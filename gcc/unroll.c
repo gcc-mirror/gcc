@@ -2495,6 +2495,7 @@ iteration_info (loop, iteration_var, initial_value, increment)
     {
       HOST_WIDE_INT offset = 0;
       struct induction *v = REG_IV_INFO (REGNO (iteration_var));
+      rtx biv_initial_value;
 
       if (REGNO (v->src_reg) >= max_reg_before_loop)
 	abort ();
@@ -2527,11 +2528,13 @@ iteration_info (loop, iteration_var, initial_value, increment)
 	fprintf (loop_dump_stream,
 		 "Loop unrolling: Giv iterator, initial value bias %ld.\n",
 		 (long) offset);
+
       /* Initial value is mult_val times the biv's initial value plus
 	 add_val.  Only useful if it is a constant.  */
+      biv_initial_value = extend_value_for_giv (v, bl->initial_value);
       *initial_value
 	= fold_rtx_mult_add (v->mult_val,
-			     plus_constant (bl->initial_value, offset),
+			     plus_constant (biv_initial_value, offset),
 			     v->add_val, v->mode);
     }
   else
@@ -2895,6 +2898,7 @@ find_splittable_givs (loop, bl, unroll_type, increment, unroll_number)
 				loop->start);
 	      biv_initial_value = tem;
 	    }
+	  biv_initial_value = extend_value_for_giv (v, biv_initial_value);
 	  value = fold_rtx_mult_add (v->mult_val, biv_initial_value,
 				     v->add_val, v->mode);
 	}
@@ -3456,10 +3460,11 @@ final_giv_value (loop, v)
 	  insert_before = NEXT_INSN (loop_end);
 
 	  /* Put the final biv value in tem.  */
-	  tem = gen_reg_rtx (bl->biv->mode);
+	  tem = gen_reg_rtx (v->mode);
 	  record_base_value (REGNO (tem), bl->biv->add_val, 0);
 	  emit_iv_add_mult (increment, GEN_INT (n_iterations),
-			    bl->initial_value, tem, insert_before);
+			    extend_value_for_giv (v, bl->initial_value),
+			    tem, insert_before);
 
 	  /* Subtract off extra increments as we find them.  */
 	  for (insn = NEXT_INSN (v->insn); insn != loop_end;

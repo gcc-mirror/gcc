@@ -115,6 +115,8 @@ struct induction
 				   subtracted from add_val when this giv
 				   derives another.  This occurs when the
 				   giv spans a biv update by incrementation. */
+  rtx ext_dependant;		/* If nonzero, is a sign or zero extension
+				   if a biv on which this giv is dependant.  */
   struct induction *next_iv;	/* For givs, links together all givs that are
 				   based on the same biv.  For bivs, links
 				   together all biv entries that refer to the
@@ -238,6 +240,7 @@ int loop_invariant_p PARAMS ((const struct loop *, rtx));
 rtx get_condition_for_loop PARAMS ((const struct loop *, rtx));
 void emit_iv_add_mult PARAMS ((rtx, rtx, rtx, rtx, rtx));
 rtx express_from PARAMS ((struct induction *, struct induction *));
+rtx extend_value_for_giv PARAMS ((struct induction *, rtx));
 
 void unroll_loop PARAMS ((struct loop *, int, rtx, int));
 rtx biv_total_increment PARAMS ((struct iv_class *));
@@ -251,7 +254,7 @@ void emit_unrolled_add PARAMS ((rtx, rtx, rtx));
 int back_branch_in_range_p PARAMS ((const struct loop *, rtx));
 
 int loop_insn_first_p PARAMS ((rtx, rtx));
-typedef rtx (*loop_insn_callback ) PARAMS ((struct loop *, rtx, int, int));
+typedef rtx (*loop_insn_callback) PARAMS ((struct loop *, rtx, int, int));
 void for_each_insn_in_loop PARAMS ((struct loop *, loop_insn_callback));
 
 /* Forward declarations for non-static functions declared in doloop.c.  */
