@@ -2187,7 +2187,7 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	     Otherwise, the targets must be compatible
 	     and both must be object or both incomplete.  */
 	  if (comp_target_types (type0, type1))
-	    ;
+	    result_type = common_type (type0, type1);
 	  else if (TYPE_MAIN_VARIANT (tt0) == void_type_node)
 	    {
 	      /* op0 != orig_op0 detects the case of something
@@ -2204,7 +2204,9 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	    }
 	  else
 	    pedwarn ("comparison of distinct pointer types lacks a cast");
-	  result_type = common_type (type0, type1);
+
+	  if (result_type == NULL_TREE)
+	    result_type = ptr_type_node;
 	}
       else if (code0 == POINTER_TYPE && TREE_CODE (op1) == INTEGER_CST
 	       && integer_zerop (op1))
@@ -2233,12 +2235,18 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	shorten = 1;
       else if (code0 == POINTER_TYPE && code1 == POINTER_TYPE)
 	{
-	  if (! comp_target_types (type0, type1))
-	    pedwarn ("comparison of distinct pointer types lacks a cast");
-	  else if (pedantic 
-		   && TREE_CODE (TREE_TYPE (type0)) == FUNCTION_TYPE)
-	    pedwarn ("ANSI C forbids ordered comparisons of pointers to functions");
-	  result_type = common_type (type0, type1);
+	  if (comp_target_types (type0, type1))
+	    {
+	      result_type = common_type (type0, type1);
+	      if (pedantic 
+		  && TREE_CODE (TREE_TYPE (type0)) == FUNCTION_TYPE)
+		pedwarn ("ANSI C forbids ordered comparisons of pointers to functions");
+	    }
+	  else
+	    {
+	      result_type = ptr_type_node;
+	      pedwarn ("comparison of distinct pointer types lacks a cast");
+	    }
 	}
       break;
 
@@ -2252,15 +2260,21 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	short_compare = 1;
       else if (code0 == POINTER_TYPE && code1 == POINTER_TYPE)
 	{
-	  if (! comp_target_types (type0, type1))
-	    pedwarn ("comparison of distinct pointer types lacks a cast");
-	  else if ((TYPE_SIZE (TREE_TYPE (type0)) != 0)
-		   != (TYPE_SIZE (TREE_TYPE (type1)) != 0))
-	    pedwarn ("comparison of complete and incomplete pointers");
-	  else if (pedantic 
-		   && TREE_CODE (TREE_TYPE (type0)) == FUNCTION_TYPE)
-	    pedwarn ("ANSI C forbids ordered comparisons of pointers to functions");
-	  result_type = common_type (type0, type1);
+	  if (comp_target_types (type0, type1))
+	    {
+	      result_type = common_type (type0, type1);
+	      if ((TYPE_SIZE (TREE_TYPE (type0)) != 0)
+		  != (TYPE_SIZE (TREE_TYPE (type1)) != 0))
+		pedwarn ("comparison of complete and incomplete pointers");
+	      else if (pedantic 
+		       && TREE_CODE (TREE_TYPE (type0)) == FUNCTION_TYPE)
+		pedwarn ("ANSI C forbids ordered comparisons of pointers to functions");
+	    }
+	  else
+	    {
+	      result_type = ptr_type_node;
+	      pedwarn ("comparison of distinct pointer types lacks a cast");
+	    }
 	}
       else if (code0 == POINTER_TYPE && TREE_CODE (op1) == INTEGER_CST
 	       && integer_zerop (op1))
