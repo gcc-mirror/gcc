@@ -3039,7 +3039,7 @@
 }")
 
 (define_expand "reload_outdi"
-  [(set (match_operand:DI 0 "general_operand" "")
+  [(set (match_operand:DI 0 "non_hard_reg_operand" "")
 	(match_operand:DI 1 "register_operand" "Z"))
    (clobber (match_operand:SI 2 "register_operand" "=&r"))]
   ""

@@ -1,5 +1,7 @@
 Mon Apr 16 08:03:48 2001  Jeffrey A Law  (law@cygnus.com)
 
+	* pa.md (reload_outdi): Operand 0 must be a non hard register.
+
 	* pa.c (secondary_reload_class): SAR<->FP copies require a 
 	secondary register.
 
