@@ -1,3 +1,9 @@
+2004-10-27  Andreas Schwab  <schwab@suse.de>
+
+	* varasm.c (default_stabs_asm_out_destructor): Mark symbol as
+	unused.
+	(default_stabs_asm_out_constructor): Likewise.
+
 2004-10-26  Geoffrey Keating  <geoffk@apple.com>
 
 	* builtins.c (fold_builtin_unordered_cmp): Always bring both
