@@ -509,6 +509,9 @@ gnat_install_builtins ()
   ftype = build_function_type (ptr_void_type_node, tmp);
   gnat_define_builtin ("__builtin_alloca", ftype, BUILT_IN_ALLOCA,
 		       "alloca", false);
+
+  /* Target specific builtins, such as the AltiVec family on ppc.  */
+  targetm.init_builtins ();
 }
 
 /* Create the predefined scalar types such as `integer_type_node' needed
@@ -3304,6 +3307,17 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
     TREE_CONSTANT (expr) = 0;
 
   return expr;
+}
+
+/* Search the chain of currently reachable declarations for a builtin
+   FUNCTION_DECL node corresponding to function NAME (an IDENTIFIER_NODE).
+   Return the first node found, if any, or NULL_TREE otherwise.  */
+tree
+builtin_decl_for (tree name __attribute__ ((unused)))
+{
+  /* ??? not clear yet how to implement this function in tree-ssa, so
+     return NULL_TREE for now */
+  return NULL_TREE;
 }
 
 #include "gt-ada-utils.h"

@@ -101,7 +101,8 @@ static void set_rm_size (Uint, tree, Entity_Id);
 static tree make_type_from_size (tree, tree, bool);
 static unsigned int validate_alignment (Uint, Entity_Id, unsigned int);
 static void check_ok_for_atomic (tree, Entity_Id, bool);
-
+static int  compatible_signatures_p (tree ftype1, tree ftype2);
+
 /* Given GNAT_ENTITY, an entity in the incoming GNAT tree, return a
    GCC type corresponding to that entity.  GNAT_ENTITY is assumed to
    refer to an Ada type.  */
@@ -3242,6 +3243,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	   corresponding to that field.  This list will be saved in the
 	   TYPE_CI_CO_LIST field of the FUNCTION_TYPE node we create.  */
 	tree gnu_return_list = NULL_TREE;
+	/* If an import pragma asks to map this subprogram to a GCC builtin,
+	   this is the builtin DECL node.  */
+	tree gnu_builtin_decl = NULL_TREE;
 	Entity_Id gnat_param;
 	bool inline_flag = Is_Inlined (gnat_entity);
 	bool public_flag = Is_Public (gnat_entity);
@@ -3282,6 +3286,20 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	    break;
 	  }
+
+	/* If this subprogram is expectedly bound to a GCC builtin, fetch the
+	   corresponding DECL node.
+
+	   We still want the parameter associations to take place because the
+	   proper generation of calls depends on it (a GNAT parameter without
+	   a corresponding GCC tree has a very specific meaning), so we don't
+	   just break here.  */
+	if (Convention (gnat_entity) == Convention_Intrinsic)
+	  gnu_builtin_decl = builtin_decl_for (gnu_ext_name);
+
+	/* ??? What if we don't find the builtin node above ? warn ? err ?
+	   In the current state we neither warn nor err, and calls will just
+	   be handled as for regular subprograms. */
 
 	if (kind == E_Function || kind == E_Subprogram_Type)
 	  gnu_return_type = gnat_to_gnu_type (Etype (gnat_entity));
@@ -3378,9 +3396,15 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    bool copy_in_copy_out_flag = false;
 	    bool req_by_copy = false, req_by_ref = false;
 
-	    /* See if a Mechanism was supplied that forced this
+	    /* Builtins are expanded inline and there is no real call sequence
+	       involved. so the type expected by the underlying expander is
+	       always the type of each argument "as is".  */
+	    if (gnu_builtin_decl)
+	      req_by_copy = 1;
+
+	    /* Otherwise, see if a Mechanism was supplied that forced this
 	       parameter to be passed one way or another.  */
-	    if (Is_Valued_Procedure (gnat_entity) && parmnum == 0)
+	    else if (Is_Valued_Procedure (gnat_entity) && parmnum == 0)
 	      req_by_copy = true;
 	    else if (Mechanism (gnat_param) == Default)
 	      ;
@@ -3637,6 +3661,23 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 				   | (TYPE_QUAL_VOLATILE * volatile_flag)));
 
 	Sloc_to_locus (Sloc (gnat_entity), &input_location);
+
+        /* If we have a builtin decl for that function, check the signatures
+           compatibilities.  If the signatures are compatible, use the builtin
+           decl.  If they are not, we expect the checker predicate to have
+           posted the appropriate errors, and just continue with what we have
+           so far.  */
+        if (gnu_builtin_decl)
+          {
+            tree gnu_builtin_type =  TREE_TYPE (gnu_builtin_decl);
+
+            if (compatible_signatures_p (gnu_type, gnu_builtin_type))
+              {
+                gnu_decl = gnu_builtin_decl;
+                gnu_type = gnu_builtin_type;
+                break;
+              }
+          }
 
 	/* If there was no specified Interface_Name and the external and
 	   internal names of the subprogram are the same, only use the
@@ -6208,6 +6249,34 @@ check_ok_for_atomic (tree object, Entity_Id gnat_entity, bool comp_p)
   else
     post_error_ne ("atomic access to & cannot be guaranteed",
 		   gnat_error_point, gnat_entity);
+}
+
+/* Check if FTYPE1 and FTYPE2, two potentially different function type nodes,
+   have compatible signatures so that a call using one type may be safely
+   issued if the actual target function type is the other. Return 1 if it is
+   the case, 0 otherwise, and post errors on the incompatibilities.
+
+   This is used when an Ada subprogram is mapped onto a GCC builtin, to ensure
+   that calls to the subprogram will have arguments suitable for the later
+   underlying builtin expansion.  */
+
+static int
+compatible_signatures_p (tree ftype1, tree ftype2)
+{
+  /* As of now, we only perform very trivial tests and consider it's the
+     programmer's responsability to ensure the type correctness in the Ada
+     declaration, as in the regular Import cases.
+
+     Mismatches typically result in either error messages from the builtin
+     expander, internal compiler errors, or in a real call sequence.  This
+     should be refined to issue diagnostics helping error detection and
+     correction.  */
+
+  /* Almost fake test, ensuring a use of each argument.  */
+  if (ftype1 == ftype2)
+    return 1;
+
+  return 1;
 }
 
 /* Given a type T, a FIELD_DECL F, and a replacement value R, return a new type
