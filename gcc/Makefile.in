@@ -767,6 +767,7 @@ libgcc1.a: libgcc1.c $(CONFIG_H) $(LIB1FUNCS_EXTRA) config.status
 	  else true; \
 	  fi; \
 	done
+	$(RANLIB) tmplibgcc1.a
 	mv tmplibgcc1.a libgcc1.a
 
 # Build libgcc1.a from assembler source.  LIB1ASMFUNCS is the list of
