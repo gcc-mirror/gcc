@@ -2028,7 +2028,7 @@ Initializes, usually a module.  No type.
 A generic integer of type @code{int}.
 
 @item is
-A generic integer that contains a true (non-zero) or false (zero) value.
+A generic integer that contains a true (nonzero) or false (zero) value.
 
 @item len
 A generic integer that contains the length of something.

@@ -6283,7 +6283,7 @@ single-dimensional array, so at least the dimensionality of the array
 is preserved.
 
 Debuggers that understand Fortran should have no trouble with
-non-zero low bounds, but for non-Fortran debuggers, especially
+nonzero low bounds, but for non-Fortran debuggers, especially
 C debuggers, the above example might have a C equivalent of
 @samp{a[4305]}.
 This calculation is arrived at by eliminating the subtraction
@@ -8547,7 +8547,7 @@ If a formatted @code{WRITE} produces an endless stream of spaces, check
 that your program is linked against the correct version of the C library.
 The configuration process takes care to account for your
 system's normal @file{libc} not being ANSI-standard, which will
-otherwise cause this behaviour.
+otherwise cause this behavior.
 If your system's default library is
 ANSI-standard and you subsequently link against a non-ANSI one, there
 might be problems such as this one.
@@ -9460,9 +9460,9 @@ general control over whether or not floating-point exceptions are trapped or
 ignored.
 (Ignoring them typically results in NaN values being
 propagated in systems that conform to IEEE 754.)
-The behaviour is normally inherited from the system-dependent startup
+The behavior is normally inherited from the system-dependent startup
 code, though some targets, such as the Alpha, have code generation
-options which change the behaviour.
+options which change the behavior.
 
 Most systems provide some C-callable mechanism to change this; this can
 be invoked at startup using @command{gcc}'s @code{constructor} attribute.

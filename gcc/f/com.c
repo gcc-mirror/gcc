@@ -821,7 +821,7 @@ ffecom_subscript_check_ (tree array, tree element, int dim, int total_dims,
    `item' is NULL_TREE, or the transformed pointer to the array.
    `expr' is the original opARRAYREF expression, which is transformed
      if `item' is NULL_TREE.
-   `want_ptr' is non-zero if a pointer to the element, instead of
+   `want_ptr' is nonzero if a pointer to the element, instead of
      the element itself, is to be returned.  */
 
 static tree
@@ -14758,12 +14758,12 @@ ffe_truthvalue_conversion (expr)
     case ABS_EXPR:
     case FLOAT_EXPR:
     case FFS_EXPR:
-      /* These don't change whether an object is non-zero or zero.  */
+      /* These don't change whether an object is nonzero or zero.  */
       return ffe_truthvalue_conversion (TREE_OPERAND (expr, 0));
 
     case LROTATE_EXPR:
     case RROTATE_EXPR:
-      /* These don't change whether an object is zero or non-zero, but
+      /* These don't change whether an object is zero or nonzero, but
 	 we can't ignore them if their second arg has side-effects.  */
       if (TREE_SIDE_EFFECTS (TREE_OPERAND (expr, 1)))
 	return build (COMPOUND_EXPR, integer_type_node, TREE_OPERAND (expr, 1),
@@ -15029,7 +15029,7 @@ struct file_name_list
     char *fname;
     /* Mapping of file names for this directory.  */
     struct file_name_map *name_map;
-    /* Non-zero if name_map is valid.  */
+    /* Nonzero if name_map is valid.  */
     int got_name_map;
   };
 

@@ -2315,7 +2315,7 @@ fix up some of the build procedures.
 
 @item
 Change code generation for list-directed I/O so it allows
-for new versions of @code{libf2c} that might return non-zero
+for new versions of @code{libf2c} that might return nonzero
 status codes for some operations previously assumed to always
 return zero.
 
