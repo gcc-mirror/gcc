@@ -1,3 +1,10 @@
+Mon Jul  6 22:09:32 1998  Ian Lance Taylor  <ian@cygnus.com>
+			  Jeff Law	    <law@cygnus.com>
+
+	* cpplib.c (cpp_options_init): Initialize cplusplus_comments to 1,
+	matching July 18, 1995 change to cccp.c.  If -traditional then
+	disable cplusplus_comments.
+
 Mon Jul  6 21:28:14 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* Disable the following change from gcc2.  Not appropriate for egcs:

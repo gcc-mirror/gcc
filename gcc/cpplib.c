@@ -762,7 +762,7 @@ cpp_options_init (opts)
   opts->no_output = 0;
   opts->remap = 0;
   opts->cplusplus = 0;
-  opts->cplusplus_comments = 0;
+  opts->cplusplus_comments = 1;
 
   opts->verbose = 0;
   opts->objc = 0;
@@ -6429,6 +6429,7 @@ cpp_handle_option (pfile, argc, argv)
     case 't':
       if (!strcmp (argv[i], "-traditional")) {
 	opts->traditional = 1;
+        opts->cplusplus_comments = 0;
       } else if (!strcmp (argv[i], "-trigraphs")) {
 	if (!opts->chill)
 	  opts->no_trigraphs = 0;
