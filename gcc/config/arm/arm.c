@@ -3982,7 +3982,7 @@ output_move_double (operands)
 {
   enum rtx_code code0 = GET_CODE (operands[0]);
   enum rtx_code code1 = GET_CODE (operands[1]);
-  rtx otherops[2];
+  rtx otherops[3];
 
   if (code0 == REG)
     {
