@@ -1109,9 +1109,10 @@ extern struct rtx_def *legitimize_address ();
 #define LOAD_EXTEND_OP(MODE) ZERO_EXTEND
 
 /* Nonzero if access to memory by bytes is no faster than for words.
-   Defining this results in worse code on the i960.  */
+   Value changed to 1 after reports of poor bitfield code with g++.
+   Indications are that code is usually as good, sometimes better. */   
 
-#define SLOW_BYTE_ACCESS 0
+#define SLOW_BYTE_ACCESS 1
 
 /* We assume that the store-condition-codes instructions store 0 for false
    and some other value for true.  This is the value stored for true.  */
