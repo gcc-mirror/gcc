@@ -1,3 +1,32 @@
+Mon Jun  4 16:50:33 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* simplify_rtx.c (simplify_subreg): Keep subregs on return values,
+	check CLASS_CANNOT_CHANGE_MODE before avoiding subreg on hard reg,
+	in case register wasn't OK previously, accept it now; allow
+	subregs of frame pointer if reload completed and frame pointer
+	is not needed.
+
+	* combine.c (sombine_simplify_rtx): Fix comment;
+	use subreg_lowpart_offset instead of subreg_lowpart_p
+	(gen_lowpart_for_combine): Use subreg_lowpart_offset.
+	* rtl.h (subreg_lowpart_parts_p): Kill.
+	(subreg_lowpart_offset, subreg_highpart_offset): Declare.
+	* simplify-rtx.c (simplify_subreg): Use subreg_lowpart_offset.
+	* emit-rtl.c (gen_lowpart_SUBREG): Use subreg_lowpart_offset;
+	(gen_lowpart_common): Likewise.
+	(subreg_lowpart_p): Likewise.
+	(subreg_lowpart_parts_p): Kill.
+	(subreg_lowpart_offset, subreg_highpart_offset): New function.
+
+	* emit-rtl.c (gen_lowpart_common): Use simplify_gen_subreg
+	to simplify SUBREG and REG.
+	(gen_highpart): Use simplify_gen_subreg for all simplifications.
+
+	* emit-rtl.c (gen_realpart, gen_imagpart): Do not handle
+	CONCAT specially.
+
+	* rtlanal.c (replace_regs):  Use simplify_gen_subreg
+
 Mon Jun  4 09:21:19 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* tree.def (ARRAY_RANGE_REF): New code.

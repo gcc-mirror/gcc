@@ -3715,7 +3715,7 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 
   /* If CODE is an associative operation not otherwise handled, see if we
      can associate some operands.  This can win if they are constants or
-     if they are logically related (i.e. (a & b) & a.  */
+     if they are logically related (i.e. (a & b) & a).  */
   if ((code == PLUS || code == MINUS
        || code == MULT || code == AND || code == IOR || code == XOR
        || code == DIV || code == UDIV
@@ -3774,7 +3774,7 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 
       /* simplify_subreg can't use gen_lowpart_for_combine.  */
       if (CONSTANT_P (SUBREG_REG (x))
-	  && subreg_lowpart_parts_p (mode, op0_mode, SUBREG_BYTE (x)))
+	  && subreg_lowpart_offset (mode, op0_mode) == SUBREG_BYTE (x))
 	return gen_lowpart_for_combine (mode, SUBREG_REG (x));
 
       {
@@ -9765,18 +9765,13 @@ gen_lowpart_for_combine (mode, x)
   else
     {
       int offset = 0;
+      rtx res;
 
-      if ((WORDS_BIG_ENDIAN || BYTES_BIG_ENDIAN)
-	  && GET_MODE_SIZE (GET_MODE (x)) > GET_MODE_SIZE (mode))
-	{
-	  int difference = (GET_MODE_SIZE (GET_MODE (x))
-			    - GET_MODE_SIZE (mode));
-	  if (WORDS_BIG_ENDIAN)
-	    offset += (difference / UNITS_PER_WORD) * UNITS_PER_WORD;
-	  if (BYTES_BIG_ENDIAN)
-	    offset += difference % UNITS_PER_WORD;
-	}
-      return gen_rtx_SUBREG (mode, x, offset);
+      offset = subreg_lowpart_offset (mode, GET_MODE (x));
+      res = simplify_gen_subreg (mode, x, GET_MODE (x), offset);
+      if (res)
+	return res;
+      return gen_rtx_CLOBBER (GET_MODE (x), const0_rtx);
     }
 }
 

@@ -1198,9 +1198,10 @@ extern rtx constant_subword		PARAMS ((rtx, int,
 extern rtx operand_subword_force	PARAMS ((rtx, unsigned int,
 						 enum machine_mode));
 extern int subreg_lowpart_p		PARAMS ((rtx));
-extern int subreg_lowpart_parts_p	PARAMS ((enum machine_mode,
-						 enum machine_mode,
-						 unsigned int));
+extern unsigned int subreg_lowpart_offset PARAMS ((enum machine_mode,
+						   enum machine_mode));
+extern unsigned int subreg_highpart_offset PARAMS ((enum machine_mode,
+						    enum machine_mode));
 extern rtx make_safe_from		PARAMS ((rtx, rtx));
 extern rtx convert_memory_address	PARAMS ((enum machine_mode, rtx));
 extern rtx get_insns			PARAMS ((void));
