@@ -1,3 +1,10 @@
+2001-02-28  Nathan Sidwell  <nathan@codesourcery.com>
+
+	Remove floating point and complex type template constant parms.
+	* pt.c (convert_nontype_argument): Remove REAL_TYPE and
+	COMPLEX_TYPE extensions.
+	(invalid_nontype_parm_type_p): Likewise.
+
 2001-02-27  Jeffrey Oldham  <oldham@codesourcery.com>
 
 	* except.c (call_eh_info): Revert "match_function"'s type.

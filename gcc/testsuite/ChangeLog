@@ -1,3 +1,7 @@
+2001-02-28  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.old-deja/g++.ext/realpt1.C: Remove.
+
 2001-02-27  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.abi/vtable3.h: Check vcall offsets too.

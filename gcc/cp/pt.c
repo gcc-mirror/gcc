@@ -2945,10 +2945,7 @@ convert_nontype_argument (type, expr)
     }
   else if (INTEGRAL_TYPE_P (expr_type) 
 	   || TYPE_PTRMEM_P (expr_type) 
-	   || TYPE_PTRMEMFUNC_P (expr_type)
-	   /* The next two are g++ extensions.  */
-	   || TREE_CODE (expr_type) == REAL_TYPE
-	   || TREE_CODE (expr_type) == COMPLEX_TYPE)
+	   || TYPE_PTRMEMFUNC_P (expr_type))
     {
       if (! TREE_CONSTANT (expr))
 	{
@@ -2987,19 +2984,6 @@ convert_nontype_argument (type, expr)
       
       return expr;
 	
-    case REAL_TYPE:
-    case COMPLEX_TYPE:
-      /* These are g++ extensions.  */
-      if (TREE_CODE (expr_type) != TREE_CODE (type))
-	return error_mark_node;
-
-      expr = digest_init (type, expr, (tree*) 0);
-      
-      if (TREE_CODE (expr) != REAL_CST)
-	goto non_constant;
-
-      return expr;
-
     case POINTER_TYPE:
       {
 	tree type_pointed_to = TREE_TYPE (type);
@@ -10355,10 +10339,6 @@ invalid_nontype_parm_type_p (type, complain)
     return 0;
   else if (TYPE_PTRMEMFUNC_P (type))
     return 0;
-  else if (!pedantic && TREE_CODE (type) == REAL_TYPE)
-    return 0; /* GNU extension */
-  else if (!pedantic && TREE_CODE (type) == COMPLEX_TYPE)
-    return 0; /* GNU extension */
   else if (TREE_CODE (type) == TEMPLATE_TYPE_PARM)
     return 0;
   else if (TREE_CODE (type) == TYPENAME_TYPE)
