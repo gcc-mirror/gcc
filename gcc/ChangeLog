@@ -1,3 +1,7 @@
+2000-10-13  Alexandre Oliva  <aoliva@redhat.com>
+
+	* c-common.c (c_expand_builtin): PARAMS-ize prototype.
+
 2000-10-12  Marek Michalkiewicz  <marekm@linux.org.pl>
 
 	* config/avr/avr.c (output_movhi, output_movsisf): Fix loading
