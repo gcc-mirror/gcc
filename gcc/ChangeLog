@@ -1,3 +1,7 @@
+Fri Mar  6 00:59:30 1998  Richard Henderson  <rth@cygnus.com>
+
+	* configure.in (target_cpu_default2): Correct typo for alphapca56.
+
 Thu Mar  5 23:24:50 1998  Jeffrey A Law  (law@cygnus.com)
 			  Doug Evans	 (devans@cygnus.com)
 
