@@ -642,9 +642,7 @@ OBJS = toplev.o version.o tree.o print-tree.o stor-layout.o fold-const.o \
 GEN= genemit genoutput genrecog genextract genflags gencodes genconfig \
  genpeep gengenrtl gencheck
 
-CCCP=cccp
-# Uncomment this line if you want to use cppmain (w/cpplib) as cpp.
-#CCCP=cppmain
+CCCP=@cpp_main@
 
 # Files to be copied away after each stage in building.
 STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \

@@ -1,3 +1,11 @@
+Wed Jun 10 13:41:23 1998  Dave Brolley  <brolley@cygnus.com>
+
+	* cppmain.c (fatal): New function.
+	* configure.in (cpp_main): New configuration variable.
+	* configure: Regenerated.
+	* Makefile.in (CCCP): Use a configuration variable to select base for cccp.
+	(cppmain$(exeext)): Add @extra_cpp_objs@.
+
 Wed Jun 10 13:07:02 1998  Dave Brolley  <brolley@cygnus.com>
 
 	* objc/objc-act.c: Add cpplib declarations.
