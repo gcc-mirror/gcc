@@ -199,11 +199,22 @@ convert_to_integer (type, expr)
 		/* In this case, shifting is like multiplication.  */
 		goto trunc1;
 	      else
-		/* If it is >= that width, result is zero.
-		   Handling this with trunc1 would give the wrong result:
-		   (int) ((long long) a << 32) is well defined (as 0)
-		   but (int) a << 32 is undefined and would get a warning.  */
-		return convert_to_integer (type, integer_zero_node);
+		{
+		  /* If it is >= that width, result is zero.
+		     Handling this with trunc1 would give the wrong result:
+		     (int) ((long long) a << 32) is well defined (as 0)
+		     but (int) a << 32 is undefined and would get a
+		     warning.  */
+
+		  tree t = convert_to_integer (type, integer_zero_node);
+
+		  /* If the original expression had side-effects, we must
+		     preserve it.  */
+		  if (TREE_SIDE_EFFECTS (expr))
+		    return build (COMPOUND_EXPR, type, expr, t);
+		  else
+		    return t;
+		}
 	    }
 	  break;
 
