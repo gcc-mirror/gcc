@@ -38,11 +38,18 @@ case "$THREADS" in
     ;;
  posix | pthreads)
     THREADS=posix
+    THREADLIBS=-lpthread
     case "$host" in
      *-*-linux*)
 	AC_DEFINE(LINUX_THREADS)
 	AC_DEFINE(_REENTRANT)
 	;;
+     *-*-freebsd*)
+	AC_MSG_WARN("FreeBSD does not yet fully support threads with Boehm GC.")
+	AC_DEFINE(FREEBSD_THREADS)
+	INCLUDES=-pthread
+	THREADLIBS=-pthread
+      	;;
      *-*-solaris*)
 	AC_DEFINE(SOLARIS_THREADS)
 	AC_DEFINE(_SOLARIS_PTHREADS)
@@ -51,7 +58,6 @@ case "$THREADS" in
 	AC_DEFINE(IRIX_THREADS)
 	;;
     esac
-    THREADLIBS=-lpthread
     ;;
  decosf1 | irix | mach | os2 | solaris | win32 | dce | vxworks)
     AC_MSG_ERROR(thread package $THREADS not yet supported)
