@@ -33,14 +33,6 @@ Boston, MA 02111-1307, USA.  */
 
 #include "i386/gas.h"
 
-/* Define the name of the .text section.  */
-#undef TEXT_SECTION_ASM_OP
-#define TEXT_SECTION_ASM_OP "\t.section .text"
-
-/* Define the name of the .data section.  */
-#undef DATA_SECTION_ASM_OP
-#define DATA_SECTION_ASM_OP "\t.section .data"
-
 /* If defined, a C expression whose value is a string containing the
    assembler operation to identify the following data as
    uninitialized global data.  If not defined, and neither
@@ -49,31 +41,12 @@ Boston, MA 02111-1307, USA.  */
    `-fno-common' is passed, otherwise `ASM_OUTPUT_COMMON' will be
    used.  */
 #undef BSS_SECTION_ASM_OP
-#define BSS_SECTION_ASM_OP "\t.section .bss"
-
-/* Define the name of the .ctor section.  */
-#undef CTORS_SECTION_ASM_OP
-#define CTORS_SECTION_ASM_OP    "\t.section .ctor"
-
-/* Define the name of the .data section.  */
-#undef DTORS_SECTION_ASM_OP
-#define DTORS_SECTION_ASM_OP    "\t.section .dtor"
+#define BSS_SECTION_ASM_OP "\t.section\t.bss"
 
 /* Enable alias attribute support.  */
-#undef SET_ASM_OP
+#ifndef SET_ASM_OP
 #define SET_ASM_OP "\t.set"
-
-/* Define the name of the .init section.  */
-#undef INIT_SECTION_ASM_OP
-#define INIT_SECTION_ASM_OP "\t.section .init"
-
-/* Define the name of the .fini section.  */
-#undef FINI_SECTION_ASM_OP
-#define FINI_SECTION_ASM_OP "\t.section .fini"
-
-/* Define the name of the .eh_frame section.  */
-#undef EH_FRAME_SECTION_ASM_OP
-#define EH_FRAME_SECTION_ASM_OP "\t.section .eh_frame"
+#endif
 
 /* Search for as.exe and ld.exe in DJGPP's binary directory. */ 
 #define MD_EXEC_PREFIX "$DJDIR/bin/"
@@ -89,7 +62,7 @@ Boston, MA 02111-1307, USA.  */
 #define CPP_PREDEFINES "-Dunix -Di386 -DGO32 -DDJGPP=2 -DMSDOS \
   -Asystem(unix) -Asystem(msdos) -Acpu(i386) -Amachine(i386)"
 
-/* We need to override link_command_spec in gcc.c to call stubify.exe.
+/* We need to override link_command_spec in gcc.c so support -Tdjgpp.djl.
    This cannot be done in LINK_SPECS as that LINK_SPECS is processed
    before library search directories are known by the linker.
    This avoids problems when specs file is not available. An alternate way,
@@ -105,7 +78,7 @@ Boston, MA 02111-1307, USA.  */
 \t%{static:} %{L*} %D %o\
 \t%{!nostdlib:%{!nodefaultlibs:%G %L %G}}\
 \t%{!A:%{!nostdlib:%{!nostartfiles:%E}}}\
-\t%{T*}}}}}}}\n\
+\t-Tdjgpp.djl %{T*}}}}}}}\n\
 %{!c:%{!M:%{!MM:%{!E:%{!S:stubify %{v} %{o*:%*} %{!o*:a.out} }}}}}"
 
 /* Always just link in 'libc.a'.  */
@@ -114,14 +87,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Pick the right startup code depending on the -pg flag.  */
 #undef STARTFILE_SPEC
-#define STARTFILE_SPEC "%{pg:gcrt0.o%s}%{!pg:crt0.o%s} crtbegin.o%s"
-
-/* Link in crtbegin.o and crtend.o for calling functions with the
-   constructor and destructor attribute.  Put the call to the
-   linker script here, and in front of crtend.o, or else the
-   resulting .exe won't have any symbols.  */
-#undef ENDFILE_SPEC
-#define ENDFILE_SPEC "-Tdjgpp.djl crtend.o%s"
+#define STARTFILE_SPEC "%{pg:gcrt0.o%s}%{!pg:crt0.o%s}"
 
 /* Make sure that gcc will not look for .h files in /usr/local/include 
    unless user explicitly requests it.  */
@@ -135,7 +101,6 @@ Boston, MA 02111-1307, USA.  */
   CTOR_SECTION_FUNCTION						\
   DTOR_SECTION_FUNCTION
 
-#undef CTOR_SECTION_FUCTION
 #define CTOR_SECTION_FUNCTION					\
 void								\
 ctor_section ()							\
@@ -147,7 +112,6 @@ ctor_section ()							\
     }								\
 }
 
-#undef DTOR_SECTION_FUNCTION
 #define DTOR_SECTION_FUNCTION					\
 void								\
 dtor_section ()							\
@@ -159,7 +123,6 @@ dtor_section ()							\
     }								\
 }
 
-#undef ASM_OUTPUT_CONSTRUCTOR
 #define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)	\
   do {						\
     ctor_section ();				\
@@ -169,13 +132,11 @@ dtor_section ()							\
   } while (0)
 
 /* Allow (eg) __attribute__((section "locked")) to work */
-#undef ASM_OUTPUT_SECTION_NAME
 #define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME, RELOC)\
   do {						\
     fprintf (FILE, "\t.section %s\n", NAME);	\
   } while (0)
 
-#undef ASM_OUTPUT_DESTRUCTOR
 #define ASM_OUTPUT_DESTRUCTOR(FILE,NAME)	\
   do {						\
     dtor_section ();                   		\
@@ -206,15 +167,6 @@ dtor_section ()							\
 #define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN) \
   asm_output_aligned_bss ((FILE), (DECL), (NAME), (SIZE), (ALIGN))
 
-/* Define how DJGPP calls function pointers in the .ctor section.  */
-#undef DO_GLOBAL_CTORS_BODY
-#define DO_GLOBAL_CTORS_BODY						\
-  do {									\
-    func_ptr *p;								\
-    for (p = __CTOR_LIST__ + 1; *p ; p++)				\
-      (*p) ();								\
-  } while (0)
-
-/* Use the .fini section for destructors.  */
-#define CRTSTUFF_USE_FINI_SECTION
-
+/* djgpp automatically calls its own version of __main, so don't define one
+   in libgcc, nor call one in main().  */
+#define HAS_INIT_SECTION
