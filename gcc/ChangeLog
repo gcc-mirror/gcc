@@ -1,3 +1,8 @@
+2004-01-05  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm/vfp.md (arm_movsi_vfp): Hide VFP register classes from register
+	preferencing.
+
 2004-01-05  Uros Bizjak  <uros@kss-loka.si>
 
 	* doc/invoke.texi (Intel 386 and AMD x86-64 Options):
