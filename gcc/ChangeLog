@@ -1,3 +1,20 @@
+2004-11-23  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-phinode.c (resize_phi_node): Abort when LEN is strictly
+	greater than PHI_ARG_CAPACITY.
+	(reserve_phi_args_for_new_edge): Initialize the new PHI
+	argument to NULL_TREE.  Increment PHI_NUM_ARGS.
+	(add_phi_arg): Add a PHI argument to the slot given by
+	E->dest_idx.
+	(remove_phi_arg_num): Do not write to PHI_ARG_EDGE.
+	* tree-flow-inline (phi_arg_from_edge): Return E->dest_idx.
+	* tree-ssa.c (ssa_redirect_edge): Check for a missing PHI
+	argument by looking at PHI_ARG_DEF.
+	(verify_phi_args): Check for a missing PHI argument.  Remove
+	the check for duplicate PHI arguments.
+	* tree.h (PHI_ARG_EDGE): Redefine in terms of EDGE_PRED.
+	(phi_arg_d): Remove e.
+
 2004-11-23  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.c (s390_backchain_string): Removed.

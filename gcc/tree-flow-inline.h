@@ -393,15 +393,9 @@ set_phi_nodes (basic_block bb, tree l)
 static inline int
 phi_arg_from_edge (tree phi, edge e)
 {
-  int i;
   gcc_assert (phi);
   gcc_assert (TREE_CODE (phi) == PHI_NODE);
-
-  for (i = 0; i < PHI_NUM_ARGS (phi); i++)
-    if (PHI_ARG_EDGE (phi, i) == e)
-      return i;
-
-  return -1;
+  return e->dest_idx;
 }
 
 /* Mark VAR as used, so that it'll be preserved during rtl expansion.  */
