@@ -1,3 +1,8 @@
+2002-11-19  Andreas Jaeger  <aj@suse.de>
+
+	* tree-inline.c: Move prototpyes of find_alloca_call_1 and
+	find_alloca_call to right place.
+
 2002-11-19  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* cppfiles.c: Fix formatting.
