@@ -302,6 +302,7 @@ the use of a header file in your program with the C preprocessing directive
 * Include Operation::   What @samp{#include} does.
 * Once-Only::		Preventing multiple inclusion of one header file.
 * Inheritance::         Including one header file in another header file.
+* System Headers::      Special treatment for some header files.
 @end menu
 
 @node Header Uses, Include Syntax, Header Files, Header Files
@@ -311,7 +312,7 @@ Header files serve two kinds of purposes.
 
 @itemize @bullet
 @item
-@findex system header files
+@cindex system header files
 System header files declare the interfaces to parts of the operating
 system.  You include them in your program to supply the definitions and
 declarations you need to invoke system calls and libraries.
@@ -518,7 +519,7 @@ once.  It is much better for the header file's implementor to write the
 file so that users don't need to know this.  Using @samp{#ifndef}
 accomplishes this goal.
 
-@node Inheritance,, Once-Only, Header Files
+@node Inheritance, System Headers, Once-Only, Header Files
 @subsection Inheritance and Header Files
 @cindex inheritance
 @cindex overriding a header file
@@ -572,6 +573,53 @@ both directories contain @file{sys/signal.h}.  Ordinary
 @file{/usr/local/include}.  If that file contains @samp{#include_next
 <sys/signal.h>}, it starts searching after that directory, and finds the
 file in @file{/usr/include}.
+
+@samp{#include_next} is a GCC extension and should not be used in
+programs intended to be portable to other compilers.
+
+@node System Headers,, Inheritance, Header Files
+@subsection System Headers
+@cindex system header files
+
+The header files declaring interfaces to the operating system and
+runtime libraries often cannot be written in strictly conforming C.
+Therefore, GNU C gives code found in @dfn{system headers} special
+treatment.  Certain categories of warnings are suppressed, notably those
+enabled by @samp{-pedantic}.  For example, a hypothetical definition of
+@code{printf} as a variable argument macro:
+
+@smallexample
+#define printf(format, args...) fprintf(stdout, format , ##args)
+@end smallexample
+
+@noindent
+would cause a warning with -pedantic if it appeared in your own code,
+but not if it appeared in @file{stdio.h}.
+
+Normally, only the headers found in specific directories are considered
+system headers.  The set of these directories is determined when GCC is
+compiled.  There are, however, two ways to add to the set.
+
+@findex -isystem
+The @samp{-isystem} command line option adds its argument to the list of
+directories to search for headers, just like @samp{-I}.  In addition,
+any headers found in that directory will be considered system headers.
+Note that unlike @samp{-I}, you must put a space between @samp{-isystem}
+and its argument.
+
+All directories named by @samp{-isystem} are searched @strong{after} all
+directories named by @samp{-I}, no matter what their order was on the
+command line.  If the same directory is named by both @samp{-I} and
+@samp{-isystem}, @samp{-I} wins; it is as if the @samp{-isystem} option
+had never been specified at all.
+
+@findex #pragma system_header
+There is also a directive, @samp{#pragma system_header}, which tells GCC
+to consider the rest of the current include file a system header, no
+matter where it was found.  Code that comes before the @samp{#pragma} in
+the file will not be affected.
+
+@samp{#pragma system_header} has no effect in the primary source file.
 
 @node Macros, Conditionals, Header Files, Top
 @section Macros
@@ -3040,7 +3088,7 @@ was specified previously with @samp{-iprefix}.
 @findex -isystem
 Add a directory to the beginning of the second include path, marking it
 as a system directory, so that it gets the same special treatment as
-is applied to the standard system directories.
+is applied to the standard system directories.  @xref{System Headers}.
 
 @item -x c
 @itemx -x c++
