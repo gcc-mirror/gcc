@@ -584,6 +584,9 @@ extern void convert_move PROTO((rtx, rtx, int));
 /* Convert an rtx to specified machine mode and return the result.  */
 extern rtx convert_to_mode PROTO((enum machine_mode, rtx, int));
 
+/* Convert an rtx to MODE from OLDMODE and return the result.  */
+extern rtx convert_modes PROTO((enum machine_mode, enum machine_mode, rtx, int));
+
 /* Emit code to move a block Y to a block X.  */
 extern void emit_block_move PROTO((rtx, rtx, rtx, int));
 
