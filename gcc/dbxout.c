@@ -132,6 +132,11 @@ static int flag_minimal_debug = 1;
 
 static int have_used_extensions = 0;
 
+/* Number for the next N_SOL filename stabs label.  The number 0 is reserved
+   for the N_SO filename stabs label.  */
+
+static int source_label_number = 1;
+
 char *getpwd ();
 
 /* Typical USG systems don't have stab.h, and they also have
@@ -508,10 +513,13 @@ dbxout_source_file (file, filename)
 #ifdef DBX_OUTPUT_SOURCE_FILENAME
       DBX_OUTPUT_SOURCE_FILENAME (file, filename);
 #else
-      ASM_GENERATE_INTERNAL_LABEL (ltext_label_name, "Ltext", 0);
+      ASM_GENERATE_INTERNAL_LABEL (ltext_label_name, "Ltext",
+				   source_label_number);
       fprintf (file, "%s ", ASM_STABS_OP);
       output_quoted_string (file, filename);
       fprintf (file, ",%d,0,0,%s\n", N_SOL, &ltext_label_name[1]);
+      text_section ();
+      ASM_OUTPUT_INTERNAL_LABEL (asmfile, "Ltext", source_label_number++);
 #endif
       lastfile = filename;
     }
