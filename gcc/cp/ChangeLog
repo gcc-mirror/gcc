@@ -1,3 +1,8 @@
+2003-03-31  Jason Merrill  <jason@redhat.com>
+
+	PR java/10145
+	* class.c (check_field_decl): Don't set DECL_ALIGN.
+
 2003-03-30  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/7647
