@@ -1,3 +1,9 @@
+2004-03-12  Matt Austern  <austern@apple.com>
+
+	* src/powerpc/darwin.S: Fix EH information so it corresponds to
+	changes in EH format resulting from addition of linkonce support.
+	* src/powerpc/darwin_closure.S: Likewise.
+	
 2004-03-11  Andreas Tobler  <a.tobler@schweiz.ch>
 	    Paolo Bonzini  <bonzini@gnu.org>
 
