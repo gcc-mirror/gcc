@@ -93,6 +93,8 @@ T(Sldf);
 void
 struct_return_10_x ()
 {
+DEBUG_INIT
+
 #define T(TYPE) testit##TYPE ();
 
 T(Sfd);

@@ -29,6 +29,8 @@ TEST(Scf16, _Complex float)
 void
 struct_by_value_16_x ()
 {
+DEBUG_INIT
+
 #define T(TYPE, MTYPE) testit##TYPE ();
 
 T(Scf1, _Complex float)

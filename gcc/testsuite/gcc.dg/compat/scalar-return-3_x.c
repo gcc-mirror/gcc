@@ -95,6 +95,8 @@ T(cld, _Complex long double, (3.0,4.0))
 void
 scalar_return_3_x ()
 {
+DEBUG_INIT
+
 #define T(NAME) testit##NAME ();
 
 T(ci)

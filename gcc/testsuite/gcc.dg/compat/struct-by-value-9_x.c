@@ -170,6 +170,8 @@ T(15, Scis)
 void
 struct_by_value_9_x ()
 {
+DEBUG_INIT
+
 #define T(N, TYPE) testit##TYPE##N ();
 
 T(0, Scsi)

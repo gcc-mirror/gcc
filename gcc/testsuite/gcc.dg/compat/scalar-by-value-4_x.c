@@ -77,6 +77,8 @@ T(cf, _Complex float, (6.0,7.0))
 void
 scalar_by_value_4_x ()
 {
+DEBUG_INIT
+
 #define T(NAME) testit##NAME ();
 
 T(cc)

@@ -106,6 +106,8 @@ T(Sics)
 void
 struct_return_3_x ()
 {
+DEBUG_INIT
+
 #define T(TYPE) testit##TYPE ();
 
 T(Sc)

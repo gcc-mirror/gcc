@@ -29,6 +29,8 @@ TEST(Scc16, _Complex char)
 void
 struct_by_value_11_x ()
 {
+DEBUG_INIT
+
 #define T(TYPE, MTYPE) testit##TYPE ();
 
 T(Scc1, _Complex char)

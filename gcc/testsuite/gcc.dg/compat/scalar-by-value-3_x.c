@@ -155,6 +155,8 @@ T(cld, _Complex long double, (8.0,9.0))
 void
 scalar_by_value_3_x ()
 {
+DEBUG_INIT
+
 #define T(NAME) testit##NAME ();
 
 T(ci)

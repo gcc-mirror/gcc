@@ -6,12 +6,14 @@
  
 #ifdef DBG
 #include <stdio.h>
+#define DEBUG_INIT setbuf (stdout, NULL);
 #define DEBUG_FPUTS(x) fputs (x, stdout)
 #define DEBUG_DOT putc ('.', stdout)
 #define DEBUG_NL putc ('\n', stdout)
 #define DEBUG_FAIL putc ('F', stdout); fails++
 #define DEBUG_CHECK { DEBUG_FAIL; } else { DEBUG_DOT; }
 #else
+#define DEBUG_INIT
 #define DEBUG_FPUTS(x)
 #define DEBUG_DOT
 #define DEBUG_NL

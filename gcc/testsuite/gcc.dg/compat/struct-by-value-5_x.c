@@ -29,6 +29,8 @@ TEST(Sf16, float)
 void
 struct_by_value_5_x ()
 {
+DEBUG_INIT
+
 #define T(TYPE, MTYPE) testit##TYPE ();
 
 T(Sf1, float)

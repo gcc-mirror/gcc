@@ -167,6 +167,8 @@ T(15, Sis)
 void
 struct_by_value_8_x ()
 {
+DEBUG_INIT
+
 #define T(N, TYPE) testit##TYPE##N ();
 
 T(0, Ssc)

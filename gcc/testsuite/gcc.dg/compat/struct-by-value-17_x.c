@@ -29,6 +29,8 @@ TEST(Scd16, _Complex double)
 void
 struct_by_value_17_x ()
 {
+DEBUG_INIT
+
 #define T(TYPE, MTYPE) testit##TYPE ();
 
 T(Scd1, _Complex double)

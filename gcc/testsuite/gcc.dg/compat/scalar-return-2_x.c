@@ -66,6 +66,8 @@ T(f, float, 90.0)
 void
 scalar_return_2_x ()
 {
+DEBUG_INIT
+
 #define T(NAME) testit##NAME ();
 
 T(c)
