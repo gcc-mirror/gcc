@@ -1,3 +1,13 @@
+Thu Feb 24 20:04:11 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	Fix breakage from 6th Feb thread_prologue_and_epilogue_insns change:
+	* sh-protos.h (sh_need_epilogue): Declare.
+	* sh.c (sh_need_epilogue_known): New static variable.
+	(sh_need_epilogue): New function.
+	(function_epilogue): Clear need_epilogue_known.
+	* sh.md (return): Split into expander / insn pattern.
+	Make the expander conditional on ! sh_need_epilogue ().
+
 2000-02-24  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* machmode.h (get_mode_alignment): Declare.

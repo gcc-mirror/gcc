@@ -3919,6 +3919,26 @@ sh_expand_epilogue ()
     emit_insn (gen_sp_switch_2 ());
 }
 
+static int sh_need_epilogue_known = 0;
+
+int
+sh_need_epilogue ()
+{
+  if (! sh_need_epilogue_known)
+    {
+      rtx epilogue;
+
+      start_sequence ();
+      sh_expand_epilogue ();
+      epilogue = gen_sequence ();
+      end_sequence ();
+      sh_need_epilogue_known
+	= (GET_CODE (epilogue) == SEQUENCE && XVECLEN (epilogue, 0) == 0
+	   ? -1 : 1);
+    }
+  return sh_need_epilogue_known > 0;
+}
+
 /* Clear variables at function end.  */
 
 void
@@ -3927,6 +3947,7 @@ function_epilogue (stream, size)
      int size ATTRIBUTE_UNUSED;
 {
   trap_exit = pragma_interrupt = pragma_trapa = pragma_nosave_low_regs = 0;
+  sh_need_epilogue_known = 0;
   sp_switch = NULL_RTX;
 }
 
