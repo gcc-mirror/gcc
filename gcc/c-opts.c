@@ -162,6 +162,7 @@ c_common_missing_argument (const char *opt, size_t code)
     case OPT_idirafter:
     case OPT_isysroot:
     case OPT_isystem:
+    case OPT_iquote:
       error ("missing path after \"%s\"", opt);
       break;
 
@@ -303,6 +304,7 @@ c_common_handle_option (size_t scode, const char *arg, int value)
 	    error ("-I- specified twice");
 	  quote_chain_split = true;
 	  split_quote_chain ();
+	  inform ("obsolete option -I- used, please use -iquote instead");
 	}
       break;
 
@@ -952,6 +954,10 @@ c_common_handle_option (size_t scode, const char *arg, int value)
 
     case OPT_iprefix:
       iprefix = arg;
+      break;
+
+    case OPT_iquote:
+      add_path (xstrdup (arg), QUOTE, 0);
       break;
 
     case OPT_isysroot:

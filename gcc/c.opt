@@ -103,7 +103,7 @@ Print the name of header files as they are used
 
 I
 C ObjC C++ ObjC++ Joined Separate
--I <dir>	Add <dir> to the end of the main include path.  -I- gives more include path control; see info documentation
+-I <dir>	Add <dir> to the end of the main include path
 
 M
 C ObjC C++ ObjC++
@@ -719,6 +719,10 @@ C ObjC C++ ObjC++ Joined Separate
 isystem
 C ObjC C++ ObjC++ Joined Separate
 -isystem <dir>	Add <dir> to the start of the system include path
+
+iquote
+C ObjC C++ ObjC++ Joined Separate
+-iquote <dir>	Add <dir> to the end of the quote include path
 
 iwithprefix
 C ObjC C++ ObjC++ Joined Separate

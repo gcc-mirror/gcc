@@ -400,6 +400,7 @@ file directory as the first search directory for @code{@w{#include
 @ifset cppmanual
 @xref{Search Path}.
 @end ifset
+This option has been deprecated.
 
 @item -nostdinc
 @opindex nostdinc
@@ -464,6 +465,16 @@ as a system directory, so that it gets the same special treatment as
 is applied to the standard system directories.
 @ifset cppmanual
 @xref{System Headers}.
+@end ifset
+
+@item -iquote @var{dir}
+@opindex iquote
+Search @var{dir} only for header files requested with
+@code{@w{#include "@var{file}"}}; they are not searched for
+@code{@w{#include <@var{file}>}}, before all directories specified by
+@option{-I} and before the standard system directories.
+@ifset cppmanual
+@xref{Search Path}.
 @end ifset
 
 @item -fdollars-in-identifiers

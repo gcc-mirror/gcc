@@ -328,7 +328,7 @@ in the following sections.
 
 @item Directory Options
 @xref{Directory Options,,Options for Directory Search}.
-@gccoptlist{-B@var{prefix}  -I@var{dir}  -I-  -L@var{dir}  -specs=@var{file}}
+@gccoptlist{-B@var{prefix}  -I@var{dir}  -iquote@var{dir}  -L@var{dir}  -specs=@var{file}  -I-}
 
 @item Target Options
 @c I wrote this xref this way to avoid overfull hbox. -- rms
@@ -5263,28 +5263,12 @@ the ordering for the include_next directive are not inadvertently changed.
 If you really need to change the search order for system directories,
 use the @option{-nostdinc} and/or @option{-isystem} options.
 
-@item -I-
-@opindex I-
-Any directories you specify with @option{-I} options before the @option{-I-}
-option are searched only for the case of @samp{#include "@var{file}"};
-they are not searched for @samp{#include <@var{file}>}.
-
-If additional directories are specified with @option{-I} options after
-the @option{-I-}, these directories are searched for all @samp{#include}
-directives.  (Ordinarily @emph{all} @option{-I} directories are used
-this way.)
-
-In addition, the @option{-I-} option inhibits the use of the current
-directory (where the current input file came from) as the first search
-directory for @samp{#include "@var{file}"}.  There is no way to
-override this effect of @option{-I-}.  With @option{-I.} you can specify
-searching the directory which was current when the compiler was
-invoked.  That is not exactly the same as what the preprocessor does
-by default, but it is often satisfactory.
-
-@option{-I-} does not inhibit the use of the standard system directories
-for header files.  Thus, @option{-I-} and @option{-nostdinc} are
-independent.
+@item -iquote@var{dir}
+@opindex iquote
+Add the directory @var{dir} to the head of the list of directories to
+be searched for header files only for the case of @samp{#include
+"@var{file}"}; they are not searched for @samp{#include <@var{file}>},
+otherwise just like @option{-I}.
 
 @item -L@var{dir}
 @opindex L
@@ -5342,6 +5326,31 @@ program uses when determining what switches to pass to @file{cc1},
 @file{cc1plus}, @file{as}, @file{ld}, etc.  More than one
 @option{-specs=@var{file}} can be specified on the command line, and they
 are processed in order, from left to right.
+
+@item -I-
+@opindex I-
+This option has been deprecated.  Please use @option{-iquote} instead for
+@option{-I} directories before the @option{-I-} and remove the @option{-I-}.
+Any directories you specify with @option{-I} options before the @option{-I-}
+option are searched only for the case of @samp{#include "@var{file}"};
+they are not searched for @samp{#include <@var{file}>}.
+
+If additional directories are specified with @option{-I} options after
+the @option{-I-}, these directories are searched for all @samp{#include}
+directives.  (Ordinarily @emph{all} @option{-I} directories are used
+this way.)
+
+In addition, the @option{-I-} option inhibits the use of the current
+directory (where the current input file came from) as the first search
+directory for @samp{#include "@var{file}"}.  There is no way to
+override this effect of @option{-I-}.  With @option{-I.} you can specify
+searching the directory which was current when the compiler was
+invoked.  That is not exactly the same as what the preprocessor does
+by default, but it is often satisfactory.
+
+@option{-I-} does not inhibit the use of the standard system directories
+for header files.  Thus, @option{-I-} and @option{-nostdinc} are
+independent.
 @end table
 
 @c man end

@@ -171,6 +171,7 @@ add_standard_paths (const char *sysroot, const char *iprefix, int cxx_stdinc)
    JOIN, unless it duplicates JOIN in which case the last path is
    removed.  Return the head of the resulting chain.  Any of HEAD,
    JOIN and SYSTEM can be NULL.  */
+
 static struct cpp_dir *
 remove_duplicates (cpp_reader *pfile, struct cpp_dir *head,
 		   struct cpp_dir *system, struct cpp_dir *join,
@@ -243,9 +244,10 @@ remove_duplicates (cpp_reader *pfile, struct cpp_dir *head,
 
    We can't just merge the lists and then uniquify them because then
    we may lose directories from the <> search path that should be
-   there; consider -Ifoo -Ibar -I- -Ifoo -Iquux.  It is however safe
-   to treat -Ibar -Ifoo -I- -Ifoo -Iquux as if written -Ibar -I- -Ifoo
-   -Iquux.  */
+   there; consider -iquote foo -iquote bar -Ifoo -Iquux.  It is
+   however safe to treat -iquote bar -iquote foo -Ifoo -Iquux as if
+   written -iquote bar -Ifoo -Iquux.  */
+
 static void
 merge_include_chains (cpp_reader *pfile, int verbose)
 {
