@@ -1,5 +1,12 @@
 2000-05-27  Richard Henderson  <rth@cygnus.com>
 
+	* print-rtl.c (reg_names): Remove const.
+	* regclass.c (reg_names): Likewise.
+	* regs.h (reg_names): Likewise.
+	* hard-reg-set.h (reg_names): Likewise.
+
+2000-05-27  Richard Henderson  <rth@cygnus.com>
+
 	* config/rs6000/rs6000.md (untyped_call): Use GEN_CALL.
 
 2000-05-27  Richard Henderson  <rth@cygnus.com>

@@ -164,7 +164,7 @@ enum reg_class reg_class_superunion[N_REG_CLASSES][N_REG_CLASSES];
    DEBUG_REGISTER_NAMES is defined, use the copy in print-rtl.c.  */
 
 #ifdef DEBUG_REGISTER_NAMES
-const char * const reg_names[] = REGISTER_NAMES;
+const char * reg_names[] = REGISTER_NAMES;
 #endif
 
 /* For each hard register, the widest mode object that it can contain.
