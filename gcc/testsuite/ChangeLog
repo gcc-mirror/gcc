@@ -1,3 +1,8 @@
+2005-01-09  Paul Brook  <paul@codesourcery.com>
+
+	* gfortran.dg/common_2.f90: New file.
+	* gfortran.dg/common_3.f90: New file.
+
 2005-01-09  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* gcc.dg/tree-ssa/loop-4.c: Fix outcome.
