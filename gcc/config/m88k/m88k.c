@@ -1484,6 +1484,7 @@ struct options
   char *string;
   int *variable;
   int on_value;
+  char *description;
 };
 
 static int

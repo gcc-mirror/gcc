@@ -1,3 +1,8 @@
+Sun Nov 22 21:34:02 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* i386/dgux.c (struct option): Add new "description field".
+	* m88k/m88k.c (struct option): Likewise.
+
 Sun Nov 22 16:07:57 PST 1998 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
