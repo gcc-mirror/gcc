@@ -1,3 +1,8 @@
+2004-04-30  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	PR other/1963
+	* config/alpha/osf.h (SWITCHES_NEED_SPACES): Define.
+
 2004-04-29  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390-protos.h (s390_emit_epilogue): Parameter added.
