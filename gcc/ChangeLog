@@ -1,3 +1,8 @@
+Wed Jun 10 23:39:32 1998  Mark Mitchell  <mark@markmitchell.com>
+
+	* rtl.h (rtx_def): Improve documentation.
+	(MEM_IN_STRUCT_P): Likewise.
+
 Wed Jun 10 23:23:17 1998  Graham  <grahams@rcp.co.uk>
 
 	* c-decl.c (start_decl): Correct test for -Wmain.

@@ -136,7 +136,7 @@ typedef struct rtx_def
      In a SYMBOL_REF, this flag is used for machine-specific purposes.
      In a LABEL_REF or in a REG_LABEL note, this is LABEL_REF_NONLOCAL_P.  */
   unsigned int volatil : 1;
-  /* 1 in a MEM referring to a field of a structure (not a union!).
+  /* 1 in a MEM referring to a field of an aggregate.
      0 if the MEM was a variable or the result of a * operator in C;
      1 if it was the result of a . or -> operator (on a struct) in C.
      1 in a REG if the register is used only in exit code a loop.
@@ -558,7 +558,7 @@ extern char *note_insn_name[];
    Also in an ASM_OPERANDS rtx.  */
 #define MEM_VOLATILE_P(RTX) ((RTX)->volatil)
 
-/* For a MEM rtx, 1 if it refers to a structure or union component.  */
+/* For a MEM rtx, 1 if it refers to a field of an aggregate.  */
 #define MEM_IN_STRUCT_P(RTX) ((RTX)->in_struct)
 
 /* For a LABEL_REF, 1 means that this reference is to a label outside the
