@@ -22,7 +22,7 @@ Fri Feb 16 12:41:30 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(cprop_insn): Call find_reg_equal_equiv_note.
 	Reflect changes to cprop_jump and cprop_cc0_jump.
 
-	* recog.c (validate_replace_rtx): Replace in operands of
+	* recog.c (validate_replace_src): Replace in operands of
 	ZERO_EXTRACT in SET_DEST.
 
 	* cse.c (new_label_ref): New variable.
