@@ -17,10 +17,12 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-extern int flag_half_pic;		/* Global half-pic flag.  */
+extern int  flag_half_pic;		/* Global half-pic flag.  */
 extern void half_pic_encode ();		/* encode whether half-pic */
 extern void half_pic_init ();		/* half_pic initialization */
-extern int half_pic_address_p ();	/* true if an address is half-pic */
+extern void half_pic_finish ();		/* half_pic termination */
+extern int  half_pic_address_p ();	/* true if an address is half-pic */
+extern struct rtx_def *half_pic_ptr ();	/* return RTX for half-pic pointer */
 
 /* Macros to provide access to the half-pic stuff (so they can easily
    be stubbed out.  */
@@ -28,4 +30,11 @@ extern int half_pic_address_p ();	/* true if an address is half-pic */
 #define HALF_PIC_P()		(flag_half_pic)
 #define HALF_PIC_ENCODE(DECL)	half_pic_encode (DECL)
 #define HALF_PIC_INIT()		half_pic_init ()
-#define HALF_PIC_ADDRESS_P(X)	(flag_half_pic && half_pic_address_p (X))
+#define HALF_PIC_FINISH(STREAM)	half_pic_finish (STREAM)
+#define HALF_PIC_ADDRESS_P(X)	half_pic_address_p (X)
+#define HALF_PIC_PTR(X)		half_pic_ptr (X)
+
+/* Prefix for half-pic names */
+#ifndef HALF_PIC_PREFIX
+#define	HALF_PIC_PREFIX	"__pic_"
+#endif

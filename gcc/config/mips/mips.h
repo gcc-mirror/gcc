@@ -105,7 +105,6 @@ extern struct rtx_def *mips_load_reg4;	/* 4th reg to check for load delay */
 extern void		abort_with_insn ();
 extern int		arith32_operand ();
 extern int		arith_operand ();
-extern int		call_memory_operand ();
 extern int		cmp_op ();
 extern int		cmp2_op ();
 extern unsigned long	compute_frame_size ();
@@ -1992,7 +1991,7 @@ __enable_execute_stack (addr)						\
    addition to `const_int' and `const_double' expressions.  */
 
 #define CONSTANT_ADDRESS_P(X)						\
-  (CONSTANT_P (X) && (!HALF_PIC_P () || HALF_PIC_ADDRESS_P (X)))
+  (CONSTANT_P (X) && (!HALF_PIC_P () || !HALF_PIC_ADDRESS_P (X)))
 
 
 /* Nonzero if the constant value X is a legitimate general operand.
@@ -2449,7 +2448,6 @@ while (0)
   {"md_register_operand",	{ REG }},				\
   {"mips_const_double_ok",	{ CONST_DOUBLE }},			\
   {"simple_memory_operand",	{ MEM, SUBREG }},			\
-  {"call_memory_operand",	{ MEM, SUBREG }},			\
   {"equality_op",		{ EQ, NE }},				\
   {"cmp_op",			{ EQ, NE, GT, GE, GTU, GEU, LT, LE,	\
 				  LTU, LEU }},				\
