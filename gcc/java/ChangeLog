@@ -1,5 +1,10 @@
 2004-04-12  Bryce McKinlay  <mckinlay@redhat.com>
 
+	* expr.c (build_invokeinterface): Remove unused variables to
+	fix warnings.
+
+2004-04-12  Bryce McKinlay  <mckinlay@redhat.com>
+
 	* class.c (get_interface_method_index): New function. Return dispatch 
 	index for interface method.
 	(make_method_value): For interface methods, set index field to
