@@ -6,6 +6,12 @@
 	* alias.c (rtx_equal_for_memref_p): VALUEs are only identical
 	if their CSELIB_VAL_PTRs are.
 
+	* config/ia64/ia64.c (struct spill_fill_data): New member prev_insn.
+	(setup_spill_pointers): Initialize it.
+	(spill_restore_mem): Set it.
+	(do_spill, do_restore): Use it to add REG_INC note.
+	* config/ia64/ia64.md (movti_internal): Add REG_INC notes as needed.
+
 2001-08-04  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config/sh/sh.c (sh_asm_named_section): Fix typo in align

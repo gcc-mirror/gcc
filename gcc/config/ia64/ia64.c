@@ -1621,6 +1621,7 @@ struct spill_fill_data
   rtx init_reg[2];		/* initial base register */
   rtx iter_reg[2];		/* the iterator registers */
   rtx *prev_addr[2];		/* address of last memory use */
+  rtx prev_insn[2];		/* the insn corresponding to prev_addr */
   HOST_WIDE_INT prev_off[2];	/* last offset */
   int n_iter;			/* number of iterators in use */
   int next_iter;		/* next iterator to use */
@@ -1642,6 +1643,8 @@ setup_spill_pointers (n_spills, init_reg, cfa_off)
   spill_fill_data.init_reg[1] = init_reg;
   spill_fill_data.prev_addr[0] = NULL;
   spill_fill_data.prev_addr[1] = NULL;
+  spill_fill_data.prev_insn[0] = NULL;
+  spill_fill_data.prev_insn[1] = NULL;
   spill_fill_data.prev_off[0] = cfa_off;
   spill_fill_data.prev_off[1] = cfa_off;
   spill_fill_data.next_iter = 0;
@@ -1675,11 +1678,16 @@ spill_restore_mem (reg, cfa_off)
   if (spill_fill_data.prev_addr[iter])
     {
       if (CONST_OK_FOR_N (disp))
-	*spill_fill_data.prev_addr[iter]
-	  = gen_rtx_POST_MODIFY (DImode, spill_fill_data.iter_reg[iter],
-				 gen_rtx_PLUS (DImode,
-					       spill_fill_data.iter_reg[iter],
-					       disp_rtx));
+	{
+	  *spill_fill_data.prev_addr[iter]
+	    = gen_rtx_POST_MODIFY (DImode, spill_fill_data.iter_reg[iter],
+				   gen_rtx_PLUS (DImode,
+						 spill_fill_data.iter_reg[iter],
+						 disp_rtx));
+	  REG_NOTES (spill_fill_data.prev_insn[iter])
+	    = gen_rtx_EXPR_LIST (REG_INC, spill_fill_data.iter_reg[iter],
+				 REG_NOTES (spill_fill_data.prev_insn[iter]));
+	}
       else
 	{
 	  /* ??? Could use register post_modify for loads.  */
@@ -1769,10 +1777,12 @@ do_spill (move_fn, reg, cfa_off, frame_reg)
      rtx reg, frame_reg;
      HOST_WIDE_INT cfa_off;
 {
+  int iter = spill_fill_data.next_iter;
   rtx mem, insn;
 
   mem = spill_restore_mem (reg, cfa_off);
   insn = emit_insn ((*move_fn) (mem, reg, GEN_INT (cfa_off)));
+  spill_fill_data.prev_insn[iter] = insn;
 
   if (frame_reg)
     {
@@ -1812,8 +1822,12 @@ do_restore (move_fn, reg, cfa_off)
      rtx reg;
      HOST_WIDE_INT cfa_off;
 {
-  emit_insn ((*move_fn) (reg, spill_restore_mem (reg, cfa_off),
-			 GEN_INT (cfa_off)));
+  int iter = spill_fill_data.next_iter;
+  rtx insn;
+
+  insn = emit_insn ((*move_fn) (reg, spill_restore_mem (reg, cfa_off),
+				GEN_INT (cfa_off)));
+  spill_fill_data.prev_insn[iter] = insn;
 }
 
 /* Wrapper functions that discards the CONST_INT spill offset.  These
