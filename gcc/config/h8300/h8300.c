@@ -168,7 +168,7 @@ dosize (file, op, size)
   if ((TARGET_H8300 && size <= 4)
       || ((TARGET_H8300H || TARGET_H8300S) && size <= 8)
       || (TARGET_H8300 && current_function_needs_context
-	  && strcmp (op, "sub")))
+	  && ! strcmp (op, "sub")))
     {
       unsigned HOST_WIDE_INT amount;
 

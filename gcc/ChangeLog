@@ -1,3 +1,7 @@
+Thu Aug 30 16:00:31 2001  J"orn Rennecke <amylaar@redhat.com>
+
+	* h8300.c (dosize): Fix test for "sub".
+
 2001-08-29  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/lib1funcs.asm: Update the copyright.  Fix
