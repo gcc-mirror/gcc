@@ -24,6 +24,22 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "rtl.h"
 
 
+/* How to print out a register name.
+   We don't use PRINT_REG because some definitions of PRINT_REG
+   don't work here.  */
+#ifndef DEBUG_PRINT_REG
+#define DEBUG_PRINT_REG(RTX, CODE, FILE) \
+  fprintf ((FILE), "%d %s", REGNO (RTX), reg_names[REGNO (RTX)])
+#endif
+
+/* Array containing all of the register names */
+
+#ifdef DEBUG_REGISTER_NAMES
+static char *reg_names[] = DEBUG_REGISTER_NAMES;
+#else
+static char *reg_names[] = REGISTER_NAMES;
+#endif
+
 static FILE *outfile;
 
 char spaces[] = "                                                                                                                                                                ";
@@ -151,11 +167,21 @@ print_rtx (in_rtx)
 	break;
 
       case 'i':
-	fprintf (outfile, " %d", XINT (in_rtx, i));
+	{
+	  register int value = XINT (in_rtx, i);
+
+	  if (GET_CODE (in_rtx) == REG && value < FIRST_PSEUDO_REGISTER)
+	    {
+	      fputc (' ', outfile);
+	      DEBUG_PRINT_REG (in_rtx, 0, outfile);
+	    }
+	  else
+	    fprintf (outfile, " %d", value);
+	}
 	if (is_insn && &INSN_CODE (in_rtx) == &XINT (in_rtx, i)
 	    && insn_name_ptr
 	    && XINT (in_rtx, i) >= 0)
-	    fprintf (outfile, " {%s}", insn_name_ptr[XINT (in_rtx, i)]);
+	  fprintf (outfile, " {%s}", insn_name_ptr[XINT (in_rtx, i)]);
 	sawclose = 0;
 	break;
 
