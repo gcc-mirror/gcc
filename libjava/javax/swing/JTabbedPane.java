@@ -544,10 +544,10 @@ public class JTabbedPane extends JComponent implements Serializable,
   protected SingleSelectionModel model;
 
   /** Indicates that the TabbedPane is in scrolling mode. */
-  static int SCROLL_TAB_LAYOUT = 0;
+  public static int SCROLL_TAB_LAYOUT = 1;
 
   /** Indicates that the TabbedPane is in wrap mode. */
-  static int WRAP_TAB_LAYOUT = 1;
+  public static int WRAP_TAB_LAYOUT = 0;
 
   /** The current tabPlacement of the TabbedPane. */
   protected int tabPlacement = SwingConstants.TOP;
@@ -1338,7 +1338,7 @@ public class JTabbedPane extends JComponent implements Serializable,
   public void setComponentAt(int index, Component component)
   {
     checkIndex(index, 0, tabs.size());
-    ((Page) tabs.elementAt(index)).setEnabled(enabled);
+    ((Page) tabs.elementAt(index)).setComponent(component);
   }
 
   /**

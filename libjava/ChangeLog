@@ -1,3 +1,14 @@
+2004-04-17  Mark Wielaard  <mark@klomp.org>
+
+	* javax/swing/JToggleButton.java (ToggleButtonModel):
+	Make public static inner class.
+	* javax/swing/JTabbedPane.java (setComponentAt):
+	Call Page.setComponent().
+	(SCROLL_TAB_LAYOUT): Make public, value is 1.
+	(WRAP_TAB_LAYOUT): Make public, value is 0.
+	* javax/swing/plaf/basic/BasicTabbedPaneUI.java (ScrollingButton):
+        Make private static inner class.
+
 2004-04-16  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* interpret.cc (_Jv_InterpMethod::run): Update _Jv_AllocObject
