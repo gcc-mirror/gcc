@@ -101,9 +101,10 @@
 ;; fp		floating point
 ;; fdiv		floating point divide (or square root)
 ;; gp_fpul	move between general purpose register and fpul
+;; nil		no-op move, will be deleted.
 
 (define_attr "type"
- "cbranch,jump,jump_ind,arith,arith3,arith3b,dyn_shift,other,load,load_si,store,move,fmove,smpy,dmpy,return,pload,pstore,pcload,pcload_si,rte,sfunc,call,fp,fdiv,gp_fpul"
+ "cbranch,jump,jump_ind,arith,arith3,arith3b,dyn_shift,other,load,load_si,store,move,fmove,smpy,dmpy,return,pload,pstore,pcload,pcload_si,rte,sfunc,call,fp,fdiv,gp_fpul,nil"
   (const_string "other"))
 
 ; If a conditional branch destination is within -252..258 bytes away
@@ -1847,7 +1848,7 @@
 	lds	%1,%0
 	sts	%1,%0
 	! move optimized away"
-  [(set_attr "type" "pcload_si,move,*,load_si,move,move,store,store,pstore,move,load,pload,pcload_si,gp_fpul,gp_fpul,other")
+  [(set_attr "type" "pcload_si,move,*,load_si,move,move,store,store,pstore,move,load,pload,pcload_si,gp_fpul,gp_fpul,nil")
    (set_attr "length" "*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,0")])
 
 (define_insn "movsi_i_lowpart"
@@ -2118,12 +2119,15 @@
 	sts	%1,%0"
   [(set_attr "type" "move,move,pcload,load,store,move,move")])
 
+;; We may not split the ry/yr/XX alternatives to movsi_ie, since
+;; update_flow_info would not know where to put REG_EQUAL notes
+;; when the destination changes mode.
 (define_insn "movsf_ie"
   [(set (match_operand:SF 0 "general_movdst_operand"
-	 "=f,r,f,f,fy,f,m,r,r,m,f,y,y,rf,ry")
+	 "=f,r,f,f,fy,f,m,r,r,m,f,y,y,rf,r,y,y")
 	(match_operand:SF 1 "general_movsrc_operand"
-	  "f,r,G,H,FQ,m,f,FQ,m,r,y,f,>,fr,yr"))
-   (clobber (match_scratch:SI 2 "=X,X,X,X,&z,X,X,X,X,X,X,X,X,y,X"))]
+	  "f,r,G,H,FQ,m,f,FQ,m,r,y,f,>,fr,y,r,y"))
+   (clobber (match_scratch:SI 2 "=X,X,X,X,&z,X,X,X,X,X,X,X,X,y,X,X,X"))]
 
   "TARGET_SH3E
    && (arith_reg_operand (operands[0], SFmode)
@@ -2143,23 +2147,11 @@
 	flds	%1,fpul
 	lds.l	%1,%0
 	#
-	#"
-  [(set_attr "type" "fmove,move,fmove,fmove,pcload,load,store,pcload,load,store,fmove,fmove,load,*,*")
-   (set_attr "length" "*,*,*,*,4,*,*,*,*,*,2,2,2,*,*")])
-
-(define_split
-  [(set (match_operand:SF 0 "register_operand" "ry")
-	(match_operand:SF 1 "register_operand" "ry"))
-   (clobber (match_scratch:SI 2 "X"))]
-  "reload_completed
-   && true_regnum (operands[0]) < FIRST_FP_REG
-   && true_regnum (operands[1]) < FIRST_FP_REG"
-  [(set (match_dup 0) (match_dup 1))]
-  "
-{
-  operands[0] = gen_rtx (REG, SImode, true_regnum (operands[0]));
-  operands[1] = gen_rtx (REG, SImode, true_regnum (operands[1]));
-}")
+	sts	%1,%0
+	lds	%1,%0
+	! move optimized away"
+  [(set_attr "type" "fmove,move,fmove,fmove,pcload,load,store,pcload,load,store,fmove,fmove,load,*,gp_fpul,gp_fpul,nil")
+   (set_attr "length" "*,*,*,*,4,*,*,*,*,*,2,2,2,*,2,2,0")])
 
 (define_split
   [(set (match_operand:SF 0 "register_operand" "")
