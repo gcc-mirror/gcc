@@ -1,3 +1,8 @@
+1999-10-12  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.f-torture/noncompile/19990905-1.f: Moved from being
+	in compile/.
+
 Fri Oct  1 00:53:17 1999  Mark P. Mitchell  <mark@codesourcery.com>
 
 	* lib/file-format.exp (gcc_target_object_format): Don't
