@@ -1,4 +1,10 @@
+2002-12-10  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/8372
+	* pt.c (tsubst_copy): Handle destructor names more correctly.
+
 2002-12-10  Matt Austern   <austern@apple.com>
+
 	* cp-tree.h: get rid of needs_virtual_reinit bit.
 	
 2002-12-09  Mark Mitchell  <mark@codesourcery.com>

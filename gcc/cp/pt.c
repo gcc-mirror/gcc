@@ -7233,9 +7233,10 @@ tsubst_copy (t, args, complain, in_decl)
 	  {
 	    tree base = tsubst_copy (TREE_OPERAND (name, 0), args,
 				     complain, in_decl);
-	    name = TREE_OPERAND (name, 1);
-	    name = tsubst_copy (TREE_OPERAND (name, 0), args,
-				complain, in_decl);
+	    name = TREE_OPERAND (TREE_OPERAND (name, 1), 0);
+	    if (TREE_CODE (name) == TYPE_DECL)
+	      name = TREE_TYPE (name);
+	    name = tsubst_copy (name, args, complain, in_decl);
 	    name = build1 (BIT_NOT_EXPR, NULL_TREE, name);
 	    name = build_nt (SCOPE_REF, base, name);
 	  }
