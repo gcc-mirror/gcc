@@ -1,5 +1,9 @@
 2004-01-19  Paolo Carlini  <pcarlini@suse.de>
 
+	* src/debug.cc: Trivial formatting change.
+
+2004-01-19  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/basic_string.tcc (_S_construct(size_type,
 	_CharT, const _Alloc&)): Remove redundant try/catch.
 	(_M_mutate(size_type, size_type, size_type)): Ditto.

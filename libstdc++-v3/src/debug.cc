@@ -585,56 +585,56 @@ namespace __gnu_debug
 	    continue;
 	  } 
 	
-      ++__start;
-      assert(*__start);
-      if (*__start == '%')
-	{
-	  _M_print_word("%");
-	  ++__start;
-	  continue;
-	}
-      
-      // Get the parameter number
-      assert(*__start >= '1' && *__start <= '9');
-      size_t param = *__start - '0';
-      --param;
-      assert(param < _M_num_parameters);
-      
-      // '.' separates the parameter number from the field
-      // name, if there is one.
-      ++__start;
-      if (*__start != '.')
-	{
-	assert(*__start == ';');
 	++__start;
-	buf[0] = '\0';
-	if (_M_parameters[param]._M_kind == _Parameter::__integer)
-	{
-	  _M_format_word(buf, bufsize, "%ld", 
-			 _M_parameters[param]._M_variant._M_integer._M_value);
-	  _M_print_word(buf);
-	}
-	else if (_M_parameters[param]._M_kind == _Parameter::__string)
-	  _M_print_string(_M_parameters[param]._M_variant._M_string._M_value);
-	continue;
-      }
-      
-      // Extract the field name we want
-      enum { max_field_len = 16 };
-      char field[max_field_len];
-      int field_idx = 0;
-      ++__start;
-      while (*__start != ';')
-      {
 	assert(*__start);
-	assert(field_idx < max_field_len-1);
-	field[field_idx++] = *__start++;
-      }
-      ++__start;
-      field[field_idx] = 0;
+	if (*__start == '%')
+	  {
+	    _M_print_word("%");
+	    ++__start;
+	    continue;
+	  }
+	
+	// Get the parameter number
+	assert(*__start >= '1' && *__start <= '9');
+	size_t param = *__start - '0';
+	--param;
+	assert(param < _M_num_parameters);
       
-      _M_parameters[param]._M_print_field(this, field);		  
-    }
+	// '.' separates the parameter number from the field
+	// name, if there is one.
+	++__start;
+	if (*__start != '.')
+	  {
+	    assert(*__start == ';');
+	    ++__start;
+	    buf[0] = '\0';
+	    if (_M_parameters[param]._M_kind == _Parameter::__integer)
+	      {
+		_M_format_word(buf, bufsize, "%ld", 
+			       _M_parameters[param]._M_variant._M_integer._M_value);
+		_M_print_word(buf);
+	      }
+	    else if (_M_parameters[param]._M_kind == _Parameter::__string)
+	      _M_print_string(_M_parameters[param]._M_variant._M_string._M_value);
+	    continue;
+	  }
+	
+	// Extract the field name we want
+	enum { max_field_len = 16 };
+	char field[max_field_len];
+	int field_idx = 0;
+	++__start;
+	while (*__start != ';')
+	  {
+	    assert(*__start);
+	    assert(field_idx < max_field_len-1);
+	    field[field_idx++] = *__start++;
+	  }
+	++__start;
+	field[field_idx] = 0;
+	
+	_M_parameters[param]._M_print_field(this, field);		  
+      }
   }
 
   // Instantiations.
