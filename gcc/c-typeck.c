@@ -4185,8 +4185,8 @@ initializer_constant_valid_p (value, endtype)
       return 0;
 
     case PLUS_EXPR:
-      if (TREE_CODE (TREE_TYPE (value)) == INTEGER_TYPE
-	  && TYPE_PRECISION (TREE_TYPE (value)) < POINTER_SIZE)
+      if (TREE_CODE (endtype) == INTEGER_TYPE
+	  && TYPE_PRECISION (endtype) < POINTER_SIZE)
 	return 0;
       {
 	tree valid0 = initializer_constant_valid_p (TREE_OPERAND (value, 0),
@@ -4202,8 +4202,8 @@ initializer_constant_valid_p (value, endtype)
       }
 
     case MINUS_EXPR:
-      if (TREE_CODE (TREE_TYPE (value)) == INTEGER_TYPE
-	  && TYPE_PRECISION (TREE_TYPE (value)) < POINTER_SIZE)
+      if (TREE_CODE (endtype) == INTEGER_TYPE
+	  && TYPE_PRECISION (endtype) < POINTER_SIZE)
 	return 0;
       {
 	tree valid0 = initializer_constant_valid_p (TREE_OPERAND (value, 0),
