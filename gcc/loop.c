@@ -8274,9 +8274,11 @@ check_dbra_loop (loop, insn_count)
 		    && REGNO (SET_DEST (set)) == bl->regno)
 		  /* An insn that sets the biv is okay.  */
 		  ;
-		else if ((p == prev_nonnote_insn (prev_nonnote_insn (loop_end))
-			  || p == prev_nonnote_insn (loop_end))
-			 && reg_mentioned_p (bivreg, PATTERN (p)))
+		else if (!reg_mentioned_p (bivreg, PATTERN (p)))
+		  /* An insn that doesn't mention the biv is okay.  */
+		  ;
+		else if (p == prev_nonnote_insn (prev_nonnote_insn (loop_end))
+			 || p == prev_nonnote_insn (loop_end))
 		  {
 		    /* If either of these insns uses the biv and sets a pseudo
 		       that has more than one usage, then the biv has uses
@@ -8290,7 +8292,7 @@ check_dbra_loop (loop, insn_count)
 			break;
 		      }
 		  }
-		else if (reg_mentioned_p (bivreg, PATTERN (p)))
+		else
 		  {
 		    no_use_except_counting = 0;
 		    break;
