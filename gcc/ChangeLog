@@ -4,6 +4,10 @@
 	(handle_vector_size_attribute): Use it to avoid generating a
 	new type node each time we are called.
 
+	* combine.c (subst): Avoid trying to make a vector mode subreg of
+	an integer constant.
+	(gen_lowpart_for_combine): Likewise.
+			
 2002-04-18  Roger Sayle  <roger@eyesopen.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 

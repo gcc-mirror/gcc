@@ -3538,6 +3538,9 @@ subst (x, from, to, in_dest, unique_copy)
 
 	      if (GET_CODE (new) == CONST_INT && GET_CODE (x) == SUBREG)
 		{
+		  if (VECTOR_MODE_P (GET_MODE (x)))
+		    return gen_rtx_CLOBBER (VOIDmode, const0_rtx);
+
 		  x = simplify_subreg (GET_MODE (x), new,
 				       GET_MODE (SUBREG_REG (x)),
 				       SUBREG_BYTE (x));
@@ -9798,6 +9801,12 @@ gen_lowpart_for_combine (mode, x)
 	     && (GET_CODE (x) == CONST_INT
 		 || GET_CODE (x) == CONST_DOUBLE))
 	    || GET_MODE_SIZE (GET_MODE (x)) == GET_MODE_SIZE (mode)))
+    return gen_rtx_CLOBBER (GET_MODE (x), const0_rtx);
+
+  /* simplify_gen_subreg does not know how to handle the case where we try
+     to convert an integer constant to a vector.
+     ??? We could try to teach it to generate CONST_VECTORs.  */
+  if (GET_MODE (x) == VOIDmode && VECTOR_MODE_P (mode))
     return gen_rtx_CLOBBER (GET_MODE (x), const0_rtx);
 
   /* X might be a paradoxical (subreg (mem)).  In that case, gen_lowpart
