@@ -1892,8 +1892,6 @@ extern rtx gen_rtx_REG (enum machine_mode, unsigned);
 extern rtx gen_rtx_SUBREG (enum machine_mode, rtx, int);
 extern rtx gen_rtx_MEM (enum machine_mode, rtx);
 
-extern rtx gen_lowpart_SUBREG (enum machine_mode, rtx);
-
 /* We need the cast here to ensure that we get the same result both with
    and without prototypes.  */
 #define GEN_INT(N)  gen_rtx_CONST_INT (VOIDmode, (HOST_WIDE_INT) (N))
@@ -2103,6 +2101,7 @@ extern void delete_insn_chain (rtx, rtx);
 extern rtx unlink_insn_chain (rtx, rtx);
 extern rtx delete_insn_and_edges (rtx);
 extern void delete_insn_chain_and_edges (rtx, rtx);
+extern rtx gen_lowpart_SUBREG (enum machine_mode, rtx);
 
 /* In combine.c */
 extern int combine_instructions (rtx, unsigned int);
@@ -2115,11 +2114,17 @@ extern void dump_combine_total_stats (FILE *);
 /* In web.c */
 extern void web_main (void);
 
-/* In sched.c.  */
+/* In sched-rgn.c.  */
 #ifdef BUFSIZ
 extern void schedule_insns (FILE *);
+#endif
+
+/* In sched-ebb.c.  */
+#ifdef BUFSIZ
 extern void schedule_ebbs (FILE *);
 #endif
+
+/* In haifa-sched.c.  */
 extern void fix_sched_param (const char *, const char *);
 
 /* In print-rtl.c */

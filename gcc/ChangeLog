@@ -1,3 +1,9 @@
+2004-02-10  Paolo Bonzini  <bonzini@gnu.org>
+
+	* rtl.h (schedule_insns, schedule_ebbs, fix_sched_param,
+	gen_lowpart_SUBREG): Move under the file in which they
+	are actually declared.
+
 2004-02-10  Arnaud Charlet  <charlet@act-europe.fr>
 
 	* doc/sourcebuild.texi: Add libada documentation.
