@@ -1,3 +1,7 @@
+2001-01-27  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* extend.texi (Attribute Syntax): New section.
+
 2001-01-27  Michael Sokolov  <msokolov@ivan.Harhan.ORG>
 
 	* fixproto: Correctly install synthesised unistd.h and stdlib.h when
