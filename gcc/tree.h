@@ -692,8 +692,11 @@ struct tree_type
    Often this is the same as DECL_NAME.
    It is an IDENTIFIER_NODE.  */
 #define DECL_ASSEMBLER_NAME(NODE) ((NODE)->decl.assembler_name)
-/* The containing binding context; either a BINDING
-   or a RECORD_TYPE or UNION_TYPE.  */
+/*  For FIELD_DECLs, this is the
+    RECORD_TYPE or UNION_TYPE node that the field is a member of.  For
+    VAR_DECL, PARM_DECL, FUNCTION_DECL, LABEL_DECL, and CONST_DECL nodes,
+    this points to the FUNCTION_DECL for the containing function, or else
+    yields NULL_TREE if the given decl has "file scope".  */
 #define DECL_CONTEXT(NODE) ((NODE)->decl.context)
 #define DECL_FIELD_CONTEXT(NODE) ((NODE)->decl.context)
 /* In a FIELD_DECL, this is the field position, counting in bits,
