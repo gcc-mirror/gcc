@@ -4982,7 +4982,7 @@ store_constructor (exp, target, cleared, size)
 	    {
 	      rtx offset_rtx;
 
-	      if (CONTAINS_PLACEHOLDER_P (offset))
+	      if (contains_placeholder_p (offset))
 		offset = build (WITH_RECORD_EXPR, sizetype,
 				offset, make_tree (TREE_TYPE (exp), target));
 
