@@ -1,3 +1,7 @@
+Thu Aug 26 18:32:32 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* gcse.c (hash_scan_insn): Don't scan obvious no-ops.
+
 1999-08-26 09:42 -0700  Zack Weinberg  <zack@bitmover.com>
 
 	* tree.h: fancy_abort always takes three args.
