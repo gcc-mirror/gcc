@@ -2821,7 +2821,7 @@ process_command (argc, argv)
     }
 
   if (have_c && have_o && lang_n_infiles > 1)
-    fatal ("cannot specify -o with -c and multiple compilations");
+    fatal ("cannot specify -o with -c or -S and multiple compilations");
 
   /* Set up the search paths before we go looking for config files.  */
 
