@@ -1,5 +1,9 @@
 2002-07-29  Aldy Hernandez  <aldyh@redhat.com>
 
+	* config/rs6000/rs6000.md ("cpu"): Add ppc8540 to attribute.
+
+2002-07-29  Aldy Hernandez  <aldyh@redhat.com>
+
 	* config/rs6000/rs6000.h (RTX_COSTS): Add MULT case for 8540.
 
 2002-07-29  Aldy Hernandez  <aldy@quesejoda.com>
