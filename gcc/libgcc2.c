@@ -1,6 +1,6 @@
 /* More subroutines needed by GCC output code on some machines.  */
 /* Compile this one with gcc.  */
-/* Copyright (C) 1989, 92, 93, 94, 95, 1996 Free Software Foundation, Inc.
+/* Copyright (C) 1989, 92, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -138,8 +138,7 @@ extern DItype __fixunstfdi (TFtype a);
 static inline
 #endif
 DItype
-__negdi2 (u)
-     DItype u;
+__negdi2 (DItype u)
 {
   DIunion w;
   DIunion uu;
@@ -153,11 +152,11 @@ __negdi2 (u)
 }
 #endif
 
+/* Unless shift functions are defined whith full ANSI prototypes,
+   parameter b will be promoted to int if word_type is smaller than an int.  */
 #ifdef L_lshrdi3
 DItype
-__lshrdi3 (u, b)
-     DItype u;
-     word_type b;
+__lshrdi3 (DItype u, word_type b)
 {
   DIunion w;
   word_type bm;
@@ -187,9 +186,7 @@ __lshrdi3 (u, b)
 
 #ifdef L_ashldi3
 DItype
-__ashldi3 (u, b)
-     DItype u;
-     word_type b;
+__ashldi3 (DItype u, word_type b)
 {
   DIunion w;
   word_type bm;
@@ -219,9 +216,7 @@ __ashldi3 (u, b)
 
 #ifdef L_ashrdi3
 DItype
-__ashrdi3 (u, b)
-     DItype u;
-     word_type b;
+__ashrdi3 (DItype u, word_type b)
 {
   DIunion w;
   word_type bm;
@@ -252,8 +247,7 @@ __ashrdi3 (u, b)
 
 #ifdef L_ffsdi2
 DItype
-__ffsdi2 (u)
-     DItype u;
+__ffsdi2 (DItype u)
 {
   DIunion uu, w;
   uu.ll = u;
@@ -273,8 +267,7 @@ __ffsdi2 (u)
 
 #ifdef L_muldi3
 DItype
-__muldi3 (u, v)
-     DItype u, v;
+__muldi3 (DItype u, DItype v)
 {
   DIunion w;
   DIunion uu, vv;
@@ -293,8 +286,7 @@ __muldi3 (u, v)
 #ifdef L_udiv_w_sdiv
 #if defined (sdiv_qrnnd)
 USItype
-__udiv_w_sdiv (rp, a1, a0, d)
-     USItype *rp, a1, a0, d;
+__udiv_w_sdiv (USItype *rp, USItype a1, USItype a0, USItype d)
 {
   USItype q, r;
   USItype c0, c1, b1;
@@ -392,8 +384,7 @@ __udiv_w_sdiv (rp, a1, a0, d)
 #else
 /* If sdiv_qrnnd doesn't exist, define dummy __udiv_w_sdiv.  */
 USItype
-__udiv_w_sdiv (rp, a1, a0, d)
-     USItype *rp, a1, a0, d;
+__udiv_w_sdiv (USItype *rp, USItype a1, USItype a0, USItype d)
 {}
 #endif
 #endif
@@ -421,9 +412,7 @@ static const UQItype __clz_tab[] =
 static inline
 #endif
 UDItype
-__udivmoddi4 (n, d, rp)
-     UDItype n, d;
-     UDItype *rp;
+__udivmoddi4 (UDItype n, UDItype d, UDItype *rp)
 {
   DIunion ww;
   DIunion nn, dd;
@@ -644,8 +633,7 @@ __udivmoddi4 (n, d, rp)
 UDItype __udivmoddi4 ();
 
 DItype
-__divdi3 (u, v)
-     DItype u, v;
+__divdi3 (DItype u, DItype v)
 {
   word_type c = 0;
   DIunion uu, vv;
@@ -672,8 +660,7 @@ __divdi3 (u, v)
 #ifdef L_moddi3
 UDItype __udivmoddi4 ();
 DItype
-__moddi3 (u, v)
-     DItype u, v;
+__moddi3 (DItype u, DItype v)
 {
   word_type c = 0;
   DIunion uu, vv;
@@ -699,8 +686,7 @@ __moddi3 (u, v)
 #ifdef L_umoddi3
 UDItype __udivmoddi4 ();
 UDItype
-__umoddi3 (u, v)
-     UDItype u, v;
+__umoddi3 (UDItype u, UDItype v)
 {
   UDItype w;
 
@@ -713,8 +699,7 @@ __umoddi3 (u, v)
 #ifdef L_udivdi3
 UDItype __udivmoddi4 ();
 UDItype
-__udivdi3 (n, d)
-     UDItype n, d;
+__udivdi3 (UDItype n, UDItype d)
 {
   return __udivmoddi4 (n, d, (UDItype *) 0);
 }
@@ -722,8 +707,7 @@ __udivdi3 (n, d)
 
 #ifdef L_cmpdi2
 word_type
-__cmpdi2 (a, b)
-     DItype a, b;
+__cmpdi2 (DItype a, DItype b)
 {
   DIunion au, bu;
 
@@ -743,8 +727,7 @@ __cmpdi2 (a, b)
 
 #ifdef L_ucmpdi2
 word_type
-__ucmpdi2 (a, b)
-     DItype a, b;
+__ucmpdi2 (DItype a, DItype b)
 {
   DIunion au, bu;
 
@@ -767,8 +750,7 @@ __ucmpdi2 (a, b)
 #define HIGH_WORD_COEFF (((UDItype) 1) << WORD_SIZE)
 
 DItype
-__fixunstfdi (a)
-     TFtype a;
+__fixunstfdi (TFtype a)
 {
   TFtype b;
   UDItype v;
@@ -797,8 +779,7 @@ __fixunstfdi (a)
 
 #if defined(L_fixtfdi) && (LONG_DOUBLE_TYPE_SIZE == 128)
 DItype
-__fixtfdi (a)
-     TFtype a;
+__fixtfdi (TFtype a)
 {
   if (a < 0)
     return - __fixunstfdi (-a);
@@ -811,8 +792,7 @@ __fixtfdi (a)
 #define HIGH_WORD_COEFF (((UDItype) 1) << WORD_SIZE)
 
 DItype
-__fixunsxfdi (a)
-     XFtype a;
+__fixunsxfdi (XFtype a)
 {
   XFtype b;
   UDItype v;
@@ -841,8 +821,7 @@ __fixunsxfdi (a)
 
 #if defined(L_fixxfdi) && (LONG_DOUBLE_TYPE_SIZE == 96)
 DItype
-__fixxfdi (a)
-     XFtype a;
+__fixxfdi (XFtype a)
 {
   if (a < 0)
     return - __fixunsxfdi (-a);
@@ -855,8 +834,7 @@ __fixxfdi (a)
 #define HIGH_WORD_COEFF (((UDItype) 1) << WORD_SIZE)
 
 DItype
-__fixunsdfdi (a)
-     DFtype a;
+__fixunsdfdi (DFtype a)
 {
   DFtype b;
   UDItype v;
@@ -885,8 +863,7 @@ __fixunsdfdi (a)
 
 #ifdef L_fixdfdi
 DItype
-__fixdfdi (a)
-     DFtype a;
+__fixdfdi (DFtype a)
 {
   if (a < 0)
     return - __fixunsdfdi (-a);
@@ -946,8 +923,7 @@ __fixsfdi (SFtype a)
 #define HIGH_WORD_COEFF (((UDItype) 1) << WORD_SIZE)
 
 XFtype
-__floatdixf (u)
-     DItype u;
+__floatdixf (DItype u)
 {
   XFtype d;
   SItype negate = 0;
@@ -970,8 +946,7 @@ __floatdixf (u)
 #define HIGH_WORD_COEFF (((UDItype) 1) << WORD_SIZE)
 
 TFtype
-__floatditf (u)
-     DItype u;
+__floatditf (DItype u)
 {
   TFtype d;
   SItype negate = 0;
@@ -994,8 +969,7 @@ __floatditf (u)
 #define HIGH_WORD_COEFF (((UDItype) 1) << WORD_SIZE)
 
 DFtype
-__floatdidf (u)
-     DItype u;
+__floatdidf (DItype u)
 {
   DFtype d;
   SItype negate = 0;
@@ -1047,8 +1021,7 @@ __floatdidf (u)
 #endif
 
 SFtype
-__floatdisf (u)
-     DItype u;
+__floatdisf (DItype u)
 {
   /* Do the calculation in DFmode
      so that we don't lose any of the precision of the high word
@@ -1098,8 +1071,7 @@ __floatdisf (u)
 #include <limits.h>
 
 USItype
-__fixunsxfsi (a)
-     XFtype a;
+__fixunsxfsi (XFtype a)
 {
   if (a >= - (DFtype) LONG_MIN)
     return (SItype) (a + LONG_MIN) - LONG_MIN;
@@ -1121,8 +1093,7 @@ __fixunsxfsi (a)
 #include <limits.h>
 
 USItype
-__fixunsdfsi (a)
-     DFtype a;
+__fixunsdfsi (DFtype a)
 {
   if (a >= - (DFtype) LONG_MIN)
     return (SItype) (a + LONG_MIN) - LONG_MIN;
@@ -1176,9 +1147,7 @@ __fixunssfsi (SFtype a)
    positive if S1 is greater, 0 if S1 and S2 are equal.  */
 
 int
-__gcc_bcmp (s1, s2, size)
-     unsigned char *s1, *s2;
-     size_t size;
+__gcc_bcmp (unsigned char *s1, unsigned char *s2, size_t size)
 {
   while (size > 0)
     {
@@ -1424,11 +1393,8 @@ __builtin_saveregs ()
 #include <stdio.h>
 /* This is used by the `assert' macro.  */
 void
-__eprintf (string, expression, line, filename)
-     const char *string;
-     const char *expression;
-     int line;
-     const char *filename;
+__eprintf (const char *string, const char *expression,
+	   int line, const char *filename)
 {
   fprintf (stderr, string, expression, line, filename);
   fflush (stderr);
@@ -1720,9 +1686,7 @@ bb_mode & 8 != 0   :   Insert return instructions in basic block flow.
    '.gz' from any first parameter to gopen.  */
 
 static FILE *
-gopen (fn, mode)
-     char *fn;
-     char *mode;
+gopen (char *fn, char *mode)
 {
   int use_gzip;
   char *p;
@@ -1770,8 +1734,7 @@ gopen (fn, mode)
 }
 
 static int
-gclose (f)
-     FILE *f;
+gclose (FILE *f)
 {
   struct stat buf;
 
@@ -2228,8 +2191,7 @@ skip:
 /* Called upon entering the first function of a file.  */
 
 static void
-__bb_init_file (blocks)
-     struct bb *blocks;
+__bb_init_file (struct bb *blocks)
 {
 
   const struct bb_func *p;
@@ -2290,9 +2252,7 @@ __bb_trace_ret ()
 /* Called when entering a function.  */
 
 void
-__bb_init_trace_func (blocks, blockno)
-     struct bb *blocks;
-     unsigned long blockno;
+__bb_init_trace_func (struct bb *blocks, unsigned long blockno)
 {
   static int trace_init = 0;
 
@@ -2529,8 +2489,7 @@ unsigned int __shtab[] = {
 #define INSN_CACHE_PLANE_SIZE (INSN_CACHE_SIZE / INSN_CACHE_DEPTH)
 
 void
-__clear_cache (beg, end)
-     char *beg, *end;
+__clear_cache (char *beg, char *end)
 {
 #ifdef CLEAR_INSN_CACHE 
   CLEAR_INSN_CACHE (beg, end);
@@ -2653,9 +2612,7 @@ long getpagesize()
 #endif
 }
 
-int mprotect(addr, len, prot)
-  char *addr;
-  int len, prot;
+int mprotect(char *addr, int len, int prot)
 {
   int np, op;
 
@@ -2690,8 +2647,7 @@ TRANSFER_FROM_TRAMPOLINE
 #endif
 
 void
-__enable_execute_stack (addr)
-     char *addr;
+__enable_execute_stack (char *addr)
 {
   kern_return_t r;
   char *eaddr = addr + TRAMPOLINE_SIZE;
@@ -2815,10 +2771,7 @@ __enable_execute_stack ()
    defined in config/mips/mips.h.  */
 
 void
-cacheflush (beg,size,flag)
-     char *beg;
-     int size;
-     int flag;
+cacheflush (char *beg, int size, int flag)
 {
   if (syscall (SYS_sysnews, NEWS_CACHEFLUSH, beg, size, FLUSH_BCACHE))
     {
@@ -2988,8 +2941,7 @@ extern void _cleanup ();
 extern void _exit () __attribute__ ((noreturn));
 
 void 
-exit (status)
-     int status;
+exit (int status)
 {
 #if !defined (INIT_SECTION_ASM_OP) || !defined (OBJECT_FORMAT_ELF)
 #ifdef NEED_ATEXIT
@@ -3045,8 +2997,7 @@ struct exception_table_node {
 static struct exception_table_node *exception_table_list;
 
 static exception_table *
-find_exception_table (pc)
-     void *pc;
+find_exception_table (void *pc)
 {
   register struct exception_table_node *table = exception_table_list;
   for ( ; table != 0; table = table->next)
@@ -3082,8 +3033,7 @@ find_exception_table (pc)
    an inner block.  */
 
 void *
-__find_first_exception_table_match (pc)
-     void *pc;
+__find_first_exception_table_match (void *pc)
 {
   exception_table *table = find_exception_table (pc);
   int pos = 0;
