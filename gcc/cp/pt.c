@@ -3854,7 +3854,8 @@ lookup_template_function (tree fns, tree arglist)
     return error_mark_node;
 
   my_friendly_assert (!arglist || TREE_CODE (arglist) == TREE_VEC, 20030726);
-  if (fns == NULL_TREE)
+  if (fns == NULL_TREE 
+      || TREE_CODE (fns) == FUNCTION_DECL)
     {
       error ("non-template used as template");
       return error_mark_node;
