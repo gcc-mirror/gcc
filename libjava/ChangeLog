@@ -1,3 +1,9 @@
+2003-06-24  Michael Koch  <konqueror@gmx.de>
+
+	* java/io/LineNumberReader.java
+	(skip): Dont do line number accounting here as this is already done in
+	read(), simplified.
+
 2003-06-21  Michael Koch  <konqueror@gmx.de>
 
 	* java/io/File.java
