@@ -1,3 +1,11 @@
+2003-04-25  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl2.c (finish_file): Don't call import_export_decl for
+	functions that are not defined.
+	(handle_class_head): Robustify.
+	* pt.c (instantiate_decl): Do not call cp_finish_decl for
+	variables that are not defined.
+
 2003-04-24  Sylvain Pion  <Sylvain.Pion@mpi-sb.mpg.de>
 
         * call.c (print_z_candidates): Fix off by one error.

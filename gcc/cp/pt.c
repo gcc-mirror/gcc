@@ -10927,11 +10927,6 @@ instantiate_decl (d, defer_ok)
   if (need_push)
     push_to_top_level ();
 
-  /* We're now committed to instantiating this template.  Mark it as
-     instantiated so that recursive calls to instantiate_decl do not
-     try to instantiate it again.  */
-  DECL_TEMPLATE_INSTANTIATED (d) = 1;
-
   /* Regenerate the declaration in case the template has been modified
      by a subsequent redeclaration.  */
   regenerate_decl_from_template (d, td);
@@ -10950,10 +10945,36 @@ instantiate_decl (d, defer_ok)
       DECL_IN_AGGR_P (d) = 0;
       import_export_decl (d);
       DECL_EXTERNAL (d) = ! DECL_NOT_REALLY_EXTERN (d);
-      cp_finish_decl (d, 
-		      (!DECL_INITIALIZED_IN_CLASS_P (d) 
-		       ? DECL_INITIAL (d) : NULL_TREE),
-		      NULL_TREE, 0);
+
+      if (DECL_EXTERNAL (d))
+	{
+	  /* The fact that this code is executing indicates that:
+	     
+	     (1) D is a template static data member, for which a
+	         definition is available.
+
+	     (2) An implicit or explicit instantiation has occured.
+
+	     (3) We are not going to emit a definition of the static
+	         data member at this time.
+
+	     This situation is peculiar, but it occurs on platforms
+	     without weak symbols when performing an implicit
+	     instantiation.  There, we cannot implicitly instantiate a
+	     defined static data member in more than one translation
+	     unit, so import_export_decl marks the declaration as
+	     external; we must rely on explicit instantiation.  */
+	}
+      else
+	{
+	  /* Mark D as instantiated so that recursive calls to
+	     instantiate_decl do not try to instantiate it again.  */
+	  DECL_TEMPLATE_INSTANTIATED (d) = 1;
+	  cp_finish_decl (d, 
+			  (!DECL_INITIALIZED_IN_CLASS_P (d) 
+			   ? DECL_INITIAL (d) : NULL_TREE),
+			  NULL_TREE, 0);
+	}
     }
   else if (TREE_CODE (d) == FUNCTION_DECL)
     {
@@ -10961,6 +10982,10 @@ instantiate_decl (d, defer_ok)
       tree subst_decl;
       tree tmpl_parm;
       tree spec_parm;
+
+      /* Mark D as instantiated so that recursive calls to
+	 instantiate_decl do not try to instantiate it again.  */
+      DECL_TEMPLATE_INSTANTIATED (d) = 1;
 
       /* Save away the current list, in case we are instantiating one
 	 template from within the body of another.  */
