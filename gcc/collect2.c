@@ -168,6 +168,7 @@ extern char *version_string;
 
 static int vflag;			/* true if -v */
 static int rflag;			/* true if -r */
+static int strip_flag;			/* true if -s */
 
 static int debug;			/* true if -debug */
 
@@ -176,6 +177,7 @@ static char *temp_filename;		/* Base of temp filenames */
 static char *c_file;			/* <xxx>.c for constructor/destructor list. */
 static char *o_file;			/* <xxx>.o for constructor/destructor list. */
 static char *nm_file_name;		/* pathname of nm */
+static char *strip_file_name;		/* pathname of strip */
 
 static struct head constructors;	/* list of constructors found */
 static struct head destructors;		/* list of destructors found */
@@ -465,7 +467,7 @@ main (argc, argv)
   signal (SIGSEGV, handler);
   signal (SIGBUS,  handler);
 
-  /* Try to discover a valid linker/assembler/nm to use.  */
+  /* Try to discover a valid linker/assembler/nm/strip to use.  */
   len = strlen (argv[0]);
   prefix = (char *)0;
   if (len >= sizeof ("ld")-1)
@@ -519,9 +521,12 @@ main (argc, argv)
     clen = sizeof (STANDARD_EXEC_PREFIX) - 1;
 #endif
 
+  /* Allocate enough string space for the longest possible pathnames.  */
   ld_file_name = xcalloc (len + sizeof ("real-ld"), 1);
   nm_file_name = xcalloc (len + sizeof ("gnm"), 1);
+  strip_file_name = xcalloc (len + sizeof ("gstrip"), 1);
 
+  /* Determine the full path name of the ld program to use.  */
   memcpy (ld_file_name, prefix, len);
   strcpy (ld_file_name + len, "real-ld");
   if (access (ld_file_name, X_OK) < 0)
@@ -533,11 +538,13 @@ main (argc, argv)
 #ifdef REAL_LD_FILE_NAME
 	  ld_file_name = REAL_LD_FILE_NAME;
 #else
-	  ld_file_name = (access ("/usr/bin/ld", X_OK) == 0) ? "/usr/bin/ld" : "/bin/ld";
+	  ld_file_name = (access ("/usr/bin/ld", X_OK) == 0
+			  ? "/usr/bin/ld" : "/bin/ld");
 #endif
 	}
     }
 
+  /* Determine the full path name of the C compiler to use.  */
   c_file_name = getenv ("COLLECT_GCC");
   if (c_file_name == 0 || c_file_name[0] != '/')
     {
@@ -564,6 +571,7 @@ main (argc, argv)
 	}
     }
 
+  /* Determine the full path name of the nm to use.  */
   memcpy (nm_file_name, prefix, len);
   strcpy (nm_file_name + len, "nm");
   if (access (nm_file_name, X_OK) < 0)
@@ -575,7 +583,26 @@ main (argc, argv)
 #ifdef REAL_NM_FILE_NAME
 	  nm_file_name = REAL_NM_FILE_NAME;
 #else
-	  nm_file_name = (access ("/usr/bin/nm", X_OK) == 0) ? "/usr/bin/nm" : "/bin/nm";
+	  nm_file_name = (access ("/usr/bin/nm", X_OK) == 0
+			  ? "/usr/bin/nm" : "/bin/nm");
+#endif
+	}
+    }
+
+  /* Determine the full pathname of the strip to use.  */
+  memcpy (strip_file_name, prefix, len);
+  strcpy (strip_file_name + len, "strip");
+  if (access (strip_file_name, X_OK) < 0)
+    {
+      strcpy (strip_file_name + len, "gstrip");
+      if (access (strip_file_name, X_OK) < 0)
+	{
+	  free (strip_file_name);
+#ifdef REAL_STRIP_FILE_NAME
+	  strip_file_name = REAL_STRIP_FILE_NAME;
+#else
+	  strip_file_name = (access ("/usr/bin/strip", X_OK) == 0
+			     ? "/usr/bin/strip" : "/bin/strip");
 #endif
 	}
     }
@@ -628,6 +655,17 @@ main (argc, argv)
 	    case 'r':
 	      if (arg[2] == '\0')
 		rflag = 1;
+	      break;
+
+	    case 's':
+	      if (arg[2] == '\0')
+		{
+		  /* We must strip after the nm run, otherwise C++ linking
+		     won't work.  Thus we strip in the second ld run, or
+		     else with strip if there is no second ld run.  */
+		  strip_flag = 1;
+		  ld1--;
+		}
 	      break;
 
 	    case 'v':
@@ -720,7 +758,18 @@ main (argc, argv)
     }
 
   if (constructors.number == 0 && destructors.number == 0)
-    return 0;
+    {
+      /* Strip now if it was requested on the command line.  */
+      if (strip_flag)
+	{
+	  char **strip_argv = (char **) xcalloc (sizeof (char *), 3);
+	  strip_argv[0] = "strip";
+	  strip_argv[1] = outfile;
+	  strip_argv[2] = (char *) 0;
+	  fork_execute (strip_file_name, strip_argv);
+	}
+      return 0;
+    }
 
   outf = fopen (c_file, "w");
   if (outf == (FILE *)0)
