@@ -1,3 +1,10 @@
+2001-11-13  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/h8300.c (shift_alg_si): Use special code for
+	25-bit shifts on H8/S.
+	(get_shift_alg): Generate special code for 25-bit shifts on
+	H8/S.
+
 2001-11-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* emit-rtl.c (adjust_address_1): Add ADJUST argument.
