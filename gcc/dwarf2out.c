@@ -1225,7 +1225,7 @@ output_call_frame_info (for_eh)
   if (for_eh)
     {
 #ifdef EH_FRAME_SECTION
-      ASM_OUTPUT_SECTION_NAME (asm_out_file, NULL_TREE, EH_FRAME_SECTION, 0);
+      named_section (NULL_TREE, EH_FRAME_SECTION, 0);
 #else
       data_section ();
 #endif
