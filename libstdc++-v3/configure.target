@@ -130,6 +130,13 @@ case "${target}" in
    *-*-irix*)
      ATOMICITYH=$os_include_dir
      ;;
+   mcore-*-pe*)
+     # The EPOC C++ environment does not support exceptions.
+     if test -z "$enable_cxx_flags"; then
+       enable_cxx_flags="-frtti -fno-exceptions"
+     fi
+     ATOMICITYH=$cpu_include_dir
+     ;;
    *)
      ATOMICITYH=$cpu_include_dir
      ;;

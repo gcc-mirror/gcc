@@ -1,3 +1,11 @@
+2002-03-22  Nick Clifton  <nickc@cambridge.redhat.com>
+
+	* config/mcore/mcore.h (CC1_SPEC): Define only if not already
+	defined.  Do not disable exceptions or rtti.
+	* config/mcore/mcore-pe.h (CC1_SPEC): Define before including
+	mcore.h.  Disable exceptions and rtti, since they are not
+	supported by EPOC.
+
 2002-03-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* regrename.c (build_def_use): Move recog_memoized
