@@ -1,3 +1,7 @@
+Thu May 12 19:13:54 1994  Richard Earnshaw  (rwe11@cl.cam.ac.uk)
+
+	* g++.c: Use #ifdef for __MSDOS__, not #if.
+
 Fri May  6 01:25:38 1994  Mike Stump  (mrs@cygnus.com)
 
 	Add alpha exception handling support to the compiler.
