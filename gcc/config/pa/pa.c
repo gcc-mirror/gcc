@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for HPPA.
-   Copyright (C) 1992, 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1992, , 1994, 95, 96, 1997 Free Software Foundation, Inc.
    Contributed by Tim Moore (moore@cs.utah.edu), based on sparc.c
 
 This file is part of GNU CC.
@@ -4269,7 +4269,7 @@ struct rtx_def *
 hppa_builtin_saveregs (arglist)
      tree arglist;
 {
-  rtx offset;
+  rtx offset, dest;
   tree fntype = TREE_TYPE (current_function_decl);
   int argadj = ((!(TYPE_ARG_TYPES (fntype) != 0
 		   && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
@@ -4282,11 +4282,16 @@ hppa_builtin_saveregs (arglist)
     offset = current_function_arg_offset_rtx;
 
   /* Store general registers on the stack. */
-  move_block_from_reg (23,
-		       gen_rtx (MEM, BLKmode,
-				plus_constant
-				(current_function_internal_arg_pointer, -16)),
-		       4, 4 * UNITS_PER_WORD);
+  dest = gen_rtx (MEM, BLKmode,
+		  plus_constant (current_function_internal_arg_pointer, -16));
+  move_block_from_reg (23, dest, 4, 4 * UNITS_PER_WORD);
+
+  if (flag_check_memory_usage)
+    emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
+		       dest, ptr_mode,
+		       GEN_INT (4 * UNITS_PER_WORD), TYPE_MODE (sizetype),
+		       GEN_INT (MEMORY_USE_RW), QImode);
+
   return copy_to_reg (expand_binop (Pmode, add_optab,
 				    current_function_internal_arg_pointer,
 				    offset, 0, 0, OPTAB_LIB_WIDEN));
