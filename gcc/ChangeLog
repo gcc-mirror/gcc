@@ -1,3 +1,19 @@
+2000-11-20  Neil Booth  <neilb@earthling.net>
+
+	* c-lang.c (lang_init_options): Update call to
+	cpp_reader_init.
+	* cppmain.c (main): Similarly.
+	* fix-header.c (read_scan_file): Similarly.
+	* cp/lex.c (lang_init_options): Similarly.
+	* objc/objc-act.c (lang_init_options): Similarly.
+	* cppexp.c (parse_number): Only warn for unextended C89.
+	* cppinit.c (set_lang): New function.
+	(cpp_reader_init): Take a LANG argument and pass it to set_lang.
+	(COMMAND_LINE_OPTIONS): New option std=c++98.
+	(cpp_handle_option): Use set_lang.
+	* cpplex.c (_cpp_lex_token): Warn pedantically if not C99.
+	* cppib.h (enum_c_lang): New enumeration.  Update comments.
+
 2000-11-20  Will Cohen  <wcohen@redhat.com>
 
 	* calls.c (expand_call): Clear target only when target is in

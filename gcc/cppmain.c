@@ -87,7 +87,8 @@ main (argc, argv)
   (void) textdomain (PACKAGE);
 
   cpp_init ();
-  cpp_reader_init (pfile);
+  /* Default language is GNU C89.  */
+  cpp_reader_init (pfile, CLK_GNUC89);
   
   argi += cpp_handle_options (pfile, argc - argi , argv + argi);
   if (argi < argc && ! CPP_FATAL_ERRORS (pfile))

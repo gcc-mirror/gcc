@@ -611,7 +611,7 @@ read_scan_file (in_fname, argc, argv)
   obstack_init (&scan_file_obstack); 
 
   cpp_init ();			/* Initialize cpplib.   */
-  cpp_reader_init (&scan_in);
+  cpp_reader_init (&scan_in, CLK_GNUC89);
 
   /* We are going to be scanning a header file out of its proper context,
      so ignore warnings and errors.  */
