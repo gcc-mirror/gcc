@@ -1,3 +1,16 @@
+2000-05-26  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cp-tree.h (CPTI_PTMD_DESC_TYPE): Rename to ...
+	(CPTI_PTMD_DESC_TYPE): ... here.
+	(ptmd_desc_type_node): Rename to ...
+	(ptm_desc_type_node): ... here.
+	* decl.c: Likewise.
+	* rtti.c (ptmd_initializer): Rename to ...
+	(ptm_initializer): ... here.
+	(sythesize_tinfo_var): Adjust. Deal with pointer to member
+	function.
+	(create_tinfo_types): Adjust.	
+
 2000-05-25  Mark Mitchell  <mark@codesourcery.com>
 
 	Finish implementation of VTTs.
