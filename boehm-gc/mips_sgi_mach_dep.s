@@ -3,6 +3,7 @@
 
 # define call_push(x)     move    $4,x;    jal     GC_push_one
 
+    .option pic2
     .text
 /* Mark from machine registers that are saved by C compiler */
 #   define FRAMESZ 32
