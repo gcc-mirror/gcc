@@ -1,5 +1,45 @@
 2001-08-18  Zack Weinberg  <zackw@panix.com>
 
+	* haifa-sched.c: Convert to target hooks.  Macros replaced
+	are ISSUE_RATE, ADJUST_COST, ADJUST_PRIORITY, MD_SCHED_INIT,
+	MD_SCHED_REORDER, MD_SCHED_REORDER2, MD_SCHED_VARIABLE_ISSUE,
+	MD_SCHED_FINISH, and HAVE_cycle_display.
+	* target-def.h (TARGET_SCHED_ADJUST_COST,
+	TARGET_SCHED_ADJUST_PRIORITY, TARGET_SCHED_ISSUE_RATE,
+	TARGET_SCHED_VARIABLE_ISSUE, TARGET_SCHED_INIT,
+	TARGET_SCHED_FINISH, TARGET_SCHED_REORDER,
+	TARGET_SCHED_REORDER2, TARGET_SCHED_CYCLE_DISPLAY): 
+	New hook #defines to be overridden.
+	(TARGET_SCHED): Bring them all together.
+	(TARGET_INITIALIZER): Update.
+	* target.h: Don't forward declare struct rtx_def.  Use 'rtx'
+	instead of 'struct rtx_def *' throughout.  
+	(struct sched): New set of hooks for the scheduler.
+	* Makefile.in (haifa-sched.o): Depend on target.h.
+	* doc/tm.texi: Document the new scheduler hooks, together in
+	their own section, instead of scattered around.
+	Fix a bunch of underfull/overfull hboxes.
+
+	* a29k.h, alpha.h, arm.h, c4x.h, convex.h, d30v.h, i386.h,
+	ia64.h, m32r.h, m88k.h, mips.h, pa.h, rs6000.h, s390.h, sh.h,
+	sparc.h: Don't define any of the old scheduler macros.
+
+	* a29k.c, alpha.c, arm.c, c4x.c, convex.c, d30v.c, i386.c,
+	ia64.c, m32r.c, m88k.c, mips.c, pa.c, rs6000.c, s390.c, sh.c,
+	sparc.c: Create hook functions from code extracted from
+	corresponding target header, or make existing hooks static, as
+	appropriate.  Set the appropriate entries in targetm.
+
+	* alpha-protos.h, arm-protos.h, c4x-protos.h, d30v-protos.h,
+	i386-protos.h, ia64-protos.h, m32r-protos.h, pa-protos.h,
+	rs6000-protos.h, s390-protos.h, sparc-protos.h:
+	Remove prototypes for functions which are now static.
+
+	* d30v.h, d30v.c, m32r.h, m32r.c: Remove #ifdef HAIFA and
+	related gunk; the Haifa scheduler is now the only choice.
+
+2001-08-18  Zack Weinberg  <zackw@panix.com>
+
 	* optabs.h (OTI_flodiv, flodiv_optab): Kill.
 	* genopinit.c: Put floating point divide insns in sdiv_optab.
 	* expr.c (expand_expr): Use sdiv_optab, not flodiv_optab.
