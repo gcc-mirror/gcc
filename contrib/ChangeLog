@@ -1,3 +1,7 @@
+2001-01-14  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* texi2pod.pl: Require at least perl 5.6.0.
+
 2001-01-13  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc_update: Add gcc/gcc.1 to generated files.
