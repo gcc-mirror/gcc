@@ -1972,7 +1972,7 @@ output_addsi3 (operands)
 	 stack slots over 64k from the frame pointer.  */
       if (GET_CODE (operands[2]) == CONST_INT
 	  && INTVAL (operands[2]) + 0x8000 >= (unsigned) 0x10000)
-        return "move%.l %2,%0\\;add%.l %1,%0";
+        return "move%.l %2,%0\n\tadd%.l %1,%0";
 #ifdef SGS
       if (GET_CODE (operands[2]) == REG)
 	return "lea 0(%1,%2.l),%0";
@@ -2015,14 +2015,14 @@ output_addsi3 (operands)
 	    {
 	      operands[2] = gen_rtx (CONST_INT, VOIDmode, 
 				      INTVAL (operands[2]) - 8);
-	      return "addq%.l %#8,%0\\;addq%.l %2,%0";
+	      return "addq%.l %#8,%0\n\taddq%.l %2,%0";
 	    }
 	  if (INTVAL (operands[2]) < -8
 	      && INTVAL (operands[2]) >= -16)
 	    {
 	      operands[2] = gen_rtx (CONST_INT, VOIDmode,
 				      - INTVAL (operands[2]) - 8);
-	      return "subq%.l %#8,%0\\;subq%.l %2,%0";
+	      return "subq%.l %#8,%0\n\tsubq%.l %2,%0";
 	    }
 	}
 #endif
