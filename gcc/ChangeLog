@@ -1,3 +1,26 @@
+2004-01-16  Geoffrey Keating  <geoffk@apple.com>
+
+	* Makefile.in (MD5_H): New.
+	(fold-const.o): Depend on md5.h.
+	(dwarf2out.o): Likewise.
+	(cppfiles.o): Likewise.
+	* cppfiles.c: Include md5.h.
+	(should_stack_file): Check against list read from PCH file.
+	(struct pchf_data): New.
+	(pchf): New variable.
+	(struct pchf_adder_info): New.
+	(pchf_adder): New.
+	(pchf_save_compare): New.
+	(_cpp_save_file_entries): New.
+	(_cpp_read_file_entries): New.
+	(struct pchf_compare_data): New.
+	(pchf_compare): New.
+	(check_file_against_entries): New.
+	* cpphash.h (_cpp_save_file_entries): Prototype.
+	(_cpp_read_file_entries): Prototype.
+	* cpppch.c (cpp_write_pch_state): Write the list of headers.
+	(cpp_read_state): Read the list of headers.
+
 2004-01-17  Jan Hubicka  <jh@suse.cz>
 
 	* c-common.c (c_estimate_num_insns_1): Handle builtin_constant_p and

@@ -1,5 +1,5 @@
 /* Part of CPP library.  (Precompiled header reading/writing.)
-   Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -366,6 +366,12 @@ cpp_write_pch_state (cpp_reader *r, FILE *f)
       return -1;
     }
 
+  if (! _cpp_save_file_entries (r, f))
+    {
+      cpp_errno (r, CPP_DL_ERROR, "while writing precompiled header");
+      return -1;
+    }
+
   return 0;
 }
 
@@ -707,6 +713,9 @@ cpp_read_state (cpp_reader *r, const char *name, FILE *f,
 
   if (deps_restore (r->deps, f, CPP_OPTION (r, restore_pch_deps) ? name : NULL)
       != 0)
+    goto error;
+
+  if (! _cpp_read_file_entries (r, f))
     goto error;
 
   return 0;

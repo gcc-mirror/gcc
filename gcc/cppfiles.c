@@ -1,6 +1,6 @@
 /* Part of CPP library.  File handling.
    Copyright (C) 1986, 1987, 1989, 1992, 1993, 1994, 1995, 1998,
-   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
    Written by Per Bothner, 1994.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -28,6 +28,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "intl.h"
 #include "mkdeps.h"
 #include "hashtab.h"
+#include "md5.h"
 #include <dirent.h>
 
 /* Variable length record files on VMS will have a stat size that includes
@@ -180,6 +181,10 @@ static char *remap_filename (cpp_reader *pfile, _cpp_file *file);
 static char *append_file_to_dir (const char *fname, cpp_dir *dir);
 static bool validate_pch (cpp_reader *, _cpp_file *file, const char *pchname);
 static bool include_pch_p (_cpp_file *file);
+static int pchf_adder (void **slot, void *data);
+static int pchf_save_compare (const void *e1, const void *e2);
+static int pchf_compare (const void *d_p, const void *e_p);
+static bool check_file_against_entries (cpp_reader *, _cpp_file *, bool);
 
 /* Given a filename in FILE->PATH, with the empty string interpreted
    as <stdin>, open it.
@@ -589,6 +594,19 @@ should_stack_file (cpp_reader *pfile, _cpp_file *file, bool import)
 
   if (!read_file (pfile, file))
     return false;
+
+  /* Check the file against the PCH file.  This is done before
+     checking against files we've already seen, since it may save on
+     I/O.  */
+  if (check_file_against_entries (pfile, file, import))
+    {
+      /* If this isn't a #import, but yet we can't include the file,
+	 that means that it was #import-ed in the PCH file,
+	 so we can never include it again.  */
+      if (! import)
+	_cpp_mark_file_once_only (pfile, file);
+      return false;
+    }
 
   /* Now we've read the file's contents, we can stack it if there
      are no once-only files.  */
@@ -1248,4 +1266,217 @@ validate_pch (cpp_reader *pfile, _cpp_file *file, const char *pchname)
 
   file->path = saved_path;
   return valid;
+}
+
+/* This datastructure holds the list of header files that were seen
+   while the PCH was being built.  The 'entries' field is kept sorted
+   in memcmp() order; yes, this means that on little-endian systems,
+   it's sorted initially by the least-significant byte of 'size', but
+   that's OK.  The code does rely on having entries with the same size
+   next to each other.  */
+
+struct pchf_data {
+  /* Number of pchf_entry structures.  */
+  size_t count;
+
+  /* Are there any values with once_only set?
+     This is used as an optimisation, it means we don't have to search
+     the structure if we're processing a regular #include.  */
+  bool have_once_only;
+  
+  struct pchf_entry {
+    /* The size of this file.  This is used to save running a MD5 checksum
+       if the sizes don't match.  */
+    off_t size;
+    /* The MD5 checksum of this file.  */
+    unsigned char sum[16];
+    /* Is this file to be included only once?  */
+    bool once_only;
+  } entries[1];
+};
+
+static struct pchf_data *pchf;
+
+/* Data for pchf_addr.  */
+struct pchf_adder_info 
+{
+  cpp_reader *pfile;
+  struct pchf_data *d;
+};
+
+/* A hash traversal function to add entries into DATA->D.  */
+
+static int
+pchf_adder (void **slot, void *data)
+{
+  struct file_hash_entry *h = (struct file_hash_entry *) *slot;
+  struct pchf_adder_info *i = (struct pchf_adder_info *) data;
+
+  if (h->start_dir != NULL && h->u.file->stack_count != 0)
+    {
+      struct pchf_data *d = i->d;
+      _cpp_file *f = h->u.file;
+      size_t count = d->count++;
+
+      /* This should probably never happen, since if a read error occurred
+	 the PCH file shouldn't be written...  */
+      if (f->dont_read || f->err_no)
+	return 1;
+      
+      d->entries[count].once_only = f->once_only;
+      d->have_once_only |= f->once_only;
+      if (f->buffer_valid)
+	  md5_buffer ((const char *)f->buffer, 
+		      f->st.st_size, d->entries[count].sum);
+      else
+	{
+	  FILE *ff;
+	  int oldfd = f->fd;
+
+	  if (!open_file (f))
+	    {
+	      open_file_failed (i->pfile, f);
+	      return 0;
+	    }
+	  ff = fdopen (f->fd, "rb");
+	  md5_stream (ff, d->entries[count].sum);
+	  fclose (ff);
+	  f->fd = oldfd;
+	}
+      d->entries[count].size = f->st.st_size;
+    }
+  return 1;
+}
+
+/* A qsort ordering function for pchf_entry structures.  */
+
+static int
+pchf_save_compare (const void *e1, const void *e2)
+{
+  return memcmp (e1, e2, sizeof (struct pchf_entry));
+}
+
+/* Create and write to F a pchf_data structure.  */
+
+bool
+_cpp_save_file_entries (cpp_reader *pfile, FILE *f)
+{
+  size_t count = 0;
+  struct pchf_data *result;
+  size_t result_size;
+  struct pchf_adder_info pai;
+  
+  count = htab_elements (pfile->file_hash);
+  result_size = (sizeof (struct pchf_data) 
+		 + sizeof (struct pchf_entry) * (count - 1));
+  result = xcalloc (result_size, 1);
+  
+  result->count = 0;
+  result->have_once_only = false;
+  
+  pai.pfile = pfile;
+  pai.d = result;
+  htab_traverse (pfile->file_hash, pchf_adder, &pai);
+
+  result_size = (sizeof (struct pchf_data)
+                 + sizeof (struct pchf_entry) * (result->count - 1));
+  
+  qsort (result->entries, result->count, sizeof (struct pchf_entry),
+	 pchf_save_compare);
+
+  return fwrite (result, result_size, 1, f) == 1;
+}
+
+/* Read the pchf_data structure from F.  */
+
+bool
+_cpp_read_file_entries (cpp_reader *pfile ATTRIBUTE_UNUSED, FILE *f)
+{
+  struct pchf_data d;
+  
+  if (fread (&d, sizeof (struct pchf_data) - sizeof (struct pchf_entry), 1, f)
+       != 1)
+    return false;
+  
+  pchf = xmalloc (sizeof (struct pchf_data)
+		  + sizeof (struct pchf_entry) * (d.count - 1));
+  memcpy (pchf, &d, sizeof (struct pchf_data) - sizeof (struct pchf_entry));
+  if (fread (pchf->entries, sizeof (struct pchf_entry), d.count, f)
+      != d.count)
+    return false;
+  return true;
+}
+
+/* The parameters for pchf_compare.  */
+
+struct pchf_compare_data
+{
+  /* The size of the file we're looking for.  */
+  off_t size;
+
+  /* The MD5 checksum of the file, if it's been computed.  */
+  unsigned char sum[16];
+
+  /* Is SUM valid?  */
+  bool sum_computed;
+
+  /* Do we need to worry about entries that don't have ONCE_ONLY set?  */
+  bool check_included;
+  
+  /* The file that we're searching for.  */
+  _cpp_file *f;
+};
+
+/* bsearch comparison function; look for D_P in E_P.  */
+
+static int
+pchf_compare (const void *d_p, const void *e_p)
+{
+  const struct pchf_entry *e = (const struct pchf_entry *)e_p;
+  struct pchf_compare_data *d = (struct pchf_compare_data *)d_p;
+  int result;
+  
+  result = memcmp (&d->size, &e->size, sizeof (off_t));
+  if (result != 0)
+    return result;
+  
+  if (! d->sum_computed)
+    {
+      _cpp_file *const f = d->f;
+      
+      md5_buffer ((const char *)f->buffer, f->st.st_size, d->sum);
+      d->sum_computed = true;
+    }
+
+  result = memcmp (d->sum, e->sum, 16);
+  if (result != 0)
+    return result;
+
+  if (d->check_included || e->once_only)
+    return 0;
+  else
+    return 1;
+}
+
+/* Check that F is not in a list read from a PCH file (if any).  
+   Assumes that f->buffer_valid is true.  Return TRUE if the file
+   should not be read.  */
+
+static bool
+check_file_against_entries (cpp_reader *pfile ATTRIBUTE_UNUSED,
+			    _cpp_file *f,
+			    bool check_included)
+{
+  struct pchf_compare_data d;
+  
+  if (pchf == NULL
+      || (! check_included && ! pchf->have_once_only))
+    return false;
+
+  d.size = f->st.st_size;
+  d.sum_computed = false;
+  d.f = f;
+  d.check_included = check_included;
+  return bsearch (&d, pchf->entries, pchf->count, sizeof (struct pchf_entry),
+		  pchf_compare) != NULL;
 }

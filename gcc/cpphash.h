@@ -530,6 +530,8 @@ extern void _cpp_report_missing_guards (cpp_reader *);
 extern void _cpp_init_files (cpp_reader *);
 extern void _cpp_cleanup_files (cpp_reader *);
 extern void _cpp_pop_file_buffer (cpp_reader *, struct _cpp_file *);
+extern bool _cpp_save_file_entries (cpp_reader *pfile, FILE *f);
+extern bool _cpp_read_file_entries (cpp_reader *, FILE *);
 
 /* In cppexp.c */
 extern bool _cpp_parse_expr (cpp_reader *);
