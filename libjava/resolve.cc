@@ -516,11 +516,14 @@ _Jv_PrepareClass(jclass klass)
   if (klass->state >= JV_STATE_PREPARED)
     return;
 
-  // make sure super-class is linked.  This involves taking a lock on
-  // the super class, so we use the Java method resolveClass, which will
-  // unlock it properly, should an exception happen.
+  // Make sure super-class is linked.  This involves taking a lock on
+  // the super class, so we use the Java method resolveClass, which
+  // will unlock it properly, should an exception happen.  If there's
+  // no superclass, do nothing -- Object will already have been
+  // resolved.
 
-  java::lang::ClassLoader::resolveClass0 (klass->superclass);
+  if (klass->superclass)
+    java::lang::ClassLoader::resolveClass0 (klass->superclass);
 
   _Jv_InterpClass *clz = (_Jv_InterpClass*)klass;
 
@@ -529,8 +532,12 @@ _Jv_PrepareClass(jclass klass)
   int instance_size;
   int static_size;
 
-  // java.lang.Object is never interpreted!
-  instance_size = clz->superclass->size ();
+  // Although java.lang.Object is never interpreted, an interface can
+  // have a null superclass.
+  if (clz->superclass)
+    instance_size = clz->superclass->size();
+  else
+    instance_size = java::lang::Object::class$.size();
   static_size   = 0;
 
   for (int i = 0; i < clz->field_count; i++)
@@ -646,9 +653,6 @@ _Jv_PrepareClass(jclass klass)
 
   jclass super_class = clz->getSuperclass ();
 
-  if (super_class == 0)
-    throw_internal_error ("cannot handle interpreted base classes");
-
   for (int i = 0; i < clz->method_count; i++)
     {
       _Jv_Method *this_meth = &clz->methods[i];
@@ -707,6 +711,10 @@ _Jv_PrepareClass(jclass klass)
        We need to find a real one... */
     while (effective_superclass && effective_superclass->vtable == NULL)
       effective_superclass = effective_superclass->superclass;
+
+    /* If we ended up without a superclass, use Object.  */
+    if (! effective_superclass)
+      effective_superclass = &java::lang::Object::class$;
 
     /* copy super class' vtable entries. */
     if (effective_superclass && effective_superclass->vtable)
