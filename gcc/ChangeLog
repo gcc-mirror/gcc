@@ -1,3 +1,11 @@
+Thu Mar 12 13:43:25 1998  Bernd Schmidt <crux@Pool.Informatik.RWTH-Aachen.DE>
+
+	* i386.c (ix86_logical_operator): New function.
+	(split_di): Ensure that when a MEM is split, the resulting MEMs have
+	SImode.
+	* i386.md (anddi3, xordi3, iordi3): New patterns. Add a define_split
+	to implement them.
+
 Thu Mar 12 15:13:16 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
                           Richard Earnshaw <rearnsha@arm.com>
                           Nick Clifton  <nickc@cygnus.com>
