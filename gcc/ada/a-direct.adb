@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004 Free Software Foundation, Inc.               --
+--          Copyright (C) 2004-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,15 +31,15 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Directories.Validity; use Ada.Directories.Validity;
-with Ada.Strings.Unbounded;    use Ada.Strings.Unbounded;
+with Ada.Directories.Validity;   use Ada.Directories.Validity;
+with Ada.Strings.Unbounded;      use Ada.Strings.Unbounded;
 with Ada.Unchecked_Deallocation;
-with Ada.Characters.Handling;  use Ada.Characters.Handling;
+with Ada.Characters.Handling;    use Ada.Characters.Handling;
 
-with GNAT.Directory_Operations; use GNAT.Directory_Operations;
-with GNAT.OS_Lib;               use GNAT.OS_Lib;
-with GNAT.Regexp;               use GNAT.Regexp;
---  ??? Ada units cannot depend on GNAT units
+with GNAT.Directory_Operations;  use GNAT.Directory_Operations;
+with GNAT.OS_Lib;                use GNAT.OS_Lib;
+with GNAT.Regexp;                use GNAT.Regexp;
+--  ??? Ada units should not depend on GNAT units
 
 with System;
 
@@ -938,6 +938,7 @@ package body Ada.Directories is
 
       exception
          when Error_In_Regexp =>
+            Free (Search.Value);
             raise Name_Error;
       end;
 
