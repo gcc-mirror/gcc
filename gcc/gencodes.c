@@ -88,10 +88,10 @@ main (argc, argv)
   if (init_md_reader (argv[1]) != SUCCESS_EXIT_CODE)
     return (FATAL_EXIT_CODE);
 
-  printf ("/* Generated automatically by the program `gencodes'\n\
-from the machine description file `md'.  */\n\n");
-
-  printf ("#ifndef MAX_INSN_CODE\n\n");
+  puts ("/* Generated automatically by the program `gencodes'");
+  puts ("   from the machine description file `md'.  */\n");
+  puts ("#ifndef GCC_INSN_CODES_H");
+  puts ("#define GCC_INSN_CODES_H\n");
 
   /* Read the machine description.  */
 
@@ -118,10 +118,12 @@ from the machine description file `md'.  */\n\n");
 
   output_predicate_decls ();
 
-  printf ("\n#endif /* MAX_INSN_CODE */\n");
+  puts("\n#endif /* GCC_INSN_CODES_H */");
 
-  fflush (stdout);
-  return (ferror (stdout) != 0 ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);
+  if (ferror (stdout) || fflush (stdout) || fclose (stdout))
+    return FATAL_EXIT_CODE;
+
+  return SUCCESS_EXIT_CODE;
 }
 
 /* Define this so we can link with print-rtl.o to get debug_rtx function.  */
