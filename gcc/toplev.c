@@ -254,9 +254,9 @@ enum dump_file_index
   DFI_peephole2,
   DFI_rnreg,
   DFI_ce3,
+  DFI_bbro,
   DFI_sched2,
   DFI_stack,
-  DFI_bbro,
   DFI_mach,
   DFI_dbr,
   DFI_MAX
@@ -305,9 +305,9 @@ static struct dump_file_info dump_file[DFI_MAX] =
   { "peephole2", 'z', 1, 0, 0 },
   { "rnreg",	'n', 1, 0, 0 },
   { "ce3",	'E', 1, 0, 0 },
+  { "bbro",	'B', 1, 0, 0 },
   { "sched2",	'R', 1, 0, 0 },
   { "stack",	'k', 1, 0, 0 },
-  { "bbro",	'B', 1, 0, 0 },
   { "mach",	'M', 1, 0, 0 },
   { "dbr",	'd', 0, 0, 0 },
 };
@@ -745,6 +745,13 @@ int flag_pedantic_errors = 0;
 int flag_schedule_insns = 0;
 int flag_schedule_insns_after_reload = 0;
 
+/* When flag_schedule_insns_after_reload is set, use EBB scheduler.  */
+int flag_sched2_use_superblocks = 0;
+
+/* When flag_schedule_insns_after_reload is set, construct traces and EBB
+   scheduler.  */
+int flag_sched2_use_traces = 0;
+
 /* The following flags have effect only for scheduling before register
    allocation:
 
@@ -1079,6 +1086,10 @@ static const lang_independent_options f_options[] =
    N_("Allow speculative motion of some loads") },
   {"sched-spec-load-dangerous",&flag_schedule_speculative_load_dangerous, 1,
    N_("Allow speculative motion of more loads") },
+  {"sched2-use-superblocks", &flag_sched2_use_superblocks, 1,
+   N_("If scheduling post reload, do superblock sheduling") },
+  {"sched2-use-traces", &flag_sched2_use_traces, 1,
+   N_("If scheduling post reload, do trace sheduling") },
   {"branch-count-reg",&flag_branch_on_count_reg, 1,
    N_("Replace add,compare,branch with branch on count reg") },
   {"pic", &flag_pic, 1,
@@ -3490,6 +3501,28 @@ rest_of_compilation (decl)
     split_all_insns (1);
 #endif
 
+  if (optimize > 0)
+    {
+      timevar_push (TV_REORDER_BLOCKS);
+      open_dump_file (DFI_bbro, decl);
+
+      /* Last attempt to optimize CFG, as scheduling, peepholing and insn
+	 splitting possibly introduced more crossjumping opportunities. */
+      cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_UPDATE_LIFE
+		   | (flag_crossjumping ? CLEANUP_CROSSJUMP : 0));
+
+      if (flag_sched2_use_traces && flag_schedule_insns_after_reload)
+        tracer ();
+      if (flag_reorder_blocks)
+	reorder_basic_blocks ();
+      if (flag_reorder_blocks
+	  || (flag_sched2_use_traces && flag_schedule_insns_after_reload))
+	  cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_UPDATE_LIFE);
+
+      close_dump_file (DFI_bbro, print_rtl_with_bb, insns);
+      timevar_pop (TV_REORDER_BLOCKS);
+    }
+
 #ifdef INSN_SCHEDULING
   if (optimize > 0 && flag_schedule_insns_after_reload)
     {
@@ -3501,7 +3534,16 @@ rest_of_compilation (decl)
 
       split_all_insns (1);
 
-      schedule_insns (rtl_dump_file);
+      if (flag_sched2_use_superblocks || flag_sched2_use_traces)
+	{
+	  schedule_ebbs (rtl_dump_file);
+	  /* No liveness updating code yet, but it should be easy to do.
+	     reg-stack recompute the liveness when needed for now.  */
+	  count_or_remove_death_notes (NULL, 1);
+	  cleanup_cfg (CLEANUP_EXPENSIVE);
+	}
+      else
+        schedule_insns (rtl_dump_file);
 
       close_dump_file (DFI_sched2, print_rtl_with_bb, insns);
       timevar_pop (TV_SCHED2);
@@ -3519,7 +3561,16 @@ rest_of_compilation (decl)
   timevar_push (TV_REG_STACK);
   open_dump_file (DFI_stack, decl);
 
-  reg_to_stack (insns, rtl_dump_file);
+  if (reg_to_stack (insns, rtl_dump_file) && optimize)
+    {
+      if (cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_POST_REGSTACK
+		       | (flag_crossjumping ? CLEANUP_CROSSJUMP : 0))
+	  && flag_reorder_blocks)
+	{
+	  reorder_basic_blocks ();
+	  cleanup_cfg (CLEANUP_EXPENSIVE);
+	}
+    }
 
   close_dump_file (DFI_stack, print_rtl_with_bb, insns);
   timevar_pop (TV_REG_STACK);
@@ -4904,6 +4955,7 @@ parse_options_and_default_flags (argc, argv)
       flag_cse_skip_blocks = 1;
       flag_gcse = 1;
       flag_expensive_optimizations = 1;
+      flag_unit_at_a_time = 1;
       flag_strength_reduce = 1;
       flag_rerun_cse_after_loop = 1;
       flag_rerun_loop_opt = 1;

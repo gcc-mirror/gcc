@@ -287,7 +287,8 @@ in the following sections.
 -frerun-cse-after-loop  -frerun-loop-opt @gol
 -fschedule-insns  -fschedule-insns2 @gol
 -fno-sched-interblock  -fno-sched-spec  -fsched-spec-load @gol
--fsched-spec-load-dangerous  -fsignaling-nans @gol
+-fsched-spec-load-dangerous  -fsched2-use-superblocks @gol
+-fsched2-use-traces  -fsignaling-nans @gol
 -fsingle-precision-constant  -fssa -fssa-ccp -fssa-dce @gol
 -fstrength-reduce  -fstrict-aliasing  -ftracer -fthread-jumps @gol
 -funit-at-a-time -funroll-all-loops  -funroll-loops  -funswitch-loops @gol
@@ -3894,6 +3895,30 @@ sense when scheduling before register allocation, i.e.@: with
 Allow speculative motion of more load instructions.  This only makes
 sense when scheduling before register allocation, i.e.@: with
 @option{-fschedule-insns} or at @option{-O2} or higher.
+
+@item -fsched2-use-superblocks
+@opindex fsched2-use-superblocks
+When schedulilng after register allocation, do use superblock scheduling
+algorithm.  Superblock scheduling allows motion acress basic block boundaries
+resulting on faster schedules.  This option is experimental, as not all machine
+descriptions used by GCC model the CPU closely enought to avoid unreliable
+results from the algorithm. 
+
+This only makes sense when scheduling after register allocation, i.e.@: with
+@option{-fschedule-insns2} or at @option{-O2} or higher.
+
+@item -fsched2-use-traces
+@opindex fsched2-use-traces
+Use @option{-fsched2-use-superblocks} algorithm when scheduling after register
+allocation and additionally perform code duplication in order to increase the
+size of superblocks using tracer pass.  See @option{-ftracer} for details on
+trace formation.
+
+This mode should produce faster but singificantly longer programs.  Also
+without @code{-fbranch-probabilities} the traces constructed may not match the
+reality and hurt the performance.  This only makes
+sense when scheduling after register allocation, i.e.@: with
+@option{-fschedule-insns2} or at @option{-O2} or higher.
 
 @item -fcaller-saves
 @opindex fcaller-saves
