@@ -1453,15 +1453,6 @@ and has a sufficiently recent version; if too old a GNAT version is
 installed, the build will fail unless @option{--enable-languages} is
 used to disable building the Ada front end.
 
-For example, you can build a native Ada compiler by issuing the
-following commands (assuming @command{make} is GNU make):
-
-@smallexample
-    cd @var{objdir}
-    @var{srcdir}/configure --enable-languages=c,ada
-    make bootstrap
-@end smallexample
-
 @section Building with profile feedback
 
 It is possible to use profile feedback to optimize the compiler itself.  This
