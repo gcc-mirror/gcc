@@ -150,6 +150,7 @@ add_assume_compiled (ident, excludep)
      const char *ident;
      int excludep;
 {
+  int len;
   assume_compiled_node *parent;
   assume_compiled_node *node = 
     xmalloc (sizeof (assume_compiled_node));
@@ -183,7 +184,8 @@ add_assume_compiled (ident, excludep)
      class or a package name.  Adjust PARENT accordingly.  */
 
   parent = find_assume_compiled_node (assume_compiled_tree, ident);
-  if (ident[strlen (parent->ident)] != '.')
+  len = strlen (parent->ident);
+  if (parent->ident[len] && parent->ident[len] != '.')
     parent = parent->parent;
 
   /* Insert NODE into the tree.  */
@@ -194,7 +196,7 @@ add_assume_compiled (ident, excludep)
 }
 
 /* Returns nonzero if IDENT is the name of a class that the compiler
-   should assume has been compiled to FIXME  */
+   should assume has been compiled to object code.  */
 
 static int
 assume_compiled (ident)
