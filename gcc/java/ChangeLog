@@ -1,3 +1,13 @@
+2002-02-22  Per Bothner  <per@bothner.com>
+
+	*  class.c:  Change vtable to be more compatible with g++ v3 abi.
+	(get_dispatch_table):  Prepend offset-to-top (always 0) and
+	type_info pointer (currently unimplemented hence NULL) to vtable.
+	Specifically, prepend offset-to-top and typeinfo ptr (currently null).
+	(make_class_data):  Variable dtable_start_offset is sizeof 2 pointers.
+	Adjust vtable pointers by dtable_start_offse - i.e. skip new words.
+	(build_dtable_decl):  Add declarations for new fields.
+
 2002-02-20  Per Bothner  <per@bothner.com>
 
 	* parse.y (patch_method_invocation): Set CAN_COMPLETE_NORMALLY on call
