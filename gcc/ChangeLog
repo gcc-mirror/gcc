@@ -1,3 +1,8 @@
+2001-05-20  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
+	* config/m68hc11/m68hc11.c (m68hc11_override_options): Ignore
+	the -fpic and -fPIC options, clear flag_pic.
+
 2001-05-20  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* hashtable.c (calc_hash): Fix HASHSTEP definition.
