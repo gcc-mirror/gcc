@@ -1,3 +1,34 @@
+Sat Aug 19 11:00:53 2000  Anthony Green  <green@redhat.com>
+
+	* java/util/jar/Attributes.java, java/util/jar/JarEntry.java,
+	java/util/jar/JarException.java, java/util/jar/JarFile.java,
+	java/util/jar/JarInputStream.java,
+	java/util/jar/JarOutputStream.java, java/util/jar/Manifest.java,
+	java/util/Set.java, java/util/Map.java, java/util/Bucket.java,
+	java/util/AbstractSet.java, java/util/BasicMapEntry.java,
+	java/security/cert/CRL.java, java/security/cert/CRLException.java,
+	java/security/cert/Certificate.java,
+	java/security/cert/CertificateEncodingException.java,
+	java/security/cert/CertificateException.java,
+	java/security/cert/CertificateExpiredException.java,
+	java/security/cert/CertificateFactory.java,
+	java/security/cert/CertificateFactorySpi.java,
+	java/security/cert/CertificateNotYetValidException.java,
+	java/security/cert/CertificateParsingException.java,
+	java/security/cert/X509CRL.java,
+	java/security/cert/X509CRLEntry.java,
+	java/security/cert/X509Certificate.java,
+	java/security/cert/X509Extension.java: Imported from Classpath.
+	* java/util/Hashtable.java: Imported from Classpath.
+
+	* java/util/zip/ZipInputStream.java: Create stub for
+	createZipEntry.
+
+	* gcj/javaprims.h: Updated class list.
+
+	* Makefile.in, gcj/Makefile.in: Rebuilt.
+	* Makefile.am (ordinary_java_source_files): Add these new classes.
+	
 2000-08-16  Rolf W. Rasmussen  <rolfwr@ii.uib.no>
 
 	* gnu/gcj/awt/ComponentDataBlitOp.java: New file.
