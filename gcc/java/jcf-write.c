@@ -1093,6 +1093,8 @@ generate_bytecode_conditional (tree exp,
   tree exp0, exp1, type;
   int save_SP = state->code_SP;
   enum java_opcode op, negop;
+  bool unordered = 0;
+  
   switch (TREE_CODE (exp))
     {
     case INTEGER_CST:
@@ -1164,25 +1166,52 @@ generate_bytecode_conditional (tree exp,
 	  emit_goto (false_label, state);
 	}
       break;
+
+    case UNEQ_EXPR:
+      unordered = 1;
     case EQ_EXPR:
       op = OPCODE_if_icmpeq;
       goto compare;
+
+    case LTGT_EXPR:
+      unordered = 1;
     case NE_EXPR:
       op = OPCODE_if_icmpne;
       goto compare;
+
+    case UNLT_EXPR:
+      unordered = 1;
     case GT_EXPR:
       op = OPCODE_if_icmpgt;
       goto compare;
+
+    case UNGT_EXPR:
+      unordered = 1;
     case LT_EXPR:
       op = OPCODE_if_icmplt;
       goto compare;
+
+    case UNLE_EXPR:
+      unordered = 1;
     case GE_EXPR:
       op = OPCODE_if_icmpge;
       goto compare;
+
+    case UNGE_EXPR:
+      unordered = 1;
     case LE_EXPR:
       op = OPCODE_if_icmple;
       goto compare;
+
     compare:
+      if (unordered)
+        {
+	  struct jcf_block *tmp = true_label;
+	  true_label = false_label;
+	  false_label = tmp;
+          true_branch_first = !true_branch_first;
+	}
+	
       exp0 = TREE_OPERAND (exp, 0);
       exp1 = TREE_OPERAND (exp, 1);
       type = TREE_TYPE (exp0);
@@ -1549,6 +1578,12 @@ generate_bytecode_insns (tree exp, int target, struct jcf_partial *state)
     case LT_EXPR:
     case GE_EXPR:
     case LE_EXPR:
+    case UNLT_EXPR:
+    case UNLE_EXPR:
+    case UNGT_EXPR:
+    case UNGE_EXPR:
+    case UNEQ_EXPR:
+    case LTGT_EXPR:
       {
 	struct jcf_block *then_label = gen_jcf_label (state);
 	struct jcf_block *else_label = gen_jcf_label (state);
