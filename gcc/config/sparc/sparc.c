@@ -20,6 +20,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include <stdio.h>
 #include "config.h"
+#include "tree.h"
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -1425,6 +1426,7 @@ output_block_move (operands)
   rtx sizertx = operands[2];
   rtx alignrtx = operands[3];
   int align = INTVAL (alignrtx);
+  char label3[30], label5[30];
 
   xoperands[0] = operands[0];
   xoperands[1] = operands[1];
@@ -1523,6 +1525,9 @@ output_block_move (operands)
   xoperands[4] = gen_rtx (CONST_INT, VOIDmode, align);
   xoperands[5] = gen_rtx (CONST_INT, VOIDmode, movstrsi_label++);
 
+  ASM_GENERATE_INTERNAL_LABEL (label3, "Lm", INTVAL (xoperands[3]));
+  ASM_GENERATE_INTERNAL_LABEL (label5, "Lm", INTVAL (xoperands[5]));
+
   /* This is the size of the transfer.  Emit code to decrement the size
      value by ALIGN, and store the result in the temp1 register.  */
   output_size_for_block_move (sizertx, temp1, alignrtx);
@@ -1538,11 +1543,12 @@ output_block_move (operands)
      be a harmless insn between the branch here and the next label emitted
      below.  */
 
-#ifdef NO_UNDERSCORES
-  output_asm_insn ("cmp %2,0\n\tbl .Lm%5", xoperands);
-#else
-  output_asm_insn ("cmp %2,0\n\tbl Lm%5", xoperands);
-#endif
+  {
+    char pattern[100];
+
+    sprintf (pattern, "cmp %%2,0\n\tbl %s", &label5[1]);
+    output_asm_insn (pattern, xoperands);
+  }
 
   zoperands[0] = operands[0];
   zoperands[3] = plus_constant_for_output (operands[0], align);
@@ -1558,29 +1564,18 @@ output_block_move (operands)
 
   /* Output the first label separately, so that it is spaced properly.  */
 
-#ifdef NO_UNDERSCORES
-  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, ".Lm", INTVAL (xoperands[3]));
-#else
   ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "Lm", INTVAL (xoperands[3]));
-#endif
 
-#ifdef NO_UNDERSCORES
-  if (align == 1)
-    output_asm_insn ("ldub [%1+%2],%%g1\n\tsubcc %2,%4,%2\n\tbge .Lm%3\n\tstb %%g1,[%0+%2]\n.Lm%5:", xoperands);
-  else if (align == 2)
-    output_asm_insn ("lduh [%1+%2],%%g1\n\tsubcc %2,%4,%2\n\tbge .Lm%3\n\tsth %%g1,[%0+%2]\n.Lm%5:", xoperands);
-  else
-    output_asm_insn ("ld [%1+%2],%%g1\n\tsubcc %2,%4,%2\n\tbge .Lm%3\n\tst %%g1,[%0+%2]\n.Lm%5:", xoperands);
+  {
+    char pattern[200];
+    register char *ld_suffix = (align == 1) ? "ub" : (align == 2) ? "uh" : "";
+    register char *st_suffix = (align == 1) ? "b" : (align == 2) ? "h" : "";
+
+    sprintf (pattern, "ld%s [%%1+%%2],%%%%g1\n\tsubcc %%2,%%4,%%2\n\tbge %s\n\tst%s %%%%g1,[%%0+%%2]\n%s:", ld_suffix, &label3[1], st_suffix, &label5[1]);
+    output_asm_insn (pattern, xoperands);
+  }
+
   return "";
-#else
-  if (align == 1)
-    output_asm_insn ("ldub [%1+%2],%%g1\n\tsubcc %2,%4,%2\n\tbge Lm%3\n\tstb %%g1,[%0+%2]\nLm%5:", xoperands);
-  else if (align == 2)
-    output_asm_insn ("lduh [%1+%2],%%g1\n\tsubcc %2,%4,%2\n\tbge Lm%3\n\tsth %%g1,[%0+%2]\nLm%5:", xoperands);
-  else
-    output_asm_insn ("ld [%1+%2],%%g1\n\tsubcc %2,%4,%2\n\tbge Lm%3\n\tst %%g1,[%0+%2]\nLm%5:", xoperands);
-  return "";
-#endif
 }
 
 /* Output reasonable peephole for set-on-condition-code insns.
@@ -2571,4 +2566,79 @@ output_double_int (file, value)
   else
     abort ();
 }
+
+/* Compute the code to put in the .proc statement
+   for a function that returns type TYPE.  */
 
+unsigned long
+sparc_type_code (type)
+     register tree type;
+{
+  register unsigned long qualifiers = 0;
+  register unsigned shift = 6;
+
+  for (;;)
+    {
+      switch (TREE_CODE (type))
+	{
+	case ERROR_MARK:
+	  return qualifiers;
+  
+	case ARRAY_TYPE:
+	  qualifiers |= (3 << shift);
+	  shift += 2;
+	  type = TREE_TYPE (type);
+	  break;
+
+	case FUNCTION_TYPE:
+	case METHOD_TYPE:
+	  qualifiers |= (2 << shift);
+	  shift += 2;
+	  type = TREE_TYPE (type);
+	  break;
+
+	case POINTER_TYPE:
+	case REFERENCE_TYPE:
+	case OFFSET_TYPE:
+	  qualifiers |= (1 << shift);
+	  shift += 2;
+	  type = TREE_TYPE (type);
+	  break;
+
+	case RECORD_TYPE:
+	  return (qualifiers | 8);
+
+	case UNION_TYPE:
+	  return (qualifiers | 9);
+
+	case ENUMERAL_TYPE:
+	  return (qualifiers | 10);
+
+	case VOID_TYPE:
+	  return (qualifiers | 16);
+
+	case INTEGER_TYPE:
+        /* This return value is not always completely the same as Sun's
+           but the Sun assembler's peephole optimizer probably doesn't
+           care.  */
+        return (qualifiers | 4);
+  
+	case REAL_TYPE:
+	  if (TYPE_PRECISION (type) == 32)
+	    return (qualifiers | 6);
+	  else
+	    return (qualifiers | 7);	/* Who knows? */
+  
+	case COMPLEX_TYPE:	/* GNU Fortran COMPLEX type.  */
+	case CHAR_TYPE:		/* GNU Pascal CHAR type.  Not used in C.  */
+	case BOOLEAN_TYPE:	/* GNU Fortran BOOLEAN type.  */
+	case FILE_TYPE:		/* GNU Pascal FILE type.  */
+	case STRING_TYPE:	/* GNU Fortran STRING type. */
+	case LANG_TYPE:		/* ? */
+	  abort ();
+  
+	default:
+	  abort ();		/* Not a type! */
+        }
+    }
+}
