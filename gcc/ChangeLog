@@ -1,3 +1,8 @@
+2004-06-24  Andrew Pinski  <apinski@apple.com>
+
+	* objc-act.c (build_objc_method_call): Save the lookup_object
+	so we do not call it twice.
+
 2004-06-24  Richard Henderson  <rth@redhat.com>
 
 	* tree-ssa-dom.c (real_avail_expr_hash): New.
