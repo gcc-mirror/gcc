@@ -227,21 +227,6 @@ Boston, MA 02111-1307, USA.  */
     }									\
   while (0)
 
-/* This is how to output an element of a case-vector that is relative.
-   This is only used for PIC code.  See comments by the `casesi' insn in
-   i386.md for an explanation of the expression this outputs.
-   PE format differs on what PC-relative offsets look like (see
-   coff_i386_rtype_to_howto), and we need to compensate (by one word) here. */
-
-#undef ASM_OUTPUT_ADDR_DIFF_ELT
-#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL) \
-  fprintf (FILE, "\t.long __GLOBAL_OFFSET_TABLE_+[.-%s%d+4]\n", LPREFIX, VALUE)
-
-/* Indicate that jump tables go in the text section.  This is
-   necessary when compiling PIC code.  */
-
-#define JUMP_TABLES_IN_TEXT_SECTION 1
-
 /* Emit code to check the stack when allocating more that 4000
    bytes in one go. */
 

@@ -76,22 +76,6 @@ Boston, MA 02111-1307, USA.  */
 /* FreeBSD using a.out does not support DWARF2 unwinding mechanisms.  */
 #define DWARF2_UNWIND_INFO 0
 
-/* The following macros are stolen from i386v4.h */
-/* These have to be defined to get PIC code correct */
-
-/* This is how to output an element of a case-vector that is relative.
-   This is only used for PIC code.  See comments by the `casesi' insn in
-   i386.md for an explanation of the expression this outputs. */
-
-#undef ASM_OUTPUT_ADDR_DIFF_ELT
-#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL) \
-  fprintf (FILE, "\t.long _GLOBAL_OFFSET_TABLE_+[.-%s%d]\n", LPREFIX, VALUE)
-
-/* Indicate that jump tables go in the text section.  This is
-   necessary when compiling PIC code.  */
-
-#define JUMP_TABLES_IN_TEXT_SECTION 1
-
 /* Don't default to pcc-struct-return, because in FreeBSD we prefer the
    superior nature of the older gcc way.  */
 #define DEFAULT_PCC_STRUCT_RETURN 0

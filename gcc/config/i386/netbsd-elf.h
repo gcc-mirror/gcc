@@ -168,16 +168,6 @@ Boston, MA 02111-1307, USA.  */
   }
 #endif
 
-/* This is how to output an element of a case-vector that is relative.
-   This is only used for PIC code.  */
-#undef ASM_OUTPUT_ADDR_DIFF_ELT
-#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL) \
-  fprintf ((FILE), "\t.long _GLOBAL_OFFSET_TABLE_+[.-%s%d]\n", LPREFIX, VALUE)
-
-/* Indicate that jump tables go in the text section.  This is
-   necessary when compiling PIC code.  */
-#define JUMP_TABLES_IN_TEXT_SECTION (flag_pic)
-
 /*
  * We always use gas here, so we don't worry about ECOFF assembler problems.
  */

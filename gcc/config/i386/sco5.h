@@ -237,15 +237,6 @@ do {									\
     sprintf (LABEL, ".%s%d", (PREFIX), (NUM));				\
 } while (0)
 
-#undef ASM_OUTPUT_ADDR_DIFF_ELT
-#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL) \
-do {									\
-  if (TARGET_ELF)							\
-    fprintf (FILE, "%s_GLOBAL_OFFSET_TABLE_+[.-%s%d]\n", ASM_LONG, LPREFIX, VALUE); \
-  else									\
-    fprintf (FILE, "%s%s%d-%s%d\n", ASM_LONG, LPREFIX,VALUE,LPREFIX,REL); \
-} while (0)
-
 #undef ASM_OUTPUT_ALIGNED_COMMON
 #define ASM_OUTPUT_ALIGNED_COMMON(FILE, NAME, SIZE, ALIGN)		\
 do {									\
@@ -532,9 +523,6 @@ init_section ()								\
 #define SUBTARGET_FRAME_POINTER_REQUIRED				\
   ((TARGET_ELF) ? 0 : 							\
    (current_function_calls_setjmp || current_function_calls_longjmp))
-
-#undef JUMP_TABLES_IN_TEXT_SECTION
-#define JUMP_TABLES_IN_TEXT_SECTION (TARGET_ELF && flag_pic)
 
 #undef LOCAL_LABEL_PREFIX
 #define LOCAL_LABEL_PREFIX						\
