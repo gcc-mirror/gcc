@@ -1,3 +1,14 @@
+Thu May  9 07:46:18 2002  Jan Hubicka <jh@suse.cz>
+			  Jeffrey A Law  (law@redhat.com)
+
+	* i386.c (ia32_use_dfa_pipeline_interface): New function.  Use
+	the DFA interface for Pentium processors.
+	(TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE): DEFINE.
+	(attr_pent_pair, ix86_pent_find_pair): Remove.
+	(ix86_sched_reorder_pentium): Remove.
+	(ix86_sched_reorder): Remove reordering for Pentium.
+	* i386.md (Pentium scheduling): Rewrite using DFA description.
+
 Thu May  9 14:55:39 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* cfganal.c (can_fallthru): Fix fast path.

@@ -44,6 +44,19 @@ Boston, MA 02111-1307, USA.  */
 #include "target-def.h"
 #include "langhooks.h"
 
+static int ia32_use_dfa_pipeline_interface PARAMS ((void));
+
+#undef TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE 
+#define TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE ia32_use_dfa_pipeline_interface
+
+static int
+ia32_use_dfa_pipeline_interface ()
+{
+  if (ix86_cpu == PROCESSOR_PENTIUM)
+    return 1;
+  return 0;
+}
+
 #ifndef CHECK_STACK_LIMIT
 #define CHECK_STACK_LIMIT (-1)
 #endif
@@ -659,12 +672,9 @@ static int ix86_flags_dependant PARAMS ((rtx, rtx, enum attr_type));
 static int ix86_agi_dependant PARAMS ((rtx, rtx, enum attr_type));
 static int ix86_safe_length PARAMS ((rtx));
 static enum attr_memory ix86_safe_memory PARAMS ((rtx));
-static enum attr_pent_pair ix86_safe_pent_pair PARAMS ((rtx));
 static enum attr_ppro_uops ix86_safe_ppro_uops PARAMS ((rtx));
 static void ix86_dump_ppro_packet PARAMS ((FILE *));
 static void ix86_reorder_insn PARAMS ((rtx *, rtx *));
-static rtx * ix86_pent_find_pair PARAMS ((rtx *, rtx *, enum attr_pent_pair,
-					 rtx));
 static void ix86_init_machine_status PARAMS ((struct function *));
 static void ix86_mark_machine_status PARAMS ((struct function *));
 static void ix86_free_machine_status PARAMS ((struct function *));
@@ -675,7 +685,6 @@ static void ix86_emit_save_regs PARAMS ((void));
 static void ix86_emit_save_regs_using_mov PARAMS ((rtx, HOST_WIDE_INT));
 static void ix86_emit_restore_regs_using_mov PARAMS ((rtx, int, int));
 static void ix86_set_move_mem_attrs_1 PARAMS ((rtx, rtx, rtx, rtx, rtx));
-static void ix86_sched_reorder_pentium PARAMS ((rtx *, rtx *));
 static void ix86_sched_reorder_ppro PARAMS ((rtx *, rtx *));
 static HOST_WIDE_INT ix86_GOT_alias_set PARAMS ((void));
 static void ix86_adjust_counter PARAMS ((rtx, HOST_WIDE_INT));
@@ -10311,16 +10320,6 @@ ix86_safe_memory (insn)
     return MEMORY_UNKNOWN;
 }
 
-static enum attr_pent_pair
-ix86_safe_pent_pair (insn)
-     rtx insn;
-{
-  if (recog_memoized (insn) >= 0)
-    return get_attr_pent_pair (insn);
-  else
-    return PENT_PAIR_NP;
-}
-
 static enum attr_ppro_uops
 ix86_safe_ppro_uops (insn)
      rtx insn;
@@ -10372,129 +10371,6 @@ ix86_reorder_insn (insnp, slot)
       while (++insnp != slot);
       *insnp = insn;
     }
-}
-
-/* Find an instruction with given pairability and minimal amount of cycles
-   lost by the fact that the CPU waits for both pipelines to finish before
-   reading next instructions.  Also take care that both instructions together
-   can not exceed 7 bytes.  */
-
-static rtx *
-ix86_pent_find_pair (e_ready, ready, type, first)
-     rtx *e_ready;
-     rtx *ready;
-     enum attr_pent_pair type;
-     rtx first;
-{
-  int mincycles, cycles;
-  enum attr_pent_pair tmp;
-  enum attr_memory memory;
-  rtx *insnp, *bestinsnp = NULL;
-
-  if (ix86_safe_length (first) > 7 + ix86_safe_length_prefix (first))
-    return NULL;
-
-  memory = ix86_safe_memory (first);
-  cycles = result_ready_cost (first);
-  mincycles = INT_MAX;
-
-  for (insnp = e_ready; insnp >= ready && mincycles; --insnp)
-    if ((tmp = ix86_safe_pent_pair (*insnp)) == type
-	&& ix86_safe_length (*insnp) <= 7 + ix86_safe_length_prefix (*insnp))
-      {
-	enum attr_memory second_memory;
-	int secondcycles, currentcycles;
-
-	second_memory = ix86_safe_memory (*insnp);
-	secondcycles = result_ready_cost (*insnp);
-	currentcycles = abs (cycles - secondcycles);
-
-	if (secondcycles >= 1 && cycles >= 1)
-	  {
-	    /* Two read/modify/write instructions together takes two
-	       cycles longer.  */
-	    if (memory == MEMORY_BOTH && second_memory == MEMORY_BOTH)
-	      currentcycles += 2;
-
-	    /* Read modify/write instruction followed by read/modify
-	       takes one cycle longer.  */
-	    if (memory == MEMORY_BOTH && second_memory == MEMORY_LOAD
-	        && tmp != PENT_PAIR_UV
-	        && ix86_safe_pent_pair (first) != PENT_PAIR_UV)
-	      currentcycles += 1;
-	  }
-	if (currentcycles < mincycles)
-	  bestinsnp = insnp, mincycles = currentcycles;
-      }
-
-  return bestinsnp;
-}
-
-/* Subroutines of ix86_sched_reorder.  */
-
-static void
-ix86_sched_reorder_pentium (ready, e_ready)
-     rtx *ready;
-     rtx *e_ready;
-{
-  enum attr_pent_pair pair1, pair2;
-  rtx *insnp;
-
-  /* This wouldn't be necessary if Haifa knew that static insn ordering
-     is important to which pipe an insn is issued to.  So we have to make
-     some minor rearrangements.  */
-
-  pair1 = ix86_safe_pent_pair (*e_ready);
-
-  /* If the first insn is non-pairable, let it be.  */
-  if (pair1 == PENT_PAIR_NP)
-    return;
-
-  pair2 = PENT_PAIR_NP;
-  insnp = 0;
-
-  /* If the first insn is UV or PV pairable, search for a PU
-     insn to go with.  */
-  if (pair1 == PENT_PAIR_UV || pair1 == PENT_PAIR_PV)
-    {
-      insnp = ix86_pent_find_pair (e_ready-1, ready,
-				   PENT_PAIR_PU, *e_ready);
-      if (insnp)
-	pair2 = PENT_PAIR_PU;
-    }
-
-  /* If the first insn is PU or UV pairable, search for a PV
-     insn to go with.  */
-  if (pair2 == PENT_PAIR_NP
-      && (pair1 == PENT_PAIR_PU || pair1 == PENT_PAIR_UV))
-    {
-      insnp = ix86_pent_find_pair (e_ready-1, ready,
-				   PENT_PAIR_PV, *e_ready);
-      if (insnp)
-	pair2 = PENT_PAIR_PV;
-    }
-
-  /* If the first insn is pairable, search for a UV
-     insn to go with.  */
-  if (pair2 == PENT_PAIR_NP)
-    {
-      insnp = ix86_pent_find_pair (e_ready-1, ready,
-				   PENT_PAIR_UV, *e_ready);
-      if (insnp)
-	pair2 = PENT_PAIR_UV;
-    }
-
-  if (pair2 == PENT_PAIR_NP)
-    return;
-
-  /* Found something!  Decide if we need to swap the order.  */
-  if (pair1 == PENT_PAIR_PV || pair2 == PENT_PAIR_PU
-      || (pair1 == PENT_PAIR_UV && pair2 == PENT_PAIR_UV
-	  && ix86_safe_memory (*e_ready) == MEMORY_BOTH
-	  && ix86_safe_memory (*insnp) == MEMORY_LOAD))
-    ix86_reorder_insn (insnp, e_ready);
-  else
-    ix86_reorder_insn (insnp, e_ready - 1);
 }
 
 static void
@@ -10601,10 +10477,6 @@ ix86_sched_reorder (dump, sched_verbose, ready, n_readyp, clock_var)
   switch (ix86_cpu)
     {
     default:
-      break;
-
-    case PROCESSOR_PENTIUM:
-      ix86_sched_reorder_pentium (ready, e_ready);
       break;
 
     case PROCESSOR_PENTIUMPRO:
