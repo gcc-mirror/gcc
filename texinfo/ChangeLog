@@ -1,3 +1,7 @@
+Tue Jan 13 21:34:23 1998  H.J. Lu  (hjl@gnu.org)
+
+	* libtxi/Makefile.in (AR_FLAGS): Defined as "rc".
+
 Tue Dec  2 20:24:40 1997  Bruno Haible  <haible@ilog.fr>
 
 	* makeinfo/makeinfo.c (find_and_load, convert_from_stream):
