@@ -251,7 +251,7 @@
 
 ;; Can the instruction be put into a delay slot?
 (define_attr "can_delay" "no,yes"
-  (if_then_else (and (eq_attr "type" "!branch,call,jump")
+  (if_then_else (and (eq_attr "type" "!branch,call,jump,multi")
 		     (and (eq_attr "hazard" "none")
 			  (eq_attr "single_insn" "yes")))
 		(const_string "yes")
@@ -266,7 +266,8 @@
 
 ;; Describe a user's asm statement.
 (define_asm_attributes
-  [(set_attr "type" "multi")])
+  [(set_attr "type" "multi")
+   (set_attr "can_delay" "no")])
 
 ;; .........................
 ;;

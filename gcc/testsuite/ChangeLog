@@ -1,3 +1,7 @@
+2004-09-20  Richard Sandiford  <rsandifo@redhat.com>
+
+	* gcc.dg/mips-asm-1.c: New test.
+
 2004-09-16  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/17501
