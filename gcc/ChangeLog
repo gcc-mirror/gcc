@@ -1,3 +1,8 @@
+Mon Dec 28 19:26:32 1998  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* gcc.texi (Non-bugs): ``Empty'' loops will be optimized away in
+	the future; indeed that already happens in some cases.
+
 Tue Dec 29 11:58:53 1998  Richard Henderson  <rth@cygnus.com>
 
 	* sparc.c (input_operand): Recognize (const (constant_p_rtx)).
