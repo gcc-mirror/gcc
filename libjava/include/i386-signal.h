@@ -24,7 +24,7 @@ details.  */
 #define SIGNAL_HANDLER(_name)	\
 static void _name (int _dummy)
 
-#define MAKE_THROW_FRAME						\
+#define MAKE_THROW_FRAME(_exception)					\
 do									\
 {									\
   void **_p = (void **)&_dummy;						\

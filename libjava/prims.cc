@@ -95,13 +95,26 @@ void (*_Jv_JVMPI_Notify_THREAD_END) (JVMPI_Event *event);
 #endif
 
 
+extern "C" void _Jv_ThrowSignal (void *) __attribute ((noreturn));
+
+// Just like _Jv_Throw, but fill in the stack trace first.  Although
+// this is declared extern in order that its name not be mangled, it
+// is not intended to be used outside this file.
+void 
+_Jv_ThrowSignal (void *e)
+{
+  java::lang::Throwable *throwable = (java::lang::Throwable *)e;
+  throwable->fillInStackTrace ();
+  _Jv_Throw (throwable);
+}
+ 
 #ifdef HANDLE_SEGV
 static java::lang::NullPointerException *nullp;
+
 SIGNAL_HANDLER (catch_segv)
 {
-  MAKE_THROW_FRAME;
-  nullp->fillInStackTrace ();
-  _Jv_Throw (nullp);
+  MAKE_THROW_FRAME (nullp);
+  _Jv_ThrowSignal (nullp);
 }
 #endif
 
@@ -113,10 +126,9 @@ SIGNAL_HANDLER (catch_fpe)
 #ifdef HANDLE_DIVIDE_OVERFLOW
   HANDLE_DIVIDE_OVERFLOW;
 #else
-  MAKE_THROW_FRAME;
+  MAKE_THROW_FRAME (arithexception);
 #endif
-  arithexception->fillInStackTrace ();
-  _Jv_Throw (arithexception);
+  _Jv_ThrowSignal (arithexception);
 }
 #endif
 
@@ -125,8 +137,8 @@ SIGNAL_HANDLER (catch_fpe)
 jboolean
 _Jv_equalUtf8Consts (Utf8Const* a, Utf8Const *b)
 {
-  register int len;
-  register _Jv_ushort *aptr, *bptr;
+  int len;
+  _Jv_ushort *aptr, *bptr;
   if (a == b)
     return true;
   if (a->hash != b->hash)
@@ -155,8 +167,8 @@ _Jv_equal (Utf8Const* a, jstring str, jint hash)
   jint len = str->length();
   jint i = 0;
   jchar *sptr = _Jv_GetStringChars (str);
-  register unsigned char* ptr = (unsigned char*) a->data;
-  register unsigned char* limit = ptr + a->length;
+  unsigned char* ptr = (unsigned char*) a->data;
+  unsigned char* limit = ptr + a->length;
   for (;; i++, sptr++)
     {
       int ch = UTF8_GET (ptr, limit);
@@ -175,8 +187,8 @@ _Jv_equaln (Utf8Const *a, jstring str, jint n)
   jint len = str->length();
   jint i = 0;
   jchar *sptr = _Jv_GetStringChars (str);
-  register unsigned char* ptr = (unsigned char*) a->data;
-  register unsigned char* limit = ptr + a->length;
+  unsigned char* ptr = (unsigned char*) a->data;
+  unsigned char* limit = ptr + a->length;
   for (; n-- > 0; i++, sptr++)
     {
       int ch = UTF8_GET (ptr, limit);
@@ -192,8 +204,8 @@ _Jv_equaln (Utf8Const *a, jstring str, jint n)
 int
 _Jv_strLengthUtf8(char* str, int len)
 {
-  register unsigned char* ptr;
-  register unsigned char* limit;
+  unsigned char* ptr;
+  unsigned char* limit;
   int str_length;
 
   ptr = (unsigned char*) str;
@@ -213,8 +225,8 @@ _Jv_strLengthUtf8(char* str, int len)
 static jint
 hashUtf8String (char* str, int len)
 {
-  register unsigned char* ptr = (unsigned char*) str;
-  register unsigned char* limit = ptr + len;
+  unsigned char* ptr = (unsigned char*) str;
+  unsigned char* limit = ptr + len;
   jint hash = 0;
 
   for (; ptr < limit;)
@@ -976,7 +988,7 @@ jint
 _Jv_divI (jint dividend, jint divisor)
 {
   if (__builtin_expect (divisor == 0, false))
-    _Jv_Throw (arithexception);
+    _Jv_ThrowSignal (arithexception);
   
   if (dividend == (jint) 0x80000000L && divisor == -1)
     return dividend;
@@ -988,7 +1000,7 @@ jint
 _Jv_remI (jint dividend, jint divisor)
 {
   if (__builtin_expect (divisor == 0, false))
-    _Jv_Throw (arithexception);
+    _Jv_ThrowSignal (arithexception);
   
   if (dividend == (jint) 0x80000000L && divisor == -1)
     return 0;
@@ -1000,7 +1012,7 @@ jlong
 _Jv_divJ (jlong dividend, jlong divisor)
 {
   if (__builtin_expect (divisor == 0, false))
-    _Jv_Throw (arithexception);
+    _Jv_ThrowSignal (arithexception);
   
   if (dividend == (jlong) 0x8000000000000000LL && divisor == -1)
     return dividend;
@@ -1012,7 +1024,7 @@ jlong
 _Jv_remJ (jlong dividend, jlong divisor)
 {
   if (__builtin_expect (divisor == 0, false))
-    _Jv_Throw (arithexception);
+    _Jv_ThrowSignal (arithexception);
   
   if (dividend == (jlong) 0x8000000000000000LL && divisor == -1)
     return 0;

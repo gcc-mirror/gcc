@@ -110,6 +110,11 @@ public abstract class SecurityManager
       throw new SecurityException();
     }
 
+  public void checkPermission (java.security.Permission perm)
+    {
+      throw new SecurityException();
+    }
+
   public void checkPrintJobAccess ()
     {
       throw new SecurityException();

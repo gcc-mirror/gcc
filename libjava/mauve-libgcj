@@ -4,13 +4,13 @@ JDK1.1
 !java.applet
 !java.awt
 !java.beans
-# We don't support object serialization yet.
-!java.io.ObjectStreamClass
-!java.io.ObjectInputOutput
 java.lang.Character.classify12
 java.lang.String.hash
-# We support 1.2 for this test.
+# We support 1.2 for these 3 tests.
 java.lang.reflect.Modifier.toString12
+!java.io.ObjectInputOutput.InputTest
+!java.io.ObjectInputOutput.OutputTest
+!java.io.ObjectStreamClass.Test
 java.math
 !java.rmi
 java.security
