@@ -107,7 +107,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    When the -G link option is used (-shared and -symbolic) a final link is
    not being done.  */
 #undef	LIB_SPEC
-#define LIB_SPEC "%{!shared:%{!symbolic:-lc}} crtend.o%s"
+#define LIB_SPEC "%{msvr4:%{!shared:-lstaticdgc}} %{!shared:%{!symbolic:-lc}} crtend.o%s"
 #undef	LINK_SPEC
 #define LINK_SPEC "%{z*} %{h*} %{V} %{v:%{!V:-V}} \
 		   %{static:-dn -Bstatic} \
@@ -121,9 +121,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 			 %{svr4:%{ansi:/lib/values-Xc.o} \
 			  %{!ansi:%{traditional:/lib/values-Xt.o} \
 			   %{!traditional:/usr/lib/values-Xa.o}}}}}"
-
-#undef	GPLUSPLUS_INCLUDE_DIR
-#define GPLUSPLUS_INCLUDE_DIR "/usr/opt/g++/lib/g++-include"
 
 /* Fast DG/UX version of profiler that does not require lots of
    registers to be stored.  */
