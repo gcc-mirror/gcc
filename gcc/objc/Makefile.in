@@ -51,8 +51,8 @@ SUBDIR_INCLUDES = -I. -I.. -I$(srcdir) -I$(srcdir)/config
 all:
 	cd ..; $(MAKE) sublibobjc.a
 
-OBJC_O = hash.o sarray.o objc-class.o objc-msg.o objc-init.o objc-archive.o \
-         objc-sel.o objc-object.o objc-misc.o Object.o Protocol.o
+OBJC_O = hash.o sarray.o oc-class.o oc-msg.o oc-init.o oc-arch.o \
+         oc-sel.o oc-obj.o oc-misc.o Object.o Protocol.o
 
 libobjc.a: $(OBJC_O)
 	-rm -f libobjc.a
@@ -60,7 +60,7 @@ libobjc.a: $(OBJC_O)
 # ranlib is run in the parent directory's makefile.
 
 OBJC_H = hash.h list.h sarray.h objc.h \
-         objc-api.h objc-archive.h cache.h \
+         objc-api.h cache.h \
 	 Object.h Protocol.h mutex.h
 
 # copy objc headers to installation include directory
@@ -73,8 +73,8 @@ copy-headers: $(OBJC_H)
 	  chmod a+r $(incinstalldir)/objc; \
 	done
 
-objc-msg.o: objc-msg.c fflags
-	$(GCC_FOR_TARGET) `cat fflags` -c $(GCC_CFLAGS) $(SUBDIR_INCLUDES) $(srcdir)/objc/objc-msg.c
+oc-msg.o: oc-msg.c fflags
+	$(GCC_FOR_TARGET) `cat fflags` -c $(GCC_CFLAGS) $(SUBDIR_INCLUDES) $(srcdir)/objc/oc-msg.c
 
 ## Next to are for heuristics on forwarding mechanism... 
 _forward: _forward.c
