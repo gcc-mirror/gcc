@@ -2138,6 +2138,9 @@ build_java_class_ref (type)
      tree type;
 {
   tree name, class_decl;
+  static tree CL_prefix = NULL_TREE;
+  if (CL_prefix == NULL_TREE)
+    CL_prefix = get_identifier("_CL_");
   if (jclass_node == NULL_TREE)
     {
       jclass_node = IDENTIFIER_GLOBAL_VALUE (get_identifier("jclass"));
@@ -2145,7 +2148,7 @@ build_java_class_ref (type)
 	fatal("call to Java constructor, while `jclass' undefined");
       jclass_node = TREE_TYPE (jclass_node);
     }
-  name = mangle_java_reflection_var_for_type (type);
+  name = build_overload_with_type (CL_prefix, type);
   class_decl = IDENTIFIER_GLOBAL_VALUE (name);
   if (class_decl == NULL_TREE)
     {

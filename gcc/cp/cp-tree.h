@@ -555,7 +555,9 @@ enum cp_tree_index
     CPTI_STD,
     CPTI_ABI,
     CPTI_TYPE_INFO_TYPE,
+    CPTI_TINFO_DECL_ID,
     CPTI_TINFO_DECL_TYPE,
+    CPTI_TINFO_VAR_ID,
     CPTI_ABORT_FNDECL,
     CPTI_GLOBAL_DELETE_FNDECL,
 
@@ -647,7 +649,9 @@ extern tree cp_global_trees[CPTI_MAX];
 #define std_node			cp_global_trees[CPTI_STD]
 #define abi_node                        cp_global_trees[CPTI_ABI]
 #define type_info_type_node		cp_global_trees[CPTI_TYPE_INFO_TYPE]
+#define tinfo_decl_id			cp_global_trees[CPTI_TINFO_DECL_ID]
 #define tinfo_decl_type			cp_global_trees[CPTI_TINFO_DECL_TYPE]
+#define tinfo_var_id                    cp_global_trees[CPTI_TINFO_VAR_ID]
 #define abort_fndecl			cp_global_trees[CPTI_ABORT_FNDECL]
 #define global_delete_fndecl		cp_global_trees[CPTI_GLOBAL_DELETE_FNDECL]
 
@@ -1173,9 +1177,18 @@ extern int flag_ansi;
 
 extern int flag_default_inline;
 
+/* The name-mangling scheme to use.  Versions of gcc before 2.8 use
+   version 0.  */
+extern int name_mangling_version;
+
 /* Nonzero if wchar_t should be `unsigned short' instead of whatever it
    would normally be, for use with WINE.  */
 extern int flag_short_wchar;
+
+/* Nonzero if squashed mangling is to be performed. 
+   This uses the B and K codes to reference previously seen class types 
+   and class qualifiers.       */
+extern int flag_do_squangling;
 
 /* Nonzero means generate separate instantiation control files and juggle
    them at link time.  */
@@ -3912,6 +3925,7 @@ extern void maybe_note_name_used_in_class       PARAMS ((tree, tree));
 extern void note_name_declared_in_class         PARAMS ((tree, tree));
 extern tree get_vtbl_decl_for_binfo             PARAMS ((tree));
 extern tree in_charge_arg_for_name              PARAMS ((tree));
+extern tree get_vtt_name                        PARAMS ((tree));
 
 /* in cvt.c */
 extern tree convert_to_reference		PARAMS ((tree, tree, int, int, tree));
@@ -4278,14 +4292,23 @@ extern void yyhook				PARAMS ((int));
 extern int cp_type_qual_from_rid                PARAMS ((tree));
 
 /* in method.c */
+extern void init_method				PARAMS ((void));
+extern char *build_overload_name		PARAMS ((tree, int, int));
+extern tree build_static_name			PARAMS ((tree, tree));
+extern tree build_decl_overload_real            PARAMS ((tree, tree, tree, tree,
+						       tree, int)); 
 extern void set_mangled_name_for_decl           PARAMS ((tree));
 extern tree build_typename_overload		PARAMS ((tree));
+extern tree build_overload_with_type		PARAMS ((tree, tree));
+extern tree build_destructor_name		PARAMS ((tree));
 extern tree build_opfncall			PARAMS ((enum tree_code, int, tree, tree, tree));
 extern tree hack_identifier			PARAMS ((tree, tree));
 extern tree make_thunk				PARAMS ((tree, int, int));
 extern void emit_thunk				PARAMS ((tree));
 extern void synthesize_method			PARAMS ((tree));
+extern tree get_id_2				PARAMS ((const char *, tree));
 extern tree implicitly_declare_fn               PARAMS ((special_function_kind, tree, int));
+extern tree get_ctor_vtbl_name                  PARAMS ((tree, tree));
 
 /* In optimize.c */
 extern void optimize_function                   PARAMS ((tree));
@@ -4724,8 +4747,6 @@ extern tree mangle_ctor_vtbl_for_type           PARAMS ((tree, tree));
 extern tree mangle_thunk                        PARAMS ((tree, int, int)); 
 extern tree mangle_conv_op_name_for_type        PARAMS ((tree));
 extern tree mangle_guard_variable               PARAMS ((tree));
-extern tree mangle_typeinfo_fn_for_type         PARAMS ((tree));
-extern tree mangle_java_reflection_var_for_type PARAMS ((tree));
 
 /* -- end of C++ */
 

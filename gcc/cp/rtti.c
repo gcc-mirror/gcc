@@ -83,22 +83,29 @@ void
 init_rtti_processing ()
 {
   if (flag_honor_std)
-    push_namespace (std_identifier);
+    push_namespace (get_identifier ("std"));
   type_info_type_node = xref_tag
     (class_type_node, get_identifier ("type_info"), 1);
   if (flag_honor_std)
     pop_namespace ();
   if (!new_abi_rtti_p ())
     {
+      tinfo_decl_id = get_identifier ("__tf");
       tinfo_decl_type = build_function_type
         (build_reference_type
           (build_qualified_type
             (type_info_type_node, TYPE_QUAL_CONST)),
          void_list_node);
+      tinfo_var_id = get_identifier ("__ti");
     }
   else
-    tinfo_decl_type = build_qualified_type
-      (type_info_type_node, TYPE_QUAL_CONST);
+    {
+      /* FIXME: These identifier prefixes are not set in stone yet.  */
+      tinfo_decl_id = get_identifier ("__ti");
+      tinfo_var_id = get_identifier ("__tn");
+      tinfo_decl_type = build_qualified_type
+                          (type_info_type_node, TYPE_QUAL_CONST);
+    }
 }
 
 /* Given a pointer to an object with at least one virtual table
@@ -326,12 +333,11 @@ static tree
 get_tinfo_var (type)
      tree type;
 {
-  tree tname;
+  tree tname = build_overload_with_type (tinfo_var_id, type);
   tree arrtype;
   int size;
 
   my_friendly_assert (!new_abi_rtti_p (), 20000118);
-  tname = mangle_typeinfo_for_type (type);
   if (IDENTIFIER_GLOBAL_VALUE (tname))
     return IDENTIFIER_GLOBAL_VALUE (tname);
     
@@ -367,7 +373,6 @@ get_tinfo_var (type)
 }
 
 /* Generate the NTBS name of a type.  */
-
 static tree
 tinfo_name (type)
      tree type;
@@ -375,7 +380,10 @@ tinfo_name (type)
   const char *name;
   tree name_string;
 
-  name = mangle_type_string (type);
+  if (flag_new_abi)
+    name = mangle_type_string (type);
+  else
+    name = build_overload_name (type, 1, 1);
   name_string = combine_strings (build_string (strlen (name) + 1, name));
   return name_string;
 }
@@ -401,10 +409,11 @@ get_tinfo_decl (type)
     type = build_function_type (TREE_TYPE (type),
 				TREE_CHAIN (TYPE_ARG_TYPES (type)));
 
-  if (new_abi_rtti_p ())
+  if (flag_new_abi)
     name = mangle_typeinfo_for_type (type);
   else
-    name = mangle_typeinfo_fn_for_type (type);
+    name = build_overload_with_type (tinfo_decl_id, type);
+
   d = IDENTIFIER_GLOBAL_VALUE (name);
   if (d)
     /* OK */;
@@ -1306,7 +1315,10 @@ tinfo_base_init (desc, target)
                      NULL_TREE);
     tree name_string = tinfo_name (target);
 
-    name_name = mangle_typeinfo_for_type (target);
+    if (flag_new_abi)
+      name_name = mangle_typeinfo_for_type (target);
+    else
+      name_name = build_overload_with_type (tinfo_var_id, target);
     name_decl = build_lang_decl (VAR_DECL, name_name, name_type);
     
     DECL_ARTIFICIAL (name_decl) = 1;
@@ -1315,8 +1327,13 @@ tinfo_base_init (desc, target)
     DECL_EXTERNAL (name_decl) = 0;
     TREE_PUBLIC (name_decl) = 1;
     comdat_linkage (name_decl);
-    DECL_ASSEMBLER_NAME (name_decl) 
-      = mangle_typeinfo_string_for_type (target);
+    if (flag_new_abi)
+      /* The new ABI specifies the external name of the string
+	 containing the type's name.  */
+      DECL_ASSEMBLER_NAME (name_decl) 
+	= mangle_typeinfo_string_for_type (target);
+    else
+      DECL_ASSEMBLER_NAME (name_decl) = DECL_NAME (name_decl);
     DECL_INITIAL (name_decl) = name_string;
     cp_finish_decl (name_decl, name_string, NULL_TREE, 0);
   }
@@ -1682,7 +1699,9 @@ create_real_tinfo_var (name, type, init, non_public)
   tree hidden_name;
   char hidden[30];
   
-  sprintf (hidden, "tinfo var %d", count++);
+  sprintf (hidden, "%.*s_%d",
+           IDENTIFIER_LENGTH (tinfo_decl_id), IDENTIFIER_POINTER (tinfo_decl_id),
+           count++);
   hidden_name = get_identifier (hidden);
   
   decl = build_lang_decl (VAR_DECL, hidden_name,
