@@ -1432,7 +1432,8 @@ ia64*-*-hpux*)
 	if test x$enable_threads = xyes; then
 		thread_file='posix'
 	fi
-	float_format=i386
+	use_collect2=no
+	float_format=i128
 	;;
 ip2k-*-elf)		
 	;;
