@@ -141,6 +141,10 @@ static void rs6000_elf_asm_out_destructor PARAMS ((rtx, int));
 #ifdef OBJECT_FORMAT_COFF
 static void xcoff_asm_named_section PARAMS ((const char *, unsigned int));
 #endif
+static int rs6000_adjust_cost PARAMS ((rtx, rtx, rtx, int));
+static int rs6000_adjust_priority PARAMS ((rtx, int));
+static int rs6000_issue_rate PARAMS ((void));
+
 
 /* Default register names.  */
 char rs6000_reg_names[][8] =
@@ -192,6 +196,13 @@ static char alt_reg_names[][8] =
 #undef TARGET_SECTION_TYPE_FLAGS
 #define TARGET_SECTION_TYPE_FLAGS  rs6000_elf_section_type_flags
 #endif
+
+#undef TARGET_SCHED_ISSUE_RATE
+#define TARGET_SCHED_ISSUE_RATE rs6000_issue_rate
+#undef TARGET_SCHED_ADJUST_COST
+#define TARGET_SCHED_ADJUST_COST rs6000_adjust_cost
+#undef TARGET_SCHED_ADJUST_PRIORITY
+#define TARGET_SCHED_ADJUST_PRIORITY rs6000_adjust_priority
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -7874,7 +7885,7 @@ output_function_profiler (file, labelno)
 /* Adjust the cost of a scheduling dependency.  Return the new cost of
    a dependency LINK or INSN on DEP_INSN.  COST is the current cost.  */
 
-int
+static int
 rs6000_adjust_cost (insn, link, dep_insn, cost)
      rtx insn;
      rtx link;
@@ -7910,7 +7921,7 @@ rs6000_adjust_cost (insn, link, dep_insn, cost)
    increase the priority to execute INSN later.  Do not define this macro if
    you do not need to adjust the scheduling priorities of insns.  */
 
-int
+static int
 rs6000_adjust_priority (insn, priority)
      rtx insn ATTRIBUTE_UNUSED;
      int priority;
@@ -7949,7 +7960,8 @@ rs6000_adjust_priority (insn, priority)
 }
 
 /* Return how many instructions the machine can issue per cycle */
-int get_issue_rate()
+static int
+rs6000_issue_rate ()
 {
   switch (rs6000_cpu_attr) {
   case CPU_RIOS1:  /* ? */

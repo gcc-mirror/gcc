@@ -2446,11 +2446,6 @@ typedef struct
    conditional instructions */
 #define BRANCH_COST \
   (TARGET_ARM ? 4 : (optimize > 1 ? 1 : 0))
-
-/* A C statement to update the variable COST based on the relationship
-   between INSN that is dependent on DEP through dependence LINK.  */
-#define ADJUST_COST(INSN, LINK, DEP, COST) \
-  (COST) = arm_adjust_cost (INSN, LINK, DEP, COST)
 
 /* Position Independent Code.  */
 /* We decide which register to use based on the compilation options and

@@ -44,9 +44,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
    to gradually reduce the amount of conditional compilation that is
    scattered throughout GCC.  */
 
-/* Forward declaration for the benefit of prototypes.  */
-struct rtx_def;
-
 struct gcc_target
 {
   /* Functions that output assembler for the target.  */
@@ -72,11 +69,51 @@ struct gcc_target
     void (* named_section) PARAMS ((const char *, unsigned int));
 
     /* Output a constructor for a symbol with a given priority.  */
-    void (* constructor) PARAMS ((struct rtx_def *, int));
+    void (* constructor) PARAMS ((rtx, int));
 
     /* Output a destructor for a symbol with a given priority.  */
-    void (* destructor) PARAMS ((struct rtx_def *, int));
+    void (* destructor) PARAMS ((rtx, int));
   } asm_out;
+
+  /* Functions relating to instruction scheduling.  */
+  struct sched
+  {
+    /* Given the current cost, COST, of an insn, INSN, calculate and
+       return a new cost based on its relationship to DEP_INSN through
+       the dependence LINK.  The default is to make no adjustment.  */
+    int (* adjust_cost) PARAMS ((rtx insn, rtx link, rtx def_insn, int cost));
+
+    /* Adjust the priority of an insn as you see fit.  Returns the new
+       priority.  */
+    int (* adjust_priority) PARAMS ((rtx, int));
+
+    /* Function which returns the maximum number of insns that can be
+       scheduled in the same machine cycle.  This must be constant
+       over an entire compilation.  The default is 1.  */
+    int (* issue_rate) PARAMS ((void));
+
+    /* Calculate how much this insn affects how many more insns we
+       can emit this cycle.  Default is they all cost the same.  */
+    int (* variable_issue) PARAMS ((FILE *, int, rtx, int));
+    
+    /* Initialize machine-dependent scheduling code.  */
+    void (* md_init) PARAMS ((FILE *, int, int));
+
+    /* Finalize machine-dependent scheduling code.  */
+    void (* md_finish) PARAMS ((FILE *, int));
+
+    /* Reorder insns in a machine-dependent fashion, in two different
+       places.  Default does nothing.  */
+    int (* reorder)  PARAMS ((FILE *, int, rtx *, int *, int));
+    int (* reorder2) PARAMS ((FILE *, int, rtx *, int *, int));
+
+    /* cycle_display is a pointer to a function which can emit
+       data into the assembly stream about the current cycle.
+       Arguments are CLOCK, the data to emit, and LAST, the last
+       insn in the new chain we're building.  Returns a new LAST.
+       The default is to do nothing.  */
+    rtx (* cycle_display) PARAMS ((int clock, rtx last));
+  } sched;
 
   /* Given two decls, merge their attributes and return the result.  */
   tree (* merge_decl_attributes) PARAMS ((tree, tree));
@@ -111,11 +148,8 @@ struct gcc_target
   void (* init_builtins) PARAMS ((void));
 
   /* Expand a target-specific builtin.  */
-  struct rtx_def * (* expand_builtin) PARAMS ((tree exp,
-					       struct rtx_def *target,
-					       struct rtx_def *subtarget,
-					       enum machine_mode mode,
-					       int ignore));
+  rtx (* expand_builtin) PARAMS ((tree exp, rtx target, rtx subtarget,
+				  enum machine_mode mode, int ignore));
 
   /* Given a decl, a section name, and whether the decl initializer
      has relocs, choose attributes for the section.  */

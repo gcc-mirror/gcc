@@ -168,6 +168,16 @@ static void sparc_nonflat_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT,
 static void sparc_nonflat_function_prologue PARAMS ((FILE *, HOST_WIDE_INT,
 						     int));
 static void sparc_elf_asm_named_section PARAMS ((const char *, unsigned int));
+
+static void ultrasparc_sched_reorder PARAMS ((FILE *, int, rtx *, int));
+static int ultrasparc_variable_issue PARAMS ((rtx));
+static void ultrasparc_sched_init PARAMS ((void));
+
+static int sparc_adjust_cost PARAMS ((rtx, rtx, rtx, int));
+static int sparc_issue_rate PARAMS ((void));
+static int sparc_variable_issue PARAMS ((FILE *, int, rtx, int));
+static void sparc_sched_init PARAMS ((FILE *, int, int));
+static int sparc_sched_reorder PARAMS ((FILE *, int, rtx *, int *, int));
 
 /* Option handling.  */
 
@@ -195,6 +205,17 @@ enum processor_type sparc_cpu;
 #define TARGET_ASM_FUNCTION_PROLOGUE sparc_output_function_prologue
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE sparc_output_function_epilogue
+
+#undef TARGET_SCHED_ADJUST_COST
+#define TARGET_SCHED_ADJUST_COST sparc_adjust_cost
+#undef TARGET_SCHED_ISSUE_RATE
+#define TARGET_SCHED_ISSUE_RATE sparc_issue_rate
+#undef TARGET_SCHED_VARIABLE_ISSUE
+#define TARGET_SCHED_VARIABLE_ISSUE sparc_variable_issue
+#undef TARGET_SCHED_INIT
+#define TARGET_SCHED_INIT sparc_sched_init
+#undef TARGET_SCHED_REORDER
+#define TARGET_SCHED_REORDER sparc_sched_reorder
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -7299,7 +7320,7 @@ ultrasparc_adjust_cost (insn, link, dep_insn, cost)
 #undef SLOW_FP
 }
 
-int
+static int
 sparc_adjust_cost(insn, link, dep, cost)
      rtx insn;
      rtx link;
@@ -7680,10 +7701,8 @@ ultra_flush_pipeline ()
 }
 
 /* Init our data structures for this current block.  */
-void
-ultrasparc_sched_init (dump, sched_verbose)
-     FILE *dump ATTRIBUTE_UNUSED;
-     int sched_verbose ATTRIBUTE_UNUSED;
+static void
+ultrasparc_sched_init ()
 {
   memset ((char *) ultra_pipe_hist, 0, sizeof ultra_pipe_hist);
   ultra_cur_hist = 0;
@@ -7691,10 +7710,20 @@ ultrasparc_sched_init (dump, sched_verbose)
   ultra_pipe.free_slot_mask = 0xf;
 }
 
+static void
+sparc_sched_init (dump, sched_verbose, max_ready)
+     FILE *dump ATTRIBUTE_UNUSED;
+     int sched_verbose ATTRIBUTE_UNUSED;
+     int max_ready ATTRIBUTE_UNUSED;
+{
+  if (sparc_cpu == PROCESSOR_ULTRASPARC)
+    ultrasparc_sched_init ();
+}
+  
 /* INSN has been scheduled, update pipeline commit state
    and return how many instructions are still to be
    scheduled in this group.  */
-int
+static int
 ultrasparc_variable_issue (insn)
      rtx insn;
 {
@@ -7716,6 +7745,19 @@ ultrasparc_variable_issue (insn)
     }
 
   return left_to_fire;
+}
+
+static int
+sparc_variable_issue (dump, sched_verbose, insn, cim)
+     FILE *dump ATTRIBUTE_UNUSED;
+     int sched_verbose ATTRIBUTE_UNUSED;
+     rtx insn;
+     int cim;
+{
+  if (sparc_cpu == PROCESSOR_ULTRASPARC)
+    return ultrasparc_variable_issue (INSN);
+  else
+    return cim - 1;
 }
 
 /* In actual_hazard_this_instance, we may have yanked some
@@ -7767,7 +7809,7 @@ ultra_rescan_pipeline_state (ready, n_ready)
     }
 }
 
-void
+static void
 ultrasparc_sched_reorder (dump, sched_verbose, ready, n_ready)
      FILE *dump;
      int sched_verbose;
@@ -8053,7 +8095,20 @@ ultrasparc_sched_reorder (dump, sched_verbose, ready, n_ready)
     }
 }
 
-int                                                           
+static int
+sparc_sched_reorder (dump, sched_verbose, ready, n_readyp, clock)
+     FILE *dump;
+     int sched_verbose;
+     rtx *ready;
+     int *n_readyp;
+     int clock;
+{
+  if (sparc_cpu == PROCESSOR_ULTRASPARC)
+    ultrasparc_sched_reorder (dump, sched_verbose, ready, *n_readyp);
+  return sparc_issue_rate ();
+}
+
+static int                                                           
 sparc_issue_rate ()
 {
   switch (sparc_cpu)

@@ -2638,29 +2638,6 @@ while (0)
    register.  */
 
 #define NO_RECURSIVE_FUNCTION_CSE
-
-/* A C statement (sans semicolon) to update the integer variable COST
-   based on the relationship between INSN that is dependent on
-   DEP_INSN through the dependence LINK.  The default is to make no
-   adjustment to COST.  This can be used for example to specify to
-   the scheduler that an output- or anti-dependence does not incur
-   the same cost as a data-dependence.  */
-
-#define ADJUST_COST(insn,link,dep_insn,cost) \
-  (cost) = ix86_adjust_cost(insn, link, dep_insn, cost)
-
-#define ISSUE_RATE \
-  ix86_issue_rate ()
-
-#define MD_SCHED_INIT(DUMP, SCHED_VERBOSE, MAX_READY) \
-  ix86_sched_init (DUMP, SCHED_VERBOSE)
-
-#define MD_SCHED_REORDER(DUMP, SCHED_VERBOSE, READY, N_READY, CLOCK, CIM) \
-  (CIM) = ix86_sched_reorder (DUMP, SCHED_VERBOSE, READY, N_READY, CLOCK)
-
-#define MD_SCHED_VARIABLE_ISSUE(DUMP, SCHED_VERBOSE, INSN, CAN_ISSUE_MORE) \
-  ((CAN_ISSUE_MORE) =							   \
-   ix86_variable_issue (DUMP, SCHED_VERBOSE, INSN, CAN_ISSUE_MORE))
 
 /* Add any extra modes needed to represent the condition code.
 

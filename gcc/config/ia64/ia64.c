@@ -141,6 +141,18 @@ static int ia64_valid_type_attribute PARAMS((tree, tree, tree, tree));
 static void ia64_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void ia64_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 static void ia64_output_function_end_prologue PARAMS ((FILE *));
+
+static int ia64_issue_rate PARAMS ((void));
+static int ia64_adjust_cost PARAMS ((rtx, rtx, rtx, int));
+static void ia64_sched_init PARAMS ((FILE *, int, int));
+static void ia64_sched_finish PARAMS ((FILE *, int));
+static int ia64_internal_sched_reorder PARAMS ((FILE *, int, rtx *,
+						int *, int, int));
+static int ia64_sched_reorder PARAMS ((FILE *, int, rtx *, int *, int));
+static int ia64_sched_reorder2 PARAMS ((FILE *, int, rtx *, int *, int));
+static int ia64_variable_issue PARAMS ((FILE *, int, rtx, int));
+static rtx ia64_cycle_display PARAMS ((int, rtx));
+
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_VALID_TYPE_ATTRIBUTE
@@ -158,6 +170,23 @@ static void ia64_output_function_end_prologue PARAMS ((FILE *));
 #define TARGET_ASM_FUNCTION_END_PROLOGUE ia64_output_function_end_prologue
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE ia64_output_function_epilogue
+
+#undef TARGET_SCHED_ADJUST_COST
+#define TARGET_SCHED_ADJUST_COST ia64_adjust_cost
+#undef TARGET_SCHED_ISSUE_RATE
+#define TARGET_SCHED_ISSUE_RATE ia64_issue_rate
+#undef TARGET_SCHED_VARIABLE_ISSUE
+#define TARGET_SCHED_VARIABLE_ISSUE ia64_variable_issue
+#undef TARGET_SCHED_INIT
+#define TARGET_SCHED_INIT ia64_sched_init
+#undef TARGET_SCHED_FINISH
+#define TARGET_SCHED_FINISH ia64_sched_finish
+#undef TARGET_SCHED_REORDER
+#define TARGET_SCHED_REORDER ia64_sched_reorder
+#undef TARGET_SCHED_REORDER2
+#define TARGET_SCHED_REORDER2 ia64_sched_reorder2
+#undef TARGET_SCHED_CYCLE_DISPLAY
+#define TARGET_SCHED_CYCLE_DISPLAY ia64_cycle_display
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -5064,7 +5093,7 @@ itanium_split_issue (p, begin)
 
 /* Return the maximum number of instructions a cpu can issue.  */
 
-int
+static int
 ia64_issue_rate ()
 {
   return 6;
@@ -5087,7 +5116,7 @@ ia64_single_set (insn)
 /* Adjust the cost of a scheduling dependency.  Return the new cost of
    a dependency LINK or INSN on DEP_INSN.  COST is the current cost.  */
 
-int
+static int
 ia64_adjust_cost (insn, link, dep_insn, cost)
      rtx insn, link, dep_insn;
      int cost;
@@ -5465,7 +5494,7 @@ rotate_two_bundles (dump)
 
 /* We're beginning a new block.  Initialize data structures as necessary.  */
 
-void
+static void
 ia64_sched_init (dump, sched_verbose, max_ready)
      FILE *dump ATTRIBUTE_UNUSED;
      int sched_verbose ATTRIBUTE_UNUSED;
@@ -5987,8 +6016,8 @@ nop_cycles_until (clock_var, dump)
 /* We are about to being issuing insns for this clock cycle.
    Override the default sort algorithm to better slot instructions.  */
 
-int
-ia64_sched_reorder (dump, sched_verbose, ready, pn_ready,
+static int
+ia64_internal_sched_reorder (dump, sched_verbose, ready, pn_ready,
 		    reorder_type, clock_var)
      FILE *dump ATTRIBUTE_UNUSED;
      int sched_verbose ATTRIBUTE_UNUSED;
@@ -6139,10 +6168,22 @@ ia64_sched_reorder (dump, sched_verbose, ready, pn_ready,
 			  ready, e_ready, reorder_type == 1);
 }
 
+static int
+ia64_sched_reorder (dump, sched_verbose, ready, pn_ready, clock_var)
+     FILE *dump;
+     int sched_verbose;
+     rtx *ready;
+     int *pn_ready;
+     int clock_var;
+{
+  return ia64_internal_sched_reorder (dump, sched_verbose, ready,
+				      pn_ready, 0, clock_var);
+}
+
 /* Like ia64_sched_reorder, but called after issuing each insn.
    Override the default sort algorithm to better slot instructions.  */
 
-int
+static int
 ia64_sched_reorder2 (dump, sched_verbose, ready, pn_ready, clock_var)
      FILE *dump ATTRIBUTE_UNUSED;
      int sched_verbose ATTRIBUTE_UNUSED;
@@ -6232,8 +6273,9 @@ ia64_sched_reorder2 (dump, sched_verbose, ready, pn_ready, clock_var)
 
   if (*pn_ready > 0)
     {
-      int more = ia64_sched_reorder (dump, sched_verbose, ready, pn_ready, 1,
-				     clock_var);
+      int more = ia64_internal_sched_reorder (dump, sched_verbose,
+					      ready, pn_ready, 1,
+					      clock_var);
       if (more)
 	return more;
       /* Did we schedule a stop?  If so, finish this cycle.  */
@@ -6253,7 +6295,7 @@ ia64_sched_reorder2 (dump, sched_verbose, ready, pn_ready, clock_var)
 /* We are about to issue INSN.  Return the number of insns left on the
    ready queue that can be issued this cycle.  */
 
-int
+static int
 ia64_variable_issue (dump, sched_verbose, insn, can_issue_more)
      FILE *dump;
      int sched_verbose;
@@ -6315,7 +6357,7 @@ ia64_variable_issue (dump, sched_verbose, insn, can_issue_more)
 
 /* Free data allocated by ia64_sched_init.  */
 
-void
+static void
 ia64_sched_finish (dump, sched_verbose)
      FILE *dump;
      int sched_verbose;
@@ -6325,6 +6367,14 @@ ia64_sched_finish (dump, sched_verbose)
   rotate_two_bundles (NULL);
   free (sched_types);
   free (sched_ready);
+}
+
+static rtx
+ia64_cycle_display (clock, last)
+     int clock;
+     rtx last;
+{
+  return emit_insn_after (gen_cycle_display (GEN_INT (clock)), last);
 }
 
 /* Emit pseudo-ops for the assembler to describe predicate relations.

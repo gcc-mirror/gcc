@@ -131,11 +131,6 @@ extern rtx assign_386_stack_local PARAMS ((enum machine_mode, int));
 extern int ix86_attr_length_immediate_default PARAMS ((rtx, int));
 extern int ix86_attr_length_address_default PARAMS ((rtx));
 
-extern int ix86_issue_rate PARAMS ((void));
-extern int ix86_adjust_cost PARAMS ((rtx, rtx, rtx, int));
-extern void ix86_sched_init PARAMS ((FILE *, int));
-extern int ix86_sched_reorder PARAMS ((FILE *, int, rtx *, int, int));
-extern int ix86_variable_issue PARAMS ((FILE *, int, rtx, int));
 extern enum machine_mode ix86_fp_compare_mode PARAMS ((enum rtx_code));
 
 extern int x86_64_sign_extended_value PARAMS ((rtx));

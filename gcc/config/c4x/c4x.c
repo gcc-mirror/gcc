@@ -194,6 +194,7 @@ static int c4x_label_ref_used_p PARAMS ((rtx, rtx));
 static int c4x_valid_type_attribute_p PARAMS ((tree, tree, tree, tree));
 static void c4x_insert_attributes PARAMS ((tree, tree *));
 static void c4x_asm_named_section PARAMS ((const char *, unsigned int));
+static int c4x_adjust_cost PARAMS ((rtx, rtx, rtx, int));
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_VALID_TYPE_ATTRIBUTE
@@ -207,6 +208,9 @@ static void c4x_asm_named_section PARAMS ((const char *, unsigned int));
 
 #undef TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN c4x_expand_builtin
+
+#undef TARGET_SCHED_ADJUST_COST
+#define TARGET_SCHED_ADJUST_COST c4x_adjust_cost
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -4907,8 +4911,7 @@ c4x_check_laj_p (insn)
 #define	SETLDA_USE_COST	2
 #define	READ_USE_COST	2
 
-
-int
+static int
 c4x_adjust_cost (insn, link, dep_insn, cost)
      rtx insn;
      rtx link;

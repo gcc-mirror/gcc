@@ -45,6 +45,7 @@ Boston, MA 02111-1307, USA.  */
 #include "debug.h"
 
 
+static int s390_adjust_cost PARAMS ((rtx, rtx, rtx, int));
 
 #undef  TARGET_ASM_FUNCTION_PROLOGUE 
 #define TARGET_ASM_FUNCTION_PROLOGUE s390_function_prologue
@@ -57,6 +58,9 @@ Boston, MA 02111-1307, USA.  */
 
 #undef  TARGET_ASM_CLOSE_PAREN
 #define TARGET_ASM_CLOSE_PAREN ""
+
+#undef  TARGET_SCHED_ADJUST_COST
+#define TARGET_SCHED_ADJUST_COST s390_adjust_cost
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1585,7 +1589,7 @@ addr_generation_dependency_p (dep_rtx, insn)
    register of a memory reference, at least 4 cycles need to pass
    between setting and using the register to avoid pipeline stalls.  */
 
-int
+static int
 s390_adjust_cost (insn, link, dep_insn, cost)
      rtx insn;
      rtx link;

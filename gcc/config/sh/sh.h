@@ -2321,58 +2321,6 @@ extern struct rtx_def *fpscr_rtx;
    clear if this would give better code.  If implemented, should check for
    compatibility problems.  */
 
-/* A C statement (sans semicolon) to update the integer variable COST
-   based on the relationship between INSN that is dependent on
-   DEP_INSN through the dependence LINK.  The default is to make no
-   adjustment to COST.  This can be used for example to specify to
-   the scheduler that an output- or anti-dependence does not incur
-   the same cost as a data-dependence.  */
-
-#define ADJUST_COST(insn,link,dep_insn,cost)				\
-do {									\
-  rtx reg;								\
-									\
-  if (GET_CODE(insn) == CALL_INSN)					\
-    {									\
-      /* The only input for a call that is timing-critical is the	\
-	 function's address.  */					\
-      rtx call = PATTERN (insn);					\
-									\
-      if (GET_CODE (call) == PARALLEL)					\
-	call = XVECEXP (call, 0 ,0);					\
-      if (GET_CODE (call) == SET)					\
-	call = SET_SRC (call);						\
-      if (GET_CODE (call) == CALL && GET_CODE (XEXP (call, 0)) == MEM	\
-	  && ! reg_set_p (XEXP (XEXP (call, 0), 0), dep_insn))		\
-	(cost) = 0;							\
-    }									\
-  /* All sfunc calls are parallels with at least four components.	\
-     Exploit this to avoid unnecessary calls to sfunc_uses_reg.  */	\
-  else if (GET_CODE (PATTERN (insn)) == PARALLEL			\
-	   && XVECLEN (PATTERN (insn), 0) >= 4				\
-	   && (reg = sfunc_uses_reg (insn)))				\
-    {									\
-      /* Likewise, the most timing critical input for an sfuncs call	\
-	 is the function address.  However, sfuncs typically start	\
-	 using their arguments pretty quickly.				\
-	 Assume a four cycle delay before they are needed.  */		\
-      if (! reg_set_p (reg, dep_insn))					\
-	cost -= TARGET_SUPERSCALAR ? 40 : 4;				\
-    }									\
-  /* Adjust load_si / pcload_si type insns latency.  Use the known	\
-     nominal latency and form of the insn to speed up the check.  */	\
-  else if (cost == 3							\
-	   && GET_CODE (PATTERN (dep_insn)) == SET			\
-	   /* Latency for dmpy type insns is also 3, so check the that	\
-	      it's actually a move insn.  */				\
-	   && general_movsrc_operand (SET_SRC (PATTERN (dep_insn)), SImode))\
-    cost = 2;								\
-  else if (cost == 30							\
-	   && GET_CODE (PATTERN (dep_insn)) == SET			\
-	   && GET_MODE (SET_SRC (PATTERN (dep_insn))) == SImode)	\
-    cost = 20;								\
-} while (0)								\
-
 #define SH_DYNAMIC_SHIFT_COST \
   (TARGET_HARD_SH4 ? 1 : TARGET_SH3 ? (TARGET_SMALLCODE ? 1 : 2) : 20)
 

@@ -82,6 +82,28 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 			TARGET_ASM_CONSTRUCTOR,			\
 			TARGET_ASM_DESTRUCTOR}
 
+/* Scheduler hooks.  All of these default to null pointers, which
+   haifa-sched.c looks for and handles.  */
+#define TARGET_SCHED_ADJUST_COST 0
+#define TARGET_SCHED_ADJUST_PRIORITY 0
+#define TARGET_SCHED_ISSUE_RATE 0
+#define TARGET_SCHED_VARIABLE_ISSUE 0
+#define TARGET_SCHED_INIT 0
+#define TARGET_SCHED_FINISH 0
+#define TARGET_SCHED_REORDER 0
+#define TARGET_SCHED_REORDER2 0
+#define TARGET_SCHED_CYCLE_DISPLAY 0
+
+#define TARGET_SCHED	{TARGET_SCHED_ADJUST_COST,	\
+			 TARGET_SCHED_ADJUST_PRIORITY,	\
+			 TARGET_SCHED_ISSUE_RATE,	\
+			 TARGET_SCHED_VARIABLE_ISSUE,	\
+			 TARGET_SCHED_INIT,		\
+			 TARGET_SCHED_FINISH,		\
+			 TARGET_SCHED_REORDER,		\
+			 TARGET_SCHED_REORDER2,		\
+			 TARGET_SCHED_CYCLE_DISPLAY}
+
 /* All in tree.c.  */
 #define TARGET_MERGE_DECL_ATTRIBUTES merge_decl_attributes
 #define TARGET_MERGE_TYPE_ATTRIBUTES merge_type_attributes
@@ -104,6 +126,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #define TARGET_INITIALIZER			\
 {						\
   TARGET_ASM_OUT,				\
+  TARGET_SCHED,					\
   TARGET_MERGE_DECL_ATTRIBUTES,			\
   TARGET_MERGE_TYPE_ATTRIBUTES,			\
   TARGET_VALID_DECL_ATTRIBUTE,			\

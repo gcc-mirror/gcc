@@ -50,14 +50,12 @@ extern enum direction function_arg_padding PARAMS ((enum machine_mode, tree));
 #endif /* ARGS_SIZE_RTX */
 #endif /* TREE_CODE */
 
-extern void ultrasparc_sched_init PARAMS ((FILE *, int));
 extern void load_pic_register PARAMS ((void));
 extern void order_regs_for_local_alloc PARAMS ((void));
 extern int compute_frame_size PARAMS ((int, int));
 extern int check_pic PARAMS ((int));
 extern int short_branch PARAMS ((int, int));
 extern int sparc_flat_epilogue_delay_slots PARAMS ((void));
-extern int sparc_issue_rate PARAMS ((void));
 extern unsigned long sparc_flat_compute_frame_size PARAMS ((int));
 extern void sparc_function_profiler PARAMS ((FILE *, int));
 extern void sparc_function_block_profiler PARAMS ((FILE *, int));
@@ -81,8 +79,6 @@ extern int gen_v9_scc PARAMS ((enum rtx_code, rtx *));
 extern void sparc_initialize_trampoline PARAMS ((rtx, rtx, rtx));
 extern void sparc64_initialize_trampoline PARAMS ((rtx, rtx, rtx));
 extern rtx legitimize_pic_address PARAMS ((rtx, enum machine_mode, rtx));
-extern void ultrasparc_sched_reorder PARAMS ((FILE *, int, rtx *, int));
-extern int ultrasparc_variable_issue PARAMS ((rtx));
 extern void sparc_defer_case_vector PARAMS ((rtx, rtx, int));
 extern void sparc_emit_set_const32 PARAMS ((rtx, rtx));
 extern void sparc_emit_set_const64 PARAMS ((rtx, rtx));
@@ -115,7 +111,6 @@ extern int reg_unused_after PARAMS ((rtx, rtx));
 extern int register_ok_for_ldd PARAMS ((rtx));
 extern int registers_ok_for_ldd_peep PARAMS ((rtx, rtx));
 extern int sparc_flat_eligible_for_epilogue_delay PARAMS ((rtx, int));
-extern int sparc_adjust_cost PARAMS ((rtx, rtx, rtx, int));
 extern int v9_regcmp_p PARAMS ((enum rtx_code));
 extern char *sparc_v8plus_shift PARAMS ((rtx *, rtx, const char *));
 /* Function used for V8+ code generation.  Returns 1 if the high

@@ -1953,11 +1953,6 @@ if (REG_P (OP1) && ! REG_P (OP0))			\
 
 #define BRANCH_COST			8
 
-/* Adjust the cost of dependencies.  */
-
-#define ADJUST_COST(INSN,LINK,DEP,COST) \
-  (COST) = c4x_adjust_cost (INSN, LINK, DEP, COST)
-
 #define	WORD_REGISTER_OPERATIONS
 
 /* Dividing the Output into Sections.  */

@@ -129,7 +129,6 @@ extern rtx d30v_emit_comparison		PARAMS ((int, rtx, rtx, rtx));
 extern char *d30v_move_2words		PARAMS ((rtx *, rtx));
 extern int d30v_emit_cond_move		PARAMS ((rtx, rtx, rtx, rtx));
 extern void d30v_machine_dependent_reorg PARAMS ((rtx));
-extern int d30v_adjust_cost		PARAMS ((rtx, rtx, rtx, int));
 extern rtx d30v_return_addr		PARAMS ((void));
 #endif
 extern void d30v_init_expanders		PARAMS ((void));

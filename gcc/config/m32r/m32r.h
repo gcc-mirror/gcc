@@ -154,8 +154,8 @@ extern int target_flags;
 #define TARGET_ALIGN_LOOPS 	(target_flags & TARGET_ALIGN_LOOPS_MASK)
 
 /* Change issue rate.  */
-#define TARGET_ISSUE_RATE_MASK	(1 << 3)
-#define TARGET_ISSUE_RATE	(target_flags & TARGET_ISSUE_RATE_MASK)
+#define TARGET_LOW_ISSUE_RATE_MASK	(1 << 3)
+#define TARGET_LOW_ISSUE_RATE	(target_flags & TARGET_LOW_ISSUE_RATE_MASK)
 
 /* Change branch cost */
 #define TARGET_BRANCH_COST_MASK	(1 << 4)
@@ -187,9 +187,9 @@ extern int target_flags;
     { "align-loops",		TARGET_ALIGN_LOOPS_MASK, 		\
 	N_("Align all loops to 32 byte boundary") },			\
     { "no-align-loops",		-TARGET_ALIGN_LOOPS_MASK, "" },		\
-    { "issue-rate=1",		TARGET_ISSUE_RATE_MASK, 		\
+    { "issue-rate=1",		TARGET_LOW_ISSUE_RATE_MASK, 		\
 	N_("Only issue one instruction per cycle") },			\
-    { "issue-rate=2",		-TARGET_ISSUE_RATE_MASK, "" },		\
+    { "issue-rate=2",		-TARGET_LOW_ISSUE_RATE_MASK, "" },	\
     { "branch-cost=1",		TARGET_BRANCH_COST_MASK, 		\
 	N_("Prefer branches over conditional execution") },		\
     { "branch-cost=2",		-TARGET_BRANCH_COST_MASK, "" },		\
@@ -1472,59 +1472,6 @@ do {									\
    itself with an explicit address than to call an address kept in a
    register.  */
 #define NO_RECURSIVE_FUNCTION_CSE
-
-/* A C statement (sans semicolon) to update the integer variable COST based on
-   the relationship between INSN that is dependent on DEP_INSN through the
-   dependence LINK.  The default is to make no adjustment to COST.  This can be
-   used for example to specify to the scheduler that an output- or
-   anti-dependence does not incur the same cost as a data-dependence.  */
-
-#define ADJUST_COST(INSN,LINK,DEP_INSN,COST) \
-  (COST) = m32r_adjust_cost (INSN, LINK, DEP_INSN, COST)
-
-/* A C statement (sans semicolon) to update the integer scheduling
-   priority `INSN_PRIORITY(INSN)'.  Reduce the priority to execute
-   the INSN earlier, increase the priority to execute INSN later.
-   Do not define this macro if you do not need to adjust the
-   scheduling priorities of insns.  */
-#define ADJUST_PRIORITY(INSN) \
-  INSN_PRIORITY (INSN) = m32r_adjust_priority (INSN, INSN_PRIORITY (INSN))
-
-/* Macro to determine whether the Haifa scheduler is used.  */
-#ifdef HAIFA
-#define HAIFA_P 1
-#else
-#define HAIFA_P 0
-#endif
-
-/* Indicate how many instructions can be issued at the same time.
-   This is sort of a lie.  The m32r can issue only 1 long insn at
-   once, but it can issue 2 short insns.  The default therefore is
-   set at 2, but this can be overridden by the command line option
-   -missue-rate=1 */
-#define ISSUE_RATE ((TARGET_ISSUE_RATE) ? 1 : 2)
-
-/* If we have a machine that can issue a variable # of instructions
-   per cycle, indicate how many more instructions can be issued
-   after the current one.  */
-#define MD_SCHED_VARIABLE_ISSUE(STREAM, VERBOSE, INSN, HOW_MANY)	\
-(HOW_MANY) = m32r_sched_variable_issue (STREAM, VERBOSE, INSN, HOW_MANY)
-
-/* Whether we are on an odd word boundary while scheduling.  */
-extern int m32r_sched_odd_word_p;
-
-/* Hook to run before scheduling a block of insns.  */
-#define MD_SCHED_INIT(STREAM, VERBOSE, MAX_READY) \
-  m32r_sched_init (STREAM, VERBOSE)
-
-/* Hook to reorder the list of ready instructions.  */
-#define MD_SCHED_REORDER(STREAM, VERBOSE, READY, N_READY, CLOCK, CIM) 	\
-  do									\
-    {									\
-      m32r_sched_reorder (STREAM, VERBOSE, READY, N_READY);		\
-      CIM = issue_rate;							\
-    }									\
-  while (0)
 
 /* When the `length' insn attribute is used, this macro specifies the
    value to be assigned to the address of the first insn in a

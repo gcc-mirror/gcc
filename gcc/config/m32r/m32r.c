@@ -56,7 +56,7 @@ const char * m32r_sdata_string = M32R_SDATA_DEFAULT;
 enum m32r_sdata m32r_sdata;
 
 /* Scheduler support */
-int m32r_sched_odd_word_p;
+static int m32r_sched_odd_word_p;
 
 /* Forward declaration.  */
 static void  init_reg_tables			PARAMS ((void));
@@ -66,6 +66,14 @@ static int   m32r_valid_decl_attribute		PARAMS ((tree, tree,
 							 tree, tree));
 static void  m32r_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void  m32r_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
+
+static int    m32r_adjust_cost 	   PARAMS ((rtx, rtx, rtx, int));
+static int    m32r_adjust_priority PARAMS ((rtx, int));
+static void   m32r_sched_init	   PARAMS ((FILE *, int));
+static int    m32r_sched_reorder   PARAMS ((FILE *, int, rtx *, int *, int));
+static int    m32r_variable_issue  PARAMS ((FILE *, int, rtx, int));
+static int    m32r_issue_rate	   PARAMS ((void));
+
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_VALID_DECL_ATTRIBUTE
@@ -75,6 +83,19 @@ static void  m32r_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 #define TARGET_ASM_FUNCTION_PROLOGUE m32r_output_function_prologue
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE m32r_output_function_epilogue
+
+#undef TARGET_SCHED_ADJUST_COST
+#define TARGET_SCHED_ADJUST_COST m32r_adjust_cost
+#undef TARGET_SCHED_ADJUST_PRIORITY
+#define TARGET_SCHED_ADJUST_PRIORITY m32r_adjust_priority
+#undef TARGET_SCHED_ISSUE_RATE
+#define TARGET_SCHED_ISSUE_RATE m32r_issue_rate
+#undef TARGET_SCHED_VARIABLE_ISSUE
+#define TARGET_SCHED_VARIABLE_ISSUE m32r_variable_issue
+#undef TARGET_SCHED_INIT
+#define TARGET_SCHED_INIT m32r_sched_init
+#undef TARGET_SCHED_REORDER
+#define TARGET_SCHED_REORDER m32r_sched_reorder
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1471,7 +1492,7 @@ m32r_va_arg (valist, type)
   return addr_rtx;
 }
 
-int
+static int
 m32r_adjust_cost (insn, link, dep_insn, cost)
      rtx insn ATTRIBUTE_UNUSED;
      rtx link ATTRIBUTE_UNUSED;
@@ -1497,7 +1518,7 @@ m32r_is_insn (insn)
 /* Increase the priority of long instructions so that the
    short instructions are scheduled ahead of the long ones.  */
 
-int
+static int
 m32r_adjust_priority (insn, priority)
      rtx insn;
      int priority;
@@ -1512,7 +1533,7 @@ m32r_adjust_priority (insn, priority)
 
 /* Initialize for scheduling a group of instructions.  */
 
-void
+static void
 m32r_sched_init (stream, verbose)
      FILE * stream ATTRIBUTE_UNUSED;
      int verbose ATTRIBUTE_UNUSED;
@@ -1523,15 +1544,18 @@ m32r_sched_init (stream, verbose)
 
 /* Reorder the schedulers priority list if needed */
 
-void
-m32r_sched_reorder (stream, verbose, ready, n_ready)
+static int
+m32r_sched_reorder (stream, verbose, ready, n_readyp, clock)
      FILE * stream;
      int verbose;
      rtx * ready;
-     int n_ready;
+     int *n_readyp;
+     int clock ATTRIBUTE_UNUSED;
 {
+  int n_ready = *n_readyp;
+
   if (TARGET_DEBUG)
-    return;
+    return m32r_issue_rate ();
 
   if (verbose <= 7)
     stream = (FILE *)0;
@@ -1605,11 +1629,8 @@ m32r_sched_reorder (stream, verbose, ready, n_ready)
       memcpy (ready, new_head, sizeof (rtx) * n_ready);
       if (stream)
 	{
-#ifdef HAIFA
-	  fprintf (stream, ";;\t\t::: New ready list:               ");
-	  debug_ready_list (ready, n_ready);
-#else
 	  int i;
+	  fprintf (stream, ";;\t\t::: New ready list:               ");
 	  for (i = 0; i < n_ready; i++)
 	    {
 	      rtx insn = ready[i];
@@ -1627,17 +1648,27 @@ m32r_sched_reorder (stream, verbose, ready, n_ready)
 	    }
 
 	  fprintf (stream, "\n");
-#endif
 	}
     }
+  return m32r_issue_rate ();
 }
 
-
+/* Indicate how many instructions can be issued at the same time.
+   This is sort of a lie.  The m32r can issue only 1 long insn at
+   once, but it can issue 2 short insns.  The default therefore is
+   set at 2, but this can be overridden by the command line option
+   -missue-rate=1 */
+static int
+m32r_issue_rate ()
+{
+  return ((TARGET_LOW_ISSUE_RATE) ? 1 : 2);
+}
+
 /* If we have a machine that can issue a variable # of instructions
    per cycle, indicate how many more instructions can be issued
    after the current one.  */
-int
-m32r_sched_variable_issue (stream, verbose, insn, how_many)
+static int
+m32r_variable_issue (stream, verbose, insn, how_many)
      FILE * stream;
      int verbose;
      rtx insn;

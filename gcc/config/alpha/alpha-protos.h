@@ -99,7 +99,6 @@ extern void alpha_expand_unaligned_store PARAMS ((rtx, rtx, HOST_WIDE_INT,
 						 HOST_WIDE_INT));
 extern int alpha_expand_block_move PARAMS ((rtx []));
 extern int alpha_expand_block_clear PARAMS ((rtx []));
-extern int alpha_adjust_cost PARAMS ((rtx, rtx, rtx, int));
 extern rtx alpha_return_addr PARAMS ((int, rtx));
 extern rtx alpha_gp_save_rtx PARAMS ((void));
 extern void print_operand PARAMS ((FILE *, rtx, int));

@@ -3630,29 +3630,6 @@ extern const char *d30v_branch_cost_string;
    with an explicit address than to call an address kept in a register.  */
 /* #define NO_RECURSIVE_FUNCTION_CSE */
 
-/* A C statement (sans semicolon) to update the integer variable COST based on
-   the relationship between INSN that is dependent on DEP_INSN through the
-   dependence LINK.  The default is to make no adjustment to COST.  This can be
-   used for example to specify to the scheduler that an output- or
-   anti-dependence does not incur the same cost as a data-dependence.  */
-
-#define ADJUST_COST(INSN,LINK,DEP_INSN,COST)				\
-  (COST) = d30v_adjust_cost (INSN, LINK, DEP_INSN, COST)
-
-/* A C statement (sans semicolon) to update the integer scheduling
-   priority `INSN_PRIORITY(INSN)'.  Reduce the priority to execute
-   the INSN earlier, increase the priority to execute INSN later.
-   Do not define this macro if you do not need to adjust the
-   scheduling priorities of insns.  */
-/* #define ADJUST_PRIORITY (INSN) */
-
-/* Macro to determine whether the Haifa scheduler is used.  */
-#ifdef HAIFA
-#define HAIFA_P 1
-#else
-#define HAIFA_P 0
-#endif
-
 
 /* Dividing the output into sections.  */
 
@@ -5763,8 +5740,5 @@ fprintf (STREAM, "\t.word .L%d\n", VALUE)
 /* Values of the -mcond-exec=n string.  */
 extern int d30v_cond_exec;
 extern const char *d30v_cond_exec_string;
-
-/* Indicate how many instructions can be issued at the same time.  */
-#define ISSUE_RATE 2
 
 #endif /* GCC_D30V_H */

@@ -50,17 +50,6 @@ extern enum processor_type pa_cpu;
 
 #define pa_cpu_attr ((enum attr_cpu)pa_cpu)
 
-/* The 700 can only issue a single insn at a time.
-   The 7XXX processors can issue two insns at a time.
-   The 8000 can issue 4 insns at a time.  */
-#define ISSUE_RATE \
-  (pa_cpu == PROCESSOR_700 ? 1 \
-   : pa_cpu == PROCESSOR_7100 ? 2 \
-   : pa_cpu == PROCESSOR_7100LC ? 2 \
-   : pa_cpu == PROCESSOR_7200 ? 2 \
-   : pa_cpu == PROCESSOR_8000 ? 4 \
-   : 2)
-
 /* Which architecture to generate code for.  */
 
 enum architecture_type
@@ -1650,38 +1639,6 @@ while (0)
 
 /* Adjust the cost of branches.  */
 #define BRANCH_COST (pa_cpu == PROCESSOR_8000 ? 2 : 1)
-
-/* Adjust the cost of dependencies.  */
-
-#define ADJUST_COST(INSN,LINK,DEP,COST) \
-  (COST) = pa_adjust_cost (INSN, LINK, DEP, COST)
-
-/* Adjust scheduling priorities.  We use this to try and keep addil
-   and the next use of %r1 close together.  */
-#define ADJUST_PRIORITY(PREV) \
-  {								\
-    rtx set = single_set (PREV);				\
-    rtx src, dest;						\
-    if (set)							\
-      {								\
-        src = SET_SRC (set);					\
-	dest = SET_DEST (set);					\
-	if (GET_CODE (src) == LO_SUM				\
-	    && symbolic_operand (XEXP (src, 1), VOIDmode)	\
-	    && ! read_only_operand (XEXP (src, 1), VOIDmode))   \
-	  INSN_PRIORITY (PREV) >>= 3;				\
-        else if (GET_CODE (src) == MEM				\
-		 && GET_CODE (XEXP (src, 0)) == LO_SUM		\
-		 && symbolic_operand (XEXP (XEXP (src, 0), 1), VOIDmode)\
-		 && ! read_only_operand (XEXP (XEXP (src, 0), 1), VOIDmode))\
-	  INSN_PRIORITY (PREV) >>= 1;				\
-	else if (GET_CODE (dest) == MEM				\
-		 && GET_CODE (XEXP (dest, 0)) == LO_SUM		\
-		 && symbolic_operand (XEXP (XEXP (dest, 0), 1), VOIDmode)\
-		 && ! read_only_operand (XEXP (XEXP (dest, 0), 1), VOIDmode))\
-	  INSN_PRIORITY (PREV) >>= 3;				\
-      }								\
-  }
 
 /* Handling the special cases is going to get too complicated for a macro,
    just call `pa_adjust_insn_length' to do the real work.  */

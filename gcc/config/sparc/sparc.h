@@ -2865,31 +2865,6 @@ do {                                                                    \
   case FIX:						\
     return 19;
 
-#define ISSUE_RATE  sparc_issue_rate()
-
-/* Adjust the cost of dependencies.  */
-#define ADJUST_COST(INSN,LINK,DEP,COST) \
-  (COST) = sparc_adjust_cost(INSN, LINK, DEP, COST)
-
-#define MD_SCHED_INIT(DUMP, SCHED_VERBOSE, MAX_READY)			\
-  if (sparc_cpu == PROCESSOR_ULTRASPARC)				\
-    ultrasparc_sched_init (DUMP, SCHED_VERBOSE)
-
-#define MD_SCHED_REORDER(DUMP, SCHED_VERBOSE, READY, N_READY, CLOCK, CIM) \
-do {									\
-  if (sparc_cpu == PROCESSOR_ULTRASPARC)				\
-    ultrasparc_sched_reorder (DUMP, SCHED_VERBOSE, READY, N_READY);	\
-  CIM = issue_rate;							\
-} while (0)
-
-#define MD_SCHED_VARIABLE_ISSUE(DUMP, SCHED_VERBOSE, INSN, CAN_ISSUE_MORE) \
-do {									\
-  if (sparc_cpu == PROCESSOR_ULTRASPARC)				\
-    (CAN_ISSUE_MORE) = ultrasparc_variable_issue (INSN);		\
-  else									\
-    (CAN_ISSUE_MORE)--;							\
-} while (0)
-
 /* Conditional branches with empty delay slots have a length of two.  */
 #define ADJUST_INSN_LENGTH(INSN, LENGTH)				\
 do {									\
