@@ -1,3 +1,9 @@
+2000-07-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* calls.c (store_arg): Return non-zero if sibcall_failure is
+	desired.
+	(expand_call): Adjust caller.
+
 2000-07-17  Gabriel Dos Reis  <gdr@codesourcery.com>
 
         * diagnostic.h (report_diagnostic): Change prototype.
@@ -14,7 +20,7 @@
         * c-errors.c (pedwarn_c99): Adjust call to report_diagnostic. End
         varaible argument list.
 	
-2000-02-17  Zack Weinberg  <zack@wolery.cumb.org>
+2000-07-17  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpphash.c: Don't include hashtab.h.  Most macro-handling code
 	moved to cppmacro.c.
@@ -41,7 +47,7 @@
 
 	* cppmain.c: Do not set pfile->printer if no_output is on.
 
-2000-02-15  Neil Booth  <neilb@earthling.net>
+2000-07-15  Neil Booth  <neilb@earthling.net>
 
 	* cpplib.c: Change all directive-handler functions to return
 	void, not int.
