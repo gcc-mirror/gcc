@@ -1,5 +1,5 @@
 /* Language-independent node constructors for parse phase of GNU compiler.
-   Copyright (C) 1987, 88, 92, 93, 94, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92, 93, 94, 95, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2285,6 +2285,12 @@ substitute_in_expr (exp, f, r)
 	  if (TREE_CODE (inner) == PLACEHOLDER_EXPR
 	      && TREE_OPERAND (exp, 1) == f)
 	    return r;
+
+	  /* If this expression hasn't been completed let, leave it 
+	     alone.  */
+	  if (TREE_CODE (inner) == PLACEHOLDER_EXPR
+	      && TREE_TYPE (inner) == 0)
+	    return exp;
 
 	  new = fold (build (code, TREE_TYPE (exp),
 			     substitute_in_expr (TREE_OPERAND (exp, 0), f, r),
