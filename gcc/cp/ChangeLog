@@ -1,3 +1,10 @@
+Wed Nov  5 23:52:50 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* except.c (call_eh_info): Split out...
+	(push_eh_info): From here.
+	(expand_builtin_throw): Use it.
+	(expand_start_catch_block): Move region start back.
+
 Tue Nov  4 13:45:10 1997  Doug Evans  <devans@canuck.cygnus.com>
 
 	* lex.c (MULTIBYTE_CHARS): #undef if cross compiling.
