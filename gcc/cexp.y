@@ -30,15 +30,11 @@ Boston, MA 02111-1307, USA.
 /* #define YYDEBUG 1 */
 
 /* The following symbols should be autoconfigured:
-	HAVE_STDLIB_H
 	STDC_HEADERS
    In the mean time, we'll get by with approximations based
    on existing GCC configuration symbols.  */
 
 #ifdef POSIX
-# ifndef HAVE_STDLIB_H
-# define HAVE_STDLIB_H 1
-# endif
 # ifndef STDC_HEADERS
 # define STDC_HEADERS 1
 # endif
@@ -50,6 +46,10 @@ Boston, MA 02111-1307, USA.
 
 #if HAVE_STDLIB_H || defined (MULTIBYTE_CHARS)
 # include <stdlib.h>
+#endif
+
+#if HAVE_LIMITS_H
+# include <limits.h>
 #endif
 
 #ifdef MULTIBYTE_CHARS
@@ -87,19 +87,37 @@ struct arglist {
 #endif
 
 /* Find the largest host integer type and set its size and type.
-   Don't blindly use `long'; on some crazy hosts it is shorter than `int'.  */
+   Watch out: on some crazy hosts `long' is shorter than `int'.  */
 
-#ifndef HOST_BITS_PER_WIDE_INT
-
-#if HOST_BITS_PER_LONG > HOST_BITS_PER_INT
-#define HOST_BITS_PER_WIDE_INT HOST_BITS_PER_LONG
-#define HOST_WIDE_INT long
-#else
-#define HOST_BITS_PER_WIDE_INT HOST_BITS_PER_INT
-#define HOST_WIDE_INT int
+#ifndef HOST_WIDE_INT
+# if HAVE_INTTYPES_H
+#  include <inttypes.h>
+#  define HOST_WIDE_INT intmax_t
+#  define unsigned_HOST_WIDE_INT uintmax_t
+# else
+#  if (HOST_BITS_PER_LONG <= HOST_BITS_PER_INT \
+       && HOST_BITS_PER_LONGLONG <= HOST_BITS_PER_INT)
+#   define HOST_WIDE_INT int
+#  else
+#  if (HOST_BITS_PER_LONGLONG <= HOST_BITS_PER_LONG \
+       || ! (defined LONG_LONG_MAX || defined LLONG_MAX))
+#   define HOST_WIDE_INT long
+#  else
+#   define HOST_WIDE_INT long long
+#  endif
+#  endif
+# endif
 #endif
 
+#ifndef unsigned_HOST_WIDE_INT
+#define unsigned_HOST_WIDE_INT unsigned HOST_WIDE_INT
 #endif
+
+#ifndef CHAR_BIT
+#define CHAR_BIT 8
+#endif
+
+#define HOST_BITS_PER_WIDE_INT (CHAR_BIT * sizeof (HOST_WIDE_INT))
 
 #if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 7)
 # define __attribute__(x)
@@ -199,17 +217,13 @@ extern int warn_undef;
 #define MAX_WCHAR_TYPE_SIZE WCHAR_TYPE_SIZE
 #endif
 
-#if MAX_CHAR_TYPE_SIZE < HOST_BITS_PER_WIDE_INT
-#define MAX_CHAR_TYPE_MASK (~ (~ (HOST_WIDE_INT) 0 << MAX_CHAR_TYPE_SIZE))
-#else
-#define MAX_CHAR_TYPE_MASK (~ (HOST_WIDE_INT) 0)
-#endif
+#define MAX_CHAR_TYPE_MASK (MAX_CHAR_TYPE_SIZE < HOST_BITS_PER_WIDE_INT \
+			    ? (~ (~ (HOST_WIDE_INT) 0 << MAX_CHAR_TYPE_SIZE)) \
+			    : ~ (HOST_WIDE_INT) 0)
 
-#if MAX_WCHAR_TYPE_SIZE < HOST_BITS_PER_WIDE_INT
-#define MAX_WCHAR_TYPE_MASK (~ (~ (HOST_WIDE_INT) 0 << MAX_WCHAR_TYPE_SIZE))
-#else
-#define MAX_WCHAR_TYPE_MASK (~ (HOST_WIDE_INT) 0)
-#endif
+#define MAX_WCHAR_TYPE_MASK (MAX_WCHAR_TYPE_SIZE < HOST_BITS_PER_WIDE_INT \
+			     ? ~ (~ (HOST_WIDE_INT) 0 << MAX_WCHAR_TYPE_SIZE) \
+			     : ~ (HOST_WIDE_INT) 0)
 
 /* Suppose A1 + B1 = SUM1, using 2's complement arithmetic ignoring overflow.
    Suppose A, B and SUM have the same respective signs as A1, B1, and SUM1.
@@ -232,8 +246,8 @@ void pedwarn PRINTF_PROTO_1((char *, ...));
 void warning PRINTF_PROTO_1((char *, ...));
 
 static int parse_number PROTO((int));
-static HOST_WIDE_INT left_shift PROTO((struct constant *, unsigned HOST_WIDE_INT));
-static HOST_WIDE_INT right_shift PROTO((struct constant *, unsigned HOST_WIDE_INT));
+static HOST_WIDE_INT left_shift PROTO((struct constant *, unsigned_HOST_WIDE_INT));
+static HOST_WIDE_INT right_shift PROTO((struct constant *, unsigned_HOST_WIDE_INT));
 static void integer_overflow PROTO((void));
 
 /* `signedp' values */
@@ -324,7 +338,7 @@ exp	:	exp '*' exp
 				integer_overflow ();
 			    }
 			  else
-			    $$.value = ((unsigned HOST_WIDE_INT) $1.value
+			    $$.value = ((unsigned_HOST_WIDE_INT) $1.value
 					* $3.value); }
 	|	exp '/' exp
 			{ if ($3.value == 0)
@@ -341,7 +355,7 @@ exp	:	exp '*' exp
 				integer_overflow ();
 			    }
 			  else
-			    $$.value = ((unsigned HOST_WIDE_INT) $1.value
+			    $$.value = ((unsigned_HOST_WIDE_INT) $1.value
 					/ $3.value); }
 	|	exp '%' exp
 			{ if ($3.value == 0)
@@ -354,7 +368,7 @@ exp	:	exp '*' exp
 			  if ($$.signedp)
 			    $$.value = $1.value % $3.value;
 			  else
-			    $$.value = ((unsigned HOST_WIDE_INT) $1.value
+			    $$.value = ((unsigned_HOST_WIDE_INT) $1.value
 					% $3.value); }
 	|	exp '+' exp
 			{ $$.value = $1.value + $3.value;
@@ -391,28 +405,28 @@ exp	:	exp '*' exp
 			  if ($1.signedp & $3.signedp)
 			    $$.value = $1.value <= $3.value;
 			  else
-			    $$.value = ((unsigned HOST_WIDE_INT) $1.value
+			    $$.value = ((unsigned_HOST_WIDE_INT) $1.value
 					<= $3.value); }
 	|	exp GEQ exp
 			{ $$.signedp = SIGNED;
 			  if ($1.signedp & $3.signedp)
 			    $$.value = $1.value >= $3.value;
 			  else
-			    $$.value = ((unsigned HOST_WIDE_INT) $1.value
+			    $$.value = ((unsigned_HOST_WIDE_INT) $1.value
 					>= $3.value); }
 	|	exp '<' exp
 			{ $$.signedp = SIGNED;
 			  if ($1.signedp & $3.signedp)
 			    $$.value = $1.value < $3.value;
 			  else
-			    $$.value = ((unsigned HOST_WIDE_INT) $1.value
+			    $$.value = ((unsigned_HOST_WIDE_INT) $1.value
 					< $3.value); }
 	|	exp '>' exp
 			{ $$.signedp = SIGNED;
 			  if ($1.signedp & $3.signedp)
 			    $$.value = $1.value > $3.value;
 			  else
-			    $$.value = ((unsigned HOST_WIDE_INT) $1.value
+			    $$.value = ((unsigned_HOST_WIDE_INT) $1.value
 					> $3.value); }
 	|	exp '&' exp
 			{ $$.value = $1.value & $3.value;
@@ -495,7 +509,7 @@ parse_number (olen)
 {
   register char *p = lexptr;
   register int c;
-  register unsigned HOST_WIDE_INT n = 0, nd, max_over_base;
+  register unsigned_HOST_WIDE_INT n = 0, nd, max_over_base;
   register int base = 10;
   register int len = olen;
   register int overflow = 0;
@@ -513,7 +527,7 @@ parse_number (olen)
     }
   }
 
-  max_over_base = (unsigned HOST_WIDE_INT) -1 / base;
+  max_over_base = (unsigned_HOST_WIDE_INT) -1 / base;
 
   for (; len > 0; len--) {
     c = *p++;
@@ -751,11 +765,11 @@ yylex ()
 		      sizeof ("__CHAR_UNSIGNED__") - 1, -1)
 	      || ((result >> (num_bits - 1)) & 1) == 0)
 	    yylval.integer.value
-	      = result & (~ (unsigned HOST_WIDE_INT) 0
+	      = result & (~ (unsigned_HOST_WIDE_INT) 0
 			  >> (HOST_BITS_PER_WIDE_INT - num_bits));
 	  else
 	    yylval.integer.value
-	      = result | ~(~ (unsigned HOST_WIDE_INT) 0
+	      = result | ~(~ (unsigned_HOST_WIDE_INT) 0
 			   >> (HOST_BITS_PER_WIDE_INT - num_bits));
 	}
       else
@@ -962,7 +976,7 @@ parse_escape (string_ptr, result_mask)
       }
     case 'x':
       {
-	register unsigned HOST_WIDE_INT i = 0, overflow = 0;
+	register unsigned_HOST_WIDE_INT i = 0, overflow = 0;
 	register int digits_found = 0, digit;
 	for (;;)
 	  {
@@ -1015,7 +1029,7 @@ integer_overflow ()
 static HOST_WIDE_INT
 left_shift (a, b)
      struct constant *a;
-     unsigned HOST_WIDE_INT b;
+     unsigned_HOST_WIDE_INT b;
 {
    /* It's unclear from the C standard whether shifts can overflow.
       The following code ignores overflow; perhaps a C standard
@@ -1023,20 +1037,20 @@ left_shift (a, b)
   if (b >= HOST_BITS_PER_WIDE_INT)
     return 0;
   else
-    return (unsigned HOST_WIDE_INT) a->value << b;
+    return (unsigned_HOST_WIDE_INT) a->value << b;
 }
 
 static HOST_WIDE_INT
 right_shift (a, b)
      struct constant *a;
-     unsigned HOST_WIDE_INT b;
+     unsigned_HOST_WIDE_INT b;
 {
   if (b >= HOST_BITS_PER_WIDE_INT)
     return a->signedp ? a->value >> (HOST_BITS_PER_WIDE_INT - 1) : 0;
   else if (a->signedp)
     return a->value >> b;
   else
-    return (unsigned HOST_WIDE_INT) a->value >> b;
+    return (unsigned_HOST_WIDE_INT) a->value >> b;
 }
 
 /* This page contains the entry point to this file.  */
