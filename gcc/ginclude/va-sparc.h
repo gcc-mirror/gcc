@@ -184,7 +184,9 @@ __extension__							\
    The casts to char * avoid warnings about invalid pointer arithmetic.  */
 #define va_arg(pvar,TYPE)					\
 __extension__							\
-(*({((__builtin_classify_type (*(TYPE*) 0) >= __record_type_class) \
+(*({((__builtin_classify_type (*(TYPE*) 0) >= __record_type_class \
+      || (__builtin_classify_type (*(TYPE*) 0) == __real_type_class \
+	  && sizeof (TYPE) == 16))				\
     ? ((pvar) = (char *)(pvar) + __va_rounded_size (TYPE *),	\
        *(TYPE **) (void *) ((char *)(pvar) - __va_rounded_size (TYPE *))) \
     : __va_rounded_size (TYPE) == 8				\
