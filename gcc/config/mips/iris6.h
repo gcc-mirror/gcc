@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Iris version 6.
-   Copyright (C) 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -541,5 +541,5 @@ do {									 \
 %{!static: \
   %{!shared: %{!non_shared: %{!call_shared: -call_shared -no_unresolved}}}} \
 %{rpath} -init __do_global_ctors -fini __do_global_dtors \
-%{shared:-hidden_symbol __do_global_ctors,__do_global_dtors,__EH_FRAME_BEGIN__} \
+%{shared:-hidden_symbol __do_global_ctors,__do_global_dtors,__EH_FRAME_BEGIN__,__frame_dummy} \
 -_SYSTYPE_SVR4 %{mabi=32: -32}%{mabi=n32: -n32}%{mabi=64: -64} %{!mabi*: -n32}"
