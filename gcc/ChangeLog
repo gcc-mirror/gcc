@@ -1,3 +1,13 @@
+2005-01-05  Stan Shebs  <shebs@apple.com>
+
+	* unwind-dw2-fde-darwin.c (examine_objects): Use 64-bit
+	Mach-O getters if ppc64.
+	* config/darwin.c (darwin_asm_output_dwarf_delta): Obey
+	size argument.
+	* config/darwin.h (ASM_PREFERRED_EH_DATA_FORMAT): Use
+	signed four-byte field for global code case.
+	(STARTFILE_SPEC): Avoid crt2.o for 64-bit compilation.
+
 2005-01-05  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/19100
