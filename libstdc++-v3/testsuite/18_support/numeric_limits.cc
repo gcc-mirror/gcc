@@ -87,8 +87,8 @@ void test_extrema<long double>()
 
   VERIFY( (extrema_min - limits_min) < epsilon );
   VERIFY( (limits_min - extrema_min) < epsilon );
-  VERIFY( (extrema_max - limits_max) < (1 + epsilon) );
-  VERIFY( (limits_max - extrema_max) < (1 + epsilon) );
+  VERIFY( (extrema_max / limits_max) < (1 + epsilon) );
+  VERIFY( (limits_max / extrema_max) < (1 + epsilon) );
 }
 #endif
 
