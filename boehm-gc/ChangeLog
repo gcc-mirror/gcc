@@ -1,3 +1,8 @@
+2000-06-20  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	Imported version 5.1.
+	* acinclude.m4: Push version to 5.1.
+
 2000-06-19  Andrew Haley  <aph@cygnus.com>
 
         * os_dep.c (read): Pass two dummy args to syscall().

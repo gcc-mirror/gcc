@@ -372,8 +372,7 @@ GC_API GC_PTR GC_malloc_atomic_ignore_off_page GC_PROTO((size_t lb));
 
 #ifdef GC_ADD_CALLER
 #  define GC_EXTRAS GC_RETURN_ADDR, __FILE__, __LINE__
-#  define GC_EXTRA_PARAMS GC_word ra, GC_CONST char * s,
-		          int i
+#  define GC_EXTRA_PARAMS GC_word ra, GC_CONST char * s, int i
 #else
 #  define GC_EXTRAS __FILE__, __LINE__
 #  define GC_EXTRA_PARAMS GC_CONST char * s, int i

@@ -236,18 +236,9 @@ register word sz;
 		/* Clear object, advance p to next object in the process */
 		    q = p + sz;
                     p++; /* Skip link field */
-#		    if defined(SMALL_CONFIG) && defined(ALIGN_DOUBLE)
-		      /* We assert that sz must be even	*/
-		      *p++ = 0;
-		      while (p < q) {
-			CLEAR_DOUBLE(p);
-			p += 2;
-		      }
-#		    else
-                      while (p < q) {
+                    while (p < q) {
 			*p++ = 0;
-		      }
-#		    endif
+		    }
 	    }
 	    word_no += sz;
 	}
@@ -604,20 +595,32 @@ int report_if_found;		/* Abort if a reclaimable object is found */
       switch(sz) {
 #      ifndef SMALL_CONFIG
         case 1:
-	    full = GC_block_nearly_full1(hhdr, 0xffffffffl);
+#           if CPP_WORDSZ == 64
+	      full = GC_block_nearly_full1(hhdr, 0xffffffffffffffffl);
+#	    else
+	      full = GC_block_nearly_full1(hhdr, 0xffffffffl);
+#	    endif
 	    if (TRUE == full) goto out;
 	    if (FALSE == full) GC_write_hint(hbp);
 	    /* In the DONT_KNOW case, we let reclaim fault.	*/
             *flh = GC_reclaim1(hbp, hhdr, *flh);
             break;
         case 2:
-	    full = GC_block_nearly_full1(hhdr, 0x55555555l);
+#           if CPP_WORDSZ == 64
+	      full = GC_block_nearly_full1(hhdr, 0x5555555555555555l);
+#	    else
+	      full = GC_block_nearly_full1(hhdr, 0x55555555l);
+#	    endif
 	    if (TRUE == full) goto out;
 	    if (FALSE == full) GC_write_hint(hbp);
             *flh = GC_reclaim_clear2(hbp, hhdr, *flh);
             break;
         case 4:
-	    full = GC_block_nearly_full1(hhdr, 0x11111111l);
+#           if CPP_WORDSZ == 64
+	      full = GC_block_nearly_full1(hhdr, 0x1111111111111111l);
+#	    else
+	      full = GC_block_nearly_full1(hhdr, 0x11111111l);
+#	    endif
 	    if (TRUE == full) goto out;
 	    if (FALSE == full) GC_write_hint(hbp);
             *flh = GC_reclaim_clear4(hbp, hhdr, *flh);
@@ -634,19 +637,31 @@ int report_if_found;		/* Abort if a reclaimable object is found */
       switch(sz) {
 #      ifndef SMALL_CONFIG
         case 1:
-	    full = GC_block_nearly_full1(hhdr, 0xffffffffl);
+#           if CPP_WORDSZ == 64
+	      full = GC_block_nearly_full1(hhdr, 0xffffffffffffffffl);
+#	    else
+	      full = GC_block_nearly_full1(hhdr, 0xffffffffl);
+#	    endif
 	    if (TRUE == full) goto out;
 	    if (FALSE == full) GC_write_hint(hbp);
             *flh = GC_reclaim1(hbp, hhdr, *flh);
             break;
         case 2:
-	    full = GC_block_nearly_full1(hhdr, 0x55555555l);
+#           if CPP_WORDSZ == 64
+	      full = GC_block_nearly_full1(hhdr, 0x5555555555555555l);
+#	    else
+	      full = GC_block_nearly_full1(hhdr, 0x55555555l);
+#	    endif
 	    if (TRUE == full) goto out;
 	    if (FALSE == full) GC_write_hint(hbp);
             *flh = GC_reclaim_uninit2(hbp, hhdr, *flh);
             break;
         case 4:
-	    full = GC_block_nearly_full1(hhdr, 0x11111111l);
+#           if CPP_WORDSZ == 64
+	      full = GC_block_nearly_full1(hhdr, 0x1111111111111111l);
+#	    else
+	      full = GC_block_nearly_full1(hhdr, 0x11111111l);
+#	    endif
 	    if (TRUE == full) goto out;
 	    if (FALSE == full) GC_write_hint(hbp);
             *flh = GC_reclaim_uninit4(hbp, hhdr, *flh);

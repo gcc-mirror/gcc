@@ -175,7 +175,7 @@ GC_descr GC_double_descr(descriptor, nwords)
 register GC_descr descriptor;
 register word nwords;
 {
-    if (descriptor && DS_TAGS == DS_LENGTH) {
+    if (descriptor & DS_TAGS == DS_LENGTH) {
         descriptor = GC_bm_table[BYTES_TO_WORDS((word)descriptor)];
     };
     descriptor |= (descriptor & ~DS_TAGS) >> nwords;
