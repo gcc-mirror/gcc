@@ -1,3 +1,7 @@
+2001-10-08  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* unroll.c (loop_iterations): Extend check for multiple back edges.
+
 2001-10-08  Jeffrey A Law  <law@cygnus.com>
 
 	* sibcall.c (optimize_sibling_and_tail_recursive_calls): Call

@@ -3498,6 +3498,27 @@ loop_iterations (loop)
       return 0;
     }
 
+  /* If there are multiple conditionalized loop exit tests, they may jump
+     back to differing CODE_LABELs.  */
+  if (loop->top && loop->cont)
+    {
+      rtx temp = PREV_INSN (last_loop_insn);
+
+      do
+	{
+	  if (GET_CODE (temp) == JUMP_INSN
+	      && INSN_LUID (JUMP_LABEL (temp)) > INSN_LUID (loop->top)
+	      && INSN_LUID (JUMP_LABEL (temp)) < INSN_LUID (loop->cont))
+	    {
+	      if (loop_dump_stream)
+		fprintf (loop_dump_stream,
+			 "Loop iterations: Loop has multiple back edges.\n");
+	      return 0;
+	    }
+	}
+      while ((temp = PREV_INSN (temp)) != loop->cont);
+    }
+
   /* Find the iteration variable.  If the last insn is a conditional
      branch, and the insn before tests a register value, make that the
      iteration variable.  */
