@@ -128,6 +128,9 @@ extern int ix86_sched_reorder PARAMS ((FILE *, int, rtx *, int, int));
 extern int ix86_variable_issue PARAMS ((FILE *, int, rtx, int));
 extern enum machine_mode ix86_fp_compare_mode PARAMS ((enum rtx_code));
 
+extern rtx ix86_force_to_memory PARAMS ((enum machine_mode, rtx));
+extern void ix86_free_from_memory PARAMS ((enum machine_mode));
+
 #ifdef TREE_CODE
 extern void init_cumulative_args PARAMS ((CUMULATIVE_ARGS *, tree, rtx));
 extern rtx function_arg PARAMS ((CUMULATIVE_ARGS *, enum machine_mode, tree, int));
