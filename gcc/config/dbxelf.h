@@ -86,7 +86,7 @@ do									\
     static int sym_lineno = 1;						\
     char temp[256];							\
     ASM_GENERATE_INTERNAL_LABEL (temp, "LM", sym_lineno);		\
-    fprintf (FILE, ".stabn 68,0,%d,", LINE);				\
+    fprintf (FILE, "\t.stabn 68,0,%d,", LINE);				\
     assemble_name (FILE, temp);						\
     putc ('-', FILE);							\
     assemble_name (FILE,						\
