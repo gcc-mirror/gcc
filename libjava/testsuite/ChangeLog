@@ -1,3 +1,10 @@
+2002-04-06  Mark Wielaard  <mark@klomp.org>
+
+	* libjava.mauve/mauve.exp: Use libgcj.jar not libgcj.zip.
+	* libjava.mauve/xfails: add Character.classify12 (number 1),
+	Character.getType (number 11), Character.getType (number 20) and
+	Character.getType (number 22). We implement 1.4 Character.
+
 2002-03-28  Andrew Haley  <aph@redhat.com>
 
 	* libjava.lang/Throw_2.java: New.

@@ -89,7 +89,7 @@ proc test_mauve {} {
 
     # Append -B and -I so that libgcj.spec and libgcj.zip are found
     # before they're installed.
-    set env(GCJ) "$GCJ_UNDER_TEST -B$objdir/../ -I$objdir/../libgcj.zip"
+    set env(GCJ) "$GCJ_UNDER_TEST -B$objdir/../ -I$objdir/../libgcj.jar"
 
   if {[catch {
     system "$env(MAUVEDIR)/configure --with-gcj 2>&1"
