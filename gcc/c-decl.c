@@ -5392,6 +5392,18 @@ grokfield (filename, line, declarator, declspecs, width)
 {
   tree value;
 
+  if (declarator == NULL_TREE && width == NULL_TREE)
+    {
+      /* This is an unnamed decl.  We only support unnamed
+	 structs/unions, so check for other things and refuse them.  */
+      if (TREE_CODE (TREE_VALUE (declspecs)) != RECORD_TYPE
+	  && TREE_CODE (TREE_VALUE (declspecs)) != UNION_TYPE)
+	{
+	  error ("unnamed fields of type other than struct or union are not allowed");
+	  return NULL_TREE;
+	}
+    }
+
   value = grokdeclarator (declarator, declspecs, width ? BITFIELD : FIELD, 0);
 
   finish_decl (value, NULL_TREE, NULL_TREE);
