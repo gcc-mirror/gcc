@@ -301,9 +301,10 @@ stuff:
 	$(MAKE) clean
 	$(MAKE) -C ../libio c++clean
 	$(MAKE) -C ../libg++ clean
-	$(MAKE) $(MAKEFLAGS) check
-	$(MAKE) -C ../libio check
-	$(MAKE) -C ../libg++ check
+	-$(MAKE) $(MAKEFLAGS) check
+	-$(MAKE) -C ../libio check
+	-$(MAKE) -C ../libg++ check
+	-$(MAKE) -C ../gcc check-g++
 
 stuff1:
 	$(MAKE) clean
@@ -311,6 +312,7 @@ stuff1:
 	$(MAKE) -C ../libg++ clean
 
 stuff2:
-	$(MAKE) check
-	$(MAKE) -C ../libio check
-	$(MAKE) -C ../libg++ check
+	-$(MAKE) check
+	-$(MAKE) -C ../libio check
+	-$(MAKE) -C ../libg++ check
+	-$(MAKE) -C ../gcc check-g++

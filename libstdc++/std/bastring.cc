@@ -87,6 +87,7 @@ inline bool basic_string <charT, traits>::
 check_realloc (size_t s) const
 {
   s += sizeof (charT);
+  rep ()->selfish = false;
   return (rep ()->ref > 1
 	  || s > capacity ()
 	  || Rep::excess_slop (s, capacity ()));
