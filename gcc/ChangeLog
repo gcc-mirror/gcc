@@ -1,3 +1,15 @@
+2000-05-06  Richard Earnshaw (reanrsha@arm.com)
+
+	* arm.c (arm_gen_load_multiple, arm_gen_store_mulitple): Don't add
+	bogus clobber to insns.
+	(load_multiple_operation, store_mulitple_operation): Don't check 
+	for it.
+	* arm.md (ldmsi_postinc, stmsi_postinc): Adjust accordingly.
+
+	* arm.md (and_scc, ior_scc): Add missing mode.
+
+	* arm.md (call_value_symbol): Remove predicate from op2.
+
 Sat May  6 06:25:56 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* expr.c (get_subtarget): New function.

@@ -3203,14 +3203,8 @@ load_multiple_operation (op, mode)
           || GET_CODE (XEXP (SET_SRC (elt), 0)) != REG
           || REGNO (XEXP (SET_SRC (elt), 0)) != REGNO (SET_DEST (elt))
           || GET_CODE (XEXP (SET_SRC (elt), 1)) != CONST_INT
-          || INTVAL (XEXP (SET_SRC (elt), 1)) != (count - 2) * 4
-          || GET_CODE (XVECEXP (op, 0, count - 1)) != CLOBBER
-          || GET_CODE (XEXP (XVECEXP (op, 0, count - 1), 0)) != REG
-          || REGNO (XEXP (XVECEXP (op, 0, count - 1), 0))
-              != REGNO (SET_DEST (elt)))
+          || INTVAL (XEXP (SET_SRC (elt), 1)) != (count - 1) * 4)
         return 0;
-
-      count--;
     }
 
   /* Perform a quick check so we don't blow up below.  */
@@ -3271,14 +3265,8 @@ store_multiple_operation (op, mode)
           || GET_CODE (XEXP (SET_SRC (elt), 0)) != REG
           || REGNO (XEXP (SET_SRC (elt), 0)) != REGNO (SET_DEST (elt))
           || GET_CODE (XEXP (SET_SRC (elt), 1)) != CONST_INT
-          || INTVAL (XEXP (SET_SRC (elt), 1)) != (count - 2) * 4
-          || GET_CODE (XVECEXP (op, 0, count - 1)) != CLOBBER
-          || GET_CODE (XEXP (XVECEXP (op, 0, count - 1), 0)) != REG
-          || REGNO (XEXP (XVECEXP (op, 0, count - 1), 0))
-              != REGNO (SET_DEST (elt)))
+          || INTVAL (XEXP (SET_SRC (elt), 1)) != (count - 1) * 4)
         return 0;
-
-      count--;
     }
 
   /* Perform a quick check so we don't blow up below.  */
@@ -3812,7 +3800,7 @@ arm_gen_load_multiple (base_regno, count, from, up, write_back, unchanging_p,
   rtx mem;
 
   result = gen_rtx_PARALLEL (VOIDmode,
-			     rtvec_alloc (count + (write_back ? 2 : 0)));
+			     rtvec_alloc (count + (write_back ? 1 : 0)));
   if (write_back)
     {
       XVECEXP (result, 0, 0)
@@ -3831,9 +3819,6 @@ arm_gen_load_multiple (base_regno, count, from, up, write_back, unchanging_p,
       XVECEXP (result, 0, i)
 	= gen_rtx_SET (VOIDmode, gen_rtx_REG (SImode, base_regno + j), mem);
     }
-
-  if (write_back)
-    XVECEXP (result, 0, i) = gen_rtx_CLOBBER (SImode, from);
 
   return result;
 }
@@ -3856,7 +3841,7 @@ arm_gen_store_multiple (base_regno, count, to, up, write_back, unchanging_p,
   rtx mem;
 
   result = gen_rtx_PARALLEL (VOIDmode,
-			     rtvec_alloc (count + (write_back ? 2 : 0)));
+			     rtvec_alloc (count + (write_back ? 1 : 0)));
   if (write_back)
     {
       XVECEXP (result, 0, 0)
@@ -3876,9 +3861,6 @@ arm_gen_store_multiple (base_regno, count, to, up, write_back, unchanging_p,
       XVECEXP (result, 0, i)
 	= gen_rtx_SET (VOIDmode, mem, gen_rtx_REG (SImode, base_regno + j));
     }
-
-  if (write_back)
-    XVECEXP (result, 0, i) = gen_rtx_CLOBBER (SImode, to);
 
   return result;
 }
