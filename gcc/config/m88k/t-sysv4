@@ -6,8 +6,8 @@ MOVE_ASM = moveHI15x.asm moveQI16x.asm moveSI46x.asm moveSI64n.asm \
 
 # Use the -abi option for version 03.00 syntax.
 
-$(MOVE_ASM): $(srcdir)/config/m88k-move.sh
-	$(srcdir)/config/m88k-move.sh -abi
+$(MOVE_ASM): $(srcdir)/config/m88k/m88k-move.sh
+	$(srcdir)/config/m88k/m88k-move.sh -abi
 
 LIB2FUNCS_EXTRA = $(MOVE_ASM)
 LIBGCC1 = libgcc1.null
