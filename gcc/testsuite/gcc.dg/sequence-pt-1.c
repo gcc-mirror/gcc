@@ -45,15 +45,20 @@ foo (int a, int b, int n, int p, int *ptr, struct s *sptr,
   *ap = fnc (ap++); /* { dg-warning "undefined" "sequence point warning" } */
   (a += b) + (a += n); /* { dg-warning "undefined" "sequence point warning" } */
   a =  (b, b++) + (b++, b); /* { dg-warning "undefined" "sequence point warning" } */
+  ap[a++] += a; /* { dg-warning "undefined" "sequence point warning" } */
+  ap[a+=1] += a; /* { dg-warning "undefined" "sequence point warning" } */
+  ap[a++] += a++; /* { dg-warning "undefined" "sequence point warning" } */
+  ap[a+=1] += a++; /* { dg-warning "undefined" "sequence point warning" } */
 
   a = (a++ && 4); /* { dg-bogus "undefined" "bogus sequence point warning" } */
   len = sprintf (ans, "%d", len++); /* { dg-bogus "undefined" "bogus sequence point warning" } */
   a = fn (a++); /* { dg-bogus "undefined" "sequence point warning" } */
-  (a = b++), (a = b++); /* { dg-bogus "undefined" "sequence point warning" } */
-  a = (b++, b++); /* { dg-bogus "undefined" "sequence point warning" } */
-  a = b++ && b++; /* { dg-bogus "undefined" "sequence point warning" } */
-  a = b++ || b++; /* { dg-bogus "undefined" "sequence point warning" } */
-  a = (b++ ? b++ : a); /* { dg-bogus "undefined" "sequence point warning" } */
-  a = (b++ ? a : b++); /* { dg-bogus "undefined" "sequence point warning" } */
-  ap[a++] += bp[b]; /* { dg-bogus "undefined" "sequence point warning" } */
+  (a = b++), (a = b++); /* { dg-bogus "undefined" "bogus sequence point warning" } */
+  a = (b++, b++); /* { dg-bogus "undefined" "bogus sequence point warning" } */
+  a = b++ && b++; /* { dg-bogus "undefined" "bogus sequence point warning" } */
+  a = b++ || b++; /* { dg-bogus "undefined" "bogus sequence point warning" } */
+  a = (b++ ? b++ : a); /* { dg-bogus "undefined" "bogus sequence point warning" } */
+  a = (b++ ? a : b++); /* { dg-bogus "undefined" "bogus sequence point warning" } */
+  ap[a++] += bp[b]; /* { dg-bogus "undefined" "bogus sequence point warning" } */
+  ap[a += 1] += 1; /* { dg-bogus "undefined" "bogus sequence point warning" } */
 }
