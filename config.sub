@@ -221,7 +221,7 @@ case $basic_machine in
 	      | sparc64-* | sparcv9-* | sparc86x-* | mips64-* | mipsel-* \
 	      | mips64el-* | mips64orion-* | mips64orionel-*  \
 	      | mipstx39-* | mipstx39el-* \
-	      | f301-* | armv-*-*)
+	      | f301-* | arm*-*)
 		;;
 	m88110-* | m680[01234]0-* | m683?2-* | m68360-* | z8k-* | h8500-* | d10v-*) # CYGNUS LOCAL
 		;;
