@@ -35,18 +35,6 @@
 # - making any compiler driver (eg: g++)
 # - the compiler proper (eg: cc1plus)
 # - define the names for selecting the language in LANGUAGES.
-#
-# Extra flags to pass to recursive makes.
-OBJC_FLAGS_TO_PASS = \
-	"OBJC_FOR_BUILD=$(OBJC_FOR_BUILD)" \
-	"OBJCFLAGS=$(OBJCFLAGS)" \
-	"OBJC_FOR_TARGET=$(OBJC_FOR_TARGET)" \
-
-# Actual names to use when installing a native compiler.
-#OBJC_INSTALL_NAME = `t='$(program_transform_name)'; echo c++ | sed $$t`
-
-# Actual names to use when installing a cross-compiler.
-#OBJC_CROSS_NAME = `t='$(program_transform_cross_name)'; echo c++ | sed $$t`
 
 #
 # Define the names for selecting Objective-C in LANGUAGES.
@@ -56,10 +44,13 @@ OBJECTIVE-C objective-c: cc1obj$(exeext)
 # Tell GNU make to ignore these if they exist.
 .PHONY: objective-c objc ObjC
 
+# Use maximal warnings for this front end.
+objc-warn = $(STRICT_WARN)
+
 # Language-specific object files for Objective C.
 OBJC_OBJS = objc-parse.o objc-act.o $(C_AND_OBJC_OBJS)
 
-cc1obj$(exeext): $(P) $(OBJC_OBJS) $(BACKEND) $(LIBDEPS)
+cc1obj$(exeext): $(OBJC_OBJS) $(BACKEND) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(OBJC_OBJS) $(BACKEND) $(LIBS)
 
 # Objective C language specific files.
@@ -70,7 +61,7 @@ objc-parse.o : $(srcdir)/objc/objc-parse.c \
    $(srcdir)/input.h $(srcdir)/flags.h $(srcdir)/output.h \
    $(srcdir)/objc/objc-act.h system.h cpplib.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -I$(srcdir)/objc \
-	-c $(srcdir)/objc/objc-parse.c
+	-c $(srcdir)/objc/objc-parse.c $(OUTPUT_OPTION)
 
 $(INTL_TARGETS): $(srcdir)/objc/objc-parse.c
 $(srcdir)/objc/objc-parse.c : $(srcdir)/objc/objc-parse.y
@@ -132,8 +123,8 @@ objc.distclean:
 	-rm -f objc-parse.output
 objc.extraclean:
 objc.maintainer-clean:
-	-rm -f objc/objc-parse.y
-	-rm -f objc/objc-parse.c objc/objc-parse.output
+	-rm -f $(srcdir)/objc/objc-parse.y
+	-rm -f $(srcdir)/objc/objc-parse.c $(srcdir)/objc/objc-parse.output
 
 #
 # Stage hooks:
@@ -156,11 +147,8 @@ objc.stage4: stage4-start
 
 # This target creates the files that can be rebuilt, but go in the
 # distribution anyway.  It then copies the files to the distdir directory.
-# ??? Note that this should be fixed once the Makefile is fixed to do
-# the build in the inner directory.
 objc.distdir: $(srcdir)/objc/objc-parse.c
 	mkdir tmp/objc
-#	cd objc ; $(MAKE) $(LANG_FLAGS_TO_PASS) objc-parse.c
 	cd objc; \
 	for file in *[0-9a-zA-Z+]; do \
 	  ln $$file ../tmp/objc >/dev/null 2>&1 || cp $$file ../tmp/objc; \

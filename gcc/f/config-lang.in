@@ -33,5 +33,3 @@ compilers="f771\$(exeext)"
 stagestuff="g77\$(exeext) g77-cross\$(exeext) f771\$(exeext)"
 
 diff_excludes="-x f/BUGS -x f/NEWS -x f/INSTALL -x f/intdoc.texi"
-
-outputs=f/Makefile
