@@ -33,6 +33,7 @@
 
 // Written by Benjamin Kosnik <bkoz@redhat.com>
 
+#include <cerrno>  // For errno
 #include <locale>
 #include <stdexcept>
 #include <langinfo.h>

@@ -33,6 +33,7 @@
 
 // Written by Benjamin Kosnik <bkoz@redhat.com>
 
+#include <cerrno>  // For errno
 #include <locale>
 
 #ifdef _GLIBCXX_HAVE_IEEEFP_H
