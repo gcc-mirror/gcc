@@ -128,11 +128,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #endif
 
 #ifndef perform_fixdfsi
-#define perform_fixdfsi(a) return (SItype) a;
+#define perform_fixdfsi(a) return (nongcc_SI_type) a;
 #endif
 
 #ifndef perform_fixsfsi
-#define perform_fixsfsi(a) return (SItype) a
+#define perform_fixsfsi(a) return (nongcc_SI_type) a
 #endif
 
 #ifndef perform_floatsidf
@@ -206,8 +206,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Define the C data type to use for an SImode value.  */
 
-#ifndef SItype
-#define SItype long int
+#ifndef nongcc_SI_type
+#define nongcc_SI_type long int
 #endif
 
 /* Define the type to be used for returning an SF mode value
@@ -237,81 +237,81 @@ union flt_or_int { int i; float f; };
 
 
 #ifdef L_mulsi3
-SItype
+nongcc_SI_type
 __mulsi3 (a, b)
-     SItype a, b;
+     nongcc_SI_type a, b;
 {
   perform_mulsi3 (a, b);
 }
 #endif
 
 #ifdef L_udivsi3
-SItype
+nongcc_SI_type
 __udivsi3 (a, b)
-     unsigned SItype a, b;
+     unsigned nongcc_SI_type a, b;
 {
   perform_udivsi3 (a, b);
 }
 #endif
 
 #ifdef L_divsi3
-SItype
+nongcc_SI_type
 __divsi3 (a, b)
-     SItype a, b;
+     nongcc_SI_type a, b;
 {
   perform_divsi3 (a, b);
 }
 #endif
 
 #ifdef L_umodsi3
-SItype
+nongcc_SI_type
 __umodsi3 (a, b)
-     unsigned SItype a, b;
+     unsigned nongcc_SI_type a, b;
 {
   perform_umodsi3 (a, b);
 }
 #endif
 
 #ifdef L_modsi3
-SItype
+nongcc_SI_type
 __modsi3 (a, b)
-     SItype a, b;
+     nongcc_SI_type a, b;
 {
   perform_modsi3 (a, b);
 }
 #endif
 
 #ifdef L_lshrsi3
-SItype
+nongcc_SI_type
 __lshrsi3 (a, b)
-     unsigned SItype a, b;
+     unsigned nongcc_SI_type a, b;
 {
   perform_lshrsi3 (a, b);
 }
 #endif
 
 #ifdef L_lshlsi3
-SItype
+nongcc_SI_type
 __lshlsi3 (a, b)
-     unsigned SItype a, b;
+     unsigned nongcc_SI_type a, b;
 {
   perform_lshlsi3 (a, b);
 }
 #endif
 
 #ifdef L_ashrsi3
-SItype
+nongcc_SI_type
 __ashrsi3 (a, b)
-     SItype a, b;
+     nongcc_SI_type a, b;
 {
   perform_ashrsi3 (a, b);
 }
 #endif
 
 #ifdef L_ashlsi3
-SItype
+nongcc_SI_type
 __ashlsi3 (a, b)
-     SItype a, b;
+     nongcc_SI_type a, b;
 {
   perform_ashlsi3 (a, b);
 }
@@ -368,7 +368,7 @@ __subdf3 (a, b)
    and so on.  */
 
 #ifdef L_eqdf2
-SItype
+nongcc_SI_type
 __eqdf2 (a, b)
      double a, b;
 {
@@ -378,7 +378,7 @@ __eqdf2 (a, b)
 #endif
 
 #ifdef L_nedf2
-SItype
+nongcc_SI_type
 __nedf2 (a, b)
      double a, b;
 {
@@ -388,7 +388,7 @@ __nedf2 (a, b)
 #endif
 
 #ifdef L_gtdf2
-SItype
+nongcc_SI_type
 __gtdf2 (a, b)
      double a, b;
 {
@@ -398,7 +398,7 @@ __gtdf2 (a, b)
 #endif
 
 #ifdef L_gedf2
-SItype
+nongcc_SI_type
 __gedf2 (a, b)
      double a, b;
 {
@@ -408,7 +408,7 @@ __gedf2 (a, b)
 #endif
 
 #ifdef L_ltdf2
-SItype
+nongcc_SI_type
 __ltdf2 (a, b)
      double a, b;
 {
@@ -418,7 +418,7 @@ __ltdf2 (a, b)
 #endif
 
 #ifdef L_ledf2
-SItype
+nongcc_SI_type
 __ledf2 (a, b)
      double a, b;
 {
@@ -428,7 +428,7 @@ __ledf2 (a, b)
 #endif
 
 #ifdef L_fixdfsi
-SItype
+nongcc_SI_type
 __fixdfsi (a)
      double a;
 {
@@ -437,7 +437,7 @@ __fixdfsi (a)
 #endif
 
 #ifdef L_fixsfsi
-SItype
+nongcc_SI_type
 __fixsfsi (a)
      FLOAT_ARG_TYPE a;
 {
@@ -449,7 +449,7 @@ __fixsfsi (a)
 #ifdef L_floatsidf
 double
 __floatsidf (a)
-     SItype a;
+     nongcc_SI_type a;
 {
   perform_floatsidf (a);
 }
@@ -458,7 +458,7 @@ __floatsidf (a)
 #ifdef L_floatsisf
 FLOAT_VALUE_TYPE
 __floatsisf (a)
-     SItype a;
+     nongcc_SI_type a;
 {
   union flt_or_value intify;
   perform_floatsisf (a);
@@ -496,7 +496,7 @@ __subsf3 (a, b)
 #endif
 
 #ifdef L_eqsf2
-SItype
+nongcc_SI_type
 __eqsf2 (a, b)
      FLOAT_ARG_TYPE a, b;
 {
@@ -507,7 +507,7 @@ __eqsf2 (a, b)
 #endif
 
 #ifdef L_nesf2
-SItype
+nongcc_SI_type
 __nesf2 (a, b)
      FLOAT_ARG_TYPE a, b;
 {
@@ -518,7 +518,7 @@ __nesf2 (a, b)
 #endif
 
 #ifdef L_gtsf2
-SItype
+nongcc_SI_type
 __gtsf2 (a, b)
      FLOAT_ARG_TYPE a, b;
 {
@@ -529,7 +529,7 @@ __gtsf2 (a, b)
 #endif
 
 #ifdef L_gesf2
-SItype
+nongcc_SI_type
 __gesf2 (a, b)
      FLOAT_ARG_TYPE a, b;
 {
@@ -540,7 +540,7 @@ __gesf2 (a, b)
 #endif
 
 #ifdef L_ltsf2
-SItype
+nongcc_SI_type
 __ltsf2 (a, b)
      FLOAT_ARG_TYPE a, b;
 {
@@ -551,7 +551,7 @@ __ltsf2 (a, b)
 #endif
 
 #ifdef L_lesf2
-SItype
+nongcc_SI_type
 __lesf2 (a, b)
      FLOAT_ARG_TYPE a, b;
 {
