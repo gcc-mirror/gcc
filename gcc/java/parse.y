@@ -7439,6 +7439,7 @@ dump_java_tree (phase, t)
   int flags;
 
   stream = dump_begin (phase, &flags);
+  flags |= TDF_SLIM;
   if (stream)
     {
       dump_node (t, flags, stream);
@@ -9504,6 +9505,8 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 	    }
 	  *type_found = type = QUAL_DECL_TYPE (*where_found);
 
+	  *where_found = force_evaluation_order (*where_found);
+
 	  /* If we're creating an inner class instance, check for that
 	     an enclosing instance is in scope */
 	  if (TREE_CODE (qual_wfl) == NEW_CLASS_EXPR
@@ -10785,7 +10788,10 @@ patch_invoke (patch, method, args)
     {
       tree list;
       tree fndecl = current_function_decl;
-      tree save = save_expr (patch);
+      /* We have to call force_evaluation_order now because creating a
+	 COMPOUND_EXPR wraps the arg list in a way that makes it
+	 unrecognizable by force_evaluation_order later.  Yuk.  */
+      tree save = save_expr (force_evaluation_order (patch));
       tree type = TREE_TYPE (patch);
 
       patch = build (COMPOUND_EXPR, type, save, empty_stmt_node);

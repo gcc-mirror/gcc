@@ -42,6 +42,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "diagnostic.h"
 #include "tree-inline.h"
 #include "splay-tree.h"
+#include "tree-dump.h"
 
 struct string_option
 {
@@ -74,6 +75,7 @@ static int merge_init_test_initialization PARAMS ((void * *,
 static int inline_init_test_initialization PARAMS ((void * *, 
 						    void *));
 static bool java_can_use_bit_fields_p PARAMS ((void));
+static int java_dump_tree PARAMS ((void *, tree));
 
 #ifndef TARGET_OBJECT_SUFFIX
 # define TARGET_OBJECT_SUFFIX ".o"
@@ -285,6 +287,9 @@ struct language_function GTY(())
 
 #undef LANG_HOOKS_TREE_INLINING_WALK_SUBTREES
 #define LANG_HOOKS_TREE_INLINING_WALK_SUBTREES java_tree_inlining_walk_subtrees
+
+#undef LANG_HOOKS_TREE_DUMP_DUMP_TREE_FN
+#define LANG_HOOKS_TREE_DUMP_DUMP_TREE_FN java_dump_tree
 
 /* Each front end provides its own.  */
 const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
@@ -1041,4 +1046,113 @@ java_inlining_map_static_initializers (fn, decl_map)
      inline_init_test_initialization, decl_map);
 }
 
+/* Avoid voluminous output for deep recursion of compound exprs.  */
+
+static void
+dump_compound_expr (di, t)
+     dump_info_p di;
+     tree t;
+{
+  int i;
+
+  for (i=0; i<2; i++)
+    {
+      switch (TREE_CODE (TREE_OPERAND (t, i)))
+	{
+	case COMPOUND_EXPR:
+	  dump_compound_expr (di, TREE_OPERAND (t, i));
+	  break;
+
+	case EXPR_WITH_FILE_LOCATION:
+	    {
+	      tree wfl_node = EXPR_WFL_NODE (TREE_OPERAND (t, i));
+	      dump_child ("expr", wfl_node);
+	      break;
+	    }
+
+	default:
+	  dump_child ("expr", TREE_OPERAND (t, i));
+	}
+    }
+}
+  
+static int
+java_dump_tree (dump_info, t)
+     void *dump_info;
+     tree t;
+{
+  enum tree_code code;
+  dump_info_p di = (dump_info_p) dump_info;
+
+  /* Figure out what kind of node this is.  */
+  code = TREE_CODE (t);
+
+  switch (code)
+    {
+    case FUNCTION_DECL:
+      dump_child ("args", DECL_ARGUMENTS (t));
+      if (DECL_EXTERNAL (t))
+	dump_string (di, "undefined");
+      if (TREE_PUBLIC (t))
+	dump_string (di, "extern");
+      else
+	dump_string (di, "static");
+      if (DECL_LANG_SPECIFIC (t))
+	dump_child ("body", DECL_FUNCTION_BODY (t));
+      if (DECL_LANG_SPECIFIC (t) && !dump_flag (di, TDF_SLIM, t))
+	dump_child ("inline body", DECL_SAVED_TREE (t));
+      return 1;
+
+    case RETURN_EXPR:
+      dump_child ("expr", TREE_OPERAND (t, 0));
+      return 1;
+
+    case GOTO_EXPR:
+      dump_child ("goto", TREE_OPERAND (t, 0));
+      return 1;
+
+    case LABEL_EXPR:
+      dump_child ("label", TREE_OPERAND (t, 0));
+      return 1;
+
+    case LABELED_BLOCK_EXPR:
+      dump_child ("label", TREE_OPERAND (t, 0));
+      dump_child ("block", TREE_OPERAND (t, 1));
+      return 1;
+
+    case EXIT_BLOCK_EXPR:
+      dump_child ("block", TREE_OPERAND (t, 0));
+      dump_child ("val", TREE_OPERAND (t, 1));
+      return 1;
+
+    case BLOCK:
+      if (BLOCK_EXPR_BODY (t))
+	{
+	  tree local = BLOCK_VARS (t);
+	  while (local)
+	    {
+	      tree next = TREE_CHAIN (local);
+	      dump_child ("var", local);
+	      local = next;
+	    }
+	  
+	  {
+	    tree block = BLOCK_EXPR_BODY (t);
+	    dump_child ("body", block);
+	    block = TREE_CHAIN (block);
+	  }
+	}
+      return 1;
+      
+    case COMPOUND_EXPR:
+      if (!dump_flag (di, TDF_SLIM, t))
+	return 0;
+      dump_compound_expr (di, t);
+      return 1;
+
+    default:
+      break;
+    }
+  return 0;
+}
 #include "gt-java-lang.h"
