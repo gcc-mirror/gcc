@@ -7051,13 +7051,9 @@ lookup_method_invoke (lc, cl, class, name, arg_list)
   /* Fix the arguments */
   for (node = arg_list; node; node = TREE_CHAIN (node))
     {
-      tree current_arg = TREE_VALUE (node);
-      /* Integer constant 0 passed as itself, not as a type */
-      if (current_arg != integer_zero_node)
-	current_arg = TREE_TYPE (TREE_VALUE (node));
+      tree current_arg = TREE_TYPE (TREE_VALUE (node));
       /* Non primitive type may have to be resolved */
-      if (current_arg != integer_zero_node 
-	  && !JPRIMITIVE_TYPE_P (current_arg))
+      if (!JPRIMITIVE_TYPE_P (current_arg))
 	resolve_and_layout (current_arg, NULL_TREE);
       /* And promoted */
       if (TREE_CODE (current_arg) == RECORD_TYPE)
@@ -7097,9 +7093,6 @@ lookup_method_invoke (lc, cl, class, name, arg_list)
       candidates = obstack_finish (&temporary_obstack);
     }
   /* Issue the error message */
-  for (node = atl; node; node = TREE_CHAIN (node))
-    if (TREE_VALUE (node) == integer_zero_node)
-      TREE_VALUE (node) = long_type_node;
   method = make_node (FUNCTION_TYPE);
   TYPE_ARG_TYPES (method) = atl;
   signature = build_java_argument_signature (method);
@@ -8602,11 +8595,6 @@ valid_builtin_assignconv_identity_widening_p (lhs_type, rhs_type)
   if (lhs_type == rhs_type)
     return 1;
 
-  /* Sometimes, instead of passing a type, we pass integer_zero_node
-     so we know that a numeric type can accomodate it */
-  if (JNUMERIC_TYPE_P (lhs_type) && (rhs_type == integer_zero_node))
-    return 1;
-
   /* Reject non primitive types */
   if (!JPRIMITIVE_TYPE_P (lhs_type) || !JPRIMITIVE_TYPE_P (rhs_type))
     return 0;
@@ -8793,8 +8781,7 @@ static int
 valid_method_invocation_conversion_p (dest, source)
      tree dest, source;
 {
-  return (((JPRIMITIVE_TYPE_P (source) || (source == integer_zero_node))
-	   && JPRIMITIVE_TYPE_P (dest)
+  return ((JPRIMITIVE_TYPE_P (source) && JPRIMITIVE_TYPE_P (dest)
 	   && valid_builtin_assignconv_identity_widening_p (dest, source))
 	  || ((JREFERENCE_TYPE_P (source) || JNULLP_TYPE_P (source))
 	      && (JREFERENCE_TYPE_P (dest) || JNULLP_TYPE_P (dest))
