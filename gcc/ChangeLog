@@ -1,3 +1,9 @@
+2000-04-21  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* predict.c (estimate_probability): New heuristic: if a jump
+	branches around a block with no successors, predict it taken.
+	Disentangle control flow.
+
 2000-04-20  Richard Henderson  <rth@cygnus.com>
 
 	* loop.c (emit_iv_add_mult): Revert last change.
