@@ -575,7 +575,7 @@ java::lang::Runtime::nativeGetLibname (jstring pathname, jstring libname)
   // FIXME: use platform function here.
 #ifdef WIN32
   sb->append (JvNewStringLatin1 ("dll"));
-else
+#else
   sb->append (JvNewStringLatin1 ("so"));
 #endif
 
