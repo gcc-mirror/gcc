@@ -1,5 +1,14 @@
 2003-03-18  Michael Koch  <konqueror@gmx.de>
 
+	* java/io/BufferedOutputStream.java,
+	java/io/DataInput.java,
+	java/io/DataInputStream.java,
+	java/io/DataOutput.java,
+	java/io/Externalizable.java:
+	More merges from classpath.
+
+2003-03-18  Michael Koch  <konqueror@gmx.de>
+
 	* configure.in: Fixed links to platform dependant java.net files.
 	* configure: Regenerated.
 	* java/net/natInetAddress.cc,

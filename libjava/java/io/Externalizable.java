@@ -56,55 +56,58 @@ package java.io;
   * created using the default no-argument constructor and the 
   * <code>readExternal</code> method is used to restore the state.
   *
-  * @version 0.0
-  *
   * @author Aaron M. Renn (arenn@urbanophile.com)
   */
 public interface Externalizable extends Serializable
 {
   static final long serialVersionUID = -282491828744381764L;
 
-/**
-  * This method restores an object's state by reading in the instance data
-  * for the object from the passed in stream.  Note that this stream is not
-  * a subclass of <code>InputStream</code>, but rather is a class that implements
-  * the <code>ObjectInput</code> interface.  That interface provides a mechanism for
-  * reading in Java data types from a stream.
-  * <p>
-  * Note that this method must be compatible with <code>writeExternal</code>.
-  * It must read back the exact same types that were written by that
-  * method in the exact order they were written.
-  * <p>
-  * If this method needs to read back an object instance, then the class
-  * for that object must be found and loaded.  If that operation fails,
-  * then this method throws a <code>ClassNotFoundException</code>
-  *
-  * @param in An <code>ObjectInput</code> instance for reading in the object state
-  *
-  * @exception ClassNotFoundException If the class of an object being restored cannot be found
-  * @exception IOException If any other error occurs
-  */
-public abstract void
-readExternal(ObjectInput in) throws ClassNotFoundException, IOException;
+  /**
+    * This method restores an object's state by reading in the instance data
+    * for the object from the passed in stream.  Note that this stream is not
+    * a subclass of <code>InputStream</code>, but rather is a class that 
+    * implements
+    * the <code>ObjectInput</code> interface.  That interface provides a 
+    * mechanism for
+    * reading in Java data types from a stream.
+    * <p>
+    * Note that this method must be compatible with <code>writeExternal</code>.
+    * It must read back the exact same types that were written by that
+    * method in the exact order they were written.
+    * <p>
+    * If this method needs to read back an object instance, then the class
+    * for that object must be found and loaded.  If that operation fails,
+    * then this method throws a <code>ClassNotFoundException</code>
+    *
+    * @param in An <code>ObjectInput</code> instance for reading in the object 
+    * state
+    *
+    * @exception ClassNotFoundException If the class of an object being 
+    * restored cannot be found
+    * @exception IOException If any other error occurs
+    */
+  public abstract void readExternal(ObjectInput in) 
+    throws ClassNotFoundException, IOException;
 
-/*************************************************************************/
+  /*************************************************************************/
 
-/**
-  * This method is responsible for writing the instance data of an object
-  * to the passed in stream.  Note that this stream is not a subclass of
-  * <code>OutputStream</code>, but rather is a class that implements the
-  * <code>ObjectOutput</code> interface.  That interface provides a number of methods
-  * for writing Java data values to a stream.
-  * <p>
-  * Not that the implementation of this method must be coordinated with
-  * the implementation of <code>readExternal</code>.
-  *
-  * @param out An <code>ObjectOutput</code> instance for writing the object state
-  *
-  * @exception IOException If an error occurs
-  */
-public abstract void
-writeExternal(ObjectOutput out) throws IOException;
+  /**
+    * This method is responsible for writing the instance data of an object
+    * to the passed in stream.  Note that this stream is not a subclass of
+    * <code>OutputStream</code>, but rather is a class that implements the
+    * <code>ObjectOutput</code> interface.  That interface provides a 
+    * number of methods
+    * for writing Java data values to a stream.
+    * <p>
+    * Not that the implementation of this method must be coordinated with
+    * the implementation of <code>readExternal</code>.
+    *
+    * @param out An <code>ObjectOutput</code> instance for writing the 
+    * object state
+    *
+    * @exception IOException If an error occurs
+    */
+  public abstract void writeExternal(ObjectOutput out) throws IOException;
 
 } // interface Externalizable
 

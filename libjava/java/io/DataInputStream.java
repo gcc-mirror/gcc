@@ -1,5 +1,5 @@
 /* DataInputStream.java -- FilteredInputStream that implements DataInput
-   Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
+   Copyright (C) 1998, 1999, 2000, 2001, 2003  Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -49,8 +49,6 @@ package java.io;
  * Java data types from a stream.
  *
  * @see DataInput
- *
- * @version 0.0
  *
  * @author Warren Levy <warrenl@cygnus.com>
  * @author Aaron M. Renn (arenn@urbanophile.com)

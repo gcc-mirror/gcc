@@ -46,189 +46,179 @@ package java.io;
   * efficient mechanism for writing versus doing numerous small unbuffered
   * writes.
   *
-  * @version 0.0
-  *
   * @author Aaron M. Renn (arenn@urbanophile.com)
   */
 public class BufferedOutputStream extends FilterOutputStream
 {
+  /*
+   * Class Variables
+   */
 
-/*************************************************************************/
+  /**
+    * This is the default buffer size
+    */
+  private static final int DEFAULT_BUFFER_SIZE = 512;
 
-/*
- * Class Variables
- */
+  /*************************************************************************/
 
-/**
-  * This is the default buffer size
-  */
-private static final int DEFAULT_BUFFER_SIZE = 512;
+  /*
+   * Instance Variables
+   */
 
-/*************************************************************************/
+  /**
+    * This is the internal byte array used for buffering output before
+    * writing it.
+    */
+  protected byte[] buf;
 
-/*
- * Instance Variables
- */
+  /**
+    * This is the number of bytes that are currently in the buffer and
+    * are waiting to be written to the underlying stream.  It always points to
+    * the index into the buffer where the next byte of data will be stored
+    */
+  protected int count;
 
-/**
-  * This is the internal byte array used for buffering output before
-  * writing it.
-  */
-protected byte[] buf;
+  /*************************************************************************/
 
-/**
-  * This is the number of bytes that are currently in the buffer and
-  * are waiting to be written to the underlying stream.  It always points to
-  * the index into the buffer where the next byte of data will be stored
-  */
-protected int count;
+  /*
+   * Constructors
+   */
 
-/*************************************************************************/
+  /**
+    * This method initializes a new <code>BufferedOutputStream</code> instance
+    * that will write to the specified subordinate <code>OutputStream</code>
+    * and which will use a default buffer size of 512 bytes.
+    *
+    * @param out The underlying <code>OutputStream</code> to write data to
+    */
+  public BufferedOutputStream(OutputStream out)
+  {
+    this(out, DEFAULT_BUFFER_SIZE);
+  }
 
-/*
- * Constructors
- */
+  /*************************************************************************/
 
-/**
-  * This method initializes a new <code>BufferedOutputStream</code> instance
-  * that will write to the specified subordinate <code>OutputStream</code>
-  * and which will use a default buffer size of 512 bytes.
-  *
-  * @param out The underlying <code>OutputStream</code> to write data to
-  */
-public
-BufferedOutputStream(OutputStream out)
-{
-  this(out, DEFAULT_BUFFER_SIZE);
-}
+  /**
+    * This method initializes a new <code>BufferedOutputStream</code> instance
+    * that will write to the specified subordinate <code>OutputStream</code>
+    * and which will use the specified buffer size
+    *
+    * @param out The underlying <code>OutputStream</code> to write data to
+    * @param size The size of the internal buffer
+    */
+  public BufferedOutputStream(OutputStream out, int size)
+  {
+    super(out);
 
-/*************************************************************************/
+    buf = new byte[size];
+  }
 
-/**
-  * This method initializes a new <code>BufferedOutputStream</code> instance
-  * that will write to the specified subordinate <code>OutputStream</code>
-  * and which will use the specified buffer size
-  *
-  * @param out The underlying <code>OutputStream</code> to write data to
-  * @param size The size of the internal buffer
-  */
-public
-BufferedOutputStream(OutputStream out, int size)
-{
-  super(out);
+  /*************************************************************************/
 
-  buf = new byte[size];
-}
+  /*
+   * Instance Methods
+   */
 
-/*************************************************************************/
+  /**
+    * This method causes any currently buffered bytes to be immediately
+    * written to the underlying output stream.
+    *
+    * @exception IOException If an error occurs
+    */
+  public synchronized void flush() throws IOException
+  {
+    if (count == 0)
+      return;
 
-/*
- * Instance Methods
- */
+    out.write(buf, 0, count);
+    count = 0;
+    out.flush();
+  }
 
-/**
-  * This method causes any currently buffered bytes to be immediately
-  * written to the underlying output stream.
-  *
-  * @exception IOException If an error occurs
-  */
-public synchronized void
-flush() throws IOException
-{
-  if (count == 0)
-    return;
+  /*************************************************************************/
 
-  out.write(buf, 0, count);
-  count = 0;
-  out.flush();
-}
-
-/*************************************************************************/
-
-/*
-  * This method flushes any remaining buffered bytes then closes the 
-  * underlying output stream.  Any further attempts to write to this stream
-  * may throw an exception
-  *
-public synchronized void
-close() throws IOException
-{
-  flush();
-  out.close();
-}
-*/
-
-/*************************************************************************/
-
-/*
-  * This method runs when the object is garbage collected.  It is 
-  * responsible for ensuring that all buffered bytes are written and
-  * for closing the underlying stream.
-  *
-  * @exception IOException If an error occurs (ignored by the Java runtime)
-  *
-protected void
-finalize() throws IOException
-{
-  close();
-}
-*/
-
-/*************************************************************************/
-
-/**
-  * This method writes a single byte of data.  This will be written to the
-  * buffer instead of the underlying data source.  However, if the buffer
-  * is filled as a result of this write request, it will be flushed to the
-  * underlying output stream.
-  *
-  * @param b The byte of data to be written, passed as an int
-  *
-  * @exception IOException If an error occurs
-  */
-public synchronized void
-write(int b) throws IOException
-{
-  if (count == buf.length)
+  /*
+    * This method flushes any remaining buffered bytes then closes the 
+    * underlying output stream.  Any further attempts to write to this stream
+    * may throw an exception
+    *
+  public synchronized void close() throws IOException
+  {
     flush();
-
-  buf[count] = (byte)(b & 0xFF);
-  ++count;
-}
-
-/*************************************************************************/
-
-/**
-  * This method writes <code>len</code> bytes from the byte array 
-  * <code>buf</code> starting at position <code>offset</code> in the buffer. 
-  * These bytes will be written to the internal buffer.  However, if this
-  * write operation fills the buffer, the buffer will be flushed to the
-  * underlying output stream.
-  *
-  * @param buf The array of bytes to write.
-  * @param offset The index into the byte array to start writing from.
-  * @param len The number of bytes to write.
-  *
-  * @exception IOException If an error occurs
+    out.close();
+  }
   */
-public synchronized void
-write(byte[] buf, int offset, int len) throws IOException
-{
-  // Buffer can hold everything.  Note that the case where LEN < 0
-  // is automatically handled by the downstream write.
-  if (len < (this.buf.length - count))
-    {
-      System.arraycopy(buf, offset, this.buf, count, len);
-      count += len;
-    }
-  else
-    {
-      // The write was too big.  So flush the buffer and write the new
-      // bytes directly to the underlying stream, per the JDK 1.2
-      // docs.
+
+  /*************************************************************************/
+
+  /*
+    * This method runs when the object is garbage collected.  It is 
+    * responsible for ensuring that all buffered bytes are written and
+    * for closing the underlying stream.
+    *
+    * @exception IOException If an error occurs (ignored by the Java runtime)
+    *
+  protected void finalize() throws IOException
+  {
+    close();
+  }
+  */
+
+  /*************************************************************************/
+
+  /**
+    * This method writes a single byte of data.  This will be written to the
+    * buffer instead of the underlying data source.  However, if the buffer
+    * is filled as a result of this write request, it will be flushed to the
+    * underlying output stream.
+    *
+    * @param b The byte of data to be written, passed as an int
+    *
+    * @exception IOException If an error occurs
+    */
+  public synchronized void write(int b) throws IOException
+  {
+    if (count == buf.length)
       flush();
-      out.write (buf, offset, len);
-    }
-}
+
+    buf[count] = (byte)(b & 0xFF);
+    ++count;
+  }
+
+  /*************************************************************************/
+
+  /**
+    * This method writes <code>len</code> bytes from the byte array 
+    * <code>buf</code> starting at position <code>offset</code> in the buffer. 
+    * These bytes will be written to the internal buffer.  However, if this
+    * write operation fills the buffer, the buffer will be flushed to the
+    * underlying output stream.
+    *
+    * @param buf The array of bytes to write.
+    * @param offset The index into the byte array to start writing from.
+    * @param len The number of bytes to write.
+    *
+    * @exception IOException If an error occurs
+    */
+  public synchronized void write(byte[] buf, int offset, int len) 
+    throws IOException
+  {
+    // Buffer can hold everything.  Note that the case where LEN < 0
+    // is automatically handled by the downstream write.
+    if (len < (this.buf.length - count))
+      {
+        System.arraycopy(buf, offset, this.buf, count, len);
+        count += len;
+      }
+    else
+      {
+        // The write was too big.  So flush the buffer and write the new
+        // bytes directly to the underlying stream, per the JDK 1.2
+        // docs.
+        flush();
+        out.write (buf, offset, len);
+      }
+  }
 
 } // class BufferedOutputStream 
+
