@@ -1,3 +1,8 @@
+Mon Nov 23 20:25:03 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* i386/linux.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Wrap in do...while.
+	* i386.md (prologue_get_pc): Remove unused variable.
+
 Mon Nov 23 17:05:40 1998  Geoffrey Noer  <noer@cygnus.com>
 
 	* i386/xm-cygwin.h: Rename cygwin_ path funcs back to cygwin32_.
