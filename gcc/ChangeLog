@@ -1,3 +1,9 @@
+2005-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/19579
+	* ifcvt.c (noce_try_cmove_arith): If emitting instructions to set up
+	both A and B, see if they don't clobber registers the other expr uses.
+
 2005-01-25  J"orn Rennecke <joern.rennecke@st.com>
 
 	* real.c (do_add): Initialize signalling and canonical members.
