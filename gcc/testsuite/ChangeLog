@@ -1,3 +1,13 @@
+2001-11-08  Geoffrey Keating  <geoffk@redhat.com>
+
+	* g++.old-deja/g++.bugs/900227_01.C: Change stormy16 to xstormy16.
+	* g++.old-deja/g++.eh/badalloc1.C: Change stormy16 to xstormy16.
+	* g++.old-deja/g++.mike/ns15.C: Change stormy16 to xstormy16.
+	* g++.old-deja/g++.pt/crash16.C: Change stormy16 to xstormy16.
+	* gcc.c-torture/compile/961203-1.x: Change stormy16 to xstormy16.
+	* gcc.c-torture/compile/980506-1.x: Change stormy16 to xstormy16.
+	* gcc.c-torture/compile/990617-1.x: Change stormy16 to xstormy16.
+
 2001-11-08  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* g++.dg/warn/Wshadow-1.C: New tests.

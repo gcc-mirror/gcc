@@ -1,3 +1,17 @@
+2001-11-08  Geoffrey Keating  <geoffk@redhat.com>
+
+	* config.gcc: Rename stormy16 to xstormy16.
+	* config/stormy16/stormy-abi: Likewise.
+	* config/stormy16/stormy16-protos.h: Likewise.
+	* config/stormy16/stormy16.c: Likewise.
+	* config/stormy16/stormy16.h: Likewise.
+	* config/stormy16/stormy16.md: Likewise.
+
+2001-11-06  Geoffrey Keating  <geoffk@redhat.com>
+
+	* tree.h (TYPE_VOLATILE): Add enable-checking code.
+	(TYPE_READONLY): Likewise.
+
 Thu Nov  8 18:00:55 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* reload1.c (reload): Don't delete equiv insn if can throw.

@@ -1,3 +1,8 @@
+2001-11-08  Geoffrey Keating  <geoffk@redhat.com>
+
+	* config.sub: Import from master sources, rev. 1.230.
+	* MAINTAINERS: Change 'stormy16' to 'xstormy16'.
+
 2001-11-07  Laurent Guerby  <guerby@acm.org>
 
 	* MAINTAINERS (Write After Approval): Add self.
