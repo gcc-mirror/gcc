@@ -85,10 +85,15 @@ static void ffi_prep_args(char *stack,
   for (i = ecif->cif->nargs, p_arg = ecif->cif->arg_types; i; i--, p_arg++)
     {
       size_t z;
+      unsigned short a;
 
       /* Align if necessary */
-      if (((*p_arg)->alignment - 1) & (unsigned) argp) {
-	argp = (char *) ALIGN(argp, (*p_arg)->alignment);
+      a = (*p_arg)->alignment;
+      if (a < FFI_SIZEOF_ARG)
+        a = FFI_SIZEOF_ARG;
+      
+      if ((a - 1) & (unsigned) argp) {
+	argp = (char *) ALIGN(argp, a);
 	FIX_ARGP;
       }
 
@@ -268,9 +273,11 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
   cif->flags = 0;
 
 #if _MIPS_SIM == _ABIO32
-  /* Set the flags necessary for O32 processing */
+  /* Set the flags necessary for O32 processing.  FFI_O32_SOFT_FLOAT
+   * does not have special handling for floating point args.
+   */
 
-  if (cif->rtype->type != FFI_TYPE_STRUCT)
+  if (cif->rtype->type != FFI_TYPE_STRUCT && cif->abi == FFI_O32)
     {
       if (cif->nargs > 0)
 	{
@@ -307,23 +314,49 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
     }
       
   /* Set the return type flag */
-  switch (cif->rtype->type)
-    {
-    case FFI_TYPE_VOID:
-    case FFI_TYPE_STRUCT:
-    case FFI_TYPE_FLOAT:
-    case FFI_TYPE_DOUBLE:
-      cif->flags += cif->rtype->type << (FFI_FLAG_BITS * 2);
-      break;
 
-    case FFI_TYPE_SINT64:
-    case FFI_TYPE_UINT64:
-      cif->flags += FFI_TYPE_UINT64 << (FFI_FLAG_BITS * 2);
-      break;
+  if (cif->abi == FFI_O32_SOFT_FLOAT)
+    {
+      switch (cif->rtype->type)
+        {
+        case FFI_TYPE_VOID:
+        case FFI_TYPE_STRUCT:
+          cif->flags += cif->rtype->type << (FFI_FLAG_BITS * 2);
+          break;
+
+        case FFI_TYPE_SINT64:
+        case FFI_TYPE_UINT64:
+        case FFI_TYPE_DOUBLE:
+          cif->flags += FFI_TYPE_UINT64 << (FFI_FLAG_BITS * 2);
+          break;
       
-    default:
-      cif->flags += FFI_TYPE_INT << (FFI_FLAG_BITS * 2);
-      break;
+        case FFI_TYPE_FLOAT:
+        default:
+          cif->flags += FFI_TYPE_INT << (FFI_FLAG_BITS * 2);
+          break;
+        }
+    }
+  else
+    {
+      /* FFI_O32 */      
+      switch (cif->rtype->type)
+        {
+        case FFI_TYPE_VOID:
+        case FFI_TYPE_STRUCT:
+        case FFI_TYPE_FLOAT:
+        case FFI_TYPE_DOUBLE:
+          cif->flags += cif->rtype->type << (FFI_FLAG_BITS * 2);
+          break;
+
+        case FFI_TYPE_SINT64:
+        case FFI_TYPE_UINT64:
+          cif->flags += FFI_TYPE_UINT64 << (FFI_FLAG_BITS * 2);
+          break;
+      
+        default:
+          cif->flags += FFI_TYPE_INT << (FFI_FLAG_BITS * 2);
+          break;
+        }
     }
 #endif
 
@@ -448,6 +481,7 @@ void ffi_call(ffi_cif *cif, void (*fn)(), void *rvalue, void **avalue)
     {
 #if _MIPS_SIM == _ABIO32
     case FFI_O32:
+    case FFI_O32_SOFT_FLOAT:
       ffi_call_O32(ffi_prep_args, &ecif, cif->bytes, 
 		   cif->flags, ecif.rvalue, fn);
       break;
@@ -482,7 +516,7 @@ ffi_prep_closure (ffi_closure *closure,
   unsigned int ctx = (unsigned int) closure;
 
 #if defined(FFI_MIPS_O32)
-  FFI_ASSERT(cif->abi == FFI_O32);
+  FFI_ASSERT(cif->abi == FFI_O32 || cif->abi == FFI_O32_SOFT_FLOAT);
   fn = (unsigned int) ffi_closure_O32;
 #else /* FFI_MIPS_N32 */
   FFI_ASSERT(cif->abi == FFI_N32);
@@ -535,10 +569,10 @@ ffi_closure_mips_inner_O32 (ffi_closure *closure,
   cif = closure->cif;
   avalue = alloca (cif->nargs * sizeof (void *));
 
-  seen_int = 0;
+  seen_int = (cif->abi == FFI_O32_SOFT_FLOAT);
   argn = 0;
 
-  if (cif->flags == FFI_TYPE_STRUCT)
+  if ((cif->flags >> (FFI_FLAG_BITS * 2)) == FFI_TYPE_STRUCT)
     {
       rvalue = (void *) ar[0];
       argn = 1;
@@ -558,12 +592,7 @@ ffi_closure_mips_inner_O32 (ffi_closure *closure,
 	}
       else
 	{
-	  /* 8-byte arguments are always 8-byte aligned. */
-	  if (arg_types[i]->size == 8 && (argn & 0x1))
-	    argn++;
-	  /* Float arguments take up two register slots. The float word
-	     is the upper one. */
-	  if (argn == 2 && arg_types[i]->type == FFI_TYPE_FLOAT)
+	  if (arg_types[i]->alignment == 8 && (argn & 0x1))
 	    argn++;
 	  avalue[i] = ((char *) &ar[argn]);
 	  seen_int = 1;
@@ -575,7 +604,22 @@ ffi_closure_mips_inner_O32 (ffi_closure *closure,
   /* Invoke the closure. */
   (closure->fun) (cif, rvalue, avalue, closure->user_data);
 
-  return cif->rtype->type;
+  if (cif->abi == FFI_O32_SOFT_FLOAT)
+    {
+      switch (cif->rtype->type)
+        {
+        case FFI_TYPE_FLOAT:
+          return FFI_TYPE_INT;
+        case FFI_TYPE_DOUBLE:
+          return FFI_TYPE_UINT64;
+        default:
+          return cif->rtype->type;
+        }
+    }
+  else
+    {
+      return cif->rtype->type;
+    }
 }
 
 #endif /* FFI_CLOSURES */

@@ -36,7 +36,6 @@
 #define flags	 a3
 		
 #define SIZEOF_FRAME	( 4 * FFI_SIZEOF_ARG + 2 * FFI_SIZEOF_ARG )
-#define SIZEOF_FRAME2	( 8 * FFI_SIZEOF_ARG + 2 * FFI_SIZEOF_ARG )
 
 	.text
 	.align	2
@@ -188,7 +187,28 @@ $LFE0:
 /* ffi_closure_O32. Expects address of the passed-in ffi_closure
 	in t0. Stores any arguments passed in registers onto the
 	stack, then calls ffi_closure_mips_inner_O32, which
-	then decodes them. */
+	then decodes them.
+	
+	Stack layout:
+
+	14 - Start of parameters, original sp
+	13 - ra save
+	12 - fp save
+	11 - $16 (s0) save
+	10 - cprestore
+	 9 - return value high (v1)
+	 8 - return value low (v0)
+	 7 - f14 (le high, be low)
+	 6 - f14 (le low, be high)
+	 5 - f12 (le high, be low)
+	 4 - f12 (le low, be high)
+	 3 - Called function a3 save
+	 2 - Called function a2 save
+	 1 - Called function a1 save
+	 0 - Called function a0 save our sp, fp point here
+	 */
+	
+#define SIZEOF_FRAME2	( 14 * FFI_SIZEOF_ARG )
 
 	.text
 	.align	2
@@ -202,10 +222,10 @@ $LFB1:
 	.cpload	$25
 	.set	reorder
 	SUBU	$sp, SIZEOF_FRAME2
-	.cprestore SIZEOF_FRAME2 - 3*FFI_SIZEOF_ARG
+	.cprestore SIZEOF_FRAME2 - 4*FFI_SIZEOF_ARG
 $LCFI4:
+	REG_S	$16, SIZEOF_FRAME2 - 3*FFI_SIZEOF_ARG($sp)	 # Save s0
 	REG_S	$fp, SIZEOF_FRAME2 - 2*FFI_SIZEOF_ARG($sp)	 # Save frame pointer
-$LCFI5:
 	REG_S	ra, SIZEOF_FRAME2 - 1*FFI_SIZEOF_ARG($sp)	 # Save return address
 $LCFI6:
 	move	$fp, $sp
@@ -218,14 +238,21 @@ $LCFI7:
 	REG_S	$6, SIZEOF_FRAME2 + 2*FFI_SIZEOF_ARG($fp)
 	REG_S	$7, SIZEOF_FRAME2 + 3*FFI_SIZEOF_ARG($fp)
 
+	# Load ABI enum to $16
+	REG_L	$16, 20($8)	# cif pointer follows tramp.
+	REG_L	$16, 0($16)	# abi is first member.
+
+	li	$13, 1		# FFI_O32
+	bne	$16, $13, 1f	# Skip fp save if FFI_O32_SOFT_FLOAT
+	
 	# Store all possible float/double registers.
 	s.d	$f12, SIZEOF_FRAME2 - 10*FFI_SIZEOF_ARG($fp)
 	s.d	$f14, SIZEOF_FRAME2 -  8*FFI_SIZEOF_ARG($fp)
-
+1:	
 	# Call ffi_closure_mips_inner_O32 to do the work.
 	la	$25, ffi_closure_mips_inner_O32
 	move	$4, $8	 # Pointer to the ffi_closure
-	addu	$5, $fp, SIZEOF_FRAME2 -  4*FFI_SIZEOF_ARG
+	addu	$5, $fp, SIZEOF_FRAME2 -  6*FFI_SIZEOF_ARG
 	addu	$6, $fp, SIZEOF_FRAME2 +  0*FFI_SIZEOF_ARG
 	addu	$7, $fp, SIZEOF_FRAME2 - 10*FFI_SIZEOF_ARG
 	jal	$31, $25
@@ -235,28 +262,30 @@ $LCFI7:
 	li	$9, FFI_TYPE_VOID
 	beq	$8, $9, closure_done
 
+	li	$13, 1		# FFI_O32
+	bne	$16, $13, 1f	# Skip fp restore if FFI_O32_SOFT_FLOAT
+
 	li	$9, FFI_TYPE_FLOAT
-	l.s	$f0, SIZEOF_FRAME2 - 4*FFI_SIZEOF_ARG($fp)
+	l.s	$f0, SIZEOF_FRAME2 - 6*FFI_SIZEOF_ARG($fp)
 	beq	$8, $9, closure_done
 
 	li	$9, FFI_TYPE_DOUBLE
-	l.d	$f0, SIZEOF_FRAME2 - 4*FFI_SIZEOF_ARG($fp)
+	l.d	$f0, SIZEOF_FRAME2 - 6*FFI_SIZEOF_ARG($fp)
 	beq	$8, $9, closure_done
-
+1:	
 	li	$9, FFI_TYPE_SINT64
-	REG_L	$3, SIZEOF_FRAME2 - 3*FFI_SIZEOF_ARG($fp)
+	REG_L	$3, SIZEOF_FRAME2 - 5*FFI_SIZEOF_ARG($fp)
 	beq	$8, $9, integer
-
 	li	$9, FFI_TYPE_UINT64
-	REG_L	$3, SIZEOF_FRAME2 - 3*FFI_SIZEOF_ARG($fp)
 	beq	$8, $9, integer
 
 integer:
-	REG_L	$2, SIZEOF_FRAME2 - 4*FFI_SIZEOF_ARG($fp)
+	REG_L	$2, SIZEOF_FRAME2 - 6*FFI_SIZEOF_ARG($fp)
 
 closure_done:
 	# Epilogue
 	move	$sp, $fp
+	REG_L	$16, SIZEOF_FRAME2 - 3*FFI_SIZEOF_ARG($sp)	 # Restore s0
 	REG_L	$fp, SIZEOF_FRAME2 - 2*FFI_SIZEOF_ARG($sp)	 # Restore frame pointer
 	REG_L	ra,  SIZEOF_FRAME2 - 1*FFI_SIZEOF_ARG($sp)	 # Restore return address
 	ADDU	$sp, SIZEOF_FRAME2
@@ -319,9 +348,12 @@ $LASFDE1:
 	.byte	0x4	 # DW_CFA_advance_loc4
 	.4byte	$LCFI4-$LFB1
 	.byte	0xe	 # DW_CFA_def_cfa_offset
-	.uleb128 0x28
+	.uleb128 0x38
 	.byte	0x4	 # DW_CFA_advance_loc4
 	.4byte	$LCFI6-$LCFI4
+	.byte	0x11	 # DW_CFA_offset_extended_sf
+	.uleb128 0x10	 # $16
+	.sleb128 -3	 # SIZEOF_FRAME2 - 3*FFI_SIZEOF_ARG($sp)
 	.byte	0x11	 # DW_CFA_offset_extended_sf
 	.uleb128 0x1e	 # $fp
 	.sleb128 -2	 # SIZEOF_FRAME2 - 2*FFI_SIZEOF_ARG($sp)
@@ -332,7 +364,7 @@ $LASFDE1:
 	.4byte	$LCFI7-$LCFI6
 	.byte	0xc	 # DW_CFA_def_cfa
 	.uleb128 0x1e
-	.uleb128 0x28
+	.uleb128 0x38
 	.align	2
 $LEFDE1:
 

@@ -1,3 +1,17 @@
+2004-08-23  David Daney <daney@avtrex.com>
+
+	PR libgcj/13141
+	* src/mips/ffitarget.h (FFI_O32_SOFT_FLOAT): New ABI.
+	* src/mips/ffi.c (ffi_prep_args): Fix alignment calculation.
+	(ffi_prep_cif_machdep): Handle FFI_O32_SOFT_FLOAT floating point
+	parameters and return types.
+	(ffi_call): Handle FFI_O32_SOFT_FLOAT ABI.
+	(ffi_prep_closure): Ditto.
+	(ffi_closure_mips_inner_O32): Handle FFI_O32_SOFT_FLOAT ABI, fix
+	alignment calculations.
+	* src/mips/o32.S (ffi_closure_O32): Don't use floating point
+	instructions if FFI_O32_SOFT_FLOAT, make stack frame ABI compliant.
+
 2004-08-14  Casey Marshall <csm@gnu.org>
 
 	* src/mips/ffi.c (ffi_pref_cif_machdep): set `cif->flags' to
