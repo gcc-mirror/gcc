@@ -1,0 +1,65 @@
+# Configure script for libada.
+#   Copyright 2003, 2004 Free Software Foundation, Inc.
+#
+# This file is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+# Please keep the version number in sync with the general GCC version.
+AC_INIT([GCC libada],[experimental pre-3.5])
+
+# This is an autoconf 2.5x script.
+AC_PREREQ([2.57])
+
+# Very limited version of AC_MAINTAINER_MODE.
+AC_ARG_ENABLE(
+  [maintainer-mode],
+  AC_HELP_STRING([--enable-maintainer-mode],
+                 [enable make rules and dependencies not useful (and
+                  sometimes confusing) to the casual installer]),
+  [case ${enable_maintainer_mode} in
+     yes) MAINT='' ;;
+     no) MAINT='#' ;;
+     *) AC_MSG_ERROR([--enable-maintainer-mode must be yes or no]) ;;
+   esac
+   maintainer_mode=${enableval}],
+  [MAINT='#'])
+AC_SUBST([MAINT])dnl
+
+# Start of actual configure tests
+
+# Output: create a Makefile.
+AC_CONFIG_FILES([Makefile])
+
+AC_CANONICAL_SYSTEM
+
+AC_ARG_ENABLE(shared,
+[  --disable-shared        don't provide a shared libgnat],
+[ 
+  case $enable_shared in
+  yes | no) ;;
+  *)
+    enable_shared=no
+    IFS="${IFS=         }"; ac_save_ifs="$IFS"; IFS="${IFS}:,"
+    for pkg in $enableval; do
+      if test "$pkg" = "ada" || test "$pkg" = "libada"; then
+        enable_shared=yes
+      fi
+    done
+    IFS="$ac_save_ifs"
+    ;;
+  esac
+], [enable_shared=yes])
+AC_SUBST(enable_shared)
+
+AC_OUTPUT

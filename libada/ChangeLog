@@ -1,0 +1,27 @@
+2003-02-10  Arnaud Charlet  <charlet@act-europe.fr>
+
+	PR ada/6637, PR ada/5911
+	* configure.in, Makefile.in, configure: Merge with libada-branch
+
+2003-10-27  Arnaud Charlet  <charlet@act-europe.fr>
+
+	PR ada/6637, PR ada/5911
+	* configure.in: Add support for --enable/disable-shared
+	* Makefile.in: Add initial, simple support for gnatlib/gnattools
+	for native and cross configurations.
+	* configure: Regenerate
+
+2003-10-23  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* configure.in: Make --enable-maintainer-mode work.
+	* configure: Regenerate.
+
+	* Makefile.in, configure.in: New files.
+	* configure: Generate.
+
+	* New directory, new ChangeLog.
+
+Copyright 2003, 2004 Free Software Foundation, Inc.
+
+This ChangeLog is free software; the Free Software Foundation gives
+unlimited permission to copy, distribute, and modify it.
