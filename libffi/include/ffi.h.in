@@ -189,21 +189,21 @@ typedef enum ffi_abi {
 #endif
 #endif
 
-  /* ---- Intel x86 and AMD x86-64 - */
-#if defined(X86) || defined(X86_64)
-  FFI_SYSV,
-  FFI_UNIX64,   /* Unix variants all use the same ABI for x86-64  */
-#ifdef X86
-  FFI_DEFAULT_ABI = FFI_SYSV,
-#else
-  FFI_DEFAULT_ABI = FFI_UNIX64,
-#endif
-#endif
-
   /* ---- Intel x86 Win32 ---------- */
 #ifdef X86_WIN32
   FFI_SYSV,
   FFI_DEFAULT_ABI = FFI_SYSV,
+#endif
+
+  /* ---- Intel x86 and AMD x86-64 - */
+#if defined(__i386__) || defined(__x86_64__)
+  FFI_SYSV,
+  FFI_UNIX64,   /* Unix variants all use the same ABI for x86-64  */
+#ifdef __i386__
+  FFI_DEFAULT_ABI = FFI_SYSV,
+#else
+  FFI_DEFAULT_ABI = FFI_UNIX64,
+#endif
 #endif
 
   /* ---- Intel ia64 ---------------- */
@@ -390,13 +390,7 @@ size_t ffi_java_raw_size (ffi_cif *cif);
 
 /* ---- Definitions for closures ----------------------------------------- */
 
-#ifdef X86
-
-#define FFI_CLOSURES 1		/* x86 supports closures */
-#define FFI_TRAMPOLINE_SIZE 10
-#define FFI_NATIVE_RAW_API 1	/* and has native raw api support */
-
-#elif defined(X86_WIN32)
+#ifdef __i386__
 
 #define FFI_CLOSURES 1		/* x86 supports closures */
 #define FFI_TRAMPOLINE_SIZE 10
