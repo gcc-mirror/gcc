@@ -22,6 +22,7 @@ Boston, MA 02111-1307, USA.  */
 #include "system.h"
 #include "toplev.h"
 #include "rtl.h"
+#include "ggc.h"
 
 /* Functions for maintaining cache-able lists of EXPR_LIST and INSN_LISTs.  */
 
@@ -104,9 +105,25 @@ alloc_EXPR_LIST (kind, val, next)
 }
 
 /* This function will initialize the EXPR_LIST and INSN_LIST caches.  */
+
+static void
+zap_lists (dummy)
+     void *dummy ATTRIBUTE_UNUSED;
+{
+  unused_expr_list = NULL;
+  unused_insn_list = NULL;
+}
+
 void 
 init_EXPR_INSN_LIST_cache ()
 {
+  static int initialized;
+  if (!initialized)
+    {
+      initialized = 1;
+      ggc_add_root (&unused_expr_list, 1, 1, zap_lists);
+    }
+    
   unused_expr_list = NULL;
   unused_insn_list = NULL;
 }
