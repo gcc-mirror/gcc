@@ -191,10 +191,10 @@ CUMULATIVE_ARGS current_function_args_info;
 
 char *current_function_name;
 
-/* If non-zero, an RTL expression for that location at which the current
-   function returns its result.  Always equal to
-   DECL_RTL (DECL_RESULT (current_function_decl)), but provided
-   independently of the tree structures.  */
+/* If non-zero, an RTL expression for the location at which the current 
+   function returns its result.  If the current function returns its
+   result in a register, current_function_return_rtx will always be
+   the hard register containing the result.  */
 
 rtx current_function_return_rtx;
 
@@ -5692,6 +5692,11 @@ expand_function_end (filename, line, end_bindings)
       emit_move_insn (real_decl_result,
 		      DECL_RTL (DECL_RESULT (current_function_decl)));
       emit_insn (gen_rtx (USE, VOIDmode, real_decl_result));
+
+      /* The delay slot scheduler assumes that current_function_return_rtx
+	 holds the hard register containing the return value, not a temporary
+	 pseudo.  */
+      current_function_return_rtx = real_decl_result;
     }
 
   /* If returning a structure, arrange to return the address of the value
