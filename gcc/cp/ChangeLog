@@ -1,3 +1,10 @@
+2001-06-15  Jason Merrill  <jason_merrill@redhat.com>
+
+	* class.c (dfs_accumulate_vtbl_inits): Just point to the base we're
+	sharing a ctor vtable with.  Merge code for cases 1 and 2.
+	(binfo_ctor_vtable): New fn.
+	(build_vtt_inits, dfs_build_secondary_vptr_vtt_inits): Use it.
+
 2001-06-14  Jason Merrill  <jason_merrill@redhat.com>
 
 	* class.c (dfs_find_final_overrider): Fix logic.

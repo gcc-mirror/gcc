@@ -7252,6 +7252,31 @@ get_original_base (base_binfo, binfo)
   return NULL;
 }
 
+/* When building a secondary VTT, BINFO_VTABLE is set to a TREE_LIST with
+   PURPOSE the RTTI_BINFO, VALUE the real vtable pointer for this binfo,
+   and CHAIN the vtable pointer for this binfo after construction is
+   complete.  VALUE can also be another BINFO, in which case we recurse. */
+
+static tree
+binfo_ctor_vtable (binfo)
+     tree binfo;
+{
+  tree vt;
+
+  while (1)
+    {
+      vt = BINFO_VTABLE (binfo);
+      if (TREE_CODE (vt) == TREE_LIST)
+	vt = TREE_VALUE (vt);
+      if (TREE_CODE (vt) == TREE_VEC)
+	binfo = vt;
+      else
+	break;
+    }
+
+  return vt;
+}
+
 /* Recursively build the VTT-initializer for BINFO (which is in the
    hierarchy dominated by T).  INITS points to the end of the initializer
    list to date.  INDEX is the VTT index where the next element will be
@@ -7288,9 +7313,7 @@ build_vtt_inits (binfo, t, inits, index)
     }
 
   /* Add the address of the primary vtable for the complete object.  */
-  init = BINFO_VTABLE (binfo);
-  if (TREE_CODE (init) == TREE_LIST)
-    init = TREE_VALUE (init);
+  init = binfo_ctor_vtable (binfo);
   *inits = build_tree_list (NULL_TREE, init);
   inits = &TREE_CHAIN (*inits);
   if (top_level_p)
@@ -7427,9 +7450,7 @@ dfs_build_secondary_vptr_vtt_inits (binfo, data)
       while (BINFO_PRIMARY_BASE_OF (binfo))
         binfo = BINFO_PRIMARY_BASE_OF (binfo);
     }
-  init = BINFO_VTABLE (binfo);
-  if (TREE_CODE (init) == TREE_LIST)
-    init = TREE_VALUE (init);
+  init = binfo_ctor_vtable (binfo);
   TREE_VALUE (l) = tree_cons (NULL_TREE, init, TREE_VALUE (l));
 
   return NULL_TREE;
@@ -7621,142 +7642,58 @@ dfs_accumulate_vtbl_inits (binfo, orig_binfo, rtti_binfo, t, l)
   tree vtbl = NULL_TREE;
   int ctor_vtbl_p = !same_type_p (BINFO_TYPE (rtti_binfo), t);
 
-  if (ctor_vtbl_p)
+  if (ctor_vtbl_p
+      && TREE_VIA_VIRTUAL (orig_binfo) && BINFO_PRIMARY_P (orig_binfo))
     {
-      tree primary = binfo;
-      tree orig_primary = orig_binfo;
-      
-      if (TREE_VIA_VIRTUAL (orig_binfo) && BINFO_PRIMARY_P (orig_binfo))
-	{
-	  /* In the hierarchy of BINFO_TYPE (RTTI_BINFO), this is a
-             primary virtual base.  If it is not the same primary in
-             the hierarchy of T, we'll need to generate a ctor vtable
-             for it, to place at its location in T.  If it is the same
-             primary, we still need a VTT entry for the vtable, but it
-             should point to the ctor vtable for the base it is a
-             primary for within the sub-hierarchy of RTTI_BINFO.
+      /* In the hierarchy of BINFO_TYPE (RTTI_BINFO), this is a
+	 primary virtual base.  If it is not the same primary in
+	 the hierarchy of T, we'll need to generate a ctor vtable
+	 for it, to place at its location in T.  If it is the same
+	 primary, we still need a VTT entry for the vtable, but it
+	 should point to the ctor vtable for the base it is a
+	 primary for within the sub-hierarchy of RTTI_BINFO.
 	      
-	     There are three possible cases:
+	 There are three possible cases:
 	      
-             1) We are in the same place.
-	     2) We are a primary base within a lost primary virtual base of
-	     RTTI_BINFO.
-	     3) We are not primary to anything else in RTTI_BINFO.  */
+	 1) We are in the same place.
+	 2) We are a primary base within a lost primary virtual base of
+	 RTTI_BINFO.
+	 3) We are not primary to anything else in RTTI_BINFO.  */
 	  
-	  if (tree_int_cst_equal (BINFO_OFFSET (orig_binfo),
-				  size_diffop (BINFO_OFFSET (binfo),
-					       BINFO_OFFSET (rtti_binfo))))
-	    {
-	      /* Case 1: We're in the same place relative to
-	     	 RTTI_BINFO as we were in the complete type, so we are
-	     	 primary either to RTTI_BINFO or one of its secondary
-	     	 bases.  */
-	      
-	      /* Walk down our until we either find the last
-	     	 primary base or rtti_binfo.  */
-	      tree b = BINFO_PRIMARY_BASE_OF (binfo);
+      tree b = BINFO_PRIMARY_BASE_OF (binfo);
+      tree last = NULL_TREE;
+      tree primary = NULL_TREE;
 
-	      for (; b; b = BINFO_PRIMARY_BASE_OF (b))
-		{
-		  tree probe;
-
-		  /* See if B is still within the hierarchy starting
-		     at RTTI_BINFO. */
-		  for (probe = b; probe;
-		       probe = BINFO_INHERITANCE_CHAIN (probe))
-		    if (probe == rtti_binfo)
-		      break;
-		  
-		  if (!probe)
-		    break;
-		  
-		  primary = b;
-		  orig_primary = BINFO_PRIMARY_BASE_OF (orig_primary);
-		}
-	    }
-	  else
-	    {
-	      /* Case 2 or 3: We're not in the same place.  We might
-	         still be primary to something within a lost primary
-	         virtual base of RTTI_BINFO.  */
-	      tree b;
-	      tree last = binfo;
-	      tree orig_last = orig_binfo;
-
-	      /* First, look through the bases we are primary to for a
-	     	 virtual base.  */
-	      for (b = BINFO_PRIMARY_BASE_OF (binfo);
-		   b;
-		   b = BINFO_PRIMARY_BASE_OF (b))
-		{
-		  if (!TREE_VIA_VIRTUAL (b))
-		    {
-		      /* See if B is still within the hierarchy starting
-			 at RTTI_BINFO. */
-		      tree probe;
-
-		      for (probe = b; probe;
-			   probe = BINFO_INHERITANCE_CHAIN (probe))
-			if (probe == rtti_binfo)
-			  break;
-		      if (!probe)
-			{
-			  b = NULL_TREE;
-			  break;
-			}
-		    }
-		  
-		  last = b;
-		  if (orig_last)
-		    orig_last = BINFO_PRIMARY_BASE_OF (orig_last);
-		  if (TREE_VIA_VIRTUAL (b))
-		    break;
-		}
-	      /* If we run out of primary links, keep looking down our
-	     	 inheritance chain; we might be an indirect primary of
-	     	 a virtual base.  */
-	      if (b == NULL_TREE)
-		for (b = last; b; b = BINFO_INHERITANCE_CHAIN (b))
-		  if (TREE_VIA_VIRTUAL (b))
-		    break;
-
-	      /* If we found a virtual base B and it is a base of
-	     	 RTTI_BINFO, we share our vtable with LAST, i.e. the
-	     	 derived-most base within B of which we are a primary.
-	     	 Otherwise, we get our own.  */
-	      if (b && binfo_for_vbase (BINFO_TYPE (b),
-					BINFO_TYPE (rtti_binfo)))
-		{
-		  my_friendly_assert (orig_last, 20010611);
-		  primary = last;
-		  orig_primary = orig_last;
-		}
-	    }
-	}
-      
-      vtbl = BINFO_VTABLE (primary);
-      if (vtbl && TREE_CODE (vtbl) == TREE_LIST
-	  && TREE_PURPOSE (vtbl) == rtti_binfo)
+      /* First, look through the bases we are primary to for RTTI_BINFO
+	 or a virtual base.  */
+      for (; b; b = BINFO_PRIMARY_BASE_OF (b))
 	{
-	  vtbl = TREE_VALUE (vtbl);
-	  if (primary == binfo)
-	    /* We created this vtable because we met its primary base
-	       earlier in the inheritance graph walk of
-	       RTTI_BINFO.  */
-	    return inits;
+	  last = b;
+	  if (TREE_VIA_VIRTUAL (b) || b == rtti_binfo)
+	    break;
 	}
-      else if (primary != binfo)
-	{
-	  /* We're the primary of some binfo that we've not yet
-	     met in the inheritance graph walk of RTTI_BINFO. We
-	     must create that vtable now. */
-	  inits = dfs_accumulate_vtbl_inits (primary, orig_primary,
-					     rtti_binfo, t, l);
-	  vtbl = BINFO_VTABLE (primary);
-	  vtbl = TREE_VALUE (vtbl);
-	}
-      else
-	vtbl = NULL;
+      /* If we run out of primary links, keep looking down our
+	 inheritance chain; we might be an indirect primary.  */
+      if (b == NULL_TREE)
+	for (b = last; b; b = BINFO_INHERITANCE_CHAIN (b))
+	  if (TREE_VIA_VIRTUAL (b) || b == rtti_binfo)
+	    break;
+
+      /* If we found RTTI_BINFO, this is case 1.  If we found a virtual
+	 base B and it is a base of RTTI_BINFO, this is case 2.  In
+	 either case, we share our vtable with LAST, i.e. the
+	 derived-most base within B of which we are a primary.  */
+      if (b == rtti_binfo
+	  || (b && binfo_for_vbase (BINFO_TYPE (b),
+				    BINFO_TYPE (rtti_binfo))))
+	primary = last;
+      /* Otherwise, this is case 3 and we get our own.  */
+
+      if (primary)
+	/* We're the primary of some binfo that we may not have
+	   met in the inheritance graph walk of RTTI_BINFO.  Just
+	   point to it.  */
+	vtbl = primary;
     }
   else if (!BINFO_NEW_VTABLE_MARKED (orig_binfo, BINFO_TYPE (rtti_binfo)))
     return inits;
