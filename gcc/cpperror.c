@@ -86,19 +86,19 @@ print_containing_files (pfile, ip)
 }
 
 static void
-print_file_and_line (filename, line, column)
+print_file_and_line (filename, line, col)
      const char *filename;
-     unsigned int line, column;
+     unsigned int line, col;
 {
   if (filename == 0 || *filename == '\0')
     filename = "<stdin>";
 
-  if (line == (unsigned int)-1)
+  if (line == 0)
     fprintf (stderr, "%s: ", filename);
-  else if (column > 0)
-    fprintf (stderr, "%s:%u:%u: ", filename, line, column);
-  else
+  else if (col == 0)
     fprintf (stderr, "%s:%u: ", filename, line);
+  else
+    fprintf (stderr, "%s:%u:%u: ", filename, line, col);
 }
 
 /* Set up for an error message: print the file and line, bump the error
