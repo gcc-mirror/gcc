@@ -776,7 +776,7 @@ public class GdkGraphics2D extends Graphics2D
   {    
     if (nPoints < 1)
       return;
-    GeneralPath gp = new GeneralPath ();
+    GeneralPath gp = new GeneralPath (PathIterator.WIND_EVEN_ODD);
     gp.moveTo ((float)xPoints[0], (float)yPoints[0]);
     for (int i = 1; i < nPoints; i++)
       gp.lineTo ((float)xPoints[i], (float)yPoints[i]);
