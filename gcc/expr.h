@@ -293,50 +293,141 @@ typedef struct optab
 
 extern rtx (*const insn_gen_function[]) PROTO ((rtx, ...));
 
-extern optab add_optab;
-extern optab sub_optab;
-extern optab smul_optab;	/* Signed and floating-point multiply */
-extern optab smul_highpart_optab; /* Signed multiply, return high word */
-extern optab umul_highpart_optab;
-extern optab smul_widen_optab;	/* Signed multiply with result 
-				   one machine mode wider than args */
-extern optab umul_widen_optab;
-extern optab sdiv_optab;	/* Signed divide */
-extern optab sdivmod_optab;	/* Signed divide-and-remainder in one */
-extern optab udiv_optab;
-extern optab udivmod_optab;
-extern optab smod_optab;	/* Signed remainder */
-extern optab umod_optab;
-extern optab flodiv_optab;	/* Optab for floating divide. */
-extern optab ftrunc_optab;	/* Convert float to integer in float fmt */
-extern optab and_optab;		/* Logical and */
-extern optab ior_optab;		/* Logical or */
-extern optab xor_optab;		/* Logical xor */
-extern optab ashl_optab;	/* Arithmetic shift left */
-extern optab ashr_optab;	/* Arithmetic shift right */
-extern optab lshr_optab;	/* Logical shift right */
-extern optab rotl_optab;	/* Rotate left */
-extern optab rotr_optab;	/* Rotate right */
-extern optab smin_optab;	/* Signed and floating-point minimum value */
-extern optab smax_optab;	/* Signed and floating-point maximum value */
-extern optab umin_optab;	/* Unsigned minimum value */
-extern optab umax_optab;	/* Unsigned maximum value */
+/* Enumeration of valid indexes into optab_table.  */
+enum optab_index
+{
+  OTI_add,
+  OTI_sub,
 
-extern optab mov_optab;		/* Move instruction.  */
-extern optab movstrict_optab;	/* Move, preserving high part of register.  */
+  /* Signed and fp multiply */
+  OTI_smul,
+  /* Signed multiply, return high word */
+  OTI_smul_highpart,
+  OTI_umul_highpart,
+  /* Signed multiply with result one machine mode wider than args */
+  OTI_smul_widen,
+  OTI_umul_widen,
 
-extern optab cmp_optab;		/* Compare insn; two operands.  */
-extern optab tst_optab;		/* tst insn; compare one operand against 0 */
+  /* Signed divide */
+  OTI_sdiv,
+  /* Signed divide-and-remainder in one */
+  OTI_sdivmod,
+  OTI_udiv,
+  OTI_udivmod,
+  /* Signed remainder */
+  OTI_smod,
+  OTI_umod,
+  /* Optab for floating divide. */
+  OTI_flodiv,
+  /* Convert float to integer in float fmt */
+  OTI_ftrunc,
 
-/* Unary operations */
-extern optab neg_optab;		/* Negation */
-extern optab abs_optab;		/* Abs value */
-extern optab one_cmpl_optab;	/* Bitwise not */
-extern optab ffs_optab;		/* Find first bit set */
-extern optab sqrt_optab;	/* Square root */
-extern optab sin_optab;		/* Sine */
-extern optab cos_optab;		/* Cosine */
-extern optab strlen_optab;	/* String length */
+  /* Logical and */
+  OTI_and,
+  /* Logical or */
+  OTI_ior,
+  /* Logical xor */
+  OTI_xor,
+
+  /* Arithmetic shift left */
+  OTI_ashl,
+  /* Logical shift right */
+  OTI_lshr,  
+  /* Arithmetic shift right */
+  OTI_ashr,
+  /* Rotate left */
+  OTI_rotl,
+  /* Rotate right */
+  OTI_rotr,
+  /* Signed and floating-point minimum value */
+  OTI_smin,
+  /* Signed and floating-point maximum value */
+  OTI_smax,
+  /* Unsigned minimum value */
+  OTI_umin,
+  /* Unsigned maximum value */
+  OTI_umax,
+
+  /* Move instruction.  */
+  OTI_mov,
+  /* Move, preserving high part of register.  */
+  OTI_movstrict,
+
+  /* Unary operations */
+  /* Negation */
+  OTI_neg,
+  /* Abs value */
+  OTI_abs,
+  /* Bitwise not */
+  OTI_one_cmpl,
+  /* Find first bit set */
+  OTI_ffs,
+  /* Square root */
+  OTI_sqrt,
+  /* Sine */
+  OTI_sin,
+  /* Cosine */
+  OTI_cos,
+
+  /* Compare insn; two operands.  */
+  OTI_cmp,
+  /* Used only for libcalls for unsigned comparisons.  */
+  OTI_ucmp,
+  /* tst insn; compare one operand against 0 */
+  OTI_tst,
+
+  /* String length */
+  OTI_strlen,
+
+  OTI_MAX
+};
+
+extern optab optab_table[OTI_MAX];
+
+#define add_optab (optab_table[OTI_add])
+#define sub_optab (optab_table[OTI_sub])
+#define smul_optab (optab_table[OTI_smul])
+#define smul_highpart_optab (optab_table[OTI_smul_highpart])
+#define umul_highpart_optab (optab_table[OTI_umul_highpart])
+#define smul_widen_optab (optab_table[OTI_smul_widen])
+#define umul_widen_optab (optab_table[OTI_umul_widen])
+#define sdiv_optab (optab_table[OTI_sdiv])
+#define sdivmod_optab (optab_table[OTI_sdivmod])
+#define udiv_optab (optab_table[OTI_udiv])
+#define udivmod_optab (optab_table[OTI_udivmod])
+#define smod_optab (optab_table[OTI_smod])
+#define umod_optab (optab_table[OTI_umod])
+#define flodiv_optab (optab_table[OTI_flodiv])
+#define ftrunc_optab (optab_table[OTI_ftrunc])
+#define and_optab (optab_table[OTI_and])
+#define ior_optab (optab_table[OTI_ior])
+#define xor_optab (optab_table[OTI_xor])
+#define ashl_optab (optab_table[OTI_ashl])
+#define lshr_optab (optab_table[OTI_lshr])
+#define ashr_optab (optab_table[OTI_ashr])
+#define rotl_optab (optab_table[OTI_rotl])
+#define rotr_optab (optab_table[OTI_rotr])
+#define smin_optab (optab_table[OTI_smin])
+#define smax_optab (optab_table[OTI_smax])
+#define umin_optab (optab_table[OTI_umin])
+#define umax_optab (optab_table[OTI_umax])
+
+#define mov_optab (optab_table[OTI_mov])
+#define movstrict_optab (optab_table[OTI_movstrict])
+
+#define neg_optab (optab_table[OTI_neg])
+#define abs_optab (optab_table[OTI_abs])
+#define one_cmpl_optab (optab_table[OTI_one_cmpl])
+#define ffs_optab (optab_table[OTI_ffs])
+#define sqrt_optab (optab_table[OTI_sqrt])
+#define sin_optab (optab_table[OTI_sin])
+#define cos_optab (optab_table[OTI_cos])
+
+#define cmp_optab (optab_table[OTI_cmp])
+#define ucmp_optab (optab_table[OTI_ucmp])
+#define tst_optab (optab_table[OTI_tst])
+
+#define strlen_optab (optab_table[OTI_strlen])
 
 /* Tables of patterns for extending one integer mode to another.  */
 extern enum insn_code extendtab[MAX_MACHINE_MODE][MAX_MACHINE_MODE][2];
@@ -364,130 +455,256 @@ enum optab_methods
   OPTAB_MUST_WIDEN
 };
 
+/* Enumeration of indexes into libfunc_table.  */
+enum libfunc_index
+{
+  LTI_extendsfdf2,
+  LTI_extendsfxf2,
+  LTI_extendsftf2,
+  LTI_extenddfxf2,
+  LTI_extenddftf2,
+
+  LTI_truncdfsf2,
+  LTI_truncxfsf2,
+  LTI_trunctfsf2,
+  LTI_truncxfdf2,
+  LTI_trunctfdf2,
+
+  LTI_memcpy,
+  LTI_bcopy,
+  LTI_memcmp,
+  LTI_bcmp,
+  LTI_memset,
+  LTI_bzero,
+
+  LTI_throw,
+  LTI_rethrow,
+  LTI_sjthrow,
+  LTI_sjpopnthrow,
+  LTI_terminate,
+  LTI_setjmp,
+  LTI_longjmp,
+  LTI_eh_rtime_match,
+
+  LTI_eqhf2,
+  LTI_nehf2,
+  LTI_gthf2,
+  LTI_gehf2,
+  LTI_lthf2,
+  LTI_lehf2,
+
+  LTI_eqsf2,
+  LTI_nesf2,
+  LTI_gtsf2,
+  LTI_gesf2,
+  LTI_ltsf2,
+  LTI_lesf2,
+
+  LTI_eqdf2,
+  LTI_nedf2,
+  LTI_gtdf2,
+  LTI_gedf2,
+  LTI_ltdf2,
+  LTI_ledf2,
+
+  LTI_eqxf2,
+  LTI_nexf2,
+  LTI_gtxf2,
+  LTI_gexf2,
+  LTI_ltxf2,
+  LTI_lexf2,
+
+  LTI_eqtf2,
+  LTI_netf2,
+  LTI_gttf2,
+  LTI_getf2,
+  LTI_lttf2,
+  LTI_letf2,
+
+  LTI_floatsisf,
+  LTI_floatdisf,
+  LTI_floattisf,
+
+  LTI_floatsidf,
+  LTI_floatdidf,
+  LTI_floattidf,
+
+  LTI_floatsixf,
+  LTI_floatdixf,
+  LTI_floattixf,
+
+  LTI_floatsitf,
+  LTI_floatditf,
+  LTI_floattitf,
+
+  LTI_fixsfsi,
+  LTI_fixsfdi,
+  LTI_fixsfti,
+
+  LTI_fixdfsi,
+  LTI_fixdfdi,
+  LTI_fixdfti,
+
+  LTI_fixxfsi,
+  LTI_fixxfdi,
+  LTI_fixxfti,
+
+  LTI_fixtfsi,
+  LTI_fixtfdi,
+  LTI_fixtfti,
+
+  LTI_fixunssfsi,
+  LTI_fixunssfdi,
+  LTI_fixunssfti,
+
+  LTI_fixunsdfsi,
+  LTI_fixunsdfdi,
+  LTI_fixunsdfti,
+
+  LTI_fixunsxfsi,
+  LTI_fixunsxfdi,
+  LTI_fixunsxfti,
+
+  LTI_fixunstfsi,
+  LTI_fixunstfdi,
+  LTI_fixunstfti,
+
+  LTI_chkr_check_addr,
+  LTI_chkr_set_right,
+  LTI_chkr_copy_bitmap,
+  LTI_chkr_check_exec,
+  LTI_chkr_check_str,
+
+  LTI_profile_function_entry,
+  LTI_profile_function_exit,
+
+  LTI_MAX
+};
+
 /* SYMBOL_REF rtx's for the library functions that are called
    implicitly and not via optabs.  */
+extern rtx libfunc_table[LTI_MAX];
 
-extern rtx extendsfdf2_libfunc;
-extern rtx extendsfxf2_libfunc;
-extern rtx extendsftf2_libfunc;
-extern rtx extenddfxf2_libfunc;
-extern rtx extenddftf2_libfunc;
+/* Accessor macros for libfunc_table.  */
+#define extendsfdf2_libfunc	(libfunc_table[LTI_extendsfdf2])
+#define extendsfxf2_libfunc	(libfunc_table[LTI_extendsfxf2])
+#define extendsftf2_libfunc	(libfunc_table[LTI_extendsftf2])
+#define extenddfxf2_libfunc	(libfunc_table[LTI_extenddfxf2])
+#define extenddftf2_libfunc	(libfunc_table[LTI_extenddftf2])
 
-extern rtx truncdfsf2_libfunc;
-extern rtx truncxfsf2_libfunc;
-extern rtx trunctfsf2_libfunc;
-extern rtx truncxfdf2_libfunc;
-extern rtx trunctfdf2_libfunc;
+#define truncdfsf2_libfunc	(libfunc_table[LTI_truncdfsf2])
+#define truncxfsf2_libfunc	(libfunc_table[LTI_truncxfsf2])
+#define trunctfsf2_libfunc	(libfunc_table[LTI_trunctfsf2])
+#define truncxfdf2_libfunc	(libfunc_table[LTI_truncxfdf2])
+#define trunctfdf2_libfunc	(libfunc_table[LTI_trunctfdf2])
 
-extern rtx memcpy_libfunc;
-extern rtx bcopy_libfunc;
-extern rtx memcmp_libfunc;
-extern rtx bcmp_libfunc;
-extern rtx memset_libfunc;
-extern rtx bzero_libfunc;
+#define memcpy_libfunc	(libfunc_table[LTI_memcpy])
+#define bcopy_libfunc	(libfunc_table[LTI_bcopy])
+#define memcmp_libfunc	(libfunc_table[LTI_memcmp])
+#define bcmp_libfunc	(libfunc_table[LTI_bcmp])
+#define memset_libfunc	(libfunc_table[LTI_memset])
+#define bzero_libfunc	(libfunc_table[LTI_bzero])
 
-extern rtx throw_libfunc;
-extern rtx rethrow_libfunc;
-extern rtx sjthrow_libfunc;
-extern rtx sjpopnthrow_libfunc;
-extern rtx terminate_libfunc;
-extern rtx setjmp_libfunc;
-extern rtx longjmp_libfunc;
-extern rtx eh_rtime_match_libfunc;
+#define throw_libfunc	(libfunc_table[LTI_throw])
+#define rethrow_libfunc	(libfunc_table[LTI_rethrow])
+#define sjthrow_libfunc	(libfunc_table[LTI_sjthrow])
+#define sjpopnthrow_libfunc	(libfunc_table[LTI_sjpopnthrow])
+#define terminate_libfunc	(libfunc_table[LTI_terminate])
+#define setjmp_libfunc	(libfunc_table[LTI_setjmp])
+#define longjmp_libfunc	(libfunc_table[LTI_longjmp])
+#define eh_rtime_match_libfunc	(libfunc_table[LTI_eh_rtime_match])
 
-extern rtx eqhf2_libfunc;
-extern rtx nehf2_libfunc;
-extern rtx gthf2_libfunc;
-extern rtx gehf2_libfunc;
-extern rtx lthf2_libfunc;
-extern rtx lehf2_libfunc;
+#define eqhf2_libfunc	(libfunc_table[LTI_eqhf2])
+#define nehf2_libfunc	(libfunc_table[LTI_nehf2])
+#define gthf2_libfunc	(libfunc_table[LTI_gthf2])
+#define gehf2_libfunc	(libfunc_table[LTI_gehf2])
+#define lthf2_libfunc	(libfunc_table[LTI_lthf2])
+#define lehf2_libfunc	(libfunc_table[LTI_lehf2])
 
-extern rtx eqsf2_libfunc;
-extern rtx nesf2_libfunc;
-extern rtx gtsf2_libfunc;
-extern rtx gesf2_libfunc;
-extern rtx ltsf2_libfunc;
-extern rtx lesf2_libfunc;
+#define eqsf2_libfunc	(libfunc_table[LTI_eqsf2])
+#define nesf2_libfunc	(libfunc_table[LTI_nesf2])
+#define gtsf2_libfunc	(libfunc_table[LTI_gtsf2])
+#define gesf2_libfunc	(libfunc_table[LTI_gesf2])
+#define ltsf2_libfunc	(libfunc_table[LTI_ltsf2])
+#define lesf2_libfunc	(libfunc_table[LTI_lesf2])
 
-extern rtx eqdf2_libfunc;
-extern rtx nedf2_libfunc;
-extern rtx gtdf2_libfunc;
-extern rtx gedf2_libfunc;
-extern rtx ltdf2_libfunc;
-extern rtx ledf2_libfunc;
+#define eqdf2_libfunc	(libfunc_table[LTI_eqdf2])
+#define nedf2_libfunc	(libfunc_table[LTI_nedf2])
+#define gtdf2_libfunc	(libfunc_table[LTI_gtdf2])
+#define gedf2_libfunc	(libfunc_table[LTI_gedf2])
+#define ltdf2_libfunc	(libfunc_table[LTI_ltdf2])
+#define ledf2_libfunc	(libfunc_table[LTI_ledf2])
 
-extern rtx eqxf2_libfunc;
-extern rtx nexf2_libfunc;
-extern rtx gtxf2_libfunc;
-extern rtx gexf2_libfunc;
-extern rtx ltxf2_libfunc;
-extern rtx lexf2_libfunc;
+#define eqxf2_libfunc	(libfunc_table[LTI_eqxf2])
+#define nexf2_libfunc	(libfunc_table[LTI_nexf2])
+#define gtxf2_libfunc	(libfunc_table[LTI_gtxf2])
+#define gexf2_libfunc	(libfunc_table[LTI_gexf2])
+#define ltxf2_libfunc	(libfunc_table[LTI_ltxf2])
+#define lexf2_libfunc	(libfunc_table[LTI_lexf2])
 
-extern rtx eqtf2_libfunc;
-extern rtx netf2_libfunc;
-extern rtx gttf2_libfunc;
-extern rtx getf2_libfunc;
-extern rtx lttf2_libfunc;
-extern rtx letf2_libfunc;
+#define eqtf2_libfunc	(libfunc_table[LTI_eqtf2])
+#define netf2_libfunc	(libfunc_table[LTI_netf2])
+#define gttf2_libfunc	(libfunc_table[LTI_gttf2])
+#define getf2_libfunc	(libfunc_table[LTI_getf2])
+#define lttf2_libfunc	(libfunc_table[LTI_lttf2])
+#define letf2_libfunc	(libfunc_table[LTI_letf2])
 
-extern rtx floatsisf_libfunc;
-extern rtx floatdisf_libfunc;
-extern rtx floattisf_libfunc;
+#define floatsisf_libfunc	(libfunc_table[LTI_floatsisf])
+#define floatdisf_libfunc	(libfunc_table[LTI_floatdisf])
+#define floattisf_libfunc	(libfunc_table[LTI_floattisf])
 
-extern rtx floatsidf_libfunc;
-extern rtx floatdidf_libfunc;
-extern rtx floattidf_libfunc;
+#define floatsidf_libfunc	(libfunc_table[LTI_floatsidf])
+#define floatdidf_libfunc	(libfunc_table[LTI_floatdidf])
+#define floattidf_libfunc	(libfunc_table[LTI_floattidf])
 
-extern rtx floatsixf_libfunc;
-extern rtx floatdixf_libfunc;
-extern rtx floattixf_libfunc;
+#define floatsixf_libfunc	(libfunc_table[LTI_floatsixf])
+#define floatdixf_libfunc	(libfunc_table[LTI_floatdixf])
+#define floattixf_libfunc	(libfunc_table[LTI_floattixf])
 
-extern rtx floatsitf_libfunc;
-extern rtx floatditf_libfunc;
-extern rtx floattitf_libfunc;
+#define floatsitf_libfunc	(libfunc_table[LTI_floatsitf])
+#define floatditf_libfunc	(libfunc_table[LTI_floatditf])
+#define floattitf_libfunc	(libfunc_table[LTI_floattitf])
 
-extern rtx fixsfsi_libfunc;
-extern rtx fixsfdi_libfunc;
-extern rtx fixsfti_libfunc;
+#define fixsfsi_libfunc	(libfunc_table[LTI_fixsfsi])
+#define fixsfdi_libfunc	(libfunc_table[LTI_fixsfdi])
+#define fixsfti_libfunc	(libfunc_table[LTI_fixsfti])
 
-extern rtx fixdfsi_libfunc;
-extern rtx fixdfdi_libfunc;
-extern rtx fixdfti_libfunc;
+#define fixdfsi_libfunc	(libfunc_table[LTI_fixdfsi])
+#define fixdfdi_libfunc	(libfunc_table[LTI_fixdfdi])
+#define fixdfti_libfunc	(libfunc_table[LTI_fixdfti])
 
-extern rtx fixxfsi_libfunc;
-extern rtx fixxfdi_libfunc;
-extern rtx fixxfti_libfunc;
+#define fixxfsi_libfunc	(libfunc_table[LTI_fixxfsi])
+#define fixxfdi_libfunc	(libfunc_table[LTI_fixxfdi])
+#define fixxfti_libfunc	(libfunc_table[LTI_fixxfti])
 
-extern rtx fixtfsi_libfunc;
-extern rtx fixtfdi_libfunc;
-extern rtx fixtfti_libfunc;
+#define fixtfsi_libfunc	(libfunc_table[LTI_fixtfsi])
+#define fixtfdi_libfunc	(libfunc_table[LTI_fixtfdi])
+#define fixtfti_libfunc	(libfunc_table[LTI_fixtfti])
 
-extern rtx fixunssfsi_libfunc;
-extern rtx fixunssfdi_libfunc;
-extern rtx fixunssfti_libfunc;
+#define fixunssfsi_libfunc	(libfunc_table[LTI_fixunssfsi])
+#define fixunssfdi_libfunc	(libfunc_table[LTI_fixunssfdi])
+#define fixunssfti_libfunc	(libfunc_table[LTI_fixunssfti])
 
-extern rtx fixunsdfsi_libfunc;
-extern rtx fixunsdfdi_libfunc;
-extern rtx fixunsdfti_libfunc;
+#define fixunsdfsi_libfunc	(libfunc_table[LTI_fixunsdfsi])
+#define fixunsdfdi_libfunc	(libfunc_table[LTI_fixunsdfdi])
+#define fixunsdfti_libfunc	(libfunc_table[LTI_fixunsdfti])
 
-extern rtx fixunsxfsi_libfunc;
-extern rtx fixunsxfdi_libfunc;
-extern rtx fixunsxfti_libfunc;
+#define fixunsxfsi_libfunc	(libfunc_table[LTI_fixunsxfsi])
+#define fixunsxfdi_libfunc	(libfunc_table[LTI_fixunsxfdi])
+#define fixunsxfti_libfunc	(libfunc_table[LTI_fixunsxfti])
 
-extern rtx fixunstfsi_libfunc;
-extern rtx fixunstfdi_libfunc;
-extern rtx fixunstfti_libfunc;
+#define fixunstfsi_libfunc	(libfunc_table[LTI_fixunstfsi])
+#define fixunstfdi_libfunc	(libfunc_table[LTI_fixunstfdi])
+#define fixunstfti_libfunc	(libfunc_table[LTI_fixunstfti])
 
-/* For check-memory-usage.  */
-extern rtx chkr_check_addr_libfunc;
-extern rtx chkr_set_right_libfunc;
-extern rtx chkr_copy_bitmap_libfunc;
-extern rtx chkr_check_exec_libfunc;
-extern rtx chkr_check_str_libfunc;
+#define chkr_check_addr_libfunc	(libfunc_table[LTI_chkr_check_addr])
+#define chkr_set_right_libfunc	(libfunc_table[LTI_chkr_set_right])
+#define chkr_copy_bitmap_libfunc	(libfunc_table[LTI_chkr_copy_bitmap])
+#define chkr_check_exec_libfunc	(libfunc_table[LTI_chkr_check_exec])
+#define chkr_check_str_libfunc	(libfunc_table[LTI_chkr_check_str])
 
-/* For instrument-functions.  */
-extern rtx profile_function_entry_libfunc;
-extern rtx profile_function_exit_libfunc;
+#define profile_function_entry_libfunc	(libfunc_table[LTI_profile_function_entry])
+#define profile_function_exit_libfunc	(libfunc_table[LTI_profile_function_exit])
 
 typedef rtx (*rtxfun) PROTO ((rtx));
 
