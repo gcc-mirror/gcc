@@ -49,6 +49,17 @@ Boston, MA 02111-1307, USA.  */
 #include "obstack.h"
 #include "intl.h"
 
+#ifndef DIR_SEPARATOR
+# define IS_DIR_SEPARATOR(ch) ((ch) == '/')
+#else /* DIR_SEPARATOR */
+# ifndef DIR_SEPARATOR_2
+#  define IS_DIR_SEPARATOR(ch) ((ch) == DIR_SEPARATOR)
+# else /* DIR_SEPARATOR && DIR_SEPARATOR_2 */
+#  define IS_DIR_SEPARATOR(ch) \
+	(((ch) == DIR_SEPARATOR) || ((ch) == DIR_SEPARATOR_2))
+# endif /* DIR_SEPARATOR && DIR_SEPARATOR_2 */
+#endif /* DIR_SEPARATOR */
+
 /* Obstack allocation and deallocation routines.  */
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
@@ -810,9 +821,9 @@ prefix_from_string (p, pprefix)
 	    {
 	      strcpy (nstore, "./");
 	    }
-	  else if (endp[-1] != '/')
+	  else if (! IS_DIR_SEPARATOR (endp[-1]))
 	    {
-	      nstore[endp-startp] = '/';
+	      nstore[endp-startp] = DIR_SEPARATOR;
 	      nstore[endp-startp+1] = 0;
 	    }
 	  else
