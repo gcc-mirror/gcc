@@ -1,5 +1,10 @@
 2003-03-20  Richard Henderson  <rth@redhat.com>
 
+        * fold-const.c (extract_muldiv_1): Revert changing order of
+        operands in case MULT_EXPR of 2003-02-16 patch.
+
+2003-03-20  Richard Henderson  <rth@redhat.com>
+
         PR c/8602
         * integrate.c (output_inline_function): Reset input_filename
         and lineno from the decl before rest_of_compilation.

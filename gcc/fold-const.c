@@ -4278,14 +4278,6 @@ extract_muldiv_1 (t, c, code, wide_type)
 	  && integer_zerop (const_binop (TRUNC_MOD_EXPR, op1, c, 0)))
 	return omit_one_operand (type, integer_zero_node, op0);
 
-      /* Arrange for the code below to simplify two constants first.  */
-      if (TREE_CODE (op1) == INTEGER_CST && TREE_CODE (op0) != INTEGER_CST)
-	{
-	  tree tmp = op0;
-	  op0 = op1;
-	  op1 = tmp;
-	}
-
       /* ... fall through ...  */
 
     case TRUNC_DIV_EXPR:  case CEIL_DIV_EXPR:  case FLOOR_DIV_EXPR:
