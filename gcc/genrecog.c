@@ -402,6 +402,7 @@ add_to_sequence (pattern, last, position, insn_type, top)
       {
 	const char *pred_name;
 	RTX_CODE was_code = code;
+	int allows_const_int = 1;
 
 	if (code == MATCH_SCRATCH)
 	  {
@@ -462,10 +463,6 @@ add_to_sequence (pattern, last, position, insn_type, top)
 		      allows_const_int = 1;
 		      break;
 		    }
-
-		/* Can't enforce a mode if we allow const_int.  */
-		if (allows_const_int)
-		  mode = VOIDmode;
 	      }
 	    else
 	      {
@@ -478,12 +475,10 @@ add_to_sequence (pattern, last, position, insn_type, top)
 #endif
 	      }
 	  }
-	else
-	  {
-	    /* Wildcard match.  Can't enforce a mode because we allow
-	       anything -- const_int included.  */
-	    mode = VOIDmode;
-	  }
+
+	/* Can't enforce a mode if we allow const_int.  */
+	if (allows_const_int)
+	  mode = VOIDmode;
 
 	/* Accept the operand, ie. record it in `operands'.  */
 	test = new_decision_test (DT_accept_op, &place);
@@ -2416,4 +2411,15 @@ debug_decision (d)
      struct decision *d;
 {
   debug_decision_0 (d, 0, 1000000);
+}
+
+void
+debug_decision_list (d)
+     struct decision *d;
+{
+  while (d)
+    {
+      debug_decision_0 (d, 0, 0);
+      d = d->next;
+    }
 }
