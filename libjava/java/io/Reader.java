@@ -1,5 +1,5 @@
 /* Reader.java -- base class of classes that read input as a stream of chars
-   Copyright (C) 1998, 1999, 2000  Free Software Foundation
+   Copyright (C) 1998, 1999, 2000, 2003  Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -222,7 +222,8 @@ public abstract class Reader
     * <p>
     * This method always returns <code>false</code> in this class
     *
-    * @return <code>true</code> if the stream is ready to be read, <code>false</code> otherwise.
+    * @return <code>true</code> if the stream is ready to be read, 
+    * <code>false</code> otherwise.
     *
     * @exception IOException If an error occurs
     */

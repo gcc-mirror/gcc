@@ -1,5 +1,5 @@
 /* FileReader.java -- Convenience class for reading characters from a file
-   Copyright (C) 1998, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2000, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -46,8 +46,6 @@ package java.io;
  * to read from files using the default character encoding.  Use
  * <code>InputStreamReader</code> directly to use a non-default encoding.
  *
- * @version 0.0
- *
  * @author Aaron M. Renn (arenn@urbanophile.com)
  */
 public class FileReader extends InputStreamReader
@@ -90,4 +88,5 @@ public class FileReader extends InputStreamReader
   {
     super(new FileInputStream(name));
   }
-}
+} // class FileReader
+

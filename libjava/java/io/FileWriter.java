@@ -54,84 +54,82 @@ package java.io;
 public class FileWriter extends OutputStreamWriter
 {
 
-/*************************************************************************/
+  /*************************************************************************/
 
-/*
- * Constructors
- */
- 
-/**
-  * This method initializes a new <code>FileWriter</code> object to write
-  * to the specified <code>File</code> object.
-  *
-  * @param file The <code>File</code> object to write to.
-  *
-  * @param SecurityException If writing to this file is forbidden by the
-  *                          <code>SecurityManager</code>.
-  * @param IOException If any other error occurs
-  */
-public 
-FileWriter(File file) throws SecurityException, IOException
-{
-  super(new FileOutputStream(file));
-}
+  /*
+   * Constructors
+   */
+   
+  /**
+    * This method initializes a new <code>FileWriter</code> object to write
+    * to the specified <code>File</code> object.
+    *
+    * @param file The <code>File</code> object to write to.
+    *
+    * @param SecurityException If writing to this file is forbidden by the
+    *                          <code>SecurityManager</code>.
+    * @param IOException If any other error occurs
+    */
+  public FileWriter(File file) throws SecurityException, IOException
+  {
+    super(new FileOutputStream(file));
+  }
 
-/*************************************************************************/
+  /*************************************************************************/
 
-/**
-  * This method initializes a new <code>FileWriter</code> object to write
-  * to the specified <code>FileDescriptor</code> object.
-  *
-  * @param fd The <code>FileDescriptor</code> object to write to
-  *
-  * @param SecurityException If writing to this file is forbidden by the
-  *                          <code>SecurityManager</code>.
-  */
-public
-FileWriter(FileDescriptor fd) throws SecurityException
-{
-  super(new FileOutputStream(fd));
-}
+  /**
+    * This method initializes a new <code>FileWriter</code> object to write
+    * to the specified <code>FileDescriptor</code> object.
+    *
+    * @param fd The <code>FileDescriptor</code> object to write to
+    *
+    * @param SecurityException If writing to this file is forbidden by the
+    *                          <code>SecurityManager</code>.
+    */
+  public FileWriter(FileDescriptor fd) throws SecurityException
+  {
+    super(new FileOutputStream(fd));
+  }
 
-/*************************************************************************/
+  /*************************************************************************/
 
-/**
-  * This method intializes a new <code>FileWriter</code> object to write to the
-  * specified named file.
-  *
-  * @param name The name of the file to write to
-  *
-  * @param SecurityException If writing to this file is forbidden by the
-  *                          <code>SecurityManager</code>.
-  * @param IOException If any other error occurs
-  */
-public
-FileWriter(String name) throws IOException
-{
-  super(new FileOutputStream(name));
-}
+  /**
+    * This method intializes a new <code>FileWriter</code> object to 
+    * write to the
+    * specified named file.
+    *
+    * @param name The name of the file to write to
+    *
+    * @param SecurityException If writing to this file is forbidden by the
+    *                          <code>SecurityManager</code>.
+    * @param IOException If any other error occurs
+    */
+  public FileWriter(String name) throws IOException
+  {
+    super(new FileOutputStream(name));
+  }
 
-/*************************************************************************/
+  /*************************************************************************/
 
-/**
-  * This method intializes a new <code>FileWriter</code> object to write to the
-  * specified named file.  This form of the constructor allows the caller
-  * to determin whether data should be written starting at the beginning or
-  * the end of the file.
-  *
-  * @param name The name of the file to write to
-  * @param append <code>true</code> to start adding data at the end of the
-  *               file, <code>false</code> otherwise.
-  *
-  * @param SecurityException If writing to this file is forbidden by the
-  *                          <code>SecurityManager</code>.
-  * @param IOException If any other error occurs
-  */
-public
-FileWriter(String name, boolean append) throws IOException
-{
-  super(new FileOutputStream(name, append));
-}
+  /**
+    * This method intializes a new <code>FileWriter</code> object to 
+    * write to the
+    * specified named file.  This form of the constructor allows the caller
+    * to determin whether data should be written starting at the beginning or
+    * the end of the file.
+    *
+    * @param name The name of the file to write to
+    * @param append <code>true</code> to start adding data at the end of the
+    *               file, <code>false</code> otherwise.
+    *
+    * @param SecurityException If writing to this file is forbidden by the
+    *                          <code>SecurityManager</code>.
+    * @param IOException If any other error occurs
+    */
+  public FileWriter(String name, boolean append) throws IOException
+  {
+    super(new FileOutputStream(name, append));
+  }
 
 } // class FileWriter
 

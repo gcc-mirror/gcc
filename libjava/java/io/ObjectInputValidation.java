@@ -1,5 +1,5 @@
 /* ObjectInputValidation.java -- Validate an object 
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,21 +41,18 @@ package java.io;
 /**
   * What does this interface really do?
   *
-  * @version 0.0
-  *
   * @author Aaron M. Renn (arenn@urbanophile.com)
   */
 public interface ObjectInputValidation
 {
 
-/**
-  * This method is called to validate an object.  If the object is invalid
-  * an exception is thrown.
-  *
-  * @exception InvalidObjectException If the object is invalid
-  */
-public abstract void
-validateObject() throws InvalidObjectException;
+  /**
+    * This method is called to validate an object.  If the object is invalid
+    * an exception is thrown.
+    *
+    * @exception InvalidObjectException If the object is invalid
+    */
+  public abstract void validateObject() throws InvalidObjectException;
 
 } // interface ObjectInputValidation
 

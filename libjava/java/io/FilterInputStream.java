@@ -70,179 +70,171 @@ package java.io;
 public class FilterInputStream extends InputStream
 {
 
-/*************************************************************************/
+  /*************************************************************************/
 
-/*
- * Instance Variables
- */
+  /*
+   * Instance Variables
+   */
 
-/**
-  * This is the subordinate <code>InputStream</code> to which method calls
-  * are redirected
-  */
-protected InputStream in;
+  /**
+    * This is the subordinate <code>InputStream</code> to which method calls
+    * are redirected
+    */
+  protected InputStream in;
 
-/*************************************************************************/
+  /*************************************************************************/
 
-/*
- * Constructors
- */
+  /*
+   * Constructors
+   */
 
-/**
-  * Create a <code>FilterInputStream</code> with the specified subordinate
-  * <code>InputStream</code>.
-  *
-  * @param in The subordinate <code>InputStream</code>
-  */
-protected 
-FilterInputStream(InputStream in)
-{
-  this.in = in;
-}
+  /**
+    * Create a <code>FilterInputStream</code> with the specified subordinate
+    * <code>InputStream</code>.
+    *
+    * @param in The subordinate <code>InputStream</code>
+    */
+  protected FilterInputStream(InputStream in)
+  {
+    this.in = in;
+  }
 
-/*************************************************************************/
+  /*************************************************************************/
 
-/*
- * Instance Methods
- */
+  /*
+   * Instance Methods
+   */
 
-/**
-  * Calls the <code>in.mark(int)</code> method.
-  *
-  * @param readlimit The parameter passed to <code>in.mark(int)</code>
-  */
-public void
-mark(int readlimit)
-{
-  in.mark(readlimit);
-}
+  /**
+    * Calls the <code>in.mark(int)</code> method.
+    *
+    * @param readlimit The parameter passed to <code>in.mark(int)</code>
+    */
+  public void mark(int readlimit)
+  {
+    in.mark(readlimit);
+  }
 
-/*************************************************************************/
+  /*************************************************************************/
 
-/**
-  * Calls the <code>in.markSupported()</code> method.
-  *
-  * @return <code>true</code> if mark/reset is supported, <code>false</code>
-  *         otherwise
-  */
-public boolean
-markSupported()
-{
-  return(in.markSupported());
-}
+  /**
+    * Calls the <code>in.markSupported()</code> method.
+    *
+    * @return <code>true</code> if mark/reset is supported, <code>false</code>
+    *         otherwise
+    */
+  public boolean markSupported()
+  {
+    return(in.markSupported());
+  }
 
-/*************************************************************************/
+  /*************************************************************************/
 
-/**
-  * Calls the <code>in.reset()</code> method.
-  *
-  * @exception IOException If an error occurs
-  */
-public void
-reset() throws IOException
-{
-  in.reset();
-}
+  /**
+    * Calls the <code>in.reset()</code> method.
+    *
+    * @exception IOException If an error occurs
+    */
+  public void reset() throws IOException
+  {
+    in.reset();
+  }
 
-/*************************************************************************/
+  /*************************************************************************/
 
-/**
-  * Calls the <code>in.available()</code> method.
-  *
-  * @return The value returned from <code>in.available()</code>
-  *
-  * @exception IOException If an error occurs
-  */
-public int
-available() throws IOException
-{
-  return(in.available());
-}
+  /**
+    * Calls the <code>in.available()</code> method.
+    *
+    * @return The value returned from <code>in.available()</code>
+    *
+    * @exception IOException If an error occurs
+    */
+  public int available() throws IOException
+  {
+    return(in.available());
+  }
 
-/*************************************************************************/
+  /*************************************************************************/
 
-/**
-  * Calls the <code>in.skip(long)</code> method
-  *
-  * @param The requested number of bytes to skip. 
-  *
-  * @return The value returned from <code>in.skip(long)</code>
-  *
-  * @exception IOException If an error occurs
-  */
-public long
-skip(long num_bytes) throws IOException
-{
-  return(in.skip(num_bytes));
-}
+  /**
+    * Calls the <code>in.skip(long)</code> method
+    *
+    * @param numBytes The requested number of bytes to skip. 
+    *
+    * @return The value returned from <code>in.skip(long)</code>
+    *
+    * @exception IOException If an error occurs
+    */
+  public long skip(long num_bytes) throws IOException
+  {
+    return(in.skip(num_bytes));
+  }
 
-/*************************************************************************/
+  /*************************************************************************/
 
-/**
-  * Calls the <code>in.read()</code> method
-  *
-  * @return The value returned from <code>in.read()</code>
-  *
-  * @exception IOException If an error occurs
-  */
-public int
-read() throws IOException
-{
-  return(in.read());
-}
+  /**
+    * Calls the <code>in.read()</code> method
+    *
+    * @return The value returned from <code>in.read()</code>
+    *
+    * @exception IOException If an error occurs
+    */
+  public int read() throws IOException
+  {
+    return(in.read());
+  }
 
-/*************************************************************************/
+  /*************************************************************************/
 
-/**
-  * Calls the <code>read(byte[], int, int)</code> overloaded method.  Note that 
-  * this method does not redirect its call directly to a corresponding
-  * method in <code>in</code>.  This allows subclasses to override only the
-  * three argument version of <code>read</code>.
-  *
-  * @param buf The buffer to read bytes into
-  *
-  * @return The value retured from <code>in.read(byte[], int, int)</code>
-  *
-  * @exception IOException If an error occurs
-  */
-public int
-read(byte[] buf) throws IOException
-{
-  return(read(buf, 0, buf.length));
-}
+  /**
+    * Calls the <code>read(byte[], int, int)</code> overloaded method.  
+    * Note that 
+    * this method does not redirect its call directly to a corresponding
+    * method in <code>in</code>.  This allows subclasses to override only the
+    * three argument version of <code>read</code>.
+    *
+    * @param buf The buffer to read bytes into
+    *
+    * @return The value retured from <code>in.read(byte[], int, int)</code>
+    *
+    * @exception IOException If an error occurs
+    */
+  public int read(byte[] buf) throws IOException
+  {
+    return(read(buf, 0, buf.length));
+  }
 
-/*************************************************************************/
+  /*************************************************************************/
 
-/**
-  * Calls the <code>in.read(byte[], int, int)</code> method.
-  *
-  * @param buf The buffer to read bytes into
-  * @param offset The index into the buffer to start storing bytes
-  * @param len The maximum number of bytes to read.
-  *
-  * @return The value retured from <code>in.read(byte[], int, int)</code>
-  *
-  * @exception IOException If an error occurs
-  */
-public int
-read(byte[] buf, int offset, int len) throws IOException
-{
-  return(in.read(buf, offset, len));
-}
+  /**
+    * Calls the <code>in.read(byte[], int, int)</code> method.
+    *
+    * @param buf The buffer to read bytes into
+    * @param offset The index into the buffer to start storing bytes
+    * @param len The maximum number of bytes to read.
+    *
+    * @return The value retured from <code>in.read(byte[], int, int)</code>
+    *
+    * @exception IOException If an error occurs
+    */
+  public int read(byte[] buf, int offset, int len) throws IOException
+  {
+    return(in.read(buf, offset, len));
+  }
 
-/*************************************************************************/
+  /*************************************************************************/
 
-/**
-  * This method closes the input stream by closing the input stream that
-  * this object is filtering.  Future attempts to access this stream may
-  * throw an exception.
-  * 
-  * @exception IOException If an error occurs
-  */
-public void
-close() throws IOException
-{
-  in.close();
-}
+  /**
+    * This method closes the input stream by closing the input stream that
+    * this object is filtering.  Future attempts to access this stream may
+    * throw an exception.
+    * 
+    * @exception IOException If an error occurs
+    */
+  public void close() throws IOException
+  {
+    in.close();
+  }
 
 } // class FilterInputStream
+

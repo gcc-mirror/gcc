@@ -1,5 +1,5 @@
 /* FilterWriter.java -- Parent class for output streams that filter
-   Copyright (C) 1998, 1999, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -52,128 +52,120 @@ package java.io;
   * underlying stream.  Subclasses provide actual filtering.
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
-  * @author Tom Tromey <tromey@cygnus.com>
+  * @author Tom Tromey <tromey@cygnus.com> 
   */
 public abstract class FilterWriter extends Writer
 {
+  /*
+   * Instance Variables
+   */
 
-/*************************************************************************/
+  /**
+    * This is the subordinate <code>Writer</code> that this class
+    * redirects its method calls to.
+    */
+  protected Writer out;
 
-/*
- * Instance Variables
- */
+  /*************************************************************************/
 
-/**
-  * This is the subordinate <code>Writer</code> that this class
-  * redirects its method calls to.
-  */
-protected Writer out;
+  /*
+   * Constructors
+   */
 
-/*************************************************************************/
+  /**
+    * This method initializes an instance of <code>FilterWriter</code>
+    * to write to the specified subordinate <code>Writer</code>.
+    * The given <code>Writer</code> will be used as <code>lock</code> for
+    * the newly created <code>FilterWriter</code>.
+    *
+    * @param out The <code>Writer</code> to write to
+    */
+  protected FilterWriter(Writer out)
+  {
+    super(out);
+    this.out = out;
+  }
 
-/*
- * Constructors
- */
+  /*************************************************************************/
 
-/**
-  * This method initializes an instance of <code>FilterWriter</code>
-  * to write to the specified subordinate <code>Writer</code>.
-  * The given <code>Writer</code> will be used as <code>lock</code> for
-  * the newly created <code>FilterWriter</code>.
-  *
-  * @param out The <code>Writer</code> to write to
-  */
-protected
-FilterWriter(Writer out)
-{
-  super(out);
-  this.out = out;
-}
+  /*
+   * Instance Methods
+   */
 
-/*************************************************************************/
+  /**
+    * This method closes the underlying <code>Writer</code>.  Any
+    * further attempts to write to this stream may throw an exception.
+    *
+    * @exception IOException If an error occurs
+    */
+  public void close() throws IOException
+  {
+    out.close();
+  }
 
-/*
- * Instance Methods
- */
+  /*************************************************************************/
 
-/**
-  * This method closes the underlying <code>Writer</code>.  Any
-  * further attempts to write to this stream may throw an exception.
-  *
-  * @exception IOException If an error occurs
-  */
-public void
-close() throws IOException
-{
-  out.close();
-}
+  /**
+    * This method attempt to flush all buffered output to be written to the
+    * underlying output sink.
+    *
+    * @exception IOException If an error occurs
+    */
+  public void flush() throws IOException
+  {
+    out.flush();
+  }
 
-/*************************************************************************/
+  /*************************************************************************/
 
-/**
-  * This method attempt to flush all buffered output to be written to the
-  * underlying output sink.
-  *
-  * @exception IOException If an error occurs
-  */
-public void
-flush() throws IOException
-{
-  out.flush();
-}
+  /**
+    * This method writes a single char of output to the underlying
+    * <code>Writer</code>.
+    *
+    * @param b The char to write, passed as an int.
+    *
+    * @exception IOException If an error occurs
+    */
+  public void write(int b) throws IOException
+  {
+    out.write(b);
+  }
 
-/*************************************************************************/
+  /*************************************************************************/
 
-/**
-  * This method writes a single char of output to the underlying
-  * <code>Writer</code>.
-  *
-  * @param b The char to write, passed as an int.
-  *
-  * @exception IOException If an error occurs
-  */
-public void
-write(int b) throws IOException
-{
-  out.write(b);
-}
+  /**
+    * This method writes <code>len</code> chars from the array <code>buf</code>
+    * starting at index <code>offset</code> to the underlying
+    * <code>Writer</code>.
+    *
+    * @param buf The char array to write chars from
+    * @param offset The index into the array to start writing chars from
+    * @param len The number of chars to write
+    *
+    * @exception IOException If an error occurs
+    */
+  public void write(char[] buf, int offset, int len) throws IOException
+  {
+    out.write(buf, offset, len);
+  }
 
-/*************************************************************************/
+  /*************************************************************************/
 
-/**
-  * This method writes <code>len</code> chars from the array <code>buf</code>
-  * starting at index <code>offset</code> to the underlying
-  * <code>Writer</code>.
-  *
-  * @param buf The char array to write chars from
-  * @param offset The index into the array to start writing chars from
-  * @param len The number of chars to write
-  *
-  * @exception IOException If an error occurs
-  */
-public void
-write(char[] buf, int offset, int len) throws IOException
-{
-  out.write(buf, offset, len);
-}
-
-/*************************************************************************/
-
-/**
-  * This method writes <code>len</code> chars from the <code>String</code>
-  * starting at position <code>offset</code>.
-  *
-  * @param str The <code>String</code> that is to be written
-  * @param offset The character offset into the <code>String</code> to start writing from
-  * @param len The number of chars to write
-  *
-  * @exception IOException If an error occurs
-  */
-public void
-write(String str, int offset, int len) throws IOException
-{
-  out.write(str, offset, len);
-}
+  /**
+    * This method writes <code>len</code> chars from the <code>String</code>
+    * starting at position <code>offset</code>.
+    *
+    * @param str The <code>String</code> that is to be written
+    * @param offset The character offset into the <code>String</code> 
+    * to start writing from
+    * @param len The number of chars to write
+    *
+    * @exception IOException If an error occurs
+    */
+  public void write(String str, int offset, int len) throws IOException
+  {
+    out.write(str, offset, len);
+  }
 
 } // class FilterWriter
 

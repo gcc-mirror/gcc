@@ -1,3 +1,31 @@
+2003-03-18  Michael Koch  <konqueror@gmx.de>
+
+	* java/io/BufferedReader.java,
+	java/io/BufferedWriter.java,
+	java/io/ByteArrayOutputStream.java,
+	java/io/FileFilter.java,
+	java/io/FilePermission.java,
+	java/io/FileReader.java,
+	java/io/FileWriter.java,
+	java/io/FilenameFilter.java,
+	java/io/FilterInputStream.java,
+	java/io/FilterOutputStream.java,
+	java/io/FilterReader.java,
+	java/io/FilterWriter.java,
+	java/io/ObjectInput.java,
+	java/io/ObjectInputValidation.java,
+	java/io/ObjectOutput.java,
+	java/io/ObjectStreamField.java,
+	java/io/PipedInputStream.java,
+	java/io/PipedReader.java,
+	java/io/PrintWriter.java,
+	java/io/PushbackReader.java,
+	java/io/Reader.java,
+	java/io/SerializablePermission.java,
+	java/io/StringReader.java,
+	java/io/Writer.java:
+	Merged from classpath.
+
 2003-03-17  Michael Koch  <konqueror@gmx.de>
 
 	* java/awt/ScrollPaneAdjustable.java:

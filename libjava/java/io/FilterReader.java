@@ -1,5 +1,5 @@
 /* FilterReader.java -- Base class for char stream classes that filter input
-   Copyright (C) 1998, 1999, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -63,163 +63,153 @@ package java.io;
   */
 public abstract class FilterReader extends Reader
 {
+  /*
+   * Instance Variables
+   */
 
-/*************************************************************************/
+  /**
+    * This is the subordinate <code>Reader</code> to which method calls
+    * are redirected
+    */
+  protected Reader in;
 
-/*
- * Instance Variables
- */
+  /*************************************************************************/
 
-/**
-  * This is the subordinate <code>Reader</code> to which method calls
-  * are redirected
-  */
-protected Reader in;
+  /*
+   * Constructors
+   */
 
-/*************************************************************************/
+  /**
+    * Create a <code>FilterReader</code> with the specified subordinate
+    * <code>Reader</code>.
+    * The <code>lock</code> of the new <code>FilterReader</code> will be set
+    * to <code>in.lock</code>.
+    *
+    * @param in The subordinate <code>Reader</code>
+    */
+  protected FilterReader(Reader in)
+  {
+    super(in.lock);
+    this.in = in;
+  }
 
-/*
- * Constructors
- */
+  /*************************************************************************/
 
-/**
-  * Create a <code>FilterReader</code> with the specified subordinate
-  * <code>Reader</code>.
-  * The <code>lock</code> of the new <code>FilterReader</code> will be set
-  * to <code>in.lock</code>.
-  *
-  * @param in The subordinate <code>Reader</code>
-  */
-protected 
-FilterReader(Reader in)
-{
-  super(in.lock);
-  this.in = in;
-}
+  /*
+   * Instance Methods
+   */
 
-/*************************************************************************/
+  /**
+    * Calls the <code>in.mark(int)</code> method.
+    *
+    * @param readlimit The parameter passed to <code>in.mark(int)</code>
+    *
+    * @exception IOException If an error occurs
+    */
+  public void mark(int readlimit) throws IOException
+  {
+    in.mark(readlimit);
+  }
 
-/*
- * Instance Methods
- */
+  /*************************************************************************/
 
-/**
-  * Calls the <code>in.mark(int)</code> method.
-  *
-  * @param readlimit The parameter passed to <code>in.mark(int)</code>
-  *
-  * @exception IOException If an error occurs
-  */
-public void
-mark(int readlimit) throws IOException
-{
-  in.mark(readlimit);
-}
+  /**
+    * Calls the <code>in.markSupported()</code> method.
+    *
+    * @return <code>true</code> if mark/reset is supported, 
+    * <code>false</code> otherwise
+    */
+  public boolean markSupported()
+  {
+    return(in.markSupported());
+  }
 
-/*************************************************************************/
+  /*************************************************************************/
 
-/**
-  * Calls the <code>in.markSupported()</code> method.
-  *
-  * @return <code>true</code> if mark/reset is supported, <code>false</code> otherwise
-  */
-public boolean
-markSupported()
-{
-  return(in.markSupported());
-}
+  /**
+    * Calls the <code>in.reset()</code> method.
+    *
+    * @exception IOException If an error occurs
+    */
+  public void reset() throws IOException
+  {
+    in.reset();
+  }
 
-/*************************************************************************/
+  /*************************************************************************/
 
-/**
-  * Calls the <code>in.reset()</code> method.
-  *
-  * @exception IOException If an error occurs
-  */
-public void
-reset() throws IOException
-{
-  in.reset();
-}
+  /**
+    * Calls the <code>in.read()</code> method.
+    *
+    * @return The value returned from <code>in.available()</code>
+    *
+    * @exception IOException If an error occurs
+    */
+  public boolean ready() throws IOException
+  {
+    return(in.ready());
+  }
 
-/*************************************************************************/
+  /*************************************************************************/
 
-/**
-  * Calls the <code>in.read()</code> method.
-  *
-  * @return The value returned from <code>in.available()</code>
-  *
-  * @exception IOException If an error occurs
-  */
-public boolean
-ready() throws IOException
-{
-  return(in.ready());
-}
+  /**
+    * Calls the <code>in.skip(long)</code> method
+    *
+    * @param numBytes The requested number of chars to skip. 
+    *
+    * @return The value returned from <code>in.skip(long)</code>
+    *
+    * @exception IOException If an error occurs
+    */
+  public long skip(long num_chars) throws IOException
+  {
+    return(in.skip(num_chars));
+  }
 
-/*************************************************************************/
+  /*************************************************************************/
 
-/**
-  * Calls the <code>in.skip(long)</code> method
-  *
-  * @param The requested number of chars to skip. 
-  *
-  * @return The value returned from <code>in.skip(long)</code>
-  *
-  * @exception IOException If an error occurs
-  */
-public long
-skip(long num_chars) throws IOException
-{
-  return(in.skip(num_chars));
-}
+  /**
+    * Calls the <code>in.read()</code> method
+    *
+    * @return The value returned from <code>in.read()</code>
+    *
+    * @exception IOException If an error occurs
+    */
+  public int read() throws IOException
+  {
+    return(in.read());
+  }
 
-/*************************************************************************/
+  /*************************************************************************/
 
-/**
-  * Calls the <code>in.read()</code> method
-  *
-  * @return The value returned from <code>in.read()</code>
-  *
-  * @exception IOException If an error occurs
-  */
-public int
-read() throws IOException
-{
-  return(in.read());
-}
+  /**
+    * Calls the <code>in.read(char[], int, int)</code> method.
+    *
+    * @param buf The buffer to read chars into
+    * @param offset The index into the buffer to start storing chars
+    * @param len The maximum number of chars to read.
+    *
+    * @return The value retured from <code>in.read(char[], int, int)</code>
+    *
+    * @exception IOException If an error occurs
+    */
+  public int read(char[] buf, int offset, int len) throws IOException
+  {
+    return(in.read(buf, offset, len));
+  }
 
-/*************************************************************************/
+  /*************************************************************************/
 
-/**
-  * Calls the <code>in.read(char[], int, int)</code> method.
-  *
-  * @param buf The buffer to read chars into
-  * @param offset The index into the buffer to start storing chars
-  * @param len The maximum number of chars to read.
-  *
-  * @return The value retured from <code>in.read(char[], int, int)</code>
-  *
-  * @exception IOException If an error occurs
-  */
-public int
-read(char[] buf, int offset, int len) throws IOException
-{
-  return(in.read(buf, offset, len));
-}
-
-/*************************************************************************/
-
-/**
-  * This method closes the stream by calling the <code>close()</code> method
-  * of the underlying stream.
-  *
-  * @exception IOException If an error occurs
-  */
-public void
-close() throws IOException
-{
-  in.close();
-}
+  /**
+    * This method closes the stream by calling the <code>close()</code> method
+    * of the underlying stream.
+    *
+    * @exception IOException If an error occurs
+    */
+  public void close() throws IOException
+  {
+    in.close();
+  }
 
 } // class FilterReader
+
