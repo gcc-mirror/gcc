@@ -525,13 +525,6 @@ convert_harshness (type, parmtype, parm)
       else
 	penalty = 2;
 
-      if (TREE_UNSIGNED (ttl) ^ TREE_UNSIGNED (intype))
-	{
-	  ttl = unsigned_type (ttl);
-	  intype = unsigned_type (intype);
-	  penalty += 2;
-	}
-
       ttr = intype;
 
       /* If the initializer is not an lvalue, then it does not
@@ -549,6 +542,13 @@ convert_harshness (type, parmtype, parm)
 	    h.code |= TRIVIAL_CODE;
 	  h.distance = 0;
 	  return h;
+	}
+
+      if (TREE_UNSIGNED (ttl) ^ TREE_UNSIGNED (intype))
+	{
+	  ttl = unsigned_type (ttl);
+	  ttr = intype = unsigned_type (intype);
+	  penalty += 2;
 	}
 
       if (ttl == ttr)
@@ -2197,6 +2197,12 @@ build_method_call (instance, name, parms, basetype_path, flags)
 		      cp->function = function;
 		      cp->basetypes = basetype_path;
 
+		      /* Don't allow non-converting constructors to convert. */
+		      if (flags & LOOKUP_ONLYCONVERTING
+			  && DECL_LANG_SPECIFIC (function)
+			  && DECL_NONCONVERTING_P (function))
+			continue;
+
 		      /* No "two-level" conversions.  */
 		      if (flags & LOOKUP_NO_CONVERSION
 			  && (cp->h.code & USER_CODE))
@@ -2433,6 +2439,13 @@ build_method_call (instance, name, parms, basetype_path, flags)
   function = DECL_MAIN_VARIANT (function);
   /* Declare external function if necessary. */
   assemble_external (function);
+
+#if 0
+  if (DECL_ARTIFICIAL (function) && ! flag_no_inline
+      && DECL_SAVED_INSNS (function) == 0
+      && ! TREE_ASM_WRITTEN (function))
+    synthesize_method (function);
+#endif
 
   fntype = TREE_TYPE (function);
   if (TREE_CODE (fntype) == POINTER_TYPE)

@@ -1185,7 +1185,7 @@ On an rs6000, xlC stores exception objects on that stack, under the try
 block.  When is unwinds down into a handler, the frame pointer is
 adjusted back to the normal value for the frame in which the handler
 resides, and the stack pointer is left unchanged from the time at which
-the object was throwed.  This is so that there is always someplace for
+the object was thrown.  This is so that there is always someplace for
 the exception object, and nothing can overwrite it, once we start
 throwing.  The only bad part, is that the stack remains large.
 

@@ -659,7 +659,7 @@ prepare_fresh_vtable (binfo, for_type)
      for_type, and we really want different names.  (mrs) */
   tree name = build_type_pathname (VTABLE_NAME_FORMAT, basetype, for_type);
   tree new_decl = build_decl (VAR_DECL, name, TREE_TYPE (orig_decl));
-  tree path;
+  tree path, offset;
   int result;
 
   /* Remember which class this vtable is really for.  */
@@ -676,11 +676,18 @@ prepare_fresh_vtable (binfo, for_type)
 
   /* Make fresh virtual list, so we can smash it later.  */
   BINFO_VIRTUALS (binfo) = copy_list (BINFO_VIRTUALS (binfo));
+
+  if (TREE_VIA_VIRTUAL (binfo))
+    offset = BINFO_OFFSET (binfo_member (BINFO_TYPE (binfo), 
+			    CLASSTYPE_VBASECLASSES (for_type)));
+  else
+    offset = BINFO_OFFSET (binfo);
+
   /* Install the value for `headof' if that's what we're doing.  */
-  if (flag_dossier)
-    TREE_VALUE (TREE_CHAIN (BINFO_VIRTUALS (binfo)))
-      = build_vtable_entry (size_binop (MINUS_EXPR, integer_zero_node, BINFO_OFFSET (binfo)),
-			    FNADDR_FROM_VTABLE_ENTRY (TREE_VALUE (TREE_CHAIN (BINFO_VIRTUALS (binfo)))));
+  if (flag_rtti)
+    TREE_VALUE (BINFO_VIRTUALS (binfo))
+      = build_vtable_entry (size_binop (MINUS_EXPR, integer_zero_node, offset),
+	    FNADDR_FROM_VTABLE_ENTRY (TREE_VALUE (BINFO_VIRTUALS (binfo))));
 
 #ifdef GATHER_STATISTICS
   n_vtables += 1;
@@ -803,11 +810,13 @@ add_virtual_function (pending_virtuals, has_virtual, fndecl, t)
     {
       tree entry;
 
-      if (flag_dossier && *has_virtual == 0)
+      if (flag_rtti && *has_virtual == 0)
 	{
-	  /* CLASSTYPE_DOSSIER is only used as a Boolean (NULL or not). */
-	  CLASSTYPE_DOSSIER (t) = integer_one_node;
+	  /* CLASSTYPE_RTTI is only used as a Boolean (NULL or not). */
+	  CLASSTYPE_RTTI (t) = integer_one_node;
+#if 0
 	  *has_virtual = 1;
+#endif
         }
 
       /* Build a new INT_CST for this DECL_VINDEX.  */
@@ -1083,19 +1092,21 @@ alter_access (t, fdecl, access)
 	error ("conflicting access specifications for field `%s', ignored",
 	       IDENTIFIER_POINTER (DECL_NAME (fdecl)));
     }
-  else if (TREE_PRIVATE (fdecl) && access != access_private)
-    cp_error_at ("cannot make private `%D' non-private", fdecl);
+  else if (TREE_PRIVATE (fdecl))
+    {
+      if (access != access_private)
+	cp_error_at ("cannot make private `%D' non-private", fdecl);
+      goto alter;
+    }
   else if (TREE_PROTECTED (fdecl))
     {
-      if (access == access_public)
-	cp_error_at ("cannot make protected `%D' public", fdecl);
+      if (access != access_protected)
+	cp_error_at ("cannot make protected `%D' non-protected", fdecl);
       goto alter;
     }
   /* ARM 11.3: an access declaration may not be used to restrict access
      to a member that is accessible in the base class.  */
-  else if (TREE_PUBLIC (fdecl)
-	   && (access == access_private
-	       || access == access_protected))
+  else if (access != access_public)
     cp_error_at ("cannot reduce access of public member `%D'", fdecl);
   else if (elem == NULL_TREE)
     {
@@ -2120,7 +2131,7 @@ finish_vtbls (binfo, do_self, t)
 	{
 	  base_binfo = binfo_member (BINFO_TYPE (base_binfo), CLASSTYPE_VBASECLASSES (t));
 	}
-      finish_vtbls (base_binfo, is_not_base_vtable, t);
+      finish_vtbls (base_binfo, (is_not_base_vtable || flag_rtti), t);
     }
 }
 
@@ -2239,12 +2250,34 @@ modify_one_vtable (binfo, t, fndecl, pfn)
      tree binfo, t, fndecl, pfn;
 {
   tree virtuals = BINFO_VIRTUALS (binfo);
+  tree old_rtti;
   unsigned HOST_WIDE_INT n;
   
-  n = 0;
-  /* Skip initial vtable length field and RTTI fake object. */
-  for (; virtuals && n < 1 + flag_dossier; n++)
-      virtuals = TREE_CHAIN (virtuals);
+  /* update rtti entry */
+  if (flag_rtti)
+    {
+      if (binfo == TYPE_BINFO (t))
+	{
+	  if (! BINFO_NEW_VTABLE_MARKED (binfo))
+	    build_vtable (TYPE_BINFO (DECL_CONTEXT (CLASSTYPE_VFIELD (t))), t);
+	}
+      else
+	{
+	  if (! BINFO_NEW_VTABLE_MARKED (binfo))
+	    prepare_fresh_vtable (binfo, t);
+	}
+      old_rtti = get_vtable_entry_n (BINFO_VIRTUALS (binfo), 0);
+      if (old_rtti)
+	TREE_VALUE (old_rtti) = build_vtable_entry (
+	DELTA_FROM_VTABLE_ENTRY (TREE_VALUE (old_rtti)), 
+        build_t_desc (t, 0));
+    }
+  if (fndecl == NULL_TREE) return;
+
+  /* Skip RTTI fake object. */
+  n = 1;
+  if (virtuals)
+    virtuals = TREE_CHAIN (virtuals);
   while (virtuals)
     {
       tree current_fndecl = TREE_VALUE (virtuals);
@@ -2330,7 +2363,7 @@ modify_all_direct_vtables (binfo, do_self, t, fndecl, pfn)
       int is_not_base_vtable =
 	i != CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (binfo));
       if (! TREE_VIA_VIRTUAL (base_binfo))
-	modify_all_direct_vtables (base_binfo, is_not_base_vtable, t, fndecl, pfn);
+	modify_all_direct_vtables (base_binfo, (is_not_base_vtable || flag_rtti), t, fndecl, pfn);
     }
 }
 
@@ -2345,10 +2378,10 @@ fixup_vtable_deltas (binfo, t)
   tree virtuals = BINFO_VIRTUALS (binfo);
   unsigned HOST_WIDE_INT n;
   
-  n = 0;
-  /* Skip initial vtable length field and RTTI fake object. */
-  for (; virtuals && n < 1 + flag_dossier; n++)
-      virtuals = TREE_CHAIN (virtuals);
+  /* Skip RTTI fake object. */
+  n = 1;
+  if (virtuals)
+    virtuals = TREE_CHAIN (virtuals);
   while (virtuals)
     {
       tree fndecl = TREE_VALUE (virtuals);
@@ -2489,21 +2522,9 @@ override_one_vtable (binfo, old, t)
   if (BINFO_NEW_VTABLE_MARKED (binfo))
     choose = NEITHER;
 
-  /* Skip size entry. */
+  /* Skip RTTI fake object. */
   virtuals = TREE_CHAIN (virtuals);
-  /* Skip RTTI fake object. */
-  if (flag_dossier)
-    {
-      virtuals = TREE_CHAIN (virtuals);
-    }
-
-  /* Skip size entry. */
   old_virtuals = TREE_CHAIN (old_virtuals);
-  /* Skip RTTI fake object. */
-  if (flag_dossier)
-    {
-      old_virtuals = TREE_CHAIN (old_virtuals);
-    }
 
   while (virtuals)
     {
@@ -2789,8 +2810,10 @@ finish_struct (t, list_of_fieldlists, warn_anon)
     }
 #endif
 
-  if (flag_dossier)
+#if 0
+  if (flag_rtti)
     build_t_desc (t, 0);
+#endif
 
   TYPE_BINFO (t) = NULL_TREE;
 
@@ -3303,7 +3326,6 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 	  tail = &TREE_CHAIN (dtor);
 
 	  if (DECL_VINDEX (dtor) == NULL_TREE
-	      && ! CLASSTYPE_DECLARED_EXCEPTION (t)
 	      && (needs_virtual_dtor
 		  || pending_virtuals != NULL_TREE
 		  || pending_hard_virtuals != NULL_TREE))
@@ -3319,6 +3341,9 @@ finish_struct (t, list_of_fieldlists, warn_anon)
   *tail_user_methods = NULL_TREE;
 
   TYPE_NEEDS_DESTRUCTOR (t) |= TYPE_HAS_DESTRUCTOR (t);
+  if (flag_rtti && (max_has_virtual > 0 || needs_virtual_dtor) && 
+	has_virtual == 0)
+    has_virtual = 1;
 
   if (! fn_fields)
     nonprivate_method = 1;
@@ -3374,7 +3399,6 @@ finish_struct (t, list_of_fieldlists, warn_anon)
       method_vec = finish_struct_methods (t, fn_fields, nonprivate_method);
 
       if (TYPE_HAS_CONSTRUCTOR (t)
-	  && ! CLASSTYPE_DECLARED_EXCEPTION (t)
 	  && CLASSTYPE_FRIEND_CLASSES (t) == NULL_TREE
 	  && DECL_FRIENDLIST (TYPE_NAME (t)) == NULL_TREE)
 	{
@@ -3485,7 +3509,7 @@ finish_struct (t, list_of_fieldlists, warn_anon)
       DECL_FCONTEXT (vfield) = t;
       DECL_FIELD_SIZE (vfield) = 0;
       DECL_ALIGN (vfield) = TYPE_ALIGN (ptr_type_node);
-      if (CLASSTYPE_DOSSIER (t))
+      if (CLASSTYPE_RTTI (t))
 	{
 	  /* vfield is always first entry in structure.  */
 	  TREE_CHAIN (vfield) = fields;
@@ -3680,14 +3704,16 @@ finish_struct (t, list_of_fieldlists, warn_anon)
       vbases = CLASSTYPE_VBASECLASSES (t);
       CLASSTYPE_N_VBASECLASSES (t) = list_length (vbases);
 
+      /* The rtti code should do this.  (mrs) */
+#if 0 
       while (vbases)
 	{
-	  /* The rtti code should do this.  (mrs) */
-	  /* Update dossier info with offsets for virtual baseclasses.  */
-	  if (flag_dossier && ! BINFO_NEW_VTABLE_MARKED (vbases))
+	  /* Update rtti info with offsets for virtual baseclasses.  */
+	  if (flag_rtti && ! BINFO_NEW_VTABLE_MARKED (vbases))
 	    prepare_fresh_vtable (vbases, t);
 	  vbases = TREE_CHAIN (vbases);
 	}
+#endif
 
       {
 	/* Now fixup overrides of all functions in vtables from all
@@ -3750,6 +3776,15 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 #ifdef NOTQUITE
   cp_warning ("Doing hard virtuals for %T...", t);
 #endif
+
+  if (has_virtual > max_has_virtual)
+    max_has_virtual = has_virtual;
+  if (max_has_virtual > 0)
+    TYPE_VIRTUAL_P (t) = 1;
+
+  if (flag_rtti && TYPE_VIRTUAL_P (t) && !pending_hard_virtuals)
+    modify_all_vtables (t, NULL_TREE, NULL_TREE);
+
   while (pending_hard_virtuals)
     {
       modify_all_vtables (t,
@@ -3761,19 +3796,27 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 
   /* Under our model of GC, every C++ class gets its own virtual
      function table, at least virtually.  */
-  if (pending_virtuals || CLASSTYPE_DOSSIER (t))
+  if (pending_virtuals || (flag_rtti && TYPE_VIRTUAL_P (t)))
     {
       pending_virtuals = nreverse (pending_virtuals);
       /* We must enter these virtuals into the table.  */
       if (first_vfn_base_index < 0)
 	{
-	  if (flag_dossier)
+	  if (flag_rtti)
 	    pending_virtuals = tree_cons (NULL_TREE,
-					  build_vtable_entry (integer_zero_node,
-							      build_t_desc (t, 0)),
-					  pending_virtuals);
+		build_vtable_entry (integer_zero_node, build_t_desc (t, 0)),
+	        pending_virtuals);
+	  else 
+            pending_virtuals = tree_cons (NULL_TREE,
+                build_vtable_entry (integer_zero_node, integer_zero_node),
+                pending_virtuals);
+
+#if 0
+	  /* The size is no longer used. */
+	  /* now we put the size of the vtable as first entry */
 	  pending_virtuals = tree_cons (NULL_TREE, the_null_vtable_entry,
 					pending_virtuals);
+#endif
 	  build_vtable (NULL_TREE, t);
 	}
       else
@@ -3784,9 +3827,9 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 	  if (! BINFO_NEW_VTABLE_MARKED (TYPE_BINFO (t)))
 	    build_vtable (TREE_VEC_ELT (TYPE_BINFO_BASETYPES (t), first_vfn_base_index), t);
 
-	  /* Update the dossier pointer for this class.  */
-	  if (flag_dossier)
-	    TREE_VALUE (TREE_CHAIN (TYPE_BINFO_VIRTUALS (t)))
+	  /* Update the rtti pointer for this class.  */
+	  if (flag_rtti)
+	    TREE_VALUE (TYPE_BINFO_VIRTUALS (t))
 	      = build_vtable_entry (integer_zero_node, build_t_desc (t, 0));
 	}
 
@@ -3815,11 +3858,8 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 	CLASSTYPE_NEEDS_VIRTUAL_REINIT (t) = 1;
     }
 
-  if (has_virtual > max_has_virtual)
-    max_has_virtual = has_virtual;
   if (max_has_virtual || first_vfn_base_index >= 0)
     {
-      TYPE_VIRTUAL_P (t) = 1;
       CLASSTYPE_VSIZE (t) = has_virtual;
       if (first_vfn_base_index >= 0)
 	{
@@ -3970,7 +4010,7 @@ finish_struct (t, list_of_fieldlists, warn_anon)
   else if (TYPE_NEEDS_CONSTRUCTING (t))
     build_class_init_list (t);
 
-  if (! CLASSTYPE_DECLARED_EXCEPTION (t) && ! IS_SIGNATURE (t))
+  if (! IS_SIGNATURE (t))
     embrace_waiting_friends (t);
 
   /* Write out inline function definitions.  */
@@ -4022,13 +4062,23 @@ finish_struct (t, list_of_fieldlists, warn_anon)
   finish_vtbls (TYPE_BINFO (t), 1, t);
   TYPE_BEING_DEFINED (t) = 0;
 
-  if (flag_dossier && CLASSTYPE_VTABLE_NEEDS_WRITING (t))
+  if (flag_rtti && TYPE_VIRTUAL_P (t) && CLASSTYPE_VTABLE_NEEDS_WRITING (t))
     {
       tree variants;
-      tree tdecl;
+      tree tdecl, td;
 
       /* Now instantiate its type descriptors.  */
-      tdecl = TREE_OPERAND (build_t_desc (t, 1), 0);
+      td = build_t_desc (t, 1);
+      if (td == NULL_TREE)
+	{
+	  cp_error ("failed to build type descriptor node of '%T', maybe typeinfo.h not included", t);
+	  tdecl = NULL_TREE;
+	}
+      else
+        tdecl = TREE_OPERAND (td, 0);
+
+#if 0
+      /* I see no need for building the following TD */
       variants = TYPE_POINTER_TO (t);
       build_type_variant (variants, 1, 0);
       while (variants)
@@ -4036,6 +4086,7 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 	  build_t_desc (variants, 1);
 	  variants = TYPE_NEXT_VARIANT (variants);
 	}
+#endif
       variants = build_reference_type (t);
       build_type_variant (variants, 1, 0);
       while (variants)
@@ -4043,11 +4094,14 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 	  build_t_desc (variants, 1);
 	  variants = TYPE_NEXT_VARIANT (variants);
 	}
-      DECL_CONTEXT (tdecl) = t;
+      if (tdecl != NULL_TREE)
+        DECL_CONTEXT (tdecl) = t;
     }
+#if 0
   /* Still need to instantiate this C struct's type descriptor.  */
-  else if (flag_dossier && ! CLASSTYPE_DOSSIER (t))
+  else if (flag_rtti && ! CLASSTYPE_RTTI (t))
     build_t_desc (t, 1);
+#endif
 
 #if 0
   if (TYPE_NAME (t) && TYPE_IDENTIFIER (t))
@@ -4450,9 +4504,20 @@ popclass (modify)
 	  if (TREE_CODE (TREE_TYPE (current_class_decl)) == POINTER_TYPE)
 	    {
 	      tree temp;
-	      /* Can't call build_indirect_ref here, because it has special
-		 logic to return C_C_D given this argument.  */
-	      C_C_D = build1 (INDIRECT_REF, current_class_type, current_class_decl);
+	      if (CLASSTYPE_INST_VAR (current_class_type) == NULL_TREE)
+		{
+		  /* Can't call build_indirect_ref here, because it has special
+		     logic to return C_C_D given this argument.  */
+		  C_C_D = build1 (INDIRECT_REF, current_class_type, current_class_decl);
+		  CLASSTYPE_INST_VAR (current_class_type) = C_C_D;
+		}
+	      else
+		{
+		  C_C_D = CLASSTYPE_INST_VAR (current_class_type);
+		  /* `current_class_decl' is different for every
+		     function we compile.  */
+		  TREE_OPERAND (C_C_D, 0) = current_class_decl;
+		}
 	      temp = TREE_TYPE (TREE_TYPE (current_class_decl));
 	      TREE_READONLY (C_C_D) = TYPE_READONLY (temp);
 	      TREE_SIDE_EFFECTS (C_C_D) = TYPE_VOLATILE (temp);

@@ -150,6 +150,7 @@ empty_parms ()
 %token <ttype> AGGR
 %token <itype> VISSPEC
 %token DELETE NEW OVERLOAD THIS OPERATOR CXX_TRUE CXX_FALSE
+%token NAMESPACE TYPENAME_KEYWORD USING
 %token LEFT_RIGHT TEMPLATE
 %token TYPEID DYNAMIC_CAST STATIC_CAST REINTERPRET_CAST CONST_CAST
 %token <itype> SCOPE
@@ -170,6 +171,7 @@ empty_parms ()
 
 %left '{' ',' ';'
 
+%nonassoc THROW
 %right <code> ASSIGN '='
 %right <code> '?' ':'
 %left <code> OROR
@@ -190,7 +192,7 @@ empty_parms ()
 %left <code> POINTSAT '.' '(' '['
 
 %right SCOPE			/* C++ extension */
-%nonassoc NEW DELETE TRY CATCH THROW
+%nonassoc NEW DELETE TRY CATCH
 
 %type <code> unop
 
@@ -430,9 +432,7 @@ template_def:
 		{
 		  yychar = ':';
 		template1:
-		  if (current_aggr == exception_type_node)
-		    error ("template type must define an aggregate or union");
-		  else if (current_aggr == signature_type_node)
+		  if (current_aggr == signature_type_node)
 		    sorry ("template type defining a signature");
 		  /* Maybe pedantic warning for union?
 		     How about an enum? :-)  */
@@ -564,7 +564,7 @@ datadef:
 fndef:
 	  fn.def1 base_init compstmt_or_error
 		{
-		  finish_function (lineno, 1);
+		  finish_function (lineno, 1, 0);
 		  /* finish_function performs these three statements:
 
 		     expand_end_bindings (getdecls (), 1, 0);
@@ -577,7 +577,7 @@ fndef:
 		}
 	| fn.def1 return_init base_init compstmt_or_error
 		{
-		  finish_function (lineno, 1);
+		  finish_function (lineno, 1, 0);
 		  /* finish_function performs these three statements:
 
 		     expand_end_bindings (getdecls (), 1, 0);
@@ -589,13 +589,13 @@ fndef:
 		  if ($<ttype>$) process_next_inline ($<ttype>$);
 		}
 	| fn.def1 nodecls compstmt_or_error
-		{ finish_function (lineno, 0);
+		{ finish_function (lineno, 0, 0);
 		  if ($<ttype>$) process_next_inline ($<ttype>$); }
 	| fn.def1 return_init ';' nodecls compstmt_or_error
-		{ finish_function (lineno, 0);
+		{ finish_function (lineno, 0, 0);
 		  if ($<ttype>$) process_next_inline ($<ttype>$); }
 	| fn.def1 return_init nodecls compstmt_or_error
-		{ finish_function (lineno, 0);
+		{ finish_function (lineno, 0, 0);
 		  if ($<ttype>$) process_next_inline ($<ttype>$); }
 	| typed_declspecs declarator error
 		{}
@@ -1148,7 +1148,7 @@ sub_cast_expr:
 		    {
 		      tree type = IDENTIFIER_TYPE_VALUE ($3);
 		      if (! IS_SIGNATURE(type))
-			$$ = CLASSTYPE_DOSSIER (type);
+			$$ = CLASSTYPE_RTTI (type);
 		      else
 			{
 			  sorry ("signature name as argument of `classof'");
@@ -2109,9 +2109,6 @@ structsp:
 
 		  if (TREE_CODE ($$) == ENUMERAL_TYPE)
 		    /* $$ = $1 from default rule.  */;
-		  else if (CLASSTYPE_DECLARED_EXCEPTION ($$))
-		    {
-		    }
 		  else
 		    {
 		      $$ = finish_struct ($$, $3, semi);
@@ -2435,8 +2432,12 @@ left_curly: '{'
 		      int needs_writing;
 		      tree name = TYPE_IDENTIFIER (t);
 
-		      CLASSTYPE_INTERFACE_ONLY (t) = interface_only;
-		      SET_CLASSTYPE_INTERFACE_UNKNOWN_X (t, interface_unknown);
+		      if (! ANON_AGGRNAME_P (name))
+			{
+			  CLASSTYPE_INTERFACE_ONLY (t) = interface_only;
+			  SET_CLASSTYPE_INTERFACE_UNKNOWN_X
+			    (t, interface_unknown);
+			}
 
 		      /* Record how to set the access of this class's
 			 virtual functions.  If write_virtuals == 2 or 3, then
@@ -3422,7 +3423,7 @@ handler_args:
 		{ expand_start_catch_block ($2, $3); }
 	| '(' typed_typespecs after_type_declarator ')'
 		{ expand_start_catch_block ($2, $3); }
-	*/
+	This allows reference parameters... */
 	| '(' parm ')'
 		{ expand_start_catch_block (TREE_PURPOSE ($2),
 					    TREE_VALUE ($2)); }

@@ -377,8 +377,8 @@ pop_memoized_context (use_old)
     type_stack = (struct type_level *)type_stack->base.prev;
 }
 
-#if 0				/* unused */
 /* This is the newer recursive depth first search routine. */
+#if 0				/* unused */
 /* Return non-zero if PARENT is directly derived from TYPE.  By directly
    we mean it's only one step up the inheritance lattice.  We check this
    by walking horizontally across the types that TYPE directly inherits
@@ -1995,11 +1995,8 @@ get_abstract_virtuals_1 (binfo, do_self, abstract_virtuals)
   /* Should we use something besides CLASSTYPE_VFIELDS? */
   if (do_self && CLASSTYPE_VFIELDS (BINFO_TYPE (binfo)))
     {
+      /* Get around first entry reserved for RTTI.  */
       tree tmp = TREE_CHAIN (BINFO_VIRTUALS (binfo));
-
-      /* Get around dossier entry if there is one.  */
-      if (flag_dossier)
-	tmp = TREE_CHAIN (tmp);
 
       while (tmp)
 	{
@@ -2417,10 +2414,10 @@ dfs_init_vbase_pointers (binfo)
 
   CLEAR_BINFO_VTABLE_PATH_MARKED (binfo);
 
-  /* If there is a dossier, it is the first field, though perhaps from
+  /* If there is a rtti, it is the first field, though perhaps from
      the base class.  Otherwise, the first fields are virtual base class
      pointer fields.  */
-  if (CLASSTYPE_DOSSIER (type) && VFIELD_NAME_P (DECL_NAME (fields)))
+  if (CLASSTYPE_RTTI (type) && VFIELD_NAME_P (DECL_NAME (fields)))
     /* Get past vtable for the object.  */
     fields = TREE_CHAIN (fields);
 

@@ -125,6 +125,7 @@ expand_direct_vtbls_init (real_binfo, binfo, init_self, can_elide, addr)
   tree real_binfos = BINFO_BASETYPES (real_binfo);
   tree binfos = BINFO_BASETYPES (binfo);
   int i, n_baselinks = real_binfos ? TREE_VEC_LENGTH (real_binfos) : 0;
+  int has_expanded = 0;
 
   for (i = 0; i < n_baselinks; i++)
     {
@@ -133,8 +134,12 @@ expand_direct_vtbls_init (real_binfo, binfo, init_self, can_elide, addr)
       int is_not_base_vtable =
 	i != CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (real_binfo));
       if (! TREE_VIA_VIRTUAL (real_base_binfo))
-	expand_direct_vtbls_init (real_base_binfo, base_binfo,
-				  is_not_base_vtable, can_elide, addr);
+	{
+	  expand_direct_vtbls_init (real_base_binfo, base_binfo,
+		  (is_not_base_vtable || flag_rtti), can_elide, addr);
+	  if (is_not_base_vtable && flag_rtti)
+	    has_expanded = 1;
+	}
     }
 #if 0
   /* Before turning this on, make sure it is correct.  */
@@ -142,7 +147,7 @@ expand_direct_vtbls_init (real_binfo, binfo, init_self, can_elide, addr)
     return;
 #endif
   /* Should we use something besides CLASSTYPE_VFIELDS? */
-  if (init_self && CLASSTYPE_VFIELDS (BINFO_TYPE (real_binfo)))
+  if (init_self && !has_expanded && CLASSTYPE_VFIELDS (BINFO_TYPE (real_binfo)))
     {
       tree base_ptr = convert_pointer_to_real (binfo, addr);
       expand_virtual_init (real_binfo, base_ptr);
@@ -421,13 +426,14 @@ emit_base_init (t, immediately)
 	      switch (n_baseclasses)
 		{
 		case 0:
-		  error ("type `%s' does not have a base class to initialize",
-			 IDENTIFIER_POINTER (current_class_name));
+		  cp_error ("`%T' does not have a base class to initialize",
+			    current_class_type);
 		  return;
 		case 1:
 		  break;
 		default:
-		  error ("unnamed initializer ambiguous for type `%s' which uses multiple inheritance", IDENTIFIER_POINTER (current_class_name));
+		  cp_error ("unnamed initializer ambiguous for `%T' which uses multiple inheritance",
+			    current_class_type);
 		  return;
 		}
 	      binfo = TREE_VEC_ELT (binfos, 0);
@@ -449,9 +455,9 @@ emit_base_init (t, immediately)
 		      break;
 		  if (i < 0)
 		    {
-		      error ("type `%s' is not an immediate base class of type `%s'",
-			     IDENTIFIER_POINTER (basename),
-			     IDENTIFIER_POINTER (current_class_name));
+		      cp_error ("`%T' is not an immediate base class of `%T'",
+				IDENTIFIER_TYPE_VALUE (basename),
+				current_class_type);
 		      continue;
 		    }
 		}
@@ -641,9 +647,8 @@ emit_base_init (t, immediately)
 
 	      if (TREE_STATIC (member))
 		{
-		  error_with_aggr_type (DECL_FIELD_CONTEXT (member),
-					"field `%s::%s' is static; only point of initialization is its declaration",
-					IDENTIFIER_POINTER (TREE_PURPOSE (init_list)));
+		  cp_error ("field `%#D' is static; only point of initialization is its declaration",
+			    member);
 		  continue;
 		}
 
@@ -745,8 +750,7 @@ expand_aggr_vbase_init_1 (binfo, exp, addr, init_list)
   if (init)
     init = TREE_PURPOSE (init);
   /* Call constructors, but don't set up vtables.  */
-  expand_aggr_init_1 (binfo, exp, ref, init, 0,
-		      LOOKUP_COMPLAIN|LOOKUP_SPECULATIVELY);
+  expand_aggr_init_1 (binfo, exp, ref, init, 0, LOOKUP_COMPLAIN);
   expand_cleanups_to (NULL_TREE);
   CLEAR_BINFO_VBASE_INIT_MARKED (binfo);
 }
@@ -1196,12 +1200,12 @@ expand_default_init (binfo, true_exp, exp, type, init, alias_this, flags)
      out, then look hard.  */
   tree rval;
   tree parms;
-  int xxref_init_possible;
 
   if (init == NULL_TREE || TREE_CODE (init) == TREE_LIST)
     {
       parms = init;
-      if (parms) init = TREE_VALUE (parms);
+      if (parms)
+	init = TREE_VALUE (parms);
     }
   else if (TREE_CODE (init) == INDIRECT_REF && TREE_HAS_CONSTRUCTOR (init))
     {
@@ -1213,16 +1217,6 @@ expand_default_init (binfo, true_exp, exp, type, init, alias_this, flags)
   else
     parms = build_tree_list (NULL_TREE, init);
 
-  if (TYPE_HAS_INIT_REF (type)
-      || init == NULL_TREE
-      || TREE_CHAIN (parms) != NULL_TREE)
-    xxref_init_possible = 0;
-  else
-    {
-      xxref_init_possible = LOOKUP_SPECULATIVELY;
-      flags &= ~LOOKUP_COMPLAIN;
-    }
-
   if (TYPE_USES_VIRTUAL_BASECLASSES (type))
     {
       if (true_exp == exp)
@@ -1232,114 +1226,43 @@ expand_default_init (binfo, true_exp, exp, type, init, alias_this, flags)
       flags |= LOOKUP_HAS_IN_CHARGE;
     }
 
-  rval = build_method_call (exp, constructor_name_full (type),
-			    parms, binfo, flags|xxref_init_possible);
-  if (rval == NULL_TREE && xxref_init_possible)
+  if (init && TREE_CHAIN (parms) == NULL_TREE
+      && TYPE_HAS_CONSTRUCTOR (type)
+      && ! TYPE_NEEDS_CONSTRUCTING (type)
+      && TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (TREE_TYPE (init)))
     {
-      /* It is an error to implement a default copy constructor if
-	 (see ARM 12.8 for details) ... one case being if another
-	 copy constructor already exists. */
-      tree init_type = TREE_TYPE (init);
-      if (TREE_CODE (init_type) == REFERENCE_TYPE)
-	init_type = TREE_TYPE (init_type);
-      if (TYPE_MAIN_VARIANT (init_type) == TYPE_MAIN_VARIANT (type)
-	  || (IS_AGGR_TYPE (init_type)
-	      && UNIQUELY_DERIVED_FROM_P (type, init_type)))
-	{
-	  if (type == BINFO_TYPE (binfo)
-	      && TYPE_USES_VIRTUAL_BASECLASSES (type))
-	    {
-	      tree addr = build_unary_op (ADDR_EXPR, exp, 0);
-	      expand_aggr_vbase_init (binfo, exp, addr, NULL_TREE);
-
-	      expand_indirect_vtbls_init (binfo, exp, addr, 1);
-	    }
-	  expand_expr_stmt (build_modify_expr (exp, INIT_EXPR, init));
-	  return;
-	}
-      else
-	rval = build_method_call (exp, constructor_name_full (type), parms,
-				  binfo, flags);
-    }
-
-  /* Private, protected, or otherwise unavailable.  */
-  if (rval == error_mark_node && (flags&LOOKUP_COMPLAIN))
-    cp_error ("in base initialization for class `%T'", binfo);
-  /* A valid initialization using constructor.  */
-  else if (rval != error_mark_node && rval != NULL_TREE)
-    {
-      /* p. 222: if the base class assigns to `this', then that
-	 value is used in the derived class.  */
-      if ((flag_this_is_variable & 1) && alias_this)
-	{
-	  TREE_TYPE (rval) = TREE_TYPE (current_class_decl);
-	  expand_assignment (current_class_decl, rval, 0, 0);
-	}
-      else
-	expand_expr_stmt (rval);
-    }
-  else if (parms && TREE_CHAIN (parms) == NULL_TREE)
-    {
-      /* If we are initializing one aggregate value
-	 from another, and though there are constructors,
-	 and none accept the initializer, just do a bitwise
-	 copy.
-
-	 The above sounds wrong, ``If a class has any copy
-	 constructor defined, the default copy constructor will
-	 not be generated.'' 12.8 Copying Class Objects  (mrs)
-
-	 @@ This should reject initializer which a constructor
-	 @@ rejected on access gounds, but there is
-	 @@ no way right now to recognize that case with
-	 @@ just `error_mark_node'.  */
-      tree itype;
-      init = TREE_VALUE (parms);
-      itype = TREE_TYPE (init);
-      if (TREE_CODE (itype) == REFERENCE_TYPE)
-	{
-	  init = convert_from_reference (init);
-	  itype = TREE_TYPE (init);
-	}
-      itype = TYPE_MAIN_VARIANT (itype);
-
-      /* This is currently how the default X(X&) constructor
-	 is implemented.  */
-      if (comptypes (TYPE_MAIN_VARIANT (type), itype, 0))
-	{
-#if 0
-	  warning ("bitwise copy in initialization of type `%s'",
-		   TYPE_NAME_STRING (type));
-#endif
-	  rval = build (INIT_EXPR, type, exp, init);
-	  expand_expr_stmt (rval);
-	}
-      else
-	{
-	  cp_error ("in base initialization for class `%T',", binfo);
-	  cp_error ("invalid initializer to constructor for type `%T'", type);
-	  return;
-	}
+      rval = build (INIT_EXPR, type, exp, init);
+      TREE_SIDE_EFFECTS (rval) = 1;
+      expand_expr_stmt (rval);
     }
   else
     {
-      if (init == NULL_TREE)
-	my_friendly_assert (parms == NULL_TREE, 210);
-      if (parms == NULL_TREE && TREE_VIA_VIRTUAL (binfo))
-	cp_error ("virtual baseclass `%T' does not have default initializer", binfo);
+      rval = build_method_call (exp, constructor_name_full (type),
+				parms, binfo, flags);
+
+      /* Private, protected, or otherwise unavailable.  */
+      if (rval == error_mark_node)
+	{
+	  if (flags & LOOKUP_COMPLAIN)
+	    cp_error ("in base initialization for %sclass `%T'",
+		      TREE_VIA_VIRTUAL (binfo) ? "virtual base " : "",
+		      binfo);
+	}
+      else if (rval == NULL_TREE)
+	my_friendly_abort (361);
       else
 	{
-	  cp_error ("in base initialization for class `%T',", binfo);
-	  /* This will make an error message for us.  */
-	  build_method_call (exp, constructor_name_full (type), parms, binfo,
-			     (TYPE_USES_VIRTUAL_BASECLASSES (type)
-			      ? LOOKUP_NORMAL|LOOKUP_HAS_IN_CHARGE
-			      : LOOKUP_NORMAL));
+	  /* p. 222: if the base class assigns to `this', then that
+	     value is used in the derived class.  */
+	  if ((flag_this_is_variable & 1) && alias_this)
+	    {
+	      TREE_TYPE (rval) = TREE_TYPE (current_class_decl);
+	      expand_assignment (current_class_decl, rval, 0, 0);
+	    }
+	  else
+	    expand_expr_stmt (rval);
 	}
-      return;
     }
-  /* Constructor has been called, but vtables may be for TYPE
-     rather than for FOR_TYPE.  */
 }
 
 /* This function is responsible for initializing EXP with INIT
@@ -2707,7 +2630,6 @@ do_friend (ctype, declarator, decl, parmdecls, flags, quals)
     {
       /* raw "main", and builtin functions never gets overloaded,
 	 but they can become friends.  */
-      TREE_PUBLIC (decl) = 1;
       add_friend (current_class_type, decl);
       DECL_FRIEND_P (decl) = 1;
       decl = void_type_node;

@@ -660,6 +660,9 @@ init_lex ()
   ridpointers[(int) RID_VIRTUAL] = get_identifier ("virtual");
   SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_VIRTUAL],
 			  build_tree_list (NULL_TREE, ridpointers[(int) RID_VIRTUAL]));
+  ridpointers[(int) RID_EXPLICIT] = get_identifier ("explicit");
+  SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_EXPLICIT],
+			  build_tree_list (NULL_TREE, ridpointers[(int) RID_EXPLICIT]));
   ridpointers[(int) RID_FRIEND] = get_identifier ("friend");
   SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_FRIEND],
 			  build_tree_list (NULL_TREE, ridpointers[(int) RID_FRIEND]));
@@ -680,11 +683,6 @@ init_lex ()
   ridpointers[(int) RID_MUTABLE] = get_identifier ("mutable");
   SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_MUTABLE],
 			  build_tree_list (NULL_TREE, ridpointers[(int) RID_MUTABLE]));
-
-  /* Exception handling extensions.  */
-  exception_type_node = build_int_2 (exception_type, 0);
-  TREE_TYPE (exception_type_node) = exception_type_node;
-  ridpointers[(int) RID_EXCEPTION] = exception_type_node;
 
   /* Signature handling extensions.  */
   signature_type_node = build_int_2 (signature_type, 0);
@@ -790,7 +788,7 @@ init_lex ()
     }
 #endif
 
-  if (! (flag_gc || flag_dossier))
+  if (! (flag_gc || flag_rtti))
     {
       UNSET_RESERVED_WORD ("classof");
       UNSET_RESERVED_WORD ("headof");
@@ -806,6 +804,17 @@ init_lex ()
     UNSET_RESERVED_WORD ("asm");
   if (flag_no_asm || flag_traditional)
     UNSET_RESERVED_WORD ("typeof");
+  if (!flag_ansi)
+    {
+      /* These are new ANSI keywords that may break code.  */
+      UNSET_RESERVED_WORD ("and");
+      UNSET_RESERVED_WORD ("bitand");
+      UNSET_RESERVED_WORD ("bitor");
+      UNSET_RESERVED_WORD ("compl");
+      UNSET_RESERVED_WORD ("not");
+      UNSET_RESERVED_WORD ("or");
+      UNSET_RESERVED_WORD ("xor");
+    }
 
   token_count = init_parse ();
   interface_unknown = 1;
@@ -1125,19 +1134,7 @@ do_pending_inlines ()
 	    DECL_PENDING_INLINE_INFO (f) = 0;
 	    interface_unknown = t->interface == 1;
 	    interface_only = t->interface == 0;
-	    switch (- t->lineno)
-	      {
-	      case 0: case 1:
-		build_dtor (f); break;
-	      case 2:
-		build_default_constructor (f); break;
-	      case 3: case 4:
-		build_copy_constructor (f); break;
-	      case 5: case 6:
-		build_assign_ref (f); break;
-	      default:
-		;
-	      }
+	    synthesize_method (f);
 	    if (tail)
 	      tail->next = t->next;
 	    else
@@ -1712,6 +1709,7 @@ cons_up_default_function (type, name, kind)
   tree fn, args;
   tree argtype;
   int retref = 0;
+  int complex = 0;
 
   name = constructor_name (name);
   switch (kind)
@@ -1722,10 +1720,13 @@ cons_up_default_function (type, name, kind)
       /* Fall through...  */
     case 0:
       name = build_parse_node (BIT_NOT_EXPR, name);
-      /* Fall through...  */
+      args = void_list_node;
+      break;
+
     case 2:
       /* Default constructor.  */
       args = void_list_node;
+      complex = TYPE_NEEDS_CONSTRUCTING (type);
       break;
 
     case 3:
@@ -1739,6 +1740,7 @@ cons_up_default_function (type, name, kind)
 			build_tree_list (hash_tree_chain (argtype, NULL_TREE),
 					 get_identifier ("_ctor_arg")),
 			void_list_node);
+      complex = TYPE_HAS_COMPLEX_INIT_REF (type);
       break;
 
     case 5:
@@ -1755,6 +1757,7 @@ cons_up_default_function (type, name, kind)
 			build_tree_list (hash_tree_chain (argtype, NULL_TREE),
 					 get_identifier ("_ctor_arg")),
 			void_list_node);
+      complex = TYPE_HAS_COMPLEX_ASSIGN_REF (type);
       break;
 
     default:
@@ -1777,20 +1780,34 @@ cons_up_default_function (type, name, kind)
   if (fn == void_type_node)
     return fn;
 
-  if (CLASSTYPE_TEMPLATE_INSTANTIATION (type))
+  if (processing_template_defn)
     SET_DECL_IMPLICIT_INSTANTIATION (fn);
 
-  /* This kludge should go away when synthesized methods are handled
-     properly, i.e. only when needed.  */
-  {
-    struct pending_inline *t;
-    t = (struct pending_inline *)
-      obstack_alloc (&synth_obstack, sizeof (struct pending_inline));
-    t->lineno = -kind;
-    t->can_free = 0;
-    t->interface = (interface_unknown ? 1 : (interface_only ? 0 : 2));
-    store_pending_inline (fn, t);
-  }
+  if (CLASSTYPE_INTERFACE_KNOWN (type))
+    {
+      DECL_INTERFACE_KNOWN (fn) = 1;
+      DECL_EXTERNAL (fn) = (CLASSTYPE_INTERFACE_ONLY (type)
+			    || ! flag_implement_inlines);
+      TREE_STATIC (fn) = ! DECL_EXTERNAL (fn);
+    }
+
+  /* When on-the-fly synthesis works properly, remove the second and third
+     conditions here.  */
+  if (flag_keep_inline_functions
+      || ! flag_no_inline
+      || complex
+      || ! DECL_EXTERNAL (fn))
+    {
+      struct pending_inline *t;
+      t = (struct pending_inline *)
+	obstack_alloc (&synth_obstack, sizeof (struct pending_inline));
+      t->lineno = -kind;
+      t->can_free = 0;
+      t->interface = (interface_unknown ? 1 : (interface_only ? 0 : 2));
+      store_pending_inline (fn, t);
+    }
+  else
+    mark_inline_for_output (fn);
 
 #ifdef DEBUG_DEFAULT_FUNCTIONS
   { char *fn_type = NULL;
@@ -3474,6 +3491,52 @@ real_yylex ()
 		  else
 		    yylval.ttype = old_ttype;
 		}
+	      else if (ptr->token == EQCOMPARE)
+		{
+		  yylval.code = NE_EXPR;
+		  token_buffer[0] = '!';
+		  token_buffer[1] = '=';
+		  token_buffer[2] = 0;
+		}
+	      else if (ptr->token == ASSIGN)
+		{
+		  if (strcmp ("and_eq", token_buffer) == 0)
+		    {
+		      yylval.code = BIT_AND_EXPR;
+		      token_buffer[0] = '&';
+		    }
+		  else if (strcmp ("or_eq", token_buffer) == 0)
+		    {
+		      yylval.code = BIT_IOR_EXPR;
+		      token_buffer[0] = '|';
+		    }
+		  else if (strcmp ("xor_eq", token_buffer) == 0)
+		    {
+		      yylval.code = BIT_XOR_EXPR;
+		      token_buffer[0] = '^';
+		    }
+		  token_buffer[1] = '=';
+		  token_buffer[2] = 0;
+		}
+	      else if (ptr->token == '&')
+		{
+		  yylval.code = BIT_AND_EXPR;
+		  token_buffer[0] = '&';
+		  token_buffer[1] = 0;
+		}
+	      else if (ptr->token == '|')
+		{
+		  yylval.code = BIT_IOR_EXPR;
+		  token_buffer[0] = '|';
+		  token_buffer[1] = 0;
+		}
+	      else if (ptr->token == '^')
+		{
+		  yylval.code = BIT_XOR_EXPR;
+		  token_buffer[0] = '^';
+		  token_buffer[1] = 0;
+		}
+
 	      value = (int) ptr->token;
 	    }
 	}

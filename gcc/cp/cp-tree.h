@@ -408,7 +408,7 @@ struct lang_type
       unsigned interface_only : 1;
       unsigned interface_unknown : 1;
       unsigned needs_virtual_reinit : 1;
-      unsigned declared_exception : 1;
+      unsigned vec_delete_takes_size : 1;
       unsigned declared_class : 1;
       unsigned being_defined : 1;
       unsigned redefined : 1;
@@ -442,13 +442,12 @@ struct lang_type
       unsigned has_const_init_ref : 1;
       unsigned has_complex_init_ref : 1;
       unsigned has_complex_assign_ref : 1;
-      unsigned vec_delete_takes_size : 1;
       unsigned has_abstract_assign_ref : 1;
 
       /* The MIPS compiler gets it wrong if this struct also
 	 does not fill out to a multiple of 4 bytes.  Add a
 	 member `dummy' with new bits if you go over the edge.  */
-      unsigned dummy : 19;
+      unsigned dummy : 20;
 
       unsigned n_vancestors : 16;
     } type_flags;
@@ -495,7 +494,7 @@ struct lang_type
   char *mi_matrix;
   union tree_node *conversions[last_conversion_type];
 
-  union tree_node *dossier;
+  union tree_node *rtti;
 
   union tree_node *methods;
 
@@ -629,8 +628,8 @@ struct lang_type
    signature reference type.  */
 #define SIGNATURE_REFERENCE_TO(NODE) (TYPE_LANG_SPECIFIC(NODE)->signature_reference_to)
 
-/* The is the VAR_DECL that contains NODE's dossier.  */
-#define CLASSTYPE_DOSSIER(NODE) (TYPE_LANG_SPECIFIC(NODE)->dossier)
+/* The is the VAR_DECL that contains NODE's rtti.  */
+#define CLASSTYPE_RTTI(NODE) (TYPE_LANG_SPECIFIC(NODE)->rtti)
 
 /* List of all explicit methods (chained using DECL_NEXT_METHOD),
    in order they were parsed. */
@@ -816,8 +815,6 @@ struct lang_type
 
 /* Say whether this node was declared as a "class" or a "struct".  */
 #define CLASSTYPE_DECLARED_CLASS(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.declared_class)
-/* Say whether this node was declared as a "class" or a "struct".  */
-#define CLASSTYPE_DECLARED_EXCEPTION(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.declared_exception)
 /* whether this can be globalized.  */
 #define CLASSTYPE_NO_GLOBALIZE(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.no_globalize)
 
@@ -947,7 +944,10 @@ struct lang_decl_flags
   unsigned saved_inline : 1;
   unsigned use_template : 2;
 
-  unsigned dummy : 8;
+  unsigned interface_known : 1;
+  unsigned declared_static : 1;
+  unsigned nonconverting : 1;
+  unsigned dummy : 5;
 
   tree access;
   tree context;
@@ -1031,6 +1031,10 @@ struct lang_decl
 /* Nonzero for _DECL means that this member object type
    is mutable.  */
 #define DECL_MUTABLE_P(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.mutable_flag)
+
+/* Nonzero for _DECL means that this constructor is a non-converting
+   constructor.  */
+#define DECL_NONCONVERTING_P(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.nonconverting)
 
 /* Nonzero for FUNCTION_DECL means that this member function
    exists as part of an abstract class's interface.  */
@@ -1322,6 +1326,18 @@ struct lang_decl
 #define SET_CLASSTYPE_EXPLICIT_INSTANTIATION(NODE) \
   (CLASSTYPE_USE_TEMPLATE(NODE) = 3)
 
+/* We know what we're doing with this decl now.  */
+#define DECL_INTERFACE_KNOWN(NODE) \
+  (DECL_LANG_SPECIFIC (NODE)->decl_flags.interface_known)
+
+/* This decl was declared to have internal linkage.  */
+#define DECL_DECLARED_STATIC(NODE) \
+  (DECL_LANG_SPECIFIC (NODE)->decl_flags.declared_static)
+
+#define DECL_PUBLIC(NODE) \
+  (TREE_CODE (NODE) == FUNCTION_DECL ? ! DECL_DECLARED_STATIC (NODE) \
+   : TREE_PUBLIC (NODE))
+
 #define THUNK_DELTA(DECL) ((DECL)->decl.frame_size.i)
 
 /* ...and for unexpanded-parameterized-type nodes.  */
@@ -1330,7 +1346,7 @@ struct lang_decl
 
 /* An enumeration of the kind of tags that C++ accepts.  */
 enum tag_types { record_type, class_type, union_type, enum_type,
-		   exception_type, signature_type };
+		   signature_type };
 
 /* Zero means prototype weakly, as in ANSI C (no args means nothing).
    Each language context defines how this variable should be set.  */
@@ -1387,8 +1403,14 @@ extern tree void_zero_node;
 extern tree default_function_type;
 extern tree vtable_entry_type;
 extern tree sigtable_entry_type;
-extern tree __t_desc_type_node, __i_desc_type_node, __m_desc_type_node;
-extern tree Type_info_type_node;
+extern tree __t_desc_type_node;
+extern tree __tp_desc_type_node;
+extern tree __access_mode_type_node;
+extern tree __bltn_desc_type_node, __user_desc_type_node;
+extern tree __class_desc_type_node, __attr_desc_type_node;
+extern tree __ptr_desc_type_node, __func_desc_type_node;
+extern tree __ptmf_desc_type_node, __ptmd_desc_type_node;
+extern tree type_info_type_node;
 extern tree class_star_type_node;
 extern tree this_identifier;
 extern tree pfn_identifier;
@@ -1402,7 +1424,7 @@ extern tree error_mark_list;
 
 extern tree ptr_type_node, const_ptr_type_node;
 extern tree class_type_node, record_type_node, union_type_node, enum_type_node;
-extern tree exception_type_node, unknown_type_node;
+extern tree unknown_type_node;
 extern tree opaque_type_node, signature_type_node;
 
 /* Node for "pointer to (virtual) function".
@@ -1418,11 +1440,6 @@ extern tree long_long_integer_type_node, long_long_unsigned_type_node;
 /* For building calls to `delete'.  */
 extern tree integer_two_node, integer_three_node;
 extern tree bool_type_node, true_node, false_node;
-
-/* in except.c */
-extern tree current_exception_type;
-extern tree current_exception_decl;
-extern tree current_exception_object;
 
 /* in pt.c  */
 /* PARM_VEC is a vector of template parameters, either IDENTIFIER_NODEs or
@@ -1715,9 +1732,9 @@ extern int flag_int_enum_equivalence;
 
 extern int flag_gc;
 
-/* Nonzero means generate 'dossiers' that give run-time type information.  */
+/* Nonzero means generate 'rtti' that give run-time type information.  */
 
-extern int flag_dossier;
+extern int flag_rtti;
 
 /* Nonzero means do emit exported implementations of functions even if
    they can be inlined.  */
@@ -1782,7 +1799,8 @@ extern tree current_class_type;	/* _TYPE: the type of the current class */
 #define LOOKUP_GLOBAL (16)
 #define LOOKUP_HAS_IN_CHARGE (32)
 #define LOOKUP_SPECULATIVELY (64)
-/* 128 & 256 are free */
+#define LOOKUP_ONLYCONVERTING (128)
+/* 256 is free */
 #define LOOKUP_NO_CONVERSION (512)
 #define LOOKUP_DESTRUCTOR (512)
 
@@ -1953,7 +1971,7 @@ extern tree grok_enum_decls			PROTO((tree, tree));
 extern int start_function			PROTO((tree, tree, tree, int));
 extern void store_parm_decls			PROTO((void));
 extern void store_return_init			PROTO((tree, tree));
-extern void finish_function			PROTO((int, int));
+extern void finish_function			PROTO((int, int, int));
 extern tree start_method			PROTO((tree, tree, tree));
 extern tree finish_method			PROTO((tree));
 extern void hack_incomplete_structures		PROTO((tree));

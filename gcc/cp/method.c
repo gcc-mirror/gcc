@@ -59,6 +59,7 @@ static char *scratch_firstobj;
 		 IDENTIFIER_LENGTH (ID)))
 # define OB_PUTCP(S) (obstack_grow (&scratch_obstack, (S), strlen (S)))
 # define OB_FINISH() (obstack_1grow (&scratch_obstack, '\0'))
+# define OB_LAST() (obstack_next_free (&scratch_obstack)[-1])
 
 #ifdef NO_AUTO_OVERLOAD
 int is_overloaded ();
@@ -317,19 +318,39 @@ static int numeric_outputed_need_bar;
 static void build_overload_identifier ();
 
 static void
-build_overload_nested_name (context)
-     tree context;
+build_overload_nested_name (decl)
+     tree decl;
 {
-  /* We use DECL_NAME here, because pushtag now sets the DECL_ASSEMBLER_NAME.  */
-  tree name = DECL_NAME (context);
-  if (DECL_CONTEXT (context))
+  if (DECL_CONTEXT (decl))
     {
-      context = DECL_CONTEXT (context);
+      tree context = DECL_CONTEXT (decl);
       if (TREE_CODE_CLASS (TREE_CODE (context)) == 't')
-	context = TYPE_NAME (context);
+	context = TYPE_MAIN_DECL (context);
       build_overload_nested_name (context);
     }
-  build_overload_identifier (name);
+
+  if (TREE_CODE (decl) == FUNCTION_DECL)
+    {
+      tree name = DECL_ASSEMBLER_NAME (decl);
+      char *label;
+      extern int var_labelno;
+
+      ASM_FORMAT_PRIVATE_NAME (label, IDENTIFIER_POINTER (name), var_labelno);
+      var_labelno++;
+
+      if (numeric_outputed_need_bar)
+	{
+	  OB_PUTC ('_');
+	  numeric_outputed_need_bar = 0;
+	}
+      icat (strlen (label));
+      OB_PUTCP (label);
+    }
+  else				/* TYPE_DECL */
+    {
+      tree name = DECL_NAME (decl);
+      build_overload_identifier (name);
+    }
 }
 
 static void
@@ -514,6 +535,7 @@ build_overload_name (parmtypes, begin, end)
   tree parmtype;
 
   if (begin) OB_INIT ();
+  numeric_outputed_need_bar = 0;
 
   if ((just_one = (TREE_CODE (parmtypes) != TREE_LIST)))
     {
@@ -761,6 +783,13 @@ build_overload_name (parmtypes, begin, end)
 	    if (TREE_CODE (name) == TYPE_DECL)
 	      {
 		tree context = name;
+
+		/* If DECL_ASSEMBLER_NAME has been set properly, use it. */
+		if (DECL_ASSEMBLER_NAME (context) != DECL_NAME (context))
+		  {
+		    OB_PUTID (DECL_ASSEMBLER_NAME (context));
+		    break;
+		  }
 		while (DECL_CONTEXT (context))
 		  {
 		    i += 1;
@@ -779,8 +808,8 @@ build_overload_name (parmtypes, begin, end)
 		icat (i);
 		if (i > 9)
 		  OB_PUTC ('_');
-                numeric_outputed_need_bar = 0;
-		build_overload_nested_name (TYPE_NAME (parmtype));
+		numeric_outputed_need_bar = 0;
+		build_overload_nested_name (TYPE_MAIN_DECL (parmtype));
 	      }
 	    else
 	      build_overload_identifier (name);
@@ -920,7 +949,6 @@ build_decl_overload (dname, parms, for_method)
     {
       ALLOCATE_TYPEVEC (parms);
       nofold = 0;
-      numeric_outputed_need_bar = 0;
       if (for_method)
 	{
 	  build_overload_name (TREE_VALUE (parms), 0, 0);
@@ -1906,6 +1934,10 @@ emit_thunk (thunk_fndecl)
 
   unshare_all_rtl (insns);
 
+  /* Instantiate all virtual registers.  */
+
+  instantiate_virtual_regs (current_function_decl, get_insns ());
+
   /* We are no longer anticipating cse in this function, at least.  */
 
   cse_not_expected = 1;
@@ -1971,16 +2003,6 @@ emit_thunk (thunk_fndecl)
 
 /* Code for synthesizing methods which have default semantics defined.  */
 
-void
-build_default_constructor (fndecl)
-     tree fndecl;
-{
-  start_function (NULL_TREE, fndecl, NULL_TREE, 1);
-  store_parm_decls ();
-  setup_vtbl_ptr ();
-  finish_function (lineno, 0);
-}
-
 /* For the anonymous union in TYPE, return the member that is at least as
    large as the rest of the members, so we can copy it.  */
 static tree
@@ -2000,14 +2022,12 @@ largest_union_member (type)
 
 /* Generate code for default X(X&) constructor.  */
 void
-build_copy_constructor (fndecl)
+do_build_copy_constructor (fndecl)
      tree fndecl;
 {
   tree parm = TREE_CHAIN (DECL_ARGUMENTS (fndecl));
   tree t;
 
-  start_function (NULL_TREE, fndecl, NULL_TREE, 1);
-  store_parm_decls ();
   clear_last_expr ();
   push_momentary ();
 
@@ -2085,17 +2105,15 @@ build_copy_constructor (fndecl)
     }
 
   pop_momentary ();
-  finish_function (lineno, 0);
 }
 
 void
-build_assign_ref (fndecl)
+do_build_assign_ref (fndecl)
      tree fndecl;
 {
   tree parm = TREE_CHAIN (DECL_ARGUMENTS (fndecl));
 
-  start_function (NULL_TREE, fndecl, NULL_TREE, 1);
-  store_parm_decls ();
+  clear_last_expr ();
   push_momentary ();
 
   parm = convert_from_reference (parm);
@@ -2158,14 +2176,45 @@ build_assign_ref (fndecl)
     }
   c_expand_return (C_C_D);
   pop_momentary ();
-  finish_function (lineno, 0);
 }
 
+void push_cp_function_context ();
+void pop_cp_function_context ();
+
 void
-build_dtor (fndecl)
+synthesize_method (fndecl)
      tree fndecl;
 {
+  int nested = (current_function_decl != NULL_TREE);
+  int toplev = (decl_function_context (fndecl) == NULL_TREE);
+  char *f = input_filename;
+
+  if (nested)
+    push_cp_function_context (toplev);
+
+  input_filename = DECL_SOURCE_FILE (fndecl);
+  extract_interface_info ();
   start_function (NULL_TREE, fndecl, NULL_TREE, 1);
   store_parm_decls ();
-  finish_function (lineno, 0);
+
+  if (DECL_NAME (fndecl) == ansi_opname[MODIFY_EXPR])
+    do_build_assign_ref (fndecl);
+  else if (DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (fndecl)))
+    ;
+  else
+    {
+      tree arg_chain = FUNCTION_ARG_CHAIN (fndecl);
+      if (DECL_CONSTRUCTOR_FOR_VBASE_P (fndecl))
+	arg_chain = TREE_CHAIN (arg_chain);
+      if (arg_chain != void_list_node)
+	do_build_copy_constructor (fndecl);
+      else if (TYPE_NEEDS_CONSTRUCTING (current_class_type))
+	setup_vtbl_ptr ();
+    }
+
+  finish_function (lineno, 0, nested);
+  input_filename = f;
+  extract_interface_info ();
+  if (nested)
+    pop_cp_function_context (toplev);
 }
