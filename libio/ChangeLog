@@ -1,3 +1,8 @@
+2000-08-18  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
+
+	* editbuf.h (edit_streambuf): Fix syntax error in
+	friend-declaration. 
+
 2000-08-14  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* configure.in: Accept *-*-linux* not just *-*-linux-gnu*.
