@@ -15,7 +15,3 @@
 /* Don't default to pcc-struct-return, because gcc is the only compiler, and
    we want to retain compatibility with older gcc versions.  */
 #define DEFAULT_PCC_STRUCT_RETURN 0
-
-/* Get a definition of O_RDONLY; some of the GCC files don't include this
-   properly and will define it themselves to be zero. */
-#include <fcntl.h>
