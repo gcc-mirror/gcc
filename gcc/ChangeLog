@@ -1,3 +1,11 @@
+2000-03-27  Richard Henderson  <rth@cygnus.com>
+
+	* i386.md (call_pop_0, call_value_pop_0): New.
+	(call_pop_1): Remove constraint from unused arg.  Support sibcalls.
+	(call_value_pop_1): Likewise.
+	(call_0, call_value_0): New.
+	(call_1, call_value_1): Remove constraint from unused arg.
+
 2000-03-27  Nick Clifton  <nickc@cygnus.com>
 
 	* invoke.texi (Spec Files): Document new spec % command created by
