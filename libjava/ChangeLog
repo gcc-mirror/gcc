@@ -1,5 +1,15 @@
 2003-12-19  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/nio/ChannelInputStream.java: New file.
+	* java/nio/channels/Channels.java (newInputStream): Implemented.
+	* java/nio/channels/FileChannelImpl.java
+	(readImpl): Only put data into buffer if something was read.
+	* Makefile.am (ordinary_java_source_files):
+	Added gnu/java/nio/ChannelInputStream.java.
+	* Makefile.in: Regenerated.
+
+2003-12-19  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/nio/OutputStreamChannel.java: New file.
 	* java/nio/channels/Channels.java (newChannel): Implemented.
 	* Makefile.am (ordinary_java_source_files):
