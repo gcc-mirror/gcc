@@ -1,5 +1,13 @@
 2003-10-17  Ralph Loader  <rcl@ihug.co.nz>
 
+	* java/lang/natString.cc (getChars):
+	Fix validation of array indexes.
+	(getBytes, regionMatches, startsWith, valueOf): Likewise.
+	* testsuite/libjava.lang/String_overflow.java: New file.
+	* testsuite/libjava.lang/String_overflow.out: New file.
+
+2003-10-17  Ralph Loader  <rcl@ihug.co.nz>
+
 	* prims.cc (_Jv_NewObjectArray): Make sure byte size doesn't
 	overflow a jint.
 	(_Jv_NewPrimArray): Check for overflowing a jint, replacing a

@@ -601,7 +601,10 @@ java::lang::String::getChars(jint srcBegin, jint srcEnd,
   jint dst_length = JvGetArrayLength (dst);
   if (srcBegin < 0 || srcBegin > srcEnd || srcEnd > count)
     throw new java::lang::StringIndexOutOfBoundsException;
-  if (dstBegin < 0 || dstBegin + (srcEnd-srcBegin) > dst_length)
+  // The 2nd part of the test below is equivalent to 
+  // dstBegin + (srcEnd-srcBegin) > dst_length
+  // except that it does not overflow.
+  if (dstBegin < 0 || dstBegin > dst_length - (srcEnd-srcBegin))
     throw new ArrayIndexOutOfBoundsException;
   jchar *dPtr = elements (dst) + dstBegin;
   jchar *sPtr = JvGetStringChars (this) + srcBegin;
@@ -653,7 +656,10 @@ java::lang::String::getBytes(jint srcBegin, jint srcEnd,
   jint dst_length = JvGetArrayLength (dst);
   if (srcBegin < 0 || srcBegin > srcEnd || srcEnd > count)
     throw new java::lang::StringIndexOutOfBoundsException;
-  if (dstBegin < 0 || dstBegin + (srcEnd-srcBegin) > dst_length)
+  // The 2nd part of the test below is equivalent to 
+  // dstBegin + (srcEnd-srcBegin) > dst_length
+  // except that it does not overflow.
+  if (dstBegin < 0 || dstBegin > dst_length - (srcEnd-srcBegin))
     throw new ArrayIndexOutOfBoundsException;
   jbyte *dPtr = elements (dst) + dstBegin;
   jchar *sPtr = JvGetStringChars (this) + srcBegin;
@@ -700,9 +706,9 @@ jboolean
 java::lang::String::regionMatches (jint toffset,
 				   jstring other, jint ooffset, jint len)
 {
-  if (toffset < 0 || ooffset < 0
-      || toffset + len > count
-      || ooffset + len > other->count)
+  if (toffset < 0 || ooffset < 0 || len < 0
+      || toffset > count - len
+      || ooffset > other->count - len)
     return false;
   jchar *tptr = JvGetStringChars (this) + toffset;
   jchar *optr = JvGetStringChars (other) + ooffset;
@@ -737,9 +743,9 @@ jboolean
 java::lang::String::regionMatches (jboolean ignoreCase, jint toffset,
 				   jstring other, jint ooffset, jint len)
 {
-  if (toffset < 0 || ooffset < 0
-      || toffset + len > count
-      || ooffset + len > other->count)
+  if (toffset < 0 || ooffset < 0 || len < 0
+      || toffset > count - len
+      || ooffset > other->count - len)
     return false;
   jchar *tptr = JvGetStringChars (this) + toffset;
   jchar *optr = JvGetStringChars (other) + ooffset;
@@ -770,7 +776,7 @@ jboolean
 java::lang::String::startsWith (jstring prefix, jint toffset)
 {
   jint i = prefix->count;
-  if (toffset < 0 || toffset + i > count)
+  if (toffset < 0 || toffset > count - i)
     return false;
   jchar *xptr = JvGetStringChars (this) + toffset;
   jchar *yptr = JvGetStringChars (prefix);
@@ -1043,7 +1049,7 @@ jstring
 java::lang::String::valueOf(jcharArray data, jint offset, jint count)
 {
   jint data_length = JvGetArrayLength (data);
-  if (offset < 0 || count < 0 || offset+count > data_length)
+  if (offset < 0 || count < 0 || offset > data_length - count)
     throw new ArrayIndexOutOfBoundsException;
   jstring result = JvAllocString(count);
   jchar *sPtr = elements (data) + offset;
