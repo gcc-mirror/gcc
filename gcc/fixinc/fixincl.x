@@ -5,7 +5,7 @@
  * files which are fixed to work correctly with ANSI C and placed in a
  * directory that GNU C will search.
  *
- * This file contains 140 fixup descriptions.
+ * This file contains 141 fixup descriptions.
  *
  * See README for more information.
  *
@@ -1987,6 +1987,43 @@ static const char* apzHpux10_Cpp_Pow_InlinePatch[] = {
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
+ *  Description of Hpux11_Cpp_Pow_Inline fix
+ */
+tSCC zHpux11_Cpp_Pow_InlineName[] =
+     "hpux11_cpp_pow_inline";
+
+/*
+ *  File name selection pattern
+ */
+tSCC zHpux11_Cpp_Pow_InlineList[] =
+  "|math.h|";
+/*
+ *  Machine/OS name selection pattern
+ */
+#define apzHpux11_Cpp_Pow_InlineMachs (const char**)NULL
+
+/*
+ *  content selection pattern - do fix if pattern found
+ */
+tSCC zHpux11_Cpp_Pow_InlineSelect0[] =
+       " +inline double pow\\(double d,int expon\\) {\n\
+ +return pow\\(d, \\(double\\)expon\\);\n\
+ +}\n";
+
+#define    HPUX11_CPP_POW_INLINE_TEST_CT  1
+static tTestDesc aHpux11_Cpp_Pow_InlineTests[] = {
+  { TT_EGREP,    zHpux11_Cpp_Pow_InlineSelect0, (regex_t*)NULL }, };
+
+/*
+ *  Fix Command Arguments for Hpux11_Cpp_Pow_Inline
+ */
+static const char* apzHpux11_Cpp_Pow_InlinePatch[] = {
+    "format",
+    "",
+    (char*)NULL };
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
  *  Description of Hpux11_Fabsf fix
  */
 tSCC zHpux11_FabsfName[] =
@@ -3702,38 +3739,42 @@ static const char* apzSco_UtimePatch[] = {
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description of Solaris27_Mutex_Init fix
+ *  Description of Solaris_Mutex_Init fix
  */
-tSCC zSolaris27_Mutex_InitName[] =
-     "solaris27_mutex_init";
+tSCC zSolaris_Mutex_InitName[] =
+     "solaris_mutex_init";
 
 /*
  *  File name selection pattern
  */
-tSCC zSolaris27_Mutex_InitList[] =
+tSCC zSolaris_Mutex_InitList[] =
   "|pthread.h|";
 /*
  *  Machine/OS name selection pattern
  */
-#define apzSolaris27_Mutex_InitMachs (const char**)NULL
+#define apzSolaris_Mutex_InitMachs (const char**)NULL
 
 /*
  *  content selection pattern - do fix if pattern found
  */
-tSCC zSolaris27_Mutex_InitSelect0[] =
-       "@\\(#\\)pthread.h[ \t]+1.26[ \t]+98/04/12 SMI";
+tSCC zSolaris_Mutex_InitSelect0[] =
+       "@\\(#\\)pthread.h[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
 
-#define    SOLARIS27_MUTEX_INIT_TEST_CT  1
-static tTestDesc aSolaris27_Mutex_InitTests[] = {
-  { TT_EGREP,    zSolaris27_Mutex_InitSelect0, (regex_t*)NULL }, };
+#define    SOLARIS_MUTEX_INIT_TEST_CT  1
+static tTestDesc aSolaris_Mutex_InitTests[] = {
+  { TT_EGREP,    zSolaris_Mutex_InitSelect0, (regex_t*)NULL }, };
 
 /*
- *  Fix Command Arguments for Solaris27_Mutex_Init
+ *  Fix Command Arguments for Solaris_Mutex_Init
  */
-static const char* apzSolaris27_Mutex_InitPatch[] = {
+static const char* apzSolaris_Mutex_InitPatch[] = {
     "format",
-    "%1, {0}}",
-    "(define[ \t]+PTHREAD_MUTEX_INITIALIZER.*),[ \t]*0}$",
+    "#if __STDC__ - 0 == 0 && !defined(_NO_LONGLONG)\n\
+%0\n\
+#else\n\
+%1, {0}}%3\n\
+#endif",
+    "(^#define[ \t]+PTHREAD_(MUTEX|COND)_INITIALIZER[ \t]+{.*),[ \t]*0}(|[ \t].*)$",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -5028,7 +5069,7 @@ tSCC zUw7_Byteorder_FixSelect0[] =
  *  perform the 'test' shell command - do fix on success
  */
 tSCC zUw7_Byteorder_FixTest0[] =
-       "-f $DESTDIR/sys/byteorder.h";
+       "-f sys/byteorder.h";
 
 #define    UW7_BYTEORDER_FIX_TEST_CT  2
 static tTestDesc aUw7_Byteorder_FixTests[] = {
@@ -5041,7 +5082,7 @@ static tTestDesc aUw7_Byteorder_FixTests[] = {
 static const char* apzUw7_Byteorder_FixPatch[] = {
     "format",
     "",
-    "^extern.*(htons|ntohs).*\\(in_port_t\\).*\n",
+    "^extern.*[ \t](htons|ntohs).*\\(in_port_t\\).*;",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -5466,9 +5507,9 @@ static const char* apzX11_SprintfPatch[] = {
  *
  *  List of all fixes
  */
-#define REGEX_COUNT          147
+#define REGEX_COUNT          148
 #define MACH_LIST_SIZE_LIMIT 279
-#define FIX_COUNT            140
+#define FIX_COUNT            141
 
 /*
  *  Enumerate the fixes
@@ -5523,6 +5564,7 @@ typedef enum {
     HP_INLINE_FIXIDX,
     HP_SYSFILE_FIXIDX,
     HPUX10_CPP_POW_INLINE_FIXIDX,
+    HPUX11_CPP_POW_INLINE_FIXIDX,
     HPUX11_FABSF_FIXIDX,
     HPUX11_UINT32_C_FIXIDX,
     HPUX8_BOGUS_INLINES_FIXIDX,
@@ -5568,7 +5610,7 @@ typedef enum {
     RS6000_PARAM_FIXIDX,
     SCO_STATIC_FUNC_FIXIDX,
     SCO_UTIME_FIXIDX,
-    SOLARIS27_MUTEX_INIT_FIXIDX,
+    SOLARIS_MUTEX_INIT_FIXIDX,
     STATSSWTCH_FIXIDX,
     STDIO_STDARG_H_FIXIDX,
     STDIO_VA_LIST_FIXIDX,
@@ -5862,6 +5904,11 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
      HPUX10_CPP_POW_INLINE_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aHpux10_Cpp_Pow_InlineTests,   apzHpux10_Cpp_Pow_InlinePatch, 0 },
 
+  {  zHpux11_Cpp_Pow_InlineName,    zHpux11_Cpp_Pow_InlineList,
+     apzHpux11_Cpp_Pow_InlineMachs,
+     HPUX11_CPP_POW_INLINE_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
+     aHpux11_Cpp_Pow_InlineTests,   apzHpux11_Cpp_Pow_InlinePatch, 0 },
+
   {  zHpux11_FabsfName,    zHpux11_FabsfList,
      apzHpux11_FabsfMachs,
      HPUX11_FABSF_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
@@ -6087,10 +6134,10 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
      SCO_UTIME_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aSco_UtimeTests,   apzSco_UtimePatch, 0 },
 
-  {  zSolaris27_Mutex_InitName,    zSolaris27_Mutex_InitList,
-     apzSolaris27_Mutex_InitMachs,
-     SOLARIS27_MUTEX_INIT_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
-     aSolaris27_Mutex_InitTests,   apzSolaris27_Mutex_InitPatch, 0 },
+  {  zSolaris_Mutex_InitName,    zSolaris_Mutex_InitList,
+     apzSolaris_Mutex_InitMachs,
+     SOLARIS_MUTEX_INIT_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
+     aSolaris_Mutex_InitTests,   apzSolaris_Mutex_InitPatch, 0 },
 
   {  zStatsswtchName,    zStatsswtchList,
      apzStatsswtchMachs,
