@@ -207,7 +207,8 @@ object_get_meta_class(id object)
 }
 
 static inline Class_t
-object_get_super_class(id object)
+object_get_super_class
+(id object)
 {
   return ((object!=nil)?(CLS_ISCLASS(object->class_pointer)
                          ?object->class_pointer->super_class
@@ -235,7 +236,10 @@ object_is_meta_class(id object)
   return CLS_ISMETA((Class_t)object);
 }
 
+
 /* Archiving stuff */
+
+#ifndef __alpha__
 
 typedef int (*objc_typed_read_func)(void*, char*, int);
 typedef int (*objc_typed_write_func)(void*, const char*, int);
@@ -332,5 +336,5 @@ void objc_close_typed_stream (TypedStream* stream);
 BOOL objc_end_of_typed_stream (TypedStream* stream);
 void objc_flush_typed_stream (TypedStream* stream);
 
-
+#endif /* __alpha__ */
 #endif /* not __objc_api_INCLUDE_GNU */
