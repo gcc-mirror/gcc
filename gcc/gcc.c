@@ -813,6 +813,7 @@ struct prefix_list
   char *prefix;               /* String to prepend to the path. */
   struct prefix_list *next;   /* Next in linked list. */
   int require_machine_suffix; /* Don't use without machine_suffix.  */
+  /* 2 means try both machine_suffix and just_machine_suffix.  */
   int *used_flag_ptr;	      /* 1 if a file was found with this prefix.  */
 };
 
@@ -835,9 +836,15 @@ static struct path_prefix startfile_prefix = { 0, 0, "startfile" };
 
 static struct path_prefix library_prefix = { 0, 0, "libraryfile" };
 
-/* Suffix to attach to directories searched for commands.  */
+/* Suffix to attach to directories searched for commands.
+   This looks like `MACHINE/VERSION/'.  */
 
 static char *machine_suffix = 0;
+
+/* Suffix to attach to directories searched for commands.
+   This is just `MACHINE/'.  */
+
+static char *just_machine_suffix = 0;
 
 /* Adjusted value of GCC_EXEC_PREFIX envvar.  */
 
@@ -1164,6 +1171,16 @@ putenv_from_prefixes (paths, env_var)
 	  obstack_grow (&collect_obstack, machine_suffix, suffix_len);
 	}
 
+      if (just_machine_suffix && pprefix->require_machine_suffix == 2)
+	{
+	  if (!first_time)
+	    obstack_grow (&collect_obstack, ":", 1);
+	    
+	  first_time = FALSE;
+	  obstack_grow (&collect_obstack, pprefix->prefix, len);
+	  obstack_grow (&collect_obstack, machine_suffix, suffix_len);
+	}
+
       if (!pprefix->require_machine_suffix)
 	{
 	  if (!first_time)
@@ -1235,6 +1252,32 @@ find_a_file (pprefix, name, mode)
 		  }
 	      }
 	  }
+	/* Certain prefixes are tried with just the machine type,
+	   not the version.  This is used for finding as, ld, etc.  */
+	if (just_machine_suffix && pl->require_machine_suffix == 2)
+	  {
+	    strcpy (temp, pl->prefix);
+	    strcat (temp, just_machine_suffix);
+	    strcat (temp, name);
+	    if (access (temp, mode) == 0)
+	      {
+		if (pl->used_flag_ptr != 0)
+		  *pl->used_flag_ptr = 1;
+		return temp;
+	      }
+	    /* Some systems have a suffix for executable files.
+	       So try appending that.  */
+	    if (file_suffix[0] != 0)
+	      {
+		strcat (temp, file_suffix);
+		if (access (temp, mode) == 0)
+		  {
+		    if (pl->used_flag_ptr != 0)
+		      *pl->used_flag_ptr = 1;
+		    return temp;
+		  }
+	      }
+	  }
 	/* Certain prefixes can't be used without the machine suffix
 	   when the machine or version is explicitly specified.  */
 	if (!pl->require_machine_suffix)
@@ -1271,7 +1314,11 @@ find_a_file (pprefix, name, mode)
 
    If WARN is nonzero, we will warn if no file is found
    through this prefix.  WARN should point to an int
-   which will be set to 1 if this entry is used.  */
+   which will be set to 1 if this entry is used.
+
+   REQUIRE_MACHINE_SUFFIX is 1 if this prefix can't be used without
+   the complete value of machine_suffix.
+   2 means try both machine_suffix and just_machine_suffix.  */
 
 static void
 add_prefix (pprefix, prefix, first, require_machine_suffix, warn)
@@ -1955,8 +2002,10 @@ process_command (argc, argv)
 
   /* These come before the md prefixes so that we will find gcc's subcommands
      (such as cpp) rather than those of the host system.  */
-  add_prefix (&exec_prefix, standard_exec_prefix, 0, 1, NULL_PTR);
-  add_prefix (&exec_prefix, standard_exec_prefix_1, 0, 1, NULL_PTR);
+  /* Use 2 as fourth arg meaning try just the machine as a suffix,
+     as well as trying the machine and the version.  */
+  add_prefix (&exec_prefix, standard_exec_prefix, 0, 2, NULL_PTR);
+  add_prefix (&exec_prefix, standard_exec_prefix_1, 0, 2, NULL_PTR);
 
   add_prefix (&startfile_prefix, standard_exec_prefix, 0, 1, NULL_PTR);
   add_prefix (&startfile_prefix, standard_exec_prefix_1, 0, 1, NULL_PTR);
@@ -3067,6 +3116,7 @@ main (argc, argv)
   /* Read specs from a file if there is one.  */
 
   machine_suffix = concat (spec_machine, "/", concat (spec_version, "/", ""));
+  just_machine_suffix = concat (spec_machine, "/", "");
 
   specs_file = find_a_file (&startfile_prefix, "specs", R_OK);
   /* Read the specs file unless it is a default one.  */
