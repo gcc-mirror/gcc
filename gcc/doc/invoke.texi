@@ -4241,9 +4241,10 @@ collector's heap should be allowed to expand between collections.
 Tuning this may improve compilation speed; it has no effect on code
 generation.
 
-The default is 30%.  Setting this parameter to zero causes a full
-collection to occur at every opportunity.  This is extremely slow, but
-can be useful for debugging.
+The default is 30%.  Setting this parameter and
+@option{ggc-min-heapsize} to zero causes a full collection to occur at
+every opportunity.  This is extremely slow, but can be useful for
+debugging.
 
 @item ggc-min-heapsize
 
@@ -4254,7 +4255,9 @@ tuning this may improve compilation speed, and has no effect on code
 generation.
 
 The default is 4096 (four megabytes).  Setting this parameter very large
-effectively disables garbage collection.
+effectively disables garbage collection.  Setting this parameter and
+@option{ggc-min-expand} to zero causes a full collection to occur at
+every opportunity.  
 
 @end table
 @end table
