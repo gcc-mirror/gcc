@@ -34,8 +34,6 @@ Boston, MA 02111-1307, USA.  */
 /* Allow test for DOS drive names.  */
 #define HAVE_DOS_BASED_FILESYSTEM
 
-#define NO_SYS_SIGLIST 1
-
 #define LIBSTDCXX "-lstdcxx"
 
 /* System dependant initialization for collect2

@@ -70,7 +70,15 @@ Boston, MA 02111-1307, USA.  */
 \t%{!A:%{!nostdlib:%{!nostartfiles:%E}}}\
 \t-Tdjgpp.djl %{T*}}}}}}}\n\
 %{!c:%{!M:%{!MM:%{!E:%{!S:stubify %{v} %{o*:%*} %{!o*:a.out} }}}}}"
- 
+
+/* Always just link in 'libc.a'.  */
+#undef LIB_SPEC
+#define LIB_SPEC "-lc"
+
+/* Pick the right startup code depending on the -pg flag.  */
+#undef STARTFILE_SPEC
+#define STARTFILE_SPEC "%{pg:gcrt0.o%s}%{!pg:crt0.o%s}"
+
 /* Make sure that gcc will not look for .h files in /usr/local/include 
    unless user explicitly requests it.  */
 #undef LOCAL_INCLUDE_DIR
