@@ -452,13 +452,13 @@ static inline int VEC_OP (TDEF,space)	       				  \
      (VEC (TDEF) *vec_, int alloc_)					  \
 {									  \
   return vec_ ? ((vec_)->alloc - (vec_)->num				  \
-		 < (unsigned)(alloc_ < 0 ? 1 : alloc_)) : alloc_ != 0;	  \
+		 >= (unsigned)(alloc_ < 0 ? 1 : alloc_)) : !alloc_;	  \
 }									  \
 									  \
 static inline int VEC_OP (TDEF,reserve)	       				  \
      (VEC (TDEF) **vec_, int alloc_ MEM_STAT_DECL)			  \
 {									  \
-  int extend = VEC_OP (TDEF,space) (*vec_, alloc_);			  \
+  int extend = !VEC_OP (TDEF,space) (*vec_, alloc_);			  \
 		  							  \
   if (extend)	  							  \
     *vec_ = (VEC (TDEF) *) vec_##a##_p_reserve (*vec_, alloc_ PASS_MEM_STAT);   \
@@ -683,13 +683,13 @@ static inline int VEC_OP (TDEF,space)	       				  \
      (VEC (TDEF) *vec_, int alloc_)					  \
 {									  \
   return vec_ ? ((vec_)->alloc - (vec_)->num				  \
-		 < (unsigned)(alloc_ < 0 ? 1 : alloc_)) : alloc_ != 0;	  \
+		 >= (unsigned)(alloc_ < 0 ? 1 : alloc_)) : !alloc_;	  \
 }									  \
 									  \
 static inline int VEC_OP (TDEF,reserve)	   	    			  \
      (VEC (TDEF) **vec_, int alloc_ MEM_STAT_DECL)			  \
 {									  \
-  int extend = VEC_OP (TDEF,space) (*vec_, alloc_);			  \
+  int extend = !VEC_OP (TDEF,space) (*vec_, alloc_);			  \
 									  \
   if (extend)								  \
     *vec_ = (VEC (TDEF) *) vec_##a##_o_reserve (*vec_, alloc_,		  \
