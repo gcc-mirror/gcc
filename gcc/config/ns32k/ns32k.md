@@ -2046,7 +2046,7 @@
 }")
 
 ;;; Index insns.  These are about the same speed as multiply-add counterparts.
-;;; but slower then using power-of-2 shifts if we can use them
+;;; but slower than using power-of-2 shifts if we can use them
 ;
 ;;; See note 1
 ;(define_insn ""
