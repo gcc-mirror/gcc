@@ -41,6 +41,7 @@ extern void		mips_output_float PARAMS ((FILE *, REAL_VALUE_TYPE));
 #endif /* REAL_VALUE_TYPE */
 extern void		mips_output_filename PARAMS ((FILE *, const char *));
 extern void		mips_output_lineno PARAMS ((FILE *, int));
+extern void		mips_output_ascii PARAMS ((FILE *, const char *, size_t));
 extern void		mips_order_regs_for_local_alloc PARAMS ((void));
 extern struct rtx_def *	mips16_gp_pseudo_reg PARAMS ((void));
 #ifdef ASM_OUTPUT_UNDEF_FUNCTION

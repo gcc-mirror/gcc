@@ -1109,6 +1109,11 @@ while (0)
 #define EH_RETURN_DATA_REGNO(N) ((N) < 4 ? (N) + GP_ARG_FIRST : INVALID_REGNUM)
 #define EH_RETURN_STACKADJ_RTX  gen_rtx_REG (Pmode, GP_REG_FIRST + 3)
 
+/* Offsets recorded in opcodes are a multiple of this alignment factor.  
+   The default for this in 64-bit mode is 8, which causes problems with
+   SFmode register saves.  */
+#define DWARF_CIE_DATA_ALIGNMENT 4
+
 /* Overrides for the COFF debug format.  */
 #define PUT_SDB_SCL(a)					\
 do {							\
@@ -4392,75 +4397,7 @@ do {									\
 /* This is how to output a string.  */
 #undef ASM_OUTPUT_ASCII
 #define ASM_OUTPUT_ASCII(STREAM, STRING, LEN)				\
-do {									\
-  register int i, c, len = (LEN), cur_pos = 17;				\
-  register const unsigned char *string =				\
-    (const unsigned char *)(STRING);					\
-  fprintf ((STREAM), "\t.ascii\t\"");					\
-  for (i = 0; i < len; i++)						\
-    {									\
-      register int c = string[i];					\
-									\
-      switch (c)							\
-	{								\
-	case '\"':							\
-	case '\\':							\
-	  putc ('\\', (STREAM));					\
-	  putc (c, (STREAM));						\
-	  cur_pos += 2;							\
-	  break;							\
-									\
-	case TARGET_NEWLINE:						\
-	  fputs ("\\n", (STREAM));					\
-	  if (i+1 < len							\
-	      && (((c = string[i+1]) >= '\040' && c <= '~')		\
-		  || c == TARGET_TAB))					\
-	    cur_pos = 32767;		/* break right here */		\
-	  else								\
-	    cur_pos += 2;						\
-	  break;							\
-									\
-	case TARGET_TAB:						\
-	  fputs ("\\t", (STREAM));					\
-	  cur_pos += 2;							\
-	  break;							\
-									\
-	case TARGET_FF:							\
-	  fputs ("\\f", (STREAM));					\
-	  cur_pos += 2;							\
-	  break;							\
-									\
-	case TARGET_BS:							\
-	  fputs ("\\b", (STREAM));					\
-	  cur_pos += 2;							\
-	  break;							\
-									\
-	case TARGET_CR:							\
-	  fputs ("\\r", (STREAM));					\
-	  cur_pos += 2;							\
-	  break;							\
-									\
-	default:							\
-	  if (c >= ' ' && c < 0177)					\
-	    {								\
-	      putc (c, (STREAM));					\
-	      cur_pos++;						\
-	    }								\
-	  else								\
-	    {								\
-	      fprintf ((STREAM), "\\%03o", c);				\
-	      cur_pos += 4;						\
-	    }								\
-	}								\
-									\
-      if (cur_pos > 72 && i+1 < len)					\
-	{								\
-	  cur_pos = 17;							\
-	  fprintf ((STREAM), "\"\n\t.ascii\t\"");			\
-	}								\
-    }									\
-  fprintf ((STREAM), "\"\n");						\
-} while (0)
+  mips_output_ascii (STREAM, STRING, LEN)
 
 /* Handle certain cpp directives used in header files on sysV.  */
 #define SCCS_DIRECTIVE
