@@ -38,6 +38,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "toplev.h"
 #include "recog.h"
 #include "sched-int.h"
+#include "params.h"
 
 extern char *reg_known_equiv_p;
 extern rtx *reg_known_value;
@@ -532,6 +533,7 @@ flush_pending_lists (deps, insn, only_write)
 
   free_INSN_LIST_list (&deps->last_pending_memory_flush);
   deps->last_pending_memory_flush = alloc_INSN_LIST (insn, NULL_RTX);
+  deps->pending_flush_length = 1;
 }
 
 /* Analyze a single SET, CLOBBER, PRE_DEC, POST_DEC, PRE_INC or POST_INC
@@ -671,14 +673,13 @@ sched_analyze_1 (deps, x, insn)
     {
       /* Writing memory.  */
 
-      if (deps->pending_lists_length > 32)
+      if (deps->pending_lists_length > MAX_PENDING_LIST_LENGTH)
 	{
 	  /* Flush all pending reads and writes to prevent the pending lists
 	     from getting any larger.  Insn scheduling runs too slowly when
-	     these lists get long.  The number 32 was chosen because it
-	     seems like a reasonable number.  When compiling GCC with itself,
+	     these lists get long.  When compiling GCC with itself,
 	     this flush occurs 8 times for sparc, and 10 times for m88k using
-	     the number 32.  */
+	     the default value of 32.  */
 	  flush_pending_lists (deps, insn, 0);
 	}
       else
@@ -1242,8 +1243,14 @@ sched_analyze (deps, head, tail)
 	  /* Make each JUMP_INSN a scheduling barrier for memory
              references.  */
 	  if (GET_CODE (insn) == JUMP_INSN)
-	    deps->last_pending_memory_flush
-	      = alloc_INSN_LIST (insn, deps->last_pending_memory_flush);
+	    {
+	      /* Keep the list a reasonable size.  */
+	      if (deps->pending_flush_length++ > MAX_PENDING_LIST_LENGTH)
+		flush_pending_lists (deps, insn, 0);
+	      else
+		deps->last_pending_memory_flush
+		  = alloc_INSN_LIST (insn, deps->last_pending_memory_flush);
+	    }
 	  sched_analyze_insn (deps, PATTERN (insn), insn, loop_notes);
 	  loop_notes = 0;
 	}
@@ -1469,6 +1476,7 @@ init_deps (deps)
   deps->pending_write_insns = 0;
   deps->pending_write_mems = 0;
   deps->pending_lists_length = 0;
+  deps->pending_flush_length = 0;
   deps->last_pending_memory_flush = 0;
   deps->last_function_call = 0;
   deps->in_post_call_group_p = 0;

@@ -3725,6 +3725,12 @@ order to perform the global common subexpression elimination
 optimization.  If more memory than specified is required, the
 optimization will not be done.
 
+@item max-pending-list-length
+The maximum number of pending dependancies scheduling will allow
+before flushing the current state and starting over.  Large functions
+with few branches or calls can create excessively large lists which
+needlessly consume memory and resources.
+
 @item max-inline-insns
 If an function contains more than this many instructions, it
 will not be inlined.  This option is precisely equivalent to

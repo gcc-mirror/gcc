@@ -53,6 +53,10 @@ struct deps
      a function of the length of these pending lists.  */
   int pending_lists_length;
 
+  /* Length of the pending memory flush list. Large functions with no
+     calls may build up extremely large lists.  */
+  int pending_flush_length;
+
   /* The last insn upon which all memory references must depend.
      This is an insn which flushed the pending lists, creating a dependency
      between it and all previously pending memory references.  This creates

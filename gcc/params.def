@@ -75,6 +75,16 @@ DEFPARAM(PARAM_MAX_GCSE_MEMORY,
 	 "The maximum amount of memory to be allocated by GCSE",
 	 50 * 1024 * 1024)
 
+/* This parameter limits the number of branch elements that the 
+   scheduler will track anti-dependancies through without resetting
+   the tracking mechanism.  Large functions with few calls or barriers 
+   can generate lists containing many 1000's of dependancies.  Generally 
+   the compiler either uses all available memory, or runs for far too long.  */
+DEFPARAM(PARAM_MAX_PENDING_LIST_LENGTH,
+	 "max-pending-list-length",
+	 "The maximum length of scheduling's pending operations list",
+	 32)
+
 /*
 Local variables:
 mode:c
