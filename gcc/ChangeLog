@@ -1,5 +1,7 @@
 2001-01-11  Alexandre Oliva  <aoliva@redhat.com>
 
+	* config/sh/sh.h (LABEL_ALIGN): Use UNSPECV_ALIGN instead of 1.
+
 	* Makefile.in (check-gcc//%, check-g++//%, check-g77//%,
 	check-objc//%): Support parallel testing of multilibs.
 	(TESTSUITEDIR): Set to testsuite by default, but override for

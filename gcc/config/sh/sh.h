@@ -401,7 +401,7 @@ do {									\
   (PREV_INSN (A_LABEL)							\
    && GET_CODE (PREV_INSN (A_LABEL)) == INSN				\
    && GET_CODE (PATTERN (PREV_INSN (A_LABEL))) == UNSPEC_VOLATILE	\
-   && XINT (PATTERN (PREV_INSN (A_LABEL)), 1) == 1)			\
+   && XINT (PATTERN (PREV_INSN (A_LABEL)), 1) == UNSPECV_ALIGN)		\
    /* explicit alignment insn in constant tables. */			\
   ? INTVAL (XVECEXP (PATTERN (PREV_INSN (A_LABEL)), 0, 0))		\
   : 0)
