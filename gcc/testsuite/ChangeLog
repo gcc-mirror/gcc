@@ -1,5 +1,9 @@
 2003-06-19  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/9649
+	* g++.dg/template/static4.C: New test.
+	* g++.old-deja/g++.other/anon7.C: Remove spurious error messages.
+
 	PR c++/11041
 	* g++.dg/init/ref7.C: New test.
 
