@@ -1,3 +1,9 @@
+2004-06-09  Richard Henderson  <rth@redhat.com>
+
+	PR opt/15108
+	* tree-tailcall.c (find_tail_calls): Don't check early for
+	tail_recursion failure.
+
 2004-06-09  Diego Novillo  <dnovillo@redhat.com>
 
 	Move SSA_NAME annotations into tree_ssa_name.
