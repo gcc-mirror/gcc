@@ -26,6 +26,7 @@ extern int handle_option (int argc, char **argv, int lang_mask);
 struct cl_option
 {
   const char *opt_text;
+  unsigned short back_chain;
   unsigned char opt_len;
   unsigned int flags;
 };
