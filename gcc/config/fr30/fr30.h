@@ -1122,18 +1122,6 @@ extern struct rtx_def * fr30_compare_op0;
 extern struct rtx_def * fr30_compare_op1;
 
 /*}}}*/ 
-/*{{{  PREDICATE_CODES.  */ 
-
-#define PREDICATE_CODES					\
-  { "stack_add_operand",	{ CONST_INT }},		\
-  { "high_register_operand",	{ REG }},		\
-  { "low_register_operand",	{ REG }},		\
-  { "call_operand",		{ MEM }},		\
-  { "di_operand",		{ CONST_INT, CONST_DOUBLE, REG, MEM }},	\
-  { "nonimmediate_di_operand",	{ REG, MEM }},		\
-  { "add_immediate_operand",	{ REG, CONST_INT }},
-
-/*}}}*/ 
 
 /* Local Variables: */
 /* folded-file: t   */
