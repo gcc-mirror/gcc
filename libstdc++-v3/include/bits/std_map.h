@@ -58,9 +58,7 @@
 
 #pragma GCC system_header
 
-#ifndef _CPP_BITS_STL_TREE_H  
 #include <bits/stl_tree.h>
-#endif
 #include <bits/stl_map.h>
 #include <bits/stl_multimap.h>
 

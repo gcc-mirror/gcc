@@ -95,7 +95,7 @@ inline bool operator==(const pair<_T1, _T2>& __x, const pair<_T1, _T2>& __y)
   return __x.first == __y.first && __x.second == __y.second; 
 }
 
-/// ...put link to onlinedocs here...
+/// http://gcc.gnu.org/onlinedocs/libstdc++/20_util/howto.html#pairlt
 template <class _T1, class _T2>
 inline bool operator<(const pair<_T1, _T2>& __x, const pair<_T1, _T2>& __y)
 { 
@@ -134,8 +134,9 @@ inline bool operator>=(const pair<_T1, _T2>& __x, const pair<_T1, _T2>& __y) {
  *  @return   A newly-constructed pair<> object of the appropriate type.
  *
  *  The standard requires that the objects be passed by reference-to-const,
- *  but LWG issue #181 says they should be passed by const value.
- */
+ *  but LWG issue #181 says they should be passed by const value.  We follow
+ *  the LWG by default.
+*/
 template <class _T1, class _T2>
 #ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
 //181.  make_pair() unintended behavior

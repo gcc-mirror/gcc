@@ -170,7 +170,7 @@ namespace std
 
     private:
 #ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
-      // Not defined.
+      // Not defined.  (Side effect of DR 50.)
       __ostream_type& 
       operator=(const __ostream_type&);
 

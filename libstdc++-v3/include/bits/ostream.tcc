@@ -644,6 +644,7 @@ namespace std
       typedef basic_ostream<_CharT, _Traits> __ostream_type;
 #ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
 // 167.  Improper use of traits_type::length()
+// Note that this is only in 'Review' status.
       typedef char_traits<char>		     __ctraits_type;
 #endif
       typename __ostream_type::sentry __cerb(__out);

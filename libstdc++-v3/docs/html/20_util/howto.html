@@ -8,7 +8,7 @@
    <meta NAME="GENERATOR" CONTENT="vi and eight fingers">
    <title>libstdc++-v3 HOWTO:  Chapter 20</title>
 <link REL=StyleSheet HREF="../lib3styles.css">
-<!-- $Id: howto.html,v 1.4 2001/05/30 21:55:00 pme Exp $ -->
+<!-- $Id: howto.html,v 1.5 2001/09/17 23:24:39 pme Exp $ -->
 </head>
 <body>
 
@@ -171,6 +171,7 @@
       <code>operator==</code> functions (for types like MyClass) or builtin
       comparisons (for types like int, char, etc).
    </p>
+   <a name="pairlt">
    <p>The less-than operator is a bit odd the first time you see it.  It
       is defined as evaluating to:
       <PRE>
@@ -180,6 +181,7 @@
       The other operators are not defined using the <code>rel_ops</code>
       functions above, but their semantics are the same.
    </p>
+   </a>
    <p>Finally, there is a template function called <code>make_pair</code>
       that takes two references-to-const objects and returns an
       instance of a pair instantiated on their respective types:
@@ -200,7 +202,7 @@
 <P CLASS="fineprint"><em>
 Comments and suggestions are welcome, and may be sent to
 <a href="mailto:libstdc++@gcc.gnu.org">the mailing list</a>.
-<br> $Id: howto.html,v 1.4 2001/05/30 21:55:00 pme Exp $
+<br> $Id: howto.html,v 1.5 2001/09/17 23:24:39 pme Exp $
 </em></p>
 
 

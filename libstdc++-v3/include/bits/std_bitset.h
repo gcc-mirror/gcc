@@ -55,11 +55,6 @@
 // individual bits.  This allows us to specialize _Base_bitset for the
 // important special case where the bitset is only a single word.
 
-// The C++ standard does not define the precise semantics of operator[].
-// In this implementation the const version of operator[] is equivalent
-// to test(), except that it does no range checking.  The non-const version
-// returns a reference to a bit, again without doing any range checking.
-
 
 #include <bits/std_cstddef.h>     // for size_t
 #include <bits/std_cstring.h>     // for memset
@@ -618,6 +613,9 @@ public:
 
   // element access:
   //for b[i];
+  // _GLIBCPP_RESOLVE_LIB_DEFECTS Note that this implementation already
+  // resolves DR 11 (items 1 and 2), but does not do the range-checking
+  // required by that DR's resolution.  -pme
   reference operator[](size_t __pos) { return reference(*this,__pos); }
   bool operator[](size_t __pos) const { return _Unchecked_test(__pos); }
 

@@ -78,7 +78,7 @@ namespace std
     
   public:
     // the public interface
-    /** Returns an \e implementation-defined byte string; this is not
+    /** Returns an @e implementation-defined byte string; this is not
      *  portable between compilers!  */
     const char* name() const
     { return __name; }
