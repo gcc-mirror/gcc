@@ -1,6 +1,6 @@
 // SGI's rope implementation -*- C++ -*-
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -40,9 +40,10 @@
  * purpose.  It is provided "as is" without express or implied warranty.
  */
 
-/** @file stl_rope.h
- *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
+/** @file ext/stl_rope.h
+ *  This file is a GNU extension to the Standard C++ Library (possibly
+ *  containing extensions from the HP/SGI STL subset).  You should only
+ *  include this header if you are using GCC 3 or later.
  */
 
 // rope<_CharT,_Alloc> is a sequence of _CharT.

@@ -101,10 +101,10 @@ namespace std
 namespace __gnu_cxx
 {
   /** A replacement for the standard terminate_handler which prints more
-      information about the terminating exception (if any) on stderr.
-
+      information about the terminating exception (if any) on stderr.  Call
+      @code
         std::set_terminate (__gnu_cxx::__verbose_terminate_handler)
-
+      @endcode
       to use.  */
   void __verbose_terminate_handler ();
 } // namespace __gnu_cxx

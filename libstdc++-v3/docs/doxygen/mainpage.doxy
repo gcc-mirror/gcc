@@ -33,7 +33,7 @@
 <p>The libstdc++-v3 configuration files needed to generate doxygen output
    are located:
    <ul><li><code>docs/doxygen/user.cfg.in</code>
-       <li><code>docs/doxygen/maint.cfg.in</code>
+       <li><code>docs/doxygen/run_doxygen</code>
    </ul>
 </p>
 

@@ -67,12 +67,16 @@ namespace std
 /**
  *  @maint
  *  This class is used in two places:  stl_algo.h and ext/memory, where it
- *  is wrapped as the temporary_buffer class.
+ *  is wrapped as the temporary_buffer class.  See temporary_buffer docs for
+ *  more notes.
  *  @endmaint
 */
 template <class _ForwardIterator, class _Tp>
-class _Temporary_buffer {
-private:
+  class _Temporary_buffer
+{
+  // concept requirements
+  __glibcpp_class_requires(_ForwardIterator, _ForwardIteratorConcept)
+
   ptrdiff_t  _M_original_len;
   ptrdiff_t  _M_len;
   _Tp*       _M_buffer;
@@ -99,9 +103,13 @@ private:
   }
 
 public:
+  /// As per Table mumble.
   ptrdiff_t size() const { return _M_len; }
+  /// Returns the size requested by the constructor; may be >size().
   ptrdiff_t requested_size() const { return _M_original_len; }
+  /// As per Table mumble.
   _Tp* begin() { return _M_buffer; }
+  /// As per Table mumble.
   _Tp* end() { return _M_buffer + _M_len; }
 
   _Temporary_buffer(_ForwardIterator __first, _ForwardIterator __last) {
@@ -139,6 +147,3 @@ private:
 
 #endif /* __GLIBCPP_INTERNAL_TEMPBUF_H */
 
-// Local Variables:
-// mode:C++
-// End:

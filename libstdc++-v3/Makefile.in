@@ -1,6 +1,6 @@
-# Makefile.in generated automatically by automake 1.4-p5 from Makefile.am
+# Makefile.in generated automatically by automake 1.4 from Makefile.am
 
-# Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
+# Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -308,7 +308,7 @@ maintainer-clean-recursive:
 	dot_seen=no; \
 	rev=''; list='$(SUBDIRS)'; for subdir in $$list; do \
 	  rev="$$subdir $$rev"; \
-	  test "$$subdir" != "." || dot_seen=yes; \
+	  test "$$subdir" = "." && dot_seen=yes; \
 	done; \
 	test "$$dot_seen" = "no" && rev=". $$rev"; \
 	target=`echo $@ | sed s/-recursive//`; \
@@ -497,20 +497,26 @@ check-script-install: $(top_builddir)/mkcheck
 	  cd testsuite; \
 	  @glibcpp_builddir@/mkcheck 1)
 
-# These two rules might seem messy, but are hella worth it.
+# These rules are messy, but are hella worth it.
 doxygen:
 	-(srcdir=`cd ${top_srcdir}; pwd`; \
-	  outdir=`pwd`; \
+	  builddir=`pwd`; \
 	  /bin/sh ${srcdir}/docs/doxygen/run_doxygen \
-	            --mode=user $${srcdir} $${outdir})
+	            --mode=user $${srcdir} $${builddir})
 
 doxygen-maint:
 	-(srcdir=`cd ${top_srcdir}; pwd`; \
-	  outdir=`pwd`; \
+	  builddir=`pwd`; \
 	  /bin/sh ${srcdir}/docs/doxygen/run_doxygen \
-	            --mode=maint $${srcdir} $${outdir})
+	            --mode=maint $${srcdir} $${builddir})
 
-.PHONY: doxygen doxygen-maint
+doxygen-man:
+	-(srcdir=`cd ${top_srcdir}; pwd`; \
+	  builddir=`pwd`; \
+	  /bin/sh ${srcdir}/docs/doxygen/run_doxygen \
+	            --mode=man $${srcdir} $${builddir})
+
+.PHONY: doxygen doxygen-maint doxygen-man
 
 # Multilib Makefile bits.
 .PHONY: all-multi mostlyclean-multi clean-multi distclean-multi \

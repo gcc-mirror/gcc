@@ -29,7 +29,7 @@
 
 /** @file ciso646
  *  This is a Standard C++ Library file.  You should @c #include this file
- *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
+ *  in your programs, rather than any of the "*.h" implementation files.
  *
  *  This is the C++ version of the Standard C Library header @c iso646.h,
  *  and its contents are (mostly) the same as that header, but are all

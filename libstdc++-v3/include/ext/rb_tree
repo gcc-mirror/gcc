@@ -53,6 +53,12 @@
  * purpose.  It is provided "as is" without express or implied warranty.
  */
 
+/** @file ext/rb_tree
+ *  This file is a GNU extension to the Standard C++ Library (possibly
+ *  containing extensions from the HP/SGI STL subset).  You should only
+ *  include this header if you are using GCC 3 or later.
+ */
+
 #ifndef _EXT_RB_TREE
 #define _EXT_RB_TREE
 

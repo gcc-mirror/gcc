@@ -2,13 +2,13 @@
 
 # Runs doxygen and massages the output files.
 #
-# Synopsis:  run_doxygen --mode=[user|maint]  v3srcdir  v3builddir
+# Synopsis:  run_doxygen --mode=[user|maint|man]  v3srcdir  v3builddir
 #
 # Originally hacked together by Phil Edwards <pme@gcc.gnu.org>
 
 
 # We can check now that the version of doxygen is >= this variable.
-DOXYVER=1.2.10
+DOXYVER=1.2.12
 doxygen=
 
 find_doxygen() {
@@ -39,11 +39,12 @@ find_doxygen() {
 
 print_usage() {
     cat 1>&2 <<EOF
-Usage:  run_doxygen --mode=MODE [<options>] <src-dir> <output-dir>
+Usage:  run_doxygen --mode=MODE [<options>] <v3-src-dir> <v3-build-dir>
       MODE is one of:
-          maint          Generate maintainers' documentation (lots more;
+          user           Generate user-level HTML library documentation.
+          maint          Generate maintainers' HTML documentation (lots more;
                              exposes non-public members, etc).
-          user           Generate user-level library documentation.
+          man            Generate user-level man pages.
 
       more options when i think of them
 
@@ -74,6 +75,7 @@ parse_options() {
         if test $srcdir = unset; then
           srcdir=$o
         elif test $outdir = unset; then
+          builddir=${o}
           outdir=${o}/docs/doxygen
         else
           echo run_doxygen error:  Too many arguments 1>&2
@@ -89,6 +91,9 @@ parse_options() {
 mode=unset
 srcdir=unset
 outdir=unset
+do_html=no
+do_man=no
+enabled_sections=
 
 parse_options $*
 find_doxygen
@@ -100,34 +105,64 @@ if test $srcdir = unset || test $outdir = unset || test $mode = unset; then
 fi
 
 case x"$mode" in
-    xuser | xmaint)  ;;  # ochen khorosho
+    xuser)           do_html=yes
+                     ;;
+    xmaint)          do_html=yes
+                     enabled_sections=maint
+                     ;;
+    xman)            do_man=yes
+                     ;;
     *)
       echo run_doxygen error:  $mode is an invalid mode 1>&2
       exit 1 ;;
 esac
 
-rm -rf $outdir
+#rm -rf $outdir
 mkdir -p $outdir
 chmod u+w $outdir
+
+# work around a stupid doxygen bug
+test $do_man = yes && {
+    mkdir -p $outdir/man/man3/ext
+    chmod -R u+w $outdir/man/man3/ext
+}
+
+set -e
 (
   set -e
-  cd $srcdir
+  cd $builddir
   sed -e "s=@outdir@=${outdir}=" \
       -e "s=@srcdir@=${srcdir}=" \
-      docs/doxygen/${mode}.cfg.in > ${outdir}/${mode}.cfg
+      -e "s=@html_output_dir@=html_${mode}=" \
+      -e "s=@enabled_sections@=${enabled_sections}=" \
+      -e "s=@do_html@=${do_html}=" \
+      -e "s=@do_man@=${do_man}=" \
+      ${srcdir}/docs/doxygen/user.cfg.in > ${outdir}/${mode}.cfg
   echo :: NOTE that this may take some time...
   echo $doxygen ${outdir}/${mode}.cfg
   $doxygen ${outdir}/${mode}.cfg
   echo :: Finished, exit code was $?
 )
+set +e
+
+test $do_html = yes && {
+    echo ::
+    echo :: HTML pages begin with
+    echo :: ${outdir}/html_${mode}/index.html
+}
 
 # Mess with the man pages.  We don't need documentation of the internal
 # headers, since the man pages for those contain nothing useful anyhow.  The
 # man pages for doxygen modules need to be renamed (or deleted).  And the
 # generated #include lines need to be changed from the internal names to the
 # standard ones (e.g., "#include <stl_tempbuf.h>" -> "#include <memory>").
-cd $outdir/man/man3 && {
+test $do_man = yes && {
+echo ::
 echo :: Fixing up the man pages...
+cd $outdir/man/man3
+
+# here's the other end of the "stupid doxygen bug" mentioned above
+rm -rf ext
 
 # File names with embedded spaces (EVIL!) need to be....?  renamed or removed?
 find . -name "* *" -print0 | xargs -0 rm        # requires GNU tools
@@ -142,10 +177,16 @@ mv s20_3_6_binder.3         Binder_functors.3
 mv s20_3_7_adaptors.3       Func_ptr_functors.3
 mv s20_3_8_memadaptors.3    Member_ptr_functors.3
 mv std.3                    Namespace_Std.3
+mv iterator_tags.3          Iterator_types.3
 
-# man pages are for functions/types/other entities, not source files directly
+# man pages are for functions/types/other entities, not source files
+# directly.  who the heck would type "man foo.h" anyhow?
 find . -name "[a-z]*" -a ! -name "std_*" -print | xargs rm
 rm -f *.h.3 *config* *.cc.3 *.tcc.3
+rm -f *_t.3  # workaround doxygen template parsing bug for now
+#mkdir trash  # this is used to examine what we would have deleted
+#find . -name "[a-z]*" -a ! -name "std_*" -print | xargs -i mv {} trash
+#mv *.h.3 *config* *.cc.3 *.tcc.3 *_t.3  trash
 
 # Standardize the displayed header names.  If anyone who knows perl cares
 # enough to rewrite all this, feel free.  This only gets run once a century,
@@ -179,14 +220,11 @@ done
 
 cp ${srcdir}/docs/doxygen/Intro.3 .
 
+echo ::
+echo :: Man pages in ${outdir}/man
 }
 
 # all done
-echo ::
-echo :: Doxygen output begins with
-echo :: ${outdir}/html_${mode}/index.html
-echo ::
-echo :: Man pages in ${outdir}/man
 echo ::
 
 exit 0

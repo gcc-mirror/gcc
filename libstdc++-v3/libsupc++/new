@@ -30,7 +30,7 @@
 // the GNU General Public License.
 
 /** @file new
- *  This header defines several functions to manage dynamic memory and
+ *  The header @c new defines several functions to manage dynamic memory and
  *  handling memory allocation errors; see
  *  http://gcc.gnu.org/onlinedocs/libstdc++/18_support/howto.html#4 for more.
  */

@@ -31,6 +31,15 @@
 // ISO C++ 14882: 26.5  C library
 //
 
+/** @file cmath
+ *  This is a Standard C++ Library file.  You should @c #include this file
+ *  in your programs, rather than any of the "*.h" implementation files.
+ *
+ *  This is the C++ version of the Standard C Library header @c math.h,
+ *  and its contents are (mostly) the same as that header, but are all
+ *  contained in the namespace @c std.
+ */
+
 #ifndef _CPP_CMATH
 #define _CPP_CMATH 1
 

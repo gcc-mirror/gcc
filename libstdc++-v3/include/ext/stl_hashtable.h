@@ -53,9 +53,10 @@
  *
  */
 
-/** @file stl_hashtable.h
- *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
+/** @file ext/stl_hashtable.h
+ *  This file is a GNU extension to the Standard C++ Library (possibly
+ *  containing extensions from the HP/SGI STL subset).  You should only
+ *  include this header if you are using GCC 3 or later.
  */
 
 #ifndef __SGI_STL_INTERNAL_HASHTABLE_H

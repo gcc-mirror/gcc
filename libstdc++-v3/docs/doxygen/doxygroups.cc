@@ -10,8 +10,17 @@
 
 // // // // // // // // // // // // // // // // // // // // // // // //
 /** @namespace std
- *  @brief Everything defined by the ISO C++ Standard is within namespace
- *  std.
+ *  @brief Everything defined by the ISO C++ Standard is within namespace std.
+*/
+/** @namespace __gnu_cxx
+ *  @brief Non-standard things.
+ *
+ *  This namespace is used for
+ *  -  sequestering internal (implementation-only) names away from the
+ *     global namespace
+ *  -  GNU extensions
+ *
+ *  This is still fluid and changing rapidly.
 */
 
 // // // // // // // // // // // // // // // // // // // // // // // //

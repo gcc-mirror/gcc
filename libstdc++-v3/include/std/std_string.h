@@ -1,6 +1,7 @@
 // Components for manipulating sequences of characters -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,9 +32,9 @@
 // ISO C++ 14882: 21  Strings library
 //
 
-/** @file std_string.h
- *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
+/** @file string
+ *  This is a Standard C++ Library header.  You should @c #include this header
+ *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
  */
 
 #ifndef _CPP_STRING
