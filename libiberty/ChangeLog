@@ -1,3 +1,9 @@
+2001-09-27  DJ Delorie  <dj@redhat.com>
+
+	* configure.in: Don't use in-tree texinfo, because libiberty must
+	be built before it.  Check for makeinfo version 4 or higher.
+	* functions.texi: Regenerate.
+	
 2001-09-20  DJ Delorie  <dj@redhat.com>
 	    Phil Edwards  <pedwards@disaster.jaj.com>
 	
