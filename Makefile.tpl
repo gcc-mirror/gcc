@@ -1660,10 +1660,12 @@ new-restage3: all-stage2-gcc
 # GCC needs to identify certain tools.
 # GCC also needs the information exported by the intl configure script.
 configure-gcc: maybe-configure-intl maybe-configure-binutils maybe-configure-gas maybe-configure-ld maybe-configure-bison maybe-configure-flex
-all-gcc: maybe-all-libiberty maybe-all-intl maybe-all-bison maybe-all-byacc maybe-all-binutils maybe-all-gas maybe-all-ld maybe-all-zlib maybe-all-libbanshee
+all-gcc: maybe-all-libiberty maybe-all-intl maybe-all-bison maybe-all-byacc maybe-all-binutils maybe-all-gas maybe-all-ld maybe-all-zlib maybe-all-libbanshee maybe-all-libcpp
+configure-libcpp: maybe-configure-libiberty maybe-configure-intl
+all-libcpp: maybe-all-libiberty maybe-all-intl
 # This is a slightly kludgy method of getting dependencies on 
 # all-build-libiberty correct; it would be better to build it every time.
-all-gcc: maybe-all-build-libiberty maybe-all-libbanshee
+all-gcc: maybe-all-build-libiberty
 all-bootstrap: [+ FOR host_modules +][+ IF bootstrap +]maybe-all-[+module+] [+ ENDIF bootstrap +][+ ENDFOR host_modules +]
 
 # Host modules specific to gdb.

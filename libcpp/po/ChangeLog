@@ -1,0 +1,13 @@
+2004-05-23  Paolo Bonzini  <bonzini@gnu.org>
+
+	* be.po: Extracted from gcc/po/be.po.
+	* ca.po: Extracted from gcc/po/ca.po.
+	* da.po: Extracted from gcc/po/da.po.
+	* de.po: Extracted from gcc/po/de.po.
+	* el.po: Extracted from gcc/po/el.po.
+	* es.po: Extracted from gcc/po/es.po.
+	* fr.po: Extracted from gcc/po/fr.po.
+	* ja.po: Extracted from gcc/po/ja.po.
+	* nl.po: Extracted from gcc/po/nl.po.
+	* sv.po: Extracted from gcc/po/sv.po.
+	* tr.po: Extracted from gcc/po/tr.po.

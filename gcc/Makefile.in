@@ -284,6 +284,10 @@ GMPINC = @GMPINC@
 
 BANSHEELIB = @BANSHEELIB@
 BANSHEEINC = @BANSHEEINC@
+
+CPPLIBS = ../libcpp/libcpp.a
+CPPINC = -I$(srcdir)/../libcpp/include
+
 # Substitution type for target's getgroups 2nd arg.
 TARGET_GETGROUPS_T = @TARGET_GETGROUPS_T@
 
@@ -699,7 +703,9 @@ C_COMMON_H = c-common.h $(SPLAY_TREE_H) $(CPPLIB_H)
 C_TREE_H = c-tree.h $(C_COMMON_H)
 SYSTEM_H = system.h hwint.h $(srcdir)/../include/libiberty.h
 PREDICT_H = predict.h predict.def
-CPPLIB_H = cpplib.h line-map.h
+CPPLIB_H = $(srcdir)/../libcpp/include/cpplib.h \
+	$(srcdir)/../libcpp/include/line-map.h
+SYMTAB_H = $(srcdir)/../libcpp/include/symtab.h
 TREE_DUMP_H = tree-dump.h $(SPLAY_TREE_H)
 TREE_GIMPLE_H = tree-gimple.h tree-iterator.h
 TREE_FLOW_H = tree-flow.h tree-flow-inline.h tree-ssa-operands.h \
@@ -731,7 +737,7 @@ LIBIBERTY = ../libiberty/libiberty.a
 BUILD_LIBIBERTY = @FORBUILD@/libiberty/libiberty.a
 
 # Dependencies on the intl and portability libraries.
-LIBDEPS= $(LIBIBERTY) $(LIBINTL_DEP) $(LIBICONV_DEP) libcpp.a $(BANSHEELIB)
+LIBDEPS= $(LIBIBERTY) $(LIBINTL_DEP) $(LIBICONV_DEP) $(CPPLIB) $(BANSHEELIB)
 
 # Likewise, for use in the tools that must run on this machine
 # even if we are cross-building GCC.
@@ -739,7 +745,7 @@ BUILD_LIBDEPS= $(BUILD_LIBIBERTY)
 
 # How to link with both our special library facilities
 # and the system's installed libraries.
-LIBS = @LIBS@ libcpp.a $(LIBIBERTY) $(LIBINTL) $(LIBICONV) $(BANSHEELIB)
+LIBS = @LIBS@ $(LIBIBERTY) $(LIBINTL) $(LIBICONV) $(CPPLIB)  $(BANSHEELIB)
 
 # Any system libraries needed just for GNAT.
 SYSLIBS = @GNAT_LIBEXC@
@@ -769,7 +775,7 @@ BUILD_VARRAY = $(BUILD_PREFIX)varray.o
 # libintl.h will be found in ../intl if we are using the included libintl.
 INCLUDES = -I. -I$(@D) -I$(srcdir) -I$(srcdir)/$(@D) \
 	   -I$(srcdir)/../include @INCINTL@ \
-	   $(BANSHEEINC) $(GMPINC)
+	   $(CPPINC) $(BANSHEEINC) $(GMPINC)
 
 .c.o:
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
@@ -898,14 +904,14 @@ OBJS-common = \
  rtl-profile.o tree-profile.o
 
 OBJS-md = $(out_object_file)
-OBJS-archive = $(EXTRA_OBJS) $(host_hook_obj) hashtable.o tree-inline.o	   \
+OBJS-archive = $(EXTRA_OBJS) $(host_hook_obj) tree-inline.o		   \
   cgraph.o cgraphunit.o tree-nomudflap.o
 
 OBJS = $(OBJS-common) $(out_object_file) $(OBJS-archive)
 
 OBJS-onestep = libbackend.o $(OBJS-archive)
 
-BACKEND = main.o @TREEBROWSER@ libbackend.a
+BACKEND = main.o @TREEBROWSER@ libbackend.a $(CPPLIBS)
 
 # Files to be copied away after each stage in building.
 STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
@@ -927,7 +933,7 @@ STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
  protoize$(exeext) unprotoize$(exeext) \
  $(SPECS) collect2$(exeext) \
  gcov-iov$(build_exeext) gcov$(exeext) gcov-dump$(exeext) \
- *.[0-9][0-9].* *.[si] libcpp.a libbackend.a libgcc.mk \
+ *.[0-9][0-9].* *.[si] libbackend.a libgcc.mk \
  $(LANG_STAGESTUFF)
 
 # Defined in libgcc2.c, included only in the static library.
@@ -1121,7 +1127,7 @@ rest.cross: $(LIBGCC) specs
 # This is used only if the user explicitly asks for it.
 compilations: $(BACKEND)
 
-# Like libcpp.a, this archive is strictly for the host.
+# This archive is strictly for the host.
 libbackend.a: $(OBJS@onestep@)
 	-rm -rf libbackend.a
 	$(AR) $(AR_FLAGS) libbackend.a $(OBJS@onestep@)
@@ -1351,7 +1357,7 @@ c-lex.o : c-lex.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
     c-pragma.h input.h intl.h flags.h toplev.h output.h \
     $(CPPLIB_H) $(EXPR_H) $(TM_P_H)
 c-ppoutput.o : c-ppoutput.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-    $(C_COMMON_H) $(TREE_H) $(CPPLIB_H) cpphash.h $(TM_P_H) c-pragma.h
+    $(C_COMMON_H) $(TREE_H) $(CPPLIB_H) $(srcdir)/../libcpp/internal.h $(TM_P_H) c-pragma.h
 c-objc-common.o : c-objc-common.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
     $(C_TREE_H) $(RTL_H) insn-config.h $(INTEGRATE_H) $(EXPR_H) $(C_TREE_H) \
     flags.h toplev.h tree-inline.h $(DIAGNOSTIC_H) $(VARRAY_H) \
@@ -2258,10 +2264,11 @@ s-preds: genpreds$(build_exeext)
 	$(SHELL) $(srcdir)/../move-if-change tmp-preds.h tm-preds.h
 	$(STAMP) s-preds
 
-GTFILES = $(srcdir)/input.h $(srcdir)/coretypes.h $(srcdir)/cpplib.h \
-  $(host_xm_file_list) $(tm_file_list) $(HASHTAB_H) $(SPLAY_TREE_H) \
-  $(srcdir)/bitmap.h $(srcdir)/coverage.c $(srcdir)/function.h  $(srcdir)/rtl.h \
-  $(srcdir)/optabs.h $(srcdir)/tree.h $(srcdir)/libfuncs.h $(srcdir)/hashtable.h \
+GTFILES = $(srcdir)/input.h $(srcdir)/coretypes.h \
+  $(srcdir)/../libcpp/include/cpplib.h $(host_xm_file_list) \
+  $(tm_file_list) $(HASHTAB_H) $(SPLAY_TREE_H) $(srcdir)/bitmap.h \
+  $(srcdir)/coverage.c $(srcdir)/function.h $(srcdir)/rtl.h \
+  $(srcdir)/optabs.h $(srcdir)/tree.h $(srcdir)/libfuncs.h $(SYMTAB_H) \
   $(srcdir)/real.h $(srcdir)/varray.h $(srcdir)/insn-addr.h $(srcdir)/hwint.h \
   $(srcdir)/cselib.h $(srcdir)/basic-block.h  $(srcdir)/cgraph.h \
   $(srcdir)/c-common.h $(srcdir)/c-tree.h $(srcdir)/reload.h \
@@ -2550,41 +2557,11 @@ PREPROCESSOR_DEFINES = \
   -DTOOL_INCLUDE_DIR=\"$(gcc_tooldir)/include\" \
   @TARGET_SYSTEM_ROOT_DEFINE@
 
-LIBCPP_OBJS =	cpplib.o cpplex.o cppmacro.o cppexp.o cppfiles.o cpptrad.o \
-		cpphash.o cpperror.o cppinit.o cppcharset.o \
-		hashtable.o line-map.o mkdeps.o cpppch.o
-
-LIBCPP_DEPS =	$(CPPLIB_H) cpphash.h line-map.h hashtable.h intl.h \
-		$(OBSTACK_H) $(CONFIG_H) $(SYSTEM_H)
-
-# Most of the other archives built/used by this makefile are for
-# targets.  This one is strictly for the host.
-libcpp.a: $(LIBCPP_OBJS)
-	-rm -rf libcpp.a
-	$(AR) $(AR_FLAGS) libcpp.a $(LIBCPP_OBJS)
-	-$(RANLIB) libcpp.a
-
-cppcharset.o: cppcharset.c $(LIBCPP_DEPS) cppucnid.h
-cpperror.o: cpperror.c $(LIBCPP_DEPS)
-cppexp.o:   cppexp.c   $(LIBCPP_DEPS)
-cpplex.o:   cpplex.c   $(LIBCPP_DEPS)
-cppmacro.o: cppmacro.c $(LIBCPP_DEPS)
-cpplib.o:   cpplib.c   $(LIBCPP_DEPS)
-cpphash.o:  cpphash.c  $(LIBCPP_DEPS)
-cpptrad.o:  cpptrad.c  $(LIBCPP_DEPS)
-cppfiles.o: cppfiles.c $(LIBCPP_DEPS) $(HASHTAB_H) $(MD5_H) mkdeps.h
-cppinit.o:  cppinit.c  $(LIBCPP_DEPS) mkdeps.h
-cpppch.o:   cpppch.c   $(LIBCPP_DEPS) mkdeps.h
-
 cppdefault.o: cppdefault.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 	cppdefault.h Makefile
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  $(PREPROCESSOR_DEFINES) \
 	  -c $(srcdir)/cppdefault.c $(OUTPUT_OPTION)
-
-mkdeps.o: mkdeps.c $(CONFIG_H) $(SYSTEM_H) mkdeps.h
-hashtable.o: hashtable.c hashtable.h $(CONFIG_H) $(SYSTEM_H) $(OBSTACK_H)
-line-map.o: line-map.c line-map.h intl.h $(CONFIG_H) $(SYSTEM_H)
 
 # Note for the stamp targets, we run the program `true' instead of
 # having an empty command (nothing following the semicolon).
@@ -2799,7 +2776,7 @@ xsys-protos.h: $(GCC_PASSES) $(srcdir)/sys-protos.h deduced.h gen-protos$(build_
 # This is nominally a 'build' program, but it's run only when host==build,
 # so we can (indeed, must) use $(LIBDEPS) and $(LIBS).
 fix-header$(build_exeext): fix-header.o scan-decls.o scan.o xsys-protos.h \
-           c-incpath.o cppdefault.o prefix.o $(LIBDEPS) libcpp.a
+           c-incpath.o cppdefault.o prefix.o $(LIBDEPS)
 	$(CC_FOR_BUILD) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) -o $@ fix-header.o \
 	c-incpath.o cppdefault.o scan-decls.o prefix.o scan.o $(LIBS)
 
@@ -3537,7 +3514,7 @@ TAGS: lang.tags
 # ------------------------------------------------------
 
 # A list of files to be destroyed during "lean" builds.
-VOL_FILES=`echo $(BACKEND) $(OBJS) $(C_OBJS) $(LIBCPP_OBJS) *.c *.h gen*`
+VOL_FILES=`echo $(BACKEND) $(OBJS) $(C_OBJS) *.c *.h gen*`
 
 # Flags to pass to stage2 and later recursive makes.  Note that the
 # WARN_CFLAGS setting can't be to the expansion of GCC_WARN_CFLAGS in

@@ -1,3 +1,8 @@
+2004-05-23  Paolo Bonzini  <bonzini@gnu.org>
+
+	* acx.m4 (ACX_HEADER_STDBOOL, ACX_HEADER_STRING):
+	From gcc.
+
 2004-04-16  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* acx.m4 (ACX_PROG_GNAT): Check if ${CC} produces object file for

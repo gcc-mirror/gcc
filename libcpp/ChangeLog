@@ -1,0 +1,35 @@
+2004-05-23  Paolo Bonzini  <bonzini@gnu.org>
+
+	Moved libcpp from the gcc subdirectory to the toplevel.
+	* Makefile.am: New file.
+	* Makefile.in: Regenerate.
+	* configure.ac: New file.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* charset.c: Moved from gcc/cppcharset.c.  Add note about
+	brokenness of input charset detection.  Adjust for change
+	in name of cppucnid.h.
+	* errors.c: Moved from gcc/cpperror.c.  Do not include intl.h.
+	* expr.c: Moved from gcc/cppexp.c.
+	* files.c: Moved from gcc/cppfiles.c.  Do not include intl.h.
+	Remove #define of O_BINARY, it is in system.h.
+	* identifiers.c: Moved from gcc/cpphash.c.
+	* internal.h: Moved from gcc/cpphash.h.  Change header
+	guard name.  All other files adjusted to match name change.
+	* init.c: Moved from gcc/cppinit.c.
+	(init_library) [ENABLE_NLS]: Call bindtextdomain.
+	* lex.c: Moved from gcc/cpplex.c.
+	* directives.c: Moved from gcc/cpplib.c.
+	* macro.c: Moved from gcc/cppmacro.c.
+	* pch.c: Moved from gcc/cpppch.c.  Do not include intl.h.
+	* traditional.c: Moved from gcc/cpptrad.c.
+	* ucnid.h: Moved from gcc/cppucnid.h.  Change header
+	guard name.
+	* ucnid.pl: Moved from gcc/cppucnid.pl.
+	* ucnid.tab: Moved from gcc/cppucnid.tab.  Change header
+	guard name.
+	* symtab.c: Moved from gcc/hashtable.c.
+	* line-map.c: Moved from gcc.  Do not include intl.h.
+	* mkdeps.c: Moved from gcc.
+	* system.h: New file.
+

@@ -105,16 +105,16 @@ JAVA_OBJS = java/parse.o java/class.o java/decl.o java/expr.o \
   java/zextract.o java/jcf-io.o java/win32-host.o java/jcf-parse.o java/mangle.o \
   java/mangle_name.o java/builtins.o java/resource.o \
   java/jcf-write.o java/buffer.o java/check-init.o java/jcf-depend.o \
-  java/jcf-path.o java/xref.o java/boehm.o java/java-gimplify.o mkdeps.o
+  java/jcf-path.o java/xref.o java/boehm.o java/java-gimplify.o
 
 GCJH_OBJS = java/gjavah.o java/jcf-io.o java/jcf-depend.o java/jcf-path.o \
-  java/win32-host.o java/zextract.o version.o mkdeps.o errors.o ggc-none.o \
+  java/win32-host.o java/zextract.o version.o errors.o ggc-none.o \
   intl.o
 
 JVSCAN_OBJS = java/parse-scan.o java/jv-scan.o version.o intl.o
 
 JCFDUMP_OBJS = java/jcf-dump.o java/jcf-io.o java/jcf-depend.o java/jcf-path.o \
-		java/win32-host.o java/zextract.o errors.o version.o mkdeps.o ggc-none.o intl.o
+		java/win32-host.o java/zextract.o errors.o version.o ggc-none.o intl.o
 
 JVGENMAIN_OBJS = java/jvgenmain.o java/mangle_name.o errors.o intl.o
 
@@ -130,7 +130,7 @@ jc1$(exeext): $(JAVA_OBJS) $(BACKEND) $(LIBDEPS)
 
 gcjh$(exeext): $(GCJH_OBJS) $(LIBDEPS)
 	rm -f $@
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(GCJH_OBJS) $(ZLIB) $(LIBS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(GCJH_OBJS) $(CPPLIBS) $(ZLIB) $(LIBS)
 
 jv-scan$(exeext): $(JVSCAN_OBJS) $(LIBDEPS)
 	rm -f $@
@@ -139,7 +139,7 @@ jv-scan$(exeext): $(JVSCAN_OBJS) $(LIBDEPS)
 jcf-dump$(exeext): $(JCFDUMP_OBJS) $(LIBDEPS)
 	rm -f $@
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(JCFDUMP_OBJS) \
-		$(ZLIB) $(LDEXP_LIB) $(LIBS)
+		$(CPPLIBS) $(ZLIB) $(LDEXP_LIB) $(LIBS)
 
 jvgenmain$(exeext): $(JVGENMAIN_OBJS) $(LIBDEPS)
 	rm -f $@

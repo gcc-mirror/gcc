@@ -15,8 +15,8 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
-#ifndef GCC_HASHTABLE_H
-#define GCC_HASHTABLE_H
+#ifndef LIBCPP_SYMTAB_H
+#define LIBCPP_SYMTAB_H
 
 #include "obstack.h"
 #define GTY(x) /* nothing */
@@ -78,4 +78,4 @@ extern void ht_forall (hash_table *, ht_cb, const void *);
 /* Dump allocation statistics to stderr.  */
 extern void ht_dump_statistics (hash_table *);
 
-#endif /* GCC_HASHTABLE_H */
+#endif /* LIBCPP_SYMTAB_H */

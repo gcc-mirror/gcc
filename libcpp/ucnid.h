@@ -23,8 +23,8 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
    a reproduction of ISO/IEC PDTR 10176.  Unfortunately these tables
    are not identical.  */
 
-#ifndef CPPUCNID_H
-#define CPPUCNID_H
+#ifndef LIBCPP_UCNID_H
+#define LIBCPP_UCNID_H
 
 #define C99 1
 #define CXX 2
@@ -333,4 +333,4 @@ static const struct ucnrange ucnranges[] = {
   { 0xffda, 0xffdc, CXX         },
 };
 
-#endif /* cppucnid.h */
+#endif /* LIBCPP_UCNID_H */

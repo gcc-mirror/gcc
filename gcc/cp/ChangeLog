@@ -1,3 +1,7 @@
+2004-05-23  Paolo Bonzini  <bonzini@gnu.org>
+
+	* Make-lang.in: No need to specify $(LIBCPP).
+
 2004-05-23  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/15044

@@ -22,7 +22,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "config.h"
 #include "system.h"
 #include "cpplib.h"
-#include "cpphash.h"
+#include "internal.h"
 #include "mkdeps.h"
 
 static void init_library (void);
@@ -119,6 +119,10 @@ init_library (void)
 	 we were compiled with a compiler that supports C99 designated
 	 initializers.  */
       init_trigraph_map ();
+
+#ifdef ENABLE_NLS
+       (void) bindtextdomain ("gcc", LOCALEDIR);
+#endif
     }
 }
 

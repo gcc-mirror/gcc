@@ -21,7 +21,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 #include "config.h"
 #include "system.h"
-#include "hashtable.h"
+#include "symtab.h"
 
 /* The code below is a specialization of Vladimir Makarov's expandable
    hash tables (see libiberty/hashtab.c).  The abstraction penalty was

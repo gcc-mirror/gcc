@@ -20,8 +20,8 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  You are forbidden to forbid anyone else to use, share and improve
  what you give them.   Help stamp out software-hoarding!  */
 
-#ifndef GCC_LINE_MAP_H
-#define GCC_LINE_MAP_H
+#ifndef LIBCPP_LINE_MAP_H
+#define LIBCPP_LINE_MAP_H
 
 /* Reason for adding a line change with add_line_map ().  LC_ENTER is
    when including a new file, e.g. a #include directive in C.
@@ -179,4 +179,4 @@ extern void linemap_print_containing_files (struct line_maps *,
 
 extern source_location
 linemap_position_for_column (struct line_maps *set, unsigned int to_column);
-#endif /* !GCC_LINE_MAP_H  */
+#endif /* !LIBCPP_LINE_MAP_H  */
