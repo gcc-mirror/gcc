@@ -1,7 +1,21 @@
-2004-08-03  Yossi Markovich <yossim@il.ibm.com>
-            Mostafa Hagog <mustafa@il.ibm.com>
+2004-08-04  Zack Weinberg  <zack@codesourcery.com>
 
-        * config/rs6000/altivec.md (altivec_vnmsubfp): Fix wrong pattern.
+	PR 13956
+	* dbxout.c (dbx_output_lbrac, dbx_output_rbrac): New
+	functions, broken out of dbxout_block.
+	(dbxout_block): The block at depth 0 should get LBRAC/RBRAC
+	stabs too, if it contains symbols.  Use the begin_label and
+	the Lscope label (emitted by dbxout_function_end) for the
+	range of this block.
+	(dbxout_function_decl): Always call dbxout_function_end.
+	(dbxout_function_end): Return after emitting the "Lscope" symbol
+	under the same conditions that this function formerly wasn't called.
+	Add explanatory comments.
+
+2004-08-03  Yossi Markovich <yossim@il.ibm.com>
+	    Mostafa Hagog <mustafa@il.ibm.com>
+
+	* config/rs6000/altivec.md (altivec_vnmsubfp): Fix wrong pattern.
 
 2004-07-31  Andrew Pinski  <apinski@apple.com>
 
@@ -13,7 +27,7 @@
 	* config/rs6000/rs6000.md ("move_from_CR_gt_bit"): Rename to
 	move_from_CR_eq_bit.
 	Rename UNSPEC_MV_CR_GT to UNSPEC_MV_CR_EQ.
-	
+
 
 	* config/rs6000/spe.md ("e500_flip_gt_bit"): Rename to
 	e500_flip_eq_bit.
