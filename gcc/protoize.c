@@ -1,5 +1,5 @@
 /* Protoize program - Original version by Ron Guilmette (rfg@segfault.us.com).
-   Copyright (C) 1989, 92-95, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1989, 92-96, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -666,7 +666,7 @@ xmalloc (byte_count)
   if (rv == NULL)
     {
       fprintf (stderr, "\n%s: virtual memory exceeded\n", pname);
-      exit (1);
+      exit (FATAL_EXIT_CODE);
       return 0;		/* avoid warnings */
     }
   else
@@ -686,7 +686,7 @@ xrealloc (old_space, byte_count)
   if (rv == NULL)
     {
       fprintf (stderr, "\n%s: virtual memory exceeded\n", pname);
-      exit (1);
+      exit (FATAL_EXIT_CODE);
       return 0;		/* avoid warnings */
     }
   else
@@ -739,7 +739,7 @@ void
 fancy_abort ()
 {
   fprintf (stderr, "%s: internal abort\n", pname);
-  exit (1);
+  exit (FATAL_EXIT_CODE);
 }
 
 /* Make a duplicate of the first N bytes of a given string in a newly
@@ -877,7 +877,7 @@ usage ()
   fprintf (stderr, "%s: usage '%s [ -VqfnkNlgC ] [ -B <dirname> ] [ filename ... ]'\n",
 	   pname, pname);
 #endif /* !defined (UNPROTOIZE) */
-  exit (1);
+  exit (FATAL_EXIT_CODE);
 }
 
 /* Return true if the given filename (assumed to be an absolute filename)
@@ -1364,18 +1364,18 @@ abspath (cwd, rel_filename)
                     while (outp >= abs_buffer && *outp != '/')
               	outp--;
                     if (outp < abs_buffer)
-                {
-                  /* Catch cases like /.. where we try to backup to a
-                     point above the absolute root of the logical file
-                     system.  */
+		      {
+			/* Catch cases like /.. where we try to backup to a
+			   point above the absolute root of the logical file
+			   system.  */
 
-              	  fprintf (stderr, "%s: invalid file name: %s\n",
-			   pname, rel_filename);
-              	  exit (1);
-              	}
+			fprintf (stderr, "%s: invalid file name: %s\n",
+				 pname, rel_filename);
+			exit (FATAL_EXIT_CODE);
+		      }
                     *++outp = '\0';
                     continue;
-            }
+		  }
         }
       *outp++ = *inp++;
     }
@@ -1541,7 +1541,7 @@ aux_info_corrupted ()
 {
   fprintf (stderr, "\n%s: fatal error: aux info file corrupted at line %d\n",
 	   pname, current_aux_info_lineno);
-  exit (1);
+  exit (FATAL_EXIT_CODE);
 }
 
 /* ??? This comment is vague.  Say what the condition is for.  */
@@ -1867,7 +1867,7 @@ save_def_or_dec (l, is_syscalls)
 			 def_dec_p->file->hash_entry->symbol,
 			 def_dec_p->line,
 			 def_dec_p->hash_entry->symbol);
-                exit (1);
+                exit (FATAL_EXIT_CODE);
               }
             free_def_dec (def_dec_p);
             return;
@@ -4575,7 +4575,7 @@ main (argc, argv)
     {
       fprintf (stderr, "%s: cannot get working directory: %s\n",
 	       pname, my_strerror(errno));
-      exit (1);
+      exit (FATAL_EXIT_CODE);
     }
 
   /* By default, convert the files in the current directory.  */
@@ -4700,9 +4700,8 @@ main (argc, argv)
         fprintf (stderr, "%s: %s\n", pname, version_string);
       do_processing ();
     }
-  if (errors)
-    exit (1);
-  else
-    exit (0);
+
+  exit (errors ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);
+
   return 1;
 }

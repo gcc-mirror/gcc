@@ -1,5 +1,5 @@
 /* fix-header.c - Make C header file suitable for C++.
-   Copyright (C) 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -624,7 +624,7 @@ read_scan_file (in_fname, argc, argv)
     fprintf (stderr, "(%s: %d errors and %d warnings from cpp)\n",
 	     inc_filename, scan_in.errors, warnings);
   if (scan_in.errors)
-    exit (0);
+    exit (SUCCESS_EXIT_CODE);
 
   /* Traditionally, getc and putc are defined in terms of _filbuf and _flsbuf.
      If so, those functions are also required.  */
@@ -689,7 +689,7 @@ read_scan_file (in_fname, argc, argv)
     {
       if (verbose)
 	fprintf (stderr, "%s: OK, nothing needs to be done.\n", inc_filename);
-      exit (0);
+      exit (SUCCESS_EXIT_CODE);
     }
   if (!verbose)
     fprintf (stderr, "%s: fixing %s\n", progname, inc_filename);
@@ -1077,7 +1077,7 @@ main (argc, argv)
     {
       fprintf (stderr, "%s: Usage: foo.h infile.h outfile.h options\n",
 	       progname);
-      exit (-1);
+      exit (FATAL_EXIT_CODE);
     }
 
   inc_filename = argv[1];
@@ -1095,7 +1095,7 @@ main (argc, argv)
 	    {
 	      if (verbose)
 		fprintf (stderr, "%s: ignoring %s\n", progname, inc_filename);
-	      exit (0);
+	      exit (SUCCESS_EXIT_CODE);
 	    }
 	}
 	  
@@ -1157,13 +1157,13 @@ main (argc, argv)
       fprintf (stderr, "%s: Cannot open '%s' for reading -",
 	       progname, argv[2]);
       perror (NULL);
-      exit (-1);
+      exit (FATAL_EXIT_CODE);
     }
   if (fstat (inf_fd, &sbuf) < 0)
     {
       fprintf (stderr, "%s: Cannot get size of '%s' -", progname, argv[2]);
       perror (NULL);
-      exit (-1);
+      exit (FATAL_EXIT_CODE);
     }
   inf_size = sbuf.st_size;
   inf_buffer = (char *) xmalloc (inf_size + 2);
@@ -1180,7 +1180,7 @@ main (argc, argv)
 	{
 	  fprintf (stderr, "%s: Failed to read '%s' -", progname, argv[2]);
 	  perror (NULL);
-	  exit (-1);
+	  exit (FATAL_EXIT_CODE);
 	}
       if (i == 0)
 	{
@@ -1203,7 +1203,7 @@ main (argc, argv)
       fprintf (stderr, "%s: Cannot open '%s' for writing -",
 	       progname, argv[3]);
       perror (NULL);
-      exit (-1);
+      exit (FATAL_EXIT_CODE);
     }
 
   lineno = 1;
