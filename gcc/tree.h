@@ -898,6 +898,8 @@ struct tree_type
 #define DECL_ARGUMENTS(NODE) ((NODE)->decl.arguments)
 /* In FUNCTION_DECL, holds the decl for the return value.  */
 #define DECL_RESULT(NODE) ((NODE)->decl.result)
+/* For a TYPE_DECL, holds the "original" type.  (TREE_TYPE has the copy.) */
+#define DECL_ORIGINAL_TYPE(NODE) ((NODE)->decl.result)
 /* In PARM_DECL, holds the type as written (perhaps a function or array).  */
 #define DECL_ARG_TYPE_AS_WRITTEN(NODE) ((NODE)->decl.result)
 /* For a FUNCTION_DECL, holds the tree of BINDINGs.
