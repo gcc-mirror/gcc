@@ -1,3 +1,8 @@
+2000-02-15  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/natRuntime.cc (_load): On Unix, prefix library name
+	with `lib' for loadLibrary.  Fixes PR gcj/150.
+
 2000-02-14  Warren Levy  <warrenl@cygnus.com>
 
 	* gnu/gcj/math/MPN.java(findLowestBit): Made methods public.
