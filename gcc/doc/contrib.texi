@@ -400,7 +400,7 @@ Kean Johnston for SCO OpenServer support and various fixes.
 
 @item
 Tim Josling for the sample language treelang based originally on Richard
-Kenner's "``toy'' language".
+Kenner's ``toy'' language.
 
 @item
 Nicolai Josuttis for additional libstdc++ documentation.

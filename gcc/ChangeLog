@@ -1,3 +1,7 @@
+2004-11-27  Di-an Jan  <dianj@freeshell.org>
+
+	* doc/contrib.texi (Tim Josling): Remove nesting quotation marks.
+
 2004-11-26  Robert Millan  <robertmh@gnu.org>
 
 	Changes for k*bsd-gnu support.
