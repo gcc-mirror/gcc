@@ -33,7 +33,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define DBX_DEBUGGING_INFO
 
-/* Generate SDB debugging information by default. */
+/* Generate SDB debugging information by default.  */
 
 #define PREFERRED_DEBUGGING_TYPE SDB_DEBUG
 
@@ -52,15 +52,14 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 
 #define CONDITIONAL_REGISTER_USAGE				\
-  /* Hitachi saves and restores mac registers on call */        \
+  /* Hitachi saves and restores mac registers on call.  */	\
   if (TARGET_HITACHI)						\
    {								\
      call_used_regs[MACH_REG] = 0;				\
      call_used_regs[MACL_REG] = 0;				\
-  }					
-
+  }
 
-/* Run-time compilation parameters selecting different hardware subsets. */
+/* Run-time compilation parameters selecting different hardware subsets.  */
 
 extern int target_flags;
 #define ISIZE_BIT      	(1<<1)
@@ -83,52 +82,54 @@ extern int target_flags;
 #define PACKSTRUCT_BIT  (1<<28)
 #define LITTLE_ENDIAN_BIT (1<<29)
 
-/* Nonzero if we should generate code using type 0 insns */
+/* Nonzero if we should generate code using type 0 insns.  */
 #define TARGET_SH0 (target_flags & SH0_BIT)
 
-/* Nonzero if we should generate code using type 1 insns */
+/* Nonzero if we should generate code using type 1 insns.  */
 #define TARGET_SH1 (target_flags & SH1_BIT)
 
-/* Nonzero if we should generate code using type 2 insns */
+/* Nonzero if we should generate code using type 2 insns.  */
 #define TARGET_SH2 (target_flags & SH2_BIT)
 
-/* Nonzero if we should generate code using type 3 insns */
+/* Nonzero if we should generate code using type 3 insns.  */
 #define TARGET_SH3 (target_flags & SH3_BIT)
 
-/* Nonzero if we should generate faster code rather than smaller code */
+/* Nonzero if we should generate faster code rather than smaller code.  */
 #define TARGET_FASTCODE   (target_flags & FAST_BIT)
 
-/* Nonzero if we should generate smaller code rather than faster code */
+/* Nonzero if we should generate smaller code rather than faster code.  */
 #define TARGET_SMALLCODE   (target_flags & SPACE_BIT)
 
-/* Nonzero if we should dump out instruction size info */
+/* Nonzero if we should dump out instruction size info.  */
 #define TARGET_DUMPISIZE  (target_flags & ISIZE_BIT)
 
-/* Nonzero if we should dump the rtl in the assembly file. */
+/* Nonzero if we should dump the rtl in the assembly file.  */
 #define TARGET_DUMP_RTL	  (target_flags & RTL_BIT)
 
-/* Nonzero if we should dump the rtl somewher else. */
+/* Nonzero if we should dump the rtl somewher else.  */
 #define TARGET_DUMP_R	  (target_flags & R_BIT)
 
-/* Nonzero to align doubles on 64 bit boundaries */
+/* Nonzero to align doubles on 64 bit boundaries.  */
 #define TARGET_ALIGN_DOUBLE (target_flags & DALIGN_BIT)
 
-/* Nonzero to use long jump tables */
+/* Nonzero to use long jump tables.  */
 #define TARGET_BIGTABLE     (target_flags & BIGTABLE_BIT)
 
-/* Nonzero if combine dumping wanted */
+/* Nonzero if combine dumping wanted.  */
 #define TARGET_CDUMP (target_flags & C_BIT)
 
-/* Select max size of computed constant code sequences to be 3 insns */
+/* Select max size of computed constant code sequences to be 3 insns.  */
 #define TARGET_CLEN3 (target_flags & CONSTLEN_3_BIT)
 
-/* Select max size of computed constant code sequences to be 0 insns - ie don't do it */
+/* Select max size of computed constant code sequences to be 0 insns -
+   i.e. don't do it.  */
 #define TARGET_CLEN0 (target_flags & CONSTLEN_0_BIT)
 
-/* Nonzero if using Hitachi's calling convention */
+/* Nonzero if using Hitachi's calling convention.  */
 #define TARGET_HITACHI 		(target_flags & HITACHI_BIT)
 
-/* Nonzero if packing structures as small as they'll go (incompatible with Hitachi's compiler) */
+/* Nonzero if packing structures as small as they'll go (incompatible
+   with Hitachi's compiler).  */
 #define TARGET_PACKSTRUCT       (target_flags & PACKSTRUCT_BIT)
 
 
@@ -177,13 +178,13 @@ do {								\
     sh_cpu = CPU_SH3|CPU_SH2;					\
 								\
   /*  We *MUST* always define optimize since we *HAVE* to run   \
-      shorten branches to get correct code. */                  \
+      shorten branches to get correct code.  */                 \
                                                                 \
   optimize = 1;                                                 \
   flag_delayed_branch = 1;					\
   /* But never run scheduling before reload, since than can     \
      break global alloc, and generates slower code anyway due   \
-     to the pressure on R0. */                                  \
+     to the pressure on R0.  */                                 \
   flag_schedule_insns = 0;            				\
   if (max_si)							\
     max_count_si = atoi (max_si);				\
@@ -194,12 +195,11 @@ do {								\
   else      							\
     max_count_hi = 500;				                \
 } while (0)
-
 
 /* Target machine storage Layout.  */
 
 /* Define to use software floating point emulator for REAL_ARITHMETIC and
-   decimal <-> binary conversion. */
+   decimal <-> binary conversion.  */
 #define REAL_ARITHMETIC
 
 /* Define this if most significant bit is lowest numbered
@@ -224,7 +224,7 @@ do {								\
 #define LIBGCC2_WORDS_BIG_ENDIAN 1
 #endif
 
-/* Number of bits in an addressable storage unit */
+/* Number of bits in an addressable storage unit.  */
 #define BITS_PER_UNIT  8
 
 /* Width in bits of a "word", which is the contents of a machine register.
@@ -275,13 +275,12 @@ do {								\
 
 /* Number of bits which any structure or union's size must be a
    multiple of.  Each structure or union's size is rounded up to a
-   multiple of this. */
+   multiple of this.  */
 #define STRUCTURE_SIZE_BOUNDARY (TARGET_PACKSTRUCT ? 8 : 32)
 
 /* Set this nonzero if move instructions will actually fail to work
    when given unaligned data.  */
 #define STRICT_ALIGNMENT 1
-
 
 /* Standard register usage.  */
 
@@ -296,17 +295,16 @@ do {								\
 	ap		arg pointer (doesn't really exist, always eliminated)
 	pr		subroutine return address
 	t               t bit
-	mach		multiply/accumulate result
-	macl
-*/
+	mach		multiply/accumulate result, high part
+	macl		multiply/accumulate result, low part.  */
 
 /* Number of actual hardware registers.
    The hardware registers are assigned numbers for the compiler
    from 0 to just below FIRST_PSEUDO_REGISTER.
    All registers that the compiler knows about must be given numbers,
-   even those that are not normally considered general registers. */
+   even those that are not normally considered general registers.  */
 
-#define AP_REG   16  
+#define AP_REG   16
 #define PR_REG   17
 #define T_REG    18
 #define GBR_REG  19
@@ -316,12 +314,12 @@ do {								\
 #define FIRST_PSEUDO_REGISTER 22
 
 /* 1 for registers that have pervasive standard uses
-   and are not available for the register allocator. 
+   and are not available for the register allocator.
 
    Mach register is fixed 'cause it's only 10 bits wide for SH1.
    It is 32 bits wide for SH2.  */
 
- /*  r0  r1  r2  r3 
+ /*  r0  r1  r2  r3
      r4  r5  r6  r7
      r8  r9  r10 r11
      r12 r13 r14 r15
@@ -344,11 +342,11 @@ do {								\
    and the register where structure-value addresses are passed.
    Aside from that, you can include as many other registers as you like.  */
 
- /*  r0  r1  r2  r3  
-     r4  r5  r6  r7 
+ /*  r0  r1  r2  r3
+     r4  r5  r6  r7
      r8  r9  r10 r11
      r12 r13 r14 r15
-     ap  pr  t   gbr 
+     ap  pr  t   gbr
      mh  ml */
 
 #define CALL_USED_REGISTERS 	\
@@ -357,20 +355,20 @@ do {								\
      0,  0,  0,  0,		\
      0,  0,  0,  1,		\
      1,  0,  1,  1,		\
-     1,  1}	
+     1,  1}
 
 /* Return number of consecutive hard regs needed starting at reg REGNO
    to hold something of mode MODE.
    This is ordinarily the length in words of a value of mode MODE
    but can be less for certain modes in special long registers.
 
-   On the SH regs are UNITS_PER_WORD bits wide; */
+   On the SH regs are UNITS_PER_WORD bits wide.  */
 
 #define HARD_REGNO_NREGS(REGNO, MODE)  \
    (((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
-   We may keep double values in even registers */
+   We may keep double values in even registers.  */
 
 extern int hard_regno_mode_ok[];
 #define HARD_REGNO_MODE_OK(REGNO, MODE)  \
@@ -437,7 +435,7 @@ extern int hard_regno_mode_ok[];
 /* Register in which the static-chain is passed to a function.  */
 #define STATIC_CHAIN_REGNUM	13
 
-/* The register in which a struct value address is passed */
+/* The register in which a struct value address is passed.  */
 
 #define STRUCT_VALUE_REGNUM 2
 
@@ -453,7 +451,6 @@ extern int hard_regno_mode_ok[];
    exactly how to return structures in the RETURN_IN_MEMORY macro.  */
 
 #define DEFAULT_PCC_STRUCT_RETURN 0
-
 
 /* Define the classes of registers for register constraints in the
    machine description.  Also define ranges of constants.
@@ -475,10 +472,10 @@ extern int hard_regno_mode_ok[];
    For any two classes, it is very desirable that there be another
    class that represents their union.  */
 
-/* The SH has two sorts of general registers, R0 and the rest.  R0 can 
+/* The SH has two sorts of general registers, R0 and the rest.  R0 can
    be used as the destination of some of the arithmetic ops. There are
    also some special purpose registers; the T bit register, the
-   Procedure Return Register and the Multipy Accumulate Registers */
+   Procedure Return Register and the Multipy Accumulate Registers.  */
 
 enum reg_class
 {
@@ -494,7 +491,7 @@ enum reg_class
 
 #define N_REG_CLASSES  (int) LIM_REG_CLASSES
 
-/* Give names of register classes as strings for dump file.   */
+/* Give names of register classes as strings for dump file.  */
 #define REG_CLASS_NAMES  \
 {			\
   "NO_REGS",		\
@@ -531,7 +528,7 @@ extern int regno_reg_class[];
 
 /* When defined, the compiler allows registers explicitly used in the
    rtl to be used as spill registers but prevents the compiler from
-   extending the lifetime of these registers. */
+   extending the lifetime of these registers.  */
 
 #define SMALL_REGISTER_CLASSES
 
@@ -543,8 +540,8 @@ extern int regno_reg_class[];
 #define INDEX_REG_CLASS  R0_REGS
 #define BASE_REG_CLASS	 GENERAL_REGS
 
-/* Get reg_class from a letter such as appears in the machine 
-   description. */
+/* Get reg_class from a letter such as appears in the machine
+   description.  */
 extern enum reg_class reg_class_from_letter[];
 
 #define REG_CLASS_FROM_LETTER(C) \
@@ -591,19 +588,12 @@ extern enum reg_class reg_class_from_letter[];
 
 #define PREFERRED_RELOAD_CLASS(X, CLASS) CLASS
 
-/* Return the register class of a scratch register needed to copy IN into
-   or out of a register in CLASS in MODE.  If it can be done directly,
-   NO_REGS is returned.  */
-
-
 /* Return the maximum number of consecutive registers
-   needed to represent mode MODE in a register of class CLASS. 
+   needed to represent mode MODE in a register of class CLASS.
 
-   On SH this is the size of MODE in words */
+   On SH this is the size of MODE in words.  */
 #define CLASS_MAX_NREGS(CLASS, MODE)  \
      ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
-
-
 
 /* Stack layout; function entry, exit and calling.  */
 
@@ -615,17 +605,16 @@ extern enum reg_class reg_class_from_letter[];
 
 /* Define this if pushing a word on the stack
    makes the stack pointer a smaller address.  */
-#define STACK_GROWS_DOWNWARD  
+#define STACK_GROWS_DOWNWARD
 
 /*  Define this macro if the addresses of local variable slots are at
     negative offsets from the frame pointer.
 
-    The SH only has positive indexes, so grow the frame up 
-*/
+    The SH only has positive indexes, so grow the frame up.  */
 /* #define FRAME_GROWS_DOWNWARD */
 
 /* Offset from the frame pointer to the first local variable slot to
-   be allocated. */
+   be allocated.  */
 #define STARTING_FRAME_OFFSET  0
 
 /* If we generate an insn to push BYTES bytes,
@@ -666,12 +655,10 @@ extern enum reg_class reg_class_from_letter[];
 #define FUNCTION_VALUE_REGNO_P(REGNO)  \
 	  ((REGNO) == FIRST_RET_REG)
 
-/* 1 if N is a possible register number for function argument passing.*/
+/* 1 if N is a possible register number for function argument passing.  */
 
 #define FUNCTION_ARG_REGNO_P(REGNO)  \
   ((REGNO) >= FIRST_PARM_REG && (REGNO) < (NPARM_REGS + FIRST_PARM_REG))
-
-
 
 /* Define a data type for recording info about an argument list
    during the scan of that argument list.  This data type should
@@ -689,11 +676,11 @@ extern enum reg_class reg_class_from_letter[];
 #define ROUND_ADVANCE(SIZE)	\
   ((SIZE + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
-/* Round a register number up to a proper boundary for an arg of mode 
-   MODE. 
-   
+/* Round a register number up to a proper boundary for an arg of mode
+   MODE.
+
    The SH doesn't care about double alignment, so we only
-   round doubles to even regs when asked to explicitly. */
+   round doubles to even regs when asked to explicitly.  */
 
 #define ROUND_REG(X, MODE) 					\
   ((TARGET_ALIGN_DOUBLE 					\
@@ -740,7 +727,6 @@ extern enum reg_class reg_class_from_letter[];
    NPARM_REGS words is at least partially passed in a register unless
    its data type forbids.  */
 
-
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
     sh_function_arg (CUM, MODE, TYPE, NAMED)
 
@@ -749,8 +735,8 @@ extern struct rtx_def *sh_function_arg();
 /* For an arg passed partly in registers and partly in memory,
    this is the number of registers used.
    For args passed entirely in registers or entirely in memory, zero.
-   
-   We sometimes split args */
+
+   We sometimes split args.  */
 
 #define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED) \
   sh_function_arg_partial_nregs (CUM, MODE, TYPE, NAMED)
@@ -758,13 +744,12 @@ extern struct rtx_def *sh_function_arg();
 extern int current_function_anonymous_args;
 
 /* Perform any needed actions needed for a function that is receiving a
-   variable number of arguments. */
+   variable number of arguments.  */
 
 #define SETUP_INCOMING_VARARGS(ASF, MODE, TYPE, PAS, ST) \
   current_function_anonymous_args = 1;
 
-
-/* Call the function profiler with a given profile label. */
+/* Call the function profiler with a given profile label.  */
 
 #define FUNCTION_PROFILER(STREAM,LABELNO)			\
 {								\
@@ -773,7 +758,6 @@ extern int current_function_anonymous_args;
 	fprintf(STREAM, "	.long	LP%d\n", (LABELNO));	\
 }
 
-
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
    the stack pointer does not matter.  The value is tested only in
    functions that have frame pointers.
@@ -781,11 +765,10 @@ extern int current_function_anonymous_args;
 
 #define EXIT_IGNORE_STACK 1
 
-/* Generate the assembly code for function exit 
-   Just dump out any accumulated constant table.*/
+/* Generate the assembly code for function exit
+   Just dump out any accumulated constant table.  */
 
 #define FUNCTION_EPILOGUE(STREAM, SIZE)  function_epilogue (STREAM, SIZE)
-
 
 /* Output assembler code for a block containing the constant parts
    of a trampoline, leaving space for the variable parts.
@@ -796,8 +779,7 @@ extern int current_function_anonymous_args;
    3 0004 4D2B     		jmp	@r13
    4 0006 200B     		or	r0,r0
    5 0008 00000000 	l1:  	.long   function
-   6 000c 00000000 	l2:	.long   area	
-*/
+   6 000c 00000000 	l2:	.long   area  */
 #define TRAMPOLINE_TEMPLATE(FILE)  		\
 {						\
   fprintf ((FILE), "	.word	0xd301\n");	\
@@ -825,7 +807,6 @@ extern int current_function_anonymous_args;
   emit_move_insn (gen_rtx (MEM, SImode, plus_constant ((TRAMP), 12)),	\
 		  (FNADDR));						\
 }
-
 
 /* Addressing modes, and classification of registers for them.  */
 #define HAVE_POST_INCREMENT  1
@@ -839,17 +820,15 @@ extern int current_function_anonymous_args;
    They give nonzero only if REGNO is a hard reg of the suitable class
    or a pseudo reg currently allocated to a suitable hard reg.
    Since they use reg_renumber, they are safe only once reg_renumber
-   has been allocated, which happens in local-alloc.c.
-
-*/
+   has been allocated, which happens in local-alloc.c.  */
 
 #define REGNO_OK_FOR_BASE_P(REGNO)  \
   ((REGNO) < PR_REG || (unsigned) reg_renumber[(REGNO)] < PR_REG)
 #define REGNO_OK_FOR_INDEX_P(REGNO)   \
   ((REGNO) == 0 || (unsigned) reg_renumber[(REGNO)] == 0)
 
-/* Maximum number of registers that can appear in a valid memory 
-   address. */
+/* Maximum number of registers that can appear in a valid memory
+   address.  */
 
 #define MAX_REGS_PER_ADDRESS 2
 
@@ -858,11 +837,10 @@ extern int current_function_anonymous_args;
 #define CONSTANT_ADDRESS_P(X) 	\
   (GET_CODE (X) == LABEL_REF)
 
-/* Nonzero if the constant value X is a legitimate general operand. */
+/* Nonzero if the constant value X is a legitimate general operand.  */
 
 #define LEGITIMATE_CONSTANT_P(X) \
   (GET_CODE(X) != CONST_DOUBLE /*&& GET_CODE(X) != LABEL_REF*/)
-
 
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
    and check its validity for a certain class.
@@ -873,12 +851,8 @@ extern int current_function_anonymous_args;
 
 #define MODE_DISP_OK_4(X,MODE) ((GET_MODE_SIZE(MODE)==4) && ((unsigned)INTVAL(X)<64) && (!(INTVAL(X) &3)))
 #define MODE_DISP_OK_8(X,MODE) ((GET_MODE_SIZE(MODE)==8) && ((unsigned)INTVAL(X)<60) && (!(INTVAL(X) &3)))
-/* ??? These two work only if the target is R0, so we do not support them.  */
-#define MODE_DISP_OK_2(X,MODE) (0)
-#define MODE_DISP_OK_1(X,MODE) (0)
 
 #ifndef REG_OK_STRICT
-
 
 /* Nonzero if X is a hard reg that can be used as a base reg
    or if it is a pseudo reg.  */
@@ -906,7 +880,7 @@ extern int current_function_anonymous_args;
 	(REGNO_OK_FOR_BASE_P (REGNO (X)))
 #endif
 
-/* The Q is a pc relative load operand */
+/* The Q is a pc relative load operand.  */
 #define EXTRA_CONSTRAINT_Q(OP)                          		\
   (GET_CODE (OP) == MEM && 						\
    ((GET_CODE (XEXP (OP, 0)) == LABEL_REF)				\
@@ -925,7 +899,6 @@ extern int current_function_anonymous_args;
 #define EXTRA_CONSTRAINT(OP, C)   \
      ((C) == 'Q' ? EXTRA_CONSTRAINT_Q (OP)   \
     : 0)
-
 
 /* GO_IF_LEGITIMATE_ADDRESS recognizes an RTL expression
    that is a valid memory address for an instruction.
@@ -943,21 +916,20 @@ extern int current_function_anonymous_args;
 
 /* Jump to LABEL if X is a valid address RTX.  This must also take
    REG_OK_STRICT into account when deciding about valid registers, but it uses
-   the above macros so we are in luck.  
- 
+   the above macros so we are in luck.
+
    Allow  REG
 	  REG+disp
 	  REG+r0
 	  REG++
-	  --REG
-*/
+	  --REG  */
 
-/* The SH allows a displacement in a QI or HI amode, but only when the 
+/* The SH allows a displacement in a QI or HI amode, but only when the
    other operand is R0. GCC doesn't handle this very well, so we forgo
    all of that.
 
-   A legitimate index for a QI or HI is 0, SI and above can be any 
-   number 0..63 */
+   A legitimate index for a QI or HI is 0, SI and above can be any
+   number 0..63.  */
 
 #define GO_IF_LEGITIMATE_INDEX(MODE, REGNO, OP, LABEL)  		\
   do {									\
@@ -965,8 +937,6 @@ extern int current_function_anonymous_args;
       {									\
 	if (MODE_DISP_OK_4 (OP, MODE))  goto LABEL;		      	\
 	if (MODE_DISP_OK_8 (OP, MODE))  goto LABEL;		      	\
-	if (MODE_DISP_OK_2 (OP, MODE))  goto LABEL;		      	\
-	if (MODE_DISP_OK_1 (OP, MODE))  goto LABEL;		      	\
       }									\
   } while(0)
 
@@ -998,10 +968,9 @@ extern int current_function_anonymous_args;
 	   && GET_CODE (XEXP (X, 0)) == REG			  \
 	   && REG_OK_FOR_PRE_POST_P (XEXP (X, 0)))		  \
     goto LABEL;                                                   \
-}								   
-								   
-								   
-/* Try machine-dependent ways of modifying an illegitimate address 
+}
+
+/* Try machine-dependent ways of modifying an illegitimate address
    to be legitimate.  If we find one, return the new, valid address.
    This macro is used in only one place: `memory_address' in explow.c.
 
@@ -1012,9 +981,7 @@ extern int current_function_anonymous_args;
    GO_IF_LEGITIMATE_ADDRESS.
 
    It is always safe for this macro to do nothing.  It exists to recognize
-   opportunities to optimize the output.
-
-  */
+   opportunities to optimize the output.  */
 
 #define LEGITIMIZE_ADDRESS(X,OLDX,MODE,WIN) ;
 
@@ -1034,7 +1001,7 @@ extern int current_function_anonymous_args;
 /* Define this if the tablejump instruction expects the table
    to contain offsets from the address of the table.
    Do not define this if the table should contain absolute addresses.  */
-#define CASE_VECTOR_PC_RELATIVE 
+#define CASE_VECTOR_PC_RELATIVE
 
 /* Specify the tree operation to be used to convert reals to integers.  */
 #define IMPLICIT_FIX_EXPR  FIX_ROUND_EXPR
@@ -1042,7 +1009,7 @@ extern int current_function_anonymous_args;
 /* This is the kind of divide that is easiest to do in the general case.  */
 #define EASY_DIV_EXPR  TRUNC_DIV_EXPR
 
-/* 'char' is signed by default */
+/* 'char' is signed by default.  */
 #define DEFAULT_SIGNED_CHAR  1
 
 /* The type of size_t unsigned int.  */
@@ -1069,7 +1036,7 @@ extern int current_function_anonymous_args;
 #define LOAD_EXTEND_OP(MODE) SIGN_EXTEND
 
 /* Define this if zero-extension is slow (more than one real instruction).
-   On the SH, it's only one instruction */
+   On the SH, it's only one instruction.  */
 /* #define SLOW_ZERO_EXTEND */
 
 /* Nonzero if access to memory by bytes is slow and undesirable.  */
@@ -1099,7 +1066,7 @@ extern int current_function_anonymous_args;
 /* Chars and shorts should be passed as ints.  */
 #define PROMOTE_PROTOTYPES 1
 
-/* The machine modes of pointers and functions */
+/* The machine modes of pointers and functions.  */
 #define Pmode  SImode
 #define FUNCTION_MODE  Pmode
 
@@ -1131,6 +1098,7 @@ extern int current_function_anonymous_args;
     return COSTS_N_INSNS (multcosts (X));		\
   case ASHIFT:						\
   case ASHIFTRT:					\
+  case LSHIFTRT:					\
     return COSTS_N_INSNS (shiftcosts (X)) ;		\
   case DIV:						\
   case UDIV:						\
@@ -1146,8 +1114,8 @@ extern int current_function_anonymous_args;
    are actually function calls with some special constraints on arguments
    and register usage.
 
-   These macros tell reorg that the references to arguments and 
-   register clobbers for insns of type sfunc do not appear to happen 
+   These macros tell reorg that the references to arguments and
+   register clobbers for insns of type sfunc do not appear to happen
    until after the millicode call.  This allows reorg to put insns
    which set the argument registers into the delay slot of the millicode
    call -- thus they act more like traditional CALL_INSNs.
@@ -1168,35 +1136,33 @@ extern int current_function_anonymous_args;
     && GET_CODE (PATTERN (X)) != SEQUENCE	\
     && GET_CODE (PATTERN (X)) != USE		\
     && GET_CODE (PATTERN (X)) != CLOBBER	\
-    && get_attr_type (X) == TYPE_SFUNC))	
+    && get_attr_type (X) == TYPE_SFUNC))
 
 /* Compute extra cost of moving data between one register class
-   and another.  
+   and another.
 
    On the SH it is hard to move into the T reg, but simple to load
-   from it.
-*/
+   from it.  */
 
 #define REGISTER_MOVE_COST(SRCCLASS, DSTCLASS)  \
 	(((DSTCLASS == T_REGS) || (DSTCLASS == PR_REG)) ? 10 : 1)
 
-/* Assembler output control */
+/* Assembler output control.  */
 
-/* The text to go at the start of the assembler file */
-#define ASM_FILE_START(STREAM) 							\
-  output_file_start (STREAM, f_options, sizeof f_options / sizeof f_options[0], \
-		     W_options, sizeof W_options / sizeof W_options[0]); 	
+/* The text to go at the start of the assembler file.  */
+#define ASM_FILE_START(STREAM) 						\
+  output_file_start (STREAM, f_options,					\
+		     sizeof f_options / sizeof f_options[0],		\
+		     W_options, sizeof W_options / sizeof W_options[0]);
 
-
-#define ASM_FILE_END(STREAM) 
-
+#define ASM_FILE_END(STREAM)
 
 #define ASM_APP_ON  		""
 #define ASM_APP_OFF  		""
 #define FILE_ASM_OP 		"\t.file\n"
 #define IDENT_ASM_OP 		"\t.ident\n"
 
-/* How to change between sections. */
+/* How to change between sections.  */
 
 #define TEXT_SECTION_ASM_OP  		"\t.text"
 #define DATA_SECTION_ASM_OP  		"\t.data"
@@ -1222,7 +1188,7 @@ dtors_section() 					     \
       fprintf (asm_out_file, "%s\n", DTORS_SECTION_ASM_OP);  \
       in_section = in_dtors;				     \
     }							     \
-}                                                            
+}
 
 /* A C statement to output something to the assembler file to switch to section
    NAME for object DECL which is either a FUNCTION_DECL, a VAR_DECL or
@@ -1238,7 +1204,7 @@ dtors_section() 					     \
 #define ASM_OUTPUT_DESTRUCTOR(FILE,NAME)	\
    do {  dtors_section();  fprintf(FILE,"\t.long\t_%s\n", NAME); } while (0)
 
-#undef DO_GLOBAL_CTORS_BODY                     
+#undef DO_GLOBAL_CTORS_BODY
 
 #define DO_GLOBAL_CTORS_BODY			\
 {						\
@@ -1250,9 +1216,9 @@ dtors_section() 					     \
     {						\
       (*--p)();					\
     }						\
-}						
+}
 
-#undef DO_GLOBAL_DTORS_BODY			 
+#undef DO_GLOBAL_DTORS_BODY
 #define DO_GLOBAL_DTORS_BODY                    \
 {						\
   typedef (*pfunc)();				\
@@ -1263,7 +1229,7 @@ dtors_section() 					     \
     {						\
       (*p)();					\
     }						\
-}						 
+}
 
 
 #define ASM_OUTPUT_REG_PUSH(file, v) \
@@ -1272,7 +1238,7 @@ dtors_section() 					     \
 #define ASM_OUTPUT_REG_POP(file, v) \
   fprintf (file, "\tmov.l	@r15+,r%s\n", v);
 
-  
+
 /* The assembler's names for the registers.  RFP need not always be used as
    the Real framepointer; it can also be used as a normal general register.
    Note that the name `fp' is horribly misleading since `fp' is in fact only
@@ -1284,7 +1250,7 @@ dtors_section() 					     \
   "ap", "pr", "t",  "gbr", "mach","macl" 		\
 }
 
-/* DBX register number for a given compiler register number */
+/* DBX register number for a given compiler register number.  */
 #define DBX_REGISTER_NUMBER(REGNO)  (REGNO)
 
 /* Output a label definition.  */
@@ -1329,11 +1295,11 @@ dtors_section() 					     \
   ((OUTVAR) = (char *) alloca (strlen (NAME) + 10),  \
    sprintf ((OUTVAR), "%s.%d", (NAME), (NUMBER)))
 
-/* Jump tables must be 32 bit aligned, no matter the size of the element */
+/* Jump tables must be 32 bit aligned, no matter the size of the element.  */
 #define ASM_OUTPUT_CASE_LABEL(STREAM,PREFIX,NUM,TABLE) \
     fprintf (STREAM, "\t.align 2\n%s%d:\n",  PREFIX, NUM);
 
-/* Output a relative address table. */
+/* Output a relative address table.  */
 
 #define ASM_OUTPUT_ADDR_DIFF_ELT(STREAM,VALUE,REL)  			\
   if (TARGET_BIGTABLE) 							\
@@ -1341,7 +1307,7 @@ dtors_section() 					     \
   else									\
 	fprintf (STREAM, "\t.word	L%d-L%d\n", VALUE,REL); 	\
 
-/* Output an absolute table element */
+/* Output an absolute table element.  */
 
 #define ASM_OUTPUT_ADDR_VEC_ELT(STREAM,VALUE)  				\
   if (TARGET_BIGTABLE) 							\
@@ -1352,7 +1318,7 @@ dtors_section() 					     \
 /* Output various types of constants.  */
 
 
-/* This is how to output an assembler line defining a `double' */
+/* This is how to output an assembler line defining a `double'.  */
 
 #define ASM_OUTPUT_DOUBLE(FILE,VALUE)			\
 do { char dstr[30];					\
@@ -1371,12 +1337,12 @@ do { char dstr[30];					\
 #define ASM_OUTPUT_INT(STREAM, EXP)  	\
   (fprintf (STREAM, "\t.long\t"),      	\
    output_addr_const (STREAM, (EXP)),  	\
-   fputc ('\n', STREAM))		
+   fputc ('\n', STREAM))
 
 #define ASM_OUTPUT_SHORT(STREAM, EXP)  \
   (fprintf (STREAM, "\t.short\t"),     \
    output_addr_const (STREAM, (EXP)),  \
-   fputc ('\n', STREAM))		
+   fputc ('\n', STREAM))
 
 #define ASM_OUTPUT_CHAR(STREAM, EXP)  	\
   (fprintf (STREAM, "\t.byte\t"),      	\
@@ -1422,7 +1388,6 @@ do { char dstr[30];					\
 #define TARGET_FF	014
 #define TARGET_CR	015
 
-
 /* Only perform branch elimination (by making instructions conditional) if
    we're optimising.  Otherwise it's of no use anyway.  */
 #define FINAL_PRESCAN_INSN(INSN, OPVEC, NOPERANDS)  \
@@ -1440,19 +1405,26 @@ do { char dstr[30];					\
 
 #define PRINT_OPERAND_PUNCT_VALID_P(CHAR) \
   ((CHAR)=='.' || (CHAR) == '#' || (CHAR)=='@')
-
 
 extern struct rtx_def *sh_compare_op0;
 extern struct rtx_def *sh_compare_op1;
 extern struct rtx_def *prepare_scc_operands();
-extern struct rtx_def *table_lab;
 
 
-/* ??? Wrong, this is an incomplete enum type.  Fix this to do it the same
-   way that the mips compiler does this.  */
-extern enum attr_cpu sh_cpu;	/* target cpu */
+/* Which processor to schedule for.  The elements of the enumeration must
+   match exactly the cpu attribute in the sh.md file.  */
 
-/* Declare functions defined in sh.c and used in templates. */
+enum processor_type {
+  PROCESSOR_SH0,
+  PROCESSOR_SH1,
+  PROCESSOR_SH2,
+  PROCESSOR_SH3
+};
+
+#define sh_cpu_attr ((enum attr_cpu)sh_cpu)
+extern enum processor_type sh_cpu;
+
+/* Declare functions defined in sh.c and used in templates.  */
 
 extern char *output_branch();
 extern char *output_shift();
@@ -1460,7 +1432,6 @@ extern char *output_movedouble();
 extern char *output_movepcrel();
 extern char *output_jump_label_table();
 extern char *output_far_jump();
-
 
 #define MACHINE_DEPENDENT_REORG(X) machine_dependent_reorg(X)
 
@@ -1470,7 +1441,7 @@ extern char *output_far_jump();
 
 #define HANDLE_PRAGMA(finput) return handle_pragma (finput)
 
-/* Set when processing a function with pragma interrupt turned on. */
+/* Set when processing a function with pragma interrupt turned on.  */
 
 extern int pragma_interrupt;
 #define MOVE_RATIO (TARGET_SMALLCODE ? 4 : 16)
@@ -1482,8 +1453,6 @@ extern int max_count_hi;
 
 /* Instructions with unfilled delay slots take up an extra two bytes for
    the nop in the delay slot.  */
-
-/* ??? Does this catch conditional branches when -m2?  */
 
 #define ADJUST_INSN_LENGTH(X, LENGTH)				\
   if (((GET_CODE (X) == INSN					\
