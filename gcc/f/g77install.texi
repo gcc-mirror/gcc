@@ -51,10 +51,6 @@ The following information describes how to install @code{g77}.
 
 @clear OMIT-FSF-G77
 
-@ifset EGCS-G77
-@set OMIT-FSF-G77
-@end ifset
-
 @ifset GCC-G77
 @set OMIT-FSF-G77
 @end ifset
@@ -593,7 +589,6 @@ be fixed in a future version of @code{gcc}.
 @cindex AIX
 A linker bug on some versions of AIX 4.1 might prevent building
 when @code{g77} is built within @code{gcc}.
-It might also occur when building within @code{egcs}.
 @ifset DOC-G77
 @xref{LINKFAIL}.
 @end ifset

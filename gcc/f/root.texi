@@ -1,11 +1,10 @@
 @c DEVELOPMENT is set to indicate an in-development version,
 @c as compared to a release version.  When making a release
-@c (e.g. a release branch in the CVS repository for egcs),
+@c (e.g. a release branch in the CVS repository for gcc),
 @c clear this and set the version information correctly.
 @set DEVELOPMENT
 @set version-g77 0.5.25
-@set version-egcs 1.2
-@set version-gcc 2.95
+@set version-gcc 2.97
 
 @c GCC-G77 indicates this is the GCC (2.95 or later) version of g77.
 @set GCC-G77
@@ -18,8 +17,8 @@
 
 @set email-general gcc@@gcc.gnu.org
 @set email-bugs gcc-bugs@@gcc.gnu.org or bug-gcc@@gnu.org
-@set path-g77 egcs/gcc/f
-@set path-libf2c egcs/libf2c
+@set path-g77 gcc/gcc/f
+@set path-libf2c gcc/libf2c
 
 @ifset GCC-G77
 @set which-g77 GCC-@value{version-gcc}

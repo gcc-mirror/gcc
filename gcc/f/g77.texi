@@ -751,7 +751,7 @@ So far, this has resulted in the three, somewhat
 experimental, options added by @code{g77} to the @code{gcc}
 compiler and its back end.
 
-(These, in turn, have made their way into the @code{egcs}
+(These, in turn, had made their way into the @code{egcs}
 version of the compiler, and do not exist in @code{gcc}
 version 2.8 or versions of @code{g77} based on that version
 of @code{gcc}.)
@@ -1658,7 +1658,7 @@ This option is obsolete in @code{egcs}
 as of version 1.1.
 The effect is instead achieved
 by the @code{lang_init_options} routine
-in @file{egcs/gcc/f/com.c}.
+in @file{gcc/gcc/f/com.c}.
 
 @cindex consistency checks
 @cindex internal consistency checks
@@ -10235,13 +10235,9 @@ introduced in version 0.5.20 and
 were withdrawn as of @code{g77} version 0.5.23
 due to their not being supported by @code{gcc} version 2.8.
 
-These options, which control the assumptions regarding aliasing
+These options control the assumptions regarding aliasing
 (overlapping) of writes and reads to main memory (core) made
-by the @code{gcc} back end,
-might well be added back (in some form) in a future version
-of @code{gcc}.
-
-However, these options @emph{are} supported by @code{egcs}.
+by the @code{gcc} back end.
 
 The information below still is useful, but applies to
 only those versions of @code{g77} that support the
@@ -13951,8 +13947,8 @@ How to do this depends on the version of @code{g77}:
 
 @table @code
 @item G77 0.5.24 (EGCS 1.1)
-@itemx G77 0.5.25 (EGCS 1.2)
-Change the @code{lang_init_options} routine in @file{egcs/gcc/f/com.c}.
+@itemx G77 0.5.25 (EGCS 1.2 - which became GCC 2.95)
+Change the @code{lang_init_options} routine in @file{gcc/gcc/f/com.c}.
 
 (Note that these versions of @code{g77}
 perform internal consistency checking automatically
@@ -15061,7 +15057,7 @@ the problem by editing $@{srcdir@}/proj.c, and what else to do.
 this problem,
 which occurs only in releases of @code{g77}
 based on @code{gcc}.
-(It does not occur in @code{egcs}.)
+(It did not occur in @code{egcs}.)
 
 On AIX 4.1, @code{g77} might not build with the native (non-GNU) tools
 due to a linker bug in coping with the @samp{-bbigtoc} option which
