@@ -1,3 +1,7 @@
+2004-09-07  Paolo Bonzini  <bonzini@gnu.org>
+
+	* missing: Import latest version from master repository.
+
 2004-09-06  Nick Clifton  <nickc@redhat.com>
 
 	* config.sub: Import latest version from master repository.
