@@ -6,10 +6,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 3.4.3\n"
+"Project-Id-Version: gcc 4.0-b20041128\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2004-11-27 19:39+0000\n"
-"PO-Revision-Date: 2004-11-13 12:52+0100\n"
+"PO-Revision-Date: 2004-12-12 21:52+0100\n"
 "Last-Translator: Roland Stigge <stigge@antcom.de>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -17,108 +17,93 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #: attribs.c:175
-#, fuzzy, c-format
+#, c-format
 msgid "%qs attribute directive ignored"
-msgstr "Attribut-Anweisung »%s« wird ignoriert"
+msgstr "Attribut-Anweisung %qs ignoriert"
 
 #: attribs.c:183
 #, fuzzy, c-format
 msgid "wrong number of arguments specified for %qs attribute"
-msgstr "falsche Anzahl an Argumenten für das Attribut »%s« angegeben"
+msgstr "falsche Anzahl an Argumenten für das Attribut %qs angegeben"
 
 #: attribs.c:200
-#, fuzzy, c-format
+#, c-format
 msgid "%qs attribute does not apply to types"
-msgstr "Attribut »%s« kann nicht auf Typen angewandt werden"
+msgstr "Attribut %qs kann nicht auf Typen angewandt werden"
 
 #: attribs.c:246
-#, fuzzy, c-format
+#, c-format
 msgid "%qs attribute only applies to function types"
-msgstr "Attribut »%s« kann nur auf Funktionstypen angewandt werden"
+msgstr "Attribut %qs kann nur auf Funktionstypen angewandt werden"
 
 #: builtins.c:341
 msgid "offset outside bounds of constant string"
 msgstr "Adressabstand ist außerhalb der Grenzen der konstanten Zeichenkette"
 
 #: builtins.c:923
-#, fuzzy
 msgid "second argument to %<__builtin_prefetch%> must be a constant"
-msgstr "zweites Argument für »__builtin_prefetch« muss eine Konstante sein"
+msgstr "zweites Argument für %<__builtin_prefetch%> muss eine Konstante sein"
 
 #: builtins.c:930
-#, fuzzy
 msgid "invalid second argument to %<__builtin_prefetch%>; using zero"
-msgstr "ungültiges zweites Argument für »__builtin_prefetch«; es wird Null verwendet"
+msgstr "ungültiges zweites Argument für %<__builtin_prefetch%>; es wird Null verwendet"
 
 #: builtins.c:938
-#, fuzzy
 msgid "third argument to %<__builtin_prefetch%> must be a constant"
-msgstr "drittes Argument für »__builtin_prefetch« muss eine Konstante sein"
+msgstr "drittes Argument für %<__builtin_prefetch%> muss eine Konstante sein"
 
 #: builtins.c:945
-#, fuzzy
 msgid "invalid third argument to %<__builtin_prefetch%>; using zero"
-msgstr "ungültiges drittes Argument für »__builtin_prefetch«; es wird Null verwendet"
+msgstr "ungültiges drittes Argument für %<__builtin_prefetch%>; es wird Null verwendet"
 
 #: builtins.c:3727
-#, fuzzy
 msgid "argument of %<__builtin_args_info%> must be constant"
-msgstr "Argument von »__builtin_args_info« muss konstant sein"
+msgstr "Argument von %<__builtin_args_info%> muss konstant sein"
 
 #: builtins.c:3733
-#, fuzzy
 msgid "argument of %<__builtin_args_info%> out of range"
-msgstr "Argument von »__builtin_args_info« außerhalb des Wertebereichs"
+msgstr "Argument von %<__builtin_args_info%> außerhalb des Wertebereichs"
 
 #: builtins.c:3739
-#, fuzzy
 msgid "missing argument in %<__builtin_args_info%>"
-msgstr "fehlendes Argument in »__builtin_args_info«"
+msgstr "fehlendes Argument in %<__builtin_args_info%>"
 
 #: builtins.c:3755 builtins.c:8661
-#, fuzzy
 msgid "%<va_start%> used in function with fixed args"
-msgstr "»va_start« in Funktion mit fester Parameterzahl verwendet"
+msgstr "%<va_start%> in Funktion mit fester Parameterzahl verwendet"
 
 #: builtins.c:3774 builtins.c:8677
-#, fuzzy
 msgid "second parameter of %<va_start%> not last named argument"
-msgstr "zweiter Parameter von »va_start« ist nicht letztgenanntes Argument"
+msgstr "zweiter Parameter von %<va_start%> ist nicht letztgenanntes Argument"
 
 #. Evidently an out of date version of <stdarg.h>; can't validate
 #. va_start's second argument, but can still work as intended.
 #: builtins.c:3779 builtins.c:8683
-#, fuzzy
 msgid "%<__builtin_next_arg%> called without an argument"
-msgstr "»__builtin_next_arg« ohne Argument gerufen"
+msgstr "%<__builtin_next_arg%> ohne Argument gerufen"
 
 #: builtins.c:3865
-#, fuzzy
 msgid "too few arguments to function %<va_start%>"
-msgstr "zu viele Argumente für »va_start«"
+msgstr "zu wenige Argumente für %<va_start%>"
 
 #: builtins.c:3869
-#, fuzzy
 msgid "too many arguments to function %<va_start%>"
-msgstr "zu viele Argumente für »va_start«"
+msgstr "zu viele Argumente für %<va_start%>"
 
 #: builtins.c:4017
-#, fuzzy
 msgid "first argument to %<va_arg%> not of type %<va_list%>"
-msgstr "erstes Argument für »va_arg« nicht vom Typ »va_list«"
+msgstr "erstes Argument für %<va_arg%> nicht vom Typ %<va_list%>"
 
 #. Unfortunately, this is merely undefined, rather than a constraint
 #. violation, so we cannot make this an error.  If this call is never
 #. executed, the program is still strictly conforming.
 #: builtins.c:4031
-#, fuzzy
 msgid "%qT is promoted to %qT when passed through %<...%>"
-msgstr "»%s« auf »%s« gesetzt beim Durchlaufen von »...«"
+msgstr "%qT auf %qT erweitert beim Durchlaufen von %<...%>"
 
 #: builtins.c:4036
-#, fuzzy
 msgid "(so you should pass %qT not %qT to %<va_arg%>)"
-msgstr "(Sie sollten also »%s« statt »%s« an »va_arg« übergeben)"
+msgstr "(Sie sollten also %qT statt %qT an %<va_arg%> übergeben)"
 
 #. We can, however, treat "undefined" any way we please.
 #. Call abort to encourage the user to fix the program.
@@ -127,63 +112,56 @@ msgid "if this code is reached, the program will abort"
 msgstr "Wenn dieser Code erreicht wird, wird das Programm abgebrochen."
 
 #: builtins.c:4160
-#, fuzzy
 msgid "invalid argument to %<__builtin_frame_address%>"
-msgstr "ungültiges Argument für »__builtin_frame_address«"
+msgstr "ungültiges Argument für %<__builtin_frame_address%>"
 
 #: builtins.c:4162
-#, fuzzy
 msgid "invalid argument to %<__builtin_return_address%>"
-msgstr "ungültiges Argument für »__builtin_return_address«"
+msgstr "ungültiges Argument für %<__builtin_return_address%>"
 
 #: builtins.c:4176
-#, fuzzy
 msgid "unsupported argument to %<__builtin_frame_address%>"
-msgstr "nicht unterstütztes Argument für »__builtin_frame_address«"
+msgstr "nicht unterstütztes Argument für %<__builtin_frame_address%>"
 
 #: builtins.c:4178
-#, fuzzy
 msgid "unsupported argument to %<__builtin_return_address%>"
-msgstr "nicht unterstütztes Argument für »__builtin_return_address«"
+msgstr "nicht unterstütztes Argument für %<__builtin_return_address%>"
 
 #: builtins.c:4281
-#, fuzzy
 msgid "second argument to %<__builtin_expect%> must be a constant"
-msgstr "zweites Argument für »__builtin_expect« muss eine Konstante sein"
+msgstr "zweites Argument für %<__builtin_expect%> muss eine Konstante sein"
 
 #: builtins.c:5488
-#, fuzzy
 msgid "%<__builtin_longjmp%> second argument must be 1"
-msgstr "zweites Argument für __builtin_longjmp muss 1 sein"
+msgstr "zweites Argument für %<__builtin_longjmp%> muss 1 sein"
 
 #: builtins.c:5840
 msgid "target format does not support infinity"
 msgstr "Zielformat unterstützt nicht »unendlich«"
 
 #: builtins.c:7518 builtins.c:7613
-#, fuzzy, c-format
+#, c-format
 msgid "too few arguments to function %qs"
-msgstr "zu wenig Argumente für Funktion »%s«"
+msgstr "zu wenig Argumente für Funktion %qs"
 
 #: builtins.c:7524 builtins.c:7619
-#, fuzzy, c-format
+#, c-format
 msgid "too many arguments to function %qs"
-msgstr "zu viele Argumente für Funktion »%s«"
+msgstr "zu viele Argumente für Funktion %qs"
 
 #: builtins.c:7530 builtins.c:7644
-#, fuzzy, c-format
+#, c-format
 msgid "non-floating-point argument to function %qs"
-msgstr "Nicht-Gleitkomma-Argument für Funktion »%s«"
+msgstr "Nicht-Gleitkomma-Argument für Funktion %qs"
 
 #: c-common.c:831
-#, fuzzy
 msgid "%qD is not defined outside of function scope"
-msgstr "%J»%D« ist außerhalb des Funktionsgültigkeitsbereiches nicht definiert"
+msgstr "%qD ist außerhalb des Funktionsgültigkeitsbereiches nicht definiert"
 
 #: c-common.c:852
-#, fuzzy, c-format
+#, c-format
 msgid "string length %qd is greater than the length %qd ISO C%d compilers are required to support"
-msgstr "Zeichenkettenlänge »%d« ist größer als die Länge »%d«, die von ISO-C%d-Compilern unterstützt werden muss"
+msgstr "Zeichenkettenlänge %qd ist größer als die Länge %qd, die von ISO-C%d-Compilern unterstützt werden muss"
 
 #: c-common.c:898
 msgid "overflow in constant expression"
@@ -215,9 +193,9 @@ msgid "overflow in implicit constant conversion"
 msgstr "Überlauf in impliziter Konstantenkonvertierung"
 
 #: c-common.c:1151
-#, fuzzy, c-format
+#, c-format
 msgid "operation on %qs may be undefined"
-msgstr "Operation auf »%s« könnte undefiniert sein"
+msgstr "Operation auf %qs könnte undefiniert sein"
 
 #: c-common.c:1437
 msgid "case label does not reduce to an integer constant"
@@ -225,19 +203,19 @@ msgstr "case-Marke reduziert nicht auf Ganzzahlkonstante"
 
 #: c-common.c:1480
 msgid "case label value is less than minimum value for type"
-msgstr ""
+msgstr "case-Marke ist kleiner als Minimalwert des Typs"
 
 #: c-common.c:1488
 msgid "case label value exceeds maximum value for type"
-msgstr ""
+msgstr "case-Marke überschreitet Maximalwert des Typs"
 
 #: c-common.c:1496
 msgid "lower value in case label range less than minimum value for type"
-msgstr ""
+msgstr "unterer Wert in case-Marken-Bereich ist kleiner als der Minimalwert des Typs"
 
 #: c-common.c:1505
 msgid "upper value in case label range exceeds maximum value for type"
-msgstr ""
+msgstr "oberer Wert in case-Marken-Bereich überschreitet den Maximalwert des Typs"
 
 #: c-common.c:1821
 msgid "invalid truth-value expression"
@@ -265,9 +243,8 @@ msgid "comparison of unsigned expression < 0 is always false"
 msgstr "Vergleich eines vorzeichenlosen Ausdrucks < 0 ist stets »unwahr«"
 
 #: c-common.c:2235
-#, fuzzy
 msgid "pointer of type %<void *%> used in arithmetic"
-msgstr "Zeiger auf Typen »void *« in Arithmetik verwendet"
+msgstr "Zeiger auf Typen %<void *%> in Arithmetik verwendet"
 
 #: c-common.c:2241
 msgid "pointer to a function used in arithmetic"
@@ -280,43 +257,38 @@ msgstr "Zeiger auf Elementfunktion in Arithmetik verwendet"
 #. Common Ada/Pascal programmer's mistake.  We always warn
 #. about this since it is so bad.
 #: c-common.c:2355
-#, fuzzy
 msgid "the address of %qD, will always evaluate as %<true%>"
-msgstr "die Adresse von »%D« wird immer zu »wahr« auswerten"
+msgstr "die Adresse von %qD wird immer zu %<wahr%> auswerten"
 
 #: c-common.c:2451
 msgid "suggest parentheses around assignment used as truth value"
 msgstr "um Zuweisung, die als Wahrheitswert verwendet wird, werden Klammern vorgeschlagen"
 
 #: c-common.c:2500 c-common.c:2540
-#, fuzzy
 msgid "invalid use of %<restrict%>"
-msgstr "ungültige Verwendung von »restrict«"
+msgstr "ungültige Verwendung von %<restrict%>"
 
 #: c-common.c:2756
-#, fuzzy
 msgid "invalid application of %<sizeof%> to a function type"
-msgstr "ungültige Anwendung von »sizeof« auf einen Funktionstypen"
+msgstr "ungültige Anwendung von %<sizeof%> auf einen Funktionstypen"
 
 #: c-common.c:2766
-#, fuzzy, c-format
+#, c-format
 msgid "invalid application of %qs to a void type"
-msgstr "ungültige Anwendung von »%s« auf einen void-Typen"
+msgstr "ungültige Anwendung von %qs auf einen void-Typen"
 
 #: c-common.c:2772
-#, fuzzy
 msgid "invalid application of %qs to incomplete type %qT "
-msgstr "ungültige Anwendung von »%s« auf unvollständigen Typen »%T«"
+msgstr "ungültige Anwendung von %qs auf unvollständigen Typen %qT"
 
 #: c-common.c:2813
-#, fuzzy
 msgid "%<__alignof%> applied to a bit-field"
-msgstr "»__alignof« auf Bitfeld angewandt"
+msgstr "%<__alignof%> auf Bitfeld angewandt"
 
 #: c-common.c:3258
-#, fuzzy, c-format
+#, c-format
 msgid "cannot disable built-in function %qs"
-msgstr "kann eingebaute Funktion »%s« nicht abschalten"
+msgstr "eingebaute Funktion %qs kann nicht abgeschaltet werden"
 
 #: c-common.c:3448
 msgid "pointers are not permitted as case values"
@@ -355,26 +327,22 @@ msgid "%Jthis is the first default label"
 msgstr "%Jdies ist die erste Standardmarke"
 
 #: c-common.c:3596
-#, fuzzy
 msgid "%Jcase value %qs not in enumerated type"
-msgstr "case-Wert »%ld« nicht in Aufzählungstyp"
+msgstr "%Jcase-Wert %qs nicht in Aufzählungstyp"
 
 #: c-common.c:3599
-#, fuzzy
 msgid "%Jcase value %qs not in enumerated type %qT"
-msgstr "case-Wert »%ld« nicht in Aufzählungstyp"
+msgstr "%Jcase-Wert %qs nicht in Aufzählungstyp %qT"
 
 #: c-common.c:3666
-#, fuzzy
 msgid "%Hswitch missing default case"
-msgstr "die Standardfallbehandlung in switch fehlt"
+msgstr "%Hdie Standardfallbehandlung in switch fehlt"
 
 #. Warn if there are enumerators that don't correspond to
 #. case expressions.
 #: c-common.c:3700
-#, fuzzy
 msgid "%Henumeration value %qE not handled in switch"
-msgstr "Aufzählungswert »%s« wird nicht von switch behandelt"
+msgstr "%HAufzählungswert %qE wird nicht von switch behandelt"
 
 #: c-common.c:3727
 msgid "taking the address of a label is non-standard"
@@ -392,62 +360,59 @@ msgstr "das Ermitteln der Adresse einer Marke ist nicht standardkonform"
 #: config/ip2k/ip2k.c:3163 config/m68hc11/m68hc11.c:1314
 #: config/rs6000/rs6000.c:17094 config/sh/symbian.c:414
 #: config/sh/symbian.c:421
-#, fuzzy, c-format
+#, c-format
 msgid "%qs attribute ignored"
-msgstr "Attribut »%s« wird ignoriert"
+msgstr "Attribut %qs wird ignoriert"
 
 #: c-common.c:4243
-#, fuzzy, c-format
+#, c-format
 msgid "unknown machine mode %qs"
-msgstr "unbekannter Maschinenzustand »%s«"
+msgstr "unbekannter Maschinenzustand %qs"
 
 #: c-common.c:4263
 msgid "specifying vector types with __attribute__ ((mode)) is deprecated"
-msgstr ""
+msgstr "Angabe von Vektortypen mit __attribute__ ((Modus)) ist veraltet"
 
 #: c-common.c:4265
-#, fuzzy
 msgid "use __attribute__ ((vector_size)) instead"
-msgstr "Attribut-Anweisung »%s« wird ignoriert"
+msgstr "stattdessen __attribute__ ((Vektorgröße)) verwenden"
 
 #: c-common.c:4274
-#, fuzzy, c-format
+#, c-format
 msgid "unable to emulate %qs"
-msgstr "»%s« kann nicht emuliert werden"
+msgstr "%qs kann nicht emuliert werden"
 
 #: c-common.c:4284
-#, fuzzy, c-format
+#, c-format
 msgid "invalid pointer mode %qs"
-msgstr "ungültiger Zeigermodus »%s«"
+msgstr "ungültiger Zeigermodus %qs"
 
 #: c-common.c:4299
-#, fuzzy, c-format
+#, c-format
 msgid "no data type for mode %qs"
-msgstr "kein Datentyp für Zustand »%s«"
+msgstr "kein Datentyp für Zustand %qs"
 
 #: c-common.c:4309
-#, fuzzy, c-format
+#, c-format
 msgid "cannot use mode %qs for enumeral types"
-msgstr "kann nicht in Zeigertyp konvertieren"
+msgstr "Modus %qs kann nicht für Aufzählungstypen verwendet werden"
 
 #: c-common.c:4322
-#, fuzzy, c-format
+#, c-format
 msgid "mode %qs applied to inappropriate type"
-msgstr "Modus »%s« auf unpassenden Typen angewendet"
+msgstr "Modus %qs auf unpassenden Typen angewendet"
 
 #: c-common.c:4355
 msgid "%Jsection attribute cannot be specified for local variables"
 msgstr "%JAbschnitts-Attribut kann nicht für lokale Variablen angegeben werden"
 
 #: c-common.c:4366
-#, fuzzy
 msgid "%Jsection of %qD conflicts with previous declaration"
-msgstr "%JAbschnitt von »%D« in Konflikt mit vorheriger Deklaration"
+msgstr "%JAbschnitt von %qD in Konflikt mit vorheriger Deklaration"
 
 #: c-common.c:4375
-#, fuzzy
 msgid "%Jsection attribute not allowed for %qD"
-msgstr "%JAbschnitts-Attribute nicht erlaubt für »%D«"
+msgstr "%JAbschnitts-Attribut nicht erlaubt für %qD"
 
 #: c-common.c:4381
 msgid "%Jsection attributes are not supported for this target"
@@ -466,164 +431,146 @@ msgid "requested alignment is too large"
 msgstr "verlangte Ausrichtung ist zu groß"
 
 #: c-common.c:4455
-#, fuzzy
 msgid "%Jalignment may not be specified for %qD"
-msgstr "%Jfür »%D« darf keine Ausrichtung angegeben werden"
+msgstr "%Jfür %qD darf keine Ausrichtung angegeben werden"
 
 #: c-common.c:4493
-#, fuzzy
 msgid "%J%qD defined both normally and as an alias"
-msgstr "%J»%D« sowohl normal als auch als Alias definiert"
+msgstr "%J%qD sowohl normal als auch als Alias definiert"
 
 #: c-common.c:4509
-#, fuzzy
 msgid "alias argument not a string"
 msgstr "Alias-Argument ist keine Zeichenkette"
 
 #: c-common.c:4551
-#, fuzzy, c-format
+#, c-format
 msgid "%qs attribute ignored on non-class types"
-msgstr "Attribut »%s« ignoriert für »%s«"
+msgstr "Attribut %qs ignoriert für Nicht-Klassen-Typen"
 
 #: c-common.c:4564
-#, fuzzy
 msgid "visibility argument not a string"
 msgstr "Sichtbarkeitsargument ist keine Zeichenkette"
 
 #: c-common.c:4585
-#, fuzzy
 msgid "visibility argument must be one of \"default\", \"hidden\", \"protected\" or \"internal\""
 msgstr "Sichtbarkeitsargument muss »default«, »hidden«, »protected« oder »internal« sein"
 
 #: c-common.c:4654
-#, fuzzy
 msgid "tls_model argument not a string"
 msgstr "Argument für tls_model ist keine Zeichenkette"
 
 #: c-common.c:4663
-#, fuzzy
 msgid "tls_model argument must be one of \"local-exec\", \"initial-exec\", \"local-dynamic\" or \"global-dynamic\""
 msgstr "Argument für tls_model muss »local-exec«, »initial-exec«, »local-dynamic« oder »global-dynamic« sein"
 
 #: c-common.c:4685 c-common.c:4731
-#, fuzzy
 msgid "%J%qE attribute applies only to functions"
-msgstr "%JAttribut »%E« kann nur auf Funktionen angewandt werden"
+msgstr "%JAttribut %qE kann nur auf Funktionen angewandt werden"
 
 #: c-common.c:4690 c-common.c:4736
-#, fuzzy
 msgid "%Jcan%'t set %qE attribute after definition"
-msgstr "%JAttribut »%E« kann nicht nach der Definition gesetzt werden"
+msgstr "%JAttribut %qE kann nicht nach der Definition gesetzt werden"
 
 #: c-common.c:4812
-#, fuzzy, c-format
+#, c-format
 msgid "%qs attribute ignored for %qs"
-msgstr "Attribut »%s« ignoriert für »%s«"
+msgstr "Attribut %qs ignoriert für %qs"
 
 #: c-common.c:4873
-#, fuzzy, c-format
+#, c-format
 msgid "invalid vector type for attribute %qs"
-msgstr "ungültiger Vektortyp für Attribut »%s«"
+msgstr "ungültiger Vektortyp für Attribut %qs"
 
 #: c-common.c:4882
 msgid "number of components of the vector not a power of two"
-msgstr ""
+msgstr "Komponentenanzahl des Vektors ist keine Zweierpotenz"
 
 #: c-common.c:4910
 msgid "nonnull attribute without arguments on a non-prototype"
 msgstr "Nicht-Null-Attribut ohne Argumente für einen Nicht-Prototyp"
 
 #: c-common.c:4925
-#, fuzzy, c-format
+#, c-format
 msgid "nonnull argument has invalid operand number (argument %lu)"
 msgstr "Nicht-Null-Argument hat ungültige Operandenzahl (Argument %lu)"
 
 #: c-common.c:4944
-#, fuzzy, c-format
+#, c-format
 msgid "nonnull argument with out-of-range operand number (argument %lu, operand %lu)"
 msgstr "Nicht-Null-Argument mit Operandenzahl außerhalb des Wertebereiches (Argument %lu, Operand %lu)"
 
 #: c-common.c:4952
-#, fuzzy, c-format
+#, c-format
 msgid "nonnull argument references non-pointer operand (argument %lu, operand %lu)"
 msgstr "Nicht-Null-Argument referenziert Nicht-Zeiger-Operanden (Argument %lu, Operand %lu)"
 
 #: c-common.c:5007 c-common.c:5044
-#, fuzzy
 msgid "missing sentinel in function call"
-msgstr "PC-relative Funktionsaufrufe verbieten"
+msgstr "Wächter in Funktionsaufruf fehlt"
 
 #: c-common.c:5030
-#, fuzzy
 msgid "not enough arguments to fit a sentinel"
-msgstr "zu wenige Argumente für Funktion"
+msgstr "zu wenige Argumente, um in einen Wächter zu passen"
 
 #: c-common.c:5086
-#, fuzzy, c-format
+#, c-format
 msgid "null argument where non-null required (argument %lu)"
 msgstr "Null-Argument, wo Nicht-Null erwartet (Argument %lu)"
 
 #: c-common.c:5157
-#, fuzzy
 msgid "cleanup argument not an identifier"
 msgstr "Argument für cleanup ist kein Bezeichner"
 
 #: c-common.c:5164
-#, fuzzy
 msgid "cleanup argument not a function"
 msgstr "Argument für cleanup ist keine Funktion"
 
 #: c-common.c:5202
-#, fuzzy, c-format
+#, c-format
 msgid "%qs attribute requires prototypes with named arguments"
-msgstr "Attribut »%s« benötigt eine Ganzzahlkonstante als Argument"
+msgstr "Attribut %qs benötigt Prototypen mit benannten Argumenten"
 
 #: c-common.c:5213
-#, fuzzy, c-format
+#, c-format
 msgid "%qs attribute only applies to variadic functions"
-msgstr "Attribut »%s« gilt nur für Funktionen"
+msgstr "Attribut %qs gilt nur für variadische Funktionen"
 
 #: c-common.c:5226
-#, fuzzy
 msgid "requested position is not an integer constant"
-msgstr "angefordertes init_priority ist keine Ganzzahlkonstante"
+msgstr "angeforderte Position ist keine Ganzzahlkonstante"
 
 #: c-common.c:5233
 msgid "requested position is less than zero"
-msgstr ""
+msgstr "angeforderte Position ist kleiner als Null"
 
 #: c-common.c:5539
-#, fuzzy
 msgid "%Hignoring return value of %qD, declared with attribute warn_unused_result"
-msgstr "%Hder Rückgabewert von »%D« mit dem Attribut warn_unused_result wird ignoriert"
+msgstr "%Hder Rückgabewert von %qD, der mit dem Attribut warn_unused_result deklariert wurde, wird ignoriert"
 
 #: c-common.c:5543
 msgid "%Hignoring return value of function declared with attribute warn_unused_result"
 msgstr "%Hder Rückgabewert der Funktion, die mit dem Attribut warn_unused_result deklariert wurde, wird ignoriert"
 
 #: c-common.c:5582
-#, fuzzy, c-format
+#, c-format
 msgid "attempt to take address of bit-field structure member %qs"
-msgstr "Versuch, die Adresse des Bitfeld-Elementes »%s« einer Struktur zu verwenden"
+msgstr "Versuch, die Adresse des Bitfeld-Elementes %qs zu verwenden"
 
 #: c-common.c:5634
 msgid "invalid lvalue in assignment"
 msgstr "ungültiger L-Wert in Zuweisung"
 
 #: c-common.c:5637
-#, fuzzy
 msgid "invalid lvalue in increment"
-msgstr "ungültiger L-Wert in Zuweisung"
+msgstr "ungültiger L-Wert in Erhöhung"
 
 #: c-common.c:5640
-#, fuzzy
 msgid "invalid lvalue in decrement"
-msgstr "ungültiger L-Wert in Zuweisung"
+msgstr "ungültiger L-Wert in Verringerung"
 
 #: c-common.c:5643
-#, fuzzy
 msgid "invalid lvalue in unary %<&%>"
-msgstr "ungültiger L-Wert in unärem »&«"
+msgstr "ungültiger L-Wert in unärem %<&%>"
 
 #: c-common.c:5646
 msgid "invalid lvalue in asm statement"
@@ -645,219 +592,179 @@ msgid "conversion to non-scalar type requested"
 msgstr "Konvertierung zu Nicht-Skalar-Typ verlangt"
 
 #: c-decl.c:524
-#, fuzzy
 msgid "%Jarray %qD assumed to have one element"
-msgstr "%JFeld »%D« als einelementig betrachtet"
+msgstr "%JFeld %qD als einelementig betrachtet"
 
 #: c-decl.c:637
 #, c-format
 msgid "GCC supports only %u nested scopes"
-msgstr ""
+msgstr "GCC unterstützt nur %u geschachtelte Gültigkeitsbereiche"
 
 #: c-decl.c:721
-#, fuzzy
 msgid "%Jlabel %qD used but not defined"
-msgstr "%JMarke »%D« verwendet, aber nicht definiert"
+msgstr "%JMarke %qD verwendet, aber nicht definiert"
 
 #: c-decl.c:727
-#, fuzzy
 msgid "%Jlabel %qD defined but not used"
-msgstr "%JMarke »%D« definiert aber nicht verwendet"
+msgstr "%JMarke %qD definiert, aber nicht verwendet"
 
 #: c-decl.c:729
-#, fuzzy
 msgid "%Jlabel %qD declared but not defined"
-msgstr "%JMarke »%D« deklariert, aber nicht definiert"
+msgstr "%JMarke %qD deklariert, aber nicht definiert"
 
 #: c-decl.c:772 cp/decl.c:575
-#, fuzzy
 msgid "%Junused variable %qD"
-msgstr "%JVariable »%D« wird nicht verwendet"
+msgstr "%JVariable %qD wird nicht verwendet"
 
 #: c-decl.c:776
 msgid "%Jtype of array %qD completed incompatibly with implicit initialization"
-msgstr ""
+msgstr "%JTyp des Feldes %qD unverträglich mit impliziter Initialisierung vervollständigt"
 
 #: c-decl.c:1008
-#, fuzzy
 msgid "a parameter list with an ellipsis can%'t match an empty parameter name list declaration"
 msgstr "eine Parameterliste mit Auslassung passt nicht zu einer leeren Parameternamenslistendeklaration"
 
 #: c-decl.c:1015
-#, fuzzy
 msgid "an argument type that has a default promotion can%'t match an empty parameter name list declaration"
 msgstr "ein Argumenttyp mit Standard-Promotion passt nicht zu leerer Parameternamenslistendeklaration"
 
 #: c-decl.c:1051
-#, fuzzy
 msgid "%Jprototype for %qD declares more arguments than previous old-style definition"
-msgstr "%JPrototyp für »%D« deklariert mehr Argumente als vorherige Definition im alten Stil"
+msgstr "%JPrototyp für %qD deklariert mehr Argumente als vorherige Definition im alten Stil"
 
 #: c-decl.c:1057
-#, fuzzy
 msgid "%Jprototype for %qD declares fewer arguments than previous old-style definition"
-msgstr "%JPrototyp für »%D« deklariert weniger Argumente als vorherige Definition im alten Stil"
+msgstr "%JPrototyp für %qD deklariert weniger Argumente als vorherige Definition im alten Stil"
 
 #: c-decl.c:1066
-#, fuzzy
 msgid "%Jprototype for %qD declares argument %d with incompatible type"
-msgstr "%JPrototyp für »%D« deklariert Argument %d mit inkompatiblem Typen"
+msgstr "%JPrototyp für %qD deklariert Argument %d mit inkompatiblem Typen"
 
 #. If we get here, no errors were found, but do issue a warning
 #. for this poor-style construct.
 #: c-decl.c:1079
-#, fuzzy
 msgid "%Jprototype for %qD follows non-prototype definition"
-msgstr "%JPrototyp für »%D« folgt einer Nicht-Prototyp-Definition"
+msgstr "%JPrototyp für %qD folgt einer Nicht-Prototyp-Definition"
 
 #: c-decl.c:1094
-#, fuzzy
 msgid "%Jprevious definition of %qD was here"
-msgstr "%Jvorherige Definition von »%D« war hier"
+msgstr "%Jvorherige Definition von %qD war hier"
 
 #: c-decl.c:1096
-#, fuzzy
 msgid "%Jprevious implicit declaration of %qD was here"
-msgstr "%Jvorherige implizite Deklaration von »%D« war hier"
+msgstr "%Jvorherige implizite Deklaration von %qD war hier"
 
 #: c-decl.c:1098
-#, fuzzy
 msgid "%Jprevious declaration of %qD was here"
-msgstr "%Jvorherige Deklaration von »%D« war hier"
+msgstr "%Jvorherige Deklaration von %qD war hier"
 
 #: c-decl.c:1134
-#, fuzzy
 msgid "%J%qD redeclared as different kind of symbol"
-msgstr "%J»%D« redeklariert als andere Symbolart"
+msgstr "%J%qD als andere Symbolart redeklariert"
 
 #: c-decl.c:1139
-#, fuzzy
 msgid "%Jbuilt-in function %qD declared as non-function"
-msgstr "%Jeingebaute Funktion »%D« als Nicht-Funktion deklariert"
+msgstr "%Jeingebaute Funktion %qD als Nicht-Funktion deklariert"
 
 #: c-decl.c:1142 c-decl.c:1246 c-decl.c:1815
-#, fuzzy
 msgid "%Jdeclaration of %qD shadows a built-in function"
-msgstr "%JDeklaration von »%D« überdeckt eine globale Deklaration"
+msgstr "%JDeklaration von %qD überdeckt eine eingebaute Funktion"
 
 #: c-decl.c:1151
-#, fuzzy
 msgid "%Jredeclaration of enumerator %qD"
-msgstr "Redeklaration von »enum %s«"
+msgstr "%JRedeklaration von Aufzählung %qD"
 
 #. If types don't match for a built-in, throw away the
 #. built-in.  No point in calling locate_old_decl here, it
 #. won't print anything.
 #: c-decl.c:1172
-#, fuzzy
 msgid "%Jconflicting types for built-in function %qD"
-msgstr "%Jin Konflikt stehende Typen für eingebaute Funktion »%D«"
+msgstr "%Jin Konflikt stehende Typen für eingebaute Funktion %qD"
 
 #: c-decl.c:1196 c-decl.c:1207
-#, fuzzy
 msgid "%Jconflicting types for %qD"
-msgstr "%Jin Konflikt stehende Typen für »%D«"
+msgstr "%Jin Konflikt stehende Typen für %qD"
 
 #: c-decl.c:1205
-#, fuzzy
 msgid "%J conflicting type qualifiers for %qD"
-msgstr "%Jin Konflikt stehende Typen für »%D«"
+msgstr "%J in Konflikt stehende Qualifizierer für %qD"
 
 #. Allow OLDDECL to continue in use.
 #: c-decl.c:1222
-#, fuzzy
 msgid "%Jredefinition of typedef %qD"
-msgstr "%JRedefinition des typedef »%D«"
+msgstr "%JRedefinition des typedef %qD"
 
 #: c-decl.c:1261 c-decl.c:1339
-#, fuzzy
 msgid "%Jredefinition of %qD"
-msgstr "%JRedefinition von »%D«"
+msgstr "%JRedefinition von %qD"
 
 #: c-decl.c:1296 c-decl.c:1377
-#, fuzzy
 msgid "%Jstatic declaration of %qD follows non-static declaration"
-msgstr "%Jstatische Deklaration von »%D« folgt Nicht-statischer Deklaration"
+msgstr "%Jstatische Deklaration von %qD folgt nicht-statischer Deklaration"
 
 #: c-decl.c:1306 c-decl.c:1313 c-decl.c:1366 c-decl.c:1374
-#, fuzzy
 msgid "%Jnon-static declaration of %qD follows static declaration"
-msgstr "%JNicht-statische-Deklaration von »%D« folgt statischer Deklaration"
+msgstr "%Jnicht-statische Deklaration von %qD folgt statischer Deklaration"
 
 #: c-decl.c:1326
-#, fuzzy
 msgid "%Jthread-local declaration of %qD follows non-thread-local declaration"
-msgstr "%JThread-lokale Deklaration von »%D« folgt nicht-Thread-lokaler Deklaration"
+msgstr "%JThread-lokale Deklaration von %qD folgt nicht-Thread-lokaler Deklaration"
 
 #: c-decl.c:1329
-#, fuzzy
 msgid "%Jnon-thread-local declaration of %qD follows thread-local declaration"
-msgstr "%JNicht-Thread-lokale Deklaration von »%D« folgt Thread-lokaler Deklaration"
+msgstr "%JNicht-Thread-lokale Deklaration von %qD folgt Thread-lokaler Deklaration"
 
 #: c-decl.c:1359
-#, fuzzy
 msgid "%Jextern declaration of %qD follows declaration with no linkage"
-msgstr "%Jextern-Deklaration von »%D« folgt Deklaration ohne Bindung"
+msgstr "%Jextern-Deklaration von %qD folgt Deklaration ohne Bindung"
 
 #: c-decl.c:1395
-#, fuzzy
 msgid "%Jdeclaration of %qD with no linkage follows extern declaration"
-msgstr "%JDeklaration von »%D« ohne Bindung folgt einer externen Deklaration"
+msgstr "%JDeklaration von %qD ohne Bindung folgt einer extern-Deklaration"
 
 #: c-decl.c:1401
-#, fuzzy
 msgid "%Jredeclaration of %qD with no linkage"
-msgstr "%JRedeklarationen von »%D« ohne Bindung"
+msgstr "%JRedeklaration von %qD ohne Bindung"
 
 #: c-decl.c:1415
-#, fuzzy
 msgid "%Jredeclaration of %qD with different visibility (old visibility preserved)"
-msgstr "%JRedeklaration von »%D« mit anderer Sichtbarkeit (alte Sichtbarkeit beibehalten)"
+msgstr "%JRedeklaration von %qD mit anderer Sichtbarkeit (alte Sichtbarkeit beibehalten)"
 
 #: c-decl.c:1426
-#, fuzzy
 msgid "%Jinline declaration of %qD follows declaration with attribute noinline"
-msgstr "%Jinline-Deklaration von »%D« folgt Deklaration mit Attribut noinline"
+msgstr "%Jinline-Deklaration von %qD folgt Deklaration mit Attribut noinline"
 
 #: c-decl.c:1433
-#, fuzzy
 msgid "%Jdeclaration of %qD with attribute noinline follows inline declaration "
-msgstr "%JDeklaration von »%D« mit Attribut noinline folgt inline-Deklaration "
+msgstr "%JDeklaration von %qD mit Attribut noinline folgt inline-Deklaration "
 
 #: c-decl.c:1448
-#, fuzzy
 msgid "%J%qD declared inline after being called"
-msgstr "%J»%D« als inline deklariert nachdem es aufgerufen wurde"
+msgstr "%J%qD als inline deklariert, nachdem es aufgerufen wurde"
 
 #: c-decl.c:1454
-#, fuzzy
 msgid "%J%qD declared inline after its definition"
-msgstr "%J»%D« nach der Definition als inline deklariert"
+msgstr "%J%qD nach der Definition als inline deklariert"
 
 #: c-decl.c:1474
-#, fuzzy
 msgid "%Jredefinition of parameter %qD"
-msgstr "%JRedefinition des Parameters »%D«"
+msgstr "%JRedefinition des Parameters %qD"
 
 #: c-decl.c:1498
-#, fuzzy
 msgid "%Jredundant redeclaration of %qD"
-msgstr "%Jredundante Redeklaration von »%D«"
+msgstr "%Jredundante Redeklaration von %qD"
 
 #: c-decl.c:1808
-#, fuzzy
 msgid "%Jdeclaration of %qD shadows a parameter"
-msgstr "%JDeklaration von »%D« überdeckt einen Parameter"
+msgstr "%JDeklaration von %qD überdeckt einen Parameter"
 
 #: c-decl.c:1811
-#, fuzzy
 msgid "%Jdeclaration of %qD shadows a global declaration"
-msgstr "%JDeklaration von »%D« überdeckt eine globale Deklaration"
+msgstr "%JDeklaration von %qD überdeckt eine globale Deklaration"
 
 #: c-decl.c:1818
-#, fuzzy
 msgid "%Jdeclaration of %qD shadows a previous local"
-msgstr "%JDeklaration von »%D« überdeckt einen vorhergehenden lokalen Bezeichner"
+msgstr "%JDeklaration von %qD überdeckt einen vorhergehenden lokalen Bezeichner"
 
 #: c-decl.c:1823 cp/name-lookup.c:942 cp/name-lookup.c:973
 #: cp/name-lookup.c:981
@@ -865,39 +772,35 @@ msgid "%Jshadowed declaration is here"
 msgstr "%Jverdeckte Deklaration ist hier"
 
 #: c-decl.c:1977
-#, fuzzy
 msgid "nested extern declaration of %qD"
-msgstr "geschachtelte extern-Deklaration von »%s«"
+msgstr "geschachtelte extern-Deklaration von %qD"
 
 #: c-decl.c:2067
-#, fuzzy
 msgid "nested static declaration of %qD"
-msgstr "geschachtelte extern-Deklaration von »%s«"
+msgstr "geschachtelte static-Deklaration von %qD"
 
 #: c-decl.c:2161
-#, fuzzy, c-format
+#, c-format
 msgid "implicit declaration of function %qE"
-msgstr "implizite Deklaration der Funktion »%s«"
+msgstr "implizite Deklaration der Funktion %qE"
 
 #: c-decl.c:2219
-#, fuzzy
 msgid "incompatible implicit declaration of built-in function %qD"
-msgstr "implizite Deklaration der Funktion »%#D«"
+msgstr "unverträgliche implizite Deklaration der eingebauten Funktion %qD"
 
 #: c-decl.c:2228
-#, fuzzy
 msgid "incompatible implicit declaration of function %qD"
-msgstr "implizite Deklaration der Funktion »%#D«"
+msgstr "unverträgliche implizite Deklaration der Funktion %qD"
 
 #: c-decl.c:2281
-#, fuzzy, c-format
+#, c-format
 msgid "%qE undeclared here (not in a function)"
-msgstr "»%s« ist hier nicht deklariert (nicht in einer Funktion)"
+msgstr "%qE ist hier nicht deklariert (nicht in einer Funktion)"
 
 #: c-decl.c:2286
-#, fuzzy, c-format
+#, c-format
 msgid "%qE undeclared (first use in this function)"
-msgstr "»%s« nicht deklariert (erste Benutzung in dieser Funktion)"
+msgstr "%qE nicht deklariert (erste Benutzung in dieser Funktion)"
 
 #: c-decl.c:2290
 msgid "(Each undeclared identifier is reported only once"
@@ -908,29 +811,26 @@ msgid "for each function it appears in.)"
 msgstr "für jede Funktion in der er auftritt.)"
 
 #: c-decl.c:2329
-#, fuzzy, c-format
+#, c-format
 msgid "label %qs referenced outside of any function"
-msgstr "Marke %s außerhalb einer Funktion referenziert"
+msgstr "Marke %qs außerhalb einer Funktion referenziert"
 
 #: c-decl.c:2372
-#, fuzzy, c-format
+#, c-format
 msgid "duplicate label declaration %qs"
-msgstr "doppelte Markendeklaration »%s«"
+msgstr "doppelte Markendeklaration %qs"
 
 #: c-decl.c:2407
-#, fuzzy
 msgid "%Hduplicate label %qD"
-msgstr "%Hdoppelte Marke »%D«"
+msgstr "%Hdoppelte Marke %qD"
 
 #: c-decl.c:2429
-#, fuzzy
 msgid "%Htraditional C lacks a separate namespace for labels, identifier %qs conflicts"
-msgstr "%Htraditionelles C bietet keinen separaten Namespace für Marken an, Bezeichner »%s« steht in Konflikt"
+msgstr "%Htraditionelles C bietet keinen separaten Namespace für Marken an, Bezeichner %qs steht in Konflikt"
 
 #: c-decl.c:2495
-#, fuzzy
 msgid "%H%qs defined as wrong kind of tag"
-msgstr "%H»%s« definiert als falsche Symbolart"
+msgstr "%H%qs als falsche Symbolart definiert"
 
 #: c-decl.c:2718
 msgid "unnamed struct/union that defines no instances"
@@ -938,47 +838,39 @@ msgstr "unbenannte struct/union, die keine Instanzen definiert"
 
 #: c-decl.c:2726
 msgid "empty declaration with storage class specifier does not redeclare tag"
-msgstr ""
+msgstr "leere Deklaration mit Speicherklassenangabe redeklariert nicht Symbol"
 
 #: c-decl.c:2737
-#, fuzzy
 msgid "empty declaration with type qualifier does not redeclare tag"
-msgstr "Deklaration deklariert nichts"
+msgstr "leere Deklaration mit Typqualifizierer redeklariert nicht Symbol"
 
 #: c-decl.c:2758 c-decl.c:2765
-#, fuzzy
 msgid "useless type name in empty declaration"
-msgstr "nutzloses Schlüsselwort oder Typenname in leerer Deklaration"
+msgstr "nutzloser Typname in leerer Deklaration"
 
 #: c-decl.c:2773
-#, fuzzy
 msgid "%<inline%> in empty declaration"
-msgstr "leere Deklaration"
+msgstr "%<inline%> in leerer Deklaration"
 
 #: c-decl.c:2779
-#, fuzzy
 msgid "%<auto%> in file-scope empty declaration"
-msgstr "zwei Typen in einer leeren Deklaration angegeben"
+msgstr "%<auto%> in einer leeren Deklaration im Datei-Gültigkeitsbereich"
 
 #: c-decl.c:2785
-#, fuzzy
 msgid "%<register%> in file-scope empty declaration"
-msgstr "zwei Typen in einer leeren Deklaration angegeben"
+msgstr "%<register%> in leeren Deklaration im Datei-Gültigkeitsbereich"
 
 #: c-decl.c:2791
-#, fuzzy
 msgid "useless storage class specifier in empty declaration"
-msgstr "Speicherklassenangaben sind in Parameterdeklarationen ungültig"
+msgstr "nutzlose Speicherklassenangabe in leerer Deklaration"
 
 #: c-decl.c:2797
-#, fuzzy
 msgid "useless %<__thread%> in empty declaration"
-msgstr "nutzloses Schlüsselwort oder Typenname in leerer Deklaration"
+msgstr "nutzloses %<__thread%> in leerer Deklaration"
 
 #: c-decl.c:2805
-#, fuzzy
 msgid "useless type qualifier in empty declaration"
-msgstr "doppelte Typqualifizierer in Deklaration von %s"
+msgstr "nutzloser Typqualifizierer in leerer Deklaration"
 
 #: c-decl.c:2812 c-parse.y:781 c-parse.y:783 objc/objc-parse.y:818
 #: objc/objc-parse.y:820
@@ -986,44 +878,37 @@ msgid "empty declaration"
 msgstr "leere Deklaration"
 
 #: c-decl.c:2878
-#, fuzzy
 msgid "ISO C90 does not support %<static%> or type qualifiers in parameter array declarators"
-msgstr "ISO-C90 unterstützt kein »static« oder Typkennzeichner in Parameterfelddeklaratoren"
+msgstr "ISO-C90 unterstützt kein %<static%> oder Typkennzeichner in Parameterfelddeklaratoren"
 
 #: c-decl.c:2881
-#, fuzzy
 msgid "ISO C90 does not support %<[*]%> array declarators"
-msgstr "ISO-C90 unterstützt nicht »[*]«-Felddeklaratoren"
+msgstr "ISO-C90 unterstützt nicht %<[*]%>-Felddeklaratoren"
 
 #: c-decl.c:2884
-#, fuzzy
 msgid "GCC does not yet properly implement %<[*]%> array declarators"
-msgstr "GCC implementiert noch keine richtigen »[*]«-Felddeklaratoren"
+msgstr "GCC implementiert noch keine richtigen %<[*]%>-Felddeklaratoren"
 
 #: c-decl.c:2903
 msgid "static or type qualifiers in abstract declarator"
 msgstr "static oder Typkennzeichner in abstraktem Deklarator"
 
 #: c-decl.c:2960
-#, fuzzy
 msgid "%J%qD is usually a function"
-msgstr "%J»%D« ist üblicherweise eine Funktion"
+msgstr "%J%qD ist üblicherweise eine Funktion"
 
 #: c-decl.c:2969 cp/decl.c:3718 cp/decl2.c:853
-#, fuzzy
 msgid "typedef %qD is initialized (use __typeof__ instead)"
-msgstr "typedef »%D« ist initialisiert (stattdessen lieber __typeof__ verwenden)"
+msgstr "typedef %qD ist initialisiert (stattdessen lieber __typeof__ verwenden)"
 
 #: c-decl.c:2974
-#, fuzzy
 msgid "function %qD is initialized like a variable"
-msgstr "Funktion »%#D« ist wie eine Variable initialisiert"
+msgstr "Funktion %qD ist wie eine Variable initialisiert"
 
 #. DECL_INITIAL in a PARM_DECL is really DECL_ARG_TYPE.
 #: c-decl.c:2980
-#, fuzzy
 msgid "parameter %qD is initialized"
-msgstr "Parameter »%s« ist initialisiert"
+msgstr "Parameter %qD ist initialisiert"
 
 #. Although C99 is unclear about whether incomplete arrays
 #. of VLAs themselves count as VLAs, it does not make
@@ -1034,49 +919,40 @@ msgid "variable-sized object may not be initialized"
 msgstr "Objekt variabler Größe darf nicht initialisiert werden"
 
 #: c-decl.c:3005
-#, fuzzy
 msgid "variable %qD has initializer but incomplete type"
-msgstr "Variable »%#D« hat Initialisierung, aber unvollständigen Typ"
+msgstr "Variable %qD hat Initialisierung, aber unvollständigen Typ"
 
 #: c-decl.c:3010
-#, fuzzy
 msgid "elements of array %qD have incomplete type"
-msgstr "Elemente des Feldes »%#D« haben unvollständigen Typ"
+msgstr "Elemente des Feldes %qD haben unvollständigen Typ"
 
 #: c-decl.c:3086 c-decl.c:5696 cp/decl.c:3758 cp/decl.c:9944
-#, fuzzy
 msgid "%Jinline function %qD given attribute noinline"
-msgstr "%Jinline-Funktion »%D« wurde das Attribut »noinline« gegeben"
+msgstr "%Jinline-Funktion %qD wurde das Attribut »noinline« gegeben"
 
 #: c-decl.c:3154
-#, fuzzy
 msgid "%Jinitializer fails to determine size of %qD"
-msgstr "%JInitialisierung scheitert an Größenbestimmung von »%D«"
+msgstr "%JInitialisierung scheitert an Größenbestimmung von %qD"
 
 #: c-decl.c:3159
-#, fuzzy
 msgid "%Jarray size missing in %qD"
-msgstr "%JFeldgröße in »%D« fehlt"
+msgstr "%JFeldgröße in %qD fehlt"
 
 #: c-decl.c:3175
-#, fuzzy
 msgid "%Jzero or negative size array %qD"
-msgstr "%JFeldgröße von »%D« ist null oder negativ"
+msgstr "%JFeldgröße von %qD ist null oder negativ"
 
 #: c-decl.c:3201 varasm.c:1541
-#, fuzzy
 msgid "%Jstorage size of %qD isn%'t known"
-msgstr "%JSpeichergröße von »%D« ist unbekannt"
+msgstr "%JSpeichergröße von %qD ist unbekannt"
 
 #: c-decl.c:3211
-#, fuzzy
 msgid "%Jstorage size of %qD isn%'t constant"
-msgstr "%JSpeichergröße von »%D« ist nicht konstant"
+msgstr "%JSpeichergröße von %qD ist nicht konstant"
 
 #: c-decl.c:3266
-#, fuzzy
 msgid "%Jignoring asm-specifier for non-static local variable %qD"
-msgstr "%Jasm-Symbol für nicht-statische lokale Variable »%D« wird ignoriert"
+msgstr "%Jasm-Symbol für nicht-statische lokale Variable %qD wird ignoriert"
 
 #: c-decl.c:3296 fortran/f95-lang.c:647
 msgid "cannot put object with volatile field into register"
@@ -1091,123 +967,109 @@ msgid "<anonymous>"
 msgstr "<anonym>"
 
 #: c-decl.c:3623
-#, fuzzy, c-format
+#, c-format
 msgid "bit-field %qs width not an integer constant"
-msgstr "Breite des Bitfeldes »%s« ist keine Ganzzahlkonstante"
+msgstr "Breite des Bitfeldes %qs ist keine Ganzzahlkonstante"
 
 #: c-decl.c:3631
-#, fuzzy, c-format
+#, c-format
 msgid "negative width in bit-field %qs"
-msgstr "negative Breite in Bitfeld »%s«"
+msgstr "negative Breite in Bitfeld %qs"
 
 #: c-decl.c:3636
-#, fuzzy, c-format
+#, c-format
 msgid "zero width for bit-field %qs"
-msgstr "Breite null für Bitfeld »%s«"
+msgstr "Breite null für Bitfeld %qs"
 
 #: c-decl.c:3646
-#, fuzzy, c-format
+#, c-format
 msgid "bit-field %qs has invalid type"
-msgstr "Bitfeld »%s« hat ungültigen Typen"
+msgstr "Bitfeld %qs hat ungültigen Typen"
 
 #: c-decl.c:3655
-#, fuzzy, c-format
+#, c-format
 msgid "type of bit-field %qs is a GCC extension"
-msgstr "der Typ des Bitfeldes »%s« ist eine Erweiterung des GCC"
+msgstr "der Typ des Bitfeldes %qs ist eine Erweiterung des GCC"
 
 #: c-decl.c:3664
-#, fuzzy, c-format
+#, c-format
 msgid "width of %qs exceeds its type"
-msgstr "Breite von »%s« überschreitet dessen Typen"
+msgstr "Breite von %qs überschreitet dessen Typen"
 
 #: c-decl.c:3677
-#, fuzzy, c-format
+#, c-format
 msgid "%qs is narrower than values of its type"
-msgstr "»%s« ist schmaler als die Werte seines Typs"
+msgstr "%qs ist schmaler als die Werte seines Typs"
 
 #: c-decl.c:3802
-#, fuzzy
 msgid "type defaults to %<int%> in declaration of %qs"
-msgstr "»int« ist Standardtyp in Deklaration von »%s«"
+msgstr "%<int%> ist Standardtyp in Deklaration von %qs"
 
 #: c-decl.c:3830
-#, fuzzy
 msgid "duplicate %<const%>"
-msgstr "doppeltes »const«"
+msgstr "doppeltes %<const%>"
 
 #: c-decl.c:3832
-#, fuzzy
 msgid "duplicate %<restrict%>"
-msgstr "doppeltes »restrict«"
+msgstr "doppeltes %<restrict%>"
 
 #: c-decl.c:3834
-#, fuzzy
 msgid "duplicate %<volatile%>"
-msgstr "doppeltes »volatile«"
+msgstr "doppeltes %<volatile%>"
 
 #: c-decl.c:3853
-#, fuzzy
 msgid "function definition declared %<auto%>"
-msgstr "Funktionsdefinition deklarierte »auto«"
+msgstr "Funktionsdefinition deklarierte %<auto%>"
 
 #: c-decl.c:3855
-#, fuzzy
 msgid "function definition declared %<register%>"
-msgstr "Funktionsdefinition deklarierte »register«"
+msgstr "Funktionsdefinition deklarierte %<register%>"
 
 #: c-decl.c:3857
-#, fuzzy
 msgid "function definition declared %<typedef%>"
-msgstr "Funktionsdefinition deklarierte »typedef«"
+msgstr "Funktionsdefinition deklarierte %<typedef%>"
 
 #: c-decl.c:3859
-#, fuzzy
 msgid "function definition declared %<__thread%>"
-msgstr "Funktionsdefinition deklarierte »__thread«"
+msgstr "Funktionsdefinition deklarierte %<__thread%>"
 
 #: c-decl.c:3875
-#, fuzzy, c-format
+#, c-format
 msgid "storage class specified for structure field %qs"
-msgstr "Speicherklasse für Strukturfeld »%s« angegeben"
+msgstr "Speicherklasse für Strukturfeld %qs angegeben"
 
 #: c-decl.c:3879 cp/decl.c:7120
-#, fuzzy, c-format
+#, c-format
 msgid "storage class specified for parameter %qs"
-msgstr "Speicherklasse für Parameter »%s« angegeben"
+msgstr "Speicherklasse für Parameter %qs angegeben"
 
 #: c-decl.c:3882 cp/decl.c:7122
 msgid "storage class specified for typename"
 msgstr "Speicherklasse für Typnamen angegeben"
 
 #: c-decl.c:3895 cp/decl.c:7139
-#, fuzzy
 msgid "%qs initialized and declared %<extern%>"
-msgstr "»%s« initialisiert und als »extern« deklariert"
+msgstr "%qs initialisiert und als %<extern%> deklariert"
 
 #: c-decl.c:3897 cp/decl.c:7142
-#, fuzzy
 msgid "%qs has both %<extern%> and initializer"
-msgstr "»%s« hat sowohl »extern« als auch Initialisierung"
+msgstr "%qs hat sowohl %<extern%> als auch Initialisierung"
 
 #: c-decl.c:3902
-#, fuzzy
 msgid "file-scope declaration of %qs specifies %<auto%>"
-msgstr "Deklaration von »%s« in Datei-Sichtbarkeitsbereich spezifiziert »auto«"
+msgstr "Deklaration von %qs in Datei-Sichtbarkeitsbereich spezifiziert %<auto%>"
 
 #: c-decl.c:3904
-#, fuzzy
 msgid "file-scope declaration of %qs specifies %<register%>"
-msgstr "Deklaration von »%s« in Datei-Sichtbarkeitsbereich spezifiziert »auto«"
+msgstr "Deklaration von %qs in Datei-Sichtbarkeitsbereich spezifiziert %<register%>"
 
 #: c-decl.c:3909 cp/decl.c:7146
-#, fuzzy
 msgid "nested function %qs declared %<extern%>"
-msgstr "geschachtelte Funktion »%s« als »extern« deklariert"
+msgstr "geschachtelte Funktion %qs als %<extern%> deklariert"
 
 #: c-decl.c:3912 cp/decl.c:7156
-#, fuzzy
 msgid "function-scope %qs implicitly auto and declared %<__thread%>"
-msgstr "Funktions-Gültigkeitsbereich »%s« ist implizit auto und deklarierte »__thread«"
+msgstr "Funktions-Gültigkeitsbereich %qs ist implizit auto und deklarierte %<__thread%>"
 
 #. Only the innermost declarator (making a parameter be of
 #. array type which is converted to pointer type)
@@ -1217,48 +1079,47 @@ msgid "static or type qualifiers in non-parameter array declarator"
 msgstr "»static« oder Typkennzeichner in Nicht-Parameter-Felddeklarator"
 
 #: c-decl.c:3999
-#, fuzzy, c-format
+#, c-format
 msgid "declaration of %qs as array of voids"
-msgstr "Deklaration von »%s« als Feld von voids"
+msgstr "Deklaration von %qs als Feld von voids"
 
 #: c-decl.c:4005
-#, fuzzy, c-format
+#, c-format
 msgid "declaration of %qs as array of functions"
-msgstr "Deklaration von »%s« als Feld von Funtionen"
+msgstr "Deklaration von %qs als Feld von Funktionen"
 
 #: c-decl.c:4010
 msgid "invalid use of structure with flexible array member"
 msgstr "ungültige Verwendung einer Struktur mit flexiblem Feldelement"
 
 #: c-decl.c:4030
-#, fuzzy, c-format
+#, c-format
 msgid "size of array %qs has non-integer type"
-msgstr "Feldgröße von »%s« hat Nicht-Ganzzahltyp"
+msgstr "Feldgröße von %qs hat Nicht-Ganzzahltyp"
 
 #: c-decl.c:4035
-#, fuzzy, c-format
+#, c-format
 msgid "ISO C forbids zero-size array %qs"
-msgstr "ISO-C verbietet Feld »%s« der Größe null"
+msgstr "ISO-C verbietet Feld %qs der Größe null"
 
 #: c-decl.c:4042
-#, fuzzy, c-format
+#, c-format
 msgid "size of array %qs is negative"
-msgstr "Feldgröße von »%s« ist negativ"
+msgstr "Größe des Feldes %qs ist negativ"
 
 #: c-decl.c:4056
-#, fuzzy
 msgid "ISO C90 forbids array %qs whose size can%'t be evaluated"
-msgstr "ISO-C90 verbietet Feld »%s«, dessen Größe nicht ausgewertet werden kann"
+msgstr "ISO-C90 verbietet Feld %qs, dessen Größe nicht ausgewertet werden kann"
 
 #: c-decl.c:4060
-#, fuzzy, c-format
+#, c-format
 msgid "ISO C90 forbids variable-size array %qs"
-msgstr "ISO-C90 verbietet Feld »%s« variabler Größe"
+msgstr "ISO-C90 verbietet Feld %qs variabler Größe"
 
 #: c-decl.c:4093 c-decl.c:4261 cp/decl.c:7559
-#, fuzzy, c-format
+#, c-format
 msgid "size of array %qs is too large"
-msgstr "Feldgröße von »%s« ist zu groß"
+msgstr "Feldgröße von %qs ist zu groß"
 
 #: c-decl.c:4106
 msgid "ISO C90 does not support flexible array members"
@@ -1269,19 +1130,18 @@ msgid "array type has incomplete element type"
 msgstr "Feldtyp hat unvollständigen Elementtypen"
 
 #: c-decl.c:4174 cp/decl.c:7248
-#, fuzzy, c-format
+#, c-format
 msgid "%qs declared as function returning a function"
-msgstr "»%s« als Funktion, die eine Funktion zurückgibt, deklariert"
+msgstr "%qs als Funktion, die eine Funktion zurückgibt, deklariert"
 
 #: c-decl.c:4179 cp/decl.c:7253
-#, fuzzy, c-format
+#, c-format
 msgid "%qs declared as function returning an array"
-msgstr "»%s« als Funktion, die ein Feld zurückgibt, deklariert"
+msgstr "%qs als Funktion, die ein Feld zurückgibt, deklariert"
 
 #: c-decl.c:4199
-#, fuzzy
 msgid "function definition has qualified void return type"
-msgstr "ungültige Definition des qualifizierten Typen »%T«"
+msgstr "Funktionsdefinition hat qualifizierten void-Rückgabetypen"
 
 #: c-decl.c:4201
 msgid "type qualifiers ignored on function return type"
@@ -1292,62 +1152,56 @@ msgid "ISO C forbids qualified function types"
 msgstr "ISO-C verbietet qualifizierte Funktionstypen"
 
 #: c-decl.c:4282
-#, fuzzy
 msgid "%Jtypedef %qD declared %<inline%>"
-msgstr "%JVariable »%D« als »inline« deklariert"
+msgstr "%Jtypedef %qD als %<inline%> deklariert"
 
 #: c-decl.c:4312
 msgid "ISO C forbids const or volatile function types"
 msgstr "ISO-C verbietet const- oder volatile-Funktionstypen"
 
 #: c-decl.c:4332
-#, fuzzy, c-format
+#, c-format
 msgid "variable or field %qs declared void"
-msgstr "Variable oder Feld »%s« als »void« deklariert"
+msgstr "Variable oder Feld %qs als void deklariert"
 
 #: c-decl.c:4361
 msgid "attributes in parameter array declarator ignored"
 msgstr "Attribute in Parameterfelddeklarator ignoriert"
 
 #: c-decl.c:4396
-#, fuzzy
 msgid "%Jparameter %qD declared %<inline%>"
-msgstr "%JParameter »%D« als void deklariert"
+msgstr "%JParameter %qD als %<inline%> deklariert"
 
 #: c-decl.c:4409
-#, fuzzy, c-format
+#, c-format
 msgid "field %qs declared as a function"
-msgstr "Feld »%s« als Funktion deklariert"
+msgstr "Feld %qs als Funktion deklariert"
 
 #: c-decl.c:4415
-#, fuzzy, c-format
+#, c-format
 msgid "field %qs has incomplete type"
-msgstr "Feld »%s« hat unvollständigen Typen"
+msgstr "Feld %qs hat unvollständigen Typen"
 
 #: c-decl.c:4432 c-decl.c:4443 c-decl.c:4446
-#, fuzzy, c-format
+#, c-format
 msgid "invalid storage class for function %qs"
-msgstr "ungültige Speicherklasse für Funktion »%s«"
+msgstr "ungültige Speicherklasse für Funktion %qs"
 
 #: c-decl.c:4461
-#, fuzzy
 msgid "%<noreturn%> function returns non-void value"
-msgstr "»noreturn«-Funktion gibt nicht-void-Wert zurück"
+msgstr "%<noreturn%>-Funktion gibt nicht-void-Wert zurück"
 
 #: c-decl.c:4489
-#, fuzzy
 msgid "cannot inline function %<main%>"
-msgstr "»main« ist nicht als »inline« möglich"
+msgstr "%<main%> ist nicht als »inline« möglich"
 
 #: c-decl.c:4546
-#, fuzzy
 msgid "variable previously declared %<static%> redeclared %<extern%>"
-msgstr "als »extern« redeklarierte Variable war bereits als »static« deklariert"
+msgstr "als %<extern%> redeklarierte Variable war bereits als %<static%> deklariert"
 
 #: c-decl.c:4555
-#, fuzzy
 msgid "%Jvariable %qD declared %<inline%>"
-msgstr "%JVariable »%D« als »inline« deklariert"
+msgstr "%JVariable %qD als %<inline%> deklariert"
 
 #. A mere warning is sure to result in improper semantics
 #. at runtime.  Don't bother to allow this to compile.
@@ -1356,7 +1210,6 @@ msgid "thread-local storage not supported for this target"
 msgstr "Thread-lokaler Speicher wird für dieses Ziel nicht unterstützt"
 
 #: c-decl.c:4648 c-decl.c:5733
-#, fuzzy
 msgid "function declaration isn%'t a prototype"
 msgstr "Funktionsdeklaration ist kein Prototyp"
 
@@ -1365,45 +1218,37 @@ msgid "parameter names (without types) in function declaration"
 msgstr "Parameternamen (ohne Typen) in Funktionsdeklaration"
 
 #: c-decl.c:4689
-#, fuzzy
 msgid "%Jparameter %u (%qD) has incomplete type"
-msgstr "%JParameter \"%D\" hat unvollständigen Typen"
+msgstr "%JParameter %u (%qD) hat unvollständigen Typen"
 
 #: c-decl.c:4692
-#, fuzzy
 msgid "%Jparameter %u has incomplete type"
-msgstr "%JParameter \"%D\" hat unvollständigen Typen"
+msgstr "%JParameter %u hat unvollständigen Typen"
 
 #: c-decl.c:4701
-#, fuzzy
 msgid "%Jparameter %u (%qD) has void type"
-msgstr "%JParameter \"%D\" hat unvollständigen Typen"
+msgstr "%JParameter %u (%qD) hat void-Typen"
 
 #: c-decl.c:4704
-#, fuzzy
 msgid "%Jparameter %u has void type"
-msgstr "%JParameter \"%D\" hat unvollständigen Typen"
+msgstr "%JParameter %u hat void-Typen"
 
 #: c-decl.c:4761
-#, fuzzy
 msgid "%<void%> as only parameter may not be qualified"
-msgstr "\"void\" kann als einziger Parameter nicht qualifiziert werden"
+msgstr "%<void%> kann nicht als einzelner Parameter qualifiziert werden"
 
 #: c-decl.c:4765 c-decl.c:4800
-#, fuzzy
 msgid "%<void%> must be the only parameter"
-msgstr "\"void\" muss der einzige Parameter sein"
+msgstr "%<void%> muss der einzige Parameter sein"
 
 #: c-decl.c:4793
-#, fuzzy
 msgid "%Jparameter %qD has just a forward declaration"
-msgstr "%JParameter »%D« hat nur eine Vorwärtsdeklaration"
+msgstr "%JParameter %qD hat nur eine Vorwärtsdeklaration"
 
 #. The %s will be one of 'struct', 'union', or 'enum'.
 #: c-decl.c:4839
-#, fuzzy
 msgid "%<%s %E%> declared inside parameter list"
-msgstr "\"%s %s\" innerhalb Parameterliste deklariert"
+msgstr "%<%s %E%> innerhalb Parameterliste deklariert"
 
 #. The %s will be one of 'struct', 'union', or 'enum'.
 #: c-decl.c:4843
@@ -1416,58 +1261,48 @@ msgid "its scope is only this definition or declaration, which is probably not w
 msgstr "sein Gültigkeitsbereich umfasst nur diese Definition bzw. Deklaration, was Sie wahrscheinlich nicht wollten"
 
 #: c-decl.c:4981
-#, fuzzy
 msgid "redefinition of %<union %s%>"
-msgstr "Redefinition von »union %s«"
+msgstr "Redefinition von %<union %s%>"
 
 #: c-decl.c:4983
-#, fuzzy
 msgid "redefinition of %<struct %s%>"
-msgstr "Redefinition von »struct %s«"
+msgstr "Redefinition von %<struct %s%>"
 
 #: c-decl.c:4988
-#, fuzzy
 msgid "nested redefinition of %<union %s%>"
-msgstr "Verschachtelte Redefinition von »%s«"
+msgstr "Verschachtelte Redefinition von %<union %s%>"
 
 #: c-decl.c:4991
-#, fuzzy
 msgid "nested redefinition of %<struct %s%>"
-msgstr "Verschachtelte Redefinition von »%s«"
+msgstr "Verschachtelte Redefinition von %<struct %s%>"
 
 #: c-decl.c:5063 cp/decl.c:3517
 msgid "declaration does not declare anything"
 msgstr "Deklaration deklariert nichts"
 
 #: c-decl.c:5067
-#, fuzzy
 msgid "ISO C doesn%'t support unnamed structs/unions"
 msgstr "ISO-C unterstützt keine namenlosen structs/unions"
 
 #: c-decl.c:5110 c-decl.c:5126
-#, fuzzy
 msgid "%Jduplicate member %qD"
-msgstr "%Jdoppeltes Element »%D«"
+msgstr "%Jdoppeltes Element %qD"
 
 #: c-decl.c:5165
-#, fuzzy
 msgid "union has no named members"
-msgstr "benannte Elemente"
+msgstr "Union hat keine benannten Elemente"
 
 #: c-decl.c:5167
-#, fuzzy
 msgid "union has no members"
-msgstr "anonyme Union ohne Element"
+msgstr "Union hat keine Elemente"
 
 #: c-decl.c:5172
-#, fuzzy
 msgid "struct has no named members"
-msgstr "benannte Elemente"
+msgstr "struct hat keine benannten Elemente"
 
 #: c-decl.c:5174
-#, fuzzy
 msgid "struct has no members"
-msgstr "%s hat kein Element namens »%s«"
+msgstr "struct hat keine Elemente"
 
 #: c-decl.c:5231
 msgid "%Jflexible array member in union"
@@ -1490,15 +1325,13 @@ msgid "union cannot be made transparent"
 msgstr "union kann nicht transparent gemacht werden"
 
 #: c-decl.c:5418
-#, fuzzy
 msgid "nested redefinition of %<enum %s%>"
-msgstr "Verschachtelte Redefinition von »%s«"
+msgstr "Verschachtelte Redefinition von %<enum %s%>"
 
 #. This enum is a named one that has been declared already.
 #: c-decl.c:5425
-#, fuzzy
 msgid "redeclaration of %<enum %s%>"
-msgstr "Redeklaration von »enum %s«"
+msgstr "Redeklaration von %<enum %s%>"
 
 #: c-decl.c:5488
 msgid "enumeration values exceed range of largest integer"
@@ -1506,135 +1339,114 @@ msgstr "Aufzählungswerte überschreiten Wertebereich des größten Ganzzahltype
 
 #: c-decl.c:5505
 msgid "specified mode too small for enumeral values"
-msgstr ""
+msgstr "angegebener Modus zu klein für Aufzählungswerte"
 
 #: c-decl.c:5604
-#, fuzzy, c-format
+#, c-format
 msgid "enumerator value for %qE is not an integer constant"
-msgstr "Aufzählungswert für »%s« ist keine Ganzzahlkonstante"
+msgstr "Aufzählungswert für %qE ist keine Ganzzahlkonstante"
 
 #: c-decl.c:5621
 msgid "overflow in enumeration values"
 msgstr "Überlauf in Aufzählungswerten"
 
 #: c-decl.c:5626
-#, fuzzy
 msgid "ISO C restricts enumerator values to range of %<int%>"
-msgstr "ISO-C beschränkt Aufzählungswerte auf Bereich von »int«"
+msgstr "ISO-C beschränkt Aufzählungswerte auf Bereich von %<int%>"
 
 #: c-decl.c:5702
 msgid "return type is an incomplete type"
 msgstr "Rückgabetyp ist unvollständig"
 
 #: c-decl.c:5710
-#, fuzzy
 msgid "return type defaults to %<int%>"
-msgstr "Rückgabetyp ist auf »int« voreingestellt"
+msgstr "Rückgabetyp ist auf %<int%> voreingestellt"
 
 #: c-decl.c:5739
-#, fuzzy
 msgid "%Jno previous prototype for %qD"
-msgstr "%Jkein vorheriger Prototyp für »%D«"
+msgstr "%Jkein vorheriger Prototyp für %qD"
 
 #: c-decl.c:5745
-#, fuzzy
 msgid "%J%qD was used with no prototype before its definition"
-msgstr "%J»%D« wurde vor seiner Definition ohne Prototyp verwendet"
+msgstr "%J%qD wurde vor seiner Definition ohne Prototyp verwendet"
 
 #: c-decl.c:5752
-#, fuzzy
 msgid "%Jno previous declaration for %qD"
-msgstr "%Jkeine vorherige Deklaration für »%D«"
+msgstr "%Jkeine vorherige Deklaration für %qD"
 
 #: c-decl.c:5758
-#, fuzzy
 msgid "%J%qD was used with no declaration before its definition"
-msgstr "%J»%D« wurde vor seiner Definition ohne Deklaration verwendet"
+msgstr "%J%qD wurde vor seiner Definition ohne Deklaration verwendet"
 
 #: c-decl.c:5791 c-decl.c:6280
-#, fuzzy
 msgid "%Jreturn type of %qD is not %<int%>"
-msgstr "%JRückgabetyp von »%D« ist nicht »int«"
+msgstr "%JRückgabetyp von %qD ist nicht %<int%>"
 
 #: c-decl.c:5806
-#, fuzzy
 msgid "%Jfirst argument of %qD should be %<int%>"
-msgstr "%Jerstes Argument von »%D« sollte »int« sein"
+msgstr "%Jerstes Argument von %qD sollte %<int%> sein"
 
 #: c-decl.c:5815
-#, fuzzy
 msgid "%Jsecond argument of %qD should be %<char **%>"
-msgstr "%Jzweites Argument von »%D« sollte »char **« sein"
+msgstr "%Jzweites Argument von %qD sollte %<char **%> sein"
 
 #: c-decl.c:5824
-#, fuzzy
 msgid "%Jthird argument of %qD should probably be %<char **%>"
-msgstr "%Jdrittes Argument von »%D« sollte wahrscheinlich »char **« sein"
+msgstr "%Jdrittes Argument von %qD sollte wahrscheinlich %<char **%> sein"
 
 #: c-decl.c:5834
-#, fuzzy
 msgid "%J%qD takes only zero or two arguments"
-msgstr "%J»%D« benötigt entweder null oder zwei Argumente"
+msgstr "%J%qD benötigt entweder null oder zwei Argumente"
 
 #: c-decl.c:5837
-#, fuzzy
 msgid "%J%qD is normally a non-static function"
-msgstr "%J»%D« ist normalerweise eine Nicht-static-Funktion"
+msgstr "%J%qD ist normalerweise eine Nicht-static-Funktion"
 
 #: c-decl.c:5883
 msgid "%Jold-style parameter declarations in prototyped function definition"
 msgstr "%JParameterdeklarationen alten Stils in Prototyp-Funktionsdeklaration"
 
 #: c-decl.c:5896
-#, fuzzy
 msgid "%Jtraditional C rejects ISO C style function definitions"
-msgstr "traditionelles C weist Funktionsdefinitionen im ISO-C-Stil zurück"
+msgstr "%Jtraditionelles C weist Funktionsdefinitionen im ISO-C-Stil zurück"
 
 #: c-decl.c:5908
 msgid "%Jparameter name omitted"
 msgstr "%JParametername ausgelassen"
 
 #: c-decl.c:5948
-#, fuzzy
 msgid "%Jold-style function definition"
-msgstr "reiner Spezifizierer bei Funktionsdefinition"
+msgstr "%JFunktionsdefinition im alten Stil"
 
 #: c-decl.c:5956
 msgid "%Jparameter name missing from parameter list"
 msgstr "%JParametername fehlt in Parameterliste"
 
 #: c-decl.c:5967
-#, fuzzy
 msgid "%J%qD declared as a non-parameter"
-msgstr "%J\"%D\" als Nicht-Parameter deklariert"
+msgstr "%J%qD als Nicht-Parameter deklariert"
 
 #: c-decl.c:5972
-#, fuzzy
 msgid "%Jmultiple parameters named %qD"
-msgstr "%Jmehrere Parameter wurden »%D« genannt"
+msgstr "%Jmehrere Parameter wurden %qD genannt"
 
 #: c-decl.c:5980
-#, fuzzy
 msgid "%Jparameter %qD declared with void type"
-msgstr "%JParameter »%D« als void deklariert"
+msgstr "%JParameter %qD als void deklariert"
 
 #: c-decl.c:5995 c-decl.c:5997
-#, fuzzy
 msgid "%Jtype of %qD defaults to %<int%>"
-msgstr "%JTyp von »%D« ist auf »int« voreingestellt"
+msgstr "%JTyp von %qD ist auf %<int%> voreingestellt"
 
 #: c-decl.c:6016
-#, fuzzy
 msgid "%Jparameter %qD has incomplete type"
-msgstr "%JParameter \"%D\" hat unvollständigen Typen"
+msgstr "%JParameter %qD hat unvollständigen Typen"
 
 #: c-decl.c:6022
-#, fuzzy
 msgid "%Jdeclaration for parameter %qD but no such parameter"
-msgstr "%Jnicht vorhandener Parameter »%D« deklariert"
+msgstr "%JDeklaration für nicht vorhandenen Parameter %qD"
 
 #: c-decl.c:6072
-#, fuzzy
 msgid "number of arguments doesn%'t match prototype"
 msgstr "Anzahl der Argumente passt nicht zum Prototypen"
 
@@ -1643,14 +1455,12 @@ msgid "%Hprototype declaration"
 msgstr "%HPrototyp-Deklaration"
 
 #: c-decl.c:6101
-#, fuzzy
 msgid "promoted argument %qD doesn%'t match prototype"
-msgstr "weitergegebenes Argument »%D« passt nicht zum Prototypen"
+msgstr "weitergegebenes Argument %qD passt nicht zum Prototypen"
 
 #: c-decl.c:6109
-#, fuzzy
 msgid "argument %qD doesn%'t match prototype"
-msgstr "Argument »%D« passt nicht zum Prototypen"
+msgstr "Argument %qD passt nicht zum Prototypen"
 
 #: c-decl.c:6307 cp/decl.c:10698
 msgid "no return statement in function returning non-void"
@@ -1664,153 +1474,129 @@ msgstr "diese Funktion kann mit oder ohne Wert zurückkehren"
 #. the C99 for loop scope.  This doesn't make much sense, so don't
 #. allow it.
 #: c-decl.c:6403
-#, fuzzy
 msgid "%<for%> loop initial declaration used outside C99 mode"
-msgstr "Anfangsdeklaration in »for«-Schleife außerhalb C99-Modus verwendet"
+msgstr "Anfangsdeklaration in %<for%>-Schleife außerhalb C99-Modus verwendet"
 
 #: c-decl.c:6432
-#, fuzzy
 msgid "%Jdeclaration of static variable %qD in %<for%> loop initial declaration"
-msgstr "%JDeklaration der »static«-Variablen »%D« in Anfangsdeklaration einer »for«-Schleife"
+msgstr "%JDeklaration der »static«-Variablen %qD in Anfangsdeklaration einer %<for%>-Schleife"
 
 #: c-decl.c:6435
-#, fuzzy
 msgid "%Jdeclaration of %<extern%> variable %qD in %<for%> loop initial declaration"
-msgstr "%JDeklaration der »extern«-Variablen »%D« in Anfangsdeklaration einer »for«-Schleife"
+msgstr "%JDeklaration der %<extern%>-Variablen %qD in Anfangsdeklaration einer %<for%>-Schleife"
 
 #: c-decl.c:6440
-#, fuzzy
 msgid "%<struct %E%> declared in %<for%> loop initial declaration"
-msgstr "»struct %s« in Anfangsdeklaration einer »for«-Schleife deklariert"
+msgstr "%<struct %E%> in Anfangsdeklaration einer %<for%>-Schleife deklariert"
 
 #: c-decl.c:6444
-#, fuzzy
 msgid "%<union %E%> declared in %<for%> loop initial declaration"
-msgstr "»union %s« in Anfangsdeklaration einer »for«-Schleife deklariert"
+msgstr "%<union %E%> in Anfangsdeklaration einer %<for%>-Schleife deklariert"
 
 #: c-decl.c:6448
-#, fuzzy
 msgid "%<enum %E%> declared in %<for%> loop initial declaration"
-msgstr "»enum %s« in Anfangsdeklaration einer »for«-Schleife deklariert"
+msgstr "%<enum %E%> in Anfangsdeklaration einer %<for%>-Schleife deklariert"
 
 #: c-decl.c:6452
-#, fuzzy
 msgid "%Jdeclaration of non-variable %qD in %<for%> loop initial declaration"
-msgstr "%JDeklaration der Nicht-Variablen »%D« in Anfangsdeklaration einer »for«-Schleife"
+msgstr "%JDeklaration der Nicht-Variablen %qD in Anfangsdeklaration einer %<for%>-Schleife"
 
 #: c-decl.c:6741 c-decl.c:6890 c-decl.c:7101 cp/decl.c:6828
-#, fuzzy, c-format
+#, c-format
 msgid "duplicate %qs"
-msgstr "doppeltes »%s«"
+msgstr "doppeltes %qs"
 
 #: c-decl.c:6762 c-decl.c:6899 c-decl.c:7002
-#, fuzzy
 msgid "two or more data types in declaration specifiers"
-msgstr "zwei oder mehr Datentypen in Deklaration von »%s«"
+msgstr "zwei oder mehr Datentypen in Deklaration"
 
 #: c-decl.c:6774 cp/decl.c:6804
-#, fuzzy
 msgid "%<long long long%> is too long for GCC"
-msgstr "»long long long« ist für GCC zu lang"
+msgstr "%<long long long%> ist für GCC zu lang"
 
 #: c-decl.c:6781 c-decl.c:6973
 msgid "both %<long long%> and %<double%> in declaration specifiers"
-msgstr ""
+msgstr "sowohl %<long long%> als auch %<double%> in Deklaration"
 
 #: c-decl.c:6787
-#, fuzzy
 msgid "ISO C90 does not support %<long long%>"
-msgstr "ISO-C90 unterstützt nicht »long long«"
+msgstr "ISO-C90 unterstützt nicht %<long long%>"
 
 #: c-decl.c:6792 c-decl.c:6812
-#, fuzzy
 msgid "both %<long%> and %<short%> in declaration specifiers"
-msgstr "sowohl »long« als auch »short« für »%s« angegeben"
+msgstr "sowohl %<long%> als auch %<short%> in Deklaration"
 
 #: c-decl.c:6795 c-decl.c:6906
-#, fuzzy
 msgid "both %<long%> and %<void%> in declaration specifiers"
-msgstr "sowohl »long« als auch »short« für »%s« angegeben"
+msgstr "sowohl %<long%> als auch %<void%> in Deklaration"
 
 #: c-decl.c:6798 c-decl.c:6925
-#, fuzzy
 msgid "both %<long%> and %<_Bool%> in declaration specifiers"
-msgstr "sowohl »long« als auch »short« für »%s« angegeben"
+msgstr "sowohl %<long%> als auch %<_Bool%> in Deklaration"
 
 #: c-decl.c:6801 c-decl.c:6944
-#, fuzzy
 msgid "both %<long%> and %<char%> in declaration specifiers"
-msgstr "sowohl »long« als auch »short« für »%s« angegeben"
+msgstr "sowohl %<long%> als auch %<char%> in Deklaration"
 
 #: c-decl.c:6804 c-decl.c:6957
-#, fuzzy
 msgid "both %<long%> and %<float%> in declaration specifiers"
-msgstr "sowohl »long« als auch »short« für »%s« angegeben"
+msgstr "sowohl %<long%> als auch %<float%> in Deklaration"
 
 #: c-decl.c:6815 c-decl.c:6909
 msgid "both %<short%> and %<void%> in declaration specifiers"
-msgstr ""
+msgstr "sowohl %<short%> als auch %<void%> in Deklaration"
 
 #: c-decl.c:6818 c-decl.c:6928
 msgid "both %<short%> and %<_Bool%> in declaration specifiers"
-msgstr ""
+msgstr "sowohl %<short%> als auch %<_Bool%> in Deklaration"
 
 #: c-decl.c:6821 c-decl.c:6947
 msgid "both %<short%> and %<char%> in declaration specifiers"
-msgstr ""
+msgstr "sowohl %<short%> als auch %<char%> in Deklaration"
 
 #: c-decl.c:6824 c-decl.c:6960
 msgid "both %<short%> and %<float%> in declaration specifiers"
-msgstr ""
+msgstr "sowohl %<short%> als auch %<float%> in Deklaration"
 
 #: c-decl.c:6827 c-decl.c:6976
 msgid "both %<short%> and %<double%> in declaration specifiers"
-msgstr ""
+msgstr "sowohl %<short%> als auch %<double%> in Deklaration"
 
 #: c-decl.c:6835 c-decl.c:6855
-#, fuzzy
 msgid "both %<signed%> and %<unsigned%> in declaration specifiers"
-msgstr "sowohl »signed« als auch »unsigned« für »%s« angegeben"
+msgstr "sowohl %<signed%> als auch %<unsigned%> in Deklaration"
 
 #: c-decl.c:6838 c-decl.c:6912
-#, fuzzy
 msgid "both %<signed%> and %<void%> in declaration specifiers"
-msgstr "sowohl »signed« als auch »unsigned« für »%s« angegeben"
+msgstr "sowohl %<signed%> als auch %<void%> in Deklaration"
 
 #: c-decl.c:6841 c-decl.c:6931
-#, fuzzy
 msgid "both %<signed%> and %<_Bool%> in declaration specifiers"
-msgstr "sowohl »signed« als auch »unsigned« für »%s« angegeben"
+msgstr "sowohl %<signed%> als auch %<_Bool%> in Deklaration"
 
 #: c-decl.c:6844 c-decl.c:6963
-#, fuzzy
 msgid "both %<signed%> and %<float%> in declaration specifiers"
-msgstr "sowohl »signed« als auch »unsigned« für »%s« angegeben"
+msgstr "sowohl %<signed%> als auch %<float%> in Deklaration"
 
 #: c-decl.c:6847 c-decl.c:6979
-#, fuzzy
 msgid "both %<signed%> and %<double%> in declaration specifiers"
-msgstr "sowohl »signed« als auch »unsigned« für »%s« angegeben"
+msgstr "sowohl %<signed%> als auch %<double%> in Deklaration"
 
 #: c-decl.c:6858 c-decl.c:6915
-#, fuzzy
 msgid "both %<unsigned%> and %<void%> in declaration specifiers"
-msgstr "sowohl »signed« als auch »unsigned« für »%s« angegeben"
+msgstr "sowohl %<unsigned%> als auch %<void%> in Deklaration"
 
 #: c-decl.c:6861 c-decl.c:6934
-#, fuzzy
 msgid "both %<unsigned%> and %<_Bool%> in declaration specifiers"
-msgstr "sowohl »signed« als auch »unsigned« für »%s« angegeben"
+msgstr "sowohl %<unsigned%> als auch %<_Bool%> in Deklaration"
 
 #: c-decl.c:6864 c-decl.c:6966
-#, fuzzy
 msgid "both %<unsigned%> and %<float%> in declaration specifiers"
-msgstr "sowohl »signed« als auch »unsigned« für »%s« angegeben"
+msgstr "sowohl %<unsigned%> als auch %<float%> in Deklaration"
 
 #: c-decl.c:6867 c-decl.c:6982
-#, fuzzy
 msgid "both %<unsigned%> and %<double%> in declaration specifiers"
-msgstr "sowohl »signed« als auch »unsigned« für »%s« angegeben"
+msgstr "sowohl %<unsigned%> als auch %<double%> in Deklaration"
 
 #: c-decl.c:6875
 msgid "ISO C90 does not support complex types"
@@ -1818,66 +1604,61 @@ msgstr "ISO-C90 unterstützt nicht komplexe Typen"
 
 #: c-decl.c:6877 c-decl.c:6918
 msgid "both %<complex%> and %<void%> in declaration specifiers"
-msgstr ""
+msgstr "sowohl %<complex%> als auch %<void%> in Deklaration"
 
 #: c-decl.c:6880 c-decl.c:6937
 msgid "both %<complex%> and %<_Bool%> in declaration specifiers"
-msgstr ""
+msgstr "sowohl %<complex%> als auch %<_Bool%> in Deklaration"
 
 #: c-decl.c:7019
-#, fuzzy, c-format
+#, c-format
 msgid "%qs fails to be a typedef or built in type"
-msgstr "»%s« ist kein typedef oder eingebauter Typ"
+msgstr "%qs ist kein typedef oder eingebauter Typ"
 
 #: c-decl.c:7051
-#, fuzzy, c-format
+#, c-format
 msgid "%qs is not at beginning of declaration"
-msgstr "»%s« ist nicht am Beginn einer Deklaration"
+msgstr "%qs ist nicht am Beginn einer Deklaration"
 
 #: c-decl.c:7066
 msgid "%<__thread%> used with %<auto%>"
-msgstr ""
+msgstr "%<__thread%> mit %<auto%> verwendet"
 
 #: c-decl.c:7068
 msgid "%<__thread%> used with %<register%>"
-msgstr ""
+msgstr "%<__thread%> mit %<register%> verwendet"
 
 #: c-decl.c:7070
 msgid "%<__thread%> used with %<typedef%>"
-msgstr ""
+msgstr "%<__thread%> mit %<typedef%> verwendet"
 
 #: c-decl.c:7081 cp/parser.c:7114
-#, fuzzy
 msgid "%<__thread%> before %<extern%>"
-msgstr "»__thread« vor »extern«"
+msgstr "%<__thread%> vor %<extern%>"
 
 #: c-decl.c:7090 cp/parser.c:7104
-#, fuzzy
 msgid "%<__thread%> before %<static%>"
-msgstr "»__thread« vor »static«"
+msgstr "%<__thread%> vor %<static%>"
 
 #: c-decl.c:7106
-#, fuzzy
 msgid "multiple storage classes in declaration specifiers"
-msgstr "mehrere Speicherklassen in Deklaration von »%s«"
+msgstr "mehrere Speicherklassen in Deklaration"
 
 #: c-decl.c:7113
 msgid "%<__thread%> used with %qs"
-msgstr ""
+msgstr "%<__thread%> mit %qs verwendet"
 
 #: c-decl.c:7167
-#, fuzzy
 msgid "ISO C does not support plain %<complex%> meaning %<double complex%>"
-msgstr "ISO-C unterstützt nicht »double complex« bedeutendes »complex«"
+msgstr "ISO-C unterstützt nicht %<double complex%> bedeutendes einfaches %<complex%>"
 
 #: c-decl.c:7212 c-decl.c:7238
 msgid "ISO C does not support complex integer types"
 msgstr "ISO-C unterstützt keine komplexen Ganzzahltypen"
 
 #: c-decl.c:7313 toplev.c:844
-#, fuzzy
 msgid "%J%qF used but never defined"
-msgstr "%J»%F« verwendet, aber nirgendwo definiert"
+msgstr "%J%qF verwendet, aber nirgendwo definiert"
 
 #: c-format.c:96 c-format.c:209
 msgid "format string has invalid operand number"
@@ -1888,7 +1669,6 @@ msgid "function does not return string type"
 msgstr "Funktion gibt keinen Zeichenkettentypen zurück"
 
 #: c-format.c:142
-#, fuzzy
 msgid "format string argument not a string type"
 msgstr "Format-Zeichenkettenargument ist kein Zeichenkettentyp"
 
@@ -1897,87 +1677,71 @@ msgid "unrecognized format specifier"
 msgstr "unerkannte Formatangabe"
 
 #: c-format.c:202
-#, fuzzy, c-format
+#, c-format
 msgid "%qs is an unrecognized format function type"
-msgstr "»%s« ist ein nicht erkannter Formatfunktionstyp"
+msgstr "%qs ist ein nicht erkannter Formatfunktionstyp"
 
 #: c-format.c:215
-#, fuzzy
 msgid "%<...%> has invalid operand number"
-msgstr "»...« hat ungültige Operandenzahl"
+msgstr "%<...%> hat ungültige Operandenzahl"
 
 #: c-format.c:222
-#, fuzzy
 msgid "format string argument follows the args to be formatted"
 msgstr "Format-Zeichenkettenargument folgt den zu formatierenden Argumenten"
 
 #: c-format.c:345 c-format.c:369
-#, fuzzy
 msgid "' ' flag"
 msgstr "» «-Kennzeichen"
 
 #: c-format.c:345 c-format.c:369
-#, fuzzy
 msgid "the ' ' printf flag"
-msgstr "das »'«-printf-Kennzeichen"
+msgstr "das » «-printf-Kennzeichen"
 
 #: c-format.c:346 c-format.c:370 c-format.c:408 c-format.c:465
-#, fuzzy
 msgid "'+' flag"
 msgstr "»+«-Kennzeichen"
 
 #: c-format.c:346 c-format.c:370 c-format.c:408
-#, fuzzy
 msgid "the '+' printf flag"
-msgstr "das »'«-printf-Kennzeichen"
+msgstr "das »+«-printf-Kennzeichen"
 
 #: c-format.c:347 c-format.c:371 c-format.c:409 c-format.c:441
-#, fuzzy
 msgid "'#' flag"
 msgstr "»#«-Kennzeichen"
 
 #: c-format.c:347 c-format.c:371 c-format.c:409
-#, fuzzy
 msgid "the '#' printf flag"
-msgstr "das »'«-printf-Kennzeichen"
+msgstr "das »#«-printf-Kennzeichen"
 
 #: c-format.c:348 c-format.c:372 c-format.c:439
-#, fuzzy
 msgid "'0' flag"
 msgstr "»0«-Kennzeichen"
 
 #: c-format.c:348 c-format.c:372
-#, fuzzy
 msgid "the '0' printf flag"
-msgstr "das »'«-printf-Kennzeichen"
+msgstr "das »0«-printf-Kennzeichen"
 
 #: c-format.c:349 c-format.c:373 c-format.c:438 c-format.c:468
-#, fuzzy
 msgid "'-' flag"
 msgstr "»-«-Kennzeichen"
 
 #: c-format.c:349 c-format.c:373
-#, fuzzy
 msgid "the '-' printf flag"
-msgstr "das »'«-printf-Kennzeichen"
+msgstr "das »-«-printf-Kennzeichen"
 
 #: c-format.c:350 c-format.c:422
-#, fuzzy
 msgid "''' flag"
 msgstr "»'«-Kennzeichen"
 
 #: c-format.c:350
-#, fuzzy
 msgid "the ''' printf flag"
 msgstr "das »'«-printf-Kennzeichen"
 
 #: c-format.c:351 c-format.c:423
-#, fuzzy
 msgid "'I' flag"
-msgstr "»'«-Kennzeichen"
+msgstr "»I«-Kennzeichen"
 
 #: c-format.c:351
-#, fuzzy
 msgid "the 'I' printf flag"
 msgstr "das »I«-printf-Kennzeichen"
 
@@ -2009,14 +1773,12 @@ msgid "length modifier in printf format"
 msgstr "Längenmodifizierer im printf-Format"
 
 #: c-format.c:398 c-format.c:410
-#, fuzzy
 msgid "'q' flag"
-msgstr "»'«-Kennzeichen"
+msgstr "»q«-Kennzeichen"
 
 #: c-format.c:398 c-format.c:410
-#, fuzzy
 msgid "the 'q' diagnostic flag"
-msgstr "das »'«-printf-Kennzeichen"
+msgstr "das »q«-printf-Kennzeichen"
 
 #: c-format.c:418
 msgid "assignment suppression"
@@ -2027,14 +1789,12 @@ msgid "the assignment suppression scanf feature"
 msgstr "das scanf-Merkmal der Zuweisungsunterdrückung"
 
 #: c-format.c:419
-#, fuzzy
 msgid "'a' flag"
-msgstr "»'«-Kennzeichen"
+msgstr "»a«-Kennzeichen"
 
 #: c-format.c:419
-#, fuzzy
 msgid "the 'a' scanf flag"
-msgstr "das »'«-scanf-Kennzeichen"
+msgstr "das »a«-scanf-Kennzeichen"
 
 #: c-format.c:420
 msgid "field width in scanf format"
@@ -2045,47 +1805,38 @@ msgid "length modifier in scanf format"
 msgstr "Längenmodifizierer im scanf-Format"
 
 #: c-format.c:422
-#, fuzzy
 msgid "the ''' scanf flag"
 msgstr "das »'«-scanf-Kennzeichen"
 
 #: c-format.c:423
-#, fuzzy
 msgid "the 'I' scanf flag"
 msgstr "das »I«-scanf-Kennzeichen"
 
 #: c-format.c:437
-#, fuzzy
 msgid "'_' flag"
-msgstr "»'«-Kennzeichen"
+msgstr "»_«-Kennzeichen"
 
 #: c-format.c:437
-#, fuzzy
 msgid "the '_' strftime flag"
 msgstr "das »_«-strftime-Kennzeichen"
 
 #: c-format.c:438
-#, fuzzy
 msgid "the '-' strftime flag"
 msgstr "das »-«-strftime-Kennzeichen"
 
 #: c-format.c:439
-#, fuzzy
 msgid "the '0' strftime flag"
 msgstr "das »0«-strftime-Kennzeichen"
 
 #: c-format.c:440 c-format.c:464
-#, fuzzy
 msgid "'^' flag"
-msgstr "»'«-Kennzeichen"
+msgstr "»^«-Kennzeichen"
 
 #: c-format.c:440
-#, fuzzy
 msgid "the '^' strftime flag"
 msgstr "das »^«-strftime-Kennzeichen"
 
 #: c-format.c:441
-#, fuzzy
 msgid "the '#' strftime flag"
 msgstr "das »#«-strftime-Kennzeichen"
 
@@ -2094,27 +1845,22 @@ msgid "field width in strftime format"
 msgstr "Feldbreite im strftime-Format"
 
 #: c-format.c:443
-#, fuzzy
 msgid "'E' modifier"
 msgstr "»E«-Modifizierer"
 
 #: c-format.c:443
-#, fuzzy
 msgid "the 'E' strftime modifier"
 msgstr "der »E«-strftime-Modifizierer"
 
 #: c-format.c:444
-#, fuzzy
 msgid "'O' modifier"
 msgstr "»O«-Modifizierer"
 
 #: c-format.c:444
-#, fuzzy
 msgid "the 'O' strftime modifier"
 msgstr "der »O«-strftime-Modifizierer"
 
 #: c-format.c:445
-#, fuzzy
 msgid "the 'O' modifier"
 msgstr "der »O«-Modifizierer"
 
@@ -2127,37 +1873,30 @@ msgid "fill character in strfmon format"
 msgstr "Füllzeichen im strfmon-Format"
 
 #: c-format.c:464
-#, fuzzy
 msgid "the '^' strfmon flag"
 msgstr "das »^«-strfmon-Kennzeichen"
 
 #: c-format.c:465
-#, fuzzy
 msgid "the '+' strfmon flag"
 msgstr "das »+«-strfmon-Kennzeichen"
 
 #: c-format.c:466
-#, fuzzy
 msgid "'(' flag"
-msgstr "»'«-Kennzeichen"
+msgstr "»(«-Kennzeichen"
 
 #: c-format.c:466
-#, fuzzy
 msgid "the '(' strfmon flag"
 msgstr "das »(«-strfmon-Kennzeichen"
 
 #: c-format.c:467
-#, fuzzy
 msgid "'!' flag"
-msgstr "»'«-Kennzeichen"
+msgstr "»!«-Kennzeichen"
 
 #: c-format.c:467
-#, fuzzy
 msgid "the '!' strfmon flag"
 msgstr "das »!«-strfmon-Kennzeichen"
 
 #: c-format.c:468
-#, fuzzy
 msgid "the '-' strfmon flag"
 msgstr "das »-«-strfmon-Kennzeichen"
 
@@ -2186,9 +1925,9 @@ msgid "length modifier in strfmon format"
 msgstr "Längenmodifizierer im strfmon-Format"
 
 #: c-format.c:840
-#, fuzzy, c-format
+#, c-format
 msgid "function might be possible candidate for %qs format attribute"
-msgstr "Funktion könnte möglicher Kandidat für Formatattribut »%s« sein"
+msgstr "Funktion könnte möglicher Kandidat für Formatattribut %qs sein"
 
 #: c-format.c:931 c-format.c:952 c-format.c:1947
 msgid "missing $ operand number in format"
@@ -2209,9 +1948,8 @@ msgid "format argument %d used more than once in %s format"
 msgstr "Formatargument %d mehr als einmal im %s-Format verwendet"
 
 #: c-format.c:1023
-#, fuzzy
 msgid "$ operand number used after format without operand number"
-msgstr "Operandennummer für Format ohne Argumente angegeben"
+msgstr "$-Operandennummer nach Format ohne Operandennummer angegeben"
 
 #: c-format.c:1053
 #, c-format
@@ -2252,14 +1990,12 @@ msgid "unterminated format string"
 msgstr "unbeendete Formatzeichenkette"
 
 #: c-format.c:1400
-#, fuzzy
 msgid "embedded %<\\0%> in format"
-msgstr "eingebettetes »\\0« im Format"
+msgstr "eingebettetes %<\\0%> im Format"
 
 #: c-format.c:1415
-#, fuzzy
 msgid "spurious trailing %<%%%> in format"
-msgstr "störendes letztes »%%« im Format"
+msgstr "störendes letztes %<%%%> im Format"
 
 #: c-format.c:1459 c-format.c:1703
 #, c-format
