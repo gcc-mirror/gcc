@@ -1481,10 +1481,16 @@ combine_movables (movables, nregs)
 		      width as M1.  The check for integer is redundant, but
 		      safe, since the only case of differing destination
 		      modes with equal sources is when both sources are
-		      VOIDmode, i.e., CONST_INT.  */
+		      VOIDmode, i.e., CONST_INT.
+		    
+		      For 2.95, don't do this if the mode of M1 is Pmode.
+		      This prevents us from substituting SUBREGs for REGs
+		      in memory accesses; not all targets are prepared to
+		      handle this properly.  */
 		   (GET_MODE (m->set_dest) == GET_MODE (m1->set_dest)
 		    || (GET_MODE_CLASS (GET_MODE (m->set_dest)) == MODE_INT
 			&& GET_MODE_CLASS (GET_MODE (m1->set_dest)) == MODE_INT
+			&& GET_MODE (m1->set_dest) != Pmode
 			&& (GET_MODE_BITSIZE (GET_MODE (m->set_dest))
 			    >= GET_MODE_BITSIZE (GET_MODE (m1->set_dest)))))
 		   /* See if the source of M1 says it matches M.  */

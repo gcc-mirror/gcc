@@ -5,6 +5,10 @@
 	Remove ia32 linux PIC kludge and move it...
 	* config/i386/linux.h (CRT_END_INIT_DUMMY): ...here.
 
+	* loop.c (combine_movables): Restrict combinations of constants with
+	different modes so that we don't introduce SUBREGs into memory
+	addresses.
+
 2001-03-30  Bernd Schmidt  <bernds@redhat.com>
 
 	* jump.c (delete_barrier_successors): Fix error in last change.
