@@ -1,3 +1,10 @@
+2005-01-24  J"orn Rennecke <joern.rennecke@st.com>
+
+	* sh.c (ra.h): Don't #include.
+	(hard_regs_intersect_p): New function, resurrected from ra.c.
+
+	* sh.c: Fix 1996 Copyright.
+
 2005-01-24  Richard Henderson  <rth@redhat.com>
             Aldy Hernandez  <aldyh@redhat.com>
 
