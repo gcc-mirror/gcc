@@ -1976,6 +1976,14 @@ summarize_insn (x, sum, set)
       summarize_insn (XEXP (x, 0), sum, 0);
       break;
 
+    case SUBREG:
+      summarize_insn (SUBREG_REG (x), sum, 0);
+      break;
+
+    case CONST_INT:   case CONST_DOUBLE:
+    case SYMBOL_REF:  case LABEL_REF:     case CONST:
+      break;
+
       /* Handle common unary and binary ops for efficiency.  */
     case COMPARE:  case PLUS:    case MINUS:   case MULT:      case DIV:
     case MOD:      case UDIV:    case UMOD:    case AND:       case IOR:
