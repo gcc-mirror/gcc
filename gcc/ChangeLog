@@ -1,3 +1,7 @@
+2004-12-22  Roger Sayle  <roger@eyesopen.com>
+
+	* tree-browser.c: Remove obsolete #ifdef HOST_EBCDIC code.
+
 2004-12-23  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/18896
