@@ -3426,20 +3426,34 @@ build_over_call (cand, args, flags)
       else if (! real_lvalue_p (arg)
 	       || TYPE_HAS_TRIVIAL_INIT_REF (DECL_CONTEXT (fn)))
 	{
+	  tree address;
 	  tree to = stabilize_reference
 	    (build_indirect_ref (TREE_VALUE (args), 0));
 
-	  /* Don't copy the padding byte; it might not have been allocated
-	     if to is a base subobject.  */
-	  if (is_empty_class (DECL_CLASS_CONTEXT (fn)))
-	    return build_unary_op
-	      (ADDR_EXPR, build (COMPOUND_EXPR, TREE_TYPE (to),
-				 cp_convert (void_type_node, arg), to),
-	       0);
-
-	  val = build (INIT_EXPR, DECL_CONTEXT (fn), to, arg);
+	  /* If we're initializing an empty class, then we actually
+	     have to use a MODIFY_EXPR rather than an INIT_EXPR.  The
+	     reason is that the dummy padding member in the target may
+	     not actually be allocated if TO is a base class
+	     subobject.  Since we've set TYPE_NONCOPIED_PARTS on the
+	     padding, a MODIFY_EXPR will preserve its value, which is
+	     the right thing to do if it's not really padding at all.
+	  
+	     It's not safe to just throw away the ARG if we're looking
+	     at an empty class because the ARG might contain a
+	     TARGET_EXPR which wants to be bound to TO.  If it is not,
+	     expand_expr will assign a dummy slot for the TARGET_EXPR,
+	     and we will call a destructor for it, which is wrong,
+	     because we will also destroy TO, but will never have
+	     constructed it.  */
+	  val = build (is_empty_class (DECL_CLASS_CONTEXT (fn))
+		       ? MODIFY_EXPR : INIT_EXPR, 
+		       DECL_CONTEXT (fn), to, arg);
 	  TREE_SIDE_EFFECTS (val) = 1;
-	  return build_unary_op (ADDR_EXPR, val, 0);
+	  address = build_unary_op (ADDR_EXPR, val, 0);
+	  /* Avoid a warning about this expression, if the address is
+	     never used.  */
+	  TREE_USED (address) = 1;
+	  return address;
 	}
     }
   else if (DECL_NAME (fn) == ansi_opname[MODIFY_EXPR]
@@ -3450,12 +3464,6 @@ build_over_call (cand, args, flags)
 	(build_indirect_ref (TREE_VALUE (converted_args), 0));
 
       arg = build_indirect_ref (TREE_VALUE (TREE_CHAIN (converted_args)), 0);
-
-      /* Don't copy the padding byte; it might not have been allocated
-	 if to is a base subobject.  */
-      if (is_empty_class (DECL_CLASS_CONTEXT (fn)))
-	return build (COMPOUND_EXPR, TREE_TYPE (to),
-		      cp_convert (void_type_node, arg), to);
 
       val = build (MODIFY_EXPR, TREE_TYPE (to), to, arg);
       TREE_SIDE_EFFECTS (val) = 1;
