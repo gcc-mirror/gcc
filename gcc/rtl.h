@@ -55,6 +55,7 @@ extern char rtx_class[];
 
 typedef union rtunion_def
 {
+  HOST_WIDE_INT rtwint;
   int rtint;
   char *rtstr;
   struct rtx_def *rtx;
@@ -132,6 +133,16 @@ typedef struct rtx_def
 
 #define NULL_RTX (rtx) 0
 
+/* Define a generic NULL if one hasn't already been defined.  */
+
+#ifndef NULL
+#define NULL 0
+#endif
+
+#ifndef NULL_PTR
+#define NULL_PTR (char *) NULL
+#endif
+
 /* Define macros to access the `code' field of the rtx.  */
 
 #ifdef SHORT_ENUM_BUG
@@ -179,6 +190,7 @@ typedef struct rtvec_def{
 
 #define XEXP(RTX, N)	((RTX)->fld[N].rtx)
 #define XINT(RTX, N)	((RTX)->fld[N].rtint)
+#define XWINT(RTX, N)	((RTX)->fld[N].rtwint)
 #define XSTR(RTX, N)	((RTX)->fld[N].rtstr)
 #define XVEC(RTX, N)	((RTX)->fld[N].rtvec)
 #define XVECLEN(RTX, N)	((RTX)->fld[N].rtvec->num_elem)
@@ -399,7 +411,7 @@ extern char *note_insn_name[];
 
 /* For a CONST_INT rtx, INTVAL extracts the integer.  */
 
-#define INTVAL(RTX) ((RTX)->fld[0].rtint)
+#define INTVAL(RTX) ((RTX)->fld[0].rtwint)
 
 /* For a SUBREG rtx, SUBREG_REG extracts the value we want a subreg of.
    SUBREG_WORD extracts the word-number.  */
@@ -532,17 +544,36 @@ extern char *note_insn_name[];
 
 /* Generally useful functions.  */
 
+/* The following functions accept a wide integer argument.  Rather than
+   having to cast on every function call, we use a macro instead, that is
+   defined here and in tree.h.  */
+
+#ifndef exact_log2
+#define exact_log2(N) exact_log2_wide ((HOST_WIDE_INT) (N))
+#define floor_log2(N) floor_log2_wide ((HOST_WIDE_INT) (N))
+#endif
+
+#define plus_constant(X,C) plus_constant_wide (X, (HOST_WIDE_INT) (C))
+
+#define plus_constant_for_output(X,C)  \
+  plus_constant_for_output_wide (X, (HOST_WIDE_INT) (C))
+
+extern rtx plus_constant_wide (), plus_constant_for_output_wide ();
+
+#define GEN_INT(N) gen_rtx (CONST_INT, VOIDmode, (N))
+
+extern rtx gen_rtx ();
+
 extern char *xmalloc ();
 extern void free ();
 extern rtx rtx_alloc ();
 extern rtvec rtvec_alloc ();
 extern rtx find_reg_note ();
 extern rtx find_regno_note ();
-extern int get_integer_term ();
+extern HOST_WIDE_INT get_integer_term ();
 extern rtx get_related_value ();
 extern rtx single_set ();
 extern rtx find_last_value ();
-extern rtx gen_rtx ();
 extern rtx copy_rtx ();
 extern rtx copy_rtx_if_shared ();
 extern rtx copy_most_rtx ();
@@ -623,7 +654,6 @@ extern enum rtx_code reverse_condition ();
 extern enum rtx_code swap_condition ();
 extern enum rtx_code unsigned_condition ();
 extern enum rtx_code signed_condition ();
-extern rtx plus_constant (), plus_constant_for_output ();
 extern rtx find_equiv_reg ();
 extern rtx squeeze_notes ();
 extern rtx delete_insn ();

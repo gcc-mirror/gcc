@@ -1,5 +1,5 @@
 /* Optimize jump instructions, for GNU compiler.
-   Copyright (C) 1987, 1988, 1989, 1991 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1989, 1991, 1992 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -368,8 +368,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 		  }
 		else
 		  XEXP (SET_SRC (PATTERN (stack_adjust_insn)), 1)
-		    = gen_rtx (CONST_INT, VOIDmode, 
-			       stack_adjust_amount - total_pushed);
+		    = GEN_INT (stack_adjust_amount - total_pushed);
 
 		/* Change the appropriate push insns to ordinary stores.  */
 		p = insn;
@@ -396,7 +395,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 		    if (total_pushed < 0)
 		      {
 			emit_insn_before (gen_add2_insn (stack_pointer_rtx,
-							 gen_rtx (CONST_INT, VOIDmode, - total_pushed)),
+							 GEN_INT (- total_pushed)),
 					  p);
 			break;
 		      }
@@ -433,8 +432,8 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 		else if (sreg >= 0 && dreg >= 0)
 		  {
 		    rtx trial;
-		    rtx tem = find_equiv_reg (0, insn, 0,
-					      sreg, 0, dreg,
+		    rtx tem = find_equiv_reg (NULL_RTX, insn, 0,
+					      sreg, NULL_PTR, dreg,
 					      GET_MODE (SET_SRC (body)));
 
 #ifdef PRESERVE_DEATH_INFO_REGNO_P
@@ -463,8 +462,9 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 		      }
 		  }
 		else if (dreg >= 0 && CONSTANT_P (SET_SRC (body))
-			 && find_equiv_reg (SET_SRC (body), insn, 0, dreg, 0,
-					    0, GET_MODE (SET_DEST (body))))
+			 && find_equiv_reg (SET_SRC (body), insn, 0, dreg,
+					    NULL_PTR, 0,
+					    GET_MODE (SET_DEST (body))))
 		  {
 		    /* This handles the case where we have two consecutive
 		       assignments of the same constant to pseudos that didn't
@@ -629,7 +629,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	     it into a RETURN insn, possibly a conditional one.  */
 	  if (JUMP_LABEL (insn)
 	      && next_active_insn (JUMP_LABEL (insn)) == 0)
-	    changed |= redirect_jump (insn, 0);
+	    changed |= redirect_jump (insn, NULL_RTX);
 
 	  /* Detect jump to following insn.  */
 	  if (reallabelprev == insn && condjump_p (insn))
@@ -902,7 +902,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 		  if (normalizep != 1)
 		    target = expand_and (yes, target,
 					 (GET_CODE (target) == REG
-					  ? target : 0));
+					  ? target : NULL_RTX));
 		  seq = gen_sequence ();
 		  end_sequence ();
 		  emit_insn_before (seq, temp5);
@@ -1718,8 +1718,8 @@ duplicate_loop_exit_test (loop_start)
 	case JUMP_INSN:
 	case INSN:
 	  if (++num_insns > 20
-	      || find_reg_note (insn, REG_RETVAL, 0)
-	      || find_reg_note (insn, REG_LIBCALL, 0))
+	      || find_reg_note (insn, REG_RETVAL, NULL_RTX)
+	      || find_reg_note (insn, REG_LIBCALL, NULL_RTX))
 	    return 0;
 	  break;
 	}
@@ -1996,10 +1996,10 @@ find_cross_jump (e1, e2, minimum, f1, f2)
 	  rtx equiv2;
 
 	  if (!lose && GET_CODE (p1) == GET_CODE (p2)
-	      && ((equiv1 = find_reg_note (i1, REG_EQUAL, 0)) != 0
-		  || (equiv1 = find_reg_note (i1, REG_EQUIV, 0)) != 0)
-	      && ((equiv2 = find_reg_note (i2, REG_EQUAL, 0)) != 0
-		  || (equiv2 = find_reg_note (i2, REG_EQUIV, 0)) != 0)
+	      && ((equiv1 = find_reg_note (i1, REG_EQUAL, NULL_RTX)) != 0
+		  || (equiv1 = find_reg_note (i1, REG_EQUIV, NULL_RTX)) != 0)
+	      && ((equiv2 = find_reg_note (i2, REG_EQUAL, NULL_RTX)) != 0
+		  || (equiv2 = find_reg_note (i2, REG_EQUIV, NULL_RTX)) != 0)
 	      /* If the equivalences are not to a constant, they may
 		 reference pseudos that no longer exist, so we can't
 		 use them.  */
@@ -2743,7 +2743,7 @@ mark_jump_label (x, insn, cross_jump)
 	int eltnum = code == ADDR_DIFF_VEC ? 1 : 0;
 
 	for (i = 0; i < XVECLEN (x, eltnum); i++)
-	  mark_jump_label (XVECEXP (x, eltnum, i), 0, cross_jump);
+	  mark_jump_label (XVECEXP (x, eltnum, i), NULL_RTX, cross_jump);
 	return;
       }
     }
@@ -2788,7 +2788,7 @@ delete_jump (insn)
 	  && sets_cc0_p (PATTERN (prev)))
 	{
 	  if (sets_cc0_p (PATTERN (prev)) > 0
-	      && !FIND_REG_INC_NOTE (prev, 0))
+	      && !FIND_REG_INC_NOTE (prev, NULL_RTX))
 	    delete_insn (prev);
 	  else
 	    /* Otherwise, show that cc0 won't be used.  */
@@ -2834,7 +2834,7 @@ delete_jump (insn)
 
 		if (reg_set_p (XEXP (note, 0), PATTERN (our_prev)))
 		  {
-		    if (FIND_REG_INC_NOTE (our_prev, 0))
+		    if (FIND_REG_INC_NOTE (our_prev, NULL_RTX))
 		      break;
 
 		    if (GET_CODE (PATTERN (our_prev)) == PARALLEL)
@@ -3463,6 +3463,11 @@ rtx_renumbered_equal_p (x, y)
       register int j;
       switch (fmt[i])
 	{
+	case 'w':
+	  if (XWINT (x, i) != XWINT (y, i))
+	    return 0;
+	  break;
+
 	case 'i':
 	  if (XINT (x, i) != XINT (y, i))
 	    return 0;
@@ -3875,6 +3880,11 @@ rtx_equal_for_thread_p (x, y, yinsn)
     {
       switch (fmt[i])
 	{
+	case 'w':
+	  if (XWINT (x, i) != XWINT (y, i))
+	    return 0;
+	  break;
+
 	case 'n':
 	case 'i':
 	  if (XINT (x, i) != XINT (y, i))

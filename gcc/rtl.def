@@ -464,7 +464,7 @@ DEF_RTL_EXPR(TRAP_IF, "trap_if", "ei", 'x')
    ---------------------------------------------------------------------- */
 
 /* numeric integer constant */
-DEF_RTL_EXPR(CONST_INT, "const_int", "i", 'o')
+DEF_RTL_EXPR(CONST_INT, "const_int", "w", 'o')
 
 /* numeric double constant.
    Operand 0 is the MEM that stores this constant in memory,
@@ -473,7 +473,7 @@ DEF_RTL_EXPR(CONST_INT, "const_int", "i", 'o')
    Remaining operands hold the actual value.
    The number of operands may be more than 2 if cross-compiling;
    see init_rtl.  */
-DEF_RTL_EXPR(CONST_DOUBLE, "const_double", "e0ii", 'o')
+DEF_RTL_EXPR(CONST_DOUBLE, "const_double", "e0ww", 'o')
 
 /* String constant.  Used only for attributes right now.  */
 DEF_RTL_EXPR(CONST_STRING, "const_string", "s", 'o')

@@ -34,7 +34,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "tree.h"
 #include "rtl.h"
 #include <stdio.h>
-#include <string.h>
 #include "obstack.h"
 
 #define obstack_chunk_alloc xmalloc

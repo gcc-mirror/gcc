@@ -1205,7 +1205,7 @@ fixup_var_refs_1 (var, loc, insn, replacements)
 		  /* Make the change and see if the insn remains valid.  */
 		  INSN_CODE (insn) = -1;
 		  XEXP (x, 0) = newmem;
-		  XEXP (x, 2) = gen_rtx (CONST_INT, VOIDmode, pos);
+		  XEXP (x, 2) = GEN_INT (pos);
 
 		  if (recog_memoized (insn) >= 0)
 		    return;
@@ -1270,7 +1270,7 @@ fixup_var_refs_1 (var, loc, insn, replacements)
 	optimize_bit_field (x, insn, 0);
       if (GET_CODE (SET_SRC (x)) == SIGN_EXTRACT
 	  || GET_CODE (SET_SRC (x)) == ZERO_EXTRACT)
-	optimize_bit_field (x, insn, 0);
+	optimize_bit_field (x, insn, NULL_PTR);
 
       /* If SET_DEST is now a paradoxical SUBREG, put the result of this
 	 insn into a pseudo and store the low part of the pseudo into VAR. */
@@ -1362,7 +1362,7 @@ fixup_var_refs_1 (var, loc, insn, replacements)
 		    /* Make the change and see if the insn remains valid.  */
 		    INSN_CODE (insn) = -1;
 		    XEXP (outerdest, 0) = newmem;
-		    XEXP (outerdest, 2) = gen_rtx (CONST_INT, VOIDmode, pos);
+		    XEXP (outerdest, 2) = GEN_INT (pos);
 		    
 		    if (recog_memoized (insn) >= 0)
 		      return;
@@ -1867,7 +1867,7 @@ instantiate_virtual_regs (fndecl, insns)
 	|| GET_CODE (insn) == CALL_INSN)
       {
 	instantiate_virtual_regs_1 (&PATTERN (insn), insn, 1);
-	instantiate_virtual_regs_1 (&REG_NOTES (insn), 0, 0);
+	instantiate_virtual_regs_1 (&REG_NOTES (insn), NULL_RTX, 0);
       }
 
   /* Now instantiate the remaining register equivalences for debugging info.
@@ -1904,11 +1904,13 @@ instantiate_decls (fndecl, valid_only)
     {
       if (DECL_RTL (decl) && GET_CODE (DECL_RTL (decl)) == MEM)
 	instantiate_virtual_regs_1 (&XEXP (DECL_RTL (decl), 0),
-				    valid_only ? DECL_RTL (decl) : 0, 0);
+				    (valid_only ? DECL_RTL (decl) : NULL_RTX),
+				    0);
       if (DECL_INCOMING_RTL (decl)
 	  && GET_CODE (DECL_INCOMING_RTL (decl)) == MEM)
 	instantiate_virtual_regs_1 (&XEXP (DECL_INCOMING_RTL (decl), 0),
-				    valid_only ? DECL_INCOMING_RTL (decl) : 0,
+				    (valid_only ? DECL_INCOMING_RTL (decl)
+				     : NULL_RTX),
 				    0);
     }
 
@@ -1938,7 +1940,7 @@ instantiate_decls_1 (let, valid_only)
   for (t = BLOCK_VARS (let); t; t = TREE_CHAIN (t))
     if (DECL_RTL (t) && GET_CODE (DECL_RTL (t)) == MEM)
       instantiate_virtual_regs_1 (& XEXP (DECL_RTL (t), 0),
-				  valid_only ? DECL_RTL (t) : 0, 0);
+				  valid_only ? DECL_RTL (t) : NULL_RTX, 0);
 
   /* Process all subblocks.  */
   for (t = BLOCK_SUBBLOCKS (let); t; t = TREE_CHAIN (t))
@@ -2023,10 +2025,10 @@ instantiate_virtual_regs_1 (loc, object, extra_insns)
 
 	  start_sequence ();
 	  if (GET_CODE (SET_SRC (x)) != REG)
-	    temp = force_operand (SET_SRC (x), 0);
+	    temp = force_operand (SET_SRC (x), NULL_RTX);
 	  else
 	    temp = SET_SRC (x);
-	  temp = force_operand (plus_constant (temp, offset), 0);
+	  temp = force_operand (plus_constant (temp, offset), NULL_RTX);
 	  seq = get_insns ();
 	  end_sequence ();
 
@@ -2128,7 +2130,7 @@ instantiate_virtual_regs_1 (loc, object, extra_insns)
 		  XEXP (x, 0) = old;
 
 		  start_sequence ();
-		  temp = force_operand (new, 0);
+		  temp = force_operand (new, NULL_RTX);
 		  seq = get_insns ();
 		  end_sequence ();
 
@@ -2267,7 +2269,7 @@ instantiate_virtual_regs_1 (loc, object, extra_insns)
 		return 0;
 
 	      start_sequence ();
-	      temp = force_operand (temp, 0);
+	      temp = force_operand (temp, NULL_RTX);
 	      seq = get_insns ();
 	      end_sequence ();
 
@@ -2490,7 +2492,7 @@ assign_parms (fndecl, second_time)
     {
       tree type = build_pointer_type (fntype);
 
-      function_result_decl = build_decl (PARM_DECL, 0, type);
+      function_result_decl = build_decl (PARM_DECL, NULL_TREE, type);
 
       DECL_ARG_TYPE (function_result_decl) = type;
       TREE_CHAIN (function_result_decl) = fnargs;
@@ -2501,9 +2503,9 @@ assign_parms (fndecl, second_time)
   bzero (parm_reg_stack_loc, nparmregs * sizeof (rtx));
 
 #ifdef INIT_CUMULATIVE_INCOMING_ARGS
-  INIT_CUMULATIVE_INCOMING_ARGS (args_so_far, fntype, 0);
+  INIT_CUMULATIVE_INCOMING_ARGS (args_so_far, fntype, NULL_PTR);
 #else
-  INIT_CUMULATIVE_ARGS (args_so_far, fntype, 0);
+  INIT_CUMULATIVE_ARGS (args_so_far, fntype, NULL_PTR);
 #endif
 
   /* We haven't yet found an argument that we must push and pretend the
@@ -2849,7 +2851,7 @@ assign_parms (fndecl, second_time)
 		  && REGNO (entry_parm) < FIRST_PSEUDO_REGISTER
 		  && ! HARD_REGNO_MODE_OK (REGNO (entry_parm),
 					   GET_MODE (entry_parm)))
-		convert_move (parmreg, copy_to_reg (entry_parm));
+		convert_move (parmreg, copy_to_reg (entry_parm), 0);
 	      else
 		convert_move (parmreg, validize_mem (entry_parm), 0);
 	    }
@@ -2953,11 +2955,10 @@ assign_parms (fndecl, second_time)
 
 #ifdef ARGS_GROW_DOWNWARD
   current_function_arg_offset_rtx
-    = (stack_args_size.var == 0 ? gen_rtx (CONST_INT, VOIDmode,
-					   -stack_args_size.constant)
+    = (stack_args_size.var == 0 ? GEN_INT (-stack_args_size.constant)
        : expand_expr (size_binop (MINUS_EXPR, stack_args_size.var,	
 				  size_int (-stack_args_size.constant)),   
-		      0, VOIDmode, 0));
+		      NULL_RTX, VOIDmode, 0));
 #else
   current_function_arg_offset_rtx = ARGS_SIZE_RTX (stack_args_size);
 #endif
@@ -3497,10 +3498,10 @@ round_trampoline_addr (tramp)
   /* Round address up to desired boundary.  */
   rtx temp = gen_reg_rtx (Pmode);
   temp = expand_binop (Pmode, add_optab, tramp,
-		       gen_rtx (CONST_INT, VOIDmode, TRAMPOLINE_ALIGNMENT - 1),
+		       GEN_INT (TRAMPOLINE_ALIGNMENT - 1),
 		       temp, 0, OPTAB_LIB_WIDEN);
   tramp = expand_binop (Pmode, and_optab, temp,
-			gen_rtx (CONST_INT, VOIDmode, - TRAMPOLINE_ALIGNMENT),
+			GEN_INT (- TRAMPOLINE_ALIGNMENT),
 			temp, 0, OPTAB_LIB_WIDEN);
 #endif
   return tramp;
@@ -3615,7 +3616,7 @@ init_function_start (subr, filename, line)
   /* Make sure first insn is a note even if we don't want linenums.
      This makes sure the first insn will never be deleted.
      Also, final expects a note to appear there.  */
-  emit_note (0, NOTE_INSN_DELETED);
+  emit_note (NULL_PTR, NOTE_INSN_DELETED);
 
   /* Set flags used by final.c.  */
   if (aggregate_value_p (DECL_RESULT (subr)))
@@ -3795,12 +3796,12 @@ expand_function_start (subr, parms_have_cleanups)
      The move is supposed to make sdb output more accurate.  */
   /* Indicate the beginning of the function body,
      as opposed to parm setup.  */
-  emit_note (0, NOTE_INSN_FUNCTION_BEG);
+  emit_note (NULL_PTR, NOTE_INSN_FUNCTION_BEG);
 
   /* If doing stupid allocation, mark parms as born here.  */
 
   if (GET_CODE (get_last_insn ()) != NOTE)
-    emit_note (0, NOTE_INSN_DELETED);
+    emit_note (NULL_PTR, NOTE_INSN_DELETED);
   parm_birth_insn = get_last_insn ();
 
   if (obey_regdecls)
@@ -3841,11 +3842,11 @@ expand_function_start (subr, parms_have_cleanups)
   /* After the display initializations is where the tail-recursion label
      should go, if we end up needing one.   Ensure we have a NOTE here
      since some things (like trampolines) get placed before this.  */
-  tail_recursion_reentry = emit_note (0, NOTE_INSN_DELETED);
+  tail_recursion_reentry = emit_note (NULL_PTR, NOTE_INSN_DELETED);
 
   /* Evaluate now the sizes of any types declared among the arguments.  */
   for (tem = nreverse (get_pending_sizes ()); tem; tem = TREE_CHAIN (tem))
-    expand_expr (TREE_VALUE (tem), 0, VOIDmode, 0);
+    expand_expr (TREE_VALUE (tem), NULL_RTX, VOIDmode, 0);
 
   /* Make sure there is a line number after the function entry setup code.  */
   force_next_line_note ();
@@ -3905,8 +3906,7 @@ expand_function_end (filename, line)
       start_sequence ();
       tramp = change_address (initial_trampoline, BLKmode,
 			      round_trampoline_addr (XEXP (tramp, 0)));
-      emit_block_move (tramp, initial_trampoline,
-		       gen_rtx (CONST_INT, VOIDmode, TRAMPOLINE_SIZE),
+      emit_block_move (tramp, initial_trampoline, GEN_INT (TRAMPOLINE_SIZE),
 		       FUNCTION_BOUNDARY / BITS_PER_UNIT);
       INITIALIZE_TRAMPOLINE (XEXP (tramp, 0),
 			     XEXP (DECL_RTL (function), 0), context);
@@ -3938,7 +3938,7 @@ expand_function_end (filename, line)
 
   /* End any sequences that failed to be closed due to syntax errors.  */
   while (in_sequence_p ())
-    end_sequence (0);
+    end_sequence ();
 
   /* Outside function body, can't compute type's actual size
      until next function's body starts.  */
@@ -3971,7 +3971,7 @@ expand_function_end (filename, line)
   /* Mark the end of the function body.
      If control reaches this insn, the function can drop through
      without returning a value.  */
-  emit_note (0, NOTE_INSN_FUNCTION_END);
+  emit_note (NULL_PTR, NOTE_INSN_FUNCTION_END);
 
   /* Output a linenumber for the end of the function.
      SDB depends on this.  */
@@ -3997,7 +3997,7 @@ expand_function_end (filename, line)
 	rtx tem = 0;
 
 	emit_stack_save (SAVE_FUNCTION, &tem, parm_birth_insn);
-	emit_stack_restore (SAVE_FUNCTION, tem, 0);
+	emit_stack_restore (SAVE_FUNCTION, tem, NULL_RTX);
       }
 
   /* If scalar return value was computed in a pseudo-reg,
@@ -4072,7 +4072,7 @@ expand_function_end (filename, line)
   /* If you have any cleanups to do at this point,
      and they need to create temporary variables,
      then you will lose.  */
-  fixup_gotos (0, 0, 0, get_insns (), 0);
+  fixup_gotos (NULL_PTR, NULL_RTX, NULL_TREE, get_insns (), 0);
 }
 
 /* These arrays record the INSN_UIDs of the prologue and epilogue insns.  */
