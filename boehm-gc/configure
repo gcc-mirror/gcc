@@ -967,7 +967,7 @@ esac
     else
       echo "$as_me: WARNING: no configuration information is in $ac_dir" >&2
     fi
-    cd "$ac_popdir"
+    cd $ac_popdir
   done
 fi
 
@@ -2522,7 +2522,8 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -2580,7 +2581,8 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -2696,7 +2698,8 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -2750,7 +2753,8 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -2795,7 +2799,8 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -2839,7 +2844,8 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -3197,7 +3203,8 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_cxx_werror_flag"			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_cxx_werror_flag"
+			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -3255,7 +3262,8 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_cxx_werror_flag"			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_cxx_werror_flag"
+			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -3326,7 +3334,8 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_cxx_werror_flag"			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_cxx_werror_flag"
+			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -3370,7 +3379,8 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_cxx_werror_flag"			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_cxx_werror_flag"
+			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -4731,7 +4741,7 @@ test x"$pic_mode" = xno && libtool_flags="$libtool_flags --prefer-non-pic"
 case $host in
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 4734 "configure"' > conftest.$ac_ext
+  echo '#line 4744 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -4878,7 +4888,8 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -5322,21 +5333,25 @@ case "$THREADS" in
     THREADLIBS=-lpthread
     case "$host" in
      x86-*-linux* | ia64-*-linux* | i586-*-linux* | i686-*-linux* | x86_64-*-linux* | alpha-*-linux*)
-	cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define GC_LINUX_THREADS 1
 _ACEOF
 
-	cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define _REENTRANT 1
 _ACEOF
 
         if test "${enable_parallel_mark}" = yes; then
-	  cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define PARALLEL_MARK 1
 _ACEOF
 
 	fi
-	cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define THREAD_LOCAL_ALLOC 1
 _ACEOF
 
@@ -5352,7 +5367,8 @@ _ACEOF
 
 	;;
      *-*-aix*)
-	cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define GC_AIX_THREADS 1
 _ACEOF
 
@@ -5364,11 +5380,13 @@ _ACEOF
      *-*-hpux*)
 	{ echo "$as_me:$LINENO: WARNING: \"Only HP/UX 11 threads are supported.\"" >&5
 echo "$as_me: WARNING: \"Only HP/UX 11 threads are supported.\"" >&2;}
-	cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define GC_HPUX_THREADS 1
 _ACEOF
 
-	cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define _POSIX_C_SOURCE 199506L
 _ACEOF
 
@@ -5387,7 +5405,8 @@ _ACEOF
      *-*-freebsd*)
 	{ echo "$as_me:$LINENO: WARNING: \"FreeBSD does not yet fully support threads with Boehm GC.\"" >&5
 echo "$as_me: WARNING: \"FreeBSD does not yet fully support threads with Boehm GC.\"" >&2;}
-	cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define GC_FREEBSD_THREADS 1
 _ACEOF
 
@@ -5395,29 +5414,34 @@ _ACEOF
 	THREADLIBS=-pthread
       	;;
      *-*-solaris*)
-	cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define GC_SOLARIS_THREADS 1
 _ACEOF
 
-	cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define GC_SOLARIS_PTHREADS 1
 _ACEOF
 
 	;;
      *-*-irix*)
-	cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define GC_IRIX_THREADS 1
 _ACEOF
 
 	;;
      *-*-cygwin*)
-	cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define GC_WIN32_THREADS 1
 _ACEOF
 
 	;;
      *-*-darwin*)
-	cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define GC_DARWIN_THREADS 1
 _ACEOF
 
@@ -5433,7 +5457,8 @@ _ACEOF
 	fi
 	;;
      *-*-osf*)
-	cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define GC_OSF1_THREADS 1
 _ACEOF
 
@@ -5476,11 +5501,13 @@ _ACEOF
 #define THREAD_LOCAL_ALLOC 1
 _ACEOF
 
-    cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define GC_DGUX386_THREADS 1
 _ACEOF
 
-    cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define DGUX_THREADS 1
 _ACEOF
 
@@ -5576,7 +5603,8 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -5630,7 +5658,8 @@ case "$TARGET_ECOS" in
    no)
       ;;
    *)
-      cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define ECOS 1
 _ACEOF
 
@@ -5721,18 +5750,21 @@ echo "$as_me: WARNING: OpenBSD/Alpha without dlopen(). Shared library support is
     machdep="alpha_mach_dep.lo"
     ;;
  i?86-*-solaris2.[89] | i?86-*-solaris2.1?)
-    cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define SOLARIS25_PROC_VDB_BUG_FIXED 1
 _ACEOF
 
     ;;
  mipstx39-*-elf*)
     machdep="mips_ultrix_mach_dep.lo"
-    cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define STACKBASE __stackbase
 _ACEOF
 
-    cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define DATASTART_IS_ETEXT 1
 _ACEOF
 
@@ -5752,7 +5784,8 @@ _ACEOF
     ;;
  sparc-sun-solaris2.3)
     machdep="sparc_mach_dep.lo"
-    cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define SUNOS53_SHARED_LIB 1
 _ACEOF
 
@@ -5761,7 +5794,8 @@ _ACEOF
     machdep="sparc_mach_dep.lo"
     ;;
  ia64-*-*)
-    cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define NO_EXECUTE_PERMISSION 1
 _ACEOF
 
@@ -6068,7 +6102,8 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -6238,7 +6273,8 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -6301,7 +6337,8 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   cat conftest.err >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -6458,26 +6495,32 @@ esac
 MY_CFLAGS="$CFLAGS"
 
 
+
 cat >>confdefs.h <<\_ACEOF
 #define SILENT 1
 _ACEOF
 
+
 cat >>confdefs.h <<\_ACEOF
 #define NO_SIGNALS 1
 _ACEOF
+
 
 cat >>confdefs.h <<\_ACEOF
 #define ALL_INTERIOR_POINTERS 1
 _ACEOF
 
 
+
 cat >>confdefs.h <<\_ACEOF
 #define JAVA_FINALIZATION 1
 _ACEOF
 
+
 cat >>confdefs.h <<\_ACEOF
 #define GC_GCJ_SUPPORT 1
 _ACEOF
+
 
 cat >>confdefs.h <<\_ACEOF
 #define ATOMIC_UNCOLLECTABLE 1
@@ -6485,11 +6528,13 @@ _ACEOF
 
 
 if test -n "${with_cross_host}"; then
-   cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define NO_SIGSET 1
 _ACEOF
 
-   cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define NO_DEBUGGING 1
 _ACEOF
 
@@ -6501,17 +6546,20 @@ if test "${enable_gc_debug+set}" = set; then
    if test "$enable_gc_debug" = "yes"; then
     { echo "$as_me:$LINENO: WARNING: \"Must define GC_DEBUG and use debug alloc. in clients.\"" >&5
 echo "$as_me: WARNING: \"Must define GC_DEBUG and use debug alloc. in clients.\"" >&2;}
-    cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define KEEP_BACK_PTRS 1
 _ACEOF
 
-    cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define DBG_HDRS_ALL 1
 _ACEOF
 
     case $host in
       ia64-*-linux* )
-	cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define MAKE_BACK_GRAPH 1
 _ACEOF
 
@@ -6523,7 +6571,8 @@ _ACEOF
 
 	{ echo "$as_me:$LINENO: WARNING: \"Client must not use -fomit-frame-pointer.\"" >&5
 echo "$as_me: WARNING: \"Client must not use -fomit-frame-pointer.\"" >&2;}
-	cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define SAVE_CALL_COUNT 8
 _ACEOF
 
@@ -7501,6 +7550,11 @@ esac
   *) ac_INSTALL=$ac_top_builddir$INSTALL ;;
   esac
 
+  if test x"$ac_file" != x-; then
+    { echo "$as_me:$LINENO: creating $ac_file" >&5
+echo "$as_me: creating $ac_file" >&6;}
+    rm -f "$ac_file"
+  fi
   # Let's still pretend it is `configure' which instantiates (i.e., don't
   # use $as_me), people would be surprised to read:
   #    /* config.h.  Generated by config.status.  */
@@ -7539,12 +7593,6 @@ echo "$as_me: error: cannot find input file: $f" >&2;}
 	 fi;;
       esac
     done` || { (exit 1); exit 1; }
-
-  if test x"$ac_file" != x-; then
-    { echo "$as_me:$LINENO: creating $ac_file" >&5
-echo "$as_me: creating $ac_file" >&6;}
-    rm -f "$ac_file"
-  fi
 _ACEOF
 cat >>$CONFIG_STATUS <<_ACEOF
   sed "$ac_vpsub

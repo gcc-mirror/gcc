@@ -1,34 +1,152 @@
+/* include/gc_config.h.in.  Generated from configure.ac by autoheader.  */
+
+/* allows all pointers to the interior of objects to be recognized */
 #undef ALL_INTERIOR_POINTERS
+
+/* include code for GC_malloc_atomic_uncollectable */
 #undef ATOMIC_UNCOLLECTABLE
+
+/* No description */
 #undef DATASTART_IS_ETEXT
+
+/* Make sure that all objects have debug headers */
 #undef DBG_HDRS_ALL
+
+/* No description */
 #undef DGUX_THREADS
+
+/* Target is ECOS */
 #undef ECOS
+
+/* support AIX threads */
 #undef GC_AIX_THREADS
+
+/* support for Mac OS X pthreads */
 #undef GC_DARWIN_THREADS
+
+/* support for DB/UX on I386 threads */
 #undef GC_DGUX386_THREADS
+
+/* support FreeBSD threads */
 #undef GC_FREEBSD_THREADS
+
+/* include support for gcj */
 #undef GC_GCJ_SUPPORT
+
+/* enables support for HP/UX 11 pthreads */
 #undef GC_HPUX_THREADS
+
+/* support for Irix pthreads */
 #undef GC_IRIX_THREADS
+
+/* support for Xavier Leroy's Linux threads */
 #undef GC_LINUX_THREADS
+
+/* support for Tru64 pthreads */
 #undef GC_OSF1_THREADS
+
+/* support for Solaris pthreads */
 #undef GC_SOLARIS_PTHREADS
+
+/* support for Solaris (thr_) threads */
 #undef GC_SOLARIS_THREADS
+
+/* support for win32 threads */
 #undef GC_WIN32_THREADS
+
+/* Define to 1 if you have the <inttypes.h> header file. */
+#undef HAVE_INTTYPES_H
+
+/* Define to 1 if you have the <memory.h> header file. */
+#undef HAVE_MEMORY_H
+
+/* Define to 1 if you have the <stdint.h> header file. */
+#undef HAVE_STDINT_H
+
+/* Define to 1 if you have the <stdlib.h> header file. */
+#undef HAVE_STDLIB_H
+
+/* Define to 1 if you have the <strings.h> header file. */
+#undef HAVE_STRINGS_H
+
+/* Define to 1 if you have the <string.h> header file. */
+#undef HAVE_STRING_H
+
+/* Define to 1 if you have the <sys/stat.h> header file. */
+#undef HAVE_SYS_STAT_H
+
+/* Define to 1 if you have the <sys/types.h> header file. */
+#undef HAVE_SYS_TYPES_H
+
+/* Define to 1 if you have the <unistd.h> header file. */
+#undef HAVE_UNISTD_H
+
+/* make it somewhat safer to finalize objects out of order */
 #undef JAVA_FINALIZATION
+
+/* Add code to save back pointers */
 #undef KEEP_BACK_PTRS
+
+/* Enable GC_PRINT_BACK_HEIGHT environment variable */
 #undef MAKE_BACK_GRAPH
+
+/* removes GC_dump */
 #undef NO_DEBUGGING
+
+/* cause some or all of the heap to not have execute permission */
 #undef NO_EXECUTE_PERMISSION
+
+/* Define to 1 if your C compiler doesn't accept -c and -o together. */
+#undef NO_MINUS_C_MINUS_O
+
+/* does not disable signals */
 #undef NO_SIGNALS
+
+/* use empty GC_disable_signals and GC_enable_signals */
 #undef NO_SIGSET
+
+/* Define to the address where bug reports for this package should be sent. */
+#undef PACKAGE_BUGREPORT
+
+/* Define to the full name of this package. */
+#undef PACKAGE_NAME
+
+/* Define to the full name and version of this package. */
+#undef PACKAGE_STRING
+
+/* Define to the one symbol short name of this package. */
+#undef PACKAGE_TARNAME
+
+/* Define to the version of this package. */
+#undef PACKAGE_VERSION
+
+/* allow the marker to run in multiple threads */
 #undef PARALLEL_MARK
+
+/* number of call frames saved with objects allocated through the debugging
+   interface */
 #undef SAVE_CALL_COUNT
+
+/* disables statistics printing */
 #undef SILENT
+
+/* PROC_VDB in Solaris 2.5 gives wrong values for dirty bits */
 #undef SOLARIS25_PROC_VDB_BUG_FIXED
+
+/* No description */
 #undef STACKBASE
+
+/* Define to 1 if you have the ANSI C header files. */
+#undef STDC_HEADERS
+
+/* Avoid Solaris 5.3 dynamic library bug */
 #undef SUNOS53_SHARED_LIB
+
+/* define GC_local_malloc() & GC_local_malloc_atomic() */
 #undef THREAD_LOCAL_ALLOC
+
+/* POSIX version of C Source */
 #undef _POSIX_C_SOURCE
+
+/* Use reentrant code */
 #undef _REENTRANT
