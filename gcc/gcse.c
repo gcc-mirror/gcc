@@ -4108,8 +4108,8 @@ alloc_pre_mem (n_blocks, n_exprs)
   transp = sbitmap_vector_alloc (n_blocks, n_exprs);
   comp = sbitmap_vector_alloc (n_blocks, n_exprs);
   antloc = sbitmap_vector_alloc (n_blocks, n_exprs);
-
   temp_bitmap = sbitmap_vector_alloc (n_blocks, n_exprs);
+
   pre_optimal = NULL;
   pre_redundant = NULL;
   pre_insert_map = NULL;
@@ -4130,6 +4130,7 @@ free_pre_mem ()
   free (transp);
   free (comp);
   free (antloc);
+  free (temp_bitmap);
 
   if (pre_optimal)
     free (pre_optimal);
@@ -4535,6 +4536,10 @@ pre_edge_insert (edge_list, index_map)
 	    }
 	}
     }
+
+  /* Clean up.  */
+  free (inserted);
+
   return did_insert;
 }
 

@@ -1,3 +1,11 @@
+Fri Oct 29 02:51:35 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* except.c (free_eh_nesting_info): Free the info itself.
+	* function.c (free_after_compilation): Don't free NULL.
+	* gcse.c (alloc_pre_mem): Free the temp_bitmap, too.
+	(pre_edge_insert): Free inserted.
+	* stmt.c (free_stmt_status): Don't free NULL.
+
 1999-10-28 21:27 -0700  Zack Weinberg  <zack@bitmover.com>
 
 	* cpplib.h (struct cpp_buffer: fname, nominal_fname,

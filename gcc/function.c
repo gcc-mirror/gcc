@@ -426,7 +426,8 @@ free_after_compilation (f)
   if (free_machine_status)
     (*free_machine_status) (f);
 
-  free (f->x_parm_reg_stack_loc);
+  if (f->x_parm_reg_stack_loc)
+    free (f->x_parm_reg_stack_loc);
 
   f->arg_offset_rtx = NULL;
   f->return_rtx = NULL;
