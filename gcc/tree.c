@@ -1011,9 +1011,17 @@ copy_node (node)
       break;
 
     case 'c':  /* a constant */
-      /* We can't use tree_code_length for this, since the number of words
-	 is machine-dependent due to varying alignment of `double'.  */
-      if (code == REAL_CST)
+      /* We can't use tree_code_length for INTEGER_CST, since the number of
+	 words is machine-dependent due to varying length of HOST_WIDE_INT,
+	 which might be wider than a pointer (e.g., long long).  Similarly
+	 for REAL_CST, since the number of words is machine-dependent due
+	 to varying size and alignment of `double'.  */
+      if (code == INTEGER_CST)
+        {
+          length = sizeof (struct tree_int_cst);
+          break;
+        }
+      else if (code == REAL_CST)
 	{
 	  length = sizeof (struct tree_real_cst);
 	  break;
