@@ -42,6 +42,9 @@ public class Socket
     if (s != null)
       s.checkConnect(host, port);
     impl.create(true);
+    // FIXME: JCL p. 1586 says if localPort is unspecified, bind to any port,
+    // i.e. '0' and if localAddr is unspecified, use getLocalAddress() as
+    // that default.  JDK 1.2 doc infers not to do a bind.
     impl.connect(host, port);
   }
 
@@ -53,6 +56,9 @@ public class Socket
     if (s != null)
       s.checkConnect(address.getHostName(), port);
     impl.create(true);
+    // FIXME: JCL p. 1586 says if localPort is unspecified, bind to any port,
+    // i.e. '0' and if localAddr is unspecified, use getLocalAddress() as
+    // that default.  JDK 1.2 doc infers not to do a bind.
     impl.connect(address, port);
   }
 
@@ -64,6 +70,7 @@ public class Socket
     if (s != null)
       s.checkConnect(host, port);
     impl.create(true);
+    // FIXME: JCL p. 1587 says if localAddr is null, use getLocalAddress().
     impl.bind(localAddr, localPort);
     impl.connect(host, port);
   }
@@ -76,6 +83,7 @@ public class Socket
     if (s != null)
       s.checkConnect(address.getHostName(), port);
     impl.create(true);
+    // FIXME: JCL p. 1587 says if localAddr is null, use getLocalAddress().
     impl.bind(localAddr, localPort);
     impl.connect(address, port);
   }
@@ -91,6 +99,9 @@ public class Socket
     SecurityManager s = System.getSecurityManager();
     if (s != null)
       s.checkConnect(host, port);
+    // FIXME: JCL p. 1586 says if localPort is unspecified, bind to any port,
+    // i.e. '0' and if localAddr is unspecified, use getLocalAddress() as
+    // that default.  JDK 1.2 doc infers not to do a bind.
     impl.connect(host, port);
   }
 
@@ -105,6 +116,9 @@ public class Socket
     SecurityManager s = System.getSecurityManager();
     if (s != null)
       s.checkConnect(host.getHostName(), port);
+    // FIXME: JCL p. 1586 says if localPort is unspecified, bind to any port,
+    // i.e. '0' and if localAddr is unspecified, use getLocalAddress() as
+    // that default.  JDK 1.2 doc infers not to do a bind.
     impl.connect(host, port);
   }
 

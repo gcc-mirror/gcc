@@ -10,6 +10,8 @@ details.  */
 
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/time.h>
+#include <sys/select.h>
 #include <netinet/in.h>
 #include <errno.h>
 #include <stdio.h>
@@ -18,12 +20,16 @@ details.  */
 #include <cni.h>
 #include <java/io/IOException.h>
 #include <java/io/FileDescriptor.h>
+#include <java/io/InterruptedIOException.h>
 #include <java/net/BindException.h>
 #include <java/net/SocketException.h>
 #include <java/net/PlainDatagramSocketImpl.h>
 #include <java/net/InetAddress.h>
 #include <java/net/DatagramPacket.h>
+#include <java/lang/InternalError.h>
+#include <java/lang/Object.h>
 #include <java/lang/Boolean.h>
+#include <java/lang/Integer.h>
 
 #ifndef HAVE_SOCKLEN_T
 typedef int socklen_t;
@@ -70,14 +76,25 @@ java::net::PlainDatagramSocketImpl::bind (jint lport,
 {
   // FIXME: prob. need to do a setsockopt with SO_BROADCAST to allow multicast.
   union SockAddr u;
-  jbyteArray haddress = host->address;
-  jbyte *bytes = elements (haddress);
-  int len = haddress->length;
   struct sockaddr *ptr = (struct sockaddr *) &u.address;
+  jbyte *bytes = NULL;
+  // FIXME: Use getaddrinfo() to get actual protocol instead of assuming ipv4.
+  int len = 4;	// Initialize for INADDR_ANY in case host is NULL.
+
+  if (host != NULL)
+    {
+      jbyteArray haddress = host->address;
+      bytes = elements (haddress);
+      len = haddress->length;
+    }
+
   if (len == 4)
     {
       u.address.sin_family = AF_INET;
-      memcpy (&u.address.sin_addr, bytes, len);
+      if (host != NULL)
+	memcpy (&u.address.sin_addr, bytes, len);
+      else
+	u.address.sin_addr.s_addr = htonl (INADDR_ANY);
       len = sizeof (struct sockaddr_in);
       u.address.sin_port = htons (lport);
     }
@@ -94,8 +111,15 @@ java::net::PlainDatagramSocketImpl::bind (jint lport,
     goto error;
   if (::bind (fnum, ptr, len) == 0)
     {
+      // FIXME: Is address really necessary to set?
       address = host;
-      localport = lport;
+      socklen_t addrlen = sizeof(u);
+      if (lport != 0)
+        localport = lport;
+      else if (::getsockname (fnum, (sockaddr*) &u, &addrlen) == 0)
+        localport = ntohs (u.address.sin_port);
+      else
+        goto error;
       return;
     }
  error:
@@ -190,7 +214,25 @@ java::net::PlainDatagramSocketImpl::receive (java::net::DatagramPacket *p)
   union SockAddr u;
   socklen_t addrlen = sizeof(u);
   jbyte *dbytes = elements (p->getData());
-  ssize_t retlen =
+  ssize_t retlen = 0;
+
+  // Do timeouts via select since SO_RCVTIMEO is not always available.
+  if (timeout > 0)
+    {
+      fd_set rset;
+      struct timeval tv;
+      FD_ZERO(&rset);
+      FD_SET(fnum, &rset);
+      tv.tv_sec = timeout / 1000;
+      tv.tv_usec = (timeout % 1000) * 1000;
+      int retval;
+      if ((retval = select (fnum + 1, &rset, NULL, NULL, &tv)) < 0)
+	goto error;
+      else if (retval == 0)
+	JvThrow (new java::io::InterruptedIOException ());
+    }
+
+  retlen =
     ::recvfrom (fnum, (char *) dbytes, p->getLength(), 0, (sockaddr*) &u,
       &addrlen);
   if (retlen < 0)
@@ -288,17 +330,74 @@ void
 java::net::PlainDatagramSocketImpl::setOption (jint optID,
   java::lang::Object *value)
 {
-  if (optID == _Jv_SO_REUSEADDR_)
-    {
-      // FIXME: Is it possible that a Boolean wasn't passed in?
-      const int on = (((java::lang::Boolean *) value)->booleanValue()) ? 1 : 0;
-      if (::setsockopt (fnum, SOL_SOCKET, SO_REUSEADDR, (char *) &on,
-	  sizeof (int)) == 0)
-        return;
-    }
-  else
-    errno = ENOPROTOOPT;
+  int val;
+  socklen_t val_len = sizeof (val);
 
+  if ( _Jv_IsInstanceOf(value,
+    java::lang::Class::forName(JvNewStringUTF("java.lang.Boolean"))))
+    {
+      java::lang::Boolean *boolobj = 
+        static_cast<java::lang::Boolean *> (value);
+      val = boolobj->booleanValue() ? 1 : 0;
+    }
+  else if ( _Jv_IsInstanceOf(value,
+      java::lang::Class::forName(JvNewStringUTF("java.lang.Integer"))))
+    {
+      java::lang::Integer *intobj = 
+        static_cast<java::lang::Integer *> (value);          
+      val = (int) intobj->intValue();
+    }
+  // Else assume value to be an InetAddress for use with IP_MULTICAST_IF.
+
+  switch (optID) 
+    {
+      case _Jv_TCP_NODELAY_ :
+        JvThrow (new java::net::SocketException (
+          JvNewStringUTF ("TCP_NODELAY not valid for UDP")));      
+        return;
+      case _Jv_SO_LINGER_ :
+        JvThrow (new java::net::SocketException (
+          JvNewStringUTF ("SO_LINGER not valid for UDP")));      
+        return;
+      case _Jv_SO_SNDBUF_ :
+      case _Jv_SO_RCVBUF_ :
+#if defined(SO_SNDBUF) && defined(SO_RCVBUF)
+        int opt;
+        optID == _Jv_SO_SNDBUF_ ? opt = SO_SNDBUF : opt = SO_RCVBUF;
+        if (::setsockopt (fnum, SOL_SOCKET, opt, (char *) &val, val_len) != 0)
+	  goto error;    
+#else
+        JvThrow (new java::lang::InternalError (
+          JvNewStringUTF ("SO_RCVBUF/SO_SNDBUF not supported")));
+#endif 
+        return;
+      case _Jv_SO_REUSEADDR_ :
+#if defined(SO_REUSEADDR)
+	if (::setsockopt (fnum, SOL_SOCKET, SO_REUSEADDR, (char *) &val,
+	    val_len) != 0)
+	  goto error;
+#else
+        JvThrow (new java::lang::InternalError (
+          JvNewStringUTF ("SO_REUSEADDR not supported")));
+#endif 
+	return;
+      case _Jv_SO_BINDADDR_ :
+        JvThrow (new java::net::SocketException (
+          JvNewStringUTF ("SO_BINDADDR: read only option")));
+        return;
+      case _Jv_IP_MULTICAST_IF_ :
+	// FIXME: TODO - Implement IP_MULTICAST_IF.
+        JvThrow (new java::lang::InternalError (
+          JvNewStringUTF ("IP_MULTICAST_IF: option not implemented")));
+        return;
+      case _Jv_SO_TIMEOUT_ :
+	timeout = val;
+        return;
+      default :
+        errno = ENOPROTOOPT;
+    }
+
+ error:
   char msg[100];
   char* strerr = strerror (errno);
   sprintf (msg, "DatagramSocketImpl.setOption: %.*s", 80, strerr);
@@ -308,17 +407,81 @@ java::net::PlainDatagramSocketImpl::setOption (jint optID,
 java::lang::Object *
 java::net::PlainDatagramSocketImpl::getOption (jint optID)
 {
-  if (optID == _Jv_SO_REUSEADDR_)
-    {
-      int on;
-      socklen_t len;
-      if (::getsockopt (fnum, SOL_SOCKET, SO_REUSEADDR, (char *) &on,
-	  (socklen_t *) &len) == 0)
-        return new java::lang::Boolean (on == 1);
-    }
-  else
-    errno = ENOPROTOOPT;
+  int val;
+  socklen_t val_len = sizeof(val);
+  union SockAddr u;
+  socklen_t addrlen = sizeof(u);
 
+  switch (optID)
+    {
+      case _Jv_TCP_NODELAY_ :
+        JvThrow (new java::net::SocketException (
+          JvNewStringUTF ("TCP_NODELAY not valid for UDP")));      
+        break;
+
+      case _Jv_SO_LINGER_ :
+        JvThrow (new java::net::SocketException (
+          JvNewStringUTF ("SO_LINGER not valid for UDP")));      
+        break;    
+      case _Jv_SO_RCVBUF_ :
+      case _Jv_SO_SNDBUF_ :
+#if defined(SO_SNDBUF) && defined(SO_RCVBUF)
+        int opt;
+        optID == _Jv_SO_SNDBUF_ ? opt = SO_SNDBUF : opt = SO_RCVBUF;
+        if (::getsockopt (fnum, SOL_SOCKET, opt, (char *) &val, &val_len) != 0)
+	  goto error;    
+        else
+	  return new java::lang::Integer (val);
+#else
+        JvThrow (new java::lang::InternalError (
+          JvNewStringUTF ("SO_RCVBUF/SO_SNDBUF not supported")));
+#endif    
+	break;
+      case _Jv_SO_BINDADDR_:
+	// FIXME: Should cache the laddr as an optimization.
+	jbyteArray laddr;
+	if (::getsockname (fnum, (sockaddr*) &u, &addrlen) != 0)
+	  goto error;
+	if (u.address.sin_family == AF_INET)
+	  {
+	    laddr = JvNewByteArray (4);
+	    memcpy (elements (laddr), &u.address.sin_addr, 4);
+	  }
+#ifdef HAVE_INET6
+        else if (u.address.sin_family == AF_INET6)
+	  {
+	    laddr = JvNewByteArray (16);
+	    memcpy (elements (laddr), &u.address6.sin6_addr, 16);
+	  }
+#endif
+	else
+	  goto error;
+	return new java::net::InetAddress (laddr, NULL);
+	break;
+      case _Jv_SO_REUSEADDR_ :
+#if defined(SO_REUSEADDR)
+	if (::getsockopt (fnum, SOL_SOCKET, SO_REUSEADDR, (char *) &val,
+	    &val_len) != 0)
+	  goto error;
+	return new java::lang::Boolean (val != 0);
+#else
+        JvThrow (new java::lang::InternalError (
+          JvNewStringUTF ("SO_REUSEADDR not supported")));
+#endif 
+	break;
+      case _Jv_IP_MULTICAST_IF_ :
+	// FIXME: TODO - Implement IP_MULTICAST_IF.
+	JvThrow (new java::lang::InternalError (
+	  JvNewStringUTF ("IP_MULTICAST_IF: option not implemented")));
+	break;
+      case _Jv_SO_TIMEOUT_ :
+	return new java::lang::Integer (timeout);
+	break;
+      default :
+	errno = ENOPROTOOPT;
+    }
+
+ error:
   char msg[100];
   char* strerr = strerror (errno);
   sprintf (msg, "DatagramSocketImpl.getOption: %.*s", 80, strerr);

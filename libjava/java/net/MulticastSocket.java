@@ -76,7 +76,7 @@ public class MulticastSocket extends DatagramSocket
   // JDK1.2
   public void setTimeToLive(int ttl) throws IOException
   {
-    if (ttl < 0 || ttl > 255)
+    if (ttl <= 0 || ttl > 255)
       throw new IllegalArgumentException("Invalid ttl: " + ttl);
 
     impl.setTimeToLive(ttl);
@@ -84,6 +84,10 @@ public class MulticastSocket extends DatagramSocket
 
   public void joinGroup(InetAddress mcastaddr) throws IOException
   {
+    // FIXME: We can't currently rely on NullPointerException being
+    // thrown when we invoke a method on a null object.
+    if (mcastaddr == null)
+      throw new NullPointerException("Null address");
     if (! mcastaddr.isMulticastAddress())
       throw new IOException("Not a Multicast address");
 
@@ -96,6 +100,10 @@ public class MulticastSocket extends DatagramSocket
 
   public void leaveGroup(InetAddress mcastaddr) throws IOException
   {
+    // FIXME: We can't currently rely on NullPointerException being
+    // thrown when we invoke a method on a null object.
+    if (mcastaddr == null)
+      throw new NullPointerException("Null address");
     if (! mcastaddr.isMulticastAddress())
       throw new IOException("Not a Multicast address");
 

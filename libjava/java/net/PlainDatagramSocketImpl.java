@@ -36,8 +36,11 @@ class PlainDatagramSocketImpl extends DatagramSocketImpl
                    _Jv_SO_RCVBUF_ = SocketOptions.SO_RCVBUF;
 
   int fnum = -1;
-  InetAddress address;	// TBD: DatagramSocket.getLocalAddress()?
-  // FIXME: These values are set/read by setOption/getOption.
+
+  // FIXME: Is this necessary?  Could it help w/ DatagramSocket.getLocalAddress?
+  InetAddress address;	
+
+  // These values are set/read by setOption/getOption.
   int timeout = 0;
   InetAddress iface = null;
   int ttl = -1;
