@@ -1,3 +1,8 @@
+2003-09-19  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* decl.c (cxx_scope_descriptor): Fix thinko.
+	(struct cp_binding_level): Adjust type of binding_depth field. 
+
 2003-09-18  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	PR c++/12320
