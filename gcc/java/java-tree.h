@@ -960,6 +960,7 @@ extern tree lookup_java_constructor PARAMS ((tree, tree));
 extern tree lookup_java_method PARAMS ((tree, tree, tree));
 extern tree lookup_argument_method PARAMS ((tree, tree, tree));
 extern tree lookup_argument_method2 PARAMS ((tree, tree, tree));
+extern int has_method PARAMS ((tree, tree));
 extern tree promote_type PARAMS ((tree));
 extern tree get_constant PARAMS ((struct JCF*, int));
 extern tree get_name_constant PARAMS ((struct JCF*, int));
