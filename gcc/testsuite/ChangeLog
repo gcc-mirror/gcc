@@ -1,3 +1,8 @@
+2003-05-25  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/10849
+	* g++.dg/template/access10.C: New test.
+
 2003-05-24  Eric Botcazou  <ebotcazou@libertysurf.fr>
             Kaveh R. Ghazi <ghazi@caip.rutgers.edu>
 
