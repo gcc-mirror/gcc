@@ -1,3 +1,7 @@
+2001-01-11  Fergus Henderson  <fjh@cs.mu.oz.au>
+
+	* MAINTAINERS: Add myself as Mercury front-end maintainer.
+
 2001-01-09  Mike Stump  <mrs@wrs.com>
 
 	* Makefile.in (CONFIGURE_TARGET_MODULES): Pass back configuration
