@@ -1,5 +1,5 @@
 /* Generate code from machine description to perform peephole optimizations.
-   Copyright (C) 1987, 1989, 1992, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 89, 92, 97, 98, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
