@@ -893,19 +893,19 @@
 		   (match_operand:QI 2 "general_operand"  "r,P,O,K,i,Qm")))
    (clobber (match_scratch:QI 3 "=X,X,X,X,&d,X"))]
   ""
-  "* return ashlhi3_out (insn,operands, NULL);"
+  "* return ashlhi3_out (insn, operands, NULL);"
   [(set_attr "length" "7,2,4,2,5,8")
-   (set_attr "cc" "clobber,clobber,clobber,clobber,clobber,clobber")])
+   (set_attr "cc" "clobber,set_n,clobber,set_n,clobber,clobber")])
 
 (define_insn "ashlsi3"
-  [(set (match_operand:SI 0 "register_operand"           "=r,r,r,r,r")
-	(ashift:SI (match_operand:SI 1 "register_operand" "0,0,r,0,0")
-		   (match_operand:QI 2 "general_operand"  "r,P,O,i,Qm")))
-   (clobber (match_scratch:QI 3 "=X,X,X,&d,X"))]
+  [(set (match_operand:SI 0 "register_operand"           "=r,r,r,r,r,r")
+	(ashift:SI (match_operand:SI 1 "register_operand" "0,0,r,0,0,0")
+		   (match_operand:QI 2 "general_operand"  "r,P,O,K,i,Qm")))
+   (clobber (match_scratch:QI 3 "=X,X,X,X,&d,X"))]
   ""
-  "* return ashlsi3_out (insn,operands, NULL);"
-  [(set_attr "length" "9,4,4,7,10")
-   (set_attr "cc" "clobber,clobber,clobber,clobber,clobber")])
+  "* return ashlsi3_out (insn, operands, NULL);"
+  [(set_attr "length" "9,4,4,8,7,10")
+   (set_attr "cc" "clobber,set_n,clobber,set_n,clobber,clobber")])
 
 ;; >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >>
 ;; arithmetic shift right
@@ -925,19 +925,19 @@
 		     (match_operand:QI 2 "general_operand"  "r,P,K,O,i,Qm")))
    (clobber (match_scratch:QI 3 "=X,X,X,X,&d,X"))]
   ""
-  "* return ashrhi3_out (insn,operands, NULL);"
+  "* return ashrhi3_out (insn, operands, NULL);"
   [(set_attr "length" "7,2,4,2,5,8")
    (set_attr "cc" "clobber,clobber,clobber,clobber,clobber,clobber")])
 
 (define_insn "ashrsi3"
-  [(set (match_operand:SI 0 "register_operand"             "=r,r,r,r,r")
-	(ashiftrt:SI (match_operand:SI 1 "register_operand" "0,0,r,0,0")
-		     (match_operand:QI 2 "general_operand"  "r,P,O,i,Qm")))
-   (clobber (match_scratch:QI 3 "=X,X,X,&d,X"))]
+  [(set (match_operand:SI 0 "register_operand"             "=r,r,r,r,r,r")
+	(ashiftrt:SI (match_operand:SI 1 "register_operand" "0,0,r,0,0,0")
+		     (match_operand:QI 2 "general_operand"  "r,P,O,K,i,Qm")))
+   (clobber (match_scratch:QI 3 "=X,X,X,X,&d,X"))]
   ""
-  "* return ashrsi3_out (insn,operands, NULL);"
-  [(set_attr "length" "9,4,6,7,10")
-   (set_attr "cc" "clobber,clobber,clobber,clobber,clobber")])
+  "* return ashrsi3_out (insn, operands, NULL);"
+  [(set_attr "length" "9,4,6,8,7,10")
+   (set_attr "cc" "clobber,clobber,clobber,clobber,clobber,clobber")])
 
 ;; >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >> >>
 ;; logical shift right
@@ -947,7 +947,7 @@
 	(lshiftrt:QI (match_operand:QI 1 "register_operand" "0,0,0,0")
 		     (match_operand:QI 2 "general_operand" "r,n,n,Qm")))]
   ""
-  "* return lshrqi3_out (insn,operands, NULL);"
+  "* return lshrqi3_out (insn, operands, NULL);"
   [(set_attr "length" "6,4,6,7")
    (set_attr "cc" "clobber,set_czn,set_czn,clobber")])
 
@@ -957,19 +957,19 @@
 		     (match_operand:QI 2 "general_operand"  "r,P,K,O,i,Qm")))
    (clobber (match_scratch:QI 3 "=X,X,X,X,&d,X"))]
   ""
-  "* return lshrhi3_out (insn,operands, NULL);"
+  "* return lshrhi3_out (insn, operands, NULL);"
   [(set_attr "length" "7,2,4,2,5,8")
    (set_attr "cc" "clobber,clobber,clobber,clobber,clobber,clobber")])
 
 (define_insn "lshrsi3"
-  [(set (match_operand:SI 0 "register_operand"             "=r,r,r,r,r")
-	(lshiftrt:SI (match_operand:SI 1 "register_operand" "0,0,r,0,0")
-		     (match_operand:QI 2 "general_operand"  "r,P,O,i,Qm")))
-   (clobber (match_scratch:QI 3 "=X,X,X,&d,X"))]
+  [(set (match_operand:SI 0 "register_operand"             "=r,r,r,r,r,r")
+	(lshiftrt:SI (match_operand:SI 1 "register_operand" "0,0,r,0,0,0")
+		     (match_operand:QI 2 "general_operand"  "r,P,O,K,i,Qm")))
+   (clobber (match_scratch:QI 3 "=X,X,X,X,&d,X"))]
   ""
-  "* return lshrsi3_out (insn,operands, NULL);"
-  [(set_attr "length" "9,4,4,7,10")
-   (set_attr "cc" "clobber,clobber,clobber,clobber,clobber")])
+  "* return lshrsi3_out (insn, operands, NULL);"
+  [(set_attr "length" "9,4,4,8,7,10")
+   (set_attr "cc" "clobber,clobber,clobber,clobber,clobber,clobber")])
 
 ;; abs(x) abs(x) abs(x) abs(x) abs(x) abs(x) abs(x) abs(x) abs(x) abs(x) abs(x)
 ;; abs

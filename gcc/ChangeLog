@@ -1,3 +1,13 @@
+2000-09-30  Marek Michalkiewicz  <marekm@linux.org.pl>
+
+	* config/avr/avr.c (ashlhi3_out, ashlsi3_out, ashrhi3_out,
+	ashrsi3_out, lshrhi3_out, lshrsi3_out): Optimize more cases
+	with known shift count.
+	* config/avr/avr.md (ashlsi3, ashrsi3, lshrsi3):
+	New alternative for shift count 2 with no scratch register.
+	(ashlhi3, ashlsi3): Change "cc" attribute from "clobber" to
+	"set_n" for shift counts 1 and 2.
+
 2000-09-30  Geoff Keating  <geoffk@cygnus.com>
 
 	* config/rs6000/rs6000.md (movsi_to_cr): Remove the USE.  Calculate
