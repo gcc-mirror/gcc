@@ -1288,7 +1288,7 @@ bit_operand (rtx op, enum machine_mode mode)
     return 1;
 
   /* Accept any mem during RTL generation.  Otherwise, the code that does
-     insv and extzv will think that we can not handle memory.  However,
+     insv and extzv will think that we cannot handle memory.  However,
      to avoid reload problems, we only accept 'U' MEM operands after RTL
      generation.  This means that any named pattern which uses this predicate
      must force its operands to match 'U' before emitting RTL.  */

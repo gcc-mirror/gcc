@@ -915,7 +915,7 @@ mcore_is_dead (rtx first, rtx reg)
 	}
     }
 
-  /* No conclusive evidence either way, we can not take the chance
+  /* No conclusive evidence either way, we cannot take the chance
      that control flow hid the use from us -- "I'm not dead yet".  */
   return 0;
 }

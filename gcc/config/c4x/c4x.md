@@ -320,8 +320,8 @@
 ;        op3             fetch executed
 ; This means that we can allow any instruction in the last delay slot
 ; and only instructions which modify registers in the first two. 
-; lda can not be executed in the first delay slot 
-; and ldpk can not be executed in the first two delay slots.
+; lda cannot be executed in the first delay slot 
+; and ldpk cannot be executed in the first two delay slots.
 
 (define_attr "onlyreg" "false,true"
        (cond [(eq_attr "type" "unary,unarycc")
@@ -5909,7 +5909,7 @@
  "push\\t%0"
  [(set_attr "type" "push")])
 
-; we can not use this because the popf will destroy the low 8 bits
+; we cannot use this because the popf will destroy the low 8 bits
 ;(define_insn "pophf"
 ;  [(set (match_operand:HF 0 "reg_operand" "=h")
 ;        (mem:HF (post_dec:QI (reg:QI 20))))

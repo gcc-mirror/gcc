@@ -207,7 +207,7 @@
 ;; unit has a latency of 5 cycles when the results goes to a LS unit (excluding
 ;; store data), otherwise a latency of 1 cycle.
 
-;; ??? We can not handle latencies properly for simple alu instructions
+;; ??? We cannot handle latencies properly for simple alu instructions
 ;; within the DFA pipeline model.  Latencies can be defined only from one
 ;; insn reservation to another.  We can't make them depend on which function
 ;; unit was used.  This isn't a DFA flaw.  There is a conflict here, as we

@@ -5903,7 +5903,7 @@ arm_gen_load_multiple (int base_regno, int count, rtx from, int up,
   rtx mem;
 
   /* XScale has load-store double instructions, but they have stricter
-     alignment requirements than load-store multiple, so we can not
+     alignment requirements than load-store multiple, so we cannot
      use them.
 
      For XScale ldm requires 2 + NREGS cycles to complete and blocks

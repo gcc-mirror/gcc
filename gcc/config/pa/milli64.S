@@ -1300,14 +1300,14 @@ GSYM($$divI_3)
 	.export		$$divI_3,millicode
 	comb,<,N	x2,0,LREF(neg3)
 
-	addi		1,x2,x2		/* this can not overflow	*/
+	addi		1,x2,x2		/* this cannot overflow	*/
 	extru		x2,1,2,x1	/* multiply by 5 to get started */
 	sh2add		x2,x2,x2
 	b		LREF(pos)
 	addc		x1,0,x1
 
 LSYM(neg3)
-	subi		1,x2,x2		/* this can not overflow	*/
+	subi		1,x2,x2		/* this cannot overflow	*/
 	extru		x2,1,2,x1	/* multiply by 5 to get started */
 	sh2add		x2,x2,x2
 	b		LREF(neg)
@@ -1328,14 +1328,14 @@ GSYM($$divI_5)
 	.export		$$divI_5,millicode
 	comb,<,N	x2,0,LREF(neg5)
 
-	addi		3,x2,t1		/* this can not overflow	*/
+	addi		3,x2,t1		/* this cannot overflow	*/
 	sh1add		x2,t1,x2	/* multiply by 3 to get started */
 	b		LREF(pos)
 	addc		0,0,x1
 
 LSYM(neg5)
 	sub		0,x2,x2		/* negate x2			*/
-	addi		1,x2,x2		/* this can not overflow	*/
+	addi		1,x2,x2		/* this cannot overflow	*/
 	shd		0,x2,31,x1	/* get top bit (can be 1)	*/
 	sh1add		x2,x2,x2	/* multiply by 3 to get started */
 	b		LREF(neg)
@@ -1373,7 +1373,7 @@ LSYM(neg6)
 GSYM($$divU_6)
 	.export		$$divU_6,millicode
 	extru		x2,30,31,x2	/* divide by 2 */
-	addi		1,x2,x2		/* can not carry */
+	addi		1,x2,x2		/* cannot carry */
 	shd		0,x2,30,x1	/* multiply by 5 to get started */
 	sh2add		x2,x2,x2
 	b		LREF(pos)
@@ -1408,7 +1408,7 @@ GSYM($$divI_10)
 	comb,<		x2,0,LREF(neg10)
 	copy		0,x1
 	extru		x2,30,31,x2	/* divide by 2 */
-	addib,TR	1,x2,LREF(pos)	/* add 1 (can not overflow)     */
+	addib,TR	1,x2,LREF(pos)	/* add 1 (cannot overflow)     */
 	sh1add		x2,x2,x2	/* multiply by 3 to get started */
 
 LSYM(neg10)
@@ -1455,7 +1455,7 @@ LSYM(neg12)
 GSYM($$divU_12)
 	.export		$$divU_12,millicode
 	extru		x2,29,30,x2	/* divide by 4   */
-	addi		5,x2,t1		/* can not carry */
+	addi		5,x2,t1		/* cannot carry */
 	sh2add		x2,t1,x2	/* multiply by 5 to get started */
 	b		LREF(pos)
 	addc		0,0,x1
@@ -1482,7 +1482,7 @@ GSYM($$divU_15)
 GSYM($$divI_17)
 	.export		$$divI_17,millicode
 	comb,<,n	x2,0,LREF(neg17)
-	addi		1,x2,x2		/* this can not overflow */
+	addi		1,x2,x2		/* this cannot overflow */
 	shd		0,x2,28,t1	/* multiply by 0xf to get started */
 	shd		x2,0,28,t2
 	sub		t2,x2,x2
@@ -1490,7 +1490,7 @@ GSYM($$divI_17)
 	subb		t1,0,x1
 
 LSYM(neg17)
-	subi		1,x2,x2		/* this can not overflow */
+	subi		1,x2,x2		/* this cannot overflow */
 	shd		0,x2,28,t1	/* multiply by 0xf to get started */
 	shd		x2,0,28,t2
 	sub		t2,x2,x2
@@ -1540,7 +1540,7 @@ GSYM($$divI_7)
 	.export		$$divI_7,millicode
 	comb,<,n	x2,0,LREF(neg7)
 LSYM(7)
-	addi		1,x2,x2		/* can not overflow */
+	addi		1,x2,x2		/* cannot overflow */
 	shd		0,x2,29,x1
 	sh3add		x2,x2,x2
 	addc		x1,0,x1
@@ -1615,7 +1615,7 @@ GSYM($$divU_7)
 GSYM($$divI_9)
 	.export		$$divI_9,millicode
 	comb,<,n	x2,0,LREF(neg9)
-	addi		1,x2,x2		/* can not overflow */
+	addi		1,x2,x2		/* cannot overflow */
 	shd		0,x2,29,t1
 	shd		x2,0,29,t2
 	sub		t2,x2,x2

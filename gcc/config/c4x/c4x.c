@@ -467,7 +467,7 @@ c4x_hard_regno_mode_ok (unsigned int regno, enum machine_mode mode)
 int
 c4x_hard_regno_rename_ok (unsigned int regno1, unsigned int regno2)
 {
-  /* We can not copy call saved registers from mode QI into QF or from
+  /* We cannot copy call saved registers from mode QI into QF or from
      mode QF into QI.  */
   if (IS_FLOAT_CALL_SAVED_REGNO (regno1) && IS_INT_CALL_SAVED_REGNO (regno2))
     return 0;
@@ -2260,7 +2260,7 @@ c4x_rptb_nop_p (rtx insn)
   Before we can create a repeat block looping instruction we have to
   verify that there are no jumps outside the loop and no jumps outside
   the loop go into this loop. This can happen in the basic blocks reorder
-  pass. The C4x cpu can not handle this.  */
+  pass. The C4x cpu cannot handle this.  */
 
 static int
 c4x_label_ref_used_p (rtx x, rtx code_label)
@@ -2305,7 +2305,7 @@ c4x_rptb_valid_p (rtx insn, rtx start_label)
     if (insn == start_label)
       break;
 
-  /* Note found then we can not use a rptb or rpts.  The label was
+  /* Note found then we cannot use a rptb or rpts.  The label was
      probably moved by the basic block reorder pass.  */
   if (! insn)
     return 0;
@@ -2374,7 +2374,7 @@ c4x_rptb_insert (rtx insn)
   
   if (! c4x_rptb_valid_p (insn, start_label))
     {
-      /* We can not use the rptb insn.  Replace it so reorg can use
+      /* We cannot use the rptb insn.  Replace it so reorg can use
          the delay slots of the jump insn.  */
       emit_insn_before (gen_addqi3 (count_reg, count_reg, constm1_rtx), insn);
       emit_insn_before (gen_cmpqi (count_reg, const0_rtx), insn);
@@ -3548,7 +3548,7 @@ c4x_address_conflict (rtx op0, rtx op1, int store0, int store1)
   if (! TARGET_DEVEL && base0 == base1 && (incdec0 || incdec1))
     return 1;
 
-  /* We can not optimize the case where op1 and op2 refer to the same
+  /* We cannot optimize the case where op1 and op2 refer to the same
      address.  */
   if (base0 == base1 && disp0 == disp1 && index0 == index1)
     return 1;

@@ -4735,7 +4735,7 @@ rtx_needs_barrier (rtx x, struct reg_flags flags, int pred)
 	}
 
       /* For all ASM_OPERANDS, we must traverse the vector of input operands.
-	 We can not just fall through here since then we would be confused
+	 We cannot just fall through here since then we would be confused
 	 by the ASM_INPUT rtx inside ASM_OPERANDS, which do not indicate
 	 traditional asms unlike their normal usage.  */
 
@@ -5727,7 +5727,7 @@ ia64_first_cycle_multipass_dfa_lookahead_guard (rtx insn)
 
 static rtx dfa_pre_cycle_insn;
 
-/* We are about to being issuing INSN.  Return nonzero if we can not
+/* We are about to being issuing INSN.  Return nonzero if we cannot
    issue it on given cycle CLOCK and return zero if we should not sort
    the ready queue on the next clock start.  */
 
@@ -6276,7 +6276,7 @@ get_next_important_insn (rtx insn, rtx tail)
    by structure bundle_state (see above).  If we generate the same
    bundle state (key is automaton state after issuing the insns and
    nops for it), we reuse already generated one.  As consequence we
-   reject some decisions which can not improve the solution and
+   reject some decisions which cannot improve the solution and
    reduce memory for the algorithm.
 
    When we reach the end of EBB (extended basic block), we choose the

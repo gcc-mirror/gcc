@@ -203,7 +203,7 @@
 				   (eq_attr "memory" "load,both")))
 			 "athlon-vector,athlon-load,athlon-ieu,athlon-mult,athlon-ieu")
 
-;; Idiv can not execute in parallel with other instructions.  Dealing with it
+;; Idiv cannot execute in parallel with other instructions.  Dealing with it
 ;; as with short latency vector instruction is good approximation avoiding
 ;; scheduler from trying too hard to can hide it's latency by overlap with
 ;; other instructions.
