@@ -1,5 +1,11 @@
 2000-10-27  Richard Henderson  <rth@redhat.com>
 
+	* config/alpha/alpha.h (enum reg_class): Add PV_REG.
+	(REG_CLASS_NAMES, REG_CLASS_CONTENTS, REGNO_REG_CLASS): Update.
+	(REG_CLASS_FROM_LETTER): Assign it to 'c'.
+	* config/alpha/alpha.md (call_osf_1): Use it.
+	(call_value_osf_1): Likewise.
+
 	* config/ia64/ia64.c: Revert 10-23 patch.
 	(ia64_hard_regno_rename_ok): New.
 	* config/ia64/ia64-protos.h: Declare it.

@@ -4223,7 +4223,7 @@
 }")
 
 (define_insn "*call_osf_1"
-  [(call (mem:DI (match_operand:DI 0 "call_operand" "r,R,i"))
+  [(call (mem:DI (match_operand:DI 0 "call_operand" "c,R,i"))
 	 (match_operand 1 "" ""))
    (clobber (reg:DI 27))
    (clobber (reg:DI 26))]
@@ -5976,7 +5976,7 @@
 
 (define_insn "*call_value_osf_1"
   [(set (match_operand 0 "" "")
-	(call (mem:DI (match_operand:DI 1 "call_operand" "r,R,i"))
+	(call (mem:DI (match_operand:DI 1 "call_operand" "c,R,i"))
 	      (match_operand 2 "" "")))
    (clobber (reg:DI 27))
    (clobber (reg:DI 26))]

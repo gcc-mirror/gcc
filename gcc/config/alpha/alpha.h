@@ -719,7 +719,7 @@ extern const char *alpha_mlat_string;	/* For -mmemory-latency= */
    For any two classes, it is very desirable that there be another
    class that represents their union.  */
    
-enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
+enum reg_class { NO_REGS, PV_REG, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
 		 LIM_REG_CLASSES };
 
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
@@ -727,22 +727,24 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
 /* Give names of register classes as strings for dump file.   */
 
 #define REG_CLASS_NAMES				\
- {"NO_REGS", "GENERAL_REGS", "FLOAT_REGS", "ALL_REGS" }
+ {"NO_REGS", "PV_REG", "GENERAL_REGS", "FLOAT_REGS", "ALL_REGS" }
 
 /* Define which registers fit in which classes.
    This is an initializer for a vector of HARD_REG_SET
    of length N_REG_CLASSES.  */
 
 #define REG_CLASS_CONTENTS	\
-  { {0, 0}, {~0, 0x80000000}, {0, 0x7fffffff}, {~0, ~0} }
+  { {0, 0}, {0x08000000, 0}, {~0, 0x80000000}, {0, 0x7fffffff}, {~0, ~0} }
 
 /* The same information, inverted:
    Return the class number of the smallest class containing
    reg number REGNO.  This could be a conditional expression
    or could index an array.  */
 
-#define REGNO_REG_CLASS(REGNO) \
- ((REGNO) >= 32 && (REGNO) <= 62 ? FLOAT_REGS : GENERAL_REGS)
+#define REGNO_REG_CLASS(REGNO)			\
+ ((REGNO) == 27 ? PV_REG			\
+  : (REGNO) >= 32 && (REGNO) <= 62 ? FLOAT_REGS	\
+  : GENERAL_REGS)
 
 /* The class value for index registers, and the one for base regs.  */
 #define INDEX_REG_CLASS NO_REGS
@@ -751,7 +753,7 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
 /* Get reg_class from a letter such as appears in the machine description.  */
 
 #define REG_CLASS_FROM_LETTER(C)	\
- ((C) == 'f' ? FLOAT_REGS : NO_REGS)
+ ((C) == 'c' ? PV_REG : (C) == 'f' ? FLOAT_REGS : NO_REGS)
 
 /* Define this macro to change register usage conditional on target flags.  */
 /* #define CONDITIONAL_REGISTER_USAGE  */
