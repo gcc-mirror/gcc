@@ -1,3 +1,8 @@
+2003-06-06  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.h (FUNCTION_ARG_1): Consistently use NEW_MODE for the mode
+	of the generated register.
+
 2003-06-06  Daniel Jacobowitz  <drow@mvista.com>
 
 	* config.gcc: Add a missing sparc64 case.
