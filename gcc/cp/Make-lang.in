@@ -42,12 +42,12 @@ CXX_FLAGS_TO_PASS = \
 	"CXX_FOR_TARGET=$(CXX_FOR_TARGET)"
 
 # Actual names to use when installing a native compiler.
-CXX_INSTALL_NAME = c++
-GXX_INSTALL_NAME = g++
+CXX_INSTALL_NAME = `t='$(program_transform_name)'; echo c++ | sed $$t`
+GXX_INSTALL_NAME = `t='$(program_transform_name)'; echo g++ | sed $$t`
 
 # Actual names to use when installing a cross-compiler.
-CXX_CROSS_NAME = $(target)-c++
-GXX_CROSS_NAME = $(target)-g++
+CXX_CROSS_NAME = `t='$(program_transform_cross_name)'; echo c++ | sed $$t`
+GXX_CROSS_NAME = `t='$(program_transform_cross_name)'; echo g++ | sed $$t`
 
 
 # Define the names for selecting c++ in LANGUAGES.
