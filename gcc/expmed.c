@@ -335,6 +335,7 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
                 + (offset * UNITS_PER_WORD);
 
   if (bitpos == 0
+      && GET_MODE_BITSIZE (fieldmode) != 0
       && bitsize >= GET_MODE_BITSIZE (fieldmode)
       && (GET_CODE (op0) != MEM
 	  ? ((GET_MODE_SIZE (fieldmode) >= UNITS_PER_WORD
@@ -1032,6 +1033,7 @@ extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
   if (GET_CODE (op0) == REG
       && mode == GET_MODE (op0)
       && bitnum == 0
+      && GET_MODE_BITSIZE (GET_MODE (op0)) != 0
       && bitsize >= GET_MODE_BITSIZE (GET_MODE (op0)))
     {
       /* We're trying to extract a full register from itself.

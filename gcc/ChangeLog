@@ -1,3 +1,11 @@
+2003-10-26  Graham Stott  <graham.stott@btinternet.com>
+
+	Fix bootstrap failure.
+	* expmed.c (store_bit_field): Don't compare bitsize against
+	modes with zero bit-size.
+
+	(extract_bit_field): Likewise
+
 2003-10-25  Jan Hubicka  <jh@suse.cz>
 
 	* dwarf2out.c (dw_cfi_oprnd_struct): Offset is HOST_WIDE_INT.
