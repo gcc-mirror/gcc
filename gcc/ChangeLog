@@ -1,3 +1,8 @@
+Tue Nov  4 13:40:35 1997  Doug Evans  <devans@canuck.cygnus.com>
+
+	* c-lex.c (MULTIBYTE_CHARS): #undef if cross compiling.
+	(yylex): Record wide strings using target endianness, not host.
+
 Tue Nov  4 13:13:12 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* mn10200.h (ASM_OUTPUT_BSS): Delete.
