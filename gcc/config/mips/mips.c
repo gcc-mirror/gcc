@@ -5357,13 +5357,13 @@ override_options ()
 
 	  else if (FP_REG_P (regno))
 	    temp = (((regno % FP_INC) == 0
-		      /* I think this change is OK regardless of abi, but
+		     /* I think this change is OK regardless of abi, but
                         I'm being cautions untill I can test this more.
                         HARD_REGNO_MODE_OK is about whether or not you
                         can move to and from a register without changing
                         the value, not about whether math works on the
-                        register.  */
-                     || (mips_abi == ABI_MEABI && size <= 4))
+                        register. */
+		     || (mips_abi == ABI_MEABI && size <= 4))
 		    && (((class == MODE_FLOAT || class == MODE_COMPLEX_FLOAT)
 			 && size <= UNITS_PER_FPVALUE)
 			/* Allow integer modes that fit into a single
@@ -10369,20 +10369,17 @@ mips_return_in_memory (type)
 static int
 mips_issue_rate ()
 {
-  int rate;
-
   switch (mips_tune)
     {
     case PROCESSOR_R3000:
-      rate = 1;
-      break;
+      return 1;
 
     default:
-      rate = 1;
-      break;
+      return 1;
     }
 
-  return rate;
+  abort ();
+
 }
 
 const char *

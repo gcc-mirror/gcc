@@ -59,9 +59,6 @@ Boston, MA 02111-1307, USA.  */
 #define getpagesize()	sysconf(_SC_PAGE_SIZE)
 #endif /*  L_trampoline */
 
-/* Generate calls to memcpy, etc., not bcopy, etc.  */
-#define TARGET_MEM_FUNCTIONS
-
 #define OBJECT_FORMAT_ELF
 
 #define	TARGET_DEFAULT	MASK_ABICALLS

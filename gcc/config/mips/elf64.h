@@ -20,33 +20,19 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+#undef  OBJECT_FORMAT_COFF
+#undef  EXTENDED_COFF
 #define OBJECT_FORMAT_ELF
 
-/* If an embedded ABI is selected, prefer to generate 64-bit code.
-   Implies -mips3 in such cases.  */
-#ifndef TARGET_DEFAULT
-#define TARGET_DEFAULT MASK_FLOAT64|MASK_64BIT
-#endif
+#undef  SDB_DEBUGGING_INFO
+#define DBX_DEBUGGING_INFO
+#define DWARF2_DEBUGGING_INFO
 
-/* This should change to n32 when it is supported in gas.  */
-#ifndef MIPS_ABI_DEFAULT
-#define MIPS_ABI_DEFAULT ABI_O64
-#endif
+#undef  PREFERRED_DEBUGGING_TYPE
+#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 
-/* Until we figure out what MIPS ELF targets normally use, just do
-   stabs in ELF.  */
-#ifndef PREFERRED_DEBUGGING_TYPE
-#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
-#endif
-
-/* US Software GOFAST library support.  */
-#include "gofast.h"
-#define INIT_SUBTARGET_OPTABS INIT_GOFAST_OPTABS
-
-#include "mips/mips.h"
-
-/* Use memcpy, et. al., rather than bcopy.  */
-#define TARGET_MEM_FUNCTIONS
+#undef  SUBTARGET_ASM_DEBUGGING_SPEC
+#define SUBTARGET_ASM_DEBUGGING_SPEC "-g0"
 
 /* Biggest alignment supported by the object file format of this
    machine.  Use this macro to limit the alignment which can be
@@ -55,24 +41,6 @@ Boston, MA 02111-1307, USA.  */
 
 #undef MAX_OFILE_ALIGNMENT
 #define MAX_OFILE_ALIGNMENT (32768*8)
-
-/* We need to use .esize and .etype instead of .size and .type to
-   avoid conflicting with ELF directives.  */
-#undef PUT_SDB_SIZE
-#define PUT_SDB_SIZE(a)					\
-do {							\
-  extern FILE *asm_out_text_file;			\
-  fprintf (asm_out_text_file, "\t.esize\t");		\
-  fprintf (asm_out_text_file, HOST_WIDE_INT_PRINT_DEC, (HOST_WIDE_INT) (a)); \
-  fprintf (asm_out_text_file, ";");		       	\
-} while (0)
-
-#undef PUT_SDB_TYPE
-#define PUT_SDB_TYPE(a)					\
-do {							\
-  extern FILE *asm_out_text_file;			\
-  fprintf (asm_out_text_file, "\t.etype\t0x%x;", (a));	\
-} while (0)
 
 /* Switch into a generic section.  */
 #undef TARGET_ASM_NAMED_SECTION
