@@ -89,9 +89,7 @@ UI_To_gnu (Uint Input, tree type)
 	   ? type : integer_type_node);
       tree gnu_base = build_cst_from_int (comp_type, Base);
 
-      if (Length <= 0)
-	abort ();
-
+      gcc_assert (Length > 0);
       gnu_ret = build_cst_from_int (comp_type, First);
       if (First < 0)
 	for (Idx++, Length--; Length; Idx++, Length--)

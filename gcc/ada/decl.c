@@ -117,9 +117,7 @@ gnat_to_gnu_type (Entity_Id gnat_entity)
 
   /* Convert the ada entity type into a GCC TYPE_DECL node.  */
   gnu_decl = gnat_to_gnu_entity (gnat_entity, NULL_TREE, 0);
-  if (TREE_CODE (gnu_decl) != TYPE_DECL)
-    abort ();
-
+  gcc_assert (TREE_CODE (gnu_decl) == TYPE_DECL);
   return TREE_TYPE (gnu_decl);
 }
 
@@ -226,12 +224,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
       /* This abort means the entity "gnat_entity" has an incorrect scope,
 	 i.e. that its scope does not correspond to the subprogram in which
 	 it is declared */
-      abort ();
+      gcc_unreachable ();
     }
 
   /* If this is entity 0, something went badly wrong.  */
-  if (No (gnat_entity))
-    abort ();
+  gcc_assert (Present (gnat_entity));
 
   /* If we've already processed this entity, return what we got last time.
      If we are defining the node, we should not have already processed it.
@@ -262,19 +259,17 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
   /* If this is a numeric or enumeral type, or an access type, a nonzero
      Esize must be specified unless it was specified by the programmer.  */
-  if ((IN (kind, Numeric_Kind) || IN (kind, Enumeration_Kind)
-       || (IN (kind, Access_Kind)
-	   && kind != E_Access_Protected_Subprogram_Type
-	   && kind != E_Access_Subtype))
-      && Unknown_Esize (gnat_entity)
-      && !Has_Size_Clause (gnat_entity))
-    abort ();
+  gcc_assert (!Unknown_Esize (gnat_entity)
+	      || Has_Size_Clause (gnat_entity)
+	      || (!IN (kind, Numeric_Kind) && !IN (kind, Enumeration_Kind)
+		  && (!IN (kind, Access_Kind)
+		      || kind == E_Access_Protected_Subprogram_Type
+		      || kind == E_Access_Subtype)));
 
   /* Likewise, RM_Size must be specified for all discrete and fixed-point
      types.  */
-  if (IN (kind, Discrete_Or_Fixed_Point_Kind)
-      && Unknown_RM_Size (gnat_entity))
-    abort ();
+  gcc_assert (!IN (kind, Discrete_Or_Fixed_Point_Kind)
+	      || !Unknown_RM_Size (gnat_entity));
 
   /* Get the name of the entity and set up the line number and filename of
      the original definition for use in any decl we make.  */
@@ -284,16 +279,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
   /* If we get here, it means we have not yet done anything with this
      entity.  If we are not defining it here, it must be external,
      otherwise we should have defined it already.  */
-  if (!definition && ! Is_Public (gnat_entity)
-      && !type_annotate_only
-      && kind != E_Discriminant && kind != E_Component
-      && kind != E_Label
-      && !(kind == E_Constant && Present (Full_View (gnat_entity)))
-#if 1
-      && !IN (kind, Type_Kind)
-#endif
-      )
-    abort ();
+  gcc_assert (definition || Is_Public (gnat_entity) || type_annotate_only
+	      || kind == E_Discriminant || kind == E_Component
+	      || kind == E_Label
+	      || (kind == E_Constant && Present (Full_View (gnat_entity)))
+	      || IN (kind, Type_Kind));
 
   /* For cases when we are not defining (i.e., we are referencing from
      another compilation unit) Public entities, show we are at global level
@@ -417,10 +407,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  {
 	    /* A tagged record has no explicit stored discriminants. */
 
-	    if (First_Discriminant (gnat_record)
-		!= First_Stored_Discriminant (gnat_record))
-	      abort ();
-
+	    gcc_assert (First_Discriminant (gnat_record)
+		       == First_Stored_Discriminant (gnat_record));
 	    gnu_decl
 	      = gnat_to_gnu_entity (Corresponding_Discriminant (gnat_entity),
 				    gnu_expr, definition);
@@ -438,7 +426,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	else if (Present (Corresponding_Discriminant (gnat_entity))
 		 && (First_Discriminant (gnat_record)
 		     != First_Stored_Discriminant (gnat_record)))
-	  abort ();
+	  gcc_unreachable ();
 
 	/* Otherwise, if we are not defining this and we have no GCC type
 	   for the containing record, make one for it.  Then we should
@@ -475,7 +463,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  /* Here we have no GCC type and this is a reference rather than a
 	     definition. This should never happen. Most likely the cause is a
 	     reference before declaration in the gnat tree for gnat_entity.  */
-	  abort ();
+	  gcc_unreachable ();
       }
 
     case E_Loop_Parameter:
@@ -527,10 +515,21 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    || TYPE_IS_DUMMY_P (gnu_type)
 	    || TREE_CODE (gnu_type) == VOID_TYPE)
 	  {
-	    if (type_annotate_only)
-	      return error_mark_node;
-	    else
-	      abort ();
+	    gcc_assert (type_annotate_only);
+	    return error_mark_node;
+	  }
+
+	/* If an alignment is specified, use it if valid.   Note that
+	   exceptions are objects but don't have alignments.  We must do this
+	   before we validate the size, since the alignment can affect the 
+	   size.  */
+	if (kind != E_Exception && Known_Alignment (gnat_entity))
+	  {
+	    gcc_assert (Present (Alignment (gnat_entity)));
+	    align = validate_alignment (Alignment (gnat_entity), gnat_entity,
+					TYPE_ALIGN (gnu_type));
+	    gnu_type = maybe_pad_type (gnu_type, NULL_TREE, align,
+				       gnat_entity, "PAD", 0, definition, 1);
 	  }
 
 	/* If we are defining the object, see if it has a Size value and
@@ -598,17 +597,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    && !Present (Renamed_Object (gnat_entity))
 	    && !Present (Address_Clause (gnat_entity)))
 	  gnu_size = bitsize_unit_node;
-
-	/* If an alignment is specified, use it if valid.   Note that
-	   exceptions are objects but don't have alignments.  */
-	if (kind != E_Exception && Known_Alignment (gnat_entity))
-	  {
-	    if (No (Alignment (gnat_entity)))
-	      abort ();
-
-	    align = validate_alignment (Alignment (gnat_entity), gnat_entity,
-					TYPE_ALIGN (gnu_type));
-	  }
 
 	/* If this is an atomic object with no specified size and alignment,
 	   but where the size of the type is a constant, set the alignment to
@@ -1358,6 +1346,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  TYPE_ALIGN (gnu_type) = TYPE_ALIGN (gnu_field_type);
 	  TYPE_PACKED (gnu_type) = 1;
 
+	  /* Create a stripped-down declaration of the original type, mainly
+	     for debugging.  */
+	  create_type_decl (get_entity_name (gnat_entity), gnu_field_type,
+			    NULL, true, debug_info_p, gnat_entity);
+
 	  /* Don't notify the field as "addressable", since we won't be taking
 	     it's address and it would prevent create_field_decl from making a
 	     bitfield.  */
@@ -1667,9 +1660,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	if (No (Packed_Array_Type (gnat_entity))
             && Known_Alignment (gnat_entity))
 	  {
-	    if (No (Alignment (gnat_entity)))
-	      abort ();
-
+	    gcc_assert (Present (Alignment (gnat_entity)));
 	    TYPE_ALIGN (tem)
 	      = validate_alignment (Alignment (gnat_entity), gnat_entity,
 				    TYPE_ALIGN (tem));
@@ -2173,8 +2164,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	}
 
       /* Abort if packed array with no packed array type field set. */
-      else if (Is_Packed (gnat_entity))
-	abort ();
+      else
+	gcc_assert (!Is_Packed (gnat_entity));
 
       break;
 
@@ -2291,8 +2282,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		|| Present (Record_Extension_Part (record_definition)))
 	      record_definition = Record_Extension_Part (record_definition);
 
-	    if (!type_annotate_only && No (Parent_Subtype (gnat_entity)))
-	      abort ();
+	    gcc_assert (type_annotate_only
+			|| Present (Parent_Subtype (gnat_entity)));
 	  }
 
 	/* Make a node for the record.  If we are not defining the record,
@@ -3568,9 +3559,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      {
 		if (!has_copy_in_out)
 		  {
-		    if (TREE_CODE (gnu_return_type) != VOID_TYPE)
-		      abort ();
-
+		    gcc_assert (TREE_CODE (gnu_return_type) == VOID_TYPE);
 		    gnu_return_type = make_node (RECORD_TYPE);
 		    TYPE_NAME (gnu_return_type) = get_identifier ("RETURN");
 		    has_copy_in_out = true;
@@ -3788,7 +3777,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   /* If we had a case where we evaluated another type and it might have
@@ -4980,7 +4969,7 @@ choices_to_gnu (tree operand, Node_Id choices)
 	  break;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
 
       result = build_binary_op (TRUTH_ORIF_EXPR, integer_type_node,
@@ -5147,7 +5136,7 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 		   First_Bit (Component_Clause (gnat_field)), gnat_field,
 		   TYPE_ALIGN (gnu_field_type));
 	      else
-		abort ();
+		gcc_unreachable ();
 
 	      gnu_pos = NULL_TREE;
 	    }
@@ -5199,9 +5188,8 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 				       "PAD", false, definition, true);
     }
 
-  if (TREE_CODE (gnu_field_type) == RECORD_TYPE
-      && TYPE_CONTAINS_TEMPLATE_P (gnu_field_type))
-    abort ();
+  gcc_assert (TREE_CODE (gnu_field_type) != RECORD_TYPE
+	      || !TYPE_CONTAINS_TEMPLATE_P (gnu_field_type));
 
   /* Now create the decl for the field.  */
   gnu_field = create_field_decl (gnu_field_id, gnu_field_type, gnu_record_type,
@@ -6271,7 +6259,7 @@ gnat_substitute_in_type (tree t, tree f, tree r)
     case FUNCTION_TYPE:
     case LANG_TYPE:
       /* Don't know how to do these yet.  */
-      abort ();
+      gcc_unreachable ();
 
     case ARRAY_TYPE:
       {
@@ -6411,9 +6399,7 @@ gnat_substitute_in_type (tree t, tree f, tree r)
 	else if (!changed_field)
 	  return t;
 
-	if (field_has_rep)
-	  abort ();
-
+	gcc_assert (!field_has_rep);
 	layout_type (new);
 
 	/* If the size was originally a constant use it.  */

@@ -238,9 +238,7 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name,
   if (Exception_Mechanism == GCC_ZCX)
     gnat_init_gcc_eh ();
 
-  if (Nkind (gnat_root) != N_Compilation_Unit)
-    abort ();
-
+  gcc_assert (Nkind (gnat_root) == N_Compilation_Unit);
   Compilation_Unit_to_gnu (gnat_root);
 
   /* Now see if we have any elaboration procedures to deal with. */
@@ -289,8 +287,7 @@ gnat_init_stmt_group ()
   if (!Stack_Check_Probes_On_Target)
     set_stack_check_libfunc (gen_rtx_SYMBOL_REF (Pmode, "_gnat_stack_check"));
 
-  if (Exception_Mechanism == Front_End_ZCX)
-    abort ();
+  gcc_assert (Exception_Mechanism != Front_End_ZCX);
 
   REAL_ARITHMETIC (dconstp5, RDIV_EXPR, dconst1, dconst2);
   REAL_ARITHMETIC (dconstmp5, RDIV_EXPR, dconstm1, dconst2);
@@ -320,23 +317,23 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 	       ? gnat_node : Entity (gnat_node));
   gnat_temp_type = Etype (gnat_temp);
 
-  if (Etype (gnat_node) != gnat_temp_type
-      && !(Is_Packed (gnat_temp_type)
-	   && Etype (gnat_node) == Packed_Array_Type (gnat_temp_type))
-      && !(Is_Class_Wide_Type (Etype (gnat_node)))
-      && !(IN (Ekind (gnat_temp_type), Private_Kind)
-	   && Present (Full_View (gnat_temp_type))
-	   && ((Etype (gnat_node) == Full_View (gnat_temp_type))
-	       || (Is_Packed (Full_View (gnat_temp_type))
-		   && (Etype (gnat_node)
-		       == Packed_Array_Type (Full_View (gnat_temp_type))))))
-      && (!Is_Itype (Etype (gnat_node)) || !Is_Itype (gnat_temp_type))
-      && (Ekind (gnat_temp) == E_Variable
-	  || Ekind (gnat_temp) == E_Component
-	  || Ekind (gnat_temp) == E_Constant
-	  || Ekind (gnat_temp) == E_Loop_Parameter
-	  || IN (Ekind (gnat_temp), Formal_Kind)))
-    abort ();
+  gcc_assert (Etype (gnat_node) == gnat_temp_type
+	      || (Is_Packed (gnat_temp_type)
+		  && Etype (gnat_node) == Packed_Array_Type (gnat_temp_type))
+	      || (Is_Class_Wide_Type (Etype (gnat_node)))
+	      || (IN (Ekind (gnat_temp_type), Private_Kind)
+		  && Present (Full_View (gnat_temp_type))
+		  && ((Etype (gnat_node) == Full_View (gnat_temp_type))
+		      || (Is_Packed (Full_View (gnat_temp_type))
+			  && (Etype (gnat_node)
+			      == Packed_Array_Type (Full_View
+						    (gnat_temp_type))))))
+	      || (Is_Itype (Etype (gnat_node)) && Is_Itype (gnat_temp_type))
+	      || !(Ekind (gnat_temp) == E_Variable
+		   || Ekind (gnat_temp) == E_Component
+		   || Ekind (gnat_temp) == E_Constant
+		   || Ekind (gnat_temp) == E_Loop_Parameter
+		   || IN (Ekind (gnat_temp), Formal_Kind)));
 
   /* If this is a reference to a deferred constant whose partial view is an
      unconstrained private type, the proper type is on the full view of the
@@ -533,8 +530,7 @@ Pragma_to_gnu (Node_Id gnat_node)
 	  break;
 
 	default:
-	  abort ();
-	  break;
+	  gcc_unreachable ();
 	}
       break;
 
@@ -748,8 +744,7 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
       else
 	gnu_result = rm_size (gnu_type);
 
-      if (!gnu_result)
-	abort ();
+      gcc_assert (gnu_result);
 
       /* Deal with a self-referential size by returning the maximum size for a
 	 type and by qualifying the size with the object for 'Size of an
@@ -863,9 +858,7 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	for (; Dimension > 1; Dimension--)
 	  gnu_type = TREE_TYPE (gnu_type);
 
-	if (TREE_CODE (gnu_type) != ARRAY_TYPE)
-	  abort ();
-
+	gcc_assert (TREE_CODE (gnu_type) == ARRAY_TYPE);
 	if (attribute == Attr_First)
 	  gnu_result
 	    = TYPE_MIN_VALUE (TYPE_INDEX_TYPE (TYPE_DOMAIN (gnu_type)));
@@ -933,10 +926,10 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	    break;
 	  }
 
-	else if (TREE_CODE (gnu_prefix) != COMPONENT_REF
-		 && !(attribute == Attr_Bit_Position
-		      && TREE_CODE (gnu_prefix) == FIELD_DECL))
-	  abort ();
+	else
+	  gcc_assert (TREE_CODE (gnu_prefix) == COMPONENT_REF
+		      || (attribute == Attr_Bit_Position
+			  && TREE_CODE (gnu_prefix) == FIELD_DECL));
 
 	get_inner_reference (gnu_prefix, &bitsize, &bitpos, &gnu_offset,
 			     &mode, &unsignedp, &volatilep);
@@ -1036,8 +1029,7 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	     && TYPE_MULTI_ARRAY_P (TREE_TYPE (gnu_type)))
 	gnu_type = TREE_TYPE (gnu_type);
 
-      if (TREE_CODE (gnu_type) != ARRAY_TYPE)
-	abort ();
+      gcc_assert (TREE_CODE (gnu_type) == ARRAY_TYPE);
 
       /* Note this size cannot be self-referential.  */
       gnu_result = TYPE_SIZE (TREE_TYPE (gnu_type));
@@ -1194,7 +1186,7 @@ Case_Statement_to_gnu (Node_Id gnat_node)
 	      break;
 
 	    default:
-	      abort ();
+	      gcc_unreachable ();
 	    }
 
 	  add_stmt_with_node (build3 (CASE_LABEL_EXPR, void_type_node,
@@ -1555,8 +1547,7 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 	Eliminate_Error_Msg (gnat_node, Entity (Name (gnat_node)));
     }
 
-  if (TREE_CODE (gnu_subprog_type) != FUNCTION_TYPE)
-    abort ();
+  gcc_assert (TREE_CODE (gnu_subprog_type) == FUNCTION_TYPE);
 
   /* If we are calling a stubbed function, make this into a raise of
      Program_Error.  Elaborate all our args first.  */
@@ -2268,7 +2259,7 @@ Exception_Handler_to_gnu_sjlj (Node_Id gnat_node)
 	    }
 	}
       else
-	abort ();
+	gcc_unreachable ();
 
       gnu_choice = build_binary_op (TRUTH_ORIF_EXPR, integer_type_node,
 				    gnu_choice, this_choice);
@@ -2329,7 +2320,7 @@ Exception_Handler_to_gnu_zcx (Node_Id gnat_node)
 	     by the personality routine.  */
 	}
       else
-	abort ();
+	gcc_unreachable ();
 
       /* The GCC interface expects NULL to be passed for catch all handlers, so
 	 it would be quite tempting to set gnu_etypes_list to NULL if gnu_etype
@@ -2534,8 +2525,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	   of the subtype, but that causes problems with subtypes whose usage
 	   will raise Constraint_Error and with biased representation, so
 	   we don't.  */
-	if (TREE_CONSTANT_OVERFLOW (gnu_result))
-	  abort ();
+	gcc_assert (!TREE_CONSTANT_OVERFLOW (gnu_result));
       }
       break;
 
@@ -2563,14 +2553,13 @@ gnat_to_gnu (Node_Id gnat_node)
 	  gnu_result_type = get_unpadded_type (Etype (gnat_node));
 	  gnu_result = UI_To_gnu (Corresponding_Integer_Value (gnat_node),
 				  gnu_result_type);
-	  if (TREE_CONSTANT_OVERFLOW (gnu_result))
-	    abort ();
+	  gcc_assert (!TREE_CONSTANT_OVERFLOW (gnu_result));
 	}
 
       /* We should never see a Vax_Float type literal, since the front end
          is supposed to transform these using appropriate conversions */
       else if (Vax_Float (Underlying_Type (Etype (gnat_node))))
-	abort ();
+	gcc_unreachable ();
 
       else
         {
@@ -2604,13 +2593,11 @@ gnat_to_gnu (Node_Id gnat_node)
 				     gnu_result,
 				     UI_To_gnu (Denominator (ur_realval),
 						gnu_result_type));
-	      else if (Rbase (ur_realval) != 2)
-		abort ();
-
 	      else
 		{
 		  REAL_VALUE_TYPE tmp;
 
+		  gcc_assert (Rbase (ur_realval) == 2);
 		  real_ldexp (&tmp, &TREE_REAL_CST (gnu_result),
 			      - UI_To_Int (Denominator (ur_realval)));
 		  gnu_result = build_real (gnu_result_type, tmp);
@@ -2836,9 +2823,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	for (i = 0, gnu_type = TREE_TYPE (gnu_array_object);
 	     i < ndim; i++, gnu_type = TREE_TYPE (gnu_type))
 	  {
-	    if (TREE_CODE (gnu_type) != ARRAY_TYPE)
-	      abort ();
-
+	    gcc_assert (TREE_CODE (gnu_type) == ARRAY_TYPE);
 	    gnat_temp = gnat_expr_array[i];
 	    gnu_expr = gnat_to_gnu (gnat_temp);
 
@@ -2979,9 +2964,7 @@ gnat_to_gnu (Node_Id gnat_node)
 				      == N_Attribute_Reference));
 	  }
 
-	if (!gnu_result)
-	  abort ();
-
+	gcc_assert (gnu_result);
 	gnu_result_type = get_unpadded_type (Etype (gnat_node));
       }
       break;
@@ -3064,7 +3047,7 @@ gnat_to_gnu (Node_Id gnat_node)
 			    (Next
 			     (First (Component_Associations (gnat_node))))));
 	else
-	  abort ();
+	  gcc_unreachable ();
 
 	gnu_result = convert (gnu_result_type, gnu_result);
       }
@@ -3138,7 +3121,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	    gnu_high = TYPE_MAX_VALUE (gnu_range_type);
 	  }
 	else
-	  abort ();
+	  gcc_unreachable ();
 
 	gnu_result_type = get_unpadded_type (Etype (gnat_node));
 
@@ -3379,7 +3362,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	      }
 	  }
 	else
-	  abort ();
+	  gcc_unreachable ();
 
 	gnu_result_type = get_unpadded_type (Etype (gnat_node));
 	return build_allocator (gnu_type, gnu_init, gnu_result_type,
@@ -3758,12 +3741,11 @@ gnat_to_gnu (Node_Id gnat_node)
       /* If there is an At_End procedure attached to this node, and the EH
 	 mechanism is SJLJ, we must have at least a corresponding At_End
 	 handler, unless the No_Exception_Handlers restriction is set.  */
-      if (!type_annotate_only
-	  && Exception_Mechanism == Setjmp_Longjmp
-	  && Present (At_End_Proc (gnat_node))
-	  && !Present (Exception_Handlers (gnat_node))
-	  && !No_Exception_Handlers_Set())
-	abort ();
+      gcc_assert (type_annotate_only
+		  || Exception_Mechanism != Setjmp_Longjmp
+		  || No (At_End_Proc (gnat_node))
+		  || Present (Exception_Handlers (gnat_node))
+		  || No_Exception_Handlers_Set ());
 
       gnu_result = Handled_Sequence_Of_Statements_to_gnu (gnat_node);
       break;
@@ -3774,7 +3756,7 @@ gnat_to_gnu (Node_Id gnat_node)
       else if (Exception_Mechanism == GCC_ZCX)
 	gnu_result = Exception_Handler_to_gnu_zcx (gnat_node);
       else
-	abort ();
+	gcc_unreachable ();
 
       break;
 
@@ -4015,9 +3997,7 @@ gnat_to_gnu (Node_Id gnat_node)
     case N_Component_Association:
     case N_Task_Body:
     default:
-      if (!type_annotate_only)
-	abort ();
-
+      gcc_assert (type_annotate_only);
       gnu_result = alloc_stmt_list ();
     }
 
@@ -4331,9 +4311,7 @@ add_cleanup (tree gnu_cleanup)
 void
 set_block_for_group (tree gnu_block)
 {
-  if (current_stmt_group->block)
-    abort ();
-
+  gcc_assert (!current_stmt_group->block);
   current_stmt_group->block = gnu_block;
 }
 
@@ -4458,7 +4436,7 @@ gnat_expand_stmt (tree gnu_stmt)
 #endif
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -4511,10 +4489,7 @@ gnat_gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p ATTRIBUTE_UNUSED)
 	  TREE_READONLY (new_var) = 1;
 	  TREE_STATIC (new_var) = 1;
 	  TREE_ADDRESSABLE (new_var) = 1;
-
-	  gimplify_and_add (build2 (MODIFY_EXPR, TREE_TYPE (new_var),
-				    new_var, TREE_OPERAND (expr, 0)),
-			    pre_p);
+	  DECL_INITIAL (new_var) = TREE_OPERAND (expr, 0);
 
 	  TREE_OPERAND (expr, 0) = new_var;
 	  return GS_ALL_DONE;
@@ -4615,7 +4590,7 @@ gnat_gimplify_stmt (tree *stmt_p)
       return GS_OK;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -4760,14 +4735,11 @@ process_freeze_entity (Node_Id gnat_node)
       && !(TREE_CODE (gnu_old) == TYPE_DECL
 	   && TYPE_IS_DUMMY_P (TREE_TYPE (gnu_old))))
     {
-      if (IN (Ekind (gnat_entity), Incomplete_Or_Private_Kind)
-  	  && Present (Full_View (gnat_entity))
-  	  && No (Freeze_Node (Full_View (gnat_entity))))
-  	return;
-      else if (Is_Concurrent_Type (gnat_entity))
-	return;
-      else
-	abort ();
+      gcc_assert ((IN (Ekind (gnat_entity), Incomplete_Or_Private_Kind)
+		   && Present (Full_View (gnat_entity))
+		   && No (Freeze_Node (Full_View (gnat_entity))))
+		  || Is_Concurrent_Type (gnat_entity));
+      return;
     }
 
   /* Reset the saved tree, if any, and elaborate the object or type for real.
@@ -5352,10 +5324,8 @@ process_type (Entity_Id gnat_entity)
 	  /* If this was a withed access type, this is not an error
 	     and merely indicates we've already elaborated the type
 	     already. */
-	  if (Is_Type (gnat_entity) && From_With_Type (gnat_entity))
-	    return;
-
-	  abort ();
+	  gcc_assert (Is_Type (gnat_entity) && From_With_Type (gnat_entity));
+	  return;
 	}
 
       save_gnu_tree (gnat_entity, NULL_TREE, false);
@@ -5363,8 +5333,7 @@ process_type (Entity_Id gnat_entity)
 
   /* Now fully elaborate the type.  */
   gnu_new = gnat_to_gnu_entity (gnat_entity, NULL_TREE, 1);
-  if (TREE_CODE (gnu_new) != TYPE_DECL)
-    abort ();
+  gcc_assert (TREE_CODE (gnu_new) == TYPE_DECL);
 
   /* If we have an old type and we've made pointers to this type,
      update those pointers.  */
@@ -5402,7 +5371,7 @@ process_type (Entity_Id gnat_entity)
 static tree
 assoc_to_constructor (Node_Id gnat_assoc, tree gnu_type)
 {
-  tree gnu_field, gnu_list, gnu_result;
+  tree gnu_list, gnu_result;
 
   /* We test for GNU_FIELD being empty in the case where a variant
      was the last thing since we don't take things off GNAT_ASSOC in
@@ -5418,8 +5387,7 @@ assoc_to_constructor (Node_Id gnat_assoc, tree gnu_type)
 
       /* The expander is supposed to put a single component selector name
 	 in every record component association */
-      if (Next (gnat_field))
-	abort ();
+      gcc_assert (No (Next (gnat_field)));
 
       /* Before assigning a value in an aggregate make sure range checks
 	 are done if required.  Then convert to the type of the field.  */
@@ -5434,10 +5402,15 @@ assoc_to_constructor (Node_Id gnat_assoc, tree gnu_type)
 
   gnu_result = extract_values (gnu_list, gnu_type);
 
-  /* Verify every enty in GNU_LIST was used.  */
-  for (gnu_field = gnu_list; gnu_field; gnu_field = TREE_CHAIN (gnu_field))
-    if (!TREE_ADDRESSABLE (gnu_field))
-      abort ();
+#ifdef ENABLE_CHECKING
+  {
+    tree gnu_field;
+
+    /* Verify every enty in GNU_LIST was used.  */
+    for (gnu_field = gnu_list; gnu_field; gnu_field = TREE_CHAIN (gnu_field))
+      gcc_assert (TREE_ADDRESSABLE (gnu_field));
+  }
+#endif
 
   return gnu_result;
 }
@@ -5754,7 +5727,7 @@ gnat_stabilize_reference_1 (tree e, bool force)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   TREE_READONLY (result) = TREE_READONLY (e);
