@@ -1,4 +1,5 @@
 // PR c++/20142
+// { dg-do run }
 
 int n=4;
 
