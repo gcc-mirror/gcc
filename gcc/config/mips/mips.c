@@ -4482,7 +4482,7 @@ mips_get_unaligned_mem (rtx *op, unsigned int width, int bitpos,
 bool
 mips_expand_unaligned_load (rtx dest, rtx src, unsigned int width, int bitpos)
 {
-  rtx left, right;
+  rtx left, right, temp;
 
   /* If TARGET_64BIT, the destination of a 32-bit load will be a
      paradoxical word_mode subreg.  This is the only case in which
@@ -4501,17 +4501,16 @@ mips_expand_unaligned_load (rtx dest, rtx src, unsigned int width, int bitpos)
   if (!mips_get_unaligned_mem (&src, width, bitpos, &left, &right))
     return false;
 
+  temp = gen_reg_rtx (GET_MODE (dest));
   if (GET_MODE (dest) == DImode)
     {
-      emit_insn (gen_mov_ldl (dest, src, left));
-      emit_insn (gen_mov_ldr (copy_rtx (dest), copy_rtx (src),
-			      right, copy_rtx (dest)));
+      emit_insn (gen_mov_ldl (temp, src, left));
+      emit_insn (gen_mov_ldr (dest, copy_rtx (src), right, temp));
     }
   else
     {
-      emit_insn (gen_mov_lwl (dest, src, left));
-      emit_insn (gen_mov_lwr (copy_rtx (dest), copy_rtx (src),
-			      right, copy_rtx (dest)));
+      emit_insn (gen_mov_lwl (temp, src, left));
+      emit_insn (gen_mov_lwr (dest, copy_rtx (src), right, temp));
     }
   return true;
 }

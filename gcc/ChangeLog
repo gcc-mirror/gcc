@@ -1,3 +1,9 @@
+2004-06-28  Richard Sandiford  <rsandifo@redhat.com>
+
+	PR target/16176
+	* config/mips/mips.c (mips_expand_unaligned_load): Use a temporary
+	register for the destination of the lwl or ldl.
+
 2004-06-25  Philip Blundell  <philb@gnu.org>
 
 	PR wrong-code/15089
