@@ -4226,6 +4226,9 @@ mips_va_arg (valist, type)
       if (r != addr_rtx)
 	emit_move_insn (addr_rtx, r);
 
+      /* Ensure that the above POSTINCREMENT is emitted before lab_over */
+      emit_queue();
+
       if (lab_over)
 	emit_label (lab_over);
 
@@ -7449,9 +7452,16 @@ function_arg_pass_by_reference (cum, mode, type, named)
      to prevent it, or add code to function.c to properly handle the case.  */
   /* ??? cum can be NULL when called from mips_va_arg.  The problem handled
      here hopefully is not relevant to mips_va_arg.  */
-  if (cum && FUNCTION_ARG (*cum, mode, type, named) != 0
-      && MUST_PASS_IN_STACK (mode, type))
-    return 1;
+  if (cum && MUST_PASS_IN_STACK (mode, type))
+     {
+        /* Don't pass the actual CUM to FUNCTION_ARG, because we would 
+           get double copies of any offsets generated for small structs 
+           passed in registers. */
+        CUMULATIVE_ARGS temp = *cum;
+        if (FUNCTION_ARG (temp, mode, type, named) != 0)
+           return 1;
+     }
+
 
   /* Otherwise, we only do this if EABI is selected.  */
   if (mips_abi != ABI_EABI)
