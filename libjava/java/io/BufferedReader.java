@@ -243,7 +243,8 @@ public class BufferedReader extends Reader
     * This method returns <code>false</code> then this stream could (but is
     * not guaranteed to) block on the next read attempt.
     *
-    * @return <code>true</code> if this stream is ready to be read, <code>false</code> otherwise
+    * @return <code>true</code> if this stream is ready to be read, 
+    * <code>false</code> otherwise
     *
     * @exception IOException If an error occurs
     */
@@ -258,7 +259,8 @@ public class BufferedReader extends Reader
 
   /**
     * This method read chars from a stream and stores them into a caller
-    * supplied buffer.  It starts storing the data at index <code>offset</code> into
+    * supplied buffer.  It starts storing the data at index 
+    * <code>offset</code> into
     * the buffer and attempts to read <code>len</code> chars.  This method can
     * return before reading the number of chars requested.  The actual number
     * of chars read is returned as an int.  A -1 is returned to indicate the
@@ -473,7 +475,8 @@ public class BufferedReader extends Reader
     * requested amount.
     * <p>
     * This method first discards chars in the buffer, then calls the
-    * <code>skip</code> method on the underlying stream to skip the remaining chars.
+    * <code>skip</code> method on the underlying stream to skip the 
+    * remaining chars.
     *
     * @param num_chars The requested number of chars to skip
     *

@@ -1,5 +1,5 @@
 /* ObjectStreamField.java -- Class used to store name and class of fields
-   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -51,17 +51,21 @@ public class ObjectStreamField implements java.lang.Comparable
   }
  
   /**
-   * There're many cases you can't get java.lang.Class from typename if your context
+   * There're many cases you can't get java.lang.Class from typename 
+   * if your context
    * class loader can't load it, then use typename to construct the field
    */
   ObjectStreamField (String name, String typename){
     this.name = name;
     this.typename = typename;
-    try{
-      type = TypeSignature.getClassForEncoding(typename);
-    }catch(ClassNotFoundException e){
-      type = Object.class; //??
-    }
+    try
+      {
+        type = TypeSignature.getClassForEncoding(typename);
+      }
+    catch(ClassNotFoundException e)
+      {
+        type = Object.class; //FIXME: ???
+      }
   }
   
   public String getName ()
@@ -125,3 +129,4 @@ public class ObjectStreamField implements java.lang.Comparable
   private String typename;
   private int offset = -1; // XXX make sure this is correct
 }
+

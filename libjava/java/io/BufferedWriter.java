@@ -51,8 +51,6 @@ package java.io;
   * efficient mechanism for writing versus doing numerous small unbuffered
   * writes.
   *
-  * @version 0.0
-  *
   * @author Aaron M. Renn (arenn@urbanophile.com)
   * @author Tom Tromey <tromey@cygnus.com>
   * @date September 25, 1998 

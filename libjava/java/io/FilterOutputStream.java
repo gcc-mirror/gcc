@@ -1,5 +1,5 @@
 /* FilterOutputStream.java -- Parent class for output streams that filter
-   Copyright (C) 1998, 1999, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -57,126 +57,121 @@ package java.io;
 public class FilterOutputStream extends OutputStream
 {
 
-/*************************************************************************/
+  /*************************************************************************/
 
-/*
- * Instance Variables
- */
+  /*
+   * Instance Variables
+   */
 
-/**
-  * This is the subordinate <code>OutputStream</code> that this class
-  * redirects its method calls to.
-  */
-protected OutputStream out;
+  /**
+    * This is the subordinate <code>OutputStream</code> that this class
+    * redirects its method calls to.
+    */
+  protected OutputStream out;
 
-/*************************************************************************/
+  /*************************************************************************/
 
-/*
- * Constructors
- */
+  /*
+   * Constructors
+   */
 
-/**
-  * This method initializes an instance of <code>FilterOutputStream</code>
-  * to write to the specified subordinate <code>OutputStream</code>.
-  *
-  * @param out The <code>OutputStream</code> to write to
-  */
-public
-FilterOutputStream(OutputStream out)
-{
-  this.out = out;
-}
+  /**
+    * This method initializes an instance of <code>FilterOutputStream</code>
+    * to write to the specified subordinate <code>OutputStream</code>.
+    *
+    * @param out The <code>OutputStream</code> to write to
+    */
+  public FilterOutputStream(OutputStream out)
+  {
+    this.out = out;
+  }
 
-/*************************************************************************/
+  /*************************************************************************/
 
-/*
- * Instance Methods
- */
+  /*
+   * Instance Methods
+   */
 
-/**
-  * This method closes the underlying <code>OutputStream</code>.  Any
-  * further attempts to write to this stream may throw an exception.
-  *
-  * @exception IOException If an error occurs
-  */
-public void
-close() throws IOException
-{
-  flush();
-  out.close();
-}
+  /**
+    * This method closes the underlying <code>OutputStream</code>.  Any
+    * further attempts to write to this stream may throw an exception.
+    *
+    * @exception IOException If an error occurs
+    */
+  public void close() throws IOException
+  {
+    flush();
+    out.close();
+  }
 
-/*************************************************************************/
+  /*************************************************************************/
 
-/**
-  * This method attempt to flush all buffered output to be written to the
-  * underlying output sink.
-  *
-  * @exception IOException If an error occurs
-  */
-public void
-flush() throws IOException
-{
-  out.flush();
-}
+  /**
+    * This method attempt to flush all buffered output to be written to the
+    * underlying output sink.
+    *
+    * @exception IOException If an error occurs
+    */
+  public void flush() throws IOException
+  {
+    out.flush();
+  }
 
-/*************************************************************************/
+  /*************************************************************************/
 
-/**
-  * This method writes a single byte of output to the underlying
-  * <code>OutputStream</code>.
-  *
-  * @param b The byte to write, passed as an int.
-  *
-  * @exception IOException If an error occurs
-  */
-public void
-write(int b) throws IOException
-{
-  out.write(b);
-}
+  /**
+    * This method writes a single byte of output to the underlying
+    * <code>OutputStream</code>.
+    *
+    * @param b The byte to write, passed as an int.
+    *
+    * @exception IOException If an error occurs
+    */
+  public void write(int b) throws IOException
+  {
+    out.write(b);
+  }
 
-/*************************************************************************/
+  /*************************************************************************/
 
-/**
-  * This method writes all the bytes in the specified array to the underlying
-  * <code>OutputStream</code>.  It does this by calling the three parameter
-  * version of this method - <code>write(byte[], int, int)</code> in this
-  * class instead of writing to the underlying <code>OutputStream</code>
-  * directly.  This allows most subclasses to avoid overriding this method.
-  *
-  * @param buf The byte array to write bytes from
-  *
-  * @exception IOException If an error occurs
-  */
-public void
-write(byte[] buf) throws IOException
-{
-  // Don't do checking here, per Java Lang Spec.
-  write(buf, 0, buf.length);
-}
+  /**
+    * This method writes all the bytes in the specified array to the underlying
+    * <code>OutputStream</code>.  It does this by calling the three parameter
+    * version of this method - <code>write(byte[], int, int)</code> in this
+    * class instead of writing to the underlying <code>OutputStream</code>
+    * directly.  This allows most subclasses to avoid overriding this method.
+    *
+    * @param buf The byte array to write bytes from
+    *
+    * @exception IOException If an error occurs
+    */
+  public void write(byte[] buf) throws IOException
+  {
+    // Don't do checking here, per Java Lang Spec.
+    write(buf, 0, buf.length);
+  }
 
-/*************************************************************************/
+  /*************************************************************************/
 
-/**
-  * This method calls the <code>write(int)</code> method <code>len</code>
-  * times for all bytes from the array <code>buf</code> starting at index
-  * <code>offset</code>. Subclasses should overwrite this method to get a
-  * more efficient implementation.
-  *
-  * @param buf The byte array to write bytes from
-  * @param offset The index into the array to start writing bytes from
-  * @param len The number of bytes to write
-  *
-  * @exception IOException If an error occurs
-  */
-public void
-write(byte[] buf, int offset, int len) throws IOException
-{
-  // Don't do checking here, per Java Lang Spec.
-  for (int i=0; i < len; i++) 
-    write(buf[offset + i]);
+  /**
+    * This method calls the <code>write(int)</code> method <code>len</code>
+    * times for all bytes from the array <code>buf</code> starting at index
+    * <code>offset</code>. Subclasses should overwrite this method to get a
+    * more efficient implementation.
+    *
+    * @param buf The byte array to write bytes from
+    * @param offset The index into the array to start writing bytes from
+    * @param len The number of bytes to write
+    *
+    * @exception IOException If an error occurs
+    */
+  public void write(byte[] buf, int offset, int len) throws IOException
+  {
+    // Don't do checking here, per Java Lang Spec.
+    for (int i=0; i < len; i++) 
+      write(buf[offset + i]);
 
-}
+  }
 
 } // class FilterOutputStream
+

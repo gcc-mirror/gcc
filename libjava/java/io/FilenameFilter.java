@@ -57,17 +57,17 @@ package java.io;
 public interface FilenameFilter
 {
 
-/**
-  * This method determines whether or not a given file should be included
-  * in a directory listing.
-  *
-  * @param dir The <code>File</code> instance for the directory being read
-  * @param name The name of the file to test
-  *
-  * @return <code>true</code> if the file should be included in the list,
-  * <code>false</code> otherwise.
-  */
-boolean
-accept(File dir, String name);
+  /**
+    * This method determines whether or not a given file should be included
+    * in a directory listing.
+    *
+    * @param dir The <code>File</code> instance for the directory being read
+    * @param name The name of the file to test
+    *
+    * @return <code>true</code> if the file should be included in the list,
+    * <code>false</code> otherwise.
+    */
+  boolean accept(File dir, String name);
 
 } // interface FilenameFilter
+

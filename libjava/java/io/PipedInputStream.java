@@ -1,5 +1,5 @@
 /* PipedInputStream.java -- Read portion of piped streams.
-   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -46,7 +46,8 @@ package java.io;
   * to which it is connected. 
   * <p>
   * Data is read and written to an internal buffer.  It is highly recommended
-  * that the <code>PipedInputStream</code> and connected <code>PipedOutputStream</code>
+  * that the <code>PipedInputStream</code> and connected 
+  * <code>PipedOutputStream</code>
   * be part of different threads.  If they are not, the read and write 
   * operations could deadlock their thread.
   *
@@ -113,7 +114,8 @@ public class PipedInputStream extends InputStream
     * it to the passed in <code>PipedOutputStream</code>. The stream is then 
     * ready for reading.
     *
-    * @param source The <code>PipedOutputStream</code> to connect this stream to
+    * @param source The <code>PipedOutputStream</code> to connect this 
+    * stream to
     *
     * @exception IOException If <code>source</code> is already connected.
     */
@@ -123,7 +125,8 @@ public class PipedInputStream extends InputStream
   }
 
   /**
-    * This method connects this stream to the passed in <code>PipedOutputStream</code>.
+    * This method connects this stream to the passed in 
+    * <code>PipedOutputStream</code>.
     * This stream is then ready for reading.  If this stream is already
     * connected or has been previously closed, then an exception is thrown
     *
@@ -224,9 +227,12 @@ public class PipedInputStream extends InputStream
   
   /**
     * This method reads bytes from the stream into a caller supplied buffer.
-    * It starts storing bytes at position <code>offset</code> into the buffer and
-    * reads a maximum of <code>len</code> bytes.  Note that this method can actually
-    * read fewer than <code>len</code> bytes.  The actual number of bytes read is
+    * It starts storing bytes at position <code>offset</code> into the 
+    * buffer and
+    * reads a maximum of <code>len</code> bytes.  Note that this method 
+    * can actually
+    * read fewer than <code>len</code> bytes.  The actual number of bytes 
+    * read is
     * returned.  A -1 is returned to indicated that no bytes can be read
     * because the end of the stream was reached.  If the stream is already
     * closed, a -1 will again be returned to indicate the end of the stream.
@@ -255,9 +261,12 @@ public class PipedInputStream extends InputStream
   
   /**
     * This method reads bytes from the stream into a caller supplied buffer.
-    * It starts storing bytes at position <code>offset</code> into the buffer and
-    * reads a maximum of <code>len</code> bytes.  Note that this method can actually
-    * read fewer than <code>len</code> bytes.  The actual number of bytes read is
+    * It starts storing bytes at position <code>offset</code> into the 
+    * buffer and
+    * reads a maximum of <code>len</code> bytes.  Note that this method 
+    * can actually
+    * read fewer than <code>len</code> bytes.  The actual number of bytes 
+    * read is
     * returned.  A -1 is returned to indicated that no bytes can be read
     * because the end of the stream was reached - ie close() was called on the
     * connected PipedOutputStream.
@@ -371,3 +380,4 @@ public class PipedInputStream extends InputStream
     notifyAll();
   }
 }
+

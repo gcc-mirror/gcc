@@ -1,5 +1,5 @@
 /* PushbackReader.java -- An character stream that can unread chars
-   Copyright (C) 1998, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2000, 2001, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -47,8 +47,6 @@ package java.io;
  * <p>
  * The default pushback buffer size one char, but this can be overridden
  * by the creator of the stream.
- *
- * @version 0.0
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
  * @author Warren Levy <warrenl@cygnus.com>
@@ -136,7 +134,8 @@ public class PushbackReader extends FilterReader
    * This method returns <code>false</code> to indicate that it does not support
    * mark/reset functionality.
    *
-   * @return This method returns <code>false</code> to indicate that this class does not support mark/reset functionality
+   * @return This method returns <code>false</code> to indicate that this 
+   * class does not support mark/reset functionality
    *
    */
   public boolean markSupported()
@@ -165,7 +164,8 @@ public class PushbackReader extends FilterReader
    * read in the pushback buffer or if the underlying stream is ready to
    * be read.
    *
-   * @return <code>true</code> if this stream is ready to be read, <code>false</code> otherwise
+   * @return <code>true</code> if this stream is ready to be read, 
+   * <code>false</code> otherwise
    *
    * @exception IOException If an error occurs
    */
@@ -252,7 +252,8 @@ public class PushbackReader extends FilterReader
 
   /**
    * This method read chars from a stream and stores them into a caller
-   * supplied buffer.  It starts storing the data at index <code>offset</code> into
+   * supplied buffer.  It starts storing the data at index <code>offset</code>
+   * into
    * the buffer and attempts to read <code>len</code> chars.  This method can
    * return before reading the number of chars requested.  The actual number
    * of chars read is returned as an int.  A -1 is returned to indicate the
@@ -302,8 +303,8 @@ public class PushbackReader extends FilterReader
    * <p>
    * If the pushback buffer is full, this method throws an exception.
    * <p>
-   * The argument to this method is an <code>int</code>.  Only the low eight bits
-   * of this value are pushed back.
+   * The argument to this method is an <code>int</code>.  Only the low eight 
+   * bits of this value are pushed back.
    *
    * @param b The char to be pushed back, passed as an int
    *
@@ -343,7 +344,8 @@ public class PushbackReader extends FilterReader
 
   /**
    * This method pushed back chars from the passed in array into the pushback
-   * buffer.  The chars from <code>buf[offset]</code> to <code>buf[offset + len]</code>
+   * buffer.  The chars from <code>buf[offset]</code> to 
+   * <code>buf[offset + len]</code>
    * are pushed in reverse order so that the next char read from the stream
    * after this operation will be <code>buf[offset]</code> followed by
    * <code>buf[offset + 1]</code>, etc.
@@ -378,3 +380,4 @@ public class PushbackReader extends FilterReader
       }
   }
 }
+

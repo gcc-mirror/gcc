@@ -46,23 +46,21 @@ package java.io;
   * The method in this interface determines if a particular pathname should
   * or should not be included in the pathname listing.
   *
-  * @version 0.0
-  *
   * @author Aaron M. Renn (arenn@urbanophile.com)
   */
 public interface FileFilter
 {
 
-/**
-  * This method determines whether or not a given pathname should be included
-  * in a pathname listing.
-  *
-  * @param pathname The pathname to test
-  *
-  * @return <code>true</code> if the path should be included in the list, <code>false</code> otherwise.
-  */
-public abstract boolean
-accept(File pathname);
+  /**
+    * This method determines whether or not a given pathname should be included
+    * in a pathname listing.
+    *
+    * @param pathname The pathname to test
+    *
+    * @return <code>true</code> if the path should be included in the list, 
+    * <code>false</code> otherwise.
+    */
+  public abstract boolean accept(File pathname);
 
 } // interface FileFilter
 

@@ -65,8 +65,6 @@ package java.io;
   * application specified character encoding.  Thus it can handle 
   * multibyte character encodings.
   *
-  * @version 0.0
-  *
   * @author Aaron M. Renn (arenn@urbanophile.com)
   * @author Tom Tromey <tromey@cygnus.com>
   * @date September 24, 1998 
