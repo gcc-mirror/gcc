@@ -1,3 +1,8 @@
+Mon Jul 16 12:21:56 2001  Nicola Pero  <n.pero@mi.flashnet.it>
+
+	* objc/execute/object_is_class.m: New test.
+	* objc/execute/object_is_meta_class.m: New test.
+
 2000-09-10  Michael Chamberlain <michael@chamberlain.net.au>
 
         * gcc.misc-tests/mg.exp (compiler_output): Support tcl 8.3.1.
