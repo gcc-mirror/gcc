@@ -1,3 +1,9 @@
+2002-02-01  Janis Johnson  <janis187@us.ibm.com>
+
+	* cfganal.c: Include tm_p.h.
+	(keep_with_call_p): Fix the test that determines if a register holds
+	the return value of a call.
+
 2002-02-01  DJ Delorie  <dj@redhat.com>
 
 	* config/sparc/sparc.c (sparc_emit_set_symbolic_const64): If
