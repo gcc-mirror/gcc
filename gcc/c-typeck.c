@@ -2711,10 +2711,12 @@ pointer_diff (op0, op1)
     }
 
   /* First do the subtraction as integers;
-     then drop through to build the divide operator.  */
+     then drop through to build the divide operator.
+     Do not do default conversions on the minus operator
+     in case restype is a short type.  */
 
   op0 = build_binary_op (MINUS_EXPR, convert (restype, op0),
-			 convert (restype, op1), 1);
+			 convert (restype, op1), 0);
   /* This generates an error if op1 is pointer to incomplete type.  */
   if (TYPE_SIZE (TREE_TYPE (TREE_TYPE (op1))) == 0)
     error ("arithmetic on pointer to an incomplete type");
