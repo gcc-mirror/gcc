@@ -1,5 +1,5 @@
 /* Fold a constant sub-tree into a single node for C-compiler
-   Copyright (C) 1987, 1988, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1992, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2376,7 +2376,7 @@ optimize_bit_field_compare (code, compare_type, lhs, rhs)
   rhs = fold (const_binop (BIT_AND_EXPR,
 			   const_binop (LSHIFT_EXPR,
 					convert (unsigned_type, rhs),
-					size_int (lbitpos)),
+					size_int (lbitpos), 0),
 			   mask, 0));
 
   return build (code, compare_type,
