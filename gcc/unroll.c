@@ -1248,7 +1248,7 @@ precondition_loop_p (initial_value, final_value, increment, loop_start,
   /* Fail for floating point values, since the caller of this function
      does not have code to deal with them.  */
   if (GET_MODE_CLASS (GET_MODE (loop_final_value)) == MODE_FLOAT
-      || GET_MODE_CLASS (GET_MODE (loop_initial_value) == MODE_FLOAT))
+      || GET_MODE_CLASS (GET_MODE (loop_initial_value)) == MODE_FLOAT)
     {
       if (loop_dump_stream)
 	fprintf (loop_dump_stream,
@@ -1493,8 +1493,11 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 					   XEXP (value, 1));
 			
 			/* Reset the giv to be just the register again, in case
-			   it is used after the set we have just emitted.  */
-			tv->dest_reg = dest_reg;
+			   it is used after the set we have just emitted.
+			   We must subtract the const_adjust factor added in
+			   above.  */
+			tv->dest_reg = plus_constant (dest_reg,
+						      - tv->const_adjust);
 			*tv->location = tv->dest_reg;
 		      }
 		  }
@@ -2669,6 +2672,7 @@ reg_dead_after_loop (reg, loop_start, loop_end)
 {
   rtx insn, label;
   enum rtx_code code;
+  int jump_count = 0;
 
   /* HACK: Must also search the loop fall through exit, create a label_ref
      here which points to the loop_end, and append the loop_number_exit_labels
@@ -2684,54 +2688,33 @@ reg_dead_after_loop (reg, loop_start, loop_end)
 	 a conditional jump.  */
 
       insn = NEXT_INSN (XEXP (label, 0));
-      while (1)
+      while (insn)
 	{
-	  if (insn == 0)
-	    break;
-
-	  if ((code = GET_CODE (insn)) == INSN || code == JUMP_INSN
-	      || code == CALL_INSN)
+	  code = GET_CODE (insn);
+	  if (GET_RTX_CLASS (code) == 'i')
 	    {
-	      if (GET_CODE (PATTERN (insn)) == SET)
-		{
-		  if (reg_mentioned_p (reg, SET_SRC (PATTERN (insn))))
-		    return 0;
-		  if (SET_DEST (PATTERN (insn)) == reg)
-		    break;
-		  if (reg_mentioned_p (reg, SET_DEST (PATTERN (insn))))
-		    return 0;
-		}
-	      else if (reg_mentioned_p (reg, PATTERN (insn)))
+	      rtx set;
+
+	      if (reg_referenced_p (reg, PATTERN (insn)))
 		return 0;
+
+	      set = single_set (insn);
+	      if (set && rtx_equal_p (SET_DEST (set), reg))
+		break;
 	    }
+
 	  if (code == JUMP_INSN)
 	    {
 	      if (GET_CODE (PATTERN (insn)) == RETURN)
 		break;
-	      else if (! simplejump_p (insn))
+	      else if (! simplejump_p (insn)
+		       /* Prevent infinite loop following infinite loops. */
+		       || jump_count++ > 20)
 		return 0;
 	      else
-		{
-		  insn = JUMP_LABEL (insn);
-		  /* If this branches to a code label after a LOOP_BEG or
-		     a LOOP_CONT note, then assume it is a loop back edge.
-		     Must fail in that case to prevent going into an infinite
-		     loop trying to trace infinite loops.
-
-		     In the presence of syntax errors, this may be a jump to
-		     a CODE_LABEL that was never emitted.  Fail in this case
-		     also.  */
-
-		  if (! PREV_INSN (insn)
-		      || (GET_CODE (PREV_INSN (insn)) == NOTE
-			  && ((NOTE_LINE_NUMBER (PREV_INSN (insn))
-			       == NOTE_INSN_LOOP_BEG)
-			      || (NOTE_LINE_NUMBER (PREV_INSN (insn))
-				  == NOTE_INSN_LOOP_CONT))))
-		    return 0;
-		}
+		insn = JUMP_LABEL (insn);
 	    }
-	  
+
 	  insn = NEXT_INSN (insn);
 	}
     }
