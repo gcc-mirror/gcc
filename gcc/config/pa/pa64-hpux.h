@@ -122,11 +122,10 @@ Boston, MA 02111-1307, USA.  */
 
    The .align directive in the HP assembler allows alignments up to
    4096 bytes.  However, the maximum alignment of a global common symbol
-   is 16 bytes using HP ld.  For consistency, we use the same limit
-   with GNU ld.  */
+   is 16 bytes using HP ld.  Unfortunately, this macro doesn't provide
+   a method to check for common symbols.  */
 #undef MAX_OFILE_ALIGNMENT
-#define MAX_OFILE_ALIGNMENT                                             \
-  (TREE_PUBLIC (decl) && DECL_COMMON (decl) ? 128 : 32768)
+#define MAX_OFILE_ALIGNMENT 32768
 
 /* Due to limitations in the target structure, it isn't currently possible
    to dynamically switch between the GNU and HP assemblers.  */

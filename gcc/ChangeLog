@@ -1,3 +1,11 @@
+2005-01-15  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR ada/19388
+	* pa.c (pa_asm_output_aligned_common): Warn if specified alignment
+	exceeds maximum alignment for global common data.
+	* pa64-hpux.h (MAX_OFILE_ALIGNMENT): Define to 32768.
+	* som.h (MAX_OFILE_ALIGNMENT): Likewise.
+
 2004-01-15  Roger Sayle  <roger@eyesopen.com>
 
 	* tree-ssa-dom.c (extract_range_from_cond): Correct condition.
