@@ -6,6 +6,8 @@ Wed Oct 20 10:46:41 1999  Richard Earnshaw (rearnsha@arm.com)
 	block records so that merge_blocks_nomove will clean up correctly.
 	(split_edge): Handle casesi insns.
 
+	* gcc-page.c: Try MAP_ANON if we don't have MAP_ANONYMOUS.
+
 Tue Oct 19 23:43:50 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.md (call, call_value): Do not emit a blockage after restoring
