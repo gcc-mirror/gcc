@@ -1,3 +1,8 @@
+1999-02-24  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* lib/Makefile.in: Regen dependencies.
+	* makeinfo/Makefile.in, util/Makefile.in: Likewise.
+
 1999-02-01  Manfred Hollstein  <manfred@s-direktnet.de>
  
  	* util/Makefile.am (noinst_PROGRAMS): Renamed from "bin_PROGRAMS"

@@ -207,8 +207,9 @@ distdir: $(DISTFILES)
 	  || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
 	  || cp -p $$d/$$file $(distdir)/$$file; \
 	done
-makeinfo.o: makeinfo.c ../lib/system.h ../lib/getopt.h makeinfo.h
-multi.o: multi.c ../lib/system.h makeinfo.h
+makeinfo.o: makeinfo.c ../lib/system.h ../config.h ../lib/getopt.h \
+	makeinfo.h
+multi.o: multi.c ../lib/system.h ../config.h makeinfo.h
 
 info:
 dvi:

@@ -219,6 +219,10 @@ distdir: $(DISTFILES)
 	  || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
 	  || cp -p $$d/$$file $(distdir)/$$file; \
 	done
+install-info.o: install-info.c ../lib/system.h ../config.h \
+	../lib/getopt.h
+texindex.o: texindex.c ../lib/system.h ../config.h ../lib/getopt.h
+
 info:
 dvi:
 check: all
