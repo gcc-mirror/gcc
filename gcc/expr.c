@@ -7440,38 +7440,40 @@ expand_expr (tree exp, rtx target, enum machine_mode tmode, enum expand_modifier
 	      op0 = validize_mem (force_const_mem (mode, op0));
 	  }
 
+ 	/* Otherwise, if this object not in memory and we either have an
+ 	   offset or a BLKmode result, put it there.  This case can't occur in
+ 	   C, but can in Ada if we have unchecked conversion of an expression
+ 	   from a scalar type to an array or record type or for an
+ 	   ARRAY_RANGE_REF whose type is BLKmode.  */
+	else if (GET_CODE (op0) != MEM
+		 && (offset != 0
+		     || (code == ARRAY_RANGE_REF && mode == BLKmode)))
+	  {
+	    /* If the operand is a SAVE_EXPR, we can deal with this by
+	       forcing the SAVE_EXPR into memory.  */
+	    if (TREE_CODE (TREE_OPERAND (exp, 0)) == SAVE_EXPR)
+	      {
+		put_var_into_stack (TREE_OPERAND (exp, 0),
+				    /*rescan=*/true);
+		op0 = SAVE_EXPR_RTL (TREE_OPERAND (exp, 0));
+	      }
+	    else
+	      {
+		tree nt
+		  = build_qualified_type (TREE_TYPE (tem),
+					  (TYPE_QUALS (TREE_TYPE (tem))
+					   | TYPE_QUAL_CONST));
+		rtx memloc = assign_temp (nt, 1, 1, 1);
+		
+		emit_move_insn (memloc, op0);
+		op0 = memloc;
+	      }
+	  }
+
 	if (offset != 0)
 	  {
 	    rtx offset_rtx = expand_expr (offset, NULL_RTX, VOIDmode,
 					  EXPAND_SUM);
-
-	    /* If this object is in a register, put it into memory.
-	       This case can't occur in C, but can in Ada if we have
-	       unchecked conversion of an expression from a scalar type to
-	       an array or record type.  */
-	    if (GET_CODE (op0) == REG || GET_CODE (op0) == SUBREG
-		|| GET_CODE (op0) == CONCAT || GET_CODE (op0) == ADDRESSOF)
-	      {
-		/* If the operand is a SAVE_EXPR, we can deal with this by
-		   forcing the SAVE_EXPR into memory.  */
-		if (TREE_CODE (TREE_OPERAND (exp, 0)) == SAVE_EXPR)
-		  {
-		    put_var_into_stack (TREE_OPERAND (exp, 0),
-					/*rescan=*/true);
-		    op0 = SAVE_EXPR_RTL (TREE_OPERAND (exp, 0));
-		  }
-		else
-		  {
-		    tree nt
-		      = build_qualified_type (TREE_TYPE (tem),
-					      (TYPE_QUALS (TREE_TYPE (tem))
-					       | TYPE_QUAL_CONST));
-		    rtx memloc = assign_temp (nt, 1, 1, 1);
-
-		    emit_move_insn (memloc, op0);
-		    op0 = memloc;
-		  }
-	      }
 
 	    if (GET_CODE (op0) != MEM)
 	      abort ();

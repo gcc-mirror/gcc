@@ -1,3 +1,8 @@
+2003-07-13  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* expr.c (expand_expr, case COMPONENT_REF): If reg, copy OP0 to MEM
+	both if OFFSET specified and if result BLKmode for ARRAY_RANGE_REF.
+
 2003-07-13  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	PR other/11123
