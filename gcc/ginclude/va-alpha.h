@@ -42,6 +42,8 @@ typedef struct {
 
 #endif /* _STDARG_H */
 
+#ifndef va_end
+
 #define va_end(__va)
 
 /* Values returned by __builtin_classify_type.  */
@@ -68,6 +70,8 @@ enum {
   __file_type_class,
   __lang_type_class
 };
+
+#endif
 
 /* Note that parameters are always aligned at least to a word boundary
    (when passed) regardless of what GCC's __alignof__ operator says.  */
