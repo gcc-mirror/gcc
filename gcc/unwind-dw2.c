@@ -1,5 +1,5 @@
 /* DWARF2 exception handling and frame unwind runtime interface routines.
-   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
    Free Software Foundation, Inc.
 
    This file is part of GCC.
@@ -769,6 +769,9 @@ execute_cfa_program (const unsigned char *insn_ptr,
 
 	case DW_CFA_undefined:
 	case DW_CFA_same_value:
+	  insn_ptr = read_uleb128 (insn_ptr, &reg);
+	  break;
+
 	case DW_CFA_nop:
 	  break;
 
