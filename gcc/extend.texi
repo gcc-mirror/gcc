@@ -1510,6 +1510,22 @@ mangled name for the target must be used.
 
 Not all target machines support this attribute.
 
+@item no_check_memory_usage
+@cindex @code{no_check_memory_usage} function attribute
+The @code{no_check_memory_usage} attribute causes GNU CC to omit checks
+of memory references when it generates code for that function.  Normally
+if you specify @samp{-fcheck-memory-usage} (see @pxref{Code Gen
+Options}), GNU CC generates calls to support routines before most memory
+accesses to permit support code to record usage and detect uses of
+uninitialized or unallocated storage.  Since GNU CC cannot handle
+@code{asm} statements properly they are not allowed in such functions.
+If you declare a function with this attribute, GNU CC will not generate
+memory checking code for that function, permitting the use of @code{asm}
+statements without having to compile that function with different
+options.  This also allows you to write support routines of your own if
+you wish, without getting infinite recursion if they get compiled with
+@code{-fcheck-memory-usage}.
+
 @item regparm (@var{number})
 @cindex functions that are passed arguments in registers on the 386
 On the Intel 386, the @code{regparm} attribute causes the compiler to
