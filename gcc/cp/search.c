@@ -1,6 +1,6 @@
 /* Breadth-first and depth-first routines for
    searching multiple-inheritance lattice for GNU C++.
-   Copyright (C) 1987, 89, 92-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 89, 92-97, 1998, 1999 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -667,6 +667,11 @@ compute_access (basetype_path, field)
       && TREE_CODE (field) == FIELD_DECL)
     context = TYPE_CONTEXT (context);
 
+  /* If we aren't a real class member (e.g. we're from a namespace-scope
+     anonymous union), there's no access control.  */
+  if (context == NULL_TREE || ! TYPE_P (context))
+    PUBLIC_RETURN;
+
   /* Virtual function tables are never private.  But we should know that
      we are looking for this, and not even try to hide it.  */
   if (DECL_NAME (field) && VFIELD_NAME_P (DECL_NAME (field)) == 1)
@@ -677,7 +682,7 @@ compute_access (basetype_path, field)
     {
       /* Are we (or an enclosing scope) friends with the class that has
          FIELD? */
-      if (TYPE_P (context) && is_friend (context, previous_scope))
+      if (is_friend (context, previous_scope))
 	PUBLIC_RETURN;
 
       /* If it's private, it's private, you letch.  */
@@ -693,7 +698,6 @@ compute_access (basetype_path, field)
 	{
 	  if (current_class_type
 	      && (static_mem || DECL_CONSTRUCTOR_P (field))
-	      && TYPE_P (context)
 	      && ACCESSIBLY_DERIVED_FROM_P (context, current_class_type))
 	    PUBLIC_RETURN;
 	  else
@@ -755,7 +759,7 @@ compute_access (basetype_path, field)
 
   if (access == access_default_node)
     {
-      if (TYPE_P (context) && is_friend (context, previous_scope))
+      if (is_friend (context, previous_scope))
 	access = access_public_node;
       else if (TREE_PRIVATE (field))
 	access = access_private_node;

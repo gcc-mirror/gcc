@@ -725,11 +725,12 @@ struct lang_type
       unsigned non_aggregate : 1;
       unsigned is_partial_instantiation : 1;
       unsigned has_mutable : 1;
+      unsigned anon_union : 1;
 
       /* The MIPS compiler gets it wrong if this struct also
 	 does not fill out to a multiple of 4 bytes.  Add a
 	 member `dummy' with new bits if you go over the edge.  */
-      unsigned dummy : 10;
+      unsigned dummy : 9;
     } type_flags;
 
   int n_ancestors;
@@ -1708,13 +1709,14 @@ extern int flag_new_for_scope;
 
 #define ANON_UNION_P(NODE) (DECL_NAME (NODE) == 0)
 
-/* Nonzero if TYPE is an anonymous union type.  We're careful
-   accessing TYPE_IDENTIFIER because some built-in types, like
-   pointer-to-member types, do not have TYPE_NAME.  */
-#define ANON_UNION_TYPE_P(TYPE) \
-  (TREE_CODE (TYPE) == UNION_TYPE \
-   && TYPE_NAME (TYPE) \
-   && ANON_AGGRNAME_P (TYPE_IDENTIFIER (TYPE)))
+/* Nonzero if TYPE is an anonymous union type.  We have to use a flag for
+   this because "A union for which objects or pointers are declared is not
+   an anonymous union" [class.union].  */
+#define ANON_UNION_TYPE_P(NODE)				\
+  (TYPE_LANG_SPECIFIC (NODE)				\
+   && TYPE_LANG_SPECIFIC (NODE)->type_flags.anon_union)
+#define SET_ANON_UNION_TYPE_P(NODE)				\
+  (TYPE_LANG_SPECIFIC (NODE)->type_flags.anon_union = 1)
 
 #define UNKNOWN_TYPE LANG_TYPE
 

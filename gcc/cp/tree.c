@@ -1517,12 +1517,7 @@ build_exception_variant (type, raises)
   v = build_type_copy (type);
 
   if (raises && ! TREE_PERMANENT (raises))
-    {
-      push_obstacks_nochange ();
-      end_temporary_allocation ();
-      raises = copy_list (raises);
-      pop_obstacks ();
-    }
+    raises = copy_to_permanent (raises);
 
   TYPE_RAISES_EXCEPTIONS (v) = raises;
   return v;

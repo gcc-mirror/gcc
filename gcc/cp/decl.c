@@ -6740,8 +6740,18 @@ check_tag_decl (declspecs)
      Until we have a good way of detecting the latter, don't warn.  */
   if (t == NULL_TREE && ! current_class_type)
     pedwarn ("declaration does not declare anything");
-  else if (t && ANON_UNION_TYPE_P (t))
-    /* Anonymous unions are objects, so they can have specifiers.  */;
+
+  /* Check for an anonymous union.  We're careful
+     accessing TYPE_IDENTIFIER because some built-in types, like
+     pointer-to-member types, do not have TYPE_NAME.  */
+  else if (t && TREE_CODE (t) == UNION_TYPE
+	   && TYPE_NAME (t)
+	   && ANON_AGGRNAME_P (TYPE_IDENTIFIER (t)))
+    {
+      /* Anonymous unions are objects, so they can have specifiers.  */;
+      SET_ANON_UNION_TYPE_P (t);
+    }
+
   else if (ob_modifier)
     {
       if (ob_modifier == ridpointers[(int) RID_INLINE]
