@@ -1,3 +1,7 @@
+2003-03-12  Neil Booth  <neil@daikokuya.co.uk>
+
+	* c-cppbuiltin.c (builtin_define_std): Make non-static.
+
 2003-03-11  Loren James Rittle  <ljrittle@acm.org>
 
 	* config/freebsd-spec.h (FBSD_CPP_PREDEFINES): Remove.
