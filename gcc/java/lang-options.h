@@ -36,3 +36,7 @@ DEFINE_LANG_NAME ("Java")
   { "-fno-assume-compiled", "" },
   { "-femit-class-file", "" },
   { "-femit-class-files", "Dump class files to <name>.class" },
+  { "-MD", "Print dependencies to FILE.d" },
+  { "-MMD", "Print dependencies to FILE.d" },
+  { "-M", "Print dependencies to stdout" },
+  { "-MM", "Print dependencies to stdout" },

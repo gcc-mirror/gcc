@@ -1,6 +1,6 @@
 /* Utility macros to read Java(TM) .class files and byte codes.
 
-   Copyright (C) 1996 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1998 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -226,7 +226,7 @@ extern char *classpath;
 #define DEFAULT_CLASS_PATH "."
 
 extern char *find_class PROTO ((const char *, int, JCF*, int));
-extern char *find_classfile PROTO ((char *, JCF*));
+extern char *find_classfile PROTO ((char *, JCF*, char *));
 extern int jcf_filbuf_from_stdio PROTO ((JCF *jcf, int count));
 extern void jcf_out_of_synch PROTO((JCF *));
 extern int jcf_unexpected_eof PROTO ((JCF*, int));
@@ -256,5 +256,14 @@ extern int quiet_flag;
 #else
 #define SOURCE_FRONTEND_DEBUG(X)
 #endif
+
+/* Declarations for dependency code.  */
+extern void jcf_dependency_reset PROTO ((void));
+extern void jcf_dependency_set_target PROTO ((char *));
+extern void jcf_dependency_add_target PROTO ((char *));
+extern void jcf_dependency_set_dep_file PROTO ((char *));
+extern void jcf_dependency_add_file PROTO ((const char *, int));
+extern void jcf_dependency_write PROTO ((void));
+extern void jcf_dependency_init PROTO ((int));
 
 #endif

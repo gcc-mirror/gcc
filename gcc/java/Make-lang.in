@@ -73,7 +73,8 @@ JAVA_SRCS = $(srcdir)/java/parse.y $(srcdir)/java/class.c \
   $(srcdir)/java/lang.c $(srcdir)/java/typeck.c $(srcdir)/java/except.c \
   $(srcdir)/java/verify.c $(srcdir)/java/zextract.c $(srcdir)/java/jcf-io.c \
   $(srcdir)/java/jcf-parse.c $(srcdir)/java/mangle.c \
-  $(srcdir)/java/jcf-write.c $(srcdir)/java/buffer.c
+  $(srcdir)/java/jcf-write.c $(srcdir)/java/buffer.c \
+  $(srcdir)/java/jcf-depend.c 
 
 jc1$(exeext): $(P) $(JAVA_SRCS) $(LIBDEPS) stamp-objlist
 	cd java; $(MAKE) $(FLAGS_TO_PASS) $(JAVA_FLAGS_TO_PASS) ../jc1$(exeext)
@@ -118,7 +119,7 @@ jvgenmain$(exeext): $(srcdir)/java/jvgenmain.c $(srcdir)/java/mangle.c \
 GCJH_SOURCES = $(srcdir)/java/gjavah.c $(srcdir)/java/jcf-io.c \
 	$(srcdir)/java/zextract.c $(srcdir)/java/jcf-reader.c \
 	$(srcdir)/java/jcf.h $(srcdir)/java/javaop.h \
-	$(srcdir)/java/javaop.def
+	$(srcdir)/java/javaop.def $(srcdir)/java/jcf-depend.c
 
 gcjh$(exeext): $(GCJH_SOURCES)
 	cd java && $(MAKE) $(FLAGS_TO_PASS) $(JAVA_FLAGS_TO_PASS) ../gcjh$(exeext)

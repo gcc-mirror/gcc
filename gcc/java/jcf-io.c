@@ -1,5 +1,5 @@
 /* Utility routines for finding and reading Java(TM) .class files.
-   Copyright (C) 1996  Free Software Foundation, Inc.
+   Copyright (C) 1996, 1998  Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -108,6 +108,7 @@ zipfile, zipmember),
 	{
 	  char magic [4];
 	  int fd = open (zipfile, O_RDONLY | O_BINARY);
+	  jcf_dependency_add_file (zipfile, 0);	/* FIXME: system file? */
 	  if (read (fd, magic, 4) != 4 || GET_u4 (magic) != (JCF_u4)ZIPMAGIC)
 	    return -1;
 	  lseek (fd, 0L, SEEK_SET);
@@ -168,11 +169,13 @@ zipfile, zipmember),
 
 #if JCF_USE_STDIO
 char*
-DEFUN(open_class, (filename, jcf, stream),
-      char *filename AND JCF *jcf AND FILE* stream)
+DEFUN(open_class, (filename, jcf, stream, dep_name),
+      char *filename AND JCF *jcf AND FILE* stream AND char *dep_name)
 {
   if (jcf)
     {
+      if (dep_name != NULL)
+	jcf_dependency_add_file (dep_name, 0);
       JCF_ZERO (jcf);
       jcf->buffer = NULL;
       jcf->buffer_end = NULL;
@@ -187,8 +190,8 @@ DEFUN(open_class, (filename, jcf, stream),
 }
 #else
 char*
-DEFUN(open_class, (filename, jcf, fd),
-      char *filename AND JCF *jcf AND int fd)
+DEFUN(open_class, (filename, jcf, fd, dep_name),
+      char *filename AND JCF *jcf AND int fd AND char *dep_name)
 {
   if (jcf)
     {
@@ -199,6 +202,8 @@ DEFUN(open_class, (filename, jcf, fd),
 	  perror ("Could not figure length of .class file");
 	  return NULL;
 	}
+      if (dep_name != NULL)
+	jcf_dependency_add_file (dep_name, 0);
       JCF_ZERO (jcf);
       jcf->buffer = ALLOC (stat_buf.st_size);
       jcf->buffer_end = jcf->buffer + stat_buf.st_size;
@@ -222,19 +227,19 @@ DEFUN(open_class, (filename, jcf, fd),
 
 
 char *
-DEFUN(find_classfile, (filename, jcf),
-      char *filename AND JCF *jcf)
+DEFUN(find_classfile, (filename, jcf, dep_name),
+      char *filename AND JCF *jcf AND char *dep_name)
 {
 #if JCF_USE_STDIO
   FILE *stream = fopen (filename, "rb");
   if (stream == NULL)
     return NULL;
-  return open_class (arg, jcf, stream);
+  return open_class (arg, jcf, stream, dep_name);
 #else
   int fd = open (filename, O_RDONLY | O_BINARY);
   if (fd < 0)
     return NULL;
-  return open_class (filename, jcf, fd);
+  return open_class (filename, jcf, fd, dep_name);
 #endif
 }
 
@@ -257,12 +262,27 @@ DEFUN(find_class, (classname, classname_length, jcf, do_class_file),
 #endif
   int i, j, k, java, class;
   struct stat java_buf, class_buf;
+  char *dep_file;
+
+  /* A temporary buffer that we grow to be large enough to hold
+     whatever class name we're working on.  */
+  static int temp_len = 0;
+  static char *temp_buffer = NULL;
 
   /* Allocate and zero out the buffer, since we don't explicitly put a
      null pointer when we're copying it below.  */
   int buflen = strlen (classpath) + classname_length + 10;
   char *buffer = (char *) ALLOC (buflen);
   bzero (buffer, buflen);
+
+  if (buflen > temp_len)
+    {
+      temp_len = buflen;
+      if (temp_buffer == NULL)
+	temp_buffer = (char *) ALLOC (temp_len);
+      else
+	temp_buffer = (char *) REALLOC (temp_buffer, temp_len);
+    }
 
   jcf->java_source = jcf->outofsynch = 0;
   for (j = 0; classpath[j] != '\0'; )
@@ -331,13 +351,20 @@ DEFUN(find_class, (classname, classname_length, jcf, do_class_file),
 		  goto found;
 		}
 	    }
-	  
+
 	  /* Check for out of synch .class/.java files */
 	  class = stat (buffer, &class_buf);
 	  strcpy (buffer+i, ".java");
+	  /* Stash the name of the .java file in the temp buffer.  */
+	  strcpy (temp_buffer, buffer);
 	  java = stat (buffer, &java_buf);
 	  if ((!java && !class) && java_buf.st_mtime >= class_buf.st_mtime)
 	    jcf->outofsynch = 1;
+
+	  if (! java)
+	    dep_file = temp_buffer;
+	  else
+	    dep_file = buffer;
 #if JCF_USE_STDIO
 	  if (!class)
 	    {
@@ -391,7 +418,7 @@ DEFUN(find_class, (classname, classname_length, jcf, do_class_file),
   if (jcf->java_source)
     return NULL;		/* FIXME */
   else
-    return open_class (buffer, jcf, stream);
+    return open_class (buffer, jcf, stream, dep_file);
 #else
   if (jcf->java_source)
     {
@@ -401,7 +428,7 @@ DEFUN(find_class, (classname, classname_length, jcf, do_class_file),
       close (fd);		/* We use STDIO for source file */
     }
   else if (do_class_file)
-    buffer = open_class (buffer, jcf, fd);
+    buffer = open_class (buffer, jcf, fd, dep_file);
   jcf->classname = (char *) ALLOC (classname_length + 1);
   strncpy (jcf->classname, classname, classname_length + 1);
   jcf->classname = (char *) strdup (classname);

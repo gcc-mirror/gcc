@@ -1,5 +1,5 @@
 /* Definitions for specs for the GNU compiler for the Java(TM) language.
-   Copyright (C) 1996 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -27,12 +27,13 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
   {".java",   "@java" },
   {".class",  "@java" },
   {"@java",
-   "%{!M:%{!MM:%{!E:jc1 %i %1 %2 %{!Q:-quiet} %{d*} %{m*} %{a}\
-			    %{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi}\
-			    %{traditional} %{v:-version} %{pg:-p} %{p}\
-			    %{f*} %{+e*} %{aux-info*}\
-			    %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
-			    %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
-	            %{!S:as %a %Y\
-			    %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}\
-			    %{!pipe:%g.s} %A\n }}}}"},
+   "%{!E:jc1 %i %1 %2 %{!Q:-quiet} %{d*} %{m*} %{a}\
+		    %{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi}\
+		    %{traditional} %{v:-version} %{pg:-p} %{p}\
+		    %{f*} %{+e*} %{aux-info*}\
+		    %{MD:-MD} %{MMD:-MMD} %{M:-M} %{MM:-MM}\
+		    %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
+		    %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
+            %{!S:as %a %Y\
+		    %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}\
+		    %{!pipe:%g.s} %A\n }}"},
