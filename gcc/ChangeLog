@@ -1,5 +1,6 @@
 2004-06-21  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* Makefile.in (gimplify.o): Add cgraph.h.
 	* alias.c (adjust_offset_for_component_ref): Use
 	component_ref_field_offset.
 	* c-decl.c (build_array_declarator): Add news args for ARRAY_REF.
