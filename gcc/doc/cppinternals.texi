@@ -131,7 +131,7 @@ the lexer to only step forwards through the input files, and not step
 back.  This will make future changes to support different character
 sets, in particular state or shift-dependent ones, much easier.
 
-This file also contains all information needed to spell a token, i.e. to
+This file also contains all information needed to spell a token, i.e.@: to
 output it either in a diagnostic or to a preprocessed output file.  This
 information is not exported, but made available to clients through such
 functions as @samp{cpp_spell_token} and @samp{cpp_token_len}.

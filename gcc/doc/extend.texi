@@ -948,7 +948,7 @@ Non-empty initialization of zero-length arrays is now deprecated.
 Instead GCC allows static initialization of flexible array members.
 This is equivalent to defining a new structure containing the original
 structure followed by an array of sufficient size to contain the data.
-I.e. in the following, @code{f1} is constructed as if it were declared
+I.e.@: in the following, @code{f1} is constructed as if it were declared
 like @code{f2}.
 
 @example
@@ -3440,7 +3440,7 @@ you recompile them specially for the task at hand).
 @cindex @code{qsort}, and global register variables
 It is not safe for one function that uses a global register variable to
 call another such function @code{foo} by way of a third function
-@code{lose} that was compiled without knowledge of this variable (i.e. in a
+@code{lose} that was compiled without knowledge of this variable (i.e.@: in a
 different source file in which the variable wasn't declared).  This is
 because @code{lose} might save the register and put some other value there.
 For example, you can't expect a global register variable to be available in
@@ -4430,7 +4430,7 @@ other files) without having to specify them as well.
 g++ has extended the template instantiation syntax outlined in the
 Working Paper to allow forward declaration of explicit instantiations
 (with @code{extern}), instantiation of the compiler support data for a
-template class (i.e. the vtable) without instantiating any of its
+template class (i.e.@: the vtable) without instantiating any of its
 members (with @code{inline}), and instantiation of only the static data
 members of a template class, without the support data or member
 functions (with (@code{static}):
@@ -4455,7 +4455,7 @@ definitions.  For each of these files, add @samp{#pragma implementation
 "@var{filename}"} to the top of some @samp{.C} file which
 @samp{#include}s it.  Then compile everything with
 @option{-fexternal-templates}.  The templates will then only be expanded
-in the translation unit which implements them (i.e. has a @samp{#pragma
+in the translation unit which implements them (i.e.@: has a @samp{#pragma
 implementation} line for the file where they live); all other files will
 use external references.  If you're lucky, everything should work
 properly.  If you get undefined symbol errors, you need to make sure
@@ -4518,7 +4518,7 @@ typedef int (*fptr)(A *);
 fptr p = (fptr)(a.*fp);
 @end example
 
-For PMF constants (i.e. expressions of the form @samp{&Klasse::Member}),
+For PMF constants (i.e.@: expressions of the form @samp{&Klasse::Member}),
 no object is needed to obtain the address of the function.  They can be
 converted to function pointers directly:
 

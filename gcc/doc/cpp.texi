@@ -864,7 +864,7 @@ generally less useful.  @xref{Invocation}.
 @cindex wrapper @code{#ifndef}
 
 If a header file happens to be included twice, the compiler will process
-its contents twice.  This is very likely to cause an error, e.g. when the
+its contents twice.  This is very likely to cause an error, e.g.@: when the
 compiler sees the same structure definition twice.  Even if it does not,
 it will certainly waste time.
 
@@ -1954,7 +1954,7 @@ the @code{m68k-aout} environment it expands to an @samp{_}, but in the
 
 This macro will have the correct definition even if
 @option{-f(no-)underscores} is in use, but it will not be correct if
-target-specific options that adjust this prefix are used (e.g. the
+target-specific options that adjust this prefix are used (e.g.@: the
 OSF/rose @option{-mno-underscores} option).
 
 @item __SIZE_TYPE__
@@ -3187,7 +3187,7 @@ discarded.
 
 The ISO standard specifies that it is implementation defined whether a
 preprocessor preserves whitespace between tokens, or replaces it with
-e.g. a single space.  In GNU CPP, whitespace between tokens is collapsed
+e.g.@: a single space.  In GNU CPP, whitespace between tokens is collapsed
 to become a single space, with the exception that the first token on a
 non-directive line is preceded with sufficient spaces that it appears in
 the same column in the preprocessed output that it appeared in in the
@@ -3325,7 +3325,7 @@ and the tokens to be pasted.
 
 @item
 Traditional mode preserves the amount and form of whitespace provided by
-the user.  Hard tabs remain hard tabs.  This can be useful, e.g. if you
+the user.  Hard tabs remain hard tabs.  This can be useful, e.g.@: if you
 are preprocessing a Makefile (which we do not encourage).
 @end itemize
 

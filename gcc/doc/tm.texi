@@ -3832,7 +3832,7 @@ First, emit code to add the integer @var{delta} to the location that
 contains the incoming first argument.  Assume that this argument
 contains a pointer, and is the one used to pass the @code{this} pointer
 in C++.  This is the incoming argument @emph{before} the function prologue,
-e.g. @samp{%o0} on a sparc.  The addition must preserve the values of
+e.g.@: @samp{%o0} on a sparc.  The addition must preserve the values of
 all other incoming arguments.
 
 After the addition, emit code to jump to @var{function}, which is a
@@ -4023,7 +4023,7 @@ assembler code to call function @code{__bb_trace_ret}.  The
 assembler code should only be output
 if the global compile flag @code{profile_block_flag} == 2.  This
 macro has to be used at every place where code for returning from
-a function is generated (e.g. @code{FUNCTION_EPILOGUE}).  Although
+a function is generated (e.g.@: @code{FUNCTION_EPILOGUE}).  Although
 you have to write the definition of @code{FUNCTION_EPILOGUE}
 as well, you have to define this macro to tell the compiler, that
 the proper call to @code{__bb_trace_ret} is produced.
@@ -5181,7 +5181,7 @@ ordinarily expect.
 @findex SLOW_BYTE_ACCESS
 @item SLOW_BYTE_ACCESS
 Define this macro as a C expression which is nonzero if accessing less
-than a word of memory (i.e. a @code{char} or a @code{short}) is no
+than a word of memory (i.e.@: a @code{char} or a @code{short}) is no
 faster than accessing a word of memory, i.e., if such access
 require more than one instruction or if there is no difference in cost
 between byte and (aligned) word loads.
@@ -6312,8 +6312,8 @@ the tree nodes are available.
 @item ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL (@var{stream}, @var{symbol}, @var{high}, @var{low})
 A C statement to output to the stdio stream @var{stream} assembler code
 which defines (equates) the symbol @var{symbol} to have a value equal to
-the difference of the two symbols @var{high} and @var{low}, i.e.
-@var{high} minus @var{low}.  GCC guarantees that the symbols @var{high}
+the difference of the two symbols @var{high} and @var{low},
+i.e.@: @var{high} minus @var{low}.  GCC guarantees that the symbols @var{high}
 and @var{low} are already known by the assembler so that the difference
 resolves into a constant.
 
@@ -6763,12 +6763,12 @@ or whatever.
 
 Don't define this macro if it has nothing to do, but it is helpful in
 reading assembly output if the extent of the delay sequence is made
-explicit (e.g. with white space).
+explicit (e.g.@: with white space).
 
 @findex final_sequence
 Note that output routines for instructions with delay slots must be
-prepared to deal with not being output as part of a sequence (i.e.
-when the scheduling pass is not run, or when no slot fillers could be
+prepared to deal with not being output as part of a sequence
+(i.e.@: when the scheduling pass is not run, or when no slot fillers could be
 found.)  The variable @code{final_sequence} is null when not
 processing a sequence, otherwise it contains the @code{sequence} rtx
 being output.
@@ -7754,7 +7754,7 @@ floating point operations, but to perform a single precision operation,
 the FPSCR PR bit has to be cleared, while for a double precision
 operation, this bit has to be set.  Changing the PR bit requires a general
 purpose register as a scratch register, hence these FPSCR sets have to
-be inserted before reload, i.e. you can't put this into instruction emitting
+be inserted before reload, i.e.@: you can't put this into instruction emitting
 or MACHINE_DEPENDENT_REORG.
 
 You can have multiple entities that are mode-switched, and select at run time
