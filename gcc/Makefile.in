@@ -1325,7 +1325,7 @@ stringpool.o: stringpool.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(OBSTACK_H) \
 
 hashtable.o: hashtable.c hashtable.h $(CONFIG_H) $(SYSTEM_H) $(OBSTACK_H)
 
-line-map.o: line-map.c line-map.h $(CONFIG_H) $(SYSTEM_H)
+line-map.o: line-map.c line-map.h intl.h $(CONFIG_H) $(SYSTEM_H)
 
 ggc-none.o: ggc-none.c $(GCONFIG_H) $(SYSTEM_H) $(GGC_H)
 	$(CC) -c $(ALL_CFLAGS) -DGENERATOR_FILE $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)

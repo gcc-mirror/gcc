@@ -31,7 +31,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 struct printer
 {
   FILE *outf;			/* Stream to write to.  */
-  const char *filename;		/* Name of current file.  */
   const char *syshdr_flags;	/* System header flags, if any.  */
   unsigned int line;		/* Line currently being written.  */
   unsigned char printed;	/* Nonzero if something output at line.  */
@@ -81,8 +80,7 @@ main (argc, argv)
   
   do_preprocessing (argc, argv);
 
-  /* Call to cpp_destroy () omitted for performance reasons.  */
-  if (cpp_errors (pfile))
+  if (cpp_destroy (pfile))
     return FATAL_EXIT_CODE;
 
   return SUCCESS_EXIT_CODE;
@@ -328,7 +326,7 @@ print_line (line, special_flags)
   if (! options->no_line_commands)
     fprintf (print.outf, "# %u \"%s\"%s%s\n",
 	     SOURCE_LINE (print.map, print.line),
-	     print.filename, special_flags, print.syshdr_flags);
+	     print.map->to_file, special_flags, print.syshdr_flags);
 }
 
 /* Callbacks.  */
@@ -400,7 +398,6 @@ cb_file_change (pfile, fc)
     maybe_print_line (fc->line - 1);
 
   print.map = fc->map;
-  print.filename = fc->map->to_file;
   if (fc->externc)
     print.syshdr_flags = " 3 4";
   else if (fc->sysp)

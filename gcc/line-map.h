@@ -42,6 +42,11 @@ struct line_maps
   struct line_map *maps;
   unsigned int allocated;
   unsigned int used;
+
+  /* The most recently listed include stack, if any, starts with
+     LAST_LISTED as the topmost including file.  -1 indicates nothing
+     has been listed yet.  */
+  int last_listed;
 };
 
 /* Reason for adding a line change with add_line_map ().  LC_ENTER is
@@ -74,12 +79,21 @@ extern struct line_map *add_line_map
 extern struct line_map *lookup_line
   PARAMS ((struct line_maps *, unsigned int));
 
+/* Print the file names and line numbers of the #include commands
+   which led to the map MAP, if any, to stderr.  Nothing is output if
+   the most recently listed stack is the same as the current one.  */
+extern void print_containing_files
+  PARAMS ((struct line_maps *, struct line_map *));
+
 /* Converts a map and logical line to source line.  */
 #define SOURCE_LINE(MAP, LINE) ((LINE) + (MAP)->to_line - (MAP)->from_line)
 
 /* Returns the last source line within a map.  This is the (last) line
    of the #include, or other directive, that caused a map change.  */
 #define LAST_SOURCE_LINE(MAP) SOURCE_LINE ((MAP), (MAP)[1].from_line - 1)
+
+/* Returns the map a given map was included from.  */
+#define INCLUDED_FROM(SET, MAP) (&(SET)->maps[(MAP)->included_from])
 
 /* Non-zero if the map is at the bottom of the include stack.  */
 #define MAIN_FILE_P(MAP) ((MAP)->included_from < 0)

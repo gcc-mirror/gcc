@@ -131,9 +131,6 @@ struct lexer_state
      all directives apart from #define.  */
   unsigned char save_comments;
 
-  /* If nonzero the next token is at the beginning of the line.  */
-  unsigned char next_bol;
-
   /* Nonzero if we're mid-comment.  */
   unsigned char lexing_comment;
 
@@ -218,10 +215,6 @@ struct cpp_buffer
 
   /* 1 = system header file, 2 = C system header file used for C++.  */
   unsigned char sysp;
-
-  /* Nonzero means we have printed (while error reporting) a list of
-     containing files that matches the current status.  */
-  unsigned char include_stack_listed;
 
   /* Nonzero means that the directory to start searching for ""
      include files has been calculated and stored in "dir" below.  */
