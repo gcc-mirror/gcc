@@ -490,7 +490,7 @@ public class IdentityHashMap extends AbstractMap
         table = new Object[old.length * 2 + 2];
         Arrays.fill(table, emptyslot);
         size = 0;
-        threshold = table.length / 4 * 3;
+        threshold = (table.length / 2) / 4 * 3;
 
         for (int i = old.length - 2; i >= 0; i -= 2)
           {
