@@ -315,6 +315,18 @@ extern void yyprint			PARAMS ((FILE *, int, YYSTYPE));
 extern tree combine_strings		PARAMS ((tree));
 
 static void
+frob_specs (specs_attrs, lookups)
+  tree specs_attrs;
+  tree lookups;
+{
+  initial_deferred_type_access_control (lookups);
+  split_specs_attrs (specs_attrs, &current_declspecs, &prefix_attributes);
+  if (current_declspecs
+      && TREE_CODE (current_declspecs) != TREE_LIST)
+    current_declspecs = build_decl_list (NULL_TREE, current_declspecs);
+}
+
+static void
 parse_decl (declarator, specs_attrs, lookups, attributes, initialized, decl)
   tree declarator;
   tree specs_attrs;
@@ -323,12 +335,8 @@ parse_decl (declarator, specs_attrs, lookups, attributes, initialized, decl)
   int initialized;
   tree* decl;
 {
-  initial_deferred_type_access_control (lookups);
+  frob_specs (specs_attrs, lookups);
 
-  split_specs_attrs (specs_attrs, &current_declspecs, &prefix_attributes);
-  if (current_declspecs
-      && TREE_CODE (current_declspecs) != TREE_LIST)
-    current_declspecs = build_decl_list (NULL_TREE, current_declspecs);
   if (have_extern_spec && !used_extern_spec)
     {
       current_declspecs = decl_tree_cons (NULL_TREE, 
@@ -747,6 +755,7 @@ fn.def2:
 		{ tree specs, attrs;
 		  split_specs_attrs ($1.t, &specs, &attrs);
 		  attrs = build_tree_list (attrs, NULL_TREE);
+		  initial_deferred_type_access_control ($1.lookups);
 		  $$ = start_method (specs, $2, attrs); goto rest_of_mdef; }
 	| declmods notype_declarator
 		{ tree specs, attrs;
@@ -2543,42 +2552,30 @@ component_declarator:
 
 after_type_component_declarator0:
 	  after_type_declarator maybeasm maybe_attribute maybe_init
-		{ split_specs_attrs ($<ttype>0, &current_declspecs,
-				     &prefix_attributes);
-		  $<ttype>0 = current_declspecs;
+		{ frob_specs ($<ftype>0.t, $<ftype>0.lookups);
 		  $$ = grokfield ($$, current_declspecs, $4, $2,
 				  build_tree_list ($3, prefix_attributes)); }
 	| TYPENAME ':' expr_no_commas maybe_attribute
-		{ split_specs_attrs ($<ttype>0, &current_declspecs,
-				     &prefix_attributes);
-		  $<ttype>0 = current_declspecs;
+		{ frob_specs ($<ftype>0.t, $<ftype>0.lookups);
 		  $$ = grokbitfield ($$, current_declspecs, $3);
 		  cplus_decl_attributes ($$, $4, prefix_attributes); }
 	;
 
 notype_component_declarator0:
 	  notype_declarator maybeasm maybe_attribute maybe_init
-		{ split_specs_attrs ($<ttype>0, &current_declspecs,
-				     &prefix_attributes);
-		  $<ttype>0 = current_declspecs;
+		{ frob_specs ($<ftype>0.t, $<ftype>0.lookups);
 		  $$ = grokfield ($$, current_declspecs, $4, $2,
 				  build_tree_list ($3, prefix_attributes)); }
 	| constructor_declarator maybeasm maybe_attribute maybe_init
-		{ split_specs_attrs ($<ttype>0, &current_declspecs,
-				     &prefix_attributes);
-		  $<ttype>0 = current_declspecs;
+		{ frob_specs ($<ftype>0.t, $<ftype>0.lookups);
 		  $$ = grokfield ($$, current_declspecs, $4, $2,
 				  build_tree_list ($3, prefix_attributes)); }
 	| IDENTIFIER ':' expr_no_commas maybe_attribute
-		{ split_specs_attrs ($<ttype>0, &current_declspecs,
-				     &prefix_attributes);
-		  $<ttype>0 = current_declspecs;
+		{ frob_specs ($<ftype>0.t, $<ftype>0.lookups);
 		  $$ = grokbitfield ($$, current_declspecs, $3);
 		  cplus_decl_attributes ($$, $4, prefix_attributes); }
 	| ':' expr_no_commas maybe_attribute
-		{ split_specs_attrs ($<ttype>0, &current_declspecs,
-				     &prefix_attributes);
-		  $<ttype>0 = current_declspecs;
+		{ frob_specs ($<ftype>0.t, $<ftype>0.lookups);
 		  $$ = grokbitfield (NULL_TREE, current_declspecs, $2);
 		  cplus_decl_attributes ($$, $3, prefix_attributes); }
 	;
