@@ -1844,7 +1844,7 @@ build_indirect_ref (ptr, errorstring)
 			   ptr : default_conversion (ptr));
   register tree type = TREE_TYPE (pointer);
 
-  if (ptr == current_class_decl)
+  if (ptr == current_class_decl && C_C_D)
     return C_C_D;
 
   ptr = build_expr_type_conversion (WANT_POINTER, pointer, 1);
