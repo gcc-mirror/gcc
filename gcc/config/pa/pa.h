@@ -1664,13 +1664,13 @@ while (0)
   else \
     data_section ();
    
-/* Arghh.  This is used for stuff in the constant pool; this may include
-   function addresses on the PA, which during PIC code generation must
-   reside in the data space.  Unfortunately, there's no way to determine
-   if a particular label in the constant pool refers to a function address.
-   So just force everything into the data space during PIC generation.  */
-#define SELECT_RTX_SECTION(RTX,MODE)	\
-  if (flag_pic)				\
+/* Arghh.  The hpux10 linker chokes if we have a reference to symbols
+   in a readonly data section when the symbol is defined in a shared
+   library.  Since we can't know at compile time if a symbol will be
+   satisfied by a shared library or main program we put any symbolic
+   constant into the normal data section.  */
+#define SELECT_RTX_SECTION(MODE,RTX)	\
+  if (symbolic_operand (RTX, MODE))	\
     data_section ();			\
   else					\
     readonly_data_section ();

@@ -1251,7 +1251,7 @@ emit_move_sequence (operands, mode, scratch_reg)
 	      && GET_CODE (XEXP (operand1, 0)) == PLUS
 	      && function_label_operand (XEXP (XEXP (operand1, 0), 0), Pmode))
 	    {
-	      rtx scratch_reg, temp, const_part;
+	      rtx temp, const_part;
 
 	      /* Figure out what (if any) scratch register to use.  */
 	      if (reload_in_progress || reload_completed)
