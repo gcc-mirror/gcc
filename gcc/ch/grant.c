@@ -2405,7 +2405,7 @@ decode_decl_selective (decl, all_decls)
 
   CH_ALREADY_GRANTED (decl) = 1;
 
-  switch ((enum chill_tree_code)TREE_CODE (decl))
+  switch ((int)TREE_CODE (decl))
     {
     case VAR_DECL:
     case BASED_DECL:
@@ -2789,6 +2789,8 @@ really_grant_this (decl, granted_decls)
 	return search_in_list (DECL_NAME (decl), granted_decls);
       else
 	return 1;
+    default:
+      break;
     }
 
   /* this nerver should happen */

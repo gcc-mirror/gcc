@@ -2036,7 +2036,10 @@ chill_resulting_class (class1, class2)
 	  class.mode
 	    = CH_ROOT_MODE (CH_RESULTING_MODE (class1.mode, class2.mode));
 	  return class;
+	default:
+	  break;
 	}
+      break;
     case CH_DERIVED_CLASS:
       switch (class2.kind)
 	{
@@ -2052,7 +2055,10 @@ chill_resulting_class (class1, class2)
 	  class.kind = CH_DERIVED_CLASS;
 	  class.mode = CH_ROOT_MODE (class1.mode);
 	  return class;
+	default:
+	  break;
 	}
+      break;
     case CH_ALL_CLASS:
       switch (class2.kind)
 	{
@@ -2068,7 +2074,12 @@ chill_resulting_class (class1, class2)
 	  class.kind = CH_DERIVED_CLASS;
 	  class.mode = CH_ROOT_MODE (class2.mode);
 	  return class;
+	default:
+	  break;
 	}
+      break;
+    default:
+      break;
     }
   error ("internal error in chill_root_resulting_mode");
   class.kind = CH_VALUE_CLASS;
