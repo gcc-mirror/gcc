@@ -38,39 +38,159 @@ exception statement from your version. */
 
 package java.lang;
 
-import java.io.Serializable;
 import java.io.InputStream;
-import java.lang.reflect.*;
-import java.security.*;
+import java.io.Serializable;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Member;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.security.ProtectionDomain;
 import java.util.Arrays;
 import java.util.HashSet;
 
 /**
+ * A Class represents a Java type.  There will never be multiple Class
+ * objects with identical names and ClassLoaders. Primitive types, array
+ * types, and void also have a Class object.
+ *
+ * <p>Arrays with identical type and number of dimensions share the same
+ * class (and null "system" ClassLoader, incidentally).  The name of an
+ * array class is <code>[&lt;signature format&gt;;</code> ... for example,
+ * String[]'s class is <code>[Ljava.lang.String;</code>. boolean, byte,
+ * short, char, int, long, float and double have the "type name" of
+ * Z,B,S,C,I,J,F,D for the purposes of array classes.  If it's a
+ * multidimensioned array, the same principle applies:
+ * <code>int[][][]</code> == <code>[[[I</code>.
+ *
+ * <p>There is no public constructor - Class objects are obtained only through
+ * the virtual machine, as defined in ClassLoaders.
+ *
+ * @serialData Class objects serialize specially:
+ * <code>TC_CLASS ClassDescriptor</code>. For more serialization information,
+ * see {@link ObjectStreamClass}.
+ *
+ * @author John Keiser
+ * @author Eric Blake <ebb9@email.byu.edu>
  * @author Tom Tromey <tromey@cygnus.com>
- * @date October 1, 1998 
+ * @since 1.0
+ * @see ClassLoader
  */
-
-/* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
- * "The Java Language Specification", ISBN 0-201-63451-1
- * plus online API docs for JDK 1.2 beta from http://www.javasoft.com.
- * plus gcj compiler sources (to determine object layout)
- * Status:  Sufficient for our purposes, but some methods missing
- * and some not implemented.
- */
-
 public final class Class implements Serializable
 {
+  /**
+   * Class is non-instantiable from Java code; only the VM can create
+   * instances of this class.
+   */
+  private Class ()
+  {
+  }
+
+  // Initialize the class.
+  private native void initializeClass ();
+
+  // finalization
+  protected native void finalize () throws Throwable;
+
+  /**
+   * Use the classloader of the current class to load, link, and initialize
+   * a class. This is equivalent to your code calling
+   * <code>Class.forName(name, true, getClass().getClassLoader())</code>.
+   *
+   * @param name the name of the class to find
+   * @return the Class object representing the class
+   * @throws ClassNotFoundException if the class was not found by the
+   *         classloader
+   * @throws LinkageError if linking the class fails
+   * @throws ExceptionInInitializerError if the class loads, but an exception
+   *         occurs during initialization
+   */
   public static native Class forName (String className)
     throws ClassNotFoundException;
-  /** @since 1.2 */
+
+  /**
+   * Use the specified classloader to load and link a class. If the loader
+   * is null, this uses the bootstrap class loader (provide the security
+   * check succeeds). Unfortunately, this method cannot be used to obtain
+   * the Class objects for primitive types or for void, you have to use
+   * the fields in the appropriate java.lang wrapper classes.
+   *
+   * <p>Calls <code>classloader.loadclass(name, initialize)</code>.
+   *
+   * @param name the name of the class to find
+   * @param initialize whether or not to initialize the class at this time
+   * @param classloader the classloader to use to find the class; null means
+   *        to use the bootstrap class loader
+   * @throws ClassNotFoundException if the class was not found by the
+   *         classloader
+   * @throws LinkageError if linking the class fails
+   * @throws ExceptionInInitializerError if the class loads, but an exception
+   *         occurs during initialization
+   * @throws SecurityException if the <code>classloader</code> argument
+   *         is <code>null</code> and the caller does not have the
+   *         <code>RuntimePermission("getClassLoader")</code> permission
+   * @see ClassLoader
+   * @since 1.2
+   */
   public static native Class forName (String className, boolean initialize,
 				      ClassLoader loader)
     throws ClassNotFoundException;
+  
+  /**
+   * Get all the public member classes and interfaces declared in this
+   * class or inherited from superclasses. This returns an array of length
+   * 0 if there are no member classes, including for primitive types. A
+   * security check may be performed, with
+   * <code>checkMemberAccess(this, Member.PUBLIC)</code> as well as
+   * <code>checkPackageAccess</code> both having to succeed.
+   *
+   * @return all public member classes in this class
+   * @throws SecurityException if the security check fails
+   * @since 1.1
+   */
   public native Class[] getClasses ();
+  
+  /**
+   * Get the ClassLoader that loaded this class.  If it was loaded by the
+   * system classloader, this method will return null. If there is a security
+   * manager, and the caller's class loader does not match the requested
+   * one, a security check of <code>RuntimePermission("getClassLoader")</code>
+   * must first succeed. Primitive types and void return null.
+   *
+   * @return the ClassLoader that loaded this class
+   * @throws SecurityException if the security check fails
+   * @see ClassLoader
+   * @see RuntimePermission
+   */
   public native ClassLoader getClassLoader ();
+  
+  /**
+   * If this is an array, get the Class representing the type of array.
+   * Examples: "[[Ljava.lang.String;" would return "[Ljava.lang.String;", and
+   * calling getComponentType on that would give "java.lang.String".  If
+   * this is not an array, returns null.
+   *
+   * @return the array type of this class, or null
+   * @see Array
+   * @since 1.1
+   */
   public native Class getComponentType ();
 
-  public native Constructor getConstructor (Class[] parameterTypes)
+  /**
+   * Get a public constructor declared in this class. If the constructor takes
+   * no argument, an array of zero elements and null are equivalent for the
+   * types argument. A security check may be performed, with
+   * <code>checkMemberAccess(this, Member.PUBLIC)</code> as well as
+   * <code>checkPackageAccess</code> both having to succeed.
+   *
+   * @param types the type of each parameter
+   * @return the constructor
+   * @throws NoSuchMethodException if the constructor does not exist
+   * @throws SecurityException if the security check fails
+   * @see #getConstructors()
+   * @since 1.1
+   */
+  public native Constructor getConstructor(Class[] args)
     throws NoSuchMethodException, SecurityException;
 
   // This is used to implement getConstructors and
@@ -78,22 +198,87 @@ public final class Class implements Serializable
   private native Constructor[] _getConstructors (boolean declared)
     throws SecurityException;
 
-  public Constructor[] getConstructors () throws SecurityException
+  /**
+   * Get all the public constructors of this class. This returns an array of
+   * length 0 if there are no constructors, including for primitive types,
+   * arrays, and interfaces. It does, however, include the default
+   * constructor if one was supplied by the compiler. A security check may
+   * be performed, with <code>checkMemberAccess(this, Member.PUBLIC)</code>
+   * as well as <code>checkPackageAccess</code> both having to succeed.
+   *
+   * @return all public constructors in this class
+   * @throws SecurityException if the security check fails
+   * @since 1.1
+   */
+  public Constructor[] getConstructors()
+    throws SecurityException
   {
-    return _getConstructors (false);
+    return _getConstructors(false);
   }
 
-  public native Constructor getDeclaredConstructor (Class[] parameterTypes)
+  /**
+   * Get a constructor declared in this class. If the constructor takes no
+   * argument, an array of zero elements and null are equivalent for the
+   * types argument. A security check may be performed, with
+   * <code>checkMemberAccess(this, Member.DECLARED)</code> as well as
+   * <code>checkPackageAccess</code> both having to succeed.
+   *
+   * @param types the type of each parameter
+   * @return the constructor
+   * @throws NoSuchMethodException if the constructor does not exist
+   * @throws SecurityException if the security check fails
+   * @see #getDeclaredConstructors()
+   * @since 1.1
+   */
+  public native Constructor getDeclaredConstructor(Class[] args)
     throws NoSuchMethodException, SecurityException;
 
-  public native Class[] getDeclaredClasses () throws SecurityException;
+  /**
+   * Get all the declared member classes and interfaces in this class, but
+   * not those inherited from superclasses. This returns an array of length
+   * 0 if there are no member classes, including for primitive types. A
+   * security check may be performed, with
+   * <code>checkMemberAccess(this, Member.DECLARED)</code> as well as
+   * <code>checkPackageAccess</code> both having to succeed.
+   *
+   * @return all declared member classes in this class
+   * @throws SecurityException if the security check fails
+   * @since 1.1
+   */
+  public native Class[] getDeclaredClasses() throws SecurityException;
 
-  public Constructor[] getDeclaredConstructors () throws SecurityException
+  /**
+   * Get all the declared constructors of this class. This returns an array of
+   * length 0 if there are no constructors, including for primitive types,
+   * arrays, and interfaces. It does, however, include the default
+   * constructor if one was supplied by the compiler. A security check may
+   * be performed, with <code>checkMemberAccess(this, Member.DECLARED)</code>
+   * as well as <code>checkPackageAccess</code> both having to succeed.
+   *
+   * @return all constructors in this class
+   * @throws SecurityException if the security check fails
+   * @since 1.1
+   */
+  public Constructor[] getDeclaredConstructors()
+    throws SecurityException
   {
-    return _getConstructors (true);
+    return _getConstructors(true);
   }
 
-  public native Field getDeclaredField (String fieldName)
+  /**
+   * Get a field declared in this class, where name is its simple name. The
+   * implicit length field of arrays is not available. A security check may
+   * be performed, with <code>checkMemberAccess(this, Member.DECLARED)</code>
+   * as well as <code>checkPackageAccess</code> both having to succeed.
+   *
+   * @param name the name of the field
+   * @return the field
+   * @throws NoSuchFieldException if the field does not exist
+   * @throws SecurityException if the security check fails
+   * @see #getDeclaredFields()
+   * @since 1.1
+   */
+  public native Field getDeclaredField(String fieldName)
     throws NoSuchFieldException, SecurityException;
 
   /**
@@ -116,10 +301,30 @@ public final class Class implements Serializable
 
   native Field[] getDeclaredFields (boolean publicOnly);
 
-  private native Method _getDeclaredMethod (String methodName,
-					    Class[] parameterTypes);
+  private native Method _getDeclaredMethod(String methodName, Class[] args);
 
-  public Method getDeclaredMethod (String methodName, Class[] parameterTypes)
+  /**
+   * Get a method declared in this class, where name is its simple name. The
+   * implicit methods of Object are not available from arrays or interfaces.
+   * Constructors (named "<init>" in the class file) and class initializers
+   * (name "<clinit>") are not available.  The Virtual Machine allows
+   * multiple methods with the same signature but differing return types; in
+   * such a case the most specific return types are favored, then the final
+   * choice is arbitrary. If the method takes no argument, an array of zero
+   * elements and null are equivalent for the types argument. A security
+   * check may be performed, with
+   * <code>checkMemberAccess(this, Member.DECLARED)</code> as well as
+   * <code>checkPackageAccess</code> both having to succeed.
+   *
+   * @param methodName the name of the method
+   * @param types the type of each parameter
+   * @return the method
+   * @throws NoSuchMethodException if the method does not exist
+   * @throws SecurityException if the security check fails
+   * @see #getDeclaredMethods()
+   * @since 1.1
+   */
+  public Method getDeclaredMethod(String methodName, Class[] args)
     throws NoSuchMethodException, SecurityException
   {
     memberAccessCheck(Member.DECLARED);
@@ -127,28 +332,66 @@ public final class Class implements Serializable
     if ("<init>".equals(methodName) || "<clinit>".equals(methodName))
       throw new NoSuchMethodException(methodName);
 
-    Method m = _getDeclaredMethod(methodName, parameterTypes);
-    if (m == null)
-      throw new NoSuchMethodException (methodName);
-    return m;
+    Method match = _getDeclaredMethod(methodName, args);
+    if (match == null)
+      throw new NoSuchMethodException(methodName);
+    return match;
   }
 
+  /**
+   * Get all the declared methods in this class, but not those inherited from
+   * superclasses. This returns an array of length 0 if there are no methods,
+   * including for primitive types. This does include the implicit methods of
+   * arrays and interfaces which mirror methods of Object, nor does it
+   * include constructors or the class initialization methods. The Virtual
+   * Machine allows multiple methods with the same signature but differing
+   * return types; all such methods are in the returned array. A security
+   * check may be performed, with
+   * <code>checkMemberAccess(this, Member.DECLARED)</code> as well as
+   * <code>checkPackageAccess</code> both having to succeed.
+   *
+   * @return all declared methods in this class
+   * @throws SecurityException if the security check fails
+   * @since 1.1
+   */
   public native Method[] getDeclaredMethods () throws SecurityException;
-
+ 
+  /**
+   * If this is a nested or inner class, return the class that declared it.
+   * If not, return null.
+   *
+   * @return the declaring class of this class
+   * @since 1.1
+   */
   // This is marked as unimplemented in the JCL book.
   public native Class getDeclaringClass ();
 
   private native Field getField (String fieldName, int hash)
     throws NoSuchFieldException, SecurityException;
 
-  public Field getField (String fieldName)
+  /**
+   * Get a public field declared or inherited in this class, where name is
+   * its simple name. If the class contains multiple accessible fields by
+   * that name, an arbitrary one is returned. The implicit length field of
+   * arrays is not available. A security check may be performed, with
+   * <code>checkMemberAccess(this, Member.PUBLIC)</code> as well as
+   * <code>checkPackageAccess</code> both having to succeed.
+   *
+   * @param fieldName the name of the field
+   * @return the field
+   * @throws NoSuchFieldException if the field does not exist
+   * @throws SecurityException if the security check fails
+   * @see #getFields()
+   * @since 1.1
+   */
+  public Field getField(String fieldName)
     throws NoSuchFieldException, SecurityException
   {
-    memberAccessCheck (Member.PUBLIC);
-    Field fld = getField(fieldName, fieldName.hashCode());
-    if (fld == null)
+    memberAccessCheck(Member.PUBLIC);
+    Field field = getField(fieldName, fieldName.hashCode());
+    if (field == null)
       throw new NoSuchFieldException(fieldName);
-    return fld;
+    return field;
   }
 
   /**
@@ -191,6 +434,7 @@ public final class Class implements Serializable
    * classloader of this class or when the classloader of this class
    * is null.
    *
+   * @return the package for this class, if it is available
    * @since 1.2
    */
   public Package getPackage()
@@ -205,19 +449,48 @@ public final class Class implements Serializable
 	  pkg = name.substring(0, idx);
 	return cl.getPackage(pkg);
       }
-    else
-      return null;
+    return null;
   }
 
+  /**
+   * Get the interfaces this class <em>directly</em> implements, in the
+   * order that they were declared. This returns an empty array, not null,
+   * for Object, primitives, void, and classes or interfaces with no direct
+   * superinterface. Array types return Cloneable and Serializable.
+   *
+   * @return the interfaces this class directly implements
+   */
   public native Class[] getInterfaces ();
 
-  private final native void getSignature (StringBuffer buffer);
-  private static final native String getSignature (Class[] parameterTypes,
-						   boolean is_construtor);
+  private final native void getSignature(StringBuffer buffer);
+  private static final native String getSignature(Class[] args,
+						  boolean is_construtor);
 
-  public native Method _getMethod (String methodName, Class[] parameterTypes);
+  public native Method _getMethod(String methodName, Class[] args);
 
-  public Method getMethod (String methodName, Class[] parameterTypes)
+  /**
+   * Get a public method declared or inherited in this class, where name is
+   * its simple name. The implicit methods of Object are not available from
+   * interfaces.  Constructors (named "<init>" in the class file) and class
+   * initializers (name "<clinit>") are not available.  The Virtual
+   * Machine allows multiple methods with the same signature but differing
+   * return types, and the class can inherit multiple methods of the same
+   * return type; in such a case the most specific return types are favored,
+   * then the final choice is arbitrary. If the method takes no argument, an
+   * array of zero elements and null are equivalent for the types argument.
+   * A security check may be performed, with
+   * <code>checkMemberAccess(this, Member.PUBLIC)</code> as well as
+   * <code>checkPackageAccess</code> both having to succeed.
+   *
+   * @param methodName the name of the method
+   * @param types the type of each parameter
+   * @return the method
+   * @throws NoSuchMethodException if the method does not exist
+   * @throws SecurityException if the security check fails
+   * @see #getMethods()
+   * @since 1.1
+   */
+  public Method getMethod(String methodName, Class[] args)
     throws NoSuchMethodException, SecurityException
   {
     memberAccessCheck(Member.PUBLIC);
@@ -225,64 +498,243 @@ public final class Class implements Serializable
     if ("<init>".equals(methodName) || "<clinit>".equals(methodName))
       throw new NoSuchMethodException(methodName);
 
-    Method m = _getMethod(methodName, parameterTypes);
-    if (m == null)
-      throw new NoSuchMethodException (methodName);
-    return m;
+    Method method = _getMethod(methodName, args);
+    if (method == null)
+      throw new NoSuchMethodException(methodName);
+    return method;
   }
 
   private native int _getMethods (Method[] result, int offset);
+  
+  /**
+   * Get all the public methods declared in this class or inherited from
+   * superclasses. This returns an array of length 0 if there are no methods,
+   * including for primitive types. This does not include the implicit
+   * methods of interfaces which mirror methods of Object, nor does it
+   * include constructors or the class initialization methods. The Virtual
+   * Machine allows multiple methods with the same signature but differing
+   * return types; all such methods are in the returned array. A security
+   * check may be performed, with
+   * <code>checkMemberAccess(this, Member.PUBLIC)</code> as well as
+   * <code>checkPackageAccess</code> both having to succeed.
+   *
+   * @return all public methods in this class
+   * @throws SecurityException if the security check fails
+   * @since 1.1
+   */
   public native Method[] getMethods () throws SecurityException;
 
+  /**
+   * Get the modifiers of this class.  These can be decoded using Modifier,
+   * and is limited to one of public, protected, or private, and any of
+   * final, static, abstract, or interface. An array class has the same
+   * public, protected, or private modifier as its component type, and is
+   * marked final but not an interface. Primitive types and void are marked
+   * public and final, but not an interface.
+   *
+   * @return the modifiers of this class
+   * @see Modifer
+   * @since 1.1
+   */
   public native int getModifiers ();
+  
+  /**
+   * Get the name of this class, separated by dots for package separators.
+   * Primitive types and arrays are encoded as:
+   * <pre>
+   * boolean             Z
+   * byte                B
+   * char                C
+   * short               S
+   * int                 I
+   * long                J
+   * float               F
+   * double              D
+   * void                V
+   * array type          [<em>element type</em>
+   * class or interface, alone: &lt;dotted name&gt;
+   * class or interface, as element type: L&lt;dotted name&gt;;
+   *
+   * @return the name of this class
+   */
   public native String getName ();
 
-  public java.net.URL getResource (String resourceName)
+  /**
+   * Get a resource URL using this class's package using the
+   * getClassLoader().getResource() method.  If this class was loaded using
+   * the system classloader, ClassLoader.getSystemResource() is used instead.
+   *
+   * <p>If the name you supply is absolute (it starts with a <code>/</code>),
+   * then it is passed on to getResource() as is.  If it is relative, the
+   * package name is prepended, and <code>.</code>'s are replaced with
+   * <code>/</code>.
+   *
+   * <p>The URL returned is system- and classloader-dependent, and could
+   * change across implementations.
+   *
+   * @param resourceName the name of the resource, generally a path
+   * @return the URL to the resource
+   * @throws NullPointerException if name is null
+   * @since 1.1
+   */
+  public URL getResource(String resourceName)
   {
-    String name = resourcePath (resourceName);
-    ClassLoader loader = getClassLoader ();
+    String name = resourcePath(resourceName);
+    ClassLoader loader = getClassLoader();
     if (loader == null)
-      return ClassLoader.getSystemResource (name);
-    else
-      return loader.getResource (name);
+      return ClassLoader.getSystemResource(name);
+    return loader.getResource(name);
   }
 
-  public java.io.InputStream getResourceAsStream (String resourceName)
+  /**
+   * Get a resource using this class's package using the
+   * getClassLoader().getResourceAsStream() method.  If this class was loaded
+   * using the system classloader, ClassLoader.getSystemResource() is used
+   * instead.
+   *
+   * <p>If the name you supply is absolute (it starts with a <code>/</code>),
+   * then it is passed on to getResource() as is.  If it is relative, the
+   * package name is prepended, and <code>.</code>'s are replaced with
+   * <code>/</code>.
+   *
+   * <p>The URL returned is system- and classloader-dependent, and could
+   * change across implementations.
+   *
+   * @param resourceName the name of the resource, generally a path
+   * @return an InputStream with the contents of the resource in it, or null
+   * @throws NullPointerException if name is null
+   * @since 1.1
+   */
+  public InputStream getResourceAsStream(String resourceName)
   {
-    String name = resourcePath (resourceName);
-    ClassLoader loader = getClassLoader ();
+    String name = resourcePath(resourceName);
+    ClassLoader loader = getClassLoader();
     if (loader == null)
-      return ClassLoader.getSystemResourceAsStream (name);
-    else
-      return loader.getResourceAsStream (name);
+      return ClassLoader.getSystemResourceAsStream(name);
+    return loader.getResourceAsStream(name);
   }
 
-  private String resourcePath (String resourceName)
+  private String resourcePath(String resourceName)
   {
-    if (resourceName.startsWith ("/"))
-      return resourceName.substring (1);
+    if (resourceName.startsWith("/"))
+      return resourceName.substring(1);
 
     Class c = this;
-    while (c.isArray ())
-      c = c.getComponentType ();
+    while (c.isArray())
+      c = c.getComponentType();
 
-    String packageName = c.getName ().replace ('.', '/');
-    int end = packageName.lastIndexOf ('/');
-    if (end == -1)
-      return resourceName;
-    else
-      return packageName.substring (0, end+1) + resourceName;
+    String packageName = c.getName().replace('.', '/');
+    int end = packageName.lastIndexOf('/');
+    if (end != -1)
+      return packageName.substring(0, end + 1) + resourceName;
+    return resourceName;
   }
 
+  /**
+   * Get the signers of this class. This returns null if there are no signers,
+   * such as for primitive types or void.
+   *
+   * @return the signers of this class
+   * @since 1.1
+   */
   public native Object[] getSigners ();
+  
+  /**
+   * Set the signers of this class.
+   *
+   * @param signers the signers of this class
+   */
   native void setSigners(Object[] signers);
 
+  /**
+   * Get the direct superclass of this class.  If this is an interface,
+   * Object, a primitive type, or void, it will return null. If this is an
+   * array type, it will return Object.
+   *
+   * @return the direct superclass of this class
+   */
   public native Class getSuperclass ();
+  
+  /**
+   * Return whether this class is an array type.
+   *
+   * @return whether this class is an array type
+   * @since 1.1
+   */
   public native boolean isArray ();
-  public native boolean isAssignableFrom (Class cls);
-  public native boolean isInstance (Object obj);
+  
+  /**
+   * Discover whether an instance of the Class parameter would be an
+   * instance of this Class as well.  Think of doing
+   * <code>isInstance(c.newInstance())</code> or even
+   * <code>c.newInstance() instanceof (this class)</code>. While this
+   * checks widening conversions for objects, it must be exact for primitive
+   * types.
+   *
+   * @param c the class to check
+   * @return whether an instance of c would be an instance of this class
+   *         as well
+   * @throws NullPointerException if c is null
+   * @since 1.1
+   */
+  public native boolean isAssignableFrom (Class c);
+ 
+  /**
+   * Discover whether an Object is an instance of this Class.  Think of it
+   * as almost like <code>o instanceof (this class)</code>.
+   *
+   * @param o the Object to check
+   * @return whether o is an instance of this class
+   * @since 1.1
+   */
+  public native boolean isInstance (Object o);
+  
+  /**
+   * Check whether this class is an interface or not.  Array types are not
+   * interfaces.
+   *
+   * @return whether this class is an interface or not
+   */
   public native boolean isInterface ();
+  
+  /**
+   * Return whether this class is a primitive type.  A primitive type class
+   * is a class representing a kind of "placeholder" for the various
+   * primitive types, or void.  You can access the various primitive type
+   * classes through java.lang.Boolean.TYPE, java.lang.Integer.TYPE, etc.,
+   * or through boolean.class, int.class, etc.
+   *
+   * @return whether this class is a primitive type
+   * @see Boolean#TYPE
+   * @see Byte#TYPE
+   * @see Character#TYPE
+   * @see Short#TYPE
+   * @see Integer#TYPE
+   * @see Long#TYPE
+   * @see Float#TYPE
+   * @see Double#TYPE
+   * @see Void#TYPE
+   * @since 1.1
+   */
   public native boolean isPrimitive ();
+  
+  /**
+   * Get a new instance of this class by calling the no-argument constructor.
+   * The class is initialized if it has not been already. A security check
+   * may be performed, with <code>checkMemberAccess(this, Member.PUBLIC)</code>
+   * as well as <code>checkPackageAccess</code> both having to succeed.
+   *
+   * @return a new instance of this class
+   * @throws InstantiationException if there is not a no-arg constructor
+   *         for this class, including interfaces, abstract classes, arrays,
+   *         primitive types, and void; or if an exception occurred during
+   *         the constructor
+   * @throws IllegalAccessException if you are not allowed to access the
+   *         no-arg constructor because of scoping reasons
+   * @throws SecurityException if the security check fails
+   * @throws ExceptionInInitializerError if class initialization caused by
+   *         this call fails with an exception
+   */
   public native Object newInstance ()
     throws InstantiationException, IllegalAccessException;
 
@@ -291,14 +743,15 @@ public final class Class implements Serializable
   private native ProtectionDomain getProtectionDomain0();
 
   /**
-   * Returns the protection domain of this class. If the classloader
-   * did not record the protection domain when creating this class
-   * the unknown protection domain is returned which has a <code>null</code>
-   * code source and all permissions.
+   * Returns the protection domain of this class. If the classloader did not
+   * record the protection domain when creating this class the unknown
+   * protection domain is returned which has a <code>null</code> code source
+   * and all permissions.
    *
-   * @exception SecurityException if a security manager exists and the caller
+   * @return the protection domain
+   * @throws SecurityException if the security manager exists and the caller
    * does not have <code>RuntimePermission("getProtectionDomain")</code>.
-   *
+   * @see RuntimePermission
    * @since 1.2
    */
   public ProtectionDomain getProtectionDomain()
@@ -315,11 +768,18 @@ public final class Class implements Serializable
       return protectionDomain;
   }
 
-  public String toString ()
+  /**
+   * Return the human-readable form of this Object.  For an object, this
+   * is either "interface " or "class " followed by <code>getName()</code>,
+   * for primitive types and void it is just <code>getName()</code>.
+   *
+   * @return the human-readable form of this Object
+   */
+  public String toString()
   {
-    if (isPrimitive ())
-      return getName ();
-    return (isInterface () ? "interface " : "class ") + getName ();
+    if (isPrimitive())
+      return getName();
+    return (isInterface() ? "interface " : "class ") + getName();
   }
 
   /**
@@ -390,17 +850,6 @@ public final class Class implements Serializable
       }
     return c.defaultAssertionStatus;
   }
-
-  // Don't allow new classes to be made.
-  private Class ()
-  {
-  }
-
-  // Initialize the class.
-  private native void initializeClass ();
-
-  // finalization
-  protected native void finalize () throws Throwable;
 
   /**
    * Strip the last portion of the name (after the last dot).

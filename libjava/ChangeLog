@@ -1,3 +1,43 @@
+2004-01-25  Michael Koch  <konqueror@gmx.de>
+
+	* java/lang/Class.java: Imports reworked, reformated.
+	(Class): Javadoc added.
+	(forName): Likewise.
+	(getClasses): Likewise.
+	(getClassLoader): Likewise.
+	(getComponentType): Likewise.
+	(getConstructor): Likewise.
+	(getConstructors): Likewise.
+	(getDeclaredConstructor): Likewise.
+	(getDeclaredClasses): Likewise.
+	(getDeclaredConstructors): Likewise.
+	(getDeclaredField): Likewise.
+	(getDeclaredMethod): Likewise.
+	(getDeclaredMethods): Likewise.
+	(getDeclaringClass): Likewise.
+	(getField): Likewise.
+	(getInterfaces): Likewise.
+	(getMethod): Likewise.
+	(getMethods): Likewise.
+	(getModifiers): Likewise.
+	(getName): Likewise.
+	(getResource): Likewise.
+	(getResourceAsStream): Likewise.
+	(getSigners): Likewise.
+	(setSigners): Likewise.
+	(getSuperclass): Likewise.
+	(isArray): Likewise.
+	(isAssignableFrom): Likewise.
+	(isInstance): Likewise.
+	(isInterface): Likewise.
+	(isPrimitive): Likewise.
+	(newInstance): Likewise.
+	(getProtectionDomain): Likewise.
+	(toString): Likewise.
+	(Class): Moved.
+	(initializeClass): Likewise.
+	(finalize): Likewise.
+
 2004-01-24  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/net/protocol/jar/Connection.java
@@ -43,6 +83,7 @@
 2004-01-23  Michael Koch  <konqueror@gmx.de>
 
 	* java/lang/VMClassLoader.java: Reworked imports.
+	
 2004-01-23  Michael Koch  <konqueror@gmx.de>
 
 	* javax/swing/AbstractAction.java: Reformated.
