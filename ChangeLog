@@ -1,3 +1,8 @@
+2004-09-03  Janis Johnson  <janis187@us.ibm.com>
+
+	* MAINTAINERS (Various Maintainers): Remove myself as web page
+	maintainer, add myself as maintainer of build status lists.
+
 2004-09-03  Jan Beulich  <jbeulich@novell.com>
 
 	* configure.in: Remove target-libstdc++-v3 from noconfigdirs for
