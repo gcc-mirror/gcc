@@ -1,7 +1,8 @@
 2004-05-28  Bryce McKinlay  <mckinlay@redhat.com>
 
-	* jcf-write.c (generate_bytecode_conditional): Handle binops UNLT_EXPR, UNLE_EXPR,
-    	UNGT_EXPR, UNGE_EXPR, UNEQ_EXPR, and LTGT_EXPR.
+	* jcf-write.c (generate_bytecode_conditional): Handle binops 
+	UNLT_EXPR, UNLE_EXPR, UNGT_EXPR, UNGE_EXPR, UNEQ_EXPR, 
+	and LTGT_EXPR.
 	(generate_bytecode_insns): Likewise.
 
 2004-05-28  Bryce McKinlay  <mckinlay@redhat.com>
