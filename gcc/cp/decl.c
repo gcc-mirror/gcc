@@ -5226,6 +5226,7 @@ finish_case_label (low_value, high_value)
     }
 
   label = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
+  DECL_CONTEXT (label) = current_function_decl;
 
   if (processing_template_decl)
     {

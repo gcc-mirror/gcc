@@ -1,3 +1,8 @@
+2000-09-12  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (finish_case_label): Given the LABEL_DECL a
+	DECL_CONTEXT.
+
 2000-09-12  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* error.c (TFF_PLAIN_IDENTIFIER, TFF_NAMESPACE_SCOPE,
