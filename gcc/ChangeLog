@@ -1,3 +1,13 @@
+Tue Nov  2 09:43:00 1999   Catherine Moore  <clm@cygnus.com>
+
+        * Makefile.in (genattrtab): Don't use (HOST_RTLANAL).
+        * rtl.h (rtx_equal_p): Move prototype.
+        * rtl.c (rtx_equal_function_value_matters): Move from 
+        rtlanal.c
+        (rtx_equal_p): Likewise.
+        * rtlanal.c (rtx_equal_function_value_matters): Delete.
+        (rtx_equal_p): Likewise.
+
 Mon Nov  1 23:21:17 1999  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* libgcc2.c (__do_global_dtors): Only do EH frame stuff if
