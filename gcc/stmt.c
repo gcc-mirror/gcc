@@ -510,6 +510,29 @@ label_rtx (label)
   return DECL_RTL (label);
 }
 
+/* As above, but also put it on the forced-reference list of the
+   function that contains it.  */
+rtx
+force_label_rtx (label)
+     tree label;
+{
+  rtx ref = label_rtx (label);
+  tree function = decl_function_context (label);
+  struct function *p;
+
+  if (!function)
+    abort ();
+
+  if (function != current_function_decl
+      && function != inline_function_decl)
+    p = find_function_data (function);
+  else
+    p = cfun;
+
+  p->expr->x_forced_labels = gen_rtx_EXPR_LIST (VOIDmode, ref,
+						p->expr->x_forced_labels);
+  return ref;
+}
 
 /* Add an unconditional jump to LABEL as the next sequential instruction.  */
 

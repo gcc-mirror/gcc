@@ -52,8 +52,9 @@ debug_tree (node)
 {
   table = (struct bucket **) xcalloc (HASH_SIZE, sizeof (struct bucket *));
   print_node (stderr, "", node, 0);
+  free (table);
   table = 0;
-  fprintf (stderr, "\n");
+  putc ('\n', stderr);
 }
 
 /* Print a node in brief fashion, with just the code, address and name.  */

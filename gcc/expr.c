@@ -6753,25 +6753,17 @@ expand_expr (exp, target, tmode, modifier)
     case LABEL_DECL:
       {
 	tree function = decl_function_context (exp);
-	/* Handle using a label in a containing function.  */
-	if (function != current_function_decl
-	    && function != inline_function_decl && function != 0)
-	  {
-	    struct function *p = find_function_data (function);
-	    p->expr->x_forced_labels
-	      = gen_rtx_EXPR_LIST (VOIDmode, label_rtx (exp),
-				   p->expr->x_forced_labels);
-	  }
+	/* Labels in containing functions, or labels used from initializers,
+	   must be forced.  */
+	if (modifier == EXPAND_INITIALIZER
+	    || (function != current_function_decl
+		&& function != inline_function_decl
+		&& function != 0))
+	  temp = force_label_rtx (exp);
 	else
-	  {
-	    if (modifier == EXPAND_INITIALIZER)
-	      forced_labels = gen_rtx_EXPR_LIST (VOIDmode,
-						 label_rtx (exp),
-						 forced_labels);
-	  }
+	  temp = label_rtx (exp);
 
-	temp = gen_rtx_MEM (FUNCTION_MODE,
-			    gen_rtx_LABEL_REF (Pmode, label_rtx (exp)));
+	temp = gen_rtx_MEM (FUNCTION_MODE, gen_rtx_LABEL_REF (Pmode, temp));
 	if (function != current_function_decl
 	    && function != inline_function_decl && function != 0)
 	  LABEL_REF_NONLOCAL_P (XEXP (temp, 0)) = 1;

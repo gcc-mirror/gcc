@@ -1,9 +1,21 @@
+2003-05-07  Zack Weinberg  <zack@codesourcery.com>
+
+	* stmt.c (force_label_rtx): New function, based on logic
+	formerly found in expand_expr.
+	* expr.h: Prototype it.
+	* expr.c (expand_expr <LABEL_DECL>): Use force_label_rtx if
+	appropriate.
+	* varasm.c (decode_addr_const <LABEL_DECL>): Use force_label_rtx.
+
+	* print-tree.c (debug_tree): Free the table after we're done
+	with it.  Use putc.
+
 2003-05-07  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/spe.h: Reverse arguments for __ev_subfw.
-        Unreverse arguments for __ev_subw.
+	* config/rs6000/spe.h: Reverse arguments for __ev_subfw.
+	Unreverse arguments for __ev_subw.
 
-        * config/rs6000/spe.md (evsubfw): Reverse arguments of assembly.
+	* config/rs6000/spe.md (evsubfw): Reverse arguments of assembly.
 
 2003-05-07  Nick Clifton  <nickc@redhat.com>
 
@@ -69,13 +81,13 @@
 
 2003-05-06  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/linuxspe.h: New file.
+	* config/rs6000/linuxspe.h: New file.
 
-        * config.gcc: Add powerpc-*-linux-gnuspe* target.
+	* config.gcc: Add powerpc-*-linux-gnuspe* target.
 
 2003-05-06  Richard Henderson  <rth@redhat.com>
 
-	* unwind-dw2.c (uw_update_context_1): Only set cfa as sp if 
+	* unwind-dw2.c (uw_update_context_1): Only set cfa as sp if
 	previous frame didn't save sp.  Clear sp for next frame.
 	(uw_install_context_1): Honor saved sp from frame.
 

@@ -1,3 +1,7 @@
+2003-05-07  Zack Weinberg  <zack@codesourcery.com>
+
+	* Make-lang.in: Set -Wno-error for treelang/lex.o.
+
 2003-05-06  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* Make-lang.in (treelang/tree1.o): Depends on input.h
@@ -91,7 +95,7 @@
 
 2003-03-01  Tim Josling  <tej@melbpc.org.au>
 
-        Name clashes with rtl.h fixed.
+	Name clashes with rtl.h fixed.
 
 	* lex.l: Tokens PLUS, MINUS, RETURN changed to tl_PLUS tl_MINUS
 	tl_RETURN.
@@ -108,7 +112,7 @@
 
 2003-02-23  Tim Josling  <tej@melbpc.org.au>
 
-        Fix garbage collection, add more error checking, force GC always.
+	Fix garbage collection, add more error checking, force GC always.
 
 	* Make-lang.in (treelang/tree1.o): Depend on treelang/treetree.h
 	(treelang/treetree.o): Depend on  treelang/parse.h
