@@ -1,3 +1,10 @@
+2002-01-06  Richard Henderson  <rth@redhat.com>
+
+	* reorg.c (emit_delay_sequence): Remove death notes, not merely
+	nop them out.  Increment label reference count for REG_LABEL.
+	(fill_slots_from_thread): Frob label reference count around
+	delete_related_insns.
+
 2002-01-05  Richard Henderson  <rth@redhat.com>
 
 	* cfgcleanup.c (try_forward_edges): Detect infinite loops while
