@@ -1,3 +1,10 @@
+2003-10-23  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/12705
+	* optabs.c (expand_binop): When expanding complex operations
+	inline, always calculate result into a new temporary register.
+	Minor code clean-ups.
+
 2003-10-24  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* objc/lang-specs.h: Handle -print-objc-runtime-info.
