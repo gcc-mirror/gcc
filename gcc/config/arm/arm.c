@@ -7430,8 +7430,19 @@ arm_expand_prologue ()
       insn = emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,
 				    amount));
       RTX_FRAME_RELATED_P (insn) = 1;
-      emit_insn (gen_rtx_CLOBBER (VOIDmode, 
-				  gen_rtx_MEM (BLKmode, stack_pointer_rtx)));
+
+      /* If the frame pointer is needed, emit a special barrier that
+	 will prevent the scheduler from moving stores to the frame
+	 before the stack adjustment.  */
+      if (frame_pointer_needed)
+	{
+	  rtx unspec = gen_rtx_UNSPEC (SImode,
+				       gen_rtvec (2, stack_pointer_rtx,
+						  hard_frame_pointer_rtx), 4);
+
+	  emit_insn (gen_rtx_CLOBBER (VOIDmode,
+				      gen_rtx_MEM (BLKmode, unspec)));
+	}
     }
 
   /* If we are profiling, make sure no instructions are scheduled before

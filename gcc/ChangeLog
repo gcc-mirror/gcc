@@ -1,3 +1,8 @@
+2000-08-23  Richard Earnshaw  (rearnsha@arm.com)
+
+	* arm.c (arm_expand_prologue): Ensure that the stack-adjustment
+	barrier can't be ignored by the alias analysis code.
+
 2000-08-12  Eli Zaretskii  <eliz@is.elta.co.il>
 
 	* fixinc/inclhack.def (sysv68_string): Fix the Sed script so it
