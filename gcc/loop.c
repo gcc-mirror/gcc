@@ -2865,86 +2865,86 @@ find_and_verify_loops (f, loops)
 
 		    /* Verify that uid_loop is large enough and that
 		       we can invert P.  */
-		   if (invert_jump (p, new_label))
-		     {
-		       rtx q, r;
+		    if (invert_jump (p, new_label, 1))
+		      {
+			rtx q, r;
 
-		       /* If no suitable BARRIER was found, create a suitable
-			  one before TARGET.  Since TARGET is a fall through
-			  path, we'll need to insert an jump around our block
-			  and a add a BARRIER before TARGET.
+			/* If no suitable BARRIER was found, create a suitable
+			   one before TARGET.  Since TARGET is a fall through
+			   path, we'll need to insert an jump around our block
+			   and a add a BARRIER before TARGET.
 
-			  This creates an extra unconditional jump outside
-			  the loop.  However, the benefits of removing rarely
-			  executed instructions from inside the loop usually
-			  outweighs the cost of the extra unconditional jump
-			  outside the loop.  */
-		       if (loc == 0)
-			 {
-			   rtx temp;
+			   This creates an extra unconditional jump outside
+			   the loop.  However, the benefits of removing rarely
+			   executed instructions from inside the loop usually
+			   outweighs the cost of the extra unconditional jump
+			   outside the loop.  */
+			if (loc == 0)
+			  {
+			    rtx temp;
 
-		           temp = gen_jump (JUMP_LABEL (insn));
-			   temp = emit_jump_insn_before (temp, target);
-			   JUMP_LABEL (temp) = JUMP_LABEL (insn);
-			   LABEL_NUSES (JUMP_LABEL (insn))++;
-			   loc = emit_barrier_before (target);
-			 }
+			    temp = gen_jump (JUMP_LABEL (insn));
+			    temp = emit_jump_insn_before (temp, target);
+			    JUMP_LABEL (temp) = JUMP_LABEL (insn);
+			    LABEL_NUSES (JUMP_LABEL (insn))++;
+			    loc = emit_barrier_before (target);
+			  }
 
-		       /* Include the BARRIER after INSN and copy the
-			  block after LOC.  */
-		       new_label = squeeze_notes (new_label, 
-						  last_insn_to_move);
-		       reorder_insns (new_label, last_insn_to_move, loc);
+			/* Include the BARRIER after INSN and copy the
+			   block after LOC.  */
+			new_label = squeeze_notes (new_label, 
+						   last_insn_to_move);
+			reorder_insns (new_label, last_insn_to_move, loc);
 
-		       /* All those insns are now in TARGET_LOOP.  */
-		       for (q = new_label; 
-			    q != NEXT_INSN (last_insn_to_move);
-			    q = NEXT_INSN (q))
-			 uid_loop[INSN_UID (q)] = target_loop;
+			/* All those insns are now in TARGET_LOOP.  */
+			for (q = new_label; 
+			     q != NEXT_INSN (last_insn_to_move);
+			     q = NEXT_INSN (q))
+			  uid_loop[INSN_UID (q)] = target_loop;
 
-		       /* The label jumped to by INSN is no longer a loop exit.
-			  Unless INSN does not have a label (e.g., it is a
-			  RETURN insn), search loop->exit_labels to find
-			  its label_ref, and remove it.  Also turn off
-			  LABEL_OUTSIDE_LOOP_P bit.  */
-		       if (JUMP_LABEL (insn))
-			 {
-			   for (q = 0,
-				r = this_loop->exit_labels;
-				r; q = r, r = LABEL_NEXTREF (r))
-			     if (XEXP (r, 0) == JUMP_LABEL (insn))
-			       {
-				 LABEL_OUTSIDE_LOOP_P (r) = 0;
-				 if (q)
-				   LABEL_NEXTREF (q) = LABEL_NEXTREF (r);
-				 else
-				   this_loop->exit_labels = LABEL_NEXTREF (r);
-				 break;
-			       }
+			/* The label jumped to by INSN is no longer a loop
+			   exit.  Unless INSN does not have a label (e.g.,
+			   it is a RETURN insn), search loop->exit_labels
+			   to find its label_ref, and remove it.  Also turn
+			   off LABEL_OUTSIDE_LOOP_P bit.  */
+			if (JUMP_LABEL (insn))
+			  {
+			    for (q = 0,
+				   r = this_loop->exit_labels;
+				 r; q = r, r = LABEL_NEXTREF (r))
+			      if (XEXP (r, 0) == JUMP_LABEL (insn))
+				{
+				  LABEL_OUTSIDE_LOOP_P (r) = 0;
+				  if (q)
+				    LABEL_NEXTREF (q) = LABEL_NEXTREF (r);
+				  else
+				    this_loop->exit_labels = LABEL_NEXTREF (r);
+				  break;
+				}
 
-			   for (loop = this_loop; loop && loop != target_loop;
-				loop = loop->outer)
-			     loop->exit_count--;
+			    for (loop = this_loop; loop && loop != target_loop;
+				 loop = loop->outer)
+			      loop->exit_count--;
 
-			   /* If we didn't find it, then something is
-                              wrong.  */
-			   if (! r)
-			     abort ();
-			 }
+			    /* If we didn't find it, then something is
+			       wrong.  */
+			    if (! r)
+			      abort ();
+			  }
 
-		       /* P is now a jump outside the loop, so it must be put
-			  in loop->exit_labels, and marked as such.
-			  The easiest way to do this is to just call
-			  mark_loop_jump again for P.  */
-		       mark_loop_jump (PATTERN (p), this_loop);
+			/* P is now a jump outside the loop, so it must be put
+			   in loop->exit_labels, and marked as such.
+			   The easiest way to do this is to just call
+			   mark_loop_jump again for P.  */
+			mark_loop_jump (PATTERN (p), this_loop);
 
-		       /* If INSN now jumps to the insn after it,
-			  delete INSN.  */
-		       if (JUMP_LABEL (insn) != 0
-			   && (next_real_insn (JUMP_LABEL (insn))
-			       == next_real_insn (insn)))
-			 delete_insn (insn);
-		     }
+			/* If INSN now jumps to the insn after it,
+			   delete INSN.  */
+			if (JUMP_LABEL (insn) != 0
+			    && (next_real_insn (JUMP_LABEL (insn))
+				== next_real_insn (insn)))
+			  delete_insn (insn);
+		      }
 
 		    /* Continue the loop after where the conditional
 		       branch used to jump, since the only branch insn

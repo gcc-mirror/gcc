@@ -733,7 +733,7 @@ optimize_skip (insn)
     {
       if (eligible_for_annul_false (insn, 0, trial, flags))
 	{
-	  if (invert_jump (insn, JUMP_LABEL (insn)))
+	  if (invert_jump (insn, JUMP_LABEL (insn), 1))
 	    INSN_FROM_TARGET_P (trial) = 1;
 	  else if (! eligible_for_annul_true (insn, 0, trial, flags))
 	    return 0;
@@ -1888,7 +1888,7 @@ reorg_redirect_jump (jump, nlabel)
      rtx nlabel;
 {
   incr_ticks_for_insn (jump);
-  return redirect_jump (jump, nlabel);
+  return redirect_jump (jump, nlabel, 1);
 }
 
 /* Called when INSN is being moved forward into a delay slot of DELAYED_INSN.
@@ -3087,7 +3087,7 @@ relax_delay_slots (first)
 	      if (label)
 		++LABEL_NUSES (label);
 
-	      if (invert_jump (insn, label))
+	      if (invert_jump (insn, label, 1))
 		{
 		  delete_insn (next);
 		  next = insn;
@@ -3123,16 +3123,8 @@ relax_delay_slots (first)
 	  rtx other_target = JUMP_LABEL (other);
 	  target_label = JUMP_LABEL (insn);
 
-	  /* Increment the count of OTHER_TARGET, so it doesn't get deleted
-	     as we move the label.  */
-	  if (other_target)
-	    ++LABEL_NUSES (other_target);
-
-	  if (invert_jump (other, target_label))
+	  if (invert_jump (other, target_label, 0))
 	    reorg_redirect_jump (insn, other_target);
-
-	  if (other_target)
-	    --LABEL_NUSES (other_target);
 	}
 
       /* Now look only at cases where we have filled a delay slot.  */
@@ -3338,7 +3330,7 @@ relax_delay_slots (first)
 	      if (old_label)
 		++LABEL_NUSES (old_label);
 
-	      if (invert_jump (delay_insn, label))
+	      if (invert_jump (delay_insn, label, 1))
 		{
 		  int i;
 
@@ -3570,7 +3562,7 @@ dbr_schedule (first, file)
 	  && JUMP_LABEL (insn) != 0
 	  && ((target = prev_label (next_active_insn (JUMP_LABEL (insn))))
 	      != JUMP_LABEL (insn)))
-	redirect_jump (insn, target);
+	redirect_jump (insn, target, 1);
     }
 
   init_resource_info (epilogue_insn);
