@@ -8709,6 +8709,13 @@ gen_type_die (type, context_die)
 
     case POINTER_TYPE:
     case REFERENCE_TYPE:
+      /* We must set TREE_ASM_WRITTEN in case this is a recursive type.  This
+	 ensures that the gen_type_die recursion will terminate even if the
+	 type is recursive.  Recursive types are possible in Ada.  */
+      /* ??? We could perhaps do this for all types before the switch
+	 statement.  */
+      TREE_ASM_WRITTEN (type) = 1;
+
       /* For these types, all that is required is that we output a DIE (or a
          set of DIEs) to represent the "basis" type.  */
       gen_type_die (TREE_TYPE (type), context_die);
