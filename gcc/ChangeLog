@@ -1,3 +1,13 @@
+2003-01-02  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c (stack_pointer_operand): New.
+	(const_int_gt_2_operand): Likewise.
+	(const_int_ge_8_operand): Likewise.
+	* config/h8300/h8300.md (a splitter): Likewise.
+	(a peephole2): Likewise.
+	* config/h8300/h8300-protos.h: Add prototypes for the new
+	functions above.
+
 2003-01-02  Neil Booth  <neil@daikokuya.co.uk>
 
 	* gccbug.in: Update for new categories.

@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.c for Hitachi H8/300.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002 Free Software Foundation, Inc.
+   2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com),
    Jim Wilson (wilson@cygnus.com), and Doug Evans (dje@cygnus.com).
 
@@ -1802,6 +1802,40 @@ notice_update_cc (body, insn)
       CC_STATUS_INIT;
       break;
     }
+}
+
+/* Return nonzero if X is a stack pointer.  */
+
+int
+stack_pointer_operand (x, mode)
+     rtx x;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  return x == stack_pointer_rtx;
+}
+
+/* Return nonzero if X is a constant whose absolute value is greater
+   than 2.  */
+
+int
+const_int_gt_2_operand (x, mode)
+     rtx x;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  return (GET_CODE (x) == CONST_INT
+	  && abs (INTVAL (x)) > 2);
+}
+
+/* Return nonzero if X is a constant whose absolute value is no
+   smaller than 8.  */
+
+int
+const_int_ge_8_operand (x, mode)
+     rtx x;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  return (GET_CODE (x) == CONST_INT
+	  && abs (INTVAL (x)) >= 8);
 }
 
 /* Recognize valid operators for bit instructions.  */
