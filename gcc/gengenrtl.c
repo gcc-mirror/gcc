@@ -44,8 +44,8 @@ struct rtx_definition defs[] =
 
 const char *formats[NUM_RTX_CODE];
 
-static const char *type_from_format PROTO((char));
-static const char *accessor_from_format PROTO((char));
+static const char *type_from_format PROTO((int));
+static const char *accessor_from_format PROTO((int));
 static int special_format PROTO((const char *));
 static int special_rtx PROTO((int));
 static void find_formats PROTO((void));
@@ -58,7 +58,7 @@ static void gencode PROTO((FILE *));
 
 static const char *
 type_from_format (c)
-     char c;
+     int c;
 {
   switch (c)
     {
@@ -90,7 +90,7 @@ type_from_format (c)
 
 static const char *
 accessor_from_format (c)
-     char c;
+     int c;
 {
   switch (c)
     {
