@@ -1,3 +1,7 @@
+2004-11-24  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* configure: Regenerate for libtool change.
+
 2004-11-22  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* configure.ac (machdep): Use sparc_mach_dep.lo on
