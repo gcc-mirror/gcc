@@ -236,7 +236,7 @@ extern varray_type basic_block_for_insn;
 extern void compute_bb_for_insn		PARAMS ((int));
 extern void update_bb_for_insn		PARAMS ((basic_block));
 extern void set_block_for_insn		PARAMS ((rtx, basic_block));
-extern void set_block_num		PARAMS ((rtx, int));
+extern void set_block_for_new_insns	PARAMS ((rtx, basic_block));
 
 extern void free_basic_block_vars	PARAMS ((int));
 
