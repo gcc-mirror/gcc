@@ -21,6 +21,7 @@ Boston, MA 02111-1307, USA.  */
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "version.h"
 #include "cpplib.h"
 #include "tree.h"
 #include "flags.h"
@@ -33,8 +34,19 @@ Boston, MA 02111-1307, USA.  */
 #include "langhooks.h"
 #include "hosthooks.h"
 
+/* This structure is read very early when validating the PCH, and
+   might be read for a PCH which is for a completely different compiler
+   for a different operating system.  Thus, it should really only contain
+   'unsigned char' entries, at least in the initial entries.  
+
+   If you add or change entries before version_length, you should increase
+   the version number in get_ident().  */
+
 struct c_pch_validity
 {
+  unsigned char host_machine_length;
+  unsigned char target_machine_length;
+  unsigned char version_length;
   unsigned char debug_info_type;
 };
 
@@ -45,9 +57,15 @@ struct c_pch_header
 
 #define IDENT_LENGTH 8
 
+/* The file we'll be writing the PCH to.  */
 static FILE *pch_outfile;
 
+/* The position in the assembler output file when pch_init was called.  */
 static long asm_file_startpos;
+
+/* The host and target machines.  */
+static const char host_machine[] = HOST_MACHINE;
+static const char target_machine[] = TARGET_MACHINE;
 
 static const char *get_ident (void);
 
@@ -60,7 +78,7 @@ static const char *
 get_ident(void)
 {
   static char result[IDENT_LENGTH];
-  static const char template[IDENT_LENGTH] = "gpch.011";
+  static const char template[IDENT_LENGTH] = "gpch.012";
   static const char c_language_chars[] = "Co+O";
   
   memcpy (result, template, IDENT_LENGTH);
@@ -86,9 +104,20 @@ pch_init (void)
     fatal_error ("can't open %s: %m", pch_file);
   pch_outfile = f;
   
+  if (strlen (host_machine) > 255 || strlen (target_machine) > 255
+      || strlen (version_string) > 255)
+    abort ();
+  
+  v.host_machine_length = strlen (host_machine);
+  v.target_machine_length = strlen (target_machine);
+  v.version_length = strlen (version_string);
+  
   v.debug_info_type = write_symbols;
   if (fwrite (get_ident(), IDENT_LENGTH, 1, f) != 1
-      || fwrite (&v, sizeof (v), 1, f) != 1)
+      || fwrite (&v, sizeof (v), 1, f) != 1
+      || fwrite (host_machine, v.host_machine_length, 1, f) != 1
+      || fwrite (target_machine, v.target_machine_length, 1, f) != 1
+      || fwrite (version_string, v.version_length, 1, f) != 1)
     fatal_error ("can't write to %s: %m", pch_file);
 
   /* We need to be able to re-read the output.  */
@@ -162,6 +191,8 @@ c_common_valid_pch (cpp_reader *pfile, const char *name, int fd)
   int sizeread;
   int result;
   char ident[IDENT_LENGTH];
+  char short_strings[256 * 3];
+  int strings_length;
   const char *pch_ident;
   struct c_pch_validity v;
 
@@ -195,8 +226,50 @@ c_common_valid_pch (cpp_reader *pfile, const char *name, int fd)
       return 2;
     }
 
+  /* At this point, we know it's a PCH file, so it ought to be long enough
+     that we can read a c_pch_validity structure.  */
   if (read (fd, &v, sizeof (v)) != sizeof (v))
     fatal_error ("can't read %s: %m", name);
+
+  strings_length = (v.host_machine_length + v.target_machine_length 
+		    + v.version_length);
+  if (read (fd, short_strings, strings_length) != strings_length)
+    fatal_error ("can't read %s: %m", name);
+  if (v.host_machine_length != strlen (host_machine)
+      || memcmp (host_machine, short_strings, strlen (host_machine)) != 0)
+    {
+      if (cpp_get_options (pfile)->warn_invalid_pch)
+	cpp_error (pfile, DL_WARNING, 
+		   "%s: created on host `%.*s', but used on host `%s'", name,
+		   v.host_machine_length, short_strings, host_machine);
+      return 2;
+    }
+  if (v.target_machine_length != strlen (target_machine)
+      || memcmp (target_machine, short_strings + v.host_machine_length,
+		 strlen (target_machine)) != 0)
+    {
+      if (cpp_get_options (pfile)->warn_invalid_pch)
+	cpp_error (pfile, DL_WARNING, 
+		   "%s: created for target `%.*s', but used for target `%s'", 
+		   name, v.target_machine_length, 
+		   short_strings + v.host_machine_length, target_machine);
+      return 2;
+    }
+  if (v.version_length != strlen (version_string)
+      || memcmp (version_string, 
+		 (short_strings + v.host_machine_length 
+		  + v.target_machine_length),
+		 v.version_length) != 0)
+    {
+      if (cpp_get_options (pfile)->warn_invalid_pch)
+	cpp_error (pfile, DL_WARNING,
+		   "%s: created by version `%.*s', but this is version `%s'", 
+		   name, v.version_length, 
+		   (short_strings + v.host_machine_length 
+		    + v.target_machine_length), 
+		   version_string);
+      return 2;
+    }
 
   /* The allowable debug info combinations are that either the PCH file
      was built with the same as is being used now, or the PCH file was
