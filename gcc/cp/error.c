@@ -519,7 +519,7 @@ dump_aggr_type (t, flags)
       typdef = !DECL_ARTIFICIAL (name);
       tmplate = !typdef && TREE_CODE (t) != ENUMERAL_TYPE
                 && TYPE_LANG_SPECIFIC (t) && CLASSTYPE_TEMPLATE_INFO (t)
-                && (CLASSTYPE_TEMPLATE_SPECIALIZATION (t)
+                && (CLASSTYPE_PARTIAL_SPECIALIZATION (t)
                     || TREE_CODE (CLASSTYPE_TI_TEMPLATE (t)) != TEMPLATE_DECL
                     || DECL_TEMPLATE_SPECIALIZATION (CLASSTYPE_TI_TEMPLATE (t))
                     || PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (t)));
