@@ -24112,11 +24112,11 @@ all-stage1-gcc: configure-stage1-gcc prebootstrap
 	mv stage1-gcc gcc ; \
 	cd gcc && \
 	$(MAKE) $(GCC_FLAGS_TO_PASS) \
-		CFLAGS="$(STAGE1_CFLAGS)" \
-		|| exit 1 ; \
+		CFLAGS="$(STAGE1_CFLAGS)" && $(STAMP) ../all-stage1-gcc ; \
+	result=$$? ; \
 	cd .. ; \
 	mv gcc stage1-gcc ; \
-	$(STAMP) all-stage1-gcc
+	exit $$result
 
 # TODO: Deal with STAGE_PREFIX (which is only for ada, incidentally)
 # Possibly pass --enable-werror-always (depending on --enable-werror);
@@ -24188,11 +24188,12 @@ all-stage2-gcc: all-stage1-gcc configure-stage2-gcc
 		CC="$(STAGE_CC_WRAPPER) $$r/prev-gcc/xgcc$(exeext) -B$$r/prev-gcc/ -B$(build_tooldir)/bin/" \
 		CC_FOR_BUILD="$(STAGE_CC_WRAPPER) $$r/prev-gcc/xgcc$(exeext) -B$$r/prev-gcc/ -B$(build_tooldir)/bin/" \
 		STAGE_PREFIX=$$r/prev-gcc/ \
-		$(POSTSTAGE1_FLAGS_TO_PASS) || exit 1 ; \
+		$(POSTSTAGE1_FLAGS_TO_PASS) && $(STAMP) ../all-stage2-gcc ; \
+	result=$$? ; \
 	cd .. ; \
 	mv prev-gcc stage1-gcc ; \
 	mv gcc stage2-gcc ; \
-	$(STAMP) all-stage2-gcc
+	exit $$result
 
 configure-stage3-gcc: all-stage2-gcc
 	echo configure-stage3-gcc > stage_last ; \
@@ -24255,11 +24256,12 @@ all-stage3-gcc: all-stage2-gcc configure-stage3-gcc
 		CC="$(STAGE_CC_WRAPPER) $$r/prev-gcc/xgcc$(exeext) -B$$r/prev-gcc/ -B$(build_tooldir)/bin/" \
 		CC_FOR_BUILD="$(STAGE_CC_WRAPPER) $$r/prev-gcc/xgcc$(exeext) -B$$r/prev-gcc/ -B$(build_tooldir)/bin/" \
 		STAGE_PREFIX=$$r/prev-gcc/ \
-		$(POSTSTAGE1_FLAGS_TO_PASS) || exit 1 ; \
+		$(POSTSTAGE1_FLAGS_TO_PASS) && $(STAMP) ../all-stage3-gcc \
+	result=$$? ; \
 	cd .. ; \
 	mv prev-gcc stage2-gcc ; \
 	mv gcc stage3-gcc ; \
-	$(STAMP) all-stage3-gcc
+	exit $$result
 
 # We only want to compare .o files, so set this!
 objext = .o
@@ -24293,6 +24295,31 @@ new-bootstrap: compare
 	mv stage3-gcc gcc ; \
 	$(MAKE) all ; \
 	mv gcc stage3-gcc
+
+new-cleanstrap:
+	rm -rf configure-stage1-gcc all-stage1-gcc stage1-gcc \
+	  configure-stage2-gcc all-stage2-gcc stage2-gcc \
+	  configure-stage3-gcc all-stage3-gcc stage3-gcc \
+	  compare
+	$(MAKE) new-bootstrap
+
+new-restage1:
+	rm -rf configure-stage1-gcc all-stage1-gcc stage1-gcc/Makefile \
+	  configure-stage2-gcc all-stage2-gcc stage2-gcc \
+	  configure-stage3-gcc all-stage3-gcc stage3-gcc \
+	  compare
+	$(MAKE) all-stage1-gcc
+
+new-restage2: all-stage1-gcc
+	rm -rf configure-stage2-gcc all-stage2-gcc stage2-gcc/Makefile \
+	  configure-stage3-gcc all-stage3-gcc stage3-gcc \
+	  compare
+	$(MAKE) all-stage2-gcc
+
+new-restage3: all-stage2-gcc
+	rm -rf configure-stage3-gcc all-stage3-gcc stage3-gcc/Makefile \
+	  compare
+	$(MAKE) compare
 
 # --------------------------------------
 # Dependencies between different modules
