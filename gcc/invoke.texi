@@ -363,7 +363,7 @@ in the following sections.
 @xref{Code Gen Options,,Options for Code Generation Conventions}.
 @smallexample
 -fcall-saved-@var{reg}  -fcall-used-@var{reg}
--ffixed-@var{reg}  -finhibit-size-directive
+-fexceptions -ffixed-@var{reg}  -finhibit-size-directive
 -fcheck-memory-usage  -fprefix-function-name
 -fno-common  -fno-ident  -fno-gnu-linker
 -fpcc-struct-return  -fpic  -fPIC
@@ -5324,6 +5324,14 @@ stack.  You should specify this flag if you are running in an
 environment with multiple threads, but only rarely need to specify it in
 a single-threaded environment since stack overflow is automatically
 detected on nearly all systems if there is only one stack.
+
+@item -fexceptions
+Enable exception handling.  For some targets, this implies
+generation of frame unwind information for all functions, which can produce
+significant data size overhead, though it does not affect execution.
+
+This option is on by default for languages that support exception
+handling (such as C++), and off for those that don't (such as C).
 
 @item +e0
 @itemx +e1
