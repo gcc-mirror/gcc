@@ -1676,7 +1676,7 @@ fixup_match_1 (insn, set, src, src_subreg, dst, backward, operand_number,
   int success = 0;
   int num_calls = 0, s_num_calls = 0;
   enum rtx_code code = NOTE;
-  HOST_WIDE_INT insn_const = 0, newconst;
+  HOST_WIDE_INT insn_const = 0, newconst = 0;
   rtx overlap = 0; /* need to move insn ? */
   rtx src_note = find_reg_note (insn, REG_DEAD, src), dst_note = NULL_RTX;
   int length, s_length;

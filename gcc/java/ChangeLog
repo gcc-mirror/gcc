@@ -1,5 +1,8 @@
 2003-01-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* Make-lang.in (java/jcf-parse.o): Depend on $(TM_P_H).
+	* jcf-parse.c: Include tm_p.h.
+
 	* jcf-write.c (generate_bytecode_insns): Avoid signed/unsigned
 	warning.
 

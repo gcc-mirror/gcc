@@ -1294,6 +1294,8 @@ colorize_one_web (web, hard)
   HARD_REG_SET fat_colors;
   HARD_REG_SET bias;
 
+  CLEAR_HARD_REG_SET (fat_colors);
+  
   if (web->regno >= max_normal_pseudo)
     hard = 0;
 

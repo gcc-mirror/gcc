@@ -305,7 +305,7 @@ java/jcf-depend.o: java/jcf-depend.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
   $(TM_H) java/jcf.h
 java/jcf-parse.o: java/jcf-parse.c $(CONFIG_H) $(JAVA_TREE_H) flags.h \
   input.h java/java-except.h $(SYSTEM_H) coretypes.h $(TM_H) toplev.h \
-  java/parse.h $(GGC_H) debug.h real.h gt-java-jcf-parse.h
+  java/parse.h $(GGC_H) debug.h real.h gt-java-jcf-parse.h $(TM_P_H)
 java/jcf-write.o: java/jcf-write.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h \
   $(RTL_H) java/java-opcodes.h java/parse.h java/buffer.h $(SYSTEM_H) \
   coretypes.h $(TM_H) toplev.h $(GGC_H) gt-java-jcf-write.h
