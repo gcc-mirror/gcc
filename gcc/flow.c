@@ -1566,11 +1566,7 @@ propagate_one_insn (pbi, insn)
 	      || (HAVE_sibcall_epilogue
 		  && sibcall_epilogue_contains (insn)))
 	  && find_reg_note (insn, REG_MAYBE_DEAD, NULL_RTX) == 0)
-	{
-	  internal_error ("Attempt to delete prologue/epilogue insn:\n");
-          debug_rtx (insn);
-	  abort ();
-	}
+	fatal_insn ("Attempt to delete prologue/epilogue insn:", insn);
 
       /* Record sets.  Do this even for dead instructions, since they
 	 would have killed the values if they hadn't been deleted.  */

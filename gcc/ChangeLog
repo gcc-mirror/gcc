@@ -1,3 +1,7 @@
+2002-01-15  Eric Christopher  <echristo@redhat.com>
+
+	* flow.c (propagate_one_insn): Change to use fatal_insn.
+
 2002-01-15  Kazu Hirata  <kazu@hxi.com>
 
 	* expmed.c (extract_fixed_bit_field): Remove unused code.
