@@ -12298,14 +12298,31 @@ rs6000_emit_prologue (void)
 
   /* If we use the link register, get it into r0.  */
   if (info->lr_save_p)
-    emit_move_insn (gen_rtx_REG (Pmode, 0),
-		    gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM));
+    {
+      insn = emit_move_insn (gen_rtx_REG (Pmode, 0),
+			     gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM));
+      RTX_FRAME_RELATED_P (insn) = 1;
+    }
 
   /* If we need to save CR, put it into r12.  */
   if (info->cr_save_p && frame_reg_rtx != frame_ptr_rtx)
     {
+      rtx set;
+      
       cr_save_rtx = gen_rtx_REG (SImode, 12);
-      emit_insn (gen_movesi_from_cr (cr_save_rtx));
+      insn = emit_insn (gen_movesi_from_cr (cr_save_rtx));
+      RTX_FRAME_RELATED_P (insn) = 1;
+      /* Now, there's no way that dwarf2out_frame_debug_expr is going
+	 to understand '(unspec:SI [(reg:CC 68) ...] UNSPEC_MOVESI_FROM_CR)'.
+	 But that's OK.  All we have to do is specify that _one_ condition
+	 code register is saved in this stack slot.  The thrower's epilogue
+	 will then restore all the call-saved registers.
+	 We use CR2_REGNO (70) to be compatible with gcc-2.95 on Linux.  */
+      set = gen_rtx_SET (VOIDmode, cr_save_rtx,
+			 gen_rtx_REG (SImode, CR2_REGNO));
+      REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
+					    set,
+					    REG_NOTES (insn));
     }
 
   /* Do any required saving of fpr's.  If only one or two to save, do
@@ -12484,7 +12501,7 @@ rs6000_emit_prologue (void)
       
       insn = emit_move_insn (mem, reg);
       rs6000_frame_related (insn, frame_ptr_rtx, info->total_size, 
-			    reg, gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM));
+			    NULL_RTX, NULL_RTX);
     }
 
   /* Save CR if we use any that must be preserved.  */
@@ -12493,6 +12510,8 @@ rs6000_emit_prologue (void)
       rtx addr = gen_rtx_PLUS (Pmode, frame_reg_rtx,
 			       GEN_INT (info->cr_save_offset + sp_offset));
       rtx mem = gen_rtx_MEM (SImode, addr);
+      /* See the large comment above about why CR2_REGNO is used.  */
+      rtx magic_eh_cr_reg = gen_rtx_REG (SImode, CR2_REGNO);
 
       set_mem_alias_set (mem, rs6000_sr_alias_set);
 
@@ -12500,19 +12519,21 @@ rs6000_emit_prologue (void)
 	 that it's free.  */
       if (REGNO (frame_reg_rtx) == 12)
 	{
+	  rtx set;
+
 	  cr_save_rtx = gen_rtx_REG (SImode, 0);
-	  emit_insn (gen_movesi_from_cr (cr_save_rtx));
+	  insn = emit_insn (gen_movesi_from_cr (cr_save_rtx));
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	  set = gen_rtx_SET (VOIDmode, cr_save_rtx, magic_eh_cr_reg);
+	  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
+						set,
+						REG_NOTES (insn));
+	  
 	}
       insn = emit_move_insn (mem, cr_save_rtx);
 
-      /* Now, there's no way that dwarf2out_frame_debug_expr is going
-	 to understand '(unspec:SI [(reg:CC 68) ...] UNSPEC_MOVESI_FROM_CR)'.
-	 But that's OK.  All we have to do is specify that _one_ condition
-	 code register is saved in this stack slot.  The thrower's epilogue
-	 will then restore all the call-saved registers.
-	 We use CR2_REGNO (70) to be compatible with gcc-2.95 on Linux.  */
       rs6000_frame_related (insn, frame_ptr_rtx, info->total_size, 
-			    cr_save_rtx, gen_rtx_REG (SImode, CR2_REGNO));
+			    NULL_RTX, NULL_RTX);
     }
 
   /* Update stack and set back pointer unless this is V.4, 
@@ -12546,9 +12567,16 @@ rs6000_emit_prologue (void)
     if (save_LR_around_toc_setup)
       {
 	rtx lr = gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM);
-	rs6000_maybe_dead (emit_move_insn (frame_ptr_rtx, lr));
+
+	insn = emit_move_insn (frame_ptr_rtx, lr);
+	rs6000_maybe_dead (insn);
+	RTX_FRAME_RELATED_P (insn) = 1;
+
 	rs6000_emit_load_toc_table (TRUE);
-	rs6000_maybe_dead (emit_move_insn (lr, frame_ptr_rtx));
+
+	insn = emit_move_insn (lr, frame_ptr_rtx);
+	rs6000_maybe_dead (insn);
+	RTX_FRAME_RELATED_P (insn) = 1;
       }
     else
       rs6000_emit_load_toc_table (TRUE);
@@ -12558,15 +12586,16 @@ rs6000_emit_prologue (void)
   if (DEFAULT_ABI == ABI_DARWIN
       && flag_pic && current_function_uses_pic_offset_table)
     {
-      rtx dest = gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM);
+      rtx lr = gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM);
       const char *picbase = machopic_function_base_name ();
       rtx src = gen_rtx_SYMBOL_REF (Pmode, picbase);
 
-      rs6000_maybe_dead (emit_insn (gen_load_macho_picbase (dest, src)));
+      rs6000_maybe_dead (emit_insn (gen_load_macho_picbase (lr, src)));
 
-      rs6000_maybe_dead (
-	emit_move_insn (gen_rtx_REG (Pmode, RS6000_PIC_OFFSET_TABLE_REGNUM),
-			gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM)));
+      insn = emit_move_insn (gen_rtx_REG (Pmode, 
+					  RS6000_PIC_OFFSET_TABLE_REGNUM),
+			     lr);
+      rs6000_maybe_dead (insn);
     }
 #endif
 }

@@ -1,3 +1,12 @@
+2004-06-26  Geoffrey Keating  <geoffk@apple.com>
+	    Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* configure.host (powerpc-*-darwin*): New case, define
+	can_unwind_signal.
+	* configure.in (*-*-darwin*): New case, point to darwin-signal.h.
+	* configure: Regenerate.
+	* include/darwin-signal.h: New.
+
 2004-06-30  Jerry Quinn  <jlquinn@optonline.net>
 
 	* java/beans/Statement.java (doExecute): Fix formatting.

@@ -359,7 +359,6 @@ static HOST_WIDE_INT stack_adjust_offset (rtx);
 static void output_cfi (dw_cfi_ref, dw_fde_ref, int);
 static void output_call_frame_info (int);
 static void dwarf2out_stack_adjust (rtx);
-static void queue_reg_save (const char *, rtx, HOST_WIDE_INT);
 static void flush_queued_reg_saves (void);
 static bool clobbers_queued_reg_save (rtx);
 static void dwarf2out_frame_debug_expr (rtx, const char *);
@@ -843,8 +842,7 @@ reg_save (const char *label, unsigned int reg, unsigned int sreg, HOST_WIDE_INT 
       cfi->dw_cfi_oprnd2.dw_cfi_offset = offset;
     }
   else if (sreg == reg)
-    /* We could emit a DW_CFA_same_value in this case, but don't bother.  */
-    return;
+    cfi->dw_cfi_opc = DW_CFA_same_value;
   else
     {
       cfi->dw_cfi_opc = DW_CFA_register;
@@ -974,7 +972,8 @@ initial_return_save (rtx rtl)
       abort ();
     }
 
-  reg_save (NULL, DWARF_FRAME_RETURN_COLUMN, reg, offset - cfa.offset);
+  if (reg != DWARF_FRAME_RETURN_COLUMN)
+    reg_save (NULL, DWARF_FRAME_RETURN_COLUMN, reg, offset - cfa.offset);
 }
 
 /* Given a SET, calculate the amount of stack adjustment it
@@ -1144,40 +1143,93 @@ struct queued_reg_save GTY(())
   struct queued_reg_save *next;
   rtx reg;
   HOST_WIDE_INT cfa_offset;
+  rtx saved_reg;
 };
 
 static GTY(()) struct queued_reg_save *queued_reg_saves;
 
+/* The caller's ORIG_REG is saved in SAVED_IN_REG.  */
+struct reg_saved_in_data GTY(()) {
+  rtx orig_reg;
+  rtx saved_in_reg;
+};
+
+/* A list of registers saved in other registers.
+   The list intentionally has a small maximum capacity of 4; if your
+   port needs more than that, you might consider implementing a
+   more efficient data structure.  */
+static GTY(()) struct reg_saved_in_data regs_saved_in_regs[4];
+static GTY(()) size_t num_regs_saved_in_regs;
+  
 #if defined (DWARF2_DEBUGGING_INFO) || defined (DWARF2_UNWIND_INFO)
 static const char *last_reg_save_label;
 
-static void
-queue_reg_save (const char *label, rtx reg, HOST_WIDE_INT offset)
-{
-  struct queued_reg_save *q = ggc_alloc (sizeof (*q));
+/* Add an entry to QUEUED_REG_SAVES saying that REG is now saved at
+   SREG, or if SREG is NULL then it is saved at OFFSET to the CFA.  */
 
-  q->next = queued_reg_saves;
+static void
+queue_reg_save (const char *label, rtx reg, rtx sreg, HOST_WIDE_INT offset)
+{
+  struct queued_reg_save *q;
+
+  /* Duplicates waste space, but it's also necessary to remove them
+     for correctness, since the queue gets output in reverse
+     order.  */
+  for (q = queued_reg_saves; q != NULL; q = q->next)
+    if (REGNO (q->reg) == REGNO (reg))
+      break;
+
+  if (q == NULL)
+    {
+      q = ggc_alloc (sizeof (*q));
+      q->next = queued_reg_saves;
+      queued_reg_saves = q;
+    }
+
   q->reg = reg;
   q->cfa_offset = offset;
-  queued_reg_saves = q;
+  q->saved_reg = sreg;
 
   last_reg_save_label = label;
 }
 
+/* Output all the entries in QUEUED_REG_SAVES.  */
+
 static void
 flush_queued_reg_saves (void)
 {
-  struct queued_reg_save *q, *next;
+  struct queued_reg_save *q;
 
-  for (q = queued_reg_saves; q; q = next)
+  for (q = queued_reg_saves; q; q = q->next)
     {
-      dwarf2out_reg_save (last_reg_save_label, REGNO (q->reg), q->cfa_offset);
-      next = q->next;
+      size_t i;
+      for (i = 0; i < num_regs_saved_in_regs; i++)
+	if (REGNO (regs_saved_in_regs[i].orig_reg) == REGNO (q->reg))
+	  break;
+      if (q->saved_reg && i == num_regs_saved_in_regs)
+	{
+	  if (i == ARRAY_SIZE (regs_saved_in_regs))
+	    abort ();
+	  num_regs_saved_in_regs++;
+	}
+      if (i != num_regs_saved_in_regs)
+	{
+	  regs_saved_in_regs[i].orig_reg = q->reg;
+	  regs_saved_in_regs[i].saved_in_reg = q->saved_reg;
+	}
+
+      reg_save (last_reg_save_label, REGNO (q->reg), 
+		q->saved_reg ? REGNO (q->saved_reg) : -1U, q->cfa_offset);
     }
 
   queued_reg_saves = NULL;
   last_reg_save_label = NULL;
 }
+
+/* Does INSN clobber any register which QUEUED_REG_SAVES lists a saved
+   location for?  Or, does it clobber a register which we've previously
+   said that some other register is saved in, and for which we now
+   have a new location for?  */
 
 static bool
 clobbers_queued_reg_save (rtx insn)
@@ -1185,10 +1237,38 @@ clobbers_queued_reg_save (rtx insn)
   struct queued_reg_save *q;
 
   for (q = queued_reg_saves; q; q = q->next)
-    if (modified_in_p (q->reg, insn))
-      return true;
+    {
+      size_t i;
+      if (modified_in_p (q->reg, insn))
+	return true;
+      for (i = 0; i < num_regs_saved_in_regs; i++)
+	if (REGNO (q->reg) == REGNO (regs_saved_in_regs[i].orig_reg)
+	    && modified_in_p (regs_saved_in_regs[i].saved_in_reg, insn))
+	  return true;
+    }
 
   return false;
+}
+
+/* What register, if any, is currently saved in REG?  */
+
+static rtx
+reg_saved_in (rtx reg)
+{
+  unsigned int regn = REGNO (reg);
+  size_t i;
+  struct queued_reg_save *q;
+  
+  for (q = queued_reg_saves; q; q = q->next)
+    if (q->saved_reg && regn == REGNO (q->saved_reg))
+      return q->reg;
+
+  for (i = 0; i < num_regs_saved_in_regs; i++)
+    if (regs_saved_in_regs[i].saved_in_reg
+	&& regn == REGNO (regs_saved_in_regs[i].saved_in_reg))
+      return regs_saved_in_regs[i].orig_reg;
+
+  return NULL_RTX;
 }
 
 
@@ -1199,8 +1279,8 @@ static dw_cfa_location cfa_temp;
 
 /* Record call frame debugging information for an expression EXPR,
    which either sets SP or FP (adjusting how we calculate the frame
-   address) or saves a register to the stack.  LABEL indicates the
-   address of EXPR.
+   address) or saves a register to the stack or another register.
+   LABEL indicates the address of EXPR.
 
    This function encodes a state machine mapping rtxes to actions on
    cfa, cfa_store, and cfa_temp.reg.  We describe these rules so
@@ -1224,11 +1304,19 @@ static dw_cfa_location cfa_temp;
   RTX_FRAME_RELATED_P is set on an insn which modifies memory, it's a
   register save, and the register used to calculate the destination
   had better be the one we think we're using for this purpose.
+  It's also assumed that a copy from a call-saved register to another
+  register is saving that register if RTX_FRAME_RELATED_P is set on
+  that instruction.  If the copy is from a call-saved register to
+  the *same* register, that means that the register is now the same
+  value as in the caller.
 
   Except: If the register being saved is the CFA register, and the
   offset is nonzero, we are saving the CFA, so we assume we have to
   use DW_CFA_def_cfa_expression.  If the offset is 0, we assume that
   the intent is to save the value of SP from the previous frame.
+
+  In addition, if a register has previously been saved to a different
+  register, 
 
   Invariants / Summaries of Rules
 
@@ -1380,29 +1468,42 @@ dwarf2out_frame_debug_expr (rtx expr, const char *label)
   src = SET_SRC (expr);
   dest = SET_DEST (expr);
 
+  if (GET_CODE (src) == REG)
+    {
+      rtx rsi = reg_saved_in (src);
+      if (rsi)
+	src = rsi;
+    }
+
   switch (GET_CODE (dest))
     {
     case REG:
-      /* Rule 1 */
-      /* Update the CFA rule wrt SP or FP.  Make sure src is
-	 relative to the current CFA register.  */
       switch (GET_CODE (src))
 	{
 	  /* Setting FP from SP.  */
 	case REG:
 	  if (cfa.reg == (unsigned) REGNO (src))
-	    /* OK.  */
-	    ;
+	    {
+	      /* Rule 1 */
+	      /* Update the CFA rule wrt SP or FP.  Make sure src is
+		 relative to the current CFA register. 
+
+		 We used to require that dest be either SP or FP, but the
+		 ARM copies SP to a temporary register, and from there to
+		 FP.  So we just rely on the backends to only set
+		 RTX_FRAME_RELATED_P on appropriate insns.  */
+	      cfa.reg = REGNO (dest);
+	      cfa_temp.reg = cfa.reg;
+	      cfa_temp.offset = cfa.offset;
+	    }
+	  else if (call_used_regs [REGNO (dest)] 
+		   && ! fixed_regs [REGNO (dest)])
+	    {
+	      /* Saving a register in a register.  */
+	      queue_reg_save (label, src, dest, 0);
+	    }
 	  else
 	    abort ();
-
-	  /* We used to require that dest be either SP or FP, but the
-	     ARM copies SP to a temporary register, and from there to
-	     FP.  So we just rely on the backends to only set
-	     RTX_FRAME_RELATED_P on appropriate insns.  */
-	  cfa.reg = REGNO (dest);
-	  cfa_temp.reg = cfa.reg;
-	  cfa_temp.offset = cfa.offset;
 	  break;
 
 	case PLUS:
@@ -1642,7 +1743,7 @@ dwarf2out_frame_debug_expr (rtx expr, const char *label)
 		 we're saving SP like any other register; this happens
 		 on the ARM.  */
 	      def_cfa_1 (label, &cfa);
-	      queue_reg_save (label, stack_pointer_rtx, offset);
+	      queue_reg_save (label, stack_pointer_rtx, NULL_RTX, offset);
 	      break;
 	    }
 	  else
@@ -1665,7 +1766,7 @@ dwarf2out_frame_debug_expr (rtx expr, const char *label)
 	}
 
       def_cfa_1 (label, &cfa);
-      queue_reg_save (label, src, offset);
+      queue_reg_save (label, src, NULL_RTX, offset);
       break;
 
     default:
@@ -1685,6 +1786,8 @@ dwarf2out_frame_debug (rtx insn)
 
   if (insn == NULL_RTX)
     {
+      size_t i;
+      
       /* Flush any queued register saves.  */
       flush_queued_reg_saves ();
 
@@ -1697,6 +1800,13 @@ dwarf2out_frame_debug (rtx insn)
       cfa_store = cfa;
       cfa_temp.reg = -1;
       cfa_temp.offset = 0;
+      
+      for (i = 0; i < num_regs_saved_in_regs; i++)
+	{
+	  regs_saved_in_regs[i].orig_reg = NULL_RTX;
+	  regs_saved_in_regs[i].saved_in_reg = NULL_RTX;
+	}
+      num_regs_saved_in_regs = 0;
       return;
     }
 
