@@ -3376,11 +3376,25 @@ start_sequence ()
   tem->next = seq_stack;
   tem->first = first_insn;
   tem->last = last_insn;
+  tem->sequence_rtl_expr = seq_rtl_expr;
 
   seq_stack = tem;
 
   first_insn = 0;
   last_insn = 0;
+}
+
+/* Similarly, but indicate that this sequence will be placed in T, an
+   RTL_EXPR.  See the documentation for start_sequence for more
+   information about how to use this function.  */
+
+void
+start_sequence_for_rtl_expr (t)
+     tree t;
+{
+  start_sequence ();
+
+  seq_rtl_expr = t;
 }
 
 /* Set up the insn chain starting with FIRST as the current sequence,
@@ -3416,6 +3430,7 @@ push_topmost_sequence ()
 
   first_insn = top->first;
   last_insn = top->last;
+  seq_rtl_expr = top->sequence_rtl_expr;
 }
 
 /* After emitting to the outer-level insn chain, update the outer-level
@@ -3431,6 +3446,7 @@ pop_topmost_sequence ()
 
   top->first = first_insn;
   top->last = last_insn;
+  /* ??? Why don't we save seq_rtl_expr here?  */
 
   end_sequence ();
 }
@@ -3455,6 +3471,7 @@ end_sequence ()
 
   first_insn = tem->first;
   last_insn = tem->last;
+  seq_rtl_expr = tem->sequence_rtl_expr;
   seq_stack = tem->next;
 
   free (tem);
@@ -3743,6 +3760,7 @@ init_emit ()
   f->emit = (struct emit_status *) xmalloc (sizeof (struct emit_status));
   first_insn = NULL;
   last_insn = NULL;
+  seq_rtl_expr = NULL;
   cur_insn_uid = 1;
   reg_rtx_no = LAST_VIRTUAL_REGISTER + 1;
   last_linenum = 0;
@@ -3816,6 +3834,7 @@ mark_sequence_stack (ss)
   while (ss)
     {
       ggc_mark_rtx (ss->first);
+      ggc_mark_tree (ss->sequence_rtl_expr);
       ss = ss->next;
     }
 }
@@ -3837,6 +3856,7 @@ mark_emit_status (es)
     ggc_mark_rtx (*r);
 
   mark_sequence_stack (es->sequence_stack);
+  ggc_mark_tree (es->sequence_rtl_expr);
   ggc_mark_rtx (es->x_first_insn);
 }
 

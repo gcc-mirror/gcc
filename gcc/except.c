@@ -2095,7 +2095,7 @@ protect_with_terminate (e)
       TREE_TYPE (handler) = void_type_node;
       RTL_EXPR_RTL (handler) = const0_rtx;
       TREE_SIDE_EFFECTS (handler) = 1;
-      start_sequence ();
+      start_sequence_for_rtl_expr (handler);
 
       emit_library_call (terminate_libfunc, 0, VOIDmode, 0);
       emit_barrier ();
