@@ -1473,11 +1473,13 @@ while (0)
 #define ADJUST_COST(INSN,LINK,DEP,COST) \
   (COST) = pa_adjust_cost (INSN, LINK, DEP, COST)
 
-/* Conditional branches with empty delay slots have a length of two.  */
+/* Handling the special cases is going to get too complicated for a macro,
+   just call `pa_adjust_insn_length' to do the real work.  */
 #define ADJUST_INSN_LENGTH(INSN, LENGTH)	\
-  if (GET_CODE (INSN) == CALL_INSN					\
-      || (GET_CODE (INSN) == JUMP_INSN && ! simplejump_p (insn)))	\
-    LENGTH += 1;
+  LENGTH += pa_adjust_insn_length (INSN, LENGTH);
+
+/* Enable a bug fix.  (This is for extra caution.)  */
+#define SHORTEN_WITH_ADJUST_INSN_LENGTH
 
 /* Millicode insns are actually function calls with some special
    constraints on arguments and register usage.
