@@ -1,5 +1,11 @@
 2001-05-22  Toon Moene  <toon@moene.indiv.nluug.nl>
 
+	* g77.texi: Update last-changed date.
+	* news.texi: Update copyright years, last-changed date.
+	* bugs.texi: Update copyright years, last-changed date.
+
+2001-05-22  Toon Moene  <toon@moene.indiv.nluug.nl>
+
 	* g77.texi: Update maintenance information for
 	GNU Fortran.  Remove all mention of -fdebug-kludge.
 	* news.texi: Make more news in 0.5.26 `user visible
