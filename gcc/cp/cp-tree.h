@@ -2631,6 +2631,8 @@ extern tree current_class_name;	/* IDENTIFIER_NODE: name of current class */
 #define COMPARE_REDECLARATION 4 /* The comparsion is being done when
 				   another declaration of an existing
 				   entity is seen.  */
+#define COMPARE_NO_ATTRIBUTES 8 /* The comparison should ignore
+				   extra-linguistic type attributes.  */
 
 /* Used with push_overloaded_decl.  */
 #define PUSH_GLOBAL          0  /* Push the DECL into namespace scope,

@@ -869,8 +869,10 @@ comptypes (type1, type2, strict)
 #define COMP_TYPE_ATTRIBUTES(t1,t2)	1
 #endif
 
+  if (strict & COMPARE_NO_ATTRIBUTES)
+    attrval = 1;
   /* 1 if no need for warning yet, 2 if warning cause has been seen.  */
-  if (! (attrval = COMP_TYPE_ATTRIBUTES (t1, t2)))
+  else if (! (attrval = COMP_TYPE_ATTRIBUTES (t1, t2)))
      return 0;
 
   /* 1 if no need for warning yet, 2 if warning cause has been seen.  */
