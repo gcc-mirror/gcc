@@ -205,6 +205,8 @@ make_ssa_name (tree var, tree stmt)
       memset (t, 0, tree_size (t));
       TREE_SET_CODE (t, SSA_NAME);
       SSA_NAME_VERSION (t) = save_version;
+      gcc_assert (ssa_name (save_version) == NULL);
+      VARRAY_TREE (ssa_names, save_version) = t;
     }
   else
     {
@@ -260,6 +262,7 @@ release_ssa_name (tree var)
      defining statement.  */
   if (! SSA_NAME_IN_FREE_LIST (var))
     {
+      VARRAY_TREE (ssa_names, SSA_NAME_VERSION (var)) = NULL;
       SSA_NAME_IN_FREE_LIST (var) = 1;
       TREE_CHAIN (var) = free_ssanames;
       free_ssanames = var;

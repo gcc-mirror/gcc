@@ -419,6 +419,8 @@ verify_flow_sensitive_alias_info (void)
       struct ptr_info_def *pi;
 
       ptr = ssa_name (i);
+      if (!ptr)
+	continue;
       ann = var_ann (SSA_NAME_VAR (ptr));
       pi = SSA_NAME_PTR_INFO (ptr);
 
@@ -466,25 +468,26 @@ verify_flow_sensitive_alias_info (void)
 	  size_t j;
 
 	  for (j = i + 1; j < num_ssa_names; j++)
-	    {
-	      tree ptr2 = ssa_name (j);
-	      struct ptr_info_def *pi2 = SSA_NAME_PTR_INFO (ptr2);
+	    if (ssa_name (j))
+	      {
+		tree ptr2 = ssa_name (j);
+		struct ptr_info_def *pi2 = SSA_NAME_PTR_INFO (ptr2);
 
-	      if (!TREE_VISITED (ptr2) || !POINTER_TYPE_P (TREE_TYPE (ptr2)))
-		continue;
+		if (!TREE_VISITED (ptr2) || !POINTER_TYPE_P (TREE_TYPE (ptr2)))
+		  continue;
 
-	      if (pi2
-		  && pi2->name_mem_tag
-		  && pi2->pt_vars
-		  && bitmap_first_set_bit (pi2->pt_vars) >= 0
-		  && pi->name_mem_tag != pi2->name_mem_tag
-		  && bitmap_equal_p (pi->pt_vars, pi2->pt_vars))
-		{
-		  error ("Two pointers with different name tags and identical points-to sets");
-		  debug_variable (ptr2);
-		  goto err;
-		}
-	    }
+		if (pi2
+		    && pi2->name_mem_tag
+		    && pi2->pt_vars
+		    && bitmap_first_set_bit (pi2->pt_vars) >= 0
+		    && pi->name_mem_tag != pi2->name_mem_tag
+		    && bitmap_equal_p (pi->pt_vars, pi2->pt_vars))
+		  {
+		    error ("Two pointers with different name tags and identical points-to sets");
+		    debug_variable (ptr2);
+		    goto err;
+		  }
+	      }
 	}
     }
 
@@ -524,7 +527,8 @@ verify_ssa (void)
 
   /* Keep track of SSA names present in the IL.  */
   for (i = 1; i < num_ssa_names; i++)
-    TREE_VISITED (ssa_name (i)) = 0;
+    if (ssa_name (i))
+      TREE_VISITED (ssa_name (i)) = 0;
 
   calculate_dominance_info (CDI_DOMINATORS);
 

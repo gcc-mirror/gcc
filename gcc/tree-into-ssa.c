@@ -1623,7 +1623,8 @@ rewrite_ssa_into_ssa (void)
   sbitmap_free (mark_def_sites_global_data.kills);
 
   for (i = 1; i < num_ssa_names; i++)
-    set_current_def (ssa_name (i), NULL_TREE);
+    if (ssa_name (i))
+      set_current_def (ssa_name (i), NULL_TREE);
 
   /* Insert PHI nodes at dominance frontiers of definition blocks.  */
   insert_phi_nodes (dfs, to_rename);
@@ -1679,7 +1680,7 @@ rewrite_ssa_into_ssa (void)
   for (i = 1; i < num_ssa_names; i++)
     {
       name = ssa_name (i);
-      if (!SSA_NAME_AUX (name))
+      if (!name || !SSA_NAME_AUX (name))
 	continue;
 
       free (SSA_NAME_AUX (name));
