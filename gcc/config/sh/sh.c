@@ -2490,11 +2490,15 @@ output_stack_adjust (size, reg, temp)
 
       if (! CONST_OK_FOR_I (size))
 	{
-	  if (CONST_OK_FOR_I (size / 2) && CONST_OK_FOR_I (size - size / 2))
+	  /* Try to do it with two partial adjustments; however, must make
+	     sure that the stack is properly aligned at all times, in case
+	     an interrupt occurs between the two partial adjustments. */
+	  if (CONST_OK_FOR_I (size / 2 & -4)
+	      && CONST_OK_FOR_I (size - (size / 2 & -4)))
 	    {
-	      val = GEN_INT (size / 2);
+	      val = GEN_INT (size / 2 & -4);
 	      emit_insn (gen_addsi3 (reg, reg, val));
-	      val = GEN_INT (size - size / 2);
+	      val = GEN_INT (size - (size / 2 & -4));
 	    }
 	  else
 	    {
