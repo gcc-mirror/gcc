@@ -1118,6 +1118,9 @@ which are outputs from it.  @samp{=} identifies an output; @samp{+}
 identifies an operand that is both input and output; all other operands
 are assumed to be input only.
 
+If you specify @samp{=} or @samp{+} in a constraint, you put it in the
+first character of the constraint string.
+
 @cindex @samp{&} in constraint
 @cindex earlyclobber operand
 @item &
