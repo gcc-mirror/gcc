@@ -1,3 +1,10 @@
+2000-07-22  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	Line up with libstdc++-v2 version of valarray.
+	* bits/valarray_array.h (__valarray_product): Make inline.
+	* src/valarray-inst.cc (__valarray_product): Remove explicit
+	instantiation. 
+
 2000-07-21  H.J. Lu  (hjl@gnu.org)
 
 	        * acinclude.m4: Include <features.h> for glibc testing.
