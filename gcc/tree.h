@@ -861,6 +861,13 @@ struct tree_type
    do not allocate storage, and refer to a definition elsewhere.  */
 #define DECL_EXTERNAL(NODE) ((NODE)->decl.external_flag)
 
+/* In a TYPE_DECL
+   nonzero means the detail info about this type is not dumped into stabs.
+   In stead, it will generate cross reference ('x') of names. 
+   This uses the same flag as DECL_EXTERNAL. */
+#define TYPE_DECL_SUPPRESS_DEBUG(NODE) ((NODE)->decl.external_flag)
+   
+
 /* In VAR_DECL and PARM_DECL nodes, nonzero means declared `register'.
    In LABEL_DECL nodes, nonzero means that an error message about
    jumping into such a binding contour has been printed for this label.  */
