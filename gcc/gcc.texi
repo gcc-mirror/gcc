@@ -144,9 +144,9 @@ original English.
 @sp 2
 @center Richard M. Stallman
 @sp 3
-@center Last updated 19 February 1998
+@center Last updated 28 February 1998
 @sp 1
-@c The version number appears three times more in this file.
+@c The version number appears five times more in this file.
 
 @center for version 2.8.1
 @page
