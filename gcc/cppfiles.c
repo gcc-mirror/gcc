@@ -43,10 +43,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 # define O_BINARY 0
 #endif
 
-#ifndef INCLUDE_LEN_FUDGE
-# define INCLUDE_LEN_FUDGE 0
-#endif
-
 /* If errno is inspected immediately after a system call fails, it will be
    nonzero, and no error number will ever be zero.  */
 #ifndef ENOENT
@@ -54,9 +50,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #endif
 #ifndef ENOTDIR
 # define ENOTDIR 0
-#endif
-#ifndef ENOMEM
-# define ENOMEM 0
 #endif
 
 /* Suppress warning about function macros used w/o arguments in traditional
@@ -469,8 +462,7 @@ cpp_included (pfile, fname)
     }
       
   /* Search directory path for the file.  */
-  name = (char *) alloca (strlen (fname) + pfile->max_include_len
-			  + 2 + INCLUDE_LEN_FUDGE);
+  name = (char *) alloca (strlen (fname) + pfile->max_include_len + 2);
   for (path = CPP_OPTION (pfile, quote_include); path; path = path->next)
     {
       memcpy (name, path->name, path->len);
@@ -505,8 +497,7 @@ find_include_file (pfile, fname, search_start)
     return open_file (pfile, fname);
       
   /* Search directory path for the file.  */
-  name = (char *) alloca (strlen (fname) + pfile->max_include_len
-			  + 2 + INCLUDE_LEN_FUDGE);
+  name = (char *) alloca (strlen (fname) + pfile->max_include_len + 2);
   for (path = search_start; path; path = path->next)
     {
       memcpy (name, path->name, path->len);
@@ -723,7 +714,7 @@ _cpp_compare_file_date (pfile, f)
 
   if (f->type == CPP_HEADER_NAME)
     search_start = CPP_OPTION (pfile, bracket_include);
-  else if (CPP_OPTION (pfile, ignore_srcdir))
+  else
     search_start = pfile->buffer->search_from;
 
   inc = find_include_file (pfile, fname, search_start);
