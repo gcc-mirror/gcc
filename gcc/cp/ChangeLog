@@ -1,3 +1,205 @@
+Thu Aug  1 11:53:51 1996  Bob Manson  <manson@charmed.cygnus.com>
+
+	* error.c (dump_decl): Don't explode (or explode more gracefully
+ 	as appropriate) if the object being dumped has a null type.
+	(dump_expr): Ditto.
+
+	* search.c (build_mi_matrix): Ensure that mi_size is large enough,
+ 	by counting the number of nodes that we'll need before allocating
+ 	the array.
+	(lookup_fnfields): Fix comment.
+	(breadth_first_search): Fix comment.
+
+Wed Jul 31 09:57:05 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (instantiate_class_template): Propagate TYPE_PACKED and
+ 	TYPE_ALIGN.
+	* class.c (finish_struct): Call cplus_decl_attributes here.
+	(finish_struct_1): Not here.
+	* cp-tree.h: Adjust.
+
+	* pt.c (type_unification): New parameter STRICT.
+	(unify): If STRICT, don't allow cv addition or base deduction.
+	* call.c, class.c, cvt.c, cp-tree.h: Adjust.
+
+Tue Jul 30 13:06:13 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* search.c (get_template_base{_recursive}): New fns.
+	* pt.c (more_specialized): New fn.
+	(do_function_instantiation): Use it.
+	(unify): Handle base deduction.
+	* cvt.c (joust): Use more_specialized.
+	Don't arbitrarily choose between non-builtin candidates.
+	(build_over_call): Call require_complete_type.
+
+	* decl.c (start_function): Statics are static even in a #pragma
+ 	interface file.
+
+	* decl2.c (import_export_vtable): Disable vtable heuristic on
+ 	systems with ASM_OUTPUT_EXTERNAL.
+
+	* cvt.c (compare_ics): Fix comparison of PMEM_CONV and BASE_CONV.
+	(standard_conversion): No std conv to enum type.
+
+	* cvt.c (standard_conversion): Fix order of args to DERIVED_FROM_P
+	for ptm's.
+
+	* cvt.c (reference_binding): Bind directly to a base subobject of
+ 	a class rvalue.
+
+	* cvt.c (build_new_op): Enforce access control.
+
+Tue Jul 30 09:22:53 1996  Bob Manson  <manson@charmed.cygnus.com>
+
+	* typeck2.c (process_init_constructor): When scanning the
+	union for a named field, skip things that aren't FIELD_DECLs.
+
+	* method.c (synthesize_method): Don't scan fndecl's rtl if
+	we're at the end of the file; just assume the function can't
+	be inlined.
+
+Mon Jul 29 15:48:30 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cvt.c (build_builtin_candidate): Stick a dummy conversion in if
+ 	it failed.
+
+	* cvt.c (build_user_type_conversion_1): Handle overloaded
+ 	conversion ops.
+
+	* cvt.c (add_builtin_candidates): Don't consider type conversion
+ 	operators for the first parameter of operator=.
+
+Mon Jul 29 15:33:55 1996  Bob Manson  <manson@charmed.cygnus.com>
+
+	* typeck.c (complete_type): Only call layout_type if we're not
+ 	expanding a template.
+
+Mon Jul 29 14:40:38 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cvt.c (compare_ics): Oops.
+
+	* cvt.c (op_error): Oops.
+
+	* cp-tree.def: Add RVALUE_CONV, rename EXACT_CONV to IDENTITY_CONV.
+	* cvt.c: Add IDENTITY_RANK before others.  Use real_lvalue_p.
+	(build_conv): Use them.
+	(implicit_conversion): Use them.
+	(convert_like): Handle them.
+	(build_new_op): Handle builtin COND_EXPR again.
+	(add_builtin_candidates): Strip cv-quals.  Fix oops.  Include enums
+	in lists of types for COND_EXPR.
+	(add_builtin_candidate): Add enum candidates for COND_EXPR.
+
+Mon Jul 29 12:05:40 1996  Bob Manson  <manson@charmed.cygnus.com>
+
+	* typeck.c (build_modify_expr): Always attempt to build a call to
+ 	the assignment operator, even if we're using a default one.
+	(convert_for_initialization): Call complete_type.
+
+Mon Jul 29 11:25:08 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cvt.c (reference_binding): A REF_BIND gets the reference type.
+	(implicit_conversion): Likewise.
+	(convert_like): Likewise.
+	(compare_ics): Likewise.
+	(compare_qual): Likewise.
+	(print_z_candidates): Handle no candidates.
+	(build_new_op): Don't handle builtin COND_EXPR for now.
+
+Sat Jul 27 11:27:47 1996  Stan Shebs  <shebs@andros.cygnus.com>
+
+	* cvt.c (build_builtin_candidate): Init local var in an ANSI way.
+
+Fri Jul 26 01:07:22 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cvt.c (joust): If the candidates are the same, arbitrarily pick one.
+
+	* cvt.c (build_builtin_candidate): Oops.
+	(build_new_op): Oops.
+
+	* method.c (build_opfncall): Pass COND_EXPR on.
+	* cvt.c (build_builtin_candidate): Reorganize, support COND_EXPR.
+	(add_builtin_candidate{,s}): Likewise.
+	(add_builtin_candidates): Likewise.
+	(print_z_candidates, op_error, build_new_op): Likewise.
+	(type_decays_to): New fn.
+	* lex.c (init_lex): Just say ?: for COND_EXPR.
+
+Thu Jul 25 09:33:33 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* typeck.c (complete_type): Call layout_type rather than building
+ 	a new array type.
+
+	* cvt.c (add_builtin_candidate): Pointer arithmetic candidates
+ 	only use ptrdiff_t.
+
+Wed Jul 24 12:45:08 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cvt.c: Always compile the new overloading code (but don't use it).
+	(implicit_conversion): Add a BASE_CONV when converting to
+ 	the same class type.
+	(convert_like): Handle BASE_CONV.
+
+Tue Jul 23 12:46:30 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cvt.c (build_new_op): Support {MAX,MIN}_EXPR.
+	(add_builtin_candidate): Likewise.
+
+	NEW_OVER changes:
+	* typeck.c (build_x_function_call): Try an operator function
+ 	whenever we call an object of class type.
+	* method.c (build_opfncall): Pass CALL_EXPRs through.
+	* cvt.c (implicit_conversion): Do const-ref case first.
+	(add_conv_candidate, build_object_call, op_error): New fns.
+	(ptr_complete_ob, TYPE_PTROB_P): void is not an object type.
+	({add,build}_builtin_candidate{,s}, print_z_candidates): Display 
+	builtin candidates.
+	(build_new_op): Handle CALL_EXPR.  Don't try to decay void.
+	Fall back on preincrement handling.  Use op_error.  
+	Handle warn_synth.
+	(convert_like): Pass INDIRECT_BIND.  Don't try to do anything with 
+	an error_mark_node.
+	(build_over_call): Handle PROMOTE_PROTOTYPES and ellipsis promotions
+	properly.
+
+Mon Jul 22 16:21:55 1996  Bob Manson  <manson@charmed.cygnus.com>
+
+	* pt.c (tsubst_expr): Handle CONTINUE_STMT.
+
+Mon Jul 22 15:38:58 1996  Mike Stump  <mrs@cygnus.com>
+
+	* typeck.c (build_component_ref_1): Use build_component_ref
+	instead of open coding it here.
+
+Mon Jul 22 12:18:54 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* g++.c (main): Don't link with -lg++.
+
+	NEW_OVER changes:
+	* cvt.c (convert_to_reference): Don't use convert_from_refeence on
+ 	result of build_type_conversion.
+	(cp_convert): Only call build_method_call for ctors if
+	build_type_conversion failed.
+	(ptr_complete_ob): New function.
+	(TYPE_PTR{,OB,MEM}_P): New macros.
+	({add,build}_builtin_candidate{,s}): New functions.
+	(print_z_candidates): Handle builtins.
+	(build_user_type_conversion_1): Don't use conversion fns for 
+	converting to a base type.
+	(build_user_type_conversion_1): Set ICS_USER_FLAG on AMBIG_CONVs.
+	(build_user_type_conversion): Use convert_from_reference.
+	(build_new_op): New function.
+	(build_over_call): Fix handling of methods.
+	(compare_ics): Handle AMBIG_CONV properly.
+	* typeck2.c: Increment abort count.
+	* method.c (build_opfncall): Forward most requests to build_new_op.
+	* cp-tree.h (IS_OVERLOAD_TYPE): Tweak.
+
+Fri Jul 19 17:59:29 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* error.c (dump_expr, case CONSTRUCTOR, case CAST_EXPR): Take out
+	invalid second argument to dump_expr_list.
+
 Fri Jul 19 14:04:05 1996  Mike Stump  <mrs@cygnus.com>
 
 	* decl.c (lookup_name_real): Make sure we do obj->X::i correctly.
@@ -320,6 +522,11 @@ Mon Jun  3 15:30:52 1996  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* method.c (emit_thunk): Pretend this is a FUNCTION_DECL for the
  	backend's benefit.
+
+Mon Jun 10 18:58:19 1996  Mike Stump  <mrs@cygnus.com>
+
+	* except.c (expand_start_catch_block): Add a dummy region, if we
+	get an error, so that we can avoid core dumping later.
 
 Fri May 31 14:56:13 1996  Mike Stump  <mrs@cygnus.com>
 
@@ -6775,7 +6982,7 @@ Thu Nov  3 00:10:46 1994  Jason Merrill  (jason@phydeaux.cygnus.com)
 
 Wed Nov  2 15:08:24 1994  Kung Hsu  (kung@mexican.cygnus.com)
 
-	* decl.c (finish_function): emit types used in method parameters
+	* decl.c (finish_function): Emit types used in method parameters
 	into symbol table.
 
 Wed Nov  2 15:05:47 1994  Jason Merrill  (jason@phydeaux.cygnus.com)
