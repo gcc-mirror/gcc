@@ -22,6 +22,9 @@
 #ifdef __mips__
 #include "va-mips.h"
 #else
+#ifdef __sparc__
+#include "va-sparc.h"
+#else
 
 #ifdef _HIDDEN_VA_LIST  /* On OSF1, this means varargs.h is "half-loaded".  */
 #undef _VA_LIST
@@ -43,14 +46,8 @@ typedef char *va_list;
 #define __va_rounded_size(TYPE)  \
   (((sizeof (TYPE) + sizeof (int) - 1) / sizeof (int)) * sizeof (int))
 
-#ifndef __sparc__
 #define va_start(AP, LASTARG) 						\
  (AP = ((char *) __builtin_next_arg ()))
-#else
-#define va_start(AP, LASTARG) 						\
- (__builtin_saveregs (),						\
-  AP = ((char *) __builtin_next_arg ()))
-#endif
 
 void va_end (va_list);		/* Defined in libgcc.a */
 #define va_end(AP)
@@ -59,6 +56,7 @@ void va_end (va_list);		/* Defined in libgcc.a */
  (AP += __va_rounded_size (TYPE),					\
   *((TYPE *) (AP - __va_rounded_size (TYPE))))
 
+#endif /* not sparc */
 #endif /* not mips */
 #endif /* not hp9000s800 */
 #endif /* not i860 */
