@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  ARM on semi-hosted platform
-   Copyright (C) 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1996 Free Software Foundation, Inc.
    Contributed by Richard Earnshaw (richard.earnshaw@armltd.co.uk)
 
 This file is part of GNU CC.
@@ -24,7 +24,7 @@ Boston, MA 02111-1307, USA.  */
 #define LIB_SPEC "-lc"
 
 #define CPP_PREDEFINES \
-    "-Darm -Dsemi -Acpu(arm) -Amachine(arm)"
+    "-Darm -D__semi__ -Acpu(arm) -Amachine(arm)"
 
 #define CPP_SPEC "%{m6:-D__arm6__} \
 %{mcpu-*:-D__%*} \
