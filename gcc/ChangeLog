@@ -1,3 +1,8 @@
+Thu Jul  8 10:28:25 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* invoke.texi (DEC Alpha Options): Put @end table at
+	beginning of line, to avoid confusing texi2html.
+
 Thu Jul  8 09:22:06 1999  Nick Clifton  <nickc@cygnus.com>
 
 	* config/arm/elf.h (ASM_OUTPUT_INTERNAL_LABEL): Fixed typo
