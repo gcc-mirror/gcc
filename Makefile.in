@@ -32900,6 +32900,7 @@ all-stage3-gcc: maybe-all-stage3-fixincludes
 all-stage4-gcc: maybe-all-stage4-fixincludes
 all-stageprofile-gcc: maybe-all-stageprofile-fixincludes
 all-stagefeedback-gcc: maybe-all-stagefeedback-fixincludes
+install-gcc: maybe-install-fixincludes
 configure-libcpp: configure-libiberty
 
 configure-stage1-libcpp: configure-stage1-libiberty

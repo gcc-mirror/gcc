@@ -1,3 +1,8 @@
+2004-11-11  Geoffrey Keating  <geoffk@apple.com>
+
+	* Makefile.def: Make gcc install depend on fixincludes install.
+	* Makefile.in: Regenerate.
+
 2004-11-10  Janis Johnson  <janis187@us.ibm.com>
 
 	* MAINTAINERS: Add myself as gcc testsuite maintainer.
