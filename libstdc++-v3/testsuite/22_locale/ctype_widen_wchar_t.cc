@@ -33,6 +33,7 @@
 #include <vector>
 #include <testsuite_hooks.h>
 
+#ifdef _GLIBCPP_USE_WCHAR_T
 void test01()
 {
   using namespace std;
@@ -59,9 +60,12 @@ void test01()
   for (int i = 0; i < narrow.length(); ++i)
     VERIFY( wide_chars[i] == wide[i] );
 }
+#endif
 
 int main() 
 {
+#ifdef _GLIBCPP_USE_WCHAR_T
   test01();
+#endif
   return 0;
 }
