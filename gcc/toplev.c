@@ -3685,16 +3685,18 @@ rest_of_compilation (decl)
     }
 #endif
 
+#ifndef STACK_REGS
+  /* ??? Do this before shorten branches so that we aren't creating
+     insns too late and fail sanity checks in final. */
+  convert_to_eh_region_ranges ();
+#endif
+
+  /* Shorten branches.
+
+     Note this must run before reg-stack because of death note (ab)use
+     in the ia32 backend.  */
   timevar_push (TV_SHORTEN_BRANCH);
-  if (0
-#ifdef HAVE_ATTR_length
-      || 1
-#endif
-#ifdef STACK_REGS
-      || 1
-#endif
-      )
-    split_all_insns (0);
+  shorten_branches (get_insns ());
   timevar_pop (TV_SHORTEN_BRANCH);
 
 #ifdef STACK_REGS
@@ -3707,14 +3709,9 @@ rest_of_compilation (decl)
   timevar_pop (TV_REG_STACK);
 
   ggc_collect ();
-#endif
 
   convert_to_eh_region_ranges ();
-
-  /* Shorten branches.  */
-  timevar_push (TV_SHORTEN_BRANCH);
-  shorten_branches (get_insns ());
-  timevar_pop (TV_SHORTEN_BRANCH);
+#endif
 
   current_function_nothrow = nothrow_function_p ();
   if (current_function_nothrow)
