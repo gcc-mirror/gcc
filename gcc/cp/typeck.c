@@ -2048,6 +2048,7 @@ build_indirect_ref (ptr, errorstring)
   if (TREE_CODE (type) == POINTER_TYPE || TREE_CODE (type) == REFERENCE_TYPE)
     {
       if (TREE_CODE (pointer) == ADDR_EXPR
+	  && !flag_volatile
 	  && (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (pointer, 0)))
 	      == TYPE_MAIN_VARIANT (TREE_TYPE (type)))
 	  && (TREE_READONLY (TREE_OPERAND (pointer, 0))
@@ -2061,10 +2062,13 @@ build_indirect_ref (ptr, errorstring)
 	  register tree ref = build1 (INDIRECT_REF,
 				      TYPE_MAIN_VARIANT (t), pointer);
 
+	  /* We *must* set TREE_READONLY when dereferencing a pointer to const,
+	     so that we get the proper error message if the result is used
+	     to assign to.  Also, &* is supposed to be a no-op.  */
 	  TREE_READONLY (ref) = TYPE_READONLY (t);
-	  TREE_THIS_VOLATILE (ref) = TYPE_VOLATILE (t);
 	  TREE_SIDE_EFFECTS (ref)
-	    = TYPE_VOLATILE (t) || TREE_SIDE_EFFECTS (pointer);
+	    = TYPE_VOLATILE (t) || TREE_SIDE_EFFECTS (pointer) || flag_volatile;
+	  TREE_THIS_VOLATILE (ref) = TYPE_VOLATILE (t);
 	  return ref;
 	}
     }
