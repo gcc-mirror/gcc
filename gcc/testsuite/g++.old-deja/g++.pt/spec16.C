@@ -17,5 +17,5 @@ template<>
 int
 A<const char*>::foo(const char*const& k)
 {
-        return((int)k);
+        return((__SIZE_TYPE__)k);
 }

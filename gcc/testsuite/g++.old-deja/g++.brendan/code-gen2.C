@@ -9,7 +9,7 @@ int main ()
 	char buff[40] ;
 	char *tmp = &buff[0];	// also fails for char *tmp = buff;
 
-	if ((unsigned int) tmp != (unsigned int) &buff[0])
+	if ((__SIZE_TYPE__) tmp != (__SIZE_TYPE__) &buff[0])
 	  printf ("FAIL\n");
 	else
 	  printf ("PASS\n");

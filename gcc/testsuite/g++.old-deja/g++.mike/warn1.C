@@ -2,8 +2,9 @@
 // Special g++ Options: -Wall
 
 typedef char * charptr;
+typedef __SIZE_TYPE__ size_t;
 char c[]={'A','B','C','D'};
-int i=int(&c);
+int i=size_t(&c);
 int *pp=&i;
 void foo() { }
 int main()
