@@ -3289,6 +3289,52 @@ assign_parms (fndecl, second_time)
   current_function_return_rtx = DECL_RTL (DECL_RESULT (fndecl));
 }
 
+/* Indicate whether REGNO is an incoming argument to the current function
+   that was promoted to a wider mode.  If so, return the RTX for the
+   register (to get its mode).  PMODE and PUNSIGNEDP are set to the mode
+   that REGNO is promoted from and whether the promotion was signed or
+   unsigned.  */
+
+#ifdef PROMOTE_FUNCTION_ARGS
+
+rtx
+promoted_input_arg (regno, pmode, punsignedp)
+     int regno;
+     enum machine_mode *pmode;
+     int *punsignedp;
+{
+  tree arg;
+
+  for (arg = DECL_ARGUMENTS (current_function_decl); arg;
+       arg = TREE_CHAIN (arg))
+    if (GET_CODE (DECL_INCOMING_RTL (arg)) == REG
+	&& REGNO (DECL_INCOMING_RTL (arg)) == regno
+	&& (TREE_CODE (TREE_TYPE (arg)) == INTEGER_TYPE
+	    || TREE_CODE (TREE_TYPE (arg)) == ENUMERAL_TYPE
+	    || TREE_CODE (TREE_TYPE (arg)) == BOOLEAN_TYPE
+	    || TREE_CODE (TREE_TYPE (arg)) == CHAR_TYPE
+	    || TREE_CODE (TREE_TYPE (arg)) == REAL_TYPE
+	    || TREE_CODE (TREE_TYPE (arg)) == POINTER_TYPE
+	    || TREE_CODE (TREE_TYPE (arg)) == OFFSET_TYPE))
+      {
+	enum machine_mode mode = TYPE_MODE (TREE_TYPE (arg));
+	int unsignedp = TREE_UNSIGNED (TREE_TYPE (arg));
+
+	PROMOTE_MODE (mode, unsignedp, TREE_TYPE (arg));
+	if (mode == GET_MODE (DECL_INCOMING_RTL (arg))
+	    && mode != DECL_MODE (arg))
+	  {
+	    *pmode = DECL_MODE (arg);
+	    *punsignedp = unsignedp;
+	    return DECL_INCOMING_RTL (arg);
+	  }
+      }
+
+  return 0;
+}
+
+#endif
+
 /* Compute the size and offset from the start of the stacked arguments for a
    parm passed in mode PASSED_MODE and with type TYPE.
 
