@@ -9404,7 +9404,7 @@ Mon Sep 29 11:05:54 1997  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* lang-options.h: New -Wold-style-cast flag.
 	* cp-tree.h (warn_old_style_cast): New variable.
-	* decl2.c (warn_old_style_cast): Likewise..
+	* decl2.c (warn_old_style_cast): Likewise.
 	(lang_decode_option): Support -Wold-style-cast.
 	(reparse_absdcl_as_casts): Produce old-style-cast warning.
 

@@ -262,9 +262,9 @@ Fri Dec 11 01:12:45 1998  Zack Weinberg <zack@rabi.columbia.edu>
 
 1998-12-09  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
-	* gcc.dg/ultrasp1.c: empty dg-options, avoid `long long' warnings
+	* gcc.dg/ultrasp1.c: Empty dg-options, avoid `long long' warnings.
 
-	* g++.old-deja/g++.pt/instantiate6.C: linker error, not	crash
+	* g++.old-deja/g++.pt/instantiate6.C: Linker error, not	crash.
 
 Tue Dec  8 22:50:04 1998  Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
 
@@ -292,9 +292,9 @@ Sun Dec  6 00:40:12 1998  Richard Henderson  <rth@cygnus.com>
 
 1998-12-04  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
-	* g++.old-deja/g++.other/using5.C: usified using[567].C here
-	* g++.old-deja/g++.other/using6.C: removed
-	* g++.old-deja/g++.other/using7.C: Mark Mitchel removed it
+	* g++.old-deja/g++.other/using5.C: Usified using[567].C here.
+	* g++.old-deja/g++.other/using6.C: Removed.
+	* g++.old-deja/g++.other/using7.C: Mark Mitchel removed it.
 
 	* g++.old-deja/g++.pt/spec20.C: Re-insert non-bogus ERROR marks.
 
@@ -304,12 +304,12 @@ Sun Dec  6 00:40:12 1998  Richard Henderson  <rth@cygnus.com>
 
 	* g++.old-deja/g++.pt/overload7.C: New test.
 
-	* g++.old-deja/g++.pt/spec20.C: ERROR marks were bogus
+	* g++.old-deja/g++.pt/spec20.C: ERROR marks were bogus.
 
-	* lib/old-dejagnu.exp (old-dejagnu): ignore collect recompiling
-	and relinking messages
-	* lib/g++.exp (g++_target_compile): remove .rpo file when
-	compiling with -frepo
+	* lib/old-dejagnu.exp (old-dejagnu): Ignore collect recompiling
+	and relinking messages.
+	* lib/g++.exp (g++_target_compile): Remove .rpo file when
+	compiling with -frepo.
 
 1998-12-01  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
@@ -376,30 +376,30 @@ Mon Nov  2 11:16:03 1998  Doug Evans  <devans@canuck.cygnus.com>
 
 1998-10-31  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
-	* g++.old-deja/g++.pt/sizeof3.C: a similar testcase not involving
-	base classes
+	* g++.old-deja/g++.pt/sizeof3.C: A similar testcase not involving
+	base classes.
 
-	* g++.old-deja/g++.pt/sizeof2.C: incorrect specialization of base
-	template is selected
+	* g++.old-deja/g++.pt/sizeof2.C: Incorrect specialization of base
+	template is selected.
 
-	* g++.old-deja/g++.ext/arrnew2.C: if new T[n](i) is accepted for
+	* g++.old-deja/g++.ext/arrnew2.C: If new T[n](i) is accepted for
 	classes, it should be accepted for all types.
 
-	* g++.old-deja/g++.eh/sjlj1.C: test checked sjlj-exception
+	* g++.old-deja/g++.eh/sjlj1.C: Test checked sjlj-exception.
 
-	* g++.old-deja/g++.pt/spec24.C: ensure that template
-	specializations start with template headers
+	* g++.old-deja/g++.pt/spec24.C: Ensure that template
+	specializations start with template headers.
 
 1998-10-29  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
-	* g++.old-deja/g++.other/dcast2.C: cannot dynamic downcast &x
+	* g++.old-deja/g++.other/dcast2.C: Cannot dynamic downcast &x.
 
-	* g++.old-deja/g++.other/init9.C: test cross initialization of
-	non-POD types
+	* g++.old-deja/g++.other/init9.C: Test cross initialization of
+	non-POD types.
 
 1998-10-27  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
-	* lib/old-dejagnu.exp (old-dejagnu): document `Additional sources'
+	* lib/old-dejagnu.exp (old-dejagnu): Document `Additional sources'.
 
 Thu Oct 22 16:01:44 1998  Andreas Schwab <schwab@issan.informatik.uni-dortmund.de>
 
@@ -421,7 +421,7 @@ Wed Oct 14 21:11:19 1998  Robert Lipe <robertl@dgii.com>
 
 1998-10-13  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
-	* lib/old-dejagnu.exp (old-dejagnu): support `Additional sources:'
+	* lib/old-dejagnu.exp (old-dejagnu): Support `Additional sources:'.
 
 1998-10-12  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
@@ -430,34 +430,34 @@ Wed Oct 14 21:11:19 1998  Robert Lipe <robertl@dgii.com>
  	expression.
 
 	* g++.old-deja/g++.pt/instantiate5.C: New test.  `global
-	constructors' name is not unique
-	* g++.old-deja/g++.pt/instantiate5.cc: ditto
-	* g++.old-deja/g++.pt/instantiate5-main.cc: ditto
+	constructors' name is not unique.
+	* g++.old-deja/g++.pt/instantiate5.cc: Ditto.
+	* g++.old-deja/g++.pt/instantiate5-main.cc: Ditto.
 
-	* g++.old-deja/g++.other/init8.C: New test.  uninitialized
- 	automatic array of const is ill-formed
+	* g++.old-deja/g++.other/init8.C: New test.  Uninitialized
+ 	automatic array of const is ill-formed.
 
-	* g++.old-deja/g++.pt/ttp53.C: New test.  incorrect substitution
+	* g++.old-deja/g++.pt/ttp53.C: New test.  Incorrect substitution
 	of template parameter?
 
-	* g++.old-deja/g++.other/conv3.C: New test.  conversion discards
-	const
+	* g++.old-deja/g++.other/conv3.C: New test.  Conversion discards
+	const.
 
-	* g++.old-deja/g++.other/pmf2.C: New test.  invalid
-	pointer-to-member expression
+	* g++.old-deja/g++.other/pmf2.C: New test.  Invalid
+	pointer-to-member expression.
 
-	* g++.old-deja/g++.other/friend5.C: New test.  bogus friend
-	declaration causes ICE
+	* g++.old-deja/g++.other/friend5.C: New test.  Bogus friend
+	declaration causes ICE.
 
 1998-10-11  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* g++.old-deja/g++.ns/main1.C: New test.  main() should only be
- 	reserved in the global namespace
+ 	reserved in the global namespace.
 
 	* g++.old-deja/g++.pt/instantiate4.C: New test: -frepo does not
-	generate needed virtual table
+	generate needed virtual table.
 
-	* lib/old-dejagnu.exp (old-dejagnu): support `Build then link:'
+	* lib/old-dejagnu.exp (old-dejagnu): Support `Build then link:'.
 
 1998-10-10  Dariush Eslimi  <eslimi@loran.com>
 
@@ -466,18 +466,18 @@ Wed Oct 14 21:11:19 1998  Robert Lipe <robertl@dgii.com>
 
 1998-10-10  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
-	* g++.old-deja/g++.brendan/parse3.C: XFAILs, not ERRORs
-	* g++.old-deja/g++.brendan/parse5.C: XFAILs, not ERRORs
-	* g++.old-deja/g++.brendan/parse6.C: XFAILs, not ERRORs
+	* g++.old-deja/g++.brendan/parse3.C: XFAILs, not ERRORs.
+	* g++.old-deja/g++.brendan/parse5.C: XFAILs, not ERRORs.
+	* g++.old-deja/g++.brendan/parse6.C: XFAILs, not ERRORs.
 
 	* g++.old-deja/g++.other/using5.C: New test; using decl from base
- 	class should be usable as argument of member function
+ 	class should be usable as argument of member function.
 	* g++.old-deja/g++.other/using6.C: New test; using decl from base
- 	class should be usable as return type of member function
+ 	class should be usable as return type of member function.
 	* g++.old-deja/g++.other/using7.C: New test; using decl from base
- 	class should be usable as type of data member
+ 	class should be usable as type of data member.
 
-	* g++.old-deja/g++.ns/extern1.C: fix XFAIL mark
+	* g++.old-deja/g++.ns/extern1.C: Fix XFAIL mark.
 
 Fri Oct  9 19:19:19 1998  Jeffrey A Law  (law@cygnus.com)
 
@@ -498,10 +498,10 @@ Thu Oct  8 19:14:05 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* g++.old-deja/g++.ns/extern1.C: New test.  Extern declarations
  	within functions should introduce names into the innermost
- 	enclosing namespace
+ 	enclosing namespace.
 
 	* g++.old-deja/g++.other/init7.C: New test.  Retry initialization
- 	of static locals if first initialization throws
+ 	of static locals if first initialization throws.
 
 Wed Oct  7 12:00:20 1998  Jim Wilson  <wilson@cygnus.com>
 
@@ -523,34 +523,35 @@ Wed Oct  7 12:00:20 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* g++.old-deja/g++.pt/overload5.C: New test; initialize variable
  	with pointer to template function, for which no argument deduction
- 	is possible
+ 	is possible.
 
 	* g++.old-deja/g++.pt/overload4.C: New test; passing pointer to
 	specialization of template function as argument to template
-	function
+	function.
 
 	* g++.old-deja/g++.other/access2.C: New test; Inner class
-	shouldn't have privileged access to Outer's names
+	shouldn't have privileged access to Outer's names.
 
 1998-10-03  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* g++.old-deja/g++.pt/friend34.C: New test; name injection of
 	friend template declared within template class conflicts with
-	nested class of the same name
+	nested class of the same name.
 
 	* g++.old-deja/g++.other/badopt1.C: New test; post-increment
- 	is ignored
+ 	is ignored.
 
 	* g++.old-deja/g++.other/decl1.C: New test; incorrect parsing of
-	object with direct initializer as function declaration
+	object with direct initializer as function declaration.
 
-	* g++.old-deja/g++.other/decl2.C: New test; duplicate initializers
+	* g++.old-deja/g++.other/decl2.C: New test; duplicate
+	initializers.
 
 	* g++.old-deja/g++.other/null2.C: New test; conditional operator
- 	involving const pointer and NULL produces incorrect result
+ 	involving const pointer and NULL produces incorrect result.
 
 	* g++.old-deja/g++.other/typename1.C: New test; template-dependent
- 	type name without `typename' should be rejected with -pedantic
+ 	type name without `typename' should be rejected with -pedantic.
 
 Fri Oct  2 21:55:58 1998  Richard Henderson  <rth@cygnus.com>
 
@@ -574,20 +575,21 @@ Thu Oct  1 19:05:20 1998  Jeffrey A Law  (law@cygnus.com)
 
 1998-09-28  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
-	* g++.old-deja/g++.other/bitfld1.C: expected failure
-	* g++.old-deja/g++.other/nested2.C: ditto
-	* g++.old-deja/g++.robertl/eb132.C: no longer an expected failure
+	* g++.old-deja/g++.other/bitfld1.C: Expected failure.
+	* g++.old-deja/g++.other/nested2.C: Ditto.
+	* g++.old-deja/g++.robertl/eb132.C: No longer an expected
+	failure.
 
 1998-09-26  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
-	* g++.old-deja/g++.other/bitfld1.C: built-in operator!= should be
-	preferred over template operator!= for enum bitfields
+	* g++.old-deja/g++.other/bitfld1.C: Built-in operator!= should be
+	preferred over template operator!= for enum bitfields.
 
 1998-09-18  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
-	* g++.old-deja/g++.other/nested2.C: different virtual base classes
+	* g++.old-deja/g++.other/nested2.C: Different virtual base classes
  	that happen to have the same base name, but in different scopes,
- 	are incorrectly rejected
+ 	are incorrectly rejected.
 
 1998-09-16  Richard Henderson  <rth@cygnus.com>
 
@@ -596,28 +598,28 @@ Thu Oct  1 19:05:20 1998  Jeffrey A Law  (law@cygnus.com)
 
 1998-09-15  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
-	* g++.old-deja/g++.other/static2.C: invocation of static data
- 	member of type pointer-to-function denoted as non-static member
+	* g++.old-deja/g++.other/static2.C: Invocation of static data
+ 	member of type pointer-to-function denoted as non-static member.
 
-	* g++.old-deja/g++.other/typedef5.C: add some more tests involving 
-	checks involving function types and aliases
+	* g++.old-deja/g++.other/typedef5.C: Add some more tests involving 
+	checks involving function types and aliases.
 
 1998-09-12  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
-	* g++.old-deja/g++.other/typedef5.C: check whether typedefs can be
- 	redefined to the same non-trivial type
+	* g++.old-deja/g++.other/typedef5.C: Check whether typedefs can be
+ 	redefined to the same non-trivial type.
 
-	* g++.old-deja/g++.pt/explicit73.C: test for proper
+	* g++.old-deja/g++.pt/explicit73.C: Test for proper
  	namespace-qualification of template specializations declared in
- 	other namespaces
+ 	other namespaces.
 
-	* g++.old-deja/g++.other/friend4.C: check whether it is possible
+	* g++.old-deja/g++.other/friend4.C: Check whether it is possible
 	to declare a subset of the specializations of a template function
-	as friends of specializations of a template class
+	as friends of specializations of a template class.
 
-	* g++.old-deja/g++.pt/explicit71.C: make sure specializations of
+	* g++.old-deja/g++.pt/explicit71.C: Make sure specializations of
  	member templates that do not fully specialize the enclosing
- 	template class are rejected
+ 	template class are rejected.
 
 1998-09-11  Dave Love  <d.love@dl.ac.uk>
 
@@ -634,7 +636,7 @@ Thu Oct  1 19:05:20 1998  Jeffrey A Law  (law@cygnus.com)
 
 1998-09-04  Reid M. Pinchback  <reidmp@MIT.EDU>, Alexandre Oliva  <oliva@dcc.unicamp.br>
 
-	* g++.old-deja/g++.pt/explicit72.C: ensure that char and
+	* g++.old-deja/g++.pt/explicit72.C: Ensure that char and
 	(un)signed char are different types for template specialization
 	purposes.
 
@@ -787,8 +789,8 @@ Thu Jul  9 23:07:45 1998  Martin von Loewis <martin@mira.isdn.cs.tu-berlin.de>
 
 Thu Jul  9 22:44:49 1998  Alexandre Oliva   <oliva@dcc.unicamp.br>
 
-        * g++.old-deja/g++.other/partspec1.C: test matching of partial
-        specialization with typedef'ed names used as array indexes.
+	* g++.old-deja/g++.other/partspec1.C: Test matching of partial
+	specialization with typedef'ed names used as array indexes.
 
 Thu Jul  9 00:38:51 1998  Jeffrey A Law  (law@cygnus.com)
 
@@ -1039,7 +1041,7 @@ Wed Mar 11 00:03:49 1998  Robert Lipe  <robertl@dgii.com>
 
 Tue Mar 10 00:31:51 1998  Alexandre Oliva   <oliva@dcc.unicamp.br>
 
-        * g++.old-deja/g++.other/friend1.C: New test.
+	* g++.old-deja/g++.other/friend1.C: New test.
 
 1998-02-18  Dave Love  <d.love@dl.ac.uk>
 

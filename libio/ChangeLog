@@ -19,7 +19,7 @@ Wed Mar 24 22:36:45 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 
 1999-03-24  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
-	* gen-params (CONFIG_NM): test ... -o ... is not portable
+	* gen-params (CONFIG_NM): `test ... -o ...' is not portable.
 
 Thu Mar 11 01:07:55 1999  Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
 
@@ -65,8 +65,8 @@ Wed Feb  3 22:05:41 1999  H.J. Lu  (hjl@gnu.org)
 
 1998-10-12  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
-	* config.shared (depend.new): delete libc-lock.h from
-	dependencies, and fix _G_config.h -> $(_G_CONFIG_H) rule
+	* config.shared (depend.new): Delete libc-lock.h from
+	dependencies, and fix _G_config.h -> $(_G_CONFIG_H) rule.
 	* depend: Rebuilt.
 	
 Sun Oct 11 01:51:42 1998  Jeffrey A Law  (law@cygnus.com)
