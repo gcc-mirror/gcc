@@ -1,3 +1,11 @@
+Wed Oct  1 08:41:38 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* Makefile.in (g++FAQ.*): New rules.
+	(CONFLICTS): Update.
+	* g++FAQ.texi: Moved from libg++.
+
+	* parse.y (PFUNCNAME): Only specify the type once.
+
 1997-10-01  Brendan Kehoe  <brendan@lasher.cygnus.com>
 
 	* lex.c (real_yylex): Clean up the code to fully behave the way
