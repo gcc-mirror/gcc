@@ -1,3 +1,7 @@
+Thu Oct 28 03:37:50 1999  Peter Gerwinski <peter@gerwinski.de>
+
+	* tree.def (PLACEHOLDER_EXPR): Update comments.
+
 Thu Oct 28 06:47:32 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-common.c (check_format_info): Avoid non-literal format string
