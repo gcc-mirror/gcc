@@ -1870,7 +1870,7 @@ dtors_section()							\
 }
 
 #define ASM_OUTPUT_REG_PUSH(file, v) \
-  fprintf ((file), "\tmov.l\tr%d,-@r15\n", (v));
+  fprintf ((file), "\tmov.l\tr%d,@-r15\n", (v));
 
 #define ASM_OUTPUT_REG_POP(file, v) \
   fprintf ((file), "\tmov.l\t@r15+,r%d\n", (v));
