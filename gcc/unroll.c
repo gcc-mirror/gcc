@@ -841,9 +841,9 @@ unroll_loop (loop, insn_count, end_insert_before, strength_reduce_p)
 	 these pseudo registers have valid regno_first_uid info.  */
       for (r = FIRST_PSEUDO_REGISTER; r < max_reg_before_loop; ++r)
 	if (REGNO_FIRST_UID (r) > 0 && REGNO_FIRST_UID (r) <= max_uid_for_loop
-	    && uid_luid[REGNO_FIRST_UID (r)] >= copy_start_luid
+	    && REGNO_FIRST_LUID (r) >= copy_start_luid
 	    && REGNO_LAST_UID (r) > 0 && REGNO_LAST_UID (r) <= max_uid_for_loop
-	    && uid_luid[REGNO_LAST_UID (r)] <= copy_end_luid)
+	    && REGNO_LAST_LUID (r) <= copy_end_luid)
 	  {
 	    /* However, we must also check for loop-carried dependencies.
 	       If the value the pseudo has at the end of iteration X is
@@ -1457,7 +1457,7 @@ precondition_loop_p (loop, initial_value, final_value, increment, mode)
   /* Fail if loop_info->iteration_var is not live before loop_start,
      since we need to test its value in the preconditioning code.  */
 
-  if (uid_luid[REGNO_FIRST_UID (REGNO (loop_info->iteration_var))]
+  if (REGNO_FIRST_LUID (REGNO (loop_info->iteration_var))
       > INSN_LUID (loop_start))
     {
       if (loop_dump_stream)
@@ -2469,10 +2469,10 @@ find_splittable_regs (loop, unroll_type, end_insert_before, unroll_number)
       biv_final_value = 0;
       if (unroll_type != UNROLL_COMPLETELY
 	  && (loop->exit_count || unroll_type == UNROLL_NAIVE)
-	  && (uid_luid[REGNO_LAST_UID (bl->regno)] >= INSN_LUID (loop_end)
+	  && (REGNO_LAST_LUID (bl->regno) >= INSN_LUID (loop_end)
 	      || ! bl->init_insn
 	      || INSN_UID (bl->init_insn) >= max_uid_for_loop
-	      || (uid_luid[REGNO_FIRST_UID (bl->regno)]
+	      || (REGNO_FIRST_LUID (bl->regno)
 		  < INSN_LUID (bl->init_insn))
 	      || reg_mentioned_p (bl->biv->dest_reg, SET_SRC (bl->init_set)))
 	  && ! (biv_final_value = final_biv_value (loop, bl)))
@@ -2698,7 +2698,7 @@ find_splittable_givs (loop, bl, unroll_type, increment, unroll_number)
 		      || (REGNO_FIRST_UID (REGNO (v->dest_reg))
 			  != INSN_UID (XEXP (tem, 0)))))
 	      /* Line above always fails if INSN was moved by loop opt.  */
-	      || (uid_luid[REGNO_LAST_UID (REGNO (v->dest_reg))]
+	      || (REGNO_LAST_LUID (REGNO (v->dest_reg))
 		  >= INSN_LUID (loop->end)))
 	  && ! (final_value = v->final_value))
 	continue;

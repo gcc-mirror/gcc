@@ -1,5 +1,12 @@
 2001-01-01  Michael Hayes  <mhayes@redhat.com>
 
+	* loop.h (REGNO_FIRST_LUID, REGNO_LAST_LUID): Define.
+	* loop.c (REGNO_FIRST_LUID, REGNO_LAST_LUID): Use in place of
+	direct access to uid_luid array.
+	* unroll.c (REGNO_FIRST_LUID, REGNO_LAST_LUID): Likewise.
+
+2001-01-01  Michael Hayes  <mhayes@redhat.com>	
+
 	* loop.h (struct loop_movables): New.
 	(LOOP_MOVABLES): New.
 	(struct loop_info): Add movables field.
