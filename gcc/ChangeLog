@@ -1,3 +1,10 @@
+2001-10-08  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cppfiles.c (open_file): Don't mark zero-length files
+	never-reread here.  Don't output diagnostics here either.
+	(stack_include_file): Mark them never-reread here.
+	(_cpp_read_file): Update.
+
 2001-10-08  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/sol2.h (UNALIGNED_DOUBLE_INT_ASM_OP): New.

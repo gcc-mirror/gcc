@@ -248,30 +248,15 @@ open_file (pfile, filename)
 
   if (file->fd != -1 && fstat (file->fd, &file->st) == 0)
     {
+      if (!S_ISDIR (file->st.st_mode))
+	return file;
       /* If it's a directory, we return null and continue the search
 	 as the file we're looking for may appear elsewhere in the
 	 search path.  */
-      if (S_ISDIR (file->st.st_mode))
-	errno = ENOENT;
-      else
-	{
-	  /* Mark a regular, zero-length file never-reread now.  */
-	  if (S_ISREG (file->st.st_mode) && file->st.st_size == 0)
-	    {
-	      _cpp_never_reread (file);
-	      close (file->fd);
-	      file->fd = -1;
-	    }
-
-	  return file;
-	}
+      errno = ENOENT;
     }
 
-  /* Don't issue an error message if the file doesn't exist.  */
   file->err_no = errno;
-  if (errno != ENOENT && errno != ENOTDIR)
-    cpp_error_from_errno (pfile, file->name);
-
   return 0;
 }
 
@@ -302,9 +287,14 @@ stack_include_file (pfile, inc)
   /* Not in cache?  */
   if (! inc->buffer)
     {
-      /* If an error occurs, do not try to read this file again.  */
-      if (read_include_file (pfile, inc))
+      /* Mark a regular, zero-length file never-reread.  Zero-length
+	 files are stacked the first time, so preprocessing a main
+	 file of zero length does not raise an error.  */
+      if (S_ISREG (inc->st.st_mode) && inc->st.st_size == 0)
+	_cpp_never_reread (inc);
+      else if (read_include_file (pfile, inc))
 	{
+	  /* If an error occurs, do not try to read this file again.  */
 	  _cpp_never_reread (inc);
 	  return false;
 	}
@@ -710,14 +700,14 @@ _cpp_read_file (pfile, fname)
      const char *fname;
 {
   struct include_file *f = open_file (pfile, fname);
-  bool stacked = false;
 
   if (f == NULL)
-    cpp_error_from_errno (pfile, fname);
-  else
-    stacked = stack_include_file (pfile, f);
+    {
+      cpp_error_from_errno (pfile, fname);
+      return false;
+    }
 
-  return stacked;
+  return stack_include_file (pfile, f);
 }
 
 /* Do appropriate cleanup when a file buffer is popped off the input
