@@ -11015,6 +11015,8 @@ require_complete_types_for_parms (parms)
 	    error ("parameter has incomplete type");
 	  TREE_TYPE (parms) = error_mark_node;
 	}
+      else
+	layout_decl (parms, 0);
 #if 0
       /* If the arg types are incomplete in a declaration,
 	 they must include undefined tags.

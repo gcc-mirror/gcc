@@ -1,3 +1,8 @@
+1998-11-21  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (require_complete_types_for_parms): Call layout_decl
+	after we've completed the type.
+
 1998-11-21  Martin von Löwis  <loewis@informatik.hu-berlin.de>
 
 	* decl2.c (validate_nonmember_using_decl): Allow using templates
