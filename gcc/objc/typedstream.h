@@ -113,6 +113,9 @@ int objc_read_array (TypedStream* stream, const char* type,
 		     int count, void* data);
 
 int objc_write_object (TypedStream* stream, id object);
+int objc_read_object (TypedStream* stream, id* object);
+
+
 
 /*
 ** Open a typed stream for reading or writing.  MODE may be either of
