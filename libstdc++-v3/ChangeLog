@@ -1,3 +1,15 @@
+2003-07-04  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/bits/stl_list.h: Fully qualify standard
+	functions with std::, thus avoiding Koenig lookup.
+	* include/bits/stl_queue.h: Likewise.
+	* include/bits/stl_raw_storage_iter.h: Likewise.
+	* include/bits/stl_tempbuf.h: Likewise.
+	* include/bits/stl_tree.h: Likewise.
+	* include/bits/stl_uninitialized.h: Likewise.
+	* include/bits/stl_vector.h: Likewise.
+	* include/ext/rope: Change includes order.	
+
 2003-07-04  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* configure.host (fpos_include_dir): Fix.

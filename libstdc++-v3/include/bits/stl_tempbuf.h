@@ -99,7 +99,7 @@ template <class _ForwardIterator, class _Tp>
 
   void _M_initialize_buffer(const _Tp&, __true_type) {}
   void _M_initialize_buffer(const _Tp& val, __false_type) {
-    uninitialized_fill_n(_M_buffer, _M_len, val);
+    std::uninitialized_fill_n(_M_buffer, _M_len, val);
   }
 
 public:
@@ -133,7 +133,7 @@ public:
   }
  
   ~_Temporary_buffer() {  
-    _Destroy(_M_buffer, _M_buffer + _M_len);
+    std::_Destroy(_M_buffer, _M_buffer + _M_len);
     free(_M_buffer);
   }
 
