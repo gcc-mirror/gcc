@@ -1,3 +1,20 @@
+2004-08-05  Adam Nemet  <anemet@lnxw.com>
+
+	* config.gcc (case i[34567]86-*-lynxos*): Update to LynxOS 4.0.
+	(case rs6000-*-lynxos*): Rename it to powerpc-*-lynxos*.  Update
+	to LynxOS 4.0.
+	* gthr-lynx.h: New file.
+	* config/lynx-ng.h: Remove file.
+	* config/lynx.h: Update to LynxOS 4.0.
+	* config/t-lynx: New file.
+	* config/i386/lynx-ng.h: Remove file.
+	* config/i386/lynx.h: Update to LynxOS 4.0.
+	* config/rs6000/lynxbase.h: Remove file.
+	* config/rs6000/lynx.h: Update to LynxOS 4.0.
+	* config/rs6000/t-lynx: New file.
+	* doc/install.texi (Options specification): Remove reference to
+	LynxOS from systems where --with-gnu-as makes a difference.
+
 2004-08-05  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* c-common.c (c_stddef_cpp_builtins): Define __INTMAX_TYPE__ and

@@ -1,6 +1,8 @@
 /* Definitions for Rs6000 running LynxOS.
-   Copyright (C) 1995, 1996, 2000, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 2000, 2002, 2003, 2004
+   Free Software Foundation, Inc.
    Contributed by David Henkel-Wallace, Cygnus Support (gumby@cygnus.com)
+   Rewritten by Adam Nemet, LynuxWorks Inc.
 
    This file is part of GCC.
 
@@ -19,69 +21,91 @@
    Free Software Foundation, 59 Temple Place - Suite 330, Boston,
    MA 02111-1307, USA.  */
 
-/* Print subsidiary information on the compiler version in use.  */
-#define TARGET_VERSION fprintf (stderr, " (LynxOS-RS/6000)");
+/* Override the definition in sysv4.h.  */
 
-/* LynxOS has signed chars, regardless of what most R/S 6000 systems do */
-#undef  DEFAULT_SIGNED_CHAR
-#define DEFAULT_SIGNED_CHAR 1
+#undef TARGET_VERSION
+#define TARGET_VERSION fputs (" (PowerPC/LynxOS)", stderr);
 
-#undef  TARGET_OS_CPP_BUILTINS
-#define TARGET_OS_CPP_BUILTINS()         \
-  do                                     \
-    {                                    \
-      builtin_assert ("cpu=rs6000");     \
-      builtin_assert ("machine=rs6000"); \
-      builtin_assert ("system=lynx");    \
-      builtin_assert ("system=unix");    \
-      builtin_define_std ("Lynx");       \
-      builtin_define ("_IBMR2");         \
-      builtin_define_std ("unix");       \
-      builtin_define_std ("rs6000");     \
-      builtin_define_std ("lynx");       \
-      builtin_define_std ("LYNX");       \
-    }                                    \
+/* Undefine the definition to enable the LynxOS default from the
+   top-level lynx.h.  */
+
+#undef SUBTARGET_EXTRA_SPECS
+
+/* Get rid off the spec definitions from rs6000/sysv4.h.  */
+
+#undef CPP_SPEC
+#define CPP_SPEC \
+"%{msoft-float: -D_SOFT_FLOAT} \
+ %(cpp_cpu) \
+ %(cpp_os_lynx)"
+
+/* LynxOS only supports big-endian on PPC so we override the
+   definition from sysv4.h.  Since the LynxOS 4.0 compiler was set to
+   return every structure in memory regardless of their size we have
+   to emulate the same behavior here with disabling the SVR4 structure
+   returning.  */
+
+#undef CC1_SPEC
+#define CC1_SPEC \
+"%{G*} %{mno-sdata:-msdata=none} \
+ %{maltivec:-mabi=altivec} \
+ -mno-svr4-struct-return"
+
+#undef ASM_SPEC
+#define ASM_SPEC \
+"%(asm_cpu) \
+ %{.s: %{mregnames} %{mno-regnames}} \
+ %{.S: %{mregnames} %{mno-regnames}}"
+
+#undef STARTFILE_SPEC
+#undef ENDFILE_SPEC
+#undef LIB_SPEC
+#undef LINK_SPEC
+#define LINK_SPEC \
+"%{!msdata=none:%{G*}} %{msdata=none:-G0} \
+ %(link_os_lynx)"
+
+/* Override the definition from sysv4.h.  */
+
+#undef TARGET_OS_CPP_BUILTINS
+#define TARGET_OS_CPP_BUILTINS()		\
+  do						\
+    {						\
+      builtin_define ("__BIG_ENDIAN__");	\
+      builtin_define ("__powerpc__");		\
+      builtin_assert ("cpu=powerpc");		\
+      builtin_assert ("machine=powerpc");	\
+      builtin_define ("__PPC__");		\
+    }						\
   while (0)
 
-#undef  LINK_SPEC
-#define LINK_SPEC "-T0x10001000 -H0x1000 -D0x20000000 -btextro -bhalt:4 -bnodelcsect -bnso -bro -bnoglink %{v} %{b*}"
+/* Override the rs6000.h definition.  */
 
-#undef  LIB_SPEC
-#define LIB_SPEC "%{mthreads:-L/lib/thread/}  \
-  %{msystem-v:-lc_v -lm.v}  \
-  %{!msystem-v:%{mposix:-lc_p} -lc -lm}"
+#undef ASM_APP_ON
+#define ASM_APP_ON "#APP\n"
 
-#undef  STARTFILE_SPEC
-#define STARTFILE_SPEC "%{p:%{mthreads:thread/pinit.o%s}%{!mthreads:pinit.o%s}}%{!p:%{msystem-v:vinit.o%s -e_start}%{!msystem-v:%{mthreads:thread/init.o%s}%{!mthreads:init.o%s}}}"
+/* Override the rs6000.h definition.  */
 
-#undef ENDFILE_SPEC
+#undef ASM_APP_OFF
+#define ASM_APP_OFF "#NO_APP\n"
 
-/* This can become more refined as we have more powerpc options.  */
-#undef  ASM_SPEC
-#define ASM_SPEC "-u %(asm_cpu)"
+#undef EXTRA_SUBTARGET_SWITCHES
+#define EXTRA_SUBTARGET_SWITCHES SUBTARGET_OS_LYNX_SWITCHES
 
-#undef  SUBTARGET_SWITCHES
-#define SUBTARGET_SWITCHES \
-    {"threads",		MASK_THREADS},		\
-    {"posix",		MASK_POSIX},		\
-    {"system-v",	MASK_SYSTEM_V},
+/* LynxOS does not do anything with .fixup plus let's not create
+   writable section for linkonce.r and linkonce.t.  */
 
-#undef  SUBTARGET_OVERRIDE_OPTIONS
-#define SUBTARGET_OVERRIDE_OPTIONS \
-do {								\
-  if (TARGET_SYSTEM_V && profile_flag)				\
-    warning ("-msystem-v and -p are incompatible");		\
-  if (TARGET_SYSTEM_V && TARGET_THREADS)			\
-    warning ("-msystem-v and -mthreads are incompatible");	\
-} while (0)
+#undef RELOCATABLE_NEEDS_FIXUP
 
-/* For collect2 */
-#define OBJECT_FORMAT_NONE
-#undef OBJECT_FORMAT_COFF
-#undef MD_EXEC_PREFIX
-#undef REAL_LD_FILE_NAME
-#undef REAL_STRIP_FILE_NAME
+/* Override these from rs6000.h with the generic definition.  */
 
-/* LynxOS doesn't have mcount.  */
-#undef  FUNCTION_PROFILER
-#define FUNCTION_PROFILER(file, profile_label_no)
+#undef SIZE_TYPE
+#undef ASM_OUTPUT_ALIGN
+#undef PREFERRED_DEBUGGING_TYPE
+
+/* The file rs6000.c defines TARGET_HAVE_TLS unconditionally to the
+   value of HAVE_AS_TLS.  HAVE_AS_TLS is true as gas support for TLS
+   is detected by configure.  Override the definition to false.  */
+
+#undef HAVE_AS_TLS
+#define HAVE_AS_TLS 0
