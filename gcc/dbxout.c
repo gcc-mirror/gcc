@@ -781,8 +781,11 @@ dbxout_type_methods (type)
 
 	  dbxout_type_method_1 (fndecl, debug_name);
 	}
-      putc (';', asmfile);
-      CHARS (1);
+      if (!need_prefix)
+	{
+          putc (';', asmfile);
+	  CHARS (1);
+	}
     }
 }
 
