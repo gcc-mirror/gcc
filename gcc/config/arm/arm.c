@@ -114,6 +114,9 @@ static void	 thumb_output_function_prologue PARAMS ((FILE *,
 							 HOST_WIDE_INT));
 static int	 arm_comp_type_attributes	PARAMS ((tree, tree));
 static void	 arm_set_default_type_attributes	PARAMS ((tree));
+static void	 arm_elf_asm_named_section	PARAMS ((const char *,
+							 unsigned int,
+							 unsigned int));
 #undef Hint
 #undef Mmode
 #undef Ulong
@@ -10632,3 +10635,38 @@ aof_dump_imports (f)
     }
 }
 #endif /* AOF_ASSEMBLER */
+
+/* Switch to an arbitrary section NAME with attributes as specified
+   by FLAGS.  ALIGN specifies any known alignment requirements for
+   the section; 0 if the default should be used.
+
+   Differs from the default elf version only in the prefix character
+   used before the section type.  */
+
+static void
+arm_elf_asm_named_section (name, flags, align)
+     const char *name;
+     unsigned int flags;
+     unsigned int align ATTRIBUTE_UNUSED;
+{
+  char flagchars[8], *f = flagchars;
+  const char *type;
+
+  if (!(flags & SECTION_DEBUG))
+    *f++ = 'a';
+  if (flags & SECTION_WRITE)
+    *f++ = 'w';
+  if (flags & SECTION_CODE)
+    *f++ = 'x';
+  if (flags & SECTION_SMALL)
+    *f++ = 's';
+  *f = '\0';
+
+  if (flags & SECTION_BSS)
+    type = "nobits";
+  else
+    type = "progbits";
+
+  fprintf (asm_out_file, "\t.section\t%s,\"%s\",%%%s\n",
+	   name, flagchars, type);
+}

@@ -83,28 +83,14 @@ func_ptr __DTOR_LIST__[1] = { (func_ptr) (-1) }
 asm (DTORS_SECTION_ASM_OP);				\
 func_ptr __DTOR_END__[1] = { (func_ptr) 0 };
 
-/* A C statement to output something to the assembler file to switch to section
-   NAME for object DECL which is either a FUNCTION_DECL, a VAR_DECL or
-   NULL_TREE.  Some target formats do not support arbitrary sections.  Do not
-   define this macro in such cases.  */
-#define ASM_OUTPUT_SECTION_NAME(STREAM, DECL, NAME, RELOC) 		\
-  do									\
-    {									\
-      if ((DECL) && TREE_CODE (DECL) == FUNCTION_DECL)			\
-	fprintf (STREAM, "\t.section %s,\"ax\",@progbits\n", (NAME));	\
-      else if ((DECL) && DECL_READONLY_SECTION (DECL, RELOC))		\
-	fprintf (STREAM, "\t.section %s,\"a\"\n", (NAME));		\
-      else								\
-	fprintf (STREAM, "\t.section %s,\"aw\"\n", (NAME));		\
-    }									\
-  while (0)
+/* Switch into a generic section.  */
+#define TARGET_ASM_NAMED_SECTION  default_elf_asm_named_section
 
 /* The ARM development system defines __main.  */
 #define NAME__MAIN "__gccmain"
 #define SYMBOL__MAIN __gccmain
 
 #define MAKE_DECL_ONE_ONLY(DECL) (DECL_WEAK (DECL) = 1)
-#define UNIQUE_SECTION_P(DECL) (DECL_ONE_ONLY (DECL))
 #define UNIQUE_SECTION(DECL,RELOC)				\
   do								\
     {								\

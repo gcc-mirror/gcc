@@ -971,33 +971,34 @@ decl_attributes (node, attributes, flags)
 	  break;
 
 	case A_SECTION:
-#ifdef ASM_OUTPUT_SECTION_NAME
-	  if ((TREE_CODE (decl) == FUNCTION_DECL
-	       || TREE_CODE (decl) == VAR_DECL)
-	      && TREE_CODE (TREE_VALUE (args)) == STRING_CST)
+	  if (targetm.have_named_sections)
 	    {
-	      if (TREE_CODE (decl) == VAR_DECL
-		  && current_function_decl != NULL_TREE
-		  && ! TREE_STATIC (decl))
-		error_with_decl (decl,
-		  "section attribute cannot be specified for local variables");
-	      /* The decl may have already been given a section attribute from
-		 a previous declaration.  Ensure they match.  */
-	      else if (DECL_SECTION_NAME (decl) != NULL_TREE
-		       && strcmp (TREE_STRING_POINTER (DECL_SECTION_NAME (decl)),
-				  TREE_STRING_POINTER (TREE_VALUE (args))) != 0)
-		error_with_decl (*node,
-				 "section of `%s' conflicts with previous declaration");
+	      if ((TREE_CODE (decl) == FUNCTION_DECL
+		   || TREE_CODE (decl) == VAR_DECL)
+		  && TREE_CODE (TREE_VALUE (args)) == STRING_CST)
+		{
+		  if (TREE_CODE (decl) == VAR_DECL
+		      && current_function_decl != NULL_TREE
+		      && ! TREE_STATIC (decl))
+		    error_with_decl (decl,
+				     "section attribute cannot be specified for local variables");
+		  /* The decl may have already been given a section attribute
+		     from a previous declaration.  Ensure they match.  */
+		  else if (DECL_SECTION_NAME (decl) != NULL_TREE
+			   && strcmp (TREE_STRING_POINTER (DECL_SECTION_NAME (decl)),
+				      TREE_STRING_POINTER (TREE_VALUE (args))) != 0)
+		    error_with_decl (*node,
+				     "section of `%s' conflicts with previous declaration");
+		  else
+		    DECL_SECTION_NAME (decl) = TREE_VALUE (args);
+		}
 	      else
-		DECL_SECTION_NAME (decl) = TREE_VALUE (args);
+		error_with_decl (*node,
+				 "section attribute not allowed for `%s'");
 	    }
 	  else
 	    error_with_decl (*node,
-			   "section attribute not allowed for `%s'");
-#else
-	  error_with_decl (*node,
-		  "section attributes are not supported for this target");
-#endif
+			     "section attributes are not supported for this target");
 	  break;
 
 	case A_ALIGNED:

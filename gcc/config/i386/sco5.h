@@ -75,10 +75,10 @@ Boston, MA 02111-1307, USA.  */
 #define GLOBAL_ASM_OP			"\t.globl\t"
 
 #undef EH_FRAME_SECTION_ASM_OP
-#define EH_FRAME_SECTION_ASM_OP_COFF	"\t.section\t.ehfram, \"x\""
-#define EH_FRAME_SECTION_ASM_OP_ELF	"\t.section\t.eh_frame, \"aw\""
-#define EH_FRAME_SECTION_ASM_OP	\
-  ((TARGET_ELF) ? EH_FRAME_SECTION_ASM_OP_ELF : EH_FRAME_SECTION_ASM_OP_COFF)
+#define EH_FRAME_SECTION_NAME_COFF	".ehfram"
+#define EH_FRAME_SECTION_NAME_ELF	".eh_frame"
+#define EH_FRAME_SECTION_NAME	\
+  ((TARGET_ELF) ? EH_FRAME_SECTION_NAME_ELF : EH_FRAME_SECTION_NAME_COFF)
 
 /* Avoid problems (long sectino names, forward assembler refs) with DWARF
    exception unwinding when we're generating COFF */
@@ -444,56 +444,14 @@ do {									\
 #define USER_LABEL_PREFIX ""
 
 /* 
- * Compensate for the difference between ELF and COFF assembler syntax.
- * Otherwise, this is cribbed from ../svr4.h.
  * We rename 'gcc_except_table' to the shorter name in preparation
- * for the day when we're ready to do DWARF2 eh unwinding under COFF 
+ * for the day when we're ready to do DWARF2 eh unwinding under COFF.
  */
-#undef ASM_OUTPUT_SECTION_NAME
-#define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME, RELOC) \
-do {									\
-  static struct section_info                                            \
-    {                                                                   \
-      struct section_info *next;                                        \
-      char *name;                                                       \
-      enum sect_enum {SECT_RW, SECT_RO, SECT_EXEC} type;                \
-    } *sections;                                                        \
-  struct section_info *s;                                               \
-  const char *mode;                                                     \
-  enum sect_enum type;                                                  \
-  const char *sname = NAME ;						\
-  if (strcmp(NAME, ".gcc_except_table") == 0) sname = ".gccexc" ;	\
-                                                                        \
-  for (s = sections; s; s = s->next)                                    \
-    if (!strcmp (NAME, s->name))                                        \
-      break;                                                            \
-                                                                        \
-  if (DECL && TREE_CODE (DECL) == FUNCTION_DECL)                        \
-    type = SECT_EXEC, mode = (TARGET_ELF) ? "ax" : "x" ;                \
-  else if (DECL && DECL_READONLY_SECTION (DECL, RELOC))                 \
-    type = SECT_RO, mode = "a";                                         \
-  else                                                                  \
-    type = SECT_RW, mode = (TARGET_ELF) ? "aw" : "w" ;                  \
-                                                                        \
-  if (s == 0)                                                           \
-    {                                                                   \
-      s = (struct section_info *) xmalloc (sizeof (struct section_info));  \
-      s->name = xmalloc ((strlen (NAME) + 1) * sizeof (*NAME));         \
-      strcpy (s->name, NAME);                                           \
-      s->type = type;                                                   \
-      s->next = sections;                                               \
-      sections = s;                                                     \
-      fprintf (FILE, ".section\t%s,\"%s\"%s\n", sname, mode,		\
-		(TARGET_ELF) ? ",@progbits" : "" );    			\
-    }                                                                   \
-  else                                                                  \
-    {                                                                   \
-      if (DECL && s->type != type)                                      \
-        error_with_decl (DECL, "%s causes a section type conflict");    \
-                                                                        \
-      fprintf (FILE, ".section\t%s\n", sname);                          \
-    }                                                                   \
-} while (0)
+#define EXCEPTION_SECTION()		named_section (NULL, ".gccexc", 1)
+
+/* Switch into a generic section.  */
+#undef TARGET_ASM_NAMED_SECTION
+#define TARGET_ASM_NAMED_SECTION  sco_asm_named_section
 
 #undef ASM_OUTPUT_SKIP
 #define ASM_OUTPUT_SKIP(FILE,SIZE) \
@@ -925,7 +883,7 @@ compiler at the end of the day. Onward we go ...
 # undef FINI_SECTION_ASM_OP
 # undef CTORS_SECTION_ASM_OP
 # undef DTORS_SECTION_ASM_OP
-# undef EH_FRAME_SECTION_ASM_OP
+# undef EH_FRAME_SECTION_NAME
 # undef CTOR_LIST_BEGIN
 # undef CTOR_LIST_END
 # undef DO_GLOBAL_CTORS_BODY
@@ -936,13 +894,13 @@ compiler at the end of the day. Onward we go ...
 #  define FINI_SECTION_ASM_OP FINI_SECTION_ASM_OP_ELF
 #  define DTORS_SECTION_ASM_OP DTORS_SECTION_ASM_OP_ELF
 #  define CTORS_SECTION_ASM_OP CTORS_SECTION_ASM_OP_ELF
-#  define EH_FRAME_SECTION_ASM_OP EH_FRAME_SECTION_ASM_OP_ELF
+#  define EH_FRAME_SECTION_NAME EH_FRAME_SECTION_NAME_ELF
 # else /* ! _SCO_ELF */
 #  define INIT_SECTION_ASM_OP INIT_SECTION_ASM_OP_COFF
 #  define FINI_SECTION_ASM_OP FINI_SECTION_ASM_OP_COFF
 #  define DTORS_SECTION_ASM_OP DTORS_SECTION_ASM_OP_COFF
 #  define CTORS_SECTION_ASM_OP CTORS_SECTION_ASM_OP_COFF
-#  define EH_FRAME_SECTION_ASM_OP EH_FRAME_SECTION_ASM_OP_COFF
+#  define EH_FRAME_SECTION_NAME EH_FRAME_SECTION_NAME_COFF
 #  define CTOR_LIST_BEGIN asm (INIT_SECTION_ASM_OP); asm ("pushl $0")
 #  define CTOR_LIST_END CTOR_LIST_BEGIN
 #  define DO_GLOBAL_CTORS_BODY						\

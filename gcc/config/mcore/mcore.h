@@ -1137,9 +1137,8 @@ switch_to_section (section, decl)				\
     }								\
 }
 
-
-#define ASM_OUTPUT_SECTION(file, nam) \
-   do { fprintf (file, "\t.section\t%s\n", nam); } while (0) 
+/* Switch into a generic section.  */
+#define TARGET_ASM_NAMED_SECTION  mcore_asm_named_section
 
 /* This is how to output an insn to push a register on the stack.
    It need not be very fast code.  */

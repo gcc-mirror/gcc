@@ -130,6 +130,14 @@ static void rs6000_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void rs6000_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 static rtx rs6000_emit_set_long_const PARAMS ((rtx,
   HOST_WIDE_INT, HOST_WIDE_INT));
+#if TARGET_ELF
+static unsigned int rs6000_elf_section_type_flags PARAMS ((tree, const char *,
+							   int));
+#endif
+#ifdef OBJECT_FORMAT_COFF
+static void xcoff_asm_named_section PARAMS ((const char *, unsigned int,
+					     unsigned int));
+#endif
 
 /* Default register names.  */
 char rs6000_reg_names[][8] =
@@ -176,6 +184,11 @@ static char alt_reg_names[][8] =
 #define TARGET_ASM_FUNCTION_PROLOGUE rs6000_output_function_prologue
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE rs6000_output_function_epilogue
+
+#if TARGET_ELF
+#undef TARGET_SECTION_TYPE_FLAGS
+#define TARGET_SECTION_TYPE_FLAGS  rs6000_elf_section_type_flags
+#endif
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -8675,3 +8688,33 @@ toc_section ()
 }
 
 #endif /* TARGET_MACHO */
+
+#if TARGET_ELF
+static unsigned int
+rs6000_elf_section_type_flags (decl, name, reloc)
+     tree decl;
+     const char *name;
+     int reloc;
+{
+  unsigned int flags = default_section_type_flags (decl, name, reloc);
+
+  /* ??? The flag_pic check appears redundant with the DECL_READONLY_SECTION
+     check in default_section_type_flags.  */
+  if (TARGET_RELOCATABLE || flag_pic)
+    flags &= ~SECTION_WRITE;
+
+  /* Solaris doesn't like @nobits, and gas can handle .sbss without it.  */
+  flags &= ~SECTION_BSS;
+}
+#endif
+
+#ifdef OBJECT_FORMAT_COFF
+static void
+xcoff_asm_named_section (name, flags, align)
+     const char *name;
+     unsigned int flags ATTRIBUTE_UNUSED;
+     unsigned int align ATTRIBUTE_UNUSED;
+{
+  fprintf (asm_out_file, "\t.csect %s\n", name);
+}
+#endif

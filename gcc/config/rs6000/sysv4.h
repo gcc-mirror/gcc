@@ -992,63 +992,6 @@ do {						\
     asm_fprintf (FILE, "%U%s", _name);		\
 } while (0)
 
-/* Switch into a generic section.
-
-   We make the section read-only and executable for a function decl,
-   read-only for a const data decl, and writable for a non-const data decl.
-
-   If the section has already been defined, we must not
-   emit the attributes here. The SVR4 assembler does not
-   recognize section redefinitions.
-   If DECL is NULL, no attributes are emitted.
-
-   Note, Solaris as doesn't like @nobits, and gas can handle .sbss without
-   needing @nobits.  */
-
-/* Override elfos.h definition.  */
-#undef	ASM_OUTPUT_SECTION_NAME
-#define	ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME, RELOC)		\
-do {									\
-  static struct section_info						\
-    {									\
-      struct section_info *next;				        \
-      char *name;						        \
-      enum sect_enum {SECT_RW, SECT_RO, SECT_EXEC} type;		\
-    } *sections;							\
-  struct section_info *s;						\
-  const char *mode;							\
-  enum sect_enum type;							\
-									\
-  for (s = sections; s; s = s->next)					\
-    if (!strcmp (NAME, s->name))					\
-      break;								\
-									\
-  if (DECL && TREE_CODE (DECL) == FUNCTION_DECL)			\
-    type = SECT_EXEC, mode = "ax";					\
-  else if (DECL && DECL_READONLY_SECTION (DECL, RELOC) && !TARGET_RELOCATABLE && !flag_pic) \
-    type = SECT_RO, mode = "a";						\
-  else									\
-    type = SECT_RW, mode = "aw";					\
-									\
-  if (s == 0)								\
-    {									\
-      s = (struct section_info *) xmalloc (sizeof (struct section_info));  \
-      s->name = xmalloc ((strlen (NAME) + 1) * sizeof (*NAME));		\
-      strcpy (s->name, NAME);						\
-      s->type = type;							\
-      s->next = sections;						\
-      sections = s;							\
-      fprintf (FILE, "\t.section\t\"%s\",\"%s\"\n", NAME, mode);	\
-    }									\
-  else									\
-    {									\
-      if (DECL && s->type != type)					\
-	error_with_decl (DECL, "%s causes a section type conflict");	\
-									\
-      fprintf (FILE, "\t.section\t\"%s\"\n", NAME);			\
-    }									\
-} while (0)
-
 /* Override elfos.h definition.  */
 #undef	ASM_OUTPUT_CONSTRUCTOR
 #define	ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)				\

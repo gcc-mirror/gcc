@@ -170,21 +170,8 @@ do { long value[3];							\
 
 #define LOCAL_LABEL_PREFIX	"."
 
-/* A C statement to output something to the assembler file to switch to section
-   NAME for object DECL which is either a FUNCTION_DECL, a VAR_DECL or
-   NULL_TREE.  Some target formats do not support arbitrary sections.  Do not
-   define this macro in such cases.  */
-
-#undef  ASM_OUTPUT_SECTION_NAME
-#define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME, RELOC) \
-do {									\
-  if ((DECL) && TREE_CODE (DECL) == FUNCTION_DECL)			\
-    fprintf (FILE, ".section\t%s,\"ax\"\n", (NAME));			\
-  else if ((DECL) && DECL_READONLY_SECTION (DECL, RELOC))		\
-    fprintf (FILE, ".section\t%s,\"a\"\n", (NAME));			\
-  else									\
-    fprintf (FILE, ".section\t%s,\"aw\"\n", (NAME));			\
-} while (0)
+/* Switch into a generic section.  */
+#define TARGET_ASM_NAMED_SECTION  default_elf_asm_named_section
 
 /* If defined, a C expression whose value is a string containing the
    assembler operation to identify the following data as

@@ -110,7 +110,9 @@ static void mips_add_gc_roots                   PARAMS ((void));
 static void mips_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 static void mips_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static enum processor_type mips_parse_cpu       PARAMS ((const char *));
-
+static void iris6_asm_named_section		PARAMS ((const char *,
+							 unsigned int,
+							 unsigned int));
 /* Global variables for machine-dependent things.  */
 
 /* Threshold for data being put into the small data/bss area, instead
@@ -9799,4 +9801,50 @@ mips_parse_cpu (cpu_string)
     cpu = PROCESSOR_DEFAULT;
 
   return cpu;
+}
+
+/* Output assembly to switch to section NAME with attribute FLAGS.  */
+
+static void
+iris6_asm_named_section (name, flags, align)
+     const char *name;
+     unsigned int flags;
+     unsigned int align;
+{
+  unsigned int sh_type, sh_flags, sh_entsize;
+
+  sh_flags = 0;
+  if (!(flags & SECTION_DEBUG))
+    sh_flags |= 2; /* SHF_ALLOC */
+  if (flags & SECTION_WRITE)
+    sh_flags |= 1; /* SHF_WRITE */
+  if (flags & SECTION_CODE)
+    sh_flags |= 4; /* SHF_EXECINSTR */
+  if (flags & SECTION_SMALL)
+    sh_flags |= 0x10000000; /* SHF_MIPS_GPREL */
+  if (strcmp (name, ".debug_frame") == 0)
+    sh_flags |= 0x08000000; /* SHF_MIPS_NOSTRIP */
+
+  if (flags & SECTION_DEBUG)
+    sh_type = 0x7000001e; /* SHT_MIPS_DWARF */
+  else if (flags & SECTION_BSS)
+    sh_type = 8; /* SHT_NOBITS */
+  else
+    sh_type = 1; /* SHT_PROGBITS */
+
+  if (flags & SECTION_CODE)
+    sh_entsize = 4;
+  else
+    sh_entsize = 0;
+
+  if (align == 0)
+    {
+      if (flags & SECTION_CODE)
+	align = 4;
+      else
+	align = 8;
+    }
+
+  fprintf (asm_out_file, "\t.section %s,%u,%u,%u,%u\n",
+	   name, sh_type, sh_flags, sh_entsize, align);
 }

@@ -2454,16 +2454,6 @@ do {									\
 
 /* Assembler Commands for Exception Regions.  */
 
-/* If defined, a C string constant for the assembler operation to switch to the
-   section for exception handling frame unwind information.  If not defined,
-   GNU CC will provide a default definition if the target supports named
-   sections.  `crtstuff.c' uses this macro to switch to the appropriate
-   section.
-
-   You should define this symbol if your target supports DWARF 2 frame unwind
-   information and the default definition does not work.  */
-#define EH_FRAME_SECTION_ASM_OP "\t.section\t.IA_64.unwind,\"aw\""
-
 /* Select a format to encode pointers in exception handling data.  CODE
    is 0 for data, 1 for code labels, 2 for function pointers.  GLOBAL is
    true if the symbol may be affected by dynamic relocations.  */
@@ -2550,18 +2540,6 @@ do {									\
    output in response to the `-g' option.  */
 
 #define DWARF2_DEBUGGING_INFO
-
-/* Section names for DWARF2 debug info.  */
-
-#define DEBUG_INFO_SECTION	".debug_info, \"\", \"progbits\""
-#define DEBUG_ABBREV_SECTION	".debug_abbrev, \"\", \"progbits\""
-#define DEBUG_ARANGES_SECTION	".debug_aranges, \"\", \"progbits\""
-#define DEBUG_MACINFO_SECTION	".debug_macinfo, \"\", \"progbits\""
-#define DEBUG_LINE_SECTION	".debug_line, \"\", \"progbits\""
-#define DEBUG_LOC_SECTION	".debug_loc, \"\", \"progbits\""
-#define DEBUG_PUBNAMES_SECTION	".debug_pubnames, \"\", \"progbits\""
-#define DEBUG_STR_SECTION	".debug_str, \"\", \"progbits\""
-#define DEBUG_RANGES_SECTION	".debug_ranges, \"\", \"progbits\""
 
 /* C string constants giving the pseudo-op to use for a sequence of
    2, 4, and 8 byte unaligned constants.  dwarf2out.c needs these.  */

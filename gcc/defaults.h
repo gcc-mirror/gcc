@@ -209,23 +209,17 @@ do { ASM_OUTPUT_LABEL(FILE,LABEL_ALTERNATE_NAME (INSN)); } while (0)
 #define DWARF2_UNWIND_INFO 1
 #endif
 
-#if defined (DWARF2_UNWIND_INFO) && !defined (EH_FRAME_SECTION)
-# if defined (EH_FRAME_SECTION_ASM_OP)
-#  define EH_FRAME_SECTION() eh_frame_section ()
-# else
-   /* If we aren't using crtstuff to run ctors, don't use it for EH.  */
-#  if defined (ASM_OUTPUT_SECTION_NAME) && defined (ASM_OUTPUT_CONSTRUCTOR)
-#   define EH_FRAME_SECTION_ASM_OP	"\t.section\t.eh_frame,\"aw\""
-#   define EH_FRAME_SECTION() \
-     do { named_section (NULL_TREE, ".eh_frame", 0); } while (0)
-#  endif
-# endif
+/* If we have named section, and we're using crtstuff to run ctors,
+   then use named sections for registering eh frame information.  */
+#if defined (TARGET_ASM_NAMED_SECTION) && defined (ASM_OUTPUT_CONSTRUCTOR)
+#ifndef EH_FRAME_SECTION_NAME
+#define EH_FRAME_SECTION_NAME ".eh_frame"
+#endif
 #endif
 
 /* If we have no definition for UNIQUE_SECTION, but do have the 
    ability to generate arbitrary sections, construct something
    reasonable.  */
-#ifdef ASM_OUTPUT_SECTION_NAME
 #ifndef UNIQUE_SECTION
 #define UNIQUE_SECTION(DECL,RELOC)				\
 do {								\
@@ -243,10 +237,6 @@ do {								\
 								\
   DECL_SECTION_NAME (DECL) = build_string (len, string);	\
 } while (0)
-#endif
-#ifndef UNIQUE_SECTION_P
-#define UNIQUE_SECTION_P(DECL) 0
-#endif
 #endif
 
 /* By default, we generate a label at the beginning and end of the

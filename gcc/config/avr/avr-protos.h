@@ -45,9 +45,6 @@ extern void   asm_output_external          PARAMS ((FILE *file, tree decl,
 						   char *name));
 extern void   unique_section               PARAMS ((tree decl, int reloc));
 extern void   encode_section_info          PARAMS ((tree decl));
-extern void   asm_output_section_name      PARAMS ((FILE *file, tree decl,
-						   const char *name,
-						   int reloc));
 extern int    avr_progmem_p                PARAMS ((tree decl));
 
 

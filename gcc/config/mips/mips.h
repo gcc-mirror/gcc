@@ -3097,10 +3097,6 @@ typedef struct mips_args {
    If you are changing this macro, you should look at
    mips_select_section and see if it needs a similar change.  */
 
-#ifndef UNIQUE_SECTION_P
-#define UNIQUE_SECTION_P(DECL) (0)
-#endif
-
 #define ENCODE_SECTION_INFO(DECL)					\
 do									\
   {									\
@@ -3120,7 +3116,7 @@ do									\
 	       references again.  We force it to work by putting string	\
 	       addresses in the constant pool and indirecting.  */	\
 	    && (! current_function_decl					\
-		|| ! UNIQUE_SECTION_P (current_function_decl)))		\
+		|| ! DECL_ONE_ONLY (current_function_decl)))		\
 	  {								\
 	    SYMBOL_REF_FLAG (XEXP (TREE_CST_RTL (DECL), 0)) = 1;	\
 	    mips_string_length += TREE_STRING_LENGTH (DECL);		\

@@ -47,11 +47,6 @@ do {									\
   ASM_OUTPUT_SKIP (FILE, SIZE ? SIZE : 1);				\
 } while (0)
 
-/* ??? Intel assembler does not allow "." in section names, so turn off
-   gnu.linkonce section support, but only when using the Intel assembler.  */
-#undef UNIQUE_SECTION_P
-#define UNIQUE_SECTION_P(DECL) (TARGET_GNU_AS ? DECL_ONE_ONLY (DECL) : 0)
-
 /* The # tells the Intel assembler that this is not a register name.
    However, we can't emit the # in a label definition, so we set a variable
    in ASM_OUTPUT_LABEL to control whether we want the postfix here or not.

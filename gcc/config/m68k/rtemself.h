@@ -58,9 +58,6 @@ Boston, MA 02111-1307, USA.  */
 #undef FINI_SECTION_ASM_OP
 #define FINI_SECTION_ASM_OP    "\t.section\t.fini"
 
-#undef EH_FRAME_SECTION_ASM_OP
-#define EH_FRAME_SECTION_ASM_OP        "\t.section\t.eh_frame"
-
 /* Do I need this? */
 #undef INVOKE__main
 

@@ -100,13 +100,9 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN) \
   asm_output_aligned_bss ((FILE), (DECL), (NAME), (SIZE), (ALIGN))
 
-/* Support generic sections */
-
-#undef ASM_OUTPUT_SECTION_NAME
-#define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME, RELOC) \
-  fprintf((FILE), ".section\t%s,\"%c\"\n", (NAME), \
-	  (DECL) && (TREE_CODE (DECL) == FUNCTION_DECL || \
-		     DECL_READONLY_SECTION (DECL, RELOC)) ? 'x' : 'd')
+/* Switch into a generic section.  */
+#undef TARGET_ASM_NAMED_SECTION
+#define TARGET_ASM_NAMED_SECTION  m68k_coff_asm_named_section
 
 /* Support the ctors and dtors sections for g++.  */
 

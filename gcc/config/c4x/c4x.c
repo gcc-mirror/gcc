@@ -191,6 +191,8 @@ static int c4x_rptb_valid_p PARAMS ((rtx, rtx));
 static int c4x_label_ref_used_p PARAMS ((rtx, rtx));
 static int c4x_valid_type_attribute_p PARAMS ((tree, tree, tree, tree));
 static void c4x_insert_attributes PARAMS ((tree, tree *));
+static void c4x_asm_named_section PARAMS ((const char *, unsigned int,
+					   unsigned int));
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_VALID_TYPE_ATTRIBUTE
@@ -5176,4 +5178,13 @@ c4x_expand_builtin (exp, target, subtarget, mode, ignore)
       return target;
     }
   return NULL_RTX;
+}
+
+static void
+c4x_asm_named_section (name, flags, align)
+     const char *name;
+     unsigned int flags ATTRIBUTE_UNUSED;
+     unsigned int align ATTRIBUTE_UNUSED;
+{
+  fprintf (asm_out_file, "\t.sect\t\"%s\"\n", name);
 }

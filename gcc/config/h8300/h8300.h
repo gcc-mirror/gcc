@@ -1225,13 +1225,8 @@ readonly_data ()							\
   fprintf (FILE,							\
 	   "\t.text\n.stabs \"\",%d,0,0,.Letext\n.Letext:\n", N_SO)
 
-/* A C statement to output something to the assembler file to switch to section
-   NAME for object DECL which is either a FUNCTION_DECL, a VAR_DECL or
-   NULL_TREE.  Some target formats do not support arbitrary sections.  Do not
-   define this macro in such cases.  */
-
-#define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME, RELOC) \
-  fprintf (FILE, "\t.section %s\n", NAME)
+/* Switch into a generic section.  */
+#define TARGET_ASM_NAMED_SECTION h8300_asm_named_section
 
 /* This is how to output the definition of a user-level label named NAME,
    such as the label on a static function or variable NAME.  */

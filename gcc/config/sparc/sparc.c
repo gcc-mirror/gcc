@@ -164,6 +164,8 @@ static void sparc_nonflat_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT,
 						     int));
 static void sparc_nonflat_function_prologue PARAMS ((FILE *, HOST_WIDE_INT,
 						     int));
+static void sparc_elf_asm_named_section PARAMS ((const char *, unsigned int,
+						 unsigned int));
 
 /* Option handling.  */
 
@@ -8687,4 +8689,24 @@ sparc_add_gc_roots ()
   ggc_add_rtx_root (&sparc_addr_list, 1);
   ggc_add_root (ultra_pipe_hist, ARRAY_SIZE (ultra_pipe_hist),
 		sizeof (ultra_pipe_hist[0]), &mark_ultrasparc_pipeline_state);
+}
+
+static void
+sparc_elf_asm_named_section (name, flags, align)
+     const char *name;
+     unsigned int flags;
+     unsigned int align ATTRIBUTE_UNUSED;
+{
+  fprintf (asm_out_file, "\t.section\t\"%s\"", name);
+
+  if (!(flags & SECTION_DEBUG))
+    fputs (",#alloc", asm_out_file);
+  if (flags & SECTION_WRITE)
+    fputs (",#write", asm_out_file);
+  if (flags & SECTION_CODE)
+    fputs (",#execinstr", asm_out_file);
+
+  /* ??? Handle SECTION_BSS.  */
+
+  fputc ('\n', asm_out_file);
 }

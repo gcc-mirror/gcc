@@ -211,7 +211,7 @@ __do_global_dtors_aux (void)
       f ();
     }
 
-#ifdef EH_FRAME_SECTION_ASM_OP
+#ifdef EH_FRAME_SECTION_NAME
 #if defined(CRT_GET_RFIB_TEXT) || defined(CRT_GET_RFIB_DATA)
   /* If we used the new __register_frame_info_bases interface,
      make sure that we deregister from the same place.  */
@@ -240,7 +240,7 @@ fini_dummy (void)
   asm (TEXT_SECTION_ASM_OP);
 }
 
-#ifdef EH_FRAME_SECTION_ASM_OP
+#ifdef EH_FRAME_SECTION_NAME
 /* Stick a call to __register_frame_info into the .init section.  For some
    reason calls with no arguments work more reliably in .init, so stick the
    call in another function.  */
@@ -279,7 +279,7 @@ init_dummy (void)
 #endif
   asm (TEXT_SECTION_ASM_OP);
 }
-#endif /* EH_FRAME_SECTION_ASM_OP */
+#endif /* EH_FRAME_SECTION_NAME */
 
 #else  /* OBJECT_FORMAT_ELF */
 
@@ -350,13 +350,13 @@ __do_global_dtors (void)
   for (p = __DTOR_LIST__ + 1; (f = *p); p++)
     f ();
 
-#ifdef EH_FRAME_SECTION_ASM_OP
+#ifdef EH_FRAME_SECTION_NAME
   if (__deregister_frame_info)
     __deregister_frame_info (__EH_FRAME_BEGIN__);
 #endif
 }
 
-#ifdef EH_FRAME_SECTION_ASM_OP
+#ifdef EH_FRAME_SECTION_NAME
 /* Define a function here to call __register_frame.  crtend.o is linked in
    after libgcc.a, and hence can't call libgcc.a functions directly.  That
    can lead to unresolved function references.  */
@@ -404,16 +404,16 @@ asm (DTORS_SECTION_ASM_OP);	/* cc1 doesn't know that we are switching! */
 STATIC func_ptr __DTOR_LIST__[1] = { (func_ptr) (-1) };
 #endif
 
-#ifdef EH_FRAME_SECTION_ASM_OP
+#ifdef EH_FRAME_SECTION_NAME
 /* Stick a label at the beginning of the frame unwind info so we can register
    and deregister it with the exception handling library code.  */
-
-asm (EH_FRAME_SECTION_ASM_OP);
 #ifdef INIT_SECTION_ASM_OP
 STATIC
 #endif
-char __EH_FRAME_BEGIN__[] = { };
-#endif /* EH_FRAME_SECTION_ASM_OP */
+char __EH_FRAME_BEGIN__[]
+     __attribute__((section(EH_FRAME_SECTION_NAME)))
+     = { };
+#endif /* EH_FRAME_SECTION_NAME */
 
 #endif /* defined(CRT_BEGIN) */
 
@@ -494,14 +494,14 @@ asm (TEXT_SECTION_ASM_OP);
    not an SVR4-style .init section.  __do_global_ctors can be non-static
    in this case because we protect it with -hidden_symbol.  */
 static func_ptr __CTOR_END__[];
-#ifdef EH_FRAME_SECTION_ASM_OP
+#ifdef EH_FRAME_SECTION_NAME
 extern void __frame_dummy (void);
 #endif
 void
 __do_global_ctors (void)
 {
   func_ptr *p;
-#ifdef EH_FRAME_SECTION_ASM_OP
+#ifdef EH_FRAME_SECTION_NAME
   __frame_dummy ();
 #endif
   for (p = __CTOR_END__ - 1; *p != (func_ptr) -1; p--)
@@ -535,13 +535,12 @@ STATIC func_ptr __DTOR_END__[1] __attribute__ ((__unused__))
   = { (func_ptr) 0 };
 #endif
 
-#ifdef EH_FRAME_SECTION_ASM_OP
+#ifdef EH_FRAME_SECTION_NAME
 /* Terminate the frame unwind info section with a 4byte 0 as a sentinel;
    this would be the 'length' field in a real FDE.  */
-
-typedef unsigned int ui32 __attribute__ ((mode (SI)));
-asm (EH_FRAME_SECTION_ASM_OP);
-STATIC ui32 __FRAME_END__[] __attribute__ ((__unused__)) = { 0 };
+STATIC int __FRAME_END__[]
+     __attribute__ ((unused, mode(SI), section(EH_FRAME_SECTION_NAME)))
+     = { 0 };
 #endif /* EH_FRAME_SECTION */
 
 #endif /* defined(CRT_END) */
@@ -601,14 +600,9 @@ __dereg_frame_dtor (void)
 }
 
 /* Terminate the frame section with a final zero.  */
-
-/* Force cc1 to switch to .data section.  */
-static void * force_to_data[1] __attribute__ ((__unused__)) = { };
-
-typedef unsigned int ui32 __attribute__ ((mode (SI)));
-asm (EH_FRAME_SECTION_ASM_OP);
-static ui32 __FRAME_END__[] __attribute__ ((__unused__)) = { 0 };
-
+STATIC int __FRAME_END__[]
+     __attribute__ ((unused, mode(SI), section(EH_FRAME_SECTION_NAME)))
+     = { 0 };
 #endif /* CRT_END */
 
 #endif /* OBJECT_FORMAT_MACHO */

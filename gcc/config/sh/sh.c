@@ -156,6 +156,8 @@ static rtx mark_constant_pool_use PARAMS ((rtx));
 static int sh_valid_decl_attribute PARAMS ((tree, tree, tree, tree));
 static void sh_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 static void sh_insert_attributes PARAMS ((tree, tree *));
+static void sh_asm_named_section PARAMS ((const char *, unsigned int,
+					  unsigned int));
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_VALID_DECL_ATTRIBUTE
@@ -5556,3 +5558,12 @@ sh_can_redirect_branch (branch1, branch2)
   return 0;
 }
 
+static void
+sh_asm_named_section (name, flags, align)
+     const char *name;
+     unsigned int flags ATTRIBUTE_UNUSED;
+     unsigned int flags ATTRIBUTE_UNUSED;
+{
+  /* ??? Perhaps we should be using default_coff_asm_named_section.  */
+  fprintf (asm_out_file, "\t.section %s\n", name);
+}
