@@ -1178,24 +1178,6 @@ header files by adding this:
 @end example
 
 @item
-If you have trouble compiling Perl on a SunOS 4 system, it may be
-because Perl specifies @samp{-I/usr/ucbinclude}.  This accesses the
-unfixed header files.  Perl specifies the options
-
-@example
--traditional -Dvolatile=__volatile__
--I/usr/include/sun -I/usr/ucbinclude
--fpcc-struct-return
-@end example
-
-@noindent
-most of which are unnecessary with GCC 2.4.5 and newer versions.  You
-can make a properly working Perl by setting @code{ccflags} to
-@samp{-fwritable-strings} (implied by the @samp{-traditional} in the
-original options) and @code{cppflags} to empty in @file{config.sh}, then
-typing @samp{./doSH; make depend; make}.
-
-@item
 On various 386 Unix systems derived from System V, including SCO, ISC,
 and ESIX, you may get error messages about running out of virtual memory
 while compiling certain programs.
