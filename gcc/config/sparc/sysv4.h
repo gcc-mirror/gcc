@@ -47,8 +47,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef COMMON_ASM_OP
 #undef SKIP_ASM_OP
 #undef DEF_ASM_OP	/* Has no equivalent.  See ASM_OUTPUT_DEF below.  */
-#undef ASM_GENERATE_INTERNAL_LABEL
-#undef ASM_OUTPUT_INTERNAL_LABEL
 
 /* Provide a set of pre-definitions and pre-assertions appropriate for
    the Sparc running svr4.  __svr4__ is our extension.  */
@@ -114,58 +112,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 	assemble_name (FILE, LABEL2);					\
 	fprintf (FILE, "\n");						\
   } while (0)
-
-/* Generate the special assembly code needed to align the start of a jump
-   tables.  Under svr4, jump tables go into the .rodata section.  Other
-   things (e.g. constants) may be put into the .rodata section too, and
-   those other things may end on odd (i.e. unaligned) boundaries, so we
-   need to get re-aligned just before we output each jump table.  */
-
-#define ASM_OUTPUT_ALIGN_JUMP_TABLE(FILE) ASM_OUTPUT_ALIGN ((FILE), 2)
-
-/* This is how to output an internal numbered label where
-   PREFIX is the class of label and NUM is the number within the class.
-
-   If the NUM argument is negative, we don't use it when generating the
-   label.
-
-   For most svr4 systems, the convention is that any symbol which begins
-   with a period is not put into the linker symbol table by the assembler,
-   however the current Sparc/svr4 assembler is brain-dammaged and it needs
-   to see `.L' at the start of a symbol or else it will be put into the
-   linker symbol table.
-*/
-
-#define ASM_OUTPUT_INTERNAL_LABEL(FILE, PREFIX, NUM)			\
-do {									\
-  if ((int) (NUM) >= 0)							\
-    fprintf (FILE, ".L%s%d:\n", PREFIX, NUM);				\
-  else									\
-    fprintf (FILE, ".L%s:\n", PREFIX);					\
-} while (0)
-
-/* This is how to store into the string LABEL
-   the symbol_ref name of an internal numbered label where
-   PREFIX is the class of label and NUM is the number within the class.
-   This is suitable for output with `assemble_name'.
-
-   If the NUM argument is negative, we don't use it when generating the
-   label.
-
-   For most svr4 systems, the convention is that any symbol which begins
-   with a period is not put into the linker symbol table by the assembler,
-   however the current Sparc/svr4 assembler is brain-dammaged and it needs
-   to see `.L' at the start of a symbol or else it will be put into the
-   linker symbol table.
-*/
-
-#define ASM_GENERATE_INTERNAL_LABEL(LABEL, PREFIX, NUM)			\
-do {									\
-  if ((int) (NUM) >= 0)							\
-    sprintf (LABEL, "*.L%s%d", PREFIX, NUM);				\
-  else									\
-    sprintf (LABEL, "*.L%s", PREFIX);					\
-} while (0)
 
 /* Define how the Sparc registers should be numbered for Dwarf output.
    The numbering provided here should be compatible with the native
