@@ -1,5 +1,8 @@
 Sat Oct 20 07:27:14 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* emit-rtl.c (set_mem_attributes): Alignment is in bits.
+	(adjust_address_1, offset_address): Likewise.
+
 	* final.c (output_asm_operand_names): New fcn, from output_asm_insn.
 	(output_asm_insn): Call it for each line output.
 	Don't record an operand more than once.

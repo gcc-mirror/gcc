@@ -95,7 +95,7 @@ typedef struct
   tree decl;			/* decl corresponding to MEM.  */
   rtx offset;			/* Offset from start of DECL, as CONST_INT.  */
   rtx size;			/* Size in bytes, as a CONST_INT.  */
-  unsigned int align;		/* Alignment of MEM in bytes.  */
+  unsigned int align;		/* Alignment of MEM in bits.  */
 } mem_attrs;
 
 /* Common union for an element of an rtx.  */
@@ -912,7 +912,7 @@ extern unsigned int subreg_regno 	PARAMS ((rtx));
    is always a CONST_INT.  */
 #define MEM_SIZE(RTX) (MEM_ATTRS (RTX) == 0 ? 0 : MEM_ATTRS (RTX)->size)
 
-/* For a MEM rtx, the alignment in bytes.  */
+/* For a MEM rtx, the alignment in bits.  */
 #define MEM_ALIGN(RTX) (MEM_ATTRS (RTX) == 0 ? 1 : MEM_ATTRS (RTX)->align)
 
 /* Copy the attributes that apply to memory locations from RHS to LHS.  */
