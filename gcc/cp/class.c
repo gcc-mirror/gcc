@@ -2155,7 +2155,7 @@ finish_struct_methods (t)
     /* Clear out this flag.  */
     DECL_IN_AGGR_P (fn_fields) = 0;
 
-  if (TYPE_HAS_DESTRUCTOR (t) && !TREE_VEC_ELT (method_vec, 1))
+  if (TYPE_HAS_DESTRUCTOR (t) && !CLASSTYPE_DESTRUCTORS (t))
     /* We thought there was a destructor, but there wasn't.  Some
        parse errors cause this anomalous situation.  */
     TYPE_HAS_DESTRUCTOR (t) = 0;
@@ -2285,11 +2285,9 @@ overrides (fndecl, base_fndecl)
      tree fndecl, base_fndecl;
 {
   /* Destructors have special names.  */
-  if (DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (base_fndecl))
-      && DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (fndecl)))
+  if (DECL_DESTRUCTOR_P (base_fndecl) && DECL_DESTRUCTOR_P (fndecl))
     return 1;
-  if (DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (base_fndecl))
-      || DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (fndecl)))
+  if (DECL_DESTRUCTOR_P (base_fndecl) || DECL_DESTRUCTOR_P (fndecl))
     return 0;
   if (DECL_NAME (fndecl) == DECL_NAME (base_fndecl))
     {
@@ -2744,8 +2742,7 @@ check_for_override (decl, ctype)
       if (TYPE_POLYMORPHIC_P (BINFO_TYPE (base_binfo)))
 	{
 	  tree tmp = get_matching_virtual
-	    (base_binfo, decl,
-	     DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (decl)));
+	    (base_binfo, decl, DECL_DESTRUCTOR_P (decl));
 
 	  if (tmp && !found_overriden_fn)
 	    {

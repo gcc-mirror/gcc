@@ -13551,8 +13551,7 @@ start_function (declspecs, declarator, attrs, flags)
 
   ++function_depth;
 
-  if (DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (decl1))
-      && DECL_LANGUAGE (decl1) == lang_cplusplus)
+  if (DECL_DESTRUCTOR_P (decl1))
     {
       dtor_label = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
       DECL_CONTEXT (dtor_label) = current_function_decl;
