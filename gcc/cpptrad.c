@@ -23,16 +23,19 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 /* Lexing TODO: Handle -C, maybe -CC, and space in escaped newlines.
    Stop cpplex.c from recognizing comments and directives during its
-   lexing pass.  Get rid of line_base usage - seems pointless?  */
+   lexing pass.  Get rid of line_base usage - seems pointless?  Do we
+   get escaped newline at EOF correct?  */
 
 static const uchar *handle_newline PARAMS ((cpp_reader *, const uchar *));
 static const uchar *skip_escaped_newlines PARAMS ((cpp_reader *,
 						   const uchar *));
+static const uchar *skip_whitespace PARAMS ((cpp_reader *, const uchar *));
 static cpp_hashnode *lex_identifier PARAMS ((cpp_reader *, const uchar *));
 static const uchar *skip_comment PARAMS ((cpp_reader *, const uchar *));
 static void scan_out_logical_line PARAMS ((cpp_reader *pfile));
 static void check_output_buffer PARAMS ((cpp_reader *, size_t));
 static void restore_buff PARAMS ((cpp_reader *));
+static void push_replacement_text PARAMS ((cpp_reader *, cpp_hashnode *));
 
 /* Ensures we have N bytes' space in the output buffer, and
    reallocates it if not.  */
@@ -118,6 +121,47 @@ skip_comment (pfile, cur)
   return cur;
 }
 
+/* Skip any horizontal whitespace and comments beginning at CUR,
+   returning the following character.  */
+static const uchar *
+skip_whitespace (pfile, cur)
+     cpp_reader *pfile;
+     const uchar *cur;
+{
+  const uchar *tmp;
+
+  for (;;)
+    {
+      while (is_nvspace (*cur) && *cur != 0)
+	cur++;
+
+      if (*cur == '\0' && cur != RLIMIT (pfile->context))
+	continue;
+
+      if (*cur == '\\')
+	{
+	  tmp = cur;
+	  cur = skip_escaped_newlines (pfile, cur);
+	  if (tmp != cur)
+	    continue;
+	}
+
+      if (*cur == '/')
+	{
+	  tmp = skip_escaped_newlines (pfile, cur + 1);
+	  if (*tmp == '*')
+	    {
+	      cur = skip_comment (pfile, tmp + 1);
+	      continue;
+	    }
+	}
+
+      break;
+    }
+
+  return cur;
+}
+
 /* Lexes and outputs an identifier starting at CUR, which is assumed
    to point to a valid first character of an identifier.  Returns
    the hashnode, and updates trad_out_cur.  */
@@ -128,6 +172,7 @@ lex_identifier (pfile, cur)
 {
   size_t len;
   uchar *out = pfile->trad_out_cur;
+  cpp_hashnode *result;
 
   do
     {
@@ -140,9 +185,27 @@ lex_identifier (pfile, cur)
 
   CUR (pfile->context) = cur;
   len = out - pfile->trad_out_cur;
+  result = (cpp_hashnode *) ht_lookup (pfile->hash_table, pfile->trad_out_cur,
+				       len, HT_ALLOC);
   pfile->trad_out_cur = out;
-  return (cpp_hashnode *) ht_lookup (pfile->hash_table, pfile->trad_out_cur,
-				     len, HT_ALLOC);
+  return result;
+}
+
+/* Reads an identifier, returning its hashnode.  If the next token is
+   not an identifier, returns NULL.  */
+cpp_hashnode *
+_cpp_lex_identifier_trad (pfile)
+     cpp_reader *pfile;
+{
+  const uchar *cur = skip_whitespace (pfile, CUR (pfile->context));
+
+  if (!ISIDST (*cur))
+    {
+      CUR (pfile->context) = cur;
+      return NULL;
+    }
+
+  return lex_identifier (pfile, cur);
 }
 
 /* Overlays the true file buffer temporarily with text of length LEN
@@ -226,11 +289,14 @@ static void
 scan_out_logical_line (pfile)
      cpp_reader *pfile;
 {
-  cpp_context *context = pfile->context;
-  const uchar *cur = CUR (context);
+  cpp_context *context;
+  const uchar *cur;
   unsigned int c, quote = 0;
   uchar *out;
 
+ new_context:
+  context = pfile->context;
+  cur = CUR (context);
   check_output_buffer (pfile, RLIMIT (context) - cur);
   out = pfile->trad_out_cur;
 
@@ -246,6 +312,16 @@ scan_out_logical_line (pfile)
 	case '\0':
 	  if (cur - 1 != RLIMIT (context))
 	    break;
+
+	  /* If this is a macro's expansion, pop it.  */
+	  if (context->prev)
+	    {
+	      pfile->trad_out_cur = out - 1;
+	      _cpp_pop_context (pfile);
+	      goto new_context;
+	    }
+
+	  /* Premature end of file.  Fake a new line.  */
 	  cur--;
 	  if (!pfile->buffer->from_stage3)
 	    cpp_error (pfile, DL_PEDWARN, "no newline at end of file");
@@ -254,11 +330,10 @@ scan_out_logical_line (pfile)
 
 	case '\r': case '\n':
 	  cur = handle_newline (pfile, cur - 1);
+	  out[-1] = '\0';
 	finish_output:
-	  out[-1] = '\n';
-	  out[0] = '\0';
 	  CUR (context) = cur;
-	  pfile->trad_out_cur = out;
+	  pfile->trad_out_cur = out - 1;
 	  return;
 
 	case '"':
@@ -309,6 +384,13 @@ scan_out_logical_line (pfile)
 
 	    pfile->trad_out_cur = --out;
 	    node = lex_identifier (pfile, cur - 1);
+	    if (node->type == NT_MACRO)
+	      {
+		/* Remove the macro name from the output.  */
+		pfile->trad_out_cur = out;
+		push_replacement_text (pfile, node);
+		goto new_context;
+	      }
 	    out = pfile->trad_out_cur;
 	    cur = CUR (context);
 	  }
@@ -318,4 +400,70 @@ scan_out_logical_line (pfile)
 	  break;
 	}
     }
+}
+
+/* Push a context holding the replacement text of the macro NODE on
+   the context stack.  Doesn't yet handle special built-ins or
+   function-like macros.  */
+static void
+push_replacement_text (pfile, node)
+     cpp_reader *pfile;
+     cpp_hashnode *node;
+{
+  cpp_macro *macro = node->value.macro;
+
+  _cpp_push_text_context (pfile, node,
+			  macro->exp.text,
+			  macro->exp.text + macro->count);
+}
+
+/* Analyze and save the replacement text of a macro.  */
+bool
+_cpp_create_trad_definition (pfile, macro)
+     cpp_reader *pfile;
+     cpp_macro *macro;
+{
+  const uchar *cur, *limit;
+  uchar *exp;
+  size_t len;
+
+  /* Skip leading whitespace now.  */
+  CUR (pfile->context) = skip_whitespace (pfile, CUR (pfile->context));
+
+  pfile->trad_out_cur = pfile->trad_out_base;
+  scan_out_logical_line (pfile);
+
+  /* Skip trailing white space.  */
+  cur = pfile->trad_out_base;
+  limit = pfile->trad_out_cur;
+  while (limit > cur && is_space (limit[-1]))
+    limit--;
+
+  len = (size_t) (limit - cur);
+  exp = _cpp_unaligned_alloc (pfile, len + 1);
+  memcpy (exp, cur, len);
+  exp[len] = '\0';
+
+  macro->exp.text = exp;
+  /* Include NUL.  */
+  macro->count = len;
+
+  return true;
+}
+
+/* Prepare to be able to scan the current buffer.  */
+void
+_cpp_set_trad_context (pfile)
+     cpp_reader *pfile;
+{
+  cpp_buffer *buffer = pfile->buffer;
+  cpp_context *context = pfile->context;
+
+  if (pfile->context->prev)
+    abort ();
+
+  pfile->trad_out_cur = pfile->trad_out_base;
+  CUR (context) = buffer->cur;
+  RLIMIT (context) = buffer->rlimit;
+  check_output_buffer (pfile, RLIMIT (context) - CUR (context));
 }

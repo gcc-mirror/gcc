@@ -1,3 +1,24 @@
+2002-06-05  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cpphash.h (_cpp_create_definition): Update prototype.
+	(_cpp_push_text_context, _cpp_create_trad_definition): New.
+	( cpp_lex_identifier_trad): New.
+	(_cpp_set_trad_context): New.
+	* cppinit.c (cpp_finish_options): Don't conditionalize builtins.
+	* cpplib.c (SEEN_EOL): Update.
+	(lex_macro_node): Update for -traditional.
+	(cpp_push_buffer, _cpp_pop_buffer): Similarly.
+	* cppmacro.c (_cpp_create_definition): Split into
+	create_iso_definition() and _cpp_create_trad_definition().
+	(warn_of_redefinition): Update prototype; handle traditional
+	macros.
+	(_cpp_push_text_context): New.
+	* cpptrad.c (skip_whitespace, push_replacement_text): New.
+	(lex_identifier): Call ht_lookup with correct start.
+	(_cpp_lex_identifier_tradm _cpp_create_trad_definition,
+	_cpp_set_trad_context): New.
+	(scan_out_logical_line): Update to handle changing contexts.
+
 Wed Jun  5 20:42:31 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* config.gcc (sh-*-elf*,  sh64*-*-elf*): Unify.

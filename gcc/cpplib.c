@@ -202,7 +202,8 @@ static const directive linemarker_dir =
   do_linemarker, U"#", 1, KANDR, IN_I
 };
 
-#define SEEN_EOL() (pfile->cur_token[-1].type == CPP_EOF)
+#define SEEN_EOL() (CPP_OPTION (pfile, traditional) \
+		    || pfile->cur_token[-1].type == CPP_EOF)
 
 /* Skip any remaining tokens in a directive.  */
 static void
@@ -447,7 +448,6 @@ lex_macro_node (pfile)
      cpp_reader *pfile;
 {
   cpp_hashnode *node;
-  const cpp_token *token = _cpp_lex_token (pfile);
 
   /* The token immediately after #define must be an identifier.  That
      identifier may not be "defined", per C99 6.10.8p4.
@@ -459,39 +459,43 @@ lex_macro_node (pfile)
      Note that if we're copying comments into macro expansions, we
      could encounter comment tokens here, so eat them all up first.  */
 
-  if (! CPP_OPTION (pfile, discard_comments_in_macro_exp))
+  if (CPP_OPTION (pfile, traditional))
+    node = _cpp_lex_identifier_trad (pfile);
+  else
     {
-      while (token->type == CPP_COMMENT)
-	token = _cpp_lex_token (pfile);
-    }
+      const cpp_token *token = _cpp_lex_token (pfile);
 
-  if (token->type != CPP_NAME)
-    {
+      if (! CPP_OPTION (pfile, discard_comments_in_macro_exp))
+	{
+	  while (token->type == CPP_COMMENT)
+	    token = _cpp_lex_token (pfile);
+	}
+
       if (token->type == CPP_EOF)
-	cpp_error (pfile, DL_ERROR, "no macro name given in #%s directive",
-		   pfile->directive->name);
-      else if (token->flags & NAMED_OP)
-	cpp_error (pfile, DL_ERROR,
-	   "\"%s\" cannot be used as a macro name as it is an operator in C++",
-		   NODE_NAME (token->val.node));
+	{
+	  cpp_error (pfile, DL_ERROR, "no macro name given in #%s directive",
+		     pfile->directive->name);
+	  return NULL;
+	}
+	
+      if (token->type == CPP_NAME || (token->flags & NAMED_OP))
+	node = token->val.node;
       else
-	cpp_error (pfile, DL_ERROR, "macro names must be identifiers");
-
-      return 0;
+	node = NULL;
     }
 
-  node = token->val.node;
-  if (node->flags & NODE_POISONED)
-    return 0;
+  if (!node)
+    cpp_error (pfile, DL_ERROR, "macro names must be identifiers");
+  else if (node->flags & NODE_OPERATOR)
+    cpp_error (pfile, DL_ERROR,
+       "\"%s\" cannot be used as a macro name as it is an operator in C++",
+	       NODE_NAME (node));
+  else if (node == pfile->spec_nodes.n_defined)
+    cpp_error (pfile, DL_ERROR, "\"defined\" cannot be used as a macro name");
+  else if (! (node->flags & NODE_POISONED))
+    return node;
 
-  if (node == pfile->spec_nodes.n_defined)
-    {
-      cpp_error (pfile, DL_ERROR, "\"%s\" cannot be used as a macro name",
-		 NODE_NAME (node));
-      return 0;
-    }
-
-  return node;
+  return NULL;
 }
 
 /* Process a #define directive.  Most work is done in cppmacro.c.  */
@@ -1890,6 +1894,9 @@ cpp_push_buffer (pfile, buffer, len, from_stage3, return_at_eof)
 
   pfile->buffer = new;
 
+  if (CPP_OPTION (pfile, traditional))
+    _cpp_set_trad_context (pfile);
+
   return new;
 }
 
@@ -1934,6 +1941,9 @@ _cpp_pop_buffer (pfile)
 	    _cpp_maybe_push_include_file (pfile);
 	}
     }
+
+  if (pfile->buffer && CPP_OPTION (pfile, traditional))
+    _cpp_set_trad_context (pfile);
 }
 
 /* Enter all recognised directives in the hash table.  */
