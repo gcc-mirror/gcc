@@ -1,3 +1,8 @@
+2002-05-31  Igor Shevlyakov <igor@microunity.com>
+
+	* expr.c (compare_from_rtx): Generate comparison between op0 and op1 
+	rather than cc0 and 0 in a case when HAVE_cc0 is not defined.
+
 2002-05-31  Matthew Woodcraft  <mattheww@chiark.greenend.org.uk>
 
 	* gcc.c (cpp_unique_options): Remove "-d" options.
