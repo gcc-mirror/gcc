@@ -1,3 +1,8 @@
+2001-10-13  Craig Rodrigues <rodrigc@gcc.gnu.org>
+
+	* doc/invoke.texi: Remove -fvtable-gc.
+	* doc/gcc.1: Likewise.
+
 2001-10-12  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/cpp.1, doc/gcc.1, doc/gcov.1: Regenerate.

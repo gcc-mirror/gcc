@@ -181,7 +181,7 @@ in the following sections.
 -fno-nonansi-builtins  -fno-operator-names @gol
 -fno-optional-diags  -fpermissive @gol
 -frepo  -fno-rtti  -fstats  -ftemplate-depth-@var{n} @gol
--fuse-cxa-atexit  -fvtable-gc  -fno-weak  -nostdinc++ @gol
+-fuse-cxa-atexit  -fno-weak  -nostdinc++ @gol
 -fno-default-inline  -Wctor-dtor-privacy @gol
 -Wnon-virtual-dtor  -Wreorder @gol
 -Weffc++  -Wno-deprecated @gol
