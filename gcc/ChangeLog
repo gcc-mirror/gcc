@@ -1,3 +1,7 @@
+2002-01-12  Richard Henderson  <rth@redhat.com>
+
+	* doc/invoke.texi: Update i386 built-in function lists.
+
 Sat Jan 12 17:38:11 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* unroll.c (final_reg_note_copy): Avoid crash on REG_LABEL note
