@@ -221,6 +221,7 @@ extern tree void_signature_node;       /* "()V" */
 extern tree length_identifier_node;  /* "length" */
 extern tree this_identifier_node;  /* "this" */
 extern tree super_identifier_node;  /* "super" */
+extern tree continue_identifier_node;  /* "continue" */
 extern tree one_elt_array_domain_type;
 extern tree void_type_node;
 extern tree ptr_type_node;
