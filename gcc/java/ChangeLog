@@ -1,5 +1,33 @@
 Wed Nov 25 09:47:15 1998  Per Bothner  <bothner@cygnus.com>
 
+	* java-tree.h (end_params_node):  Declare global.
+	* decl.c (end_params_node):  New global.
+	(init_decl_processing, start_java_method):  Use end_params_node for
+	end of list of parameter types.  Follows correct gcc conventions.
+	* expr.c (pop_argument_types, pop_arguments):  Likewise.
+	* lang.c (put_decl_node):  Likewise.
+	* typeck.c (various places):  Likewise.
+	* class.y (various places):  Likewise.
+	* parse.y (various places):  Likewise.
+
+	* parse.y (java_complete_tree):  Move CAN_COMPLETE_NORMALLY.
+	(build_jump_to_finally):  Add missing CAN_COMPLETE_NORMALLY.
+
+	* class.c:  Add #include flags.h, remove no-longer needed declaration.
+
+	* class.c (layout_class_method):  Remove commented-out code, re-format.
+	Don't add vtable entry (or index) for private methods.
+	* expr.c (expand_invoke):  A private method is implicitly final.
+	* class.c (make_class_data):  If inlining or optimizing,
+	skip private methods.
+
+	* class.c (finish_class):  New function.  Calls existing methods,
+	but alls emits deferred inline functions.
+	* jcf-parse.c (parse_class_file):  Call finish_class.
+	* parse.y (java_complete_expand_methods):  Likewise.
+
+	* expr.c (build_java_binop):  Explicit default, to silence -Wall.
+
 	* expr.c (CHECK_PC_IN_RANGE):  Add void cast to kill warnings.
 
 Wed Nov 25 00:50:58 1998  Marc Espie <espie@quatramaran.ens.fr>
