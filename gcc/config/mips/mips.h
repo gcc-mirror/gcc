@@ -3538,7 +3538,14 @@ do {									\
   if (TARGET_64BIT)							\
     {									\
       fprintf (STREAM, "\t.dword\t");					\
-      output_addr_const (STREAM, (VALUE));				\
+      if (HOST_BITS_PER_WIDE_INT < 64 || GET_CODE (VALUE) != CONST_INT)	\
+	/* We can't use 'X' for negative numbers, because then we won't	\
+	   get the right value for the upper 32 bits.  */		\
+        output_addr_const (STREAM, VALUE);				\
+      else								\
+	/* We must use 'X', because otherwise LONG_MIN will print as	\
+	   a number that the Irix 6 assembler won't accept.  */		\
+        print_operand (STREAM, VALUE, 'X');				\
       fprintf (STREAM, "\n");						\
     }									\
   else									\
