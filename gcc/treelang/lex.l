@@ -4,7 +4,7 @@
 
    ---------------------------------------------------------------------
 
-   Copyright (C) 1986, 87, 89, 92-96, 1997, 1999, 2000, 2001, 2002
+   Copyright (C) 1986, 87, 89, 92-96, 1997, 1999, 2000, 2001, 2002, 2003
    Free Software Foundation, Inc.
    
    This program is free software; you can redistribute it and/or modify it 
@@ -44,6 +44,7 @@
 /* Token defs.  */
 #include "treelang.h"
 #include "parse.h"
+#include "treetree.h"
 
 extern int option_lexer_trace;
 
@@ -257,8 +258,7 @@ update_yylval (int a)
   tok->tp.tok.length = yyleng;
   /* Have to copy yytext as it is just a ptr into the buffer at the
      moment.  */
-  tok->tp.tok.chars = my_malloc (yyleng + 1);
-  memcpy (tok->tp.tok.chars, yytext, yyleng);
+  tok->tp.tok.chars = (unsigned char*) get_string (yytext, yyleng);
 }
 
 /* Trace the value LEXRET and the position and token details being

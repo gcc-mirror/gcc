@@ -1,3 +1,8 @@
+2003-02-25  Tim Josling  <tej@melbpc.org.au>
+
+	* treetests.exp (run3): set options to force aggressive GC, to
+	ensure GC is all set up correct,
+
 2002-05-07  Tim Josling  <tej@melbpc.org.au>
 
 	* Makefile.in: Fix copyright

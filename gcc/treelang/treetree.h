@@ -3,7 +3,7 @@
     TREELANG Compiler definitions for interfacing to treetree.c
     (compiler back end interface).
 
-    Copyright (C) 1986, 87, 89, 92-96, 1997, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+    Copyright (C) 1986, 87, 89, 92-96, 1997, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
     This program is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
@@ -63,11 +63,11 @@ void tree_code_if_end (unsigned char* filename, int lineno);
 tree tree_code_get_type (int type_num);
 void treelang_init_decl_processing (void);
 void treelang_finish (void);
-const char * treelang_init (const char* filename);
+const char *treelang_init (const char* filename);
 int treelang_decode_option (int, char **);
 void treelang_parse_file (int debug_flag);
 void push_var_level (void);
 void pop_var_level (void);
-
+const char* get_string (const char *s, size_t l);
 
 

@@ -301,7 +301,7 @@ if {${check_rc} == 1} {
 #
 #set X "x"
 set X ""
-    run3 "${sourcedir}" "${testdir}" " -g -O3 " 01 01 0 3 0 1 0
+run3 "${sourcedir}" "${testdir}" " -g -O3 --param ggc-min-heapsize=0 --param ggc-min-expand=0 " 01 01 0 3 0 1 0
 set X ""
 }
 

@@ -1,3 +1,40 @@
+2003-02-24  Tim Josling  <tej@melbpc.org.au>
+
+	* parse.y (my_yylex): New - ensure lexer time is charged to
+	TV_LEX.
+	(yylex): redefine as invocation of my_yylex which then calls
+	flex-generated yylex.
+	(timevar.h): include.
+	
+2003-02-23  Tim Josling  <tej@melbpc.org.au>
+
+        Fix garbage collection, add more error checking, force GC always.
+	
+	* Make-lang.in (treelang/tree1.o): Depend on treelang/treetree.h
+	(treelang/treetree.o): Depend on  treelang/parse.h
+
+	* lex.l: include "treetree.h"
+
+	* lex.l (update_yylval): Allocate string using get_string so GC
+	works.
+
+	* parse.y (function_prototype): Set category correctly so GC works.
+	(function): Set category in search so checking works.
+	(function_invocation): Ditto.
+	(variable_ref): Ditto.
+
+	* tree1.c (lookup_tree_name): Call sanity_check for passed
+	production and associated token and for symbol table entries.
+
+	* tree1.c (sanity_check): New, basic check that struct is valid.
+
+	* treelang.h: Prototype for sanity_check.
+
+2003-01-27  Tim Josling  <tej@melbpc.org.au>
+
+	* treetree.c (treelang_init_decl_processing): Change memory
+	allocation to use GC.
+
 2003-02-04  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* treelang.texi: Update to GFDL 1.2.
