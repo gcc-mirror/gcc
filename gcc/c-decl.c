@@ -1511,7 +1511,7 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
 		oldtype = trytype;
 	    }
 	  /* Accept harmless mismatch in first argument type also.
-	     This is for ffs.  */
+	     This is for the ffs and fprintf builtins.  */
 	  if (TYPE_ARG_TYPES (TREE_TYPE (newdecl)) != 0
 	      && TYPE_ARG_TYPES (oldtype) != 0
 	      && TREE_VALUE (TYPE_ARG_TYPES (newtype)) != 0

@@ -1951,6 +1951,8 @@ static int is_valid_printf_arglist PARAMS ((tree));
 static rtx c_expand_builtin PARAMS ((tree, rtx, enum machine_mode, enum expand_modifier));
 static rtx c_expand_builtin_printf PARAMS ((tree, rtx, enum machine_mode,
 					    enum expand_modifier, int));
+static rtx c_expand_builtin_fprintf PARAMS ((tree, rtx, enum machine_mode,
+					     enum expand_modifier, int));
 
 /* Initialize the table of functions to perform format checking on.
    The ISO C functions are always checked (whether <stdio.h> is
@@ -1975,6 +1977,8 @@ init_function_format_info ()
       record_function_format (get_identifier ("__builtin_printf"), NULL_TREE,
 			      printf_format_type, 1, 2);
       record_function_format (get_identifier ("fprintf"), NULL_TREE,
+			      printf_format_type, 2, 3);
+      record_function_format (get_identifier ("__builtin_fprintf"), NULL_TREE,
 			      printf_format_type, 2, 3);
       record_function_format (get_identifier ("sprintf"), NULL_TREE,
 			      printf_format_type, 2, 3);
@@ -5127,7 +5131,7 @@ c_common_nodes_and_builtins ()
   tree temp;
   tree memcpy_ftype, memset_ftype, strlen_ftype;
   tree bzero_ftype, bcmp_ftype, puts_ftype, printf_ftype;
-  tree fputs_ftype, fputc_ftype, fwrite_ftype;
+  tree fputs_ftype, fputc_ftype, fwrite_ftype, fprintf_ftype;
   tree endlink, int_endlink, double_endlink, unsigned_endlink;
   tree cstring_endlink, sizetype_endlink;
   tree ptr_ftype, ptr_ftype_unsigned;
@@ -5539,6 +5543,14 @@ c_common_nodes_and_builtins ()
 			   tree_cons (NULL_TREE, const_string_type_node,
 				      tree_cons (NULL_TREE, ptr_type_node, endlink)));
 
+  /* Prototype for fprintf.  */
+  fprintf_ftype
+    = build_function_type (integer_type_node,
+			   tree_cons (NULL_TREE, ptr_type_node,
+				      tree_cons (NULL_TREE,
+						 const_string_type_node,
+						 NULL_TREE)));
+
   builtin_function ("__builtin_constant_p", default_function_type,
 		    BUILT_IN_CONSTANT_P, BUILT_IN_NORMAL, NULL_PTR);
 
@@ -5817,6 +5829,9 @@ c_common_nodes_and_builtins ()
   builtin_function_2 ("__builtin_printf", "printf",
 		      printf_ftype, printf_ftype,
 		      BUILT_IN_PRINTF, BUILT_IN_FRONTEND, 1, 0, 0);
+  builtin_function_2 ("__builtin_fprintf", "fprintf",
+		      fprintf_ftype, fprintf_ftype,
+		      BUILT_IN_FPRINTF, BUILT_IN_FRONTEND, 1, 0, 0);
   built_in_decls[BUILT_IN_FWRITE] =
     builtin_function ("__builtin_fwrite", fwrite_ftype,
 		      BUILT_IN_FWRITE, BUILT_IN_NORMAL, "fwrite");
@@ -6614,6 +6629,13 @@ c_expand_builtin (exp, target, tmode, modifier)
 	return target;
       break;
 
+    case BUILT_IN_FPRINTF:
+      target = c_expand_builtin_fprintf (arglist, target, tmode,
+					 modifier, ignore);
+      if (target)
+	return target;
+      break;
+
     default:			/* just do library call, if unknown builtin */
       error ("built-in function `%s' not currently supported",
 	     IDENTIFIER_POINTER (DECL_NAME (fndecl)));
@@ -6745,6 +6767,86 @@ c_expand_builtin_printf (arglist, target, tmode, modifier, ignore)
 	/* We'd like to arrange to call fputs(string) here, but we
            need stdout and don't have a way to get it ... yet.  */
 	return 0;
+    }
+  
+  return expand_expr (build_function_call (fn, arglist),
+		      (ignore ? const0_rtx : target),
+		      tmode, modifier);
+}
+
+/* If the arguments passed to fprintf are suitable for optimizations,
+   we attempt to transform the call. */
+static rtx
+c_expand_builtin_fprintf (arglist, target, tmode, modifier, ignore)
+     tree arglist;
+     rtx target;
+     enum machine_mode tmode;
+     enum expand_modifier modifier;
+     int ignore;
+{
+  tree fn_fputc = built_in_decls[BUILT_IN_FPUTC],
+    fn_fputs = built_in_decls[BUILT_IN_FPUTS];
+  tree fn, format_arg, stripped_string;
+
+  /* If the return value is used, or the replacement _DECL isn't
+     initialized, don't do the transformation. */
+  if (!ignore || !fn_fputc || !fn_fputs)
+    return 0;
+
+  /* Verify the required arguments in the original call. */
+  if (arglist == 0
+      || (TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE)
+      || (TREE_CHAIN (arglist) == 0)
+      || (TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist)))) !=
+	  POINTER_TYPE))
+    return 0;
+  
+  /* Check the specifier vs. the parameters. */
+  if (!is_valid_printf_arglist (TREE_CHAIN (arglist)))
+    return 0;
+  
+  format_arg = TREE_VALUE (TREE_CHAIN (arglist));
+  stripped_string = format_arg;
+  STRIP_NOPS (stripped_string);
+  if (stripped_string && TREE_CODE (stripped_string) == ADDR_EXPR)
+    stripped_string = TREE_OPERAND (stripped_string, 0);
+
+  /* If the format specifier isn't a STRING_CST, punt.  */
+  if (TREE_CODE (stripped_string) != STRING_CST)
+    return 0;
+  
+  /* OK!  We can attempt optimization.  */
+
+  /* If the format specifier was "%s", call __builtin_fputs(arg3, arg1). */
+  if (strcmp (TREE_STRING_POINTER (stripped_string), "%s") == 0)
+    {
+      tree newarglist = build_tree_list (NULL_TREE, TREE_VALUE (arglist));
+      arglist = tree_cons (NULL_TREE,
+			   TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist))),
+			   newarglist);
+      fn = fn_fputs;
+    }
+  /* If the format specifier was "%c", call __builtin_fputc (arg3, arg1). */
+  else if (strcmp (TREE_STRING_POINTER (stripped_string), "%c") == 0)
+    {
+      tree newarglist = build_tree_list (NULL_TREE, TREE_VALUE (arglist));
+      arglist = tree_cons (NULL_TREE,
+			   TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist))),
+			   newarglist);
+      fn = fn_fputc;
+    }
+  else
+    {
+     /* We can't handle anything else with % args or %% ... yet. */
+      if (strchr (TREE_STRING_POINTER (stripped_string), '%'))
+	return 0;
+      
+      /* When "string" doesn't contain %, replace all cases of
+         fprintf(stream,string) with fputs(string,stream).  The fputs
+         builtin will take take of special cases like length==1.  */
+      arglist = tree_cons (NULL_TREE, TREE_VALUE (TREE_CHAIN (arglist)),
+			   build_tree_list (NULL_TREE, TREE_VALUE (arglist)));
+      fn = fn_fputs;
     }
   
   return expand_expr (build_function_call (fn, arglist),

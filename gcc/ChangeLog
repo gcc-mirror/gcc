@@ -1,3 +1,16 @@
+2001-01-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.def (BUILT_IN_FPRINTF): New entry.
+
+	* c-common.c (c_expand_builtin_fprintf): New function.
+	(init_function_format_info): Handle __builtin_fprintf.
+	(c_common_nodes_and_builtins): Declare fprintf/__builtin_fprintf.
+	(c_expand_builtin): Handle BUILT_IN_FPRINTF.
+
+	* c-decl.c (duplicate_decls): Adjust comment.
+
+	* extend.texi (fprintf): Document new builtin.
+
 2001-01-07  Richard Henderson  <rth@redhat.com>
 
 	* jump.c (simplejump_p): Recognize any single_set jump
