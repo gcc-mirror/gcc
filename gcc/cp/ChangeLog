@@ -1,3 +1,7 @@
+2000-04-28  Cosmin Truta  <cosmint@cs.ubbcluj.ro>
+
+	* decl.c (grok_op_properties): Add an extra check of argtypes.
+
 2000-04-28  Jason Merrill  <jason@casey.cygnus.com>
 
 	* optimize.c (initialize_inlined_parameters): Call 
