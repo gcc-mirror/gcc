@@ -283,6 +283,10 @@ struct cpp_options
      promotions.  */
   unsigned char warn_num_sign_change;
 
+  /* Zero means don't warn about __VA_ARGS__ usage in c89 pedantic mode.
+     Presumably the usage is protected by the appropriate #ifdef.  */
+  unsigned char warn_variadic_macros;
+
   /* Nonzero means turn warnings into errors.  */
   unsigned char warnings_are_errors;
 

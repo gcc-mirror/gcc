@@ -1,3 +1,13 @@
+2004-02-19  Richard Henderson  <rth@redhat.com>
+
+	* c-opts.c (warn_variadic_macros): New.
+	(c_common_handle_option): Set it.
+	(sanitize_cpp_opts): Copy it to cpp_opts.
+	* c.opt (Wvariadic-macros): New.
+	* cpplib.h (struct cpp_options): Add warn_variadic_macros.
+	* cppinit.c (cpp_create_reader): Initialize it.
+	* cppmacro.c (parse_params): Check it.
+
 2004-02-19  David Daney <ddaney@avtrex.com>
 
 	PR preprocessor/14198

@@ -1327,11 +1327,14 @@ parse_params (cpp_reader *pfile, cpp_macro *macro)
 	      _cpp_save_parameter (pfile, macro,
 				   pfile->spec_nodes.n__VA_ARGS__);
 	      pfile->state.va_args_ok = 1;
-	      if (! CPP_OPTION (pfile, c99) && CPP_OPTION (pfile, pedantic))
+	      if (! CPP_OPTION (pfile, c99)
+		  && CPP_OPTION (pfile, pedantic)
+		  && CPP_OPTION (pfile, warn_variadic_macros))
 		cpp_error (pfile, CPP_DL_PEDWARN,
 			   "anonymous variadic macros were introduced in C99");
 	    }
-	  else if (CPP_OPTION (pfile, pedantic))
+	  else if (CPP_OPTION (pfile, pedantic)
+		   && CPP_OPTION (pfile, warn_variadic_macros))
 	    cpp_error (pfile, CPP_DL_PEDWARN,
 		       "ISO C does not permit named variadic macros");
 
