@@ -269,7 +269,7 @@
         (match_operand:SI 1 "general_operand"       "r,L,Qm,rL,i,i"))]
   "(register_operand (operands[0],SImode)
     || register_operand (operands[1],SImode) || const0_rtx == operands[1])"
-  "* return output_movsisf (insn, operands, which_alternative);"
+  "* return output_movsisf (insn, operands, NULL);"
   [(set_attr "length" "4,4,8,8,4,10")
    (set_attr "cc" "none,set_zn,clobber,clobber,clobber,clobber")])
 
@@ -295,7 +295,7 @@
         (match_operand:SF 1 "general_operand"       "r,G,Qm,r,F,F"))]
   "register_operand (operands[0], SFmode)
    || register_operand (operands[1], SFmode)"
-  "* return output_movsisf (insn, operands, which_alternative);"
+  "* return output_movsisf (insn, operands, NULL);"
   [(set_attr "length" "4,4,8,8,4,10")
    (set_attr "cc" "none,set_zn,clobber,clobber,clobber,clobber")])
 

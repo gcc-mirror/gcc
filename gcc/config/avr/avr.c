@@ -4545,6 +4545,10 @@ output_reload_inhi (insn, operands, len)
      rtx *operands;
      int *len;
 {
+  int tmp;
+  if (!len)
+    len = &tmp;
+      
   if (GET_CODE (operands[1]) == CONST_INT)
     {
       int val = INTVAL (operands[1]);
