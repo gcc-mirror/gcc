@@ -395,6 +395,11 @@ GLIBCPP_3.2.3 {
 
 } GLIBCPP_3.2.2;
 
+GLIBCPP_3.2.4 {
+
+  _ZNSt9basic_iosI[cw]St11char_traitsI[cw]EE11_M_setstateESt12_Ios_Iostate;
+
+} GLIBCPP_3.2.3;
 
 # Symbols in the support library (libsupc++) have their own tag.
 CXXABI_1.2 {

@@ -1,3 +1,12 @@
+2004-05-13  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/14720
+	* config/linker-map.gnu: Export basic_ios::_M_setstate.
+	* testsuite/abi_check.cc (check_version): Add GLIBCXX_3.2.4
+	to known versions.
+	* configure.in (libtool_VERSION): To 5:6:0. 
+	* configure: Regenerated.
+
 2004-05-07  Matthias Klose  <doko@debian.org>
 
 	* include/backward/iterator.h: Add GPL copyright info,
