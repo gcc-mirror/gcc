@@ -3684,10 +3684,6 @@ parse_stabs_common (string_start, string_end, rest)
 	  return;
 	}
 
-      /* Ignore line number 0 for now until G++ bug that generates them is fixed.  */
-      if (code == 0)
-	return;
-
       dummy_symr.index = code;
       if (dummy_symr.index != code)
 	{
