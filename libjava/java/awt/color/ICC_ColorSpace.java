@@ -78,4 +78,28 @@ public class ICC_ColorSpace extends ColorSpace
     // FIXME: Not implemented
     throw new UnsupportedOperationException();
   }
+
+  /**
+   * @param component The index of the color component
+   * 
+   * @exception IllegalArgumentException If <code>component<code> is less
+   * then 0 or greater then <code>numComponents - 1</code>
+   */
+  public float getMinValue (int component)
+  {
+    // FIXME: Not implemented
+    throw new UnsupportedOperationException();
+  }
+
+  /**
+   * @param component The index of the color component
+   * 
+   * @exception IllegalArgumentException If <code>component<code> is less
+   * then 0 or greater then <code>numComponents - 1</code>
+   */
+  public float getMaxValue (int component)
+  {
+    // FIXME: Not implemented
+    throw new UnsupportedOperationException();
+  }
 }

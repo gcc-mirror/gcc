@@ -83,7 +83,7 @@ public interface DragSourceListener extends EventListener
    *
    * @param e the drag source drag event
    */
-  void dragExit(DragSourceDragEvent e);
+  void dragExit(DragSourceEvent e);
 
   /**
    * Called when the drag and drop operation is complete. After this event,
@@ -93,5 +93,5 @@ public interface DragSourceListener extends EventListener
    *
    * @param e the drag source drag event
    */
-  void dragDropEnd(DragSourceDragEvent e);
+  void dragDropEnd(DragSourceDropEvent e);
 } // interface DragSourceListener

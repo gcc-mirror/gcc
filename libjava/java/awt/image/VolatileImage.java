@@ -49,7 +49,7 @@ public abstract class VolatileImage extends Image
 {
   public static final int IMAGE_OK = 0;
   public static final int IMAGE_RESTORED = 1;
-  public static final int IMAGE_INCOMPLETE = 2;
+  public static final int IMAGE_INCOMPATIBLE = 2;
   public VolatileImage()
   {
   }

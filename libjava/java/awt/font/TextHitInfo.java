@@ -107,4 +107,8 @@ public final class TextHitInfo {
     return new TextHitInfo();
   }
 
+  public String toString()
+  {
+    return "";
+  }
 }

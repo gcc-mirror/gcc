@@ -74,13 +74,13 @@ package java.beans;
 
 public interface BeanInfo {
 	/** Use this as a parameter for the getIcon() command to retrieve a certain type of icon. **/
-	public static int ICON_COLOR_16x16 = 1;
+	public static final int ICON_COLOR_16x16 = 1;
 	/** Use this as a parameter for the getIcon() command to retrieve a certain type of icon. **/
-	public static int ICON_COLOR_32x32 = 2;
+	public static final int ICON_COLOR_32x32 = 2;
 	/** Use this as a parameter for the getIcon() command to retrieve a certain type of icon. **/
-	public static int ICON_MONO_16x16 = 3;
+	public static final int ICON_MONO_16x16 = 3;
 	/** Use this as a parameter for the getIcon() command to retrieve a certain type of icon. **/
-	public static int ICON_MONO_32x32 = 4;
+	public static final int ICON_MONO_32x32 = 4;
 
 	/** Get the general description of this Bean type.
 	 ** @return the BeanDescriptor for the Bean, or null if
