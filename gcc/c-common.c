@@ -1,5 +1,5 @@
 /* Subroutines shared by all languages that are variants of C.
-   Copyright (C) 1992, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93, 94, 95, 96, 97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -918,37 +918,39 @@ typedef struct {
   /* Type of argument if length modifier `L' is used.
      If NULL, then this modifier is not allowed.  */
   tree *bigllen;
+  /* Type of argument if length modifier `Z' is used.
+     If NULL, then this modifier is not allowed.  */
+  tree *zlen;
   /* List of other modifier characters allowed with these options.  */
   char *flag_chars;
 } format_char_info;
 
 static format_char_info print_char_table[] = {
-  { "di",	0,	T_I,	T_I,	T_L,	T_LL,	T_LL,	"-wp0 +"	},
-  { "oxX",	0,	T_UI,	T_UI,	T_UL,	T_ULL,	T_ULL,	"-wp0#"		},
-  { "u",	0,	T_UI,	T_UI,	T_UL,	T_ULL,	T_ULL,	"-wp0"		},
-/* Two GNU extensions.  */
-  { "Z",	0,	T_ST,	NULL,	NULL,	NULL,	NULL,	"-wp0"		},
-  { "m",	0,	T_V,	NULL,	NULL,	NULL,	NULL,	"-wp"		},
-  { "feEgGaA",	0,	T_D,	NULL,	NULL,	NULL,	T_LD,	"-wp0 +#"	},
-  { "c",	0,	T_I,	NULL,	T_W,	NULL,	NULL,	"-w"		},
-  { "C",	0,	T_W,	NULL,	NULL,	NULL,	NULL,	"-w"		},
-  { "s",	1,	T_C,	NULL,	T_W,	NULL,	NULL,	"-wp"		},
-  { "S",	1,	T_W,	NULL,	NULL,	NULL,	NULL,	"-wp"		},
-  { "p",	1,	T_V,	NULL,	NULL,	NULL,	NULL,	"-w"		},
-  { "n",	1,	T_I,	T_S,	T_L,	T_LL,	NULL,	""		},
+  { "di",	0,	T_I,	T_I,	T_L,	T_LL,	T_LL,	T_ST,	"-wp0 +"	},
+  { "oxX",	0,	T_UI,	T_UI,	T_UL,	T_ULL,	T_ULL,	T_ST,	"-wp0#"		},
+  { "u",	0,	T_UI,	T_UI,	T_UL,	T_ULL,	T_ULL,	T_ST,	"-wp0"		},
+/* A GNU extension.  */
+  { "m",	0,	T_V,	NULL,	NULL,	NULL,	NULL,	NULL,	"-wp"		},
+  { "feEgGaA",	0,	T_D,	NULL,	NULL,	NULL,	T_LD,	NULL,	"-wp0 +#"	},
+  { "c",	0,	T_I,	NULL,	T_W,	NULL,	NULL,	NULL,	"-w"		},
+  { "C",	0,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	"-w"		},
+  { "s",	1,	T_C,	NULL,	T_W,	NULL,	NULL,	NULL,	"-wp"		},
+  { "S",	1,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	"-wp"		},
+  { "p",	1,	T_V,	NULL,	NULL,	NULL,	NULL,	NULL,	"-w"		},
+  { "n",	1,	T_I,	T_S,	T_L,	T_LL,	NULL,	NULL,	""		},
   { NULL }
 };
 
 static format_char_info scan_char_table[] = {
-  { "di",	1,	T_I,	T_S,	T_L,	T_LL,	T_LL,	"*"	},
-  { "ouxX",	1,	T_UI,	T_US,	T_UL,	T_ULL,	T_ULL,	"*"	},	
-  { "efgEGaA",	1,	T_F,	NULL,	T_D,	NULL,	T_LD,	"*"	},
-  { "sc",	1,	T_C,	NULL,	T_W,	NULL,	NULL,	"*a"	},
-  { "[",	1,	T_C,	NULL,	NULL,	NULL,	NULL,	"*a"	},
-  { "C",	1,	T_W,	NULL,	NULL,	NULL,	NULL,	"*"	},
-  { "S",	1,	T_W,	NULL,	NULL,	NULL,	NULL,	"*"	},
-  { "p",	2,	T_V,	NULL,	NULL,	NULL,	NULL,	"*"	},
-  { "n",	1,	T_I,	T_S,	T_L,	T_LL,	NULL,	""	},
+  { "di",	1,	T_I,	T_S,	T_L,	T_LL,	T_LL,	NULL,	"*"	},
+  { "ouxX",	1,	T_UI,	T_US,	T_UL,	T_ULL,	T_ULL,	NULL,	"*"	},	
+  { "efgEGaA",	1,	T_F,	NULL,	T_D,	NULL,	T_LD,	NULL,	"*"	},
+  { "sc",	1,	T_C,	NULL,	T_W,	NULL,	NULL,	NULL,	"*a"	},
+  { "[",	1,	T_C,	NULL,	NULL,	NULL,	NULL,	NULL,	"*a"	},
+  { "C",	1,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	"*"	},
+  { "S",	1,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	"*"	},
+  { "p",	2,	T_V,	NULL,	NULL,	NULL,	NULL,	NULL,	"*"	},
+  { "n",	1,	T_I,	T_S,	T_L,	T_LL,	NULL,	NULL,	""	},
   { NULL }
 };
 
@@ -1287,7 +1289,7 @@ check_format_info (info, params)
 	      if (index (flag_chars, *format_chars) != 0)
 		{
 		  sprintf (message, "repeated `%c' flag in format",
-			   *format_chars);
+			   *format_chars++);
 		  warning (message);
 		}
 	      else
@@ -1394,6 +1396,12 @@ check_format_info (info, params)
 	  if (pedantic)
 	    pedwarn ("ANSI C does not support the `%c' length modifier",
 		     length_char);
+	}
+      else if (*format_chars == 'Z')
+	{
+	  length_char = *format_chars++;
+	  if (pedantic)
+	    pedwarn ("ANSI C does not support the `Z' length modifier");
 	}
       else
 	length_char = 0;
@@ -1517,6 +1525,7 @@ check_format_info (info, params)
 	case 'l': wanted_type = fci->llen ? *(fci->llen) : 0; break;
 	case 'q': wanted_type = fci->qlen ? *(fci->qlen) : 0; break;
 	case 'L': wanted_type = fci->bigllen ? *(fci->bigllen) : 0; break;
+	case 'Z': wanted_type = fci->zlen ? *fci->zlen : 0; break;
 	}
       if (wanted_type == 0)
 	{
