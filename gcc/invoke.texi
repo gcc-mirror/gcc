@@ -304,7 +304,9 @@ in the following sections.
 -mstats  -EL  -EB  -G @var{num}  -nocpp
 
 @emph{i386 Options}
--m486  -m386  -mieee-fp  -mno-fancy-math-387
+-mcpu=@var{cpu type}
+-march=@var{cpu type}
+-mieee-fp  -mno-fancy-math-387
 -mno-fp-ret-in-387  -msoft-float  -msvr3-shlib
 -mno-wide-multiply  -mrtd  -malign-double
 -mreg-alloc=@var{list}  -mregparm=@var{num}
@@ -4456,11 +4458,27 @@ defaults.
 
 These @samp{-m} options are defined for the i386 family of computers:
 
-@table @code
-@item -m486
-@itemx -m386
-Control whether or not code is optimized for a 486 instead of an
-386.  Code generated for an 486 will run on a 386 and vice versa.
+@item -mcpu=@var{cpu type}
+Assume the defaults for the machine type @var{cpu type} when scheduling
+instructions.  The choices for @var{cpu type} are: @samp{i386},
+@samp{i486}, @samp{i586} (@samp{pentium}), @samp{pentium}, @samp{i686}
+(@samp{pentiumpro}) and @samp{pentiumpro}. While picking a specific
+@var{cpu type} will schedule things appropriately for that particular
+chip, the compiler will not generate any code that does not run on the
+i386 without the @samp{-march=@var{cpu type}} option being used.
+
+@item -march=@var{cpu type}
+Generate instructions for the machine type @var{cpu type}.  The choices
+for @var{cpu type} are: @samp{i386}, @samp{i486}, @samp{pentium}, and
+@samp{pentiumpro}.  Specifying @samp{-march=@var{cpu type}} implies
+@samp{-mcpu=@var{cpu type}}.
+
+@item -m386
+@itemx -m486
+@itemx -mpentium
+@itemx -mpentiumpro
+Synonyms for -mcpu=i386, -mcpu=i486, -mcpu=pentium, and -mcpu=pentiumpro
+respectively.
 
 @item -mieee-fp
 @itemx -mno-ieee-fp
