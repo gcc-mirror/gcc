@@ -90,7 +90,7 @@ typedef struct
   gfc_offset physical_offset;	/* Current physical file offset */
   gfc_offset logical_offset;	/* Current logical file offset */
   gfc_offset dirty_offset;	/* Start of modified bytes in buffer */
-  gfc_offset file_length;		/* Length of the file, -1 if not seekable. */
+  gfc_offset file_length;	/* Length of the file, -1 if not seekable. */
 
   char *buffer;
   int len;			/* Physical length of the current buffer */
@@ -280,7 +280,9 @@ fd_flush (unix_stream * s)
     return FAILURE;
 
   s->physical_offset = s->dirty_offset + s->ndirty;
-  if (s->physical_offset > s->file_length)
+
+  /* don't increment file_length if the file is non-seekable */
+  if (s->file_length != -1 && s->physical_offset > s->file_length)
     s->file_length = s->physical_offset;
   s->ndirty = 0;
 
@@ -406,18 +408,28 @@ fd_alloc_w_at (unix_stream * s, int *len, gfc_offset where)
     }
 
   /* Return a position within the current buffer */
-
-  if (s->ndirty == 0)
-    {				/* First write into a clean buffer */
-      s->dirty_offset = where;
-      s->ndirty = *len;
+  if (s->ndirty == 0 
+      || where > s->dirty_offset + s->ndirty    
+      || s->dirty_offset > where + *len)
+    {  /* Discontiguous blocks, start with a clean buffer.  */  
+        /* Flush the buffer.  */  
+       if (s->ndirty != 0)    
+         fd_flush (s);  
+       s->dirty_offset = where;  
+       s->ndirty = *len;
     }
   else
-    {
-      if (s->dirty_offset + s->ndirty == where)
-	s->ndirty += *len;
-      else
-	fd_flush (s);		/* Can't combine two dirty blocks */
+    {  
+      gfc_offset start;  /* Merge with the existing data.  */  
+      if (where < s->dirty_offset)    
+        start = where;  
+      else    
+        start = s->dirty_offset;  
+      if (where + *len > s->dirty_offset + s->ndirty)    
+        s->ndirty = where + *len - start;  
+      else    
+        s->ndirty = s->dirty_offset + s->ndirty - start;  
+        s->dirty_offset = start;
     }
 
   s->logical_offset = where + *len;
@@ -461,13 +473,18 @@ static try
 fd_truncate (unix_stream * s)
 {
 
-  if (ftruncate (s->fd, s->logical_offset))
+  if (lseek (s->fd, s->logical_offset, SEEK_SET) == -1)
     return FAILURE;
+
+  /* non-seekable files, like terminals and fifo's fail the lseek.
+     the fd is a regular file at this point */
+
+  if (ftruncate (s->fd, s->logical_offset))
+   {
+    return FAILURE;
+   }
 
   s->physical_offset = s->file_length = s->logical_offset;
-
-  if (lseek (s->fd, s->file_length, SEEK_SET) == -1)
-    return FAILURE;
 
   return SUCCESS;
 }
@@ -1390,8 +1407,10 @@ file_position (stream * s)
 int
 is_seekable (stream * s)
 {
-
-  return ((unix_stream *) s)->mmaped;
+  /* by convention, if file_length == -1, the file is not seekable
+     note that a mmapped file is always seekable, an fd_ file may
+     or may not be. */
+  return ((unix_stream *) s)->file_length!=-1;
 }
 
 try

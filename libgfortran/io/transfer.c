@@ -835,6 +835,11 @@ us_write (void)
   if (sfree (current_unit->s) == FAILURE)
     generate_error (ERROR_OS, NULL);
 
+  /* for sequential unformatted, we write until we have more bytes than
+      can fit in the record markers. if disk space runs out first it will
+      error on the write */
+  current_unit->recl = g.max_offset;
+
   current_unit->bytes_left = current_unit->recl;
 }
 
@@ -890,7 +895,11 @@ data_transfer_init (int read_flag)
      memset (&u_flags, '\0', sizeof (u_flags));
      u_flags.access = ACCESS_SEQUENTIAL;
      u_flags.action = ACTION_READWRITE;
-     u_flags.form = FORM_UNSPECIFIED;
+     /* is it unformatted ?*/
+     if (ioparm.format == NULL && !ioparm.list_format)
+       u_flags.form = FORM_UNFORMATTED;
+     else
+       u_flags.form = FORM_UNSPECIFIED;
      u_flags.delim = DELIM_UNSPECIFIED;
      u_flags.blank = BLANK_UNSPECIFIED;
      u_flags.pad = PAD_UNSPECIFIED;

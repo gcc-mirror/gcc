@@ -1,3 +1,16 @@
+2004-07-04  Bud Davis  <bdavis9659@comcast.net>
+	    Paul Brook  <paul@codesourcery.com>
+
+	PR fortran/15472
+	* io/transfer.c(us_write): set recl for seq unform writes to max size.
+	* io/transfer.c(data_transfer_init): handle un-opened seq unform unit.
+	* io/unix.c(fd_alloc_w_at): handle requests at start, fd_flush at 
+	  right time.
+	* io/unix.c(is_seekable): set based upon the file/device, not the
+          method being used to access it (fd or mmap).
+	* io/unix.c(fd_flush): don't set file_size if !seekable.
+	* io/unix.c(fd_truncate: ditto.
+
 2004-07-04  Janne Blomqvist  <jblomqvi@cc.hut.fi>
 	Paul Brook  <paul@codesourcery.com>
 
