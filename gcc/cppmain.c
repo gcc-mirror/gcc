@@ -271,9 +271,6 @@ printer_init (pfile)
   print.lineno = 0;
   print.printed = 0;
 
-  if (options->out_fname == NULL)
-    options->out_fname = "";
-  
   if (options->out_fname[0] == '\0')
     print.outf = stdout;
   else

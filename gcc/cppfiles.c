@@ -174,7 +174,8 @@ _cpp_fake_include (pfile, fname)
    create one with a non-NULL value (regardless of success in opening
    the file).  If the file doesn't exist or is inaccessible, this
    entry is flagged so we don't attempt to open it again in the
-   future.  If the file isn't open, open it.
+   future.  If the file isn't open, open it.  The empty string is
+   interpreted as stdin.
 
    Returns an include_file structure with an open file descriptor on
    success, or NULL on failure.  */
@@ -755,18 +756,13 @@ _cpp_compare_file_date (pfile, f)
 
 
 /* Push an input buffer and load it up with the contents of FNAME.
-   If FNAME is "" or NULL, read standard input.  */
+   If FNAME is "", read standard input.  */
 int
 _cpp_read_file (pfile, fname)
      cpp_reader *pfile;
      const char *fname;
 {
-  struct include_file *f;
-
-  if (fname == NULL)
-    fname = "";
-
-  f = open_file (pfile, fname);
+  struct include_file *f = open_file (pfile, fname);
 
   if (f == NULL)
     {
