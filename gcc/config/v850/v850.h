@@ -1555,6 +1555,24 @@ enum GHS_section_kind
   COUNT_OF_GHS_SECTION_KINDS  /* must be last */
 };
 
+/* The following code is for handling pragmas supported by the
+   v850 compiler produced by Green Hills Software.  This is at
+   the specific request of a customer.  */
+
+typedef struct data_area_stack_element
+{
+  struct data_area_stack_element * prev;
+  v850_data_area                   data_area; /* Current default data area.  */
+} data_area_stack_element;
+
+/* Track the current data area set by the
+   data area pragma (which can be nested).  */
+extern data_area_stack_element * data_area_stack;
+
+/* Names of the various data areas used on the v850.  */
+extern union tree_node * GHS_default_section_names [(int) COUNT_OF_GHS_SECTION_KINDS];
+extern union tree_node * GHS_current_section_names [(int) COUNT_OF_GHS_SECTION_KINDS];
+
 /* The assembler op to start the file.  */
 
 #define FILE_ASM_OP "\t.file\n"

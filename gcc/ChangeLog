@@ -1,5 +1,35 @@
 2000-11-24  Nick Clifton  <nickc@redhat.com>
 
+	* config.gcc (v850-*-*): Define c_target_objs and
+        cxx_target_objs.
+
+	* config/v850/t-v850: Define how to build v850-c.o
+
+	* config/v850/v850.h (struct data_area_stack_element): Move
+	definition here from v850.c.
+
+	* config/v850v850.c: Include gcc.h to avoid compile time
+	warning.
+	(push_data_area): Move to v850-c.c.
+	(pop_data_area): Move to v850-c.c.
+	(mark_current_function_as_interrupt): Move to v850-c.c.
+	(GHS_default_section_names): Allow to be exported.
+	(GHS_current_section_names): Allow to be exported.
+	(data_area_stack_elements): Allow to be exported.
+	(ghs_pragma_section): Move to v850-c.c.
+	(ghs_pragma_interrupt): Move to v850-c.c.
+	(ghs_pragma_starttda): Move to v850-c.c.
+	(ghs_pragma_startsda): Move to v850-c.c.
+	(ghs_pragma_startzda): Move to v850-c.c.
+	(ghs_pragma_endtda): Move to v850-c.c.
+	(ghs_pragma_endsda): Move to v850-c.c.
+	(ghs_pragma_endzda): Move to v850-c.c.
+
+	* config/v850/v850-c.c: New file: Contains v850 specific
+	pragma parsing functions.
+
+2000-11-24  Nick Clifton  <nickc@redhat.com>
+
 	* config.gcc (extra_objs): Remove duplicate description.
 	(c_target_objs): New variable.  Contains target specific
 	object files for the gcc C compiler only.

@@ -38,7 +38,7 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "cpplib.h"
 #include "c-lex.h"
-#include "c-pragma.h"
+#include "ggc.h"
 #include "tm_p.h"
 
 #ifndef streq
@@ -50,10 +50,7 @@ static void const_double_split
   PARAMS ((rtx, HOST_WIDE_INT *, HOST_WIDE_INT *));
 static int  const_costs_int        PARAMS ((HOST_WIDE_INT, int));
 static void substitute_ep_register PARAMS ((rtx, rtx, int, int, rtx *, rtx *));
-static int  push_data_area         PARAMS ((v850_data_area));
-static int  pop_data_area          PARAMS ((v850_data_area));
 static int  ep_memory_offset       PARAMS ((enum machine_mode, int));
-static int  mark_current_function_as_interrupt PARAMS ((void));
 static void v850_set_data_area     PARAMS ((tree, v850_data_area));
 
 /* True if the current function has anonymous arguments.  */
@@ -68,8 +65,16 @@ struct small_memory_info small_memory[ (int)SMALL_MEMORY_max ] =
   { "zda",	(char *)0,	0,		32768 },
 };
 
+/* Names of the various data areas used on the v850.  */
+tree GHS_default_section_names [(int) COUNT_OF_GHS_SECTION_KINDS];
+tree GHS_current_section_names [(int) COUNT_OF_GHS_SECTION_KINDS];
+
+/* Track the current data area set by the data area pragma (which 
+   can be nested).  Tested by check_default_data_area.  */
+data_area_stack_element * data_area_stack = NULL;
+
 /* True if we don't need to check any more if the current
-   function is an interrupt handler */
+   function is an interrupt handler.  */
 static int v850_interrupt_cache_p = FALSE;
 
 /* Whether current function is an interrupt handler.  */
@@ -1028,7 +1033,7 @@ not_power_of_two_operand (op, mode)
   else if (mode == HImode)
     mask = 0xffff;
   else if (mode == SImode)
-    mask = 0xffffffff; 
+    mask = 0xffffffffU;
   else
     return 0;
 
@@ -1104,12 +1109,12 @@ Saved %d bytes (%d uses of register %s) in function %s, starting as insn %d, end
 		{
 		  rtx addr = XEXP (*p_mem, 0);
 
-		  if (GET_CODE (addr) == REG && REGNO (addr) == regno)
+		  if (GET_CODE (addr) == REG && REGNO (addr) == (unsigned) regno)
 		    *p_mem = change_address (*p_mem, VOIDmode, *p_ep);
 
 		  else if (GET_CODE (addr) == PLUS
 			   && GET_CODE (XEXP (addr, 0)) == REG
-			   && REGNO (XEXP (addr, 0)) == regno
+			   && REGNO (XEXP (addr, 0)) == (unsigned) regno
 			   && GET_CODE (XEXP (addr, 1)) == CONST_INT
 			   && ((INTVAL (XEXP (addr, 1)))
 			       < ep_memory_offset (GET_MODE (*p_mem),
@@ -2636,240 +2641,6 @@ v850_output_local (file, decl, name, size, align)
   fprintf (file, "\n");
   
   ASM_OUTPUT_ALIGNED_DECL_COMMON (file, decl, name, size, align);
-}
-
-/* The following code is for handling pragmas supported by the
-   v850 compiler produced by Green Hills Software.  This is at
-   the specific request of a customer.  */
-
-/* Track the current data area set by the data area pragma (which 
-   can be nested).  Tested by check_default_data_area. */
-
-typedef struct data_area_stack_element
-{
-  struct data_area_stack_element * prev;
-  v850_data_area                   data_area; /* current default data area. */
-} data_area_stack_element;
-
-static data_area_stack_element * data_area_stack = NULL;
-
-/* Names of the various data areas used on the v850.  */
-static tree GHS_default_section_names [(int) COUNT_OF_GHS_SECTION_KINDS];
-static tree GHS_current_section_names [(int) COUNT_OF_GHS_SECTION_KINDS];
-
-/* Push a data area onto the stack.  */
-static int
-push_data_area (data_area)
-     v850_data_area data_area;
-{
-  data_area_stack_element * elem;
-
-  elem = (data_area_stack_element *) xmalloc (sizeof (* elem));
-
-  if (elem == NULL)
-    return 0;
-
-  elem->prev      = data_area_stack;
-  elem->data_area = data_area;
-
-  data_area_stack = elem;
-
-  return 1;
-}
-
-/* Remove a data area from the stack.  */
-static int
-pop_data_area (data_area)
-     v850_data_area data_area;
-{
-  if (data_area_stack == NULL)
-    warning ("#pragma GHS endXXXX found without previous startXXX");
-  else if (data_area != data_area_stack->data_area)
-    warning ("#pragma GHS endXXX does not match previous startXXX");
-  else
-    {
-      data_area_stack_element * elem;
-
-      elem = data_area_stack;
-      data_area_stack = data_area_stack->prev;
-
-      free (elem);
-
-      return 1;
-    }
-
-  return 0;
-}
-
-/* Set the machine specific 'interrupt' attribute on the current function.  */
-static int
-mark_current_function_as_interrupt ()
-{
-  tree name;
-  
-  if (current_function_decl ==  NULL_TREE)
-    {
-      warning ("Cannot set interrupt attribute: no current function");
-      return 0;
-    }
-
-  name = get_identifier ("interrupt");
-
-  if (name == NULL_TREE || TREE_CODE (name) != IDENTIFIER_NODE)
-    {
-      warning ("Cannot set interrupt attribute: no such identifier");
-      return 0;
-    }
-  
-  return valid_machine_attribute
-    (name, NULL_TREE, current_function_decl, NULL_TREE);
-}
-
-/* Support for GHS pragmata.  */
-
-void
-ghs_pragma_section (pfile)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
-{
-  int repeat;
-
-  /* #pragma ghs section [name = alias [, name = alias [, ...]]] */
-  do {
-    tree x;
-    enum cpp_ttype type;
-    const char *sect, *alias;
-    enum GHS_section_kind kind;
-
-    type = c_lex (&x);
-    if (type == CPP_EOF && !repeat)
-      goto reset;
-    else if (type == CPP_NAME)
-      sect = IDENTIFIER_POINTER (x);
-    else
-      goto bad;
-    repeat = 0;
-
-    if (c_lex (&x) != CPP_EQ)
-      goto bad;
-    if (c_lex (&x) != CPP_NAME)
-      goto bad;
-    alias = IDENTIFIER_POINTER (x);
-
-    type = c_lex (&x);
-    if (type == CPP_COMMA)
-      repeat = 1;
-    else if (type != CPP_EOF)
-      warning ("junk at end of #pragma ghs section");
-
-    if      (streq (sect, "data"))    kind = GHS_SECTION_KIND_DATA;
-    else if (streq (sect, "text"))    kind = GHS_SECTION_KIND_TEXT;
-    else if (streq (sect, "rodata"))  kind = GHS_SECTION_KIND_RODATA;
-    else if (streq (sect, "const"))   kind = GHS_SECTION_KIND_RODATA;
-    else if (streq (sect, "rosdata")) kind = GHS_SECTION_KIND_ROSDATA;
-    else if (streq (sect, "rozdata")) kind = GHS_SECTION_KIND_ROZDATA;
-    else if (streq (sect, "sdata"))   kind = GHS_SECTION_KIND_SDATA;
-    else if (streq (sect, "tdata"))   kind = GHS_SECTION_KIND_TDATA;
-    else if (streq (sect, "zdata"))   kind = GHS_SECTION_KIND_ZDATA;
-    /* According to GHS beta documentation, the following should not be
-       allowed!  */
-    else if (streq (sect, "bss"))     kind = GHS_SECTION_KIND_BSS;
-    else if (streq (sect, "zbss"))    kind = GHS_SECTION_KIND_ZDATA;
-    else
-      {
-	warning ("unrecognised section name \"%s\"", sect);
-	return;
-      }
-
-    if (streq (alias, "default"))
-      GHS_current_section_names [kind] = NULL;
-    else
-      GHS_current_section_names [kind] =
-	build_string (strlen (alias) + 1, alias);
-
-  } while (repeat);
-  return;
-
- bad:
-  warning ("malformed #pragma ghs section");
-  return;
-
- reset:
-  /* #pragma ghs section \n: Reset all section names back to their defaults.  */
-  {
-    int i;
-    for (i = COUNT_OF_GHS_SECTION_KINDS; i--;)
-      GHS_current_section_names [i] = NULL;
-  }
-}
-
-void
-ghs_pragma_interrupt (pfile)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
-{
-  tree x;
-  if (c_lex (&x) != CPP_EOF)
-    warning ("junk at end of #pragma ghs interrupt");
-  mark_current_function_as_interrupt ();
-}
-
-void
-ghs_pragma_starttda (pfile)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
-{
-  tree x;
-  if (c_lex (&x) != CPP_EOF)
-    warning ("junk at end of #pragma ghs starttda");
-  push_data_area (DATA_AREA_TDA);
-}
-
-void
-ghs_pragma_startsda (pfile)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
-{
-  tree x;
-  if (c_lex (&x) != CPP_EOF)
-    warning ("junk at end of #pragma ghs startsda");
-  push_data_area (DATA_AREA_SDA);
-}
-
-void
-ghs_pragma_startzda (pfile)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
-{
-  tree x;
-  if (c_lex (&x) != CPP_EOF)
-    warning ("junk at end of #pragma ghs startzda");
-  push_data_area (DATA_AREA_ZDA);
-}
-
-void
-ghs_pragma_endtda (pfile)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
-{
-  tree x;
-  if (c_lex (&x) != CPP_EOF)
-    warning ("junk at end of #pragma ghs endtda");
-  pop_data_area (DATA_AREA_TDA);
-}
-
-void
-ghs_pragma_endsda (pfile)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
-{
-  tree x;
-  if (c_lex (&x) != CPP_EOF)
-    warning ("junk at end of #pragma ghs endsda");
-  pop_data_area (DATA_AREA_SDA);
-}
-
-void
-ghs_pragma_endzda (pfile)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
-{
-  tree x;
-  if (c_lex (&x) != CPP_EOF)
-    warning ("junk at end of #pragma ghs endzda");
-  pop_data_area (DATA_AREA_ZDA);
 }
 
 /* Add data area to the given declaration if a ghs data area pragma is

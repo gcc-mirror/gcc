@@ -31,7 +31,6 @@ LIB1ASMFUNCS	= _mulsi3 \
 		  _save_varargs \
 		  _save_interrupt \
 		  _save_all_interrupt
-	
 
 # We want fine grained libraries, so use the new code to build the
 # floating point emulation libraries.
@@ -52,3 +51,7 @@ fp-bit.c: $(srcdir)/config/fp-bit.c
 	cat $(srcdir)/config/fp-bit.c >> fp-bit.c
 
 TCFLAGS = -Wa,-mwarn-signed-overflow -Wa,-mwarn-unsigned-overflow
+
+v850-c.o: $(srcdir)/config/v850/v850-c.c
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
+
