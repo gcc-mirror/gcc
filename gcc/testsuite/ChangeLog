@@ -1,3 +1,28 @@
+2004-08-24  Janis Johnson  <janis187@us.ibm.com>
+
+	Copy tests from mainline.
+
+	* gcc.dg/altivec-6.c: New test.
+	* gcc.dg/altivec-12.c: New test.
+	* gcc.dg/altivec-13.c: New test.
+	* gcc.dg/altivec-14.c: New test.
+	* gcc.dg/altivec-15.c: New test.
+	* gcc.dg/altivec-16.c: New test.
+	* gcc.dg/altivec-17.c: New test.
+	* gcc.dg/altivec_check.h: New test.
+	* g++.dg/ext/altivec-2.C: New test.
+	* g++.dg/ext/altivec-3.C: New test.
+	* g++.dg/ext/altivec-4.C: New test.
+	* g++.dg/ext/altivec-5.C: New test.
+	* g++.dg/ext/altivec-6.C: New test.
+	* g++.dg/ext/altivec-7.C: New test.
+	* g++.dg/ext/altivec-8.C: New test.
+	* g++.dg/ext/altivec-9.C: New test.
+	* g++.dg/ext/altivec-10.C: New test.
+	* g++.dg/ext/altivec-11.C: New test.
+	* g++.dg/ext/altivec-12.C: New test.
+	* g++.dg/ext/altivec_check.h: New file.
+
 2004-08-24  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/16889
