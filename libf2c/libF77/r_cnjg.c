@@ -1,16 +1,11 @@
 #include "f2c.h"
 
 #ifdef KR_headers
-VOID r_cnjg(resx, z) complex *resx, *z;
+VOID r_cnjg(r, z) complex *r, *z;
 #else
-VOID r_cnjg(complex *resx, complex *z)
+VOID r_cnjg(complex *r, complex *z)
 #endif
 {
-complex res;
-
-res.r = z->r;
-res.i = - z->i;
-
-resx->r = res.r;
-resx->i = res.i;
+r->r = z->r;
+r->i = - z->i;
 }

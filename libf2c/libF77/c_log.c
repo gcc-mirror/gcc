@@ -2,20 +2,16 @@
 
 #ifdef KR_headers
 extern double log(), f__cabs(), atan2();
-VOID c_log(resx, z) complex *resx, *z;
+VOID c_log(r, z) complex *r, *z;
 #else
 #undef abs
-#include <math.h>
+#include "math.h"
 extern double f__cabs(double, double);
 
-void c_log(complex *resx, complex *z)
+void c_log(complex *r, complex *z)
 #endif
 {
-complex res;
-
-res.i = atan2(z->i, z->r);
-res.r = log( f__cabs(z->r, z->i) );
-
-resx->r = res.r;
-resx->i = res.i;
-}
+	double zi;
+	r->i = atan2(zi = z->i, z->r);
+	r->r = log( f__cabs(z->r, zi) );
+	}
