@@ -1,3 +1,9 @@
+2003-04-13  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/10300
+	* init.c (build_new_1): Correct logic for checking whether the
+	return value from the allocation function was zero.
+
 2003-03-31  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/10278
