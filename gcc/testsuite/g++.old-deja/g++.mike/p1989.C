@@ -439,7 +439,7 @@ Graph<T>::lookup_new(const T& from)
 {
     vertex<T> *v = lookup(from);
     if (0 == v) {
-	vertices.append(from);		// gets bogus error
+	vertices.append(from);
 	return &vertices(vertices.last());
     }
     return v;
