@@ -2063,7 +2063,10 @@ propagate_block (basic_block bb, regset live, regset local_set,
 	IOR_REG_SET (regs_live_at_setjmp, pbi->reg_live);
 
       prev = propagate_one_insn (pbi, insn);
-      changed |= NEXT_INSN (prev) != insn;
+      if (!prev)
+        changed |= insn != get_insns ();
+      else
+        changed |= NEXT_INSN (prev) != insn;
 
       if (insn == bb->head)
 	break;

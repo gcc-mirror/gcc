@@ -33,13 +33,12 @@ typedef struct reorder_block_def
   int visited;
 } *reorder_block_def;
 
-#define RBI(BB)	((reorder_block_def) (BB)->aux)
-
 extern rtx cfg_layout_function_footer;
 
-extern void cfg_layout_initialize (struct loops *);
+extern void cfg_layout_initialize (void);
 extern void cfg_layout_finalize (void);
 extern bool cfg_layout_can_duplicate_bb_p (basic_block);
 extern basic_block cfg_layout_duplicate_bb (basic_block, edge);
 extern void insn_locators_initialize (void);
 extern void reemit_insn_block_notes (void);
+extern void cfg_layout_initialize_rbi	(basic_block);

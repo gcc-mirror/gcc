@@ -241,6 +241,9 @@ typedef struct basic_block_def {
 
   /* Various flags.  See BB_* below.  */
   int flags;
+
+  /* Additional data maintained by cfg_layout routines.  */
+  struct reorder_block_def *rbi;
 } *basic_block;
 
 #define BB_FREQ_MAX 10000
@@ -362,9 +365,7 @@ extern void redirect_edge_succ		PARAMS ((edge, basic_block));
 extern edge redirect_edge_succ_nodup	PARAMS ((edge, basic_block));
 extern void redirect_edge_pred		PARAMS ((edge, basic_block));
 extern basic_block create_basic_block_structure PARAMS ((rtx, rtx, rtx, basic_block));
-extern basic_block create_basic_block	PARAMS ((rtx, rtx, basic_block));
 extern void clear_bb_flags		PARAMS ((void));
-extern void merge_blocks_nomove		PARAMS ((basic_block, basic_block));
 extern void tidy_fallthru_edge		PARAMS ((edge, basic_block,
 						 basic_block));
 extern void tidy_fallthru_edges		PARAMS ((void));
@@ -500,6 +501,7 @@ enum update_life_extent
 #define CLEANUP_THREADING	64	/* Do jump threading.  */
 #define CLEANUP_NO_INSN_DEL	128	/* Do not try to delete trivially dead
 					   insns.  */
+#define CLEANUP_CFGLAYOUT	256	/* Do cleanup in cfglayout mode.  */
 extern void life_analysis	PARAMS ((rtx, FILE *, int));
 extern int update_life_info	PARAMS ((sbitmap, enum update_life_extent,
 					 int));

@@ -1,3 +1,79 @@
+Thu Jul  3 20:36:47 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* basic-block.h (create_basic_block, merge_blocks_nomove): Kill.
+	* cfgcleanup.c (merge_blocks): Rename to merge_blocks_move.
+	(merge_blocks_move_predecessor_nojumps,
+	 merge_blocks_move_successor_nojumps): Use merge_blocks.
+	(try_optimize_cfg): Use merge_blocks_move.
+	* cfgrtl.c (create_basic_block): Rename to rtl_create_basic_block.
+	(merge_blocks_nomove): Rename to rtl_merge_blocks.
+	(cfg_layout_create_basic_block): New.
+	(rtl_can_merge_blocks): New.
+	(cfg_layout_split_block): Do not alloc aux by hand.
+	* cfghooks.h (cfg_hooks): Add create_basic_block, can_merge_blocks_p,
+	merge_blocks.
+	(create_basic_block, can_merge_blocks_p, merge_blocks): New macros.
+	* cfglayout.c (cfg_layout_duplicate_bb): Do not allocate aux by hand.
+	* cfgloopmanip.c (loop_split_edge_with): Likewise.
+	* ifcvt.c (merge_if_block): Use merge_blocks_nomove.
+
+	* basic-block.h (basic_block_def): Add field 'rbi'.
+	* bb-reorder.c (find_traces, rotate_loop, mark_bb_visited,
+	find_traces_1_round, copy_bb, connect_traces): Update use of rbi.
+	* cfg.c (entry_exit_blocks): Add new field.
+	* cfglayout.c: Include alloc-pool.h;
+	(cfg_layout_pool): New.
+	(record_effective_endpoints, fixup_reorder_chain,
+	fixup_fallthru_exit_predecessor, cfg_layout_duplicate_bb): Update use
+	of rbi.
+	(cfg_layout_initialize_rbi): New function.
+	(cfg_layout_initialize): Use it.
+	(cfg_layout_finalize): Clear rbi fields.
+	* cfglayout.h (RBI): Kill.
+	(cfg_layout_initialize_rbi): Declare.
+	* cfgloopmanip.c (copy_bbs): Use rbi.
+	(record_exit_edges): Likewise.
+	(duplicate_loop_to_header_edge): Likewise.
+	* cfgrtl.c (cfg_layout_create_basic_block): Use
+	cfg_layout_initialize_rbi.
+	(cfg_layout_split_block): Use rbi.
+	(cfg_layout_delete_block): Likewise.
+	* loop-init.c (loop_optimizer_finalize): Likewise.
+	* loop-unswitch.c (unswitch_loop): Likewise.
+	* tracer.c (seen, tail_duplicate, layout_superblocks): Likewise.
+
+	* cfgrtl.c: Update comments.
+	(try_redirect_by_replacing_jump): New argument.
+	(redirect_branch_edge): Break out from ...
+	(rtl_redirect_edge_and_branch): ... this one.
+	(update_cfg_after_block_merging): Break out from ...
+	(rtl_merge_blocks): ... this one.
+	(cfg_layout_split_edge): New.
+	(cfg_layout_merge_blocks): New.
+	(cfg_layout_can_merge_blocks_p): New.
+	(cfg_layout_redirect_edge_and_branch): Reorganize.
+	(cfg_layout_rtl_cfg_hooks): Fill in.
+	(cfg_layout_delete_block): Kill barriers.
+	* cfganal.c (can_fallthru): Deal with exit blocks
+	* cfglayout.c (cfg_layout_function_header): New function
+	(record_effective_endpoints): Record function header.
+	(fixup_reorder_chain): Fixup dead jumptables; place header
+
+	* basic-block.h (CLEANUP_CFGLAYOUT): New flag.
+	* bb-reorder.c (cfg_layout_initialize): Update call.
+	* cfgcleanup.c (try_optimize_cfg): Supress optimizations of fallthru
+	edges in cfglayout mode.
+	* cfglayout.c (cleanup_unconditional_jumps): Kill.
+	(cfg_layout_initialize): Kill agrument loops; use cfgcleanup.
+	* cfglayout.h (cfg_layout_initialize): Update prototype.
+	* cfgloop.h (CP_INSIDE_CFGLAYOUT): Kill.
+	* cfgloopmanip.c (loop_split_edge_with): Use split_edge.
+	* flow.c (propagate_block): Do not crash when basic block ends
+	by first insn in the chain.
+	* loop-init.c (loop_optimizer_init):  First enter cfglayout mode; later
+	do loop discovery.
+	* tracer.c (tracer): Update call of cfg_layout_initialize.
+
 2003-07-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in: Use dependency variables in lieu of explicit

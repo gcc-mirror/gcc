@@ -2016,7 +2016,7 @@ merge_if_block (ce_info)
 	  fallthru = block_fallthru (bb);
 	  if (post_dominators)
 	    delete_from_dominance_info (post_dominators, bb);
-	  merge_blocks_nomove (combo_bb, bb);
+	  merge_blocks (combo_bb, bb);
 	  num_removed_blocks++;
 	}
       while (bb != last_test_bb);
@@ -2033,7 +2033,7 @@ merge_if_block (ce_info)
 		      then_bb->global_live_at_end);
       if (post_dominators)
 	delete_from_dominance_info (post_dominators, then_bb);
-      merge_blocks_nomove (combo_bb, then_bb);
+      merge_blocks (combo_bb, then_bb);
       num_removed_blocks++;
     }
 
@@ -2044,7 +2044,7 @@ merge_if_block (ce_info)
     {
       if (post_dominators)
 	delete_from_dominance_info (post_dominators, else_bb);
-      merge_blocks_nomove (combo_bb, else_bb);
+      merge_blocks (combo_bb, else_bb);
       num_removed_blocks++;
     }
 
@@ -2101,7 +2101,7 @@ merge_if_block (ce_info)
 
       if (post_dominators)
 	delete_from_dominance_info (post_dominators, join_bb);
-      merge_blocks_nomove (combo_bb, join_bb);
+      merge_blocks (combo_bb, join_bb);
       num_removed_blocks++;
     }
   else
@@ -3129,7 +3129,7 @@ if_convert (x_life_data_ok)
   life_data_ok = (x_life_data_ok != 0);
 
   /* Free up basic_block_for_insn so that we don't have to keep it
-     up to date, either here or in merge_blocks_nomove.  */
+     up to date, either here or in merge_blocks.  */
   free_basic_block_vars (1);
 
   /* Compute postdominators if we think we'll use them.  */

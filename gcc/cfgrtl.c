@@ -23,20 +23,19 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    that are aware of the RTL intermediate language.
 
    Available functionality:
+     - Basic CFG/RTL manipulation API documented in cfghooks.h
      - CFG-aware instruction chain manipulation
 	 delete_insn, delete_insn_chain
-     - Basic block manipulation
-	 create_basic_block, rtl_delete_block,rtl_split_block,
-	 merge_blocks_nomove
+     - Edge splitting and committing to edges
+	 insert_insn_on_edge, commit_edge_insertions
+     - CFG updating after insn simplification
+	 purge_dead_edges, purge_all_dead_edges
+
+   Functions not supposed for generic use:
      - Infrastructure to determine quickly basic block for insn
 	 compute_bb_for_insn, update_bb_for_insn, set_block_for_insn,
      - Edge redirection with updating and optimizing of insn chain
-	 block_label, redirect_edge_and_branch,
-	 redirect_edge_and_branch_force, tidy_fallthru_edge, force_nonfallthru
-     - Edge splitting and committing to edges
-	 split_edge, insert_insn_on_edge, commit_edge_insertions
-     - CFG updating after constant propagation
-	 purge_dead_edges, purge_all_dead_edges   */
+	 block_label, tidy_fallthru_edge, force_nonfallthru  */
 
 #include "config.h"
 #include "system.h"
@@ -73,7 +72,6 @@ rtx tail_recursion_label_list;
 static int can_delete_note_p (rtx);
 static int can_delete_label_p (rtx);
 static void commit_one_edge_insertion (edge, int);
-static bool try_redirect_by_replacing_jump (edge, basic_block);
 static rtx last_loop_beg_note (rtx);
 static bool back_edge_of_syntactic_loop_p (basic_block, basic_block);
 basic_block force_nonfallthru_and_redirect (edge, basic_block);
@@ -326,9 +324,10 @@ create_basic_block_structure (rtx head, rtx end, rtx bb_note, basic_block after)
    create new empty basic block before HEAD.  Both END and HEAD can be NULL to
    create basic block at the end of INSN chain.  */
 
-basic_block
-create_basic_block (rtx head, rtx end, basic_block after)
+static basic_block
+rtl_create_basic_block (void *headp, void *endp, basic_block after)
 {
+  rtx head = headp, end = endp;
   basic_block bb;
 
   /* Place the new block just after the end.  */
@@ -339,6 +338,15 @@ create_basic_block (rtx head, rtx end, basic_block after)
   bb = create_basic_block_structure (head, end, NULL, after);
   bb->aux = NULL;
   return bb;
+}
+
+static basic_block
+cfg_layout_create_basic_block (void *head, void *end, basic_block after)
+{
+  basic_block newbb = rtl_create_basic_block (head, end, after);
+
+  cfg_layout_initialize_rbi (newbb);
+  return newbb;
 }
 
 /* Delete the insns in a (non-live) block.  We physically delete every
@@ -517,16 +525,42 @@ rtl_split_block (basic_block bb, void *insnp)
   return new_edge;
 }
 
-/* Blocks A and B are to be merged into a single block A.  The insns
-   are already contiguous, hence `nomove'.  */
+/* Assume that the code of basic block B has been merged into A.
+   Do corresponding CFG updates:  redirect edges accordingly etc.  */
+static void
+update_cfg_after_block_merging (basic_block a, basic_block b)
+{
+  edge e;
 
-void
-merge_blocks_nomove (basic_block a, basic_block b)
+  /* Normally there should only be one successor of A and that is B, but
+     partway though the merge of blocks for conditional_execution we'll
+     be merging a TEST block with THEN and ELSE successors.  Free the
+     whole lot of them and hope the caller knows what they're doing.  */
+  while (a->succ)
+    remove_edge (a->succ);
+
+  /* Adjust the edges out of B for the new owner.  */
+  for (e = b->succ; e; e = e->succ_next)
+    e->src = a;
+  a->succ = b->succ;
+  a->flags |= b->flags;
+
+  /* B hasn't quite yet ceased to exist.  Attempt to prevent mishap.  */
+  b->pred = b->succ = NULL;
+  a->global_live_at_end = b->global_live_at_end;
+
+  expunge_block (b);
+}
+
+/* Blocks A and B are to be merged into a single block A.  The insns
+   are already contiguous.  */
+
+static void
+rtl_merge_blocks (basic_block a, basic_block b)
 {
   rtx b_head = b->head, b_end = b->end, a_end = a->end;
   rtx del_first = NULL_RTX, del_last = NULL_RTX;
   int b_empty = 0;
-  edge e;
 
   /* If there was a CODE_LABEL beginning B, delete it.  */
   if (GET_CODE (b_head) == CODE_LABEL)
@@ -585,24 +619,7 @@ merge_blocks_nomove (basic_block a, basic_block b)
   else if (GET_CODE (NEXT_INSN (a_end)) == BARRIER)
     del_first = NEXT_INSN (a_end);
 
-  /* Normally there should only be one successor of A and that is B, but
-     partway though the merge of blocks for conditional_execution we'll
-     be merging a TEST block with THEN and ELSE successors.  Free the
-     whole lot of them and hope the caller knows what they're doing.  */
-  while (a->succ)
-    remove_edge (a->succ);
-
-  /* Adjust the edges out of B for the new owner.  */
-  for (e = b->succ; e; e = e->succ_next)
-    e->src = a;
-  a->succ = b->succ;
-  a->flags |= b->flags;
-
-  /* B hasn't quite yet ceased to exist.  Attempt to prevent mishap.  */
-  b->pred = b->succ = NULL;
-  a->global_live_at_end = b->global_live_at_end;
-
-  expunge_block (b);
+  update_cfg_after_block_merging (a, b);
 
   /* Delete everything marked above as well as crap that might be
      hanging out between the two blocks.  */
@@ -622,6 +639,24 @@ merge_blocks_nomove (basic_block a, basic_block b)
     }
 
   a->end = a_end;
+}
+
+/* Return true when block A and B can be merged.  */
+static bool
+rtl_can_merge_blocks (basic_block a,basic_block b)
+{
+  /* There must be exactly one edge in between the blocks.  */
+  return (a->succ && !a->succ->succ_next && a->succ->dest == b
+	  && !b->pred->pred_next && a != b
+	  /* Must be simple edge.  */
+	  && !(a->succ->flags & EDGE_COMPLEX)
+	  && a->next_bb == b
+	  && a != ENTRY_BLOCK_PTR && b != EXIT_BLOCK_PTR
+	  /* If the jump insn has side effects,
+	     we can't kill the edge.  */
+	  && (GET_CODE (a->end) != JUMP_INSN
+	      || (flow2_completed
+		  ? simplejump_p (a->end) : onlyjump_p (a->end))));
 }
 
 /* Return the label in the head of basic block BLOCK.  Create one if it doesn't
@@ -647,7 +682,7 @@ block_label (basic_block block)
    return values are equivalent to redirect_edge_and_branch.  */
 
 static bool
-try_redirect_by_replacing_jump (edge e, basic_block target)
+try_redirect_by_replacing_jump (edge e, basic_block target, bool in_cfglayout)
 {
   basic_block src = e->src;
   rtx insn = src->end, kill_from;
@@ -679,14 +714,38 @@ try_redirect_by_replacing_jump (edge e, basic_block target)
 #endif
 
   /* See if we can create the fallthru edge.  */
-  if (can_fallthru (src, target))
+  if (in_cfglayout || can_fallthru (src, target))
     {
       if (rtl_dump_file)
 	fprintf (rtl_dump_file, "Removing jump %i.\n", INSN_UID (insn));
       fallthru = 1;
 
       /* Selectively unlink whole insn chain.  */
-      delete_insn_chain (kill_from, PREV_INSN (target->head));
+      if (in_cfglayout)
+	{
+	  rtx insn = src->rbi->footer;
+
+          delete_insn_chain (kill_from, src->end);
+
+	  /* Remove barriers but keep jumptables.  */
+	  while (insn)
+	    {
+	      if (GET_CODE (insn) == BARRIER)
+		{
+		  if (PREV_INSN (insn))
+		    NEXT_INSN (PREV_INSN (insn)) = NEXT_INSN (insn);
+		  else
+		    src->rbi->footer = NEXT_INSN (insn);
+		  if (NEXT_INSN (insn))
+		    PREV_INSN (NEXT_INSN (insn)) = PREV_INSN (insn);
+		}
+	      if (GET_CODE (insn) == CODE_LABEL)
+		break;
+	      insn = NEXT_INSN (insn);
+	    }
+	}
+      else
+        delete_insn_chain (kill_from, PREV_INSN (target->head));
     }
 
   /* If this already is simplejump, redirect it.  */
@@ -782,35 +841,14 @@ last_loop_beg_note (rtx insn)
   return last;
 }
 
-/* Attempt to change code to redirect edge E to TARGET.  Don't do that on
-   expense of adding new instructions or reordering basic blocks.
-
-   Function can be also called with edge destination equivalent to the TARGET.
-   Then it should try the simplifications and do nothing if none is possible.
-
-   Return true if transformation succeeded.  We still return false in case E
-   already destinated TARGET and we didn't managed to simplify instruction
-   stream.  */
-
+/* Redirect edge representing branch of (un)conditional jump or tablejump.  */
 static bool
-rtl_redirect_edge_and_branch (edge e, basic_block target)
+redirect_branch_edge (edge e, basic_block target)
 {
   rtx tmp;
   rtx old_label = e->dest->head;
   basic_block src = e->src;
   rtx insn = src->end;
-
-  if (e->flags & (EDGE_ABNORMAL_CALL | EDGE_EH))
-    return false;
-
-  if (try_redirect_by_replacing_jump (e, target))
-    return true;
-
-  /* Do this fast path late, as we want above code to simplify for cases
-     where called on single edge leaving basic block containing nontrivial
-     jump insn.  */
-  else if (e->dest == target)
-    return false;
 
   /* We can only redirect non-fallthru edges of jump insn.  */
   if (e->flags & EDGE_FALLTHRU)
@@ -884,6 +922,37 @@ rtl_redirect_edge_and_branch (edge e, basic_block target)
 
   if (e->dest != target)
     redirect_edge_succ_nodup (e, target);
+  return true;
+}
+
+/* Attempt to change code to redirect edge E to TARGET.  Don't do that on
+   expense of adding new instructions or reordering basic blocks.
+
+   Function can be also called with edge destination equivalent to the TARGET.
+   Then it should try the simplifications and do nothing if none is possible.
+
+   Return true if transformation succeeded.  We still return false in case E
+   already destinated TARGET and we didn't managed to simplify instruction
+   stream.  */
+
+static bool
+rtl_redirect_edge_and_branch (e, target)
+     edge e;
+     basic_block target;
+{
+  if (e->flags & (EDGE_ABNORMAL_CALL | EDGE_EH))
+    return false;
+
+  if (try_redirect_by_replacing_jump (e, target, false))
+    return true;
+
+  /* Do this fast path late, as we want above code to simplify for cases
+     where called on single edge leaving basic block containing nontrivial
+     jump insn.  */
+  else if (e->dest == target)
+    return false;
+  else if (!redirect_branch_edge (e, target))
+    return false;
 
   return true;
 }
@@ -2323,9 +2392,8 @@ cfg_layout_split_block (basic_block bb, void *insnp)
 
   edge fallthru = rtl_split_block (bb, insn);
 
-  alloc_aux_for_block (fallthru->dest, sizeof (struct reorder_block_def));
-  RBI (fallthru->dest)->footer = RBI (fallthru->src)->footer;
-  RBI (fallthru->src)->footer = NULL;
+  fallthru->dest->rbi->footer = fallthru->src->rbi->footer;
+  fallthru->src->rbi->footer = NULL;
   return fallthru;
 }
 
@@ -2335,14 +2403,33 @@ static bool
 cfg_layout_redirect_edge_and_branch (edge e, basic_block dest)
 {
   basic_block src = e->src;
-  basic_block old_next_bb = src->next_bb;
   bool ret;
+
+  if (e->flags & (EDGE_ABNORMAL_CALL | EDGE_EH))
+    return false;
+
+  if (e->src != ENTRY_BLOCK_PTR
+      && try_redirect_by_replacing_jump (e, dest, true))
+    return true;
+
+  if (e->dest == dest)
+    return true;
+
+  if (e->src == ENTRY_BLOCK_PTR
+      && (e->flags & EDGE_FALLTHRU) && !(e->flags & EDGE_COMPLEX))
+    {
+      if (rtl_dump_file)
+	fprintf (rtl_dump_file, "Redirecting entry edge from bb %i to %i\n",
+		 e->src->index, dest->index);
+
+      redirect_edge_succ (e, dest);
+      return true;
+    }
 
   /* Redirect_edge_and_branch may decide to turn branch into fallthru edge
      in the case the basic block appears to be in sequence.  Avoid this
      transformation.  */
 
-  src->next_bb = NULL;
   if (e->flags & EDGE_FALLTHRU)
     {
       /* Redirect any branch edges unified with the fallthru one.  */
@@ -2364,20 +2451,18 @@ cfg_layout_redirect_edge_and_branch (edge e, basic_block dest)
 	    delete_insn (src->end);
 	}
       redirect_edge_succ_nodup (e, dest);
+      if (rtl_dump_file)
+	fprintf (rtl_dump_file, "Fallthru edge %i->%i redirected to %i\n",
+		 e->src->index, e->dest->index, dest->index);
 
       ret = true;
     }
   else
-    ret = rtl_redirect_edge_and_branch (e, dest);
+    ret = redirect_branch_edge (e, dest);
 
   /* We don't want simplejumps in the insn stream during cfglayout.  */
   if (simplejump_p (src->end))
-    {
-      delete_insn (src->end);
-      delete_barrier (NEXT_INSN (src->end));
-      src->succ->flags |= EDGE_FALLTHRU;
-    }
-  src->next_bb = old_next_bb;
+    abort ();
 
   return ret;
 }
@@ -2397,36 +2482,55 @@ cfg_layout_delete_block (basic_block bb)
 {
   rtx insn, next, prev = PREV_INSN (bb->head), *to, remaints;
 
-  if (RBI (bb)->header)
+  if (bb->rbi->header)
     {
       next = bb->head;
       if (prev)
-	NEXT_INSN (prev) = RBI (bb)->header;
+	NEXT_INSN (prev) = bb->rbi->header;
       else
-	set_first_insn (RBI (bb)->header);
-      PREV_INSN (RBI (bb)->header) = prev;
-      insn = RBI (bb)->header;
+	set_first_insn (bb->rbi->header);
+      PREV_INSN (bb->rbi->header) = prev;
+      insn = bb->rbi->header;
       while (NEXT_INSN (insn))
 	insn = NEXT_INSN (insn);
       NEXT_INSN (insn) = next;
       PREV_INSN (next) = insn;
     }
   next = NEXT_INSN (bb->end);
-  if (RBI (bb)->footer)
+  if (bb->rbi->footer)
     {
-      insn = bb->end;
-      NEXT_INSN (insn) = RBI (bb)->footer;
-      PREV_INSN (RBI (bb)->footer) = insn;
-      while (NEXT_INSN (insn))
-	insn = NEXT_INSN (insn);
-      NEXT_INSN (insn) = next;
-      if (next)
-	PREV_INSN (next) = insn;
-      else
-	set_last_insn (insn);
+      insn = bb->rbi->footer;
+      while (insn)
+	{
+	  if (GET_CODE (insn) == BARRIER)
+	    {
+	      if (PREV_INSN (insn))
+		NEXT_INSN (PREV_INSN (insn)) = NEXT_INSN (insn);
+	      else
+		bb->rbi->footer = NEXT_INSN (insn);
+	      if (NEXT_INSN (insn))
+		PREV_INSN (NEXT_INSN (insn)) = PREV_INSN (insn);
+	    }
+	  if (GET_CODE (insn) == CODE_LABEL)
+	    break;
+	  insn = NEXT_INSN (insn);
+	}
+      if (bb->rbi->footer)
+	{
+	  insn = bb->end;
+	  NEXT_INSN (insn) = bb->rbi->footer;
+	  PREV_INSN (bb->rbi->footer) = insn;
+	  while (NEXT_INSN (insn))
+	    insn = NEXT_INSN (insn);
+	  NEXT_INSN (insn) = next;
+	  if (next)
+	    PREV_INSN (next) = insn;
+	  else
+	    set_last_insn (insn);
+	}
     }
   if (bb->next_bb != EXIT_BLOCK_PTR)
-    to = &RBI(bb->next_bb)->header;
+    to = &bb->next_bb->rbi->header;
   else
     to = &cfg_layout_function_footer;
   rtl_delete_block (bb);
@@ -2453,14 +2557,141 @@ cfg_layout_delete_block (basic_block bb)
     }
 }
 
+/* return true when blocks A and B can be safely merged.  */
+static bool
+cfg_layout_can_merge_blocks_p (basic_block a, basic_block b)
+{
+  /* There must be exactly one edge in between the blocks.  */
+  return (a->succ && !a->succ->succ_next && a->succ->dest == b
+	  && !b->pred->pred_next && a != b
+	  /* Must be simple edge.  */
+	  && !(a->succ->flags & EDGE_COMPLEX)
+	  && a != ENTRY_BLOCK_PTR && b != EXIT_BLOCK_PTR
+	  /* If the jump insn has side effects,
+	     we can't kill the edge.  */
+	  && (GET_CODE (a->end) != JUMP_INSN
+	      || (flow2_completed
+		  ? simplejump_p (a->end) : onlyjump_p (a->end))));
+}
+
+/* Merge block A and B, abort when it is not possible.  */
+static void
+cfg_layout_merge_blocks (basic_block a, basic_block b)
+{
+#ifdef ENABLE_CHECKING
+  if (!cfg_layout_can_merge_blocks_p (a, b))
+    abort ();
+#endif
+
+  /* If there was a CODE_LABEL beginning B, delete it.  */
+  if (GET_CODE (b->head) == CODE_LABEL)
+    delete_insn (b->head);
+
+  /* We should have fallthru edge in a, or we can do dummy redirection to get
+     it cleaned up.  */
+  if (GET_CODE (a->end) == JUMP_INSN)
+    redirect_edge_and_branch (a->succ, b);
+  if (GET_CODE (a->end) == JUMP_INSN)
+    abort ();
+
+  /* Possible line number notes should appear in between.  */
+  if (b->rbi->header)
+    {
+      rtx first = a->end, last;
+
+      last = emit_insn_after (b->rbi->header, a->end);
+      delete_insn_chain (NEXT_INSN (first), last);
+      b->rbi->header = NULL;
+    }
+
+  /* In the case basic blocks are not adjacent, move them around.  */
+  if (NEXT_INSN (a->end) != b->head)
+    {
+      rtx first = unlink_insn_chain (b->head, b->end);
+
+      emit_insn_after (first, a->end);
+      /* Skip possible DELETED_LABEL insn.  */
+      if (!NOTE_INSN_BASIC_BLOCK_P (first))
+	first = NEXT_INSN (first);
+      if (!NOTE_INSN_BASIC_BLOCK_P (first))
+	abort ();
+      b->head = NULL;
+      delete_insn (first);
+    }
+  /* Otherwise just re-associate the instructions.  */
+  else
+    {
+      rtx insn;
+
+      for (insn = b->head; insn != NEXT_INSN (b->end); insn = NEXT_INSN (insn))
+	set_block_for_insn (insn, a);
+      insn = b->head;
+      /* Skip possible DELETED_LABEL insn.  */
+      if (!NOTE_INSN_BASIC_BLOCK_P (insn))
+	insn = NEXT_INSN (insn);
+      if (!NOTE_INSN_BASIC_BLOCK_P (insn))
+	abort ();
+      b->head = NULL;
+      a->end = b->end;
+      delete_insn (insn);
+    }
+
+  /* Possible tablejumps and barriers should appear after the block.  */
+  if (b->rbi->footer)
+    {
+      if (!a->rbi->footer)
+	a->rbi->footer = b->rbi->footer;
+      else
+	{
+	  rtx last = a->rbi->footer;
+
+	  while (NEXT_INSN (last))
+	    last = NEXT_INSN (last);
+	  NEXT_INSN (last) = b->rbi->footer;
+	  PREV_INSN (b->rbi->footer) = last;
+	}
+      b->rbi->footer = NULL;
+    }
+
+  if (rtl_dump_file)
+    fprintf (rtl_dump_file, "Merged blocks %d and %d.\n",
+	     a->index, b->index);
+
+  update_cfg_after_block_merging (a, b);
+}
+
+/* Split edge E.  */
+static basic_block
+cfg_layout_split_edge (edge e)
+{
+  edge new_e;
+  basic_block new_bb =
+    create_basic_block (e->src != ENTRY_BLOCK_PTR
+			? NEXT_INSN (e->src-> end) : get_insns (),
+			NULL_RTX, e->src);
+
+  new_bb->count = e->count;
+  new_bb->frequency = EDGE_FREQUENCY (e);
+
+  new_e = make_edge (new_bb, e->dest, EDGE_FALLTHRU);
+  new_e->probability = REG_BR_PROB_BASE;
+  new_e->count = e->count;
+  redirect_edge_and_branch_force (e, new_bb);
+
+  return new_bb;
+}
+
 /* Implementation of CFG manipulation for linearized RTL.  */
 struct cfg_hooks rtl_cfg_hooks = {
   rtl_verify_flow_info,
   rtl_dump_bb,
+  rtl_create_basic_block,
   rtl_redirect_edge_and_branch,
   rtl_redirect_edge_and_branch_force,
   rtl_delete_block,
   rtl_split_block,
+  rtl_can_merge_blocks,  /* can_merge_blocks_p */
+  rtl_merge_blocks,
   rtl_split_edge
 };
 
@@ -2469,11 +2700,14 @@ struct cfg_hooks rtl_cfg_hooks = {
    This representation will hopefully become the default one in future
    version of the compiler.  */
 struct cfg_hooks cfg_layout_rtl_cfg_hooks = {
-  rtl_verify_flow_info_1,   /* verify_flow_info.  */
+  rtl_verify_flow_info_1,
   rtl_dump_bb,
+  cfg_layout_create_basic_block,
   cfg_layout_redirect_edge_and_branch,
   cfg_layout_redirect_edge_and_branch_force,
   cfg_layout_delete_block,
   cfg_layout_split_block,
-  NULL  /* split_edge.  */
+  cfg_layout_can_merge_blocks_p,
+  cfg_layout_merge_blocks,
+  cfg_layout_split_edge
 };
