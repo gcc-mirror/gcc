@@ -31,10 +31,6 @@ struct function;
 #undef ABS /* Likewise.  */
 #undef PC /* Likewise.  */
 
-#ifndef TREE_CODE
-union tree_node;
-#endif
-
 /* Value used by some passes to "recognize" noop moves as valid instructions.
  */
 #define NOOP_MOVE_INSN_CODE	INT_MAX
@@ -93,19 +89,19 @@ typedef union rtunion_def
   int rtint;
   unsigned int rtuint;
   const char *rtstr;
-  struct rtx_def *rtx;
-  struct rtvec_def *rtvec;
+  rtx rtx;
+  rtvec rtvec;
   enum machine_mode rttype;
   addr_diff_vec_flags rt_addr_diff_vec_flags;
   struct cselib_val_struct *rt_cselib;
   struct bitmap_head_def *rtbit;
-  union tree_node *rttree;
+  tree rttree;
   struct basic_block_def *bb;
 } rtunion;
 
 /* RTL expression ("rtx").  */
 
-typedef struct rtx_def
+struct rtx_def
 {
   /* The kind of expression this is.  */
   ENUM_BITFIELD(rtx_code) code: 16;
@@ -183,7 +179,7 @@ typedef struct rtx_def
      The number of operands and their types are controlled
      by the `code' field, according to rtl.def.  */
   rtunion fld[1];
-} *rtx;
+};
 
 #define NULL_RTX (rtx) 0
 
@@ -203,10 +199,10 @@ typedef struct rtx_def
    for a variable number of things.  The principle use is inside
    PARALLEL expressions.  */
 
-typedef struct rtvec_def{
+struct rtvec_def {
   int num_elem;		/* number of elements */
-  struct rtx_def *elem[1];
-} *rtvec;
+  rtx elem[1];
+};
 
 #define NULL_RTVEC (rtvec) 0
 
@@ -1147,7 +1143,7 @@ extern int ceil_log2			PARAMS ((unsigned HOST_WIDE_INT));
 #define plus_constant(X,C) plus_constant_wide (X, (HOST_WIDE_INT) (C))
 
 /* In builtins.c */
-extern rtx expand_builtin_expect_jump	PARAMS ((union tree_node *, rtx, rtx));
+extern rtx expand_builtin_expect_jump	PARAMS ((tree, rtx, rtx));
 
 /* In explow.c */
 extern void set_stack_check_libfunc PARAMS ((rtx));
@@ -1237,8 +1233,7 @@ extern rtx assign_stack_local		PARAMS ((enum machine_mode,
 					       HOST_WIDE_INT, int));
 extern rtx assign_stack_temp		PARAMS ((enum machine_mode,
 					       HOST_WIDE_INT, int));
-extern rtx assign_temp			PARAMS ((union tree_node *,
-					       int, int, int));
+extern rtx assign_temp			PARAMS ((tree, int, int, int));
 /* In emit-rtl.c */
 extern rtx emit_insn_before		PARAMS ((rtx, rtx));
 extern rtx emit_jump_insn_before	PARAMS ((rtx, rtx));
@@ -1348,7 +1343,7 @@ extern rtx simplify_rtx			PARAMS ((rtx));
 extern rtx avoid_constant_pool_reference PARAMS ((rtx));
 
 /* In function.c  */
-extern rtx gen_mem_addressof		PARAMS ((rtx, union tree_node *));
+extern rtx gen_mem_addressof		PARAMS ((rtx, tree));
 
 /* In regclass.c  */
 extern enum machine_mode choose_hard_reg_mode PARAMS ((unsigned int,
@@ -1636,8 +1631,8 @@ extern rtx gen_lowpart_SUBREG PARAMS ((enum machine_mode, rtx));
 
 extern rtx find_next_ref		PARAMS ((rtx, rtx));
 
-extern rtx output_constant_def		PARAMS ((union tree_node *, int));
-extern rtx immed_real_const		PARAMS ((union tree_node *));
+extern rtx output_constant_def		PARAMS ((tree, int));
+extern rtx immed_real_const		PARAMS ((tree));
 
 /* Define a default value for STORE_FLAG_VALUE.  */
 
