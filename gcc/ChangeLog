@@ -1,3 +1,7 @@
+2000-04-09  Philip Blundell  <philb@gnu.org>
+
+        * config/arm/arm.h (ARM_NAME_ENCODING_LENGTHS): Strip `*' too.
+	
 Sun Apr  9 15:16:14 EDT 2000  John Wehle  (john@feith.com)
 
 	* i386.md (fix_truncsfhi2, fix_truncdfhi2,
