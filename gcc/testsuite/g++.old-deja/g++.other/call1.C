@@ -23,7 +23,7 @@ struct B {
 };
 
 struct C {
-  const fptr &pr;
+  const fptr pr;
 
   C (fptr n): pr(n) { }
   operator const fptr& () { return pr; }
