@@ -68,7 +68,10 @@ public class InetAddress implements Serializable
    */
   static InetAddress ANY_IF;
     
-  private static final byte[] localhostAddress = { 127, 0, 0, 1 };
+  private static final byte[] loopbackAddress = { 127, 0, 0, 1 };
+
+  private static final InetAddress loopback 
+    = new InetAddress (loopbackAddress, "localhost");
 
   private static InetAddress localhost = null;
 
@@ -564,7 +567,8 @@ public class InetAddress implements Serializable
    * default.  This method is equivalent to returning the first element in
    * the InetAddress array returned from GetAllByName.
    *
-   * @param hostname The name of the desired host, or null for the local machine.
+   * @param hostname The name of the desired host, or null for the local 
+   * loopback address.
    *
    * @return The address of the host as an InetAddress object.
    *
@@ -576,13 +580,14 @@ public class InetAddress implements Serializable
   public static InetAddress getByName(String hostname)
     throws UnknownHostException
   {
+    // If null or the empty string is supplied, the loopback address
+    // is returned. Note that this is permitted without a security check.
+    if (hostname == null || hostname.length() == 0)
+      return loopback;
+
     SecurityManager s = System.getSecurityManager();
     if (s != null)
       s.checkConnect(hostname, -1);
-
-    // Default to current host if necessary
-    if (hostname == null || hostname.length() == 0)
-      return getLocalHost();
 
     // Assume that the host string is an IP address
     byte[] address = aton(hostname);
@@ -608,8 +613,9 @@ public class InetAddress implements Serializable
       }
 
     // Try to resolve the host by DNS
-    InetAddress[] addresses = getAllByName(hostname);
-    return addresses[0];
+    InetAddress result = new InetAddress(null, null);
+    lookup (hostname, result, false);
+    return result;
   }
 
   /**
@@ -620,7 +626,7 @@ public class InetAddress implements Serializable
    * hostname of the local machine is supplied by default.
    *
    * @param hostname The name of the desired host, or null for the
-   * local machine.
+   * local loopback address.
    *
    * @return All addresses of the host as an array of InetAddress objects.
    *
@@ -632,6 +638,11 @@ public class InetAddress implements Serializable
   public static InetAddress[] getAllByName(String hostname)
     throws UnknownHostException
   {
+    // If null or the empty string is supplied, the loopback address
+    // is returned. Note that this is permitted without a security check.
+    if (hostname == null || hostname.length() == 0)
+      return new InetAddress[] {loopback};
+
     SecurityManager s = System.getSecurityManager();
     if (s != null)
       s.checkConnect(hostname, -1);
@@ -676,7 +687,7 @@ public class InetAddress implements Serializable
     // However, if there is a security manager, and the cached result
     // is other than "localhost", we need to check again.
     if (localhost == null
-	|| (s != null && localhost.addr != localhostAddress))
+	|| (s != null && ! localhost.isLoopbackAddress()))
       getLocalHost (s);
     
     return localhost;
@@ -724,7 +735,7 @@ public class InetAddress implements Serializable
       }
     
     if (localhost == null)
-      localhost = new InetAddress (localhostAddress, "localhost");
+      localhost = new InetAddress (loopbackAddress, "localhost");
   }
 
   /**
