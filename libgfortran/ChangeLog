@@ -1,4 +1,10 @@
-2004-01-22  Bud Davis  <bdavis9659@comcast.net>
+2005-01-22  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+	
+	PR fortran/19194
+	* io/io.h (st_parameter): Use 'GFC_INTEGER_4' instead of 'int',
+	use CHARACTER macro for definition of string valued paramters.
+	
+2005-01-22  Bud Davis  <bdavis9659@comcast.net>
 
 	PR fortran/19314
 	* io/inquire.c(inquire_via_unit): implement POSITION=.
@@ -7,7 +13,7 @@
 	* io/rewind.c(st_rewind): update position for
 	INQUIRE.
 
-2004-01-16  Bud Davis  <bdavis9659@comcast.net>
+2005-01-16  Bud Davis  <bdavis9659@comcast.net>
 
 	PR fortran/18778
 	* io/transfer.c (us_read): no bytes available is not a

@@ -1,4 +1,4 @@
-/* Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
+/* Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -165,8 +165,8 @@ unit_mode;
 
 typedef struct
 {
-  int unit;
-  int err, end, eor, list_format;	/* These are flags, not values.  */
+  GFC_INTEGER_4 unit;
+  GFC_INTEGER_4 err, end, eor, list_format; /* These are flags, not values.  */
 
 /* Return values from library statements.  These are returned only if
    the labels are specified in the statement itself and the condition
@@ -183,58 +183,44 @@ typedef struct
   }
   library_return;
 
-  int *iostat, *exist, *opened, *number, *named, rec, *nextrec, *size;
+  GFC_INTEGER_4 *iostat, *exist, *opened, *number, *named;
+  GFC_INTEGER_4 rec;
+  GFC_INTEGER_4 *nextrec, *size;
 
-  int recl_in; 
-  int *recl_out;
+  GFC_INTEGER_4 recl_in; 
+  GFC_INTEGER_4 *recl_out;
 
-  int *iolength;
+  GFC_INTEGER_4 *iolength;
 
-  char *file;
-  int file_len;
-  char *status;
-  int status_len;
-  char *access;
-  int access_len;
-  char *form;
-  int form_len;
-  char *blank;
-  int blank_len;
-  char *position;
-  int position_len;
-  char *action;
-  int action_len;
-  char *delim;
-  int delim_len;
-  char *pad;
-  int pad_len;
-  char *format;
-  int format_len;
-  char *advance;
-  int advance_len;
-  char *name;
-  int name_len;
-  char *internal_unit;
-  int internal_unit_len;
-  char *sequential;
-  int sequential_len;
-  char *direct;
-  int direct_len;
-  char *formatted;
-  int formatted_len;
-  char *unformatted;
-  int unformatted_len;
-  char *read;
-  int read_len;
-  char *write;
-  int write_len;
-  char *readwrite;
-  int readwrite_len;
+#define CHARACTER(name) \
+              char * name; \
+              gfc_charlen_type name ## _len
+  CHARACTER (file);
+  CHARACTER (status);
+  CHARACTER (access);
+  CHARACTER (form);
+  CHARACTER (blank);
+  CHARACTER (position);
+  CHARACTER (action);
+  CHARACTER (delim);
+  CHARACTER (pad);
+  CHARACTER (format);
+  CHARACTER (advance);
+  CHARACTER (name);
+  CHARACTER (internal_unit);
+  CHARACTER (sequential);
+  CHARACTER (direct);
+  CHARACTER (formatted);
+  CHARACTER (unformatted);
+  CHARACTER (read);
+  CHARACTER (write);
+  CHARACTER (readwrite);
 
 /* namelist related data */
-  char * namelist_name;
-  int namelist_name_len;
-  int namelist_read_mode;
+  CHARACTER (namelist_name);
+  GFC_INTEGER_4 namelist_read_mode;
+
+#undef CHARACTER
 }
 st_parameter;
 

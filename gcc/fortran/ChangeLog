@@ -4,6 +4,12 @@
 	* trans-const.c (gfc_conv_constant_to_tree): Give logical
 	constants the correct type.
 
+	PR fortran/19194
+	* trans-io.c (ADD_STRING): Use gfc_charlen_type_node for string
+	length parameters.
+	(gfc_build_io_library_fndecls): 'rec' and 'recl_in' are not
+	pointer fields.
+
 2005-01-18  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* arith.c, array.c, check.c, decl.c, expr.c, f95-lang.c,
