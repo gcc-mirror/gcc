@@ -840,6 +840,8 @@ package body Prj.Part is
       Project_Scan_State  : Saved_Project_Scan_State;
       Source_Index        : Source_File_Index;
 
+      Extending : Boolean := False;
+
       Extended_Project    : Project_Node_Id := Empty_Node;
 
       A_Project_Name_And_Node : Tree_Private_Part.Project_Name_And_Node :=
@@ -1051,6 +1053,27 @@ package body Prj.Part is
          Scan;
       end loop;
 
+      --  See if this is an extending project
+
+      if Token = Tok_Extends then
+
+         --  Make sure that gnatmake will use mapping files
+
+         Create_Mapping_File := True;
+
+         --  We are extending another project
+
+         Extending := True;
+
+         Scan; -- scan past EXTENDS
+
+         if Token = Tok_All then
+            Extends_All := True;
+            Set_Is_Extending_All (Project);
+            Scan; --  scan past ALL
+         end if;
+      end if;
+
       --  If the name is well formed, Buffer_Last is > 0
 
       if Buffer_Last > 0 then
@@ -1098,7 +1121,7 @@ package body Prj.Part is
          begin
             --  Extending_All is always propagated
 
-            if From_Extended = Extending_All then
+            if From_Extended = Extending_All or else Extends_All then
                From_Ext := Extending_All;
 
             --  Otherwise, From_Extended is set to Extending_Single if the
@@ -1149,22 +1172,7 @@ package body Prj.Part is
 
       end if;
 
-      if Token = Tok_Extends then
-
-         --  Make sure that gnatmake will use mapping files
-
-         Create_Mapping_File := True;
-
-         --  We are extending another project
-
-         Scan; -- scan past EXTENDS
-
-         if Token = Tok_All then
-            Extends_All := True;
-            Set_Is_Extending_All (Project);
-            Scan; --  scan past ALL
-         end if;
-
+      if Extending then
          Expect (Tok_String_Literal, "literal string");
 
          if Token = Tok_String_Literal then
@@ -1205,11 +1213,11 @@ package body Prj.Part is
 
                else
                   declare
-                     From_Extended : Extension_Origin := None;
+                     From_Ext : Extension_Origin := None;
 
                   begin
-                     if Is_Extending_All (Project) then
-                        From_Extended := Extending_All;
+                     if From_Extended = Extending_All or else Extends_All then
+                        From_Ext := Extending_All;
                      end if;
 
                      Parse_Single_Project
@@ -1217,7 +1225,7 @@ package body Prj.Part is
                         Extends_All   => Extends_All,
                         Path_Name     => Extended_Project_Path_Name,
                         Extended      => True,
-                        From_Extended => From_Extended);
+                        From_Extended => From_Ext);
                   end;
 
                   --  A project that extends an extending-all project is also
@@ -1640,11 +1648,10 @@ package body Prj.Part is
 
       else
          declare
-            Final_Result : String :=
+            Final_Result : constant String :=
                              GNAT.OS_Lib.Normalize_Pathname (Result.all);
          begin
             Free (Result);
-            Canonical_Case_File_Name (Final_Result);
             return Final_Result;
          end;
       end if;

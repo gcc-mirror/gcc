@@ -58,6 +58,10 @@ procedure Gprcmd is
 
    --  ??? comments are thin throughout this unit
 
+   Gprdebug : constant String  := To_Lower (Getenv ("GPRDEBUG").all);
+   Debug    : constant Boolean := Gprdebug = "true";
+   --  When Debug is True, gprcmd displays its arguments to Standard_Error.
+   --  This is to help to debug.
 
    procedure Cat (File : String);
    --  Print the contents of file on standard output.
@@ -81,6 +85,9 @@ procedure Gprcmd is
 
    procedure Copy_Time_Stamp (From, To : String);
    --  Copy file time stamp from file From to file To.
+
+   procedure Display_Command;
+   --  Display the invoked command to Standard_Error
 
    ---------
    -- Cat --
@@ -256,6 +263,19 @@ procedure Gprcmd is
       Free (Buffer);
    end Deps;
 
+   ---------------------
+   -- Display_Command --
+   ---------------------
+
+   procedure Display_Command is
+   begin
+      for J in 0 .. Argument_Count loop
+         Put (Standard_Error, Argument (J) & ' ');
+      end loop;
+
+      New_Line (Standard_Error);
+   end Display_Command;
+
    ------------
    -- Extend --
    ------------
@@ -354,6 +374,8 @@ procedure Gprcmd is
                                 "get the prefix of the GNAT installation");
       Put_Line (Standard_Error, "  path        " &
                                 "convert a directory list into a path list");
+      Put_Line (Standard_Error, "  linkopts      " &
+                                "process attribute Linker'Linker_Options");
       Put_Line (Standard_Error, "  ignore      " &
                                 "do nothing");
       OS_Exit (1);
@@ -362,6 +384,10 @@ procedure Gprcmd is
 --  Start of processing for Gprcmd
 
 begin
+   if Debug then
+      Display_Command;
+   end if;
+
    Check_Args (Argument_Count > 0);
 
    declare
@@ -408,8 +434,11 @@ begin
                if Is_Absolute_Path (Argument (J)) then
                   Put (Format_Pathname (Argument (J), UNIX));
                else
-                  Put (Format_Pathname (Normalize_Pathname (Argument (J), Dir),
-                                        UNIX));
+                  Put (Format_Pathname
+                         (Normalize_Pathname
+                            (Format_Pathname (Argument (J)),
+                             Format_Pathname (Dir)),
+                          UNIX));
                end if;
 
                if J < Argument_Count then
@@ -426,17 +455,33 @@ begin
 
          begin
             for J in 3 .. Argument_Count loop
-               if Is_Absolute_Path (Argument (J)) then
-                  Extend (Format_Pathname (Argument (J), UNIX));
-               else
-                  Extend
-                    (Format_Pathname (Normalize_Pathname (Argument (J), Dir),
-                                      UNIX));
-               end if;
 
-               if J < Argument_Count then
-                  Put (' ');
-               end if;
+               --  Remove quotes that may have been added around each argument
+
+               declare
+                  Arg   : constant String := Argument (J);
+                  First : Natural := Arg'First;
+                  Last  : Natural := Arg'Last;
+               begin
+                  if Arg (First) = '"' and then Arg (Last) = '"' then
+                     First := First + 1;
+                     Last  := Last - 1;
+                  end if;
+                  if Is_Absolute_Path (Arg (First .. Last)) then
+                     Extend (Format_Pathname (Arg (First .. Last), UNIX));
+                  else
+                     Extend
+                       (Format_Pathname
+                          (Normalize_Pathname
+                             (Format_Pathname (Arg (First .. Last)),
+                              Format_Pathname (Dir)),
+                           UNIX));
+                  end if;
+
+                  if J < Argument_Count then
+                     Put (' ');
+                  end if;
+               end;
             end loop;
          end;
 
@@ -489,6 +534,70 @@ begin
             Put (Argument (J));
             Put (Path_Separator);
          end loop;
+
+      --  Check the linker options for relative paths. Insert the project
+      --  base dir before relative paths.
+
+      elsif Cmd = "linkopts" then
+         Check_Args (Argument_Count >= 2);
+
+         --  First argument is the base directory of the project file
+
+         declare
+            Base_Dir : constant String := Argument (2) & '/';
+         begin
+            --  process the remainder of the arguments
+
+            for J in 3 .. Argument_Count loop
+               declare
+                  Arg : constant String := Argument (J);
+               begin
+                  --  If it is a switch other than a -L switch, just send back
+                  --  the argument.
+
+                  if Arg (Arg'First) = '-' and then
+                    (Arg'Length <= 2 or else Arg (Arg'First + 1) /= 'L')
+                  then
+                     Put (Arg);
+
+                  else
+                     --  If it is a file, check if its path is relative, and
+                     --  if it is relative, add <project base dir>/ in front.
+                     --  Otherwise just send back the argument.
+
+                     if Arg'Length <= 2
+                       or else Arg (Arg'First .. Arg'First + 1) /= "-L"
+                     then
+                        if not Is_Absolute_Path (Arg) then
+                           Put (Base_Dir);
+                        end if;
+
+                        Put (Arg);
+
+                     --  For -L switches, check if the path is relative and
+                     --  proceed similarly.
+
+                     else
+                        Put ("-L");
+
+                        if
+                         not Is_Absolute_Path (Arg (Arg'First + 2 .. Arg'Last))
+                        then
+                           Put (Base_Dir);
+                        end if;
+
+                        Put (Arg (Arg'First + 2 .. Arg'Last));
+                     end if;
+                  end if;
+               end;
+
+               --  Insert a space between each processed argument
+
+               if J /= Argument_Count then
+                  Put (' ');
+               end if;
+            end loop;
+         end;
 
       --  For "ignore" do nothing
 

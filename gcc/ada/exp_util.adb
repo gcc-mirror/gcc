@@ -3348,6 +3348,15 @@ package body Exp_Util is
             when N_Unchecked_Expression =>
                return Side_Effect_Free (Expression (N));
 
+            --  A literal is side effect free
+
+            when N_Character_Literal    |
+                 N_Integer_Literal      |
+                 N_Real_Literal         |
+                 N_String_Literal
+              =>
+               return True;
+
             --  We consider that anything else has side effects. This is a bit
             --  crude, but we are pretty close for most common cases, and we
             --  are certainly correct (i.e. we never return True when the
