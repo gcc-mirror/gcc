@@ -1,6 +1,4 @@
-// 2001-11-19 Benjamin Kosnik  <bkoz@redhat.com>
-
-// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation
+// Copyright (C) 2004 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -24,50 +22,42 @@
 #include <sstream>
 #include <testsuite_hooks.h>
 
-void test03()
+// libstdc++/15565
+void test01()
 {
   using namespace std;
-  typedef ostreambuf_iterator<wchar_t> iterator_type;
-
   bool test __attribute__((unused)) = true;
 
   // basic construction
   locale loc_c = locale::classic();
-  locale loc_hk = __gnu_test::try_named_locale("en_HK");
-  VERIFY( loc_c != loc_hk );
 
   // sanity check the data is correct.
   const wstring empty;
-  wstring result1;
-  wstring result2;
-
-  long l1 = 2147483647;
-  long l2 = -2147483647;
 
   // cache the num_put facet
   wostringstream oss;
-  oss.imbue(loc_hk);
-  const num_put<wchar_t>& np = use_facet<num_put<wchar_t> >(oss.getloc()); 
+  oss.imbue(loc_c);
+  const num_put<wchar_t>& np = use_facet<num_put<wchar_t> >(oss.getloc());
 
-  // HK
-  // long, in a locale that expects grouping
+  unsigned long ul1 = 42UL;
   oss.str(empty);
   oss.clear();
-  np.put(oss.rdbuf(), oss, L'+', l1);
-  result1 = oss.str();
-  VERIFY( result1 == L"2,147,483,647" );
+  oss.setf(ios_base::showpos);
+  np.put(oss.rdbuf(), oss, L' ', ul1);
+  VERIFY( oss.str() == L"42" );
 
+#ifdef _GLIBCXX_USE_LONG_LONG
+  unsigned long long ull1 = 31ULL;
   oss.str(empty);
   oss.clear();
-  oss.width(20);
-  oss.setf(ios_base::left, ios_base::adjustfield);
-  np.put(oss.rdbuf(), oss, L'+', l2);
-  result1 = oss.str();
-  VERIFY( result1 == L"-2,147,483,647++++++" );
+  oss.setf(ios_base::showpos);
+  np.put(oss.rdbuf(), oss, L' ', ull1);
+  VERIFY( oss.str() == L"31" );
+#endif
 }
 
 int main()
 {
-  test03();
+  test01();
   return 0;
 }

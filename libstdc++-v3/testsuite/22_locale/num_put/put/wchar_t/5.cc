@@ -48,7 +48,7 @@ void test05()
   oss.clear();
   oss.setf(ios::showbase);
   oss.setf(ios::hex, ios::basefield);
-  np.put(oss.rdbuf(), oss, '+', l);
+  np.put(oss.rdbuf(), oss, L'+', l);
   result = oss.str();
   VERIFY( result == L"0" );
 
@@ -56,7 +56,7 @@ void test05()
   oss.clear();
   oss.setf(ios::showbase);
   oss.setf(ios::oct, ios::basefield);
-  np.put(oss.rdbuf(), oss, '+', l);
+  np.put(oss.rdbuf(), oss, L'+', l);
   result = oss.str();
   VERIFY( result == L"0" );
 }
@@ -66,5 +66,3 @@ int main()
   test05();
   return 0;
 }
-
-
