@@ -2305,11 +2305,11 @@
   "and %1,%2,%0\;and %R1,%R2,%R0"
   [(set_attr "length" "8")])
 
-; The ! for op1 makes reload prefer zdepi instead of loading a huge
+; The ? for op1 makes reload prefer zdepi instead of loading a huge
 ; constant with ldil;ldo.
 (define_insn "andsi3"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
-	(and:SI (match_operand:SI 1 "register_operand" "%!r,0")
+	(and:SI (match_operand:SI 1 "register_operand" "%?r,0")
 		(match_operand:SI 2 "and_operand" "rO,P")))]
   ""
   "* return output_and (operands); "
