@@ -1,3 +1,9 @@
+2004-07-08  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* gcc.c-torture/execute/bitfld-1.x: Remove.
+	* gcc.c-torture/execute/bitfld-3.c: New test.
+	* gcc.dg/bitfld-2.c: Remove XFAILs.
+
 2004-07-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR c++/16276

@@ -347,6 +347,10 @@ struct lang_hooks
      optimizations, for instance in fold_truthop().  */
   bool (*can_use_bit_fields_p) (void);
 
+  /* Nonzero if operations on types narrower than their mode should
+     have their results reduced to the precision of the type.  */
+  bool reduce_bit_field_operations;
+
   /* Nonzero if TYPE_READONLY and TREE_READONLY should always be honored.  */
   bool honor_readonly;
 

@@ -154,6 +154,7 @@ static int is_aligning_offset (tree, tree);
 static rtx expand_increment (tree, int, int);
 static void expand_operands (tree, tree, rtx, rtx*, rtx*,
 			     enum expand_modifier);
+static rtx reduce_to_bit_field_precision (rtx, rtx, tree);
 static rtx do_store_flag (tree, rtx, enum machine_mode, int);
 #ifdef PUSH_ROUNDING
 static void emit_single_push_insn (enum machine_mode, rtx, tree);
@@ -6430,9 +6431,26 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
   rtx subtarget, original_target;
   int ignore;
   tree context;
+  bool reduce_bit_field = false;
+#define REDUCE_BIT_FIELD(expr)	(reduce_bit_field && !ignore		  \
+				 ? reduce_to_bit_field_precision ((expr), \
+								  target, \
+								  type)	  \
+				 : (expr))
 
   mode = TYPE_MODE (type);
   unsignedp = TYPE_UNSIGNED (type);
+  if (lang_hooks.reduce_bit_field_operations
+      && TREE_CODE (type) == INTEGER_TYPE
+      && GET_MODE_PRECISION (mode) > TYPE_PRECISION (type))
+    {
+      /* An operation in what may be a bit-field type needs the
+	 result to be reduced to the precision of the bit-field type,
+	 which is narrower than that of the type's mode.  */
+      reduce_bit_field = true;
+      if (modifier == EXPAND_STACK_PARM)
+	target = 0;
+    }
 
   /* Use subtarget as the target for operand 0 of a binary operation.  */
   subtarget = get_subtarget (target);
@@ -7423,10 +7441,11 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	      && GET_CODE (op0) == SUBREG)
 	    SUBREG_PROMOTED_VAR_P (op0) = 0;
 
-	  return op0;
+	  return REDUCE_BIT_FIELD (op0);
 	}
 
       op0 = expand_expr (TREE_OPERAND (exp, 0), NULL_RTX, mode, modifier);
+      op0 = REDUCE_BIT_FIELD (op0);
       if (GET_MODE (op0) == mode)
 	return op0;
 
@@ -7594,7 +7613,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	      op1 = plus_constant (op1, INTVAL (constant_part));
 	      if (modifier != EXPAND_SUM && modifier != EXPAND_INITIALIZER)
 		op1 = force_operand (op1, target);
-	      return op1;
+	      return REDUCE_BIT_FIELD (op1);
 	    }
 
 	  else if (TREE_CODE (TREE_OPERAND (exp, 1)) == INTEGER_CST
@@ -7627,7 +7646,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	      op0 = plus_constant (op0, INTVAL (constant_part));
 	      if (modifier != EXPAND_SUM && modifier != EXPAND_INITIALIZER)
 		op0 = force_operand (op0, target);
-	      return op0;
+	      return REDUCE_BIT_FIELD (op0);
 	    }
 	}
 
@@ -7649,7 +7668,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 
       expand_operands (TREE_OPERAND (exp, 0), TREE_OPERAND (exp, 1),
 		       subtarget, &op0, &op1, modifier);
-      return simplify_gen_binary (PLUS, mode, op0, op1);
+      return REDUCE_BIT_FIELD (simplify_gen_binary (PLUS, mode, op0, op1));
 
     case MINUS_EXPR:
       /* For initializers, we are allowed to return a MINUS of two
@@ -7667,9 +7686,9 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	  /* If the last operand is a CONST_INT, use plus_constant of
 	     the negated constant.  Else make the MINUS.  */
 	  if (GET_CODE (op1) == CONST_INT)
-	    return plus_constant (op0, - INTVAL (op1));
+	    return REDUCE_BIT_FIELD (plus_constant (op0, - INTVAL (op1)));
 	  else
-	    return gen_rtx_MINUS (mode, op0, op1);
+	    return REDUCE_BIT_FIELD (gen_rtx_MINUS (mode, op0, op1));
 	}
 
       this_optab = ! unsignedp && flag_trapv
@@ -7691,7 +7710,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       if (GET_CODE (op1) == CONST_INT)
 	{
 	  op1 = negate_rtx (mode, op1);
-	  return simplify_gen_binary (PLUS, mode, op0, op1);
+	  return REDUCE_BIT_FIELD (simplify_gen_binary (PLUS, mode, op0, op1));
 	}
 
       goto binop2;
@@ -7723,9 +7742,9 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	  if (!REG_P (op0))
 	    op0 = copy_to_mode_reg (mode, op0);
 
-	  return gen_rtx_MULT (mode, op0,
+	  return REDUCE_BIT_FIELD (gen_rtx_MULT (mode, op0,
 			       gen_int_mode (tree_low_cst (exp1, 0),
-					     TYPE_MODE (TREE_TYPE (exp1))));
+					     TYPE_MODE (TREE_TYPE (exp1)))));
 	}
 
       if (modifier == EXPAND_STACK_PARM)
@@ -7803,13 +7822,13 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 						      zextend_p);
 		  if (htem != hipart)
 		    emit_move_insn (hipart, htem);
-		  return temp;
+		  return REDUCE_BIT_FIELD (temp);
 		}
 	    }
 	}
       expand_operands (TREE_OPERAND (exp, 0), TREE_OPERAND (exp, 1),
 		       subtarget, &op0, &op1, 0);
-      return expand_mult (mode, op0, op1, target, unsignedp);
+      return REDUCE_BIT_FIELD (expand_mult (mode, op0, op1, target, unsignedp));
 
     case TRUNC_DIV_EXPR:
     case FLOOR_DIV_EXPR:
@@ -7885,7 +7904,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 			  ? negv_optab : neg_optab, op0, target, 0);
       if (temp == 0)
 	abort ();
-      return temp;
+      return REDUCE_BIT_FIELD (temp);
 
     case ABS_EXPR:
       op0 = expand_expr (TREE_OPERAND (exp, 0), subtarget, VOIDmode, 0);
@@ -8550,12 +8569,12 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 
     case PREINCREMENT_EXPR:
     case PREDECREMENT_EXPR:
-      return expand_increment (exp, 0, ignore);
+      return REDUCE_BIT_FIELD (expand_increment (exp, 0, ignore));
 
     case POSTINCREMENT_EXPR:
     case POSTDECREMENT_EXPR:
       /* Faster to treat as pre-increment if result is not used.  */
-      return expand_increment (exp, ! ignore, ignore);
+      return REDUCE_BIT_FIELD (expand_increment (exp, ! ignore, ignore));
 
     case ADDR_EXPR:
       if (modifier == EXPAND_STACK_PARM)
@@ -8915,7 +8934,37 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 		       unsignedp, OPTAB_LIB_WIDEN);
   if (temp == 0)
     abort ();
-  return temp;
+  return REDUCE_BIT_FIELD (temp);
+}
+#undef REDUCE_BIT_FIELD
+
+/* Subroutine of above: reduce EXP to the precision of TYPE (in the
+   signedness of TYPE), possibly returning the result in TARGET.  */
+static rtx
+reduce_to_bit_field_precision (rtx exp, rtx target, tree type)
+{
+  HOST_WIDE_INT prec = TYPE_PRECISION (type);
+  if (target && GET_MODE (target) != GET_MODE (exp))
+    target = 0;
+  if (TYPE_UNSIGNED (type))
+    {
+      rtx mask;
+      if (prec < HOST_BITS_PER_WIDE_INT)
+	mask = immed_double_const (((unsigned HOST_WIDE_INT) 1 << prec) - 1, 0,
+				   GET_MODE (exp));
+      else
+	mask = immed_double_const ((unsigned HOST_WIDE_INT) -1,
+				   ((unsigned HOST_WIDE_INT) 1
+				    << (prec - HOST_BITS_PER_WIDE_INT)) - 1,
+				   GET_MODE (exp));
+      return expand_and (GET_MODE (exp), exp, mask, target);
+    }
+  else
+    {
+      tree count = build_int_2 (GET_MODE_BITSIZE (GET_MODE (exp)) - prec, 0);
+      exp = expand_shift (LSHIFT_EXPR, GET_MODE (exp), exp, count, target, 0);
+      return expand_shift (RSHIFT_EXPR, GET_MODE (exp), exp, count, target, 0);
+    }
 }
 
 /* Subroutine of above: returns 1 if OFFSET corresponds to an offset that

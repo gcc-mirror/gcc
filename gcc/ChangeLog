@@ -1,3 +1,27 @@
+2004-07-08  Joseph S. Myers  <jsm@polyomino.org.uk>
+            Neil Booth  <neil@daikokuya.co.uk>
+
+	PR c/2511
+	PR c/3325
+	* c-decl.c (finish_struct): Ensure bit-fields are given the
+	correct type.
+	* c-common.c (c_common_signed_or_unsigned_type): For C, require
+	the precision to match as well as the mode.
+	* expr.c (reduce_to_bit_field_precision): New function.
+	(expand_expr_real_1): Reduce expressions of bit-field type to
+	proper precision.
+	* langhooks.h (reduce_bit_field_operations): New hook.
+	* langhooks-def.h (LANG_HOOKS_REDUCE_BIT_FIELD_OPERATIONS):
+	Define.
+	* c-lang.c, objc/objc-lang.c
+	(LANG_HOOKS_REDUCE_BIT_FIELD_OPERATIONS): Define.
+	* objc/objc-act.c (check_ivars): Convert types to bit-field types
+	before checking.
+	* tree.c (build_nonstandard_integer_type): New function.
+	* tree.h (build_nonstandard_integer_type): New prototype.
+	* tree-ssa.c (tree_ssa_useless_type_conversion_1): Don't treat
+	conversions between integer and boolean types as useless.
+
 2004-07-08  Paolo Bonzini  <bonzini@gnu.org>
 
 	* c-common.c (c_common_nodes_and_builtins): Do not
