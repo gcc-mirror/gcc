@@ -130,7 +130,7 @@ class ios : public _ios_fields {
     typedef __fmtflags fmtflags;
     typedef int iostate;
     typedef int openmode;
-    typedef int streamsize;
+    typedef _IO_ssize_t streamsize;
     enum io_state {
 	goodbit = _IOS_GOOD,
 	eofbit = _IOS_EOF,
