@@ -3414,6 +3414,9 @@ changequote([,])dnl
 		xmake_file=x-linux
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 		gnu_ld=yes
+ 		if test x$enable_threads = xyes; then
+ 			thread_file='posix'
+ 		fi
 		float_format=sparc
 		;;
 # This hasn't been upgraded to GCC 2.
