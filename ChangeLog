@@ -3,11 +3,21 @@ Thu Nov 27 01:31:30 1997  Jeffrey A Law  (law@cygnus.com)
 	* Makefile.in (INSTALL_TARGET): Do install-gcc first.
 	* configure (gxx_include_dir): Provide a definition for subdirs
 	which do not use autoconf.
+	
+Wed Nov 26 16:08:50 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* From Franz Sirl.
+	* config.guess (powerpc*-*-linux): Handle glibc2 beta release
+	found on RedHat Linux systems.
 
 Fri Nov 21 09:51:01 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* config.guess (alpha stuff): Merge with FSF to avoid incorrect
 	guesses.
+
+Thu Nov 13 11:38:37 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* configure.in (i[3456]86-ncr-sysv4.3*): Tweak.
 
 Mon Oct 27 12:03:53 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
