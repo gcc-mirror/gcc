@@ -85,6 +85,16 @@ case "${host}" in
 	enable_hash_synchronization_default=yes
 	slow_pthread_self=yes
 	;;
+  x86_64-*)
+	sysdeps_dir=x86-64
+	libgcj_flags="${libgcj_flags} -ffloat-store"
+	libgcj_interpreter=no
+	libgcj_cxxflags="-D__NO_MATH_INLINES"
+	libgcj_cflags="-D__NO_MATH_INLINES"
+	DIVIDESPEC=-fno-use-divide-subroutine
+	enable_hash_synchronization_default=yes
+	slow_pthread_self=yes
+	;;
   alpha*-*)
 	sysdeps_dir=alpha
 	libgcj_flags="${libgcj_flags} -mieee"
@@ -127,7 +137,8 @@ case "${host}" in
   alpha*-linux* | \
   s390*-linux* | \
   sparc*-linux* | \
-  ia64-*)
+  ia64-* | \
+  x86_64*-linux*)
   	can_unwind_signal=yes
 	;;
   *-*-darwin*)
