@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   ffi.c - Copyright (c) 2002 Kaz Kojima
+   ffi.c - Copyright (c) 2002, 2003 Kaz Kojima
    
    SuperH Foreign Function Interface 
 
@@ -507,7 +507,7 @@ ffi_prep_closure (ffi_closure* closure,
 
 #ifdef __LITTLE_ENDIAN__
 #define OFS_INT8	0
-#define OFS_INT16	2
+#define OFS_INT16	0
 #else
 #define OFS_INT8	3
 #define OFS_INT16	2
