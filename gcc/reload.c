@@ -2953,6 +2953,17 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		  && operand_mode[i] != VOIDmode)
 		losers++;
 
+	      /* If we can't reload this value at all, reject this
+		 alternative.  Note that we could also lose due to
+		 LIMIT_RELOAD_RELOAD_CLASS, but we don't check that
+		 here.  */
+
+	      if (! CONSTANT_P (operand)
+		  && (PREFERRED_RELOAD_CLASS (operand,
+					      (enum reg_class) this_alternative[i])
+		      == NO_REGS))
+		bad = 1;
+
 	      /* We prefer to reload pseudos over reloading other things,
 		 since such reloads may be able to be eliminated later.
 		 If we are reloading a SCRATCH, we won't be generating any
