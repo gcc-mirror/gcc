@@ -1,3 +1,9 @@
+1999-09-01  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (lang_type): Move align into type_flags.
+	(CLASSTYPE_ALIGN): Adjust accordingly.
+	* call.c (direct_reference_binding): Remove misleading comment.
+
 1999-08-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* parse.y (language_string): Constify.

@@ -987,10 +987,9 @@ direct_reference_binding (type, conv)
 
 /* Returns the conversion path from type FROM to reference type TO for
    purposes of reference binding.  For lvalue binding, either pass a
-   reference type to FROM or an lvalue expression to EXPR.
-
-   Currently does not distinguish in the generated trees between binding to
-   an lvalue and a temporary.  Should it?  */
+   reference type to FROM or an lvalue expression to EXPR.  If the
+   reference will be bound to a temporary, NEED_TEMPORARY_P is set for
+   the conversion returned.  */
 
 static tree
 reference_binding (rto, rfrom, expr, flags)
