@@ -1,3 +1,9 @@
+2005-03-06  Roger Sayle  <roger@eyesopen.com>
+
+	PR libgcj/20155
+	* Makefile.am (libgcj0_convenience.la): Revert last change.
+	* Makefile.in: Regenerate.
+
 2005-03-05  Roger Sayle  <roger@eyesopen.com>
 	    Alexandre Oliva  <aoliva@redhat.com>
 	    Kelley Cook  <kcook@gcc.gnu.org>

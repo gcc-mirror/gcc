@@ -329,7 +329,7 @@ am__DEPENDENCIES_2 = gnu/regexp/MessagesBundle.properties.lo \
 am__DEPENDENCIES_3 = $(am__DEPENDENCIES_2)
 am_libgcj_la_OBJECTS =
 libgcj_la_OBJECTS = $(am_libgcj_la_OBJECTS)
-libgcj0_convenience_la_DEPENDENCIES =
+libgcj0_convenience_la_LIBADD =
 am__libgcj0_convenience_la_SOURCES_DIST = prims.cc jni.cc exception.cc \
 	link.cc defineclass.cc interpret.cc verify.cc \
 	gnu/gcj/natCore.cc gnu/gcj/convert/JIS0208_to_Unicode.cc \
@@ -5171,9 +5171,6 @@ libgcj0_convenience_la_SOURCES = prims.cc jni.cc exception.cc \
 	$(DARWIN_CRT_SRC) \
 	$(POSIX_THREAD_SRC) $(WIN32_THREAD_SRC) $(NO_THREAD_SRC)
 
-libgcj0_convenience_la_LDFLAGS = 
-libgcj0_convenience_la_LIBADD = 
-libgcj0_convenience_la_LINK = $(LIBLINK)
 noinst_LTLIBRARIES = libgcj0_convenience.la
 libgcj_la_SOURCES = 
 nat_files = $(nat_source_files:.cc=.lo)
@@ -16145,6 +16142,8 @@ sysdep/$(DEPDIR)/$(am__dirstamp):
 	@: > sysdep/$(DEPDIR)/$(am__dirstamp)
 sysdep/dwarf2-backtrace.lo: sysdep/$(am__dirstamp) \
 	sysdep/$(DEPDIR)/$(am__dirstamp)
+libgcj0_convenience.la: $(libgcj0_convenience_la_OBJECTS) $(libgcj0_convenience_la_DEPENDENCIES) 
+	$(GCJLINK)  $(libgcj0_convenience_la_LDFLAGS) $(libgcj0_convenience_la_OBJECTS) $(libgcj0_convenience_la_LIBADD) $(LIBS)
 libgij.la: $(libgij_la_OBJECTS) $(libgij_la_DEPENDENCIES) 
 	$(CXXLINK) -rpath $(toolexeclibdir) $(libgij_la_LDFLAGS) $(libgij_la_OBJECTS) $(libgij_la_LIBADD) $(LIBS)
 libjawt.la: $(libjawt_la_OBJECTS) $(libjawt_la_DEPENDENCIES) 
@@ -26668,7 +26667,6 @@ mostlyclean-local:
 
 clean-local:
 	find . -name '*.class' -print | xargs rm -f
-	find . -name '*.objectlist' -print | xargs rm -f
 
 distclean-local:
 	find . -name '*.d' -print | xargs rm -f
@@ -26692,14 +26690,6 @@ libgcj.la: $(libgcj_la_OBJECTS) $(libgcj_la_DEPENDENCIES)
 	$(libgcj_la_LINK) -objectlist libgcj.objectlist \
 	$(libgcj_la_LIBADD) \
 	-rpath $(toolexeclibdir) $(libgcj_la_LDFLAGS) $(LIBS)
-
-libgcj0_convenience.la: $(libgcj0_convenience_la_OBJECTS) $(libgcj0_convenience_la_DEPENDENCIES)
-	@echo Creating list of files to link...
-	@: $(call write_entries_to_file,$(libgcj0_convenience_la_OBJECTS),libgcj0_convenience.objectlist)
-	$(libgcj0_convenience_la_LINK) \
-	-objectlist libgcj0_convenience.objectlist \
-	$(libgcj0_convenience_la_LIBADD) \
-	-rpath $(toolexeclibdir) $(libgcj0_convenience_la_LDFLAGS) $(LIBS)
 
 lib-gnu-awt-xlib.la: $(lib_gnu_awt_xlib_la_OBJECTS) $(lib_gnu_awt_xlib_la_DEPENDENCIES)
 	@echo Creating list of files to link...
