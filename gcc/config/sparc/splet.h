@@ -36,12 +36,6 @@ Boston, MA 02111-1307, USA.  */
 {"broken-saverestore", MASK_BROKEN_SAVERESTORE},	\
 {"no-broken-saverestore", -MASK_BROKEN_SAVERESTORE},
 
-#undef CPP_SPEC
-#define CPP_SPEC "\
-%(cpp_cpu) \
-%{mlittle-endian:-D__LITTLE_ENDIAN__} \
-"
-
 #undef ASM_SPEC
 #define ASM_SPEC "%{mlittle-endian:-EL} %(asm_cpu)"
 

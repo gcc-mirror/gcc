@@ -19,13 +19,11 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+/* ??? bi-architecture support will require changes to the linker
+   related specs, among perhaps other things (multilibs).  */
+/* #define SPARC_BI_ARCH */
+
 #define LINUX_DEFAULT_ELF
-
-/* This is a v9 only compiler.  -mv8 is not expected to work.  If you want
-   a v8/v9 compiler, this isn't the place to do it.  */
-
-#define SPARC_V9 1	/* See sparc.h.  */
-#define SPARC_ARCH64 1
 
 /* Don't assume anything about the header files. */
 #define NO_IMPLICIT_EXTERN_C
@@ -47,8 +45,8 @@ Boston, MA 02111-1307, USA.  */
         fprintf (FILE, "\t.version\t\"01.01\"\n");                      \
   } while (0)
   
-#undef ASM_DEFAULT_SPEC
-#define ASM_DEFAULT_SPEC "-Av9a"
+#undef ASM_CPU_DEFAULT_SPEC
+#define ASM_CPU_DEFAULT_SPEC "-Av9a"
 
 #undef  LIBGCC_SPEC
 #define LIBGCC_SPEC \
@@ -78,13 +76,17 @@ Boston, MA 02111-1307, USA.  */
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (sparc64 Linux/ELF)");
 
-/* A v9 compiler with stack-bias, 32 bit integers, 64 bit longs and
-   64 bit pointers, in a Medium/Anywhere code model environment.  */
+/* A 64 bit v9 compiler with stack-bias,
+   in a Medium/Anywhere code model environment.  */
 
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT \
-  (MASK_V9 + MASK_ARCH64 + MASK_LONG64 + MASK_PTR64 /* + MASK_HARD_QUAD */ \
-   + MASK_STACK_BIAS + MASK_MEDANY + MASK_APP_REGS + MASK_EPILOGUE + MASK_FPU)
+  (MASK_V9 + MASK_PTR64 + MASK_64BIT /* + MASK_HARD_QUAD */ \
+   + MASK_STACK_BIAS + MASK_APP_REGS + MASK_EPILOGUE + MASK_FPU)
+
+/* The default code model.  */
+#undef SPARC_DEFAULT_CMODEL
+#define SPARC_DEFAULT_CMODEL CM_MEDANY
 
 #undef SIZE_TYPE
 #define SIZE_TYPE "long long unsigned int"
@@ -97,20 +99,17 @@ Boston, MA 02111-1307, USA.  */
    
 #undef WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE BITS_PER_WORD
+
+#undef LONG_DOUBLE_TYPE_SIZE
+#define LONG_DOUBLE_TYPE_SIZE 128
     
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-D__sparc__ -D__sparc__ -D__sparc_v9__ -D__arch64__ -D__ELF__ -Dunix -Dsparc -Dlinux -Asystem(unix) -Asystem(posix) -Acpu(sparc) -Amachine(sparc)"
+#define CPP_PREDEFINES "-D__ELF__ -Dunix -Dsparc -Dlinux -Asystem(unix) -Asystem(posix)"
 
-#undef CPP_SPEC
-#define CPP_SPEC "\
+#undef CPP_SUBTARGET_SPEC
+#define CPP_SUBTARGET_SPEC "\
 %{fPIC:-D__PIC__ -D__pic__} \
 %{fpic:-D__PIC__ -D__pic__} \
-%{mint64:-D__INT_MAX__=9223372036854775807LL -D__LONG_MAX__=9223372036854775807LL} \
-%{mlong64:-D__LONG_MAX__=9223372036854775807LL} \
-%{mlittle-endian:-D__LITTLE_ENDIAN__} \
-%{msparclite:-D__sparclite__} \
-%{mv8:-D__sparc_v8__} \
-%{msupersparc:-D__supersparc__ -D__sparc_v8__} \
 %{posix:-D_POSIX_SOURCE} \
 "
 /* We no longer link with libc_p.a or libg.a by default. If you
@@ -162,7 +161,7 @@ Boston, MA 02111-1307, USA.  */
 %{Wa,*:%*} \
 -s %{fpic:-K PIC} %{fPIC:-K PIC} \
 %{mlittle-endian:-EL} \
-%(asm_cpu) \
+%(asm_cpu) %(asm_arch) \
 "
 
 /* Same as sparc.h */
