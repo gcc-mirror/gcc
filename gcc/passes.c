@@ -1051,7 +1051,6 @@ rest_of_handle_gcse (void)
      things up.  Then possibly re-run CSE again.  */
   if (tem || tem2)
     {
-      tem = tem2 = 0;
       timevar_push (TV_JUMP);
       rebuild_jump_labels (get_insns ());
       cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
