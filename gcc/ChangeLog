@@ -1,3 +1,15 @@
+2004-07-06  Eric Christopher  <echristo@redhat.com>
+
+	PR rtl-optimization/14700
+	Backport from mainline:
+	2004-06-30  Zack Weinberg  <zack@codesourcery.com>
+	* combine.c (distribute_notes): Don't look at global_regs for
+        pseudos.
+
+	2004-06-24  Eric Christopher  <echristo@redhat.com>
+	* combine.c (distribute_notes): Don't delete sets to
+        global register variables.
+
 2004-07-04  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/contrib.texi (Contributors): Adjust link for GNU Classpath.
@@ -28,13 +40,13 @@
 	PR wrong-code/15089
 	* loop.c (scan_loop): Do not move user-specified register
 	assignments.
-	
+
 2004-06-25  Mark Mitchell  <mark@codesourcery.com>
 
 	PR wrong-code/16129
 	* alias.c (get_alias_set): Adjust setting of
 	DECL_POINTER_ALIAS_SET for pointers to aggregates.
-	
+
 2004-06-25  Richard Sandiford  <rsandifo@redhat.com>
 
 	PR target/16144
