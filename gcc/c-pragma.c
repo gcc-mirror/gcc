@@ -589,6 +589,8 @@ init_pragma (void)
   c_register_pragma (0, "redefine_extname", handle_pragma_redefine_extname);
   c_register_pragma (0, "extern_prefix", handle_pragma_extern_prefix);
 
+  c_register_pragma ("GCC", "pch_preprocess", c_common_pch_pragma);
+
 #ifdef REGISTER_TARGET_PRAGMAS
   REGISTER_TARGET_PRAGMAS ();
 #endif

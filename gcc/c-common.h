@@ -350,6 +350,10 @@ extern char flag_dump_macros;
 
 extern char flag_dump_includes;
 
+/* Nonzero means process PCH files while preprocessing.  */
+
+extern bool flag_pch_preprocess;
+
 /* The file name to which we should write a precompiled header, or
    NULL if no header will be written in this compile.  */
 
@@ -1096,12 +1100,15 @@ extern void c_genericize (tree);
 extern int c_gimplify_expr (tree *, tree *, tree *);
 extern tree c_build_bind_expr (tree, tree);
 
+/* In c-pch.c  */
 extern void pch_init (void);
 extern int c_common_valid_pch (cpp_reader *pfile, const char *name, int fd);
 extern void c_common_read_pch (cpp_reader *pfile, const char *name, int fd,
 			       const char *orig);
 extern void c_common_write_pch (void);
 extern void c_common_no_more_pch (void);
+extern void c_common_pch_pragma (cpp_reader *pfile);
+
 extern void builtin_define_with_value (const char *, const char *, int);
 extern void c_stddef_cpp_builtins (void);
 extern void fe_file_change (const struct line_map *);

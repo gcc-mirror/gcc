@@ -57,6 +57,8 @@ static void cb_include (cpp_reader *, fileline, const unsigned char *,
 			const char *, int);
 static void cb_ident (cpp_reader *, fileline, const cpp_string *);
 static void cb_def_pragma (cpp_reader *, fileline);
+static void cb_read_pch (cpp_reader *pfile, const char *name,
+			 int fd, const char *orig_name);
 
 /* Preprocess and output.  */
 void
@@ -105,6 +107,12 @@ init_pp_output (FILE *out_stream)
 
   if (flag_dump_includes)
     cb->include  = cb_include;
+
+  if (flag_pch_preprocess)
+    {
+      cb->valid_pch = c_common_valid_pch;
+      cb->read_pch = cb_read_pch;
+    }
 
   if (flag_dump_macros == 'N' || flag_dump_macros == 'D')
     {
@@ -415,4 +423,18 @@ dump_macro (cpp_reader *pfile, cpp_hashnode *node, void *v ATTRIBUTE_UNUSED)
     }
 
   return 1;
+}
+
+/* Load in the PCH file NAME, open on FD.  It was originally searched for
+   by ORIG_NAME.  Also, print out a #include command so that the PCH
+   file can be loaded when the preprocessed output is compiled.  */
+
+static void
+cb_read_pch (cpp_reader *pfile, const char *name,
+	     int fd, const char *orig_name ATTRIBUTE_UNUSED)
+{
+  c_common_read_pch (pfile, name, fd, orig_name);
+  
+  fprintf (print.outf, "#pragma GCC pch_preprocess \"%s\"\n", name);
+  print.src_line++;
 }

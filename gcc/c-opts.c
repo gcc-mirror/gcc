@@ -879,6 +879,10 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       cpp_opts->restore_pch_deps = value;
       break;
 
+    case OPT_fpch_preprocess:
+      flag_pch_preprocess = value;
+      break;
+
     case OPT_fpermissive:
       flag_permissive = value;
       break;

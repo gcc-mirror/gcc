@@ -599,6 +599,10 @@ Enable optional diagnostics
 fpch-deps
 C ObjC C++ ObjC++
 
+fpch-preprocess
+C ObjC C++ ObjC++
+Look for and use PCH files even when preprocessing
+
 fpermissive
 C++ ObjC++
 Downgrade conformance errors to warnings

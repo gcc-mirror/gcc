@@ -438,13 +438,22 @@ cpp_valid_state (cpp_reader *r, const char *name, int fd)
       if (m.name_length == 0)
 	break;
 
+      /* If this file is already preprocessed, there won't be any
+	 macros defined, and that's OK.  */
+      if (CPP_OPTION (r, preprocessed))
+	{
+	  if (lseek (fd, m.definition_length, SEEK_CUR) == -1)
+	    goto error;
+	  continue;
+	}
+
       if (m.definition_length > namebufsz)
 	{
 	  free (namebuf);
 	  namebufsz = m.definition_length + 256;
 	  namebuf = xmalloc (namebufsz);
 	}
-      
+
       if ((size_t)read (fd, namebuf, m.definition_length) 
 	  != m.definition_length)
 	goto error;

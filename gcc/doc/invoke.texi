@@ -11809,7 +11809,7 @@ which options are safe to change and which are not; the safest choice
 is to use exactly the same options when generating and using the
 precompiled header.  The following are known to be safe:
 
-@gccoptlist{-pedantic-errors}
+@gccoptlist{-fpreprocessed -pedantic-errors}
 
 @end itemize
 
@@ -11818,6 +11818,12 @@ ignore the precompiled header if the conditions aren't met.  If you
 find an option combination that doesn't work and doesn't cause the
 precompiled header to be ignored, please consider filing a bug report,
 see @ref{Bugs}.
+
+If you do use differing options when generating and using the
+precompiled header, the actual behaviour will be a mixture of the
+behaviour for the options.  For instance, if you use @option{-g} to
+generate the precompiled header but not when using it, you may or may
+not get debugging information for routines in the precompiled header.
 
 @node Running Protoize
 @section Running Protoize

@@ -323,6 +323,24 @@ precompiled header would be listed and not the files that were used to
 create it because those files are not consulted when a precompiled
 header is used.
 
+@item -fpch-preprocess
+@opindex fpch-preprocess
+This option allows use of a precompiled header (@pxref{Precompiled
+Headers}) together with @option{-E}.  It inserts a special @code{#pragma},
+@code{#pragma GCC pch_preprocess "<filename>"} in the output to mark
+the place where the precompiled header was found, and its filename.  When
+@code{-fpreprocessed} is in use, GCC recognizes this @code{#pragma} and
+loads the PCH.
+
+This option is off by default, because the resulting preprocessed output
+is only really suitable as input to GCC.  It is switched on by
+@option{-save-temps}.
+
+You should not write this @code{#pragma} in your own code, but it is
+safe to edit the filename if the PCH file is available in a different
+location.  The filename may be absolute or it may be relative to GCC's
+current directory.
+
 @end ifclear
 @item -x c
 @itemx -x c++
