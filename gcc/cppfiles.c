@@ -904,8 +904,9 @@ read_and_prescan (pfile, fp, desc, len)
 	      memcpy (op, ip, span);
 	      op += span;
 	      ip += span;
-	      if (*ip == '\n' || *ip == '\t'
-		  || *ip == ' ' || *ip == ' ')
+	      /* If ip[0] is SPECCASE_EMPTY, we have hit white space.
+		 Dump out the remaining deferred \-newlines.  */
+	      if (speccase[ip[0]] == SPECCASE_EMPTY)
 		while (deferred_newlines)
 		  deferred_newlines--, *op++ = '\r';
 	      span = 0;
@@ -924,15 +925,15 @@ read_and_prescan (pfile, fp, desc, len)
 	      goto read_next;
 
 	    case SPECCASE_CR:  /* \r */
-	      if (*ip == '\n')
+	      if (ip[-2] == '\n')
+		continue;
+	      else if (*ip == '\n')
 		ip++;
 	      else if (*ip == '\0')
 		{
 		  *--ibase = '\r';
 		  goto read_next;
 		}
-	      else if (ip[-2] == '\n')
-		continue;
 	      *op++ = '\n';
 	      break;
 
