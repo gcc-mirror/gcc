@@ -1,5 +1,9 @@
 2004-01-30  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	* config/sparc/sparc.h: Update copyright.
+
+2004-01-30  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	PR c/12818
 	* varasm.c (const_hash_1) <STRING_CST>: Use the
 	address to compute the hash value if flag_writable_strings.
