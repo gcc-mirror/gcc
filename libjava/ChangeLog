@@ -1,3 +1,8 @@
+2003-11-28  Bryce McKinlay  <bryce@mckinlay.net.nz>
+
+	* configure: Rebuilt.
+	* configure.in: Require gtk and glib 2.2.0.
+
 2003-11-27  Dalibor Topic <robilad@kaffe.org>
 
 	* java/text/FieldPosition.java (equals): Adapted to handle

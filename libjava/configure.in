@@ -840,8 +840,8 @@ else
 
    # Test for Gtk stuff, if asked for.
    if test "$use_gtk_awt" = yes; then
-      AM_PATH_GTK_2_0(2.0.0,,exit 1)
-      AM_PATH_GLIB_2_0(2.0.0,,exit 1,gthread)
+      AM_PATH_GTK_2_0(2.2.0,,exit 1)
+      AM_PATH_GLIB_2_0(2.2.0,,exit 1,gthread)
       dnl XXX Fix me when libart.m4 has the compile test fixed!
       enable_libarttest=no
       AM_PATH_LIBART(2.1.0,,exit 1)
