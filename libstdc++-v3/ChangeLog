@@ -1,5 +1,11 @@
 2004-01-31  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/stl_algo.h: Minor additional reformat, add
+	copyright year.
+	* include/bits/stl_algobase.h: Add copyright year.
+
+2004-01-31  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/stl_algo.h: Wrap overlong lines, constify
 	a few variables, reformat according to the coding standards.
 	* include/bits/stl_algobase.h: Likewise.

@@ -1,6 +1,6 @@
 // Algorithm implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -2117,17 +2117,17 @@ namespace std
 	return;
 
       for (_RandomAccessIterator __i = __first + 1; __i != __last; ++__i)
-      {
-	typename iterator_traits<_RandomAccessIterator>::value_type
-	  __val = *__i;
-	if (__val < *__first)
-	  {
-	    std::copy_backward(__first, __i, __i + 1);
-	    *__first = __val;
-	  }
-	else
-	  std::__unguarded_linear_insert(__i, __val);
-      }
+	{
+	  typename iterator_traits<_RandomAccessIterator>::value_type
+	    __val = *__i;
+	  if (__val < *__first)
+	    {
+	      std::copy_backward(__first, __i, __i + 1);
+	      *__first = __val;
+	    }
+	  else
+	    std::__unguarded_linear_insert(__i, __val);
+	}
     }
 
   /**
@@ -2143,17 +2143,17 @@ namespace std
       if (__first == __last) return;
 
       for (_RandomAccessIterator __i = __first + 1; __i != __last; ++__i)
-      {
-	typename iterator_traits<_RandomAccessIterator>::value_type
-	  __val = *__i;
-	if (__comp(__val, *__first))
-	  {
-	    std::copy_backward(__first, __i, __i + 1);
-	    *__first = __val;
-	  }
-	else
-	  std::__unguarded_linear_insert(__i, __val, __comp);
-      }
+	{
+	  typename iterator_traits<_RandomAccessIterator>::value_type
+	    __val = *__i;
+	  if (__comp(__val, *__first))
+	    {
+	      std::copy_backward(__first, __i, __i + 1);
+	      *__first = __val;
+	    }
+	  else
+	    std::__unguarded_linear_insert(__i, __val, __comp);
+	}
     }
 
   /**
