@@ -1,5 +1,5 @@
 /* Allocate and read RTL for GNU C Compiler.
-   Copyright (C) 1987, 1988, 1991, 1994, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 91, 94, 97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -233,7 +233,8 @@ rtx_alloc (code)
 
   if (ob->chunk_limit - ob->next_free < length)
     _obstack_newchunk (ob, length);
-  rt = (rtx)ob->object_base;
+
+  rt = (rtx) ob->object_base;
   ob->next_free += length;
   ob->object_base = ob->next_free;
 
@@ -241,11 +242,56 @@ rtx_alloc (code)
      one int, but we don't want to assume that and it isn't very portable
      anyway; this is.  */
 
-  length = (sizeof (struct rtx_def) - sizeof (rtunion) - 1) / sizeof (int);
-  for (; length >= 0; length--)
-    ((int *) rt)[length] = 0;
+  if (sizeof (struct rtx_def) - sizeof (rtunion) == sizeof (int))
+    *(int *) rt = 0;
+  else if (sizeof (struct rtx_def) - sizeof (rtunion)
+	   == sizeof (HOST_WIDE_INT))
+    *(HOST_WIDE_INT *) rt = 0;
+  else
+    bzero((char *) rt, sizeof (struct rtx_def) - sizeof (rtunion));
 
   PUT_CODE (rt, code);
+
+  return rt;
+}
+
+/* Like the above, but allocate based only on the length.  This is called
+   by the routines built into genrtl.c.  */
+
+rtx
+obstack_alloc_rtx (length)
+     int length;
+{
+  rtx rt;
+  register struct obstack *ob = rtl_obstack;
+
+  /* This function is called more than any other in GCC,
+     so we manipulate the obstack directly.
+
+     Even though rtx objects are word aligned, we may be sharing an obstack
+     with tree nodes, which may have to be double-word aligned.  So align
+     our length to the alignment mask in the obstack.  */
+
+  length = (length + ob->alignment_mask) & ~ ob->alignment_mask;
+
+  if (ob->chunk_limit - ob->next_free < length)
+    _obstack_newchunk (ob, length);
+
+  rt = (rtx) ob->object_base;
+  ob->next_free += length;
+  ob->object_base = ob->next_free;
+
+  /* We want to clear everything up to the FLD array.  Normally, this is
+     one int, but we don't want to assume that and it isn't very portable
+     anyway; this is.  */
+
+  if (sizeof (struct rtx_def) - sizeof (rtunion) == sizeof (int))
+    *(int *) rt = 0;
+  else if (sizeof (struct rtx_def) - sizeof (rtunion)
+	   == sizeof (HOST_WIDE_INT))
+    *(HOST_WIDE_INT *) rt = 0;
+  else
+    bzero((char *) rt, sizeof (struct rtx_def) - sizeof (rtunion));
 
   return rt;
 }
