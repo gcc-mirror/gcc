@@ -1,6 +1,6 @@
 2004-12-17  Nathan Sidwell  <nathan@codesourcery.com>
 
-	PR c++/17821
+	PR c++/18721
 	* g++.dg/lookup/conv-5.C: New.
 
 2004-12-16  Ziemowit Laski  <zlaski@apple.com>

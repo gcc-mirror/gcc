@@ -3,7 +3,7 @@
 // Copyright (C) 2004 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 17 Dec 2004 <nathan@codesourcery.com>
 
-// PR 17821. bogus error
+// PR 18721. bogus error
 // Origin:  Mikael Kilpel?inen <belz@kolumbus.fi>
 
 struct A {
