@@ -236,7 +236,7 @@ lang_decode_option (argc, argv)
 
 void
 chill_print_error_function (file)
-     char *file;
+     const char *file;
 {
   static tree last_error_function = NULL_TREE;
   static struct module *last_error_module = NULL;
@@ -283,8 +283,6 @@ incomplete_type_error (value, type)
 void
 lang_init ()
 {
-  extern void (*print_error_function) PROTO((char*));
-
   chill_real_input_filename = input_filename;
 
   /* the beginning of the file is a new line; check for # */
