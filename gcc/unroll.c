@@ -4059,7 +4059,7 @@ remap_split_bivs (x)
     {
       if (fmt[i] == 'e')
 	XEXP (x, i) = remap_split_bivs (XEXP (x, i));
-      if (fmt[i] == 'E')
+      else if (fmt[i] == 'E')
 	{
 	  register int j;
 	  for (j = 0; j < XVECLEN (x, i); j++)

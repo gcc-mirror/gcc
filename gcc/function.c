@@ -2324,7 +2324,7 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
     {
       if (fmt[i] == 'e')
 	fixup_var_refs_1 (var, promoted_mode, &XEXP (x, i), insn, replacements);
-      if (fmt[i] == 'E')
+      else if (fmt[i] == 'E')
 	{
 	  register int j;
 	  for (j = 0; j < XVECLEN (x, i); j++)
@@ -2405,7 +2405,7 @@ walk_fixup_memory_subreg (x, insn, uncritical)
     {
       if (fmt[i] == 'e')
 	XEXP (x, i) = walk_fixup_memory_subreg (XEXP (x, i), insn, uncritical);
-      if (fmt[i] == 'E')
+      else if (fmt[i] == 'E')
 	{
 	  register int j;
 	  for (j = 0; j < XVECLEN (x, i); j++)
@@ -2468,7 +2468,7 @@ fixup_stack_1 (x, insn)
     {
       if (fmt[i] == 'e')
 	XEXP (x, i) = fixup_stack_1 (XEXP (x, i), insn);
-      if (fmt[i] == 'E')
+      else if (fmt[i] == 'E')
 	{
 	  register int j;
 	  for (j = 0; j < XVECLEN (x, i); j++)

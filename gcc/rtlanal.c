@@ -612,7 +612,7 @@ modified_between_p (x, start, end)
       if (fmt[i] == 'e' && modified_between_p (XEXP (x, i), start, end))
 	return 1;
 
-      if (fmt[i] == 'E')
+      else if (fmt[i] == 'E')
 	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
 	  if (modified_between_p (XVECEXP (x, i, j), start, end))
 	    return 1;
@@ -667,7 +667,7 @@ modified_in_p (x, insn)
       if (fmt[i] == 'e' && modified_in_p (XEXP (x, i), insn))
 	return 1;
 
-      if (fmt[i] == 'E')
+      else if (fmt[i] == 'E')
 	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
 	  if (modified_in_p (XVECEXP (x, i, j), insn))
 	    return 1;
@@ -1519,7 +1519,7 @@ volatile_insn_p (x)
 	    if (volatile_insn_p (XEXP (x, i)))
 	      return 1;
 	  }
-	if (fmt[i] == 'E')
+	else if (fmt[i] == 'E')
 	  {
 	    register int j;
 	    for (j = 0; j < XVECLEN (x, i); j++)
@@ -1585,7 +1585,7 @@ volatile_refs_p (x)
 	    if (volatile_refs_p (XEXP (x, i)))
 	      return 1;
 	  }
-	if (fmt[i] == 'E')
+	else if (fmt[i] == 'E')
 	  {
 	    register int j;
 	    for (j = 0; j < XVECLEN (x, i); j++)
@@ -1660,7 +1660,7 @@ side_effects_p (x)
 	    if (side_effects_p (XEXP (x, i)))
 	      return 1;
 	  }
-	if (fmt[i] == 'E')
+	else if (fmt[i] == 'E')
 	  {
 	    register int j;
 	    for (j = 0; j < XVECLEN (x, i); j++)
@@ -1959,7 +1959,7 @@ replace_regs (x, reg_map, nregs, replace_dest)
     {
       if (fmt[i] == 'e')
 	XEXP (x, i) = replace_regs (XEXP (x, i), reg_map, nregs, replace_dest);
-      if (fmt[i] == 'E')
+      else if (fmt[i] == 'E')
 	{
 	  register int j;
 	  for (j = 0; j < XVECLEN (x, i); j++)
@@ -2014,7 +2014,7 @@ jmp_uses_reg_or_mem (x)
 	  && jmp_uses_reg_or_mem (XEXP (x, i)))
 	return 1;
 
-      if (fmt[i] == 'E')
+      else if (fmt[i] == 'E')
 	for (j = 0; j < XVECLEN (x, i); j++)
 	  if (jmp_uses_reg_or_mem (XVECEXP (x, i, j)))
 	    return 1;
