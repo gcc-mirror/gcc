@@ -1363,7 +1363,7 @@ darwin_asm_output_dwarf_delta (FILE *file, int size,
 {
   int islocaldiff = (lab1[0] == '*' && lab1[1] == 'L'
 		     && lab2[0] == '*' && lab2[1] == 'L');
-  char *directive = (size == 8 ? ".quad" : ".long");
+  const char *directive = (size == 8 ? ".quad" : ".long");
 
   if (islocaldiff)
     fprintf (file, "\t.set L$set$%d,", darwin_dwarf_label_counter);
