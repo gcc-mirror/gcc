@@ -49,7 +49,7 @@ rs6000 port		Geoff Keating		geoffk@redhat.com
 rs6000 port		David Edelsohn		dje@watson.ibm.com
 s390 port		Hartmut Penner		hpenner@de.ibm.com
 s390 port		Ulrich Weigand		uweigand@de.ibm.com
-sh port			Joern Rennecke		amylaar@onetel.net.uk
+sh port			Joern Rennecke		joern.rennecke@superh.com
 sh port			Alexandre Oliva		aoliva@redhat.com
 sparc port		Richard Henderson	rth@redhat.com
 sparc port		David S. Miller		davem@redhat.com
