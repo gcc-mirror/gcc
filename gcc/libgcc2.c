@@ -3124,10 +3124,16 @@ exit (int status)
 #else /* No NEED_ATEXIT */
   __do_global_dtors ();
 #endif /* No NEED_ATEXIT */
-#endif
+#endif /* !defined (INIT_SECTION_ASM_OP) || !defined (OBJECT_FORMAT_ELF) */
+/* In gbl-ctors.h, ON_EXIT is defined if HAVE_ATEXIT is defined.  In
+   __bb_init_func and _bb_init_prg, __bb_exit_func is registered with
+   ON_EXIT if ON_EXIT is defined.  Thus we must not call __bb_exit_func here
+   if HAVE_ATEXIT is defined. */
+#ifndef HAVE_ATEXIT
 #ifndef inhibit_libc
   __bb_exit_func ();
 #endif
+#endif /* !HAVE_ATEXIT */
 #ifdef EXIT_BODY
   EXIT_BODY;
 #else
