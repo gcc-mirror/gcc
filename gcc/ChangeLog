@@ -1,5 +1,9 @@
 Fri Oct 20 13:33:16 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* loop.c (strength_reduce): Show when new register made for
+	giv is known to be a pointer and its aligment if so and known.
+	(loop_dump_aux): Show VERBOSE parameter unused.
+
 	* gcse.c (set_hash_table_size): Now unsigned.
 	* sdbout.c (template_name_p): Add "const" to avoid warnings.
 	(sdbout_record_type_name, plain_type_1, sdbout_symbol): Likewise.
