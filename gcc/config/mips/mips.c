@@ -3648,7 +3648,8 @@ print_operand (file, op, letter)
   else if (code == MEM)
     output_address (XEXP (op, 0));
 
-  else if (code == CONST_DOUBLE)
+  else if (code == CONST_DOUBLE
+	   && GET_MODE_CLASS (GET_MODE (op)) == MODE_FLOAT)
     {
       REAL_VALUE_TYPE d;
       char s[30];
