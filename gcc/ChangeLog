@@ -1,3 +1,9 @@
+Thu Oct 29 18:07:47 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* mips.md (reload_{in,out}{si,di}): Emit a USE of HILO at the end
+	of the sequences to reload the HILO register which do not actually
+	reference HILO.
+
 Thu Oct 29 12:39:35 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* c-common.c (c_get_alias_set): Handle ARRAY_REF of union field.
