@@ -35,7 +35,6 @@ static int memrefs_conflict_p		PROTO((int, rtx, int, rtx,
 static void record_set			PROTO((rtx, rtx));
 static rtx find_base_term		PROTO((rtx));
 static int base_alias_check		PROTO((rtx, rtx));
-static int mode_alias_check		PROTO((rtx, rtx, int (*)(rtx)));
 
 /* Set up all info needed to perform alias analysis on memory references.  */
 
@@ -642,11 +641,7 @@ base_alias_check (x, y)
    align memory references, as is done on the Alpha.
 
    Nice to notice that varying addresses cannot conflict with fp if no
-   local variables had their addresses taken, but that's too hard now.
-
-   TODO: (symbol_ref foo) can not alias (plus REG N) if N is a positive
-   integer because REG would have to point outside of the object, which
-   is not allowed in C or C++.  */
+   local variables had their addresses taken, but that's too hard now.  */
 
 
 static int
@@ -847,70 +842,6 @@ memrefs_conflict_p (xsize, x, ysize, y, c)
    generate aligned addresses from unaligned addresses, for instance, the
    alpha storeqi_unaligned pattern.  */
 
-
-/* This subroutine implements the type and struct/varying part of the
-   alias check.
-
-   Return 0 if the memory references can never alias.
-   Return 1 if the values of the addresses should be checked.  */
-
-static int
-mode_alias_check (x, y, varies)
-     register rtx x, y;
-     int (*varies) PROTO ((rtx));
-{
-#if 1
-  /* gcc rules: all type aliasing allowed  */
-  return 1;
-#else
-  /* ANSI C rules: different types do not alias. */
-  enum machine_mode x_mode = GET_MODE (x), y_mode = GET_MODE (y);
-  rtx x_addr = XEXP (x, 0), y_addr = XEXP (y, 0);
-  int x_varies, y_varies, x_struct, y_struct;
-
-  /* If either address is an AND then neither the mode check nor the
-     struct/varying check is valid.  */
-  if (GET_CODE (x_addr) == AND || GET_CODE (y_addr) == AND)
-    return 1;
-
-  x_struct = MEM_IN_STRUCT_P (x);
-  y_struct = MEM_IN_STRUCT_P (y);
-
-  /* QImode and BLKmode references can alias anything.  */
-  if (x_mode == QImode || x_mode == BLKmode
-      || y_mode == QImode || y_mode == BLKmode)
-    return 1;
-
-  /* Otherwise, different modes can only alias if they are structure
-     references.  gcc bitfield operations can access an entire word,
-     but that word may also contain integers accessed directly.
-
-     ??? It appears that bitfield accesses can not be larger than
-     word_mode?
-     ??? Can complex modes alias their components? */
-  if (x_mode != y_mode && ! (x_struct && y_struct))
-    return 0;
-
-  /* Modes are the same or may alias.  */
-
-  /* No alias if one reference is a struct at a varying address and the
-     other is a scalar at a fixed address.
-
-     If either reference is a varying scalar or a fixed struct nothing
-     is known about aliasing.  */
-  x_varies = varies (x_addr);
-  if (x_struct != x_varies)
-    return 1;
-  y_varies = varies (y_addr);
-  if (y_struct != y_varies)
-    return 1;
-
-  /* Both are varying structs or fixed scalars.  Check that they are not
-     the same type.  */
-  return (x_struct == y_struct);
-#endif
-}
-
 /* Read dependence: X is read after read in MEM takes place.  There can
    only be a dependence here if both reads are volatile.  */
 
@@ -949,17 +880,40 @@ true_dependence (mem, mem_mode, x, varies)
   if (! base_alias_check (XEXP (x, 0), XEXP (mem, 0)))
     return 0;
 
-  if (! mode_alias_check (x, mem, varies))
-    return 0;
-
   x_addr = canon_rtx (XEXP (x, 0));
   mem_addr = canon_rtx (XEXP (mem, 0));
 
   if (mem_mode == VOIDmode)
     mem_mode = GET_MODE (mem);
 
-  return memrefs_conflict_p (GET_MODE_SIZE (mem_mode), mem_addr,
-			     SIZE_FOR_MODE (x), x_addr, 0);
+  if (! memrefs_conflict_p (GET_MODE_SIZE (mem_mode), mem_addr,
+			    SIZE_FOR_MODE (x), x_addr, 0))
+    return 0;
+
+  /* If both references are struct references, or both are not, nothing
+     is known about aliasing.
+
+     If either reference is QImode or BLKmode, ANSI C permits aliasing.
+
+     If both addresses are constant, or both are not, nothing is known
+     about aliasing.  */
+  if (MEM_IN_STRUCT_P (x) == MEM_IN_STRUCT_P (mem)
+      || mem_mode == QImode || mem_mode == BLKmode
+      || GET_MODE (x) == QImode || GET_MODE (x) == BLKmode
+      || GET_CODE (x_addr) == AND || GET_CODE (mem_addr) == AND
+      || varies (x_addr) == varies (mem_addr))
+    return 1;
+
+  /* One memory reference is to a constant address, one is not.
+     One is to a structure, the other is not.
+
+     If either memory reference is a variable structure the other is a
+     fixed scalar and there is no aliasing.  */
+  if ((MEM_IN_STRUCT_P (mem) && varies (mem_addr))
+      || (MEM_IN_STRUCT_P (x) && varies (x_addr)))
+    return 0;
+
+  return 1;
 }
 
 /* Anti dependence: X is written after read in MEM takes place.  */
@@ -989,11 +943,16 @@ anti_dependence (mem, x)
   x_addr = XEXP (x, 0);
   mem_addr = XEXP (mem, 0);
 
-  if (! mode_alias_check (x, mem, rtx_varies_p))
-    return 0;
-
-  return memrefs_conflict_p (SIZE_FOR_MODE (mem), mem_addr,
-			     SIZE_FOR_MODE (x), x_addr, 0);
+  return (memrefs_conflict_p (SIZE_FOR_MODE (mem), mem_addr,
+			      SIZE_FOR_MODE (x), x_addr, 0)
+	  && ! (MEM_IN_STRUCT_P (mem) && rtx_addr_varies_p (mem)
+		&& GET_MODE (mem) != QImode
+		&& GET_CODE (mem_addr) != AND
+		&& ! MEM_IN_STRUCT_P (x) && ! rtx_addr_varies_p (x))
+	  && ! (MEM_IN_STRUCT_P (x) && rtx_addr_varies_p (x)
+		&& GET_MODE (x) != QImode
+		&& GET_CODE (x_addr) != AND
+		&& ! MEM_IN_STRUCT_P (mem) && ! rtx_addr_varies_p (mem)));
 }
 
 /* Output dependence: X is written after store in MEM takes place.  */
@@ -1012,11 +971,16 @@ output_dependence (mem, x)
   x = canon_rtx (x);
   mem = canon_rtx (mem);
 
-  if (! mode_alias_check (x, mem, rtx_varies_p))
-    return 0;
-
-  return memrefs_conflict_p (SIZE_FOR_MODE (mem), XEXP (mem, 0),
-			     SIZE_FOR_MODE (x), XEXP (x, 0), 0);
+  return (memrefs_conflict_p (SIZE_FOR_MODE (mem), XEXP (mem, 0),
+			      SIZE_FOR_MODE (x), XEXP (x, 0), 0)
+	  && ! (MEM_IN_STRUCT_P (mem) && rtx_addr_varies_p (mem)
+		&& GET_MODE (mem) != QImode
+		&& GET_CODE (XEXP (mem, 0)) != AND
+		&& ! MEM_IN_STRUCT_P (x) && ! rtx_addr_varies_p (x))
+	  && ! (MEM_IN_STRUCT_P (x) && rtx_addr_varies_p (x)
+		&& GET_MODE (x) != QImode
+		&& GET_CODE (XEXP (x, 0)) != AND
+		&& ! MEM_IN_STRUCT_P (mem) && ! rtx_addr_varies_p (mem)));
 }
 
 

@@ -1,3 +1,9 @@
+Sun May 17 13:44:32 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* alias.c (mode_alias_check): Delete.
+	(true_dependence, anti_dependence, output_dependence): Revert April 21
+	change.
+
 Sun May 17 08:45:21 1998  Krister Walfridsson <cato@df.lth.se>
 
         * toplev.c (output_lang_identify): Enable prototype and definition.
