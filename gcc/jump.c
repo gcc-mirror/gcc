@@ -2925,6 +2925,12 @@ follow_jumps (label)
       /* If we have found a cycle, make the insn jump to itself.  */
       if (JUMP_LABEL (insn) == label)
 	return label;
+
+      tem = next_active_insn (JUMP_LABEL (insn));
+      if (tem && (GET_CODE (PATTERN (tem)) == ADDR_VEC
+		  || GET_CODE (PATTERN (tem)) == ADDR_DIFF_VEC))
+	break;
+
       value = JUMP_LABEL (insn);
     }
   if (depth == 10)
