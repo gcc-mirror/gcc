@@ -54,14 +54,13 @@ struct macro_arg
 
 /* Macro expansion.  */
 
-static void lock_pools PARAMS ((cpp_reader *));
-static void unlock_pools PARAMS ((cpp_reader *));
 static int enter_macro_context PARAMS ((cpp_reader *, cpp_hashnode *));
 static const cpp_token *builtin_macro PARAMS ((cpp_reader *, cpp_hashnode *));
 static void push_token_context
   PARAMS ((cpp_reader *, cpp_macro *, const cpp_token *, unsigned int));
 static void push_ptoken_context
-  PARAMS ((cpp_reader *, cpp_macro *, const cpp_token **, unsigned int));
+  PARAMS ((cpp_reader *, cpp_macro *, _cpp_buff *,
+	   const cpp_token **, unsigned int));
 static _cpp_buff *collect_args PARAMS ((cpp_reader *, const cpp_hashnode *));
 static cpp_context *next_context PARAMS ((cpp_reader *));
 static const cpp_token *padding_token
@@ -215,20 +214,6 @@ builtin_macro (pfile, node)
 
       return node->value.builtin == BT_DATE ? &pfile->date: &pfile->time;
     }
-}
-
-static void
-lock_pools (pfile)
-     cpp_reader *pfile;
-{
-  _cpp_lock_pool (&pfile->argument_pool);
-}
-
-static void
-unlock_pools (pfile)
-     cpp_reader *pfile;
-{
-  _cpp_unlock_pool (&pfile->argument_pool);
 }
 
 /* Adds backslashes before all backslashes and double quotes appearing
@@ -685,15 +670,8 @@ enter_macro_context (pfile, node)
     {
       cpp_macro *macro = node->value.macro;
 
-      if (!pfile->context->prev)
-	lock_pools (pfile);
-
       if (macro->fun_like && !funlike_invocation_p (pfile, node))
-	{
-	  if (!pfile->context->prev)
-	    unlock_pools (pfile);
-	  return 0;
-	}
+	return 0;
 
       /* Disable the macro within its expansion.  */
       macro->disabled = 1;
@@ -718,12 +696,12 @@ replace_args (pfile, macro, args)
   const cpp_token *src, *limit;
   const cpp_token **dest, **first;
   macro_arg *arg;
+  _cpp_buff *buff;
 
   /* First, fully macro-expand arguments, calculating the number of
-     tokens in the final expansion as we go.  This ensures that the
-     possible recursive use of argument_pool is fine.  The ordering of
-     the if statements below is subtle; we must handle stringification
-     before pasting.  */
+     tokens in the final expansion as we go.  The ordering of the if
+     statements below is subtle; we must handle stringification before
+     pasting.  */
   total = macro->count;
   limit = macro->expansion + macro->count;
 
@@ -755,8 +733,8 @@ replace_args (pfile, macro, args)
 
   /* Now allocate space for the expansion, copy the tokens and replace
      the arguments.  */
-  first = (const cpp_token **) _cpp_pool_alloc (&pfile->argument_pool,
-						total * sizeof (cpp_token *));
+  buff = _cpp_get_buff (pfile, total * sizeof (cpp_token *));
+  first = (const cpp_token **) buff->base;
   dest = first;
 
   for (src = macro->expansion; src < limit; src++)
@@ -841,7 +819,7 @@ replace_args (pfile, macro, args)
     if (args[i].expanded)
       free (args[i].expanded);
 
-  push_ptoken_context (pfile, macro, first, dest - first);
+  push_ptoken_context (pfile, macro, buff, first, dest - first);
 }
 
 /* Return a special padding token, with padding inherited from SOURCE.  */
@@ -879,9 +857,10 @@ next_context (pfile)
 
 /* Push a list of pointers to tokens.  */
 static void
-push_ptoken_context (pfile, macro, first, count)
+push_ptoken_context (pfile, macro, buff, first, count)
      cpp_reader *pfile;
      cpp_macro *macro;
+     _cpp_buff *buff;
      const cpp_token **first;
      unsigned int count;
 {
@@ -889,6 +868,7 @@ push_ptoken_context (pfile, macro, first, count)
 
   context->direct_p = false;
   context->macro = macro;
+  context->buff = buff;
   context->first.ptoken = first;
   context->last.ptoken = first + count;
 }
@@ -905,6 +885,7 @@ push_token_context (pfile, macro, first, count)
 
   context->direct_p = true;
   context->macro = macro;
+  context->buff = NULL;
   context->first.token = first;
   context->last.token = first + count;
 }
@@ -924,7 +905,7 @@ expand_arg (pfile, arg)
   arg->expanded = (const cpp_token **)
     xmalloc (capacity * sizeof (cpp_token *));
 
-  push_ptoken_context (pfile, NULL, arg->first, arg->count + 1);
+  push_ptoken_context (pfile, NULL, NULL, arg->first, arg->count + 1);
   for (;;)
     {
       const cpp_token *token;
@@ -944,22 +925,23 @@ expand_arg (pfile, arg)
       arg->expanded[arg->expanded_count++] = token;
     }
 
-  /* Avoid the unlock_pools test of _cpp_pop_context.  Change this to
-     call _cpp_pop_context once we remove pool locking.  */
-  pfile->context = pfile->context->prev;
+  _cpp_pop_context (pfile);
 }
 
 void
 _cpp_pop_context (pfile)
      cpp_reader *pfile;
 {
-  /* Re-enable a macro when leaving its expansion.  */
-  if (pfile->context->macro)
-    pfile->context->macro->disabled = 0;
+  cpp_context *context = pfile->context;
 
-  pfile->context = pfile->context->prev;
-  if (!pfile->context->prev && !pfile->state.parsing_args)
-    unlock_pools (pfile);
+  /* Re-enable a macro when leaving its expansion.  */
+  if (context->macro)
+    context->macro->disabled = 0;
+
+  if (context->buff)
+    _cpp_release_buff (pfile, context->buff);
+
+  pfile->context = context->prev;
 }
 
 /* Eternal routine to get a token.  Also used nearly everywhere

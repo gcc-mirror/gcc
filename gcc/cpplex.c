@@ -105,7 +105,7 @@ static int maybe_read_ucs PARAMS ((cpp_reader *, const unsigned char **,
 static tokenrun *next_tokenrun PARAMS ((tokenrun *));
 
 static cpp_chunk *new_chunk PARAMS ((unsigned int));
-static int chunk_suitable PARAMS ((cpp_pool *, cpp_chunk *, unsigned int));
+static int chunk_suitable PARAMS ((cpp_chunk *, unsigned int));
 static unsigned int hex_digit_value PARAMS ((unsigned int));
 static _cpp_buff *new_buff PARAMS ((unsigned int));
 
@@ -2115,7 +2115,16 @@ cpp_interpret_charconst (pfile, token, warn_multi, traditional, pchars_seen)
   return result;
 }
 
-/* Memory buffers.  */
+/* Memory buffers.  Changing these three constants can have a dramatic
+   effect on performance.  The values here are reasonable defaults,
+   but might be tuned.  If you adjust them, be sure to test across a
+   range of uses of cpplib, including heavy nested function-like macro
+   expansion.  Also check the change in peak memory usage (NJAMD is a
+   good tool for this).  */
+#define MIN_BUFF_SIZE 8000
+#define BUFF_SIZE_UPPER_BOUND(MIN_SIZE) (8000 + (MIN_SIZE) * 3 / 2)
+#define EXTENDED_BUFF_SIZE(BUFF, MIN_EXTRA) \
+	(MIN_EXTRA + ((BUFF)->limit - (BUFF)->cur) * 2)
 
 struct dummy
 {
@@ -2138,8 +2147,8 @@ new_buff (len)
   _cpp_buff *result;
   char *base;
 
-  if (len < 4000)
-    len = 4000;
+  if (len < MIN_BUFF_SIZE)
+    len = MIN_BUFF_SIZE;
   len = CPP_ALIGN (len, DEFAULT_ALIGNMENT);
 
   base = xmalloc (len + sizeof (_cpp_buff));
@@ -2175,10 +2184,15 @@ _cpp_get_buff (pfile, min_size)
 
   for (p = &pfile->free_buffs;; p = &(*p)->next)
     {
-      if (*p == NULL || (*p)->next == NULL)
+      unsigned int size;
+
+      if (*p == NULL)
 	return new_buff (min_size);
-      result = (*p)->next;
-      if ((unsigned int) (result->limit - result->base) > min_size)
+      result = *p;
+      size = result->limit - result->base;
+      /* Return a buffer that's big enough, but don't waste one that's
+         way too big.  */
+      if (size >= min_size && size < BUFF_SIZE_UPPER_BOUND (min_size))
 	break;
     }
 
@@ -2197,7 +2211,7 @@ _cpp_extend_buff (pfile, buff, min_extra)
      _cpp_buff *buff;
      unsigned int min_extra;
 {
-  unsigned int size = min_extra + (buff->limit - buff->cur) * 2;
+  unsigned int size = EXTENDED_BUFF_SIZE (buff, min_extra);
 
   buff->next = _cpp_get_buff (pfile, size);
   memcpy (buff->next->base, buff->cur, buff->limit - buff->cur);
@@ -2219,16 +2233,14 @@ _cpp_free_buff (buff)
 }
 
 static int
-chunk_suitable (pool, chunk, size)
-     cpp_pool *pool;
+chunk_suitable (chunk, size)
      cpp_chunk *chunk;
      unsigned int size;
 {
   /* Being at least twice SIZE means we can use memcpy in
      _cpp_next_chunk rather than memmove.  Besides, it's a good idea
      anyway.  */
-  return (chunk && pool->locked != chunk
-	  && (unsigned int) (chunk->limit - chunk->base) >= size * 2);
+  return (chunk && (unsigned int) (chunk->limit - chunk->base) >= size * 2);
 }
 
 /* Returns the end of the new pool.  PTR points to a char in the old
@@ -2243,7 +2255,7 @@ _cpp_next_chunk (pool, len, ptr)
 
   /* LEN is the minimum size we want in the new pool.  */
   len += POOL_ROOM (pool);
-  if (! chunk_suitable (pool, chunk, len))
+  if (! chunk_suitable (chunk, len))
     {
       chunk = new_chunk (POOL_SIZE (pool) * 2 + len);
 
@@ -2294,26 +2306,8 @@ _cpp_init_pool (pool, size, align, temp)
   pool->align = align;
   pool->first = new_chunk (size);
   pool->cur = pool->first;
-  pool->locked = 0;
-  pool->locks = 0;
   if (temp)
     pool->cur->next = pool->cur;
-}
-
-void
-_cpp_lock_pool (pool)
-     cpp_pool *pool;
-{
-  if (pool->locks++ == 0)
-    pool->locked = pool->cur;
-}
-
-void
-_cpp_unlock_pool (pool)
-     cpp_pool *pool;
-{
-  if (--pool->locks == 0)
-    pool->locked = 0;
 }
 
 void
