@@ -644,27 +644,27 @@ hppa_legitimize_address (x, oldx, mode)
 	  && GET_CODE (XEXP (x, 0)) == SYMBOL_REF)
 	{
 	  rtx const_part = gen_rtx (CONST, VOIDmode,
-				    gen_rtx (PLUS, SImode,
+				    gen_rtx (PLUS, Pmode,
 					     XEXP (x, 0),
 					     GEN_INT (newoffset)));
 	  rtx tmp_reg
-	    = force_reg (SImode,
-			 gen_rtx (HIGH, SImode, const_part));
+	    = force_reg (Pmode,
+			 gen_rtx (HIGH, Pmode, const_part));
 	  ptr_reg
-	    = force_reg (SImode,
-			 gen_rtx (LO_SUM, SImode,
+	    = force_reg (Pmode,
+			 gen_rtx (LO_SUM, Pmode,
 				  tmp_reg, const_part));
 	}
       else
 	{
 	  if (! VAL_14_BITS_P (newoffset))
-	    int_part = force_reg (SImode, GEN_INT (newoffset));
+	    int_part = force_reg (Pmode, GEN_INT (newoffset));
 	  else
 	    int_part = GEN_INT (newoffset);
 
-	  ptr_reg = force_reg (SImode,
-			       gen_rtx (PLUS, SImode,
-					force_reg (SImode, XEXP (x, 0)),
+	  ptr_reg = force_reg (Pmode,
+			       gen_rtx (PLUS, Pmode,
+					force_reg (Pmode, XEXP (x, 0)),
 					int_part));
 	}
       return plus_constant (ptr_reg, offset - newoffset);
@@ -675,12 +675,12 @@ hppa_legitimize_address (x, oldx, mode)
     {
       int val = INTVAL (XEXP (XEXP (x, 0), 1));
       rtx reg1, reg2;
-      reg1 = force_reg (SImode, force_operand (XEXP (x, 1), 0));
-      reg2 = force_reg (SImode,
+      reg1 = force_reg (Pmode, force_operand (XEXP (x, 1), 0));
+      reg2 = force_reg (Pmode,
 			force_operand (XEXP (XEXP (x, 0), 0), 0));
-      return force_reg (SImode,
-		        gen_rtx (PLUS, SImode,
-				 gen_rtx (MULT, SImode, reg2,
+      return force_reg (Pmode,
+		        gen_rtx (PLUS, Pmode,
+				 gen_rtx (MULT, Pmode, reg2,
 					  GEN_INT (val)),
 				 reg1));
     }
