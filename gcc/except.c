@@ -1273,9 +1273,14 @@ start_dynamic_handler ()
 
 #ifndef DONT_USE_BUILTIN_SETJMP
   /* The number of Pmode words for the setjmp buffer, when using the
-     builtin setjmp/longjmp, see expand_builtin, case
-     BUILT_IN_LONGJMP.  */
-  size = 5;
+     builtin setjmp/longjmp, see expand_builtin, case BUILT_IN_LONGJMP.  */
+  /* We use 2 words here before calling expand_builtin_setjmp.
+     expand_builtin_setjmp uses 2 words, and then calls emit_stack_save.
+     emit_stack_save needs space of size STACK_SAVEAREA_MODE (SAVE_NONLOCAL).
+     Subtract one, because the assign_stack_local call below adds 1.  */
+  size = (2 + 2 + (GET_MODE_SIZE (STACK_SAVEAREA_MODE (SAVE_NONLOCAL))
+		   / GET_MODE_SIZE (Pmode))
+	  - 1);
 #else
 #ifdef JMP_BUF_SIZE
   size = JMP_BUF_SIZE;
