@@ -2000,8 +2000,9 @@ munge_compile_params (params_list)
   temp_params[param_count++] = "-S";
   temp_params[param_count++] = "-o";
   
-  if ((stat (HOST_BIT_BUCKET, &st) == 0) && (!S_ISDIR (st.st_mode))
-      (access (HOST_BIT_BUCKET, W_OK) == 0))
+  if ((stat (HOST_BIT_BUCKET, &st) == 0)
+      && (!S_ISDIR (st.st_mode))
+      && (access (HOST_BIT_BUCKET, W_OK) == 0))
     temp_params[param_count++] = HOST_BIT_BUCKET;
   else
     /* FIXME: This is hardly likely to be right, if HOST_BIT_BUCKET is not
