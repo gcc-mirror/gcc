@@ -1,6 +1,6 @@
 // -*- C++ -*- forwarding header.
 
-// Copyright (C) 2000 Free Software Foundation, Inc.
+// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -36,7 +36,80 @@
 #ifndef _CPP_CSTDIO
 #define _CPP_CSTDIO 1
 
+#include <bits/std_cstdarg.h>
+
 #pragma GCC system_header
 #include <stdio.h>
 
+// Get rid of those macros defined in <stdio.h> in lieu of real functions.
+#undef clearerr
+#undef feof
+#undef ferror
+#undef fileno
+#undef getc
+#undef getchar
+#undef putc
+#undef putchar
+
+namespace std 
+{
+  using ::FILE;
+  using ::fpos_t;
+
+  extern "C" int remove(const char*); 
+  extern "C" int rename(const char*, const char*); 
+  extern "C" FILE* tmpfile(void); 
+  extern "C" char* tmpnam(char*); 
+  extern "C" int fclose(FILE*); 
+  extern "C" int fflush(FILE*); 
+  extern "C" FILE* fopen(const char*, const char*); 
+  extern "C" FILE* freopen(const char*, const char*, FILE*); 
+  extern "C" void setbuf(FILE*, char*);
+  extern "C" int setvbuf(FILE*, char*, int, size_t); 
+  extern "C" int fprintf(FILE*, const char*, ...); 
+  extern "C" int fscanf(FILE*, const char*, ...); 
+  extern "C" int printf(const char*, ...); 
+  extern "C" int scanf(const char*, ...); 
+  extern "C" int snprintf(char *, size_t, const char*, ...);
+  extern "C" int sprintf(char *, const char*, ...); 
+  extern "C" int sscanf(const char*, const char*, ...); 
+  extern "C" int vfprintf(FILE*, const char*, va_list); 
+  extern "C" int vfscanf(FILE*, const char*, va_list); 
+  extern "C" int vprintf(const char*, va_list); 
+  extern "C" int vscanf(const char*, va_list); 
+  extern "C" int vsnprintf(char*, size_t, const char*, va_list); 
+  extern "C" int vsprintf(char*, const char*, va_list); 
+  extern "C" int vsscanf(const char*, const char*, va_list); 
+  extern "C" int fgetc(FILE *); 
+  extern "C" char *fgets(char*, int, FILE*); 
+  extern "C" int fputc(int, FILE*); 
+  extern "C" int fputs(const char*, FILE*); 
+  extern "C" int getc(FILE*); 
+  extern "C" int getchar(void); 
+  extern "C" char *gets(char*); 
+  extern "C" int putc(int, FILE*); 
+  extern "C" int putchar(int); 
+  extern "C" int puts(const char*); 
+  extern "C" int ungetc(int, FILE*);
+  extern "C" size_t fread(void*, size_t, size_t, FILE*); 
+  extern "C" size_t fwrite(const void*, size_t, size_t, FILE*); 
+  extern "C" int fgetpos(FILE*, fpos_t*); 
+  extern "C" int fseek(FILE*, long int, int); 
+  extern "C" int fsetpos(FILE*, const fpos_t*); 
+  extern "C" long int ftell(FILE*); 
+  extern "C" void rewind(FILE*); 
+  extern "C" void clearerr(FILE*); 
+  extern "C" int feof(FILE*); 
+  extern "C" int ferror(FILE*); 
+  extern "C" void perror(const char*);
+}
+
 #endif
+
+
+
+
+
+
+
+
