@@ -1790,7 +1790,8 @@ regrename.o : regrename.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    resource.h $(OBSTACK_H) flags.h $(TM_P_H)
 ifcvt.o : ifcvt.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    $(REGS_H) toplev.h flags.h insn-config.h function.h $(RECOG_H) \
-   $(BASIC_BLOCK_H) $(EXPR_H) output.h except.h $(TM_P_H) real.h $(OPTABS_H)
+   $(BASIC_BLOCK_H) $(EXPR_H) output.h except.h $(TM_P_H) real.h $(OPTABS_H) \
+   cfgloop.h
 params.o : params.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(PARAMS_H) toplev.h
 hooks.o: hooks.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(HOOKS_H)
 
