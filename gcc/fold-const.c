@@ -45,6 +45,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "flags.h"
 #include "tree.h"
 
+/* Handle floating overflow for `const_binop'.  */
+static jmp_buf float_error;
+
 void lshift_double ();
 void rshift_double ();
 void lrotate_double ();
@@ -938,9 +941,6 @@ split_tree (in, code, varp, conp, varsignp)
    We assume ARG1 and ARG2 have the same data type,
    or at least are the same kind of constant and the same machine mode.  */
 
-/* Handle floating overflow for `const_binop'.  */
-static jmp_buf const_binop_error;
-
 static tree
 const_binop (code, arg1, arg2)
      enum tree_code code;
@@ -1165,15 +1165,16 @@ const_binop (code, arg1, arg2)
       register REAL_VALUE_TYPE d1;
       register REAL_VALUE_TYPE d2;
       register REAL_VALUE_TYPE value;
+      tree t;
 
       d1 = TREE_REAL_CST (arg1);
       d2 = TREE_REAL_CST (arg2);
-      if (setjmp (const_binop_error))
+      if (setjmp (float_error))
 	{
 	  warning ("floating overflow in constant folding");
 	  return build (code, TREE_TYPE (arg1), arg1, arg2);
 	}
-      set_float_handler (const_binop_error);
+      set_float_handler (float_error);
 
 #ifdef REAL_ARITHMETIC
       REAL_ARITHMETIC (value, code, d1, d2);
@@ -1213,9 +1214,10 @@ const_binop (code, arg1, arg2)
 	  abort ();
 	}
 #endif /* no REAL_ARITHMETIC */
+      t = build_real (TREE_TYPE (arg1),
+		      REAL_VALUE_TRUNCATE (TYPE_MODE (TREE_TYPE (arg1)), value));
       set_float_handler (0);
-      return build_real (TREE_TYPE (arg1),
-			 REAL_VALUE_TRUNCATE (TYPE_MODE (TREE_TYPE (arg1)), value));
+      return t;
     }
 #endif /* not REAL_IS_NOT_DOUBLE, or REAL_ARITHMETIC */
   if (TREE_CODE (arg1) == COMPLEX_CST)
@@ -1413,8 +1415,19 @@ fold_convert (t, arg1)
 	return build_real_from_int_cst (type, arg1);
 #endif /* not REAL_IS_NOT_DOUBLE, or REAL_ARITHMETIC */
       if (TREE_CODE (arg1) == REAL_CST)
-	return build_real (type, REAL_VALUE_TRUNCATE (TYPE_MODE (type),
-						      TREE_REAL_CST (arg1)));
+	{
+	  if (setjmp (float_error))
+	    {
+	      warning ("floating overflow in constant folding");
+	      return t;
+	    }
+	  set_float_handler (float_error);
+
+	  t = build_real (type, REAL_VALUE_TRUNCATE (TYPE_MODE (type),
+						     TREE_REAL_CST (arg1)));
+	  set_float_handler (0);
+	  return t;
+	}
     }
   TREE_CONSTANT (t) = 1;
   return t;
