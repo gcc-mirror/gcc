@@ -338,6 +338,9 @@ int num_not_at_initial_offset;
 
 /* Count the number of registers that we may be able to eliminate.  */
 static int num_eliminable;
+/* And the number of registers that are equivalent to a constant that
+   can be eliminated to frame_pointer / arg_pointer + constant.  */
+static int num_eliminable_invariants;
 
 /* For each label, we record the offset of each elimination.  If we reach
    a label by more than one path and an offset differs, we cannot do the
@@ -659,6 +662,7 @@ reload (first, global, dumpfile)
      Also look for a "constant" NOTE_INSN_SETJMP.  This means that all
      caller-saved registers must be marked live.  */
 
+  num_eliminable_invariants = 0;
   for (insn = first; insn; insn = NEXT_INSN (insn))
     {
       rtx set = single_set (insn);
@@ -674,7 +678,8 @@ reload (first, global, dumpfile)
 	  rtx note = find_reg_note (insn, REG_EQUIV, NULL_RTX);
 	  if (note
 #ifdef LEGITIMATE_PIC_OPERAND_P
-	      && (! CONSTANT_P (XEXP (note, 0)) || ! flag_pic
+	      && (! function_invariant_p (XEXP (note, 0))
+		  || ! flag_pic
 		  || LEGITIMATE_PIC_OPERAND_P (XEXP (note, 0)))
 #endif
 	      )
@@ -692,9 +697,22 @@ reload (first, global, dumpfile)
 
 		      reg_equiv_memory_loc[i] = x;
 		    }
-		  else if (CONSTANT_P (x))
+		  else if (function_invariant_p (x))
 		    {
-		      if (LEGITIMATE_CONSTANT_P (x))
+		      if (GET_CODE (x) == PLUS)
+			{
+			  /* This is PLUS of frame pointer and a constant,
+			     and might be shared.  Unshare it.  */
+			  reg_equiv_constant[i] = copy_rtx (x);
+			  num_eliminable_invariants++;
+			}
+		      else if (x == frame_pointer_rtx
+			       || x == arg_pointer_rtx)
+			{
+			  reg_equiv_constant[i] = x;
+			  num_eliminable_invariants++;
+			}
+		      else if (LEGITIMATE_CONSTANT_P (x))
 			reg_equiv_constant[i] = x;
 		      else
 			reg_equiv_memory_loc[i]
@@ -1335,9 +1353,16 @@ calculate_needs_all_insns (global)
 	  rtx old_notes = REG_NOTES (insn);
 	  int did_elimination = 0;
 	  int operands_changed = 0;
+	  rtx set = single_set (insn);
+
+	  /* Skip insns that only set an equivalence.  */
+	  if (set && GET_CODE (SET_DEST (set)) == REG
+	      && reg_renumber[REGNO (SET_DEST (set))] < 0
+	      && reg_equiv_constant[REGNO (SET_DEST (set))])
+	    continue;
 
 	  /* If needed, eliminate any eliminable registers.  */
-	  if (num_eliminable)
+	  if (num_eliminable || num_eliminable_invariants)
 	    did_elimination = eliminate_regs_in_insn (insn, 0);
 
 	  /* Analyze the instruction.  */
@@ -2698,6 +2723,11 @@ eliminate_regs (x, mem_mode, insn)
 	      }
 
 	}
+      else if (reg_renumber[regno] < 0 && reg_equiv_constant
+	       && reg_equiv_constant[regno]
+	       && ! CONSTANT_P (reg_equiv_constant[regno]))
+	return eliminate_regs (copy_rtx (reg_equiv_constant[regno]),
+			       mem_mode, insn);
       return x;
 
     case PLUS:
@@ -4163,7 +4193,7 @@ reload_as_needed (live_known)
 
 	  /* If we need to do register elimination processing, do so.
 	     This might delete the insn, in which case we are done.  */
-	  if (num_eliminable && chain->need_elim)
+	  if ((num_eliminable || num_eliminable_invariants) && chain->need_elim)
 	    {
 	      eliminate_regs_in_insn (insn, 1);
 	      if (GET_CODE (insn) == NOTE)

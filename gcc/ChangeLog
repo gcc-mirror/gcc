@@ -1,3 +1,20 @@
+Tue Dec  1 17:58:26 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* local-alloc.c (function_invariant_p): New function.
+	(update_equiv_regs): Use function_invariant_p instead of CONSTANT_P
+	to decide if an equivalence should be recorded.
+	* reload1.c (num_eliminable_invariants): New static variable.
+	(reload): Set it.  Use function_invariant_p instead of CONSTANT_P
+	to decide if an equivalence should be recorded.
+	Unshare PLUS.
+	(calculate_needs_all_insns): Skip insns that only set an equivalence.
+	Take num_eliminable_invariants into account when deciding
+	if register elimination should be done.
+	(reload_as_needed): Take num_eliminable_invariants into account
+	when deciding if register elimination should be done.
+	(eliminate_regs): Handle non-constant reg_equiv_constant.
+	* rtl.h (function_invariant_p): Declare.
+
 Mon Nov 30 02:00:08 PST 1998 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
