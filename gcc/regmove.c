@@ -540,6 +540,7 @@ copy_src_to_dest (insn, src, dest, loop_depth)
      rtx insn;
      rtx src;
      rtx dest;
+     int loop_depth;
 {
   rtx seq;
   rtx link;
