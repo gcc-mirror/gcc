@@ -1,4 +1,4 @@
-/* Copyright (C) 1993, 1997 Free Software Foundation, Inc.
+/* Copyright (C) 1993, 1997, 1998 Free Software Foundation, Inc.
    This file is part of the GNU IO Library.
 
    This library is free software; you can redistribute it and/or
@@ -26,13 +26,7 @@
 #include "libioP.h"
 #include <string.h>
 
-/* Algorithm based on that used by Berkeley pre-4.4 fgets implementation.
-
-   Read chars into buf (of size n), until delim is seen.
-   Return number of chars read (at most n).
-   Does not put a terminating '\0' in buf.
-   If extract_delim < 0, leave delimiter unread.
-   If extract_delim > 0, insert delim in output. */
+#if defined(_LIBC) || !_G_HAVE_IO_GETLINE_INFO
 
 _IO_size_t
 _IO_getline (fp, buf, n, delim, extract_delim)
@@ -42,37 +36,77 @@ _IO_getline (fp, buf, n, delim, extract_delim)
      int delim;
      int extract_delim;
 {
+  return _IO_getline_info (fp, buf, n, delim, extract_delim, (int *) 0);
+}
+
+/* Algorithm based on that used by Berkeley pre-4.4 fgets implementation.
+
+   Read chars into buf (of size n), until delim is seen.
+   Return number of chars read (at most n).
+   Does not put a terminating '\0' in buf.
+   If extract_delim < 0, leave delimiter unread.
+   If extract_delim > 0, insert delim in output. */
+
+_IO_size_t
+_IO_getline_info (fp, buf, n, delim, extract_delim, eof)
+     _IO_FILE *fp;
+     char *buf;
+     _IO_size_t n;
+     int delim;
+     int extract_delim;
+     int *eof;
+{
   char *ptr = buf;
+  if (eof) *eof = 0;
   do
     {
       _IO_ssize_t len = fp->_IO_read_end - fp->_IO_read_ptr;
-      char *t;
       if (len <= 0)
-	if (__underflow (fp) == EOF)
-	  break;
-	else
-	  len = fp->_IO_read_end - fp->_IO_read_ptr;
-      if ((_IO_size_t) len >= n)
-	len = n;
-      t = (char *) memchr ((void *) fp->_IO_read_ptr, delim, len);
-      if (t != NULL)
 	{
-	  _IO_size_t old_len = ptr-buf;
-	  len = t - fp->_IO_read_ptr;
-	  if (extract_delim >= 0)
+	  int c = __uflow (fp);
+	  if (c == EOF)
 	    {
-	      ++t;
-	      if (extract_delim > 0)
-		++len;
+	      if (eof) *eof = c;
+	      break;
 	    }
-	  memcpy ((void *) ptr, (void *) fp->_IO_read_ptr, len);
-	  fp->_IO_read_ptr = t;
-	  return old_len + len;
+	  if (c == delim)
+	    {
+	      if (extract_delim > 0)
+		*ptr++ = c;
+	      else if (extract_delim < 0)
+		_IO_sputbackc (fp, c);
+	      return ptr - buf;
+	    }
+	  *ptr++ = c;
+	  n--;
 	}
-      memcpy ((void *) ptr, (void *) fp->_IO_read_ptr, len);
-      fp->_IO_read_ptr += len;
-      ptr += len;
-      n -= len;
+	else
+	  {
+	    char *t;
+	    if ((_IO_size_t) len >= n)
+	      len = n;
+	    t = (char *) memchr ((void *) fp->_IO_read_ptr, delim, len);
+	    if (t != NULL)
+	      {
+		_IO_size_t old_len = ptr-buf;
+		len = t - fp->_IO_read_ptr;
+		if (extract_delim >= 0)
+		  {
+		    ++t;
+		    if (extract_delim > 0)
+		      ++len;
+		  }
+		memcpy ((void *) ptr, (void *) fp->_IO_read_ptr, len);
+		fp->_IO_read_ptr = t;
+		return old_len + len;
+	      }
+	    memcpy ((void *) ptr, (void *) fp->_IO_read_ptr, len);
+	    fp->_IO_read_ptr += len;
+	    ptr += len;
+	    n -= len;
+	  }
     } while (n != 0);
   return ptr - buf;
 }
+
+#endif /* Defined(_LIBC) || !_G_HAVE_IO_GETLINE_INFO */
