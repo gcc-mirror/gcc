@@ -1,3 +1,9 @@
+2004-02-11  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c/456
+	* cppexp.c (num_binary_op): Don't allow comma operators in #if
+	constant expressions at all outside C99 mode if pedantic.
+
 2004-02-10  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/spe.md ("*movv2si_internal"): Check for register

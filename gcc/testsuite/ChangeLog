@@ -1,3 +1,9 @@
+2004-02-11  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c/456
+	* gcc.dg/cpp/c90-if-comma-1.c, gcc.dg/cpp/c99-if-comma-1.c: New
+	tests.
+
 2004-02-10  Alan Modra  <amodra@bigpond.net.au>
 
 	* gcc.dg/cpp/assert4.c: Fix typo last change.
