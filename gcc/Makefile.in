@@ -3317,6 +3317,8 @@ VOL_FILES=`echo $(BACKEND) $(OBJS) $(C_OBJS) $(LIBCPP_OBJS) *.c *.h gen*`
 # the context of the stage_x rule.
 STAGE2_FLAGS_TO_PASS = \
 	ADAC="\$$(CC)" \
+	AR_FOR_TARGET="$(AR_FOR_TARGET)" \
+	RANLIB_FOR_TARGET="$(RANLIB_FOR_TARGET)" \
 	CFLAGS="$(BOOT_CFLAGS)" \
 	LDFLAGS="$(BOOT_LDFLAGS)" \
 	WARN_CFLAGS="\$$(GCC_WARN_CFLAGS)" \
@@ -3332,7 +3334,9 @@ STAGE2_FLAGS_TO_PASS = \
 # MAKEINFO and MAKEINFOFLAGS are explicitly passed here to make them
 # overrideable (for a bootstrap build stage1 also builds gcc.info).
 stage1_build:
-	$(MAKE) CC="$(CC)" libdir=$(libdir) LANGUAGES="$(BOOT_LANGUAGES)" \
+	$(MAKE) AR_FOR_TARGET="$(AR_FOR_TARGET)" \
+	        RANLIB_FOR_TARGET="$(RANLIB_FOR_TARGET)" \
+		CC="$(CC)" libdir=$(libdir) LANGUAGES="$(BOOT_LANGUAGES)" \
 		CFLAGS="$(STAGE1_CFLAGS)" MAKEINFO="$(MAKEINFO)" \
 		MAKEINFOFLAGS="$(MAKEINFOFLAGS)" COVERAGE_FLAGS=
 	$(STAMP) stage1_build
