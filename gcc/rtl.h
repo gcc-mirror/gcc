@@ -566,7 +566,10 @@ enum reg_note
 
   /* This kind of note is generated at each to `setjmp',
      and similar functions that can return twice.  */
-  REG_SETJMP
+  REG_SETJMP,
+
+  /* Indicate calls that always returns.  */
+  REG_ALWAYS_RETURN
 };
 
 /* The base value for branch probability notes.  */
@@ -1952,7 +1955,8 @@ enum libcall_type
   LCT_CONST_MAKE_BLOCK = 3,
   LCT_PURE_MAKE_BLOCK = 4,
   LCT_NORETURN = 5,
-  LCT_THROW = 6
+  LCT_THROW = 6,
+  LCT_ALWAYS_RETURN = 7
 };
 
 extern void emit_library_call		PARAMS ((rtx, enum libcall_type,

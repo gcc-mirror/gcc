@@ -177,6 +177,8 @@ static int calls_function_1	PARAMS ((tree, int));
 /* Nonzero if this is a call to a function that returns with the stack
    pointer depressed.  */
 #define ECF_SP_DEPRESSED	1024
+/* Nonzero if this call is known to always return.  */
+#define ECF_ALWAYS_RETURN	2048
 
 static void emit_call_1		PARAMS ((rtx, tree, tree, HOST_WIDE_INT,
 					 HOST_WIDE_INT, HOST_WIDE_INT, rtx,
@@ -608,6 +610,9 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
 
   if (ecf_flags & ECF_NORETURN)
     REG_NOTES (call_insn) = gen_rtx_EXPR_LIST (REG_NORETURN, const0_rtx,
+					       REG_NOTES (call_insn));
+  if (ecf_flags & ECF_ALWAYS_RETURN)
+    REG_NOTES (call_insn) = gen_rtx_EXPR_LIST (REG_ALWAYS_RETURN, const0_rtx,
 					       REG_NOTES (call_insn));
 
   if (ecf_flags & ECF_RETURNS_TWICE)
@@ -2594,7 +2599,8 @@ expand_call (exp, target, ignore)
 	 is subject to race conditions, just as with multithreaded
 	 programs.  */
 
-      emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__bb_fork_func"), 0,
+      emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__bb_fork_func"),
+		      	 LCT_ALWAYS_RETURN,
 			 VOIDmode, 0);
     }
 
@@ -3545,6 +3551,9 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
       break;
     case LCT_THROW:
       flags = ECF_NORETURN;
+      break;
+    case LCT_ALWAYS_RETURN:
+      flags = ECF_ALWAYS_RETURN;
       break;
     }
   fun = orgfun;
