@@ -261,6 +261,18 @@ options</a></h1>
         people will volunteer to do other 'style' options.
      </p>
  </dd>
+
+ <dt><code>--enable-pch  </code></dt>
+ <dd><p>In 3.4 and later, tries to turn on the generation of
+        stdc++.h.gch, a pre-compiled file including all the standard
+        C++ includes. If enabled (as by default), and the compiler
+        seems capable of passing the simple sanity checks thrown at
+        it, try to build stdc++.h.gch as part of the make process. 
+        In addition, this generated file is used later on (by appending <code>
+        --include bits/stdc++.h </code> to CXXFLAGS) when running the
+        testsuite.
+     </p>
+ </dd>
 </dl>
 <p>Return <a href="#top">to the top of the page</a> or
    <a href="http://gcc.gnu.org/libstdc++/">to the libstdc++ homepage</a>.

@@ -45,12 +45,15 @@ AM_PROG_LIBTOOL
 AC_SUBST(enable_shared)
 AC_SUBST(enable_static)
 
-# Check for c++ or library specific bits that don't require linking.
+# Check for support bits and g++ features that don't require linking.
 GLIBCPP_CHECK_GNU_MAKE
 #GLIBCPP_CHECK_COMPILER_VERSION
-GLIBCPP_CHECK_PCH
+GLIBCPP_ENABLE_SJLJ_EXCEPTIONS
+GLIBCPP_ENABLE_LIBUNWIND_EXCEPTIONS
+GLIBCPP_ENABLE_PCH([yes])
 
-# Enable all the variable C++ stuff.  C_MBCHAR must come early.
+# Enable all the variable C++ runtime options.  
+# NB: C_MBCHAR must come early.
 GLIBCPP_ENABLE_CSTDIO
 GLIBCPP_ENABLE_CLOCALE
 GLIBCPP_ENABLE_CHEADERS([$c_model])
@@ -58,8 +61,6 @@ GLIBCPP_ENABLE_C_MBCHAR([yes])
 GLIBCPP_ENABLE_C99([yes])
 GLIBCPP_ENABLE_LONG_LONG([yes])
 GLIBCPP_ENABLE_THREADS
-GLIBCPP_ENABLE_SJLJ_EXCEPTIONS
-GLIBCPP_ENABLE_LIBUNWIND_EXCEPTIONS
 GLIBCPP_ENABLE_CONCEPT_CHECKS
 GLIBCPP_ENABLE_CXX_FLAGS
 GLIBCPP_ENABLE_DEBUG([no])

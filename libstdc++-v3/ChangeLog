@@ -1,3 +1,12 @@
+2003-06-30  Benjamin Kosnik  <bkoz@redhat.com>
+	
+	* acinclude.m4 (GLIBCPP_ENABLE_PCH): Add bits for --enable-pch.
+	* aclocal.m4: Regenerate.
+	* configure.in (GLIBCPP_CHECK_PCH): Move, change to
+	GLIBCPP_ENABLE_PCH, default to yes.
+	* configure: Regenerate.
+	* docs/html/configopts.html: Add --enable-pch.
+	
 2003-06-30  Phil Edwards  <pme@gcc.gnu.org>
 
 	* testsuite/lib/libstdc++-v3-dg.exp:  Add comments.
