@@ -953,7 +953,7 @@ struct cum_arg {int nbytes; };
 /* This is how to output an element of a case-vector that is absolute.  */
 
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE) \
-  asm_fprintf (FILE, "\t%s .L%d\n", ".long", VALUE)
+  fprintf (FILE, "\t%s .L%d\n", ".long", VALUE)
 
 /* This is how to output an element of a case-vector that is relative.  */
 

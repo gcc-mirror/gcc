@@ -864,9 +864,9 @@ cris_target_asm_function_prologue (file, size)
 
   /* Set up the PIC register.  */
   if (current_function_uses_pic_offset_table)
-    asm_fprintf (file, "\tmove.d $pc,$%s\n\tsub.d .:GOTOFF,$%s\n",
-		 reg_names[PIC_OFFSET_TABLE_REGNUM],
-		 reg_names[PIC_OFFSET_TABLE_REGNUM]);
+    fprintf (file, "\tmove.d $pc,$%s\n\tsub.d .:GOTOFF,$%s\n",
+	     reg_names[PIC_OFFSET_TABLE_REGNUM],
+	     reg_names[PIC_OFFSET_TABLE_REGNUM]);
 
   if (TARGET_PDEBUG)
     fprintf (file,
@@ -2580,13 +2580,13 @@ cris_asm_output_mi_thunk (stream, thunkdecl, delta, funcdecl)
      tree funcdecl;
 {
   if (delta > 0)
-    asm_fprintf (stream, "\tadd%s %d,$%s\n",
-		 ADDITIVE_SIZE_MODIFIER (delta), delta,
-		 reg_names[CRIS_FIRST_ARG_REG]);
+    fprintf (stream, "\tadd%s %d,$%s\n",
+	     ADDITIVE_SIZE_MODIFIER (delta), delta,
+	     reg_names[CRIS_FIRST_ARG_REG]);
   else if (delta < 0)
-    asm_fprintf (stream, "\tsub%s %d,$%s\n",
-		 ADDITIVE_SIZE_MODIFIER (-delta), -delta,
-		 reg_names[CRIS_FIRST_ARG_REG]);
+    fprintf (stream, "\tsub%s %d,$%s\n",
+	     ADDITIVE_SIZE_MODIFIER (-delta), -delta,
+	     reg_names[CRIS_FIRST_ARG_REG]);
 
   if (flag_pic)
     {

@@ -785,13 +785,13 @@ mmix_asm_output_mi_thunk (stream, fndecl, delta, func)
   const char *regname = reg_names[MMIX_FIRST_INCOMING_ARG_REGNUM];
 
   if (delta >= 0 && delta < 65536)
-    asm_fprintf (stream, "\tINCL %s,%d\n", delta, regname);
+    fprintf (stream, "\tINCL %s,%d\n", regname, delta);
   else if (delta < 0 && delta >= -255)
-    asm_fprintf (stream, "\tSUBU %s,%s,%d\n", regname, regname, -delta);
+    fprintf (stream, "\tSUBU %s,%s,%d\n", regname, regname, -delta);
   else
     {
       mmix_output_register_setting (stream, 255, delta, 1);
-      asm_fprintf (stream, "\tADDU %s,%s,$255\n", regname, regname);
+      fprintf (stream, "\tADDU %s,%s,$255\n", regname, regname);
     }
 
   fprintf (stream, "\tJMP ");
@@ -1539,9 +1539,9 @@ mmix_asm_weaken_label (stream, name)
      FILE * stream ATTRIBUTE_UNUSED;
      const char * name ATTRIBUTE_UNUSED;
 {
-  asm_fprintf (stream, "\t.weak ");
+  fprintf (stream, "\t.weak ");
   assemble_name (stream, name);
-  asm_fprintf (stream, " ! mmixal-incompatible\n");
+  fprintf (stream, " ! mmixal-incompatible\n");
 }
 
 /* MAKE_DECL_ONE_ONLY.  */

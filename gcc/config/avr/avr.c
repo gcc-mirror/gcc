@@ -1156,12 +1156,12 @@ print_operand (file, x, code)
 	fatal_insn ("internal compiler error.  Unknown mode:", x);
       REAL_VALUE_FROM_CONST_DOUBLE (rv, x);
       REAL_VALUE_TO_TARGET_SINGLE (rv, val);
-      asm_fprintf (file, "0x%lx", val);
+      fprintf (file, "0x%lx", val);
     }
   else if (code == 'j')
-    asm_fprintf (file, cond_string (GET_CODE (x)));
+    fputs (cond_string (GET_CODE (x)), file);
   else if (code == 'k')
-    asm_fprintf (file, cond_string (reverse_condition (GET_CODE (x))));
+    fputs (cond_string (reverse_condition (GET_CODE (x))), file);
   else
     print_operand_address (file, x);
 }

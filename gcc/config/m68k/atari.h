@@ -103,6 +103,6 @@ do {							\
 #undef ASM_OUTPUT_INTERNAL_LABEL
 #define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)	\
   if (flag_pic && !strcmp(PREFIX,"LC"))			\
-    asm_fprintf (FILE, "%s%%%d:\n", PREFIX, NUM);	\
+    fprintf (FILE, "%s%%%d:\n", PREFIX, NUM);		\
   else							\
     asm_fprintf (FILE, "%0L%s%d:\n", PREFIX, NUM)

@@ -10283,13 +10283,13 @@ thumb_output_function_prologue (f, size)
       
 #define STUB_NAME ".real_start_of"
       
-      asm_fprintf (f, "\t.code\t16\n");
+      fprintf (f, "\t.code\t16\n");
 #ifdef ARM_PE
       if (arm_dllexport_name_p (name))
         name = arm_strip_name_encoding (name);
 #endif        
       asm_fprintf (f, "\t.globl %s%U%s\n", STUB_NAME, name);
-      asm_fprintf (f, "\t.thumb_func\n");
+      fprintf (f, "\t.thumb_func\n");
       asm_fprintf (f, "%s%U%s:\n", STUB_NAME, name);
     }
     
@@ -10299,7 +10299,7 @@ thumb_output_function_prologue (f, size)
 	{
 	  int num_pushes;
 	  
-	  asm_fprintf (f, "\tpush\t{");
+	  fprintf (f, "\tpush\t{");
 
 	  num_pushes = ARM_NUM_INTS (current_function_pretend_args_size);
 	  
@@ -10309,7 +10309,7 @@ thumb_output_function_prologue (f, size)
 	    asm_fprintf (f, "%r%s", regno,
 			 regno == LAST_ARG_REGNUM ? "" : ", ");
 
-	  asm_fprintf (f, "}\n");
+	  fprintf (f, "}\n");
 	}
       else
 	asm_fprintf (f, "\tsub\t%r, %r, #%d\n", 
