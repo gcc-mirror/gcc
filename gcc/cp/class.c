@@ -5106,17 +5106,12 @@ resolve_address_of_overloaded_function (target_type,
       tree fns;
 
       if (is_ptrmem)
-	{
-	  target_fn_type
-	    = TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (target_type));
-	  target_arg_types = TREE_CHAIN (TYPE_ARG_TYPES (target_fn_type));
-	}
+	target_fn_type
+	  = TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (target_type));
       else
-	{
-	  target_fn_type = TREE_TYPE (target_type);
-	  target_arg_types = TYPE_ARG_TYPES (target_fn_type);
-	}
-
+	target_fn_type = TREE_TYPE (target_type);
+      target_arg_types = TYPE_ARG_TYPES (target_fn_type);
+	  
       for (fns = overload; fns; fns = OVL_CHAIN (fns))
 	{
 	  tree fn = OVL_FUNCTION (fns);
@@ -5131,26 +5126,15 @@ resolve_address_of_overloaded_function (target_type,
 
 	  if ((TREE_CODE (TREE_TYPE (fn)) == METHOD_TYPE)
 	      != is_ptrmem)
-	    /* We're looking for a non-static member, and this isn't
+	    /* We're not looking for a non-static member, and this is
 	       one, or vice versa.  */
 	    continue;
 
-	  /* We don't use the `this' argument to do argument deduction
-	     since that would prevent us from converting a base class
-	     pointer-to-member to a derived class pointer-to-member.  */
-	  fn_arg_types = TYPE_ARG_TYPES (TREE_TYPE (fn));
-	  if (is_ptrmem)
-	    fn_arg_types = TREE_CHAIN (fn_arg_types);
-
 	  /* Try to do argument deduction.  */
 	  targs = make_scratch_vec (DECL_NTPARMS (fn));
-	  if (type_unification (DECL_INNERMOST_TEMPLATE_PARMS (fn),
-				targs,
-				fn_arg_types,
-				target_arg_types,
-				explicit_targs,
-				DEDUCE_EXACT,
-				/*allow_incomplete=*/1) != 0)
+	  if (fn_type_unification (fn, explicit_targs, targs,
+				   target_arg_types, NULL_TREE,
+				   DEDUCE_EXACT, NULL_TREE) != 0)
 	    /* Argument deduction failed.  */
 	    continue;
 

@@ -938,7 +938,7 @@ build_template_parm_names (parmlist, arglist)
 	}
       else
 	{
-	  parm = tsubst (parm, arglist, NULL_TREE);
+	  parm = tsubst (parm, arglist, /*complain=*/1, NULL_TREE);
 	  /* It's a PARM_DECL.  */
 	  build_mangled_name_for_type (TREE_TYPE (parm));
 	  build_overload_value (TREE_TYPE (parm), arg, 

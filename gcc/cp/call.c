@@ -3205,7 +3205,7 @@ convert_default_arg (type, arg, fn)
       if (DECL_CLASS_SCOPE_P (fn))
 	pushclass (DECL_REAL_CONTEXT (fn), 2);
 
-      arg = tsubst_expr (arg, DECL_TI_ARGS (fn), NULL_TREE);
+      arg = tsubst_expr (arg, DECL_TI_ARGS (fn), /*complain=*/1, NULL_TREE);
 
       if (DECL_CLASS_SCOPE_P (fn))
 	popclass (1);

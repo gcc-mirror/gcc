@@ -10397,7 +10397,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		    && uses_template_parms (current_class_type))
 		  {
 		    tree args = current_template_args ();
-		    type = tsubst (type, args, NULL_TREE);
+		    type = tsubst (type, args, /*complain=*/1, NULL_TREE);
 		  }
 
 		/* This pop_nested_class corresponds to the
