@@ -670,14 +670,45 @@ alpha_extra_constraint (rtx value, int c)
     }
 }
 
-/* Implements target hook vector_mode_supported_p.  */
+/* The scalar modes supported differs from the default check-what-c-supports
+   version in that sometimes TFmode is available even when long double
+   indicates only DFmode.  On unicosmk, we have the situation that HImode
+   doesn't map to any C type, but of course we still support that.  */
+
+static bool
+alpha_scalar_mode_supported_p (enum machine_mode mode)
+{
+  switch (mode)
+    {
+    case QImode:
+    case HImode:
+    case SImode:
+    case DImode:
+    case TImode: /* via optabs.c */
+      return true;
+
+    case SFmode:
+    case DFmode:
+      return true;
+
+    case TFmode:
+      return TARGET_HAS_XFLOATING_LIBS;
+
+    default:
+      return false;
+    }
+}
+
+/* Alpha implements a couple of integer vector mode operations when
+   TARGET_MAX is enabled.  */
+
 static bool
 alpha_vector_mode_supported_p (enum machine_mode mode)
 {
   if (TARGET_MAX
-      && ((mode == V8QImode)
-	  || (mode == V4HImode)
-	  || (mode == V2SImode)))
+      && (mode == V8QImode
+	  || mode == V4HImode
+	  || mode == V2SImode))
     return true;
 
   return false;
@@ -9362,6 +9393,9 @@ alpha_init_libfuncs (void)
 #define TARGET_SPLIT_COMPLEX_ARG alpha_split_complex_arg
 #undef TARGET_GIMPLIFY_VA_ARG_EXPR
 #define TARGET_GIMPLIFY_VA_ARG_EXPR alpha_gimplify_va_arg
+
+#undef TARGET_SCALAR_MODE_SUPPORTED_P
+#define TARGET_SCALAR_MODE_SUPPORTED_P alpha_scalar_mode_supported_p
 #undef TARGET_VECTOR_MODE_SUPPORTED_P
 #define TARGET_VECTOR_MODE_SUPPORTED_P alpha_vector_mode_supported_p
 

@@ -381,7 +381,14 @@ struct gcc_target
   /* True if MODE is valid for a pointer in __attribute__((mode("MODE"))).  */
   bool (* valid_pointer_mode) (enum machine_mode mode);
 
-  /* True if MODE is valid for a vector.  */
+  /* True if MODE is valid for the target.  By "valid", we mean able to
+     be manipulated in non-trivial ways.  In particular, this means all
+     the arithmetic is supported.  */
+  bool (* scalar_mode_supported_p) (enum machine_mode mode);
+
+  /* Similarly for vector modes.  "Supported" here is less strict.  At
+     least some operations are supported; need to check optabs or builtins
+     for further details.  */
   bool (* vector_mode_supported_p) (enum machine_mode mode);
 
   /* True if a vector is opaque.  */

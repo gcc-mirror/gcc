@@ -4267,7 +4267,7 @@ handle_mode_attribute (tree *node, tree name, tree args,
       int len = strlen (p);
       enum machine_mode mode = VOIDmode;
       tree typefm;
-      tree ptr_type;
+      bool valid_mode;
 
       if (len > 4 && p[0] == '_' && p[1] == '_'
 	  && p[len - 1] == '_' && p[len - 2] == '_')
@@ -4294,51 +4294,67 @@ handle_mode_attribute (tree *node, tree name, tree args,
 
       if (mode == VOIDmode)
 	{
-	  error ("unknown machine mode `%s'", p);
+	  error ("unknown machine mode %<%s%>", p);
 	  return NULL_TREE;
 	}
 
-      if (VECTOR_MODE_P (mode))
+      valid_mode = false;
+      switch (GET_MODE_CLASS (mode))
 	{
+	case MODE_INT:
+	case MODE_PARTIAL_INT:
+	case MODE_FLOAT:
+	  valid_mode = targetm.scalar_mode_supported_p (mode);
+	  break;
+
+	case MODE_COMPLEX_INT:
+	case MODE_COMPLEX_FLOAT:
+	  valid_mode = targetm.scalar_mode_supported_p (GET_MODE_INNER (mode));
+	  break;
+
+	case MODE_VECTOR_INT:
+	case MODE_VECTOR_FLOAT:
 	  warning ("specifying vector types with __attribute__ ((mode)) "
 		   "is deprecated");
 	  warning ("use __attribute__ ((vector_size)) instead");
+	  valid_mode = vector_mode_valid_p (mode);
+	  break;
+
+	default:
+	  break;
+	}
+      if (!valid_mode)
+	{
+	  error ("unable to emulate %<%s%>", p);
+	  return NULL_TREE;
 	}
 
-      typefm = lang_hooks.types.type_for_mode (mode, TYPE_UNSIGNED (type));
-      if (typefm == NULL_TREE)
-	error ("no data type for mode `%s'", p);
-
-      else if ((TREE_CODE (type) == POINTER_TYPE
-		|| TREE_CODE (type) == REFERENCE_TYPE)
-	       && !targetm.valid_pointer_mode (mode))
-	error ("invalid pointer mode `%s'", p);
-      else
+      if (POINTER_TYPE_P (type))
 	{
-	  /* If this is a vector, make sure we either have hardware
-	     support, or we can emulate it.  */
-	  if (VECTOR_MODE_P (mode) && !vector_mode_valid_p (mode))
+	  tree (*fn)(tree, enum machine_mode, bool);
+
+	  if (!targetm.valid_pointer_mode (mode))
 	    {
-	      error ("unable to emulate '%s'", GET_MODE_NAME (mode));
+	      error ("invalid pointer mode %<%s%>", p);
 	      return NULL_TREE;
 	    }
 
-	  if (TREE_CODE (type) == POINTER_TYPE)
-	    {
-	      ptr_type = build_pointer_type_for_mode (TREE_TYPE (type),
-						      mode, false);
-	      *node = ptr_type;
-	    }
-	  else if (TREE_CODE (type) == REFERENCE_TYPE)
-	    {
-	      ptr_type = build_reference_type_for_mode (TREE_TYPE (type),
-							mode, false);
-	      *node = ptr_type;
-	    }
+          if (TREE_CODE (type) == POINTER_TYPE)
+	    fn = build_pointer_type_for_mode;
 	  else
-	    *node = typefm;
-	  /* No need to layout the type here.  The caller should do this.  */
+	    fn = build_reference_type_for_mode;
+	  typefm = fn (TREE_TYPE (type), mode, false);
 	}
+      else
+        typefm = lang_hooks.types.type_for_mode (mode, TYPE_UNSIGNED (type));
+      if (typefm == NULL_TREE)
+	{
+	  error ("no data type for mode %<%s%>", p);
+	  return NULL_TREE;
+	}
+      *node = typefm;
+
+      /* No need to layout the type here.  The caller should do this.  */
     }
 
   return NULL_TREE;

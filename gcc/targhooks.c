@@ -62,6 +62,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tm_p.h"
 #include "target-def.h"
 
+
 void
 default_external_libcall (rtx fun ATTRIBUTE_UNUSED)
 {
@@ -206,4 +207,50 @@ default_unwind_emit (FILE * stream ATTRIBUTE_UNUSED,
 {
   /* Should never happen.  */
   abort ();
+}
+
+/* True if MODE is valid for the target.  By "valid", we mean able to
+   be manipulated in non-trivial ways.  In particular, this means all
+   the arithmetic is supported.
+
+   By default we guess this means that any C type is supported.  If
+   we can't map the mode back to a type that would be available in C,
+   then reject it.  Special case, here, is the double-word arithmetic
+   supported by optabs.c.  */
+
+bool
+default_scalar_mode_supported_p (enum machine_mode mode)
+{
+  int precision = GET_MODE_PRECISION (mode);
+
+  switch (GET_MODE_CLASS (mode))
+    {
+    case MODE_PARTIAL_INT:
+    case MODE_INT:
+      if (precision == CHAR_TYPE_SIZE)
+	return true;
+      if (precision == SHORT_TYPE_SIZE)
+	return true;
+      if (precision == INT_TYPE_SIZE)
+	return true;
+      if (precision == LONG_TYPE_SIZE)
+	return true;
+      if (precision == LONG_LONG_TYPE_SIZE)
+	return true;
+      if (precision == 2 * BITS_PER_WORD)
+	return true;
+      return false;
+
+    case MODE_FLOAT:
+      if (precision == FLOAT_TYPE_SIZE)
+	return true;
+      if (precision == DOUBLE_TYPE_SIZE)
+	return true;
+      if (precision == LONG_DOUBLE_TYPE_SIZE)
+	return true;
+      return false;
+
+    default:
+      abort ();
+    }
 }
