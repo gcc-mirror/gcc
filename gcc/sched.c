@@ -322,7 +322,7 @@ static void sched_analyze_2		PROTO((rtx, rtx));
 static void sched_analyze_insn		PROTO((rtx, rtx, rtx));
 static int sched_analyze		PROTO((rtx, rtx));
 static void sched_note_set		PROTO((int, rtx, int));
-static int rank_for_schedule		PROTO((rtx *, rtx *));
+static int rank_for_schedule		PROTO((const GENERIC_PTR, const GENERIC_PTR));
 static void swap_sort			PROTO((rtx *, int));
 static void queue_insn			PROTO((rtx, int));
 static int birthing_insn_p		PROTO((rtx));
@@ -1860,10 +1860,11 @@ sched_note_set (b, x, death)
 
 static int
 rank_for_schedule (x, y)
-     rtx *x, *y;
+     const GENERIC_PTR x;
+     const GENERIC_PTR y;
 {
-  rtx tmp = *y;
-  rtx tmp2 = *x;
+  rtx tmp = *(rtx *)y;
+  rtx tmp2 = *(rtx *)x;
   rtx link;
   int tmp_class, tmp2_class;
   int value;

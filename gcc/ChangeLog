@@ -1,3 +1,8 @@
+Wed Mar 11 15:16:01 1998  Michael Meissner  <meissner@cygnus.com>
+
+	* {haifa-,}sched.c (rank_for_schedule): Only take void * arguments
+	as per ISO C spec.
+
 Wed Mar 11 12:05:20 1998  Teemu Torma  <tot@trema.com>
 
 	* gthr.h: Changed the comment about return values.
