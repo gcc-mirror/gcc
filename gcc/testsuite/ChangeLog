@@ -1,3 +1,8 @@
+2002-05-21  Richard Henderson  <rth@redhat.com>
+
+	* gcc.dg/tls/tls.exp, gcc.dg/tls/trivial.c, gcc.dg/tls/diag-1.c,
+	gcc.dg/tls/diag-2.c, gcc.dg/tls/init-1.c: New directory and files.
+
 Tue May 21 14:25:32 2002  Brian R. Gaeke  <brg@dgate.ORG>
 
 	* g++.dg/other/copy2.C: New test.
