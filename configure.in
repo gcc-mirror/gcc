@@ -1716,31 +1716,28 @@ case "$enable_gdbtk" in
     ;;
 esac
 
-# Create the 'maybe dependencies'.  This uses a temporary file.
+# Strip out unwanted targets.
 
 # While at that, we remove Makefiles if we were started for recursive
 # configuration, so that the top-level Makefile reconfigures them,
 # like we used to do when configure itself was recursive.
-rm -f maybedep.tmp
-echo '# maybedep.tmp' > maybedep.tmp
 
-# Make-targets which may need maybe dependencies.
-mts="configure all install check clean distclean dvi info install-info"
-mts="${mts} installcheck mostlyclean maintainer-clean TAGS"
+# Loop over modules.  $extrasub must be used with care, limiting as
+# much as possible the usage of range addresses.  That's because autoconf
+# splits the sed script to overcome limits in the number of commands,
+# and relying on carefully-timed sed passes may turn out to be very hard
+# to maintain later.  In this particular case, you just have to be careful
+# not to nest @if/@endif pairs, because configure will not warn you at all.
 
-# Loop over modules and make-targets.
 for module in ${build_modules} ; do
   if test -z "${no_recursion}" \
      && test -f ${build_subdir}/${module}/Makefile; then
     echo 1>&2 "*** removing ${build_subdir}/${module}/Makefile to force reconfigure"
     rm -f ${build_subdir}/${module}/Makefile
   fi
-  for mt in ${mts} ; do
-    case ${mt} in
-      install) ;; # No installing build modules.
-      *) echo "maybe-${mt}-build-${module}: ${mt}-build-${module}" >> maybedep.tmp ;;
-    esac
-  done
+  extrasub="$extrasub
+/^@if build-$module\$/d
+/^@endif build-$module\$/d"
 done
 for module in ${configdirs} ; do
   if test -z "${no_recursion}" \
@@ -1748,9 +1745,9 @@ for module in ${configdirs} ; do
     echo 1>&2 "*** removing ${module}/Makefile to force reconfigure"
     rm -f ${module}/Makefile
   fi
-  for mt in ${mts} ; do
-    echo "maybe-${mt}-${module}: ${mt}-${module}" >> maybedep.tmp
-  done
+  extrasub="$extrasub
+/^@if $module\$/d
+/^@endif $module\$/d"
 done
 for module in ${target_configdirs} ; do
   if test -z "${no_recursion}" \
@@ -1758,12 +1755,12 @@ for module in ${target_configdirs} ; do
     echo 1>&2 "*** removing ${target_subdir}/${module}/Makefile to force reconfigure"
     rm -f ${target_subdir}/${module}/Makefile
   fi
-  for mt in ${mts} ; do
-    echo "maybe-${mt}-target-${module}: ${mt}-target-${module}" >> maybedep.tmp
-  done
+  extrasub="$extrasub
+/^@if target-$module\$/d
+/^@endif target-$module\$/d"
 done
-maybe_dependencies=maybedep.tmp
-AC_SUBST_FILE(maybe_dependencies)
+extrasub="$extrasub
+/^@if /,/^@endif /d"
 
 # Create the serialization dependencies.  This uses a temporary file.
 
