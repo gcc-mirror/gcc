@@ -200,8 +200,7 @@ do									\
 	    fprintf (FILE, "\tmovl $%sP%d,%%edx\n", lprefix, labelno);	\
 	    fprintf (FILE, "\tmovl %s%s,%%eax\n", prefix,		\
 		     XSTR (symref, 0));					\
-	    fprintf (FILE, "\tmovl (%%eax),%%eax\n");			\
-	    fprintf (FILE, "\tcall *%%eax\n");				\
+	    fprintf (FILE, "\tcall *(%%eax)\n");			\
 	  }								\
 									\
 	else								\
@@ -216,8 +215,7 @@ do									\
 		     lprefix, labelno);					\
 	    fprintf (FILE, "\tmovl %s_mcount_ptr@GOT(%%eax),%%eax\n",	\
 		     prefix);						\
-	    fprintf (FILE, "\tmovl (%%eax),%%eax\n");			\
-	    fprintf (FILE, "\tcall *%%eax\n");				\
+	    fprintf (FILE, "\tcall *(%%eax)\n");			\
 	  }								\
       }									\
 									\
@@ -271,8 +269,7 @@ do									\
 	    HALF_PIC_EXTERNAL ("mcount");				\
 	    symdef = HALF_PIC_PTR (gen_rtx (SYMBOL_REF, Pmode, "mcount")); \
 	    fprintf (FILE, "\tmovl $%sP%d,%%edx\n", lprefix, labelno);	\
-	    fprintf (FILE, "\tmovl %s%s,%%eax\n", prefix, XSTR (symdef, 0)); \
-	    fprintf (FILE, "\tcall *%%eax\n");				\
+	    fprintf (FILE, "\tcall *%s%s\n", prefix, XSTR (symdef, 0));	\
 	  }								\
 									\
 	else if (TARGET_MCOUNT)						\
@@ -288,8 +285,7 @@ do									\
 	    fprintf (FILE, "\tleal $%sP%d@GOTOFF(%%ebx),%%edx\n",	\
 		     lprefix, labelno);					\
 	    fprintf (FILE, "\tmovl _mcount_ptr@GOT(%%eax),%%eax\n");	\
-	    fprintf (FILE, "\tmovl (%%eax),%%eax\n");			\
-	    fprintf (FILE, "\tcall *%%eax\n");				\
+	    fprintf (FILE, "\tcall *(%%eax)\n");			\
 	    fprintf (FILE, "\tpopl %%eax\n");				\
 	  }								\
 									\
@@ -423,6 +419,14 @@ while (0)
 #undef	ASM_OUTPUT_LABELREF
 #define ASM_OUTPUT_LABELREF(FILE,NAME)					\
   fprintf (FILE, "%s%s", (TARGET_UNDERSCORES) ? "_" : "", NAME)
+
+/* This is how to output an element of a case-vector that is relative.
+   This is only used for PIC code.  See comments by the `casesi' insn in
+   i386.md for an explanation of the expression this outputs. */
+
+#undef ASM_OUTPUT_ADDR_DIFF_ELT
+#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL) \
+  fprintf (FILE, "\t.long _GLOBAL_OFFSET_TABLE_+[.-%s%d]\n", LPREFIX, VALUE)
 
 /* A C expression to output text to align the location counter in the
    way that is desirable at a point in the code that is reached only
