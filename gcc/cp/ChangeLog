@@ -1,3 +1,10 @@
+2002-03-20  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/4361
+	* mangle.c (struct globals) Add internal_mangling_p member.
+	(write_template_param): Do internal mangling, if needed.
+	(mangle_conv_op_name_for_type): Request internal mangling.
+
 2002-03-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/2136
@@ -79,14 +86,11 @@
 	all end up on slot 2.
 	* lex.c (do_identifier): A conversion operator token might be
 	satisfied by a templated conversion operator.
-	* mangle.c (struct globals) Add internal_mangling_p member.
-	(write_template_param): Do internal mangling, if needed.
-	(mangle_conv_op_name_for_type): Request internal mangling.
 	* pt.c (check_explicit_specialization): Use
 	CLASSTYPE_FIRST_CONVERSION_SLOT.
 	(template_parm_this_level_p): New function.
 	(push_template_decl_real): Determine DECL_TEMPLATE_CONV_FN_P.
-	* search.c (lookup_fn_fields_1): Template conversions will be on
+	* search.c (lookup_fnfields_1): Template conversions will be on
 	the first slot.
 	* typeck.c (build_component_ref): Preserve the type of an
 	conversion operator name on the overload type.
