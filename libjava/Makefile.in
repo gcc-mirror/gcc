@@ -534,6 +534,7 @@ java/beans/beancontext/BeanContextServiceRevokedEvent.java \
 java/beans/beancontext/BeanContextServiceRevokedListener.java \
 java/beans/beancontext/BeanContextServices.java	\
 java/beans/beancontext/BeanContextServicesListener.java	\
+java/beans/AppletInitializer.java \
 java/beans/BeanDescriptor.java \
 java/beans/BeanInfo.java \
 java/beans/Beans.java \
@@ -1718,9 +1719,10 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/awt/peer/ScrollbarPeer.P .deps/java/awt/peer/TextAreaPeer.P \
 .deps/java/awt/peer/TextComponentPeer.P \
 .deps/java/awt/peer/TextFieldPeer.P .deps/java/awt/peer/WindowPeer.P \
-.deps/java/beans/BeanDescriptor.P .deps/java/beans/BeanInfo.P \
-.deps/java/beans/Beans.P .deps/java/beans/Customizer.P \
-.deps/java/beans/DesignMode.P .deps/java/beans/EventSetDescriptor.P \
+.deps/java/beans/AppletInitializer.P .deps/java/beans/BeanDescriptor.P \
+.deps/java/beans/BeanInfo.P .deps/java/beans/Beans.P \
+.deps/java/beans/Customizer.P .deps/java/beans/DesignMode.P \
+.deps/java/beans/EventSetDescriptor.P \
 .deps/java/beans/FeatureDescriptor.P \
 .deps/java/beans/IndexedPropertyDescriptor.P \
 .deps/java/beans/IntrospectionException.P \
