@@ -1,3 +1,8 @@
+Tue Apr 27 00:36:44 1999  Nick Burrett  <nick.burrett@btinternet.com>
+
+	* arm.md (nop): Output instruction using output_asm_insn to fix
+	assembler dialect problems.
+
 Mon Apr 26 23:55:50 1999  Robert Lipe  <robertlipe@usa.net>
 
 	* Makefile.in (fixinc.sh): Fix dependencies.
