@@ -2,8 +2,6 @@
 # to point to the bsd43 include files.
 SYSTEM_HEADER_DIR = /bsd43/usr/include
 
-EXTRA_PASSES	= mips-tfile mips-tdump
-
 # We have a premade insn-attrtab.c to save the hour it takes to run genattrtab.
 # PREMADE_ATTRTAB = $(srcdir)/config/mips/mips-at.c
 # PREMADE_ATTRTAB_MD = $(srcdir)/config/mips/mips-at.md
@@ -12,13 +10,3 @@ EXTRA_PASSES	= mips-tfile mips-tdump
 # and does not need anything from libgcc1.a.
 LIBGCC1 = libgcc1.null
 CROSS_LIBGCC1 = libgcc1.null
-
-mips-tfile: mips-tfile.o version.o $(LIBDEPS)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o mips-tfile mips-tfile.o version.o $(LIBS)
-
-mips-tfile.o : mips-tfile.c $(CONFIG_H) $(CONFIG2_H) $(RTL_H)
-
-mips-tdump: mips-tdump.o version.o $(LIBDEPS)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o mips-tdump mips-tdump.o version.o $(LIBS)
-
-mips-tdump.o : mips-tdump.c $(CONFIG_H) $(CONFIG2_H) $(RTL_H)
