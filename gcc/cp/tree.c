@@ -1530,7 +1530,7 @@ no_linkage_helper (tp, walk_subtrees, data)
   tree t = *tp;
 
   if (TYPE_P (t)
-      && (IS_AGGR_TYPE (t) || TREE_CODE (t) == ENUMERAL_TYPE)
+      && (CLASS_TYPE_P (t) || TREE_CODE (t) == ENUMERAL_TYPE)
       && (decl_function_context (TYPE_MAIN_DECL (t))
 	  || ANON_AGGRNAME_P (TYPE_IDENTIFIER (t))))
     return t;

@@ -1,5 +1,10 @@
 2000-12-15  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
+	* tree.c (no_linkage_helper): Use CLASS_TYPE_P instead of
+	IS_AGGR_TYPE.
+
+2000-12-15  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
 	* pt.c (unify): Handle when both ARG and PARM are
 	BOUND_TEMPLATE_TEMPLATE_PARM.
 
