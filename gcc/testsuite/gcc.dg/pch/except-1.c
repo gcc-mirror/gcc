@@ -1,5 +1,5 @@
 /* { dg-options "-fexceptions -I." } */
-#include "except-1.hp"
+#include "except-1.h"
 
 int main(void) 
 {

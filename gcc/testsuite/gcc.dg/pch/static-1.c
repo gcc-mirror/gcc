@@ -1,4 +1,4 @@
-#include "static-1.hp"
+#include "static-1.h"
 static int bar(void)
 {
   static int counter;

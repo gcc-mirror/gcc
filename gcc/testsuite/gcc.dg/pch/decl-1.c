@@ -1,2 +1,2 @@
-#include "decl-1.hp"
+#include "decl-1.h"
 int main(void) { return foo; }
