@@ -4923,9 +4923,6 @@ namespace std
       // concept requirements
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
       __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
-      __glibcxx_function_requires(_EqualOpConcept<
-	    typename iterator_traits<_InputIterator>::value_type,
-	    typename iterator_traits<_ForwardIterator>::value_type>)
       __glibcxx_function_requires(_BinaryPredicateConcept<_BinaryPredicate,
 	    typename iterator_traits<_InputIterator>::value_type,
 	    typename iterator_traits<_ForwardIterator>::value_type>)
