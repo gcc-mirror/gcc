@@ -1,3 +1,9 @@
+2004-05-05  Paolo Bonzini  <bonzini@gnu.org>
+
+	* config/rs6000/rs6000.c (build_opaque_vector_type):
+	New function.
+	(rs6000_init_builtins): Use it.
+
 2004-05-04  Bernard Giroud  <bgiroud2@free.fr>
 
 	* gcc/gcc/vmsdbgout.c (vms_func_node, vms_func_ref): New.
@@ -22,9 +28,6 @@
 	* cp/call.c (standard_conversion): Likewise.
 	* cp/typeck.c (comptypes): Recurse on vector types.
 	(convert_for_assignment): Use vector_types_convertible_p.
-	* config/rs6000/rs6000.c (build_opaque_vector_type):
-	New function.
-	(rs6000_init_builtins): Use it.
 
 2004-05-04  Chris Demetriou  <cgd@broadcom.com>
 
