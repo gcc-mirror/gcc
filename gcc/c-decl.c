@@ -1249,12 +1249,15 @@ duplicate_decls (newdecl, olddecl)
 	  TREE_THIS_VOLATILE (newdecl) |= TREE_THIS_VOLATILE (olddecl);
 	}
     }
-  /* Permit char *foo () to match void *foo (...) if not pedantic.  */
+  /* Permit char *foo () to match void *foo (...) if not pedantic,
+     if one of them came from a system header file.  */
   else if (!types_match
 	   && TREE_CODE (olddecl) == FUNCTION_DECL
 	   && TREE_CODE (newdecl) == FUNCTION_DECL
 	   && TREE_CODE (TREE_TYPE (oldtype)) == POINTER_TYPE
 	   && TREE_CODE (TREE_TYPE (newtype)) == POINTER_TYPE
+	   && (DECL_IN_SYSTEM_HEADER (olddecl)
+	       || DECL_IN_SYSTEM_HEADER (newdecl))
 	   && ((TREE_TYPE (TREE_TYPE (newtype)) == void_type_node
 		&& TYPE_ARG_TYPES (oldtype) == 0
 		&& self_promoting_args_p (TYPE_ARG_TYPES (newtype))
