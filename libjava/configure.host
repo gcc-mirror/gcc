@@ -72,8 +72,11 @@ case "${host}" in
 	libgcj_interpreter=yes
 	enable_hash_synchronization_default=yes
 	;;
-  powerpc*-*)
+  powerpc*-linux*)
 	libgcj_interpreter=yes
+	;;
+  powerpc-apple-*)
+        libgcj_interpreter=no
 	;;
   sparc-*)
         ;;

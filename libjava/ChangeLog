@@ -1,3 +1,7 @@
+2002-01-02 Andreas Tobler <a.tobler@schweiz.ch>
+
+	* configure.host: Disable the interpreter for Darwin.
+
 2002-01-04  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/Thread.java (stop): No longer synchronized.
