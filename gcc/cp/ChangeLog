@@ -1,3 +1,9 @@
+2003-10-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/12726
+	* tree.c (build_target_expr_with_type): Don't call force_rvalue
+	for CONSTRUCTORs.
+
 2003-10-16  Release Manager
 
 	* GCC 3.3.2 Released.
