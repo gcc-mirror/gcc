@@ -1,3 +1,7 @@
+2000-12-12  Jim Wilson  <wilson@redhat.com>
+
+	* rtlanal.c (may_trap_p): Check operand modes of LE, LT, GE, and GT.
+
 2000-12-12  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.in: Simplify language enabling/disabling code.
