@@ -10073,7 +10073,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		}
 	    }
 	}
-      /* C++ aggregate types.  */
       else if (TREE_CODE (id) == TYPE_DECL)
 	{
 	  if (type)
@@ -10083,6 +10082,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	    {
 	      type = TREE_TYPE (id);
 	      TREE_VALUE (spec) = type;
+	      typedef_decl = id;
 	    }
 	  goto found;
 	}
@@ -10097,10 +10097,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	  else
 	    {
 	      type = TREE_TYPE (t);
-#if 0
-	      /* See the code below that used this.  */
-	      decl_attr = DECL_ATTRIBUTES (id);
-#endif
 	      typedef_decl = t;
 	    }
 	}
@@ -10111,6 +10107,11 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
     found: ;
     }
 
+#if 0
+  /* See the code below that used this.  */
+  if (typedef_decl)
+    decl_attr = DECL_ATTRIBUTES (typedef_decl);
+#endif
   typedef_type = type;
 
   /* No type at all: default to `int', and set DEFAULTED_INT
@@ -10157,7 +10158,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
       type = integer_type_node;
     }
   
-  if (type && TREE_CODE (type) == TYPENAME_TYPE && TREE_TYPE (type))
+  if (type && IMPLICIT_TYPENAME_P (type))
     {
       /* The implicit typename extension is deprecated and will be
 	 removed.  Warn about its use now.  */
@@ -11221,16 +11222,13 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
   /* Detect the case of an array type of unspecified size
      which came, as such, direct from a typedef name.
-     We must copy the type, so that each identifier gets
-     a distinct type, so that each identifier's size can be
-     controlled separately by its own initializer.  */
+     We must copy the type, so that the array's domain can be
+     individually set by the object's initializer.  */
 
-  if (type != 0 && typedef_type != 0
-      && TREE_CODE (type) == ARRAY_TYPE && TYPE_DOMAIN (type) == 0
+  if (type && typedef_type
+      && TREE_CODE (type) == ARRAY_TYPE && !TYPE_DOMAIN (type)
       && TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (typedef_type))
-    {
-      type = build_cplus_array_type (TREE_TYPE (type), TYPE_DOMAIN (type));
-    }
+    type = build_cplus_array_type (TREE_TYPE (type), NULL_TREE);
 
   /* Detect where we're using a typedef of function type to declare a
      function. last_function_parms will not be set, so we must create
