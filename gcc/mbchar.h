@@ -38,3 +38,4 @@ extern int local_mb_cur_max PROTO ((void));
 /* The locale being used for multibyte characters in string/char literals.  */
 extern char *literal_codeset;
 #endif /* MULTIBYTE_CHARS */
+#endif
