@@ -6554,11 +6554,9 @@ c_finish_loop (location_t start_locus, tree cond, tree incr, tree body,
 {
   tree entry = NULL, exit = NULL, t;
 
-  /* Force zeros to NULL so that we don't test them.  */
-  if (cond && integer_zerop (cond))
-    cond = NULL;
-
   /* Detect do { ... } while (0) and don't generate loop construct.  */
+  if (cond && !cond_is_first && integer_zerop (cond))
+    cond = NULL;
   if (cond_is_first || cond)
     {
       tree top = build1 (LABEL_EXPR, void_type_node, NULL_TREE);

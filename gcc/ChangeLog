@@ -1,3 +1,8 @@
+2004-07-04  Richard Henderson  <rth@redhat.com>
+
+	PR c/16348
+	* c-typeck.c (c_finish_loop): Don't clear cond for cond_is_first loops.
+
 2004-07-04  Mark Mitchell  <mark@codesourcery.com>
 
 	* configure.ac (ranlib_flags): New variable.
