@@ -103,7 +103,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 rtx peephole ();
 void output_asm_insn ();
 rtx alter_subreg ();
-static int alter_cond ();
 void output_asm_label ();
 static void output_operand ();
 void output_address ();
