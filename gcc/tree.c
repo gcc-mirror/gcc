@@ -1133,17 +1133,13 @@ copy_node (node)
 	 for REAL_CST, since the number of words is machine-dependent due
 	 to varying size and alignment of `double'.  */
       if (code == INTEGER_CST)
-        {
-          length = sizeof (struct tree_int_cst);
-          break;
-        }
+	length = sizeof (struct tree_int_cst);
       else if (code == REAL_CST)
-	{
-	  length = sizeof (struct tree_real_cst);
-	  break;
-	}
+	length = sizeof (struct tree_real_cst);
       else
-	abort();
+	length = (sizeof (struct tree_common)
+		  + tree_code_length[(int) code] * sizeof (char *));
+      break;
 
     case 'x':  /* something random, like an identifier.  */
       length = sizeof (struct tree_common)
