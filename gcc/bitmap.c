@@ -687,9 +687,11 @@ bitmap_union_of_diff (dst, a, b, c)
      bitmap c;
 {
   int changed = 0;
-  bitmap temp = BITMAP_ALLOCA ();
+  bitmap temp = BITMAP_XMALLOC ();
+  
   bitmap_operation (temp, b, c, BITMAP_AND_COMPL);
   changed = bitmap_operation (dst, temp, a, BITMAP_IOR);
+  BITMAP_XFREE (temp);
   return changed;
 }
 
