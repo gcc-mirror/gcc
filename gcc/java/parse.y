@@ -2991,17 +2991,8 @@ create_class (flags, id, super, interfaces)
 	  return NULL_TREE;
 	}
 
-      /* The class is known and exists if there is a decl. Otherwise,
-         postpone the operation and do it later. */
-      super_decl = IDENTIFIER_CLASS_VALUE (EXPR_WFL_NODE (super));
-      if (super_decl)
-	{
-	  parser_check_super (super_decl, decl, id);
-	  super_decl_type = TREE_TYPE (super_decl);
-	}
-      else
-	super_decl_type = 
-	  register_incomplete_type (JDEP_SUPER, super, decl, NULL_TREE);
+      super_decl_type = 
+	register_incomplete_type (JDEP_SUPER, super, decl, NULL_TREE);
     }
   else if (TREE_TYPE (decl) != object_type_node)
     super_decl_type = object_type_node;
