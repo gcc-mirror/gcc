@@ -376,13 +376,13 @@ public:
   typedef const _Tp& const_reference;
   typedef _Tp        value_type;
 
-  template <class _U> struct rebind {
-    typedef pthread_allocator<_U> other;
+  template <class _Up> struct rebind {
+    typedef pthread_allocator<_Up> other;
   };
 
   pthread_allocator() __STL_NOTHROW {}
   pthread_allocator(const pthread_allocator& a) __STL_NOTHROW {}
-  template <class _U> pthread_allocator(const pthread_allocator<_U>&)
+  template <class _Up> pthread_allocator(const pthread_allocator<_Up>&)
 		__STL_NOTHROW {}
   ~pthread_allocator() __STL_NOTHROW {}
 
@@ -416,8 +416,8 @@ public:
   typedef const void* const_pointer;
   typedef void        value_type;
 
-  template <class _U> struct rebind {
-    typedef pthread_allocator<_U> other;
+  template <class _Up> struct rebind {
+    typedef pthread_allocator<_Up> other;
   };
 };
 
@@ -451,16 +451,16 @@ struct _Alloc_traits<_Tp, _Pthread_alloc_template<_Max_size> >
           allocator_type;
 };
 
-template <class _Tp, class _U, size_t _Max>
-struct _Alloc_traits<_Tp, __allocator<_U, _Pthread_alloc_template<_Max> > >
+template <class _Tp, class _Up, size_t _Max>
+struct _Alloc_traits<_Tp, __allocator<_Up, _Pthread_alloc_template<_Max> > >
 {
   static const bool _S_instanceless = true;
   typedef simple_alloc<_Tp, _Pthread_alloc_template<_Max> > _Alloc_type;
   typedef __allocator<_Tp, _Pthread_alloc_template<_Max> > allocator_type;
 };
 
-template <class _Tp, class _U>
-struct _Alloc_traits<_Tp, pthread_allocator<_U> >
+template <class _Tp, class _Up>
+struct _Alloc_traits<_Tp, pthread_allocator<_Up> >
 {
   static const bool _S_instanceless = true;
   typedef simple_alloc<_Tp, _Pthread_alloc_template<> > _Alloc_type;
