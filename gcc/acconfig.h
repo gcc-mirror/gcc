@@ -25,3 +25,17 @@
 
 /* Define to `int' if <sys/types.h> doesn't define.  */
 #undef ssize_t
+
+@BOTTOM@
+
+/* Bison unconditionally undefines `const' if neither `__STDC__' nor
+   __cplusplus are defined.  That's a problem since we use `const' in
+   the GCC headers, and the resulting bison code is therefore type
+   unsafe.  Thus, we must match the bison behavior here.  */
+
+#ifndef __STDC__
+#ifndef __cplusplus
+#undef const
+#define const
+#endif
+#endif
