@@ -503,9 +503,8 @@ namespace std
       // low-balling it (especially when this algorithm is used with
       // malloc implementations that allocate memory blocks rounded up
       // to a size which is a power of 2).
-      const size_type __pagesize = 4096; // must be 2^i * __subpagesize
-      const size_type __subpagesize = 128; // should be >> __malloc_header_size
-      const size_type __malloc_header_size = 4 * sizeof (void*);
+      const size_type __pagesize = 4096;
+      const size_type __malloc_header_size = 4 * sizeof(void*);
 
       // The below implements an exponential growth policy, necessary to
       // meet amortized linear time requirements of the library: see
@@ -513,14 +512,7 @@ namespace std
       // It's active for allocations requiring an amount of memory above
       // system pagesize. This is consistent with the requirements of the
       // standard: http://gcc.gnu.org/ml/libstdc++/2001-07/msg00130.html
-
-      // The biggest string which fits in a memory page
-      const size_type __page_capacity = ((__pagesize - __malloc_header_size
-					  - sizeof(_Rep) - sizeof(_CharT))
-					 / sizeof(_CharT));
-
-      if (__capacity > __old_capacity && __capacity < 2 * __old_capacity
-	  && __capacity > __page_capacity)
+      if (__capacity > __old_capacity && __capacity < 2 * __old_capacity)
 	__capacity = 2 * __old_capacity;
 
       // NB: Need an array of char_type[__capacity], plus a terminating
@@ -536,12 +528,6 @@ namespace std
 	  // Never allocate a string bigger than _S_max_size.
 	  if (__capacity > _S_max_size)
 	    __capacity = _S_max_size;
-	  __size = (__capacity + 1) * sizeof(_CharT) + sizeof(_Rep);
-	}
-      else if (__size > __subpagesize)
-	{
-	  const size_type __extra = __subpagesize - __adj_size % __subpagesize;
-	  __capacity += __extra / sizeof(_CharT);
 	  __size = (__capacity + 1) * sizeof(_CharT) + sizeof(_Rep);
 	}
 

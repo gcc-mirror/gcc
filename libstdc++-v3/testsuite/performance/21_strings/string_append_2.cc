@@ -25,44 +25,27 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#include <cassert>
 #include <string>
-#include <iostream>
-#include <ext/array_allocator.h>
+#include <testsuite_performance.h>
 
-typedef char char_type;
-typedef std::char_traits<char_type> traits_type;
-typedef std::tr1::array<char_type, 32> array_type;
-
-array_type extern_array;
-
-void test01() 
+// Short strings didn't grow quickly...
+void test01()
 {
-  using std::basic_string;
-  typedef __gnu_cxx::array_allocator<char_type, array_type> allocator_type;
-  typedef basic_string<char_type, traits_type, allocator_type> string_type;
+  using namespace __gnu_test;
+  time_counter time;
+  resource_counter resource;
 
-  size_t index = array_type::_S_index;
-  allocator_type a(&extern_array);
-  string_type s(a);
-    
-  try
+  start_counters(time, resource);
+  for (unsigned i = 0; i < 200000; ++i)
     {
-      s.reserve(4); // Actually need 4 + 1 + sizeof(std::string::_Rep).
+      std::string a;
+      for (unsigned j = 0; j < 400; ++j)
+	a.append(1, 'x');
     }
-  catch(std::bad_alloc& obj)
-    {
-      assert(false);
-    }
-  catch(...)
-    {
-      assert(false);
-    }
+  stop_counters(time, resource);
 
-  s.append(1, 'c');
-  s.append(2, 'b');
-
-  std::cout << s.c_str() << std::endl;
+  report_performance(__FILE__, "", time, resource);
+  clear_counters(time, resource);
 }
 
 int main()
