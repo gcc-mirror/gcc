@@ -1,3 +1,7 @@
+2000-05-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* invoke.texi (-Wtraditional): Update WRT function macros.
+
 Tue May 30 09:57:32 2000  Philippe De Muyter  <phdm@macqel.be>
 
 	* except.c (free_exception_table): Do not free NULL.
