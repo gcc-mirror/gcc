@@ -6295,7 +6295,7 @@ sh_va_arg (tree valist, tree type)
   rtx addr_rtx, r;
   rtx result_ptr, result = NULL_RTX;
   int pass_by_ref = MUST_PASS_IN_STACK (TYPE_MODE (type), type);
-  rtx lab_over;
+  rtx lab_over = NULL_RTX;
 
   size = int_size_in_bytes (type);
   rsize = (size + UNITS_PER_WORD - 1) & -UNITS_PER_WORD;
