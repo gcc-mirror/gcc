@@ -6397,7 +6397,7 @@ get_condition (jump, earliest)
      the same tests as a function of STORE_FLAG_VALUE as find_comparison_args
      in cse.c  */
 
-  while (GET_RTX_CLASS (code) == '<' && op1 == const0_rtx)
+  while (GET_RTX_CLASS (code) == '<' && op1 == CONST0_RTX (GET_MODE (op0)))
     {
       /* Set non-zero when we find something of interest.  */
       rtx x = 0;
