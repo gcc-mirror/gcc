@@ -1,5 +1,9 @@
 2003-03-28  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	* gcc.dg/ultrasp7.c: New test.
+
+2003-03-28  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	* gcc.dg/sparc-dwarf2.c: New test.
 
 2003-03-26  Eric Botcazou  <ebotcazou@libertysurf.fr>
