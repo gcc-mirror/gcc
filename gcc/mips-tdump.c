@@ -60,7 +60,7 @@ typedef char *CPTR_T;
 #define ptrdiff_t	int
 
 
-/* Redefination of of storage classes as an enumeration for better
+/* Redefinition of of storage classes as an enumeration for better
    debugging.  */
 
 #ifndef stStaParam
@@ -108,7 +108,7 @@ typedef enum st {
   st_Local	= stLocal,	/* local variable */
   st_Label	= stLabel,	/* label */
   st_Proc	= stProc,	/*     "      "	 Procedure */
-  st_Block	= stBlock,	/* beginnning of block */
+  st_Block	= stBlock,	/* beginning of block */
   st_End	= stEnd,	/* end (of anything) */
   st_Member	= stMember,	/* member (of anything	- struct/union/enum */
   st_Typedef	= stTypedef,	/* type definition */
@@ -121,7 +121,7 @@ typedef enum st {
   st_Str	= stStr,	/* string */
   st_Number	= stNumber,	/* pure number (ie. 4 NOR 2+2) */
   st_Expr	= stExpr,	/* 2+2 vs. 4 */
-  st_Type	= stType,	/* post-coersion SER */
+  st_Type	= stType,	/* post-coercion SER */
   st_Max	= stMax		/* max type+1 */
 } st_t;
 
@@ -221,7 +221,7 @@ EXTR	*e_symbols;		/* external symbols */
 LINER	*lines;			/* line numbers */
 DNR	*dense_nums;		/* dense numbers */
 OPTR	*opt_symbols;		/* optimization symbols */
-AUXU	*aux_symbols;		/* Auxilary symbols */
+AUXU	*aux_symbols;		/* Auxiliary symbols */
 char	*aux_used;		/* map of which aux syms are used */
 FDR	*file_desc;		/* file tables */
 ulong	*rfile_desc;		/* relative file tables */
@@ -622,7 +622,7 @@ type_to_string (aux_ptr, index)
     {
       /*
        * Snarf up any array bounds in the correct order.  Arrays
-       * store 5 succesive words in the aux. table:
+       * store 5 successive words in the aux. table:
        *	word 0	RNDXR to type of the bounds (ie, int)
        *	word 1	Current file descriptor index
        *	word 2	low bound
@@ -808,7 +808,7 @@ print_sym_hdr (sym_ptr)
   printf("    %-*s %11ld %11d %11d\n", width, "Optimization Symbols",
 	 sym_ptr->cbOptOffset, sym_ptr->ioptMax, sym_ptr->ioptMax * sizeof (OPTR));
 
-  printf("    %-*s %11ld %11d %11d\n", width, "Auxilary Symbols",
+  printf("    %-*s %11ld %11d %11d\n", width, "Auxiliary Symbols",
 	 sym_ptr->cbAuxOffset, sym_ptr->iauxMax, sym_ptr->iauxMax * sizeof (AUXU));
 
   printf("    %-*s %11ld %11d %11d\n", width, "Local Strings",
@@ -1344,7 +1344,7 @@ read_tfile __proto((void))
   aux_symbols = (AUXU *) read_seek ((PTR_T)0,
 				    sym_hdr.iauxMax * sizeof (AUXU),
 				    sym_hdr.cbAuxOffset,
-				    "Auxilary symbols");
+				    "Auxiliary symbols");
 
   if (sym_hdr.iauxMax > 0)
     {
