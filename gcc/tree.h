@@ -1484,6 +1484,7 @@ extern tree convert			PROTO((tree, tree));
 extern tree size_in_bytes		PROTO((tree));
 extern HOST_WIDE_INT int_size_in_bytes	PROTO((tree));
 extern tree size_binop			PROTO((enum tree_code, tree, tree));
+extern tree ssize_binop			PROTO((enum tree_code, tree, tree));
 extern tree size_int_wide		PROTO((unsigned HOST_WIDE_INT,
 					       unsigned HOST_WIDE_INT, int));
 #define size_int(L) size_int_2 ((L), 0, 0)
