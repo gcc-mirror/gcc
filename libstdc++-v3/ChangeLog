@@ -1,3 +1,9 @@
+2002-03-04  Craig Rodrigues  <rodrigc@gcc.gnu.org>
+
+	* docs/html/17_intro/porting-howto.xml: Refer to 
+	http://www.oasis-open.org for docbookx.dtd.
+	* docs/html/17_intro/porting-howto.html: Regenerated.
+
 2002-03-03  Phil Edwards  <pme@gcc.gnu.org>
 
 	PR libstdc++/3955
