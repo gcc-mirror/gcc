@@ -990,8 +990,11 @@ default_conversion (exp)
   /* Constants can be used directly unless they're not loadable.  */
   if (TREE_CODE (exp) == CONST_DECL)
     exp = DECL_INITIAL (exp);
-  /* Replace a nonvolatile const static variable with its value.  */
-  else if (optimize && TREE_CODE (exp) == VAR_DECL)
+
+  /* Replace a nonvolatile const static variable with its value unless
+     it is an array, in which case we must be sure that taking the
+     address of the array produces consistent results.  */
+  else if (optimize && TREE_CODE (exp) == VAR_DECL && code != ARRAY_TYPE)
     {
       exp = decl_constant_value (exp);
       type = TREE_TYPE (exp);
