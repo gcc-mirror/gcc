@@ -1,3 +1,8 @@
+2002-05-16  Dale Johannesen  <dalej@apple.com>
+
+	* combine.c (cant_combine_insn_p):  Reenable combinations
+	involving hard regs unless CLASS_LIKELY_SPILLED_P.
+
 2002-05-16  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* c-common.c (cb_register_builtins): Handle more built-ins
