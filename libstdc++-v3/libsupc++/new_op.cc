@@ -36,9 +36,8 @@ using std::bad_alloc;
 #if _GLIBCXX_HOSTED
 using std::malloc;
 #else
-// In a freestanding environment, "malloc" may not be available.  In
-// that case, it may make sense not to define "operator new" at all.
-// For now, we assume that "malloc" will work.
+// A freestanding C runtime may not provide "malloc" -- but there is no
+// other reasonable way to implement "operator new".
 extern "C" void *malloc (std::size_t);
 #endif
 

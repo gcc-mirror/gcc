@@ -34,9 +34,8 @@
 #if _GLIBCXX_HOSTED
 using std::free;
 #else
-// In a freestanding environment, "free" may not be available.  In
-// that case, it may make sense not to define "operator delete" at
-// all.  For now, we assume that "free" will work.
+// A freestanding C runtime may not provide "free" -- but there is no
+// other reasonable way to implement "operator delete".
 extern "C" void free(void *);
 #endif
 
