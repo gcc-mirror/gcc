@@ -26,6 +26,8 @@ libstdc++-dg-init
 
 ## Set ulimits.  This should normally be handled on test-by-test
 ## basis through @xxx@-keywords.
+## The following limit is expressed in kilobytes.  For history, Have a 
+## look at http://gcc.gnu.org/ml/libstdc++/2000-10/msg00029.html
 set maximum-memory-usage 16384
 set shell-ulimit-command ulimit
 remote_exec host ${shell-ulimit-command} "-d ${maximum-memory-usage}"

@@ -1,5 +1,9 @@
 2001-05-01  Gabriel Dos Reis  <gdr@codesourcery.com>
 
+	* testsuite/libstdc++.tests/tests.exp: Add comment.
+
+2001-05-01  Gabriel Dos Reis  <gdr@codesourcery.com>
+
 	* testsuite/libstdc++.tests/tests.exp: Set ulimits.
 
 2001-04-30  Mark Mitchell  <mark@codesourcery.com>
