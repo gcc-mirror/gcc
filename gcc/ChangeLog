@@ -1,3 +1,11 @@
+Tue Jul 28 22:31:12 1998  Craig Burley  <burley@gnu.org>
+
+	* gcc.c: Fix commentary describing %g, %u, %U, and %O.
+
+	* gcc.c (do_spec_1): Fix support for %O so the
+	temporary file name made for it the first time
+	gets reused subsequently.
+
 1998-07-28  Vladimir N. Makarov  <vmakarov@cygnus.com>
 
 	* cse.c (cse_insn): Enable subsitution inside libcall only for REG,
