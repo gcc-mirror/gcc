@@ -1,3 +1,12 @@
+2004-08-18  Richard Henderson  <rth@redhat.com>
+
+	* config/mcore/mcore.c (mode_from_align): Remove DImode.
+	(block_move_sequence): Rewrite to use adjust_address.
+	(mcore_expand_block_move): Cleanup logic.  Accept only operands.
+	Return boolean indicating success/failure.
+	* config/mcore/mcore-protos.h (mcore_expand_block_move): Update decl.
+	* config/mcore/mcore.md (movmemsi): Update to match.
+
 2004-08-18  Mike Stump  <mrs@apple.com>
 
 	* doc/invoke.texi (-mfix-and-continue): Add support for

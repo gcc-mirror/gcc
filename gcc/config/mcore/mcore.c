@@ -122,7 +122,6 @@ static int        calc_live_regs                (int *);
 static int        const_ok_for_mcore            (int);
 static int        try_constant_tricks           (long, int *, int *);
 static const char *     output_inline_const     (enum machine_mode, rtx *);
-static void       block_move_sequence           (rtx, rtx, rtx, rtx, int, int, int);
 static void       layout_mcore_frame            (struct mcore_frame *);
 static void       mcore_setup_incoming_varargs	(CUMULATIVE_ARGS *, enum machine_mode, tree, int *, int);
 static cond_type  is_cond_candidate             (rtx);
@@ -1824,127 +1823,117 @@ mcore_store_multiple_operation (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 static const enum machine_mode mode_from_align[] =
 {
   VOIDmode, QImode, HImode, VOIDmode, SImode,
-  VOIDmode, VOIDmode, VOIDmode, DImode
 };
 
 static void
-block_move_sequence (rtx dest, rtx dst_mem, rtx src, rtx src_mem,
-		     int size, int align, int offset)
+block_move_sequence (rtx dst_mem, rtx src_mem, int size, int align)
 {
   rtx temp[2];
   enum machine_mode mode[2];
   int amount[2];
-  int active[2];
+  bool active[2];
   int phase = 0;
   int next;
-  int offset_ld = offset;
-  int offset_st = offset;
+  int offset_ld = 0;
+  int offset_st = 0;
+  rtx x;
 
-  active[0] = active[1] = FALSE;
-
-  /* Establish parameters for the first load and for the second load if
-     it is known to be the same mode as the first.  */
-  amount[0] = amount[1] = align;
-
-  mode[0] = mode_from_align[align];
-
-  temp[0] = gen_reg_rtx (mode[0]);
-  
-  if (size >= 2 * align)
+  x = XEXP (dst_mem, 0);
+  if (!REG_P (x))
     {
-      mode[1] = mode[0];
-      temp[1] = gen_reg_rtx (mode[1]);
+      x = force_reg (Pmode, x);
+      dst_mem = replace_equiv_address (dst_mem, x);
     }
+
+  x = XEXP (src_mem, 0);
+  if (!REG_P (x))
+    {
+      x = force_reg (Pmode, x);
+      src_mem = replace_equiv_address (src_mem, x);
+    }
+
+  active[0] = active[1] = false;
 
   do
     {
-      rtx srcp, dstp;
-      
       next = phase;
-      phase = !phase;
+      phase ^= 1;
 
       if (size > 0)
 	{
-	  /* Change modes as the sequence tails off.  */
-	  if (size < amount[next])
-	    {
-	      amount[next] = (size >= 4 ? 4 : (size >= 2 ? 2 : 1));
-	      mode[next] = mode_from_align[amount[next]];
-	      temp[next] = gen_reg_rtx (mode[next]);
-	    }
-	  
-	  size -= amount[next];
-	  srcp = gen_rtx_MEM (
-#if 0
-			  MEM_IN_STRUCT_P (src_mem) ? mode[next] : BLKmode,
-#else
-			  mode[next],
-#endif
-			  gen_rtx_PLUS (Pmode, src, GEN_INT (offset_ld)));
-	  
-	  MEM_READONLY_P (srcp) = MEM_READONLY_P (src_mem);
-	  MEM_VOLATILE_P (srcp) = MEM_VOLATILE_P (src_mem);
-	  MEM_IN_STRUCT_P (srcp) = 1;
-	  emit_insn (gen_rtx_SET (VOIDmode, temp[next], srcp));
-	  offset_ld += amount[next];
-	  active[next] = TRUE;
+	  int next_amount;
+
+	  next_amount = (size >= 4 ? 4 : (size >= 2 ? 2 : 1));
+	  next_amount = MIN (next_amount, align);
+
+	  amount[next] = next_amount;
+	  mode[next] = mode_from_align[next_amount];
+	  temp[next] = gen_reg_rtx (mode[next]);
+
+	  x = adjust_address (src_mem, mode[next], offset_ld);
+	  emit_insn (gen_rtx_SET (VOIDmode, temp[next], x));
+
+	  offset_ld += next_amount;
+	  size -= next_amount;
+	  active[next] = true;
 	}
 
       if (active[phase])
 	{
-	  active[phase] = FALSE;
+	  active[phase] = false;
 	  
-	  dstp = gen_rtx_MEM (
-#if 0
-			  MEM_IN_STRUCT_P (dst_mem) ? mode[phase] : BLKmode,
-#else
-			  mode[phase],
-#endif
-			  gen_rtx_PLUS (Pmode, dest, GEN_INT (offset_st)));
-	  
-	  MEM_READONLY_P (dstp) = MEM_READONLY_P (dst_mem);
-	  MEM_VOLATILE_P (dstp) = MEM_VOLATILE_P (dst_mem);
-	  MEM_IN_STRUCT_P (dstp) = 1;
-	  emit_insn (gen_rtx_SET (VOIDmode, dstp, temp[phase]));
+	  x = adjust_address (dst_mem, mode[phase], offset_st);
+	  emit_insn (gen_rtx_SET (VOIDmode, x, temp[phase]));
+
 	  offset_st += amount[phase];
 	}
     }
   while (active[next]);
 }
 
-void
-mcore_expand_block_move (rtx dst_mem, rtx src_mem, rtx * operands)
+bool
+mcore_expand_block_move (rtx *operands)
 {
-  int align = INTVAL (operands[3]);
-  int bytes;
+  HOST_WIDE_INT align, bytes, max;
 
-  if (GET_CODE (operands[2]) == CONST_INT)
+  if (GET_CODE (operands[2]) != CONST_INT)
+    return false;
+
+  bytes = INTVAL (operands[2]);
+  align = INTVAL (operands[3]);
+
+  if (bytes <= 0)
+    return false;
+  if (align > 4)
+    align = 4;
+
+  switch (align)
     {
-      bytes = INTVAL (operands[2]);
-      
-      if (bytes <= 0)
-	return;
-      if (align > 4)
-	align = 4;
-      
-      /* RBE: bumped 1 and 2 byte align from 1 and 2 to 4 and 8 bytes before
-         we give up and go to memcpy.  */
-      if ((align == 4 && (bytes <= 4*4
-			  || ((bytes & 01) == 0 && bytes <= 8*4)
-			  || ((bytes & 03) == 0 && bytes <= 16*4)))
-	  || (align == 2 && bytes <= 4*2)
-	  || (align == 1 && bytes <= 4*1))
-	{
-	  block_move_sequence (operands[0], dst_mem, operands[1], src_mem,
-			       bytes, align, 0);
-	  return;
-	}
+    case 4:
+      if (bytes & 1)
+	max = 4*4;
+      else if (bytes & 3)
+	max = 8*4;
+      else
+	max = 16*4;
+      break;
+    case 2:
+      max = 4*2;
+      break;
+    case 1:
+      max = 4*1;
+      break;
+    default:
+      abort ();
     }
 
-  /* If we get here, just use the library routine.  */
-  emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "memcpy"), 0, VOIDmode, 3,
-		     operands[0], Pmode, operands[1], Pmode, operands[2],
-		     SImode);
+  if (bytes <= max)
+    {
+      block_move_sequence (operands[0], operands[1], bytes, align);
+      return true;
+    }
+
+  return false;
 }
 
 
@@ -3104,7 +3093,7 @@ mcore_function_arg (CUMULATIVE_ARGS cum, enum machine_mode mode,
 {
   int arg_reg;
   
-  if (! named)
+  if (! named || mode == VOIDmode)
     return 0;
 
   if (targetm.calls.must_pass_in_stack (mode, type))
