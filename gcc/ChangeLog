@@ -1,8 +1,13 @@
-Mon Mar 16 15:57:17 1998  Michael Meissner  <meissner@cygnus.com>
+Wed Mar 18 05:54:25 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
-	(From Geoffrey Keating  <geoffk@ozemail.com.au>)
-	* rs6000.c (small_data_operand): Ensure that any address referenced
-	relative to the small data area is inside the SDA.
+	* combine.c (gen_binary): Don't make AND that does nothing.
+	(simplify_comparison, case AND): Commute AND and SUBREG.
+	* i386.h (CONST_CONSTS, case CONST_INT): One-byte integers are cost 0.
+
+Mon Mar 16 15:57:17 1998  Geoffrey Keating  <geoffk@ozemail.com.au>
+
+	* rs6000.c (small_data_operand): Ensure any address referenced
+	relative to small data area is inside SDA.
 
 Sun Mar 15 16:01:19 1998  Andrew Pochinsky  <avp@ctp.mit.edu>
 
