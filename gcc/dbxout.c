@@ -1386,11 +1386,10 @@ print_int_cst_octal (c)
     ;
   else if (width > HOST_BITS_PER_WIDE_INT)
     high &= (((HOST_WIDE_INT) 1 << (width - HOST_BITS_PER_WIDE_INT)) - 1);
-  else 
-    {
-      high = 0;
-      low &= (((HOST_WIDE_INT) 1 << width) - 1);
-    }
+  else if (width == HOST_BITS_PER_WIDE_INT)
+    high = 0;
+  else
+    high = 0, low &= (((HOST_WIDE_INT) 1 << width) - 1);
 
   fprintf (asmfile, "0");
 
