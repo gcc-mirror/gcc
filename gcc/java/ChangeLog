@@ -1,3 +1,7 @@
+2003-09-16  Andrew Haley  <aph@redhat.com>
+
+	* jcf-write.c (generate_bytecode_insns): Add MIN_EXPR and MAX_EXPR.
+
 2003-09-17  Ranjit Mathew  <rmathew@hotmail.com>
 
 	Fixes PR java/9577
