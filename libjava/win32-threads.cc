@@ -16,6 +16,8 @@ details.  */
 extern "C"
 {
 #include <gc.h>
+// <windows.h> #define's STRICT, which conflicts with Modifier.h
+#undef STRICT
 };
 #endif /* HAVE_BOEHM_GC */
 
