@@ -1,3 +1,9 @@
+2003-03-04  Jerry Quinn  <jlquinn@optonline.net>
+
+	* src/ios.cc (ios_base::_M_grow_words): Don't delete _M_word on
+	new failure.  Throw exception if badbit and exception mask when ix
+	>= numeric_limits<int>::max().
+
 2003-03-04  Alexandre Oliva  <aoliva@redhat.com>
 
 	* src/strstream.cc (strstreambuf::overflow): Make sure operands of
