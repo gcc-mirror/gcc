@@ -1,5 +1,12 @@
 2003-10-20  Zack Weinberg  <zack@codesourcery.com>
 
+	* config/i386/i386.c (print_reg): Abort if REGNO (x) is a
+	virtual register, but only if file == asm_out_file.
+	* config/i386/i386.h (HI_REGISTER_NAMES): Use "argp", not "",
+	for ARG_POINTER_REGNUM.
+
+2003-10-20  Zack Weinberg  <zack@codesourcery.com>
+
 	* c-common.c (registered_builtin_types): New static.
 	(c_common_type_for_mode): Consult registered_builtin_types.
 	(c_register_builtin_type): Add type to registered_builtin_types.
