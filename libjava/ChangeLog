@@ -1,5 +1,10 @@
 2003-03-19  Michael Koch  <konqueror@gmx.de>
 
+	* java/lang/Process.java:
+	Merged from classpath.
+
+2003-03-19  Michael Koch  <konqueror@gmx.de>
+
 	* java/io/FileOutputStream.java
 	(FileOutputStream): New constructor, merged from classpath.
 	* java/io/FileWriter.java
