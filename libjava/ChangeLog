@@ -1,3 +1,17 @@
+2002-01-08  Nic Ferrier  <nferrier@tf1.tapsellferrier.co.uk> 
+
+	* java/net/natPlainSocketImpl.cc: Added timeout handling for
+	sockets.
+	(close): New function closes the socket.
+	(write): New functions for output to socket.
+	(read): New functions for reading from socket.
+	* java/net/PlainSocketImpl.java: Glue for new timeout
+	implementation.
+	(write): Call the native impl.
+	(read): Likewise.
+	(getInputStream): Get a stream to read from the socket.
+	(getOutputStream): Get a stream to write to the socket.
+
 2002-01-08  Tom Tromey  <tromey@redhat.com>
 
 	* resolve.cc (_Jv_PrepareClass): Enable verifier.
