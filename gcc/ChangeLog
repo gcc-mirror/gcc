@@ -1,5 +1,7 @@
 Sat Dec 22 08:59:50 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* predict.c: Reformatting and minor cleanups.
+
 	* expr.c (expand_expr, case ADDR_EXPR): Handling taking address of
 	SAVE_EXPR.
 	* function.c (gen_mem_addressof): Add missing tests for SAVE_EXPR.
