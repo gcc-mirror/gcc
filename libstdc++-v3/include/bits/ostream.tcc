@@ -417,7 +417,7 @@ namespace std {
       typedef typename traits_type::int_type int_type;
       
       int_type __plen = static_cast<size_t>(__newlen - __oldlen); 
-      char_type __pads[__plen];
+      __extension__ char_type __pads[__plen];
       traits_type::assign(__pads, __plen, __ios.fill()); 
 
       char_type* __beg;
@@ -496,7 +496,7 @@ namespace std {
 	{
 	  try {
 	    streamsize __w = __out.width();
-	    _CharT __pads[__w];
+	    __extension__ _CharT __pads[__w];
 	    __pads[0] = __c;
 	    streamsize __len = 1;
 	    if (__w > __len)
@@ -529,7 +529,7 @@ namespace std {
 	{
 	  try {
 	    streamsize __w = __out.width();
-	    char __pads[__w + 1];
+	    __extension__ char __pads[__w + 1];
 	    __pads[0] = __c;
 	    streamsize __len = 1;
 	    if (__w > __len)
@@ -596,7 +596,7 @@ namespace std {
       if (__cerb)
 	{
 	  size_t __clen = __ctraits_type::length(__s);
-	  _CharT __ws[__clen + 1];
+	  __extension__ _CharT __ws[__clen + 1];
 	  for (size_t  __i = 0; __i <= __clen; ++__i)
 	    __ws[__i] = __out.widen(__s[__i]);
 	  _CharT* __str = __ws;
@@ -604,7 +604,7 @@ namespace std {
 	  try {
 	    streamsize __len = static_cast<streamsize>(__clen);
 	    streamsize __w = __out.width();
-	    _CharT __pads[__w];
+	    __extension__ _CharT __pads[__w];
 
 	    if (__w > __len)
 	      {
@@ -637,7 +637,7 @@ namespace std {
 	{
 	  try {
 	    streamsize __w = __out.width();
-	    char __pads[__w];
+	    __extension__ char __pads[__w];
 	    streamsize __len = static_cast<streamsize>(_Traits::length(__s));
 	    if (__w > __len)
 	      {

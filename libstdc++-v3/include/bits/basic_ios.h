@@ -31,6 +31,7 @@
 #define _CPP_BITS_BASICIOS_H 1
 
 #include <bits/sbuf_iter.h>
+#include <bits/locale_facets.h>
 
 namespace std {
 
@@ -205,10 +206,13 @@ namespace std {
 
 #ifdef _GLIBCPP_NO_TEMPLATE_EXPORT
 # define export
-//#include <bits/basic_ios.tcc>
+#include <bits/basic_ios.tcc>
 #endif
 
 #endif /* _CPP_BITS_BASICIOS_H */
+
+
+
 
 
 

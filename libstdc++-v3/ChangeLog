@@ -1,3 +1,27 @@
+2001-02-16  Greg Bumgardner <bumgard@roguewave.com>
+
+	libstdc++/1734
+        * include/bits/std_ostream.h: Replaced usage of
+        _Traits::_S_eos() with _CharT() as per section 17.2.2.1.3.  
+        * include/bits/char_traits.h: Removed non-standard
+        methods that cannot be used elsewhere.  
+	
+	libstdc++/1885
+        * include/bits/basic_ios.h: Uncommented #include of
+        bits/basic_ios.tcc 
+	
+	libstdc++/1897
+        * include/bits/codecvt.h: See next...
+        * include/bits/fstream.tcc: See next...
+        * include/bits/ostream.tcc: Add __extension__ 
+        to variable-length arrays.  
+	
+	libstdc++/1967
+        * include/bits/localefwd.h: Changed int counter type to size_t.
+
+	libstdc++/1968
+        * include/bits/std_fstream.h: Added typedef for __ctype_type.
+
 2001-02-16  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/21_strings/char_traits.cc: Move to ...

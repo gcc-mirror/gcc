@@ -397,7 +397,7 @@ namespace std
     {
       _M_impl = new _Impl(*__other._M_impl, 1);
       _M_impl->_M_install_facet(&_Facet::id, __f);
-      for (int __i = 0; __i < _S_num_categories; ++__i)
+      for (size_t __i = 0; __i < _S_num_categories; ++__i)
 	_M_impl->_M_names[__i] = "*";
     }
 
