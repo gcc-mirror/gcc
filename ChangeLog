@@ -1,3 +1,8 @@
+2003-03-14  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* Makefile.tpl: Move .NOEXPORT, MAKEOVERRIDES back down.
+	* Makefile.in: Regenerate.
+
 2003-03-14  Michael Chastain  <mec@shout.net>
 
 	* Makefile.in: Regenerate with correct Makefile.def.
