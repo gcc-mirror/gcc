@@ -2565,7 +2565,7 @@ store_constructor (exp, target)
 
       if (list_length (CONSTRUCTOR_ELTS (exp)) < maxelt - minelt + 1
 	  || (GET_CODE (target) == REG && TREE_STATIC (exp)))
-	clear_storage (target, maxelt - minelt + 1);
+	clear_storage (target, int_size_in_bytes (type));
       else
 	/* Inform later passes that the old value is dead.  */
 	emit_insn (gen_rtx (CLOBBER, VOIDmode, target));
