@@ -1,3 +1,8 @@
+Mon Nov 15 15:33:18 1999  Richard Henderson  <rth@cygnus.com>
+
+	* rs6000.h (ASM_OUTPUT_DEF): New.
+	Based on proposed addition from David Edelsohn.
+
 1999-11-15  Robert Lipe  <RobertLipe@usa.net>
             Bruce Korb  <autogen@linuxbox.com>
 
