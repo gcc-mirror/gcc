@@ -1,3 +1,11 @@
+2003-11-10  Matt Austern  <austern@apple.com>
+
+	* config/darwin-protos.h (darwin_assemble_visibility): Declare.
+	* config/darwin.c (darwin_assemble_visibility): Define.  Warn for
+	anything other than VISIBILITY_DEFAULT and VISIBILITY_HIDDEN.
+	* config/darwin.h (TARGET_ASM_ASSEMBLE_VISIBILITY): Use
+	darwin_assemble_visibility instead of default.
+	
 2003-11-10  Waldek Hebisch  <hebisch@math.uni.wroc.pl>
 
 	PR target/12865

@@ -41,6 +41,7 @@ Boston, MA 02111-1307, USA.  */
 #include "ggc.h"
 #include "langhooks.h"
 #include "tm_p.h"
+#include "errors.h"
 
 static int machopic_data_defined_p (const char *);
 static void update_non_lazy_ptrs (const char *);
@@ -1322,6 +1323,29 @@ darwin_globalize_label (FILE *stream, const char *name)
 {
   if (!!strncmp (name, "_OBJC_", 6))
     default_globalize_label (stream, name);
+}
+
+/* Emit an assembler directive to set visibility for a symbol.  The
+   only supported visibilities are VISIBILITY_DEFAULT and
+   VISIBILITY_HIDDEN; the latter corresponds to Darwin's "private
+   extern".  There is no MACH-O equivalent of ELF's
+   VISIBILITY_INTERNAL or VISIBILITY_PROTECTED. */
+
+void 
+darwin_assemble_visibility (tree decl, int vis)
+{
+  if (vis == VISIBILITY_DEFAULT)
+    ;
+  else if (vis == VISIBILITY_HIDDEN)
+    {
+      fputs ("\t.private_extern ", asm_out_file);
+      assemble_name (asm_out_file,
+		     (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl))));
+      fputs ("\n", asm_out_file);
+    }
+  else
+    warning ("internal and protected visibility attributes not supported"
+	     "in this configuration; ignored");
 }
 
 /* Output a difference of two labels that will be an assembly time
