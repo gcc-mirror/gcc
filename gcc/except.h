@@ -266,6 +266,11 @@ rtx rethrow_symbol_map                          PROTO((rtx, rtx (*)(rtx)));
 
 int rethrow_used                                PROTO((int));
 
+/* Update the rethrow references to reflect rethrows which have been
+   optimized away.  */
+
+void update_rethrow_references			PROTO((void));
+
 /* Return the region number a this is the rethrow label for. */
 
 int eh_region_from_symbol                       PROTO((rtx));
@@ -277,6 +282,46 @@ struct handler_info *get_first_handler          PROTO((int));
 /* Find all the runtime handlers type matches currently referenced */
 
 int find_all_handler_type_matches               PROTO((void ***));
+
+/* The eh_nesting_info structure is used to find a list of valid handlers
+   for any arbitrary exception region.  When init_eh_nesting_info is called,
+   the information is all pre-calculated and entered in this structure.
+   REGION_INDEX is a vector over all possible region numbers.  Since the
+   number of regions is typically much smaller than the range of block
+   numbers, this is a sparse vector and the other data structures are 
+   represented as dense vectors.  Indexed with an exception region number, this
+   returns the index to use in the other data structures to retreive the
+   correct information.
+   HANDLERS is an array of vectors which point to handler_info structures.
+   when indexed, it gives the list of all possible handlers which can 
+   be reached by a throw from this exception region.
+   NUM_HANDLERS is the equivilent array indicating how many handler
+   pointers there are in the HANDLERS vector.
+   OUTER_INDEX indicates which index represents the information for the
+   outer block.  0 indicates there is no outer context.
+   REGION_COUNT is the number of regions.  */
+
+typedef struct eh_nesting 
+{
+  int *region_index;
+  handler_info ***handlers;
+  int *num_handlers;
+  int *outer_index;
+  int region_count;
+} eh_nesting_info;
+
+/* Initialize the eh_nesting_info structure.  */
+
+eh_nesting_info *init_eh_nesting_info 		PROTO((void));
+
+/* Get a list of handlers reachable from a an exception region/insn.  */
+
+int reachable_handlers 			PROTO((int, eh_nesting_info *, rtx, 
+					       handler_info ***handlers));
+
+/* Free the eh_nesting_info structure.  */
+
+void free_eh_nesting_info 			PROTO((eh_nesting_info *));
 
 extern void init_eh				PROTO((void));
 

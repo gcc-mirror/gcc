@@ -1,3 +1,38 @@
+Tue Aug 10 10:47:42 EDT 1999  Andrew MacLeod  <amacleod@cygnus.com>
+
+	* except.h (eh_nesting_info): Add new structure defintion.
+	(init_eh_nesting_info, free_eh_nesting_info): Add function prototypes.
+	(reachable_handlers, update_rethrow_references): Add function 
+	prototypes.
+	* rtl.h (struct rtvec_def): Update comments.  REG_EH_RETHROW takes
+	a rethrow symbol instead of an integer exception region number.
+	* flow.c (Make_edges): Use new exception nesting routines to determine 
+	which handlers are reachable from a CALL or asynchronous insn.
+	Dont add an edge for calls with a REG_EH_REGION of -1 to non-local
+	goto receivers.
+	(delete_eh_regions): Update rethrow labels, and don't delete 
+	regions which are the target of a rethrow.
+	* except.c (struct func_eh_entry): Add rethrow_ref field, now we can
+	avoid overloading the SYMBOL_REF_USED flag.
+	(rethrow_symbol_map): Use new rethrow_ref field.
+	(rethrow_used): Use new rethrow_ref field.
+	(expand_rethrow): REG_EH_RETHROW now has a SYMBOL_REF instead 
+	of an integer.  Fix formatting.
+	(output_exception_table_entry): Use new rethrow_ref field.
+	(can_throw): Check for EH_REGION_NOTE before deciding
+	whether a CALL can throw or not.
+	(scan_region): Call rethrow_used() instead of accessing data structure.
+	(update_rethrow_references): New function to make sure only regions
+	which are still targets of a rethrow are flagged as such.
+	(process_nestinfo): New static function to initialize a handler 
+	list for a specific region.
+	(init_eh_nesting_info): New function to allocate and initialize
+	the list of all EH handlers reachable from all regions.
+	(reachable_handlers): New function to retrieve the list of handlers
+	reachable from a specific region and insn.
+	(free_eh_nesting_info): New function to dispose of a list of
+	reachable handlers.
+
 Tue Aug 10 10:39:31 EDT 1999  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* flow.c (split_edge): Set JUMP_LABEL field.

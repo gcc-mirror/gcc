@@ -867,6 +867,7 @@ make_edges (label_value_list, bb_eh_end)
      rtx *bb_eh_end;
 {
   int i;
+  eh_nesting_info *eh_nest_info = init_eh_nesting_info ();
 
   /* Assume no computed jump; revise as we create edges.  */
   current_function_has_computed_jump = 0;
@@ -976,41 +977,19 @@ make_edges (label_value_list, bb_eh_end)
       if (code == CALL_INSN || asynchronous_exceptions)
 	{
 	  int is_call = (code == CALL_INSN ? EDGE_ABNORMAL_CALL : 0);
-	  handler_info *ptr;
+	  handler_info **handler_list;
+	  int eh_region = -1;
+	  int num;
 
-	  /* Use REG_EH_RETHROW and REG_EH_REGION if available.  */
-	  /* ??? REG_EH_REGION is not generated presently.  Is it
-	     inteded that there be multiple notes for the regions?
-	     or is my eh_list collection redundant with handler linking?  */
+	  if (eh_list)
+	    eh_region = NOTE_BLOCK_NUMBER (XEXP (eh_list, 0));
 
-	  x = find_reg_note (insn, REG_EH_RETHROW, 0);
-	  if (!x)
-	    x = find_reg_note (insn, REG_EH_REGION, 0);
-	  if (x)
+	  num = reachable_handlers (eh_region, eh_nest_info,
+				    insn, &handler_list);
+	  for ( ; num > 0; num--)
 	    {
-	      if (XINT (XEXP (x, 0), 0) > 0)
-		{
-		  ptr = get_first_handler (XINT (XEXP (x, 0), 0));
-		  while (ptr)
-		    {
-		      make_label_edge (bb, ptr->handler_label,
-				       EDGE_ABNORMAL | EDGE_EH | is_call);
-		      ptr = ptr->next;
-		    }
-		}
-	    }
-	  else
-	    {
-	      for (x = eh_list; x; x = XEXP (x, 1))
-		{
-		  ptr = get_first_handler (NOTE_BLOCK_NUMBER (XEXP (x, 0)));
-		  while (ptr)
-		    {
-		      make_label_edge (bb, ptr->handler_label,
-				       EDGE_ABNORMAL | EDGE_EH | is_call);
-		      ptr = ptr->next;
-		    }
-		}
+	      make_label_edge (bb, handler_list[num - 1]->handler_label,
+			       EDGE_ABNORMAL | EDGE_EH | is_call);
 	    }
 
 	  if (code == CALL_INSN && nonlocal_goto_handler_labels)
@@ -1022,10 +1001,13 @@ make_edges (label_value_list, bb_eh_end)
 		 gotos do not have their addresses taken, then only calls to
 		 those functions or to other nested functions that use them
 		 could possibly do nonlocal gotos.  */
-
-	      for (x = nonlocal_goto_handler_labels; x ; x = XEXP (x, 1))
-	        make_label_edge (bb, XEXP (x, 0),
-			         EDGE_ABNORMAL | EDGE_ABNORMAL_CALL);
+	      /* We do know that a REG_EH_REGION note with a value less
+		 than 0 is guaranteed not to perform a non-local goto.  */
+	      rtx note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
+	      if (!note || XINT (XEXP (note, 0), 0) >=  0)
+		for (x = nonlocal_goto_handler_labels; x ; x = XEXP (x, 1))
+		  make_label_edge (bb, XEXP (x, 0),
+				   EDGE_ABNORMAL | EDGE_ABNORMAL_CALL);
 	    }
 	}
 
@@ -1050,6 +1032,7 @@ make_edges (label_value_list, bb_eh_end)
 	    make_edge (bb, BASIC_BLOCK (i + 1), EDGE_FALLTHRU);
 	}
     }
+  free_eh_nesting_info (eh_nest_info);
 }
 
 /* Create an edge between two basic blocks.  FLAGS are auxiliary information
@@ -1615,6 +1598,8 @@ delete_eh_regions ()
 {
   rtx insn;
 
+  update_rethrow_references ();
+
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     if (GET_CODE (insn) == NOTE)
       {
@@ -1622,8 +1607,9 @@ delete_eh_regions ()
 	    (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_END)) 
 	  {
 	    int num = CODE_LABEL_NUMBER (insn);
-	    /* A NULL handler indicates a region is no longer needed */
-	    if (get_first_handler (num) == NULL)
+	    /* A NULL handler indicates a region is no longer needed,
+	       as long as it isn't the target of a rethrow.  */
+	    if (get_first_handler (num) == NULL && ! rethrow_used (num))
 	      {
 		NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
 		NOTE_SOURCE_FILE (insn) = 0;
