@@ -1,3 +1,7 @@
+Sun Jun 24 21:21:49 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* (movsi_insv_1, movsi_insv_1_rex64): Allow immediate operand.
+
 2001-06-24  Richard Henderson  <rth@redhat.com>
 
 	* builtins.c (expand_builtin_expect_jump): Disable if the
