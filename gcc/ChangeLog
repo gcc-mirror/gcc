@@ -1,3 +1,8 @@
+2002-12-11  Neil Booth  <neil@daikokuya.co.uk>
+
+	* c-common.c (builtin_define_type_max): Handle unsigned
+	types too.
+
 2002-12-10  Janis Johnson  <janis187@us.ibm.com>
 
 	PR other/8882
