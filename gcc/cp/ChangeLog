@@ -1,3 +1,10 @@
+1998-05-22  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* class.c (build_vtable_entry): Use int_fits_type_p.
+	(build_vtable): Pass a signed offset to build_vtable_entry.
+	(prepare_fresh_vtable, modify_one_vtable, fixup_vtable_deltas1,
+	set_rtti_entry): Likewise.
+
 1998-05-22  Per Bothner  <bothner@cygnus.com>
 
 	* cp-tree.h:  Add comments documenting which LANG_FLAGS are used.
