@@ -1,6 +1,6 @@
 /* Threads compatibility routines for libgcc2 and libobjc.  */
 /* Compile this one with gcc.  */
-/* Copyright (C) 1999, 2000, 2002 Free Software Foundation, Inc.
+/* Copyright (C) 1999, 2000, 2002, 2003  Free Software Foundation, Inc.
    Contributed by Mumit Khan <khan@xraylith.wisc.edu>.
 
 This file is part of GCC.
@@ -365,7 +365,7 @@ __gthread_active_p (void)
 #endif
 }
 
-#ifdef __GTHREAD_HIDE_WIN32API
+#if __GTHREAD_HIDE_WIN32API
 
 /* The implementations are in config/i386/gthr-win32.c in libgcc.a.
    Only stubs are exposed to avoid polluting the C++ namespace with
