@@ -22,7 +22,7 @@ Boston, MA 02111-1307, USA.  */
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Dh8300 \
   -D__LONG_MAX__=2147483647L -D__LONG_LONG_MAX__=2147483647L \
-  -D__rtems__ -Asystem(rtems) -Acpu(h8300) -Amachine(h8300)"
+  -D__rtems__ -Asystem(rtems)"
 
 /* Generate calls to memcpy, memcmp and memset.  */
 #ifndef TARGET_MEM_FUNCTIONS
