@@ -1,3 +1,14 @@
+2003-08-26  Per Bothner  <pbothner@apple.com>
+
+	* cpplib.h (struct cpp_token):  Change type of field line to fileline.
+	(cpp_error_with_line):  Use fileline for appropriate parameter.
+	* cpphash.h (struct cpp_macro):  Change type of field line to fileline.
+	(struct cpp_reader):  Likewise for fields line and directive_line.
+	(_cpp_begin_message):  Use fileline for appropriate parameter.
+	* cpperror.c (print_location, _cpp_begin_message, cpp_error_with_line,
+	cpp_error):  Use fileline for appropriate parameters and variables.
+	(print_location):  New local lin, since it is not a fileline.
+
 2003-08-26  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/12002

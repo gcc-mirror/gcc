@@ -100,7 +100,7 @@ struct cpp_macro
   } exp;
 
   /* Definition line number.  */
-  unsigned int line;
+  fileline line;
 
   /* Number of tokens in expansion, or bytes for traditional macros.  */
   unsigned int count;
@@ -337,10 +337,10 @@ struct cpp_reader
   /* Source line tracking.  */
   struct line_maps line_maps;
   const struct line_map *map;
-  unsigned int line;
+  fileline line;
 
   /* The line of the '#' of the current directive.  */
-  unsigned int directive_line;
+  fileline directive_line;
 
   /* Memory buffers.  */
   _cpp_buff *a_buff;		/* Aligned permanent storage.  */
@@ -497,7 +497,7 @@ extern unsigned char _cpp_trigraph_map[UCHAR_MAX + 1];
 #define CPP_WTRADITIONAL(PF) CPP_OPTION (PF, warn_traditional)
 
 /* In cpperror.c  */
-extern int _cpp_begin_message (cpp_reader *, int, unsigned int, unsigned int);
+extern int _cpp_begin_message (cpp_reader *, int, fileline, unsigned int);
 
 /* In cppmacro.c */
 extern void _cpp_free_definition (cpp_hashnode *);
