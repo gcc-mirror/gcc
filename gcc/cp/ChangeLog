@@ -1,3 +1,17 @@
+2003-02-05  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/14008
+	* parser.c (cp_parser_diagnose_invalid_typename): Removed parsing 
+	code, only emits the diagnostic now. Added lookup of the identifier
+	and support for qualified ids.
+	(cp_parser_parse_and_diagnose_invalid_type_name): New function.
+	Parse an (invalid) type name as id-expression within a declarator.
+	(cp_parser_simple_declaration): Use it.
+	(cp_parser_member_declaration): Likewise.
+	(cp_parser_make_typename_type): New function. Handle errors through
+	cp_parser_diagnose_invalid_typename.
+	(cp_parser_elaborated_type_specifier): Use it.
+
 2004-02-04  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/13932
