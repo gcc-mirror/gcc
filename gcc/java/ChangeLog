@@ -1,3 +1,25 @@
+Wed Jan 13 01:24:54 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* class.c (maybe_layout_super_class): Fixed returned value.
+	* lex.c: Added 1999 to the copyright.
+	(java_init_lex): Initialize java_lang_imported.
+	* lex.h: Added 1999 to the copyright.
+	* parse.h: Added 1999 to the copyright.
+	(REGISTER_IMPORT): Fixed typo in trailing macro.
+	(CURRENT_OSB): New macro.
+	(struct parser_ctxt): New fields osb_depth, osb_limit.
+	* parse.y (java_lang_id): New global variable.
+	(type_import_on_demand_declaration): Don't import java.lang.* twice.
+	(array_creation_expression:): Use CURRENT_OSB.
+	(dims:): Uses a stack to keep track of array dimensions.
+	(cast_expression:): Use CURRENT_OSB.
+	(find_expr_with_wfl): Return NULL if node found doesn't meet the
+ 	conditions.
+	(register_fields): Fixed typos in comment.
+	(check_method_redefinition): Fixed comment indentation.
+	(java_check_regular_methods): Set saved found wfl to NULL after
+ 	having reinstalled it in the previously found DECL_NAME.
+
 Sun Jan 10 13:36:14 1999  Richard Henderson  <rth@cygnus.com>
 
 	* gjavah.c (java_float_finite): Use a union to do type punning.

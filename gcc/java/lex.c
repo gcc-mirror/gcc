@@ -80,10 +80,13 @@ java_init_lex ()
   int java_lang_imported = 0;
 
 #ifndef JC1_LITE
+  if (!java_lang_id)
+    java_lang_id = get_identifier ("java.lang");
+
   if (!java_lang_imported)
     {
       tree node = build_tree_list 
-	(build_expr_wfl (get_identifier ("java.lang"), NULL, 0, 0), NULL_TREE);
+	(build_expr_wfl (java_lang_id, NULL, 0, 0), NULL_TREE);
       read_import_dir (TREE_PURPOSE (node));
       TREE_CHAIN (node) = ctxp->import_demand_list;
       ctxp->import_demand_list = node;
