@@ -1059,7 +1059,7 @@ force_nonfallthru_and_redirect (edge e, basic_block target)
 	    {
 	      if (tmp == e)
 		{
-		  VEC_ordered_remove (edge, ENTRY_BLOCK_PTR->succs, ei.index);
+		  VEC_unordered_remove (edge, ENTRY_BLOCK_PTR->succs, ei.index);
 		  found = true;
 		  break;
 		}
