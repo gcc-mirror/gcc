@@ -1008,7 +1008,7 @@ call_operand (op, mode)
   if (GET_CODE (op) == REG)
     {
       if (TARGET_ABI_OSF)
-	return REGNO (op) == 27;
+	return (REGNO (op) == 27 || REGNO (op) >= FIRST_PSEUDO_REGISTER);
       else
 	return 1;
     }

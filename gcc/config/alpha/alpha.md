@@ -4602,11 +4602,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 
   operands[0] = XEXP (operands[0], 0);
   if (! call_operand (operands[0], Pmode))
-    {
-      rtx pv = gen_rtx_REG (Pmode, 27);
-      emit_move_insn (pv, operands[0]);
-      operands[0] = pv;
-    }
+    operands[0] = copy_to_mode_reg (Pmode, operands[0]);
 })
 
 (define_expand "call_nt"
@@ -4735,11 +4731,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 
   operands[1] = XEXP (operands[1], 0);
   if (! call_operand (operands[1], Pmode))
-    {
-      rtx pv = gen_rtx_REG (Pmode, 27);
-      emit_move_insn (pv, operands[1]);
-      operands[1] = pv;
-    }
+    operands[1] = copy_to_mode_reg (Pmode, operands[1]);
 })
 
 (define_expand "call_value_nt"
