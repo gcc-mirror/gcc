@@ -294,7 +294,7 @@
 }")
 
 (define_insn "movstrictsi"
-  [(set (strict_low_part (match_operand:SI 0 "general_operand" "=g,r"))
+  [(set (strict_low_part (match_operand:SI 0 "general_operand" "+g,r"))
 	(match_operand:SI 1 "general_operand" "r,g"))]
   ""
   "*
