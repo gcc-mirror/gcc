@@ -1504,6 +1504,7 @@ void gfc_get_errors (int *, int *);
 void gfc_arith_init_1 (void);
 void gfc_arith_done_1 (void);
 
+/* trans-types.c */
 /* FIXME: These should go to symbol.c, really...  */
 int gfc_default_integer_kind (void);
 int gfc_default_real_kind (void);

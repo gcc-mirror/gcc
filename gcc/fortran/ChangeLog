@@ -1,3 +1,31 @@
+2004-08-26  Richard Henderson  <rth@redhat.com>
+
+        * arith.c: Include system.h, not real system headers.
+        (MPZ_NULL, MPF_NULL, DEF_GFC_INTEGER_KIND, DEF_GFC_LOGICAL_KIND,
+        DEF_GFC_REAL_KIND, GFC_SP_KIND, GFC_SP_PREC, GFC_SP_EMIN, GFC_SP_EMAX,
+        GFC_DP_KIND, GFC_DP_PREC, GFC_DP_EMIN, GFC_DP_EMAX, GFC_QP_KIND,
+        GFC_QP_PREC, GFC_QP_EMIN, GFC_QP_EMAX): Remove.
+        (gfc_integer_kinds, gfc_logical_kinds, gfc_real_kinds,
+        gfc_index_integer_kind, gfc_default_integer_kind,
+        gfc_default_real_kind,gfc_default_double_kind,
+        gfc_default_character_kind, gfc_default_logical_kind,
+        gfc_default_complex_kind, validate_integer, validate_real,
+        validate_logical, validate_character,
+        gfc_validate_kind): Move to trans-types.c.
+        (gfc_set_model_kind): Use gfc_validate_kind.
+        (gfc_set_model): Just copy the current precision to default.
+        (gfc_arith_init_1): Use mpfr precision 128 for integer setup.
+        * f95-lang.c (gfc_init_decl_processing): Invoke gfc_init_kinds.
+        * gfortran.h: Update file commentary.
+        * trans-types.c (MAX_INT_KINDS, MAX_REAL_KINDS): New.
+        (gfc_default_integer_kind_1, gfc_default_real_kind_1,
+        gfc_default_double_kind_1, gfc_default_character_kind_1,
+        gfc_default_logical_kind_1, gfc_default_complex_kind_1): New.
+        (gfc_init_kinds): New.
+        (gfc_init_types): Don't set gfc_index_integer_kind here.
+        * trans-types.h (gfc_init_kinds): Declare.
+	* doc/invoke.texi: Clarify DOUBLE PRECISION behaviour wrt -r8.
+
 2004-08-26  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* check.c (gfc_check_atan2): New function.

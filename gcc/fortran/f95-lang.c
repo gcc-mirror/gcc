@@ -576,6 +576,7 @@ gfc_init_decl_processing (void)
   build_common_tree_nodes_2 (0);
 
   /* Set up F95 type nodes.  */
+  gfc_init_kinds ();
   gfc_init_types ();
 }
 
