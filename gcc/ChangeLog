@@ -1,3 +1,9 @@
+2000-12-05  Kaveh R. Ghazi  <ghazi@teal.rutgers.edu>
+
+	* Makefile.in (fixinc.sh): Pass $WARN_CFLAGS into fixinc dir.
+
+	* fixinc/Makefile.in (FIXINC_DEFS): Add $(WARN_CFLAGS).
+
 2000-12-05  Bruce Korb  <bkorb@gnu.org>
 
 	* fixinc/mkfixinc.sh(*-gnu*): activate fixinc for GNU/Hurd and
