@@ -1,3 +1,39 @@
+Wed Jan 27 23:39:53 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* rtl.h (insn_first_p): Declare.
+	* rtlanal.c (insn_first_p): New function.
+	* loop.h (varray.h): Include.
+	(struct induction): Change combined_with to unsigned.
+	New members derived, ix and last_use.
+	(reg_iv_type, reg_iv_info): Now varray_type.  All references changed.
+	(REG_IV_TYPE, REG_IV_INFO): Define.
+	(first_increment_giv, last_increment_giv): Declare.
+	* loop.c (loop_number_loop_cont): New static variable.
+	(loop_number_cont_dominator): Likewise.
+	(reg_iv_type, reg_iv_info): Now varray_type.
+	(first_increment_giv, last_increment_giv): New variables.
+	(compute_luids, verify_dominator, find_life_end): New functions.
+	(cmp_recombine_givs_stats, recombine_givs): Likewise.
+	(loop_optimize): Allocate loop_number_loop_cont and
+	loop_number_cont_dominator.  Use compute_luids.
+	(find_and_verify_loops): Initialize loop_number_loop_cont and
+	loop_number_cont_dominator.
+	(strength_reduce): Try to find bivs that can be expressed as givs
+	of another biv, and to convert biv increments into givs.
+	Call recombine_givs.  Handle derived givs.
+	(record_biv): New argument location.  All callers changed.
+	(record_giv): Initialize derived and last_use fields.
+	(basic_induction_var): New argument location.  All callers changed.
+	(combine_givs): Don't combine a DEST_REG giv with a DEST_ADDR giv.
+	Increment combined_with instead of setting to 1.
+	* unroll.c (derived_regs): New static variable.
+	(unroll_loop): Initialize it.
+	Allocate local_regno according to max_reg_num.
+	(copy_loop_body): Cope with derived givs.
+	(find_splittable_givs): Check for Givs made from biv increments.
+	Set derived_regs for givs.
+	* Makefile.in (stmt.o, loop.o, unroll.o): Depend on loop.h .
+
 Wed Jan 27 19:31:36 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* function.c (purge_addressof_1): Handle case when a register

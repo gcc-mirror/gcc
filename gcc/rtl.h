@@ -1008,6 +1008,7 @@ extern int reg_set_between_p		PROTO((rtx, rtx, rtx));
 extern int regs_set_between_p		PROTO((rtx, rtx, rtx));
 extern int modified_between_p		PROTO((rtx, rtx, rtx));
 extern int no_labels_between_p		PROTO((rtx, rtx));
+extern int no_jumps_between_p		PROTO((rtx, rtx));
 extern int modified_in_p		PROTO((rtx, rtx));
 extern int reg_set_p			PROTO((rtx, rtx));
 extern rtx single_set			PROTO((rtx));
@@ -1035,6 +1036,7 @@ extern rtx replace_regs			PROTO((rtx, rtx *, int, int));
 extern int computed_jump_p		PROTO((rtx));
 typedef int (*rtx_function)             PROTO((rtx *, void *));
 extern int for_each_rtx                 PROTO((rtx *, rtx_function, void *));
+extern int insn_first_p			PROTO((rtx, rtx));
 
 /* flow.c */
 

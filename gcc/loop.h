@@ -18,6 +18,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+#include "varray.h"
+
 /* Get the luid of an insn.  Catch the error of trying to reference the LUID
    of an insn added during loop, since these don't have LUIDs.  */
 
@@ -54,6 +56,8 @@ struct induction
 				   For a DEST_ADDR type giv, this is 0.  */
   rtx *location;		/* Place in the insn where this giv occurs.
 				   If GIV_TYPE is DEST_REG, this is 0.  */
+				/* For a biv, this is the place where add_val
+				   was found.  */
   enum machine_mode mode;	/* The mode of this biv or giv */
   enum machine_mode mem_mode;	/* For DEST_ADDR, mode of the memory object. */
   rtx mult_val;			/* Multiplicative factor for src_reg.  */
@@ -63,6 +67,9 @@ struct induction
 				   final value could be calculated, it is put
 				   here, and the giv is made replaceable.  Set
 				   the giv to this value before the loop.  */
+  unsigned combined_with;	/* The number of givs this giv has been
+				   combined with.  If nonzero, this giv
+				   cannot combine with any other giv.  */
   unsigned replaceable : 1;	/* 1 if we can substitute the strength-reduced
 				   variable for the original variable.
 				   0 means they must be kept separate and the
@@ -85,8 +92,6 @@ struct induction
 				   another giv.  This occurs in many cases
 				   where a giv's lifetime spans an update to
 				   a biv. */
-  unsigned combined_with : 1;	/* 1 if this giv has been combined with.  It
-				   then cannot combine with any other giv.  */
   unsigned maybe_dead : 1;	/* 1 if this giv might be dead.  In that case,
 				   we won't use it to eliminate a biv, it
 				   would probably lose. */
@@ -96,6 +101,8 @@ struct induction
 				   initialized in unrolled loop.  */
   unsigned shared : 1;
   unsigned no_const_addval : 1; /* 1 if add_val does not contain a const. */
+  unsigned derived : 1;         /* For a giv, 1 if we decided to derive this
+				   giv from another one.  */
   int lifetime;			/* Length of life of this giv */
   rtx derive_adjustment;	/* If nonzero, is an adjustment to be
 				   subtracted from add_val when this giv
@@ -112,10 +119,14 @@ struct induction
 				   is split, and a constant is eliminated from
 				   the address, the -constant is stored here
 				   for later use. */
+  int ix;			/* Used by recombine_givs, as n index into
+				   the stats array.  */
   struct induction *same_insn;	/* If there are multiple identical givs in
 				   the same insn, then all but one have this
 				   field set, and they all point to the giv
 				   that doesn't have this field set.  */
+  rtx last_use;			/* For a giv made from a biv increment, this is
+				   a substitute for the lifetime information. */
 };
 
 /* A `struct iv_class' is created for each biv.  */
@@ -197,10 +208,18 @@ extern int max_reg_before_loop;
 
 extern FILE *loop_dump_stream;
 
-extern enum iv_mode *reg_iv_type;
-extern struct induction **reg_iv_info;
+extern varray_type reg_iv_type;
+extern varray_type reg_iv_info;
+
+#define REG_IV_TYPE(n) \
+  (*(enum iv_mode *) &VARRAY_INT(reg_iv_type, (n)))
+#define REG_IV_INFO(n) \
+  (*(struct induction **) &VARRAY_GENERIC_PTR(reg_iv_info, (n)))
+
 extern struct iv_class **reg_biv_class;
 extern struct iv_class *loop_iv_list;
+
+extern int first_increment_giv, last_increment_giv;
 
 /* Forward declarations for non-static functions declared in loop.c and
    unroll.c.  */

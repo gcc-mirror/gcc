@@ -1474,7 +1474,7 @@ function.o : function.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
    insn-config.h $(RECOG_H) output.h toplev.h except.h
 stmt.o : stmt.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h function.h  \
    insn-flags.h insn-config.h insn-codes.h hard-reg-set.h $(EXPR_H) except.h \
-   loop.h $(RECOG_H) toplev.h output.h
+   loop.h $(RECOG_H) toplev.h output.h varray.h
 except.o : except.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
    function.h insn-flags.h $(EXPR_H) $(REGS_H) hard-reg-set.h \
    insn-config.h $(RECOG_H) output.h except.h toplev.h
@@ -1527,9 +1527,9 @@ profile.o : profile.c $(CONFIG_H) system.h $(RTL_H) flags.h insn-flags.h \
    gcov-io.h $(TREE_H) output.h $(REGS_H) toplev.h insn-config.h
 loop.o : loop.c $(CONFIG_H) system.h $(RTL_H) flags.h loop.h insn-config.h \
    insn-flags.h $(REGS_H) hard-reg-set.h $(RECOG_H) $(EXPR_H) real.h \
-   toplev.h
+   toplev.h varray.h
 unroll.o : unroll.c $(CONFIG_H) system.h $(RTL_H) insn-config.h \
-   integrate.h $(REGS_H) $(RECOG_H) flags.h $(EXPR_H) loop.h toplev.h
+   integrate.h $(REGS_H) $(RECOG_H) flags.h $(EXPR_H) loop.h toplev.h varray.h
 flow.o : flow.c $(CONFIG_H) system.h $(RTL_H) flags.h insn-config.h \
    $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h output.h toplev.h recog.h
 combine.o : combine.c $(CONFIG_H) system.h $(RTL_H) flags.h  \
