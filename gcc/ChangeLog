@@ -1,3 +1,9 @@
+2002-11-22  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* c-decl.c (c_init_decl_processing): Move generation of
+	decls for g77_integer_type_node and friends from here ...
+	* c-common.c (c_common_nodes_and_builtins): ... to here.
+
 2002-11-22  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR optimization/8599
