@@ -1,3 +1,8 @@
+2005-02-18  James E Wilson  <wilson@specifixinc.com>
+
+	PR tree-optimization/18977
+	* gcc.c-torture/execute/loop-ivopts-1.c: New testcase.
+
 2005-02-18  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	PR target/20054
