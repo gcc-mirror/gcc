@@ -1,3 +1,10 @@
+2000-01-28  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+
+	* fstream.h (ifstream::ifstream): Add ios::in to mode.
+	(ifstream::open): Likewise.
+	(ofstream::ofstream): Add ios::out to mode.
+	(ofstream::open): Likewise.
+
 2000-01-27  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* dbz/dbz.c, dbz/dbzmain.c: Include stdlib.h.  Don't declare
