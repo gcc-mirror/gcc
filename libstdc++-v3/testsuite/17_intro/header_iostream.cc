@@ -20,7 +20,7 @@
 
 // 17.4.1.2 Headers, iostream
 
-#include <iostream>
+#include <iostream>             // { dg-do compile }
 #include <debug_assert.h>
 
 

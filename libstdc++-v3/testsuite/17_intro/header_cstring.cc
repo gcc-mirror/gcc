@@ -26,6 +26,7 @@
 int main(void)
 {
   // Make sure size_t is in namespace std
+  // { dg-do compile }
   std::size_t i = std::strlen("tibet shop/san francisco (415) 982-0326");
   return 0;
 }

@@ -80,4 +80,4 @@
   #include <cwctype>
 #endif
 
-int main() { }
+int main() { }                  // { dg-do compile }

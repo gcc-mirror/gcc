@@ -20,7 +20,7 @@
 
 // 17.4.1.2 Headers, sstream
 
-#include <sstream>
+#include <sstream>              // { dg-do compile }
 #include <debug_assert.h>
 
 

@@ -20,7 +20,7 @@
 
 // 17.4.1.2 Headers, ios
 
-#include <ios>
+#include <ios>                  // { dg-do compile }
 #include <debug_assert.h>
 
 
