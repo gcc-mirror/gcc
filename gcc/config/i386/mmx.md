@@ -121,9 +121,9 @@
 
 (define_insn "*movv2sf_internal_rex64"
   [(set (match_operand:V2SF 0 "nonimmediate_operand"
-				"=rm,r,*y ,*y ,m ,*y,Y ,x,x ,m,r,x")
+				"=rm,r,*y ,*y ,m ,*y,Y ,x,x,x,m,r,x")
         (match_operand:V2SF 1 "vector_move_operand"
-				"Cr ,m ,C ,*ym,*y,Y ,*y,C,xm,x,x,r"))]
+				"Cr ,m ,C ,*ym,*y,Y ,*y,C,x,m,x,x,r"))]
   "TARGET_64BIT && TARGET_MMX
    && (GET_CODE (operands[0]) != MEM || GET_CODE (operands[1]) != MEM)"
   "@
@@ -135,18 +135,19 @@
     movdq2q\t{%1, %0|%0, %1}
     movq2dq\t{%1, %0|%0, %1}
     xorps\t%0, %0
+    movaps\t{%1, %0|%0, %1}
     movlps\t{%1, %0|%0, %1}
     movlps\t{%1, %0|%0, %1}
     movd\t{%1, %0|%0, %1}
     movd\t{%1, %0|%0, %1}"
-  [(set_attr "type" "imov,imov,mmxmov,mmxmov,mmxmov,ssecvt,ssecvt,ssemov,ssemov,ssemov,ssemov,ssemov")
-   (set_attr "mode" "DI,DI,DI,DI,DI,DI,DI,V4SF,V2SF,V2SF,DI,DI")])
+  [(set_attr "type" "imov,imov,mmxmov,mmxmov,mmxmov,ssecvt,ssecvt,ssemov,ssemov,ssemov,ssemov,ssemov,ssemov")
+   (set_attr "mode" "DI,DI,DI,DI,DI,DI,DI,V4SF,V4SF,V2SF,V2SF,DI,DI")])
 
 (define_insn "*movv2sf_internal"
   [(set (match_operand:V2SF 0 "nonimmediate_operand"
-					"=*y,*y ,m,*y,*Y,*x,*x ,m ,?r ,?m")
+					"=*y,*y ,m,*y,*Y,*x,*x,*x,m ,?r ,?m")
         (match_operand:V2SF 1 "vector_move_operand"
-					"C ,*ym,*y,*Y,*y,C ,*xm,*x,irm,r"))]
+					"C ,*ym,*y,*Y,*y,C ,*x,m ,*x,irm,r"))]
   "TARGET_MMX
    && (GET_CODE (operands[0]) != MEM || GET_CODE (operands[1]) != MEM)"
   "@
@@ -156,12 +157,13 @@
     movdq2q\t{%1, %0|%0, %1}
     movq2dq\t{%1, %0|%0, %1}
     xorps\t%0, %0
+    movaps\t{%1, %0|%0, %1}
     movlps\t{%1, %0|%0, %1}
     movlps\t{%1, %0|%0, %1}
     #
     #"
-  [(set_attr "type" "mmxmov,mmxmov,mmxmov,ssecvt,ssecvt,ssemov,ssemov,ssemov,*,*")
-   (set_attr "mode" "DI,DI,DI,DI,DI,V4SF,V2SF,V2SF,DI,DI")])
+  [(set_attr "type" "mmxmov,mmxmov,mmxmov,ssecvt,ssecvt,ssemov,ssemov,ssemov,ssemov,*,*")
+   (set_attr "mode" "DI,DI,DI,DI,DI,V4SF,V4SF,V2SF,V2SF,DI,DI")])
 
 ;; %%% This multiword shite has got to go.
 (define_split
