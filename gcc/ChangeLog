@@ -1,3 +1,10 @@
+2001-06-10  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.c (override_options): Set align_loops,
+	align_jumps, and align_functions.
+	* config/alpha/alpha.h (FUNCTION_BOUNDARY): Set to 32 bits.
+	(LOOP_ALIGN, LABEL_ALIGN_AFTER_BARRIER): Remove.  
+
 2001-06-11  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* emit-rtl.c (gen_lowpart_common): Do not assume that SFmode and DFmode
