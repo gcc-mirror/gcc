@@ -17,7 +17,7 @@ License along with libiberty; see the file COPYING.LIB.  If not,
 write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* This file exports one function: choose_temp_base.  */
+/* This file exports two functions: choose_temp_base and make_temp_file.  */
 
 /* This file lives in at least two places: libiberty and gcc.
    Don't change one without the other.  */
@@ -102,10 +102,57 @@ try (dir, base)
 /* Return a prefix for temporary file names or NULL if unable to find one.
    The current directory is chosen if all else fails so the program is
    exited if a temporary directory can't be found (mktemp fails).
-   The buffer for the result is obtained with xmalloc.  */
+   The buffer for the result is obtained with xmalloc. 
+
+   This function is provided for backwards compatability only.  It use
+   is not recommended.  */
 
 char *
 choose_temp_base ()
+{
+  char *base = 0;
+  char *temp_filename;
+  int len;
+  static char tmp[] = { DIR_SEPARATOR, 't', 'm', 'p', 0 };
+  static char usrtmp[] = { DIR_SEPARATOR, 'u', 's', 'r', DIR_SEPARATOR, 't', 'm', 'p', 0 };
+
+  base = try (getenv ("TMPDIR"), base);
+  base = try (getenv ("TMP"), base);
+  base = try (getenv ("TEMP"), base);
+
+#ifdef P_tmpdir
+  base = try (P_tmpdir, base);
+#endif
+
+  /* Try /usr/tmp, then /tmp.  */
+  base = try (usrtmp, base);
+  base = try (tmp, base);
+ 
+  /* If all else fails, use the current directory!  */
+  if (base == 0)
+    base = ".";
+
+  len = strlen (base);
+  temp_filename = xmalloc (len + 1 /*DIR_SEPARATOR*/
+			   + strlen (TEMP_FILE) + 1);
+  strcpy (temp_filename, base);
+
+  if (len != 0
+      && temp_filename[len-1] != '/'
+      && temp_filename[len-1] != DIR_SEPARATOR)
+    temp_filename[len++] = DIR_SEPARATOR;
+  strcpy (temp_filename + len, TEMP_FILE);
+
+  mktemp (temp_filename);
+  if (strlen (temp_filename) == 0)
+    abort ();
+  return temp_filename;
+}
+/* Return a temporary file name (as a string) or NULL if unable to create
+   one.  */
+
+char *
+make_temp_file ()
 {
   char *base = 0;
   char *temp_filename;

@@ -60,7 +60,7 @@ Boston, MA 02111-1307, USA.  */
 #define WEXITSTATUS(S) (((S) & 0xff00) >> 8)
 #endif
 
-extern char *choose_temp_base ();
+extern char *make_temp_file ();
 
 /* On certain systems, we have code that works by scanning the object file
    directly.  But this code uses system-specific header files and library
@@ -204,8 +204,6 @@ int debug;				/* true if -debug */
 
 static int shared_obj;		        /* true if -shared */
 
-static int   temp_filename_length;	/* Length of temp_filename */
-static char *temp_filename;		/* Base of temp filenames */
 static char *c_file;			/* <xxx>.c for constructor/destructor list.  */
 static char *o_file;			/* <xxx>.o for constructor/destructor list.  */
 #ifdef COLLECT_EXPORT_LIST
@@ -932,7 +930,7 @@ main (argc, argv)
   char **object_lst	= (char **) xcalloc (sizeof (char *), argc);
   char **object		= object_lst;
   int first_file;
-  int num_c_args	= argc+7;
+  int num_c_args	= argc+8;
 
 #ifdef DEBUG
   debug = 1;
@@ -1131,23 +1129,15 @@ main (argc, argv)
   *ld1++ = *ld2++ = ld_file_name;
 
   /* Make temp file names.  */
-  temp_filename = choose_temp_base ();
-  temp_filename_length = strlen (temp_filename);
-  c_file = xcalloc (temp_filename_length + sizeof (".c"), 1);
-  o_file = xcalloc (temp_filename_length + sizeof (".o"), 1);
+  c_file = make_temp_file ();
+  o_file = make_temp_file ();
 #ifdef COLLECT_EXPORT_LIST
-  export_file = xmalloc (temp_filename_length + sizeof (".x"));
-  import_file = xmalloc (temp_filename_length + sizeof (".p"));
+  export_file = make_temp_file ();
+  import_file = make_temp_file ();
 #endif
-  ldout = xmalloc (temp_filename_length + sizeof (".ld"));
-  sprintf (ldout, "%s.ld", temp_filename);
-  sprintf (c_file, "%s.c", temp_filename);
-  sprintf (o_file, "%s.o", temp_filename);
-#ifdef COLLECT_EXPORT_LIST
-  sprintf (export_file, "%s.x", temp_filename);
-  sprintf (import_file, "%s.p", temp_filename);
-#endif
+  ldout = make_temp_file ();
   *c_ptr++ = c_file_name;
+  *c_ptr++ = "-lang-c";
   *c_ptr++ = "-c";
   *c_ptr++ = "-o";
   *c_ptr++ = o_file;
@@ -1435,6 +1425,8 @@ main (argc, argv)
       if (import_file != 0 && import_file[0])
 	maybe_unlink (import_file);
 #endif
+      maybe_unlink (c_file);
+      maybe_unlink (o_file);
       return 0;
     }
 
@@ -1485,6 +1477,8 @@ main (argc, argv)
       maybe_unlink (export_file);
       maybe_unlink (import_file);
 #endif
+      maybe_unlink (c_file);
+      maybe_unlink (o_file);
       return 0;
     }
 

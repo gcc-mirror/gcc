@@ -121,7 +121,6 @@ static char dir_separator_str[] = {DIR_SEPARATOR, 0};
 #define GET_ENVIRONMENT(ENV_VALUE,ENV_NAME) ENV_VALUE = getenv (ENV_NAME)
 #endif
 
-extern char *choose_temp_base PROTO((void));
 extern char *my_strerror PROTO((int));
 
 #ifndef HAVE_KILL
@@ -1269,6 +1268,9 @@ static int argbuf_index;
 #define MKTEMP_EACH_FILE
 
 #ifdef MKTEMP_EACH_FILE
+
+extern char *make_temp_file PROTO((void));
+
 /* This is the list of suffixes and codes (%g/%u/%U) and the associated
    temp file.  */
 
@@ -1280,7 +1282,10 @@ static struct temp_name {
   int filename_length;	/* strlen (filename).  */
   struct temp_name *next;
 } *temp_names;
+#else
+extern char *choose_temp_base PROTO((void));
 #endif
+
 
 /* Number of commands executed so far.  */
 
@@ -3512,7 +3517,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		    t->length = p - suffix;
 		    t->suffix = save_string (suffix, p - suffix);
 		    t->unique = (c != 'g');
-		    temp_filename = choose_temp_base ();
+		    temp_filename = make_temp_file ();
 		    temp_filename_length = strlen (temp_filename);
 		    t->filename = temp_filename;
 		    t->filename_length = temp_filename_length;
