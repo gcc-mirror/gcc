@@ -31,6 +31,11 @@ Wed Nov 17 21:09:28 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	* class.c (layout_class): Always convert TYPE_SIZE_UNIT to
  	int_type_node: that's what `_Jv_AllocObject' expects.
 
+Thu Nov 11 01:57:14 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+        * parse.y (lookup_method_invoke): Use lang_printable_name to
+ 	reliably build the type name during error report. Fixes PR gcj/97.
+
 1999-11-09  Tom Tromey  <tromey@cygnus.com>
 
 	* jcf-path.c: Include <sys/stat.h>.
