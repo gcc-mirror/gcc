@@ -41,6 +41,10 @@ cpp_reader  parse_in;
 #undef WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE TYPE_PRECISION (wchar_type_node)
 
+#ifndef PTRDIFF_TYPE
+#define PTRDIFF_TYPE "long int"
+#endif
+
 #ifndef WINT_TYPE
 #define WINT_TYPE "unsigned int"
 #endif

@@ -1,5 +1,8 @@
 2000-12-02  Bernd Schmidt  <bernds@redhat.co.uk>
 
+	* c-common.c (PTRDIFF_TYPE): Provide default here, ...
+	* c-decl.c: ... not here.
+
 	* haifa-sched.c (sched_dump): Renamed from dump.  All users changed.
 	(old_max_uid): New variable.
 	(compute_forward_dependences): Renamed from
