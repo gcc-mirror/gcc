@@ -1,3 +1,11 @@
+2001-12-16  David O'Brien  <obrien@FreeBSD.org>
+
+	* config.gcc (sparc64-*-freebsd*): Add target.
+	* config/sparc/freebsd.h: New file.
+	* config/sparc/sparc.h (LIB_SPEC, LINK_SPEC): Don't define.
+	* config/sparc/sunos4.h (LIB_SPEC, LINK_SPEC): Define.
+	* config/sparc/sysv4.h (CPP_PREDEFINES): Undefine before defining.
+
 2001-12-16  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/rs6000.c (rs6000_legitimize_address): Force both

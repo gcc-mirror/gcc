@@ -51,6 +51,7 @@ Boston, MA 02111-1307, USA.  */
 /* Provide a set of pre-definitions and pre-assertions appropriate for
    the Sparc running svr4.  __svr4__ is our extension.  */
 
+#undef  CPP_PREDEFINES
 #define CPP_PREDEFINES \
 "-Dsparc -Dunix -D__svr4__ -Asystem=unix -Asystem=svr4"
 
