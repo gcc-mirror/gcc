@@ -1,3 +1,9 @@
+Wed Oct 28 14:06:49 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* dwarfout.c (dwarfout_file_scope_decl): If DECL_CONTEXT, don't abort
+	if pending_types is non-zero.
+	(dwarfout_finish): Verify pending_types is zero before finishing.
+
 Wed Oct 28 10:29:09 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* expr.c (convert_move): Use shifts to perform the move if a
