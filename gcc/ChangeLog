@@ -1,3 +1,14 @@
+2001-03-28  Bernd Schmidt  <bernds@redhat.com>
+
+	* flow.c (propagate_block): When trying to delete a case vector, cope
+	if its label has LABEL_PRESERVE_P set.
+	* jump.c (jump_optimize_1): Move call to delete_barrier_successors to
+	a point where JUMP_LABELS and LABEL_NUSES are set up properly.
+	(delete_barrier_successors): If deleting a table jump, delete the case
+	vector as well.
+	* varasm.c (force_const_mem): If we have a label, set LABEL_PRESERVE_P
+	so it won't get deleted.
+
 Tue Mar 20 18:31:48 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	1999-11-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>

@@ -3495,6 +3495,9 @@ force_const_mem (mode, x)
 	  pop_obstacks ();
 	}
 
+      if (GET_CODE (x) == LABEL_REF)
+	LABEL_PRESERVE_P (XEXP (x, 0)) = 1;
+
       /* Allocate a pool constant descriptor, fill it in, and chain it in.  */
 
       pool = (struct pool_constant *) savealloc (sizeof (struct pool_constant));

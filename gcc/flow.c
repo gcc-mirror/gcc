@@ -2744,15 +2744,23 @@ propagate_block (old, first, last, final, significant, bnum, remove_dead_code)
 		{
 		  if (REG_NOTE_KIND (inote) == REG_LABEL)
 		    {
+		      int n_forced;
 		      rtx label = XEXP (inote, 0);
 		      rtx next;
 		      LABEL_NUSES (label)--;
+
+		      /* The label may be forced if it has been put in the
+		         constant pool.  We can't delete it in this case, but
+		         we still must discard a jump table following it.  */
+		      n_forced = 0;
+		      if (LABEL_PRESERVE_P (label))
+			n_forced++;
 
 		      /* If this label was attached to an ADDR_VEC, it's
 			 safe to delete the ADDR_VEC.  In fact, it's pretty much
 			 mandatory to delete it, because the ADDR_VEC may
 			 be referencing labels that no longer exist.  */
-		      if (LABEL_NUSES (label) == 0
+		      if (LABEL_NUSES (label) == n_forced
 			  && (next = next_nonnote_insn (label)) != NULL
 			  && GET_CODE (next) == JUMP_INSN
 			  && (GET_CODE (PATTERN (next)) == ADDR_VEC
