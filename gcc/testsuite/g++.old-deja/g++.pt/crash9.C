@@ -3,7 +3,7 @@
 template <class T>
 void f(T) {} // ERROR - parameter has incomplete type
 
-class C;
+class C;    // ERROR - forward declaration
 
 void g(const C& c)
 {

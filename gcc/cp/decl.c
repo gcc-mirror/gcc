@@ -100,7 +100,7 @@ extern int (*valid_lang_attribute) PARAMS ((tree, tree, tree, tree));
 			: "long long unsigned int"))
 #endif
 
-static tree grokparms				PARAMS ((tree, int));
+static tree grokparms				PARAMS ((tree));
 static const char *redeclaration_error_message	PARAMS ((tree, tree));
 
 static void push_binding_level PARAMS ((struct binding_level *, int,
@@ -10738,7 +10738,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	    /* FIXME: This is where default args should be fully
 	       processed.  */
 
-	    arg_types = grokparms (inner_parms, funcdecl_p ? funcdef_flag : 0);
+	    arg_types = grokparms (inner_parms);
 
 	    if (declarator && flags == DTOR_FLAG)
 	      {
@@ -11367,11 +11367,6 @@ friend declaration requires class-key, i.e. `friend %#T'",
 	type = build_pointer_type (type);
       else if (TREE_CODE (type) == OFFSET_TYPE)
 	type = build_pointer_type (type);
-      else if (TREE_CODE (type) == VOID_TYPE && declarator)
-	{
-	  error ("declaration of `%s' as void", name);
-	  return NULL_TREE;
-	}
     }
 
   {
@@ -11837,25 +11832,13 @@ require_complete_types_for_parms (parms)
 {
   for (; parms; parms = TREE_CHAIN (parms))
     {
-      tree type = TREE_TYPE (parms);
-
-      /* Try to complete the TYPE.  */
-      type = complete_type (type);
-
-      if (type == error_mark_node)
-	continue;
-
-      if (!COMPLETE_TYPE_P (type))
-	{
-	  if (DECL_NAME (parms))
-	    error ("parameter `%s' has incomplete type",
-		   IDENTIFIER_POINTER (DECL_NAME (parms)));
-	  else
-	    error ("parameter has incomplete type");
-	  TREE_TYPE (parms) = error_mark_node;
-	}
-      else
+      if (VOID_TYPE_P (TREE_TYPE (parms)))
+        /* grokparms will have already issued an error */
+        TREE_TYPE (parms) = error_mark_node;
+      else if (complete_type_or_else (TREE_TYPE (parms), parms))
 	layout_decl (parms, 0);
+      else
+        TREE_TYPE (parms) = error_mark_node;
     }
 }
 
@@ -11986,205 +11969,114 @@ check_default_argument (decl, arg)
    Given the list of things declared inside the parens,
    return a list of types.
 
-   The list we receive can have three kinds of elements:
-   an IDENTIFIER_NODE for names given without types,
-   a TREE_LIST node for arguments given as typespecs or names with typespecs,
-   or void_type_node, to mark the end of an argument list
-   when additional arguments are not permitted (... was not used).
+   We determine whether ellipsis parms are used by PARMLIST_ELLIPSIS_P
+   flag. If unset, we append void_list_node. A parmlist declared
+   as `(void)' is accepted as the empty parmlist.
 
-   FUNCDEF_FLAG is nonzero for a function definition, 0 for
-   a mere declaration.  A nonempty identifier-list gets an error message
-   when FUNCDEF_FLAG is zero.
-   If FUNCDEF_FLAG is 1, then parameter types must be complete.
-   If FUNCDEF_FLAG is -1, then parameter types may be incomplete.
-
-   If all elements of the input list contain types,
-   we return a list of the types.
-   If all elements contain no type (except perhaps a void_type_node
-   at the end), we return a null list.
-   If some have types and some do not, it is an error, and we
-   return a null list.
-
-   Also set last_function_parms to either
-   a list of names (IDENTIFIER_NODEs) or a chain of PARM_DECLs.
-   A list of names is converted to a chain of PARM_DECLs
-   by store_parm_decls so that ultimately it is always a chain of decls.
-
-   Note that in C++, parameters can take default values.  These default
-   values are in the TREE_PURPOSE field of the TREE_LIST.  It is
-   an error to specify default values which are followed by parameters
-   that have no default values, or an ELLIPSES.  For simplicities sake,
-   only parameters which are specified with their types can take on
-   default values.  */
+   Also set last_function_parms to the chain of PARM_DECLs.  */
 
 static tree
-grokparms (first_parm, funcdef_flag)
+grokparms (first_parm)
      tree first_parm;
-     int funcdef_flag;
 {
   tree result = NULL_TREE;
   tree decls = NULL_TREE;
+  int ellipsis = !first_parm || PARMLIST_ELLIPSIS_P (first_parm);
+  tree parm, chain;
+  int any_error = 0;
 
-  if (first_parm != NULL_TREE
-      && TREE_CODE (TREE_VALUE (first_parm)) == IDENTIFIER_NODE)
-    {
-      if (! funcdef_flag)
-	pedwarn ("parameter names (without types) in function declaration");
-      last_function_parms = first_parm;
-      return NULL_TREE;
-    }
-  else if (first_parm != NULL_TREE
-	   && TREE_CODE (TREE_VALUE (first_parm)) != TREE_LIST
-	   && TREE_CODE (TREE_VALUE (first_parm)) != VOID_TYPE)
-    my_friendly_abort (145);
-  else
-    {
-      /* Types were specified.  This is a list of declarators
-	 each represented as a TREE_LIST node.  */
-      register tree parm, chain;
-      int any_init = 0, any_error = 0;
+  my_friendly_assert (!first_parm || TREE_PARMLIST (first_parm), 20001115);
 
-      if (first_parm != NULL_TREE)
+  for (parm = first_parm; parm != NULL_TREE; parm = chain)
+    {
+      tree type = NULL_TREE, list_node = parm;
+      register tree decl = TREE_VALUE (parm);
+      tree init = TREE_PURPOSE (parm);
+
+      chain = TREE_CHAIN (parm);
+      /* @@ weak defense against parse errors.  */
+      if (TREE_CODE (decl) != VOID_TYPE
+	  && TREE_CODE (decl) != TREE_LIST)
 	{
-	  tree last_result = NULL_TREE;
-	  tree last_decl = NULL_TREE;
-
-	  for (parm = first_parm; parm != NULL_TREE; parm = chain)
-	    {
-	      tree type = NULL_TREE, list_node = parm;
-	      register tree decl = TREE_VALUE (parm);
-	      tree init = TREE_PURPOSE (parm);
-
-	      chain = TREE_CHAIN (parm);
-	      /* @@ weak defense against parse errors.  */
-	      if (TREE_CODE (decl) != VOID_TYPE
-		  && TREE_CODE (decl) != TREE_LIST)
-		{
-		  /* Give various messages as the need arises.  */
-		  if (TREE_CODE (decl) == STRING_CST)
-		    cp_error ("invalid string constant `%E'", decl);
-		  else if (TREE_CODE (decl) == INTEGER_CST)
-		    error ("invalid integer constant in parameter list, did you forget to give parameter name?");
-		  continue;
-		}
-
-	      if (TREE_CODE (decl) != VOID_TYPE)
-		{
-		  decl = grokdeclarator (TREE_VALUE (decl),
-					 TREE_PURPOSE (decl),
-					 PARM, init != NULL_TREE,
-					 NULL_TREE);
-		  if (! decl || TREE_TYPE (decl) == error_mark_node)
-		    continue;
-
-		  /* Top-level qualifiers on the parameters are
-		     ignored for function types.  */
-		  type = TYPE_MAIN_VARIANT (TREE_TYPE (decl));
-
-		  if (TREE_CODE (type) == VOID_TYPE)
-		    decl = void_type_node;
-		  else if (TREE_CODE (type) == METHOD_TYPE)
-		    {
-		      if (DECL_NAME (decl))
-			/* Cannot use the decl here because
-			   we don't have DECL_CONTEXT set up yet.  */
-			cp_error ("parameter `%D' invalidly declared method type",
-				  DECL_NAME (decl));
-		      else
-			error ("parameter invalidly declared method type");
-		      type = build_pointer_type (type);
-		      TREE_TYPE (decl) = type;
-		    }
-		  else if (TREE_CODE (type) == OFFSET_TYPE)
-		    {
-		      if (DECL_NAME (decl))
-			cp_error ("parameter `%D' invalidly declared offset type",
-				  DECL_NAME (decl));
-		      else
-			error ("parameter invalidly declared offset type");
-		      type = build_pointer_type (type);
-		      TREE_TYPE (decl) = type;
-		    }
-                  else if (abstract_virtuals_error (decl, type))
-		    any_error = 1;  /* Seems like a good idea. */
-		  else if (POINTER_TYPE_P (type))
-		    {
-		      tree t = type;
-		      while (POINTER_TYPE_P (t)
-			     || (TREE_CODE (t) == ARRAY_TYPE
-				 && TYPE_DOMAIN (t) != NULL_TREE))
-			t = TREE_TYPE (t);
-		      if (TREE_CODE (t) == ARRAY_TYPE)
-			cp_error ("parameter type `%T' includes %s to array of unknown bound",
-				  type,
-				  TYPE_PTR_P (type) ? "pointer" : "reference");
-		    }
-		}
-
-	      if (TREE_CODE (decl) == VOID_TYPE)
-		{
-		  if (result == NULL_TREE)
-		    {
-		      result = void_list_node;
-		      last_result = result;
-		    }
-		  else
-		    {
-		      TREE_CHAIN (last_result) = void_list_node;
-		      last_result = void_list_node;
-		    }
-		  if (chain
-		      && (chain != void_list_node || TREE_CHAIN (chain)))
-		    error ("`void' in parameter list must be entire list");
-		  break;
-		}
-
-	      /* Since there is a prototype, args are passed in their own types.  */
-	      DECL_ARG_TYPE (decl) = TREE_TYPE (decl);
-	      if (PROMOTE_PROTOTYPES
-		  && (TREE_CODE (type) == INTEGER_TYPE
-		      || TREE_CODE (type) == ENUMERAL_TYPE)
-		  && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node))
-		DECL_ARG_TYPE (decl) = integer_type_node;
-	      if (!any_error && init)
-		{
-		  any_init++;
-		  init = check_default_argument (decl, init);
-		}
-	      else
-		init = NULL_TREE;
-
-	      if (decls == NULL_TREE)
-		{
-		  decls = decl;
-		  last_decl = decls;
-		}
-	      else
-		{
-		  TREE_CHAIN (last_decl) = decl;
-		  last_decl = decl;
-		}
-	      list_node = tree_cons (init, type, NULL_TREE);
-	      if (result == NULL_TREE)
-		{
-		  result = list_node;
-		  last_result = result;
-		}
-	      else
-		{
-		  TREE_CHAIN (last_result) = list_node;
-		  last_result = list_node;
-		}
-	    }
-	  if (last_result)
-	    TREE_CHAIN (last_result) = NULL_TREE;
-	  /* If there are no parameters, and the function does not end
-	     with `...', then last_decl will be NULL_TREE.  */
-	  if (last_decl != NULL_TREE)
-	    TREE_CHAIN (last_decl) = NULL_TREE;
+	  /* Give various messages as the need arises.  */
+	  if (TREE_CODE (decl) == STRING_CST)
+	    cp_error ("invalid string constant `%E'", decl);
+	  else if (TREE_CODE (decl) == INTEGER_CST)
+	    error ("invalid integer constant in parameter list, did you forget to give parameter name?");
+	  continue;
 	}
-    }
 
+      if (parm == void_list_node)
+        break;
+
+      decl = grokdeclarator (TREE_VALUE (decl), TREE_PURPOSE (decl),
+        		     PARM, init != NULL_TREE, NULL_TREE);
+      if (! decl || TREE_TYPE (decl) == error_mark_node)
+        continue;
+    
+      type = TREE_TYPE (decl);
+      if (VOID_TYPE_P (type))
+        {
+          if (same_type_p (type, void_type_node)
+              && !DECL_NAME (decl) && !result && !chain && !ellipsis)
+            /* this is a parmlist of `(void)', which is ok.  */
+            break;
+          incomplete_type_error (decl, type);
+        }
+      
+      /* Top-level qualifiers on the parameters are
+         ignored for function types.  */
+      type = TYPE_MAIN_VARIANT (type);
+      if (TREE_CODE (type) == METHOD_TYPE)
+        {
+          cp_error ("parameter `%D' invalidly declared method type", decl);
+          type = build_pointer_type (type);
+          TREE_TYPE (decl) = type;
+        }
+      else if (TREE_CODE (type) == OFFSET_TYPE)
+        {
+          cp_error ("parameter `%D' invalidly declared offset type", decl);
+          type = build_pointer_type (type);
+          TREE_TYPE (decl) = type;
+        }
+      else if (abstract_virtuals_error (decl, type))
+        any_error = 1;  /* Seems like a good idea. */
+      else if (POINTER_TYPE_P (type))
+        {
+          /* [dcl.fct]/6, parameter types cannot contain pointers (references)
+             to arrays of unknown bound.  */
+          tree t = type;
+          
+          while (POINTER_TYPE_P (t)
+                 || (TREE_CODE (t) == ARRAY_TYPE
+                     && TYPE_DOMAIN (t) != NULL_TREE))
+    	    t = TREE_TYPE (t);
+          if (TREE_CODE (t) == ARRAY_TYPE)
+    	    cp_error ("parameter `%D' includes %s to array of unknown bound `%T'",
+    		      decl, TYPE_PTR_P (type) ? "pointer" : "reference", t);
+        }
+
+      DECL_ARG_TYPE (decl) = TREE_TYPE (decl);
+      if (PROMOTE_PROTOTYPES
+	  && (TREE_CODE (type) == INTEGER_TYPE
+	      || TREE_CODE (type) == ENUMERAL_TYPE)
+	  && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node))
+	DECL_ARG_TYPE (decl) = integer_type_node;
+      if (!any_error && init)
+        init = check_default_argument (decl, init);
+      else
+	init = NULL_TREE;
+
+      TREE_CHAIN (decl) = decls;
+      decls = decl;
+      list_node = tree_cons (init, type, NULL_TREE);
+      TREE_CHAIN (list_node) = result;
+      result = list_node;
+    }
+  decls = nreverse (decls);
+  result = nreverse (result);
+  if (!ellipsis)
+    result = chainon (result, void_list_node);
   last_function_parms = decls;
 
   return result;
