@@ -1,3 +1,8 @@
+2003-01-29  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/8591
+	* g++.dg/parse/friend2.C: New test.
+
 2003-01-29  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/9437
