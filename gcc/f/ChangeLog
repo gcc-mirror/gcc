@@ -1,5 +1,10 @@
 1999-02-26  Craig Burley  <craig@jcb-sc.com>
 
+	* intdoc.in (DATE_AND_TIME): Explain that VALUES(7) holds
+	seconds, and VALUES(8), therefore, the milliseconds.
+
+1999-02-26  Craig Burley  <craig@jcb-sc.com>
+
 	* bugs.texi: Mention bugs known fixed in egcs 1.2 as of now.
 
 1999-02-26  Craig Burley  <craig@jcb-sc.com>

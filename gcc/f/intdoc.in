@@ -2503,7 +2503,8 @@ The difference between local time and UTC (GMT) in the form @var{Shhmm}:
 sign, hours and minutes, e.g.@: @samp{-0500} (winter in New York);
 @item @4@
 The year, month of the year, day of the month, time difference in
-minutes from UTC, hour of the day, minutes of the hour and milliseconds
+minutes from UTC, hour of the day, minutes of the hour, seconds
+of the minute, and milliseconds
 of the second in successive values of the array.
 @end table
 
