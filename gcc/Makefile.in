@@ -1417,7 +1417,7 @@ emit-rtl.o : emit-rtl.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TREE_H) flags.h \
    $(HASHTAB_H) $(TM_P_H)
 real.o : real.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) toplev.h $(TM_P_H)
 integrate.o : integrate.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TREE_H) flags.h \
-   $(INTEGRATE_H) insn-config.h $(EXPR_H) real.h $(REGS_H) \
+   debug.h $(INTEGRATE_H) insn-config.h $(EXPR_H) real.h $(REGS_H) \
    intl.h function.h output.h $(RECOG_H) except.h toplev.h $(LOOP_H) \
    $(PARAMS_H) $(TM_P_H)
 jump.o : jump.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) flags.h hard-reg-set.h $(REGS_H) \

@@ -28,6 +28,7 @@ Boston, MA 02111-1307, USA.  */
 #include "tm_p.h"
 #include "regs.h"
 #include "flags.h"
+#include "debug.h"
 #include "insn-config.h"
 #include "expr.h"
 #include "output.h"
@@ -2866,6 +2867,7 @@ output_inline_function (fndecl)
 {
   struct function *old_cfun = cfun;
   enum debug_info_type old_write_symbols = write_symbols;
+  struct debug_hooks *old_debug_hooks = debug_hooks;
   struct function *f = DECL_SAVED_INSNS (fndecl);
 
   cfun = f;
@@ -2879,7 +2881,10 @@ output_inline_function (fndecl)
 
   /* If requested, suppress debugging information.  */
   if (f->no_debugging_symbols)
-    write_symbols = NO_DEBUG;
+    {
+      write_symbols = NO_DEBUG;
+      debug_hooks = &do_nothing_debug_hooks;
+    }
 
   /* Do any preparation, such as emitting abstract debug info for the inline
      before it gets mangled by optimization.  */
@@ -2895,6 +2900,7 @@ output_inline_function (fndecl)
   cfun = old_cfun;
   current_function_decl = old_cfun ? old_cfun->decl : 0;
   write_symbols = old_write_symbols;
+  debug_hooks = old_debug_hooks;
 }
 
 
