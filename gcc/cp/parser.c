@@ -10702,7 +10702,7 @@ cp_parser_init_declarator (cp_parser* parser,
 
   /* Finish processing the declaration.  But, skip friend
      declarations.  */
-  if (!friend_p && decl)
+  if (!friend_p && decl && decl != error_mark_node)
     {
       cp_finish_decl (decl,
 		      initializer,
