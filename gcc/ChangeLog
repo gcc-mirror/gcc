@@ -1,3 +1,10 @@
+2004-12-04  Alan Modra  <amodra@bigpond.net.au>
+
+	PR middle end/18718
+	* sched-rgn.c (schedule_region): Don't assume REG_SAVE_NOTEs are
+	in pairs.
+	* sched-ebb.c (schedule_ebb): Likewise.
+
 2004-12-03  Andreas Schwab  <schwab@suse.de>
 
 	* Makefile.in (HOSTHOOKS_DEF_H): Define.
