@@ -1,3 +1,8 @@
+2002-04-15  Loren J. Rittle  <ljrittle@acm.org>
+
+	* doc/install.texi (Installing GCC: Configuration): Clarify
+	the only supported ways to configure gcc.
+
 2002-04-15  Roland McGrath  <roland@frob.com>
  
 	* config.gcc (alpha*-*-gnu*): New target configuration.
