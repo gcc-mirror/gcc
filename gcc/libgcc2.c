@@ -3759,7 +3759,7 @@ label:
 	{
 	  i = udata->reg_or_offset[udata->retaddr_column];
 	  if (in_reg_window (i, udata))
-	    copy_reg (i, udata, sub_udata);
+	    copy_reg (i, udata, my_udata);
 	}
 #endif
     }
