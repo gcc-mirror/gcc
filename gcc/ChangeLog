@@ -1,3 +1,8 @@
+2004-01-17  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* doc/invoke.texi, doc/standards.texi: Point to 3.4 version of
+	c99status.html.
+
 2004-01-17  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR target/10781
