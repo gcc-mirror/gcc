@@ -205,7 +205,7 @@ public class Container extends Component
    *
    * @return The same component that was added.
    *
-   * @param throws ArrayIndexOutOfBounds If the specified index is invalid.
+   * @throws ArrayIndexOutOfBounds If the specified index is invalid.
    */
   public Component add(Component comp, int index)
   {
@@ -236,7 +236,7 @@ public class Container extends Component
    * @param index The index in the component list to insert this child
    * at, or -1 to add at the end of the list.
    *
-   * @param throws ArrayIndexOutOfBounds If the specified index is invalid.
+   * @throws ArrayIndexOutOfBounds If the specified index is invalid.
    */
   public void add(Component comp, Object constraints, int index)
   {
@@ -256,7 +256,7 @@ public class Container extends Component
    * @param index The index in the component list to insert this child
    * at, or -1 to add at the end of the list.
    *
-   * @param throws ArrayIndexOutOfBounds If the specified index is invalid.
+   * @throws ArrayIndexOutOfBounds If the specified index is invalid.
    */
   protected void addImpl(Component comp, Object constraints, int index)
   {
