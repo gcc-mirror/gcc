@@ -23,7 +23,13 @@ toolexecdir = $(exec_prefix)/$(target_alias)
 toolexeclibdir = $(toolexecdir)/lib$(MULTISUBDIR)
 endif
 
-toolexeclib_LTLIBRARIES = libgcj.la
+if NO_X
+cond_x_ltlibrary =
+else
+cond_x_ltlibrary = libgcjx.la
+endif
+
+toolexeclib_LTLIBRARIES = libgcj.la $(cond_x_ltlibrary)
 toolexeclib_DATA = libgcj.spec
 data_DATA = libgcj.zip
 
@@ -82,7 +88,7 @@ WARNINGS = -W -Wall
 AM_CXXFLAGS = -fno-rtti -fvtable-thunks -fasynchronous-exceptions \
 ## Some systems don't allow `$' in identifiers by default, so we force it.
 	-fdollars-in-identifiers \
-	@LIBGCJ_CXXFLAGS@ @EXCEPTIONSPEC@ $(WARNINGS) -D_GNU_SOURCE
+	@LIBGCJ_CXXFLAGS@ @EXCEPTIONSPEC@ @X_CFLAGS@ $(WARNINGS) -D_GNU_SOURCE
 if USING_GCC
 AM_CFLAGS = @LIBGCJ_CFLAGS@ $(WARNINGS)
 else
@@ -107,11 +113,13 @@ INCLUDES = -I$(top_srcdir) -Iinclude -I$(top_srcdir)/include \
 
 ## Objects from C++ sources in subdirs.
 nat_files = $(nat_source_files:.cc=.lo)
+x_nat_files = $(x_nat_source_files:.cc=.lo)
 ## Objects from C sources in subdirs.
 c_files = $(c_source_files:.c=.lo)
 ## Objects from Java sources in subdirs.
 javao_files = $(java_source_files:.java=.lo) \
 	$(built_java_source_files:.java=.lo)
+x_javao_files = $(x_java_source_files:.java=.lo)
 
 ## Extract the libffi object file names.
 libffi_files = `$(AR) t ../libffi/.libs/libffi.a 2>/dev/null | sed 's/\.o/\.lo/g' | sed 's/^/..\/libffi\//g'`
@@ -130,6 +138,15 @@ libgcj_la_LDFLAGS = -lsupc++ -rpath $(toolexeclibdir) \
 	-version-info `grep -v '^\#' $(srcdir)/libtool-version`
 libgcj_la_LINK = $(LIBLINK)
 
+libgcjx_la_SOURCES = $(x_nat_source_files)
+EXTRA_libgcjx_la_SOURCES = $(x_java_source_files)
+libgcjx_la_DEPENDENCIES = libgcj.zip $(x_javao_files)
+libgcjx_la_LIBADD = $(x_javao_files)
+libgcjx_la_LDFLAGS = @X_PRE_LIBS@ @X_LIBS@ -lX11 @X_EXTRA_LIBS@ \
+        -lsupc++ -rpath $(toolexeclibdir) \
+## The mysterious backslash is consumed by make.
+        -version-info `grep -v '^\#' $(srcdir)/libtool-version`
+libgcjx_la_LINK = $(LIBLINK)
 
 ## Make the .class files depend on the .zip file.  This seems
 ## backwards, but is right.  This doesn't catch all the .class files,
@@ -138,6 +155,11 @@ libgcj_la_LINK = $(LIBLINK)
 ## only want to create headers for those files which do not have
 ## hand-maintained headers.
 $(java_source_files:.java=.class): libgcj.zip
+
+## The .class files for X will not be included in libgcj.zip, but the
+## rule for libgcj.zip will cause all out-of-date .class files to be
+## built. We need this to generate headers for the nat-files.
+$(x_java_source_files:.java=.class): libgcj.zip
 
 ## FIXME: this isn't really correct.
 $(built_java_source_files:.java=.class): $(built_java_source_files)
@@ -156,7 +178,7 @@ $(built_java_source_files:.java=.class): $(built_java_source_files)
 ## up-to-date, and foo.class is removed, and bar.java is touched, then
 ## `make libgcj.zip' will not rebuilt foo.class.  That's because
 ## libgcj.zip is not out-of-date with respect to foo.java.
-libgcj.zip: $(java_source_files)
+libgcj.zip: $(java_source_files) $(x_java_source_files)
 ## Create a list of all Java sources, without exceeding any shell limits.
 	@: $(shell echo Creating list of files to compile...) $(shell rm -f tmp-list || :) $(shell touch tmp-list) $(foreach source,$(subst $(srcdir)/,,$?),$(shell echo $(source) >> tmp-list))
 ## FIXME: this ought to depend on built_java_source_files, but right
@@ -171,9 +193,11 @@ libgcj.zip: $(java_source_files)
 	done
 	-@rm -f tmp-list libgcj.zip
 ## Note that we explicitly want to include directory information.
-	$(ZIP) -r libgcj java gnu -n .class -i '*.class' -i '*/'
+	find java gnu -type d -o -type f -name '*.class' | \
+	  sed -e '/\/\./d' -e '/\/xlib/d' | \
+	  $(ZIP) libgcj -@ -n .class
 
-MOSTLYCLEANFILES = $(javao_files) $(nat_files) $(nat_headers) $(c_files)
+MOSTLYCLEANFILES = $(javao_files) $(nat_files) $(nat_headers) $(c_files) $(x_javao_files) $(x_nat_files) $(x_nat_headers)
 CLEANFILES = tmp-list libgcj.zip
 
 clean-local:
@@ -192,7 +216,7 @@ SUFFIXES = .class .java .h
 ## special rule.  The standard automake rule can't be overridden (this
 ## is a bug in automake), and it also won't put the .o files into
 ## subdirs.  FIXME.
-$(nat_files): %.lo: %.cc
+$(nat_files) $(x_nat_files): %.lo: %.cc
 	@echo '$(LTCXXCOMPILE) -c -o $@ $<'; \
 	$(LTCXXCOMPILE) -Wp,-MD,.deps/$(*F).pp -c -o $@ $<
 	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
@@ -209,7 +233,7 @@ $(c_files): %.lo: %.c
 $(c_files): java/lang/fdlibm.h java/lang/ieeefp.h java/lang/mprec.h
 
 ## FIXME: GNU make.
-$(javao_files): %.lo: %.java
+$(javao_files) $(x_javao_files): %.lo: %.java
 	$(GCJCOMPILE) -o $@ $<
 
 ## ################################################################
@@ -227,6 +251,8 @@ nat_headers = $(ordinary_java_source_files:.java=.h) \
 	$(built_java_source_files:.java=.h) \
 	java/io/ObjectOutputStream$$PutField.h \
 	java/io/ObjectInputStream$$GetField.h
+
+x_nat_headers = $(x_java_source_files:.java=.h)
 
 java/lang/ClassLoader.h: java/lang/ClassLoader.class libgcj.zip
 	$(GCJH) -classpath $(top_builddir) \
@@ -491,6 +517,16 @@ gnu/gcj/convert/UnicodeToBytes.java
 special_java_source_files = java/lang/Class.java java/lang/Object.java
 
 awt_java_source_files =	\
+gnu/awt/LightweightRedirector.java \
+gnu/awt/j2d/AbstractGraphicsState.java \
+gnu/awt/j2d/DirectRasterGraphics.java \
+gnu/awt/j2d/Graphics2DImpl.java \
+gnu/awt/j2d/IntegerGraphicsState.java \
+gnu/awt/j2d/MappedRaster.java \
+gnu/gcj/awt/BitMaskExtent.java \
+gnu/gcj/awt/Buffers.java \
+gnu/gcj/awt/ComponentDataBlitOp.java \
+gnu/gcj/awt/GLightweightPeer.java \
 gnu/java/beans/editors/ColorEditor.java	\
 gnu/java/beans/editors/FontEditor.java \
 gnu/java/beans/editors/NativeBooleanEditor.java	\
@@ -506,10 +542,6 @@ gnu/java/beans/BeanInfoEmbryo.java \
 gnu/java/beans/EmptyBeanInfo.java \
 gnu/java/beans/ExplicitBeanInfo.java \
 gnu/java/beans/IntrospectionIncubator.java \
-gnu/gcj/awt/BitMaskExtent.java \
-gnu/gcj/awt/Buffers.java \
-gnu/gcj/awt/ComponentDataBlitOp.java \
-gnu/gcj/awt/GLightweightPeer.java \
 java/applet/Applet.java \
 java/applet/AppletStub.java \
 java/applet/AppletContext.java \
@@ -1168,6 +1200,62 @@ java/util/natGregorianCalendar.cc \
 java/util/zip/natDeflater.cc \
 java/util/zip/natInflater.cc
 
+x_java_source_files = \
+gnu/gcj/xlib/Clip.java \
+gnu/gcj/xlib/Colormap.java \
+gnu/gcj/xlib/Display.java \
+gnu/gcj/xlib/Drawable.java \
+gnu/gcj/xlib/Font.java \
+gnu/gcj/xlib/GC.java \
+gnu/gcj/xlib/Pixmap.java \
+gnu/gcj/xlib/Screen.java \
+gnu/gcj/xlib/Visual.java \
+gnu/gcj/xlib/WMSizeHints.java \
+gnu/gcj/xlib/Window.java \
+gnu/gcj/xlib/WindowAttributes.java \
+gnu/gcj/xlib/XAnyEvent.java \
+gnu/gcj/xlib/XButtonEvent.java \
+gnu/gcj/xlib/XColor.java \
+gnu/gcj/xlib/XConfigureEvent.java \
+gnu/gcj/xlib/XConnectException.java \
+gnu/gcj/xlib/XEvent.java \
+gnu/gcj/xlib/XException.java \
+gnu/gcj/xlib/XExposeEvent.java \
+gnu/gcj/xlib/XID.java \
+gnu/gcj/xlib/XImage.java \
+gnu/gcj/xlib/XUnmapEvent.java \
+gnu/awt/xlib/XCanvasPeer.java \
+gnu/awt/xlib/XEventLoop.java \
+gnu/awt/xlib/XEventQueue.java \
+gnu/awt/xlib/XFontMetrics.java \
+gnu/awt/xlib/XFramePeer.java \
+gnu/awt/xlib/XGraphics.java \
+gnu/awt/xlib/XGraphicsConfiguration.java \
+gnu/awt/xlib/XPanelPeer.java \
+gnu/awt/xlib/XToolkit.java
+
+x_nat_source_files = \
+gnu/gcj/xlib/natClip.cc \
+gnu/gcj/xlib/natColormap.cc \
+gnu/gcj/xlib/natDisplay.cc \
+gnu/gcj/xlib/natDrawable.cc \
+gnu/gcj/xlib/natFont.cc \
+gnu/gcj/xlib/natGC.cc \
+gnu/gcj/xlib/natPixmap.cc \
+gnu/gcj/xlib/natScreen.cc \
+gnu/gcj/xlib/natVisual.cc \
+gnu/gcj/xlib/natWMSizeHints.cc \
+gnu/gcj/xlib/natWindow.cc \
+gnu/gcj/xlib/natWindowAttributes.cc \
+gnu/gcj/xlib/natXAnyEvent.cc \
+gnu/gcj/xlib/natXButtonEvent.cc \
+gnu/gcj/xlib/natXColor.cc \
+gnu/gcj/xlib/natXConfigureEvent.cc \
+gnu/gcj/xlib/natXException.cc \
+gnu/gcj/xlib/natXExposeEvent.cc \
+gnu/gcj/xlib/natXImage.cc \
+gnu/gcj/xlib/natXUnmapEvent.cc
+
 ## ################################################################
 
 ##
@@ -1182,7 +1270,7 @@ java/util/zip/natInflater.cc
 ## compile the C++ sources, but we can't make the .o files depend on
 ## the headers, because in that case we'll force a complete rebuild of
 ## the C++ code whenever any .java file is touched.
-all-recursive: $(nat_headers)
+all-recursive: $(nat_headers) $(x_nat_headers)
 
 ## ################################################################
 

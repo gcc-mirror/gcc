@@ -119,40 +119,29 @@ here = @here@
 libgcj_basedir = @libgcj_basedir@
 
 AUTOMAKE_OPTIONS = foreign no-installinfo
-@TESTSUBDIR_TRUE@SUBDIRS = \
-@TESTSUBDIR_TRUE@$(DIRLTDL) testsuite gcj include
-@TESTSUBDIR_FALSE@SUBDIRS = \
-@TESTSUBDIR_FALSE@$(DIRLTDL) gcj include
-@USE_LIBDIR_TRUE@toolexeclibdir = \
-@USE_LIBDIR_TRUE@$(libdir)$(MULTISUBDIR)
-@USE_LIBDIR_FALSE@toolexeclibdir = \
-@USE_LIBDIR_FALSE@$(toolexecdir)/lib$(MULTISUBDIR)
-@USE_LIBDIR_FALSE@toolexecdir = \
-@USE_LIBDIR_FALSE@$(exec_prefix)/$(target_alias)
+@TESTSUBDIR_TRUE@SUBDIRS = @TESTSUBDIR_TRUE@$(DIRLTDL) testsuite gcj include
+@TESTSUBDIR_FALSE@SUBDIRS = @TESTSUBDIR_FALSE@$(DIRLTDL) gcj include
+@USE_LIBDIR_TRUE@toolexeclibdir = @USE_LIBDIR_TRUE@$(libdir)$(MULTISUBDIR)
+@USE_LIBDIR_FALSE@toolexeclibdir = @USE_LIBDIR_FALSE@$(toolexecdir)/lib$(MULTISUBDIR)
+@USE_LIBDIR_FALSE@toolexecdir = @USE_LIBDIR_FALSE@$(exec_prefix)/$(target_alias)
+@NO_X_TRUE@cond_x_ltlibrary = 
+@NO_X_FALSE@cond_x_ltlibrary = @NO_X_FALSE@libgcjx.la
 
-toolexeclib_LTLIBRARIES = libgcj.la
+toolexeclib_LTLIBRARIES = libgcj.la $(cond_x_ltlibrary)
 toolexeclib_DATA = libgcj.spec
 data_DATA = libgcj.zip
 
-@NEEDS_DATA_START_TRUE@toolexeclib_LIBRARIES = \
-@NEEDS_DATA_START_TRUE@libgcjdata.a
-@NEEDS_DATA_START_TRUE@libgcjdata_a_SOURCES = \
-@NEEDS_DATA_START_TRUE@libgcjdata.c
+@NEEDS_DATA_START_TRUE@toolexeclib_LIBRARIES = @NEEDS_DATA_START_TRUE@libgcjdata.a
+@NEEDS_DATA_START_TRUE@libgcjdata_a_SOURCES = @NEEDS_DATA_START_TRUE@libgcjdata.c
 
-@NATIVE_TRUE@bin_PROGRAMS = \
-@NATIVE_TRUE@jv-convert gij
+@NATIVE_TRUE@bin_PROGRAMS = @NATIVE_TRUE@jv-convert gij
 
 bin_SCRIPTS = addr2name.awk
-@CANADIAN_TRUE@@NULL_TARGET_TRUE@ZIP = \
-@CANADIAN_TRUE@@NULL_TARGET_TRUE@$(MULTIBUILDTOP)../$(COMPPATH)/zip/zip$(EXEEXT)
-@CANADIAN_TRUE@@NULL_TARGET_FALSE@ZIP = \
-@CANADIAN_TRUE@@NULL_TARGET_FALSE@zip
-@CANADIAN_FALSE@ZIP = \
-@CANADIAN_FALSE@$(MULTIBUILDTOP)../$(COMPPATH)/zip/zip$(EXEEXT)
-@CANADIAN_TRUE@GCJH = \
-@CANADIAN_TRUE@gcjh
-@CANADIAN_FALSE@GCJH = \
-@CANADIAN_FALSE@$(MULTIBUILDTOP)../$(COMPPATH)/gcc/gcjh$(EXEEXT)
+@CANADIAN_TRUE@@NULL_TARGET_TRUE@ZIP = @CANADIAN_TRUE@@NULL_TARGET_TRUE@$(MULTIBUILDTOP)../$(COMPPATH)/zip/zip$(EXEEXT)
+@CANADIAN_TRUE@@NULL_TARGET_FALSE@ZIP = @CANADIAN_TRUE@@NULL_TARGET_FALSE@zip
+@CANADIAN_FALSE@ZIP = @CANADIAN_FALSE@$(MULTIBUILDTOP)../$(COMPPATH)/zip/zip$(EXEEXT)
+@CANADIAN_TRUE@GCJH = @CANADIAN_TRUE@gcjh
+@CANADIAN_FALSE@GCJH = @CANADIAN_FALSE@$(MULTIBUILDTOP)../$(COMPPATH)/gcc/gcjh$(EXEEXT)
 
 GCJCOMPILE = $(LIBTOOL) --mode=compile $(GCJ) -fassume-compiled -fclasspath=$(here) -L$(here) $(JC1FLAGS) -MD -MT $@ -MF $(@:.lo=.d) -c
 GCJLINK = $(LIBTOOL) --mode=link $(GCJ) -L$(here) $(JC1FLAGS) $(LDFLAGS) -o $@
@@ -165,12 +154,10 @@ EH_COMMON_INCLUDE = @EH_COMMON_INCLUDE@
 WARNINGS = -W -Wall
 AM_CXXFLAGS = -fno-rtti -fvtable-thunks -fasynchronous-exceptions \
 	-fdollars-in-identifiers \
-	@LIBGCJ_CXXFLAGS@ @EXCEPTIONSPEC@ $(WARNINGS) -D_GNU_SOURCE
+	@LIBGCJ_CXXFLAGS@ @EXCEPTIONSPEC@ @X_CFLAGS@ $(WARNINGS) -D_GNU_SOURCE
 
-@USING_GCC_TRUE@AM_CFLAGS = \
-@USING_GCC_TRUE@@LIBGCJ_CFLAGS@ $(WARNINGS)
-@USING_GCC_FALSE@AM_CFLAGS = \
-@USING_GCC_FALSE@@LIBGCJ_CFLAGS@
+@USING_GCC_TRUE@AM_CFLAGS = @USING_GCC_TRUE@@LIBGCJ_CFLAGS@ $(WARNINGS)
+@USING_GCC_FALSE@AM_CFLAGS = @USING_GCC_FALSE@@LIBGCJ_CFLAGS@
 
 JCFLAGS = -g
 JC1FLAGS = -g @LIBGCJ_JAVAFLAGS@
@@ -183,10 +170,12 @@ INCLUDES = -I$(top_srcdir) -Iinclude -I$(top_srcdir)/include \
 
 
 nat_files = $(nat_source_files:.cc=.lo)
+x_nat_files = $(x_nat_source_files:.cc=.lo)
 c_files = $(c_source_files:.c=.lo)
 javao_files = $(java_source_files:.java=.lo) \
 	$(built_java_source_files:.java=.lo)
 
+x_javao_files = $(x_java_source_files:.java=.lo)
 
 libffi_files = `$(AR) t ../libffi/.libs/libffi.a 2>/dev/null | sed 's/\.o/\.lo/g' | sed 's/^/..\/libffi\//g'`
 
@@ -208,7 +197,17 @@ libgcj_la_LDFLAGS = -lsupc++ -rpath $(toolexeclibdir) \
 
 libgcj_la_LINK = $(LIBLINK)
 
-MOSTLYCLEANFILES = $(javao_files) $(nat_files) $(nat_headers) $(c_files)
+libgcjx_la_SOURCES = $(x_nat_source_files)
+EXTRA_libgcjx_la_SOURCES = $(x_java_source_files)
+libgcjx_la_DEPENDENCIES = libgcj.zip $(x_javao_files)
+libgcjx_la_LIBADD = $(x_javao_files)
+libgcjx_la_LDFLAGS = @X_PRE_LIBS@ @X_LIBS@ -lX11 @X_EXTRA_LIBS@ \
+        -lsupc++ -rpath $(toolexeclibdir) \
+        -version-info `grep -v '^\#' $(srcdir)/libtool-version`
+
+libgcjx_la_LINK = $(LIBLINK)
+
+MOSTLYCLEANFILES = $(javao_files) $(nat_files) $(nat_headers) $(c_files) $(x_javao_files) $(x_nat_files) $(x_nat_headers)
 CLEANFILES = tmp-list libgcj.zip
 
 SUFFIXES = .class .java .h
@@ -219,12 +218,13 @@ nat_headers = $(ordinary_java_source_files:.java=.h) \
 	java/io/ObjectInputStream$$GetField.h
 
 
+x_nat_headers = $(x_java_source_files:.java=.h)
+
 extra_headers = java/lang/Object.h java/lang/Class.h
 
 NM = nm
 
-@NATIVE_TRUE@@MAINTAINER_MODE_TRUE@noinst_PROGRAMS = \
-@NATIVE_TRUE@@MAINTAINER_MODE_TRUE@gen-from-JIS
+@NATIVE_TRUE@@MAINTAINER_MODE_TRUE@noinst_PROGRAMS = @NATIVE_TRUE@@MAINTAINER_MODE_TRUE@gen-from-JIS
 
 CONVERT_DIR = gnu/gcj/convert
 
@@ -281,6 +281,16 @@ gnu/gcj/convert/UnicodeToBytes.java
 special_java_source_files = java/lang/Class.java java/lang/Object.java
 
 awt_java_source_files = \
+gnu/awt/LightweightRedirector.java \
+gnu/awt/j2d/AbstractGraphicsState.java \
+gnu/awt/j2d/DirectRasterGraphics.java \
+gnu/awt/j2d/Graphics2DImpl.java \
+gnu/awt/j2d/IntegerGraphicsState.java \
+gnu/awt/j2d/MappedRaster.java \
+gnu/gcj/awt/BitMaskExtent.java \
+gnu/gcj/awt/Buffers.java \
+gnu/gcj/awt/ComponentDataBlitOp.java \
+gnu/gcj/awt/GLightweightPeer.java \
 gnu/java/beans/editors/ColorEditor.java	\
 gnu/java/beans/editors/FontEditor.java \
 gnu/java/beans/editors/NativeBooleanEditor.java	\
@@ -296,10 +306,6 @@ gnu/java/beans/BeanInfoEmbryo.java \
 gnu/java/beans/EmptyBeanInfo.java \
 gnu/java/beans/ExplicitBeanInfo.java \
 gnu/java/beans/IntrospectionIncubator.java \
-gnu/gcj/awt/BitMaskExtent.java \
-gnu/gcj/awt/Buffers.java \
-gnu/gcj/awt/ComponentDataBlitOp.java \
-gnu/gcj/awt/GLightweightPeer.java \
 java/applet/Applet.java \
 java/applet/AppletStub.java \
 java/applet/AppletContext.java \
@@ -953,6 +959,64 @@ java/util/zip/natDeflater.cc \
 java/util/zip/natInflater.cc
 
 
+x_java_source_files = \
+gnu/gcj/xlib/Clip.java \
+gnu/gcj/xlib/Colormap.java \
+gnu/gcj/xlib/Display.java \
+gnu/gcj/xlib/Drawable.java \
+gnu/gcj/xlib/Font.java \
+gnu/gcj/xlib/GC.java \
+gnu/gcj/xlib/Pixmap.java \
+gnu/gcj/xlib/Screen.java \
+gnu/gcj/xlib/Visual.java \
+gnu/gcj/xlib/WMSizeHints.java \
+gnu/gcj/xlib/Window.java \
+gnu/gcj/xlib/WindowAttributes.java \
+gnu/gcj/xlib/XAnyEvent.java \
+gnu/gcj/xlib/XButtonEvent.java \
+gnu/gcj/xlib/XColor.java \
+gnu/gcj/xlib/XConfigureEvent.java \
+gnu/gcj/xlib/XConnectException.java \
+gnu/gcj/xlib/XEvent.java \
+gnu/gcj/xlib/XException.java \
+gnu/gcj/xlib/XExposeEvent.java \
+gnu/gcj/xlib/XID.java \
+gnu/gcj/xlib/XImage.java \
+gnu/gcj/xlib/XUnmapEvent.java \
+gnu/awt/xlib/XCanvasPeer.java \
+gnu/awt/xlib/XEventLoop.java \
+gnu/awt/xlib/XEventQueue.java \
+gnu/awt/xlib/XFontMetrics.java \
+gnu/awt/xlib/XFramePeer.java \
+gnu/awt/xlib/XGraphics.java \
+gnu/awt/xlib/XGraphicsConfiguration.java \
+gnu/awt/xlib/XPanelPeer.java \
+gnu/awt/xlib/XToolkit.java
+
+
+x_nat_source_files = \
+gnu/gcj/xlib/natClip.cc \
+gnu/gcj/xlib/natColormap.cc \
+gnu/gcj/xlib/natDisplay.cc \
+gnu/gcj/xlib/natDrawable.cc \
+gnu/gcj/xlib/natFont.cc \
+gnu/gcj/xlib/natGC.cc \
+gnu/gcj/xlib/natPixmap.cc \
+gnu/gcj/xlib/natScreen.cc \
+gnu/gcj/xlib/natVisual.cc \
+gnu/gcj/xlib/natWMSizeHints.cc \
+gnu/gcj/xlib/natWindow.cc \
+gnu/gcj/xlib/natWindowAttributes.cc \
+gnu/gcj/xlib/natXAnyEvent.cc \
+gnu/gcj/xlib/natXButtonEvent.cc \
+gnu/gcj/xlib/natXColor.cc \
+gnu/gcj/xlib/natXConfigureEvent.cc \
+gnu/gcj/xlib/natXException.cc \
+gnu/gcj/xlib/natXExposeEvent.cc \
+gnu/gcj/xlib/natXImage.cc \
+gnu/gcj/xlib/natXUnmapEvent.cc
+
+
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and
 # friends when we are called from the top level Makefile.
@@ -1014,6 +1078,10 @@ DEFS = @DEFS@ -I. -I$(srcdir) -I./include
 CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
+X_CFLAGS = @X_CFLAGS@
+X_LIBS = @X_LIBS@
+X_EXTRA_LIBS = @X_EXTRA_LIBS@
+X_PRE_LIBS = @X_PRE_LIBS@
 libgcjdata_a_LIBADD = 
 @NEEDS_DATA_START_TRUE@libgcjdata_a_OBJECTS =  libgcjdata.$(OBJEXT)
 LTLIBRARIES =  $(toolexeclib_LTLIBRARIES)
@@ -1040,6 +1108,17 @@ java/net/natInetAddress.lo java/net/natPlainDatagramSocketImpl.lo \
 java/net/natPlainSocketImpl.lo java/text/natCollator.lo \
 java/util/natGregorianCalendar.lo java/util/zip/natDeflater.lo \
 java/util/zip/natInflater.lo
+libgcjx_la_OBJECTS =  gnu/gcj/xlib/natClip.lo \
+gnu/gcj/xlib/natColormap.lo gnu/gcj/xlib/natDisplay.lo \
+gnu/gcj/xlib/natDrawable.lo gnu/gcj/xlib/natFont.lo \
+gnu/gcj/xlib/natGC.lo gnu/gcj/xlib/natPixmap.lo \
+gnu/gcj/xlib/natScreen.lo gnu/gcj/xlib/natVisual.lo \
+gnu/gcj/xlib/natWMSizeHints.lo gnu/gcj/xlib/natWindow.lo \
+gnu/gcj/xlib/natWindowAttributes.lo gnu/gcj/xlib/natXAnyEvent.lo \
+gnu/gcj/xlib/natXButtonEvent.lo gnu/gcj/xlib/natXColor.lo \
+gnu/gcj/xlib/natXConfigureEvent.lo gnu/gcj/xlib/natXException.lo \
+gnu/gcj/xlib/natXExposeEvent.lo gnu/gcj/xlib/natXImage.lo \
+gnu/gcj/xlib/natXUnmapEvent.lo
 @NATIVE_TRUE@bin_PROGRAMS =  jv-convert$(EXEEXT) gij$(EXEEXT)
 @NATIVE_TRUE@@MAINTAINER_MODE_TRUE@noinst_PROGRAMS =  \
 @NATIVE_TRUE@@MAINTAINER_MODE_TRUE@gen-from-JIS$(EXEEXT)
@@ -1076,6 +1155,17 @@ DIST_SUBDIRS =  @DIRLTDL@ testsuite gcj include @DIRLTDL@ gcj include
 DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/$(srcdir)/$(CONVERT_DIR)/make-trie.P .deps/boehm.P \
 .deps/defineclass.P .deps/exception.P .deps/gij.P \
+.deps/gnu/awt/LightweightRedirector.P \
+.deps/gnu/awt/j2d/AbstractGraphicsState.P \
+.deps/gnu/awt/j2d/DirectRasterGraphics.P \
+.deps/gnu/awt/j2d/Graphics2DImpl.P \
+.deps/gnu/awt/j2d/IntegerGraphicsState.P \
+.deps/gnu/awt/j2d/MappedRaster.P .deps/gnu/awt/xlib/XCanvasPeer.P \
+.deps/gnu/awt/xlib/XEventLoop.P .deps/gnu/awt/xlib/XEventQueue.P \
+.deps/gnu/awt/xlib/XFontMetrics.P .deps/gnu/awt/xlib/XFramePeer.P \
+.deps/gnu/awt/xlib/XGraphics.P \
+.deps/gnu/awt/xlib/XGraphicsConfiguration.P \
+.deps/gnu/awt/xlib/XPanelPeer.P .deps/gnu/awt/xlib/XToolkit.P \
 .deps/gnu/gcj/RawData.P .deps/gnu/gcj/awt/BitMaskExtent.P \
 .deps/gnu/gcj/awt/Buffers.P .deps/gnu/gcj/awt/ComponentDataBlitOp.P \
 .deps/gnu/gcj/awt/GLightweightPeer.P \
@@ -1119,7 +1209,29 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/gcj/text/LocaleData_en_US.P \
 .deps/gnu/gcj/text/SentenceBreakIterator.P \
 .deps/gnu/gcj/text/WordBreakIterator.P \
-.deps/gnu/gcj/util/EnumerationChain.P \
+.deps/gnu/gcj/util/EnumerationChain.P .deps/gnu/gcj/xlib/Clip.P \
+.deps/gnu/gcj/xlib/Colormap.P .deps/gnu/gcj/xlib/Display.P \
+.deps/gnu/gcj/xlib/Drawable.P .deps/gnu/gcj/xlib/Font.P \
+.deps/gnu/gcj/xlib/GC.P .deps/gnu/gcj/xlib/Pixmap.P \
+.deps/gnu/gcj/xlib/Screen.P .deps/gnu/gcj/xlib/Visual.P \
+.deps/gnu/gcj/xlib/WMSizeHints.P .deps/gnu/gcj/xlib/Window.P \
+.deps/gnu/gcj/xlib/WindowAttributes.P .deps/gnu/gcj/xlib/XAnyEvent.P \
+.deps/gnu/gcj/xlib/XButtonEvent.P .deps/gnu/gcj/xlib/XColor.P \
+.deps/gnu/gcj/xlib/XConfigureEvent.P \
+.deps/gnu/gcj/xlib/XConnectException.P .deps/gnu/gcj/xlib/XEvent.P \
+.deps/gnu/gcj/xlib/XException.P .deps/gnu/gcj/xlib/XExposeEvent.P \
+.deps/gnu/gcj/xlib/XID.P .deps/gnu/gcj/xlib/XImage.P \
+.deps/gnu/gcj/xlib/XUnmapEvent.P .deps/gnu/gcj/xlib/natClip.P \
+.deps/gnu/gcj/xlib/natColormap.P .deps/gnu/gcj/xlib/natDisplay.P \
+.deps/gnu/gcj/xlib/natDrawable.P .deps/gnu/gcj/xlib/natFont.P \
+.deps/gnu/gcj/xlib/natGC.P .deps/gnu/gcj/xlib/natPixmap.P \
+.deps/gnu/gcj/xlib/natScreen.P .deps/gnu/gcj/xlib/natVisual.P \
+.deps/gnu/gcj/xlib/natWMSizeHints.P .deps/gnu/gcj/xlib/natWindow.P \
+.deps/gnu/gcj/xlib/natWindowAttributes.P \
+.deps/gnu/gcj/xlib/natXAnyEvent.P .deps/gnu/gcj/xlib/natXButtonEvent.P \
+.deps/gnu/gcj/xlib/natXColor.P .deps/gnu/gcj/xlib/natXConfigureEvent.P \
+.deps/gnu/gcj/xlib/natXException.P .deps/gnu/gcj/xlib/natXExposeEvent.P \
+.deps/gnu/gcj/xlib/natXImage.P .deps/gnu/gcj/xlib/natXUnmapEvent.P \
 .deps/gnu/java/beans/BeanInfoEmbryo.P \
 .deps/gnu/java/beans/EmptyBeanInfo.P \
 .deps/gnu/java/beans/ExplicitBeanInfo.P \
@@ -1544,8 +1656,8 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/util/zip/natInflater.P .deps/jni.P .deps/libgcjdata.P \
 .deps/name-finder.P .deps/no-threads.P .deps/nogc.P \
 .deps/posix-threads.P .deps/posix.P .deps/prims.P .deps/resolve.P
-SOURCES = $(libgcjdata_a_SOURCES) $(libgcj_la_SOURCES) $(EXTRA_libgcj_la_SOURCES) $(jv_convert_SOURCES) $(EXTRA_jv_convert_SOURCES) $(gij_SOURCES) $(gen_from_JIS_SOURCES) $(EXTRA_gen_from_JIS_SOURCES)
-OBJECTS = $(libgcjdata_a_OBJECTS) $(libgcj_la_OBJECTS) $(jv_convert_OBJECTS) $(gij_OBJECTS) $(gen_from_JIS_OBJECTS)
+SOURCES = $(libgcjdata_a_SOURCES) $(libgcj_la_SOURCES) $(EXTRA_libgcj_la_SOURCES) $(libgcjx_la_SOURCES) $(EXTRA_libgcjx_la_SOURCES) $(jv_convert_SOURCES) $(EXTRA_jv_convert_SOURCES) $(gij_SOURCES) $(gen_from_JIS_SOURCES) $(EXTRA_gen_from_JIS_SOURCES)
+OBJECTS = $(libgcjdata_a_OBJECTS) $(libgcj_la_OBJECTS) $(libgcjx_la_OBJECTS) $(jv_convert_OBJECTS) $(gij_OBJECTS) $(gen_from_JIS_OBJECTS)
 
 all: all-redirect
 .SUFFIXES:
@@ -1671,6 +1783,9 @@ uninstall-toolexeclibLTLIBRARIES:
 
 libgcj.la: $(libgcj_la_OBJECTS) $(libgcj_la_DEPENDENCIES)
 	$(libgcj_la_LINK) -rpath $(toolexeclibdir) $(libgcj_la_LDFLAGS) $(libgcj_la_OBJECTS) $(libgcj_la_LIBADD) $(LIBS)
+
+libgcjx.la: $(libgcjx_la_OBJECTS) $(libgcjx_la_DEPENDENCIES)
+	$(libgcjx_la_LINK) -rpath $(toolexeclibdir) $(libgcjx_la_LDFLAGS) $(libgcjx_la_OBJECTS) $(libgcjx_la_LIBADD) $(LIBS)
 
 mostlyclean-binPROGRAMS:
 
@@ -1916,7 +2031,7 @@ distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
-	    cp -pr $$/$$file $(distdir)/$$file; \
+	    cp -pr $$d/$$file $(distdir)/$$file; \
 	  else \
 	    test -f $(distdir)/$$file \
 	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
@@ -2104,6 +2219,8 @@ mostlyclean distclean maintainer-clean
 
 $(java_source_files:.java=.class): libgcj.zip
 
+$(x_java_source_files:.java=.class): libgcj.zip
+
 $(built_java_source_files:.java=.class): $(built_java_source_files)
 	@javac="$(JAVAC)"; \
 	for f in $?; do \
@@ -2112,7 +2229,7 @@ $(built_java_source_files:.java=.class): $(built_java_source_files)
 	  -d $(here) $$f; \
 	done
 
-libgcj.zip: $(java_source_files)
+libgcj.zip: $(java_source_files) $(x_java_source_files)
 	@: $(shell echo Creating list of files to compile...) $(shell rm -f tmp-list || :) $(shell touch tmp-list) $(foreach source,$(subst $(srcdir)/,,$?),$(shell echo $(source) >> tmp-list))
 	$(MAKE) $(built_java_source_files:.java=.class)
 	@javac="$(JAVAC)"; dir=`/bin/pwd`; cd $(srcdir); \
@@ -2121,7 +2238,9 @@ libgcj.zip: $(java_source_files)
 	    $$javac $(JCFLAGS) -classpath $(here):`/bin/pwd` -d $(here) $$f; \
 	done
 	-@rm -f tmp-list libgcj.zip
-	$(ZIP) -r libgcj java gnu -n .class -i '*.class' -i '*/'
+	find java gnu -type d -o -type f -name '*.class' | \
+	  sed -e '/\/\./d' -e '/\/xlib/d' | \
+	  $(ZIP) libgcj -@ -n .class
 
 clean-local:
 	find . -name '*.class' -print | xargs rm -f
@@ -2132,7 +2251,7 @@ clean-local:
 .java.lo:
 	$(GCJCOMPILE) -o $@ $<
 
-$(nat_files): %.lo: %.cc
+$(nat_files) $(x_nat_files): %.lo: %.cc
 	@echo '$(LTCXXCOMPILE) -c -o $@ $<'; \
 	$(LTCXXCOMPILE) -Wp,-MD,.deps/$(*F).pp -c -o $@ $<
 	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
@@ -2147,7 +2266,7 @@ $(c_files): %.lo: %.c
 
 $(c_files): java/lang/fdlibm.h java/lang/ieeefp.h java/lang/mprec.h
 
-$(javao_files): %.lo: %.java
+$(javao_files) $(x_javao_files): %.lo: %.java
 	$(GCJCOMPILE) -o $@ $<
 
 .class.h:
@@ -2295,7 +2414,7 @@ $(CONVERT_DIR)/make-trie.o: $(srcdir)/$(CONVERT_DIR)/make-trie.c
 
 -include deps.mk
 
-all-recursive: $(nat_headers)
+all-recursive: $(nat_headers) $(x_nat_headers)
 
 # Multilib support.
 .PHONY: all-multi mostlyclean-multi clean-multi distclean-multi \
