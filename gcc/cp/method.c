@@ -1924,7 +1924,8 @@ hack_identifier (value, name)
   else
     mark_used (value);
 
-  if (TREE_CODE (value) == VAR_DECL || TREE_CODE (value) == PARM_DECL)
+  if (TREE_CODE (value) == VAR_DECL || TREE_CODE (value) == PARM_DECL
+      || TREE_CODE (value) == RESULT_DECL)
     {
       tree context = decl_function_context (value);
       if (context != NULL_TREE && context != current_function_decl

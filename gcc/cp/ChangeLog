@@ -1,3 +1,9 @@
+1998-10-27  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* lex.c (do_identifier): Also generate LOOKUP_EXPR for RESULT_DECL.
+	* method.c (hack_identifier): Also check for using RESULT_DECL
+	from outer context.
+
 1998-10-27  Mark Mitchell  <mark@markmitchell.com>
 
 	* decl.c (grokdeclarator): Use type_quals, rather than constp,

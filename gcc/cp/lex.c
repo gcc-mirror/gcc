@@ -3070,6 +3070,7 @@ do_identifier (token, parsing, args)
 	      && CP_DECL_CONTEXT (id)
 	      && TREE_CODE (CP_DECL_CONTEXT (id)) == FUNCTION_DECL)
 	  || TREE_CODE (id) == PARM_DECL
+	  || TREE_CODE (id) == RESULT_DECL
 	  || TREE_CODE (id) == USING_DECL))
     id = build_min_nt (LOOKUP_EXPR, token);
       
