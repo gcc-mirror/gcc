@@ -5212,6 +5212,10 @@ unify (tparms, targs, ntparms, parm, arg, nsubsts, strict)
 	return 1;
       return 0;
 
+    case TEMPLATE_DECL:
+      /* Matched cases are handled by the ARG == PARM test above.  */
+      return 1;
+
     default:
       sorry ("use of `%s' in template type unification",
 	     tree_code_name [(int) TREE_CODE (parm)]);
