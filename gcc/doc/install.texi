@@ -973,12 +973,6 @@ systems that support conditional traps).
 Division by zero checks use the break instruction.
 @end table
 
-@item --enable-altivec
-Specify that the target supports AltiVec vector enhancements.  This
-option will adjust the ABI for AltiVec enhancements, as well as generate
-AltiVec code when appropriate.  This option is only available for
-PowerPC systems.
-
 @item --enable-__cxa_atexit
 Define if you want to use __cxa_atexit, rather than atexit, to
 register C++ destructors for local statics and global objects.

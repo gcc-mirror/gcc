@@ -1,3 +1,7 @@
+2005-03-24  James E Wilson  <wilson@specifixinc.com>
+
+	* doc/install.texi (--enable-altivec): Delete docs.
+
 2005-03-24  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/predicates.md (easy_fp_constant): Return 0 for
