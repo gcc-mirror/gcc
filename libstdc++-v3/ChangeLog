@@ -1,6 +1,24 @@
 2003-05-22  Paolo Carlini  <pcarlini@unitus.it>
 
-	* include/bits/fstream.tcc (_M_underflow): simplify:
+	* include/std/std_fstream.h (_S_pback_size): Remove definition.
+	(_M_create_pback(), _M_destroy_pback()): Simplify for a single-char
+	pback buffer.
+	* include/bits/fstream.tcc (_S_pback_size): Remove declaration.
+	* testsuite/27_io/basic_filebuf/3.cc: Remove explicit instantiation
+	of _S_pback_size for systems with no COMDAT or weak support.
+	* testsuite/27_io/basic_filebuf/seekoff/10132-2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekpos/10132-3.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/underflow/10096.cc: Likewise.
+	* testsuite/27_io/basic_fstream/3.cc: Likewise.
+	* testsuite/27_io/basic_ifstream/3.cc: Likewise.
+	* testsuite/27_io/basic_istream/sentry/char/3983-fstream.cc: Likewise.
+	* testsuite/27_io/basic_ofstream/3.cc: Likewise.
+	* testsuite/27_io/basic_ostream/sentry/char/3983-fstream.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/3.cc: Likewise.
+
+2003-05-22  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/bits/fstream.tcc (_M_underflow): Simplify:
 	!__testout implies _M_filepos == _M_in_end, therefore
 	the first _M_file.seekoff call is never issued.
 

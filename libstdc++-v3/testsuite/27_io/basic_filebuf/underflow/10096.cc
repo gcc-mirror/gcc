@@ -63,13 +63,6 @@ void test01()
   VERIFY( fb.sgetc() == MyTraits::eof() );
 }
 
-#if !__GXX_WEAK__
-// Explicitly instantiate for systems with no COMDAT or weak support.
-template 
-  std::basic_filebuf<char, MyTraits>::int_type
-  std::basic_filebuf<char, MyTraits>::_S_pback_size;
-#endif
-
 int main()
 {
   test01();
