@@ -165,7 +165,7 @@ static int source_label_number = 1;
 
 /* If there is a system stabs.h, use it.  Otherwise, use our own.  */
 
-#ifndef HAVE_STABS_H
+#ifndef HAVE_STAB_H
 #include "gstab.h"
 #else
 #include <stab.h>

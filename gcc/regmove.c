@@ -1009,7 +1009,7 @@ regmove_optimize (f, nregs, regmove_dump_file)
 	    }
 
 #ifdef REGISTER_CONSTRAINTS
-	  if (find_matches (insn, &match) < 0)
+	  if (! find_matches (insn, &match))
 	    continue;
 
 	  /* Now scan through the operands looking for a source operand
@@ -1119,7 +1119,7 @@ regmove_optimize (f, nregs, regmove_dump_file)
 	  int op_no, match_no;
 	  int success = 0;
 
-	  if (find_matches (insn, &match) < 0)
+	  if (! find_matches (insn, &match))
 	    continue;
 
 	  /* Now scan through the operands looking for a destination operand
