@@ -5,26 +5,35 @@
 @set DEVELOPMENT
 @set version-g77 0.5.25
 @set version-egcs 1.2
+@set version-gcc 2.95
 
-@c EGCS-G77 is set to indicate this is the EGCS version of g77.
+@c GCC-G77 indicates this is the GCC (2.95 or later) version of g77.
+@set GCC-G77
+
+@c EGCS-G77 indicates this is the EGCS (1.0 or 1.1) version of g77.
 @clear EGCS-G77
 
-@ifclear EGCS-G77
-@c FSF-G77 is set to indicate this is the FSF version of g77.
-@set FSF-G77
-@end ifclear
+@c FSF-G77 indicates this is the FSF (0.5.23 or earlier) version of g77.
+@clear FSF-G77
 
 @set email-general egcs@@egcs.cygnus.com
 @set email-bugs egcs-bugs@@egcs.cygnus.com
 @set path-g77 egcs/gcc/f
 @set path-libf2c egcs/libf2c
 
+@ifset GCC-G77
+@set which-g77 GCC-@value{version-gcc}
+@set which-gcc GCC
+@end ifset
+
 @ifset EGCS-G77
 @set which-g77 EGCS-@value{version-egcs}
+@set which-gcc EGCS
 @end ifset
 
 @ifset FSF-G77
 @set which-g77 FSF-@value{version-g77}
+@set which-gcc GCC
 @end ifset
 
 @set email-burley craig@@jcb-sc.com

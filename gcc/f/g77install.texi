@@ -9,7 +9,7 @@
 @c in the standalone derivations of this file (e.g. INSTALL).
 @set copyrights 1995-1999
 
-@set last-update-install 1999-05-10
+@set last-update-install 1999-07-17
 
 @include root.texi
 
@@ -30,7 +30,6 @@ this copyright notice and permission notice.
 @chapter Installing GNU Fortran
 @end ifset
 
-@set version-gcc 2.8.1
 @set version-autoconf 2.12
 @set version-bison 1.25
 @set version-gperf 2.5
@@ -50,21 +49,22 @@ this copyright notice and permission notice.
 
 The following information describes how to install @code{g77}.
 
+@clear OMIT-FSF-G77
+
 @ifset EGCS-G77
 @set OMIT-FSF-G77
-Note that, for @code{egcs} users,
+@end ifset
+
+@ifset GCC-G77
+@set OMIT-FSF-G77
+@end ifset
+
+@ifset OMIT-FSF-G77
+Note that, for users of the @value{which-g77} version of @code{g77},
 much of the information is obsolete,
 and is superceded by the
-@code{egcs} installation procedures.
+@value{which-gcc} installation procedures.
 Such information is accordingly omitted and flagged as such.
-@ifset DEVELOPMENT
-@ifclear DOC-INSTALL
-@clear OMIT-FSF-G77
-(It is not actually omitted from the development version of this documentation,
-so the @code{g77} developers can easily find all the documentation
-for all versions of @code{g77} in one place.)
-@end ifclear
-@end ifset
 @end ifset
 
 @ifclear OMIT-FSF-G77
@@ -112,9 +112,10 @@ The following information was last updated on @value{last-update-install}:
 @section Prerequisites
 @cindex prerequisites
 
-@ifset EGCS-G77
-For @code{egcs} users, this information is
-superceded by the @code{egcs} installation instructions.
+@ifset OMIT-FSF-G77
+For users of the @value{which-g77} version of @code{g77},
+this information is superceded by the
+@value{which-gcc} installation instructions.
 @end ifset
 
 @ifclear OMIT-FSF-G77
@@ -482,9 +483,9 @@ is not yet established.
 @cindex @code{ld}, can't find _strtoul
 @cindex SunOS4
 
-@ifset EGCS-G77
-This information does not apply to the
-@code{egcs} version of @code{g77}.
+@ifset OMIT-FSF-G77
+This information does not apply to
+the @value{which-g77} version of @code{g77},
 @end ifset
 
 @ifclear OMIT-FSF-G77
@@ -890,9 +891,10 @@ systems.
 @section Quick Start
 @cindex quick start
 
-@ifset EGCS-G77
-For @code{egcs} users, this information is
-superceded by the @code{egcs} installation instructions.
+@ifset OMIT-FSF-G77
+For users of the @value{which-g77} version of @code{g77},
+this information is superceded by the
+@value{which-gcc} installation instructions.
 @end ifset
 
 @ifclear OMIT-FSF-G77
@@ -1178,9 +1180,10 @@ Removing them can free up a lot of disk space.
 @node Complete Installation
 @section Complete Installation
 
-@ifset EGCS-G77
-For @code{egcs} users, this information is
-superceded by the @code{egcs} installation instructions.
+@ifset OMIT-FSF-G77
+For users of the @value{which-g77} version of @code{g77},
+this information is superceded by the
+@value{which-gcc} installation instructions.
 @end ifset
 
 @ifclear OMIT-FSF-G77
@@ -2048,9 +2051,10 @@ sh#
 @cindex binaries, distributing
 @cindex code, distributing
 
-@ifset EGCS-G77
-For @code{egcs} users, this information is
-superceded by the @code{egcs} installation instructions.
+@ifset OMIT-FSF-G77
+For users of the @value{which-g77} version of @code{g77},
+this information is superceded by the
+@value{which-gcc} installation instructions.
 @end ifset
 
 @ifclear OMIT-FSF-G77
