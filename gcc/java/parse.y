@@ -237,6 +237,7 @@ static tree patch_new_array_init PROTO ((tree, tree));
 static tree maybe_build_array_element_wfl PROTO ((tree));
 static int array_constructor_check_entry PROTO ((tree, tree));
 static char *purify_type_name PROTO ((char *));
+static tree patch_initialized_static_field PROTO ((tree));
 
 /* Number of error found so far. */
 int java_error_count; 
@@ -609,8 +610,8 @@ type_import_on_demand_declaration:
 type_declaration:
 	class_declaration
 		{
-		  maybe_generate_clinit ();
 		  maybe_generate_finit ();
+		  maybe_generate_clinit ();
 		  $$ = $1;
 		}
 |	interface_declaration
@@ -3133,34 +3134,24 @@ register_fields (flags, type, variable_list)
 	  /* The field is declared static */
 	  if (flags & ACC_STATIC)
 	    {
-	      if (flags & ACC_FINAL)
-		{
-		  if (DECL_LANG_SPECIFIC (field_decl) == NULL)
-		    DECL_LANG_SPECIFIC (field_decl) = (struct lang_decl *)
-		      permalloc (sizeof (struct lang_decl_var));
-		  DECL_LOCAL_STATIC_VALUE (field_decl) = 
-		    TREE_OPERAND (init, 1);
-		  if (TREE_CONSTANT (TREE_OPERAND (init, 1)))
-		    DECL_INITIAL (field_decl) = TREE_OPERAND (init, 1);
-		}
-	      /* Otherwise, the field should be initialized in <clinit>. 
-		 This field is remembered so we can generate <clinit> later */
-	      else
-		{
-		  INITIALIZED_P (field_decl) = 1;
-		  TREE_CHAIN (init) = ctxp->static_initialized;
-		  ctxp->static_initialized = init;
-		}
+	      /* We include the field and its initialization part into
+		 a list used to generate <clinit>. After <clinit> is
+		 walked, fields initialization will be processed and
+		 fields initialized with know constants will be taken
+		 out of <clinit> and have ther DECL_INITIAL set
+		 appropriately. */
+	      TREE_CHAIN (init) = ctxp->static_initialized;
+	      ctxp->static_initialized = init;
 	    }
 	  /* A non-static field declared with an immediate initialization is
 	     to be initialized in <init>, if any.  This field is remembered
 	     to be processed at the time of the generation of <init>. */
 	  else
 	    {
-	      INITIALIZED_P (field_decl) = 1;
 	      TREE_CHAIN (init) = ctxp->non_static_initialized;
 	      ctxp->non_static_initialized = init;
 	    }
+	  INITIALIZED_P (field_decl) = 1;
 	}
     }
   lineno = saved_lineno;
@@ -5582,6 +5573,16 @@ java_complete_expand_methods ()
       /* Initialize a new constant pool */
       init_outgoing_cpool ();
 
+      /* We want <clinit> (if any) to be processed first. */
+      decl = tree_last (TYPE_METHODS (class_type));
+      if (decl && DECL_NAME (decl) == clinit_identifier_node)
+	{
+	  tree list = nreverse (TYPE_METHODS (class_type));
+	  list = TREE_CHAIN (list);
+	  TREE_CHAIN (decl) = NULL_TREE;
+	  TYPE_METHODS (class_type) = chainon (decl, nreverse (list));
+	}
+
       /* Don't process function bodies in interfaces */
       if (!CLASS_INTERFACE (TYPE_NAME (current_class)))
 	for (decl = TYPE_METHODS (class_type); decl; decl = TREE_CHAIN (decl))
@@ -5659,7 +5660,7 @@ java_complete_expand_method (mdecl)
       if ((block_body == NULL_TREE || CAN_COMPLETE_NORMALLY (block_body))
 	  && TREE_CODE (TREE_TYPE (TREE_TYPE (mdecl))) != VOID_TYPE)
 	missing_return_error (current_function_decl);
-      
+
       /* Don't go any further if we've found error(s) during the
          expansion */
       if (!java_error_count)
@@ -5975,8 +5976,8 @@ resolve_expression_name (id, orig)
 		  return error_mark_node;
 		}
 	      /* The field is final. We may use its value instead */
-	      if (fs && FIELD_FINAL (decl))
-		value = java_complete_tree (DECL_LOCAL_STATIC_VALUE (decl));
+	      if (fs && FIELD_FINAL (decl) && DECL_INITIAL (decl))
+		value = DECL_INITIAL (decl);
 
 	      /* Otherwise build what it takes to access the field */
 	      decl = build_field_ref ((fs ? NULL_TREE : current_this),
@@ -6049,9 +6050,9 @@ resolve_field_access (qual_wfl, field_decl, field_type)
       if (FIELD_FINAL (decl) 
 	  && JPRIMITIVE_TYPE_P (TREE_TYPE (decl))
 	  && DECL_LANG_SPECIFIC (decl)
-	  && DECL_LOCAL_STATIC_VALUE (decl))
+	  && DECL_INITIAL (decl))
 	{
-	  field_ref = java_complete_tree (DECL_LOCAL_STATIC_VALUE (decl));
+	  field_ref = DECL_INITIAL (decl);
 	  static_final_found = 1;
 	}
       else
@@ -7765,6 +7766,15 @@ java_complete_tree (node)
 	TREE_OPERAND (node, 1) = nn;
       node = patch_assignment (node, wfl_op1, wfl_op2);
       CAN_COMPLETE_NORMALLY (node) = 1;
+
+      /* Before returning the node, in the context of a static field
+         assignment in <clinit>, we may want to carray further
+         optimizations. (VAR_DECL means it's a static field. See
+         add_field. */
+      if (DECL_NAME (current_function_decl) == clinit_identifier_node
+	  && TREE_CODE (TREE_OPERAND (node, 0)) == VAR_DECL)
+	node = patch_initialized_static_field (node);
+
       return node;
 
     case MULT_EXPR:
@@ -8161,7 +8171,8 @@ static int
 check_final_assignment (lvalue, wfl)
      tree lvalue, wfl;
 {
-  if (DECL_P (lvalue) && FIELD_FINAL (lvalue))
+  if (DECL_P (lvalue) && FIELD_FINAL (lvalue) &&
+      DECL_NAME (current_function_decl) != clinit_identifier_node)
     {
       parse_error_context 
         (wfl, "Can't assign a value to the final variable `%s'",
@@ -8320,6 +8331,30 @@ patch_assignment (node, wfl_op1, wfl_op2)
   TREE_OPERAND (node, 0) = lvalue;
   TREE_OPERAND (node, 1) = new_rhs;
   TREE_TYPE (node) = lhs_type;
+  return node;
+}
+
+/* Optimize static (final) field initialized upon declaration.
+     - If the field is static final and is assigned to a primitive
+       constant type, then set its DECL_INITIAL to the value.
+     - More to come.  */
+
+static tree
+patch_initialized_static_field (node)
+     tree node;
+{
+  tree field = TREE_OPERAND (node, 0);
+  tree value = TREE_OPERAND (node, 1);
+
+  if (FIELD_FINAL (field) && TREE_CONSTANT (value)
+      && JPRIMITIVE_TYPE_P (TREE_TYPE (value)))
+    {
+      if (DECL_LANG_SPECIFIC (field) == NULL)
+	DECL_LANG_SPECIFIC (field) = (struct lang_decl *)
+	  permalloc (sizeof (struct lang_decl_var));
+      DECL_INITIAL (field) = value;
+      return empty_stmt_node;
+    }
   return node;
 }
 
@@ -9392,7 +9427,7 @@ patch_unaryop (node, wfl_op)
   /* There are cases where node has been replaced by something else
      and we don't end up returning here: UNARY_PLUS_EXPR,
      CONVERT_EXPR, {POST,PRE}{INCR,DECR}EMENT_EXPR. */
-  TREE_OPERAND (node, 0) = op;
+  TREE_OPERAND (node, 0) = fold (op);
   TREE_TYPE (node) = prom_type;
   return fold (node);
 }
@@ -10547,7 +10582,7 @@ patch_try_statement (node)
 	   CATCH_EXPR		(catch node)
 	     BLOCK	        (with the decl of the parameter)
                COMPOUND_EXPR
-                 MODIFIY_EXPR   (assignemnt of the catch parameter)
+                 MODIFY_EXPR   (assignment of the catch parameter)
 		 BLOCK	        (catch clause block)
            LABEL_DECL		(where to return after finally (if any))
 
