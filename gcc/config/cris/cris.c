@@ -117,6 +117,8 @@ static bool cris_rtx_costs (rtx, int, int, int *);
 static int cris_address_cost (rtx);
 static bool cris_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
 				    tree, bool);
+static int cris_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
+				   tree, bool);
 
 /* The function cris_target_asm_function_epilogue puts the last insn to
    output here.  It always fits; there won't be a symbol operand.  Used in
@@ -191,6 +193,8 @@ int cris_cpu_version = CRIS_DEFAULT_CPU_VERSION;
 #define TARGET_SETUP_INCOMING_VARARGS cris_setup_incoming_varargs
 #undef TARGET_PASS_BY_REFERENCE
 #define TARGET_PASS_BY_REFERENCE cris_pass_by_reference
+#undef TARGET_ARG_PARTIAL_BYTES
+#define TARGET_ARG_PARTIAL_BYTES cris_arg_partial_bytes
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3181,6 +3185,20 @@ cris_pass_by_reference (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
 {
   return (targetm.calls.must_pass_in_stack (mode, type)
 	  || CRIS_FUNCTION_ARG_SIZE (mode, type) > 8);
+}
+
+
+static int
+cris_arg_partial_bytes (CUMULATIVE_ARGS *ca, enum machine_mode mode,
+			tree type, bool named ATTRIBUTE_UNUSED)
+{
+  if (ca->regs == CRIS_MAX_ARGS_IN_REGS - 1
+      && !targetm.calls.must_pass_in_stack (mode, type)
+      && CRIS_FUNCTION_ARG_SIZE (mode, type) > 4
+      && CRIS_FUNCTION_ARG_SIZE (mode, type) <= 8)
+    return UNITS_PER_WORD;
+  else
+    return 0;
 }
 
 

@@ -356,6 +356,8 @@ static tree sparc_gimplify_va_arg (tree, tree, tree *, tree *);
 static bool sparc_vector_mode_supported_p (enum machine_mode);
 static bool sparc_pass_by_reference (CUMULATIVE_ARGS *,
 				     enum machine_mode, tree, bool);
+static int sparc_arg_partial_bytes (CUMULATIVE_ARGS *,
+				    enum machine_mode, tree, bool);
 static void sparc_dwarf_handle_frame_unspec (const char *, rtx, int);
 #ifdef SUBTARGET_ATTRIBUTE_TABLE
 const struct attribute_spec sparc_attribute_table[];
@@ -469,6 +471,8 @@ enum processor_type sparc_cpu;
 #define TARGET_MUST_PASS_IN_STACK must_pass_in_stack_var_size
 #undef TARGET_PASS_BY_REFERENCE
 #define TARGET_PASS_BY_REFERENCE sparc_pass_by_reference
+#undef TARGET_ARG_PARTIAL_BYTES
+#define TARGET_ARG_PARTIAL_BYTES sparc_arg_partial_bytes
 
 #undef TARGET_EXPAND_BUILTIN_SAVEREGS
 #define TARGET_EXPAND_BUILTIN_SAVEREGS sparc_builtin_saveregs
@@ -5618,7 +5622,7 @@ function_arg_record_value (tree type, enum machine_mode mode,
   /* If at least one field must be passed on the stack, generate
      (parallel [(expr_list (nil) ...) ...]) so that all fields will
      also be passed on the stack.  We can't do much better because the
-     semantics of FUNCTION_ARG_PARTIAL_NREGS doesn't handle the case
+     semantics of TARGET_ARG_PARTIAL_BYTES doesn't handle the case
      of structures for which the fields passed exclusively in registers
      are not at the beginning of the structure.  */
   if (parms.stack)
@@ -5857,9 +5861,8 @@ function_arg (const struct sparc_args *cum, enum machine_mode mode,
   return reg;
 }
 
-/* Handle the FUNCTION_ARG_PARTIAL_NREGS macro.
-   For an arg passed partly in registers and partly in memory,
-   this is the number of registers used.
+/* For an arg passed partly in registers and partly in memory,
+   this is the number of bytes of registers used.
    For args passed entirely in registers or entirely in memory, zero.
 
    Any arg that starts in the first 6 regs but won't entirely fit in them
@@ -5868,9 +5871,9 @@ function_arg (const struct sparc_args *cum, enum machine_mode mode,
    values that begin in the last fp reg [where "last fp reg" varies with the
    mode] will be split between that reg and memory.  */
 
-int
-function_arg_partial_nregs (const struct sparc_args *cum,
-			    enum machine_mode mode, tree type, int named)
+static int
+sparc_arg_partial_bytes (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+			 tree type, bool named)
 {
   int slotno, regno, padding;
 
@@ -5886,13 +5889,13 @@ function_arg_partial_nregs (const struct sparc_args *cum,
 		     ? ROUND_ADVANCE (int_size_in_bytes (type))
 		     : ROUND_ADVANCE (GET_MODE_SIZE (mode))))
 	  > SPARC_INT_ARG_MAX)
-	return SPARC_INT_ARG_MAX - slotno;
+	return (SPARC_INT_ARG_MAX - slotno) * UNITS_PER_WORD;
     }
   else
     {
       /* We are guaranteed by pass_by_reference that the size of the
-	 argument is not greater than 16 bytes, so we only need to
-	 return 1 if the argument is partially passed in registers.  */
+	 argument is not greater than 16 bytes, so we only need to return
+	 one word if the argument is partially passed in registers.  */
 
       if (type && AGGREGATE_TYPE_P (type))
 	{
@@ -5900,7 +5903,7 @@ function_arg_partial_nregs (const struct sparc_args *cum,
 
 	  if (size > UNITS_PER_WORD
 	      && slotno == SPARC_INT_ARG_MAX - 1)
-	    return 1;
+	    return UNITS_PER_WORD;
 	}
       else if (GET_MODE_CLASS (mode) == MODE_COMPLEX_INT
 	       || (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT
@@ -5909,13 +5912,13 @@ function_arg_partial_nregs (const struct sparc_args *cum,
 	  /* The complex types are passed as packed types.  */
 	  if (GET_MODE_SIZE (mode) > UNITS_PER_WORD
 	      && slotno == SPARC_INT_ARG_MAX - 1)
-	    return 1;
+	    return UNITS_PER_WORD;
 	}
       else if (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT)
 	{
 	  if ((slotno + GET_MODE_SIZE (mode) / UNITS_PER_WORD)
 	      > SPARC_FP_ARG_MAX)
-	    return 1;
+	    return UNITS_PER_WORD;
 	}
     }
 

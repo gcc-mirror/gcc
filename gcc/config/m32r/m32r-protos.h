@@ -35,10 +35,6 @@ extern void   m32r_load_pic_register (void);
 
 #ifdef TREE_CODE
 extern enum m32r_function_type m32r_compute_function_type (tree);
-
-#ifdef HAVE_MACHINE_MODES
-extern int    function_arg_partial_nregs (CUMULATIVE_ARGS *, Mmode, tree, int);
-#endif
 #endif /* TREE_CODE */
 
 #ifdef RTX_CODE

@@ -160,9 +160,6 @@ extern rtx function_arg (CUMULATIVE_ARGS *, enum machine_mode,
 			 tree, int);
 extern rtx function_value (tree, tree);
 #endif
-extern int function_arg_partial_nregs (CUMULATIVE_ARGS *,
-				       enum machine_mode,
-				       tree, int);
 extern bool pa_return_in_memory (tree, tree);
 #endif /* TREE_CODE */
 

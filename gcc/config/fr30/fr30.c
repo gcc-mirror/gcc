@@ -124,6 +124,9 @@ static struct fr30_frame_info 	zero_frame_info;
 static void fr30_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
 					 tree, int *, int);
 static bool fr30_must_pass_in_stack (enum machine_mode, tree);
+static int fr30_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
+				   tree, bool);
+
 
 #define FRAME_POINTER_MASK 	(1 << (FRAME_POINTER_REGNUM))
 #define RETURN_POINTER_MASK 	(1 << (RETURN_POINTER_REGNUM))
@@ -154,6 +157,8 @@ static bool fr30_must_pass_in_stack (enum machine_mode, tree);
 #define TARGET_PROMOTE_PROTOTYPES hook_bool_tree_true
 #undef  TARGET_PASS_BY_REFERENCE
 #define TARGET_PASS_BY_REFERENCE hook_pass_by_reference_must_pass_in_stack
+#undef  TARGET_ARG_PARTIAL_BYTES
+#define TARGET_ARG_PARTIAL_BYTES fr30_arg_partial_bytes
 
 #undef  TARGET_SETUP_INCOMING_VARARGS
 #define TARGET_SETUP_INCOMING_VARARGS fr30_setup_incoming_varargs
@@ -697,22 +702,21 @@ fr30_num_arg_regs (enum machine_mode mode, tree type)
   return (size + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
 }
 
-/* Implements the FUNCTION_ARG_PARTIAL_NREGS macro.
-   Returns the number of argument registers required to hold *part* of
-   a parameter of machine mode MODE and tree type TYPE (which may be
-   NULL if the type is not known).  If the argument fits entirely in
-   the argument registers, or entirely on the stack, then 0 is returned.
+/* Returns the number of bytes in which *part* of a parameter of machine
+   mode MODE and tree type TYPE (which may be NULL if the type is not known).
+   If the argument fits entirely in the argument registers, or entirely on
+   the stack, then 0 is returned.
    CUM is the number of argument registers already used by earlier
    parameters to the function.  */
 
-int
-fr30_function_arg_partial_nregs (CUMULATIVE_ARGS cum, enum machine_mode mode,
-				 tree type, int named)
+static int
+fr30_arg_partial_bytes (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+			tree type, bool named)
 {
   /* Unnamed arguments, i.e. those that are prototyped as ...
      are always passed on the stack.
      Also check here to see if all the argument registers are full.  */
-  if (named == 0 || cum >= FR30_NUM_ARG_REGS)
+  if (named == 0 || *cum >= FR30_NUM_ARG_REGS)
     return 0;
 
   /* Work out how many argument registers would be needed if this
@@ -721,11 +725,10 @@ fr30_function_arg_partial_nregs (CUMULATIVE_ARGS cum, enum machine_mode mode,
      are needed because the parameter must be passed on the stack)
      then return zero, as this parameter does not require partial
      register, partial stack stack space.  */
-  if (cum + fr30_num_arg_regs (mode, type) <= FR30_NUM_ARG_REGS)
+  if (*cum + fr30_num_arg_regs (mode, type) <= FR30_NUM_ARG_REGS)
     return 0;
   
-  /* Otherwise return the number of registers that would be used.  */
-  return FR30_NUM_ARG_REGS - cum;
+  return (FR30_NUM_ARG_REGS - *cum) * UNITS_PER_WORD;
 }
 
 /*}}}*/

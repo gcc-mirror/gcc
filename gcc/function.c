@@ -2296,10 +2296,10 @@ assign_parm_find_entry_rtl (struct assign_parm_data_all *all,
     {
       int partial;
 
-      partial = FUNCTION_ARG_PARTIAL_NREGS (all->args_so_far,
-					    data->promoted_mode,
-					    data->passed_type,
-					    data->named_arg);
+      partial = targetm.calls.arg_partial_bytes (&all->args_so_far,
+						 data->promoted_mode,
+						 data->passed_type,
+						 data->named_arg);
       data->partial = partial;
 
       /* The caller might already have allocated stack space for the
@@ -2325,7 +2325,7 @@ assign_parm_find_entry_rtl (struct assign_parm_data_all *all,
 	     argument on the stack.  */
 	  gcc_assert (!all->extra_pretend_bytes && !all->pretend_args_size);
 
-	  pretend_bytes = partial * UNITS_PER_WORD;
+	  pretend_bytes = partial;
 	  all->pretend_args_size = CEIL_ROUND (pretend_bytes, STACK_BYTES);
 
 	  /* We want to align relative to the actual stack pointer, so
@@ -2449,8 +2449,11 @@ assign_parm_adjust_entry_rtl (struct assign_parm_data_one *data)
 			  data->passed_type, 
 			  int_size_in_bytes (data->passed_type));
       else
-	move_block_from_reg (REGNO (entry_parm), validize_mem (stack_parm),
-			     data->partial);
+	{
+	  gcc_assert (data->partial % UNITS_PER_WORD == 0);
+	  move_block_from_reg (REGNO (entry_parm), validize_mem (stack_parm),
+			       data->partial / UNITS_PER_WORD);
+	}
 
       entry_parm = stack_parm;
     }
@@ -3399,11 +3402,7 @@ locate_and_pad_parm (enum machine_mode passed_mode, tree type, int in_regs,
     }
 #endif /* REG_PARM_STACK_SPACE */
 
-  part_size_in_regs = 0;
-  if (reg_parm_stack_space == 0)
-    part_size_in_regs = ((partial * UNITS_PER_WORD)
-			 / (PARM_BOUNDARY / BITS_PER_UNIT)
-			 * (PARM_BOUNDARY / BITS_PER_UNIT));
+  part_size_in_regs = (reg_parm_stack_space == 0 ? partial : 0);
 
   sizetree
     = type ? size_in_bytes (type) : size_int (GET_MODE_SIZE (passed_mode));

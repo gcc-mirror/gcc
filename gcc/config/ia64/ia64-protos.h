@@ -73,8 +73,6 @@ extern rtx ia64_va_arg (tree, tree);
 extern rtx ia64_function_value (tree, tree);
 #endif /* RTX_CODE */
 
-extern int ia64_function_arg_partial_nregs (CUMULATIVE_ARGS *,
-					    enum machine_mode, tree, int);
 extern void ia64_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
 				       tree, int);
 extern int ia64_function_arg_boundary (enum machine_mode, tree);

@@ -279,3 +279,12 @@ hook_bool_CUMULATIVE_ARGS_mode_tree_bool_true (
 {
   return true;
 }
+
+int
+hook_int_CUMULATIVE_ARGS_mode_tree_bool_0 (
+	CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
+	enum machine_mode mode ATTRIBUTE_UNUSED,
+	tree type ATTRIBUTE_UNUSED, bool named ATTRIBUTE_UNUSED)
+{
+  return 0;
+}

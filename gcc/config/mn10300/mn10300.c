@@ -73,6 +73,8 @@ static bool mn10300_return_in_memory (tree, tree);
 static rtx mn10300_builtin_saveregs (void);
 static bool mn10300_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
 				       tree, bool);
+static int mn10300_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
+				      tree, bool);
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -99,6 +101,8 @@ static bool mn10300_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
 #define TARGET_PASS_BY_REFERENCE mn10300_pass_by_reference
 #undef TARGET_CALLEE_COPIES
 #define TARGET_CALLEE_COPIES hook_bool_CUMULATIVE_ARGS_mode_tree_bool_true
+#undef TARGET_ARG_PARTIAL_BYTES
+#define TARGET_ARG_PARTIAL_BYTES mn10300_arg_partial_bytes
 
 #undef TARGET_EXPAND_BUILTIN_SAVEREGS
 #define TARGET_EXPAND_BUILTIN_SAVEREGS mn10300_builtin_saveregs
@@ -1528,12 +1532,12 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
   return result;
 }
 
-/* Return the number of registers to use for an argument passed partially
-   in registers and partially in memory.  */
+/* Return the number of bytes of registers to use for an argument passed
+   partially in registers and partially in memory.  */
 
-int
-function_arg_partial_nregs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
-			    tree type, int named ATTRIBUTE_UNUSED)
+static int
+mn10300_arg_partial_bytes (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+			   tree type, bool named ATTRIBUTE_UNUSED)
 {
   int size, align;
 
@@ -1565,7 +1569,7 @@ function_arg_partial_nregs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
       && cum->nbytes + size > nregs * UNITS_PER_WORD)
     return 0;
 
-  return (nregs * UNITS_PER_WORD - cum->nbytes) / UNITS_PER_WORD;
+  return nregs * UNITS_PER_WORD - cum->nbytes;
 }
 
 /* Output a tst insn.  */

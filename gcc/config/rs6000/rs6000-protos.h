@@ -160,8 +160,6 @@ extern void function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
 extern int function_arg_boundary (enum machine_mode, tree);
 extern struct rtx_def *function_arg (CUMULATIVE_ARGS *,
 				     enum machine_mode, tree, int);
-extern int function_arg_partial_nregs (CUMULATIVE_ARGS *,
-				       enum machine_mode, tree, int);
 extern rtx rs6000_function_value (tree, tree);
 extern rtx rs6000_libcall_value (enum machine_mode);
 extern struct rtx_def *rs6000_va_arg (tree, tree);

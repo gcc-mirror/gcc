@@ -376,6 +376,8 @@ static void frv_output_const_unspec		(FILE *,
 static bool frv_function_ok_for_sibcall		(tree, tree);
 static rtx frv_struct_value_rtx			(tree, int);
 static bool frv_must_pass_in_stack (enum machine_mode mode, tree type);
+static int frv_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
+				  tree, bool);
 
 /* Initialize the GCC target structure.  */
 #undef  TARGET_ASM_FUNCTION_PROLOGUE
@@ -418,6 +420,8 @@ static bool frv_must_pass_in_stack (enum machine_mode mode, tree type);
 #define TARGET_MUST_PASS_IN_STACK frv_must_pass_in_stack
 #undef TARGET_PASS_BY_REFERENCE
 #define TARGET_PASS_BY_REFERENCE hook_pass_by_reference_must_pass_in_stack
+#undef TARGET_ARG_PARTIAL_BYTES
+#define TARGET_ARG_PARTIAL_BYTES frv_arg_partial_bytes
 
 #undef TARGET_EXPAND_BUILTIN_SAVEREGS
 #define TARGET_EXPAND_BUILTIN_SAVEREGS frv_expand_builtin_saveregs
@@ -3192,11 +3196,9 @@ frv_function_arg_advance (CUMULATIVE_ARGS *cum,
    used by the caller for this argument; likewise `FUNCTION_INCOMING_ARG', for
    the called function.  */
 
-int
-frv_function_arg_partial_nregs (CUMULATIVE_ARGS *cum,
-                                enum machine_mode mode,
-                                tree type ATTRIBUTE_UNUSED,
-                                int named ATTRIBUTE_UNUSED)
+static int
+frv_arg_partial_bytes (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+		       tree type ATTRIBUTE_UNUSED, bool named ATTRIBUTE_UNUSED)
 {
   enum machine_mode xmode = (mode == BLKmode) ? SImode : mode;
   int bytes = GET_MODE_SIZE (xmode);
@@ -3207,12 +3209,12 @@ frv_function_arg_partial_nregs (CUMULATIVE_ARGS *cum,
   ret = ((arg_num <= LAST_ARG_REGNUM && arg_num + words > LAST_ARG_REGNUM+1)
 	 ? LAST_ARG_REGNUM - arg_num + 1
 	 : 0);
+  ret *= UNITS_PER_WORD;
 
   if (TARGET_DEBUG_ARG && ret)
-    fprintf (stderr, "function_arg_partial_nregs: %d\n", ret);
+    fprintf (stderr, "frv_arg_partial_bytes: %d\n", ret);
 
   return ret;
-
 }
 
 

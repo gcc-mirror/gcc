@@ -2279,13 +2279,6 @@ typedef struct mips_args {
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
   function_arg( &CUM, MODE, TYPE, NAMED)
 
-/* For an arg passed partly in registers and partly in memory,
-   this is the number of registers used.
-   For args passed entirely in registers or entirely in memory, zero.  */
-
-#define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED) \
-  function_arg_partial_nregs (&CUM, MODE, TYPE, NAMED)
-
 #define FUNCTION_ARG_BOUNDARY function_arg_boundary
 
 #define FUNCTION_ARG_PADDING(MODE, TYPE)		\

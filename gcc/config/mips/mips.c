@@ -352,6 +352,8 @@ static bool mips_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode mode,
 				    tree, bool);
 static bool mips_callee_copies (CUMULATIVE_ARGS *, enum machine_mode mode,
 				tree, bool);
+static int mips_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode mode,
+				   tree, bool);
 static bool mips_valid_pointer_mode (enum machine_mode);
 static bool mips_scalar_mode_supported_p (enum machine_mode);
 static bool mips_vector_mode_supported_p (enum machine_mode);
@@ -798,6 +800,8 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
 #define TARGET_PASS_BY_REFERENCE mips_pass_by_reference
 #undef TARGET_CALLEE_COPIES
 #define TARGET_CALLEE_COPIES mips_callee_copies
+#undef TARGET_ARG_PARTIAL_BYTES
+#define TARGET_ARG_PARTIAL_BYTES mips_arg_partial_bytes
 
 #undef TARGET_VECTOR_MODE_SUPPORTED_P
 #define TARGET_VECTOR_MODE_SUPPORTED_P mips_vector_mode_supported_p
@@ -3316,16 +3320,16 @@ function_arg (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
 }
 
 
-/* Implement FUNCTION_ARG_PARTIAL_NREGS.  */
+/* Implement TARGET_ARG_PARTIAL_BYTES.  */
 
-int
-function_arg_partial_nregs (const CUMULATIVE_ARGS *cum,
-			    enum machine_mode mode, tree type, int named)
+static int
+mips_arg_partial_bytes (CUMULATIVE_ARGS *cum,
+			enum machine_mode mode, tree type, bool named)
 {
   struct mips_arg_info info;
 
   mips_arg_info (cum, mode, type, named, &info);
-  return info.stack_words > 0 ? info.reg_words : 0;
+  return info.stack_words > 0 ? info.reg_words * UNITS_PER_WORD : 0;
 }
 
 

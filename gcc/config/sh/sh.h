@@ -2204,27 +2204,6 @@ struct sh_args {
 							  (REG)),	\
 				   const0_rtx))))
 
-/* For an arg passed partly in registers and partly in memory,
-   this is the number of registers used.
-   For args passed entirely in registers or entirely in memory, zero.
-
-   We sometimes split args.  */
-
-#define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED) \
-  ((! TARGET_SH5 \
-    && PASS_IN_REG_P ((CUM), (MODE), (TYPE))			\
-    && ! (TARGET_SH4 || TARGET_SH2A_DOUBLE)						\
-    && (ROUND_REG ((CUM), (MODE))				\
-	+ ((MODE) != BLKmode					\
-	   ? ROUND_ADVANCE (GET_MODE_SIZE (MODE))		\
-	   : ROUND_ADVANCE (int_size_in_bytes (TYPE)))		\
-	> NPARM_REGS (MODE)))					\
-   ? NPARM_REGS (MODE) - ROUND_REG ((CUM), (MODE))		\
-   : (SH5_WOULD_BE_PARTIAL_NREGS ((CUM), (MODE), (TYPE), (NAMED)) \
-      && ! TARGET_SHCOMPACT)					\
-   ? NPARM_REGS (SImode) - (CUM).arg_count[(int) SH_ARG_INT]	\
-   : 0)
-
 #define SH5_WOULD_BE_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED) \
   (TARGET_SH5							\
    && ((MODE) == BLKmode || (MODE) == TImode || (MODE) == CDImode \

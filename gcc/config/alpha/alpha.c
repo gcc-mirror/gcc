@@ -5190,6 +5190,31 @@ function_arg (CUMULATIVE_ARGS cum, enum machine_mode mode, tree type,
   return gen_rtx_REG (mode, num_args + basereg);
 }
 
+static int
+alpha_arg_partial_bytes (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
+			 enum machine_mode mode ATTRIBUTE_UNUSED,
+			 tree type ATTRIBUTE_UNUSED,
+			 bool named ATTRIBUTE_UNUSED)
+{
+  int words = 0;
+
+#if TARGET_ABI_OPEN_VMS
+  if (cum->num_args < 6
+      && 6 < cum->num_args + ALPHA_ARG_SIZE (mode, type, named))
+    words = 6 - (CUM).num_args;
+#elif TARGET_ABI_UNICOSMK
+  /* Never any split arguments.  */
+#elif TARGET_ABI_OSF
+  if (*cum < 6 && 6 < *cum + ALPHA_ARG_SIZE (mode, type, named))
+    words = 6 - *cum;
+#else
+#error Unhandled ABI
+#endif
+
+  return words * UNITS_PER_WORD;
+}
+
+
 /* Return true if TYPE must be returned in memory, instead of in registers.  */
 
 static bool
@@ -9453,6 +9478,8 @@ alpha_init_libfuncs (void)
 #define TARGET_SPLIT_COMPLEX_ARG alpha_split_complex_arg
 #undef TARGET_GIMPLIFY_VA_ARG_EXPR
 #define TARGET_GIMPLIFY_VA_ARG_EXPR alpha_gimplify_va_arg
+#undef TARGET_ARG_PARTIAL_BYTES
+#define TARGET_ARG_PARTIAL_BYTES alpha_arg_partial_bytes
 
 #undef TARGET_SCALAR_MODE_SUPPORTED_P
 #define TARGET_SCALAR_MODE_SUPPORTED_P alpha_scalar_mode_supported_p

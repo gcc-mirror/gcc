@@ -1,3 +1,123 @@
+2004-12-29  Richard Henderson  <rth@redhat.com>
+
+	* target.h (targetm.calls.arg_partial_bytes): New.
+	* target-def.h (TARGET_ARG_PARTIAL_BYTES): New.
+	* calls.c (store_unaligned_arguments_into_pseudos): Update for
+	partial in bytes.
+	(load_register_parameters): Likewise.
+	(store_one_arg): Likewise.
+	(initialize_argument_information): Use targetm.calls.arg_partial_bytes.
+	(emit_library_call_value_1): Likewise.
+	* expr.c (block_move_libcall_safe_for_call_parm): Likewise.
+	(emit_push_insn): Update for partial in bytes.
+	* expr.h (FUNCTION_ARG_PARTIAL_NREGS): Remove.
+	* function.c (assign_parm_find_entry_rtl): Use
+	targetm.calls.arg_partial_bytes.  Update for result in bytes.
+	(locate_and_pad_parm): Update for partial in bytes.
+	* system.h (FUNCTION_ARG_PARTIAL_NREGS): Poison.
+	* targhooks.c (hook_int_CUMULATIVE_ARGS_mode_tree_bool_0): New.
+	* targhooks.h (hook_int_CUMULATIVE_ARGS_mode_tree_bool_0): Declare.
+	* doc/tm.texi (TARGET_ARG_PARTIAL_BYTES): Rename and update from
+	FUNCTION_ARG_PARTIAL_NREGS.
+
+	* config/arc/arc.h, config/c4x/c4x.h, config/i386/i386.h,
+	config/i860/i860.h, config/m68hc11/m68hc11.h, config/m68k/m68k.h,
+	config/pdp11/pdp11.h, config/s390/s390.h, config/stormy16/stormy16.h, 
+	config/xtensa/xtensa.h (FUNCTION_ARG_PARTIAL_NREGS): Remove.
+
+	* config/alpha/alpha.c (alpha_arg_partial_bytes): New.
+	(TARGET_ARG_PARTIAL_BYTES): New.
+	* config/alpha/alpha.h, config/alpha/unicosmk.h,
+	config/alpha/vms.h (FUNCTION_ARG_PARTIAL_NREGS): Remove.
+
+	* config/arm/arm.h (FUNCTION_ARG_PARTIAL_NREGS): Move ...
+	* config/arm/arm.c (arm_arg_partial_bytes): ... here.
+	(TARGET_ARG_PARTIAL_BYTES): New.
+
+	* config/cris/cris.h (FUNCTION_ARG_PARTIAL_NREGS): Move ...
+	* config/cris/cris.c (cris_arg_partial_bytes): ... here.
+	(TARGET_ARG_PARTIAL_BYTES): New.
+
+	* config/fr30/fr30.h (FUNCTION_ARG_PARTIAL_NREGS): Remove.
+	* config/fr30/fr30.c (fr30_arg_partial_bytes): Rename from
+	fr30_function_arg_partial_nregs.  Adjust to return bytes.
+	(TARGET_ARG_PARTIAL_BYTES): New.
+	* config/fr30/fr30-protos.h: Update.
+
+	* config/frv/frv.h (FUNCTION_ARG_PARTIAL_NREGS): Remove.
+	* config/frv/frv.c (frv_arg_partial_bytes): Rename from 
+	frv_function_arg_partial_nregs.  Adjust to return bytes.
+	(TARGET_ARG_PARTIAL_BYTES): New.
+	* config/frv/frv-protos.h: Update.
+
+	* config/ia64/ia64.h (FUNCTION_ARG_PARTIAL_NREGS): Remove.
+	* config/ia64/ia64.c (ia64_arg_partial_bytes): Rename from
+	ia64_function_arg_partial_nregs.  Adjust to return bytes.
+	(TARGET_ARG_PARTIAL_BYTES): New.
+	* config/ia64/ia64-protos.h: Update.
+
+	* config/iq2000/iq2000.h (FUNCTION_ARG_PARTIAL_NREGS): Remove.
+	* config/iq2000/iq2000.c (iq2000_arg_partial_bytes): Rename from
+	function_arg_partial_nregs.  Adjust to return bytes.
+	(TARGET_ARG_PARTIAL_BYTES): New.
+	* config/iq2000/iq2000-protos.h: Update.
+
+	* config/m32r/m32r.h (FUNCTION_ARG_PARTIAL_NREGS): Remove.
+	* config/m32r/m32r.c (m32r_arg_partial_bytes): Rename from
+	function_arg_partial_nregs.  Adjust to return bytes.
+	(TARGET_ARG_PARTIAL_BYTES): New.
+	* config/m32r/m32r-protos.h: Update.
+
+	* config/mcore/mcore.h (FUNCTION_ARG_PARTIAL_NREGS): Remove.
+	* config/mcore/mcore.c (mcore_arg_partial_bytes): Rename from
+	mcore_function_arg_partial_nregs.  Adjust to return bytes.
+        (TARGET_ARG_PARTIAL_BYTES): New.
+	* config/mcore/mcore-protos.h: Update.
+
+	* config/mips/mips.h (FUNCTION_ARG_PARTIAL_NREGS): Remove.
+	* config/mips/mips.c (mips_arg_partial_bytes): Rename from
+	function_arg_partial_nregs.  Adjust to return bytes.
+	(TARGET_ARG_PARTIAL_BYTES): New.
+	* config/mips/mips-protos.h: Update.
+
+	* config/mn10300/mn10300.h (FUNCTION_ARG_PARTIAL_NREGS): Remove.
+	* config/mn10300/mn10300.c (mn10300_arg_partial_bytes): Rename from	
+	function_arg_partial_nregs.  Adjust to return bytes.
+	(TARGET_ARG_PARTIAL_BYTES): New.
+	* config/mn10300/mn10300-protos.h: Update.
+
+	* config/ns32k/ns32k.h (FUNCTION_ARG_PARTIAL_NREGS): Move ...
+	* config/ns32k/ns32k.c (ns32k_arg_partial_bytes): ... here.
+	(TARGET_ARG_PARTIAL_BYTES): New.
+
+	* config/pa/pa.h (FUNCTION_ARG_PARTIAL_NREGS): Remove.
+	* config/pa/pa.c (pa_arg_partial_bytes): Rename from 
+	function_arg_partial_nregs.  Handle 32-bit.  Adjust to return bytes.
+	(TARGET_ARG_PARTIAL_BYTES): New.
+	* config/pa/pa-protos.h: Update.
+
+	* config/rs6000/rs6000.h (FUNCTION_ARG_PARTIAL_NREGS): Remove.
+	* config/rs6000/rs6000.c (rs6000_arg_partial_bytes): Rename from 
+	function_arg_partial_nregs.  Adjust to return bytes.
+	(TARGET_ARG_PARTIAL_BYTES): New.
+	* config/rs6000/rs6000-protos.h: Update.
+
+	* config/sh/sh.h (FUNCTION_ARG_PARTIAL_NREGS): Move ...
+	* config/sh/sh.c (sh_arg_partial_bytes): ... here.
+	(TARGET_ARG_PARTIAL_BYTES): New.
+
+	* config/sparc/sparc.h (FUNCTION_ARG_PARTIAL_NREGS): Remove.
+	* config/sparc/sparc.c (sparc_arg_partial_bytes): Rename from
+	function_arg_partial_nregs.  Adjust to return bytes.
+        (TARGET_ARG_PARTIAL_BYTES): New.
+	* config/sparc/sparc-protos.h: Update.
+
+	* config/v850/v850.h (FUNCTION_ARG_PARTIAL_NREGS): Remove.
+	* config/v850/v850.c (v850_arg_partial_bytes): Rename from
+        function_arg_partial_nregs.  Adjust to return bytes.
+        (TARGET_ARG_PARTIAL_BYTES): New.
+	* config/v850/v850-protos.h: Update.
+
 2004-12-30  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config/mmix/mmix.h (ASM_OUTPUT_INTERNAL_LABEL): Define.
