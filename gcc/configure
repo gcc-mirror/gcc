@@ -6674,6 +6674,19 @@ foo:	.long	25
 	tls_first_minor=14
 	tls_as_opt="-m64 -Aesame"
 	;;
+  sh-*-* | sh[34]-*-*)
+    conftest_s='
+	.section ".tdata","awT",@progbits
+foo:	.long	25
+	.text
+	.long	foo@TLSGD
+	.long	foo@TLSLDM
+	.long	foo@DTPOFF
+	.long	foo@GOTTPOFF
+	.long	foo@TPOFF'
+	tls_first_major=2
+	tls_first_minor=13
+	;;
   sparc*-*-*)
     conftest_s='
 	.section ".tdata","awT",@progbits

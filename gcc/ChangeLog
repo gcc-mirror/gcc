@@ -1,3 +1,8 @@
+2003-10-09  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* configure.in (HAVE_AS_TLS): Add sh-*-* and sh[34]*-*-* cases.
+	* configure: Regenerate.
+
 2003-10-09  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (define_asm_attributes): Specify
