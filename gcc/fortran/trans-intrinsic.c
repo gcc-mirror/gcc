@@ -2410,7 +2410,7 @@ call_builtin_clz (tree result_type, tree op0)
 }
 
 /* Generate code for SPACING (X) intrinsic function. We generate:
-                                                                                
+
     t = expn - (BITS_OF_FRACTION)
     res = t << (BITS_OF_FRACTION)
     if (t < 0)
