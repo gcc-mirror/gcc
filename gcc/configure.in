@@ -32,6 +32,18 @@ AC_CONFIG_HEADER(auto-host.h:config.in)
 # Determine the host, build, and target systems
 AC_CANONICAL_SYSTEM
 
+# Define variables host_canonical and build_canonical
+build_canonical=${build}
+host_canonical=${host}
+AC_SUBST(build_canonical)
+AC_SUBST(host_canonical)
+
+target_subdir=
+if test "${host}" != "${target}" ; then
+    target_subdir=${target_alias}/
+fi
+AC_SUBST(target_subdir)
+	
 # Set program_transform_name
 AC_ARG_PROGRAM
 
@@ -226,6 +238,10 @@ else
 fi
 AC_SUBST(NO_MINUS_C_MINUS_O)
 AC_SUBST(OUTPUT_OPTION)
+
+# -------------------------
+# Check C compiler features
+# -------------------------
 
 AC_CACHE_CHECK(whether ${CC-cc} accepts -Wno-long-long,
 ac_cv_prog_cc_no_long_long,
@@ -439,9 +455,9 @@ esac],
 [coverage_flags=""])
 AC_SUBST(coverage_flags)
 
-# --------
-# UNSORTED
-# --------
+# -------------------------------
+# Miscenalleous configure options
+# -------------------------------
 
 # With stabs
 AC_ARG_WITH(stabs,
@@ -581,42 +597,11 @@ AC_SUBST(TARGET_SYSTEM_ROOT)
 AC_SUBST(TARGET_SYSTEM_ROOT_DEFINE)
 AC_SUBST(CROSS_SYSTEM_HEADER_DIR)
 
-# Stage specific cflags for build.
-stage1_cflags=
-case $build in
-vax-*-*)
-  if test x$GCC = xyes
-  then
-    stage1_cflags="-Wa,-J"
-  else
-    stage1_cflags="-J"
-  fi
-  ;;
-powerpc-*-darwin*)
-  # The spiffy cpp-precomp chokes on some legitimate constructs in GCC
-  # sources; use -no-cpp-precomp to get to GNU cpp.
-  # Apple's GCC has bugs in designated initializer handling, so disable
-  # that too.
-  stage1_cflags="-no-cpp-precomp -DHAVE_DESIGNATED_INITIALIZERS=0"
-  ;;
-esac
-AC_SUBST(stage1_cflags)
+# -------------------------
+# Checks for other programs
+# -------------------------
 
 AC_PROG_MAKE_SET
-
-AC_MSG_CHECKING(for GNU C library)
-AC_CACHE_VAL(gcc_cv_glibc,
-[AC_TRY_COMPILE(
-  [#include <features.h>],[
-#if ! (defined __GLIBC__ || defined __GNU_LIBRARY__)
-#error Not a GNU C library system
-#endif], 
-  [gcc_cv_glibc=yes], 
-  gcc_cv_glibc=no)])
-AC_MSG_RESULT($gcc_cv_glibc)
-if test $gcc_cv_glibc = yes; then
-  AC_DEFINE(_GNU_SOURCE, 1, [Always define this when using the GNU C Library])
-fi
 
 # Find some useful tools
 AC_PROG_AWK
@@ -624,25 +609,6 @@ gcc_AC_PROG_LN
 gcc_AC_PROG_LN_S
 AC_PROG_RANLIB
 gcc_AC_PROG_INSTALL
-
-AC_HEADER_STDC
-AC_HEADER_TIME
-gcc_AC_HEADER_STDBOOL
-gcc_AC_HEADER_STRING
-AC_HEADER_SYS_WAIT
-AC_CHECK_HEADERS(limits.h stddef.h string.h strings.h stdlib.h time.h \
-		 fcntl.h unistd.h sys/file.h sys/time.h \
-		 sys/resource.h sys/param.h sys/times.h sys/stat.h \
-		 direct.h malloc.h langinfo.h ldfcn.h)
-
-# Check for thread headers.
-AC_CHECK_HEADER(thread.h, [have_thread_h=yes], [have_thread_h=])
-AC_CHECK_HEADER(pthread.h, [have_pthread_h=yes], [have_pthread_h=])
-
-# These tests can't be done till we know if we have limits.h.
-gcc_AC_C_CHAR_BIT
-AC_C_BIGENDIAN_CROSS
-gcc_AC_C_FLOAT_FORMAT
 
 # See if we have the mktemp command.
 AC_CHECK_PROG(have_mktemp_command, mktemp, yes, no)
@@ -695,6 +661,68 @@ if test -f $srcdir/../bison/bison.simple; then
 else
   AC_CHECK_PROG(BISON, bison, bison, ${CONFIG_SHELL-/bin/sh} ${srcdir}/../missing bison)
 fi
+
+# --------------------
+# Checks for C headers
+# --------------------
+
+AC_MSG_CHECKING(for GNU C library)
+AC_CACHE_VAL(gcc_cv_glibc,
+[AC_TRY_COMPILE(
+  [#include <features.h>],[
+#if ! (defined __GLIBC__ || defined __GNU_LIBRARY__)
+#error Not a GNU C library system
+#endif], 
+  [gcc_cv_glibc=yes], 
+  gcc_cv_glibc=no)])
+AC_MSG_RESULT($gcc_cv_glibc)
+if test $gcc_cv_glibc = yes; then
+  AC_DEFINE(_GNU_SOURCE, 1, [Always define this when using the GNU C Library])
+fi
+
+AC_HEADER_STDC
+AC_HEADER_TIME
+gcc_AC_HEADER_STDBOOL
+gcc_AC_HEADER_STRING
+AC_HEADER_SYS_WAIT
+AC_CHECK_HEADERS(limits.h stddef.h string.h strings.h stdlib.h time.h \
+		 fcntl.h unistd.h sys/file.h sys/time.h \
+		 sys/resource.h sys/param.h sys/times.h sys/stat.h \
+		 direct.h malloc.h langinfo.h ldfcn.h)
+
+# Check for thread headers.
+AC_CHECK_HEADER(thread.h, [have_thread_h=yes], [have_thread_h=])
+AC_CHECK_HEADER(pthread.h, [have_pthread_h=yes], [have_pthread_h=])
+
+# These tests can't be done till we know if we have limits.h.
+gcc_AC_C_CHAR_BIT
+AC_C_BIGENDIAN_CROSS
+gcc_AC_C_FLOAT_FORMAT
+
+# --------
+# UNSORTED
+# --------
+
+# Stage specific cflags for build.
+stage1_cflags=
+case $build in
+vax-*-*)
+  if test x$GCC = xyes
+  then
+    stage1_cflags="-Wa,-J"
+  else
+    stage1_cflags="-J"
+  fi
+  ;;
+powerpc-*-darwin*)
+  # The spiffy cpp-precomp chokes on some legitimate constructs in GCC
+  # sources; use -no-cpp-precomp to get to GNU cpp.
+  # Apple's GCC has bugs in designated initializer handling, so disable
+  # that too.
+  stage1_cflags="-no-cpp-precomp -DHAVE_DESIGNATED_INITIALIZERS=0"
+  ;;
+esac
+AC_SUBST(stage1_cflags)
 
 # These libraries may be used by collect2.
 # We may need a special search path to get them linked.
@@ -2857,18 +2885,6 @@ if test "x$subdirs" != x; then
 fi
 echo "source ${srcdir}/gdbinit.in" >> .gdbinit
 
-# Define variables host_canonical and build_canonical
-# because some Cygnus local changes in the Makefile depend on them.
-build_canonical=${build}
-host_canonical=${host}
-target_subdir=
-if test "${host}" != "${target}" ; then
-    target_subdir=${target_alias}/
-fi
-AC_SUBST(build_canonical)
-AC_SUBST(host_canonical)
-AC_SUBST(target_subdir)
-	
 # If $(exec_prefix) exists and is not the same as $(prefix), then compute an
 # absolute path for gcc_tooldir based on inserting the number of up-directory
 # movements required to get from $(exec_prefix) to $(prefix) into the basic

@@ -1,6 +1,8 @@
-# Makefile for GNU C compiler.
-#   Copyright (C) 1987, 1988, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997
-#   1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+# Makefile for GNU Compiler Collection
+# Run 'configure' to generate Makefile from Makefile.in
+
+# Copyright (C) 1987, 1988, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997
+# 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -25,17 +27,53 @@
 # stage1, stage2, stage3, stage4.
 
 # This is the default target.
-all:
+# Set by autoconf to "all.internal" for a native build, or
+# "all.cross" to build a cross compiler.
+all: @ALL@
+
+# Depend on this to specify a phony target portably.
+force:
+
+# This tells GNU make version 3 not to export the variables
+# defined in this file into the environment (and thus recursive makes).
+.NOEXPORT:
+# And this tells it not to automatically pass command-line variables
+# to recursive makes.
+MAKEOVERRIDES =
 
 # Suppress smart makes who think they know how to automake Yacc files
 .y.c:
 
+# The only suffixes we want for implicit rules are .c and .o, so clear
+# the list and add them.  This speeds up GNU Make, and allows -r to work.
+# For i18n support, we also need .gmo, .po, .pox.
+# This must come before the language makefile fragments to allow them to
+# add suffixes and rules of their own.
+.SUFFIXES:
+.SUFFIXES: .c .o .po .pox .gmo
+
+# -------------------------------
+# Standard autoconf-set variables
+# -------------------------------
+
 # Directory where sources are, from where we are.
-srcdir = @srcdir@
 VPATH = @srcdir@
 
-# Pointer to the GCC Project website
-website=http://gcc.gnu.org
+build_canonical = @build_canonical@
+host_canonical = @host_canonical@
+target=@target@
+target_alias=@target_alias@
+
+# Sed command to transform gcc to installed name.
+program_transform_name = @program_transform_name@
+program_transform_cross_name = s,^,$(target_alias)-,
+
+# -----------------------------
+# Directories used during build
+# -----------------------------
+
+# Directory where sources are, from where we are.
+srcdir = @srcdir@
 
 # These directories contain files that are provided as part of a FSF tarball,
 # but not provided in CVS.  Some GCC integrators like to use the CVS sources
@@ -44,20 +82,27 @@ website=http://gcc.gnu.org
 parsedir = $(srcdir)
 docobjdir = $(srcdir)/doc
 
+# Top build directory, relative to here.
+top_builddir = .
+# objdir is set by configure.
+# It's normally the absolute path to the current directory.
+objdir = @objdir@
+
+# --------
+# UNSORTED
+# --------
+
 # Variables that exist for you to override.
 # See below for how to change them for certain systems.
 
 # List of language subdirectories.
-# This is overridden by configure.
 SUBDIRS =@subdirs@
 
 # Selection of languages to be made.
-# This is overridden by configure.
 CONFIG_LANGUAGES = @all_languages@
 LANGUAGES = c gcov$(exeext) gcov-dump$(exeext) $(CONFIG_LANGUAGES)
 
 # Selection of languages to be made during stage1 build.
-# This is overridden by configure.
 BOOT_LANGUAGES = c @all_boot_languages@
 
 # Various ways of specifying flags for compilations:
@@ -144,6 +189,11 @@ AR = ar
 AR_FLAGS = rc
 DLLTOOL = dlltool
 RANLIB = @RANLIB@
+
+# -------------------------------------------
+# Programs which operate on the build machine
+# -------------------------------------------
+
 SHELL = @SHELL@
 # pwd command to use.  Allow user to override default by setting PWDCMD in
 # the environment to account for automounters.  The make variable must not
@@ -165,17 +215,21 @@ MAKEINFOFLAGS =
 TEXI2DVI = texi2dvi
 TEXI2POD = perl $(srcdir)/../contrib/texi2pod.pl
 POD2MAN = pod2man --center="GNU" --release="gcc-$(version)"
-# For GNUmake: let us decide what gets passed to recursive makes.
-MAKEOVERRIDES =
-@SET_MAKE@
-# Some compilers can't handle cc -c blah.c -o foo/blah.o.
-# In stage2 and beyond, we force this to "-o $@" since we know we're using gcc.
-OUTPUT_OPTION = @OUTPUT_OPTION@
-
 # Some versions of `touch' (such as the version on Solaris 2.8)
 # do not correctly set the timestamp due to buggy versions of `utime'
 # in the kernel.  So, we use `echo' instead.
 STAMP = echo timestamp >
+
+# Make sure the $(MAKE) variable is defined.
+@SET_MAKE@
+
+# --------
+# UNSORTED
+# --------
+
+# Some compilers can't handle cc -c blah.c -o foo/blah.o.
+# In stage2 and beyond, we force this to "-o $@" since we know we're using gcc.
+OUTPUT_OPTION = @OUTPUT_OPTION@
 
 # This is where we get zlib from.  zlibdir is -L../zlib and zlibinc is
 # -I../zlib, unless we were configured with --with-system-zlib, in which
@@ -211,21 +265,9 @@ GCC_FOR_TARGET = $(STAGE_CC_WRAPPER) ./xgcc -B./ -B$(build_tooldir)/bin/ -isyste
 # It also specifies -isystem ./include to find, e.g., stddef.h.
 GCC_CFLAGS=$(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(LOOSE_WARN) -isystem ./include $(TCFLAGS)
 
-# Sed command to transform gcc to installed name.  Overwritten by configure.
-program_transform_name = @program_transform_name@
-program_transform_cross_name = s,^,$(target_alias)-,
-
-build_canonical = @build_canonical@
-host_canonical = @host_canonical@
-
-# Tools to use when building a cross-compiler.
-# These are used because `configure' appends `cross-make'
-# to the makefile when making a cross-compiler.
-
-# Use the tools from the build tree, if they are available.
-
-# objdir is set by configure.
-objdir = @objdir@
+# ---------------------------------------------------
+# Programs which produce files for the target machine
+# ---------------------------------------------------
 
 AR_FOR_TARGET = ` \
   if [ -f $(objdir)/../binutils/ar ] ; then \
@@ -263,6 +305,10 @@ NM_FOR_TARGET = ` \
     fi; \
   fi`
 
+# --------
+# UNSORTED
+# --------
+
 # Where to find some libiberty headers.
 HASHTAB_H   = $(srcdir)/../include/hashtab.h
 OBSTACK_H   = $(srcdir)/../include/obstack.h
@@ -289,8 +335,6 @@ LIMITS_H_TEST = [ -f $(SYSTEM_HEADER_DIR)/limits.h ]
 # each of $(system_prefix)/usr/include, $(system_prefix)/usr/lib, etc.
 TARGET_SYSTEM_ROOT = @TARGET_SYSTEM_ROOT@
 
-target=@target@
-target_alias=@target_alias@
 xmake_file=@dep_host_xmake_file@
 tmake_file=@dep_tmake_file@
 out_file=$(srcdir)/config/@out_file@
@@ -323,6 +367,10 @@ gcc_version_trigger=@gcc_version_trigger@
 version=$(gcc_version)
 mainversion=`grep version_string $(srcdir)/version.c | sed -e 's/.*\"\([0-9]*\.[0-9]*\).*/\1/'`
 
+# ------------------------
+# Installation directories
+# ------------------------
+
 # Common prefix for installation directories.
 # NOTE: This directory must exist when you start installation.
 prefix = @prefix@
@@ -337,6 +385,11 @@ exec_prefix = @exec_prefix@
 bindir = @bindir@
 # Directory in which to put the directories used by the compiler.
 libdir = @libdir@
+
+# --------
+# UNSORTED
+# --------
+
 # Directory in which the compiler finds executables, libraries, etc.
 libsubdir = $(libdir)/gcc-lib/$(target_alias)/$(version)
 # Used to produce a relative $(gcc_tooldir) in gcc.o
@@ -374,9 +427,6 @@ man1dir = $(mandir)/man1
 man7dir = $(mandir)/man7
 # Dir for temp files.
 tmpdir = /tmp
-
-# Top build directory, relative to here.
-top_builddir = .
 
 # Whether we were configured with NLS.
 USE_NLS = @USE_NLS@
@@ -448,7 +498,6 @@ EXTRA_OBJS = @extra_objs@
 EXTRA_GCC_OBJS =@host_extra_gcc_objs@
 
 # List of additional header files to install.
-# Often this is edited directly by `configure'.
 EXTRA_HEADERS =@extra_headers_list@
 
 # It is convenient for configure to add the assignment at the beginning,
@@ -484,7 +533,6 @@ GENERATED_MANPAGES = @GENERATED_MANPAGES@
 OTHER_FIXINCLUDES_DIRS=
 
 # A list of all the language-specific executables.
-# This is overridden by configure.
 COMPILERS = cc1$(exeext) @all_compilers@
 
 # List of things which should already be built whenever we try to use xgcc
@@ -530,10 +578,6 @@ CPP_CROSS_NAME = `echo cpp|sed '$(program_transform_cross_name)'`
 PROTOIZE_CROSS_NAME = `echo protoize|sed '$(program_transform_cross_name)'`
 UNPROTOIZE_CROSS_NAME = `echo unprotoize|sed '$(program_transform_cross_name)'`
 
-# Set by autoconf to "all.internal" for a native build, or
-# "all.cross" to build a cross compiler.
-ALL = @ALL@
-
 # Setup the testing framework, if you have one
 EXPECT = `if [ -f $${rootme}/../expect/expect ] ; then \
             echo $${rootme}/../expect/expect ; \
@@ -569,15 +613,6 @@ T_TARGET : $(T_TARGET)
 SPECS = specs
 
 # End of variables for you to override.
-
-# Definition of `all' is here so that new rules inserted by sed
-# do not specify the default target.
-# The real definition is under `all.internal' (for native compilers)
-# or `all.cross' (for cross compilers).
-all: all.indirect
-
-# This tells GNU Make version 3 not to put all variables in the environment.
-.NOEXPORT:
 
 # GTM_H lists the config files that the generator files depend on,
 # while TM_H lists the ones ordinary gcc files depend on, which
@@ -626,8 +661,6 @@ CPPLIB_H = cpplib.h line-map.h
 @host_overrides@
 #
 # Now figure out from those variables how to compile and link.
-
-all.indirect: $(ALL)
 
 # IN_GCC distinguishes between code compiled into GCC itself and other
 # programs built during a bootstrap.
@@ -688,14 +721,10 @@ INCLUDES = -I. -I$(@D) -I$(srcdir) -I$(srcdir)/$(@D) \
 .c.o:
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
-# This tells GNU make version 3 not to export all the variables
-# defined in this file into the environment.
-.NOEXPORT:
 #
-# Support for additional languages (other than c and objc).
-# ??? objc can be supported this way too (leave for later).
+# Support for additional languages (other than C).
+# C can be supported this way too (leave for later).
 
-# These next lines are overridden by configure.
 LANG_MAKEFILES = @all_lang_makefiles@
 LANG_STAGESTUFF = @all_stagestuff@
 
@@ -840,14 +869,6 @@ TPBIT_FUNCS = _pack_tf _unpack_tf _addsub_tf _mul_tf _div_tf \
 # unwinder info.
 LIB2_DIVMOD_FUNCS = _divdi3 _moddi3 _udivdi3 _umoddi3 _udiv_w_sdiv _udivmoddi4
 
-# The only suffixes we want for implicit rules are .c and .o, so clear
-# the list and add them.  This speeds up GNU Make, and allows -r to work.
-# For i18n support, we also need .gmo, .po, .pox.
-# This must come before the language makefile fragments to allow them to
-# add suffixes and rules of their own.
-.SUFFIXES:
-.SUFFIXES: .c .o .po .pox .gmo
-
 #
 # Language makefile fragments.
 
@@ -873,6 +894,10 @@ LIB2_DIVMOD_FUNCS = _divdi3 _moddi3 _udivdi3 _umoddi3 _udiv_w_sdiv _udivmoddi4
 
 # End of language makefile fragments.
 #
+
+# -----------------------------
+# Rebuilding this configuration
+# -----------------------------
 
 Makefile: $(srcdir)/Makefile.in config.status $(srcdir)/version.c \
    $(xmake_file) $(tmake_file) $(LANG_MAKEFILES)
@@ -961,6 +986,10 @@ config.status: $(srcdir)/configure $(srcdir)/config.gcc version.c
 	else \
 	  LANGUAGES="$(CONFIG_LANGUAGES)" $(SHELL) config.status --recheck; \
 	fi
+
+# --------
+# UNSORTED
+# --------
 
 all.internal: start.encap rest.encap doc
 # This is what to compile if making a cross-compiler.
@@ -3763,8 +3792,6 @@ risky-stage4: stage4
 #In GNU Make, ignore whether `stage*' exists.
 .PHONY: stage1 stage2 stage3 stage4 clean maintainer-clean TAGS bootstrap
 .PHONY: risky-stage1 risky-stage2 risky-stage3 risky-stage4
-
-force:
 
 # Rules for generating translated message descriptions.
 # Disabled by autoconf if the tools are not available.

@@ -23,6 +23,10 @@ in
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
+# Don't pass command-line variables to submakes.
+.NOEXPORT:
+MAKEOVERRIDES=
+
 # -------------------------------
 # Standard Autoconf-set variables
 # -------------------------------
@@ -87,7 +91,6 @@ INSTALL_DATA = $(INSTALL) -m 644
 # -------------------------------------------------
 
 links=@configlinks@
-enable_version_specific_runtime_libs = @enable_version_specific_runtime_libs@
 # The file containing GCC's version number.
 gcc_version_trigger = @gcc_version_trigger@
 gcc_version = @gcc_version@
@@ -1450,10 +1453,6 @@ config.status: configure $(gcc_version_trigger)
 AUTOCONF = autoconf
 $(srcdir)/configure: @MAINT@ $(srcdir)/configure.in $(srcdir)/config/acx.m4
 	cd $(srcdir) && $(AUTOCONF)
-#
-
-.NOEXPORT:
-MAKEOVERRIDES=
 
 # Tell GNU make 3.79 not to run the top level in parallel.  This 
 # prevents contention for $builddir/$target/config.cache, as well
