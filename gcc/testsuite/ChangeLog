@@ -1,5 +1,8 @@
 2005-02-24  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/20196
+	* gcc.c-torture/execute/20050224-1.c: New test.
+
 	PR c++/20175
 	* g++.dg/warn/Wbraces2.C: New test.
 
