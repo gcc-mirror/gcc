@@ -3234,6 +3234,12 @@ find_comparison_args (code, parg1, parg2, pmode1, pmode2)
       if (x == 0)
 	break;
 
+      /* If we need to reverse the comparison, make sure that that is
+	 possible -- we can't necessarily infer the value of GE from LT
+	 with floating-point operands.  */
+      if (reverse_code && ! can_reverse_comparison_p (x, NULL_RTX))
+	break;
+
       arg1 = XEXP (x, 0), arg2 = XEXP (x, 1);
       if (GET_RTX_CLASS (GET_CODE (x)) == '<')
 	code = GET_CODE (x);
