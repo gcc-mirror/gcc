@@ -2999,14 +2999,14 @@ lookup_template_function (fns, arglist)
       return error_mark_node;
     }
 
-  if (arglist != NULL_TREE && !TREE_PERMANENT (arglist))
-    copy_to_permanent (arglist);
-
   type = TREE_TYPE (fns);
   if (TREE_CODE (fns) == OVERLOAD || !type)
     type = unknown_type_node;
 
-  return build_min (TEMPLATE_ID_EXPR, type, fns, arglist);  
+  if (processing_template_decl)
+    return build_min (TEMPLATE_ID_EXPR, type, fns, arglist);  
+  else
+    return build (TEMPLATE_ID_EXPR, type, fns, arglist);
 }
 
 /* Within the scope of a template class S<T>, the name S gets bound
@@ -5469,11 +5469,25 @@ tsubst_copy (t, args, in_decl)
       else
 	return t;
 
-#if 0
-    case IDENTIFIER_NODE:
-      return do_identifier (t, 0);
-#endif
-      
+    case LOOKUP_EXPR:
+      {
+	/* We must tsbust into a LOOKUP_EXPR in case the names to
+	   which it refers is a conversion operator; in that case the
+	   name will change.  We avoid making unnecessary copies,
+	   however.  */
+	
+	tree id = tsubst_copy (TREE_OPERAND (t, 0), args, in_decl);
+
+	if (id != TREE_OPERAND (t, 0))
+	  {
+	    tree r = build_nt (LOOKUP_EXPR, id);
+	    LOOKUP_EXPR_GLOBAL (r) = LOOKUP_EXPR_GLOBAL (t);
+	    t = r;
+	  }
+
+	return t;
+      }
+
     case CAST_EXPR:
     case REINTERPRET_CAST_EXPR:
     case CONST_CAST_EXPR:
@@ -7234,6 +7248,16 @@ do_decl_instantiation (declspecs, declarator, storage)
   else if (TREE_CODE (decl) != FUNCTION_DECL)
     {
       cp_error ("explicit instantiation of `%#D'", decl);
+      return;
+    }
+  else if (DECL_TEMPLATE_SPECIALIZATION (decl))
+    /* [temp.spec]
+
+       No program shall both explicit instantiation and explicit
+       specialize a template.  */
+    {
+      cp_error ("explicit instantiation of `%#D' after", decl);
+      cp_error_at ("explicit specialization here", decl);
       return;
     }
   else if (DECL_TEMPLATE_INSTANTIATION (decl))

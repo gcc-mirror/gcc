@@ -1784,6 +1784,11 @@ mapcar (t, func)
       TREE_OPERAND (t, 2) = mapcar (TREE_OPERAND (t, 2), func);
       return t;
 
+    case LOOKUP_EXPR:
+      t = copy_node (t);
+      TREE_OPERAND (t, 0) = mapcar (TREE_OPERAND (t, 0), func);
+      return t;
+
     case RECORD_TYPE:
       if (TYPE_PTRMEMFUNC_P (t))
 	return build_ptrmemfunc_type
@@ -2022,7 +2027,7 @@ build_min VPROTO((enum tree_code code, tree tt, ...))
 
   t = make_node (code);
   length = tree_code_length[(int) code];
-  TREE_TYPE (t) = tt;
+  TREE_TYPE (t) = copy_to_permanent (tt);
   TREE_COMPLEXITY (t) = lineno;
 
   for (i = 0; i < length; i++)
