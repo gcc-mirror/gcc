@@ -458,25 +458,20 @@ proc check_effective_target_vect_int { } {
 
 # Return 1 if the target supports hardware vectors of long, 0 otherwise.
 #
-# This won't change for different subtargets so cache the result.
+# This can change for different subtargets so do not cache the result.
 
 proc check_effective_target_vect_long { } {
-    global et_vect_long_saved
-
-    if [info exists et_vect_long_saved] {
-	verbose "check_effective_target_vect_long: using cached result" 2
+    if { [istarget i?86-*-*]
+	 || ([istarget powerpc*-*-*] && [check_effective_target_ilp32])
+	 || [istarget x86_64-*-*]
+	 || ([istarget sparc*-*-*] && [check_effective_target_ilp32]) } {
+	set answer 1
     } else {
-	set et_vect_long_saved 0
-	if { [istarget i?86-*-*]
-	      || [istarget powerpc*-*-*]
-	      || [istarget x86_64-*-*]
-	      || ([istarget sparc*-*-*] && [check_effective_target_ilp32]) } {
-	   set et_vect_long_saved 1
-	}
+	set answer 0
     }
 
-    verbose "check_effective_target_vect_long: returning $et_vect_long_saved" 2
-    return $et_vect_long_saved
+    verbose "check_effective_target_vect_long: returning $answer" 2
+    return $answer
 }
 
 # Return 1 if the target supports hardware vectors of float, 0 otherwise.
