@@ -1,3 +1,11 @@
+2002-08-15  Alexandre Oliva  <aoliva@redhat.com>
+
+	* parse.y (sizeof, alignof, typeof): New non-terminals to
+	increment skip_evaluation.  Replace terminals with them and
+	decrement skip_evaluation at the end of rules using them.
+	* decl2.c (mark_used): Don't assemble_external if
+	skipping evaluation.
+
 2002-08-15  Gabriel Dos Reis  <gdr@nerim.net>
 
 	Fix PR/7504
