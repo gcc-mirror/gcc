@@ -3345,6 +3345,15 @@ the basename of the source file.  In both cases any suffix is removed
 (e.g.@: @file{foo.gcda} for input file @file{dir/foo.c}, or
 @file{dir/foo.gcda} for output file specified as @option{-o dir/foo.o}).
 
+@cindex @command{gcov}
+@item --coverage
+@opindex coverage
+
+This option is used to compile and link code instrumented for coverage
+analysis.  The option is a synonym for @option{-fprofile-arcs}
+@option{-ftest-coverage} (when compiling) and @option{-lgcov} (when
+linking).  See the documentation for those options for more details.
+
 @itemize
 
 @item
