@@ -21,6 +21,15 @@
 ;; along with GNU CC; see the file COPYING.  If not, write to
 ;; the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 
+;; ??? MIPS4 has 8 floating point condition codes.  This is not supported yet.
+
+;; ??? MIPS4 has floating point doubleword/word load/stores that accept a
+;; base+index addressing mode.  There are no such load/stores for the integer
+;; registers.  This is not supported yet.
+
+;; ??? Currently does not have define_function_unit support for the R8000.
+;; Must include new entries for fmadd in addition to existing entries.
+
 
 
 ;; ....................
@@ -45,6 +54,7 @@
 ;; icmp		integer compare
 ;; fadd		floating point add/subtract
 ;; fmul		floating point multiply
+;; fmadd	floating point multiply-add
 ;; fdiv		floating point divide
 ;; fabs		floating point absolute value
 ;; fneg		floating point negation
@@ -55,7 +65,7 @@
 ;; nop		no operation
 
 (define_attr "type"
-  "unknown,branch,jump,call,load,store,move,xfer,hilo,arith,darith,imul,idiv,icmp,fadd,fmul,fdiv,fabs,fneg,fcmp,fcvt,fsqrt,multi,nop"
+  "unknown,branch,jump,call,load,store,move,xfer,hilo,arith,darith,imul,idiv,icmp,fadd,fmul,fmadd,fdiv,fabs,fneg,fcmp,fcvt,fsqrt,multi,nop"
   (const_string "unknown"))
 
 ;; Main data type used by the insn
@@ -81,7 +91,8 @@
 ;;           (eq (symbol_ref "mips_cpu") (symbol_ref "PROCESSOR_R6000"))   (const_string "r6000")]
 ;;          (const_string "default"))))
 
-(define_attr "cpu" "default,r3000,r6000,r4000,r4600"
+;; ??? Fix everything that tests this attribute.
+(define_attr "cpu" "default,r3000,r6000,r4000,r4600,r8000"
   (const (symbol_ref "mips_cpu_attr")))
 
 ;; Attribute defining whether or not we can use the branch-likely instructions
@@ -1060,6 +1071,97 @@
   [(set_attr "type"	"imul")
    (set_attr "mode"	"SI")
    (set_attr "length"   "1")])
+
+;; Floating point multiply accumulate instructions.
+
+(define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=f")
+	(plus:DF (mult:DF (match_operand:DF 1 "register_operand" "f")
+			  (match_operand:DF 2 "register_operand" "f"))
+		 (match_operand:DF 3 "register_operand" "f")))]
+  "mips_isa >= 4 && TARGET_HARD_FLOAT"
+  "madd.d\\t%0,%3,%1,%2"
+  [(set_attr "type"	"fmadd")
+   (set_attr "mode"	"DF")
+   (set_attr "length"	"1")])
+
+(define_insn ""
+  [(set (match_operand:SF 0 "register_operand" "=f")
+	(plus:SF (mult:SF (match_operand:SF 1 "register_operand" "f")
+			  (match_operand:SF 2 "register_operand" "f"))
+		 (match_operand:SF 3 "register_operand" "f")))]
+  "mips_isa >= 4 && TARGET_HARD_FLOAT"
+  "madd.s\\t%0,%3,%1,%2"
+  [(set_attr "type"	"fmadd")
+   (set_attr "mode"	"SF")
+   (set_attr "length"	"1")])
+
+(define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=f")
+	(minus:DF (mult:DF (match_operand:DF 1 "register_operand" "f")
+			   (match_operand:DF 2 "register_operand" "f"))
+		  (match_operand:DF 3 "register_operand" "f")))]
+  "mips_isa >= 4 && TARGET_HARD_FLOAT"
+  "msub.d\\t%0,%3,%1,%2"
+  [(set_attr "type"	"fmadd")
+   (set_attr "mode"	"DF")
+   (set_attr "length"	"1")])
+
+(define_insn ""
+  [(set (match_operand:SF 0 "register_operand" "=f")
+	(minus:SF (mult:SF (match_operand:SF 1 "register_operand" "f")
+			   (match_operand:SF 2 "register_operand" "f"))
+		  (match_operand:SF 3 "register_operand" "f")))]
+		  
+  "mips_isa >= 4 && TARGET_HARD_FLOAT"
+  "msub.s\\t%0,%3,%1,%2"
+  [(set_attr "type"	"fmadd")
+   (set_attr "mode"	"SF")
+   (set_attr "length"	"1")])
+
+(define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=f")
+	(neg:DF (plus:DF (mult:DF (match_operand:DF 1 "register_operand" "f")
+				  (match_operand:DF 2 "register_operand" "f"))
+			 (match_operand:DF 3 "register_operand" "f"))))]
+  "mips_isa >= 4 && TARGET_HARD_FLOAT"
+  "nmadd.d\\t%0,%3,%1,%2"
+  [(set_attr "type"	"fmadd")
+   (set_attr "mode"	"DF")
+   (set_attr "length"	"1")])
+
+(define_insn ""
+  [(set (match_operand:SF 0 "register_operand" "=f")
+	(neg:SF (plus:SF (mult:SF (match_operand:SF 1 "register_operand" "f")
+				  (match_operand:SF 2 "register_operand" "f"))
+			 (match_operand:SF 3 "register_operand" "f"))))]
+  "mips_isa >= 4 && TARGET_HARD_FLOAT"
+  "nmadd.s\\t%0,%3,%1,%2"
+  [(set_attr "type"	"fmadd")
+   (set_attr "mode"	"SF")
+   (set_attr "length"	"1")])
+
+(define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=f")
+	(minus:DF (match_operand:DF 1 "register_operand" "f")
+		  (mult:DF (match_operand:DF 2 "register_operand" "f")
+			   (match_operand:DF 3 "register_operand" "f"))))]
+  "mips_isa >= 4 && TARGET_HARD_FLOAT"
+  "nmsub.d\\t%0,%1,%2,%3"
+  [(set_attr "type"	"fmadd")
+   (set_attr "mode"	"DF")
+   (set_attr "length"	"1")])
+
+(define_insn ""
+  [(set (match_operand:SF 0 "register_operand" "=f")
+	(minus:SF (match_operand:SF 1 "register_operand" "f")
+		  (mult:SF (match_operand:SF 2 "register_operand" "f")
+			   (match_operand:SF 3 "register_operand" "f"))))]
+  "mips_isa >= 4 && TARGET_HARD_FLOAT"
+  "nmsub.s\\t%0,%1,%2,%3"
+  [(set_attr "type"	"fmadd")
+   (set_attr "mode"	"SF")
+   (set_attr "length"	"1")])
 
 ;;
 ;;  ....................
@@ -2767,6 +2869,37 @@ move\\t%0,%z4\\n\\
   ""
   "
 {
+  /* If we are generating embedded PIC code, and we are referring to a
+     symbol in the .text section, we must use an offset from the start
+     of the function.  */
+  if (TARGET_EMBEDDED_PIC
+      && (GET_CODE (operands[1]) == LABEL_REF
+	  || (GET_CODE (operands[1]) == SYMBOL_REF
+	      && ! SYMBOL_REF_FLAG (operands[1]))))
+    {
+      rtx temp;
+
+      temp = embedded_pic_offset (operands[1]);
+      temp = gen_rtx (PLUS, Pmode, embedded_pic_fnaddr_rtx,
+		      force_reg (DImode, temp));
+      emit_move_insn (operands[0], force_reg (DImode, temp));
+      DONE;
+    }
+
+  /* If operands[1] is a constant address illegal for pic, then we need to
+     handle it just like LEGITIMIZE_ADDRESS does.  */
+  if (flag_pic && pic_address_needs_scratch (operands[1]))
+    {
+      rtx temp = force_reg (DImode, XEXP (XEXP (operands[1], 0), 0));
+      rtx temp2 = XEXP (XEXP (operands[1], 0), 1);
+
+      if (! SMALL_INT (temp2))
+	temp2 = force_reg (DImode, temp2);
+
+      emit_move_insn (operands[0], gen_rtx (PLUS, DImode, temp, temp2));
+      DONE;
+    }
+
   if ((reload_in_progress | reload_completed) == 0
       && !register_operand (operands[0], DImode)
       && !register_operand (operands[1], DImode)
@@ -3139,6 +3272,19 @@ move\\t%0,%z4\\n\\
    (set (subreg:SI (match_dup 0) 1) (subreg:SI (match_dup 1) 1))]
   "")
 
+;; Instructions to load the global pointer register.
+;; This is volatile to make sure that the scheduler won't move any symbol_ref
+;; uses in front of it.  All symbol_refs implicitly use the gp reg.
+
+(define_insn "loadgp"
+  [(set (reg:DI 28)
+	(unspec_volatile [(match_operand:DI 0 "address_operand" "")] 2))
+   (clobber (reg:DI 1))]
+  ""
+  "%[lui\\t$1,%%hi(%%neg(%%gp_rel(%a0)))\\n\\taddiu\\t$1,$1,%%lo(%%neg(%%gp_rel(%a0)))\\n\\tdaddu\\t$gp,$1,$25%]"
+  [(set_attr "type"	"move")
+   (set_attr "mode"	"DI")
+   (set_attr "length"	"3")])
 
 ;; Block moves, see mips.c for more details.
 ;; Argument 0 is the destination
@@ -3270,7 +3416,7 @@ move\\t%0,%z4\\n\\
   "*
 {
   if (GET_CODE (operands[2]) == CONST_INT)
-    operands[2] = gen_rtx (CONST_INT, VOIDmode, (XINT (operands[2], 0))& 0x1f);
+    operands[2] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[2]) & 0x1f);
 
   return \"sll\\t%0,%1,%2\";
 }"
@@ -3340,7 +3486,7 @@ move\\t%0,%z4\\n\\
   "!TARGET_64BIT && !TARGET_DEBUG_G_MODE && (INTVAL (operands[2]) & 32) != 0"
   "*
 {
-  operands[2] = gen_rtx (CONST_INT, VOIDmode, (XINT (operands[2], 0))& 0x1f);
+  operands[2] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[2]) & 0x1f);
   operands[4] = const0_rtx;
   return \"sll\\t%M0,%L1,%2\;move\\t%L0,%z4\";
 }"
@@ -3362,7 +3508,7 @@ move\\t%0,%z4\\n\\
   [(set (subreg:SI (match_dup 0) 1) (ashift:SI (subreg:SI (match_dup 1) 0) (match_dup 2)))
    (set (subreg:SI (match_dup 0) 0) (const_int 0))]
 
-  "operands[2] = gen_rtx (CONST_INT, VOIDmode, (XINT (operands[2], 0))& 0x1f);")
+  "operands[2] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[2]) & 0x1f);")
 
 
 (define_split
@@ -3378,7 +3524,7 @@ move\\t%0,%z4\\n\\
   [(set (subreg:SI (match_dup 0) 0) (ashift:SI (subreg:SI (match_dup 1) 1) (match_dup 2)))
    (set (subreg:SI (match_dup 0) 1) (const_int 0))]
 
-  "operands[2] = gen_rtx (CONST_INT, VOIDmode, (XINT (operands[2], 0))& 0x1f);")
+  "operands[2] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[2]) & 0x1f);")
 
 
 (define_insn "ashldi3_internal3"
@@ -3497,7 +3643,7 @@ move\\t%0,%z4\\n\\
   "*
 {
   if (GET_CODE (operands[2]) == CONST_INT)
-    operands[2] = gen_rtx (CONST_INT, VOIDmode, (XINT (operands[2], 0))& 0x1f);
+    operands[2] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[2]) & 0x1f);
 
   return \"sra\\t%0,%1,%2\";
 }"
@@ -3567,7 +3713,7 @@ move\\t%0,%z4\\n\\
   "!TARGET_64BIT && !TARGET_DEBUG_G_MODE && (INTVAL (operands[2]) & 32) != 0"
   "*
 {
-  operands[2] = gen_rtx (CONST_INT, VOIDmode, (XINT (operands[2], 0))& 0x1f);
+  operands[2] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[2]) & 0x1f);
   return \"sra\\t%L0,%M1,%2\;sra\\t%M0,%M1,31\";
 }"
   [(set_attr "type"	"darith")
@@ -3588,7 +3734,7 @@ move\\t%0,%z4\\n\\
   [(set (subreg:SI (match_dup 0) 0) (ashiftrt:SI (subreg:SI (match_dup 1) 1) (match_dup 2)))
    (set (subreg:SI (match_dup 0) 1) (ashiftrt:SI (subreg:SI (match_dup 1) 1) (const_int 31)))]
 
-  "operands[2] = gen_rtx (CONST_INT, VOIDmode, (XINT (operands[2], 0))& 0x1f);")
+  "operands[2] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[2]) & 0x1f);")
 
 
 (define_split
@@ -3604,7 +3750,7 @@ move\\t%0,%z4\\n\\
   [(set (subreg:SI (match_dup 0) 1) (ashiftrt:SI (subreg:SI (match_dup 1) 0) (match_dup 2)))
    (set (subreg:SI (match_dup 0) 0) (ashiftrt:SI (subreg:SI (match_dup 1) 0) (const_int 31)))]
 
-  "operands[2] = gen_rtx (CONST_INT, VOIDmode, (XINT (operands[2], 0))& 0x1f);")
+  "operands[2] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[2]) & 0x1f);")
 
 
 (define_insn "ashrdi3_internal3"
@@ -3722,7 +3868,7 @@ move\\t%0,%z4\\n\\
   "*
 {
   if (GET_CODE (operands[2]) == CONST_INT)
-    operands[2] = gen_rtx (CONST_INT, VOIDmode, (XINT (operands[2], 0))& 0x1f);
+    operands[2] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[2]) & 0x1f);
 
   return \"srl\\t%0,%1,%2\";
 }"
@@ -3792,7 +3938,7 @@ move\\t%0,%z4\\n\\
   "!TARGET_64BIT && !TARGET_DEBUG_G_MODE && (INTVAL (operands[2]) & 32) != 0"
   "*
 {
-  operands[2] = gen_rtx (CONST_INT, VOIDmode, (XINT (operands[2], 0))& 0x1f);
+  operands[2] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[2]) & 0x1f);
   operands[4] = const0_rtx;
   return \"srl\\t%L0,%M1,%2\;move\\t%M0,%z4\";
 }"
@@ -3814,7 +3960,7 @@ move\\t%0,%z4\\n\\
   [(set (subreg:SI (match_dup 0) 0) (lshiftrt:SI (subreg:SI (match_dup 1) 1) (match_dup 2)))
    (set (subreg:SI (match_dup 0) 1) (const_int 0))]
 
-  "operands[2] = gen_rtx (CONST_INT, VOIDmode, (XINT (operands[2], 0))& 0x1f);")
+  "operands[2] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[2]) & 0x1f);")
 
 
 (define_split
@@ -3830,7 +3976,7 @@ move\\t%0,%z4\\n\\
   [(set (subreg:SI (match_dup 0) 1) (lshiftrt:SI (subreg:SI (match_dup 1) 0) (match_dup 2)))
    (set (subreg:SI (match_dup 0) 0) (const_int 0))]
 
-  "operands[2] = gen_rtx (CONST_INT, VOIDmode, (XINT (operands[2], 0))& 0x1f);")
+  "operands[2] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[2]) & 0x1f);")
 
 
 (define_insn "lshrdi3_internal3"
@@ -5384,7 +5530,12 @@ move\\t%0,%z4\\n\\
 {
   if (GET_CODE (operands[0]) == REG)
     return \"%*j\\t%0\";
-  else
+  /* ??? I don't know why this is necessary.  This works around an
+     assembler problem that appears when a label is defined, then referenced
+     in a switch table, then used in a `j' instruction.  */
+  else if (ABI_64BIT && mips_isa >= 3)
+    return \"%*b\\t%l0\";
+  else	
     return \"%*j\\t%l0\";
 }"
   [(set_attr "type"	"jump")
@@ -5460,7 +5611,7 @@ move\\t%0,%z4\\n\\
   "*
 {
   /* .cpadd expands to add REG,REG,$gp when pic, and nothing when not pic.  */
-  if (TARGET_ABICALLS)
+  if (TARGET_ABICALLS && (! ABI_64BIT || mips_isa < 3))
     output_asm_insn (\".cpadd\\t%0\", operands);
   return \"%*j\\t%0\";
 }"
@@ -5479,8 +5630,9 @@ move\\t%0,%z4\\n\\
   "*
 {
   /* .cpdadd expands to dadd REG,REG,$gp when pic, and nothing when not pic. */
-  if (TARGET_ABICALLS)
-    output_asm_insn (\".cpdadd\\t%0\", operands);
+  /*  ??? SGI as does not have a .cpdadd.  */
+  if (TARGET_ABICALLS && (! ABI_64BIT || mips_isa < 3))
+    output_asm_insn (\".cpadd\\t%0\", operands);
   return \"%*j\\t%0\";
 }"
   [(set_attr "type"	"jump")
@@ -6031,3 +6183,217 @@ move\\t%0,%z4\\n\\
 
   /* fall through and generate default code */
 }")
+
+;;
+;; MIPS4 Conditional move instructions.
+
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=d,d")
+	(if_then_else:SI
+	 (match_operator 4 "equality_op"
+			 [(match_operand:SI 1 "register_operand" "d,d")
+			  (const_int 0)])
+	 (match_operand:SI 2 "reg_or_0_operand" "dJ,0")
+	 (match_operand:SI 3 "reg_or_0_operand" "0,dJ")))]
+  "mips_isa >= 4"
+  "@
+    mov%B4\\t%0,%z2,%1
+    mov%b4\\t%0,%z3,%1"
+  [(set_attr "type" "move")
+   (set_attr "mode" "SI")])
+
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=d,d")
+	(if_then_else:SI
+	 (match_operator 3 "equality_op" [(reg:CC_FP 66) (const_int 0)])
+	 (match_operand:SI 1 "reg_or_0_operand" "dJ,0")
+	 (match_operand:SI 2 "reg_or_0_operand" "0,dJ")))]
+  "mips_isa >= 4"
+  "@
+    mov%T3\\t%0,%z1,$fcc0
+    mov%t3\\t%0,%z2,$fcc0"
+  [(set_attr "type" "move")
+   (set_attr "mode" "SI")])
+
+(define_insn ""
+  [(set (match_operand:DI 0 "register_operand" "=d,d")
+	(if_then_else:DI
+	 (match_operator 4 "equality_op"
+			 [(match_operand:DI 1 "register_operand" "d,d")
+			  (const_int 0)])
+	 (match_operand:DI 2 "reg_or_0_operand" "dJ,0")
+	 (match_operand:DI 3 "reg_or_0_operand" "0,dJ")))]
+  "mips_isa >= 4"
+  "@
+    mov%B4\\t%0,%z2,%1
+    mov%b4\\t%0,%z3,%1"
+  [(set_attr "type" "move")
+   (set_attr "mode" "DI")])
+
+(define_insn ""
+  [(set (match_operand:DI 0 "register_operand" "=d,d")
+	(if_then_else:DI
+	 (match_operator 3 "equality_op" [(reg:CC_FP 66) (const_int 0)])
+	 (match_operand:DI 1 "reg_or_0_operand" "dJ,0")
+	 (match_operand:DI 2 "reg_or_0_operand" "0,dJ")))]
+  "mips_isa >= 4"
+  "@
+    mov%T3\\t%0,%z1,$fcc0
+    mov%t3\\t%0,%z2,$fcc0"
+  [(set_attr "type" "move")
+   (set_attr "mode" "DI")])
+
+(define_insn ""
+  [(set (match_operand:SF 0 "register_operand" "=f,f")
+	(if_then_else:SF
+	 (match_operator 4 "equality_op"
+			 [(match_operand:SI 1 "register_operand" "d,d")
+			  (const_int 0)])
+	 (match_operand:SF 2 "register_operand" "f,0")
+	 (match_operand:SF 3 "register_operand" "0,f")))]
+  "mips_isa >= 4 && TARGET_HARD_FLOAT"
+  "@
+    mov%B4.s\\t%0,%2,%1
+    mov%b4.s\\t%0,%3,%1"
+  [(set_attr "type" "move")
+   (set_attr "mode" "SF")])
+
+(define_insn ""
+  [(set (match_operand:SF 0 "register_operand" "=f,f")
+	(if_then_else:SF
+	 (match_operator 3 "equality_op" [(reg:CC_FP 66) (const_int 0)])
+	 (match_operand:SF 1 "register_operand" "f,0")
+	 (match_operand:SF 2 "register_operand" "0,f")))]
+  "mips_isa >= 4 && TARGET_HARD_FLOAT"
+  "@
+    mov%T3.s\\t%0,%1,$fcc0
+    mov%t3.s\\t%0,%2,$fcc0"
+  [(set_attr "type" "move")
+   (set_attr "mode" "SF")])
+
+(define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=f,f")
+	(if_then_else:DF
+	 (match_operator 4 "equality_op"
+			 [(match_operand:SI 1 "register_operand" "d,d")
+			  (const_int 0)])
+	 (match_operand:DF 2 "register_operand" "f,0")
+	 (match_operand:DF 3 "register_operand" "0,f")))]
+  "mips_isa >= 4 && TARGET_HARD_FLOAT"
+  "@
+    mov%B4.d\\t%0,%2,%1
+    mov%b4.d\\t%0,%3,%1"
+  [(set_attr "type" "move")
+   (set_attr "mode" "DF")])
+
+(define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=f,f")
+	(if_then_else:DF
+	 (match_operator 3 "equality_op" [(reg:CC_FP 66) (const_int 0)])
+	 (match_operand:DF 1 "register_operand" "f,0")
+	 (match_operand:DF 2 "register_operand" "0,f")))]
+  "mips_isa >= 4 && TARGET_HARD_FLOAT"
+  "@
+    mov%T3.d\\t%0,%1,$fcc0
+    mov%t3.d\\t%0,%2,$fcc0"
+  [(set_attr "type" "move")
+   (set_attr "mode" "DF")])
+
+;; These are the main define_expand's used to make conditional moves.
+
+(define_expand "movsicc"
+  [(set (match_dup 4) (match_operand 1 "comparison_operator" ""))
+   (set (match_operand:SI 0 "register_operand" "")
+	(if_then_else:SI (match_dup 5)
+			 (match_operand:SI 2 "reg_or_0_operand" "")
+			 (match_operand:SI 3 "reg_or_0_operand" "")))]
+  "mips_isa >= 4"
+  "
+{
+  rtx op0 = branch_cmp[0];
+  rtx op1 = branch_cmp[1];
+  enum machine_mode mode = GET_MODE (branch_cmp[0]);
+  enum rtx_code compare_code = GET_CODE (operands[1]);
+  enum rtx_code move_code = NE;
+
+  if (GET_MODE_CLASS (mode) != MODE_FLOAT)
+    {
+      switch (compare_code)
+	{
+	case EQ:
+	  compare_code = XOR;
+	  move_code = EQ;
+	  break;
+	case NE:
+	  compare_code = XOR;
+	  break;
+	case LT:
+	  break;
+	case GE:
+	  compare_code = LT;
+	  move_code = EQ;
+	  break;
+	case GT:
+	  compare_code = LT;
+	  op0 = force_reg (mode, branch_cmp[1]);
+	  op1 = branch_cmp[0];
+	  break;
+	case LE:
+	  compare_code = LT;
+	  op0 = force_reg (mode, branch_cmp[1]);
+	  op1 = branch_cmp[0];
+	  move_code = EQ;
+	  break;
+	case LTU:
+	  break;
+	case GEU:
+	  compare_code = LTU;
+	  move_code = EQ;
+	  break;
+	case GTU:
+	  compare_code = LTU;
+	  op0 = force_reg (mode, branch_cmp[1]);
+	  op1 = branch_cmp[0];
+	  break;
+	case LEU:
+	  compare_code = LTU;
+	  op0 = force_reg (mode, branch_cmp[1]);
+	  op1 = branch_cmp[0];
+	  move_code = EQ;
+	  break;
+	default:
+	  abort ();
+	}
+    }
+  else
+    {
+      if (compare_code == NE)
+	{
+	  /* ??? Perhaps we need to use CC_FP_REVmode here?  */
+	  compare_code = EQ;
+	  move_code = EQ;
+	}
+    }
+	  
+  if (mode == SImode || mode == DImode)
+    {
+      operands[1] = gen_rtx (compare_code, mode, op0, op1);
+      operands[4] = gen_reg_rtx (mode);
+    }
+  else if (mode == SFmode || mode == DFmode)
+    {
+      operands[1] = gen_rtx (compare_code, CC_FPmode, op0, op1);
+      operands[4] = gen_rtx (REG, CC_FPmode, FPSW_REGNUM);
+    }
+
+  if (mode == DImode)
+    operands[5] = gen_rtx (move_code, VOIDmode,
+			   gen_lowpart (SImode, operands[4]),
+			   CONST0_RTX (SImode));
+  else
+    operands[5] = gen_rtx (move_code, VOIDmode, operands[4],
+			   CONST0_RTX (SImode));
+}")
+
+;; ??? Need movdicc, movsfcc, and movdfcc patterns.  They should be
+;; very similar to the above movsicc pattern.
