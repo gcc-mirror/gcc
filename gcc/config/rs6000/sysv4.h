@@ -657,15 +657,25 @@ do {									\
    out of the string in a SYMBOL_REF.  Discard
    a leading * or @. */
 #undef  STRIP_NAME_ENCODING
-#define STRIP_NAME_ENCODING(VAR,SYMBOL_NAME) \
-  (VAR) = ((SYMBOL_NAME) + (((SYMBOL_NAME)[0] == '*') || ((SYMBOL_NAME)[0] == '@')))
+#define STRIP_NAME_ENCODING(VAR,SYMBOL_NAME)				\
+do {									\
+  char *_name = SYMBOL_NAME;						\
+  while (*_name == '*' || *_name == '@')				\
+    _name++;								\
+  (VAR) = _name;							\
+} while (0)
 
 /* This is how to output a reference to a user-level label named NAME.
    `assemble_name' uses this.  */
 
 #undef ASM_OUTPUT_LABELREF
 #define ASM_OUTPUT_LABELREF(FILE,NAME)	\
-  fputs ((NAME) + (NAME[0] == '@'), FILE)
+do {									\
+  char *_name = NAME;							\
+  while (*_name == '*' || *_name == '@')				\
+    _name++;								\
+  fputs (_name, FILE);							\
+} while (0)
 
 /* But, to make this work, we have to output the stabs for the function
    name *first*...  */
