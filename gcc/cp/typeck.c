@@ -808,7 +808,13 @@ comp_target_types (ttl, ttr, nptrs)
 	    return -1;
 	  else if (TREE_CODE (ttl) == POINTER_TYPE
 		   || TREE_CODE (ttl) == ARRAY_TYPE)
-	    return comp_ptr_ttypes (ttl, ttr);
+	    {
+	      if (comp_ptr_ttypes (ttl, ttr))
+		return 1;
+	      else if (comp_ptr_ttypes (ttr, ttl))
+		return -1;
+	      return 0;
+	    }
 	}
 
       /* Const and volatile mean something different for function types,
@@ -6134,9 +6140,9 @@ build_modify_expr (lhs, modifycode, rhs)
 	newrhs = build_cplus_new (lhstype, newrhs, 0);
 
       /* Can't initialize directly from a TARGET_EXPR, since that would
-	 cause the lhs to be constructed twice.  So we force the
-	 TARGET_EXPR to be expanded.  expand_expr should really do this
-	 by itself.  */
+	 cause the lhs to be constructed twice, and possibly result in
+	 accidental self-initialization.  So we force the TARGET_EXPR to be
+	 expanded.  expand_expr should really do this by itself.  */
       if (TREE_CODE (newrhs) == TARGET_EXPR)
 	newrhs = expand_target_expr (newrhs);
     }

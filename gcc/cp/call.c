@@ -194,7 +194,12 @@ convert_harshness (type, parmtype, parm)
 
       ttr = intype;
 
-      /* Maybe handle conversion to base here?  */
+      if (TREE_CODE (ttl) == ARRAY_TYPE && TREE_CODE (ttr) == ARRAY_TYPE)
+	{
+	  if (comptypes (ttl, ttr, 1))
+	    return ZERO_RETURN (h);
+	  return EVIL_RETURN (h);
+	}
 
       h = convert_harshness (ttl, ttr, NULL_TREE);
       if (penalty && h.code == 0)
