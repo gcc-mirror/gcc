@@ -1152,6 +1152,11 @@ The testing process will try to test as many components in the GCC
 distribution as possible, including the C, C++, Objective-C and Fortran
 compilers as well as the C++ and Java runtime libraries.
 
+While running the testsuite, DejaGnu might emit messages resembling
+@samp{WARNING: Couldn't find the global config file.} or 
+@samp{WARNING: Couldn't find tool init file}.
+These messages are harmless and do not affect the validity of the tests.
+
 @section How can I run the test suite on selected tests?
 
 As a first possibility to cut down the number of tests that are run it is
@@ -1255,6 +1260,9 @@ Now that GCC has been built (and optionally tested), you can install it with
 @example
 cd @var{objdir}; make install
 @end example
+
+We strongly recommend to install into a target directory where there is
+no previous version of GCC present.
 
 That step completes the installation of GCC; user level binaries can
 be found in @file{@var{prefix}/bin} where @var{prefix} is the value you
