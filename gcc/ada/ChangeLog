@@ -1,3 +1,10 @@
+2001-10-30  Robert Dewar <dewar@gnat.com>
+
+	* style.adb:
+	(Check_Identifier): Rewrite circuit to be compatible with use of letters
+	in the upper half of ASCII.
+	(Check_Identifier): Minor reformatting
+
 2001-10-30  Geert Bosch <bosch@gnat.com>
 
 	* (Associated_Node, Set_Associated_Node): Do not check for 

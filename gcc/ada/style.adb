@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.48 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -409,10 +409,10 @@ package body Style is
      (Ref : Node_Or_Entity_Id;
       Def : Node_Or_Entity_Id)
    is
-      SRef : Source_Ptr := Sloc (Ref);
-      SDef : Source_Ptr := Sloc (Def);
-      TRef : Source_Buffer_Ptr;
-      TDef : Source_Buffer_Ptr;
+      Sref : Source_Ptr := Sloc (Ref);
+      Sdef : Source_Ptr := Sloc (Def);
+      Tref : Source_Buffer_Ptr;
+      Tdef : Source_Buffer_Ptr;
       Nlen : Nat;
       Cas  : Casing_Type;
 
@@ -429,45 +429,66 @@ package body Style is
          --  Check same casing if we are checking references
 
          if Style_Check_References then
-            TRef := Source_Text (Get_Source_File_Index (SRef));
-            TDef := Source_Text (Get_Source_File_Index (SDef));
+            Tref := Source_Text (Get_Source_File_Index (Sref));
+            Tdef := Source_Text (Get_Source_File_Index (Sdef));
 
             --  Ignore operator name case completely. This also catches the
             --  case of where one is an operator and the other is not. This
             --  is a phenomenon from rewriting of operators as functions,
             --  and is to be ignored.
 
-            if TRef (SRef) = '"' or else TDef (SDef) = '"' then
+            if Tref (Sref) = '"' or else Tdef (Sdef) = '"' then
                return;
 
             else
-               for J in 1 .. Length_Of_Name (Chars (Ref)) loop
-                  if TRef (SRef) /= TDef (SDef) then
-                     Error_Msg_Node_1 := Def;
-                     Error_Msg_Sloc := Sloc (Def);
-                     Error_Msg
-                       ("(style) bad casing of & declared#", SRef);
-                     return;
-                  end if;
+               while Tref (Sref) = Tdef (Sdef) loop
 
-                  SRef := SRef + 1;
-                  SDef := SDef + 1;
+                  --  If end of identifier, all done
+
+                  if not Identifier_Char (Tref (Sref)) then
+                     return;
+
+                  --  Otherwise loop continues
+
+                  else
+                     Sref := Sref + 1;
+                     Sdef := Sdef + 1;
+                  end if;
                end loop;
+
+               --  Fall through loop when mismatch between identifiers
+               --  If either identifier is not terminated, error.
+
+               if Identifier_Char (Tref (Sref))
+                    or else
+                  Identifier_Char (Tdef (Sdef))
+               then
+                  Error_Msg_Node_1 := Def;
+                  Error_Msg_Sloc := Sloc (Def);
+                  Error_Msg
+                    ("(style) bad casing of & declared#", Sref);
+                  return;
+
+               --  Else end of identifiers, and they match
+
+               else
+                  return;
+               end if;
             end if;
          end if;
 
       --  Case of definition in package Standard
 
-      elsif SDef = Standard_Location then
+      elsif Sdef = Standard_Location then
 
          --  Check case of identifiers in Standard
 
          if Style_Check_Standard then
-            TRef := Source_Text (Get_Source_File_Index (SRef));
+            Tref := Source_Text (Get_Source_File_Index (Sref));
 
             --  Ignore operators
 
-            if TRef (SRef) = '"' then
+            if Tref (Sref) = '"' then
                null;
 
             --  Special case of ASCII
@@ -491,7 +512,7 @@ package body Style is
                Nlen  := Length_Of_Name (Chars (Ref));
 
                if Determine_Casing
-                    (TRef (SRef .. SRef + Source_Ptr (Nlen) - 1)) = Cas
+                    (Tref (Sref .. Sref + Source_Ptr (Nlen) - 1)) = Cas
                then
                   null;
                else
