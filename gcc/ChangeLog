@@ -1,3 +1,7 @@
+Sun Feb 15 17:05:41 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* mips/mips.h (INITIAL_ELIMINATION_OFFSET): Readd Jun 6 change.
+
 Sun Feb 15 15:23:15 1998  John Carr  <jfc@mit.edu>
 
 	* alias.c: Include <stdlib.h> and <string.h>.
