@@ -1152,12 +1152,8 @@ make_edges (label_value_list)
 	 wouldn't have created the sibling call in the first place.  */
 
       if (code == CALL_INSN && SIBLING_CALL_P (insn))
-	{
-	  if (! find_reg_note (insn, REG_NORETURN, NULL_RTX))
-	    make_edge (edge_cache, bb, EXIT_BLOCK_PTR,
-		       EDGE_ABNORMAL | EDGE_ABNORMAL_CALL);
-	}
-      else
+	make_edge (edge_cache, bb, EXIT_BLOCK_PTR,
+		   EDGE_ABNORMAL | EDGE_ABNORMAL_CALL);
 
       /* If this is a CALL_INSN, then mark it as reaching the active EH
 	 handler for this CALL_INSN.  If we're handling asynchronous
@@ -1165,7 +1161,7 @@ make_edges (label_value_list)
 
 	 Also mark the CALL_INSN as reaching any nonlocal goto handler.  */
 
-      if (code == CALL_INSN || asynchronous_exceptions)
+      else if (code == CALL_INSN || asynchronous_exceptions)
 	{
 	  /* Add any appropriate EH edges.  We do this unconditionally
 	     since there may be a REG_EH_REGION or REG_EH_RETHROW note

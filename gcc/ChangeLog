@@ -1,3 +1,12 @@
+2000-10-07  Richard Henderson  <rth@cygnus.com>
+
+	* calls.c (expand_call): Disallow sibcalls to noreturn functions.
+	* flow.c (make_edges): Revert last change.
+
+	* config/alpha/alpha.h (FUNCTION_OK_FOR_SIBCALL): Don't test
+	TREE_THIS_VOLATILE.
+	* config/pa/pa.h (FUNCTION_OK_FOR_SIBCALL): Likewise.
+
 2000-10-06  David O'Brien  <obrien@dragon.nuxi.com>
 
 	* config/alpha/elf.h: Standardize the formatting.

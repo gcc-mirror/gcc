@@ -2014,8 +2014,7 @@ while (0)
 #define FUNCTION_OK_FOR_SIBCALL(DECL) \
   (DECL \
    && ! TARGET_64BIT \
-   && (! TREE_PUBLIC (DECL) \
-       || TREE_THIS_VOLATILE (DECL)))
+   && ! TREE_PUBLIC (DECL))
 
 #define PREDICATE_CODES							\
   {"reg_or_0_operand", {SUBREG, REG, CONST_INT}},			\

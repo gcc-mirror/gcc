@@ -2463,6 +2463,7 @@ expand_call (exp, target, ignore)
 	 before the sibcall_epilogue.  */
       || fndecl == NULL_TREE
       || (flags & (ECF_RETURNS_TWICE | ECF_LONGJMP))
+      || TREE_THIS_VOLATILE (fndecl)
       || !FUNCTION_OK_FOR_SIBCALL (fndecl)
       /* If this function requires more stack slots than the current
 	 function, we cannot change it into a sibling call.  */
