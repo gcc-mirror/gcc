@@ -227,6 +227,7 @@ java_read_char ()
           c1 = GETC ();
 	  if ((c1 & 0xc0) == 0x80)
 	    return (unicode_t)(((c &0x1f) << 6) + (c1 & 0x3f));
+	  c = c1;
 	}
       else if ((c & 0xf0) == 0xe0)
         {
@@ -237,8 +238,18 @@ java_read_char ()
 	      if ((c2 & 0xc0) == 0x80)
 	        return (unicode_t)(((c & 0xf) << 12) + 
 				   (( c1 & 0x3f) << 6) + (c2 & 0x3f));
+	      else
+		c = c2;
 	    }
+	  else
+	    c = c1;
 	}
+      /* We looked for a UTF8 multi-byte sequence (since we saw an initial
+	 byte with the high bit set), but found invalid bytes instead.
+	 If the most recent byte was Ascii (and not EOF), we should
+	 unget it, in case it was a comment terminator or other delimitor. */
+      if ((c & 0x80) == 0)
+	UNGETC (c);
       return BAD_UTF8_VALUE;
     }
 }
@@ -308,7 +319,7 @@ java_read_unicode (term_context, unicode_escape_p)
 	  return (term_context ? unicode :
 		  (java_lineterminator (c) ? '\n' : unicode));
 	}
-      UNGETC (c);
+      ctxp->unget_utf8_value = c;
     }
   return (unicode_t)'\\';
 }

@@ -99,8 +99,8 @@ typedef struct _java_lc {
 
 #define JAVA_LINE_MAX 80
 
-/* Macro to read and unread chars */
-#define UNGETC(c) ctxp->unget_utf8_value = (c);
+/* Macro to read and unread bytes */
+#define UNGETC(c) ungetc(c, finput)
 #define GETC()    getc(finput)
 
 /* Build a location compound integer */
