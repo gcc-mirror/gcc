@@ -2967,7 +2967,7 @@ insn_dead_p (x, needed, call_ok, notes)
 
       while (GET_CODE (r) == SUBREG || GET_CODE (r) == STRICT_LOW_PART
 	     || GET_CODE (r) == ZERO_EXTRACT)
-	r = SUBREG_REG (r);
+	r = XEXP (r, 0);
 
       if (GET_CODE (r) == REG)
 	{
