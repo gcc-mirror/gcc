@@ -2745,7 +2745,7 @@ expand_decl (decl)
       free_temp_slots ();
 
       /* Allocate space on the stack for the variable.  */
-      address = allocate_dynamic_stack_space (size, 0);
+      address = allocate_dynamic_stack_space (size, 0, DECL_ALIGN (decl));
 
       if (nonlocal_goto_stack_level != 0)
 	emit_move_insn (nonlocal_goto_stack_level, stack_pointer_rtx);
@@ -3651,7 +3651,7 @@ expand_end_case (orig_index)
 	  if (HAVE_casesi)
 	    {
 	      enum machine_mode index_mode = SImode;
-	      tree index_type = GET_MODE_BITSIZE (index_mode);
+	      int index_bits = GET_MODE_BITSIZE (index_mode);
 
 	      /* Convert the index to SImode.  */
 	      if (GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (index_expr)))
@@ -3662,7 +3662,7 @@ expand_end_case (orig_index)
 		  minval = integer_zero_node;
 		}
 	      if (TYPE_MODE (TREE_TYPE (index_expr)) != index_mode)
-		index_expr = convert (type_for_size (index_type, 0),
+		index_expr = convert (type_for_size (index_bits, 0),
 				      index_expr);
 	      index = expand_expr (index_expr, 0, VOIDmode, 0);
 	      emit_queue ();
@@ -3683,9 +3683,9 @@ expand_end_case (orig_index)
 						 TREE_TYPE (index_expr),
 						 index_expr, minval)));
 	      index = expand_expr (index_expr, 0, VOIDmode, 0);
-	      index = convert_to_mode (Pmode, index, 1);
 	      emit_queue ();
-	      index = protect_from_queue (index, 0);
+	      /* convert_to_mode calls protect_from_queue.  */
+	      index = convert_to_mode (Pmode, index, 1);
 	      do_pending_stack_adjust ();
 
 	      do_tablejump (index, Pmode,
