@@ -16,9 +16,6 @@
 
 # This file was derived from mike-g++.exp written by Mike Stump <mrs@cygnus.com>
 
-# Please email any bugs, comments, and/or additions to this file to:
-# bug-gcc@prep.ai.mit.edu
-
 #
 # mike_cleanup -- remove any files that are created by the testcase
 #
