@@ -4817,7 +4817,7 @@ init_block_visualization ()
   n_vis_no_unit = 0;
 }
 
-#define BUF_LEN 256
+#define BUF_LEN 2048
 
 static char *
 safe_concat (buf, cur, str)
