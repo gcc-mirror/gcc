@@ -195,7 +195,8 @@ rs6000_override_options ()
 /* Create a CONST_DOUBLE like immed_double_const, except reverse the
    two parts of the constant if the target is little endian.  */
 
-struct rtx_def *rs6000_immed_double_const (i0, i1, mode)
+struct rtx_def *
+rs6000_immed_double_const (i0, i1, mode)
      HOST_WIDE_INT i0, i1;
      enum machine_mode mode;
 {
@@ -683,8 +684,6 @@ expand_block_move (operands)
     {
       for ( ; bytes > 0; bytes -= move_bytes)
 	{
-#if 0
-	  /* XXX Don't move so many bytes right now, it causes the compiler to not bootstrap */
 	  if (bytes > 24		/* move up to 32 bytes at a time */
 	      && !fixed_regs[5]
 	      && !fixed_regs[6]
@@ -727,9 +726,7 @@ expand_block_move (operands)
 					    GEN_INT (move_bytes),
 					    align_rtx));
 	    }
-	  else
-#endif
-	    if (bytes > 4 && !TARGET_64BIT)
+	  else if (bytes > 4 && !TARGET_64BIT)
 	    {			/* move up to 8 bytes at a time */
 	      move_bytes = (bytes > 8) ? 8 : bytes;
 	      emit_insn (gen_movstrsi_2reg (dest_reg,
