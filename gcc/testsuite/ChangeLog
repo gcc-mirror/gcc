@@ -1,3 +1,8 @@
+2005-03-22  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* g77_intrinsics_funcs.f: New test.
+	* g77_intrinsics_sub.f: New test.
+
 2005-03-22  Richard Guenther <rguenth@tat.physik.uni-tuebingen.de>
 	    Jan Hubicka  <jh@suse.cz>
 	    Steven Bosscher <stevenb@suse.de
@@ -68,6 +73,7 @@
 	* gcc.c-torture/compile/pr20539-1.c: Likewise.
 	* g++.dg/opt/pr13066-1.C: Likewise.
 
+>>>>>>> 1.5197
 2005-03-20  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/bitfld-14.c, gcc.dg/enum3.c: New tests.
