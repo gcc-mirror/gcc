@@ -72,14 +72,6 @@ extern char *update_path PARAMS ((char *, char *));
 # endif
 #endif
 
-#ifndef S_ISREG
-#define S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
-#endif
-
-#ifndef S_ISDIR
-#define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
-#endif
-
 /* By default, colon separates directories in a path.  */
 #ifndef PATH_SEPARATOR
 #define PATH_SEPARATOR ':'

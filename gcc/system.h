@@ -356,4 +356,15 @@ extern void abort ();
 #define _(String) String
 #define N_(String) String
 
+
+/* Test if something is a normal file.  */
+#ifndef S_ISREG
+#define S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
+#endif
+
+/* Test if something is a directory.  */
+#ifndef S_ISDIR
+#define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
+#endif
+
 #endif /* __GCC_SYSTEM_H__ */
