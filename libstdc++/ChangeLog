@@ -1,3 +1,8 @@
+1998-07-02  Ulrich Drepper  <drepper@cygnus.com>
+
+	* std/bastring.h (class basic_string): Return correct iterators in
+	erase member functions.
+
 1998-06-24  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* Makefile.in (INSTALLDIR): Add comment to document the fact,
@@ -104,9 +109,9 @@ Sun Dec  7 02:32:20 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 Sun Dec  7 02:32:20 1997  Gregory L. Galloway (gregg@eoeml.gtri.gatech.edu)
 
-	* Makefile.in (HEADERS): Modified list of headers to 
-	install to include all of SGI STL headers especially hash_set and 
-	hash_map, and added ANSI C++ style wrappers for fstream, iomanip, 
+	* Makefile.in (HEADERS): Modified list of headers to
+	install to include all of SGI STL headers especially hash_set and
+	hash_map, and added ANSI C++ style wrappers for fstream, iomanip,
 	iostream, and strstream.
 
 	* fstream, iomanip, iostream, strstream: New forwarding headers
@@ -241,7 +246,7 @@ Sat Aug 23 21:25:37 1997  Mark Mitchell  <mmitchell@usa.net>
 
 Wed Jul 30 10:59:00 1997  Benjamin Kosnik  <bkoz@rhino.cygnus.com>
 
-	* stlinst.cc: Add instantiation file for 
+	* stlinst.cc: Add instantiation file for
 	__default_alloc_template<fale, 0> and
 	__malloc_alloc_template<0>
 
@@ -280,7 +285,7 @@ Fri Apr  4 03:25:13 1997  Ulrich Drepper  <drepper@cygnus.com>
 
 	* configure.in: Enable multilibing by default.
 	Update multilib template to read config-ml.in.
-	
+
 Wed Mar 12 16:09:34 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* configure.in (XCXXINCLUDES): Add the STL directory.
@@ -475,7 +480,7 @@ Wed Feb 14 14:39:07 1996  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* std/bastring.cc (check_realloc): Fix for sizeof (charT) > 1.
 	From John Hickin <hickin@bnr.ca>.
-	
+
 Wed Jan 10 11:05:04 1996  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* std/bastring.h (insert): Fix iterator handling.
@@ -584,7 +589,7 @@ Mon Oct 30 23:09:48 1995  Per Bothner  <bothner@kalessin.cygnus.com>
 	now that we are using target-libiberty instead.
 	* Makefile.in (LIBIBERTY_DIR):  Simplify.
 	(LIBIBERTY):  Remove.
-	
+
 Wed Oct 11 14:56:49 1995  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 	* config/sol2shm.ml: New files with -rpath.
@@ -675,7 +680,7 @@ Mon Aug 21 00:57:03 1995  Jeffrey A. Law  <law@rtl.cygnus.com>
 
 Tue Jul 25 18:41:29 1995  Per Bothner  <bothner@kalessin.cygnus.com>
 
-	* std/stddef.h:  Remove obsolete definition of enum capacity. 
+	* std/stddef.h:  Remove obsolete definition of enum capacity.
 
 Sat Jul 22 13:37:01 1995  Doug Evans  <dje@canuck.cygnus.com>
 
