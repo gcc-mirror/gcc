@@ -1,3 +1,9 @@
+2004-09-25  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c/12951
+	* doc/invoke.texi: Document that
+	-Wno-error-implicit-function-declaration is not accepted.
+
 2004-09-24  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.h (UNITS_PER_SIMD_WORD): New.
