@@ -1,3 +1,8 @@
+2004-06-09  Paolo Bonzini  <bonzini@gnu.org>
+
+	* gcc_release (build_sources): Move the libcpp gmo files
+	to the source directory.
+
 2004-06-03  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* gcc_release (maybe_build_tarfile): New function.

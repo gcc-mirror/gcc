@@ -1,3 +1,8 @@
+2004-06-09  Paolo Bonzini  <bonzini@gnu.org>
+
+	* Makefile.am (all-local): New.
+	* Makefile.in: Regenerate.
+
 2004-06-06  Roger Sayle  <roger@eyesopen.com>
 
 	* Makefile.am (LIBICONV): Declare.

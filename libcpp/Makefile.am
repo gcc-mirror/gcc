@@ -23,6 +23,8 @@ GMSGFMT = @GMSGFMT@
 MSGMERGE = msgmerge
 CATALOGS = @CATALOGS@
 
+all-local: build-po
+
 if ENABLE_NLS
 build-po: $(CATALOGS)
 update-po: $(CATALOGS:.gmo=.pox)
