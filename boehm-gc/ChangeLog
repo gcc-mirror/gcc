@@ -1,3 +1,8 @@
+2001-06-12  Tom Tromey  <tromey@redhat.com>
+
+	* aclocal.m4, configure: Rebuilt.
+	* acinclude.m4: Find configure.host in srcdir.
+
 2001-06-07  Tom Tromey  <tromey@redhat.com>
 
 	For PR bootstrap/3075:

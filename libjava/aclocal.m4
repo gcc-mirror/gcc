@@ -91,7 +91,7 @@ libgcj_cflags=
 libgcj_cxxflags=
 libgcj_javaflags=
 
-. [$]{libgcj_basedir}/configure.host
+. [$]{srcdir}/configure.host
 
 case [$]{libgcj_basedir} in
 /* | [A-Za-z]:[/\\]*) libgcj_flagbasedir=[$]{libgcj_basedir} ;;
