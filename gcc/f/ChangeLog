@@ -1,3 +1,7 @@
+2001-05-20  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* Make-lang.in (f/g77.dvi): Include $(srcdir) in TEXINPUTS.
+
 2001-05-19  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* Make-lang.in: Have $(MAKEINFO) look into the parent
