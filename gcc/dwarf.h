@@ -162,7 +162,9 @@ enum dwarf_attribute {
     AT_sf_names			= (0x8000|FORM_DATA4),
     AT_src_info			= (0x8010|FORM_DATA4),
     AT_mac_info			= (0x8020|FORM_DATA4),
-    AT_src_coords		= (0x8030|FORM_DATA4)
+    AT_src_coords		= (0x8030|FORM_DATA4),
+    AT_body_begin		= (0x8040|FORM_ADDR),
+    AT_body_end			= (0x8050|FORM_ADDR)
 };
 
 #define AT_lo_user	0x8000  /* implementation-defined range start */
