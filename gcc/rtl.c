@@ -420,6 +420,7 @@ copy_rtx (orig)
 	case 'i':
 	case 's':
 	case 'S':
+	case 'T':
 	case 'u':
 	case '0':
 	  /* These are left unchanged.  */

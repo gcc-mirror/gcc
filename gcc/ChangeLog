@@ -1,3 +1,9 @@
+2001-07-03  Zack Weinberg  <zackw@stanford.edu>
+
+	* rtl.c (copy_rtx): Handle 'T' format letter.
+	* gensupport.c (collect_insn_data): Likewise.
+	* print-rtl.c (print_rtx): Print 'T' slots like 's'.
+
 2001-07-03  Nick Clifton  <nickc@cambridge.redhat.com>
 
 	* doc/invoke.texi (Directory Options): Specifiy range for <N> in

@@ -453,7 +453,7 @@ collect_insn_data (pattern, palt, pmax)
 	    collect_insn_data (XVECEXP (pattern, i, j), palt, pmax);
 	  break;
 
-	case 'i': case 'w': case '0': case 's': case 'S':
+	case 'i': case 'w': case '0': case 's': case 'S': case 'T':
 	  break;
 
 	default:
