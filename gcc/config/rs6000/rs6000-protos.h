@@ -101,6 +101,7 @@ extern int includes_rldic_lshift_p PARAMS ((rtx, rtx));
 extern int includes_rldicr_lshift_p PARAMS ((rtx, rtx));
 extern int registers_ok_for_quad_peep PARAMS ((rtx, rtx));
 extern int addrs_ok_for_quad_peep PARAMS ((rtx, rtx));
+extern int altivec_in_gprs_p (rtx, rtx);
 extern enum reg_class secondary_reload_class PARAMS ((enum reg_class,
 						      enum machine_mode, rtx));
 extern int ccr_bit PARAMS ((rtx, int));
@@ -125,6 +126,7 @@ extern int mtcrf_operation PARAMS ((rtx, enum machine_mode));
 extern int lmw_operation PARAMS ((rtx, enum machine_mode));
 extern struct rtx_def *create_TOC_reference PARAMS ((rtx));
 extern void rs6000_emit_eh_toc_restore PARAMS ((rtx));
+extern void rs6000_split_altivec_in_gprs (rtx *);
 extern void rs6000_emit_move PARAMS ((rtx, rtx, enum machine_mode));
 extern rtx rs6000_legitimize_address PARAMS ((rtx, rtx, enum machine_mode));
 extern rtx rs6000_legitimize_reload_address PARAMS ((rtx, enum machine_mode,

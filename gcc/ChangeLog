@@ -1,3 +1,19 @@
+2003-06-30 Hartmut Penner  <hpenner@de.ibm.com>
+
+        * config/rs6000/rs6000.c (rs6000_split_altivec_in_gprs): New function.
+        (altivec_in_gprs_p): New function.
+
+	* config/rs6000/rs6000-protos (rs6000_split_altivec_in_gprs): New 
+	prototype.
+	(altivec_in_gprs_p): New prototype.
+
+	* config/rs6000/altivec.md (*movv4si_internal): Change
+	multi-assembler alternative to '#'. Add postreload splitter to
+	handle this cases.
+	(*movv4hi_internal): Likewise.
+	(*movv4qi_internal): Likewise.
+	(*movv4sf_internal): Likewise.
+
 2003-06-30  Jason Merrill  <jason@redhat.com>
 
 	* defaults.h (PUSH_ARGS_REVERSED): Define default here.
