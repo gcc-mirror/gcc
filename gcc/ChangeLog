@@ -1,3 +1,9 @@
+2004-04-30  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* expr.c (store_constructor): SIZE operand is now in bits; CLEARED
+	less than zero now means emitted CLOBBER already.
+	(store_constructor_field, expand_expr_real): Reflect above changes.
+
 2004-04-30  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* flow.c (propagate_one_insn): Call mark_set_regs for stack pointer
