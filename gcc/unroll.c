@@ -1,5 +1,5 @@
 /* Try to unroll loops, and split induction variables.
-   Copyright (C) 1992, 1993, 1994, 1995, 1997, 1998, 1999, 2000, 2001
+   Copyright (C) 1992, 1993, 1994, 1995, 1997, 1998, 1999, 2000, 2001, 2002
    Free Software Foundation, Inc.
    Contributed by James E. Wilson, Cygnus Support/UC Berkeley.
 
@@ -4053,7 +4053,7 @@ loop_iterations (loop)
      not HOST_WIDE_INT, disregard higher bits that might have come
      into the picture due to sign extension of initial and final
      values.  */
-  abs_diff &= ((unsigned HOST_WIDE_INT)1
+  abs_diff &= ((unsigned HOST_WIDE_INT) 1
 	       << (GET_MODE_BITSIZE (GET_MODE (iteration_var)) - 1)
 	       << 1) - 1;
 

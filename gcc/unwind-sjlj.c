@@ -1,5 +1,6 @@
 /* DWARF2 exception handling and frame unwind runtime interface routines.
-   Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+   Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -251,11 +252,13 @@ uw_init_context (struct _Unwind_Context *context)
 
 /* ??? There appear to be bugs in integrate.c wrt __builtin_longjmp and
    virtual-stack-vars.  An inline version of this segfaults on Sparc.  */
-#define uw_install_context(CURRENT, TARGET)	\
-  do {						\
-    _Unwind_SjLj_SetContext ((TARGET)->fc);	\
-    longjmp ((TARGET)->fc->jbuf, 1);		\
-  } while (0)
+#define uw_install_context(CURRENT, TARGET)		\
+  do							\
+    {							\
+      _Unwind_SjLj_SetContext ((TARGET)->fc);		\
+      longjmp ((TARGET)->fc->jbuf, 1);			\
+    }							\
+  while (0)
 
 
 static inline _Unwind_Ptr

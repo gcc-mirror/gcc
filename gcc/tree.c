@@ -1,6 +1,6 @@
 /* Language-independent node constructors for parse phase of GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2911,7 +2911,7 @@ merge_dllimport_decl_attributes (old, new)
 
   if (delete_dllimport_p)
     {
-      tree prev,t;
+      tree prev, t;
 
       /* Scan the list for dllimport and delete it.  */
       for (prev = NULL_TREE, t = a; t; prev = t, t = TREE_CHAIN (t))
@@ -3270,7 +3270,7 @@ attribute_list_contained (l1, l2)
 
   /* Maybe the lists are equal.  */
   if (t1 == 0 && t2 == 0)
-     return 1;
+    return 1;
 
   for (; t2 != 0; t2 = TREE_CHAIN (t2))
     {
@@ -3708,7 +3708,7 @@ build_reference_type (to_type)
 
 tree
 build_type_no_quals (t)
-  tree t;
+     tree t;
 {
   switch (TREE_CODE (t))
     {
@@ -3789,7 +3789,7 @@ build_range_type (type, lowval, highval)
    of just highval (maxval).  */
 
 tree
-build_index_2_type (lowval,highval)
+build_index_2_type (lowval, highval)
      tree lowval, highval;
 {
   return build_range_type (sizetype, lowval, highval);
@@ -3869,7 +3869,7 @@ build_array_type (elt_type, index_type)
 
 tree
 get_inner_array_type (array)
-    tree array;
+     tree array;
 {
   tree type = TREE_TYPE (array);
 

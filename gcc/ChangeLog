@@ -1,3 +1,14 @@
+2002-01-10  Kazu Hirata  <kazu@hxi.com>
+
+	* toplev.c: Fix formatting.
+	* tree.c: Likewise.
+	* tree-dump.c: Likewise.
+	* unroll.c: Likewise.
+	* unwind-dw2.c: Likewise.
+	* unwind-dw2-fde.c: Likewise.
+	* unwind-dw2-fde-glibc.c: Likewise.
+	* unwind-sjlj.c: Likewise.
+
 2002-01-10  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/invoke.texi: Document PDP-11 options.

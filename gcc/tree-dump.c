@@ -1,5 +1,5 @@
 /* Tree-dumping functionality for intermediate representation.
-   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2002 Free Software Foundation, Inc.
    Written by Mark Mitchell <mark@codesourcery.com>
 
 This file is part of GCC.
@@ -331,7 +331,7 @@ dequeue_and_dump (di)
 	  break;
 	      
 	default:
-	  abort();
+	  abort ();
 	}
     }
   else if (DECL_P (t))

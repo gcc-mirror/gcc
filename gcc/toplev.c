@@ -1701,8 +1701,8 @@ set_float_handler (handler)
 
 int
 do_float_handler (fn, data)
-  void (*fn) PARAMS ((PTR));
-  PTR data;
+     void (*fn) PARAMS ((PTR));
+     PTR data;
 {
   jmp_buf buf;
 
@@ -2861,7 +2861,7 @@ rest_of_compilation (decl)
       ggc_collect ();
       flag_cse_skip_blocks = save_csb;
       flag_cse_follow_jumps = save_cfj;
-     }
+    }
 
   /* Move constant computations out of loops.  */
 
@@ -3027,7 +3027,7 @@ rest_of_compilation (decl)
       if (initialize_uninitialized_subregs ())
 	{
 	  /* Insns were inserted, so things might look a bit different.  */
-	  insns = get_insns();
+	  insns = get_insns ();
 	  life_analysis (insns, rtl_dump_file, 
 			 (PROP_LOG_LINKS | PROP_REG_INFO | PROP_DEATH_NOTES));
 	}
@@ -3704,7 +3704,7 @@ display_help ()
 static void
 display_target_options ()
 {
-  int undoc,i;
+  int undoc, i;
   static bool displayed = false;
 
   /* Avoid double printing for --help --target-help.  */
@@ -3853,9 +3853,9 @@ decode_f_option (arg)
     }
 
   if (!strcmp (arg, "fast-math"))
-    set_fast_math_flags();
+    set_fast_math_flags ();
   else if (!strcmp (arg, "no-fast-math"))
-    set_no_fast_math_flags();
+    set_no_fast_math_flags ();
   else if ((option_value = skip_leading_substring (arg, "inline-limit-"))
 	   || (option_value = skip_leading_substring (arg, "inline-limit=")))
     {
