@@ -68,6 +68,11 @@ to be combined later on.
 Names that are not thus known and used in RTL-generation have no
 effect; they are equivalent to no name at all.
 
+For the purpose of debugging the compiler, you may also specify a
+name beginning with the @samp{*} character.  Such a name is used only
+for identifying the instruction in RTL dumps; it is entirely equivalent
+to having a nameless pattern for all other purposes.
+
 @item
 The @dfn{RTL template} (@pxref{RTL Template}) is a vector of incomplete
 RTL expressions which show what the instruction should look like.  It is
