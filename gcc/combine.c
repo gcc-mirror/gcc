@@ -1558,12 +1558,15 @@ try_combine (i3, i2, i1, new_direct_jump_p)
   added_links_insn = 0;
 
   /* First check for one important special-case that the code below will
-     not handle.  Namely, the case where I1 is zero, I2 has multiple sets,
+     not handle.  Namely, the case where I1 is zero, I2 is a PARALLEL
      and I3 is a SET whose SET_SRC is a SET_DEST in I2.  In that case,
      we may be able to replace that destination with the destination of I3.
      This occurs in the common code where we compute both a quotient and
      remainder into a structure, in which case we want to do the computation
      directly into the structure to avoid register-register copies.
+
+     Note that this case handles both multiple sets in I2 and also
+     cases where I2 has a number of CLOBBER or PARALLELs.
 
      We make very conservative checks below and only try to handle the
      most common cases of this.  For example, we only handle the case
@@ -1673,7 +1676,6 @@ try_combine (i3, i2, i1, new_direct_jump_p)
 	     immed_double_const (lo, hi, GET_MODE (SET_DEST (temp))));
 
       newpat = PATTERN (i2);
-      i3_subst_into_i2 = 1;
       goto validate_replacement;
     }
 
@@ -2524,7 +2526,7 @@ try_combine (i3, i2, i1, new_direct_jump_p)
        actually came from I3, so that REG_UNUSED notes from I2 will be
        properly handled.  */
 
-    if (i3_subst_into_i2 && single_set (i2) == 0)
+    if (i3_subst_into_i2)
       {
 	for (i = 0; i < XVECLEN (PATTERN (i2), 0); i++)
 	  if (GET_CODE (XVECEXP (PATTERN (i2), 0, i)) != USE
