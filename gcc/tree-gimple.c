@@ -602,26 +602,18 @@ rationalize_compound_expr (tree top)
 tree
 get_base_address (tree t)
 {
-  do
-    {
-      if (SSA_VAR_P (t)
-	  || TREE_CODE (t) == STRING_CST
-	  || TREE_CODE (t) == CONSTRUCTOR
-	  || TREE_CODE (t) == INDIRECT_REF)
-	return t;
-
-      if (TREE_CODE (t) == REALPART_EXPR || TREE_CODE (t) == IMAGPART_EXPR)
-	t = TREE_OPERAND (t, 0);
-      else if (handled_component_p (t))
-	t = get_base_address (TREE_OPERAND (t, 0));
-      else
-	return NULL_TREE;
-    }
-  while (t);
-
-  return t;
+  while (TREE_CODE (t) == REALPART_EXPR || TREE_CODE (t) == IMAGPART_EXPR
+	 || handled_component_p (t))
+    t = TREE_OPERAND (t, 0);
+  
+  if (SSA_VAR_P (t)
+      || TREE_CODE (t) == STRING_CST
+      || TREE_CODE (t) == CONSTRUCTOR
+      || TREE_CODE (t) == INDIRECT_REF)
+    return t;
+  else
+    return NULL_TREE;
 }
-
 
 void
 recalculate_side_effects (tree t)

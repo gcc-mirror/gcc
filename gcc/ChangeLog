@@ -6,6 +6,11 @@
 
 2004-06-25  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* tree-dfa.c (get_virtual_var): Merge real/imaginary parts with
+	handled_component_p handling.
+	* tree-gimple.c (get_base_address): Likewise and fix typo that
+	caused both recursion and looping.
+
 	* tree-cfg.c (verify_expr): Add macro CHECK_OK.
 	Properly test for nest of handled_components in LHS context.
 
