@@ -305,14 +305,21 @@ bss_section (decl, name)
    support is localized here.  */
 
 static void
-asm_output_bss (file, name, size, rounded)
+asm_output_bss (file, decl, name, size, rounded)
      FILE *file;
+     tree decl;
      char *name;
      int size, rounded;
 {
   ASM_GLOBALIZE_LABEL (file, name);
   bss_section ();
+#ifdef ASM_DECLARE_OBJECT_NAME
+  last_assemble_variable_decl = decl;
+  ASM_DECLARE_OBJECT_NAME (file, name, decl);
+#else
+  /* Standard thing is just output label for the object.  */
   ASM_OUTPUT_LABEL (file, name);
+#endif /* ASM_DECLARE_OBJECT_NAME */
   ASM_OUTPUT_SKIP (file, rounded);
 }
 
@@ -326,15 +333,22 @@ asm_output_bss (file, name, size, rounded)
    support is localized here.  */
 
 static void
-asm_output_aligned_bss (file, name, size, align)
+asm_output_aligned_bss (file, decl, name, size, align)
      FILE *file;
+     tree decl;
      char *name;
      int size, align;
 {
   ASM_GLOBALIZE_LABEL (file, name);
   bss_section ();
   ASM_OUTPUT_ALIGN (file, floor_log2 (align / BITS_PER_UNIT));
+#ifdef ASM_DECLARE_OBJECT_NAME
+  last_assemble_variable_decl = decl;
+  ASM_DECLARE_OBJECT_NAME (file, name, decl);
+#else
+  /* Standard thing is just output label for the object.  */
   ASM_OUTPUT_LABEL (file, name);
+#endif /* ASM_DECLARE_OBJECT_NAME */
   ASM_OUTPUT_SKIP (file, size);
 }
 
@@ -1304,7 +1318,7 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 	{
 #ifdef ASM_OUTPUT_SHARED_BSS
 	  if (flag_shared_data)
-	    ASM_OUTPUT_SHARED_BSS (asm_out_file, name, size, rounded);
+	    ASM_OUTPUT_SHARED_BSS (asm_out_file, decl, name, size, rounded);
 	  else
 #endif
 	    if (output_bytecode)
@@ -1314,10 +1328,10 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 	    else
 	      {
 #ifdef ASM_OUTPUT_ALIGNED_BSS
-		ASM_OUTPUT_ALIGNED_BSS (asm_out_file, name, size,
+		ASM_OUTPUT_ALIGNED_BSS (asm_out_file, decl, name, size,
 					DECL_ALIGN (decl));
 #else
-		ASM_OUTPUT_BSS (asm_out_file, name, size, rounded);
+		ASM_OUTPUT_BSS (asm_out_file, decl, name, size, rounded);
 #endif
 	      }
 	}
