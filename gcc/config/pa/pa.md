@@ -2214,7 +2214,7 @@
 
 (define_expand "ashlsi3"
   [(set (match_operand:SI 0 "register_operand" "")
-	(ashift:SI (match_operand:SI 1 "register_operand" "")
+	(ashift:SI (match_operand:SI 1 "arith5_operand" "")
 		   (match_operand:SI 2 "arith32_operand" "")))]
   ""
   "
@@ -2226,14 +2226,17 @@
       emit_insn (gen_zvdep32 (operands[0], operands[1], temp));
       DONE;
     }
+  /* Make sure both inputs are not constants, 
+     the recognizer can't handle that.  */
+  operands[1] = force_reg (SImode, operands[1]);
 }")
 
 (define_insn ""
- [(set (match_operand:SI 0 "register_operand" "=r")
-       (ashift:SI (match_operand:SI 1 "register_operand" "r")
-		  (match_operand:SI 2 "const_int_operand" "n")))]
- ""
- "*
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(ashift:SI (match_operand:SI 1 "register_operand" "r")
+		   (match_operand:SI 2 "const_int_operand" "n")))]
+  ""
+  "*
 {
   rtx xoperands[4];
   xoperands[0] = operands[0];
@@ -2245,12 +2248,14 @@
 }")
 
 (define_insn "zvdep32"
- [(set (match_operand:SI 0 "register_operand" "=r")
-       (ashift:SI (match_operand:SI 1 "register_operand" "r")
-		  (minus:SI (const_int 31)
-			    (match_operand:SI 2 "register_operand" "q"))))]
- ""
- "zvdep %1,32,%0")
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+	(ashift:SI (match_operand:SI 1 "arith5_operand" "r,L")
+		   (minus:SI (const_int 31)
+			     (match_operand:SI 2 "register_operand" "q,q"))))]
+  ""
+  "@
+   zvdep %1,32,%0
+   zvdepi %1,32,%0")
 
 (define_expand "ashrsi3"
   [(set (match_operand:SI 0 "register_operand" "")
@@ -2269,11 +2274,11 @@
 }")
 
 (define_insn ""
- [(set (match_operand:SI 0 "register_operand" "=r")
-       (ashiftrt:SI (match_operand:SI 1 "register_operand" "r")
-		    (match_operand:SI 2 "const_int_operand" "n")))]
- ""
- "*
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(ashiftrt:SI (match_operand:SI 1 "register_operand" "r")
+		     (match_operand:SI 2 "const_int_operand" "n")))]
+  ""
+  "*
 {
   rtx xoperands[4];
   xoperands[0] = operands[0];
@@ -2285,12 +2290,12 @@
 }")
 
 (define_insn "vextrs32"
- [(set (match_operand:SI 0 "register_operand" "=r")
-       (ashiftrt:SI (match_operand:SI 1 "register_operand" "r")
-		    (minus:SI (const_int 31)
-			      (match_operand:SI 2 "register_operand" "q"))))]
- ""
- "vextrs %1,32,%0")
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(ashiftrt:SI (match_operand:SI 1 "register_operand" "r")
+		     (minus:SI (const_int 31)
+			       (match_operand:SI 2 "register_operand" "q"))))]
+  ""
+  "vextrs %1,32,%0")
 
 (define_insn "lshrsi3"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -2356,6 +2361,21 @@
   "shd %1,%2,%4,%0"
   [(set_attr "type" "binary")
    (set_attr "length" "1")])
+
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(and:SI (ashift:SI (match_operand:SI 1 "register_operand" "r")
+			   (match_operand:SI 2 "const_int_operand" ""))
+		(match_operand:SI 3 "const_int_operand" "")))]
+  "exact_log2 (1 + (INTVAL (operands[3]) >> (INTVAL (operands[2]) & 31))) >= 0"
+  "*
+{
+  int cnt = INTVAL (operands[2]) & 31;
+  operands[3] = GEN_INT (exact_log2 (1 + (INTVAL (operands[3]) >> cnt)));
+  operands[2] = GEN_INT (31 - cnt);
+  return \"zdep %1,%2,%3,%0\";
+}")
+
 
 ;; Unconditional and other jump instructions.
 
