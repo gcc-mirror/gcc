@@ -3,6 +3,10 @@
 	* flow.c (init_propagate_block_info): Watch out for conditional
 	branch to next instruction, and thus one outgoing edge.
 
+	* config/ia64/ia64.c (ia64_encode_section_info): Exit early
+	for global register variables; don't special case __[CD]TOR_LIST__;
+	mind ggc_p for string allocation.
+
 2000-05-08  Nick Clifton  <nickc@cygnus.com>
 
 	* config/i386/i386.h (ELIMINABLE_REGS): Fix comment.
