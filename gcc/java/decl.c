@@ -341,6 +341,7 @@ tree void_signature_node;
 tree length_identifier_node;
 tree this_identifier_node;
 tree super_identifier_node;
+tree continue_identifier_node;
 
 tree end_params_node;
 
@@ -563,6 +564,7 @@ init_decl_processing ()
   length_identifier_node = get_identifier ("length");
   this_identifier_node = get_identifier ("this");
   super_identifier_node = get_identifier ("super");
+  continue_identifier_node = get_identifier ("continue");
 
   /* for lack of a better place to put this stub call */
   init_expr_processing();
