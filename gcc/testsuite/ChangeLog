@@ -1,3 +1,7 @@
+2000-11-11  Bernd Schmidt  <bernds@redhat.co.uk>
+
+	* gcc.c-torture/compile/20001116-1.c: New test.
+
 2000-11-15  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* gcc.c-torture/execute/20001115-1.c: New test.
