@@ -350,8 +350,9 @@ public class Timer
                   throw death;
                 }
 	      catch (Throwable t)
-		{		
-		  /* ignore all errors */
+		{
+		  // If an exception escapes, the Timer becomes invalid.
+                  queue.stop();
 		}
 	    }
 
