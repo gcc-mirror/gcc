@@ -97,8 +97,17 @@ extern void check_global_declarations   (union tree_node **, int);
 
 extern const char *progname;
 extern const char *dump_base_name;
+extern const char *aux_base_name;
+extern const char *aux_info_file_name;
+extern const char *asm_file_name;
+extern bool exit_after_options;
+extern bool version_flag;
 
 extern int target_flags_explicit;
+
+extern void display_help (void);
+extern void display_target_options (void);
+extern void print_version (FILE *, const char *);
 
 /* The hashtable, so that the C front ends can pass it to cpplib.  */
 extern struct ht *ident_hash;
@@ -107,6 +116,9 @@ extern struct ht *ident_hash;
     implied by -ffast-math and -fno-fast-math.  */
 
 extern void set_fast_math_flags         (int);
+
+/* Handle -d switch.  */
+extern void decode_d_option		(const char *);
 
 /* Return true iff flags are set as if -ffast-math.  */
 extern bool fast_math_flags_set_p	(void);

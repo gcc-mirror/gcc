@@ -46,7 +46,6 @@ struct c_pch_header
 
 static FILE *pch_outfile;
 
-extern char *asm_file_name;
 static long asm_file_startpos;
 
 static const char * get_ident PARAMS((void));

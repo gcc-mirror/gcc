@@ -181,7 +181,7 @@ int flag_indirect_dispatch = 0;
 int flag_store_check = 1;
 
 /* When nonzero, print extra version information.  */
-static int version_flag = 0;
+static int v_flag = 0;
 
 /* Set nonzero if the user specified -finline-functions on the command
    line.  */
@@ -448,7 +448,7 @@ java_handle_option (size_t scode, const char *arg, int value)
       break;
 
     case OPT_version:
-      version_flag = 1;
+      v_flag = 1;
       break;
     }
 
@@ -476,7 +476,7 @@ java_init (void)
       && force_align_functions_log < 1)
     force_align_functions_log = 1;
 
-  jcf_path_seal (version_flag);
+  jcf_path_seal (v_flag);
 
   java_init_decl_processing ();
 

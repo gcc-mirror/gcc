@@ -600,7 +600,7 @@ extern int flag_wrapv;
 
 /* Value of the -G xx switch, and whether it was passed or not.  */
 extern unsigned HOST_WIDE_INT g_switch_value;
-extern int g_switch_set;
+extern bool g_switch_set;
 
 /* Values of the -falign-* flags: how much to align labels in code. 
    0 means `use default', 1 means `don't align'.  

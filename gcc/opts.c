@@ -30,6 +30,16 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "flags.h"
 #include "toplev.h"
 
+/* Value of the -G xx switch, and whether it was passed or not.  */
+unsigned HOST_WIDE_INT g_switch_value;
+bool g_switch_set;
+
+/* True if we should exit after parsing options.  */
+bool exit_after_options;
+
+/* If -version.  */
+bool version_flag;
+
 static size_t find_opt (const char *, int);
 static int common_handle_option (size_t scode, const char *arg, int value);
 
@@ -236,9 +246,82 @@ common_handle_option (size_t scode, const char *arg,
     default:
       abort ();
 
+    case OPT__help:
+      display_help ();
+      exit_after_options = true;
+      break;
+
+    case OPT__target_help:
+      display_target_options ();
+      exit_after_options = true;
+      break;
+
+    case OPT__version:
+      print_version (stderr, "");
+      exit_after_options = true;
+      break;
+
+    case OPT_G:
+      g_switch_value = read_integral_parameter (arg, 0, -1);
+      if (g_switch_value == (unsigned HOST_WIDE_INT) -1)
+	return 0;
+      g_switch_set = true;
+      break;
+
+    case OPT_aux_info:
+    case OPT_aux_info_:
+      aux_info_file_name = arg;
+      flag_gen_aux_info = 1;
+      break;
+
+    case OPT_auxbase:
+      aux_base_name = arg;
+      break;
+
+    case OPT_auxbase_strip:
+      {
+	char *tmp = xstrdup (arg);
+	strip_off_ending (tmp, strlen (tmp));
+	if (tmp[0])
+	  aux_base_name = tmp;
+      }
+      break;
+
+    case OPT_d:
+      decode_d_option (arg);
+      break;
+
+    case OPT_dumpbase:
+      dump_base_name = arg;
+      break;
+
+    case OPT_o:
+      asm_file_name = arg;
+      break;
+
+    case OPT_p:
+      profile_flag = 1;
+      break;
+
+    case OPT_pedantic:
+      pedantic = 1;
+      break;
+
+    case OPT_pedantic_errors:
+      flag_pedantic_errors = pedantic = 1;
+      break;
+
     case OPT_quiet:
       quiet_flag = 1;
       break;
+
+    case OPT_version:
+      version_flag = 1;
+      break;
+
+    case OPT_w:
+      inhibit_warnings = 1;
+      break;      
     }
 
   return 1;

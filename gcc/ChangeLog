@@ -1,3 +1,21 @@
+2003-06-15  Neil Booth  <neil@daikokuya.co.uk>
+
+	* c-pch.c (asm_file_name): Remove.
+	* common.opt: Add more switches.
+	* flags.h (g_switch_set): Boolify.
+	* opts.c (g_switch_value, g_switch_set, exit_after_options,
+	version_flag): Move from toplev.c.
+	(common_handle_option): Handle more switches from toplev.c.
+	* toplev.c (display_help, display_target_options, decode_d_option,
+	print_version): Make non-static, remove prototypes.
+	(aux_base_name, asm_file_name, aux_info_file_name): Constify.
+	(version_flag, g_switch_value, g_switch_set, exit_after_options):
+	Remove.
+	(independent_decode_option): Move some handlers to opts.c.
+	* toplev.h (aux_info_file_name, aux_base_name, asm_file_name,
+	exit_after_options, version_flag, display_help, display_target_options,
+	print_version, decode_d_option): New.
+
 2003-06-15  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/alpha/alpha.md: Follow spelling conventions.
