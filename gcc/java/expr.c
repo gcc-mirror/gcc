@@ -3239,14 +3239,14 @@ build_expr_wfl (tree node,
 )
 {
   tree wfl;
+  static const char *last_file = 0;
+  static tree last_filenode = NULL_TREE;
+
 #ifdef USE_MAPPED_LOCATION
   wfl = make_node (EXPR_WITH_FILE_LOCATION);
   SET_EXPR_LOCATION (wfl, location);
 #else
   wfl = make_node (EXPR_WITH_FILE_LOCATION);
-
-  static const char *last_file = 0;
-  static tree last_filenode = NULL_TREE;
 
   EXPR_WFL_SET_LINECOL (wfl, line, col);
   if (file != last_file)
