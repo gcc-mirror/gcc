@@ -2250,6 +2250,7 @@ c4x_process_after_reload (first)
       if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
 	{
 	  int insn_code_number;
+	  rtx old;
 
 	  insn_code_number = recog_memoized (insn);
 
@@ -2261,26 +2262,22 @@ c4x_process_after_reload (first)
 	  if (insn_code_number == CODE_FOR_rptb_end)
 	    c4x_rptb_insert(insn);
 
-	  /* When the optimization level less than 2 we need to split
-	     the insn here.  Otherwise the calls to force_const_mem
-	     will not work.  */
-	  if (optimize < 2)
+	  /* We need to split the insn here. Otherwise the calls to
+	     force_const_mem will not work for load_immed_address.  */
+	  old = insn;
+
+	  /* Don't split the insn if it has been deleted.  */
+	  if (! INSN_DELETED_P (old))
+	    insn = try_split (PATTERN(old), old, 1);
+
+	  /* When not optimizing, the old insn will be still left around
+	     with only the 'deleted' bit set.  Transform it into a note
+	     to avoid confusion of subsequent processing.  */
+	  if (INSN_DELETED_P (old))
 	    {
-	      rtx old = insn;
-
-	      /* Don't split the insn if it has been deleted.  */
-	      if (! INSN_DELETED_P (old))
-	        insn = try_split (PATTERN(old), old, 1);
-
-	      /* When not optimizing, the old insn will be still left around
-		 with only the 'deleted' bit set.  Transform it into a note
-		 to avoid confusion of subsequent processing.  */
-	      if (INSN_DELETED_P (old))
-		{
-		  PUT_CODE (old, NOTE);
-		  NOTE_LINE_NUMBER (old) = NOTE_INSN_DELETED;
-		  NOTE_SOURCE_FILE (old) = 0;
-		}
+	      PUT_CODE (old, NOTE);
+	      NOTE_LINE_NUMBER (old) = NOTE_INSN_DELETED;
+	      NOTE_SOURCE_FILE (old) = 0;
 	    }
 	}
     }
@@ -4413,7 +4410,7 @@ static struct name_list *extern_head;
 
 void
 c4x_global_label (name)
-     char *name;
+     const char *name;
 {
   struct name_list *p, *last;
 
@@ -4454,7 +4451,7 @@ c4x_global_label (name)
 
 void
 c4x_external_ref (name)
-     char *name;
+     const char *name;
 {
   struct name_list *p;
 
