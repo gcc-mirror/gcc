@@ -1700,7 +1700,7 @@ static bool cp_parser_check_template_parameters
   PARAMS ((cp_parser *, unsigned));
 static tree cp_parser_binary_expression
   PARAMS ((cp_parser *, 
-	   cp_parser_token_tree_map,
+	   const cp_parser_token_tree_map,
 	   cp_parser_expression_fn));
 static tree cp_parser_global_scope_opt
   PARAMS ((cp_parser *, bool));
@@ -5172,7 +5172,7 @@ static tree
 cp_parser_multiplicative_expression (parser)
      cp_parser *parser;
 {
-  static cp_parser_token_tree_map map = {
+  static const cp_parser_token_tree_map map = {
     { CPP_MULT, MULT_EXPR },
     { CPP_DIV, TRUNC_DIV_EXPR },
     { CPP_MOD, TRUNC_MOD_EXPR },
@@ -5197,7 +5197,7 @@ static tree
 cp_parser_additive_expression (parser)
      cp_parser *parser;
 {
-  static cp_parser_token_tree_map map = {
+  static const cp_parser_token_tree_map map = {
     { CPP_PLUS, PLUS_EXPR },
     { CPP_MINUS, MINUS_EXPR },
     { CPP_EOF, ERROR_MARK }
@@ -5221,7 +5221,7 @@ static tree
 cp_parser_shift_expression (parser)
      cp_parser *parser;
 {
-  static cp_parser_token_tree_map map = {
+  static const cp_parser_token_tree_map map = {
     { CPP_LSHIFT, LSHIFT_EXPR },
     { CPP_RSHIFT, RSHIFT_EXPR },
     { CPP_EOF, ERROR_MARK }
@@ -5253,7 +5253,7 @@ static tree
 cp_parser_relational_expression (parser)
      cp_parser *parser;
 {
-  static cp_parser_token_tree_map map = {
+  static const cp_parser_token_tree_map map = {
     { CPP_LESS, LT_EXPR },
     { CPP_GREATER, GT_EXPR },
     { CPP_LESS_EQ, LE_EXPR },
@@ -5281,7 +5281,7 @@ static tree
 cp_parser_equality_expression (parser)
      cp_parser *parser;
 {
-  static cp_parser_token_tree_map map = {
+  static const cp_parser_token_tree_map map = {
     { CPP_EQ_EQ, EQ_EXPR },
     { CPP_NOT_EQ, NE_EXPR },
     { CPP_EOF, ERROR_MARK }
@@ -5304,7 +5304,7 @@ static tree
 cp_parser_and_expression (parser)
      cp_parser *parser;
 {
-  static cp_parser_token_tree_map map = {
+  static const cp_parser_token_tree_map map = {
     { CPP_AND, BIT_AND_EXPR },
     { CPP_EOF, ERROR_MARK }
   };
@@ -5326,7 +5326,7 @@ static tree
 cp_parser_exclusive_or_expression (parser)
      cp_parser *parser;
 {
-  static cp_parser_token_tree_map map = {
+  static const cp_parser_token_tree_map map = {
     { CPP_XOR, BIT_XOR_EXPR },
     { CPP_EOF, ERROR_MARK }
   };
@@ -5349,7 +5349,7 @@ static tree
 cp_parser_inclusive_or_expression (parser)
      cp_parser *parser;
 {
-  static cp_parser_token_tree_map map = {
+  static const cp_parser_token_tree_map map = {
     { CPP_OR, BIT_IOR_EXPR },
     { CPP_EOF, ERROR_MARK }
   };
@@ -5371,7 +5371,7 @@ static tree
 cp_parser_logical_and_expression (parser)
      cp_parser *parser;
 {
-  static cp_parser_token_tree_map map = {
+  static const cp_parser_token_tree_map map = {
     { CPP_AND_AND, TRUTH_ANDIF_EXPR },
     { CPP_EOF, ERROR_MARK }
   };
@@ -5393,7 +5393,7 @@ static tree
 cp_parser_logical_or_expression (parser)
      cp_parser *parser;
 {
-  static cp_parser_token_tree_map map = {
+  static const cp_parser_token_tree_map map = {
     { CPP_OR_OR, TRUTH_ORIF_EXPR },
     { CPP_EOF, ERROR_MARK }
   };
@@ -13833,7 +13833,7 @@ cp_parser_check_template_parameters (parser, num_templates)
 static tree
 cp_parser_binary_expression (parser, token_tree_map, fn)
      cp_parser *parser;
-     cp_parser_token_tree_map token_tree_map;
+     const cp_parser_token_tree_map token_tree_map;
      cp_parser_expression_fn fn;
 {
   tree lhs;
@@ -13844,7 +13844,7 @@ cp_parser_binary_expression (parser, token_tree_map, fn)
   while (true)
     {
       cp_token *token;
-      cp_parser_token_tree_map_node *map_node;
+      const cp_parser_token_tree_map_node *map_node;
       tree rhs;
 
       /* Peek at the next token.  */
