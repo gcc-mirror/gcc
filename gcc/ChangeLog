@@ -1,3 +1,8 @@
+2004-02-08  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* README.Portability: Change "ISO C89" to "ISO C90".
+	* c-parse.in (primary, initelt): Likewise.
+
 2004-02-07  Zack Weinberg  <zack@codesourcery.com>
 
 	Bug 13856

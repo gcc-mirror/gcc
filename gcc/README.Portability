@@ -10,7 +10,7 @@ This knowledge until know has been sparsely spread around, so I
 thought I'd collect it in one useful place.  Please add and correct
 any problems as you come across them.
 
-I'm going to start from a base of the ISO C89 standard, since that is
+I'm going to start from a base of the ISO C90 standard, since that is
 probably what most people code to naturally.  Obviously using
 constructs introduced after that is not a good idea.
 
