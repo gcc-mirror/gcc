@@ -1,3 +1,8 @@
+2003-10-01  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* aclocal.m4: Add ultrix* to /dev/zero blacklist.
+	* configure: Rebuilt.
+
 2003-10-01  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* except.h (MUST_USE_SJLJ_EXCEPTIONS): Revert 2003-09-23 change.
