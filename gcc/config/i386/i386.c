@@ -6659,6 +6659,40 @@ ix86_output_block_profiler (file, blockno)
       break;
     }
 }
+
+void
+ix86_output_addr_vec_elt (file, value)
+     FILE *file;
+     int value;
+{
+  const char *directive = ASM_LONG;
+
+  if (TARGET_64BIT)
+    {
+#ifdef ASM_QUAD
+      directive = ASM_QUAD;
+#else
+      abort ();
+#endif
+    }
+
+  fprintf (file, "%s%s%d\n", directive, LPREFIX, value);
+}
+
+void
+ix86_output_addr_diff_elt (file, value, rel)
+     FILE *file;
+     int value, rel;
+{
+  if (TARGET_64BIT)
+    fprintf (file, "%s%s%d-.+4+(.-%s%d)\n",
+	     ASM_LONG, LPREFIX, value, LPREFIX, rel);
+  else if (HAVE_AS_GOTOFF_IN_DATA)
+    fprintf (file, "%s%s%d@GOTOFF\n", ASM_LONG, LPREFIX, value);
+  else
+    asm_fprintf (file, "%s%U_GLOBAL_OFFSET_TABLE_+[.-%s%d]\n",
+		 ASM_LONG, LPREFIX, value);
+}
 
 void
 ix86_expand_move (mode, operands)

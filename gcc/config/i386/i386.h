@@ -2979,19 +2979,21 @@ do { long l;						\
 #define ASM_OUTPUT_REG_POP(FILE,REGNO)  \
   asm_fprintf (FILE, "\tpop{l}\t%%e%s\n", reg_names[REGNO])
 
-/* This is how to output an element of a case-vector that is absolute.
-     */
+/* This is how to output an element of a case-vector that is absolute.  */
 
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)  \
-  fprintf (FILE, "%s%s%d\n", TARGET_64BIT ? ASM_QUAD : ASM_LONG, LPREFIX, VALUE)
+  ix86_output_addr_vec_elt (FILE, VALUE)
 
-/* This is how to output an element of a case-vector that is relative.
-   We don't use these on the 386 yet, because the ATT assembler can't do
-   forward reference the differences.  
- */
+/* This is how to output an element of a case-vector that is relative.  */
 
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL) \
-  fprintf (FILE, "%s%s%d-%s%d\n",ASM_LONG, LPREFIX, VALUE, LPREFIX, REL)
+  ix86_output_addr_diff_elt (FILE, VALUE, REL)
+
+/* Under some conditions we need jump tables in the text section, because
+   the assembler cannot handle label differences between sections.  */
+
+#define JUMP_TABLES_IN_TEXT_SECTION \
+  (!TARGET_64BIT && flag_pic && !HAVE_AS_GOTOFF_IN_DATA)
 
 /* A C statement that outputs an address constant appropriate to 
    for DWARF debugging.  */

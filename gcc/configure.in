@@ -1631,6 +1631,32 @@ changequote([,])dnl
 	AC_DEFINE_UNQUOTED(HAVE_GAS_`echo "$gcc_cv_as_instructions" | sed -e 's/ $//' | tr '[a-z ]' '[A-Z_]'`)
     fi
     AC_MSG_RESULT($gcc_cv_as_instructions)
+
+    AC_MSG_CHECKING(assembler GOTOFF in data directives)
+    gcc_cv_as_gotoff_in_data=no
+    if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x
+    then
+      if test "$gcc_cv_gas_major_version" -eq 2 \
+	 -a "$gcc_cv_gas_minor_version" -ge 11 \
+	 -o "$gcc_cv_gas_major_version" -gt 2; then
+	gcc_cv_as_gotoff_in_data=yes
+      fi
+    elif test x$gcc_cv_as != x; then
+	cat > conftest.s <<EOF
+	.text
+.L0:
+	nop
+	.data
+	.long .L0@GOTOFF
+EOF
+	if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
+	  gcc_cv_as_gotoff_in_data=yes
+	fi
+    fi
+    AC_DEFINE_UNQUOTED(HAVE_AS_GOTOFF_IN_DATA,
+      [`if test $gcc_cv_as_gotoff_in_data = yes; then echo 1; else echo 0; fi`],
+      [Define true if the assembler supports '.long foo@GOTOFF'.])
+    AC_MSG_RESULT($gcc_cv_as_gotoff_in_data)
     ;;
 esac
 

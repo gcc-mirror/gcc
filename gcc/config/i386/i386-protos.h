@@ -36,6 +36,9 @@ extern void ix86_expand_epilogue PARAMS ((int));
 extern void ix86_output_function_block_profiler PARAMS ((FILE *, int));
 extern void ix86_output_block_profiler PARAMS ((FILE *, int));
 
+extern void ix86_output_addr_vec_elt PARAMS ((FILE *, int));
+extern void ix86_output_addr_diff_elt PARAMS ((FILE *, int, int));
+
 #ifdef RTX_CODE
 extern int ix86_aligned_p PARAMS ((rtx));
 
@@ -94,6 +97,7 @@ extern void print_operand PARAMS ((FILE*, rtx, int));
 extern void print_operand_address PARAMS ((FILE*, rtx));
 
 extern void split_di PARAMS ((rtx[], int, rtx[], rtx[]));
+extern void split_ti PARAMS ((rtx[], int, rtx[], rtx[]));
 
 extern const char *output_387_binary_op PARAMS ((rtx, rtx*));
 extern const char *output_fix_trunc PARAMS ((rtx, rtx*));

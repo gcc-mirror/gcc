@@ -159,19 +159,6 @@ do { long value[3];							\
     }									\
   while (0)
 
-/* This is how to output an element of a case-vector that is relative.
-   This is only used for PIC code.  See comments by the `casesi' insn in
-   i386.md for an explanation of the expression this outputs. */
-
-#undef ASM_OUTPUT_ADDR_DIFF_ELT
-#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL) \
-  fprintf (FILE, "\t.long _GLOBAL_OFFSET_TABLE_+[.-%s%d]\n", LPREFIX, VALUE)
-
-/* Indicate that jump tables go in the text section.  This is
-   necessary when compiling PIC code.  */
-
-#define JUMP_TABLES_IN_TEXT_SECTION (flag_pic)
-
 /* A C statement (sans semicolon) to output to the stdio stream
    FILE the assembler definition of uninitialized global DECL named
    NAME whose size is SIZE bytes and alignment is ALIGN bytes.
