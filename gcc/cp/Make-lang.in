@@ -1,5 +1,5 @@
 # Top level makefile fragment for GNU C++.
-#   Copyright (C) 1994, 1995, 1997, 1998, 1999 Free Software Foundation, Inc.
+#   Copyright (C) 1994, 1995, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
 
 #This file is part of GNU CC.
 
@@ -137,40 +137,40 @@ c++.dvi:
 
 # C++ language-support library pieces for libgcc.
 tinfo.o: cc1plus$(exeext) $(srcdir)/cp/tinfo.cc
-	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(CXXFLAGS) $(INCLUDES) \
+	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(GXX_ABI_FLAG) $(CXXFLAGS) $(INCLUDES) \
 	  -c $(srcdir)/cp/tinfo.cc
 tinfo2.o: cc1plus$(exeext) $(srcdir)/cp/tinfo2.cc
-	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(CXXFLAGS) $(INCLUDES) \
+	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(GXX_ABI_FLAG) $(CXXFLAGS) $(INCLUDES) \
 	  -c $(srcdir)/cp/tinfo2.cc
 exception.o: cc1plus$(exeext) $(srcdir)/cp/exception.cc
-	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(CXXFLAGS) $(INCLUDES) \
+	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(GXX_ABI_FLAG) $(CXXFLAGS) $(INCLUDES) \
 	  -c -fexceptions $(srcdir)/cp/exception.cc
 new.o: cc1plus$(exeext) $(srcdir)/cp/new.cc
-	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(CXXFLAGS) $(INCLUDES) \
+	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(GXX_ABI_FLAG) $(CXXFLAGS) $(INCLUDES) \
 	  -c $(srcdir)/cp/new.cc
 opnew.o: cc1plus$(exeext) $(srcdir)/cp/new1.cc
-	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(CXXFLAGS) $(INCLUDES) \
+	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(GXX_ABI_FLAG) $(CXXFLAGS) $(INCLUDES) \
 	  -c $(srcdir)/cp/new1.cc -DL_op_new -o opnew.o
 opnewnt.o: cc1plus$(exeext) $(srcdir)/cp/new1.cc
-	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(CXXFLAGS) $(INCLUDES) \
+	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(GXX_ABI_FLAG) $(CXXFLAGS) $(INCLUDES) \
 	  -c $(srcdir)/cp/new1.cc -DL_op_newnt -o opnewnt.o
 opvnew.o: cc1plus$(exeext) $(srcdir)/cp/new2.cc
-	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(CXXFLAGS) $(INCLUDES) \
+	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(GXX_ABI_FLAG) $(CXXFLAGS) $(INCLUDES) \
 	  -c $(srcdir)/cp/new2.cc -DL_op_vnew -o opvnew.o
 opvnewnt.o: cc1plus$(exeext) $(srcdir)/cp/new2.cc
-	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(CXXFLAGS) $(INCLUDES) \
+	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(GXX_ABI_FLAG) $(CXXFLAGS) $(INCLUDES) \
 	  -c $(srcdir)/cp/new2.cc -DL_op_vnewnt -o opvnewnt.o
 opdel.o: cc1plus$(exeext) $(srcdir)/cp/new2.cc
-	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(CXXFLAGS) $(INCLUDES) \
+	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(GXX_ABI_FLAG) $(CXXFLAGS) $(INCLUDES) \
 	  -c $(srcdir)/cp/new2.cc -DL_op_delete -o opdel.o
 opdelnt.o: cc1plus$(exeext) $(srcdir)/cp/new2.cc
-	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(CXXFLAGS) $(INCLUDES) \
+	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(GXX_ABI_FLAG) $(CXXFLAGS) $(INCLUDES) \
 	  -c $(srcdir)/cp/new2.cc -DL_op_delnt -o opdelnt.o
 opvdel.o: cc1plus$(exeext) $(srcdir)/cp/new2.cc
-	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(CXXFLAGS) $(INCLUDES) \
+	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(GXX_ABI_FLAG) $(CXXFLAGS) $(INCLUDES) \
 	  -c $(srcdir)/cp/new2.cc -DL_op_vdel -o opvdel.o
 opvdelnt.o: cc1plus$(exeext) $(srcdir)/cp/new2.cc
-	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(CXXFLAGS) $(INCLUDES) \
+	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(GXX_ABI_FLAG) $(CXXFLAGS) $(INCLUDES) \
 	  -c $(srcdir)/cp/new2.cc -DL_op_vdelnt -o opvdelnt.o
 
 # We want to update cplib2.txt if any of the source files change...
