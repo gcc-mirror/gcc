@@ -5747,6 +5747,7 @@ find_attr (name, create)
   attr->name = attr_string (name, strlen (name));
   attr->first_value = attr->default_val = NULL;
   attr->is_numeric = attr->negative_ok = attr->is_const = attr->is_special = 0;
+  attr->unsigned_p = attr->func_units_p = attr->blockage_p = 0;
   attr->next = attrs[index];
   attrs[index] = attr;
 

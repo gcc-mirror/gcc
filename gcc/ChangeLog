@@ -1,3 +1,8 @@
+Mon Apr 24 00:21:36 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* genattrtab.c (find_attr): Initialize unsigned_p, func_units_p
+	and blockage_p in the newly allocated attribute.
+
 Sun Apr 23 20:16:49 2000  Alexandre Oliva  <aoliva@cygnus.com>
 
 	* config/mn10300/mn10300.md (addsi): `inc4' on address
