@@ -857,19 +857,11 @@ cris_target_asm_function_prologue (file, size)
       framesize += size + cfoa_size;
     }
 
-  /* Set up the PIC register.  Not needed for a function marked with
-     visibility "internal".  */
+  /* Set up the PIC register.  */
   if (current_function_uses_pic_offset_table)
-    {
-      tree vis = lookup_attribute ("visibility", DECL_ATTRIBUTES (cfun->decl));
-
-      if (!vis
-	  || strcmp ("internal",
-		     TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (vis)))))
-	asm_fprintf (file, "\tmove.d $pc,$%s\n\tsub.d .:GOTOFF,$%s\n",
-		     reg_names[PIC_OFFSET_TABLE_REGNUM],
-		     reg_names[PIC_OFFSET_TABLE_REGNUM]);
-    }
+    asm_fprintf (file, "\tmove.d $pc,$%s\n\tsub.d .:GOTOFF,$%s\n",
+		 reg_names[PIC_OFFSET_TABLE_REGNUM],
+		 reg_names[PIC_OFFSET_TABLE_REGNUM]);
 
   if (TARGET_PDEBUG)
     fprintf (file,
@@ -3054,11 +3046,13 @@ cris_encode_section_info (exp, first)
       if (DECL_P (exp))
 	{
 	  if (TREE_CODE (exp) == FUNCTION_DECL
-	      && (TREE_PUBLIC (exp) || DECL_WEAK (exp)))
+	      && (TREE_PUBLIC (exp) || DECL_WEAK (exp))
+	      && ! MODULE_LOCAL_P (exp))
 	    SYMBOL_REF_FLAG (XEXP (DECL_RTL (exp), 0)) = 0;
 	  else
 	    SYMBOL_REF_FLAG (XEXP (DECL_RTL (exp), 0))
-	      = ! TREE_PUBLIC (exp) && ! DECL_WEAK (exp);
+	      = ((! TREE_PUBLIC (exp) && ! DECL_WEAK (exp))
+		 || MODULE_LOCAL_P (exp));
 	}
       else
 	/* Others are local entities.  */
