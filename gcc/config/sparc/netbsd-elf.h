@@ -56,6 +56,9 @@ Boston, MA 02111-1307, USA.  */
 #define DBX_REGISTER_NUMBER(REGNO) \
   (TARGET_FLAT && REGNO == HARD_FRAME_POINTER_REGNUM ? 31 : REGNO)
 
+#undef  LOCAL_LABEL_PREFIX
+#define LOCAL_LABEL_PREFIX  "."
+
 /* This is how to output a definition of an internal numbered label where
    PREFIX is the class of label and NUM is the number within the class.  */
 
