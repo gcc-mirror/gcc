@@ -19,6 +19,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 
 #include "config.h"
+/* Must precede rtl.h for FFS.  */
+#include <stdio.h>
+
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -27,7 +30,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "insn-config.h"
 #include "recog.h"
 
-#include <stdio.h>
 #include <setjmp.h>
 
 /* The basic idea of common subexpression elimination is to go
