@@ -677,7 +677,22 @@ namespace std
       _CharT* __buf = __out + __size - 1;
       _CharT* __bufend = __out + __size;
 
-      if (__builtin_expect(__basefield == ios_base::oct, false))
+      if (__builtin_expect(__basefield != ios_base::oct &&
+			   __basefield != ios_base::hex, true))
+	{
+	  // Decimal.
+	  do 
+	    {
+	      *__buf-- = __lit[(__v % 10) + __num_base::_S_digits];
+	      __v /= 10;
+	    } 
+	  while (__v != 0);
+	  if (__neg)
+	    *__buf-- = __lit[__num_base::_S_minus];
+	  else if (__flags & ios_base::showpos)
+	    *__buf-- = __lit[__num_base::_S_plus];
+	}
+      else if (__basefield == ios_base::oct)
 	{
 	  // Octal.
 	  do 
@@ -689,7 +704,7 @@ namespace std
 	  if (__showbase)
 	    *__buf-- = __lit[__num_base::_S_digits];
 	}
-      else if (__builtin_expect(__basefield == ios_base::hex, false))
+      else
 	{
 	  // Hex.
 	  const bool __uppercase = __flags & ios_base::uppercase;
@@ -708,20 +723,6 @@ namespace std
 	      // '0'
 	      *__buf-- = __lit[__num_base::_S_digits];
 	    }
-	}
-      else
-	{
-	  // Decimal.
-	  do 
-	    {
-	      *__buf-- = __lit[(__v % 10) + __num_base::_S_digits];
-	      __v /= 10;
-	    } 
-	  while (__v != 0);
-	  if (__neg)
-	    *__buf-- = __lit[__num_base::_S_minus];
-	  else if (__flags & ios_base::showpos)
-	    *__buf-- = __lit[__num_base::_S_plus];
 	}
       int __ret = __bufend - __buf - 1;
       return __ret;

@@ -1,5 +1,10 @@
 2003-07-04  Jerry Quinn  <jlquinn@optonline.net>
 
+	* include/bits/locale_facets.tcc (__int_to_char): Move common
+        case to the top.
+
+2003-07-04  Jerry Quinn  <jlquinn@optonline.net>
+
 	* testsuite/27_io/ostream_inserter_arith.cc (test05, test06):
         Add missing bool test.
 
