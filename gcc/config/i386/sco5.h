@@ -724,7 +724,7 @@ dtors_section ()							\
   && strcmp (STR, "Tbss"))
 
 #undef TARGET_DEFAULT
-#define TARGET_DEFAULT 0301
+#define TARGET_DEFAULT (MASK_80387 | MASK_IEEE_FP | MASK_FLOAT_RETURNS)
 
 #undef HANDLE_SYSV_PRAGMA
 #define HANDLE_SYSV_PRAGMA 1

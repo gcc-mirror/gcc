@@ -1,3 +1,9 @@
+Tue Jan 19 16:37:36 1999  Richard Henderson  <rth@cygnus.com>
+
+	* i386/isc.h (TARGET_DEFAULT): Define symbolicly.
+	* i386/isccoff.h, i386/next.h, i386/sco.h, i386/sco5.h: Likewise.
+	* i386/scodbx.h, i386/sequent.h, i386.unix.h: Likewise.
+
 Tue Jan 19 15:00:10 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (protoize.o, unprotoize.o): Depend on Makefile.
