@@ -2579,7 +2579,7 @@ static void
 remove_eh_handler (region)
      struct eh_region *region;
 {
-  struct eh_region **pp, *p;
+  struct eh_region **pp, **pp_start, *p, *outer, *inner;
   rtx lab;
 
   /* For the benefit of efficiently handling REG_EH_REGION notes,
@@ -2588,21 +2588,22 @@ remove_eh_handler (region)
      multiple copies of this region in the array, so we have a
      list of alternate numbers by which we are known.  */
 
-  cfun->eh->region_array[region->region_number] = region->outer;
+  outer = region->outer;
+  cfun->eh->region_array[region->region_number] = outer;
   if (region->aka)
     {
       int i;
       EXECUTE_IF_SET_IN_BITMAP (region->aka, 0, i,
-	{ cfun->eh->region_array[i] = region->outer; });
+	{ cfun->eh->region_array[i] = outer; });
     }
 
-  if (region->outer)
+  if (outer)
     {
-      if (!region->outer->aka)
-        region->outer->aka = BITMAP_XMALLOC ();
+      if (!outer->aka)
+        outer->aka = BITMAP_XMALLOC ();
       if (region->aka)
-	bitmap_a_or_b (region->outer->aka, region->outer->aka, region->aka);
-      bitmap_set_bit (region->outer->aka, region->region_number);
+	bitmap_a_or_b (outer->aka, outer->aka, region->aka);
+      bitmap_set_bit (outer->aka, region->region_number);
     }
 
   if (cfun->eh->built_landing_pads)
@@ -2612,23 +2613,24 @@ remove_eh_handler (region)
   if (lab)
     remove_exception_handler_label (lab);
 
-  if (region->outer)
-    pp = &region->outer->inner;
+  if (outer)
+    pp_start = &outer->inner;
   else
-    pp = &cfun->eh->region_tree;
-  for (p = *pp; p != region; pp = &p->next_peer, p = *pp)
+    pp_start = &cfun->eh->region_tree;
+  for (pp = pp_start, p = *pp; p != region; pp = &p->next_peer, p = *pp)
     continue;
+  *pp = region->next_peer;
 
-  if (region->inner)
+  inner = region->inner;
+  if (inner)
     {
-      for (p = region->inner; p->next_peer ; p = p->next_peer)
-	p->outer = region->outer;
-      p->next_peer = region->next_peer;
-      p->outer = region->outer;
-      *pp = region->inner;
+      for (p = inner; p->next_peer ; p = p->next_peer)
+	p->outer = outer;
+      p->outer = outer;
+
+      p->next_peer = *pp_start;
+      *pp_start = inner;
     }
-  else
-    *pp = region->next_peer;
 
   if (region->type == ERT_CATCH)
     {
