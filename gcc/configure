@@ -3734,7 +3734,7 @@ for machine in $build $host $target; do
 		tmake_file=mips/t-ecoff
 		;;
 	mips-*-ecoff*)
-		tm_file="${tm_file} gofast.h mips/ecoff.h"
+		tm_file="gofast.h mips/ecoff.h"
 		if [ x$stabs = xyes ]; then
 			tm_file="${tm_file} dbx.h"
 		fi
