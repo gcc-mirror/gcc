@@ -1,3 +1,8 @@
+2002-03-19  Lars Brinkhoff  <lars@nocrew.org>
+
+	* emit-rtl.c (gen_int_mode): New function.
+	* rtl.h: Prototype for it.
+
 Sat May 18 23:09:19 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (pushqi2, ashrqi_*): Fix constraint.

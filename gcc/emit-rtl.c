@@ -355,6 +355,14 @@ gen_rtx_CONST_INT (mode, arg)
   return (rtx) *slot;
 }
 
+rtx
+gen_int_mode (c, mode)
+     HOST_WIDE_INT c;
+     enum machine_mode mode;
+{
+  return GEN_INT (trunc_int_for_mode (c, mode));
+}
+
 /* CONST_DOUBLEs needs special handling because their length is known
    only at run-time.  */
 
