@@ -191,6 +191,11 @@ cpp_grow_buffer (pfile, n)
    If STR has anything after the identifier, then it should
    be identifier=definition. */
 
+/* Process the string STR as if it appeared as the body of a #define
+   If STR is just an identifier, define it with value 1.
+   If STR has anything after the identifier, then it should
+   be identifier=definition. */
+
 void
 cpp_define (pfile, str)
      cpp_reader *pfile;
@@ -199,21 +204,28 @@ cpp_define (pfile, str)
   U_CHAR *buf, *p;
   size_t count;
 
-  /* Copy the entire option so we can modify it.  */
-  count = strlen (str) + 3;
-  buf = (U_CHAR *) alloca (count);
-  memcpy (buf, str, count - 2);
-  /* Change the first "=" in the string to a space.  If there is none,
-     tack " 1" on the end. */
-  p = (U_CHAR *) strchr (buf, '=');
+  p = strchr (str, '=');
+  /* Copy the entire option so we can modify it. 
+     Change the first "=" in the string to a space.  If there is none,
+     tack " 1" on the end.  Then add a newline and a NUL.  */
+  
   if (p)
     {
-      *p = ' ';
-      count -= 2;
+      count = strlen (str) + 2;
+      buf = (U_CHAR *) alloca (count);
+      memcpy (buf, str, count - 2);
+      buf[p - str] = ' ';
+      buf[count - 2] = '\n';
+      buf[count - 1] = '\0';
     }
   else
-      strcpy (&buf[count-3], " 1");
-  
+    {
+      count = strlen (str) + 4;
+      buf = (U_CHAR *) alloca (count);
+      memcpy (buf, str, count - 4);
+      strcpy (&buf[count-4], " 1\n");
+    }
+
   if (cpp_push_buffer (pfile, buf, count - 1) != NULL)
     {
       do_define (pfile, NULL);
@@ -1476,14 +1488,19 @@ cpp_undef (pfile, macro)
      cpp_reader *pfile;
      U_CHAR *macro;
 {
-  if (cpp_push_buffer (pfile, macro, strlen (macro)))
+  /* Copy the string so we can append a newline.  */
+  size_t len = strlen (macro);
+  U_CHAR *buf = alloca (len + 2);
+  memcpy (buf, macro, len);
+  buf[len]     = '\n';
+  buf[len + 1] = '\0';
+  if (cpp_push_buffer (pfile, buf, len + 1))
     {
       do_undef (pfile, NULL);
       cpp_pop_buffer (pfile);
     }
 }
 
-
 /*
  * Report an error detected by the program we are processing.
  * Use the text of the line in the error message.
