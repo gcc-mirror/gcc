@@ -316,20 +316,20 @@ Unrecognized value in TARGET_CPU_DEFAULT.
    Do not define this macro if it does not need to do anything.  */
 
 #define EXTRA_SPECS \
-  { "cpp_cpu",		CPP_CPU_SPEC, 0, 0, 0, 0 },		\
-  { "cpp_cpu_default",	CPP_CPU_DEFAULT_SPEC, 0, 0, 0, 0 },	\
-  { "cpp_arch32",	CPP_ARCH32_SPEC, 0, 0, 0, 0 },		\
-  { "cpp_arch64",	CPP_ARCH64_SPEC, 0, 0, 0, 0 },		\
-  { "cpp_arch_default",	CPP_ARCH_DEFAULT_SPEC, 0, 0, 0, 0 },	\
-  { "cpp_arch",		CPP_ARCH_SPEC, 0, 0, 0, 0 },		\
-  { "cpp_endian",	CPP_ENDIAN_SPEC, 0, 0, 0, 0 },		\
-  { "cpp_subtarget",	CPP_SUBTARGET_SPEC, 0, 0, 0, 0 },	\
-  { "asm_cpu",		ASM_CPU_SPEC, 0, 0, 0, 0 },		\
-  { "asm_cpu_default",	ASM_CPU_DEFAULT_SPEC, 0, 0, 0, 0 },	\
-  { "asm_arch32",	ASM_ARCH32_SPEC, 0, 0, 0, 0 },		\
-  { "asm_arch64",	ASM_ARCH64_SPEC, 0, 0, 0, 0 },		\
-  { "asm_arch_default",	ASM_ARCH_DEFAULT_SPEC, 0, 0, 0, 0 },	\
-  { "asm_arch",		ASM_ARCH_SPEC, 0, 0, 0, 0 },		\
+  { "cpp_cpu",		CPP_CPU_SPEC },		\
+  { "cpp_cpu_default",	CPP_CPU_DEFAULT_SPEC },	\
+  { "cpp_arch32",	CPP_ARCH32_SPEC },	\
+  { "cpp_arch64",	CPP_ARCH64_SPEC },	\
+  { "cpp_arch_default",	CPP_ARCH_DEFAULT_SPEC },\
+  { "cpp_arch",		CPP_ARCH_SPEC },	\
+  { "cpp_endian",	CPP_ENDIAN_SPEC },	\
+  { "cpp_subtarget",	CPP_SUBTARGET_SPEC },	\
+  { "asm_cpu",		ASM_CPU_SPEC },		\
+  { "asm_cpu_default",	ASM_CPU_DEFAULT_SPEC },	\
+  { "asm_arch32",	ASM_ARCH32_SPEC },	\
+  { "asm_arch64",	ASM_ARCH64_SPEC },	\
+  { "asm_arch_default",	ASM_ARCH_DEFAULT_SPEC },\
+  { "asm_arch",		ASM_ARCH_SPEC },	\
   SUBTARGET_EXTRA_SPECS
 
 #define SUBTARGET_EXTRA_SPECS
