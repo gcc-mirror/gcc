@@ -44,6 +44,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "optabs.h"
 #include "output.h"
 #include "libfuncs.h"
+#include "ggc.h"
 #include "target.h"
 #include "target-def.h"
 
@@ -193,7 +194,7 @@ static rtx gen_float_relational PARAMS ((enum rtx_code, rtx, rtx));
 static rtx gen_conditional_move PARAMS ((rtx));
 static rtx fixup_subreg_mem PARAMS ((rtx x));
 static enum machine_mode xtensa_find_mode_for_size PARAMS ((unsigned));
-static struct machine_status * xtensa_init_machine_status PARAMS ((void));
+static struct machine_function * xtensa_init_machine_status PARAMS ((void));
 static void printx PARAMS ((FILE *, signed int));
 static void xtensa_select_rtx_section PARAMS ((enum machine_mode, rtx,
 					       unsigned HOST_WIDE_INT));
@@ -1380,7 +1381,7 @@ xtensa_expand_block_move (operands)
   if (num_pieces >= move_ratio)
     return 0;
 
-   /* make sure the memory addresses are valid */
+  /* make sure the memory addresses are valid */
   operands[0] = validize_mem (dest);
   operands[1] = validize_mem (src);
 
