@@ -1526,11 +1526,28 @@
   [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
+(define_insn ""
+  [(set (match_operand:DI 0 "register_operand" "=&f")
+	(fix:DI (match_operand:DF 1 "reg_or_fp0_operand" "fG")))]
+  "TARGET_FP && alpha_tp == ALPHA_TP_INSN"
+  "cvt%-q%(c %R1,%0"
+  [(set_attr "type" "fadd")
+   (set_attr "trap" "yes")])
+
 (define_insn "fix_truncdfdi2"
   [(set (match_operand:DI 0 "register_operand" "=f")
 	(fix:DI (match_operand:DF 1 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
-  "cvt%-q%( %R1,%0"
+  "cvt%-q%(c %R1,%0"
+  [(set_attr "type" "fadd")
+   (set_attr "trap" "yes")])
+
+(define_insn ""
+  [(set (match_operand:DI 0 "register_operand" "=&f")
+	(fix:DI (float_extend:DF
+		 (match_operand:SF 1 "reg_or_fp0_operand" "fG"))))]
+  "TARGET_FP && alpha_tp == ALPHA_TP_INSN"
+  "cvt%-q%(c %R1,%0"
   [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
@@ -1539,7 +1556,7 @@
 	(fix:DI (float_extend:DF
 		 (match_operand:SF 1 "reg_or_fp0_operand" "fG"))))]
   "TARGET_FP"
-  "cvt%-q%( %R1,%0"
+  "cvt%-q%(c %R1,%0"
   [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
