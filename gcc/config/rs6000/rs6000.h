@@ -1198,7 +1198,7 @@ extern int rs6000_fpmem_size;
 extern int rs6000_sysv_varargs_p;
 
 /* Align an address */
-#define ALIGN(n,a) (((n) + (a) - 1) & ~((a) - 1))
+#define RS6000_ALIGN(n,a) (((n) + (a) - 1) & ~((a) - 1))
 
 /* Initialize data used by insn expanders.  This is called from
    init_emit, once for each function, before code is generated. */
@@ -1210,7 +1210,7 @@ extern int rs6000_sysv_varargs_p;
 
 /* Offset of V.4 varargs area */
 #define RS6000_VARARGS_OFFSET						\
-  (ALIGN (current_function_outgoing_args_size, 8)			\
+  (RS6000_ALIGN (current_function_outgoing_args_size, 8)		\
    + RS6000_SAVE_AREA)
 
 /* Offset within stack frame to start allocating local variables at.
@@ -1223,7 +1223,7 @@ extern int rs6000_sysv_varargs_p;
    outgoing parameter area.  */
 
 #define STARTING_FRAME_OFFSET						\
-  (ALIGN (current_function_outgoing_args_size, 8)			\
+  (RS6000_ALIGN (current_function_outgoing_args_size, 8)		\
    + RS6000_VARARGS_AREA						\
    + RS6000_SAVE_AREA)
 
@@ -1234,7 +1234,7 @@ extern int rs6000_sysv_varargs_p;
    length of the outgoing arguments.  The default is correct for most
    machines.  See `function.c' for details.  */
 #define STACK_DYNAMIC_OFFSET(FUNDECL)					\
-  (ALIGN (current_function_outgoing_args_size, 8)			\
+  (RS6000_ALIGN (current_function_outgoing_args_size, 8)		\
    + (STACK_POINTER_OFFSET))
 
 /* If we generate an insn to push BYTES bytes,
