@@ -1,3 +1,11 @@
+Wed Jan 13 16:16:44 1999  Catherine Moore  <clm@cygnus.com>
+
+        * config/arm.c (output_func_epilogue):  Check TARGET_ABORT_NORETURN
+        before generating a call to abort for volatile functions.
+        * config/arm.h (ARM_FLAG_ABORT_NORETURN):  Define.
+        (TARGET_ABORT_NORETURN):  Define.
+        (abort-on-noreturn):  New option.
+
 Wed Jan 13 13:30:08 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cccp.c (xstrdup): Renamed from `savestring'.  All callers changed.

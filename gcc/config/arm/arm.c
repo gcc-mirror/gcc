@@ -5006,7 +5006,7 @@ output_func_epilogue (f, frame_size)
     goto epilogue_done;
 
   /* A volatile function should never return.  Call abort.  */
-  if (volatile_func)
+  if (TARGET_ABORT_NORETURN && volatile_func)
     {
       rtx op = gen_rtx (SYMBOL_REF, Pmode, "abort");
       assemble_external_libcall (op);
