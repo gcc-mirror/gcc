@@ -141,16 +141,16 @@ Boston, MA 02111-1307, USA.
    support here for as many of the other svr4 linker options as seems
    reasonable, given that some of them conflict with options for other
    svr4 tools (e.g. the assembler).  In particular, we do support the
-   -z*, -V, -b, -t, -Qy, -Qn, and -YP* options here, and the -e*,
-   -l*, -o*, -r, -s, -u*, and -L* options are directly supported
-   by gcc.c itself.  We don't directly support the -m (generate load
-   map) option because that conflicts with the -m (run m4) option of
-   the svr4 assembler.  We also don't directly support the svr4 linker's
-   -I* or -M* options because these conflict with existing GCC options.
-   We do however allow passing arbitrary options to the svr4 linker
-   via the -Wl, option.  We don't support the svr4 linker's -a option
-   at all because it is totally useless and because it conflicts with
-   GCC's own -a option.
+   -z*, -V, -b, -t, -Qy, -Qn, and -YP* options here, and the -e*, -l*,
+   -o*, -r, -s, -u*, and -L* options are directly supported by gcc.c
+   itself.  We don't directly support the -m (generate load map)
+   option because that conflicts with the -m (run m4) option of the
+   svr4 assembler.  We also don't directly support the svr4 linker's
+   -I* or -M* options because these conflict with existing GCC
+   options.  We do however allow passing arbitrary options to the svr4
+   linker via the -Wl, option, in gcc.c.  We don't support the svr4
+   linker's -a option at all because it is totally useless and because
+   it conflicts with GCC's own -a option.
 
    Note that gcc doesn't allow a space to follow -Y in a -YP,* option.
 
@@ -160,7 +160,7 @@ Boston, MA 02111-1307, USA.
 #undef	LINK_SPEC
 #ifdef CROSS_COMPILE
 #define LINK_SPEC "%{h*} %{v:-V} \
-		   %{b} %{Wl,*:%*} \
+		   %{b} \
 		   %{static:-dn -Bstatic} \
 		   %{shared:-G -dy -z text} \
 		   %{symbolic:-Bsymbolic -G -dy -z text} \
@@ -169,7 +169,7 @@ Boston, MA 02111-1307, USA.
 		   %{Qy:} %{!Qn:-Qy}"
 #else
 #define LINK_SPEC "%{h*} %{v:-V} \
-		   %{b} %{Wl,*:%*} \
+		   %{b} \
 		   %{static:-dn -Bstatic} \
 		   %{shared:-G -dy -z text} \
 		   %{symbolic:-Bsymbolic -G -dy -z text} \
