@@ -178,6 +178,5 @@ extern int i386_pe_valid_decl_attribute_p PARAMS ((tree, tree, tree, tree));
 extern int i386_pe_valid_type_attribute_p PARAMS ((tree, tree, tree, tree));
 extern unsigned int i386_pe_section_type_flags PARAMS ((tree, const char *,
 							int));
-extern void i386_pe_asm_named_section PARAMS ((const char *, unsigned int,
-					       unsigned int));
+extern void i386_pe_asm_named_section PARAMS ((const char *, unsigned int));
 #endif
