@@ -1032,12 +1032,10 @@ expand_eh_region_start_for_decl (decl)
       expand_dhc_cleanup (decl);
     }
 
-  if (exceptions_via_longjmp == 0)
-    note = emit_note (NULL_PTR, NOTE_INSN_EH_REGION_BEG);
   push_eh_entry (&ehstack);
-  if (exceptions_via_longjmp == 0)
-    NOTE_BLOCK_NUMBER (note)
-      = CODE_LABEL_NUMBER (ehstack.top->entry->exception_handler_label);
+  note = emit_note (NULL_PTR, NOTE_INSN_EH_REGION_BEG);
+  NOTE_BLOCK_NUMBER (note)
+    = CODE_LABEL_NUMBER (ehstack.top->entry->exception_handler_label);
   if (exceptions_via_longjmp)
     start_dynamic_handler ();
 }
@@ -1066,17 +1064,19 @@ expand_eh_region_end (handler)
      tree handler;
 {
   struct eh_entry *entry;
+  rtx note;
 
   if (! doing_eh (0))
     return;
 
   entry = pop_eh_entry (&ehstack);
 
+  note = emit_note (NULL_PTR, NOTE_INSN_EH_REGION_END);
+  NOTE_BLOCK_NUMBER (note)
+    = CODE_LABEL_NUMBER (entry->exception_handler_label);
   if (exceptions_via_longjmp == 0)
     {
       rtx label;
-      rtx note = emit_note (NULL_PTR, NOTE_INSN_EH_REGION_END);
-      NOTE_BLOCK_NUMBER (note) = CODE_LABEL_NUMBER (entry->exception_handler_label);
 
       label = gen_label_rtx ();
       emit_jump (label);
@@ -2135,10 +2135,6 @@ exception_optimize ()
 {
   rtx insn, regions = NULL_RTX;
   int n;
-
-  /* The below doesn't apply to setjmp/longjmp EH.  */
-  if (exceptions_via_longjmp)
-    return;
 
   /* Remove empty regions.  */
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))

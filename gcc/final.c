@@ -1379,7 +1379,8 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
       if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END)
 	break;
 
-      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG)
+      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG
+	  && ! exceptions_via_longjmp)
 	{
 	  ASM_OUTPUT_INTERNAL_LABEL (file, "LEHB", NOTE_BLOCK_NUMBER (insn));
 	  add_eh_table_entry (NOTE_BLOCK_NUMBER (insn));
@@ -1389,7 +1390,8 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	  break;
 	}
 
-      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_END)
+      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_END
+	  && ! exceptions_via_longjmp)
 	{
 	  ASM_OUTPUT_INTERNAL_LABEL (file, "LEHE", NOTE_BLOCK_NUMBER (insn));
 #ifdef ASM_OUTPUT_EH_REGION_END
