@@ -4,7 +4,6 @@
 	(get_qualified_type): Use it.  If type already has the desired
 	quals, just return it.
 	* tree.h: Declare it.
-	* cp/tree.c (build_exception_variant): Use it.
 
 2003-02-24  Sanjiv Kumar Gupta  <sanjivg@noida.hcltech.com>
 
