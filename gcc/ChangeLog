@@ -1,3 +1,8 @@
+2001-01-25  lars brinkhoff  <lars@nocrew.org>
+
+	* tm.texi (DATA_ALIGNMENT, LOCAL_ALIGNMENT, ASM_OPEN_PAREN,
+	ASM_CLOSE_PAREN): fix typos.
+
 2001-01-25  Mark Mitchell  <mark@codesourcery.com>
 
 	* acconfig.h: Define `const' to the empty string if neither
