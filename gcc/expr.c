@@ -159,6 +159,7 @@ static void emit_single_push_insn (enum machine_mode, rtx, tree);
 #endif
 static void do_tablejump (rtx, enum machine_mode, rtx, rtx, rtx);
 static rtx const_vector_from_tree (tree);
+static void write_complex_part (rtx, rtx, bool);
 
 /* Record for each mode whether we can move a register directly to or
    from an object of that mode in memory.  If we can't, we won't try
@@ -2405,30 +2406,48 @@ store_by_pieces_2 (rtx (*genfun) (rtx, ...), enum machine_mode mode,
 rtx
 clear_storage (rtx object, rtx size)
 {
-  rtx retval = 0;
-  unsigned int align = (MEM_P (object) ? MEM_ALIGN (object)
-			: GET_MODE_ALIGNMENT (GET_MODE (object)));
+  enum machine_mode mode = GET_MODE (object);
+  unsigned int align;
 
   /* If OBJECT is not BLKmode and SIZE is the same size as its mode,
      just move a zero.  Otherwise, do this a piece at a time.  */
-  if (GET_MODE (object) != BLKmode
+  if (mode != BLKmode
       && GET_CODE (size) == CONST_INT
-      && INTVAL (size) == (HOST_WIDE_INT) GET_MODE_SIZE (GET_MODE (object)))
-    emit_move_insn (object, CONST0_RTX (GET_MODE (object)));
-  else
+      && INTVAL (size) == (HOST_WIDE_INT) GET_MODE_SIZE (mode))
     {
-      if (size == const0_rtx)
-	;
-      else if (GET_CODE (size) == CONST_INT
-	  && CLEAR_BY_PIECES_P (INTVAL (size), align))
-	clear_by_pieces (object, INTVAL (size), align);
-      else if (clear_storage_via_clrmem (object, size, align))
-	;
-      else
-	retval = clear_storage_via_libcall (object, size);
+      rtx zero = CONST0_RTX (mode);
+      if (zero != NULL)
+	{
+	  emit_move_insn (object, zero);
+	  return NULL;
+	}
+
+      if (COMPLEX_MODE_P (mode))
+	{
+	  zero = CONST0_RTX (GET_MODE_INNER (mode));
+	  if (zero != NULL)
+	    {
+	      write_complex_part (object, zero, 0);
+	      write_complex_part (object, zero, 1);
+	      return NULL;
+	    }
+	}
     }
 
-  return retval;
+  if (size == const0_rtx)
+    return NULL;
+
+  align = MEM_ALIGN (object);
+
+  if (GET_CODE (size) == CONST_INT
+      && CLEAR_BY_PIECES_P (INTVAL (size), align))
+    clear_by_pieces (object, INTVAL (size), align);
+  else if (clear_storage_via_clrmem (object, size, align))
+    ;
+  else
+    return clear_storage_via_libcall (object, size);
+
+  return NULL;
 }
 
 /* A subroutine of clear_storage.  Expand a clrmem pattern;
