@@ -1474,8 +1474,11 @@ extern const struct mips_cpu_info *mips_tune_info;
    - 8 condition code registers
    - 2 accumulator registers (hi and lo)
    - 32 registers each for coprocessors 0, 2 and 3
-   - FAKE_CALL_REGNO (see the comment above load_callsi for details)
-   - 5 dummy entries that were used at various times in the past.  */
+   - 3 fake registers:
+	- ARG_POINTER_REGNUM
+	- FRAME_POINTER_REGNUM
+	- FAKE_CALL_REGNO (see the comment above load_callsi for details)
+   - 3 dummy entries that were used at various times in the past.  */
 
 #define FIRST_PSEUDO_REGISTER 176
 
@@ -1661,11 +1664,10 @@ extern char mips_hard_regno_mode_ok[][FIRST_PSEUDO_REGISTER];
 /* Register to use for pushing function arguments.  */
 #define STACK_POINTER_REGNUM (GP_REG_FIRST + 29)
 
-/* Base register for access to local variables of the function.  We
-   pretend that the frame pointer is $1, and then eliminate it to
-   HARD_FRAME_POINTER_REGNUM.  We can get away with this because $1 is
-   a fixed register, and will not be used for anything else.  */
-#define FRAME_POINTER_REGNUM (GP_REG_FIRST + 1)
+/* These two registers don't really exist: they get eliminated to either
+   the stack or hard frame pointer.  */
+#define ARG_POINTER_REGNUM 77
+#define FRAME_POINTER_REGNUM 78
 
 /* $30 is not available on the mips16, so we use $17 as the frame
    pointer.  */
@@ -1677,9 +1679,6 @@ extern char mips_hard_regno_mode_ok[][FIRST_PSEUDO_REGISTER];
    may be accessed via the stack pointer) in functions that seem suitable.
    This is computed in `reload', in reload1.c.  */
 #define FRAME_POINTER_REQUIRED (current_function_calls_alloca)
-
-/* Base register for access to arguments of the function.  */
-#define ARG_POINTER_REGNUM GP_REG_FIRST
 
 /* Register in which static-chain is passed to a function.  */
 #define STATIC_CHAIN_REGNUM (GP_REG_FIRST + 2)
@@ -2510,31 +2509,9 @@ typedef struct mips_args {
 
 /* Addressing modes, and classification of registers for them.  */
 
-/* These assume that REGNO is a hard or pseudo reg number.
-   They give nonzero only if REGNO is a hard reg of the suitable class
-   or a pseudo reg currently allocated to a suitable hard reg.
-   These definitions are NOT overridden anywhere.  */
-
-#define BASE_REG_P(regno, mode)					\
-  (TARGET_MIPS16						\
-   ? (M16_REG_P (regno)						\
-      || (regno) == FRAME_POINTER_REGNUM			\
-      || (regno) == ARG_POINTER_REGNUM				\
-      || ((regno) == STACK_POINTER_REGNUM			\
-	  && (GET_MODE_SIZE (mode) == 4				\
-	      || GET_MODE_SIZE (mode) == 8)))			\
-   : GP_REG_P (regno))
-
-#define GP_REG_OR_PSEUDO_STRICT_P(regno, mode)				    \
-  BASE_REG_P((regno < FIRST_PSEUDO_REGISTER) ? (int) regno : reg_renumber[regno], \
-	     (mode))
-
-#define GP_REG_OR_PSEUDO_NONSTRICT_P(regno, mode) \
-  (((regno) >= FIRST_PSEUDO_REGISTER) || (BASE_REG_P ((regno), (mode))))
-
-#define REGNO_OK_FOR_INDEX_P(regno)	0
-#define REGNO_MODE_OK_FOR_BASE_P(regno, mode) \
-  GP_REG_OR_PSEUDO_STRICT_P ((regno), (mode))
+#define REGNO_OK_FOR_INDEX_P(REGNO) 0
+#define REGNO_MODE_OK_FOR_BASE_P(REGNO, MODE) \
+  mips_regno_mode_ok_for_base_p (REGNO, MODE, 1)
 
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
    and check its validity for a certain class.
@@ -2549,10 +2526,10 @@ typedef struct mips_args {
 
 #ifndef REG_OK_STRICT
 #define REG_MODE_OK_FOR_BASE_P(X, MODE) \
-  mips_reg_mode_ok_for_base_p (X, MODE, 0)
+  mips_regno_mode_ok_for_base_p (REGNO (X), MODE, 0)
 #else
 #define REG_MODE_OK_FOR_BASE_P(X, MODE) \
-  mips_reg_mode_ok_for_base_p (X, MODE, 1)
+  mips_regno_mode_ok_for_base_p (REGNO (X), MODE, 1)
 #endif
 
 #define REG_OK_FOR_INDEX_P(X) 0

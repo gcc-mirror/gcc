@@ -1,3 +1,7 @@
+2004-01-25  Richard Sandiford  <rsandifo@redhat.com>
+
+	* gcc.dg/torture/mips-clobber-at.c: New test.
+
 2004-01-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/20040123-1.c: New test.

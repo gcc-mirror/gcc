@@ -572,7 +572,7 @@ char mips_reg_names[][8] =
  "$f16", "$f17", "$f18", "$f19", "$f20", "$f21", "$f22", "$f23",
  "$f24", "$f25", "$f26", "$f27", "$f28", "$f29", "$f30", "$f31",
  "hi",   "lo",   "",     "$fcc0","$fcc1","$fcc2","$fcc3","$fcc4",
- "$fcc5","$fcc6","$fcc7","", "",     "",     "",     "$fakec",
+ "$fcc5","$fcc6","$fcc7","", "", "$arg", "$frame", "$fakec",
  "$c0r0", "$c0r1", "$c0r2", "$c0r3", "$c0r4", "$c0r5", "$c0r6", "$c0r7",
  "$c0r8", "$c0r9", "$c0r10","$c0r11","$c0r12","$c0r13","$c0r14","$c0r15",
  "$c0r16","$c0r17","$c0r18","$c0r19","$c0r20","$c0r21","$c0r22","$c0r23",
@@ -601,7 +601,7 @@ char mips_sw_reg_names[][8] =
   "$f16", "$f17", "$f18", "$f19", "$f20", "$f21", "$f22", "$f23",
   "$f24", "$f25", "$f26", "$f27", "$f28", "$f29", "$f30", "$f31",
   "hi",   "lo",   "",     "$fcc0","$fcc1","$fcc2","$fcc3","$fcc4",
-  "$fcc5","$fcc6","$fcc7","$rap", "",     "",     "",     "$fakec",
+  "$fcc5","$fcc6","$fcc7","$rap", "", "$arg", "$frame", "$fakec",
   "$c0r0", "$c0r1", "$c0r2", "$c0r3", "$c0r4", "$c0r5", "$c0r6", "$c0r7",
   "$c0r8", "$c0r9", "$c0r10","$c0r11","$c0r12","$c0r13","$c0r14","$c0r15",
   "$c0r16","$c0r17","$c0r18","$c0r19","$c0r20","$c0r21","$c0r22","$c0r23",
@@ -638,7 +638,7 @@ const enum reg_class mips_regno_to_class[] =
   HI_REG,	LO_REG,		NO_REGS,	ST_REGS,
   ST_REGS,	ST_REGS,	ST_REGS,	ST_REGS,
   ST_REGS,	ST_REGS,	ST_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
+  NO_REGS,	ALL_REGS,	ALL_REGS,	NO_REGS,
   COP0_REGS,	COP0_REGS,	COP0_REGS,	COP0_REGS,
   COP0_REGS,	COP0_REGS,	COP0_REGS,	COP0_REGS,
   COP0_REGS,	COP0_REGS,	COP0_REGS,	COP0_REGS,
@@ -953,11 +953,40 @@ mips_symbolic_constant_p (rtx x, enum mips_symbol_type *symbol_type)
 /* This function is used to implement REG_MODE_OK_FOR_BASE_P.  */
 
 int
-mips_reg_mode_ok_for_base_p (rtx reg, enum machine_mode mode, int strict)
+mips_regno_mode_ok_for_base_p (int regno, enum machine_mode mode, int strict)
 {
-  return (strict
-	  ? REGNO_MODE_OK_FOR_BASE_P (REGNO (reg), mode)
-	  : GP_REG_OR_PSEUDO_NONSTRICT_P (REGNO (reg), mode));
+  if (regno >= FIRST_PSEUDO_REGISTER)
+    {
+      if (!strict)
+	return true;
+      regno = reg_renumber[regno];
+    }
+
+  /* These fake registers will be eliminated to either the stack or
+     hard frame pointer, both of which are usually valid base registers.
+     Reload deals with the cases where the eliminated form isn't valid.  */
+  if (regno == ARG_POINTER_REGNUM || regno == FRAME_POINTER_REGNUM)
+    return true;
+
+  /* In mips16 mode, the stack pointer can only address word and doubleword
+     values, nothing smaller.  There are two problems here:
+
+       (a) Instantiating virtual registers can introduce new uses of the
+	   stack pointer.  If these virtual registers are valid addresses,
+	   the stack pointer should be too.
+
+       (b) Most uses of the stack pointer are not made explicit until
+	   FRAME_POINTER_REGNUM and ARG_POINTER_REGNUM have been eliminated.
+	   We don't know until that stage whether we'll be eliminating to the
+	   stack pointer (which needs the restriction) or the hard frame
+	   pointer (which doesn't).
+
+     All in all, it seems more consitent to only enforce this restriction
+     during and after reload.  */
+  if (TARGET_MIPS16 && regno == STACK_POINTER_REGNUM)
+    return !strict || GET_MODE_SIZE (mode) == 4 || GET_MODE_SIZE (mode) == 8;
+
+  return TARGET_MIPS16 ? M16_REG_P (regno) : GP_REG_P (regno);
 }
 
 
@@ -971,7 +1000,7 @@ mips_valid_base_register_p (rtx x, enum machine_mode mode, int strict)
     x = SUBREG_REG (x);
 
   return (GET_CODE (x) == REG
-	  && mips_reg_mode_ok_for_base_p (x, mode, strict));
+	  && mips_regno_mode_ok_for_base_p (REGNO (x), mode, strict));
 }
 
 

@@ -1,3 +1,23 @@
+2004-01-25  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips-protos.h (mips_reg_mode_ok_for_base_p): Delete.
+	(mips_regno_mode_ok_for_base_p): Declare.
+	* config/mips/mips.h (ARG_POINTER_REGNUM): Renumber to 77.
+	(FRAME_POINTER_REGNUM): Renumber to 78.
+	(FIRST_PSEUDO_REGISTER): Update comment accordingly.
+	(BASE_REG_P, GP_REG_OR_PSEUDO_STRICT_P): Delete.
+	(GP_REG_OR_PSEUDO_NONSTRICT_P): Delete.
+	(REGNO_MODE_OK_FOR_BASE_P): Use mips_regno_mode_ok_for_base_p.
+	(REG_MODE_OK_FOR_BASE_P): Likewise.
+	* config/mips/mips.c (mips_reg_names, mips_sw_reg_names): Change
+	entry for 77 to "$arg" and entry for 78 to "$frame".
+	(mips_regno_to_class): Map 77 and 78 to ALL_REGS.
+	(mips_reg_mode_ok_for_base_p): Remove.
+	(mips_regno_mode_ok_for_base_p): New function, derived from old
+	BASE_REG_P macro.  Don't enforce the mips16 stack pointer
+	restrictions unless we're being strict.
+	(mips_valid_base_register_p): Use mips_regno_mode_ok_for_base_p.
+
 2004-01-24  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* doc/frontends.texi: Update copyright.
