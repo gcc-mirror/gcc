@@ -10378,6 +10378,13 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	  if (TYPE_LANG_SPECIFIC (type))
 	    TYPE_WAS_ANONYMOUS (type) = 1;
 
+	  /* If this is a typedef within a template class, the nested
+	     type is a (non-primary) template.  The name for the
+	     template needs updating as well.  */
+	  if (TYPE_LANG_SPECIFIC (type) && CLASSTYPE_TEMPLATE_INFO (type))
+	    DECL_NAME (CLASSTYPE_TI_TEMPLATE (type)) 
+	      = TYPE_IDENTIFIER (type);
+
 	  /* XXX Temporarily set the scope. 
 	     When returning, start_decl expects it as NULL_TREE,
 	     and will then then set it using pushdecl. */
