@@ -309,11 +309,6 @@ do {									\
    support 64 bit PowerPC either, so this just keeps things happy.  */
 #define DOUBLE_INT_ASM_OP "\t.quad\t"
 
-/* Get HOST_WIDE_INT and CONST_INT to be 32 bits, for compile time
-   space/speed.  */
-#undef MAX_LONG_TYPE_SIZE
-#define MAX_LONG_TYPE_SIZE 32
-
 /* For binary compatibility with 2.95; Darwin C APIs use bool from
    stdbool.h, which was an int-sized enum in 2.95.  */
 #define BOOL_TYPE_SIZE INT_TYPE_SIZE

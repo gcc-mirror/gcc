@@ -983,7 +983,6 @@ struct cum_arg
 
 #define WCHAR_TYPE "short unsigned int"
 #define WCHAR_TYPE_SIZE 16
-#define MAX_WCHAR_TYPE_SIZE 16
 
 /* A function address in a call instruction
    is a byte address (for indexing purposes)

@@ -449,7 +449,6 @@ do {								\
 #define WORDS_BIG_ENDIAN 1
 
 #define MAX_BITS_PER_WORD 64
-#define MAX_LONG_TYPE_SIZE 32
 
 /* Width of a word, in units (bytes).  */
 #define UNITS_PER_WORD (TARGET_64BIT ? 8 : 4)

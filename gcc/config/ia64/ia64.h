@@ -429,8 +429,6 @@ while (0)
 
 #define LONG_TYPE_SIZE (TARGET_ILP32 ? 32 : 64)
 
-#define MAX_LONG_TYPE_SIZE 64
-
 #define LONG_LONG_TYPE_SIZE 64
 
 #define FLOAT_TYPE_SIZE 32

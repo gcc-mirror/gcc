@@ -181,7 +181,6 @@ do {									\
 /* Width of wchar_t in bits.  */
 #undef  WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE (!TARGET_64BIT ? 16 : 32)
-#define MAX_WCHAR_TYPE_SIZE 32
 
 /* AIX V5 uses PowerPC nop (ori 0,0,0) instruction as call glue for PowerPC
    and "cror 31,31,31" for POWER architecture.  */

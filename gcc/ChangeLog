@@ -1,3 +1,23 @@
+2004-02-07  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config.gcc: Don't mention MAX_LONG_TYPE_SIZE.
+	* system.h (MAX_LONG_TYPE_SIZE, MAX_LONG_DOUBLE_TYPE_SIZE,
+	MAX_WCHAR_TYPE_SIZE, GCOV_TYPE_SIZE): Poison.
+	* config/avr/avr.h, config/h8300/h8300.h, config/i386/i386.h,
+	config/ia64/ia64.h, config/ip2k/ip2k.h,
+	config/iq2000/iq2000.h, config/mips/iris5.h,
+	config/mips/mips.h, config/pa/pa-64.h, config/pa/pa.h,
+	config/rs6000/aix51.h, config/rs6000/aix52.h,
+	config/rs6000/darwin.h, config/rs6000/rs6000.h,
+	config/s390/s390.h, config/sh/sh.h, config/sparc/freebsd.h,
+	config/sparc/linux.h, config/sparc/linux64.h,
+	config/sparc/netbsd-elf.h, config/sparc/sparc.h,
+	config/xtensa/xtensa.h: Remove the definitions of
+	MAX_LONG_TYPE_SIZE, MAX_LONG_DOUBLE_TYPE_SIZE, and/or
+	MAX_WCHAR_TYPE_SIZE.
+	* doc/tm.texi (MAX_LONG_TYPE_SIZE, MAX_LONG_DOUBLE_TYPE_SIZE,
+	MAX_WCHAR_TYPE_SIZE, GCOV_TYPE_SIZE): Remove.
+
 2004-02-07  Stephane Carrez  <stcarrez@nerim.fr>
 
 	PR bootstrap/13990

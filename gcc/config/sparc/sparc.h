@@ -694,10 +694,6 @@ extern struct sparc_cpu_select sparc_select[];
 #define FLOAT_TYPE_SIZE		32
 #define DOUBLE_TYPE_SIZE	64
 
-#ifdef SPARC_BI_ARCH
-#define MAX_LONG_TYPE_SIZE	64
-#endif
-
 #if 0
 /* ??? This does not work in SunOS 4.x, so it is not enabled here.
    Instead, it is enabled in sol2.h, because it does work under Solaris.  */

@@ -1535,14 +1535,6 @@ the size of that type.  If you don't define this, the default is the
 value of @code{LONG_TYPE_SIZE}.
 @end defmac
 
-@defmac MAX_LONG_TYPE_SIZE
-Maximum number for the size in bits of the type @code{long} on the
-target machine.  If this is undefined, the default is
-@code{LONG_TYPE_SIZE}.  Otherwise, it is the constant value that is the
-largest value that @code{LONG_TYPE_SIZE} can have at run-time.  This is
-used in @code{cpp}.
-@end defmac
-
 @defmac LONG_LONG_TYPE_SIZE
 A C expression for the size in bits of the type @code{long long} on the
 target machine.  If you don't define this, the default is two
@@ -1577,14 +1569,6 @@ words.
 A C expression for the size in bits of the type @code{long double} on
 the target machine.  If you don't define this, the default is two
 words.
-@end defmac
-
-@defmac MAX_LONG_DOUBLE_TYPE_SIZE
-Maximum number for the size in bits of the type @code{long double} on the
-target machine.  If this is undefined, the default is
-@code{LONG_DOUBLE_TYPE_SIZE}.  Otherwise, it is the constant value that is
-the largest value that @code{LONG_DOUBLE_TYPE_SIZE} can have at run-time.
-This is used in @code{cpp}.
 @end defmac
 
 @defmac TARGET_FLT_EVAL_METHOD
@@ -1657,22 +1641,6 @@ If you don't define this macro, the default is @code{"int"}.
 A C expression for the size in bits of the data type for wide
 characters.  This is used in @code{cpp}, which cannot make use of
 @code{WCHAR_TYPE}.
-@end defmac
-
-@defmac MAX_WCHAR_TYPE_SIZE
-Maximum number for the size in bits of the data type for wide
-characters.  If this is undefined, the default is
-@code{WCHAR_TYPE_SIZE}.  Otherwise, it is the constant value that is the
-largest value that @code{WCHAR_TYPE_SIZE} can have at run-time.  This is
-used in @code{cpp}.
-@end defmac
-
-@defmac GCOV_TYPE_SIZE
-A C expression for the size in bits of the type used for gcov counters on the
-target machine.  If you don't define this, the default is one
-@code{LONG_TYPE_SIZE} in case it is greater or equal to 64-bit and
-@code{LONG_LONG_TYPE_SIZE} otherwise.  You may want to re-define the type to
-ensure atomicity for counters in multithreaded programs.
 @end defmac
 
 @defmac WINT_TYPE
