@@ -981,7 +981,7 @@ alpha_emit_set_long_const (target, c)
     = (flag_expensive_optimizations && rtx_equal_function_value_matters
        ? 0 : target);
   HOST_WIDE_INT d1, d2, d3, d4;
-  rtx r;
+  rtx r1, r2;
 
   /* Decompose the entire word */
   d1 = ((c & 0xffff) ^ 0x8000) - 0x8000;
@@ -997,29 +997,36 @@ alpha_emit_set_long_const (target, c)
 
   /* Construct the high word */
   if (d3 == 0)
-    r = copy_to_suggested_reg (GEN_INT (d4), subtarget, DImode);
+    r1 = copy_to_suggested_reg (GEN_INT (d4), subtarget, DImode);
   else if (d4 == 0)
-    r = copy_to_suggested_reg (GEN_INT (d3), subtarget, DImode);
+    r1 = copy_to_suggested_reg (GEN_INT (d3), subtarget, DImode);
   else
-    r = expand_binop (DImode, add_optab, GEN_INT (d3), GEN_INT (d4),
-		      subtarget, 0, OPTAB_WIDEN);
+    r1 = expand_binop (DImode, add_optab, GEN_INT (d3), GEN_INT (d4),
+		       subtarget, 0, OPTAB_WIDEN);
 
   /* Shift it into place */
-  r = expand_binop (DImode, ashl_optab, r, GEN_INT (32), 
-		    subtarget, 0, OPTAB_WIDEN);
+  r2 = expand_binop (DImode, ashl_optab, r1, GEN_INT (32), 
+		     subtarget, 0, OPTAB_WIDEN);
 
-  /* Add in the low word */
-  if (d2 != 0)
-    r = expand_binop (DImode, add_optab, r, GEN_INT (d2),
-		      subtarget, 0, OPTAB_WIDEN);
-  if (d1 != 0)
-    r = expand_binop (DImode, add_optab, r, GEN_INT (d1),
-		      subtarget, 0, OPTAB_WIDEN);
+  if (subtarget == 0 && d1 == d3 && d2 == d4)
+    r1 = expand_binop (DImode, add_optab, r1, r2, subtarget, 0, OPTAB_WIDEN);
+  else
+    {
+      r1 = r2;
+
+      /* Add in the low word */
+      if (d2 != 0)
+	r1 = expand_binop (DImode, add_optab, r1, GEN_INT (d2),
+		           subtarget, 0, OPTAB_WIDEN);
+      if (d1 != 0)
+	r1 = expand_binop (DImode, add_optab, r1, GEN_INT (d1),
+		           subtarget, 0, OPTAB_WIDEN);
+    }
 
   if (subtarget == 0)
-    r = copy_to_suggested_reg(r, target, DImode);
+    r1 = copy_to_suggested_reg(r1, target, DImode);
 
-  return r;
+  return r1;
 }
 #endif /* HOST_BITS_PER_WIDE_INT == 64 */
 
