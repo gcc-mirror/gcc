@@ -273,7 +273,7 @@ build_base_path (enum tree_code code,
 
   if (code == MINUS_EXPR && v_binfo)
     {
-      error ("cannot convert from base `%T' to derived type `%T' via virtual base `%T'",
+      error ("cannot convert from base %qT to derived type %qT via virtual base %qT",
 	     BINFO_TYPE (binfo), BINFO_TYPE (d_binfo), BINFO_TYPE (v_binfo));
       return error_mark_node;
     }
@@ -885,8 +885,8 @@ add_method (tree type, tree method)
       
       if (TYPE_FOR_JAVA (type))
 	error (DECL_ARTIFICIAL (method)
-	       ? "Java class '%T' cannot have an implicit non-trivial destructor"
-	       : "Java class '%T' cannot have a destructor",
+	       ? "Java class %qT cannot have an implicit non-trivial destructor"
+	       : "Java class %qT cannot have a destructor",
 	       DECL_CONTEXT (method));
     }
   else
@@ -1042,9 +1042,10 @@ alter_access (tree t, tree fdecl, tree access)
       if (TREE_VALUE (elem) != access)
 	{
 	  if (TREE_CODE (TREE_TYPE (fdecl)) == FUNCTION_DECL)
-	    cp_error_at ("conflicting access specifications for method `%D', ignored", TREE_TYPE (fdecl));
+	    cp_error_at ("conflicting access specifications for method"
+                         " %qD, ignored", TREE_TYPE (fdecl));
 	  else
-	    error ("conflicting access specifications for field `%E', ignored",
+	    error ("conflicting access specifications for field %qE, ignored",
 		   DECL_NAME (fdecl));
 	}
       else
@@ -1094,12 +1095,12 @@ handle_using_decl (tree using_decl, tree t)
   
   if (constructor_name_p (name, ctype))
     {
-      cp_error_at ("`%D' names constructor", using_decl);
+      cp_error_at ("%qD names constructor", using_decl);
       return;
     }
   if (constructor_name_p (name, t))
     {
-      cp_error_at ("`%D' invalid in `%T'", using_decl, t);
+      cp_error_at ("%qD invalid in %qT", using_decl, t);
       return;
     }
 
@@ -1107,7 +1108,7 @@ handle_using_decl (tree using_decl, tree t)
   
   if (!fdecl)
     {
-      cp_error_at ("no members matching `%D' in `%#T'", using_decl, ctype);
+      cp_error_at ("no members matching %qD in %q#T", using_decl, ctype);
       return;
     }
 
@@ -1139,16 +1140,16 @@ handle_using_decl (tree using_decl, tree t)
 	   the same name already present in the current class.  */;
       else
 	{
-	  cp_error_at ("`%D' invalid in `%#T'", using_decl, t);
-	  cp_error_at ("  because of local method `%#D' with same name",
+	  cp_error_at ("%qD invalid in %q#T", using_decl, t);
+	  cp_error_at ("  because of local method %q#D with same name",
 		       OVL_CURRENT (old_value));
 	  return;
 	}
     }
   else if (!DECL_ARTIFICIAL (old_value))
     {
-      cp_error_at ("`%D' invalid in `%#T'", using_decl, t);
-      cp_error_at ("  because of local member `%#D' with same name", old_value);
+      cp_error_at ("%qD invalid in %q#T", using_decl, t);
+      cp_error_at ("  because of local member %q#D with same name", old_value);
       return;
     }
   
@@ -1193,8 +1194,7 @@ check_bases (tree t,
 	 dtor is handled in finish_struct_1.  */
       if (warn_ecpp && ! TYPE_POLYMORPHIC_P (basetype)
 	  && TYPE_HAS_DESTRUCTOR (basetype))
-	warning ("base class `%#T' has a non-virtual destructor",
-		    basetype);
+	warning ("base class %q#T has a non-virtual destructor", basetype);
 
       /* If the base class doesn't have copy constructors or
 	 assignment operators that take const references, then the
@@ -1213,8 +1213,9 @@ check_bases (tree t,
 	{
 	  *cant_have_default_ctor_p = 1;
 	  if (! TYPE_HAS_CONSTRUCTOR (t))
-            pedwarn ("base `%T' with only non-default constructor in class without a constructor",
-                        basetype);
+            pedwarn ("base %qT with only non-default constructor in class "
+                     "without a constructor",
+                     basetype);
 	}
 
       if (BINFO_VIRTUAL_P (base_binfo))
@@ -1519,7 +1520,7 @@ maybe_warn_about_overly_private_class (tree t)
 	  }
       if (!has_nonprivate_method) 
 	{
-	  warning ("all member functions in class `%T' are private", t);
+	  warning ("all member functions in class %qT are private", t);
 	  return;
 	}
     }
@@ -1530,7 +1531,7 @@ maybe_warn_about_overly_private_class (tree t)
   if (TYPE_HAS_DESTRUCTOR (t)
       && TREE_PRIVATE (CLASSTYPE_DESTRUCTORS (t)))
     {
-      warning ("`%#T' only defines a private destructor and has no friends",
+      warning ("%q#T only defines a private destructor and has no friends",
 	       t);
       return;
     }
@@ -1570,8 +1571,8 @@ maybe_warn_about_overly_private_class (tree t)
 
       if (nonprivate_ctor == 0)
 	{
-	  warning ("`%#T' only defines private constructors and has no friends",
-		      t);
+	  warning ("%q#T only defines private constructors and has no friends",
+                   t);
 	  return;
 	}
     }
@@ -1951,7 +1952,7 @@ find_final_overrider (tree derived, tree binfo, tree fn)
   /* If there was no winner, issue an error message.  */
   if (!ffod.candidates || TREE_CHAIN (ffod.candidates))
     {
-      error ("no unique final overrider for `%D' in `%T'", fn, 
+      error ("no unique final overrider for %qD in %qT", fn, 
 	     BINFO_TYPE (derived));
       return error_mark_node;
     }
@@ -2405,8 +2406,8 @@ warn_hidden (tree t)
       while (base_fndecls) 
 	{
 	  /* Here we know it is a hider, and no overrider exists.  */
-	  cp_warning_at ("`%D' was hidden", TREE_VALUE (base_fndecls));
-	  cp_warning_at ("  by `%D'", fns);
+	  cp_warning_at ("%qD was hidden", TREE_VALUE (base_fndecls));
+	  cp_warning_at ("  by %qD", fns);
 	  base_fndecls = TREE_CHAIN (base_fndecls);
 	}
     }
@@ -2447,16 +2448,17 @@ finish_struct_anon (tree t)
 
 	      if (TREE_CODE (elt) != FIELD_DECL)
 		{
-		  cp_pedwarn_at ("`%#D' invalid; an anonymous union can only have non-static data members",
+		  cp_pedwarn_at ("%q#D invalid; an anonymous union can "
+                                 "only have non-static data members",
 				 elt);
 		  continue;
 		}
 
 	      if (TREE_PRIVATE (elt))
-		cp_pedwarn_at ("private member `%#D' in anonymous union",
+		cp_pedwarn_at ("private member %q#D in anonymous union",
 			       elt);
 	      else if (TREE_PROTECTED (elt))
-		cp_pedwarn_at ("protected member `%#D' in anonymous union",
+		cp_pedwarn_at ("protected member %q#D in anonymous union",
 			       elt);
 
 	      TREE_PRIVATE (elt) = TREE_PRIVATE (field);
@@ -2570,7 +2572,7 @@ add_implicitly_declared_members (tree t,
   else
     {
       if (warn_abi && virtual_dtor)
-	warning ("vtable layout for class `%T' may not be ABI-compliant "
+	warning ("vtable layout for class %qT may not be ABI-compliant "
 		 "and may change in a future version of GCC due to implicit "
 		 "virtual destructor",
 		 t);
@@ -2628,7 +2630,7 @@ check_bitfield_decl (tree field)
   if (DECL_INITIAL (field)
       && ! INTEGRAL_TYPE_P (TREE_TYPE (field)))
     {
-      cp_error_at ("bit-field `%#D' with non-integral type", field);
+      cp_error_at ("bit-field %q#D with non-integral type", field);
       w = error_mark_node;
     }
 
@@ -2648,24 +2650,24 @@ check_bitfield_decl (tree field)
 
       if (TREE_CODE (w) != INTEGER_CST)
 	{
-	  cp_error_at ("bit-field `%D' width not an integer constant",
+	  cp_error_at ("bit-field %qD width not an integer constant",
 		       field);
 	  w = error_mark_node;
 	}
       else if (tree_int_cst_sgn (w) < 0)
 	{
-	  cp_error_at ("negative width in bit-field `%D'", field);
+	  cp_error_at ("negative width in bit-field %qD", field);
 	  w = error_mark_node;
 	}
       else if (integer_zerop (w) && DECL_NAME (field) != 0)
 	{
-	  cp_error_at ("zero width for bit-field `%D'", field);
+	  cp_error_at ("zero width for bit-field %qD", field);
 	  w = error_mark_node;
 	}
       else if (compare_tree_int (w, TYPE_PRECISION (type)) > 0
 	       && TREE_CODE (type) != ENUMERAL_TYPE
 	       && TREE_CODE (type) != BOOLEAN_TYPE)
-	cp_warning_at ("width of `%D' exceeds its type", field);
+	cp_warning_at ("width of %qD exceeds its type", field);
       else if (TREE_CODE (type) == ENUMERAL_TYPE
 	       && (0 > compare_tree_int (w,
 					 min_precision (TYPE_MIN_VALUE (type),
@@ -2674,7 +2676,7 @@ check_bitfield_decl (tree field)
 					     min_precision
 					     (TYPE_MAX_VALUE (type),
 					      TYPE_UNSIGNED (type)))))
-	cp_warning_at ("`%D' is too small to hold all values of `%#T'",
+	cp_warning_at ("%qD is too small to hold all values of %q#T",
 		       field, type);
     }
   
@@ -2736,13 +2738,13 @@ check_field_decl (tree field,
       if (TREE_CODE (t) == UNION_TYPE)
 	{
 	  if (TYPE_NEEDS_CONSTRUCTING (type))
-	    cp_error_at ("member `%#D' with constructor not allowed in union",
+	    cp_error_at ("member %q#D with constructor not allowed in union",
 			 field);
 	  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
-	    cp_error_at ("member `%#D' with destructor not allowed in union",
+	    cp_error_at ("member %q#D with destructor not allowed in union",
 			 field);
 	  if (TYPE_HAS_COMPLEX_ASSIGN_REF (type))
-	    cp_error_at ("member `%#D' with copy assignment operator not allowed in union",
+	    cp_error_at ("member %q#D with copy assignment operator not allowed in union",
 			 field);
 	}
       else
@@ -2769,7 +2771,7 @@ check_field_decl (tree field,
       /* `build_class_init_list' does not recognize
 	 non-FIELD_DECLs.  */
       if (TREE_CODE (t) == UNION_TYPE && any_default_members != 0)
-	error ("multiple fields in union `%T' initialized", t);
+	error ("multiple fields in union %qT initialized", t);
       *any_default_members = 1;
     }
 }
@@ -2835,7 +2837,7 @@ check_field_decls (tree t, tree *access_decls,
 	    {
 	      if (!pod_type_p (TREE_TYPE (x)) && !TYPE_PACKED (TREE_TYPE (x)))
 		cp_warning_at
-		  ("ignoring packed attribute on unpacked non-POD field `%#D'",
+		  ("ignoring packed attribute on unpacked non-POD field %q#D",
 		   x);
 	      else
 		DECL_PACKED (x) = 1;
@@ -2895,12 +2897,12 @@ check_field_decls (tree t, tree *access_decls,
 	     reference type, the program is ill-formed.  */
 	  if (TREE_CODE (x) == VAR_DECL)
 	    {
-	      cp_error_at ("`%D' may not be static because it is a member of a union", x);
+	      cp_error_at ("%qD may not be static because it is a member of a union", x);
 	      continue;
 	    }
 	  if (TREE_CODE (type) == REFERENCE_TYPE)
 	    {
-	      cp_error_at ("`%D' may not have reference type `%T' because it is a member of a union",
+	      cp_error_at ("%qD may not have reference type `%T' because it is a member of a union",
 			   x, type);
 	      continue;
 	    }
@@ -2908,20 +2910,19 @@ check_field_decls (tree t, tree *access_decls,
 
       /* ``A local class cannot have static data members.'' ARM 9.4 */
       if (current_function_decl && TREE_STATIC (x))
-	cp_error_at ("field `%D' in local class cannot be static", x);
+	cp_error_at ("field %qD in local class cannot be static", x);
 
       /* Perform error checking that did not get done in
 	 grokdeclarator.  */
       if (TREE_CODE (type) == FUNCTION_TYPE)
 	{
-	  cp_error_at ("field `%D' invalidly declared function type",
-		       x);
+	  cp_error_at ("field %qD invalidly declared function type", x);
 	  type = build_pointer_type (type);
 	  TREE_TYPE (x) = type;
 	}
       else if (TREE_CODE (type) == METHOD_TYPE)
 	{
-	  cp_error_at ("field `%D' invalidly declared method type", x);
+	  cp_error_at ("field %qD invalidly declared method type", x);
 	  type = build_pointer_type (type);
 	  TREE_TYPE (x) = type;
 	}
@@ -2954,7 +2955,7 @@ check_field_decls (tree t, tree *access_decls,
 
 	  if (! TYPE_HAS_CONSTRUCTOR (t) && CLASSTYPE_NON_AGGREGATE (t)
 	      && extra_warnings)
-            cp_warning_at ("non-static reference `%#D' in class without a constructor", x);
+            cp_warning_at ("non-static reference %q#D in class without a constructor", x);
 	}
 
       type = strip_array_types (type);
@@ -3002,7 +3003,7 @@ check_field_decls (tree t, tree *access_decls,
 
 	  if (! TYPE_HAS_CONSTRUCTOR (t) && CLASSTYPE_NON_AGGREGATE (t)
 	      && extra_warnings)
-            cp_warning_at ("non-static const member `%#D' in class without a constructor", x);
+            cp_warning_at ("non-static const member %q#D in class without a constructor", x);
 	}
       /* A field that is pseudo-const makes the structure likewise.  */
       else if (CLASS_TYPE_P (type))
@@ -3017,7 +3018,7 @@ check_field_decls (tree t, tree *access_decls,
 	 different name from the class iff the class has a
 	 user-defined constructor.  */
       if (constructor_name_p (DECL_NAME (x), t) && TYPE_HAS_CONSTRUCTOR (t))
-	cp_pedwarn_at ("field `%#D' with same name as class", x);
+	cp_pedwarn_at ("field %q#D with same name as class", x);
 
       /* We set DECL_C_BIT_FIELD in grokbitfield.
 	 If the type and width are valid, we'll also set DECL_BIT_FIELD.  */
@@ -3051,16 +3052,16 @@ check_field_decls (tree t, tree *access_decls,
 	&& TYPE_HAS_DESTRUCTOR (t)
 	&& !(TYPE_HAS_INIT_REF (t) && TYPE_HAS_ASSIGN_REF (t)))
     {
-      warning ("`%#T' has pointer data members", t);
+      warning ("%q#T has pointer data members", t);
       
       if (! TYPE_HAS_INIT_REF (t))
 	{
-	  warning ("  but does not override `%T(const %T&)'", t, t);
+	  warning ("  but does not override %<%T(const %T&)%>", t, t);
 	  if (! TYPE_HAS_ASSIGN_REF (t))
-	    warning ("  or `operator=(const %T&)'", t);
+	    warning ("  or %<operator=(const %T&)%>", t);
 	}
       else if (! TYPE_HAS_ASSIGN_REF (t))
-	warning ("  but does not override `operator=(const %T&)'", t);
+	warning ("  but does not override %<operator=(const %T&)%>", t);
     }
 
 
@@ -3493,7 +3494,7 @@ layout_empty_base (tree binfo, tree eoc, splay_tree offsets)
 	propagate_binfo_offsets
 	  (binfo, size_diffop (size_zero_node, BINFO_OFFSET (binfo)));
       else if (warn_abi)
-	warning ("offset of empty base `%T' may not be ABI-compliant and may"
+	warning ("offset of empty base %qT may not be ABI-compliant and may"
 		 "change in a future version of GCC",
 		 BINFO_TYPE (binfo));
     }
@@ -3605,7 +3606,7 @@ build_base_field (record_layout_info rli, tree binfo,
 	      if (abi_version_at_least (2))
 		CLASSTYPE_NEARLY_EMPTY_P (t) = 0;
 	      else if (warn_abi)
-		warning ("class `%T' will be considered nearly empty in a "
+		warning ("class %qT will be considered nearly empty in a "
 			 "future version of GCC", t);
 	    }
 	}
@@ -3687,7 +3688,7 @@ check_methods (tree t)
     {
       check_for_override (x, t);
       if (DECL_PURE_VIRTUAL_P (x) && ! DECL_VINDEX (x))
-	cp_error_at ("initializer specified for non-virtual method `%D'", x);
+	cp_error_at ("initializer specified for non-virtual method %qD", x);
       /* The name of the field is the original field name
 	 Save this in auxiliary field for later overloading.  */
       if (DECL_VINDEX (x))
@@ -4346,7 +4347,8 @@ layout_virtual_bases (record_layout_info rli, splay_tree offsets)
 					 CLASSTYPE_ALIGN (basetype)),
 			       bitsize_unit_node),
 		   BINFO_OFFSET (vbase))))
-	    warning ("offset of virtual base `%T' is not ABI-compliant and may change in a future version of GCC",
+	    warning ("offset of virtual base %qT is not ABI-compliant and "
+                     "may change in a future version of GCC",
 		     basetype);
 
 	  first_vbase = false;
@@ -4440,7 +4442,7 @@ warn_about_ambiguous_bases (tree t)
       basetype = BINFO_TYPE (base_binfo);
 
       if (!lookup_base (t, basetype, ba_ignore | ba_quiet, NULL))
-	warning ("direct base `%T' inaccessible in `%T' due to ambiguity",
+	warning ("direct base %qT inaccessible in %qT due to ambiguity",
 		 basetype, t);
     }
 
@@ -4452,7 +4454,7 @@ warn_about_ambiguous_bases (tree t)
 	basetype = BINFO_TYPE (binfo);
 	
 	if (!lookup_base (t, basetype, ba_ignore | ba_quiet, NULL))
-	  warning ("virtual base `%T' inaccessible in `%T' due to ambiguity",
+	  warning ("virtual base %qT inaccessible in %qT due to ambiguity",
 		   basetype, t);
       }
 }
@@ -4662,7 +4664,7 @@ layout_class_type (tree t, tree *virtuals_p)
 		   && DECL_MODE (field) != TYPE_MODE (type))
 	    /* Versions of G++ before G++ 3.4 did not reset the
 	       DECL_MODE.  */
-	    warning ("the offset of `%D' may not be ABI-compliant and may "
+	    warning ("the offset of %qD may not be ABI-compliant and may "
 		     "change in a future version of GCC", field);
 	}
       else
@@ -4685,7 +4687,8 @@ layout_class_type (tree t, tree *virtuals_p)
 	  && !integer_zerop (size_binop (TRUNC_MOD_EXPR,
 					 DECL_FIELD_BIT_OFFSET (field),
 					 bitsize_unit_node)))
-	cp_warning_at ("offset of `%D' is not ABI-compliant and may change in a future version of GCC", 
+	cp_warning_at ("offset of %qD is not ABI-compliant and may "
+                       "change in a future version of GCC", 
 		       field);
 
       /* G++ used to use DECL_FIELD_OFFSET as if it were the byte
@@ -4694,7 +4697,7 @@ layout_class_type (tree t, tree *virtuals_p)
 	  && !tree_int_cst_equal (DECL_FIELD_OFFSET (field),
 				  byte_position (field))
 	  && contains_empty_class_p (TREE_TYPE (field)))
-	cp_warning_at ("`%D' contains empty classes which may cause base "
+	cp_warning_at ("%qD contains empty classes which may cause base "
 		       "classes to be placed at different locations in a "
 		       "future version of GCC",
 		       field);
@@ -4753,7 +4756,7 @@ layout_class_type (tree t, tree *virtuals_p)
 	  TYPE_SIZE (base_t) = bitsize_zero_node;
 	  TYPE_SIZE_UNIT (base_t) = size_zero_node;
 	  if (warn_abi && !integer_zerop (rli_size_unit_so_far (rli)))
-	    warning ("layout of classes derived from empty class `%T' "
+	    warning ("layout of classes derived from empty class %qT "
 		     "may change in a future version of GCC",
 		     t);
 	}
@@ -4894,7 +4897,7 @@ finish_struct_1 (tree t)
   if (COMPLETE_TYPE_P (t))
     {
       gcc_assert (IS_AGGR_TYPE (t));
-      error ("redefinition of `%#T'", t);
+      error ("redefinition of %q#T", t);
       popclass ();
       return;
     }
@@ -5038,7 +5041,7 @@ finish_struct_1 (tree t)
       if (!TREE_PRIVATE (dtor) ||
 	  (CLASSTYPE_FRIEND_CLASSES (t) ||
 	   DECL_FRIENDLIST (TYPE_MAIN_DECL (t))))
-	warning ("%#T' has virtual functions but non-virtual destructor", t);
+	warning ("%q#T has virtual functions but non-virtual destructor", t);
     }
 
   complete_vars (t);
@@ -5763,9 +5766,9 @@ cannot resolve overloaded function `%D' based on conversion to type `%T'",
       /* There were *no* matches.  */
       if (flags & tf_error)
 	{
- 	  error ("no matches converting function `%D' to type `%#T'", 
-		    DECL_NAME (OVL_FUNCTION (overload)),
-		    target_type);
+ 	  error ("no matches converting function %qD to type %q#T", 
+                 DECL_NAME (OVL_FUNCTION (overload)),
+                 target_type);
 
 	  /* print_candidates expects a chain with the functions in
              TREE_VALUE slots, so we cons one up here (we're losing anyway,
@@ -5786,7 +5789,7 @@ cannot resolve overloaded function `%D' based on conversion to type `%T'",
 	{
 	  tree match;
 
- 	  error ("converting overloaded function `%D' to type `%#T' is ambiguous", 
+ 	  error ("converting overloaded function %qD to type %q#T is ambiguous", 
 		    DECL_NAME (OVL_FUNCTION (overload)),
 		    target_type);
 
@@ -5812,10 +5815,10 @@ cannot resolve overloaded function `%D' based on conversion to type `%T'",
       if (!(flags & tf_error))
         return error_mark_node;
 
-      pedwarn ("assuming pointer to member `%D'", fn);
+      pedwarn ("assuming pointer to member %qD", fn);
       if (!explained)
         {
-          pedwarn ("(a pointer to member can only be formed with `&%E')", fn);
+          pedwarn ("(a pointer to member can only be formed with %<&%E%>)", fn);
           explained = 1;
         }
     }
@@ -5877,7 +5880,7 @@ instantiate_type (tree lhstype, tree rhs, tsubst_flags_t flags)
       else
 	{
 	  if (flags & tf_error)
-	    error ("argument of type `%T' does not match `%T'",
+	    error ("argument of type %qT does not match %qT",
 		   TREE_TYPE (rhs), lhstype);
 	  return error_mark_node;
 	}
@@ -6289,8 +6292,8 @@ note_name_declared_in_class (tree name, tree decl)
 	 A name N used in a class S shall refer to the same declaration
 	 in its context and when re-evaluated in the completed scope of
 	 S.  */
-      error ("declaration of `%#D'", decl);
-      cp_error_at ("changes meaning of `%D' from `%+#D'", 
+      error ("declaration of %q#D", decl);
+      cp_error_at ("changes meaning of %qD from %q+#D", 
 		   DECL_NAME (OVL_CURRENT (decl)),
 		   (tree) n->value);
     }
