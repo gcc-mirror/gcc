@@ -1,5 +1,5 @@
 /* Expands front end tree to back end RTL for GNU C-Compiler
-   Copyright (C) 1987, 88, 89, 92, 93, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92, 93, 94, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1319,7 +1319,7 @@ expand_asm (body)
 {
   if (output_bytecode)
     {
-      error ("`asm' is illegal when generating bytecode");
+      error ("`asm' is invalid when generating bytecode");
       return;
     }
 
@@ -1367,7 +1367,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 
   if (output_bytecode)
     {
-      error ("`asm' is illegal when generating bytecode");
+      error ("`asm' is invalid when generating bytecode");
       return;
     }
 
