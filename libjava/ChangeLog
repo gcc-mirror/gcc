@@ -1,3 +1,14 @@
+2004-06-11  Jerry Quinn  <jlquinn@optonline.net>
+
+	* java/util/GregorianCalendar.java (computeTime):  Skip buggy formulae
+	when we already know the answer.
+	* java/util/SimpleTimeZone.java (serialVersionOnStream): Bump to 2.
+	(setStartRule,setEndRule): Don't take abs of day number.
+	(getOffset): Clarify docs.  Add argument checks.
+	(isBefore): Take abs of day number in DOW_LE_DOM_MODE.
+	(equals,hasSameRules,toString,readObject): Use startTimeMode and
+	endTimeMode.
+
 2004-06-10  Tom Tromey  <tromey@redhat.com>
 
 	* interpret.cc (run): Handle wide fload.
