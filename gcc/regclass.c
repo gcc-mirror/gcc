@@ -115,14 +115,14 @@ int reg_alloc_order[FIRST_PSEUDO_REGISTER] = REG_ALLOC_ORDER;
 
 HARD_REG_SET reg_class_contents[N_REG_CLASSES];
 
-/* The same information, but as an array of ints.  We copy from these
-   ints to the table above.  This is done so that the tm.h files do
-   not have to be aware of the wordsize for machines with <= 64 regs.  */
+/* The same information, but as an array of unsigned ints.  We copy from
+   these unsigned ints to the table above.  We do this so the tm.h files
+   do not have to be aware of the wordsize for machines with <= 64 regs.  */
 
 #define N_REG_INTS  \
   ((FIRST_PSEUDO_REGISTER + (HOST_BITS_PER_INT - 1)) / HOST_BITS_PER_INT)
 
-static int int_reg_class_contents[N_REG_CLASSES][N_REG_INTS] 
+static unsigned int_reg_class_contents[N_REG_CLASSES][N_REG_INTS] 
   = REG_CLASS_CONTENTS;
 
 /* For each reg class, number of regs it contains.  */
@@ -201,7 +201,7 @@ init_reg_sets ()
 
       for (j = 0; j < FIRST_PSEUDO_REGISTER; j++)
 	if (int_reg_class_contents[i][j / HOST_BITS_PER_INT]
-	    & (1 << (j % HOST_BITS_PER_INT)))
+	    & ((unsigned) 1 << (j % HOST_BITS_PER_INT)))
 	  SET_HARD_REG_BIT (reg_class_contents[i], j);
     }
 
