@@ -1,3 +1,8 @@
+2004-01-04  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* configure.ac: Use AC_PROG_CPP_WERROR.
+	* configure: Regenerate.
+
 2004-01-04  Zack Weinberg  <zack@codesourcery.com>
 
 	* .cvsignore: Add autom4te.cache.
