@@ -1,3 +1,9 @@
+2003-10-16  Benjamin Kosnik  <bkoz@redhat.com>
+
+        * acconfig.h: Add HAVE_DRAND48 and HAVE_ISATTY.
+	* aclocal.m4: Regenerated.
+	* config.h.in: Regenerated.
+	
 2003-10-16  Bernardo Innocenti  <bernie@develer.com>
 
 	* config/cpu/m68k/atomicity.h (__exchange_and_add): Use TAS on
