@@ -70,9 +70,9 @@ BOOT_LANGUAGES = c @all_boot_languages@
 # TCFLAGS is used for compilations with the GCC just built.
 XCFLAGS =
 TCFLAGS =
-CFLAGS = -g
-STAGE1_CFLAGS = -g @stage1_cflags@
-BOOT_CFLAGS = -g -O2
+CFLAGS = -g -O2
+STAGE1_CFLAGS = -g @stage1_cflags@ 
+BOOT_CFLAGS = -g -O2 -pg
 
 # The warning flags are separate from BOOT_CFLAGS because people tend to
 # override optimization flags and we'd like them to still have warnings
@@ -248,7 +248,7 @@ STMP_FIXINC = stmp-fixinc
 LIMITS_H_TEST = [ -f $(SYSTEM_HEADER_DIR)/limits.h ]
 
 target=@target@
-target_alias=@target_alias@
+target_alias=@target@
 xmake_file=@dep_host_xmake_file@
 tmake_file=@dep_tmake_file@
 out_file=$(srcdir)/config/@out_file@
@@ -750,7 +750,7 @@ OBJS =									\
  sbitmap.o sched-deps.o	sched-ebb.o sched-rgn.o sched-vis.o sdbout.o	\
  sibcall.o simplify-rtx.o splay-tree.o ssa.o ssa-ccp.o ssa-dce.o	\
  stmt.o stor-layout.o stringpool.o timevar.o toplev.o tree.o unroll.o	\
- varasm.o varray.o version.o xcoffout.o					\
+ varasm.o varray.o version.o xcoffout.o ebitmap.o			\
  $(GGC) $(out_object_file) $(EXTRA_OBJS)
 
 BACKEND = main.o libbackend.a
@@ -1187,7 +1187,9 @@ mbchar.o: mbchar.c $(CONFIG_H) $(SYSTEM_H) mbchar.h
 graph.o: graph.c $(CONFIG_H) $(SYSTEM_H) toplev.h flags.h output.h $(RTL_H) \
     function.h hard-reg-set.h $(BASIC_BLOCK_H) graph.h
 sbitmap.o: sbitmap.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) flags.h hard-reg-set.h \
-    $(BASIC_BLOCK_H)
+    $(BASIC_BLOCK_H) sbitmap.h
+ebitmap.o: ebitmap.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) flags.h hard-reg-set.h \
+    $(BASIC_BLOCK_H) ebitmap.h sbitmap.h varray.h $(SPLAY_TREE_H)
 
 COLLECT2_OBJS = collect2.o tlink.o hash.o intl.o underscore.o version.o
 COLLECT2_LIBS = @COLLECT2_LIBS@
@@ -1450,7 +1452,7 @@ cse.o : cse.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(REGS_H) hard-reg-set.h flags.h 
    $(BASIC_BLOCK_H) $(GGC_H) $(TM_P_H)
 gcse.o : gcse.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(REGS_H) hard-reg-set.h \
    flags.h real.h insn-config.h ggc.h $(RECOG_H) $(EXPR_H) $(BASIC_BLOCK_H) \
-   function.h output.h toplev.h $(TM_P_H) $(PARAMS_H)
+   function.h output.h toplev.h $(TM_P_H) $(PARAMS_H) df.h
 sibcall.o : sibcall.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(REGS_H) function.h \
    hard-reg-set.h flags.h insn-config.h $(RECOG_H) $(BASIC_BLOCK_H)
 resource.o : resource.c $(CONFIG_H) $(RTL_H) hard-reg-set.h $(SYSTEM_H) \
@@ -1468,7 +1470,7 @@ ssa-ccp.o : ssa-ccp.c $(CONFIG_H) system.h $(RTL_H) hard-reg-set.h \
     $(BASIC_BLOCK_H) ssa.h insn-config.h $(RECOG_H) output.h \
     errors.h $(GGC_H) df.h function.h
 df.o : df.c $(CONFIG_H) system.h $(RTL_H) insn-config.h $(RECOG_H) \
-   function.h $(REGS_H) $(OBSTACK_H) hard-reg-set.h $(BASIC_BLOCK_H) df.h
+   function.h $(REGS_H) $(OBSTACK_H) hard-reg-set.h $(BASIC_BLOCK_H) df.h ebitmap.h
 conflict.o : conflict.c $(CONFIG_H) $(SYSTEM_H) $(OBSTACK_H) $(HASHTAB_H) \
    $(RTL_H) hard-reg-set.h $(BASIC_BLOCK_H)
 profile.o : profile.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TREE_H) flags.h \
