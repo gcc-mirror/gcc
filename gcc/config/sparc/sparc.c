@@ -789,7 +789,7 @@ arith_operand (op, mode)
 int
 arith_4096_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   int val;
   if (GET_CODE (op) != CONST_INT)
@@ -814,7 +814,7 @@ arith_add_operand (op, mode)
 int
 const64_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return ((GET_CODE (op) == CONST_INT
 	   && SPARC_SIMM13_P (INTVAL (op)))
@@ -823,7 +823,7 @@ const64_operand (op, mode)
 	      && SPARC_SIMM13_P (CONST_DOUBLE_LOW (op))
 	      && (CONST_DOUBLE_HIGH (op) ==
 		  ((CONST_DOUBLE_LOW (op) & 0x80000000) != 0 ?
-		   0xffffffff : 0)))
+		   (HOST_WIDE_INT)0xffffffff : 0)))
 #endif
 	  || GET_CODE (op) == CONSTANT_P_RTX);
 }
@@ -832,7 +832,7 @@ const64_operand (op, mode)
 int
 const64_high_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return ((GET_CODE (op) == CONST_INT
 	   && (INTVAL (op) & 0xfffffc00) != 0
@@ -912,7 +912,7 @@ arith_double_operand (op, mode)
 int
 arith_double_4096_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (TARGET_ARCH64 &&
   	  ((GET_CODE (op) == CONST_INT && INTVAL (op) == 4096) ||
@@ -1689,12 +1689,12 @@ const64_is_2insns (high_bits, low_bits)
 
 static unsigned HOST_WIDE_INT create_simple_focus_bits
 	PROTO((unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT,
-	       int, int, int));
+	       int, int));
 
 static unsigned HOST_WIDE_INT
-create_simple_focus_bits (high_bits, low_bits, highest_bit_set, lowest_bit_set, shift)
+create_simple_focus_bits (high_bits, low_bits, lowest_bit_set, shift)
      unsigned HOST_WIDE_INT high_bits, low_bits;
-     int highest_bit_set, lowest_bit_set, shift;
+     int lowest_bit_set, shift;
 {
   HOST_WIDE_INT hi, lo;
 
@@ -1725,7 +1725,6 @@ sparc_emit_set_const64 (op0, op1)
   unsigned HOST_WIDE_INT high_bits, low_bits;
   int lowest_bit_set, highest_bit_set;
   int all_bits_between_are_set;
-  int i;
   rtx temp;
 
   /* Sanity check that we know what we are working with.  */
@@ -1802,7 +1801,6 @@ sparc_emit_set_const64 (op0, op1)
 	{
 	  the_const =
 	    create_simple_focus_bits (high_bits, low_bits,
-				      highest_bit_set,
 				      lowest_bit_set, 0);
 	}
       else if (lowest_bit_set == 0)
@@ -1839,7 +1837,7 @@ sparc_emit_set_const64 (op0, op1)
     {
       unsigned HOST_WIDE_INT focus_bits =
 	create_simple_focus_bits (high_bits, low_bits,
-				  highest_bit_set, lowest_bit_set, 10);
+				  lowest_bit_set, 10);
 
       if (! SPARC_SETHI_P (focus_bits))
 	 abort ();
@@ -1953,7 +1951,7 @@ sparc_emit_set_const64 (op0, op1)
     {
       unsigned HOST_WIDE_INT focus_bits =
 	create_simple_focus_bits (high_bits, low_bits,
-				  highest_bit_set, lowest_bit_set, 0);
+				  lowest_bit_set, 0);
 
       /* We can't get here in this state.  */
       if (highest_bit_set < 32
@@ -4751,8 +4749,6 @@ sparc_splitdi_legitimate (reg, mem)
      rtx reg;
      rtx mem;
 {
-  rtx addr_part = XEXP (mem, 0);
-
   /* Punt if we are here by mistake.  */
   if (! reload_completed)
     abort ();
@@ -6272,8 +6268,6 @@ static enum ultra_code
 ultra_code_from_mask (type_mask)
      int type_mask;
 {
-  int mask;
-
   if (type_mask & (TMASK (TYPE_SHIFT) | TMASK (TYPE_CMOVE)))
     return IEU0;
   else if (type_mask & (TMASK (TYPE_COMPARE) |
@@ -6311,7 +6305,7 @@ ultra_cmove_results_ready_p (insn)
 
   /* If this got dispatched in the previous
      group, the results are not ready.  */
-  entry = (ultra_cur_hist - 1) % ULTRA_NUM_HIST;
+  entry = (ultra_cur_hist - 1) % (ULTRA_NUM_HIST - 1);
   up = &ultra_pipe_hist[entry];
   slot = 4;
   while (--slot >= 0)
@@ -6332,7 +6326,7 @@ ultra_fpmode_conflict_exists (fpmode)
   int hist_ent;
   int hist_lim;
 
-  hist_ent = (ultra_cur_hist - 1) % ULTRA_NUM_HIST;
+  hist_ent = (ultra_cur_hist - 1) % (ULTRA_NUM_HIST - 1);
   if (ultra_cycles_elapsed < 4)
     hist_lim = ultra_cycles_elapsed;
   else
@@ -6346,7 +6340,6 @@ ultra_fpmode_conflict_exists (fpmode)
 	{
 	  rtx insn = up->group[slot];
 	  enum machine_mode this_mode;
-	  enum attr_type this_type;
 	  rtx pat;
 
 	  if (! insn
@@ -6362,16 +6355,18 @@ ultra_fpmode_conflict_exists (fpmode)
 	    continue;
 
 	  /* If it is not FMOV, FABS, FNEG, FDIV, or FSQRT then
-	     we will get a stall.  */
+	     we will get a stall.  Loads and stores are independant
+	     of these rules.  */
 	  if (GET_CODE (SET_SRC (pat)) != ABS
 	      && GET_CODE (SET_SRC (pat)) != NEG
 	      && ((TMASK (get_attr_type (insn)) &
 		   (TMASK (TYPE_FPDIVS) | TMASK (TYPE_FPDIVD) |
-		    TMASK (TYPE_FPMOVE) | TMASK (TYPE_FPSQRT))) == 0))
+		    TMASK (TYPE_FPMOVE) | TMASK (TYPE_FPSQRT) |
+                    TMASK (TYPE_LOAD) | TMASK (TYPE_STORE))) == 0))
 	    return 1;
 	}
       hist_lim--;
-      hist_ent = (hist_ent - 1) % ULTRA_NUM_HIST;
+      hist_ent = (hist_ent - 1) % (ULTRA_NUM_HIST - 1);
     }
 
   /* No conflicts, safe to dispatch.  */
@@ -6407,7 +6402,7 @@ ultra_find_type (type_mask, list, start)
       if (recog_memoized (insn) >= 0
 	  && (TMASK(get_attr_type (insn)) & type_mask))
 	{
-	  enum machine_mode fpmode;
+	  enum machine_mode fpmode = SFmode;
 	  rtx pat = 0;
 	  int slot;
 	  int check_depend = 0;
@@ -6451,13 +6446,13 @@ ultra_find_type (type_mask, list, start)
 				  && REGNO (SUBREG_REG (SET_DEST (slot_pat))) ==
 				       REGNO (SUBREG_REG (SET_SRC (pat)))
 				  && SUBREG_WORD (SET_DEST (slot_pat)) ==
-				       SUBREG_WORD (SET_SRC (pat))))
+				       SUBREG_WORD (SET_SRC (pat)))))
 		      || (check_fpmode_conflict == 1
 			  && GET_CODE (slot_insn) == INSN
 			  && GET_CODE (slot_pat) == SET
-			  && ((GET_MODE (SET_DEST (slot_pat)) == SFmode
-			       || GET_MODE (SET_DEST (slot_pat)) == DFmode)
-			      && GET_MODE (SET_DEST (slot_pat)) != fpmode)))))
+			  && (GET_MODE (SET_DEST (slot_pat)) == SFmode
+			      || GET_MODE (SET_DEST (slot_pat)) == DFmode)
+			  && GET_MODE (SET_DEST (slot_pat)) != fpmode)))
 		goto next;
 	    }
 
@@ -6558,7 +6553,7 @@ ultra_schedule_insn (ip, ready, this, type)
 static void
 ultra_flush_pipeline ()
 {
-  ultra_cur_hist = (ultra_cur_hist + 1) % ULTRA_NUM_HIST;
+  ultra_cur_hist = (ultra_cur_hist + 1) % (ULTRA_NUM_HIST - 1);
   ultra_cycles_elapsed += 1;
   bzero ((char *) &ultra_pipe, sizeof ultra_pipe);
   ultra_pipe.free_slot_mask = 0xf;
@@ -6569,14 +6564,14 @@ static int ultra_reorder_called_this_block;
 /* Init our data structures for this current block.  */
 void
 ultrasparc_sched_init (dump, sched_verbose)
-     FILE *dump;
-     int sched_verbose;
+     FILE *dump ATTRIBUTE_UNUSED;
+     int sched_verbose ATTRIBUTE_UNUSED;
 {
   bzero ((char *) &ultra_pipe_hist, sizeof ultra_pipe_hist);
-  ultra_pipe.free_slot_mask = 0xf;
   ultra_cur_hist = 0;
   ultra_cycles_elapsed = 0;
   ultra_reorder_called_this_block = 0;
+  ultra_pipe.free_slot_mask = 0xf;
 }
 
 /* INSN has been scheduled, update pipeline commit state
@@ -6621,7 +6616,6 @@ ultra_rescan_pipeline_state (ready, n_ready)
   for (i = 0; i < 4; i++)
     {
       rtx insn = up->group[i];
-      enum ultra_code ucode;
       int j;
 
       if (! insn)
@@ -6723,8 +6717,8 @@ ultrasparc_sched_reorder (dump, sched_verbose, ready, n_ready)
 	if (num_committed == 0
 	    || num_committed == up->group_size)
 	  {
-	    bzero ((char *) &ultra_pipe, sizeof ultra_pipe);
-	    ultra_pipe.free_slot_mask = 0xf;
+	    ultra_flush_pipeline ();
+	    up = &ultra_pipe;
 	    old_group_size = 0;
 	  }
 	else
@@ -6737,7 +6731,7 @@ ultrasparc_sched_reorder (dump, sched_verbose, ready, n_ready)
 	       formed group so the code at the end of the loop
 	       knows that progress was in fact made.  */
 	    if (up->group_size != old_group_size)
-	      old_group_size == 0;
+	      old_group_size = 0;
 	  }
       }
 
@@ -6905,9 +6899,20 @@ ultrasparc_sched_reorder (dump, sched_verbose, ready, n_ready)
       break;
 
     /* Clean out the (current cycle's) pipeline state
-       and try once more.  */
-    bzero ((char *) &ultra_pipe, sizeof ultra_pipe);
-    ultra_pipe.free_slot_mask = 0xf;
+       and try once more.  If we placed no instructions
+       into the pipeline at all, it means a real hard
+       conflict exists with some earlier issued instruction
+       so we must advance to the next cycle to clear it up.  */
+    if (up->group_size == 0)
+      {
+	ultra_flush_pipeline ();
+	up = &ultra_pipe;
+      }
+    else
+      {
+	bzero ((char *) &ultra_pipe, sizeof ultra_pipe);
+	ultra_pipe.free_slot_mask = 0xf;
+      }
   }
 
   if (sched_verbose)
@@ -6938,11 +6943,10 @@ ultrasparc_sched_reorder (dump, sched_verbose, ready, n_ready)
 }
 
 int
-ultrasparc_adjust_cost (insn, link, dep_insn, previous, cost)
+ultrasparc_adjust_cost (insn, link, dep_insn, cost)
      rtx insn;
      rtx link;
      rtx dep_insn;
-     rtx previous;
      int cost;
 {
   enum attr_type insn_type, dep_type;
