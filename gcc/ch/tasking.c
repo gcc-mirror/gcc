@@ -2085,8 +2085,8 @@ build_receive_case_label (signame, loclist)
  * BUFFER location and TREE_PURPOSE defines the defining occurence.
  */
 static void
-build_receive_buffer_case_end (label_cnt, buf_list, else_clause)
-     tree label_cnt, buf_list, else_clause;
+build_receive_buffer_case_end (buf_list, else_clause)
+     tree buf_list, else_clause;
 {
   struct rc_state_type *rc_state = current_rc_state;
   tree alist;
@@ -2185,8 +2185,8 @@ build_receive_buffer_case_end (label_cnt, buf_list, else_clause)
  * case-label counter passed from build_receive_case_start.
  */
 static void
-build_receive_signal_case_end (label_cnt, sig_list, else_clause)
-     tree label_cnt, sig_list, else_clause;
+build_receive_signal_case_end (sig_list, else_clause)
+     tree sig_list, else_clause;
 {
   struct rc_state_type *rc_state = current_rc_state;
   tree alist, temp1;
@@ -2285,8 +2285,8 @@ build_receive_signal_case_end (label_cnt, sig_list, else_clause)
 /* General function for the end of a RECEIVE CASE action */
 
 void
-build_receive_case_end (label_cnt, alist, else_clause)
-     tree label_cnt, alist, else_clause;
+build_receive_case_end (alist, else_clause)
+     tree alist, else_clause;
 {
   rtx rcdone = gen_label_rtx ();
   struct rc_state_type *rc_state = current_rc_state;
@@ -2322,9 +2322,9 @@ build_receive_case_end (label_cnt, alist, else_clause)
 
   /* now call the actual end function */
   if (rc_state->bufseen)
-    build_receive_buffer_case_end (label_cnt, alist, else_clause);
+    build_receive_buffer_case_end (alist, else_clause);
   else
-    build_receive_signal_case_end (label_cnt, alist, else_clause);
+    build_receive_signal_case_end (alist, else_clause);
 
   /* now jump to the beginning of RECEIVE CASE processing */
 gen_rcdoit: ;
@@ -2594,8 +2594,8 @@ build_delay_case_label (eventlist, if_or_elseif)
  * passed from build_delay_case_start.
  */
 void
-build_delay_case_end (label_cnt, event_list)
-     tree label_cnt, event_list;
+build_delay_case_end (event_list)
+     tree event_list;
 {
   struct dl_state_type *dl_state = current_dl_state;
   rtx    dldone          = gen_label_rtx ();
@@ -3209,8 +3209,8 @@ invalidate_buffer_element_mode (bufmode)
    perform various error checks.  Return a new queue size. */
 
 tree
-check_queue_size (type, qsize)
-     tree type, qsize;
+check_queue_size (qsize)
+     tree qsize;
 {
   if (qsize == NULL_TREE || TREE_CODE (qsize) == ERROR_MARK)
     return qsize;

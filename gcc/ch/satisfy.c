@@ -560,7 +560,7 @@ satisfy (exp, chain)
 		      {
 			if (CH_IS_BUFFER_MODE (exp) || CH_IS_EVENT_MODE (exp))
 			  DECL_INITIAL (decl)
-			    = check_queue_size (exp, DECL_INITIAL (decl));
+			    = check_queue_size (DECL_INITIAL (decl));
 			else if (CH_IS_TEXT_MODE (exp) &&
 				 DECL_NAME (decl) == get_identifier ("__textlength"))
 			  DECL_INITIAL (decl)

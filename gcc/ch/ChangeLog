@@ -1,3 +1,21 @@
+Fri Oct  9 13:01:23 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* ch-tree.h (build_delay_case_end): Remove unused parameter.
+	(build_receive_case_end): Likewise.
+	(check_queue_size): Likewise.
+
+	* parse.c: Callers changed.
+
+	* satisfy.c: Likewise.
+
+	* tasking.c (build_receive_buffer_case_end): Remove unused
+	parameter `label_cnt'.
+	(build_receive_signal_case_end): Likewise.
+	(build_receive_case_end): Likewise.
+	(build_delay_case_end): Likewise.
+	(check_queue_size): Likewise for parameter `type'.
+	All callers changed.
+
 Thu Oct  8 05:57:41 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* typeck (type_for_mode): Only return TItype nodes when
