@@ -249,7 +249,6 @@ extern "Java"
       class ArrayList;
       class Arrays;
       class Arrays$ArrayList;
-      class BasicMapEntry;
       class BitSet;
       class Calendar;
       class Collection;
