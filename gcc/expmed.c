@@ -3132,16 +3132,28 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 		unsigned HOST_WIDE_INT d = INTVAL (op1);
 		t1 = expand_shift (RSHIFT_EXPR, compute_mode, op0,
 				   build_int_2 (floor_log2 (d), 0),
-				   NULL_RTX, 1);
+				   tquotient, 1);
 		t2 = expand_binop (compute_mode, and_optab, op0,
 				   GEN_INT (d - 1),
 				   NULL_RTX, 1, OPTAB_LIB_WIDEN);
 		t3 = gen_reg_rtx (compute_mode);
 		t3 = emit_store_flag (t3, NE, t2, const0_rtx,
 				      compute_mode, 1, 1);
-		quotient = force_operand (gen_rtx (PLUS, compute_mode,
-						   t1, t3),
-					  tquotient);
+		if (t3 == 0)
+		  {
+		    rtx lab;
+		    lab = gen_label_rtx ();
+		    emit_cmp_insn (t2, const0_rtx, EQ, NULL_RTX,
+				   compute_mode, 0, 0);
+		    emit_jump_insn (gen_beq (lab));
+		    expand_inc (t1, const1_rtx);
+		    emit_label (lab);
+		    quotient = t1;
+		  }
+		else
+		  quotient = force_operand (gen_rtx (PLUS, compute_mode,
+						     t1, t3),
+					    tquotient);
 		break;
 	      }
 
