@@ -4126,9 +4126,9 @@ lookup_template_class (tree d1,
 	       i > 0 && t != NULL_TREE;
 	       --i, t = TREE_CHAIN (t))
 	    {
-	      tree a = coerce_template_parms (TREE_VALUE (t), arglist,
-					      template, complain,
-					      /*require_all_args=*/1);
+	      tree a = coerce_template_parms (TREE_VALUE (t),
+					      arglist, template,
+	                                      complain, /*require_all_args=*/1);
 
 	      /* Don't process further if one of the levels fails.  */
 	      if (a == error_mark_node)
@@ -8786,9 +8786,7 @@ type_unification_real (tree tparms,
   my_friendly_assert (TREE_CODE (tparms) == TREE_VEC, 289);
   my_friendly_assert (xparms == NULL_TREE 
 		      || TREE_CODE (xparms) == TREE_LIST, 290);
-  /* ARGS could be NULL.  */
-  if (xargs)
-    my_friendly_assert (TREE_CODE (xargs) == TREE_LIST, 291);
+  my_friendly_assert (!xargs || TREE_CODE (xargs) == TREE_LIST, 291);
   my_friendly_assert (ntparms > 0, 292);
 
   switch (strict)
@@ -9489,8 +9487,8 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
 	       template <class T, class Allocator = allocator> 
 	       class vector.  */
 
-	    if (coerce_template_parms (argtmplvec, parmvec, parmtmpl,
-				       tf_none, 1) == error_mark_node)
+	    if (coerce_template_parms (argtmplvec, parmvec, parmtmpl, 0, 1)
+	        == error_mark_node)
 	      return 1;
 	  
 	    /* Deduce arguments T, i from TT<T> or TT<i>.  
@@ -11638,8 +11636,8 @@ type_dependent_expression_p (tree expression)
 	expression = BASELINK_FUNCTIONS (expression);
       if (TREE_CODE (expression) == TEMPLATE_ID_EXPR)
 	{
-	  if (any_dependent_template_arguments_p (TREE_OPERAND (expression, 
-								1)))
+	  if (any_dependent_template_arguments_p
+	      (TREE_OPERAND (expression, 1)))
 	    return true;
 	  expression = TREE_OPERAND (expression, 0);
 	}
