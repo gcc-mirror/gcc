@@ -5967,7 +5967,7 @@
   [(unspec_volatile [(const_int 0)] 4)]
   ""
   "*
-  text_section ();
+  /* Nothing to do (currently).  */
   return \"\";
 ")
 
@@ -5975,7 +5975,6 @@
   [(unspec_volatile [(const_int 0)] 5)]
   ""
   "*
-  readonly_data_section ();
   assemble_align (32);
   return \"\";
 ")
