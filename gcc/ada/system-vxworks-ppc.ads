@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                          (VxWorks Version PPC)                           --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -147,7 +147,7 @@ private
    Suppress_Standard_Library : constant Boolean := False;
    Use_Ada_Main_Program_Name : constant Boolean := True;
    ZCX_By_Default            : constant Boolean := False;
-   GCC_ZCX_Support           : constant Boolean := False;
+   GCC_ZCX_Support           : constant Boolean := True;
    Front_End_ZCX_Support     : constant Boolean := False;
 
    --  Obsolete entries, to be removed eventually (bootstrap issues!)

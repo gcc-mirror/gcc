@@ -5,7 +5,7 @@
 --                               S Y S T E M                                --
 --                                                                          --
 --                                 S p e c                                  --
---                           (SGI Irix, o32 ABI)                            --
+--                           (SGI Irix, n32 ABI)                            --
 --                                                                          --
 --          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -66,7 +66,7 @@ pragma Pure (System);
    Null_Address : constant Address;
 
    Storage_Unit : constant := 8;
-   Word_Size    : constant := 32;
+   Word_Size    : constant := 64;
    Memory_Size  : constant := 2 ** 32;
 
    --  Address comparison
@@ -138,8 +138,8 @@ private
    Support_Long_Shifts       : constant Boolean := True;
    Suppress_Standard_Library : constant Boolean := False;
    Use_Ada_Main_Program_Name : constant Boolean := False;
-   ZCX_By_Default            : constant Boolean := False;
-   GCC_ZCX_Support           : constant Boolean := False;
+   ZCX_By_Default            : constant Boolean := True;
+   GCC_ZCX_Support           : constant Boolean := True;
    Front_End_ZCX_Support     : constant Boolean := False;
 
    --  Obsolete entries, to be removed eventually (bootstrap issues!)
