@@ -224,14 +224,15 @@ static void
 __objc_init_protocols (struct objc_protocol_list* protos)
 {
   int i;
-  Class* proto_class;
+  static Class* proto_class = 0;
 
   if (! protos)
     return;
 
-  proto_class = objc_lookup_class("Protocol");
+  if (!proto_class)
+    proto_class = objc_lookup_class("Protocol");
 
-  if (proto_class == 0 && ! list_find (&unclaimed_proto_list, protos))
+  if (!proto_class)
     {
       unclaimed_proto_list = list_cons (protos, unclaimed_proto_list);
       return;
@@ -241,13 +242,20 @@ __objc_init_protocols (struct objc_protocol_list* protos)
 
   for(i = 0; i < protos->count; i++)
     {
-      if (((size_t)((id)protos->list[i])->class_pointer) == PROTOCOL_VERSION)
-	((id)protos->list[i])->class_pointer = proto_class;
-      else if (((id)protos->list[i])->class_pointer != proto_class)
+      struct objc_protocol* aProto = protos->list[i];
+      if (((size_t)aProto->class_pointer) == PROTOCOL_VERSION)
+	{
+	  /* assign class pointer */
+	  aProto->class_pointer = proto_class;
+
+	  /* init super protocols */
+	  __objc_init_protocols (aProto->protocol_list);
+	}
+      else if (protos->list[i]->class_pointer != proto_class)
 	{
 	  fprintf (stderr,
 		   "Version %d doesn't match runtime protocol version %d\n",
-		   ((size_t)((id)protos->list[i])->class_pointer),
+		   ((size_t)protos->list[i]->class_pointer),
 		   PROTOCOL_VERSION);
 	  abort ();
 	}
