@@ -1,5 +1,10 @@
 2004-11-08  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* tree-if-conv.c (tree_if_convert_cond_expr): Remove two "if"
+	statements that always trigger.
+
+2004-11-08  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* tree-cfg.c, tree-if-conv.c, tree-into-ssa.c,
 	tree-scalar-evolution.c, tree-ssa-loop-im.c,
 	tree-ssa-loop-ivopts.c, tree-ssa-loop-manip.c, tree-ssa.c,

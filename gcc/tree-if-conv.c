@@ -271,7 +271,7 @@ static void
 tree_if_convert_cond_expr (struct loop *loop, tree stmt, tree cond,
 			   block_stmt_iterator *bsi)
 {
-  tree then_clause, else_clause, c, new_cond;
+  tree then_clause, else_clause, c, c2, new_cond;
   new_cond = NULL_TREE;
 
   gcc_assert (TREE_CODE (stmt) == COND_EXPR);
@@ -290,26 +290,22 @@ tree_if_convert_cond_expr (struct loop *loop, tree stmt, tree cond,
     }
 
   /* Add new condition into destination's predicate list.  */
-  if (then_clause)
-    /* if 'c' is true then then_clause is reached.  */
-    new_cond = add_to_dst_predicate_list (loop, then_clause, cond, 
-					  unshare_expr (c), bsi);
 
-  if (else_clause)
+  /* If 'c' is true then then_clause is reached.  */
+  new_cond = add_to_dst_predicate_list (loop, then_clause, cond,
+					unshare_expr (c), bsi);
+
+  if (!is_gimple_reg(c) && is_gimple_condexpr (c))
     {
-      tree c2;
-      if (!is_gimple_reg(c) && is_gimple_condexpr (c))
-	{
-	  tree new_stmt;
-	  new_stmt = ifc_temp_var (TREE_TYPE (c), unshare_expr (c));
-	  bsi_insert_before (bsi, new_stmt, BSI_SAME_STMT);
-	  c = TREE_OPERAND (new_stmt, 0);
-	}
-
-      /* if 'c' is false then else_clause is reached.  */
-      c2 = invert_truthvalue (unshare_expr (c));
-      add_to_dst_predicate_list (loop, else_clause, cond, c2, bsi);
+      tree new_stmt;
+      new_stmt = ifc_temp_var (TREE_TYPE (c), unshare_expr (c));
+      bsi_insert_before (bsi, new_stmt, BSI_SAME_STMT);
+      c = TREE_OPERAND (new_stmt, 0);
     }
+
+  /* If 'c' is false then else_clause is reached.  */
+  c2 = invert_truthvalue (unshare_expr (c));
+  add_to_dst_predicate_list (loop, else_clause, cond, c2, bsi);
 
   /* Now this conditional statement is redundant. Remove it.
      But, do not remove exit condition! Update exit condition
