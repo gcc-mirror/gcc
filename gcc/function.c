@@ -5231,15 +5231,27 @@ assign_parms (tree fndecl)
 	{
 	  if (TREE_CODE (TREE_TYPE (parm)) == COMPLEX_TYPE)
 	    {
-	      rtx tmp;
+	      rtx tmp, real, imag;
+	      enum machine_mode inner = GET_MODE_INNER (DECL_MODE (parm));
 
-	      SET_DECL_RTL (parm,
-			    gen_rtx_CONCAT (DECL_MODE (parm),
-					    DECL_RTL (fnargs),
-					    DECL_RTL (TREE_CHAIN (fnargs))));
-	      tmp = gen_rtx_CONCAT (DECL_MODE (parm),
-				    DECL_INCOMING_RTL (fnargs),
-				    DECL_INCOMING_RTL (TREE_CHAIN (fnargs)));
+	      real = DECL_RTL (fnargs);
+	      imag = DECL_RTL (TREE_CHAIN (fnargs));
+	      if (inner != GET_MODE (real))
+		{
+		  real = gen_lowpart_SUBREG (inner, real);
+		  imag = gen_lowpart_SUBREG (inner, imag);
+		}
+	      tmp = gen_rtx_CONCAT (DECL_MODE (parm), real, imag);
+	      SET_DECL_RTL (parm, tmp);
+
+	      real = DECL_INCOMING_RTL (fnargs);
+	      imag = DECL_INCOMING_RTL (TREE_CHAIN (fnargs));
+	      if (inner != GET_MODE (real))
+		{
+		  real = gen_lowpart_SUBREG (inner, real);
+		  imag = gen_lowpart_SUBREG (inner, imag);
+		}
+	      tmp = gen_rtx_CONCAT (DECL_MODE (parm), real, imag);
 	      set_decl_incoming_rtl (parm, tmp);
 	      fnargs = TREE_CHAIN (fnargs);
 	    }
