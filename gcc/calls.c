@@ -254,11 +254,6 @@ calls_function_1 (exp, which)
   if ((int) code >= NUM_TREE_CODES)
     return 1;
 
-  /* Only expressions and references can contain calls.  */
-  if (type != 'e' && type != '<' && type != '1' && type != '2' && type != 'r'
-      && type != 'b')
-    return 0;
-
   switch (code)
     {
     case CALL_EXPR:
@@ -269,12 +264,8 @@ calls_function_1 (exp, which)
 		   == FUNCTION_DECL))
 	{
 	  tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
-
-	  if ((DECL_BUILT_IN (fndecl)
-	       && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
-	       && DECL_FUNCTION_CODE (fndecl) == BUILT_IN_ALLOCA)
-	      || (DECL_SAVED_INSNS (fndecl)
-		  && DECL_SAVED_INSNS (fndecl)->calls_alloca))
+	  int flags = special_function_p (fndecl, 0);
+	  if (flags & ECF_MAY_BE_ALLOCA)
 	    return 1;
 	}
 
@@ -311,6 +302,11 @@ calls_function_1 (exp, which)
 	    return 1;
       }
       return 0;
+    case TREE_LIST:
+      for (; exp != 0; exp = TREE_CHAIN (exp))
+	if (calls_function_1 (TREE_VALUE (exp), which))
+	  return 1;
+      return 0;
 
     case METHOD_CALL_EXPR:
       length = 3;
@@ -322,10 +318,15 @@ calls_function_1 (exp, which)
 
     case RTL_EXPR:
       return 0;
-      
+
     default:
       break;
     }
+
+  /* Only expressions and references can contain calls.  */
+  if (type != 'e' && type != '<' && type != '1' && type != '2' && type != 'r'
+      && type != 'b')
+    return 0;
 
   for (i = 0; i < length; i++)
     if (TREE_OPERAND (exp, i) != 0
