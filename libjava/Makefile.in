@@ -265,8 +265,12 @@ awt_java_source_files = \
 java/awt/event/ActionEvent.java	\
 java/awt/event/ActionListener.java \
 java/awt/event/ComponentEvent.java \
-java/awt/event/KeyAdapter.java \
+java/awt/event/HierarchyBoundsAdapter.java \
+java/awt/event/HierarchyBoundsListener.java \
+java/awt/event/HierarchyEvent.java \
+java/awt/event/HierarchyListener.java \
 java/awt/event/InputEvent.java \
+java/awt/event/KeyAdapter.java \
 java/awt/event/KeyEvent.java \
 java/awt/event/KeyListener.java	\
 java/awt/event/TextEvent.java \
@@ -296,14 +300,25 @@ java/awt/event/ItemEvent.java \
 java/awt/event/InvocationEvent.java \
 java/awt/event/PaintEvent.java \
 java/awt/event/ContainerEvent.java \
+java/awt/AWTError.java \
 java/awt/AWTEvent.java \
+java/awt/AWTEventMulticaster.java \
 java/awt/BorderLayout.java \
+java/awt/CheckboxGroup.java \
+java/awt/ColorModel.java \
 java/awt/Component.java	\
+java/awt/ComponentOrientation.java \
 java/awt/Container.java	\
+java/awt/Cursor.java \
 java/awt/Dimension.java	\
 java/awt/Event.java \
+java/awt/EventDispatchThread.java \
+java/awt/EventQueue.java \
 java/awt/Font.java \
+java/awt/FontMetrics.java \
 java/awt/Frame.java \
+java/awt/GraphicsConfiguration.java \
+java/awt/Insets.java \
 java/awt/LayoutManager.java \
 java/awt/LayoutManager2.java \
 java/awt/Menu.java \
@@ -311,18 +326,45 @@ java/awt/MenuBar.java \
 java/awt/MenuComponent.java \
 java/awt/MenuContainer.java \
 java/awt/MenuItem.java \
+java/awt/MenuShortcut.java \
+java/awt/Panel.java \
 java/awt/Point.java \
-java/awt/AWTError.java \
+java/awt/PopupMenu.java \
 java/awt/Shape.java \
 java/awt/TextArea.java \
 java/awt/TextComponent.java \
 java/awt/Toolkit.java \
 java/awt/Window.java \
+java/awt/image/ImageConsumer.java \
+java/awt/image/ImageObserver.java \
+java/awt/image/ImageProducer.java \
 java/awt/geom/Dimension2D.java \
 java/awt/geom/Point2D.java \
+java/awt/peer/ButtonPeer.java \
+java/awt/peer/CanvasPeer.java \
+java/awt/peer/CheckboxMenuItemPeer.java \
+java/awt/peer/CheckboxPeer.java \
+java/awt/peer/ChoicePeer.java \
 java/awt/peer/ComponentPeer.java \
 java/awt/peer/ContainerPeer.java \
+java/awt/peer/DialogPeer.java \
+java/awt/peer/FileDialogPeer.java \
+java/awt/peer/FontPeer.java \
 java/awt/peer/FramePeer.java \
+java/awt/peer/LabelPeer.java \
+java/awt/peer/LightweightPeer.java \
+java/awt/peer/ListPeer.java \
+java/awt/peer/MenuBarPeer.java \
+java/awt/peer/MenuComponentPeer.java \
+java/awt/peer/MenuItemPeer.java \
+java/awt/peer/MenuPeer.java \
+java/awt/peer/PanelPeer.java \
+java/awt/peer/PopupMenuPeer.java \
+java/awt/peer/ScrollPanePeer.java \
+java/awt/peer/ScrollbarPeer.java \
+java/awt/peer/TextAreaPeer.java \
+java/awt/peer/TextComponentPeer.java \
+java/awt/peer/TextFieldPeer.java \
 java/awt/peer/WindowPeer.java \
 java/awt/Adjustable.java \
 java/awt/Color.java \
@@ -904,14 +946,13 @@ LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
 DATA =  $(data_DATA) $(toolexeclib_DATA)
 
 DIST_COMMON =  README COPYING ChangeLog Makefile.am Makefile.in NEWS \
-THANKS acconfig.h acinclude.m4 aclocal.m4 configure configure.in \
-include/config.h.in include/stamp-h.in libgcj-test.spec.in \
-libgcj.spec.in
+THANKS acinclude.m4 aclocal.m4 configure configure.in \
+libgcj-test.spec.in libgcj.spec.in
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = gtar
+TAR = tar
 GZIP_ENV = --best
 DIST_SUBDIRS =  @DIRLTDL@ testsuite gcj include @DIRLTDL@ gcj include
 DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
@@ -971,19 +1012,26 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/java/security/provider/SHA.P \
 .deps/gnu/java/security/provider/SHA1PRNG.P .deps/interpret.P \
 .deps/java/awt/AWTError.P .deps/java/awt/AWTEvent.P \
-.deps/java/awt/AWTException.P .deps/java/awt/ActiveEvent.P \
-.deps/java/awt/Adjustable.P .deps/java/awt/BorderLayout.P \
-.deps/java/awt/Color.P .deps/java/awt/Component.P \
-.deps/java/awt/Container.P .deps/java/awt/Dimension.P \
-.deps/java/awt/Event.P .deps/java/awt/Font.P .deps/java/awt/Frame.P \
-.deps/java/awt/Graphics.P \
+.deps/java/awt/AWTEventMulticaster.P .deps/java/awt/AWTException.P \
+.deps/java/awt/ActiveEvent.P .deps/java/awt/Adjustable.P \
+.deps/java/awt/BorderLayout.P .deps/java/awt/CheckboxGroup.P \
+.deps/java/awt/Color.P .deps/java/awt/ColorModel.P \
+.deps/java/awt/Component.P .deps/java/awt/ComponentOrientation.P \
+.deps/java/awt/Container.P .deps/java/awt/Cursor.P \
+.deps/java/awt/Dimension.P .deps/java/awt/Event.P \
+.deps/java/awt/EventDispatchThread.P .deps/java/awt/EventQueue.P \
+.deps/java/awt/Font.P .deps/java/awt/FontMetrics.P \
+.deps/java/awt/Frame.P .deps/java/awt/Graphics.P \
+.deps/java/awt/GraphicsConfiguration.P \
 .deps/java/awt/IllegalComponentStateException.P .deps/java/awt/Image.P \
-.deps/java/awt/ItemSelectable.P .deps/java/awt/LayoutManager.P \
-.deps/java/awt/LayoutManager2.P .deps/java/awt/Menu.P \
-.deps/java/awt/MenuBar.P .deps/java/awt/MenuComponent.P \
-.deps/java/awt/MenuContainer.P .deps/java/awt/MenuItem.P \
+.deps/java/awt/Insets.P .deps/java/awt/ItemSelectable.P \
+.deps/java/awt/LayoutManager.P .deps/java/awt/LayoutManager2.P \
+.deps/java/awt/Menu.P .deps/java/awt/MenuBar.P \
+.deps/java/awt/MenuComponent.P .deps/java/awt/MenuContainer.P \
+.deps/java/awt/MenuItem.P .deps/java/awt/MenuShortcut.P \
 .deps/java/awt/Paint.P .deps/java/awt/PaintContext.P \
-.deps/java/awt/Point.P .deps/java/awt/Rectangle.P \
+.deps/java/awt/Panel.P .deps/java/awt/Point.P \
+.deps/java/awt/PopupMenu.P .deps/java/awt/Rectangle.P \
 .deps/java/awt/Shape.P .deps/java/awt/TextArea.P \
 .deps/java/awt/TextComponent.P .deps/java/awt/Toolkit.P \
 .deps/java/awt/Transparency.P .deps/java/awt/Window.P \
@@ -999,7 +1047,12 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/awt/event/ContainerEvent.P \
 .deps/java/awt/event/ContainerListener.P \
 .deps/java/awt/event/FocusAdapter.P .deps/java/awt/event/FocusEvent.P \
-.deps/java/awt/event/FocusListener.P .deps/java/awt/event/InputEvent.P \
+.deps/java/awt/event/FocusListener.P \
+.deps/java/awt/event/HierarchyBoundsAdapter.P \
+.deps/java/awt/event/HierarchyBoundsListener.P \
+.deps/java/awt/event/HierarchyEvent.P \
+.deps/java/awt/event/HierarchyListener.P \
+.deps/java/awt/event/InputEvent.P \
 .deps/java/awt/event/InputMethodEvent.P \
 .deps/java/awt/event/InputMethodListener.P \
 .deps/java/awt/event/InvocationEvent.P .deps/java/awt/event/ItemEvent.P \
@@ -1013,12 +1066,27 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/awt/event/TextListener.P \
 .deps/java/awt/event/WindowAdapter.P .deps/java/awt/event/WindowEvent.P \
 .deps/java/awt/event/WindowListener.P .deps/java/awt/geom/Dimension2D.P \
-.deps/java/awt/geom/Point2D.P .deps/java/awt/peer/ComponentPeer.P \
-.deps/java/awt/peer/ContainerPeer.P .deps/java/awt/peer/FramePeer.P \
-.deps/java/awt/peer/WindowPeer.P .deps/java/beans/BeanDescriptor.P \
-.deps/java/beans/BeanInfo.P .deps/java/beans/Beans.P \
-.deps/java/beans/Customizer.P .deps/java/beans/DesignMode.P \
-.deps/java/beans/EventSetDescriptor.P \
+.deps/java/awt/geom/Point2D.P .deps/java/awt/image/ImageConsumer.P \
+.deps/java/awt/image/ImageObserver.P \
+.deps/java/awt/image/ImageProducer.P .deps/java/awt/peer/ButtonPeer.P \
+.deps/java/awt/peer/CanvasPeer.P \
+.deps/java/awt/peer/CheckboxMenuItemPeer.P \
+.deps/java/awt/peer/CheckboxPeer.P .deps/java/awt/peer/ChoicePeer.P \
+.deps/java/awt/peer/ComponentPeer.P .deps/java/awt/peer/ContainerPeer.P \
+.deps/java/awt/peer/DialogPeer.P .deps/java/awt/peer/FileDialogPeer.P \
+.deps/java/awt/peer/FontPeer.P .deps/java/awt/peer/FramePeer.P \
+.deps/java/awt/peer/LabelPeer.P .deps/java/awt/peer/LightweightPeer.P \
+.deps/java/awt/peer/ListPeer.P .deps/java/awt/peer/MenuBarPeer.P \
+.deps/java/awt/peer/MenuComponentPeer.P \
+.deps/java/awt/peer/MenuItemPeer.P .deps/java/awt/peer/MenuPeer.P \
+.deps/java/awt/peer/PanelPeer.P .deps/java/awt/peer/PopupMenuPeer.P \
+.deps/java/awt/peer/ScrollPanePeer.P \
+.deps/java/awt/peer/ScrollbarPeer.P .deps/java/awt/peer/TextAreaPeer.P \
+.deps/java/awt/peer/TextComponentPeer.P \
+.deps/java/awt/peer/TextFieldPeer.P .deps/java/awt/peer/WindowPeer.P \
+.deps/java/beans/BeanDescriptor.P .deps/java/beans/BeanInfo.P \
+.deps/java/beans/Beans.P .deps/java/beans/Customizer.P \
+.deps/java/beans/DesignMode.P .deps/java/beans/EventSetDescriptor.P \
 .deps/java/beans/FeatureDescriptor.P \
 .deps/java/beans/IndexedPropertyDescriptor.P \
 .deps/java/beans/IntrospectionException.P \
@@ -1296,34 +1364,6 @@ config.status: $(srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 	$(SHELL) ./config.status --recheck
 $(srcdir)/configure: @MAINTAINER_MODE_TRUE@$(srcdir)/configure.in $(ACLOCAL_M4) $(CONFIGURE_DEPENDENCIES)
 	cd $(srcdir) && $(AUTOCONF)
-
-include/config.h: include/stamp-h
-	@if test ! -f $@; then \
-		rm -f include/stamp-h; \
-		$(MAKE) include/stamp-h; \
-	else :; fi
-include/stamp-h: $(srcdir)/include/config.h.in $(top_builddir)/config.status
-	cd $(top_builddir) \
-	  && CONFIG_FILES= CONFIG_HEADERS=include/config.h \
-	     $(SHELL) ./config.status
-	@echo timestamp > include/stamp-h 2> /dev/null
-$(srcdir)/include/config.h.in: @MAINTAINER_MODE_TRUE@$(srcdir)/include/stamp-h.in
-	@if test ! -f $@; then \
-		rm -f $(srcdir)/include/stamp-h.in; \
-		$(MAKE) $(srcdir)/include/stamp-h.in; \
-	else :; fi
-$(srcdir)/include/stamp-h.in: $(top_srcdir)/configure.in $(ACLOCAL_M4) acconfig.h
-	cd $(top_srcdir) && $(AUTOHEADER)
-	@echo timestamp > $(srcdir)/include/stamp-h.in 2> /dev/null
-
-mostlyclean-hdr:
-
-clean-hdr:
-
-distclean-hdr:
-	-rm -f include/config.h
-
-maintainer-clean-hdr:
 libgcj.spec: $(top_builddir)/config.status libgcj.spec.in
 	cd $(top_builddir) && CONFIG_FILES=$@ CONFIG_HEADERS= $(SHELL) ./config.status
 libgcj-test.spec: $(top_builddir)/config.status libgcj-test.spec.in
@@ -1786,33 +1826,31 @@ distclean-generic:
 	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
 
 maintainer-clean-generic:
-mostlyclean-am:  mostlyclean-hdr mostlyclean-toolexeclibLIBRARIES \
-		mostlyclean-compile mostlyclean-libtool \
-		mostlyclean-toolexeclibLTLIBRARIES \
+mostlyclean-am:  mostlyclean-toolexeclibLIBRARIES mostlyclean-compile \
+		mostlyclean-libtool mostlyclean-toolexeclibLTLIBRARIES \
 		mostlyclean-binPROGRAMS mostlyclean-noinstPROGRAMS \
 		mostlyclean-tags mostlyclean-depend mostlyclean-generic
 
 mostlyclean: mostlyclean-recursive
 
-clean-am:  clean-hdr clean-toolexeclibLIBRARIES clean-compile \
-		clean-libtool clean-toolexeclibLTLIBRARIES \
-		clean-binPROGRAMS clean-noinstPROGRAMS clean-tags \
-		clean-depend clean-generic mostlyclean-am clean-local
+clean-am:  clean-toolexeclibLIBRARIES clean-compile clean-libtool \
+		clean-toolexeclibLTLIBRARIES clean-binPROGRAMS \
+		clean-noinstPROGRAMS clean-tags clean-depend \
+		clean-generic mostlyclean-am clean-local
 
 clean: clean-recursive
 
-distclean-am:  distclean-hdr distclean-toolexeclibLIBRARIES \
-		distclean-compile distclean-libtool \
-		distclean-toolexeclibLTLIBRARIES distclean-binPROGRAMS \
-		distclean-noinstPROGRAMS distclean-tags \
-		distclean-depend distclean-generic clean-am
+distclean-am:  distclean-toolexeclibLIBRARIES distclean-compile \
+		distclean-libtool distclean-toolexeclibLTLIBRARIES \
+		distclean-binPROGRAMS distclean-noinstPROGRAMS \
+		distclean-tags distclean-depend distclean-generic \
+		clean-am
 	-rm -f libtool
 
 distclean: distclean-recursive
 	-rm -f config.status
 
-maintainer-clean-am:  maintainer-clean-hdr \
-		maintainer-clean-toolexeclibLIBRARIES \
+maintainer-clean-am:  maintainer-clean-toolexeclibLIBRARIES \
 		maintainer-clean-compile maintainer-clean-libtool \
 		maintainer-clean-toolexeclibLTLIBRARIES \
 		maintainer-clean-binPROGRAMS \
@@ -1825,8 +1863,7 @@ maintainer-clean-am:  maintainer-clean-hdr \
 maintainer-clean: maintainer-clean-recursive
 	-rm -f config.status
 
-.PHONY: mostlyclean-hdr distclean-hdr clean-hdr maintainer-clean-hdr \
-mostlyclean-toolexeclibLIBRARIES distclean-toolexeclibLIBRARIES \
+.PHONY: mostlyclean-toolexeclibLIBRARIES distclean-toolexeclibLIBRARIES \
 clean-toolexeclibLIBRARIES maintainer-clean-toolexeclibLIBRARIES \
 uninstall-toolexeclibLIBRARIES install-toolexeclibLIBRARIES \
 mostlyclean-compile distclean-compile clean-compile \

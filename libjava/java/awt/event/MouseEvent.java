@@ -67,10 +67,37 @@ public class MouseEvent extends InputEvent
 
   public String paramString ()
   {
-    return ("MouseEvent[" + when + "," + modifiers
-	    + ",(" + x + "," + y + "),"
-	    + clickCount + "," + popupTrigger
-	    + ";" + super.paramString () + "]");
+    String r;
+    switch (id)
+      {
+	case MOUSE_CLICKED:
+	  r = "MOUSE_CLICKED";
+	break;
+	case MOUSE_DRAGGED:
+	  r = "MOUSE_DRAGGED";
+	break;
+	case MOUSE_ENTERED:
+	  r = "MOUSE_ENTERED";
+	break;
+	case MOUSE_EXITED:
+	  r = "MOUSE_EXITED";
+	break;
+	case MOUSE_MOVED:
+	  r = "MOUSE_MOVED";
+	break;
+	case MOUSE_PRESSED:
+	  r = "MOUSE_PRESSED";
+	break;
+	case MOUSE_RELEASED:
+	  r = "MOUSE_RELEASED";
+	break;
+	default:
+	  r = "unknown id";
+	break;
+      }
+    r += ",(" + x + "," + y + "),modifiers=" + modifiers + ",clickCount=" +
+         clickCount;
+    return r;
   }
 
   public void translatePoint (int x, int y)

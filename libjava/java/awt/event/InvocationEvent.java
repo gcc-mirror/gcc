@@ -14,7 +14,7 @@ import java.awt.*;
  * @date April 8, 2000
  */
 
-/* Status: Still one bug.  */
+/* Status: Believed to be complete and correct.  */
 
 public class InvocationEvent extends AWTEvent implements ActiveEvent
 {
@@ -37,28 +37,29 @@ public class InvocationEvent extends AWTEvent implements ActiveEvent
     this.runnable = runnable;
   }
 
-  public InvocationEvent (Object source, Runnable runnable, Object notifier)
+  public InvocationEvent(Object source, Runnable runnable, Object notifier,
+                	 boolean catchExceptions)
   {
     super (source, INVOCATION_DEFAULT);
     this.runnable = runnable;
     this.notifier = notifier;
+    this.catchExceptions = catchExceptions;
   }
 
   public void dispatch ()
   {
     Exception e = null;
-    try
-      {
-	runnable.run ();
-      }
-    catch (Exception _)
-      {
-	e = _;
-      }
-
-    // FIXME: what to do if !catchExceptions?
     if (catchExceptions)
-      exception = e;
+      try
+	{
+	  runnable.run ();
+	}
+      catch (Exception x)
+	{
+	  exception = x;
+	}
+    else
+      runnable.run ();
 
     if (notifier != null)
       notifier.notifyAll ();
@@ -71,9 +72,15 @@ public class InvocationEvent extends AWTEvent implements ActiveEvent
 
   public String paramString ()
   {
-    return ("InvocationEvent[" + notifier + "," + runnable
-	    + "," + catchExceptions
-	    + ";" + super.paramString () + "]");
+    String r;
+    if (id == INVOCATION_DEFAULT)
+      r = "INVOCATION_DEFAULT";
+    else
+      r = "unknown type";
+
+    r += ",runnable=" + runnable + ",notifier=" + notifier + 
+         ",catchExceptions=" + catchExceptions;    
+    return r;
   }
 
   protected boolean catchExceptions;

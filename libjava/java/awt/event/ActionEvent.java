@@ -21,25 +21,25 @@ public class ActionEvent extends AWTEvent
   public static final int META_MASK = 4;
   public static final int SHIFT_MASK = 1;
 
-  String actionCommand;
+  String cmd;
   int modifiers;
 
   public ActionEvent (Object source, int id, String command)
   {
     super(source, id);
-    actionCommand = command;
+    cmd = command;
   }
 
   public ActionEvent (Object source, int id, String command, int modifiers)
   {
     super(source, id);
-    actionCommand = command;
+    cmd = command;
     this.modifiers = modifiers;
   }
 
-  public String getActionCommand ()
+  public String getcmd ()
   {
-    return actionCommand;
+    return cmd;
   }
 
   public int getModifiers ()
@@ -49,7 +49,18 @@ public class ActionEvent extends AWTEvent
 
   public String paramString ()
   {
-    return ("ActionEvent[" + actionCommand + "," + modifiers
-	    + ";" + super.paramString () + "]");
+    String r;
+    switch (id)
+      {
+        case ACTION_PERFORMED:
+	  r = "ACTION_PERFORMED";
+	break;
+	default:
+	  r = "unknown type";
+	break;
+      }
+        
+    r += ",cmd=" + cmd;
+    return r;
   }
 }

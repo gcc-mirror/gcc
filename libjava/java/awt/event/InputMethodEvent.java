@@ -43,7 +43,21 @@ public class InputMethodEvent extends AWTEvent
   public TextHitInfo getVisiblePosition ();
   public boolean isConsumed ();
 
-  public String paramString ();
+  public String paramString ()
+  {
+    String r;
+    switch (id)
+      {
+        case CARET_POSITION_CHANGED:
+	  r = "CARET_POSITION_CHANGED";
+	break;
+	case INPUT_METHOD_TEXT_CHANGED:
+	  r = "INPUT_METHOD_TEXT_CHANGED";
+	break;
+      }
+    r += ""; // FIXME
+    return r;
+  }
   */
 
   // FIXME: this is just to let it compile.

@@ -251,8 +251,22 @@ public class KeyEvent extends InputEvent
 
   public String paramString ()
   {
-    return ("KeyEvent[" + keyCode + "," + keyChar + "," + modifiers
-	    + ";" + super.paramString () + "]");
+    String r;
+    switch (id)
+      {
+        case KEY_PRESSED:
+	  r = "KEY_PRESSED";
+	break;
+	case KEY_RELEASED:
+	  r = "KEY_RELEASED";
+	break;
+	case KEY_TYPED:
+	  r = "KEY_TYPED";
+	break;
+      }    
+    r += ",keyCode=" + keyCode + "," + getKeyText(keyCode) + ",modifiers=" +
+         getKeyModifiersText(modifiers);
+    return r;	 
   }
 
   private int keyCode;

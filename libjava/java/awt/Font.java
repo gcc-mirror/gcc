@@ -8,6 +8,8 @@ details.  */
 
 package java.awt;
 
+import java.util.Locale;
+
 /**
  * @author Warren Levy <warrenl@cygnus.com>
  * @date March 16, 2000.
@@ -71,6 +73,18 @@ public class Font
     return name;
   }
 
+  public String getFamily()
+  {
+    // FIXME
+    return null;
+  }
+
+  public String getFamily(Locale l)
+  {
+    // FIXME
+    return null;
+  }
+
   public int getStyle()
   {
     return style;
@@ -87,4 +101,20 @@ public class Font
   }
 
   public static Font decode(String str) { return null; } // FIXME
+  
+  public String toString()
+  {
+    String style_str = "";
+    if (isPlain())
+      style_str = "plain";
+    else 
+      {
+        if (isBold())
+	  style_str += "bold";	
+	if (isItalic())
+	  style_str += "italic";
+      }
+    return getClass().getName() + "[family=" + getFamily() + ",name=" + 
+           getName() + ",style=" + style_str + ",size=" + getSize() + "]";
+  }
 }

@@ -35,6 +35,31 @@ public class WindowEvent extends ComponentEvent
 
   public String paramString ()
   {
-    return super.paramString ();
+    String r;
+    switch (id)
+      {
+        case WINDOW_ACTIVATED:
+	  r = "WINDOW_ACTIVATED";
+	break;
+	case WINDOW_CLOSED:
+	  r = "WINDOW_CLOSED";
+	break;
+	case WINDOW_CLOSING:
+	  r = "WINDOW_CLOSING";
+	break;
+	case WINDOW_DEACTIVATED:
+	  r = "WINDOW_DEACTIVATED";
+	break;
+	case WINDOW_DEICONIFIED:
+	  r = "WINDOW_DEICONIFIED";
+	break;
+	case WINDOW_ICONIFIED:
+	  r = "WINDOW_ICONIFIED";
+	break;
+	case WINDOW_OPENED:
+	  r = "WINDOW_OPENED";
+	break;
+      }
+    return r;
   }
 }

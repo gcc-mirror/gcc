@@ -1,3 +1,82 @@
+2000-07-12  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	AWT Stuff:
+	* java/util/ResourceBundle.java (getLocale): stub.
+	* Makefile.am: Added new AWT classes.
+	* Makefile.in: Rebuilt.
+	* java/awt/AWTEvent.java: Add EVENT_MASK constants, isConsumed, 
+	constructors. Fix toString() and paramString().
+	* java/awt/AWTEventMulticaster.java: New class. Implemented.
+	* java/awt/CheckboxGroup.java: New class.
+	* java/awt/ColorModel.java: New class.
+	* java/awt/Component.java: Added stubs for most methods. Implemented 
+	event dispatch.
+	* java/awt/Container.java: ditto.
+	* java/awt/ComponentOrientation.java: New class. Partly implemented.
+	* java/awt/Cursor.java: ditto.
+	* java/awt/Event.java: Fix paramString().
+	* java/awt/EventQueue.java: New class. Implemented.
+	* java/awt/Font.java: Added additional stub methods. Implemented 
+	toString().
+	* java/awt/FontMetrics.java: New class. Stubbed.
+	* java/awt/GraphicsConfiguration.java: New class. Complete, except for 
+	Java2D parts.
+	* java/awt/Insets.java: New class. Implemented.
+	* java/awt/Menu.java: Add new methods. Partially implemented.
+	* java/awt/MenuItem.java: Add new methods and fields. Partially 
+	implemented.
+	* java/awt/MenuShortcut.java: New class. Implemented.
+	* java/awt/Panel.java: New class. Placeholder.
+	* java/awt/PopupMenu.java: New class. Stubbed.
+	* java/awt/Rectangle.java: New class. Implemented.
+	* java/awt/Toolkit.java: Added getSystemEventQueue() stub.
+	* java/awt/event/ActionEvent.java: Implement paramString().
+	* java/awt/event/AdjustmentEvent.java: Implement paramString().
+	* java/awt/event/ComponentEvent.java: Implement paramString().
+	* java/awt/event/ContainerEvent.java: Implement paramString().
+	* java/awt/event/FocusEvent.java: Implement paramString().
+	* java/awt/event/HierarchyBoundsAdapter.java: New class.
+	* java/awt/event/HierarchyBoundsListener.java: New class.
+	* java/awt/event/HierarchyEvent.java: New class.
+	* java/awt/event/HierarchyListener.java: New class.
+	* java/awt/event/InputMethodEvent.java: Implement paramString().
+	* java/awt/event/InvocationEvent.java: Implement paramString(). Throw 
+	exception if !catchExceptions.
+	* java/awt/event/ItemEvent.java: Implement paramString().
+	* java/awt/event/KeyEvent.java: Implement paramString().
+	* java/awt/event/MouseEvent.java: Implement paramString().
+	* java/awt/event/PaintEvent.java: Implement paramString().
+	* java/awt/event/TextEvent.java: Implement paramString().
+	* java/awt/event/WindowEvent.java: Implement paramString().
+	
+	AWT Peer interfaces:
+	* java/awt/peer/ButtonPeer.java: New file.
+	* java/awt/peer/ListPeer.java: New file.
+	* java/awt/peer/CanvasPeer.java: New file.
+	* java/awt/peer/MenuBarPeer.java: New file.
+	* java/awt/peer/CheckboxMenuItemPeer.java: New file.
+	* java/awt/peer/MenuComponentPeer.java: New file.
+	* java/awt/peer/CheckboxPeer.java: New file.
+	* java/awt/peer/MenuItemPeer.java: New file.
+	* java/awt/peer/ChoicePeer.java: New file.
+	* java/awt/peer/MenuPeer.java: New file.
+	* java/awt/peer/ComponentPeer.java: Implemented.
+	* java/awt/peer/PanelPeer.java: New file.
+	* java/awt/peer/ContainerPeer.java: Implemented.
+	* java/awt/peer/PopupMenuPeer.java: New file.
+	* java/awt/peer/DialogPeer.java: New file.
+	* java/awt/peer/ScrollPanePeer.java: New file.
+	* java/awt/peer/FileDialogPeer.java: New file.
+	* java/awt/peer/ScrollbarPeer.java: New file.
+	* java/awt/peer/FontPeer.java: New file.
+	* java/awt/peer/TextAreaPeer.java: New file.
+	* java/awt/peer/FramePeer.java: Implemented.
+	* java/awt/peer/TextComponentPeer.java: New file.
+	* java/awt/peer/LabelPeer.java: New file.
+	* java/awt/peer/TextFieldPeer.java: New file.
+	* java/awt/peer/LightweightPeer.java: New file.
+	* java/awt/peer/WindowPeer.java: Implemented.
+
 2000-07-06  Tom Tromey  <tromey@cygnus.com>
 
 	* java/lang/natClassLoader.cc (_Jv_PrepareCompiledClass):
@@ -32,7 +111,7 @@
 
 2000-06-28  Bryce McKinlay  <bryce@albatross.co.nz>
 
-	* ThreadGroup.java: Added synchronized flag to many methods.
+	* java/lang/ThreadGroup.java: Added synchronized flag to many methods.
 	(destroyed_flag): Removed.
 	(isDestroyed, removeGroup, removeThread): Test for parent == null.	
 	(activeCount): Added spec note.

@@ -30,7 +30,7 @@ public class AdjustmentEvent extends AWTEvent
   public AdjustmentEvent (Adjustable source, int id, int type, int value)
   {
     super (source, id);
-    this.type = type;
+    this.adjType = type;
     this.value = value;
   }
 
@@ -41,7 +41,7 @@ public class AdjustmentEvent extends AWTEvent
 
   public int getAdjustmentType ()
   {
-    return type;
+    return adjType;
   }
 
   public int getValue ()
@@ -51,10 +51,45 @@ public class AdjustmentEvent extends AWTEvent
 
   public String paramString ()
   {
-    return ("AdjustmentEvent[" + type + "," + value
-	    + ";" + super.paramString () + "]");
+    String r;
+    switch (id)
+      {
+        case ADJUSTMENT_VALUE_CHANGED:
+	  r = "ADJUSTMENT_VALUE_CHANGED";
+	break;
+	default:
+	  r = "unknown id";
+	break;
+      }
+    
+    r += ",adjType=";
+    
+    switch (adjType)
+      {
+	case BLOCK_DECREMENT:
+	  r += "BLOCK_DECREMENT";
+	break;
+	case BLOCK_INCREMENT:
+	  r += "BLOCK_INCREMENT";
+	break;
+	case TRACK:
+	  r += "TRACK";
+	break;
+	case UNIT_DECREMENT:
+	  r += "UNIT_DECREMENT";
+	break;
+	case UNIT_INCREMENT:
+	  r += "UNIT_INCREMENT";
+	break;
+	default:
+	  r += "unknown type";
+	break;
+      }
+  
+    r += ",value=" + value;  
+    return r;
   }
 
-  private int type;
+  private int adjType;
   private int value;
 }

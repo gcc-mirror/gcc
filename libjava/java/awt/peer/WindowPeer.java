@@ -1,15 +1,15 @@
-/* Copyright (C) 1999  Free Software Foundation
+/* Copyright (C) 2000  Free Software Foundation
 
-   This file is part of libjava.
+   This file is part of libgcj.
 
 This software is copyrighted work licensed under the terms of the
-Libjava License.  Please consult the file "LIBJAVA_LICENSE" for
+Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
 
 package java.awt.peer;
 
-/* A very incomplete placeholder. */
-
 public interface WindowPeer extends ContainerPeer
 {
+  void toBack();
+  void toFront();
 }
