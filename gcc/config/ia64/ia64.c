@@ -6090,12 +6090,14 @@ nop_cycles_until (clock_var, dump)
 {
   int prev_clock = prev_cycle;
   int cycles_left = clock_var - prev_clock;
+  bool did_stop = false;
 
   /* Finish the previous cycle; pad it out with NOPs.  */
   if (sched_data.cur == 3)
     {
       rtx t = gen_insn_group_barrier (GEN_INT (3));
       last_issued = emit_insn_after (t, last_issued);
+      did_stop = true;
       maybe_rotate (dump);
     }
   else if (sched_data.cur > 0)
@@ -6148,6 +6150,7 @@ nop_cycles_until (clock_var, dump)
 	{
 	  rtx t = gen_insn_group_barrier (GEN_INT (3));
 	  last_issued = emit_insn_after (t, last_issued);
+	  did_stop = true;
 	}
       maybe_rotate (dump);
     }
@@ -6171,8 +6174,12 @@ nop_cycles_until (clock_var, dump)
       last_issued = emit_insn_after (t, last_issued);
       t = gen_insn_group_barrier (GEN_INT (3));
       last_issued = emit_insn_after (t, last_issued);
+      did_stop = true;
       cycles_left--;
     }
+
+  if (did_stop)
+    init_insn_group_barriers ();
 }
 
 /* We are about to being issuing insns for this clock cycle.
