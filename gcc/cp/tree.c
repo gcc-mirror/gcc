@@ -2376,7 +2376,7 @@ init_tree ()
   make_lang_type_fn = cp_make_lang_type;
   lang_unsave = cp_unsave;
   ggc_add_root (list_hash_table, 
-		sizeof (list_hash_table) / sizeof (struct list_hash *),
+		ARRAY_SIZE (list_hash_table),
 		sizeof (struct list_hash *),
 		mark_list_hash);
 }

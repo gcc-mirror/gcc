@@ -1,3 +1,7 @@
+2000-08-25  Greg McGary  <greg@mcgary.org>
+
+	* tree.c (init_tree): Use ARRAY_SIZE.
+
 2000-08-25  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* error.c (cp_tree_printer): Rework.
