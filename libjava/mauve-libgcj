@@ -1,9 +1,13 @@
 # Config file that tells mauve about the `libjava' tag.
 JDK1.0
 JDK1.1
+JDK1.2
+JDBC2.0
 !java.applet
 !java.awt
-!java.beans
+java.beans
+!java.beans.DescriptorTest
+!java.beans.IntrospectorTest
 java.lang.Character.classify12
 java.lang.String.hash
 # We support 1.2 for these 3 tests.
@@ -13,13 +17,18 @@ java.io.ObjectInputOutput.OutputTest
 java.io.ObjectStreamClass.Test
 java.math
 !java.rmi
-java.security
-java.sql
+# These 2 are tests that fail with JDBC2.0 but the tags don't seem to
+# have the right effect.
+!java.sql.Connection.TestJdbc10
+!java.sql.DatabaseMetaData.TestJdbc10
 java.text.FieldPosition.Test
 java.text.ParsePosition.Test
 java.text.SimpleDateFormat.getAndSet2DigitYearStart
 java.text.StringCharacterIterator.iter
 !java.text.ACIAttribute
+!java.text.Annotation
 !java.text.AttributedCharacterIterator
+!java.text.AttributedString
+!java.text.DecimalFormatSymbols.DumpDefault12
+!java.text.DecimalFormatSymbols.GetSet12
 !java.text.resources
-!java.text.DateFormat
