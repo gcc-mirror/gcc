@@ -152,6 +152,7 @@ toplevel_srcdir = @toplevel_srcdir@
 PACKAGE = @PACKAGE@
 
 # Location of installation directories.
+mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
 locale_installdir = $(DESTDIR)$(datadir)/locale
 locale_builddir = @glibcpp_localedir@
 
@@ -171,7 +172,6 @@ DISTFILES = \
 
 # Specify what gets cleaned up on a 'make clean'
 CLEANFILES = $(LOCALE_OUT) 
-mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
 CFLAGS = @CFLAGS@
