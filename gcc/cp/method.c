@@ -588,8 +588,6 @@ do_build_copy_constructor (fndecl)
 	    {
 	      if (VFIELD_NAME_P (DECL_NAME (field)))
 		continue;
-	      if (VBASE_NAME_P (DECL_NAME (field)))
-		continue;
 
 	      /* True for duplicate members.  */
 	      if (IDENTIFIER_CLASS_VALUE (DECL_NAME (field)) != field)
@@ -677,8 +675,6 @@ do_build_assign_ref (fndecl)
 	  if (DECL_NAME (field))
 	    {
 	      if (VFIELD_NAME_P (DECL_NAME (field)))
-		continue;
-	      if (VBASE_NAME_P (DECL_NAME (field)))
 		continue;
 
 	      /* True for duplicate members.  */

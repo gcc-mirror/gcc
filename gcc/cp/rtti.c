@@ -41,7 +41,6 @@ Boston, MA 02111-1307, USA.  */
 
 extern struct obstack permanent_obstack;
 
-static tree build_headof_sub PARAMS((tree));
 static tree build_headof PARAMS((tree));
 static tree ifnonnull PARAMS((tree, tree));
 static tree tinfo_name PARAMS((tree));
@@ -82,23 +81,6 @@ init_rtti_processing ()
     build_qualified_type (type_info_type_node, TYPE_QUAL_CONST);
 }
 
-/* Given a pointer to an object with at least one virtual table
-   pointer somewhere, return a pointer to a possible sub-object that
-   has a virtual table pointer in it that is the vtable parent for
-   that sub-object.  */
-
-static tree
-build_headof_sub (exp)
-     tree exp;
-{
-  tree type = TREE_TYPE (TREE_TYPE (exp));
-  tree basetype = CLASSTYPE_RTTI (type);
-  tree binfo = get_binfo (basetype, type, 0);
-
-  exp = convert_pointer_to_real (binfo, exp);
-  return exp;
-}
-
 /* Given the expression EXP of type `class *', return the head of the
    object pointed to by EXP with type cv void*, if the class has any
    virtual functions (TYPE_POLYMORPHIC_P), else just return the
@@ -117,10 +99,6 @@ build_headof (exp)
 
   if (!TYPE_POLYMORPHIC_P (type))
     return exp;
-
-  /* If we don't have rtti stuff, get to a sub-object that does.  */
-  if (!CLASSTYPE_VFIELDS (TREE_TYPE (TREE_TYPE (exp))))
-    exp = build_headof_sub (exp);
 
   /* We use this a couple of times below, protect it.  */
   exp = save_expr (exp);
@@ -203,17 +181,6 @@ get_tinfo_decl_dynamic (exp)
       /* build reference to type_info from vtable.  */
       tree t;
       tree index;
-
-      if (! flag_rtti)
-	error ("taking dynamic typeid of object with -fno-rtti");
-
-      /* If we don't have rtti stuff, get to a sub-object that does.  */
-      if (! CLASSTYPE_VFIELDS (type))
-	{
-      	  exp = build_unary_op (ADDR_EXPR, exp, 0);
-	  exp = build_headof_sub (exp);
-	  exp = build_indirect_ref (exp, NULL);
-	}
 
       /* The RTTI information is at index -1.  */
       index = integer_minus_one_node;
@@ -1146,7 +1113,10 @@ create_real_tinfo_var (target_type, name, type, init, non_public)
   tree decl;
   tree hidden_name;
   char hidden[30];
-  
+
+  /* We cannot give this the name NAME, as that already is globally
+     bound to the tinfo_decl we originally created for this type in
+     get_tinfo_decl. */
   sprintf (hidden, "__ti_%d", count++);
   hidden_name = get_identifier (hidden);
   

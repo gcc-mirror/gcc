@@ -3140,8 +3140,6 @@ extern varray_type local_classes;
 #define VFIELD_BASE "$vf"
 #define VFIELD_NAME "_vptr$"
 #define VFIELD_NAME_FORMAT "_vptr$%s"
-#define VBASE_NAME "_vb$"
-#define VBASE_NAME_FORMAT "_vb$%s"
 #define STATIC_NAME_FORMAT "_%s$%s"
 #define ANON_AGGRNAME_FORMAT "$_%d"
 
@@ -3162,8 +3160,6 @@ extern varray_type local_classes;
 #define VFIELD_BASE ".vf"
 #define VFIELD_NAME "_vptr."
 #define VFIELD_NAME_FORMAT "_vptr.%s"
-#define VBASE_NAME "_vb."
-#define VBASE_NAME_FORMAT "_vb.%s"
 #define STATIC_NAME_FORMAT "_%s.%s"
 
 #define ANON_AGGRNAME_FORMAT "._%d"
@@ -3197,11 +3193,6 @@ extern varray_type local_classes;
   (!strncmp (IDENTIFIER_POINTER (ID_NODE), VFIELD_NAME, \
 	    sizeof (VFIELD_NAME) - 1))
 #define VFIELD_NAME_FORMAT "_vptr_%s"
-#define VBASE_NAME "__vb_"
-#define VBASE_NAME_P(ID_NODE) \
-  (!strncmp (IDENTIFIER_POINTER (ID_NODE), VBASE_NAME, \
-	     sizeof (VBASE_NAME) - 1))
-#define VBASE_NAME_FORMAT "__vb_%s"
 #define STATIC_NAME_FORMAT "__static_%s_%s"
 
 #define ANON_AGGRNAME_PREFIX "__anon_"
@@ -3244,10 +3235,6 @@ extern varray_type local_classes;
   && IDENTIFIER_POINTER (ID_NODE)[2] == 't' \
   && IDENTIFIER_POINTER (ID_NODE)[3] == JOINER)
 
-#define VBASE_NAME_P(ID_NODE) (IDENTIFIER_POINTER (ID_NODE)[1] == 'v' \
-  && IDENTIFIER_POINTER (ID_NODE)[2] == 'b' \
-  && IDENTIFIER_POINTER (ID_NODE)[3] == JOINER)
-
 #define TEMP_NAME_P(ID_NODE) (!strncmp (IDENTIFIER_POINTER (ID_NODE), AUTO_TEMP_NAME, sizeof (AUTO_TEMP_NAME)-1))
 #define VFIELD_NAME_P(ID_NODE) (!strncmp (IDENTIFIER_POINTER (ID_NODE), VFIELD_NAME, sizeof(VFIELD_NAME)-1))
 
@@ -3260,14 +3247,6 @@ extern varray_type local_classes;
 #define ANON_PARMNAME_P(ID_NODE) (IDENTIFIER_POINTER (ID_NODE)[0] == '_' \
 				  && IDENTIFIER_POINTER (ID_NODE)[1] <= '9')
 #endif /* !defined(NO_DOLLAR_IN_LABEL) || !defined(NO_DOT_IN_LABEL) */
-
-/* Store the vbase pointer field name for type TYPE into pointer BUF.  */
-#define FORMAT_VBASE_NAME(BUF,TYPE) do {				\
-  char *wbuf = (char *) alloca (TYPE_ASSEMBLER_NAME_LENGTH (TYPE)	\
-			 + sizeof (VBASE_NAME) + 1);			\
-  sprintf (wbuf, VBASE_NAME_FORMAT, TYPE_ASSEMBLER_NAME_STRING (TYPE));	\
-  (BUF) = wbuf;								\
-} while (0)
 
 /* Returns non-zero iff NODE is a declaration for the global function
    `main'.  */

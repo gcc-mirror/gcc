@@ -2237,16 +2237,7 @@ build_component_ref (datum, component, basetype_path, protect)
 	      error ("invalid reference to NULL ptr, use ptr-to-member instead");
 	      return error_mark_node;
 	    }
-	  if (VBASE_NAME_P (DECL_NAME (field)))
-	    {
-	      /* It doesn't matter which vbase pointer we grab, just
-		 find one of them.  */
-	      tree binfo = get_binfo (base,
-				      TREE_TYPE (TREE_TYPE (addr)), 0);
-	      addr = convert_pointer_to_real (binfo, addr);
-	    }
-	  else
-	    addr = convert_pointer_to (base, addr);
+	  addr = convert_pointer_to (base, addr);
 	  datum = build_indirect_ref (addr, NULL);
 	  if (datum == error_mark_node)
 	    return error_mark_node;
