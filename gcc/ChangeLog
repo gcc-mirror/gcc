@@ -1,3 +1,11 @@
+2000-12-06      Joel Sherrill <joel@OARcorp.com>
+
+        * config.gcc (a29k*-*-rtems*, arm*-*-rtems*, c4x-*-rtems*, 
+        h8300-*-rtems*, hppa1.1-*-rtems, *mips*-*-rtems*): New targets.
+        * config.gcc (*-rtems*): Add support for gthr-rtems.h.
+        * gthr-rtems.h, config/a29k/rtems.h, config/arm/rtems-elf.h,
+        config/h8300/rtems.h, config/mips/rtems.h: New files.
+
 2000-12-06  Mark Kettenis  <kettenis@gnu.org>
 
 	* config.gcc: Reorganize handling of *-*-gnu*, to share target
