@@ -1,7 +1,8 @@
-#ifndef _STDDEF_H
-#ifndef _STDDEF_H_
-#ifndef _ANSI_STDDEF_H
-#ifndef __STDDEF_H__
+#if (!defined(_STDDEF_H) && !defined(_STDDEF_H_) && !defined(_ANSI_STDDEF_H) \
+     && !defined(__STDDEF_H__)) \
+    || defined(__need_wchar_t) || defined(__need_size_t) \
+    || defined(__need_ptrdiff_t) || defined(__need_NULL) \
+    || defined(__need_wint_t)
 
 /* Any one of these symbols __need_* means that GNU libc
    wants us just to define one data type.  So don't define
@@ -322,7 +323,5 @@ typedef __WINT_TYPE__ wint_t;
 
 #endif /* _STDDEF_H was defined this time */
 
-#endif /* __STDDEF_H__ was not defined before */
-#endif /* _ANSI_STDDEF_H was not defined before */
-#endif /* _STDDEF_H_ was not defined before */
-#endif /* _STDDEF_H was not defined before */
+#endif /* !_STDDEF_H && !_STDDEF_H_ && !_ANSI_STDDEF_H && !__STDDEF_H__
+	  || __need_XXX was not defined before */
