@@ -58,8 +58,8 @@ Boston, MA 02111-1307, USA.  */
 
 #define STARTFILE_SPEC32 \
   "%{!shared: \
-     %{pg:/usr/lib/gcrt1.o%s} %{!pg:%{p:/usr/lib/gcrt1.o%s} %{!p:/usr/lib/crt1.o%s}}}\
-   /usr/lib/crti.o%s %{static:crtbeginT.o%s}\
+     %{pg:gcrt1.o%s} %{!pg:%{p:gcrt1.o%s} %{!p:crt1.o%s}}}\
+   crti.o%s %{static:crtbeginT.o%s}\
    %{!static:%{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}}"
 
 #define STARTFILE_SPEC64 \
@@ -97,7 +97,7 @@ Boston, MA 02111-1307, USA.  */
 #undef  ENDFILE_SPEC
 
 #define ENDFILE_SPEC32 \
-  "%{!shared:crtend.o%s} %{shared:crtendS.o%s} /usr/lib/crtn.o%s"
+  "%{!shared:crtend.o%s} %{shared:crtendS.o%s} crtn.o%s"
 
 #define ENDFILE_SPEC64 \
   "%{!shared:crtend.o%s} %{shared:crtendS.o%s} /usr/lib64/crtn.o%s"

@@ -1,3 +1,8 @@
+2002-09-29  David S. Miller  <davem@redhat.com>
+
+	* config/sparc/linux64.h (STARTFILE_SPEC32, ENDFILE_SPEC32): Kill
+	hardcoded paths.
+
 2002-09-27  Alexander N. Kabaev <ak03@gte.com>
 
 	PR preprocessor/8055
