@@ -1,3 +1,9 @@
+21-09-2001  Richard Earnshaw  (reanrsha@arm.com)
+
+	* cfgcleanup.c (merge_blocks_move_successor_nojumps): Don't leave 
+	ADDR_VEC or ADDR_DIFF_VEC jump insns as part of the basic block
+	once merging is complete.
+
 Fri Sep 21 11:20:12 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* integrate.c (allocate_initial_values): Eliminate unused arg warning.
