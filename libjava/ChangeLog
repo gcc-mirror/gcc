@@ -1,3 +1,9 @@
+1999-08-19  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/natThread.cc (class locker): New class.
+	(join): Use a locker around _Jv_CondWait.
+	(sleep): Likewise.
+
 1999-08-18  Tom Tromey  <tromey@cygnus.com>
 
 	* java/lang/ThreadGroup.java: Fixed now-erroneous comment.
