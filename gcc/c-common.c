@@ -5924,6 +5924,20 @@ c_safe_from_p (target, exp)
   return 1;
 }
 
+/* Hook used by unsafe_for_reeval to handle language-specific tree codes.  */
+
+int
+c_unsafe_for_reeval (exp)
+     tree exp;
+{
+  /* Statement expressions may not be reevaluated.  */
+  if (TREE_CODE (exp) == STMT_EXPR)
+    return 2;
+
+  /* Walk all other expressions.  */
+  return -1;
+}
+
 /* Tree code classes. */
 
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) TYPE,
@@ -5971,6 +5985,7 @@ add_c_tree_codes ()
   memcpy (tree_code_name + (int) LAST_AND_UNUSED_TREE_CODE,
 	  c_tree_code_name,
 	  (LAST_C_TREE_CODE - (int)LAST_AND_UNUSED_TREE_CODE) * sizeof (char *));
+  lang_unsafe_for_reeval = c_unsafe_for_reeval;
 }
 
 #define CALLED_AS_BUILT_IN(NODE) \

@@ -179,6 +179,9 @@ static void finish_vector_type PARAMS((tree));
 void (*lang_unsave) PARAMS ((tree *));
 void (*lang_unsave_expr_now) PARAMS ((tree));
 
+/* If non-null, these are language-specific helper functions for
+   unsafe_for_reeval.  Return negative to not handle some tree.  */
+int (*lang_unsafe_for_reeval) PARAMS ((tree));
 
 tree global_trees[TI_MAX];
 tree integer_types[itk_none];
@@ -1778,7 +1781,12 @@ unsafe_for_reeval (expr)
       break;
 
     default:
-      /* ??? Add a lang hook if it becomes necessary.  */
+      if (lang_unsafe_for_reeval != 0)
+	{
+	  tmp = (*lang_unsafe_for_reeval) (expr);
+	  if (tmp >= 0)
+	    return tmp;
+	}
       break;
     }
 
