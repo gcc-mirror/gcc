@@ -165,7 +165,10 @@ _Jv_MutexInit (_Jv_Mutex_t *mu)
   val = &attr;
 #endif
 
-  pthread_mutex_init (mu, val);
+  pthread_mutex_init (_Jv_PthreadGetMutex (mu), val);
+#ifdef PTHREAD_MUTEX_IS_STRUCT
+  mu->count = 0;
+#endif
 
 #if defined (HAVE_PTHREAD_MUTEXATTR_SETTYPE) || defined (HAVE_PTHREAD_MUTEXATTR_SETKIND_NP)
   pthread_mutexattr_destroy (&attr);
