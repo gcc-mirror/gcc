@@ -1,5 +1,5 @@
 // Test rtti pointer flags
-// Copyright (C) 2000 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2002 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 15 Apr 2000 <nathan@nathan@codesourcery.com>
 
 #include <typeinfo>
