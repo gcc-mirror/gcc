@@ -1,3 +1,8 @@
+2003-08-04  Neil Booth  <neil@daikokuya.co.uk>
+
+	* config.in: Remove HAVE_LSTAT.
+	* configure, configure.in: Don't test for lstat.
+
 2003-08-03  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* opts.c (decode_options): Do language-specific initialization for
