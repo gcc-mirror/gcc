@@ -3765,7 +3765,7 @@ build_c_cast (type, expr)
 	  if (warn)
 	    /* There are qualifiers present in IN_OTYPE that are not
 	       present in IN_TYPE.  */
-	    pedwarn ("cast discards qualifiers from pointer target type");
+	    warning ("cast discards qualifiers from pointer target type");
 	}
 
       /* Warn about possible alignment problems.  */
