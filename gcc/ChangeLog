@@ -1,3 +1,16 @@
+2003-11-14  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	PR/6552
+	* function.c (struct epi_info): New field const_equiv.
+	(update_epilogue_consts): New function.
+	(keep_stack_depressed): Clear new field and verify scratch register
+	doesn't have it set.
+	Call new function via note_stores.
+	(handle_epilogue_set): Allow setting SP equiv reg in different mode.
+	Allow PLUS where second operand is register known set to constant.
+	(emit_equiv_load): Write load using proper mode if source different.
+	* config/mips/mips.md (return_internal): Put (return) first.
+
 2003-11-14  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/lib1funcs.asm (___udivsi3): Add a comment.

@@ -8249,8 +8249,8 @@ ld\t%2,%1-%S1(%2)\;daddu\t%2,%2,$31\;%*j\t%2%/"
 ;; Normal return.
 
 (define_insn "return_internal"
-  [(use (match_operand 0 "pmode_register_operand" ""))
-   (return)]
+  [(return)
+   (use (match_operand 0 "pmode_register_operand" ""))]
   ""
   "%*j\t%0%/"
   [(set_attr "type"	"jump")
