@@ -409,7 +409,7 @@ DEFTREECODE (INIT_EXPR, "init_expr", "e", 2)
    and operand 2 is the cleanup for this node, if any.
    and operand 3 is the saved initializer after this node has been
    expanded once, this is so we can re-expand the tree later.  */
-DEFTREECODE (TARGET_EXPR, "target_expr", "e", 3)
+DEFTREECODE (TARGET_EXPR, "target_expr", "e", 4)
 
 /* Conditional expression ( ... ? ... : ...  in C).
    Operand 0 is the condition.
