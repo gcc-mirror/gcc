@@ -112,7 +112,7 @@ AR = ar
 AR_FLAGS = rc
 DLLTOOL = dlltool
 RANLIB = @RANLIB@
-SHELL = /bin/sh
+SHELL = @SHELL@
 # pwd command to use.  Allow user to override default by setting PWDCMD in
 # the environment to account for automounters.  The make variable must not
 # be called PWDCMD, otherwise the value set here is passed to make

@@ -114,7 +114,7 @@ AR_FLAGS = rc
 RANLIB = ranlib
 # Test to use to see whether ranlib exists on the system.
 RANLIB_TEST = [ -f /usr/bin/ranlib -o -f /bin/ranlib ]
-SHELL = /bin/sh
+SHELL = @SHELL@
 PWD = $${PWDCMD-pwd}
 # How to copy preserving the date
 INSTALL_DATA_DATE = cp -p
