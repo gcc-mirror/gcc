@@ -1552,6 +1552,11 @@ copy_lang_decl (node)
   ld = (struct lang_decl *) ggc_alloc (size);
   memcpy (ld, DECL_LANG_SPECIFIC (node), size);
   DECL_LANG_SPECIFIC (node) = ld;
+
+#ifdef GATHER_STATISTICS
+  tree_node_counts[(int)lang_decl] += 1;
+  tree_node_sizes[(int)lang_decl] += size;
+#endif
 }
 
 /* Copy DECL, including any language-specific parts.  */
@@ -1567,14 +1572,51 @@ copy_decl (decl)
   return copy;
 }
 
+/* Replace the shared language-specific parts of NODE with a new copy.  */
+
+void
+copy_lang_type (node)
+     tree node;
+{
+  int size;
+  struct lang_type *lt;
+
+  if (! TYPE_LANG_SPECIFIC (node))
+    return;
+
+  size = sizeof (struct lang_type);
+  lt = (struct lang_type *) ggc_alloc (size);
+  memcpy (lt, TYPE_LANG_SPECIFIC (node), size);
+  TYPE_LANG_SPECIFIC (node) = lt;
+
+#ifdef GATHER_STATISTICS
+  tree_node_counts[(int)lang_type] += 1;
+  tree_node_sizes[(int)lang_type] += size;
+#endif
+}
+
+/* Copy TYPE, including any language-specific parts.  */
+
+tree
+copy_type (type)
+     tree type;
+{
+  tree copy;
+
+  copy = copy_node (type);
+  copy_lang_type (copy);
+  return copy;
+}
+
 tree
 cp_make_lang_type (code)
      enum tree_code code;
 {
   register tree t = make_node (code);
 
-  /* Set up some flags that give proper default behavior.  */
-  if (IS_AGGR_TYPE_CODE (code))
+  /* Create lang_type structure.  */
+  if (IS_AGGR_TYPE_CODE (code)
+      || code == BOUND_TEMPLATE_TEMPLATE_PARM)
     {
       struct lang_type *pi;
 
@@ -1582,6 +1624,16 @@ cp_make_lang_type (code)
 	    ggc_alloc_cleared (sizeof (struct lang_type)));
 
       TYPE_LANG_SPECIFIC (t) = pi;
+
+#ifdef GATHER_STATISTICS
+      tree_node_counts[(int)lang_type] += 1;
+      tree_node_sizes[(int)lang_type] += sizeof (struct lang_type);
+#endif
+    }
+
+  /* Set up some flags that give proper default behavior.  */
+  if (IS_AGGR_TYPE_CODE (code))
+    {
       SET_CLASSTYPE_INTERFACE_UNKNOWN_X (t, interface_unknown);
       CLASSTYPE_INTERFACE_ONLY (t) = interface_only;
 
@@ -1589,11 +1641,6 @@ cp_make_lang_type (code)
 	 presence of parse errors, the normal was of assuring this
 	 might not ever get executed, so we lay it out *immediately*.  */
       build_pointer_type (t);
-
-#ifdef GATHER_STATISTICS
-      tree_node_counts[(int)lang_type] += 1;
-      tree_node_sizes[(int)lang_type] += sizeof (struct lang_type);
-#endif
     }
   else
     /* We use TYPE_ALIAS_SET for the CLASSTYPE_MARKED bits.  But,
@@ -1605,7 +1652,9 @@ cp_make_lang_type (code)
      since they can be virtual base types, and we then need a
      canonical binfo for them.  Ideally, this would be done lazily for
      all types.  */
-  if (IS_AGGR_TYPE_CODE (code) || code == TEMPLATE_TYPE_PARM)
+  if (IS_AGGR_TYPE_CODE (code) || code == TEMPLATE_TYPE_PARM
+      || code == BOUND_TEMPLATE_TEMPLATE_PARM
+      || code == TYPENAME_TYPE)
     TYPE_BINFO (t) = make_binfo (size_zero_node, t, NULL_TREE, NULL_TREE);
 
   return t;

@@ -1,5 +1,21 @@
 2001-10-12  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
+	* cp-tree.h (TYPE_BINFO): Update comment.
+	(BOUND_TEMPLATE_TEMPLATE_PARM_TYPE_CHECK): New macro.
+	(TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO): Use template_info.
+	(TYPENAME_TYPE_FULLNAME): Use TYPE_FIELDS.
+	(copy_type): Prototype new function.
+	* lex.c (copy_lang_decl): Gather tree node statistics.
+	(copy_lang_type): New function.
+	(copy_type): Likewise.
+	(cp_make_lang_type): Create lang_type for
+	BOUND_TEMPLATE_TEMPLATE_PARM.  Set TYPE_BINFO for TYPENAME_TYPE
+	and BOUND_TEMPLATE_TEMPLATE_PARM.
+	* pt.c (tsubst): Use copy_type instead of copy_node.
+	* search.c (lookup_field_1): Ignore TYPENAME_TYPE.
+
+2001-10-12  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
 	* pt.c (determine_specialization): Ignore functions without
 	DECL_TEMPLATE_INFO.
 

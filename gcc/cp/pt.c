@@ -6429,7 +6429,7 @@ tsubst (t, args, complain, in_decl)
 	      }
 	    else
 	      {
-		r = copy_node (t);
+		r = copy_type (t);
 		TEMPLATE_TYPE_PARM_INDEX (r)
 		  = reduce_template_parm_level (TEMPLATE_TYPE_PARM_INDEX (t),
 						r, levels);
