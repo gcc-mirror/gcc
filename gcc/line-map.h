@@ -30,6 +30,11 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
    (e.g. a #line directive in C).  */
 enum lc_reason {LC_ENTER = 0, LC_LEAVE, LC_RENAME};
 
+/* A logical line number, i,e, an "index" into a line_map. */
+/* Long-term, we want to use this to replace struct location_s (in input.h),
+   and effectively typedef fileline location_t. */
+typedef unsigned int fileline;
+
 /* The logical line FROM_LINE maps to physical source file TO_FILE at
    line TO_LINE, and subsequently one-to-one until the next line_map
    structure in the set.  INCLUDED_FROM is an index into the set that
@@ -42,7 +47,7 @@ struct line_map
 {
   const char *to_file;
   unsigned int to_line;
-  unsigned int from_line;
+  fileline from_line;
   int included_from;
   ENUM_BITFIELD (lc_reason) reason : CHAR_BIT;
   unsigned char sysp;
@@ -87,12 +92,11 @@ extern void linemap_free (struct line_maps *);
    maps, so any stored line_map pointers should not be used.  */
 extern const struct line_map *linemap_add
   (struct line_maps *, enum lc_reason, unsigned int sysp,
-   unsigned int from_line, const char *to_file, unsigned int to_line);
+   fileline from_line, const char *to_file, unsigned int to_line);
 
 /* Given a logical line, returns the map from which the corresponding
    (source file, line) pair can be deduced.  */
-extern const struct line_map *linemap_lookup (struct line_maps *,
-					      unsigned int);
+extern const struct line_map *linemap_lookup (struct line_maps *, fileline);
 
 /* Print the file names and line numbers of the #include commands
    which led to the map MAP, if any, to stderr.  Nothing is output if

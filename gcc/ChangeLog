@@ -1,3 +1,10 @@
+2003-08-06  Per Bothner  <pbothner@apple.com>
+
+	* line-map.h (fileline):  New typedef.
+	(struct line_map, linemap_add, linemap_lookup):  Use it.	
+	* input.h (struct location_s):  Comment notes that long-term we want
+	to replace it by fileline.
+
 2003-08-06  J"orn Rennecke <joern.rennecke@superh.com>
 
 	Fix SHcompact exception handling:
