@@ -302,7 +302,7 @@ extern int target_flags;
    extern char *m88k_short_data;
    #define TARGET_OPTIONS { { "short-data-", &m88k_short_data } }  */
 
-extern char *c4x_rpts_cycles_string, *c4x_cpu_version_string;
+extern const char *c4x_rpts_cycles_string, *c4x_cpu_version_string;
 
 #define TARGET_OPTIONS		\
 { {"rpts=", &c4x_rpts_cycles_string, \
@@ -2554,7 +2554,7 @@ do { fprintf (asm_out_file, "\t.sdef\t");		\
 #define DBR_OUTPUT_SEQEND(FILE)		\
 if (final_sequence != NULL_RTX)		\
 {					\
- int count;
+ int count;				\
  int laj = GET_CODE (XVECEXP (final_sequence, 0, 0)) == CALL_INSN; \
 					\
  count = dbr_sequence_length();		\

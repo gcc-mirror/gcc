@@ -135,9 +135,9 @@ enum machine_mode c4x_caller_save_map[FIRST_PSEUDO_REGISTER] =
 struct rtx_def *c4x_compare_op0 = NULL_RTX;
 struct rtx_def *c4x_compare_op1 = NULL_RTX;
 
-char *c4x_rpts_cycles_string;
+const char *c4x_rpts_cycles_string;
 int c4x_rpts_cycles = 0;	/* Max. cycles for RPTS.  */
-char *c4x_cpu_version_string;
+const char *c4x_cpu_version_string;
 int c4x_cpu_version = 40;	/* CPU version C30/31/32/40/44.  */
 
 /* Pragma definitions.  */

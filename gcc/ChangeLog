@@ -1,3 +1,10 @@
+Sun Sep 12 22:05:21 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.h (c4x_rpts_cycles_string,
+	c4x_cpu_version_string): Constify char *.
+	* config/c4x/c4x.c (c4x_rpts_cycles_string,
+	c4x_cpu_version_string): Likewise.
+
 Sat Sep 11 23:28:33 1999  Richard Henderson  <rth@cygnus.com>
 
 	* tree.c (save_tree_status): Revert 10 Sep change.
