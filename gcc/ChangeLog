@@ -1,3 +1,9 @@
+2000-02-19  Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
+
+	* except.c (start_dynamic_handler) : Use TYPE_MODE (integer_type_node)
+	instead of SImode.
+	(start_catch_handler) : Same.
+
 2000-02-19  Brad Lucier  (lucier@math.purdue.edu)
 
 	* Makefile.in: Have flow.o depend on $(EXPR_H)
