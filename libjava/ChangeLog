@@ -3,6 +3,11 @@
 	* java/net/URLStreamHandler.java
 	(parseURL): Fixed file path canonicalisation.
 
+2004-11-18  Jeroen Frijters  <jeroen@frijters.net>
+
+	* java/net/URLStreamHandler.java
+	(parseURL): Fixed file path canonicalisation.
+
 2004-11-18  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/URLClassLoader.java: Whitespace cleanup.
