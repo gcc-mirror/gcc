@@ -89,7 +89,7 @@ c++.install-normal:
 # and also as either g++ (if native) or $(tooldir)/bin/g++.
 c++.install-common:
 	-if [ -f cc1plus ] ; then \
-	  if [ -f gcc-cross ] ; then \
+	  if [ -f g++-cross ] ; then \
 	    rm -f $(bindir)/$(target)-g++; \
 	    $(INSTALL_PROGRAM) g++-cross $(bindir)/$(target)-g++; \
 	    chmod a+x $(bindir)/$(target)-g++; \
