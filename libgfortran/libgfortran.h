@@ -292,7 +292,7 @@ enum
 
 typedef struct
 {
-  int stdin_unit, stdout_unit, optional_plus;
+  int stdin_unit, stdout_unit, stderr_unit, optional_plus;
   int allocate_init_flag, allocate_init_value;
   int locus;
 

@@ -1,3 +1,14 @@
+2005-01-22  David Edelsohn  <edelsohn@gnu.org>
+
+	PR libgfortran/19052
+	* libgfortran.h (options_t): Add stderr_unit.
+	* io/io.h (error_stream): Declare.
+	* io/open.c (new_unit): Do not terminate abnormally if opening
+	file preconnected to stdin, stdout, or stderr.
+	* io/unit.c (init_units): Initialize stderr_unit.
+	* io/unix.c (error_stream): New function.
+	* runtime/environ.c (GFORTRAN_STDERR_UNIT): New environment variable.
+
 2005-01-22  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/18982

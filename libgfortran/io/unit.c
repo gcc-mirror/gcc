@@ -334,6 +334,27 @@ init_units (void)
       insert_unit (u);
     }
 
+  if (options.stderr_unit >= 0)
+    {				/* STDERR */
+      u = get_mem (sizeof (gfc_unit));
+
+      u->unit_number = options.stderr_unit;
+      u->s = error_stream ();
+
+      u->flags.action = ACTION_WRITE;
+
+      u->flags.access = ACCESS_SEQUENTIAL;
+      u->flags.form = FORM_FORMATTED;
+      u->flags.status = STATUS_OLD;
+      u->flags.blank = BLANK_ZERO;
+      u->flags.position = POSITION_ASIS;
+
+      u->recl = options.default_recl;
+      u->endfile = AT_ENDFILE;
+
+      insert_unit (u);
+    }
+
   /* Calculate the maximum file offset in a portable manner.
    * max will be the largest signed number for the type gfc_offset.
    *

@@ -443,6 +443,11 @@ static variable variable_table[] = {
    "Unit number that will be preconnected to standard output\n"
    "(No preconnection if negative)"},
 
+  {"GFORTRAN_STDERR_UNIT", 0, &options.stderr_unit, init_integer,
+   show_integer,
+   "Unit number that will be preconnected to standard error\n"
+   "(No preconnection if negative)"},
+
   {"GFORTRAN_USE_STDERR", 1, &options.use_stderr, init_boolean,
    show_boolean,
    "Sends library output to standard error instead of standard output."},
