@@ -1,3 +1,7 @@
+Sun Sep 20 00:13:02 1998  Richard Henderson  <rth@cygnus.com>
+
+	* config.sub: Fix typo in last change.
+
 1998-09-19  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config.sub: Add support for C4x target.
