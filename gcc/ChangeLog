@@ -1,9 +1,11 @@
+2002-01-15  Douglas B Rupp  <rupp@gnat.com>
+
+	* gcc.c (delete_if_ordinary): Backout previous change.
+
 2002-01-15  Kazu Hirata  <kazu@hxi.com>
 
-	* confiig/h8300/h8300.c (print_operand): Remove support for
+	* config/h8300/h8300.c (print_operand): Remove support for
 	unused operand characters.
-
-2002-01-15  Kazu Hirata  <kazu@hxi.com>
 
 	* read-rtl.c: Fix formatting.
 	* real.c: Likewise.

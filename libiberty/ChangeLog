@@ -1,3 +1,8 @@
+2002-01-15  Douglas B Rupp  <rupp@gnat.com>
+
+	* mkstemps.c (mkstemps): On VMS, open temp file with option
+	that causes it to be deleted when closed.
+
 2002-01-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cp-demangle.c (long_options): Const-ify.
