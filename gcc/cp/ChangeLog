@@ -11,6 +11,14 @@
 
 	* call.c: If GATHER_STATISTICS, declare `n_build_method_call'.
 
+2000-01-13  Nathan Sidwell  <sidwell@codesourcery.com>
+
+	* g++spec.c (lang_specific_driver): Add -fnew-abi if
+	ENABLE_NEW_GXX_ABI defined.
+	* Make-lang.in (tinfo.o, tinfo2.o, exception.o, new.o,
+	opnew.o, opnewnt.o, opvnew.o, opvnewnt.o, opdel.o, opdelnt.o,
+	opvdel.o, opvdelnt.o): Use GXX_ABI_FLAG switch.
+
 2000-01-12  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (start_cleanup_fn): Call pushdecl.

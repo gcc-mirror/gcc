@@ -111,6 +111,13 @@ Thu Jan 13 16:03:06 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* reload1.c (reload_combine_note_store): Use HARD_REGNO_NREGS.
 
+2000-01-13  Nathan Sidwell  <sidwell@codesourcery.com>
+
+	* configure.in (--enable-new-gxx-abi): New option.
+	* acconfig.h (ENABLE_NEW_GXX_ABI): New define.
+	* Makefile.in (GXX_ABI_FLAG): New variable.
+	* configure: Regenerate.
+
 2000-01-13  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* stor-layout.c (layout_type): Use FORCE_STRUCT_BLK.
