@@ -1476,13 +1476,21 @@ struct lang_type GTY(())
 #define CLASSTYPE_DECLARED_CLASS(NODE) \
   (LANG_TYPE_CLASS_CHECK (NODE)->declared_class)
 
-/* Nonzero if this class has const members which have no specified initialization.  */
-#define CLASSTYPE_READONLY_FIELDS_NEED_INIT(NODE) \
-  (LANG_TYPE_CLASS_CHECK (NODE)->h.const_needs_init)
+/* Nonzero if this class has const members
+   which have no specified initialization.  */
+#define CLASSTYPE_READONLY_FIELDS_NEED_INIT(NODE)	\
+  (TYPE_LANG_SPECIFIC (NODE)				\
+   ? LANG_TYPE_CLASS_CHECK (NODE)->h.const_needs_init : 0)
+#define SET_CLASSTYPE_READONLY_FIELDS_NEED_INIT(NODE, VALUE) \
+  (LANG_TYPE_CLASS_CHECK (NODE)->h.const_needs_init = (VALUE))
 
-/* Nonzero if this class has ref members which have no specified initialization.  */
-#define CLASSTYPE_REF_FIELDS_NEED_INIT(NODE) \
-  (LANG_TYPE_CLASS_CHECK (NODE)->h.ref_needs_init)
+/* Nonzero if this class has ref members
+   which have no specified initialization.  */
+#define CLASSTYPE_REF_FIELDS_NEED_INIT(NODE)		\
+  (TYPE_LANG_SPECIFIC (NODE)				\
+   ? LANG_TYPE_CLASS_CHECK (NODE)->h.ref_needs_init : 0)
+#define SET_CLASSTYPE_REF_FIELDS_NEED_INIT(NODE, VALUE) \
+  (LANG_TYPE_CLASS_CHECK (NODE)->h.ref_needs_init = (VALUE))
 
 /* Nonzero if this class is included from a header file which employs
    `#pragma interface', and it is not included in its implementation file.  */
