@@ -23,13 +23,20 @@ Boston, MA 02111-1307, USA.  */
 
 /* Supposedly the same as vanilla sparc svr4, except for the stuff below: */
 
+/* Solaris 2 (at least as of 2.5.1) uses a 32-bit wchar_t.  */
+#undef WCHAR_TYPE
+#define WCHAR_TYPE "long int"
+
+#undef WCHAR_TYPE_SIZE
+#define WCHAR_TYPE_SIZE 32
+
 /* Solaris 2 uses a wint_t different from the default. This is required
    by the SCD 2.4.1, p. 6-83, Figure 6-66.  */
 #undef	WINT_TYPE
 #define	WINT_TYPE "long int"
 
 #undef	WINT_TYPE_SIZE
-#define	WINT_TYPE_SIZE BITS_PER_WORD
+#define	WINT_TYPE_SIZE 32
 
 #define HANDLE_PRAGMA_REDEFINE_EXTNAME 1
 
