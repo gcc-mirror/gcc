@@ -1,3 +1,8 @@
+1999-07-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (stmp-multilib-sub): Make the files extracted
+	from $(LIBGCC1) writable.
+
 Fri Jul 16 01:39:57 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* m68k.c (output_function_prologue): Fix computation of save mask
