@@ -1,4 +1,4 @@
-2003-01-04  Paolo Carlini  <pcarlini@suse.de>
+2004-01-04  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/27_io/basic_istream/extractors_arithmetic/char/01.cc:
 	Remove redundant #includes.
