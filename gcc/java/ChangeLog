@@ -1,3 +1,8 @@
+2001-12-08  Tom Tromey  <tromey@redhat.com>
+
+	* gjavah.c (print_namelet): Clear subnamelets.
+	(HANDLE_METHOD): Set `method_printed' earlier.
+
 2001-12-07  Tom Tromey  <tromey@redhat.com>
 
 	* lang.c (lang_f_options): Added
