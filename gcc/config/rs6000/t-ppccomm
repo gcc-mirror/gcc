@@ -33,16 +33,19 @@ MULTILIB_MATCHES_FLOAT	= msoft-float=mcpu?401 \
 			  msoft-float=mcpu?823 \
 			  msoft-float=mcpu?860
 MULTILIB_MATCHES_ENDIAN	= mlittle=mlittle-endian mbig=mbig-endian
-MULTILIB_MATCHES_SYSV	= mcall-sysv=mcall-sysv-eabi mcall-sysv=mcall-sysv-noeabi mcall-sysv=mcall-linux
+MULTILIB_MATCHES_SYSV	= mcall-sysv=mcall-sysv-eabi mcall-sysv=mcall-sysv-noeabi mcall-sysv=mcall-linux mcall-sysv=mcall-netbsd
 
 LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib
 EXTRA_MULTILIB_PARTS = crtbegin$(objext) crtend$(objext) \
   crtbeginS$(objext) crtendS$(objext) \
-  ecrti$(objext) ecrtn$(objext) scrt0$(objext) scrti$(objext) scrtn$(objext)
+  ecrti$(objext) ecrtn$(objext) \
+  scrt0$(objext) scrti$(objext) scrtn$(objext) \
+  ncrti$(objext) ncrtn$(objext)
 
-# We build {e,s}crti.o, {e,s}crtn.o, and scrt0.o which serve to add begin and
-# end labels to all of the special sections used when we link using gcc.
+# We build {e,s}crti.o, {e,s}crtn.o, and {s,n}crt0.o which serve to
+# add begin and end labels to all of the special sections used when we
+# link using gcc.
 
 # Assemble startup files.
 ecrti.S: $(srcdir)/config/rs6000/eabi-ci.asm
@@ -50,6 +53,14 @@ ecrti.S: $(srcdir)/config/rs6000/eabi-ci.asm
 
 ecrtn.S: $(srcdir)/config/rs6000/eabi-cn.asm
 	cat $(srcdir)/config/rs6000/eabi-cn.asm >ecrtn.S
+
+ncrti.S: $(srcdir)/config/rs6000/sol-ci.asm
+	sed -e 's/__init/_init/' -e 's/__fini/_fini/' \
+		$(srcdir)/config/rs6000/sol-ci.asm >ncrti.S
+
+ncrtn.S: $(srcdir)/config/rs6000/sol-cn.asm
+	sed -e 's/__init/_init/' -e 's/__fini/_fini/' \
+		$(srcdir)/config/rs6000/sol-cn.asm >ncrtn.S
 
 scrti.S: $(srcdir)/config/rs6000/sol-ci.asm
 	cat $(srcdir)/config/rs6000/sol-ci.asm >scrti.S
@@ -66,6 +77,12 @@ $(T)ecrti$(objext): ecrti.S
 
 $(T)ecrtn$(objext): ecrtn.S
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -c ecrtn.S -o $(T)ecrtn$(objext)
+
+$(T)ncrti$(objext): ncrti.S
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -c ncrti.S -o $(T)ncrti$(objext)
+
+$(T)ncrtn$(objext): ncrtn.S
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -c ncrtn.S -o $(T)ncrtn$(objext)
 
 $(T)scrti$(objext): scrti.S
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -c scrti.S -o $(T)scrti$(objext)
