@@ -637,6 +637,34 @@ build_class_ref (type)
 	{
 	  char *name;
 	  char buffer[25];
+	  if (flag_emit_class_files)
+	    {
+	      char *prim_class_name;
+	      tree prim_class;
+	      if (type == char_type_node)
+		prim_class_name = "java.lang.Character";
+	      else if (type == boolean_type_node)
+		prim_class_name = "java.lang.Boolean";
+	      else if (type == byte_type_node)
+		prim_class_name = "java.lang.Byte";
+	      else if (type == short_type_node)
+		prim_class_name = "java.lang.Short";
+	      else if (type == int_type_node)
+		prim_class_name = "java.lang.Integer";
+	      else if (type == long_type_node)
+		prim_class_name = "java.lang.Long";
+	      else if (type == float_type_node)
+                prim_class_name = "java.lang.Float";
+	      else if (type == double_type_node)
+                prim_class_name = "java.lang.Double";
+	      else if (type == void_type_node)
+                prim_class_name = "java.lang.Void";
+	      else
+		fatal ("internal error - bad type to build_class_ref");
+	      prim_class = lookup_class (get_identifier (prim_class_name));
+	      return build (COMPONENT_REF, NULL_TREE,
+			    prim_class, TYPE_identifier_node);
+	    }
 	  decl_name = TYPE_NAME (type);
 	  if (TREE_CODE (decl_name) == TYPE_DECL)
 	    decl_name = DECL_NAME (decl_name);
