@@ -432,6 +432,19 @@ arith_double_operand (op, mode)
 	      && (unsigned) (INTVAL (op) + 0x1000) < 0x2000));
 }
 
+/* Return true if OP is a register, or is a CONST_INT that can fit in a 5
+   bit unsigned immediate field.  This is an acceptable SImode operand for
+   the count field of shift instructions.  */
+
+int
+shift_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return (register_operand (op, mode)
+	  || (GET_CODE (op) == CONST_INT && (unsigned) (INTVAL (op)) < 32));
+}
+
 /* Return truth value of whether OP is a integer which fits the
    range constraining immediate operands in most three-address insns,
    which have a 13 bit immediate field.  */
