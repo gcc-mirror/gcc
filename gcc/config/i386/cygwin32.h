@@ -1,11 +1,8 @@
 /* Operating system specific defines to be used when targeting GCC for
-   hosting on Windows NT 3.x, using a unix style C library and tools.
-
-   This is different to the winnt.h file, since that is used
-   to build GCC for use with a windows style library and tool
-   set, winnt.h uses the Microsoft tools to do that.
-
-   Copyright (C) 1995 Free Software Foundation, Inc.
+   hosting on Windows NT 3.x, using a Unix style C library and tools,
+   as distinct from winnt.h, which is used to build GCC for use with a
+   windows style library and tool set and uses the Microsoft tools.
+   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -147,12 +144,10 @@ do									\
 while (0)
 #endif
 
-/* Emit code to check the stack when allocating more that 20
+/* Emit code to check the stack when allocating more that 4000
    bytes in one go. */
 
-#define CHECK_STACK_LIMIT 20
-
-
+#define CHECK_STACK_LIMIT 4000
 
 /* By default, target has a 80387, uses IEEE compatible arithmetic,
    and returns float values in the 387 and needs stack probes */
