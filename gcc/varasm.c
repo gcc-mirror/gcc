@@ -666,6 +666,16 @@ assemble_zeros (size)
       ASM_OUTPUT_SKIP (asm_out_file, size);
 }
 
+/* Assemble an alignment pseudo op for an ALIGN-bit boundary.  */
+
+void
+assemble_align (align)
+     int align;
+{
+  if (align > BITS_PER_UNIT)
+    ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (align / BITS_PER_UNIT));
+}
+
 /* Assemble a string constant with the specified C string as contents.  */
 
 void
@@ -971,6 +981,13 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
   /* Compute and output the alignment of this data.  */
 
   align = DECL_ALIGN (decl);
+  /* In the case for initialing an array whose length isn't specified,
+     where we have not yet been able to do the layout,
+     figure out the proper alignment now.  */
+  if (dont_output_data && DECL_SIZE (decl) == 0
+      && TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
+    align = MAX (align, TYPE_ALIGN (TREE_TYPE (TREE_TYPE (decl))));
+
   /* Some object file formats have a maximum alignment which they support.
      In particular, a.out format supports a maximum alignment of 4.  */
 #ifndef MAX_OFILE_ALIGNMENT
