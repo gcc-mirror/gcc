@@ -1,3 +1,8 @@
+2000-09-11  Alexandre Oliva  <aoliva@redhat.com>
+
+	* gcc.c-torture/execute/20000910-1.c: New test.
+	* gcc.c-torture/execute/20000910-2.c: Likewise.
+
 2000-09-11  Robert Lipe  <robertl@sco.com>
 	
 	* gcc.dg/pragma-align.c: New test.
