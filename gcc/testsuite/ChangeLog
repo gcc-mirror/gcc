@@ -1,3 +1,7 @@
+2004-10-06  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* gcc.dg/Wconversion-2.c, gcc.dg/func-args-1.c: New tests.
+
 2004-10-06  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c++/17368
