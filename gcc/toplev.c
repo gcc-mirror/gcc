@@ -1473,6 +1473,8 @@ strip_off_ending (name, len)
     name[len - 2] = 0;
   else if (len > 4 && ! strcmp (".ada", name + len - 4))
     name[len - 4] = 0;
+  else if (len > 4 && ! strcmp (".atr", name + len - 4))
+    name[len - 4] = 0;
 }
 
 /* Output a file name in the form wanted by System V.  */
