@@ -59,6 +59,9 @@ else os=; fi
 ### recognize some manufacturers as not being operating systems, so we
 ### can provide default operating systems below.
 case $os in
+	-sun*os*)
+		# Prevent following clause from handling this invalid input.
+		;;
 	-dec* | -mips* | -sequent* | -encore* | -pc532* | -sgi* | -sony* | \
 	-att* | -7300* | -3300* | -delta* | -motorola* | -sun[234]* | \
 	-unicom* | -ibm* | -next* | -hp | -isi* | -apollo | -altos* | \
@@ -93,6 +96,11 @@ case $basic_machine in
 		| tron | a29k | 580 | i960 | h8300 | hppa1.0 | hppa1.1 \
 		| alpha | we32k | ns16k | clipper )
 		basic_machine=$basic_machine-unknown
+		;;
+	# Object if more than one company name word.
+	*-*-*)
+		echo Invalid configuration \`$1\': machine \`$basic_machine\' not recognized 1>&2
+		exit 1
 		;;
 	# Recognize the basic CPU types with with company name.
 	vax-* | tahoe-* | i[34]86-* | i860-* | m68k-* | m68000-* | m88k-* \
