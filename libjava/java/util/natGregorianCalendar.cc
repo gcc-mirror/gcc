@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -15,6 +15,7 @@ details.  */
 #include <gcj/cni.h>
 #include <java/util/TimeZone.h>
 #include <java/util/GregorianCalendar.h>
+#include <java/lang/IllegalArgumentException.h>
 #include <time.h>
 
 void
@@ -27,11 +28,52 @@ java::util::GregorianCalendar::computeTime ()
   tim.tm_mday = elements(fields)[DATE];
   tim.tm_mon = elements(fields)[MONTH];
   tim.tm_year = elements(fields)[YEAR] - 1900;
-  tim.tm_isdst = 0;  // FIXME
+  tim.tm_isdst = 0;
 #ifndef ECOS
   // FIXME: None of the standard C library access to the ECOS calendar
   // is yet available.
   time_t t = mktime (&tim);
+
+  if (!isLenient ())
+    {
+      // mktime will correct for any time leniencies (e.g. 31-Apr becomes
+      // 1-May).
+      // Daylight savings time is a special case since times in hour 23
+      // will compute to hour 0 of the next day.
+      if (tim.tm_isdst == 0 || elements(fields)[HOUR_OF_DAY] != 23)
+        {
+	  if (tim.tm_sec != elements(fields)[SECOND] ||
+	      tim.tm_min != elements(fields)[MINUTE] ||
+	      tim.tm_hour != elements(fields)[HOUR_OF_DAY] +
+	      		     (tim.tm_isdst > 0 ? 1 : 0) ||
+	      tim.tm_mday != elements(fields)[DATE] ||
+	      tim.tm_mon != elements(fields)[MONTH] ||
+	      tim.tm_year != elements(fields)[YEAR] - 1900)
+	    throw new java::lang::IllegalArgumentException ();
+        }
+      else
+        {
+	  // The easiest thing to do is to temporarily shift the clock
+	  // back from the 23th hour so mktime doesn't cause the extra
+	  // hour for DST to roll the date to the next day.
+	  struct tm tmp_tim;
+	  tmp_tim.tm_sec = elements(fields)[SECOND];
+	  tmp_tim.tm_min = elements(fields)[MINUTE];
+	  tmp_tim.tm_hour = elements(fields)[HOUR_OF_DAY] - 1;
+	  tmp_tim.tm_mday = elements(fields)[DATE];
+	  tmp_tim.tm_mon = elements(fields)[MONTH];
+	  tmp_tim.tm_year = elements(fields)[YEAR] - 1900;
+	  tmp_tim.tm_isdst = 0;
+	  mktime (&tmp_tim);
+	  if (tmp_tim.tm_sec != elements(fields)[SECOND] ||
+	      tmp_tim.tm_min != elements(fields)[MINUTE] ||
+	      tmp_tim.tm_hour != elements(fields)[HOUR_OF_DAY] ||
+	      tmp_tim.tm_mday != elements(fields)[DATE] ||
+	      tmp_tim.tm_mon != elements(fields)[MONTH] ||
+	      tmp_tim.tm_year != elements(fields)[YEAR] - 1900)
+	    throw new java::lang::IllegalArgumentException ();
+	}
+    }
 #else
   time_t t = 0;
 #endif

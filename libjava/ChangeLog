@@ -1,3 +1,17 @@
+2001-04-20  Warren Levy  <warrenl@redhat.com>
+
+	* java/lang/natSystem.cc (getSystemTimeZone): Adjust for DST.
+	* java/text/SimpleDateFormat.java
+	(indexInArray): Removed private method.
+	(processYear): Removed private method.
+	(parseLenient): Removed private method.
+	(parseLeadingZeros): Removed private method.
+	(parseStrict): Removed private method.
+	(expect): Added new private method.
+	(parse): Reverted to pre-Classpath merge version with minor fixes.
+	* java/util/natGregorianCalendar.cc (computeTime): Handle strict
+	calendars.
+
 2001-04-18  Warren Levy  <warrenl@redhat.com>
 
 	* java/util/TimeZone.java: Sync up with Classpath.  Includes new
