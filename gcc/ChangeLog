@@ -1,3 +1,8 @@
+2003-05-23  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config/sparc/netbsd-elf.h (TARGET_OS_CPP_BUILTINS): Define
+	__sparcv9 in the TARGET_ARCH64 case.
+
 Fri May 23 22:17:32 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (ix86_reorg): Calls are also jumps.
