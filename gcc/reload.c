@@ -4422,6 +4422,24 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels, insn)
 	return 0;
     }
 
+#ifdef LEGITIMIZE_RELOAD_ADDRESS
+  do
+    {
+      if (memrefloc)
+	{
+	  LEGITIMIZE_RELOAD_ADDRESS (ad, GET_MODE (*memrefloc), opnum, type,
+				     ind_levels, win);
+	}
+      break;
+    win:
+      *memrefloc = copy_rtx (*memrefloc);
+      XEXP (*memrefloc, 0) = ad;
+      move_replacements (&ad, &XEXP (*memrefloc, 0));
+      return 1;
+    }
+  while (0);
+#endif
+
   /* The address is not valid.  We have to figure out why.  One possibility
      is that it is itself a MEM.  This can happen when the frame pointer is
      being eliminated, a pseudo is not allocated to a hard register, and the
@@ -5371,6 +5389,25 @@ copy_replacements (x, y)
 	      r->mode = replacements[j].mode;
 	    }
 	}
+}
+
+/* Change any replacements being done to *X to be done to *Y */
+
+void
+move_replacements (x, y)
+     rtx *x;
+     rtx *y;
+{
+  int i;
+
+  for (i = 0; i < n_replacements; i++)
+    if (replacements[i].subreg_loc == x)
+      replacements[i].subreg_loc = y;
+    else if (replacements[i].where == x)
+      {
+	replacements[i].where = y;
+	replacements[i].subreg_loc = 0;
+      }
 }
 
 /* If LOC was scheduled to be replaced by something, return the replacement.

@@ -1,3 +1,12 @@
+Thu Apr  2 02:37:07 1998  Joern Rennecke  (amylaar@cygnus.co.uk)
+	 		  Richard Henderson  <rth@cygnus.com>
+
+	* reload.c (find_reloads_address): Try LEGITIMIZE_RELOAD_ADDRESS.
+	(move_replacements): New function.
+	* reload.h: Prototype it.
+	
+	* alpha.h (LEGITIMIZE_RELOAD_ADDRESS): New definition.
+	
 Thu Apr  2 01:01:34 1998  Richard Henderson  <rth@cygnus.com>
 
 	* configure (alpha-*-linuxecoff, alpha-*-linux-gnulibc1):
