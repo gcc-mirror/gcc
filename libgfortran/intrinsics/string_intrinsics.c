@@ -184,7 +184,7 @@ string_trim (GFC_INTEGER_4 * len, void ** dest, GFC_INTEGER_4 slen,
   if (*len > 0)
     {
       /* Allocate space for result string.  */
-      *dest = internal_malloc (*len);
+      *dest = internal_malloc_size (*len);
 
       /* copy string if necessary.  */
       memmove (*dest, src, *len);

@@ -86,7 +86,8 @@ __matmul_c8 (gfc_array_c8 * retarray, gfc_array_c8 * a, gfc_array_c8 * b)
           retarray->dim[1].stride = retarray->dim[0].ubound+1;
         }
           
-      retarray->data = internal_malloc (sizeof (GFC_COMPLEX_8) * size0 (retarray));
+      retarray->data
+	= internal_malloc_size (sizeof (GFC_COMPLEX_8) * size0 (retarray));
       retarray->base = 0;
     }
 
@@ -199,4 +200,3 @@ __matmul_c8 (gfc_array_c8 * retarray, gfc_array_c8 * a, gfc_array_c8 * b)
 	    dest[x*rxstride + y*rystride] += abase[x*axstride + n*aystride] * bbase[n*bxstride + y*bystride];
     }
 }
-

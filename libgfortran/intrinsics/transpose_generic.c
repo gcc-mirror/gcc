@@ -56,7 +56,7 @@ __transpose (gfc_array_char * ret, gfc_array_char * source)
       ret->dim[1].ubound = source->dim[0].ubound - source->dim[0].lbound;
       ret->dim[1].stride = ret->dim[0].ubound+1;
 
-      ret->data = internal_malloc (size * size0 ((array_t*)ret));
+      ret->data = internal_malloc_size (size * size0 ((array_t*)ret));
       ret->base = 0;
     }
 
