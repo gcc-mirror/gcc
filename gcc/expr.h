@@ -671,6 +671,9 @@ extern rtx emit_store_flag_force PROTO((rtx, enum rtx_code, rtx, rtx,
 
 /* Given a JUMP_INSN, return a description of the test being made.  */
 extern rtx get_condition PROTO((rtx, rtx *));
+
+/* Generate a conditional trap instruction.  */
+extern rtx gen_cond_trap PROTO((enum rtx_code, rtx, rtx, rtx));
 
 /* Functions from expr.c:  */
 

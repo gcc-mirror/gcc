@@ -596,6 +596,7 @@ extern char *note_insn_name[];
 
 /* For a TRAP_IF rtx, TRAP_CONDITION is an expression.  */
 #define TRAP_CONDITION(RTX) ((RTX)->fld[0].rtx)
+#define TRAP_CODE(RTX) (RTX)->fld[1].rtx
 
 /* 1 in a SYMBOL_REF if it addresses this function's constants pool.  */
 #define CONSTANT_POOL_ADDRESS_P(RTX) ((RTX)->unchanging)

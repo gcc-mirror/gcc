@@ -1892,6 +1892,80 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 		  continue;
 		}
 	    }
+#ifdef HAVE_trap
+	  /* Detect a conditional jump jumping over an unconditional trap.  */
+	  else if (HAVE_trap
+		   && this_is_condjump && ! this_is_simplejump
+		   && reallabelprev != 0
+		   && GET_CODE (reallabelprev) == INSN
+		   && GET_CODE (PATTERN (reallabelprev)) == TRAP_IF
+		   && TRAP_CONDITION (PATTERN (reallabelprev)) == const_true_rtx
+		   && prev_active_insn (reallabelprev) == insn
+		   && no_labels_between_p (insn, reallabelprev)
+		   && (temp2 = get_condition (insn, &temp4))
+		   && can_reverse_comparison_p (temp2, insn))
+	    {
+	      rtx new = gen_cond_trap (reverse_condition (GET_CODE (temp2)),
+				       XEXP (temp2, 0), XEXP (temp2, 1),
+				       TRAP_CODE (PATTERN (reallabelprev)));
+
+	      if (new)
+		{
+		  emit_insn_before (new, temp4);
+		  delete_insn (reallabelprev);
+		  delete_jump (insn);
+		  changed = 1;
+		  continue;
+		}
+	    }
+	  /* Detect a jump jumping to an unconditional trap.  */
+	  else if (HAVE_trap && this_is_condjump
+		   && (temp = next_active_insn (JUMP_LABEL (insn)))
+		   && GET_CODE (temp) == INSN
+		   && GET_CODE (PATTERN (temp)) == TRAP_IF
+		   && (this_is_simplejump
+		       || (temp2 = get_condition (insn, &temp4))))
+	    {
+	      rtx tc = TRAP_CONDITION (PATTERN (temp));
+
+	      if (tc == const_true_rtx
+		  || (! this_is_simplejump && rtx_equal_p (temp2, tc)))
+		{
+		  rtx new;
+		  /* Replace an unconditional jump to a trap with a trap.  */
+		  if (this_is_simplejump)
+		    {
+		      emit_barrier_after (emit_insn_before (gen_trap (), insn));
+		      delete_jump (insn);
+		      changed = 1;
+		      continue;
+		    }
+		  new = gen_cond_trap (GET_CODE (temp2), XEXP (temp2, 0),
+				       XEXP (temp2, 1),
+				       TRAP_CODE (PATTERN (temp)));
+		  if (new)
+		    {
+		      emit_insn_before (new, temp4);
+		      delete_jump (insn);
+		      changed = 1;
+		      continue;
+		    }
+		}
+	      /* If the trap condition and jump condition are mutually
+		 exclusive, redirect the jump to the following insn.  */
+	      else if (GET_RTX_CLASS (GET_CODE (tc)) == '<'
+		       && ! this_is_simplejump
+		       && swap_condition (GET_CODE (temp2)) == GET_CODE (tc)
+		       && rtx_equal_p (XEXP (tc, 0), XEXP (temp2, 0))
+		       && rtx_equal_p (XEXP (tc, 1), XEXP (temp2, 1))
+		       && redirect_jump (insn, get_label_after (temp)))
+		{
+		  changed = 1;
+		  continue;
+		}
+	    }
+#endif
+
 	  /* Detect a conditional jump jumping over an unconditional jump.  */
 
 	  else if ((this_is_condjump || this_is_condjump_in_parallel)

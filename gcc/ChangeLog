@@ -1,3 +1,36 @@
+Wed Jun 17 19:05:03 1998  John Carr  <jfc@mit.edu>
+
+	* haifa-sched.c (haifa_classify_insn): TRAP_IF is risky.
+	(sched_analyze_2): Allow scheduling TRAP_IF.
+
+	* reorg.c (mark_referenced_resources): Examine operands of TRAP_IF.
+
+	* rtl.h (TRAP_CODE): New macro.
+
+	* rtl.def (TRAP_IF): Change second operand type to rtx.
+
+	* optabs.c (gen_cond_trap): New function.
+	(init_traps): New function.
+	(init_optabs): Call init_traps.
+	* expr.h: Declare gen_cond_trap.
+
+	* jump.c (jump_optimize): Optimize jumps to and around traps.
+
+	* sparc.md: Define trap instructions.
+
+	* rs6000.md: Define trap instructions.
+	* rs6000.c (print_operand): New code 'V' for trap condition.
+	(trap_comparison_operator): New function.
+
+	* m88k.md: Update use of TRAP_IF.
+
+	* tree.h (enum built_in_function): New function code BUILT_IN_TRAP.
+	* c-decl.c (init_decl_processing): New builtin __builtin_trap.
+	* expr.c (expand_builtin): Handle BUILT_IN_TRAP.
+
+	* expr.c (expand_builtin): Error if __builtin_longjmp second argument
+	is not 1.
+
 Wed Jun 17 15:20:00 PDT 1998  Catherine Moore  <clm@cygnus.com>
 
          * reload1.c (spill_hard_reg):  Check mode of register when

@@ -340,10 +340,13 @@ mark_referenced_resources (x, res, include_delayed_effects)
 
     case UNSPEC_VOLATILE:
     case ASM_INPUT:
-    case TRAP_IF:
       /* Traditional asm's are always volatile.  */
       res->volatil = 1;
       return;
+
+    case TRAP_IF:
+      res->volatil = 1;
+      break;
 
     case ASM_OPERANDS:
       res->volatil = MEM_VOLATILE_P (x);

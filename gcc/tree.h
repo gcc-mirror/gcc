@@ -107,6 +107,7 @@ enum built_in_function
   BUILT_IN_RETURN,
   BUILT_IN_SETJMP,
   BUILT_IN_LONGJMP,
+  BUILT_IN_TRAP,
 
   /* Various hooks for the DWARF 2 __throw routine.  */
   BUILT_IN_FP, BUILT_IN_SP,

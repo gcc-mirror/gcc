@@ -506,7 +506,7 @@ DEF_RTL_EXPR(RETURN, "return", "", 'x')
    Operand 1 is the condition.
    Operand 2 is the trap code.
    For an unconditional trap, make the condition (const_int 1).  */
-DEF_RTL_EXPR(TRAP_IF, "trap_if", "ei", 'x')
+DEF_RTL_EXPR(TRAP_IF, "trap_if", "ee", 'x')
 
 /* ----------------------------------------------------------------------
    Primitive values for use in expressions.
