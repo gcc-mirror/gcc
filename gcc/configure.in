@@ -3257,7 +3257,12 @@ changequote([,])dnl
 		tm_file=sparc/rtems.h
 		;;
 	sparcv9-*-solaris2*)
-		tm_file=sparc/sol2-sld-64.h
+		if test x$gnu_ld = xyes
+		then
+			tm_file=sparc/sol2-64.h
+		else
+			tm_file=sparc/sol2-sld-64.h
+		fi
 		xm_file="sparc/xm-sysv4-64.h sparc/xm-sol2.h"
 		xm_defines="USG POSIX"
 		tmake_file="sparc/t-sol2 sparc/t-sol2-64"
@@ -3312,7 +3317,12 @@ changequote(,)dnl
 		*-*-solaris2.[0-6] | *-*-solaris2.[0-6].*) ;;
 changequote([,])dnl
 		*-*-solaris2*)
-			tm_file=sparc/sol2-sld-64.h
+			if test x$gnu_ld = xyes
+			then
+				tm_file=sparc/sol2-64.h
+			else
+				tm_file=sparc/sol2-sld-64.h
+			fi
 			tmake_file="$tmake_file sparc/t-sol2-64"
 			;;
 		esac
