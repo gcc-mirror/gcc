@@ -78,7 +78,7 @@ namespace std
     inline bool
     has_facet(const locale& __loc) throw()
     {
-      size_t __i = _Facet::id._M_id();
+      const size_t __i = _Facet::id._M_id();
       const locale::facet** __facets = __loc._M_impl->_M_facets;
       return (__i < __loc._M_impl->_M_facets_size && __facets[__i]);
     }
@@ -87,7 +87,7 @@ namespace std
     inline const _Facet&
     use_facet(const locale& __loc)
     {
-      size_t __i = _Facet::id._M_id();
+      const size_t __i = _Facet::id._M_id();
       const locale::facet** __facets = __loc._M_impl->_M_facets;
       if (!(__i < __loc._M_impl->_M_facets_size && __facets[__i]))
         __throw_bad_cast();
@@ -109,7 +109,7 @@ namespace std
       const __numpunct_cache<_CharT>*
       operator() (const locale& __loc) const
       {
-	size_t __i = numpunct<_CharT>::id._M_id();
+	const size_t __i = numpunct<_CharT>::id._M_id();
 	const locale::facet** __caches = __loc._M_impl->_M_caches;
 	if (!__caches[__i])
 	  {
@@ -191,7 +191,7 @@ namespace std
 	      __c = *(++__beg);
 	    }
           else if (__traits_type::eq(__c, __lc->_M_thousands_sep) 
-		   &&  __lc->_M_use_grouping && !__found_dec)
+		   && __lc->_M_use_grouping && !__found_dec)
 	    {
               // NB: Thousands separator at the beginning of a string
               // is a no-no, as is two consecutive thousands separators.
@@ -631,9 +631,9 @@ namespace std
     {
       // Prepare for hex formatted input.
       typedef ios_base::fmtflags        fmtflags;
-      fmtflags __fmt = __io.flags();
-      fmtflags __fmtmask = ~(ios_base::showpos | ios_base::basefield
-                             | ios_base::uppercase | ios_base::internal);
+      const fmtflags __fmt = __io.flags();
+      const fmtflags __fmtmask = ~(ios_base::showpos | ios_base::basefield
+				   | ios_base::uppercase | ios_base::internal);
       __io.flags(__fmt & __fmtmask | (ios_base::hex | ios_base::showbase));
 
       string __xtrc;
@@ -755,8 +755,8 @@ namespace std
 	{
 	  // Hex.
 	  const bool __uppercase = __flags & ios_base::uppercase;
-	  int __case_offset = __uppercase ? __num_base::_S_oudigits 
-	                                  : __num_base::_S_odigits;
+	  const int __case_offset = __uppercase ? __num_base::_S_oudigits 
+	                                        : __num_base::_S_odigits;
 	  do 
 	    {
 	      *__buf-- = __lit[(__v & 0xf) + __case_offset];
@@ -846,7 +846,7 @@ namespace std
 	
 	// Pad.
 	_CharT* __cs3;
-	streamsize __w = __io.width();
+	const streamsize __w = __io.width();
 	if (__w > static_cast<streamsize>(__len))
 	  {
 	    __cs3 = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) 
@@ -998,7 +998,7 @@ namespace std
 
       // Pad.
       _CharT* __ws3;
-      streamsize __w = __io.width();
+      const streamsize __w = __io.width();
       if (__w > static_cast<streamsize>(__len))
 	{
 	  __ws3 = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) * __w));
@@ -1017,7 +1017,7 @@ namespace std
     num_put<_CharT, _OutIter>::
     do_put(iter_type __s, ios_base& __io, char_type __fill, bool __v) const
     {
-      ios_base::fmtflags __flags = __io.flags();
+      const ios_base::fmtflags __flags = __io.flags();
       if ((__flags & ios_base::boolalpha) == 0)
         {
           unsigned long __uv = __v;
@@ -1035,7 +1035,7 @@ namespace std
 	  int __len = char_traits<_CharT>::length(__name);
 
 	  _CharT* __cs;
-	  streamsize __w = __io.width();
+	  const streamsize __w = __io.width();
 	  if (__w > static_cast<streamsize>(__len))
 	    {
 	      __cs = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) 
@@ -1096,9 +1096,9 @@ namespace std
     do_put(iter_type __s, ios_base& __io, char_type __fill,
            const void* __v) const
     {
-      ios_base::fmtflags __flags = __io.flags();
-      ios_base::fmtflags __fmt = ~(ios_base::showpos | ios_base::basefield
-				   | ios_base::uppercase | ios_base::internal);
+      const ios_base::fmtflags __flags = __io.flags();
+      const ios_base::fmtflags __fmt = ~(ios_base::showpos | ios_base::basefield
+					 | ios_base::uppercase | ios_base::internal);
       __io.flags(__flags & __fmt | (ios_base::hex | ios_base::showbase));
       try 
 	{
@@ -1180,10 +1180,9 @@ namespace std
       string_type __tmp_units;
 
       char_type __c = *__beg;
-      char_type __eof = static_cast<char_type>(char_traits<char_type>::eof());
       for (int __i = 0; __beg != __end && __i < 4 && __testvalid; ++__i)
 	{
-	  part __which = static_cast<part>(__p.field[__i]);
+	  const part __which = static_cast<part>(__p.field[__i]);
 	  switch (__which)
 		{
 		case money_base::symbol:
@@ -1198,8 +1197,8 @@ namespace std
 		      // other characters are needed to complete the
 		      // format.
 		      const string_type __symbol = __intl ? __mpt.curr_symbol()
-						    	 : __mpf.curr_symbol();
-		      size_type __len = __symbol.size();
+			                                  : __mpf.curr_symbol();
+		      const size_type __len = __symbol.size();
 		      size_type __j = 0;
 		      while (__beg != __end 
 			     && __j < __len && __symbol[__j] == __c)
@@ -1214,24 +1213,8 @@ namespace std
 		    }
 		  break;
 		case money_base::sign:		    
-		  // Sign might not exist, or be more than one character long. 
-		  if (__pos_sign.size() && __neg_sign.size())
-		  {
-		    // Sign is mandatory.
-		    if (__c == __pos_sign[0])
-		      {
-			__sign = __pos_sign;
-			__c = *(++__beg);
-		      }
-		    else if (__c == __neg_sign[0])
-		      {
-			__sign = __neg_sign;
-			__c = *(++__beg);
-		      }
-		    else
-		      __testvalid = false;
-		  }
-		  else if (__pos_sign.size() && __c == __pos_sign[0])
+		  // Sign might not exist, or be more than one character long.
+		  if (__pos_sign.size() && __c == __pos_sign[0])
 		    {
 		      __sign = __pos_sign;
 		      __c = *(++__beg);
@@ -1240,6 +1223,11 @@ namespace std
 		    {
 		      __sign = __neg_sign;
 		      __c = *(++__beg);
+		    }
+		  else if (__pos_sign.size() && __neg_sign.size())
+		    {
+		      // Sign is mandatory.
+		      __testvalid = false;
 		    }
 		  break;
 		case money_base::value:
@@ -1290,9 +1278,10 @@ namespace std
 	}
 
       // Need to get the rest of the sign characters, if they exist.
+      const char_type __eof = static_cast<char_type>(char_traits<char_type>::eof());
       if (__sign.size() > 1)
 	{
-	  size_type __len = __sign.size();
+	  const size_type __len = __sign.size();
 	  size_type __i = 1;
 	  for (; __c != __eof && __i < __len; ++__i)
 	    while (__beg != __end && __c != __sign[__i])
@@ -1477,15 +1466,15 @@ namespace std
 	    }
 
 	  // Calculate length of resulting string.
-	  ios_base::fmtflags __f = __io.flags() & ios_base::adjustfield;
+	  const ios_base::fmtflags __f = __io.flags() & ios_base::adjustfield;
 	  size_type __len = __value.size() + __sign.size();
 	  __len += (__io.flags() & ios_base::showbase) ? __symbol.size() : 0;
-	  bool __testipad = __f == ios_base::internal && __len < __width;
+	  const bool __testipad = __f == ios_base::internal && __len < __width;
 
 	  // Fit formatted digits into the required pattern.
 	  for (int __i = 0; __i < 4; ++__i)
 	    {
-	      part __which = static_cast<part>(__p.field[__i]);
+	      const part __which = static_cast<part>(__p.field[__i]);
 	      switch (__which)
 		{
 		case money_base::symbol:
@@ -1558,10 +1547,10 @@ namespace std
 			  ios_base::iostate& __err, tm* __tm, 
 			  const _CharT* __format) const
     {  
-      locale __loc = __io.getloc();
+      const locale __loc = __io.getloc();
       __timepunct<_CharT> const& __tp = use_facet<__timepunct<_CharT> >(__loc);
       const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc); 
-      size_t __len = char_traits<_CharT>::length(__format);
+      const size_t __len = char_traits<_CharT>::length(__format);
 
       for (size_t __i = 0; __beg != __end && __i < __len && !__err; ++__i)
 	{
@@ -1729,23 +1718,23 @@ namespace std
 			  _M_extract_num(__beg, __end, __tmp, 0, 59, 2,
 					  __ctype, __err);
 			}	    
-			  }
-		      else
-			__err |= ios_base::failbit;
-		      break;
-		    default:
-		      // Not recognized.
-		      __err |= ios_base::failbit;
 		    }
-		}
-	      else
-		{
-		  // Verify format and input match, extract and discard.
-		  if (__c == __ctype.narrow(*__beg, 0))
-		    ++__beg;
 		  else
 		    __err |= ios_base::failbit;
+		  break;
+		default:
+		  // Not recognized.
+		  __err |= ios_base::failbit;
 		}
+	    }
+	  else
+	    {
+	      // Verify format and input match, extract and discard.
+	      if (__c == __ctype.narrow(*__beg, 0))
+		++__beg;
+	      else
+		__err |= ios_base::failbit;
+	    }
 	}
     }
 
@@ -1770,7 +1759,7 @@ namespace std
 	}
       if (__i == __len)
 	{
-	  int __value = atoi(__digits.c_str());
+	  const int __value = std::atoi(__digits.c_str());
 	  if (__min <= __value && __value <= __max)
 	    __member = __value;
 	  else
@@ -1855,7 +1844,7 @@ namespace std
     {
       _CharT __wcs[3];
       const char* __cs = "%X";
-      locale __loc = __io.getloc();
+      const locale __loc = __io.getloc();
       ctype<_CharT> const& __ctype = use_facet<ctype<_CharT> >(__loc);
       __ctype.widen(__cs, __cs + 3, __wcs);
       _M_extract_via_format(__beg, __end, __io, __err, __tm, __wcs);
@@ -1872,7 +1861,7 @@ namespace std
     {
       _CharT __wcs[3];
       const char* __cs = "%x";
-      locale __loc = __io.getloc();
+      const locale __loc = __io.getloc();
       ctype<_CharT> const& __ctype = use_facet<ctype<_CharT> >(__loc);
       __ctype.widen(__cs, __cs + 3, __wcs);
       _M_extract_via_format(__beg, __end, __io, __err, __tm, __wcs);
@@ -1888,7 +1877,7 @@ namespace std
 		   ios_base::iostate& __err, tm* __tm) const
     {
       typedef char_traits<_CharT> 		__traits_type;
-      locale __loc = __io.getloc();
+      const locale __loc = __io.getloc();
       __timepunct<_CharT> const& __tp = use_facet<__timepunct<_CharT> >(__loc);
       const char_type*  __days[7];
       __tp._M_days_abbreviated(__days);
@@ -1931,7 +1920,7 @@ namespace std
                      ios_base& __io, ios_base::iostate& __err, tm* __tm) const
     {
       typedef char_traits<_CharT> 		__traits_type;
-      locale __loc = __io.getloc();
+      const locale __loc = __io.getloc();
       __timepunct<_CharT> const& __tp = use_facet<__timepunct<_CharT> >(__loc);
       const char_type*  __months[12];
       __tp._M_months_abbreviated(__months);
@@ -1974,7 +1963,7 @@ namespace std
     do_get_year(iter_type __beg, iter_type __end, ios_base& __io, 
 		ios_base::iostate& __err, tm* __tm) const
     {
-      locale __loc = __io.getloc();
+      const locale __loc = __io.getloc();
       const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc); 
 
       char_type __c = *__beg;
@@ -2010,7 +1999,7 @@ namespace std
     put(iter_type __s, ios_base& __io, char_type __fill, const tm* __tm, 
 	const _CharT* __beg, const _CharT* __end) const
     {
-      locale __loc = __io.getloc();
+      const locale __loc = __io.getloc();
       ctype<_CharT> const& __ctype = use_facet<ctype<_CharT> >(__loc);
       while (__beg != __end)
 	{
@@ -2047,7 +2036,7 @@ namespace std
     do_put(iter_type __s, ios_base& __io, char_type, const tm* __tm, 
 	   char __format, char __mod) const
     { 
-      locale __loc = __io.getloc();
+      const locale __loc = __io.getloc();
       ctype<_CharT> const& __ctype = use_facet<ctype<_CharT> >(__loc);
       __timepunct<_CharT> const& __tp = use_facet<__timepunct<_CharT> >(__loc);
 
@@ -2115,7 +2104,7 @@ namespace std
       // to strcoll.
       for (;;)
 	{
-	  int __res = _M_compare(__p, __q);
+	  const int __res = _M_compare(__p, __q);
 	  if (__res)
 	    return __res;
 
