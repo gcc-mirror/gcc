@@ -3366,36 +3366,55 @@ process_command (argc, argv)
 	    case 'B':
 	      {
 		const char *value;
+		int len;
+
 		if (p[1] == 0 && i + 1 == argc)
 		  fatal ("argument to `-B' is missing");
 		if (p[1] == 0)
 		  value = argv[++i];
 		else
 		  value = p + 1;
-		{
-		  /* As a kludge, if the arg is "[foo/]stageN/", just
-		     add "[foo/]include" to the include prefix.  */
-		  int len = strlen (value);
-		  if ((len == 7
-		       || (len > 7
-			   && (IS_DIR_SEPARATOR (value[len - 8]))))
-		      && strncmp (value + len - 7, "stage", 5) == 0
-		      && ISDIGIT (value[len - 2])
-		      && (IS_DIR_SEPARATOR (value[len - 1])))
-		    {
-		      if (len == 7)
-			add_prefix (&include_prefixes, "include", NULL,
+
+		len = strlen (value);
+
+		/* Catch the case where the user has forgotten to append a
+		   directory seperator to the path.  Note, they may be using
+		   -B to add an executable name prefix, eg "i386-elf-", in
+		   order to distinguish between multiple installations of
+		   GCC in the same directory.  Hence we must check to see
+		   if appending a directory separator actually makes a
+		   valid directory name.  */
+		if (! IS_DIR_SEPARATOR (value [len - 1])
+		    && is_directory (value, "", 0))
+		  {
+		    value = strcpy (xmalloc (len + 2), value);
+		    value[len] = DIR_SEPARATOR;
+		    value[++ len] = 0;
+		  }
+		
+		/* As a kludge, if the arg is "[foo/]stageN/", just
+		   add "[foo/]include" to the include prefix.  */
+		if ((len == 7
+		     || (len > 7
+			 && (IS_DIR_SEPARATOR (value[len - 8]))))
+		    && strncmp (value + len - 7, "stage", 5) == 0
+		    && ISDIGIT (value[len - 2])
+		    && (IS_DIR_SEPARATOR (value[len - 1])))
+		  {
+		    if (len == 7)
+		      add_prefix (&include_prefixes, "include", NULL,
+				  PREFIX_PRIORITY_B_OPT, 0, NULL);
+		    else
+		      {
+			char * string = xmalloc (len + 1);
+
+			strncpy (string, value, len - 7);
+			strcpy (string + len - 7, "include");
+			add_prefix (&include_prefixes, string, NULL,
 				    PREFIX_PRIORITY_B_OPT, 0, NULL);
-		      else
-			{
-			  char *string = xmalloc (len + 1);
-			  strncpy (string, value, len-7);
-			  strcpy (string+len-7, "include");
-			  add_prefix (&include_prefixes, string, NULL,
-				      PREFIX_PRIORITY_B_OPT, 0, NULL);
-			}
-		    }
-		}
+		      }
+		  }
+
 		add_prefix (&exec_prefixes, value, NULL,
 			    PREFIX_PRIORITY_B_OPT, 0, &warn_B);
 		add_prefix (&startfile_prefixes, value, NULL,

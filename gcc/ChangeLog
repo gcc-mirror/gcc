@@ -1,3 +1,10 @@
+2001-06-29  Nick Clifton  <nickc@cambridge.redhat.com>
+
+	* gcc.c (process_command): Append a DIR_SEPARATOR to a path
+	specified by the -B switch, if doing so would create a valid
+	directory name.
+	* doc/invoke.texi: Document changed behaviour of -B.
+
 2001-06-29  DJ Delorie  <dj@redhat.com>
 
 	* simplify-rtx.c (simplify_subreg): When simplifying a CONCAT, at
