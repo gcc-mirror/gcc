@@ -1027,19 +1027,25 @@ gen_lowpart_common (mode, x)
       long i[4];  /* Only the low 32 bits of each 'long' are used.  */
       int endian = WORDS_BIG_ENDIAN ? 1 : 0;
 
+      /* Convert 'r' into an array of four 32-bit words in target word
+         order.  */
       REAL_VALUE_FROM_CONST_DOUBLE (r, x);
       switch (GET_MODE_BITSIZE (GET_MODE (x)))
 	{
 	case 32:
-	  REAL_VALUE_TO_TARGET_SINGLE (r, i[endian]);
-	  i[1 - endian] = 0;
-	  break;
+          REAL_VALUE_TO_TARGET_SINGLE (r, i[3 * endian]);
+	  i[1] = 0;
+	  i[2] = 0;
+          i[3 - 3 * endian] = 0;
+          break;
 	case 64:
-	  REAL_VALUE_TO_TARGET_DOUBLE (r, i);
-	  break;
+          REAL_VALUE_TO_TARGET_DOUBLE (r, i + 2 * endian);
+	  i[2 - 2 * endian] = 0;
+	  i[3 - 2 * endian] = 0;
+          break;
 	case 96:
 	  REAL_VALUE_TO_TARGET_LONG_DOUBLE (r, i + endian);
-	  i[3-3*endian] = 0;
+	  i[3 - 3 * endian] = 0;
 	  break;
 	case 128:
 	  REAL_VALUE_TO_TARGET_LONG_DOUBLE (r, i);
@@ -1047,39 +1053,17 @@ gen_lowpart_common (mode, x)
 	default:
 	  abort ();
 	}
-
       /* Now, pack the 32-bit elements of the array into a CONST_DOUBLE
 	 and return it.  */
 #if HOST_BITS_PER_WIDE_INT == 32
-      return immed_double_const (i[endian], i[1 - endian], mode);
+      return immed_double_const (i[3 * endian], i[1 + endian], mode);
 #else
-      {
-	int c;
+      if (HOST_BITS_PER_WIDE_INT != 64)
+	abort ();
 
-	if (HOST_BITS_PER_WIDE_INT != 64)
-	  abort ();
-
-	for (c = 0; c < 4; c++)
-	  i[c] &= ~ (0L);
-
-	switch (GET_MODE_BITSIZE (GET_MODE (x)))
-	  {
-	  case 32:
-	  case 64:
-	    return immed_double_const (((unsigned long) i[endian]) |
-				       (((HOST_WIDE_INT) i[1-endian]) << 32),
-				       0, mode);
-	  case 96:
-	  case 128:
-	    return immed_double_const (((unsigned long) i[endian*3]) |
-				       (((HOST_WIDE_INT) i[1+endian]) << 32),
-				       ((unsigned long) i[2-endian]) |
-				       (((HOST_WIDE_INT) i[3-endian*3]) << 32),
-				       mode);
-	  default:
-	    abort ();
-	  }
-      }
+      return immed_double_const (i[3 * endian] | (i[1 + endian] << 32),
+				 i[2 - endian] | (i [3 - 3 * endian] << 32),
+				 mode);
 #endif
     }
 #endif /* ifndef REAL_ARITHMETIC */

@@ -1,3 +1,9 @@
+Thu Nov 29 11:12:59 2001  Geoffrey Keating (geoffk@redhat.com)
+
+        * emit-rtl.c (gen_lowpart_common): Fix conversion of 
+        REAL_VALUE_TYPEs to an array of target integers.  Fix extraction
+        of low part of those arrays for 32bit and 64bit hosts.
+
 2001-11-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (insn-output.o): Depend on insn-codes.h.
