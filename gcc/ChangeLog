@@ -1,3 +1,7 @@
+2001-04-28  Martin Kalen  <martin.kalen@todaysystems.com.au>
+
+        * pa.c (FRP): Remove erroneous white space in macro definition.
+
 2001-04-28  Andreas Jaeger  <aj@suse.de>
 
 	* invoke.texi: Use XX-bit instead of XXbit or XX bit where

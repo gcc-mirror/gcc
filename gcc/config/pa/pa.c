@@ -2955,7 +2955,7 @@ output_function_prologue (file, size)
     }					\
   while (0)
 #else
-#define FRP (INSN) INSN
+#define FRP(INSN) INSN
 #endif
 
 void
