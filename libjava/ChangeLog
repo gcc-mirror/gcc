@@ -1,5 +1,8 @@
 1999-12-17  Tom Tromey  <tromey@cygnus.com>
 
+	* java/lang/reflect/Method.java (toString): Call getType if
+	required.  Partial fix for PR libgcj/111.  From Per Bothner.
+
 	* java/lang/natPosixProcess.cc (startProcess): Don't use sprintf.
 
 1999-12-16  Bryce McKinlay  <bryce@albatross.co.nz>
