@@ -1133,7 +1133,7 @@ const_binop (code, arg1, arg2, notrunc)
     got_it:
       TREE_TYPE (t) = TREE_TYPE (arg1);
       TREE_OVERFLOW (t)
-	= ((notrunc ? !uns && overflow : force_fit_type (t, overflow))
+	= ((notrunc ? !uns && overflow : force_fit_type (t, overflow && !uns))
 	   | TREE_OVERFLOW (arg1)
 	   | TREE_OVERFLOW (arg2));
       TREE_CONSTANT_OVERFLOW (t) = (TREE_OVERFLOW (t)
