@@ -1289,6 +1289,16 @@ dwarf2out_frame_debug_expr (expr, label)
       dwarf2out_def_cfa (label, cfa_reg, cfa_offset);
       break;
 
+      /* Skip over HIGH, assuming it will be followed by a LO_SUM, which
+	 will fill in all of the bits.  */
+    case HIGH:
+      break;
+
+    case LO_SUM:
+      cfa_temp_reg = REGNO (dest);
+      cfa_temp_value = INTVAL (XEXP (src, 1));
+      break;
+
     case MEM:
       /* Saving a register to the stack.  Make sure dest is relative to the
 	 CFA register.  */
