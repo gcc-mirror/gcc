@@ -1,3 +1,7 @@
+1999-12-22  Mark Mitchell  <mark@codesourcery.com>
+
+	* dump.c (dequeue_and_dump): Handle CTOR_STMTs.
+
 1999-12-22  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* error.c (dump_decl): Support named return values.
