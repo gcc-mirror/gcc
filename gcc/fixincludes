@@ -1002,6 +1002,25 @@ if [ -r ${LIB}/$file ]; then
   fi
 fi
 
+# Wrong fchmod prototype on RS/6000.
+file=sys/stat.h
+if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+  mkdir ${LIB}/sys 2>/dev/null
+  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+  chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
+fi
+
+if [ -r ${LIB}/$file ]; then
+  echo Fixing $file, fchmod prototype
+  sed -e 's/fchmod(char \*/fchmod(int/' \
+    ${LIB}/$file > ${LIB}/$file.sed
+  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+    rm -f ${LIB}/$file
+  fi
+fi
+
 # NeXT 2.0 defines 'int wait(union wait*)', which conflicts with Posix.1.
 # Note that version 3 of the NeXT system has wait.h in a different directory,
 # so that this code won't do anything.  But wait.h in version 3 has a
@@ -1086,6 +1105,25 @@ if [ -r ${LIB}/$file ]; then
   fi
 fi
 
+# Avoid nested comments on Ultrix 4.3.
+file=rpc/svc.h
+if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+  mkdir ${LIB}/rpc 2>/dev/null
+  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+  chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
+fi
+
+if [ -r ${LIB}/$file ]; then
+  echo Fixing $file, nested comment
+  sed -e 's@^\( \*	int protocol;  \)/\*@\1*/ /*@' \
+    ${LIB}/$file > ${LIB}/$file.sed
+  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+    rm -f ${LIB}/$file
+  fi
+fi
+
 # In limits.h, put #ifndefs around things that are supposed to be defined
 # in float.h to avoid redefinition errors if float.h is included first.
 # On HP/UX this patch does not work, because on HP/UX limits.h uses
@@ -1093,50 +1131,52 @@ fi
 # comment.  Fortunately, HP/UX already uses #ifndefs in limits.h; if
 # we find a #ifndef FLT_MIN we assume that all the required #ifndefs
 # are there, and we do not add them ourselves.
-file=limits.h
-if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
-  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
-  chmod +w ${LIB}/$file 2>/dev/null
-  chmod a+r ${LIB}/$file 2>/dev/null
-fi
+for file in limits.h sys/limits.h; do
+  if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+    mkdir ${LIB}/sys 2>/dev/null
+    cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+    chmod +w ${LIB}/$file 2>/dev/null
+    chmod a+r ${LIB}/$file 2>/dev/null
+  fi
 
-if [ -r ${LIB}/$file ]; then
-  if egrep 'ifndef[ 	]+FLT_MIN' ${LIB}/$file >/dev/null; then
-    true
-  else
-    echo Fixing $file
-    sed -e '/[ 	]FLT_MIN[ 	]/i\
+  if [ -r ${LIB}/$file ]; then
+    if egrep 'ifndef[ 	]+FLT_MIN' ${LIB}/$file >/dev/null; then
+      true
+    else
+      echo Fixing $file
+      sed -e '/[ 	]FLT_MIN[ 	]/i\
 #ifndef FLT_MIN'\
-        -e '/[ 	]FLT_MIN[ 	]/a\
+	  -e '/[ 	]FLT_MIN[ 	]/a\
 #endif'\
-        -e '/[ 	]FLT_MAX[ 	]/i\
+	  -e '/[ 	]FLT_MAX[ 	]/i\
 #ifndef FLT_MAX'\
-        -e '/[ 	]FLT_MAX[ 	]/a\
+	  -e '/[ 	]FLT_MAX[ 	]/a\
 #endif'\
-        -e '/[ 	]FLT_DIG[ 	]/i\
+	  -e '/[ 	]FLT_DIG[ 	]/i\
 #ifndef FLT_DIG'\
-        -e '/[ 	]FLT_DIG[ 	]/a\
+	  -e '/[ 	]FLT_DIG[ 	]/a\
 #endif'\
-        -e '/[ 	]DBL_MIN[ 	]/i\
+	  -e '/[ 	]DBL_MIN[ 	]/i\
 #ifndef DBL_MIN'\
-        -e '/[ 	]DBL_MIN[ 	]/a\
+	  -e '/[ 	]DBL_MIN[ 	]/a\
 #endif'\
-        -e '/[ 	]DBL_MAX[ 	]/i\
+	  -e '/[ 	]DBL_MAX[ 	]/i\
 #ifndef DBL_MAX'\
-        -e '/[ 	]DBL_MAX[ 	]/a\
+	  -e '/[ 	]DBL_MAX[ 	]/a\
 #endif'\
-        -e '/[ 	]DBL_DIG[ 	]/i\
+	  -e '/[ 	]DBL_DIG[ 	]/i\
 #ifndef DBL_DIG'\
-        -e '/[ 	]DBL_DIG[ 	]/a\
+	  -e '/[ 	]DBL_DIG[ 	]/a\
 #endif'\
-      ${LIB}/$file > ${LIB}/${file}.sed
-    rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+	${LIB}/$file > ${LIB}/${file}.sed
+      rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+    fi
+    if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+      echo Deleting ${LIB}/$file\; no fixes were needed.
+      rm -f ${LIB}/$file
+    fi
   fi
-  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
-    echo Deleting ${LIB}/$file\; no fixes were needed.
-    rm -f ${LIB}/$file
-  fi
-fi
+done
 
 # In math.h, put #ifndefs around things that might be defined in a gcc
 # specific math-*.h file.
@@ -1197,6 +1237,25 @@ if [ -r ${LIB}/$file ]; then
     rm -f ${LIB}/$file
   fi
 fi
+
+# Fix getopt declarations in stdio.h and stdlib.h on Alpha OSF/1.
+for file in stdio.h stdlib.h; do
+  if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+    cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+    chmod +w ${LIB}/$file 2>/dev/null
+    chmod a+r ${LIB}/$file 2>/dev/null
+  fi
+
+  if [ -r ${LIB}/$file ]; then
+    echo Fixing $file, getopt declaration
+    sed -e 's/getopt(int, char \*\[\],char \*)/getopt(int, char *const[], const char *)/' \
+      ${LIB}/$file > ${LIB}/${file}.sed
+    rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+    if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+      rm -f ${LIB}/$file
+    fi
+  fi
+done
 
 # These two files on SunOS 4 are included by other files
 # in the same directory, using "...".  So we must make sure they exist
