@@ -2,6 +2,12 @@ Mon Sep  1 22:13:18 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
 
+	* pa.c (restore_unscaled_index_insn_codes): New function.
+	(record_unscaled_index_insn_codes): Likewise.
+	(output_function_prologue): Call restore_unscaled_index_insn_codes.
+	(output_function_epilogue): Free memory for unscaled_index_insn_codes.
+	(pa_reorg): Call record_unscaled_index_insn_codes.
+
 	* haifa-sched.c (move_insn): Handle notes correctly for insns
 	with SCHED_GROUP_P set.
 	
