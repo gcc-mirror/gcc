@@ -1,5 +1,5 @@
 /* Expand the basic unary and binary arithmetic operations, for GNU compiler.
-   Copyright (C) 1987, 88, 92-96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92-97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -3182,15 +3182,14 @@ emit_conditional_move (target, code, op0, op1, cmode, op2, op3, mode,
   if (cmode == VOIDmode)
     cmode = GET_MODE (op0);
 
-  if ((CONSTANT_P (op2) && ! CONSTANT_P (op3))
-      || (GET_CODE (op2) == CONST_INT && GET_CODE (op3) != CONST_INT))
+  if (((CONSTANT_P (op2) && ! CONSTANT_P (op3))
+       || (GET_CODE (op2) == CONST_INT && GET_CODE (op3) != CONST_INT))
+      && (GET_MODE_CLASS (GET_MODE (op1)) != MODE_FLOAT
+	  || TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT || flag_fast_math))
     {
       tem = op2;
       op2 = op3;
       op3 = tem;
-      /* ??? This may not be appropriate (consider IEEE).  Perhaps we should
-	 call can_reverse_comparison_p here and bail out if necessary.
-	 It's not clear whether we need to do this canonicalization though.  */
       code = reverse_condition (code);
     }
 
