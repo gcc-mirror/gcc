@@ -1,11 +1,58 @@
 Thu Nov 12 14:15:07 1998  Per Bothner  <bothner@cygnus.com>
 
+	* parse.y (patch_invoke):  Do less if flag_emit_class_files.
+	* expr.c (build_known_method_ref):  Don't check flag_emit_class_files
+	here (done in patch_invoke instead).
+	(case_identity):  Moved here from parse.y.
+
+	* java-tree.h (CAN_COMPLETE_NORMALLY):  New macro.
+	* parse.y (java_complete_tree etc):  Maybe set CAN_COMPLETE_NORMALLY.
+	* parse.y (java_complete_tree):  Re-order COMPOUND_EXPR in BLOCK
+	so they can be efficiently scanned without recursion.
+	Error it ! CAN_COMPLETE_NORMALLY first part of COMPOUND_EXPR.
+	* expr.c (java_lang_expand_expr):  Expand statements of COMPOUND_EXPR
+	in BLOCK iteratively, rather than recursively.
+
+	* parse.y (do_unary_numeric_promotion):  New function.
+	(patch_unaryop, patch_binop, patch_array_ref):  Use it.
+
+	* parse.y (patch_newarray):  Various fixes.
+
+	Re-do handling of switch statements (for proper block scoping).
+	* parse.y:  Add just a single block for the enture switch block,
+	but don't create any "case blocks".
+	(group_of_labels):  Rmeoved unneeded non-terminal.
+	CASE_EXPR and DEFAULT_EXPR are added to current block.
+	* expr.c (java_lang_expand_expr):  Inline SWITCH_EXPR here.
+	Now also need to handle CASE_EXPR and DEFAULT_EXPR.
+	* java-tree.h (SWITCH_HAS_DEFAULT):  New macro.
+	* parse.y (wfl_operator, print_int_node): Make non-static.
+	(java_complete_tree):  CASE_EXPR and DEFAULT_EXPR are now processed
+	as part of recursive scan of block.
+	(java_expand_switch ):  Removed - inlined into java_lang_expand_expr.
+	(patch_switch_statement):  Most tests move dinto java_complete_tree.
+	
+	* parse.y:  Make various production be non-typed (void).
+	* parse.y (parse_error):  Merged into issue_warning_error_from_context.
+	* parse.y (add_stmt_to_compound):  Don't create/change extra node.
+	(patch_method_invocation_stmt):  Renamed to patch_method_invocation.
+
+	* jcf-write.c (struct jcf_handler):  New type.
+	(struct jcf_switch_state):  New type.
+	(SWITCH_ALIGN_RELOC, BLOCK_START_RELOC):  New relocation kinds.
+	(alloc_handler, emit_unop, emit_reloc):  New functions.
+	(adjust_typed_op):  Add extra parameter ("max type" offset).
+	(emit_switch_reloc, emit_case-reloc):  New function.
+	(generate_bytecode_conditional):  Handle REAL_TYPE comparisons.
+	(generate_bytecode_insns):  Support REAL_CST, switch statements,
+	exception handling, method calls, object/array creation, and more.
+	
 	* class.c:  Remove some unused variables.
 	* constants.c (find_string_constant):  New function.
 	(count_constant_pool_bytes):  Fix to correctly handle wide constants.
 	* decl.c (complete_start_java_method):  Don't _Jv_InitClass
 	if flag_emit_class_files.
-	
+
 1998-11-12  Tom Tromey  <tromey@cygnus.com>
 
 	* jcf-io.c (find_class): Added explanatory comment.
