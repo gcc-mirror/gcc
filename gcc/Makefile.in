@@ -670,11 +670,13 @@ RECOG_H = recog.h gansidecl.h
 .SUFFIXES: .in .def
 
 $(srcdir)/version.c: @version_dep@
-	tag=`cd $(srcdir); cvs log -h $? |  sed '1,/^sym/d;s/	*gcc-//;s/:.*$$//;q'`; \
+	cd $(srcdir); cvs log -h $? >tmp-ver
+	tag=`sed '1,/^sym/d;s/	*gcc-//;s/:.*$$//;q' tmp-ver`; \
 	ver=`echo $${tag} | sed 's/-.*//' | sed 's/_/./g'`; \
 	date=`echo $${tag} | sed 's/.*-//'`; \
 	if [ $${date} != RELEASE ]; then ver="testgcc-$${ver} $${date} experimental"; fi; \
 	echo "char *version_string = \"$${ver}\";" >>tmp-version.c
+	rm -f tmp-ver
 	$(srcdir)/move-if-change tmp-version.c $(srcdir)/version.c
 
 Makefile: $(srcdir)/Makefile.in config.status $(srcdir)/version.c \
