@@ -103,7 +103,8 @@ static int pa_can_combine_p (rtx, rtx, rtx, int, rtx, rtx, rtx);
 static int forward_branch_p (rtx);
 static int shadd_constant_p (int);
 static void compute_zdepwi_operands (unsigned HOST_WIDE_INT, unsigned *);
-static int compute_movstrsi_length (rtx);
+static int compute_movstr_length (rtx);
+static int compute_clrstr_length (rtx);
 static bool pa_assemble_integer (rtx, unsigned int, int);
 static void remove_useless_addtr_insns (int);
 static void store_reg (int, int, int);
@@ -2431,8 +2432,8 @@ find_addr_reg (rtx addr)
    OPERANDS[0] is the destination pointer as a REG, clobbered.
    OPERANDS[1] is the source pointer as a REG, clobbered.
    OPERANDS[2] is a register for temporary storage.
-   OPERANDS[4] is the size as a CONST_INT
    OPERANDS[3] is a register for temporary storage.
+   OPERANDS[4] is the size as a CONST_INT
    OPERANDS[5] is the alignment safe to use, as a CONST_INT.
    OPERANDS[6] is another temporary register.   */
 
@@ -2442,15 +2443,43 @@ output_block_move (rtx *operands, int size_is_constant ATTRIBUTE_UNUSED)
   int align = INTVAL (operands[5]);
   unsigned long n_bytes = INTVAL (operands[4]);
 
-  /* We can't move more than four bytes at a time because the PA
+  /* We can't move more than a word at a time because the PA
      has no longer integer move insns.  (Could use fp mem ops?)  */
-  if (align > 4)
-    align = 4;
+  if (align > (TARGET_64BIT ? 8 : 4))
+    align = (TARGET_64BIT ? 8 : 4);
 
   /* Note that we know each loop below will execute at least twice
      (else we would have open-coded the copy).  */
   switch (align)
     {
+      case 8:
+	/* Pre-adjust the loop counter.  */
+	operands[4] = GEN_INT (n_bytes - 16);
+	output_asm_insn ("ldi %4,%2", operands);
+
+	/* Copying loop.  */
+	output_asm_insn ("ldd,ma 8(%1),%3", operands);
+	output_asm_insn ("ldd,ma 8(%1),%6", operands);
+	output_asm_insn ("std,ma %3,8(%0)", operands);
+	output_asm_insn ("addib,>= -16,%2,.-12", operands);
+	output_asm_insn ("std,ma %6,8(%0)", operands);
+
+	/* Handle the residual.  There could be up to 7 bytes of
+	   residual to copy!  */
+	if (n_bytes % 16 != 0)
+	  {
+	    operands[4] = GEN_INT (n_bytes % 8);
+	    if (n_bytes % 16 >= 8)
+	      output_asm_insn ("ldd,ma 8(%1),%3", operands);
+	    if (n_bytes % 8 != 0)
+	      output_asm_insn ("ldd 0(%1),%6", operands);
+	    if (n_bytes % 16 >= 8)
+	      output_asm_insn ("std,ma %3,8(%0)", operands);
+	    if (n_bytes % 8 != 0)
+	      output_asm_insn ("stdby,e %6,%4(%0)", operands);
+	  }
+	return "";
+
       case 4:
 	/* Pre-adjust the loop counter.  */
 	operands[4] = GEN_INT (n_bytes - 8);
@@ -2536,7 +2565,7 @@ output_block_move (rtx *operands, int size_is_constant ATTRIBUTE_UNUSED)
    count insns rather than emit them.  */
 
 static int
-compute_movstrsi_length (rtx insn)
+compute_movstr_length (rtx insn)
 {
   rtx pat = PATTERN (insn);
   unsigned int align = INTVAL (XEXP (XVECEXP (pat, 0, 7), 0));
@@ -2545,8 +2574,8 @@ compute_movstrsi_length (rtx insn)
 
   /* We can't move more than four bytes at a time because the PA
      has no longer integer move insns.  (Could use fp mem ops?)  */
-  if (align > 4)
-    align = 4;
+  if (align > (TARGET_64BIT ? 8 : 4))
+    align = (TARGET_64BIT ? 8 : 4);
 
   /* The basic copying loop.  */
   n_insns = 6;
@@ -2559,6 +2588,148 @@ compute_movstrsi_length (rtx insn)
 
       if ((n_bytes % align) != 0)
 	n_insns += 2;
+    }
+
+  /* Lengths are expressed in bytes now; each insn is 4 bytes.  */
+  return n_insns * 4;
+}
+
+/* Emit code to perform a block clear.
+
+   OPERANDS[0] is the destination pointer as a REG, clobbered.
+   OPERANDS[1] is a register for temporary storage.
+   OPERANDS[2] is the size as a CONST_INT
+   OPERANDS[3] is the alignment safe to use, as a CONST_INT.  */
+
+const char *
+output_block_clear (rtx *operands, int size_is_constant ATTRIBUTE_UNUSED)
+{
+  int align = INTVAL (operands[3]);
+  unsigned long n_bytes = INTVAL (operands[2]);
+
+  /* We can't clear more than a word at a time because the PA
+     has no longer integer move insns.  */
+  if (align > (TARGET_64BIT ? 8 : 4))
+    align = (TARGET_64BIT ? 8 : 4);
+
+  /* Note that we know each loop below will execute at least twice
+     (else we would have open-coded the copy).  */
+  switch (align)
+    {
+      case 8:
+	/* Pre-adjust the loop counter.  */
+	operands[2] = GEN_INT (n_bytes - 16);
+	output_asm_insn ("ldi %2,%1", operands);
+
+	/* Loop.  */
+	output_asm_insn ("std,ma %%r0,8(%0)", operands);
+	output_asm_insn ("addib,>= -16,%1,.-4", operands);
+	output_asm_insn ("std,ma %%r0,8(%0)", operands);
+
+	/* Handle the residual.  There could be up to 7 bytes of
+	   residual to copy!  */
+	if (n_bytes % 16 != 0)
+	  {
+	    operands[2] = GEN_INT (n_bytes % 8);
+	    if (n_bytes % 16 >= 8)
+	      output_asm_insn ("std,ma %%r0,8(%0)", operands);
+	    if (n_bytes % 8 != 0)
+	      output_asm_insn ("stdby,e %%r0,%2(%0)", operands);
+	  }
+	return "";
+
+      case 4:
+	/* Pre-adjust the loop counter.  */
+	operands[2] = GEN_INT (n_bytes - 8);
+	output_asm_insn ("ldi %2,%1", operands);
+
+	/* Loop.  */
+	output_asm_insn ("{stws|stw},ma %%r0,4(%0)", operands);
+	output_asm_insn ("addib,>= -8,%1,.-4", operands);
+	output_asm_insn ("{stws|stw},ma %%r0,4(%0)", operands);
+
+	/* Handle the residual.  There could be up to 7 bytes of
+	   residual to copy!  */
+	if (n_bytes % 8 != 0)
+	  {
+	    operands[2] = GEN_INT (n_bytes % 4);
+	    if (n_bytes % 8 >= 4)
+	      output_asm_insn ("{stws|stw},ma %%r0,4(%0)", operands);
+	    if (n_bytes % 4 != 0)
+	      output_asm_insn ("{stbys|stby},e %%r0,%2(%0)", operands);
+	  }
+	return "";
+
+      case 2:
+	/* Pre-adjust the loop counter.  */
+	operands[2] = GEN_INT (n_bytes - 4);
+	output_asm_insn ("ldi %2,%1", operands);
+
+	/* Loop.  */
+	output_asm_insn ("{sths|sth},ma %%r0,2(%0)", operands);
+	output_asm_insn ("addib,>= -4,%1,.-4", operands);
+	output_asm_insn ("{sths|sth},ma %%r0,2(%0)", operands);
+
+	/* Handle the residual.  */
+	if (n_bytes % 4 != 0)
+	  {
+	    if (n_bytes % 4 >= 2)
+	      output_asm_insn ("{sths|sth},ma %%r0,2(%0)", operands);
+	    if (n_bytes % 2 != 0)
+	      output_asm_insn ("stb %%r0,0(%0)", operands);
+	  }
+	return "";
+
+      case 1:
+	/* Pre-adjust the loop counter.  */
+	operands[2] = GEN_INT (n_bytes - 2);
+	output_asm_insn ("ldi %2,%1", operands);
+
+	/* Loop.  */
+	output_asm_insn ("{stbs|stb},ma %%r0,1(%0)", operands);
+	output_asm_insn ("addib,>= -2,%1,.-4", operands);
+	output_asm_insn ("{stbs|stb},ma %%r0,1(%0)", operands);
+
+	/* Handle the residual.  */
+	if (n_bytes % 2 != 0)
+	  output_asm_insn ("stb %%r0,0(%0)", operands);
+
+	return "";
+
+      default:
+	abort ();
+    }
+}
+
+/* Count the number of insns necessary to handle this block move.
+
+   Basic structure is the same as emit_block_move, except that we
+   count insns rather than emit them.  */
+
+static int
+compute_clrstr_length (rtx insn)
+{
+  rtx pat = PATTERN (insn);
+  unsigned int align = INTVAL (XEXP (XVECEXP (pat, 0, 4), 0));
+  unsigned long n_bytes = INTVAL (XEXP (XVECEXP (pat, 0, 3), 0));
+  unsigned int n_insns = 0;
+
+  /* We can't clear more than a word at a time because the PA
+     has no longer integer move insns.  */
+  if (align > (TARGET_64BIT ? 8 : 4))
+    align = (TARGET_64BIT ? 8 : 4);
+
+  /* The basic loop.  */
+  n_insns = 4;
+
+  /* Residuals.  */
+  if (n_bytes % (2 * align) != 0)
+    {
+      if ((n_bytes % (2 * align)) >= align)
+	n_insns++;
+
+      if ((n_bytes % align) != 0)
+	n_insns++;
     }
 
   /* Lengths are expressed in bytes now; each insn is 4 bytes.  */
@@ -4337,7 +4508,15 @@ pa_adjust_insn_length (rtx insn, int length)
 	   && GET_CODE (XEXP (XVECEXP (pat, 0, 0), 1)) == MEM
 	   && GET_MODE (XEXP (XVECEXP (pat, 0, 0), 0)) == BLKmode
 	   && GET_MODE (XEXP (XVECEXP (pat, 0, 0), 1)) == BLKmode)
-    return compute_movstrsi_length (insn) - 4;
+    return compute_movstr_length (insn) - 4;
+  /* Block clear pattern.  */
+  else if (GET_CODE (insn) == INSN
+	   && GET_CODE (pat) == PARALLEL
+	   && GET_CODE (XVECEXP (pat, 0, 0)) == SET
+	   && GET_CODE (XEXP (XVECEXP (pat, 0, 0), 0)) == MEM
+	   && XEXP (XVECEXP (pat, 0, 0), 1) == const0_rtx
+	   && GET_MODE (XEXP (XVECEXP (pat, 0, 0), 0)) == BLKmode)
+    return compute_clrstr_length (insn) - 4;
   /* Conditional branch with an unfilled delay slot.  */
   else if (GET_CODE (insn) == JUMP_INSN && ! simplejump_p (insn))
     {

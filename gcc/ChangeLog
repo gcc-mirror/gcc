@@ -1,3 +1,23 @@
+2003-11-08  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR optimization/12630
+	* pa.c (compute_movstrsi_length): Rename to compute_movstr_length.
+	Handle length computation 64-bit moves.
+	(compute_clrstr_length, output_block_clear): Implement block clear.
+	(output_block_move): Handle 64-bit moves.
+	(pa_adjust_insn_length): Use compute_movstr_length and
+	compute_clrstr_length.
+	* pa.md (movstrsi): Revise operand order and comments.  Don't use
+	match_scratch.
+	(movstrsi_internal): Delete.
+	(movstrsi_prereload, movstrsi_postreload): New insns.  Define splitter
+	and peephole2 patterns to transform prereload to postreload form.
+	(movstrdi, movstrdi_prereload, movstrdi_postreload, clrstrsi,
+	clrstrsi_prereload, clrstrsi_postreload, clrstrdi, clrstrdi_prereload,
+	clrstrdi_postreload): New patterns for 64-bit block move, and block
+	clear.
+	* pa-protos.h (output_block_clear): New prototype.
+
 2003-11-08  Andreas Schwab  <schwab@suse.de>
 
 	* dbxout.c (current_file): Also wrap inside DBX_DEBUGGING_INFO ||
