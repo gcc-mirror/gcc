@@ -428,13 +428,6 @@ int protect_cleanup_actions_with_terminate;
 
 rtx exception_handler_labels;
 
-/* Nonzero means that __throw was invoked. 
-
-   This is used by the C++ frontend to know if code needs to be emitted
-   for __throw or not.  */
-
-int throw_used;
-
 /* The EH context.  Nonzero if the function has already
    fetched a pointer to the EH context  for exception handling.  */
 
@@ -1200,7 +1193,6 @@ emit_throw ()
 #else
       emit_library_call (throw_libfunc, 0, VOIDmode, 0);
 #endif
-      throw_used = 1;
     }
   emit_barrier ();
 }
