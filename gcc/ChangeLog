@@ -1,3 +1,13 @@
+Sun Feb 18 15:45:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* toplev.c (note_deferral_of_defined_inlined_function): Argument
+	FNDECL may be unused.
+
+	* toplev.c (rest_of_compilation): Don't have CSE skip blocks or
+	follow jumps after first run.
+	If -fexpensive-optimizations rerun CSE after GCSE and iterate until
+	it doesn't change any jumps.
+
 Sun Feb 18 17:05:50 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (rtlanal.o): Depend on hard-reg-set.h.
@@ -9,6 +19,7 @@ Sun Feb 18 17:05:50 2001  Jeffrey A Law  (law@cygnus.com)
 	(rtx_varies_p, rtx_addr_can_trap_p): Similarly.
 
 Sun Feb 18 15:45:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+>>>>>>> 1.9328
 
 	* sibcall.c (optimize_sibling_and_tail_recursive_call): Compare
 	against last real insn in basic block.

@@ -2687,7 +2687,7 @@ note_deferral_of_defined_inline_function (decl)
 
 void
 note_outlining_of_inline_function (fndecl)
-     tree fndecl;
+     tree fndecl ATTRIBUTE_UNUSED;
 {
 #ifdef DWARF2_DEBUGGING_INFO
   /* The DWARF 2 backend tries to reduce debugging bloat by not emitting
@@ -3004,9 +3004,10 @@ rest_of_compilation (decl)
 
       tem = cse_main (insns, max_reg_num (), 0, rtl_dump_file);
 
-      /* If we are not running the second CSE pass, then we are no longer
-	 expecting CSE to be run.  */
-      cse_not_expected = !flag_rerun_cse_after_loop;
+      /* If we are not running more CSE passes, then we are no longer
+	 expecting CSE to be run.  But always rerun it in a cheap mode.  */
+      cse_not_expected = !flag_rerun_cse_after_loop && !flag_gcse;
+      flag_cse_skip_blocks = flag_cse_follow_jumps = 0;
 
       if (tem || optimize > 1)
 	{
@@ -3105,6 +3106,8 @@ rest_of_compilation (decl)
 
   if (optimize > 0 && flag_gcse)
     {
+      int tem2 = 0;
+
       timevar_push (TV_GCSE);
       open_dump_file (DFI_gcse, decl);
 
@@ -3112,14 +3115,34 @@ rest_of_compilation (decl)
       cleanup_cfg (insns);
       tem = gcse_main (insns, rtl_dump_file);
 
-      /* If gcse altered any jumps, rerun jump optimizations to clean
-	 things up.  */
-      if (tem)
+      /* If -fexpensive-optimizations, re-run CSE to clean up things done
+	 by gcse.  */
+      if (flag_expensive_optimizations)
 	{
+	  timevar_push (TV_CSE);
+	  reg_scan (insns, max_reg_num (), 1);
+	  tem2 = cse_main (insns, max_reg_num (), 0, rtl_dump_file);
+	  timevar_pop (TV_CSE);
+	  cse_not_expected = !flag_rerun_cse_after_loop;
+	}
+      
+      /* If gcse or cse altered any jumps, rerun jump optimizations to clean
+	 things up.  Then possibly re-run CSE again.  */
+      while (tem || tem2)
+	{
+	  tem = tem2 = 0;
 	  timevar_push (TV_JUMP);
 	  jump_optimize (insns, !JUMP_CROSS_JUMP, !JUMP_NOOP_MOVES,
 			 !JUMP_AFTER_REGSCAN);
 	  timevar_pop (TV_JUMP);
+
+	  if (flag_expensive_optimizations)
+	    {
+	      timevar_push (TV_CSE);
+	      reg_scan (insns, max_reg_num (), 1);
+	      tem2 = cse_main (insns, max_reg_num (), 0, rtl_dump_file);
+	      timevar_pop (TV_CSE);
+	    }
 	}
 
       close_dump_file (DFI_gcse, print_rtl, insns);
