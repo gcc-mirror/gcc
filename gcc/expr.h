@@ -79,7 +79,9 @@ enum memory_use_mode {MEMORY_USE_BAD = 0, MEMORY_USE_RO = 1,
 
 #ifdef TREE_CODE /* Don't lose if tree.h not included.  */
 /* Structure to record the size of a sequence of arguments
-   as the sum of a tree-expression and a constant.  */
+   as the sum of a tree-expression and a constant.  This structure is
+   also used to store offsets from the stack, which might be negative,
+   so the variable part must be ssizetype, not sizetype.  */
 
 struct args_size
 {
@@ -104,21 +106,21 @@ struct args_size
   if (TREE_CODE (dec) == INTEGER_CST)		\
     (TO).constant -= TREE_INT_CST_LOW (dec);	\
   else if ((TO).var == 0)			\
-    (TO).var = size_binop (MINUS_EXPR, integer_zero_node, dec); \
+    (TO).var = size_binop (MINUS_EXPR, ssize_int (0), dec); \
   else						\
     (TO).var = size_binop (MINUS_EXPR, (TO).var, dec); }
 
-/* Convert the implicit sum in a `struct args_size' into an rtx.  */
-#define ARGS_SIZE_RTX(SIZE)						\
-((SIZE).var == 0 ? GEN_INT ((SIZE).constant)	\
- : expand_expr (size_binop (PLUS_EXPR, (SIZE).var,			\
-			    size_int ((SIZE).constant)),		\
-		NULL_RTX, VOIDmode, EXPAND_MEMORY_USE_BAD))
+/* Convert the implicit sum in a `struct args_size' into a tree
+   of type ssizetype.  */
+#define ARGS_SIZE_TREE(SIZE)					\
+((SIZE).var == 0 ? ssize_int ((SIZE).constant)			\
+ : size_binop (PLUS_EXPR, (SIZE).var, ssize_int ((SIZE).constant)))
 
-/* Convert the implicit sum in a `struct args_size' into a tree.  */
-#define ARGS_SIZE_TREE(SIZE)						\
-((SIZE).var == 0 ? size_int ((SIZE).constant)				\
- : size_binop (PLUS_EXPR, (SIZE).var, size_int ((SIZE).constant)))
+/* Convert the implicit sum in a `struct args_size' into an rtx.  */
+#define ARGS_SIZE_RTX(SIZE)					\
+((SIZE).var == 0 ? GEN_INT ((SIZE).constant)			\
+ : expand_expr (ARGS_SIZE_TREE (SIZE), NULL_RTX, VOIDmode,	\
+		EXPAND_MEMORY_USE_BAD))
 
 /* Supply a default definition for FUNCTION_ARG_PADDING:
    usually pad upward, but pad short args downward on

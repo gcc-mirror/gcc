@@ -1,3 +1,40 @@
+Sun Feb 27 16:40:33 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* class.c (dfs_build_vtable_offset_vtbl_entries): Don't use size_binop
+	on things that are not sizes; ssize_binop deleted.
+	Call size_diffop when appropriate.
+	(dfs_build_vcall_offset_vtbl_entries): Likewise.
+	(build_primary_vtable, build_secondary_vtable): Likewise.
+	(dfs_set_offset_for_unshared_vbases, dfs_modify_vtables): Likewise.
+	Variable I is HOST_WIDE_INT.
+	(get_vfield_offset): Pass proper types to size_binop.
+	(size_extra_vtbl_entries, layout_virtual_bases): Likewise.
+	(finish_struct_1): Likewise.
+	(skip_rtti_stuff): Arg N is now pointer to signed.
+	(layout_class_type): Use size_zero_node.
+	* cp-tree.h (skip_rtti_stuff): Arg N is pointer to signed.
+	* cvt.c (cp_convert_to_pointer): Pass proper types to size_binop.
+	* decl.c (complete_arry_type): Pass proper types to size_binop.
+	(xref_basetypes): BINFO_OFFSET is sizetype.
+	* error.c (dump_expr): Don't use size_binop non-sizes.
+	* expr.c (cplus_expand_constant): Pass proper types to size_binop.
+	* init.c (construct_virtual_bases): Fix type error.
+	(build_vec_delete_1): Pass proper type to size_binop and don't
+	fold result.
+	* lex.c (cp_make_lang_type): BINFO_OFFSET is sizetype.
+	* rtti.c (get_base_offset): Pass proper type to size_binop.
+	* search.c (dfs_find_vbases): Fix type error.
+	(expand_upcast_fixups): Arg to skip_rtti_stuff is pointer to signed.
+	(dfs_get_vbase_types): BINFO_OFFSET is sizetype.
+	* tree.c (debug_binfo): Variable N is signed.
+	Use HOST_WIDE_INT_PRINT_DEC.
+	* typeck.c (comptypes): sizetype is same as equivalent integer type.
+	(c_sizeof, c_sizeof_nowarn, expr_sizeof): Use TYPE_SIZE_UNIT,
+	size_one_node and size_zero_node.
+	(c_alignof): Use size_one_node.
+	(build_component_addr): Pass proper types to size_binop.
+	(expand_ptrmemfunc_cst): Don't use size_binop on non-sizes.
+
 2000-02-26  Jason Merrill  <jason@casey.cygnus.com>
 
 	Implement class scope using-declarations for functions.

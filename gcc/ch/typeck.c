@@ -1,5 +1,6 @@
 /* Build expressions with type checking for CHILL compiler.
-   Copyright (C) 1992, 93, 94, 98, 99, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994, 1998, 1999, 2000
+   Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -215,17 +216,17 @@ build_chill_slice (array, min_value, length)
      
      The static allocation info is passed by using the parent array's
      limits to compute a temp_size, which is passed in the lang_specific
-     field of the slice_type.
-   */
+     field of the slice_type. */
      
   if (TREE_CODE (array_type) == ARRAY_TYPE)
     {
       tree domain_type = TYPE_DOMAIN (array_type);
       tree domain_min = TYPE_MIN_VALUE (domain_type);
-      tree domain_max = fold (build (PLUS_EXPR, domain_type,
-				     domain_min,
-				     size_binop (MINUS_EXPR,
-						 length, integer_one_node)));
+      tree domain_max
+	= fold (build (PLUS_EXPR, domain_type,
+		       domain_min,
+		       fold (build (MINUS_EXPR, integer_type_node,
+				    length, integer_one_node))));
       tree index_type = build_chill_range_type (TYPE_DOMAIN (array_type),
 						domain_min,
 						domain_max);
@@ -408,12 +409,14 @@ build_chill_slice_with_range (array, min_value, max_value)
       && tree_int_cst_lt (max_value, min_value))
     return build_empty_string (TREE_TYPE (TREE_TYPE (array)));
 
-  return build_chill_slice (array, min_value,
-	     save_expr (size_binop (PLUS_EXPR,
-	       size_binop (MINUS_EXPR, max_value, min_value),
-				    integer_one_node)));
+  return
+    build_chill_slice
+      (array, min_value,
+       save_expr (fold (build (PLUS_EXPR, integer_type_node,
+			       fold (build (MINUS_EXPR, integer_type_node,
+					    max_value, min_value)),
+			       integer_one_node))));
 }
-
 
 tree
 build_chill_slice_with_length (array, min_value, length)
@@ -450,9 +453,10 @@ build_chill_slice_with_length (array, min_value, length)
       length = integer_one_node;
     }
 
-  max_index = size_binop (MINUS_EXPR, 
-	        size_binop (PLUS_EXPR, length, min_value),
-			  integer_one_node);
+  max_index = fold (build (MINUS_EXPR, integer_type_node,
+			   fold (build (PLUS_EXPR, integer_type_node,
+					length, min_value)),
+			   integer_one_node));
   max_index = convert_to_class (chill_expr_class (min_value), max_index);
 
   min_value = valid_array_index_p (array, min_value,
@@ -1208,22 +1212,22 @@ build_chill_cast (type, expr)
   return expr;
 }
 
-/*
- * given a set_type, build an integer array from it that C will grok.
- */
+/* Given a set_type, build an integer array from it that C will grok. */
+
 tree
 build_array_from_set (type)
      tree type;
 {
   tree bytespint, bit_array_size, int_array_count;
  
-  if (type == NULL_TREE || type == error_mark_node || TREE_CODE (type) != SET_TYPE)
+  if (type == NULL_TREE || type == error_mark_node
+      || TREE_CODE (type) != SET_TYPE)
     return error_mark_node;
 
-  bytespint = build_int_2 (HOST_BITS_PER_INT / HOST_BITS_PER_CHAR, 0);
+  /* ??? Should this really be *HOST*??  */
+  bytespint = size_int (HOST_BITS_PER_INT / HOST_BITS_PER_CHAR);
   bit_array_size = size_in_bytes (type);
-  int_array_count = fold (size_binop (TRUNC_DIV_EXPR, bit_array_size,
-						 bytespint));
+  int_array_count = size_binop (TRUNC_DIV_EXPR, bit_array_size, bytespint);
   if (integer_zerop (int_array_count))
     int_array_count = size_one_node;
   type = build_array_type (integer_type_node, 
@@ -3371,9 +3375,9 @@ smash_dummy_type (type)
 	    {
 	      tree oldindex = TYPE_DOMAIN (origin);
 	      new_max = check_range (new_max, new_max, NULL_TREE,
-				     size_binop (PLUS_EXPR,
-						 TYPE_MAX_VALUE (oldindex),
-						 integer_one_node));
+				     fold (build (PLUS_EXPR, integer_type_node,
+						  TYPE_MAX_VALUE (oldindex),
+						  integer_one_node)));
 	      origin = build_string_type (TREE_TYPE (origin), new_max);
 	    }
 	  else if (TREE_CODE (origin) == ARRAY_TYPE)

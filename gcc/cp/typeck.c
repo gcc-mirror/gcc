@@ -934,6 +934,18 @@ comptypes (t1, t2, strict)
   if (t2 == error_mark_node)
     return 0;
 
+  /* If this is a strict comparison with a sizetype, the actual types
+     won't be the same (since we need to set TYPE_IS_SIZETYPE, so verify
+     if they are both the same size and signedness.  */
+  if (strict == COMPARE_STRICT
+      && TREE_CODE (t2) == INTEGER_TYPE && TYPE_IS_SIZETYPE (t2) 
+      && TREE_CODE (t1) == INTEGER_TYPE
+      && TREE_UNSIGNED (t1) == TREE_UNSIGNED (t2)
+      && TYPE_MODE (t1) == TYPE_MODE (t2)
+      && TYPE_MIN_VALUE (t1) == TYPE_MIN_VALUE (t2)
+      && TYPE_MAX_VALUE (t1) == TYPE_MAX_VALUE (t2))
+    return 1;
+
   if (strict & COMPARE_RELAXED)
     {
       /* Treat an enum type as the unsigned integer type of the same width.  */
@@ -1539,7 +1551,6 @@ c_sizeof (type)
      tree type;
 {
   enum tree_code code = TREE_CODE (type);
-  tree t;
 
   if (processing_template_decl)
     return build_min (SIZEOF_EXPR, sizetype, type);
@@ -1548,22 +1559,22 @@ c_sizeof (type)
     {
       if (pedantic || warn_pointer_arith)
 	pedwarn ("ISO C++ forbids applying `sizeof' to a function type");
-      return size_int (1);
+      return size_one_node;
     }
   if (code == METHOD_TYPE)
     {
       if (pedantic || warn_pointer_arith)
 	pedwarn ("ISO C++ forbids applying `sizeof' to a member function");
-      return size_int (1);
+      return size_one_node;
     }
   if (code == VOID_TYPE)
     {
       if (pedantic || warn_pointer_arith)
 	pedwarn ("ISO C++ forbids applying `sizeof' to type `void' which is an incomplete type");
-      return size_int (1);
+      return size_one_node;
     }
   if (code == ERROR_MARK)
-    return size_int (1);
+    return size_one_node;
 
   /* ARM $5.3.2: ``When applied to a reference, the result is the size of the
      referenced object.'' */
@@ -1573,23 +1584,19 @@ c_sizeof (type)
   if (code == OFFSET_TYPE)
     {
       cp_error ("`sizeof' applied to non-static member");
-      return size_int (0);
+      return size_zero_node;
     }
 
   if (TYPE_SIZE (complete_type (type)) == 0)
     {
       cp_error ("`sizeof' applied to incomplete type `%T'", type);
-      return size_int (0);
+      return size_zero_node;
     }
 
   /* Convert in case a char is more than one unit.  */
-  t = size_binop (CEIL_DIV_EXPR, TYPE_SIZE (type), 
-		  size_int (TYPE_PRECISION (char_type_node)));
-  t = convert (sizetype, t);
-  /* size_binop does not put the constant in range, so do it now.  */
-  if (TREE_CODE (t) == INTEGER_CST && force_fit_type (t, 0))
-    TREE_CONSTANT_OVERFLOW (t) = TREE_OVERFLOW (t) = 1;
-  return t;
+  return size_binop (CEIL_DIV_EXPR, TYPE_SIZE_UNIT (type),
+		     size_int (TYPE_PRECISION (char_type_node)
+			       / BITS_PER_UNIT));
 }
 
 tree
@@ -1605,12 +1612,12 @@ expr_sizeof (e)
   if (is_overloaded_fn (e))
     {
       pedwarn ("ISO C++ forbids applying `sizeof' to an expression of function type");
-      return size_int (1);
+      return size_one_node;
     }
   else if (type_unknown_p (e))
     {
       incomplete_type_error (e, TREE_TYPE (e));
-      return size_int (1);
+      return size_one_node;
     }
   /* It's illegal to say `sizeof (X::i)' for `i' a non-static data
      member unless you're in a non-static member of X.  So hand off to
@@ -1629,25 +1636,23 @@ c_sizeof_nowarn (type)
      tree type;
 {
   enum tree_code code = TREE_CODE (type);
-  tree t;
 
   if (code == FUNCTION_TYPE
       || code == METHOD_TYPE
       || code == VOID_TYPE
       || code == ERROR_MARK)
-    return size_int (1);
+    return size_one_node;
+
   if (code == REFERENCE_TYPE)
     type = TREE_TYPE (type);
 
   if (TYPE_SIZE (type) == 0)
-    return size_int (0);
+    return size_zero_node;
 
   /* Convert in case a char is more than one unit.  */
-  t = size_binop (CEIL_DIV_EXPR, TYPE_SIZE (type), 
-		  size_int (TYPE_PRECISION (char_type_node)));
-  t = convert (sizetype, t);
-  force_fit_type (t, 0);
-  return t;
+  return size_binop (CEIL_DIV_EXPR, TYPE_SIZE_UNIT (type),
+		     size_int (TYPE_PRECISION (char_type_node)
+			       / BITS_PER_UNIT));
 }
 
 /* Implement the __alignof keyword: Return the minimum required
@@ -1667,7 +1672,7 @@ c_alignof (type)
     return size_int (FUNCTION_BOUNDARY / BITS_PER_UNIT);
 
   if (code == VOID_TYPE || code == ERROR_MARK)
-    return size_int (1);
+    return size_one_node;
 
   /* C++: this is really correct!  */
   if (code == REFERENCE_TYPE)
@@ -4301,7 +4306,7 @@ build_component_addr (arg, argtype)
   if (! integer_zerop (DECL_FIELD_BITPOS (field)))
     {
       tree offset = size_binop (EASY_DIV_EXPR, DECL_FIELD_BITPOS (field),
-				size_int (BITS_PER_UNIT));
+				bitsize_int (BITS_PER_UNIT));
       int flag = TREE_CONSTANT (rval);
       offset = convert (sizetype, offset);
       rval = fold (build (PLUS_EXPR, argtype,
@@ -6287,7 +6292,11 @@ build_ptrmemfunc (type, pfn, force)
 }
 
 /* Return the DELTA, IDX, PFN, and DELTA2 values for the PTRMEM_CST
-   given by CST.  */
+   given by CST.
+
+   ??? There is no consistency as to the types returned for the above
+   values.  Some code acts as if its a sizetype and some as if its
+   integer_type_node.  */
 
 void
 expand_ptrmemfunc_cst (cst, delta, idx, pfn, delta2)
@@ -6315,7 +6324,7 @@ expand_ptrmemfunc_cst (cst, delta, idx, pfn, delta2)
   if (!DECL_VIRTUAL_P (fn))
     {
       if (!flag_new_abi)
-	*idx = size_binop (MINUS_EXPR, integer_zero_node, integer_one_node);
+	*idx = convert (TYPE_PTRMEMFUNC_FN_TYPE (type), build_int_2 (-1, -1));
       else
 	*idx = NULL_TREE;
       *pfn = convert (TYPE_PTRMEMFUNC_FN_TYPE (type), build_addr_func (fn));
@@ -6328,12 +6337,14 @@ expand_ptrmemfunc_cst (cst, delta, idx, pfn, delta2)
          fn; the call will do the opposite adjustment.  */
       tree orig_class = DECL_VIRTUAL_CONTEXT (fn);
       tree binfo = binfo_or_else (orig_class, fn_class);
-      *delta = size_binop (PLUS_EXPR, *delta, BINFO_OFFSET (binfo));
+      *delta = fold (build (PLUS_EXPR, TREE_TYPE (*delta),
+			    *delta, BINFO_OFFSET (binfo)));
 
       if (!flag_new_abi)
 	{
 	  /* Map everything down one to make room for the null PMF.  */
-	  *idx = size_binop (PLUS_EXPR, DECL_VINDEX (fn), integer_one_node);
+	  *idx = fold (build (PLUS_EXPR, integer_type_node,
+			      DECL_VINDEX (fn), integer_one_node));
 	  *pfn = NULL_TREE;
 	}
       else
@@ -6341,14 +6352,17 @@ expand_ptrmemfunc_cst (cst, delta, idx, pfn, delta2)
 	  /* Under the new ABI, we set PFN to twice the index, plus
 	     one.  */
 	  *idx = NULL_TREE;
-	  *pfn = size_binop (MULT_EXPR, DECL_VINDEX (fn), integer_two_node);
-	  *pfn = size_binop (PLUS_EXPR, *pfn, integer_one_node);
-	  *pfn = build1 (NOP_EXPR, TYPE_PTRMEMFUNC_FN_TYPE (type), *pfn);
+	  *pfn = fold (build (MULT_EXPR, integer_type_node,
+			      DECL_VINDEX (fn), integer_two_node));
+	  *pfn = fold (build (PLUS_EXPR, integer_type_node, *pfn,
+			      integer_one_node));
+	  *pfn = fold (build1 (NOP_EXPR, TYPE_PTRMEMFUNC_FN_TYPE (type),
+			       *pfn));
 	}
 
       /* Offset from an object of PTR_CLASS to the vptr for ORIG_CLASS.  */
-      *delta2 = size_binop (PLUS_EXPR, *delta,
-			    get_vfield_offset (TYPE_BINFO (orig_class)));
+      *delta2 = fold (build (PLUS_EXPR, integer_type_node, *delta,
+			     get_vfield_offset (TYPE_BINFO (orig_class))));
     }
 }
 

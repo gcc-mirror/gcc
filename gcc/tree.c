@@ -276,7 +276,6 @@ static void build_real_from_int_cst_1 PARAMS ((PTR));
 static void set_type_quals PARAMS ((tree, int));
 static void append_random_chars PARAMS ((char *));
 static void mark_type_hash PARAMS ((void *));
-static void fix_sizetype PARAMS ((tree));
 
 /* If non-null, these are language-specific helper functions for
    unsave_expr_now.  If present, LANG_UNSAVE is called before its
@@ -5387,6 +5386,8 @@ build_common_tree_nodes (signed_char)
   error_mark_node = make_node (ERROR_MARK);
   TREE_TYPE (error_mark_node) = error_mark_node;
 
+  initialize_sizetypes ();
+
   /* Define both `signed char' and `unsigned char'.  */
   signed_char_type_node = make_signed_type (CHAR_TYPE_SIZE);
   unsigned_char_type_node = make_unsigned_type (CHAR_TYPE_SIZE);
@@ -5401,10 +5402,6 @@ build_common_tree_nodes (signed_char)
   short_integer_type_node = make_signed_type (SHORT_TYPE_SIZE);
   short_unsigned_type_node = make_unsigned_type (SHORT_TYPE_SIZE);
   integer_type_node = make_signed_type (INT_TYPE_SIZE);
-  /* Define an unsigned integer first.  make_unsigned_type and make_signed_type
-     both call set_sizetype for the first type that we create, and we want this
-     to be large enough to hold the sizes of various types until we switch to
-     the real sizetype.  */
   unsigned_type_node = make_unsigned_type (INT_TYPE_SIZE);
   long_integer_type_node = make_signed_type (LONG_TYPE_SIZE);
   long_unsigned_type_node = make_unsigned_type (LONG_TYPE_SIZE);
@@ -5424,47 +5421,13 @@ build_common_tree_nodes (signed_char)
   unsigned_intTI_type_node = make_unsigned_type (GET_MODE_BITSIZE (TImode));
 }
 
-/* For type TYPE, fill in the proper type for TYPE_SIZE and TYPE_SIZE_UNIT.  */
-
-static void
-fix_sizetype (type)
-     tree type;
-{
-  TREE_TYPE (TYPE_SIZE (type)) = bitsizetype;
-  TREE_TYPE (TYPE_SIZE_UNIT (type)) = sizetype;
-}
-
 /* Call this function after calling build_common_tree_nodes and set_sizetype.
-   It will fix the previously made nodes to have proper references to
-   sizetype, and it will create several other common tree nodes.  */
+   It will create several other common tree nodes.  */
 
 void
 build_common_tree_nodes_2 (short_double)
      int short_double;
 {
-  fix_sizetype (signed_char_type_node);
-  fix_sizetype (unsigned_char_type_node);
-  fix_sizetype (char_type_node);
-  fix_sizetype (short_integer_type_node);
-  fix_sizetype (short_unsigned_type_node);
-  fix_sizetype (integer_type_node);
-  fix_sizetype (unsigned_type_node);
-  fix_sizetype (long_unsigned_type_node);
-  fix_sizetype (long_integer_type_node);
-  fix_sizetype (long_long_integer_type_node);
-  fix_sizetype (long_long_unsigned_type_node);
-
-  fix_sizetype (intQI_type_node);
-  fix_sizetype (intHI_type_node);
-  fix_sizetype (intSI_type_node);
-  fix_sizetype (intDI_type_node);
-  fix_sizetype (intTI_type_node);
-  fix_sizetype (unsigned_intQI_type_node);
-  fix_sizetype (unsigned_intHI_type_node);
-  fix_sizetype (unsigned_intSI_type_node);
-  fix_sizetype (unsigned_intDI_type_node);
-  fix_sizetype (unsigned_intTI_type_node);
-
   integer_zero_node = build_int_2 (0, 0);
   TREE_TYPE (integer_zero_node) = integer_type_node;
   integer_one_node = build_int_2 (1, 0);

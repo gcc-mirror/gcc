@@ -274,17 +274,16 @@ dfs_build_vbase_offset_vtbl_entries (binfo, data)
       else
 	{
 	  BINFO_VPTR_FIELD (vbase) = TREE_PURPOSE (TREE_VALUE (list));
-	  BINFO_VPTR_FIELD (vbase) = ssize_binop (MINUS_EXPR,
-						  BINFO_VPTR_FIELD (vbase),
-						  integer_one_node);
+	  BINFO_VPTR_FIELD (vbase)
+	    = fold (build (MINUS_EXPR, integer_type_node,
+			   BINFO_VPTR_FIELD (vbase), integer_one_node));
 	}
 
       /* And record the offset at which this virtual base lies in the
 	 vtable.  */
       init = BINFO_OFFSET (binfo);
       TREE_VALUE (list) = tree_cons (BINFO_VPTR_FIELD (vbase),
-				     init, 
-				     TREE_VALUE (list));
+				     init, TREE_VALUE (list));
     }
 
   SET_BINFO_VTABLE_PATH_MARKED (binfo);
@@ -338,17 +337,14 @@ build_vbase_offset_vtbl_entries (binfo, t)
      object, and we need offsets from this BINFO.  */
   for (init = inits; init; init = TREE_CHAIN (init))
     {
-      tree exp = TREE_VALUE (init);
-
-      exp = ssize_binop (MINUS_EXPR, exp, BINFO_OFFSET (binfo));
-      exp = build1 (NOP_EXPR, vtable_entry_type, exp);
-      exp = fold (exp);
-      TREE_CONSTANT (exp) = 1;
       /* The dfs_build_vbase_offset_vtbl_entries routine uses the
 	 TREE_PURPOSE to scribble in.  But, we need to clear it now so
 	 that the values are not perceived as labeled initializers.  */
       TREE_PURPOSE (init) = NULL_TREE;
-      TREE_VALUE (init) = exp;
+      TREE_VALUE (init)
+	= fold (build1 (NOP_EXPR, vtable_entry_type,
+			size_diffop (TREE_VALUE (init),
+				     BINFO_OFFSET (binfo))));
     }
 
   return inits;
@@ -406,25 +402,19 @@ dfs_build_vcall_offset_vtbl_entries (binfo, data)
        virtuals;
        virtuals = TREE_CHAIN (virtuals))
     {
-      tree fn;
-      tree base;
-      tree base_binfo;
-      tree offset;
-
       /* Figure out what function we're looking at.  */
-      fn = TREE_VALUE (virtuals);
-      base = DECL_CONTEXT (fn);
-
+      tree fn = TREE_VALUE (virtuals);
+      tree base = DECL_CONTEXT (fn);
       /* The FN comes from BASE.  So, we must caculate the adjustment
 	 from the virtual base that derived from BINFO to BASE.  */
-      base_binfo = get_binfo (base, vod->derived, /*protect=*/0);
-      offset = ssize_binop (MINUS_EXPR,
-			    BINFO_OFFSET (base_binfo),
-			    BINFO_OFFSET (vod->vbase));
-      offset = build1 (NOP_EXPR, vtable_entry_type, offset);
-      offset = fold (offset);
-      TREE_CONSTANT (offset) = 1;
-      binfo_inits = tree_cons (NULL_TREE, offset, binfo_inits);
+      tree base_binfo = get_binfo (base, vod->derived, /*protect=*/0);
+
+      binfo_inits
+	= tree_cons (NULL_TREE,
+		     fold (build1 (NOP_EXPR, vtable_entry_type,
+				   size_diffop (BINFO_OFFSET (base_binfo),
+						BINFO_OFFSET (vod->vbase)))),
+		     binfo_inits);
     }
 
   /* Now add the initializers we've just created to the list that will
@@ -634,11 +624,10 @@ build_vbase_path (code, type, expr, path, nonnull)
   if (changed)
     {
       tree intype = TREE_TYPE (TREE_TYPE (expr));
+
       if (TYPE_MAIN_VARIANT (intype) != BINFO_TYPE (last))
-	{
-	  tree binfo = get_binfo (last, TYPE_MAIN_VARIANT (intype), 0);
-	  offset = BINFO_OFFSET (binfo);
-	}
+	offset
+	  = BINFO_OFFSET (get_binfo (last, TYPE_MAIN_VARIANT (intype), 0));
     }
   else
     offset = BINFO_OFFSET (last);
@@ -647,10 +636,6 @@ build_vbase_path (code, type, expr, path, nonnull)
     {
       /* Bash types to make the backend happy.  */
       offset = cp_convert (type, offset);
-#if 0
-      /* This shouldn't be necessary.  (mrs) */
-      expr = build1 (NOP_EXPR, type, expr);
-#endif
 
       /* If expr might be 0, we need to preserve that zeroness.  */
       if (nonnull == 0)
@@ -921,16 +906,18 @@ get_vfield_offset (binfo)
   tree tmp
     = size_binop (FLOOR_DIV_EXPR,
 		  DECL_FIELD_BITPOS (TYPE_VFIELD (BINFO_TYPE (binfo))),
-		  size_int (BITS_PER_UNIT));
-  tmp = convert (sizetype, tmp);
-  return size_binop (PLUS_EXPR, tmp, BINFO_OFFSET (binfo));
+		  bitsize_int (BITS_PER_UNIT));
+
+  return size_binop (PLUS_EXPR, convert (sizetype, tmp),
+		     BINFO_OFFSET (binfo));
 }
 
 /* Get the offset to the start of the original binfo that we derived
    this binfo from.  If we find TYPE first, return the offset only
    that far.  The shortened search is useful because the this pointer
    on method calling is expected to point to a DECL_CONTEXT (fndecl)
-   object, and not a baseclass of it.  */
+   object, and not a baseclass of it.   */
+
 
 static tree
 get_derived_offset (binfo, type)
@@ -939,14 +926,16 @@ get_derived_offset (binfo, type)
   tree offset1 = get_vfield_offset (TYPE_BINFO (BINFO_TYPE (binfo)));
   tree offset2;
   int i;
+
   while (BINFO_BASETYPES (binfo)
-	 && (i=CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (binfo))) != -1)
+	 && (i = CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (binfo))) != -1)
     {
       tree binfos = BINFO_BASETYPES (binfo);
       if (BINFO_TYPE (binfo) == type)
 	break;
       binfo = TREE_VEC_ELT (binfos, i);
     }
+
   offset2 = get_vfield_offset (TYPE_BINFO (BINFO_TYPE (binfo)));
   return size_binop (MINUS_EXPR, offset1, offset2);
 }
@@ -1085,7 +1074,7 @@ build_primary_vtable (binfo, type)
 
       /* Now do rtti stuff.  */
       offset = get_derived_offset (TYPE_BINFO (type), NULL_TREE);
-      offset = ssize_binop (MINUS_EXPR, integer_zero_node, offset);
+      offset = size_diffop (size_zero_node, offset);
       set_rtti_entry (virtuals, offset, type);
     }
   else
@@ -1175,7 +1164,7 @@ build_secondary_vtable (binfo, for_type)
     offset = BINFO_OFFSET (binfo);
 
   set_rtti_entry (BINFO_VIRTUALS (binfo),
-		  ssize_binop (MINUS_EXPR, integer_zero_node, offset),
+		  size_diffop (size_zero_node, offset),
 		  for_type);
 
   /* In the new ABI, secondary vtables are laid out as part of the
@@ -2620,12 +2609,8 @@ tree
 size_extra_vtbl_entries (binfo)
      tree binfo;
 {
-  tree offset;
-
-  offset = size_binop (EXACT_DIV_EXPR,
-		       TYPE_SIZE (vtable_entry_type),
-		       size_int (BITS_PER_UNIT));
-  offset = size_binop (MULT_EXPR, offset, num_extra_vtbl_entries (binfo));
+  tree offset = size_binop (MULT_EXPR, TYPE_SIZE_UNIT (vtable_entry_type),
+			    num_extra_vtbl_entries (binfo));
   return fold (offset);
 }
 
@@ -3039,7 +3024,7 @@ tree
 skip_rtti_stuff (binfo, t, n)
      tree binfo;
      tree t;
-     unsigned HOST_WIDE_INT *n;
+     HOST_WIDE_INT *n;
 {
   tree virtuals;
 
@@ -3121,7 +3106,7 @@ dfs_modify_vtables (binfo, data)
 	  tree overrider;
 	  tree vindex;
 	  tree delta;
-	  int i;
+	  HOST_WIDE_INT i;
 
 	  /* Find the function which originally caused this vtable
 	     entry to be present.  */
@@ -3151,9 +3136,7 @@ dfs_modify_vtables (binfo, data)
 			      get_derived_offset (binfo,
 						  DECL_VIRTUAL_CONTEXT (fn)),
 			      BINFO_OFFSET (binfo));
-	  delta = ssize_binop (MINUS_EXPR,
-			       BINFO_OFFSET (TREE_VALUE (overrider)),
-			       delta);
+	  delta = size_diffop (BINFO_OFFSET (TREE_VALUE (overrider)), delta);
 
 	  modify_vtable_entry (t, 
 			       binfo, 
@@ -4568,8 +4551,7 @@ dfs_propagate_binfo_offsets (binfo, data)
   tree offset = (tree) data;
 
   /* Update the BINFO_OFFSET for this base.  */
-  BINFO_OFFSET (binfo) 
-    = size_binop (PLUS_EXPR, BINFO_OFFSET (binfo), offset);
+  BINFO_OFFSET (binfo) = size_binop (PLUS_EXPR, BINFO_OFFSET (binfo), offset);
 
   SET_BINFO_MARKED (binfo);
 
@@ -4714,9 +4696,8 @@ dfs_set_offset_for_unshared_vbases (binfo, data)
       tree offset;
       
       vbase = BINFO_FOR_VBASE (BINFO_TYPE (binfo), t);
-      offset = ssize_binop (MINUS_EXPR, 
-			    BINFO_OFFSET (vbase),
-			    BINFO_OFFSET (binfo));
+      offset = size_binop (MINUS_EXPR, 
+			   BINFO_OFFSET (vbase), BINFO_OFFSET (binfo));
       propagate_binfo_offsets (binfo, offset);
     }
 
@@ -4789,9 +4770,10 @@ layout_virtual_bases (t)
   /* Now, make sure that the total size of the type is a multiple of
      its alignment.  */
   dsize = CEIL (dsize, TYPE_ALIGN (t)) * TYPE_ALIGN (t);
-  TYPE_SIZE (t) = size_int (dsize);
-  TYPE_SIZE_UNIT (t) = size_binop (FLOOR_DIV_EXPR, TYPE_SIZE (t),
-				   size_int (BITS_PER_UNIT));
+  TYPE_SIZE (t) = bitsize_int (dsize);
+  TYPE_SIZE_UNIT (t) = convert (sizetype,
+				size_binop (FLOOR_DIV_EXPR, TYPE_SIZE (t),
+					    bitsize_int (BITS_PER_UNIT)));
 }
 
 /* Finish the work of layout_record, now taking virtual bases into account.
@@ -4915,7 +4897,7 @@ layout_class_type (t, empty_p, has_virtual_p,
   if (*empty_p && flag_new_abi)
     {
       CLASSTYPE_SIZE (t) = bitsize_int (0);
-      CLASSTYPE_SIZE_UNIT (t) = size_int (0);
+      CLASSTYPE_SIZE_UNIT (t) = size_zero_node;
     }
   else if (flag_new_abi && TYPE_HAS_COMPLEX_INIT_REF (t)
 	   && TYPE_HAS_COMPLEX_ASSIGN_REF (t))
@@ -5026,13 +5008,14 @@ finish_struct_1 (t)
       && DECL_FIELD_CONTEXT (vfield) != t)
     {
       tree binfo = get_binfo (DECL_FIELD_CONTEXT (vfield), t, 0);
-      tree offset = BINFO_OFFSET (binfo);
+      tree offset = convert (bitsizetype, BINFO_OFFSET (binfo));
 
       vfield = copy_node (vfield);
       copy_lang_decl (vfield);
 
       if (! integer_zerop (offset))
-	offset = size_binop (MULT_EXPR, offset, size_int (BITS_PER_UNIT));
+	offset = size_binop (MULT_EXPR, offset, bitsize_int (BITS_PER_UNIT));
+
       DECL_FIELD_CONTEXT (vfield) = t;
       DECL_FIELD_BITPOS (vfield)
 	= size_binop (PLUS_EXPR, offset, DECL_FIELD_BITPOS (vfield));

@@ -1,3 +1,12 @@
+Sun Feb 27 16:40:33 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* com.c (ffecom_arrayref_): Convert args to size_binop to proper type.
+	(ffecom_tree_canonize_ptr_): Don't use size_binop for non-sizes.
+	(ffecom_tree_canonize_ref_): Likewise.
+	(type_for_mode): Handle TImode.
+	* ste.c (ffeste_io_dofio_, ffeste_io_douio_): Use TYPE_SIZE_UNIT.
+	(ffeste_io_ciclist_): Likewise.
+
 2000-02-23  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* com.c (ffecom_type_permanent_copy_): Delete unused function.

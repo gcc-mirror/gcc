@@ -63,13 +63,12 @@ cplus_expand_constant (cst)
 	    offset = convert (sizetype,
 			      size_binop (EASY_DIV_EXPR,
 					  DECL_FIELD_BITPOS (member),
-					  size_int (BITS_PER_UNIT)));
+					  bitsize_int (BITS_PER_UNIT)));
 
 	    /* We offset all pointer to data members by 1 so that we
 	       can distinguish between a null pointer to data member
 	       and the first data member of a structure.  */
-	    offset = size_binop (PLUS_EXPR, offset, size_int (1));
-	
+	    offset = size_binop (PLUS_EXPR, offset, size_one_node);
 	    cst = cp_convert (type, offset);
 	  }
 	else

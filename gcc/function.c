@@ -4835,8 +4835,8 @@ assign_parms (fndecl)
 #ifdef ARGS_GROW_DOWNWARD
   current_function_arg_offset_rtx
     = (stack_args_size.var == 0 ? GEN_INT (-stack_args_size.constant)
-       : expand_expr (size_binop (MINUS_EXPR, stack_args_size.var,	
-				  size_int (-stack_args_size.constant)),   
+       : expand_expr (size_diffop (stack_args_size.var,	
+				   size_int (-stack_args_size.constant)),   
 		      NULL_RTX, VOIDmode, EXPAND_MEMORY_USE_BAD));
 #else
   current_function_arg_offset_rtx = ARGS_SIZE_RTX (stack_args_size);
@@ -4968,7 +4968,7 @@ locate_and_pad_parm (passed_mode, type, in_regs, fndecl,
 	    {
 	      initial_offset_ptr->var
 		= size_binop (MAX_EXPR, ARGS_SIZE_TREE (*initial_offset_ptr),
-			      size_int (reg_parm_stack_space));
+			      ssize_int (reg_parm_stack_space));
 	      initial_offset_ptr->constant = 0;
 	    }
 	  else if (initial_offset_ptr->constant < reg_parm_stack_space)
@@ -4984,7 +4984,7 @@ locate_and_pad_parm (passed_mode, type, in_regs, fndecl,
   if (initial_offset_ptr->var)
     {
       offset_ptr->constant = 0;
-      offset_ptr->var = size_binop (MINUS_EXPR, integer_zero_node,
+      offset_ptr->var = size_binop (MINUS_EXPR, ssize_int (0),
 				    initial_offset_ptr->var);
     }
   else
@@ -5000,18 +5000,16 @@ locate_and_pad_parm (passed_mode, type, in_regs, fndecl,
   if (where_pad != downward)
     pad_to_arg_alignment (offset_ptr, boundary, alignment_pad);
   if (initial_offset_ptr->var)
-    {
-      arg_size_ptr->var = size_binop (MINUS_EXPR,
-				      size_binop (MINUS_EXPR,
-						  integer_zero_node,
-						  initial_offset_ptr->var),
-				      offset_ptr->var);
-    }
+    arg_size_ptr->var = size_binop (MINUS_EXPR,
+				    size_binop (MINUS_EXPR,
+						ssize_int (0),
+						initial_offset_ptr->var),
+				    offset_ptr->var);
+
   else
-    {
-      arg_size_ptr->constant = (- initial_offset_ptr->constant
-				- offset_ptr->constant); 
-    }
+    arg_size_ptr->constant = (- initial_offset_ptr->constant
+			      - offset_ptr->constant); 
+
 #else /* !ARGS_GROW_DOWNWARD */
   pad_to_arg_alignment (initial_offset_ptr, boundary, alignment_pad);
   *offset_ptr = *initial_offset_ptr;
@@ -5075,7 +5073,8 @@ pad_to_arg_alignment (offset_ptr, boundary, alignment_pad)
 	       boundary / BITS_PER_UNIT);
 	  offset_ptr->constant = 0; /*?*/
           if (boundary > PARM_BOUNDARY && boundary > STACK_BOUNDARY)
-            alignment_pad->var = size_binop (MINUS_EXPR, offset_ptr->var, save_var);
+            alignment_pad->var = size_binop (MINUS_EXPR, offset_ptr->var,
+					     save_var);
 	}
       else
         {
@@ -5118,18 +5117,6 @@ pad_below (offset_ptr, passed_mode, sizetree)
 	  SUB_PARM_SIZE (*offset_ptr, sizetree);
 	}
     }
-}
-#endif
-
-#ifdef ARGS_GROW_DOWNWARD
-static tree
-round_down (value, divisor)
-     tree value;
-     int divisor;
-{
-  return size_binop (MULT_EXPR,
-		     size_binop (FLOOR_DIV_EXPR, value, size_int (divisor)),
-		     size_int (divisor));
 }
 #endif
 

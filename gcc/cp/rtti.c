@@ -1,6 +1,6 @@
 /* RunTime Type Identification
-   Copyright (C) 1995, 1996, 1997, 1998, 
-   1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000
+   Free Software Foundation, Inc.
    Mostly written by Jason Merrill (jason@cygnus.com).
 
 This file is part of GNU CC.
@@ -559,7 +559,7 @@ get_base_offset (binfo, parent)
       field = lookup_field (parent, get_identifier (name), 0, 0);
       offset = size_binop (FLOOR_DIV_EXPR, 
     		           DECL_FIELD_BITPOS (field), 
-    		           size_int (BITS_PER_UNIT));
+    		           bitsize_int (BITS_PER_UNIT));
       offset = convert (sizetype, offset);
     }
   else

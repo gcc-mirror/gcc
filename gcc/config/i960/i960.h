@@ -493,7 +493,11 @@ extern int target_flags;
 
 #define ROUND_TYPE_SIZE(TYPE, COMPUTED, SPECIFIED)		\
   ((TREE_CODE (TYPE) == REAL_TYPE && TYPE_MODE (TYPE) == XFmode)	\
-   ? build_int_2 (128, 0) : round_up (COMPUTED, SPECIFIED))
+   ? bitsize_int (128) : round_up (COMPUTED, SPECIFIED))
+#define ROUND_TYPE_SIZE_UNIT(TYPE, COMPUTED, SPECIFIED)		\
+  ((TREE_CODE (TYPE) == REAL_TYPE && TYPE_MODE (TYPE) == XFmode)	\
+   ? bitsize_int (16) : round_up (COMPUTED, SPECIFIED))
+
 
 /* Standard register usage.  */
 

@@ -1,6 +1,6 @@
 /* Breadth-first and depth-first routines for
    searching multiple-inheritance lattice for GNU C++.
-   Copyright (C) 1987, 89, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
+   Copyright (C) 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
    1999, 2000 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
@@ -2704,10 +2704,11 @@ dfs_find_vbases (binfo, data)
 	{
 	  tree vbase = BINFO_TYPE (base_binfo);
 	  tree binfo = binfo_member (vbase, vi->vbase_types);
+	  tree ptr_type = build_pointer_type (vbase);
 
 	  CLASSTYPE_SEARCH_SLOT (vbase)
-	    = build (PLUS_EXPR, build_pointer_type (vbase),
-		     vi->decl_ptr, BINFO_OFFSET (binfo));
+	    = build (PLUS_EXPR, ptr_type, vi->decl_ptr,
+		     convert (ptr_type, BINFO_OFFSET (binfo)));
 	}
     }
   SET_BINFO_VTABLE_PATH_MARKED (binfo);
@@ -2895,7 +2896,7 @@ expand_upcast_fixups (binfo, addr, orig_addr, vbase, vbase_addr, t,
   tree virtuals;
   tree vc;
   tree delta;
-  unsigned HOST_WIDE_INT n;
+  HOST_WIDE_INT n;
 
   while (BINFO_PRIMARY_MARKED_P (binfo))
     {
@@ -3153,7 +3154,7 @@ dfs_get_vbase_types (binfo, data)
 
   if (TREE_VIA_VIRTUAL (binfo) && ! BINFO_VBASE_MARKED (binfo))
     {
-      tree new_vbase = make_binfo (integer_zero_node, 
+      tree new_vbase = make_binfo (size_zero_node, 
 				   BINFO_TYPE (binfo),
 				   BINFO_VTABLE (binfo),
 				   BINFO_VIRTUALS (binfo));

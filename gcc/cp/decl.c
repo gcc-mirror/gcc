@@ -8244,13 +8244,14 @@ complete_array_type (type, initial_value, do_default)
       else if (TREE_CODE (initial_value) == CONSTRUCTOR)
 	{
 	  tree elts = CONSTRUCTOR_ELTS (initial_value);
-	  maxindex = size_binop (MINUS_EXPR, integer_zero_node, size_one_node);
+
+	  maxindex = ssize_int (-1);
 	  for (; elts; elts = TREE_CHAIN (elts))
 	    {
 	      if (TREE_PURPOSE (elts))
 		maxindex = TREE_PURPOSE (elts);
 	      else
-		maxindex = size_binop (PLUS_EXPR, maxindex, size_one_node);
+		maxindex = size_binop (PLUS_EXPR, maxindex, ssize_int (1));
 	    }
 	  maxindex = copy_node (maxindex);
 	}
@@ -12481,7 +12482,7 @@ xref_basetypes (code_type_node, name, ref, binfo)
 	     the `accessibility' of that particular inheritance is.)  */
 
 	  base_binfo
-	    = make_binfo (integer_zero_node, basetype,
+	    = make_binfo (size_zero_node, basetype,
 			  CLASS_TYPE_P (basetype)
 			  ? TYPE_BINFO_VTABLE (basetype) : NULL_TREE,
 			  CLASS_TYPE_P (basetype)

@@ -1,3 +1,17 @@
+Sun Feb 27 16:40:33 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* actions.c (chill_convert_for_assignment): Don't use size_binop
+	for things that aren't sizes.
+	(expand_varying_length_assignment): Likewise.
+	* convert.c (digest_array_tuple, convert): Likewise.
+	* typeck.c (build_chill_slice, smash_dummy_type): Likewise.
+	(build_chill_slice_with_range): Likewise.
+	(build_chill_slice_with_length): Likewise.
+	(build_array_from_set): Adjust types for size_binop.
+	* expr.c (build_concat_expr, build_chill_repetition_op): Likewise.
+	(build_chill_sizeof): Use TYPE_SIZE_UNIT.
+	* tree.c (build_string_type): Pass proper type to size_binop.
+
 Sat Feb 19 18:43:13 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* decl.c (layout_enum): Set DECL_SIZE_UNIT.	

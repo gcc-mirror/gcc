@@ -1,4 +1,5 @@
-@c Copyright (C) 1988,1989,1992,1993,1994,1995,1996,1997,1998,1999,2000 Free Software Foundation, Inc.
+@c Copyright (C) 1988,1989,1992,1993,1994,1995,1996,1997,1998,1999,2000
+@c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -1000,6 +1001,13 @@ Define this macro as an expression for the overall size of a type
 usual way is @var{computed} and the alignment is @var{specified}.
 
 The default is to round @var{computed} up to a multiple of @var{specified}.
+
+@findex ROUND_TYPE_SIZE_UNIT
+@item ROUND_TYPE_SIZE_UNIT (@var{type}, @var{computed}, @var{specified})
+Similar to @code{ROUND_TYPE_SIZE}, but sizes and alignments are
+specified in units (bytes).  If you define @code{ROUND_TYPE_SIZE},
+you must also define this macro and they must be defined consistently
+with each other.
 
 @findex ROUND_TYPE_ALIGN
 @item ROUND_TYPE_ALIGN (@var{type}, @var{computed}, @var{specified})

@@ -579,7 +579,7 @@ build_java_ret (location)
   size_binop (CEIL_DIV_EXPR, 						   \
 	      (DECL_FIELD_BITPOS					   \
 		  (TREE_CHAIN (TYPE_FIELDS (TREE_TYPE (TREE_TYPE (A)))))), \
-              size_int (BITS_PER_UNIT))
+              bitsize_int (BITS_PER_UNIT))
 
 tree
 decode_newarray_type (atype)

@@ -3864,8 +3864,7 @@ store_expr (exp, target, want_value)
 	      tree copy_size
 		= size_binop (MIN_EXPR,
 			      make_tree (sizetype, size),
-			      convert (sizetype,
-				       build_int_2 (TREE_STRING_LENGTH (exp), 0)));
+			      size_int (TREE_STRING_LENGTH (exp)));
 	      rtx copy_size_rtx = expand_expr (copy_size, NULL_RTX,
 					       VOIDmode, 0);
 	      rtx label = 0;
@@ -4215,11 +4214,12 @@ store_constructor (exp, target, align, cleared, size)
 	      rtx offset_rtx;
 
 	      if (contains_placeholder_p (offset))
-		offset = build (WITH_RECORD_EXPR, sizetype,
+		offset = build (WITH_RECORD_EXPR, bitsizetype,
 				offset, make_tree (TREE_TYPE (exp), target));
 
 	      offset = size_binop (EXACT_DIV_EXPR, offset,
-				   size_int (BITS_PER_UNIT));
+				   bitsize_int (BITS_PER_UNIT));
+	      offset = convert (sizetype, offset);
 
 	      offset_rtx = expand_expr (offset, NULL_RTX, VOIDmode, 0);
 	      if (GET_CODE (to_rtx) != MEM)
@@ -4435,12 +4435,14 @@ store_constructor (exp, target, align, cleared, size)
 		  loop = expand_start_loop (0);
 
 		  /* Assign value to element index.  */
-		  position = size_binop (EXACT_DIV_EXPR, TYPE_SIZE (elttype),
-					 size_int (BITS_PER_UNIT));
-		  position = size_binop (MULT_EXPR,
-					 size_binop (MINUS_EXPR, index,
-						     TYPE_MIN_VALUE (domain)),
-					 position);
+		  position
+		    = convert (ssizetype,
+			       fold (build (MINUS_EXPR, TREE_TYPE (index),
+					    index, TYPE_MIN_VALUE (domain))));
+		  position = size_binop (MULT_EXPR, position,
+					 convert (ssizetype,
+						  TYPE_SIZE_UNIT (elttype)));
+
 		  pos_rtx = expand_expr (position, 0, VOIDmode, 0);
 		  addr = gen_rtx_PLUS (Pmode, XEXP (target, 0), pos_rtx);
 		  xtarget = change_address (target, mode, addr);
@@ -4473,14 +4475,15 @@ store_constructor (exp, target, align, cleared, size)
 	      tree position;
 
 	      if (index == 0)
-		index = size_int (i);
+		index = ssize_int (1);
 
 	      if (minelt)
-		index = size_binop (MINUS_EXPR, index,
-				    TYPE_MIN_VALUE (domain));
-	      position = size_binop (EXACT_DIV_EXPR, TYPE_SIZE (elttype),
-				     size_int (BITS_PER_UNIT));
-	      position = size_binop (MULT_EXPR, index, position);
+		index = convert (ssizetype,
+				 fold (build (MINUS_EXPR, index,
+					      TYPE_MIN_VALUE (domain))));
+	      position = size_binop (MULT_EXPR, index,
+				     convert (ssizetype,
+					      TYPE_SIZE_UNIT (elttype)));
 	      pos_rtx = expand_expr (position, 0, VOIDmode, 0);
 	      addr = gen_rtx_PLUS (Pmode, XEXP (target, 0), pos_rtx);
 	      xtarget = change_address (target, mode, addr);
@@ -4528,8 +4531,8 @@ store_constructor (exp, target, align, cleared, size)
       domain_min = convert (sizetype, TYPE_MIN_VALUE (domain));
       domain_max = convert (sizetype, TYPE_MAX_VALUE (domain));
       bitlength = size_binop (PLUS_EXPR,
-			      size_binop (MINUS_EXPR, domain_max, domain_min),
-			      size_one_node);
+			      size_diffop (domain_max, domain_min),
+			      ssize_int (1));
 
       if (nbytes < 0 || TREE_CODE (bitlength) != INTEGER_CST)
 	abort ();
@@ -4930,7 +4933,7 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
   tree orig_exp = exp;
   tree size_tree = 0;
   enum machine_mode mode = VOIDmode;
-  tree offset = integer_zero_node;
+  tree offset = size_zero_node;
   unsigned int alignment = BIGGEST_ALIGNMENT;
 
   if (TREE_CODE (exp) == COMPONENT_REF)
@@ -4975,7 +4978,7 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
 	  tree pos = (TREE_CODE (exp) == COMPONENT_REF
 		      ? DECL_FIELD_BITPOS (TREE_OPERAND (exp, 1))
 		      : TREE_OPERAND (exp, 2));
-	  tree constant = integer_zero_node, var = pos;
+	  tree constant = bitsize_int (0), var = pos;
 
 	  /* If this field hasn't been filled in yet, don't go
 	     past it.  This should only happen when folding expressions
@@ -4989,12 +4992,14 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
 	      && TREE_CODE (TREE_OPERAND (pos, 1)) == INTEGER_CST)
 	    constant = TREE_OPERAND (pos, 1), var = TREE_OPERAND (pos, 0);
 	  else if (TREE_CODE (pos) == INTEGER_CST)
-	    constant = pos, var = integer_zero_node;
+	    constant = pos, var = bitsize_int (0);
 
 	  *pbitpos += TREE_INT_CST_LOW (constant);
-	  offset = size_binop (PLUS_EXPR, offset,
-			       size_binop (EXACT_DIV_EXPR, var,
-					   size_int (BITS_PER_UNIT)));
+	  offset
+	    = size_binop (PLUS_EXPR, offset,
+			  convert (sizetype,
+				   size_binop (EXACT_DIV_EXPR, var,
+					       bitsize_int (BITS_PER_UNIT))));
 	}
 
       else if (TREE_CODE (exp) == ARRAY_REF)
@@ -5051,14 +5056,16 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
 		 it overflowed.  In either case, redo the multiplication
 		 against the size in units.  This is especially important
 		 in the non-constant case to avoid a division at runtime.  */
-	      xindex = fold (build (MULT_EXPR, ssizetype, index,
-                                    convert (ssizetype,
-                                         TYPE_SIZE_UNIT (TREE_TYPE (exp)))));
+	      xindex
+		= fold (build (MULT_EXPR, ssizetype, index,
+			       convert (ssizetype,
+					TYPE_SIZE_UNIT (TREE_TYPE (exp)))));
 
 	      if (contains_placeholder_p (xindex))
-		xindex = build (WITH_RECORD_EXPR, sizetype, xindex, exp);
+		xindex = build (WITH_RECORD_EXPR, ssizetype, xindex, exp);
 
-	      offset = size_binop (PLUS_EXPR, offset, xindex);
+	      offset
+		= size_binop (PLUS_EXPR, offset, convert (sizetype, xindex));
 	    }
 	}
       else if (TREE_CODE (exp) != NON_LVALUE_EXPR
@@ -6457,8 +6464,7 @@ expand_expr (exp, target, tmode, modifier)
 	tree array = TREE_OPERAND (exp, 0);
 	tree domain = TYPE_DOMAIN (TREE_TYPE (array));
 	tree low_bound = domain ? TYPE_MIN_VALUE (domain) : integer_zero_node;
-	tree index = TREE_OPERAND (exp, 1);
-	tree index_type = TREE_TYPE (index);
+	tree index = convert (sizetype, TREE_OPERAND (exp, 1));
 	HOST_WIDE_INT i;
 
 	/* Optimize the special-case of a zero lower bound.
@@ -6467,14 +6473,10 @@ expand_expr (exp, target, tmode, modifier)
 	   with constant folding.  (E.g. suppose the lower bound is 1,
 	   and its mode is QI.  Without the conversion,  (ARRAY
 	   +(INDEX-(unsigned char)1)) becomes ((ARRAY+(-(unsigned char)1))
-	   +INDEX), which becomes (ARRAY+255+INDEX).  Oops!)
-
-	   But sizetype isn't quite right either (especially if
-	   the lowbound is negative).  FIXME */
+	   +INDEX), which becomes (ARRAY+255+INDEX).  Oops!)  */
 
 	if (! integer_zerop (low_bound))
-	  index = fold (build (MINUS_EXPR, index_type, index,
-			       convert (sizetype, low_bound)));
+	  index = size_diffop (index, convert (sizetype, low_bound));
 
 	/* Fold an expression like: "foo"[2].
 	   This is not done in fold so it won't happen inside &.
@@ -8508,8 +8510,7 @@ expand_expr_unaligned (exp, palign)
 	tree array = TREE_OPERAND (exp, 0);
 	tree domain = TYPE_DOMAIN (TREE_TYPE (array));
 	tree low_bound = domain ? TYPE_MIN_VALUE (domain) : integer_zero_node;
-	tree index = TREE_OPERAND (exp, 1);
-	tree index_type = TREE_TYPE (index);
+	tree index = convert (sizetype, TREE_OPERAND (exp, 1));
 	HOST_WIDE_INT i;
 
 	if (TREE_CODE (TREE_TYPE (TREE_OPERAND (exp, 0))) != ARRAY_TYPE)
@@ -8521,14 +8522,10 @@ expand_expr_unaligned (exp, palign)
 	   with constant folding.  (E.g. suppose the lower bound is 1,
 	   and its mode is QI.  Without the conversion,  (ARRAY
 	   +(INDEX-(unsigned char)1)) becomes ((ARRAY+(-(unsigned char)1))
-	   +INDEX), which becomes (ARRAY+255+INDEX).  Oops!)
-
-	   But sizetype isn't quite right either (especially if
-	   the lowbound is negative).  FIXME */
+	   +INDEX), which becomes (ARRAY+255+INDEX).  Oops!)  */
 
 	if (! integer_zerop (low_bound))
-	  index = fold (build (MINUS_EXPR, index_type, index,
-			       convert (sizetype, low_bound)));
+	  index = size_diffop (index, convert (sizetype, low_bound));
 
 	/* If this is a constant index into a constant array,
 	   just get the value from the array.  Handle both the cases when
@@ -8778,8 +8775,10 @@ expand_expr_unaligned (exp, palign)
   return expand_expr (exp, NULL_RTX, VOIDmode, EXPAND_NORMAL);
 }
 
-/* Return the tree node and offset if a given argument corresponds to
-   a string constant.  */
+/* Return the tree node if a ARG corresponds to a string constant or zero
+   if it doesn't.  If we return non-zero, set *PTR_OFFSET to the offset
+   in bytes within the string that ARG is accessing.  The type of the
+   offset will be `sizetype'.  */
 
 tree
 string_constant (arg, ptr_offset)
@@ -8791,7 +8790,7 @@ string_constant (arg, ptr_offset)
   if (TREE_CODE (arg) == ADDR_EXPR
       && TREE_CODE (TREE_OPERAND (arg, 0)) == STRING_CST)
     {
-      *ptr_offset = integer_zero_node;
+      *ptr_offset = size_zero_node;
       return TREE_OPERAND (arg, 0);
     }
   else if (TREE_CODE (arg) == PLUS_EXPR)
@@ -8805,13 +8804,13 @@ string_constant (arg, ptr_offset)
       if (TREE_CODE (arg0) == ADDR_EXPR
 	  && TREE_CODE (TREE_OPERAND (arg0, 0)) == STRING_CST)
 	{
-	  *ptr_offset = arg1;
+	  *ptr_offset = convert (sizetype, arg1);
 	  return TREE_OPERAND (arg0, 0);
 	}
       else if (TREE_CODE (arg1) == ADDR_EXPR
 	       && TREE_CODE (TREE_OPERAND (arg1, 0)) == STRING_CST)
 	{
-	  *ptr_offset = arg0;
+	  *ptr_offset = convert (sizetype, arg0);
 	  return TREE_OPERAND (arg1, 0);
 	}
     }

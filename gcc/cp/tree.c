@@ -910,16 +910,18 @@ void
 debug_binfo (elem)
      tree elem;
 {
-  unsigned HOST_WIDE_INT n;
+  HOST_WIDE_INT n;
   tree virtuals;
 
-  fprintf (stderr, "type \"%s\"; offset = %ld\n",
-	   TYPE_NAME_STRING (BINFO_TYPE (elem)),
-	   (long) TREE_INT_CST_LOW (BINFO_OFFSET (elem)));
-  fprintf (stderr, "vtable type:\n");
+  fprintf (stderr, "type \"%s\", offset = ",
+	   TYPE_NAME_STRING (BINFO_TYPE (elem)));
+  fprintf (stderr, HOST_WIDE_INT_PRINT_DEC,
+	   TREE_INT_CST_LOW (BINFO_OFFSET (elem)));
+  fprintf (stderr, "\nvtable type:\n");
   debug_tree (BINFO_TYPE (elem));
   if (BINFO_VTABLE (elem))
-    fprintf (stderr, "vtable decl \"%s\"\n", IDENTIFIER_POINTER (DECL_NAME (BINFO_VTABLE (elem))));
+    fprintf (stderr, "vtable decl \"%s\"\n",
+	     IDENTIFIER_POINTER (DECL_NAME (BINFO_VTABLE (elem))));
   else
     fprintf (stderr, "no vtable decl yet\n");
   fprintf (stderr, "virtuals:\n");
