@@ -38,12 +38,25 @@ exception statement from your version. */
 
 package javax.swing.plaf.basic;
 
-import javax.swing.text.*;
-import javax.swing.plaf.*;
-import java.awt.*;
-import javax.swing.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Point;
+import java.awt.Rectangle;
+import javax.swing.JComponent;
+import javax.swing.plaf.ComponentUI;
+import javax.swing.plaf.TextUI;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultEditorKit;
+import javax.swing.text.EditorKit;
+import javax.swing.text.Element;
+import javax.swing.text.JTextComponent;
+import javax.swing.text.Position;
+import javax.swing.text.View;
+import javax.swing.text.ViewFactory;
 
 public class BasicTextUI extends TextUI
+  implements ViewFactory
 {
     int gap = 3;
     View view = null; // was: new RootView();
@@ -167,9 +180,10 @@ public class BasicTextUI extends TextUI
     {
 	return 0;
     } 
+
+  public View create (Element elem)
+  {
+    // subclasses have to implement this to get this functionality
+    return null;
+  }
 }
-
-
-
-
-

@@ -1300,7 +1300,7 @@ public class BasicBorders
    * painted if the orientation of the enclosed JSplitPane is
    * <code>JSplitPane.VERTICAL_SPLIT</code> (at least in versions
    * 1.3.1 and 1.4.1).  GNU Classpath does not replicate this bug. A
-   * report has been filed with Sun (review ID 188773).
+   * report has been filed with Sun (bug ID 4885629).
    *
    * <p>Note that the bottom left pixel of the border has a different
    * color depending on the orientation of the enclosed JSplitPane.

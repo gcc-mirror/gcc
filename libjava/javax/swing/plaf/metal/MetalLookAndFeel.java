@@ -36,14 +36,14 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 
+
 package javax.swing.plaf.metal;
 
-import javax.swing.*;
-import javax.swing.plaf.*;
-import javax.swing.plaf.basic.*;
+import javax.swing.UIDefaults;
+import javax.swing.plaf.basic.BasicDefaults;
+import javax.swing.plaf.basic.BasicLookAndFeel;
 
-
-public class MetalLookAndFeel extends LookAndFeel
+public class MetalLookAndFeel extends BasicLookAndFeel
  {	   
      public boolean isNativeLookAndFeel()        { return true; }
      public boolean isSupportedLookAndFeel()     { return true; }

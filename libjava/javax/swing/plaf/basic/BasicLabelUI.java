@@ -38,22 +38,32 @@ exception statement from your version. */
 
 package javax.swing.plaf.basic;
 
-import javax.swing.*;
-import javax.swing.plaf.*;
-import java.awt.*;
-
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Insets;
+import java.awt.Rectangle;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.SwingUtilities;
+import javax.swing.plaf.ComponentUI;
+import javax.swing.plaf.LabelUI;
 
 public class BasicLabelUI extends LabelUI
+  implements PropertyChangeListener
 {
     int gap = 3;
-    
     Color foreground;
 
     
     public static ComponentUI createUI(final JComponent c)  {
 	return new BasicLabelUI();
     }
-
+    
     
     public void installUI(final JComponent c)  {
 	super.installUI(c);
@@ -182,20 +192,11 @@ public class BasicLabelUI extends LabelUI
 
 	g.drawLine(0,0,100,100);
 	
-	BasicGraphicsUtils.drawString(g,
-				      text, 
-				      0,	
-				      0,//textRect.x, 
-				      0);//textRect.y);
+	BasicGraphicsUtils.drawString(g, text, 0, 0 /*textRect.x*/, 0 /*textRect.y*/);
     }
+
+  public void propertyChange (PropertyChangeEvent event)
+  {
+    throw new Error ("Not implemented");
+  }
 }
-
-
-
-
-
-
-
-
-
-

@@ -38,11 +38,18 @@ exception statement from your version. */
 
 package javax.swing.plaf.basic;
 
-import javax.swing.*;
-import java.awt.*;
-import javax.swing.plaf.*;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Insets;
+import java.awt.Rectangle;
+import javax.swing.JComponent;
+import javax.swing.JTabbedPane;
+import javax.swing.SwingConstants;
+import javax.swing.plaf.ComponentUI;
+import javax.swing.plaf.TabbedPaneUI;
 
-public class BasicTabbedPaneUI  extends TabbedPaneUI 
+public class BasicTabbedPaneUI extends TabbedPaneUI
+  implements SwingConstants
 {
     public static ComponentUI createUI(final JComponent c) 
     {
