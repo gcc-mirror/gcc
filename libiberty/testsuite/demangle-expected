@@ -2883,10 +2883,28 @@ void __gnu_debug::_Error_formatter::_M_format_word<unsigned long>(char*, int, ch
 --format=gnu-v3
 _ZSt18uninitialized_copyIN9__gnu_cxx17__normal_iteratorIPSt4pairISsPFbP6sqlitePPcEESt6vectorIS9_SaIS9_EEEESE_ET0_T_SG_SF_
 __gnu_cxx::__normal_iterator<std::pair<std::string, bool (*)(sqlite*, char**)>*, std::vector<std::pair<std::string, bool (*)(sqlite*, char**)>, std::allocator<std::pair<std::string, bool (*)(sqlite*, char**)> > > > std::uninitialized_copy<__gnu_cxx::__normal_iterator<std::pair<std::string, bool (*)(sqlite*, char**)>*, std::vector<std::pair<std::string, bool (*)(sqlite*, char**)>, std::allocator<std::pair<std::string, bool (*)(sqlite*, char**)> > > >, __gnu_cxx::__normal_iterator<std::pair<std::string, bool (*)(sqlite*, char**)>*, std::vector<std::pair<std::string, bool (*)(sqlite*, char**)>, std::allocator<std::pair<std::string, bool (*)(sqlite*, char**)> > > > >(__gnu_cxx::__normal_iterator<std::pair<std::string, bool (*)(sqlite*, char**)>*, std::vector<std::pair<std::string, bool (*)(sqlite*, char**)>, std::allocator<std::pair<std::string, bool (*)(sqlite*, char**)> > > >, __gnu_cxx::__normal_iterator<std::pair<std::string, bool (*)(sqlite*, char**)>*, std::vector<std::pair<std::string, bool (*)(sqlite*, char**)>, std::allocator<std::pair<std::string, bool (*)(sqlite*, char**)> > > >, __gnu_cxx::__normal_iterator<std::pair<std::string, bool (*)(sqlite*, char**)>*, std::vector<std::pair<std::string, bool (*)(sqlite*, char**)>, std::allocator<std::pair<std::string, bool (*)(sqlite*, char**)> > > >)
+#
 # The new demangler used to fail on this.
 --format=gnu-v3
 _Z1fP1cIPFiiEE
 f(c<int (*)(int)>*)
+#
+# Wrap expressions using '>' in an extra layer of parens to avoid
+# confusion with the '>' which ends the template parameters.
+--format=gnu-v3
+_Z4dep9ILi3EEvP3fooIXgtT_Li2EEE
+void dep9<3>(foo<((3) > (2))>*)
+#
+# Watch out for templated version of `operator<'--it needs an extra
+# space.
+--format=gnu-v3
+_ZStltI9file_pathSsEbRKSt4pairIT_T0_ES6_
+bool std::operator< <file_path, std::string>(std::pair<file_path, std::string> const&, std::pair<file_path, std::string> const&)
+#
+# More hairy qualifier handling.
+--format=gnu-v3
+_Z9hairyfuncM1YKFPVPFrPA2_PM1XKFKPA3_ilEPcEiE
+hairyfunc(int (* const (X::** (* restrict (* volatile*(Y::*)(int) const)(char*)) [2])(long) const) [3])
 # 
 # This caused an infinite loop.
 #

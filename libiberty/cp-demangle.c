@@ -28,6 +28,43 @@
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. 
 */
 
+/* This code implements a demangler for the g++ V3 ABI.  The ABI is
+   described on this web page:
+       http://www.codesourcery.com/cxx-abi/abi.html#mangling
+
+   This code was written while looking at the demangler written by
+   Alex Samuel <samuel@codesourcery.com>.
+
+   This code first pulls the mangled name apart into a list of
+   components, and then walks the list generating the demangled
+   name.
+
+   This file will normally define the following functions, q.v.:
+      char *cplus_demangle_v3(const char *mangled, int options)
+      char *java_demangle_v3(const char *mangled)
+      enum gnu_v3_ctor_kinds is_gnu_v3_mangled_ctor (const char *name)
+      enum gnu_v3_dtor_kinds is_gnu_v3_mangled_dtor (const char *name)
+
+   Preprocessor macros you can define while compiling this file:
+
+   IN_LIBGCC2
+      If defined, this file defines the following function, q.v.:
+         char *__cxa_demangle (const char *mangled, char *buf, size_t *len,
+                               int *status)
+      instead of cplus_demangle_v3() and java_demangle_v3().
+
+   IN_GLIBCPP_V3
+      If defined, this file defines only __cxa_demangle().
+
+   STANDALONE_DEMANGLER
+      If defined, this file defines a main() function which demangles
+      any arguments, or, if none, demangles stdin.
+
+   CP_DEMANGLE_DEBUG
+      If defined, turns on debugging mode, which prints information on
+      stdout about the mangled string.  This is not generally useful.
+*/
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -45,19 +82,18 @@
 #include "libiberty.h"
 #include "demangle.h"
 
-/* This code implements a demangler for the g++ V3 ABI.  The ABI is
-   described on this web page:
-       http://www.codesourcery.com/cxx-abi/abi.html#mangling
+/* We avoid pulling in the ctype tables, to prevent pulling in
+   additional unresolved symbols when this code is used in a library.
+   FIXME: Is this really a valid reason?  This comes from the original
+   V3 demangler code.
 
-   This code was written while looking at the demangler written by
-   Alex Samuel <samuel@codesourcery.com>.
+   As of this writing this file has the following undefined references
+   when compiled with -DIN_GLIBCPP_V3: malloc, realloc, free, memcpy,
+   strcpy, strcat, strlen.  */
 
-   This code first pulls the mangled name apart into a list of
-   components, and then walks the list generating the demangled
-   name.  */
-
-/* Avoid pulling in the ctype tables for this simple usage.  */
 #define IS_DIGIT(c) ((c) >= '0' && (c) <= '9')
+#define IS_UPPER(c) ((c) >= 'A' && (c) <= 'Z')
+#define IS_LOWER(c) ((c) >= 'a' && (c) <= 'z')
 
 /* The prefix prepended by GCC to an identifier represnting the
    anonymous namespace.  */
@@ -155,6 +191,12 @@ enum d_comp_type
   D_COMP_VOLATILE,
   /* The const qualifier.  */
   D_COMP_CONST,
+  /* The restrict qualifier modifying a member function.  */
+  D_COMP_RESTRICT_THIS,
+  /* The volatile qualifier modifying a member function.  */
+  D_COMP_VOLATILE_THIS,
+  /* The const qualifier modifying a member function.  */
+  D_COMP_CONST_THIS,
   /* A vendor qualifier.  */
   D_COMP_VENDOR_TYPE_QUAL,
   /* A pointer.  */
@@ -389,6 +431,9 @@ struct d_print_info
     } \
   while (0)
 
+#define d_last_char(dpi) \
+  ((dpi)->buf == NULL || (dpi)->len == 0 ? '\0' : (dpi)->buf[(dpi)->len - 1])
+
 #ifdef CP_DEMANGLE_DEBUG
 static void d_dump PARAMS ((struct d_comp *, int));
 #endif
@@ -430,7 +475,7 @@ static int d_call_offset PARAMS ((struct d_info *, int));
 static struct d_comp *d_ctor_dtor_name PARAMS ((struct d_info *));
 static struct d_comp *d_type PARAMS ((struct d_info *));
 static struct d_comp **d_cv_qualifiers PARAMS ((struct d_info *,
-						struct d_comp **));
+						struct d_comp **, int));
 static struct d_comp *d_function_type PARAMS ((struct d_info *));
 static struct d_comp *d_bare_function_type PARAMS ((struct d_info *, int));
 static struct d_comp *d_class_enum_type PARAMS ((struct d_info *));
@@ -456,7 +501,7 @@ static void d_print_comp PARAMS ((struct d_print_info *,
 static void d_print_identifier PARAMS ((struct d_print_info *, const char *,
 					int));
 static void d_print_mod_list PARAMS ((struct d_print_info *,
-				      struct d_print_mod *));
+				      struct d_print_mod *, int));
 static void d_print_mod PARAMS ((struct d_print_info *,
 				 const struct d_comp *));
 static void d_print_function_type PARAMS ((struct d_print_info *,
@@ -571,6 +616,15 @@ d_dump (dc, indent)
       break;
     case D_COMP_CONST:
       printf ("const\n");
+      break;
+    case D_COMP_RESTRICT_THIS:
+      printf ("restrict this\n");
+      break;
+    case D_COMP_VOLATILE_THIS:
+      printf ("volatile this\n");
+      break;
+    case D_COMP_CONST_THIS:
+      printf ("const this\n");
       break;
     case D_COMP_VENDOR_TYPE_QUAL:
       printf ("vendor type qualifier\n");
@@ -725,6 +779,9 @@ d_make_comp (di, type, left, right)
     case D_COMP_RESTRICT:
     case D_COMP_VOLATILE:
     case D_COMP_CONST:
+    case D_COMP_RESTRICT_THIS:
+    case D_COMP_VOLATILE_THIS:
+    case D_COMP_CONST_THIS:
       break;
 
       /* Other types should not be seen here.  */
@@ -751,6 +808,8 @@ d_make_name (di, s, len)
 {
   struct d_comp *p;
 
+  if (s == NULL || len == 0)
+    return NULL;
   p = d_make_empty (di, D_COMP_NAME);
   if (p != NULL)
     {
@@ -922,10 +981,9 @@ has_return_type (dc)
       return 0;
     case D_COMP_TEMPLATE:
       return ! is_ctor_dtor_or_conversion (d_left (dc));
-    case D_COMP_RESTRICT:
-    case D_COMP_VOLATILE:
-    case D_COMP_CONST:
-    case D_COMP_VENDOR_TYPE_QUAL:
+    case D_COMP_RESTRICT_THIS:
+    case D_COMP_VOLATILE_THIS:
+    case D_COMP_CONST_THIS:
       return has_return_type (d_left (dc));
     }
 }
@@ -981,9 +1039,9 @@ d_encoding (di, top_level)
 	  /* Strip off any initial CV-qualifiers, as they really apply
 	     to the `this' parameter, and they were not output by the
 	     v2 demangler without DMGL_PARAMS.  */
-	  while (dc->type == D_COMP_RESTRICT
-		 || dc->type == D_COMP_VOLATILE
-		 || dc->type == D_COMP_CONST)
+	  while (dc->type == D_COMP_RESTRICT_THIS
+		 || dc->type == D_COMP_VOLATILE_THIS
+		 || dc->type == D_COMP_CONST_THIS)
 	    dc = d_left (dc);
 	  return dc;
 	}
@@ -1092,7 +1150,7 @@ d_nested_name (di)
   if (d_next_char (di) != 'N')
     return NULL;
 
-  pret = d_cv_qualifiers (di, &ret);
+  pret = d_cv_qualifiers (di, &ret, 1);
   if (pret == NULL)
     return NULL;
 
@@ -1139,7 +1197,7 @@ d_prefix (di)
 
       comb_type = D_COMP_QUAL_NAME;
       if (IS_DIGIT (peek)
-	  || (peek >= 'a' && peek <= 'z')
+	  || IS_LOWER (peek)
 	  || peek == 'C'
 	  || peek == 'D')
 	dc = d_unqualified_name (di);
@@ -1186,7 +1244,7 @@ d_unqualified_name (di)
   peek = d_peek_char (di);
   if (IS_DIGIT (peek))
     return d_source_name (di);
-  else if (peek >= 'a' && peek <= 'z')
+  else if (IS_LOWER (peek))
     return d_operator_name (di);
   else if (peek == 'C' || peek == 'D')
     return d_ctor_dtor_name (di);
@@ -1648,7 +1706,7 @@ d_type (di)
     {
       struct d_comp **pret;
 
-      pret = d_cv_qualifiers (di, &ret);
+      pret = d_cv_qualifiers (di, &ret, 0);
       if (pret == NULL)
 	return NULL;
       *pret = d_type (di);
@@ -1716,7 +1774,7 @@ d_type (di)
 	peek_next = d_peek_next_char (di);
 	if (IS_DIGIT (peek_next)
 	    || peek_next == '_'
-	    || (peek_next >= 'A' && peek_next <= 'Z'))
+	    || IS_UPPER (peek_next))
 	  {
 	    ret = d_substitution (di);
 	    /* The substituted name may have been a template name and
@@ -1782,9 +1840,10 @@ d_type (di)
 /* <CV-qualifiers> ::= [r] [V] [K]  */
 
 static struct d_comp **
-d_cv_qualifiers (di, pret)
+d_cv_qualifiers (di, pret, member_fn)
      struct d_info *di;
      struct d_comp **pret;
+     int member_fn;
 {
   char peek;
 
@@ -1795,11 +1854,11 @@ d_cv_qualifiers (di, pret)
 
       d_advance (di, 1);
       if (peek == 'r')
-	t = D_COMP_RESTRICT;
+	t = member_fn ? D_COMP_RESTRICT_THIS: D_COMP_RESTRICT;
       else if (peek == 'V')
-	t = D_COMP_VOLATILE;
+	t = member_fn ? D_COMP_VOLATILE_THIS : D_COMP_VOLATILE;
       else
-	t = D_COMP_CONST;
+	t = member_fn ? D_COMP_CONST_THIS: D_COMP_CONST;
 
       *pret = d_make_comp (di, t, NULL, NULL);
       if (*pret == NULL)
@@ -1970,7 +2029,7 @@ d_pointer_to_member_type (di)
      with g++, we need to pull off the CV-qualifiers here, in order to
      avoid calling add_substitution() in d_type().  */
 
-  pmem = d_cv_qualifiers (di, &mem);
+  pmem = d_cv_qualifiers (di, &mem, 1);
   if (pmem == NULL)
     return NULL;
   *pmem = d_type (di);
@@ -2316,7 +2375,7 @@ d_substitution (di)
     return NULL;
 
   c = d_next_char (di);
-  if (c == '_' || IS_DIGIT (c) || (c >= 'A' && c <= 'Z'))
+  if (c == '_' || IS_DIGIT (c) || IS_UPPER (c))
     {
       int id;
 
@@ -2327,7 +2386,7 @@ d_substitution (di)
 	    {
 	      if (IS_DIGIT (c))
 		id = id * 36 + c - '0';
-	      else if (c >= 'A' && c <= 'Z')
+	      else if (IS_UPPER (c))
 		id = id * 36 + c - 'A' + 10;
 	      else
 		return NULL;
@@ -2527,28 +2586,40 @@ d_print_comp (dpi, dc)
 
     case D_COMP_TYPED_NAME:
       {
-	const struct d_comp *typed_name;
-	struct d_print_mod dpm;
+	struct d_print_mod *hold_modifiers;
+	struct d_comp *typed_name;
+	struct d_print_mod adpm[4];
+	unsigned int i;
 	struct d_print_template dpt;
 
 	/* Pass the name down to the type so that it can be printed in
-	   the right place for the type.  If the name has
-	   CV-qualifiers, they are really method qualifiers; pull them
-	   off now and print them after everything else.  Note that we
-	   don't handle D_COMP_VENDOR_TYPE_QUAL here; it's not
-	   accepted by d_cv_qualifiers() either.  */
+	   the right place for the type.  We also have to pass down
+	   any CV-qualifiers, which apply to the this parameter.  */
+	hold_modifiers = dpi->modifiers;
+	i = 0;
 	typed_name = d_left (dc);
-	while (typed_name != NULL
-	       && (typed_name->type == D_COMP_RESTRICT
-		   || typed_name->type == D_COMP_VOLATILE
-		   || typed_name->type == D_COMP_CONST))
-	  typed_name = d_left (typed_name);
+	while (typed_name != NULL)
+	  {
+	    if (i >= sizeof adpm / sizeof adpm[0])
+	      {
+		d_print_error (dpi);
+		return;
+	      }
 
-	dpm.next = dpi->modifiers;
-	dpi->modifiers = &dpm;
-	dpm.mod = typed_name;
-	dpm.printed = 0;
-	dpm.templates = dpi->templates;
+	    adpm[i].next = dpi->modifiers;
+	    dpi->modifiers = &adpm[i];
+	    adpm[i].mod = typed_name;
+	    adpm[i].printed = 0;
+	    adpm[i].templates = dpi->templates;
+	    ++i;
+
+	    if (typed_name->type != D_COMP_RESTRICT_THIS
+		&& typed_name->type != D_COMP_VOLATILE_THIS
+		&& typed_name->type != D_COMP_CONST_THIS)
+	      break;
+
+	    typed_name = d_left (typed_name);
+	  }
 
 	/* If typed_name is a template, then it applies to the
 	   function type as well.  */
@@ -2564,26 +2635,19 @@ d_print_comp (dpi, dc)
 	if (typed_name->type == D_COMP_TEMPLATE)
 	  dpi->templates = dpt.next;
 
-	/* If the modifier didn't get printed by the type, print it
+	/* If the modifiers didn't get printed by the type, print them
 	   now.  */
-	if (! dpm.printed)
+	while (i > 0)
 	  {
-	    d_append_char (dpi, ' ');
-	    d_print_comp (dpi, typed_name);
+	    --i;
+	    if (! adpm[i].printed)
+	      {
+		d_append_char (dpi, ' ');
+		d_print_mod (dpi, adpm[i].mod);
+	      }
 	  }
 
-	dpi->modifiers = dpm.next;
-
-	/* Now print any CV-qualifiers on the type.  */
-	typed_name = d_left (dc);
-	while (typed_name != NULL
-	       && (typed_name->type == D_COMP_RESTRICT
-		   || typed_name->type == D_COMP_VOLATILE
-		   || typed_name->type == D_COMP_CONST))
-	  {
-	    d_print_mod (dpi, typed_name);
-	    typed_name = d_left (typed_name);
-	  }
+	dpi->modifiers = hold_modifiers;
 
 	return;
       }
@@ -2600,11 +2664,13 @@ d_print_comp (dpi, dc)
 	dpi->modifiers = NULL;
 
 	d_print_comp (dpi, d_left (dc));
+	if (d_last_char (dpi) == '<')
+	  d_append_char (dpi, ' ');
 	d_append_char (dpi, '<');
 	d_print_comp (dpi, d_right (dc));
 	/* Avoid generating two consecutive '>' characters, to avoid
 	   the C++ syntactic ambiguity.  */
-	if (dpi->buf != NULL && dpi->buf[dpi->len - 1] == '>')
+	if (d_last_char (dpi) == '>')
 	  d_append_char (dpi, ' ');
 	d_append_char (dpi, '>');
 
@@ -2737,6 +2803,9 @@ d_print_comp (dpi, dc)
     case D_COMP_RESTRICT:
     case D_COMP_VOLATILE:
     case D_COMP_CONST:
+    case D_COMP_RESTRICT_THIS:
+    case D_COMP_VOLATILE_THIS:
+    case D_COMP_CONST_THIS:
     case D_COMP_VENDOR_TYPE_QUAL:
     case D_COMP_POINTER:
     case D_COMP_REFERENCE:
@@ -2832,19 +2901,7 @@ d_print_comp (dpi, dc)
 
     case D_COMP_PTRMEM_TYPE:
       {
-	const struct d_comp *target_type;
 	struct d_print_mod dpm;
-
-	/* Pass the name down to the type so that it can be printed in
-	   the right place for the type.  If the type has
-	   CV-qualifiers, they are really method qualifiers; pull them
-	   off now and print them after everything else.  */
-	target_type = d_right (dc);
-	while (target_type != NULL
-	       && (target_type->type == D_COMP_RESTRICT
-		   || target_type->type == D_COMP_VOLATILE
-		   || target_type->type == D_COMP_CONST))
-	  target_type = d_left (target_type);
 
 	dpm.next = dpi->modifiers;
 	dpi->modifiers = &dpm;
@@ -2852,7 +2909,7 @@ d_print_comp (dpi, dc)
 	dpm.printed = 0;
 	dpm.templates = dpi->templates;
 
-	d_print_comp (dpi, target_type);
+	d_print_comp (dpi, d_right (dc));
 
 	/* If the modifier didn't get printed by the type, print it
 	   now.  */
@@ -2864,17 +2921,6 @@ d_print_comp (dpi, dc)
 	  }
 
 	dpi->modifiers = dpm.next;
-
-	/* Now print any CV-qualifiers on the type.  */
-	target_type = d_right (dc);
-	while (target_type != NULL
-	       && (target_type->type == D_COMP_RESTRICT
-		   || target_type->type == D_COMP_VOLATILE
-		   || target_type->type == D_COMP_CONST))
-	  {
-	    d_print_mod (dpi, target_type);
-	    target_type = d_left (target_type);
-	  }
 
 	return;
       }
@@ -2895,7 +2941,7 @@ d_print_comp (dpi, dc)
 
 	d_append_string (dpi, "operator");
 	c = dc->u.s_operator.op->name[0];
-	if (c >= 'a' && c <= 'z')
+	if (IS_LOWER (c))
 	  d_append_char (dpi, ' ');
 	d_append_string (dpi, dc->u.s_operator.op->name);
 	return;
@@ -2933,6 +2979,14 @@ d_print_comp (dpi, dc)
 	  d_print_error (dpi);
 	  return;
 	}
+
+      /* We wrap an expression which uses the greater-than operator in
+	 an extra layer of parens so that it does not get confused
+	 with the '>' which ends the template parameters.  */
+      if (d_left (dc)->type == D_COMP_OPERATOR
+	  && strcmp (d_left (dc)->u.s_operator.op->name, ">") == 0)
+	d_append_char (dpi, '(');
+
       d_append_char (dpi, '(');
       d_print_comp (dpi, d_left (d_right (dc)));
       d_append_string (dpi, ") ");
@@ -2940,6 +2994,11 @@ d_print_comp (dpi, dc)
       d_append_string (dpi, " (");
       d_print_comp (dpi, d_right (d_right (dc)));
       d_append_char (dpi, ')');
+
+      if (d_left (dc)->type == D_COMP_OPERATOR
+	  && strcmp (d_left (dc)->u.s_operator.op->name, ">") == 0)
+	d_append_char (dpi, ')');
+
       return;
 
     case D_COMP_BINARY_ARGS:
@@ -3064,7 +3123,7 @@ d_print_identifier (dpi, name, len)
 		{
 		  int dig;
 
-		  if (*q >= '0' && *q <= '9')
+		  if (IS_DIGIT (*q))
 		    dig = *q - '0';
 		  else if (*q >= 'A' && *q <= 'F')
 		    dig = *q - 'A' + 10;
@@ -3090,17 +3149,29 @@ d_print_identifier (dpi, name, len)
     }
 }
 
-/* Print a list of modifiers.  */
+/* Print a list of modifiers.  SUFFIX is 1 if we are printing
+   qualifiers on this after printing a function.  */
 
 static void
-d_print_mod_list (dpi, mods)
+d_print_mod_list (dpi, mods, suffix)
      struct d_print_info *dpi;
      struct d_print_mod *mods;
+     int suffix;
 {
   struct d_print_template *hold_dpt;
 
-  if (mods == NULL || mods->printed || d_print_saw_error (dpi))
+  if (mods == NULL || d_print_saw_error (dpi))
     return;
+
+  if (mods->printed
+      || (! suffix
+	  && (mods->mod->type == D_COMP_RESTRICT_THIS
+	      || mods->mod->type == D_COMP_VOLATILE_THIS
+	      || mods->mod->type == D_COMP_CONST_THIS)))
+    {
+      d_print_mod_list (dpi, mods->next, suffix);
+      return;
+    }
 
   mods->printed = 1;
 
@@ -3124,7 +3195,7 @@ d_print_mod_list (dpi, mods)
 
   dpi->templates = hold_dpt;
 
-  d_print_mod_list (dpi, mods->next);
+  d_print_mod_list (dpi, mods->next, suffix);
 }
 
 /* Print a modifier.  */
@@ -3137,12 +3208,15 @@ d_print_mod (dpi, mod)
   switch (mod->type)
     {
     case D_COMP_RESTRICT:
+    case D_COMP_RESTRICT_THIS:
       d_append_string (dpi, " restrict");
       return;
     case D_COMP_VOLATILE:
+    case D_COMP_VOLATILE_THIS:
       d_append_string (dpi, " volatile");
       return;
     case D_COMP_CONST:
+    case D_COMP_CONST_THIS:
       d_append_string (dpi, " const");
       return;
     case D_COMP_VENDOR_TYPE_QUAL:
@@ -3164,7 +3238,7 @@ d_print_mod (dpi, mod)
       d_append_string (dpi, "imaginary ");
       return;
     case D_COMP_PTRMEM_TYPE:
-      if (dpi->buf != NULL && dpi->buf[dpi->len - 1] != '(')
+      if (d_last_char (dpi) != '(')
 	d_append_char (dpi, ' ');
       d_print_comp (dpi, d_left (mod));
       d_append_string (dpi, "::*");
@@ -3213,6 +3287,10 @@ d_print_function_type (dpi, dc, mods)
 	case D_COMP_PTRMEM_TYPE:
 	  need_paren = 1;
 	  break;
+	case D_COMP_RESTRICT_THIS:
+	case D_COMP_VOLATILE_THIS:
+	case D_COMP_CONST_THIS:
+	  break;
 	default:
 	  break;
 	}
@@ -3224,9 +3302,23 @@ d_print_function_type (dpi, dc, mods)
     need_paren = 1;
 
   if (need_paren)
-    d_append_char (dpi, '(');
+    {
+      switch (d_last_char (dpi))
+	{
+	case ' ':
+	case '(':
+	case '*':
+	  break;
 
-  d_print_mod_list (dpi, mods);
+	default:
+	  d_append_char (dpi, ' ');
+	  break;
+	}
+
+      d_append_char (dpi, '(');
+    }
+
+  d_print_mod_list (dpi, mods, 0);
 
   if (need_paren)
     d_append_char (dpi, ')');
@@ -3237,6 +3329,8 @@ d_print_function_type (dpi, dc, mods)
     d_print_comp (dpi, d_right (dc));
 
   d_append_char (dpi, ')');
+
+  d_print_mod_list (dpi, mods, 1);
 }
 
 /* Print an array type, except for the element type.  */
@@ -3277,7 +3371,7 @@ d_print_array_type (dpi, dc, mods)
       if (need_paren)
 	d_append_string (dpi, " (");
 
-      d_print_mod_list (dpi, mods);
+      d_print_mod_list (dpi, mods, 0);
 
       if (need_paren)
 	d_append_char (dpi, ')');
@@ -3337,11 +3431,13 @@ d_print_cast (dpi, dc)
 
       dpi->templates = dpt.next;
 
+      if (d_last_char (dpi) == '<')
+	d_append_char (dpi, ' ');
       d_append_char (dpi, '<');
       d_print_comp (dpi, d_right (d_left (dc)));
       /* Avoid generating two consecutive '>' characters, to avoid
 	 the C++ syntactic ambiguity.  */
-      if (dpi->buf != NULL && dpi->buf[dpi->len - 1] == '>')
+      if (d_last_char (dpi) == '>')
 	d_append_char (dpi, ' ');
       d_append_char (dpi, '>');
 
@@ -3653,6 +3749,7 @@ is_ctor_or_dtor (mangled, ctor_kind, dtor_kind)
 {
   struct d_info di;
   struct d_comp *dc;
+  int ret;
 
   *ctor_kind = (enum gnu_v3_ctor_kinds) 0;
   *dtor_kind = (enum gnu_v3_dtor_kinds) 0;
@@ -3662,36 +3759,44 @@ is_ctor_or_dtor (mangled, ctor_kind, dtor_kind)
 
   dc = d_mangled_name (&di, 1);
 
-  if (dc == NULL || d_peek_char (&di) != '\0')
-    return 0;
-
-  while (dc != NULL)
+  ret = 0;
+  if (d_peek_char (&di) == '\0')
     {
-      switch (dc->type)
+      while (dc != NULL)
 	{
-	default:
-	  return 0;
-	case D_COMP_TYPED_NAME:
-	case D_COMP_TEMPLATE:
-	case D_COMP_RESTRICT:
-	case D_COMP_VOLATILE:
-	case D_COMP_CONST:
-	case D_COMP_VENDOR_TYPE_QUAL:
-	  dc = d_left (dc);
-	  break;
-	case D_COMP_QUAL_NAME:
-	  dc = d_right (dc);
-	  break;
-	case D_COMP_CTOR:
-	  *ctor_kind = dc->u.s_ctor.kind;
-	  return 1;
-	case D_COMP_DTOR:
-	  *dtor_kind = dc->u.s_dtor.kind;
-	  return 1;
+	  switch (dc->type)
+	    {
+	    default:
+	      dc = NULL;
+	      break;
+	    case D_COMP_TYPED_NAME:
+	    case D_COMP_TEMPLATE:
+	    case D_COMP_RESTRICT_THIS:
+	    case D_COMP_VOLATILE_THIS:
+	    case D_COMP_CONST_THIS:
+	      dc = d_left (dc);
+	      break;
+	    case D_COMP_QUAL_NAME:
+	      dc = d_right (dc);
+	      break;
+	    case D_COMP_CTOR:
+	      *ctor_kind = dc->u.s_ctor.kind;
+	      ret = 1;
+	      dc = NULL;
+	      break;
+	    case D_COMP_DTOR:
+	      *dtor_kind = dc->u.s_dtor.kind;
+	      ret = 1;
+	      dc = NULL;
+	      break;
+	    }
 	}
     }
 
-  return 0;
+  free (di.subs);
+  free (di.comps);
+
+  return ret;
 }
 
 /* Return whether NAME is the mangled form of a g++ V3 ABI constructor
