@@ -3,6 +3,9 @@
 	* config/ia64/sysv4.h (ASM_OUTPUT_LABELREF): Don't emit '#' if 
 	ia64_asm_output_label.
 
+	* config/ia64/crtbegin.asm (__do_global_dtors_aux): Use saved
+	copy of gp while the real gp register contains garbage.
+
 2001-08-21  Zack Weinberg  <zackw@panix.com>
 
 	* expmed.c (mode_for_extraction): New function.

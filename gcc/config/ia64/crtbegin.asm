@@ -172,7 +172,7 @@ __do_global_dtors_aux:
 	{ .mmi
 	  ld8 r15 = [loc0]
 	  ;;
-	  add r16 = r15, gp
+	  add r16 = r15, loc2
 	  adds r15 = 8, r15
 	  ;;
 	}
