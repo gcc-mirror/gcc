@@ -1,5 +1,44 @@
 2000-06-28  Zack Weinberg  <zack@wolery.cumb.org>
 
+	Rearrange lots of files, removing entirely the
+	gcc.c-torture/special, gcc.c-torture/code-quality, and gcc.failure
+	directories.
+
+	* Deleted files:
+	gcc.c-torture/code_quality/code_quality.exp
+	gcc.c-torture/special/special.exp
+	gcc.failure/failure.exp
+	gcc.failure/940409-1.x
+	gcc.c-torture/compile/961203-1.x
+
+	* New files:
+	gcc.misc-tests/linkage.exp
+	gcc.c-torture/execute/920730-1t.c
+	gcc.c-torture/execute/920730-1t.x
+	gcc.c-torture/compile/920520-1.x
+	gcc.c-torture/compile/920521-1.x
+	gcc.c-torture/compile/981006-1.x
+	gcc.c-torture/execute/eeprof-1.x
+
+	* Moved files (possibly with modifications to fit a new harness):
+	Old name				New name
+	gcc.c-torture/code_quality/920608-1.c	gcc.c-torture/compile/920608-1.c
+	gcc.c-torture/special/920413-1.c	gcc.dg/920413-1.c
+	gcc.c-torture/special/920520-1.c	gcc.c-torture/compile/920520-1.c
+	gcc.c-torture/special/920521-1.c	gcc.c-torture/compile/920521-1.c
+	gcc.c-torture/special/920717-x.c	gcc.misc-tests/linkage-x.c
+	gcc.c-torture/special/920717-y.c	gcc.misc-tests/linkage-y.c
+	gcc.c-torture/special/920730-1.c	gcc.c-torture/execute/920730-1.c
+	gcc.c-torture/special/930510-1.c	gcc.dg/cpp/19930510-1.c
+	gcc.c-torture/special/951130-1.c	gcc.dg/951130-1.c
+	gcc.c-torture/special/960224-1.c	gcc.dg/cpp/19960224-1.c
+	gcc.c-torture/special/960224-2.c	gcc.dg/cpp/19960224-2.c
+	gcc.c-torture/special/981006-1.c	gcc.c-torture/compile/981006-1.c
+	gcc.c-torture/special/eeprof-1.c	gcc.c-torture/execute/eeprof-1.c
+	gcc.failure/940409-1.c			gcc.dg/940409-1.c
+
+2000-06-28  Zack Weinberg  <zack@wolery.cumb.org>
+
 	* c-torture/compile/961203-1.x: Delete.
 
 	* gcc.misc-tests/acker1.c: Report failure.  Use return from main,
