@@ -1,3 +1,13 @@
+2000-10-18  Geoffrey Keating  <geoffk@cygnus.com>
+	    David V. Henkel-Wallace  <gumby@cygnus.com>
+
+	* config/i386/t-netware: Bring in from the Red Hat tree.
+	* config/i386/netware.h: Likewise.
+	* config/netware.h: Likewise.
+	* config/rs6000/netware.h: Delete.
+	* configure.in: Add i[34567]86-*-netware.
+	* configure: Hand-edit to match configure.in change.
+
 2000-10-18  Mark Mitchell  <mark@codesourcery.com>
 
 	* c-common.h (flag_no_builtin): Declare.
