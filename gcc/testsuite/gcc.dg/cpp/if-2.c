@@ -14,7 +14,7 @@
 #endif
 
 #if L'\x1234' != 0x1234
-#error 0xfeed	/* { dg-bogus "error" "wide charconst recognition 2" } */
+#error 0x1234	/* { dg-bogus "error" "wide charconst recognition 3" } */
 #endif
 
 #if 'abcd' /* { dg-warning "multi-character character constant" "multi-character charconst" } */
