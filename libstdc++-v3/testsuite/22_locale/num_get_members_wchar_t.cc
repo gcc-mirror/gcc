@@ -391,6 +391,28 @@ void test04()
   VERIFY( err == goodbit );
   VERIFY( ul == 0776 );
 }
+
+// libstdc++/5816
+void test05()
+{
+  using namespace std;
+ 
+  double d = 0.0;
+
+  wistringstream iss;
+  locale loc_de("de_DE");
+  iss.imbue(loc_de);
+
+  const num_get<wchar_t>& ng = use_facet<num_get<wchar_t> >(iss.getloc()); 
+  const ios_base::iostate goodbit = ios_base::goodbit;
+  ios_base::iostate err = ios_base::goodbit;
+
+  iss.str(L"1234,5 ");
+  err = goodbit;
+  ng.get(iss.rdbuf(), 0, iss, err, d);
+  VERIFY( err == goodbit );
+  VERIFY( d == 1234.5 );
+}
 #endif
 
 int main()
@@ -400,6 +422,7 @@ int main()
   test02();
   test03();
   test04();
+  test05();
 #endif
   return 0;
 }
