@@ -423,9 +423,9 @@ These problems can occur on most or all systems.
 * GNU C Required::             Why even ANSI C is not enough.
 * Patching GNU CC::            Why @code{gcc} needn't be patched.
 * Building GNU CC Necessary::  Why you can't build @emph{just} Fortran.
-* Missing strtoul or bsearch:: When linking @samp{f771} fails.
+* Missing strtoul or bsearch:: When linking @code{f771} fails.
 * Cleanup Kills Stage Directories::  For @code{g77} developers.
-* LANGUAGES Macro Ignored::    Sometimes @samp{LANGUAGES} is ignored.
+* LANGUAGES Macro Ignored::    Sometimes @code{LANGUAGES} is ignored.
 @end menu
 
 @node GNU C Required
@@ -490,11 +490,11 @@ This information does not apply to the
 @ifclear OMIT-FSF-G77
 On SunOS4 systems, linking the @code{f771} program used to
 produce an error message concerning an undefined symbol named
-@samp{_strtoul}, because the @samp{strtoul} library function
+@samp{_strtoul}, because the @code{strtoul} library function
 is not provided on that system.
 
 Other systems have, in the past, been reported to not provide
-their own @samp{strtoul} or @samp{bsearch} function.
+their own @code{strtoul} or @code{bsearch} function.
 
 Some versions @code{g77} tried to default to providing bare-bones
 versions of @code{bsearch} and @code{strtoul} automatically,
@@ -504,8 +504,8 @@ To limit the failures to those few systems actually missing the
 required routines, the bare-bones versions are still provided,
 in @file{@value{path-g77}/proj.c},
 if the appropriate macros are defined.
-These are @code{NEED_BSEARCH} for @samp{bsearch} and
-@code{NEED_STRTOUL} for @samp{NEED_STRTOUL}.
+These are @code{NEED_BSEARCH} for @code{bsearch} and
+@code{NEED_STRTOUL} for @code{NEED_STRTOUL}.
 
 Therefore, if you are sure your system is missing
 @code{bsearch} or @code{strtoul} in its library,
@@ -530,8 +530,8 @@ make bootstrap BOOT_CFLAGS='-O2 -g -DNEED_STRTOUL'
 @end smallexample
 
 If you then encounter problems compiling @file{@value{path-g77}/proj.c},
-it might be due to a discrepancy between how @samp{bsearch}
-or @samp{strtoul} are defined by that file and how they're
+it might be due to a discrepancy between how @code{bsearch}
+or @code{strtoul} are defined by that file and how they're
 declared by your system's header files.
 
 In that case, you'll have to use some basic knowledge of C
@@ -559,14 +559,14 @@ that, on demand.
 
 @node LANGUAGES Macro Ignored
 @subsubsection LANGUAGES Macro Ignored
-@cindex @samp{LANGUAGES} macro ignored
-@cindex ignoring @samp{LANGUAGES} macro
+@cindex @code{LANGUAGES} macro ignored
+@cindex ignoring @code{LANGUAGES} macro
 
 Prior to version 0.5.23 of @code{g77}
 and version 1.1 of @code{egcs},
 @code{g77} would sometimes ignore
-the absence of @samp{f77} and @samp{F77} in the
-@samp{LANGUAGES} macro definition used for the
+the absence of @code{f77} and @code{F77} in the
+@code{LANGUAGES} macro definition used for the
 @code{make} command being processed.
 
 As of @code{g77} version 0.5.23
@@ -580,7 +580,7 @@ such as @code{g++},
 are known to go ahead and perform various
 language-specific activities when their
 respective language strings do not appear
-in the @samp{LANGUAGES} macro in effect
+in the @code{LANGUAGES} macro in effect
 during that invocation of @code{make}.
 
 It is expected that these remaining problems will
@@ -669,7 +669,7 @@ As such, none of the following information is expected to
 be pertinent in future versions of @code{g77}.
 
 @menu
-* Larger File Unit Numbers::     Raising @samp{MXUNIT}.
+* Larger File Unit Numbers::     Raising @code{MXUNIT}.
 * Always Flush Output::          Synchronizing write errors.
 * Maximum Stackable Size::       Large arrays forced off the stack.
 * Floating-point Bit Patterns::  Possible programs building @code{g77}
@@ -697,7 +697,7 @@ a run-time crash in @code{libf2c}, because the unit number,
 
 If you know that Fortran programs at your installation require
 the use of unit numbers higher than 99, you can change the
-value of the @samp{MXUNIT} macro, which represents the maximum unit
+value of the @code{MXUNIT} macro, which represents the maximum unit
 number, to an appropriately higher value.
 
 To do this, edit the file @file{@value{path-libf2c}/libI77/fio.h} in your
@@ -707,12 +707,12 @@ To do this, edit the file @file{@value{path-libf2c}/libI77/fio.h} in your
 #define MXUNIT 100
 @end example
 
-Change the line so that the value of @samp{MXUNIT} is defined to be
+Change the line so that the value of @code{MXUNIT} is defined to be
 at least one @emph{greater} than the maximum unit number used by
 the Fortran programs on your system.
 
 (For example, a program that does @samp{WRITE (UNIT=255)} would require
-@samp{MXUNIT} set to at least 256 to avoid crashing.)
+@code{MXUNIT} set to at least 256 to avoid crashing.)
 
 Then build or rebuild @code{g77} as appropriate.
 
@@ -753,7 +753,7 @@ asynchronous, or, more precisely, buffered error reporting
 (detection of errors might be delayed).
 
 @code{libg2c} supports flagging write errors immediately when
-it is built with the @samp{ALWAYS_FLUSH} macro defined.
+it is built with the @code{ALWAYS_FLUSH} macro defined.
 This results in a @code{libg2c} that runs slower, sometimes
 quite a bit slower, under certain circumstances---for example,
 accessing files via the networked file system NFS---but the
@@ -763,7 +763,7 @@ If you know that Fortran programs requiring this level of precision
 of error reporting are to be compiled using the
 version of @code{g77} you are building, you might wish to
 modify the @code{g77} source tree so that the version of
-@code{libg2c} is built with the @samp{ALWAYS_FLUSH} macro
+@code{libg2c} is built with the @code{ALWAYS_FLUSH} macro
 defined, enabling this behavior.
 
 To do this, find this line in @file{@value{path-libf2c}/f2c.h} in
@@ -788,7 +788,7 @@ Then build or rebuild @code{g77} as appropriate.
 @cindex segmentation violation
 @code{g77}, on most machines, puts many variables and arrays on the stack
 where possible, and can be configured (by changing
-@samp{FFECOM_sizeMAXSTACKITEM} in @file{@value{path-g77}/com.c}) to force
+@code{FFECOM_sizeMAXSTACKITEM} in @file{@value{path-g77}/com.c}) to force
 smaller-sized entities into static storage (saving
 on stack space) or permit larger-sized entities to be put on the
 stack (which can improve run-time performance, as it presents
@@ -796,7 +796,7 @@ more opportunities for the GBE to optimize the generated code).
 
 @emph{Note:} Putting more variables and arrays on the stack
 might cause problems due to system-dependent limits on stack size.
-Also, the value of @samp{FFECOM_sizeMAXSTACKITEM} has no
+Also, the value of @code{FFECOM_sizeMAXSTACKITEM} has no
 effect on automatic variables and arrays.
 @xref{But-bugs}, for more information.
 
@@ -837,7 +837,7 @@ This size currently is quite small, since @code{g77}
 currently has a known bug requiring too much memory
 and time to handle such cases.
 In @file{@value{path-g77}/data.c}, the macro
-@samp{FFEDATA_sizeTOO_BIG_INIT_} is defined
+@code{FFEDATA_sizeTOO_BIG_INIT_} is defined
 to the minimum size for the warning to appear.
 The size is specified in storage units,
 which can be bytes, words, or whatever, on a case-by-case basis.
@@ -1537,16 +1537,16 @@ issuing an explanatory diagnostic.
 @cindex building @code{gcc}
 @cindex building @code{g77}
 
-@cindex @samp{LANGUAGES} macro
+@cindex @code{LANGUAGES} macro
 Building @code{g77} requires building enough of @code{gcc} that
 these instructions assume you're going to build all of
 @code{gcc}, including @code{g++}, @code{protoize}, and so on.
 You can save a little time and disk space by changes the
-@samp{LANGUAGES} macro definition in @code{gcc/Makefile.in}
+@code{LANGUAGES} macro definition in @code{gcc/Makefile.in}
 or @code{gcc/Makefile}, but if you do that, you're on your own.
 One change is almost @emph{certainly} going to cause failures:
-removing @samp{c} or @samp{f77} from the definition of the
-@samp{LANGUAGES} macro.
+removing @code{c} or @code{f77} from the definition of the
+@code{LANGUAGES} macro.
 
 After configuring @code{gcc}, which configures @code{g77} and
 @code{libg2c} automatically, you're ready to start the actual
@@ -1785,7 +1785,7 @@ make -k CC=gcc install
 
 As described in @ref{Installation,,Installing GNU CC,
 gcc,Using and Porting GNU CC}, the values for
-the @samp{CC} and @samp{LANGUAGES} macros should
+the @code{CC} and @code{LANGUAGES} macros should
 be the same as those you supplied for the build
 itself.
 
@@ -1805,7 +1805,7 @@ make -k @dots{} install install-libf77
 
 We don't know why some non-GNU versions of @code{make} sometimes
 require this alternate command, but they do.
-(Remember to supply the appropriate definition for @samp{CC}
+(Remember to supply the appropriate definition for @code{CC}
 where you see @samp{@dots{}} in the above command.)
 
 Note that using the @samp{-k} option tells @code{make} to
@@ -1939,10 +1939,10 @@ information for the derived files to work around the
 problem of not having the appropriate tools installed.
 
 On UNIX systems, the simplest way to update the date-time-modified
-information of a file is to use the use the @samp{touch}
+information of a file is to use the use the @code{touch}
 command.
 
-How to use @samp{touch} to update the derived files
+How to use @code{touch} to update the derived files
 updated by each of the tools is described below.
 @emph{Note:} New versions of @code{g77} might change the set of
 files it generates by invoking each of these tools.

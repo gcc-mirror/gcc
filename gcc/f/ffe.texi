@@ -1,3 +1,7 @@
+@c Copyright (C) 1999 Free Software Foundation, Inc.
+@c This is part of the G77 manual.
+@c For copying conditions, see the file g77.texi.
+
 @node Front End
 @chapter Front End
 @cindex GNU Fortran Front End (FFE)
@@ -375,7 +379,7 @@ Whether @samp{Y} and @samp{Z} are local variables,
 additional function entry points,
 or dummy arguments to additional entry points
 is not known
-until the @samp{ENTRY} statement is parsed.
+until the @code{ENTRY} statement is parsed.
 
 @item
 Similarly, whether @samp{TMP} is a local variable is not known
@@ -383,7 +387,7 @@ until the @samp{READ *, TMP} statement is parsed.
 
 @item
 The initial values for @samp{EE} and @samp{PI}
-are not known until after the @samp{DATA} statement is parsed.
+are not known until after the @code{DATA} statement is parsed.
 
 @item
 Whether @samp{FRED} is a function returning type @code{REAL}
@@ -404,7 +408,7 @@ especially when @code{ASSIGN}'ed.)
 
 @item
 That @samp{J} is a local variable is not known
-until the first @samp{ASSIGN} statement is parsed.
+until the first @code{ASSIGN} statement is parsed.
 (This happens @emph{after} executable code has been seen.)
 @end itemize
 
@@ -678,17 +682,17 @@ END
 
 The arguments to the two calls to @samp{LFUNC}
 require dynamic allocation (at run time),
-but are not required during execution of the @samp{CALL} statements.
+but are not required during execution of the @code{CALL} statements.
 
 So, the scopes of those temporaries must be within blocks inside
 the block corresponding to the Fortran @code{IF} block.
 
 This cannot be represented ``naturally''
 in vanilla C, nor in GBEL.
-The @samp{if}, @samp{elseif}, @samp{else},
-and @samp{endif} constructs
+The @code{if}, @code{elseif}, @code{else},
+and @code{endif} constructs
 provided by both languages must,
-for a given @samp{if} block,
+for a given @code{if} block,
 share the same C/GBE block.
 
 Therefore, any temporaries needed during evaluation of @samp{expr}
@@ -793,7 +797,7 @@ as if @samp{SELECT CASE(temp0)} had been written.
 Each corresponding @code{CASE} is replaced with @samp{CASE(@var{i})},
 where @var{i} is the ordinal for that case,
 determined while, or before,
-generating the cascade of @samp{if}-related constructs
+generating the cascade of @code{if}-related constructs
 to cope with @code{CHARACTER} selection.
 
 @item

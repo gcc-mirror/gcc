@@ -9,7 +9,7 @@
 @c in the standalone derivations of this file (e.g. BUGS).
 @set copyrights-bugs 1995-1999
 
-@set last-update-bugs 1999-04-03
+@set last-update-bugs 1999-04-17
 
 @include root.texi
 
@@ -111,8 +111,8 @@ e.g. not passed to other procedures as they should be.
 @code{g77} fails to warn about
 use of a ``live'' iterative-DO variable
 as an implied-DO variable
-in a @samp{WRITE} or @samp{PRINT} statement
-(although it does warn about this in a @samp{READ} statement).
+in a @code{WRITE} or @code{PRINT} statement
+(although it does warn about this in a @code{READ} statement).
 
 @item
 Something about @code{g77}'s straightforward handling of
@@ -210,8 +210,8 @@ for information on the @samp{-fdebug-kludge} option.
 @item
 When debugging, after starting up the debugger but before being able
 to see the source code for the main program unit, the user must currently
-set a breakpoint at @samp{MAIN__} (or @samp{MAIN___} or @samp{MAIN_} if
-@samp{MAIN__} doesn't exist)
+set a breakpoint at @code{MAIN__} (or @code{MAIN___} or @code{MAIN_} if
+@code{MAIN__} doesn't exist)
 and run the program until it hits the breakpoint.
 At that point, the
 main program unit is activated and about to execute its first

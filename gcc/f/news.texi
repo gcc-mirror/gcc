@@ -9,7 +9,7 @@
 @c in the standalone derivations of this file (e.g. NEWS).
 @set copyrights-news 1995-1999
 
-@set last-update-news 1999-04-03
+@set last-update-news 1999-04-17
 
 @include root.texi
 
@@ -190,7 +190,7 @@ as if they ended in @samp{.for} and @samp{.fpp}, respectively.
 that has an interface that is not Year 2000 (Y2K) compliant.
 Also, the @code{libg2c} has been changed to increase the likelihood
 of catching references to the implementations of these intrinsics
-using the @samp{EXTERNAL} mechanism
+using the @code{EXTERNAL} mechanism
 (which would avoid the new warnings).
 
 @ifset DOC-G77
@@ -205,7 +205,7 @@ disagrees with the reference concerning the type of the function.
 @end ifclear
 
 @item
-@code{-fno-emulate-complex} is now the default option.
+@samp{-fno-emulate-complex} is now the default option.
 This should result in improved performance
 of code that uses the @code{COMPLEX} data type.
 
@@ -213,14 +213,22 @@ of code that uses the @code{COMPLEX} data type.
 @cindex double-precision performance
 @cindex -malign-double
 @item
-The @code{-malign-double} option
+The @samp{-malign-double} option
 now reliably aligns @emph{all} double-precision variables and arrays
 on Intel x86 targets.
+
+@item
+Support for the @samp{-fugly} option has been removed.
 
 @ifclear USERVISONLY
 @item
 Improve documentation and indexing,
 including information on Year 2000 (Y2K) compliance.
+@end ifclear
+
+@ifclear USERVISONLY
+@item
+Upgrade to @code{libf2c} as of 1999-03-17.
 @end ifclear
 @end itemize
 
@@ -230,7 +238,7 @@ including information on Year 2000 (Y2K) compliance.
 @item
 Fix the @code{IDate} intrinsic (VXT) (in @code{libg2c})
 so the returned year is in the documented, non-Y2K-compliant range
-of 0--99,
+of 0-99,
 instead of being returned as 100 in the year 2000.
 
 @ifset DOC-G77
@@ -239,12 +247,12 @@ for more information.
 @end ifset
 
 @item
-Fix the @samp{Date_and_Time} intrinsic (in @code{libg2c})
+Fix the @code{Date_and_Time} intrinsic (in @code{libg2c})
 to return the milliseconds value properly
 in @var{Values}(8).
 
 @item
-Fix the @samp{LStat} intrinsic (in @code{libg2c})
+Fix the @code{LStat} intrinsic (in @code{libg2c})
 to return device-ID information properly
 in @var{SArray}(7).
 
@@ -273,13 +281,13 @@ upon doing any I/O following a direct formatted write.
 
 @item
 Fix @code{g77} so it no longer crashes compiling references
-to the @samp{Rand} intrinsic on some systems.
+to the @code{Rand} intrinsic on some systems.
 
 @item
 Fix @code{g77} portion of installation process so it works
 better on some systems
 (those with shells requiring @samp{else true} clauses
-on @samp{if} constructs
+on @code{if} constructs
 for the completion code to be set properly).
 @end itemize
 @end ifclear
@@ -310,7 +318,7 @@ involving @code{COMPLEX} arithmetic
 Fix a code-generation bug that afflicted
 Intel x86 targets when @samp{-O2} was specified
 compiling, for example, an old version of
-the @samp{DNRM2} routine.
+the @code{DNRM2} routine.
 
 The x87 coprocessor stack was being
 mismanaged in cases involving assigned @code{GOTO}
@@ -335,11 +343,11 @@ or given initial values via @code{DATA}.
 @itemize @bullet
 @ifclear USERVISONLY
 @item
-Fix bugs in the @code{libU77} intrinsic @samp{HostNm}
-that wrote one byte beyond the end of its @samp{CHARACTER}
+Fix bugs in the @code{libU77} intrinsic @code{HostNm}
+that wrote one byte beyond the end of its @code{CHARACTER}
 argument,
 and in the @code{libU77} intrinsics
-@samp{GMTime} and @samp{LTime}
+@code{GMTime} and @code{LTime}
 that overwrote their arguments.
 @end ifclear
 
@@ -385,7 +393,7 @@ compile-time constant @code{INTEGER} expression.
 
 @item
 Fix @code{g77} @samp{-g} option so procedures that
-use @samp{ENTRY} can be stepped through, line by line,
+use @code{ENTRY} can be stepped through, line by line,
 in @code{gdb}.
 
 @item
@@ -503,7 +511,7 @@ Improve documentation and indexing.
 @item
 The upgrade to @code{libf2c} as of 1998-06-18
 should fix a variety of problems, including
-those involving some uses of the @samp{T} format
+those involving some uses of the @code{T} format
 specifier, and perhaps some build (porting) problems
 as well.
 @end ifclear
@@ -515,7 +523,7 @@ as well.
 @item
 @code{g77} no longer produces incorrect code
 and initial values
-for @samp{EQUIVALENCE} and @samp{COMMON}
+for @code{EQUIVALENCE} and @code{COMMON}
 aggregates that, due to ``unnatural'' ordering of members
 vis-a-vis their types, require initial padding.
 @end ifclear
@@ -562,20 +570,20 @@ in @code{libf2c} (@code{libg2c}).
 This new information allows, for example,
 @kbd{which __g77_length_a} to be used in @code{gdb}
 to determine the type of the phantom length argument
-supplied with @samp{CHARACTER} variables.
+supplied with @code{CHARACTER} variables.
 
 This information pertains to internally-generated
 type, variable, and other information,
 not to the longstanding deficiencies vis-a-vis
-@samp{COMMON} and @samp{EQUIVALENCE}.
+@code{COMMON} and @code{EQUIVALENCE}.
 
 @item
-The F90 @samp{Date_and_Time} intrinsic now is
+The F90 @code{Date_and_Time} intrinsic now is
 supported.
 
 @item
-The F90 @samp{System_Clock} intrinsic allows
-the optional arguments (except for the @samp{Count}
+The F90 @code{System_Clock} intrinsic allows
+the optional arguments (except for the @code{Count}
 argument) to be omitted.
 
 @ifclear USERVISONLY
@@ -617,7 +625,7 @@ of @code{g77} due to their being implemented
 via @code{g77}-specific patches to the @code{gcc}
 back end in previous releases include:
 
-@itemize --
+@itemize @minus
 @item
 Support for @code{__restrict__} keyword,
 the options @samp{-fargument-alias}, @samp{-fargument-noalias},
@@ -659,11 +667,11 @@ including patches for the @code{gcc} back end.
 
 @ifclear USERVISONLY
 @item
-Fix bugs in the @code{libU77} intrinsic @samp{HostNm}
-that wrote one byte beyond the end of its @samp{CHARACTER}
+Fix bugs in the @code{libU77} intrinsic @code{HostNm}
+that wrote one byte beyond the end of its @code{CHARACTER}
 argument,
 and in the @code{libU77} intrinsics
-@samp{GMTime} and @samp{LTime}
+@code{GMTime} and @code{LTime}
 that overwrote their arguments.
 @end ifclear
 
@@ -800,7 +808,7 @@ Improve documentation and indexing.
 Upgrade to @code{libf2c} as of 1998-04-20.
 
 This should fix a variety of problems, including
-those involving some uses of the @samp{T} format
+those involving some uses of the @code{T} format
 specifier, and perhaps some build (porting) problems
 as well.
 @end ifclear
@@ -826,7 +834,7 @@ For example, @samp{DO 10 J=2,J} now is compiled correctly.
 Fix a code-generation bug that afflicted
 Intel x86 targets when @samp{-O2} was specified
 compiling, for example, an old version of
-the @samp{DNRM2} routine.
+the @code{DNRM2} routine.
 
 The x87 coprocessor stack was being
 mismanaged in cases involving assigned @code{GOTO}
@@ -856,7 +864,7 @@ Fix @code{g77} version of @code{libf2c} so it no longer
 produces a spurious @samp{I/O recursion} diagnostic at run time
 when an I/O operation (such as @samp{READ *,I}) is interrupted
 in a manner that causes the program to be terminated
-via the @samp{f_exit} routine (such as via @kbd{C-c}).
+via the @code{f_exit} routine (such as via @kbd{C-c}).
 @end ifclear
 
 @ifclear USERVISONLY
@@ -898,7 +906,7 @@ compile-time constant @code{INTEGER} expression.
 
 @item
 Fix @code{g77} @samp{-g} option so procedures that
-use @samp{ENTRY} can be stepped through, line by line,
+use @code{ENTRY} can be stepped through, line by line,
 in @code{gdb}.
 
 @ifclear USERVISONLY
@@ -1070,7 +1078,7 @@ of @code{g77} due to their being implemented
 via @code{g77}-specific patches to the @code{gcc}
 back end in previous releases include:
 
-@itemize --
+@itemize @minus
 @item
 Support for the C-language @code{restrict} keyword.
 
@@ -1233,8 +1241,8 @@ or assigned-@code{GOTO} statement.
 @ifclear USERVISONLY
 @item
 Fix compiler crashes due to using the name of a some
-non-standard intrinsics (such as @samp{FTELL} or
-@samp{FPUTC}) as such and as the name of a procedure
+non-standard intrinsics (such as @code{FTell} or
+@code{FPutC}) as such and as the name of a procedure
 or common block.
 Such dual use of a name in a program is allowed by
 the standard.
@@ -1251,19 +1259,19 @@ the standard.
 @c 
 @c For example, the intrinsic @code{FPUTC} previously was
 @c implemented by @code{g77} as a call to the @code{libf2c}
-@c routine @samp{fputc_}.
+@c routine @code{fputc_}.
 @c This would conflict with a Fortran procedure named @code{FPUTC}
 @c (using default compiler options), and this conflict
 @c would cause a crash under certain circumstances.
 @c 
-@c Now, the intrinsic @code{FPUTC} calls @samp{G77_fputc_0},
-@c which does not conflict with the @samp{fputc_} external
+@c Now, the intrinsic @code{FPUTC} calls @code{G77_fputc_0},
+@c which does not conflict with the @code{fputc_} external
 @c that implements a Fortran procedure named @code{FPUTC}.
 @c 
 @c Programs that refer to @code{FPUTC} as an external procedure
 @c without supplying their own implementation will link to
-@c the new @code{libf2c} routine @samp{fputc_}, which is
-@c simply a jacket routine that calls @samp{G77_fputc_0}.
+@c the new @code{libf2c} routine @code{fputc_}, which is
+@c simply a jacket routine that calls @code{G77_fputc_0}.
 
 @ifclear USERVISONLY
 @item
@@ -1370,7 +1378,7 @@ that have embedded blanks, commas, and so on.
 
 @item
 Fix @code{SIGNAL} intrinsic so it accepts an
-optional third @samp{Status} argument.
+optional third @code{Status} argument.
 
 @ifclear USERVISONLY
 @item
@@ -1478,7 +1486,7 @@ Support @samp{*f771} entry in @code{gcc} @file{specs} file.
 
 @ifclear USERVISONLY
 @item
-Fix typo in @code{make} rule @samp{g77-cross}, used only for
+Fix typo in @code{make} rule @code{g77-cross}, used only for
 cross-compiling.
 @end ifclear
 
@@ -1600,12 +1608,12 @@ statements specifying that these names are not intended
 to be names of intrinsics.
 
 @item
-The @samp{ALWAYS_FLUSH} macro is no longer defined when
+The @code{ALWAYS_FLUSH} macro is no longer defined when
 building @code{libf2c}, which should result in improved
 I/O performance, especially over NFS.
 
 @emph{Note:} If you have code that depends on the behavior
-of @code{libf2c} when built with @samp{ALWAYS_FLUSH} defined,
+of @code{libf2c} when built with @code{ALWAYS_FLUSH} defined,
 you will have to modify @code{libf2c} accordingly before
 building it from this and future versions of @code{g77}.
 
@@ -1860,10 +1868,10 @@ These are @code{REALPART}, @code{IMAGPART},
 @code{LONG}, and @code{SHORT}.
 
 @item
-A new group of intrinsics, @samp{gnu}, has been added
+A new group of intrinsics, @code{gnu}, has been added
 to contain the new @code{REALPART}, @code{IMAGPART},
 and @code{COMPLEX} intrinsics.
-An old group, @samp{dcp}, has been removed.
+An old group, @code{dcp}, has been removed.
 
 @item
 Complain about industry-wide ambiguous references
@@ -1891,8 +1899,8 @@ a new chapter containing information on one, later
 more, diagnostics that users are directed to pull
 up automatically via a message in the diagnostic itself.
 
-(Hence the menu item @samp{M} for the node
-@samp{Diagnostics} in the top-level menu of
+(Hence the menu item @code{M} for the node
+@code{Diagnostics} in the top-level menu of
 the Info documentation.)
 @end ifclear
 @end itemize
@@ -1902,7 +1910,7 @@ the Info documentation.)
 
 Information on previous versions is archived
 in @file{@value{path-g77}/news.texi}
-following the test of the @samp{DOC-OLDNEWS} macro.
+following the test of the @code{DOC-OLDNEWS} macro.
 @end ifclear
 
 @ifset DOC-OLDNEWS
@@ -1917,14 +1925,14 @@ These bugs occurred when assigning the result of an
 operation to a complex variable (or array element)
 that also served as an input to that operation.
 
-The operations affected by this bug were: @samp{CONJG()},
-@samp{DCONJG()}, @samp{CCOS()}, @samp{CDCOS()},
-@samp{CLOG()}, @samp{CDLOG()}, @samp{CSIN()}, @samp{CDSIN()},
-@samp{CSQRT()}, @samp{CDSQRT()}, complex division, and
+The operations affected by this bug were: @code{CONJG()},
+@code{DCONJG()}, @code{CCOS()}, @code{CDCOS()},
+@code{CLOG()}, @code{CDLOG()}, @code{CSIN()}, @code{CDSIN()},
+@code{CSQRT()}, @code{CDSQRT()}, complex division, and
 raising a @code{DOUBLE COMPLEX} operand to an @code{INTEGER}
 power.
 (The related generic and @samp{Z}-prefixed intrinsics,
-such as @samp{ZSIN()}, also were affected.)
+such as @code{ZSIN()}, also were affected.)
 
 For example, @samp{C = CSQRT(C)}, @samp{Z = Z/C}, and @samp{Z = Z**I}
 (where @samp{C} is @code{COMPLEX} and @samp{Z} is
@@ -1936,7 +1944,7 @@ For example, @samp{C = CSQRT(C)}, @samp{Z = Z/C}, and @samp{Z = Z**I}
 @itemize @bullet
 @item
 Fix @code{FORMAT} statement parsing so negative values for
-specifiers such as @samp{P} (e.g. @samp{FORMAT(-1PF8.1)})
+specifiers such as @code{P} (e.g. @samp{FORMAT(-1PF8.1)})
 are correctly processed as negative.
 
 @item
@@ -2020,7 +2028,7 @@ procedures in @code{libf2c}.
 @item
 Modify @code{fseek_()} in @code{libf2c} to be more portable
 (though, in practice, there might be no systems where this
-matters) and to catch invalid @samp{whence} arguments.
+matters) and to catch invalid @code{whence} arguments.
 
 @item
 Some useless warnings from the @samp{-Wunused} option have
@@ -2032,7 +2040,7 @@ on AIX systems by linking with the @samp{-bbigtoc} option.
 
 @item
 Abort configuration if @code{gcc} has not been patched
-using the patch file provided in the @samp{gcc/f/gbe/}
+using the patch file provided in the @file{gcc/f/gbe/}
 subdirectory.
 
 @item
@@ -2244,7 +2252,7 @@ maintainer's new address is @email{dmg@@bell-labs.com}.
 @itemize @bullet
 @item
 @strong{Fix serious bug} in @samp{g77 -v} command that can cause removal of a
-system's @file{/dev/null} special file if run by user @samp{root}.
+system's @file{/dev/null} special file if run by user @code{root}.
 
 @strong{All users} of version 0.5.16 should ensure that
 they have not removed @file{/dev/null} or replaced it with an ordinary
@@ -2283,7 +2291,7 @@ never happen).
 
 @item
 Make @code{libf2c} build procedures work on more systems again by
-eliminating unnecessary invocations of @samp{ld -r -x} and @samp{mv}.
+eliminating unnecessary invocations of @samp{ld -r -x} and @code{mv}.
 
 @item
 Fix omission of @samp{-funix-intrinsics-@dots{}} options in list of permitted
@@ -2362,7 +2370,7 @@ This is known to fix code invoking @code{ERF()}, @code{ERFC()},
 
 @item
 Update @code{libf2c} to include netlib patches through 1995-08-16, and
-@code{#define} @samp{WANT_LEAD_0} to 1 to make @code{g77}-compiled code more
+@code{#define} @code{WANT_LEAD_0} to 1 to make @code{g77}-compiled code more
 consistent with other Fortran implementations by outputting
 leading zeros in formatted and list-directed output.
 
@@ -2444,12 +2452,12 @@ and @code{SYSTEM}, append a final argument specifying an @code{INTEGER}
 variable or array element (e.g. @samp{CALL SYSTEM('rm foo',ISTAT)}).
 
 @item
-Add new intrinsic group named @samp{unix} to contain the new intrinsics,
+Add new intrinsic group named @code{unix} to contain the new intrinsics,
 and by default enable this new group.
 
 @item
-Move @code{LOC()} intrinsic out of the @samp{vxt} group to the new
-@samp{unix} group.
+Move @code{LOC()} intrinsic out of the @code{vxt} group to the new
+@code{unix} group.
 
 @item
 Improve @code{g77} so that @samp{g77 -v} by itself (or with
@@ -2706,7 +2714,7 @@ Allow @code{RETURN} in main program unit.
 Changes to Hollerith-constant support to obey Appendix C of the
 standard:
 
-@itemize --
+@itemize @minus
 @item
 Now padded on the right with zeros, not spaces.
 
@@ -2734,7 +2742,7 @@ to widen to @code{INTEGER}), essentially.
 @item
 Changes and fixes to typeless-constant support:
 
-@itemize --
+@itemize @minus
 @item
 Now treated as a typeless double-length @code{INTEGER} value.
 
