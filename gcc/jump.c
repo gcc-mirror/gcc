@@ -771,6 +771,8 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	      && rtx_equal_p (SET_DEST (temp4), temp1)
 	      && (GET_CODE (SET_SRC (temp4)) == REG
 		  || GET_CODE (SET_SRC (temp4)) == SUBREG
+		  || (GET_CODE (SET_SRC (temp4)) == MEM
+		      && RTX_UNCHANGING_P (SET_SRC (temp4)))
 		  || CONSTANT_P (SET_SRC (temp4)))
 	      && (REG_NOTES (temp2) == 0
 		  || ((REG_NOTE_KIND (REG_NOTES (temp2)) == REG_EQUAL
@@ -907,6 +909,8 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	      && rtx_equal_p (SET_DEST (temp4), temp1)
 	      && (GET_CODE (SET_SRC (temp4)) == REG
 		  || GET_CODE (SET_SRC (temp4)) == SUBREG
+		  || (GET_CODE (SET_SRC (temp4)) == MEM
+		      && RTX_UNCHANGING_P (SET_SRC (temp4)))
 		  || CONSTANT_P (SET_SRC (temp4)))
 	      && (REG_NOTES (temp3) == 0
 		  || ((REG_NOTE_KIND (REG_NOTES (temp3)) == REG_EQUAL
@@ -991,6 +995,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	      && GET_CODE (SET_SRC (temp1)) != REG
 	      && GET_CODE (SET_SRC (temp1)) != SUBREG
 	      && GET_CODE (SET_SRC (temp1)) != CONST_INT
+	      && ! modified_in_p (insn, temp)
 	      && ! side_effects_p (SET_SRC (temp1))
 	      && ! may_trap_p (SET_SRC (temp1))
 	      && rtx_cost (SET_SRC (temp1), SET) < 10)
@@ -1030,11 +1035,13 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	      && GET_MODE_CLASS (GET_MODE (temp2)) == MODE_INT
 	      && (! SMALL_REGISTER_CLASSES
 		  || REGNO (temp2) >= FIRST_PSEUDO_REGISTER)
+	      && ! modified_in_p (insn, temp)
 	      && ! side_effects_p (SET_SRC (temp1))
 	      && ! may_trap_p (SET_SRC (temp1))
 	      && rtx_cost (SET_SRC (temp1), SET) < 10
 	      && (temp4 = single_set (temp3)) != 0
 	      && rtx_equal_p (SET_DEST (temp4), temp2)
+	      && ! modified_in_p (insn, temp3)
 	      && ! side_effects_p (SET_SRC (temp4))
 	      && ! may_trap_p (SET_SRC (temp4))
 	      && rtx_cost (SET_SRC (temp4), SET) < 10)
@@ -1087,6 +1094,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	      && REGNO (temp5) >= FIRST_PSEUDO_REGISTER
 	      && REGNO_FIRST_UID (REGNO (temp5)) == INSN_UID (temp)
 	      && REGNO_LAST_UID (REGNO (temp5)) == INSN_UID (temp3)
+	      && ! modified_in_p (insn, temp)
 	      && ! side_effects_p (SET_SRC (temp1))
 	      && ! may_trap_p (SET_SRC (temp1))
 	      && rtx_cost (SET_SRC (temp1), SET) < 10
@@ -1096,6 +1104,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	      && (! SMALL_REGISTER_CLASSES
 		  || REGNO (temp2) >= FIRST_PSEUDO_REGISTER)
 	      && rtx_equal_p (SET_DEST (temp4), temp2)
+	      && ! modified_in_p (insn, temp3)
 	      && ! side_effects_p (SET_SRC (temp4))
 	      && ! may_trap_p (SET_SRC (temp4))
 	      && rtx_cost (SET_SRC (temp4), SET) < 10)
@@ -1153,9 +1162,10 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	      && (! SMALL_REGISTER_CLASSES
 		  || REGNO (temp1) >= FIRST_PSEUDO_REGISTER)
 	      && (GET_CODE (temp2 = SET_SRC (PATTERN (temp))) == REG
+		  || (GET_CODE (temp2) == MEM && RTX_UNCHANGING_P (temp2))
 		  || GET_CODE (temp2) == SUBREG
 		  /* ??? How about floating point constants?  */
-		  || GET_CODE (temp2) == CONST_INT)
+		  || CONSTANT_P (temp2))
 	      /* Allow either form, but prefer the former if both apply. 
 		 There is no point in using the old value of TEMP1 if
 		 it is a register, since cse will alias them.  It can

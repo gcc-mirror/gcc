@@ -1,3 +1,8 @@
+Mon Feb  2 02:08:04 1998  Michael P. Hayes  <michaelh@ongaonga.chch.cri.nz>
+
+	* jump.c (jump_optimize): Allow conditional loading of floating point
+	constants and constants from memory.  Reinstalled modified_in_p tests.
+
 Mon Feb  2 01:38:39 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* loop.c (get_condition): Handle sign-extended constants.
