@@ -12312,6 +12312,7 @@ dwarf2out_finish (input_filename)
     {
       named_section_flags (DEBUG_MACINFO_SECTION, SECTION_DEBUG);
       dw2_asm_output_data (1, DW_MACINFO_end_file, "End file");
+      dw2_asm_output_data (1, 0, "End compilation unit");
     }
 
   /* If we emitted any DW_FORM_strp form attribute, output the string
