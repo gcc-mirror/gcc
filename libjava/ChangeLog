@@ -1,5 +1,7 @@
 2001-09-05  Tom Tromey  <tromey@redhat.com>
 
+	* java/util/Date.java: Re-merged with Classpath.
+
 	* java/text/DateFormatSymbols.java: Re-merged with Classpath.
 
 2001-09-05  Corey Minyard  <minyard@acm.org>
