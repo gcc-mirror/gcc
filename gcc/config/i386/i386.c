@@ -6762,6 +6762,10 @@ output_pic_addr_const (FILE *file, rtx x, int code)
       break;
 
     case SYMBOL_REF:
+     /* Mark the decl as referenced so that cgraph will output the function.  */
+     if (SYMBOL_REF_DECL (x))
+       mark_decl_referenced (SYMBOL_REF_DECL (x));
+
       assemble_name (file, XSTR (x, 0));
       if (!TARGET_MACHO && code == 'P' && ! SYMBOL_REF_LOCAL_P (x))
 	fputs ("@PLT", file);
