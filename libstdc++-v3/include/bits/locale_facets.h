@@ -325,6 +325,11 @@ namespace std
       __to_type 	       	_M_toupper;
       __to_type  	       	_M_tolower;
       const mask*              	_M_table;
+      mutable char		_M_widen_ok;
+      mutable char		_M_widen[1 + static_cast<unsigned char>(-1)];
+      mutable char		_M_narrow[1 + static_cast<unsigned char>(-1)];
+      mutable char		_M_narrow_ok;	// 0 uninitialized, 1 init,
+						// 2 non-consecutive
       
     public:
       static locale::id        id;
@@ -367,20 +372,46 @@ namespace std
 
       char_type 
       widen(char __c) const
-      { return this->do_widen(__c); }
+      { 
+// 	if (_M_widen_ok) return _M_widen[__c];
+// 	this->_M_widen_init();
+	return this->do_widen(__c);
+      }
 
       const char*
       widen(const char* __lo, const char* __hi, char_type* __to) const
-      { return this->do_widen(__lo, __hi, __to); }
+      {
+// 	if (_M_widen_ok == 1)
+// 	  {
+// 	    memcpy(__to, __lo, __hi - __lo);
+// 	    return __hi;
+// 	  }
+// 	if (!_M_widen_ok) _M_widen_init();
+	return this->do_widen(__lo, __hi, __to);
+      }
 
       char 
       narrow(char_type __c, char __dfault) const
-      { return this->do_narrow(__c, __dfault); }
+      {
+// 	if (_M_narrow[__c]) return _M_narrow[__c];
+	char __t = do_narrow(__c, __dfault);
+// 	if (__t != __dfault) _M_narrow[__c] = __t;
+	return __t;
+      }
 
       const char_type*
       narrow(const char_type* __lo, const char_type* __hi,
 	      char __dfault, char *__to) const
-      { return this->do_narrow(__lo, __hi, __dfault, __to); }
+      {
+// 	if (__builtin_expect(_M_narrow_ok==1,true))
+// 	  {
+// 	    memcpy(__to, __lo, __hi - __lo);
+// 	    return __hi;
+// 	  }
+// 	if (!_M_narrow_ok)
+// 	  _M_narrow_init();
+	return this->do_narrow(__lo, __hi, __dfault, __to);
+      }
 
     protected:
       const mask* 
@@ -426,6 +457,54 @@ namespace std
       {
 	memcpy(__dest, __lo, __hi - __lo);
 	return __hi;
+      }
+
+    private:
+
+      void _M_widen_init() const
+      {
+	char __tmp[sizeof(_M_widen)];
+	for (unsigned __i = 0; __i < sizeof(_M_widen); ++__i)
+	  __tmp[__i] = __i;
+	do_widen(__tmp, __tmp + sizeof(__tmp), _M_widen);
+	    
+	_M_widen_ok = 1;
+	// Set _M_widen_ok to 2 if memcpy can't be used.
+	for (unsigned __i = 0; __i < sizeof(_M_widen); ++__i)
+	  if (__tmp[__i] != _M_widen[__i])
+	    {
+	      _M_widen_ok = 2;
+	      break;
+	    }
+      }
+
+      // Fill in the narrowing cache and flag whether all values are
+      // valid or not.  _M_narrow_ok is set to 1 if the whole table is
+      // narrowed, 2 if only some values could be narrowed.
+      void _M_narrow_init() const
+      {
+	char __tmp[sizeof(_M_narrow)];
+	for (unsigned i = 0; i < sizeof(_M_narrow); ++i)
+	  __tmp[i] = i;
+	do_narrow(__tmp, __tmp + sizeof(__tmp), 0, _M_narrow);
+
+	// Check if any default values were created.  Do this by
+	// renarrowing with a different default value and comparing.
+	bool __consecutive = true;
+	for (unsigned __i = 0; __i < sizeof(_M_narrow); ++__i)
+	  {
+	    char __c[1];
+	    if (!_M_narrow[__i])
+	      {
+		do_narrow(__tmp + __i, __tmp + __i + 1, 1, __c);
+		if (__c[0] == 1)
+		  {
+		    __consecutive = false;
+		    break;
+		  }
+	      }
+	  }
+	_M_narrow_ok = __consecutive ? 1 : 2;
       }
     };
  

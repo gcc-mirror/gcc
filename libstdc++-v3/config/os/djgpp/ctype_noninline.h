@@ -42,13 +42,23 @@
   : facet(__refs), _M_del(__table != 0 && __del), 
   _M_toupper(__dj_ctype_toupper), _M_tolower(__dj_ctype_tolower),
   _M_table(__table ? __table : __dj_ctype_flags)  
-  { }
+  { 
+    memset(_M_widen, 0, sizeof(_M_widen));
+    _M_widen_ok = 0;
+    memset(_M_narrow, 0, sizeof(_M_narrow));
+    _M_narrow_ok = 0;
+  }
 
   ctype<char>::ctype(const mask* __table, bool __del, size_t __refs) 
   : facet(__refs), _M_del(__table != 0 && __del), 
   _M_toupper(__dj_ctype_toupper), _M_tolower(__dj_ctype_tolower),
   _M_table(__table ? __table : __dj_ctype_flags)  
-  { }
+  { 
+    memset(_M_widen, 0, sizeof(_M_widen));
+    _M_widen_ok = 0;
+    memset(_M_narrow, 0, sizeof(_M_narrow));
+    _M_narrow_ok = 0;
+  }
 
   char
   ctype<char>::do_toupper(char __c) const

@@ -65,6 +65,10 @@
     _M_toupper = _M_c_locale_ctype->__ctype_toupper;
     _M_tolower = _M_c_locale_ctype->__ctype_tolower;
     _M_table = __table ? __table : _M_c_locale_ctype->__ctype_b;
+    memset(_M_widen, 0, sizeof(_M_widen));
+    _M_widen_ok = 0;
+    memset(_M_narrow, 0, sizeof(_M_narrow));
+    _M_narrow_ok = 0;
   }
 #else
   ctype<char>::ctype(__c_locale, const mask* __table, bool __del, 
@@ -85,6 +89,10 @@
     setlocale(LC_CTYPE, __old);
     free(__old);
     _M_c_locale_ctype = _S_get_c_locale();
+    memset(_M_widen, 0, sizeof(_M_widen));
+    _M_widen_ok = 0;
+    memset(_M_narrow, 0, sizeof(_M_narrow));
+    _M_narrow_ok = 0;
   }
 #endif
 
@@ -96,6 +104,10 @@
     _M_toupper = _M_c_locale_ctype->__ctype_toupper;
     _M_tolower = _M_c_locale_ctype->__ctype_tolower;
     _M_table = __table ? __table : _M_c_locale_ctype->__ctype_b;
+    memset(_M_widen, 0, sizeof(_M_widen));
+    _M_widen_ok = 0;
+    memset(_M_narrow, 0, sizeof(_M_narrow));
+    _M_narrow_ok = 0;
   }
 #else
   ctype<char>::ctype(const mask* __table, bool __del, size_t __refs)
@@ -115,6 +127,10 @@
     setlocale(LC_CTYPE, __old);
     free(__old);
     _M_c_locale_ctype = _S_get_c_locale();
+    memset(_M_widen, 0, sizeof(_M_widen));
+    _M_widen_ok = 0;
+    memset(_M_narrow, 0, sizeof(_M_narrow));
+    _M_narrow_ok = 0;
   }
 #endif
 
