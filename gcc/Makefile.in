@@ -629,7 +629,7 @@ LIB2FUNCS = _muldi3 _divdi3 _moddi3 _udivdi3 _umoddi3 _negdi2 \
     _fixtfdi _fixunstfdi _floatditf \
     __gcc_bcmp _varargs __dummy _eprintf _op_new _op_vnew _new_handler \
     _op_delete _op_vdel _bb _shtab _clear_cache _trampoline __main _exit \
-    _ctors _eh _eh_compat _pure
+    _ctors _eh _pure
 
 # The files that "belong" in CONFIG_H are deliberately omitted
 # because having them there would not be useful in actual practice.
