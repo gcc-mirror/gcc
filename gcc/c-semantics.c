@@ -140,6 +140,9 @@ add_stmt (tree t)
       STMT_IS_FULL_EXPR_P (t) = stmts_are_full_exprs_p ();
     }
 
+  if (code == LABEL_EXPR || code == CASE_LABEL_EXPR)
+    STATEMENT_LIST_HAS_LABEL (cur_stmt_list) = 1;
+
   /* Add T to the statement-tree.  Non-side-effect statements need to be
      recorded during statement expressions.  */
   append_to_statement_list_force (t, &cur_stmt_list);

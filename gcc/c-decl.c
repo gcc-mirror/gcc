@@ -3061,7 +3061,24 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
 	    }
 
 	  if (TREE_CODE (decl) != FUNCTION_DECL)
-	    add_stmt (build_stmt (DECL_EXPR, decl));
+	    {
+	      /* If we're building a variable sized type, and we might be
+		 reachable other than via the top of the current binding
+		 level, then create a new BIND_EXPR so that we deallocate
+		 the object at the right time.  */
+	      /* Note that DECL_SIZE can be null due to errors.  */
+	      if (DECL_SIZE (decl)
+		  && !TREE_CONSTANT (DECL_SIZE (decl))
+		  && STATEMENT_LIST_HAS_LABEL (cur_stmt_list))
+		{
+		  tree bind;
+		  bind = build (BIND_EXPR, void_type_node, NULL, NULL, NULL);
+		  TREE_SIDE_EFFECTS (bind) = 1;
+		  add_stmt (bind);
+		  BIND_EXPR_BODY (bind) = push_stmt_list ();
+		}
+	      add_stmt (build_stmt (DECL_EXPR, decl));
+	    }
 	}
   
 
