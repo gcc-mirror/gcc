@@ -1,5 +1,11 @@
 2002-03-06  Phil Edwards  <pme@gcc.gnu.org>
 
+	PR libstdc++/5734
+	* include/bits/stl_vector.h (vector::push_back()):  Guard with
+	_GLIBCPP_DEPRECATED.
+
+2002-03-06  Phil Edwards  <pme@gcc.gnu.org>
+
 	* include/bits/c++config:  Fix misplaced leading blanks on first line.
 
 2002-03-05  Benjamin Kosnik  <bkoz@redhat.com>
