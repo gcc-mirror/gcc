@@ -179,6 +179,8 @@ _FOR fix ",\n" =]
      [=hackname  _up=]_TEST_CT, [=
        _IF not_machine _exist =]FD_MACH_IFNOT[=
        _ELSE                  =]FD_MACH_ONLY[=
+       _ENDIF =][=
+       _IF shell       _exist =] | FD_SHELL_SCRIPT[=
        _ENDIF =],
      a[=hackname _cap=]Tests,   apz[=hackname _cap=]Patch }[=
 

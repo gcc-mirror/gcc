@@ -4040,7 +4040,7 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
 
   {  zM88k_Multi_InclName,    zM88k_Multi_InclList,
      apzM88k_Multi_InclMachs, (regex_t*)NULL,
-     M88K_MULTI_INCL_TEST_CT, FD_MACH_ONLY,
+     M88K_MULTI_INCL_TEST_CT, FD_MACH_ONLY | FD_SHELL_SCRIPT,
      aM88k_Multi_InclTests,   apzM88k_Multi_InclPatch },
 
   {  zMachine_NameName,    zMachine_NameList,
@@ -4055,7 +4055,7 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
 
   {  zMath_Gcc_IfndefsName,    zMath_Gcc_IfndefsList,
      apzMath_Gcc_IfndefsMachs, (regex_t*)NULL,
-     MATH_GCC_IFNDEFS_TEST_CT, FD_MACH_ONLY,
+     MATH_GCC_IFNDEFS_TEST_CT, FD_MACH_ONLY | FD_SHELL_SCRIPT,
      aMath_Gcc_IfndefsTests,   apzMath_Gcc_IfndefsPatch },
 
   {  zNested_CommentName,    zNested_CommentList,
@@ -4135,7 +4135,7 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
 
   {  zStdio_Va_ListName,    zStdio_Va_ListList,
      apzStdio_Va_ListMachs, (regex_t*)NULL,
-     STDIO_VA_LIST_TEST_CT, FD_MACH_ONLY,
+     STDIO_VA_LIST_TEST_CT, FD_MACH_ONLY | FD_SHELL_SCRIPT,
      aStdio_Va_ListTests,   apzStdio_Va_ListPatch },
 
   {  zSun_Bogus_IfdefName,    zSun_Bogus_IfdefList,
@@ -4310,31 +4310,31 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
 
   {  zZzz_Ki_IfaceName,    zZzz_Ki_IfaceList,
      apzZzz_Ki_IfaceMachs, (regex_t*)NULL,
-     ZZZ_KI_IFACE_TEST_CT, FD_MACH_ONLY,
+     ZZZ_KI_IFACE_TEST_CT, FD_MACH_ONLY | FD_SHELL_SCRIPT,
      aZzz_Ki_IfaceTests,   apzZzz_Ki_IfacePatch },
 
   {  zZzz_KiName,    zZzz_KiList,
      apzZzz_KiMachs, (regex_t*)NULL,
-     ZZZ_KI_TEST_CT, FD_MACH_ONLY,
+     ZZZ_KI_TEST_CT, FD_MACH_ONLY | FD_SHELL_SCRIPT,
      aZzz_KiTests,   apzZzz_KiPatch },
 
   {  zZzz_Ki_CallsName,    zZzz_Ki_CallsList,
      apzZzz_Ki_CallsMachs, (regex_t*)NULL,
-     ZZZ_KI_CALLS_TEST_CT, FD_MACH_ONLY,
+     ZZZ_KI_CALLS_TEST_CT, FD_MACH_ONLY | FD_SHELL_SCRIPT,
      aZzz_Ki_CallsTests,   apzZzz_Ki_CallsPatch },
 
   {  zZzz_Ki_DefsName,    zZzz_Ki_DefsList,
      apzZzz_Ki_DefsMachs, (regex_t*)NULL,
-     ZZZ_KI_DEFS_TEST_CT, FD_MACH_ONLY,
+     ZZZ_KI_DEFS_TEST_CT, FD_MACH_ONLY | FD_SHELL_SCRIPT,
      aZzz_Ki_DefsTests,   apzZzz_Ki_DefsPatch },
 
   {  zZzz_Bad_FixesName,    zZzz_Bad_FixesList,
      apzZzz_Bad_FixesMachs, (regex_t*)NULL,
-     ZZZ_BAD_FIXES_TEST_CT, FD_MACH_ONLY,
+     ZZZ_BAD_FIXES_TEST_CT, FD_MACH_ONLY | FD_SHELL_SCRIPT,
      aZzz_Bad_FixesTests,   apzZzz_Bad_FixesPatch },
 
   {  zZzz_TimeName,    zZzz_TimeList,
      apzZzz_TimeMachs, (regex_t*)NULL,
-     ZZZ_TIME_TEST_CT, FD_MACH_ONLY,
+     ZZZ_TIME_TEST_CT, FD_MACH_ONLY | FD_SHELL_SCRIPT,
      aZzz_TimeTests,   apzZzz_TimePatch }
 };

@@ -103,6 +103,7 @@ typedef struct patch_desc tPatchDesc;
     */
 #define FD_MACH_ONLY      0x0000
 #define FD_MACH_IFNOT     0x0001
+#define FD_SHELL_SCRIPT   0x0002
 #define FD_SKIP_TEST      0x8000
 
 typedef struct fix_desc tFixDesc;
@@ -909,6 +910,70 @@ extract_quoted_files (pz_data, pz_file_name, p_re_match)
 }
 
 
+
+/* * * * * * * * * * * * *
+
+    This loop should only cycle for 1/2 of one loop.
+    "chain_open" starts a process that uses "read_fd" as
+    its stdin and returns the new fd this process will use
+    for stdout.  */
+
+int
+start_fixer (read_fd, p_fixd, pz_file_name)
+  int read_fd;
+  tFixDesc* p_fixd;
+  char* pz_file_name;
+{
+  tSCC z_err[] = "Error %d (%s) starting filter process for %s\n";
+  tCC* pz_cmd_save;
+  char* pz_cmd;
+
+  if ((p_fixd->fd_flags & FD_SHELL_SCRIPT) == 0)
+    pz_cmd = (char*)NULL;
+  else
+    {
+      tSCC z_cmd_fmt[] = "file='%s'\n%s";
+      pz_cmd = (char*)xmalloc (strlen (p_fixd->patch_args[2])
+                               + sizeof( z_cmd_fmt )
+                               + strlen( pz_file_name ));
+      sprintf (pz_cmd, z_cmd_fmt, pz_file_name, p_fixd->patch_args[2]);
+      pz_cmd_save = p_fixd->patch_args[2];
+      p_fixd->patch_args[2] = pz_cmd;
+    }
+
+  for (;;)
+    {
+      static int failCt = 0;
+      int fd;
+
+      fd = chain_open (read_fd,
+                       (t_pchar *) p_fixd->patch_args,
+                       (process_chain_head == -1)
+                       ? &process_chain_head : (pid_t *) NULL);
+
+      if (fd != -1)
+        {
+          read_fd = fd;
+          break;
+        }
+
+      fprintf (stderr, z_err, errno, strerror (errno),
+               p_fixd->fix_name);
+
+      if ((errno != EAGAIN) || (++failCt > 10))
+        exit (EXIT_FAILURE);
+      sleep (1);
+    }
+
+  if (pz_cmd != (char*)NULL)
+    {
+      free ((void*)pz_cmd);
+      p_fixd->patch_args[2] = pz_cmd_save;
+    }
+
+  return read_fd;
+}
+
 /* * * * * * * * * * * * *
 
    Process the potential fixes for a particular include file.
@@ -926,30 +991,6 @@ process (pz_data, pz_file_name)
   int read_fd = -1;
   int num_children = 0;
 
-  /*  IF this is the first time through,
-      THEN put the 'file' environment variable into the environment.
-           This is used by some of the subject shell scripts and tests.   */
-
-  if (env_current_file[0] == NUL) {
-    strcpy (env_current_file, "file=");
-    putenv (env_current_file);
-  }
-
-  /*
-     Ghastly as it is, this actually updates the value of the variable:
-   
-       putenv(3C)             C Library Functions             putenv(3C)
-   
-       DESCRIPTION
-            putenv() makes the value of the  environment  variable  name
-            equal  to value by altering an existing variable or creating
-            a new one.  In either case, the string pointed to by  string
-            becomes part of the environment, so altering the string will
-            change the environment.  string points to a  string  of  the
-            form  ``name=value.''  The space used by string is no longer
-            used once a new string-defining name is passed to putenv().
-   */
-  strcpy (env_current_file + 5, pz_file_name);
   process_chain_head = NOPROCESS;
   fprintf (stderr, "%-50s   \r", pz_file_name );
   /* For every fix in our fix list, ...  */
@@ -1058,34 +1099,8 @@ process (pz_data, pz_file_name)
             }
         }
 
-      /*  This loop should only cycle for 1/2 of one loop.
-          "chain_open" starts a process that uses "read_fd" as
-          its stdin and returns the new fd this process will use
-          for stdout.  */
-
-      for (;;)
-        {
-          tSCC z_err[] = "Error %d (%s) starting filter process for %s\n";
-          static int failCt = 0;
-          int fd = chain_open (read_fd,
-                               (t_pchar *) p_fixd->patch_args,
-                               (process_chain_head == -1)
-                               ? &process_chain_head : (pid_t *) NULL);
-
-          if (fd != -1)
-            {
-              read_fd = fd;
-              num_children++;
-              break;
-            }
-
-          fprintf (stderr, z_err, errno, strerror (errno),
-                   p_fixd->fix_name);
-
-          if ((errno != EAGAIN) || (++failCt > 10))
-            exit (EXIT_FAILURE);
-          sleep (1);
-        }
+      read_fd = start_fixer (read_fd, p_fixd, pz_file_name);
+      num_children++;
 
     next_fix:
       ;
