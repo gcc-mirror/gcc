@@ -1,7 +1,11 @@
+2004-08-26  Matthias Klose  <doko@debian.org>
+
+	* texi2pod.pl: keep references of the form @ref{...}, print them bold.
+
 2003-08-26  Matthias Klose  <doko@debian.org>
 
-	* test_summary: Include baseline used for libstdc++-v3
-	abi check in test summary.
+	* test_summary: Include baseline used for libstdc++-v3 abi check
+	in test summary.
 
 2004-05-31  Release Manager
 
