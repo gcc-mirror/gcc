@@ -1,3 +1,10 @@
+2004-03-11  Steve Ellcey  <sje@cup.hp.com>
+
+	* config/ia64/hpux.h (TARGET_INIT_LIBFUNCS): Add undef.
+	* config/ia64/ia64.h (TARGET_INIT_LIBFUNCS): Add define.
+	* config/ia64/ia64.c (ia64_init_libfuncs): New.
+	(ia64_hpux_init_libfuncs): Add call to ia64_init_libfuncs.
+
 2004-03-11  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (negate_expr_p) <RSHIFT_EXPR>: We can optimize

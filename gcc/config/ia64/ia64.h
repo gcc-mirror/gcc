@@ -2381,6 +2381,10 @@ enum fetchop_code {
 #undef  PROFILE_BEFORE_PROLOGUE
 #define PROFILE_BEFORE_PROLOGUE 1
 
+/* Initialize library function table. */
+#undef TARGET_INIT_LIBFUNCS
+#define TARGET_INIT_LIBFUNCS ia64_init_libfuncs
+
 
 
 /* Switch on code for querying unit reservations.  */
