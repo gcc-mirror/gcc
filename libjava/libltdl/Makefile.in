@@ -61,8 +61,13 @@ host_alias = @host_alias@
 host_triplet = @host@
 AS = @AS@
 CC = @CC@
+CXX = @CXX@
+CXXCPP = @CXXCPP@
 DLLTOOL = @DLLTOOL@
+EXEEXT = @EXEEXT@
 GCINCS = @GCINCS@
+GCJ = @GCJ@
+GCJFLAGS = @GCJFLAGS@
 LIBADD_DL = @LIBADD_DL@
 LIBTOOL = @LIBTOOL@
 LIBTOOL_DEPS = @LIBTOOL_DEPS@
@@ -70,22 +75,24 @@ LN_S = @LN_S@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 OBJDUMP = @OBJDUMP@
+OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
 RANLIB = @RANLIB@
+STRIP = @STRIP@
 VERSION = @VERSION@
 
-AUTOMAKE_OPTIONS = no-dependencies foreign no-installinfo
+AUTOMAKE_OPTIONS = no-dependencies foreign
 
 INCLUDES = $(GCINCS)
 
-@INSTALL_LTDL_TRUE@include_HEADERS = @INSTALL_LTDL_TRUE@ltdl.h
-@INSTALL_LTDL_TRUE@lib_LTLIBRARIES = @INSTALL_LTDL_TRUE@libltdl.la
-@INSTALL_LTDL_FALSE@noinst_HEADERS = @INSTALL_LTDL_FALSE@ltdl.h
+@INSTALL_LTDL_TRUE@include_HEADERS = ltdl.h
+@INSTALL_LTDL_TRUE@lib_LTLIBRARIES = libltdl.la
+@INSTALL_LTDL_FALSE@noinst_HEADERS = ltdl.h
 
-@CONVENIENCE_LTDL_TRUE@noinst_LTLIBRARIES = @CONVENIENCE_LTDL_TRUE@libltdlc.la
+@CONVENIENCE_LTDL_TRUE@noinst_LTLIBRARIES = libltdlc.la
 
 libltdl_la_SOURCES = ltdl.c
-libltdl_la_LDFLAGS = -version-info 1:2:1
+libltdl_la_LDFLAGS = -no-undefined -version-info 2:0:2
 libltdl_la_LIBADD = $(LIBADD_DL)
 
 libltdlc_la_SOURCES = ltdl.c
@@ -127,7 +134,7 @@ OBJECTS = $(libltdl_la_OBJECTS) $(libltdlc_la_OBJECTS)
 
 all: all-redirect
 .SUFFIXES:
-.SUFFIXES: .S .c .lo .o .s
+.SUFFIXES: .S .c .lo .o .obj .s
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
 	cd $(top_srcdir) && $(AUTOMAKE) --foreign Makefile
 
@@ -208,6 +215,11 @@ maintainer-clean-noinstLTLIBRARIES:
 .c.o:
 	$(COMPILE) -c $<
 
+# FIXME: We should only use cygpath when building on Windows,
+# and only if it is available.
+.c.obj:
+	$(COMPILE) -c `cygpath -w $<`
+
 .s.o:
 	$(COMPILE) -c $<
 
@@ -216,6 +228,7 @@ maintainer-clean-noinstLTLIBRARIES:
 
 mostlyclean-compile:
 	-rm -f *.o core *.core
+	-rm -f *.$(OBJEXT)
 
 clean-compile:
 
@@ -349,8 +362,6 @@ check-am: all-am
 check: check-am
 installcheck-am:
 installcheck: installcheck-am
-install-info-am: 
-install-info: install-info-am
 all-recursive-am: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
@@ -427,12 +438,11 @@ maintainer-clean-compile mostlyclean-libtool distclean-libtool \
 clean-libtool maintainer-clean-libtool uninstall-includeHEADERS \
 install-includeHEADERS tags mostlyclean-tags distclean-tags clean-tags \
 maintainer-clean-tags distdir info-am info dvi-am dvi check check-am \
-installcheck-am installcheck install-info-am install-info \
-all-recursive-am install-exec-am install-exec install-data-am \
-install-data install-am install uninstall-am uninstall all-redirect \
-all-am all installdirs mostlyclean-generic distclean-generic \
-clean-generic maintainer-clean-generic clean mostlyclean distclean \
-maintainer-clean
+installcheck-am installcheck all-recursive-am install-exec-am \
+install-exec install-data-am install-data install-am install \
+uninstall-am uninstall all-redirect all-am all installdirs \
+mostlyclean-generic distclean-generic clean-generic \
+maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 
 ltdl.lo: ltdl.h config.h

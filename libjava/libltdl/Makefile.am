@@ -16,7 +16,7 @@ noinst_LTLIBRARIES = libltdlc.la
 endif
 
 libltdl_la_SOURCES = ltdl.c
-libltdl_la_LDFLAGS = -version-info 1:2:1
+libltdl_la_LDFLAGS = -no-undefined -version-info 2:0:2
 libltdl_la_LIBADD = $(LIBADD_DL)
 
 libltdlc_la_SOURCES = ltdl.c
