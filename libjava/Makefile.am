@@ -1166,6 +1166,8 @@ javax/swing/plaf/basic/BasicOptionPaneUI.java \
 javax/swing/plaf/basic/BasicPanelUI.java \
 javax/swing/plaf/basic/BasicRadioButtonUI.java \
 javax/swing/plaf/basic/BasicScrollPaneUI.java \
+javax/swing/plaf/basic/BasicSplitPaneDivider.java \
+javax/swing/plaf/basic/BasicSplitPaneUI.java \
 javax/swing/plaf/basic/BasicTabbedPaneUI.java \
 javax/swing/plaf/basic/BasicTextUI.java \
 javax/swing/plaf/basic/BasicToggleButtonUI.java \
