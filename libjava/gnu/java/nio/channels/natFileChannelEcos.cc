@@ -26,37 +26,39 @@ details.  */
 #include <java/lang/NullPointerException.h>
 #include <java/lang/String.h>
 #include <java/io/FileNotFoundException.h>
+#include <java/nio/MappedByteBufferImpl.h>
+#include <java/nio/channels/FileChannel.h>
+#include <java/nio/channels/FileLock.h>
+#include <gnu/java/nio/channels/FileChannelImpl.h>
 
-extern "C" void diag_write_char (char c);
-
-static void 
-diag_write (char *data, int len)
-{
-  while (len > 0)
-    {
-      diag_write_char (*data++);
-      len--;
-    }
-}
+using gnu::gcj::RawData;
+using java::io::IOException;
+using java::nio::MappedByteBufferImpl;
+using java::io::InterruptedIOException;
+using java::io::FileNotFoundException;
+using java::lang::ArrayIndexOutOfBoundsException;
+using java::lang::NullPointerException;
+using gnu::java::nio::channels::FileChannelImpl;
 
 #define NO_FSYNC_MESSAGE "sync unsupported"
 
 void
-java::io::FileDescriptor::init(void)
+FileChannelImpl::init(void)
 {
-  in = new java::io::FileDescriptor(0);
-  out = new java::io::FileDescriptor(1);
-  err = new java::io::FileDescriptor(2);
+  in = new FileChannelImpl((jint) 0, FileChannelImpl::READ);
+  out = new FileChannelImpl((jint) 1, FileChannelImpl::WRITE);
+  err = new FileChannelImpl((jint) 2, FileChannelImpl::WRITE);
 }
 
+#if 0
 jboolean
-java::io::FileDescriptor::valid (void)
+FileChannelImpl::valid (void)
 {
   return true;
 }
 
 void
-java::io::FileDescriptor::sync (void)
+FileChannelImpl::sync (void)
 {
   // Some files don't support fsync.  We don't bother reporting these
   // as errors.
@@ -65,95 +67,110 @@ java::io::FileDescriptor::sync (void)
   throw new SyncFailedException (JvNewStringLatin1 (NO_FSYNC_MESSAGE));
 #endif
 }
+#endif
 
 jint
-java::io::FileDescriptor::open (jstring path, jint jflags)
+FileChannelImpl::open (jstring, jint)
 {
   return fd;
 }
 
 void
-java::io::FileDescriptor::write (jint b)
+FileChannelImpl::write (jint)
 {
-  char d = (char) b;
-  ::diag_write (&d, 1);
 }
 
 void
-java::io::FileDescriptor::write (jbyteArray b, jint offset, jint len)
+FileChannelImpl::write (jbyteArray b, jint offset, jint len)
 {
   if (! b)
-    throw new java::lang::NullPointerException;
+    throw new NullPointerException;
   if (offset < 0 || len < 0 || offset + len > JvGetArrayLength (b))
-    throw new java::lang::ArrayIndexOutOfBoundsException;
-  char *bytes = (char *)elements (b) + offset;
-  ::diag_write (bytes, len);
+    throw new ArrayIndexOutOfBoundsException;
 }
 
 void
-java::io::FileDescriptor::close (void)
+FileChannelImpl::implCloseChannel (void)
 {
 }
 
 void
-java::io::FileDescriptor::setLength (long)
+FileChannelImpl::implTruncate (jlong)
 {
 }
 
-jint
-java::io::FileDescriptor::seek (jlong pos, jint whence, jboolean)
+void
+FileChannelImpl::seek (jlong)
 {
-  JvAssert (whence == SET || whence == CUR);
-  return 0;
 }
 
 jlong
-java::io::FileDescriptor::getLength (void)
+FileChannelImpl::size (void)
 {
   return 0;
 }
 
 jlong
-java::io::FileDescriptor::getFilePointer (void)
+FileChannelImpl::implPosition (void)
 {
   return 0;
 }
 
 jint
-java::io::FileDescriptor::read (void)
+FileChannelImpl::read (void)
 {
   return 0;
 }
 
 jint
-java::io::FileDescriptor::read (jbyteArray buffer, jint offset, jint count)
+FileChannelImpl::read (jbyteArray buffer, jint offset, jint count)
 {
   return 0;
 }
 
 jint
-java::io::FileDescriptor::available (void)
+FileChannelImpl::available (void)
 {
   return 0;
-}
-
-void
-java::io::FileDescriptor::lock (jlong pos, jint len, jboolean shared)
-{
-  throw new IOException (JvNewStringLatin1
-    ("java.io.FileDescriptor.lock() not implemented"));
 }
 
 jboolean
-java::io::FileDescriptor::tryLock (jlong pos, jint len, jboolean shared)
+FileChannelImpl::lock (jlong, jlong, jboolean, jboolean)
 {
   throw new IOException (JvNewStringLatin1
-    ("java.io.FileDescriptor.tryLock() not implemented"));
+    ("gnu.java.nio.FileChannelImpl.lock() not implemented"));
 }
 
 void
-java::io::FileDescriptor::unlock (jlong pos, jint len)
+FileChannelImpl::unlock (jlong, jlong)
 {
   throw new IOException (JvNewStringLatin1
-    ("java.io.FileDescriptor.unlock() not implemented"));
+    ("gnu.java.nio.channels.FileChannelImpl.unlock() not implemented"));
+}
+
+java::nio::MappedByteBuffer *
+FileChannelImpl::mapImpl (jchar, jlong, jint)
+{
+  return NULL;
+}
+
+void
+MappedByteBufferImpl::unmapImpl ()
+{
+}
+
+void
+MappedByteBufferImpl::loadImpl ()
+{
+}
+
+jboolean
+MappedByteBufferImpl::isLoadedImpl ()
+{
+  return true;
+}
+
+void
+MappedByteBufferImpl::forceImpl ()
+{
 }
