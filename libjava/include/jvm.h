@@ -82,6 +82,9 @@ void _Jv_RunFinalizers (void);
 void _Jv_RunAllFinalizers (void);
 /* Perform a GC.  */
 void _Jv_RunGC (void);
+/* Disable and enable GC.  */
+void _Jv_DisableGC (void);
+void _Jv_EnableGC (void);
 
 /* Return approximation of total size of heap.  */
 long _Jv_GCTotalMemory (void);
@@ -215,5 +218,13 @@ void _Jv_SetCurrentJNIEnv (_Jv_JNIEnv *);
 
 struct _Jv_JavaVM;
 _Jv_JavaVM *_Jv_GetJavaVM ();
+
+#ifdef ENABLE_JVMPI
+#include "jvmpi.h"
+
+extern void (*_Jv_JVMPI_Notify_OBJECT_ALLOC) (JVMPI_Event *event);
+extern void (*_Jv_JVMPI_Notify_THREAD_START) (JVMPI_Event *event);
+extern void (*_Jv_JVMPI_Notify_THREAD_END) (JVMPI_Event *event);
+#endif
 
 #endif /* __JAVA_JVM_H__ */

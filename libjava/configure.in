@@ -127,6 +127,14 @@ if test "$enable_java_net" = no; then
    AC_DEFINE(DISABLE_JAVA_NET)
 fi
 
+dnl See if the user wants to disable JVMPI support.
+AC_ARG_ENABLE(jvmpi,
+[  --disable-jvmpi         disable JVMPI support])
+
+if test "$enable_jvmpi" != no; then
+    AC_DEFINE(ENABLE_JVMPI)
+fi
+
 dnl If the target is an eCos system, use the appropriate eCos
 dnl I/O routines.
 dnl FIXME: this should not be a local option but a global target
