@@ -5,7 +5,6 @@
 # something suitable for a manpage from a Texinfo document.
 
 $output = 0;
-$ignore = 0;
 $skipping = 0;
 %sects = ();
 $section = "";
@@ -14,9 +13,9 @@ $section = "";
 @skstack = ();
 $shift = "";
 %defs = ();
+$fnno = 1;
 
-while($_ = shift)
-{
+while ($_ = shift) {
     if (/^-D(.*)$/) {
 	if ($1 ne "") {
 	    $flag = $1;
@@ -46,119 +45,133 @@ if (defined $out) {
 
 while(<STDIN>)
 {
+    # Certain commands are discarded without further processing.
+    /^\@(?:
+	 [a-z]+index		# @*index: useful only in complete manual
+	 |need			# @need: useful only in printed manual
+	 |(?:end\s+)?group	# @group .. @end group: ditto
+	 |page			# @page: ditto
+	 |node			# @node: useful only in .info file
+	)\b/x and next;
+    
     chomp;
+
+    # Look for filename and title markers.
+    /^\@setfilename\s+([^.]+)/ and $fn = $1, next;
+    /^\@settitle\s+([^.]+)/ and $tl = $1, next;
+
+    # Look for blocks surrounded by @c man begin SECTION ... @c man end.
+    # This really oughta be @ifman ... @end ifman and the like, but such
+    # would require rev'ing all other Texinfo translators.
     /^\@c man begin ([A-Z]+)/ and $sect = $1, $output = 1, next;
     /^\@c man end/ and do {
-	$_ = $section;
-
-	s/\@(?:dfn|var|emph|cite)\{([^\}]*)\}/I<$1>/g;
-	s/\@(?:code|kbd)\{([^\}]*)\}/C<$1>/g;
-	s/\@(?:samp|strong|key)\{([^\}]*)\}/B<$1>/g;
-	s/\@value\{([a-zA-Z0-9_-]+)\}/$defs{$1}/g;
-	s/\@sc\{([^\}]*)\}/\U$1/g;
-	s/\@file\{([^\}]*)\}/F<$1>/g;
-	s/\@(?:url|email)\{([^\}]*)\}/E<lt>C<$1>E<rt>/g;
-	s/\@xref\{(?:[^\}]*)\}[^.]*.//g;
-	s/\s+\(\@p[a-z]?ref\{(?:[^\}]*)\}\)//g;
-	s/\@copyright\{\}//g;
-	s/\@noindent\s*//g;
-	s/\@refill//g;
-	s/\@\././g;
-
-	# Turn B<blah I<blah> blah> into B<blah> I<blah> B<blah> to
-	# match Texinfo semantics of @emph inside @samp.
-
-	s/&LT;/</g;
-	s/&GT;/>/g;
-	1 while (s/B<([^<>]*)I<([^>]+)>/B<$1>I<$2>B</g);
-	1 while (s/I<([^<>]*)B<([^>]+)>/I<$1>B<$2>I</g);
-	s/[BI]<>//g;
-	s/([BI])<(\s+)([^>]+)>/$2$1<$3>/g;
-	s/([BI])<([^>]+?)(\s+)>/$1<$2>$3/g;
-
-	s/&lt;/E<lt>/g;
-	s/&gt;/E<gt>/g;
-	s/&lbrace;/\{/g;
-	s/&rbrace;/\}/g;
-
-	$sects{$sect} = $_;
+	$sects{$sect} = postprocess($section);
 	$section = "";
 	$output = 0;
 	next;
     };
-
-    /^\@(c|[a-z]+index)\b/ and next;
-    /^\@subsection/ and next;
-    /^\@need/ and next;
-    /^\@node/ and next;
-
-    /^\@setfilename\s+([^.]+)/ and $fn = $1, next;
-    /^\@settitle\s+([^.]+)/ and $tl = $1, next;
-
     next unless $output;
 
-    /^\@end\s+([a-z]+)/ and do {
-	if(defined $endw)
-	{
-	    die "\@$endw ended by \@end $1 at line $.\n"
-		unless $1 eq $endw;
+    # Discard comments.  (Can't do it above, because then we'd never see
+    # @c man lines.)
+    /^\@c\b/ and next;
 
-	    if($endw =~ /example$/)
-	    {
-		$shift = "";
-		$_ = "";
-	    }
-	    elsif($endw =~ /^if/)
-	    {
-		$skipping = pop @skstack;
-		$_ = "";
-	    }
-	    else
-	    {
-		$_ = "\n=back\n";
-		$ic = pop @icstack;
-	    }
-	    $endw = pop @endwstack;
+    # End-block handler goes up here because it needs to operate even
+    # if we are skipping.
+    /^\@end\s+([a-z]+)/ and do {
+	die "\@end $1 without \@$1 at line $.\n" unless defined $endw;
+	die "\@$endw ended by \@end $1 at line $.\n" unless $1 eq $endw;
+
+	$endw = pop @endwstack;
+
+	if ($1 =~ /example$/) {
+	    $shift = "";
+	    next;
+	} elsif ($1 =~ /^(if|ignore|menu)/) {
+	    $skipping = pop @skstack;
+	    next;
+	} else {
+	    $_ = "\n=back\n";
+	    $ic = pop @icstack;
 	}
     };
-
-    /^\@end ignore/ and $ignore = 0, next;
-    next if $ignore;
     next if $skipping;
 
-    /^\@ignore/ and $ignore = 1, next;
+    # Character entities.  First the ones that can be replaced by raw text
+    # or discarded outright:
+    s/\@copyright\{\}/(c)/g;
+    s/\@dots\{\}/.../g;
+    s/\@enddots\{\}/..../g;
+    s/\@([.!? ])/$1/g;
+    s/\@[:-]//g;
+    s/\@bullet(?:\{\})?/*/g;
+    s/\@TeX\{\}/TeX/g;
+    s/\@pounds\{\}/\#/g;
+    s/\@minus(?:\{\})?/-/g;
 
+    # Now the ones that have to be replaced by special escapes
+    # (which will be turned back into text by unmunge())
+    s/&/&amp;/g;
+    s/\@\{/&lbrace;/g;
+    s/\@\}/&rbrace;/g;
+    s/\@\@/&at;/g;
+    # POD doesn't interpret E<> inside a verbatim block.
+    if ($shift eq "") {
+	s/</&lt;/g;
+	s/>/&gt;/g;
+    } else {
+	s/</&LT;/g;
+	s/>/&GT;/g;
+    }
+
+    # Single line command handlers.
     /^\@set\s+([a-zA-Z0-9_-]+)\s*(.*)$/ and $defs{$1} = $2, next;
     /^\@clear\s+([a-zA-Z0-9_-]+)/ and delete $defs{$1}, next;
 
+    /^\@section\s+(.+)$/ and $_ = "\n=head2 $1\n";
+    /^\@subsection\s+(.+)$/ and $_ = "\n=head3 $1\n";
+
+    # Block command handlers:
     /^\@ifset\s+([a-zA-Z0-9_-]+)/ and do {
 	push @endwstack, $endw;
 	push @skstack, $skipping;
 	$endw = "ifset";
 	$skipping = 1 unless exists $defs{$1};
+	next;
     };
 
     /^\@ifclear\s+([a-zA-Z0-9_-]+)/ and do {
 	push @endwstack, $endw;
 	push @skstack, $skipping;
-	$endw = "ifset";
+	$endw = "ifclear";
 	$skipping = 1 if exists $defs{$1};
+	next;
     };
 
-    /^\@itemize (\@[a-z]+)/ and do {
+    /^\@(ignore|menu)\b/ and do {
+	push @endwstack, $endw;
+	push @skstack, $skipping;
+	$endw = $1;
+	$skipping = 1;
+	next;
+    };
+
+    /^\@itemize\s+(\@[a-z]+|\*|-)/ and do {
 	push @endwstack, $endw;
 	push @icstack, $ic;
 	$ic = $1;
-	$ic =~ s/\@bullet/*/;
-	$ic =~ s/\@minus/-/;
 	$_ = "\n=over 4\n";
 	$endw = "itemize";
     };
 
-    /^\@enumerate\s+([A-Z0-9]+)/ and do {
+    /^\@enumerate(?:\s+([A-Z0-9]+))?/ and do {
 	push @endwstack, $endw;
 	push @icstack, $ic;
-	$ic = $1 . ".";
+	if (defined $1) {
+	    $ic = $1 . ".";
+	} else {
+	    $ic = "1.";
+	}
 	$_ = "\n=over 4\n";
 	$endw = "enumerate";
     };
@@ -169,7 +182,7 @@ while(<STDIN>)
 	$ic = $1;
 	$ic =~ s/\@(?:samp|strong|key)/B/;
 	$ic =~ s/\@(?:code|kbd)/C/;
-	$ic =~ s/\@(?:dfn|var|emph|cite)/I/;
+	$ic =~ s/\@(?:dfn|var|emph|cite|i)/I/;
 	$ic =~ s/\@(?:file)/F/;
 	$_ = "\n=over 4\n";
 	$endw = "table";
@@ -183,45 +196,30 @@ while(<STDIN>)
     };
 
     /^\@itemx?\s*(.+)?$/ and do {
-	if(defined $1)
-	{
-	    $_ = "=item $ic\&LT;$1\&GT;\n";
-	}
-	else
-	{
-	    $_ = "=item $ic\n";
+	if (defined $1) {
+	    # Entity escapes prevent munging by the <> processing below.
+	    $_ = "\n=item $ic\&LT;$1\&GT;\n";
+	} else {
+	    $_ = "\n=item $ic\n";
 	    $ic =~ y/A-Ya-y1-8/B-Zb-z2-9/;
 	}
     };
 
-    /^\@section\s+(.+)$/ and do {
-	$_ = "\n=head2 $1\n";
-    };
-
-    # POD doesn't interpret E<> inside a verbatim block.
-    if ($shift eq "") {
-	s/</&lt;/g;
-	s/>/&gt;/g;
-    } else {
-	s/</&LT;/g;
-	s/>/&GT;/g;
-    }
-    s/\@\{/&lbrace;/g;
-    s/\@\}/&rbrace;/g;
     $section .= $shift.$_."\n";
 }
 
+die "No filename or title\n" unless defined $fn && defined $tl;
+
 $sects{NAME} = "$fn \- $tl\n";
+$sects{FOOTNOTES} .= "=back\n" if exists $sects{FOOTNOTES};
 
 for $sect (qw(NAME SYNOPSIS DESCRIPTION OPTIONS ENVIRONMENT FILES
-	      BUGS NOTES SEEALSO AUTHOR COPYRIGHT))
-{
-    if(exists $sects{$sect})
-    {
+	      BUGS NOTES FOOTNOTES SEEALSO AUTHOR COPYRIGHT)) {
+    if(exists $sects{$sect}) {
 	$head = $sect;
 	$head =~ s/SEEALSO/SEE ALSO/;
 	print "=head1 $head\n\n";
-	print $sects{$sect};
+	print scalar unmunge ($sects{$sect});
 	print "\n";
     }
 }
@@ -230,3 +228,86 @@ sub usage
 {
     die "usage: $0 [-D toggle...] [infile [outfile]]\n";
 }
+
+sub postprocess
+{
+    local $_ = $_[0];
+
+    # @value{foo} is replaced by whatever 'foo' is defined as.
+    s/\@value\{([a-zA-Z0-9_-]+)\}/$defs{$1}/g;
+
+    # Formatting commands.
+    s/\@(?:dfn|var|emph|cite|i)\{([^\}]*)\}/I<$1>/g;
+    s/\@(?:code|kbd)\{([^\}]*)\}/C<$1>/g;
+    s/\@(?:samp|strong|key|b)\{([^\}]*)\}/B<$1>/g;
+    s/\@sc\{([^\}]*)\}/\U$1/g;
+    s/\@file\{([^\}]*)\}/F<$1>/g;
+    s/\@w\{([^\}]*)\}/S<$1>/g;
+    s/\@(?:dmn|math)\{([^\}]*)\}/$1/g;
+
+    # Cross references are thrown away, as are @noindent and @refill.
+    # (@noindent is impossible in .pod, and @refill is unnecessary.)
+    # @* is also impossible in .pod; we discard it and any newline that
+    # follows it.
+
+    s/\@xref\{(?:[^\}]*)\}[^.]*.//g;
+    s/\s+\(\@pxref\{(?:[^\}]*)\}\)//g;
+    s/;\s+\@pxref\{(?:[^\}]*)\}//g;
+    s/\@noindent\s*//g;
+    s/\@refill//g;
+    s/\@\*\s*\n?//g;
+
+    # @uref can take one, two, or three arguments, with different
+    # semantics each time.  @url and @email are just like @uref with
+    # one argument, for our purposes.
+    s/\@(?:uref|url|email)\{([^\},]*)\}/&lt;C<$1>&gt;/g;
+    s/\@uref\{([^\},]*),([^\},]*)\}/$2 (C<$1>)/g;
+    s/\@uref\{([^\},]*),([^\},]*),([^\},]*)\}/$3/g;
+
+    # Turn B<blah I<blah> blah> into B<blah> I<blah> B<blah> to
+    # match Texinfo semantics of @emph inside @samp.
+    s/&LT;/</g;
+    s/&GT;/>/g;
+    1 while (s/B<([^<>]*)I<([^>]+)>/B<$1>I<$2>B</g);
+    1 while (s/I<([^<>]*)B<([^>]+)>/I<$1>B<$2>I</g);
+    s/[BI]<>//g;
+    s/([BI])<(\s+)([^>]+)>/$2$1<$3>/g;
+    s/([BI])<([^>]+?)(\s+)>/$1<$2>$3/g;
+
+    # Extract footnotes.  This has to be done after all other
+    # processing because otherwise the regexp will choke on formatting
+    # inside @footnote.
+    while (/\@footnote/g) {
+	s/\@footnote\{([^\}]+)\}/[$fnno]/;
+	add_footnote($1, $fnno);
+	$fnno++;
+    }
+
+    return $_;
+}
+
+sub unmunge
+{
+    # Replace escaped symbols with their equivalents.
+    local $_ = $_[0];
+
+    s/&lt;/E<lt>/g;
+    s/&gt;/E<gt>/g;
+    s/&lbrace;/\{/g;
+    s/&rbrace;/\}/g;
+    s/&at;/\@/g;
+    s/&amp;/&/g;
+    return $_;
+}
+
+sub add_footnote
+{
+    unless (exists $sects{FOOTNOTES}) {
+	$sects{FOOTNOTES} = "\n=over 4\n\n";
+    }
+
+    $sects{FOOTNOTES} .= "=item $fnno.\n\n"; $fnno++;
+    $sects{FOOTNOTES} .= $_[0];
+    $sects{FOOTNOTES} .= "\n\n";
+}
+    
