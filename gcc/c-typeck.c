@@ -2037,7 +2037,7 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	{
 	  if (TREE_CODE (op1) == INTEGER_CST)
 	    {
-	      if (tree_int_cst_lt (op1, integer_zero_node))
+	      if (tree_int_cst_sgn (op1) < 0)
 		warning ("right shift count is negative");
 	      else
 		{
@@ -2069,7 +2069,7 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	{
 	  if (TREE_CODE (op1) == INTEGER_CST)
 	    {
-	      if (tree_int_cst_lt (op1, integer_zero_node))
+	      if (tree_int_cst_sgn (op1) < 0)
 		warning ("left shift count is negative");
 	      else if (TREE_INT_CST_HIGH (op1) != 0
 		       || ((unsigned HOST_WIDE_INT) TREE_INT_CST_LOW (op1)
@@ -2097,7 +2097,7 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	{
 	  if (TREE_CODE (op1) == INTEGER_CST)
 	    {
-	      if (tree_int_cst_lt (op1, integer_zero_node))
+	      if (tree_int_cst_sgn (op1) < 0)
 		warning ("shift count is negative");
 	      else if (TREE_INT_CST_HIGH (op1) != 0
 		       || ((unsigned HOST_WIDE_INT) TREE_INT_CST_LOW (op1)
@@ -5397,9 +5397,10 @@ pop_init_level (implicit)
 	      TREE_TYPE (maxindex) = TYPE_DOMAIN (constructor_type);
 
 	      if (pedantic
-		  && tree_int_cst_lt (TYPE_MAX_VALUE (TYPE_DOMAIN (constructor_type)),
-				      integer_zero_node))
-		error_with_decl (constructor_decl, "zero-size array `%s'");
+		  && (tree_int_cst_sgn (TYPE_MAX_VALUE (TYPE_DOMAIN (constructor_type)))
+		      <= 0))
+		error_with_decl (constructor_decl,
+				 "zero or negative array size `%s'");
 	      layout_type (constructor_type);
 	      size = int_size_in_bytes (constructor_type);
 	      pop_obstacks ();
@@ -5736,7 +5737,8 @@ output_pending_init_elements (all)
 	  if (tree_int_cst_equal (TREE_PURPOSE (tail),
 				  constructor_unfilled_index))
 	    {
-	      output_init_element (TREE_VALUE (tail), TREE_TYPE (constructor_type),
+	      output_init_element (TREE_VALUE (tail),
+				   TREE_TYPE (constructor_type),
 				   constructor_unfilled_index, 0);
 	      goto retry;
 	    }
@@ -5744,8 +5746,7 @@ output_pending_init_elements (all)
 				    constructor_unfilled_index))
 	    ;
 	  else if (next == 0
-		   || tree_int_cst_lt (TREE_PURPOSE (tail),
-					  next))
+		   || tree_int_cst_lt (TREE_PURPOSE (tail), next))
 	    next = TREE_PURPOSE (tail);
 	}
       else if (TREE_CODE (constructor_type) == RECORD_TYPE
