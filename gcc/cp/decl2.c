@@ -4222,6 +4222,13 @@ do_nonmember_using_decl (tree scope, tree name, tree oldval, tree oldtype,
     {
       tree tmp, tmp1;
 
+      if (oldval && !is_overloaded_fn (oldval))
+	{
+	  if (!DECL_IMPLICIT_TYPEDEF_P (oldval))
+	    error ("`%D' is already declared in this scope", name);
+	  oldval = NULL_TREE;
+	}
+
       *newval = oldval;
       for (tmp = BINDING_VALUE (decls); tmp; tmp = OVL_NEXT (tmp))
 	{

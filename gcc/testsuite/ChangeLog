@@ -1,5 +1,7 @@
 2003-03-13  Mark Mitchell  <mark@codesourcery.com>
 
+	* g++.dg/parse/namespace9.C: New test.
+
 	* g++.dg/init/ref5.C: New test.
 	* g++.dg/parse/ptrmem1.C: Likewise.
 
