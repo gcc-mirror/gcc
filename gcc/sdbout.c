@@ -597,10 +597,13 @@ sdbout_symbol (decl, local)
   int regno = -1;
   char *name;
 
+  sdbout_one_type (type);
+
+#if 0 /* This loses when functions are marked to be ignored,
+	 which happens in the C++ front end.  */
   if (DECL_IGNORED_P (decl))
     return;
-
-  sdbout_one_type (type);
+#endif
 
   switch (TREE_CODE (decl))
     {
@@ -627,6 +630,8 @@ sdbout_symbol (decl, local)
       /* Done with tagged types.  */
       if (DECL_NAME (decl) == 0)
 	return;
+      if (DECL_IGNORED_P (decl))
+	return;
 
       /* Output typedef name.  */
       PUT_SDB_DEF (IDENTIFIER_POINTER (DECL_NAME (decl)));
@@ -642,6 +647,10 @@ sdbout_symbol (decl, local)
       /* Don't mention a variable that is external.
 	 Let the file that defines it describe it.  */
       if (TREE_EXTERNAL (decl))
+	return;
+
+      /* Ignore __FUNCTION__, etc.  */
+      if (DECL_IGNORED_P (decl))
 	return;
 
       /* If there was an error in the declaration, don't dump core
