@@ -113,6 +113,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Turn on -mpic-extern by default.  */
 #define CC1_SPEC "\
 %{gline:%{!g:%{!g0:%{!g1:%{!g2: -g1}}}}} \
+%{mips1:-mfp32 -mgp32}%{mips2:-mfp32 -mgp32}%{mips3:-mfp64 -mgp64} \
 %{G*} \
 %{pic-none:   -mno-half-pic} \
 %{pic-lib:    -mhalf-pic} \
