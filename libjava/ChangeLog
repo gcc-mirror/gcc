@@ -1,5 +1,9 @@
 2003-12-11  Michael Koch  <konqueror@gmx.de>
 
+	* java/text/Format.java (serialVersionUID): Fixed value.
+
+2003-12-11  Michael Koch  <konqueror@gmx.de>
+
 	* javax/naming/event/EventDirContext.java: Jalopied.
 	(addNamingListener): Fixed typo in method name.
 	

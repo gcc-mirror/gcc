@@ -1,5 +1,5 @@
 /* Format.java -- Abstract superclass for formatting/parsing strings.
-   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2003  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -63,7 +63,7 @@ import java.io.Serializable;
  */
 public abstract class Format implements Serializable, Cloneable
 {
-  static final long serialVersionUID = 4479235611355683992L;
+  static final long serialVersionUID = -299282585814624189L;
 
   public static class Field extends AttributedCharacterIterator.Attribute
   {
