@@ -1,3 +1,9 @@
+2001-10-30  Robert Dewar <dewar@gnat.com>
+
+	* lib.adb: Minor reformatting
+
+	* s-taprop.ads: Minor reformatting
+
 2001-10-29  Laurent Guerby  <guerby@acm.org>
 	
 	* init.c:

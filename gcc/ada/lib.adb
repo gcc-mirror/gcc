@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.97 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -792,8 +792,8 @@ package body Lib is
    procedure Store_Compilation_Switch (Switch : String) is
    begin
       Compilation_Switches.Increment_Last;
-      Compilation_Switches.Table (Compilation_Switches.Last)
-        := new String'(Switch);
+      Compilation_Switches.Table (Compilation_Switches.Last) :=
+        new String'(Switch);
    end Store_Compilation_Switch;
 
    --------------------------------
