@@ -1,5 +1,10 @@
 2004-05-15  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
+	* primary.c (match_boz_constant): Use gfc_notify_std() for
+	issuing a warning or an error.
+
+2004-05-15  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
 	PR fortran/13826
 	* primary.c (match_structure_constructor): Rename ...
 	(gfc_match_structure_constructor): ... to this. Make non-static.
