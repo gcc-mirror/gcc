@@ -1,3 +1,51 @@
+Tue Jul  9 21:39:50 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.h (PREDICATE_CODES): Add general_extend_operand and inqhi_operand.
+	* sh.c (general_extend_operand, inqhi_operand): New functions.
+	* sh.md (cmpeqdi_media, cmpgtdi_media, cmpgtudi_media): Collapse
+	alternatives using 'N' modifier.  Add type.
+	(adddi3z_media): Likewise.  Enable generator function generation.
+	(movdicc_false, movdicc_true, addsi3_media, subsi3_media): Use more
+	exact predicates / constraints.  Add type.
+	(subsi3): Allow 0 for SHMEDIA.
+	(udivsi3_i4_media): Use match_operand for input values
+	rather than hard registers.
+	(udivsi3 - TARGET_SHMEDIA_FPU case): Don't ferry values
+	unnecessarily through hard registers.  Keep copies of pseudo
+	registers outside of the libcall sequence.
+	(mulsidi3_media, umulsidi3_media): Use more exact predicates.  Add type.
+	(ashlsi3_media, ashrsi3_media, lshrsi3_media): Likewise.
+	(zero_extendsidi2, zero_extendhidi2, zero_extendqidi2): Likewise.
+	(extendhidi2, extendqidi2): Likewise.
+	(andsi3_compact): Name.
+	(andcdi3): Enable generator function generation.
+	(zero_extendhisi2, zero_extendqisi2): Rename to
+	(zero_extendhisi2_compact, zero_extendqisi2_compact).
+	(extendhisi2, extendqisi2): Rename to
+	(extendhisi2_compact, extendqisi2_compact).
+	(rotldi3, rotldi3_mextr, rotrdi3, rotrdi3_mextr): New patterns.
+	(loaddi_trunc, zero_extendhisi2, zero_extendhisi2_media): Likewise.
+	(zero_extendhisi2_media+1, zero_extendqisi2): Likewise.
+	(zero_extendqisi2_media, extendhisi2, extendhisi2_media): Likewise.
+	(extendhisi2_media, extendhisi2_media+1, extendqisi2): Likewise.
+	(extendqisi2_media, extendqisi2_media+1, truncdisi2): Likewise.
+	(truncdihi2, truncdiqi2, reload_inqi, reload_inhi): Likewise.
+	(shmedia32_initialize_trampoline_big): Likewise.
+	(shmedia32_initialize_trampoline_little): Likewise.
+	(nsb, nsbsi, nsbdi, ffsdi2, ffssi2, byterev): Likewise.
+	(negdi2): Remove spurious T clobber.
+	(zero_extendhidi2+1, extendhidi2+1, extendqidi2+1): Handle TRUNCATE.
+	(movsi_media, movsi_media_nofpu): Remove spurious *k after b.
+	(movdi_media, movdi_media_nofpu, pt, ptb): Likewise.
+	(movsi_media_nofpu+2, movhi_media+1): Only do split after reload.
+	(ic_invalidate_line_media): Write back data cache before invalidating
+	instruction cache.  Add type.
+	(movsf_media): Sign-extend when the destination is a general
+	purpose register.  Add type.
+	(bgt_media, bge_media, bgtu_media, bgeu_media, blt_media_i): Allow 0.
+	(casesi_worker_0+1): Only increment ref count for proper label.
+	(casesi_worker_0+2): Likewise.
+
 2002-07-09  Mark Mitchell  <mark@codesourcery.com>
 
 	* dwarfout.c (dwarfout_init): Warn that DWARF1 is deprecated.

@@ -3240,9 +3240,11 @@ extern int rtx_equal_function_value_matters;
   {"fp_arith_reg_operand", {SUBREG, REG}},				\
   {"fpscr_operand", {REG}},						\
   {"fpul_operand", {REG}},						\
+  {"general_extend_operand", {SUBREG, REG, MEM, TRUNCATE}},		\
   {"general_movsrc_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE, MEM}}, \
   {"general_movdst_operand", {SUBREG, REG, MEM}},			\
   {"greater_comparison_operator", {GT,GE,GTU,GEU}},			\
+  {"inqhi_operand", {TRUNCATE}},					\
   {"less_comparison_operator", {LT,LE,LTU,LEU}},			\
   {"logical_operand", {SUBREG, REG, CONST_INT}},			\
   {"mextr_bit_offset", {CONST_INT}},					\

@@ -6275,6 +6275,29 @@ extend_reg_or_0_operand (op, mode)
 	  : arith_reg_or_0_operand) (op, mode);
 }
 
+int
+general_extend_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return (GET_CODE (op) == TRUNCATE
+	  ? arith_operand
+	  : nonimmediate_operand) (op, mode);
+}
+
+int
+inqhi_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (GET_CODE (op) != TRUNCATE || mode != GET_MODE (op))
+    return 0;
+  op = XEXP (op, 0);
+  /* Can't use true_regnum here because copy_cost wants to know about
+     SECONDARY_INPUT_RELOAD_CLASS.  */
+  return GET_CODE (op) == REG && FP_REGISTER_P (REGNO (op));
+}
+
 /* Return nonzero if V is a zero vector matching MODE.  */
 int
 zero_vec_operand (v, mode)
