@@ -24,12 +24,13 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Fmap;     use Fmap;
+with Fmap;             use Fmap;
 with Hostparm;
-with Namet;    use Namet;
-with Opt;      use Opt;
-with Output;   use Output;
-with Sdefault; use Sdefault;
+with Namet;            use Namet;
+with Opt;              use Opt;
+with Output;           use Output;
+with Sdefault;         use Sdefault;
+with System.Case_Util; use System.Case_Util;
 with Table;
 
 with Unchecked_Conversion;
@@ -41,6 +42,10 @@ package body Osint is
 
    Running_Program : Program_Type := Unspecified;
    Program_Set     : Boolean      := False;
+
+   Std_Prefix      : String_Ptr;
+   --  Standard prefix, computed dynamically the first time Relocate_Path
+   --  is called, and cached for subsequent calls.
 
    -------------------------------------
    -- Use of Name_Find and Name_Enter --
@@ -70,6 +75,14 @@ package body Osint is
 
    function Concat (String_One : String; String_Two : String) return String;
    --  Concatenates 2 strings and returns the result of the concatenation
+
+   function Executable_Prefix return String_Ptr;
+   --  Returns the name of the root directory where the executable is stored.
+   --  The executable must be located in a directory called "bin", or
+   --  under root/lib/gcc-lib/..., or under root/libexec/gcc/... Thus, if
+   --  the executable is stored in directory "/foo/bar/bin", this routine
+   --  returns "/foo/bar/".
+   --  Return "" if the location is not recognized as described above.
 
    function Update_Path (Path : String_Ptr) return String_Ptr;
    --  Update the specified path to replace the prefix with the location
@@ -734,6 +747,63 @@ package body Osint is
 
       return Name_Enter;
    end Executable_Name;
+
+   -------------------------
+   -- Executable_Prefix --
+   -------------------------
+
+   function Executable_Prefix return String_Ptr is
+      Exec_Name : String (1 .. Len_Arg (0));
+
+      function Get_Install_Dir (Exec : String) return String_Ptr;
+      --  S is the executable name preceeded by the absolute or relative
+      --  path, e.g. "c:\usr\bin\gcc.exe" or "..\bin\gcc".
+
+      ---------------------
+      -- Get_Install_Dir --
+      ---------------------
+
+      function Get_Install_Dir (Exec : String) return String_Ptr is
+      begin
+         for J in reverse Exec'Range loop
+            if Is_Directory_Separator (Exec (J)) then
+               if J < Exec'Last - 5 then
+                  if (To_Lower (Exec (J + 1)) = 'l'
+                      and then To_Lower (Exec (J + 2)) = 'i'
+                      and then To_Lower (Exec (J + 3)) = 'b')
+                    or else
+                      (To_Lower (Exec (J + 1)) = 'b'
+                       and then To_Lower (Exec (J + 2)) = 'i'
+                       and then To_Lower (Exec (J + 3)) = 'n')
+                  then
+                     return new String'(Exec (Exec'First .. J));
+                  end if;
+               end if;
+            end if;
+         end loop;
+
+         return new String'("");
+      end Get_Install_Dir;
+
+   --  Beginning of Executable_Prefix
+
+   begin
+      Osint.Fill_Arg (Exec_Name'Address, 0);
+
+      --  First determine if a path prefix was placed in front of the
+      --  executable name.
+
+      for J in reverse Exec_Name'Range loop
+         if Is_Directory_Separator (Exec_Name (J)) then
+            return Get_Install_Dir (Exec_Name);
+         end if;
+      end loop;
+
+      --  If you are here, the user has typed the executable name with no
+      --  directory prefix.
+
+      return Get_Install_Dir (GNAT.OS_Lib.Locate_Exec_On_Path (Exec_Name).all);
+   end Executable_Prefix;
 
    ------------------
    -- Exit_Program --
@@ -2074,6 +2144,44 @@ package body Osint is
 
    end Read_Source_File;
 
+   -------------------
+   -- Relocate_Path --
+   -------------------
+
+   function Relocate_Path
+     (Prefix : String;
+      Path   : String) return String_Ptr
+   is
+      S : String_Ptr;
+
+      procedure set_std_prefix (S : String; Len : Integer);
+      pragma Import (C, set_std_prefix);
+
+   begin
+      if Std_Prefix = null then
+         Std_Prefix := Executable_Prefix;
+
+         if Std_Prefix.all /= "" then
+            --  Remove trailing directory separator when calling set_std_prefix
+
+            set_std_prefix (Std_Prefix.all, Std_Prefix'Length - 1);
+         end if;
+      end if;
+
+      if Path (Prefix'Range) = Prefix then
+         if Std_Prefix.all /= "" then
+            S := new String
+              (1 .. Std_Prefix'Length + Path'Last - Prefix'Last);
+            S (1 .. Std_Prefix'Length) := Std_Prefix.all;
+            S (Std_Prefix'Length + 1 .. S'Last) :=
+              Path (Prefix'Last + 1 .. Path'Last);
+            return S;
+         end if;
+      end if;
+
+      return new String'(Path);
+   end Relocate_Path;
+
    -----------------
    -- Set_Program --
    -----------------
@@ -2493,7 +2601,7 @@ package body Osint is
 
       In_Length      : constant Integer := Path'Length;
       In_String      : String (1 .. In_Length + 1);
-      Component_Name : aliased String := "GNAT" & ASCII.NUL;
+      Component_Name : aliased String := "GCC" & ASCII.NUL;
       Result_Ptr     : Address;
       Result_Length  : Integer;
       Out_String     : String_Ptr;
