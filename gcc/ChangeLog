@@ -1,3 +1,11 @@
+2005-03-04  Ben Elliston  <bje@au.ibm.com>
+
+	* gcc.c (option_map): Add --coverage.
+	(LINK_COMMAND_SPEC): Pass -lgcov for `coverage'.
+	(cc1_options): Pass -fprofile-arcs -ftest-coverage for `coverage'.
+	* config/darwin.h: Pass -lgcov for `coverage'.
+	* doc/invoke.texi (Debugging Options): Document --coverage.
+
 2005-03-04  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* gcse.c (bypass_block): Use find_edge wherever possible.
