@@ -67,6 +67,7 @@ Boston, MA 02111-1307, USA.  */
 #include "except.h"
 #include "toplev.h"
 #include "reload.h"
+#include "predict.h"
 
 /* ??? Eventually must record somehow the labels used by jumps
    from nested functions.  */
@@ -1248,6 +1249,23 @@ duplicate_loop_exit_test (loop_start)
 		replace_regs (REG_NOTES (copy), reg_map, max_reg, 1);
 	    }
 
+	  /* Predict conditional jump that do make loop looping as taken.
+	     Other jumps are probably exit conditions, so predict
+	     them as untaken.  */
+	  if (any_condjump_p (copy))
+	    {
+	      rtx label = JUMP_LABEL (copy);
+	      if (label)
+		{
+		  if (PREV_INSN (label)
+		      && GET_CODE (PREV_INSN (label)) == NOTE
+		      && (NOTE_LINE_NUMBER (PREV_INSN (label))
+			  == NOTE_INSN_LOOP_CONT))
+		    predict_insn_def (copy, PRED_LOOP_HEADER, TAKEN);
+		  else
+		    predict_insn_def (copy, PRED_LOOP_HEADER, NOT_TAKEN);
+		}
+	    }
 	  /* If this is a simple jump, add it to the jump chain.  */
 
 	  if (INSN_UID (copy) < max_jump_chain && JUMP_LABEL (copy)
@@ -3351,13 +3369,7 @@ invert_jump (jump, nlabel, delete_unused)
 
   if (redirect_jump (jump, nlabel, delete_unused))
     {
-      /* An inverted jump means that a probability taken becomes a
-	 probability not taken.  Subtract the branch probability from the
-	 probability base to convert it back to a taken probability.  */
-
-      rtx note = find_reg_note (jump, REG_BR_PROB, NULL_RTX);
-      if (note)
-	XEXP (note, 0) = GEN_INT (REG_BR_PROB_BASE - INTVAL (XEXP (note, 0)));
+      invert_br_probabilities (jump);
 
       return 1;
     }

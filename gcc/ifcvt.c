@@ -2410,11 +2410,7 @@ dead_or_predicable (test_bb, merge_bb, other_bb, new_dest, reversep)
   JUMP_LABEL (jump) = new_dest;
 
   if (reversep)
-    {
-      rtx note = find_reg_note (jump, REG_BR_PROB, NULL_RTX);
-      if (note)
-	XEXP (note, 0) = GEN_INT (REG_BR_PROB_BASE - INTVAL (XEXP (note, 0)));
-    }
+    invert_br_probabilities (jump);
 
   /* Move the insns out of MERGE_BB to before the branch.  */
   if (head != NULL)
