@@ -6588,107 +6588,139 @@ emit_reload_insns (insn)
 
       /* I is nonneg if this reload used one of the spill regs.
 	 If reload_reg_rtx[r] is 0, this is an optional reload
-	 that we opted to ignore.
+	 that we opted to ignore.  */
 
-	 Also ignore reloads that don't reach the end of the insn,
-	 since we will eventually see the one that does.  */
-
-      if (i >= 0 && reload_reg_rtx[r] != 0
-	  && reload_reg_reaches_end_p (spill_regs[i], reload_opnum[r],
-				       reload_when_needed[r]))
+      if (i >= 0 && reload_reg_rtx[r] != 0)
 	{
-	  /* First, clear out memory of what used to be in this spill reg.
-	     If consecutive registers are used, clear them all.  */
 	  int nr
 	    = HARD_REGNO_NREGS (spill_regs[i], GET_MODE (reload_reg_rtx[r]));
 	  int k;
+	  int part_reaches_end = 0;
+	  int all_reaches_end = 1;
 
+	  /* For a multi register reload, we need to check if all or part
+	     of the value lives to the end.  */
 	  for (k = 0; k < nr; k++)
 	    {
-	      reg_reloaded_contents[spill_reg_order[spill_regs[i] + k]] = -1;
-	      reg_reloaded_insn[spill_reg_order[spill_regs[i] + k]] = 0;
+	      if (reload_reg_reaches_end_p (spill_regs[i] + k, reload_opnum[r],
+					    reload_when_needed[r]))
+		part_reaches_end = 1;
+	      else
+		all_reaches_end = 0;
 	    }
 
-	  /* Maybe the spill reg contains a copy of reload_out.  */
-	  if (reload_out[r] != 0 && GET_CODE (reload_out[r]) == REG)
+	  /* Ignore reloads that don't reach the end of the insn in
+	     entirety.  */
+	  if (all_reaches_end)
 	    {
-	      register int nregno = REGNO (reload_out[r]);
-	      int nnr = (nregno >= FIRST_PSEUDO_REGISTER ? 1
+	      /* First, clear out memory of what used to be in this spill reg.
+		 If consecutive registers are used, clear them all.  */
+
+	      for (k = 0; k < nr; k++)
+		{
+		  reg_reloaded_contents[spill_reg_order[spill_regs[i] + k]] = -1;
+		  reg_reloaded_insn[spill_reg_order[spill_regs[i] + k]] = 0;
+		}
+
+	      /* Maybe the spill reg contains a copy of reload_out.  */
+	      if (reload_out[r] != 0 && GET_CODE (reload_out[r]) == REG)
+		{
+		  register int nregno = REGNO (reload_out[r]);
+		  int nnr = (nregno >= FIRST_PSEUDO_REGISTER ? 1
+			     : HARD_REGNO_NREGS (nregno,
+						 GET_MODE (reload_reg_rtx[r])));
+
+		  spill_reg_store[i] = new_spill_reg_store[i];
+		  reg_last_reload_reg[nregno] = reload_reg_rtx[r];
+
+		  /* If NREGNO is a hard register, it may occupy more than
+		     one register.  If it does, say what is in the 
+		     rest of the registers assuming that both registers
+		     agree on how many words the object takes.  If not,
+		     invalidate the subsequent registers.  */
+
+		  if (nregno < FIRST_PSEUDO_REGISTER)
+		    for (k = 1; k < nnr; k++)
+		      reg_last_reload_reg[nregno + k]
+			= (nr == nnr
+			   ? gen_rtx (REG,
+				      reg_raw_mode[REGNO (reload_reg_rtx[r]) + k],
+				      REGNO (reload_reg_rtx[r]) + k)
+			   : 0);
+
+		  /* Now do the inverse operation.  */
+		  for (k = 0; k < nr; k++)
+		    {
+		      reg_reloaded_contents[spill_reg_order[spill_regs[i] + k]]
+			= (nregno >= FIRST_PSEUDO_REGISTER || nr != nnr
+			   ? nregno
+			   : nregno + k);
+		      reg_reloaded_insn[spill_reg_order[spill_regs[i] + k]] = insn;
+		    }
+		}
+
+	      /* Maybe the spill reg contains a copy of reload_in.  Only do
+		 something if there will not be an output reload for
+		 the register being reloaded.  */
+	      else if (reload_out[r] == 0
+		       && reload_in[r] != 0
+		       && ((GET_CODE (reload_in[r]) == REG
+			    && ! reg_has_output_reload[REGNO (reload_in[r])])
+			   || (GET_CODE (reload_in_reg[r]) == REG
+			       && ! reg_has_output_reload[REGNO (reload_in_reg[r])])))
+		{
+		  register int nregno;
+		  int nnr;
+
+		  if (GET_CODE (reload_in[r]) == REG)
+		    nregno = REGNO (reload_in[r]);
+		  else
+		    nregno = REGNO (reload_in_reg[r]);
+
+		  nnr = (nregno >= FIRST_PSEUDO_REGISTER ? 1
 			 : HARD_REGNO_NREGS (nregno,
 					     GET_MODE (reload_reg_rtx[r])));
+		  
+		  reg_last_reload_reg[nregno] = reload_reg_rtx[r];
 
-	      spill_reg_store[i] = new_spill_reg_store[i];
-	      reg_last_reload_reg[nregno] = reload_reg_rtx[r];
+		  if (nregno < FIRST_PSEUDO_REGISTER)
+		    for (k = 1; k < nnr; k++)
+		      reg_last_reload_reg[nregno + k]
+			= (nr == nnr
+			   ? gen_rtx (REG,
+				      reg_raw_mode[REGNO (reload_reg_rtx[r]) + k],
+				      REGNO (reload_reg_rtx[r]) + k)
+			   : 0);
 
-	      /* If NREGNO is a hard register, it may occupy more than
-		 one register.  If it does, say what is in the 
-		 rest of the registers assuming that both registers
-		 agree on how many words the object takes.  If not,
-		 invalidate the subsequent registers.  */
+		  /* Unless we inherited this reload, show we haven't
+		     recently done a store.  */
+		  if (! reload_inherited[r])
+		    spill_reg_store[i] = 0;
 
-	      if (nregno < FIRST_PSEUDO_REGISTER)
-		for (k = 1; k < nnr; k++)
-		  reg_last_reload_reg[nregno + k]
-		    = (nr == nnr ? gen_rtx (REG,
-					    reg_raw_mode[REGNO (reload_reg_rtx[r]) + k],
-					    REGNO (reload_reg_rtx[r]) + k)
-		       : 0);
-
-	      /* Now do the inverse operation.  */
-	      for (k = 0; k < nr; k++)
-		{
-		  reg_reloaded_contents[spill_reg_order[spill_regs[i] + k]]
-		    = (nregno >= FIRST_PSEUDO_REGISTER || nr != nnr ? nregno
-		       : nregno + k);
-		  reg_reloaded_insn[spill_reg_order[spill_regs[i] + k]] = insn;
+		  for (k = 0; k < nr; k++)
+		    {
+		      reg_reloaded_contents[spill_reg_order[spill_regs[i] + k]]
+			= (nregno >= FIRST_PSEUDO_REGISTER || nr != nnr
+			   ? nregno
+			   : nregno + k);
+		      reg_reloaded_insn[spill_reg_order[spill_regs[i] + k]]
+			= insn;
+		    }
 		}
 	    }
 
-	  /* Maybe the spill reg contains a copy of reload_in.  Only do
-	     something if there will not be an output reload for
-	     the register being reloaded.  */
-	  else if (reload_out[r] == 0
-		   && reload_in[r] != 0
-		   && ((GET_CODE (reload_in[r]) == REG
-			&& ! reg_has_output_reload[REGNO (reload_in[r])])
-		       || (GET_CODE (reload_in_reg[r]) == REG
-			   && ! reg_has_output_reload[REGNO (reload_in_reg[r])])))
+	  /* However, if part of the reload reaches the end, then we must
+	     invalidate the old info for the part that survives to the end.  */
+	  else if (part_reaches_end)
 	    {
-	      register int nregno;
-	      int nnr;
-
-	      if (GET_CODE (reload_in[r]) == REG)
-		nregno = REGNO (reload_in[r]);
-	      else
-		nregno = REGNO (reload_in_reg[r]);
-
-	      nnr = (nregno >= FIRST_PSEUDO_REGISTER ? 1
-		     : HARD_REGNO_NREGS (nregno,
-					 GET_MODE (reload_reg_rtx[r])));
-
-	      reg_last_reload_reg[nregno] = reload_reg_rtx[r];
-
-	      if (nregno < FIRST_PSEUDO_REGISTER)
-		for (k = 1; k < nnr; k++)
-		  reg_last_reload_reg[nregno + k]
-		    = (nr == nnr ? gen_rtx (REG,
-					    reg_raw_mode[REGNO (reload_reg_rtx[r]) + k],
-					    REGNO (reload_reg_rtx[r]) + k)
-		       : 0);
-
-	      /* Unless we inherited this reload, show we haven't
-		 recently done a store.  */
-	      if (! reload_inherited[r])
-		spill_reg_store[i] = 0;
-
 	      for (k = 0; k < nr; k++)
-		{
-		  reg_reloaded_contents[spill_reg_order[spill_regs[i] + k]]
-		    = (nregno >= FIRST_PSEUDO_REGISTER || nr != nnr ? nregno
-		       : nregno + k);
-		  reg_reloaded_insn[spill_reg_order[spill_regs[i] + k]]
-		    = insn;
-		}
+		if (reload_reg_reaches_end_p (spill_regs[i] + k,
+					      reload_opnum[r],
+					      reload_when_needed[r]))
+		  {
+		    reg_reloaded_contents[spill_reg_order[spill_regs[i] + k]] = -1;
+		    reg_reloaded_insn[spill_reg_order[spill_regs[i] + k]] = 0;
+		  }
 	    }
 	}
 
