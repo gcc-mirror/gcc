@@ -1,3 +1,10 @@
+2005-03-08  James E Wilson  <wilson@specifixinc.com>
+
+	Backport from mainline
+	2005-02-21  James E Wilson  <wilson@specifixinc.com>
+	* toplev.c (backend_init): Don't call init_adjust_machine_modes here.
+	(do_compile): Do call it here.
+
 2005-03-07  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	* config/i386/cygwin1.c(mingw_scan): Use xstrdup in calls to putenv.
