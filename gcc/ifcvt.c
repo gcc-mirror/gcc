@@ -2667,19 +2667,7 @@ dead_or_predicable (test_bb, merge_bb, other_bb, new_dest, reversep)
       if (end == merge_bb->end)
 	merge_bb->end = PREV_INSN (head);
 
-      head = squeeze_notes (head, end);
-      if (GET_CODE (end) == NOTE
-	  && (NOTE_LINE_NUMBER (end) == NOTE_INSN_BLOCK_END
-              || NOTE_LINE_NUMBER (end) == NOTE_INSN_BLOCK_BEG
-              || NOTE_LINE_NUMBER (end) == NOTE_INSN_LOOP_BEG
-              || NOTE_LINE_NUMBER (end) == NOTE_INSN_LOOP_END
-              || NOTE_LINE_NUMBER (end) == NOTE_INSN_LOOP_CONT
-              || NOTE_LINE_NUMBER (end) == NOTE_INSN_LOOP_VTOP))
-	{
-	  if (head == end)
-	    return TRUE;
-	  end = PREV_INSN (end);
-	}
+      squeeze_notes (&head, &end);
 
       reorder_insns (head, end, PREV_INSN (earliest));
     }

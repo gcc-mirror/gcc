@@ -3074,13 +3074,10 @@ static int
 merge_blocks_move_predecessor_nojumps (a, b)
      basic_block a, b;
 {
-  rtx start, end, barrier;
+  rtx barrier;
   int index;
 
-  start = a->head;
-  end = a->end;
-
-  barrier = next_nonnote_insn (end);
+  barrier = next_nonnote_insn (a->end);
   if (GET_CODE (barrier) != BARRIER)
     abort ();
   flow_delete_insn (barrier);
@@ -3092,11 +3089,11 @@ merge_blocks_move_predecessor_nojumps (a, b)
      and adjust the block trees appropriately.   Even better would be to have
      a tighter connection between block trees and rtl so that this is not
      necessary.  */
-  start = squeeze_notes (start, end);
+  squeeze_notes (&a->head, &a->end);
 
   /* Scramble the insn chain.  */
-  if (end != PREV_INSN (b->head))
-    reorder_insns (start, end, PREV_INSN (b->head));
+  if (a->end != PREV_INSN (b->head))
+    reorder_insns (a->head, a->end, PREV_INSN (b->head));
 
   if (rtl_dump_file)
     {
@@ -3127,11 +3124,9 @@ static int
 merge_blocks_move_successor_nojumps (a, b)
      basic_block a, b;
 {
-  rtx start, end, barrier;
+  rtx barrier;
 
-  start = b->head;
-  end = b->end;
-  barrier = NEXT_INSN (end);
+  barrier = NEXT_INSN (b->end);
 
   /* Recognize a jump table following block B.  */
   if (barrier
@@ -3141,8 +3136,8 @@ merge_blocks_move_successor_nojumps (a, b)
       && (GET_CODE (PATTERN (NEXT_INSN (barrier))) == ADDR_VEC
 	  || GET_CODE (PATTERN (NEXT_INSN (barrier))) == ADDR_DIFF_VEC))
     {
-      end = NEXT_INSN (barrier);
-      barrier = NEXT_INSN (end);
+      b->end = NEXT_INSN (barrier);
+      barrier = NEXT_INSN (b->end);
     }
 
   /* There had better have been a barrier there.  Delete it.  */
@@ -3156,10 +3151,10 @@ merge_blocks_move_successor_nojumps (a, b)
      and adjust the block trees appropriately.   Even better would be to have
      a tighter connection between block trees and rtl so that this is not
      necessary.  */
-  start = squeeze_notes (start, end);
+  squeeze_notes (&b->head, &b->end);
 
   /* Scramble the insn chain.  */
-  reorder_insns (start, end, a->end);
+  reorder_insns (b->head, b->end, a->end);
 
   /* Now blocks A and B are contiguous.  Merge them.  */
   merge_blocks_nomove (a, b);

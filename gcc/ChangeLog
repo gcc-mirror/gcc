@@ -1,3 +1,15 @@
+2001-08-22  Jason Merrill  <jason_merrill@redhat.com>
+
+	* jump.c (squeeze_notes): Take parms by reference.  Handle END being
+	a squeezable note.
+	* rtl.h: Adjust.
+	* ifcvt.c (dead_or_predicable): Adjust.
+	* loop.c (find_and_verify_loops): Adjust.
+	* stmt.c (expand_end_case): Adjust.
+	* flow.c (merge_blocks_move_successor_nojumps): Adjust.  Modify the
+	head and end insn pointers in the basic block, not just local copies.
+	(merge_blocks_move_predecessor_nojumps): Likewise.
+
 2001-08-22  Lars Brinkhoff  <lars@nocrew.org>
 
 	* Makefile.in, alias.c, basic-block.h, bb-reorder.c, bitmap.c,
