@@ -4043,7 +4043,10 @@ cprop_jump (bb, insn, from, src)
       SET_SRC (set) = new;
 
       if (JUMP_LABEL (insn) != 0)
-	--LABEL_NUSES (JUMP_LABEL (insn));
+	{
+	  --LABEL_NUSES (JUMP_LABEL (insn));
+	  JUMP_LABEL (insn) = NULL_RTX;
+	}
     }
 
   /* Otherwise, this must be a valid instruction.  */
