@@ -9957,11 +9957,16 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	 refer to it, so nothing needs know about the name change.
 	 The TYPE_NAME field was filled in by build_struct_xref.  */
       if (type != error_mark_node
-	  && !TYPE_READONLY (type) && !TYPE_VOLATILE (type)
 	  && TYPE_NAME (type)
 	  && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
 	  && ANON_AGGRNAME_P (TYPE_IDENTIFIER (type)))
 	{
+	  /* For anonymous structs that are cv-qualified, need to use
+             TYPE_MAIN_VARIANT so that name will mangle correctly. As
+             type not referenced after this block, don't bother
+             resetting type to original type, ie. TREE_TYPE (decl). */
+	  type = TYPE_MAIN_VARIANT (type);
+
 	  /* Replace the anonymous name with the real name everywhere.  */
 	  lookup_tag_reverse (type, declarator);
 	  TYPE_NAME (type) = decl;

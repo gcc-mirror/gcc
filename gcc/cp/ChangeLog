@@ -1,3 +1,7 @@
+1998-08-17  Benjamin Kosnik  <bkoz@loony.cygnus.com>
+
+	* decl.c (grokdeclarator): Allow anonymous types to be cv-qualified.
+
 Mon Aug 17 10:40:18 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* cp-tree.h (set_identifier_local_value): Provide prototype.
