@@ -1,5 +1,15 @@
 2003-06-21  Michael Koch  <konqueror@gmx.de>
 
+	* java/io/File.java
+	(static): Load javaio lib if existing (only in classpath).
+	(File): Revised documentation to show the correct argument name.
+	(createTempFile): Partly merged with classpath.
+	(compareTo): Simplified.
+	(lastModified): Throw exception if time < 0.
+	(deleteOnExit): Revised documentation.
+
+2003-06-21  Michael Koch  <konqueror@gmx.de>
+
 	* java/net/PlainSocketImpl.java:
 	Reformatted.
 	(PlainSocketImpl): Merged class documentaion with classpath.
