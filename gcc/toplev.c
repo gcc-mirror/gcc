@@ -4198,7 +4198,7 @@ main (argc, argv, envp)
 			  type = PREFERRED_DEBUGGING_TYPE;
 			  if (len > 1 && strncmp (str, "ggdb", len) == 0)
 			    {
-#ifdef DWARF2_DEBUGGING_INFO
+#if defined (DWARF2_DEBUGGING_INFO) && !defined (LINKER_DOES_NOT_WORK_WITH_DWARF2)
 			      type = DWARF2_DEBUG;
 #else
 #ifdef DBX_DEBUGGING_INFO
