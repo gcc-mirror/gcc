@@ -1,3 +1,14 @@
+2004-01-14  Nathan Bryant  <nbryant@optonline.net>
+	    Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/12001:
+	* gnu/gcj/runtime/VMClassLoader.java (VMClassLoader): Pass empty
+	array to superclass.
+	(init): Changed interface; add URLs here.
+	(initialize): New static method.
+	* prims.cc (_Jv_CreateJavaVM): Initialize ClassLoader here...
+	(_Jv_RunMain): ... not here.
+
 2004-01-14  Michael Koch  <konqueror@gmx.de>
 
 	* java/text/MessageFormat.java:
@@ -8,7 +19,7 @@
 
 	* java/awt/EventQueue.java (isDispatchThread): Do check on top of stack.
 	(push): Make sure push is performed at the top of the thread stack.
- 
+
 2004-01-13  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* gnu/java/awt/peer/gtk/GtkTextAreaPeer.java,
