@@ -368,6 +368,7 @@ static struct undobuf undobuf;
 
 static int n_occurrences;
 
+static void init_reg_last_arrays	PROTO(());
 static void setup_incoming_promotions   PROTO(());
 static void set_nonzero_bits_and_sign_copies  PROTO((rtx, rtx));
 static int can_combine_p	PROTO((rtx, rtx, rtx, rtx, rtx *, rtx *));
@@ -438,6 +439,13 @@ combine_instructions (f, nregs)
 
   combine_max_regno = nregs;
 
+  reg_nonzero_bits
+    = (unsigned HOST_WIDE_INT *) alloca (nregs * sizeof (HOST_WIDE_INT));
+  reg_sign_bit_copies = (char *) alloca (nregs * sizeof (char));
+
+  bzero (reg_nonzero_bits, nregs * sizeof (HOST_WIDE_INT));
+  bzero (reg_sign_bit_copies, nregs * sizeof (char));
+
   reg_last_death = (rtx *) alloca (nregs * sizeof (rtx));
   reg_last_set = (rtx *) alloca (nregs * sizeof (rtx));
   reg_last_set_value = (rtx *) alloca (nregs * sizeof (rtx));
@@ -451,21 +459,7 @@ combine_instructions (f, nregs)
   reg_last_set_sign_bit_copies
     = (char *) alloca (nregs * sizeof (char));
 
-  reg_nonzero_bits
-    = (unsigned HOST_WIDE_INT *) alloca (nregs * sizeof (HOST_WIDE_INT));
-  reg_sign_bit_copies = (char *) alloca (nregs * sizeof (char));
-
-  bzero (reg_last_death, nregs * sizeof (rtx));
-  bzero (reg_last_set, nregs * sizeof (rtx));
-  bzero (reg_last_set_value, nregs * sizeof (rtx));
-  bzero (reg_last_set_table_tick, nregs * sizeof (int));
-  bzero (reg_last_set_label, nregs * sizeof (int));
-  bzero (reg_last_set_invalid, nregs * sizeof (char));
-  bzero (reg_last_set_mode, nregs * sizeof (enum machine_mode));
-  bzero (reg_last_set_nonzero_bits, nregs * sizeof (HOST_WIDE_INT));
-  bzero (reg_last_set_sign_bit_copies, nregs * sizeof (char));
-  bzero (reg_nonzero_bits, nregs * sizeof (HOST_WIDE_INT));
-  bzero (reg_sign_bit_copies, nregs * sizeof (char));
+  init_reg_last_arrays ();
 
   init_recog_no_volatile ();
 
@@ -523,13 +517,7 @@ combine_instructions (f, nregs)
   label_tick = 1;
   last_call_cuid = 0;
   mem_last_set = 0;
-  bzero (reg_last_death, nregs * sizeof (rtx));
-  bzero (reg_last_set, nregs * sizeof (rtx));
-  bzero (reg_last_set_value, nregs * sizeof (rtx));
-  bzero (reg_last_set_table_tick, nregs * sizeof (int));
-  bzero (reg_last_set_label, nregs * sizeof (int));
-  bzero (reg_last_set_invalid, nregs * sizeof (char));
-
+  init_reg_last_arrays ();
   setup_incoming_promotions ();
 
   for (insn = f; insn; insn = next ? next : NEXT_INSN (insn))
@@ -639,6 +627,24 @@ combine_instructions (f, nregs)
   total_successes += combine_successes;
 
   nonzero_sign_valid = 0;
+}
+
+/* Wipe the reg_last_xxx arrays in preparation for another pass.  */
+
+static void
+init_reg_last_arrays ()
+{
+  int nregs = combine_max_regno;
+
+  bzero (reg_last_death, nregs * sizeof (rtx));
+  bzero (reg_last_set, nregs * sizeof (rtx));
+  bzero (reg_last_set_value, nregs * sizeof (rtx));
+  bzero (reg_last_set_table_tick, nregs * sizeof (int));
+  bzero (reg_last_set_label, nregs * sizeof (int));
+  bzero (reg_last_set_invalid, nregs * sizeof (char));
+  bzero (reg_last_set_mode, nregs * sizeof (enum machine_mode));
+  bzero (reg_last_set_nonzero_bits, nregs * sizeof (HOST_WIDE_INT));
+  bzero (reg_last_set_sign_bit_copies, nregs * sizeof (char));
 }
 
 /* Set up any promoted values for incoming argument registers.  */
@@ -5554,25 +5560,34 @@ force_to_mode (x, mode, mask, reg)
      rtx reg;
 {
   enum rtx_code code = GET_CODE (x);
-  unsigned HOST_WIDE_INT nonzero = nonzero_bits (x, mode);
+  enum machine_mode op_mode;
+  unsigned HOST_WIDE_INT fuller_mask, nonzero;
   rtx op0, op1, temp;
 
   /* We want to perform the operation is its present mode unless we know
      that the operation is valid in MODE, in which case we do the operation
      in MODE.  */
-  enum machine_mode op_mode
-    = ((code_to_optab[(int) code] != 0
-	&& (code_to_optab[(int) code]->handlers[(int) mode].insn_code
-	    != CODE_FOR_nothing))
-       ? mode : GET_MODE (x));
+  op_mode = ((code_to_optab[(int) code] != 0
+	      && (code_to_optab[(int) code]->handlers[(int) mode].insn_code
+		  != CODE_FOR_nothing))
+	     ? mode : GET_MODE (x));
+
+  /* Truncate MASK to fit OP_MODE.  */
+  if (op_mode)
+    mask &= GET_MODE_MASK (op_mode);
 
   /* When we have an arithmetic operation, or a shift whose count we
      do not know, we need to assume that all bit the up to the highest-order
      bit in MASK will be needed.  This is how we form such a mask.  */
-  unsigned HOST_WIDE_INT fuller_mask
-    = (GET_MODE_BITSIZE (op_mode) >= HOST_BITS_PER_WIDE_INT
-       ? GET_MODE_MASK (op_mode)
-       : ((HOST_WIDE_INT) 1 << (floor_log2 (mask) + 1)) - 1);
+  if (op_mode)
+    fuller_mask = (GET_MODE_BITSIZE (op_mode) >= HOST_BITS_PER_WIDE_INT
+		   ? GET_MODE_MASK (op_mode)
+		   : ((HOST_WIDE_INT) 1 << (floor_log2 (mask) + 1)) - 1);
+  else
+    fuller_mask = ~ (HOST_WIDE_INT) 0;
+
+  /* Determine what bits of X are guaranteed to be (non)zero.  */
+  nonzero = nonzero_bits (x, mode);
 
   /* If none of the bits in X are needed, return a zero.  */
   if ((nonzero & mask) == 0)
@@ -9188,13 +9203,17 @@ record_value_for_reg (reg, insn, value)
     }
 
   /* For each register modified, show we don't know its value, that
-     its value has been updated, and that we don't know the location of
-     the death of the register.  */
+     we don't know about its bitwise content, that its value has been
+     updated, and that we don't know the location of the death of the
+     register.  */
   for (i = regno; i < endregno; i ++)
     {
       if (insn)
 	reg_last_set[i] = insn;
       reg_last_set_value[i] = 0;
+      reg_last_set_mode[i] = 0;
+      reg_last_set_nonzero_bits[i] = 0;
+      reg_last_set_sign_bit_copies[i] = 0;
       reg_last_death[i] = 0;
     }
 
@@ -9281,9 +9300,11 @@ record_dead_and_set_regs_1 (dest, setter)
    for the things done by INSN.  This is the last thing done in processing
    INSN in the combiner loop.
 
-   We update reg_last_set, reg_last_set_value, reg_last_death, and also the
-   similar information mem_last_set (which insn most recently modified memory)
-   and last_call_cuid (which insn was the most recent subroutine call).  */
+   We update reg_last_set, reg_last_set_value, reg_last_set_mode,
+   reg_last_set_nonzero_bits, reg_last_set_sign_bit_copies, reg_last_death,
+   and also the similar information mem_last_set (which insn most recently
+   modified memory) and last_call_cuid (which insn was the most recent
+   subroutine call).  */
 
 static void
 record_dead_and_set_regs (insn)
@@ -9316,6 +9337,9 @@ record_dead_and_set_regs (insn)
 	if (call_used_regs[i])
 	  {
 	    reg_last_set_value[i] = 0;
+	    reg_last_set_mode[i] = 0;
+	    reg_last_set_nonzero_bits[i] = 0;
+	    reg_last_set_sign_bit_copies[i] = 0;
 	    reg_last_death[i] = 0;
 	  }
 
