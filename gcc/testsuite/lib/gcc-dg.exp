@@ -522,17 +522,74 @@ if { [info procs saved-dg-test] == [list] } {
 # selector is one of:
 #    xfail target-triplet-1 ...
 #    xfail effective-target-keyword
+#    xfail selector-expression
 #    target target-triplet-1 ...
 #    target effective-target-keyword
+#    target selector-expression
 #
 # For a target list the result is "S" if the target is selected, "N" otherwise.
 # For an xfail list the result is "F" if the target is affected, "P" otherwise.
+#
+# A selector expression appears within curly braces and uses a single logical
+# operator: !, &&, or ||.  An operand is another selector expression, an
+# effective-target keyword, or a list of target triplets within quotes or
+# curly braces.
 
 if { [info procs saved-dg-process-target] == [list] } {
     rename dg-process-target saved-dg-process-target
 
+    # Evaluate an operand within a selector expression.
+    proc selector_opd { op } {
+	set selector "target"
+	lappend selector $op
+	set answer [ expr { [dg-process-target $selector] == "S" } ]
+	verbose "selector_opd: `$op' $answer" 2
+	return $answer
+    }
+
+    # Evaluate a target triplet list within a selector expression.
+    # Unlike other operands, this needs to be expanded from a list to
+    # the same string as "target".
+    proc selector_list { op } {
+	set selector "target [join $op]"
+	set answer [ expr { [dg-process-target $selector] == "S" } ]
+	verbose "selector_list: `$op' $answer" 2
+	return $answer
+    }
+
+    # Evaluate a selector expression.
+    proc selector_expression { exp } {
+	if { [llength $exp] == 2 } {
+	    if [string match "!" [lindex $exp 0]] {
+		set op1 [lindex $exp 1]
+		set answer [expr { ! [selector_opd $op1] }]
+	    } else {
+		# Assume it's a list of target triplets.
+		set answer [selector_list $exp]
+	    }
+	} elseif { [llength $exp] == 3 } {
+	    set op1 [lindex $exp 0]
+	    set opr [lindex $exp 1]
+	    set op2 [lindex $exp 2]
+	    if [string match "&&" $opr] {
+		set answer [expr { [selector_opd $op1] && [selector_opd $op2] }]
+	    } elseif [string match "||" $opr] {
+		set answer [expr { [selector_opd $op1] || [selector_opd $op2] }]
+	    } else {
+		# Assume it's a list of target triplets.
+		set answer [selector_list $exp]
+	    }
+	} else {
+	    # Assume it's a list of target triplets.
+	    set answer [selector_list $exp]
+	}
+
+	verbose "selector_expression: `$exp' $answer" 2
+	return $answer
+    }
+
     proc dg-process-target { args } {
-        verbose "replacement dg-process-target" 2
+	verbose "replacement dg-process-target: `$args'" 2
 	
 	# Extract the 'what' keyword from the argument list.
 	set selector [string trim [lindex $args 0]]
@@ -551,6 +608,14 @@ if { [info procs saved-dg-process-target] == [list] } {
 	if [is-effective-target-keyword $rest] {
 	    # The selector is an effective target keyword.
 	    if [is-effective-target $rest] {
+		return [expr { $what == "xfail" ? "F" : "S" }]
+	    } else {
+		return [expr { $what == "xfail" ? "P" : "N" }]
+	    }
+	}
+
+	if [string match "{*}" $rest] {
+	    if [selector_expression [lindex $rest 0]] {
 		return [expr { $what == "xfail" ? "F" : "S" }]
 	    } else {
 		return [expr { $what == "xfail" ? "P" : "N" }]
