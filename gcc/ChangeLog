@@ -1,3 +1,8 @@
+Fri Aug 14 21:52:53 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* expr.c (store_expr): Don't optimize away load-store pair
+	when either source or destination have a side effect.
+
 Fri Aug 14 16:50:10 1998  John Carr  <jfc@mit.edu>
 
 	* genrecog.c (add_to_sequence): Fatal error if the modes of the operands
