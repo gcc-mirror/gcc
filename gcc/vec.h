@@ -156,7 +156,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    Ensure that V has at least RESERVE slots available, if RESERVE is
    >= 0.  If RESERVE < 0, ensure that there is at least one spare
    slot.  These differ in their reallocation behaviour, the first will
-   not create additionsl headroom, but the second mechanism will
+   not create additional headroom, but the second mechanism will
    perform the usual exponential headroom increase.  Note this can
    cause V to be reallocated.  Returns non-zero iff reallocation
    actually occurred.  */
