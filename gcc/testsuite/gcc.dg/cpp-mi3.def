@@ -1,0 +1,10 @@
+/* Another test case for over-eager multiple include optimization.    
+   This one distilled from glibc's setlocale.c and categories.def.
+   The #ifdef block doesn't cover the entire file, so it must not be
+   taken for a reinclude guard.  */
+
+#ifndef NO_POSTLOAD
+#define NO_POSTLOAD NULL
+#endif
+
+int X;

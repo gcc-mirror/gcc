@@ -2,6 +2,7 @@
 /* { dg-do compile } */
 /* { dg-options "" } */
 
+#define def unused expansion
 #define fail  int fail
 
 #assert abc (def)
