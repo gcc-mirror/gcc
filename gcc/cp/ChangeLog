@@ -1,5 +1,10 @@
 2000-08-29  Zack Weinberg  <zack@wolery.cumb.org>
 
+	* cp/semantics.c (prune_unused_decls): New function.
+	(finish_stmt_tree): Call it via walk_tree.
+
+2000-08-29  Zack Weinberg  <zack@wolery.cumb.org>
+
 	* class.c (build_secondary_vtable): Constify a char *.
 	* decl.c (init_decl_processing): Initialize function_id_node,
 	pretty_function_id_node, and func_id_node.

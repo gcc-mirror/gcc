@@ -48,6 +48,7 @@
 
 static tree maybe_convert_cond PARAMS ((tree));
 static tree simplify_aggr_init_exprs_r PARAMS ((tree *, int *, void *));
+static tree prune_unused_decls PARAMS ((tree *, int *, void *));
 static void deferred_type_access_control PARAMS ((void));
 static void emit_associated_thunks PARAMS ((tree));
 
@@ -2241,6 +2242,57 @@ finish_typeof (expr)
   return TREE_TYPE (expr);
 }
 
+/* Remove declarations of internal variables that are not used from a
+   stmt tree.  To qualify, the variable must have a name and must have
+   a zero DECL_SOURCE_LINE.  We tried to remove all variables for
+   which TREE_USED was false, but it turns out that there's tons of
+   variables for which TREE_USED is false but that are still in fact
+   used.  */
+
+static tree
+prune_unused_decls (tp, walk_subtrees, data)
+     tree *tp;
+     int *walk_subtrees ATTRIBUTE_UNUSED;
+     void *data ATTRIBUTE_UNUSED;
+{
+  tree t = *tp;
+
+  if (t == NULL_TREE)
+    {
+      *walk_subtrees = 0;
+      return NULL_TREE;
+    }
+
+  if (TREE_CODE (t) == DECL_STMT)
+    {
+      tree d = DECL_STMT_DECL (t);
+      if (!TREE_USED (d) && DECL_NAME (d) && DECL_SOURCE_LINE (d) == 0)
+	{
+	  *tp = TREE_CHAIN (t);
+	  /* Recurse on the new value of tp, otherwise we will skip
+	     the next statement.  */
+	  return prune_unused_decls (tp, walk_subtrees, data);
+	}
+    }
+  else if (TREE_CODE (t) == BLOCK)
+    {
+      /* walk_tree doesn't inspect BLOCK_VARS, so we must do it by hand.  */
+      tree *vp;
+
+      for (vp = &BLOCK_VARS (t); *vp; )
+	{
+	  tree v = *vp;
+	  if (! TREE_USED (v) && DECL_NAME (v) && DECL_SOURCE_LINE (v) == 0)
+	    *vp = TREE_CHAIN (v);  /* drop */
+	  else
+	    vp = &TREE_CHAIN (v);  /* advance */
+	}
+      if (BLOCK_VARS (t) == NULL_TREE)
+	TREE_USED (t) = 0;
+    }
+  return NULL_TREE;
+}
+
 /* Create an empty statement tree rooted at T.  */
 
 void
@@ -2262,11 +2314,18 @@ finish_stmt_tree (t)
      tree *t;
 {
   tree stmt;
+  int old_lineno;
   
   /* Remove the fake extra statement added in begin_stmt_tree.  */
   stmt = TREE_CHAIN (*t);
   *t = stmt;
   SET_LAST_STMT (NULL_TREE);
+
+  /* Remove unused decls from the stmt tree.  walk_tree messes with
+     the line number, so save/restore it.  */
+  old_lineno = lineno;
+  walk_tree (t, prune_unused_decls, 0);
+  lineno = old_lineno;
 
   if (cfun)
     {
