@@ -1,5 +1,7 @@
 Sun Aug 30 17:18:43 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* collect2.c (mktemp): Delete unused declaration.
+
 	* config/xm-netbsd.h: Remove unnecessary file.
 	* config/*/xm-netbsd.h: Do not include the generic xm-netbsd.h
 	file anymore, it is not needed.

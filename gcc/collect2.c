@@ -236,7 +236,6 @@ char * temporary_firstobj;
 /* Defined in the automatically-generated underscore.c.  */
 extern int prepends_underscore;
 
-extern char *mktemp ();
 extern FILE *fdopen ();
 
 #ifndef GET_ENVIRONMENT
