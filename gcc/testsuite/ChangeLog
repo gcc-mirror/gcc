@@ -1,3 +1,8 @@
+2004-10-08  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* gcc.dg/darwin-longdouble.c: Include stdlib.h and string.h.
+	* gcc.dg/darwin-abi-2.c: Include stdlib.h.
+
 2004-10-08  Christian Ehrhardt  <ehrhardt@mathematik.uni-ulm.de>
 
 	* gcc.dg/ultrasp11.c: New test.

@@ -3,6 +3,8 @@
 /* No options so 'long long' can be used.  */
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 typedef unsigned long long uint64_t;
 typedef uint64_t ldbits[2];

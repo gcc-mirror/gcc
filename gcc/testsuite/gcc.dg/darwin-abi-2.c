@@ -5,6 +5,7 @@
    tests that the ABI is correct.  */
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #define vector __attribute__((vector_size(16)))
 
