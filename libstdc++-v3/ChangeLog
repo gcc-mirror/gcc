@@ -1,4 +1,12 @@
 2004-09-17  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/ext/mt_allocator/tune-1.cc: Use VERIFY, clean
+	up a bit.
+	* testsuite/ext/mt_allocator/tune-2.cc: Likewise.
+	* testsuite/ext/mt_allocator/tune-3.cc: Likewise.
+	* testsuite/ext/mt_allocator/tune-4.cc: Likewise.
+
+2004-09-17  Paolo Carlini  <pcarlini@suse.de>
 	    Andrea Arcangeli  <andrea@suse.de>
 
 	* config/io/basic_file_stdio.cc (__basic_file<>::close)): Don't
