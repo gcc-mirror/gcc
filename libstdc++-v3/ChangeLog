@@ -1,3 +1,16 @@
+2002-04-28  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/5280
+	* config/io/basic_file_stdio.h (__basic_file::sys_getc): Return int.
+	(__basic_file::sys_ungetc): Take int.
+	* config/io/basic_file_stdio.cc (__basic_file::sys_ungetc): Same.
+	* include/bits/fstream.tcc (basic_filebuf::_M_underflow_common):
+	Use sys_getc for unbuffered input.
+	* testsuite/27_io/narrow_stream_objects.cc (test06): New.
+	
+	* src/ios.cc (_M_grow_words): Adjust error checking.
+	* testsuite/27_io/ios_base_storage.cc: Same.
+
 2002-04-28  Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
 
 	* include/ext/stl_hashtable.h: Import __iterator_category
