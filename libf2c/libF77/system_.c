@@ -15,7 +15,7 @@ G77_system_0 (register char *s, ftnlen n)
   register char *bp, *blast;
   integer rv;
 
-  buff = bp = n < sizeof (buff0) ? buff0 : F77_aloc (n + 1, "system_");
+  buff = bp = n < (ftnlen) sizeof (buff0) ? buff0 : F77_aloc (n + 1, "system_");
   blast = bp + n;
 
   while (bp < blast && *s)

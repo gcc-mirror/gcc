@@ -34,7 +34,7 @@ rd_Z (Uint * n, int w, ftnlen len)
   s = s0 = (char *) x;
   s1 = (char *) &x[4];
   se = (char *) &x[8];
-  if (len > 4 * sizeof (long))
+  if (len > 4 * (ftnlen) sizeof (long))
     return errno = 117;
   while (w)
     {

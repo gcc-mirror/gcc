@@ -24,7 +24,7 @@ G77_getenv_0 (char *fname, char *value, ftnlen flen, ftnlen vlen)
 
   if (flen <= 0)
     goto add_blanks;
-  for (i = 0; i < sizeof (buf); i++)
+  for (i = 0; i < (integer) sizeof (buf); i++)
     {
       if (i == flen || (buf[i] = fname[i]) == ' ')
 	{
