@@ -1448,7 +1448,7 @@ extern struct rtx_def *hppa_builtin_saveregs ();
    these things in insns and then not re-recognize the insns, causing
    constrain_operands to fail.
 
-   `R' is unused.
+   `R' is used for scaled indexed addresses.
 
    `S' is unused.
 
