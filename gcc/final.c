@@ -1756,35 +1756,39 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	   and the next statement should reexamine the variable
 	   to compute the condition codes.  */
 
-	if (optimize
-	    && GET_CODE (body) == SET
-	    && GET_CODE (SET_DEST (body)) == CC0
-	    && insn != last_ignored_compare)
+	if (optimize)
 	  {
-	    if (GET_CODE (SET_SRC (body)) == SUBREG)
-	      SET_SRC (body) = alter_subreg (SET_SRC (body));
-	    else if (GET_CODE (SET_SRC (body)) == COMPARE)
+	    rtx set = single_set(insn);
+
+	    if (set
+		&& GET_CODE (SET_DEST (set)) == CC0
+		&& insn != last_ignored_compare)
 	      {
-		if (GET_CODE (XEXP (SET_SRC (body), 0)) == SUBREG)
-		  XEXP (SET_SRC (body), 0)
-		    = alter_subreg (XEXP (SET_SRC (body), 0));
-		if (GET_CODE (XEXP (SET_SRC (body), 1)) == SUBREG)
-		  XEXP (SET_SRC (body), 1)
-		    = alter_subreg (XEXP (SET_SRC (body), 1));
-	      }
-	    if ((cc_status.value1 != 0
-		 && rtx_equal_p (SET_SRC (body), cc_status.value1))
-		|| (cc_status.value2 != 0
-		    && rtx_equal_p (SET_SRC (body), cc_status.value2)))
-	      {
-		/* Don't delete insn if it has an addressing side-effect.  */
-		if (! FIND_REG_INC_NOTE (insn, 0)
-		    /* or if anything in it is volatile.  */
-		    && ! volatile_refs_p (PATTERN (insn)))
+		if (GET_CODE (SET_SRC (set)) == SUBREG)
+		  SET_SRC (set) = alter_subreg (SET_SRC (set));
+		else if (GET_CODE (SET_SRC (set)) == COMPARE)
 		  {
-		    /* We don't really delete the insn; just ignore it.  */
-		    last_ignored_compare = insn;
-		    break;
+		    if (GET_CODE (XEXP (SET_SRC (set), 0)) == SUBREG)
+		      XEXP (SET_SRC (set), 0)
+			= alter_subreg (XEXP (SET_SRC (set), 0));
+		    if (GET_CODE (XEXP (SET_SRC (set), 1)) == SUBREG)
+		      XEXP (SET_SRC (set), 1)
+			= alter_subreg (XEXP (SET_SRC (set), 1));
+		  }
+		if ((cc_status.value1 != 0
+		     && rtx_equal_p (SET_SRC (set), cc_status.value1))
+		    || (cc_status.value2 != 0
+			&& rtx_equal_p (SET_SRC (set), cc_status.value2)))
+		  {
+		    /* Don't delete insn if it has an addressing side-effect.  */
+		    if (! FIND_REG_INC_NOTE (insn, 0)
+			/* or if anything in it is volatile.  */
+			&& ! volatile_refs_p (PATTERN (insn)))
+		      {
+			/* We don't really delete the insn; just ignore it.  */
+			last_ignored_compare = insn;
+			break;
+		      }
 		  }
 	      }
 	  }
