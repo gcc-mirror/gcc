@@ -1,3 +1,8 @@
+2004-12-12  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* lcm.c (optimize_mode_switching): Free insert and delete in
+	the "for" loop.
+
 2004-12-11  David Edelsohn  <edelsohn@gnu.org>
 	    Ulrich Weigand  <uweigand@de.ibm.com>
 
