@@ -46,7 +46,9 @@ import javax.swing.event.*;
  * AbstractTableModel
  * @author Andrew Selkirk
  */
-public abstract class AbstractTableModel implements TableModel, Serializable {
+public abstract class AbstractTableModel implements TableModel, Serializable
+{
+  static final long serialVersionUID = -5798593159423650347L;
 
 	//-------------------------------------------------------------
 	// Variables --------------------------------------------------

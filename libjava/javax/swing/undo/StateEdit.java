@@ -1,5 +1,5 @@
-/* AbstractTableModel.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+/* StateEdit.java --
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,108 +44,133 @@ import java.util.*;
  * StateEdit
  * @author	Andrew Selkirk
  */
-public class StateEdit extends AbstractUndoableEdit {
+public class StateEdit extends AbstractUndoableEdit
+{
 
-	//-------------------------------------------------------------
-	// Variables --------------------------------------------------
-	//-------------------------------------------------------------
+  //-------------------------------------------------------------
+  // Variables --------------------------------------------------
+  //-------------------------------------------------------------
 
-	/**
-	 * RCSID
-	 */
-	protected static final String RCSID = ""; // TODO
+  /**
+   * RCSID
+   */
+  protected static final String RCSID = ""; // TODO
 
-	/**
-	 * object
-	 */
-	protected StateEditable object;
+  /**
+   * object
+   */
+  protected StateEditable object;
 
-	/**
-	 * preState
-	 */
-	protected Hashtable preState;
+  /**
+   * preState
+   */
+  protected Hashtable preState;
 
-	/**
-	 * postState
-	 */
-	protected Hashtable postState;
+  /**
+   * postState
+   */
+  protected Hashtable postState;
 
-	/**
-	 * undoRedoName
-	 */
-	protected String undoRedoName;
-
-
-	//-------------------------------------------------------------
-	// Initialization ---------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * Constructor StateEdit
-	 * @param value0 TODO
-	 */
-	public StateEdit(StateEditable value0) {
-		// TODO
-	} // StateEdit()
-
-	/**
-	 * Constructor StateEdit
-	 * @param value0 TODO
-	 * @param value1 TODO
-	 */
-	public StateEdit(StateEditable value0, String value1) {
-		// TODO
-	} // StateEdit()
+  /**
+   * undoRedoName
+   */
+  protected String undoRedoName;
 
 
-	//-------------------------------------------------------------
-	// Methods ----------------------------------------------------
-	//-------------------------------------------------------------
+  //-------------------------------------------------------------
+  // Initialization ---------------------------------------------
+  //-------------------------------------------------------------
 
-	/**
-	 * init
-	 * @param value0 TODO
-	 * @param value1 TODO
-	 */
-	protected void init(StateEditable value0, String value1) {
-		// TODO
-	} // init()
+  /**
+   * Constructor StateEdit
+   * @param obj Object to edit
+   */
+  public StateEdit(StateEditable obj)
+  {
+    init(obj, null);
+  }
 
-	/**
-	 * end
-	 */
-	public void end() {
-		// TODO
-	} // end()
-
-	/**
-	 * undo
-	 */
-	public void undo() {
-		// TODO
-	} // undo()
-
-	/**
-	 * redo
-	 */
-	public void redo() {
-		// TODO
-	} // redo()
-
-	/**
-	 * getPresentationName
-	 * @returns String
-	 */
-	public String getPresentationName() {
-		return null; // TODO
-	} // getPresentationName()
-
-	/**
-	 * removeRedundantState
-	 */
-	protected void removeRedundantState() {
-		// TODO
-	} // removeRedundantState()
+  /**
+   * Constructor StateEdit
+   * @param obj Object to edit
+   * @param name Presentation name
+   */
+  public StateEdit(StateEditable obj, String name)
+  {
+    init(obj, name);
+  }
 
 
-} // StateEdit
+  //-------------------------------------------------------------
+  // Methods ----------------------------------------------------
+  //-------------------------------------------------------------
+
+  /**
+   * Initialize this object.
+   * @param obj Object to edit
+   * @param name Presentation name
+   */
+  protected void init(StateEditable obj, String name)
+  {
+    object = obj;
+    undoRedoName = name;
+    preState = new Hashtable();
+    postState = new Hashtable();
+    obj.storeState(preState);
+  }
+
+  /**
+   * Indicate that all edits are finished, and update this object
+   * with final state.
+   */
+  public void end()
+  {
+    object.storeState(postState);
+    removeRedundantState();
+  }
+
+  /**
+   * Undo this edit by applying the initial state to the edited object.
+   */
+  public void undo()
+  {
+    object.restoreState(preState);
+  }
+
+  /**
+   * Undo this edit by applying the final state to the edited object.
+   */
+  public void redo()
+  {
+    object.restoreState(postState);
+  }
+
+  /**
+   * Return the presentation name of this object.
+   * @returns The name, or null if not set
+   */
+  public String getPresentationName()
+  {
+    return undoRedoName;
+  }
+
+  /**
+   * removeRedundantState
+   */
+  protected void removeRedundantState()
+  {
+    Iterator i = preState.keySet().iterator();
+    while (i.hasNext())
+      {
+	Object key = i.next();
+	if (postState.containsKey(key))
+	  {
+	    if (preState.get(key).equals(postState.get(key)))
+	      {
+		i.remove();
+		postState.remove(key);
+	      }
+	  }
+      }
+  }
+}

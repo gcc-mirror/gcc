@@ -46,7 +46,10 @@ import java.io.*;
  * @author	Andrew Selkirk
  * @version	1.0
  */
-public class OverlayLayout implements LayoutManager2, Serializable {
+public class OverlayLayout
+  implements LayoutManager2, Serializable
+{
+  static final long serialVersionUID = 18082829169631543L;
 
 	//-------------------------------------------------------------
 	// Variables --------------------------------------------------

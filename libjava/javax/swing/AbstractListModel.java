@@ -48,7 +48,10 @@ import javax.swing.event.*;
  * @author	Andrew Selkirk
  * @version	1.0
  */
-public abstract class AbstractListModel implements ListModel, Serializable {
+public abstract class AbstractListModel
+  implements ListModel, Serializable
+{
+  static final long serialVersionUID = -3285184064379168730L;
 
 	//-------------------------------------------------------------
 	// Variables --------------------------------------------------

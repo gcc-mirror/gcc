@@ -47,7 +47,10 @@ import javax.swing.event.*;
  * @author	Andrew Selkirk
  * @version	1.0
  */
-public abstract class AbstractCellEditor implements CellEditor, Serializable {
+public abstract class AbstractCellEditor
+  implements CellEditor, Serializable
+{
+  static final long serialVersionUID = -1048006551406220959L;
 
 	//-------------------------------------------------------------
 	// Variables --------------------------------------------------

@@ -46,7 +46,9 @@ import java.io.*;
  * @author	Andrew Selkirk
  * @version	1.0
  */
-public class ViewportLayout implements LayoutManager, Serializable {
+public class ViewportLayout implements LayoutManager, Serializable
+{
+  static final long serialVersionUID = -788225906076097229L;
 
 	//-------------------------------------------------------------
 	// Initialization ---------------------------------------------

@@ -44,7 +44,9 @@ import java.io.*;
  * TreePath
  * @author Andrew Selkirk
  */
-public class TreePath implements Serializable {
+public class TreePath implements Serializable
+{
+  static final long serialVersionUID = 4380036194768077479L;
 
 	//-------------------------------------------------------------
 	// Variables --------------------------------------------------

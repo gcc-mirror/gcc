@@ -45,7 +45,10 @@ import java.util.*;
  * DefaultMutableTreeNode
  * @author Andrew Selkirk
  */
-public class DefaultMutableTreeNode implements Cloneable, MutableTreeNode, Serializable {
+public class DefaultMutableTreeNode
+  implements Cloneable, MutableTreeNode, Serializable
+{
+  static final long serialVersionUID = -4298474751201349152L;
 
 	//-------------------------------------------------------------
 	// Variables --------------------------------------------------

@@ -45,8 +45,9 @@ import java.util.EventListener;
  * EventListenerList
  * @author Andrew Selkirk
  */
-public class EventListenerList	extends		Object
-								implements	Serializable {
+public class EventListenerList extends Object implements Serializable
+{
+  static final long serialVersionUID = -5677132037850737084L;
 
 	//-------------------------------------------------------------
 	// Variables --------------------------------------------------

@@ -48,7 +48,10 @@ import javax.swing.event.*;
  * DefaultTreeSelectionModel
  * @author Andrew Selkirk
  */
-public class DefaultTreeSelectionModel implements Cloneable, Serializable, TreeSelectionModel {
+public class DefaultTreeSelectionModel
+  implements Cloneable, Serializable, TreeSelectionModel
+{
+  static final long serialVersionUID = 3288129636638950196L;
 
 	//-------------------------------------------------------------
 	// Variables --------------------------------------------------

@@ -49,7 +49,9 @@ import javax.swing.plaf.*;
  * @version	1.0
  */
 public class DefaultListCellRenderer extends JLabel 
-		implements ListCellRenderer, Serializable {
+		implements ListCellRenderer, Serializable
+{
+  static final long serialVersionUID = 7708947179685189462L;
 
 	//-------------------------------------------------------------
 	// Classes ----------------------------------------------------

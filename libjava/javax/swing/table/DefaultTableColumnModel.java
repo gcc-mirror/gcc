@@ -49,7 +49,11 @@ import javax.swing.event.*;
  * @author	Andrew Selkirk
  * @version	1.0
  */
-public class DefaultTableColumnModel implements TableColumnModel, PropertyChangeListener, ListSelectionListener, Serializable {
+public class DefaultTableColumnModel
+  implements TableColumnModel, PropertyChangeListener,
+             ListSelectionListener, Serializable
+{
+  static final long serialVersionUID = 6580012493508960512L;
 
 	//-------------------------------------------------------------
 	// Variables --------------------------------------------------

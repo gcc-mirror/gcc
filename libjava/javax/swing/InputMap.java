@@ -46,7 +46,9 @@ import java.io.*;
  * @author	Andrew Selkirk
  * @version	1.0
  */
-public class InputMap implements Serializable {
+public class InputMap implements Serializable
+{
+  static final long serialVersionUID = -5429059542008604257L;
 
 	//-------------------------------------------------------------
 	// Variables --------------------------------------------------

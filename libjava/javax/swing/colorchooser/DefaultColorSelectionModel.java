@@ -48,7 +48,9 @@ import javax.swing.event.*;
  * @version	1.0
  */
 public class DefaultColorSelectionModel 
-		implements ColorSelectionModel, Serializable {
+  implements ColorSelectionModel, Serializable
+{
+  static final long serialVersionUID = 580150227676302096L;
 
 	//-------------------------------------------------------------
 	// Variables --------------------------------------------------

@@ -51,6 +51,8 @@ import java.beans.*;
 
 public class UIManager implements Serializable
 {
+  static final long serialVersionUID = -5547433830339189365L;
+
     static class LookAndFeelInfo
     {
 	String name, clazz;

@@ -46,7 +46,10 @@ import javax.swing.event.*;
  * DefaultTableModel
  * @author	Andrew Selkirk
  */
-public class DefaultTableModel extends AbstractTableModel implements Serializable {
+public class DefaultTableModel extends AbstractTableModel
+  implements Serializable
+{
+  static final long serialVersionUID = 6680042567037222321L;
 
 	//-------------------------------------------------------------
 	// Variables --------------------------------------------------

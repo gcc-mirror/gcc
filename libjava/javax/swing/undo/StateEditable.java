@@ -1,5 +1,5 @@
-/* AbstractTableModel.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+/* StateEditable.java --
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -46,20 +46,20 @@ import java.util.Hashtable;
  */
 public interface StateEditable
 {
-
   /**
-   * Upon receiving this message the receiver should extract any relevant
-   * state out of state
-   * 
+   * Restore State
    * @param state State
    */
   public void restoreState(Hashtable state);
 
   /**
-   * Upon receiving this message the receiver should place any relevant state
-   * into state
-   * 
+   * Store State
    * @param state State
    */
   public void storeState(Hashtable state);
+
+  /**
+   * For some reason, Sun made the RCS IDs visible.
+   */
+  public static final String RCSID = "We aren't compatible";
 } // StateEditable
