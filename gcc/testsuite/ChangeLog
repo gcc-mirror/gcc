@@ -1,3 +1,7 @@
+Fri Jun 26 17:57:40 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.dg/980626-1.c: New test.
+
 Fri Jun 19 23:26:12 1998  Bruno Haible <haible@ilog.fr>
 
 	* gcc.misc-tests/m-un-2.c: New test.
