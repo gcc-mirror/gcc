@@ -5600,34 +5600,6 @@
   "TARGET_V9"
   "ldsb %1,%0\;orcc %0,%%g0,%2")
 
-(define_peephole
-  [(set (match_operand:HI 0 "register_operand" "")
-	(match_operand:HI 1 "memory_operand" ""))
-   (set (match_operand:SI 2 "register_operand" "")
-	(sign_extend:SI (match_dup 0)))]
-  "dead_or_set_p (insn, operands[0])"
-  "*
-{
-  warning (\"bad peephole\");
-  if (! MEM_VOLATILE_P (operands[1]))
-    abort ();
-  return \"ldsh %1,%2\";
-}")
-
-(define_peephole
-  [(set (match_operand:QI 0 "register_operand" "")
-	(match_operand:QI 1 "memory_operand" ""))
-   (set (match_operand:SI 2 "register_operand" "")
-	(sign_extend:SI (match_dup 0)))]
-  "dead_or_set_p (insn, operands[0])"
-  "*
-{
-  warning (\"bad peephole\");
-  if (! MEM_VOLATILE_P (operands[1]))
-    abort ();
-  return \"ldsb %1,%2\";
-}")
-
 ;; Floating-point move peepholes
 ;; ??? v9: Do we want similar ones?
 
