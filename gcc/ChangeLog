@@ -1,3 +1,13 @@
+2004-07-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/sparc.c (SIBCALL_SLOT_EMPTY_P): Rename
+	into LEAF_SIBCALL_SLOT_RESERVED_P after negation.
+	(eligible_for_sibcall_delay): Adjust use of SIBCALL_SLOT_EMPTY_P.
+	(output_restore): Change parameter from 'insn' to 'pat'.
+	(output_return): Adjust call to output_restore.
+	(output_sibcall): Adjust use of SIBCALL_SLOT_EMPTY_P.
+	Adjust call to output_restore.
+
 2004-07-04  Neil Booth  <neil@duron.akihabara.co.uk>
 
 	* config/netbsd.h (NETBSD_OS_CPP_BUILTINS_COMMON): Define __unix__
