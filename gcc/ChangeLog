@@ -1,3 +1,12 @@
+2002-01-24  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/sh/sh.md (symGOT_load, sym2GOT, sym2GOTOFF): New expands.
+	(symGOT2reg): Use them, then set as GOT value as unchanging.
+	(symGOTOFF2reg): Set REG_EQUAL note.  Use a different pseudo
+	as a temporary, if possible.
+	(symPLT_label2reg): Enclose (pc) in UNSPEC_PIC.  Emit
+	sym@PLT-(.LPCS#+2-.) instead of sym@PLT+.-(.LPCS#+2).
+
 2002-01-23  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.md: Fix xorqi and xorqi so that they will
