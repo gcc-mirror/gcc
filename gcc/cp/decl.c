@@ -313,10 +313,6 @@ static tree current_function_parm_tags;
 
 #define named_labels cp_function_chain->x_named_labels
 
-/* The FUNCTION_DECL for the function currently being compiled,
-   or 0 if between functions.  */
-tree current_function_decl;
-
 /* Set to 0 at beginning of a function definition, and whenever
    a label (case or named) is defined.  Set to value of expression
    returned from function when that value can be transformed into

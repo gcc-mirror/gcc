@@ -2092,6 +2092,9 @@ extern int immediate_size_expand;
 
 extern tree current_function_decl;
 
+/* Nonzero means a FUNC_BEGIN label was emitted.  */
+extern tree current_function_func_begin_label;
+
 /* Nonzero means all ..._TYPE nodes should be allocated permanently.  */
 
 extern int all_types_permanent;

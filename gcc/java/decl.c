@@ -283,10 +283,6 @@ static int keep_next_level_flag;
 
 static int keep_next_if_subblocks;
   
-/* The FUNCTION_DECL for the function currently being compiled,
-   or 0 if between functions.  */
-tree current_function_decl;
-
 tree object_type_node;
 tree unqualified_object_id_node;
 tree object_ptr_type_node;

@@ -307,6 +307,14 @@ int errorcount = 0;
 int warningcount = 0;
 int sorrycount = 0;
 
+/* The FUNCTION_DECL for the function currently being compiled,
+   or 0 if between functions.  */
+tree current_function_decl;
+
+/* Set to the FUNC_BEGIN label of the current function, or NULL_TREE
+   if none.  */
+tree current_function_func_begin_label;
+
 /* Pointer to function to compute the name to use to print a declaration.
    DECL is the declaration in question.
    VERBOSITY determines what information will be printed:
@@ -4607,6 +4615,8 @@ main (argc, argv)
   ggc_add_root (&input_file_stack, 1, sizeof input_file_stack,
 		mark_file_stack);
   ggc_add_rtx_root (&stack_limit_rtx, 1);
+  ggc_add_tree_root (&current_function_decl, 1);
+  ggc_add_tree_root (&current_function_func_begin_label, 1);
 
   /* Perform language-specific options intialization.  */
   lang_init_options ();

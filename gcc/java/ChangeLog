@@ -1,3 +1,7 @@
+2000-03-01  Martin von Loewis  <loewis@informatik.hu-berlin.de>
+
+	* decl.c (current_function_decl): Move to toplev.c.
+
 Mon Feb 28 08:20:42 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* java-tree.h (LABEL_PC): Relect name changes in ../tree.h.

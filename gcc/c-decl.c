@@ -133,10 +133,6 @@ static tree shadowed_labels;
 
 static int c_function_varargs;
 
-/* The FUNCTION_DECL for the function currently being compiled,
-   or 0 if between functions.  */
-tree current_function_decl;
-
 /* Set to 0 at beginning of a function definition, set to 1 if
    a return statement that specifies a return value is seen.  */
 
@@ -3079,7 +3075,6 @@ init_decl_processing ()
   /* Record our roots.  */
 
   ggc_add_tree_root (c_global_trees, CTI_MAX);
-  ggc_add_tree_root (&current_function_decl, 1);
   ggc_add_tree_root (&named_labels, 1);
   ggc_add_tree_root (&shadowed_labels, 1);
   ggc_add_root (&current_binding_level, 1, sizeof current_binding_level,

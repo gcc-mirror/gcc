@@ -1692,15 +1692,17 @@ dbxout_type_name (type)
 /* Output a .stabs for the symbol defined by DECL,
    which must be a ..._DECL node in the normal namespace.
    It may be a CONST_DECL, a FUNCTION_DECL, a PARM_DECL or a VAR_DECL.
-   LOCAL is nonzero if the scope is less than the entire file.  */
+   LOCAL is nonzero if the scope is less than the entire file.
+   Return 1 if a stabs might have been emitted.  */
 
-void
+int
 dbxout_symbol (decl, local)
      tree decl;
      int local ATTRIBUTE_UNUSED;
 {
   tree type = TREE_TYPE (decl);
   tree context = NULL_TREE;
+  int result = 0;
 
   /* Cast avoids warning in old compilers.  */
   current_sym_code = (STAB_CODE_TYPE) 0;
@@ -1711,7 +1713,7 @@ dbxout_symbol (decl, local)
 
   if ((DECL_NAME (decl) == 0 && TREE_CODE (decl) != TYPE_DECL)
       || DECL_IGNORED_P (decl))
-    return;
+    return 0;
 
   dbxout_prepare_symbol (decl);
 
@@ -1729,7 +1731,7 @@ dbxout_symbol (decl, local)
 
     case FUNCTION_DECL:
       if (DECL_RTL (decl) == 0)
-	return;
+	return 0;
       if (DECL_EXTERNAL (decl))
 	break;
       /* Don't mention a nested function under its parent.  */
@@ -1744,6 +1746,7 @@ dbxout_symbol (decl, local)
       fprintf (asmfile, "%s \"%s:%c", ASM_STABS_OP,
 	       IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)),
 	       TREE_PUBLIC (decl) ? 'F' : 'f');
+      result = 1;
 
       current_sym_code = N_FUN;
       current_sym_addr = XEXP (DECL_RTL (decl), 0);
@@ -1775,15 +1778,15 @@ dbxout_symbol (decl, local)
 	 don't duplicate it.  */
       if (typevec[TYPE_SYMTAB_ADDRESS (type)].status == TYPE_DEFINED
 	  && TYPE_NAME (TREE_TYPE (decl)) == decl)
-	return;
+	return 0;
 #endif
       /* Don't output the same typedef twice.
          And don't output what language-specific stuff doesn't want output.  */
       if (TREE_ASM_WRITTEN (decl) || TYPE_DECL_SUPPRESS_DEBUG (decl))
-	return;
+	return 0;
 
       FORCE_TEXT;
-
+      result = 1;
       {
 	int tag_needed = 1;
 	int did_output = 0;
@@ -1915,7 +1918,7 @@ dbxout_symbol (decl, local)
       /* Named return value, treat like a VAR_DECL.  */
     case VAR_DECL:
       if (DECL_RTL (decl) == 0)
-	return;
+	return 0;
       /* Don't mention a variable that is external.
 	 Let the file that defines it describe it.  */
       if (DECL_EXTERNAL (decl))
@@ -1945,7 +1948,7 @@ dbxout_symbol (decl, local)
 		  fprintf (asmfile, HOST_WIDE_INT_PRINT_DEC, ival);
 		  fprintf (asmfile, "\",0x%x,0,0,0\n", N_LSYM);
 #endif
-		  return;
+		  return 1;
 		}
 	      else if (TREE_CODE (TREE_TYPE (decl)) == REAL_TYPE)
 		{
@@ -1962,20 +1965,22 @@ dbxout_symbol (decl, local)
 	leaf_renumber_regs_insn (DECL_RTL (decl));
 #endif
 
-      dbxout_symbol_location (decl, type, 0, DECL_RTL (decl));
+      result = dbxout_symbol_location (decl, type, 0, DECL_RTL (decl));
       break;
       
     default:
       break;
     }
+  return result;
 }
 
 /* Output the stab for DECL, a VAR_DECL, RESULT_DECL or PARM_DECL.
    Add SUFFIX to its name, if SUFFIX is not 0.
    Describe the variable as residing in HOME
-   (usually HOME is DECL_RTL (DECL), but not always).  */
+   (usually HOME is DECL_RTL (DECL), but not always).
+   Returns 1 if the stab was really emitted.  */
 
-static void
+static int
 dbxout_symbol_location (decl, type, suffix, home)
      tree decl, type;
      const char *suffix;
@@ -1994,7 +1999,7 @@ dbxout_symbol_location (decl, type, suffix, home)
     {
       regno = REGNO (home);
       if (regno >= FIRST_PSEUDO_REGISTER)
-	return;
+	return 0;
     }
   else if (GET_CODE (home) == SUBREG)
     {
@@ -2009,7 +2014,7 @@ dbxout_symbol_location (decl, type, suffix, home)
 	{
 	  regno = REGNO (value);
 	  if (regno >= FIRST_PSEUDO_REGISTER)
-	    return;
+	    return 0;
 	  regno += offset;
 	}
       alter_subreg (home);
@@ -2163,13 +2168,13 @@ dbxout_symbol_location (decl, type, suffix, home)
 	dbxout_symbol_location (decl, subtype, "$real", XEXP (home, 1));
       else
 	dbxout_symbol_location (decl, subtype, "$imag", XEXP (home, 1));
-      return;
+      return 1;
     }
   else
     /* Address might be a MEM, when DECL is a variable-sized object.
        Or it might be const0_rtx, meaning previous passes
        want us to ignore this variable.  */
-    return;
+    return 0;
 
   /* Ok, start a symtab entry and output the variable name.  */
   FORCE_TEXT;
@@ -2185,6 +2190,7 @@ dbxout_symbol_location (decl, type, suffix, home)
 #ifdef DBX_STATIC_BLOCK_END
   DBX_STATIC_BLOCK_END (asmfile, current_sym_code);
 #endif
+  return 1;
 }
 
 /* Output the symbol name of DECL for a stabs, with suffix SUFFIX.
@@ -2240,17 +2246,20 @@ dbxout_finish_symbol (sym)
 #endif
 }
 
-/* Output definitions of all the decls in a chain.  */
+/* Output definitions of all the decls in a chain. Return non-zero if
+   anything was output */
 
-void
+int
 dbxout_syms (syms)
      tree syms;
 {
+  int result = 0;
   while (syms)
     {
-      dbxout_symbol (syms, 1);
+      result += dbxout_symbol (syms, 1);
       syms = TREE_CHAIN (syms);
     }
+  return result;
 }
 
 /* The following two functions output definitions of function parameters.
@@ -2615,6 +2624,15 @@ dbxout_block (block, depth, args)
      tree args;
 {
   int blocknum = -1;
+  int ignored;
+
+#if DBX_BLOCKS_FUNCTION_RELATIVE
+  char *begin_label; 
+  if (current_function_func_begin_label != NULL_TREE)
+    begin_label = IDENTIFIER_POINTER (current_function_func_begin_label);
+  else
+    begin_label = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);
+#endif
 
   while (block)
     {
@@ -2622,9 +2640,11 @@ dbxout_block (block, depth, args)
       if (TREE_USED (block) && TREE_ASM_WRITTEN (block))
 	{
 #ifndef DBX_LBRAC_FIRST
-	  /* In dbx format, the syms of a block come before the N_LBRAC.  */
+	  /* In dbx format, the syms of a block come before the N_LBRAC.
+	     If nothing is output, we don't need the N_LBRAC, either. */
+	  ignored = 1;
 	  if (debug_info_level != DINFO_LEVEL_TERSE || depth == 0)
-	    dbxout_syms (BLOCK_VARS (block));
+	    ignored = dbxout_syms (BLOCK_VARS (block));
 	  if (args)
 	    dbxout_reg_parms (args);
 #endif
@@ -2633,7 +2653,7 @@ dbxout_block (block, depth, args)
 	     the block.  Use the block's tree-walk order to generate
 	     the assembler symbols LBBn and LBEn
 	     that final will define around the code in this block.  */
-	  if (depth > 0 && debug_info_level != DINFO_LEVEL_TERSE)
+	  if (depth > 0 && !ignored)
 	    {
 	      char buf[20];
 	      blocknum = BLOCK_NUMBER (block);
@@ -2664,7 +2684,7 @@ dbxout_block (block, depth, args)
 	      assemble_name (asmfile, buf);
 #if DBX_BLOCKS_FUNCTION_RELATIVE
 	      fputc ('-', asmfile);
-	      assemble_name (asmfile, XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0));
+	      assemble_name (asmfile, begin_label);
 #endif
 	      fprintf (asmfile, "\n");
 #endif
@@ -2683,7 +2703,7 @@ dbxout_block (block, depth, args)
 	  dbxout_block (BLOCK_SUBBLOCKS (block), depth + 1, NULL_TREE);
 
 	  /* Refer to the marker for the end of the block.  */
-	  if (depth > 0 && debug_info_level != DINFO_LEVEL_TERSE)
+	  if (depth > 0 && !ignored)
 	    {
 	      char buf[20];
 	      ASM_GENERATE_INTERNAL_LABEL (buf, "LBE", blocknum);
@@ -2694,7 +2714,7 @@ dbxout_block (block, depth, args)
 	      assemble_name (asmfile, buf);
 #if DBX_BLOCKS_FUNCTION_RELATIVE
 	      fputc ('-', asmfile);
-	      assemble_name (asmfile, XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0));
+	      assemble_name (asmfile, begin_label);
 #endif
 	      fprintf (asmfile, "\n");
 #endif
