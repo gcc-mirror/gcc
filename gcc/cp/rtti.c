@@ -122,11 +122,6 @@ build_headof (exp)
 
   if (!TYPE_POLYMORPHIC_P (type))
     return exp;
-  if (CLASSTYPE_COM_INTERFACE (type))
-    {
-      cp_error ("RTTI not supported for COM interface type `%T'", type);
-      return error_mark_node;
-    }
 
   /* If we don't have rtti stuff, get to a sub-object that does.  */
   if (!CLASSTYPE_VFIELDS (TREE_TYPE (TREE_TYPE (exp))))
@@ -222,11 +217,6 @@ get_tinfo_decl_dynamic (exp)
 
       if (! flag_rtti)
 	error ("taking dynamic typeid of object with -fno-rtti");
-      if (CLASSTYPE_COM_INTERFACE (type))
-	{
-	  cp_error ("RTTI not supported for COM interface type `%T'", type);
-	  return error_mark_node;
-	}
 
       /* If we don't have rtti stuff, get to a sub-object that does.  */
       if (! CLASSTYPE_VFIELDS (type))
