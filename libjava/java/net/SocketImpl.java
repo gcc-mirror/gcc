@@ -120,6 +120,21 @@ public abstract class SocketImpl implements SocketOptions
     throws IOException;
 
   /**
+   * Connects to the socket to the host specified in address. This
+   * method blocks until successful connected or the timeout occurs.
+   * A timeout of zero means no timout.
+   *
+   * @param address Data of remote host
+   * @param timeout time to wait to stop connecting
+   *
+   * @exception IOException If an error occurs
+   *
+   * @since 1.4
+   */
+  protected abstract void connect(SocketAddress address, int timeout)
+    throws IOException;
+
+  /**
    * Binds to the specified port on the specified addr.  Note that this addr
    * must represent a local IP address.
    * <p>
@@ -214,6 +229,31 @@ public abstract class SocketImpl implements SocketOptions
    */
   protected int getPort() { return port; }
 
+  /**
+   * Returns true or false when this socket supports sending urgent data
+   * or not.
+   *
+   * @since 1.4
+   */
+  protected boolean supportsUrgentData()
+  {
+    // This method has to be overwritten by socket classes that support
+    // sending urgend data.
+    return false;
+  }
+  
+  /**
+   * Sends one byte of urgent data to the socket.
+   *
+   * @param data The byte to send, the low eight bits of it
+   *
+   * @exception IOException If an error occurs
+   *
+   * @since 1.4
+   */
+  protected abstract void sendUrgentData(int data)
+    throws IOException;
+  
   /**
    * Returns the local port this socket is bound to
    *
