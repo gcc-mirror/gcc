@@ -1762,6 +1762,12 @@ simplify_relational_operation (code, mode, op0, op1)
     return simplify_relational_operation (signed_condition (code),
 					  mode, tem, const0_rtx);
 
+  if (flag_fast_math && code == ORDERED)
+    return const_true_rtx;
+
+  if (flag_fast_math && code == UNORDERED)
+    return const0_rtx;
+
   /* For non-IEEE floating-point, if the two operands are equal, we know the
      result.  */
   if (rtx_equal_p (op0, op1)
@@ -1953,8 +1959,10 @@ simplify_relational_operation (code, mode, op0, op1)
     case GTU:
       return op1ltu ? const_true_rtx : const0_rtx;
     case LE:
+    case UNLE:
       return equal || op0lt ? const_true_rtx : const0_rtx;
     case GE:
+    case UNGE:
       return equal || op1lt ? const_true_rtx : const0_rtx;
     case LEU:
       return equal || op0ltu ? const_true_rtx : const0_rtx;
