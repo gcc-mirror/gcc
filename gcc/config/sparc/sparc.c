@@ -2563,11 +2563,6 @@ registers_ok_for_ldd_peep (reg1, reg2)
   if (GET_CODE (reg1) != REG || GET_CODE (reg2) != REG) 
     return 0;
 
-  /* Should never happen.  */
-  if (REGNO (reg1) > FIRST_PSEUDO_REGISTER 
-      || REGNO (reg2) > FIRST_PSEUDO_REGISTER)
-    abort ();
-
   if (REGNO (reg1) % 2 != 0)
     return 0;
 
