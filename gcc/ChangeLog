@@ -1,3 +1,9 @@
+2003-11-21  Daniel Berlin  <dberlin@dberlin.org>
+	    David Edelsohn  <edelsohn@gnu.org>
+
+	* dwarf2out.c (add_location_or_const_value_attribute): Add support
+	for PARALLEL.
+
 2003-11-21  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config/mips/t-iris6 (CRTSTUFF_T_CFLAGS): Add -Wno-error.
