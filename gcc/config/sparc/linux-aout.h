@@ -1,5 +1,5 @@
 /* Definitions for SPARC running Linux with a.out
-   Copyright (C) 1996 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
    Contributed by Eddie C. Dost (ecd@skynet.be)
 
 This file is part of GNU CC.
