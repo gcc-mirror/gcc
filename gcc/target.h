@@ -292,6 +292,9 @@ struct gcc_target
   /* True if the constant X cannot be placed in the constant pool.  */
   bool (* cannot_force_const_mem) PARAMS ((rtx));
 
+  /* True if the insn X cannot be duplicated.  */
+  bool (* cannot_copy_insn_p) PARAMS ((rtx));
+
   /* Given an address RTX, undo the effects of LEGITIMIZE_ADDRESS.  */
   rtx (* delegitimize_address) PARAMS ((rtx));
 
