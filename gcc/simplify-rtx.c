@@ -584,6 +584,7 @@ simplify_unary_operation (code, mode, op, op_mode)
      eggert@twinsun.com says it is safe for IEEE also.  */
   else
     {
+      enum rtx_code reversed;
       /* There are some simplifications we can do even if the operands
 	 aren't constant.  */
       switch (code)
@@ -595,8 +596,9 @@ simplify_unary_operation (code, mode, op, op_mode)
 
 	  /* (not (eq X Y)) == (ne X Y), etc.  */
 	  if (mode == BImode && GET_RTX_CLASS (GET_CODE (op)) == '<'
-	      && can_reverse_comparison_p (op, NULL_RTX))
-	    return gen_rtx_fmt_ee (reverse_condition (GET_CODE (op)),
+	      && ((reversed = reversed_comparison_code (op, NULL_RTX))
+		  != UNKNOWN))
+	    return gen_rtx_fmt_ee (reversed,
 				   op_mode, XEXP (op, 0), XEXP (op, 1));
 	  break;
 
@@ -2075,9 +2077,14 @@ simplify_ternary_operation (code, mode, op0_mode, op0, op1, op2)
 	      
 	      if (t == STORE_FLAG_VALUE && f == 0)
 	        code = GET_CODE (op0);
-	      else if (t == 0 && f == STORE_FLAG_VALUE
-		       && can_reverse_comparison_p (op0, NULL_RTX))
-		code = reverse_condition (GET_CODE (op0));
+	      else if (t == 0 && f == STORE_FLAG_VALUE)
+		{
+		  enum rtx_code tmp;
+		  tmp = reversed_comparison_code (op0, NULL_RTX);
+		  if (tmp == UNKNOWN)
+		    break;
+		  code = tmp;
+		}
 	      else
 		break;
 

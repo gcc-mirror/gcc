@@ -207,6 +207,7 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan,
   int first = 1;
   int max_uid = 0;
   rtx last_insn;
+  enum rtx_code reversed_code;
 
   cross_jump_death_matters = (cross_jump == 2);
   max_uid = init_label_info (f) + 1;
@@ -525,9 +526,10 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan,
 	      && prev_active_insn (reallabelprev) == insn
 	      && no_labels_between_p (insn, reallabelprev)
 	      && (temp2 = get_condition (insn, &temp4))
-	      && can_reverse_comparison_p (temp2, insn))
+	      && ((reversed_code = reversed_comparison_code (temp2, insn))
+		  != UNKNOWN))
 	    {
-	      rtx new = gen_cond_trap (reverse_condition (GET_CODE (temp2)),
+	      rtx new = gen_cond_trap (reversed_code,
 				       XEXP (temp2, 0), XEXP (temp2, 1),
 				       TRAP_CODE (PATTERN (reallabelprev)));
 
@@ -1682,16 +1684,16 @@ jump_back_p (insn, target)
 
   if (XEXP (SET_SRC (set), 1) == pc_rtx)
     {
-      if (! can_reverse_comparison_p (cinsn, insn))
+      codei = reversed_comparison_code (cinsn, insn);
+      if (codei == UNKNOWN)
 	return 0;
-      codei = reverse_condition (codei);
     }
 
   if (XEXP (SET_SRC (tset), 2) == pc_rtx)
     {
-      if (! can_reverse_comparison_p (ctarget, target))
+      codet = reversed_comparison_code (ctarget, target);
+      if (codei == UNKNOWN)
 	return 0;
-      codet = reverse_condition (codet);
     }
 
   return (codei == codet
@@ -3319,16 +3321,19 @@ invert_exp_1 (insn)
     {
       register rtx comp = XEXP (x, 0);
       register rtx tem;
+      enum rtx_code reversed_code;
 
       /* We can do this in two ways:  The preferable way, which can only
 	 be done if this is not an integer comparison, is to reverse
 	 the comparison code.  Otherwise, swap the THEN-part and ELSE-part
 	 of the IF_THEN_ELSE.  If we can't do either, fail.  */
 
-      if (can_reverse_comparison_p (comp, insn))
+      reversed_code = reversed_comparison_code (comp, insn);
+
+      if (reversed_code != UNKNOWN)
 	{
 	  validate_change (insn, &XEXP (x, 0),
-			   gen_rtx_fmt_ee (reverse_condition (GET_CODE (comp)),
+			   gen_rtx_fmt_ee (reversed_code,
 					   GET_MODE (comp), XEXP (comp, 0),
 					   XEXP (comp, 1)),
 			   1);
@@ -3849,6 +3854,7 @@ thread_jumps (f, max_reg, flag_before_loop)
   int changed = 1;
   int i;
   int *all_reset;
+  enum rtx_code reversed_code1, reversed_code2;
 
   /* Allocate register tables and quick-reset table.  */
   modified_regs = (char *) xmalloc (max_reg * sizeof (char));
@@ -3938,14 +3944,20 @@ thread_jumps (f, max_reg, flag_before_loop)
 	  b1op0 = XEXP (XEXP (SET_SRC (set), 0), 0);
 	  b1op1 = XEXP (XEXP (SET_SRC (set), 0), 1);
 	  code1 = GET_CODE (XEXP (SET_SRC (set), 0));
+	  reversed_code1 = code1;
 	  if (XEXP (SET_SRC (set), 1) == pc_rtx)
-	    code1 = reverse_condition (code1);
+	    code1 = reversed_comparison_code (XEXP (SET_SRC (set), 0), b1);
+	  else
+	    reversed_code1 = reversed_comparison_code (XEXP (SET_SRC (set), 0), b1);
 
 	  b2op0 = XEXP (XEXP (SET_SRC (set2), 0), 0);
 	  b2op1 = XEXP (XEXP (SET_SRC (set2), 0), 1);
 	  code2 = GET_CODE (XEXP (SET_SRC (set2), 0));
+	  reversed_code2 = code2;
 	  if (XEXP (SET_SRC (set2), 1) == pc_rtx)
-	    code2 = reverse_condition (code2);
+	    code2 = reversed_comparison_code (XEXP (SET_SRC (set2), 0), b2);
+	  else
+	    reversed_code2 = reversed_comparison_code (XEXP (SET_SRC (set2), 0), b2);
 
 	  /* If they test the same things and knowing that B1 branches
 	     tells us whether or not B2 branches, check if we
@@ -3953,9 +3965,7 @@ thread_jumps (f, max_reg, flag_before_loop)
 	  if (rtx_equal_for_thread_p (b1op0, b2op0, b2)
 	      && rtx_equal_for_thread_p (b1op1, b2op1, b2)
 	      && (comparison_dominates_p (code1, code2)
-		  || (can_reverse_comparison_p (XEXP (SET_SRC (set), 0), b1)
-		      && comparison_dominates_p (code1,
-						 reverse_condition (code2)))))
+		  || comparison_dominates_p (code1, reversed_code2)))
 
 	    {
 	      t1 = prev_nonnote_insn (b1);

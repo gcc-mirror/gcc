@@ -3251,15 +3251,16 @@ find_comparison_args (code, parg1, parg2, pmode1, pmode2)
       /* If we need to reverse the comparison, make sure that that is
 	 possible -- we can't necessarily infer the value of GE from LT
 	 with floating-point operands.  */
-      if (reverse_code && ! can_reverse_comparison_p (x, NULL_RTX))
-	break;
-
-      arg1 = XEXP (x, 0), arg2 = XEXP (x, 1);
-      if (GET_RTX_CLASS (GET_CODE (x)) == '<')
-	code = GET_CODE (x);
-
       if (reverse_code)
-	code = reverse_condition (code);
+	{
+	  enum rtx_code reversed = reversed_comparison_code (x, NULL_RTX);
+	  if (reversed == UNKNOWN)
+	    break;
+	  else code = reversed;
+	}
+      else if (GET_RTX_CLASS (GET_CODE (x)) == '<')
+	code = GET_CODE (x);
+      arg1 = XEXP (x, 0), arg2 = XEXP (x, 1);
     }
 
   /* Return our results.  Return the modes from before fold_rtx
@@ -4446,8 +4447,7 @@ record_jump_equiv (insn, taken)
   code = find_comparison_args (code, &op0, &op1, &mode0, &mode1);
   if (! cond_known_true)
     {
-      reversed_nonequality = (code != EQ && code != NE);
-      code = reverse_condition (code);
+      code = reversed_comparison_code_parts (code, op0, op1, insn);
 
       /* Don't remember if we can't find the inverse.  */
       if (code == UNKNOWN)
