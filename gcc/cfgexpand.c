@@ -433,6 +433,9 @@ tree_expand_cfg (void)
 	       IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (current_function_decl)));
     }
 
+  /* Some backends want to know that we are expanding to RTL.  */
+  currently_expanding_to_rtl = 1;
+
   /* Prepare the rtl middle end to start recording block changes.  */
   reset_block_changes ();
 
@@ -458,6 +461,9 @@ tree_expand_cfg (void)
     bb = expand_gimple_basic_block (bb, dump_file);
 
   construct_exit_block ();
+
+  /* We're done expanding trees to RTL.  */
+  currently_expanding_to_rtl = 0;
 
   /* Convert from NOTE_INSN_EH_REGION style notes, and do other
      sorts of eh initialization.  Delay this until after the
