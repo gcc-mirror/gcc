@@ -1,3 +1,14 @@
+2001-07-03  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/localefwd.h: Format.	
+	* include/bits/locale_facts.tcc (locale::combine): Adjust.
+	* src/locale.cc (locale::locale::(_Impl)): Don't call
+	_M_add_reference.
+	(locale::facet::_M_remove_reference): Simplify.
+	* src/globals.cc (locale_impl_c): New. Format.
+	(locale_c): New.
+	* src/ios.cc (ios_base::Init::Init): Increment _S_ios_base_init last.
+
 2001-07-02  Loren J. Rittle  <ljrittle@acm.org>
 
 	* acinclude.m4 (GLIBCPP_ENABLE_THREADS): Protect variable from shell

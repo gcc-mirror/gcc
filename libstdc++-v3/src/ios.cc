@@ -205,12 +205,13 @@ namespace std
 
   ios_base::Init::Init()
   {
-    if (++_S_ios_base_init == 1)
+    if (_S_ios_base_init == 0)
       {
 	// Standard streams default to synced with "C" operations.
 	ios_base::Init::_S_synced_with_stdio = true;
 	_S_ios_create(ios_base::Init::_S_synced_with_stdio);
       }
+    ++_S_ios_base_init;
   }
 
   ios_base::Init::~Init()
