@@ -1,3 +1,7 @@
+1999-08-11  Richard Earnshaw (rearnsha@arm.com)
+
+	* gcc.c-torture/execute/990811-1.c: New test.
+
 1999-08-09  Nick Clifton  <nickc@cygnus.com>
 
 	* gcc.misc-tests/m-un-2.c: Expect the warnings for all builds, not
