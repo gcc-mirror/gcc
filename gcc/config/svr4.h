@@ -639,6 +639,37 @@ do {									\
     }									\
 } while (0)
 
+/* A C statement (sans semicolon) to mark DECL to be emitted as a
+   public symbol such that extra copies in multiple translation units will
+   be discarded by the linker.  */
+#define MAKE_DECL_ONE_ONLY(DECL)				\
+do {								\
+  int len;							\
+  char *name, *string, *prefix;					\
+								\
+  DECL_WEAK (DECL) = 1;						\
+  								\
+  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));	\
+								\
+  if (DECL_ONE_ONLY (decl))					\
+    {								\
+      if (TREE_CODE (decl) == FUNCTION_DECL)			\
+	prefix = ".gnu.linkonce.t.";				\
+      else if (TREE_READONLY (decl))				\
+	prefix = ".gnu.linkonce.r.";				\
+      else							\
+	prefix = ".gnu.linkonce.d.";				\
+    }								\
+  else								\
+    prefix = "";						\
+								\
+  len = strlen (name) + strlen (prefix);			\
+  string = alloca (len + 1);					\
+  sprintf (string, "%s%s", prefix, name);			\
+								\
+  DECL_SECTION_NAME (DECL) = build_string (len, string);	\
+} while (0)
+
 /* A C statement (sans semicolon) to output an element in the table of
    global constructors.  */
 #define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)				\
