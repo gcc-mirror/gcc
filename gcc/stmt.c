@@ -2665,7 +2665,13 @@ void
 expand_null_return ()
 {
   struct nesting *block = block_stack;
-  rtx last_insn = 0;
+  rtx last_insn = get_last_insn ();
+
+  /* If this function was declared to return a value, but we 
+     didn't, clobber the return registers so that they are not
+     propogated live to the rest of the function.  */
+
+  diddle_return_value (CLOBBER);
 
   /* Does any pending block have cleanups?  */
 
@@ -2710,25 +2716,7 @@ expand_value_return (val)
 	emit_move_insn (return_reg, val);
     }
 
-  if (GET_CODE (return_reg) == REG
-      && REGNO (return_reg) < FIRST_PSEUDO_REGISTER)
-    emit_insn (gen_rtx_USE (VOIDmode, return_reg));
-
-  /* Handle calls that return values in multiple non-contiguous locations.
-     The Irix 6 ABI has examples of this.  */
-  else if (GET_CODE (return_reg) == PARALLEL)
-    {
-      int i;
-
-      for (i = 0; i < XVECLEN (return_reg, 0); i++)
-	{
-	  rtx x = XEXP (XVECEXP (return_reg, 0, i), 0);
-
-	  if (GET_CODE (x) == REG
-	      && REGNO (x) < FIRST_PSEUDO_REGISTER)
-	    emit_insn (gen_rtx_USE (VOIDmode, x));
-	}
-    }
+  diddle_return_value (USE);
 
   /* Does any pending block have cleanups?  */
 

@@ -578,6 +578,10 @@ extern void free_expr_status		PROTO((struct function *));
 
 extern rtx get_first_block_beg		PROTO((void));
 
+#ifdef RTX_CODE
+extern void diddle_return_value		PROTO((enum rtx_code));
+#endif
+
 extern void init_virtual_regs		PROTO((struct emit_status *));
 
 /* Called once, at initialization, to initialize function.c.  */
