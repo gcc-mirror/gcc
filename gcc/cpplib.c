@@ -624,7 +624,7 @@ do_define (pfile, keyword)
   /* Copy out the line so we can pop the token buffer. */
   buf = pfile->token_buffer + here;
   end = CPP_PWRITTEN (pfile);
-  macro = alloca (end - buf + 1);
+  macro = (U_CHAR *) alloca (end - buf + 1);
   bcopy (buf, macro, end - buf + 1);
   end = macro + (end - buf);
 
@@ -1015,7 +1015,7 @@ do_include (pfile, keyword)
     }
 
   flen = CPP_WRITTEN (pfile) - old_written;
-  ftok = alloca (flen + 1);
+  ftok = (unsigned char *) alloca (flen + 1);
   memcpy (ftok, pfile->token_buffer + old_written, flen);
   ftok[flen] = '\0';
 
@@ -1342,7 +1342,7 @@ do_undef (pfile, keyword)
   limit = CPP_PWRITTEN(pfile);
 
   /* Copy out the token so we can pop the token buffer. */
-  name = alloca (limit - buf + 1);
+  name = (U_CHAR *) alloca (limit - buf + 1);
   bcopy(buf, name, limit - buf);
   name[limit - buf] = '\0';
 
@@ -1507,7 +1507,7 @@ do_pragma (pfile, keyword)
       fname = p + 1;
       p = (U_CHAR *) index (fname, '\"');
 
-      fcopy = alloca (p - fname + 1);
+      fcopy = (U_CHAR *) alloca (p - fname + 1);
       bcopy (fname, fcopy, p - fname);
       fcopy[p-fname] = '\0';
 

@@ -1665,9 +1665,10 @@ dump_definition (pfile, macro)
   else
     {
       struct reflist *r;
-      unsigned char *argnames = xstrdup (defn->args.argnames);
-      unsigned char **argv = alloca (defn->nargs * sizeof(char *));
-      int *argl = alloca (defn->nargs * sizeof(int));
+      unsigned char *argnames = (unsigned char *) xstrdup (defn->args.argnames);
+      unsigned char **argv = (unsigned char **) alloca (defn->nargs *
+							sizeof(char *));
+      int *argl = (int *) alloca (defn->nargs * sizeof(int));
       unsigned char *x;
       int i;
 

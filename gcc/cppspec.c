@@ -194,7 +194,7 @@ lang_specific_driver (errfn, in_argc, in_argv, in_added_libraries)
   if (new_argc == argc)
     return;
 
-  new_argv = xmalloc (new_argc * sizeof(char *));
+  new_argv = (char **) xmalloc (new_argc * sizeof(char *));
 
   new_argv[0] = argv[0];
   j = 1;
