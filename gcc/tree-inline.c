@@ -812,6 +812,9 @@ expand_call_inline (tp, walk_subtrees, data)
   if (!inlinable_function_p (fn, id))
     return NULL_TREE;
 
+  if (! (*lang_hooks.tree_inlining.start_inlining) (fn))
+    return NULL_TREE;
+
   /* Set the current filename and line number to the function we are
      inlining so that when we create new _STMT nodes here they get
      line numbers corresponding to the function we are calling.  We
@@ -950,6 +953,8 @@ expand_call_inline (tp, walk_subtrees, data)
 
   /* Don't walk into subtrees.  We've already handled them above.  */
   *walk_subtrees = 0;
+
+  (*lang_hooks.tree_inlining.end_inlining) (fn);
 
   /* Keep iterating.  */
   return NULL_TREE;

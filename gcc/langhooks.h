@@ -46,6 +46,8 @@ struct lang_hooks_for_tree_inlining
 							  void *, int *,
 							  void *));
   int (*anon_aggr_type_p) PARAMS ((union tree_node *));
+  int (*start_inlining) PARAMS ((union tree_node *));
+  void (*end_inlining) PARAMS ((union tree_node *));
 };
 
 /* The following hooks are used by tree-dump.c.  */

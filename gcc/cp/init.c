@@ -1831,9 +1831,12 @@ resolve_offset_ref (exp)
       if (TREE_CODE (exp) == OFFSET_REF && TREE_CODE (type) == OFFSET_TYPE)
 	base = build_scoped_ref (base, TYPE_OFFSET_BASETYPE (type));
 
-      basetype = lookup_base (TREE_TYPE (base), basetype, ba_check, NULL);
+      /* Don't check access on the conversion; we might be after a member
+	 promoted by an access- or using-declaration, and we have already
+	 checked access for the member itself.  */
+      basetype = lookup_base (TREE_TYPE (base), basetype, ba_ignore, NULL);
       expr = build_base_path (PLUS_EXPR, base, basetype, 1);
-      
+
       if (expr == error_mark_node)
 	return error_mark_node;
 

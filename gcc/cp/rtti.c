@@ -1162,6 +1162,15 @@ create_pseudo_type_info VPARAMS((const char *real_name, int ident, ...))
   
   /* Get the vtable decl. */
   real_type = xref_tag (class_type_node, get_identifier (real_name), 1);
+  if (! TYPE_SIZE (real_type))
+    {
+      /* We never saw a definition of this type, so we need to tell the
+	 compiler that this is an exported class, as indeed all of the
+	 __*_type_info classes are.  */
+      SET_CLASSTYPE_INTERFACE_KNOWN (real_type);
+      CLASSTYPE_INTERFACE_ONLY (real_type) = 1;
+    }
+
   vtable_decl = get_vtable_decl (real_type, /*complete=*/1);
   vtable_decl = build_unary_op (ADDR_EXPR, vtable_decl, 0);
 
@@ -1185,12 +1194,12 @@ create_pseudo_type_info VPARAMS((const char *real_name, int ident, ...))
   pseudo_type = make_aggr_type (RECORD_TYPE);
   finish_builtin_type (pseudo_type, pseudo_name, fields, ix, ptr_type_node);
   TYPE_HAS_CONSTRUCTOR (pseudo_type) = 1;
-  VA_CLOSE (ap);
 
   result = tree_cons (NULL_TREE, NULL_TREE, NULL_TREE);
   TINFO_VTABLE_DECL (result) = vtable_decl;
   TINFO_PSEUDO_TYPE (result) = pseudo_type;
   
+  VA_CLOSE (ap);
   return result;
 }
 
