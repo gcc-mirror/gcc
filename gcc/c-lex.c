@@ -794,10 +794,11 @@ handle_sysv_pragma (input, c)
 #define ENDFILE -1  /* token that represents end-of-file */
 
 /* Read an escape sequence, returning its equivalent as a character,
-   or -1 if it is backslash-newline.  */
+   or store 1 in *ignore_ptr if it is backslash-newline.  */
 
 static int
-readescape ()
+readescape (ignore_ptr)
+     int *ignore_ptr;
 {
   register int c = getc (finput);
   register int code;
@@ -868,7 +869,8 @@ readescape ()
 
     case '\n':
       lineno++;
-      return -1;
+      *ignore_ptr = 1;
+      return 0;
 
     case 'n':
       return TARGET_NEWLINE;
@@ -1637,8 +1639,9 @@ yylex ()
 
 	    if (c == '\\')
 	      {
-		c = readescape ();
-		if (c < 0)
+		int ignore = 0;
+		c = readescape (&ignore);
+		if (ignore)
 		  goto tryagain;
 		if (width < HOST_BITS_PER_INT
 		    && (unsigned) c >= (1 << width))
@@ -1735,8 +1738,9 @@ yylex ()
 	    /* ignore_escape_flag is set for reading the filename in #line.  */
 	    if (!ignore_escape_flag && c == '\\')
 	      {
-		c = readescape ();
-		if (c < 0)
+		int ignore;
+		c = readescape (&ignore);
+		if (ignore)
 		  goto skipnewline;
 		if (!wide_flag
 		    && TYPE_PRECISION (char_type_node) < HOST_BITS_PER_INT
