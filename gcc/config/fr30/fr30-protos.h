@@ -28,7 +28,6 @@ extern void  fr30_print_operand (FILE *, rtx, int);
 extern void  fr30_print_operand_address (FILE *, rtx);
 extern rtx   fr30_move_double (rtx *);
 #ifdef TREE_CODE
-extern rtx   fr30_va_arg (tree, tree);
 extern int   fr30_num_arg_regs (enum machine_mode, tree);
 extern int   fr30_function_arg_partial_nregs (CUMULATIVE_ARGS,
 					      enum machine_mode, tree, int);

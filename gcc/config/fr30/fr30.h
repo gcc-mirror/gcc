@@ -648,10 +648,6 @@ enum reg_class
    takes a fixed number of arguments.  */
 #define RETURN_POPS_ARGS(FUNDECL, FUNTYPE, STACK_SIZE) 0
 
-/* Implement `va_arg'.  */
-#define EXPAND_BUILTIN_VA_ARG(valist, type) \
-  fr30_va_arg (valist, type)
-
 /*}}}*/ 
 /*{{{  Function Arguments in Registers.  */ 
 
