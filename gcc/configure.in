@@ -2383,6 +2383,9 @@ for machine in $build $host $target; do
 		tm_file=sparc/sunos4.h
 		tmake_file=sparc/t-sunos41
 		use_collect2=yes
+		if [[ x$gas = xyes ]]; then
+			tm_file="${tm_file} sparc/sun4gas.h"
+		fi
 		;;
 	sparc-*-sunos3*)
 		tm_file=sparc/sun4o3.h

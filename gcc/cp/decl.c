@@ -4725,7 +4725,7 @@ init_decl_processing ()
   tree string_ftype_ptr_ptr, int_ftype_string_string;
   tree sizetype_endlink;
   tree ptr_ftype, ptr_ftype_unsigned, ptr_ftype_sizetype;
-  tree void_ftype, void_ftype_int, void_ftype_ptr;
+  tree void_ftype, void_ftype_int, void_ftype_ptr, ptr_ftype_void;
 
   /* Have to make these distinct before we try using them.  */
   lang_name_cplusplus = get_identifier ("C++");
@@ -5102,6 +5102,10 @@ init_decl_processing ()
 
   builtin_function ("__builtin_frame_address", ptr_ftype_unsigned,
 		    BUILT_IN_FRAME_ADDRESS, NULL_PTR);
+
+  ptr_ftype_void = build_function_type (ptr_type_node, endlink);
+  builtin_function ("__builtin_fp", ptr_ftype_void, BUILT_IN_FP, NULL_PTR);
+  builtin_function ("__builtin_sp", ptr_ftype_void, BUILT_IN_SP, NULL_PTR);
 
   builtin_function ("__builtin_alloca", ptr_ftype_sizetype,
 		    BUILT_IN_ALLOCA, "alloca");

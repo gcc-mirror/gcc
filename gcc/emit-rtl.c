@@ -3196,6 +3196,7 @@ gen_sequence ()
      (Now that we cache SEQUENCE expressions, it isn't worth special-casing
      the case of an empty list.)  */
   if (len == 1
+      && ! RTX_FRAME_RELATED_P (first_insn)
       && (GET_CODE (first_insn) == INSN
 	  || GET_CODE (first_insn) == JUMP_INSN
 	  /* Don't discard the call usage field.  */

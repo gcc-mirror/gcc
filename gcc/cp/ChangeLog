@@ -36,6 +36,14 @@ Thu Sep 11 10:08:45 1997  Mark Mitchell  <mmitchell@usa.net>
 	(tsubst): Do constant folding as necessary to make sure that
 	arguments passed to lookup_template_class really are constants. 
 
+Wed Sep 10 11:21:55 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* except.c (expand_builtin_throw): #ifndef DWARF2_UNWIND_INFO.
+	* decl2.c (finish_file): Only register exception tables if we
+	need to.
+
+	* decl.c (init_decl_processing): Add __builtin_[fs]p.
+
 Tue Sep  9 19:49:38 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* pt.c (unify): Just return 0 for a TYPENAME_TYPE.
