@@ -1,3 +1,16 @@
+Fri May  8 01:04:43 1998  Mark Kettenis <kettenis@phys.uva.nl>
+
+	* objc/thr-posix.c (__objc_mutex_allocate): Allocate
+	mutex type instead of assuming it fits in a void * type.
+	(__objc_mutex_deallocate): Free mutex type.
+	(__objc_mutex_lock): Pass mutex type instead of pointer to it.
+	(__objc_mutex_{try,un}lock): Likewise.
+	(__objc_condition_allocate): Allocate condition type instead
+	of assuming it fits in a void * type.
+	(__objc_condition_deallocate): Free condition type.
+	(__objc_condition_wait): Pass condition type instead of pointer to it.
+	(__objc_condition_{broadcast,signal}): Likewise.
+
 Wed May  6 01:30:24 1998  Jeffrey A Law  (law@cygnus.com)
 			  Richard Henderson (rth@cygnus.com)
 
