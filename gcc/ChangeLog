@@ -1,3 +1,7 @@
+2003-04-05  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* simplify-rtx.c: Fix formatting.
+
 2003-04-05  Andrew Pinski  <apinski@apple.com>
 
 	* config/rs6000/rs6000.c (addrs_ok_for_quad_peep): Allow addr2

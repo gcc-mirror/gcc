@@ -325,7 +325,7 @@ simplify_replace_rtx (x, old, new)
 				     GET_MODE (SUBREG_REG (x)),
 				     SUBREG_BYTE (x));
 	  if (exp)
-	   x = exp;
+	    x = exp;
 	}
       return x;
 
@@ -1337,19 +1337,19 @@ simplify_binary_operation (code, mode, op0, op1)
 	  /* (x - (x & y)) -> (x & ~y) */
 	  if (GET_CODE (op1) == AND)
 	    {
-	     if (rtx_equal_p (op0, XEXP (op1, 0)))
-	       {
-		 tem = simplify_gen_unary (NOT, mode, XEXP (op1, 1),
-					   GET_MODE (XEXP (op1, 1)));
-		 return simplify_gen_binary (AND, mode, op0, tem);
-	       }
-	     if (rtx_equal_p (op0, XEXP (op1, 1)))
-	       {
-		 tem = simplify_gen_unary (NOT, mode, XEXP (op1, 0),
-					   GET_MODE (XEXP (op1, 0)));
-		 return simplify_gen_binary (AND, mode, op0, tem);
-	       }
-	   }
+	      if (rtx_equal_p (op0, XEXP (op1, 0)))
+		{
+		  tem = simplify_gen_unary (NOT, mode, XEXP (op1, 1),
+					    GET_MODE (XEXP (op1, 1)));
+		  return simplify_gen_binary (AND, mode, op0, tem);
+		}
+	      if (rtx_equal_p (op0, XEXP (op1, 1)))
+		{
+		  tem = simplify_gen_unary (NOT, mode, XEXP (op1, 0),
+					    GET_MODE (XEXP (op1, 0)));
+		  return simplify_gen_binary (AND, mode, op0, tem);
+		}
+	    }
 	  break;
 
 	case MULT:
@@ -1605,15 +1605,15 @@ simplify_binary_operation (code, mode, op0, op1)
 		  rtvec v = rtvec_alloc (n_elts);
 		  unsigned int i;
 
-		  if (XVECLEN (trueop1, 0) != (int)n_elts)
+		  if (XVECLEN (trueop1, 0) != (int) n_elts)
 		    abort ();
 		  for (i = 0; i < n_elts; i++)
 		    {
-		       rtx x = XVECEXP (trueop1, 0, i);
+		      rtx x = XVECEXP (trueop1, 0, i);
 
-		       if (GET_CODE (x) != CONST_INT)
-			 abort ();
-		       RTVEC_ELT (v, i) = CONST_VECTOR_ELT (trueop0, INTVAL (x));
+		      if (GET_CODE (x) != CONST_INT)
+			abort ();
+		      RTVEC_ELT (v, i) = CONST_VECTOR_ELT (trueop0, INTVAL (x));
 		    }
 
 		  return gen_rtx_CONST_VECTOR (mode, v);
@@ -1684,7 +1684,7 @@ simplify_binary_operation (code, mode, op0, op1)
 
 		return gen_rtx_CONST_VECTOR (mode, v);
 	      }
-	    }
+	  }
 	  return 0;
 
 	default:
@@ -2556,7 +2556,7 @@ simplify_ternary_operation (code, mode, op0_mode, op0, op1, op2)
 	{
           int elt_size = GET_MODE_SIZE (GET_MODE_INNER (mode));
 	  unsigned n_elts = (GET_MODE_SIZE (mode) / elt_size);
-	  int mask = (1<<n_elts) - 1;
+	  int mask = (1 << n_elts) - 1;
 
 	  if (!(INTVAL (op2) & mask))
 	    return op1;
@@ -2681,8 +2681,8 @@ simplify_subreg (outermode, op, innermode, byte)
 	  int subbyte = byte % elt_size;
 
 	  op = simplify_subreg (new_mode, op, innermode, byte - subbyte);
-	    if (! op)
-	      return NULL_RTX;
+	  if (! op)
+	    return NULL_RTX;
 	  return simplify_subreg (outermode, op, new_mode, subbyte);
 	}
       else if (GET_MODE_CLASS (outermode) == MODE_INT)
@@ -3091,7 +3091,7 @@ simplify_rtx (x)
 				    SUBREG_BYTE (x));
       if (code == CONSTANT_P_RTX)
 	{
-	  if (CONSTANT_P (XEXP (x,0)))
+	  if (CONSTANT_P (XEXP (x, 0)))
 	    return const1_rtx;
 	}
       return NULL;
