@@ -1,3 +1,8 @@
+Fri May 22 03:42:05 1998  Richard Earnshaw (rearnsha@arm.com)
+
+	* genextract.c (print_path): Handle zero-length path as a special 
+	case.
+
 Fri May 22 01:38:07 1998  Hans-Peter Nilsson  <hp@axis.se>
 
 	* cplus-dem.c (MBUF_SIZE): Bumped from 512 to 32767.
