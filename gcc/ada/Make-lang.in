@@ -321,10 +321,6 @@ ada.all.cross:
 	then \
 	   $(MV) gnatmake$(exeext)  gnatmake-cross$(exeext); \
 	fi
-	-if [ -f gnatmem$(exeext) ] ; \
-	then \
-	   $(MV) gnatmem$(exeext)  gnatmem-cross$(exeext); \
-	fi
 	-if [ -f gnatname$(exeext) ] ; \
 	then \
 	   $(MV) gnatname$(exeext)  gnatname-cross$(exeext); \
@@ -352,14 +348,6 @@ ada.all.cross:
 	-if [ -f gprmake$(exeext) ] ; \
 	then \
 	   $(MV) gprmake$(exeext)  gprmake-cross$(exeext); \
-	fi
-	-if [ -f gpr2make$(exeext) ] ; \
-	then \
-	   $(MV) gpr2make$(exeext)  gpr2make-cross$(exeext); \
-	fi
-	-if [ -f gprcmd$(exeext) ] ; \
-	then \
-	   $(MV) gprcmd$(exeext)  gprcmd-cross$(exeext); \
 	fi
 
 ada.start.encap:
@@ -447,7 +435,7 @@ ada.install-normal:
 # and also as either gnatbind (if native) or $(tooldir)/bin/gnatbind
 # likewise for gnatf, gnatchop, and gnatlink, gnatkr, gnatmake, gnat,
 # gnatprep, gnatbl, gnatls, gnatxref, gnatfind, gnatname, gnatclean,
-# gnatsym, gprmake, gpr2make, gprcmd
+# gnatsym, gprmake
 ada.install-common:
 	$(MKDIR) $(DESTDIR)$(bindir)
 	-if [ -f gnat1$(exeext) ] ; \
@@ -572,17 +560,6 @@ ada.install-common:
 	fi
 	-if [ -f gnat1$(exeext) ] ; \
 	then \
-	  if [ -f gnatmem-cross$(exeext) ] ; \
-	  then \
-	    $(RM) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatmem$(exeext); \
-	    $(INSTALL_PROGRAM) gnatmem-cross$(exeext) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatmem$(exeext); \
-	  else \
-	    $(RM) $(DESTDIR)$(bindir)/gnatmem$(exeext); \
-	    $(INSTALL_PROGRAM) gnatmem$(exeext) $(DESTDIR)$(bindir)/gnatmem$(exeext); \
-	  fi ; \
-	fi
-	-if [ -f gnat1$(exeext) ] ; \
-	then \
 	  if [ -f gnatname-cross$(exeext) ] ; \
 	  then \
 	    $(RM) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatname$(exeext); \
@@ -649,22 +626,6 @@ ada.install-common:
 	  else \
 	    $(RM) $(bindir)/gprmake$(exeext); \
 	    $(INSTALL_PROGRAM) gprmake$(exeext) $(DESTDIR)$(bindir)/gprmake$(exeext); \
-	  fi ; \
-	fi
-	-if [ -f gnat1$(exeext) ] ; \
-	then \
-	  if [ -f gpr2make$(exeext) ] ; \
-	  then \
-	    $(RM) $(DESTDIR)$(bindir)/gpr2make$(exeext); \
-	    $(INSTALL_PROGRAM) gpr2make$(exeext) $(DESTDIR)$(bindir)/gpr2make$(exeext); \
-	  fi ; \
-	fi
-	-if [ -f gnat1$(exeext) ] ; \
-	then \
-	  if [ -f gprcmd$(exeext) ] ; \
-	  then \
-	    $(RM) $(DESTDIR)$(bindir)/gprcmd$(exeext); \
-	    $(INSTALL_PROGRAM) gprcmd$(exeext) $(DESTDIR)$(bindir)/gprcmd$(exeext); \
 	  fi ; \
 	fi
 #
@@ -738,7 +699,6 @@ ada.uninstall:
 	-$(RM) $(DESTDIR)$(bindir)/gnatlink$(exeext)
 	-$(RM) $(DESTDIR)$(bindir)/gnatls$(exeext)
 	-$(RM) $(DESTDIR)$(bindir)/gnatmake$(exeext)
-	-$(RM) $(DESTDIR)$(bindir)/gnatmem$(exeext)
 	-$(RM) $(DESTDIR)$(bindir)/gnatname$(exeext)
 	-$(RM) $(DESTDIR)$(bindir)/gnatprep$(exeext)
 	-$(RM) $(DESTDIR)$(bindir)/gnatxref$(exeext)
@@ -755,7 +715,6 @@ ada.uninstall:
 	-$(RM) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatlink$(exeext)
 	-$(RM) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatls$(exeext)
 	-$(RM) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatmake$(exeext)
-	-$(RM) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatmem$(exeext)
 	-$(RM) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatname$(exeext)
 	-$(RM) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatprep$(exeext)
 	-$(RM) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatxref$(exeext)
@@ -772,7 +731,6 @@ ada.uninstall:
 	-$(RM) $(DESTDIR)$(tooldir)/bin/gnatlink$(exeext)
 	-$(RM) $(DESTDIR)$(tooldir)/bin/gnatls$(exeext)
 	-$(RM) $(DESTDIR)$(tooldir)/bin/gnatmake$(exeext)
-	-$(RM) $(DESTDIR)$(tooldir)/bin/gnatmem$(exeext)
 	-$(RM) $(DESTDIR)$(tooldir)/bin/gnatname$(exeext)
 	-$(RM) $(DESTDIR)$(tooldir)/bin/gnatprep$(exeext)
 	-$(RM) $(DESTDIR)$(tooldir)/bin/gnatxref$(exeext)
@@ -801,14 +759,12 @@ ada.distclean:
 	-$(RM) gnatlink$(exeext)
 	-$(RM) gnatls$(exeext)
 	-$(RM) gnatmake$(exeext)
-	-$(RM) gnatmem$(exeext)
 	-$(RM) gnatname$(exeext)
 	-$(RM) gnatprep$(exeext)
 	-$(RM) gnatfind$(exeext)
 	-$(RM) gnatxref$(exeext)
 	-$(RM) gnatclean$(exeext)
 	-$(RM) gnatsym$(exeext)
-	-$(RM) gpr2make$(exeext)
 	-$(RM) gprmake$(exeext)
 # Gnatlbr is only used on VMS
 	-$(RM) gnatlbr$(exeext)
@@ -969,7 +925,7 @@ ada/stamp-sdefault : $(srcdir)/version.c Makefile
 	$(ECHO) "   end Object_Dir_Default_Name;" >>tmp-sdefault.adb
 	$(ECHO) "   function Target_Name return String_Ptr is" >>tmp-sdefault.adb
 	$(ECHO) "   begin" >>tmp-sdefault.adb
-	$(ECHO) "      return Relocate_Path (S0, S3);" >>tmp-sdefault.adb
+	$(ECHO) "      return new String'(S3);" >>tmp-sdefault.adb
 	$(ECHO) "   end Target_Name;" >>tmp-sdefault.adb
 	$(ECHO) "   function Search_Dir_Prefix return String_Ptr is" >>tmp-sdefault.adb
 	$(ECHO) "   begin" >>tmp-sdefault.adb
