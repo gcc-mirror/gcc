@@ -1751,7 +1751,8 @@ duplicate_decls (newdecl, olddecl)
 	  DECL_SOURCE_LINE (newdecl) = DECL_SOURCE_LINE (olddecl);
 	  DECL_SOURCE_FILE (newdecl) = DECL_SOURCE_FILE (olddecl);
 
-	  if (DECL_CONTEXT (olddecl) == 0)
+	  if (DECL_CONTEXT (olddecl) == 0
+	      && TREE_CODE (newdecl) != FUNCTION_DECL)
 	    DECL_CONTEXT (newdecl) = 0;
 	}
 
