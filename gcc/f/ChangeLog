@@ -1,3 +1,11 @@
+Mon Jul 13 18:45:06 1998  Craig Burley  <burley@gnu.org>
+
+	* Make-lang.in (f77.rebuilt): Fix to depend on
+	build-dir-based, not source-based, g77.info.
+
+	* g77.texi: Merge docs with 0.5.24.
+	* g77install.texi: Ditto.
+
 Mon Jul 13 18:02:29 1998  Craig Burley  <burley@gnu.org>
 
 	Cleanups vis-a-vis g77-0.5.24:

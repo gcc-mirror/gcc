@@ -5,9 +5,9 @@
 @c The text of this file appears in the file INSTALL
 @c in the G77 distribution, as well as in the G77 manual.
 
-@c 1998-05-29
+@c 1998-07-13
 
-@set version-g77 0.5.23
+@set version-g77 0.5.24
 @set version-gcc 2.8.1
 @set version-autoconf 2.12
 @set version-bison 1.25
@@ -59,6 +59,7 @@ are ongoing.
 @section Prerequisites
 @cindex prerequisites
 
+@emph{Version info:}
 For @code{egcs} users, the following information is
 superceded by the @code{egcs} installation instructions.
 
@@ -414,6 +415,7 @@ is not yet established.
 @cindex ld can't find _strtoul
 @cindex SunOS4
 
+@emph{Version info:}
 The following information does not apply to the
 @code{egcs} version of @code{g77}.
 
@@ -815,6 +817,7 @@ systems.
 @section Quick Start
 @cindex quick start
 
+@emph{Version info:}
 For @code{egcs} users, the following information is
 superceded by the @code{egcs} installation instructions.
 
@@ -1098,6 +1101,7 @@ Removing them can free up a lot of disk space.
 @node Complete Installation
 @section Complete Installation
 
+@emph{Version info:}
 For @code{egcs} users, the following information is
 mostly superceded by the @code{egcs} installation instructions.
 
