@@ -5554,7 +5554,7 @@ pop_init_level (implicit)
       else
 	/* Zero-length arrays are no longer special, so we should no longer
 	   get here.  */
-	abort();
+	abort ();
     }
 
   /* Warn when some struct elements are implicitly initialized to zero.  */

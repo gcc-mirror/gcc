@@ -3155,7 +3155,7 @@ emit_single_push_insn (mode, x, type)
   if (icode != CODE_FOR_nothing)
     {
       if (((pred = insn_data[(int) icode].operand[0].predicate)
-	  && !((*pred) (x, mode))))
+	   && !((*pred) (x, mode))))
 	x = force_reg (mode, x);
       emit_insn (GEN_FCN (icode) (x));
       return;
@@ -3166,7 +3166,7 @@ emit_single_push_insn (mode, x, type)
     {
 #ifdef STACK_GROWS_DOWNWARD
       dest_addr = gen_rtx_PLUS (Pmode, stack_pointer_rtx,
-				GEN_INT (-(HOST_WIDE_INT)rounded_size));
+				GEN_INT (-(HOST_WIDE_INT) rounded_size));
 #else
       dest_addr = gen_rtx_PLUS (Pmode, stack_pointer_rtx,
 				GEN_INT (rounded_size));
@@ -6152,7 +6152,7 @@ expand_expr (exp, target, tmode, modifier)
 	      set_mem_attributes (value, exp, 1);
 	      SET_DECL_RTL (exp, value);
 	    }
-	  }
+	}
 
       /* ... fall through ...  */
 
@@ -8880,7 +8880,7 @@ expand_increment (exp, post, ignore)
     }
 
   if (TYPE_TRAP_SIGNED (TREE_TYPE (exp)))
-     this_optab = this_optab == add_optab ? addv_optab : subv_optab;
+    this_optab = this_optab == add_optab ? addv_optab : subv_optab;
 
   /* For a preincrement, see if we can do this with a single instruction.  */
   if (!post)

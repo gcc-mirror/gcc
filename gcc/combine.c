@@ -1,6 +1,6 @@
 /* Optimize by combining instructions for GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -135,7 +135,7 @@ static int max_uid_cuid;
    BITS_PER_WORD would invoke undefined behavior.  Work around it.  */
 
 #define UWIDE_SHIFT_LEFT_BY_BITS_PER_WORD(val) \
-  (((unsigned HOST_WIDE_INT)(val) << (BITS_PER_WORD - 1)) << 1)
+  (((unsigned HOST_WIDE_INT) (val) << (BITS_PER_WORD - 1)) << 1)
 
 /* Maximum register number, which is the size of the tables below.  */
 
@@ -6012,7 +6012,7 @@ make_extraction (mode, inner, pos, pos_rtx, len,
 
   /* Get the mode to use should INNER not be a MEM, the mode for the position,
      and the mode for the result.  */
-  if (in_dest && mode_for_extraction(EP_insv, -1) != MAX_MACHINE_MODE)
+  if (in_dest && mode_for_extraction (EP_insv, -1) != MAX_MACHINE_MODE)
     {
       wanted_inner_reg_mode = mode_for_extraction (EP_insv, 0);
       pos_mode = mode_for_extraction (EP_insv, 2);
@@ -8544,8 +8544,8 @@ num_sign_bit_copies (x, mode)
       if (! POINTERS_EXTEND_UNSIGNED && GET_MODE (x) == Pmode
 	  && (code == PLUS || code == MINUS)
 	  && GET_CODE (XEXP (x, 0)) == REG && REG_POINTER (XEXP (x, 0)))
-	result = MAX ((int)(GET_MODE_BITSIZE (Pmode)
-			    - GET_MODE_BITSIZE (ptr_mode) + 1),
+	result = MAX ((int) (GET_MODE_BITSIZE (Pmode)
+			     - GET_MODE_BITSIZE (ptr_mode) + 1),
 		      result);
 #endif
       return result;
@@ -12004,7 +12004,7 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 	  else if (i2 && GET_CODE (i2) == JUMP_INSN)
 	    place = i2;
 	  else
-	    abort();
+	    abort ();
 	  break;
 
 	case REG_EH_REGION:
