@@ -6,11 +6,11 @@
 
 // keywords: typedef names, shadowing, scope, formal parameter list
 
-class class0;				// ERROR - 
+class class0;
 
 struct struct1 {
-  int class0;			// ERROR - 
-  void member_function (class0 *);
+  int class0;			
+  void member_function (class0 *); // ERROR - 
 };
 
 void class1::member_function (class0 *p) {	// ERROR - 

@@ -152,7 +152,7 @@ print_lang_identifier (file, node, indent)
 {
   print_node (file, "bindings", IDENTIFIER_NAMESPACE_BINDINGS (node), indent + 4);
   print_node (file, "class", IDENTIFIER_CLASS_VALUE (node), indent + 4);
-  print_node (file, "local", IDENTIFIER_LOCAL_VALUE (node), indent + 4);
+  print_node (file, "local bindings", IDENTIFIER_BINDING (node), indent + 4);
   print_node (file, "label", IDENTIFIER_LABEL_VALUE (node), indent + 4);
   print_node (file, "template", IDENTIFIER_TEMPLATE (node), indent + 4);
   print_node (file, "implicit", IDENTIFIER_IMPLICIT_DECL (node), indent + 4);
@@ -168,7 +168,8 @@ lang_print_xnode (file, node, indent)
   switch (TREE_CODE (node))
     {
     case CPLUS_BINDING:
-      print_node (file, "scope", BINDING_SCOPE (node), indent+4);
+      fprintf (file, " scope ");
+      fprintf (file, HOST_PTR_PRINTF, BINDING_SCOPE (node));
       print_node (file, "value", BINDING_VALUE (node), indent+4);
       print_node (file, "chain", TREE_CHAIN (node), indent+4);
       break;

@@ -4849,7 +4849,8 @@ mark_addressable (exp)
 
 	    TREE_ASM_WRITTEN (x) = 0;
 	    DECL_RTL (x) = 0;
-	    rest_of_decl_compilation (x, 0, IDENTIFIER_LOCAL_VALUE (x) == 0,
+	    rest_of_decl_compilation (x, 0, 
+				      !DECL_FUNCTION_SCOPE_P (x),
 				      0);
 	    TREE_ADDRESSABLE (x) = 1;
 
@@ -7235,9 +7236,9 @@ c_expand_return (retval)
 	      if (TEMP_NAME_P (DECL_NAME (whats_returned)))
 		warning ("reference to non-lvalue returned");
 	      else if (TREE_CODE (TREE_TYPE (whats_returned)) != REFERENCE_TYPE
-		       && ! TREE_STATIC (whats_returned)
-		       && IDENTIFIER_LOCAL_VALUE (DECL_NAME (whats_returned))
-		       && !TREE_PUBLIC (whats_returned))
+		       && DECL_FUNCTION_SCOPE_P (whats_returned)
+		       && !(TREE_STATIC (whats_returned)
+			    || TREE_PUBLIC (whats_returned)))
 		cp_warning_at ("reference to local variable `%D' returned", whats_returned);
 	    }
 	}
@@ -7247,9 +7248,9 @@ c_expand_return (retval)
 
 	  if (TREE_CODE (whats_returned) == VAR_DECL
 	      && DECL_NAME (whats_returned)
-	      && IDENTIFIER_LOCAL_VALUE (DECL_NAME (whats_returned))
-	      && !TREE_STATIC (whats_returned)
-	      && !TREE_PUBLIC (whats_returned))
+	      && DECL_FUNCTION_SCOPE_P (whats_returned)
+	      && !(TREE_STATIC (whats_returned)
+		   || TREE_PUBLIC (whats_returned)))
 	    cp_warning_at ("address of local variable `%D' returned", whats_returned);
 	}
     }

@@ -4780,15 +4780,18 @@ pushclass (type, modify)
 	{
 	  tree item;
 
-	  /* Hooray, we successfully cached; let's just install the
-	     cached class_shadowed list, and walk through it to get the
-	     IDENTIFIER_TYPE_VALUEs correct.  */
+	  /* We are re-entering the same class we just left, so we
+	     don't have to search the whole inheritance matrix to find
+	     all the decls to bind again.  Instead, we install the
+	     cached class_shadowed list, and walk through it binding
+	     names and setting up IDENTIFIER_TYPE_VALUEs.  */
 	  set_class_shadows (previous_class_values);
 	  for (item = previous_class_values; item; item = TREE_CHAIN (item))
 	    {
 	      tree id = TREE_PURPOSE (item);
 	      tree decl = IDENTIFIER_CLASS_VALUE (id);
 
+	      push_class_binding (id, decl);
 	      if (TREE_CODE (decl) == TYPE_DECL)
 		set_identifier_type_value (id, TREE_TYPE (decl));
 	    }

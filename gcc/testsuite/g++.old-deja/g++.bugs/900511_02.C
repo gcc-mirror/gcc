@@ -8,11 +8,11 @@
 
 // cfront 2.0 passes this test.
 
-enum enum0 { enum0_value_0 };	// ERROR - 
+enum enum0 { enum0_value_0 };
 
 struct struct0 {
-  int enum0;			// ERROR - 
-  void member_function (enum0 e);
+  int enum0;			
+  void member_function (enum0 e); // ERROR - 
 };
 
 void class0::member_function (enum0 e) {	// ERROR - 
