@@ -3861,7 +3861,6 @@ expand_a_rotate (enum rtx_code code, rtx operands[])
   rtx src = operands[1];
   rtx rotate_amount = operands[2];
   enum machine_mode mode = GET_MODE (dst);
-  rtx tmp;
 
   /* We rotate in place.  */
   emit_move_insn (dst, src);
@@ -3883,12 +3882,23 @@ expand_a_rotate (enum rtx_code code, rtx operands[])
       emit_label (start_label);
 
       /* Rotate by one bit.  */
-      tmp = gen_rtx_fmt_ee (code, mode, dst, const1_rtx);
-      emit_insn (gen_rtx_SET (mode, dst, tmp));
+      switch (mode)
+	{
+	case QImode:
+	  emit_insn (gen_rotlqi3_1 (dst, dst, const1_rtx));
+	  break;
+	case HImode:
+	  emit_insn (gen_rotlhi3_1 (dst, dst, const1_rtx));
+	  break;
+	case SImode:
+	  emit_insn (gen_rotlsi3_1 (dst, dst, const1_rtx));
+	  break;
+	default:
+	  abort ();
+	}
 
       /* Decrement the counter by 1.  */
-      tmp = gen_rtx_PLUS (QImode, counter, constm1_rtx);
-      emit_insn (gen_rtx_SET (VOIDmode, counter, tmp));
+      emit_insn (gen_addqi3 (counter, counter, constm1_rtx));
 
       /* If the loop counter is nonzero, we go back to the beginning
 	 of the loop.  */
@@ -3900,8 +3910,20 @@ expand_a_rotate (enum rtx_code code, rtx operands[])
   else
     {
       /* Rotate by AMOUNT bits.  */
-      tmp = gen_rtx_fmt_ee (code, mode, dst, rotate_amount);
-      emit_insn (gen_rtx_SET (mode, dst, tmp));
+      switch (mode)
+	{
+	case QImode:
+	  emit_insn (gen_rotlqi3_1 (dst, dst, rotate_amount));
+	  break;
+	case HImode:
+	  emit_insn (gen_rotlhi3_1 (dst, dst, rotate_amount));
+	  break;
+	case SImode:
+	  emit_insn (gen_rotlsi3_1 (dst, dst, rotate_amount));
+	  break;
+	default:
+	  abort ();
+	}
     }
 
   return 1;
@@ -4001,7 +4023,7 @@ output_a_rotate (enum rtx_code code, rtx *operands)
 	(rotate_type == SHIFT_ASHIFT) ? SHIFT_LSHIFTRT : SHIFT_ASHIFT;
     }
 
-  /* Emit rotate insns.  */
+  /* Output rotate insns.  */
   for (bits = TARGET_H8300S ? 2 : 1; bits > 0; bits /= 2)
     {
       if (bits == 2)
