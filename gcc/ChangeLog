@@ -1,3 +1,7 @@
+Sun Nov 8 13:10:55 PST 1998 Jeff Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Sat Nov  7 23:34:01 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (libcpp.a): Check RANLIB_TEST before runing RANLIB.
