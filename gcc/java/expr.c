@@ -1710,6 +1710,8 @@ build_class_init (tree clas, tree expr)
              optimizing class initialization. */
 	  if (!STATIC_CLASS_INIT_OPT_P ())
 	    DECL_BIT_INDEX(*init_test_decl) = -1;
+	  /* Don't emit any symbolic debugging info for this decl.  */
+	  DECL_IGNORED_P (*init_test_decl) = 1;
 	}
 
       init = build (CALL_EXPR, void_type_node,

@@ -67,6 +67,7 @@ static bool java_dump_tree (void *, tree);
 static void dump_compound_expr (dump_info_p, tree);
 static bool java_decl_ok_for_sibcall (tree);
 static int java_estimate_num_insns (tree);
+static int java_start_inlining (tree);
 
 #ifndef TARGET_OBJECT_SUFFIX
 # define TARGET_OBJECT_SUFFIX ".o"
@@ -253,11 +254,17 @@ struct language_function GTY(())
 #undef LANG_HOOKS_TREE_INLINING_ESTIMATE_NUM_INSNS
 #define LANG_HOOKS_TREE_INLINING_ESTIMATE_NUM_INSNS java_estimate_num_insns
 
+#undef LANG_HOOKS_TREE_INLINING_START_INLINING
+#define LANG_HOOKS_TREE_INLINING_START_INLINING java_start_inlining
+
 #undef LANG_HOOKS_TREE_DUMP_DUMP_TREE_FN
 #define LANG_HOOKS_TREE_DUMP_DUMP_TREE_FN java_dump_tree
 
 #undef LANG_HOOKS_DECL_OK_FOR_SIBCALL
 #define LANG_HOOKS_DECL_OK_FOR_SIBCALL java_decl_ok_for_sibcall
+
+#undef LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION
+#define LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION java_expand_body
 
 /* Each front end provides its own.  */
 const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
@@ -1178,8 +1185,21 @@ static int
 java_estimate_num_insns (tree decl)
 {
   int num = 0;
-  walk_tree (&DECL_SAVED_TREE (decl), java_estimate_num_insns_1, &num, NULL);
+  walk_tree_without_duplicates (&DECL_SAVED_TREE (decl),
+				java_estimate_num_insns_1, &num);
   return num;
+}
+
+/* Start inlining fn.  Called by the tree inliner via
+   lang_hooks.tree_inlining.cannot_inline_tree_fn.  */
+
+static int
+java_start_inlining (tree fn)
+{
+  /* A java function's body doesn't have a BLOCK structure suitable
+     for debug output until it is expanded.  Prevent inlining functions
+     that are not yet expanded.  */
+  return TREE_ASM_WRITTEN (fn) ? 1 : 0;
 }
 
 #include "gt-java-lang.h"

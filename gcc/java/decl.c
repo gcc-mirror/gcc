@@ -1811,6 +1811,59 @@ end_java_method (void)
   current_function_decl = NULL_TREE;
 }
 
+/* Expand a function's body.  */
+
+void
+java_expand_body (tree fndecl)
+{
+  const char *saved_input_filename = input_filename;
+  int saved_lineno = input_line;
+
+  current_function_decl = fndecl;
+  input_filename = DECL_SOURCE_FILE (fndecl);
+  input_line = DECL_SOURCE_LINE (fndecl);
+
+  timevar_push (TV_EXPAND);
+
+  /* Prepare the function for tree completion.  */
+  start_complete_expand_method (fndecl);
+
+  if (! flag_emit_class_files && ! flag_emit_xref)
+    {
+      /* Initialize the RTL code for the function.  */
+      init_function_start (fndecl);
+
+      /* Set up parameters and prepare for return, for the function.  */
+      expand_function_start (fndecl, 0);
+
+      /* Generate the RTL for this function.  */
+      expand_expr_stmt_value (DECL_SAVED_TREE (fndecl), 0, 1);
+    }
+
+  /* Pop out of its parameters.  */
+  pushdecl_force_head (DECL_ARGUMENTS (fndecl));
+  poplevel (1, 0, 1);
+  BLOCK_SUPERCONTEXT (DECL_INITIAL (fndecl)) = fndecl;
+
+  if (! flag_emit_class_files && ! flag_emit_xref)
+    {
+      /* Generate RTL for function exit.  */
+      input_line = DECL_FUNCTION_LAST_LINE (fndecl);
+      expand_function_end ();
+
+      /* Run the optimizers and output the assembler code
+	 for this function.  */
+      rest_of_compilation (fndecl);
+    }
+
+  timevar_pop (TV_EXPAND);
+
+  input_filename = saved_input_filename;
+  input_line = saved_lineno;
+
+  current_function_decl = NULL_TREE;
+}
+
 /* Dump FUNCTION_DECL FN as tree dump PHASE. */
 
 static void
