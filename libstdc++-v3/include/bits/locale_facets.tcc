@@ -1855,7 +1855,7 @@ namespace std
       unsigned long __val = 0;
       for (; __lo < __hi; ++__lo)
 	__val = *__lo + ((__val << 7) | 
-		       (__val >> (numeric_limits<unsigned long>::digits - 1)));
+		       (__val >> (numeric_limits<unsigned long>::digits - 7)));
       return static_cast<long>(__val);
     }
 
