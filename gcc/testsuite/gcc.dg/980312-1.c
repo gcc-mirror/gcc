@@ -1,4 +1,4 @@
-/* { dg-do compile { target i?86-*-* } } */
+/* { dg-do link { target i?86-*-* } } */
 /* { dg-options "-O2 -march=pentiumpro" } */
 
 extern __inline  double
@@ -17,4 +17,8 @@ double
 tanh (double __x)
 {
   return  __expm1 (__x) * __sgn1 (-__x);
+}
+main ()
+{
+  return tanh (3.45) != 0;
 }
