@@ -533,8 +533,6 @@ push_function_context_to (context)
   save_varasm_status (p, context);
   if (save_machine_status)
     (*save_machine_status) (p);
-
-  init_emit ();
 }
 
 void
