@@ -5,3 +5,5 @@ STMP_FIXPROTO =
 USER_H = ${LANG_EXTRA_HEADERS}
 INSTALL_ASSERT_H =
 
+# We don't want collisions with our mkstemps
+T_CFLAGS=-Dmkstemps=my_mkstemps

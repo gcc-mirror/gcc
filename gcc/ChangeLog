@@ -1,3 +1,7 @@
+Sat Feb 27 19:47:39 1999  Marc Espie <espie@openbsd.org>
+
+	* config/t-openbsd (T_CFLAGS): Add -Dmkstemps=my_mkstemps.
+
 Sat Feb 27 19:37:04 1999  Arturo Montes  <mitosys@colomsat.com.co>
 
 	* i386/t-sco5 (crti.o): New target.
