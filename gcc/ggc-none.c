@@ -23,11 +23,11 @@
    need GC at all.  This prevents problems with pulling in all the
    tree stuff.  */
 
-#include "config.h"
+#include "bconfig.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
 #include "ggc.h"
+
 struct alloc_zone *rtl_zone = NULL;
 struct alloc_zone *garbage_zone = NULL;
 

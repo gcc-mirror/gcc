@@ -1,5 +1,5 @@
 /* Basic error reporting routines.
-   Copyright (C) 1999, 2000, 2001, 2003
+   Copyright (C) 1999, 2000, 2001, 2003, 2004
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -20,10 +20,10 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
 /* warning, error, and fatal.  These definitions are suitable for use
-   in the generator programs; eventually we would like to use them in
-   cc1 too, but that's a longer term project.  */
+   in the generator programs; the compiler has a more elaborate suite
+   of diagnostic printers, found in diagnostic.c.  */
 
-#include "config.h"
+#include "bconfig.h"
 #include "system.h"
 #include "errors.h"
 

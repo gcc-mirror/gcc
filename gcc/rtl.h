@@ -21,10 +21,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #ifndef GCC_RTL_H
 #define GCC_RTL_H
+
 #include "statistics.h"
-
-struct function;
-
 #include "machmode.h"
 #include "input.h"
 
@@ -1634,6 +1632,8 @@ extern rtx immed_double_const (HOST_WIDE_INT, HOST_WIDE_INT,
 extern rtx force_const_mem (enum machine_mode, rtx);
 
 /* In varasm.c  */
+
+struct function;
 extern rtx get_pool_constant (rtx);
 extern rtx get_pool_constant_mark (rtx, bool *);
 extern enum machine_mode get_pool_mode (rtx);
@@ -1983,7 +1983,7 @@ extern GTY(()) rtx return_address_pointer_rtx;
 
 /* Include the RTL generation functions.  */
 
-#ifndef NO_GENRTL_H
+#ifndef GENERATOR_FILE
 #include "genrtl.h"
 #ifndef USE_MAPPED_LOCATION
 #undef gen_rtx_ASM_OPERANDS
@@ -2109,9 +2109,7 @@ extern int rtx_to_tree_code (enum rtx_code);
 
 /* In cse.c */
 extern int delete_trivially_dead_insns (rtx, int);
-#ifdef BUFSIZ
 extern int cse_main (rtx, int, int, FILE *);
-#endif
 extern void cse_condition_code_reg (void);
 
 /* In jump.c */
@@ -2192,22 +2190,16 @@ extern rtx gen_lowpart_SUBREG (enum machine_mode, rtx);
 extern int combine_instructions (rtx, unsigned int);
 extern unsigned int extended_count (rtx, enum machine_mode, int);
 extern rtx remove_death (unsigned int, rtx);
-#ifdef BUFSIZ
 extern void dump_combine_stats (FILE *);
 extern void dump_combine_total_stats (FILE *);
-#endif
 /* In web.c */
 extern void web_main (void);
 
 /* In sched-rgn.c.  */
-#ifdef BUFSIZ
 extern void schedule_insns (FILE *);
-#endif
 
 /* In sched-ebb.c.  */
-#ifdef BUFSIZ
 extern void schedule_ebbs (FILE *);
-#endif
 
 /* In haifa-sched.c.  */
 extern void fix_sched_param (const char *, const char *);
@@ -2218,19 +2210,15 @@ extern void debug_rtx (rtx);
 extern void debug_rtx_list (rtx, int);
 extern void debug_rtx_range (rtx, rtx);
 extern rtx debug_rtx_find (rtx, int);
-#ifdef BUFSIZ
 extern void print_mem_expr (FILE *, tree);
 extern void print_rtl (FILE *, rtx);
 extern void print_simple_rtl (FILE *, rtx);
 extern int print_rtl_single (FILE *, rtx);
 extern void print_inline_rtx (FILE *, rtx, int);
-#endif
 
 /* In loop.c */
 extern void init_loop (void);
-#ifdef BUFSIZ
 extern void loop_optimize (rtx, FILE *, int);
-#endif
 extern void branch_target_load_optimize (bool);
 
 /* In function.c */
@@ -2256,10 +2244,8 @@ extern rtx move_by_pieces (rtx, rtx, unsigned HOST_WIDE_INT,
 extern void recompute_reg_usage (rtx, int);
 extern int initialize_uninitialized_subregs (void);
 extern void delete_dead_jumptables (void);
-#ifdef BUFSIZ
 extern void print_rtl_with_bb (FILE *, rtx);
 extern void dump_flow_info (FILE *);
-#endif
 
 /* In expmed.c */
 extern void init_expmed (void);
@@ -2271,18 +2257,14 @@ extern rtx expand_mult_highpart (enum machine_mode, rtx,
 /* In gcse.c */
 extern bool can_copy_p (enum machine_mode);
 extern rtx fis_get_condition (rtx);
-#ifdef BUFSIZ
 extern int gcse_main (rtx, FILE *);
 extern int bypass_jumps (FILE *);
 extern void gcse_after_reload_main (rtx, FILE *);
-#endif
 
 /* In global.c */
 extern void mark_elimination (int, int);
-#ifdef BUFSIZ
 extern int global_alloc (FILE *);
 extern void dump_global_regs (FILE *);
-#endif
 #ifdef HARD_CONST
 /* Yes, this ifdef is silly, but HARD_REG_SET is not always defined.  */
 extern void retry_global_alloc (int, HARD_REG_SET);
@@ -2311,26 +2293,18 @@ extern bool invalid_mode_change_p (unsigned int, enum reg_class,
 				   enum machine_mode);
 
 /* In regmove.c */
-#ifdef BUFSIZ
 extern void regmove_optimize (rtx, int, FILE *);
-#endif
 extern void combine_stack_adjustments (void);
 
 /* In reorg.c */
-#ifdef BUFSIZ
 extern void dbr_schedule (rtx, FILE *);
-#endif
 
 /* In local-alloc.c */
-#ifdef BUFSIZ
 extern void dump_local_alloc (FILE *);
-#endif
 extern int local_alloc (void);
 
 /* In reg-stack.c */
-#ifdef BUFSIZ
 extern bool reg_to_stack (FILE *);
-#endif
 
 /* In calls.c */
 enum libcall_type
@@ -2363,11 +2337,9 @@ extern void init_rtl (void);
 extern void traverse_md_constants (int (*) (void **, void *), void *);
 struct md_constant { char *name, *value; };
 
-#ifdef BUFSIZ
+/* In read-rtl.c */
 extern int read_skip_spaces (FILE *);
 extern rtx read_rtx (FILE *);
-#endif
-
 extern const char *read_rtx_filename;
 extern int read_rtx_lineno;
 
@@ -2442,9 +2414,7 @@ extern void simplify_using_condition (rtx, rtx *, struct bitmap_head_def *);
 extern void reg_alloc (void);
 
 /* In modulo-sched.c.  */
-#ifdef BUFSIZ
 extern void sms_schedule (FILE *);
-#endif
 
 struct rtl_hooks
 {
