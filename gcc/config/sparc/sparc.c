@@ -1440,24 +1440,14 @@ output_fp_move_double (operands)
       if (FP_REG_P (operands[1]))
 	return "fmovs %1,%0\n\tfmovs %R1,%R0";
       else if (GET_CODE (operands[1]) == REG)
-	{
-	  if ((REGNO (operands[1]) & 1) == 0)
-	    return "std %1,[%@-8]\n\tldd [%@-8],%0";
-	  else
-	    return "st %R1,[%@-4]\n\tst %1,[%@-8]\n\tldd [%@-8],%0";
-	}
+	abort ();
       else
 	return output_move_double (operands);
     }
   else if (FP_REG_P (operands[1]))
     {
       if (GET_CODE (operands[0]) == REG)
-	{
-	  if ((REGNO (operands[0]) & 1) == 0)
-	    return "std %1,[%@-8]\n\tldd [%@-8],%0";
-	  else
-	    return "std %1,[%@-8]\n\tld [%@-4],%R0\n\tld [%@-8],%0";
-	}
+	abort ();
       else
 	return output_move_double (operands);
     }
@@ -1478,25 +1468,15 @@ output_fp_move_quad (operands)
     {
       if (FP_REG_P (op1))
 	return "fmovs %1,%0\n\tfmovs %R1,%R0\n\tfmovs %S1,%S0\n\tfmovs %T1,%T0";
-      if (GET_CODE (op1) == REG)
-	{
-	  if ((REGNO (op1) & 1) == 0)
-	    return "std %1,[%@-8]\n\tldd [%@-8],%0\n\tstd %S1,[%@-8]\n\tldd [%@-8],%S0";
-	  else
-	    return "st %R1,[%@-4]\n\tst %1,[%@-8]\n\tldd [%@-8],%0\n\tst %T1,[%@-4]\n\tst %S1,[%@-8]\n\tldd [%@-8],%S0";
-	}
+      else if (GET_CODE (op1) == REG)
+	abort ();
       else
 	return output_move_quad (operands);
     }
   else if (FP_REG_P (op1))
     {
       if (GET_CODE (op0) == REG)
-	{
-	  if ((REGNO (op0) & 1) == 0)
-	    return "std %1,[%@-8]\n\tldd [%@-8],%0\n\tstd %S1,[%@-8]\n\tldd [%@-8],%S0";
-	  else
-	    return "std %S1,[%@-8]\n\tld [%@-4],%T0\n\tld [%@-8],%S0\n\tstd %1,[%@-8]\n\tld [%@-4],%R0\n\tld [%@-8],%0";
-	}
+	abort ();
       else
 	return output_move_quad (operands);
     }
@@ -2705,11 +2685,6 @@ print_operand (file, x, code)
 	fputs (reg_names[REGNO (x)-16], file);
       else
 	abort ();
-      return;
-    case '@':
-      /* Print out what we are using as the frame pointer.  This might
-	 be %fp, or might be %sp+offset.  */
-      fputs (frame_base_name, file);
       return;
     case 'R':
       /* Print out the second register name of a register pair or quad.
