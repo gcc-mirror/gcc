@@ -102,7 +102,7 @@ place of the container.
 
 The compiler pass which lowers GENERIC to GIMPLE is referred to as the
 @samp{gimplifier}.  The gimplifier works recursively, replacing complex
-statements with sequences of simple statements.  
+statements with sequences of simple statements.
 
 @c Currently, the only way to
 @c tell whether or not an expression is in GIMPLE form is by recursively
@@ -195,7 +195,7 @@ GIMPLE rvalue (@code{is_gimple_val}), i.e.@: a constant or a register
 variable.  More complex operands are factored out into temporaries, so
 that
 @smallexample
-  a = b + c + d 
+  a = b + c + d
 @end smallexample
 becomes
 @smallexample
@@ -293,7 +293,7 @@ Most statements will be assignment statements, represented by
 @code{MODIFY_EXPR}.  A @code{CALL_EXPR} whose value is ignored can
 also be a statement.  No other C expressions can appear at statement level;
 a reference to a volatile object is converted into a @code{MODIFY_EXPR}.
-In GIMPLE form, type of @code{MODIFY_EXPR} is not meaningful. Instead, use type 
+In GIMPLE form, type of @code{MODIFY_EXPR} is not meaningful. Instead, use type
 of LHS or RHS.
 
 There are also several varieties of complex statements.
@@ -318,7 +318,7 @@ expressed using the @code{BIND_EXPR} code, which in previous versions of
 GCC was primarily used for the C statement-expression extension.
 
 Variables in a block are collected into @code{BIND_EXPR_VARS} in
-declaration order.  Any runtime initialization is moved out of 
+declaration order.  Any runtime initialization is moved out of
 @code{DECL_INITIAL} and into a statement in the controlled block.  When
 gimplifying from C or C++, this initialization replaces the
 @code{DECL_STMT}.
@@ -328,7 +328,7 @@ refers to variables initialized earlier in the block.  To handle this, we
 currently split the block at that point, and move the VLA into a new, inner
 @code{BIND_EXPR}.  This strategy may change in the future.
 
-@code{DECL_SAVED_TREE} for a GIMPLE function will always be a 
+@code{DECL_SAVED_TREE} for a GIMPLE function will always be a
 @code{BIND_EXPR} which contains declarations for the temporary variables
 used in the function.
 
@@ -422,7 +422,7 @@ edge.
 @cindex GIMPLE Exception Handling
 
 Other exception handling constructs are represented using
-@code{TRY_CATCH_EXPR}.  The handler operand of a @code{TRY_CATCH_EXPR} 
+@code{TRY_CATCH_EXPR}.  The handler operand of a @code{TRY_CATCH_EXPR}
 can be a normal statement to be executed if the controlled block throws an
 exception, or it can have one of two special forms:
 
@@ -711,7 +711,7 @@ operands, they are organized into arrays associated inside each
 statement's annotation.  Each element in an operand array is a pointer
 to a @code{VAR_DECL}, @code{PARM_DECL} or @code{SSA_NAME} tree node.
 This provides a very convenient way of examining and replacing
-operands.  
+operands.
 
 Data flow analysis and optimization is done on all tree nodes
 representing variables.  Any node for which @code{SSA_VAR_P} returns
@@ -755,12 +755,12 @@ In contrast, virtual operands are used with variables that can have
 a partial or ambiguous reference. This includes structures, arrays,
 globals, and aliased variables. In these cases, we have two types of
 definitions. For globals, structures, and arrays, we can determine from
-a statement whether a variable of these types has a killing definition. 
+a statement whether a variable of these types has a killing definition.
 If the variable does, then the statement is marked as having a
 @dfn{must definition} of that variable. However, if a statement is only
 defining a part of the variable (i.e.@: a field in a structure), or if we
 know that a statement might define the variable but we cannot say for sure,
-then we mark that statement as having a @dfn{may definition}.  For 
+then we mark that statement as having a @dfn{may definition}.  For
 instance, given
 
 @smallexample
@@ -814,9 +814,9 @@ incorrect assumptions about them.
 
 Operands are collected by @file{tree-ssa-operands.c}.  They are stored
 inside each statement's annotation and can be accessed with
-@code{DEF_OPS}, @code{USE_OPS}, @code{V_MAY_DEF_OPS}, 
-@code{V_MUST_DEF_OPS} and @code{VUSE_OPS}. The following are all the 
-accessor macros available to access USE operands.  To access all the 
+@code{DEF_OPS}, @code{USE_OPS}, @code{V_MAY_DEF_OPS},
+@code{V_MUST_DEF_OPS} and @code{VUSE_OPS}. The following are all the
+accessor macros available to access USE operands.  To access all the
 other operand arrays, just change the name accordingly:
 
 @defmac USE_OPS (@var{ann})
@@ -858,7 +858,7 @@ print_ops (tree stmt)
 
   get_stmt_operands (stmt);
   ann = stmt_ann (stmt);
-  
+
   defs = DEF_OPS (ann);
   for (i = 0; i < NUM_DEFS (defs); i++)
     print_generic_expr (stderr, DEF_OP (defs, i), 0);
@@ -866,7 +866,7 @@ print_ops (tree stmt)
   uses = USE_OPS (ann);
   for (i = 0; i < NUM_USES (uses); i++)
     print_generic_expr (stderr, USE_OP (uses, i), 0);
-  
+
   v_may_defs = V_MAY_DEF_OPS (ann);
   for (i = 0; i < NUM_V_MAY_DEFS (v_may_defs); i++)
     @{
@@ -877,7 +877,7 @@ print_ops (tree stmt)
   v_must_defs = V_MUST_DEF_OPS (ann);
   for (i = 0; i < NUM_V_MUST_DEFS (v_must_defs); i++)
     print_generic_expr (stderr, V_MUST_DEF_OP (v_must_defs, i), 0);
-  
+
   vuses = VUSE_OPS (ann);
   for (i = 0; i < NUM_VUSES (vuses); i++)
     print_generic_expr (stderr, VUSE_OP (vuses, i), 0);
@@ -914,23 +914,23 @@ print_ops (tree stmt)
 
 @enumerate
 @item Determine whether you are need to see the operand pointers, or just the
-    trees, and choose the appropriate macro: 
+    trees, and choose the appropriate macro:
 
 @smallexample
-Need            Macro: 
-----            ------- 
-use_operand_p   FOR_EACH_SSA_USE_OPERAND 
-def_operand_p   FOR_EACH_SSA_DEF_OPERAND 
-tree            FOR_EACH_SSA_TREE_OPERAND 
+Need            Macro:
+----            -------
+use_operand_p   FOR_EACH_SSA_USE_OPERAND
+def_operand_p   FOR_EACH_SSA_DEF_OPERAND
+tree            FOR_EACH_SSA_TREE_OPERAND
 @end smallexample
 
 @item You need to declare a variable of the type you are interested
     in, and an ssa_op_iter structure which serves as the loop
-    controlling variable. 
+    controlling variable.
 
 @item Determine which operands you wish to use, and specify the flags of
     those you are interested in.  They are documented in
-    @file{tree-ssa-operands.h}: 
+    @file{tree-ssa-operands.h}:
 
 @smallexample
 #define SSA_OP_USE              0x01    /* Real USE operands.  */
@@ -950,22 +950,22 @@ tree            FOR_EACH_SSA_TREE_OPERAND
 @end enumerate
 
 So if you want to look at the use pointers for all the @code{USE} and
-@code{VUSE} operands, you would do something like: 
+@code{VUSE} operands, you would do something like:
 
 @smallexample
-  use_operand_p use_p; 
-  ssa_op_iter iter; 
+  use_operand_p use_p;
+  ssa_op_iter iter;
 
   FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, (SSA_OP_USE | SSA_OP_VUSE))
-    @{ 
-      process_use_ptr (use_p); 
-    @} 
+    @{
+      process_use_ptr (use_p);
+    @}
 @end smallexample
 
 The @code{_TREE_} macro is basically the same as the @code{USE} and
 @code{DEF} macros, only with the use or def dereferenced via
 @code{USE_FROM_PTR (use_p)} and @code{DEF_FROM_PTR (def_p)}. Since we
-aren't using operand pointers, use and defs flags can be mixed. 
+aren't using operand pointers, use and defs flags can be mixed.
 
 @smallexample
   tree var;
@@ -983,22 +983,22 @@ Note that @code{V_MAY_DEFS} are broken into 2 flags, one for the
 @code{V_MAY_DEFS} together, there is a fourth iterator macro for this,
 which returns both a def_operand_p and a use_operand_p for each
 @code{V_MAY_DEF} in the statement. Note that you don't need any flags for
-this one. 
+this one.
 
 @smallexample
-  use_operand_p use_p; 
-  def_operand_p def_p; 
-  ssa_op_iter iter; 
+  use_operand_p use_p;
+  def_operand_p def_p;
+  ssa_op_iter iter;
 
-  FOR_EACH_SSA_MAYDEF_OPERAND (def_p, use_p, stmt, iter) 
-    @{ 
-      my_code; 
-    @} 
+  FOR_EACH_SSA_MAYDEF_OPERAND (def_p, use_p, stmt, iter)
+    @{
+      my_code;
+    @}
 @end smallexample
 
 
 There are many examples in the code as well, as well as the
-documentation in @file{tree-ssa-operands.h}. 
+documentation in @file{tree-ssa-operands.h}.
 
 
 @node SSA
@@ -1127,7 +1127,7 @@ Calls function @var{fn} at each reaching definition found.  Function
 (@var{def_stmt}) and a generic pointer to whatever state information
 that @var{fn} may want to maintain (@var{data}).  Function @var{fn} is
 able to stop the walk by returning @code{true}, otherwise in order to
-continue the walk, @var{fn} should return @code{false}.  
+continue the walk, @var{fn} should return @code{false}.
 
 Note, that if @var{def_stmt} is a @code{PHI} node, the semantics are
 slightly different.  For each argument @var{arg} of the PHI node, this

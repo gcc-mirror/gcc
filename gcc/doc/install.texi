@@ -1235,7 +1235,7 @@ The following options apply to the build of the Fortran front end.
 @itemx --with-mpfr=@var{pathname}
 @itemx --with-gmp-dir=@var{pathname}
 @itemx --with-mpfr-dir=@var{pathname}
-If you don't have GMP (the GNU Multiple Precision library) and the MPFR 
+If you don't have GMP (the GNU Multiple Precision library) and the MPFR
 Libraries installed in a standard location and you want to build the Fortran
 front-end, you can explicitly specify the directory where they are installed
 (@samp{--with-gmp=gmpinstalldir}, @samp{--with-mpfr=mpfrinstalldir}) or where
@@ -2751,7 +2751,7 @@ needed whenever @env{CC} is used.
 
 Specifically, options that determine the runtime architecture must be
 in @env{CC} to correctly select the target for the build.  It is also
-convenient to place many other compiler options in @env{CC}.  For example, 
+convenient to place many other compiler options in @env{CC}.  For example,
 @env{CC="cc -Ac +DA2.0W -Wp,-H16376 -D_CLASSIC_TYPES -D_HPUX_SOURCE"}
 can be used to bootstrap the GCC 3.3 branch with the HP compiler in
 64-bit K&R/bundled mode.  The @option{+DA2.0W} option will result in

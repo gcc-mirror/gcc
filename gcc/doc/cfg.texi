@@ -229,7 +229,7 @@ and many computed jumps may have @emph{very} dense flow graphs, so
 these edges need to be handled with special care.  During the earlier
 stages of the compilation process, GCC tries to avoid such dense flow
 graphs by factoring computed jumps.  For example, given the following
-series of jumps, 
+series of jumps,
 
 @smallexample
   goto *x;
@@ -580,7 +580,7 @@ be freely reused for other values when a register is dead.
 @findex REG_DEAD, REG_UNUSED
 The liveness information is stored partly in the RTL instruction
 stream and partly in the flow graph.  Local information is stored in
-the instruction stream: 
+the instruction stream:
 Each instruction may contain @code{REG_DEAD} notes representing that
 the value of a given register is no longer needed, or
 @code{REG_UNUSED} notes representing that the value computed by the

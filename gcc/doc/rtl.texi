@@ -1772,7 +1772,7 @@ saturates at the maximum signed value representable in @var{m};
 This expression represents the sum of @var{x} and the low-order bits
 of @var{y}.  It is used with @code{high} (@pxref{Constants}) to
 represent the typical two-instruction sequence used in RISC machines
-to reference a global memory location.  
+to reference a global memory location.
 
 The number of low order bits is machine-dependent but is
 normally the number of bits in a @code{Pmode} item minus the number of

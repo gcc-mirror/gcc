@@ -2170,7 +2170,7 @@ variable is initialized, rather than assigned to subsequently.
 These nodes represent non-static data member accesses.  The first
 operand is the object (rather than a pointer to it); the second operand
 is the @code{FIELD_DECL} for the data member.  The third operand represents
-the byte offset of the field, but should not be used directly; call 
+the byte offset of the field, but should not be used directly; call
 @code{component_ref_field_offset} instead.
 
 @item COMPOUND_EXPR
