@@ -1,3 +1,7 @@
+2000-05-05  David Billinghurst  <David Billinghurst@riotinto.com.au>
+
+        * g77.f-torture/execute/20000503-1.f:  New test.
+
 2000-05-04  Andreas Jaeger  <aj@suse.de>
 
 	* gcc.dg/noreturn-2.c: New test.
