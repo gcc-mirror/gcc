@@ -103,6 +103,7 @@ Boston, MA 02111-1307, USA.  */
 
 #define CONDITIONAL_REGISTER_USAGE \
 {						\
+  int i;					\
   if (TARGET_DISABLE_FPREGS || TARGET_SOFT_FLOAT)\
     {						\
       for (i = FP_REG_FIRST; i < FP_REG_LAST; i++)\

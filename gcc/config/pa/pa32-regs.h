@@ -97,6 +97,7 @@
 
 #define CONDITIONAL_REGISTER_USAGE \
 {						\
+  int i;					\
   if (!TARGET_PA_11)				\
     {						\
       for (i = 56; i < 88; i++) 		\
