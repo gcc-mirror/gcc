@@ -1,3 +1,9 @@
+2002-09-29  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* Makefile.tpl: Make more autoconf-friendly.
+	* Makefile.in: Regenerate.
+	* configure: Make substitution more autoconf-like.
+
 2002-09-28  Richard Earnshaw  <rearnsha@arm.com>
 
 	* configure.in (arm-*-coff, strongarm-*-coff, xscale-*-coff): Use a
