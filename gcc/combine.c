@@ -2373,11 +2373,17 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
 	  && REG_P (i2dest)
 #endif
 	  /* We need I2DEST in the proper mode.  If it is a hard register
-	     or the only use of a pseudo, we can change its mode.  */
+	     or the only use of a pseudo, we can change its mode.
+	     Make sure we don't change a hard register to have a mode that
+	     isn't valid for it, or change the number of registers.  */
 	  && (GET_MODE (*split) == GET_MODE (i2dest)
 	      || GET_MODE (*split) == VOIDmode
-	      || REGNO (i2dest) < FIRST_PSEUDO_REGISTER
-	      || (REG_N_SETS (REGNO (i2dest)) == 1 && ! added_sets_2
+	      || (REGNO (i2dest) < FIRST_PSEUDO_REGISTER
+		  && HARD_REGNO_MODE_OK (REGNO (i2dest), GET_MODE (*split))
+		  && (HARD_REGNO_NREGS (REGNO (i2dest), GET_MODE (i2dest))
+		      == HARD_REGNO_NREGS (REGNO (i2dest), GET_MODE (*split))))
+	      || (REGNO (i2dest) >= FIRST_PSEUDO_REGISTER
+		  && REG_N_SETS (REGNO (i2dest)) == 1 && ! added_sets_2
 		  && ! REG_USERVAR_P (i2dest)))
 	  && (next_real_insn (i2) == i3
 	      || ! use_crosses_set_p (*split, INSN_CUID (i2)))

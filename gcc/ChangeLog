@@ -1,3 +1,8 @@
+2005-03-19  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* combine.c (try_combine): When changing the mode of a hard reg, make
+	sure that doing so is valid.
+
 2005-03-19  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/avr/avr.c (avr_init_stack, avr_mcu_name): Make static.
