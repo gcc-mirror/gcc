@@ -3436,9 +3436,8 @@ schedule_block (b, file)
 
   if (reload_completed == 0)
     {
-      bcopy ((char *) basic_block_live_at_start[b], (char *) bb_live_regs,
-	     regset_bytes);
-      bzero ((char *) bb_dead_regs, regset_bytes);
+      COPY_REG_SET (bb_live_regs, basic_block_live_at_start[b]);
+      CLEAR_REG_SET (bb_dead_regs);
 
       if (b == 0)
 	{
