@@ -77,8 +77,8 @@ Written by Per Bothner 1994.  */
 #define possible_sum_sign(a, b, sum) ((((a) ^ (b)) | ~ ((a) ^ (sum))) < 0)
 
 static void integer_overflow PARAMS ((cpp_reader *));
-static long left_shift PARAMS ((cpp_reader *, long, int, unsigned long));
-static long right_shift PARAMS ((cpp_reader *, long, int, unsigned long));
+static HOST_WIDEST_INT left_shift PARAMS ((cpp_reader *, HOST_WIDEST_INT, int, unsigned HOST_WIDEST_INT));
+static HOST_WIDEST_INT right_shift PARAMS ((cpp_reader *, HOST_WIDEST_INT, int, unsigned HOST_WIDEST_INT));
 
 #define ERROR 299
 #define OROR 300
@@ -330,11 +330,11 @@ parse_charconst (pfile, start, end)
   if (cpp_lookup (pfile, (U_CHAR *)"__CHAR_UNSIGNED__",
 		  sizeof ("__CHAR_UNSIGNED__")-1, -1)
       || ((result >> (num_bits - 1)) & 1) == 0)
-    op.value = result & ((unsigned long) ~0
-			 >> (HOST_BITS_PER_LONG - num_bits));
+    op.value = result & ((unsigned HOST_WIDEST_INT) ~0
+			 >> (HOST_BITS_PER_WIDEST_INT - num_bits));
   else
-    op.value = result | ~((unsigned long) ~0
-			  >> (HOST_BITS_PER_LONG - num_bits));
+    op.value = result | ~((unsigned HOST_WIDEST_INT) ~0
+			  >> (HOST_BITS_PER_WIDEST_INT - num_bits));
 
   /* This is always a signed type.  */
   op.unsignedp = 0;
@@ -620,41 +620,41 @@ integer_overflow (pfile)
     cpp_pedwarn (pfile, "integer overflow in preprocessor expression");
 }
 
-static long
+static HOST_WIDEST_INT
 left_shift (pfile, a, unsignedp, b)
      cpp_reader *pfile;
-     long a;
+     HOST_WIDEST_INT a;
      int unsignedp;
-     unsigned long b;
+     unsigned HOST_WIDEST_INT b;
 {
-  if (b >= HOST_BITS_PER_LONG)
+  if (b >= HOST_BITS_PER_WIDEST_INT)
     {
       if (! unsignedp && a != 0)
 	integer_overflow (pfile);
       return 0;
     }
   else if (unsignedp)
-    return (unsigned long) a << b;
+    return (unsigned HOST_WIDEST_INT) a << b;
   else
     {
-      long l = a << b;
+      HOST_WIDEST_INT l = a << b;
       if (l >> b != a)
 	integer_overflow (pfile);
       return l;
     }
 }
 
-static long
+static HOST_WIDEST_INT
 right_shift (pfile, a, unsignedp, b)
      cpp_reader *pfile ATTRIBUTE_UNUSED;
-     long a;
+     HOST_WIDEST_INT a;
      int unsignedp;
-     unsigned long b;
+     unsigned HOST_WIDEST_INT b;
 {
-  if (b >= HOST_BITS_PER_LONG)
-    return unsignedp ? 0 : a >> (HOST_BITS_PER_LONG - 1);
+  if (b >= HOST_BITS_PER_WIDEST_INT)
+    return unsignedp ? 0 : a >> (HOST_BITS_PER_WIDEST_INT - 1);
   else if (unsignedp)
-    return (unsigned long) a >> b;
+    return (unsigned HOST_WIDEST_INT) a >> b;
   else
     return a >> b;
 }
@@ -679,7 +679,7 @@ right_shift (pfile, a, unsignedp, b)
 #define COMPARE(OP) \
   top->unsignedp = 0;\
   top->value = (unsigned1 || unsigned2) \
-  ? (unsigned long) v1 OP (unsigned long) v2 : (v1 OP v2)
+  ? (unsigned HOST_WIDEST_INT) v1 OP (unsigned HOST_WIDEST_INT) v2 : (v1 OP v2)
 
 /* Parse and evaluate a C expression, reading from PFILE.
    Returns the value of the expression.  */
@@ -789,7 +789,7 @@ cpp_parse_expr (pfile)
       /* Push an operator, and check if we can reduce now.  */
       while (top->rprio > lprio)
 	{
-	  long v1 = top[-1].value, v2 = top[0].value;
+	  HOST_WIDEST_INT v1 = top[-1].value, v2 = top[0].value;
 	  int unsigned1 = top[-1].unsignedp, unsigned2 = top[0].unsignedp;
 	  top--;
 	  if ((top[1].flags & LEFT_OPERAND_REQUIRED)
@@ -844,7 +844,7 @@ cpp_parse_expr (pfile)
 	    case '*':
 	      top->unsignedp = unsigned1 || unsigned2;
 	      if (top->unsignedp)
-		top->value = (unsigned long) v1 * v2;
+		top->value = (unsigned HOST_WIDEST_INT) v1 * v2;
 	      else if (!skip_evaluation)
 		{
 		  top->value = v1 * v2;
@@ -864,7 +864,7 @@ cpp_parse_expr (pfile)
 		}
 	      top->unsignedp = unsigned1 || unsigned2;
 	      if (top->unsignedp)
-		top->value = (unsigned long) v1 / v2;
+		top->value = (unsigned HOST_WIDEST_INT) v1 / v2;
 	      else
 		{
 		  top->value = v1 / v2;
@@ -882,7 +882,7 @@ cpp_parse_expr (pfile)
 		}
 	      top->unsignedp = unsigned1 || unsigned2;
 	      if (top->unsignedp)
-		top->value = (unsigned long) v1 % v2;
+		top->value = (unsigned HOST_WIDEST_INT) v1 % v2;
 	      else
 		top->value = v1 % v2;
 	      break;
