@@ -1,3 +1,9 @@
+2005-01-07  Bud Davis  <bdavis9659@comcast.net>
+
+	PR fortran/18398
+	* transfer.c (next_record_r): always skip the
+	eol search if it was found during sf_read.
+
 2004-12-27  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* libgfortran/libgfortran.h (GFC_UINTEGER_1, GFC_UINTEGER_2): 
