@@ -444,7 +444,7 @@ memory_address (enum machine_mode mode, rtx x)
 
   x = convert_memory_address (Pmode, x);
 
-  /* By passing constant addresses thru registers
+  /* By passing constant addresses through registers
      we get a chance to cse them.  */
   if (! cse_not_expected && CONSTANT_P (x) && CONSTANT_ADDRESS_P (x))
     x = force_reg (Pmode, x);

@@ -290,7 +290,7 @@ prepare_call_address (rtx funexp, tree fndecl, rtx *call_fusage,
     /* Get possible static chain value for nested function in C.  */
     static_chain_value = lookup_static_chain (fndecl);
 
-  /* Make a valid memory address and copy constants thru pseudo-regs,
+  /* Make a valid memory address and copy constants through pseudo-regs,
      but not for a constant address if -fno-function-cse.  */
   if (GET_CODE (funexp) != SYMBOL_REF)
     /* If we are using registers for parameters, force the

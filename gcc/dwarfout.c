@@ -2074,7 +2074,7 @@ output_mem_loc_descriptor (rtx rtl)
 	   which contains the given subreg.  */
 
 	rtl = SUBREG_REG (rtl);
-	/* Drop thru.  */
+	/* Drop through.  */
 
       case REG:
 
@@ -2157,7 +2157,7 @@ output_loc_descriptor (rtx rtl)
 	   which contains the given subreg.  */
 
 	rtl = SUBREG_REG (rtl);
-	/* Drop thru.  */
+	/* Drop through.  */
 
     case REG:
 	ASM_OUTPUT_DWARF_STACK_OP (asm_out_file, OP_REG);

@@ -878,7 +878,7 @@ typedef struct block_info_def
   /* To keep queue of basic blocks to process.  */
   basic_block next;
 
-  /* True if block needs to be visited in prop_freqency.  */
+  /* True if block needs to be visited in propagate_freq.  */
   int tovisit:1;
 
   /* Number of predecessors we need to visit first.  */

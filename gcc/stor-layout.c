@@ -453,7 +453,7 @@ layout_decl (tree decl, unsigned int known_align)
       else if (DECL_PACKED (decl) && DECL_USER_ALIGN (decl))
 	/* Don't touch DECL_ALIGN.  For other packed fields, go ahead and
 	   round up; we'll reduce it again below.  We want packing to
-	   supercede USER_ALIGN inherited from the type, but defer to
+	   supersede USER_ALIGN inherited from the type, but defer to
 	   alignment explicitly specified on the field decl.  */;
       else
 	do_type_align (type, decl);

@@ -502,7 +502,7 @@ compute_branch_probabilities (void)
 	}
       for (e = bb->succ; e; e = e->succ_next)
 	{
-	  /* Function may return twice in the cased the called fucntion is
+	  /* Function may return twice in the cased the called function is
 	     setjmp or calls fork, but we can't represent this by extra
 	     edge from the entry, since extra edge from the exit is
 	     already present.  We get negative frequency from the entry

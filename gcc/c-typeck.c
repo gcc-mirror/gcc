@@ -5642,7 +5642,7 @@ output_pending_init_elements (int all)
 
  retry:
 
-  /* Look thru the whole pending tree.
+  /* Look through the whole pending tree.
      If we find an element that should be output now,
      output it.  Otherwise, set NEXT to the element
      that comes first among those still pending.  */

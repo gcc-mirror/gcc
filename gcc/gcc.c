@@ -2687,7 +2687,7 @@ execute (void)
         {
 	  /* verbose_only_flag should act as if the spec was
 	     executed, so increment execution_count before
-	     returning.  Theis prevent spurious warnings about
+	     returning.  This prevents spurious warnings about
 	     unused linker input files, etc.  */
 	  execution_count++;
 	  return 0;

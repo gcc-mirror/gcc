@@ -2462,7 +2462,7 @@ mark_set_regs (struct propagate_block_info *pbi, rtx x, rtx insn)
     case SET:
       if (GET_CODE (XEXP (x, 1)) == ASM_OPERANDS)
 	flags |= PROP_ASM_SCAN;
-      /* Fall thru */
+      /* Fall through */
     case CLOBBER:
       mark_set_1 (pbi, code, SET_DEST (x), cond, insn, flags);
       return;
@@ -2497,7 +2497,7 @@ mark_set_regs (struct propagate_block_info *pbi, rtx x, rtx insn)
 	      mark_set:
 		if (GET_CODE (XEXP (sub, 1)) == ASM_OPERANDS)
 		  flags |= PROP_ASM_SCAN;
-		/* Fall thru */
+		/* Fall through */
 	      case CLOBBER:
 	      mark_clob:
 		mark_set_1 (pbi, code, SET_DEST (sub), cond, insn, flags);

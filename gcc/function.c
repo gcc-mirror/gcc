@@ -6733,7 +6733,7 @@ expand_function_start (tree subr, int parms_have_cleanups)
 	  tem = decl_function_context (tem);
 	  if (tem == 0)
 	    break;
-	  /* Chain thru stack frames, assuming pointer to next lexical frame
+	  /* Chain through stack frames, assuming pointer to next lexical frame
 	     is found at the place we always store it.  */
 #ifdef FRAME_GROWS_DOWNWARD
 	  last_ptr = plus_constant (last_ptr,
