@@ -1,3 +1,10 @@
+Mon Nov  2 07:52:28 1998  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* configure.in (DEFAULT_LINKER): renamed from LD
+	(DEFAULT_ASSEMBLER): renamed from AS; reverted Schwab's patch
+	(gcc_cv_as): try $DEFAULT_ASSEMBLER before $AS
+	* configure: rebuilt
+
 Mon Nov  2 01:48:10 1998  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* BUGS: fix the regexp for `more' to find the appropriate node.
