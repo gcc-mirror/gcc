@@ -37,13 +37,13 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 /* Forward declarations.  */
 
-static const char *my_strerror		PROTO ((int));
-static void validate_else		PROTO ((cpp_reader *, const char *));
-static HOST_WIDEST_INT eval_if_expression	PROTO ((cpp_reader *));
+static const char *my_strerror		PARAMS ((int));
+static void validate_else		PARAMS ((cpp_reader *, const char *));
+static HOST_WIDEST_INT eval_if_expression	PARAMS ((cpp_reader *));
 
-static void conditional_skip		PROTO ((cpp_reader *, int,
+static void conditional_skip		PARAMS ((cpp_reader *, int,
 						enum node_type, U_CHAR *));
-static void skip_if_group		PROTO ((cpp_reader *));
+static void skip_if_group		PARAMS ((cpp_reader *));
 
 static void parse_name			PARAMS ((cpp_reader *, int));
 static void parse_string		PARAMS ((cpp_reader *, int));
@@ -3258,7 +3258,7 @@ v_cpp_error (pfile, msgid, ap)
 }
 
 void
-cpp_error VPROTO ((cpp_reader * pfile, const char *msgid, ...))
+cpp_error VPARAMS ((cpp_reader * pfile, const char *msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
   cpp_reader *pfile;
@@ -3297,7 +3297,7 @@ v_cpp_warning (pfile, msgid, ap)
 }
 
 void
-cpp_warning VPROTO ((cpp_reader * pfile, const char *msgid, ...))
+cpp_warning VPARAMS ((cpp_reader * pfile, const char *msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
   cpp_reader *pfile;
@@ -3319,7 +3319,7 @@ cpp_warning VPROTO ((cpp_reader * pfile, const char *msgid, ...))
 /* Print an error message and maybe count it.  */
 
 void
-cpp_pedwarn VPROTO ((cpp_reader * pfile, const char *msgid, ...))
+cpp_pedwarn VPARAMS ((cpp_reader * pfile, const char *msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
   cpp_reader *pfile;
@@ -3360,7 +3360,7 @@ v_cpp_error_with_line (pfile, line, column, msgid, ap)
 }
 
 void
-cpp_error_with_line VPROTO ((cpp_reader * pfile, int line, int column,
+cpp_error_with_line VPARAMS ((cpp_reader * pfile, int line, int column,
 			     const char *msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
@@ -3411,7 +3411,7 @@ v_cpp_warning_with_line (pfile, line, column, msgid, ap)
 }  
 
 void
-cpp_warning_with_line VPROTO ((cpp_reader * pfile, int line, int column,
+cpp_warning_with_line VPARAMS ((cpp_reader * pfile, int line, int column,
 			       const char *msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
@@ -3436,7 +3436,7 @@ cpp_warning_with_line VPROTO ((cpp_reader * pfile, int line, int column,
 }
 
 void
-cpp_pedwarn_with_line VPROTO ((cpp_reader * pfile, int line, int column,
+cpp_pedwarn_with_line VPARAMS ((cpp_reader * pfile, int line, int column,
 			       const char *msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
@@ -3467,7 +3467,7 @@ cpp_pedwarn_with_line VPROTO ((cpp_reader * pfile, int line, int column,
    giving specified file name and line number, not current.  */
 
 void
-cpp_pedwarn_with_file_and_line VPROTO ((cpp_reader *pfile, const char *file,
+cpp_pedwarn_with_file_and_line VPARAMS ((cpp_reader *pfile, const char *file,
 					int line, const char *msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES

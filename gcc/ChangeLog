@@ -1,4 +1,10 @@
 2000-01-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+	
+	* cppalloc.c: PROTO -> PARAMS.
+	* cpperror.c: Likewise.
+	* cppfiles.c: Likewise.
+	* cpplib.c: Likewise.
+	* cpplib.h: Likewise.
 
 	* config/arm/arm-protos.h: PROTO -> PARAMS.
 	* config/arm/arm.c: Likewise.

@@ -722,24 +722,24 @@ extern void cpp_assert PARAMS ((cpp_reader *, unsigned char *));
 extern void cpp_undef  PARAMS ((cpp_reader *, unsigned char *));
 extern void cpp_unassert PARAMS ((cpp_reader *, unsigned char *));
 
-extern void cpp_error PVPROTO ((cpp_reader *, const char *, ...))
+extern void cpp_error PARAMS ((cpp_reader *, const char *, ...))
   ATTRIBUTE_PRINTF_2;
-extern void cpp_warning PVPROTO ((cpp_reader *, const char *, ...))
+extern void cpp_warning PARAMS ((cpp_reader *, const char *, ...))
   ATTRIBUTE_PRINTF_2;
-extern void cpp_pedwarn PVPROTO ((cpp_reader *, const char *, ...))
+extern void cpp_pedwarn PARAMS ((cpp_reader *, const char *, ...))
   ATTRIBUTE_PRINTF_2;
-extern void cpp_error_with_line PVPROTO ((cpp_reader *, int, int, const char *, ...))
+extern void cpp_error_with_line PARAMS ((cpp_reader *, int, int, const char *, ...))
   ATTRIBUTE_PRINTF_4;
-extern void cpp_warning_with_line PVPROTO ((cpp_reader *, int, int, const char *, ...))
+extern void cpp_warning_with_line PARAMS ((cpp_reader *, int, int, const char *, ...))
   ATTRIBUTE_PRINTF_4;
-extern void cpp_pedwarn_with_line PVPROTO ((cpp_reader *, int, int, const char *, ...))
+extern void cpp_pedwarn_with_line PARAMS ((cpp_reader *, int, int, const char *, ...))
   ATTRIBUTE_PRINTF_4;
-extern void cpp_pedwarn_with_file_and_line PVPROTO ((cpp_reader *, const char *, int, const char *, ...))
+extern void cpp_pedwarn_with_file_and_line PARAMS ((cpp_reader *, const char *, int, const char *, ...))
   ATTRIBUTE_PRINTF_4;
-extern void cpp_message_from_errno PROTO ((cpp_reader *, int, const char *));
-extern void cpp_error_from_errno PROTO ((cpp_reader *, const char *));
-extern void cpp_perror_with_name PROTO ((cpp_reader *, const char *));
-extern void v_cpp_message PROTO ((cpp_reader *, int, const char *, va_list));
+extern void cpp_message_from_errno PARAMS ((cpp_reader *, int, const char *));
+extern void cpp_error_from_errno PARAMS ((cpp_reader *, const char *));
+extern void cpp_perror_with_name PARAMS ((cpp_reader *, const char *));
+extern void v_cpp_message PARAMS ((cpp_reader *, int, const char *, va_list));
 
 extern void cpp_grow_buffer PARAMS ((cpp_reader *, long));
 extern cpp_buffer *cpp_push_buffer PARAMS ((cpp_reader *,
@@ -768,29 +768,29 @@ extern void output_line_command		PARAMS ((cpp_reader *,
 						 enum file_change_code));
 
 /* From cpperror.c */
-extern void cpp_fatal PVPROTO ((cpp_reader *, const char *, ...))
+extern void cpp_fatal PARAMS ((cpp_reader *, const char *, ...))
   ATTRIBUTE_PRINTF_2;
-extern void cpp_message PVPROTO ((cpp_reader *, int, const char *, ...))
+extern void cpp_message PARAMS ((cpp_reader *, int, const char *, ...))
   ATTRIBUTE_PRINTF_3;
-extern void cpp_pfatal_with_name PROTO ((cpp_reader *, const char *))
+extern void cpp_pfatal_with_name PARAMS ((cpp_reader *, const char *))
   ATTRIBUTE_NORETURN;
-extern void cpp_file_line_for_message PROTO ((cpp_reader *, const char *,
+extern void cpp_file_line_for_message PARAMS ((cpp_reader *, const char *,
 					      int, int));
-extern void cpp_print_containing_files PROTO ((cpp_reader *));
-extern void cpp_notice PVPROTO ((const char *msgid, ...)) ATTRIBUTE_PRINTF_1;
+extern void cpp_print_containing_files PARAMS ((cpp_reader *));
+extern void cpp_notice PARAMS ((const char *msgid, ...)) ATTRIBUTE_PRINTF_1;
 
 /* In cppfiles.c */
-extern void simplify_pathname		PROTO ((char *));
-extern void merge_include_chains	PROTO ((struct cpp_options *));
-extern int find_include_file		PROTO ((cpp_reader *, const char *,
+extern void simplify_pathname		PARAMS ((char *));
+extern void merge_include_chains	PARAMS ((struct cpp_options *));
+extern int find_include_file		PARAMS ((cpp_reader *, const char *,
 						struct file_name_list *,
 						struct include_hash **,
 						int *));
-extern int finclude			PROTO ((cpp_reader *, int,
+extern int finclude			PARAMS ((cpp_reader *, int,
 					        struct include_hash *));
-extern void deps_output			PROTO ((cpp_reader *,
+extern void deps_output			PARAMS ((cpp_reader *,
 						const char *, int));
-extern struct include_hash *include_hash PROTO ((cpp_reader *, const char *, int));
+extern struct include_hash *include_hash PARAMS ((cpp_reader *, const char *, int));
 
 #ifndef INCLUDE_LEN_FUDGE
 #define INCLUDE_LEN_FUDGE 0

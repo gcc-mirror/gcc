@@ -33,27 +33,27 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
    so it's static anyway. */
 
 static struct include_hash *redundant_include_p
-					PROTO ((cpp_reader *,
+					PARAMS ((cpp_reader *,
 						struct include_hash *,
 						struct file_name_list *));
-static struct file_name_map *read_name_map	PROTO ((cpp_reader *,
+static struct file_name_map *read_name_map	PARAMS ((cpp_reader *,
 							const char *));
-static char *read_filename_string	PROTO ((int, FILE *));
-static char *remap_filename 		PROTO ((cpp_reader *, char *,
+static char *read_filename_string	PARAMS ((int, FILE *));
+static char *remap_filename 		PARAMS ((cpp_reader *, char *,
 						struct file_name_list *));
-static long read_and_prescan		PROTO ((cpp_reader *, cpp_buffer *,
+static long read_and_prescan		PARAMS ((cpp_reader *, cpp_buffer *,
 						int, size_t));
-static struct file_name_list *actual_directory PROTO ((cpp_reader *,
+static struct file_name_list *actual_directory PARAMS ((cpp_reader *,
 						       const char *));
-static void initialize_input_buffer	PROTO ((cpp_reader *, int,
+static void initialize_input_buffer	PARAMS ((cpp_reader *, int,
 						struct stat *));
-static int file_cleanup			PROTO ((cpp_buffer *, cpp_reader *));
-static void find_position		PROTO ((U_CHAR *, U_CHAR *,
+static int file_cleanup			PARAMS ((cpp_buffer *, cpp_reader *));
+static void find_position		PARAMS ((U_CHAR *, U_CHAR *,
 						unsigned long *,
 						unsigned long *));
 
 #if 0
-static void hack_vms_include_specification PROTO ((char *));
+static void hack_vms_include_specification PARAMS ((char *));
 #endif
 
 /* Windows does not natively support inodes, and neither does MSDOS.
