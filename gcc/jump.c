@@ -4526,6 +4526,7 @@ thread_jumps (f, max_reg, flag_before_loop)
 			  rtx prev = PREV_INSN (new_label);
 
 			  if (flag_before_loop
+			      && GET_CODE (prev) == NOTE
 			      && NOTE_LINE_NUMBER (prev) == NOTE_INSN_LOOP_BEG)
 			    {
 			      /* Don't thread to the loop label.  If a loop

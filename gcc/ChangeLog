@@ -1,5 +1,8 @@
 Fri May 29 01:48:25 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* jump.c (thread_jumps): Do not look at the NOTE_LINE_NUMBER
+	of a non-note insn.
+
 	* gcse.c (pre_delete): Fix code to determine the mode of
 	the reaching pseudo register.
 
