@@ -390,7 +390,7 @@ the target makefile fragment or if none of the options listed in
 
 @findex RELATIVE_PREFIX_NOT_LINKDIR
 @item RELATIVE_PREFIX_NOT_LINKDIR
-Define this macro to tell @code{gcc} that it should only translate
+Define this macro to tell @command{gcc} that it should only translate
 a @option{-B} prefix into a @option{-L} linker option if the prefix
 indicates an absolute file name.
 
@@ -6931,7 +6931,7 @@ When arbitrary sections are available, there are two variants, depending
 upon how the code in @file{crtstuff.c} is called.  On systems that
 support a @dfn{.init} section which is executed at program startup,
 parts of @file{crtstuff.c} are compiled into that section.  The
-program is linked by the @code{gcc} driver like this:
+program is linked by the @command{gcc} driver like this:
 
 @example
 ld -o @var{output_file} crti.o crtbegin.o @dots{} -lgcc crtend.o crtn.o

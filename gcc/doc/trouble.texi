@@ -886,9 +886,9 @@ int Foo::bar = 0;
 @end example
 
 Other C++ compilers may not correctly implement the standard behavior.
-As a result, when you switch to @code{g++} from one of these compilers,
+As a result, when you switch to @command{g++} from one of these compilers,
 you may discover that a program that appeared to work correctly in fact
-does not conform to the standard: @code{g++} reports as undefined
+does not conform to the standard: @command{g++} reports as undefined
 symbols any static data members that lack definitions.
 
 @node Temporaries

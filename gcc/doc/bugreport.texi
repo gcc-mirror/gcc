@@ -376,9 +376,9 @@ we should be able to reproduce the crash ourselves.
 
 To simplify creation of bug reports, and to allow better tracking of
 reports, we use the GNATS bug tracking system.  Part of that system is
-the @code{gccbug} script.  This is a Unix shell script, so you need a
+the @command{gccbug} script.  This is a Unix shell script, so you need a
 shell to run it.  It is normally installed in the same directory where
-@code{gcc} is installed.
+@command{gcc} is installed.
 
 The gccbug script is derived from send-pr, @pxref{using
 send-pr,,Creating new Problem Reports,send-pr,Reporting Problems}.  When

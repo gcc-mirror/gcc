@@ -1,3 +1,13 @@
+2003-01-24  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	* doc/bugreport.texi: Use @command instead of @code for commands.
+	* doc/collect2.texi: Likewise.
+	* doc/headerdirs.texi: Likewise.
+	* doc/invoke.texi: Likewise.
+	* doc/standards.texi: Likewise.
+	* doc/tm.texi: Likewise.
+	* doc/trouble.texi: Likewise.
+
 2003-01-23  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	PR java/6748

@@ -189,4 +189,4 @@ conformance and compatibility of the Ada compiler.
 Fortran}, for details of the Fortran language supported by GCC@.
 
 @xref{Compatibility,,Compatibility with the Java Platform, gcj, GNU gcj},
-for details of compatibility between @code{gcj} and the Java Platform.
+for details of compatibility between @command{gcj} and the Java Platform.

@@ -2954,19 +2954,19 @@ Compress DWARF2 debugging information by eliminating duplicated
 information about each symbol.  This option only makes sense when
 generating DWARF2 debugging information with @option{-gdwarf-2}.
 
-@cindex @code{prof}
+@cindex @command{prof}
 @item -p
 @opindex p
 Generate extra code to write profile information suitable for the
-analysis program @code{prof}.  You must use this option when compiling
+analysis program @command{prof}.  You must use this option when compiling
 the source files you want data about, and you must also use it when
 linking.
 
-@cindex @code{gprof}
+@cindex @command{gprof}
 @item -pg
 @opindex pg
 Generate extra code to write profile information suitable for the
-analysis program @code{gprof}.  You must use this option when compiling
+analysis program @command{gprof}.  You must use this option when compiling
 the source files you want data about, and you must also use it when
 linking.
 
@@ -3006,7 +3006,7 @@ optimization and code generation options plus
 @option{-fbranch-probabilities} (@pxref{Optimize Options,,Options that
 Control Optimization}).
 
-The other use of @option{-fprofile-arcs} is for use with @code{gcov},
+The other use of @option{-fprofile-arcs} is for use with @command{gcov},
 when it is used with the @option{-ftest-coverage} option.
 
 With @option{-fprofile-arcs}, for each function of your program GCC
@@ -3026,11 +3026,11 @@ Create data files for the @command{gcov} code-coverage utility
 
 @table @gcctabopt
 @item @var{auxname}.bb
-A mapping from basic blocks to line numbers, which @code{gcov} uses to
+A mapping from basic blocks to line numbers, which @command{gcov} uses to
 associate basic block execution counts with line numbers.
 
 @item @var{auxname}.bbg
-A list of all arcs in the program flow graph.  This allows @code{gcov}
+A list of all arcs in the program flow graph.  This allows @command{gcov}
 to reconstruct the program flow graph, so that it can compute all basic
 block and arc execution counts from the information in the
 @file{@var{auxname}.da} file.
@@ -3919,7 +3919,7 @@ as well as AIX may have these optimizations in the future.
 Only use these options when there are significant benefits from doing
 so.  When you specify these options, the assembler and linker will
 create larger object and executable files and will also be slower.
-You will not be able to use @code{gprof} on all systems if you
+You will not be able to use @command{gprof} on all systems if you
 specify this option and you may have problems with debugging if
 you specify both this option and @option{-g}.
 
@@ -10907,16 +10907,16 @@ prototype information about standard system functions.  This option
 applies only to @code{protoize}.
 
 @item -c @var{compilation-options}
-Use  @var{compilation-options} as the options when running @code{gcc} to
+Use @var{compilation-options} as the options when running @command{gcc} to
 produce the @samp{.X} files.  The special option @option{-aux-info} is
-always passed in addition, to tell @code{gcc} to write a @samp{.X} file.
+always passed in addition, to tell @command{gcc} to write a @samp{.X} file.
 
 Note that the compilation options must be given as a single argument to
 @code{protoize} or @code{unprotoize}.  If you want to specify several
-@code{gcc} options, you must quote the entire set of compilation options
+@command{gcc} options, you must quote the entire set of compilation options
 to make them a single word in the shell.
 
-There are certain @code{gcc} arguments that you cannot use, because they
+There are certain @command{gcc} arguments that you cannot use, because they
 would produce the wrong kind of output.  These include @option{-g},
 @option{-O}, @option{-c}, @option{-S}, and @option{-o} If you include these in
 the @var{compilation-options}, they are ignored.
@@ -10969,12 +10969,12 @@ Use the program @var{program} as the compiler.  Normally, the name
 Work quietly.  Most warnings are suppressed.
 
 @item -v
-Print the version number, just like @option{-v} for @code{gcc}.
+Print the version number, just like @option{-v} for @command{gcc}.
 @end table
 
 If you need special compiler options to compile one of your program's
 source files, then you should generate that file's @samp{.X} file
-specially, by running @code{gcc} on that source file with the
+specially, by running @command{gcc} on that source file with the
 appropriate options and the option @option{-aux-info}.  Then run
 @code{protoize} on the entire set of files.  @code{protoize} will use
 the existing @samp{.X} file because it is newer than the source file.
