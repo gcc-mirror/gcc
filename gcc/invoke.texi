@@ -2159,7 +2159,8 @@ the 68000 where the floating registers (of the 68881) keep more
 precision than a @code{double} is supposed to have.  Similarly for the
 x86 architecture.  For most programs, the excess precision does only
 good, but a few programs rely on the precise definition of IEEE floating
-point.  Use @samp{-ffloat-store} for such programs.
+point.  Use @samp{-ffloat-store} for such programs, after modifying
+them to store all pertinent intermediate computations into variables.
 
 @item -fno-default-inline
 Do not make member functions inline by default merely because they are
