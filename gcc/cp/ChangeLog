@@ -1,3 +1,7 @@
+Sun Feb 22 19:53:29 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* error.c: Include sys/types.h.
+
 Thu Feb 19 14:49:09 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* method.c (build_mangled_name): Start CPP directives in column zero.
