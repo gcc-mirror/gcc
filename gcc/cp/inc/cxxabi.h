@@ -122,8 +122,8 @@ class __pbase_type_info
 {
 /* abi defined member variables */
 public:
-  int quals;                    /* qualification of the target object */
-  const std::type_info *type;   /* type of pointed to object */
+  unsigned int __qualifier_flags; /* qualification of the target object */
+  const std::type_info *__pointee;   /* type of pointed to object */
 
 /* abi defined member functions */
 public:
@@ -132,17 +132,17 @@ public:
   explicit __pbase_type_info (const char *__n,
                                 int __quals,
                                 const std::type_info *__type)
-    : std::type_info (__n), quals (__quals), type (__type)
+    : std::type_info (__n), __qualifier_flags (__quals), __pointee (__type)
     { }
 
 /* implementation defined types */
 public:
-  enum quals_masks {
-    const_mask = 0x1,
-    volatile_mask = 0x2,
-    restrict_mask = 0x4,
-    incomplete_mask = 0x8,
-    incomplete_class_mask = 0x10
+  enum __qualifier_masks {
+    __const_mask = 0x1,
+    __volatile_mask = 0x2,
+    __restrict_mask = 0x4,
+    __incomplete_mask = 0x8,
+    __incomplete_class_mask = 0x10
   };
 
 /* implementation defined member functions */
@@ -186,7 +186,7 @@ class __pointer_to_member_type_info
 {
 /* abi defined member variables */
 public:
-  const __class_type_info *klass;   /* class of the member */
+  __class_type_info *__context_class;   /* class of the member */
 
 /* abi defined member functions */
 public:
@@ -195,8 +195,8 @@ public:
   explicit __pointer_to_member_type_info (const char *__n,
                                           int __quals,
                                           const std::type_info *__type,
-                                          const __class_type_info *__klass)
-    : __pbase_type_info (__n, __quals, __type), klass (__klass)
+                                          __class_type_info *__klass)
+    : __pbase_type_info (__n, __quals, __type), __context_class (__klass)
     { }
 
 /* implementation defined member functions */
@@ -213,14 +213,14 @@ class __base_class_info
 {
 /* abi defined member variables */
 public:
-  const __class_type_info *base;    /* base class type */
-  long vmi_offset_flags;            /* offset and info */
+  const __class_type_info *__base;    /* base class type */
+  long __offset_flags;            /* offset and info */
 
 /* implementation defined types */
 public:
-  enum vmi_masks {
-    virtual_mask = 0x1,
-    public_mask = 0x2,
+  enum __offset_flags_masks {
+    __virtual_mask = 0x1,
+    __public_mask = 0x2,
     hwm_bit = 2,
     offset_shift = 8          /* bits to shift offset by */
   };
@@ -228,14 +228,14 @@ public:
 /* implementation defined member functions */
 public:
   bool __is_virtual_p () const
-    { return vmi_offset_flags & virtual_mask; }
+    { return __offset_flags & __virtual_mask; }
   bool __is_public_p () const
-    { return vmi_offset_flags & public_mask; }
+    { return __offset_flags & __public_mask; }
   __PTRDIFF_TYPE__ __offset () const
     { 
       // This shift, being of a signed type, is implementation defined. GCC
       // implements such shifts as arithmetic, which is what we want.
-      return static_cast<__PTRDIFF_TYPE__> (vmi_offset_flags) >> offset_shift;
+      return static_cast<__PTRDIFF_TYPE__> (__offset_flags) >> offset_shift;
     }
 };
 
@@ -264,8 +264,8 @@ public:
                                 /* publicly) */
     __contained_ambig,          /* contained ambiguously */
     
-    __contained_virtual_mask = __base_class_info::virtual_mask, /* via a virtual path */
-    __contained_public_mask = __base_class_info::public_mask,   /* via a public path */
+    __contained_virtual_mask = __base_class_info::__virtual_mask, /* via a virtual path */
+    __contained_public_mask = __base_class_info::__public_mask,   /* via a public path */
     __contained_mask = 1 << __base_class_info::hwm_bit,         /* contained within us */
     
     __contained_private = __contained_mask,
@@ -334,8 +334,8 @@ class __si_class_type_info
   : public __class_type_info
 {
 /* abi defined member variables */
-protected:
-  const __class_type_info *base;    /* base type */
+public:
+  const __class_type_info *__base_type;
 
 /* abi defined member functions */
 public:
@@ -343,7 +343,7 @@ public:
 public:
   explicit __si_class_type_info (const char *__n,
                                  const __class_type_info *__base)
-    : __class_type_info (__n), base (__base)
+    : __class_type_info (__n), __base_type (__base)
     { }
 
 /* implementation defined member functions */
@@ -368,9 +368,9 @@ protected:
 class __vmi_class_type_info : public __class_type_info {
 /* abi defined member variables */
 public:
-  int vmi_flags;                  /* details about the class heirarchy */
-  int vmi_base_count;             /* number of direct bases */
-  __base_class_info vmi_bases[1]; /* array of bases */
+  unsigned int __flags;         /* details about the class heirarchy */
+  unsigned int __base_count;    /* number of direct bases */
+  __base_class_info const __base_info[1]; /* array of bases */
   /* The array of bases uses the trailing array struct hack
      so this class is not constructable with a normal constructor. It is
      internally generated by the compiler. */
@@ -380,15 +380,15 @@ public:
   virtual ~__vmi_class_type_info ();
 public:
   explicit __vmi_class_type_info (const char *__n,
-                                  int __flags)
-    : __class_type_info (__n), vmi_flags (__flags), vmi_base_count (0)
+                                  int ___flags)
+    : __class_type_info (__n), __flags (___flags), __base_count (0)
     { }
 
 /* implementation defined types */
 public:
-  enum vmi_flags_masks {
-    non_diamond_repeat_mask = 0x1,   /* distinct instance of repeated base */
-    diamond_shaped_mask = 0x2,       /* diamond shaped multiple inheritance */
+  enum __flags_masks {
+    __non_diamond_repeat_mask = 0x1,   /* distinct instance of repeated base */
+    __diamond_shaped_mask = 0x2,       /* diamond shaped multiple inheritance */
     non_public_base_mask = 0x4,      /* has non-public direct or indirect base */
     public_base_mask = 0x8,          /* has public base (direct) */
     

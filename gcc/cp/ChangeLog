@@ -1,3 +1,25 @@
+2000-08-04  Jeffrey Oldham  <oldham@codesourcery.com>
+
+	* inc/cxxabi.h (__pbase_type_info): Changed member names to match
+	specifications.
+	(__pointer_to_member_type_info): Likewise.
+	(__base_class_info): Likewise.
+	(__class_type_info): Likewise.
+	(__si_class_type_info): Likewise.
+	(__vmi_class_type_info): Likewise.
+	* tinfo.cc (__si_class_type_info::__do_find_public_src):
+	Changed member names to match specifications.
+	(__vmi_class_type_info::__do_find_public_src): Likewise.
+	(__si_class_type_info::__do_dyncast): Likewise.
+	(__vmi_class_type_info::__do_dyncast): Likewise.
+	(__si_class_type_info::__do_upcast): Likewise.
+	(__vmi_class_type_info::__do_upcast): Likewise.
+	* tinfo2.cc (__pbase_type_info::__do_catch): Likewise.
+	(__pbase_type_info::__pointer_catch): Likewise.
+	(__pointer_type_info::__pointer_catch): Likewise.
+	(__pointer_to_member_type_info::__pointer_catch): Likewise.
+
+
 2000-08-04  Zack Weinberg  <zack@wolery.cumb.org>
 
         * Make-lang.in (cc1plus): Depend on $(BACKEND), not stamp-objlist.

@@ -755,7 +755,7 @@ __do_find_public_src (ptrdiff_t src2dst,
 {
   if (src_ptr == obj_ptr && *this == *src_type)
     return __contained_public;
-  return base->__do_find_public_src (src2dst, obj_ptr, src_type, src_ptr);
+  return __base_type->__do_find_public_src (src2dst, obj_ptr, src_type, src_ptr);
 }
 
 __class_type_info::__sub_kind __vmi_class_type_info::
@@ -767,14 +767,14 @@ __do_find_public_src (ptrdiff_t src2dst,
   if (obj_ptr == src_ptr && *this == *src_type)
     return __contained_public;
   
-  for (size_t i = vmi_base_count; i--;)
+  for (size_t i = __base_count; i--;)
     {
-      if (!vmi_bases[i].__is_public_p ())
+      if (!__base_info[i].__is_public_p ())
         continue; // Not public, can't be here.
       
       const void *base = obj_ptr;
-      ptrdiff_t offset = vmi_bases[i].__offset ();
-      bool is_virtual = vmi_bases[i].__is_virtual_p ();
+      ptrdiff_t offset = __base_info[i].__offset ();
+      bool is_virtual = __base_info[i].__is_virtual_p ();
       
       if (is_virtual)
         {
@@ -783,7 +783,7 @@ __do_find_public_src (ptrdiff_t src2dst,
         }
       base = convert_to_base (base, is_virtual, offset);
       
-      __sub_kind base_kind = vmi_bases[i].base->__do_find_public_src
+      __sub_kind base_kind = __base_info[i].__base->__do_find_public_src
                               (src2dst, base, src_type, src_ptr);
       if (contained_p (base_kind))
         {
@@ -849,7 +849,7 @@ __do_dyncast (ptrdiff_t src2dst,
       result.whole2src = access_path;
       return false;
     }
-  return base->__do_dyncast (src2dst, access_path, dst_type, obj_ptr,
+  return __base_type->__do_dyncast (src2dst, access_path, dst_type, obj_ptr,
                              src_type, src_ptr, result);
 }
 
@@ -872,7 +872,7 @@ __do_dyncast (ptrdiff_t src2dst,
               __dyncast_result &__restrict result) const
 {
   if (result.whole_details & __flags_unknown_mask)
-    result.whole_details = vmi_flags;
+    result.whole_details = __flags;
   
   if (obj_ptr == src_ptr && *this == *src_type)
     {
@@ -894,23 +894,23 @@ __do_dyncast (ptrdiff_t src2dst,
     }
 
   bool result_ambig = false;
-  for (size_t i = vmi_base_count; i--;)
+  for (size_t i = __base_count; i--;)
     {
       __dyncast_result result2 (result.whole_details);
       void const *base = obj_ptr;
       __sub_kind base_access = access_path;
-      ptrdiff_t offset = vmi_bases[i].__offset ();
-      bool is_virtual = vmi_bases[i].__is_virtual_p ();
+      ptrdiff_t offset = __base_info[i].__offset ();
+      bool is_virtual = __base_info[i].__is_virtual_p ();
       
       if (is_virtual)
         base_access = __sub_kind (base_access | __contained_virtual_mask);
       base = convert_to_base (base, is_virtual, offset);
 
-      if (!vmi_bases[i].__is_public_p ())
+      if (!__base_info[i].__is_public_p ())
         {
           if (src2dst == -2 &&
               !(result.whole_details
-                & (non_diamond_repeat_mask | diamond_shaped_mask)))
+                & (__non_diamond_repeat_mask | __diamond_shaped_mask)))
             // The hierarchy has no duplicate bases (which might ambiguate
             // things) and where we started is not a public base of what we
             // want (so it cannot be a downcast). There is nothing of interest
@@ -920,7 +920,7 @@ __do_dyncast (ptrdiff_t src2dst,
         }
       
       bool result2_ambig
-          = vmi_bases[i].base->__do_dyncast (src2dst, base_access,
+          = __base_info[i].__base->__do_dyncast (src2dst, base_access,
                                              dst_type, base,
                                              src_type, src_ptr, result2);
       result.whole2src = __sub_kind (result.whole2src | result2.whole2src);
@@ -942,7 +942,7 @@ __do_dyncast (ptrdiff_t src2dst,
           result.whole2dst = result2.whole2dst;
           result_ambig = result2_ambig;
           if (result.dst_ptr && result.whole2src != __unknown
-              && !(vmi_flags & non_diamond_repeat_mask))
+              && !(__flags & __non_diamond_repeat_mask))
             // Found dst and src and we don't have repeated bases.
             return result_ambig;
         }
@@ -969,7 +969,7 @@ __do_dyncast (ptrdiff_t src2dst,
           
           if (contained_p (result.whole2src)
               && (!virtual_p (result.whole2src)
-                  || !(result.whole_details & diamond_shaped_mask)))
+                  || !(result.whole_details & __diamond_shaped_mask)))
             {
               // We already found SRC_PTR as a base of most derived, and
               // either it was non-virtual, or the whole heirarchy is
@@ -986,7 +986,7 @@ __do_dyncast (ptrdiff_t src2dst,
                 ;// already calculated
               else if (contained_p (new_sub_kind)
                        && (!virtual_p (new_sub_kind)
-                           || !(vmi_flags & diamond_shaped_mask)))
+                           || !(__flags & __diamond_shaped_mask)))
                 // Already found inside the other choice, and it was
                 // non-virtual or we are not diamond shaped.
                 old_sub_kind = __not_contained;
@@ -998,7 +998,7 @@ __do_dyncast (ptrdiff_t src2dst,
                 ;// already calculated
               else if (contained_p (old_sub_kind)
                        && (!virtual_p (old_sub_kind)
-                           || !(vmi_flags & diamond_shaped_mask)))
+                           || !(__flags & __diamond_shaped_mask)))
                 // Already found inside the other choice, and it was
                 // non-virtual or we are not diamond shaped.
                 new_sub_kind = __not_contained;
@@ -1075,7 +1075,7 @@ __do_upcast (const __class_type_info *dst, const void *obj_ptr,
   if (__class_type_info::__do_upcast (dst, obj_ptr, result))
     return true;
   
-  return base->__do_upcast (dst, obj_ptr, result);
+  return __base_type->__do_upcast (dst, obj_ptr, result);
 }
 
 bool __vmi_class_type_info::
@@ -1087,27 +1087,27 @@ __do_upcast (const __class_type_info *dst, const void *obj_ptr,
   
   int src_details = result.src_details;
   if (src_details & __flags_unknown_mask)
-    src_details = vmi_flags;
+    src_details = __flags;
   
-  for (size_t i = vmi_base_count; i--;)
+  for (size_t i = __base_count; i--;)
     {
       __upcast_result result2 (src_details);
       const void *base = obj_ptr;
-      ptrdiff_t offset = vmi_bases[i].__offset ();
-      bool is_virtual = vmi_bases[i].__is_virtual_p ();
-      bool is_public = vmi_bases[i].__is_public_p ();
+      ptrdiff_t offset = __base_info[i].__offset ();
+      bool is_virtual = __base_info[i].__is_virtual_p ();
+      bool is_public = __base_info[i].__is_public_p ();
       
-      if (!is_public && !(src_details & non_diamond_repeat_mask))
+      if (!is_public && !(src_details & __non_diamond_repeat_mask))
         // original cannot have an ambiguous base, so skip private bases
         continue;
 
       if (base)
         base = convert_to_base (base, is_virtual, offset);
       
-      if (vmi_bases[i].base->__do_upcast (dst, base, result2))
+      if (__base_info[i].__base->__do_upcast (dst, base, result2))
         {
           if (result2.base_type == nonvirtual_base_type && is_virtual)
-            result2.base_type = vmi_bases[i].base;
+            result2.base_type = __base_info[i].__base;
           if (contained_p (result2.part2dst) && !is_public)
             result2.part2dst = __sub_kind (result2.part2dst & ~__contained_public_mask);
           
@@ -1119,14 +1119,14 @@ __do_upcast (const __class_type_info *dst, const void *obj_ptr,
               
               if (result.part2dst & __contained_public_mask)
                 {
-                  if (!(vmi_flags & non_diamond_repeat_mask))
+                  if (!(__flags & __non_diamond_repeat_mask))
                     return true;  // cannot have an ambiguous other base
                 }
               else
                 {
                   if (!virtual_p (result.part2dst))
                     return true; // cannot have another path
-                  if (!(vmi_flags & diamond_shaped_mask))
+                  if (!(__flags & __diamond_shaped_mask))
                     return true; // cannot have a more accessible path
                 }
             }
