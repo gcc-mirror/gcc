@@ -7570,8 +7570,12 @@ alpha_align_insns (insns, max_align, next_group, next_nop)
   /* Let shorten branches care for assigning alignments to code labels.  */
   shorten_branches (insns);
 
-  align = (FUNCTION_BOUNDARY / BITS_PER_UNIT < max_align
-	   ? FUNCTION_BOUNDARY / BITS_PER_UNIT : max_align);
+  if (align_functions < 4)
+    align = 4;
+  else if (align_functions < max_align)
+    align = align_functions;
+  else
+    align = max_align;
 
   ofs = prev_in_use = 0;
   i = insns;

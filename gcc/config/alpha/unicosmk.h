@@ -73,12 +73,6 @@ Boston, MA 02111-1307, USA.  */
 #undef STRUCTURE_SIZE_BOUNDARY
 #define STRUCTURE_SIZE_BOUNDARY 64
 
-/* Allocation boundary (in *bits*) for the code of a function. Functions
-   should be cache-aligned on the T3E.  */
-
-#undef FUNCTION_BOUNDARY
-#define FUNCTION_BOUNDARY 256
-
 /* No data type wants to be aligned rounder than this.  */
 
 #undef BIGGEST_ALIGNMENT
