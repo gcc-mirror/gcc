@@ -1,3 +1,9 @@
+2004-09-15  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR target/11572
+	* configure.in (*-*-darwin*): Renable libobjc.
+	* configure: Regenerate.
+
 2004-09-10  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* MAINTAINERS: Add self as c++ and type-safe vector maintainer.
