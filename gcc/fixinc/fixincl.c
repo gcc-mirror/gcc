@@ -693,7 +693,7 @@ egrep_test (pz_data, p_test)
     fprintf (stderr, "fixincl ERROR RE not compiled:  `%s'\n",
              p_test->pz_test_text);
 #endif
-  if (regexec (p_test->p_test_regex, pz_data, 0, 0, 0) == 0)
+  if (xregexec (p_test->p_test_regex, pz_data, 0, 0, 0) == 0)
     return APPLY_FIX;
   return SKIP_FIX;
 }
@@ -808,7 +808,7 @@ extract_quoted_files (pz_data, pz_fixed_file, p_re_match)
         }
 
       /* Find the next entry */
-      if (regexec (&incl_quote_re, pz_incl_quot, 1, p_re_match, 0) != 0)
+      if (xregexec (&incl_quote_re, pz_incl_quot, 1, p_re_match, 0) != 0)
         break;
     }
 }
@@ -1315,7 +1315,7 @@ test_for_changes (read_fd)
       /* Close the file and see if we have to worry about
          `#include "file.h"' constructs.  */
       fclose (out_fp);
-      if (regexec (&incl_quote_re, pz_curr_data, 1, &match, 0) == 0)
+      if (xregexec (&incl_quote_re, pz_curr_data, 1, &match, 0) == 0)
         extract_quoted_files (pz_curr_data, pz_curr_file, &match);
     }
 

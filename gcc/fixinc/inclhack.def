@@ -1003,11 +1003,11 @@ fix = {
     files     = fixinc-test-limits.h, math.h;
     select    = <<-	END_POW_INLINE
 	^# +ifdef +__cplusplus
-	 +}
-	 +inline +double +pow\(double +__d,int +__expon\) +{
+	 +\}
+	 +inline +double +pow\(double +__d,int +__expon\) +\{
 	[ 	]+return +pow\(__d,\(double\)__expon\);
-	 +}
-	 +extern +"C" +{
+	 +\}
+	 +extern +"C" +\{
 	#else
 	# +endif
 	END_POW_INLINE;
@@ -1029,9 +1029,9 @@ fix = {
 fix = {
      hackname  = hpux11_cpp_pow_inline;
      files     = math.h;
-     select    = " +inline double pow\\(double d,int expon\\) {\n"
+     select    = " +inline double pow\\(double d,int expon\\) \\{\n"
                  " +return pow\\(d, \\(double\\)expon\\);\n"
-                 " +}\n";
+                 " +\\}\n";
      c_fix     = format;
      c_fix_arg = "";
 

@@ -32,7 +32,7 @@ Boston, MA 02111-1307, USA.  */
 #include "tm.h"
 #include <signal.h>
 
-#include "gnu-regex.h"
+#include "xregex.h"
 #include "machname.h"
 #include "libiberty.h"
 

@@ -2507,8 +2507,7 @@ fixinc.sh-warn = -Wno-error
 
 FIXINCSRCDIR=$(srcdir)/fixinc
 fixinc.sh: $(FIXINCSRCDIR)/mkfixinc.sh $(FIXINCSRCDIR)/fixincl.c \
-	$(FIXINCSRCDIR)/procopen.c $(FIXINCSRCDIR)/gnu-regex.c \
-	$(FIXINCSRCDIR)/server.c $(FIXINCSRCDIR)/gnu-regex.h \
+	$(FIXINCSRCDIR)/procopen.c $(FIXINCSRCDIR)/server.c \
 	$(FIXINCSRCDIR)/server.h $(FIXINCSRCDIR)/inclhack.def specs.ready
 	(MAKE="$(MAKE)"; srcdir=`cd $(srcdir)/fixinc && ${PWD_COMMAND}` ; \
 	CC="$(CC_FOR_BUILD)"; CFLAGS="$(BUILD_CFLAGS)"; LDFLAGS="$(BUILD_LDFLAGS)"; \
