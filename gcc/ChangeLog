@@ -1,5 +1,11 @@
 2003-06-07  Andreas Jaeger  <aj@suse.de>
 
+	* ggc.h: Convert to ISO C90 prototypes.
+	* ggc-none.c: Likewise.
+	* ggc-common.c: Likewise.
+	* ggc-page.c: Likewise.
+	* ggc-simple.c: Likewise.
+
 	* crtstuff.c: Remove undefined usage of INIT_SECTION_PREAMBLE.
 
 	* system.h: Poison INIT_SECTION_PREAMBLE.
