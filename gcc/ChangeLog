@@ -1,3 +1,11 @@
+2002-04-23  Eric Botcazou  <ebotcazou@multimania.com>
+
+	PR c/5430
+	* fold-const.c (split_tree): Add MINUS_LITP parameter; separate
+	added literals from substracted literals.
+	(associate_trees): Don't convert MINUS_EXPR into PLUS_EXPR.
+	(fold) [associate]: Preserve MINUS_EXPR if needed.
+
 2002-04-23  Tom Tromey  <tromey@redhat.com>
 
 	* gcc.c: Added --resource.  For PR java/6314.
@@ -36,17 +44,17 @@
 
 2002-04-23  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/altivec.h (vec_step): Remove extraneous
-        parentheses.
-        (vec_ctu): Cast return.
+	* config/rs6000/altivec.h (vec_step): Remove extraneous
+	parentheses.
+	(vec_ctu): Cast return.
 
 2002-04-22  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/rs6000.md ("*movv4si_internal"): Change 'm'
-        constraint to 'o' for m=r and r=m alternatives.
-        ("*movv8hi_internal1"): Same.
-        ("*movv16qi_internal1"): Same.
-        ("*movv4sf_internal1"): Same.
+	* config/rs6000/rs6000.md ("*movv4si_internal"): Change 'm'
+	constraint to 'o' for m=r and r=m alternatives.
+	("*movv8hi_internal1"): Same.
+	("*movv16qi_internal1"): Same.
+	("*movv4sf_internal1"): Same.
 
 2002-04-22  Zack Weinberg  <zack@codesourcery.com>
 
@@ -97,12 +105,12 @@
 
 2002-04-22  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/altivec.h (vec_xor): Add variant for both args
-        being vector signed int.
-        (vec_andc): Same.
-        (vec_xor): Add variant for both args being vector signed char.
-        Remove redundant variant.
-        (vec_andc): Same.
+	* config/rs6000/altivec.h (vec_xor): Add variant for both args
+	being vector signed int.
+	(vec_andc): Same.
+	(vec_xor): Add variant for both args being vector signed char.
+	Remove redundant variant.
+	(vec_andc): Same.
 
 2002-04-21  David S. Miller  <davem@redhat.com>
 
@@ -180,9 +188,9 @@ Sat Apr 20 02:17:38 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-04-18  Richard Henderson  <rth@redhat.com>
 
-        * ifcvt.c (find_cond_trap): Handle cases with no proper THEN or JOIN
-        blocks.  Handle multiple references to the TRAP block.  Handle
-        non-adjacent THEN and OTHER blocks.
+	* ifcvt.c (find_cond_trap): Handle cases with no proper THEN or JOIN
+	blocks.  Handle multiple references to the TRAP block.  Handle
+	non-adjacent THEN and OTHER blocks.
 
 2002-04-18  Richard Henderson  <rth@redhat.com>
 
