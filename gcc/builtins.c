@@ -27,6 +27,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "real.h"
 #include "rtl.h"
 #include "tree.h"
+#include "tree-gimple.h"
 #include "flags.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -7925,8 +7926,20 @@ readonly_data_expr (tree exp)
 {
   STRIP_NOPS (exp);
 
-  if (TREE_CODE (exp) == ADDR_EXPR)
-    return decl_readonly_section (TREE_OPERAND (exp, 0), 0);
+  if (TREE_CODE (exp) != ADDR_EXPR)
+    return false;
+
+  exp = get_base_address (TREE_OPERAND (exp, 0));
+  if (!exp)
+    return false;
+
+  /* Make sure we call decl_readonly_section only for trees it
+     can handle (since it returns true for everything it doesn't
+     understand).  */
+  if (TREE_CODE (exp) == STRING_CST 
+      || TREE_CODE (exp) == CONSTRUCTOR
+      || (TREE_CODE (exp) == VAR_DECL && TREE_STATIC (exp)))
+    return decl_readonly_section (exp, 0);
   else
     return false;
 }
