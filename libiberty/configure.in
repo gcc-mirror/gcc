@@ -340,6 +340,13 @@ if test -z "${setobjs}"; then
     libiberty_cv_var_sys_errlist=yes
     ;;
 
+  *-*-*vms*)
+    # Under VMS, vfork works very different than on Unix. The standard test 
+    # won't work, and it isn't easily adaptable. It makes more sense to
+    # just force it.
+    ac_cv_func_vfork_works=yes
+    ;;
+
   esac
 
   # We haven't set the list of objects yet.  Use the standard autoconf

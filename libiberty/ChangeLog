@@ -1,3 +1,8 @@
+Tue Dec 11 07:08:57 2001  Douglas B. Rupp  <rupp@gnat.com>
+
+	* configure.in: Hardcode that vfork works on VMS host.
+	* configure: Regenerated.
+
 2001-12-06  Richard Henderson  <rth@redhat.com>
 
 	* cplus-dem.c (libiberty_demanglers): Add no_demangling case.

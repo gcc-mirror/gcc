@@ -1,3 +1,8 @@
+Tue Dec 11 07:08:57 2001  Douglas B. Rupp  <rupp@gnat.com>
+
+	* configure.in: Hardcode that vfork works on VMS host.
+	* configure: Regenerated.
+
 Mon Dec 10 18:37:31 2001  Douglas B. Rupp  <rupp@gnat.com>
 
 	* gcc.c (convert_filename): Add do_obj parameter. Don't convert
