@@ -4040,9 +4040,14 @@ store_constructor_field (target, bitsize, bitpos,
       && (bitpos == 0 || GET_CODE (target) == MEM))
     {
       if (bitpos != 0)
-	target = change_address (target, VOIDmode,
-				 plus_constant (XEXP (target, 0),
-						bitpos / BITS_PER_UNIT));
+	target
+	  = change_address (target,
+			    GET_MODE (target) == BLKmode
+			    || 0 != (bitpos
+				     % GET_MODE_ALIGNMENT (GET_MODE (target)))
+			    ? BLKmode : VOIDmode,
+			    plus_constant (XEXP (target, 0),
+					   bitpos / BITS_PER_UNIT));
       store_constructor (exp, target, align, cleared);
     }
   else
