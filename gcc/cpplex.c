@@ -59,15 +59,14 @@ static const struct token_spelling token_spellings[N_TTYPES] = { TTYPE_TABLE };
 static void add_line_note PARAMS ((cpp_buffer *, const uchar *, unsigned int));
 static int skip_line_comment PARAMS ((cpp_reader *));
 static void skip_whitespace PARAMS ((cpp_reader *, cppchar_t));
-static cpp_hashnode *lex_identifier PARAMS ((cpp_reader *));
+static cpp_hashnode *lex_identifier PARAMS ((cpp_reader *, const uchar *));
 static void lex_number PARAMS ((cpp_reader *, cpp_string *));
-static bool continues_identifier_p PARAMS ((cpp_reader *));
+static bool forms_identifier_p PARAMS ((cpp_reader *, int));
 static void lex_string PARAMS ((cpp_reader *, cpp_token *));
 static void save_comment PARAMS ((cpp_reader *, cpp_token *, const uchar *,
 				  cppchar_t));
 static int name_p PARAMS ((cpp_reader *, const cpp_string *));
-static int maybe_read_ucs PARAMS ((cpp_reader *, const unsigned char **,
-				   const unsigned char *, cppchar_t *));
+static cppchar_t maybe_read_ucn PARAMS ((cpp_reader *, const uchar **));
 static tokenrun *next_tokenrun PARAMS ((tokenrun *));
 
 static unsigned int hex_digit_value PARAMS ((unsigned int));
@@ -361,33 +360,53 @@ name_p (pfile, string)
 }
 
 /* Returns TRUE if the sequence starting at buffer->cur is invalid in
-   an identifier.  */
+   an identifier.  FIRST is TRUE if this starts an identifier.  */
 static bool
-continues_identifier_p (pfile)
+forms_identifier_p (pfile, first)
      cpp_reader *pfile;
+     int first;
 {
-  if (*pfile->buffer->cur != '$' || !CPP_OPTION (pfile, dollars_in_ident))
-    return false;
+  cpp_buffer *buffer = pfile->buffer;
 
-  if (CPP_PEDANTIC (pfile) && !pfile->state.skipping && !pfile->warned_dollar)
+  if (*buffer->cur == '$')
     {
-      pfile->warned_dollar = true;
-      cpp_error (pfile, DL_PEDWARN, "'$' in identifier or number");
-    }
-  pfile->buffer->cur++;
+      if (!CPP_OPTION (pfile, dollars_in_ident))
+	return false;
 
-  return true;
+      buffer->cur++;
+      if (CPP_PEDANTIC (pfile)
+	  && !pfile->state.skipping
+	  && !pfile->warned_dollar)
+	{
+	  pfile->warned_dollar = true;
+	  cpp_error (pfile, DL_PEDWARN, "'$' in identifier or number");
+	}
+
+      return true;
+    }
+
+  /* Is this a syntactically valid UCN?  */
+  if (0 && *buffer->cur == '\\'
+      && (buffer->cur[1] == 'u' || buffer->cur[1] == 'U'))
+    {
+      buffer->cur += 2;
+      if (_cpp_valid_ucn (pfile, &buffer->cur, 1 + !first))
+	return true;
+      buffer->cur -= 2;
+    }
+
+  return false;
 }
 
 /* Lex an identifier starting at BUFFER->CUR - 1.  */
 static cpp_hashnode *
-lex_identifier (pfile)
+lex_identifier (pfile, base)
      cpp_reader *pfile;
+     const uchar *base;
 {
   cpp_hashnode *result;
-  const uchar *cur, *base;
+  const uchar *cur;
 
-  base = pfile->buffer->cur - 1;
   do
     {
       cur = pfile->buffer->cur;
@@ -398,7 +417,7 @@ lex_identifier (pfile)
 
       pfile->buffer->cur = cur;
     }
-  while (continues_identifier_p (pfile));
+  while (forms_identifier_p (pfile, false));
 
   result = (cpp_hashnode *)
     ht_lookup (pfile->hash_table, base, cur - base, HT_ALLOC);
@@ -444,7 +463,7 @@ lex_number (pfile, number)
 
       pfile->buffer->cur = cur;
     }
-  while (continues_identifier_p (pfile));
+  while (forms_identifier_p (pfile, false));
 
   number->len = cur - base;
   dest = _cpp_unaligned_alloc (pfile, number->len + 1);
@@ -803,7 +822,6 @@ _cpp_lex_direct (pfile)
 	}
       /* Fall through.  */
 
-    start_ident:
     case '_':
     case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
     case 'g': case 'h': case 'i': case 'j': case 'k': case 'l':
@@ -816,7 +834,7 @@ _cpp_lex_direct (pfile)
     case 'S': case 'T': case 'U': case 'V': case 'W': case 'X':
     case 'Y': case 'Z':
       result->type = CPP_NAME;
-      result->val.node = lex_identifier (pfile);
+      result->val.node = lex_identifier (pfile, buffer->cur - 1);
 
       /* Convert named operators to their proper types.  */
       if (result->val.node->flags & NODE_OPERATOR)
@@ -1044,14 +1062,23 @@ _cpp_lex_direct (pfile)
     case '@': result->type = CPP_ATSIGN; break;
 
     case '$':
-      if (CPP_OPTION (pfile, dollars_in_ident))
-	goto start_ident;
-      /* Fall through...  */
+    case '\\':
+      {
+	const uchar *base = --buffer->cur;
 
-    default:
-      result->type = CPP_OTHER;
-      result->val.c = c;
-      break;
+	if (forms_identifier_p (pfile, true))
+	  {
+	    result->type = CPP_NAME;
+	    result->val.node = lex_identifier (pfile, base);
+	    break;
+	  }
+	buffer->cur++;
+
+      default:
+	result->type = CPP_OTHER;
+	result->val.c = c;
+	break;
+      }
     }
 
   return result;
@@ -1321,9 +1348,11 @@ cpp_avoid_paste (pfile, token1, token2)
 				|| b == CPP_CHAR || b == CPP_STRING); /* L */
     case CPP_NUMBER:	return (b == CPP_NUMBER || b == CPP_NAME
 				|| c == '.' || c == '+' || c == '-');
-    case CPP_OTHER:	return (CPP_OPTION (pfile, objc)
-				&& token1->val.c == '@'
-				&& (b == CPP_NAME || b == CPP_STRING));
+				      /* UCNs */
+    case CPP_OTHER:	return ((token1->val.c == '\\' && b == CPP_NAME)
+				|| (CPP_OPTION (pfile, objc)
+				    && token1->val.c == '@'
+				    && (b == CPP_NAME || b == CPP_STRING)));
     default:		break;
     }
 
@@ -1363,93 +1392,31 @@ hex_digit_value (c)
     abort ();
 }
 
-/* Parse a '\uNNNN' or '\UNNNNNNNN' sequence.  Returns 1 to indicate
-   failure if cpplib is not parsing C++ or C99.  Such failure is
-   silent, and no variables are updated.  Otherwise returns 0, and
-   warns if -Wtraditional.
-
-   [lex.charset]: The character designated by the universal character
-   name \UNNNNNNNN is that character whose character short name in
-   ISO/IEC 10646 is NNNNNNNN; the character designated by the
-   universal character name \uNNNN is that character whose character
-   short name in ISO/IEC 10646 is 0000NNNN.  If the hexadecimal value
-   for a universal character name is less than 0x20 or in the range
-   0x7F-0x9F (inclusive), or if the universal character name
-   designates a character in the basic source character set, then the
-   program is ill-formed.
-
-   We assume that wchar_t is Unicode, so we don't need to do any
-   mapping.  Is this ever wrong?
-
-   PC points to the 'u' or 'U', PSTR is points to the byte after PC,
-   LIMIT is the end of the string or charconst.  PSTR is updated to
-   point after the UCS on return, and the UCS is written into PC.  */
-
-static int
-maybe_read_ucs (pfile, pstr, limit, pc)
+/* Read a possible universal character name starting at *PSTR.  */
+static cppchar_t
+maybe_read_ucn (pfile, pstr)
      cpp_reader *pfile;
-     const unsigned char **pstr;
-     const unsigned char *limit;
-     cppchar_t *pc;
+     const uchar **pstr;
 {
-  const unsigned char *p = *pstr;
-  unsigned int code = 0;
-  unsigned int c = *pc, length;
+  cppchar_t result, c = (*pstr)[-1];
 
-  /* Only attempt to interpret a UCS for C++ and C99.  */
-  if (! (CPP_OPTION (pfile, cplusplus) || CPP_OPTION (pfile, c99)))
-    return 1;
-
-  if (CPP_WTRADITIONAL (pfile))
-    cpp_error (pfile, DL_WARNING,
-	       "the meaning of '\\%c' is different in traditional C", c);
-
-  length = (c == 'u' ? 4: 8);
-
-  if ((size_t) (limit - p) < length)
+  result = _cpp_valid_ucn (pfile, pstr, false);
+  if (result)
     {
-      cpp_error (pfile, DL_ERROR, "incomplete universal-character-name");
-      /* Skip to the end to avoid more diagnostics.  */
-      p = limit;
-    }
-  else
-    {
-      for (; length; length--, p++)
+      if (CPP_WTRADITIONAL (pfile))
+	cpp_error (pfile, DL_WARNING,
+		   "the meaning of '\\%c' is different in traditional C",
+		   (int) c);
+
+      if (CPP_OPTION (pfile, EBCDIC))
 	{
-	  c = *p;
-	  if (ISXDIGIT (c))
-	    code = (code << 4) + hex_digit_value (c);
-	  else
-	    {
-	      cpp_error (pfile, DL_ERROR,
-			 "non-hex digit '%c' in universal-character-name", c);
-	      /* We shouldn't skip in case there are multibyte chars.  */
-	      break;
-	    }
+	  cpp_error (pfile, DL_ERROR,
+		     "universal character with an EBCDIC target");
+	  result = 0x3f;  /* EBCDIC invalid character */
 	}
     }
 
-  if (CPP_OPTION (pfile, EBCDIC))
-    {
-      cpp_error (pfile, DL_ERROR, "universal-character-name on EBCDIC target");
-      code = 0x3f;  /* EBCDIC invalid character */
-    }
-  /* True extended characters are OK.  */
-  else if (code >= 0xa0
-	   && !(code & 0x80000000)
-	   && !(code >= 0xD800 && code <= 0xDFFF))
-    ;
-  /* The standard permits $, @ and ` to be specified as UCNs.  We use
-     hex escapes so that this also works with EBCDIC hosts.  */
-  else if (code == 0x24 || code == 0x40 || code == 0x60)
-    ;
-  /* Don't give another error if one occurred above.  */
-  else if (length == 0)
-    cpp_error (pfile, DL_ERROR, "universal-character-name out of range");
-
-  *pstr = p;
-  *pc = code;
-  return 0;
+  return result;
 }
 
 /* Returns the value of an escape sequence, truncated to the correct
@@ -1470,7 +1437,7 @@ cpp_parse_escape (pfile, pstr, limit, wide)
 
   int unknown = 0;
   const unsigned char *str = *pstr, *charconsts;
-  cppchar_t c, mask;
+  cppchar_t c, ucn, mask;
   unsigned int width;
 
   if (CPP_OPTION (pfile, EBCDIC))
@@ -1519,7 +1486,11 @@ cpp_parse_escape (pfile, pstr, limit, wide)
       break;
 
     case 'u': case 'U':
-      unknown = maybe_read_ucs (pfile, &str, limit, &c);
+      ucn = maybe_read_ucn (pfile, &str);
+      if (ucn)
+	c = ucn;
+      else
+	unknown = true;
       break;
 
     case 'x':

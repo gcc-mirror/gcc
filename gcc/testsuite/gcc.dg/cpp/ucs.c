@@ -51,7 +51,7 @@ void foo ()
   c = L'\ubad';		/* { dg-error "incomplete" "incompete UCN 1" } */
   c = L"\U1234"[0];	/* { dg-error "incomplete" "incompete UCN 2" } */
 
-  c = L'\u000x';	/* { dg-error "non-hex" "non-hex digit in UCN" } */
+  c = L'\u000x';	/* { dg-error "incomplete" "non-hex digit in UCN" } */
   /* If sizeof(HOST_WIDE_INT) > sizeof(wchar_t), we can get a multi-character
      constant warning even for wide characters.  */
   /* { dg-warning "too long|multi-character" "" { target *-*-* } 54 } */
@@ -61,7 +61,7 @@ void foo ()
   c = '\u00a0';		/* { dg-bogus "invalid" "00a0 is a valid UCN" } */
   c = '\U00000060';	/* { dg-bogus "invalid" "0060 is a valid UCN" } */
 
-  c = '\u0025';		/* { dg-error "range" "0025 is an invalid UCN" } */
-  c = L"\uD800"[0];	/* { dg-error "range" "D800 is an invalid UCN" } */
-  c = L'\U0000DFFF';	/* { dg-error "range" "DFFF is an invalid UCN" } */
+  c = '\u0025';		/* { dg-error "not a valid" "0025 invalid UCN" } */
+  c = L"\uD800"[0];	/* { dg-error "not a valid" "D800 invalid UCN" } */
+  c = L'\U0000DFFF';	/* { dg-error "not a valid" "DFFF invalid UCN" } */
 }

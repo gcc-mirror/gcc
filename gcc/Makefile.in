@@ -2320,7 +2320,7 @@ PREPROCESSOR_DEFINES = \
   @TARGET_SYSTEM_ROOT_DEFINE@
 
 LIBCPP_OBJS =	cpplib.o cpplex.o cppmacro.o cppexp.o cppfiles.o cpptrad.o \
-		cpphash.o cpperror.o cppinit.o \
+		cpphash.o cpperror.o cppinit.o cppcharset.o \
 		hashtable.o line-map.o mkdeps.o mbchar.o cpppch.o
 
 LIBCPP_DEPS =	$(CPPLIB_H) cpphash.h line-map.h hashtable.h intl.h \
@@ -2333,6 +2333,7 @@ libcpp.a: $(LIBCPP_OBJS)
 	$(AR) $(AR_FLAGS) libcpp.a $(LIBCPP_OBJS)
 	-$(RANLIB) libcpp.a
 
+cppcharset.o: cppcharset.c $(LIBCPP_DEPS)
 cpperror.o: cpperror.c $(LIBCPP_DEPS)
 cppexp.o:   cppexp.c   $(LIBCPP_DEPS)
 cpplex.o:   cpplex.c   $(LIBCPP_DEPS) mbchar.h

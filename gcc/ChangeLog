@@ -1,3 +1,20 @@
+2003-04-20  Neil Booth  <neil@daikokuya.co.uk>
+
+	* Makefile.in (LIBCPP_OBJS): Add cppcharset.o.
+	(cppcharset.o): New target.
+	* c-lex.c (is_extended_char): Move to cppcharset.c.
+	(utf8_extend_token): Delete.
+	* cppcharset.c: New file.
+	* cpphash.h (_cpp_valid_ucn): New.
+	* cpplex.c (lex_identifier): Update prototype.
+	(continues_identifier_p): Rename forms_identifier_p.  Handle UCN
+	escapes.
+	(maybe_read_ucs): Rename maybe_read_ucn.  Update to use code
+	in cppcharset.c.
+	(lex_number, lex_identifier, cpp_parse_escape): Update.
+	(_cpp_lex_direct): Update to handle UCNs.
+	(cpp_avoid_paste): Don't paste to form a UCN.
+
 2003-04-19  Roger Sayle  <roger@eyesopen.com>
 
 	* builtins.c (expand_builtin):  Don't expand a pure or const

@@ -1,3 +1,7 @@
+2003-04-20  Neil Booth  <neil@daikokuya.co.uk>
+
+	* ucs.c: Update diagnostic messages.
+
 2003-04-19  Neil Booth  <neil@daikokuya.co.uk>
 
 	* gcc.dg/cpp/truefalse.cpp: New test.
