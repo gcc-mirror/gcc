@@ -26,6 +26,8 @@ Fri Jun 19 22:55:14 1998  Jeffrey A Law  (law@cygnus.com)
 
 Fri Jun 19 20:38:34 1998  H.J. Lu  (hjl@gnu.org)
 
+	* except.h (emit_unwinder, end_eh_unwinder): Removed.
+
 	* dwarfout.c (getpwd): Add prototype.
 	(is_pseudo_reg, type_main_variant, is_tagged_type,
 	is_redundant_typedef): New declaration.
