@@ -2348,7 +2348,7 @@ dbxout_block (block, depth, args)
 	      assemble_name (asmfile, buf);
 #if DBX_BLOCKS_FUNCTION_RELATIVE
 	      fputc ('-', asmfile);
-	      assemble_name (asmfile, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (current_function_decl)));
+	      assemble_name (asmfile, XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0));
 #endif
 	      fprintf (asmfile, "\n");
 #endif
@@ -2381,7 +2381,7 @@ dbxout_block (block, depth, args)
 	      assemble_name (asmfile, buf);
 #if DBX_BLOCKS_FUNCTION_RELATIVE
 	      fputc ('-', asmfile);
-	      assemble_name (asmfile, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (current_function_decl)));
+	      assemble_name (asmfile, XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0));
 #endif
 	      fprintf (asmfile, "\n");
 #endif
