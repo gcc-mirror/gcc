@@ -1,5 +1,6 @@
 /* Definitions of target machine for GNU compiler, for Intel 80960
-   Copyright (C) 1992, 1993, 1995, 1996, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1995, 1996, 1998, 1999
+   Free Software Foundation, Inc.
    Contributed by Steven McGeady, Intel Corp.
    Additional Work by Glenn Colon-Bonet, Jonathan Shapiro, Andy Wilson
    Converted to GCC 2.0 by Jim Wilson and Michael Tiemann, Cygnus Support.
@@ -859,6 +860,18 @@ enum reg_class { NO_REGS, GLOBAL_REGS, LOCAL_REGS, LOCAL_OR_GLOBAL_REGS,
 
 #define SETUP_INCOMING_VARARGS(CUM,MODE,TYPE,PRETEND_SIZE,NO_RTL) \
   i960_setup_incoming_varargs(&CUM,MODE,TYPE,&PRETEND_SIZE,NO_RTL)
+
+/* Define the `__builtin_va_list' type for the ABI.  */
+#define BUILD_VA_LIST_TYPE(VALIST) \
+  (VALIST) = i960_build_va_list ()
+
+/* Implement `va_start' for varargs and stdarg.  */
+#define EXPAND_BUILTIN_VA_START(stdarg, valist, nextarg) \
+  i960_va_start (stdarg, valist, nextarg)
+
+/* Implement `va_arg'.  */
+#define EXPAND_BUILTIN_VA_ARG(valist, type) \
+  i960_va_arg (valist, type)
 
 /* Define a data type for recording info about an argument list
    during the scan of that argument list.  This data type should
