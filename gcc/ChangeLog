@@ -1,3 +1,10 @@
+Fri Feb 21 22:47:27 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* cfgrtl.c (commit_edge_insertions):  Call
+	find_many_sub_basic_block only when some code has been emitted.
+	(commit_edge_insertions_watch_calls): Bring into sync with
+	commit_edge_insertions
+
 2003-02-21  Zack Weinberg  <zack@codesourcery.com>
 
 	* cpphash.h (struct lexer_state): Add directive_wants_padding.
