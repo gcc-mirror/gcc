@@ -1712,6 +1712,40 @@ __clear_cache (beg, end)
 TRANSFER_FROM_TRAMPOLINE 
 #endif
 
+#if defined (NeXT) && defined (__MACH__)
+
+/* Make stack executable so we can call trampolines on stack.
+   This is called from INITIALIZE_TRAMPOLINE in next.h.  */
+
+#include <mach/mach.h>
+
+void
+__enable_execute_stack (addr)
+     char *addr;
+{
+  kern_return_t r;
+  char *eaddr = addr + TRAMPOLINE_SIZE;
+  vm_address_t a = (vm_address_t) addr;
+
+  /* turn on execute access on stack */
+  r = vm_protect (task_self (), a, TRAMPOLINE_SIZE, FALSE, VM_PROT_ALL);
+  if (r != KERN_SUCCESS)
+    {
+      mach_error("vm_protect VM_PROT_ALL", r);
+      exit(1);
+    }
+
+  /* We inline the i-cache invalidation for speed */
+
+#ifdef CLEAR_INSN_CACHE
+  CLEAR_INSN_CACHE (addr, eaddr);
+#else
+  __clear_cache ((int) addr, (int) eaddr);
+#endif
+} 
+
+#endif /* defined (NeXT) && defined (__MACH__) */
+
 #ifdef __convex__
 
 /* Make stack executable so we can call trampolines on stack.
