@@ -1894,7 +1894,8 @@ static void
 munge_compile_params (params_list)
      const char *params_list;
 {
-  char **temp_params = (char **) alloca (strlen (params_list) + 10);
+  char **temp_params
+    = (char **) alloca ((strlen (params_list) + 6) * sizeof (char *));
   int param_count = 0;
   const char *param;
 
