@@ -1143,6 +1143,32 @@ di_operand (op, mode)
     }
 }
 
+/* Return TRUE for a valid operand of a DFmode operation when -msoft-float.
+   Either: REG, CONST_DOUBLE or MEM(DImode_address).
+   Note that this disallows MEM(REG+REG), but allows
+   MEM(PRE/POST_INC/DEC(REG)).  */
+
+int
+soft_df_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (s_register_operand (op, mode))
+    return TRUE;
+
+  switch (GET_CODE (op))
+    {
+    case CONST_DOUBLE:
+      return TRUE;
+
+    case MEM:
+      return memory_address_p (DFmode, XEXP (op, 0));
+
+    default:
+      return FALSE;
+    }
+}
+
 /* Return TRUE for valid index operands. */
 
 int
@@ -1856,14 +1882,14 @@ print_multi_reg (stream, instr, mask, hat)
   int not_first = FALSE;
 
   fputc ('\t', stream);
-  fprintf (stream, instr, ARM_REG_PREFIX);
+  fprintf (stream, instr, REGISTER_PREFIX);
   fputs (", {", stream);
   for (i = 0; i < 16; i++)
     if (mask & (1 << i))
       {
 	if (not_first)
 	  fprintf (stream, ", ");
-	fprintf (stream, "%s%s", ARM_REG_PREFIX, reg_names[i]);
+	fprintf (stream, "%s%s", REGISTER_PREFIX, reg_names[i]);
 	not_first = TRUE;
       }
 
@@ -2769,15 +2795,15 @@ output_func_prologue (f, frame_size)
   return_used_this_function = 0;
   lr_save_eliminated = 0;
   
-  fprintf (f, "\t%c args = %d, pretend = %d, frame = %d\n",
-	   ARM_COMMENT_CHAR, current_function_args_size,
+  fprintf (f, "\t%s args = %d, pretend = %d, frame = %d\n",
+	   ASM_COMMENT_START, current_function_args_size,
 	   current_function_pretend_args_size, frame_size);
-  fprintf (f, "\t%c frame_needed = %d, current_function_anonymous_args = %d\n",
-	   ARM_COMMENT_CHAR, frame_pointer_needed,
+  fprintf (f, "\t%s frame_needed = %d, current_function_anonymous_args = %d\n",
+	   ASM_COMMENT_START, frame_pointer_needed,
 	   current_function_anonymous_args);
 
   if (volatile_func)
-    fprintf (f, "\t%c Volatile function.\n", ARM_COMMENT_CHAR);
+    fprintf (f, "\t%s Volatile function.\n", ASM_COMMENT_START);
 
   if (current_function_anonymous_args && current_function_pretend_args_size)
     store_arg_regs = 1;
@@ -2810,8 +2836,8 @@ output_func_prologue (f, frame_size)
     }
 
   if (lr_save_eliminated)
-    fprintf (f,"\t%c I don't think this function clobbers lr\n",
-	     ARM_COMMENT_CHAR);
+    fprintf (f,"\t%s I don't think this function clobbers lr\n",
+	     ASM_COMMENT_START);
 }
 
 
@@ -2857,8 +2883,8 @@ output_func_epilogue (f, frame_size)
       for (reg = 23; reg > 15; reg--)
 	if (regs_ever_live[reg] && ! call_used_regs[reg])
 	  {
-	    fprintf (f, "\tldfe\t%s%s, [%sfp, #-%d]\n", ARM_REG_PREFIX,
-		     reg_names[reg], ARM_REG_PREFIX, floats_offset);
+	    fprintf (f, "\tldfe\t%s%s, [%sfp, #-%d]\n", REGISTER_PREFIX,
+		     reg_names[reg], REGISTER_PREFIX, floats_offset);
 	    floats_offset += 12;
 	    code_size += 4;
 	  }
@@ -2881,8 +2907,8 @@ output_func_epilogue (f, frame_size)
       for (reg = 16; reg < 24; reg++)
 	if (regs_ever_live[reg] && ! call_used_regs[reg])
 	  {
-	    fprintf (f, "\tldfe\t%s%s, [%ssp], #12\n", ARM_REG_PREFIX,
-		     reg_names[reg], ARM_REG_PREFIX);
+	    fprintf (f, "\tldfe\t%s%s, [%ssp], #12\n", REGISTER_PREFIX,
+		     reg_names[reg], REGISTER_PREFIX);
 	    code_size += 4;
 	  }
       if (current_function_pretend_args_size == 0 && regs_ever_live[14])
@@ -2908,7 +2934,7 @@ output_func_epilogue (f, frame_size)
 	    }
 	  fprintf (f,
 		   TARGET_6 ? "\tmov\t%spc, %slr\n" : "\tmovs\t%spc, %slr\n",
-		   ARM_REG_PREFIX, ARM_REG_PREFIX, f);
+		   REGISTER_PREFIX, REGISTER_PREFIX, f);
 	  code_size += 4;
 	}
     }
@@ -3070,11 +3096,11 @@ arm_print_operand (stream, x, code)
   switch (code)
     {
     case '@':
-      fputc (ARM_COMMENT_CHAR, stream);
+      fputs (ASM_COMMENT_START, stream);
       return;
 
     case '|':
-      fputs (ARM_REG_PREFIX, stream);
+      fputs (REGISTER_PREFIX, stream);
       return;
 
     case '?':
@@ -3140,12 +3166,12 @@ arm_print_operand (stream, x, code)
     case 'R':
       if (REGNO (x) > 15)
 	abort ();
-      fputs (ARM_REG_PREFIX, stream);
+      fputs (REGISTER_PREFIX, stream);
       fputs (reg_names[REGNO (x) + 1], stream);
       return;
 
     case 'm':
-      fputs (ARM_REG_PREFIX, stream);
+      fputs (REGISTER_PREFIX, stream);
       if (GET_CODE (XEXP (x, 0)) == REG)
 	fputs (reg_names[REGNO (XEXP (x, 0))], stream);
       else
@@ -3153,8 +3179,8 @@ arm_print_operand (stream, x, code)
       return;
 
     case 'M':
-      fprintf (stream, "{%s%s-%s%s}", ARM_REG_PREFIX, reg_names[REGNO (x)],
-	       ARM_REG_PREFIX, reg_names[REGNO (x) - 1
+      fprintf (stream, "{%s%s-%s%s}", REGISTER_PREFIX, reg_names[REGNO (x)],
+	       REGISTER_PREFIX, reg_names[REGNO (x) - 1
 					 + ((GET_MODE_SIZE (GET_MODE (x))
 					     + GET_MODE_SIZE (SImode) - 1)
 					    / GET_MODE_SIZE (SImode))]);
@@ -3183,7 +3209,7 @@ arm_print_operand (stream, x, code)
 
       if (GET_CODE (x) == REG)
 	{
-	  fputs (ARM_REG_PREFIX, stream);
+	  fputs (REGISTER_PREFIX, stream);
 	  fputs (reg_names[REGNO (x)], stream);
 	}
       else if (GET_CODE (x) == MEM)
@@ -3243,7 +3269,7 @@ arm_asm_output_label (stream, name)
   else
     {
       real_name = xmalloc (2 + strlen (name));
-      strcpy (real_name, "_");
+      strcpy (real_name, USER_LABEL_PREFIX);
       strcat (real_name, name);
     }
   for (s = real_name; *s; s++)
@@ -3346,7 +3372,7 @@ output_lcomm_directive (stream, name, size, rounded)
      char *name;
      int size, rounded;
 {
-  fprintf (stream, "\n\t.bss\t%c .lcomm\n", ARM_COMMENT_CHAR);
+  fprintf (stream, "\n\t.bss\t%s .lcomm\n", ASM_COMMENT_START);
   assemble_name (stream, name);
   fprintf (stream, ":\t.space\t%d\n", rounded);
   if (in_text_section ())
