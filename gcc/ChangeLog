@@ -1,3 +1,53 @@
+Fri Nov 27 20:16:12 1998  Michael Meissner  <meissner@cygnus.com>
+
+	* configure.in (AC_CHECK_FUNCS): Check for strchr and strrchr.
+
+Fri Nov 27 20:13:36 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* system.h: New file.
+
+	* configure.in (AC_CHECK_FUNCS): Remove check for vprintf.
+	Add check for isascii and strsignal.
+	Collapse multiple calls.
+	(GCC_NEED_DECLARATIONS): Likewise, from GCC_NEED_DECLARATION.
+	Check for bcopy, bcmp, bzero, strerror, atof, getcwd,
+	strsignal and getwd.
+	Add checks for getrlimit and setrlimit; search in sys/resource.h.
+	(GCC_FUNC_PRINTF_PTR, GCC_C_VOLATILE, GCC_FUNC_VFPRINTF_DOPRNT): Call.
+	(GCC_HEADER_STRING, AC_FUNC_VFORK, AC_HEADER_SYS_WAIT): Likewise.
+
+	* acconfig.h (NEED_DECLARATION_{STRERROR,GETCWD,GETWD,BZERO}: Add.
+	(NEED_DECLARATION_{{G,S}ETRLIMIT,STRSIGNAL,BCOPY,BCMP}): Likewise.
+	(STRING_WITH_STRINGS, HAVE_VOLATILE, HOST_PTR_PRINTF): Likewise.
+
+	* aclocal.m4 (GCC_NEED_DECLARATION): Accept optional second arg.
+	Test STRING_WITH_STRINGS when deciding which headers to search for
+	function declarations.
+	(GCC_NEED_DECLARATIONS, GCC_HEADER_STRING): New autoconf test.
+	(GCC_FUNC_{VFPRINTF_DOPRNT,PRINTF_PTR}, GCC_C_VOLATILE): Likewise.
+
+Fri Nov 27 20:10:42 1998  Richard Henderson  <rth@cygnus.com>
+
+        * configure.in: Add cpp stringify test.
+	(AC_CHECK_FUNCS): Check for sbrk.
+	* acconfig.h (HAVE_CPP_STRINGIFY): New tag.
+
+Fri Nov 27 20:09:27 1998  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* configure.in (AC_CHECK_FUNCS): Check for getrlimit and setrlimit.
+
+Fri Nov 27 19:48:27 1998  Jeffrey A Law  <law@cygnus.com>
+
+	* configure.in (AC_CHECK_FUNCS): Add gettimeofday, atoq, atoll,
+	strerror, stroul, abort and bsearch.
+	* acconfig.h (NEED_DECLARATION_{ATOL,ABORT}): New tags.
+
+Fri Nov 27 19:46:09 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* acconfig.h (HAVE_INTTYPES_H): New tag.
+	* configure.in (inttypes.h): Check for conflicts between sys/types.h
+	and inttypes.h and verify that intmax_t is defined.
+	
 Fri Nov 27 08:07:53 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* alpha.c (sext_add_operand): Use reg_not_elim_operand.
