@@ -11417,7 +11417,7 @@ resolve_field_access (qual_wfl, field_decl, field_type)
 
   /* Resolve the LENGTH field of an array here */
   if (DECL_P (decl) && DECL_NAME (decl) == length_identifier_node 
-      && TYPE_ARRAY_P (type_found) 
+      && type_found && TYPE_ARRAY_P (type_found) 
       && ! flag_emit_class_files && ! flag_emit_xref)
     {
       tree length = build_java_array_length_access (where_found);
