@@ -11,6 +11,10 @@
    <meta name="GENERATOR" content="emacs and ten fingers" />
    <title>Allocators and allocation</title>
 <link rel="StyleSheet" href="../lib3styles.css" type="text/css" />
+<link rel="Start" href="../documentation.html" type="text/html"
+  title="GNU C++ Standard Library" />
+<link rel="Bookmark" href="howto.html" type="text/html"
+  title="General Utilities" />
 <link rel="Copyright" href="../17_intro/license.html" type="text/html" />
 </head>
 <body>
@@ -35,7 +39,7 @@
 </p>
 
 <h3 class="left">
-  <a name="standard requirements">Standard requirements</a>
+  <a name="standard_requirements">Standard requirements</a>
 </h3>
    <p>The C++ standard only gives a few directives in this area:
    </p>
@@ -74,7 +78,7 @@
    </p>
 
 <h3 class="left">
-  <a name="probs possibilities">Problems and Possibilities</a>
+  <a name="probs_possibilities">Problems and Possibilities</a>
 </h3>
    <p>The easiest way of fulfilling the requirements is to call operator new
       each time a container needs memory, and to call operator delete each
@@ -256,7 +260,7 @@
    </p> 
 
 <h3 class="left">
-  <a name="ext allocators">Other allocators</a>
+  <a name="ext_allocators">Other allocators</a>
 </h3>
    <p> Several other allocators are provided as part of this
    implementation.  The location of the extension allocators and their
@@ -381,7 +385,7 @@
 
 
 <h3 class="left">
-  <a name="using custom allocators">Using a specific allocator</a>
+  <a name="using_custom_allocators">Using a specific allocator</a>
 </h3>
    <p>You can specify different memory management schemes on a
       per-container basis, by overriding the default
@@ -397,7 +401,7 @@
 
 
 <h3 class="left">
-  <a name="custom allocators">Writing custom allocators</a>
+  <a name="custom_allocators">Writing custom allocators</a>
 </h3>
    <p> Writing a portable C++ allocator would dictate that the
    interface would look much like the one specified for <code>

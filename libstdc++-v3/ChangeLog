@@ -1,3 +1,9 @@
+2004-02-25  Jonathan Wakely  <redi@gcc.gnu.org>
+
+	* docs/html/20_util/howto.html, docs/html/20_util/allocator.html,
+	docs/html/ext/howto.html, docs/html/ext/mt_allocator.html:
+	Fix markup, more <link> tags.
+
 2004-02-25  Carlo Wood  <carlo@alinoe.com>
 
 	* bits/demangle.h
