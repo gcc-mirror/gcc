@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for AMD Am29000 CPU.
-   Copyright (C) 1988, 90-95, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1988, 90-96, 1997 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@nyu.edu)
 
 This file is part of GNU CC.
@@ -1275,9 +1275,10 @@ extern char *a29k_function_name;
 #define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
 
 /* We assume that the store-condition-codes instructions store 0 for false
-   and some other value for true.  This is the value stored for true.  */
+   and some other value for true.  This is the value stored for true, which
+   is just the sign bit.  */
 
-#define STORE_FLAG_VALUE 0x80000000
+#define STORE_FLAG_VALUE -2147483648
 
 /* Specify the machine mode that pointers have.
    After generation of rtl, the compiler makes no further distinction
