@@ -44,6 +44,7 @@ Boston, MA 02111-1307, USA.  */
 #include "obstack.h"
 #include "except.h"
 #include "function.h"
+#include "fr30-protos.h"
 
 /*}}}*/
 /*{{{  Function Prologues & Epilogues */ 
@@ -398,7 +399,7 @@ void
 fr30_setup_incoming_varargs (arg_regs_used_so_far, int_mode, type, pretend_size)
      CUMULATIVE_ARGS arg_regs_used_so_far;
      int             int_mode;
-     tree            type;
+     tree            type ATTRIBUTE_UNUSED;
      int *           pretend_size;
 {
   enum machine_mode mode = (enum machine_mode)int_mode;
@@ -576,7 +577,7 @@ fr30_print_operand (file, x, code)
       switch (GET_CODE (x0))
 	{
 	case REG:
-	  if (REGNO (x0) >= (sizeof (reg_names) / sizeof (reg_names[0])))
+	  if ((unsigned) REGNO (x0) >= (sizeof (reg_names) / sizeof (reg_names[0])))
 	    abort ();
 	  fprintf (file, "@%s", reg_names [REGNO (x0)]);
 	  break;
@@ -785,6 +786,10 @@ fr30_va_arg (valist, type)
 
 /*}}}*/
 /*{{{  Operand predicates */ 
+
+#ifndef Mmode
+#define Mmode enum machine_mode
+#endif
 
 /* Returns true if OPERAND is an integer value suitable for use in
    an ADDSP instruction.  */
