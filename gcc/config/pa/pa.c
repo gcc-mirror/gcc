@@ -1946,10 +1946,14 @@ output_function_prologue (file, size)
      of a function.  */
   fprintf (file, "\t.PROC\n\t.CALLINFO FRAME=%d", actual_fsize);
   if (regs_ever_live[2] || profile_flag)
-    fprintf (file, ",CALLS,SAVE_RP\n");
+    fprintf (file, ",CALLS,SAVE_RP");
   else
-    fprintf (file, ",NO_CALLS\n");
-  fprintf (file, "\t.ENTRY\n");
+    fprintf (file, ",NO_CALLS");
+
+  if (frame_pointer_needed)
+    fprintf (file, ",SAVE_SP");
+
+  fprintf (file, "\n\t.ENTRY\n");
 
   /* Horrid hack.  emit_function_prologue will modify this RTL in
      place to get the expected results.  */
