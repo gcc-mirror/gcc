@@ -89,7 +89,7 @@ extern void bitmap_debug PROTO((bitmap));
 extern void bitmap_debug_file PROTO((FILE *, bitmap));
 
 /* Print a bitmap */
-extern void bitmap_print PROTO((FILE *, bitmap, char *, char *));
+extern void bitmap_print PROTO((FILE *, bitmap, const char *, const char *));
 
 /* Initialize a bitmap header.  */
 extern bitmap bitmap_initialize PROTO((bitmap));

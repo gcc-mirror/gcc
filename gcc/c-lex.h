@@ -81,7 +81,7 @@ extern void position_after_white_space PROTO((void));
 extern int check_newline PROTO((void));
 
 extern int yylex PROTO((void));
-extern void yyerror PROTO((char *));
+extern void yyerror PROTO((const char *));
 
 extern void forget_protocol_qualifiers PROTO((void));
 extern void remember_protocol_qualifiers PROTO((void));

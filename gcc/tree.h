@@ -1672,7 +1672,7 @@ extern int staticp			PROTO((tree));
 /* Gets an error if argument X is not an lvalue.
    Also returns 1 if X is an lvalue, 0 if not.  */
 
-extern int lvalue_or_else		PROTO((tree, char *));
+extern int lvalue_or_else		PROTO((tree, const char *));
 
 /* save_expr (EXP) returns an expression equivalent to EXP
    but it can be used multiple times within context CTX
@@ -2209,8 +2209,8 @@ extern void print_rtl			PROTO ((FILE *, struct rtx_def *));
 /* In print-tree.c */
 extern void debug_tree			PROTO ((tree));
 #ifdef BUFSIZ
-extern void print_node			PROTO ((FILE *, char *, tree, int));
-extern void print_node_brief		PROTO ((FILE *, char *, tree, int));
+extern void print_node			PROTO ((FILE *, const char *, tree, int));
+extern void print_node_brief		PROTO ((FILE *, const char *, tree, int));
 extern void indent_to			PROTO ((FILE *, int));
 #endif
 
