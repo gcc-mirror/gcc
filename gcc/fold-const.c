@@ -5370,6 +5370,14 @@ fold (expr)
 	     so we can do this anyway.  */
 	  if (real_onep (arg1))
 	    return non_lvalue (convert (type, arg0));
+
+	  /* Transform x * -1.0 into -x.  This should be safe for NaNs,
+	     signed zeros and signed infinities, but is currently
+	     restricted to "unsafe math optimizations" just in case.  */
+	  if (flag_unsafe_math_optimizations
+	      && real_minus_onep (arg1))
+	    return fold (build1 (NEGATE_EXPR, type, arg0));
+
 	  /* x*2 is x+x */
 	  if (! wins && real_twop (arg1)
 	      && (*lang_hooks.decls.global_bindings_p) () == 0

@@ -1,5 +1,10 @@
 2002-06-01  Roger Sayle  <roger@eyesopen.com>
 
+	* tree.c (real_minus_onep): New function to test for -1.0.
+	* fold-const.c (fold) [MULT_EXPR]:  Optimize -1.0*x into -x.
+
+2002-06-01  Roger Sayle  <roger@eyesopen.com>
+
 	* fold-const.c (fold_truthop): Transform "a || b" into "(a|b) != 0"
 	and "!p && !q" into "(p|q) == 0" under suitable conditions.
 
