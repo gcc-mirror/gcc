@@ -1,6 +1,12 @@
 2004-06-30  Richard Henderson  <rth@redhat.com>
 
 	* trans-decl.c (gfc_generate_function_code): Don't set
+	x_whole_function_mode_p.
+	(gfc_generate_constructors): Likewise.
+
+2004-06-30  Richard Henderson  <rth@redhat.com>
+
+	* trans-decl.c (gfc_generate_function_code): Don't set
 	immediate_size_expand.
 	(gfc_generate_constructors): Likewise.
 

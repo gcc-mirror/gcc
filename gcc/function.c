@@ -1768,7 +1768,6 @@ fixup_var_refs_insn (rtx insn, rtx var, enum machine_mode promoted_mode,
   else
     {
       struct fixup_replacement *replacements = 0;
-      rtx next_insn = NEXT_INSN (insn);
 
       if (SMALL_REGISTER_CLASSES)
 	{

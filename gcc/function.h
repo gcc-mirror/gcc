@@ -461,12 +461,6 @@ struct function GTY(())
   /* Nonzero if current function uses stdarg.h or equivalent.  */
   unsigned int stdarg : 1;
 
-  /* Nonzero if this function is being processed in function-at-a-time
-     mode.  In other words, if all tree structure for this function,
-     including the BLOCK tree, is created before RTL generation
-     commences.  */
-  unsigned int x_whole_function_mode_p : 1;
-
   /* Nonzero if the back-end should not keep track of expressions that
      determine the size of variable-sized objects.  Normally, such
      expressions are saved away, and then expanded when the next

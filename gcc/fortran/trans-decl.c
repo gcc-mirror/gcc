@@ -2028,9 +2028,6 @@ gfc_generate_function_code (gfc_namespace * ns)
   /* line and file should not be 0 */
   init_function_start (fndecl);
 
-  /* We're in function-at-a-time mode. */
-  cfun->x_whole_function_mode_p = 1;
-
   /* Even though we're inside a function body, we still don't want to
      call expand_expr to calculate the size of a variable-sized array.
      We haven't necessarily assigned RTL to all variables yet, so it's
@@ -2187,8 +2184,6 @@ gfc_generate_constructors (void)
   make_decl_rtl (fndecl, NULL);
 
   init_function_start (fndecl, input_filename, input_line);
-
-  cfun->x_whole_function_mode_p = 1;
 
   pushlevel (0);
 

@@ -1376,15 +1376,9 @@ rest_of_compilation (void)
 
   if (!cfun->dont_emit_block_notes)
     {
-      /* First, make sure that NOTE_BLOCK is set correctly for each
-	 NOTE_INSN_BLOCK_BEG/NOTE_INSN_BLOCK_END note.  */
-      if (!cfun->x_whole_function_mode_p)
-	identify_blocks ();
-
       /* In function-at-a-time mode, we do not attempt to keep the BLOCK
 	 tree in sensible shape.  So, we just recalculate it here.  */
-      if (cfun->x_whole_function_mode_p)
-	reorder_blocks ();
+      reorder_blocks ();
     }
   else
     finalize_block_changes ();
