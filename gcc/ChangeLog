@@ -1,3 +1,8 @@
+2004-04-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.c (mathfn_built_in): Check TYPE_MAIN_VARIANT, not
+	TYPE_MODE.
+
 2004-04-09  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* c-common.c (handle_noreturn_attribute): Use TYPE_READONLY instead

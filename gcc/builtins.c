@@ -1389,7 +1389,6 @@ expand_builtin_constant_p (tree arglist, enum machine_mode target_mode)
 tree
 mathfn_built_in (tree type, enum built_in_function fn)
 {
-  const enum machine_mode type_mode = TYPE_MODE (type);
   enum built_in_function fcode, fcodef, fcodel;
 
   switch (fn)
@@ -1472,11 +1471,11 @@ mathfn_built_in (tree type, enum built_in_function fn)
 	return 0;
       }
 
-  if (type_mode == TYPE_MODE (double_type_node))
+  if (TYPE_MAIN_VARIANT (type) == double_type_node)
     return implicit_built_in_decls[fcode];
-  else if (type_mode == TYPE_MODE (float_type_node))
+  else if (TYPE_MAIN_VARIANT (type) == float_type_node)
     return implicit_built_in_decls[fcodef];
-  else if (type_mode == TYPE_MODE (long_double_type_node))
+  else if (TYPE_MAIN_VARIANT (type) == long_double_type_node)
     return implicit_built_in_decls[fcodel];
   else
     return 0;
