@@ -2041,7 +2041,21 @@ write_expression (tree expr)
 
 	default:
 	  for (i = 0; i < TREE_CODE_LENGTH (code); ++i)
-	    write_expression (TREE_OPERAND (expr, i));
+	    {
+	      tree operand = TREE_OPERAND (expr, i);
+	      /* As a GNU expression, the middle operand of a
+		 conditional may be omitted.  Since expression
+		 manglings are supposed to represent the input token
+		 stream, there's no good way to mangle such an
+		 expression without extending the C++ ABI.  */
+	      if (code == COND_EXPR && i == 1 && !operand)
+		{
+		  error ("omitted middle operand to `?:' operand "
+			 "cannot be mangled");
+		  continue;
+		}
+	      write_expression (operand);
+	    }
 	}
     }
 }
