@@ -316,10 +316,12 @@ convert_to_integer (type, expr)
 		       unsigned then can safely do the work as unsigned.
 		       And we may need to do it as unsigned
 		       if we truncate to the original size.  */
-		    typex = ((TREE_UNSIGNED (TREE_TYPE (expr))
-			      || (TREE_UNSIGNED (TREE_TYPE (arg0))
-				  && TREE_UNSIGNED (TREE_TYPE (arg1))))
-			     ? unsigned_type (typex) : signed_type (typex));
+		    if (TREE_UNSIGNED (TREE_TYPE (expr))
+			|| (TREE_UNSIGNED (TREE_TYPE (arg0))
+			    && TREE_UNSIGNED (TREE_TYPE (arg1))))
+		      typex = (*lang_hooks.types.unsigned_type) (typex);
+		    else
+		      typex = (*lang_hooks.types.signed_type) (typex);
 		    return convert (type,
 				    fold (build (ex_form, typex,
 						 convert (typex, arg0),
@@ -350,8 +352,10 @@ convert_to_integer (type, expr)
 	      {
 		/* Don't do unsigned arithmetic where signed was wanted,
 		   or vice versa.  */
-		typex = (TREE_UNSIGNED (TREE_TYPE (expr))
-			 ? unsigned_type (typex) : signed_type (typex));
+		if (TREE_UNSIGNED (TREE_TYPE (expr)))
+		  typex = (*lang_hooks.types.unsigned_type) (typex);
+		else
+		  typex = (*lang_hooks.types.signed_type) (typex);
 		return convert (type,
 				fold (build1 (ex_form, typex,
 					      convert (typex,

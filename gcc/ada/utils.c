@@ -2022,7 +2022,7 @@ gnat_type_for_mode (mode, unsignedp)
 /* Return the unsigned version of a TYPE_NODE, a scalar type.  */
 
 tree
-unsigned_type (type_node)
+gnat_unsigned_type (type_node)
      tree type_node;
 {
   tree type = gnat_type_for_size (TYPE_PRECISION (type_node), 1);
@@ -2046,7 +2046,7 @@ unsigned_type (type_node)
 /* Return the signed version of a TYPE_NODE, a scalar type.  */
 
 tree
-signed_type (type_node)
+gnat_signed_type (type_node)
      tree type_node;
 {
   tree type = gnat_type_for_size (TYPE_PRECISION (type_node), 0);
@@ -2071,7 +2071,7 @@ signed_type (type_node)
    UNSIGNEDP.  */
 
 tree
-signed_or_unsigned_type (unsignedp, type)
+gnat_signed_or_unsigned_type (unsignedp, type)
      int unsignedp;
      tree type;
 {

@@ -84,6 +84,18 @@ struct lang_hooks_for_types
   /* Given PRECISION and UNSIGNEDP, return a suitable type-tree for an
      integer type with at least that precision.  */
   tree (*type_for_size) PARAMS ((unsigned, int));
+
+  /* Given an integer type T, return a type like T but unsigned.
+     If T is unsigned, the value is T.  */
+  tree (*unsigned_type) PARAMS ((tree));
+
+  /* Given an integer type T, return a type like T but signed.
+     If T is signed, the value is T.  */
+  tree (*signed_type) PARAMS ((tree));
+
+  /* Return a type the same as TYPE except unsigned or signed
+     according to UNSIGNEDP.  */
+  tree (*signed_or_unsigned_type) PARAMS ((int, tree));
 };
 
 /* Language hooks related to decls and the symbol table.  */

@@ -263,6 +263,9 @@ struct _ffecom_concat_list_
 
 static tree ffe_type_for_mode PARAMS ((enum machine_mode, int));
 static tree ffe_type_for_size PARAMS ((unsigned int, int));
+static tree ffe_unsigned_type PARAMS ((tree));
+static tree ffe_signed_type PARAMS ((tree));
+static tree ffe_signed_or_unsigned_type PARAMS ((int, tree));
 static void ffecom_init_decl_processing PARAMS ((void));
 static tree ffecom_arglist_expr_ (const char *argstring, ffebld args);
 static tree ffecom_widest_expr_type_ (ffebld list);
@@ -14230,10 +14233,17 @@ static void ffe_mark_tree (tree);
 #define LANG_HOOKS_DECL_PRINTABLE_NAME	ffe_printable_name
 #undef  LANG_HOOKS_PRINT_ERROR_FUNCTION
 #define LANG_HOOKS_PRINT_ERROR_FUNCTION ffe_print_error_function
+
 #undef  LANG_HOOKS_TYPE_FOR_MODE
 #define LANG_HOOKS_TYPE_FOR_MODE	ffe_type_for_mode
 #undef  LANG_HOOKS_TYPE_FOR_SIZE
 #define LANG_HOOKS_TYPE_FOR_SIZE	ffe_type_for_size
+#undef  LANG_HOOKS_SIGNED_TYPE
+#define LANG_HOOKS_SIGNED_TYPE		ffe_signed_type
+#undef  LANG_HOOKS_UNSIGNED_TYPE
+#define LANG_HOOKS_UNSIGNED_TYPE	ffe_unsigned_type
+#undef  LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE
+#define LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE ffe_signed_or_unsigned_type
 
 /* We do not wish to use alias-set based aliasing at all.  Used in the
    extreme (every object with its own set, with equivalences recorded) it
@@ -14745,8 +14755,8 @@ set_block (block)
 					   BLOCK_SUBBLOCKS (block));
 }
 
-tree
-signed_or_unsigned_type (unsignedp, type)
+static tree
+ffe_signed_or_unsigned_type (unsignedp, type)
      int unsignedp;
      tree type;
 {
@@ -14773,8 +14783,8 @@ signed_or_unsigned_type (unsignedp, type)
   return type2;
 }
 
-tree
-signed_type (type)
+static tree
+ffe_signed_type (type)
      tree type;
 {
   tree type1 = TYPE_MAIN_VARIANT (type);
@@ -15093,8 +15103,8 @@ ffe_type_for_size (bits, unsignedp)
   return 0;
 }
 
-tree
-unsigned_type (type)
+static tree
+ffe_unsigned_type (type)
      tree type;
 {
   tree type1 = TYPE_MAIN_VARIANT (type);

@@ -2125,7 +2125,6 @@ extern tree make_signed_type		PARAMS ((int));
 extern tree make_unsigned_type		PARAMS ((int));
 extern void initialize_sizetypes	PARAMS ((void));
 extern void set_sizetype		PARAMS ((tree));
-extern tree signed_or_unsigned_type 	PARAMS ((int, tree));
 extern void fixup_unsigned_type		PARAMS ((tree));
 extern tree build_pointer_type		PARAMS ((tree));
 extern tree build_reference_type 	PARAMS ((tree));
@@ -2606,20 +2605,6 @@ extern tree get_unwidened		PARAMS ((tree, tree));
    or 0 if the value should be sign-extended.  */
 
 extern tree get_narrower		PARAMS ((tree, int *));
-
-/* Given an integer type T, return a type like T but unsigned.
-   If T is unsigned, the value is T.
-   The definition of this resides in language-specific code
-   as the repertoire of available types may vary.  */
-
-extern tree unsigned_type		PARAMS ((tree));
-
-/* Given an integer type T, return a type like T but signed.
-   If T is signed, the value is T.
-   The definition of this resides in language-specific code
-   as the repertoire of available types may vary.  */
-
-extern tree signed_type			PARAMS ((tree));
 
 /* Given an expression EXP that may be a COMPONENT_REF or an ARRAY_REF,
    look for nested component-refs or array-refs at constant positions

@@ -1395,7 +1395,7 @@ build_java_binop (op, type, arg1, arg2)
     {
     case URSHIFT_EXPR:
       {
-	tree u_type = unsigned_type (type);
+	tree u_type = java_unsigned_type (type);
 	arg1 = convert (u_type, arg1);
 	arg1 = build_java_binop (RSHIFT_EXPR, u_type, arg1, arg2);
 	return convert (type, arg1);

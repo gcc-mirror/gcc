@@ -1,3 +1,14 @@
+2002-04-01  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* expr.c (build_java_binop): Update.
+	* java-tree.h (java_signed_type, java_unsigned_type,
+	java_signed_or_unsigned_type): Update.
+	* lang.c (LANG_HOOKS_SIGNED_TYPE, LANG_HOOKS_UNSIGNED_TYPE,
+	LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE): New.
+	* parse.y (patch_binop): Update.
+	* typeck.c (signed_or_unsigned_type, unsigned_type,
+	signed_type): Update.
+
 2002-03-31  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* lang.c (LANG_HOOKS_PRINT_ERROR_FUNCTION): Redefine.

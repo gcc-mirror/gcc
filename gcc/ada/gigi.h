@@ -430,14 +430,14 @@ extern tree gnat_type_for_size		PARAMS ((unsigned, int));
 extern tree gnat_type_for_mode		PARAMS ((enum machine_mode, int));
 
 /* Return the unsigned version of a TYPE_NODE, a scalar type.  */
-extern tree unsigned_type		PARAMS ((tree));
+extern tree gnat_unsigned_type		PARAMS ((tree));
 
 /* Return the signed version of a TYPE_NODE, a scalar type.  */
-extern tree signed_type			PARAMS ((tree));
+extern tree gnat_signed_type		PARAMS ((tree));
 
 /* Return a type the same as TYPE except unsigned or signed according to
    UNSIGNEDP.  */
-extern tree signed_or_unsigned_type	PARAMS ((int, tree));
+extern tree gnat_signed_or_unsigned_type PARAMS ((int, tree));
 
 /* This routine is called in tree.c to print an error message for invalid use
    of an incomplete type.  */

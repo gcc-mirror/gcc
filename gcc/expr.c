@@ -4021,11 +4021,9 @@ store_expr (exp, target, want_value)
 	{
 	  if (TREE_UNSIGNED (TREE_TYPE (exp))
 	      != SUBREG_PROMOTED_UNSIGNED_P (target))
-	    exp
-	      = convert
-		(signed_or_unsigned_type (SUBREG_PROMOTED_UNSIGNED_P (target),
-					  TREE_TYPE (exp)),
-		 exp);
+	    exp = convert
+	      ((*lang_hooks.types.signed_or_unsigned_type)
+	       (SUBREG_PROMOTED_UNSIGNED_P (target), TREE_TYPE (exp)), exp);
 
 	  exp = convert ((*lang_hooks.types.type_for_mode)
 			 (GET_MODE (SUBREG_REG (target)),
