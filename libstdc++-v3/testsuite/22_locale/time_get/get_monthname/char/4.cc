@@ -1,0 +1,59 @@
+// 2004-04-07  Paolo Carlini  <pcarlini@suse.de>
+
+// Copyright (C) 2004 Free Software Foundation
+//
+// This file is part of the GNU ISO C++ Library.  This library is free
+// software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the
+// Free Software Foundation; either version 2, or (at your option)
+// any later version.
+
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License along
+// with this library; see the file COPYING.  If not, write to the Free
+// Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
+// USA.
+
+// 22.2.5.1.1 time_get members
+
+#include <locale>
+#include <sstream>
+#include <testsuite_hooks.h>
+
+void test01()
+{
+  using namespace std;
+  bool test __attribute__((unused)) = true;
+
+  typedef istreambuf_iterator<char> iterator_type;
+
+  const ios_base::iostate good = ios_base::goodbit;
+  ios_base::iostate errorstate = good;
+
+  // basic construction
+  locale loc_c = locale::classic();
+
+  iterator_type end;
+  istringstream iss;
+  iss.imbue(loc_c);
+  const time_get<char>& tim_get =
+    use_facet<time_get<char> >(iss.getloc()); 
+
+  iss.str("Jul");
+  iterator_type is_it01(iss);
+  tm time01;
+  errorstate = good;
+  tim_get.get_monthname(is_it01, end, iss, errorstate, &time01);
+  VERIFY( time01.tm_mon == 6 );
+  VERIFY( errorstate == ios_base::eofbit );
+}
+
+int main()
+{
+  test01();
+  return 0;
+}
