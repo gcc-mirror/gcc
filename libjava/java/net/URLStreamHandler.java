@@ -502,12 +502,9 @@ public abstract class URLStreamHandler
   protected String toExternalForm(URL url)
   {
     String protocol;
-    String host;
     String file;
     String ref;
-    String user;
     String authority;
-    int port;
 
     protocol = url.getProtocol();
     authority = url.getAuthority();
