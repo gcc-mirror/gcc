@@ -154,3 +154,6 @@ Boston, MA 02111-1307, USA.  */
 
 #undef LOCAL_LABEL_PREFIX
 #define LOCAL_LABEL_PREFIX "."
+
+/* The Solaris assembler does not support .quad.  Do not use it.  */
+#undef ASM_QUAD
