@@ -1,5 +1,7 @@
 2001-02-18  Richard Henderson  <rth@redhat.com>
 
+	* config/ns32k/ns32k.h (ADJSP): Upcase arguments.
+
 	* config/alpha/alpha.md (movsi_fix): Fix typo in pattern name.
 
 	* reload1.c (reload_cse_simplify_set): Fix typo.

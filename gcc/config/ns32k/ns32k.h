@@ -711,11 +711,11 @@ enum reg_class
  *  .
  */
 #if defined(IMMEDIATE_PREFIX) && IMMEDIATE_PREFIX
-#define ADJSP(FILE, n) \
-        fprintf (FILE, "\tadjspd %c%d\n", IMMEDIATE_PREFIX, (n))
+#define ADJSP(FILE, N) \
+        fprintf (FILE, "\tadjspd %c%d\n", IMMEDIATE_PREFIX, (N))
 #else
-#define ADJSP(FILE, n) \
-        fprintf (FILE, "\tadjspd %d\n", (n))
+#define ADJSP(FILE, N) \
+        fprintf (FILE, "\tadjspd %d\n", (N))
 #endif
 
 #define FUNCTION_PROLOGUE(FILE, SIZE)     \
