@@ -50,6 +50,9 @@ struct arg_data
      EXPR_LIST if the arg is to be copied into multiple different
      registers.  */
   rtx reg;
+  /* If REG was promoted from the actual mode of the argument expression,
+     indicates whether the promotion is sign- or zero-extended.  */
+  int unsignedp;
   /* Number of registers to use.  0 means put the whole arg in registers.
      Also 0 if not passed in registers.  */
   int partial;
@@ -854,6 +857,7 @@ expand_call (exp, target, ignore)
   for (p = actparms, argpos = 0; p; p = TREE_CHAIN (p), i += inc, argpos++)
     {
       tree type = TREE_TYPE (TREE_VALUE (p));
+      enum machine_mode mode;
 
       args[i].tree_value = TREE_VALUE (p);
 
@@ -914,16 +918,31 @@ expand_call (exp, target, ignore)
 	}
 #endif
 
-      args[i].reg = FUNCTION_ARG (args_so_far, TYPE_MODE (type), type,
+      mode = TYPE_MODE (type);
+
+#ifdef PROMOTE_FUNCTION_ARGS
+      /* Compute the mode in which the arg is actually to be extended to.  */
+      if (TREE_CODE (type) == INTEGER_TYPE || TREE_CODE (type) == ENUMERAL_TYPE
+	  || TREE_CODE (type) == BOOLEAN_TYPE || TREE_CODE (type) == CHAR_TYPE
+	  || TREE_CODE (type) == REAL_TYPE || TREE_CODE (type) == POINTER_TYPE
+	  || TREE_CODE (type) == OFFSET_TYPE)
+	{
+	  int unsignedp = TREE_UNSIGNED (type);
+	  PROMOTE_MODE (mode, unsignedp, type);
+	  args[i].unsignedp = unsignedp;
+	}
+#endif
+
+      args[i].reg = FUNCTION_ARG (args_so_far, mode, type,
 				  argpos < n_named_args);
 #ifdef FUNCTION_ARG_PARTIAL_NREGS
       if (args[i].reg)
 	args[i].partial
-	  = FUNCTION_ARG_PARTIAL_NREGS (args_so_far, TYPE_MODE (type), type,
+	  = FUNCTION_ARG_PARTIAL_NREGS (args_so_far, mode, type,
 					argpos < n_named_args);
 #endif
 
-      args[i].pass_on_stack = MUST_PASS_IN_STACK (TYPE_MODE (type), type);
+      args[i].pass_on_stack = MUST_PASS_IN_STACK (mode, type);
 
       /* If FUNCTION_ARG returned an (expr_list (nil) FOO), it means that
 	 we are to pass this arg in the register(s) designated by FOO, but
@@ -1385,6 +1404,8 @@ expand_call (exp, target, ignore)
   for (i = 0; i < num_actuals; i++)
     if (args[i].reg != 0 && ! args[i].pass_on_stack)
       {
+	enum machine_mode mode;
+
 	reg_parm_seen = 1;
 
 	if (args[i].value == 0)
@@ -1398,6 +1419,15 @@ expand_call (exp, target, ignore)
 	       but PCC has one, so this will avoid some problems.  */
 	    emit_queue ();
 	  }
+
+	/* If we are to promote the function arg to a wider mode,
+	   do it now.  */
+	mode = (GET_CODE (args[i].reg) == EXPR_LIST 
+		? GET_MODE (XEXP (args[i].reg, 0)) : GET_MODE (args[i].reg));
+
+	if (GET_MODE (args[i].value) != mode)
+	  args[i].value = convert_to_mode (mode, args[i].value,
+					   args[i].unsignedp);
       }
 
 #if defined(ACCUMULATE_OUTGOING_ARGS) && defined(REG_PARM_STACK_SPACE)
@@ -1666,7 +1696,8 @@ expand_call (exp, target, ignore)
 			 expr_size (exp),
 			 TYPE_ALIGN (TREE_TYPE (exp)) / BITS_PER_UNIT);
     }
-  else if (target && GET_MODE (target) == TYPE_MODE (TREE_TYPE (exp)))
+  else if (target && GET_MODE (target) == TYPE_MODE (TREE_TYPE (exp))
+	   && GET_MODE (target) == GET_MODE (valreg))
     /* TARGET and VALREG cannot be equal at this point because the latter
        would not have REG_FUNCTION_VALUE_P true, while the former would if
        it were referring to the same register.
@@ -1676,6 +1707,30 @@ expand_call (exp, target, ignore)
     emit_move_insn (target, valreg);
   else
     target = copy_to_reg (valreg);
+
+#ifdef PROMOTE_FUNCTION_RETURN
+  /* If we promoted this return value, make the proper SUBREG.  */
+  if (GET_MODE (target) != TYPE_MODE (TREE_TYPE (exp)))
+    {
+      enum machine_mode mode = GET_MODE (target);
+      int unsignedp = TREE_UNSIGNED (TREE_TYPE (exp));
+
+      if (TREE_CODE (TREE_TYPE (exp)) == INTEGER_TYPE
+	  || TREE_CODE (TREE_TYPE (exp)) == ENUMERAL_TYPE
+	  || TREE_CODE (TREE_TYPE (exp)) == BOOLEAN_TYPE
+	  || TREE_CODE (TREE_TYPE (exp)) == CHAR_TYPE
+	  || TREE_CODE (TREE_TYPE (exp)) == REAL_TYPE
+	  || TREE_CODE (TREE_TYPE (exp)) == POINTER_TYPE
+	  || TREE_CODE (TREE_TYPE (exp)) == OFFSET_TYPE)
+	{
+	  PROMOTE_MODE (mode, unsignedp, TREE_TYPE (exp));
+	}
+
+      target = gen_rtx (SUBREG, TYPE_MODE (TREE_TYPE (exp)), target, 0);
+      SUBREG_PROMOTED_VAR_P (target) = 1;
+      SUBREG_PROMOTED_UNSIGNED_P (target) = unsignedp;
+    }
+#endif
 
   /* Perform all cleanups needed for the arguments of this call
      (i.e. destructors in C++).  */
