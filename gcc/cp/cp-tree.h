@@ -3102,32 +3102,6 @@ extern GTY(()) tree integer_three_node;
    function, two inside the body of a function in a local class, etc.)  */
 extern int function_depth;
 
-typedef struct deferred_access GTY(())
-{
-  /* A TREE_LIST representing name-lookups for which we have deferred
-     checking access controls.  We cannot check the accessibility of
-     names used in a decl-specifier-seq until we know what is being
-     declared because code like:
-
-       class A { 
-         class B {};
-         B* f();
-       }
-
-       A::B* A::f() { return 0; }
-
-     is valid, even though `A::B' is not generally accessible.  
-
-     The TREE_PURPOSE of each node is the scope used to qualify the
-     name being looked up; the TREE_VALUE is the DECL to which the
-     name was resolved.  */
-  tree deferred_access_checks;
-  /* The current mode of access checks.  */
-  enum deferring_kind deferring_access_checks_kind;
-  /* The next deferred access data in stack or linked-list.  */
-  struct deferred_access *next;
-} deferred_access;
-
 /* in pt.c  */
 
 /* These values are used for the `STRICT' parameter to type_unification and
