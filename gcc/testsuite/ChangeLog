@@ -1,3 +1,7 @@
+2000-11-09  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.old-deja/g++.pt/operator1.C: New test.
+
 2000-11-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/20001108-1.c: New test.
