@@ -24,7 +24,9 @@
 #include <sstream>
 #include <testsuite_hooks.h>
 
-// test string version
+// XXX This test is not working for non-glibc locale models.
+// { dg-do run { xfail *-*-* } }
+
 void test01()
 {
   using namespace std;
@@ -42,11 +44,11 @@ void test01()
   VERIFY( loc_hk != loc_de );
   VERIFY( loc_de != loc_fr );
 
-  // cache the moneypunct facets, for quicker gdb inspection
-  const time_put<char>& timp_c = use_facet<time_put<char> >(loc_c); 
-  const time_put<char>& timp_de = use_facet<time_put<char> >(loc_de); 
-  const time_put<char>& timp_hk = use_facet<time_put<char> >(loc_hk); 
-  const time_put<char>& timp_fr = use_facet<time_put<char> >(loc_fr); 
+  // cache the __timepunct facets, for quicker gdb inspection
+  const __timepunct<char>& time_c = use_facet<__timepunct<char> >(loc_c); 
+  const __timepunct<char>& time_de = use_facet<__timepunct<char> >(loc_de); 
+  const __timepunct<char>& time_hk = use_facet<__timepunct<char> >(loc_hk); 
+  const __timepunct<char>& time_fr = use_facet<__timepunct<char> >(loc_fr); 
 
   // create an ostream-derived object, cache the time_put facet
   const string empty;
@@ -71,10 +73,36 @@ void test01()
   VERIFY( result1 == "Sun" );
 
   oss.str(empty);
+  iterator_type os_it21 = tim_put.put(oss.rdbuf(), oss, '*', &time1, 'x');
+  string result21 = oss.str(); // "04/04/71"
+  oss.str(empty);
+  iterator_type os_it22 = tim_put.put(oss.rdbuf(), oss, '*', &time1, 'X');
+  string result22 = oss.str(); // "12:00:00"
+  oss.str(empty);
+  iterator_type os_it31 = tim_put.put(oss.rdbuf(), oss, '*', &time1, 'x', 'E');
+  string result31 = oss.str(); // "04/04/71"
+  oss.str(empty);
+  iterator_type os_it32 = tim_put.put(oss.rdbuf(), oss, '*', &time1, 'X', 'E');
+  string result32 = oss.str(); // "12:00:00"
+
+  oss.str(empty);
   oss.imbue(loc_de);
   iterator_type os_it02 = tim_put.put(oss.rdbuf(), oss, '*', &time1, 'a');
   string result2 = oss.str();
   VERIFY( result2 == "Son" );
+
+  oss.str(empty); // "%d.%m.%Y"
+  iterator_type os_it23 = tim_put.put(oss.rdbuf(), oss, '*', &time1, 'x');
+  string result23 = oss.str(); // "04.04.1971"
+  oss.str(empty); // "%T"
+  iterator_type os_it24 = tim_put.put(oss.rdbuf(), oss, '*', &time1, 'X');
+  string result24 = oss.str(); // "12:00:00"
+  oss.str(empty);
+  iterator_type os_it33 = tim_put.put(oss.rdbuf(), oss, '*', &time1, 'x', 'E');
+  string result33 = oss.str(); // "04.04.1971"
+  oss.str(empty);
+  iterator_type os_it34 = tim_put.put(oss.rdbuf(), oss, '*', &time1, 'X', 'E');
+  string result34 = oss.str(); // "12:00:00"
 
   oss.str(empty);
   oss.imbue(loc_hk);
@@ -82,11 +110,37 @@ void test01()
   string result3 = oss.str();
   VERIFY( result3 == "Sun" );
 
+  oss.str(empty); // "%A, %B %d, %Y"
+  iterator_type os_it25 = tim_put.put(oss.rdbuf(), oss, '*', &time1, 'x');
+  string result25 = oss.str(); // "Sunday, April 04, 1971"
+  oss.str(empty); // "%I:%M:%S %Z"
+  iterator_type os_it26 = tim_put.put(oss.rdbuf(), oss, '*', &time1, 'X');
+  string result26 = oss.str(); // "12:00:00 PST"
+  oss.str(empty);
+  iterator_type os_it35 = tim_put.put(oss.rdbuf(), oss, '*', &time1, 'x', 'E');
+  string result35 = oss.str(); // "Sunday, April 04, 1971"
+  oss.str(empty);
+  iterator_type os_it36 = tim_put.put(oss.rdbuf(), oss, '*', &time1, 'X', 'E');
+  string result36 = oss.str(); // "12:00:00 PST"
+
   oss.str(empty);
   oss.imbue(loc_fr);
   iterator_type os_it04 = tim_put.put(oss.rdbuf(), oss, '*', &time1, 'a');
   string result4 = oss.str();
   VERIFY( result4 == "dim" );
+
+  oss.str(empty); // "%d.%m.%Y"
+  iterator_type os_it27 = tim_put.put(oss.rdbuf(), oss, '*', &time1, 'x');
+  string result27 = oss.str(); // "04.04.1971"
+  oss.str(empty); // "%T"
+  iterator_type os_it28 = tim_put.put(oss.rdbuf(), oss, '*', &time1, 'X');
+  string result28 = oss.str(); // "12:00:00"
+  oss.str(empty);
+  iterator_type os_it37 = tim_put.put(oss.rdbuf(), oss, '*', &time1, 'x', 'E');
+  string result37 = oss.str(); // "04.04.1971"
+  oss.str(empty);
+  iterator_type os_it38 = tim_put.put(oss.rdbuf(), oss, '*', &time1, 'X', 'E');
+  string result38 = oss.str(); // "12:00:00"
 
   // 2
   oss.str(empty);

@@ -36,10 +36,19 @@
 
   template<typename _CharT>
     void
-    __timepunct<_CharT>::_M_put_helper(char* __s, size_t __maxlen, 
-				       const char* __format, 
-				       const tm* __tm) const
+    __timepunct<_CharT>::
+    _M_put_helper(char* __s, size_t __maxlen, const char* __format, 
+		  const tm* __tm) const
     {
       setlocale(LC_ALL, _M_name_timepunct);
       strftime(__s, __maxlen, __format, __tm); 
+    }
+
+  template<typename _CharT>
+    void
+    __timepunct<_CharT>::
+    _M_get_helper(const char*, const char*, tm*) const
+    {
+      setlocale(LC_ALL, _M_name_timepunct);
+      // strptime(__s, __format, __tm);
     }

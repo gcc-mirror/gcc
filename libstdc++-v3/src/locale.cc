@@ -434,6 +434,25 @@ namespace std
   : ctype<char>(new mask[table_size], true, __refs)
   { }
 
+  // Definitions for static const data members of time_base
+  template<> 
+    const char*
+    __timepunct<char>::_S_timezones[14] =
+    { 
+      "GMT", "HST", "AKST", "PST", "MST", "CST", "EST", "AST", "NST", "CET", 
+      "IST", "EET", "CST", "JST"  
+    };
+ 
+#ifdef _GLIBCPP_USE_WCHAR_T
+  template<> 
+    const wchar_t*
+    __timepunct<wchar_t>::_S_timezones[14] =
+    { 
+      L"GMT", L"HST", L"AKST", L"PST", L"MST", L"CST", L"EST", L"AST", 
+      L"NST", L"CET", L"IST", L"EET", L"CST", L"JST"  
+    };
+#endif
+
   // Definitions for static const data members of money_base
   const money_base::pattern 
   money_base::_S_default_pattern =  {{symbol, sign, none, value}};
