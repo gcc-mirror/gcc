@@ -1,5 +1,5 @@
 /* com.c -- Implementation File (module.c template V1.0)
-   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003
+   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
    Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
@@ -6906,11 +6906,11 @@ ffecom_member_phase2_ (ffestorag mst, ffestorag st)
   TREE_USED (t) = 1;
 
   SET_DECL_RTL (t,
-		gen_rtx (MEM, TYPE_MODE (type),
-			 plus_constant (XEXP (DECL_RTL (mt), 0),
-					ffestorag_modulo (mst)
-					+ ffestorag_offset (st)
-					- ffestorag_offset (mst))));
+		gen_rtx_MEM (TYPE_MODE (type),
+			     plus_constant (XEXP (DECL_RTL (mt), 0),
+					    ffestorag_modulo (mst)
+					    + ffestorag_offset (st)
+					    - ffestorag_offset (mst))));
 
   t = start_decl (t, FALSE);
 

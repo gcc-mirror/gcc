@@ -5355,8 +5355,8 @@ init_emit_once (int line_numbers)
      This must be done at runtime because the register number field
      is in a union and some compilers can't initialize unions.  */
 
-  pc_rtx = gen_rtx (PC, VOIDmode);
-  cc0_rtx = gen_rtx (CC0, VOIDmode);
+  pc_rtx = gen_rtx_PC (VOIDmode);
+  cc0_rtx = gen_rtx_CC0 (VOIDmode);
   stack_pointer_rtx = gen_raw_REG (Pmode, STACK_POINTER_REGNUM);
   frame_pointer_rtx = gen_raw_REG (Pmode, FRAME_POINTER_REGNUM);
   if (hard_frame_pointer_rtx == 0)

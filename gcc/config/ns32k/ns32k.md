@@ -1322,8 +1322,8 @@
 ;;			         REG_NOTES (first));
 ;;    REG_NOTES (last) = gen_rtx_INSN_LIST (REG_RETVAL, first,
 ;;                                gen_rtx_EXPR_LIST (REG_EQUAL,
-;;                       gen_rtx(IOR, DImode, moddi,
-;;                               gen_rtx(ASHIFT, DImode, divdi, GEN_INT(32))),
+;;                       gen_rtx_IOR (DImode, moddi,
+;;                                    gen_rtx_ASHIFT (DImode, divdi, GEN_INT(32))),
 ;;                       REG_NOTES (last)));
 ;;  }
 ;;
@@ -1379,8 +1379,8 @@
 ;;			         REG_NOTES (first));
 ;;    REG_NOTES (last) = gen_rtx_INSN_LIST (REG_RETVAL, first,
 ;;                                gen_rtx_EXPR_LIST (REG_EQUAL,
-;;                       gen_rtx(IOR, DImode, moddi,
-;;                               gen_rtx(ASHIFT, DImode, divdi, GEN_INT(32))),
+;;                       gen_rtx_IOR (DImode, moddi,
+;;                                    gen_rtx_ASHIFT (DImode, divdi, GEN_INT(32))),
 ;;                       REG_NOTES (last)));
 ;;  }
 ;;

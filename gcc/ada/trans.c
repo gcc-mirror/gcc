@@ -186,7 +186,7 @@ gigi (Node_Id gnat_root,
 
   /* Enable GNAT stack checking method if needed */
   if (!Stack_Check_Probes_On_Target)
-    set_stack_check_libfunc (gen_rtx (SYMBOL_REF, Pmode, "_gnat_stack_check"));
+    set_stack_check_libfunc (gen_rtx_SYMBOL_REF (Pmode, "_gnat_stack_check"));
 
   /* Save the type we made for integer as the type for Standard.Integer.
      Then make the rest of the standard types.  Note that some of these

@@ -3477,7 +3477,7 @@ init_elim_table (void)
 #endif
 
   /* Count the number of eliminable registers and build the FROM and TO
-     REG rtx's.  Note that code in gen_rtx will cause, e.g.,
+     REG rtx's.  Note that code in gen_rtx_REG will cause, e.g.,
      gen_rtx_REG (Pmode, STACK_POINTER_REGNUM) to equal stack_pointer_rtx.
      We depend on this.  */
   for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
@@ -3932,8 +3932,9 @@ reload_as_needed (int live_known)
 			  if (n == 1)
 			    {
 			      n = validate_replace_rtx (reload_reg,
-							gen_rtx (code, mode,
-								 reload_reg),
+							gen_rtx_fmt_e (code,
+								       mode,
+								       reload_reg),
 							p);
 
 			      /* We must also verify that the constraints
@@ -3948,8 +3949,9 @@ reload_as_needed (int live_known)
 				 undo the replacement.  */
 			      if (!n)
 				{
-				  validate_replace_rtx (gen_rtx (code, mode,
-								 reload_reg),
+				  validate_replace_rtx (gen_rtx_fmt_e (code,
+								       mode,
+								       reload_reg),
 							reload_reg, p);
 				  break;
 				}
