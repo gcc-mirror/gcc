@@ -1,3 +1,7 @@
+2000-07-16  Laurynas Biveinis  <lauras@softhome.net>
+
+	* cppfiles.c (read_name_map): Set map_list_ptr->map_list_map to NULL.
+
 2000-07-16  Mark Mitchell  <mark@codesourcery.com>
 
 	* dwarf2out.c (expand_builtin_init_dwarf_reg_sizes): Fix typo.

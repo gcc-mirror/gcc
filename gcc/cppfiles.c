@@ -881,6 +881,7 @@ read_name_map (pfile, dirname)
   map_list_ptr = ((struct file_name_map_list *)
 		  xmalloc (sizeof (struct file_name_map_list)));
   map_list_ptr->map_list_name = xstrdup (dirname);
+  map_list_ptr->map_list_map = NULL;
 
   name = (char *) alloca (strlen (dirname) + strlen (FILE_NAME_MAP_FILE) + 2);
   strcpy (name, dirname);
