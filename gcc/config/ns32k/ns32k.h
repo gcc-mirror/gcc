@@ -843,7 +843,7 @@ __transfer_from_trampoline ()		\
  (((i) <= 16777215 && (i) >= -16777216)
   || ((TARGET_32532 || TARGET_32332) && ...))  */
 #define NS32K_DISPLACEMENT_P(i) 				\
-  ((i) <= 536870913 && (i) >= -536870912)
+  ((i) < (1 << 29) && (i) >= - (1 << 29))
 
 /* Check for frame pointer or stack pointer.  */
 #define MEM_REG(X) \
