@@ -1,3 +1,8 @@
+2000-03-06  Clinton Popetz  <cpopetz@cygnus.com>
+
+	* config/sh/sh.c: (barrier_align): Handle a delay slot that is
+	filled with an insn from the jump target.
+
 2000-03-07  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x-protos.h (c4x_global_name): Constify char *.
