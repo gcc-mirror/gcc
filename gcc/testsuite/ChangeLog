@@ -1,3 +1,7 @@
+2000-11-25  Alexandre Oliva  <aoliva@redhat.com>
+
+	* gcc.c-torture/compile/20001123-2.c: New.
+
 2000-11-24  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* g++.old-dega/g++.pt/ttp62.C: Call abort() on failure.
