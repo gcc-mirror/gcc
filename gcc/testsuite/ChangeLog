@@ -1,3 +1,12 @@
+2004-01-25  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/13797
+	* g++.dg/template/nontype4.C: New test.
+	* g++.dg/template/nontype5.C: Likewise.
+
+	PR c++/10555, c++/10576
+	* g++.dg/template/memclass1.C: New test.
+
 2004-01-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/13392

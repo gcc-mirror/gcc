@@ -1,3 +1,18 @@
+2004-01-25  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/13797
+	* pt.c (instantiate_class_template): Add an error_mark_node
+	check.
+	(tsubst_decl) <TEMPLATE_DECL case>: Likewise.
+
+	Backport from mainline
+	2003-05-09  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/10555, c++/10576
+	* pt.c (lookup_template_class): Handle class template with
+	multiple levels of parameters when one of the levels contain
+	errors.
+
 2004-01-21  Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 	Backport from mainline

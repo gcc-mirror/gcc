@@ -12,7 +12,7 @@ template <typename> struct A
 
 template <typename T> struct C
 {
-    typedef typename A<T>::template B<U> X; // { dg-error "declared|invalid" }
+    typedef typename A<T>::template B<U> X; // { dg-error "mismatch|expected" }
 };
 
-C<void> c;
+C<void> c;			// { dg-error "instantiated" }
