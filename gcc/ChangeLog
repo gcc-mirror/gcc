@@ -1,3 +1,8 @@
+2004-01-30  Fariborz Jahanian <fjahanian@apple.com>
+        
+        * config/rs6000/rs6000.c (rs6000_emit_move): Remove #if 0. 
+	Copy operands[1] to pseudo for simplify_gen_subreg.
+
 2004-01-30  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* gcse.c (bypass_block): Fix a typo in the previous check-in
