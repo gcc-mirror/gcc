@@ -6559,18 +6559,17 @@ expand_function_start (subr, parms_have_cleanups)
 			       subr, 1);
 
       /* Structures that are returned in registers are not aggregate_value_p,
-	 so we may see a PARALLEL.  Don't play pseudo games with this.  */
-      if (! REG_P (hard_reg))
-	SET_DECL_RTL (DECL_RESULT (subr), hard_reg);
+	 so we may see a PARALLEL or a REG.  */
+      if (REG_P (hard_reg))
+	SET_DECL_RTL (DECL_RESULT (subr), gen_reg_rtx (GET_MODE (hard_reg)));
+      else if (GET_CODE (hard_reg) == PARALLEL)
+	SET_DECL_RTL (DECL_RESULT (subr), gen_group_rtx (hard_reg));
       else
-	{
-	  /* Create the pseudo.  */
-	  SET_DECL_RTL (DECL_RESULT (subr), gen_reg_rtx (GET_MODE (hard_reg)));
+	abort ();
 
-	  /* Needed because we may need to move this to memory
-	     in case it's a named return value whose address is taken.  */
-	  DECL_REGISTER (DECL_RESULT (subr)) = 1;
-	}
+      /* Set DECL_REGISTER flag so that expand_function_end will copy the
+	 result to the real return register(s).  */
+      DECL_REGISTER (DECL_RESULT (subr)) = 1;
     }
 
   /* Initialize rtx for parameters and local variables.
@@ -6998,8 +6997,16 @@ expand_function_end (filename, line, end_bindings)
 	      convert_move (real_decl_rtl, decl_rtl, unsignedp);
 	    }
 	  else if (GET_CODE (real_decl_rtl) == PARALLEL)
-	    emit_group_load (real_decl_rtl, decl_rtl,
-			     int_size_in_bytes (TREE_TYPE (decl_result)));
+	    {
+	      /* If expand_function_start has created a PARALLEL for decl_rtl,
+		 move the result to the real return registers.  Otherwise, do
+		 a group load from decl_rtl for a named return.  */
+	      if (GET_CODE (decl_rtl) == PARALLEL)
+		emit_group_move (real_decl_rtl, decl_rtl);
+	      else
+		emit_group_load (real_decl_rtl, decl_rtl,
+				 int_size_in_bytes (TREE_TYPE (decl_result)));
+	    }
 	  else
 	    emit_move_insn (real_decl_rtl, decl_rtl);
 	}

@@ -2203,6 +2203,42 @@ move_block_from_reg (regno, x, nregs, size)
     }
 }
 
+/* Generate a PARALLEL rtx for a new non-consecutive group of registers from
+   ORIG, where ORIG is a non-consecutive group of registers represented by
+   a PARALLEL.  The clone is identical to the original except in that the
+   original set of registers is replaced by a new set of pseudo registers.
+   The new set has the same modes as the original set.  */
+
+rtx
+gen_group_rtx (orig)
+     rtx orig;
+{
+  int i, length;
+  rtx *tmps;
+
+  if (GET_CODE (orig) != PARALLEL)
+    abort ();
+
+  length = XVECLEN (orig, 0);
+  tmps = (rtx *) alloca (sizeof (rtx) * length);
+
+  /* Skip a NULL entry in first slot.  */
+  i = XEXP (XVECEXP (orig, 0, 0), 0) ? 0 : 1;
+
+  if (i)
+    tmps[0] = 0;
+
+  for (; i < length; i++)
+    {
+      enum machine_mode mode = GET_MODE (XEXP (XVECEXP (orig, 0, i), 0));
+      rtx offset = XEXP (XVECEXP (orig, 0, i), 1);
+
+      tmps[i] = gen_rtx_EXPR_LIST (VOIDmode, gen_reg_rtx (mode), offset);
+    }
+
+  return gen_rtx_PARALLEL (GET_MODE (orig), gen_rtvec_v (length, tmps));
+}
+
 /* Emit code to move a block SRC to a block DST, where DST is non-consecutive
    registers represented by a PARALLEL.  SSIZE represents the total size of
    block SRC in bytes, or -1 if not known.  */
@@ -2322,6 +2358,26 @@ emit_group_load (dst, orig_src, ssize)
   /* Copy the extracted pieces into the proper (probable) hard regs.  */
   for (i = start; i < XVECLEN (dst, 0); i++)
     emit_move_insn (XEXP (XVECEXP (dst, 0, i), 0), tmps[i]);
+}
+
+/* Emit code to move a block SRC to block DST, where SRC and DST are
+   non-consecutive groups of registers, each represented by a PARALLEL.  */
+
+void
+emit_group_move (dst, src)
+     rtx dst, src;
+{
+  int i;
+
+  if (GET_CODE (src) != PARALLEL
+      || GET_CODE (dst) != PARALLEL
+      || XVECLEN (src, 0) != XVECLEN (dst, 0))
+    abort ();
+
+  /* Skip first entry if NULL.  */
+  for (i = XEXP (XVECEXP (src, 0, 0), 0) ? 0 : 1; i < XVECLEN (src, 0); i++)
+    emit_move_insn (XEXP (XVECEXP (dst, 0, i), 0),
+		    XEXP (XVECEXP (src, 0, i), 0));
 }
 
 /* Emit code to move a block SRC to a block DST, where SRC is non-consecutive

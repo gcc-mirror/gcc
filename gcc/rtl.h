@@ -185,7 +185,7 @@ struct rtx_def GTY((chain_next ("RTX_NEXT (&%h)"),
      has used it as the function.  */
   unsigned int used : 1;
   /* Nonzero if this rtx came from procedure integration.
-     1 in a REG means this reg refers to the return value
+     1 in a REG or PARALLEL means this rtx refers to the return value
      of the current function.
      1 in a SYMBOL_REF if the symbol is weak.  */
   unsigned integrated : 1;
@@ -988,9 +988,10 @@ enum label_kind
 #define REGNO(RTX) XCUINT (RTX, 0, REG)
 #define ORIGINAL_REGNO(RTX) X0UINT (RTX, 1)
 
-/* 1 if RTX is a reg that is the current function's return value.  */
+/* 1 if RTX is a reg or parallel that is the current function's return
+   value.  */
 #define REG_FUNCTION_VALUE_P(RTX)					\
-  (RTL_FLAG_CHECK1("REG_FUNCTION_VALUE_P", (RTX), REG)->integrated)
+  (RTL_FLAG_CHECK2("REG_FUNCTION_VALUE_P", (RTX), REG, PARALLEL)->integrated)
 
 /* 1 if RTX is a reg that corresponds to a variable declared by the user.  */
 #define REG_USERVAR_P(RTX)						\
