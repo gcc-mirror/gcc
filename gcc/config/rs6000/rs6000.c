@@ -14352,7 +14352,7 @@ rtx
 rs6000_function_value (tree valtype, tree func ATTRIBUTE_UNUSED)
 {
   enum machine_mode mode;
-  unsigned int regno = GP_ARG_RETURN;
+  unsigned int regno;
 
   if ((INTEGRAL_TYPE_P (valtype)
        && TYPE_PRECISION (valtype) < BITS_PER_WORD)
@@ -14361,14 +14361,9 @@ rs6000_function_value (tree valtype, tree func ATTRIBUTE_UNUSED)
   else
     mode = TYPE_MODE (valtype);
 
-  if (TREE_CODE (valtype) == REAL_TYPE)
-    {
-      if (TARGET_HARD_FLOAT && TARGET_FPRS)
-	regno = FP_ARG_RETURN;
-      else if (TARGET_SPE_ABI && !TARGET_FPRS)
-	regno = GP_ARG_RETURN;
-    }
-  else if (TARGET_ALTIVEC && TREE_CODE (valtype) == VECTOR_TYPE)
+  if (TREE_CODE (valtype) == REAL_TYPE && TARGET_HARD_FLOAT && TARGET_FPRS)
+    regno = FP_ARG_RETURN;
+  else if (TREE_CODE (valtype) == VECTOR_TYPE && TARGET_ALTIVEC)
     regno = ALTIVEC_ARG_RETURN;
   else
     regno = GP_ARG_RETURN;

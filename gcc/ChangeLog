@@ -1,3 +1,7 @@
+2003-05-17  David Edelsohn  <edelsohn@gnu.org>
+
+	* rs6000.c (rs6000_function_value): Simplify REAL_TYPE logic.
+
 2003-05-17  Neil Booth  <neil@daikokuya.co.uk>
 
 	* config/sol2.h: Add TARGET_SUB_OS_CPP_BUILTINS.
