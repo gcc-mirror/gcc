@@ -1,5 +1,10 @@
 2001-06-13  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* doc/install.texi: Use more logical markup.  Include @node
+	commands in the source when generating any non-HTML.
+
+2001-06-13  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* README: Remove.  Some of the contents moved to ../README.
 
 2001-06-13  Alexandre Oliva  <aoliva@redhat.com>
