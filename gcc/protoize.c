@@ -133,7 +133,8 @@ typedef char * const_pointer_type;
    causes conflicts with system headers on some systems.  */
 
 #ifndef abort
-extern VOLATILE void abort ();
+typedef void voidfn ();
+extern VOLATILE voidfn abort;
 #endif
 extern int kill ();
 extern int creat ();
