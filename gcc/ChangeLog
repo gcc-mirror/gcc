@@ -1,3 +1,7 @@
+2004-10-30  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-phinodes.c (create_phi_node): Don't zero PHI_REWRITTEN.
+
 2004-10-29 Jeff Law  <law@redhat.com>
 
 	* tree-ssa-dom.c (struct edge_info): New structure holding
