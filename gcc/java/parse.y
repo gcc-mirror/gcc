@@ -1732,11 +1732,14 @@ catch_clause_parameter:
 		  EXPR_WFL_LINECOL ($$) = $1.location;
 		}
 |	CATCH_TK error
-		{yyerror ("'(' expected"); RECOVER;}
+		{yyerror ("'(' expected"); RECOVER; $$ = NULL_TREE;}
 |	CATCH_TK OP_TK error 
-		{yyerror ("Missing term or ')' expected"); DRECOVER (2);}
+		{
+		  yyerror ("Missing term or ')' expected"); 
+		  RECOVER; $$ = NULL_TREE;
+		}
 |	CATCH_TK OP_TK error CP_TK /* That's for () */
-		{yyerror ("')' expected"); DRECOVER (1);}
+		{yyerror ("Missing term"); RECOVER; $$ = NULL_TREE;}
 ;
 
 finally:
