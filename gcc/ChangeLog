@@ -1,3 +1,9 @@
+2002-06-05  Jeffrey Law  <law@redhat.com>
+
+        * pa.h (EXTRA_CONSTRAINT, T case): Further refine so that it
+        rejects (mem (lo_sum (reg) (unspec))), but will allow
+        (mem (lo_sum (reg) (symbol_ref)) for PA2.0. 
+
 2002-06-05  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cpphash.h (_cpp_create_definition): Update prototype.

@@ -1173,7 +1173,11 @@ extern int may_call_alloca;
 			     ? GET_MODE (OP)		\
 			     : DFmode),			\
 			    XEXP (OP, 0))		\
-       && GET_CODE (XEXP (OP, 0)) != LO_SUM		\
+       && !(GET_CODE (XEXP (OP, 0)) == LO_SUM		\
+	    && GET_CODE (XEXP (XEXP (OP, 0), 0)) == REG \
+	    && REG_OK_FOR_BASE_P (XEXP (XEXP (OP, 0), 0))\
+	    && GET_CODE (XEXP (XEXP (OP, 0), 1)) == UNSPEC\
+	    && GET_MODE (XEXP (OP, 0)) == Pmode)	\
        && !(GET_CODE (XEXP (OP, 0)) == PLUS		\
 	    && (GET_CODE (XEXP (XEXP (OP, 0), 0)) == MULT\
 		|| GET_CODE (XEXP (XEXP (OP, 0), 1)) == MULT)))\
