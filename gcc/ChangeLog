@@ -1,3 +1,8 @@
+Fri Sep 10 16:48:26 1999  Andrew Haley  <aph@cygnus.com>
+
+	* tree.c (type_hash_lookup): Check for equal TYPE_ALIGN fields
+	when comparing types.
+
 Wed Sep  8 16:12:04 1999  Andrew Haley  <aph@cygnus.com>
 
 	* alias.c (rtx_equal_for_memref_p): Allow CONST_DOUBLEs to be used
