@@ -2367,6 +2367,11 @@ __register_exceptions (exception_table *table)
   exception_table_list = node;
 }
 
+void
+__empty ()
+{
+}
+
 #if #machine(i386)
 void
 __unwind_function(void *ptr)
