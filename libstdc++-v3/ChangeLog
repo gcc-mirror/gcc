@@ -1,3 +1,9 @@
+2002-05-23  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* configure.in (release_VERSION): Update to 3.1.1.
+	(libtool_VERSION): Update to 4:1:0.
+	* configure: Regenerate.
+	
 2002-05-21  Phil Edwards  <pme@gcc.gnu.org>
 
 	* include/bits/stl_pair.h:  Tweak comment markup.
