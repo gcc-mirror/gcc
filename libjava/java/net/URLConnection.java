@@ -726,7 +726,7 @@ public abstract class URLConnection
 
   /**
    * Adds a new request property by a key/value pair.
-   * This method does not overwrite* existing properties with the same key.
+   * This method does not overwrite existing properties with the same key.
    *
    * @param key Key of the property to add
    * @param value Value of the Property to add
@@ -800,14 +800,14 @@ public abstract class URLConnection
    * @param key The request property name the default is being set for
    * @param value The value to set the default to
    *
-   * @deprecated 1.3 The method setRequestProperty should be used instead
+   * @deprecated 1.3 The method setRequestProperty should be used instead.
+   * This method does nothing now.
    *
    * @see URLConnectionr#setRequestProperty(String key, String value)
    */
-  public static void setDefaultRequestProperty(String key, String value)
+  public static void setDefaultRequestProperty (String key, String value)
   {
-    // Do nothing unless overridden by subclasses that support setting
-    // default request properties.
+    // This method does nothing since JDK 1.3.
   }
 
   /**
@@ -819,13 +819,14 @@ public abstract class URLConnection
    *
    * @return The value of the default property or null if not available
    * 
-   * @deprecated 1.3 The method getRequestProperty should be used instead
+   * @deprecated 1.3 The method getRequestProperty should be used instead.
+   * This method does nothing now.
    *
    * @see URLConnection#getRequestProperty(String key)
    */
   public static String getDefaultRequestProperty(String key)
   {
-    // Overridden by subclasses that support default request properties.
+    // This method does nothing since JDK 1.3.
     return null;
   }
 
