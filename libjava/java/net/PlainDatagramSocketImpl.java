@@ -39,6 +39,7 @@ exception statement from your version. */
 package java.net;
 
 import java.io.IOException;
+import gnu.classpath.Configuration;
 
 /**
  * Written using on-line Java Platform 1.2 API Specification, as well
@@ -47,11 +48,24 @@ import java.io.IOException;
  */
 
 /**
+ * This is the default socket implementation for datagram sockets.
+ * It makes native calls to C routines that implement BSD style
+ * SOCK_DGRAM sockets in the AF_INET family.
+ *
+ * @author Aaron M. Renn <arenn@urbanophile.com>
  * @author Warren Levy <warrenl@cygnus.com>
- * @date May 3, 1999.
  */
 class PlainDatagramSocketImpl extends DatagramSocketImpl
 {
+  // Static initializer to load native library
+  static
+  {
+    if (Configuration.INIT_LOAD_LIBRARY)
+      {
+        System.loadLibrary("javanet");
+      }
+  }
+  
   // These fields are mirrored for use in native code to avoid cpp conflicts
   // when the #defines in system header files are the same as the public fields.
   static final int _Jv_TCP_NODELAY_ = SocketOptions.TCP_NODELAY,
@@ -69,6 +83,9 @@ class PlainDatagramSocketImpl extends DatagramSocketImpl
                    _Jv_SO_RCVBUF_ = SocketOptions.SO_RCVBUF,
                    _Jv_SO_KEEPALIVE_ = SocketOptions.SO_KEEPALIVE;
 
+  /**
+   * This is the actual underlying file descriptor
+   */
   int fnum = -1;
 
   // FIXME: Is this necessary?  Could it help w/ DatagramSocket.getLocalAddress?
@@ -80,50 +97,152 @@ class PlainDatagramSocketImpl extends DatagramSocketImpl
   // 'timeout' is set/read by setOption/getOption.
   int timeout = 0;
 
-  // FIXME: Probably should have bind (and create?) calls from DatagramSocket
-  // constuctor.  If so, then same change should be made to the corresponding
-  // Socket (non-datagram) classes.  This allows the implementation more
-  // complete control over how the socket is set up and used (e.g. connect,
-  // setting options, etc.).
+  /**
+   * Default do nothing constructor
+   */
   public PlainDatagramSocketImpl()
   {
   }
 
+  /**
+   * Binds this socket to a particular port and interface
+   *
+   * @param port The port to bind to
+   * @param addr The address to bind to
+   *
+   * @exception SocketException If an error occurs
+   */
   protected native void bind(int lport, InetAddress laddr)
 	throws SocketException;
+
   protected native void connect (InetAddress i, int port)
 	throws SocketException;
+  
   protected native void disconnect ();
+  
+  /**
+   * Creates a new datagram socket
+   *
+   * @exception SocketException If an error occurs
+   */
   protected native void create() throws SocketException;
+  
   protected native int peek(InetAddress i) throws IOException;
+  
   protected native int peekData (DatagramPacket dp) throws IOException;
+
+  /**
+   * Sets the Time to Live value for the socket
+   *
+   * @param ttl The new TTL value
+   *
+   * @exception IOException If an error occurs
+   */
   protected native void setTimeToLive(int ttl) throws IOException;
+
+  /**
+   * Gets the Time to Live value for the socket
+   *
+   * @return The TTL value
+   *
+   * @exception IOException If an error occurs
+   */
   protected native int getTimeToLive() throws IOException;
+
+  /**
+   * Sends a packet of data to a remote host
+   *
+   * @param packet The packet to send
+   *
+   * @exception IOException If an error occurs
+   */
   protected native void send(DatagramPacket p) throws IOException;
+
+  /**
+   * Receives a UDP packet from the network
+   *
+   * @param packet The packet to fill in with the data received
+   *
+   * @exception IOException IOException If an error occurs
+   */
   protected native void receive(DatagramPacket p) throws IOException;
+
+  /**
+   * Sets the value of an option on the socket
+   *
+   * @param option_id The identifier of the option to set
+   * @param val The value of the option to set
+   *
+   * @exception SocketException If an error occurs
+   */
   public native void setOption(int optID, Object value) throws SocketException;
+
+  /**
+   * Retrieves the value of an option on the socket
+   *
+   * @param option_id The identifier of the option to retrieve
+   *
+   * @return The value of the option
+   *
+   * @exception SocketException If an error occurs
+   */
   public native Object getOption(int optID) throws SocketException;
+  
   private native void mcastGrp(InetAddress inetaddr, NetworkInterface netIf,
 		               boolean join) throws IOException;
+
+  /**
+   * Closes the socket
+   */
   protected native void close();
 
-  // Deprecated in JDK 1.2.
+  /**
+   * Gets the Time to Live value for the socket
+   *
+   * @return The TTL value
+   *
+   * @exception IOException If an error occurs
+   *
+   * @deprecated 1.2
+   */
   protected byte getTTL() throws IOException
   {
     return (byte) getTimeToLive();
   }
 
-  // Deprecated in JDK 1.2.
+  /**
+   * Sets the Time to Live value for the socket
+   *
+   * @param ttl The new TTL value
+   *
+   * @exception IOException If an error occurs
+   *
+   * @deprecated 1.2
+   */
   protected void setTTL(byte ttl) throws IOException
   {
     setTimeToLive(((int) ttl) & 0xFF);
   }
 
+  /**
+   * Joins a multicast group
+   *
+   * @param addr The group to join
+   *
+   * @exception IOException If an error occurs
+   */
   protected void join(InetAddress inetaddr) throws IOException
   {
     mcastGrp(inetaddr, null, true);
   }
 
+  /**
+   * Leaves a multicast group
+   *
+   * @param addr The group to leave
+   *
+   * @exception IOException If an error occurs
+   */
   protected void leave(InetAddress inetaddr) throws IOException
   {
     mcastGrp(inetaddr, null, false);

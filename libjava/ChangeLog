@@ -1,5 +1,10 @@
 2003-06-25  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/PlainDatagramSocketImpl.java:
+	Partly merged with classpath, this mainly adds documentation.
+
+2003-06-25  Michael Koch  <konqueror@gmx.de>
+
 	* java/io/ObjectInputStream.java
 	(readClassDescriptor): New method.
 	(readObject): Moved functionality to readClassDescriptor().
