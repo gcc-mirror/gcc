@@ -1,5 +1,6 @@
 2004-01-16  J"orn Rennecke <joern.rennecke@superh.com>
 
+	PR 11864
 	* postreload.c (reload_cse_simplify_operands): Don't remove
 	implicit extension from LOAD_EXTEND_OP.
 
