@@ -234,7 +234,7 @@ ulong	*rfile_desc;		/* relative file tables */
 PDR	*proc_desc;		/* procedure tables */
 
 /* Forward reference for functions.  */
-static PTR read_seek			PARAMS ((PTR, size_t, off_t, const char *));
+static void *read_seek			PARAMS ((void *, size_t, off_t, const char *));
 static void read_tfile			PARAMS ((void));
 static void print_global_hdr		PARAMS ((struct filehdr *));
 static void print_sym_hdr		PARAMS ((HDRR *));
@@ -271,9 +271,9 @@ static const struct option options[] =
 
 /* Read some bytes at a specified location, and return a pointer.  */
 
-static PTR
+static void *
 read_seek (ptr, size, offset, context)
-     PTR ptr;			/* pointer to buffer or NULL */
+     void *ptr;			/* pointer to buffer or NULL */
      size_t size;		/* # bytes to read */
      off_t offset;		/* offset to read at */
      const char *context;	/* context for error message */
@@ -1349,12 +1349,12 @@ read_tfile ()
   short magic;
   off_t sym_hdr_offset = 0;
 
-  (void) read_seek ((PTR) &magic, sizeof (magic), (off_t) 0, "Magic number");
+  (void) read_seek (&magic, sizeof (magic), (off_t) 0, "Magic number");
   if (!tfile)
     {
       /* Print out the global header, since this is not a T-file.  */
 
-      (void) read_seek ((PTR) &global_hdr, sizeof (global_hdr), (off_t) 0,
+      (void) read_seek (&global_hdr, sizeof (global_hdr), (off_t) 0,
 			"Global file header");
 
       print_global_hdr (&global_hdr);
@@ -1368,7 +1368,7 @@ read_tfile ()
       sym_hdr_offset = global_hdr.f_symptr;
     }
 
-  (void) read_seek ((PTR) &sym_hdr,
+  (void) read_seek (&sym_hdr,
 		    sizeof (sym_hdr),
 		    sym_hdr_offset,
 		    "Symbolic header");

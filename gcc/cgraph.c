@@ -57,14 +57,14 @@ bool cgraph_global_info_ready = false;
 static struct cgraph_edge *create_edge PARAMS ((struct cgraph_node *,
 						struct cgraph_node *));
 static void cgraph_remove_edge PARAMS ((struct cgraph_node *, struct cgraph_node *));
-static hashval_t hash_node PARAMS ((const PTR));
-static int eq_node PARAMS ((const PTR, const PTR));
+static hashval_t hash_node PARAMS ((const void *));
+static int eq_node PARAMS ((const void *, const void *));
 
 /* Returns a hash code for P.  */
 
 static hashval_t
 hash_node (p)
-     const PTR p;
+     const void *p;
 {
   return (hashval_t)
     htab_hash_pointer (DECL_ASSEMBLER_NAME
@@ -75,8 +75,8 @@ hash_node (p)
 
 static int
 eq_node (p1, p2)
-     const PTR p1;
-     const PTR p2;
+     const void *p1;
+     const void *p2;
 {
   return ((DECL_ASSEMBLER_NAME (((struct cgraph_node *) p1)->decl)) ==
 	  DECL_ASSEMBLER_NAME ((tree) p2));

@@ -2277,11 +2277,11 @@ expand_builtin_memcpy (tree arglist, rtx target, enum machine_mode mode)
 	  && GET_CODE (len_rtx) == CONST_INT
 	  && (unsigned HOST_WIDE_INT) INTVAL (len_rtx) <= strlen (src_str) + 1
 	  && can_store_by_pieces (INTVAL (len_rtx), builtin_memcpy_read_str,
-				  (PTR) src_str, dest_align))
+				  (void *) src_str, dest_align))
 	{
 	  dest_mem = store_by_pieces (dest_mem, INTVAL (len_rtx),
 				      builtin_memcpy_read_str,
-				      (PTR) src_str, dest_align, 0);
+				      (void *) src_str, dest_align, 0);
 	  dest_mem = force_operand (XEXP (dest_mem, 0), NULL_RTX);
 #ifdef POINTERS_EXTEND_UNSIGNED
 	  if (GET_MODE (dest_mem) != ptr_mode)
@@ -2374,13 +2374,13 @@ expand_builtin_mempcpy (tree arglist, rtx target, enum machine_mode mode,
 	  && GET_CODE (len_rtx) == CONST_INT
 	  && (unsigned HOST_WIDE_INT) INTVAL (len_rtx) <= strlen (src_str) + 1
 	  && can_store_by_pieces (INTVAL (len_rtx), builtin_memcpy_read_str,
-				  (PTR) src_str, dest_align))
+				  (void *) src_str, dest_align))
 	{
 	  dest_mem = get_memory_rtx (dest);
 	  set_mem_align (dest_mem, dest_align);
 	  dest_mem = store_by_pieces (dest_mem, INTVAL (len_rtx),
 				      builtin_memcpy_read_str,
-				      (PTR) src_str, dest_align, endp);
+				      (void *) src_str, dest_align, endp);
 	  dest_mem = force_operand (XEXP (dest_mem, 0), NULL_RTX);
 #ifdef POINTERS_EXTEND_UNSIGNED
 	  if (GET_MODE (dest_mem) != ptr_mode)
@@ -2626,13 +2626,13 @@ expand_builtin_strncpy (tree arglist, rtx target, enum machine_mode mode)
 	  if (!p || dest_align == 0 || !host_integerp (len, 1)
 	      || !can_store_by_pieces (tree_low_cst (len, 1),
 				       builtin_strncpy_read_str,
-				       (PTR) p, dest_align))
+				       (void *) p, dest_align))
 	    return 0;
 
 	  dest_mem = get_memory_rtx (dest);
 	  store_by_pieces (dest_mem, tree_low_cst (len, 1),
 			   builtin_strncpy_read_str,
-			   (PTR) p, dest_align, 0);
+			   (void *) p, dest_align, 0);
 	  dest_mem = force_operand (XEXP (dest_mem, 0), NULL_RTX);
 #ifdef POINTERS_EXTEND_UNSIGNED
 	  if (GET_MODE (dest_mem) != ptr_mode)
@@ -2743,7 +2743,7 @@ expand_builtin_memset (tree arglist, rtx target, enum machine_mode mode)
 	  c = 1;
 	  if (!can_store_by_pieces (tree_low_cst (len, 1),
 				    builtin_memset_read_str,
-				    (PTR) &c, dest_align))
+				    &c, dest_align))
 	    return 0;
 
 	  val = fold (build1 (CONVERT_EXPR, unsigned_char_type_node, val));
@@ -2753,7 +2753,7 @@ expand_builtin_memset (tree arglist, rtx target, enum machine_mode mode)
 	  dest_mem = get_memory_rtx (dest);
 	  store_by_pieces (dest_mem, tree_low_cst (len, 1),
 			   builtin_memset_gen_str,
-			   (PTR) val_rtx, dest_align, 0);
+			   val_rtx, dest_align, 0);
 	  dest_mem = force_operand (XEXP (dest_mem, 0), NULL_RTX);
 #ifdef POINTERS_EXTEND_UNSIGNED
 	  if (GET_MODE (dest_mem) != ptr_mode)
@@ -2770,14 +2770,14 @@ expand_builtin_memset (tree arglist, rtx target, enum machine_mode mode)
 	  if (!host_integerp (len, 1))
 	    return 0;
 	  if (!can_store_by_pieces (tree_low_cst (len, 1),
-				    builtin_memset_read_str, (PTR) &c,
+				    builtin_memset_read_str, &c,
 				    dest_align))
 	    return 0;
 
 	  dest_mem = get_memory_rtx (dest);
 	  store_by_pieces (dest_mem, tree_low_cst (len, 1),
 			   builtin_memset_read_str,
-			   (PTR) &c, dest_align, 0);
+			   &c, dest_align, 0);
 	  dest_mem = force_operand (XEXP (dest_mem, 0), NULL_RTX);
 #ifdef POINTERS_EXTEND_UNSIGNED
 	  if (GET_MODE (dest_mem) != ptr_mode)

@@ -120,7 +120,7 @@ symbol_hash_lookup (string, create)
      const char *string;
      int create;
 {
-  PTR *e;
+  void **e;
   e = htab_find_slot_with_hash (symbol_table, string,
 				(*htab_hash_string) (string),
 				create ? INSERT : NO_INSERT);
@@ -143,7 +143,7 @@ static struct file_hash_entry *
 file_hash_lookup (string)
      const char *string;
 {
-  PTR *e;
+  void **e;
   e = htab_find_slot_with_hash (file_table, string,
 				(*htab_hash_string) (string),
 				INSERT);
@@ -165,7 +165,7 @@ demangled_hash_lookup (string, create)
      const char *string;
      int create;
 {
-  PTR *e;
+  void **e;
   e = htab_find_slot_with_hash (demangled_table, string,
 				(*htab_hash_string) (string),
 				create ? INSERT : NO_INSERT);

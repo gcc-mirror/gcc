@@ -94,8 +94,8 @@ static void copy_insn_list              PARAMS ((rtx, struct inline_remap *,
 						 rtx));
 static void copy_insn_notes		PARAMS ((rtx, struct inline_remap *,
 						 int));
-static int compare_blocks               PARAMS ((const PTR, const PTR));
-static int find_block                   PARAMS ((const PTR, const PTR));
+static int compare_blocks               PARAMS ((const void *, const void *));
+static int find_block                   PARAMS ((const void *, const void *));
 
 /* Used by copy_rtx_and_substitute; this indicates whether the function is
    called for the purpose of inlining or some other purpose (i.e. loop
@@ -613,8 +613,8 @@ process_reg_param (map, loc, copy)
 
 static int
 compare_blocks (v1, v2)
-     const PTR v1;
-     const PTR v2;
+     const void *v1;
+     const void *v2;
 {
   tree b1 = *((const tree *) v1);
   tree b2 = *((const tree *) v2);
@@ -631,8 +631,8 @@ compare_blocks (v1, v2)
 
 static int
 find_block (v1, v2)
-     const PTR v1;
-     const PTR v2;
+     const void *v1;
+     const void *v2;
 {
   const union tree_node *b1 = (const union tree_node *) v1;
   tree b2 = *((const tree *) v2);

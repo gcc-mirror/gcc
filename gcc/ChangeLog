@@ -1,5 +1,15 @@
 2003-06-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* bitmap.c, builtins.c, c-incpath.c, cgraph.c, config/frv/frv.c,
+	config/mips/mips.c, cppfiles.c, cpphash.c, cppinit.c, cpplib.c,
+	dwarf2out.c, dwarfout.c, except.c, expr.c, expr.h, fold-const.c,
+	function.c, gcc.c, genoutput.c, gensupport.c, global.c,
+	haifa-sched.c, hashtable.c, ifcvt.c, integrate.c, local-alloc.c,
+	loop.c, mips-tdump.c, mips-tfile.c, mkdeps.c, protoize.c,
+	read-rtl.c, recog.h, reload1.c, sbitmap.c, ssa-dce.c,
+	stringpool.c, tlink.c, tree.c, varasm.c, varray.c: Don't use
+	the PTR macro.
+
 	* gengtype.c: Don't use UNION_INIT_ZERO.
 	* system.h (UNION_INIT_ZERO): Delete.
 

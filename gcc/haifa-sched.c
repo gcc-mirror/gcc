@@ -480,7 +480,7 @@ static int actual_hazard PARAMS ((int, rtx, int, int));
 static int potential_hazard PARAMS ((int, rtx, int));
 
 static int priority PARAMS ((rtx));
-static int rank_for_schedule PARAMS ((const PTR, const PTR));
+static int rank_for_schedule PARAMS ((const void *, const void *));
 static void swap_sort PARAMS ((rtx *, int));
 static void queue_insn PARAMS ((rtx, int));
 static int schedule_insn PARAMS ((rtx, struct ready_list *, int));
@@ -1007,8 +1007,8 @@ while (0)
 
 static int
 rank_for_schedule (x, y)
-     const PTR x;
-     const PTR y;
+     const void *x;
+     const void *y;
 {
   rtx tmp = *(const rtx *) y;
   rtx tmp2 = *(const rtx *) x;

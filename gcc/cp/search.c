@@ -1262,7 +1262,7 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type)
   n_calls_lookup_field++;
 #endif /* GATHER_STATISTICS */
 
-  memset ((PTR) &lfi, 0, sizeof (lfi));
+  memset (&lfi, 0, sizeof (lfi));
   lfi.type = type;
   lfi.name = name;
   lfi.want_type = want_type;

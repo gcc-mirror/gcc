@@ -289,7 +289,7 @@ static int n_regs_set;
 
 static HARD_REG_SET eliminable_regset;
 
-static int allocno_compare	PARAMS ((const PTR, const PTR));
+static int allocno_compare	PARAMS ((const void *, const void *));
 static void global_conflicts	PARAMS ((void));
 static void mirror_conflicts	PARAMS ((void));
 static void expand_preferences	PARAMS ((void));
@@ -600,8 +600,8 @@ global_alloc (file)
 
 static int
 allocno_compare (v1p, v2p)
-     const PTR v1p;
-     const PTR v2p;
+     const void *v1p;
+     const void *v2p;
 {
   int v1 = *(const int *)v1p, v2 = *(const int *)v2p;
   /* Note that the quotient will never be bigger than

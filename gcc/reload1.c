@@ -402,7 +402,7 @@ static void count_pseudo		PARAMS ((int));
 static void order_regs_for_reload	PARAMS ((struct insn_chain *));
 static void reload_as_needed		PARAMS ((int));
 static void forget_old_reloads_1	PARAMS ((rtx, rtx, void *));
-static int reload_reg_class_lower	PARAMS ((const PTR, const PTR));
+static int reload_reg_class_lower	PARAMS ((const void *, const void *));
 static void mark_reload_reg_in_use	PARAMS ((unsigned int, int,
 						 enum reload_type,
 						 enum machine_mode));
@@ -1548,8 +1548,8 @@ calculate_needs_all_insns (global)
 
 static int
 reload_reg_class_lower (r1p, r2p)
-     const PTR r1p;
-     const PTR r2p;
+     const void *r1p;
+     const void *r2p;
 {
   int r1 = *(const short *) r1p, r2 = *(const short *) r2p;
   int t;

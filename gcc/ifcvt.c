@@ -2160,7 +2160,7 @@ find_if_header (test_bb, pass)
     /* Otherwise this must be a multiway branch of some sort.  */
     return NULL;
 
-  memset ((PTR) &ce_info, '\0', sizeof (ce_info));
+  memset (&ce_info, '\0', sizeof (ce_info));
   ce_info.test_bb = test_bb;
   ce_info.then_bb = then_edge->dest;
   ce_info.else_bb = else_edge->dest;
@@ -2566,7 +2566,7 @@ find_cond_trap (test_bb, then_edge, else_edge)
     {
       struct ce_if_block new_ce_info;
       delete_insn (jump);
-      memset ((PTR) &new_ce_info, '\0', sizeof (new_ce_info));
+      memset (&new_ce_info, '\0', sizeof (new_ce_info));
       new_ce_info.test_bb = test_bb;
       new_ce_info.then_bb = NULL;
       new_ce_info.else_bb = NULL;

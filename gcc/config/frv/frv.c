@@ -1689,7 +1689,7 @@ frv_function_epilogue (file, size)
   frv_stack_cache = (frv_stack_t *)0;
 
   /* zap last used registers for conditional execution.  */
-  memset ((PTR) &frv_ifcvt.tmp_reg, 0, sizeof (frv_ifcvt.tmp_reg));
+  memset (&frv_ifcvt.tmp_reg, 0, sizeof (frv_ifcvt.tmp_reg));
 
   /* release the bitmap of created insns.  */
   BITMAP_XFREE (frv_ifcvt.scratch_insns_bitmap);
@@ -6565,7 +6565,7 @@ frv_ifcvt_modify_tests (ce_info, p_true, p_false)
      consider registers that are not preserved across function calls and are
      not fixed.  However, allow the ICC/ICR temporary registers to be allocated
      if we did not need to use them in reloading other registers. */
-  memset ((PTR) &tmp_reg->regs, 0, sizeof (tmp_reg->regs));
+  memset (&tmp_reg->regs, 0, sizeof (tmp_reg->regs));
   COPY_HARD_REG_SET (tmp_reg->regs, call_used_reg_set);
   AND_COMPL_HARD_REG_SET (tmp_reg->regs, fixed_reg_set);
   SET_HARD_REG_BIT (tmp_reg->regs, ICC_TEMP);
@@ -8650,7 +8650,7 @@ frv_pack_insns ()
   /* Set up the instruction and register states.  */
   dfa_start ();
   frv_state = (state_t) xmalloc (state_size ());
-  memset ((PTR) reg_state, REGSTATE_DEAD, sizeof (reg_state));
+  memset (reg_state, REGSTATE_DEAD, sizeof (reg_state));
 
   /* Go through the insns, and repack the insns.  */
   state_reset (frv_state);
@@ -8783,7 +8783,7 @@ frv_pack_insns ()
 	}
     }
 
-  free ((PTR) frv_state);
+  free (frv_state);
   dfa_finish ();
   return;
 }

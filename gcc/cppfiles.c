@@ -560,7 +560,7 @@ purge_cache (inc)
 {
   if (inc->buffer)
     {
-      free ((PTR) inc->buffer);
+      free ((void *) inc->buffer);
       inc->buffer = NULL;
     }
 }
@@ -708,8 +708,7 @@ _cpp_report_missing_guards (pfile)
      cpp_reader *pfile;
 {
   int banner = 0;
-  splay_tree_foreach (pfile->all_include_files, report_missing_guard,
-		      (PTR) &banner);
+  splay_tree_foreach (pfile->all_include_files, report_missing_guard, &banner);
 }
 
 /* Callback function for splay_tree_foreach().  */

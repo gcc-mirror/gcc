@@ -83,7 +83,7 @@ free_path (path, reason)
       break;
     }
 
-  free ((PTR) path->name);
+  free (path->name);
   free (path);
 }
 

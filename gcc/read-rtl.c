@@ -653,7 +653,7 @@ again:
 	    {
 	      ungetc (c, infile);
 	      list_counter++;
-	      obstack_ptr_grow (&vector_stack, (PTR) read_rtx (infile));
+	      obstack_ptr_grow (&vector_stack, read_rtx (infile));
 	    }
 	  if (list_counter > 0)
 	    {

@@ -68,14 +68,14 @@ sbitmap_resize (bmap, n_elms, def)
     {
       amt = (sizeof (struct simple_bitmap_def)
 	    + bytes - sizeof (SBITMAP_ELT_TYPE));
-      bmap = (sbitmap) xrealloc ((PTR) bmap, amt);
+      bmap = (sbitmap) xrealloc (bmap, amt);
     }
 
   if (n_elms > bmap->n_bits)
     {
       if (def)
 	{
-	  memset ((PTR) (bmap->elms + bmap->size), -1, bytes - bmap->bytes);
+	  memset (bmap->elms + bmap->size, -1, bytes - bmap->bytes);
 
 	  /* Set the new bits if the original last element.  */
 	  last_bit = bmap->n_bits % SBITMAP_ELT_BITS;
@@ -90,7 +90,7 @@ sbitmap_resize (bmap, n_elms, def)
 	      &= (SBITMAP_ELT_TYPE)-1 >> (SBITMAP_ELT_BITS - last_bit);
 	}
       else
-	memset ((PTR) (bmap->elms + bmap->size), 0, bytes - bmap->bytes);
+	memset (bmap->elms + bmap->size, 0, bytes - bmap->bytes);
     }
   else if (n_elms < bmap->n_bits)
     {
@@ -173,7 +173,7 @@ void
 sbitmap_zero (bmap)
      sbitmap bmap;
 {
-  memset ((PTR) bmap->elms, 0, bmap->bytes);
+  memset (bmap->elms, 0, bmap->bytes);
 }
 
 /* Set all elements in a bitmap to ones.  */
@@ -184,7 +184,7 @@ sbitmap_ones (bmap)
 {
   unsigned int last_bit;
 
-  memset ((PTR) bmap->elms, -1, bmap->bytes);
+  memset (bmap->elms, -1, bmap->bytes);
 
   last_bit = bmap->n_bits % SBITMAP_ELT_BITS;
   if (last_bit)

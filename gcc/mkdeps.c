@@ -137,14 +137,14 @@ deps_free (d)
   if (d->targetv)
     {
       for (i = 0; i < d->ntargets; i++)
-	free ((PTR) d->targetv[i]);
+	free ((void *) d->targetv[i]);
       free (d->targetv);
     }
 
   if (d->depv)
     {
       for (i = 0; i < d->ndeps; i++)
-	free ((PTR) d->depv[i]);
+	free ((void *) d->depv[i]);
       free (d->depv);
     }
 

@@ -6367,7 +6367,7 @@ dwarfout_init (main_input_filename)
   fputc ('\n', asm_out_file);
   ASM_OUTPUT_PUSH_SECTION (asm_out_file, DEBUG_SECTION);
   ASM_OUTPUT_LABEL (asm_out_file, DEBUG_BEGIN_LABEL);
-  output_die (output_compile_unit_die, (PTR) main_input_filename);
+  output_die (output_compile_unit_die, (void *) main_input_filename);
   ASM_OUTPUT_POP_SECTION (asm_out_file);
 
   fputc ('\n', asm_out_file);

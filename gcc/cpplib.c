@@ -681,7 +681,7 @@ do_include_common (pfile, type)
       _cpp_execute_include (pfile, fname, angle_brackets, type);
     }
 
-  free ((PTR) fname);
+  free ((void *) fname);
 }
 
 static void
@@ -1320,7 +1320,7 @@ do_pragma_dependency (pfile)
 	}
     }
 
-  free ((PTR) fname);
+  free ((void *) fname);
 }
 
 /* Get a token but skip padding.  */

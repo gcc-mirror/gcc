@@ -3384,7 +3384,7 @@ insns_for_mem_walk (r, data)
   if (ifmwi->pass == 0 && *r && GET_CODE (*r) == ADDRESSOF
       && GET_CODE (XEXP (*r, 0)) == REG)
     {
-      PTR *e;
+      void **e;
       tmp.key = XEXP (*r, 0);
       e = htab_find_slot (ifmwi->ht, &tmp, INSERT);
       if (*e == NULL)

@@ -5384,7 +5384,7 @@ build_typename_type (tree context, tree name, tree fullname)
 {
   tree t;
   tree d;
-  PTR *e;
+  void **e;
 
   if (typename_htab == NULL)
     {

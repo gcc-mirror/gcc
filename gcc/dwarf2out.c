@@ -4692,7 +4692,7 @@ add_AT_string (die, attr_kind, str)
 {
   dw_attr_ref attr = (dw_attr_ref) ggc_alloc (sizeof (dw_attr_node));
   struct indirect_string_node *node;
-  PTR *slot;
+  void **slot;
 
   if (! debug_str_hash)
     debug_str_hash = htab_create_ggc (10, debug_str_do_hash, 
