@@ -396,10 +396,10 @@ remove_phi_arg_num (tree phi, int i)
       PHI_ARG_NONZERO (phi, i) = PHI_ARG_NONZERO (phi, num_elem - 1);
     }
 
-  /* Shrink the vector and return.  */
-  SET_PHI_ARG_DEF (phi, num_elem - 1, NULL_TREE);
-  PHI_ARG_EDGE (phi, num_elem - 1) = NULL;
-  PHI_ARG_NONZERO (phi, num_elem - 1) = false;
+  /* Shrink the vector and return.  Note that we do not have to clear
+     PHI_ARG_DEF, PHI_ARG_EDGE, or PHI_ARG_NONZERO because the garbage
+     collector will not look at those elements beyond the first
+     PHI_NUM_ARGS elements of the array.  */
   PHI_NUM_ARGS (phi)--;
 }
 
