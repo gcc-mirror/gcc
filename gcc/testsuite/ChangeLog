@@ -1,3 +1,8 @@
+Sat Nov 21 21:41:05 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.c-torture/execute/980526-1.c: Do nothing if NO_LABEL_VALUES
+	is defined.
+
 1998-11-18  Dave Love  <d.love@dl.ac.uk>
 
 	* g77.f-torture/compile/981117-1.f: New test.
