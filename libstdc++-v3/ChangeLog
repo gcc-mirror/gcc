@@ -1,3 +1,8 @@
+2003-10-02  Paolo Carlini  <pcarlini@unitus.it>
+
+	* testsuite/22_locale/locale/cons/12438.cc: Use
+	__gnu_test::try_named_locale("").
+
 2003-10-01  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* linkage.m4 (GLIBCXX_CHECK_STDLIB_DECL_AND_LINKAGE_0): Define.
