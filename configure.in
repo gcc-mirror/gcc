@@ -1232,15 +1232,6 @@ else
 fi
 
 FLAGS_FOR_TARGET=
-if test -d ${topsrcdir}/gcc; then
-  # Directories specified with -B are searched for libraries after those
-  # specified with -L, but for headers (in sub-directory `include')
-  # before those specified with -I and -isystem.  Fortunately, we don't
-  # expect include directories to exist in build_tooldir/{bin,lib} (see
-  # below), and we want gcc/include to be searched first.
-  FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -B$$r/gcc/'
-fi
-
 case " $skipdirs " in
 *" target-newlib "*) ;;
 *)
@@ -1282,7 +1273,7 @@ fi
 if test "x${CC_FOR_TARGET+set}" = xset; then
   :
 elif test -d ${topsrcdir}/gcc; then
-  CC_FOR_TARGET='$$r/gcc/xgcc'
+  CC_FOR_TARGET='$$r/gcc/xgcc -B$$r/gcc/'
 elif test "$host" = "$target"; then
   CC_FOR_TARGET='$(CC)'
 else
@@ -1297,16 +1288,8 @@ esac
 
 if test "x${CHILL_FOR_TARGET+set}" = xset; then
   :
-elif test -d ${topsrcdir}/gcc &&
-   # This used to be
-   # echo ",${enable_languages-`echo ${LANGUAGES-CHILL} | tr ' ' ','`},"
-   # but that didn't work on the AIX 4.3.3 /bin/sh.
-   # echo ",${enable_languages-`echo ${LANGUAGES-CHILL} | tr " " ","`},"
-   # doesn't work on the Solaris 5.6 /bin/sh.
-   # This works on both:
-   echo ",${enable_languages-`echo ${LANGUAGES-CHILL} | tr \  ,`}," |
-   grep ',CHILL,' > /dev/null ; then
-  CHILL_FOR_TARGET='$$r/gcc/xgcc -L$$r/gcc/ch/runtime/'
+elif test -d ${topsrcdir}/gcc; then
+  CHILL_FOR_TARGET='$$r/gcc/xgcc -B$$r/gcc/ -L$$r/gcc/ch/runtime/'
 elif test "$host" = "$target"; then
   CHILL_FOR_TARGET='$(CC)'
 else
@@ -1319,16 +1302,8 @@ esac
 
 if test "x${CXX_FOR_TARGET+set}" = xset; then
   :
-elif test -d ${topsrcdir}/gcc &&
-   # This used to be
-   # echo ",${enable_languages-`echo ${LANGUAGES-c++} | tr ' ' ','`},"
-   # but that didn't work on the AIX 4.3.3 /bin/sh.
-   # echo ",${enable_languages-`echo ${LANGUAGES-c++} | tr " " ","`},"
-   # doesn't work on the Solaris 5.6 /bin/sh.
-   # This works on both:
-   echo ",${enable_languages-`echo ${LANGUAGES-c++} | tr \  ,`}," |
-   grep ',c[+][+],' > /dev/null ; then
-  CXX_FOR_TARGET='$$r/gcc/g++ -nostdinc++ '$libstdcxx_flags
+elif test -d ${topsrcdir}/gcc; then
+  CXX_FOR_TARGET='$$r/gcc/g++ -B$$r/gcc/ -nostdinc++ '$libstdcxx_flags
 elif test "$host" = "$target"; then
   CXX_FOR_TARGET='$(CXX)'
 else
