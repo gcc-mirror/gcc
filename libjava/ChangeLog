@@ -1,4 +1,10 @@
-2000-03-08  Anthony Green  <green@redhat.com>
+2000-03-05  Tom Tromey  <tromey@cygnus.com>
+
+	Fix for PR libgcj/43:
+	* include/Makefile.in: Rebuilt.
+	* include/Makefile.am (include_HEADERS): New define.
+
+2000-03-05  Anthony Green  <green@redhat.com>
 
 	* gcj/javaprims.h ("Java"): Remove FirstThread.
 
