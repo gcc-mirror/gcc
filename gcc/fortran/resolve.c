@@ -312,10 +312,6 @@ merge_argument_lists (gfc_symbol *proc, gfc_formal_arglist *new_args)
       /* Add a new argument.  Argument order is not important.  */
       new_arglist = gfc_get_formal_arglist ();
       new_arglist->sym = new_sym;
-      /* We mark all arguments as optional, since in the common case
-	 only a subset of the arguments will be present. This avoids
-	 having to special case arguments of master functions later on.  */
-      new_arglist->sym->attr.optional = 1;
       new_arglist->next = proc->formal;
       proc->formal  = new_arglist;
     }
