@@ -16,9 +16,11 @@ fp-bit.c: $(srcdir)/config/fp-bit.c
 # Build libgcc.a with different options.
 
 MULTILIB_OPTIONS	= msoft-float \
+			  mno-toc \
 			  mlittle/mbig
 
 MULTILIB_DIRNAMES	= soft-float \
+			  no-toc \
 			  little-endian big-endian
 
 MULTILIB_MATCHES	= mlittle=mlittle-endian \
