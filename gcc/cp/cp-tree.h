@@ -43,7 +43,7 @@ Boston, MA 02111-1307, USA.  */
       DELETE_EXPR_USE_VEC (in DELETE_EXPR).
       (TREE_CALLS_NEW) (in _EXPR or _REF) (commented-out).
       TYPE_USES_COMPLEX_INHERITANCE (in _TYPE).
-      C_DECLARED_LABEL_FLAG.
+      C_DECLARED_LABEL_FLAG (in LABEL_DECL)
       INHERITED_VALUE_BINDING_P (in CPLUS_BINDING)
       BASELINK_P (in TREE_LIST)
       ICS_ELLIPSIS_FLAG (in _CONV)
@@ -2159,6 +2159,7 @@ extern int flag_new_for_scope;
 #define DECL_STMT_DECL(NODE)    TREE_OPERAND (NODE, 0)
 #define STMT_EXPR_STMT(NODE)    TREE_OPERAND (NODE, 0)
 #define SUBOBJECT_CLEANUP(NODE) TREE_OPERAND (NODE, 0)
+#define LABEL_STMT_LABEL(NODE)  TREE_OPERAND (NODE, 0)
 
 /* Nonzero for an ASM_STMT if the assembly statement is volatile.  */
 #define ASM_VOLATILE_P(NODE)			\
@@ -2894,7 +2895,7 @@ extern tree push_using_directive                PROTO((tree));
 extern void push_class_level_binding		PROTO((tree, tree));
 extern tree implicitly_declare			PROTO((tree));
 extern tree lookup_label			PROTO((tree));
-extern tree shadow_label			PROTO((tree));
+extern tree declare_local_label                 PROTO((tree));
 extern tree define_label			PROTO((char *, int, tree));
 extern void push_switch				PROTO((void));
 extern void pop_switch				PROTO((void));
@@ -3360,6 +3361,7 @@ extern tree begin_compound_stmt                 PROTO((int));
 extern tree finish_compound_stmt                PROTO((int, tree));
 extern void finish_asm_stmt                     PROTO((tree, tree, tree, tree, tree));
 extern void finish_label_stmt                   PROTO((tree));
+extern void finish_label_decl                   PROTO((tree));
 extern void finish_subobject                    PROTO((tree));
 extern tree finish_parenthesized_expr           PROTO((tree));
 extern tree begin_stmt_expr                     PROTO((void));
