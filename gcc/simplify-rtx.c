@@ -2332,11 +2332,12 @@ simplify_subreg (outermode, op, innermode, byte)
 	}
 
       /* Recurse for futher possible simplifications.  */
-      new = simplify_subreg (outermode, op, GET_MODE (op),
+      new = simplify_subreg (outermode, SUBREG_REG (op),
+			     GET_MODE (SUBREG_REG (op)),
 			     final_offset);
       if (new)
 	return new;
-      return gen_rtx_SUBREG (outermode, op, final_offset);
+      return gen_rtx_SUBREG (outermode, SUBREG_REG (op), final_offset);
     }
 
   /* SUBREG of a hard register => just change the register number
