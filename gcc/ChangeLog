@@ -18,6 +18,8 @@
 	(mips_output_function_epilogue): Likewise.  Switch back to data
 	section after emitting the function.
 
+	* doc/tm.texi (Sections): Document TEXT_SECTION.
+
 2001-08-17  Richard Henderson  <rth@redhat.com>
 
 	* dwarf2out.c (dwarf2out_init): Don't emit .debug_loc label here.
