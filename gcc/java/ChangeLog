@@ -1,3 +1,9 @@
+1999-05-13  Kaveh R. Ghazi  <ghazi@snafu.rutgers.edu>
+
+        * gjavah.c (print_include): Cast the result of `strlen' to int
+        when comparing against a signed value.
+        (add_namelet): Likewise.
+
 1999-05-12  Kaveh R. Ghazi  <ghazi@snafu.rutgers.edu>
 
 	* expr.c (expand_invoke): Mark parameter `nargs' with

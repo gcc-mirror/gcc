@@ -927,7 +927,7 @@ print_include (out, utf8, len)
   for (incl = all_includes; incl; incl = incl->next)
     {
       /* We check the length because we might have a proper prefix.  */
-      if (len == strlen (incl->name)
+      if (len == (int) strlen (incl->name)
 	  && ! strncmp (incl->name, utf8, len))
 	return;
     }
@@ -1003,7 +1003,7 @@ add_namelet (name, name_limit, parent)
   for (np = parent->subnamelets; np != NULL; np = np->next)
     {
       /* We check the length because we might have a proper prefix.  */
-      if (strlen (np->name) == p - name &&
+      if ((int) strlen (np->name) == p - name &&
 	  ! strncmp (name, np->name, p - name))
 	{
 	  n = np;
