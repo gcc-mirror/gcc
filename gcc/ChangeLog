@@ -1,3 +1,9 @@
+2001-02-12  Kazu Hirata  <kazu@hxi.com>
+
+	* toplev.c (push_float_handler): Remove.
+	(pop_float_handler): Remove.
+	* toplev.h: Remove prototypes for the above functions.
+
 2001-02-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-common.c (constant_fits_type_p): New function.

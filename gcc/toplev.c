@@ -1662,38 +1662,6 @@ do_float_handler (fn, data)
   return 1;
 }
 
-/* Specify, in HANDLER, where to longjmp to when a floating arithmetic
-   error happens, pushing the previous specification into OLD_HANDLER.
-   Return an indication of whether there was a previous handler in effect.  */
-
-int
-push_float_handler (handler, old_handler)
-     jmp_buf handler, old_handler;
-{
-  int was_handled = float_handled;
-
-  float_handled = 1;
-  if (was_handled)
-    memcpy ((char *) old_handler, (char *) float_handler,
-	   sizeof (float_handler));
-
-  memcpy ((char *) float_handler, (char *) handler, sizeof (float_handler));
-  return was_handled;
-}
-
-/* Restore the previous specification of whether and where to longjmp to
-   when a floating arithmetic error happens.  */
-
-void
-pop_float_handler (handled, handler)
-     int handled;
-     jmp_buf handler;
-{
-  float_handled = handled;
-  if (handled)
-    bcopy ((char *) handler, (char *) float_handler, sizeof (float_handler));
-}
-
 /* Handler for fatal signals, such as SIGSEGV.  These are transformed
    into ICE messages, which is much more user friendly.  */
 
