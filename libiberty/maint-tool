@@ -1,0 +1,75 @@
+#!/usr/bin/perl
+# -*- perl -*-
+
+#   Copyright (C) 2001
+#   Free Software Foundation
+#
+# This file is part of the libiberty library.
+# Libiberty is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Library General Public
+# License as published by the Free Software Foundation; either
+# version 2 of the License, or (at your option) any later version.
+#
+# Libiberty is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Library General Public License for more details.
+#
+# You should have received a copy of the GNU Library General Public
+# License along with libiberty; see the file COPYING.LIB.  If not,
+# write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+# Boston, MA 02111-1307, USA.
+#
+# Originally written by DJ Delorie <dj@redhat.com>
+
+
+# This is a trivial script which checks the lists of C and O files in
+# the Makefile for consistency.
+
+$mode = shift;
+$srcdir = ".";
+
+if ($mode eq "-s") {
+    $srcdir = shift;
+    $mode = shift;
+}
+
+&missing() if $mode eq "missing";
+
+exit 0;
+
+######################################################################
+
+sub missing {
+
+    opendir(S, $srcdir);
+    while ($f = readdir S) {
+	$have{$f} = 1;
+    }
+    closedir(S);
+    opendir(S, ".");
+    while ($f = readdir S) {
+	$have{$f} = 1;
+    }
+    closedir(S);
+
+    for $a (@ARGV) {
+	$listed{$a} = 1;
+	$have{$a} = 0;
+    }
+
+    for $f (sort keys %have) {
+	next unless $have{$f};
+	if ($f =~ /\.c$/) {
+	    print "S $f\n";
+	}
+    }
+    for $f (sort keys %listed) {
+	if ($f =~ /(.*)\.c$/) {
+	    $base = $1;
+	    if (! $listed{"$base.o"}) {
+		print "O $f\n";
+	    }
+	}
+    }
+}

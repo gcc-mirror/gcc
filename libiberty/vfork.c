@@ -1,6 +1,16 @@
 /* Emulate vfork using just plain fork, for systems without a real vfork.
    This function is in the public domain. */
 
+/*
+
+@deftypefn Supplemental int vfork ()
+
+Emulates @code{vfork} by calling @code{fork} and returning its value.
+
+@end deftypefn
+
+*/
+
 #include "ansidecl.h"
 
 extern int fork PARAMS ((void));

@@ -2,6 +2,17 @@
    Fri Jun 16 18:30:00 1995  Pat Rankin  <rankin@eql.caltech.edu>
    This code is in the public domain.  */
 
+/*
+
+@deftypefn Replacement char* xstrerror (int @var{errnum})
+
+Behaves exactly like the standard @code{strerror} function, but
+will never return a NULL pointer.
+
+@end deftypefn
+
+*/
+
 #include <stdio.h>
 
 #include "libiberty.h"

@@ -16,6 +16,22 @@
    write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.  */
 
+
+/*
+
+@deftypefn Supplemental int setenv (const char *@var{name}, const char *@var{value}, int @var{overwrite})
+@deftypefnx Supplemental void unsetenv (const char *@var{name})
+
+@code{setenv} adds @var{name} to the environment with value
+@var{value}.  If the name was already present in the environment,
+the new value will be stored only if @var{overwrite} is non-zero.
+The companion @code{unsetenv} function removes @var{name} from the
+environment.  This implementation is not safe for multithreaded code.
+
+@end deftypefn
+
+*/
+
 #if HAVE_CONFIG_H
 # include <config.h>
 #endif

@@ -22,6 +22,21 @@ the resulting executable to be covered by the GNU General Public License.
 This exception does not however invalidate any other reasons why
 the executable file might be covered by the GNU General Public License. */
 
+/*
+
+@deftypefn Supplemental double strtod (const char *@var{string}, char **@var{endptr})
+
+This ANSI C function converts the initial portion of @var{string} to a
+@code{double}.  If @var{endptr} is not NULL, a pointer to the
+character after the last character used in the conversion is stored in
+the location referenced by @var{endptr}.  If no conversion is
+performed, zero is returned and the value of @var{string} is stored in
+the location referenced by @var{endptr}.
+
+@end deftypefn
+
+*/
+
 #include "ansidecl.h"
 #include "safe-ctype.h"
 

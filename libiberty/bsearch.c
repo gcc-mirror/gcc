@@ -28,6 +28,23 @@
  * SUCH DAMAGE.
  */
 
+/*
+
+@deftypefn Supplemental void* bsearch (const void *@var{key}, const void *@var{base}, size_t @var{nmemb}, size_t @var{size}, int (*@var{compar})(const void *, const void *))
+
+Performs a search over an array of @var{nmemb} elements pointed to by
+@var{base} for a member that matches the object pointed to by @var{key}.
+The size of each member is specified by @var{size}.  The array contents
+should be sorted in ascending order according to the @var{compar}
+comparison function.  This routine should take two arguments pointing to
+the @var{key} and to an array member, in that order, and should return an
+integer less than, equal to, or greater than zero if the @var{key} object
+is respectively less than, matching, or greater than the array member.
+
+@end deftypefn
+
+*/
+
 #include "config.h"
 #include "ansidecl.h"
 #include <sys/types.h>		/* size_t */

@@ -3,24 +3,16 @@
 
 /*
 
-NAME
+@deftypefn Supplemental char* strstr (const char *@var{string}, const char *@var{sub})
 
-	strstr -- locate first occurance of a substring
+This function searches for the substring @var{sub} in the string
+@var{string}, not including the terminating NUL characters.  A pointer
+to the first occurance of @var{sub} is returned, or NULL if the
+substring is absent.  If @var{sub} points to a string with zero
+length, the function returns @var{string}.
 
-SYNOPSIS
+@end deftypefn
 
-	#include <string.h>
-
-	char *strstr (char *s1, char *s2)
-
-DESCRIPTION
-
-	Locates the first occurance in the string pointed to by S1 of
-	the string pointed to by S2.  Returns a pointer to the substring
-	found, or a NULL pointer if not found.  If S2 points to a string
-	with zero length, the function returns S1.
-	
-BUGS
 
 */
 

@@ -2,6 +2,17 @@
    This trivial function is in the public domain.
    Ian Lance Taylor, Cygnus Support, December 1995.  */
 
+/*
+
+@deftypefn Replacement char* xstrdup (const char *@var{s})
+
+Duplicates a character string without fail, using @code{xmalloc} to
+obtain memory.
+
+@end deftypefn
+
+*/
+
 #include <sys/types.h>
 #ifdef HAVE_CONFIG_H
 #include "config.h"

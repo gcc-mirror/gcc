@@ -3,28 +3,15 @@
 
 /*
 
-NAME
+@deftypefn Supplemental int bcmp (char *@var{x}, char *@var{y}, int @var{count})
 
-	bcmp -- compare two memory regions
+Compares the first @var{count} bytes of two areas of memory.  Returns
+zero if they are the same, non-zero otherwise.  Returns zero if
+@var{count} is zero.  A non-zero result only indicates a difference,
+it does not indicate any sorting order (say, by having a positive
+result mean @var{x} sorts before @var{y}).
 
-SYNOPSIS
-
-	int bcmp (char *from, char *to, int count)
-
-DESCRIPTION
-
-	Compare two memory regions and return zero if they are identical,
-	non-zero otherwise.  If count is zero, return zero.
-
-NOTES
-
-	No guarantee is made about the non-zero returned value.  In
-	particular, the results may be signficantly different than
-	strcmp(), where the return value is guaranteed to be less than,
-	equal to, or greater than zero, according to lexicographical
-	sorting of the compared regions.
-
-BUGS
+@end deftypefn
 
 */
 
