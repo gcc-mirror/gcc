@@ -186,23 +186,24 @@ _Jv_platform_initProperties (java::util::Properties* newprops)
   // Set the OS architecture.
   SYSTEM_INFO si;
   GetSystemInfo (&si);
-  switch (si.dwProcessorType)
+  switch (si.wProcessorArchitecture)
     {
-      case PROCESSOR_INTEL_386:
-        SET ("os.arch", "i386");
+      case PROCESSOR_ARCHITECTURE_INTEL:
+        SET ("os.arch", "x86");
         break;
-      case PROCESSOR_INTEL_486:
-        SET ("os.arch", "i486");
+      case PROCESSOR_ARCHITECTURE_MIPS:
+        SET ("os.arch", "mips");
         break;
-      case PROCESSOR_INTEL_PENTIUM:
-        SET ("os.arch", "i586");
+      case PROCESSOR_ARCHITECTURE_ALPHA:
+        SET ("os.arch", "alpha");
         break;
-      case PROCESSOR_MIPS_R4000:	
-        SET ("os.arch", "MIPS4000");
+      case PROCESSOR_ARCHITECTURE_PPC:	
+        SET ("os.arch", "ppc");
         break;
-      case PROCESSOR_ALPHA_21064:
-        SET ("os.arch", "ALPHA");
+      case PROCESSOR_ARCHITECTURE_IA64:
+        SET ("os.arch", "ia64");
         break;
+      case PROCESSOR_ARCHITECTURE_UNKNOWN:
       default:
         SET ("os.arch", "unknown");
         break;
