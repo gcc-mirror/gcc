@@ -1,3 +1,23 @@
+2004-08-30  Casey Marshall  <csm@gnu.org>
+
+	Author e-mail updated for all files.
+	* gnu/java/security/OID.java (equals): Test if the aurgment is an
+	instance of OID.
+	(compareTo): Use `equals'.
+	* gnu/java/security/der/BitString.java (equals): Test if the
+	argument is an instance of BitString.
+	* gnu/java/security/der/DERReader.java: Removed NIO imports.  Made
+	class final. Made fields private.
+	(<init>): New constructor.
+	(skip): New method.
+	(makeString): Made static; don't use NIO.
+	(fromIso88591, fromUtf16Be, fromUtf8): New methods.
+	* gnu/java/security/der/DERWriter.java: Fixed imports.
+	(writeString): Don't use NIO.
+	(toIso88591, toUtf16Be, toUtf8): New methods.
+	* gnu/java/security/der/DERValue.java: Formatting changes only.
+	* gnu/java/security/der/DER.java: Likewise.
+
 2004-08-30  Tom Tromey  <tromey@redhat.com>
 
 	* java/nio/CharBuffer.java (put): Fix typo.

@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -51,9 +51,9 @@ import java.util.Arrays;
  * <p>Where the "xxx" represents three bits that should be ignored, and
  * can have any value.
  *
- * @author Casey Marshall (rsdio@metastatic.org)
+ * @author Casey Marshall (csm@gnu.org)
  */
-public class BitString implements Cloneable, Comparable, java.io.Serializable
+public class BitString implements Cloneable, Comparable
 {
 
   // Fields.
@@ -288,8 +288,8 @@ public class BitString implements Cloneable, Comparable, java.io.Serializable
 
   public boolean equals(Object o)
   {
-    if (this == o)
-      return true;
+    if (!(o instanceof BitString))
+      return false;
     BitString that = (BitString) o;
     // True for cloned instances.
     if (this.bytes == that.bytes && this.ignoredBits == that.ignoredBits)
