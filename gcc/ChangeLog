@@ -1,3 +1,22 @@
+2002-03-30  Richard Henderson  <rth@redhat.com>
+
+	* config/sparc/sparc.c: Remove all references to TARGET_EPILOGUE.
+	(sparc_emitting_epilogue): New.
+	(leaf_label, output_return, sparc_return_peephole_ok): Remove.
+	* config/sparc/sparc-protos.h: Update.
+	* config/sparc/sparc.h (MASK_EPILOGUE, TARGET_EPILOGUE): Remove.
+	(TARGET_SWITCHES): Update.
+	* config/sparc/sparc.md (return): Remove.
+	(return_*): Use sparc_emitting_epilogue, not !TARGET_EPILOGUE.
+	* config/sparc/freebsd.h, config/sparc/linux64.h, config/sparc/lite.h,
+	config/sparc/liteelf.h, config/sparc/netbsd-elf.h,
+	config/sparc/sol2-sld-64.h, config/sparc/sol2.h,
+	config/sparc/sp64-aout.h, config/sparc/sp64-elf.h, 
+	config/sparc/sp86x-aout.h, config/sparc/sp86x-elf.h,
+	config/sparc/splet.h, config/sparc/vxsparc64.h (TARGET_DEFAULT):
+	Remove MASK_EPILOGUE.
+	* doc/invoke.texi: Update.
+
 2002-03-30  Daniel Berlin  <dan@dberlin.org>
 
 	* dwarf2out.c (dwarf2out_define): Remove start_source_file call,

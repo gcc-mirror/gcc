@@ -387,11 +387,6 @@ extern int target_flags;
 #define MASK_FPU 1
 #define TARGET_FPU (target_flags & MASK_FPU)
 
-/* Nonzero if we should use function_epilogue().  Otherwise, we
-   use fast return insns, but lose some generality.  */
-#define MASK_EPILOGUE 2
-#define TARGET_EPILOGUE (target_flags & MASK_EPILOGUE)
-
 /* Nonzero if we should assume that double pointers might be unaligned.
    This can happen when linking gcc compiled code with other compilers,
    because the ABI only guarantees 4 byte alignment.  */
@@ -535,10 +530,6 @@ extern int target_flags;
     {"soft-float", -MASK_FPU,						\
      N_("Do not use hardware fp") },					\
     {"soft-float", MASK_FPU_SET,			NULL },		\
-    {"epilogue", MASK_EPILOGUE,						\
-     N_("Use function_epilogue()") },					\
-    {"no-epilogue", -MASK_EPILOGUE,					\
-     N_("Do not use function_epilogue()") }, 				\
     {"unaligned-doubles", MASK_UNALIGNED_DOUBLES,			\
      N_("Assume possible double misalignment") },			\
     {"no-unaligned-doubles", -MASK_UNALIGNED_DOUBLES,			\
@@ -607,7 +598,7 @@ extern int target_flags;
 /* MASK_APP_REGS must always be the default because that's what
    FIXED_REGISTERS is set to and -ffixed- is processed before
    CONDITIONAL_REGISTER_USAGE is called (where we process -mno-app-regs).  */
-#define TARGET_DEFAULT (MASK_APP_REGS + MASK_EPILOGUE + MASK_FPU)
+#define TARGET_DEFAULT (MASK_APP_REGS + MASK_FPU)
 
 /* This is meant to be redefined in target specific files.  */
 #define SUBTARGET_SWITCHES

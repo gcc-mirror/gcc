@@ -348,10 +348,10 @@ in the following sections.
 -mcmodel=@var{code-model} @gol
 -m32  -m64 @gol
 -mapp-regs  -mbroken-saverestore  -mcypress @gol
--mepilogue  -mfaster-structs  -mflat @gol
+-mfaster-structs  -mflat @gol
 -mfpu  -mhard-float  -mhard-quad-float @gol
 -mimpure-text  -mlive-g0  -mno-app-regs @gol
--mno-epilogue  -mno-faster-structs  -mno-flat  -mno-fpu @gol
+-mno-faster-structs  -mno-flat  -mno-fpu @gol
 -mno-impure-text  -mno-stack-bias  -mno-unaligned-doubles @gol
 -msoft-float  -msoft-quad-float  -msparclite  -mstack-bias @gol
 -msupersparc  -munaligned-doubles  -mv8}
@@ -5209,18 +5209,6 @@ a trap handler for one of these instructions, and then the trap handler
 emulates the effect of the instruction.  Because of the trap handler overhead,
 this is much slower than calling the ABI library routines.  Thus the
 @option{-msoft-quad-float} option is the default.
-
-@item -mno-epilogue
-@itemx -mepilogue
-@opindex mno-epilogue
-@opindex mepilogue
-With @option{-mepilogue} (the default), the compiler always emits code for
-function exit at the end of each function.  Any function exit in
-the middle of the function (such as a return statement in C) will
-generate a jump to the exit code at the end of the function.
-
-With @option{-mno-epilogue}, the compiler tries to emit exit code inline
-at every function exit.
 
 @item -mno-flat
 @itemx -mflat

@@ -24,6 +24,8 @@ Boston, MA 02111-1307, USA.  */
 #ifndef __SPARC_PROTOS_H__
 #define __SPARC_PROTOS_H__
 
+extern bool sparc_emitting_epilogue;
+
 #ifdef TREE_CODE
 extern struct rtx_def *function_value PARAMS ((tree, enum machine_mode, int));
 extern void function_arg_advance PARAMS ((CUMULATIVE_ARGS *,
@@ -84,7 +86,6 @@ extern void sparc_emit_set_symbolic_const64 PARAMS ((rtx, rtx, rtx));
 extern int sparc_splitdi_legitimate PARAMS ((rtx, rtx));
 extern int sparc_absnegfloat_split_legitimate PARAMS ((rtx, rtx));
 extern char *output_cbranch PARAMS ((rtx, rtx, int, int, int, int, rtx));
-extern const char *output_return PARAMS ((rtx *));
 extern const char *output_sibcall PARAMS ((rtx, rtx));
 extern char *output_v9branch PARAMS ((rtx, rtx, int, int, int, int, int,
 				      rtx));
@@ -115,7 +116,6 @@ extern char *sparc_v8plus_shift PARAMS ((rtx *, rtx, const char *));
 /* Function used for V8+ code generation.  Returns 1 if the high
    32 bits of REG are 0 before INSN.  */   
 extern int sparc_check_64 PARAMS ((rtx, rtx));
-extern int sparc_return_peephole_ok PARAMS ((rtx, rtx));
 extern rtx gen_df_reg PARAMS ((rtx, int));
 #endif /* RTX_CODE */
 
