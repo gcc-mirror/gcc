@@ -285,11 +285,11 @@ void
 c_initialize_diagnostics (diagnostic_context *context)
 {
   pretty_printer *base = context->printer;
-  c_pretty_printer *pp = xmalloc (sizeof (c_pretty_printer));
+  c_pretty_printer *pp = XNEW (c_pretty_printer);
   memcpy (pp_base (pp), base, sizeof (pretty_printer));
   pp_c_pretty_printer_init (pp);
   context->printer = (pretty_printer *) pp;
 
-  /* It is safe to free this object because it was previously malloc()'d.  */
-  free (base);
+  /* It is safe to free this object because it was previously XNEW()'d.  */
+  XDELETE (base);
 }

@@ -117,7 +117,7 @@ do_typedef (const char *s, type_p t, struct fileloc *pos)
 	return;
       }
 
-  p = xmalloc (sizeof (struct pair));
+  p = XNEW (struct pair);
   p->next = typedefs;
   p->name = s;
   p->type = t;
@@ -173,7 +173,7 @@ new_structure (const char *name, int isunion, struct fileloc *pos,
 	else if (si->u.s.line.file != NULL && si->u.s.bitmap != bitmap)
 	  {
 	    ls = si;
-	    si = xcalloc (1, sizeof (struct type));
+	    si = XCNEW (struct type);
 	    memcpy (si, ls, sizeof (struct type));
 	    ls->kind = TYPE_LANG_STRUCT;
 	    ls->u.s.lang_struct = si;
@@ -187,7 +187,7 @@ new_structure (const char *name, int isunion, struct fileloc *pos,
 
 	if (ls != NULL && s == NULL)
 	  {
-	    s = xcalloc (1, sizeof (struct type));
+	    s = XCNEW (struct type);
 	    s->next = ls->u.s.lang_struct;
 	    ls->u.s.lang_struct = s;
 	    s->u.s.lang_struct = ls;
@@ -197,7 +197,7 @@ new_structure (const char *name, int isunion, struct fileloc *pos,
 
   if (s == NULL)
     {
-      s = xcalloc (1, sizeof (struct type));
+      s = XCNEW (struct type);
       s->next = structures;
       structures = s;
     }
@@ -233,7 +233,7 @@ find_structure (const char *name, int isunion)
 	&& UNION_P (s) == isunion)
       return s;
 
-  s = xcalloc (1, sizeof (struct type));
+  s = XCNEW (struct type);
   s->next = structures;
   structures = s;
   s->kind = isunion ? TYPE_UNION : TYPE_STRUCT;
@@ -258,7 +258,7 @@ find_param_structure (type_p t, type_p param[NUM_PARAM])
       break;
   if (res == NULL)
     {
-      res = xcalloc (1, sizeof (*res));
+      res = XCNEW (struct type);
       res->kind = TYPE_PARAM_STRUCT;
       res->next = param_structs;
       param_structs = res;
@@ -273,9 +273,9 @@ find_param_structure (type_p t, type_p param[NUM_PARAM])
 type_p
 create_scalar_type (const char *name, size_t name_len)
 {
-  type_p r = xcalloc (1, sizeof (struct type));
+  type_p r = XCNEW (struct type);
   r->kind = TYPE_SCALAR;
-  r->u.sc = xmemdup (name, name_len, name_len + 1);
+  r->u.sc = (char *) xmemdup (name, name_len, name_len + 1);
   return r;
 }
 
@@ -286,7 +286,7 @@ create_pointer (type_p t)
 {
   if (! t->pointer_to)
     {
-      type_p r = xcalloc (1, sizeof (struct type));
+      type_p r = XCNEW (struct type);
       r->kind = TYPE_POINTER;
       r->u.p = t;
       t->pointer_to = r;
@@ -301,7 +301,7 @@ create_array (type_p t, const char *len)
 {
   type_p v;
 
-  v = xcalloc (1, sizeof (*v));
+  v = XCNEW (struct type);
   v->kind = TYPE_ARRAY;
   v->u.a.p = t;
   v->u.a.len = len;
@@ -312,7 +312,7 @@ create_array (type_p t, const char *len)
 options_p
 create_option (const char *name, void *info)
 {
-  options_p o = xmalloc (sizeof (*o));
+  options_p o = XNEW (struct options);
   o->name = name;
   o->info = info;
   return o;
@@ -325,7 +325,7 @@ void
 note_variable (const char *s, type_p t, options_p o, struct fileloc *pos)
 {
   pair_p n;
-  n = xmalloc (sizeof (*n));
+  n = XNEW (struct pair);
   n->name = s;
   n->type = t;
   n->line = *pos;
@@ -412,7 +412,7 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
       return &string_type;
     }
 
-  nodot = xmalloc (sizeof (*nodot));
+  nodot = XNEW (struct options);
   nodot->next = NULL;
   nodot->name = "dot";
   nodot->info = "";
@@ -434,10 +434,10 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
       {
 	pair_p old_note_flds = note_flds;
 
-	note_flds = xmalloc (sizeof (*note_flds));
+	note_flds = XNEW (struct pair);
 	note_flds->line.file = __FILE__;
 	note_flds->line.line = __LINE__;
-	note_flds->opt = xmalloc (sizeof (*note_flds->opt));
+	note_flds->opt = XNEW (struct options);
 	note_flds->opt->next = nodot;
 	note_flds->opt->name = "tag";
 	note_flds->opt->info = xasprintf ("%d", c);
@@ -586,7 +586,7 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
 	      break;
 	    }
 
-	  subfields = xmalloc (sizeof (*subfields));
+	  subfields = XNEW (struct pair);
 	  subfields->next = old_subf;
 	  subfields->type = t;
 	  subfields->name = xasprintf (".fld[%lu].%s", (unsigned long)aindex,
@@ -595,7 +595,7 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
 	  subfields->line.line = __LINE__;
 	  if (t == note_union_tp)
 	    {
-	      subfields->opt = xmalloc (sizeof (*subfields->opt));
+	      subfields->opt = XNEW (struct options);
 	      subfields->opt->next = nodot;
 	      subfields->opt->name = "desc";
 	      subfields->opt->info = "NOTE_LINE_NUMBER (&%0)";
@@ -603,7 +603,7 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
 	  else if (t == basic_block_tp)
 	    {
 	      /* We don't presently GC basic block structures...  */
-	      subfields->opt = xmalloc (sizeof (*subfields->opt));
+	      subfields->opt = XNEW (struct options);
 	      subfields->opt->next = nodot;
 	      subfields->opt->name = "skip";
 	      subfields->opt->info = NULL;
@@ -612,7 +612,7 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
 	    subfields->opt = nodot;
 	}
 
-      flds = xmalloc (sizeof (*flds));
+      flds = XNEW (struct pair);
       flds->next = old_flds;
       flds->name = "";
       sname = xasprintf ("rtx_def_%s", rtx_name[i]);
@@ -620,7 +620,7 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
       flds->type = find_structure (sname, 0);
       flds->line.file = __FILE__;
       flds->line.line = __LINE__;
-      flds->opt = xmalloc (sizeof (*flds->opt));
+      flds->opt = XNEW (struct options);
       flds->opt->next = nodot;
       flds->opt->name = "tag";
       ftag = xstrdup (rtx_name[i]);
@@ -652,24 +652,24 @@ adjust_field_tree_exp (type_p t, options_p opt ATTRIBUTE_UNUSED)
       return &string_type;
     }
 
-  nodot = xmalloc (sizeof (*nodot));
+  nodot = XNEW (struct options);
   nodot->next = NULL;
   nodot->name = "dot";
   nodot->info = "";
 
-  flds = xmalloc (sizeof (*flds));
+  flds = XNEW (struct pair);
   flds->next = NULL;
   flds->name = "";
   flds->type = t;
   flds->line.file = __FILE__;
   flds->line.line = __LINE__;
-  flds->opt = xmalloc (sizeof (*flds->opt));
+  flds->opt = XNEW (struct options);
   flds->opt->next = nodot;
   flds->opt->name = "length";
   flds->opt->info = "TREE_CODE_LENGTH (TREE_CODE ((tree) &%0))";
   {
     options_p oldopt = flds->opt;
-    flds->opt = xmalloc (sizeof (*flds->opt));
+    flds->opt = XNEW (struct options);
     flds->opt->next = oldopt;
     flds->opt->name = "default";
     flds->opt->info = "";
@@ -998,7 +998,7 @@ create_file (const char *name, const char *oname)
   outf_p f;
   size_t i;
 
-  f = xcalloc (sizeof (*f), 1);
+  f = XCNEW (struct outf);
   f->next = output_files;
   f->name = oname;
   output_files = f;
@@ -1028,7 +1028,7 @@ oprintf (outf_p o, const char *format, ...)
       do {
 	new_len *= 2;
       } while (o->bufused + slength >= new_len);
-      o->buf = xrealloc (o->buf, new_len);
+      o->buf = (char *) xrealloc (o->buf, new_len);
       o->buflength = new_len;
     }
   memcpy (o->buf + o->bufused, s, slength);
@@ -2716,7 +2716,7 @@ write_roots (pair_p variables)
 	  break;
       if (fli == NULL)
 	{
-	  fli = xmalloc (sizeof (*fli));
+	  fli = XNEW (struct flist);
 	  fli->f = f;
 	  fli->next = flp;
 	  fli->started_p = 0;

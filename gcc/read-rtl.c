@@ -439,10 +439,10 @@ read_constants (FILE *infile, char *tmp_char)
 
       if (c != '(')
 	fatal_expected_char (infile, '(', c);
-      def = xmalloc (sizeof (struct md_constant));
+      def = XNEW (struct md_constant);
       def->name = tmp_char;
       read_name (tmp_char, infile);
-      entry_ptr = htab_find_slot (defs, def, TRUE);
+      entry_ptr = htab_find_slot (defs, def, INSERT);
       if (! *entry_ptr)
 	def->name = xstrdup (tmp_char);
       c = read_skip_spaces (infile);

@@ -226,7 +226,7 @@ new_adjust (const char *name,
 	return;
       }
 
-  a = xmalloc (sizeof (struct mode_adjust));
+  a = XNEW (struct mode_adjust);
   a->mode = mode;
   a->adjustment = adjustment;
   a->file = file;
