@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on the Mitsubishi M32R cpu.
-   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -41,8 +41,6 @@ rtx m32r_compare_op0, m32r_compare_op1;
 /* Array of valid operand punctuation characters.  */
 char m32r_punct_chars[256];
 
-static void init_reg_tables ();
-
 /* Selected code model.  */
 char *m32r_model_string = M32R_MODEL_DEFAULT;
 enum m32r_model m32r_model;
@@ -50,6 +48,10 @@ enum m32r_model m32r_model;
 /* Selected SDA support.  */
 char *m32r_sdata_string = M32R_SDATA_DEFAULT;
 enum m32r_sdata m32r_sdata;
+
+
+/* Forward declaration.  */
+static void init_reg_tables	PROTO((void));
 
 /* Called by OVERRIDE_OPTIONS to initialize various things.  */
 
@@ -84,6 +86,7 @@ m32r_init ()
     m32r_sdata = M32R_SDATA_USE;
   else
     error ("bad value (%s) for -msdata switch", m32r_sdata_string);
+
 }
 
 /* Vectors to keep interesting information about registers where it can easily
@@ -95,7 +98,8 @@ m32r_init ()
    they all fit (as bit numbers) in a 32 bit word (again).  Each real mode is
    mapped into one m32r_mode_class mode.  */
 
-enum m32r_mode_class {
+enum m32r_mode_class
+{
   C_MODE,
   S_MODE, D_MODE, T_MODE, O_MODE,
   SF_MODE, DF_MODE, TF_MODE, OF_MODE
@@ -113,9 +117,11 @@ enum m32r_mode_class {
 /* Modes for quad-word and smaller quantities.  */
 #define T_MODES (D_MODES | (1 << (int) T_MODE) | (1 << (int) TF_MODE))
 
+
 /* Value is 1 if register/mode pair is acceptable on arc.  */
 
-unsigned int m32r_hard_regno_mode_ok[FIRST_PSEUDO_REGISTER] = {
+unsigned int m32r_hard_regno_mode_ok[FIRST_PSEUDO_REGISTER] =
+{
   T_MODES, T_MODES, T_MODES, T_MODES, T_MODES, T_MODES, T_MODES, T_MODES,
   T_MODES, T_MODES, T_MODES, T_MODES, T_MODES, S_MODES, S_MODES, S_MODES,
   S_MODES, C_MODES
@@ -412,21 +418,23 @@ m32r_init_expanders ()
 /* Acceptable arguments to the call insn.  */
 
 int
-call_address_operand (op, mode)
+call_address_operand (op, int_mode)
      rtx op;
-     enum machine_mode mode;
+     int int_mode;
 {
-  return symbolic_operand (op, mode);
+  return symbolic_operand (op, int_mode);
 
-  /* Constants and values in registers are not OK, because
-     the m32r BL instruction can only support PC relative branching.  */ 
+/* Constants and values in registers are not OK, because
+   the m32r BL instruction can only support PC relative branching.  */ 
 }
 
 int
-call_operand (op, mode)
+call_operand (op, int_mode)
      rtx op;
-     enum machine_mode mode;
+     int int_mode;
 {
+  enum machine_mode mode = (enum machine_mode)int_mode;
+
   if (GET_CODE (op) != MEM)
     return 0;
   op = XEXP (op, 0);
@@ -436,9 +444,9 @@ call_operand (op, mode)
 /* Returns 1 if OP is a symbol reference.  */
 
 int
-symbolic_operand (op, mode)
+symbolic_operand (op, int_mode)
      rtx op;
-     enum machine_mode mode;
+     int int_mode;
 {
   switch (GET_CODE (op))
     {
@@ -446,6 +454,7 @@ symbolic_operand (op, mode)
     case LABEL_REF:
     case CONST :
       return 1;
+
     default:
       return 0;
     }
@@ -454,9 +463,9 @@ symbolic_operand (op, mode)
 /* Return 1 if OP is a reference to an object in .sdata/.sbss.  */
 
 int
-small_data_operand (op, mode)
+small_data_operand (op, int_mode)
      rtx op;
-     enum machine_mode mode;
+     int int_mode;
 {
   if (! TARGET_SDATA_USE)
     return 0;
@@ -477,9 +486,9 @@ small_data_operand (op, mode)
 /* Return 1 if OP is a symbol that can use 24 bit addressing.  */
 
 int
-addr24_operand (op, mode)
+addr24_operand (op, int_mode)
      rtx op;
-     enum machine_mode mode;
+     int int_mode;
 {
   if (GET_CODE (op) == LABEL_REF)
     return TARGET_ADDR24;
@@ -509,24 +518,24 @@ addr24_operand (op, mode)
 /* Return 1 if OP is a symbol that needs 32 bit addressing.  */
 
 int
-addr32_operand (op, mode)
+addr32_operand (op, int_mode)
      rtx op;
-     enum machine_mode mode;
+     int int_mode;
 {
   if (GET_CODE (op) == LABEL_REF)
     return TARGET_ADDR32;
 
   if (GET_CODE (op) == SYMBOL_REF)
-    return (! addr24_operand (op)
-	    && ! small_data_operand (op));
+    return (! addr24_operand (op, int_mode)
+	    && ! small_data_operand (op, int_mode));
 
   if (GET_CODE (op) == CONST
       && GET_CODE (XEXP (op, 0)) == PLUS
       && GET_CODE (XEXP (XEXP (op, 0), 0)) == SYMBOL_REF
       && GET_CODE (XEXP (XEXP (op, 0), 1)) == CONST_INT)
     {
-      return (! addr24_operand (op)
-	      && ! small_data_operand (op));
+      return (! addr24_operand (op, int_mode)
+	      && ! small_data_operand (op, int_mode));
     }
 
   return 0;
@@ -535,9 +544,9 @@ addr32_operand (op, mode)
 /* Return 1 if OP is a function that can be called with the `bl' insn.  */
 
 int
-call26_operand (op, mode)
+call26_operand (op, int_mode)
      rtx op;
-     enum machine_mode mode;
+     int int_mode;
 {
   if (GET_CODE (op) == SYMBOL_REF)
     return ! LARGE_NAME_P (XSTR (op, 0));
@@ -548,9 +557,9 @@ call26_operand (op, mode)
 /* Returns 1 if OP is an acceptable operand for seth/add3.  */
 
 int
-seth_add3_operand (op, mode)
+seth_add3_operand (op, int_mode)
      rtx op;
-     enum machine_mode mode;
+     int int_mode;
 {
   if (GET_CODE (op) == SYMBOL_REF
       || GET_CODE (op) == LABEL_REF)
@@ -570,9 +579,9 @@ seth_add3_operand (op, mode)
    useful in comparisons.  */
 
 int
-cmp_int16_operand (op, mode)
+cmp_int16_operand (op, int_mode)
      rtx op;
-     enum machine_mode mode;
+     int int_mode;
 {
   if (GET_CODE (op) != CONST_INT)
     return 0;
@@ -581,10 +590,10 @@ cmp_int16_operand (op, mode)
 
 /* Return true if OP is an unsigned 16 bit immediate value.  */
 
-static int
-uint16_operand (op, mode)
+int
+uint16_operand (op, int_mode)
      rtx op;
-     enum machine_mode mode;
+     int int_mode;
 {
   if (GET_CODE (op) != CONST_INT)
     return 0;
@@ -594,10 +603,12 @@ uint16_operand (op, mode)
 /* Return true if OP is a register or signed 8 bit value.  */
 
 int
-reg_or_int16_operand (op, mode)
+reg_or_int16_operand (op, int_mode)
      rtx op;
-     enum machine_mode mode;
+     int int_mode;
 {
+  enum machine_mode mode = (enum machine_mode)int_mode;
+
   if (GET_CODE (op) == REG || GET_CODE (op) == SUBREG)
     return register_operand (op, mode);
   if (GET_CODE (op) != CONST_INT)
@@ -608,10 +619,12 @@ reg_or_int16_operand (op, mode)
 /* Return true if OP is a register or an unsigned 16 bit value.  */
 
 int
-reg_or_uint16_operand (op, mode)
+reg_or_uint16_operand (op, int_mode)
      rtx op;
-     enum machine_mode mode;
+     int int_mode;
 {
+  enum machine_mode mode = (enum machine_mode)int_mode;
+
   if (GET_CODE (op) == REG || GET_CODE (op) == SUBREG)
     return register_operand (op, mode);
   if (GET_CODE (op) != CONST_INT)
@@ -622,10 +635,12 @@ reg_or_uint16_operand (op, mode)
 /* Return true if OP is a register or signed 16 bit value for compares.  */
 
 int
-reg_or_cmp_int16_operand (op, mode)
+reg_or_cmp_int16_operand (op, int_mode)
      rtx op;
-     enum machine_mode mode;
+     int int_mode;
 {
+  enum machine_mode mode = (enum machine_mode)int_mode;
+
   if (GET_CODE (op) == REG || GET_CODE (op) == SUBREG)
     return register_operand (op, mode);
   if (GET_CODE (op) != CONST_INT)
@@ -636,9 +651,9 @@ reg_or_cmp_int16_operand (op, mode)
 /* Return true if OP is a const_int requiring two instructions to load.  */
 
 int
-two_insn_const_operand (op, mode)
+two_insn_const_operand (op, int_mode)
      rtx op;
-     enum machine_mode mode;
+     int int_mode;
 {
   if (GET_CODE (op) != CONST_INT)
     return 0;
@@ -653,15 +668,16 @@ two_insn_const_operand (op, mode)
    move source.  */
 
 int
-move_src_operand (op, mode)
+move_src_operand (op, int_mode)
      rtx op;
-     enum machine_mode mode;
+     int int_mode;
 {
+  enum machine_mode mode = (enum machine_mode)int_mode;
   switch (GET_CODE (op))
     {
     case SYMBOL_REF :
     case CONST :
-      return addr24_operand (op, mode);
+      return addr24_operand (op, int_mode);
     case CONST_INT :
       /* ??? We allow more cse opportunities if we only allow constants
 	 loadable with one insn, and split the rest into two.  The instances
@@ -704,10 +720,11 @@ move_src_operand (op, mode)
    move source.  */
 
 int
-move_double_src_operand (op, mode)
+move_double_src_operand (op, int_mode)
      rtx op;
-     enum machine_mode mode;
+     int int_mode;
 {
+  enum machine_mode mode = (enum machine_mode)int_mode;
   switch (GET_CODE (op))
     {
     case CONST_INT :
@@ -722,7 +739,7 @@ move_double_src_operand (op, mode)
       /* (subreg (mem ...) ...) can occur here if the inner part was once a
 	 pseudo-reg and is now a stack slot.  */
       if (GET_CODE (SUBREG_REG (op)) == MEM)
-	return move_double_src_operand (SUBREG_REG (op), mode);
+	return move_double_src_operand (SUBREG_REG (op), int_mode);
       else
 	return register_operand (op, mode);
     case MEM :
@@ -739,10 +756,11 @@ move_double_src_operand (op, mode)
 /* Return true if OP is an acceptable argument for a move destination.  */
 
 int
-move_dest_operand (op, mode)
+move_dest_operand (op, int_mode)
      rtx op;
-     enum machine_mode mode;
+     int int_mode;
 {
+  enum machine_mode mode = (enum machine_mode)int_mode;
   switch (GET_CODE (op))
     {
     case REG :
@@ -805,9 +823,9 @@ easy_df_const (op)
 /* Return 1 if OP is an EQ or NE comparison operator.  */
 
 int
-eqne_comparison_operator (op, mode)
+eqne_comparison_operator (op, int_mode)
     rtx op;
-    enum machine_mode mode;
+    int int_mode;
 {
   enum rtx_code code = GET_CODE (op);
 
@@ -819,9 +837,9 @@ eqne_comparison_operator (op, mode)
 /* Return 1 if OP is a signed comparison operator.  */
 
 int
-signed_comparison_operator (op, mode)
+signed_comparison_operator (op, int_mode)
     rtx op;
-    enum machine_mode mode;
+    int int_mode;
 {
   enum rtx_code code = GET_CODE (op);
 
@@ -835,35 +853,70 @@ signed_comparison_operator (op, mode)
    This is used in insn length calcs.  */
 
 int
-memreg_operand (op, mode)
+memreg_operand (op, int_mode)
      rtx op;
-     enum machine_mode mode;
+     int int_mode;
 {
   return GET_CODE (op) == MEM && GET_CODE (XEXP (op, 0)) == REG;
 }
+
+/* Return non-zero if the operand is an insn that is a small insn.
+   Allow const_int 0 as well, which is a placeholder for NOP slots.  */
+
+int
+small_insn_p (op, int_mode)
+     rtx op;
+     int int_mode;
+{
+  if (GET_CODE (op) == CONST_INT && INTVAL (op) == 0)
+    return 1;
+
+  if (GET_RTX_CLASS (GET_CODE (op)) != 'i')
+    return 0;
+
+  return get_attr_length (op) == 2;
+}
+
+/* Return non-zero if the operand is an insn that is a large insn.  */
+
+int
+large_insn_p (op, int_mode)
+     rtx op;
+     int int_mode;
+{
+  if (GET_RTX_CLASS (GET_CODE (op)) != 'i')
+    return 0;
+
+  return get_attr_length (op) != 2;
+}
+
 
 /* Comparisons.  */
 
 /* Given a comparison code (EQ, NE, etc.) and the first operand of a COMPARE,
    return the mode to be used for the comparison.  */
 
-enum machine_mode
+int
 m32r_select_cc_mode (op, x, y)
-     enum rtx_code op;
+     int op;
      rtx x, y;
 {
-  return CCmode;
+  return (int)CCmode;
 }
 
 /* X and Y are two things to compare using CODE.  Emit the compare insn and
-   return the rtx for compare [arg0 of the if_then_else].  */
+   return the rtx for compare [arg0 of the if_then_else].
+   If need_compare is true then the comparison insn must be generated, rather
+   than being susummed into the following branch instruction. */
 
 rtx
-gen_compare (code, x, y)
-     enum rtx_code code;
+gen_compare (int_code, x, y, need_compare)
+     int	   int_code;
      rtx           x;
      rtx           y;
+     int           need_compare;
 {
+  enum rtx_code     code = (enum rtx_code)int_code;
   enum rtx_code     compare_code;
   enum rtx_code     branch_code;
   enum machine_mode mode      = SELECT_CC_MODE (code, x, y);
@@ -884,7 +937,122 @@ gen_compare (code, x, y)
     case GEU: compare_code = LTU; branch_code = EQ; break;
     }
 
-  if (! TARGET_OLD_COMPARE)
+  if (need_compare)
+    {
+      switch (compare_code)
+	{
+	case EQ:
+	  if (GET_CODE (y) == CONST_INT
+	      && CMP_INT16_P (INTVAL (y))		/* reg equal to small const.  */
+	      && y != const0_rtx)
+	    {
+	      rtx tmp = gen_reg_rtx (SImode);		
+	      
+	      emit_insn (gen_cmp_ne_small_const_insn (tmp, x, y));
+	      x = tmp;
+	      y = const0_rtx;
+	    }
+	  else if (CONSTANT_P (y))			/* reg equal to const.  */
+	    {
+	      rtx tmp = force_reg (GET_MODE (x), y);
+	      y = tmp;
+	    }
+
+	  if (register_operand (y, SImode) 		/* reg equal to reg.  */
+	      || y == const0_rtx) 	   		/* req equal to zero. */
+	    {
+		emit_insn (gen_cmp_eqsi_insn (x, y));
+		
+	      return gen_rtx (code, mode, cc_reg, const0_rtx);
+	    }
+	  break;
+      
+	case LT:
+	  if (register_operand (y, SImode)
+	      || (GET_CODE (y) == CONST_INT && CMP_INT16_P (INTVAL (y))))
+	    {
+	      rtx tmp = gen_reg_rtx (SImode);	      /* reg compared to reg. */
+	      
+	      switch (code)
+		{
+		case LT:
+		  emit_insn (gen_cmp_ltsi_insn (x, y));
+		  code = EQ;
+		  break;
+		case LE:
+		  if (y == const0_rtx)
+		    tmp = const1_rtx;
+		  else
+		    emit_insn (gen_cmp_ne_small_const_insn (tmp, y, const1_rtx));
+		  emit_insn (gen_cmp_ltsi_insn (x, tmp));
+		  code = EQ;
+		  break;
+		case GT:
+		  if (GET_CODE (y) == CONST_INT)
+		    tmp = gen_rtx (PLUS, SImode, y, const1_rtx);
+		  else
+		    emit_insn (gen_cmp_ne_small_const_insn (tmp, y, const1_rtx));
+		  emit_insn (gen_cmp_ltsi_insn (x, tmp));
+		  code = NE;
+		  break;
+		case GE:
+		  emit_insn (gen_cmp_ltsi_insn (x, y));
+		  code = NE;
+		  break;
+		default:
+		  abort();
+		}
+	      
+	      return gen_rtx (code, mode, cc_reg, const0_rtx);
+	    }
+	  break;
+	  
+	case LTU:
+	  if (register_operand (y, SImode)
+	      || (GET_CODE (y) == CONST_INT && CMP_INT16_P (INTVAL (y))))
+	    {
+	      rtx tmp = gen_reg_rtx (SImode);	      /* reg (unsigned) compared to reg. */
+	      
+	      switch (code)
+		{
+		case LTU:
+		  emit_insn (gen_cmp_ltusi_insn (x, y));
+		  code = EQ;
+		  break;
+		case LEU:
+		  if (y == const0_rtx)
+		    tmp = const1_rtx;
+		  else
+		    emit_insn (gen_cmp_ne_small_const_insn (tmp, y, const1_rtx));
+		  emit_insn (gen_cmp_ltusi_insn (x, tmp));
+		  code = EQ;
+		  break;
+		case GTU:
+		  if (GET_CODE (y) == CONST_INT)
+		    tmp = gen_rtx (PLUS, SImode, y, const1_rtx);
+		  else
+		    emit_insn (gen_cmp_ne_small_const_insn (tmp, y, const1_rtx));
+		  emit_insn (gen_cmp_ltusi_insn (x, tmp));
+		  code = NE;
+		  break;
+		case GEU:
+		  emit_insn (gen_cmp_ltusi_insn (x, y));
+		  code = NE;
+		  break;
+		default:
+		  abort();
+		}
+	      
+	      return gen_rtx (code, mode, cc_reg, const0_rtx);
+	    }
+	  break;
+
+	default:
+	  abort();
+	}
+    }
+  else
+    if (! TARGET_OLD_COMPARE)
     {
       /* reg/reg equal comparison */
       if (compare_code == EQ
@@ -950,12 +1118,13 @@ gen_compare (code, x, y)
 /* Implements the FUNCTION_ARG_PARTIAL_NREGS macro.  */
 
 int
-function_arg_partial_nregs (cum, mode, type, named)
+function_arg_partial_nregs (cum, int_mode, type, named)
      CUMULATIVE_ARGS *cum;
-     enum machine_mode mode;
+     int int_mode;
      tree type;
      int named;
 {
+  enum machine_mode mode = (enum machine_mode)int_mode;
   int ret;
   int size = (((mode == BLKmode && type)
 	       ? int_size_in_bytes (type)
@@ -979,13 +1148,14 @@ function_arg_partial_nregs (cum, mode, type, named)
    and mode MODE, and we rely on this fact.  */
 
 void
-m32r_setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
+m32r_setup_incoming_varargs (cum, int_mode, type, pretend_size, no_rtl)
      CUMULATIVE_ARGS *cum;
-     enum machine_mode mode;
+     int int_mode;
      tree type;
      int *pretend_size;
      int no_rtl;
 {
+  enum machine_mode mode = (enum machine_mode)int_mode;
   int first_anon_arg;
 
   if (no_rtl)
@@ -1128,6 +1298,7 @@ struct m32r_frame_info
   unsigned int args_size;	/* # bytes that outgoing arguments take up */
   unsigned int reg_size;	/* # bytes needed to store regs */
   unsigned int var_size;	/* # bytes that variables take up */
+  unsigned int prolog_size;	/* # bytes that the prologue takes up */
   unsigned int gmask;		/* mask of saved gp registers */
   unsigned int save_fp;		/* nonzero if fp must be saved */
   unsigned int save_lr;		/* nonzero if lr (return addr) must be saved */
@@ -1153,6 +1324,9 @@ static struct m32r_frame_info zero_frame_info;
 #define MUST_SAVE_FRAME_POINTER (regs_ever_live[FRAME_POINTER_REGNUM])
 #define MUST_SAVE_RETURN_ADDR (regs_ever_live[RETURN_ADDR_REGNUM])
 
+#define SHORT_INSN_SIZE 2	/* size of small instructions */
+#define LONG_INSN_SIZE 4	/* size of long instructions */
+
 /* Return the bytes needed to compute the frame pointer from the current
    stack pointer.
 
@@ -1164,7 +1338,7 @@ m32r_compute_frame_size (size)
 {
   int regno;
   unsigned int total_size, var_size, args_size, pretend_size, extra_size;
-  unsigned int reg_size;
+  unsigned int reg_size, prolog_size, frame_size;
   unsigned int gmask;
   enum m32r_function_type fn_type;
   int interrupt_p;
@@ -1175,6 +1349,7 @@ m32r_compute_frame_size (size)
   extra_size	= FIRST_PARM_OFFSET (0);
   total_size	= extra_size + pretend_size + args_size + var_size;
   reg_size	= 0;
+  prolog_size	= 0;
   gmask		= 0;
 
   /* See if this is an interrupt handler.  Call used registers must be saved
@@ -1204,6 +1379,33 @@ m32r_compute_frame_size (size)
      handler will do the right thing if this changes total_size.  */
   total_size = M32R_STACK_ALIGN (total_size);
 
+  /* Calculate prologue size.  Obviously any changes to
+     m32r_output_function_prologue must be mirrored here.  */
+  if (pretend_size)
+    prolog_size += SHORT_INSN_SIZE;		/* addi sp,-pretend_size */
+
+  prolog_size += SHORT_INSN_SIZE * (reg_size / UNITS_PER_WORD);	/* pushes */
+  frame_size = total_size - (pretend_size + reg_size);
+
+  if (frame_size == 0)
+    ;						/* nothing to do */
+  else if (frame_size <= 128)
+    prolog_size += SHORT_INSN_SIZE;		/* addi sp,-<frame> */
+  else
+    {
+      if ((prolog_size % LONG_INSN_SIZE) != 0)
+	prolog_size += SHORT_INSN_SIZE;		/* nop */
+
+      if (frame_size <= 32768)
+	prolog_size += LONG_INSN_SIZE;		/* add3 sp,sp,-<frame> */
+      else
+	prolog_size += (LONG_INSN_SIZE		/* ld24 tmp,<frame>/sub sp,tmp */
+			+ SHORT_INSN_SIZE);
+    }
+
+  if (frame_pointer_needed)
+    prolog_size += SHORT_INSN_SIZE;		/* mv fp,sp */
+
   /* Save computed information.  */
   current_frame_info.total_size   = total_size;
   current_frame_info.extra_size   = extra_size;
@@ -1211,6 +1413,7 @@ m32r_compute_frame_size (size)
   current_frame_info.var_size     = var_size;
   current_frame_info.args_size    = args_size;
   current_frame_info.reg_size	  = reg_size;
+  current_frame_info.prolog_size  = prolog_size;
   current_frame_info.gmask	  = gmask;
   current_frame_info.initialized  = reload_completed;
 
@@ -1218,7 +1421,22 @@ m32r_compute_frame_size (size)
   return total_size;
 }
 
-/* Set up the stack and frame pointer (if desired) for the function.  */
+/* When the `length' insn attribute is used, this macro specifies the
+   value to be assigned to the address of the first insn in a
+   function.  If not specified, 0 is used.  */
+
+int
+m32r_first_insn_address ()
+{
+  if (! current_frame_info.initialized)
+    m32r_compute_frame_size (get_frame_size ());
+
+  return current_frame_info.prolog_size;
+}
+
+/* Set up the stack and frame pointer (if desired) for the function.
+   Note, if this is changed, you need to mirror the changes in
+   m32r_compute_frame_size which calculates the prolog size.  */
 
 void
 m32r_output_function_prologue (file, size)
@@ -1239,17 +1457,19 @@ m32r_output_function_prologue (file, size)
 	       ASM_COMMENT_START);
     }
 
-  /* This is only for the human reader.  */
-  fprintf (file, "\t%s BEGIN PROLOGUE %s vars= %d, regs= %d, args= %d, extra= %d\n",
-	   ASM_COMMENT_START, ASM_COMMENT_START,
-	   current_frame_info.var_size,
-	   current_frame_info.reg_size / 4,
-	   current_frame_info.args_size,
-	   current_frame_info.extra_size);
-
   total_size = (! current_frame_info.initialized
 		? m32r_compute_frame_size (size)
 		: current_frame_info.total_size);
+
+  /* This is only for the human reader.  */
+  fprintf (file,
+	   "\t%s BEGIN PROLOGUE, vars= %d, regs= %d, args= %d, extra= %d, prolog= %d\n",
+	   ASM_COMMENT_START,
+	   current_frame_info.var_size,
+	   current_frame_info.reg_size / 4,
+	   current_frame_info.args_size,
+	   current_frame_info.extra_size,
+	   current_frame_info.prolog_size);
 
   /* These cases shouldn't happen.  Catch them now.  */
   if (total_size == 0 && gmask)
@@ -1767,3 +1987,127 @@ m32r_print_operand_address (file, addr)
       break;
     }
 }
+
+/* Return true if the operands are the constants 0 and 1.  */
+int
+zero_and_one (operand1, operand2)
+     rtx operand1;
+     rtx operand2;
+{
+  return
+       GET_CODE (operand1) == CONST_INT
+    && GET_CODE (operand2) == CONST_INT
+    && (  ((INTVAL (operand1) == 0) && (INTVAL (operand2) == 1))
+	||((INTVAL (operand1) == 1) && (INTVAL (operand2) == 0)));
+}
+
+/* Return non-zero if the operand is suitable for use in a conditional move sequence.  */
+int
+conditional_move_operand (operand, int_mode)
+     rtx operand;
+     int int_mode;
+{
+  enum machine_mode mode = (enum machine_mode)int_mode;
+
+  /* Only defined for simple integers so far... */
+  if (mode != SImode && mode != HImode && mode != QImode)
+    return FALSE;
+
+  /* At the moment we can hanndle moving registers and loading constants.  */
+  /* To be added: Addition/subtraction/bitops/multiplication of registers.  */
+
+  switch (GET_CODE (operand))
+    {
+    case REG:
+      return 1;
+
+    case CONST_INT:
+      return INT8_P (INTVAL (operand));
+
+    default:
+#if 0
+      fprintf (stderr, "Test for cond move op of type: %s\n",
+	       GET_RTX_NAME (GET_CODE (operand)));
+#endif
+      return 0;
+    }
+}
+
+/* Return true if the code is a test of the carry bit */
+int
+carry_compare_operand (op, int_mode)
+     rtx op;
+     int int_mode;
+{
+  rtx x;
+
+  if (GET_MODE (op) != CCmode && GET_MODE (op) != VOIDmode)
+    return FALSE;
+
+  if (GET_CODE (op) != NE && GET_CODE (op) != EQ)
+    return FALSE;
+
+  x = XEXP (op, 0);
+  if (GET_CODE (x) != REG || REGNO (x) != CARRY_REGNUM)
+    return FALSE;
+
+  x = XEXP (op, 1);
+  if (GET_CODE (x) != CONST_INT || INTVAL (x) != 0)
+    return FALSE;
+
+  return TRUE;
+}
+
+
+/* Generate the correct assembler code to handle the conditional loading of a
+   value into a register.  It is known that the operands satisfy the
+   conditional_move_operand() function above.  The destination is operand[0].
+   The condition is operand [1].  The 'true' value is operand [2] and the
+   'false' value is operand [3].  */
+char *
+emit_cond_move (operands, insn)
+     rtx * operands;
+     rtx   insn;
+{
+  static char buffer [100];
+
+  buffer [0] = 0;
+  
+  /* Destination must be a register.  */
+  if (GET_CODE (operands [0]) != REG)
+    abort();
+  if (! conditional_move_operand (operands [2], SImode))
+    abort();
+  if (! conditional_move_operand (operands [3], SImode))
+    abort();
+      
+
+  /* Check to see if the test is reversed.  */
+  if (GET_CODE (operands [1]) == NE)
+    {
+      rtx tmp = operands [2];
+      operands [2] = operands [3];
+      operands [3] = tmp;
+    }
+
+  /* Catch a special case where 0 or 1 is being loaded into the destination.
+     Since we already have these values in the C bit we can use a special
+     instruction.  */
+  if (zero_and_one (operands [2], operands [3]))
+    {
+      char * dest = reg_names [REGNO (operands [0])];
+      
+      sprintf (buffer, "mvfc %s, cbr", dest);
+
+      /* If the true value was '0' then we need to invert the results of the move.  */
+      if (INTVAL (operands [2]) == 0)
+	sprintf (buffer + strlen (buffer), "\n\txor3 %s, %s, #1",
+		 dest, dest);
+      
+      return buffer;
+    }
+
+
+  return buffer;
+}
+

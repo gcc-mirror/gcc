@@ -1,3 +1,60 @@
+Tue Apr 28 08:55:26 1998  Michael Meissner  <meissner@cygnus.com>
+
+	* m32r.c (*_oper{and|ator}): Change enum arguments and return
+	values to int, so they can be prototyped even in files that don't
+	include rtl.h.
+	({small,large}_insn_p): Ditto.
+	(m32r_select_cc_mode): Ditto.
+	(gen_compare): Ditto.
+	(function_arg_partial_nregs): Ditto.
+	(m32r_setup_incoming_varargs): Ditto.
+	(init_reg_tables): Add prototype.
+	(m32r_frame_info): Add prolog_size field.
+	(m32r_compute_frame_size): Calculate the size of the prologue.
+	(m32r_first_insn_address): Return prologue size.
+	(m32r_output_function_prologue): Calculate frame size before
+	printing out information.  Print out the prologue size.
+
+	* m32r.h: Prototype all functions in m32r.c.
+	(FIRST_INSN_ADDRESS): Declare, returning prologue size.
+
+	* m32r.md (bcc functions): Cast enum's to int.
+
+	* m32r.c (conditional_move_operand): Silence a debug message.
+	({small,long}_insn): New predicates.
+	
+	* m32r.h (TARGET_M32R): New macro.
+	(PREDICATE_CODES): Rearrange somewhat, add small_insn/long_insn.
+	(HAIFA_P): Define as 1/0 depending on whether the Haifa scheduler
+	was selected.
+	(ISSUE_RATE): Define as 2.
+
+	* m32r.md (insn_size): New attribute.
+	({,rev_}branch_insn): Add .s qualifier to branches believed to be
+	short.
+	(m32r): New attribute.
+
+	* configure.in (enable_haifa): Switch m32r to Haifa by default.
+	* configure: Regenerate.
+
+	(Changes from Nick Clifton <nickc@cygnus.com>)
+	* m32r.h (EXTRA_CONSTRAINT): Implement 'S' constraint to perfoirm
+	the equivalent of a negated 'I' constraint.
+	(PRESERVE_DEATH_INFO_REGNO_P): Define in order to allow peephole
+	optimisation to work.
+
+	* m32r.md (cmp_ne_small_const_insn): Use 'S' constriant rather
+	than 'I' since the value is negated.
+	(peephole): Add peephole optimisation to cope with optimization of
+	divide and subtracts of the same operands.
+
+	* m32r.c zero_and_one, emit_cond_move): Add support for MVFC.
+	* m32r.h: Ditto. 
+	* m32r.md: Ditto.
+
+	* m32r.h (PREDICATE_CODES): Add declaration of machine specific
+	predicates.
+
 Tue Apr 28 07:25:53 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* Makefile.in (libgcc2.ready): Revert last patch (Apr 24).
