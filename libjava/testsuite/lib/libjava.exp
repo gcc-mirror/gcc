@@ -49,7 +49,7 @@ proc find_gcjh {} {
 proc bytecompile_file { file objdir {classpath {}} } {
     global env
     global SUN_JAVAC
-    set dirname  [file dirname $file];
+    set dirname [file dirname $file]
 
     # If JDK doesn't run on your platform but some other
     # JDK-compatible javac does, you may set SUN_JAVAC to point to it.
@@ -72,7 +72,12 @@ proc bytecompile_file { file objdir {classpath {}} } {
         set env(CLASSPATH) $classpath
     }
     if {[catch {
-	system "cd $dirname; $SUN_JAVAC $file -d $objdir 2>&1"
+	set here [pwd]
+	cd $dirname
+	set q [eval exec "$SUN_JAVAC [list $file] -d $objdir 2>@ stdout"]
+	cd $here
+	# "return" a result
+	set q $q
     } msg]} then {
 	verbose "couldn't compile $file: $msg"
 	set r 0
