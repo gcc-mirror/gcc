@@ -1,3 +1,7 @@
+2003-12-16  Hartmut Penner  <hpenner@de.ibm.com>
+
+	* testsuite/gcc.dg/altivec-10.c: Test vec_cmple and vec_all_numeric.
+
 2003-12-12  Roger Sayle  <roger@eyesopen.com>
 
 	PR optimization/13037
