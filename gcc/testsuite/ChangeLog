@@ -1,3 +1,8 @@
+2002-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR optimization/5429:
+	* gcc.c-torture/compile/20020206-1.c: New test.
+
 2002-02-06  Nick Clifton  <nickc@cambridge.redhat.com>
 
 	* g++.dg/ext/align1.C: Do not use an explicit alignment value
