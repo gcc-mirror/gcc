@@ -1,3 +1,9 @@
+2000-11-30  Bernd Schmidt  <bernds@redhat.co.uk>
+
+	2000-01-01  Bernd Schmidt  <bernds@cygnus.co.uk>
+	* expmed.c (emit_store_flag): Prevent losing a pending stack
+	adjust the same way we prevent losing queued increments.
+
 2000-10-27  Bernd Schmidt  <bernds@redhat.co.uk>
 
 	* expr.c (expand_expr, case INDIRECT_REF): If the address is a
