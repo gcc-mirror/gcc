@@ -1,5 +1,13 @@
 2001-01-13  Neil Booth  <neil@daikokuya.demon.co.uk>
 
+        * fix-header.c (read_scan_file): Use cpp_get_callbacks and
+        cpp_get_options rather than dereferencing pfile and using
+        CPP_OPTION.
+        * scan-decls.c (scan_decls): Use return value of
+        cpp_pop_buffer rather than CPP_BUFFER.
+	
+2001-01-13  Neil Booth  <neil@daikokuya.demon.co.uk>
+
         * cppinit.c (cpp_handle_option): help_only is now part of the
         cpp_options structure.
         * cpplib.c (cpp_errors, cpp_get_options, cpp_get_callbacks,
