@@ -1260,6 +1260,14 @@ void v850_reorg (start_insn)
 	      /* Memory operands are signed by default.  */
 	      int unsignedp = FALSE;
 
+	      /* We might have (SUBREG (MEM)) here, so just get rid of the
+		 subregs to make this code simpler.  It is safe to call
+		 alter_subreg any time after reload.  */
+	      if (GET_CODE (dest) == SUBREG)
+		dest = alter_subreg (dest);
+	      if (GET_CODE (src) == SUBREG)
+		src = alter_subreg (src);
+
 	      if (GET_CODE (dest) == MEM && GET_CODE (src) == MEM)
 		mem = NULL_RTX;
 
@@ -1312,20 +1320,13 @@ void v850_reorg (start_insn)
 
 	      /* Loading up a register in the basic block zaps any savings
 		 for the register */
-	      if (GET_CODE (dest) == REG || GET_CODE (dest) == SUBREG)
+	      if (GET_CODE (dest) == REG)
 		{
 		  enum machine_mode mode = GET_MODE (dest);
-		  int word = 0;
 		  int regno;
 		  int endregno;
 
-		  while (GET_CODE (dest) == SUBREG)
-		    {
-		      word = SUBREG_WORD (dest);
-		      dest = SUBREG_REG (dest);
-		    }
-
-		  regno = REGNO (dest) + word;
+		  regno = REGNO (dest);
 		  endregno = regno + HARD_REGNO_NREGS (regno, mode);
 
 		  if (!use_ep)
