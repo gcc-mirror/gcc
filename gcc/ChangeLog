@@ -1,3 +1,8 @@
+2001-06-07  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config/alpha/alpha.c (alpha_va_arg): Handle TFmode, TCmode args,
+	passed by reference.
+
 2001-06-07  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/tm.texi (TARGET_SWITCHES, TARGET_OPTIONS): Adjust markup.
