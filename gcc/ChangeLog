@@ -1,3 +1,8 @@
+2004-08-04  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cfglayout.c (insn_locators_initialize): Update the current
+	location before initializing a location.
+
 2004-08-03  Zack Weinberg  <zack@codesourcery.com>
 
 	* dbxout.c (dbxout_function_decl): Always call dbxout_function_end.
