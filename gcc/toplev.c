@@ -1640,7 +1640,7 @@ read_integral_parameter (p, pname, defval)
   return atoi (p);
 }
 
-/* This calls abort and is used to avoid problems when abort if a macro.
+/* This calls abort and is used to avoid problems when abort is a macro.
    It is used when we need to pass the address of abort.  */
 
 void
