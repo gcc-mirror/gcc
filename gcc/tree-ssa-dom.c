@@ -2564,7 +2564,6 @@ record_equivalences_from_stmt (tree stmt,
     {
       tree rhs = TREE_OPERAND (stmt, 1);
       tree new;
-      size_t j;
 
       /* FIXME: If the LHS of the assignment is a bitfield and the RHS
          is a constant, we need to adjust the constant to fit into the
@@ -2589,39 +2588,10 @@ record_equivalences_from_stmt (tree stmt,
 
       if (rhs)
 	{
-	  v_may_def_optype v_may_defs = V_MAY_DEF_OPS (ann);
-	  v_must_def_optype v_must_defs = V_MUST_DEF_OPS (ann);
-
 	  /* Build a new statement with the RHS and LHS exchanged.  */
 	  new = build (MODIFY_EXPR, TREE_TYPE (stmt), rhs, lhs);
 
-	  /* Get an annotation and set up the real operands.  */
-	  get_stmt_ann (new);
-	  get_stmt_operands (new);
-
-	  /* Clear out the virtual operands on the new statement, we are
-	     going to set them explicitly below.  */
-	  remove_vuses (new);
-	  remove_v_may_defs (new);
-	  remove_v_must_defs (new);
-
-	  start_ssa_stmt_operands (new);
-	  /* For each VDEF on the original statement, we want to create a
-	     VUSE of the V_MAY_DEF result or V_MUST_DEF op on the new 
-	     statement.  */
-	  for (j = 0; j < NUM_V_MAY_DEFS (v_may_defs); j++)
-	    {
-	      tree op = V_MAY_DEF_RESULT (v_may_defs, j);
-	      add_vuse (op, new);
-	    }
-	    
-	  for (j = 0; j < NUM_V_MUST_DEFS (v_must_defs); j++)
-	    {
-	      tree op = V_MUST_DEF_OP (v_must_defs, j);
-	      add_vuse (op, new);
-	    }
-
-	  finalize_ssa_stmt_operands (new);
+	  create_ssa_artficial_load_stmt (&(ann->operands), new);
 
 	  /* Finally enter the statement into the available expression
 	     table.  */
