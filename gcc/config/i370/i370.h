@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  System/370 version.
-   Copyright (C) 1989, 1993, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1993, 1995, 1996, 1997 Free Software Foundation, Inc.
    Contributed by Jan Stein (jan@cd.chalmers.se).
    Modified for C/370 MVS by Dave Pitts (dpitts@nyx.cs.du.edu)
 
@@ -19,12 +19,6 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
-
-#ifdef sun
-#include <sys/types.h>
-#include <ctype.h>
-#endif
-#include <time.h>
 
 #define TARGET_VERSION printf (" (370/MVS)");
 
@@ -489,103 +483,7 @@ enum reg_class
 
 /* This macro generates the assembly code for function entry.
    All of the C/370 environment is preserved.  */
-
-#if MACROPROLOGUE == 1
-#define FUNCTION_PROLOGUE(FILE, LSIZE)					\
-{ 									\
-  fprintf (FILE, "\tEDCPRLG USRDSAL=%d,BASEREG=%d\n",			\
-	   STACK_POINTER_OFFSET + LSIZE - 120 +				\
-	   current_function_outgoing_args_size, BASE_REGISTER);		\
-  fprintf (FILE, "PG%d\tEQU\t*\n", mvs_page_num );			\
-  fprintf (FILE, "\tLR\t11,1\n");					\
-  fprintf (FILE, "\tL\t%d,=A(PGT%d)\n", PAGE_REGISTER, mvs_page_num);	\
-  mvs_page_code = 6;							\
-  mvs_page_lit = 4;							\
-  mvs_check_page (FILE, 0, 0);						\
-  function_base_page = mvs_page_num;					\
-}
-#else /* MACROPROLOGUE != 1 */
-#define FUNCTION_PROLOGUE(FILE, LSIZE)					\
-{ 									\
-  static int function_label_index = 1;					\
-  static int function_first = 0;					\
-  static int function_year, function_month, function_day;		\
-  static int function_hour, function_minute, function_second;		\
-  int i;								\
-  if (!function_first)							\
-    {									\
-      struct tm *function_time;						\
-      time_t lcltime;							\
-      time (&lcltime);							\
-      function_time = localtime (&lcltime);				\
-      function_year = function_time->tm_year + 1900;			\
-      function_month = function_time->tm_mon + 1;			\
-      function_day = function_time->tm_mday;				\
-      function_hour = function_time->tm_hour;				\
-      function_minute = function_time->tm_min;				\
-      function_second = function_time->tm_sec;				\
-      fprintf (FILE, "PPA2\tDS\t0F\n");					\
-      fprintf (FILE, "\tDC\tX'03',X'00',X'33',X'00'\n");		\
-      fprintf (FILE, "\tDC\tV(CEESTART),A(0)\n");			\
-      fprintf (FILE, "\tDC\tA(CEETIMES)\n");				\
-      fprintf (FILE, "CEETIMES\tDS\t0F\n");				\
-      fprintf (FILE, "\tDC\tCL4'%d',CL4'%02d%02d',CL6'%02d%02d00'\n",	\
-    		 function_year, function_month, function_day,		\
-    		 function_hour, function_minute, function_second);	\
-      fprintf (FILE, "\tDC\tCL2'01',CL4'0100'\n");			\
-    }									\
-  fprintf (FILE, "$DSD%03d\tDSECT\n", function_label_index);		\
-  fprintf (FILE, "\tDS\tD\n");						\
-  fprintf (FILE, "\tDS\tCL(%d)\n", STACK_POINTER_OFFSET + LSIZE 	\
-			+ current_function_outgoing_args_size);		\
-  fprintf (FILE, "\tORG\t$DSD%03d\n", function_label_index);		\
-  fprintf (FILE, "\tDS\tCL(120+8)\n");					\
-  fprintf (FILE, "\tORG\n");						\
-  fprintf (FILE, "\tDS\t0D\n");						\
-  fprintf (FILE, "$DSL%03d\tEQU\t*-$DSD%03d-8\n", function_label_index, \
-	   function_label_index);					\
-  fprintf (FILE, "\tDS\t0H\n");						\
-  assemble_name (FILE, mvs_function_name);				\
-  fprintf (FILE, "\tEQU\t*\n");						\
-  fprintf (FILE, "\tUSING\t*,15\n");					\
-  fprintf (FILE, "\tB\tFPL%03d\n", function_label_index);		\
-  fprintf (FILE, "\tDC\tAL1(FPL%03d+4-*)\n", function_label_index + 1);	\
-  fprintf (FILE, "\tDC\tX'CE',X'A0',AL1(16)\n");			\
-  fprintf (FILE, "\tDC\tAL4(PPA2)\n");					\
-  fprintf (FILE, "\tDC\tAL4(0)\n");					\
-  fprintf (FILE, "\tDC\tAL4($DSL%03d)\n", function_label_index);	\
-  fprintf (FILE, "FPL%03d\tEQU\t*\n", function_label_index + 1);	\
-  fprintf (FILE, "\tDC\tAL2(%d),C'%s'\n", strlen (mvs_function_name),	\
-	mvs_function_name);						\
-  fprintf (FILE, "FPL%03d\tDS\t0H\n", function_label_index);		\
-  fprintf (FILE, "\tSTM\t14,12,12(13)\n");				\
-  fprintf (FILE, "\tL\t2,76(,13)\n");					\
-  fprintf (FILE, "\tL\t0,16(,15)\n");					\
-  fprintf (FILE, "\tALR\t0,2\n");					\
-  fprintf (FILE, "\tCL\t0,12(,12)\n");					\
-  fprintf (FILE, "\tBNH\t*+10\n");					\
-  fprintf (FILE, "\tL\t15,116(,12)\n");					\
-  fprintf (FILE, "\tBALR\t14,15\n");					\
-  fprintf (FILE, "\tL\t15,72(,13)\n");					\
-  fprintf (FILE, "\tSTM\t15,0,72(2)\n");				\
-  fprintf (FILE, "\tMVI\t0(2),X'10'\n");				\
-  fprintf (FILE, "\tST\t2,8(,13)\n ");                                  \
-  fprintf (FILE, "\tST\t13,4(,2)\n ");					\
-  fprintf (FILE, "\tLR\t13,2\n");					\
-  fprintf (FILE, "\tDROP\t15\n");					\
-  fprintf (FILE, "\tBALR\t%d,0\n", BASE_REGISTER);			\
-  fprintf (FILE, "PG%d\tEQU\t*\n", mvs_page_num );			\
-  fprintf (FILE, "\tUSING\t*,%d\n", BASE_REGISTER);			\
-  fprintf (FILE, "\tLR\t11,1\n");					\
-  fprintf (FILE, "\tL\t%d,=A(PGT%d)\n", PAGE_REGISTER, mvs_page_num);	\
-  mvs_page_code = 4;							\
-  mvs_page_lit = 4;							\
-  mvs_check_page (FILE, 0, 0);						\
-  function_base_page = mvs_page_num;					\
-  function_first = 1;							\
-  function_label_index += 2;						\
-}
-#endif /* MACROPROLOGUE */
+#define FUNCTION_PROLOGUE(FILE, LSIZE) i370_function_prolog ((FILE), (LSIZE));
 
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)			\
 {									\
