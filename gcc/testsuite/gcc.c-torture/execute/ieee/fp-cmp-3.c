@@ -1,6 +1,6 @@
 #include <signal.h>
 
-long double nan = 1.0l/0.0l - 1.0l/0.0l;
+long double dnan = 1.0l/0.0l - 1.0l/0.0l;
 long double x = 1.0l;
 
 void leave ()
@@ -19,22 +19,22 @@ main ()
   signal (SIGFPE, leave);
 #endif
   /* NaN is an IEEE unordered operand.  All these test should be false.  */
-  if (nan == nan)
+  if (dnan == dnan)
     abort ();
-  if (nan != x)
+  if (dnan != x)
     x = 1.0;
   else
     abort ();
 
-  if (nan < x)
+  if (dnan < x)
     abort ();
-  if (nan > x)
+  if (dnan > x)
     abort ();
-  if (nan <= x)
+  if (dnan <= x)
     abort ();
-  if (nan >= x)
+  if (dnan >= x)
     abort ();
-  if (nan == x)
+  if (dnan == x)
     abort ();
 #endif
   exit (0);
