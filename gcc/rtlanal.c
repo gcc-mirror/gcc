@@ -41,6 +41,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* Forward declarations */
 static int global_reg_mentioned_p_1 (rtx *, void *);
 static void set_of_1 (rtx, rtx, void *);
+static bool covers_regno_p (rtx, unsigned int);
+static bool covers_regno_no_parallel_p (rtx, unsigned int);
 static int rtx_referenced_p_1 (rtx *, void *);
 static int computed_jump_p_1 (rtx);
 static void parms_set (rtx, rtx, void *);
@@ -1549,13 +1551,64 @@ dead_or_set_p (rtx insn, rtx x)
   return 1;
 }
 
+/* Return TRUE iff DEST is a register or subreg of a register and
+   doesn't change the number of words of the inner register, and any
+   part of the register is TEST_REGNO.  */
+
+static bool
+covers_regno_no_parallel_p (rtx dest, unsigned int test_regno)
+{
+  unsigned int regno, endregno;
+
+  if (GET_CODE (dest) == SUBREG
+      && (((GET_MODE_SIZE (GET_MODE (dest))
+	    + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
+	  == ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (dest)))
+	       + UNITS_PER_WORD - 1) / UNITS_PER_WORD)))
+    dest = SUBREG_REG (dest);
+
+  if (!REG_P (dest))
+    return false;
+
+  regno = REGNO (dest);
+  endregno = (regno >= FIRST_PSEUDO_REGISTER ? regno + 1
+	      : regno + hard_regno_nregs[regno][GET_MODE (dest)]);
+  return (test_regno >= regno && test_regno < endregno);
+}
+
+/* Like covers_regno_no_parallel_p, but also handles PARALLELs where
+   any member matches the covers_regno_no_parallel_p criteria.  */
+
+static bool
+covers_regno_p (rtx dest, unsigned int test_regno)
+{
+  if (GET_CODE (dest) == PARALLEL)
+    {
+      /* Some targets place small structures in registers for return
+	 values of functions, and those registers are wrapped in
+	 PARALLELs that we may see as the destination of a SET.  */
+      int i;
+
+      for (i = XVECLEN (dest, 0) - 1; i >= 0; i--)
+	{
+	  rtx inner = XEXP (XVECEXP (dest, 0, i), 0);
+	  if (inner != NULL_RTX
+	      && covers_regno_no_parallel_p (inner, test_regno))
+	    return true;
+	}
+
+      return false;
+    }
+  else
+    return covers_regno_no_parallel_p (dest, test_regno);
+}
+
 /* Utility function for dead_or_set_p to check an individual register.  Also
    called from flow.c.  */
 
 int
 dead_or_set_regno_p (rtx insn, unsigned int test_regno)
 {
-  unsigned int regno, endregno;
   rtx pattern;
 
   /* See if there is a death note for something that includes TEST_REGNO.  */
@@ -1572,28 +1625,7 @@ dead_or_set_regno_p (rtx insn, unsigned int test_regno)
     pattern = COND_EXEC_CODE (pattern);
 
   if (GET_CODE (pattern) == SET)
-    {
-      rtx dest = SET_DEST (pattern);
-
-      /* A value is totally replaced if it is the destination or the
-	 destination is a SUBREG of REGNO that does not change the number of
-	 words in it.  */
-      if (GET_CODE (dest) == SUBREG
-	  && (((GET_MODE_SIZE (GET_MODE (dest))
-		+ UNITS_PER_WORD - 1) / UNITS_PER_WORD)
-	      == ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (dest)))
-		   + UNITS_PER_WORD - 1) / UNITS_PER_WORD)))
-	dest = SUBREG_REG (dest);
-
-      if (!REG_P (dest))
-	return 0;
-
-      regno = REGNO (dest);
-      endregno = (regno >= FIRST_PSEUDO_REGISTER ? regno + 1
-		  : regno + hard_regno_nregs[regno][GET_MODE (dest)]);
-
-      return (test_regno >= regno && test_regno < endregno);
-    }
+    return covers_regno_p (SET_DEST (pattern), test_regno);
   else if (GET_CODE (pattern) == PARALLEL)
     {
       int i;
@@ -1605,27 +1637,9 @@ dead_or_set_regno_p (rtx insn, unsigned int test_regno)
 	  if (GET_CODE (body) == COND_EXEC)
 	    body = COND_EXEC_CODE (body);
 
-	  if (GET_CODE (body) == SET || GET_CODE (body) == CLOBBER)
-	    {
-	      rtx dest = SET_DEST (body);
-
-	      if (GET_CODE (dest) == SUBREG
-		  && (((GET_MODE_SIZE (GET_MODE (dest))
-			+ UNITS_PER_WORD - 1) / UNITS_PER_WORD)
-		      == ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (dest)))
-			   + UNITS_PER_WORD - 1) / UNITS_PER_WORD)))
-		dest = SUBREG_REG (dest);
-
-	      if (!REG_P (dest))
-		continue;
-
-	      regno = REGNO (dest);
-	      endregno = (regno >= FIRST_PSEUDO_REGISTER ? regno + 1
-			  : regno + hard_regno_nregs[regno][GET_MODE (dest)]);
-
-	      if (test_regno >= regno && test_regno < endregno)
-		return 1;
-	    }
+	  if ((GET_CODE (body) == SET || GET_CODE (body) == CLOBBER)
+	      && covers_regno_p (SET_DEST (body), test_regno))
+	    return 1;
 	}
     }
 
