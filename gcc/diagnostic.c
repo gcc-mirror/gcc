@@ -137,7 +137,7 @@ int diagnostic_message_length_per_line;
 
 /* Used to control every diagnostic message formatting.  Front-ends should
    call set_message_prefixing_rule to set up their policies.  */
-static int current_prefixing_rule;
+static diagnostic_prefixing_rule_t current_prefixing_rule;
 
 /* Prevent recursion into the error handler.  */
 static int diagnostic_lock;
@@ -195,7 +195,7 @@ initialize_diagnostics ()
 
 void
 set_message_prefixing_rule (rule)
-     int rule;
+     diagnostic_prefixing_rule_t rule;
 {
   current_prefixing_rule = rule;
 }
