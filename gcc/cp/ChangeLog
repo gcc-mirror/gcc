@@ -1,3 +1,10 @@
+2003-08-26  Dan Nicolaescu  <dann@ics.uci.edu>
+
+	* parser.c (struct cp_token): Use enum bitfields.
+	(CP_TOKEN_BLOCK_NUM_TOKENS): Make sure cp_token_block fits in a
+	512B allocation unit.
+	(cp_parser_token_tree_map_node): Use enum bitfields.
+
 2003-08-26  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/11871
@@ -224,7 +231,7 @@
 	(cp_parser_elaborated_type_specifier): Adjust call to
 	check_elaborated_type_specifier.
 	* typeck2.c (build_functional_cast): Do not perform name lookups.
-	
+
 	PR c++/10717
 	* decl.c (expand_static_init): Remove unncessary code.
 
@@ -283,7 +290,7 @@ Sun Aug 17 10:05:38 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	build_non_dependent_expr.
 	* error.c (dump_expr) <NON_DEPENDENT_EXPR case>: Dump the operand.
 	* pt.c (build_non_dependent_expr): Set operand.
-	
+
 2003-08-14  Jan Hubicka  <jh@suse.cz>
 
 	* decl2.c (mark_member_pointers): Rename to...
@@ -350,7 +357,7 @@ Thu Aug 14 12:19:25 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	(cp_parser_function_definition): Likewise.
 	(cp_parser_member_declaration): Likewise.
 	(cp_parser_single_declaration): Likewise.
-	
+
 	* cp-tree.h (lang_type_class): Remove has_call_overloaded,
 	has_array_ref_overloaded, has_arrow_overloaded, and got_semicolon.
 	(TYPE_OVERLOADS_CALL_EXPR): Remove.
@@ -375,12 +382,12 @@ Thu Aug 14 12:19:25 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	* ptree.c (cxx_print_type): Do not print them.
 	* semantics.c (finish_member_class_template): Do not call
 	note_list_got_semicolon.
-	
+
 2003-08-11  Aldy Hernandez  <aldyh@redhat.com>
- 
-        * call.c (standard_conversion): Opaque pointers interconvert.
- 
-        * testsuite/g++.dg/other/opaque-3.C: New.
+
+	* call.c (standard_conversion): Opaque pointers interconvert.
+
+	* testsuite/g++.dg/other/opaque-3.C: New.
 
 2003-08-11  Mark Mitchell  <mark@codesourcery.com>
 
@@ -445,7 +452,7 @@ Thu Aug 14 12:19:25 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	* call.c (convert_like_real): Add rvalue binding error message.
 	* error.c (dump_expr) <NOP_EXPR case>: Detect when the no expr is
 	really a cast.
-	
+
 	PR c++/10530
 	* pt.c (dependent_type_p_r): A dependent template-id is a class
 	type with dependent template arguments, or a bound template
@@ -613,10 +620,10 @@ Thu Aug 14 12:19:25 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	(begin_stmt_expr): Clear last_expr_type.
 	(finish_stmt_expr_expr): New.
 	(finish_stmt_expr): Process the value expression.
-	
+
 	* typeck.c (build_compound_expr): If RHS is a TARGET_EXPR, put the
 	compound expr inside the target's initializer.
-	
+
 	PR c++/11525
 	* parser.c (cp_parser_primary_expression): Do not set
 	non-constant-p merely because it is a dependent scope.
@@ -973,7 +980,7 @@ Mon Jul 28 23:55:10 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	(strip_all_pointer_quals): Remove.
 	* typeck2.c (digest_init): Adjust pointer-to-member handling.
 	(build_m_component_ref): Likewise.
-	
+
 2003-07-22  Wolfgang Bangerth  <bangerth@dealii.org>
 
 	* lex.c (unqualified_fn_lookup_error): Mention that the error
