@@ -270,8 +270,8 @@ in the following sections.
 -fdelayed-branch  -fdelete-null-pointer-checks @gol
 -fexpensive-optimizations  -ffast-math  -ffloat-store @gol
 -fforce-addr  -fforce-mem  -ffunction-sections @gol
--fgcse  -fgcse-lm  -fgcse-sm  -fgcse-las  -fgcse-after-reload @gol
--floop-optimize -fcrossjumping  -fif-conversion  -fif-conversion2 @gol
+-fgcse  -fgcse-lm  -fgcse-sm  -fgcse-las  -floop-optimize @gol
+-fcrossjumping  -fif-conversion  -fif-conversion2 @gol
 -finline-functions  -finline-limit=@var{n}  -fkeep-inline-functions @gol
 -fkeep-static-consts  -fmerge-constants  -fmerge-all-constants @gol
 -fmove-all-movables  -fnew-ra  -fno-branch-count-reg @gol
@@ -461,7 +461,7 @@ in the following sections.
 -single_module  -static  -sub_library  -sub_umbrella @gol
 -twolevel_namespace  -umbrella  -undefined @gol
 -unexported_symbols_list  -weak_reference_mismatches @gol
--whatsloaded -F}
+-whatsloaded}
 
 @emph{MIPS Options}
 @gccoptlist{-EL  -EB  -march=@var{arch}  -mtune=@var{arch} @gol
@@ -478,8 +478,7 @@ in the following sections.
 -mcheck-zero-division  -mno-check-zero-division @gol
 -mmemcpy  -mno-memcpy  -mlong-calls  -mno-long-calls @gol
 -mmad  -mno-mad  -mfused-madd  -mno-fused-madd  -nocpp @gol
--mfix-r4000  -mno-fix-r4000  -mfix-r4400  -mno-fix-r4400 @gol
--mfix-sb1  -mno-fix-sb1 @gol
+-mfix-r4000  -mno-fix-r4000  -mfix-sb1  -mno-fix-sb1 @gol
 -mflush-func=@var{func}  -mno-flush-func @gol
 -mbranch-likely  -mno-branch-likely}
 
@@ -3646,8 +3645,7 @@ invoking @option{-O2} on programs that use computed gotos.
 @opindex O3
 Optimize yet more.  @option{-O3} turns on all optimizations specified by
 @option{-O2} and also turns on the @option{-finline-functions},
-@option{-fweb}, @option{-frename-registers}
-and @option{-fgcse-after-reload} options.
+@option{-fweb} and @option{-frename-registers} options.
 
 @item -O0
 @opindex O0
@@ -3957,12 +3955,6 @@ elimination pass eliminates redundant loads that come after stores to the
 same memory location (both partial and full redundancies).
 
 Enabled by default when gcse is enabled.
-
-@item -fgcse-after-reload
-@opindex fgcse-after-reload
-When @option{-fgcse-after-reload} is enabled, a redundant load elimination
-pass is performed after reload. The purpose of this pass is to cleanup
-redundant spilling.
 
 @item -floop-optimize
 @opindex floop-optimize
@@ -7529,16 +7521,27 @@ names in the assembly language output using symbolic forms.
 @itemx -mno-longcall
 @opindex mlongcall
 @opindex mno-longcall
-Default to making all function calls via pointers, so that functions
-which reside further than 64 megabytes (67,108,864 bytes) from the
-current location can be called.  This setting can be overridden by the
-@code{shortcall} function attribute, or by @code{#pragma longcall(0)}.
+Default to making all function calls indirectly, using a register, so
+that functions which reside further than 32 megabytes (33,554,432
+bytes) from the current location can be called.  This setting can be
+overridden by the @code{shortcall} function attribute, or by
+@code{#pragma longcall(0)}.
 
 Some linkers are capable of detecting out-of-range calls and generating
 glue code on the fly.  On these systems, long calls are unnecessary and
 generate slower code.  As of this writing, the AIX linker can do this,
 as can the GNU linker for PowerPC/64.  It is planned to add this feature
 to the GNU linker for 32-bit PowerPC systems as well.
+
+On Darwin/PPC systems, @code{#pragma longcall} will generate ``jbsr
+callee, L42'', plus a ``branch island'' (glue code).  The two target
+addresses represent the callee and the ``branch island.'' The
+Darwin/PPC linker will prefer the first address and generate a ``bl
+callee'' if the PPC ``bl'' instruction will reach the callee directly;
+otherwise, the linker will generate ``bl L42'' to call the ``branch
+island.''  The ``branch island'' is appended to the body of the
+calling function; it computes the full 32-bit address of the callee
+and jumps to it.
 
 On Mach-O (Darwin) systems, this option directs the compiler emit to
 the glue for every direct call, and the Darwin linker decides whether
@@ -7562,34 +7565,6 @@ These options are defined for all architectures running the Darwin operating
 system.  They are useful for compatibility with other Mac OS compilers.
 
 @table @gcctabopt
-@item -F@var{dir}
-@opindex F
-Add the framework directory @var{dir} to the head of the list of
-directories to be searched for header files.  These directories are
-interleaved with those specified by @option{-I} options and are
-scanned in a left-to-right order.
-
-A framework directory is a directory with frameworks in it.  A
-framework is a directory with a @samp{"Headers"} and/or
-@samp{"PrivateHeaders"} directory contained directly in it that ends
-in @samp{".framework"}.  The name of a framework is the name of this
-directory excluding the @samp{".framework"}.  Headers associated with
-the framework are found in one of those two directories, with
-@samp{"Headers"} being searched first.  A subframework is a framework
-directory that is in a framework's @samp{"Frameworks"} directory.
-Includes of subframework headers can only appear in a header of a
-framework that contains the subframework, or in a sibling subframework
-header.  Two subframeworks are siblings if they occur in the same
-framework.  A subframework should not have the same name as a
-framework, a warning will be issued if this is violated.  Currently a
-subframework cannot have subframeworks, in the future, the mechanism
-may be extended to support this.  The standard frameworks can be found
-in @samp{"/System/Library/Frameworks"}, @samp{"/Library/Frameworks"}
-and @samp{"/Local/Library/Frameworks"}.  An example include looks like
-@code{#include <Framework/header.h>}, where @samp{Framework} denotes
-the name of the framework and header.h is found in the
-@samp{"PrivateHeaders"} or @samp{"Headers"} directory.
-
 @item -all_load
 @opindex all_load
 Loads all members of static archive libraries.
@@ -8084,20 +8059,6 @@ immediately after starting an integer division.
 @item
 A double-word or a variable shift may give an incorrect result if executed
 while an integer multiplication is in progress.
-@item
-An integer division may give an incorrect result if started in a delay slot
-of a taken branch or a jump.
-@end itemize
-
-@item -mfix-r4400
-@itemx -mno-fix-r4400
-@opindex mfix-r4400
-@opindex mno-fix-r4400
-Work around certain R4400 CPU errata:
-@itemize @minus
-@item
-A double-word or a variable shift may give an incorrect result if executed
-immediately after starting an integer division.
 @end itemize
 
 @item -mfix-sb1
