@@ -12121,9 +12121,6 @@ store_parm_decls ()
      to run global initializers, etc.  */
   if (DECL_MAIN_P (fndecl))
     expand_main_function ();
-    {
-      expand_main_function ();
-    }
 
   /* Now that we have initialized the parms, we can start their
      cleanups.  We cannot do this before, since expand_decl_cleanup
