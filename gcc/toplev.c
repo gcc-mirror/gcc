@@ -3379,12 +3379,6 @@ rest_of_compilation (decl)
   if (optimize > 0)
     reload_cse_regs (insns);
 
-  /* Register allocation and reloading may have turned an indirect jump into
-     a direct jump.  If so, we must rebuild the JUMP_LABEL fields of
-     jumping instructions.  */
-  if (rebuild_label_notes_after_reload)
-    TIMEVAR (jump_time, rebuild_jump_labels (insns));
-
   /* If optimizing and we are performing instruction scheduling after
      reload, then go ahead and split insns now since we are about to
      recompute flow information anyway.
@@ -3393,6 +3387,12 @@ rest_of_compilation (decl)
      for double-word operations.  */
   if (optimize > 0 && flag_schedule_insns_after_reload)
     split_all_insns (0);
+
+  /* Register allocation and reloading may have turned an indirect jump into
+     a direct jump.  If so, we must rebuild the JUMP_LABEL fields of
+     jumping instructions.  */
+  if (rebuild_label_notes_after_reload)
+    TIMEVAR (jump_time, rebuild_jump_labels (insns));
 
   if (global_reg_dump)
     {
