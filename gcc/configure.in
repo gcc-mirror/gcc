@@ -3125,8 +3125,13 @@ if [[ x$host_truncate_target != x ]]; then
 	target=`echo $target | sed -e 's/\(..............\).*/\1/'`
 fi
 
-# Get the version number from the toplevel
-version=`sed -e 's/.*\"\([[^ \"]]*\)[[ \"]].*/\1/' < ${srcdir}/version.c`
+# Get the version trigger filename from the toplevel
+if [[ "${with_gcc_version_trigger+set}" = set ]]; then
+	gcc_version_trigger=$with_gcc_version_trigger
+else
+	gcc_version_trigger=${srcdir}/version.c
+fi
+gcc_version=`sed -e 's/.*\"\([[^ \"]]*\)[[ \"]].*/\1/' < ${gcc_version_trigger}`
 
 # Get an absolute path to the GCC top-level source directory
 holddir=`pwd`
@@ -3551,7 +3556,8 @@ AC_SUBST(host_xm_file_list)
 AC_SUBST(lang_specs_files)
 AC_SUBST(lang_options_files)
 AC_SUBST(thread_file)
-AC_SUBST(version)
+AC_SUBST(gcc_version)
+AC_SUBST(gcc_version_trigger)
 AC_SUBST(local_prefix)
 AC_SUBST(gxx_include_dir)
 AC_SUBST(fixincludes)
@@ -3654,7 +3660,8 @@ host_xmake_file='${host_xmake_file}'
 dep_tmake_file='${dep_tmake_file}'
 tmake_file='${tmake_file}'
 thread_file='${thread_file}'
-version='${version}'
+gcc_version='${gcc_version}'
+gcc_version_trigger='${gcc_version_trigger}'
 local_prefix='${local_prefix}'
 build_install_headers_dir='${build_install_headers_dir}'
 build_exeext='${build_exeext}'

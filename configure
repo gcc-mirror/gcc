@@ -56,7 +56,8 @@ exec_prefixoption=
 fatal=
 floating_point=default
 gas=default
-gcc_version=UNKNOWN
+gcc_version=
+gcc_version_trigger=
 host_alias=NOHOST
 host_makefile_frag=
 moveifchange=
@@ -458,6 +459,7 @@ fi
 
 configsub=`echo ${progname} | sed 's/configure$/config.sub/'`
 moveifchange=`echo ${progname} | sed 's/configure$/move-if-change/'`
+topsrcdir=`cd \`dirname ${progname}\`; pwd`
 
 # this is a hack.  sun4 must always be a valid host alias or this will fail.
 if ${config_shell} ${configsub} sun4 >/dev/null 2>&1 ; then
@@ -519,6 +521,28 @@ case "${exec_prefixoption}" in
 "") exec_prefix="\$(prefix)" ;;
 *) ;;
 esac
+
+# Define the trigger file to make sure configure will re-run whenever
+# the gcc version number changes.
+if [ "${with_gcc_version_trigger+set}" = set ]; then
+    gcc_version_trigger="$with_gcc_version_trigger"
+    gcc_version=`sed -e 's/.*\"\([^ \"]*\)[ \"].*/\1/' < ${with_gcc_version_trigger}`
+else
+    # If gcc's sources are available, define the trigger file.
+    if [ -f ${topsrcdir}/gcc/version.c ] ; then
+	gcc_version_trigger=${topsrcdir}/gcc/version.c
+	gcc_version=`sed -e 's/.*\"\([^ \"]*\)[ \"].*/\1/' < ${gcc_version_trigger}`
+	case "$arguments" in
+	  *--with-gcc-version-trigger=$gcc_version_trigger* )
+	    ;;
+	  * )
+	    # Make sure configure.in knows about this.
+	    arguments="--with-gcc-version-trigger=$gcc_version_trigger $arguments"
+	    ;;
+	esac
+	withoptions="--with-gcc-version-trigger=$gcc_version_trigger $withoptions"
+    fi
+fi
 
 ### break up ${srcdir}/configure.in.
 case "`grep '^# per\-host:' ${srcdir}/configure.in`" in
@@ -699,33 +723,6 @@ fi
 
 if [ "${program_prefix}" != "" ] ; then
     program_transform_name="-e s,^,${program_prefix}, ${program_transform_name}"
-fi
-
-# Check whether --with-gcc-version was given.
-if [ "${with_gcc_version+set}" = set ]; then
-    gcc_version="$with_gcc_version"
-else
-    if [ "${srcdir}" = "." ] ; then
-	if [ "${with_target_subdir}" != "." ] ; then
-	    topsrcdir=${with_multisrctop}../..
-	else
-	    topsrcdir=${with_multisrctop}..
-	fi
-    else
-	case ${srcdir} in
-	    */*/* )	# Need to do this only in subdirectories.
-		topsrcdir=${srcdir}/..
-		;;
-	    * )		# We are already in the topsrcdir.
-		topsrcdir=${srcdir}
-		;;
-	esac
-    fi
-    # If gcc's sources are available, extract its version number which is used by
-    # $libsubdir.
-    if [ -f ${topsrcdir}/gcc/version.c ] ; then
-	gcc_version=`sed -e 's/.*\"\([^ \"]*\)[ \"].*/\1/' < ${topsrcdir}/gcc/version.c`
-    fi
 fi
 
 # If CC and CXX are not set in the environment, and the Makefile
@@ -1266,10 +1263,10 @@ EOF
 	        echo enable_version_specific_runtime_libs = ${enable_version_specific_runtime_libs} >> ${Makefile}
 	    fi
 
-	    # Emit a macro which is used to build the libsubdir macro where
-	    # compiler specific stuff can be found/installed.
-	    # FIXME: This works only if gcc's sources are available in a gcc
-	    # subdirectory!
+	    # Emit a macro which describes the file containing gcc's
+	    # version number.
+	    echo gcc_version_trigger = ${gcc_version_trigger} >> ${Makefile}
+	    # And emit a macro defining gcc's version number.
 	    echo gcc_version = ${gcc_version} >> ${Makefile}
 
             # reset prefix, exec_prefix, srcdir, SUBDIRS, NONSUBDIRS,
@@ -1478,7 +1475,7 @@ if [ -z "${norecursion}" -a -n "${configdirs}" ] ; then
 			if [ ! -z "${recprog}" ] ; then
 	                        if eval ${config_shell} ${recprog} ${verbose} ${buildopt} --host=${host_alias} --target=${target_alias} \
         	                        ${prefixoption} ${tmpdiroption} ${exec_prefixoption} \
-                	                ${srcdiroption} ${program_prefixoption} ${program_suffixoption} ${program_transform_nameoption} ${site_option} --with-gcc-version=${gcc_version} ${withoptions} ${withoutoptions} ${enableoptions} ${disableoptions} ${floating_pointoption} ${cache_file_option} ${removing} ${other_options} ${redirect} ; then
+                	                ${srcdiroption} ${program_prefixoption} ${program_suffixoption} ${program_transform_nameoption} ${site_option} ${withoptions} ${withoutoptions} ${enableoptions} ${disableoptions} ${floating_pointoption} ${cache_file_option} ${removing} ${other_options} ${redirect} ; then
 	                                true
         	                else
 					echo Configure in `pwd` failed, exiting. 1>&2

@@ -1861,17 +1861,16 @@ test -f libF77/makefile && mv libF77/makefile  libF77/makefile.ori
 test -f libI77/makefile && mv libI77/makefile  libI77/makefile.ori
 test -f libU77/makefile && mv libU77/makefile  libU77/makefile.ori
 
-# Get the version number from the toplevel
-if test x${with_gcc_version} = x; then
-  # Try to get the version number from a hopefully existing gcc directory.
-  if test -d ${srcdir}/../gcc; then
-    gcc_version=`sed -e 's/.*\"\([^ \"]*\)[ \"].*/\1/' < ${srcdir}/../gcc/version.c`
-  else
-    gcc_version=UNKNOWN
-  fi
+# Get the version trigger filename from the toplevel
+if [ "${with_gcc_version_trigger+set}" = set ]; then
+	gcc_version_trigger=$with_gcc_version_trigger
+	gcc_version=`sed -e 's/.*\"\([^ \"]*\)[ \"].*/\1/' < ${gcc_version_trigger}`
 else
-  gcc_version=${with_gcc_version}
+	gcc_version_trigger=
+	gcc_version=UNKNOWN
 fi
+
+
 
 ac_aux_dir=
 for ac_dir in $srcdir $srcdir/.. $srcdir/../..; do
@@ -1920,7 +1919,7 @@ else { echo "configure: error: can not run $ac_config_sub" 1>&2; exit 1; }
 fi
 
 echo $ac_n "checking host system type""... $ac_c" 1>&6
-echo "configure:1924: checking host system type" >&5
+echo "configure:1923: checking host system type" >&5
 
 host_alias=$host
 case "$host_alias" in
@@ -1941,7 +1940,7 @@ host_os=`echo $host | sed 's/^\([^-]*\)-\([^-]*\)-\(.*\)$/\3/'`
 echo "$ac_t""$host" 1>&6
 
 echo $ac_n "checking target system type""... $ac_c" 1>&6
-echo "configure:1945: checking target system type" >&5
+echo "configure:1944: checking target system type" >&5
 
 target_alias=$target
 case "$target_alias" in
@@ -1959,7 +1958,7 @@ target_os=`echo $target | sed 's/^\([^-]*\)-\([^-]*\)-\(.*\)$/\3/'`
 echo "$ac_t""$target" 1>&6
 
 echo $ac_n "checking build system type""... $ac_c" 1>&6
-echo "configure:1963: checking build system type" >&5
+echo "configure:1962: checking build system type" >&5
 
 build_alias=$build
 case "$build_alias" in
@@ -2136,6 +2135,7 @@ s%@CPP@%$CPP%g
 s%@F2C_INTEGER@%$F2C_INTEGER%g
 s%@F2C_LONGINT@%$F2C_LONGINT%g
 s%@gcc_version@%$gcc_version%g
+s%@gcc_version_trigger@%$gcc_version_trigger%g
 s%@host@%$host%g
 s%@host_alias@%$host_alias%g
 s%@host_cpu@%$host_cpu%g
