@@ -1,3 +1,10 @@
+2001-07-18  Stephen M. Webb  <stephen@bregmasoft..com>
+            Roman Sulzhyk  <roman_sulzhyk@yahoo.com>
+
+        libstdc++/3599
+        * include/bits/ostream.tcc (ostream::put): Fixed error condition check.
+        * testsuite/27_io/streambuf.cc (test07): Added new regression test.
+
 2001-07-17  Stephen M. Webb   <stephen@bregmasoft.com>r
 
 	All occurrences of the __value_type() and __distance_type()
