@@ -148,6 +148,10 @@ struct gcc_target
     /* Output any boilerplate text needed at the end of a
        translation unit.  */
     void (*file_end) (void);
+
+    /* Output an assembler pseudo-op to declare a library function name
+       external.  */
+    void (*external_libcall) (rtx);
   } asm_out;
 
   /* Functions relating to instruction scheduling.  */

@@ -61,9 +61,16 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tm_p.h"
 #include "target-def.h"
 
+void
+default_external_libcall (rtx fun ATTRIBUTE_UNUSED)
+{
+#ifdef ASM_OUTPUT_EXTERNAL_LIBCALL
+  ASM_OUTPUT_EXTERNAL_LIBCALL(asm_out_file, fun);
+#endif
+}
+
 bool
-default_promote_function_args (fntype)
-     tree fntype ATTRIBUTE_UNUSED;
+default_promote_function_args (tree fntype ATTRIBUTE_UNUSED)
 {
 #ifdef PROMOTE_FUNCTION_ARGS
   return true;
@@ -73,8 +80,7 @@ default_promote_function_args (fntype)
 }
 
 bool
-default_promote_function_return (fntype)
-     tree fntype ATTRIBUTE_UNUSED;
+default_promote_function_return (tree fntype ATTRIBUTE_UNUSED)
 {
 #ifdef PROMOTE_FUNCTION_RETURN
   return true;
@@ -84,8 +90,7 @@ default_promote_function_return (fntype)
 }
 
 bool
-default_promote_prototypes (fntype)
-     tree fntype ATTRIBUTE_UNUSED;
+default_promote_prototypes (tree fntype ATTRIBUTE_UNUSED)
 {
   if (PROMOTE_PROTOTYPES)
     return true;

@@ -178,7 +178,6 @@ Boston, MA 02111-1307, USA.  */
 /* IRIX 5 stuff that we don't need for IRIX 6.  */
 /* ??? We do need this for the -mabi=32 switch though.  */
 #undef ASM_OUTPUT_UNDEF_FUNCTION
-#undef ASM_OUTPUT_EXTERNAL_LIBCALL
 #undef ASM_DECLARE_FUNCTION_SIZE
 
 /* Stuff we need for IRIX 6 that isn't in IRIX 5.  */

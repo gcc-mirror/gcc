@@ -5517,19 +5517,20 @@ mips_output_external (FILE *file ATTRIBUTE_UNUSED, tree decl, const char *name)
   return 0;
 }
 
-#ifdef ASM_OUTPUT_UNDEF_FUNCTION
-int
-mips_output_external_libcall (FILE *file ATTRIBUTE_UNUSED, const char *name)
+#if TARGET_IRIX5 || TARGET_IRIX6
+void
+mips_output_external_libcall (rtx fun)
 {
   register struct extern_list *p;
 
-  p = (struct extern_list *) ggc_alloc (sizeof (struct extern_list));
-  p->next = extern_head;
-  p->name = name;
-  p->size = -1;
-  extern_head = p;
-
-  return 0;
+  if (mips_abi == ABI_32)
+    {
+      p = (struct extern_list *) ggc_alloc (sizeof (struct extern_list));
+      p->next = extern_head;
+      p->name = XSTR (fun, 0);
+      p->size = -1;
+      extern_head = p;
+    }
 }
 #endif
 

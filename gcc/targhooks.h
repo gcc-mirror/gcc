@@ -18,6 +18,8 @@ along with GCC; see the file COPYING.  If not, write to the Free
 Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
+extern void default_external_libcall (rtx);
+
 extern bool default_promote_function_args (tree);
 extern bool default_promote_function_return (tree);
 extern bool default_promote_prototypes (tree);

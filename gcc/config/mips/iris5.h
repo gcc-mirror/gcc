@@ -215,8 +215,8 @@ do {						\
 } while (0)
 
 /* Also do this for libcalls.  */
-#define ASM_OUTPUT_EXTERNAL_LIBCALL(FILE, FUN)	\
-  mips_output_external_libcall (FILE, XSTR (FUN, 0))
+#undef TARGET_ASM_EXTERNAL_LIBCALL
+#define TARGET_ASM_EXTERNAL_LIBCALL mips_output_external_libcall
 
 /* This does for functions what ASM_DECLARE_OBJECT_NAME does for variables.
    This is used indirectly by ASM_OUTPUT_EXTERNAL.  */

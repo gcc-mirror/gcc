@@ -1621,16 +1621,14 @@ assemble_external (tree decl ATTRIBUTE_UNUSED)
 /* Similar, for calling a library function FUN.  */
 
 void
-assemble_external_libcall (rtx fun ATTRIBUTE_UNUSED)
+assemble_external_libcall (rtx fun)
 {
-#ifdef ASM_OUTPUT_EXTERNAL_LIBCALL
   /* Declare library function name external when first used, if nec.  */
   if (! SYMBOL_REF_USED (fun))
     {
       SYMBOL_REF_USED (fun) = 1;
-      ASM_OUTPUT_EXTERNAL_LIBCALL (asm_out_file, fun);
+      (*targetm.asm_out.external_libcall) (fun);
     }
-#endif
 }
 
 /* Assemble a label named NAME.  */

@@ -1,6 +1,6 @@
 /* Prototypes of target machine for GNU compiler.  MIPS version.
    Copyright (C) 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2001, 2002 Free Software Foundation, Inc.
+   1999, 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by A. Lichnewsky (lich@inria.inria.fr).
    Changed by Michael Meissner	(meissner@osf.org).
    64 bit r4000 support by Ian Lance Taylor (ian@cygnus.com) and
@@ -98,8 +98,8 @@ extern HOST_WIDE_INT mips_debugger_offset (rtx, HOST_WIDE_INT);
 extern void print_operand (FILE *, rtx, int);
 extern void print_operand_address (FILE *, rtx);
 extern int mips_output_external (FILE *, tree, const char *);
-#ifdef ASM_OUTPUT_UNDEF_FUNCTION
-extern int mips_output_external_libcall (FILE *, const char *);
+#if TARGET_IRIX5 || TARGET_IRIX6
+extern void mips_output_external_libcall (rtx);
 #endif
 extern void mips_output_filename (FILE *, const char *);
 extern void mips_output_lineno (FILE *, int);
