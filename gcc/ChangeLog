@@ -1,5 +1,13 @@
 2001-08-08  Graham Stott  <grahams@redhat.com>
 
+	* flow.c (back_edge_of_syntactic_loop_p): Add whitespace.
+	(libcall_dead_p): Likewise.
+
+	(mark_used_regs): Constify fmt.
+	(find_use_as_address): Likewise.
+
+2001-08-08  Graham Stott  <grahams@redhat.com>
+
 	* c-typeck.c (RESTORE_SPELLING_DEPTH): Uppercase and parenthesize macro
 	 parameter.
 
