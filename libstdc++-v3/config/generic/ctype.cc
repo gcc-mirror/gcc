@@ -42,14 +42,14 @@
 
   char
   ctype<char>::do_toupper(char __c) const
-  { return _S_toupper[(int) __c]; }
+  { return toupper((int) __c); }
 
   const char*
   ctype<char>::do_toupper(char* __low, const char* __high) const
   {
     while (__low < __high)
       {
-	*__low = _S_toupper[(int) *__low];
+	*__low = toupper((int) *__low);
 	++__low;
       }
     return __high;
@@ -57,14 +57,14 @@
 
   char
   ctype<char>::do_tolower(char __c) const
-  { return _S_tolower[(int) __c]; }
+  { return tolower((int) __c); }
 
   const char* 
   ctype<char>::do_tolower(char* __low, const char* __high) const
   {
     while (__low < __high)
       {
-	*__low = _S_tolower[(int) *__low];
+	*__low = tolower((int) *__low);
 	++__low;
       }
     return __high;
