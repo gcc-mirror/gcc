@@ -1,3 +1,8 @@
+2000-03-20 Theodore Papadopoulo <Theodore.Papadopoulo@sophia.inria.fr>
+
+	* init.c (build_offset_ref): Handle the case of a templated member
+	function.
+    
 2000-03-19  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
 
 	* except.c (expand_exception_blocks): Clear catch_clauses_last.
