@@ -319,7 +319,11 @@ timevar_pop (timevar)
     return;
 
   if (&timevars[timevar] != stack->timevar)
-    abort ();
+    {
+      sorry ("cannot timevar_pop '%s' when top of timevars stack is '%s'",
+             timevars[timevar].name, stack->timevar->name);
+      abort ();
+    }
 
   /* What time is it?  */
   get_time (&now);
