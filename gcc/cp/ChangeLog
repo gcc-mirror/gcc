@@ -1,3 +1,8 @@
+2005-01-19  Matt Austern  <austern@apple.com>
+
+	* typeck.c (comptypes): Handle return code from objc_comptypes
+	correctly.
+	
 2005-01-19  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* cp-tree.h, name-lookup.h: Remove unused prototypes.
