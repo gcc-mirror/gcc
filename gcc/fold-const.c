@@ -2424,7 +2424,15 @@ simple_operand_p (exp)
 	  || (TREE_CODE_CLASS (TREE_CODE (exp)) == 'd'
 	      && ! TREE_ADDRESSABLE (exp)
 	      && ! TREE_THIS_VOLATILE (exp)
-	      && ! DECL_NONLOCAL (exp)));
+	      && ! DECL_NONLOCAL (exp)
+	      /* Don't regard global variables as simple.  They may be
+		 allocated in ways unknown to the compiler (shared memory,
+		 #pragma weak, etc).  */
+	      && ! TREE_PUBLIC (exp)
+	      && ! DECL_EXTERNAL (exp)
+	      /* Loading a static variable is unduly expensive, but global
+		 registers aren't expensive.  */
+	      && (! TREE_STATIC (exp) || DECL_REGISTER (exp))));
 }
 
 /* Subroutine for fold_truthop: try to optimize a range test.
@@ -2657,7 +2665,7 @@ fold_truthop (code, truth_type, lhs, rhs)
       return result;
     }
 
-  /* If the RHS can be evaluated unconditionally and all operands are
+  /* If the RHS can be evaluated unconditionally and its operands are
      simple, it wins to evaluate the RHS unconditionally on machines
      with expensive branches.  In this case, this isn't a comparison
      that can be merged.  */
@@ -2668,9 +2676,7 @@ fold_truthop (code, truth_type, lhs, rhs)
   if (BRANCH_COST >= 2
       && TREE_CODE (TREE_TYPE (rhs)) == INTEGER_TYPE
       && simple_operand_p (rl_arg)
-      && simple_operand_p (ll_arg)
-      && simple_operand_p (rr_arg)
-      && simple_operand_p (lr_arg))
+      && simple_operand_p (rr_arg))
     return build (code, truth_type, lhs, rhs);
 
   /* See if the comparisons can be merged.  Then get all the parameters for
