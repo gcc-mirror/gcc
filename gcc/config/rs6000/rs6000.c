@@ -10458,8 +10458,6 @@ output_profile_hook (labelno)
       const char *label_name;
       rtx fun;
 
-      labelno += 1;
-
       ASM_GENERATE_INTERNAL_LABEL (buf, "LP", labelno);
       STRIP_NAME_ENCODING (label_name, ggc_strdup (buf));
       fun = gen_rtx_SYMBOL_REF (Pmode, label_name);
