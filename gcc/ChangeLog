@@ -1,3 +1,11 @@
+Sat Mar 13 11:36:16 1999  Richard Earnshaw (rearnsha@arm.com)
+
+	* arm.c (arm_split_constant): Don't try to force a constant to
+	memory after arm_reorg has run.
+	(after_arm_reorg): New static variable.
+	(arm_reorg): Set it.
+	(output_func_epilogue): Clear it.
+
 Fri Mar 12 20:26:32 1999  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* configure.in ({rs6000,powerpc}-ibm-aix*): Set float_format to none.
