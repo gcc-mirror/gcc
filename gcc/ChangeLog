@@ -1,3 +1,14 @@
+2003-10-13  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/s390.md ("*fmadddf4", "*fmsubdf4", "*fmaddsf4", 
+	"*fmsubsf4"): Insns are now dependent on TARGET_FUSED_MADD instead
+	of flag_unsafe_math_optimizations.
+	* config/s390/s390.h ("MASK_NO_FUSED_MADD", "TARGET_NO_FUSED_MADD",
+	"TARGET_FUSED_MADD", "TARGET_SWITCHES"): Introduced new target flags
+	fused-madd and no-fused-madd.
+	* doc/invoke.texi: Documented the new options fused-madd and 
+	no-fused-madd for S/390.
+
 2003-10-14  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/linux64.h (SUBSUBTARGET_OVERRIDE_OPTIONS): Choose

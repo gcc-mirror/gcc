@@ -95,6 +95,7 @@ extern int target_flags;
 #define MASK_ZARCH                 0x20
 #define MASK_MVCLE                 0x40
 #define MASK_TPF                   0x80
+#define MASK_NO_FUSED_MADD         0x100
 
 #define TARGET_HARD_FLOAT          (target_flags & MASK_HARD_FLOAT)
 #define TARGET_SOFT_FLOAT          (!(target_flags & MASK_HARD_FLOAT))
@@ -105,6 +106,8 @@ extern int target_flags;
 #define TARGET_ZARCH               (target_flags & MASK_ZARCH)
 #define TARGET_MVCLE               (target_flags & MASK_MVCLE)
 #define TARGET_TPF                 (target_flags & MASK_TPF)
+#define TARGET_NO_FUSED_MADD       (target_flags & MASK_NO_FUSED_MADD)
+#define TARGET_FUSED_MADD	   (! TARGET_NO_FUSED_MADD)
 
 /* ??? Once this actually works, it could be made a runtime option.  */
 #define TARGET_IBM_FLOAT           0
@@ -116,23 +119,25 @@ extern int target_flags;
 #define TARGET_DEFAULT             0x3
 #endif
 
-#define TARGET_SWITCHES                                                \
-{ { "hard-float",    1, N_("Use hardware fp")},                        \
-  { "soft-float",   -1, N_("Don't use hardware fp")},                  \
-  { "backchain",     2, N_("Set backchain")},                          \
-  { "no-backchain", -2, N_("Don't set backchain (faster, but debug harder")}, \
-  { "small-exec",    4, N_("Use bras for executable < 64k")},          \
-  { "no-small-exec",-4, N_("Don't use bras")},                         \
-  { "debug",         8, N_("Additional debug prints")},                \
-  { "no-debug",     -8, N_("Don't print additional debug prints")},    \
-  { "64",           16, N_("64 bit ABI")},                             \
-  { "31",          -16, N_("31 bit ABI")},                             \
-  { "zarch",        32, N_("z/Architecture")},                         \
-  { "esa",         -32, N_("ESA/390 architecture")},                   \
-  { "mvcle",        64, N_("mvcle use")},                              \
-  { "no-mvcle",    -64, N_("mvc&ex")},                                 \
-  { "tpf",         128, N_("enable tpf OS code")},                     \
-  { "no-tpf",     -128, N_("disable tpf OS code")},                    \
+#define TARGET_SWITCHES                                                  \
+{ { "hard-float",      1, N_("Use hardware fp")},                        \
+  { "soft-float",     -1, N_("Don't use hardware fp")},                  \
+  { "backchain",       2, N_("Set backchain")},                          \
+  { "no-backchain",   -2, N_("Don't set backchain (faster, but debug harder")},\
+  { "small-exec",      4, N_("Use bras for executable < 64k")},          \
+  { "no-small-exec",  -4, N_("Don't use bras")},                         \
+  { "debug",           8, N_("Additional debug prints")},                \
+  { "no-debug",       -8, N_("Don't print additional debug prints")},    \
+  { "64",             16, N_("64 bit ABI")},                             \
+  { "31",            -16, N_("31 bit ABI")},                             \
+  { "zarch",          32, N_("z/Architecture")},                         \
+  { "esa",           -32, N_("ESA/390 architecture")},                   \
+  { "mvcle",          64, N_("mvcle use")},                              \
+  { "no-mvcle",      -64, N_("mvc&ex")},                                 \
+  { "tpf",           128, N_("enable tpf OS code")},                     \
+  { "no-tpf",       -128, N_("disable tpf OS code")},                    \
+  { "no-fused-madd", 256, N_("disable fused multiply/add instructions")},\
+  { "fused-madd",   -256, N_("enable fused multiply/add instructions")}, \
   { "", TARGET_DEFAULT, 0 } }
 
 #define TARGET_OPTIONS                                          \
