@@ -1,3 +1,8 @@
+2002-01-18  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* Makefile.in: Install libg2c.{a|la|so} in $(libdir)$(MULTISUBDIR)
+	instead of $(libsubdir)$(MULTISUBDIR).
+
 2002-01-15  Loren J. Rittle  <ljrittle@acm.org>
 
 	* libI77/configure.in: Remove fcntl.h check; never define
