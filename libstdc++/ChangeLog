@@ -33,6 +33,20 @@ Thu Feb 18 19:53:17 1999  Marc Espie <espie@cvs.openbsd.org>
 	* config/openbsd.ml: New file.
 	* config/openbsd.mt: New file.
 
+1999-02-04  Ulrich Drepper  <drepper@cygnus.com>
+
+	* configure.in: Recognize --enable-threads=posix for all
+	platforms.
+	* config/posix.mt: New file.
+
+	* configure.in: Add fragments for Solaris defining macro specifying
+	thread library to be used.
+	* config/sol2pth.mt: New file
+	* config/sol2solth.mt: New file.
+	* stl/stl_alloc.h: Add support for Solaris thread library.
+	* stl/stl_config.h: Recognize _SOLTHREADS and define internal macros
+	appropriately.
+
 1999-01-28  Baron Roberts  <baron@sgi.com>
 
 	* string: Uncomment wstring declaration.
