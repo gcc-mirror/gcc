@@ -14256,7 +14256,7 @@ finish_function (flags)
       && !current_function_returns_abnormally
       /* If we have -Wreturn-type, let flow complain.  Unless we're an
 	 inline function, as we might never be compiled separately.  */
-      && (!warn_return_type || DECL_INLINE (fndecl))
+      && (!warn_return_type || DECL_INLINE (fndecl)))
     warning ("no return statement in function returning non-void");
     
   /* Clear out memory we no longer need.  */
