@@ -100,7 +100,7 @@ output_op_from_reg (src, template)
 
   xops[0] = src;
   xops[1] = AT_SP (Pmode);
-  xops[2] = gen_rtx (CONST_INT, VOIDmode, GET_MODE_SIZE (GET_MODE (src)));
+  xops[2] = GEN_INT (GET_MODE_SIZE (GET_MODE (src)));
   xops[3] = stack_pointer_rtx;
 
   if (GET_MODE_SIZE (GET_MODE (src)) > UNITS_PER_WORD)
@@ -129,7 +129,7 @@ output_to_reg (dest, dies)
 
   xops[0] = AT_SP (Pmode);
   xops[1] = stack_pointer_rtx;
-  xops[2] = gen_rtx (CONST_INT, VOIDmode, GET_MODE_SIZE (GET_MODE (dest)));
+  xops[2] = GEN_INT (GET_MODE_SIZE (GET_MODE (dest)));
   xops[3] = dest;
 
   output_asm_insn (AS2 (sub%L1,%2,%1), xops);
@@ -223,12 +223,12 @@ asm_add (n, x)
   xops[1] = x;
   if (n < 0)
     {
-      xops[0] = gen_rtx (CONST_INT, VOIDmode, -n);
+      xops[0] = GEN_INT (-n);
       output_asm_insn (AS2 (sub%L0,%0,%1), xops);
     }
   else if (n > 0)
     {
-      xops[0] = gen_rtx (CONST_INT, VOIDmode, n);
+      xops[0] = GEN_INT (n);
       output_asm_insn (AS2 (add%L0,%0,%1), xops);
     }
 }
@@ -449,7 +449,7 @@ output_move_const_single (operands)
       u1.i[0] = CONST_DOUBLE_LOW (operands[1]);
       u1.i[1] = CONST_DOUBLE_HIGH (operands[1]);
       u2.f = u1.d;
-      operands[1] = gen_rtx (CONST_INT, VOIDmode, u2.i);
+      operands[1] = GEN_INT (u2.i);
     }
   return singlemove_string (operands);
 }
@@ -581,7 +581,8 @@ legitimize_pic_address (orig, reg)
 	reg = gen_reg_rtx (Pmode);
 
       base = legitimize_pic_address (XEXP (addr, 0), reg);
-      addr = legitimize_pic_address (XEXP (addr, 1), base == reg ? 0 : reg);
+      addr = legitimize_pic_address (XEXP (addr, 1),
+				     base == reg ? NULL_RTX : reg);
 
       if (GET_CODE (addr) == CONST_INT)
 	return plus_constant (base, INTVAL (addr));
@@ -628,7 +629,7 @@ function_prologue (file, size)
 
   xops[0] = stack_pointer_rtx;
   xops[1] = frame_pointer_rtx;
-  xops[2] = gen_rtx (CONST_INT, VOIDmode, size);
+  xops[2] = GEN_INT (size);
   if (frame_pointer_needed)
     {
       output_asm_insn ("push%L1 %1", xops);
@@ -790,13 +791,13 @@ function_epilogue (file, size)
     {
       /* If there is no frame pointer, we must still release the frame. */
 
-      xops[0] = gen_rtx (CONST_INT, VOIDmode, size);
+      xops[0] = GEN_INT (size);
       output_asm_insn (AS2 (add%L2,%0,%2), xops);
     }
 
   if (current_function_pops_args && current_function_args_size)
     {
-      xops[1] = gen_rtx (CONST_INT, VOIDmode, current_function_pops_args);
+      xops[1] = GEN_INT (current_function_pops_args);
 
       /* i386 can only pop 32K bytes (maybe 64K?  Is it signed?).  If
 	 asked to pop more, pop return address, do explicit add, and jump
@@ -1657,8 +1658,8 @@ output_fix_trunc (insn, operands)
   xops[0] = stack_pointer_rtx;
   xops[1] = AT_SP (SImode);
   xops[2] = adj_offsettable_operand (xops[1], 2);
-  xops[3] = gen_rtx (CONST_INT, VOIDmode, 4);
-  xops[4] = gen_rtx (CONST_INT, VOIDmode, 0xc00);
+  xops[3] = GEN_INT (4);
+  xops[4] = GEN_INT (0xc00);
   xops[5] = operands[2];
 
   output_asm_insn (AS2 (sub%L0,%3,%0), xops);
@@ -1799,28 +1800,28 @@ output_fp_cc0_set (insn)
   switch (code)
     {
     case GT:
-      xops[1] = gen_rtx (CONST_INT, VOIDmode, 0x45);
+      xops[1] = GEN_INT (0x45);
       output_asm_insn (AS2 (and%B0,%1,%h0), xops);
       /* je label */
       break;
 
     case LT:
-      xops[1] = gen_rtx (CONST_INT, VOIDmode, 0x45);
-      xops[2] = gen_rtx (CONST_INT, VOIDmode, 0x01);
+      xops[1] = GEN_INT (0x45);
+      xops[2] = GEN_INT (0x01);
       output_asm_insn (AS2 (and%B0,%1,%h0), xops);
       output_asm_insn (AS2 (cmp%B0,%2,%h0), xops);
       /* je label */
       break;
 
     case GE:
-      xops[1] = gen_rtx (CONST_INT, VOIDmode, 0x05);
+      xops[1] = GEN_INT (0x05);
       output_asm_insn (AS2 (and%B0,%1,%h0), xops);
       /* je label */
       break;
 
     case LE:
-      xops[1] = gen_rtx (CONST_INT, VOIDmode, 0x45);
-      xops[2] = gen_rtx (CONST_INT, VOIDmode, 0x40);
+      xops[1] = GEN_INT (0x45);
+      xops[2] = GEN_INT (0x40);
       output_asm_insn (AS2 (and%B0,%1,%h0), xops);
       output_asm_insn (AS1 (dec%B0,%h0), xops);
       output_asm_insn (AS2 (cmp%B0,%2,%h0), xops);
@@ -1828,16 +1829,16 @@ output_fp_cc0_set (insn)
       break;
 
     case EQ:
-      xops[1] = gen_rtx (CONST_INT, VOIDmode, 0x45);
-      xops[2] = gen_rtx (CONST_INT, VOIDmode, 0x40);
+      xops[1] = GEN_INT (0x45);
+      xops[2] = GEN_INT (0x40);
       output_asm_insn (AS2 (and%B0,%1,%h0), xops);
       output_asm_insn (AS2 (cmp%B0,%2,%h0), xops);
       /* je label */
       break;
 
     case NE:
-      xops[1] = gen_rtx (CONST_INT, VOIDmode, 0x44);
-      xops[2] = gen_rtx (CONST_INT, VOIDmode, 0x40);
+      xops[1] = GEN_INT (0x44);
+      xops[2] = GEN_INT (0x40);
       output_asm_insn (AS2 (and%B0,%1,%h0), xops);
       output_asm_insn (AS2 (xor%B0,%2,%h0), xops);
       /* jne label */
