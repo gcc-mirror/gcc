@@ -691,8 +691,9 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
       else if (GET_CODE (insn) == JUMP_INSN)
 	{
 	  if (JUMP_LABEL (insn))
-	    map->label_map[CODE_LABEL_NUMBER (JUMP_LABEL (insn))]
-	      = JUMP_LABEL (insn);
+	    set_label_in_map (map,
+			      CODE_LABEL_NUMBER (JUMP_LABEL (insn)),
+			      JUMP_LABEL (insn));
 	  else if (GET_CODE (PATTERN (insn)) == ADDR_VEC
 		   || GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC)
 	    {
@@ -704,7 +705,9 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 	      for (i = 0; i < len; i++)
 		{
 		  label = XEXP (XVECEXP (pat, diff_vec_p, i), 0);
-		  map->label_map[CODE_LABEL_NUMBER (label)] = label;
+		  set_label_in_map (map,
+				    CODE_LABEL_NUMBER (label),
+				    label);
 		}
 	    }
 	}
@@ -1043,7 +1046,7 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 
 	      for (j = 0; j < max_labelno; j++)
 		if (local_label[j])
-		  map->label_map[j] = gen_label_rtx ();
+		  set_label_in_map (map, j, gen_label_rtx ());
 
 	      for (j = FIRST_PSEUDO_REGISTER; j < max_reg_before_loop; j++)
 		if (local_regno[j])
@@ -1188,7 +1191,7 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 
       for (j = 0; j < max_labelno; j++)
 	if (local_label[j])
-	  map->label_map[j] = gen_label_rtx ();
+	  set_label_in_map (map, j, gen_label_rtx ());
 
       for (j = FIRST_PSEUDO_REGISTER; j < max_reg_before_loop; j++)
 	if (local_regno[j])
@@ -1201,8 +1204,9 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 	  insn = PREV_INSN (copy_start);
 	  pattern = PATTERN (insn);
 	  
-	  tem = map->label_map[CODE_LABEL_NUMBER
-			       (XEXP (SET_SRC (pattern), 0))];
+	  tem = get_label_from_map (map,
+				    CODE_LABEL_NUMBER
+				    (XEXP (SET_SRC (pattern), 0)));
 	  SET_SRC (pattern) = gen_rtx (LABEL_REF, VOIDmode, tem);
 
 	  /* Set the jump label so that it can be used by later loop unrolling
@@ -1610,10 +1614,11 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
   if (! last_iteration)
     {
       final_label = gen_label_rtx ();
-      map->label_map[CODE_LABEL_NUMBER (start_label)] = final_label;
+      set_label_in_map (map, CODE_LABEL_NUMBER (start_label),
+			final_label); 
     }
   else
-    map->label_map[CODE_LABEL_NUMBER (start_label)] = start_label;
+    set_label_in_map (map, CODE_LABEL_NUMBER (start_label), start_label);
 
   start_sequence ();
   
@@ -1897,8 +1902,9 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 	      if (invert_exp (pattern, copy))
 		{
 		  if (! redirect_exp (&pattern,
-				      map->label_map[CODE_LABEL_NUMBER
-						     (JUMP_LABEL (insn))],
+				      get_label_from_map (map,
+							  CODE_LABEL_NUMBER
+							  (JUMP_LABEL (insn))),
 				      exit_label, copy))
 		    abort ();
 		}
@@ -1915,8 +1921,9 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 		  emit_label_after (lab, jmp);
 		  LABEL_NUSES (lab) = 0;
 		  if (! redirect_exp (&pattern,
-				      map->label_map[CODE_LABEL_NUMBER
-						     (JUMP_LABEL (insn))],
+				      get_label_from_map (map,
+							  CODE_LABEL_NUMBER
+							  (JUMP_LABEL (insn))),
 				      lab, copy))
 		    abort ();
 		}
@@ -1959,7 +1966,8 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 		     for a switch statement.  This label must have been mapped,
 		     so just use the label_map to get the new jump label.  */
 		  JUMP_LABEL (copy)
-		    = map->label_map[CODE_LABEL_NUMBER (JUMP_LABEL (insn))];
+		    = get_label_from_map (map, 
+					  CODE_LABEL_NUMBER (JUMP_LABEL (insn))); 
 		}
 	  
 	      /* If this is a non-local jump, then must increase the label
@@ -2037,7 +2045,8 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 
 	  if (insn != start_label)
 	    {
-	      copy = emit_label (map->label_map[CODE_LABEL_NUMBER (insn)]);
+	      copy = emit_label (get_label_from_map (map,
+						     CODE_LABEL_NUMBER (insn)));
 	      map->const_age++;
 	    }
 	  break;
