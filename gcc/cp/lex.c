@@ -4677,9 +4677,8 @@ make_lang_type (code)
   if (IS_AGGR_TYPE_CODE (code))
     {
       struct obstack *obstack = current_obstack;
-      register int i = sizeof (struct lang_type) / sizeof (int);
-      register int *pi;
-      
+      struct lang_type *pi;
+
       SET_IS_AGGR_TYPE (t, 1);
 
       if (! TREE_PERMANENT (t))
@@ -4687,11 +4686,10 @@ make_lang_type (code)
       else
 	my_friendly_assert (obstack == &permanent_obstack, 236);
 
-      pi = (int *) obstack_alloc (obstack, sizeof (struct lang_type));
-      while (i > 0)
-	pi[--i] = 0;
+      pi = (struct lang_type *) obstack_alloc (obstack, sizeof (struct lang_type));
+      bzero ((char *) pi, (int) sizeof (struct lang_type));
 
-      TYPE_LANG_SPECIFIC (t) = (struct lang_type *) pi;
+      TYPE_LANG_SPECIFIC (t) = pi;
       CLASSTYPE_AS_LIST (t) = build_expr_list (NULL_TREE, t);
       SET_CLASSTYPE_INTERFACE_UNKNOWN_X (t, interface_unknown);
       CLASSTYPE_INTERFACE_ONLY (t) = interface_only;
