@@ -144,8 +144,10 @@ _Jv_WaitForState (jclass klass, int state)
 
   if (state == JV_STATE_LINKED)
     {
-      _Jv_MonitorExit (klass);
+      // Must call _Jv_PrepareCompiledClass while holding the class
+      // mutex.
       _Jv_PrepareCompiledClass (klass);
+      _Jv_MonitorExit (klass);
       return;
     }
 	
@@ -217,7 +219,7 @@ _Jv_PrepareCompiledClass(jclass klass)
   if (klass->state >= JV_STATE_LINKED)
     return;
 
-  // short-circuit, so that mutually dependent classes are ok
+  // Short-circuit, so that mutually dependent classes are ok.
   klass->state = JV_STATE_LINKED;
 
   _Jv_Constants *pool = &klass->constants;

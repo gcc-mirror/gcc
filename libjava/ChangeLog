@@ -1,3 +1,8 @@
+1999-09-02  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/natClassLoader.cc (_Jv_WaitForState): Call
+	_Jv_PrepareCompiledClass while holding class mutex.
+
 1999-09-01  Tom Tromey  <tromey@cygnus.com>
 
 	* include/posix-threads.h (PTHREAD_MUTEX_IS_STRUCT): New define.
