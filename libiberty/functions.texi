@@ -22,7 +22,7 @@ the possibility of a GCC built-in function.
 @end deftypefn
 
 @c asprintf.c:33
-@deftypefn Extension int asprintf (char **@var{resptr}, char *@var{format}, ...)
+@deftypefn Extension int asprintf (char **@var{resptr}, const char *@var{format}, ...)
 
 Like @code{sprintf}, but instead of passing a pointer to a buffer, you
 pass a pointer to a pointer.  This function will compute the size of
@@ -97,7 +97,7 @@ is obtained from @code{malloc}.  All of the memory can be returned to the
 system with the single function call @code{freeargv}, which takes the
 returned result of @code{buildargv}, as it's argument.
 
-Returns a pointer to the argument vector if successful. Returns
+Returns a pointer to the argument vector if successful.  Returns
 @code{NULL} if @var{sp} is @code{NULL} or if there is insufficient
 memory to complete building the argument vector.
 
@@ -124,7 +124,7 @@ Uses @code{malloc} to allocate storage for @var{nelem} objects of
 @end deftypefn
 
 @c choose-temp.c:42
-@deftypefn Extension char* choose_temp_base ()
+@deftypefn Extension char* choose_temp_base (void)
 
 Return a prefix for temporary file names or @code{NULL} if unable to
 find one.  The current directory is chosen if all else fails so the
@@ -154,10 +154,10 @@ number of seconds used.
 @end deftypefn
 
 @c concat.c:24
-@deftypefn Extension char* concat (char *@var{s1}, char *@var{s2}, ..., @code{NULL})
+@deftypefn Extension char* concat (const char *@var{s1}, const char *@var{s2}, @dots{}, @code{NULL})
 
 Concatenate zero or more of strings and return the result in freshly
-xmalloc'd memory.  Returns @code{NULL} if insufficient memory is
+@code{xmalloc}ed memory.  Returns @code{NULL} if insufficient memory is
 available.  The argument list is terminated by the first @code{NULL}
 pointer encountered.  Pointers to empty strings are ignored.
 
@@ -168,7 +168,7 @@ pointer encountered.  Pointers to empty strings are ignored.
 
 Duplicate an argument vector.  Simply scans through @var{vector},
 duplicating each argument until the terminating @code{NULL} is found.
-Returns a pointer to the argument vector if successful. Returns
+Returns a pointer to the argument vector if successful.  Returns
 @code{NULL} if there is insufficient memory to complete building the
 argument vector.
 
@@ -210,7 +210,7 @@ and inode numbers.
 @c ffs.c:3
 @deftypefn Supplemental int ffs (int @var{valu})
 
-Find the first (least significant) bit set in @var{valu}. Bits are
+Find the first (least significant) bit set in @var{valu}.  Bits are
 numbered from right to left, starting with bit 1 (corresponding to the
 value 1).  If @var{valu} is zero, zero is returned.
 
@@ -225,7 +225,7 @@ wildcards @code{?} to match any one character, @code{*} to match any
 zero or more characters, or a set of alternate characters in square
 brackets, like @samp{[a-gt8]}, which match one character (@code{a}
 through @code{g}, or @code{t}, or @code{8}, in this example) if that one
-character is in the set.  A set may be inverted (i.e. match anything
+character is in the set.  A set may be inverted (i.e., match anything
 except what's in the set) by giving @code{^} or @code{!} as the first
 character in the set.  To include those characters in the set, list them
 as anything other than the first character of the set.  To include a
@@ -236,7 +236,7 @@ backslash, use @samp{\\}.
 
 @code{flags} controls various aspects of the matching process, and is a
 boolean OR of zero or more of the following values (defined in
-@code{<fnmatch.h>}:
+@code{<fnmatch.h>}):
 
 @table @code
 
@@ -277,7 +277,7 @@ itself.
 @end deftypefn
 
 @c getruntime.c:78
-@deftypefn Replacement long get_run_time ()
+@deftypefn Replacement long get_run_time (void)
 
 Returns the time used so far, in microseconds.  If possible, this is
 the time used by this process, else it is the elapsed time since the
@@ -368,7 +368,7 @@ and a path ending in @code{/} returns the empty string after it.
 
 Return a temporary file name (as a string) or @code{NULL} if unable to
 create one.  @var{suffix} is a suffix to append to the file name.  The
-string is malloced, and the temporary file has been created.
+string is @code{malloc}ed, and the temporary file has been created.
 
 @end deftypefn
 
@@ -427,12 +427,12 @@ Generate a unique temporary file name from @var{template}.
 @var{template} has the form:
 
 @example
-   <path>/ccXXXXXX<suffix>
+   @var{path}/ccXXXXXX@var{suffix}
 @end example
 
-@var{suffix_len} tells us how long <suffix> is (it can be zero
-length).  The last six characters of @var{template} before <suffix>
-must be @code{XXXXXX}; they are replaced with a string that makes the
+@var{suffix_len} tells us how long @var{suffix} is (it can be zero
+length).  The last six characters of @var{template} before @var{suffix}
+must be @samp{XXXXXX}; they are replaced with a string that makes the
 filename unique.  Returns a file descriptor open on the file for
 reading and writing.
 
@@ -446,17 +446,17 @@ Executes a program.
 @var{program} and @var{argv} are the arguments to
 @code{execv}/@code{execvp}.
 
-@var{this_pname} is name of the calling program (i.e. @code{argv[0]}).
+@var{this_pname} is name of the calling program (i.e., @code{argv[0]}).
 
 @var{temp_base} is the path name, sans suffix, of a temporary file to
 use if needed.  This is currently only needed for MS-DOS ports that
 don't use @code{go32} (do any still exist?).  Ports that don't need it
 can pass @code{NULL}.
 
-(@var{flags} & @code{PEXECUTE_SEARCH}) is non-zero if @code{$PATH} should be searched
-(??? It's not clear that GCC passes this flag correctly). (@var{flags} &
-@code{PEXECUTE_FIRST}) is nonzero for the first process in chain.
-(@var{flags} & @code{PEXECUTE_FIRST}) is nonzero for the last process
+(@code{@var{flags} & PEXECUTE_SEARCH}) is non-zero if @env{PATH} should be searched
+(??? It's not clear that GCC passes this flag correctly).  (@code{@var{flags} &
+PEXECUTE_FIRST}) is nonzero for the first process in chain.
+(@code{@var{flags} & PEXECUTE_FIRST}) is nonzero for the last process
 in chain.  The first/last flags could be simplified to only mark the
 last of a chain of processes but that requires the caller to always
 mark the last one (and not give up early if some error occurs).
@@ -466,12 +466,12 @@ The result is the pid on systems like Unix where we
 @code{fork}/@code{exec} and on systems like WIN32 and OS/2 where we
 use @code{spawn}.  It is up to the caller to wait for the child.
 
-The result is the WEXITSTATUS on systems like MS-DOS where we
+The result is the @code{WEXITSTATUS} on systems like MS-DOS where we
 @code{spawn} and wait for the child here.
 
 Upon failure, @var{errmsg_fmt} and @var{errmsg_arg} are set to the
 text of the error message with an optional argument (if not needed,
-@var{errmsg_arg} is set to @code{NULL}), and -1 is returned.
+@var{errmsg_arg} is set to @code{NULL}), and @minus{}1 is returned.
 @code{errno} is available to the caller to use.
 
 @end deftypefn
@@ -514,22 +514,22 @@ is just a mechanism to provide a consistent interface for the caller.
 @end deftypefn
 
 @c random.c:39
-@deftypefn Supplement {long int} random ()
+@deftypefn Supplement {long int} random (void)
 @deftypefnx Supplement void srandom (unsigned int @var{seed})
 @deftypefnx Supplement void* initstate (unsigned int @var{seed}, void *@var{arg_state}, unsigned long @var{n})
 @deftypefnx Supplement void* setstate (void *@var{arg_state})
 
 Random number functions.  @code{random} returns a random number in the
-range @code{0..LONG_MAX}.  @code{srandom} initializes the random
+range 0 to @code{LONG_MAX}.  @code{srandom} initializes the random
 number generator to some starting point determined by @var{seed}
 (else, the values returned by @code{random} are always the same for each
-run of the program).  @code{initstate} and @code{setstate} allow fine-grain
+run of the program).  @code{initstate} and @code{setstate} allow fine-grained
 control over the state of the random number generator.
 
 @end deftypefn
 
 @c concat.c:177
-@deftypefn Extension char* reconcat (char *@var{optr}, char *@var{s1}, ..., @code{NULL})
+@deftypefn Extension char* reconcat (char *@var{optr}, const char *@var{s1}, @dots{}, @code{NULL})
 
 Same as @code{concat}, except that if @var{optr} is not @code{NULL} it
 is freed after the string is created.  This is intended to be useful
@@ -572,7 +572,7 @@ environment.  This implementation is not safe for multithreaded code.
 @end deftypefn
 
 @c strsignal.c:353
-@deftypefn Extension int signo_max ()
+@deftypefn Extension int signo_max (void)
 
 Returns the maximum signal value for which a corresponding symbolic
 name or message is available.  Note that in the case where we use the
@@ -803,7 +803,7 @@ not be used in new projects.  Use @code{mkstemp} instead.
 @end deftypefn
 
 @c vasprintf.c:48
-@deftypefn Extension int vasprintf (char **@var{resptr}, char *@var{format}, va_list @var{args})
+@deftypefn Extension int vasprintf (char **@var{resptr}, const char *@var{format}, va_list @var{args})
 
 Like @code{vsprintf}, but instead of passing a pointer to a buffer,
 you pass a pointer to a pointer.  This function will compute the size

@@ -1,3 +1,11 @@
+2001-10-17  DJ Delorie  <dj@redhat.com>
+
+	* argv.c, asprintf.c, choose-temp.c, concat.c, cplus-dem.c,
+	ffs.c, fnmatch.txh, getruntime.c, make-temp-file.c,
+	mkstemps.c, pexecute.c, random.c, strsitnal.c, vasprintf.c:
+	Improve manual formatting.
+	* functions.texi: Regenerate.
+
 2001-10-15  DJ Delorie  <dj@redhat.com>
 
 	* Makefile.in (TEXIFILES): Add fnmatch.txh.

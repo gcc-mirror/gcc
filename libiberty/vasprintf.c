@@ -45,7 +45,7 @@ int global_total_width;
 
 /*
 
-@deftypefn Extension int vasprintf (char **@var{resptr}, char *@var{format}, va_list @var{args})
+@deftypefn Extension int vasprintf (char **@var{resptr}, const char *@var{format}, va_list @var{args})
 
 Like @code{vsprintf}, but instead of passing a pointer to a buffer,
 you pass a pointer to a pointer.  This function will compute the size

@@ -71,17 +71,17 @@ Executes a program.
 @var{program} and @var{argv} are the arguments to
 @code{execv}/@code{execvp}.
 
-@var{this_pname} is name of the calling program (i.e. @code{argv[0]}).
+@var{this_pname} is name of the calling program (i.e., @code{argv[0]}).
 
 @var{temp_base} is the path name, sans suffix, of a temporary file to
 use if needed.  This is currently only needed for MS-DOS ports that
 don't use @code{go32} (do any still exist?).  Ports that don't need it
 can pass @code{NULL}.
 
-(@var{flags} & @code{PEXECUTE_SEARCH}) is non-zero if @code{$PATH} should be searched
-(??? It's not clear that GCC passes this flag correctly). (@var{flags} &
-@code{PEXECUTE_FIRST}) is nonzero for the first process in chain.
-(@var{flags} & @code{PEXECUTE_FIRST}) is nonzero for the last process
+(@code{@var{flags} & PEXECUTE_SEARCH}) is non-zero if @env{PATH} should be searched
+(??? It's not clear that GCC passes this flag correctly).  (@code{@var{flags} &
+PEXECUTE_FIRST}) is nonzero for the first process in chain.
+(@code{@var{flags} & PEXECUTE_FIRST}) is nonzero for the last process
 in chain.  The first/last flags could be simplified to only mark the
 last of a chain of processes but that requires the caller to always
 mark the last one (and not give up early if some error occurs).
@@ -91,12 +91,12 @@ The result is the pid on systems like Unix where we
 @code{fork}/@code{exec} and on systems like WIN32 and OS/2 where we
 use @code{spawn}.  It is up to the caller to wait for the child.
 
-The result is the WEXITSTATUS on systems like MS-DOS where we
+The result is the @code{WEXITSTATUS} on systems like MS-DOS where we
 @code{spawn} and wait for the child here.
 
 Upon failure, @var{errmsg_fmt} and @var{errmsg_arg} are set to the
 text of the error message with an optional argument (if not needed,
-@var{errmsg_arg} is set to @code{NULL}), and -1 is returned.
+@var{errmsg_arg} is set to @code{NULL}), and @minus{}1 is returned.
 @code{errno} is available to the caller to use.
 
 @end deftypefn

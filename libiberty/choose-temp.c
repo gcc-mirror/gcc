@@ -39,7 +39,7 @@ extern char *choose_tmpdir PARAMS ((void));
 
 /*
 
-@deftypefn Extension char* choose_temp_base ()
+@deftypefn Extension char* choose_temp_base (void)
 
 Return a prefix for temporary file names or @code{NULL} if unable to
 find one.  The current directory is chosen if all else fails so the
