@@ -1460,7 +1460,7 @@ struct sparc_args {
 
 #if SPARC_ARCH64
 extern int sparc_arg_count,sparc_n_named_args;
-#define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME)		\
+#define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME,INDIRECT)	\
   do {								\
     (CUM).arg_count[(int) SPARC_ARG_INT] = 0;			\
     (CUM).arg_count[(int) SPARC_ARG_FLOAT] = 0;			\
@@ -1476,7 +1476,7 @@ extern int sparc_arg_count,sparc_n_named_args;
        : 10000);						\
   } while (0)
 #else
-#define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME) ((CUM) = 0)
+#define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME,INDIRECT) ((CUM) = 0)
 #endif
 
 /* Update the data in CUM to advance over an argument

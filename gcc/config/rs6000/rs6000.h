@@ -1310,7 +1310,7 @@ typedef struct rs6000_args
    for a call to a function whose data type is FNTYPE.
    For a library call, FNTYPE is 0.  */
 
-#define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME) \
+#define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME,INDIRECT) \
   init_cumulative_args (&CUM, FNTYPE, LIBNAME, FALSE)
 
 /* Similar, but when scanning the definition of a procedure.  We always

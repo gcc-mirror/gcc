@@ -1880,7 +1880,6 @@ emit_thunk (thunk_fndecl)
   int delta = THUNK_DELTA (thunk_fndecl);
   int tem;
   int failure = 0;
-  int current_call_is_indirect = 0;	/* needed for HPPA FUNCTION_ARG */
 
   /* Used to remember which regs we need to emit a USE rtx for. */
   rtx need_use[FIRST_PSEUDO_REGISTER];
@@ -1913,7 +1912,7 @@ emit_thunk (thunk_fndecl)
   expand_start_bindings (1);
 
   /* Start updating where the next arg would go.  */
-  INIT_CUMULATIVE_ARGS (args_so_far, TREE_TYPE (function), NULL_RTX);
+  INIT_CUMULATIVE_ARGS (args_so_far, TREE_TYPE (function), NULL_RTX, 0);
   stack_args_size.constant = 0;
   stack_args_size.var = 0;
   /* SETUP for possible structure return address FIXME */

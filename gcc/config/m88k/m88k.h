@@ -199,13 +199,13 @@ extern char * reg_names[];
    Redefined in sysv4.h, and luna.h.  */
 #define VERSION_INFO1	"88open OCS/BCS, "
 #ifndef VERSION_INFO2
-#define VERSION_INFO2   "$Revision: 1.66 $"
+#define VERSION_INFO2   "$Revision: 1.67 $"
 #endif
 
 #ifndef VERSION_STRING
 #define VERSION_STRING  version_string
 #ifdef __STDC__
-#define TM_RCS_ID      "@(#)" __FILE__ " $Revision: 1.66 $ " __DATE__
+#define TM_RCS_ID      "@(#)" __FILE__ " $Revision: 1.67 $ " __DATE__
 #else
 #define TM_RCS_ID      "$What: <@(#) m88k.h,v	1.1.1.2.2.2> $"
 #endif  /* __STDC__ */
@@ -1046,7 +1046,7 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 
 /* Initialize a variable CUM of type CUMULATIVE_ARGS for a call to a
    function whose data type is FNTYPE.  For a library call, FNTYPE is 0. */
-#define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME) ((CUM) = 0)
+#define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME,INDIRECT) ((CUM) = 0)
 
 /* A C statement (sans semicolon) to update the summarizer variable
    CUM to advance past an argument in the argument list.  The values

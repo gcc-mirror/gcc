@@ -8631,7 +8631,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	op0 = memory_address (FUNCTION_MODE, op0);
 
 	INIT_CUMULATIVE_ARGS (args_so_far, NULL_TREE,
-			      gen_rtx (SYMBOL_REF, Pmode, "__dummy"));
+			      gen_rtx (SYMBOL_REF, Pmode, "__dummy"), 1);
 	next_arg_reg = FUNCTION_ARG (args_so_far, VOIDmode, void_type_node, 1);
 
 #ifndef ACCUMULATE_OUTGOING_ARGS

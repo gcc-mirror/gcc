@@ -591,7 +591,7 @@ struct rt_cargs {int gregs, fregs; };
    when the function gets a structure-value-address as an
    invisible first argument.  */
 
-#define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME)	\
+#define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME,INDIRECT)	\
   (CUM).gregs = 0,				\
   (CUM).fregs = 0
 

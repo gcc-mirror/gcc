@@ -598,7 +598,7 @@ maybe ac0 ? - as option someday! */
    when the function gets a structure-value-address as an
    invisible first argument.  */
 
-#define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME)	\
+#define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME,INDIRECT)	\
  ((CUM) = 0)
 
 /* Update the data in CUM to advance over an argument

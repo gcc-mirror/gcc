@@ -467,7 +467,7 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, GEN_AND_FP_REGS,
 
    On the ns32k, the offset starts at 0.  */
 
-#define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME)	\
+#define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME,INDIRECT)	\
  ((CUM) = 0)
 
 /* Update the data in CUM to advance over an argument

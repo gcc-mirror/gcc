@@ -780,7 +780,7 @@ extern struct rtx_def *a29k_get_reloaded_address ();
    for a call to a function whose data type is FNTYPE.
    For a library call, FNTYPE is 0.  */
 
-#define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME)  (CUM) = 0
+#define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME,INDIRECT)  (CUM) = 0
 
 /* Same, but called for incoming args.
 

@@ -356,7 +356,7 @@ enum reg_class {NO_REGS,GENERAL_REGS,FPP_REG,ALL_REGS,LIM_REG_CLASSES};
 /* we just set CUM to 0 before the FUNCTION_ARG call. No matter what */
 /* we make it, FUNCTION_ARG will return 0 anyway		     */
 
-#define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME)	\
+#define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME,INDIRECT)	\
  ((CUM) = 0)
 
 /* all modes push their size rounded to the nearest word boundary */
