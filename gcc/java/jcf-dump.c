@@ -1197,10 +1197,10 @@ DEFUN(disassemble_method, (jcf, byte_ops, len),
 
 #define SPECIAL_IINC(OPERAND_TYPE) \
   i = saw_wide ? IMMEDIATE_u2 : IMMEDIATE_u1; \
-  fprintf (out, " %d", i); \
+  fprintf (out, " %ld", (long) i); \
   INT_temp = saw_wide ? IMMEDIATE_s2 : IMMEDIATE_s1; \
   saw_wide = 0; \
-  fprintf (out, " %d", INT_temp)
+  fprintf (out, " %ld", (long) INT_temp)
 
 #define SPECIAL_WIDE(OPERAND_TYPE) \
   saw_wide = 1;
