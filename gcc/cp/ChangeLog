@@ -1,3 +1,7 @@
+1999-08-02  Richard Henderson  <rth@cygnus.com>
+
+	* cp-tree.h (TYPE_PTRMEMFUNC_P): Check TYPE_LANG_SPECIFIC non-null.
+
 1999-08-01  Mark Mitchell  <mark@codesourcery.com>
 
 	* call.c (build_conditional_expr): Fix typo in comment.
