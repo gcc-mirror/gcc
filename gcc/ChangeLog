@@ -1,3 +1,10 @@
+2003-01-09  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR c/8032
+	* c-typeck.c (process_init_element) [RECORD_TYPE]: For
+	an empty element, do not advance the pointer to unfilled
+	fields if there are pending initializers.
+
 2003-01-09  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.h (CASE_VECTOR_MODE): Use SImode for a
