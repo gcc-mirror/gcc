@@ -202,7 +202,6 @@ T_CFLAGS =
 X_CPPFLAGS =
 T_CPPFLAGS =
 
-ADAC = @ADAC@
 AWK = @AWK@
 CC = @CC@
 BISON = @BISON@
@@ -3363,7 +3362,6 @@ VOL_FILES=`echo $(BACKEND) $(OBJS) $(C_OBJS) $(LIBCPP_OBJS) *.c *.h gen*`
 # the context of the stage_x rule.
 
 POSTSTAGE1_FLAGS_TO_PASS = \
-	ADAC="\$$(CC)" \
 	ADAFLAGS="$(BOOT_ADAFLAGS)" \
 	CFLAGS="$(BOOT_CFLAGS)" \
 	LDFLAGS="$(BOOT_LDFLAGS)" \
