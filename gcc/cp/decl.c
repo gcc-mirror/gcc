@@ -2356,6 +2356,7 @@ duplicate_decls (newdecl, olddecl)
 	DECL_PENDING_INLINE_INFO (newdecl) = DECL_PENDING_INLINE_INFO (olddecl);
       DECL_STATIC_CONSTRUCTOR (newdecl) |= DECL_STATIC_CONSTRUCTOR (olddecl);
       DECL_STATIC_DESTRUCTOR (newdecl) |= DECL_STATIC_DESTRUCTOR (olddecl);
+      DECL_ABSTRACT_VIRTUAL_P (newdecl) |= DECL_ABSTRACT_VIRTUAL_P (olddecl);
     }
 
   /* Deal with C++: must preserve virtual function table size.  */
@@ -12216,6 +12217,7 @@ struct cp_function
   int assigns_this;
   int just_assigned_this;
   int parms_stored;
+  int temp_name_counter;
   tree named_labels;
   tree shadowed_labels;
   tree ctor_label;
@@ -12228,6 +12230,8 @@ struct cp_function
 };
 
 struct cp_function *cp_function_chain;
+
+extern int temp_name_counter;
 
 /* Save and reinitialize the variables
    used during compilation of a C++ function.  */
@@ -12259,6 +12263,7 @@ push_cp_function_context (context)
   p->result_rtx = original_result_rtx;
   p->base_init_insns = base_init_insns;
   p->protect_list = protect_list;
+  p->temp_name_counter = temp_name_counter;
 }
 
 /* Restore the variables used during compilation of a C++ function.  */
@@ -12306,6 +12311,7 @@ pop_cp_function_context (context)
   current_function_parms_stored = p->parms_stored;
   original_result_rtx = p->result_rtx;
   base_init_insns = p->base_init_insns;
+  temp_name_counter = p->temp_name_counter;
 
   free (p);
 }

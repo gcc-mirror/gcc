@@ -1560,10 +1560,13 @@ build_type_conversion (code, xtype, expr, for_sure)
 	{
 	  if (winner)
 	    {
-	      cp_error ("ambiguous conversion from `%T' to `%T'", basetype,
-			xtype);
-	      cp_error ("  candidate conversions include `%T' and `%T'",
-			TREE_VALUE (winner), TREE_VALUE (conv));
+	      if (for_sure)
+		{
+		  cp_error ("ambiguous conversion from `%T' to `%T'", basetype,
+			    xtype);
+		  cp_error ("  candidate conversions include `%T' and `%T'",
+			    TREE_VALUE (winner), TREE_VALUE (conv));
+		}
 	      return NULL_TREE;
 	    }
 	  else
