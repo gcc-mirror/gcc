@@ -375,7 +375,7 @@ _Jv_GCSetInitialHeapSize (size_t size)
 {
   size_t current = GC_get_heap_size ();
   if (size > current)
-    GC_expand_hp (current - size);
+    GC_expand_hp (size - current);
 }
 
 void

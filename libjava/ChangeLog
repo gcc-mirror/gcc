@@ -1,3 +1,9 @@
+1999-11-05  Jeff Sturm  <jsturm@sigma6.com>
+
+	* boehm.cc (_Jv_GCSetInitialHeapSize): Swapped size & current.
+	* prims.cc (parse_heap_size): Use end, not spec.  Use 1024
+	multipler for `k'.
+
 1999-11-05  Tom Tromey  <tromey@cygnus.com>
 
 	* java/lang/natThread.cc (stop): Removed argument name.

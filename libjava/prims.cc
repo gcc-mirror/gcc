@@ -822,10 +822,10 @@ parse_heap_size (const char *spec)
 {
   char *end;
   unsigned long val = strtoul (spec, &end, 10);
-  if (*spec == 'k' || *spec == 'K')
-    val *= 1000;
-  else if (*spec == 'm' || *spec == 'M')
-    val *= 1000000;
+  if (*end == 'k' || *end == 'K')
+    val *= 1024;
+  else if (*end == 'm' || *end == 'M')
+    val *= 1048576;
   return (size_t) val;
 }
 
