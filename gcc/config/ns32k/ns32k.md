@@ -346,7 +346,7 @@
   ""
   "*
 {
-  extern int flag_pic;						\
+  extern int flag_pic;
 
   if (FP_REG_P (operands[0]))
     {
