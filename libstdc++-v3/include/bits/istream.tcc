@@ -1176,11 +1176,15 @@ namespace std
   extern template istream& operator>>(istream&, unsigned char*);
   extern template istream& operator>>(istream&, signed char*);
 
+  extern template class basic_iostream<char>;
+
 #ifdef _GLIBCXX_USE_WCHAR_T
   extern template class basic_istream<wchar_t>;
   extern template wistream& ws(wistream&);
   extern template wistream& operator>>(wistream&, wchar_t&);
   extern template wistream& operator>>(wistream&, wchar_t*);
+
+  extern template class basic_iostream<wchar_t>;
 #endif
 #endif
 } // namespace std
