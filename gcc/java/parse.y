@@ -3138,7 +3138,7 @@ register_fields (flags, type, variable_list)
 	      ctxp->static_initialized = init;
 	      DECL_INITIAL (field_decl) = TREE_OPERAND (init, 1);
 	      if (TREE_CODE (TREE_OPERAND (init, 1)) == NEW_ARRAY_INIT)
-		TREE_STATIC (TREE_OPERAND (TREE_OPERAND (init, 1), 0)) = 1;
+		TREE_STATIC (TREE_OPERAND (init, 1)) = 1;
 	    }
 	  /* A non-static field declared with an immediate initialization is
 	     to be initialized in <init>, if any.  This field is remembered
@@ -9840,7 +9840,7 @@ build_new_array_init (location, values)
 {
   tree constructor = build (CONSTRUCTOR, NULL_TREE, NULL_TREE, values);
   tree to_return = build1 (NEW_ARRAY_INIT, NULL_TREE, constructor);
-  EXPR_WFL_LINECOL (to_return) = EXPR_WFL_LINECOL (constructor) = location;
+  EXPR_WFL_LINECOL (to_return) = location;
   return to_return;
 }
 
@@ -9877,7 +9877,10 @@ patch_new_array_init (type, node)
       if (elt == NULL_TREE || TREE_CODE (elt) != NEW_ARRAY_INIT)
 	{
 	  error_seen |= array_constructor_check_entry (element_type, current);
-	  if (! TREE_CONSTANT (TREE_VALUE (current)))
+	  elt = TREE_VALUE (current);
+	  /* When compiling to native code, STRING_CST is converted to
+	     INDIRECT_REF, but still with a TREE_CONSTANT flag. */
+	  if (! TREE_CONSTANT (elt) || TREE_CODE (elt) == INDIRECT_REF)
 	    all_constant = 0;
 	}
       else
