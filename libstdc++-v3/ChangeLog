@@ -1,3 +1,11 @@
+2003-09-10  Petur Runolfsson  <peturr02@ru.is>
+
+	* include/bits/fstream.tcc (basic_filebuf::seekoff):
+	Use codecvt::length to handle variable-width stateless encodings
+	correctly.
+	* testsuite/27_io/basic_filebuf/seekoff/wchar_t/1.cc: New test.
+	* testsuite/27_io/basic_filebuf/seekoff/wchar_t/2.cc: New test.
+
 2003-09-10  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/io/basic_file_stdio.cc (_M_open_mode): Assign __p_mode
