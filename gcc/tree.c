@@ -4802,6 +4802,15 @@ decl_function_context (decl)
 
   if (TREE_CODE (decl) == SAVE_EXPR)
     context = SAVE_EXPR_CONTEXT (decl);
+  /* C++ virtual functions use DECL_CONTEXT for the class of the vtable
+     where we look up the function at runtime.  Such functions always take
+     a first argument of type 'pointer to real context'.
+
+     C++ should really be fixed to use DECL_CONTEXT for the real context,
+     and use something else for the "virtual context".  */
+  else if (TREE_CODE (decl) == FUNCTION_DECL && DECL_VINDEX (decl))
+    context = TYPE_MAIN_VARIANT
+      (TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (decl)))));
   else
     context = DECL_CONTEXT (decl);
 
