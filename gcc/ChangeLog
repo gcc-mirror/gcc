@@ -1,3 +1,10 @@
+2003-06-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* config/c4x/c4x.c: Don't include "c-tree.h".
+	* config/pa/pa.c: Likewise.
+	* langhooks.c: Likewise.
+	* tree.h (poplevel): Declare.
+
 2003-06-16  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.c (const_costs): Move this to ...
