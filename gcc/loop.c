@@ -5485,7 +5485,7 @@ check_insn_for_givs (struct loop *loop, rtx p, int not_every_iteration,
 
   /* Update the status of whether giv can derive other givs.  This can
      change when we pass a label or an insn that updates a biv.  */
-  if (INSN_P (p))
+  if (INSN_P (p) || LABEL_P (p))
     update_giv_derive (loop, p);
   return p;
 }
