@@ -49,7 +49,7 @@ Boston, MA 02111-1307, USA. */
 #define	LINK_SPEC "%{v:-V}"
 
 #undef STARTFILE_SPEC
-#define STARTFILE_SPEC "crti%O%s %{!:crt0%O%s}"
+#define STARTFILE_SPEC "crti%O%s crt0%O%s"
 
 #undef	ENDFILE_SPEC
 #define	ENDFILE_SPEC "crtn%O%s"
