@@ -1,3 +1,8 @@
+2004-01-10  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	* include/bits/locale_facets.h: Make a name really dependent. This
+	will be needed when Core Issue 224 is implemented.
+
 2004-01-09  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/performance/allocator.cc: Demangle typeid(obj).name().
