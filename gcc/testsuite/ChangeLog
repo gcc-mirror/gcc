@@ -1,6 +1,8 @@
 1999-05-17  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
 
-	* execute/990326-1.c: Force bitfields to be aligned.
+	* gcc.c-torture/compile/990517-1.c: New test.
+
+	* gcc.c-torture/execute/990326-1.c: Force bitfields to be aligned.
 	(e4, f4): New tests.
 	(main): Call them.
 
