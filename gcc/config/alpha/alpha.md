@@ -2583,16 +2583,23 @@
   "
 {
   enum machine_mode mode;
-  enum rtx_code compare_code, branch_code;
+  enum rtx_code compare_code = EQ, branch_code = NE;
 
   if (alpha_compare_fp_p)
-    mode = DFmode, compare_code = EQ, branch_code = NE;
+    mode = DFmode;
   else
     {
-      mode = DImode, compare_code = MINUS, branch_code = EQ;
-      if (GET_CODE (alpha_compare_op1) == CONST_INT)
+      mode = DImode;
+      /* We want to use cmpeq/bne when we can, since there is a zero-delay
+	 bypass between logicals and br/cmov on the 21164.  But we don't
+	 want to force valid immediate constants into registers needlessly.  */
+      if (GET_CODE (alpha_compare_op1) == CONST_INT
+	  && ((INTVAL (alpha_compare_op1) >= -0x8000
+	       && INTVAL (alpha_compare_op1) < 0)
+	      || (INTVAL (alpha_compare_op1) > 0xff
+		  && INTVAL (alpha_compare_op1) < 0x8000)))
 	{
-	  compare_code = PLUS;
+	  compare_code = PLUS, branch_code = EQ;
 	  alpha_compare_op1 = GEN_INT (- INTVAL (alpha_compare_op1));
 	}
     }
@@ -2614,16 +2621,23 @@
   "
 {
   enum machine_mode mode;
-  enum rtx_code compare_code, branch_code;
+  enum rtx_code compare_code = EQ, branch_code = EQ;
 
   if (alpha_compare_fp_p)
-    mode = DFmode, compare_code = EQ, branch_code = EQ;
+    mode = DFmode;
   else
     {
-      mode = DImode, compare_code = MINUS, branch_code = NE;
-      if (GET_CODE (alpha_compare_op1) == CONST_INT)
+      mode = DImode;
+      /* We want to use cmpeq/bne when we can, since there is a zero-delay
+	 bypass between logicals and br/cmov on the 21164.  But we don't
+	 want to force valid immediate constants into registers needlessly.  */
+      if (GET_CODE (alpha_compare_op1) == CONST_INT
+	  && ((INTVAL (alpha_compare_op1) >= -0x8000
+	       && INTVAL (alpha_compare_op1) < 0)
+	      || (INTVAL (alpha_compare_op1) > 0xff
+		  && INTVAL (alpha_compare_op1) < 0x8000)))
 	{
-	  compare_code = PLUS;
+	  compare_code = PLUS, branch_code = NE;
 	  alpha_compare_op1 = GEN_INT (- INTVAL (alpha_compare_op1));
 	}
     }
