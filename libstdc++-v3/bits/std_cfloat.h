@@ -35,6 +35,7 @@
 
 #ifndef _CPP_CFLOAT
 #define _CPP_CFLOAT 1
+# pragma system_header
 # include_next <float.h>
 
 #if 0

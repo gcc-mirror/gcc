@@ -83,7 +83,7 @@ headers = \
 	bits/valarray_array.h bits/valarray_array.tcc bits/valarray_meta.h \
 	bits/std_valarray.h bits/mask_array.h bits/slice.h bits/slice_array.h \
 	bits/gslice.h bits/gslice_array.h bits/indirect_array.h \
-	bits/std_cassert.h bits/std_cwctype.h bits/std_ciso646.h \
+	bits/std_cassert.h bits/std_cwctype.h \
 	bits/std_cerrno.h bits/std_cfloat.h bits/std_climits.h \
 	bits/std_clocale.h bits/std_cmath.h \
 	bits/std_csetjmp.h bits/std_csignal.h bits/std_cstdarg.h \

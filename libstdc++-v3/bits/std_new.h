@@ -32,6 +32,7 @@
 #include <bits/c++config.h>
 
 #ifdef __GNUG__
+# pragma system_header
 # include_next <new>
 #else
 

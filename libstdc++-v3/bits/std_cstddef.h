@@ -35,5 +35,6 @@
 
 #ifndef _CPP_CSTDDEF
 #define _CPP_CSTDDEF 1
+# pragma system_header
 # include_next <stddef.h>
 #endif

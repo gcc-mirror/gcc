@@ -1,3 +1,59 @@
+2000-05-17  Nathan C. Myers  <ncm@cantrip.org>
+
+	* bits/std_cmath.h: fix sqrt(float)
+
+2000-05-16  Loren J. Rittle  <ljrittle@acm.org>
+
+        * bits/std_cassert.h: Use system_header pragma.
+        * bits/std_cctype.h: Likewise.
+        * bits/std_cerrno.h: Likewise.
+        * bits/std_cfloat.h: Likewise.
+        * bits/std_climits.h: Likewise.
+        * bits/std_clocale.h: Likewise.
+        * bits/std_cmath.h: Likewise.
+        * bits/std_csetjmp.h: Likewise.
+        * bits/std_csignal.h: Likewise.
+        * bits/std_cstdarg.h: Likewise.
+        * bits/std_cstddef.h: Likewise.
+        * bits/std_cstdio.h: Likewise.
+        * bits/std_cstdlib.h: Likewise.
+        * bits/std_cstring.h: Likewise.
+        * bits/std_ctime.h: Likewise.
+        * bits/std_cwchar.h: Likewise.
+        * bits/std_cwctype.h: Likewise.
+        * bits/std_exception.h: Likewise.
+        * bits/std_new.h: Likewise.
+        * bits/std_typeinfo.h: Likewise.
+        * shadow/bits/std_cassert.h: Likewise.
+        * shadow/bits/std_cctype.h: Likewise.
+        * shadow/bits/std_cerrno.h: Likewise.
+        * shadow/bits/std_cfloat.h: Likewise.
+        * shadow/bits/std_climits.h: Likewise.
+        * shadow/bits/std_clocale.h: Likewise.
+        * shadow/bits/std_cmath.h: Likewise.
+        * shadow/bits/std_csetjmp.h: Likewise.
+        * shadow/bits/std_csignal.h: Likewise.
+        * shadow/bits/std_cstdarg.h: Likewise.
+        * shadow/bits/std_cstddef.h: Likewise.
+        * shadow/bits/std_cstdio.h: Likewise.
+        * shadow/bits/std_cstdlib.h: Likewise.
+        * shadow/bits/std_cstring.h: Likewise.
+        * shadow/bits/std_ctime.h: Likewise.
+        * shadow/bits/std_cwchar.h: Likewise.
+        * shadow/bits/std_cwctype.h: Likewise.
+        * shadow/bits/wrap_libio.h: Likewise.
+        * shadow/bits/wrap_unistd.h: Likewise.
+        * shadow/sys/cdefs.h: Likewise.
+
+2000-05-16  Nathan C. Myers  <ncm@cantrip.org>
+
+        It appears that gcc-2.96 supports the keyword "and" now.
+	* bits/std_ciso646.h: remove.
+	* std/ciso646: gut.
+	* testsuite/17_intro/header_ciso646.c: enable testing.
+	* src/Makefile.am, src/Makefile.in: remove mention of
+	bits/std_ciso646.h
+
 2000-05-16  Nathan C. Myers  <ncm@cantrip.org>
        
        * mkcshadow: fix typo s/_C_Swamp_/_C_Swamp/.

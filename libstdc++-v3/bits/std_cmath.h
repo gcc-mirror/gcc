@@ -35,6 +35,7 @@
 
 #ifndef _CPP_CMATH
 #define _CPP_CMATH 1
+# pragma system_header
 # include_next <math.h>
 # include_next <stdlib.h>
 
@@ -233,7 +234,7 @@ namespace std {
   sqrt(float __x) { return ::sqrtf(__x); }
 #else
   inline float
-  sqrt(float __x) { return ::fabs(static_cast<double>(__x)); }
+  sqrt(float __x) { return ::sqrt(static_cast<double>(__x)); }
 #endif
 
   // XXX long double

@@ -39,6 +39,7 @@
 #define __NO_WCTYPE 1
 #endif
 
+# pragma system_header
 # include_next <wctype.h>
 
 // Sequester the C non-inline implementations in the _C_Swamp::

@@ -41,6 +41,7 @@
   namespace _C_Swamp {
     extern "C" {
 #     define _IN_C_SWAMP_
+#     pragma system_header
 #     include_next <wctype.h>
     }
     typedef wctype_t _CPP_wctype_t_capture;

@@ -37,6 +37,7 @@
 //   defines a global used in other headers, we are sunk.
 
 extern "C" {
+# pragma system_header
 # include_next <assert.h>
 }
 

@@ -38,6 +38,7 @@
 
 #include <bits/c++config.h>
 #ifdef _GLIBCPP_USE_WCHAR_T
+ # pragma system_header
  # include_next <wchar.h>
 #endif 
 

@@ -1,6 +1,6 @@
 // -*- C++ -*- forwarding header.
 
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,9 +31,12 @@
 // ISO C++ 14882: 18.2.2  Implementation properties: C library
 //
 
-// Note: this is not a conforming implementation.
+// Note: This is not a conforming implementation.
 
 #ifndef _CPP_CLIMITS
 #define _CPP_CLIMITS	1
+# pragma system_header
 # include_next <limits.h>
 #endif
+
+
