@@ -39,7 +39,7 @@ static rtx cplus_expand_expr PROTO((tree, rtx, enum machine_mode,
 /* Hook used by output_constant to expand language-specific
    constants.  */
 
-static tree
+tree
 cplus_expand_constant (cst)
      tree cst;
 {

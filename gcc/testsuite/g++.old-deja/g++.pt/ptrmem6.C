@@ -23,7 +23,7 @@ int main() {
   h<&A::i>();
   g<&B::f>(); // ERROR - 
   h<&B::j>(); // ERROR - 
-  g<(void (A::*)()) &A::f>(); // ERROR - XFAIL *-*-*
+  g<(void (A::*)()) &A::f>(); // ERROR - 
   h<(int A::*) &A::i>(); // ERROR - 
   g<(void (A::*)()) &B::f>(); // ERROR - 
   h<(int A::*) &B::j>(); // ERROR - 

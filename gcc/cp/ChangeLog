@@ -1,3 +1,15 @@
+1999-05-22  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (cplus_expand_constant): Declare.
+	* cvt.c (convert_to_pointer): Expand PTRMEM_CSTs when they're
+	converted from one pointer-to-object type to another.
+	* expr.c (cplus_expand_constant): Don't make it static.
+	* typeck.c (build_component_ref): Don't crash when presented with
+	a component which is a TEMPLATE_DECL.
+	(build_ptrmemfunc): Tidy.  Clarify comment.  Make sure that even a
+	cast from a pointer-to-member constant to its own type does not
+	result in a valid non-type template argument.
+
 1999-05-21  Mark Mitchell  <mark@codesourcery.com>
             Nathan Sidwell  <nathan@acm.org>
 	

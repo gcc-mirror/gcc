@@ -179,19 +179,29 @@ cp_convert_to_pointer (type, expr)
 
       if (TYPE_PTRMEM_P (type) && TYPE_PTRMEM_P (intype))
 	{
-	  tree b1 = TYPE_OFFSET_BASETYPE (TREE_TYPE (type));
-	  tree b2 = TYPE_OFFSET_BASETYPE (TREE_TYPE (intype));
-	  tree binfo = get_binfo (b2, b1, 1);
-	  enum tree_code code = PLUS_EXPR;
+	  tree b1; 
+	  tree b2;
+	  tree binfo;
+	  enum tree_code code;
+
+	  b1 = TYPE_OFFSET_BASETYPE (TREE_TYPE (type));
+	  b2 = TYPE_OFFSET_BASETYPE (TREE_TYPE (intype));
+	  binfo = get_binfo (b2, b1, 1);
 
 	  if (binfo == NULL_TREE)
 	    {
 	      binfo = get_binfo (b1, b2, 1);
 	      code = MINUS_EXPR;
 	    }
+	  else
+	    code = PLUS_EXPR;
 
 	  if (binfo == error_mark_node)
 	    return error_mark_node;
+
+	  if (TREE_CODE (expr) == PTRMEM_CST)
+	    expr = cplus_expand_constant (expr);
+
 	  if (binfo && ! TREE_VIA_VIRTUAL (binfo))
 	    expr = size_binop (code, expr, BINFO_OFFSET (binfo));
 	}
