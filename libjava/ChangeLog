@@ -1,3 +1,8 @@
+2003-08-01  Tom Tromey  <tromey@redhat.com>
+
+	* configure: Rebuilt.
+	* configure.in (tool_include_dir): Redefine to match gcc.
+
 2003-08-01  Jerry Quinn  <jlquinn@optonline.net>
             Mark Wielaard  <mark@klomp.org>
 	    
