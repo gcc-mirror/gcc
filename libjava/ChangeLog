@@ -1,3 +1,13 @@
+2005-02-07  Tom Tromey  <tromey@redhat.com>
+
+	* defineclass.cc (handleClassBegin): Use
+	_Jv_RegisterInitiatingLoader.
+	* java/lang/Class.h (_Jv_UnregisterInitiatingLoader): Declare.
+	* java/lang/natVMClassLoader.cc (resolveClass): Don't register
+	class.  Use _Jv_UnregisterInitiatingLoader.
+	* java/lang/natClassLoader.cc (_Jv_UnregisterInitiatingLoader):
+	New function.
+
 2005-02-07  Mark Wielaard  <mark@klomp.org>
 
         Reported by Timo Lindfors <timo.lindfors@iki.fi>
