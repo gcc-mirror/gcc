@@ -1,3 +1,14 @@
+Thu May 29 13:02:06 1997  Mike Stump  <mrs@cygnus.com>
+
+	* except.c (expand_exception_blocks): Simplify and fix and make
+	sure we don't end a region in a sequence, as expand_end_bindings
+	doesn't like it.
+
+Wed May 28 17:08:03 1997  Mike Stump  <mrs@cygnus.com>
+
+	* except.c (init_exception_processing): Mark terminate as not
+	returning so that the optimizer can optimize better.
+
 Tue May 27 19:49:19 1997  Mike Stump  <mrs@cygnus.com>
 
 	* cvt.c (convert): Don't do any extra work, if we can avoid it
