@@ -1,6 +1,6 @@
 /* This file contains the definitions and documentation for the
    machine modes used in the the GNU compiler.
-   Copyright (C) 1987, 1992, 1994, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1992, 1994, 1997, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -42,7 +42,7 @@ Boston, MA 02111-1307, USA.  */
    Third argument states the kind of representation:
    MODE_INT - integer
    MODE_FLOAT - floating
-   MODE_PARTIAL_INT - PSImode and PDImode
+   MODE_PARTIAL_INT - PQImode, PHImode, PSImode and PDImode
    MODE_CC - modes used for representing the condition code in a register
    MODE_COMPLEX_INT, MODE_COMPLEX_FLOAT - complex number
    MODE_RANDOM - anything else
@@ -63,8 +63,10 @@ Boston, MA 02111-1307, USA.  */
    as for example on CONST_INT RTL expressions.  */
 DEF_MACHMODE (VOIDmode, "VOID", MODE_RANDOM, 0, 0, VOIDmode)
 
-DEF_MACHMODE (QImode, "QI", MODE_INT, 1, 1, HImode)		/* int types */
-DEF_MACHMODE (HImode, "HI", MODE_INT, 2, 2, SImode)
+DEF_MACHMODE (QImode, "QI", MODE_INT, 1, 1, PQImode)		/* int types */
+DEF_MACHMODE (PQImode, "PQI", MODE_PARTIAL_INT, 1, 1, HImode)
+DEF_MACHMODE (HImode, "HI", MODE_INT, 2, 2, PHImode)
+DEF_MACHMODE (PHImode, "PHI", MODE_PARTIAL_INT, 2, 2, SImode)
 /* Pointers on some machines use this type to distinguish them from ints.
    Useful if a pointer is 4 bytes but has some bits that are not significant,
    so it is really not quite as wide as an integer.  */
