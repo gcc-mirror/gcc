@@ -1,5 +1,14 @@
 2001-06-15  Tom Tromey  <tromey@redhat.com>
 
+	* java/lang/natRuntime.cc (_Jv_FindSymbolInExecutable): Return
+	NULL if no library on the list has the symbol.
+	(init): Call add_library on the program itself.
+	* prims.cc (JvRunMain): Initialize Runtime before searching for
+	`main'.
+	(_Jv_RunMain): Likewise.
+
+2001-06-15  Tom Tromey  <tromey@redhat.com>
+
 	* jni.cc (ClassClass): Removed; updated all users.
 	(ObjectClass): Likewise.
 	(ThrowableClass): Likewise.

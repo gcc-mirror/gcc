@@ -1008,6 +1008,10 @@ JvRunMain (jclass klass, int argc, const char **argv)
   _Jv_ThisExecutable (argv[0]);
 #endif
 
+  // Get the Runtime here.  We want to initialize it before searching
+  // for `main'; that way it will be set up if `main' is a JNI method.
+  java::lang::Runtime *rtime = java::lang::Runtime::getRuntime ();
+
   main_thread = _Jv_AttachCurrentThread (JvNewStringLatin1 ("main"), NULL);
   arg_vec = JvConvertArgv (argc - 1, argv + 1);
   runFirst (klass, arg_vec);
@@ -1015,7 +1019,7 @@ JvRunMain (jclass klass, int argc, const char **argv)
 
   int status = (int) java::lang::ThreadGroup::had_uncaught_exception;
     
-  java::lang::Runtime::getRuntime ()->_exit (status);
+  rtime->_exit (status);
 }
 
 void
@@ -1030,6 +1034,10 @@ _Jv_RunMain (const char *name, int argc, const char **argv, bool is_jar)
   sprintf (exec_name, "/proc/%d/exe", getpid ());
   _Jv_ThisExecutable (exec_name);
 #endif
+
+  // Get the Runtime here.  We want to initialize it before searching
+  // for `main'; that way it will be set up if `main' is a JNI method.
+  java::lang::Runtime *rtime = java::lang::Runtime::getRuntime ();
 
   main_thread = _Jv_AttachCurrentThread (JvNewStringLatin1 ("main"), NULL);
 
@@ -1061,7 +1069,7 @@ _Jv_RunMain (const char *name, int argc, const char **argv, bool is_jar)
 
   int status = (int) java::lang::ThreadGroup::had_uncaught_exception;
 
-  java::lang::Runtime::getRuntime ()->exit (status);
+  rtime->exit (status);
 }
 
 
