@@ -563,6 +563,8 @@ const short rid_to_yy[RID_MAX] =
   /* RID_PTRBASE */	0,
   /* RID_PTREXTENT */	0,
   /* RID_PTRVALUE */	0,
+  /* RID_CHOOSE_EXPR */	0,
+  /* RID_TYPES_COMPATIBLE_P */ 0,
 
   /* RID_FUNCTION_NAME */	VAR_FUNC_NAME,
   /* RID_PRETTY_FUNCTION_NAME */ VAR_FUNC_NAME,
