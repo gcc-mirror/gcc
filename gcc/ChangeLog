@@ -1,3 +1,8 @@
+2004-12-25  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/19147
+	* config/rs6000/rs6000.md (andsi3_internal7, andsi3_internal8): Delete.
+
 2004-12-23  Richard Henderson  <rth@redhat.com>
 
         PR c/18282
