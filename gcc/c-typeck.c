@@ -1982,14 +1982,17 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
     case TRUNC_MOD_EXPR:
     case FLOOR_MOD_EXPR:
       if (code0 == INTEGER_TYPE && code1 == INTEGER_TYPE)
-	/* Although it would be tempting to shorten always here, doing so loses
-	   on some targets, since the modulo instruction is undefined if the
-	   quotient can't be represented in the computation mode.  We shorten
-	   only if unsigned or if dividing by something we know != -1.  */
-	shorten = (TREE_UNSIGNED (orig_op0)
-		   || (TREE_CODE (op1) == INTEGER_CST
-		       && (TREE_INT_CST_LOW (op1) != -1
-			   || TREE_INT_CST_HIGH (op1) != -1)));
+	{
+	  /* Although it would be tempting to shorten always here, that loses
+	     on some targets, since the modulo instruction is undefined if the
+	     quotient can't be represented in the computation mode.  We shorten
+	     only if unsigned or if dividing by something we know != -1.  */
+	  shorten = (TREE_UNSIGNED (orig_op0)
+		     || (TREE_CODE (op1) == INTEGER_CST
+			 && (TREE_INT_CST_LOW (op1) != -1
+			     || TREE_INT_CST_HIGH (op1) != -1)));
+	  common = 1;
+	}
       break;
 
     case TRUTH_ANDIF_EXPR:
