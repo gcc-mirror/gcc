@@ -175,6 +175,8 @@ static void pop_cp_function_context PROTO((struct function *));
 static void mark_binding_level PROTO((void *));
 static void mark_cp_function_context PROTO((struct function *));
 static void mark_saved_scope PROTO((void *));
+static void mark_lang_function PROTO((struct language_function *));
+static void save_function_data PROTO((tree));
 static void check_function_type PROTO((tree));
 static void destroy_local_static PROTO((tree));
 static void destroy_local_var PROTO((tree));
@@ -785,14 +787,6 @@ kept_level_p ()
 	  || current_binding_level->names != NULL_TREE
 	  || (current_binding_level->tags != NULL_TREE
 	      && !current_binding_level->tag_transparent));
-}
-
-/* Identify this binding level as a level of parameters.  */
-
-void
-declare_parm_level ()
-{
-  current_binding_level->parm_flag = 1;
 }
 
 void
@@ -13245,6 +13239,43 @@ store_return_init (decl)
 }
 
 
+/* We have finished doing semantic analysis on DECL, but have not yet
+   generated RTL for its body.  Save away our current state, so that
+   when we want to generate RTL later we know what to do.  */
+
+static void
+save_function_data (decl)
+     tree decl;
+{
+  struct language_function *f;
+
+  /* Save the language-specific per-function data so that we can
+     get it back when we really expand this function.  */
+  my_friendly_assert (!DECL_PENDING_INLINE_P (decl),
+		      19990908);
+      
+  /* Make a copy.  */
+  f = ((struct language_function *) 
+       xmalloc (sizeof (struct language_function)));
+  bcopy ((char *) cp_function_chain, (char *) f,
+	 sizeof (struct language_function));
+  DECL_SAVED_FUNCTION_DATA (decl) = f;
+
+  /* Clear out the bits we don't need.  */
+  f->x_base_init_list = NULL_TREE;
+  f->x_member_init_list = NULL_TREE;
+  f->x_last_tree = NULL_TREE;
+  f->x_last_expr_type = NULL_TREE;
+  f->x_last_dtor_insn = NULL_RTX;
+  f->x_last_parm_cleanup_insn = NULL_RTX;
+  f->x_result_rtx = NULL_RTX;
+  f->x_named_label_uses = NULL;
+  f->bindings = NULL;
+
+  /* When we get back here again, we will be expanding.  */
+  f->x_expanding_p = 1;
+}
+
 /* Finish up a function declaration and compile that function
    all the way to assembler language output.  The free the storage
    for the function definition.
@@ -13724,6 +13755,10 @@ finish_function (lineno, flags)
 
   /* Undo the call to push_momentary in start_function.  */
   pop_momentary ();
+
+  /* Save away current state, if appropriate.  */
+  if (!expanding_p && !processing_template_decl)
+    save_function_data (fndecl);
 
   if (expand_p)
     {
@@ -14294,12 +14329,12 @@ pop_cp_function_context (f)
   f->language = 0;
 }
 
-void
-mark_cp_function_context (f)
-     struct function *f;
-{
-  struct language_function *p = f->language;
+/* Mark P for GC.  */
 
+static void
+mark_lang_function (p)
+     struct language_function *p;
+{
   if (!p)
     return;
 
@@ -14321,6 +14356,14 @@ mark_cp_function_context (f)
   mark_binding_level (&p->bindings);
 }
 
+/* Mark the language-specific data in F for GC.  */
+
+void
+mark_cp_function_context (f)
+     struct function *f;
+{
+  mark_lang_function (f->language);
+}
 
 int
 in_function_p ()
@@ -14388,6 +14431,9 @@ lang_mark_tree (t)
 	      ggc_mark_tree (ld->saved_tree);
 	      if (TREE_CODE (t) == TYPE_DECL)
 		ggc_mark_tree (ld->u.sorted_fields);
+	      else if (TREE_CODE (t) == FUNCTION_DECL
+		       && !DECL_PENDING_INLINE_P (t))
+		mark_lang_function (DECL_SAVED_FUNCTION_DATA (t));
 	    }
 	}
     }

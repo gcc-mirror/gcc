@@ -5874,6 +5874,7 @@ tsubst_decl (t, args, type, in_decl)
 	DECL_DEFER_OUTPUT (r) = 0;
 	TREE_CHAIN (r) = NULL_TREE;
 	DECL_PENDING_INLINE_INFO (r) = 0;
+	DECL_PENDING_INLINE_P (r) = 0;
 	TREE_USED (r) = 0;
 
 	/* Set up the DECL_TEMPLATE_INFO for R and compute its mangled

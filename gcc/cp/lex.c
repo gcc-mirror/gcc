@@ -1288,6 +1288,7 @@ begin_definition_of_inclass_inline (pi)
   /* Pass back a handle to the rest of the inline functions, so that they
      can be processed later.  */
   DECL_PENDING_INLINE_INFO (pi->fndecl) = 0;
+  DECL_PENDING_INLINE_P (pi->fndecl) = 0;
   interface_unknown = pi->interface == 1;
   interface_only  = pi->interface == 0;
 }
@@ -1510,6 +1511,7 @@ store_pending_inline (decl, t)
 {
   t->fndecl = decl;
   DECL_PENDING_INLINE_INFO (decl) = t;
+  DECL_PENDING_INLINE_P (decl) = 1;
 
   /* Because we use obstacks, we must process these in precise order.  */
   t->next = pending_inlines;

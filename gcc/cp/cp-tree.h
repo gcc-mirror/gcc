@@ -40,6 +40,7 @@ Boston, MA 02111-1307, USA.  */
       ICS_USER_FLAG (in _CONV)
       CLEANUP_P (in TRY_BLOCK)
       AGGR_INIT_VIA_CTOR_P (in AGGR_INIT_EXPR)
+      SCOPE_BEGIN_P (in SCOPE_STMT)
    1: IDENTIFIER_VIRTUAL_P.
       TI_PENDING_TEMPLATE_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
@@ -64,6 +65,7 @@ Boston, MA 02111-1307, USA.  */
       (TREE_REFERENCE_EXPR) (in NON_LVALUE_EXPR) (commented-out).
       ICS_BAD_FLAG (in _CONV)
       FN_TRY_BLOCK_P (in TRY_BLOCK)
+      SCOPE_NULLIFIED_P (in SCOPE_STMT)
    4: BINFO_NEW_VTABLE_MARKED.
       TREE_HAS_CONSTRUCTOR (in INDIRECT_REF, SAVE_EXPR, CONSTRUCTOR,
           or FIELD_DECL).
@@ -1505,7 +1507,8 @@ struct lang_decl_flags
 
   unsigned bitfield : 1;
   unsigned defined_in_class : 1;
-  unsigned dummy : 6;
+  unsigned pending_inline_p : 1;
+  unsigned dummy : 5;
 
   tree access;
   tree context;
@@ -1533,6 +1536,7 @@ struct lang_decl
   {
     tree sorted_fields;
     struct pending_inline *pending_inline_info;
+    struct language_function *saved_language_function;
   } u;
 };
 
@@ -1717,10 +1721,16 @@ struct lang_decl
 /* Points back to the decl which caused this lang_decl to be allocated.  */
 #define DECL_MAIN_VARIANT(NODE) (DECL_LANG_SPECIFIC(NODE)->main_decl_variant)
 
-/* For a FUNCTION_DECL: if this function was declared inline inside of
-   a class declaration, this is where the text for the function is
-   squirreled away.  */
-#define DECL_PENDING_INLINE_INFO(NODE) (DECL_LANG_SPECIFIC(NODE)->u.pending_inline_info)
+/* In a FUNCTION_DECL, this is nonzero if this function was defined in
+   the class definition.  We have saved away the text of the function,
+   but have not yet processed it.  */
+#define DECL_PENDING_INLINE_P(NODE) \
+  (DECL_LANG_SPECIFIC (NODE)->decl_flags.pending_inline_p)
+   
+/* If DECL_PENDING_INLINE_P holds, this is the saved text of the
+   function.  */
+#define DECL_PENDING_INLINE_INFO(NODE) \
+  (DECL_LANG_SPECIFIC(NODE)->u.pending_inline_info)
 
 /* For a TYPE_DECL: if this function has many fields, we'll sort them
    and put them into a TREE_VEC. */
@@ -1804,7 +1814,7 @@ struct lang_decl
 #define TYPE_TI_TEMPLATE(NODE)			\
   (TI_TEMPLATE (TYPE_TEMPLATE_INFO (NODE)))
 
-/* Like DECL_TI_ARGS, , but for an ENUMERAL_, RECORD_, or UNION_TYPE.  */
+/* Like DECL_TI_ARGS, but for an ENUMERAL_, RECORD_, or UNION_TYPE.  */
 #define TYPE_TI_ARGS(NODE)			\
   (TI_ARGS (TYPE_TEMPLATE_INFO (NODE)))
 
@@ -1815,10 +1825,15 @@ struct lang_decl
    the class definition is complete.  */
 #define TEMPLATE_PARMS_FOR_INLINE(NODE) TREE_LANG_FLAG_1 (NODE)
 
-/* In a template FUNCTION_DECL, the tree structure that will be
-   substituted into to obtain instantiations.  */
+/* In a FUNCTION_DECL, the saved representation of the body of the
+   entire function.  Usually a COMPOUND_STMT, but this may also be a
+   RETURN_INIT, CTOR_INITIALIZER, or TRY_BLOCK.  */
 #define DECL_SAVED_TREE(NODE) \
   (DECL_LANG_SPECIFIC ((NODE))->saved_tree)
+
+/* In a FUNCTION_DECL, the saved language-specific per-function data.  */
+#define DECL_SAVED_FUNCTION_DATA(NODE) \
+  (DECL_LANG_SPECIFIC ((NODE))->u.saved_language_function)
 
 #define COMPOUND_STMT_NO_SCOPE(NODE)	TREE_LANG_FLAG_0 (NODE)
 #define NEW_EXPR_USE_GLOBAL(NODE)	TREE_LANG_FLAG_0 (NODE)
@@ -2446,7 +2461,20 @@ extern int flag_new_for_scope;
 #define SUBOBJECT_CLEANUP(NODE) TREE_OPERAND (NODE, 0)
 #define CLEANUP_DECL(NODE)      TREE_OPERAND (NODE, 0)
 #define CLEANUP_EXPR(NODE)      TREE_OPERAND (NODE, 1)
+#define START_CATCH_TYPE(NODE)  TREE_TYPE (NODE)
 #define LABEL_STMT_LABEL(NODE)  TREE_OPERAND (NODE, 0)
+
+/* Nonzero if this SCOPE_STMT is for the beginning of a scope.  */
+#define SCOPE_BEGIN_P(NODE) \
+  (TREE_LANG_FLAG_0 ((NODE))) 
+
+/* Nonzero if this SCOPE_STMT is for the end of a scope.  */
+#define SCOPE_END_P(NODE) \
+  (!SCOPE_BEGIN_P ((NODE)))
+
+/* Nonzero for a SCOPE_STMT if there were no variables in this scope.  */
+#define SCOPE_NULLIFIED_P(NODE) \
+  (TREE_LANG_FLAG_3 ((NODE)))
 
 /* Nonzero for an ASM_STMT if the assembly statement is volatile.  */
 #define ASM_VOLATILE_P(NODE)			\
@@ -3106,14 +3134,12 @@ extern int toplevel_bindings_p			PROTO((void));
 extern int namespace_bindings_p			PROTO((void));
 extern void keep_next_level			PROTO((int));
 extern int kept_level_p				PROTO((void));
-extern void declare_parm_level			PROTO((void));
 extern void declare_pseudo_global_level		PROTO((void));
 extern int pseudo_global_level_p		PROTO((void));
 extern void set_class_shadows			PROTO((tree));
 extern void pushlevel				PROTO((int));
 extern void note_level_for_for			PROTO((void));
 extern void pushlevel_temporary			PROTO((int));
-extern tree poplevel				PROTO((int, int, int));
 extern void resume_level			PROTO((struct binding_level *));
 extern void delete_block			PROTO((tree));
 extern void insert_block			PROTO((tree));
