@@ -2927,6 +2927,8 @@ changequote([,])dnl
                 ;;
         pdp11-*-*)
 		;;
+        avr-*-*)
+		;;
 	ns32k-*-openbsd*)
 		# Nothing special
 		;;
