@@ -5003,7 +5003,14 @@ reload_reg_free_for_value_p (regno, opnum, type, value)
      monotonic.
      Some reload types use different 'buckets' for each operand.
      So there are MAX_RECOG_OPERANDS different time values for each
-     such reload type.  */
+     such reload type.
+     We compute TIME1 as the time when the register for the prospective
+     new reload ceases to be live, and TIME2 for each existing
+     reload as the time when that the reload register of that reload
+     becomes live.
+     Where there is little to be gained by exact lifetime calculations,
+     we just make conservative assumptions, i.e. a longer lifetime;
+     this is done in the 'default:' cases.  */
   switch (type)
     {
     case RELOAD_FOR_OTHER_ADDRESS:
@@ -5022,10 +5029,12 @@ reload_reg_free_for_value_p (regno, opnum, type, value)
       time1 = opnum * 4 + 2;
       break;
     case RELOAD_FOR_INPUT:
-      time1 = opnum * 4 + 3;
+      /* All RELOAD_FOR_INPUT reloads remain live till just before the
+	 instruction is executed.  */
+      time1 = (MAX_RECOG_OPERANDS - 1) * 4 + 3;
       break;
     /* opnum * 4 + 3 < opnum * 4 + 4
-       <= (MAX_RECOG_OPERAND - 1) * 4 + 4 == MAX_RECOG_OPERAND * 4 */
+       <= (MAX_RECOG_OPERANDS - 1) * 4 + 4 == MAX_RECOG_OPERANDS * 4 */
     case RELOAD_FOR_OUTPUT_ADDRESS:
       time1 = MAX_RECOG_OPERANDS * 4 + opnum;
       break;
@@ -5057,10 +5066,13 @@ reload_reg_free_for_value_p (regno, opnum, type, value)
 	    case RELOAD_FOR_INPUT:
 	      time2 = reload_opnum[i] * 4 + 3;
 	      break;
-	    /* RELOAD_FOR_OUTPUT and RELOAD_FOR_OUTPUT_ADDRESS reloads
-	       for identical operand number conflict with each other, so
-	       assign them the same time value.  */
 	    case RELOAD_FOR_OUTPUT:
+	    /* All RELOAD_FOR_OUTPUT reloads become live just after the
+	       instruction is executed.  */
+	      time2 = MAX_RECOG_OPERANDS * 4;
+	      break;
+	    /* The first RELOAD_FOR_OUTPUT_ADDRESS reload conflicts with the
+	       RELOAD_FOR_OUTPUT reloads, so assign it the same time value.  */
 	    case RELOAD_FOR_OUTPUT_ADDRESS:
 	      time2 = MAX_RECOG_OPERANDS * 4 + reload_opnum[i];
 	      break;
