@@ -3169,8 +3169,8 @@ nested_name_specifier:
 	  nested_name_specifier_1
 	| nested_name_specifier nested_name_specifier_1
 		{ $$ = $2; }
-	| nested_name_specifier explicit_template_type SCOPE
-		{ got_scope = $$ = make_typename_type ($1, $2); }
+	| nested_name_specifier TEMPLATE explicit_template_type SCOPE
+		{ got_scope = $$ = make_typename_type ($1, $3); }
 	;
 
 /* Why the @#$%^& do type_name and notype_identifier need to be expanded
@@ -3238,14 +3238,10 @@ typename_sub0:
 		}
 	| typename_sub1 template_type %prec EMPTY
 		{ $$ = TREE_TYPE ($2); }
-	| typename_sub1 identifier '<' template_arg_list_opt
-	  template_close_bracket
-		{
-		  $$ = build_min_nt (TEMPLATE_ID_EXPR, $2, $4);
-		  $$ = make_typename_type ($1, $$);
-		}
 	| typename_sub1 explicit_template_type %prec EMPTY
 		{ $$ = make_typename_type ($1, $2); }
+	| typename_sub1 TEMPLATE explicit_template_type %prec EMPTY
+		{ $$ = make_typename_type ($1, $3); }
 	;
 
 typename_sub1:
@@ -3269,6 +3265,8 @@ typename_sub1:
 		}
 	| typename_sub1 explicit_template_type SCOPE
 		{ got_scope = $$ = make_typename_type ($1, $2); }
+	| typename_sub1 TEMPLATE explicit_template_type SCOPE
+		{ got_scope = $$ = make_typename_type ($1, $3); }
 	;
 
 typename_sub2:
@@ -3301,8 +3299,8 @@ typename_sub2:
 	;
 
 explicit_template_type:
-	  TEMPLATE identifier '<' template_arg_list_opt template_close_bracket
-		{ $$ = build_min_nt (TEMPLATE_ID_EXPR, $2, $4); }
+	  identifier '<' template_arg_list_opt template_close_bracket
+		{ $$ = build_min_nt (TEMPLATE_ID_EXPR, $1, $3); }
 	;
 
 complex_type_name:

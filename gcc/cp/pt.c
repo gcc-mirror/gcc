@@ -3022,8 +3022,8 @@ instantiate_class_template (type)
 	  CLASSTYPE_INTERFACE_ONLY (type) = interface_only;
 	  SET_CLASSTYPE_INTERFACE_UNKNOWN_X (type, interface_unknown);
 	  CLASSTYPE_VTABLE_NEEDS_WRITING (type)
-	    = ! CLASSTYPE_INTERFACE_ONLY (type)
-	      && CLASSTYPE_INTERFACE_KNOWN (type);
+	    = (! CLASSTYPE_INTERFACE_ONLY (type)
+	       && CLASSTYPE_INTERFACE_KNOWN (type));
 	}
       else
 	{
@@ -3031,8 +3031,8 @@ instantiate_class_template (type)
 	  SET_CLASSTYPE_INTERFACE_UNKNOWN_X
 	    (type, CLASSTYPE_INTERFACE_UNKNOWN (pattern));
 	  CLASSTYPE_VTABLE_NEEDS_WRITING (type)
-	    = ! CLASSTYPE_INTERFACE_ONLY (type)
-	      && CLASSTYPE_INTERFACE_KNOWN (type);
+	    = (! CLASSTYPE_INTERFACE_ONLY (type)
+	       && CLASSTYPE_INTERFACE_KNOWN (type));
 	}
     }
   else
@@ -3067,6 +3067,21 @@ instantiate_class_template (type)
   TYPE_PACKED (type) = TYPE_PACKED (pattern);
   TYPE_ALIGN (type) = TYPE_ALIGN (pattern);
 
+  CLASSTYPE_LOCAL_TYPEDECLS (type) = CLASSTYPE_LOCAL_TYPEDECLS (pattern);
+
+  /* If this is a partial instantiation, don't tsubst anything.  We will
+     only use this type for implicit typename, so the actual contents don't
+     matter.  All that matters is whether a particular name is a type.  */
+  if (uses_template_parms (type))
+    {
+      TYPE_BINFO_BASETYPES (type) = TYPE_BINFO_BASETYPES (pattern);
+      TYPE_FIELDS (type) = TYPE_FIELDS (pattern);
+      TYPE_METHODS (type) = TYPE_METHODS (pattern);
+      CLASSTYPE_TAGS (type) = CLASSTYPE_TAGS (pattern);
+      TYPE_SIZE (type) = integer_zero_node;
+      goto end;
+    }
+
   {
     tree binfo = TYPE_BINFO (type);
     tree pbases = TYPE_BINFO_BASETYPES (pattern);
@@ -3089,9 +3104,7 @@ instantiate_class_template (type)
 	      cp_error
 		("base type `%T' of `%T' fails to be a struct or class type",
 		 TREE_TYPE (elt), type);
-	    else if (! uses_template_parms (type)
-		     && (TYPE_SIZE (complete_type (TREE_TYPE (elt)))
-			 == NULL_TREE))
+	    else if (TYPE_SIZE (complete_type (TREE_TYPE (elt))) == NULL_TREE)
 	      cp_error ("base class `%T' of `%T' has incomplete type",
 			TREE_TYPE (elt), type);
 	  }
@@ -3100,8 +3113,6 @@ instantiate_class_template (type)
 	BINFO_BASETYPES (binfo) = bases;
       }
   }
-
-  CLASSTYPE_LOCAL_TYPEDECLS (type) = CLASSTYPE_LOCAL_TYPEDECLS (pattern);
 
   field_chain = &TYPE_FIELDS (type);
 
@@ -3131,9 +3142,8 @@ instantiate_class_template (type)
 	tree r = tsubst (t, args, NULL_TREE);
 	if (TREE_CODE (r) == VAR_DECL)
 	  {
-	    if (! uses_template_parms (r))
-	      pending_statics = perm_tree_cons (NULL_TREE, r, pending_statics);
-	    /* Perhaps I should do more of grokfield here.  */
+	    pending_statics = perm_tree_cons (NULL_TREE, r, pending_statics);
+	    /* Perhaps we should do more of grokfield here.  */
 	    start_decl_1 (r);
 	    DECL_IN_AGGR_P (r) = 1;
 	    DECL_EXTERNAL (r) = 1;
@@ -3153,87 +3163,79 @@ instantiate_class_template (type)
 	grok_op_properties (t, DECL_VIRTUAL_P (t), 0);
     }
 
-  if (! uses_template_parms (type))
+  /* Construct the DECL_FRIENDLIST for the new class type.  */
+  typedecl = TYPE_MAIN_DECL (type);
+  for (t = DECL_FRIENDLIST (TYPE_MAIN_DECL (pattern));
+       t != NULL_TREE;
+       t = TREE_CHAIN (t))
     {
-      /* Construct the DECL_FRIENDLIST for the new class type.  */
-      typedecl = TYPE_MAIN_DECL (type);
-      for (t = DECL_FRIENDLIST (TYPE_MAIN_DECL (pattern));
-	   t != NULL_TREE;
-	   t = TREE_CHAIN (t))
+      tree friends;
+
+      DECL_FRIENDLIST (typedecl)
+	= tree_cons (TREE_PURPOSE (t), NULL_TREE, 
+		     DECL_FRIENDLIST (typedecl));
+
+      for (friends = TREE_VALUE (t);
+	   friends != NULL_TREE;
+	   friends = TREE_CHAIN (friends))
 	{
-	  tree friends;
-
-	  DECL_FRIENDLIST (typedecl)
-	    = tree_cons (TREE_PURPOSE (t), NULL_TREE, 
-			 DECL_FRIENDLIST (typedecl));
-
-	  for (friends = TREE_VALUE (t);
-	       friends != NULL_TREE;
-	       friends = TREE_CHAIN (friends))
+	  if (TREE_PURPOSE (friends) == error_mark_node)
 	    {
-	      if (TREE_PURPOSE (friends) == error_mark_node)
-		{
-		  TREE_VALUE (DECL_FRIENDLIST (typedecl))
-		    = tree_cons (error_mark_node, 
-				 tsubst_friend_function (TREE_VALUE (friends),
-							 args),
-				 TREE_VALUE (DECL_FRIENDLIST (typedecl)));
-		}
-	      else
-		{
-		  TREE_VALUE (DECL_FRIENDLIST (typedecl))
-		    = tree_cons (tsubst (TREE_PURPOSE (friends), args, NULL_TREE),
-				 NULL_TREE,
-				 TREE_VALUE (DECL_FRIENDLIST (typedecl)));
+	      TREE_VALUE (DECL_FRIENDLIST (typedecl))
+		= tree_cons (error_mark_node, 
+			     tsubst_friend_function (TREE_VALUE (friends),
+						     args),
+			     TREE_VALUE (DECL_FRIENDLIST (typedecl)));
+	    }
+	  else
+	    {
+	      TREE_VALUE (DECL_FRIENDLIST (typedecl))
+		= tree_cons (tsubst (TREE_PURPOSE (friends), args, NULL_TREE),
+			     NULL_TREE,
+			     TREE_VALUE (DECL_FRIENDLIST (typedecl)));
 
-		}
 	    }
 	}
-
-      t = CLASSTYPE_FRIEND_CLASSES (type)
-	= tsubst (CLASSTYPE_FRIEND_CLASSES (pattern), args, NULL_TREE);
-
-      /* This does injection for friend classes.  */
-      for (; t; t = TREE_CHAIN (t))
-	TREE_VALUE (t) = xref_tag_from_type (TREE_VALUE (t), NULL_TREE, 1);
-
-      /* This does injection for friend functions. */
-      if (!processing_template_decl)
-	{
-	  t = tsubst (DECL_TEMPLATE_INJECT (template), args, NULL_TREE);
-
-	  for (; t; t = TREE_CHAIN (t))
-	    {
-	      tree d = TREE_VALUE (t);
-
-	      if (TREE_CODE (d) == TYPE_DECL)
-		/* Already injected.  */;
-	      else
-		pushdecl (d);
-	    }
-	} 
-
-      for (t = TYPE_FIELDS (type); t; t = TREE_CHAIN (t))
-	if (TREE_CODE (t) == FIELD_DECL)
-	  {
-	    TREE_TYPE (t) = complete_type (TREE_TYPE (t));
-	    require_complete_type (t);
-	  }
-
-      type = finish_struct_1 (type, 0);
-      CLASSTYPE_GOT_SEMICOLON (type) = 1;
-
-      repo_template_used (type);
-      if (at_eof && TYPE_BINFO_VTABLE (type) != NULL_TREE)
-	finish_prevtable_vardecl (NULL, TYPE_BINFO_VTABLE (type));
     }
-  else
+
+  t = CLASSTYPE_FRIEND_CLASSES (type)
+    = tsubst (CLASSTYPE_FRIEND_CLASSES (pattern), args, NULL_TREE);
+
+  /* This does injection for friend classes.  */
+  for (; t; t = TREE_CHAIN (t))
+    TREE_VALUE (t) = xref_tag_from_type (TREE_VALUE (t), NULL_TREE, 1);
+
+  /* This does injection for friend functions. */
+  if (!processing_template_decl)
     {
-      TYPE_SIZE (type) = integer_zero_node;
-      CLASSTYPE_METHOD_VEC (type)
-	= finish_struct_methods (type, TYPE_METHODS (type), 1);
-    }
+      t = tsubst (DECL_TEMPLATE_INJECT (template), args, NULL_TREE);
 
+      for (; t; t = TREE_CHAIN (t))
+	{
+	  tree d = TREE_VALUE (t);
+
+	  if (TREE_CODE (d) == TYPE_DECL)
+	    /* Already injected.  */;
+	  else
+	    pushdecl (d);
+	}
+    } 
+
+  for (t = TYPE_FIELDS (type); t; t = TREE_CHAIN (t))
+    if (TREE_CODE (t) == FIELD_DECL)
+      {
+	TREE_TYPE (t) = complete_type (TREE_TYPE (t));
+	require_complete_type (t);
+      }
+
+  type = finish_struct_1 (type, 0);
+  CLASSTYPE_GOT_SEMICOLON (type) = 1;
+
+  repo_template_used (type);
+  if (at_eof && TYPE_BINFO_VTABLE (type) != NULL_TREE)
+    finish_prevtable_vardecl (NULL, TYPE_BINFO_VTABLE (type));
+
+ end:
   TYPE_BEING_DEFINED (type) = 0;
   popclass (0);
 
