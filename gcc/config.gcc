@@ -562,13 +562,6 @@ alpha64-dec-*vms*)
 	tm_file="${tm_file} alpha/vms.h alpha/vms64.h"
 	xm_file="alpha/xm-vms.h"
 	tmake_file="alpha/t-alpha alpha/t-vms alpha/t-vms64 alpha/t-ieee"
-	# This removes the cpu type and manufacturer components and
-	#  replaces "." with "_" in the operating system version.
-	case $host in *-*-*vms*)
-		target_alias=`echo $host \
-		  | sed 's/.*-.*-\(.*\)$/\1/' | sed 's/\./_/g'`
-		;;
-	esac
 	prefix=/gnu
 	local_prefix=/gnu
 	;;
@@ -576,13 +569,6 @@ alpha*-dec-*vms*)
 	tm_file="${tm_file} alpha/vms.h"
 	xm_file=alpha/xm-vms.h
 	tmake_file="alpha/t-alpha alpha/t-vms alpha/t-ieee"
-	# This removes the cpu type and manufacturer components and
-	#  replaces "." with "_" in the operating system version.
-	case $host in *-*-*vms*)
-		target_alias=`echo $host \
-		  | sed 's/.*-.*-\(.*\)$/\1/' | sed 's/\./_/g'`
-		;;
-	esac
 	prefix=/gnu
 	local_prefix=/gnu
 	;;
@@ -955,10 +941,6 @@ i[34567]86-pc-msdosdjgpp*)
 	tmake_file=i386/t-djgpp
 	gnu_ld=yes
 	gas=yes
-	case $host in *pc-msdosdjgpp*)
-		target_alias=djgpp
-		;;
-	esac
 	;;
 i[34567]86-moss-msdos* | i[34567]86-*-moss*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h svr4.h linux.h i386/linux.h i386/moss.h"
