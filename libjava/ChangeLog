@@ -1,5 +1,19 @@
 2003-06-14  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/nio/FileChannelImpl.java
+        (map_address): Removed incorrect comment.        
+	* gnu/java/nio/SelectorImpl.java
+        (register): Remove code duplication and code for file channel handling.        
+	* gnu/java/nio/ServerSocketChannelImpl.java
+        (serverSocket): Renamed from sock_object.
+        (ServerSocketChannel): Initialize serverSocket.
+        (socket): Return serverSocket.
+	* gnu/java/nio/SocketChannelImpl.java
+        (socket): Renamed from sock_object.
+        (isConnectionPenging): Simplified.
+        (socket): Return socket.
+2003-06-14  Michael Koch  <konqueror@gmx.de>
+
 	* java/security/BasicPermission.java:
 	New version from classpath.
 
