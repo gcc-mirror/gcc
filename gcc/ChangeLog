@@ -1,5 +1,11 @@
 2004-11-05  Richard Henderson  <rth@redhat.com>
 
+	* config/alpha/alpha.c (alpha_expand_unaligned_load): Special case
+	size 2 with BWX.
+	(alpha_expand_unaligned_store): Likewise.
+
+2004-11-05  Richard Henderson  <rth@redhat.com>
+
 	* expmed.c (extract_force_align_mem_bit_field): New.
 	(extract_split_bit_field): Call it.
 
