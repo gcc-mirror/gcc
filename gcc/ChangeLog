@@ -62,7 +62,7 @@
 	DBX_OUTPUT_MAIN_SOURCE_FILENAME.
 	* config/m32r/m32r.h: Define DBX_OUTPUT_SOURCE_LINE, not
 	ASM_OUTPUT_SOURCE_LINE.
-	* config/rs6000/rs6000.h: (ASM_OUTPUT_SOURCE_LINE): Rename
+	* config/rs6000/linux64.h (ASM_OUTPUT_SOURCE_LINE): Rename to
 	DBX_OUTPUT_SOURCE_LINE.  Don't use current_function_func_begin_label.
 	* config/vax/elf.h: No need to define DBX_OUTPUT_FUNCTION_END.
 
