@@ -118,12 +118,13 @@ am__objects_31 = $(am__objects_2) $(am__objects_3) $(am__objects_4) \
 am__objects_32 = backspace.lo close.lo endfile.lo format.lo inquire.lo \
 	list_read.lo lock.lo open.lo read.lo rewind.lo transfer.lo \
 	unit.lo unix.lo write.lo
-am__objects_33 = associated.lo abort.lo args.lo cpu_time.lo cshift0.lo \
-	date_and_time.lo eoshift0.lo eoshift2.lo etime.lo ishftc.lo \
-	pack_generic.lo size.lo spread_generic.lo string_intrinsics.lo \
-	rand.lo random.lo reshape_generic.lo reshape_packed.lo \
-	selected_kind.lo system_clock.lo transpose_generic.lo \
-	unpack_generic.lo in_pack_generic.lo in_unpack_generic.lo
+am__objects_33 = associated.lo abort.lo args.lo c99_functions.lo \
+	cpu_time.lo cshift0.lo date_and_time.lo eoshift0.lo \
+	eoshift2.lo etime.lo ishftc.lo pack_generic.lo size.lo \
+	spread_generic.lo string_intrinsics.lo rand.lo random.lo \
+	reshape_generic.lo reshape_packed.lo selected_kind.lo \
+	system_clock.lo transpose_generic.lo unpack_generic.lo \
+	in_pack_generic.lo in_unpack_generic.lo
 am__objects_34 =
 am__objects_35 = _abs_c4.lo _abs_c8.lo _abs_i4.lo _abs_i8.lo \
 	_abs_r4.lo _abs_r8.lo _exp_r4.lo _exp_r8.lo _exp_c4.lo \
@@ -309,6 +310,7 @@ gfor_helper_src = \
 intrinsics/associated.c \
 intrinsics/abort.c \
 intrinsics/args.c \
+intrinsics/c99_functions.c \
 intrinsics/cpu_time.c \
 intrinsics/cshift0.c \
 intrinsics/date_and_time.c \
@@ -1985,6 +1987,15 @@ args.obj: intrinsics/args.c
 
 args.lo: intrinsics/args.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o args.lo `test -f 'intrinsics/args.c' || echo '$(srcdir)/'`intrinsics/args.c
+
+c99_functions.o: intrinsics/c99_functions.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o c99_functions.o `test -f 'intrinsics/c99_functions.c' || echo '$(srcdir)/'`intrinsics/c99_functions.c
+
+c99_functions.obj: intrinsics/c99_functions.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o c99_functions.obj `if test -f 'intrinsics/c99_functions.c'; then $(CYGPATH_W) 'intrinsics/c99_functions.c'; else $(CYGPATH_W) '$(srcdir)/intrinsics/c99_functions.c'; fi`
+
+c99_functions.lo: intrinsics/c99_functions.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o c99_functions.lo `test -f 'intrinsics/c99_functions.c' || echo '$(srcdir)/'`intrinsics/c99_functions.c
 
 cpu_time.o: intrinsics/cpu_time.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cpu_time.o `test -f 'intrinsics/cpu_time.c' || echo '$(srcdir)/'`intrinsics/cpu_time.c
