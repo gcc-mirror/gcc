@@ -1,3 +1,4 @@
+//Build don't link: 
 #include <vector.h>
 enum s { S };
 class a
