@@ -548,7 +548,7 @@ namespace __gnu_cxx
     {
       if (_S_options._M_force_new)
 	return;
-	
+
       // Calculate the number of bins required based on _M_max_bytes.
       // _S_bin_size is statically-initialized to one.
       size_t bin_size = 1;
@@ -598,6 +598,11 @@ namespace __gnu_cxx
           _S_thread_freelist_first[i - 1].next = NULL;
           _S_thread_freelist_first[i - 1].id = i;
 
+
+	  // Make sure this is initialized.
+#ifndef __GTHREAD_MUTEX_INIT
+	  __GTHREAD_MUTEX_INIT_FUNCTION(&_S_thread_freelist_mutex);
+#endif
           // Initialize per thread key to hold pointer to
           // _S_thread_freelist.
           __gthread_key_create(&_S_thread_key, _S_destroy_thread_key);
@@ -745,7 +750,6 @@ namespace __gnu_cxx
 #ifdef __GTHREAD_MUTEX_INIT
     __mt_alloc<_Tp>::_S_thread_freelist_mutex = __GTHREAD_MUTEX_INIT;
 #else
-  // XXX
     __mt_alloc<_Tp>::_S_thread_freelist_mutex;
 #endif
 #endif
