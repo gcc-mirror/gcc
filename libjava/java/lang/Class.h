@@ -182,9 +182,9 @@ public:
   JArray<java::lang::reflect::Method *> *getMethods (void);
 
   inline jint getModifiers (void)
-    {
-      return accflags;
-    }
+  {
+    return accflags & java::lang::reflect::Modifier::ALL_FLAGS;
+  }
 
   jstring getName (void);
 
@@ -348,6 +348,7 @@ private:
 					      _Jv_Utf8Const *method_signature);
 
   friend void _Jv_PrepareClass (jclass);
+  friend void _Jv_PrepareMissingMethods (jclass base, jclass iface_class);
 
   friend class _Jv_ClassReader;	
   friend class _Jv_InterpClass;

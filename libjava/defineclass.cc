@@ -890,7 +890,7 @@ _Jv_ClassReader::handleClassBegin
       throw_no_class_def_found_error (msg);
     }
 
-  def->accflags = access_flags;
+  def->accflags = access_flags | java::lang::reflect::Modifier::INTERPRETED;
   pool_data[this_class].clazz = def;
   pool_tags[this_class] = JV_CONSTANT_ResolvedClass;
 
