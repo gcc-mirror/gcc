@@ -435,6 +435,7 @@ in the following sections.
 -mdynamic-no-pic @gol
 -mprioritize-restricted-insns=@var{priority} @gol
 -msched-costly-dep=@var{dependence_type} @gol
+-minsert-sched-nops=@var{scheme} @gol
 -mcall-sysv  -mcall-netbsd @gol
 -maix-struct-return  -msvr4-struct-return @gol
 -mabi=altivec  -mabi=no-altivec @gol
@@ -7590,6 +7591,20 @@ by the target during instruction scheduling.  The argument
 @var{store_to_load}: any dependence from store to load is costly,
 @var{number}: any dependence which latency >= @var{number} is costly.
  
+@item -minsert-sched-nops=@var{scheme}
+@opindex minsert-sched-nops
+This option controls which nop insertion scheme will be used during
+the second scheduling pass. The argument @var{scheme} takes one of the
+following values:
+@var{no}: Don't insert nops.
+@var{pad}: Pad with nops any dispatch group which has vacant issue slots,
+according to the scheduler's grouping.
+@var{regroup_exact}: Insert nops to force costly dependent insns into
+separate groups.  Insert exactly as many nops as needed to force an insn
+to a new group, according to the estimatied processor grouping.
+@var{number}: Insert nops to force costly dependent insns into 
+separate groups.  Insert @var{number} nops to force an insn to a new group.
+
 @item -mcall-sysv
 @opindex mcall-sysv
 On System V.4 and embedded PowerPC systems compile code using calling

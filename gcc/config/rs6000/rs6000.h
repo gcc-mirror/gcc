@@ -386,6 +386,21 @@ enum rs6000_dependence_cost
    store_to_load_dep_costly
  };
 
+/* Types of nop insertion schemes in sched target hook sched_finish.  */
+enum rs6000_nop_insertion
+  {
+    sched_finish_regroup_exact = 1000,
+    sched_finish_pad_groups,
+    sched_finish_none
+  };
+
+/* Dispatch group termination caused by an insn.  */
+enum group_termination
+  {
+    current_group,
+    previous_group
+  };
+
 /* This is meant to be overridden in target specific files.  */
 #define	SUBTARGET_OPTIONS
 
@@ -413,7 +428,9 @@ enum rs6000_dependence_cost
     N_("Avoid all range limits on call instructions"), 0},		\
    {"no-longcall", &rs6000_longcall_switch, "", 0},			\
    {"sched-costly-dep=", &rs6000_sched_costly_dep_str,                  \
-    N_("determine which dependences between insns are considered costly"), 0}, \
+    N_("Determine which dependences between insns are considered costly"), 0}, \
+   {"insert-sched-nops=", &rs6000_sched_insert_nops_str,                \
+    N_("Specify which post scheduling nop insertion scheme to apply"), 0}, \
    {"align-", &rs6000_alignment_string,					\
     N_("Specify alignment of structure fields default/natural"), 0},	\
    {"prioritize-restricted-insns=", &rs6000_sched_restricted_insns_priority_str, \
@@ -475,6 +492,8 @@ extern const char *rs6000_sched_restricted_insns_priority_str;
 extern int rs6000_sched_restricted_insns_priority;
 extern const char *rs6000_sched_costly_dep_str;
 extern enum rs6000_dependence_cost rs6000_sched_costly_dep;
+extern const char *rs6000_sched_insert_nops_str;
+extern enum rs6000_nop_insertion rs6000_sched_insert_nops;
 
 /* Alignment options for fields in structures for sub-targets following
    AIX-like ABI.
@@ -500,6 +519,11 @@ extern enum rs6000_dependence_cost rs6000_sched_costly_dep;
 
 /* Define if the target has restricted dispatch slot instructions.  */
 #define DEFAULT_RESTRICTED_INSNS_PRIORITY (rs6000_cpu == PROCESSOR_POWER4 ? 1 : 0)
+
+/* Set a default value for post scheduling nop insertion scheme
+   (used by taget hook sched_finish).  */
+#define DEFAULT_SCHED_FINISH_NOP_INSERTION_SCHEME          \
+  (rs6000_cpu == PROCESSOR_POWER4 ? sched_finish_regroup_exact : sched_finish_none)
 
 /* Define TARGET_MFCRF if the target assembler supports the optional
    field operand for mfcr and the target processor supports the
