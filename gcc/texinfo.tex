@@ -1,8 +1,8 @@
 %% TeX macros to handle Texinfo files.
-%% $Id: texinfo.tex,v 2.194 1996/12/17 06:25:17 eggert Exp $
+%% $Id: texinfo.tex,v 2.193.1.1 1997/01/04 19:21:48 karl Exp $
 
 %  Copyright (C) 1985, 86, 88, 90, 91, 92, 93,
-%                94, 95, 1996 Free Software Foundation, Inc.
+%                94, 95, 96, 97 Free Software Foundation, Inc.
 
 %This texinfo.tex file is free software; you can redistribute it and/or
 %modify it under the terms of the GNU General Public License as
@@ -36,7 +36,7 @@
 
 % This automatically updates the version number based on RCS.
 \def\deftexinfoversion$#1: #2 ${\def\texinfoversion{#2}}
-\deftexinfoversion$Revision: 2.194 $
+\deftexinfoversion$Revision: 2.193.1.1 $
 \message{Loading texinfo package [Version \texinfoversion]:}
 
 % If in a .fmt file, print the version number
@@ -60,7 +60,6 @@
 \let\ptexrbrace=\}
 \let\ptexstar=\*
 \let\ptext=\t
-\let\ptextilde=\~
 
 % Be sure we're in horizontal mode when doing a tie, since we make space
 % equivalent to this in @example-like environments. Otherwise, a space
@@ -73,7 +72,6 @@
  \global\let\tiepenalty = \@M
  \gdef\tie{\leavevmode\penalty\tiepenalty\ }
 }
-\let\~ = \tie                  % And make it available as @~.
 
 
 \message{Basics,}
@@ -2078,7 +2076,7 @@ July\or August\or September\or October\or November\or December\fi
  % characters.
  \noindent\ignorespaces##\unskip\multistrut}\cr
  % \everycr will reset column counter, \colcount, at the end of
- % each line. Every column  entry will cause \colcount to advance by one. 
+ % each line. Every column  entry will cause \colcount to advance by one.
  % The table preamble
  % looks at the current \colcount to find the correct column width.
 \global\everycr{\noalign{%
@@ -3391,7 +3389,6 @@ width0pt\relax} \fi
 \escapechar=`\\
 %
 \let\,=\ptexcomma
-\let\~=\ptextilde
 \let\{=\ptexlbrace
 \let\}=\ptexrbrace
 \let\.=\ptexdot
