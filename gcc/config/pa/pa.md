@@ -2090,7 +2090,7 @@
 ;; This must come before the movdf pattern, and it must be present
 ;; to handle obscure reloading cases.
 (define_insn ""
-  [(set (match_operand:DF 0 "general_operand" "=?r,f")
+  [(set (match_operand:DF 0 "register_operand" "=?r,f")
 	(match_operand:DF 1 "" "?F,m"))]
   "GET_CODE (operands[1]) == CONST_DOUBLE
    && operands[1] != CONST0_RTX (DFmode)
@@ -2433,7 +2433,7 @@
 ;; This must come before the movsf pattern, and it must be present
 ;; to handle obscure reloading cases.
 (define_insn ""
-  [(set (match_operand:SF 0 "general_operand" "=?r,f")
+  [(set (match_operand:SF 0 "register_operand" "=?r,f")
 	(match_operand:SF 1 "" "?F,m"))]
   "GET_CODE (operands[1]) == CONST_DOUBLE
    && operands[1] != CONST0_RTX (SFmode)
@@ -2729,7 +2729,7 @@
 ;; to be reloaded by putting the constant into memory.
 ;; It must come before the more general floatsisf2 pattern.
 (define_insn ""
-  [(set (match_operand:SF 0 "general_operand" "=f")
+  [(set (match_operand:SF 0 "register_operand" "=f")
 	(float:SF (match_operand:SI 1 "const_int_operand" "m")))]
   "! TARGET_SOFT_FLOAT"
   "fldws %1,%0\;fcnvxf,sgl,sgl %0,%0"
@@ -2737,7 +2737,7 @@
    (set_attr "length" "8")])
 
 (define_insn "floatsisf2"
-  [(set (match_operand:SF 0 "general_operand" "=f")
+  [(set (match_operand:SF 0 "register_operand" "=f")
 	(float:SF (match_operand:SI 1 "register_operand" "f")))]
   "! TARGET_SOFT_FLOAT"
   "fcnvxf,sgl,sgl %1,%0"
@@ -2748,7 +2748,7 @@
 ;; to be reloaded by putting the constant into memory.
 ;; It must come before the more general floatsidf2 pattern.
 (define_insn ""
-  [(set (match_operand:DF 0 "general_operand" "=f")
+  [(set (match_operand:DF 0 "register_operand" "=f")
 	(float:DF (match_operand:SI 1 "const_int_operand" "m")))]
   "! TARGET_SOFT_FLOAT"
   "fldws %1,%0\;fcnvxf,sgl,dbl %0,%0"
@@ -2756,7 +2756,7 @@
    (set_attr "length" "8")])
 
 (define_insn "floatsidf2"
-  [(set (match_operand:DF 0 "general_operand" "=f")
+  [(set (match_operand:DF 0 "register_operand" "=f")
 	(float:DF (match_operand:SI 1 "register_operand" "f")))]
   "! TARGET_SOFT_FLOAT"
   "fcnvxf,sgl,dbl %1,%0"
@@ -2784,7 +2784,7 @@
   "operands[2] = gen_reg_rtx (DImode);")
 
 (define_insn "floatdisf2"
-  [(set (match_operand:SF 0 "general_operand" "=f")
+  [(set (match_operand:SF 0 "register_operand" "=f")
 	(float:SF (match_operand:DI 1 "register_operand" "f")))]
   "TARGET_SNAKE && ! TARGET_SOFT_FLOAT"
   "fcnvxf,dbl,sgl %1,%0"
@@ -2792,7 +2792,7 @@
    (set_attr "length" "4")])
 
 (define_insn "floatdidf2"
-  [(set (match_operand:DF 0 "general_operand" "=f")
+  [(set (match_operand:DF 0 "register_operand" "=f")
 	(float:DF (match_operand:DI 1 "register_operand" "f")))]
   "TARGET_SNAKE && ! TARGET_SOFT_FLOAT"
   "fcnvxf,dbl,dbl %1,%0"
