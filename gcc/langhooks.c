@@ -175,6 +175,13 @@ lhd_set_decl_assembler_name (decl)
     abort ();
 }
 
+/* By default we always allow bit-field based optimizations.  */
+bool
+lhd_can_use_bit_fields_p ()
+{
+  return true;
+}
+
 /* Provide a default routine to clear the binding stack.  This is used
    by languages that don't need to do anything special.  */
 void

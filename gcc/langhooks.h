@@ -299,6 +299,10 @@ struct lang_hooks
      assembler does not talk about it.  */
   void (*set_decl_assembler_name) PARAMS ((tree));
 
+  /* Return nonzero if fold-const is free to use bit-field
+     optimizations, for instance in fold_truthop().  */
+  bool (*can_use_bit_fields_p) PARAMS ((void));
+
   /* Nonzero if TYPE_READONLY and TREE_READONLY should always be honored.  */
   bool honor_readonly;
 
