@@ -77,7 +77,7 @@ TCFLAGS =
 CFLAGS = -g @stage1_warn_cflags@
 BOOT_CFLAGS = -O2 $(CFLAGS)
 WARN_CFLAGS = -W -Wall -Wtraditional -pedantic -Wno-long-long
-LOOSE_CFLAGS = `echo $(CFLAGS) | sed -e 's/-pedantic//' -e 's/-Wtraditional//'`
+LOOSE_CFLAGS = `echo $(CFLAGS)|sed -e 's/-pedantic//g' -e 's/-Wtraditional//g'`
 # These exists to be overridden by the x-* and t-* files, respectively.
 X_CFLAGS =
 T_CFLAGS =
