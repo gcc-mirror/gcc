@@ -1293,6 +1293,7 @@ count_functions (t)
     return decl_list_length (TREE_VALUE (t));
 
   my_friendly_abort (359);
+  return 0;
 }
 
 /* Like value_member, but for DECL_CHAINs.  */
