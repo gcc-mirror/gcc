@@ -95,7 +95,8 @@ mv `find . -name \*.texi -print` .
 mv `find . -name \*.tex -print` .
 
 # Now convert the relevant files from texi to HTML and PostScript.
-for file in cpp chill cppinternals gcc gcj g77 objc-features porting; do
+for file in cpp chill cppinternals gcc gcj g77 gnat-style libiberty \
+    objc-features porting; do
   if [ -e ${file}.texi ]; then
     /usr/local/bin/texi2html -glossary -menu -split_chapter ${file}.texi
     texi2dvi ${file}.texi </dev/null && dvips -o ${file}.ps ${file}.dvi
