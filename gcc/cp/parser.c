@@ -238,16 +238,19 @@ cp_lexer_new_main (void)
   size_t space;
   cp_token *buffer;
 
+  /* It's possible that lexing the first token will load a PCH file,
+     which is a GC collection point.  So we have to grab the first
+     token before allocating any memory.  Pragmas must not be deferred
+     as -fpch-preprocess can generate a pragma to load the PCH file in
+     the preprocessed output used by -save-temps.  */
+  cp_lexer_get_preprocessor_token (NULL, &first_token);
+
   /* Tell cpplib we want CPP_PRAGMA tokens.  */
   cpp_get_options (parse_in)->defer_pragmas = true;
 
   /* Tell c_lex not to merge string constants.  */
   c_lex_return_raw_strings = true;
 
-  /* It's possible that lexing the first token will load a PCH file,
-     which is a GC collection point.  So we have to grab the first
-     token before allocating any memory.  */
-  cp_lexer_get_preprocessor_token (NULL, &first_token);
   c_common_no_more_pch ();
 
   /* Allocate the memory.  */
