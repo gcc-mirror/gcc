@@ -1106,7 +1106,7 @@ compare_trees (tree a, tree b)
 /* Returns the largest value obtainable by casting something in INNER type to
    OUTER type.  */
 
-tree
+static tree
 upper_bound_in_type (tree outer, tree inner)
 {
   unsigned HOST_WIDE_INT lo, hi;
@@ -1152,7 +1152,7 @@ upper_bound_in_type (tree outer, tree inner)
 /* Returns the smallest value obtainable by casting something in INNER type to
    OUTER type.  */
 
-tree
+static tree
 lower_bound_in_type (tree outer, tree inner)
 {
   unsigned HOST_WIDE_INT lo, hi;
