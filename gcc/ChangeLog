@@ -1,5 +1,7 @@
 Mon Aug 24 10:25:46 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* h8300.h (STRIP_NAME_ENCODING): Fix typo.
+
 	* sparc.md (TFmode splits): Use reg_overlap_mentioned_p to detect
 	when the source and destination overlap.
 
