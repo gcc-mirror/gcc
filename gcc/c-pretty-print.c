@@ -71,9 +71,6 @@ pp_c_cv_qualifier (ppi, cv)
 }
 
 
-/* Statements.  */
-
-
 /* Expressions.  */
 
 /* Print out a c-char.  */
@@ -501,6 +498,30 @@ pp_c_postfix_expression (ppi, e)
       pp_initializer (ppi, e);
       break;
       
+#if 0
+    case SRCLOC:
+      pp_left_paren (ppi);
+      pp_identifier (ppi, "__location__");
+      pp_right_paren (ppi);
+      pp_whitespace (ppi);
+      pp_left_brace (ppi);
+      pp_dot (ppi);
+      pp_identifier (ppi, "file");
+      pp_whitespace (ppi);
+      pp_equal (ppi);
+      pp_c_whitespace (ppi);
+      pp_c_expression (ppi, SRCLOC_FILE (e));
+      pp_separate_with (ppi, ',');
+      pp_dot (ppi);
+      pp_identifier (ppi, "line");
+      pp_whitespace (ppi);
+      pp_equal (ppi);
+      pp_c_whitespace (ppi);
+      pp_c_expression (ppi, SRCLOC_LINE (e));
+      pp_right_brace (ppi);
+      break;
+#endif
+
     case VA_ARG_EXPR:
       pp_c_identifier (ppi, "__builtin_va_arg");
       pp_c_left_paren (ppi);
@@ -516,7 +537,7 @@ pp_c_postfix_expression (ppi, e)
     }
 }
 
-/* Print out an expession-list; E is expected to be a TREE_LIST  */
+/* Print out an expression-list; E is expected to be a TREE_LIST  */
 void
 pp_c_expression_list (ppi, e)
      c_pretty_print_info *ppi;
@@ -998,5 +1019,231 @@ pp_c_expression (ppi, e)
       pp_unsupported_tree (ppi, e);
       break;
     }
+}
+
+
+/* Statements.  */
+void
+pp_c_statement (ppi, stmt)
+     c_pretty_print_info *ppi;
+     tree stmt;
+{
+  const enum tree_code code = TREE_CODE (stmt);
+  switch (code)
+    {
+    case LABEL_STMT:
+    case CASE_LABEL:
+      pp_newline (ppi);
+      if (code == LABEL_STMT)
+	pp_tree_identifier (ppi, DECL_NAME (LABEL_STMT_LABEL (stmt)));
+      else if (code == LABEL_STMT)
+	{
+	  if (CASE_LOW (stmt) == NULL_TREE)
+	    pp_identifier (ppi, "default");
+	  else
+	    {
+	      pp_c_identifier (ppi, "case");
+	      pp_c_whitespace (ppi);
+	      pp_conditional_expression (ppi, CASE_LOW (stmt));
+	      if (CASE_HIGH (stmt))
+		{
+		  pp_identifier (ppi, "...");
+		  pp_conditional_expression (ppi, CASE_HIGH (stmt));
+		}
+	    }
+	}
+      pp_colon (ppi);
+      pp_newline_and_indent (ppi, 3);
+      break;
+
+    case COMPOUND_STMT:
+      pp_left_brace (ppi);
+      pp_newline_and_indent (ppi, 3);
+      for (stmt = COMPOUND_BODY (stmt); stmt; stmt = TREE_CHAIN (stmt))
+	pp_c_statement (ppi, stmt);
+      pp_newline_and_indent (ppi, -3);
+      pp_right_brace (ppi);
+      pp_newline (ppi);
+      break;
+
+    case EXPR_STMT:
+    case CLEANUP_STMT:
+      pp_newline (ppi);
+      pp_c_expression (ppi, code == EXPR_STMT 
+		       ? EXPR_STMT_EXPR (stmt)
+		       : CLEANUP_EXPR (stmt));
+      pp_semicolon (ppi);
+      pp_newline (ppi);
+      break;
+
+    case IF_STMT:
+      pp_c_identifier (ppi, "if");
+      pp_whitespace (ppi);
+      pp_c_left_paren (ppi);
+      pp_c_expression (ppi, IF_COND (stmt));
+      pp_right_paren (ppi);
+      pp_newline_and_indent (ppi, 3);
+      pp_statement (ppi, THEN_CLAUSE (stmt));
+      pp_newline_and_indent (ppi, -3);
+      if (ELSE_CLAUSE (stmt))
+	{
+	  tree else_clause = ELSE_CLAUSE (stmt);
+	  pp_c_identifier (ppi, "else");
+	  if (TREE_CODE (else_clause) == IF_STMT)
+	    pp_c_whitespace (ppi);
+	  else
+	    pp_newline_and_indent (ppi, 3);
+	  pp_statement (ppi, else_clause);
+	  if (TREE_CODE (else_clause) != IF_STMT)
+	    pp_newline_and_indent (ppi, -3);
+	}
+      break;
+
+    case SWITCH_STMT:
+      pp_newline (ppi);
+      pp_c_identifier (ppi, "switch");
+      pp_whitespace (ppi);
+      pp_c_left_paren (ppi);
+      pp_c_expression (ppi, SWITCH_COND (stmt));
+      pp_right_paren (ppi);
+      pp_newline_and_indent (ppi, 3);
+      pp_statement (ppi, SWITCH_BODY (stmt));
+      pp_newline_and_indent (ppi, -3);
+      break;
+
+    case WHILE_STMT:
+      pp_c_identifier (ppi, "while");
+      pp_whitespace (ppi);
+      pp_c_left_paren (ppi);
+      pp_c_expression (ppi, WHILE_COND (stmt));
+      pp_right_paren (ppi);
+      pp_newline_and_indent (ppi, 3);
+      pp_statement (ppi, WHILE_BODY (stmt));
+      pp_newline_and_indent (ppi, -3);
+      break;
+
+    case DO_STMT:
+      pp_c_identifier (ppi, "do");
+      pp_newline_and_indent (ppi, 3);
+      pp_statement (ppi, DO_BODY (stmt));
+      pp_newline_and_indent (ppi, -3);
+      pp_c_identifier (ppi, "while");
+      pp_whitespace (ppi);
+      pp_c_left_paren (ppi);
+      pp_c_expression (ppi, DO_COND (stmt));
+      pp_c_right_paren (ppi);
+      pp_semicolon (ppi);
+      pp_newline (ppi);
+      break;
+
+    case FOR_STMT:
+      pp_c_identifier (ppi, "for");
+      pp_whitespace (ppi);
+      pp_c_left_paren (ppi);
+      pp_statement (ppi, FOR_INIT_STMT (stmt));
+      pp_c_whitespace (ppi);
+      if (FOR_COND (stmt))
+	pp_c_expression (ppi, FOR_COND (stmt));
+      pp_semicolon (ppi);
+      pp_c_whitespace (ppi);
+      if (FOR_EXPR (stmt))
+	pp_c_expression (ppi, FOR_EXPR (stmt));
+      pp_right_paren (ppi);
+      pp_newline_and_indent (ppi, 3);
+      pp_statement (ppi, FOR_BODY (stmt));
+      pp_newline_and_indent (ppi, -3);
+      break;
+      
+    case BREAK_STMT:
+    case CONTINUE_STMT:
+      pp_newline (ppi);
+      pp_identifier (ppi, code == BREAK_STMT ? "break" : "continue");
+      pp_semicolon (ppi);
+      pp_newline (ppi);
+      break;
+
+    case RETURN_STMT:
+    case GOTO_STMT:
+      {
+	tree e = code == RETURN_STMT 
+	  ? RETURN_EXPR (stmt)
+	  : GOTO_DESTINATION (stmt);
+
+	pp_newline (ppi);
+	pp_c_identifier (ppi, code == RETURN_STMT ? "return" : "goto");
+	if (e)
+	  pp_c_expression (ppi, e);
+	pp_semicolon (ppi);
+	pp_newline (ppi);
+      }
+      break;
+
+    case SCOPE_STMT:
+      if (!SCOPE_NULLIFIED_P (stmt) && SCOPE_NO_CLEANUPS_P (stmt))
+	{
+	  if (SCOPE_BEGIN_P (stmt))
+	    {
+	      pp_left_brace (ppi);
+	      pp_newline_and_indent (ppi, 3);
+	    }
+	  else if (SCOPE_END_P (stmt))
+	    {
+	      pp_right_brace (ppi);
+	      pp_newline_and_indent (ppi, -3);
+	    }
+	}
+      break;
+
+    case DECL_STMT:
+      pp_declaration (ppi, DECL_STMT_DECL (stmt));
+      pp_semicolon (ppi);
+      pp_newline (ppi);
+      break;
+
+    case ASM_STMT:
+      {
+	bool has_volatile_p = ASM_VOLATILE_P (stmt);
+	bool is_extended = has_volatile_p || ASM_INPUTS (stmt) 
+	  || ASM_OUTPUTS (stmt) || ASM_CLOBBERS (stmt);
+	pp_c_identifier (ppi, is_extended ? "__asm__" : "asm");
+	if (has_volatile_p)
+	  pp_c_identifier (ppi, "__volatile__");
+	pp_whitespace (ppi);
+	pp_c_left_paren (ppi);
+	pp_c_string_literal (ppi, ASM_STRING (stmt));
+	if (is_extended)
+	  {
+	    pp_whitespace (ppi);
+	    pp_separate_with (ppi, ':');
+	    if (ASM_OUTPUTS (stmt))
+	      pp_c_expression (ppi, ASM_OUTPUTS (stmt));
+	    pp_whitespace (ppi);
+	    pp_separate_with (ppi, ':');
+	    if (ASM_INPUTS (stmt))
+	      pp_c_expression (ppi, ASM_INPUTS (stmt));
+	    pp_whitespace (ppi);
+	    pp_separate_with (ppi, ':');
+	    if (ASM_CLOBBERS (stmt))
+	      pp_c_expression (ppi, ASM_CLOBBERS (stmt));
+	  }
+	pp_right_paren (ppi);
+	pp_newline (ppi);
+      }
+      break;
+
+    case FILE_STMT:
+      pp_c_identifier (ppi, "__FILE__");
+      pp_whitespace (ppi);
+      pp_equal (ppi);
+      pp_c_whitespace (ppi);
+      pp_c_identifier (ppi, FILE_STMT_FILENAME (stmt));
+      pp_semicolon (ppi);
+      pp_newline (ppi);
+      break;
+
+    default:
+      pp_unsupported_tree (ppi, stmt);
+    }
+
 }
 
