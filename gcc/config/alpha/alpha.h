@@ -1753,7 +1753,7 @@ literal_section ()						\
   {"sext_add_operand", {SUBREG, REG, CONST_INT}},	\
   {"const48_operand", {CONST_INT}},			\
   {"and_operand", {SUBREG, REG, CONST_INT}},		\
-  {"ior_operand", {SUBREG, REG, CONST_INT}},		\
+  {"or_operand", {SUBREG, REG, CONST_INT}},		\
   {"mode_mask_operand", {CONST_INT}},			\
   {"mul8_operand", {CONST_INT}},			\
   {"mode_width_operand", {CONST_INT}},			\
