@@ -1,6 +1,11 @@
+Mon Dec  3 09:18:34 2001  Jeffrey A Law  (law@cygnus.com)
+
+	* mn10200.md (negsf2): Use -0x8000 instead of 0x8000 for
+	bit twiddling constant.
+
 Mon Dec  3 16:16:37 CET 2001  Jan Hubicka  <jh@suse.cz>
 
-	* gcse.c (delete_null_pointer_checks_1): Do not use delelete_list;
+	* gcse.c (delete_null_pointer_checks_1): Do not use delete_list;
 	call purge_dead_edges after removing.
 	(delete_null_pointer_checks): Do not handle delete_list.
 
