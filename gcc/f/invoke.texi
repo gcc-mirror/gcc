@@ -389,7 +389,7 @@ This option is supplied automatically when @option{-v} or @option{--verbose}
 is specified as a command-line option for @command{g77} or @command{gcc}
 and when the resulting commands compile Fortran source files.
 
-In GCC 3.1, this is changed back to the behaviour @command{gcc} displays
+In GCC 3.1, this is changed back to the behavior @command{gcc} displays
 for @samp{.c} files.
 
 @cindex -fset-g77-defaults option

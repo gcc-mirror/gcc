@@ -1,3 +1,15 @@
+2002-09-23  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* ChangeLog: Follow spelling conventions.
+	* ChangeLog.0: Likewise.
+	* com.c: Likewise.
+	* ffe.texi: Likewise.
+	* g77.texi: Likewise.
+	* intdoc.in: Likewise.
+	* invoke.texi: Likewise.
+	* news.texi: Likewise.
+	* intdoc.texi: Regenerate.
+
 2002-09-16  Geoffrey Keating  <geoffk@apple.com>
 
 	* com.c (union lang_tree_node): Add chain_next option.
@@ -3048,7 +3060,7 @@ Sat Jul 11 19:24:32 1998  Craig Burley  <burley@gnu.org>
 Sat Jul 11 18:24:37 1998  Craig Burley  <burley@gnu.org>
 
 	* com.c (ffecom_expr_) [FFEBLD_opCONTER]: Die if padding
-	for constant is non-zero.
+	for constant is nonzero.
 
 	* com.c (__eprintf): Delete this function, it is obsolete.
 
@@ -3104,7 +3116,7 @@ Wed Jul  1 11:19:13 1998  Craig Burley  <burley@gnu.org>
 	and even more elegantly than those.
 
 	* target.c (ffetarget_align): Make sure alignments
-	are non-zero, just in case.
+	are nonzero, just in case.
 
 See ChangeLog.0 for earlier changes.
 

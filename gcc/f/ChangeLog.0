@@ -38,7 +38,7 @@ Mon Jun 29 09:47:33 1998  Craig Burley  <burley@gnu.org>
 	of equiv area, extend lowering to maintain needed alignment.
 	* target.c (ffetarget_align): Handle negative offset correctly.
 
-	* global.c (ffeglobal_pad_common): Warn about non-zero
+	* global.c (ffeglobal_pad_common): Warn about nonzero
 	padding only the first time its seen.
 	If new padding larger than old, update old.
 	(ffeglobal_save_common): Use correct type for size throughout.
@@ -2419,7 +2419,7 @@ Sat Nov  2 13:50:31 1996  Craig Burley  <burley@gnu.ai.mit.edu>
 	function call to the type in the fall-through case).
 
 	* ste.c (ffeste_R909_finish): Don't special-case list-directed
-	I/O, now that libf2c can return non-zero status codes.
+	I/O, now that libf2c can return nonzero status codes.
 	(ffeste_R910_finish): Ditto.
 	(ffeste_io_call_): Simplify logic.
 	(ffeste_io_impdo_):

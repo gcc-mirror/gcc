@@ -2226,7 +2226,7 @@ Description:
 
 Sets the current working directory to be @var{Dir}.
 If the @var{Status} argument is supplied, it contains 0
-on success or a non-zero error code otherwise upon return.
+on success or a nonzero error code otherwise upon return.
 See @code{chdir(3)}.
 
 @emph{Caution:} Using this routine during I/O to a unit connected with a
@@ -2265,7 +2265,7 @@ Intrinsic groups: @code{badu77}.
 Description:
 
 Sets the current working directory to be @var{Dir}.
-Returns 0 on success or a non-zero error code.
+Returns 0 on success or a nonzero error code.
 See @code{chdir(3)}.
 
 @emph{Caution:} Using this routine during I/O to a unit connected with a
@@ -2315,7 +2315,7 @@ Currently, @var{Name} must not contain the single quote
 character.
 
 If the @var{Status} argument is supplied, it contains
-0 on success or a non-zero error code upon return.
+0 on success or a nonzero error code upon return.
 
 Note that this currently works
 by actually invoking @code{/bin/chmod} (or the @code{chmod} found when
@@ -2365,7 +2365,7 @@ trailing blanks in @var{Name} are ignored.
 Currently, @var{Name} must not contain the single quote
 character.
 
-Returns 0 on success or a non-zero error code otherwise.
+Returns 0 on success or a nonzero error code otherwise.
 
 Note that this currently works
 by actually invoking @code{/bin/chmod} (or the @code{chmod} found when
@@ -5067,7 +5067,7 @@ Not all these elements are relevant on all systems.
 If an element is not relevant, it is returned as 0.
 
 If the @var{Status} argument is supplied, it contains
-0 on success or a non-zero error code upon return.
+0 on success or a nonzero error code upon return.
 
 Some non-GNU implementations of Fortran provide this intrinsic as
 only a function, not as a subroutine, or do not support the
@@ -5152,7 +5152,7 @@ Number of blocks allocated (-1 if not available)
 Not all these elements are relevant on all systems.
 If an element is not relevant, it is returned as 0.
 
-Returns 0 on success or a non-zero error code.
+Returns 0 on success or a nonzero error code.
 
 For information on other intrinsics with the same name:
 @xref{FStat Intrinsic (subroutine)}.
@@ -5292,7 +5292,7 @@ Description:
 
 Places the current working directory in @var{Name}.
 If the @var{Status} argument is supplied, it contains 0
-success or a non-zero error code upon return
+success or a nonzero error code upon return
 (@code{ENOSYS} if the system does not provide @code{getcwd(3)}
 or @code{getwd(3)}).
 
@@ -5327,7 +5327,7 @@ Description:
 
 Places the current working directory in @var{Name}.
 Returns 0 on
-success, otherwise a non-zero error code
+success, otherwise a nonzero error code
 (@code{ENOSYS} if the system does not provide @code{getcwd(3)}
 or @code{getwd(3)}).
 
@@ -5537,7 +5537,7 @@ Description:
 Fills @var{Name} with the system's host name returned by
 @code{gethostname(2)}.
 If the @var{Status} argument is supplied, it contains
-0 on success or a non-zero error code upon return
+0 on success or a nonzero error code upon return
 (@code{ENOSYS} if the system does not provide @code{gethostname(2)}).
 
 Some non-GNU implementations of Fortran provide this intrinsic as
@@ -5575,7 +5575,7 @@ Intrinsic groups: @code{unix}.
 Description:
 
 Fills @var{Name} with the system's host name returned by
-@code{gethostname(2)}, returning 0 on success or a non-zero error code
+@code{gethostname(2)}, returning 0 on success or a nonzero error code
 (@code{ENOSYS} if the system does not provide @code{gethostname(2)}).
 
 On some systems (specifically SCO) it might be necessary to link the
@@ -7107,7 +7107,7 @@ Description:
 
 Sends the signal specified by @var{Signal} to the process @var{Pid}.
 If the @var{Status} argument is supplied, it contains
-0 on success or a non-zero error code upon return.
+0 on success or a nonzero error code upon return.
 See @code{kill(2)}.
 
 Some non-GNU implementations of Fortran provide this intrinsic as
@@ -7145,7 +7145,7 @@ Intrinsic groups: @code{badu77}.
 Description:
 
 Sends the signal specified by @var{Signal} to the process @var{Pid}.
-Returns 0 on success or a non-zero error code.
+Returns 0 on success or a nonzero error code.
 See @code{kill(2)}.
 
 Due to the side effects performed by this intrinsic, the function
@@ -7377,7 +7377,7 @@ A null character (@samp{CHAR(0)}) marks the end of
 the names in @var{Path1} and @var{Path2}---otherwise,
 trailing blanks in @var{Path1} and @var{Path2} are ignored.
 If the @var{Status} argument is supplied, it contains
-0 on success or a non-zero error code upon return.
+0 on success or a nonzero error code upon return.
 See @code{link(2)}.
 
 Some non-GNU implementations of Fortran provide this intrinsic as
@@ -7418,7 +7418,7 @@ Makes a (hard) link from file @var{Path1} to @var{Path2}.
 A null character (@samp{CHAR(0)}) marks the end of
 the names in @var{Path1} and @var{Path2}---otherwise,
 trailing blanks in @var{Path1} and @var{Path2} are ignored.
-Returns 0 on success or a non-zero error code.
+Returns 0 on success or a nonzero error code.
 See @code{link(2)}.
 
 Due to the side effects performed by this intrinsic, the function
@@ -7802,7 +7802,7 @@ Not all these elements are relevant on all systems.
 If an element is not relevant, it is returned as 0.
 
 If the @var{Status} argument is supplied, it contains
-0 on success or a non-zero error code upon return
+0 on success or a nonzero error code upon return
 (@code{ENOSYS} if the system does not provide @code{lstat(2)}).
 
 Some non-GNU implementations of Fortran provide this intrinsic as
@@ -7893,7 +7893,7 @@ Number of blocks allocated (-1 if not available)
 Not all these elements are relevant on all systems.
 If an element is not relevant, it is returned as 0.
 
-Returns 0 on success or a non-zero error code
+Returns 0 on success or a nonzero error code
 (@code{ENOSYS} if the system does not provide @code{lstat(2)}).
 
 For information on other intrinsics with the same name:
@@ -9085,7 +9085,7 @@ the names in @var{Path1} and @var{Path2}---otherwise,
 trailing blanks in @var{Path1} and @var{Path2} are ignored.
 See @code{rename(2)}.
 If the @var{Status} argument is supplied, it contains
-0 on success or a non-zero error code upon return.
+0 on success or a nonzero error code upon return.
 
 Some non-GNU implementations of Fortran provide this intrinsic as
 only a function, not as a subroutine, or do not support the
@@ -9126,7 +9126,7 @@ A null character (@samp{CHAR(0)}) marks the end of
 the names in @var{Path1} and @var{Path2}---otherwise,
 trailing blanks in @var{Path1} and @var{Path2} are ignored.
 See @code{rename(2)}.
-Returns 0 on success or a non-zero error code.
+Returns 0 on success or a nonzero error code.
 
 Due to the side effects performed by this intrinsic, the function
 form is not recommended.
@@ -9931,7 +9931,7 @@ Not all these elements are relevant on all systems.
 If an element is not relevant, it is returned as 0.
 
 If the @var{Status} argument is supplied, it contains
-0 on success or a non-zero error code upon return.
+0 on success or a nonzero error code upon return.
 
 Some non-GNU implementations of Fortran provide this intrinsic as
 only a function, not as a subroutine, or do not support the
@@ -10018,7 +10018,7 @@ Number of blocks allocated (-1 if not available)
 Not all these elements are relevant on all systems.
 If an element is not relevant, it is returned as 0.
 
-Returns 0 on success or a non-zero error code.
+Returns 0 on success or a nonzero error code.
 
 For information on other intrinsics with the same name:
 @xref{Stat Intrinsic (subroutine)}.
@@ -10067,7 +10067,7 @@ A null character (@samp{CHAR(0)}) marks the end of
 the names in @var{Path1} and @var{Path2}---otherwise,
 trailing blanks in @var{Path1} and @var{Path2} are ignored.
 If the @var{Status} argument is supplied, it contains
-0 on success or a non-zero error code upon return
+0 on success or a nonzero error code upon return
 (@code{ENOSYS} if the system does not provide @code{symlink(2)}).
 
 Some non-GNU implementations of Fortran provide this intrinsic as
@@ -10108,7 +10108,7 @@ Makes a symbolic link from file @var{Path1} to @var{Path2}.
 A null character (@samp{CHAR(0)}) marks the end of
 the names in @var{Path1} and @var{Path2}---otherwise,
 trailing blanks in @var{Path1} and @var{Path2} are ignored.
-Returns 0 on success or a non-zero error code
+Returns 0 on success or a nonzero error code
 (@code{ENOSYS} if the system does not provide @code{symlink(2)}).
 
 Due to the side effects performed by this intrinsic, the function
@@ -10657,7 +10657,7 @@ A null character (@samp{CHAR(0)}) marks the end of
 the name in @var{File}---otherwise,
 trailing blanks in @var{File} are ignored.
 If the @var{Status} argument is supplied, it contains
-0 on success or a non-zero error code upon return.
+0 on success or a nonzero error code upon return.
 See @code{unlink(2)}.
 
 Some non-GNU implementations of Fortran provide this intrinsic as
@@ -10695,7 +10695,7 @@ Unlink the file @var{File}.
 A null character (@samp{CHAR(0)}) marks the end of
 the name in @var{File}---otherwise,
 trailing blanks in @var{File} are ignored.
-Returns 0 on success or a non-zero error code.
+Returns 0 on success or a nonzero error code.
 See @code{unlink(2)}.
 
 Due to the side effects performed by this intrinsic, the function
