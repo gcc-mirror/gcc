@@ -53,10 +53,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    flow.c aren't completely updated:
 
    - reg_live_length is not updated
-   - reg_n_refs is not adjusted in the rare case when a register is
-     no longer required in a computation
-   - there are extremely rare cases (see distribute_regnotes) when a
-     REG_DEAD note is lost
    - a LOG_LINKS entry that refers to an insn with multiple SETs may be
      removed because there is no way to know which register it was
      linking
@@ -413,7 +409,7 @@ static void reg_dead_at_p_1	PARAMS ((rtx, rtx, void *));
 static int reg_dead_at_p	PARAMS ((rtx, rtx));
 static void move_deaths		PARAMS ((rtx, rtx, int, rtx, rtx *));
 static int reg_bitfield_target_p  PARAMS ((rtx, rtx));
-static void distribute_notes	PARAMS ((rtx, rtx, rtx, rtx, rtx, rtx));
+static void distribute_notes	PARAMS ((rtx, rtx, rtx, rtx));
 static void distribute_links	PARAMS ((rtx));
 static void mark_used_regs_combine PARAMS ((rtx));
 static int insn_cuid		PARAMS ((rtx));
@@ -2492,7 +2488,7 @@ try_combine (i3, i2, i1, new_direct_jump_p)
 	  REG_N_DEATHS (REGNO (XEXP (note, 0)))++;
 
       distribute_notes (new_other_notes, undobuf.other_insn,
-			undobuf.other_insn, NULL_RTX, NULL_RTX, NULL_RTX);
+			undobuf.other_insn, NULL_RTX);
     }
 #ifdef HAVE_cc0
   /* If I2 is the setter CC0 and I3 is the user CC0 then check whether
@@ -2516,15 +2512,6 @@ try_combine (i3, i2, i1, new_direct_jump_p)
     rtx i3links, i2links, i1links = 0;
     rtx midnotes = 0;
     unsigned int regno;
-    /* Compute which registers we expect to eliminate.  newi2pat may be setting
-       either i3dest or i2dest, so we must check it.  Also, i1dest may be the
-       same as i3dest, in which case newi2pat may be setting i1dest.  */
-    rtx elim_i2 = ((newi2pat && reg_set_p (i2dest, newi2pat))
-		   || i2dest_in_i2src || i2dest_in_i1src
-		   ? 0 : i2dest);
-    rtx elim_i1 = (i1 == 0 || i1dest_in_i1src
-		   || (newi2pat && reg_set_p (i1dest, newi2pat))
-		   ? 0 : i1dest);
 
     /* Get the old REG_NOTES and LOG_LINKS from all our insns and
        clear them.  */
@@ -2655,17 +2642,13 @@ try_combine (i3, i2, i1, new_direct_jump_p)
 
     /* Distribute all the LOG_LINKS and REG_NOTES from I1, I2, and I3.  */
     if (i3notes)
-      distribute_notes (i3notes, i3, i3, newi2pat ? i2 : NULL_RTX,
-			elim_i2, elim_i1);
+      distribute_notes (i3notes, i3, i3, newi2pat ? i2 : NULL_RTX);
     if (i2notes)
-      distribute_notes (i2notes, i2, i3, newi2pat ? i2 : NULL_RTX,
-			elim_i2, elim_i1);
+      distribute_notes (i2notes, i2, i3, newi2pat ? i2 : NULL_RTX);
     if (i1notes)
-      distribute_notes (i1notes, i1, i3, newi2pat ? i2 : NULL_RTX,
-			elim_i2, elim_i1);
+      distribute_notes (i1notes, i1, i3, newi2pat ? i2 : NULL_RTX);
     if (midnotes)
-      distribute_notes (midnotes, NULL_RTX, i3, newi2pat ? i2 : NULL_RTX,
-			elim_i2, elim_i1);
+      distribute_notes (midnotes, NULL_RTX, i3, newi2pat ? i2 : NULL_RTX);
 
     /* Distribute any notes added to I2 or I3 by recog_for_combine.  We
        know these are REG_UNUSED and want them to go to the desired insn,
@@ -2678,7 +2661,7 @@ try_combine (i3, i2, i1, new_direct_jump_p)
 	  if (GET_CODE (XEXP (temp, 0)) == REG)
 	    REG_N_DEATHS (REGNO (XEXP (temp, 0)))++;
 
-	distribute_notes (new_i2_notes, i2, i2, NULL_RTX, NULL_RTX, NULL_RTX);
+	distribute_notes (new_i2_notes, i2, i2, NULL_RTX);
       }
 
     if (new_i3_notes)
@@ -2687,7 +2670,7 @@ try_combine (i3, i2, i1, new_direct_jump_p)
 	  if (GET_CODE (XEXP (temp, 0)) == REG)
 	    REG_N_DEATHS (REGNO (XEXP (temp, 0)))++;
 
-	distribute_notes (new_i3_notes, i3, i3, NULL_RTX, NULL_RTX, NULL_RTX);
+	distribute_notes (new_i3_notes, i3, i3, NULL_RTX);
       }
 
     /* If I3DEST was used in I3SRC, it really died in I3.  We may need to
@@ -2705,12 +2688,11 @@ try_combine (i3, i2, i1, new_direct_jump_p)
 	if (newi2pat && reg_set_p (i3dest_killed, newi2pat))
 	  distribute_notes (gen_rtx_EXPR_LIST (REG_DEAD, i3dest_killed,
 					       NULL_RTX),
-			    NULL_RTX, i2, NULL_RTX, elim_i2, elim_i1);
+			    NULL_RTX, i2, NULL_RTX);
 	else
 	  distribute_notes (gen_rtx_EXPR_LIST (REG_DEAD, i3dest_killed,
 					       NULL_RTX),
-			    NULL_RTX, i3, newi2pat ? i2 : NULL_RTX,
-			    elim_i2, elim_i1);
+			    NULL_RTX, i3, newi2pat ? i2 : NULL_RTX);
       }
 
     if (i2dest_in_i2src)
@@ -2720,11 +2702,10 @@ try_combine (i3, i2, i1, new_direct_jump_p)
 
 	if (newi2pat && reg_set_p (i2dest, newi2pat))
 	  distribute_notes (gen_rtx_EXPR_LIST (REG_DEAD, i2dest, NULL_RTX),
-			    NULL_RTX, i2, NULL_RTX, NULL_RTX, NULL_RTX);
+			    NULL_RTX, i2, NULL_RTX);
 	else
 	  distribute_notes (gen_rtx_EXPR_LIST (REG_DEAD, i2dest, NULL_RTX),
-			    NULL_RTX, i3, newi2pat ? i2 : NULL_RTX,
-			    NULL_RTX, NULL_RTX);
+			    NULL_RTX, i3, newi2pat ? i2 : NULL_RTX);
       }
 
     if (i1dest_in_i1src)
@@ -2734,11 +2715,10 @@ try_combine (i3, i2, i1, new_direct_jump_p)
 
 	if (newi2pat && reg_set_p (i1dest, newi2pat))
 	  distribute_notes (gen_rtx_EXPR_LIST (REG_DEAD, i1dest, NULL_RTX),
-			    NULL_RTX, i2, NULL_RTX, NULL_RTX, NULL_RTX);
+			    NULL_RTX, i2, NULL_RTX);
 	else
 	  distribute_notes (gen_rtx_EXPR_LIST (REG_DEAD, i1dest, NULL_RTX),
-			    NULL_RTX, i3, newi2pat ? i2 : NULL_RTX,
-			    NULL_RTX, NULL_RTX);
+			    NULL_RTX, i3, newi2pat ? i2 : NULL_RTX);
       }
 
     distribute_links (i3links);
@@ -12550,19 +12530,14 @@ reg_bitfield_target_p (x, body)
    as appropriate.  I3 and I2 are the insns resulting from the combination
    insns including FROM (I2 may be zero).
 
-   ELIM_I2 and ELIM_I1 are either zero or registers that we know will
-   not need REG_DEAD notes because they are being substituted for.  This
-   saves searching in the most common cases.
-
    Each note in the list is either ignored or placed on some insns, depending
    on the type of note.  */
 
 static void
-distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
+distribute_notes (notes, from_insn, i3, i2)
      rtx notes;
      rtx from_insn;
      rtx i3, i2;
-     rtx elim_i2, elim_i1;
 {
   rtx note, next_note;
   rtx tem;
@@ -12824,10 +12799,6 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 		   && reg_referenced_p (XEXP (note, 0), PATTERN (i2)))
 	    place = i2;
 
-	  if (rtx_equal_p (XEXP (note, 0), elim_i2)
-	      || rtx_equal_p (XEXP (note, 0), elim_i1))
-	    break;
-
 	  if (place == 0)
 	    {
 	      basic_block bb = this_basic_block;
@@ -12885,7 +12856,7 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 			  PATTERN (tem) = pc_rtx;
 
 			  distribute_notes (REG_NOTES (tem), tem, tem,
-					    NULL_RTX, NULL_RTX, NULL_RTX);
+					    NULL_RTX);
 			  distribute_links (LOG_LINKS (tem));
 
 			  PUT_CODE (tem, NOTE);
@@ -12900,7 +12871,7 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 
 			      distribute_notes (REG_NOTES (cc0_setter),
 						cc0_setter, cc0_setter,
-						NULL_RTX, NULL_RTX, NULL_RTX);
+						NULL_RTX);
 			      distribute_links (LOG_LINKS (cc0_setter));
 
 			      PUT_CODE (cc0_setter, NOTE);
@@ -13048,7 +13019,7 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 				= gen_rtx_EXPR_LIST (REG_DEAD, piece, NULL_RTX);
 
 			      distribute_notes (new_note, place, place,
-						NULL_RTX, NULL_RTX, NULL_RTX);
+						NULL_RTX);
 			    }
 			  else if (! refers_to_regno_p (i, i + 1,
 							PATTERN (place), 0)
