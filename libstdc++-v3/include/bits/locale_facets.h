@@ -648,7 +648,7 @@ namespace std
 
       iter_type 
       _M_extract_int(iter_type, iter_type, ios_base&, ios_base::iostate&, 
-		     char* __xtrc, int __max, int& __base) const;
+		     string& __xtrc, int& __base) const;
 
       virtual iter_type 
       do_get(iter_type, iter_type, ios_base&, ios_base::iostate&, bool&) const;
