@@ -4980,6 +4980,32 @@ fold (expr)
 					  TREE_OPERAND (arg0, 1)))));
       return t;
 
+      /* Pull arithmetic ops out of the CLEANUP_POINT_EXPR where
+         appropriate.  */
+    case CLEANUP_POINT_EXPR:
+      if (! TREE_SIDE_EFFECTS (arg0))
+	return arg0;
+
+      {
+	enum tree_code code0 = TREE_CODE (arg0);
+	int kind0 = TREE_CODE_CLASS (code0);
+	tree arg00 = TREE_OPERAND (arg0, 0);
+	tree arg01;
+
+	if (kind0 == '1')
+	  return fold (build1 (code0, type, 
+			       fold (build1 (CLEANUP_POINT_EXPR,
+					     TREE_TYPE (arg00), arg00))));
+	if ((kind0 == '<' || kind0 == '2')
+	    && ! TREE_SIDE_EFFECTS (arg01 = TREE_OPERAND (arg0, 1)))
+	  return fold (build (code0, type,
+			      fold (build1 (CLEANUP_POINT_EXPR,
+					    TREE_TYPE (arg00), arg00)),
+			      arg01));
+
+	return t;
+      }
+
     default:
       return t;
     } /* switch (code) */
