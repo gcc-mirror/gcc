@@ -965,6 +965,67 @@ alpha_emit_set_const_1 (target, mode, c, n)
 
   return 0;
 }
+
+/* Rewrite a comparison against zero CMP of the form
+   (CODE (cc0) (const_int 0)) so it can be written validly in
+   a conditional move (if_then_else CMP ...).
+   If both of the operands that set cc0 are non-zero we must emit
+   an insn to perform the compare (it can't be done within
+   the conditional move). */
+rtx
+alpha_emit_conditional_move (cmp, mode)
+     rtx cmp;
+     enum machine_mode mode;
+{
+  rtx op0 = alpha_compare_op0;
+  rtx op1 = alpha_compare_op1;
+  rtx zero = CONST0_RTX (mode);
+  rtx tmp;
+  enum rtx_code code = GET_CODE (cmp), code2;
+
+  if (alpha_compare_fp_p != FLOAT_MODE_P(mode))
+    return 0;
+
+  /* We may be able to use a conditional move directly.
+     This avoids emitting spurious compares. */
+  if (signed_comparison_operator (cmp, mode) && (op0 == zero || op1 == zero))
+    return gen_rtx (code, mode, op0, op1);
+
+  /* We can't put the comparison insides a conditional move;
+     emit a compare instruction and put that inside the
+     conditional move. */
+
+  /* The alpha does not have NE GE GT compares for any mode.  Avoid them. */
+  code2 = NE;
+  switch (code)
+    {
+    /* We have these compares: */
+    case EQ: case LE: case LT:
+      break;
+    /* These must be inverted: */
+    case NE:
+      code = code2 = EQ;
+      break;
+    case GE:
+      code = LE;
+      op0 = force_reg (mode, alpha_compare_op1);
+      op1 = alpha_compare_op0;
+      break;
+    case GT:
+      code = LT;
+      op0 = force_reg (mode, alpha_compare_op1);
+      op1 = alpha_compare_op0;
+      break;
+    default:
+      return 0;
+    }
+
+  cmp = gen_rtx (code, mode, op0, op1);
+  tmp = gen_reg_rtx (mode);
+  emit_insn (gen_rtx (SET, VOIDmode, tmp, cmp));
+  cmp = gen_rtx (code2, VOIDmode, tmp, zero);
+  return cmp;
+}
 
 /* Adjust the cost of a scheduling dependency.  Return the new cost of
    a dependency LINK or INSN on DEP_INSN.  COST is the current cost.  */
