@@ -26,7 +26,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Names to predefine in the preprocessor for this target machine.  */
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dsparc -DUnicomPBD -Dunix"
+#define CPP_PREDEFINES "-Dsparc -DUnicomPBD -Dunix -D__GCC_NEW_VARARGS__"
 
 /* We want DBX format for use with gdb under COFF.  */
 
