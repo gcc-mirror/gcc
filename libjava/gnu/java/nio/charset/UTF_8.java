@@ -1,5 +1,5 @@
 /* UTF_8.java -- 
-   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -62,7 +62,15 @@ final class UTF_8 extends Charset
 {
   UTF_8 ()
   {
-    super ("UTF-8", null);
+    super ("UTF-8", new String[] {
+        /* These names are provided by
+         * http://oss.software.ibm.com/cgi-bin/icu/convexp?s=ALL
+         */
+        "ibm-1208", "ibm-1209", "ibm-5304", "ibm-5305",
+        "windows-65001", "cp1208",
+        // see http://java.sun.com/j2se/1.5.0/docs/guide/intl/encoding.doc.html
+        "UTF8"
+    });
   }
 
   public boolean contains (Charset cs)

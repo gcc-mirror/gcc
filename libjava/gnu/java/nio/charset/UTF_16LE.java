@@ -1,5 +1,5 @@
 /* UTF_16LE.java -- 
-   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -51,7 +51,17 @@ final class UTF_16LE extends Charset
 {
   UTF_16LE ()
   {
-    super ("UTF-16LE", null);
+    super ("UTF-16LE", new String[] {
+        // witnessed by the internet
+        "UTF16LE", 
+        /* These names are provided by
+         * http://oss.software.ibm.com/cgi-bin/icu/convexp?s=ALL
+         */
+        "x-utf-16le", "ibm-1202", "ibm-13490", "ibm-17586",
+        "UTF16_LittleEndian",
+        // see http://java.sun.com/j2se/1.5.0/docs/guide/intl/encoding.doc.html
+        "UnicodeLittleUnmarked"
+    });
   }
 
   public boolean contains (Charset cs)

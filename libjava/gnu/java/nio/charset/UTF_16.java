@@ -1,5 +1,5 @@
 /* UTF_16.java -- 
-   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -51,7 +51,14 @@ final class UTF_16 extends Charset
 {
   UTF_16 ()
   {
-    super ("UTF-16", null);
+    super ("UTF-16", new String[] {
+        // witnessed by the internet
+        "UTF16",
+        /* These names are provided by
+         * http://oss.software.ibm.com/cgi-bin/icu/convexp?s=ALL
+         */
+        "ISO-10646-UCS-2", "unicode", "csUnicode", "ucs-2"
+    });
   }
 
   public boolean contains (Charset cs)
