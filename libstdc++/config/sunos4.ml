@@ -2,7 +2,7 @@
 # library, even for programs that don't use complex.
 # SunOS requires a version number in shared library filenames.
 
-LIBS    = $(ARLIB) $(SHLIB)
+LIBS    = $(ARLIB) $(ARLINK) $(SHLIB)
 SHFLAGS = $(PICFLAG)
 DEPLIBS = ../$(SHLIB)
 LDLIBS	= -L.. -lstdc++ -lm
