@@ -77,8 +77,15 @@ private:
     void release ()
       {
 	size_t __val;
-	asm ("lock; xaddl %0, %2"
-	     : "=r" (__val) : "0" (-1), "m" (ref) : "memory");
+	// This opcode exists as a .byte instead of as a mnemonic for the
+	// benefit of SCO OpenServer 5.  The system assembler (which is 
+	// essentially required on this target) can't assemble xaddl in 
+	//COFF mode.
+	asm (".byte 0xf0, 0x0f, 0xc1, 0x02" // lock; xaddl %eax, (%edx)
+	    : "=a" (__val)
+	    : "0" (-1), "m" (ref), "d" (&ref)
+	    : "memory");
+
 	if (__val == 1)
 	  delete this;
       }
