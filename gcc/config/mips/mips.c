@@ -1,9 +1,9 @@
 /* Subroutines for insn-output.c for MIPS
+   Copyright (C) 1989, 90, 91, 93, 94, 1995 Free Software Foundation, Inc.
    Contributed by A. Lichnewsky, lich@inria.inria.fr.
-   Changes by     Michael Meissner, meissner@osf.org.
+   Changes by Michael Meissner, meissner@osf.org.
    64 bit r4000 support by Ian Lance Taylor, ian@cygnus.com, and
    Brendan Eich, brendan@microunity.com.
-   Copyright (C) 1989, 90, 91, 93, 94, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -724,7 +724,7 @@ mips_fill_delay_slot (ret, type, operands, cur_insn)
   dslots_number_nops = num_nops;
   mips_load_reg = set_reg;
   if (GET_MODE_SIZE (mode)
-      > (FP_REG_P (set_reg) ? UNITS_PER_FPREG : UNITS_PER_WORD))
+      > (FP_REG_P (REGNO (set_reg)) ? UNITS_PER_FPREG : UNITS_PER_WORD))
     mips_load_reg2 = gen_rtx (REG, SImode, REGNO (set_reg) + 1);
   else
     mips_load_reg2 = 0;
