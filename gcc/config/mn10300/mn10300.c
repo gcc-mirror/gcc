@@ -563,7 +563,7 @@ secondary_reload_class (class, mode, in)
 	   && REGNO (SUBREG_REG (in)) >= FIRST_PSEUDO_REGISTER))
       && (mode == QImode || mode == HImode)
       && (class == ADDRESS_REGS || class == SP_REGS
-	  || class == DATA_OR_ADDRESS_REGS))
+	  || class == SP_OR_ADDRESS_REGS))
     {
       if (TARGET_AM33)
 	return DATA_OR_EXTENDED_REGS;
