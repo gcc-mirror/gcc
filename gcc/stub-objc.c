@@ -2,7 +2,7 @@
    that are called from within the C and C++ front-ends,
    respectively.
    Copyright (C) 1991, 1995, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -56,6 +56,12 @@ objc_check_decl (tree ARG_UNUSED (decl))
 {
 }
    
+int
+objc_is_reserved_word (tree ARG_UNUSED (ident))
+{
+  return 0;
+}
+
 int
 objc_comptypes (tree ARG_UNUSED (lhs), tree ARG_UNUSED (rhs),
                 int ARG_UNUSED (reflexive))

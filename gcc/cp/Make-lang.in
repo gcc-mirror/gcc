@@ -76,21 +76,23 @@ CXX_C_OBJS = attribs.o c-common.o c-format.o c-pragma.o c-semantics.o c-lex.o \
 	c-incpath.o cppdefault.o c-ppoutput.o c-cppbuiltin.o prefix.o \
 	c-gimplify.o tree-inline.o
 
-# Language-specific object files.
-CXX_OBJS = cp/call.o cp/decl.o cp/expr.o cp/pt.o cp/typeck2.o \
+# Language-specific object files for C++ and Objective C++.
+CXX_AND_OBJCXX_OBJS = cp/call.o cp/decl.o cp/expr.o cp/pt.o cp/typeck2.o \
  cp/class.o cp/decl2.o cp/error.o cp/lex.o cp/parser.o cp/ptree.o cp/rtti.o \
  cp/typeck.o cp/cvt.o cp/except.o cp/friend.o cp/init.o cp/method.o \
  cp/search.o cp/semantics.o cp/tree.o cp/repo.o cp/dump.o cp/optimize.o \
- cp/mangle.o cp/cp-lang.o cp/name-lookup.o cp/cxx-pretty-print.o \
- cp/cp-gimplify.o tree-mudflap.o
+ cp/mangle.o cp/name-lookup.o cp/cxx-pretty-print.o \
+ cp/cp-gimplify.o tree-mudflap.o $(CXX_C_OBJS)
+
+# Language-specific object files for C++.
+CXX_OBJS = cp/cp-lang.o stub-objc.o $(CXX_AND_OBJCXX_OBJS)
 
 # Use strict warnings for this front end.
 cp-warn = $(STRICT_WARN) $(WERROR)
 
-cc1plus$(exeext): $(CXX_OBJS) $(CXX_C_OBJS) $(BACKEND) \
-		  $(LIBDEPS)
+cc1plus$(exeext): $(CXX_OBJS) $(BACKEND) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
-	      $(CXX_OBJS) $(CXX_C_OBJS) $(BACKEND) $(LIBS)
+	      $(CXX_OBJS) $(BACKEND) $(LIBS)
 
 # Special build rules.
 $(srcdir)/cp/cfns.h: $(srcdir)/cp/cfns.gperf

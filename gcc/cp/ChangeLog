@@ -1,3 +1,10 @@
+2004-08-28  Ziemowit Laski  <zlaski@apple.com>
+
+	* Make-lang.in (CXX_OBJS): Split up into CXX_OBJS and
+	CXX_AND_OBJCXX_OBJS.
+	(CXX_C_OBJS): Include in CXX_AND_OBJCXX_OBJS instead of listing
+	separately on the link line.
+
 2004-08-28  Jason Merrill  <jason@redhat.com>
 
 	* decl.c (expand_static_init): Avoid bogus warnings.

@@ -1,3 +1,7 @@
+2004-08-28  Ziemowit Laski  <zlaski@apple.com>
+
+	* objc-act.c (objc_is_reserved_word): New function.
+
 2004-08-15  Ziemowit Laski  <zlaski@apple.com>
 
 	* Make-lang.in (objc/objc-lang.o): Depend on $(C_PRETTY_PRINT_H),
