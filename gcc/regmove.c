@@ -823,6 +823,8 @@ fixup_match_2 (insn, dst, src, offset, regmove_dump_file)
 			  && (NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_BEG
 			      || NOTE_LINE_NUMBER (p) == NOTE_INSN_LOOP_END)))
 		    break;
+		  if (GET_RTX_CLASS (GET_CODE (p)) != 'i')
+		    continue;
 		  if (reg_overlap_mentioned_p (dst, PATTERN (p)))
 		    {
 		      if (try_auto_increment (p, insn, 0, dst, newconst, 0))

@@ -5,6 +5,9 @@ Tue Aug 18 12:40:27 1998  Richard Henderson  <rth@cygnus.com>
 
 Tue Aug 18 10:33:30 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* regmove.c (fixup_match_2): Do not call reg_overlap_mentioned_p
+	on notes.
+
 	* Makefile.in (cplus-dem.o): Provide explicit rules for building
 	cplus-dem.o
 
