@@ -1,3 +1,7 @@
+2003-07-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/compile/20030725-1.c: New test.
+
 2003-07-28  Aldy Hernandez  <aldyh@redhat.com>
 
 	* gcc.dg/20030505.c: Only run for SPE.
