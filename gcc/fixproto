@@ -4,7 +4,8 @@
 #	fixproto TARGET-DIR SOURCE-DIR-ALL SOURCE-DIR-STD
 #
 # COPYRIGHT
-#	Copyright (C) 1993, 1994, 1997, 1998, 2002 Free Software Foundation, Inc.
+#	Copyright (C) 1993, 1994, 1997, 1998, 2002, 2003
+#       Free Software Foundation, Inc.
 #	This file is part of GCC.
 #
 #	GCC is free software; you can redistribute it and/or modify
@@ -132,13 +133,6 @@ if [ `echo $* | wc -w` != 0 ] ; then
     include_path="$include_path -I$abs_source_dir"
   done
 fi
-
-required_stdlib_h="abort abs atexit atof atoi atol bsearch calloc exit free getenv labs malloc putenv qsort rand realloc srand strtod strtol strtoul system"
-# "div ldiv", - ignored because these depend on div_t, ldiv_t
-# ignore these: "mblen mbstowcs mbstowc wcstombs wctomb"
-# Left out getgroups, because SunOS4 has incompatible BSD and SVR4 versions.
-# Should perhaps also add NULL
-required_unistd_h="_exit access alarm chdir chown close ctermid cuserid dup dup2 execl execle execlp execv execve execvp fork fpathconf getcwd getegid geteuid getgid getlogin getopt getpgrp getpid getppid getuid isatty link lseek pathconf pause pipe read rmdir setgid setpgid setsid setuid sleep sysconf tcgetpgrp tcsetpgrp ttyname unlink write"
 
 done_dirs=""
 subdirs_made=""
@@ -283,35 +277,57 @@ done
 
 # This might be more cleanly moved into the main loop, by adding
 # a <dummy> source directory at the end.  FIXME!
-for rel_source_file in unistd.h stdlib.h
-do
-  if grep "$rel_source_file" fixproto.list >/dev/null
-  then true
+
+# All the headers we create define size_t and NULL.
+for rel_source_file in unistd.h stdlib.h string.h time.h ; do
+  if grep "$rel_source_file" fixproto.list >/dev/null ; then
+    : # It exists, we don't need to make it
   else
     echo Adding missing $rel_source_file
     rel_source_ident=`echo $rel_source_file | tr ./ __`
-    required_list=`eval echo '${required_'${rel_source_ident}'-}'`
     cat >tmp.h <<EOF
+/* Fake ${rel_source_file}, created by GCC.
+   The functions declared in this file do not necessarily exist in
+   your C library. */
 #ifndef __${rel_source_ident}
 #define __${rel_source_ident}
-EOF
-    if test $rel_source_file = stdlib.h
-    then
-      # Make sure it contains a definition of size_t.
-      cat >>tmp.h <<EOF
 
+#define __need_NULL
 #define __need_size_t
 #include <stddef.h>
 EOF
-    fi
+    # Insert special stuff for particular files here.
+    case ${rel_source_file} in
+      time.h)
+        # If time.h doesn't exist, find out if sys/time.h does.
+        if test -f $src_dir_std/sys/time.h \
+            || grep "sys/time.h" fixproto.list >/dev/null ; then
+          # It does; include it and hope it has the needed declarations.
+          # Some versions require sys/types.h.
+          cat >>tmp.h <<EOF
+
+#include <sys/types.h>
+#include <sys/time.h>
+EOF
+        else
+          # It doesn't.  Make up plausible definitions for time_t, clock_t.
+          # Forward-declare struct tm.  Hope nobody tries to use it.  (Odds
+          # are they won't.)
+          cat >>tmp.h <<EOF
+
+typedef long time_t;
+typedef long clock_t;
+struct tm;
+EOF
+        fi ;;
+    esac
     cat >>tmp.h <<EOF
 
 #endif /* __${rel_source_ident} */
 EOF
     ${FIX_HEADER} $rel_source_file tmp.h $abs_target_dir/$rel_source_file ${DEFINES} $include_path
     if test $? != 0 ; then exit 1 ; fi
-    if test -f $abs_target_dir/$rel_source_file
-    then
+    if test -f $abs_target_dir/$rel_source_file ; then
       rm tmp.h
     else
       mv tmp.h $abs_target_dir/$rel_source_file

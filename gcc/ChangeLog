@@ -1,3 +1,12 @@
+2003-03-21  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* fixproto: Define NULL and size_t in generated stdlib.h and
+	unistd.h.  Kill unused required_stdlib_h, required_unistd_h.
+	Rearrange file generation loop for readability.  Generate time.h,
+	string.h if missing.
+	* tsystem.h: Include <string.h>, <time.h> unconditionally.
+	* config.gcc: Blow away POSIX defines.
+
 2003-03-22  Stephane Carrez  <stcarrez@nerim.fr>
 
 	* config/m68hc11/m68hc11.md ("call_value"): Fix trap check.

@@ -73,20 +73,16 @@ extern int atexit (void (*)(void));
 extern int errno;
 #endif
 
-#ifdef POSIX
-#include <string.h>
-#endif
-
 /* GCC (fixproto) guarantees these system headers exist.  */
+#include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
 
 /* GCC supplies this header.  */
 #include <limits.h>
 
-#ifdef POSIX
+/* GCC (fixproto) guarantees this system headers exists.  */
 #include <time.h>
-#endif
 
 #endif /* inhibit_libc */
 
