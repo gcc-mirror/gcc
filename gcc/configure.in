@@ -2640,90 +2640,17 @@ do
 	test -d $subdir || mkdir $subdir
 	cd $subdir
 
-	# Create Makefile.tem from Makefile.in.
-	# Make it set VPATH if necessary so that the sources are found.
-	# Also change its value of srcdir.
-	# Also create a .gdbinit file which runs the one in srcdir
-	# and tells GDB to look there for source files.
-	case $srcdir in
-	. | ./$subdir | .././$subdir)
-		rm -f Makefile.tem
-		cp Makefile.in Makefile.tem
-		chmod +w Makefile.tem
-		;;
-	*)
-		rm -f Makefile.tem
-		echo "VPATH = ${srcdir}" \
-		  | cat - ${srcdir}/Makefile.in \
-		  | sed "s@^srcdir = \.@srcdir = ${srcdir}@" > Makefile.tem
-		rm -f .gdbinit
-		echo "dir ." > .gdbinit
-		echo "dir ${srcdir}" >> .gdbinit
-		if [[ x$gdb_needs_out_file_path = xyes ]]
-		then
-			echo "dir ${srcdir}/config/"`dirname ${out_file}` >> .gdbinit
-		fi
-		if [[ "x$subdirs" != x ]]; then
-			for s in $subdirs
-			do
-				echo "dir ${srcdir}/$s" >> .gdbinit
-			done
-		fi
-		echo "source ${srcdir}/.gdbinit" >> .gdbinit
-		;;
-	esac
-
 	# Conditionalize the makefile for this host machine.
 	dep_host_xmake_file=
-	rm -f Makefile.xx Makefile.ll
 	merged_frags=
 	for f in .. ${host_xmake_file}
 	do
 		if [[ -f ${mainsrcdir}/config/$f ]]
 		then
-			cat ${mainsrcdir}/config/$f >> Makefile.ll
-			if [[ x"${merged_frags}" != x ]]
-			then
-				merged_frags="${merged_frags} and "
-			fi
-			merged_frags="${merged_frags}${f}"
 			cat ${mainsrcdir}/config/$f >> Make-host
 			dep_host_xmake_file="${dep_host_xmake_file} \$(srcdir)/config/$f"
 		fi
 	done
-	if [[ x"${merged_frags}" != x ]]
-	then
-		sed -e "/####host/  r Makefile.ll" Makefile.tem > Makefile.xx
-		echo "Merged ${merged_frags}."
-		rm -f Makefile.tem
-		mv Makefile.xx Makefile.tem
-		rm -f Makefile.ll
-	fi
-
-	# Add a definition for MAKE if system wants one.
-	case "$SET_MAKE" in
-	?*)
-		rm -f Makefile.xx
-		(echo "$SET_MAKE"; cat Makefile.tem) >Makefile.xx
-		rm -f Makefile.tem
-		mv Makefile.xx Makefile.tem
-	esac
-
-	# Add a definition for INSTALL if system wants one.
-	# This substitutes for lots of x-* files.
-	if [[ x$build_broken_install = x ]]
-	then true
-	else
-		rm -f Makefile.xx
-		abssrcdir=`cd ${srcdir}; pwd`
-		sed "s|^INSTALL = .*|INSTALL = ${abssrcdir}/install.sh -c|" Makefile.tem > Makefile.xx
-		rm -f Makefile.tem
-		mv Makefile.xx Makefile.tem
-	fi
-
-	# Some of the following don't make sense in the language makefiles,
-	# but rather than introduce another level of nesting, we leave them
-	# as is.
 
 	# Set EXTRA_HEADERS according to extra_headers.
 	# This substitutes for lots of t-* files.
@@ -2736,65 +2663,6 @@ do
 		do
 			extra_headers_list="${extra_headers_list} \$(srcdir)/ginclude/${file}"
 		done
-		rm -f Makefile.xx
-		sed "s|^EXTRA_HEADERS =|EXTRA_HEADERS = ${extra_headers_list}|" Makefile.tem > Makefile.xx
-		rm -f Makefile.tem
-		mv Makefile.xx Makefile.tem
-	fi
-
-	# Set EXTRA_PASSES according to extra_passes.
-	# This substitutes for lots of t-* files.
-	if [[ "x$extra_passes" = x ]]
-	then true
-	else
-		rm -f Makefile.xx
-		sed "s/^EXTRA_PASSES =/EXTRA_PASSES = $extra_passes/" Makefile.tem > Makefile.xx
-		rm -f Makefile.tem
-		mv Makefile.xx Makefile.tem
-	fi
-
-	# Set EXTRA_PARTS according to extra_parts.
-	# This substitutes for lots of t-* files.
-	if [[ "x$extra_parts" = x ]]
-	then true
-	else
-		rm -f Makefile.xx
-		sed "s/^EXTRA_PARTS =/EXTRA_PARTS = $extra_parts/" Makefile.tem > Makefile.xx
-		rm -f Makefile.tem
-		mv Makefile.xx Makefile.tem
-	fi
-
-	# Set EXTRA_PROGRAMS according to extra_programs.
-	if [[ "x$extra_programs" = x ]]
-	then true
-	else
-		rm -f Makefile.xx
-		sed "s/^EXTRA_PROGRAMS =/EXTRA_PROGRAMS = $extra_programs/" Makefile.tem > Makefile.xx
-		rm -f Makefile.tem
-		mv Makefile.xx Makefile.tem
-	fi
-
-	# Set EXTRA_OBJS according to extra_objs.
-	# This substitutes for lots of t-* files.
-	if [[ "x$extra_objs" = x ]]
-	then true
-	else
-		rm -f Makefile.xx
-		sed "s|^EXTRA_OBJS =|EXTRA_OBJS = $extra_objs|" Makefile.tem > Makefile.xx
-		rm -f Makefile.tem
-		mv Makefile.xx Makefile.tem
-	fi
-
-	# Set EXTRA_GCC_OBJS according to host_extra_gcc_objs.
-	# This substitutes for lots of x-* files.
-	if [[ "x$host_extra_gcc_objs" = x ]]
-	then true
-	else
-		rm -f Makefile.xx
-		sed "s|^EXTRA_GCC_OBJS =|EXTRA_GCC_OBJS = $host_extra_gcc_objs|"
-Makefile.tem > Makefile.xx
-		rm -f Makefile.tem
-		mv Makefile.xx Makefile.tem
 	fi
 
 	# Add a definition of USE_COLLECT2 if system wants one.
@@ -2807,11 +2675,6 @@ Makefile.tem > Makefile.xx
 	else
 		will_use_collect2="ld"
 		maybe_use_collect2="-DUSE_COLLECT2"
-		rm -f Makefile.xx
-		(echo "USE_COLLECT2 = ld"; echo "MAYBE_USE_COLLECT2 = -DUSE_COLLECT2")\
-	 	   | cat - Makefile.tem > Makefile.xx
-		rm -f Makefile.tem
-		mv Makefile.xx Makefile.tem
 	fi
 
 	# NEED TO CONVERT
@@ -2825,17 +2688,7 @@ Makefile.tem > Makefile.xx
 	then
 		md_file_sub=$srcdir/config/$md_file
 	else
-		rm -f Makefile.xx
-	  	(if [[ x$host = x$build ]] ; then
-			echo "MD_DEPS = $(md_file) cpp" ; echo "MD_CPP = ./cpp"
-		else
-			echo "MD_DEPS = md.pre-cpp" ; echo "MD_CPP = \$(HOST_CC) -x c -E"
-		fi
 		md_file=md
-		echo "MD_CPPFLAGS = $md_cppflags") | \
-		  cat - Makefile.tem | sed -e "s|^MD_FILE[[ 	]]*=.*|MD_FILE = md|" > Makefile.xx
-		rm -f Makefile.tem
-		mv Makefile.xx Makefile.tem
 	fi
 
 	# If we have gas in the build tree, make a link to it.
@@ -2852,20 +2705,8 @@ Makefile.tem > Makefile.xx
 		fi
 	fi
 
-	# If using -program-transform-name, override the installation names.
-	if [[ "x${program_transform_set}" = "xyes" ]] ; then
-		sed -e "s/^program_transform_name[[ 	]]*=.*$/program_transform_name =
-$program_transform_name/" \
-		    -e "s/^program_transform_cross_name[[
-]]*=.*$/program_transform_cross_name = $program_transform_name/" \
-		    Makefile.tem > Makefile.xx
-		rm -f Makefile.tem
-		mv Makefile.xx Makefile.tem
-	fi
-
 	# Conditionalize the makefile for this target machine.
 	dep_tmake_file=
-	rm -f Makefile.xx Makefile.ll
 	merged_frags=
 	for f in .. ${tmake_file}
 	do
@@ -2873,22 +2714,8 @@ $program_transform_name/" \
 		then
 			cat ${mainsrcdir}/config/$f >> Make-target
 			dep_tmake_file="${dep_tmake_file} \$(srcdir)/config/$f"
-			cat ${mainsrcdir}/config/$f >> Makefile.ll
-			if [[ x"${merged_frags}" != x ]]
-			then
-				merged_frags="${merged_frags} and "
-			fi
-			merged_frags="${merged_frags}$f"
 		fi
 	done
-	if [[ x"${merged_frags}" != x ]]
-	then
-		sed -e "/####target/  r Makefile.ll" Makefile.tem > Makefile.xx
-		echo "Merged ${merged_frags}."
-		rm -f Makefile.tem
-		mv Makefile.xx Makefile.tem
-		rm -f Makefile.ll
-	fi
 
 	# If this is the top level Makefile, add the language fragments.
 	# Languages are added via two mechanisms.  Some information must be
@@ -2898,8 +2725,6 @@ $program_transform_name/" \
 	# like `clean', `install', etc.
 	if [[ $subdir = . ]]
 	then
-		rm -f Makefile.xx Makefile.ll
-		touch Makefile.ll
 		for s in .. $subdirs
 		do
 			if [[ $s != ".." ]]
@@ -2931,22 +2756,6 @@ $program_transform_name/" \
 				cat ${mainsrcdir}/$s/Make-lang.in >> Makefile.ll
 			fi
 		done
-		sed -e "/####language fragments/ r Makefile.ll" Makefile.tem > Makefile.xx
-		rm -f Makefile.tem
-		mv Makefile.xx Makefile.tem
-		subdirs=`echo $subdirs`
-		sed -e "s|^SUBDIRS[[ 	]]*=.*$|SUBDIRS = $subdirs|" \
-		    -e "s|^LANGUAGES[[ 	]]*=[[ 	]]*\(.*\)$|LANGUAGES = \1 $all_languages|" \
-		    -e "s|^BOOT_LANGUAGES[[ 	]]*=[[ 	]]*\(.*\)$|BOOT_LANGUAGES = \1 $all_boot_languages|" \
-		    -e "s|^COMPILERS[[ 	]]*=[[ 	]]*\(.*\)$|COMPILERS = \1 $all_compilers|" \
-		    -e "s|^LANG_MAKEFILES[[ 	]]*=.*$|LANG_MAKEFILES = $all_lang_makefiles|" \
-		    -e "s|^LANG_STAGESTUFF[[ 	]]*=.*$|LANG_STAGESTUFF = $all_stagestuff|" \
-		    -e "s|^LANG_DIFF_EXCLUDES[[ 	]]*=.*$|LANG_DIFF_EXCLUDES = $all_diff_excludes|" \
-		    -e "s|^LANG_EXTRA_HEADERS[[ 	]]*=.*$|LANG_EXTRA_HEADERS = $all_headers|" \
-		    -e "s|^LANG_LIB2FUNCS[[ 	]]*=.*$|LANG_LIB2FUNCS = $all_lib2funcs|" \
-		    Makefile.tem > Makefile.xx
-		rm -f Makefile.tem
-		mv Makefile.xx Makefile.tem
 
 		# Since we can't use `::' targets, we link each language in
 		# with a set of hooks, reached indirectly via lang.${target}.
@@ -2957,7 +2766,6 @@ $program_transform_name/" \
 			uninstall distdir \
 			mostlyclean clean distclean extraclean maintainer-clean \
 			stage1 stage2 stage3 stage4"
-		rm -f Makefile.ll
 		for t in $target_list
 		do
 			x=
@@ -2968,12 +2776,7 @@ $program_transform_name/" \
 				fi
 			done
 			echo "lang.$t: $x" >> Make-hooks
-			echo "lang.$t: $x" >> Makefile.ll
 		done
-		sed -e "/####language hooks/ r Makefile.ll" Makefile.tem > Makefile.xx
-		rm -f Makefile.tem
-		mv Makefile.xx Makefile.tem
-		rm -f Makefile.ll
 
 		# If the host doesn't support symlinks, modify CC in
 		# FLAGS_TO_PASS so CC="stage1/xgcc -Bstage1/" works.
@@ -2983,27 +2786,10 @@ $program_transform_name/" \
 		then
 			cc_set_by_configure="\$(CC)"
 			stage_prefix_set_by_configure="\$(STAGE_PREFIX)"
-			sed -e 's,CC=set-by-configure,CC=$(CC),' \
-			    Makefile.tem > Makefile.xx
-			sed -e 's,STAGE_PREFIX=set-by-configure,STAGE_PREFIX=$(STAGE_PREFIX),' \
-			    Makefile.xx > Makefile.yy
 		else
 			cc_set_by_configure="\`case '\$(CC)' in stage*) echo '\$(CC)' | sed -e 's|stage|../stage|g';; *) echo '\$(CC)';; esac\`,"
 
 			stage_prefix_set_by_configure="\`case '\$(STAGE_PREFIX)' in stage*) echo '\$(STAGE_PREFIX)' | sed -e 's|stage|../stage|g';; *) echo '\$(STAGE_PREFIX)';; esac\`,"
-			sed -e "s,CC=set-by-configure,CC=\`case '\$(CC)' in *stage*) echo '\$(CC)' | sed -e 's|stage|../stage|g';; *) echo '\$(CC)';; esac\`," \
-			    Makefile.tem > Makefile.xx
-			sed -e "s,STAGE_PREFIX=set-by-configure,STAGE_PREFIX=\`case '\$(STAGE_PREFIX)' in stage*) echo '\$(STAGE_PREFIX)' | sed -e 's|stage|../stage|g';; *) echo '\$(STAGE_PREFIX)';; esac\`," \
-			    Makefile.xx > Makefile.yy
-		fi
-		rm -f Makefile.tem Makefile.xx
-		mv Makefile.yy Makefile.tem
-		rm -f symtest.tem
-
-		if [[ "x$all_languages" != x ]]
-		then
-			# Missing space after `Merged' is intentional.
-			echo "Merged$all_languages fragment(s)."
 		fi
 
 	# Otherwise, this is a language subdirectory.  If the host supports
@@ -3045,51 +2831,22 @@ $program_transform_name/" \
 	# `out_file', `out_object', `md_file', `lang_specs_files',
 	# `lang_options_files', `INSTALL_HEADERS_DIR', and `CROSS_FLOAT_H'
 	# values in the Makefile from the values they have in this script.
-	rm -f Makefile.xx
-	rm -f aux-output.c aux-output.o md
-	# Create an empty Makefile.sed first, to work around a Nextstep 3.3 bug.
-	echo 's|||' > Makefile.sed
-	rm Makefile.sed
-	echo 's|||' > Makefile.sed
-	echo "s|^target=.*$|target=${target}|" >> Makefile.sed
-	echo "s|^target_alias=.*$|target_alias=${target}|" >> Makefile.sed
-	echo "s|^xmake_file=.*$|xmake_file=${dep_host_xmake_file}|" >> Makefile.sed
-	echo "s|^tmake_file=.*$|tmake_file=${dep_tmake_file}|" >> Makefile.sed
-	echo "s|^version=.*$|version=${version}|" >> Makefile.sed
-	echo "s|^version=.*$|version=${version}|" >> Makefile.sed
-	echo "s|^out_file=.*$|out_file=${srcdir}/config/${out_file}|" >> Makefile.sed
-	echo "s|^out_object_file=.*$|out_object_file=${out_object_file}|" >> Makefile.sed
-	echo "s|^md_file=.*$|md_file=${md_file}|" >> Makefile.sed
+
 	tm_file_sub=
 	for f in $tm_file; do
 		tm_file_sub="${tm_file_sub} ${srcdir}/config/$f"
 	done
-	echo "s|^tm_file=.*$|tm_file=${tm_file_sub}|" >> Makefile.sed
+
 	host_xm_file_sub=
 	for f in $host_xm_file; do
 		host_xm_file_sub="${host_xm_file_sub} ${srcdir}/config/$f"
 	done
-	echo "s|^host_xm_file=.*$|host_xm_file=${host_xm_file_sub}|" >> Makefile.sed
+
 	build_xm_file_sub=
 	for f in $build_xm_file; do
 		build_xm_file_sub="${build_xm_file_sub} ${srcdir}/config/$f"
 	done
-	echo "s|^build_xm_file=.*$|build_xm_file=${build_xm_file_sub}|" >> Makefile.sed
-	echo "s|^lang_specs_files=.*$|lang_specs_files=${lang_specs_files}|" >> Makefile.sed
-	echo "s|^lang_options_files=.*$|lang_options_files=${lang_options_files}|" >> Makefile.sed
-	echo "s|^OBJC_THREAD_FILE=.*$|OBJC_THREAD_FILE=thr-${objc_thread_file}|" >> Makefile.sed
-	echo "s|^prefix[[ 	]]*=.*|prefix = $prefix|" >> Makefile.sed
-	echo "s|^local_prefix[[ 	]]*=.*|local_prefix = $local_prefix|" >> Makefile.sed
-	echo "s|^exec_prefix[[ 	]]*=.*|exec_prefix = $exec_prefix|" >> Makefile.sed
-	echo "s|^FIXINCLUDES[[ 	]]*=.*|FIXINCLUDES = $fixincludes|" >> Makefile.sed
-	echo "s|^INSTALL_HEADERS_DIR[[ 	]]*=.*$|INSTALL_HEADERS_DIR = ${build_install_headers_dir}|" >> Makefile.sed
-	echo "s|^exeext[[ 	]]*=.*$|exeext = ${build_exeext}|" >> Makefile.sed
-	echo "s|^CROSS_FLOAT_H[[	]]*=.*|CROSS_FLOAT_H=\$(srcdir)/config/float-${float_format}.h|" >> Makefile.sed
-	sed -f Makefile.sed Makefile.tem > Makefile.xx
-	rm -f Makefile.tem Makefile.sed
-	mv Makefile.xx Makefile.tem
 
-	# Install Makefile for real, after making final changes.
 	# Define macro CROSS_COMPILE in compilation
 	# if this is a cross-compiler.
 	# Also use all.cross instead of all.internal
@@ -3098,11 +2855,6 @@ $program_transform_name/" \
 	then
 		cross_defines="CROSS=-DCROSS_COMPILE"
 		cross_overrides="./cross-make"
-		rm -f Makefile.xx
-		echo "CROSS=-DCROSS_COMPILE" > Makefile.xx
-		sed -e "/####cross/  r ${mainsrcdir}/cross-make" Makefile.tem >> Makefile.xx
-		rm -f Makefile.tem
-		mv Makefile.xx Makefile.tem
 	fi
 
 	# When building gcc with a cross-compiler, we need to fix a few things.
@@ -3111,21 +2863,6 @@ $program_transform_name/" \
   	if [[ x$build != x$host ]]
 	then
 		build_overrides="./build-make"
-		rm -f Makefile.xx
-		echo "build= $build" > Makefile.xx
-		echo "host= $host" >> Makefile.xx
-    		sed -e "s|objc-runtime$||" \
-		    -e "/####build/  r ${mainsrcdir}/build-make" Makefile.tem >> Makefile.xx
-		rm -f Makefile.tem
-		mv Makefile.xx Makefile.tem
-	fi
-
-	rm -f Makefile
-	mv Makefile.tem Makefile
-
-	if [[ $subdir != . ]]
-	then
-		echo "Created \`$subdir/Makefile'."
 	fi
 
 	cd $STARTDIR
@@ -3209,4 +2946,71 @@ fi
 # AC_CONFIG_SUBDIRS($subdirs)
 
 # Create the Makefile
-AC_OUTPUT(Makefile)
+# and configure language subdirectories
+AC_OUTPUT(Makefile,
+. $srcdir/configure.lang,
+host='${host}'
+build='${build}'
+target='${target}'
+srcdir='${srcdir}'
+subdirs='${subdirs}'
+symbolic_link='${symbolic_link}'
+program_transform_set='${program_transform_set}'
+program_transform_name='${program_transform_name}'
+all_languages='${all_languages}'
+all_boot_languages='${all_boot_languages}'
+all_compilers='${all_compilers}'
+all_lang_makefiles='${all_lang_makefiles}'
+all_stagestuff='${all_stagestuff}'
+all_diff_excludes='${all_diff_excludes}'
+all_lib2funcs='${all_lib2funcs}'
+all_headers='${all_headers}'
+extra_headers='${extra_headers}'
+extra_passes='${extra_passes}'
+extra_programs='${extra_programs}'
+extra_parts='${extra_parts}'
+extra_objs='${extra_objs}'
+host_extra_gcc_objs='${host_extra_gcc_objs}'
+extra_headers_list='${extra_headers_list}'
+dep_host_xmake_file='${dep_host_xmake_file}'
+host_xmake_file='${host_xmake_file}'
+dep_tmake_file='${dep_tmake_file}'
+tmake_file='${tmake_file}'
+out_file='${out_file}'
+out_object_file='${out_object_file}'
+md_file='${md_file}'
+md_file_sub='${md_file_sub}'
+tm_file_list='${tm_file_list}'
+tm_file_sub='${tm_file_sub}'
+build_xm_file_list='${build_xm_file_list}'
+build_xm_file_sub='${build_xm_file_sub}'
+host_xm_file_list='${host_xm_file_list}'
+host_xm_file_sub='${host_xm_file_sub}'
+lang_specs_files='${lang_specs_files}'
+lang_options_files='${lang_options_files}'
+objc_thread_file='${objc_thread_file}'
+version='${version}'
+local_prefix='${local_prefix}'
+fixincludes='${fixincludes}'
+build_install_headers_dir='${build_install_headers_dir}'
+exeext='${exeext}'
+float_format='${float_format}'
+use_collect2='${use_collect2}'
+will_use_collect2='${will_use_collect2}'
+maybe_use_collect2='${maybe_use_collect2}'
+cc_set_by_configure='${cc_set_by_configure}'
+stage_prefix_set_by_configure='${stage_prefix_set_by_configure}'
+gdb_needs_out_file_path='${gdb_needs_out_file_path}'
+SET_MAKE='${SET_MAKE}'
+build_broken_install='${build_broken_install}'
+md_cppflags='${md_cppflags}'
+target_list='${target_list}'
+
+target_overrides='${target_overrides}'
+host_overrides='${host_overrides}'
+cross_defines='${cross_defines}'
+cross_overrides='${cross_overrides}'
+build_overrides='${build_overrides}'
+language_fragments='${language_fragments}'
+language_hooks='${language_hooks}'
+)
