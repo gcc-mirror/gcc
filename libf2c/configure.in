@@ -21,24 +21,12 @@
 
 AC_INIT(libF77/Version.c)
 
-AC_REVISION(1.10)
+AC_REVISION(1.11)
 
-dnl AC_C_CROSS
-dnl Gives misleading `(cached)' message from the check.
-if test "$CROSS";then
-  if test "$CC_FOR_TARGET"; then
-    CC="$CC_FOR_TARGET"
-  else
-    CC="../../xgcc -B../../xgcc/"
-  fi
-  ac_cv_c_cross=yes
-else
-  dnl Checks for programs.
-  # For g77 we'll set CC to point at the built gcc, but this will get it into
-  # the makefiles
-  AC_PROG_CC
-  ac_cv_c_cross=no
-fi
+dnl Checks for programs.
+# For g77 we'll set CC to point at the built gcc, but this will get it into
+# the makefiles
+AC_PROG_CC
 
 dnl These should be inherited in the recursive make, but ensure they are
 dnl defined:
@@ -213,11 +201,8 @@ AC_TRY_RUN(changequote(<<, >>)dnl
 AC_CACHE_VAL(g77_cv_sys_sprintf_ansi,
      g77_cv_sys_sprintf_ansi=$g77_cv_sys_sprintf_ansi)
 dnl We get a misleading `(cached)' message...
-if test $ac_cv_c_cross = no; then
-  AC_MSG_RESULT($g77_cv_sys_sprintf_ansi)
-else
-  AC_MSG_RESULT([can't tell -- assuming no])
-fi
+AC_MSG_RESULT($g77_cv_sys_sprintf_ansi)
+
 # The cygwin patch takes steps to avoid defining USE_STRLEN here -- I don't
 # understand why.
 if test $g77_cv_sys_sprintf_ansi != yes; then 
@@ -347,43 +332,10 @@ AC_SUBST(F2C_LONGINT)
 
 dnl maybe check for drem/remainder
 
-AC_SUBST(CROSS)
-
-
 # This EOF_CHAR is a misfeature on unix.
 AC_DEFINE(NO_EOF_CHAR_CHECK)
 
 AC_DEFINE(Skip_f2c_Undefs)
-
-dnl Craig had these in f2c.h, but they're only relevant for building libf2c
-dnl anyway.
-
-dnl   For GNU Fortran (g77), we always enable the following behaviors for
-dnl   libf2c, to make things easy on the programmer.  The alternate
-dnl   behaviors have their uses, and g77 might provide them as compiler,
-dnl   rather than library, options, so only a single copy of a shared libf2c
-dnl   need be built for a system.
-
-dnl   This makes unformatted I/O more consistent in relation to other
-dnl   systems.  It is not required by the F77 standard.
-
-AC_DEFINE(Pad_UDread)
-
-dnl   This makes ERR= and IOSTAT= returns work properly in disk-full
-dnl   situations, making things work more as expected.  It slows things
-dnl   down, so g77 will probably someday choose the original implementation
-dnl   on a case-by-case basis when it can be shown to not be necessary
-dnl   (e.g. no ERR= or IOSTAT=) or when it is given the appropriate
-dnl   compile-time option or, perhaps, source-code directive.
-
-dnl AC_DEFINE(ALWAYS_FLUSH)
-
-dnl   Most Fortran implementations do this, so to make it easier
-dnl   to compare the output of g77-compiled programs to those compiled
-dnl   by most other compilers, tell libf2c to put leading zeros in
-dnl   appropriate places on output
-
-AC_DEFINE(WANT_LEAD_0)
 
 # avoid confusion in case the `makefile's from the f2c distribution have
 # got put here
@@ -392,11 +344,9 @@ test -f libI77/makefile && mv libI77/makefile  libI77/makefile.ori
 test -f libU77/makefile && mv libU77/makefile  libU77/makefile.ori
 
 AC_CONFIG_SUBDIRS(libU77)
-AC_OUTPUT(Makefile f2c.h libI77/Makefile libF77/Makefile)
+AC_OUTPUT(Makefile g2c.h libI77/Makefile libF77/Makefile)
 
 dnl We might have configuration options to:
-dnl * allow non-standard string concatenation (use libF77 s_catow.o,
-dnl   not s_cat.o)
 dnl * change unit preconnexion in libI77/err.c (f_init.c)
 dnl * -DALWAYS_FLUSH in libI77
 dnl * -DOMIT_BLANK_CC in libI77

@@ -1,7 +1,7 @@
 # Makefile for GNU F77 compiler runtime.
 # Copyright 1990 - 1994 by AT&T Bell Laboratories and Bellcore (see the
 # file `Notice').
-# Portions of this file Copyright (C) 1995, 1996 Free Software Foundation, Inc.
+# Portions of this file Copyright (C) 1995-1998 Free Software Foundation, Inc.
 #   Contributed by Dave Love (d.love@dl.ac.uk).
 #
 #This file is part of GNU Fortran.
@@ -21,16 +21,35 @@
 #the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #02111-1307, USA.
 
-SHELL = /bin/sh
+#### Start of system configuration section. ####
+
+# $(srcdir) must be set to the g77 runtime libF77 source directory
+# (g77/f/runtime/libF77).
 
 srcdir = @srcdir@
 VPATH = @srcdir@
 
-#### Start of system configuration section. ####
+# gcc/f/runtime/configure sets this to all the -D options appropriate
+# for the configuration.
+DEFS = @DEFS@
 
+#### End of system configuration section. ####
+
+# Must be passed in explicitly.  Sample values are shown below.
+#CC = /gcc-build-dir/xgcc -B/gcc-build-dir/
+#CFLAGS = -O -g
+#CPPFLAGS = 
+#F2C_H_DIR = /gcc-source-dir/f/runtime
+#G2C_H_DIR = /gcc-build-dir/f/runtime
+#GCC_H_DIR = /gcc-build-dir/include
+
+ALL_CFLAGS = -I. -I$(srcdir) -I$(G2C_H_DIR) -I$(F2C_H_DIR) -I$(GCC_H_DIR) $(CPPFLAGS) $(DEFS) $(CFLAGS)
+
+.SUFFIXES:
+.SUFFIXES: .c .o
 
 .c.o:
-	$(CC) -c -DSkip_f2c_Undefs -I../ $(CFLAGS) $<
+	$(CC) -c -DSkip_f2c_Undefs $(ALL_CFLAGS) $<
 
 MISC =	F77_aloc.o VersionF.o main.o s_rnge.o abort_.o getarg_.o iargc_.o\
 	getenv_.o signal_.o s_stop.o s_paus.o system_.o cabs.o\
@@ -55,22 +74,14 @@ EFL =	ef1asc_.o ef1cmc_.o
 CHAR =	s_cat.o s_cmp.o s_copy.o
 F90BIT = lbitbits.o lbitshft.o qbitbits.o qbitshft.o
 
-F2C_H = ../f2c.h
-
 all: $(MISC) $(POW) $(CX) $(DCX) $(REAL) $(DBL) $(INT) \
 	 $(HALF) $(CMP) $(EFL) $(CHAR) $(F90BIT)
 
 VersionF.o: Version.c
-	$(CC) -c $(CFLAGS) -o $@ $(srcdir)/Version.c
-
-mostlyclean clean:
-	-rm -f *.o
-
-distclean maintainer-clean: clean
-	-rm -f stage? include Makefile
+	$(CC) -c $(ALL_CFLAGS) -o $@ $(srcdir)/Version.c
 
 # Not quite all these actually do depend on f2c.h...
-$(MISC) $(POW) $(CX) $(DCX) $(REAL) $(DBL) $(INT) \
-  $(HALF) $(CMP) $(EFL) $(CHAR) $(F90BIT): $(F2C_H)
+$(MISC) $(POW) $(CX) $(DCX) $(REAL) $(DBL) $(INT) $(HALF) $(CMP) $(EFL) \
+  $(CHAR) $(F90BIT): $(F2C_H_DIR)/f2c.h $(G2C_H_DIR)/g2c.h
 
-.PHONY: mostlyclean clean distclean maintainer-clean all
+.PHONY: all

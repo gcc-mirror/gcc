@@ -60,24 +60,16 @@ LIBCFLAGS = $(CFLAGS)
 # overrides thouh $(MAKE)) but may be needed by older versions.'
 
 FLAGS_TO_PASS= \
-	"SHELL=$(SHELL)" \
-	"INSTALL=$(INSTALL)" \
-	"INSTALL_DATA=$(INSTALL_DATA)" \
-	"INSTALL_PROGRAM=$(INSTALL_PROGRAM)" \
-	"prefix=$(prefix)" \
-	"exec_prefix=$(exec_prefix)" \
-	"tooldir=$(tooldir)" \
-	"AR=$(AR)" \
-	"AR_FLAGS=$(AR_FLAGS)" \
 	"CC=$(CC)" \
 	"CFLAGS=$(CFLAGS)" \
-	"RANLIB=$(RANLIB)" \
+	"F2C_H_DIR=$(s)/libf2c" \
+	"G2C_H_DIR=$(r)/libraries/libf2c" \
+	"GCC_H_DIR=$(s)/include" \
 	"LIBCFLAGS=$(LIBCFLAGS)" \
 	"PICFLAG=$(PICFLAG)" \
 	"RUNTESTFLAGS=$(RUNTESTFLAGS)"
 
-
-lib = libf2c.a
+LIBG2C = libg2c.a
 
 MISC =	libF77/F77_aloc.o libF77/VersionF.o libF77/main.o libF77/s_rnge.o \
 	libF77/abort_.o libF77/getarg_.o libF77/iargc_.o libF77/getenv_.o \
@@ -151,55 +143,55 @@ F2CEXT = abort derf derfc ef1asc ef1cmc erf erfc exit getarg getenv iargc \
 	secnds second sleep srand stat symlnk sclock time ttynam umask unlink \
 	vxtidt vxttim alarm
 
-all: f2c.h $(lib)
+all: g2c.h $(LIBG2C)
 
-$(lib): stamp-libf77 stamp-libi77 stamp-libu77 stamp-libe77
-	rm -f $(lib)
-	$(AR) $(AR_FLAGS) $(lib) $(FOBJ)
-	$(AR) $(AR_FLAGS) $(lib) $(IOBJ)
-	$(AR) $(AR_FLAGS) $(lib) $(UOBJ)
+$(LIBG2C): stamp-libf77 stamp-libi77 stamp-libu77 stamp-libe77
+	rm -f $(LIBG2C)
+	$(AR) $(AR_FLAGS) $(LIBG2C) $(FOBJ)
+	$(AR) $(AR_FLAGS) $(LIBG2C) $(IOBJ)
+	$(AR) $(AR_FLAGS) $(LIBG2C) $(UOBJ)
 	objs=""; for i in $(F2CEXT); do objs="$$objs libE77/L$$i.o"; done; \
-	  $(AR) $(AR_FLAGS) $(lib) $$objs
-	$(RANLIB) $(lib)
+	  $(AR) $(AR_FLAGS) $(LIBG2C) $$objs
+	$(RANLIB) $(LIBG2C)
 
 stamp-libi77: libI77/Makefile
 	rm -f stamp-libi77
-	cd libI77; $(MAKE) -f Makefile $(FLAGS_TO_PASS) all
+	cd libI77; $(MAKE) $(FLAGS_TO_PASS) all
 	touch stamp-libi77
 
 stamp-libf77: libF77/Makefile
 	rm -f stamp-libf77
-	cd libF77; $(MAKE) -f Makefile $(FLAGS_TO_PASS) all
+	cd libF77; $(MAKE) $(FLAGS_TO_PASS) all
 	touch stamp-libf77
 
 stamp-libu77: libU77/Makefile
 	rm -f stamp-libu77
-	cd libU77; $(MAKE) -f Makefile $(FLAGS_TO_PASS) all
+	cd libU77; $(MAKE) $(FLAGS_TO_PASS) all
 	touch stamp-libu77
 
 stamp-libe77: $(srcdir)/f2cext.c
-	rm -fr libE77
-	mkdir libE77
+	rm -f stamp-libe77
+	if [ -d libE77 ]; then rm -f libE77/*.o; else mkdir libE77; fi
 	for name in $(F2CEXT); \
 	do \
 	  echo $${name}; \
 	  $(CC) -c -I. -I$(srcdir) -I../../include $(CPPFLAGS) $(CFLAGS) \
-	    $(CGFLAGS) -DL$${name} $(srcdir)/f2cext.c \
+	    -DL$${name} $(srcdir)/f2cext.c \
 	    -o libE77/L$${name}.o; \
 	  if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
 	done
 	touch stamp-libe77
 
 ${srcdir}/configure: ${srcdir}/configure.in
-	rm -f config.cache && cd ${srcdir} && autoconf && rm -f config.cache
+	rm -f config.cache Makefile g2c.h \
+	  && cd $(srcdir) && autoconf && rm -f config.cache
 ${srcdir}/libU77/configure: ${srcdir}/libU77/configure.in
-	rm -f libU77/config.cache && cd ${srcdir}/libU77 && autoconf && rm -f config.cache
-f2c.h Makefile: $(srcdir)/Makefile.in config.status
+	rm -f libU77/config.cache libU77/Makefile && \
+	  cd $(srcdir)/libU77 && autoconf && rm -f config.cache
+g2c.h Makefile: $(srcdir)/g2c.h.in $(srcdir)/Makefile.in config.status
 	$(SHELL) config.status
 config.status: $(srcdir)/configure
 	$(SHELL) config.status --recheck
-
-f2c.h: $(srcdir)/f2c.h.in
 
 info install-info clean-info dvi:
 
@@ -207,34 +199,61 @@ check:
 	cd libU77; $(MAKE) G77DIR=../../../gcc/ check
 
 install:
-	$(INSTALL_DATA) $(lib) $(libdir)/$(lib).n
-	( cd $(libdir) ; $(RANLIB) $(lib).n )
-	mv -f $(libdir)/$(lib).n $(libdir)/$(lib)
-	$(INSTALL_DATA) f2c.h $(includedir)/f2c.h
+	@if [ x$(libsubdir) = x ]; then \
+	  echo ''; \
+	  echo 'libf2c error: libsubdir environment variable is not'; \
+	  echo '  exported by top-level Makefile.  libg2c.a and g2c.h'; \
+	  echo '  are installed in the directory tree identified named'; \
+	  echo '  by that variable, the same tree in which the gcc-'; \
+	  echo '  specific executables, libraries, and so on are installed.'; \
+	  echo '  Rather than try to extract the name of this tree via'; \
+	  echo '  a kludge, libf2c/Makefile.in simply assumes it is passed'; \
+	  echo '  in as an environment variable.  Someone needs to make'; \
+	  echo '  the appropriate changes to the top-level Makefile.in for'; \
+	  echo '  this to happen.'; \
+	  echo ''; \
+	  echo '  In the meantime, you can try setting libsubdir explicitly'; \
+	  echo '  in the make command line via libsubdir=/foo/lib/gcc-lib/...,'; \
+	  echo '  where foo and ... indicate wherever the cc1 and f771'; \
+	  echo '  executables were installed as part of this overall'; \
+	  echo '  installation process.'; \
+	  echo ''; \
+	  exit 1; \
+	fi
+	$(INSTALL_DATA) $(LIBG2C) $(libsubdir)/$(LIBG2C).n
+	( cd $(libsubdir) ; $(RANLIB) $(LIBG2C).n )
+	mv -f $(libsubdir)/$(LIBG2C).n $(libsubdir)/$(LIBG2C)
+	$(INSTALL_DATA) g2c.h $(libsubdir)/include/g2c.h
+	@if [ -f f2c-install-ok -o -f $(srcdir)/f2c-install-ok ]; then \
+	  echo ''; \
+	  echo 'Warning: g77 no longer installs libf2c.a or f2c.h.'; \
+	  echo '         You must do so yourself.  For more information,'; \
+	  echo '         read "Distributing Binaries" in the g77 docs.'; \
+	  echo '         (To turn off this warning, delete the file'; \
+	  echo '         f2c-install-ok in the source or build directory.)'; \
+	  echo ''; \
+	fi
 
 mostlyclean:
-	-rm -f stamp-*
-	for i in libI77 libF77 libU77; do \
-	  if [ -f $$i/Makefile ]; then \
-	    cd $$i; $(MAKE) -f Makefile mostlyclean; cd ..; \
-	  fi; \
-	done
+	rm -f stamp-* $(LIBG2C)
+	rm -f libF77/*.o
+	rm -f libI77/*.o
+	rm -f libU77/*.o
 	rm -fr libE77
 
 clean:
-	-rm -f config.log stamp-*
-	for i in libI77 libF77 libU77; do \
-	  if [ -f $$i/Makefile ]; then \
-	    cd $$i; $(MAKE) -f Makefile clean; cd ..; \
-	  fi; \
-	done
-	rm -fr libE77
+	rm -f config.log
+	rm -f libF77/Makefile
+	rm -f libI77/Makefile
+	rm -f libU77/Makefile libU77/config.log libU77/a.out
 
-distclean: clean
-	-rm -f Makefile config.cache lib?77/Makefile config.status lib?77/config.status lib?77/config.cache lib?77/config.h f2c.h
+distclean:
+	rm -f Makefile config.cache config.status g2c.h
+	rm -f lib?77/Makefile lib?77/config.status
+	rm -f lib?77/config.cache lib?77/config.h
 
-maintainer-clean: distclean
-	-rm -f $(srcdir)/configure $(srcdir)/libU77/configure
+maintainer-clean:
+	rm -f $(srcdir)/configure $(srcdir)/libU77/configure
 
 rebuilt: ${srcdir}/configure ${srcdir}/libU77/configure
 
