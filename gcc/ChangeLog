@@ -1,3 +1,7 @@
+2003-05-11  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* varasm.c (copy_constant, case VIEW_CONVERT_EXPR): New case.
+
 2003-05-11  Bruno Haible  <bruno@clisp.org>
 	
 	* cppfiles.c (find_or_create_entry): Preserve errno.
