@@ -92,6 +92,11 @@ extern int matherr();
 #define __P(a) a
 #endif
 #endif  /* SVR4__P_CHECK */
+
+
+#if defined( ULTRIX_ATOF_PARAM_CHECK )
+extern double atof( const char *);
+#endif  /* ULTRIX_ATOF_PARAM_CHECK */
 #ifdef __cplusplus
 #undef exception
 #endif
