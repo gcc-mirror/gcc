@@ -9253,6 +9253,21 @@ reload_combine_note_use (xp, insn)
 	}
       break;
 
+    case USE:
+      /* If this is the USE of a return value, we can't change it.  */
+      if (GET_CODE (XEXP (x, 0)) == REG && REG_FUNCTION_VALUE_P (XEXP (x, 0)))
+	{
+	/* Mark the return register as used in an unknown fashion.  */
+	  rtx reg = XEXP (x, 0);
+	  int regno = REGNO (reg);
+	  int nregs = HARD_REGNO_NREGS (regno, GET_MODE (reg));
+
+	  while (--nregs >= 0)
+	    reg_state[regno + nregs].use_index = -1;
+	  return;
+	}
+      break;
+
     case CLOBBER:
       if (GET_CODE (SET_DEST (x)) == REG)
 	return;
@@ -9269,11 +9284,22 @@ reload_combine_note_use (xp, insn)
       {
 	int regno = REGNO (x);
 	int use_index;
+	int nregs;
 
 	/* Some spurious USEs of pseudo registers might remain.
 	   Just ignore them.  */
 	if (regno >= FIRST_PSEUDO_REGISTER)
 	  return;
+
+	nregs = HARD_REGNO_NREGS (regno, GET_MODE (x));
+
+	/* We can't substitute into multi-hard-reg uses.  */
+	if (nregs > 1)
+	  {
+	    while (--nregs >= 0)
+	      reg_state[regno + nregs].use_index = -1;
+	    return;
+	  }
 
 	/* If this register is already used in some unknown fashion, we
 	   can't do anything.
