@@ -534,6 +534,10 @@ alignof:
 	ALIGNOF { skip_evaluation++; }
 	;
 
+typeof:
+	TYPEOF { skip_evaluation++; }
+	;
+
 cast_expr:
 	unary_expr
 	| '(' typename ')' cast_expr  %prec UNARY
@@ -1376,10 +1380,10 @@ ifobjc
         | non_empty_protocolrefs
                 { $$ = get_object_reference ($1); }
 end ifobjc
-	| TYPEOF '(' expr ')'
-		{ $$ = TREE_TYPE ($3); }
-	| TYPEOF '(' typename ')'
-		{ $$ = groktypename ($3); }
+	| typeof '(' expr ')'
+		{ skip_evaluation--; $$ = TREE_TYPE ($3); }
+	| typeof '(' typename ')'
+		{ skip_evaluation--; $$ = groktypename ($3); }
 	;
 
 /* typespec_nonreserved_attr does not exist.  */

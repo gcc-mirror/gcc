@@ -287,11 +287,6 @@ extern int current_function_returns_null;
 
 extern int current_function_returns_abnormally;
 
-/* Nonzero means the expression being parsed will never be evaluated.
-   This is a count, since unevaluated expressions can nest.  */
-
-extern int skip_evaluation;
-
 /* Nonzero means `$' can be in an identifier.  */
 
 extern int dollars_in_ident;

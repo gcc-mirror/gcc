@@ -1493,7 +1493,8 @@ build_external_ref (id, fun)
   if (TREE_TYPE (ref) == error_mark_node)
     return error_mark_node;
 
-  assemble_external (ref);
+  if (!skip_evaluation)
+    assemble_external (ref);
   TREE_USED (ref) = 1;
 
   if (TREE_CODE (ref) == CONST_DECL)
