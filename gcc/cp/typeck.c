@@ -5077,17 +5077,20 @@ build_conditional_expr (ifexp, op1, op2)
       ifexp = op1 = save_expr (ifexp);
     }
 
+  type1 = TREE_TYPE (op1);
+  code1 = TREE_CODE (type1);
+  type2 = TREE_TYPE (op2);
+  code2 = TREE_CODE (type2);
+  if (op1 == error_mark_node || op2 == error_mark_node
+      || type1 == error_mark_node || type2 == error_mark_node)
+    return error_mark_node;
+
   ifexp = cp_convert (boolean_type_node, ifexp);
 
   if (TREE_CODE (ifexp) == ERROR_MARK)
     return error_mark_node;
 
   /* C++: REFERENCE_TYPES must be dereferenced.  */
-  type1 = TREE_TYPE (op1);
-  code1 = TREE_CODE (type1);
-  type2 = TREE_TYPE (op2);
-  code2 = TREE_CODE (type2);
-
   if (code1 == REFERENCE_TYPE)
     {
       op1 = convert_from_reference (op1);

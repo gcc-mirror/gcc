@@ -6541,6 +6541,8 @@ tsubst (t, args, complain, in_decl)
 	  }
 
 	f = make_typename_type (ctx, f);
+	if (f == error_mark_node)
+	  return f;
 	return cp_build_qualified_type (f, 
 					CP_TYPE_QUALS (f) 
 					| CP_TYPE_QUALS (t));
