@@ -1,3 +1,12 @@
+2004-10-05  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* basic-block.h: Remove the prototype for
+	flow_preorder_transversal_compute.
+	* cfganal.c (dfst_node): Remove.
+	(flow_preorder_transversal_compute): Likewise.
+	* rtl.h: Remove the prototype for get_jump_table_offset.
+	* rtlanal.c (get_jump_table_offset): Remove.
+
 2004-10-05  Richard Henderson  <rth@redhat.com>
 
 	PR 17756
