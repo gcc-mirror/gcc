@@ -162,7 +162,7 @@ extern long get_run_time PARAMS ((void));
    return value using malloc.  */
 
 extern char *make_relative_prefix PARAMS ((const char *, const char *,
-					   const char *));
+					   const char *)) ATTRIBUTE_MALLOC;
 
 /* Choose a temporary directory to use for scratch files.  */
 
