@@ -8128,11 +8128,20 @@ Intel PentiumMMX CPU based on Pentium core with MMX instruction set support.
 Intel PentiumPro CPU.
 @item pentium2
 Intel Pentium2 CPU based on PentiumPro core with MMX instruction set support.
-@item pentium3
+@item pentium3, pentium3m
 Intel Pentium3 CPU based on PentiumPro core with MMX and SSE instruction set
 support.
-@item pentium4
+@item pentium-m
+Low power version of Intel Pentium3 CPU with MMX, SSE and SSE2 instruction set
+support.  Used by Centrino notebooks.
+@item pentium4, pentium4m
 Intel Pentium4 CPU with MMX, SSE and SSE2 instruction set support.
+@item prescott
+Improved version of Intel Pentium4 CPU with MMX, SSE, SSE2 and SSE3 instruction
+set support.
+@item nocona
+Improved version of Intel Pentium4 CPU with 64-bit extensions, MMX, SSE,
+SSE2 and SSE3 instruction set support.
 @item k6
 AMD K6 CPU with MMX instruction set support.
 @item k6-2, k6-3

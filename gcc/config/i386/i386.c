@@ -1079,9 +1079,10 @@ override_options (void)
 	{
 	  PTA_SSE = 1,
 	  PTA_SSE2 = 2,
-	  PTA_MMX = 4,
-	  PTA_PREFETCH_SSE = 8,
-	  PTA_3DNOW = 16,
+	  PTA_SSE3 = 4,
+	  PTA_MMX = 8,
+	  PTA_PREFETCH_SSE = 16,
+	  PTA_3DNOW = 32,
 	  PTA_3DNOW_A = 64,
 	  PTA_64BIT = 128
 	} flags;
@@ -1101,8 +1102,16 @@ override_options (void)
       {"pentiumpro", PROCESSOR_PENTIUMPRO, 0},
       {"pentium2", PROCESSOR_PENTIUMPRO, PTA_MMX},
       {"pentium3", PROCESSOR_PENTIUMPRO, PTA_MMX | PTA_SSE | PTA_PREFETCH_SSE},
-      {"pentium4", PROCESSOR_PENTIUM4, PTA_SSE | PTA_SSE2 |
-				       PTA_MMX | PTA_PREFETCH_SSE},
+      {"pentium3m", PROCESSOR_PENTIUMPRO, PTA_MMX | PTA_SSE | PTA_PREFETCH_SSE},
+      {"pentium-m", PROCESSOR_PENTIUMPRO, PTA_MMX | PTA_SSE | PTA_PREFETCH_SSE | PTA_SSE2},
+      {"pentium4", PROCESSOR_PENTIUM4, PTA_SSE | PTA_SSE2
+				       | PTA_MMX | PTA_PREFETCH_SSE},
+      {"pentium4m", PROCESSOR_PENTIUM4, PTA_SSE | PTA_SSE2
+				        | PTA_MMX | PTA_PREFETCH_SSE},
+      {"prescott", PROCESSOR_PENTIUM4, PTA_SSE | PTA_SSE2 | PTA_SSE3
+				        | PTA_MMX | PTA_PREFETCH_SSE},
+      {"nocona", PROCESSOR_PENTIUM4, PTA_SSE | PTA_SSE2 | PTA_SSE3 | PTA_64BIT
+				     | PTA_MMX | PTA_PREFETCH_SSE},
       {"k6", PROCESSOR_K6, PTA_MMX},
       {"k6-2", PROCESSOR_K6, PTA_MMX | PTA_3DNOW},
       {"k6-3", PROCESSOR_K6, PTA_MMX | PTA_3DNOW},
@@ -1224,6 +1233,9 @@ override_options (void)
 	if (processor_alias_table[i].flags & PTA_SSE2
 	    && !(target_flags_explicit & MASK_SSE2))
 	  target_flags |= MASK_SSE2;
+	if (processor_alias_table[i].flags & PTA_SSE3
+	    && !(target_flags_explicit & MASK_SSE3))
+	  target_flags |= MASK_SSE3;
 	if (processor_alias_table[i].flags & PTA_PREFETCH_SSE)
 	  x86_prefetch_sse = true;
 	if (TARGET_64BIT && !(processor_alias_table[i].flags & PTA_64BIT))

@@ -699,11 +699,15 @@ extern int x86_prefetch_sse;
 #define TARGET_CPU_DEFAULT_athlon 11
 #define TARGET_CPU_DEFAULT_athlon_sse 12
 #define TARGET_CPU_DEFAULT_k8 13
+#define TARGET_CPU_DEFAULT_pentium_m 14
+#define TARGET_CPU_DEFAULT_prescott 15
+#define TARGET_CPU_DEFAULT_nocona 16
 
 #define TARGET_CPU_DEFAULT_NAMES {"i386", "i486", "pentium", "pentium-mmx",\
 				  "pentiumpro", "pentium2", "pentium3", \
 				  "pentium4", "k6", "k6-2", "k6-3",\
-				  "athlon", "athlon-4", "k8"}
+				  "athlon", "athlon-4", "k8", \
+				  "pentium-m", "prescott", "nocona"}
 
 #ifndef CC1_SPEC
 #define CC1_SPEC "%(cc1_cpu) "

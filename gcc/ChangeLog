@@ -1,3 +1,17 @@
+2004-04-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* PR target/14723
+	Backport from mainline:
+	2004-02-14  Jan Hubicka  <jh@suse.cz>
+
+	* config.gcc: Add support for nocona/prescott/pentium-m/pentium3m
+	/pentium4m.
+	* i386.c (override_options): Add support for new CPUs.
+	* i386.h (TARGET_CPU_DEFAULT_NAMES): New names.
+	(TARGET_CPU_DEFAULT_pentium_m, TARGET_CPU_DEFAULT_pentium4e): New
+	constants.
+	* invoke.texi: Extend documentation of -mtune/-march for new CPUs.
+
 2004-04-20  Mark Mitchell  <mark@codesourcery.com>
 
 	* version.c (version_string): Mark as prerelease.
