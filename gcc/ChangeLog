@@ -1,3 +1,84 @@
+2004-02-02  Jan Hubicka  <jh@suse.cz>
+
+	* alias.c (record_set): Use hard_regno_nregs.
+	* bt-load.c (find_btr_reference, note_btr_set): Likewise.
+	* builtins.c (apply_args_size): Likewise.
+	* caller-save.c (setup_save_areas, save_call_clobbered_regs,
+	mark_set_regs, add_stored_regs, mark_referenced_regs,
+	insert_restore, insert_save, insert_one_insn): Likewise.
+	* cfgcleanup.c: Include regs.h
+	(mark_effect, mentions_nonequal_regs): Likewise.
+	* cfgrtl.c (mark_killed_regs): Likewise
+	* combine.c (update_table_tick, record_value_for_reg,
+	record_dead_and_set_regs, get_last_value_validate, use_crosses_set_p,
+	reg_dead_at_p_1, reg_dead_at_p, mark_used_regs_combine, move_deaths,
+	reg_bitfield_target_p, distribute_notes): Likewise.
+	* cse.c (mention_regs, insert, invalidate, invalidate_for_call,
+	exp_equiv_p, cse_insn): Likewise.
+	* cselib.c (cselib_lookup): Likewise.
+	(cselib_invalidate_regno, cselib_record_set): Likewise.
+	* df.c (df_ref_record): Likewise.
+	* dwarf2out.c (reg_loc_descriptor, multiple_reg_loc_descriptor):
+	Likewise.
+	* flow.c (mark_reg, insn_dead_p, mark_set_1, mark_used_reg,
+	count_or_remove_death_notes_bb): Likewise.
+	* function.c (aggregate_value_p, keep_stack_depressed): Likewise.
+	* gloval.c (global_alloc, find_reg, mark_reg_store, mark_reg_conflicts,
+	mark_reg_death, set_preference, reg_becomes_live, reg_dies): Likewise.
+	* integrate.c (mark_stores): Likewise.
+	* jump.c (delete_prior_computation): Likewise.
+	* lcm.c (reg_dies, reg_becomes_live): Likewise.
+	* local-alloc.c (combine_regs, find_free_reg, post_mark_life): Likewise.
+	* loop.c (LOOP_REGNO_NREGS): Likewise.
+	* postreload.c (reload_combine, reload_combine_note_store,
+	reload_combine_note_use, reload_cse_move2add, move2add_note_store): Likewise.
+	* ra-colorize.c (combine, color_usable_p, get_free_reg,
+	calculate_dont_begin, calculate_dont_begin, colorize_one_web, 
+	try_recolor_web, insert_coalesced_conflicts, check_colors,
+	break_precolored_alias): Likewise.
+	* ra-debug.c: Include regs.h
+	(ra_print_rtx_object): Likewise.
+	* ra-rewrite (choose_spill_colors): Likewise.
+	(spill_same_color_p, update_spill_colors, spill_is_free): Likewise.
+	* ra.c (init_ra): Likewise.
+	* recog.c (reg_fits_class_p, peep2_reg_dead_p,
+	peep2_find_free_register): Likewise.
+	* reg-stack.c (subst_stack_regs_pat, convert_regs_exit): Likewise.
+	* regclass.c (hard_regno_nregs): New array.
+	(init_reg_modes_once): Initialize it.
+	(choose_hard_reg_mode): Use it.
+	(record_reg_classes): Likewise.
+	* regmove.c (mark_flags_life_zones): Likewise.
+	* regrename.c (note_sets, clear_dead_regs, regrename_optimize,
+	scan_rtx_reg, dump_def_use_chain, kill_value, set_value_regno,
+	copy_value, maybe_mode_change, find_oldest_value_reg,
+	copyprop_hardreg_forward_1):
+	* regs.h (hard_regno_nregs): Declare.
+	* realod.c (reload_inner_reg_of_subreg): Use it.
+	(push_reload, combine_reloads, find_dummy_reload,
+	hard_reg_set_here_p, operands_match_p, decompose, find_reloads,
+	refers_to_regno_for_reload_p, find_equiv_reg, regno_clobbered_p,
+	reload_adjust_reg_for_mode): Likewise.
+	* reload1.c (compute_use_by_pseudos, count_pseudo,
+	count_spilled_pseudo, find_reg, find_reload_regs, mark_home_live,
+	spill_hard_reg, forget_old_reloads_1, mark_reload_reg_in_use,
+	clear_reload_reg_in_use, reload_reg_free_for_value_p, free_for_value_p
+	allocate_reload_reg, choose_reload_regs, emit_reload_insns,
+	delete_output_reload): Likewise.
+	* resource.c (update_live_status, mark_referenced_resources,
+	mark_set_resources, mark_target_live_regs): Likewise.
+	* rtlanal.c:  Include regs.h
+	(refers_to_regno_p, reg_overlap_mentioned_p, dead_or_set_p,
+	dead_or_set_regno_p, find_regno_note, find_reg_fusage,
+	subreg_regno_offset, subreg_offset_representable_p,
+	hoist_test_store): Likewise.
+	* sched-deps.c (sched_analyze_1, sched_analyze_2): Likewise.
+	* sched-rgn.c (check_live_1, update_live_1): Likewise.
+	* stmt.c: Include regs.h
+	(decl_conflicts_with_clobbers_p): Likewise.
+	* varasm.c (make_decl_rtl): Likewise.
+	* Makefile.in (cfgcleanup.o, rtlanal.o, ra-debug.o): Add regs.h dependnecy.
+
 2004-02-01  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/arm/arm.c, config/arm/arm.h, config/arm/arm.md,

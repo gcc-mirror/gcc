@@ -2830,7 +2830,7 @@ mark_stores (rtx dest, rtx x ATTRIBUTE_UNUSED, void *data ATTRIBUTE_UNUSED)
     {
       unsigned int uregno = regno;
       unsigned int last_reg = (uregno >= FIRST_PSEUDO_REGISTER ? uregno
-			       : uregno + HARD_REGNO_NREGS (uregno, mode) - 1);
+			       : uregno + hard_regno_nregs[uregno][mode] - 1);
       unsigned int i;
 
       /* Ignore virtual stack var or virtual arg register since those

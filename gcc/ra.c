@@ -472,26 +472,26 @@ init_ra (void)
     {
       if (! CAN_ELIMINATE (eliminables[j].from, eliminables[j].to)
 	  || (eliminables[j].to == STACK_POINTER_REGNUM && need_fp))
-	for (i = HARD_REGNO_NREGS (eliminables[j].from, Pmode); i--;)
+	for (i = hard_regno_nregs[eliminables[j].from][Pmode]; i--;)
 	  SET_HARD_REG_BIT (never_use_colors, eliminables[j].from + i);
     }
 #if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
   if (need_fp)
-    for (i = HARD_REGNO_NREGS (HARD_FRAME_POINTER_REGNUM, Pmode); i--;)
+    for (i = hard_regno_nregs[HARD_FRAME_POINTER_REGNUM][Pmode]; i--;)
       SET_HARD_REG_BIT (never_use_colors, HARD_FRAME_POINTER_REGNUM + i);
 #endif
 
 #else
   if (need_fp)
-    for (i = HARD_REGNO_NREGS (FRAME_POINTER_REGNUM, Pmode); i--;)
+    for (i = hard_regno_nregs[FRAME_POINTER_REGNUM][Pmode]; i--;)
       SET_HARD_REG_BIT (never_use_colors, FRAME_POINTER_REGNUM + i);
 #endif
 
   /* Stack and argument pointer are also rather useless to us.  */
-  for (i = HARD_REGNO_NREGS (STACK_POINTER_REGNUM, Pmode); i--;)
+  for (i = hard_regno_nregs[STACK_POINTER_REGNUM][Pmode]; i--;)
     SET_HARD_REG_BIT (never_use_colors, STACK_POINTER_REGNUM + i);
 
-  for (i = HARD_REGNO_NREGS (ARG_POINTER_REGNUM, Pmode); i--;)
+  for (i = hard_regno_nregs[ARG_POINTER_REGNUM][Pmode]; i--;)
     SET_HARD_REG_BIT (never_use_colors, ARG_POINTER_REGNUM + i);
 
   for (i = 0; i < 256; i++)
@@ -528,7 +528,7 @@ init_ra (void)
       for (reg = 0; reg < FIRST_PSEUDO_REGISTER; reg++)
 	if (HARD_REGNO_MODE_OK (reg, i)
 	    /* Ignore VOIDmode and similar things.  */
-	    && (size = HARD_REGNO_NREGS (reg, i)) != 0
+	    && (size = hard_regno_nregs[reg][i]) != 0
 	    && (reg + size) <= FIRST_PSEUDO_REGISTER)
 	  {
 	    while (size--)

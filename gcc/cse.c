@@ -1162,7 +1162,7 @@ mention_regs (rtx x)
       unsigned int regno = REGNO (x);
       unsigned int endregno
 	= regno + (regno >= FIRST_PSEUDO_REGISTER ? 1
-		   : HARD_REGNO_NREGS (regno, GET_MODE (x)));
+		   : hard_regno_nregs[regno][GET_MODE (x)]);
       unsigned int i;
 
       for (i = regno; i < endregno; i++)
@@ -1529,7 +1529,7 @@ insert (rtx x, struct table_elt *classp, unsigned int hash, enum machine_mode mo
   if (GET_CODE (x) == REG && REGNO (x) < FIRST_PSEUDO_REGISTER)
     {
       unsigned int regno = REGNO (x);
-      unsigned int endregno = regno + HARD_REGNO_NREGS (regno, GET_MODE (x));
+      unsigned int endregno = regno + hard_regno_nregs[regno][GET_MODE (x)];
       unsigned int i;
 
       for (i = regno; i < endregno; i++)
@@ -1842,7 +1842,7 @@ invalidate (rtx x, enum machine_mode full_mode)
 	    HOST_WIDE_INT in_table
 	      = TEST_HARD_REG_BIT (hard_regs_in_table, regno);
 	    unsigned int endregno
-	      = regno + HARD_REGNO_NREGS (regno, GET_MODE (x));
+	      = regno + hard_regno_nregs[regno][GET_MODE (x)];
 	    unsigned int tregno, tendregno, rn;
 	    struct table_elt *p, *next;
 
@@ -1869,7 +1869,7 @@ invalidate (rtx x, enum machine_mode full_mode)
 
 		    tregno = REGNO (p->exp);
 		    tendregno
-		      = tregno + HARD_REGNO_NREGS (tregno, GET_MODE (p->exp));
+		      = tregno + hard_regno_nregs[tregno][GET_MODE (p->exp)];
 		    if (tendregno > regno && tregno < endregno)
 		      remove_from_table (p, hash);
 		  }
@@ -2081,7 +2081,7 @@ invalidate_for_call (void)
 	    continue;
 
 	  regno = REGNO (p->exp);
-	  endregno = regno + HARD_REGNO_NREGS (regno, GET_MODE (p->exp));
+	  endregno = regno + hard_regno_nregs[regno][GET_MODE (p->exp)];
 
 	  for (i = regno; i < endregno; i++)
 	    if (TEST_HARD_REG_BIT (regs_invalidated_by_call, i))
@@ -2540,7 +2540,7 @@ exp_equiv_p (rtx x, rtx y, int validate, int equal_values)
 	unsigned int regno = REGNO (y);
 	unsigned int endregno
 	  = regno + (regno >= FIRST_PSEUDO_REGISTER ? 1
-		     : HARD_REGNO_NREGS (regno, GET_MODE (y)));
+		     : hard_regno_nregs[regno][GET_MODE (y)]);
 	unsigned int i;
 
 	/* If the quantities are not the same, the expressions are not
@@ -5974,7 +5974,7 @@ cse_insn (rtx insn, rtx libcall_insn)
 	      unsigned int regno = REGNO (x);
 	      unsigned int endregno
 		= regno + (regno >= FIRST_PSEUDO_REGISTER ? 1
-			   : HARD_REGNO_NREGS (regno, GET_MODE (x)));
+			   : hard_regno_nregs[regno][GET_MODE (x)]);
 	      unsigned int i;
 
 	      for (i = regno; i < endregno; i++)

@@ -252,6 +252,8 @@ static struct reg_info_data *reg_info_head;
 
 static int no_global_reg_vars = 0;
 
+/* Specify number of hard registers given machine mode occupy.  */
+unsigned char hard_regno_nregs[FIRST_PSEUDO_REGISTER][MAX_MACHINE_MODE];
 
 /* Function called only once to initialize the above data on reg usage.
    Once this is done, various switches may override.  */
@@ -539,7 +541,11 @@ init_reg_sets_1 (void)
 void
 init_reg_modes_once (void)
 {
-  int i;
+  int i, j;
+
+  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+    for (j = 0; j < MAX_MACHINE_MODE; j++)
+      hard_regno_nregs[i][j] = HARD_REGNO_NREGS(i, (enum machine_mode)j);
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
@@ -658,7 +664,7 @@ choose_hard_reg_mode (unsigned int regno ATTRIBUTE_UNUSED,
   for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
        mode != VOIDmode;
        mode = GET_MODE_WIDER_MODE (mode))
-    if ((unsigned) HARD_REGNO_NREGS (regno, mode) == nregs
+    if ((unsigned) hard_regno_nregs[regno][mode] == nregs
 	&& HARD_REGNO_MODE_OK (regno, mode)
 	&& (! call_saved || ! HARD_REGNO_CALL_PART_CLOBBERED (regno, mode)))
       found_mode = mode;
@@ -669,7 +675,7 @@ choose_hard_reg_mode (unsigned int regno ATTRIBUTE_UNUSED,
   for (mode = GET_CLASS_NARROWEST_MODE (MODE_FLOAT);
        mode != VOIDmode;
        mode = GET_MODE_WIDER_MODE (mode))
-    if ((unsigned) HARD_REGNO_NREGS (regno, mode) == nregs
+    if ((unsigned) hard_regno_nregs[regno][mode] == nregs
 	&& HARD_REGNO_MODE_OK (regno, mode)
 	&& (! call_saved || ! HARD_REGNO_CALL_PART_CLOBBERED (regno, mode)))
       found_mode = mode;
@@ -680,7 +686,7 @@ choose_hard_reg_mode (unsigned int regno ATTRIBUTE_UNUSED,
   for (mode = GET_CLASS_NARROWEST_MODE (MODE_VECTOR_FLOAT);
        mode != VOIDmode;
        mode = GET_MODE_WIDER_MODE (mode))
-    if ((unsigned) HARD_REGNO_NREGS (regno, mode) == nregs
+    if ((unsigned) hard_regno_nregs[regno][mode] == nregs
 	&& HARD_REGNO_MODE_OK (regno, mode)
 	&& (! call_saved || ! HARD_REGNO_CALL_PART_CLOBBERED (regno, mode)))
       found_mode = mode;
@@ -691,7 +697,7 @@ choose_hard_reg_mode (unsigned int regno ATTRIBUTE_UNUSED,
   for (mode = GET_CLASS_NARROWEST_MODE (MODE_VECTOR_INT);
        mode != VOIDmode;
        mode = GET_MODE_WIDER_MODE (mode))
-    if ((unsigned) HARD_REGNO_NREGS (regno, mode) == nregs
+    if ((unsigned) hard_regno_nregs[regno][mode] == nregs
 	&& HARD_REGNO_MODE_OK (regno, mode)
 	&& (! call_saved || ! HARD_REGNO_CALL_PART_CLOBBERED (regno, mode)))
       found_mode = mode;
@@ -703,7 +709,7 @@ choose_hard_reg_mode (unsigned int regno ATTRIBUTE_UNUSED,
   for (m = (unsigned int) CCmode; m < (unsigned int) NUM_MACHINE_MODES; ++m)
     {
       mode = (enum machine_mode) m;
-      if ((unsigned) HARD_REGNO_NREGS (regno, mode) == nregs
+      if ((unsigned) hard_regno_nregs[regno][mode] == nregs
 	  && HARD_REGNO_MODE_OK (regno, mode)
 	  && (! call_saved || ! HARD_REGNO_CALL_PART_CLOBBERED (regno, mode)))
 	return mode;
@@ -1836,14 +1842,14 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 		    op_costs[i].cost[class] = -1;
 		  else
 		    {
-		      for (nr = 0; nr < (unsigned) HARD_REGNO_NREGS (regno, mode); nr++)
+		      for (nr = 0; nr < (unsigned) hard_regno_nregs[regno][mode]; nr++)
 			{
 			  if (! TEST_HARD_REG_BIT (reg_class_contents[class],
 						   regno + nr))
 			    break;
 			}
 
-		      if (nr == (unsigned) HARD_REGNO_NREGS (regno,mode))
+		      if (nr == (unsigned) hard_regno_nregs[regno][mode])
 			op_costs[i].cost[class] = -1;
 		    }
 		}

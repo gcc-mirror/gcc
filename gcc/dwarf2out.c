@@ -8080,7 +8080,7 @@ reg_loc_descriptor (rtx rtl)
   reg = reg_number (rtl);
   regs = (*targetm.dwarf_register_span) (rtl);
 
-  if (HARD_REGNO_NREGS (reg, GET_MODE (rtl)) > 1
+  if (hard_regno_nregs[reg][GET_MODE (rtl)] > 1
       || regs)
     return multiple_reg_loc_descriptor (rtl, regs);
   else
@@ -8110,7 +8110,7 @@ multiple_reg_loc_descriptor (rtx rtl, rtx regs)
   dw_loc_descr_ref loc_result = NULL;
 
   reg = reg_number (rtl);
-  nregs = HARD_REGNO_NREGS (reg, GET_MODE (rtl));
+  nregs = hard_regno_nregs[reg][GET_MODE (rtl)];
 
   /* Simple, contiguous registers.  */
   if (regs == NULL_RTX)

@@ -104,7 +104,7 @@ update_live_status (rtx dest, rtx x, void *data ATTRIBUTE_UNUSED)
   else
     first_regno = REGNO (dest);
 
-  last_regno = first_regno + HARD_REGNO_NREGS (first_regno, GET_MODE (dest));
+  last_regno = first_regno + hard_regno_nregs[first_regno][GET_MODE (dest)];
 
   if (GET_CODE (x) == CLOBBER)
     for (i = first_regno; i < last_regno; i++)
@@ -233,7 +233,7 @@ mark_referenced_resources (rtx x, struct resources *res,
 	{
 	  unsigned int regno = subreg_regno (x);
 	  unsigned int last_regno
-	    = regno + HARD_REGNO_NREGS (regno, GET_MODE (x));
+	    = regno + hard_regno_nregs[regno][GET_MODE (x)];
 
 	  if (last_regno > FIRST_PSEUDO_REGISTER)
 	    abort ();
@@ -246,7 +246,7 @@ mark_referenced_resources (rtx x, struct resources *res,
 	{
 	  unsigned int regno = REGNO (x);
 	  unsigned int last_regno
-	    = regno + HARD_REGNO_NREGS (regno, GET_MODE (x));
+	    = regno + hard_regno_nregs[regno][GET_MODE (x)];
 
 	  if (last_regno > FIRST_PSEUDO_REGISTER)
 	    abort ();
@@ -771,7 +771,7 @@ mark_set_resources (rtx x, struct resources *res, int in_dest,
 	    {
 	      unsigned int regno = subreg_regno (x);
 	      unsigned int last_regno
-		= regno + HARD_REGNO_NREGS (regno, GET_MODE (x));
+		= regno + hard_regno_nregs[regno][GET_MODE (x)];
 
 	      if (last_regno > FIRST_PSEUDO_REGISTER)
 		abort ();
@@ -786,7 +786,7 @@ mark_set_resources (rtx x, struct resources *res, int in_dest,
 	{
 	  unsigned int regno = REGNO (x);
 	  unsigned int last_regno
-	    = regno + HARD_REGNO_NREGS (regno, GET_MODE (x));
+	    = regno + hard_regno_nregs[regno][GET_MODE (x)];
 
 	  if (last_regno > FIRST_PSEUDO_REGISTER)
 	    abort ();
@@ -970,8 +970,8 @@ mark_target_live_regs (rtx insns, rtx target, struct resources *res)
 	     {
 	       regno = reg_renumber[i];
 	       for (j = regno;
-		    j < regno + HARD_REGNO_NREGS (regno,
-						  PSEUDO_REGNO_MODE (i));
+		    j < regno + hard_regno_nregs[regno]
+						[PSEUDO_REGNO_MODE (i)];
 		    j++)
 		 SET_HARD_REG_BIT (current_live_regs, j);
 	     }
@@ -1044,8 +1044,8 @@ mark_target_live_regs (rtx insns, rtx target, struct resources *res)
 		    unsigned int first_regno = REGNO (XEXP (link, 0));
 		    unsigned int last_regno
 		      = (first_regno
-			 + HARD_REGNO_NREGS (first_regno,
-					     GET_MODE (XEXP (link, 0))));
+			 + hard_regno_nregs[first_regno]
+					   [GET_MODE (XEXP (link, 0))]);
 
 		    for (i = first_regno; i < last_regno; i++)
 		      SET_HARD_REG_BIT (pending_dead_regs, i);
@@ -1063,8 +1063,8 @@ mark_target_live_regs (rtx insns, rtx target, struct resources *res)
 		    unsigned int first_regno = REGNO (XEXP (link, 0));
 		    unsigned int last_regno
 		      = (first_regno
-			 + HARD_REGNO_NREGS (first_regno,
-					     GET_MODE (XEXP (link, 0))));
+			 + hard_regno_nregs[first_regno]
+					   [GET_MODE (XEXP (link, 0))]);
 
 		    for (i = first_regno; i < last_regno; i++)
 		      CLEAR_HARD_REG_BIT (current_live_regs, i);

@@ -352,7 +352,7 @@ choose_spill_colors (void)
 	    && HARD_REGNO_MODE_OK (c, PSEUDO_REGNO_MODE (web->regno)))
 	  {
 	    int i, size;
-	    size = HARD_REGNO_NREGS (c, PSEUDO_REGNO_MODE (web->regno));
+	    size = hard_regno_nregs[c][PSEUDO_REGNO_MODE (web->regno)];
 	    for (i = 1; i < size
 		 && TEST_HARD_REG_BIT (avail, c + i); i++);
 	    if (i == size)
@@ -742,9 +742,9 @@ spill_same_color_p (struct web *web1, struct web *web2)
     return 0;
 
   size1 = web1->type == PRECOLORED
-          ? 1 : HARD_REGNO_NREGS (c1, PSEUDO_REGNO_MODE (web1->regno));
+          ? 1 : hard_regno_nregs[c1][PSEUDO_REGNO_MODE (web1->regno)];
   size2 = web2->type == PRECOLORED
-          ? 1 : HARD_REGNO_NREGS (c2, PSEUDO_REGNO_MODE (web2->regno));
+          ? 1 : hard_regno_nregs[c2][PSEUDO_REGNO_MODE (web2->regno)];
   if (c1 >= c2 + size2 || c2 >= c1 + size1)
     return 0;
   return 1;
@@ -779,7 +779,7 @@ update_spill_colors (HARD_REG_SET *in_use, struct web *web, int add)
   if ((c = alias (find_web_for_subweb (web))->color) < 0
       || c == an_unusable_color)
     return;
-  size = HARD_REGNO_NREGS (c, GET_MODE (web->orig_x));
+  size = hard_regno_nregs[c][GET_MODE (web->orig_x)];
   if (SUBWEB_P (web))
     {
       c += subreg_regno_offset (c, GET_MODE (SUBREG_REG (web->orig_x)),
@@ -810,7 +810,7 @@ spill_is_free (HARD_REG_SET *in_use, struct web *web)
   if (c == an_unusable_color)
     return 1;
   size = web->type == PRECOLORED
-         ? 1 : HARD_REGNO_NREGS (c, PSEUDO_REGNO_MODE (web->regno));
+         ? 1 : hard_regno_nregs[c][PSEUDO_REGNO_MODE (web->regno)];
   for (; size--;)
     if (TEST_HARD_REG_BIT (*in_use, c + size))
       return 0;

@@ -32,6 +32,7 @@
 #include "output.h"
 #include "ra.h"
 #include "tm_p.h"
+#include "regs.h"
 
 /* This file contains various dumping and debug functions for
    the graph coloring register allocator.  */
@@ -245,7 +246,7 @@ ra_print_rtx_object (FILE *file, rtx x)
 		 int regno = REGNO (x);
 		 if (regno < FIRST_PSEUDO_REGISTER)
 		   {
-		     int i, nregs = HARD_REGNO_NREGS (regno, mode);
+		     int i, nregs = hard_regno_nregs[regno][mode];
 		     if (nregs > 1)
 		       fputs ("[", file);
 		     for (i = 0; i < nregs; i++)
@@ -272,7 +273,7 @@ ra_print_rtx_object (FILE *file, rtx x)
 		     && REGNO (sub) < FIRST_PSEUDO_REGISTER)
 		   {
 		     int regno = REGNO (sub);
-		     int i, nregs = HARD_REGNO_NREGS (regno, mode);
+		     int i, nregs = hard_regno_nregs[regno][mode];
 		     regno += subreg_regno_offset (regno, GET_MODE (sub),
 						   ofs, mode);
 		     if (nregs > 1)

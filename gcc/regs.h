@@ -224,3 +224,6 @@ extern int caller_save_needed;
 
 /* Allocate reg_n_info tables */
 extern void allocate_reg_info (size_t, int, int);
+
+/* Specify number of hard registers given machine mode occupy.  */
+extern unsigned char hard_regno_nregs[FIRST_PSEUDO_REGISTER][MAX_MACHINE_MODE];

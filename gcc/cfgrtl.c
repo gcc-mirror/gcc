@@ -1352,7 +1352,7 @@ mark_killed_regs (rtx reg, rtx set ATTRIBUTE_UNUSED, void *data)
     SET_REGNO_REG_SET (killed, regno);
   else
     {
-      for (i = 0; i < (int) HARD_REGNO_NREGS (regno, GET_MODE (reg)); i++)
+      for (i = 0; i < (int) hard_regno_nregs[regno][GET_MODE (reg)]; i++)
 	SET_REGNO_REG_SET (killed, regno + i);
     }
 }

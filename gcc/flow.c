@@ -928,7 +928,7 @@ mark_reg (rtx reg, void *xset)
   SET_REGNO_REG_SET (set, regno);
   if (regno < FIRST_PSEUDO_REGISTER)
     {
-      int n = HARD_REGNO_NREGS (regno, GET_MODE (reg));
+      int n = hard_regno_nregs[regno][GET_MODE (reg)];
       while (--n > 0)
 	SET_REGNO_REG_SET (set, regno + n);
     }
@@ -2163,7 +2163,7 @@ insn_dead_p (struct propagate_block_info *pbi, rtx x, int call_ok,
 		 words are not needed.  */
 	      if (regno < FIRST_PSEUDO_REGISTER)
 		{
-		  int n = HARD_REGNO_NREGS (regno, GET_MODE (r));
+		  int n = hard_regno_nregs[regno][GET_MODE (r)];
 
 		  while (--n > 0)
 		    if (REGNO_REG_SET_P (pbi->reg_live, regno+n))
@@ -2560,7 +2560,7 @@ mark_set_1 (struct propagate_block_info *pbi, enum rtx_code code, rtx reg, rtx c
     case REG:
       regno_last = regno_first = REGNO (reg);
       if (regno_first < FIRST_PSEUDO_REGISTER)
-	regno_last += HARD_REGNO_NREGS (regno_first, GET_MODE (reg)) - 1;
+	regno_last += hard_regno_nregs[regno_first][GET_MODE (reg)] - 1;
       break;
 
     case SUBREG:
@@ -2579,7 +2579,7 @@ mark_set_1 (struct propagate_block_info *pbi, enum rtx_code code, rtx reg, rtx c
 						  SUBREG_BYTE (reg),
 						  outer_mode);
 	      regno_last = (regno_first
-			    + HARD_REGNO_NREGS (regno_first, outer_mode) - 1);
+			    + hard_regno_nregs[regno_first][outer_mode] - 1);
 
 	      /* Since we've just adjusted the register number ranges, make
 		 sure REG matches.  Otherwise some_was_live will be clear
@@ -3491,7 +3491,7 @@ mark_used_reg (struct propagate_block_info *pbi, rtx reg,
 
   regno_last = regno_first = REGNO (reg);
   if (regno_first < FIRST_PSEUDO_REGISTER)
-    regno_last += HARD_REGNO_NREGS (regno_first, GET_MODE (reg)) - 1;
+    regno_last += hard_regno_nregs[regno_first][GET_MODE (reg)] - 1;
 
   /* Find out if any of this register is live after this instruction.  */
   some_was_live = some_was_dead = 0;
@@ -4247,7 +4247,7 @@ count_or_remove_death_notes_bb (basic_block bb, int kill)
 		      if (REGNO (reg) >= FIRST_PSEUDO_REGISTER)
 		        n = 1;
 		      else
-		        n = HARD_REGNO_NREGS (REGNO (reg), GET_MODE (reg));
+		        n = hard_regno_nregs[REGNO (reg)][GET_MODE (reg)];
 		      count += n;
 		    }
 

@@ -795,7 +795,7 @@ make_decl_rtl (tree decl, const char *asmspec)
 #ifdef ASM_DECLARE_REGISTER_GLOBAL
 	      ASM_DECLARE_REGISTER_GLOBAL (asm_out_file, decl, reg_number, name);
 #endif
-	      nregs = HARD_REGNO_NREGS (reg_number, DECL_MODE (decl));
+	      nregs = hard_regno_nregs[reg_number][DECL_MODE (decl)];
 	      while (nregs > 0)
 		globalize_reg (reg_number + --nregs);
 	    }
