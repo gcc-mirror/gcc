@@ -1,3 +1,7 @@
+Tue Jan 13 21:37:07 1998  Shigeya Suzuki <shigeya@foretune.co.jp>
+
+	* i386/bsd386.h (DWARF2_UNWIND_INFO): Define as zero for now.
+
 Tue Jan 13 17:50:55 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* configure.in (target_cpu_default, target_cpu_default2): Use double
