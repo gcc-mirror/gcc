@@ -1512,7 +1512,8 @@ fix = {
      *  but there is no point bothering if the fix is not needed.
      */
     select   = '\(\*[a-z][a-z_]*\)\(\)';
-    bypass   = '\(\*[a-z][a-z_]*\)\(' "[ \t]*[a-zA-Z.].*" '\)';
+    bypass   = "^[a-zA-Z0-9_ \t]*" '\(\*[a-z][a-z_]*\)\('
+               "[ \t]*[a-zA-Z.].*" '\)';
     sed      = 's'
                 '/^\(.*(\*[a-z][a-z_]*)(\)'      '\();.*\)'
                 "/\\\n"

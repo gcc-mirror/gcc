@@ -31,6 +31,13 @@ Wed Jun  9 22:42:49 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 	(c4x_legitimize_reload_address): New function.
 	* config/c4x/c4x.md: Update docs.
 
+Wed Jun  9 06:50 1999  Bruce Korb <ddsinc09@ix.netcom.com>
+
+	*fixinc/inclhack.def(sun_auth_proto): bypass the patch if
+	the typed arguments are not part of a comment
+	(ioctl_fix_ctrl): Added a purpose comment
+	*fixinc/fixincl.x: regenerate
+	*fixinc/inclhack.sh: regenerate
 
 Wed Jun  9 04:14:48 1999  Jeffrey A Law  (law@cygnus.com)
 
