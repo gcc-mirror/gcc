@@ -18,6 +18,14 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
+#ifndef STDIO_PROTO
+#ifdef BUFSIZ
+#define STDIO_PROTO(ARGS) PROTO(ARGS)
+#else
+#define STDIO_PROTO(ARGS) ()
+#endif
+#endif
+
 /* Output a string of assembler code, substituting insn operands.
    Defined in final.c.  */
 extern void output_asm_insn PROTO((char *, rtx *));
@@ -26,15 +34,13 @@ extern void output_asm_insn PROTO((char *, rtx *));
    and fixed syntactic prefixes.  */
 extern void asm_fprintf ();
 
-#ifdef FILE
 /* Print an integer constant expression in assembler syntax.
    Addition and subtraction are the only arithmetic
    that may appear in these expressions.  */
-extern void output_addr_const PROTO((FILE *, rtx));
+extern void output_addr_const STDIO_PROTO((FILE *, rtx));
 
 /* Output a name (as found inside a symbol_ref) in assembler syntax.  */
-extern void assemble_name PROTO((FILE *, char *));
-#endif
+extern void assemble_name STDIO_PROTO((FILE *, char *));
 
 /* Replace a SUBREG with a REG or a MEM, based on the thing it is a
    subreg of.  */
@@ -160,6 +166,6 @@ extern int sdb_begin_function_line;
 
 /* File in which assembler code is being written.  */
 
-#ifdef BUFSIZ  /* The hope is that any kind of stdio.h must define BUFSIZ.  */
+#ifdef BUFSIZ
 extern FILE *asm_out_file;
 #endif
