@@ -1,6 +1,6 @@
 /* Perform instruction reorganizations for delay slot filling.
-   Copyright (C) 1992, 1993 Free Software Foundation, Inc.
-   Contributed by Richard Kenner (kenner@nyu.edu).
+   Copyright (C) 1992, 1993, 1994 Free Software Foundation, Inc.
+   Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu).
    Hacked by Michael Tiemann (tiemann@cygnus.com).
 
 This file is part of GNU CC.
@@ -2399,11 +2399,7 @@ mark_target_live_regs (target, res)
 	 marked live, plus live pseudo regs that have been renumbered to
 	 hard regs.  */
 
-#ifdef HARD_REG_SET
-      current_live_regs = *regs_live;
-#else
-      COPY_HARD_REG_SET (current_live_regs, regs_live);
-#endif
+      COPY_HARD_REG_SET (current_live_regs, *regs_live);
 
       for (offset = 0, i = 0; offset < regset_size; offset++)
 	{
