@@ -1238,12 +1238,11 @@ __eprintf (const char *string, const char *expression,
 
 #ifdef L_bb
 
-#if LONG_TYPE_SIZE == GCOV_TYPE_SIZE
-typedef long gcov_type;
-#else
-typedef long long gcov_type;
-#endif
-
+struct bb_function_info {
+  long checksum;
+  int arc_count;
+  const char *name;
+};
 
 /* Structure emitted by -a  */
 struct bb
@@ -1253,14 +1252,10 @@ struct bb
   gcov_type *counts;
   long ncounts;
   struct bb *next;
-  const unsigned long *addresses;
 
   /* Older GCC's did not emit these fields.  */
   long nwords;
-  const char **functions;
-  const long *line_nums;
-  const char **filenames;
-  char *flags;
+  struct bb_function_info *function_infos;
 };
 
 #ifdef BLOCK_PROFILER_CODE
@@ -1283,39 +1278,66 @@ BLOCK_PROFILER_CODE
 #include <errno.h>
 #endif
 
+#include <gthr.h>
+
 static struct bb *bb_head;
+
+int __global_counters = 0, __gthreads_active = 0;
 
 void
 __bb_exit_func (void)
 {
   FILE *da_file;
-  int i;
   struct bb *ptr;
+  long n_counters_p = 0;
+  gcov_type max_counter_p = 0;
+  gcov_type sum_counters_p = 0;
 
   if (bb_head == 0)
     return;
 
-  i = strlen (bb_head->filename) - 3;
-
+  /* Calculate overall "statistics".  */
 
   for (ptr = bb_head; ptr != (struct bb *) 0; ptr = ptr->next)
     {
-      int firstchar;
+      int i;
 
-      /* Make sure the output file exists -
-         but don't clobber exiting data.  */
-      if ((da_file = fopen (ptr->filename, "a")) != 0)
-	fclose (da_file);
+      n_counters_p += ptr->ncounts;
 
-      /* Need to re-open in order to be able to write from the start.  */
-      da_file = fopen (ptr->filename, "r+b");
+      for (i = 0; i < ptr->ncounts; i++)
+	{
+	  sum_counters_p += ptr->counts[i];
+
+	  if (ptr->counts[i] > max_counter_p)
+	    max_counter_p = ptr->counts[i];
+	}
+    }
+
+  for (ptr = bb_head; ptr != (struct bb *) 0; ptr = ptr->next)
+    {
+      gcov_type max_counter_o = 0;
+      gcov_type sum_counters_o = 0;
+      int i;
+
+      /* Calculate the per-object statistics.  */
+
+      for (i = 0; i < ptr->ncounts; i++)
+	{
+	  sum_counters_o += ptr->counts[i];
+
+	  if (ptr->counts[i] > max_counter_o)
+	    max_counter_o = ptr->counts[i];
+	}
+
+      /* open the file for appending, creating it if necessary.  */
+      da_file = fopen (ptr->filename, "ab");
       /* Some old systems might not allow the 'b' mode modifier.
          Therefore, try to open without it.  This can lead to a race
          condition so that when you delete and re-create the file, the
          file might be opened in text mode, but then, you shouldn't
          delete the file in the first place.  */
       if (da_file == 0)
-	da_file = fopen (ptr->filename, "r+");
+	da_file = fopen (ptr->filename, "a");
       if (da_file == 0)
 	{
 	  fprintf (stderr, "arc profiling: Can't open output file %s.\n",
@@ -1341,92 +1363,96 @@ __bb_exit_func (void)
       }
 #endif
 
-      /* If the file is not empty, and the number of counts in it is the
-         same, then merge them in.  */
-      firstchar = fgetc (da_file);
-      if (firstchar == EOF)
+      if (__write_long (-123, da_file, 4) != 0)	/* magic */
 	{
-	  if (ferror (da_file))
-	    {
-	      fprintf (stderr, "arc profiling: Can't read output file ");
-	      perror (ptr->filename);
-	    }
-	}
-      else
-	{
-	  long n_counts = 0;
-
-	  if (ungetc (firstchar, da_file) == EOF)
-	    rewind (da_file);
-	  if (__read_long (&n_counts, da_file, 8) != 0)
-	    {
-	      fprintf (stderr, "arc profiling: Can't read output file %s.\n",
-		       ptr->filename);
-	      continue;
-	    }
-
-	  if (n_counts == ptr->ncounts)
-	    {
-	      int i;
-
-	      for (i = 0; i < n_counts; i++)
-		{
-		  gcov_type v = 0;
-
-		  if (__read_gcov_type (&v, da_file, 8) != 0)
-		    {
-		      fprintf (stderr,
-			       "arc profiling: Can't read output file %s.\n",
-			       ptr->filename);
-		      break;
-		    }
-		  ptr->counts[i] += v;
-		}
-	    }
-
-	}
-
-      rewind (da_file);
-
-      /* ??? Should first write a header to the file.  Preferably, a 4 byte
-         magic number, 4 bytes containing the time the program was
-         compiled, 4 bytes containing the last modification time of the
-         source file, and 4 bytes indicating the compiler options used.
-
-         That way we can easily verify that the proper source/executable/
-         data file combination is being used from gcov.  */
-
-      if (__write_gcov_type (ptr->ncounts, da_file, 8) != 0)
-	{
-
 	  fprintf (stderr, "arc profiling: Error writing output file %s.\n",
 		   ptr->filename);
 	}
       else
 	{
-	  int j;
+
+	  struct bb_function_info *fn_info;
 	  gcov_type *count_ptr = ptr->counts;
-	  int ret = 0;
-	  for (j = ptr->ncounts; j > 0; j--)
+	  int i;
+	  int count_functions = 0;
+
+	  for (fn_info = ptr->function_infos; fn_info->arc_count != -1;
+	       fn_info++)
+	    count_functions++;
+
+	  /* number of functions in this block.  */
+	  __write_long (count_functions, da_file, 4);
+
+	  /* length of extra data in bytes.  */
+	  __write_long ((4 + 8 + 8) + (4 + 8 + 8), da_file, 4);
+
+	  /* overall statistics. */
+	  /* number of counters.  */
+	  __write_long (n_counters_p, da_file, 4);	
+	  /* sum of counters.  */
+	  __write_gcov_type (sum_counters_p, da_file, 8);	
+	  /* maximal counter.  */
+	  __write_gcov_type (max_counter_p, da_file, 8);	
+
+	  /* per-object statistics. */
+	  /* number of counters.  */
+	  __write_long (ptr->ncounts, da_file, 4);	
+	  /* sum of counters.  */
+	  __write_gcov_type (sum_counters_o, da_file, 8);	
+	  /* maximal counter.  */
+	  __write_gcov_type (max_counter_o, da_file, 8);	
+
+	  /* write execution counts for each function.  */
+
+	  for (fn_info = ptr->function_infos; fn_info->arc_count != -1;
+	       fn_info++)
 	    {
-	      if (__write_gcov_type (*count_ptr, da_file, 8) != 0)
+	      /* new function.  */
+	      if (__write_gcov_string
+		  (fn_info->name, strlen (fn_info->name), da_file, -1) != 0)
 		{
-		  ret = 1;
+		  fprintf (stderr,
+			   "arc profiling: Error writing output file %s.\n",
+			   ptr->filename);
 		  break;
 		}
-	      count_ptr++;
+
+	      if (__write_long (fn_info->checksum, da_file, 4) != 0)
+		{
+		  fprintf (stderr,
+			   "arc profiling: Error writing output file %s.\n",
+			   ptr->filename);
+		  break;
+		}
+
+	      if (__write_long (fn_info->arc_count, da_file, 4) != 0)
+		{
+		  fprintf (stderr,
+			   "arc profiling: Error writing output file %s.\n",
+			   ptr->filename);
+		  break;
+		}
+
+	      for (i = fn_info->arc_count; i > 0; i--, count_ptr++)
+		{
+		  if (__write_gcov_type (*count_ptr, da_file, 8) != 0)
+		    break;
+		}
+
+	      if (i)		/* there was an error */
+		{
+		  fprintf (stderr,
+			   "arc profiling: Error writing output file %s.\n",
+			   ptr->filename);
+		  break;
+		}
 	    }
-	  if (ret)
-	    fprintf (stderr, "arc profiling: Error writing output file %s.\n",
-		     ptr->filename);
 	}
 
-      if (fclose (da_file) == EOF)
+      if (fclose (da_file) != 0)
 	fprintf (stderr, "arc profiling: Error closing output file %s.\n",
 		 ptr->filename);
     }
-
-  return;
 }
 
 void
@@ -1437,8 +1463,8 @@ __bb_init_func (struct bb *blocks)
 
   if (blocks->zero_word)
     return;
-
-  /* Initialize destructor.  */
+  
+  /* Initialize destructor and per-thread data.  */
   if (!bb_head)
     atexit (__bb_exit_func);
 
@@ -1451,7 +1477,7 @@ __bb_init_func (struct bb *blocks)
 /* Called before fork or exec - write out profile information gathered so
    far and reset it to zero.  This avoids duplication or loss of the
    profile information gathered so far.  */
-void
+void 
 __bb_fork_func (void)
 {
   struct bb *ptr;

@@ -232,6 +232,7 @@ static void print_usage PARAMS ((int)) ATTRIBUTE_NORETURN;
 static void print_version PARAMS ((void)) ATTRIBUTE_NORETURN;
 static void init_arc PARAMS ((struct adj_list *, int, int, struct bb_info *));
 static struct adj_list *reverse_arcs PARAMS ((struct adj_list *));
+static gcov_type *read_profile PARAMS ((char *, long, int));
 static void create_program_flow_graph PARAMS ((struct bb_info_list *));
 static void solve_program_flow_graph PARAMS ((struct bb_info_list *));
 static void calculate_branch_probs PARAMS ((struct bb_info_list *, int,
@@ -538,6 +539,130 @@ reverse_arcs (arcptr)
   return prev;
 }
 
+/* Reads profiles from the .da file and compute a hybrid profile.  */
+
+static gcov_type *
+read_profile (function_name, cfg_checksum, instr_arcs)
+     char *function_name;
+     long cfg_checksum;
+     int instr_arcs;
+{
+  int i;
+  int okay = 1;
+  gcov_type *profile;
+  char *function_name_buffer;
+  int function_name_buffer_len;
+
+  profile = xmalloc (sizeof (gcov_type) * instr_arcs);
+  rewind (da_file);
+  function_name_buffer_len = strlen (function_name) + 1;
+  function_name_buffer = xmalloc (function_name_buffer_len + 1);
+
+  for (i = 0; i < instr_arcs; i++)
+    profile[i] = 0;
+
+  if (!da_file)
+    return profile;
+
+  while (1)
+    {
+      long magic, extra_bytes;
+      long func_count;
+      int i;
+
+      if (__read_long (&magic, da_file, 4) != 0)
+	break;
+
+      if (magic != -123)
+	{
+	  okay = 0;
+	  break;
+	}
+
+      if (__read_long (&func_count, da_file, 4) != 0)
+	{
+	  okay = 0;
+	  break;
+	}
+
+      if (__read_long (&extra_bytes, da_file, 4) != 0)
+	{
+	  okay = 0;
+	  break;
+	}
+
+      /* skip extra data emited by __bb_exit_func.  */
+      fseek (da_file, extra_bytes, SEEK_CUR);
+
+      for (i = 0; i < func_count; i++)
+	{
+	  long arc_count;
+	  long chksum;
+	  int j;
+
+	  if (__read_gcov_string
+	      (function_name_buffer, function_name_buffer_len, da_file,
+	       -1) != 0)
+	    {
+	      okay = 0;
+	      break;
+	    }
+
+	  if (__read_long (&chksum, da_file, 4) != 0)
+	    {
+	      okay = 0;
+	      break;
+	    }
+
+	  if (__read_long (&arc_count, da_file, 4) != 0)
+	    {
+	      okay = 0;
+	      break;
+	    }
+
+	  if (strcmp (function_name_buffer, function_name) != 0
+	      || arc_count != instr_arcs || chksum != cfg_checksum)
+	    {
+	      /* skip */
+	      if (fseek (da_file, arc_count * 8, SEEK_CUR) < 0)
+		{
+		  okay = 0;
+		  break;
+		}
+	    }
+	  else
+	    {
+	      gcov_type tmp;
+
+	      for (j = 0; j < arc_count; j++)
+		if (__read_gcov_type (&tmp, da_file, 8) != 0)
+		  {
+		    okay = 0;
+		    break;
+		  }
+		else
+		  {
+		    profile[j] += tmp;
+		  }
+	    }
+	}
+
+      if (!okay)
+	break;
+
+    }
+
+  free (function_name_buffer);
+
+  if (!okay)
+    {
+      fprintf (stderr, ".da file corrupted!\n");
+      free (profile);
+      abort ();
+    }
+
+  return profile;
+}
 
 /* Construct the program flow graph from the .bbg file, and read in the data
    in the .da file.  */
@@ -550,6 +675,29 @@ create_program_flow_graph (bptr)
   int i;
   struct adj_list *arcptr;
   struct bb_info *bb_graph;
+  long cfg_checksum;
+  long instr_arcs = 0;
+  gcov_type *profile;
+  int profile_pos = 0;
+  char *function_name;
+  long function_name_len, tmp;
+
+  /* Read function name.  */
+  __read_long (&tmp, bbg_file, 4);   /* ignore -1.  */
+  __read_long (&function_name_len, bbg_file, 4);
+  function_name = xmalloc (function_name_len + 1);
+  fread (function_name, 1, function_name_len + 1, bbg_file);
+  
+  /* Skip padding.  */
+  tmp = (function_name_len + 1) % 4;
+
+  if (tmp)
+    fseek (bbg_file, 4 - tmp, SEEK_CUR);
+
+  __read_long (&tmp, bbg_file, 4);   /* ignore -1.  */
+  
+  /* Read the cfg checksum.  */
+  __read_long (&cfg_checksum, bbg_file, 4);
 
   /* Read the number of blocks.  */
   __read_long (&num_blocks, bbg_file, 4);
@@ -579,7 +727,10 @@ create_program_flow_graph (bptr)
 	  init_arc (arcptr, src, dest, bb_graph);
 
 	  __read_long (&flag_bits, bbg_file, 4);
-	  arcptr->on_tree = flag_bits & 0x1;
+	  if (flag_bits & 0x1)
+	    arcptr->on_tree++;
+	  else 
+	    instr_arcs++;
 	  arcptr->fake = !! (flag_bits & 0x2);
 	  arcptr->fall_through = !! (flag_bits & 0x4);
 	}
@@ -601,6 +752,10 @@ create_program_flow_graph (bptr)
     if (bb_graph[i].succ)
       bb_graph[i].succ = reverse_arcs (bb_graph[i].succ);
 
+  /* Read profile from the .da file.  */
+
+  profile = read_profile (function_name, cfg_checksum, instr_arcs);
+
   /* For each arc not on the spanning tree, set its execution count from
      the .da file.  */
 
@@ -613,15 +768,13 @@ create_program_flow_graph (bptr)
     for (arcptr = bb_graph[i].succ; arcptr; arcptr = arcptr->succ_next)
       if (! arcptr->on_tree)
 	{
-	  gcov_type tmp_count = 0;
-	  if (da_file && __read_gcov_type (&tmp_count, da_file, 8))
-	    abort ();
-
-	  arcptr->arc_count = tmp_count;
+	  arcptr->arc_count = profile[profile_pos++];
 	  arcptr->count_valid = 1;
 	  bb_graph[i].succ_count--;
 	  bb_graph[arcptr->target].pred_count--;
 	}
+  free (profile);
+  free (function_name);
 }
 
 static void
@@ -755,12 +908,6 @@ read_files ()
   struct stat buf;
   struct bb_info_list *list_end = 0;
   struct bb_info_list *b_ptr;
-  long total;
-
-  /* Read and ignore the first word of the .da file, which is the count of
-     how many numbers follow.  */
-  if (da_file && __read_long (&total, da_file, 8))
-    abort ();
 
   while (! feof (bbg_file))
     {
@@ -779,17 +926,6 @@ read_files ()
 
       /* Set the EOF condition if at the end of file.  */
       ungetc (getc (bbg_file), bbg_file);
-    }
-
-  /* Check to make sure the .da file data is valid.  */
-
-  if (da_file)
-    {
-      if (feof (da_file))
-	fnotice (stderr, ".da file contents exhausted too early\n");
-      /* Should be at end of file now.  */
-      if (__read_long (&total, da_file, 8) == 0)
-	fnotice (stderr, ".da file contents not exhausted\n");
     }
 
   /* Calculate all of the basic block execution counts and branch

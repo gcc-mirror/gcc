@@ -6318,6 +6318,8 @@ prepare_function_start ()
 
   current_function_outgoing_args_size = 0;
 
+  cfun->arc_profile = profile_arc_flag || flag_test_coverage;
+
   (*lang_hooks.function.init) (cfun);
   if (init_machine_status)
     (*init_machine_status) (cfun);
