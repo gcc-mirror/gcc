@@ -1,3 +1,8 @@
+Tue Aug 14 17:30:59 2001  Jeffrey A Law  (law@cygnus.com)
+
+	* flow.c (commit_one_edge_insertion): Don't separate a LOOP_BEG
+	note from its associated jump.
+
 2001-08-14  Ulrich Weigand  <uweigand@de.ibm.com>
  
 	* config/s390/linux64.h (CPP_PREDEFINES): Define __s390__
