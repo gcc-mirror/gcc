@@ -1,5 +1,9 @@
 2004-11-04  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* cfgrtl.c (force_nonfallthru_and_redirect): Make it static.
+
+2004-11-04  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* builtins.c (expand_builtin_return_addr,
 	expand_builtin_longjmp, expand_builtin_trap): Make them static.
 	* expr.h: Remove the prototypes for expand_builtin_longjmp and
