@@ -1536,6 +1536,11 @@ copy_insn_list (insns, map, static_chain_value)
 		  else
 		    NOTE_BLOCK (copy) = *mapped_block_p;
 		}
+	      else if (copy
+		       && NOTE_LINE_NUMBER (copy) == NOTE_INSN_EXPECTED_VALUE)
+		NOTE_EXPECTED_VALUE (copy)
+		  = copy_rtx_and_substitute (NOTE_EXPECTED_VALUE (insn),
+					     map, 0);
 	    }
 	  else
 	    copy = 0;
