@@ -469,6 +469,10 @@ extern int warn_cast_qual;
 
 extern int warn_bad_function_cast;
 
+/* Warn about functions which might be candidates for attribute noreturn. */
+
+extern int warn_missing_noreturn;
+
 /* Warn about traditional constructs whose meanings changed in ANSI C.  */
 
 extern int warn_traditional;

@@ -1,3 +1,15 @@
+Tue Oct 20 10:12:17 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-decl.c (warn_missing_noreturn): New global variable.
+	(c_decode_option): Check for new flags -W{no-}missing-noreturn.
+	(finish_function): Implement missing noreturn warning.
+
+	* c-tree.h (warn_missing_noreturn): Declare extern.
+
+	* invoke.texi: Document new flags.
+
+	* toplev.c (documented_lang_options): Add description.
+
 Tue Oct 20 22:16:11 1998  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.c (c4x_parallel_process): Disable until BCT
