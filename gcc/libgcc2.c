@@ -1589,7 +1589,7 @@ __builtin_new (size_t sz)
 }
 #endif /* L_op_new */
 
-#ifdef L_op_vec_new
+#ifdef L_op_vnew
 /* void * operator new [] (size_t), described in 17.3.3.6.  This function
    is used by C++ programs to allocate a block of memory for an array.  */
 
@@ -1600,7 +1600,7 @@ __builtin_vec_new (size_t sz)
 {
   return __builtin_new (sz);
 }
-#endif /* L_op_vec_new */
+#endif /* L_op_vnew */
 
 #ifdef L_new_handler
 /* set_new_handler (fvoid_t *) and the default new handler, described in
@@ -1663,7 +1663,7 @@ __builtin_delete (void *ptr)
 }
 #endif
 
-#ifdef L_op_vec_del
+#ifdef L_op_vdel
 /* operator delete [] (void *), described in 17.3.3.4.  This function is
    used by C++ programs to return to the free store a block of memory
    allocated as an array. */
