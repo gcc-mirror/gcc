@@ -1,3 +1,7 @@
+2003-06-16  Richard Sandiford  <rsandifo@redhat.com>
+
+	* optabs.c (emit_libcall_block): Don't hoist insns past a label.
+
 2003-06-16  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha-protos.h, config/alpha/elf.h,
