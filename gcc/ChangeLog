@@ -1,3 +1,7 @@
+Mon Aug 31 14:55:02 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* NEWS: Fix typos.
+
 Sat Aug 29 14:52:28 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 
 	* config/sparc/sparc.md (movdf_insn, movtf_insn): Fix type and
