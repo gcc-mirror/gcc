@@ -1,5 +1,10 @@
 2004-07-14  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* acinclude.m4: "Inline" LIBGCJ_CONFIGURE macro into...
+	* configure.in: ...here.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+
 	* aclocal.m4: Rebuilt with aclocal gcj-1.4.
 	* configure: Rebuilt with autoconf 2.13.
 	* Makefile.in, gcj/Makefile.in, include/Makefile.in,
