@@ -2388,9 +2388,10 @@ emit_unop_insn (icode, target, op0, code)
 
   op0 = protect_from_queue (op0, 0);
 
-  /* Sign extension from memory is often done specially on RISC
-     machines, so forcing into a register here can pessimize code.  */
-  if (flag_force_mem && code != SIGN_EXTEND)
+  /* Sign and zero extension from memory is often done specially on
+     RISC machines, so forcing into a register here can pessimize
+     code.  */
+  if (flag_force_mem && code != SIGN_EXTEND && code != ZERO_EXTEND)
     op0 = force_not_mem (op0);
 
   /* Now, if insn does not accept our operands, put them into pseudos.  */
