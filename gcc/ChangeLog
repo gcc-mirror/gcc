@@ -1,3 +1,7 @@
+2003-03-26  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* doc/contrib.texi (Contributors): Update Janis Johnson.
+
 2003-03-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/ia64/ia64.c (ia64_expand_op_and_fetch): Fix comment.

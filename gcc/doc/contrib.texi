@@ -308,8 +308,8 @@ as lots of bug fixes and test cases, and for improving the Java build
 system.
 
 @item
-Janis Johnson for ia64 testing and fixes and for her quality improvement
-sidetracks.
+Janis Johnson for ia64 testing and fixes, her quality improvement
+sidetracks, and web page maintainance.
 
 @item
 J. Kean Johnston for OpenServer support.
