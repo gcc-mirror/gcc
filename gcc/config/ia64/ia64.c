@@ -3609,7 +3609,8 @@ ia64_function_arg_pass_by_reference (cum, mode, type, named)
    this is an indirect call.  */
 static bool
 ia64_function_ok_for_sibcall (decl, exp)
-     tree decl, exp;
+     tree decl;
+     tree exp ATTRIBUTE_UNUSED;
 {
   /* Direct calls are always ok.  */
   if (decl)
@@ -6554,7 +6555,7 @@ bundling (dump, verbose, prev_head_insn, tail)
   rtx insn, next_insn;
   int insn_num;
   int i, bundle_end_p, only_bundle_end_p, asm_p;
-  int pos, max_pos, template0, template1;
+  int pos = 0, max_pos, template0, template1;
   rtx b;
   rtx nop;
   enum attr_type type;
@@ -8151,7 +8152,7 @@ ia64_expand_builtin (exp, target, subtarget, mode, ignore)
   tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
   unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
   tree arglist = TREE_OPERAND (exp, 1);
-  enum machine_mode rmode;
+  enum machine_mode rmode = VOIDmode;
 
   switch (fcode)
     {
