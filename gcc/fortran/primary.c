@@ -235,7 +235,7 @@ match_integer_constant (gfc_expr ** result, int signflag)
 static match
 match_boz_constant (gfc_expr ** result)
 {
-  int radix, delim, length;
+  int radix, delim, length, x_hex;
   locus old_loc;
   char *buffer;
   gfc_expr *e;
@@ -244,6 +244,7 @@ match_boz_constant (gfc_expr ** result)
   old_loc = gfc_current_locus;
   gfc_gobble_whitespace ();
 
+  x_hex = 0;
   switch (gfc_next_char ())
     {
     case 'b':
@@ -255,12 +256,7 @@ match_boz_constant (gfc_expr ** result)
       rname = "octal";
       break;
     case 'x':
-      if (pedantic
-         && (gfc_notify_std (GFC_STD_GNU, "Extension: Hexadecimal "
-                            "constant at %C uses non-standard syntax.")
-             == FAILURE))
-       goto backup;
-
+      x_hex = 1;
       /* Fall through.  */
     case 'z':
       radix = 16;
@@ -306,6 +302,16 @@ match_boz_constant (gfc_expr ** result)
     {
       gfc_error ("Integer too big for default integer kind at %C");
 
+      gfc_free_expr (e);
+      return MATCH_ERROR;
+    }
+
+  if (x_hex
+      && pedantic
+      && (gfc_notify_std (GFC_STD_GNU, "Extension: Hexadecimal "
+			  "constant at %C uses non-standard syntax.")
+	  == FAILURE))
+    {
       gfc_free_expr (e);
       return MATCH_ERROR;
     }

@@ -12,7 +12,11 @@
 	(gfc_match_return): RETURN in main program is an extension.
 	(gfc_match_block_data): A space is required before a block data
 	name.
-	
+
+	PR fortran/16433
+	* primary.c (match_boz_constant): Call gfc_notify_std only if
+	we actually have a non-standard boz-literal-constant.
+
 2004-07-11  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* f95-lang.c (set_block): Remove.
