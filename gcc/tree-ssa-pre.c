@@ -768,7 +768,7 @@ bitmap_print_value_set (FILE *outfile, bitmap_set_t set,
   fprintf (outfile, "%s[%d] := { ", setname, blockindex);
   if (set)
     {
-      bool first;
+      bool first = true;
       unsigned i;
       bitmap_iterator bi;
 
