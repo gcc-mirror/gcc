@@ -3229,7 +3229,7 @@ finish_struct_1 (t, warn_anon)
 
   if (IS_SIGNATURE (t))
     all_virtual = 0;
-  else if (flag_all_virtual == 1 && TYPE_OVERLOADS_METHOD_CALL_EXPR (t))
+  else if (flag_all_virtual == 1)
     all_virtual = 1;
   else
     all_virtual = 0;

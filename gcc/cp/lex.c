@@ -615,8 +615,6 @@ init_lex ()
   IDENTIFIER_OPNAME_P (ansi_opname[(int) MAX_EXPR]) = 1;
   ansi_opname[(int) COND_EXPR] = get_identifier ("__cn");
   IDENTIFIER_OPNAME_P (ansi_opname[(int) COND_EXPR]) = 1;
-  ansi_opname[(int) METHOD_CALL_EXPR] = get_identifier ("__wr");
-  IDENTIFIER_OPNAME_P (ansi_opname[(int) METHOD_CALL_EXPR]) = 1;
 
   init_method ();
   init_error ();
@@ -747,7 +745,6 @@ init_lex ()
 
   opname_tab[(int) COMPONENT_REF] = "->";
   opname_tab[(int) MEMBER_REF] = "->*";
-  opname_tab[(int) METHOD_CALL_EXPR] = "->()";
   opname_tab[(int) INDIRECT_REF] = "*";
   opname_tab[(int) ARRAY_REF] = "[]";
   opname_tab[(int) MODIFY_EXPR] = "=";

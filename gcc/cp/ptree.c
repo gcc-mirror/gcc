@@ -118,8 +118,6 @@ print_lang_type (file, node, indent)
     fputs (" has=", file);
   if (TYPE_HAS_ASSIGN_REF (node))
     fputs (" this=(X&)", file);
-  if (TYPE_OVERLOADS_METHOD_CALL_EXPR (node))
-    fputs (" op->()", file);
   if (TYPE_GETS_INIT_AGGR (node))
     fputs (" gets X(X, ...)", file);
   if (TYPE_OVERLOADS_CALL_EXPR (node))

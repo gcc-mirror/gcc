@@ -143,11 +143,6 @@ int flag_no_ident;
 
 int flag_ansi;
 
-/* Nonzero means do argument matching for overloading according to the
-   ANSI rules, rather than what g++ used to believe to be correct.  */
-
-int flag_ansi_overloading = 1;
-
 /* Nonzero means do emit exported implementations of functions even if
    they can be inlined.  */
 
@@ -470,7 +465,6 @@ static struct { char *string; int *variable; int on_value;} lang_f_options[] =
   {"implement-inlines", &flag_implement_inlines, 1},
   {"external-templates", &flag_external_templates, 1},
   {"implicit-templates", &flag_implicit_templates, 1},
-  {"ansi-overloading", &flag_ansi_overloading, 1},
   {"huge-objects", &flag_huge_objects, 1},
   {"conserve-space", &flag_conserve_space, 1},
   {"vtable-thunks", &flag_vtable_thunks, 1},
@@ -563,6 +557,13 @@ lang_decode_option (p)
       else if (!strcmp (p, "no-guiding-decls"))
 	{
 	  flag_guiding_decls = 0;
+	  found = 1;
+	}
+      else if (!strcmp (p, "ansi-overloading"))
+	found = 1;
+      else if (!strcmp (p, "no-ansi-overloading"))
+	{
+	  error ("-fno-ansi-overloading is no longer supported");
 	  found = 1;
 	}
       else if (!strncmp (p, "template-depth-", 15))

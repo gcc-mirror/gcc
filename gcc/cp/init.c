@@ -1249,7 +1249,7 @@ expand_default_init (binfo, true_exp, exp, init, alias_this, flags)
   tree rval;
   tree parms;
 
-  if (flag_ansi_overloading && init && TREE_CODE (init) != TREE_LIST
+  if (init && TREE_CODE (init) != TREE_LIST
       && (flags & LOOKUP_ONLYCONVERTING))
     {
       /* Base subobjects should only get direct-initialization.  */
@@ -1287,15 +1287,6 @@ expand_default_init (binfo, true_exp, exp, init, alias_this, flags)
       if (parms)
 	init = TREE_VALUE (parms);
     }
-  else if (! flag_ansi_overloading
-	   && TREE_CODE (init) == INDIRECT_REF && TREE_HAS_CONSTRUCTOR (init)
-	   && TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (TREE_TYPE (init)))
-    {
-      rval = convert_for_initialization (exp, type, init, 0, 0, 0, 0);
-      TREE_USED (rval) = 1;
-      expand_expr_stmt (rval);
-      return;
-    }
   else
     parms = build_expr_list (NULL_TREE, init);
 
@@ -1308,52 +1299,9 @@ expand_default_init (binfo, true_exp, exp, init, alias_this, flags)
       flags |= LOOKUP_HAS_IN_CHARGE;
     }
 
-  if (flag_ansi_overloading)
-    {
-      rval = build_method_call (exp, ctor_identifier,
-				parms, binfo, flags);
-      expand_expr_stmt (rval);
-      return;
-    }
-
-  if (init && TREE_CHAIN (parms) == NULL_TREE
-      && TYPE_HAS_TRIVIAL_INIT_REF (type)
-      && TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (TREE_TYPE (init)))
-    {
-      rval = build (INIT_EXPR, type, exp, init);
-      TREE_SIDE_EFFECTS (rval) = 1;
-      expand_expr_stmt (rval);
-    }
-  else
-    {
-      if (flags & LOOKUP_ONLYCONVERTING)
-	flags |= LOOKUP_NO_CONVERSION;
-      rval = build_method_call (exp, ctor_identifier,
-				parms, binfo, flags);
-
-      /* Private, protected, or otherwise unavailable.  */
-      if (rval == error_mark_node)
-	{
-	  if (flags & LOOKUP_COMPLAIN)
-	    cp_error ("in base initialization for %sclass `%T'",
-		      TREE_VIA_VIRTUAL (binfo) ? "virtual base " : "",
-		      binfo);
-	}
-      else if (rval == NULL_TREE)
-	my_friendly_abort (361);
-      else
-	{
-	  /* p. 222: if the base class assigns to `this', then that
-	     value is used in the derived class.  */
-	  if ((flag_this_is_variable & 1) && alias_this)
-	    {
-	      TREE_TYPE (rval) = TREE_TYPE (current_class_ptr);
-	      expand_assignment (current_class_ptr, rval, 0, 0);
-	    }
-	  else
-	    expand_expr_stmt (rval);
-	}
-    }
+  rval = build_method_call (exp, ctor_identifier,
+			    parms, binfo, flags);
+  expand_expr_stmt (rval);
 }
 
 /* This function is responsible for initializing EXP with INIT
@@ -1411,171 +1359,6 @@ expand_aggr_init_1 (binfo, true_exp, exp, init, alias_this, flags)
       TREE_SIDE_EFFECTS (t) = 1;
       expand_expr_stmt (t);
       return;
-    }
-
-  if (init && ! flag_ansi_overloading)
-    {
-      tree init_list = NULL_TREE;
-
-      if (TREE_CODE (init) == TREE_LIST)
-	{
-	  init_list = init;
-	  if (TREE_CHAIN (init) == NULL_TREE)
-	    init = TREE_VALUE (init);
-	}
-
-      init_type = TREE_TYPE (init);
-
-      if (TREE_CODE (init) != TREE_LIST)
-	{
-	  if (init_type == error_mark_node)
-	    return;
-
-	  /* This happens when we use C++'s functional cast notation.
-	     If the types match, then just use the TARGET_EXPR
-	     directly.  Otherwise, we need to create the initializer
-	     separately from the object being initialized.  */
-	  if (TREE_CODE (init) == TARGET_EXPR)
-	    {
-	      if (TYPE_MAIN_VARIANT (init_type) == TYPE_MAIN_VARIANT (type))
-		{
-		  if (TREE_CODE (exp) == VAR_DECL
-		      || TREE_CODE (exp) == RESULT_DECL)
-		    /* Unify the initialization targets.  */
-		    DECL_RTL (TREE_OPERAND (init, 0)) = DECL_RTL (exp);
-		  else
-		    DECL_RTL (TREE_OPERAND (init, 0)) = expand_expr (exp, NULL_RTX, VOIDmode, EXPAND_NORMAL);
-
-		  expand_expr_stmt (init);
-		  return;
-		}
-	    }
-
-	  if (init_type == type && TREE_CODE (init) == CALL_EXPR)
-	    {
-	      /* A CALL_EXPR is a legitimate form of initialization, so
-		 we should not print this warning message.  */
-
-	      expand_assignment (exp, init, 0, 0);
-	      if (exp == DECL_RESULT (current_function_decl))
-		{
-		  /* Failing this assertion means that the return value
-		     from receives multiple initializations.  */
-		  my_friendly_assert (DECL_INITIAL (exp) == NULL_TREE
-				      || DECL_INITIAL (exp) == error_mark_node,
-				      212);
-		  DECL_INITIAL (exp) = init;
-		}
-	      return;
-	    }
-	  else if (init_type == type
-		   && TREE_CODE (init) == COND_EXPR)
-	    {
-	      /* Push value to be initialized into the cond, where possible.
-	         Avoid spurious warning messages when initializing the
-		 result of this function.  */
-	      TREE_OPERAND (init, 1)
-		= build_modify_expr (exp, INIT_EXPR, TREE_OPERAND (init, 1));
-	      if (exp == DECL_RESULT (current_function_decl))
-		DECL_INITIAL (exp) = NULL_TREE;
-	      TREE_OPERAND (init, 2)
-		= build_modify_expr (exp, INIT_EXPR, TREE_OPERAND (init, 2));
-	      if (exp == DECL_RESULT (current_function_decl))
-		DECL_INITIAL (exp) = init;
-	      TREE_SIDE_EFFECTS (init) = 1;
-	      expand_expr (init, const0_rtx, VOIDmode, EXPAND_NORMAL);
-	      free_temp_slots ();
-	      return;
-	    }
-	}
-
-      /* We did not know what we were initializing before.  Now we do.  */
-      if (TREE_CODE (init) == TARGET_EXPR)
-	{
-	  tree tmp = TREE_OPERAND (TREE_OPERAND (init, 1), 1);
-
-	  if (tmp && TREE_CODE (TREE_VALUE (tmp)) == NOP_EXPR
-	      && TREE_OPERAND (TREE_VALUE (tmp), 0) == integer_zero_node)
-	    {
-	      /* In order for this to work for RESULT_DECLs, if their
-		 type has a constructor, then they must be BLKmode
-		 so that they will be meaningfully addressable.  */
-	      tree arg = build_unary_op (ADDR_EXPR, exp, 0);
-	      init = TREE_OPERAND (init, 1);
-	      init = build (CALL_EXPR, build_pointer_type (TREE_TYPE (init)),
-			    TREE_OPERAND (init, 0), TREE_OPERAND (init, 1), NULL_TREE);
-	      TREE_SIDE_EFFECTS (init) = 1;
-	      TREE_VALUE (TREE_OPERAND (init, 1))
-		= convert_pointer_to (TREE_TYPE (TREE_TYPE (TREE_VALUE (tmp))), arg);
-
-	      if (alias_this)
-		{
-		  expand_assignment (current_function_decl, init, 0, 0);
-		  return;
-		}
-	      if (exp == DECL_RESULT (current_function_decl))
-		{
-		  if (DECL_INITIAL (DECL_RESULT (current_function_decl)))
-		    fatal ("return value from function receives multiple initializations");
-		  DECL_INITIAL (exp) = init;
-		}
-	      expand_expr_stmt (init);
-	      return;
-	    }
-	}
-
-      /* Handle this case: when calling a constructor: xyzzy foo(bar);
-	 which really means:  xyzzy foo = bar; Ugh!
-
-	 More useful for this case: xyzzy *foo = new xyzzy (bar);  */
-
-      if (! TYPE_NEEDS_CONSTRUCTING (type) && ! IS_AGGR_TYPE (type))
-	{
-	  if (init_list && TREE_CHAIN (init_list))
-	    {
-	      warning ("initializer list being treated as compound expression");
-	      init = cp_convert (type, build_compound_expr (init_list));
-	      if (init == error_mark_node)
-		return;
-	    }
-
-	  expand_assignment (exp, init, 0, 0);
-
-	  return;
-	}
-
-      /* If this is copy-initialization, see whether we can go through a
-	 type conversion operator.  */
-      if (TREE_CODE (init) != TREE_LIST && (flags & LOOKUP_ONLYCONVERTING))
-	{
-	  tree ttype = TREE_CODE (init_type) == REFERENCE_TYPE
-	    ? TREE_TYPE (init_type) : init_type;
-
-	  if (ttype != type && IS_AGGR_TYPE (ttype))
-	    {
-	      tree rval = build_type_conversion (CONVERT_EXPR, type, init, 1);
-
-	      if (rval)
-		{
-		  /* See if there is a constructor for``type'' that takes a
-		     ``ttype''-typed object.  */
-		  tree parms = build_expr_list (NULL_TREE, init);
-		  tree as_cons = NULL_TREE;
-		  if (TYPE_HAS_CONSTRUCTOR (type))
-		    as_cons = build_method_call (exp, ctor_identifier,
-						 parms, binfo,
-						 LOOKUP_SPECULATIVELY|LOOKUP_NO_CONVERSION);
-		  if (as_cons != NULL_TREE && as_cons != error_mark_node)
-		    /* ANSI C++ June 5 1992 WP 12.3.2.6.1 */
-		    cp_error ("ambiguity between conversion to `%T' and constructor",
-			      type);
-		  else
-		    if (rval != error_mark_node)
-		      expand_aggr_init_1 (binfo, true_exp, exp, rval, alias_this, flags);
-		  return;
-		}
-	    }
-	}
     }
 
   /* We know that expand_default_init can handle everything we want

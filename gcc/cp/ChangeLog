@@ -1,5 +1,11 @@
 Tue Mar  3 01:38:17 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* call.c, class.c, cp-tree.h, cvt.c, decl.c, init.c, lex.c,
+	method.c, pt.c, ptree.c, typeck.c: Remove support for 
+	-fno-ansi-overloading and overloading METHOD_CALL_EXPR.
+	* class.h: Remove.
+	* Makefile.in: Adjust.
+
 	* pt.c (unify): Don't allow reduced cv-quals when strict.
 
 	* call.c, class.c, pt.c, cp-tree.h: Remove nsubsts parm from

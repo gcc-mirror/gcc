@@ -10760,8 +10760,7 @@ grok_op_properties (decl, virtualp, friendp)
 	    }
 	}
       
-      if (name == ansi_opname[(int) CALL_EXPR]
-	  || name == ansi_opname[(int) METHOD_CALL_EXPR])
+      if (name == ansi_opname[(int) CALL_EXPR])
 	return;			/* no restrictions on args */
 
       if (IDENTIFIER_TYPENAME_P (name) && ! DECL_TEMPLATE_INFO (decl))
@@ -11245,7 +11244,6 @@ xref_basetypes (code_type_node, name, ref, binfo)
 	      TYPE_USES_COMPLEX_INHERITANCE (ref) = 1;
 	    }
 
-	  TYPE_OVERLOADS_METHOD_CALL_EXPR (ref) |= TYPE_OVERLOADS_METHOD_CALL_EXPR (basetype);
 	  TYPE_GETS_NEW (ref) |= TYPE_GETS_NEW (basetype);
 	  TYPE_GETS_DELETE (ref) |= TYPE_GETS_DELETE (basetype);
 	  CLASSTYPE_LOCAL_TYPEDECLS (ref) |= CLASSTYPE_LOCAL_TYPEDECLS (basetype);
