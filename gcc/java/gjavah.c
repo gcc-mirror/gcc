@@ -1,7 +1,7 @@
 /* Program to write C++-suitable header files from a Java(TM) .class
    file.  This is similar to SUN's javah.
 
-Copyright (C) 1996, 1998, 1999 Free Software Foundation, Inc.
+Copyright (C) 1996, 1998, 1999, 2000 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -436,7 +436,11 @@ DEFUN(print_field_info, (stream, jcf, name_index, sig_index, flags),
       return;
     }
 
-  if (flags & ACC_FINAL)
+  fputs ("  ", out);
+  if ((flags & ACC_STATIC))
+    fputs ("static ", out);
+
+  if ((flags & ACC_FINAL))
     {
       if (current_field_value > 0)
 	{
@@ -449,7 +453,7 @@ DEFUN(print_field_info, (stream, jcf, name_index, sig_index, flags),
 	      {
 		jint num;
 		int most_negative = 0;
-		fputs ("  static const jint ", out);
+		fputs ("const jint ", out);
 		print_field_name (out, jcf, name_index, 0);
 		fputs (" = ", out);
 		num = JPOOL_INT (jcf, current_field_value);
@@ -468,7 +472,7 @@ DEFUN(print_field_info, (stream, jcf, name_index, sig_index, flags),
 	      {
 		jlong num;
 		int most_negative = 0;
-		fputs ("  static const jlong ", out);
+		fputs ("const jlong ", out);
 		print_field_name (out, jcf, name_index, 0);
 		fputs (" = ", out);
 		num = JPOOL_LONG (jcf, current_field_value);
@@ -486,7 +490,7 @@ DEFUN(print_field_info, (stream, jcf, name_index, sig_index, flags),
 	    case CONSTANT_Float:
 	      {
 		jfloat fnum = JPOOL_FLOAT (jcf, current_field_value);
-		fputs ("  static const jfloat ", out);
+		fputs ("const jfloat ", out);
 		print_field_name (out, jcf, name_index, 0);
 		if (! java_float_finite (fnum))
 		  fputs (";\n", out);
@@ -497,7 +501,7 @@ DEFUN(print_field_info, (stream, jcf, name_index, sig_index, flags),
 	    case CONSTANT_Double:
 	      {
 		jdouble dnum = JPOOL_DOUBLE (jcf, current_field_value);
-		fputs ("  static const jdouble ", out);
+		fputs ("const jdouble ", out);
 		print_field_name (out, jcf, name_index, 0);
 		if (! java_double_finite (dnum))
 		  fputs (";\n", out);
@@ -516,10 +520,6 @@ DEFUN(print_field_info, (stream, jcf, name_index, sig_index, flags),
 	    return;
 	}
     }
-
-  fputs ("  ", out);
-  if ((flags & ACC_STATIC))
-    fputs ("static ", out);
 
   override = get_field_name (jcf, name_index, flags);
   print_c_decl (out, jcf, name_index, sig_index, 0, override);
