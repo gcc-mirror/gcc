@@ -156,7 +156,15 @@ The following information was last updated on @value{last-update-news}:
 @itemize @bullet
 @ifclear USERVISONLY
 @item
-[ Nothing yet ]
+George Helffrich (@email{george@@geo.titech.ac.jp}) implemented a change
+in substring index checking (when specifying @code{-fbounds-check})
+that permits the use of zero length substrings of the form
+@code{string(1:0)}.
+
+@item
+Based on code developed by Pedro Vazquez (@email{vazquez@@penelope.iqm.unicamp.br}),
+the @code{libf2c} library is now able to read and write files larger than
+2 Gbyte on 32-bit target machines, if the operating system supports this.
 @end ifclear
 @end itemize
 
