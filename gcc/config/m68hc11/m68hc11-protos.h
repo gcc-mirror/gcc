@@ -120,6 +120,7 @@ extern int m68hc11_arith_operator PARAMS((rtx, enum machine_mode));
 extern int m68hc11_non_shift_operator PARAMS((rtx, enum machine_mode));
 extern int m68hc11_shift_operator PARAMS((rtx, enum machine_mode));
 extern int m68hc11_unary_operator PARAMS((rtx, enum machine_mode));
+extern int m68hc11_eq_compare_operator PARAMS((rtx, enum machine_mode));
 extern int non_push_operand PARAMS((rtx, enum machine_mode));
 extern int hard_reg_operand PARAMS((rtx, enum machine_mode));
 extern int soft_reg_operand PARAMS((rtx, enum machine_mode));
