@@ -182,9 +182,12 @@ static jint get4(unsigned char* loc) {
 
 #ifdef HANDLE_SEGV
 #define NULLCHECK(X) 
+#define NULLARRAYCHECK(X) do { SAVE_PC; } while (0)
 #else
 #define NULLCHECK(X) \
   do { if ((X)==NULL) throw_null_pointer_exception (); } while (0)
+#define NULLARRAYCHECK(X) \
+  do { if ((X)==NULL) { SAVE_PC; throw_null_pointer_exception (); } } while (0)
 #endif
 
 #define ARRAYBOUNDSCHECK(array, index)					      \
@@ -298,10 +301,14 @@ _Jv_InterpMethod::run (ffi_cif* cif,
   return ex;
 }
 
+#define SAVE_PC   inv->pc = pc
+
 bool _Jv_InterpMethod::find_exception (jobject ex,
 				       _Jv_InterpMethodInvocation *inv)
 {
-  int logical_pc = inv->pc - bytecode ();
+  // We subtract one because the PC was incremented before it was
+  // saved.
+  int logical_pc = inv->pc - 1 - bytecode ();
   _Jv_InterpException *exc = exceptions ();
   jclass exc_class = ex->getClass ();
 
@@ -621,8 +628,6 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
     INSN_LABEL(goto_w),
     INSN_LABEL(jsr_w),
   };
-
-#define SAVE_PC   inv->pc = pc-1
 
   /* If the macro INLINE_SWITCH is not defined, then the main loop
      operates as one big (normal) switch statement.  If it is defined,
@@ -960,88 +965,80 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
       NEXT_INSN;
 
      insn_iaload:
-      SAVE_PC;
       {
 	jint index = POPI();
 	jintArray arr = (jintArray) POPA();
-	NULLCHECK (arr);
+	NULLARRAYCHECK (arr);
 	ARRAYBOUNDSCHECK (arr, index);
 	PUSHI( elements(arr)[index] );
       }
       NEXT_INSN;
 
      insn_laload:
-      SAVE_PC;
       {
 	jint index = POPI();
 	jlongArray arr = (jlongArray) POPA();
-	NULLCHECK (arr);
+	NULLARRAYCHECK (arr);
 	ARRAYBOUNDSCHECK (arr, index);
 	PUSHL( elements(arr)[index] );
       }
       NEXT_INSN;
 
      insn_faload:
-      SAVE_PC;
       {
 	jint index = POPI();
 	jfloatArray arr = (jfloatArray) POPA();
-	NULLCHECK (arr);
+	NULLARRAYCHECK (arr);
 	ARRAYBOUNDSCHECK (arr, index);
 	PUSHF( elements(arr)[index] );
       }
       NEXT_INSN;
 
      insn_daload:
-      SAVE_PC;
       {
 	jint index = POPI();
 	jdoubleArray arr = (jdoubleArray) POPA();
-	NULLCHECK (arr);
+	NULLARRAYCHECK (arr);
 	ARRAYBOUNDSCHECK (arr, index);
 	PUSHD( elements(arr)[index] );
       }
       NEXT_INSN;
 
      insn_aaload:
-      SAVE_PC;
       {
 	jint index = POPI();
 	jobjectArray arr = (jobjectArray) POPA();
-	NULLCHECK (arr);
+	NULLARRAYCHECK (arr);
 	ARRAYBOUNDSCHECK (arr, index);
 	PUSHA( elements(arr)[index] );
       }
       NEXT_INSN;
 
      insn_baload:
-      SAVE_PC;
       {
 	jint index = POPI();
 	jbyteArray arr = (jbyteArray) POPA();
-	NULLCHECK (arr);
+	NULLARRAYCHECK (arr);
 	ARRAYBOUNDSCHECK (arr, index);
 	PUSHI( elements(arr)[index] );
       }
       NEXT_INSN;
 
      insn_caload:
-      SAVE_PC;
       {
 	jint index = POPI();
 	jcharArray arr = (jcharArray) POPA();
-	NULLCHECK (arr);
+	NULLARRAYCHECK (arr);
 	ARRAYBOUNDSCHECK (arr, index);
 	PUSHI( elements(arr)[index] );
       }
       NEXT_INSN;
 
      insn_saload:
-      SAVE_PC;
       {
 	jint index = POPI();
 	jshortArray arr = (jshortArray) POPA();
-	NULLCHECK (arr);
+	NULLARRAYCHECK (arr);
 	ARRAYBOUNDSCHECK (arr, index);
 	PUSHI( elements(arr)[index] );
       }
@@ -1148,60 +1145,55 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
       NEXT_INSN;
 
      insn_iastore:
-      SAVE_PC;
       {
 	jint value = POPI();
 	jint index  = POPI();
 	jintArray arr = (jintArray) POPA();
-	NULLCHECK (arr);
+	NULLARRAYCHECK (arr);
 	ARRAYBOUNDSCHECK (arr, index);
 	elements(arr)[index] = value;
       }
       NEXT_INSN;
 
      insn_lastore:
-      SAVE_PC;
       {
 	jlong value = POPL();
 	jint index  = POPI();
 	jlongArray arr = (jlongArray) POPA();
-	NULLCHECK (arr);
+	NULLARRAYCHECK (arr);
 	ARRAYBOUNDSCHECK (arr, index);
 	elements(arr)[index] = value;
       }
       NEXT_INSN;
 
      insn_fastore:
-      SAVE_PC;
       {
 	jfloat value = POPF();
 	jint index  = POPI();
 	jfloatArray arr = (jfloatArray) POPA();
-	NULLCHECK (arr);
+	NULLARRAYCHECK (arr);
 	ARRAYBOUNDSCHECK (arr, index);
 	elements(arr)[index] = value;
       }
       NEXT_INSN;
 
      insn_dastore:
-      SAVE_PC;
       {
 	jdouble value = POPD();
 	jint index  = POPI();
 	jdoubleArray arr = (jdoubleArray) POPA();
-	NULLCHECK (arr);
+	NULLARRAYCHECK (arr);
 	ARRAYBOUNDSCHECK (arr, index);
 	elements(arr)[index] = value;
       }
       NEXT_INSN;
 
      insn_aastore:
-      SAVE_PC;
       {
 	jobject value = POPA();
 	jint index  = POPI();
 	jobjectArray arr = (jobjectArray) POPA();
-	NULLCHECK (arr);
+	NULLARRAYCHECK (arr);
 	ARRAYBOUNDSCHECK (arr, index);
 	_Jv_CheckArrayStore (arr, value);
 	elements(arr)[index] = value;
@@ -1209,36 +1201,33 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
       NEXT_INSN;
 
      insn_bastore:
-      SAVE_PC;
       {
 	jbyte value = (jbyte) POPI();
 	jint index  = POPI();
 	jbyteArray arr = (jbyteArray) POPA();
-	NULLCHECK (arr);
+	NULLARRAYCHECK (arr);
 	ARRAYBOUNDSCHECK (arr, index);
 	elements(arr)[index] = value;
       }
       NEXT_INSN;
 
      insn_castore:
-      SAVE_PC;
       {
 	jchar value = (jchar) POPI();
 	jint index  = POPI();
 	jcharArray arr = (jcharArray) POPA();
-	NULLCHECK (arr);
+	NULLARRAYCHECK (arr);
 	ARRAYBOUNDSCHECK (arr, index);
 	elements(arr)[index] = value;
       }
       NEXT_INSN;
 
      insn_sastore:
-      SAVE_PC;
       {
 	jshort value = (jshort) POPI();
 	jint index  = POPI();
 	jshortArray arr = (jshortArray) POPA();
-	NULLCHECK (arr);
+	NULLARRAYCHECK (arr);
 	ARRAYBOUNDSCHECK (arr, index);
 	elements(arr)[index] = value;
       }
@@ -1357,7 +1346,6 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
       NEXT_INSN;
 
      insn_fdiv:
-      SAVE_PC;
       {
 	jfloat value2 = POPF();
 	jfloat value1 = POPF();
@@ -1367,7 +1355,6 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
       NEXT_INSN;
 
      insn_ddiv:
-      SAVE_PC;
       {
 	jdouble value2 = POPD();
 	jdouble value1 = POPD();
@@ -1397,7 +1384,6 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
       NEXT_INSN;
 
      insn_frem:
-      SAVE_PC;
       {
 	jfloat value2 = POPF();
 	jfloat value1 = POPF();
@@ -1407,7 +1393,6 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
       NEXT_INSN;
 
      insn_drem:
-      SAVE_PC;
       {
 	jdouble value2 = POPD();
 	jdouble value1 = POPD();
@@ -2185,10 +2170,9 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
       NEXT_INSN;
 
      insn_arraylength:
-      SAVE_PC;
       {
 	__JArray *arr = (__JArray*)POPA();
-	NULLCHECK (arr);
+	NULLARRAYCHECK (arr);
 	PUSHI (arr->length);
       }
       NEXT_INSN;
