@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1997-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -159,7 +159,7 @@ package body Sem_Elab is
    -- Local Subprograms --
    -----------------------
 
-   --  Note: Outer_Scope in all these calls represents the scope of
+   --  Note: Outer_Scope in all following specs represents the scope of
    --  interest of the outer level call. If it is set to Standard_Standard,
    --  then it means the outer level call was at elaboration level, and that
    --  thus all calls are of interest. If it was set to some other scope,
@@ -223,6 +223,29 @@ package body Sem_Elab is
    --  when Check_Elab_Calls is called. N, E and Orig_Ent are as for the call
    --  to Check_Internal_Call. Outer_Scope is the outer level scope for
    --  the original call.
+
+   procedure Set_Elaboration_Constraint
+    (Call : Node_Id;
+     Subp : Entity_Id;
+     Scop : Entity_Id);
+   --  The current unit U may depend semantically on some unit P which is not
+   --  in the current context. If there is an elaboration call that reaches P,
+   --  we need to indicate that P requires an Elaborate_All, but this is not
+   --  effective in U's ali file, if there is no with_clause for P. In this
+   --  case we add the Elaborate_All on the unit Q that directly or indirectly
+   --  makes P available. This can happen in two cases:
+   --
+   --    a) Q declares a subtype of a type declared in P, and the call is an
+   --    initialization call for an object of that subtype.
+   --
+   --    b) Q declares an object of some tagged type whose root type is
+   --    declared in P, and the initialization call uses object notation on
+   --    that object to reach a primitive operation or a classwide operation
+   --    declared in P.
+   --
+   --  If P appears in the context of U, the current processing is correct.
+   --  Otherwise we must identify these two cases to retrieve Q and place the
+   --  Elaborate_All_Desirable on it.
 
    function Has_Generic_Body (N : Node_Id) return Boolean;
    --  N is a generic package instantiation node, and this routine determines
@@ -308,11 +331,16 @@ package body Sem_Elab is
       --  elaboration check is required.
 
       W_Scope : Entity_Id;
-      --  Top level scope of directly called entity for subprogram.
-      --  This differs from E_Scope in the case where renamings or
-      --  derivations are involved, since it does not follow these
-      --  links, thus W_Scope is always in a visible unit. This is
-      --  the scope for the Elaborate_All if one is needed.
+      --  Top level scope of directly called entity for subprogram. This
+      --  differs from E_Scope in the case where renamings or derivations
+      --  are involved, since it does not follow these links. W_Scope is
+      --  generally in a visible unit, and it is this scope that may require
+      --  an Elaborate_All. However, there are some cases (initialization
+      --  calls and calls involving object notation) where W_Scope might not
+      --  be in the context of the current unit, and there is an intermediate
+      --  package that is, in which case the Elaborate_All has to be placed
+      --  on this intedermediate package. These special cases are handled in
+      --  Set_Elaboration_Constraint.
 
       Body_Acts_As_Spec : Boolean;
       --  Set to true if call is to body acting as spec (no separate spec)
@@ -751,8 +779,7 @@ package body Sem_Elab is
 
                --  Set indication for binder to generate Elaborate_All
 
-               Set_Elaborate_All_Desirable (W_Scope);
-               Set_Suppress_Elaboration_Warnings (W_Scope, True);
+               Set_Elaboration_Constraint (N, E, W_Scope);
             end if;
          end if;
 
@@ -1342,6 +1369,12 @@ package body Sem_Elab is
       --  Nothing to do if inside a generic template
 
       if Inside_A_Generic then
+         return;
+      end if;
+
+      --  Nothing to do if the instantiation is not in the main unit.
+
+      if not In_Extended_Main_Code_Unit (N) then
          return;
       end if;
 
@@ -1999,6 +2032,96 @@ package body Sem_Elab is
 
       In_Task_Activation := False;
    end Check_Task_Activation;
+
+   --------------------------------
+   -- Set_Elaboration_Constraint --
+   --------------------------------
+
+   procedure Set_Elaboration_Constraint
+    (Call : Node_Id;
+     Subp : Entity_Id;
+     Scop : Entity_Id)
+   is
+      Elab_Unit  : Entity_Id;
+      Init_Call  : constant Boolean :=
+                     Chars (Subp) = Name_Initialize
+                       and then Comes_From_Source (Subp)
+                       and then Present (Parameter_Associations (Call))
+                       and then Is_Controlled
+                         (Etype (First (Parameter_Associations (Call))));
+   begin
+      --  If the unit is mentioned in a with_clause of the current
+      --  unit, it is visible, and we can set the elaboration flag.
+
+      if Is_Immediately_Visible (Scop)
+        or else
+          (Is_Child_Unit (Scop) and then Is_Visible_Child_Unit (Scop))
+      then
+         Set_Elaborate_All_Desirable (Scop);
+         Set_Suppress_Elaboration_Warnings (Scop, True);
+         return;
+      end if;
+
+      --  If this is not an initialization call or a call using object notation
+      --  we know that the unit of the called entity is in the context, and
+      --  we can set the flag as well. The unit need not be visible if the call
+      --  occurs within an instantiation.
+
+      if Is_Init_Proc (Subp)
+        or else Init_Call
+        or else Nkind (Original_Node (Call)) = N_Selected_Component
+      then
+         null;  --  detailed processing follows.
+
+      else
+         Set_Elaborate_All_Desirable (Scop);
+         Set_Suppress_Elaboration_Warnings (Scop, True);
+         return;
+      end if;
+
+      --  If the unit is not in the context, there must be an intermediate
+      --  unit that is, on which we need to place to elaboration flag.
+
+      if Is_Init_Proc (Subp)
+        or else Init_Call
+      then
+         --  The initialization call is on an object whose type is not
+         --  declared in the same scope as the subprogram. The type of
+         --  the object must be a subtype of the type of operation. This
+         --  object is the first actual in the call.
+
+         declare
+            Typ  : constant Entity_Id :=
+                     Etype (First (Parameter_Associations (Call)));
+         begin
+            Elab_Unit := Scope (Typ);
+
+            while (Present (Elab_Unit))
+              and then not Is_Compilation_Unit (Elab_Unit)
+            loop
+               Elab_Unit := Scope (Elab_Unit);
+            end loop;
+         end;
+      elsif Nkind (Original_Node (Call)) = N_Selected_Component then
+
+         --  If original node uses selected component notation, the
+         --  prefix is visible and determines the scope that must be
+         --  elaborated. After rewriting, the prefix is the first actual
+         --  in the call.
+
+         Elab_Unit := Scope (Etype (First (Parameter_Associations (Call))));
+
+      else
+         --  Using previously computed scope. If the elaboration check is
+         --  done after analysis, the scope is not visible any longer, but
+         --  must still be in the context.
+
+         Elab_Unit := Scop;
+      end if;
+
+      Set_Elaborate_All_Desirable (Elab_Unit);
+      Set_Suppress_Elaboration_Warnings (Elab_Unit, True);
+   end Set_Elaboration_Constraint;
 
    ----------------------
    -- Has_Generic_Body --
