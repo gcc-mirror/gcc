@@ -2179,9 +2179,10 @@
       rtx temp = XEXP (operands[0], 0);
       if (CONSTANT_ADDRESS_P (temp))
 	{
+#ifdef GAS_SYNTAX
 	  operands[0] = temp;
 	  return \"bsr %0\";
-#if 0
+#else
 #ifdef GNX_V3
 	  return \"bsr %0\";
 #else
@@ -2190,8 +2191,9 @@
 #endif
 	}
       if (GET_CODE (XEXP (operands[0], 0)) == REG)
+#if defined (GNX_V3) || defined (GAS_SYNTAX)
 	return \"jsr %0\";
-#if 0
+#else
         return \"jsr %a0\";
 #endif
     }
@@ -2211,10 +2213,10 @@
     {
       rtx temp = XEXP (operands[1], 0);
       if (CONSTANT_ADDRESS_P (temp))
-	{
+#ifdef GAS_SYNTAX
 	  operands[1] = temp;
 	  return \"bsr %1\";
-#if 0
+#else
 #ifdef GNX_V3
 	  return \"bsr %1\";
 #else
@@ -2223,8 +2225,9 @@
 #endif
 	}
       if (GET_CODE (XEXP (operands[1], 0)) == REG)
+#if defined (GNX_V3) || defined (GAS_SYNTAX)
 	return \"jsr %1\";
-#if 0
+#else
         return \"jsr %a1\";
 #endif
     }
