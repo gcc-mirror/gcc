@@ -77,6 +77,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "regs.h"
 #include "insn-config.h"
 #include "reload.h"
+#include "defaults.h"
 
 #ifndef errno
 extern int errno;
