@@ -147,6 +147,12 @@ namespace std
       __basic_file*
       sys_open(__c_file_type* __file, ios_base::openmode __mode);
 
+      _CharT
+      sys_getc();
+
+      _CharT
+      sys_ungetc(_CharT);
+
       __basic_file* 
       close(); 
 
