@@ -51,7 +51,7 @@ typedef int (*tree_fn_t) PARAMS ((tree, void*));
    instantiations have been deferred, either because their definitions
    were not yet available, or because we were putting off doing the
    work.  The TREE_PURPOSE of each entry is a SRCLOC indicating where
-   the instantiate request occurred; the TREE_VALUE is a either a DECL
+   the instantiate request occurred; the TREE_VALUE is either a DECL
    (for a function or static data member), or a TYPE (for a class)
    indicating what we are hoping to instantiate.  */
 static GTY(()) tree pending_templates;
@@ -5074,7 +5074,7 @@ instantiate_class_template (type)
 
   if (t)
     {
-      /* This TYPE is actually a instantiation of of a partial
+      /* This TYPE is actually an instantiation of a partial
 	 specialization.  We replace the innermost set of ARGS with
 	 the arguments appropriate for substitution.  For example,
 	 given:
@@ -7449,7 +7449,7 @@ tsubst_expr (t, args, complain, in_decl)
 	  }
 
 	/* A DECL_STMT can also be used as an expression, in the condition
-	   clause of a if/for/while construct.  If we aren't followed by
+	   clause of an if/for/while construct.  If we aren't followed by
 	   another statement, return our decl.  */
 	if (TREE_CHAIN (t) == NULL_TREE)
 	  return decl;

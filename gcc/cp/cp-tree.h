@@ -2223,7 +2223,7 @@ struct lang_decl GTY(())
 #define TMPL_ARGS_DEPTH(NODE)					\
   (TMPL_ARGS_HAVE_MULTIPLE_LEVELS (NODE) ? TREE_VEC_LENGTH (NODE) : 1)
 
-/* The LEVELth level of the template ARGS.  The outermost level of of
+/* The LEVELth level of the template ARGS.  The outermost level of
    args is level 1, not level 0.  */
 #define TMPL_ARGS_LEVEL(ARGS, LEVEL)		\
   (TMPL_ARGS_HAVE_MULTIPLE_LEVELS (ARGS)	\

@@ -13245,7 +13245,7 @@ finish_enum (enumtype)
   for (pair = TYPE_VALUES (enumtype); pair; pair = TREE_CHAIN (pair))
     TREE_TYPE (TREE_VALUE (pair)) = enumtype;
   
-  /* For a enum defined in a template, all further processing is
+  /* For an enum defined in a template, all further processing is
      postponed until the template is instantiated.  */
   if (processing_template_decl)
     {
@@ -14320,7 +14320,7 @@ finish_function (flags)
   free_after_compilation (cfun);
   cfun = NULL;
 
-  /* If this is a in-class inline definition, we may have to pop the
+  /* If this is an in-class inline definition, we may have to pop the
      bindings for the template parameters that we added in
      maybe_begin_member_template_processing when start_function was
      called.  */
