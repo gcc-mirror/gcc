@@ -1,3 +1,13 @@
+2003-02-12  Ranjit Mathew  <rmathew@hotmail.com>
+
+	* jni.cc (_Jv_LookupJNIMethod): Modify to accept the
+	size of the arguments for a JNI function. For Win32,
+	modify to search for all forms of possible exported
+	names of an stdcall JNI function.
+	(_Jv_JNIMethod::call): Modify to calculate the size
+	of the arguments passed to a JNI function and pass
+	it to _Jv_LookupJNIMethod.
+
 2003-02-12  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/NetPermission.java
