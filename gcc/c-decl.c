@@ -6002,7 +6002,8 @@ store_parm_decls_oldstyle (tree fndecl, const struct c_arg_info *arg_info)
       if (TREE_CODE (parm) != PARM_DECL)
 	continue;
 
-      if (!COMPLETE_TYPE_P (TREE_TYPE (parm)))
+      if (TREE_TYPE (parm) != error_mark_node
+	  && !COMPLETE_TYPE_P (TREE_TYPE (parm)))
 	{
 	  error ("%Jparameter %qD has incomplete type", parm, parm);
 	  TREE_TYPE (parm) = error_mark_node;

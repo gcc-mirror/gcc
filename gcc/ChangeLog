@@ -1,3 +1,11 @@
+2004-10-14  Richard Henderson  <rth@redhat.com>
+
+	PR c/17023
+	* c-decl.c (store_parm_decls_oldstyle): Care for parameter type
+	as error_mark_node.
+	* c-parse.in (compstmt_primary_start): Check cur_stmt_list non-null
+	instaed of current_function_decl non-null.
+
 2004-10-14  Matt Austern  <austern@apple.com>
 
 	* pointer-set.c: New file, special-purpose hash table.
