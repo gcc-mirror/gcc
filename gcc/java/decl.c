@@ -885,22 +885,6 @@ java_init_decl_processing (void)
 			build_function_type (ptr_type_node, t),
 			0, NOT_BUILT_IN, NULL, NULL_TREE);
 
-  t = tree_cons (NULL_TREE, double_type_node,
-		 tree_cons (NULL_TREE, double_type_node, endlink));
-  soft_fmod_node
-    = builtin_function ("__builtin_fmod",
-			build_function_type (double_type_node, t),
-			BUILT_IN_FMOD, BUILT_IN_NORMAL, "fmod", NULL_TREE);
-
-#if 0
-  t = tree_cons (NULL_TREE, float_type_node,
-		 tree_cons (NULL_TREE, float_type_node, endlink));
-  soft_fmodf_node
-    = builtin_function ("__builtin_fmodf",
-			build_function_type (float_type_node, t),
-			BUILT_IN_FMOD, BUILT_IN_NORMAL, "fmodf", NULL_TREE);
-#endif
-    
   soft_idiv_node
     = builtin_function ("_Jv_divI",
 			build_function_type (int_type_node, t),
@@ -928,8 +912,13 @@ java_init_decl_processing (void)
   lang_eh_runtime_type = prepare_eh_table_type;
 
   init_jcf_parse ();
-
+    
   initialize_builtins ();
+
+  soft_fmod_node = built_in_decls[BUILT_IN_FMOD];
+#if 0
+  soft_fmodf_node = built_in_decls[BUILT_IN_FMODF];
+#endif
 }
 
 
