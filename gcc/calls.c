@@ -2341,12 +2341,6 @@ expand_call (exp, target, ignore)
              only one of the alternates.  */
 	  emit_queue ();
 
-	  /* We know at this point that there are not currently any
-	     pending cleanups.  If, however, in the process of evaluating
-	     the arguments we were to create some, we'll need to be
-	     able to get rid of them.  */
-	  expand_start_target_temps ();
-
 	  /* State variables we need to save and restore between
 	     iterations.  */
 	  save_pending_stack_adjust = pending_stack_adjust;
@@ -2367,6 +2361,15 @@ expand_call (exp, target, ignore)
 	 From this point on, if the sibling call fails, we want to set
 	 sibcall_failure instead of continuing the loop.  */
       start_sequence ();
+
+      if (pass == 0)
+	{
+	  /* We know at this point that there are not currently any
+	     pending cleanups.  If, however, in the process of evaluating
+	     the arguments we were to create some, we'll need to be
+	     able to get rid of them.  */
+	  expand_start_target_temps ();
+	}
 
       /* When calling a const function, we must pop the stack args right away,
 	 so that the pop is deleted or moved with the call.  */
