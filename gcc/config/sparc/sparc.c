@@ -2947,6 +2947,14 @@ sparc_type_code (type)
 	  return (qualifiers | 16);
 
 	case INTEGER_TYPE:
+	  /* If this is a range type, consider it to be the underlying
+	     type.  */
+	  if (TREE_TYPE (type) != 0)
+	    {
+	      type = TREE_TYPE (type);
+	      break;
+	    }
+
 	  /* Carefully distinguish all the standard types of C,
 	     without messing up if the language is not C.
 	     Note that we check only for the names that contain spaces;
