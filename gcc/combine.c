@@ -143,13 +143,103 @@ static int max_uid_cuid;
 
 static unsigned int combine_max_regno;
 
-/* Record last point of death of (hard or pseudo) register n.  */
+struct reg_stat {
+  /* Record last point of death of (hard or pseudo) register n.  */
+  rtx				last_death;
 
-static rtx *reg_last_death;
+  /* Record last point of modification of (hard or pseudo) register n.  */
+  rtx				last_set;
 
-/* Record last point of modification of (hard or pseudo) register n.  */
+  /* The next group of fields allows the recording of the last value assigned
+     to (hard or pseudo) register n.  We use this information to see if an
+     operation being processed is redundant given a prior operation performed
+     on the register.  For example, an `and' with a constant is redundant if
+     all the zero bits are already known to be turned off.
 
-static rtx *reg_last_set;
+     We use an approach similar to that used by cse, but change it in the
+     following ways:
+
+     (1) We do not want to reinitialize at each label.
+     (2) It is useful, but not critical, to know the actual value assigned
+         to a register.  Often just its form is helpful.
+
+     Therefore, we maintain the following fields:
+
+     last_set_value		the last value assigned
+     last_set_label		records the value of label_tick when the
+				register was assigned
+     last_set_table_tick	records the value of label_tick when a
+				value using the register is assigned
+     last_set_invalid		set to nonzero when it is not valid
+				to use the value of this register in some
+				register's value
+
+     To understand the usage of these tables, it is important to understand
+     the distinction between the value in last_set_value being valid and
+     the register being validly contained in some other expression in the
+     table.
+
+     (The next two parameters are out of date).
+
+     reg_stat[i].last_set_value is valid if it is nonzero, and either
+     reg_n_sets[i] is 1 or reg_stat[i].last_set_label == label_tick.
+
+     Register I may validly appear in any expression returned for the value
+     of another register if reg_n_sets[i] is 1.  It may also appear in the
+     value for register J if reg_stat[j].last_set_invalid is zero, or
+     reg_stat[i].last_set_label < reg_stat[j].last_set_label.
+
+     If an expression is found in the table containing a register which may
+     not validly appear in an expression, the register is replaced by
+     something that won't match, (clobber (const_int 0)).  */
+
+  /* Record last value assigned to (hard or pseudo) register n.  */
+
+  rtx				last_set_value;
+
+  /* Record the value of label_tick when an expression involving register n
+     is placed in last_set_value.  */
+
+  int				last_set_table_tick;
+
+  /* Record the value of label_tick when the value for register n is placed in
+     last_set_value.  */
+
+  int				last_set_label;
+
+  /* These fields are maintained in parallel with last_set_value and are
+     used to store the mode in which the register was last set, te bits
+     that were known to be zero when it was last set, and the number of
+     sign bits copies it was known to have when it was last set.  */
+
+  unsigned HOST_WIDE_INT	last_set_nonzero_bits;
+  char				last_set_sign_bit_copies;
+  ENUM_BITFIELD(machine_mode)	last_set_mode : 8; 
+
+  /* Set nonzero if references to register n in expressions should not be
+     used.  last_set_invalid is set nonzero when this register is being
+     assigned to and last_set_table_tick == label_tick.  */
+
+  char				last_set_invalid;
+
+  /* Some registers that are set more than once and used in more than one
+     basic block are nevertheless always set in similar ways.  For example,
+     a QImode register may be loaded from memory in two places on a machine
+     where byte loads zero extend.
+
+     We record in the following fields if a register has some leading bits
+     that are always equal to the sign bit, and what we know about the
+     nonzero bits of a register, specifically which bits are known to be
+     zero.
+
+     If an entry is zero, it means that we don't know anything special.  */
+
+  unsigned char			sign_bit_copies;
+
+  unsigned HOST_WIDE_INT	nonzero_bits;
+};
+
+static struct reg_stat *reg_stat;
 
 /* Record the cuid of the last insn that invalidated memory
    (anything that writes memory, and subroutine calls, but not pushes).  */
@@ -197,110 +287,23 @@ static basic_block this_basic_block;
    those blocks as starting points.  */
 static sbitmap refresh_blocks;
 
-/* The next group of arrays allows the recording of the last value assigned
-   to (hard or pseudo) register n.  We use this information to see if an
-   operation being processed is redundant given a prior operation performed
-   on the register.  For example, an `and' with a constant is redundant if
-   all the zero bits are already known to be turned off.
-
-   We use an approach similar to that used by cse, but change it in the
-   following ways:
-
-   (1) We do not want to reinitialize at each label.
-   (2) It is useful, but not critical, to know the actual value assigned
-       to a register.  Often just its form is helpful.
-
-   Therefore, we maintain the following arrays:
-
-   reg_last_set_value		the last value assigned
-   reg_last_set_label		records the value of label_tick when the
-				register was assigned
-   reg_last_set_table_tick	records the value of label_tick when a
-				value using the register is assigned
-   reg_last_set_invalid		set to nonzero when it is not valid
-				to use the value of this register in some
-				register's value
-
-   To understand the usage of these tables, it is important to understand
-   the distinction between the value in reg_last_set_value being valid
-   and the register being validly contained in some other expression in the
-   table.
-
-   Entry I in reg_last_set_value is valid if it is nonzero, and either
-   reg_n_sets[i] is 1 or reg_last_set_label[i] == label_tick.
-
-   Register I may validly appear in any expression returned for the value
-   of another register if reg_n_sets[i] is 1.  It may also appear in the
-   value for register J if reg_last_set_label[i] < reg_last_set_label[j] or
-   reg_last_set_invalid[j] is zero.
-
-   If an expression is found in the table containing a register which may
-   not validly appear in an expression, the register is replaced by
-   something that won't match, (clobber (const_int 0)).
-
-   reg_last_set_invalid[i] is set nonzero when register I is being assigned
-   to and reg_last_set_table_tick[i] == label_tick.  */
-
-/* Record last value assigned to (hard or pseudo) register n.  */
-
-static rtx *reg_last_set_value;
-
-/* Record the value of label_tick when the value for register n is placed in
-   reg_last_set_value[n].  */
-
-static int *reg_last_set_label;
-
-/* Record the value of label_tick when an expression involving register n
-   is placed in reg_last_set_value.  */
-
-static int *reg_last_set_table_tick;
-
-/* Set nonzero if references to register n in expressions should not be
-   used.  */
-
-static char *reg_last_set_invalid;
-
 /* Incremented for each label.  */
 
 static int label_tick;
 
-/* Some registers that are set more than once and used in more than one
-   basic block are nevertheless always set in similar ways.  For example,
-   a QImode register may be loaded from memory in two places on a machine
-   where byte loads zero extend.
-
-   We record in the following array what we know about the nonzero
-   bits of a register, specifically which bits are known to be zero.
-
-   If an entry is zero, it means that we don't know anything special.  */
-
-static unsigned HOST_WIDE_INT *reg_nonzero_bits;
-
-/* Mode used to compute significance in reg_nonzero_bits.  It is the largest
-   integer mode that can fit in HOST_BITS_PER_WIDE_INT.  */
+/* Mode used to compute significance in reg_stat[].nonzero_bits.  It is the
+   largest integer mode that can fit in HOST_BITS_PER_WIDE_INT.  */
 
 static enum machine_mode nonzero_bits_mode;
 
-/* Nonzero if we know that a register has some leading bits that are always
-   equal to the sign bit.  */
-
-static unsigned char *reg_sign_bit_copies;
-
-/* Nonzero when reg_nonzero_bits and reg_sign_bit_copies can be safely used.
-   It is zero while computing them and after combine has completed.  This
-   former test prevents propagating values based on previously set values,
-   which can be incorrect if a variable is modified in a loop.  */
+/* Nonzero when reg_stat[].nonzero_bits and reg_stat[].sign_bit_copies can
+   be safely used.  It is zero while computing them and after combine has
+   completed.  This former test prevents propagating values based on
+   previously set values, which can be incorrect if a variable is modified
+   in a loop.  */
 
 static int nonzero_sign_valid;
 
-/* These arrays are maintained in parallel with reg_last_set_value
-   and are used to store the mode in which the register was last set,
-   the bits that were known to be zero when it was last set, and the
-   number of sign bits copies it was known to have when it was last set.  */
-
-static enum machine_mode *reg_last_set_mode;
-static unsigned HOST_WIDE_INT *reg_last_set_nonzero_bits;
-static char *reg_last_set_sign_bit_copies;
 
 /* Record one modification to rtl structure
    to be undone by storing old_contents into *where.
@@ -336,7 +339,7 @@ static int n_occurrences;
 
 static void do_SUBST (rtx *, rtx);
 static void do_SUBST_INT (int *, int);
-static void init_reg_last_arrays (void);
+static void init_reg_last (void);
 static void setup_incoming_promotions (void);
 static void set_nonzero_bits_and_sign_copies (rtx, rtx, void *);
 static int cant_combine_insn_p (rtx);
@@ -523,20 +526,7 @@ combine_instructions (rtx f, unsigned int nregs)
      See comments in gen_lowpart_for_combine.  */
   gen_lowpart = gen_lowpart_for_combine;
 
-  reg_nonzero_bits = xcalloc (nregs, sizeof (unsigned HOST_WIDE_INT));
-  reg_sign_bit_copies = xcalloc (nregs, sizeof (unsigned char));
-
-  reg_last_death = xmalloc (nregs * sizeof (rtx));
-  reg_last_set = xmalloc (nregs * sizeof (rtx));
-  reg_last_set_value = xmalloc (nregs * sizeof (rtx));
-  reg_last_set_table_tick = xmalloc (nregs * sizeof (int));
-  reg_last_set_label = xmalloc (nregs * sizeof (int));
-  reg_last_set_invalid = xmalloc (nregs * sizeof (char));
-  reg_last_set_mode = xmalloc (nregs * sizeof (enum machine_mode));
-  reg_last_set_nonzero_bits = xmalloc (nregs * sizeof (HOST_WIDE_INT));
-  reg_last_set_sign_bit_copies = xmalloc (nregs * sizeof (char));
-
-  init_reg_last_arrays ();
+  reg_stat = xcalloc (nregs, sizeof (struct reg_stat));
 
   init_recog_no_volatile ();
 
@@ -551,8 +541,8 @@ combine_instructions (rtx f, unsigned int nregs)
 
   nonzero_bits_mode = mode_for_size (HOST_BITS_PER_WIDE_INT, MODE_INT, 0);
 
-  /* Don't use reg_nonzero_bits when computing it.  This can cause problems
-     when, for example, we have j <<= 1 in a loop.  */
+  /* Don't use reg_stat[].nonzero_bits when computing it.  This can cause
+     problems when, for example, we have j <<= 1 in a loop.  */
 
   nonzero_sign_valid = 0;
 
@@ -605,7 +595,7 @@ combine_instructions (rtx f, unsigned int nregs)
   label_tick = 1;
   last_call_cuid = 0;
   mem_last_set = 0;
-  init_reg_last_arrays ();
+  init_reg_last ();
   setup_incoming_promotions ();
 
   FOR_EACH_BB (this_basic_block)
@@ -768,17 +758,7 @@ combine_instructions (rtx f, unsigned int nregs)
 
   /* Clean up.  */
   sbitmap_free (refresh_blocks);
-  free (reg_nonzero_bits);
-  free (reg_sign_bit_copies);
-  free (reg_last_death);
-  free (reg_last_set);
-  free (reg_last_set_value);
-  free (reg_last_set_table_tick);
-  free (reg_last_set_label);
-  free (reg_last_set_invalid);
-  free (reg_last_set_mode);
-  free (reg_last_set_nonzero_bits);
-  free (reg_last_set_sign_bit_copies);
+  free (reg_stat);
   free (uid_cuid);
 
   {
@@ -805,22 +785,14 @@ combine_instructions (rtx f, unsigned int nregs)
   return new_direct_jump_p;
 }
 
-/* Wipe the reg_last_xxx arrays in preparation for another pass.  */
+/* Wipe the last_xxx fields of reg_stat in preparation for another pass.  */
 
 static void
-init_reg_last_arrays (void)
+init_reg_last (void)
 {
-  unsigned int nregs = combine_max_regno;
-
-  memset (reg_last_death, 0, nregs * sizeof (rtx));
-  memset (reg_last_set, 0, nregs * sizeof (rtx));
-  memset (reg_last_set_value, 0, nregs * sizeof (rtx));
-  memset (reg_last_set_table_tick, 0, nregs * sizeof (int));
-  memset (reg_last_set_label, 0, nregs * sizeof (int));
-  memset (reg_last_set_invalid, 0, nregs * sizeof (char));
-  memset (reg_last_set_mode, 0, nregs * sizeof (enum machine_mode));
-  memset (reg_last_set_nonzero_bits, 0, nregs * sizeof (HOST_WIDE_INT));
-  memset (reg_last_set_sign_bit_copies, 0, nregs * sizeof (char));
+  unsigned int i;
+  for (i = 0; i < combine_max_regno; i++)
+    memset (reg_stat + i, 0, offsetof (struct reg_stat, sign_bit_copies));
 }
 
 /* Set up any promoted values for incoming argument registers.  */
@@ -878,8 +850,8 @@ set_nonzero_bits_and_sign_copies (rtx x, rtx set,
     {
       if (set == 0 || GET_CODE (set) == CLOBBER)
 	{
-	  reg_nonzero_bits[REGNO (x)] = GET_MODE_MASK (GET_MODE (x));
-	  reg_sign_bit_copies[REGNO (x)] = 1;
+	  reg_stat[REGNO (x)].nonzero_bits = GET_MODE_MASK (GET_MODE (x));
+	  reg_stat[REGNO (x)].sign_bit_copies = 1;
 	  return;
 	}
 
@@ -901,7 +873,7 @@ set_nonzero_bits_and_sign_copies (rtx x, rtx set,
 #ifdef SHORT_IMMEDIATES_SIGN_EXTEND
 	  /* If X is narrower than a word and SRC is a non-negative
 	     constant that would appear negative in the mode of X,
-	     sign-extend it for use in reg_nonzero_bits because some
+	     sign-extend it for use in reg_stat[].nonzero_bits because some
 	     machines (maybe most) will actually do the sign-extension
 	     and this is the conservative approach.
 
@@ -920,18 +892,18 @@ set_nonzero_bits_and_sign_copies (rtx x, rtx set,
 #endif
 
 	  /* Don't call nonzero_bits if it cannot change anything.  */
-	  if (reg_nonzero_bits[REGNO (x)] != ~(unsigned HOST_WIDE_INT) 0)
-	    reg_nonzero_bits[REGNO (x)]
+	  if (reg_stat[REGNO (x)].nonzero_bits != ~(unsigned HOST_WIDE_INT) 0)
+	    reg_stat[REGNO (x)].nonzero_bits
 	      |= nonzero_bits (src, nonzero_bits_mode);
 	  num = num_sign_bit_copies (SET_SRC (set), GET_MODE (x));
-	  if (reg_sign_bit_copies[REGNO (x)] == 0
-	      || reg_sign_bit_copies[REGNO (x)] > num)
-	    reg_sign_bit_copies[REGNO (x)] = num;
+	  if (reg_stat[REGNO (x)].sign_bit_copies == 0
+	      || reg_stat[REGNO (x)].sign_bit_copies > num)
+	    reg_stat[REGNO (x)].sign_bit_copies = num;
 	}
       else
 	{
-	  reg_nonzero_bits[REGNO (x)] = GET_MODE_MASK (GET_MODE (x));
-	  reg_sign_bit_copies[REGNO (x)] = 1;
+	  reg_stat[REGNO (x)].nonzero_bits = GET_MODE_MASK (GET_MODE (x));
+	  reg_stat[REGNO (x)].sign_bit_copies = 1;
 	}
     }
 }
@@ -1101,7 +1073,7 @@ can_combine_p (rtx insn, rtx i3, rtx pred ATTRIBUTE_UNUSED, rtx succ,
 	 does not use any registers whose values alter in between.  However,
 	 If the insns are adjacent, a use can't cross a set even though we
 	 think it might (this can happen for a sequence of insns each setting
-	 the same destination; reg_last_set of that register might point to
+	 the same destination; last_set of that register might point to
 	 a NOTE).  If INSN has a REG_EQUIV note, the register is always
 	 equivalent to the memory so the substitution is valid even if there
 	 are intervening stores.  Also, don't move a volatile asm or
@@ -2331,18 +2303,18 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
 	   && GET_CODE (SET_DEST (XVECEXP (newpat, 0, 1))) != STRICT_LOW_PART
 	   && ! (temp = SET_DEST (XVECEXP (newpat, 0, 1)),
 		 (GET_CODE (temp) == REG
-		  && reg_nonzero_bits[REGNO (temp)] != 0
+		  && reg_stat[REGNO (temp)].nonzero_bits != 0
 		  && GET_MODE_BITSIZE (GET_MODE (temp)) < BITS_PER_WORD
 		  && GET_MODE_BITSIZE (GET_MODE (temp)) < HOST_BITS_PER_INT
-		  && (reg_nonzero_bits[REGNO (temp)]
+		  && (reg_stat[REGNO (temp)].nonzero_bits
 		      != GET_MODE_MASK (word_mode))))
 	   && ! (GET_CODE (SET_DEST (XVECEXP (newpat, 0, 1))) == SUBREG
 		 && (temp = SUBREG_REG (SET_DEST (XVECEXP (newpat, 0, 1))),
 		     (GET_CODE (temp) == REG
-		      && reg_nonzero_bits[REGNO (temp)] != 0
+		      && reg_stat[REGNO (temp)].nonzero_bits != 0
 		      && GET_MODE_BITSIZE (GET_MODE (temp)) < BITS_PER_WORD
 		      && GET_MODE_BITSIZE (GET_MODE (temp)) < HOST_BITS_PER_INT
-		      && (reg_nonzero_bits[REGNO (temp)]
+		      && (reg_stat[REGNO (temp)].nonzero_bits
 			  != GET_MODE_MASK (word_mode)))))
 	   && ! reg_overlap_mentioned_p (SET_DEST (XVECEXP (newpat, 0, 1)),
 					 SET_SRC (XVECEXP (newpat, 0, 1)))
@@ -2783,9 +2755,10 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
 	  REG_N_SETS (regno)--;
       }
 
-    /* Update reg_nonzero_bits et al for any changes that may have been made
-       to this insn.  The order of set_nonzero_bits_and_sign_copies() is
-       important.  Because newi2pat can affect nonzero_bits of newpat */
+    /* Update reg_stat[].nonzero_bits et al for any changes that may have
+       been made to this insn.  The order of
+       set_nonzero_bits_and_sign_copies() is important.  Because newi2pat
+       can affect nonzero_bits of newpat */
     if (newi2pat)
       note_stores (newi2pat, set_nonzero_bits_and_sign_copies, NULL);
     note_stores (newpat, set_nonzero_bits_and_sign_copies, NULL);
@@ -8171,17 +8144,17 @@ nonzero_bits1 (rtx x, enum machine_mode mode, rtx known_x,
 	 value.  Otherwise, use the previously-computed global nonzero bits
 	 for this register.  */
 
-      if (reg_last_set_value[REGNO (x)] != 0
-	  && (reg_last_set_mode[REGNO (x)] == mode
-	      || (GET_MODE_CLASS (reg_last_set_mode[REGNO (x)]) == MODE_INT
+      if (reg_stat[REGNO (x)].last_set_value != 0
+	  && (reg_stat[REGNO (x)].last_set_mode == mode
+	      || (GET_MODE_CLASS (reg_stat[REGNO (x)].last_set_mode) == MODE_INT
 		  && GET_MODE_CLASS (mode) == MODE_INT))
-	  && (reg_last_set_label[REGNO (x)] == label_tick
+	  && (reg_stat[REGNO (x)].last_set_label == label_tick
 	      || (REGNO (x) >= FIRST_PSEUDO_REGISTER
 		  && REG_N_SETS (REGNO (x)) == 1
 		  && ! REGNO_REG_SET_P (ENTRY_BLOCK_PTR->next_bb->global_live_at_start,
 					REGNO (x))))
-	  && INSN_CUID (reg_last_set[REGNO (x)]) < subst_low_cuid)
-	return reg_last_set_nonzero_bits[REGNO (x)] & nonzero;
+	  && INSN_CUID (reg_stat[REGNO (x)].last_set) < subst_low_cuid)
+	return reg_stat[REGNO (x)].last_set_nonzero_bits & nonzero;
 
       tem = get_last_value (x);
 
@@ -8190,8 +8163,8 @@ nonzero_bits1 (rtx x, enum machine_mode mode, rtx known_x,
 #ifdef SHORT_IMMEDIATES_SIGN_EXTEND
 	  /* If X is narrower than MODE and TEM is a non-negative
 	     constant that would appear negative in the mode of X,
-	     sign-extend it for use in reg_nonzero_bits because some
-	     machines (maybe most) will actually do the sign-extension
+	     sign-extend it for use in reg_stat[].nonzero_bits because
+	     some machines (maybe most) will actually do the sign-extension
 	     and this is the conservative approach.
 
 	     ??? For 2.5, try to tighten up the MD files in this regard
@@ -8209,9 +8182,9 @@ nonzero_bits1 (rtx x, enum machine_mode mode, rtx known_x,
 #endif
 	  return nonzero_bits_with_known (tem, mode) & nonzero;
 	}
-      else if (nonzero_sign_valid && reg_nonzero_bits[REGNO (x)])
+      else if (nonzero_sign_valid && reg_stat[REGNO (x)].nonzero_bits)
 	{
-	  unsigned HOST_WIDE_INT mask = reg_nonzero_bits[REGNO (x)];
+	  unsigned HOST_WIDE_INT mask = reg_stat[REGNO (x)].nonzero_bits;
 
 	  if (GET_MODE_BITSIZE (GET_MODE (x)) < mode_width)
 	    /* We don't know anything about the upper bits.  */
@@ -8667,23 +8640,23 @@ num_sign_bit_copies1 (rtx x, enum machine_mode mode, rtx known_x,
 	return GET_MODE_BITSIZE (Pmode) - GET_MODE_BITSIZE (ptr_mode) + 1;
 #endif
 
-      if (reg_last_set_value[REGNO (x)] != 0
-	  && reg_last_set_mode[REGNO (x)] == mode
-	  && (reg_last_set_label[REGNO (x)] == label_tick
+      if (reg_stat[REGNO (x)].last_set_value != 0
+	  && reg_stat[REGNO (x)].last_set_mode == mode
+	  && (reg_stat[REGNO (x)].last_set_label == label_tick
 	      || (REGNO (x) >= FIRST_PSEUDO_REGISTER
 		  && REG_N_SETS (REGNO (x)) == 1
 		  && ! REGNO_REG_SET_P (ENTRY_BLOCK_PTR->next_bb->global_live_at_start,
 					REGNO (x))))
-	  && INSN_CUID (reg_last_set[REGNO (x)]) < subst_low_cuid)
-	return reg_last_set_sign_bit_copies[REGNO (x)];
+	  && INSN_CUID (reg_stat[REGNO (x)].last_set) < subst_low_cuid)
+	return reg_stat[REGNO (x)].last_set_sign_bit_copies;
 
       tem = get_last_value (x);
       if (tem != 0)
 	return num_sign_bit_copies_with_known (tem, mode);
 
-      if (nonzero_sign_valid && reg_sign_bit_copies[REGNO (x)] != 0
+      if (nonzero_sign_valid && reg_stat[REGNO (x)].sign_bit_copies != 0
 	  && GET_MODE_BITSIZE (GET_MODE (x)) == bitwidth)
-	return reg_sign_bit_copies[REGNO (x)];
+	return reg_stat[REGNO (x)].sign_bit_copies;
       break;
 
     case MEM:
@@ -11367,7 +11340,7 @@ reversed_comparison (rtx exp, enum machine_mode mode, rtx op0, rtx op1)
 }
 
 /* Utility function for following routine.  Called when X is part of a value
-   being stored into reg_last_set_value.  Sets reg_last_set_table_tick
+   being stored into last_set_value.  Sets last_set_table_tick
    for each register mentioned.  Similar to mention_regs in cse.c  */
 
 static void
@@ -11386,7 +11359,7 @@ update_table_tick (rtx x)
       unsigned int r;
 
       for (r = regno; r < endregno; r++)
-	reg_last_set_table_tick[r] = label_tick;
+	reg_stat[r].last_set_table_tick = label_tick;
 
       return;
     }
@@ -11434,8 +11407,9 @@ update_table_tick (rtx x)
 
 /* Record that REG is set to VALUE in insn INSN.  If VALUE is zero, we
    are saying that the register is clobbered and we no longer know its
-   value.  If INSN is zero, don't update reg_last_set; this is only permitted
-   with VALUE also zero and is used to invalidate the register.  */
+   value.  If INSN is zero, don't update reg_stat[].last_set; this is
+   only permitted with VALUE also zero and is used to invalidate the
+   register.  */
 
 static void
 record_value_for_reg (rtx reg, rtx insn, rtx value)
@@ -11479,13 +11453,13 @@ record_value_for_reg (rtx reg, rtx insn, rtx value)
   for (i = regno; i < endregno; i++)
     {
       if (insn)
-	reg_last_set[i] = insn;
+	reg_stat[i].last_set = insn;
 
-      reg_last_set_value[i] = 0;
-      reg_last_set_mode[i] = 0;
-      reg_last_set_nonzero_bits[i] = 0;
-      reg_last_set_sign_bit_copies[i] = 0;
-      reg_last_death[i] = 0;
+      reg_stat[i].last_set_value = 0;
+      reg_stat[i].last_set_mode = 0;
+      reg_stat[i].last_set_nonzero_bits = 0;
+      reg_stat[i].last_set_sign_bit_copies = 0;
+      reg_stat[i].last_death = 0;
     }
 
   /* Mark registers that are being referenced in this value.  */
@@ -11501,40 +11475,40 @@ record_value_for_reg (rtx reg, rtx insn, rtx value)
 
   for (i = regno; i < endregno; i++)
     {
-      reg_last_set_label[i] = label_tick;
-      if (value && reg_last_set_table_tick[i] == label_tick)
-	reg_last_set_invalid[i] = 1;
+      reg_stat[i].last_set_label = label_tick;
+      if (value && reg_stat[i].last_set_table_tick == label_tick)
+	reg_stat[i].last_set_invalid = 1;
       else
-	reg_last_set_invalid[i] = 0;
+	reg_stat[i].last_set_invalid = 0;
     }
 
   /* The value being assigned might refer to X (like in "x++;").  In that
      case, we must replace it with (clobber (const_int 0)) to prevent
      infinite loops.  */
   if (value && ! get_last_value_validate (&value, insn,
-					  reg_last_set_label[regno], 0))
+					  reg_stat[regno].last_set_label, 0))
     {
       value = copy_rtx (value);
       if (! get_last_value_validate (&value, insn,
-				     reg_last_set_label[regno], 1))
+				     reg_stat[regno].last_set_label, 1))
 	value = 0;
     }
 
   /* For the main register being modified, update the value, the mode, the
      nonzero bits, and the number of sign bit copies.  */
 
-  reg_last_set_value[regno] = value;
+  reg_stat[regno].last_set_value = value;
 
   if (value)
     {
       enum machine_mode mode = GET_MODE (reg);
       subst_low_cuid = INSN_CUID (insn);
-      reg_last_set_mode[regno] = mode;
+      reg_stat[regno].last_set_mode = mode;
       if (GET_MODE_CLASS (mode) == MODE_INT
 	  && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT)
 	mode = nonzero_bits_mode;
-      reg_last_set_nonzero_bits[regno] = nonzero_bits (value, mode);
-      reg_last_set_sign_bit_copies[regno]
+      reg_stat[regno].last_set_nonzero_bits = nonzero_bits (value, mode);
+      reg_stat[regno].last_set_sign_bit_copies
 	= num_sign_bit_copies (value, GET_MODE (reg));
     }
 }
@@ -11579,11 +11553,11 @@ record_dead_and_set_regs_1 (rtx dest, rtx setter, void *data)
    for the things done by INSN.  This is the last thing done in processing
    INSN in the combiner loop.
 
-   We update reg_last_set, reg_last_set_value, reg_last_set_mode,
-   reg_last_set_nonzero_bits, reg_last_set_sign_bit_copies, reg_last_death,
-   and also the similar information mem_last_set (which insn most recently
-   modified memory) and last_call_cuid (which insn was the most recent
-   subroutine call).  */
+   We update reg_stat[], in particular fields last_set, last_set_value,
+   last_set_mode, last_set_nonzero_bits, last_set_sign_bit_copies,
+   last_death, and also the similar information mem_last_set (which insn
+   most recently modified memory) and last_call_cuid (which insn was the
+   most recent subroutine call).  */
 
 static void
 record_dead_and_set_regs (rtx insn)
@@ -11603,7 +11577,7 @@ record_dead_and_set_regs (rtx insn)
 		       : 1);
 
 	  for (i = regno; i < endregno; i++)
-	    reg_last_death[i] = insn;
+	    reg_stat[i].last_death = insn;
 	}
       else if (REG_NOTE_KIND (link) == REG_INC)
 	record_value_for_reg (XEXP (link, 0), insn, NULL_RTX);
@@ -11614,11 +11588,11 @@ record_dead_and_set_regs (rtx insn)
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	if (TEST_HARD_REG_BIT (regs_invalidated_by_call, i))
 	  {
-	    reg_last_set_value[i] = 0;
-	    reg_last_set_mode[i] = 0;
-	    reg_last_set_nonzero_bits[i] = 0;
-	    reg_last_set_sign_bit_copies[i] = 0;
-	    reg_last_death[i] = 0;
+	    reg_stat[i].last_set_value = 0;
+	    reg_stat[i].last_set_mode = 0;
+	    reg_stat[i].last_set_nonzero_bits = 0;
+	    reg_stat[i].last_set_sign_bit_copies = 0;
+	    reg_stat[i].last_death = 0;
 	  }
 
       last_call_cuid = mem_last_set = INSN_CUID (insn);
@@ -11666,10 +11640,10 @@ record_promoted_value (rtx insn, rtx subreg)
 	  continue;
 	}
 
-      if (reg_last_set[regno] == insn)
+      if (reg_stat[regno].last_set == insn)
 	{
 	  if (SUBREG_PROMOTED_UNSIGNED_P (subreg) > 0)
-	    reg_last_set_nonzero_bits[regno] &= GET_MODE_MASK (mode);
+	    reg_stat[regno].last_set_nonzero_bits &= GET_MODE_MASK (mode);
 	}
 
       if (GET_CODE (SET_SRC (set)) == REG)
@@ -11739,14 +11713,14 @@ get_last_value_validate (rtx *loc, rtx insn, int tick, int replace)
       unsigned int j;
 
       for (j = regno; j < endregno; j++)
-	if (reg_last_set_invalid[j]
+	if (reg_stat[j].last_set_invalid
 	    /* If this is a pseudo-register that was only set once and not
 	       live at the beginning of the function, it is always valid.  */
 	    || (! (regno >= FIRST_PSEUDO_REGISTER
 		   && REG_N_SETS (regno) == 1
 		   && (! REGNO_REG_SET_P
 		       (ENTRY_BLOCK_PTR->next_bb->global_live_at_start, regno)))
-		&& reg_last_set_label[j] > tick))
+		&& reg_stat[j].last_set_label > tick))
 	  {
 	    if (replace)
 	      *loc = gen_rtx_CLOBBER (GET_MODE (x), const0_rtx);
@@ -11838,7 +11812,7 @@ get_last_value (rtx x)
     return 0;
 
   regno = REGNO (x);
-  value = reg_last_set_value[regno];
+  value = reg_stat[regno].last_set_value;
 
   /* If we don't have a value, or if it isn't for this basic block and
      it's either a hard register, set more than once, or it's a live
@@ -11851,7 +11825,7 @@ get_last_value (rtx x)
      block.  */
 
   if (value == 0
-      || (reg_last_set_label[regno] != label_tick
+      || (reg_stat[regno].last_set_label != label_tick
 	  && (regno < FIRST_PSEUDO_REGISTER
 	      || REG_N_SETS (regno) != 1
 	      || (REGNO_REG_SET_P
@@ -11860,20 +11834,20 @@ get_last_value (rtx x)
 
   /* If the value was set in a later insn than the ones we are processing,
      we can't use it even if the register was only set once.  */
-  if (INSN_CUID (reg_last_set[regno]) >= subst_low_cuid)
+  if (INSN_CUID (reg_stat[regno].last_set) >= subst_low_cuid)
     return 0;
 
   /* If the value has all its registers valid, return it.  */
-  if (get_last_value_validate (&value, reg_last_set[regno],
-			       reg_last_set_label[regno], 0))
+  if (get_last_value_validate (&value, reg_stat[regno].last_set,
+			       reg_stat[regno].last_set_label, 0))
     return value;
 
   /* Otherwise, make a copy and replace any invalid register with
      (clobber (const_int 0)).  If that fails for some reason, return 0.  */
 
   value = copy_rtx (value);
-  if (get_last_value_validate (&value, reg_last_set[regno],
-			       reg_last_set_label[regno], 1))
+  if (get_last_value_validate (&value, reg_stat[regno].last_set,
+			       reg_stat[regno].last_set_label, 1))
     return value;
 
   return 0;
@@ -11902,8 +11876,8 @@ use_crosses_set_p (rtx x, int from_cuid)
 	return 1;
 #endif
       for (; regno < endreg; regno++)
-	if (reg_last_set[regno]
-	    && INSN_CUID (reg_last_set[regno]) > from_cuid)
+	if (reg_stat[regno].last_set
+	    && INSN_CUID (reg_stat[regno].last_set) > from_cuid)
 	  return 1;
       return 0;
     }
@@ -12163,7 +12137,7 @@ move_deaths (rtx x, rtx maybe_kill_insn, int from_cuid, rtx to_insn,
   if (code == REG)
     {
       unsigned int regno = REGNO (x);
-      rtx where_dead = reg_last_death[regno];
+      rtx where_dead = reg_stat[regno].last_death;
       rtx before_dead, after_dead;
 
       /* Don't move the register if it gets killed in between from and to.  */
@@ -12190,7 +12164,7 @@ move_deaths (rtx x, rtx maybe_kill_insn, int from_cuid, rtx to_insn,
 	  rtx note = remove_death (regno, where_dead);
 
 	  /* It is possible for the call above to return 0.  This can occur
-	     when reg_last_death points to I2 or I1 that we combined with.
+	     when last_death points to I2 or I1 that we combined with.
 	     In that case make a new note.
 
 	     We must also check for the case where X is a hard register
@@ -12803,14 +12777,14 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2)
 		  || reg_bitfield_target_p (XEXP (note, 0), PATTERN (place)))
 		{
 		  /* Unless the register previously died in PLACE, clear
-		     reg_last_death.  [I no longer understand why this is
+		     last_death.  [I no longer understand why this is
 		     being done.] */
-		  if (reg_last_death[regno] != place)
-		    reg_last_death[regno] = 0;
+		  if (reg_stat[regno].last_death != place)
+		    reg_stat[regno].last_death = 0;
 		  place = 0;
 		}
 	      else
-		reg_last_death[regno] = place;
+		reg_stat[regno].last_death = place;
 
 	      /* If this is a death note for a hard reg that is occupying
 		 multiple registers, ensure that we are still using all
