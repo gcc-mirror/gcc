@@ -1577,7 +1577,7 @@ unroll.o : unroll.c $(CONFIG_H) system.h $(RTL_H) insn-config.h function.h \
    varray.h 
 flow.o : flow.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h insn-config.h \
    $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h output.h toplev.h $(RECOG_H) \
-   insn-flags.h function.h except.h
+   insn-flags.h function.h except.h $(EXPR_H)
 combine.o : combine.c $(CONFIG_H) system.h $(RTL_H) flags.h function.h \
    insn-config.h insn-flags.h insn-codes.h insn-attr.h $(REGS_H) $(EXPR_H) \
    $(BASIC_BLOCK_H) $(RECOG_H) real.h hard-reg-set.h toplev.h

@@ -1,3 +1,7 @@
+2000-02-19  Brad Lucier  (lucier@math.purdue.edu)
+
+	* Makefile.in: Have flow.o depend on $(EXPR_H)
+
 Sat Feb 19 18:43:13 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* c-common.c (decl_attributes): Set DECL_SIZE_UNIT.
