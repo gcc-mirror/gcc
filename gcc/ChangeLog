@@ -1,3 +1,12 @@
+2001-01-14  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * c-parse.in (finish_parse): Add comment about cpp_destroy.
+        * cp/lex.c (finish_parse): Similarly.
+        * cppinit.c (cpp_cleanup): Rename cpp_destroy for clarity.
+        Return the number of errors encountered.
+        * cpplib.h (cpp_cleanup): Rename cpp_destroy, return int.
+        * cppmain.c (main): Don't call cpp_destroy.
+
 2001-01-14  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* configure.in: Require at least perl 5.6.0 to regenerate

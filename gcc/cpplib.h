@@ -494,6 +494,10 @@ struct cpp_hashnode
 /* Call this first to get a handle to pass to other functions.  */
 extern cpp_reader *cpp_create_reader PARAMS ((enum c_lang));
 
+/* Call this to release the handle.  Any use of the handle after this
+   function returns is invalid.  Returns cpp_errors (pfile).  */
+extern int cpp_destroy PARAMS ((cpp_reader *));
+
 /* Call these to get pointers to the options and callback structures
    for a given reader.  These pointers are good until you call
    cpp_finish on that reader.  You can either edit the callbacks
@@ -529,7 +533,6 @@ extern void cpp_register_pragma_space PARAMS ((cpp_reader *, const char *));
 
 extern int cpp_start_read PARAMS ((cpp_reader *, const char *));
 extern void cpp_finish PARAMS ((cpp_reader *));
-extern void cpp_cleanup PARAMS ((cpp_reader *));
 extern int cpp_avoid_paste PARAMS ((cpp_reader *, const cpp_token *,
 				    const cpp_token *));
 extern enum cpp_ttype cpp_can_paste PARAMS ((cpp_reader *, const cpp_token *,
