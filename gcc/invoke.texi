@@ -204,7 +204,7 @@ in the following sections.
 -Werror-implicit-function-declaration @gol
 -Wimport  -Winline @gol
 -Wlarger-than-@var{len}  -Wlong-long @gol
--Wmain  -Wmissing-declarations @gol
+-Wmain  -Wmissing-braces  -Wmissing-declarations @gol
 -Wmissing-format-attribute  -Wmissing-noreturn @gol
 -Wmultichar  -Wno-format-extra-args -Wno-format-y2k @gol
 -Wno-import  -Wpacked  -Wpadded @gol
@@ -224,8 +224,10 @@ in the following sections.
 @item Debugging Options
 @xref{Debugging Options,,Options for Debugging Your Program or GCC}.
 @gccoptlist{
--a  -ax  -d@var{letters}  -fdump-unnumbered -fdump-translation-unit=@var{file} @gol
--fdump-class-layout=@var{file} -fpretend-float -fprofile-arcs  -ftest-coverage @gol
+-a  -ax  -d@var{letters}  -dumpspecs  -dumpmachine  -dumpversion @gol
+-fdump-unnumbered -fdump-translation-unit=@var{file} @gol
+-fdump-class-layout=@var{file}  -fmem-report  -fpretend-float @gol
+-fprofile-arcs  -ftest-coverage  -ftime-report @gol
 -g  -g@var{level}  -gcoff  -gdwarf  -gdwarf-1  -gdwarf-1+  -gdwarf-2 @gol
 -ggdb  -gstabs  -gstabs+  -gxcoff  -gxcoff+ @gol
 -p  -pg  -print-file-name=@var{library}  -print-libgcc-file-name @gol
@@ -1697,6 +1699,16 @@ Warn if the type of @samp{main} is suspicious.  @samp{main} should be a
 function with external linkage, returning int, taking either zero
 arguments, two, or three arguments of appropriate types.
 
+@item -Wmissing-braces
+Warn if an aggregate or union initializer is not fully bracketed.  In
+the following example, the initializer for @samp{a} is not fully
+bracketed, but that for @samp{b} is fully bracketed.
+
+@smallexample
+int a[2][2] = @{ 0, 1, 2, 3 @};
+int b[2][2] = @{ @{ 0, 1 @}, @{ 2, 3 @} @};
+@end smallexample
+
 @item -Wmultichar
 Warn if a multicharacter constant (@samp{'FOOF'}) is used.  Usually they
 indicate a typo in the user's code, as they have implementation-defined
@@ -2451,6 +2463,14 @@ Eventually GNU @code{gprof} should be extended to process this data.
 Makes the compiler print out each function name as it is compiled, and
 print some statistics about each pass when it finishes.
 
+@item -ftime-report
+Makes the compiler print some statistics about the time consumed by each
+pass when it finishes.
+
+@item -fmem-report
+Makes the compiler print some statistics about permanent memory
+allocation when it finishes.
+
 @item -ax
 Generate extra code to profile basic blocks.  Your executable will
 produce output that is a superset of that produced when @samp{-a} is
@@ -2747,6 +2767,18 @@ components where gcc expects to find them, or you can set the environment
 variable @env{GCC_EXEC_PREFIX} to the directory where you installed them.
 Don't forget the trailing '/'.
 @xref{Environment Variables}.
+
+@item -dumpmachine
+Print the compiler's target machine (for example,
+@samp{i686-pc-linux-gnu})---and don't do anything else.
+
+@item -dumpversion
+Print the compiler version (for example, @samp{3.0})---and don't do
+anything else.
+
+@item -dumpspecs
+Print the compiler's built-in specs---and don't do anything else.  (This
+is used when GCC itself is being built.)  @xref{Spec Files}.
 @end table
 
 @node Optimize Options
