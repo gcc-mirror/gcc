@@ -1,5 +1,10 @@
 2002-01-30  Richard Henderson  <rth@redhat.com>
 
+	* ifcvt.c (dead_or_predicable): Handling merging when other_bb
+	and new_dest are the same.
+
+2002-01-30  Richard Henderson  <rth@redhat.com>
+
 	PR opt/5076
 	* rtl.h (NOTE_INSN_LOOP_END_TOP_COND): New.
 	* rtl.c (note_insn_name): Update.
