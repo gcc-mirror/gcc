@@ -818,6 +818,7 @@ here; FIXME: document the others.
 
 @menu
 * Test Idioms::     Idioms used in testsuite code.
+* Test Directives:: Directives used within DejaGnu tests.
 * Ada Tests::       The Ada language testsuites.
 * C Tests::         The C language testsuites.
 * libgcj Tests::    The Java library testsuites.
@@ -904,6 +905,206 @@ appropriate code to avoid causing failures on unsupported systems;
 unfortunately, the mechanisms for this differ by directory.
 
 FIXME: discuss non-C testsuites here.
+
+@node Test Directives
+@subsection Directives used within DejaGnu tests
+
+Test directives appear within comments in a test source file and begin
+with @code{dg-}.  Some of these are defined within DegaGnu and others
+are local to the GCC testsuite.
+
+The order in which test directives appear in a test can be important:
+directives local to GCC sometimes override information used by the
+DejaGnu directives, which know nothing about the GCC directives, so the
+DejaGnu directives must precede GCC directives.
+
+Several test directives include selectors which are usually preceded by
+the keyword @code{target} or @code{xfail}.  A selector is one or
+more target triplets, possibly including wildcard characters, or else a
+single effective-target keyword.  Depending on the context, the selector
+specifies whether a test is skipped and reported as unsupported or is
+expected to fail.  Use @samp{*-*-*} to match any target.
+
+Effective-target keywords are defined in @file{target-supports.exp} in
+the GCC testsuite or, in the case of unusual effective targets that are
+used only for a limited number of tests, in @file{.exp} files in the
+same directory as the tests.  There is no mechanism to combine or negate
+effective-target keywords.
+
+@table @code
+@item @{ dg-do @var{do-what-keyword} [@{ target/xfail @var{selector} @}] @}
+@var{do-what-keyword} specifies how the test is compiled and whether
+it is executed.  It is one of:
+
+@table @code
+@item preprocess
+Compile with @option{-E} to run only the preprocessor.
+@item assemble
+Compile with @option{-S} to produce an assembly code file.
+@item compile
+Compile with @option{-c} to produce a relocatable object file.
+@item link
+Compile, assemble, and link to produce an executable file.
+@item run
+Produce and run an executable file, which is expected to return
+an exit code of 0.
+@end table
+
+The default is @code{compile}.  That can be overridden for a set of
+tests by redefining @code{dg-do-what-default} within the @code{.exp}
+file for those tests.
+
+If the directive includes the optional @samp{@{ target @var{selector} @}}
+then the test is skipped unless the target system is included in the
+list of target triplets or matches the effective-target keyword.
+
+If the directive includes the optional @samp{@{ xfail @var{selector} @}}
+and the selector is met then the test is expected to fail.  For
+@code{dg-do run}, execution is expected to fail but compilation
+is expected to pass.
+
+@item @{ dg-options @var{options} [@{ target @var{selector} @}] @}
+This DejaGnu directive provides a list of compiler options, to be used
+if the target system matches @var{selector}, that replace the default
+options used for this set of tests.
+
+@item @{ dg-skip-if @var{comment} @{ @var{selector} @} @{ @var{include-opts} @} @{ @var{exclude-opts} @} @}
+Skip the test if the test system is included in @var{selector} and if
+each of the options in @var{include-opts} is in the set of options with
+which the test would be compiled and if none of the options in
+@var{exclude-opts} is in the set of options with which the test would be
+compiled.
+
+Use @samp{"*"} for an empty @var{include-opts} list and @samp{""} for
+an empty @var{exclude-opts} list.
+
+@item  @{ dg-xfail-if @var{comment} @{ @var{selector} @} @{ @var{include-opts} @} @{ @var{exclude-opts} @} @}
+Expect the test to fail if the conditions (which are the same as for
+@code{dg-skip-if}) are met.
+
+@item @{ dg-require-@var{support} args @}
+Skip the test if the target does not provide the required support;
+see @file{gcc-dg.exp} in the GCC testsuite for the actual directives.
+These directives must appear after any @code{dg-do} directive in the test.
+They require at least one argument, which can be an empty string if the
+specific procedure does not examine the argument.
+
+@item @{ dg-require-effective-target @var{keyword} @}
+Skip the test if the test target, including current multilib flags,
+is not covered by the effective-target keyword.
+This directive must appear after any @code{dg-do} directive in the test.
+
+@item @{ dg-error @var{regexp} [@var{comment} [@{ target/xfail @var{selector} @} [@var{line}] @}]] @}
+This DejaGnu directive appears on a source line that is expected to get
+an error message, or else specifies the source line associated with the
+message.  If there is no message for that line or if the text of that
+message is not matched by @var{regexp} then the check fails and
+@var{comment} is included in the @code{FAIL} message.  The check does
+not look for the string @samp{"error"} unless it is part of @var{regexp}.
+
+@item @{ dg-warning @var{regexp} [@var{comment} [@{ target/xfail @var{selector} @} [@var{line}] @}]] @}
+This DejaGnu directive appears on a source line that is expected to get
+a warning message, or else specifies the source line associated with the
+message.  If there is no message for that line or if the text of that
+message is not matched by @var{regexp} then the check fails and
+@var{comment} is included in the @code{FAIL} message.  The check does
+not look for the string @samp{"warning"} unless it is part of @var{regexp}.
+
+@item @{ dg-bogus @var{regexp} [@var{comment} [@{ target/xfail @var{selector} @} [@var{line}] @}]] @}
+This DejaGnu directive appears on a source line that should not get a
+message matching @var{regexp}, or else specifies the source line
+associated with the bogus message.  It is usually used with @samp{xfail}
+to indicate that the message is a known problem for a particular set of
+targets.
+
+@item @{ dg-excess-errors @var{comment} [@{ target/xfail @var{selector} @}] @}
+This DejaGnu directive indicates that the test is expected to fail due
+to compiler messages that are not handled by @option{dg-error},
+@option{dg-warning} or @option{dg-bogus}.
+
+@item @{ dg-output @var{regexp} [@{ target/xfail @var{selector} @}] @}
+This DejaGnu directive compares @var{regexp} to the combined output
+that the test executable writes to @file{stdout} and @file{stderr}.
+
+@item @{ dg-prune-output @var{regexp} @}
+Prune messages matching @var{regexp} from test output.
+
+@item @{ dg-additional-files "@var{filelist}" @}
+Specify additional files, other than source files, that must be copied
+to the system where the compiler runs.
+
+@item @{ dg-additional-sources "@var{filelist}" @}
+Specify additional source files to appear in the compile line
+following the main test file.
+
+@item @{ dg-final @{ @var{local-directive} @} @}
+This DejaGnu directive is placed within a comment anywhere in the
+source file and is processed after the test has been compiled and run.
+Multiple @option{dg-final} commands are processed in the order in which
+they appear in the source file.
+
+The GCC testsuite defines the following directives to be used within
+@code{dg-final}.
+
+@table @code
+@item scan-file @var{filename} @var{regexp} [@{ target/xfail @var{selector} @}]
+Passes if @var{regexp} matches text in @var{filename}.
+
+@item scan-file-not @var{filename} @var{regexp} [@{ target/xfail @var{selector} @}]
+Passes if @var{regexp} does not match text in @var{filename}.
+
+@item scan-hidden @var{symbol} [@{ target/xfail @var{selector} @}]
+Passes if @var{symbol} is defined as a hidden symbol in the test's
+assembly output.
+
+@item scan-not-hidden @var{symbol} [@{ target/xfail @var{selector} @}]
+Passes if @var{symbol} is not defined as a hidden symbol in the test's
+assembly output.
+
+@item scan-assembler-times @var{regex} @var{num} [@{ target/xfail @var{selector} @}]
+Passes if @var{regex} is matched exactly @var{num} times in the test's
+assembler output.
+
+@item scan-assembler @var{regex} [@{ target/xfail @var{selector} @}]
+Passes if @var{regex} matches text in the test's assembler output.
+
+@item scan-assembler-not @var{regex} [@{ target/xfail @var{selector} @}]
+Passes if @var{regex} does not match text in the test's assembler output.
+
+@item scan-assembler-dem @var{regex} [@{ target/xfail @var{selector} @}]
+Passes if @var{regex} matches text in the test's demangled assembler output.
+
+@item scan-assembler-dem-not @var{regex} [@{ target/xfail @var{selector} @}]
+Passes if @var{regex} does not match text in the test's demangled assembler
+output.
+
+@item scan-tree-dump-times @var{regex} @var{num} @var{suffix} [@{ target/xfail @var{selector} @}]
+Passes if @var{regex} is found exactly @var{num} times in the dump file
+with suffix @var{suffix}.
+
+@item scan-tree-dump @var{regex} @var{suffix} [@{ target/xfail @var{selector} @}]
+Passes if @var{regex} matches text in the dump file with suffix @var{suffix}.
+
+@item scan-tree-dump-not @var{regex} @var{suffix} [@{ target/xfail @var{selector} @}]
+Passes if @var{regex} does not match text in the dump file with suffix
+@var{suffix}.
+
+@item scan-tree-dump-dem @var{regex} @var{suffix} [@{ target/xfail @var{selector} @}]
+Passes if @var{regex} matches demangled text in the dump file with
+suffix @var{suffix}.
+
+@item scan-tree-dump-dem-not @var{regex} @var{suffix} [@{ target/xfail @var{selector} @}]
+Passes if @var{regex} does not match demangled text in the dump file with
+suffix @var{suffix}.
+
+@item run-gcov @var{sourcefile}
+Check line counts in @command{gcov} tests.
+
+@item run-gcov [branches] [calls] @{ @var{opts} @var{sourcefile} @}
+Check branch and/or call counts, in addition to line counts, in
+@command{gcov} tests.
+@end table
+@end table
 
 @node Ada Tests
 @subsection Ada Language Testsuites
