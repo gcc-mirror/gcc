@@ -1644,7 +1644,8 @@ unsafe_associative_fp_binop (tree exp)
 {
   enum tree_code code = TREE_CODE (exp);
   return !(!flag_unsafe_math_optimizations
-           && (code == MULT_EXPR || code == PLUS_EXPR)
+           && (code == MULT_EXPR || code == PLUS_EXPR
+	       || code == MINUS_EXPR)
            && FLOAT_TYPE_P (TREE_TYPE (exp)));
 }
 

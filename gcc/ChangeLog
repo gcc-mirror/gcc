@@ -1,3 +1,9 @@
+2004-11-10  Fariborz Jahanian <fjahanian@apple.com>
+
+	PR tree-optimization/17892
+    	* tree-ssa-dom.c (unsafe_associative_fp_binop): Add test for
+	MINUS_EXPR operator.
+
 2004-11-10  James A. Morrison  <phython@gcc.gnu.org>
 
 	PR target/18230
