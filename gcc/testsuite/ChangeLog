@@ -1,3 +1,7 @@
+2000-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.old-deja/g++.other/init16.C: New test.
+
 2000-11-06  Loren J. Rittle  <ljrittle@acm.org>
 
 	* g++.old-deja/g++.mike/p6610a.C: Update XFAIL.
