@@ -1,3 +1,9 @@
+2003-01-20  Zack Weinberg  <zack@codesourcery.com>
+
+	* configure.in: Check for system-provided 'uchar' type.
+	* configure: Regenerate.
+	* cpphash.h: Only typedef 'uchar' if the system doesn't.
+
 2003-01-20  Richard Henderson  <rth@redhat.com>
 
 	* expr.h (MUST_PASS_IN_STACK): Move implementation...
@@ -5,8 +11,8 @@
 
 2003-01-20  Vladimir Makarov  <vmakarov@redhat.com>
 
-        * genattrtab.h (INSN_ALTS_FUNC_NAME): Move it from genautomata.c.
-	
+	* genattrtab.h (INSN_ALTS_FUNC_NAME): Move it from genautomata.c.
+
 	* genautomata.c (INSN_ALTS_FUNC_NAME): Move it into genattrtab.h.
 
 	* genattr.c (main): Output default definition of AUTOMATON_ALTS.
@@ -19,7 +25,7 @@
 	* collect2.c (ldgetname): Check HAVE_DECL_LDGETNAME before
 	prototyping.
 	* configure.in: Check for <ldfcn.h> and ldgetname() prototype.
-	
+
 	* config.in, configure: Regenerate.
 
 2003-01-20  Nick Clifton  <nickc@redhat.com>
@@ -102,7 +108,7 @@ Mon Jan 20 14:36:23 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-01-17  Dale Johannesen  <dalej@apple.com>
 
-        * config/rs6000/rs6000.md (*floatsidf2_internal):  Add earlyclobbers.
+	* config/rs6000/rs6000.md (*floatsidf2_internal):  Add earlyclobbers.
 	  (*floatunssidf2_internal):  Ditto.
 
 2003-01-17  Kazu Hirata  <kazu@cs.umass.edu>
@@ -228,8 +234,8 @@ Mon Jan 20 14:36:23 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-01-16  Kaz Kojima  <kkojima@gcc.gnu.org>
 
-        * config/sh/sh.c (sh_initialize_trampoline): Emit rotrdi3_mextr
-        instead of rotldi3_mextr.
+	* config/sh/sh.c (sh_initialize_trampoline): Emit rotrdi3_mextr
+	instead of rotldi3_mextr.
 
 2003-01-16  Vladimir Makarov  <vmakarov@redhat.com>
 
@@ -250,7 +256,7 @@ Mon Jan 20 14:36:23 CET 2003  Jan Hubicka  <jh@suse.cz>
 	account.
 	(can_schedule_ready_p): Ditto.
 	(add_branch_dependences): Restore skipping over the group insns.
-	
+
 2003-01-16  Stephane Carrez  <stcarrez@nerim.fr>
 
 	* config/m68hc11/m68hc11.c (m68hc11_check_z_replacement): Fix handling
