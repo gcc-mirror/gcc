@@ -195,7 +195,6 @@ const struct attribute_spec c4x_attribute_table[];
 static void c4x_insert_attributes PARAMS ((tree, tree *));
 static void c4x_asm_named_section PARAMS ((const char *, unsigned int));
 static int c4x_adjust_cost PARAMS ((rtx, rtx, rtx, int));
-static void c4x_encode_section_info PARAMS ((tree, int));
 static void c4x_globalize_label PARAMS ((FILE *, const char *));
 static bool c4x_rtx_costs PARAMS ((rtx, int, int, int *));
 static int c4x_address_cost PARAMS ((rtx));
@@ -222,9 +221,6 @@ static int c4x_address_cost PARAMS ((rtx));
 
 #undef TARGET_SCHED_ADJUST_COST
 #define TARGET_SCHED_ADJUST_COST c4x_adjust_cost
-
-#undef TARGET_ENCODE_SECTION_INFO
-#define TARGET_ENCODE_SECTION_INFO c4x_encode_section_info
 
 #undef TARGET_ASM_GLOBALIZE_LABEL
 #define TARGET_ASM_GLOBALIZE_LABEL c4x_globalize_label
@@ -1452,19 +1448,6 @@ c4x_emit_libcall_mulhi (libcall, code, mode, operands)
   insns = get_insns ();
   end_sequence ();
   emit_libcall_block (insns, operands[0], ret, equiv);
-}
-
-
-/* Set the SYMBOL_REF_FLAG for a function decl.  However, wo do not
-   yet use this info.  */
-
-static void
-c4x_encode_section_info (decl, first)
-     tree decl;
-     int first ATTRIBUTE_UNUSED;
-{
-  if (TREE_CODE (decl) == FUNCTION_DECL)   
-    SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;
 }
 
 
@@ -2909,7 +2892,7 @@ c4x_T_constraint (op)
       /* Allow call operands.  */
       return GET_CODE (op) == SYMBOL_REF
 	&& GET_MODE (op) == Pmode
-	&& SYMBOL_REF_FLAG (op);
+	&& SYMBOL_REF_FUNCTION_P (op);
     }
 
   /* HImode and HFmode are not offsettable.  */

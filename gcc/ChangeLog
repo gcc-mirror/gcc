@@ -1,5 +1,13 @@
 2003-04-16  Richard Henderson  <rth@redhat.com>
 
+	* config/c4x/c4x.c (c4x_encode_section_info): Remove.
+	(c4x_T_constraint): Use SYMBOL_REF_FUNCTION_P.
+
+	* config/c4x/c4x.h (TARGET_CPU_CPP_BUILTINS): Declare
+	flag_inline_trees.
+
+2003-04-16  Richard Henderson  <rth@redhat.com>
+
 	* config/avr/avr.c (avr_encode_section_info): Remove.
 	(avr_insert_attributes): New.
 	(print_operand_address): Use SYMBOL_REF_FUNCTION_P.
