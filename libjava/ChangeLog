@@ -1,3 +1,11 @@
+2003-03-29  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/natClass.cc (newInstance): Put method name in
+	exception.
+	(getConstructor): Likewise.
+	(getDeclaredConstructor): Likewise.
+	(getPrivateMethod): Likewise.
+
 2003-03-28  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/reflect/Proxy.java: New version from Classpath.

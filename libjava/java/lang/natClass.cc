@@ -1,6 +1,6 @@
 // natClass.cc - Implementation of java.lang.Class native methods.
 
-/* Copyright (C) 1998, 1999, 2000, 2001, 2002  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -157,7 +157,7 @@ java::lang::Class::getConstructor (JArray<jclass> *param_types)
 	  return cons;
 	}
     }
-  throw new java::lang::NoSuchMethodException;
+  throw new java::lang::NoSuchMethodException (_Jv_NewStringUtf8Const (init_name));
 }
 
 JArray<java::lang::reflect::Constructor *> *
@@ -224,7 +224,7 @@ java::lang::Class::getDeclaredConstructor (JArray<jclass> *param_types)
 	  return cons;
 	}
     }
-  throw new java::lang::NoSuchMethodException;
+  throw new java::lang::NoSuchMethodException (_Jv_NewStringUtf8Const (init_name));
 }
 
 java::lang::reflect::Field *
@@ -707,13 +707,13 @@ java::lang::Class::newInstance (void)
       || isInterface ()
       || isArray ()
       || java::lang::reflect::Modifier::isAbstract(accflags))
-    throw new java::lang::InstantiationException;
+    throw new java::lang::InstantiationException (getName ());
 
   _Jv_InitClass (this);
 
   _Jv_Method *meth = _Jv_GetMethodLocal (this, init_name, void_signature);
   if (! meth)
-    throw new java::lang::NoSuchMethodException;
+    throw new java::lang::NoSuchMethodException (_Jv_NewStringUtf8Const (init_name));
 
   jobject r = JvAllocObject (this);
   ((void (*) (jobject)) meth->ncode) (r);
@@ -1504,7 +1504,7 @@ java::lang::Class::getPrivateMethod (jstring name, JArray<jclass> *param_types)
 	    }
 	}
     }
-  throw new java::lang::NoSuchMethodException;
+  throw new java::lang::NoSuchMethodException (name);
 }
 
 // Private accessor method for Java code to retrieve the protection domain.
