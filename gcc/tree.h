@@ -1301,6 +1301,9 @@ extern tree decl_type_context		PROTO((tree));
    for the function's name.  */
 
 extern char *function_cannot_inline_p 	PROTO((tree));
+
+/* Return 1 if EXPR is the real constant zero.  */
+extern int real_zerop PROTO((tree));
 
 /* Declare commonly used variables for tree structure.  */
 
@@ -1458,3 +1461,36 @@ extern tree pushdecl				PROTO((tree));
 extern tree getdecls				PROTO((void));
 /* Function to return the chain of structure tags in the current scope level.  */
 extern tree gettags				PROTO((void));
+
+extern tree build_range_type PROTO((tree, tree, tree));
+
+/* Call when starting to parse a declaration:
+   make expressions in the declaration last the length of the function.
+   Returns an argument that should be passed to resume_momentary later.  */
+extern int suspend_momentary PROTO((void));
+
+extern int allocation_temporary_p PROTO((void));
+
+/* Call when finished parsing a declaration:
+   restore the treatment of node-allocation that was
+   in effect before the suspension.
+   YES should be the value previously returned by suspend_momentary.  */
+extern void resume_momentary PROTO((int));
+
+/* Called after finishing a record, union or enumeral type.  */
+extern void rest_of_type_compilation PROTO((tree, int));
+
+/* Save the current set of obstacks, but don't change them.  */
+extern void push_obstacks_nochange PROTO((void));
+
+extern void push_momentary PROTO((void));
+
+extern void clear_momentary PROTO((void));
+
+extern void pop_momentary PROTO((void));
+
+extern void end_temporary_allocation PROTO((void));
+
+/* Pop the obstack selection stack.  */
+extern void pop_obstacks PROTO((void));
+
