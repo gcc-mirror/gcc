@@ -83,7 +83,6 @@ tpipe: tpipe.o libio.a
 
 iostream.list: stamp-picdir $(_G_CONFIG_H) $(LIBIOSTREAM_DEP)
 	@echo "$(LIBIOSTREAM_USE)"> iostream.list
-	@echo "$(STDIO_WRAP_OBJECTS)" >> iostream.list
 
 stmp-stdio:
 	@rootme=`pwd`/ ; export rootme; cd stdio ; \
