@@ -1,4 +1,4 @@
-/* Definitions for Sun Sparc64 running FreeBSD using the ELF format
+/* Definitions for Sun SPARC64 running FreeBSD using the ELF format
    Copyright (C) 2001, 2002 Free Software Foundation, Inc.
    Contributed by David E. O'Brien <obrien@FreeBSD.org> and BSDi.
 
@@ -54,7 +54,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define WCHAR_TYPE_SIZE 32
 
 /* Define for support of TFmode long double.
-   Sparc ABI says that long double is 4 words.  */
+   SPARC ABI says that long double is 4 words.  */
 #undef  LONG_DOUBLE_TYPE_SIZE
 #define LONG_DOUBLE_TYPE_SIZE (TARGET_LONG_DOUBLE_128 ? 128 : 64)
 

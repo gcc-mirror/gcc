@@ -1,4 +1,4 @@
-;; Scheduling description for Sparclet.
+;; Scheduling description for SPARClet.
 ;;   Copyright (C) 2002 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GNU CC.
@@ -18,7 +18,7 @@
 ;; the Free Software Foundation, 59 Temple Place - Suite 330,
 ;; Boston, MA 02111-1307, USA.
 
-;; The Sparclet is a single-issue processor.
+;; The SPARClet is a single-issue processor.
 
 (define_automaton "sparclet")
 

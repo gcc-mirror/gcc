@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.
-   64-bit VxWorks Sparc version.
+   64-bit VxWorks SPARC version.
    Copyright (C) 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.

@@ -1,7 +1,7 @@
 /* This is an assembly language implementation of mulsi3, divsi3, and modsi3
    for the sparclite processor.
 
-   These routines are all from the Sparclite User's Guide, slightly edited
+   These routines are all from the SPARClite User's Guide, slightly edited
    to match the desired calling convention, and also to optimize them.  */
 
 #ifdef L_udivsi3

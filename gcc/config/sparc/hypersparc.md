@@ -1,4 +1,4 @@
-;; Scheduling description for HyperSparc.
+;; Scheduling description for HyperSPARC.
 ;;   Copyright (C) 2002 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GNU CC.
@@ -18,7 +18,7 @@
 ;; the Free Software Foundation, 59 Temple Place - Suite 330,
 ;; Boston, MA 02111-1307, USA.
 
-;; The HyperSparc is a dual-issue processor.  It is not all that fancy.
+;; The HyperSPARC is a dual-issue processor.  It is not all that fancy.
 
 ;; ??? There are some things not modelled.  For example, sethi+or
 ;; ??? coming right after each other are specifically identified and

@@ -1,4 +1,4 @@
-;; Scheduling description for SuperSparc.
+;; Scheduling description for SuperSPARC.
 ;;   Copyright (C) 2002 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GNU CC.
@@ -18,7 +18,7 @@
 ;; the Free Software Foundation, 59 Temple Place - Suite 330,
 ;; Boston, MA 02111-1307, USA.
 
-;; The SuperSparc is a tri-issue, which was considered quite parallel
+;; The SuperSPARC is a tri-issue, which was considered quite parallel
 ;; at the time it was released.  Much like UltraSPARC-I and UltraSPARC-II
 ;; there are two integer units but only one of them may take shifts.
 ;;

@@ -28,7 +28,7 @@
  * SUCH DAMAGE.
  */
 
-/* Mangled into a form that works on Sparc Solaris 2 by Mark Eichin
+/* Mangled into a form that works on SPARC Solaris 2 by Mark Eichin
  * for Cygnus Support, July 1992.
  */
 
@@ -232,7 +232,7 @@ _mcleanup()
 }
 
 /*
- * The Sparc stack frame is only held together by the frame pointers
+ * The SPARC stack frame is only held together by the frame pointers
  * in the register windows. According to the SVR4 SPARC ABI
  * Supplement, Low Level System Information/Operating System
  * Interface/Software Trap Types, a type 3 trap will flush all of the

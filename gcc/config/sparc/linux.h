@@ -231,7 +231,7 @@ do {									\
 
 
 /* Define for support of TFmode long double.
-   Sparc ABI says that long double is 4 words.  */
+   SPARC ABI says that long double is 4 words.  */
 #define LONG_DOUBLE_TYPE_SIZE (TARGET_LONG_DOUBLE_128 ? 128 : 64)
 
 /* Constant which presents upper bound of the above value.  */
