@@ -4319,10 +4319,16 @@ clone_function_decl (fn, update_method_vec_p)
 	 version.  We clone the deleting version first because that
 	 means it will go second on the TYPE_METHODS list -- and that
 	 corresponds to the correct layout order in the virtual
-	 function table.  */
-      clone = build_clone (fn, deleting_dtor_identifier);
-      if (update_method_vec_p)
-	add_method (DECL_CONTEXT (clone), clone, /*error_p=*/0);
+	 function table.  
+
+         For a non-virtual destructor, we do not build a deleting
+	 destructor.  */
+      if (DECL_VIRTUAL_P (fn))
+	{
+	  clone = build_clone (fn, deleting_dtor_identifier);
+	  if (update_method_vec_p)
+	    add_method (DECL_CONTEXT (clone), clone, /*error_p=*/0);
+	}
       clone = build_clone (fn, complete_dtor_identifier);
       if (update_method_vec_p)
 	add_method (DECL_CONTEXT (clone), clone, /*error_p=*/0);
