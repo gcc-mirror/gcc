@@ -1,5 +1,10 @@
 Mon May 18 01:23:33 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* Makefile.in (build_canonical, host_canonical): Let configure
+	substitute values for these variables.
+	* configure.in: Substitute for build_canonical, host_canonical
+	and target_subdir in generated Makefile.
+
 	* output.h (find_basic_blocks): Declare.
 	(free_basic_block_vars, set_block_num, life_analysis): Likewise.
 

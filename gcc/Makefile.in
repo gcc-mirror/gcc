@@ -170,6 +170,9 @@ ENQUIRE_LDFLAGS = $(LDFLAGS)
 program_transform_name = @program_transform_name@
 program_transform_cross_name = s,^,$(target_alias)-,
 
+build_canonical = @build_canonical@
+host_canonical = @host_canonical@
+
 # Tools to use when building a cross-compiler.
 # These are used because `configure' appends `cross-make'
 # to the makefile when making a cross-compiler.

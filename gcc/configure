@@ -5212,6 +5212,18 @@ if [ ! -f Makefile.in ]; then
 	echo "source ${srcdir}/.gdbinit" >> .gdbinit
 fi
 
+# Define variables host_canonical and build_canonical
+# because some Cygnus local changes in the Makefile depend on them.
+build_canonical=${build}
+host_canonical=${host}
+target_subdir=
+if [ "${host}" != "${target}" ] ; then
+    target_subdir=${target}/
+fi
+
+
+
+	
 # If this is using newlib, then define inhibit_libc in
 # LIBGCC2_CFLAGS.  This will cause __eprintf to be left out of
 # libgcc.a, but that's OK because newib should have its own version of
@@ -5497,6 +5509,9 @@ s%@doprint@%$doprint%g
 s%@manext@%$manext%g
 s%@objext@%$objext%g
 s%@gthread_flags@%$gthread_flags%g
+s%@build_canonical@%$build_canonical%g
+s%@host_canonical@%$host_canonical%g
+s%@target_subdir@%$target_subdir%g
 s%@inhibit_libc@%$inhibit_libc%g
 s%@sched_prefix@%$sched_prefix%g
 s%@sched_cflags@%$sched_cflags%g
