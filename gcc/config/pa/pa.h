@@ -1123,6 +1123,9 @@ extern enum cmp_type hppa_branch_type;
   fprintf (FILE, "\n\t.EXIT\n\t.PROCEND\n"); \
 }
 
+/* NAME refers to the function's name.  If we are placing each function into
+   its own section, we need to switch to the section for this function.  Note
+   that the section name will have a "." prefix.  */
 #define ASM_OUTPUT_FUNCTION_PREFIX(FILE, NAME) \
   {									\
     char *name;								\
@@ -1131,7 +1134,7 @@ extern enum cmp_type hppa_branch_type;
       fputs ("\t.NSUBSPA $CODE$,QUAD=0,ALIGN=8,ACCESS=44,CODE_ONLY\n", FILE); \
     else if (! TARGET_PORTABLE_RUNTIME && TARGET_GAS)			\
       fprintf (FILE,							\
-	       "\t.SUBSPA %s\n", name);				\
+	       "\t.SUBSPA .%s\n", name);				\
   }
     
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL) \
