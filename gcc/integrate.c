@@ -111,9 +111,7 @@ function_cannot_inline_p (fndecl)
   register tree parms;
   rtx result;
 
-  /* No inlines with varargs.  `grokdeclarator' gives a warning
-     message about that if `inline' is specified.  This code
-     it put in to catch the volunteers.  */
+  /* No inlines with varargs.  */
   if ((last && TREE_VALUE (last) != void_type_node)
       || current_function_varargs)
     return "varargs function cannot be inline";
