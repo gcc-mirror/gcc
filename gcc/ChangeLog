@@ -1,3 +1,14 @@
+2004-08-10  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390-protos.h (s390_canonicalize_comparison): Declare.
+	* config/s390/s390.c (s390_canonicalize_comparison): New function.
+	* config/s390/s390.h (CANONICALIZE_COMPARISON): Define.
+	* config/s390/s390.md ("*tmdi_ext", "*tmsi_ext", "*tmqisi_ext",
+	"*tmqidi_ext", "*tmdi_mem", "*tmsi_mem", "*tmhi_mem"): Remove.
+	("*tmqi_mem"): Remove SUBREG from pattern.
+	("*anddi3_cconly"): Prevent accidentally matching TM pattern.
+	("*andsi3_cconly"): Likewise.
+	
 2004-08-10  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/16909

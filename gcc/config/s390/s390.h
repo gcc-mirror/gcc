@@ -813,6 +813,10 @@ CUMULATIVE_ARGS;
    return the mode to be used for the comparison.  */
 #define SELECT_CC_MODE(OP, X, Y) s390_select_ccmode ((OP), (X), (Y))
 
+/* Canonicalize a comparison from one we don't have to one we do have.  */
+#define CANONICALIZE_COMPARISON(CODE, OP0, OP1) \
+  s390_canonicalize_comparison (&(CODE), &(OP0), &(OP1))
+
 /* Define the information needed to generate branch and scc insns.  This is
    stored from the compare operation.  Note that we can't use "rtx" here
    since it hasn't been defined!  */

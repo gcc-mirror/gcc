@@ -50,6 +50,7 @@ extern int tls_symbolic_operand (rtx);
 extern int s390_match_ccmode (rtx, enum machine_mode);
 extern enum machine_mode s390_tm_ccmode (rtx, rtx, int);
 extern enum machine_mode s390_select_ccmode (enum rtx_code, rtx, rtx);
+extern void s390_canonicalize_comparison (enum rtx_code *, rtx *, rtx *);
 extern int s390_alc_comparison (rtx op, enum machine_mode mode);
 extern int s390_slb_comparison (rtx op, enum machine_mode mode);
 extern rtx s390_emit_compare (enum rtx_code, rtx, rtx);
