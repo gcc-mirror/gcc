@@ -19,6 +19,7 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include <stdio.h>
+#include <ctype.h>
 #include "config.h"
 #include "rtl.h"
 #include "regs.h"
