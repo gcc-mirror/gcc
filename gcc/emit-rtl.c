@@ -3522,54 +3522,6 @@ init_emit_once (line_numbers)
   if (ggc_p)
     ggc_add_rtx_root (global_rtl, GR_MAX);
 
-#ifdef RETURN_ADDRESS_POINTER_REGNUM
-  return_address_pointer_rtx
-    = gen_rtx_raw_REG (Pmode, RETURN_ADDRESS_POINTER_REGNUM);
-#endif
-
-#ifdef STRUCT_VALUE
-  struct_value_rtx = STRUCT_VALUE;
-#else
-  struct_value_rtx = gen_rtx_REG (Pmode, STRUCT_VALUE_REGNUM);
-#endif
-
-#ifdef STRUCT_VALUE_INCOMING
-  struct_value_incoming_rtx = STRUCT_VALUE_INCOMING;
-#else
-#ifdef STRUCT_VALUE_INCOMING_REGNUM
-  struct_value_incoming_rtx
-    = gen_rtx_REG (Pmode, STRUCT_VALUE_INCOMING_REGNUM);
-#else
-  struct_value_incoming_rtx = struct_value_rtx;
-#endif
-#endif
-
-#ifdef STATIC_CHAIN_REGNUM
-  static_chain_rtx = gen_rtx_REG (Pmode, STATIC_CHAIN_REGNUM);
-
-#ifdef STATIC_CHAIN_INCOMING_REGNUM
-  if (STATIC_CHAIN_INCOMING_REGNUM != STATIC_CHAIN_REGNUM)
-    static_chain_incoming_rtx
-      = gen_rtx_REG (Pmode, STATIC_CHAIN_INCOMING_REGNUM);
-  else
-#endif
-    static_chain_incoming_rtx = static_chain_rtx;
-#endif
-
-#ifdef STATIC_CHAIN
-  static_chain_rtx = STATIC_CHAIN;
-
-#ifdef STATIC_CHAIN_INCOMING
-  static_chain_incoming_rtx = STATIC_CHAIN_INCOMING;
-#else
-  static_chain_incoming_rtx = static_chain_rtx;
-#endif
-#endif
-
-#ifdef PIC_OFFSET_TABLE_REGNUM
-  pic_offset_table_rtx = gen_rtx_REG (Pmode, PIC_OFFSET_TABLE_REGNUM);
-#endif
-
 #ifdef INIT_EXPANDERS
   /* This is to initialize save_machine_status and restore_machine_status before
      the first call to push_function_context_to.  This is needed by the Chill
@@ -3666,8 +3618,56 @@ init_emit_once (line_numbers)
       const_tiny_rtx[0][(int) mode] = const0_rtx;
 
   ggc_add_rtx_root (&const_tiny_rtx[0][0], sizeof(const_tiny_rtx)/sizeof(rtx));
-
   ggc_add_rtx_root (&const_true_rtx, 1);
+
+#ifdef RETURN_ADDRESS_POINTER_REGNUM
+  return_address_pointer_rtx
+    = gen_rtx_raw_REG (Pmode, RETURN_ADDRESS_POINTER_REGNUM);
+#endif
+
+#ifdef STRUCT_VALUE
+  struct_value_rtx = STRUCT_VALUE;
+#else
+  struct_value_rtx = gen_rtx_REG (Pmode, STRUCT_VALUE_REGNUM);
+#endif
+
+#ifdef STRUCT_VALUE_INCOMING
+  struct_value_incoming_rtx = STRUCT_VALUE_INCOMING;
+#else
+#ifdef STRUCT_VALUE_INCOMING_REGNUM
+  struct_value_incoming_rtx
+    = gen_rtx_REG (Pmode, STRUCT_VALUE_INCOMING_REGNUM);
+#else
+  struct_value_incoming_rtx = struct_value_rtx;
+#endif
+#endif
+
+#ifdef STATIC_CHAIN_REGNUM
+  static_chain_rtx = gen_rtx_REG (Pmode, STATIC_CHAIN_REGNUM);
+
+#ifdef STATIC_CHAIN_INCOMING_REGNUM
+  if (STATIC_CHAIN_INCOMING_REGNUM != STATIC_CHAIN_REGNUM)
+    static_chain_incoming_rtx
+      = gen_rtx_REG (Pmode, STATIC_CHAIN_INCOMING_REGNUM);
+  else
+#endif
+    static_chain_incoming_rtx = static_chain_rtx;
+#endif
+
+#ifdef STATIC_CHAIN
+  static_chain_rtx = STATIC_CHAIN;
+
+#ifdef STATIC_CHAIN_INCOMING
+  static_chain_incoming_rtx = STATIC_CHAIN_INCOMING;
+#else
+  static_chain_incoming_rtx = static_chain_rtx;
+#endif
+#endif
+
+#ifdef PIC_OFFSET_TABLE_REGNUM
+  pic_offset_table_rtx = gen_rtx_REG (Pmode, PIC_OFFSET_TABLE_REGNUM);
+#endif
+
   ggc_add_rtx_root (&pic_offset_table_rtx, 1);
   ggc_add_rtx_root (&struct_value_rtx, 1);
   ggc_add_rtx_root (&struct_value_incoming_rtx, 1);
