@@ -1715,6 +1715,10 @@ output_mem_loc_descriptor (rtl)
      which is actually within the array.  That's *not* necessarily the
      same as the zeroth element of the array.  */
 
+#ifdef ASM_SIMPLIFY_DWARF_ADDR
+  rtl = ASM_SIMPLIFY_DWARF_ADDR (rtl);
+#endif
+
   switch (GET_CODE (rtl))
     {
       case SUBREG:

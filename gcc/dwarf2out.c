@@ -53,7 +53,7 @@ Boston, MA 02111-1307, USA.  */
 #include "dwarf2.h"
 #include "dwarf2out.h"
 #include "toplev.h"
-#include "dyn-string.h"
+#include "varray.h"
 #include "ggc.h"
 #include "tm_p.h"
 
@@ -357,19 +357,13 @@ static void dwarf2out_frame_debug_expr	PARAMS ((rtx, char *));
   } while (0)
 #endif
 
-/* ??? This macro takes an RTX in dwarfout.c and a string in dwarf2out.c.
-   We resolve the conflict by creating a new macro ASM_OUTPUT_DWARF2_ADDR_CONST
-   for ports that want to support both DWARF1 and DWARF2.  This needs a better
-   solution.  See also the comments in sparc/sp64-elf.h.  */
-#ifdef ASM_OUTPUT_DWARF2_ADDR_CONST
-#undef ASM_OUTPUT_DWARF_ADDR_CONST
-#define ASM_OUTPUT_DWARF_ADDR_CONST(FILE,ADDR) \
-  ASM_OUTPUT_DWARF2_ADDR_CONST (FILE, ADDR)
-#endif
-
 #ifndef ASM_OUTPUT_DWARF_ADDR_CONST
-#define ASM_OUTPUT_DWARF_ADDR_CONST(FILE,ADDR)				\
-  fprintf ((FILE), "\t%s\t%s", UNALIGNED_WORD_ASM_OP, (ADDR))
+#define ASM_OUTPUT_DWARF_ADDR_CONST(FILE,RTX)				\
+  do {									\
+    fprintf ((FILE), "\t%s\t", UNALIGNED_INT_ASM_OP);			\
+    output_addr_const ((FILE), (RTX));					\
+    fputc ('\n', (FILE));						\
+  } while (0)
 #endif
 
 #ifndef ASM_OUTPUT_DWARF_OFFSET4
@@ -2025,7 +2019,7 @@ typedef struct dw_val_struct
   dw_val_class val_class;
   union
     {
-      char *val_addr;
+      rtx val_addr;
       dw_loc_descr_ref val_loc;
       long int val_int;
       long unsigned val_unsigned;
@@ -2330,10 +2324,14 @@ static int current_function_has_inlines;
 static int comp_unit_has_inlines;
 #endif
 
+/* Array of RTXes referenced by the debugging information, which therefore
+   must be kept around forever.  We do this rather than perform GC on
+   the dwarf info because almost all of the dwarf info lives forever, and
+   it's easier to support non-GC frontends this way.  */
+static varray_type used_rtx_varray;
+
 /* Forward declarations for functions defined in this file.  */
 
-static void addr_const_to_string	PARAMS ((dyn_string_t, rtx));
-static char *addr_to_string		PARAMS ((rtx));
 static int is_pseudo_reg		PARAMS ((rtx));
 static tree type_main_variant		PARAMS ((tree));
 static int is_tagged_type		PARAMS ((tree));
@@ -2377,7 +2375,7 @@ static void add_AT_loc			PARAMS ((dw_die_ref,
 						 dw_loc_descr_ref));
 static void add_AT_addr			PARAMS ((dw_die_ref,
 						 enum dwarf_attribute,
-						 char *));
+						 rtx));
 static void add_AT_lbl_id		PARAMS ((dw_die_ref,
 						 enum dwarf_attribute,
 						 char *));
@@ -2614,25 +2612,6 @@ static char debug_line_section_label[MAX_ARTIFICIAL_LABEL_BYTES];
 #ifndef SEPARATE_LINE_CODE_LABEL
 #define SEPARATE_LINE_CODE_LABEL	"LSM"
 #endif
-
-/* Convert a reference to the assembler name of a C-level name.  This
-   macro has the same effect as ASM_OUTPUT_LABELREF, but copies to
-   a string rather than writing to a file.  */
-#ifndef ASM_NAME_TO_STRING
-#define ASM_NAME_TO_STRING(STR, NAME)			\
-  do {							\
-      if ((NAME)[0] == '*')				\
-	dyn_string_append (STR, NAME + 1);		\
-      else						\
-	{						\
-	  const char *newstr;				\
-	  STRIP_NAME_ENCODING (newstr, NAME);		\
-	  dyn_string_append (STR, user_label_prefix);	\
-	  dyn_string_append (STR, newstr);		\
-	}						\
-  }							\
-  while (0)
-#endif
 
 /* We allow a language front-end to designate a function that is to be
    called to "demangle" any name before it it put into a DIE.  */
@@ -2646,141 +2625,25 @@ dwarf2out_set_demangle_name_func (func)
   demangle_name_func = func;
 }
 
-/* Convert an integer constant expression into assembler syntax.  Addition
-   and subtraction are the only arithmetic that may appear in these
-   expressions.   This is an adaptation of output_addr_const in final.c.
-   Here, the target of the conversion is a string buffer.  We can't use
-   output_addr_const directly, because it writes to a file.  */
+/* Return an rtx like ORIG which lives forever.  If we're doing GC,
+   that means adding it to used_rtx_varray.  If not, that means making
+   a copy on the permanent_obstack.  */
 
-static void
-addr_const_to_string (str, x)
-     dyn_string_t str;
-     rtx x;
+static rtx
+save_rtx (orig)
+     register rtx orig;
 {
-  char buf1[256];
-
-restart:
-  switch (GET_CODE (x))
+  if (ggc_p)
+    VARRAY_PUSH_RTX (used_rtx_varray, orig);
+  else
     {
-    case PC:
-      if (flag_pic)
-	dyn_string_append (str, ",");
-      else
-	abort ();
-      break;
-
-    case SYMBOL_REF:
-      ASM_NAME_TO_STRING (str, XSTR (x, 0));
-      break;
-
-    case LABEL_REF:
-      ASM_GENERATE_INTERNAL_LABEL (buf1, "L", CODE_LABEL_NUMBER (XEXP (x, 0)));
-      ASM_NAME_TO_STRING (str, buf1);
-      break;
-
-    case CODE_LABEL:
-      ASM_GENERATE_INTERNAL_LABEL (buf1, "L", CODE_LABEL_NUMBER (x));
-      ASM_NAME_TO_STRING (str, buf1);
-      break;
-
-    case CONST_INT:
-      sprintf (buf1, HOST_WIDE_INT_PRINT_DEC, INTVAL (x));
-      dyn_string_append (str, buf1);
-      break;
-
-    case CONST:
-      /* This used to output parentheses around the expression, but that does 
-         not work on the 386 (either ATT or BSD assembler).  */
-      addr_const_to_string (str, XEXP (x, 0));
-      break;
-
-    case CONST_DOUBLE:
-      if (GET_MODE (x) == VOIDmode)
-	{
-	  /* We can use %d if the number is one word and positive.  */
-	  if (CONST_DOUBLE_HIGH (x))
-	    sprintf (buf1, HOST_WIDE_INT_PRINT_DOUBLE_HEX,
-		     CONST_DOUBLE_HIGH (x), CONST_DOUBLE_LOW (x));
-	  else if (CONST_DOUBLE_LOW (x) < 0)
-	    sprintf (buf1, HOST_WIDE_INT_PRINT_HEX, CONST_DOUBLE_LOW (x));
-	  else
-	    sprintf (buf1, HOST_WIDE_INT_PRINT_DEC,
-		     CONST_DOUBLE_LOW (x));
-	  dyn_string_append (str, buf1);
-	}
-      else
-	/* We can't handle floating point constants; PRINT_OPERAND must
-	   handle them.  */
-	output_operand_lossage ("floating constant misused");
-      break;
-
-    case PLUS:
-      /* Some assemblers need integer constants to appear last (eg masm).  */
-      if (GET_CODE (XEXP (x, 0)) == CONST_INT)
-	{
-	  addr_const_to_string (str, XEXP (x, 1));
-	  if (INTVAL (XEXP (x, 0)) >= 0)
-	    dyn_string_append (str, "+");
-
-	  addr_const_to_string (str, XEXP (x, 0));
-	}
-      else
-	{
-	  addr_const_to_string (str, XEXP (x, 0));
-	  if (INTVAL (XEXP (x, 1)) >= 0)
-	    dyn_string_append (str, "+");
-
-	  addr_const_to_string (str, XEXP (x, 1));
-	}
-      break;
-
-    case MINUS:
-      /* Avoid outputting things like x-x or x+5-x, since some assemblers
-         can't handle that.  */
-      x = simplify_subtraction (x);
-      if (GET_CODE (x) != MINUS)
-	goto restart;
-
-      addr_const_to_string (str, XEXP (x, 0));
-      dyn_string_append (str, "-");
-      if (GET_CODE (XEXP (x, 1)) == CONST_INT
-	  && INTVAL (XEXP (x, 1)) < 0)
-	{
-	  dyn_string_append (str, ASM_OPEN_PAREN);
-	  addr_const_to_string (str, XEXP (x, 1));
-	  dyn_string_append (str, ASM_CLOSE_PAREN);
-	}
-      else
-	addr_const_to_string (str, XEXP (x, 1));
-      break;
-
-    case ZERO_EXTEND:
-    case SIGN_EXTEND:
-      addr_const_to_string (str, XEXP (x, 0));
-      break;
-
-    default:
-      output_operand_lossage ("invalid expression as operand");
+      push_obstacks_nochange ();
+      end_temporary_allocation ();
+      orig = copy_rtx (orig);
+      pop_obstacks ();
     }
-}
 
-/* Convert an address constant to a string, and return a pointer to
-   a copy of the result, located on the heap.  */
-
-static char *
-addr_to_string (x)
-     rtx x;
-{
-  dyn_string_t ds = dyn_string_new (256);
-  char *s;
-
-  addr_const_to_string (ds, x);
-  
-  /* Return the dynamically allocated string, but free the
-     dyn_string_t itself.  */
-  s = ds->s;
-  free (ds);
-  return s;
+  return orig;
 }
 
 /* Test if rtl node points to a pseudo register.  */
@@ -3837,7 +3700,7 @@ static inline void
 add_AT_addr (die, attr_kind, addr)
      register dw_die_ref die;
      register enum dwarf_attribute attr_kind;
-     char *addr;
+     rtx addr;
 {
   register dw_attr_ref attr = (dw_attr_ref) xmalloc (sizeof (dw_attr_node));
 
@@ -3848,7 +3711,7 @@ add_AT_addr (die, attr_kind, addr)
   add_dwarf_attr (die, attr);
 }
 
-static inline const char *
+static inline rtx
 AT_addr (a)
      register dw_attr_ref a;
 {
@@ -4029,7 +3892,6 @@ free_AT (a)
 {
   switch (AT_class (a))
     {
-    case dw_val_class_addr:
     case dw_val_class_str:
     case dw_val_class_lbl_id:
     case dw_val_class_lbl_offset:
@@ -5533,7 +5395,8 @@ output_aranges ()
 	  if (loc->dw_loc_opc != DW_OP_addr)
 	    abort ();
 
-	  ASM_OUTPUT_DWARF_ADDR (asm_out_file, loc->dw_loc_oprnd1.v.val_addr);
+	  ASM_OUTPUT_DWARF_ADDR_CONST (asm_out_file,
+				       loc->dw_loc_oprnd1.v.val_addr);
 	}
 
       if (flag_debug_asm)
@@ -6433,6 +6296,10 @@ mem_loc_descriptor (rtl, mode)
      actually within the array.  That's *not* necessarily the same as the
      zeroth element of the array.  */
 
+#ifdef ASM_SIMPLIFY_DWARF_ADDR
+  rtl = ASM_SIMPLIFY_DWARF_ADDR (rtl);
+#endif
+
   switch (GET_CODE (rtl))
     {
     case POST_INC:
@@ -6482,7 +6349,7 @@ mem_loc_descriptor (rtl, mode)
     case SYMBOL_REF:
       mem_loc_result = new_loc_descr (DW_OP_addr, 0, 0);
       mem_loc_result->dw_loc_oprnd1.val_class = dw_val_class_addr;
-      mem_loc_result->dw_loc_oprnd1.v.val_addr = addr_to_string (rtl);
+      mem_loc_result->dw_loc_oprnd1.v.val_addr = save_rtx (rtl);
       break;
 
     case PRE_INC:
@@ -6942,7 +6809,7 @@ add_const_value_attribute (die, rtl)
     case SYMBOL_REF:
     case LABEL_REF:
     case CONST:
-      add_AT_addr (die, DW_AT_const_value, addr_to_string (rtl));
+      add_AT_addr (die, DW_AT_const_value, save_rtx (rtl));
       break;
 
     case PLUS:
@@ -9958,6 +9825,12 @@ dwarf2out_init (asm_out_file, main_input_filename)
      taken as being relative to the directory from which the compiler was
      invoked when the given (base) source file was compiled.  */
   comp_unit_die = gen_compile_unit_die (main_input_filename);
+
+  if (ggc_p)
+    {
+      VARRAY_RTX_INIT (used_rtx_varray, 32, "used_rtx_varray");
+      ggc_add_tree_varray_root (&used_rtx_varray, 1);
+    }
 
   ASM_GENERATE_INTERNAL_LABEL (text_end_label, TEXT_END_LABEL, 0);
   ASM_GENERATE_INTERNAL_LABEL (abbrev_section_label, ABBREV_SECTION_LABEL, 0);

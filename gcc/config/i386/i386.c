@@ -2818,6 +2818,51 @@ output_pic_addr_const (file, x, code)
       output_operand_lossage ("invalid expression as operand");
     }
 }
+
+/* This is called from dwarfout.c via ASM_OUTPUT_DWARF_ADDR_CONST.  
+   We need to handle our special PIC relocations.  */
+
+void 
+i386_dwarf_output_addr_const (file, x)
+     FILE *file;
+     rtx x;
+{
+  fprintf (file, "\t%s\t", INT_ASM_OP);
+  if (flag_pic)
+    output_pic_addr_const (file, x, '\0');
+  else
+    output_addr_const (file, x);
+  fputc ('\n', file);
+}
+
+/* In the name of slightly smaller debug output, and to cater to
+   general assembler losage, recognize PIC+GOTOFF and turn it back
+   into a direct symbol reference.  */
+
+rtx
+i386_simplify_dwarf_addr (orig_x)
+     rtx orig_x;
+{
+  rtx x = orig_x;
+
+  if (GET_CODE (x) != PLUS
+      || GET_CODE (XEXP (x, 0)) != REG
+      || GET_CODE (XEXP (x, 1)) != CONST)
+    return orig_x;
+
+  x = XEXP (XEXP (x, 1), 0);
+  if (GET_CODE (x) == UNSPEC
+      && XINT (x, 1) == 7)
+    return XVECEXP (x, 0, 0);
+
+  if (GET_CODE (x) == PLUS
+      && GET_CODE (XEXP (x, 0)) == UNSPEC
+      && GET_CODE (XEXP (x, 1)) == CONST_INT
+      && XINT (XEXP (x, 0), 1) == 7)
+    return gen_rtx_PLUS (VOIDmode, XVECEXP (XEXP (x, 0), 0, 0), XEXP (x, 1));
+
+  return orig_x;
+}
 
 static void
 put_condition_code (code, mode, reverse, fp, file)

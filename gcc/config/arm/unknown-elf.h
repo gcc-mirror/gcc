@@ -1,5 +1,5 @@
 /* Definitions for non-Linux based ARM systems using ELF
-   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
    Contributed by Catherine Moore <clm@cygnus.com>
 
 This file is part of GNU CC.
@@ -106,9 +106,6 @@ func_ptr __DTOR_END__[1] = { (func_ptr) 0 };
 /* Don't know how to order these.  UNALIGNED_WORD_ASM_OP is in
    dwarf2.out. */ 
 #define UNALIGNED_WORD_ASM_OP ".4byte"
-
-#define ASM_OUTPUT_DWARF2_ADDR_CONST(FILE,ADDR)                  \
-     fprintf ((FILE), "\t%s\t%s", UNALIGNED_WORD_ASM_OP, ADDR)
 
 #define ASM_OUTPUT_DWARF_ADDR_CONST(FILE,RTX)                   \
 do {								\
