@@ -115,6 +115,8 @@ AC_ARG_ENABLE(interpreter,
 if test "$libgcj_interpreter" = yes; then
    AC_DEFINE(INTERPRETER)
 fi
+INTERPRETER="$libgcj_interpreter"
+AC_SUBST(INTERPRETER)
 
 AC_MSG_CHECKING([for exception model to use])
 AC_LANG_SAVE
@@ -788,8 +790,6 @@ AM_CONDITIONAL(NATIVE, test "$NATIVE" = yes || test "$NULL_TARGET" = yes)
 AM_CONDITIONAL(USE_LIBDIR, test -z "$with_cross_host")
 AM_CONDITIONAL(NEEDS_DATA_START, test "$NEEDS_DATA_START" = yes && test "$NATIVE" = yes)
 AC_SUBST(GCC_UNWIND_INCLUDE)
-
-AC_SUBST(AM_RUNTESTFLAGS)
 
 # Determine gcj version number.
 changequote(<<,>>)
