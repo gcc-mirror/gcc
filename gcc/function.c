@@ -1417,7 +1417,8 @@ put_var_into_stack (decl)
 		       XEXP (reg, 0), ptr_mode,
 		       GEN_INT (GET_MODE_SIZE (GET_MODE (reg))),
 		       TYPE_MODE (sizetype),
-		       GEN_INT (MEMORY_USE_RW), QImode);
+		       GEN_INT (MEMORY_USE_RW),
+		       TYPE_MODE (integer_type_node));
 }
 
 /* Subroutine of put_var_into_stack.  This puts a single pseudo reg REG
@@ -3938,7 +3939,8 @@ assign_parms (fndecl, second_time)
 				     GEN_INT (int_size_in_bytes 
 					      (TREE_TYPE (parm))),
 				     TYPE_MODE (sizetype),
-				     GEN_INT (MEMORY_USE_RW), QImode);
+				     GEN_INT (MEMORY_USE_RW),
+				     TYPE_MODE (integer_type_node));
 		  conversion_insns = get_insns ();
 		  end_sequence ();
 		}
@@ -4168,7 +4170,8 @@ assign_parms (fndecl, second_time)
 				   XEXP (copy, 0), ptr_mode,
 				   GEN_INT (int_size_in_bytes (type)),
 				   TYPE_MODE (sizetype),
-				   GEN_INT (MEMORY_USE_RW), QImode);
+				   GEN_INT (MEMORY_USE_RW),
+				   TYPE_MODE (integer_type_node));
 	      conversion_insns = get_insns ();
 	      did_conversion = 1;
 	      end_sequence ();
@@ -4329,7 +4332,8 @@ assign_parms (fndecl, second_time)
 				 GEN_INT (GET_MODE_SIZE (GET_MODE 
 							 (entry_parm))),
 				 TYPE_MODE (sizetype),
-				 GEN_INT (MEMORY_USE_RW), QImode);
+				 GEN_INT (MEMORY_USE_RW),
+				 TYPE_MODE (integer_type_node));
 
 	      conversion_insns = get_insns ();
 	      end_sequence ();
