@@ -1,3 +1,10 @@
+2003-06-06  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c (get_shift_alg): Correct the syntax of
+	rotxl.
+	* config/h8300/h8300.md (*addsi3_lshiftrt_16_zexthi):
+	Likewise.
+
 2003-06-05  Kelley Cook  <kelleycook@wideopenwest.com>
 
 	PR optimization/4490
