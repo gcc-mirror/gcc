@@ -3036,6 +3036,7 @@ do { long l;						\
 				   SYMBOL_REF, LABEL_REF, CONST}},	\
   {"x86_64_zext_immediate_operand", {CONST_INT, CONST_DOUBLE, CONST,	\
 				       SYMBOL_REF, LABEL_REF}},		\
+  {"shiftdi_operand", {SUBREG, REG, MEM}},				\
   {"const_int_1_operand", {CONST_INT}},					\
   {"symbolic_operand", {SYMBOL_REF, LABEL_REF, CONST}},			\
   {"aligned_operand", {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF,	\

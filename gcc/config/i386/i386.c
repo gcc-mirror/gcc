@@ -1411,6 +1411,20 @@ incdec_operand (op, mode)
   return 0;
 }
 
+/* Return nonzero if OP is acceptable as operand of DImode shift
+   expander.  */
+
+int
+shiftdi_operand (op, mode)
+     rtx op;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  if (TARGET_64BIT)
+    return nonimmediate_operand (op, mode);
+  else
+    return register_operand (op, mode);
+}
+
 /* Return false if this is the stack pointer, or any other fake
    register eliminable to the stack pointer.  Otherwise, this is
    a register operand.
