@@ -73,6 +73,16 @@ type_from_format (c)
       return "rtx";
     case 'E':
       return "rtvec";
+    /* ?!? These should be bitmap and tree respectively, but those types
+       are not available in many of the files which include the output
+       of gengenrtl.
+
+       These are only used in prototypes, so I think we can assume that
+       void * is useable.  */
+    case 'b':
+      return "void *";
+    case 't':
+      return "void *";
     default:
       abort ();
     }
@@ -95,6 +105,10 @@ accessor_from_format (c)
       return "XEXP";
     case 'E':
       return "XVEC";
+    case 'b':
+      return "XBITMAP";
+    case 't':
+      return "XTREE";
     default:
       abort ();
     }

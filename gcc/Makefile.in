@@ -521,7 +521,7 @@ LIBS = $(OBSTACK) $(USE_ALLOCA) $(MALLOC) $(VFPRINTF) $(DOPRINT) $(CLIB)
 HOST_LIBS = $(USE_HOST_OBSTACK) $(USE_HOST_ALLOCA) $(USE_HOST_MALLOC)  \
 	    $(USE_HOST_VFPRINTF) $(USE_HOST_DOPRINT) $(HOST_CLIB)
 
-HOST_RTL = $(HOST_PREFIX)rtl.o
+HOST_RTL = $(HOST_PREFIX)rtl.o $(HOST_PREFIX)bitmap.o
 HOST_RTLANAL = $(HOST_PREFIX)rtlanal.o
 HOST_PRINT = $(HOST_PREFIX)print-rtl.o
 
@@ -1342,7 +1342,7 @@ toplev.o : toplev.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) \
 	  -DTARGET_NAME=\"$(target_alias)\" \
 	  -c `echo $(srcdir)/toplev.c | sed 's,^\./,,'`
 
-rtl.o : rtl.c $(CONFIG_H) system.h $(RTL_H)
+rtl.o : rtl.c $(CONFIG_H) system.h $(RTL_H) bitmap.h
 
 print-rtl.o : print-rtl.c $(CONFIG_H) system.h $(RTL_H)
 rtlanal.o : rtlanal.c $(CONFIG_H) system.h $(RTL_H)
@@ -1384,7 +1384,7 @@ xcoffout.o : xcoffout.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) xcoffout.h \
    flags.h
 emit-rtl.o : emit-rtl.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
    except.h function.h regs.h insn-config.h insn-codes.h $(RECOG_H) real.h \
-   expr.h obstack.h hard-reg-set.h
+   expr.h obstack.h hard-reg-set.h bitmap.h
 real.o : real.c $(CONFIG_H) system.h $(TREE_H) toplev.h
 getpwd.o : getpwd.c $(CONFIG_H) system.h
 
@@ -1716,7 +1716,7 @@ gengenrtl.o : gengenrtl.c $(RTL_BASE_H) system.h
 # If we are not cross-building, gen* use the same .o's that cc1 will use,
 # and HOST_PREFIX_1 is `foobar', just to ensure these rules don't conflict
 # with the rules for rtl.o, alloca.o, etc.
-$(HOST_PREFIX_1)rtl.o: $(srcdir)/rtl.c $(CONFIG_H) $(RTL_H)
+$(HOST_PREFIX_1)rtl.o: $(srcdir)/rtl.c $(CONFIG_H) system.h $(RTL_H) bitmap.h
 	rm -f $(HOST_PREFIX)rtl.c
 	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/rtl.c > $(HOST_PREFIX)rtl.c
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)rtl.c
@@ -1725,6 +1725,12 @@ $(HOST_PREFIX_1)print-rtl.o: $(srcdir)/print-rtl.c $(CONFIG_H) $(RTL_H)
 	rm -f $(HOST_PREFIX)print-rtl.c
 	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/print-rtl.c > $(HOST_PREFIX)print-rtl.c
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)print-rtl.c
+
+$(HOST_PREFIX_1)bitmap.o: $(srcdir)/bitmap.c $(CONFIG_H) system.h $(RTL_H) \
+  flags.h $(BASIC_BLOCK_H) regs.h
+	rm -f $(HOST_PREFIX)bitmap.c
+	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/bitmap.c > $(HOST_PREFIX)bitmap.c
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)bitmap.c
 
 $(HOST_PREFIX_1)rtlanal.o: $(srcdir)/rtlanal.c $(CONFIG_H) $(RTL_H)
 	rm -f $(HOST_PREFIX)rtlanal.c

@@ -3899,6 +3899,8 @@ sched_analyze (head, tail)
 		   || NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END
 		   || NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG
 		   || NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_END
+		   || NOTE_LINE_NUMBER (insn) == NOTE_INSN_RANGE_START
+		   || NOTE_LINE_NUMBER (insn) == NOTE_INSN_RANGE_END
 		   || (NOTE_LINE_NUMBER (insn) == NOTE_INSN_SETJMP
 		       && GET_CODE (PREV_INSN (insn)) != CALL_INSN)))
 	{
@@ -4656,6 +4658,8 @@ unlink_other_notes (insn, tail)
       if (NOTE_LINE_NUMBER (insn) != NOTE_INSN_SETJMP
 	  && NOTE_LINE_NUMBER (insn) != NOTE_INSN_LOOP_BEG
 	  && NOTE_LINE_NUMBER (insn) != NOTE_INSN_LOOP_END
+	  && NOTE_LINE_NUMBER (insn) != NOTE_INSN_RANGE_START
+	  && NOTE_LINE_NUMBER (insn) != NOTE_INSN_RANGE_END
 	  && NOTE_LINE_NUMBER (insn) != NOTE_INSN_EH_REGION_BEG
 	  && NOTE_LINE_NUMBER (insn) != NOTE_INSN_EH_REGION_END)
 	{

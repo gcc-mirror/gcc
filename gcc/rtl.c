@@ -23,6 +23,7 @@ Boston, MA 02111-1307, USA.  */
 #include "system.h"
 #include "rtl.h"
 #include "real.h"
+#include "bitmap.h"
 
 #include "obstack.h"
 #define	obstack_chunk_alloc	xmalloc
@@ -143,7 +144,9 @@ char *rtx_format[] = {
      "V" like "E", but optional:
 	 the containing rtx may end before this operand
      "u" a pointer to another insn
-         prints the uid of the insn.  */
+         prints the uid of the insn.
+     "b" is a pointer to a bitmap header.
+     "t" is a tree pointer. */
 
 #define DEF_RTL_EXPR(ENUM, NAME, FORMAT, CLASS)   FORMAT ,
 #include "rtl.def"		/* rtl expressions are defined here */
@@ -169,7 +172,8 @@ char *note_insn_name[] = { 0                    , "NOTE_INSN_DELETED",
 			   "NOTE_INSN_PROLOGUE_END", "NOTE_INSN_EPILOGUE_BEG",
 			   "NOTE_INSN_DELETED_LABEL", "NOTE_INSN_FUNCTION_BEG",
 			   "NOTE_INSN_EH_REGION_BEG", "NOTE_INSN_EH_REGION_END",
-			   "NOTE_REPEATED_LINE_NUMBER" };
+			   "NOTE_REPEATED_LINE_NUMBER", "NOTE_INSN_RANGE_START",
+			   "NOTE_INSN_RANGE_END", "NOTE_INSN_LIVE" };
 
 char *reg_note_name[] = { "", "REG_DEAD", "REG_INC", "REG_EQUIV", "REG_WAS_0",
 			  "REG_EQUAL", "REG_RETVAL", "REG_LIBCALL",
@@ -336,6 +340,18 @@ copy_rtx (orig)
 	      for (j = 0; j < XVECLEN (copy, i); j++)
 		XVECEXP (copy, i, j) = copy_rtx (XVECEXP (orig, i, j));
 	    }
+	  break;
+
+	case 'b':
+	  {
+	    bitmap new_bits = BITMAP_OBSTACK_ALLOC (rtl_obstack);
+	    bitmap_copy (new_bits, XBITMAP (orig, i));
+	    XBITMAP (copy, i) = new_bits;
+	    break;
+	  }
+
+	case 't':
+	  XTREE (copy, i) = XTREE (orig, i);
 	  break;
 
 	case 'w':

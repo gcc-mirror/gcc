@@ -110,12 +110,37 @@ print_rtx (in_rtx)
       case 's':
 	if (i == 3 && GET_CODE (in_rtx) == NOTE
 	    && (NOTE_LINE_NUMBER (in_rtx) == NOTE_INSN_EH_REGION_BEG
-		|| NOTE_LINE_NUMBER (in_rtx) == NOTE_INSN_EH_REGION_END))
+		|| NOTE_LINE_NUMBER (in_rtx) == NOTE_INSN_EH_REGION_END
+		|| NOTE_LINE_NUMBER (in_rtx) == NOTE_INSN_BLOCK_BEG
+		|| NOTE_LINE_NUMBER (in_rtx) == NOTE_INSN_BLOCK_END))
 	  {
 	    fprintf (outfile, " %d", NOTE_BLOCK_NUMBER (in_rtx));
 	    sawclose = 1;
 	    break;
 	  }
+
+	if (i == 3 && GET_CODE (in_rtx) == NOTE
+	    && (NOTE_LINE_NUMBER (in_rtx) == NOTE_INSN_RANGE_START
+		|| NOTE_LINE_NUMBER (in_rtx) == NOTE_INSN_RANGE_END))
+	  {
+	    indent += 2;
+	    if (!sawclose)
+	      fprintf (outfile, " ");
+	    print_rtx (NOTE_RANGE_INFO (in_rtx));
+	    indent -= 2;
+	    break;
+	  }
+
+	if (i == 3 && GET_CODE (in_rtx) == NOTE
+	    && NOTE_LINE_NUMBER (in_rtx) == NOTE_INSN_LIVE)
+	  {
+	    if (XBITMAP (in_rtx, i) == NULL)
+	      fprintf (outfile, " {null}");
+	    else
+	      bitmap_print (outfile, XBITMAP (in_rtx, i), " {", "}");
+	    sawclose = 0;
+	  }
+
 	if (XSTR (in_rtx, i) == 0)
 	  fprintf (outfile, " \"\"");
 	else
@@ -205,6 +230,20 @@ print_rtx (in_rtx)
 	else
 	  fprintf (outfile, " 0");
 	sawclose = 0;
+	break;
+
+      case 'b':
+	if (XBITMAP (in_rtx, i) == NULL)
+	  fprintf (outfile, " {null}");
+	else
+	  bitmap_print (outfile, XBITMAP (in_rtx, i), " {", "}");
+	sawclose = 0;
+	break;
+
+      case 't':
+	putc (' ', outfile);
+	fprintf (outfile, HOST_WIDE_INT_PRINT_HEX,
+		 (HOST_WIDE_INT) XTREE (in_rtx, i));
 	break;
 
       case '*':

@@ -89,6 +89,8 @@ typedef union rtunion_def
   struct rtvec_def *rtvec;
   enum machine_mode rttype;
   addr_diff_vec_flags rt_addr_diff_vec_flags;
+  struct bitmap_head_def *rtbit;
+  union tree_node *rttree;
 } rtunion;
 
 /* RTL expression ("rtx").  */
@@ -228,6 +230,9 @@ typedef struct rtvec_def{
 #define XVEC(RTX, N)	((RTX)->fld[N].rtvec)
 #define XVECLEN(RTX, N)	((RTX)->fld[N].rtvec->num_elem)
 #define XVECEXP(RTX,N,M)((RTX)->fld[N].rtvec->elem[M].rtx)
+#define XBITMAP(RTX, N) ((RTX)->fld[N].rtbit)
+#define XTREE(RTX, N)   ((RTX)->fld[N].rttree)
+
 
 /* ACCESS MACROS for particular fields of insns.  */
 
@@ -375,14 +380,21 @@ extern char *reg_note_name[];
 
 #define LINE_NUMBER NOTE
 
-/* In a NOTE that is a line number, this is a string for the file name
-   that the line is in.  We use the same field to record block numbers
-   temporarily in NOTE_INSN_BLOCK_BEG and NOTE_INSN_BLOCK_END notes.
-   (We avoid lots of casts between ints and pointers if we use a
-   different macro for the bock number.)  */
+/* In a NOTE that is a line number, this is a string for the file name that the
+   line is in.  We use the same field to record block numbers temporarily in
+   NOTE_INSN_BLOCK_BEG and NOTE_INSN_BLOCK_END notes.  (We avoid lots of casts
+   between ints and pointers if we use a different macro for the block number.)
+   The NOTE_INSN_RANGE_{START,END} and NOTE_INSN_LIVE notes record their
+   information as a rtx in the field.  */
 
 #define NOTE_SOURCE_FILE(INSN)  ((INSN)->fld[3].rtstr)
 #define NOTE_BLOCK_NUMBER(INSN) ((INSN)->fld[3].rtint)
+#define NOTE_RANGE_INFO(INSN)   ((INSN)->fld[3].rtx)
+#define NOTE_LIVE_INFO(INSN)    ((INSN)->fld[3].rtx)
+
+/* If the NOTE_BLOCK_NUMBER field gets a -1, it means create a new
+   block node for a live range block.  */
+#define NOTE_BLOCK_LIVE_RANGE_BLOCK -1
 
 /* In a NOTE that is a line number, this is the line number.
    Other kinds of NOTEs are identified by negative numbers here.  */
@@ -438,6 +450,12 @@ extern char *reg_note_name[];
    the line containing the inline call from being counted twice in gcov. */
 #define NOTE_REPEATED_LINE_NUMBER -16
 
+/* Start/end of a live range region, where pseudos allocated on the stack can
+   be allocated to temporary registers.  */
+#define NOTE_INSN_RANGE_START -17
+#define NOTE_INSN_RANGE_END -18
+/* Record which registers are currently live.  */
+#define NOTE_INSN_LIVE -19
 
 #if 0 /* These are not used, and I don't know what they were for. --rms.  */
 #define NOTE_DECL_NAME(INSN) ((INSN)->fld[3].rtstr)
@@ -666,6 +684,99 @@ extern char *note_insn_name[];
 #if (defined (HAVE_PRE_INCREMENT) || defined (HAVE_PRE_DECREMENT) || defined (HAVE_POST_INCREMENT) || defined (HAVE_POST_DECREMENT))
 #define AUTO_INC_DEC
 #endif
+
+/* Accessors for RANGE_INFO.  */
+/* For RANGE_{START,END} notes return the RANGE_START note.  */
+#define RANGE_INFO_NOTE_START(INSN) (XEXP (INSN, 0))
+
+/* For RANGE_{START,END} notes return the RANGE_START note.  */
+#define RANGE_INFO_NOTE_END(INSN) (XEXP (INSN, 1))
+
+/* For RANGE_{START,END} notes, return the vector containing the registers used
+   in the range.  */
+#define RANGE_INFO_REGS(INSN) (XVEC (INSN, 2))
+#define RANGE_INFO_REGS_REG(INSN, N) (XVECEXP (INSN, 2, N))
+#define RANGE_INFO_NUM_REGS(INSN) (XVECLEN (INSN, 2))
+
+/* For RANGE_{START,END} notes, the number of calls within the range.  */
+#define RANGE_INFO_NCALLS(INSN) (XINT (INSN, 3))
+
+/* For RANGE_{START,END} notes, the number of insns within the range.  */
+#define RANGE_INFO_NINSNS(INSN) (XINT (INSN, 4))
+
+/* For RANGE_{START,END} notes, a unique # to identify this range.  */
+#define RANGE_INFO_UNIQUE(INSN) (XINT (INSN, 5))
+
+/* For RANGE_{START,END} notes, the basic block # the range starts with. */
+#define RANGE_INFO_BB_START(INSN) (XINT (INSN, 6))
+
+/* For RANGE_{START,END} notes, the basic block # the range ends with. */
+#define RANGE_INFO_BB_END(INSN) (XINT (INSN, 7))
+
+/* For RANGE_{START,END} notes, the loop depth the range is in.  */
+#define RANGE_INFO_LOOP_DEPTH(INSN) (XINT (INSN, 8))
+
+/* For RANGE_{START,END} notes, the bitmap of live registers at the start
+   of the range.  */
+#define RANGE_INFO_LIVE_START(INSN) (XBITMAP (INSN, 9))
+
+/* For RANGE_{START,END} notes, the bitmap of live registers at the end
+   of the range.  */
+#define RANGE_INFO_LIVE_END(INSN) (XBITMAP (INSN, 10))
+
+/* For RANGE_START notes, the marker # of the start of the range.  */
+#define RANGE_INFO_MARKER_START(INSN) (XINT (INSN, 11))
+
+/* For RANGE_START notes, the marker # of the end of the range.  */
+#define RANGE_INFO_MARKER_END(INSN) (XINT (INSN, 12))
+
+/* Original pseudo register # for a live range note.  */
+#define RANGE_REG_PSEUDO(INSN,N) (XINT (XVECEXP (INSN, 2, N), 0))
+
+/* Pseudo register # original register is copied into or -1.  */
+#define RANGE_REG_COPY(INSN,N) (XINT (XVECEXP (INSN, 2, N), 1))
+
+/* How many times a register in a live range note was referenced.  */
+#define RANGE_REG_REFS(INSN,N) (XINT (XVECEXP (INSN, 2, N), 2))
+
+/* How many times a register in a live range note was set.  */
+#define RANGE_REG_SETS(INSN,N) (XINT (XVECEXP (INSN, 2, N), 3))
+
+/* How many times a register in a live range note died.  */
+#define RANGE_REG_DEATHS(INSN,N) (XINT (XVECEXP (INSN, 2, N), 4))
+
+/* Whether the original value is needed to be copied into the range register at
+   the start of the range. */
+#define RANGE_REG_COPY_FLAGS(INSN,N) (XINT (XVECEXP (INSN, 2, N), 5))
+
+/* # of insns the register copy is live over.  */
+#define RANGE_REG_LIVE_LENGTH(INSN,N) (XINT (XVECEXP (INSN, 2, N), 6))
+
+/* # of calls the register copy is live over.  */
+#define RANGE_REG_N_CALLS(INSN,N) (XINT (XVECEXP (INSN, 2, N), 7))
+
+/* DECL_NODE pointer of the declaration if the register is a user defined
+   variable.  */
+#define RANGE_REG_SYMBOL_NODE(INSN,N) (XTREE (XVECEXP (INSN, 2, N), 8))
+
+/* BLOCK_NODE pointer to the block the variable is declared in if the
+   register is a user defined variable.  */
+#define RANGE_REG_BLOCK_NODE(INSN,N) (XTREE (XVECEXP (INSN, 2, N), 9))
+
+/* EXPR_LIST of the distinct ranges a variable is in.  */
+#define RANGE_VAR_LIST(INSN) (XEXP (INSN, 0))
+
+/* Block a variable is declared in.  */
+#define RANGE_VAR_BLOCK(INSN) (XTREE (INSN, 1))
+
+/* # of distinct ranges a variable is in.  */
+#define RANGE_VAR_NUM(INSN) (XINT (INSN, 2))
+
+/* For a NOTE_INSN_LIVE note, the registers which are currently live.  */
+#define RANGE_LIVE_BITMAP(INSN) (XBITMAP (INSN, 0))
+
+/* For a NOTE_INSN_LIVE note, the original basic block number.  */
+#define RANGE_LIVE_ORIG_BLOCK(INSN) (XINT (INSN, 1))
 
 /* Generally useful functions.  */
 

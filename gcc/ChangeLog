@@ -23,6 +23,48 @@ Wed May 13 13:09:19 1998  Jim Wilson  <wilson@cygnus.com>
 	TARGET_CMOVE support.
 
 Wed May 13 15:28:59 1998  Michael Meissner  <meissner@cygnus.com>
+			  Jeff Law <law@cygnus.com>
+
+	* Makefile.in (HOST_RTL): Add $(HOST_PREFIX)bitmap.o.
+	(rtl.o, emit-rtl.o): Add dependency on bitmap.h.
+	($(HOST_PREFIX_1)rtl.o): Likewise.
+	($(HOST_PREFIX_1)bitmap.o): New host object.
+	* emit-rtl.c (toplevel): Include bitmap.h.
+	(gen_rtx): Handle 't' and 'b' nodes.
+	* print-rtl.c (print_rtx): Handle printing NOTE_INSN_LIVE notes.
+	Print block number for block begin/end notes.  Print 't' type
+	nodes as a pointer.  Know that the 3rd argument of live range
+	start/stop notes is really a range_info rtx.  If type is 'b', print
+	out argument as a bitmap.
+	* rtl.c: Include bitmap.c.
+	(copy_rtx): Copy tree nodes as is.  Copy bitmaps if type is 'b'.
+	(note_insn_name): Add NOTE_INSN_RANGE_{START,END}, NOTE_INSN_LIVE.
+	* rtl.def (RANGE_LIVE): New node to hold live information while we
+	recalculate the basic blocks.
+	(RANGE_REG, RANGE_INFO): New rtl types for live range splitting.
+        (RANGE_VAR): New node, to hold information saved in symbol node for New 
+        communicating live range information to the debug output functions.
+	* rtl.h (rtunion_def): Add rttree and rtbit fields.
+	(XBITMAP, XTREE): New accessor macros.
+ 	(NOTE_LIVE_INFO): Overload NOTE_SOURCE_FILE for NOTE_INSN_LIVE notes.
+	(NOTE_RANGE_INFO): Similarly for NOTE_INSN_RANGE_{START,END} notes.
+	(NOTE_BLOCK_LIVE_RANGE_BLOCK): Define.
+	(NOTE_INSN_RANGE_START, NOTE_INSN_RANGE_END, NOTE_INSN_LIVE): New notes.
+	(RANGE_LIVE_{BITMAP,ORIG_BLOCK}): New accessor macros.
+	(RANGE_REG_{SYMBOL,BLOCK}_NODE, RANGE_VAR_*): New accessor macros.
+	(RANGE_INFO_*): Likewise.
+	* sched.c (sched_analyze): Keep live range start/stop notes.
+	(unlink_other_notes): Likewise.
+	* haifa-sched.c (sched_analyze): Keep live range start/stop notes.
+	(unlink_other_notes): Likewise.
+	* tree.h (BLOCK_LIVE_RANGE_{START,END,VAR_FLAG}): New accessor macros.
+	(BLOCK_LIVE_RANGE_FLAG): Likewise.
+	(DECL_LIVE_RANGE_RTL): Likewise.
+	(struct tree_block): Add live_range_flag, live_range_var_flag,
+	live_range_start and live_range_end.
+	(struct tree_decl): Add live_range_rtl field.
+	* gengenrtl.c (type_from_format): Handle 'b' and 't'.
+	(accessor_from_format): Likewise.
 
 	* haifa-sched.c (schedule_block): Make verbose output line up.
 	Also add a blank line in printing the individual ready lists.
