@@ -305,13 +305,15 @@ enum reg_class {
 #define CONST_OK_FOR_K(VALUE) ((VALUE) == 2)
 #define CONST_OK_FOR_L(VALUE) ((VALUE) == 4)
 #define CONST_OK_FOR_M(VALUE) ((VALUE) == 3)
+#define CONST_OK_FOR_N(VALUE) ((VALUE) == 255 || (VALUE) == 65535)
 
 #define CONST_OK_FOR_LETTER_P(VALUE, C) \
   ((C) == 'I' ? CONST_OK_FOR_I (VALUE) : \
    (C) == 'J' ? CONST_OK_FOR_J (VALUE) : \
    (C) == 'K' ? CONST_OK_FOR_K (VALUE) : \
    (C) == 'L' ? CONST_OK_FOR_L (VALUE) : \
-   (C) == 'M' ? CONST_OK_FOR_M (VALUE) : 0)
+   (C) == 'M' ? CONST_OK_FOR_M (VALUE) : \
+   (C) == 'N' ? CONST_OK_FOR_N (VALUE) : 0)
 
 
 /* Similar, but for floating constants, and defining letters G and H.
@@ -319,7 +321,9 @@ enum reg_class {
      
   `G' is a floating-point zero.  */
 
-#define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C)  0
+#define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C) \
+  ((C) == 'G' ? (GET_MODE_CLASS (GET_MODE (VALUE)) == MODE_FLOAT	\
+		 && (VALUE) == CONST0_RTX (GET_MODE (VALUE))) : 0)
 
 
 /* Stack layout; function entry, exit and calling.  */
@@ -565,8 +569,22 @@ enum reg_class {
 
 /* Extra constraints.  */
  
+#define OK_FOR_R(OP) \
+   (GET_CODE (OP) == MEM					\
+    && GET_MODE (OP) == QImode					\
+    && (CONSTANT_ADDRESS_P (XEXP (OP, 0))			\
+	|| (GET_CODE (XEXP (OP, 0)) == REG			\
+	    && REG_OK_FOR_BASE_P (XEXP (OP, 0))			\
+	    && XEXP (OP, 0) != stack_pointer_rtx)		\
+	|| (GET_CODE (XEXP (OP, 0)) == PLUS			\
+	    && GET_CODE (XEXP (XEXP (OP, 0), 0)) == REG		\
+	    && REG_OK_FOR_BASE_P (XEXP (XEXP (OP, 0), 0))	\
+	    && XEXP (XEXP (OP, 0), 0) != stack_pointer_rtx	\
+	    && GET_CODE (XEXP (XEXP (OP, 0), 1)) == CONST_INT	\
+	    && INT_8_BITS (INTVAL (XEXP (XEXP (OP, 0), 1))))))
+	 
 #define EXTRA_CONSTRAINT(OP, C) \
- ((C) == 'S' ? GET_CODE (OP) == SYMBOL_REF : 0)
+ ((C) == 'R' ? OK_FOR_R (OP) : (C) == 'S' ? GET_CODE (OP) == SYMBOL_REF : 0)
 
 /* Maximum number of registers that can appear in a valid memory address.  */
 
@@ -635,10 +653,11 @@ enum reg_class {
 	base = XEXP (X, 1), index = XEXP (X, 0);	\
       if (base != 0 && index != 0)			\
 	{						\
-	  if (GET_CODE (index) == CONST_INT)		\
+	  if (CONSTANT_ADDRESS_P (index))		\
 	    goto ADDR;					\
 	  if (REG_P (index)				\
-	      && REG_OK_FOR_INDEX_P (index))		\
+	      && REG_OK_FOR_INDEX_P (index)		\
+	      && GET_MODE_SIZE (mode) <= GET_MODE_SIZE (word_mode)) \
 	    goto ADDR;					\
 	}						\
     }							\
@@ -668,8 +687,7 @@ enum reg_class {
 /* Nonzero if the constant value X is a legitimate general operand.
    It is given that X satisfies CONSTANT_P or is a CONST_DOUBLE.  */
 
-#define LEGITIMATE_CONSTANT_P(X) \
-  (GET_MODE_CLASS (GET_MODE (X)) != MODE_FLOAT) \
+#define LEGITIMATE_CONSTANT_P(X) 1
 
 
 /* Tell final.c how to eliminate redundant test instructions.  */
@@ -691,8 +709,31 @@ enum reg_class {
    return it with a return statement.  Otherwise, break from the switch.  */
 
 #define CONST_COSTS(RTX,CODE,OUTER_CODE) \
-  default: { int _zxy= const_costs(RTX, CODE);	\
-	     if(_zxy) return _zxy; break;}
+  case CONST_INT:							\
+    /* Zeros are extremely cheap.  */					\
+    if (INTVAL (RTX) == 0 && OUTER_CODE == SET)				\
+      return 0;								\
+    /* If it fits in 8 bits, then it's still relatively cheap.  */	\
+    if (INT_8_BITS (INTVAL (RTX)))					\
+      return 1;								\
+    /* This is the "base" cost, includes constants where either the	\
+       upper or lower 16bits are all zeros.  */				\
+    if (INT_16_BITS (INTVAL (RTX))					\
+	|| (INTVAL (RTX) & 0xffff) == 0					\
+	|| (INTVAL (RTX) & 0xffff0000) == 0)				\
+      return 2;								\
+    return 4;								\
+  /* These are more costly than a CONST_INT, but we can relax them,	\
+     so they're less costly than a CONST_DOUBLE.  */			\
+  case CONST:								\
+  case LABEL_REF:							\
+  case SYMBOL_REF:							\
+    return 6;								\
+  /* We don't optimize CONST_DOUBLEs well nor do we relax them well,	\
+     so their cost is very high.  */					\
+  case CONST_DOUBLE:							\
+    return 8;
+
 
 #define REGISTER_MOVE_COST(CLASS1, CLASS2)  (CLASS1 != CLASS2 ? 4 : 0)
 
