@@ -1,3 +1,7 @@
+2000-03-08  Neil Booth  <NeilB@earthling.net>
+
+	* MAINTAINERS: Add self in write-after-approval section.
+
 2000-01-27  Christopher Faylor <cgf@redhat.com>
 
 	* Makefile.in (CC_FOR_TARGET): Add new winsup directory
