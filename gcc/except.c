@@ -1930,15 +1930,23 @@ static short language_code = 0;
 static short version_code = 0; 
 
 /* This routine will set the language code for exceptions. */
+#ifdef __STDC__
+void set_exception_lang_code (short code)
+#else
 void set_exception_lang_code (code)
      short code;
+#endif
 {
   language_code = code;
 }
 
 /* This routine will set the language version code for exceptions. */
+#ifdef __STDC__
+void set_exception_version_code (short code)
+#else
 void set_exception_version_code (code)
      short code;
+#endif
 {
   version_code = code;
 }

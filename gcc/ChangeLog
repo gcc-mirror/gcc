@@ -1,3 +1,11 @@
+Tue Aug 11 16:04:34 1998  John Carr  <jfc@mit.edu>
+
+	* except.c (set_exception_lang_code, set_exception_version_code):
+	Use prototype-style definition if __STDC__, to match declaration
+	in except.h.
+
+	* genemit.c: Change FAIL and DONE macros not to use loops.
+
 Tue Aug 11 12:27:03 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* dwarf2out.c (ASM_OUTPUT_DWARF_ADDR_CONST): Use

@@ -782,8 +782,8 @@ from the machine description file `md'.  */\n\n");
   printf ("extern char *insn_operand_constraint[][MAX_RECOG_OPERANDS];\n\n");
   printf ("extern rtx recog_operand[];\n");
   printf ("#define operands emit_operand\n\n");
-  printf ("#define FAIL do {end_sequence (); return _val;} while (0)\n");
-  printf ("#define DONE do {_val = gen_sequence (); end_sequence (); return _val;} while (0)\n");
+  printf ("#define FAIL return (end_sequence (), _val)\n");
+  printf ("#define DONE return (_val = gen_sequence (), end_sequence (), _val)\n");
 
   /* Read the machine description.  */
 
