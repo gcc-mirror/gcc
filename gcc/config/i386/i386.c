@@ -3596,6 +3596,32 @@ const248_operand (register rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 	  && (INTVAL (op) == 2 || INTVAL (op) == 4 || INTVAL (op) == 8));
 }
 
+int
+const_0_to_3_operand (register rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
+{
+  return (GET_CODE (op) == CONST_INT && INTVAL (op) >= 0 && INTVAL (op) < 4);
+}
+
+int
+const_0_to_7_operand (register rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
+{
+  return (GET_CODE (op) == CONST_INT && INTVAL (op) >= 0 && INTVAL (op) < 8);
+}
+
+int
+const_0_to_15_operand (register rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
+{
+  return (GET_CODE (op) == CONST_INT && INTVAL (op) >= 0 && INTVAL (op) < 16);
+}
+
+int
+const_0_to_255_operand (register rtx op,
+			enum machine_mode mode ATTRIBUTE_UNUSED)
+{
+  return (GET_CODE (op) == CONST_INT && INTVAL (op) >= 0 && INTVAL (op) < 256);
+}
+
+
 /* True if this is a constant appropriate for an increment or decrement.  */
 
 int
@@ -9400,11 +9426,6 @@ ix86_expand_carry_flag_compare (enum rtx_code code, rtx op0, rtx op1, rtx *pop)
 	    return false;
 	  code = (code == GTU ? GEU : LTU);
 	}
-      else if (!nonimmediate_operand (op1, mode)
-	       || !general_operand (op0, mode))
-	/* Swapping operands in this case would generate an
-	   unrecognizable insn.  */
-	return false;
       else
 	{
 	  rtx tmp = op1;
@@ -9432,6 +9453,13 @@ ix86_expand_carry_flag_compare (enum rtx_code code, rtx op0, rtx op1, rtx *pop)
 
     default:
       return false;
+    }
+  /* Swapping operands may cause constant to appear as first operand.  */
+  if (!nonimmediate_operand (op0, VOIDmode))
+    {
+      if (no_new_pseudos)
+	return false;
+      op0 = force_reg (mode, op0);
     }
   ix86_compare_op0 = op0;
   ix86_compare_op1 = op1;
@@ -13508,7 +13536,8 @@ ix86_expand_binop_builtin (enum insn_code icode, tree arglist, rtx target)
 
   /* In case the insn wants input operands in modes different from
      the result, abort.  */
-  if (GET_MODE (op0) != mode0 || GET_MODE (op1) != mode1)
+  if ((GET_MODE (op0) != mode0 && GET_MODE (op0) != VOIDmode)
+      || (GET_MODE (op1) != mode1 && GET_MODE (op1) != VOIDmode))
     abort ();
 
   if (! (*insn_data[icode].operand[1].predicate) (op0, mode0))
@@ -13773,8 +13802,8 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 	op0 = copy_to_mode_reg (mode0, op0);
       if (! (*insn_data[icode].operand[2].predicate) (op1, mode1))
 	{
-	  /* @@@ better error message */
-	  error ("selector must be an immediate");
+	  error ("selector must be an integer constant in the range 0..%i",
+		  fcode == IX86_BUILTIN_PEXTRW ? 3:7);
 	  return gen_reg_rtx (tmode);
 	}
       if (target == 0
@@ -13809,8 +13838,8 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 	op1 = copy_to_mode_reg (mode1, op1);
       if (! (*insn_data[icode].operand[3].predicate) (op2, mode2))
 	{
-	  /* @@@ better error message */
-	  error ("selector must be an immediate");
+	  error ("selector must be an integer constant in the range 0..%i",
+		  fcode == IX86_BUILTIN_PINSRW ? 15:255);
 	  return const0_rtx;
 	}
       if (target == 0

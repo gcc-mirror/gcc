@@ -1,3 +1,24 @@
+Wed Aug 20 12:08:55 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	PR target/11369
+	* i386.c (ix86_expand_carry_flag_compare): Validate operand.
+
+	PR target/11031
+	* i386.c (const_0_to_3_operand, const_0_to_7_operand,
+	const_0_to_15_operand, const_0_to_255_operand): New predicates.
+	* i386.h (PREDICATE_CODES): Add these.
+	* i386.c (pinsrw and pextrw patterns): Use them.
+
+	PR target/10984
+	* i386.c (ix86_expand_binop_builtin): Behave sanely for VOIDmodes.
+
+	PR target/8869
+	* expr.c (convert_modes): Deal properly with integer to vector
+	constant conversion.
+
+	PR target/8871
+	* i386.md (zero_extendsidi2*): Add MMX and SSE alternatives.
+
 2003-08-23  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.h (LOAD_EXTEND_OP): Remove.
