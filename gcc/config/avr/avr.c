@@ -4666,5 +4666,3 @@ output_reload_insisf (insn, operands, len)
     }
   return "";
 }
-
-

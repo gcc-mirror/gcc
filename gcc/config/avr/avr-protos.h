@@ -42,8 +42,6 @@ extern int    mask_one_bit_p              PARAMS ((HOST_WIDE_INT mask));
 extern void   gas_output_limited_string PARAMS ((FILE *file, const char *str));
 extern void   gas_output_ascii          PARAMS ((FILE *file, const char *str,
 							 size_t length));
-
-
 #ifdef TREE_CODE
 extern void   asm_output_external          PARAMS ((FILE *file, tree decl,
 						   char *name));

@@ -340,8 +340,7 @@
    (clobber (match_dup 0))
    (clobber (match_dup 1))]
   ""
-  "
-	ld __tmp_reg__,%a1+
+  "ld __tmp_reg__,%a1+
 	st %a0+,__tmp_reg__
 	dec %2
 	brne _PC_-8"
@@ -409,8 +408,7 @@
    (clobber (match_dup 1))
    (clobber (match_dup 0))]
   ""
-  "
-	st %a0+,__zero_reg__
+  "st %a0+,__zero_reg__
         dec %1
 	brne _PC_-6"
   [(set_attr "length" "3")
@@ -555,12 +553,11 @@
   [(set_attr "length" "2,1,1,2,3,3")
    (set_attr "cc" "set_n,set_czn,set_czn,set_czn,set_n,set_n")])
 
-;; TODO: use "movw" if available
 (define_insn "addsi3"
-  [(set (match_operand:SI 0 "register_operand" "=r,!w,!w,d,r,r,&*!w,&*!w")
+  [(set (match_operand:SI 0 "register_operand" "=r,!w,!w,d,r,r")
 	  (plus:SI
-	   (match_operand:SI 1 "register_operand" "%0,0,0,0,0,0,r,r")
-	   (match_operand:SI 2 "nonmemory_operand" "r,I,J,i,P,N,#I,#J")))]
+	   (match_operand:SI 1 "register_operand" "%0,0,0,0,0,0")
+	   (match_operand:SI 2 "nonmemory_operand" "r,I,J,i,P,N")))]
   ""
   "@
 	add %A0,%A2\;adc %B0,%B2\;adc %C0,%C2\;adc %D0,%D2
@@ -568,11 +565,9 @@
 	sbiw %0,%n2\;sbc %C0,__zero_reg__\;sbc %D0,__zero_reg__
 	subi %0,lo8(-(%2))\;sbci %B0,hi8(-(%2))\;sbci %C0,hlo8(-(%2))\;sbci %D0,hhi8(-(%2))
 	sec\;adc %A0,__zero_reg__\;adc %B0,__zero_reg__\;adc %C0,__zero_reg__\;adc %D0,__zero_reg__
-	sec\;sbc %A0,__zero_reg__\;sbc %B0,__zero_reg__\;sbc %C0,__zero_reg__\;sbc %D0,__zero_reg__
-	mov %A0,%A1\;mov %B0,%B1\;mov %C0,%C1\;mov %D0,%D1\;adiw %0,%2\;adc %C0,__zero_reg__\;adc %D0,__zero_reg__
-	mov %A0,%A1\;mov %B0,%B1\;mov %C0,%C1\;mov %D0,%D1\;sbiw %0,%n2\;sbc %C0,__zero_reg__\;sbc %D0,__zero_reg__"
-  [(set_attr "length" "4,3,3,4,5,5,7,7")
-   (set_attr "cc" "set_n,set_n,set_czn,set_czn,set_n,set_n,set_n,set_czn")])
+	sec\;sbc %A0,__zero_reg__\;sbc %B0,__zero_reg__\;sbc %C0,__zero_reg__\;sbc %D0,__zero_reg__"
+  [(set_attr "length" "4,3,3,4,5,5")
+   (set_attr "cc" "set_n,set_n,set_czn,set_czn,set_n,set_n")])
 
 ;-----------------------------------------------------------------------------
 ; sub bytes
@@ -852,7 +847,8 @@
         (xor:HI (match_operand:HI 1 "register_operand" "%0")
                 (match_operand:HI 2 "register_operand" "r")))]
   ""
-  "eor %0,%2\;eor %B0,%B2"
+  "eor %0,%2
+	eor %B0,%B2"
   [(set_attr "length" "2")
    (set_attr "cc" "set_n")])
 
@@ -971,7 +967,8 @@
   [(set (match_operand:QI 0 "register_operand" "=r")
         (abs:QI (match_operand:QI 1 "register_operand" "0")))]
   ""
-  "sbrc %0,7\;neg %0"
+  "sbrc %0,7
+	neg %0"
   [(set_attr "length" "2")
    (set_attr "cc" "clobber")])
 
@@ -1043,7 +1040,8 @@
   [(set (match_operand:HI 0 "register_operand" "=r")
         (not:HI (match_operand:HI 1 "register_operand" "0")))]
   ""
-  "com %0\;com %B0"
+  "com %0
+	com %B0"
   [(set_attr "length" "2")
    (set_attr "cc" "set_n")])
 
@@ -1051,7 +1049,10 @@
   [(set (match_operand:SI 0 "register_operand" "=r")
         (not:SI (match_operand:SI 1 "register_operand" "0")))]
   ""
-  "com %0\;com %B0\;com %C0\;com %D0"
+  "com %0
+	com %B0
+	com %C0
+	com %D0"
   [(set_attr "length" "4")
    (set_attr "cc" "set_n")])
 
@@ -1078,15 +1079,22 @@
   [(set_attr "length" "5,6")
    (set_attr "cc" "clobber,clobber")])
 
-;; TODO: use "movw" if available
 (define_insn "extendhisi2"
   [(set (match_operand:SI 0 "register_operand"               "=r,&r")
         (sign_extend:SI (match_operand:HI 1 "register_operand" "0,*r")))]
   ""
   "@
 	clr %C0\;sbrc %B0,7\;com %C0\;mov %D0,%C0
-	mov %A0,%A1\;mov %B0,%B1\;clr %C0\;sbrc %B0,7\;com %C0\;mov %D0,%C0"
-  [(set_attr "length" "4,6")
+	{mov %A0,%A1\;mov %B0,%B1|movw %A0,%A1}\;clr %C0\;sbrc %B0,7\;com %C0\;mov %D0,%C0"
+  [(set (attr "length")
+	(if_then_else
+	 (eq (symbol_ref "AVR_ENHANCED") (const_int 0))
+	 (if_then_else (eq (symbol_ref "which_alternative") (const_int 0))
+		       (const_int 4)
+		       (const_int 6))
+	 (if_then_else (eq (symbol_ref "which_alternative") (const_int 0))
+		       (const_int 4)
+		       (const_int 5))))
    (set_attr "cc" "clobber,clobber")])
 
 ;; xx<---x xx<---x xx<---x xx<---x xx<---x xx<---x xx<---x xx<---x xx<---x
@@ -1112,15 +1120,22 @@
   [(set_attr "length" "3,4")
    (set_attr "cc" "set_n,set_n")])
 
-;; TODO: use "movw" if available
 (define_insn "zero_extendhisi2"
   [(set (match_operand:SI 0 "register_operand" "=r,&r")
         (zero_extend:SI (match_operand:HI 1 "register_operand" "0,*r")))]
   ""
   "@
 	clr %C0\;clr %D0
-	mov %A0,%A1\;mov %B0,%B1\;clr %C0\;clr %D0"
-  [(set_attr "length" "2,4")
+	{mov %A0,%A1\;mov %B0,%B1|movw %A0,%B0}\;clr %C0\;clr %D0"
+  [(set (attr "length")
+	(if_then_else
+	 (eq (symbol_ref "AVR_ENHANCED") (const_int 0))
+	 (if_then_else (eq (symbol_ref "which_alternative") (const_int 0))
+		       (const_int 2)
+		       (const_int 4))
+	 (if_then_else (eq (symbol_ref "which_alternative") (const_int 0))
+		       (const_int 2)
+		       (const_int 3))))
    (set_attr "cc" "set_n,set_n")])
 
 ;;<=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=>

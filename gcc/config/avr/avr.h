@@ -2656,6 +2656,31 @@ sprintf (STRING, "*.%s%d", PREFIX, NUM)
    formats.  In that case, the various `tm.h' files can define these
    macros differently.  */
 
+#define ASSEMBLER_DIALECT AVR_ENHANCED
+/* If your target supports multiple dialects of assembler language
+  (such as different opcodes), define this macro as a C expression
+  that gives the numeric index of the assembler language dialect to
+  use, with zero as the first variant.
+
+  If this macro is defined, you may use constructs of the form
+  `{option0|option1|option2...}' in the output templates of patterns
+  (*note Output Template::.) or in the first argument of
+  `asm_fprintf'.  This construct outputs `option0', `option1' or
+  `option2', etc., if the value of `ASSEMBLER_DIALECT' is zero, one
+  or two, etc.  Any special characters within these strings retain
+  their usual meaning.
+
+  If you do not define this macro, the characters `{', `|' and `}'
+  do not have any special meaning when used in templates or operands
+  to `asm_fprintf'.
+
+  Define the macros `REGISTER_PREFIX', `LOCAL_LABEL_PREFIX',
+  `USER_LABEL_PREFIX' and `IMMEDIATE_PREFIX' if you can express the
+  variations in assembler language syntax with that mechanism.
+  Define `ASSEMBLER_DIALECT' and use the `{option0|option1}' syntax
+  if the syntax variant are larger and involve such things as
+  different opcodes or operand order.  */
+
 #define ASM_OUTPUT_REG_PUSH(STREAM, REGNO)	\
 {						\
   if (REGNO > 31)				\
