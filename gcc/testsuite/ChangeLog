@@ -1,3 +1,7 @@
+2002-02-06  Richard Henderson  <rth@redhat.com>
+
+	* gcc.dg/asm-4.c: Add case with an unnamed operand in the middle.
+
 2002-02-06  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc.dg/20020206-1.c: New test.
