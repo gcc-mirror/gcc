@@ -3543,6 +3543,7 @@ tree fold_build_cleanup_point_expr (tree type, tree expr);
 extern tree build_fold_addr_expr_with_type (tree, tree);
 extern tree build_fold_indirect_ref (tree);
 extern tree constant_boolean_node (int, tree);
+extern tree build_low_bits_mask (tree, unsigned);
 
 extern bool tree_swap_operands_p (tree, tree, bool);
 extern enum tree_code swap_tree_comparison (enum tree_code);
