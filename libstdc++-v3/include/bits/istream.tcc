@@ -29,7 +29,7 @@
 // the GNU General Public License.
 
 //
-// ISO C++ 14882: 27.6.2  Output streams
+// ISO C++ 14882: 27.6.1  Input streams
 //
 
 #ifndef _ISTREAM_TCC

@@ -1,5 +1,9 @@
 2004-04-26  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/istream.tcc: Fix comment.
+
+2004-04-26  Paolo Carlini  <pcarlini@suse.de>
+
 	* src/locale.cc (locale::operator==): When _M_impl == __rhs._M_impl
 	avoid constructing unnecessarily this->name().
 
