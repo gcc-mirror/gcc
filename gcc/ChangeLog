@@ -18,6 +18,8 @@ Tue Sep 12 08:53:57 2000  Jeffrey A Law  (law@cygnus.com)
 
 2000-09-12  Kazu Hirata  <kazu@hxi.com>
 
+	* genattrtab.c: Fix formatting.
+
 	* unroll.c: Fix formatting.
 
 2000-09-12  Bruce Korb  <bkorb@gnu.org>
