@@ -1590,6 +1590,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 		}
 
 	      /* Ignore unknown register, error already signalled.  */
+	      continue;
 	    }
 
 	  /* Use QImode since that's guaranteed to clobber just one reg.  */
