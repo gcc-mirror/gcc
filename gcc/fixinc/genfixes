@@ -75,7 +75,7 @@ fixincl.x | */fixincl.x )
   else
     echo "AutoGen does not appear to be correctly installed."
     echo "Please download and install:"
-    echo "   ftp://sourceware.cygnus.com/pub/egcs/infrastructure/autogen.tar.gz"
+    echo "   ftp://gcc.gnu.org/pub/gcc/infrastructure/autogen.tar.gz"
     touch fixincl.x
   fi
   ;;

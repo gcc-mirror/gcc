@@ -7,7 +7,8 @@ Installing GNU CC
 *****************
 
    Note most of this information is out of date and superseded by the
-EGCS install procedures.  It is provided for historical reference only.
+online GCC install procedures `http://gcc.gnu.org/install/'.  It is
+provided for historical reference only.
 
    Here is the procedure for installing GNU CC on a GNU or Unix system.
 See *Note VMS Install::, for VMS systems.  In this section we assume you
@@ -640,9 +641,10 @@ Configurations Supported by GNU CC
 
      1750a, a29k, alpha, arm, avr, cN, clipper, dsp16xx, elxsi, fr30,
      h8300, hppa1.0, hppa1.1, i370, i386, i486, i586, i686, i786, i860,
-     i960, m32r, m68000, m68k, m88k, mcore, mips, mipsel, mips64,
-     mips64el, mn10200, mn10300, ns32k, pdp11, powerpc, powerpcle,
-     romp, rs6000, sh, sparc, sparclite, sparc64, v850, vax, we32k.
+     i960, m32r, m68000, m68k, m6811, m6812, m88k, mcore, mips, mipsel,
+     mips64, mips64el, mn10200, mn10300, ns32k, pdp11, powerpc,
+     powerpcle, romp, rs6000, sh, sparc, sparclite, sparc64, v850, vax,
+     we32k.
 
    Here are the recognized company names.  As you can see, customary
 abbreviations are used rather than the longer official names.
@@ -721,7 +723,7 @@ special things you must know:
      The MIL-STD-1750A cross configuration produces output for
      `as1750', an assembler/linker available under the GNU Public
      License for the 1750A. `as1750' can be obtained at
-     *ftp://ftp.fta-berlin.de/pub/crossgcc/1750gals/*.  A similarly
+     `ftp://ftp.fta-berlin.de/pub/crossgcc/1750gals/'.  A similarly
      licensed simulator for the 1750A is available from same address.
 
      You should ignore a fatal error during the building of libgcc
@@ -828,7 +830,7 @@ special things you must know:
      Any of the ARM-family processors running the Linux-based GNU
      system with the `ELF' binary format.  You must use version
      2.9.1.0.22 or later of the GNU/Linux binutils, which you can
-     download from `ftp.varesearch.com:/pub/support/hjl/binutils'.
+     download from `ftp://ftp.varesearch.com/pub/support/hjl/binutils/'.
 
      These two configurations differ only in the required version of GNU
      binutils.  For binutils 2.9.1.0.x, use `arm-*-linux-gnuoldld'.  For
@@ -841,7 +843,7 @@ special things you must know:
      that the assembler shipped with RISC iX does not support stabs
      debugging information; a new version of the assembler, with stabs
      support included, is now available from Acorn and via ftp
-     `ftp.acorn.com:/pub/riscix/as+xterm.tar.Z'.  To enable stabs
+     `ftp://ftp.acorn.com/pub/riscix/as+xterm.tar.Z'.  To enable stabs
      debugging, pass `--with-gnu-as' to configure.
 
      You will need to install GNU `sed' before you can run configure.
@@ -892,7 +894,7 @@ special things you must know:
 
 `elxsi-elxsi-bsd'
      The Elxsi's C compiler has known limitations that prevent it from
-     compiling GNU C.  Please contact `mrs@cygnus.com' for more details.
+     compiling GNU C.  Please contact <mrs@cygnus.com> for more details.
 
 `dsp16xx'
      A port to the AT&T DSP1610 family of processors.
@@ -1023,13 +1025,13 @@ special things you must know:
 `i[345]86-*-winnt3.5'
      This version requires a GAS that has not yet been released.  Until
      it is, you can get a prebuilt binary version via anonymous ftp from
-     `cs.washington.edu:pub/gnat' or `cs.nyu.edu:pub/gnat'. You must
-     also use the Microsoft header files from the Windows NT 3.5 SDK.
-     Find these on the CDROM in the `/mstools/h' directory dated
-     9/4/94.  You must use a fixed version of Microsoft linker made
-     especially for NT 3.5, which is also is available on the NT 3.5
-     SDK CDROM.  If you do not have this linker, can you also use the
-     linker from Visual C/C++ 1.0 or 2.0.
+     `ftp://cs.washington.edu/pub/gnat' or `ftp://cs.nyu.edu/pub/gnat'.
+     You must also use the Microsoft header files from the Windows NT
+     3.5 SDK.  Find these on the CDROM in the `/mstools/h' directory
+     dated 9/4/94.  You must use a fixed version of Microsoft linker
+     made especially for NT 3.5, which is also is available on the NT
+     3.5 SDK CDROM.  If you do not have this linker, can you also use
+     the linker from Visual C/C++ 1.0 or 2.0.
 
      Installing GNU CC for NT builds a wrapper linker, called `ld.exe',
      which mimics the behaviour of Unix `ld' in the specification of
@@ -1087,7 +1089,7 @@ special things you must know:
 `m68000-hp-bsd'
      HP 9000 series 200 running BSD.  Note that the C compiler that
      comes with this system cannot compile GNU CC; contact
-     `law@cygnus.com' to get binaries of GNU CC for bootstrapping.
+     <law@cygnus.com> to get binaries of GNU CC for bootstrapping.
 
 `m68k-altos'
      Altos 3068.  You must use the GNU assembler, linker and debugger.
@@ -1122,7 +1124,7 @@ special things you must know:
      `--with-gnu-as' to the configure script or use GNU assembler with
      dbx-in-coff encapsulation by providing `--with-gnu-as --stabs'.
      For any problem with native assembler or for availability of the
-     DPX/2 port of GAS, contact `F.Pierresteguy@frcl.bull.fr'.
+     DPX/2 port of GAS, contact <F.Pierresteguy@frcl.bull.fr>.
 
 `m68k-crds-unox'
      Use `configure unos' for building on Unos.
@@ -1178,6 +1180,14 @@ special things you must know:
 
      See *Note Sun Install::, for information on installing GNU CC on
      Sun systems.
+
+`m6811-elf'
+     Motorola 68HC11 family micro controllers.  These are used in
+     embedded applications.  There are no standard Unix configurations.
+
+`m6812-elf'
+     Motorola 68HC12 family micro controllers.  These are used in
+     embedded applications.  There are no standard Unix configurations.
 
 `m88k-*-svr3'
      Motorola m88k running the AT&T/Unisoft/Motorola V.3 reference port.
