@@ -1,3 +1,10 @@
+Sat Aug 16 01:08:12 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* loop.c (is_power_of_2, is_conditional_branch): Delete unused
+	functions and declarations.
+	(analyze_loop_iterations): Use condjump_p.
+	(insert_bct): Likewise.  Use exact_log2.
+	
 Fri Aug 15 23:48:32 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* haifa-sched.c (find_post_sched_live): Call FREE_REG_SET as needed.

@@ -340,8 +340,6 @@ int indirect_jump_in_function = 0;
 static int indirect_jump_in_function_p ();
 
 int loop_number ();
-static int is_power_of_2();
-static int is_conditional_branch ();
 
 /* Debugging functions.  */
 int fix_bct_param ();
@@ -7111,7 +7109,7 @@ void analyze_loop_iterations (loop_start, loop_end)
 
   /* make sure that the last loop insn is a conditional jump */
   last_loop_insn = PREV_INSN (loop_end);
-  if (!is_conditional_branch (last_loop_insn)) {
+  if (GET_CODE (last_loop_insn != JUMP_INSN) || !condjump_p (last_loop_insn))
     if (loop_dump_stream)
       fprintf (loop_dump_stream,
               "analyze_loop_iterations %d: BCT instrumentation failed: invalid jump at loop end\n",
@@ -7301,7 +7299,8 @@ insert_bct (loop_start, loop_end)
   /* make sure that the last loop insn is a conditional jump .
      This check is repeated from analyze_loop_iterations (),
      because unrolling might have changed that.  */
-  if (!is_conditional_branch (PREV_INSN (loop_end))){
+  if (GET_CODE (PREV_INSN (loop_end)) != JUMP_INSN
+      || !is_condjump_p (PREV_INSN (loop_end)))
     if (loop_dump_stream)
       fprintf (loop_dump_stream,
 	      "insert_bct: not instrumenting BCT because of invalid branch\n");
@@ -7462,7 +7461,7 @@ insert_bct (loop_start, loop_end)
 
     /* make sure that the increment is a power of two, otherwise (an
        expensive) divide is needed.  */
-    if ( !is_power_of_2(increment_value_abs) )
+    if (exact_log2 (increment_value_abs) == -1)
       {
 	if (loop_dump_stream)
 	  fprintf (loop_dump_stream,
@@ -7632,30 +7631,6 @@ indirect_jump_in_function_p (start)
     }
   }
   return is_indirect_jump;
-}
-
-/* return 1 iff n is a power of 2 */
-static int
-is_power_of_2(n)
-     int n;
-{
-  return (n & (n-1)) == 0;
-}
-
-/* return 1 iff insn is a conditional jump */
-static int
-is_conditional_branch (insn)
-     rtx insn;
-{
-  rtx work_code;
-  if (GET_CODE (insn) != JUMP_INSN)
-    return 0;
-  work_code = PATTERN (insn);
-  if (GET_CODE (work_code) != SET)
-    return 0;
-  if (GET_CODE (XEXP (work_code, 1)) != IF_THEN_ELSE)
-    return 0;
-  return 1;
 }
 
 /* debugging: fix_bct_param () is called from toplev.c upon detection
