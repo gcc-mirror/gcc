@@ -1,3 +1,7 @@
+Sun Sep  7 23:18:32 1997  Fred Fish  <fnf@ninemoons.com>
+
+	* config.sub: Change 'amigados' to 'amigaos' to match current usage.
+
 Fri Sep  5 16:11:28 1997  Joel Sherrill  (joel@OARcorp.com)
 
         * configure.in (*-*-rtems*): Do not build libgloss for rtems.

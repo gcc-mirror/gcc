@@ -452,7 +452,7 @@ is equivalent to `vax-dec-ultrix4.2'.
 
    Here is a list of system types:
 
-     386bsd, aix, acis, amigados, aos, aout, bosx, bsd, clix, coff,
+     386bsd, aix, acis, amigaos, aos, aout, bosx, bsd, clix, coff,
      ctix, cxux, dgux, dynix, ebmon, ecoff, elf, esix, freebsd, hms,
      genix, gnu, gnu/linux, hiux, hpux, iris, irix, isc, luna, lynxos,
      mach, minix, msdos, mvs, netbsd, newsos, nindy, ns, osf, osfrose,
