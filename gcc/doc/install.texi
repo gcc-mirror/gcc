@@ -2727,6 +2727,9 @@ have installed.
 IA-64 processor (also known as IPF, or Itanium Processor Family)
 running GNU/Linux.
 
+If you are using the optional libunwind library, then you must use
+libunwind 0.96 or later.
+
 None of the following versions of GCC has an ABI that is compatible
 with any of the other versions in this list, with the exception that
 Red Hat 2.96 and Trillian 000171 are compatible with each other:
