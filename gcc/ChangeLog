@@ -1,3 +1,9 @@
+2005-03-03  Roger Sayle  <roger@eyesopen.com>
+	    Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* jump.c (redirect_exp_1): If nlabel is a NULL pointer create a
+	RETURN rtx, and not a LABEL_REF containing a NULL pointer.
+
 2005-03-03  Hans-Peter Nilsson  <hp@axis.com>
 
 	Describe special registers SRP and MOF as allocatable registers.

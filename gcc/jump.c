@@ -1539,7 +1539,10 @@ redirect_exp_1 (rtx *loc, rtx olabel, rtx nlabel, rtx insn)
     }
   else if (code == RETURN && olabel == 0)
     {
-      x = gen_rtx_LABEL_REF (VOIDmode, nlabel);
+      if (nlabel)
+	x = gen_rtx_LABEL_REF (VOIDmode, nlabel);
+      else
+	x = gen_rtx_RETURN (VOIDmode);
       if (loc == &PATTERN (insn))
 	x = gen_rtx_SET (VOIDmode, pc_rtx, x);
       validate_change (insn, loc, x, 1);
