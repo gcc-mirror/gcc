@@ -3734,7 +3734,6 @@ extern tree do_friend				PROTO((tree, tree, tree, tree, tree, enum overload_flag
 
 /* in init.c */
 extern void init_init_processing		PROTO((void));
-extern void expand_direct_vtbls_init		PROTO((tree, tree, int, int, tree));
 extern tree emit_base_init			PROTO((tree));
 extern void check_base_init			PROTO((tree));
 extern void expand_member_init			PROTO((tree, tree, tree));
@@ -3757,6 +3756,7 @@ extern tree build_vec_delete			PROTO((tree, tree, tree, int));
 extern tree create_temporary_var                PROTO((tree));
 extern void begin_init_stmts                    PROTO((tree *, tree *));
 extern tree finish_init_stmts                   PROTO((tree, tree));
+extern void initialize_vtbl_ptrs                PROTO((tree, tree));
 
 /* in input.c */
 
@@ -3926,7 +3926,7 @@ extern tree lookup_nested_tag			PROTO((tree, tree));
 extern tree get_matching_virtual		PROTO((tree, tree, int));
 extern void get_pure_virtuals		        PROTO((tree));
 extern tree init_vbase_pointers			PROTO((tree, tree));
-extern void expand_indirect_vtbls_init		PROTO((tree, tree, tree));
+extern void expand_indirect_vtbls_init		PROTO((tree, tree));
 extern void clear_search_slots			PROTO((tree));
 extern void get_vbase_types			PROTO((tree));
 extern void maybe_suppress_debug_info		PROTO((tree));
@@ -3955,6 +3955,7 @@ extern tree dfs_skip_nonprimary_vbases_markedp  PROTO((tree, void *));
 extern tree dfs_unmarked_real_bases_queue_p     PROTO((tree, void *));
 extern tree dfs_marked_real_bases_queue_p       PROTO((tree, void *));
 extern void mark_primary_bases                  PROTO((tree));
+extern tree convert_pointer_to_vbase            PROTO((tree, tree));
 
 /* in semantics.c */
 extern void finish_expr_stmt                    PROTO((tree));

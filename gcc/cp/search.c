@@ -77,7 +77,6 @@ static struct search_level *search_stack;
 
 static tree next_baselink PROTO((tree));
 static tree get_vbase_1 PROTO((tree, tree, unsigned int *));
-static tree convert_pointer_to_vbase PROTO((tree, tree));
 static tree lookup_field_1 PROTO((tree, tree));
 static tree convert_pointer_to_single_level PROTO((tree, tree));
 static int lookup_fnfields_here PROTO((tree, tree));
@@ -249,7 +248,7 @@ get_vbase (parent, binfo)
    EXPR is a non-null POINTER_TYPE to RECORD_TYPE.  We also know that
    the type of what expr points to has a virtual base of type TYPE.  */
 
-static tree
+tree
 convert_pointer_to_vbase (type, expr)
      tree type;
      tree expr;
@@ -3004,9 +3003,9 @@ fixup_all_virtual_upcast_offsets (type, decl_ptr)
    sub-object we are initializing.  */
 
 void
-expand_indirect_vtbls_init (binfo, true_exp, decl_ptr)
+expand_indirect_vtbls_init (binfo, decl_ptr)
      tree binfo;
-     tree true_exp, decl_ptr;
+     tree decl_ptr;
 {
   tree type = BINFO_TYPE (binfo);
 
@@ -3025,29 +3024,11 @@ expand_indirect_vtbls_init (binfo, true_exp, decl_ptr)
     {
       tree vbases = CLASSTYPE_VBASECLASSES (type);
       struct vbase_info vi;
-      vi.decl_ptr = (true_exp ? build_unary_op (ADDR_EXPR, true_exp, 0) 
-		     : decl_ptr);
+      vi.decl_ptr = decl_ptr;
       vi.vbase_types = vbases;
 
       dfs_walk (binfo, dfs_find_vbases, unmarked_new_vtablep, &vi);
-
-      /* Initialized with vtables of type TYPE.  */
-      for (; vbases; vbases = TREE_CHAIN (vbases))
-	{
-	  tree addr;
-
-	  addr = convert_pointer_to_vbase (TREE_TYPE (vbases), vi.decl_ptr);
-
-	  /* Do all vtables from this virtual base.  */
-	  /* This assumes that virtual bases can never serve as parent
-	     binfos.  (in the CLASSTYPE_VFIELD_PARENT sense)  */
-	  expand_direct_vtbls_init (vbases, TYPE_BINFO (BINFO_TYPE (vbases)),
-				    1, 0, addr);
-	}
-
-      fixup_all_virtual_upcast_offsets (type,
-					vi.decl_ptr);
-
+      fixup_all_virtual_upcast_offsets (type, vi.decl_ptr);
       dfs_walk (binfo, dfs_clear_vbase_slots, marked_new_vtablep, 0);
     }
 }

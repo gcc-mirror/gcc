@@ -1,5 +1,5 @@
 /* Handle initialization things in C++.
-   Copyright (C) 1987, 89, 92-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 89, 92-98, 1999, 2000 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -48,6 +48,7 @@ static tree initializing_context PROTO((tree));
 static tree build_java_class_ref PROTO((tree));
 static void expand_cleanup_for_base PROTO((tree, tree));
 static tree get_temp_regvar PROTO((tree, tree));
+static tree dfs_initialize_vtbl_ptrs PROTO((tree, void *));
 
 /* Set up local variable for this file.  MUST BE CALLED AFTER
    INIT_DECL_PROCESSING.  */
@@ -77,59 +78,55 @@ void init_init_processing ()
   ggc_add_tree_root (&BI_header_size, 1);
 }
 
-/* Subroutine of emit_base_init.  For BINFO, initialize all the
-   virtual function table pointers, except those that come from
-   virtual base classes.  Initialize binfo's vtable pointer, if
-   INIT_SELF is true.  CAN_ELIDE is true when we know that all virtual
-   function table pointers in all bases have been initialized already,
-   probably because their constructors have just be run.  ADDR is the
-   pointer to the object whos vtables we are going to initialize.
+/* Called from initialize_vtbl_ptrs via dfs_walk.  */
 
-   REAL_BINFO is usually the same as BINFO, except when addr is not of
-   pointer to the type of the real derived type that we want to
-   initialize for.  This is the case when addr is a pointer to a sub
-   object of a complete object, and we only want to do part of the
-   complete object's initialization of vtable pointers.  This is done
-   for all virtual table pointers in virtual base classes.  REAL_BINFO
-   is used to find the BINFO_VTABLE that we initialize with.  BINFO is
-   used for conversions of addr to subobjects.
+static tree
+dfs_initialize_vtbl_ptrs (binfo, data)
+     tree binfo;
+     void *data;
+{
+  if (!BINFO_PRIMARY_MARKED_P (binfo) 
+      && CLASSTYPE_VFIELDS (BINFO_TYPE (binfo)))
+    {
+      tree base_ptr = TREE_VALUE ((tree) data);
 
-   BINFO_TYPE (real_binfo) must be BINFO_TYPE (binfo).
+      if (TREE_VIA_VIRTUAL (binfo))
+	base_ptr = convert_pointer_to_vbase (BINFO_TYPE (binfo),
+					     base_ptr);
+      else
+	base_ptr 
+	  = build_vbase_path (PLUS_EXPR, 
+			      build_pointer_type (BINFO_TYPE (binfo)),
+			      base_ptr,
+			      binfo,
+			      /*nonnull=*/1);
 
-   Relies upon binfo being inside TYPE_BINFO (TREE_TYPE (TREE_TYPE
-   (addr))).  */
+      expand_virtual_init (binfo, base_ptr);
+    }
+
+  SET_BINFO_MARKED (binfo);
+
+  return NULL_TREE;
+}
+
+/* Initialize all the vtable pointers for the hierarchy dominated by
+   TYPE. */
 
 void
-expand_direct_vtbls_init (real_binfo, binfo, init_self, can_elide, addr)
-     tree real_binfo, binfo, addr;
-     int init_self, can_elide;
+initialize_vtbl_ptrs (type, addr)
+     tree type;
+     tree addr;
 {
-  tree real_binfos = BINFO_BASETYPES (real_binfo);
-  tree binfos = BINFO_BASETYPES (binfo);
-  int i, n_baselinks = real_binfos ? TREE_VEC_LENGTH (real_binfos) : 0;
+  tree list = build_tree_list (type, addr);
 
-  for (i = 0; i < n_baselinks; i++)
-    {
-      tree real_base_binfo = TREE_VEC_ELT (real_binfos, i);
-      tree base_binfo = TREE_VEC_ELT (binfos, i);
-      int is_not_base_vtable
-	= i != CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (real_binfo));
-      if (! TREE_VIA_VIRTUAL (real_base_binfo))
-	expand_direct_vtbls_init (real_base_binfo, base_binfo,
-				  is_not_base_vtable, can_elide, addr);
-    }
-#if 0
-  /* Before turning this on, make sure it is correct.  */
-  if (can_elide && ! BINFO_MODIFIED (binfo))
-    return;
-#endif
-  /* Should we use something besides CLASSTYPE_VFIELDS? */
-  if (init_self && CLASSTYPE_VFIELDS (BINFO_TYPE (real_binfo)))
-    {
-      tree base_ptr = convert_pointer_to_real (binfo, addr);
-      expand_virtual_init (real_binfo, base_ptr);
-    }
+  dfs_walk (TYPE_BINFO (type), dfs_initialize_vtbl_ptrs, 
+	    dfs_unmarked_real_bases_queue_p, list);
+  dfs_walk (TYPE_BINFO (type), dfs_unmark,
+	    dfs_marked_real_bases_queue_p, type);
+  if (TYPE_USES_VIRTUAL_BASECLASSES (type))
+    expand_indirect_vtbls_init (TYPE_BINFO (type), addr);
 }
+
 
 /* 348 - 351 */
 /* Subroutine of emit_base_init.  */
@@ -547,14 +544,8 @@ emit_base_init (t)
       rbase_init_list = TREE_CHAIN (rbase_init_list);
     }
 
-  /* Initialize all the virtual function table fields that
-     do come from virtual base classes.  */
-  if (TYPE_USES_VIRTUAL_BASECLASSES (t))
-    expand_indirect_vtbls_init (t_binfo, current_class_ref, current_class_ptr);
-
-  /* Initialize all the virtual function table fields that
-     do not come from virtual base classes.  */
-  expand_direct_vtbls_init (t_binfo, t_binfo, 1, 1, current_class_ptr);
+  /* Initialize the vtable pointers for the class.  */
+  initialize_vtbl_ptrs (t, current_class_ptr);
 
   for (member = TYPE_FIELDS (t); member; member = TREE_CHAIN (member))
     {
