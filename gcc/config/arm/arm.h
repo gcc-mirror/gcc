@@ -35,6 +35,9 @@ extern char *output_call_mem ();
 extern char *output_move_double ();
 extern char *output_mov_double_fpu_from_arm ();
 extern char *output_mov_double_arm_from_fpu ();
+extern char *output_mov_long_double_fpu_from_arm ();
+extern char *output_mov_long_double_arm_from_fpu ();
+extern char *output_mov_long_double_arm_from_arm ();
 extern char *output_mov_immediate ();
 extern char *output_multi_immediate ();
 extern char *output_shifted_move ();
@@ -44,6 +47,7 @@ extern char *output_arithmetic_with_shift ();
 extern char *output_return_instruction ();
 extern char *output_load_symbol ();
 extern char *fp_immediate_constant ();
+extern char *shift_instr ();
 extern struct rtx_def *gen_compare_reg ();
 extern struct rtx_def *arm_gen_store_multiple ();
 extern struct rtx_def *arm_gen_load_multiple ();
@@ -220,6 +224,9 @@ extern enum processor_type arm_cpu;
 /* Define this if most significant word of a multiword number is the lowest
    numbered.  */
 #define WORDS_BIG_ENDIAN  0
+
+/* Define this if most significant word of doubles is the lowest numbered */
+#define FLOAT_WORDS_BIG_ENDIAN 1
 
 /* Number of bits in an addressable storage unit */
 #define BITS_PER_UNIT  8
@@ -536,7 +543,7 @@ enum reg_class
 #define SECONDARY_OUTPUT_RELOAD_CLASS(CLASS,MODE,X)	\
   (((MODE) == DFmode && (CLASS) == GENERAL_REGS		\
     && true_regnum (X) == -1) ? GENERAL_REGS		\
-   : NO_REGS)
+   : ((MODE) == HImode && true_regnum (X) == -1) ? GENERAL_REGS : NO_REGS)
 
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.
@@ -1514,36 +1521,56 @@ do {									\
   (arm_increase_location (4)                     \
    , fprintf (STREAM, "\t.word\tL%d\n", VALUE))
 
-/* Output various types of constants.  */
+/* Output various types of constants.  For real numbers we output hex, with
+   a comment containing the "human" value, this allows us to pass NaN's which
+   the riscix assembler doesn't understand (it also makes cross-assembling
+   less likely to fail). */
+
 #define ASM_OUTPUT_LONG_DOUBLE(STREAM,VALUE)				\
-do { long l[3];								\
+do { char dstr[30];							\
+     long l[3];								\
      arm_increase_location (12);					\
      REAL_VALUE_TO_TARGET_LONG_DOUBLE (VALUE, l);			\
+     REAL_VALUE_TO_DECIMAL (VALUE, "%.20g", dstr);			\
      if (sizeof (int) == sizeof (long))					\
-       fprintf (STREAM, "\t.long 0x%x,0x%x,0x%x\n", l[2], l[1], l[0]);	\
+       fprintf (STREAM, "\t.long 0x%x,0x%x,0x%x\t@ long double %s\n",	\
+		l[2], l[1], l[0], dstr);				\
      else								\
-       fprintf (STREAM, "\t.long 0x%lx,0x%lx,0x%lx\n", l[2], l[1], l[0]);	\
+       fprintf (STREAM, "\t.long 0x%lx,0x%lx,0x%lx\t@ long double %s\n",\
+		l[0], l[1], l[2], dstr);				\
    } while (0)
 
     
-#define ASM_OUTPUT_DOUBLE(STREAM, VALUE)  		\
-do { char dstr[30];					\
-     arm_increase_location (8);				\
-     REAL_VALUE_TO_DECIMAL (VALUE, "%.20g", dstr);	\
-     fprintf (STREAM, "\t.double %s\n", dstr);	\
+#define ASM_OUTPUT_DOUBLE(STREAM, VALUE)  				\
+do { char dstr[30];							\
+     long l[2];								\
+     arm_increase_location (8);						\
+     REAL_VALUE_TO_TARGET_DOUBLE (VALUE, l);				\
+     REAL_VALUE_TO_DECIMAL (VALUE, "%.14g", dstr);			\
+     if (sizeof (int) == sizeof (long))					\
+       fprintf (STREAM, "\t.long 0x%x, 0x%x\t@ double %s\n", l[0], l[1],\
+		dstr);							\
+     else								\
+       fprintf (STREAM, "\t.long 0x%lx, 0x%lx\t@ double %s\n", l[0],	\
+		l[1], dstr);						\
    } while (0)
 
-#define ASM_OUTPUT_FLOAT(STREAM, VALUE)			\
-do { char dstr[30];					\
-     arm_increase_location (4);				\
-     REAL_VALUE_TO_DECIMAL (VALUE, "%.20g", dstr);	\
-     fprintf (STREAM, "\t.float %s\n", dstr);		\
+#define ASM_OUTPUT_FLOAT(STREAM, VALUE)					\
+do { char dstr[30];							\
+     long l;								\
+     arm_increase_location (4);						\
+     REAL_VALUE_TO_TARGET_SINGLE (VALUE, l);				\
+     REAL_VALUE_TO_DECIMAL (VALUE, "%.7g", dstr);			\
+     if (sizeof (int) == sizeof (long))					\
+       fprintf (STREAM, "\t.word 0x%x\t@ float %s\n", l, dstr);		\
+     else								\
+       fprintf (STREAM, "\t.word 0x%lx\t@ float %s\n", l, dstr);	\
    } while (0);
 
-#define ASM_OUTPUT_INT(STREAM, EXP)  \
-  (fprintf (STREAM, "\t.word\t"),      \
-   output_addr_const (STREAM, (EXP)),  \
-   arm_increase_location (4),          \
+#define ASM_OUTPUT_INT(STREAM, EXP)	\
+  (fprintf (STREAM, "\t.word\t"),	\
+   output_addr_const (STREAM, (EXP)),	\
+   arm_increase_location (4),		\
    fputc ('\n', STREAM))
 
 #define ASM_OUTPUT_SHORT(STREAM, EXP)  \
@@ -1693,12 +1720,7 @@ do { char dstr[30];					\
       output_address (XEXP (X, 0));					\
     }									\
   else if (GET_CODE(X) == CONST_DOUBLE)					\
-    {									\
-      union real_extract u;						\
-      u.i[0] = CONST_DOUBLE_LOW (X);					\
-      u.i[1] = CONST_DOUBLE_HIGH (X);					\
-      fprintf(STREAM,"#%s", fp_immediate_constant(X));			\
-    }									\
+    fprintf(STREAM,"#%s", fp_immediate_constant(X));			\
   else if (GET_CODE (X) == NEG)						\
     {									\
       fputc ('-', (STREAM));						\
