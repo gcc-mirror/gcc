@@ -31,6 +31,7 @@
 2004-08-17  David Edelsohn  <edelsohn@gnu.org>
 
 	Revert 2004-08-16  Stan Shebs  <shebs@apple.com>
+	* config/darwin.c (macho_indirect_data_reference): Add DImode case.
 	* config/rs6000/rs6000.md: Include darwin.md.
 	(builtin_setjmp_receiver): Add DImode case.
 	* config/rs6000/rs6000.c (rs6000_emit_move): Add DImode case to
