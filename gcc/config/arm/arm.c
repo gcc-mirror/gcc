@@ -162,6 +162,9 @@ static bool arm_promote_prototypes (tree);
 static bool arm_default_short_enums (void);
 static bool arm_align_anon_bitfield (void);
 
+static tree arm_cxx_guard_type (void);
+static bool arm_cxx_guard_mask_bit (void);
+
 
 /* Initialize the GCC target structure.  */
 #ifdef TARGET_DLLIMPORT_DECL_ATTRIBUTES
@@ -263,6 +266,12 @@ static bool arm_align_anon_bitfield (void);
 
 #undef TARGET_ALIGN_ANON_BITFIELD
 #define TARGET_ALIGN_ANON_BITFIELD arm_align_anon_bitfield
+
+#undef TARGET_CXX_GUARD_TYPE
+#define TARGET_CXX_GUARD_TYPE arm_cxx_guard_type
+
+#undef TARGET_CXX_GUARD_MASK_BIT
+#define TARGET_CXX_GUARD_MASK_BIT arm_cxx_guard_mask_bit
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -14534,6 +14543,24 @@ arm_default_short_enums (void)
 
 static bool
 arm_align_anon_bitfield (void)
+{
+  return TARGET_AAPCS_BASED;
+}
+
+
+/* The generic C++ ABI says 64-bit (long long).  The EABI says 32-bit.  */
+
+static tree
+arm_cxx_guard_type (void)
+{
+  return TARGET_AAPCS_BASED ? integer_type_node : long_long_integer_type_node;
+}
+
+
+/* The EABI says test the least significan bit of a guard variable.  */
+
+static bool
+arm_cxx_guard_mask_bit (void)
 {
   return TARGET_AAPCS_BASED;
 }

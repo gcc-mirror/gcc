@@ -30,18 +30,29 @@
 
 #include <cxxabi.h>
 
+// The IA64/generic ABI uses the fist byte of the guard variable.
+// The ARM EABI uses the least significant bit.
+
 namespace __cxxabiv1 
 {
   extern "C"
   int __cxa_guard_acquire (__guard *g) 
   {
+#ifdef __ARM_EABI__
+    return !(*g & 1);
+#else
     return !*(char *)(g);
+#endif
   }
 
   extern "C"
   void __cxa_guard_release (__guard *g)
   {
+#ifdef __ARM_EABI__
+    *g = 1;
+#else
     *(char *)g = 1;
+#endif
   }
 
   extern "C"

@@ -1,3 +1,17 @@
+2004-06-25  Paul Brook  <paul@codesourcery.com>
+
+	* target-def.h (TARGET_CXX_GUARD_TYPE, TARGET_CXX_GUARD_MASK_BIT,
+	TARGET_CXX): Define.
+	(TARGET_INITIALIZER): Use TARGET_CXX.
+	* target.h (struct gcc_target): Add struct cxx.
+	* targhooks.h (default_cxx_guard_type): Add prototype.
+	* targhooks.c (default_cxx_guard_type): New function.
+	* config/arm/arm.c (TARGET_CXX_GUARD_TYPE, TARGET_CXX_GUARD_MASK_BIT):
+	Define.
+	(arm_cxx_guard_type, arm_cxx_guard_mask_bit): New functions.
+	* doc/tm.texi: Document TARGET_CXX_GUARD_TYPE and
+	TARGET_CXX_GUARD_MASK_BIT.
+
 2004-06-25  Devang Patel  <dpatel@apple.com>
 	
 	* config/rs6000/darwin.h (CC1_SPEC): Handle -gused and -gfull.
