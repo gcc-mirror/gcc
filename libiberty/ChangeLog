@@ -1,3 +1,7 @@
+Tue Feb  9 16:39:01 1999  Dave Brolley  <brolley@cygnus.com>
+
+	* Makefile.in: Change mkstemp -> mkstemps.
+
 Tue Feb  9 01:12:27 1999  Marc Espie <Marc.Espie@liafa.jussieu.fr>
 
 	* Makefile.in (REQUIRED_OFILES): remove mkstemp.o
