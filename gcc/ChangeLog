@@ -1,3 +1,10 @@
+Mon Mar 24 20:03:03 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	PR opt/10056
+	* cfglayout.c (fixup_reorder_chain):  Fix dealing with the conditional
+	jump jumping to the next instruction.
+	* cfgrtl.c (force_nonfallthru_and_redirect):  Likewise.
+
 2003-03-25  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/passes.texi (Passes): Properly document that we do not

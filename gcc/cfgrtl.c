@@ -78,7 +78,7 @@ static void commit_one_edge_insertion	PARAMS ((edge, int));
 static bool try_redirect_by_replacing_jump PARAMS ((edge, basic_block));
 static rtx last_loop_beg_note		PARAMS ((rtx));
 static bool back_edge_of_syntactic_loop_p PARAMS ((basic_block, basic_block));
-static basic_block force_nonfallthru_and_redirect PARAMS ((edge, basic_block));
+basic_block force_nonfallthru_and_redirect PARAMS ((edge, basic_block));
 
 /* Return true if NOTE is not one of the ones that must be kept paired,
    so that we may simply delete it.  */
@@ -930,7 +930,7 @@ redirect_edge_and_branch (e, target)
 /* Like force_nonfallthru below, but additionally performs redirection
    Used by redirect_edge_and_branch_force.  */
 
-static basic_block
+basic_block
 force_nonfallthru_and_redirect (e, target)
      edge e;
      basic_block target;
@@ -939,6 +939,34 @@ force_nonfallthru_and_redirect (e, target)
   rtx note;
   edge new_edge;
   int abnormal_edge_flags = 0;
+
+  /* In the case the last instruction is conditional jump to the next
+     instruction, first redirect the jump itself and then continue
+     by creating an basic block afterwards to redirect fallthru edge.  */
+  if (e->src != ENTRY_BLOCK_PTR && e->dest != EXIT_BLOCK_PTR
+      && any_condjump_p (e->src->end)
+      && JUMP_LABEL (e->src->end) == e->dest->head)
+    {
+      rtx note;
+      edge b = make_edge (e->src, target, 0);
+
+      if (!redirect_jump (e->src->end, block_label (target), 0))
+	abort ();
+      note = find_reg_note (e->src->end, REG_BR_PROB, NULL_RTX);
+      if (note)
+	{
+	  int prob = INTVAL (XEXP (note, 0));
+
+	  b->probability = prob;
+	  b->count = e->count * prob / REG_BR_PROB_BASE;
+	  e->probability -= e->probability;
+	  e->count -= b->count;
+	  if (e->probability < 0)
+	    e->probability = 0;
+	  if (e->count < 0)
+	    e->count = 0;
+	}
+    }
 
   if (e->flags & EDGE_ABNORMAL)
     {
