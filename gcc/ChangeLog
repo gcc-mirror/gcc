@@ -1,3 +1,10 @@
+2003-12-17  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	PR target/11992
+	* config/s390/s390.md ("*cmpmem_long_64"): Use CLCLE instruction
+	instead of CLCL.
+	("*cmpmem_long_31"): Likewise.
+
 2003-12-17  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* config/ia64/ia64.c: Add more comments about insn bundling.
