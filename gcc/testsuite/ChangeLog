@@ -1,3 +1,8 @@
+2000-12-06  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	* g++.old-deja/g++.oliva/partspec1.C: Remove XFAIL.
+	* g++.old-deja/g++.pt/partial4.C: New test.
+
 2000-12-06  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* gcc.c-torture/execute/ieee/hugeval.x: New.

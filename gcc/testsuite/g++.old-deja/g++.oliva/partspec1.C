@@ -10,11 +10,11 @@ template <typename A, int* P> struct X;
 int a;
 
 template <typename A>
-struct X<A,&a> {}; // gets bogus error - candidate - XFAIL *-*-*
+struct X<A,&a> {};
 
 int b;
 
 template <typename A>
-struct X<A,&b> {}; // gets bogus error - candidate - XFAIL *-*-*
+struct X<A,&b> {};
 
-X<int,&a> x; // gets bogus error - ambiguous - XFAIL *-*-*
+X<int,&a> x;
