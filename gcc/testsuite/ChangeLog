@@ -1,3 +1,9 @@
+2004-01-05  Nathan Sidwell  <nathan@codesourcery.com>
+	Richard Sandiford <rsandifo@redhat.com>
+
+	PR c++/13387
+	* g++.dg/opt/alias3.C: New test.
+
 2004-01-04  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/13157
