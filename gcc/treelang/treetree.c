@@ -352,25 +352,19 @@ tree_code_create_function_prototype (unsigned char* chars,
   DECL_CONTEXT (fn_decl) = NULL_TREE;
   DECL_SOURCE_LOCATION (fn_decl) = loc;
 
-  TREE_USED (fn_decl) = 1;
-
   TREE_PUBLIC (fn_decl) = 0;
   DECL_EXTERNAL (fn_decl) = 0;
   TREE_STATIC (fn_decl) = 0;
   switch (storage_class)
     {
     case STATIC_STORAGE:
-      TREE_PUBLIC (fn_decl) = 0;
       break;
 
     case EXTERNAL_DEFINITION_STORAGE:
       TREE_PUBLIC (fn_decl) = 1;
-      TREE_STATIC (fn_decl) = 0;
-      DECL_EXTERNAL (fn_decl) = 0;
       break;
 
     case EXTERNAL_REFERENCE_STORAGE:
-      TREE_PUBLIC (fn_decl) = 0;
       DECL_EXTERNAL (fn_decl) = 1;
       break;
 
@@ -457,11 +451,7 @@ tree_code_create_function_initial (tree prev_saved,
 
   pushlevel (0);
 
-  /* Force it to be output, else may be solely inlined.  */
-  TREE_ADDRESSABLE (fn_decl) = 1;
-
-  /* Stop -O3 from deleting it.  */
-  TREE_USED (fn_decl) = 1;
+  TREE_STATIC (fn_decl) = 1;
 }
 
 /* Wrapup a function contained in file FILENAME, ending at line LINENO.  */
@@ -569,9 +559,6 @@ tree_code_create_variable (unsigned int storage_class,
     default:
       gcc_unreachable ();
     }
-
-  /* This should really only be set if the variable is used.  */
-  TREE_USED (var_decl) = 1;
 
   TYPE_NAME (TREE_TYPE (var_decl)) = TYPE_NAME (var_type);
   return pushdecl (copy_node (var_decl));
@@ -701,6 +688,7 @@ tree_code_get_expression (unsigned int exp_type,
          variable type, convert it.  */
     case EXP_REFERENCE:
       gcc_assert (op1);
+      TREE_USED (op1) = 1;
       if (type == TREE_TYPE (op1))
         ret1 = op1;
       else
@@ -711,6 +699,7 @@ tree_code_get_expression (unsigned int exp_type,
       gcc_assert (op1);
       {
         tree fun_ptr;
+	TREE_USED (op1) = 1;
         fun_ptr = fold (build1 (ADDR_EXPR,
                                 build_pointer_type (TREE_TYPE (op1)), op1));
         ret1 = build3 (CALL_EXPR, type, fun_ptr, nreverse (op2), NULL_TREE);

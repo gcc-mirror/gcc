@@ -710,9 +710,11 @@ the programmer's intention.)
 @cindex warnings
 @cindex questionable instructions
 @item
-There are few warnings in treelang.  A program is either correct or in
-error.  The only exception to this is an expression in a return statement for
-functions that return nothing.
+There are a few warnings in treelang.  For example an unused static function
+generate a warnings when -Wunused-function is specified, similarily an unused
+static variable generates a warning when -Wunused-variable are specified.
+The only treelang specific warning is a warning when an expression is in a
+return statement for functions that return void.
 @end itemize
 
 @cindex components of treelang
