@@ -1,3 +1,13 @@
+2003-06-03  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config.gcc (default_use_cxa_atexit): New variable, defaults to no.
+	(*-*-netbsd[2-9]* | *-*-netbsdelf[2-9]*): Set default_use_cxa_atexit
+	to yes.
+	* configure.in: Allow default_use_cxa_atexit to determine the
+	value of DEFAULT_USE_CXA_ATEXIT if not explicitly enabled or
+	disabled.
+	* configure: Regenerate.
+
 2003-06-03  Douglas B Rupp  <rupp@gnat.com>
 
 	* Makefile.in (TEXI_GCC_FILES): Remove vms.texi entry.
