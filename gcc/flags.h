@@ -507,6 +507,10 @@ extern int current_function_is_thunk;
 extern int g_switch_value;
 extern int g_switch_set;
 
+/* Value of the -finline-limit flag.  */
+
+extern int inline_max_insns;
+
 /* Nonzero if we dump in VCG format, not plain text.  */
 extern int dump_for_graph;
 
