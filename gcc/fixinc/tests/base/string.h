@@ -8,6 +8,6 @@
     original, manufacturer supplied header file.  */
 
 #ifndef _STRING_INCLUDED
-#define _STRING_INCLUDED
-#include <strings.h>
+  #define _STRING_INCLUDED
+  #include <strings.h>
 #endif /* _STRING_INCLUDED */

@@ -1653,6 +1653,21 @@ fix = {
 
 
 /*
+ * Apparently some SVR4 systems typedef longlong_t to long ?
+ */
+#ifdef SVR4
+fix = {
+    hackname  = longlong_t;
+    select    = "typedef[ \t]+(unsigned[ \t]+)?long[ \t]+(u_)?longlong_t";
+    c_fix     = format;
+    c_fix_arg = "typedef %1long long %2longlong_t";
+    test_text = "typedef long longlong_t\n"
+                "typedef unsigned long u_longlong_t";
+};
+#endif
+
+
+/*
  *  Delete the '#define void int' line from curses.h on Lynx
  */
 fix = {
