@@ -1328,6 +1328,21 @@ regmove_optimize (f, nregs, regmove_dump_file)
 		}
 	      src_class = reg_preferred_class (REGNO (src));
 	      dst_class = reg_preferred_class (REGNO (dst));
+
+	      if (! (src_note = find_reg_note (insn, REG_DEAD, src)))
+		{
+		  /* We used to force the copy here like in other cases, but
+		     it produces worse code, as it eliminates no copy
+		     instructions and the copy emitted will be produced by
+		     reload anyway.  On patterns with multiple alternatives,
+		     there may be better sollution availble.
+
+		     In particular this change produced slower code for numeric
+		     i387 programs.  */
+
+		  continue;
+		}
+
 	      if (! regclass_compatible_p (src_class, dst_class))
 		{
 		  if (!copy_src)
@@ -1349,17 +1364,6 @@ regmove_optimize (f, nregs, regmove_dump_file)
 		    }
 		  continue;
 		}
-
-	      if (! (src_note = find_reg_note (insn, REG_DEAD, src)))
-		{
-		  if (!copy_src)
-		    {
-		      copy_src = src;
-		      copy_dst = dst;
-		    }
-		  continue;
-		}
-
 
 	      /* If src is set once in a different basic block,
 		 and is set equal to a constant, then do not use
