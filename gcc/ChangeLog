@@ -4,6 +4,9 @@
 
 Tue Mar 18 19:22:57 CET 2003  Jan Hubicka  <jh@suse.cz>
 
+	* i386.md:  Fix previous commit that mistakely applied the patch
+	twice.
+
 	* alias.c (rtx_equal_for_memref_p): Assume that X and Y has been
 	canonicalized.
 	(memrefs_conflict_p): Likewise.
