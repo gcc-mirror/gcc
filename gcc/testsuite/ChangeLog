@@ -1,3 +1,7 @@
+2003-03-07  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/init/ref4.C: New test.
+
 2003-03-07  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.c-torture/execute/20030307-1.c: New test.

@@ -3558,7 +3558,7 @@ extern tree convert_for_arg_passing             PARAMS ((tree, tree));
 extern tree cp_convert_parm_for_inlining        PARAMS ((tree, tree, tree));
 extern int is_properly_derived_from             PARAMS ((tree, tree));
 extern tree initialize_reference                PARAMS ((tree, tree, tree));
-extern tree make_temporary_var_for_ref_to_temp  (tree);
+extern tree make_temporary_var_for_ref_to_temp  (tree, tree);
 extern tree strip_top_quals                     PARAMS ((tree));
 extern tree perform_implicit_conversion         PARAMS ((tree, tree));
 
@@ -4228,6 +4228,7 @@ extern tree canonical_type_variant              PARAMS ((tree));
 extern void unshare_base_binfos			PARAMS ((tree));
 extern int member_p				PARAMS ((tree));
 extern cp_lvalue_kind real_lvalue_p		PARAMS ((tree));
+extern cp_lvalue_kind real_non_cast_lvalue_p    (tree);
 extern int non_cast_lvalue_p			PARAMS ((tree));
 extern int non_cast_lvalue_or_else		PARAMS ((tree, const char *));
 extern tree build_min				PARAMS ((enum tree_code, tree,

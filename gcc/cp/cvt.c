@@ -361,7 +361,7 @@ build_up_reference (type, arg, flags, decl)
 	 here because it needs to live as long as DECL.  */
       tree targ = arg;
 
-      arg = make_temporary_var_for_ref_to_temp (decl);
+      arg = make_temporary_var_for_ref_to_temp (decl, TREE_TYPE (arg));
 
       /* Process the initializer for the declaration.  */
       DECL_INITIAL (arg) = targ;
