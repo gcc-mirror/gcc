@@ -7682,12 +7682,14 @@ scope_die_for (t, context_die)
 
       if (i < 0)
 	{
-	  if (scope_die != comp_unit_die
-	      || TREE_CODE_CLASS (TREE_CODE (containing_scope)) != 't')
+	  if (TREE_CODE_CLASS (TREE_CODE (containing_scope)) != 't')
 	    abort ();
 	  if (debug_info_level > DINFO_LEVEL_TERSE
 	      && !TREE_ASM_WRITTEN (containing_scope))
 	    abort ();
+
+	  /* If none of the current dies are suitable, we get file scope.  */
+	  scope_die = comp_unit_die;
 	}
     }
 
