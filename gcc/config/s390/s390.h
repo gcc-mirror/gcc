@@ -917,10 +917,6 @@ extern int flag_pic;
 #define ASM_OUTPUT_SKIP(FILE, SIZE) \
   fprintf ((FILE), "\t.set\t.,.+%u\n", (SIZE))
 
-/* Output a reference to a user-level label named NAME.  */
-#define ASM_OUTPUT_LABELREF(FILE, NAME) \
-  asm_fprintf ((FILE), "%U%s", (*targetm.strip_name_encoding) (NAME))
-
 /* The LOCAL_LABEL_PREFIX variable is used by dbxelf.h.  */
 #define LOCAL_LABEL_PREFIX "."
 

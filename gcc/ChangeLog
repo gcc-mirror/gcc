@@ -1,5 +1,22 @@
 2003-04-17  Richard Henderson  <rth@redhat.com>
 
+	* config/s390/s390.c (SYMBOL_FLAG_ALIGN1): New.
+	(tls_model_chars): Remove.
+	(larl_operand): Use SYMBOL_REF_FLAGS.
+	(tls_symbolic_operand): Use SYMBOL_REF_TLS_MODEL.
+	(legitimize_pic_address): Use SYMBOL_REF_LOCAL_P. 
+	(s390_output_mi_thunk): Likewise.
+	(s390_emit_prologue): Set SYMBOL_FLAG_LOCAL as needed.
+	(s390_function_profiler): Likewise.
+	(s390_encode_section_info): Use default_encode_section_info
+	and SYMBOL_FLAG_ALIGN1.
+	(s390_strip_name_encoding): Remove.
+	* config/s390/s390.h (ASM_OUTPUT_LABELREF): Remove.
+	* config/s390/s390.md (call, call_value): Use SYMBOL_REF_LOCAL_P.
+	(builtin_setjmp_receiver): Set SYMBOL_FLAG_LOCAL as needed.
+
+2003-04-17  Richard Henderson  <rth@redhat.com>
+
 	* config/ns32k/ns32k.c (ns32k_encode_section_info): Remove.
 	(global_symbolic_reference_mentioned_p): Use SYMBOL_REF_LOCAL_P.
 	(print_operand_address): Likewise.
