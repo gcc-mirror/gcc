@@ -3591,7 +3591,7 @@ pushed, zero suffices as a definition.
 
 The value of the expression can also be a @code{parallel} RTX@.  This is
 used when an argument is passed in multiple locations.  The mode of the
-of the @code{parallel} should be the mode of the entire argument.  The
+@code{parallel} should be the mode of the entire argument.  The
 @code{parallel} holds any number of @code{expr_list} pairs; each one
 describes where part of the argument is passed.  In each
 @code{expr_list} the first operand must be a @code{reg} RTX for the hard
