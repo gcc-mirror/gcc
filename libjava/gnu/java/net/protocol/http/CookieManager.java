@@ -1,4 +1,4 @@
-/* Handler.java --
+/* CookieManager.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -38,36 +38,28 @@ exception statement from your version. */
 
 package gnu.java.net.protocol.http;
 
-import java.io.IOException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLStreamHandler;
-
 /**
- * An HTTP URL stream handler.
+ * Cookie manager interface.
+ * If an application wants to handle cookies, they should implement this
+ * interface and register the instance with each HTTPConnection they use.
  *
  * @author Chris Burdess (dog@gnu.org)
  */
-public class Handler
-  extends URLStreamHandler
+public interface CookieManager
 {
 
   /**
-   * Returns the default HTTP port (80).
+   * Stores a cookie in the cookie manager.
+   * @param cookie the cookie to store
    */
-  protected int getDefaultPort()
-  {
-    return HTTPConnection.HTTP_PORT;
-  }
+  void setCookie(Cookie cookie);
 
   /**
-   * Returns an HTTPURLConnection for the given URL.
+   * Retrieves the cookies matching the specified criteria.
+   * @param host the host name
+   * @param secure whether the connection is secure
+   * @param path the path to access
    */
-  public URLConnection openConnection(URL url)
-    throws IOException
-  {
-    return new HTTPURLConnection(url);
-  }
-
+  Cookie[] getCookies(String host, boolean secure, String path);
+  
 }
-

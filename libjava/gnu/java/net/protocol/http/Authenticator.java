@@ -1,4 +1,4 @@
-/* Handler.java --
+/* Authenticator.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -38,36 +38,22 @@ exception statement from your version. */
 
 package gnu.java.net.protocol.http;
 
-import java.io.IOException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLStreamHandler;
-
 /**
- * An HTTP URL stream handler.
+ * Callback interface for managing authentication.
+ * @see Request#setAuthenticator
  *
  * @author Chris Burdess (dog@gnu.org)
  */
-public class Handler
-  extends URLStreamHandler
+public interface Authenticator
 {
 
   /**
-   * Returns the default HTTP port (80).
+   * Returns the credentials to supply for the given realm.
+   * @param realm the authentication realm
+   * @param attempt zero on first authentication attempt, increments on each
+   * unsuccessful attempt
    */
-  protected int getDefaultPort()
-  {
-    return HTTPConnection.HTTP_PORT;
-  }
-
-  /**
-   * Returns an HTTPURLConnection for the given URL.
-   */
-  public URLConnection openConnection(URL url)
-    throws IOException
-  {
-    return new HTTPURLConnection(url);
-  }
-
+  Credentials getCredentials(String realm, int attempt);
+  
 }
 

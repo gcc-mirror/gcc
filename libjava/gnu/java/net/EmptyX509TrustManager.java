@@ -1,5 +1,5 @@
-/* Handler.java --
-   Copyright (C) 2004 Free Software Foundation, Inc.
+/* EmptyX509TrustManager.java --
+   Copyright (C) 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -36,38 +36,34 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 
-package gnu.java.net.protocol.http;
+package gnu.java.net;
 
-import java.io.IOException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLStreamHandler;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import javax.net.ssl.X509TrustManager;
 
 /**
- * An HTTP URL stream handler.
+ * Empty implementation of an X509 trust manager.
+ * This implementation does not check any certificates in the chain.
  *
  * @author Chris Burdess (dog@gnu.org)
  */
-public class Handler
-  extends URLStreamHandler
+public class EmptyX509TrustManager
+  implements X509TrustManager
 {
-
-  /**
-   * Returns the default HTTP port (80).
-   */
-  protected int getDefaultPort()
+  public void checkClientTrusted(X509Certificate[] chain, String authType)
+    throws CertificateException
   {
-    return HTTPConnection.HTTP_PORT;
   }
 
-  /**
-   * Returns an HTTPURLConnection for the given URL.
-   */
-  public URLConnection openConnection(URL url)
-    throws IOException
+  public void checkServerTrusted(X509Certificate[] chain, String authType)
+    throws CertificateException
   {
-    return new HTTPURLConnection(url);
   }
 
+  public X509Certificate[] getAcceptedIssuers()
+  {
+    return new X509Certificate[0];
+  }
 }
 

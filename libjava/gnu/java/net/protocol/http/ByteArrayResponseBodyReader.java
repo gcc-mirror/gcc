@@ -1,4 +1,4 @@
-/* Handler.java --
+/* Authenticator.java --ByteArrayResponseBodyReader.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -38,36 +38,86 @@ exception statement from your version. */
 
 package gnu.java.net.protocol.http;
 
-import java.io.IOException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLStreamHandler;
-
 /**
- * An HTTP URL stream handler.
+ * Simple response body reader that stores content in a byte array.
  *
  * @author Chris Burdess (dog@gnu.org)
  */
-public class Handler
-  extends URLStreamHandler
+public class ByteArrayResponseBodyReader
+  implements ResponseBodyReader
 {
 
   /**
-   * Returns the default HTTP port (80).
+   * The content.
    */
-  protected int getDefaultPort()
+  protected byte[] content;
+
+  /**
+   * The position in the content at which the next write will occur.
+   */
+  protected int pos;
+
+  /**
+   * The length of the buffer.
+   */
+  protected int len;
+
+  /**
+   * Constructs a new byte array response body reader.
+   */
+  public ByteArrayResponseBodyReader()
   {
-    return HTTPConnection.HTTP_PORT;
+    this(4096);
+  }
+  
+  /**
+   * Constructs a new byte array response body reader with the specified
+   * initial buffer size.
+   * @param size the initial buffer size
+   */
+  public ByteArrayResponseBodyReader(int size)
+  {
+    content = new byte[size];
+    pos = len = 0;
   }
 
   /**
-   * Returns an HTTPURLConnection for the given URL.
-   */
-  public URLConnection openConnection(URL url)
-    throws IOException
+   * This reader accepts all responses.
+   */ 
+  public boolean accept(Request request, Response response)
   {
-    return new HTTPURLConnection(url);
+    return true;
   }
 
+  public void read(byte[] buffer, int offset, int length)
+  {
+    int l = length - offset;
+    if (pos + l > content.length)
+      {
+        byte[] tmp = new byte[content.length * 2];
+        System.arraycopy(content, 0, tmp, 0, pos);
+        content = tmp;
+      }
+    System.arraycopy(buffer, offset, content, pos, l);
+    pos += l;
+    len = pos;
+  }
+
+  public void close()
+  {
+    pos = 0;
+  }
+
+  /**
+   * Retrieves the content of this reader as a byte array.
+   * The size of the returned array is the number of bytes read.
+   */
+  public byte[] toByteArray()
+  {
+    byte[] ret = new byte[len];
+    System.arraycopy(content, 0, ret, 0, len);
+    return ret;
+  }
+  
 }
 

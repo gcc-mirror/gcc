@@ -1,4 +1,4 @@
-/* Handler.java --
+/* RequestEvent.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -36,38 +36,72 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 
-package gnu.java.net.protocol.http;
+package gnu.java.net.protocol.http.event;
 
-import java.io.IOException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLStreamHandler;
+import gnu.java.net.protocol.http.Request;
+
+import java.util.EventObject;
 
 /**
- * An HTTP URL stream handler.
+ * A request event.
  *
  * @author Chris Burdess (dog@gnu.org)
  */
-public class Handler
-  extends URLStreamHandler
+public class RequestEvent
+  extends EventObject
 {
 
   /**
-   * Returns the default HTTP port (80).
+   * The request created event type.
    */
-  protected int getDefaultPort()
+  public static final int REQUEST_CREATED = 0;
+  
+  /**
+   * The request sending event type.
+   */
+  public static final int REQUEST_SENDING = 1;
+  
+  /**
+   * The request sent event type.
+   */
+  public static final int REQUEST_SENT = 2;
+  
+  /**
+   * The type of this event.
+   */
+  protected int type;
+
+  /**
+   * The request associated with this event.
+   */
+  protected Request request;
+
+  /**
+   * Constructs a request event with the specified source, type, and request.
+   */
+  public RequestEvent(Object source, int type, Request request)
   {
-    return HTTPConnection.HTTP_PORT;
+    super(source);
+    this.type = type;
+    this.request = request;
   }
 
   /**
-   * Returns an HTTPURLConnection for the given URL.
+   * Returns the type of this event.
+   * @see #type
    */
-  public URLConnection openConnection(URL url)
-    throws IOException
+  public int getType()
   {
-    return new HTTPURLConnection(url);
+    return type;
   }
 
+  /**
+   * Returns the request associated with this event.
+   */
+  public Request getRequest()
+  {
+    return request;
+  }
+  
 }
 

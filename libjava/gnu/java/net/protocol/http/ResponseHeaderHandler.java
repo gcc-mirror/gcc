@@ -1,4 +1,4 @@
-/* Handler.java --
+/* ResponseHeaderHandler.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -38,36 +38,20 @@ exception statement from your version. */
 
 package gnu.java.net.protocol.http;
 
-import java.io.IOException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLStreamHandler;
-
 /**
- * An HTTP URL stream handler.
+ * Callback interface for objects that wish to be notified of response
+ * header values.
+ * @see Request#setHeaderHandler(String)
  *
  * @author Chris Burdess (dog@gnu.org)
  */
-public class Handler
-  extends URLStreamHandler
+public interface ResponseHeaderHandler
 {
 
   /**
-   * Returns the default HTTP port (80).
+   * Sets the value for the header associated with this handler.
    */
-  protected int getDefaultPort()
-  {
-    return HTTPConnection.HTTP_PORT;
-  }
-
-  /**
-   * Returns an HTTPURLConnection for the given URL.
-   */
-  public URLConnection openConnection(URL url)
-    throws IOException
-  {
-    return new HTTPURLConnection(url);
-  }
-
+  void setValue(String value);
+  
 }
 

@@ -1,4 +1,4 @@
-/* Handler.java --
+/* Credentials.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -38,36 +38,51 @@ exception statement from your version. */
 
 package gnu.java.net.protocol.http;
 
-import java.io.IOException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLStreamHandler;
-
 /**
- * An HTTP URL stream handler.
+ * Represents a username/password combination that can be used to
+ * authenticate to an HTTP server.
  *
  * @author Chris Burdess (dog@gnu.org)
  */
-public class Handler
-  extends URLStreamHandler
+public class Credentials
 {
 
   /**
-   * Returns the default HTTP port (80).
+   * The username.
    */
-  protected int getDefaultPort()
+  private String username;
+
+  /**
+   * The password.
+   */
+  private String password;
+
+  /**
+   * Constructor.
+   * @param username the username
+   * @param password the password
+   */
+  public Credentials(String username, String password)
   {
-    return HTTPConnection.HTTP_PORT;
+    this.username = username;
+    this.password = password;
   }
 
   /**
-   * Returns an HTTPURLConnection for the given URL.
+   * Returns the username.
    */
-  public URLConnection openConnection(URL url)
-    throws IOException
+  public String getUsername()
   {
-    return new HTTPURLConnection(url);
+    return username;
   }
 
+  /**
+   * Returns the password.
+   */
+  public String getPassword()
+  {
+    return password;
+  }
+  
 }
 

@@ -1,4 +1,4 @@
-/* Handler.java --
+/* RequestListener.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -36,38 +36,35 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 
-package gnu.java.net.protocol.http;
+package gnu.java.net.protocol.http.event;
 
-import java.io.IOException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLStreamHandler;
+import java.util.EventListener;
 
 /**
- * An HTTP URL stream handler.
+ * A request listener.
  *
  * @author Chris Burdess (dog@gnu.org)
  */
-public class Handler
-  extends URLStreamHandler
+public interface RequestListener
+  extends EventListener
 {
 
   /**
-   * Returns the default HTTP port (80).
+   * Callback invoked when a request is created from the associated
+   * connection.
    */
-  protected int getDefaultPort()
-  {
-    return HTTPConnection.HTTP_PORT;
-  }
+  void requestCreated(RequestEvent event);
 
   /**
-   * Returns an HTTPURLConnection for the given URL.
+   * Callback invoked when the request has been initialised with all data
+   * and before sending this data to the server.
    */
-  public URLConnection openConnection(URL url)
-    throws IOException
-  {
-    return new HTTPURLConnection(url);
-  }
+  void requestSending(RequestEvent event);
 
+  /**
+   * Callback invoked after all request data has been sent to the server.
+   */
+  void requestSent(RequestEvent event);
+  
 }
 
