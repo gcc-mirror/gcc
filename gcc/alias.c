@@ -1600,10 +1600,13 @@ true_dependence (mem, mem_mode, x, varies)
      A non-unchanging read can conflict with a non-unchanging write.
      An unchanging read can conflict with an unchanging write since
      there may be a single store to this address to initialize it.
+     Note that an unchanging store can conflict with a non-unchanging read
+     since we have to make conservative assumptions when we have a
+     record with readonly fields and we are copying the whole thing.
      Just fall through to the code below to resolve potential conflicts.
      This won't handle all cases optimally, but the possible performance
      loss should be negligible.  */
-  if (RTX_UNCHANGING_P (x) != RTX_UNCHANGING_P (mem))
+  if (RTX_UNCHANGING_P (x) && ! RTX_UNCHANGING_P (mem))
     return 0;
 
   if (mem_mode == VOIDmode)

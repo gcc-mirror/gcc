@@ -13,6 +13,9 @@ Sun Sep 17 18:48:32 2000  Denis Chertykov  <denisc@overta.ru>
 
 Sun Sep 17 10:46:17 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* alias.c (true_dependence): Allow non-unchanging read to conflict
+	with unchanging write.
+
 	* expr.c (store_constructor_field): Accept ALIAS_SET arg.
 	(store_constructor): Pass alias_set to it.
 
