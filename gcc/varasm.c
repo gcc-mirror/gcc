@@ -1229,18 +1229,11 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 
   /* Handle uninitialized definitions.  */
 
-  /* ANSI specifies that a tentative definition which is not merged with
-     a non-tentative definition behaves exactly like a definition with an
-     initializer equal to zero.  (Section 3.7.2)
-     -fno-common gives strict ANSI behavior.  Usually you don't want it.
-     This matters only for variables with external linkage.  */
-
   if ((DECL_INITIAL (decl) == 0 || DECL_INITIAL (decl) == error_mark_node)
       /* If the target can't output uninitialized but not common global data
 	 in .bss, then we have to use .data.  */
 #if ! defined (ASM_OUTPUT_BSS) && ! defined (ASM_OUTPUT_ALIGNED_BSS)
-      && (! flag_no_common || ! TREE_PUBLIC (decl))
-      && DECL_COMMON (decl)
+      && (DECL_COMMON (decl) || ! TREE_PUBLIC (decl))
 #endif
       && ! dont_output_data)
     {
@@ -1286,7 +1279,6 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
       if (TREE_PUBLIC (decl)
 #if defined (ASM_OUTPUT_BSS) || defined (ASM_OUTPUT_ALIGNED_BSS)
 	  && DECL_COMMON (decl)
-	  && ! flag_no_common
 #endif
 	  )
 	{

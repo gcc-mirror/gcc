@@ -3611,9 +3611,13 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
   if (TREE_CODE (decl) == FUNCTION_DECL)
     gen_aux_info_record (decl, 0, 0, TYPE_ARG_TYPES (TREE_TYPE (decl)) != 0);
 
-  /* For C and Objective-C, we by default put things in .common when
-     possible.  */
-  DECL_COMMON (decl) = 1;
+  /* ANSI specifies that a tentative definition which is not merged with
+     a non-tentative definition behaves exactly like a definition with an
+     initializer equal to zero.  (Section 3.7.2)
+     -fno-common gives strict ANSI behavior.  Usually you don't want it.
+     This matters only for variables with external linkage.  */
+  if (! flag_no_common)
+    DECL_COMMON (decl) = 1;
 
   /* Set attributes here so if duplicate decl, will have proper attributes.  */
   decl_attributes (decl, attributes, prefix_attributes);

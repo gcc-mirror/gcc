@@ -315,7 +315,8 @@ extern int flag_pedantic_errors;
 
 extern int flag_pic;
 
-/* Nonzero means place uninitialized global data in the bss section.  */
+/* Nonzero means don't place uninitialized global data in common storage
+   by default.  */
 
 extern int flag_no_common;
 

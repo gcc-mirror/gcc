@@ -482,7 +482,8 @@ int flag_short_temps;
 
 int flag_pic;
 
-/* Nonzero means place uninitialized global data in the bss section. */
+/* Nonzero means don't place uninitialized global data in common storage
+   by default. */
 
 int flag_no_common;
 
