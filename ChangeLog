@@ -1,3 +1,9 @@
+2004-05-18  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR bootstrap/15120
+	* libtool.m4 (lt_cv_deplibs_check_method): Use pass_all on sh*.
+	* */configure: Rebuilt.
+
 2004-05-17  Zack Weinberg  <zack@codesourcery.com>
 
 	* Makefile.def, Makefile.tpl, configure.in: Remove all mention
