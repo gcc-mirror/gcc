@@ -1,3 +1,12 @@
+2002-12-27  Mark Mitchell  <mark@codesourcery.com>
+
+	* gjavah.c (print_name_for_stub_or_jni): Adjust call to
+	print_cxx_classname.
+	(print_cxx_classname): Add add_scope parameter.
+	(print_class_decls): Do not emit a semicolon after the extern
+	"Java" block.
+	(process_file): Adjust calls to print_cxx_classname.	
+
 2002-12-23  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* gcj.texi: Include Cover Texts in man page.

@@ -122,7 +122,7 @@ static struct method_name *method_name_list;
 
 static void print_field_info PARAMS ((FILE*, JCF*, int, int, JCF_u2));
 static void print_mangled_classname PARAMS ((FILE*, JCF*, const char*, int));
-static int  print_cxx_classname PARAMS ((FILE*, const char*, JCF*, int));
+static int  print_cxx_classname PARAMS ((FILE*, const char*, JCF*, int, int));
 static void print_method_info PARAMS ((FILE*, JCF*, int, int, JCF_u2));
 static void print_c_decl PARAMS ((FILE*, JCF*, int, int, int, const char *,
 				  int));
@@ -1533,7 +1533,7 @@ DEFUN (print_name_for_stub_or_jni, (stream, jcf, name_index, signature_index,
        AND int is_init AND const char *name_override AND int flags)
 {
   const char *const prefix = flag_jni ? "Java_" : "";
-  print_cxx_classname (stream, prefix, jcf, jcf->this_class);
+  print_cxx_classname (stream, prefix, jcf, jcf->this_class, 1);
   fputs (flag_jni ? "_" : "::", stream);
   print_full_cxx_name (stream, jcf, name_index, 
 		       signature_index, is_init, name_override,
@@ -1641,11 +1641,12 @@ DEFUN(print_mangled_classname, (stream, jcf, prefix, index),
    to an array, ignore it and don't print PREFIX.  Returns 1 if
    something was printed, 0 otherwise.  */
 static int
-print_cxx_classname (stream, prefix, jcf, index)
+print_cxx_classname (stream, prefix, jcf, index, add_scope)
      FILE *stream;
      const char *prefix;
      JCF *jcf;
      int index;
+     int add_scope;
 {
   int name_index = JPOOL_USHORT1 (jcf, index);
   int len, c;
@@ -1664,7 +1665,7 @@ print_cxx_classname (stream, prefix, jcf, index)
   fputs (prefix, stream);
 
   /* Print a leading "::" so we look in the right namespace.  */
-  if (! flag_jni && ! stubs)
+  if (! flag_jni && ! stubs && add_scope)
     fputs ("::", stream);
 
   while (s < limit)
@@ -1954,7 +1955,7 @@ print_class_decls (out, jcf, self)
       /* We use an initial offset of 0 because the root namelet
 	 doesn't cause anything to print.  */
       print_namelet (out, &root, 0);
-      fputs ("};\n\n", out);
+      fputs ("}\n\n", out);
     }
 }
 
@@ -2130,7 +2131,8 @@ DEFUN(process_file, (jcf, out),
 
       if (! stubs)
 	{
-	  if (! print_cxx_classname (out, "class ", jcf, jcf->this_class))
+	  if (! print_cxx_classname (out, "class ", jcf,
+				     jcf->this_class, 0))
 	    {
 	      fprintf (stderr, "class is of array type\n");
 	      found_error = 1;
@@ -2139,7 +2141,7 @@ DEFUN(process_file, (jcf, out),
 	  if (jcf->super_class)
 	    {
 	      if (! print_cxx_classname (out, " : public ", 
-					 jcf, jcf->super_class))
+					 jcf, jcf->super_class, 1))
 		{
 		  fprintf (stderr, "base class is of array type\n");
 		  found_error = 1;
