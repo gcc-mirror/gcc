@@ -28,6 +28,10 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "output.h"
 
+#if USE_CPPLIB
+extern char *yy_cur;
+#endif
+
 /* Each of the functions defined here
    is an alternative to a function in objc-actions.c.  */
    
@@ -47,12 +51,15 @@ lang_init_options ()
 void
 lang_init ()
 {
-#if !USE_CPPLIB
   /* the beginning of the file is a new line; check for # */
   /* With luck, we discover the real source file's name from that
      and put it in input_filename.  */
+#if !USE_CPPLIB
   ungetc (check_newline (), finput);
-#endif
+#else
+  check_newline ();
+  yy_cur--;
+#endif 
 }
 
 void

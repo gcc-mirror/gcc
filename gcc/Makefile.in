@@ -1881,7 +1881,7 @@ cccp.o: cccp.c $(CONFIG_H) pcp.h version.c config.status system.h gansidecl.h \
 	  -DTOOL_INCLUDE_DIR=\"$(tooldir)/include\" \
 	  -c `echo $(srcdir)/cccp.c | sed 's,^\./,,'`
 
-LIBCPP_OBJS =	cpplib.o cpphash.o cppalloc.o cpperror.o cppexp.o \
+LIBCPP_OBJS =	cpplib.o cpphash.o cppalloc.o cpperror.o cppexp.o cppfiles.o \
 		cppulp.o prefix.o version.o mbchar.o @extra_cpp_objs@
 
 libcpp.a: $(LIBCPP_OBJS)
@@ -1906,6 +1906,8 @@ cpplib.o: cpplib.c $(CONFIG_H) cpplib.h cpphash.h config.status system.h \
 cpperror.o: cpperror.c $(CONFIG_H) cpplib.h system.h gansidecl.h
 
 cppexp.o: cppexp.c $(CONFIG_H) cpplib.h system.h gansidecl.h
+
+cppfiles.o: cppfiles.c $(CONFIG_H) cpplib.h system.h gansidecl.h
 
 cpphash.o: cpphash.c cpplib.h cpphash.h $(CONFIG_H) system.h gansidecl.h
 
