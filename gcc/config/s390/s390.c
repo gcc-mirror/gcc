@@ -2553,16 +2553,15 @@ enum reg_class
 s390_secondary_output_reload_class (enum reg_class class,
 				    enum machine_mode mode, rtx out)
 {
-  struct s390_address addr;
-
   if ((TARGET_64BIT ? mode == TImode
                     : (mode == DImode || mode == DFmode))
       && reg_classes_intersect_p (GENERAL_REGS, class)
       && GET_CODE (out) == MEM
-      && s390_decompose_address (XEXP (out, 0), &addr)
-      && addr.base && addr.indx
-      && addr.disp && GET_CODE (addr.disp) == CONST_INT
-      && !DISP_IN_RANGE (INTVAL (addr.disp) + GET_MODE_SIZE (mode) - 1))
+      && GET_CODE (XEXP (out, 0)) == PLUS
+      && GET_CODE (XEXP (XEXP (out, 0), 0)) == PLUS
+      && GET_CODE (XEXP (XEXP (out, 0), 1)) == CONST_INT
+      && !DISP_IN_RANGE (INTVAL (XEXP (XEXP (out, 0), 1))
+			 + GET_MODE_SIZE (mode) - 1))
     return ADDR_REGS;
 
   if (reg_classes_intersect_p (CC_REGS, class))
