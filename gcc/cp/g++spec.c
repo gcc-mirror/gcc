@@ -141,9 +141,6 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 	  else if (strcmp (argv[i], "-lm") == 0
 		   || strcmp (argv[i], "-lmath") == 0
 		   || strcmp (argv[i], MATH_LIBRARY) == 0
-#ifdef ALT_LIBM
-		   || strcmp (argv[i], ALT_LIBM) == 0
-#endif
 		  )
 	    {
 	      args[i] |= MATHLIB;
