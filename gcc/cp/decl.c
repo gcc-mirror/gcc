@@ -13133,6 +13133,20 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
       DECL_NOT_REALLY_EXTERN (decl1) = 0;
       DECL_INTERFACE_KNOWN (decl1) = 1;
     }
+  else if (interface_unknown && interface_only
+	   && (! DECL_TEMPLATE_INSTANTIATION (decl1)
+	       || flag_alt_external_templates))
+    {
+      /* If MULTIPLE_SYMBOL_SPACES is defined and we saw a #pragma
+	 interface, we will have interface_only set but not
+	 interface_known.  In that case, we don't want to use the normal
+	 heuristics because someone will supply a #pragma implementation
+	 elsewhere, and deducing it here would produce a conflict.  */
+      comdat_linkage (decl1);
+      DECL_EXTERNAL (decl1) = 0;
+      DECL_INTERFACE_KNOWN (decl1) = 1;
+      DECL_DEFER_OUTPUT (decl1) = 1;
+    }
   else
     {
       /* This is a definition, not a reference.
