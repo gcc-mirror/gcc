@@ -1,3 +1,10 @@
+2000-06-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* system.h (SSIZE_MAX): Delete backup definition.
+
+	* cppfiles.c (read_include_file): Use INTTYPE_MAXIMUM(ssize_t)
+	instead of SSIZE_MAX.
+
 2000-06-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* configure.in: Check whether gas supports -relax.
