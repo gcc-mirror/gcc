@@ -416,21 +416,21 @@ memory_address (mode, x)
 	x = force_reg (Pmode, x);
 
       goto done;
-    }
 
- win2:
-  x = oldx;
- win:
-  if (flag_force_addr && ! cse_not_expected && GET_CODE (x) != REG
-      /* Don't copy an addr via a reg if it is one of our stack slots.  */
-      && ! (GET_CODE (x) == PLUS
-	    && (XEXP (x, 0) == virtual_stack_vars_rtx
-		|| XEXP (x, 0) == virtual_incoming_args_rtx)))
-    {
-      if (general_operand (x, Pmode))
-	x = force_reg (Pmode, x);
-      else
-	x = force_operand (x, NULL_RTX);
+    win2:
+      x = oldx;
+    win:
+      if (flag_force_addr && ! cse_not_expected && GET_CODE (x) != REG
+	  /* Don't copy an addr via a reg if it is one of our stack slots.  */
+	  && ! (GET_CODE (x) == PLUS
+		&& (XEXP (x, 0) == virtual_stack_vars_rtx
+		    || XEXP (x, 0) == virtual_incoming_args_rtx)))
+	{
+	  if (general_operand (x, Pmode))
+	    x = force_reg (Pmode, x);
+	  else
+	    x = force_operand (x, NULL_RTX);
+	}
     }
 
  done:
