@@ -1496,51 +1496,6 @@ mprotect (char *addr, int len, int prot)
 #ifdef TRANSFER_FROM_TRAMPOLINE
 TRANSFER_FROM_TRAMPOLINE
 #endif
-
-#ifdef __sysV68__
-
-#include <sys/signal.h>
-#include <errno.h>
-
-/* Motorola forgot to put memctl.o in the libp version of libc881.a,
-   so define it here, because we need it in __clear_insn_cache below */
-/* On older versions of this OS, no memctl or MCT_TEXT are defined;
-   hence we enable this stuff only if MCT_TEXT is #define'd.  */
-
-#ifdef MCT_TEXT
-asm("\n\
-	global memctl\n\
-memctl:\n\
-	movq &75,%d0\n\
-	trap &0\n\
-	bcc.b noerror\n\
-	jmp cerror%\n\
-noerror:\n\
-	movq &0,%d0\n\
-	rts");
-#endif
-
-/* Clear instruction cache so we can call trampolines on stack.
-   This is called from FINALIZE_TRAMPOLINE in mot3300.h.  */
-
-void
-__clear_insn_cache (void)
-{
-#ifdef MCT_TEXT
-  int save_errno;
-
-  /* Preserve errno, because users would be surprised to have
-  errno changing without explicitly calling any system-call.  */
-  save_errno = errno;
-
-  /* Keep it simple : memctl (MCT_TEXT) always fully clears the insn cache.
-     No need to use an address derived from _start or %sp, as 0 works also.  */
-  memctl(0, 4096, MCT_TEXT);
-  errno = save_errno;
-#endif
-}
-
-#endif /* __sysV68__ */
 #endif /* L_trampoline */
 
 #ifndef __CYGWIN__
