@@ -65,7 +65,6 @@ public final class SocketChannelImpl extends SocketChannel
 {
   private PlainSocketImpl impl;
   private NIOSocket socket;
-  private boolean blocking = true;
   private boolean connectionPending;
 
   SocketChannelImpl (SelectorProvider provider)
@@ -74,6 +73,7 @@ public final class SocketChannelImpl extends SocketChannel
     super (provider);
     impl = new PlainSocketImpl();
     socket = new NIOSocket (impl, this);
+    configureBlocking(true);
   }
   
   SocketChannelImpl (SelectorProvider provider,
@@ -117,7 +117,6 @@ public final class SocketChannelImpl extends SocketChannel
   protected void implConfigureBlocking (boolean blocking) throws IOException
   {
     socket.setSoTimeout (blocking ? 0 : NIOConstants.DEFAULT_TIMEOUT);
-    this.blocking = blocking;
   }   
 
   public boolean connect (SocketAddress remote) throws IOException
@@ -137,7 +136,7 @@ public final class SocketChannelImpl extends SocketChannel
     if (((InetSocketAddress) remote).isUnresolved())
       throw new UnresolvedAddressException();
     
-    if (blocking)
+    if (isBlocking())
       {
         // Do blocking connect.
         socket.connect (remote);

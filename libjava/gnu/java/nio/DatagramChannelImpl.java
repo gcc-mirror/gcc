@@ -56,13 +56,13 @@ import java.nio.channels.spi.SelectorProvider;
 public final class DatagramChannelImpl extends DatagramChannel
 {
   private NIODatagramSocket socket;
-  private boolean blocking = true;
   
   protected DatagramChannelImpl (SelectorProvider provider)
     throws IOException
   {
     super (provider);
     socket = new NIODatagramSocket (new PlainDatagramSocketImpl(), this);
+    configureBlocking(true);
   }
 
   public int getNativeFD()
@@ -85,7 +85,6 @@ public final class DatagramChannelImpl extends DatagramChannel
     throws IOException
   {
     socket.setSoTimeout (blocking ? 0 : NIOConstants.DEFAULT_TIMEOUT);
-    this.blocking = blocking;
   }
 
   public DatagramChannel connect (SocketAddress remote)

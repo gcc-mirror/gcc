@@ -55,7 +55,6 @@ import java.nio.channels.spi.SelectorProvider;
 public final class ServerSocketChannelImpl extends ServerSocketChannel
 {
   private NIOServerSocket serverSocket;
-  private boolean blocking = true;
   private boolean connected;
 
   protected ServerSocketChannelImpl (SelectorProvider provider)
@@ -63,6 +62,7 @@ public final class ServerSocketChannelImpl extends ServerSocketChannel
   {
     super (provider);
     serverSocket = new NIOServerSocket (this);
+    configureBlocking(true);
   }
 
   public int getNativeFD()
@@ -93,7 +93,6 @@ public final class ServerSocketChannelImpl extends ServerSocketChannel
   protected void implConfigureBlocking (boolean blocking) throws IOException
   {
     serverSocket.setSoTimeout (blocking ? 0 : NIOConstants.DEFAULT_TIMEOUT);
-    this.blocking = blocking;
   }
 
   public SocketChannel accept () throws IOException
