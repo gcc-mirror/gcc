@@ -1,43 +1,21 @@
-2002-05-11  Zack Weinberg  <zack@codesourcery.com>
+Sat May 11 14:34:35 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
-	* config/rs6000/rs6000.c (rs6000_default_long_calls,
-	rs6000_longcall_switch, rs6000_set_default_type_attributes): New.
-	(TARGET_SET_DEFAULT_TYPE_ATTRIBUTES): Set it.
-	(rs6000_override_options): Handle -m(no-)longcall.
-	(init_cumulative_args, output_mi_thunk): Check for both
-	longcall and shortcall attributes on the function.
-	(rs6000_attribute_table): Add "shortcall".
-	(rs6000_handle_longcall_attribute): Update comment.
-	(altivec_expand_unop_builtin, altivec_expand_binop_builtin,
-	altivec_expand_ternop_builtin): Add default clauses to switches
-	to silence warnings.
+	* i386.md (testsi to testqi spliters): New.
 
-	* config/rs6000/rs6000.h: Declare rs6000_longcall_switch and
-	rs6000_default_long_calls.  Define REGISTER_TARGET_PRAGMAS.
-	(TARGET_OPTIONS): Add longcall and no-longcall.
+	2002-01-14  Josef Zlomek  <zlomek@matfyz.cz>
 
-	* config/rs6000/rs6000.md (call_nonlocal_sysv,
-	call_value_nonlocal_sysv): Split by alternatives.  One pair
-	accepts only SYMBOL_REFs and rejects if CALL_LONG is set in
-	the call cookie.  The other pair accepts only LR/CTR and has
-	no restriction.
+	cfg.c (dump_edge_info): added dumping of EDGE_CAN_FALLTHRU.
 
-	* config.gcc (rs6000-*-* | powerpc*-*-* trailer stanza):
-	Set c_target_objs, cxx_target_objs; add t-rs6000-c-rule to
-	tmake_file.
-	* config/rs6000/rs6000-c.c: New file.
-	* config/rs6000/t-rs6000-c-rule: New file.
-	* config/rs6000/rs6000-protos.c: Add multiple-include guard.
-	Prototype rs6000_pragma_longcall.
+	Wed Jan  9 2002  Josef Zlomek  <zlomj9am@artax.karlin.mff.cuni.cz>
 
-	* doc/extend.texi: Document shortcall attribute.
-	* doc/invoke.texi: Document -mlongcall, -mno-longcall.
+	* basic-block.h: New flag EDGE_CAN_FALLTHRU
+	* cfganal.c (set_edge_can_fallthru_flag): New function; marks the edges
+	that can be made fallthru.
 
-2002-05-12  Marek Michalkiewicz  <marekm@amelek.gda.pl>
+	Mon Nov 12 16:25:53 CET 2001  Jan Hubicka  <jh@suse.cz>
 
-	* config/avr/avr.c (avr_mcu_types): Update supported devices.
-	* config/avr/avr.h (CPP_SPEC, LINK_SPEC, CRT_BINUTILS_SPECS): Likewise.
-	* config/avr/t-avr (MULTILIB_MATCHES): Likewise.
+	* cfglayout.c (cleanup_unconditional_jumps): New static function.
+	(cfg_layout_initialize): Use it.
 
 2002-05-11  Kazu Hirata  <kazu@cs.umass.edu>
 
@@ -240,38 +218,38 @@ Thu May  9 14:52:45 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	* final.c (end_final): Use C trees to output data structures for profiling.
 
 	* Makefile.in (LIBGCC_DEPS): Added missing dependency on gcov-io.h
-	(profile.o): New dependency profile.h
-	(final.o): New dependency profile.h
-	* profile.h: New file. New global structure profile_info.
-	* final.h (count_edges_instrumented_now): Declare.
-	(current_function_cfg_checksum): Declare.
-	(function_list): New structure.
-	(functions_head, functions_tail): New static variables.
-	(end_final): Emits more data, removed some -ax stuff.
-	(final): Stores function names and chcksums.
-	* gcov-io.h (__write_gcov_string): New function.
-	(__read_gcov_string): New function.
-	* gcov.c (read_profile): New function.
-	(create_program_flow_graph): Uses read_profile instead of reading
+        (profile.o): New dependency profile.h
+        (final.o): New dependency profile.h
+        * profile.h: New file. New global structure profile_info.
+        * final.h (count_edges_instrumented_now): Declare.
+        (current_function_cfg_checksum): Declare.
+        (function_list): New structure.
+        (functions_head, functions_tail): New static variables.
+        (end_final): Emits more data, removed some -ax stuff.
+        (final): Stores function names and chcksums.
+        * gcov-io.h (__write_gcov_string): New function.
+        (__read_gcov_string): New function.
+        * gcov.c (read_profile): New function.
+        (create_program_flow_graph): Uses read_profile instead of reading
 	da_file.
-	(read_files): Removed da_file checking, it's done by read_profile now.
-	* libgcc2.c (bb_function_info): New structure.
-	(bb): New field in structure, removed some -ax stuff.
-	(__bb_exit_func): Changed structure of da_file.
-	* profile.c (count_edges_instrumented_now): New global variable.
-	(current_function_cfg_checksum): New global variable.
-	(max_counter_in_program): New global variable.
-	(get_exec_counts): New function.
-	(compute_checksum): New function.
-	(instrument_edges): Sets count_edges_instrumented_now.
-	(compute_branch_probabilities): Uses get_exec_counts instead of
+        (read_files): Removed da_file checking, it's done by read_profile now.
+        * libgcc2.c (bb_function_info): New structure.
+        (bb): New field in structure, removed some -ax stuff.
+        (__bb_exit_func): Changed structure of da_file.
+        * profile.c (count_edges_instrumented_now): New global variable.
+        (current_function_cfg_checksum): New global variable.
+        (max_counter_in_program): New global variable.
+        (get_exec_counts): New function.
+        (compute_checksum): New function.
+        (instrument_edges): Sets count_edges_instrumented_now.
+        (compute_branch_probabilities): Uses get_exec_counts instead of
 	reading da_file.
-	(branch_prob): Calls compute_checksum and writes extra data to bbg_file.
-	(init_branch_prob): Removed da_file checking, done in get_exec_counts
+        (branch_prob): Calls compute_checksum and writes extra data to bbg_file.
+        (init_branch_prob): Removed da_file checking, done in get_exec_counts
 	now.
-	(end_branch_prob): Removed da_file checking, done in get_exec_counts
+        (end_branch_prob): Removed da_file checking, done in get_exec_counts
 	now.
-	* gcov.texi: Updated information about gcov file format.
+        * gcov.texi: Updated information about gcov file format.
 
 2002-05-09  Kazu Hirata  <kazu@cs.umass.edu>
 
