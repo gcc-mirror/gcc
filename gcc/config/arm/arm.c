@@ -4544,8 +4544,8 @@ arm_gen_movstrqi (operands)
 	  RTX_UNCHANGING_P (mem) = dst_unchanging_p;
 	  MEM_IN_STRUCT_P (mem) = dst_in_struct_p;
 	  MEM_SCALAR_P (mem) = dst_scalar_p;
-	  emit_move_insn (mem, gen_rtx_SUBREG (QImode, part_bytes_reg, 0));
-	  
+	  emit_move_insn (mem, gen_lowpart (QImode, part_bytes_reg));
+
 	  if (--last_bytes)
 	    {
 	      tmp = gen_reg_rtx (SImode);
@@ -4563,7 +4563,7 @@ arm_gen_movstrqi (operands)
 	  RTX_UNCHANGING_P (mem) = dst_unchanging_p;
 	  MEM_IN_STRUCT_P (mem) = dst_in_struct_p;
 	  MEM_SCALAR_P (mem) = dst_scalar_p;
-	  emit_move_insn (mem, gen_rtx_SUBREG (HImode, part_bytes_reg, 0));
+	  emit_move_insn (mem, gen_lowpart (HImode, part_bytes_reg));
 	  last_bytes -= 2;
 	  if (last_bytes)
 	    {
@@ -4581,7 +4581,7 @@ arm_gen_movstrqi (operands)
 	  RTX_UNCHANGING_P (mem) = dst_unchanging_p;
 	  MEM_IN_STRUCT_P (mem) = dst_in_struct_p;
 	  MEM_SCALAR_P (mem) = dst_scalar_p;
-	  emit_move_insn (mem, gen_rtx_SUBREG (QImode, part_bytes_reg, 0));	  
+	  emit_move_insn (mem, gen_lowpart (QImode, part_bytes_reg));
 	}
     }
 
@@ -5119,23 +5119,23 @@ arm_reload_out_hi (operands)
     {
       emit_insn (gen_movqi (gen_rtx_MEM (QImode, 
 					 plus_constant (base, offset + 1)),
-			    gen_rtx_SUBREG (QImode, outval, 0)));
+			    gen_lowpart (QImode, outval)));
       emit_insn (gen_lshrsi3 (scratch,
 			      gen_rtx_SUBREG (SImode, outval, 0),
 			      GEN_INT (8)));
       emit_insn (gen_movqi (gen_rtx_MEM (QImode, plus_constant (base, offset)),
-			    gen_rtx_SUBREG (QImode, scratch, 0)));
+			    gen_lowpart (QImode, scratch)));
     }
   else
     {
       emit_insn (gen_movqi (gen_rtx_MEM (QImode, plus_constant (base, offset)),
-			    gen_rtx_SUBREG (QImode, outval, 0)));
+			    gen_lowpart (QImode, outval)));
       emit_insn (gen_lshrsi3 (scratch,
 			      gen_rtx_SUBREG (SImode, outval, 0),
 			      GEN_INT (8)));
       emit_insn (gen_movqi (gen_rtx_MEM (QImode,
 					 plus_constant (base, offset + 1)),
-			    gen_rtx_SUBREG (QImode, scratch, 0)));
+			    gen_lowpart (QImode, scratch)));
     }
 }
 
