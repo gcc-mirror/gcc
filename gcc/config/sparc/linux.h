@@ -1,5 +1,5 @@
 /* Definitions for SPARC running Linux-based GNU systems with ELF.
-   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998 Free Software Foundation, Inc.
    Contributed by Eddie C. Dost (ecd@skynet.be)
 
 This file is part of GNU CC.
@@ -33,6 +33,11 @@ Boston, MA 02111-1307, USA.  */
 #if 0
 #undef MULTIBYTE_CHARS
 #define MULTIBYTE_CHARS 1
+#endif
+
+#ifndef USE_GNULIBC_1
+#undef DEFAULT_VTABLE_THUNKS
+#define DEFAULT_VTABLE_THUNKS 1
 #endif
 
 /* Use stabs instead of DWARF debug format.  */
@@ -120,7 +125,8 @@ Boston, MA 02111-1307, USA.  */
      %{!profile:%{!ggdb:-lc} %{ggdb:-lg}}}"
 #else
 #define LIB_SPEC \
-  "%{!shared: %{mieee-fp:-lieee} %{pthread:-lpthread} \
+  "%{shared: -lc} \
+   %{!shared: %{mieee-fp:-lieee} %{pthread:-lpthread} \
      %{profile:-lc_p} %{!profile: -lc}}"
 #endif
 #else
