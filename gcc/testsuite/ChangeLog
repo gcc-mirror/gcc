@@ -1,3 +1,7 @@
+2003-12-01  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/unaligned-1.c: New test.
+
 2003-11-30  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/9849
