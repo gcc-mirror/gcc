@@ -18,8 +18,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#ifndef _INSN_ADDR_H
-#define _INSN_ADDR_H 1
+#ifndef GCC_INSN_ADDR_H
+#define GCC_INSN_ADDR_H 
 
 #include "varray.h"
 
@@ -43,4 +43,4 @@ extern int insn_current_address;
   }									\
 } while (0)
 
-#endif /* _INSN_ADDR_H */
+#endif /* ! GCC_INSN_ADDR_H */

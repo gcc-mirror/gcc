@@ -1,6 +1,6 @@
-#ifndef _H_f_version
-#define _H_f_version
+#ifndef GCC_F_VERSION_H
+#define GCC_F_VERSION_H
 
 extern const char *ffe_version_string;
 
-#endif
+#endif /* ! GCC_F_VERSION_H */

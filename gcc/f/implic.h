@@ -27,8 +27,8 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* Allow multiple inclusion to work. */
 
-#ifndef _H_f_implic
-#define _H_f_implic
+#ifndef GCC_F_IMPLIC_H
+#define GCC_F_IMPLIC_H
 
 /* Simple definitions and enumerations. */
 
@@ -71,4 +71,4 @@ void ffeimplic_terminate_2 (void);
 
 /* End of #include file. */
 
-#endif
+#endif /* ! GCC_F_IMPLIC_H */

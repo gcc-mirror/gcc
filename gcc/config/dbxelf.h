@@ -22,8 +22,8 @@ Boston, MA 02111-1307, USA.  */
    support -gstabs generating stabs in sections, as produced by gas
    and understood by gdb.  */
 
-#ifndef __DBX_ELF_H
-#define __DBX_ELF_H
+#ifndef GCC_DBX_ELF_H
+#define GCC_DBX_ELF_H
 
 /* Output DBX (stabs) debugging information if doing -gstabs.  */
 
@@ -84,4 +84,4 @@ while (0)
   asm_fprintf (FILE,							\
 	       "\t.text\n\t.stabs \"\",%d,0,0,%LLetext\n%LLetext:\n", N_SO)
 
-#endif /* __DBX_ELF_H */
+#endif /* ! GCC_DBX_ELF_H */

@@ -351,5 +351,4 @@ do {								\
 #define MD_INIT_BUILTINS
 #endif
 
-#endif  /* GCC_DEFAULTS_H */
-
+#endif  /* ! GCC_DEFAULTS_H */

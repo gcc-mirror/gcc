@@ -23,8 +23,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#ifndef __ARM_H__
-#define __ARM_H__
+#ifndef GCC_ARM_H
+#define GCC_ARM_H
 
 #define TARGET_CPU_arm2		0x0000
 #define TARGET_CPU_arm250	0x0000
@@ -3008,4 +3008,4 @@ enum arm_builtins
 
 #define MD_EXPAND_BUILTIN(EXP, TARGET, SUBTARGET, MODE, IGNORE) \
     arm_expand_builtin ((EXP), (TARGET), (SUBTARGET), (MODE), (IGNORE))
-#endif /* __ARM_H__ */
+#endif /* ! GCC_ARM_H */

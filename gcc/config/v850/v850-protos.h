@@ -98,4 +98,4 @@ extern void ghs_pragma_endzda		    PARAMS ((cpp_reader *));
 
 #undef  Mmode
 
-#endif /* v850-protos.h */
+#endif /* ! GCC_V850_PROTOS_H */

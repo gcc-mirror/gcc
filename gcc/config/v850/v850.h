@@ -1633,4 +1633,4 @@ extern union tree_node * GHS_current_section_names [(int) COUNT_OF_GHS_SECTION_K
 { "register_is_ok_for_epilogue",{ REG }},				\
 { "not_power_of_two_operand",	{ CONST_INT }},
   
-#endif /* v850.h */
+#endif /* ! GCC_V850_H */

@@ -19,8 +19,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#ifndef _CH_TREE_H
-#define _CH_TREE_H
+#ifndef GCC_CH_TREE_H
+#define GCC_CH_TREE_H
 
 /* Usage of TREE_LANG_FLAG_?:
    1: TUPLE_NAMED_FIELD
@@ -1154,4 +1154,4 @@ extern tree deep_fold PARAMS ((tree));
 
 extern const char * const gnuchill_version;
 
-#endif
+#endif /* ! GCC_CH_TREE_H */

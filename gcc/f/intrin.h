@@ -21,8 +21,8 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 */
 
-#ifndef _H_f_intrin
-#define _H_f_intrin
+#ifndef GCC_F_INTRIN_H
+#define GCC_F_INTRIN_H
 
 #ifndef FFEINTRIN_DOC
 #define FFEINTRIN_DOC 0	/* 1 means intrinsic documentation only (intdoc.c). */
@@ -134,4 +134,4 @@ ffeIntrinsicState ffeintrin_state_family (ffeintrinFamily family);
 
 /* End of #include file. */
 
-#endif
+#endif /* ! GCC_F_INTRIN_H */

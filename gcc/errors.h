@@ -22,8 +22,8 @@ Boston, MA 02111-1307, USA.  */
    in the generator programs; eventually we would like to use them in
    cc1 too, but that's a longer term project.  */
 
-#ifndef __GCC_ERRORS_H__
-#define __GCC_ERRORS_H__
+#ifndef GCC_ERRORS_H
+#define GCC_ERRORS_H
 
 extern void warning PARAMS ((const char *, ...)) ATTRIBUTE_PRINTF_1;
 extern void error   PARAMS ((const char *, ...)) ATTRIBUTE_PRINTF_1;
@@ -38,4 +38,4 @@ extern void fancy_abort PARAMS ((const char *, int, const char *))
 extern int have_error;
 extern const char *progname;
     
-#endif
+#endif /* ! GCC_ERRORS_H */

@@ -83,4 +83,4 @@ extern void h8300_pr_interrupt PARAMS ((cpp_reader *));
 extern void h8300_pr_saveall PARAMS ((cpp_reader *));
 #endif
 
-#endif /* GCC_H8300_PROTOS_H */
+#endif /* ! GCC_H8300_PROTOS_H */

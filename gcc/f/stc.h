@@ -27,8 +27,8 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* Allow multiple inclusion to work. */
 
-#ifndef _H_f_stc
-#define _H_f_stc
+#ifndef GCC_F_STC_H
+#define GCC_F_STC_H
 
 /* Simple definitions and enumerations. */
 
@@ -357,4 +357,4 @@ void ffestc_any (void);
 
 /* End of #include file. */
 
-#endif
+#endif /* ! GCC_F_STC_H */

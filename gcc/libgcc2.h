@@ -19,8 +19,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#ifndef __LIBGCC2_H__
-#define __LIBGCC2_H__
+#ifndef GCC_LIBGCC2_H
+#define GCC_LIBGCC2_H
 
 extern int __gcc_bcmp (const unsigned char *, const unsigned char *, size_t);
 extern void __clear_cache (char *, char *);
@@ -298,4 +298,4 @@ typedef union
 
 #include "longlong.h"
 
-#endif /* __LIBGCC2_H__ */
+#endif /* ! GCC_LIBGCC2_H */

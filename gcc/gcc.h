@@ -18,8 +18,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#ifndef __GCC_H__
-#define __GCC_H__
+#ifndef GCC_GCC_H
+#define GCC_GCC_H
 
 #include "version.h"
 
@@ -51,4 +51,4 @@ extern int lang_specific_extra_outfiles;
 
 extern const char **outfiles;
 
-#endif /* ! __GCC_H__ */
+#endif /* ! GCC_GCC_H */

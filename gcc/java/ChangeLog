@@ -1,3 +1,8 @@
+2001-05-25  Sam TH  <sam@uchicago.edu>
+
+	* gen-table.pl javaop.h jcf.h lex.h,
+	parse.h: Fix header include guards.
+
 2001-05-23  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* jv-scan.c (version): Update copyright year.

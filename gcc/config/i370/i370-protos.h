@@ -54,4 +54,4 @@ extern void mvs_free_label_list PARAMS ((void));
 extern void i370_pr_map PARAMS ((cpp_reader *));
 #endif
 
-#endif
+#endif /* ! GCC_I370_PROTOS_H */

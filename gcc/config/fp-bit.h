@@ -26,8 +26,8 @@ Boston, MA 02111-1307, USA.  */
    This exception does not however invalidate any other reasons why
    the executable file might be covered by the GNU General Public License.  */
 
-#ifndef __FP_BIT_H__
-#define __FP_BIT_H__
+#ifndef GCC_FP_BIT_H
+#define GCC_FP_BIT_H
 
 /* Defining FINE_GRAINED_LIBRARIES allows one to select which routines
    from this file are compiled via additional -D options.
@@ -414,4 +414,4 @@ extern SFtype df_to_sf (DFtype);
 #endif
 #endif /* ! FLOAT */
 
-#endif /* __FP_BIT_H__ */
+#endif /* ! GCC_FP_BIT_H */

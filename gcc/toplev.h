@@ -18,8 +18,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#ifndef __GCC_TOPLEV_H__
-#define __GCC_TOPLEV_H__
+#ifndef GCC_TOPLEV_H
+#define GCC_TOPLEV_H
 
 #ifdef ANSI_PROTOTYPES
 union tree_node;
@@ -188,4 +188,4 @@ extern void set_no_fast_math_flags      PARAMS ((void));
 extern int exact_log2_wide             PARAMS ((unsigned HOST_WIDE_INT));
 extern int floor_log2_wide             PARAMS ((unsigned HOST_WIDE_INT));
 
-#endif /* __GCC_TOPLEV_H */
+#endif /* ! GCC_TOPLEV_H */

@@ -27,8 +27,8 @@ Boston, MA 02111-1307, USA.  */
    This exception does not however invalidate any other reasons why
    the executable file might be covered by the GNU General Public License.  */
 
-#ifndef __gthr_rtems_h
-#define __gthr_rtems_h
+#ifndef GCC_GTHR_RTEMS_H
+#define GCC_GTHR_RTEMS_H
 
 
 #define __GTHREADS 1
@@ -117,4 +117,4 @@ __gthread_mutex_unlock (__gthread_mutex_t *mutex)
     return rtems_gxx_mutex_unlock( mutex );
 }
 
-#endif /* __gthr_rtems_h */
+#endif /* ! GCC_GTHR_RTEMS_H */

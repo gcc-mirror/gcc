@@ -18,8 +18,8 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-#ifndef __MCORE__H
-#define __MCORE__H
+#ifndef GCC_MCORE_H
+#define GCC_MCORE_H
 
 /* RBE: need to move these elsewhere.  */
 #undef	LIKE_PPC_ABI 
@@ -1451,4 +1451,4 @@ extern long mcore_current_compilation_timestamp;
   { "mcore_store_multiple_operation",	{ PARALLEL }},			\
   { "mcore_call_address_operand",	{ REG, SUBREG, CONST_INT }},	\
 
-#endif /* __MCORE__H */
+#endif /* ! GCC_MCORE_H */

@@ -26,8 +26,8 @@ Boston, MA 02111-1307, USA.  */
    This exception does not however invalidate any other reasons why
    the executable file might be covered by the GNU General Public License.  */
 
-#ifndef __gthr_aix_h
-#define __gthr_aix_h
+#ifndef GCC_GTHR_AIX_H
+#define GCC_GTHR_AIX_H
 
 #ifdef _THREAD_SAFE
 #include "gthr-posix.h"
@@ -35,4 +35,4 @@ Boston, MA 02111-1307, USA.  */
 #include "gthr-single.h"
 #endif
 
-#endif /* __gthr_aix_h */
+#endif /* GCC_GTHR_AIX_H */

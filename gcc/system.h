@@ -20,8 +20,8 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 
-#ifndef __GCC_SYSTEM_H__
-#define __GCC_SYSTEM_H__
+#ifndef GCC_SYSTEM_H
+#define GCC_SYSTEM_H
 
 /* This is the location of the online document giving information how
    to report bugs. If you change this string, also check for strings
@@ -557,4 +557,4 @@ typedef char _Bool;
 
 #endif /* GCC >= 3.0 */
 
-#endif /* __GCC_SYSTEM_H__ */
+#endif /* ! GCC_SYSTEM_H */

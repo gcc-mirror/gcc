@@ -26,8 +26,8 @@ Boston, MA 02111-1307, USA.  */
    This exception does not however invalidate any other reasons why
    the executable file might be covered by the GNU General Public License.  */
 
-#ifndef __gthr_solaris_h
-#define __gthr_solaris_h
+#ifndef GCC_GTHR_SOLARIS_H
+#define GCC_GTHR_SOLARIS_H
 
 /* Solaris threads as found in Solaris 2.[456].
    Actually these are Unix International (UI) threads, but I don't
@@ -477,4 +477,4 @@ __gthread_mutex_unlock (__gthread_mutex_t *mutex)
 
 #endif /* _LIBOBJC */
 
-#endif /* not __gthr_solaris_h */
+#endif /* ! GCC_GTHR_SOLARIS_H */

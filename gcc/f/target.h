@@ -27,8 +27,8 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* Allow multiple inclusion to work. */
 
-#ifndef _H_f_target
-#define _H_f_target
+#ifndef GCC_F_TARGET_H
+#define GCC_F_TARGET_H
 
 #ifdef FFE_STANDALONE
 #define HOST_WIDE_INT long
@@ -1892,4 +1892,4 @@ void *ffetarget_memcpy_ (void *dst, void *src, size_t len);
 
 /* End of #include file. */
 
-#endif
+#endif /* ! GCC_F_TARGET_H */

@@ -32,8 +32,8 @@ Boston, MA 02111-1307, USA.
    Since their values can be set on the command-line, these parameters
    should not be used for non-dynamic memory allocation.  */
 
-#ifndef PARAMS_H
-#define PARAMS_H
+#ifndef GCC_PARAMS_H
+#define GCC_PARAMS_H
 
 /* No parameter shall have this value.  */
 
@@ -93,4 +93,4 @@ typedef enum compiler_param
 #define MAX_GCSE_MEMORY \
   ((size_t) PARAM_VALUE (PARAM_MAX_GCSE_MEMORY))
 
-#endif /* PARAMS_H */
+#endif /* ! GCC_PARAMS_H */

@@ -514,4 +514,4 @@ ufputs (s, f)
   return fputs ((const char *)s, f);
 }
 
-#endif /* GCC_CPPHASH_H */
+#endif /* ! GCC_CPPHASH_H */

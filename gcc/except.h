@@ -31,7 +31,7 @@ struct rtx_def;
 #define rtx struct rtx_def *
 #endif
 
-#ifndef _VARRAY_H_
+#ifndef GCC_VARRAY_H
 struct varray_head_tag;
 #define varray_type struct varray_head_tag *
 #endif
@@ -169,7 +169,7 @@ extern tree (*lang_eh_runtime_type) PARAMS ((tree));
 #undef rtx
 #endif
 
-#ifndef _VARRAY_H_
+#ifndef GCC_VARRAY_H
 #undef varray_type
 #endif
 

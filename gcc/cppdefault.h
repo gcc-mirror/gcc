@@ -19,8 +19,8 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
-#ifndef __GCC_CPPDEFAULT__
-#define __GCC_CPPDEFAULT__
+#ifndef GCC_CPPDEFAULT_H
+#define GCC_CPPDEFAULT_H
 
 /* This header contains declarations and/or #defines for all the
    hard-wired defaults in cpp.  Note it's used by both cpplib and
@@ -109,4 +109,4 @@ extern const struct default_include cpp_include_defaults[];
 extern const char cpp_GCC_INCLUDE_DIR[];
 extern const size_t cpp_GCC_INCLUDE_DIR_len;
 
-#endif /* cppdefault.h */
+#endif /* ! GCC_CPPDEFAULT_H */

@@ -46,8 +46,8 @@
  * If you do not wish that, delete this exception notice.
  */
 
-#ifndef FIXINC_SERVER_H
-#define FIXINC_SERVER_H
+#ifndef GCC_SERVER_H
+#define GCC_SERVER_H
 
 #include <stdio.h>
 #ifdef HAVE_UNISTD_H
@@ -78,4 +78,5 @@ pid_t proc2_open  PARAMS (( t_fd_pair * p_pair, tCC ** pp_args));
 int   chain_open  PARAMS (( int in_fd, tCC ** pp_args,
                             pid_t * p_child));
 void close_server PARAMS (( void ));
-#endif /* FIXINC_SERVER_H */
+
+#endif /* ! GCC_SERVER_H */

@@ -27,8 +27,8 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* Allow multiple inclusion to work. */
 
-#ifndef _H_f_ste
-#define _H_f_ste
+#ifndef GCC_F_STE_H
+#define GCC_F_STE_H
 
 /* Simple definitions and enumerations. */
 
@@ -169,4 +169,4 @@ void ffeste_terminate_2 (void);
 
 /* End of #include file. */
 
-#endif
+#endif /* ! GCC_F_STE_H */

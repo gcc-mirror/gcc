@@ -18,8 +18,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#ifndef _BITMAP_H
-#define _BITMAP_H 1
+#ifndef GCC_BITMAP_H
+#define GCC_BITMAP_H 
 
 /* Number of words to use for each element in the linked list.  */
 
@@ -336,4 +336,4 @@ do {									\
     }									\
 } while (0)
 
-#endif /* _BITMAP_H */
+#endif /* GCC_BITMAP_H */

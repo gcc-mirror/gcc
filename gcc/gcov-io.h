@@ -19,8 +19,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#ifndef GCOV_IO_H
-#define GCOV_IO_H
+#ifndef GCC_GCOV_IO_H
+#define GCC_GCOV_IO_H
 #include <stdio.h>
 #include <sys/types.h>
 
@@ -139,4 +139,4 @@ __read_long (dest, file, bytes)
     return __fetch_long (dest, c, bytes);
 }
 
-#endif
+#endif /* ! GCC_GCOV_IO_H */

@@ -27,8 +27,8 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* Allow multiple inclusion to work. */
 
-#ifndef _H_f_sta
-#define _H_f_sta
+#ifndef GCC_F_STA_H
+#define GCC_F_STA_H
 
 /* Simple definitions and enumerations. */
 
@@ -114,4 +114,4 @@ void ffesta_set_outpooldisp (ffestaPooldisp d);
 
 /* End of #include file. */
 
-#endif
+#endif /* ! GCC_F_STA_H */

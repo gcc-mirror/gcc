@@ -1,4 +1,8 @@
-2001-05-26  Mark Mitchell <mark@codesourcery.com>
+2001-05-25  Sam TH  <sam@uchicago.edu>
+
+	* cp-tree.h lex.h: Fix header include guards.
+
+2001-05-25  Mark Mitchell <mark@codesourcery.com>
 
 	* decl.c (init_decl_processing): Tweak.
 

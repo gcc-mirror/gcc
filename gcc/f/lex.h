@@ -29,8 +29,8 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* Allow multiple inclusion to work. */
 
-#ifndef _H_f_lex
-#define _H_f_lex
+#ifndef GCC_F_LEX_H
+#define GCC_F_LEX_H
 
 /* Simple definitions and enumerations. */
 
@@ -198,4 +198,4 @@ ffelexToken ffelex_token_use (ffelexToken t);
 
 /* End of #include file. */
 
-#endif
+#endif /* ! GCC_F_LEX_H */

@@ -1,3 +1,23 @@
+2001-05-25  Sam TH  <sam@uchicago.edu>
+
+	* basic-block.h: Fix header include guards.
+	* bitmap.h c-dump.h c-lex.h c-pragma.h c-tree.h collect2.h
+	cppdefault.h cpphash.h cpplib.h defaults.h diagnostic.h errors.h
+	except.h flags.h gcc.h gcov-io.h graph.h gstab.h gthr-aix.h
+	gthr-dce.h gthr-posix.h gthr-rtems.h gthr-single.h gthr-solaris.h
+	gthr-vxworks.h gthr-win32.h gthr.h hard-reg-set.h hwint.h
+	insn-addr.h libgcc2.h mbchar.h mkdeps.h params.h prefix.h real.h
+	rtl.h sbitmap.h system.h timevar.h toplev.h tradcpp.h tsystem.h
+	varray.h version.h: Likewise.
+	* config/dbxelf.h config/fp-bit.h config/arm/arm-protos.h
+	config/arm/arm.h config/c4x/c4x-protos.h
+	config/h8300/h8300-protos.h config/h8300/h8300.h
+	config/i370/i370-protos.h config/i370/i370.h
+	config/i960/i960-protos.h config/mcore/mcore.h
+	config/mips/mips-protos.h config/sh/sh-protos.h config/sh/sh.h
+	config/v850/v850-protos.h config/v850/v850.h: Likewise.
+	* fixinc/fixlib.h fixinc/server.h: Likewise.	
+
 2001-05-25  Stacey Sheldon  <ssheldon@Catena.com>
 
 	* config/arc/initfini.c (.init): Fix typo.

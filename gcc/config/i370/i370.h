@@ -22,8 +22,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#ifndef __I370_H__
-#define __I370_H__
+#ifndef GCC_I370_H
+#define GCC_I370_H
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
 extern int target_flags;
@@ -2165,4 +2165,4 @@ abort(); \
   fprintf ((FILE), ",%u\n", (ROUNDED)))
 
 #endif /* TARGET_ELF_ABI */
-#endif /* __I370_H__ */
+#endif /* ! GCC_I370_H */

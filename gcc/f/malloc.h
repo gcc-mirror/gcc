@@ -27,8 +27,8 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* Allow multiple inclusion to work. */
 
-#ifndef _H_f_malloc
-#define _H_f_malloc
+#ifndef GCC_F_MALLOC_H
+#define GCC_F_MALLOC_H
 
 #ifndef MALLOC_DEBUG
 #define MALLOC_DEBUG 0	/* 1 means check caller's use of this module. */
@@ -180,4 +180,4 @@ void malloc_verify_inpool_ (mallocPool pool, mallocType_ type, void *ptr,
 
 /* End of #include file. */
 
-#endif
+#endif /* ! GCC_F_MALLOC_H */

@@ -27,8 +27,8 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* Allow multiple inclusion to work. */
 
-#ifndef _H_f_bit
-#define _H_f_bit
+#ifndef GCC_F_BIT_H
+#define GCC_F_BIT_H
 
 /* Simple definitions and enumerations. */
 
@@ -81,4 +81,4 @@ void ffebit_test (ffebit b, ffebitCount offset, bool *value, ffebitCount *length
 
 /* End of #include file. */
 
-#endif
+#endif /* ! GCC_F_BIT_H */

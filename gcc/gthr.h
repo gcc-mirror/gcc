@@ -26,8 +26,8 @@ Boston, MA 02111-1307, USA.  */
    This exception does not however invalidate any other reasons why
    the executable file might be covered by the GNU General Public License.  */
 
-#ifndef __gthr_h
-#define __gthr_h
+#ifndef GCC_GTHR_H
+#define GCC_GTHR_H
 
 /* If this file is compiled with threads support, it must
        #define __GTHREADS 1
@@ -102,4 +102,4 @@ Boston, MA 02111-1307, USA.  */
 #include "gthr-single.h"
 #endif
 
-#endif /* not __gthr_h */
+#endif /* ! GCC_GTHR_H */

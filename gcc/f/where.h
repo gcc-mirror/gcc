@@ -27,8 +27,8 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* Allow multiple inclusion to work. */
 
-#ifndef _H_f_where
-#define _H_f_where
+#ifndef GCC_F_WHERE_H
+#define GCC_F_WHERE_H
 
 /* Simple definitions and enumerations. */
 
@@ -135,4 +135,4 @@ void ffewhere_track_kill (ffewhereLine wrl, ffewhereColumn wrc, ffewhereTrack wt
 
 /* End of #include file. */
 
-#endif
+#endif /* ! GCC_F_EHERE_H */

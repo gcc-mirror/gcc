@@ -27,8 +27,8 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* Allow multiple inclusion to work. */
 
-#ifndef _H_f_data
-#define _H_f_data
+#ifndef GCC_F_DATA_H
+#define GCC_F_DATA_H
 
 /* Simple definitions and enumerations. */
 
@@ -71,4 +71,4 @@ bool ffedata_value (ffetargetIntegerDefault rpt, ffebld value,
 
 /* End of #include file. */
 
-#endif
+#endif /* ! GCC_F_DATA_H */

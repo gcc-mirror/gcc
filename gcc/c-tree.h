@@ -19,8 +19,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#ifndef _C_TREE_H
-#define _C_TREE_H
+#ifndef GCC_C_TREE_H
+#define GCC_C_TREE_H
 
 #include "c-common.h"
 
@@ -361,4 +361,4 @@ extern int mesg_implicit_function_declaration;
 /* In c-decl.c */
 extern void finish_incomplete_decl PARAMS ((tree));
 
-#endif /* not _C_TREE_H */
+#endif /* ! GCC_C_TREE_H */

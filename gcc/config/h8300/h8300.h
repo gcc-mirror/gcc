@@ -1485,4 +1485,4 @@ readonly_data ()							\
 
 #define MOVE_RATIO 3
 
-#endif /* GCC_H8300_H */
+#endif /* ! GCC_H8300_H */
