@@ -1,3 +1,19 @@
+2002-12-12  Tom Tromey  <tromey@redhat.com>
+
+	* libjava.loader/loader.exp (gcj_loader_test_one): Use
+	libjava_prune_warnings.
+	(gcj_loader_run): Likewise.
+	* libjava.mauve/mauve.exp (test_mauve): Use
+	libjava_prune_warnings.
+	(test_mauve_sim): Likewise.
+	* libjava.jni/jni.exp (gcj_jni_compile_c_to_so): Use
+	libjava_prune_warnings.
+	(gcj_jni_build_header): Likewise.
+	* lib/libjava.exp (libjava_prune_warnings): New proc.
+	(gcj_link): Use it.
+	(test_libjava_from_source): Likewise.
+	(test_libjava_from_javac): Likewise.
+
 2002-12-08  Tom Tromey  <tromey@redhat.com>
 
 	Test for PR libgcj/8823:

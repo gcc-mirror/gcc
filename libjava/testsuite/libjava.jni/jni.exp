@@ -15,7 +15,8 @@ proc gcj_jni_compile_c_to_so {file {options {}}} {
   # Find jni.h.
   lappend options "additional_flags=-I$srcdir/../include"
 
-  set x [prune_warnings [target_compile $file $soname executable $options]]
+  set x [libjava_prune_warnings \
+	   [target_compile $file $soname executable $options]]
   if {$x != ""} {
     verbose "target_compile failed: $x" 2
     fail "$name.c compilation"
@@ -30,7 +31,7 @@ proc gcj_jni_compile_c_to_so {file {options {}}} {
 proc gcj_jni_build_header {file} {
   set gcjh [find_gcjh]
   set file [file rootname $file]
-  set x [string trim [prune_warnings \
+  set x [string trim [libjava_prune_warnings \
 			[lindex [local_exec "$gcjh -jni $file" "" "" 300] 1]]]
   if {$x != ""} {
     verbose "local_exec failed: $x" 2

@@ -154,7 +154,7 @@ proc test_mauve {} {
   foreach base {DejaGNUTestHarness gnu/testlet/SimpleTestHarness gnu/testlet/TestHarness gnu/testlet/Testlet gnu/testlet/ResourceNotFoundException gnu/testlet/config} {
     set file $base.class
     set obj $base.o
-    set x [prune_warnings \
+    set x [libjava_prune_warnings \
 	     [target_compile [pwd]/$file $obj object $compile_args]]
     if {$x != ""} then {
       fail "Compile $obj"
@@ -180,7 +180,7 @@ proc test_mauve {} {
       if {! [file exists $obj]} then {
 	verbose "compiling $obj for test of $class"
 	set srcfile [file rootname $obj].class
-	set x [prune_warnings \
+	set x [libjava_prune_warnings \
 		 [target_compile [pwd]/$srcfile $obj object $compile_args]]
 	if {$x != ""} then {
 	  fail "Compile $obj for $class"
@@ -195,8 +195,9 @@ proc test_mauve {} {
       continue
     }
 
-    set x [prune_warnings [target_compile [concat $uses($file) $objlist] \
-			     $Executable executable $link_args]]
+    set x [libjava_prune_warnings \
+	     [target_compile [concat $uses($file) $objlist] \
+		$Executable executable $link_args]]
     if {$x != ""} then {
       set proc_ok 0
       fail "Link for $class"
@@ -292,7 +293,7 @@ proc test_mauve_sim {} {
 		  gnu/testlet/config} {
     set file $base.class
     set obj $base.o
-    set x [prune_warnings \
+    set x [libjava_prune_warnings \
 	     [target_compile [pwd]/$file $obj object $compile_args]]
     if {$x != ""} then {
       fail "Compile $obj"
@@ -321,7 +322,7 @@ proc test_mauve_sim {} {
       if {! [file exists $obj]} then {
 	verbose "compiling $obj for test of $class"
 	set srcfile [file rootname $obj].class
-	set x [prune_warnings \
+	set x [libjava_prune_warnings \
 		 [target_compile [pwd]/$srcfile $obj object $compile_args]]
 	if {$x != ""} then {
 	  fail "Compile $obj for $class"
@@ -357,7 +358,7 @@ proc test_mauve_sim {} {
 	return 0
     }
 
-    set x [prune_warnings \
+    set x [libjava_prune_warnings \
 	     [target_compile gnu/testlet/DejaGNUTestHarness.class \
 		gnu/testlet/DejaGNUTestHarness.o object $compile_args]]
     if {$x != ""} then {
@@ -366,8 +367,9 @@ proc test_mauve_sim {} {
 	continue
     }
 
-    set x [prune_warnings [target_compile [concat $uses($file) $objlist] \
-			     $Executable executable $link_args]]
+    set x [libjava_prune_warnings \
+	     [target_compile [concat $uses($file) $objlist] \
+		$Executable executable $link_args]]
     if {$x != ""} then {
       set proc_ok 0
       fail "Link for $class"
