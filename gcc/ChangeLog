@@ -1,3 +1,7 @@
+2001-08-20  Richard Henderson  <rth@redhat.com>
+
+	* varasm.c (assemble_integer): Document ppc-eabi -mrelocatable losage.
+
 2001-08-20  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa.h (RETURN_IN_MEMORY): Improve comment.
