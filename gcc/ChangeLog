@@ -2,7 +2,12 @@ Fri Jun 19 22:55:14 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* c-lang.c (GNU_xref_begin, GNU_xref_end): Deleted.
 
+	* Makefile.in (c-iterate.o): Depend on expr.h.
+
 Fri Jun 19 20:38:34 1998  H.J. Lu  (hjl@gnu.org)
+
+	* c-iterate.c: Include "expr.h".
+	(expand_expr): Use proper values when calling the function.
 
 	* explow.c (emit_stack_save): Add prototype for FCN.
 	(emit_stack_restore): Likewise.
