@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2004, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2005, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -660,13 +660,16 @@ build_binary_op (enum tree_code op_code, tree result_type,
 	 might indicate a conversion between a root type and a class-wide
 	 type, which we must not remove.  */
       while (TREE_CODE (right_operand) == VIEW_CONVERT_EXPR
-	     && ((TREE_CODE (right_type) == RECORD_TYPE
+	     && (((TREE_CODE (right_type) == RECORD_TYPE
+		   || TREE_CODE (right_type) == UNION_TYPE)
 		  && !TYPE_JUSTIFIED_MODULAR_P (right_type)
 		  && !TYPE_ALIGN_OK (right_type)
 		  && !TYPE_IS_FAT_POINTER_P (right_type))
 		 || TREE_CODE (right_type) == ARRAY_TYPE)
-	     && (((TREE_CODE (TREE_TYPE (TREE_OPERAND (right_operand, 0)))
-		   == RECORD_TYPE)
+	     && ((((TREE_CODE (TREE_TYPE (TREE_OPERAND (right_operand, 0)))
+		    == RECORD_TYPE)
+		   || (TREE_CODE (TREE_TYPE (TREE_OPERAND (right_operand, 0)))
+		       == UNION_TYPE))
 		  && !(TYPE_JUSTIFIED_MODULAR_P
 		       (TREE_TYPE (TREE_OPERAND (right_operand, 0))))
 		  && !(TYPE_ALIGN_OK
@@ -695,7 +698,9 @@ build_binary_op (enum tree_code op_code, tree result_type,
 	operation_type = best_type;
 
       /* If a class-wide type may be involved, force use of the RHS type.  */
-      if (TREE_CODE (right_type) == RECORD_TYPE && TYPE_ALIGN_OK (right_type))
+      if ((TREE_CODE (right_type) == RECORD_TYPE
+	   || TREE_CODE (right_type) == UNION_TYPE)
+	  && TYPE_ALIGN_OK (right_type))
 	operation_type = right_type;
 
       /* Ensure everything on the LHS is valid.  If we have a field reference,
@@ -1087,7 +1092,8 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 	      int unsignedp, volatilep;
 
 	      inner = get_inner_reference (operand, &bitsize, &bitpos, &offset,
-					   &mode, &unsignedp, &volatilep, false);
+					   &mode, &unsignedp, &volatilep,
+					   false);
 
 	      /* If INNER is a padding type whose field has a self-referential
 		 size, convert to that inner type.  We know the offset is zero

@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2004, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2005, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -309,7 +309,7 @@ insert_block (tree block)
 }
 
 /* Records a ..._DECL node DECL as belonging to the current lexical scope
-   and uses GNAT_NODE for location information.  */
+   and uses GNAT_NODE for location information and propagating flags.  */
 
 void
 gnat_pushdecl (tree decl, Node_Id gnat_node)
@@ -320,6 +320,8 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
     DECL_CONTEXT (decl) = 0;
   else
     DECL_CONTEXT (decl) = current_function_decl;
+
+  TREE_NO_WARNING (decl) = (gnat_node == Empty || Warnings_Off (gnat_node));
 
   /* Set the location of DECL and emit a declaration for it.  */
   if (Present (gnat_node))
@@ -1182,8 +1184,8 @@ create_type_decl (tree type_name, tree type, struct attrib *attr_list,
       || !debug_info_p)
     DECL_IGNORED_P (type_decl) = 1;
   else if (code != ENUMERAL_TYPE && code != RECORD_TYPE
-      && !((code == POINTER_TYPE || code == REFERENCE_TYPE)
-	   && TYPE_IS_DUMMY_P (TREE_TYPE (type))))
+	   && !((code == POINTER_TYPE || code == REFERENCE_TYPE)
+		&& TYPE_IS_DUMMY_P (TREE_TYPE (type))))
     rest_of_decl_compilation (type_decl, global_bindings_p (), 0);
 
   if (!TYPE_IS_DUMMY_P (type))
@@ -2905,21 +2907,29 @@ convert (tree type, tree expr)
       return unchecked_convert (type, expr, false);
 
     case UNION_TYPE:
-      /* Just validate that the type is indeed that of a field
-	 of the type.  Then make the simple conversion.  */
-      for (tem = TYPE_FIELDS (type); tem; tem = TREE_CHAIN (tem))
+      /* For unchecked unions, just validate that the type is indeed that of
+	 a field of the type.  Then make the simple conversion.  */
+      if (TYPE_UNCHECKED_UNION_P (type))
 	{
-	  if (TREE_TYPE (tem) == etype)
-	    return build1 (CONVERT_EXPR, type, expr);
-	  else if (TREE_CODE (TREE_TYPE (tem)) == RECORD_TYPE
-		   && (TYPE_JUSTIFIED_MODULAR_P (TREE_TYPE (tem))
-		       || TYPE_IS_PADDING_P (TREE_TYPE (tem)))
-		   && TREE_TYPE (TYPE_FIELDS (TREE_TYPE (tem))) == etype)
-	    return build1 (CONVERT_EXPR, type,
-			   convert (TREE_TYPE (tem), expr));
-	}
+	  for (tem = TYPE_FIELDS (type); tem; tem = TREE_CHAIN (tem))
+	    {
+	      if (TREE_TYPE (tem) == etype)
+		return build1 (CONVERT_EXPR, type, expr);
+	      else if (TREE_CODE (TREE_TYPE (tem)) == RECORD_TYPE
+		       && (TYPE_JUSTIFIED_MODULAR_P (TREE_TYPE (tem))
+			   || TYPE_IS_PADDING_P (TREE_TYPE (tem)))
+		       && TREE_TYPE (TYPE_FIELDS (TREE_TYPE (tem))) == etype)
+		return build1 (CONVERT_EXPR, type,
+			       convert (TREE_TYPE (tem), expr));
+	    }
 
-      gcc_unreachable ();
+	  gcc_unreachable ();
+	}
+      else
+	/* Otherwise, this is a conversion between a tagged type and some
+	   subtype, which we have to mark as a UNION_TYPE because of
+	   overlapping fields.  */
+	return unchecked_convert (type, expr, false);
 
     case UNCONSTRAINED_ARRAY_TYPE:
       /* If EXPR is a constrained array, take its address, convert it to a
@@ -3214,6 +3224,7 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
 /* Search the chain of currently reachable declarations for a builtin
    FUNCTION_DECL node corresponding to function NAME (an IDENTIFIER_NODE).
    Return the first node found, if any, or NULL_TREE otherwise.  */
+
 tree
 builtin_decl_for (tree name __attribute__ ((unused)))
 {
