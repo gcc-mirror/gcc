@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, Citicorp/TTI Unicom PBD
    version (using GAS and COFF (encapsulated is unacceptable) )
-   Copyright (C) 1990, 1996, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1990, 1996, 2000, 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
