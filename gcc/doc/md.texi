@@ -898,7 +898,7 @@ digit is used together with letters within the same alternative, the
 digit should come last.
 
 This number is allowed to be more than a single digit.  If multiple
-digits are encountered consecutavely, they are interpreted as a single
+digits are encountered consecutively, they are interpreted as a single
 decimal integer.  There is scant chance for ambiguity, since to-date
 it has never been desirable that @samp{10} be interpreted as matching
 either operand 1 @emph{or} operand 0.  Should this be desired, one
@@ -965,7 +965,7 @@ The machine description macro @code{REG_CLASS_FROM_LETTER} has first
 cut at the otherwise unused letters.  If it evaluates to @code{NO_REGS},
 then @code{EXTRA_CONSTRAINT} is evaluated.
 
-A typical use for @code{EXTRA_CONSTRANT} would be to distinguish certain
+A typical use for @code{EXTRA_CONSTRAINT} would be to distinguish certain
 types of memory references that affect other insn operands.
 @end ifset
 @end table
@@ -1609,7 +1609,7 @@ Second floating point register
 @samp{c} register
 
 @item C
-Specifies constant that can be easilly constructed in SSE register without
+Specifies constant that can be easily constructed in SSE register without
 loading it from memory.
 
 @item d
@@ -5368,7 +5368,7 @@ The first one is a data dependence delay determining @dfn{instruction
 latency time}.  The instruction execution is not started until all
 source data have been evaluated by prior instructions (there are more
 complex cases when the instruction execution starts even when the data
-are not availaible but will be ready in given time after the
+are not available but will be ready in given time after the
 instruction execution start).  Taking the data dependence delays into
 account is simple.  The data dependence (true, output, and
 anti-dependence) delay between two instructions is given by a

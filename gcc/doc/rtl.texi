@@ -2841,7 +2841,7 @@ labels: @code{LABEL_NORMAL}, @code{LABEL_STATIC_ENTRY},
 that do not have type @code{LABEL_NORMAL} are @dfn{alternate entry
 points} to the current function.  These may be static (visible only in
 the containing translation unit), global (exposed to all translation
-units), or weak (global, but can be overriden by another symbol with the
+units), or weak (global, but can be overridden by another symbol with the
 same name).
 
 Much of the compiler treats all four kinds of label identically.  Some

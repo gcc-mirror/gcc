@@ -4888,7 +4888,7 @@ type is @code{long double}.
 This is an implementation of the ISO C99 function @code{nan}.
 
 Since ISO C99 defines this function in terms of @code{strtod}, which we
-do not implement, a desription of the parsing is in order.  The string
+do not implement, a description of the parsing is in order.  The string
 is parsed as by @code{strtol}; that is, the base is recognized by
 leading @samp{0} or @samp{0x} prefixes.  The number parsed is placed
 in the significand such that the least significant bit of the number
@@ -6682,7 +6682,7 @@ Add after paragraph 4
 
 @quotation
 The storage for an object of thread storage duration shall be
-staticly initialized before the first statement of the thread startup
+statically initialized before the first statement of the thread startup
 function.  An object of thread storage duration shall not require
 dynamic initialization.
 @end quotation
