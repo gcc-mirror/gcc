@@ -1,3 +1,35 @@
+Tue Jan  5 21:57:42 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (gcc.o, prefix.o, cccp.o, cpplib.o): Depend on prefix.h.
+
+	* cccp.c: Include prefix.h, don't prototype prefix.c functions.
+	(new_include_prefix): Constify char* parameters.
+
+	* cppfiles.c (read_name_map): Likewise.
+	(append_include_chain): Likewise.  Also, use a writable char* copy
+	of parameter `dir' which we then modify, rather than using the
+	parameter itself to store the new writable string.
+	(remap_filename): Constify some variables.  Also, use a writable
+	char* to store an allocated string which we will be modifying.
+
+	* cpplib.c: Include prefix.h, don't prototype prefix.c functions.
+	(cpp_start_read): Constify variable `str'.
+
+	* cpplib.h (append_include_chain): Constify a char* parameter.
+
+	* gcc.c Include prefix.h, don't prototype prefix.c functions.
+	(add_prefix, save_string): Constify char* parameters.
+	(fatal, error): Add ATTRIBUTE_PRINTF_1 to prototypes.
+
+	* prefix.c: Include prefix.h.
+  	(get_key_value, translate_name, save_string, update_path,
+	set_std_prefix): Constify various char* parameters and variables.
+	(save_string): Use xmalloc, not malloc.
+	(translate_name): Use a writable temporary variable to create and
+	modify a string before setting it to a const char*.
+	
+	* prefix.h: New file to prototype functions exported from prefix.c.
+
 Mon Jan  4 15:37:30 1999  Zack Weinberg  <zack@rabi.phys.columbia.edu>
 
 	* cpplib.c (skip_if_group): Split out the logic that handles

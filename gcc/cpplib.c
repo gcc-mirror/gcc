@@ -38,12 +38,11 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "cpplib.h"
 #include "cpphash.h"
 #include "output.h"
+#include "prefix.h"
 
 #ifndef GET_ENV_PATH_LIST
 #define GET_ENV_PATH_LIST(VAR,NAME)	do { (VAR) = getenv (NAME); } while (0)
 #endif
-
-extern char *update_path PARAMS ((char *, char *));
 
 /* By default, colon separates directories in a path.  */
 #ifndef PATH_SEPARATOR
@@ -4942,7 +4941,7 @@ cpp_start_read (pfile, fname)
       /* Some standard dirs are only for C++.  */
       if (!p->cplusplus
 	  || (opts->cplusplus && !opts->no_standard_cplusplus_includes)) {
-	char *str = update_path (p->fname, p->component);
+	const char *str = update_path (p->fname, p->component);
 	append_include_chain (pfile, &opts->system_include,
 			      str, !p->cxx_aware);
       }

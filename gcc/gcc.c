@@ -36,10 +36,7 @@ compilation is specified by a string called a "spec".  */
 #include <signal.h>
 
 #include "obstack.h"
-
-/* ??? Need to find a GCC header to put these in.  */
-extern char *update_path PROTO((char *, char *));
-extern void set_std_prefix PROTO((char *, int));
+#include "prefix.h"
 
 #ifdef VMS
 #define exit __posix_exit
@@ -174,8 +171,8 @@ static struct compiler *lookup_compiler PROTO((char *, size_t, char *));
 static char *build_search_list	PROTO((struct path_prefix *, char *, int));
 static void putenv_from_prefixes PROTO((struct path_prefix *, char *));
 static char *find_a_file	PROTO((struct path_prefix *, char *, int));
-static void add_prefix		PROTO((struct path_prefix *, char *, char *,
-				       int, int, int *));
+static void add_prefix		PROTO((struct path_prefix *, const char *,
+				       const char *, int, int, int *));
 static char *skip_whitespace	PROTO((char *));
 static void record_temp_file	PROTO((char *, int, int));
 static void delete_if_ordinary	PROTO((char *));
@@ -184,7 +181,7 @@ static void delete_failure_queue PROTO((void));
 static void clear_failure_queue PROTO((void));
 static int check_live_switch	PROTO((int, int));
 static char *handle_braces	PROTO((char *));
-static char *save_string	PROTO((char *, int));
+static char *save_string	PROTO((const char *, int));
 extern int do_spec		PROTO((char *));
 static int do_spec_1		PROTO((char *, int, char *));
 static char *find_file		PROTO((char *));
@@ -199,8 +196,9 @@ static void print_multilib_info	PROTO((void));
 static void pfatal_with_name	PROTO((char *)) ATTRIBUTE_NORETURN;
 static void perror_with_name	PROTO((char *));
 static void pfatal_pexecute	PROTO((char *, char *)) ATTRIBUTE_NORETURN;
-static void fatal		PVPROTO((char *, ...)) ATTRIBUTE_NORETURN;
-static void error		PVPROTO((char *, ...));
+static void fatal		PVPROTO((char *, ...))
+  ATTRIBUTE_NORETURN ATTRIBUTE_PRINTF_1;
+static void error		PVPROTO((char *, ...)) ATTRIBUTE_PRINTF_1;
 static void display_help 	PROTO((void));
 
 void fancy_abort		PROTO((void)) ATTRIBUTE_NORETURN;
@@ -2101,8 +2099,8 @@ find_a_file (pprefix, name, mode)
 static void
 add_prefix (pprefix, prefix, component, first, require_machine_suffix, warn)
      struct path_prefix *pprefix;
-     char *prefix;
-     char *component;
+     const char *prefix;
+     const char *component;
      int first;
      int require_machine_suffix;
      int *warn;
@@ -5233,8 +5231,8 @@ xrealloc (ptr, size)
 
 static char *
 save_string (s, len)
-     char *s;
-     int len;
+  const char *s;
+  int len;
 {
   register char *result = xmalloc (len + 1);
 
