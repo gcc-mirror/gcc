@@ -38,26 +38,21 @@
   
   struct ctype_base
   {
-    typedef unsigned char 		mask;
     // Non-standard typedefs.
     typedef const unsigned char*	__to_type;
 
-    enum
-    {
-      // NetBSD 
-      space = _S,
-      print = _P | _U | _L | _N | _B,
-      cntrl = _C,
-      upper = _U,
-      lower = _L,
-      alpha = _U | _L,
-      digit = _N,
-      punct = _P,
-      xdigit = _N | _X,
-      alnum = _U | _L | _N,
-      graph = _P | _U | _L | _N,
-    };
+    // NB: Offsets into ctype<char>::_M_table force a particular size
+    // on the mask type. Because of this, we don't use an enum.
+    typedef unsigned char      	mask;
+    static const mask upper    	= _U;
+    static const mask lower 	= _L;
+    static const mask alpha 	= _U | _L;
+    static const mask digit 	= _N;
+    static const mask xdigit 	= _N | _X;
+    static const mask space 	= _S;
+    static const mask print 	= _P | _U | _L | _N | _B;
+    static const mask graph 	= _P | _U | _L | _N;
+    static const mask cntrl 	= _C;
+    static const mask punct 	= _P;
+    static const mask alnum 	= _U | _L | _N;
   };
-
-
-

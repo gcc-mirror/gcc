@@ -43,8 +43,15 @@
   ctype<char>::
   is(const char* __low, const char* __high, mask* __vec) const throw()
   {
-    while (__low < __high)
-      *__vec++ = __OBJ_DATA(__lc_ctype)->mask[*__low++];
+    const int __bitmasksize = sizeof(mask) * 8;
+    for (;__low < __high; ++__vec, ++__low)
+      {
+	mask __m = __OBJ_DATA(__lc_ctype)->mask[*__low++];
+	int __i = 0; // Lowest bitmask.
+	while (__i < __bitmasksize && !(__m & static_cast<mask>(1 << __i)))
+	  ++__i;
+	*__vec = static_cast<mask>(1 << __i);
+      }
     return __high;
   }
 

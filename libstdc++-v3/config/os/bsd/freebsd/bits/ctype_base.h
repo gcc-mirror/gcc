@@ -37,40 +37,39 @@
   
   struct ctype_base
   {
-    typedef unsigned long 	mask;
     // Non-standard typedefs.
     typedef const int* 		__to_type;
 
-    enum
-    {
+    // NB: Offsets into ctype<char>::_M_table force a particular size
+    // on the mask type. Because of this, we don't use an enum.
+    typedef unsigned long 	mask;
 #ifdef _CTYPE_S
-      // FreeBSD 4.0 uses this style of define.
-      space = _CTYPE_S,
-      print = _CTYPE_R,
-      cntrl = _CTYPE_C,
-      upper = _CTYPE_U,
-      lower = _CTYPE_L,
-      alpha = _CTYPE_A,
-      digit = _CTYPE_D,
-      punct = _CTYPE_P,
-      xdigit = _CTYPE_X,
-      alnum = _CTYPE_A | _CTYPE_D,
-      graph = _CTYPE_G
+    // FreeBSD 4.0 uses this style of define.
+    static const mask upper    	= _CTYPE_U;
+    static const mask lower 	= _CTYPE_L;
+    static const mask alpha 	= _CTYPE_A;
+    static const mask digit 	= _CTYPE_D;
+    static const mask xdigit 	= _CTYPE_X;
+    static const mask space 	= _CTYPE_S;
+    static const mask print 	= _CTYPE_R;
+    static const mask graph 	= _CTYPE_G;
+    static const mask cntrl 	= _CTYPE_C;
+    static const mask punct 	= _CTYPE_P;
+    static const mask alnum 	= _CTYPE_A | _CTYPE_D;
 #else
-      // Older versions, including Free BSD 3.4, use this style of define.
-      space = _S,
-      print = _R,
-      cntrl = _C,
-      upper = _U,
-      lower = _L,
-      alpha = _A,
-      digit = _D,
-      punct = _P,
-      xdigit = _X,
-      alnum = _A | _D,
-      graph = _G
+    // Older versions, including Free BSD 3.4, use this style of define.
+    static const mask upper    	= _U;
+    static const mask lower 	= _L;
+    static const mask alpha 	= _A;
+    static const mask digit 	= _D;
+    static const mask xdigit 	= _X;
+    static const mask space 	= _S;
+    static const mask print 	= _R;
+    static const mask graph 	= _G;
+    static const mask cntrl 	= _C;
+    static const mask punct 	= _P;
+    static const mask alnum 	= _A | _D;
 #endif
-    };
   };
 
 

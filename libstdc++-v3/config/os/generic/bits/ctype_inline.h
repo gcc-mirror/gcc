@@ -43,7 +43,7 @@
   ctype<char>::
   is(mask __m, char __c) const throw()
   { 
-    bool __ret = false;
+    bool __ret;
     switch (__m)
       {
       case space:
@@ -80,6 +80,7 @@
 	__ret = isgraph(__c);
 	break;
       default:
+	__ret = false;
 	break;
       }
     return __ret;
@@ -89,8 +90,15 @@
   ctype<char>::
   is(const char* __low, const char* __high, mask* __vec) const throw()
   {
-    while (__low < __high)
-      *__vec++ = _M_table[(unsigned char)(*__low++)];
+    const int __bitmasksize = 11; // Highest bitmask in ctype_base == 10
+    for (;__low < __high; ++__vec, ++__low)
+      {
+	mask __m = _M_table[*__low];
+	int __i = 0; // Lowest bitmask in ctype_base == 0
+	while (__i < __bitmasksize && !(__m & static_cast<mask>(1 << __i)))
+	  ++__i;
+	*__vec = static_cast<mask>(1 << __i);
+      }
     return __high;
   }
 

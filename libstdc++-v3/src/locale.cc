@@ -778,6 +778,19 @@ namespace std {
   _Bad_use_facet::
   ~_Bad_use_facet() throw() { }
   
+  // Definitions for static const data members of ctype_base.
+  const ctype_base::mask ctype_base::space;
+  const ctype_base::mask ctype_base::print;
+  const ctype_base::mask ctype_base::cntrl;
+  const ctype_base::mask ctype_base::upper;
+  const ctype_base::mask ctype_base::lower;
+  const ctype_base::mask ctype_base::alpha;
+  const ctype_base::mask ctype_base::digit;
+  const ctype_base::mask ctype_base::punct;
+  const ctype_base::mask ctype_base::xdigit;
+  const ctype_base::mask ctype_base::alnum;
+  const ctype_base::mask ctype_base::graph;
+
   // Platform-specific initialization code for ctype tables.
   #include <bits/ctype_noninline.h>
 

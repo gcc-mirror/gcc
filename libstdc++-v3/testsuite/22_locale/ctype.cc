@@ -30,5 +30,29 @@ int mask ();
 class gnu_ctype: public std::ctype<unsigned char> { };
 gnu_ctype facet01;
 
+// 3: Sanity check ctype_base::mask bitmask requirements
+void
+test01()
+{
+  using namespace std;
 
-int main() { }
+  ctype_base::mask m01;
+  ctype_base::mask m02;
+  
+  m01 = ctype_base::space;
+  m02 = ctype_base::xdigit;
+
+  m01 & m02;
+  m01 | m02;
+  m01 ^ m02;
+  m01 ~ m02;
+  m01 &= m02;
+  m01 |= m02;
+  m01 ^= m02;
+}
+
+int main() 
+{ 
+  test01();
+  return 0;
+}

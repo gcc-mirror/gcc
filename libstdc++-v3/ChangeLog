@@ -1,3 +1,38 @@
+2000-12-13  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* config/os/generic/bits/ctype_base.h (ctype_base): Consistency
+	with linux.
+	* config/os/generic/bits/ctype_inline.h (is): Same.
+	* config/os/solaris/solaris2.5/bits/ctype_inline.h (is): Same.
+	* config/os/solaris/solaris2.5/bits/ctype_base.h: Same.
+	* config/os/solaris/solaris2.6/bits/ctype_inline.h (is): Same.
+	* config/os/solaris/solaris2.6/bits/ctype_base.h: Same.
+	* config/os/solaris/solaris2.7/bits/ctype_inline.h (is): Same.
+	* config/os/solaris/solaris2.7/bits/ctype_base.h: Same.
+	* config/os/irix/bits/ctype_inline.h (is): Same.
+	* config/os/irix/bits/ctype_base.h (ctype_base): Same.
+	* config/os/aix/bits/ctype_inline.h (is): Same.
+	* config/os/aix/bits/ctype_base.h (ctype_base): Same.
+	* config/os/bsd/netbsd/bits/ctype_inline.h (is): Same.
+	* config/os/bsd/netbsd/bits/ctype_base.h (ctype_base): Same.
+	* config/os/bsd/freebsd/bits/ctype_base.h (ctype_base): Same.
+	* config/os/bsd/freebsd/bits/ctype_inline.h (is): Same.
+	* config/os/newlib/bits/ctype_inline.h (is): Same.
+	* config/os/newlib/bits/ctype_base.h (ctype_base): Same.
+
+	* testsuite/22_locale/ctype_char_members.cc (test01): Add tests, fix.
+	* testsuite/22_locale/ctype.cc (test01): Add tests for
+	ctype_base::mask bitmask features.
+	* src/locale.cc: Define const static data for ctype_base.
+	* config/os/gnu-linux/bits/ctype_base.h (ctype_base): Make
+	ctype_base::mask type an integer type, not an enum.
+	* config/os/gnu-linux/bits/ctype_inline.h (is): Implement correctly.
+	* include/bits/locale_facets.h: Tweaks.
+	
+	* include/bits/ios_base.h: Formatting tweaks.
+
+	* docs/html/17_intro/C++STYLE: Add.
+
 2000-12-12  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* acinclude.m4 (GLIBCPP_CHECK_CTYPE_SUPPORT): Don't link ctype
