@@ -1,5 +1,5 @@
 /* Compute register class preferences for pseudo-registers.
-   Copyright (C) 1987, 1988, 1991, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1991, 1992, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1002,7 +1002,12 @@ record_reg_classes (n_alts, n_ops, ops, modes, constraints, insn)
 		    alt_cost += 2;
 
 		  /* This is in place of ordinary cost computation
-		     for this operand.  */
+		     for this operand, so skip to the end of the
+		     alternative (should be just one character).  */
+		  while (*p && *p++ != ',')
+		    ;
+
+		  constraints[i] = p;
 		  continue;
 		}
 	    }
