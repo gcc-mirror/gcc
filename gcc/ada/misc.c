@@ -217,17 +217,26 @@ extern char **gnat_argv;
 
 
 /* Declare functions we use as part of startup.  */
-extern void __gnat_initialize	(void *);
-extern void adainit		(void);
-extern void _ada_gnat1drv	(void);
+extern void __gnat_initialize           (void *);
+extern void __gnat_install_SEH_handler  (void *);
+extern void adainit		        (void);
+extern void _ada_gnat1drv	        (void);
 
 /* The parser for the language.  For us, we process the GNAT tree.  */
 
 static void
 gnat_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
 {
+  int seh[2];
+
   /* call the target specific initializations */
   __gnat_initialize (NULL);
+
+  /* ??? call the SEH initialization routine, this is to workaround a
+  bootstrap path problem. The call below should be removed at some point and
+  the seh pointer passed to __gnat_initialize() above.  */
+
+  __gnat_install_SEH_handler((void *)seh);
 
   /* Call the front-end elaboration procedures */
   adainit ();
@@ -289,7 +298,7 @@ gnat_handle_option (size_t scode, const char *arg, int value ATTRIBUTE_UNUSED)
       gnat_argc++;
       break;
 
-    case OPT_fRTS:
+    case OPT_fRTS_:
       gnat_argv[gnat_argc] = xstrdup ("-fRTS");
       gnat_argc++;
       break;

@@ -57,8 +57,9 @@ nostdlib
 Ada
 ; Don't look for object files
 
-fRTS
-Ada RejectNegative
+fRTS=
+Ada Joined RejectNegative
+; Selects the runtime
 
 gant
 Ada Joined Undocumented
