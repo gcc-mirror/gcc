@@ -1,3 +1,8 @@
+2001-06-19  Mark J. Roberts  <mjr@statesmean.com>
+
+	* java/math/BigInteger.java (byteArrayToIntArray): Don't include
+	extraneous/malformed sign word.
+
 2001-06-15  Tom Tromey  <tromey@redhat.com>
 
 	* jni.cc (_Jv_JNI_NewLocalRef): Search other frames.
