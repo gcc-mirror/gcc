@@ -49,14 +49,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #endif
 #endif
 
-/* These are GNU extensions we need to reference in this file.  */
-#ifndef N_DSLINE
-#define N_DSLINE 0x46
-#endif
-#ifndef N_BSLINE
-#define N_BSLINE 0x48
-#endif
-
 /* Line number of beginning of current function, minus one.
    Negative means not in a function or not using xcoff.  */
 
@@ -205,9 +197,11 @@ stab_to_sclass (stab)
     case N_LCSYM:
       return C_STSYM;
 
+#ifdef N_MAIN
     case N_MAIN:
       UNKNOWN_STAB ("N_MAIN"); 
       abort ();
+#endif
 
     case N_RSYM:
       return C_RSYM;
@@ -240,13 +234,17 @@ stab_to_sclass (stab)
       UNKNOWN_STAB ("N_SLINE"); 
       abort ();
 
+#ifdef N_DSLINE
     case N_DSLINE:
       UNKNOWN_STAB ("N_DSLINE"); 
       abort ();
+#endif
 
+#ifdef N_BSLINE
     case N_BSLINE:
       UNKNOWN_STAB ("N_BSLINE"); 
       abort ();
+#endif
 #if 0
       /* This has the same value as N_BSLINE.  */
     case N_BROWS:
@@ -254,17 +252,23 @@ stab_to_sclass (stab)
       abort ();
 #endif
 
+#ifdef N_BINCL
     case N_BINCL:
       UNKNOWN_STAB ("N_BINCL"); 
       abort ();
+#endif
 
+#ifdef N_EINCL
     case N_EINCL:
       UNKNOWN_STAB ("N_EINCL"); 
       abort ();
+#endif
 
+#ifdef N_EXCL
     case N_EXCL:
       UNKNOWN_STAB ("N_EXCL"); 
       abort ();
+#endif
 
     case N_LBRAC:
       UNKNOWN_STAB ("N_LBRAC"); 
@@ -289,13 +293,17 @@ stab_to_sclass (stab)
       UNKNOWN_STAB ("N_PC"); 
       abort ();
 
+#ifdef N_M2C
     case N_M2C:
       UNKNOWN_STAB ("N_M2C"); 
       abort ();
+#endif
 
+#ifdef N_SCOPE
     case N_SCOPE:
       UNKNOWN_STAB ("N_SCOPE"); 
       abort ();
+#endif
 
     case N_CATCH:
       UNKNOWN_STAB ("N_CATCH"); 
