@@ -1,3 +1,9 @@
+2005-02-17  Jason Merrill  <jason@redhat.com>
+
+	PR mudflap/19319, c++/19317
+	* gimplify.c (gimplify_modify_expr_rhs) [CALL_EXPR]: Make return
+	slot explicit.
+
 2005-02-17  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/install.texi (Specific): Update link for Darwin-specific
@@ -286,11 +292,6 @@
 	* flags.h, read-rtl.c, tree-ssa-live.h: Update copyright.
 
 2005-02-13  Jason Merrill  <jason@redhat.com>
-
-	[reverted temporarily]
-	PR mudflap/19319
-	* gimplify.c (gimplify_modify_expr_rhs) [CALL_EXPR]: Make return
-	slot explicit.
 
 	PR c++/16405
 	* fold-const.c (fold_indirect_ref_1): Split out from...
