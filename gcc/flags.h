@@ -229,6 +229,10 @@ extern int flag_no_peephole;
 
 extern int flag_volatile;
 
+/* Nonzero means treat all global and extern variables as global.  */
+
+extern int flag_volatile_global;
+
 /* Nonzero allows GCC to violate some IEEE or ANSI rules regarding math
    operations in the interest of optimization.  For example it allows
    GCC to assume arguments to sqrt are nonnegative numbers, allowing
