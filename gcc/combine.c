@@ -6355,7 +6355,7 @@ num_sign_bit_copies (x, mode)
 	  sig = significant_bits (XEXP (x, 0), mode);
 	  if ((((HOST_WIDE_INT) 1 << (bitwidth - 1)) & sig) == 0)
 	    return (sig == 1 || sig == 0 ? bitwidth
-		    : bitwidth - floor_log2 (sig));
+		    : bitwidth - floor_log2 (sig) - 1);
 	}
 
       num0 = num_sign_bit_copies (XEXP (x, 0), mode);
