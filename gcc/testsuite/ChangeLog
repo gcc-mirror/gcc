@@ -1,5 +1,12 @@
 2002-01-04  Loren J. Rittle  <ljrittle@acm.org>
 
+        * g++.old-deja/g++.abi/aggregates.C: Corrected last patch: removed
+	extra triple that slipped in.
+        * g++.old-deja/g++.abi/align.C: Likewise.
+        * g++.old-deja/g++.abi/bitfields.C: Likewise.
+
+2002-01-04  Loren J. Rittle  <ljrittle@acm.org>
+
 	* g++.old-deja/g++.abi/aggregates.C: Do not skip i?86-*-freebsd*.
 	* g++.old-deja/g++.abi/align.C: Likewise.
 	* g++.old-deja/g++.abi/bitfields.C: Likewise.
