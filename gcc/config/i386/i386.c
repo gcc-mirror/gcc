@@ -181,7 +181,7 @@ struct machine_function
 #define ix86_stack_locals (current_function->machine->stack_locals)
 
 /* which cpu are we scheduling for */
-extern enum processor_type ix86_cpu;
+enum processor_type ix86_cpu;
 
 /* which instruction set architecture to use.  */
 int ix86_arch;

@@ -1,3 +1,8 @@
+Sat Oct 30 14:38:04 1999  Catherine Moore  <clm@cygnus.com>
+
+	* config/i386/i386.c (ix86_cpu): Revert last patch.
+	* config/i386/i386.h (ix86_cpu): Ditto.
+
 Fri Oct 29 17:00:42 1999  Jim Wilson  <wilson@cygnus.com>
 
 	* stor-layout.c (layout_type): When compute TYPE_SIZE_UNIT from
