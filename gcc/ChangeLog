@@ -1,3 +1,8 @@
+2001-12-04  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* doc/install.texi: Document that installed native compiler for
+	building cross compilers should be GCC 2.95 or later.
+
 2001-12-03  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	PR c/4988

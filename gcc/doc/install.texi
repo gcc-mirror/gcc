@@ -890,7 +890,8 @@ as parts of GCC can only be built with GCC@.
 
 To build a cross compiler, we first recommend building and installing a
 native compiler.  You can then use the native GCC compiler to build the
-cross compiler.
+cross compiler.  The installed native compiler needs to be GCC version
+2.95 or later.
 
 Assuming you have already installed a native copy of GCC and configured
 your cross compiler, issue the command @command{make}, which performs the
