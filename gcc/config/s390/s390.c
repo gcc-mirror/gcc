@@ -2993,7 +2993,7 @@ s390_emit_prologue ()
     }      
 }
 
-/* Expand the epilogue into a bunch of separate insns. */
+/* Expand the epilogue into a bunch of separate insns.  */
 
 void
 s390_emit_epilogue ()

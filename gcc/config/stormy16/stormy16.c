@@ -976,7 +976,7 @@ xstormy16_expand_prologue ()
       }
 
   /* It's just possible that the SP here might be what we need for
-     the new FP... */
+     the new FP...  */
   if (frame_pointer_needed && layout.sp_minus_fp == layout.locals_size)
     {
       insn = emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx);
