@@ -9370,10 +9370,19 @@ system library's @code{pow}, @code{powf} or @code{powl} routines.
 The default value places no upper bound on the multiplication count.
 @end defmac
 
-@deftypefn Macro void TARGET_EXTRA_INCLUDES (int @var{stdinc})
+@deftypefn Macro void TARGET_EXTRA_INCLUDES (const char *@var{sysroot}, const char *@var{iprefix}, int @var{stdinc})
 This target hook should register any extra include files for the
 target.  The parameter @var{stdinc} indicates if normal include files
-are present.
+are present.  The parameter @var{sysroot} is the system root directory.
+The parameter @var{iprefix} is the prefix for the gcc directory.
+@end deftypefn
+
+@deftypefn Macro void TARGET_EXTRA_PRE_INCLUDES (const char *@var{sysroot}, const char *@var{iprefix}, int @var{stdinc})
+This target hook should register any extra include files for the
+target before any standard headers.  The parameter @var{stdinc}
+indicates if normal include files are present.  The parameter
+@var{sysroot} is the system root directory.  The parameter
+@var{iprefix} is the prefix for the gcc directory.
 @end deftypefn
 
 @deftypefn Macro void TARGET_OPTF (char *@var{path})

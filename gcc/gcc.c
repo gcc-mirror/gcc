@@ -361,6 +361,7 @@ static const char *convert_filename (const char *, int, int);
 
 static const char *if_exists_spec_function (int, const char **);
 static const char *if_exists_else_spec_function (int, const char **);
+static const char *replace_outfile_spec_function (int, const char **);
 
 /* The Specs Language
 
@@ -1572,6 +1573,7 @@ static const struct spec_function static_spec_functions[] =
 {
   { "if-exists",		if_exists_spec_function },
   { "if-exists-else",		if_exists_else_spec_function },
+  { "replace-outfile",		replace_outfile_spec_function },
   { 0, 0 }
 };
 
@@ -7582,3 +7584,24 @@ if_exists_else_spec_function (int argc, const char **argv)
 
   return argv[1];
 }
+
+/* replace-outfile built-in spec function.
+   This looks for the first argument in the outfiles array's name and replaces it
+   with the second argument.  */
+
+static const char *
+replace_outfile_spec_function (int argc, const char **argv)
+{
+  int i;
+  /* Must have exactly two arguments.  */
+  if (argc != 2)
+    abort ();
+  
+  for (i = 0; i < n_infiles; i++)
+    {
+      if (outfiles[i] && !strcmp (outfiles[i], argv[0]))
+	outfiles[i] = xstrdup (argv[1]);
+    }
+  return NULL;
+}
+

@@ -6361,6 +6361,16 @@ based on the existence of the first.  Here is a small example of its usage:
 crt0%O%s %:if-exists(crti%O%s) \
 %:if-exists-else(crtbeginT%O%s crtbegin%O%s)
 @end smallexample
+
+@item @code{replace-outfile}
+The @code{replace-outfile} spec function takes two arguments.  It looks for the
+first argument in the outfiles array and replaces it with the second argument.  Here
+is a small example of its usage:
+
+@smallexample
+%@{fgnu-runtime:%:replace-outfile(-lobjc -lobjc-gnu)@}
+@end smallexample
+
 @end table
 
 @item %@{@code{S}@}
