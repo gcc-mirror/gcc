@@ -1,3 +1,8 @@
+2002-06-12  Stan Shebs  <shebs@apple.com>
+
+	* mpw-config.in: Remove file, no longer used.
+	* mpw-make.sed: Ditto.
+
 2002-06-07  Zack Weinberg  <zack@codesourcery.com>
 
 	* decl2.c: Update call to cpp_handle_option.
