@@ -1,7 +1,9 @@
 2000-05-16  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
-	* sysv4.h (CPP_OS_LINUX_SPEC): Define __unix and __linux according
-	to given options.
+	* rs6000/sysv4.h (ASM_OUTPUT_DWARF_ADDR): Delete unused variable.
+
+	* rs6000/sysv4.h (CPP_OS_LINUX_SPEC): Define __unix and __linux
+	according to given options.
 
 Tue May 16 12:17:31 2000  Jeffrey A Law  (law@cygnus.com)
 
