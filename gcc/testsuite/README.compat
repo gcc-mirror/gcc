@@ -29,6 +29,11 @@ sets of compiler options.
   varible ALT_LD_LIBRARY_PATH.  If it needs different options to build
   a shared object, define those in ALT_SHOBJ_OPTIONS.
 
+  Normally, only a small amount of compatibility tests is run.
+  Setting RUN_ALL_COMPAT_TESTS=1 in the environment before running the
+  testsuite enables running all compatibility tests, but might take
+  significantly longer than it takes without this variable.
+
 To run only the C++ compatibility tests, optionally specifying an
 alternate compiler and/or sets of options, do from $objdir/gcc:
 

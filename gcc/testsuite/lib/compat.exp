@@ -277,6 +277,7 @@ proc compat-execute { src1 sid use_alt } {
 
     # Get the base name of this test, for use in messages.
     regsub "^$srcdir/?" $src1 "" testcase
+    regsub "^$tmpdir/?" $testcase "tmpdir-" testcase
     regsub "_main.*" $testcase "" testcase
     # Set up the base name of executable files so they'll be unique.
     regsub -all "\[./\]" $testcase "-" execbase

@@ -1,3 +1,22 @@
+2004-07-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* README.compat: Add RUN_ALL_COMPAT_TESTS documentation.
+	* lib/compat.exp: Replace ^$tmpdir/? in testcase names with tmpdir-.
+	* gcc.dg/compat/struct-layout-1.exp: New testsuite driver.
+	* gcc.dg/compat/struct-layout-1_generate.c: New testcase generator.
+	* gcc.dg/compat/generate-random.c: New file.
+	* gcc.dg/compat/generate-random.h: Likewise.
+	* gcc.dg/compat/generate-random_r.c: Likewise.
+	* gcc.dg/compat/struct-layout-1.h: Likewise.
+	* gcc.dg/compat/struct-layout-1_x1.h: Likewise.
+	* gcc.dg/compat/struct-layout-1_x2.h: Likewise.
+	* gcc.dg/compat/struct-layout-1_y1.h: Likewise.
+	* gcc.dg/compat/struct-layout-1_y2.h: Likewise.
+	* gcc.dg/compat/struct-layout-1_main.c: New test.
+	* gcc.dg/compat/struct-layout-1_x.c: New file.
+	* gcc.dg/compat/struct-layout-1_y.c: New file.
+	* gcc.dg/compat/struct-layout-1_test.h: New file.
+
 2004-07-23  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* gcc.dg/comp-return-1.c: New test

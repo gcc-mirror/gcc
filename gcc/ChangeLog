@@ -1,3 +1,7 @@
+2004-07-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.in (site.exp): Add HOSTCC and HOSTCFLAGS to site.exp.
+
 2004-07-23  Zack Weinberg  <zack@codesourcery.com>
 
 	* print-rtl.c (print_rtx <case 'b'>): Don't attempt to print
