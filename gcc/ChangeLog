@@ -1,3 +1,10 @@
+Wed Mar 15 13:26:58 MET 2000  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (movhi_1): Promote movw imm, reg to movl imm, reg and
+	movw reg, reg to movzwl reg, reg on PARTIAL_REGISTER_STALL machines.
+	* i386.c (pentiumpro_cost): Set mul cost to 4.
+	(x86_use_movx): Set for PPro.
+
 Wed Mar 15 13:07:05 MET 2000  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (ix86_compute_frame_size): stack_alignment_needed is

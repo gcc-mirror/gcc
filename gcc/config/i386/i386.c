@@ -124,7 +124,7 @@ struct processor_costs pentiumpro_cost = {
   1,					/* cost of a lea instruction */
   1,					/* variable shift costs */
   1,					/* constant shift costs */
-  1,					/* cost of starting a multiply */
+  4,					/* cost of starting a multiply */
   0,					/* cost of multiply per each bit set */
   17,					/* cost of a divide/mod */
   8,					/* "large" insn */
@@ -195,7 +195,7 @@ struct processor_costs *ix86_cost = &pentium_cost;
 const int x86_use_leave = m_386 | m_K6 | m_ATHLON;
 const int x86_push_memory = m_386 | m_K6 | m_ATHLON;
 const int x86_zero_extend_with_and = m_486 | m_PENT;
-const int x86_movx = m_ATHLON /* m_386 | m_PPRO | m_K6 */;
+const int x86_movx = m_ATHLON | m_PPRO /* m_386 | m_K6 */;
 const int x86_double_with_add = ~m_386;
 const int x86_use_bit_test = m_386;
 const int x86_unroll_strlen = m_486 | m_PENT | m_PPRO | m_ATHLON | m_K6;
