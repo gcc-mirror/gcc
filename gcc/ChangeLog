@@ -1,3 +1,11 @@
+2004-07-07  Richard Henderson  <rth@redhat.com>
+
+	* tree-flow-inline.h (may_propagate_copy): Move...
+	* tree-ssa-copy.c (may_propagate_copy): ... here.  Fail if we
+	attempt to copy between types requiring conversion.
+	* tree-flow.h (may_propagate_copy): Update decl.
+	* tree-ssa-dom.c (cprop_operand): Tidy redundant tests.
+
 2004-07-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.c (override_options): Don't set x86_prefetch_sse

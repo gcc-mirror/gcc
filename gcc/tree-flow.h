@@ -591,10 +591,10 @@ extern void debug_dominator_optimization_stats (void);
 extern void propagate_value (use_operand_p, tree);
 extern void propagate_tree_value (tree *, tree);
 extern void replace_exp (use_operand_p, tree);
+extern bool may_propagate_copy (tree, tree);
 
 /* In tree-flow-inline.h  */
 static inline int phi_arg_from_edge (tree, edge);
-static inline bool may_propagate_copy (tree, tree);
 static inline bool is_call_clobbered (tree);
 static inline void mark_call_clobbered (tree);
 

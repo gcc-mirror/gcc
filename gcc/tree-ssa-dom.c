@@ -2906,24 +2906,24 @@ cprop_operand (stmt_ann_t ann, use_operand_p op_p, varray_type const_and_copies)
 	  val_type = TREE_TYPE (val_type);
 	}
 
-      /* Make sure underlying types match before propagating a
-	 constant by converting the constant to the proper type.  Note
-	 that convert may return a non-gimple expression, in which case
-	 we ignore this propagation opportunity.  */
-     if (!lang_hooks.types_compatible_p (op_type, val_type)
-           && TREE_CODE (val) != SSA_NAME)
+      /* Make sure underlying types match before propagating a constant by
+	 converting the constant to the proper type.  Note that convert may
+	 return a non-gimple expression, in which case we ignore this
+	 propagation opportunity.  */
+      if (TREE_CODE (val) != SSA_NAME)
 	{
-	  val = fold_convert (TREE_TYPE (op), val);
-	  if (!is_gimple_min_invariant (val)
-	      && TREE_CODE (val) != SSA_NAME)
-	    return false;
+	  if (!lang_hooks.types_compatible_p (op_type, val_type))
+	    {
+	      val = fold_convert (TREE_TYPE (op), val);
+	      if (!is_gimple_min_invariant (val))
+		return false;
+	    }
 	}
 
       /* Certain operands are not allowed to be copy propagated due
 	 to their interaction with exception handling and some GCC
 	 extensions.  */
-      if (TREE_CODE (val) == SSA_NAME
-	  && !may_propagate_copy (op, val))
+      else if (!may_propagate_copy (op, val))
 	return false;
 
       /* Dump details.  */
