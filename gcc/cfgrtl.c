@@ -792,7 +792,7 @@ redirect_edge_and_branch (e, target)
   basic_block src = e->src;
   rtx insn = src->end;
 
-  if (e->flags & EDGE_COMPLEX)
+  if (e->flags & (EDGE_ABNORMAL_CALL | EDGE_EH))
     return false;
 
   if (try_redirect_by_replacing_jump (e, target))
