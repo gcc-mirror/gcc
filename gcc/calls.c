@@ -2022,15 +2022,6 @@ expand_call (exp, target, ignore)
 			 expr_size (exp),
 			 TYPE_ALIGN (TREE_TYPE (exp)) / BITS_PER_UNIT);
     }
-  else if (target && GET_MODE (target) == TYPE_MODE (TREE_TYPE (exp))
-	   && GET_MODE (target) == GET_MODE (valreg))
-    /* TARGET and VALREG cannot be equal at this point because the latter
-       would not have REG_FUNCTION_VALUE_P true, while the former would if
-       it were referring to the same register.
-
-       If they refer to the same register, this move will be a no-op, except
-       when function inlining is being done.  */
-    emit_move_insn (target, valreg);
   /* Handle calls that return values in multiple non-contiguous locations.
      The Irix 6 ABI has examples of this.  */
   else if (GET_CODE (valreg) == PARALLEL)
@@ -2045,6 +2036,15 @@ expand_call (exp, target, ignore)
 
       emit_group_store (target, valreg);
     }
+  else if (target && GET_MODE (target) == TYPE_MODE (TREE_TYPE (exp))
+	   && GET_MODE (target) == GET_MODE (valreg))
+    /* TARGET and VALREG cannot be equal at this point because the latter
+       would not have REG_FUNCTION_VALUE_P true, while the former would if
+       it were referring to the same register.
+
+       If they refer to the same register, this move will be a no-op, except
+       when function inlining is being done.  */
+    emit_move_insn (target, valreg);
   else if (TYPE_MODE (TREE_TYPE (exp)) == BLKmode)
     {
       /* Some machines (the PA for example) want to return all small
