@@ -1,3 +1,10 @@
+2002-03-12  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.md (reload_insi, reload_indi): Change mode of
+	scratch register to DImode / TImode.
+	config/s390/s390.c (s390_expand_plus_operand): Make sure scratch
+	register used does not overlap the target.
+
 2002-03-11  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* Makefile.in: Update.

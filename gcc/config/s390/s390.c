@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on IBM S/390 and zSeries
-   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by Hartmut Penner (hpenner@de.ibm.com) and
                   Ulrich Weigand (uweigand@de.ibm.com).
 
@@ -1169,14 +1169,23 @@ s390_plus_operand (op, mode)
    SCRATCH may be used as scratch register.  */
 
 void
-s390_expand_plus_operand (target, src, scratch)
+s390_expand_plus_operand (target, src, scratch_in)
      register rtx target;
      register rtx src;
-     register rtx scratch;
+     register rtx scratch_in;
 {
-  /* src must be a PLUS; get its two operands.  */
-  rtx sum1, sum2;
+  rtx sum1, sum2, scratch;
 
+  /* ??? reload apparently does not ensure that the scratch register
+     and the target do not overlap.  We absolutely require this to be
+     the case, however.  Therefore the reload_in[sd]i patterns ask for
+     a double-sized scratch register, and if one part happens to be
+     equal to the target, we use the other one.  */
+  scratch = gen_rtx_REG (Pmode, REGNO (scratch_in));
+  if (rtx_equal_p (scratch, target))
+    scratch = gen_rtx_REG (Pmode, REGNO (scratch_in) + 1);
+
+  /* src must be a PLUS; get its two operands.  */
   if (GET_CODE (src) != PLUS || GET_MODE (src) != Pmode)
     abort ();
 
