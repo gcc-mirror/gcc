@@ -951,7 +951,7 @@ libgcc1-test: libgcc1-test.o native $(GCC_PARTS)
 	@echo "Testing libgcc1.  Ignore linker warning messages."
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) libgcc1-test.o -o libgcc1-test \
 	  -nostartfiles -nostdlib `$(GCC_FOR_TARGET) --print-libgcc-file-name`
-libgcc1-test.o: libgcc1-test.c native xgcc$(exeext)
+libgcc1-test.o: libgcc1-test.c native xgcc$(exeext) stmp-int-hdrs
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(ALL_CPPFLAGS) -c $(srcdir)/libgcc1-test.c
 
 # Recompile all the language-independent object files.

@@ -1,3 +1,7 @@
+Sun Jan 14 22:31:30 2001  J"orn Rennecke <amylaar@redhat.com>
+
+	* Makefile.in (libgcc1-test.o): Depends on stmp-int-hdrs.
+
 2001-01-14  Neil Booth  <neil@daikokuya.demon.co.uk>
 
         * c-parse.in (finish_parse): Add comment about cpp_destroy.
