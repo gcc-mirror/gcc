@@ -665,10 +665,12 @@ emit_move_sequence (operands, mode)
 		}
 	      else
 		{
-		  rtx temp1 = gen_reg_rtx (mode), temp2 = gen_reg_rtx (mode);
+		  rtx temp1, temp2 = gen_reg_rtx (mode);
 
-		  emit_insn (gen_rtx (SET, VOIDmode,
-				      temp1, gen_rtx (HIGH, mode, operand1)));
+		  /* For 2.4 we could set RTX_UNCHANGING and add a 
+		     REG_EQUAL note for the first insn.  This would 
+		     allow the first insn to be moved out of loops.  */
+		  temp1 = gen_rtx (HIGH, mode, operand1);
 		  emit_insn (gen_rtx (SET, VOIDmode,
 				      temp2,
 				      gen_rtx (PLUS, mode,
