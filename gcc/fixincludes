@@ -261,6 +261,8 @@ while [ $# != 0 ]; do
 	|| echo "Can't copy $file"
 	chmod +w $2/$file
 	chmod a+r $2/$file
+	# The fixinc_eol stuff is to work around a bug in the sed
+	# program on HP/UX 10.20.
 	# Here is how the sed commands in braces work.
 	# (It doesn't work to put the comments inside the sed commands.)
 		# Surround each word with spaces, to simplify matching below.
@@ -270,7 +272,9 @@ while [ $# != 0 ]; do
 	sed -e '
 				   :loop
 	  /\\$/			N
+ 	  s/\\$/\\*fixinc_eol*/
 	  /\\$/			b loop
+	  s/\\\*fixinc_eol\*/\\/g
 	  s%^\([ 	]*#[ 	]*else\)[ 	]*/[^*].*%\1%
 	  s%^\([ 	]*#[ 	]*else\)[ 	]*[^/ 	].*%\1%
 	  s%^\([ 	]*#[ 	]*endif\)[ 	]*/[^*].*%\1%
