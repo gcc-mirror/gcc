@@ -3385,8 +3385,5 @@ enum mips_cmp_choice
   MIPS_CMP_LOWER,  /* Check if the lower one of two results is true.  */
   MIPS_CMP_ALL,    /* Check if all results are true.  */
 
-  MIPS_CMP_MOVT,   /* Conditional move if true.  */
-  MIPS_CMP_MOVF,   /* Conditional move if false.  */
-
   MIPS_CMP_MAX
 };

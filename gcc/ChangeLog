@@ -1,5 +1,20 @@
 2004-08-29  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.h (MIPS_CMP_MOVT, MIPS_CMP_MOVF): Delete.
+	* config/mips/mips.c (mips_prepare_builtin_arg): New function.
+	(mips_prepare_builtin_target): New function.
+	(mips_expand_builtin): Use them.  Update calls to subroutines.
+	(mips_expand_ps_cond_move_builtin): Use the new functions.  Replace
+	cmp_choice with a boolean argument to select between movt and movf.
+	Take the comparison's icode as an argument, not the function's fcode.
+	(mips_expand_compare_builtin): New function.  Rename existing function
+	to mips_expand_scalar_compare_builtin.
+	(mips_expand_scalar_compare_builtin, mips_expand_4s_compare_builtin)
+	(mips_expand_ps_compare_builtin): Use the new functions.  Take the
+	comparison's icode as an argument, not the builtin's fcode.
+
+2004-08-29  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.c (print_operand): Remove '%Y' and '%y'.
 	(mips_expand_4s_compare_builtin): Redefine CCV4 to be 0 if all
 	registers are false and -1 if all registers are true.
