@@ -2245,12 +2245,14 @@
   "TARGET_BITFIELD"
   "*
 { if (GET_CODE (operands[2]) == CONST_INT)
+  {
     if (INTVAL (operands[1]) <= 8)
       return \"inssb %3,%0,%2,%1\";
     else if (INTVAL (operands[1]) <= 16)
       return \"inssw %3,%0,%2,%1\";
     else
       return \"inssd %3,%0,%2,%1\";
+  }
   return \"insd %2,%3,%0,%1\";
 }")
 
@@ -2262,12 +2264,14 @@
   "TARGET_BITFIELD"
   "*
 { if (GET_CODE (operands[2]) == CONST_INT)
+  {
     if (INTVAL (operands[1]) <= 8)
       return \"inssb %3,%0,%2,%1\";
     else if (INTVAL (operands[1]) <= 16)
       return \"inssw %3,%0,%2,%1\";
     else
       return \"inssd %3,%0,%2,%1\";
+  }
   return \"insd %2,%3,%0,%1\";
 }")
 

@@ -1,5 +1,16 @@
 2000-01-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* ns32k-protos.h: New file.
+
+	* ns32k.c: Fix compile time warnings.
+	
+	* ns32k.h: Move prototypes to ns32k-protos.h.  Fix compile time
+	warnings.
+
+	* ns32k.md: Likewise.
+
+2000-01-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* vax-protos.h: New file.
 
 	* vax.c: Fix compile time warnings.

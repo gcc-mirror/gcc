@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  NS32000 version.
-   Copyright (C) 1988, 93, 94-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1988, 93, 94-99, 2000 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -408,12 +408,12 @@ enum reg_class
    This is an initializer for a vector of HARD_REG_SET
    of length N_REG_CLASSES.  */
 
-#define REG_CLASS_CONTENTS {0, 0x00ff, 0x100, 0x300, 0xff00, \
-                            0xffff00, 0xffffff, 0x1000000, 0x2000000, \
-                            0x30000ff, 0x3ffffff }
+#define REG_CLASS_CONTENTS {{0}, {0x00ff}, {0x100}, {0x300}, {0xff00}, \
+                            {0xffff00}, {0xffffff}, {0x1000000}, {0x2000000}, \
+                            {0x30000ff}, {0x3ffffff} }
 
 #define SUBSET_P(CLASS1, CLASS2) \
-   ((ns32k_reg_class_contents[CLASS1] & ~ns32k_reg_class_contents[CLASS2]) \
+   ((ns32k_reg_class_contents[CLASS1][0] & ~ns32k_reg_class_contents[CLASS2][0]) \
      == 0)
 
 /* The same information, inverted:
@@ -1145,8 +1145,7 @@ __transfer_from_trampoline ()		\
 /* Go to ADDR if X is a valid address not using indexing.
    (This much is the easy part.)  */
 #define GO_IF_NONINDEXED_ADDRESS(X, ADDR)  \
-{ register rtx xfoob = (X);						\
-  if (INDIRECTABLE_1_ADDRESS_P (X)) goto ADDR;				\
+{ if (INDIRECTABLE_1_ADDRESS_P (X)) goto ADDR;				\
   if (INDIRECTABLE_2_ADDRESS_P (X)) goto ADDR;				\
   if (GET_CODE (X) == PLUS)						\
     if (CONSTANT_ADDRESS_NO_LABEL_P (XEXP (X, 1)))			\
@@ -1211,7 +1210,9 @@ __transfer_from_trampoline ()		\
   else if (INDEX_TERM_P (xfooy, MODE))					\
     goto ADDR;								\
   else if (GET_CODE (xfooy) == PRE_DEC)					\
-    if (REGNO (XEXP (xfooy, 0)) == STACK_POINTER_REGNUM) goto ADDR;	\
+    {									\
+      if (REGNO (XEXP (xfooy, 0)) == STACK_POINTER_REGNUM) goto ADDR;	\
+    }									\
   else abort ();							\
 }
 
@@ -1594,7 +1595,7 @@ do {									\
    This is suitable for output with `assemble_name'.  */
 
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
-  sprintf (LABEL, "*%s%d", PREFIX, NUM)
+  sprintf (LABEL, "*%s%ld", PREFIX, (long) NUM)
 
 /* This is how to align the code that follows an unconditional branch.  */
 
@@ -1676,38 +1677,8 @@ do {									\
 
 #define PRINT_OPERAND_ADDRESS(FILE, ADDR) print_operand_address(FILE, ADDR)
 
-/* Prototypes for functions in ns32k.c */
-
-/* Prototypes would be nice, but for now it causes too many problems.
-   This file gets included in places where the types (such as "rtx"
-   and enum machine_mode) are not defined. */
-#define NS32K_PROTO(ARGS) ()
-
-int hard_regno_mode_ok NS32K_PROTO((int regno, enum machine_mode mode));
-int register_move_cost NS32K_PROTO((enum reg_class CLASS1, enum reg_class CLASS2));
-int calc_address_cost NS32K_PROTO((rtx operand));
-enum reg_class secondary_reload_class NS32K_PROTO((enum reg_class class,
-					     enum machine_mode mode, rtx in));
-int reg_or_mem_operand NS32K_PROTO((register rtx op, enum machine_mode mode));
-
-void split_di NS32K_PROTO((rtx operands[], int num, rtx lo_half[], hi_half[]));
-
-void expand_block_move NS32K_PROTO((rtx operands[]));
-int global_symbolic_reference_mentioned_p NS32K_PROTO((rtx op, int f));
-int ns32k_comp_type_attributes NS32K_PROTO((tree type1, tree type2));
-int ns32k_return_pops_args NS32K_PROTO((tree fundecl, tree funtype, int size));
-int ns32k_valid_decl_attribute_p NS32K_PROTO((tree decl, tree attributes,
-						tree identifier, tree args));
-int ns32k_valid_type_attribute_p NS32K_PROTO((tree decl, tree attributes,
-						tree identifier, tree args));
-void print_operand NS32K_PROTO((FILE *file, rtx x, char code));
-void print_operand_address NS32K_PROTO((register FILE *file, register rtx addr));
-char *output_move_dconst NS32K_PROTO((int n, char *s));
-char *output_move_double NS32K_PROTO((rtx *operands));
-char *output_shift_insn NS32K_PROTO((rtx *operands));
-
-extern unsigned int ns32k_reg_class_contents[N_REG_CLASSES];
-extern char *ns32k_out_reg_names[];
+extern unsigned int ns32k_reg_class_contents[N_REG_CLASSES][1];
+extern const char *const ns32k_out_reg_names[];
 extern enum reg_class regclass_map[];		/* smalled class containing REGNO */
 
 /*

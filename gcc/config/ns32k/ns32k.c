@@ -1,5 +1,5 @@
 /* Subroutines for assembler code output on the NS32000.
-   Copyright (C) 1988, 94, 95, 96, 97, 98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1988, 94-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -33,16 +33,18 @@ Boston, MA 02111-1307, USA.  */
 #include "function.h"
 #include "expr.h"
 #include "flags.h"
+#include "recog.h"
+#include "tm_p.h"
 
 #ifdef OSF_OS
 int ns32k_num_files = 0;
 #endif
 
-/* This duplicates reg_class_contens in reg_class.c, but maybe that isn't
+/* This duplicates reg_class_contents in reg_class.c, but maybe that isn't
    initialized in time. Also this is more convenient as an array of ints.
    We know that HARD_REG_SET fits in an unsigned int */
 
-unsigned int ns32k_reg_class_contents[N_REG_CLASSES] = REG_CLASS_CONTENTS;
+unsigned int ns32k_reg_class_contents[N_REG_CLASSES][1] = REG_CLASS_CONTENTS;
 
 enum reg_class regclass_map[FIRST_PSEUDO_REGISTER] =
 {
@@ -55,15 +57,11 @@ enum reg_class regclass_map[FIRST_PSEUDO_REGISTER] =
   FRAME_POINTER_REG, STACK_POINTER_REG
 };
 
-char *ns32k_out_reg_names[] = OUTPUT_REGISTER_NAMES;
+const char *const ns32k_out_reg_names[] = OUTPUT_REGISTER_NAMES;
 
-void
-trace (s, s1, s2)
-     char *s, *s1, *s2;
-{
-  fprintf (stderr, s, s1, s2);
-}
-
+static rtx gen_indexed_expr PARAMS ((rtx, rtx, rtx));
+static const char *singlemove_string PARAMS ((rtx *));
+static void move_tail PARAMS ((rtx[], int, int));
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE. */ 
 int
@@ -179,7 +177,7 @@ calc_address_cost (operand)
 enum reg_class
 secondary_reload_class (class, mode, in)
      enum reg_class class;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
      rtx in;
 {
   int regno = true_regnum (in);
@@ -265,7 +263,7 @@ split_di (operands, num, lo_half, hi_half)
 /* Return the best assembler insn template
    for moving operands[1] into operands[0] as a fullword.  */
 
-static char *
+static const char *
 singlemove_string (operands)
      rtx *operands;
 {
@@ -276,7 +274,7 @@ singlemove_string (operands)
   return "movd %1,%0";
 }
 
-char *
+const char *
 output_move_double (operands)
      rtx *operands;
 {
@@ -454,7 +452,6 @@ expand_block_move (operands)
   rtx src_reg = gen_rtx(REG, Pmode, 1);
   rtx dest_reg = gen_rtx(REG, Pmode, 2);
   rtx count_reg = gen_rtx(REG, SImode, 0);
-  rtx insn;
 
   if (constp && bytes <= 0)
     return;
@@ -463,6 +460,7 @@ expand_block_move (operands)
     {
       int words = bytes >> 2;
       if (words)
+      {
 	if (words < 3 || flag_unroll_loops)
 	  {
 	    int offset = 0;
@@ -488,6 +486,7 @@ expand_block_move (operands)
 	    
 	    emit_insn(gen_movstrsi2(dest, src, GEN_INT(words)));
 	  }
+      }
       move_tail(operands, bytes & 3, bytes & ~3);
       return;
     }
@@ -504,8 +503,6 @@ expand_block_move (operands)
 
   if (constp && (align == UNITS_PER_WORD || bytes < MAX_UNALIGNED_COPY))
     {
-      rtx  bytes_reg;
-
       /* constant no of bytes and aligned or small enough copy to not bother
        * aligning. Emit insns to copy by words.
        */
@@ -640,10 +637,10 @@ symbolic_reference_mentioned_p (op)
 
 int
 ns32k_valid_decl_attribute_p (decl, attributes, identifier, args)
-     tree decl;
-     tree attributes;
-     tree identifier;
-     tree args;
+     tree decl ATTRIBUTE_UNUSED;
+     tree attributes ATTRIBUTE_UNUSED;
+     tree identifier ATTRIBUTE_UNUSED;
+     tree args ATTRIBUTE_UNUSED;
 {
   return 0;
 }
@@ -655,7 +652,7 @@ ns32k_valid_decl_attribute_p (decl, attributes, identifier, args)
 int
 ns32k_valid_type_attribute_p (type, attributes, identifier, args)
      tree type;
-     tree attributes;
+     tree attributes ATTRIBUTE_UNUSED;
      tree identifier;
      tree args;
 {
@@ -682,8 +679,8 @@ ns32k_valid_type_attribute_p (type, attributes, identifier, args)
 
 int
 ns32k_comp_type_attributes (type1, type2)
-     tree type1;
-     tree type2;
+     tree type1 ATTRIBUTE_UNUSED;
+     tree type2 ATTRIBUTE_UNUSED;
 {
   return 1;
 }
@@ -708,7 +705,7 @@ ns32k_comp_type_attributes (type1, type2)
 
 int
 ns32k_return_pops_args (fundecl, funtype, size)
-     tree fundecl;
+     tree fundecl ATTRIBUTE_UNUSED;
      tree funtype;
      int size;
 {
@@ -744,7 +741,7 @@ void
 print_operand (file, x, code)
      FILE *file;
      rtx x;
-     char code;
+     int code;
 {
   if (code == '$')
     PUT_IMMEDIATE_PREFIX (file);
@@ -754,7 +751,6 @@ print_operand (file, x, code)
     fprintf (file, "%s", ns32k_out_reg_names[REGNO (x)]);
   else if (GET_CODE (x) == MEM)
     {
-      rtx tmp = XEXP (x, 0);
       output_address (XEXP (x, 0));
     }
   else if (GET_CODE (x) == CONST_DOUBLE && GET_MODE (x) != VOIDmode)
@@ -1124,13 +1120,14 @@ print_operand_address (file, addr)
 /* National 32032 shifting is so bad that we can get
    better performance in many common cases by using other
    techniques.  */
-char *
+const char *
 output_shift_insn (operands)
      rtx *operands;
 {
   if (GET_CODE (operands[2]) == CONST_INT
       && INTVAL (operands[2]) > 0
       && INTVAL (operands[2]) <= 3)
+  {
     if (GET_CODE (operands[0]) == REG)
       {
 	if (GET_CODE (operands[1]) == REG)
@@ -1169,13 +1166,14 @@ output_shift_insn (operands)
 	  return "addd %0,%0";
       }
     else return "ashd %2,%0";
+  }
   return "ashd %2,%0";
 }
 
-char *
+const char *
 output_move_dconst (n, s)
 	int n;
-	char *s;
+	const char *s;
 {
   static char r[32];
 
