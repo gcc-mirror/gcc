@@ -268,7 +268,6 @@ convert_to_integer (type, expr)
 
 	case NEGATE_EXPR:
 	case BIT_NOT_EXPR:
-	case ABS_EXPR:
 	  {
 	    register tree typex = type;
 
