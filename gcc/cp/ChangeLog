@@ -1,3 +1,8 @@
+2000-05-26  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl2.c (grokclassfn): Set DECL_LANGUAGE here.
+	* method.c (implicitly_declare_fn): Not here.
+
 2000-05-26  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cp-tree.h (CPTI_PTMD_DESC_TYPE): Rename to ...

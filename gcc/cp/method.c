@@ -2581,9 +2581,6 @@ implicitly_declare_fn (kind, type, const_p)
   DECL_NOT_REALLY_EXTERN (fn) = 1;
   DECL_THIS_INLINE (fn) = 1;
   DECL_INLINE (fn) = 1;
-  /* Even within an `extern "C"' block, members get C++ linkage.  See
-     [dcl.link] for details.  */
-  DECL_LANGUAGE (fn) = lang_cplusplus;
   defer_fn (fn);
   
   return fn;
