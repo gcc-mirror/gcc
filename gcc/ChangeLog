@@ -1,3 +1,41 @@
+2000-04-14  Geoff Keating  <geoffk@cygnus.com>
+
+	* config/rs6000/sysv4.h (LINK_START_SOLARIS_SPEC): Define to empty
+	always, use the default SVR4 start address.
+
+	* config/rs6000/linux.h (LINK_SPEC): Don't define.
+	(LINK_SHLIB_SPEC): Define.
+	(LINK_START_DEFAULT_SPEC): Define.
+	(LINK_OS_DEFAULT_SPEC): Define.
+
+	* config/rs6000/sysv4.h (ENDFILE_SPEC): Use the %(endfile_*) macros.
+
+	* config/rs6000/eabi.asm (__eabi): Call __init rather than 
+	__do_global_ctors to handle constructors.
+	* config/rs6000/sysv4.h (STARTFILE_ADS_SPEC): Use crtbegin.
+	(STARTFILE_YELLOWKNIFE_SPEC): Likewise.
+	(STARTFILE_MVME_SPEC): Likewise.
+	(STARTFILE_SIM_SPEC): Likewise.
+	(ENDFILE_ADS_SPEC): Use crtend.
+	(ENDFILE_YELLOWKNIFE_SPEC): Likewise.
+	(ENDFILE_MVME_SPEC): Likewise.
+	(ENDFILE_SIM_SPEC): Likewise.
+	(STARTFILE_SOLARIS_SPEC): Use crtbegin/crtbeginS.
+	(ENDFILE_SOLARIS_SPEC): Use crtend/crtendS.
+	(STARTFILE_LINUX_SPEC): Use crtbeginS for shared objects.
+	(ENDFILE_LINUX_SPEC): Use crtendS for shared objects.
+	* config/rs6000/t-ppccomm (LIB2FUNCS_EXTRA): Don't build eabi-ctors.o.
+	(EXTRA_MULTILIB_PARTS): Build crtbeginS/crtendS.
+	(CRTSTUFF_T_CFLAGS_S): Define.
+	* config/rs6000/eabi-ctors.c: Delete.
+	
+	* config/rs6000/eabi-ci.asm (__init): Align stack to 16-byte
+	boundary.
+	(__fini): Likewise.
+	* config/rs6000/eabi-cn.asm (__init): Allow for 16-byte stack frame.
+	boundary.
+	(__fini): Likewise.
+
 Fri Apr 14 16:09:02 2000  Jim Wilson  <wilson@cygnus.com>
 
 	* combine.c (force_to_mode, case LSHIFTRT): Check that shift shift

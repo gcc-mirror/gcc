@@ -1082,7 +1082,7 @@ do {									\
 %{Wl,*:%*} %{YP,*} %{R*} \
 %{Qy:} %{!Qn:-Qy} \
 %(link_shlib) \
-%{!Ttext*: %(link_start) } \
+%{!Wl,-T*: %{!T*: %(link_start) }} \
 %(link_target) \
 %(link_os)"
 
@@ -1218,12 +1218,12 @@ do {									\
 /* Override svr4.h definition.  */
 #undef	ENDFILE_SPEC
 #define	ENDFILE_SPEC "\
-%{mads: ecrtn.o%s} \
-%{myellowknife: ecrtn.o%s} \
-%{mmvme: ecrtn.o%s} \
-%{msim: ecrtn.o%s} \
+%{mads: %(endfile_ads)} \
+%{myellowknife: %(endfile_yellowknife)} \
+%{mmvme: %(endfile_mvme)} \
+%{msim: %(endfile_sim)} \
 %{mcall-linux: %(endfile_linux) } \
-%{mcall-solaris: scrtn.o%s} \
+%{mcall-solaris: %(endfile_solaris)} \
 %{mvxworks: %(endfile_vxworks) } \
 %{!mads: %{!myellowknife: %{!mmvme: %{!msim: %{!mcall-linux: %{!mcall-solaris: %{!mvxworks: %(endfile_default) }}}}}}}"
 
@@ -1232,9 +1232,9 @@ do {									\
 /* Motorola ADS support.  */
 #define LIB_ADS_SPEC "--start-group -lads -lc --end-group"
 
-#define	STARTFILE_ADS_SPEC "ecrti.o%s crt0.o%s"
+#define	STARTFILE_ADS_SPEC "ecrti.o%s crt0.o%s crtbegin.o%s"
 
-#define	ENDFILE_ADS_SPEC "ecrtn.o%s"
+#define	ENDFILE_ADS_SPEC "crtend.o%s ecrtn.o%s"
 
 #define LINK_START_ADS_SPEC "-T ads.ld%s"
 
@@ -1245,9 +1245,9 @@ do {									\
 /* Motorola Yellowknife support.  */
 #define LIB_YELLOWKNIFE_SPEC "--start-group -lyk -lc --end-group"
 
-#define	STARTFILE_YELLOWKNIFE_SPEC "ecrti.o%s crt0.o%s"
+#define	STARTFILE_YELLOWKNIFE_SPEC "ecrti.o%s crt0.o%s crtbegin.o%s"
 
-#define	ENDFILE_YELLOWKNIFE_SPEC "ecrtn.o%s"
+#define	ENDFILE_YELLOWKNIFE_SPEC "crtend.o%s ecrtn.o%s"
 
 #define LINK_START_YELLOWKNIFE_SPEC "-T yellowknife.ld%s"
 
@@ -1258,11 +1258,11 @@ do {									\
 /* Motorola MVME support.  */
 #define LIB_MVME_SPEC "--start-group -lmvme -lc --end-group"
 
-#define	STARTFILE_MVME_SPEC "ecrti.o%s crt0.o%s"
+#define	STARTFILE_MVME_SPEC "ecrti.o%s crt0.o%s crtbegin.o%s"
 
-#define	ENDFILE_MVME_SPEC "ecrtn.o%s"
+#define	ENDFILE_MVME_SPEC "crtend.o%s ecrtn.o%s"
 
-#define LINK_START_MVME_SPEC "%{!Wl,-T*: %{!T*: -Ttext 0x40000}}"
+#define LINK_START_MVME_SPEC "-Ttext 0x40000"
 
 #define LINK_OS_MVME_SPEC ""
 
@@ -1271,13 +1271,13 @@ do {									\
 /* PowerPC simulator based on netbsd system calls support.  */
 #define LIB_SIM_SPEC "--start-group -lsim -lc --end-group"
 
-#define	STARTFILE_SIM_SPEC "ecrti.o%s sim-crt0.o%s"
+#define	STARTFILE_SIM_SPEC "ecrti.o%s sim-crt0.o%s crtbegin.o%s"
 
-#define	ENDFILE_SIM_SPEC "ecrtn.o%s"
+#define	ENDFILE_SIM_SPEC "crtend.o%s ecrtn.o%s"
 
-#define LINK_START_SIM_SPEC "-Ttext 0x10000074"
+#define LINK_START_SIM_SPEC ""
 
-#define LINK_OS_SIM_SPEC ""
+#define LINK_OS_SIM_SPEC "-m elf32ppcsim"
 
 #define CPP_OS_SIM_SPEC ""
 
@@ -1294,15 +1294,16 @@ do {									\
 #define	STARTFILE_LINUX_SPEC "\
 %{!shared: %{pg:gcrt1.o%s} %{!pg:%{p:gcrt1.o%s} %{!p:crt1.o%s}}} \
 %{mnewlib: ecrti.o%s} %{!mnewlib: crti.o%s} \
-crtbegin.o%s"
+%{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}"
 
-#define	ENDFILE_LINUX_SPEC "crtend.o%s \
-%{mnewlib: ecrtn.o%s} \
-%{!mnewlib: crtn.o%s}"
+#define	ENDFILE_LINUX_SPEC "%{!shared:crtend.o%s} %{shared:crtendS.o%s} \
+%{mnewlib: ecrtn.o%s} %{!mnewlib: crtn.o%s}"
 
-#define LINK_START_LINUX_SPEC "-Ttext 0x400074"
+#define LINK_START_LINUX_SPEC ""
 
-#define LINK_OS_LINUX_SPEC ""
+#define LINK_OS_LINUX_SPEC "-m elf32ppclinux %{!shared: %{!static: \
+  %{rdynamic:-export-dynamic} \
+  %{!dynamic-linker:-dynamic-linker /lib/ld.so.1}}}"
 
 #ifdef USE_GNULIBC_1
 #define CPP_OS_LINUX_SPEC "-D__unix__ -D__linux__ \
@@ -1339,17 +1340,15 @@ crtbegin.o%s"
 
 #define	STARTFILE_SOLARIS_SPEC "\
 %{!msolaris-cclib: scrti.o%s scrt0.o%s} \
-%{msolaris-cclib: /opt/SUNWspro/SC4.0/lib/crti.o%s /opt/SUNWspro/SC4.0/lib/crt1.o%s}"
+%{msolaris-cclib: /opt/SUNWspro/SC4.0/lib/crti.o%s /opt/SUNWspro/SC4.0/lib/crt1.o%s} \
+%{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}"
 
 #define	ENDFILE_SOLARIS_SPEC "\
+%{!shared:crtend.o%s} %{shared:crtendS.o%s} \
 %{!msolaris-cclib: scrtn.o%s} \
 %{msolaris-cclib: /opt/SUNWspro/SC4.0/lib/crtn.o%s}"
 
-#ifdef CROSS_COMPILE
-#define LINK_START_SOLARIS_SPEC "-Ttext 0x2000074"
-#else
 #define LINK_START_SOLARIS_SPEC ""
-#endif
 
 #define LINK_OS_SOLARIS_SPEC ""
 

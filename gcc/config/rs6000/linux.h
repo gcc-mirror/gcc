@@ -33,13 +33,8 @@ Boston, MA 02111-1307, USA.  */
 #undef	CPP_OS_DEFAULT_SPEC
 #define CPP_OS_DEFAULT_SPEC "%(cpp_os_linux)"
 
-#undef LINK_SPEC
-#define LINK_SPEC "-m elf32ppclinux %{G*} %{shared:-shared} \
-  %{!shared: \
-    %{!static: \
-      %{rdynamic:-export-dynamic} \
-      %{!dynamic-linker:-dynamic-linker /lib/ld.so.1}} \
-    %{static:-static}}"
+#undef LINK_SHLIB_SPEC
+#define LINK_SHLIB_SPEC "%{shared:-shared} %{!shared: %{static:-static}}"
 
 #undef	LIB_DEFAULT_SPEC
 #define LIB_DEFAULT_SPEC "%(lib_linux)"
@@ -49,6 +44,12 @@ Boston, MA 02111-1307, USA.  */
 
 #undef	ENDFILE_DEFAULT_SPEC
 #define ENDFILE_DEFAULT_SPEC "%(endfile_linux)"
+
+#undef	LINK_START_DEFAULT_SPEC
+#define LINK_START_DEFAULT_SPEC "%(link_start_linux)"
+
+#undef	LINK_OS_DEFAULT_SPEC
+#define LINK_OS_DEFAULT_SPEC "%(link_os_linux)"
 
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (PowerPC GNU/Linux)");

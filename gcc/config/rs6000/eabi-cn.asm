@@ -102,14 +102,14 @@ __EH_FRAME_END__:
 
 # Tail of __init used for static constructors in Solaris
 	.section ".init","ax"
-	lwz 0,12(1)
+	lwz 0,20(1)
 	mtlr 0
-	addi 1,1,8
+	addi 1,1,16
 	blr
 
 # Tail of __fini used for static destructors in Solaris
 	.section ".fini","ax"
-	lwz 0,12(1)
+	lwz 0,20(1)
 	mtlr 0
-	addi 1,1,8
+	addi 1,1,16
 	blr

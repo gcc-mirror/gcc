@@ -1,7 +1,7 @@
 /*
  * special support for eabi
  *
- *   Copyright (C) 1995, 1996, 1998 Free Software Foundation, Inc.
+ *   Copyright (C) 1995, 1996, 1998, 2000 Free Software Foundation, Inc.
  *   Written By Michael Meissner
  * 
  * This file is free software; you can redistribute it and/or modify it
@@ -228,7 +228,7 @@ FUNC_START(__eabi)
 /* Done adjusting pointers, return by way of doing the C++ global constructors.  */
 
 .Ldone:
-	b	FUNC_NAME(__do_global_ctors)	/* do any C++ global constructors (which returns to caller) */
+	b	FUNC_NAME(__init)	/* do any C++ global constructors (which returns to caller) */
 FUNC_END(__eabi)
 
 /* Special subroutine to convert a bunch of pointers directly.
