@@ -849,6 +849,7 @@ df_ref_record (df, reg, loc, insn, ref_type, ref_flags)
     {
       loc = &SUBREG_REG (reg);
       reg = *loc;
+      ref_flags |= DF_REF_STRIPPED;
     }
 
   regno = REGNO (GET_CODE (reg) == SUBREG ? SUBREG_REG (reg) : reg);
@@ -893,13 +894,8 @@ read_modify_subreg_p (x)
     return false;
   isize = GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)));
   osize = GET_MODE_SIZE (GET_MODE (x));
-  if (isize <= osize)
-    return true;
-  if (isize <= UNITS_PER_WORD)
-    return false;
-  if (osize > UNITS_PER_WORD)
-    return false;
-  return true;
+  /* Paradoxical subreg writes don't leave a trace of the old content.  */
+  return (isize > osize && isize > UNITS_PER_WORD);
 }
 
 
@@ -927,9 +923,7 @@ df_def_record_1 (df, x, bb, insn)
     }
 
 #ifdef CLASS_CANNOT_CHANGE_MODE
-  if (GET_CODE (dst) == SUBREG
-      && CLASS_CANNOT_CHANGE_MODE_P (GET_MODE (SUBREG_REG (dst)),
-				     GET_MODE (dst)))
+  if (GET_CODE (dst) == SUBREG)
     flags |= DF_REF_MODE_CHANGE;
 #endif
 
@@ -938,7 +932,8 @@ df_def_record_1 (df, x, bb, insn)
   while (GET_CODE (dst) == STRICT_LOW_PART
 	 || GET_CODE (dst) == ZERO_EXTRACT
 	 || GET_CODE (dst) == SIGN_EXTRACT
-	 || read_modify_subreg_p (dst))
+	 || ((df->flags & DF_FOR_REGALLOC) == 0
+             && read_modify_subreg_p (dst)))
     {
       /* Strict low part always contains SUBREG, but we do not want to make
 	 it appear outside, as whole register is always considered.  */
@@ -948,9 +943,7 @@ df_def_record_1 (df, x, bb, insn)
 	  dst = *loc;
 	}
 #ifdef CLASS_CANNOT_CHANGE_MODE
-      if (GET_CODE (dst) == SUBREG
-	  && CLASS_CANNOT_CHANGE_MODE_P (GET_MODE (SUBREG_REG (dst)),
-				         GET_MODE (dst)))
+      if (GET_CODE (dst) == SUBREG)
         flags |= DF_REF_MODE_CHANGE;
 #endif
       loc = &XEXP (dst, 0);
@@ -1050,9 +1043,7 @@ df_uses_record (df, loc, ref_type, bb, insn, flags)
 	  return;
 	}
 #ifdef CLASS_CANNOT_CHANGE_MODE
-      if (CLASS_CANNOT_CHANGE_MODE_P (GET_MODE (x),
-				      GET_MODE (SUBREG_REG (x))))
-        flags |= DF_REF_MODE_CHANGE;
+      flags |= DF_REF_MODE_CHANGE;
 #endif
 
       /* ... Fall through ...  */
@@ -1072,13 +1063,12 @@ df_uses_record (df, loc, ref_type, bb, insn, flags)
 	  {
 	    enum df_ref_flags use_flags;
 	    case SUBREG:
-	      if (read_modify_subreg_p (dst))
+	      if ((df->flags & DF_FOR_REGALLOC) == 0
+                  && read_modify_subreg_p (dst))
 		{
 		  use_flags = DF_REF_READ_WRITE;
 #ifdef CLASS_CANNOT_CHANGE_MODE
-		  if (CLASS_CANNOT_CHANGE_MODE_P (GET_MODE (dst),
-						  GET_MODE (SUBREG_REG (dst))))
-		    use_flags |= DF_REF_MODE_CHANGE;
+		  use_flags |= DF_REF_MODE_CHANGE;
 #endif
 		  df_uses_record (df, &SUBREG_REG (dst), DF_REF_REG_USE, bb,
 				  insn, use_flags);
@@ -1102,9 +1092,7 @@ df_uses_record (df, loc, ref_type, bb, insn, flags)
 		abort ();
 	      use_flags = DF_REF_READ_WRITE;
 #ifdef CLASS_CANNOT_CHANGE_MODE
-	      if (CLASS_CANNOT_CHANGE_MODE_P (GET_MODE (dst),
-					      GET_MODE (SUBREG_REG (dst))))
-		use_flags |= DF_REF_MODE_CHANGE;
+	      use_flags |= DF_REF_MODE_CHANGE;
 #endif
 	      df_uses_record (df, &SUBREG_REG (dst), DF_REF_REG_USE, bb,
 			     insn, use_flags);

@@ -31,6 +31,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define DF_ALL	       255
 #define DF_HARD_REGS  1024	/* Mark hard registers.  */
 #define DF_EQUIV_NOTES 2048	/* Mark uses present in EQUIV/EQUAL notes.  */
+#define DF_FOR_REGALLOC 4096    /* If called for the register allocator.  */
 
 enum df_ref_type {DF_REF_REG_DEF, DF_REF_REG_USE, DF_REF_REG_MEM_LOAD,
 		  DF_REF_REG_MEM_STORE};
@@ -52,13 +53,17 @@ enum df_ref_flags
     DF_REF_READ_WRITE = 1,
     
     /* This flag is set on register references inside a subreg on
-       machines which have CLASS_CANNOT_CHANGE_MODE and where the mode
-       change of that subreg expression is invalid for this class.
+       machines which have CANNOT_CHANGE_MODE_CLASS.
        Note, that this flag can also be set on df_refs representing
        the REG itself (i.e., one might not see the subreg anyore).
        Also note, that this flag is set also for hardreg refs, i.e.,
        you must check yourself if it's a pseudo.  */
-    DF_REF_MODE_CHANGE = 2
+    DF_REF_MODE_CHANGE = 2,
+
+    /* This flag is set, if we stripped the subreg from the reference.
+       In this case we must make conservative guesses, at what the
+       outer mode was.  */
+    DF_REF_STRIPPED = 4
   };
 
 
