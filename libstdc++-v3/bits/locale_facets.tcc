@@ -313,6 +313,9 @@ namespace std
       int __sep_pos = 0;
       int __pos = 0;
       bool __testdec = false;
+      bool __testEE = false;
+      bool __testsign = false;
+      bool __testEEsign = false;
       const char* __lits = __fmt->_S_literals;
 
       while (__valid && __beg != __end)
@@ -322,17 +325,42 @@ namespace std
 	  const char* __p = strchr(__fmt->_S_literals, __c);
 	  
 	  // NB: strchr returns true for __c == 0x0
-	  if (__p && __c)
-	    {
-	      if ((__p >= &__lits[__cache_type::_S_digits + __base]
-		   && __p < &__lits[__cache_type::_S_digits_end]) ||
-		  (__p >= &__lits[__cache_type::_S_udigits+__base]
-		   && __p < &__lits[__cache_type::_S_udigits_end]))
+          if (__p && __c)
+            {
+	      // Check for sign and accept if appropriate.
+	      if ((__p == &__lits[__cache_type::_S_minus]) 
+		  || (__p == &__lits[__cache_type::_S_plus]))
 		{
-		  if (!(__fp && (__p == &__lits[__cache_type::_S_ee] 
-				  || __p == &__lits[__cache_type::_S_Ee]))) 
-		    break;
+		  if (__testEE)
+		    {
+		      if (__testEEsign) break;
+		      __testEEsign = true;
+		    }
+		  else
+		    {
+		      if (__testsign) break;
+		      __testsign = true;
+		    }
 		}
+	      // Check for exponential part and accept if appropriate.
+	      else if ((__p == &__lits[__cache_type::_S_ee])
+		       || (__p == &__lits[__cache_type::_S_Ee]))
+		{
+		  if (!__fp || __testEE || !__testsign) break;
+		  __testEE = true;
+		}
+	      // Check for appropriate digits. If found, too late for a sign
+	      else if ((__p >= &__lits[__cache_type::_S_digits]
+			&& __p < &__lits[__cache_type::_S_digits+__base]) 
+		       || (__p >= &__lits[__cache_type::_S_udigits]
+			   && __p < &__lits[__cache_type::_S_udigits+__base]))
+                {
+		  __testsign = true;
+		  if (__testEE) __testEEsign = true;
+                }
+	      // Nothing else will do
+	      else break;
+	      
 	      __xtrc[__pos] = __c;
 	      ++__pos;
 	      ++__sep_pos;
