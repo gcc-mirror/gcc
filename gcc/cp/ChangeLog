@@ -1,5 +1,11 @@
 2001-01-18  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* pt.c (UNIFY_ALLOW_OUTER_LEVEL): New unify flag.
+	(type_unification_real): Set it.
+	(unify): Use it.
+
+2001-01-18  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* decl.c (finish_destructor_body): Convert to vbase pointer here.
 
 2001-01-18  Nathan Sidwell  <nathan@codesourcery.com>

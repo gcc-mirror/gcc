@@ -86,6 +86,7 @@ static htab_t local_specializations;
 #define UNIFY_ALLOW_LESS_CV_QUAL 2
 #define UNIFY_ALLOW_DERIVED 4
 #define UNIFY_ALLOW_INTEGER 8
+#define UNIFY_ALLOW_OUTER_LEVEL 16
 
 #define GTB_VIA_VIRTUAL 1 /* The base class we are examining is
 			     virtual, or a base class of a virtual
@@ -7874,7 +7875,8 @@ type_unification_real (tparms, targs, parms, args, subr,
   switch (strict)
     {
     case DEDUCE_CALL:
-      sub_strict = UNIFY_ALLOW_MORE_CV_QUAL | UNIFY_ALLOW_DERIVED;
+      sub_strict = (UNIFY_ALLOW_OUTER_LEVEL | UNIFY_ALLOW_MORE_CV_QUAL
+                    | UNIFY_ALLOW_DERIVED);
       break;
       
     case DEDUCE_CONV:
@@ -8413,7 +8415,8 @@ check_cv_quals_for_unify (strict, arg, parm)
      UNIFY_ALLOW_NONE:
        Require an exact match between PARM and ARG.
      UNIFY_ALLOW_MORE_CV_QUAL:
-       Allow the deduced ARG to be more cv-qualified than ARG.
+       Allow the deduced ARG to be more cv-qualified (by qualification
+       conversion) than ARG.
      UNIFY_ALLOW_LESS_CV_QUAL:
        Allow the deduced ARG to be less cv-qualified than ARG.
      UNIFY_ALLOW_DERIVED:
@@ -8422,7 +8425,14 @@ check_cv_quals_for_unify (strict, arg, parm)
        ARG.
      UNIFY_ALLOW_INTEGER:
        Allow any integral type to be deduced.  See the TEMPLATE_PARM_INDEX
-       case for more information.  */
+       case for more information. 
+     UNIFY_ALLOW_OUTER_LEVEL:
+       This is the outermost level of a deduction. Used to determine validity
+       of qualification conversions. A valid qualification conversion must
+       have const qualified pointers leading up to the inner type which
+       requires additional CV quals, except at the outer level, where const
+       is not required [conv.qual]. It would be normal to set this flag in
+       addition to setting UNIFY_ALLOW_MORE_CV_QUAL.  */
 
 static int
 unify (tparms, targs, parm, arg, strict)
@@ -8432,6 +8442,7 @@ unify (tparms, targs, parm, arg, strict)
   int idx;
   tree targ;
   tree tparm;
+  int strict_in = strict;
 
   /* I don't think this will do the right thing with respect to types.
      But the only case I've seen it in so far has been array bounds, where
@@ -8463,9 +8474,15 @@ unify (tparms, targs, parm, arg, strict)
 	 PARM `T' for example, when computing which of two templates
 	 is more specialized, for example.  */
       && TREE_CODE (arg) != TEMPLATE_TYPE_PARM
-      && !check_cv_quals_for_unify (strict, arg, parm))
+      && !check_cv_quals_for_unify (strict_in, arg, parm))
     return 1;
 
+  if (!(strict & UNIFY_ALLOW_OUTER_LEVEL)
+      && TYPE_P (arg) && !CP_TYPE_CONST_P (arg))
+    strict &= ~UNIFY_ALLOW_MORE_CV_QUAL;
+  strict &= ~UNIFY_ALLOW_OUTER_LEVEL;
+  strict &= ~UNIFY_ALLOW_DERIVED;
+  
   switch (TREE_CODE (parm))
     {
     case TYPENAME_TYPE:
@@ -8560,7 +8577,7 @@ unify (tparms, targs, parm, arg, strict)
 	     a match unless we are allowing additional qualification.
 	     If ARG is `const int' and PARM is just `T' that's OK;
 	     that binds `const int' to `T'.  */
-	  if (!check_cv_quals_for_unify (strict | UNIFY_ALLOW_LESS_CV_QUAL, 
+	  if (!check_cv_quals_for_unify (strict_in | UNIFY_ALLOW_LESS_CV_QUAL, 
 					 arg, parm))
 	    return 1;
 
@@ -8645,8 +8662,6 @@ unify (tparms, targs, parm, arg, strict)
 
     case POINTER_TYPE:
       {
-	int sub_strict;
-
 	if (TREE_CODE (arg) != POINTER_TYPE)
 	  return 1;
 	
@@ -8658,28 +8673,22 @@ unify (tparms, targs, parm, arg, strict)
 
 	   We pass down STRICT here rather than UNIFY_ALLOW_NONE.
 	   This will allow for additional cv-qualification of the
-	   pointed-to types if appropriate.  In general, this is a bit
-	   too generous; we are only supposed to allow qualification
-	   conversions and this method will allow an ARG of char** and
-	   a deduced ARG of const char**.  However, overload
-	   resolution will subsequently invalidate the candidate, so
-	   this is probably OK.  */
-	sub_strict = strict;
+	   pointed-to types if appropriate.  */
 	
-	if (TREE_CODE (TREE_TYPE (arg)) != RECORD_TYPE)
+	if (TREE_CODE (TREE_TYPE (arg)) == RECORD_TYPE)
 	  /* The derived-to-base conversion only persists through one
 	     level of pointers.  */
-	  sub_strict &= ~UNIFY_ALLOW_DERIVED;
+	  strict |= (strict_in & UNIFY_ALLOW_DERIVED);
 
 	return unify (tparms, targs, TREE_TYPE (parm), 
-		      TREE_TYPE (arg), sub_strict);
+		      TREE_TYPE (arg), strict);
       }
 
     case REFERENCE_TYPE:
       if (TREE_CODE (arg) != REFERENCE_TYPE)
 	return 1;
       return unify (tparms, targs, TREE_TYPE (parm), TREE_TYPE (arg),
-		    UNIFY_ALLOW_NONE);
+		    strict & UNIFY_ALLOW_MORE_CV_QUAL);
 
     case ARRAY_TYPE:
       if (TREE_CODE (arg) != ARRAY_TYPE)
@@ -8769,7 +8778,7 @@ unify (tparms, targs, parm, arg, strict)
 	{
 	  tree t = NULL_TREE;
 
-	  if (strict & UNIFY_ALLOW_DERIVED)
+	  if (strict_in & UNIFY_ALLOW_DERIVED)
 	    {
 	      /* First, we try to unify the PARM and ARG directly.  */
 	      t = try_class_unification (tparms, targs,
