@@ -4606,19 +4606,30 @@ default_section_type_flags_1 (tree decl, const char *name, int reloc,
 
   if (strcmp (name, ".bss") == 0
       || strncmp (name, ".bss.", 5) == 0
-      || strncmp (name, ".gnu.linkonce.b.", 16) == 0
-      || strcmp (name, ".sbss") == 0
-      || strncmp (name, ".sbss.", 6) == 0
-      || strncmp (name, ".gnu.linkonce.sb.", 17) == 0
-      || strcmp (name, ".tbss") == 0
-      || strncmp (name, ".gnu.linkonce.tb.", 17) == 0)
+      || strncmp (name, ".gnu.linkonce.b.", 16) == 0)
     flags |= SECTION_BSS;
 
+  if (strcmp (name, ".sdata") == 0
+      || strncmp (name, ".sdata.", 7) == 0
+      || strncmp (name, ".gnu.linkonce.s.", 16) == 0
+      || strncmp (name, ".sdata2.", 8) == 0
+      || strncmp (name, ".gnu.linkonce.s2.", 17) == 0)
+    flags |= SECTION_SMALL;
+
+  if (strcmp (name, ".sbss") == 0
+      || strncmp (name, ".sbss.", 6) == 0
+      || strncmp (name, ".gnu.linkonce.sb.", 17) == 0)
+    flags |= SECTION_SMALL | SECTION_BSS;
+
   if (strcmp (name, ".tdata") == 0
-      || strcmp (name, ".tbss") == 0
-      || strncmp (name, ".gnu.linkonce.td.", 17) == 0
-      || strncmp (name, ".gnu.linkonce.tb.", 17) == 0)
+      || strncmp (name, ".tdata.", 7) == 0
+      || strncmp (name, ".gnu.linkonce.td.", 17) == 0)
     flags |= SECTION_TLS;
+
+  if (strcmp (name, ".tbss") == 0
+      || strncmp (name, ".tbss.", 6) == 0
+      || strncmp (name, ".gnu.linkonce.tb.", 17) == 0)
+    flags |= SECTION_TLS | SECTION_BSS;
 
   /* These three sections have special ELF types.  They are neither
      SHT_PROGBITS nor SHT_NOBITS, so when changing sections we don't
