@@ -1,3 +1,9 @@
+1999-05-05 09:58 -0400  Zack Weinberg  <zack@rabi.columbia.edu>
+
+	* gcc.c (default_compilers): Fix brace nesting bug.
+	* objc/lang-specs.h: Use %i, not %g.mi, for the input file
+	when processing an .mi file.
+
 Tue May  4 13:17:55 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* resource.c (mark_set_resources): Handle UNSPEC_VOLATILE,

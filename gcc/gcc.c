@@ -629,7 +629,6 @@ static struct compiler default_compilers[] =
                   %{!S:as %a %Y\
 		     %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}\
                      %{!pipe:%g.s} %A\n }}}}"
-  }},
 #else /* ! USE_CPPLIB */
     "cpp -lang-c %{ansi:-std=c89} %{std*} %{nostdinc*}\
 	%{C} %{v} %{A*} %{I*} %{P} %I\
@@ -656,8 +655,8 @@ static struct compiler default_compilers[] =
               %{!S:as %a %Y\
 		      %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}\
                       %{!pipe:%g.s} %A\n }}}}"
-  }},
 #endif /* ! USE_CPPLIB */
+  }},
   {"-",
    {"%{E:cpp -lang-c %{ansi:-std=c89} %{std*} %{nostdinc*}\
 	%{C} %{v} %{A*} %{I*} %{P} %I\

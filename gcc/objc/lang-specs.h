@@ -83,7 +83,7 @@ Boston, MA 02111-1307, USA.  */
   },
   {".mi", {"@objc-cpp-output"}},
   {"@objc-cpp-output",
-   {"%{!M:%{!MM:%{!E:cc1obj %{!pipe:%g.i} %1 \
+   {"%{!M:%{!MM:%{!E:cc1obj %i %1 \
 		   %{!Q:-quiet} -dumpbase %b.m %{d*} %{m*} %{a*}\
 		   %{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi} \
 		   %{traditional} %{v:-version} %{pg:-p} %{p} %{f*} \
