@@ -93,6 +93,8 @@ static unsigned int ssa_max_reg_num;
 
 /* Local function prototypes.  */
 
+struct rename_context;
+
 static inline rtx * phi_alternative
   PARAMS ((rtx, int));
 
@@ -114,6 +116,10 @@ static void insert_phi_node
   PARAMS ((int regno, int b));
 static void insert_phi_nodes
   PARAMS ((sbitmap *idfs, sbitmap *evals, int nregs));
+static void create_delayed_rename 
+  PARAMS ((struct rename_context *, rtx *));
+static void apply_delayed_renames 
+  PARAMS ((struct rename_context *));
 static int rename_insn_1 
   PARAMS ((rtx *ptr, void *data));
 static void rename_block 
@@ -521,10 +527,17 @@ insert_phi_nodes (idfs, evals, nregs)
 struct rename_set_data
 {
   struct rename_set_data *next;
+  /* This is the SET_DEST of the (first) SET that sets the REG.  */
   rtx *reg_loc;
-  rtx set_dest;
+  /* This is what used to be at *REG_LOC.  */
+  rtx old_reg;
+  /* This is the REG that will replace OLD_REG.  It's set only
+     when the rename data is moved onto the DONE_RENAMES queue.  */
   rtx new_reg;
+  /* This is what to restore ssa_rename_to[REGNO (old_reg)] to. 
+     It is usually the previous contents of ssa_rename_to[REGNO (old_reg)].  */
   rtx prev_reg;
+  /* This is the insn that contains all the SETs of the REG.  */
   rtx set_insn;
 };
 
@@ -532,13 +545,31 @@ struct rename_set_data
    renaming registers.  */
 struct rename_context
 {
-  struct rename_set_data *set_data;
+  struct rename_set_data *new_renames;
+  struct rename_set_data *done_renames;
   rtx current_insn;
 };
 
-static void new_registers_for_updates 
-  PARAMS ((struct rename_set_data *set_data,
-	   struct rename_set_data *old_set_data, rtx insn));
+/* Queue the rename of *REG_LOC.  */
+static void
+create_delayed_rename (c, reg_loc)
+     struct rename_context *c;
+     rtx *reg_loc;
+{
+  struct rename_set_data *r;
+  r = (struct rename_set_data *) xmalloc (sizeof(*r));
+  
+  if (GET_CODE (*reg_loc) != REG
+      || REGNO (*reg_loc) < FIRST_PSEUDO_REGISTER)
+    abort();
+
+  r->reg_loc = reg_loc;
+  r->old_reg = *reg_loc;
+  r->prev_reg = ssa_rename_to [REGNO (r->old_reg) - FIRST_PSEUDO_REGISTER];
+  r->set_insn = c->current_insn;
+  r->next = c->new_renames;
+  c->new_renames = r;
+}
 
 /* This is part of a rather ugly hack to allow the pre-ssa regno to be
    reused.  If, during processing, a register has not yet been touched,
@@ -548,6 +579,60 @@ static void new_registers_for_updates
    same as NULL, except that it signals that the original regno has
    already been reused.  */
 #define RENAME_NO_RTX  pc_rtx
+
+/* Move all the entries from NEW_RENAMES onto DONE_RENAMES by
+   applying all the renames on NEW_RENAMES.  */
+
+static void
+apply_delayed_renames (c)
+       struct rename_context *c;
+{
+  struct rename_set_data *r;
+  struct rename_set_data *last_r = NULL;
+  
+  for (r = c->new_renames; r != NULL; r = r->next)
+    {
+      int regno = REGNO (r->old_reg);
+      int new_regno;
+      
+      /* Failure here means that someone has a PARALLEL that sets
+	 a register twice (bad!).  */
+      if (ssa_rename_to [regno - FIRST_PSEUDO_REGISTER] != r->prev_reg)
+	abort();
+      /* Failure here means we have changed REG_LOC before applying
+	 the rename.  */
+      /* For the first set we come across, reuse the original regno.  */
+      if (r->prev_reg == NULL_RTX)
+	{
+	  r->new_reg = r->old_reg;
+	  /* We want to restore RENAME_NO_RTX rather than NULL_RTX. */
+	  r->prev_reg = RENAME_NO_RTX;
+	}
+      else
+	r->new_reg = gen_reg_rtx (GET_MODE (r->old_reg));
+      new_regno = REGNO (r->new_reg);
+      ssa_rename_to[regno - FIRST_PSEUDO_REGISTER] = r->new_reg;
+
+      if (new_regno >= (int) ssa_definition->num_elements)
+	{
+	  int new_limit = new_regno * 5 / 4;
+	  ssa_definition = VARRAY_GROW (ssa_definition, new_limit);
+	  ssa_uses = VARRAY_GROW (ssa_uses, new_limit);
+	  ssa_rename_from = VARRAY_GROW (ssa_rename_from, new_limit);
+	}
+
+      VARRAY_RTX (ssa_definition, new_regno) = r->set_insn;
+      VARRAY_RTX (ssa_rename_from, new_regno) = r->old_reg;
+
+      last_r = r;
+    }
+  if (last_r != NULL)
+    {
+      last_r->next = c->done_renames;
+      c->done_renames = c->new_renames;
+      c->new_renames = NULL;
+    }
+}
 
 /* Part one of the first step of rename_block, called through for_each_rtx. 
    Mark pseudos that are set for later update.  Transform uses of pseudos.  */
@@ -559,47 +644,76 @@ rename_insn_1 (ptr, data)
 {
   rtx x = *ptr;
   struct rename_context *context = data;
-  struct rename_set_data **set_datap = &(context->set_data);
 
   if (x == NULL_RTX)
     return 0;
 
   switch (GET_CODE (x))
     {
+    case CLOBBER:
     case SET:
       {
 	rtx *destp = &SET_DEST (x);
 	rtx dest = SET_DEST (x);
 
-	/* Subregs at word 0 are interesting.  Subregs at word != 0 are
-	   presumed to be part of a contiguous multi-word set sequence.  */
-	while (GET_CODE (dest) == SUBREG
-	       && SUBREG_WORD (dest) == 0)
-	  {
-	    destp = &SUBREG_REG (dest);
-	    dest = SUBREG_REG (dest);
-	  }
+	/* Some SETs also use the REG specified in their LHS.
+	   These can be detected by the presence of
+	   STRICT_LOW_PART, SUBREG, SIGN_EXTRACT, and ZERO_EXTRACT
+	   in the LHS.  Handle these by changing
+	   (set (subreg (reg foo)) ...)
+	   into
+	   (sequence [(set (reg foo_1) (reg foo))
+	              (set (subreg (reg foo_1)) ...)])  
 
-	if (GET_CODE (dest) == REG
-	    && REGNO (dest) >= FIRST_PSEUDO_REGISTER)
+	   FIXME: Much of the time this is too much.  For many libcalls,
+	   paradoxical SUBREGs, etc., the input register is dead.  We should
+	   recognise this in rename_block or here and not make a false
+	   dependency.  */
+	   
+	if (GET_CODE (dest) == STRICT_LOW_PART
+	    || GET_CODE (dest) == SUBREG
+	    || GET_CODE (dest) == SIGN_EXTRACT
+	    || GET_CODE (dest) == ZERO_EXTRACT)
+	  {
+	    rtx i, reg;
+	    reg = dest;
+	    
+	    while (GET_CODE (reg) == STRICT_LOW_PART
+		   || GET_CODE (reg) == SUBREG
+		   || GET_CODE (reg) == SIGN_EXTRACT
+		   || GET_CODE (reg) == ZERO_EXTRACT)
+		reg = XEXP (reg, 0);
+	    
+	    if (GET_CODE (reg) == REG
+		&& REGNO (reg) >= FIRST_PSEUDO_REGISTER)
+	      {
+		/* Generate (set reg reg), and do renaming on it so
+		   that it becomes (set reg_1 reg_0), and we will
+		   replace reg with reg_1 in the SUBREG.  */
+
+		struct rename_set_data *saved_new_renames;
+		saved_new_renames = context->new_renames;
+		context->new_renames = NULL;
+		i = emit_insn (gen_rtx_SET (VOIDmode, reg, reg));
+		for_each_rtx (&i, rename_insn_1, data);
+		apply_delayed_renames (context);
+		context->new_renames = saved_new_renames;
+	      }
+	  }
+	else if (GET_CODE (dest) == REG
+		 && REGNO (dest) >= FIRST_PSEUDO_REGISTER)
 	  {
 	    /* We found a genuine set of an interesting register.  Tag
 	       it so that we can create a new name for it after we finish
 	       processing this insn.  */
 
-	    struct rename_set_data *r;
-	    r = (struct rename_set_data *) xmalloc (sizeof(*r));
-
-	    r->reg_loc = destp;
-	    r->set_dest = SET_DEST (x);
-	    r->set_insn = context->current_insn;
-	    r->next = *set_datap;
-	    *set_datap = r;
+	    create_delayed_rename (context, destp);
 
 	    /* Since we do not wish to (directly) traverse the
 	       SET_DEST, recurse through for_each_rtx for the SET_SRC
 	       and return.  */
-	    for_each_rtx (&SET_SRC (x), rename_insn_1, data);
+	    if (GET_CODE (x) == SET)
+	      for_each_rtx (&SET_SRC (x), rename_insn_1, data);
 	    return -1;
 	  }
 
@@ -634,55 +748,6 @@ rename_insn_1 (ptr, data)
     }
 }
 
-/* Second part of the first step of rename_block.  The portion of the list
-   beginning at SET_DATA through OLD_SET_DATA contain the sets present in
-   INSN.  Update data structures accordingly.  */
-
-static void
-new_registers_for_updates (set_data, old_set_data, insn)
-     struct rename_set_data *set_data, *old_set_data;
-     rtx insn;
-{
-  while (set_data != old_set_data)
-    {
-      int regno, new_regno;
-      rtx old_reg, new_reg, prev_reg;
-
-      old_reg = *set_data->reg_loc;
-      regno = REGNO (*set_data->reg_loc);
-
-      /* For the first set we come across, reuse the original regno.  */
-      if (ssa_rename_to[regno - FIRST_PSEUDO_REGISTER] == NULL_RTX)
-	{
-	  new_reg = old_reg;
-	  prev_reg = RENAME_NO_RTX;
-	}
-      else
-	{
-	  prev_reg = ssa_rename_to[regno - FIRST_PSEUDO_REGISTER];
-	  new_reg = gen_reg_rtx (GET_MODE (old_reg));
-	}
-
-      set_data->new_reg = new_reg;
-      set_data->prev_reg = prev_reg;
-      new_regno = REGNO (new_reg);
-      ssa_rename_to[regno - FIRST_PSEUDO_REGISTER] = new_reg;
-
-      if (new_regno >= (int) ssa_definition->num_elements)
-	{
-	  int new_limit = new_regno * 5 / 4;
-	  ssa_definition = VARRAY_GROW (ssa_definition, new_limit);
-	  ssa_uses = VARRAY_GROW (ssa_uses, new_limit);
-	  ssa_rename_from = VARRAY_GROW (ssa_rename_from, new_limit);
-	}
-
-      VARRAY_RTX (ssa_definition, new_regno) = insn;
-      VARRAY_RTX (ssa_rename_from, new_regno) = old_reg;
-
-      set_data = set_data->next;
-    }
-}
-
 static void
 rename_block (bb, idom)
      int bb;
@@ -705,14 +770,29 @@ rename_block (bb, idom)
       if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
 	{
 	  struct rename_context context;
-	  context.set_data = set_data;
+	  context.done_renames = set_data;
+	  context.new_renames = NULL;
 	  context.current_insn = insn;
 
+	  start_sequence ();
 	  for_each_rtx (&PATTERN (insn), rename_insn_1, &context);
 	  for_each_rtx (&REG_NOTES (insn), rename_insn_1, &context);
+
+	  /* Sometimes, we end up with a sequence of insns that
+	     SSA needs to treat as a single insn.  Wrap these in a
+	     SEQUENCE.  (Any notes now get attached to the SEQUENCE,
+	     not to the old version inner insn.)  */
+	  if (get_insns () != NULL_RTX)
+	    {
+	      int i;
+	      
+	      emit (PATTERN (insn));
+	      PATTERN (insn) = gen_sequence ();
+	    }
+	  end_sequence ();
 	  
-	  new_registers_for_updates (context.set_data, set_data, insn);
-	  set_data = context.set_data;
+	  apply_delayed_renames (&context);
+	  set_data = context.done_renames;
 	}
 
       next = NEXT_INSN (insn);
@@ -780,29 +860,18 @@ rename_block (bb, idom)
     if (idom[c] == bb)
       rename_block (c, idom);
 
-  /* Step Four: Update the sets to refer to their new register.  */
+  /* Step Four: Update the sets to refer to their new register,
+     and restore ssa_rename_to to its previous state.  */
 
   while (set_data)
     {
       struct rename_set_data *next;
       rtx old_reg = *set_data->reg_loc;
 
-      /* If the set is of a subreg only, copy the entire reg first so
-	 that unmodified bits are preserved.  Of course, we don't
-	 strictly have SSA any more, but that's the best we can do
-	 without a lot of hard work.  */
-
-      if (GET_CODE (set_data->set_dest) == SUBREG) 
-	{
-	  if (old_reg != set_data->new_reg)
-	    {
-	      rtx copy = gen_rtx_SET (GET_MODE (old_reg), 
-				      set_data->new_reg, old_reg);
-	      emit_insn_before (copy, set_data->set_insn);
-	    }
-	}
-
+      if (*set_data->reg_loc != set_data->old_reg)
+	abort();
       *set_data->reg_loc = set_data->new_reg;
+
       ssa_rename_to[REGNO (old_reg)-FIRST_PSEUDO_REGISTER]
 	= set_data->prev_reg;
 
@@ -1478,14 +1547,6 @@ coalesce_regs_in_copies (bb, p, conflicts)
       src = SET_SRC (pattern);
       dest = SET_DEST (pattern);
 
-      /* If src or dest are subregs, find the underlying reg.  */
-      while (GET_CODE (src) == SUBREG
-	     && SUBREG_WORD (src) != 0)
-	src = SUBREG_REG (src);
-      while (GET_CODE (dest) == SUBREG
-	     && SUBREG_WORD (dest) != 0)
-	dest = SUBREG_REG (dest);
-
       /* We're only looking for copies.  */
       if (GET_CODE (src) != REG || GET_CODE (dest) != REG)
 	continue;
@@ -1709,40 +1770,6 @@ rename_equivalent_regs_in_insn (ptr, data)
 
   switch (GET_CODE (x))
     {
-    case SET:
-      {
-	rtx *destp = &SET_DEST (x);
-	rtx dest = SET_DEST (x);
-
-	/* Subregs at word 0 are interesting.  Subregs at word != 0 are
-	   presumed to be part of a contiguous multi-word set sequence.  */
-	while (GET_CODE (dest) == SUBREG
-	       && SUBREG_WORD (dest) == 0)
-	  {
-	    destp = &SUBREG_REG (dest);
-	    dest = SUBREG_REG (dest);
-	  }
-
-	if (GET_CODE (dest) == REG
-	    && REGNO (dest) >= FIRST_PSEUDO_REGISTER)
-	  {
-	    /* Got a pseudo; replace it.  */
-	    int regno = REGNO (dest);
-	    int new_regno = partition_find (reg_partition, regno);
-	    if (regno != new_regno)
-	      *destp = regno_reg_rtx[new_regno];
-
-	    for_each_rtx (&SET_SRC (x), 
-			  rename_equivalent_regs_in_insn, 
-			  data);
-	    return -1;
-	  }
-
-	/* Otherwise, this was not an interesting destination.  Continue
-	   on, marking uses as normal.  */
-	return 0;
-      }
-
     case REG:
       if (REGNO (x) >= FIRST_PSEUDO_REGISTER)
 	{
@@ -1769,7 +1796,8 @@ rename_equivalent_regs_in_insn (ptr, data)
     }
 }
 
-/* Rename regs that are equivalent in REG_PARTITION.  */
+/* Rename regs that are equivalent in REG_PARTITION.  
+   Also collapse any SEQUENCE insns.  */
 
 static void
 rename_equivalent_regs (reg_partition)
@@ -1795,6 +1823,28 @@ rename_equivalent_regs (reg_partition)
 	      for_each_rtx (&REG_NOTES (insn), 
 			    rename_equivalent_regs_in_insn, 
 			    reg_partition);
+
+	      if (GET_CODE (PATTERN (insn)) == SEQUENCE)
+		{
+		  rtx s = PATTERN (insn);
+		  int slen = XVECLEN (s, 0);
+		  int i;
+
+		  if (slen <= 1)
+		    abort();
+
+		  PATTERN (insn) = PATTERN (XVECEXP (s, 0, slen-1));
+		  for (i = 0; i < slen - 1; i++)
+		    {
+		      rtx new_insn;
+		      rtx old_insn = XVECEXP (s, 0, i);
+		      
+		      new_insn = emit_block_insn_before (PATTERN (old_insn),
+							 insn, b);
+		      REG_NOTES (new_insn) = REG_NOTES (old_insn);
+		    }
+		  
+		}
 	    }
 
 	  next = NEXT_INSN (insn);

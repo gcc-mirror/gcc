@@ -1,3 +1,21 @@
+2000-06-26  Geoff Keating  <geoffk@cygnus.com>
+
+	* ssa.c (struct rename_set_data): Change the name of field
+	'set_dest' to 'old_reg'.  Add comments.
+	(struct rename_context): Change the name of 'set_data' to
+	'new_renames'.  Add new field 'done_renames'.
+	(create_delayed_rename): New function.
+	(apply_delayed_renames): New function.
+	(rename_insn_1): Use the new functions.  Handle CLOBBERS.  Handle
+	SUBREGs and similar by emitting a move.
+	(new_registers_for_updates): Delete, functionality moved to
+	apply_delayed_renames.
+	(rename_block): Handle moves emitted by rename_insn_1 by putting
+	them into a SEQUENCE with the original insn.  Add sanity checks
+	and comments.
+	(rename_equivalent_regs_in_insn): Don't handle SUBREGs specially.
+	(rename_equivalent_regs): Expand SEQUENCEs out to individual insns.
+	
 2000-06-26  Andrew Macleod <amacleod@cygnus.com>
 	    Jason Merrill <jason@redhat.com>
 
