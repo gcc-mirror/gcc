@@ -1,3 +1,8 @@
+2004-01-30  David Edelsohn  <edelsohn@gnu.org>
+
+	* src/allocator.cc: Protect _S_get_thread_id() and
+	_S_thread_key_destr() with #ifdef __GTHREADS.
+
 2004-01-30  Paolo Carlini  <pcarlini@suse.de>
 
 	Reshuffle performance testsuite.

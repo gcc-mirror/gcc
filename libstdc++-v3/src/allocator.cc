@@ -46,11 +46,13 @@ namespace __gnu_cxx
   template
     void __mt_alloc<char>::_S_init();
 
+#ifdef __GTHREADS
    template
     size_t __mt_alloc<char>::_S_get_thread_id();
 
    template
     void __mt_alloc<char>::_S_thread_key_destr(void*);
+#endif
 
   // Static members of __pool_alloc.
   template class __pool_alloc<true, 0>;
