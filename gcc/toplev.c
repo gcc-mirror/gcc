@@ -655,6 +655,11 @@ int flag_keep_inline_functions;
 
 int flag_no_inline;
 
+/* Nonzero means that we don't want inlining by virtue of -fno-inline,
+   not just because the tree inliner turned us off.  */
+
+int flag_really_no_inline;
+
 /* Nonzero means that we should emit static const variables
    regardless of whether or not optimization is turned on.  */
 

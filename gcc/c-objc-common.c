@@ -145,7 +145,7 @@ c_cannot_inline_tree_fn (fnp)
   tree fn = *fnp;
   tree t;
 
-  if (optimize == 0
+  if (flag_really_no_inline
       && lookup_attribute ("always_inline", DECL_ATTRIBUTES (fn)) == NULL)
     return 1;
 
