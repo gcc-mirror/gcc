@@ -106,11 +106,13 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <assert.h>
 
 
+/* Holds a single variable in a equivalence set.  */
 typedef struct segment_info
 {
   gfc_symbol *sym;
   HOST_WIDE_INT offset;
   HOST_WIDE_INT length;
+  /* This will contain the field type until the field is created.  */
   tree field; 
   struct segment_info *next;
 } segment_info;
@@ -119,10 +121,30 @@ static segment_info *current_segment, *current_common;
 static HOST_WIDE_INT current_offset;
 static gfc_namespace *gfc_common_ns = NULL;
 
-#define get_segment_info() gfc_getmem (sizeof (segment_info))
-
 #define BLANK_COMMON_NAME "__BLNK__"
 
+
+/* Make a segment_info based on a symbol.  */
+
+static segment_info *
+get_segment_info (gfc_symbol * sym, HOST_WIDE_INT offset)
+{
+  segment_info *s;
+
+  /* Make sure we've got the character length.  */
+  if (sym->ts.type == BT_CHARACTER)
+    gfc_conv_const_charlen (sym->ts.cl);
+
+  /* Create the segment_info and fill it in.  */
+  s = (segment_info *) gfc_getmem (sizeof (segment_info));
+  s->sym = sym;
+  /* We will use this type when building the segment aggreagate type.  */
+  s->field = gfc_sym_type (sym);
+  s->length = int_size_in_bytes (s->field);
+  s->offset = offset;
+
+  return s;
+}
 
 /* Add combine segment V and segement LIST.  */
 
@@ -189,18 +211,19 @@ gfc_sym_mangled_common_id (const char  *name)
 }
 
 
-/* Build a filed declaration for a common variable or a local equivalence
+/* Build a field declaration for a common variable or a local equivalence
    object.  */
 
-static tree
+static void
 build_field (segment_info *h, tree union_type, record_layout_info rli)
 {
-  tree type = gfc_sym_type (h->sym);
-  tree name = get_identifier (h->sym->name);
-  tree field = build_decl (FIELD_DECL, name, type);
+  tree field;
+  tree name;
   HOST_WIDE_INT offset = h->offset;
   unsigned HOST_WIDE_INT desired_align, known_align;
 
+  name = get_identifier (h->sym->name);
+  field = build_decl (FIELD_DECL, name, h->field);
   known_align = (offset & -offset) * BITS_PER_UNIT;
   if (known_align == 0 || known_align > BIGGEST_ALIGNMENT)
     known_align = BIGGEST_ALIGNMENT;
@@ -218,7 +241,7 @@ build_field (segment_info *h, tree union_type, record_layout_info rli)
                             size_binop (PLUS_EXPR,
                                         DECL_FIELD_OFFSET (field),
                                         DECL_SIZE_UNIT (field)));
-  return field;
+  h->field = field;
 }
 
 
@@ -340,13 +363,12 @@ create_common (gfc_common_head *com, const char *name)
 
   for (h = current_common; h; h = next_s)
     {
-      tree field;
-      field = build_field (h, union_type, rli);
+      build_field (h, union_type, rli);
 
       /* Link the field into the type.  */
-      *field_link = field;
-      field_link = &TREE_CHAIN (field);
-      h->field = field;
+      *field_link = h->field;
+      field_link = &TREE_CHAIN (h->field);
+
       /* Has initial value.  */      
       if (h->sym->value)
         is_init = true;
@@ -450,31 +472,6 @@ find_segment_info (gfc_symbol *symbol)
 
   return NULL;    
 } 
-
-
-/* Given a variable symbol, calculate the total length in bytes of the
-   variable.  */
-
-static HOST_WIDE_INT
-calculate_length (gfc_symbol *symbol)
-{        
-  HOST_WIDE_INT j, element_size;        
-  mpz_t elements;  
-
-  if (symbol->ts.type == BT_CHARACTER)
-    gfc_conv_const_charlen (symbol->ts.cl);
-  element_size = int_size_in_bytes (gfc_typenode_for_spec (&symbol->ts));
-  if (symbol->as == NULL) 
-    return element_size;        
-
-  /* Calculate the number of elements in the array */  
-  if (spec_size (symbol->as, &elements) == FAILURE)    
-    gfc_internal_error ("calculate_length(): Unable to determine array size");
-  j = mpz_get_ui (elements);          
-  mpz_clear (elements);
-
-  return j*element_size;;
-}     
 
 
 /* Given an expression node, make sure it is a constant integer and return
@@ -601,11 +598,8 @@ new_condition (segment_info *v, gfc_equiv *eq1, gfc_equiv *eq2)
   offset1 = calculate_offset (eq1->expr);
   offset2 = calculate_offset (eq2->expr);
 
-  a = get_segment_info ();
- 
-  a->sym = eq2->expr->symtree->n.sym;
-  a->offset = v->offset + offset1 - offset2;
-  a->length = calculate_length (eq2->expr->symtree->n.sym);
+  a = get_segment_info (eq2->expr->symtree->n.sym,
+			v->offset + offset1 - offset2);
  
   current_segment = add_segments (current_segment, a);
 }
@@ -728,14 +722,11 @@ add_equivalences (void)
 static void
 new_segment (gfc_common_head *common, const char *name, gfc_symbol *sym)
 {
-  HOST_WIDE_INT length;
+  current_segment = get_segment_info (sym, current_offset);
 
-  current_segment = get_segment_info ();
-  current_segment->sym = sym;
-  current_segment->offset = current_offset;
-  length = calculate_length (sym);
-  current_segment->length = length;
- 
+  /* The offset of the next common variable.  */ 
+  current_offset += current_segment->length;
+
   /* Add all object directly or indirectly equivalenced with this common
      variable.  */ 
   add_equivalences ();
@@ -745,8 +736,6 @@ new_segment (gfc_common_head *common, const char *name, gfc_symbol *sym)
 	       "to COMMON '%s' at %L",
 	       sym->name, name, &common->where);
 
-  /* The offset of the next common variable.  */ 
-  current_offset += length;
 
   /* Add these to the common block.  */
   current_common = add_segments (current_common, current_segment);
@@ -768,10 +757,7 @@ finish_equivalences (gfc_namespace *ns)
       {
         if (y->used) continue;
         sym = z->expr->symtree->n.sym;
-        current_segment = get_segment_info ();
-        current_segment->sym = sym;
-        current_segment->offset = 0;
-        current_segment->length = calculate_length (sym);
+        current_segment = get_segment_info (sym, 0);
 
         /* All objects directly or indrectly equivalenced with this symbol.  */
         add_equivalences ();
