@@ -31,10 +31,8 @@ Boston, MA 02111-1307, USA.  */
       BASELINK, or TEMPLATE_ID_EXPR (corresponding to `m').
 
       The expression is a pointer-to-member if its address is taken,
-      but simply denotes a member of the object if its address isnot
-      taken.  In the latter case, resolve_offset_ref is used to
-      convert it to a representation of the member referred to by the
-      OFFSET_REF.
+      but simply denotes a member of the object if its address is not
+      taken.
       
       This form is only used during the parsing phase; once semantic
       analysis has taken place they are eliminated.

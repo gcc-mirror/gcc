@@ -1,3 +1,8 @@
+2005-04-05  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/20734
+	* g++.dg/template/ptrmem13.C: New test.
+
 2005-04-05  Per Bothner  <per@bothner.com>
 
 	* lib/gcc.exp: Always add -fno-show-column, for now.
