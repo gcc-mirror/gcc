@@ -72,14 +72,23 @@ struct predictor_info
   const char *name;	/* Name used in the debugging dumps.  */
   int hitrate;		/* Expected hitrate used by
 			   predict_insn_def call.  */
+  int flags;
 };
 
-#define DEF_PREDICTOR(ENUM, NAME, HITRATE) {NAME, HITRATE},
+/* Use given predictor without Dempster-Shaffer theory if it matches
+   using first_match heuristics.  */
+#define PRED_FLAG_FIRST_MATCH 1
+
+/* Recompute hitrate in percent to our representation.  */
+
+#define HITRATE(VAL) ((int)((VAL) * REG_BR_PROB_BASE + 50) / 100)
+
+#define DEF_PREDICTOR(ENUM, NAME, HITRATE, FLAGS) {NAME, HITRATE, FLAGS},
 struct predictor_info predictor_info[] = {
 #include "predict.def"
 
-  /* Upper bound on non-language-specific builtins. */
-  {NULL, 0}
+  /* Upper bound on predictors. */
+  {NULL, 0, 0}
 };
 #undef DEF_PREDICTOR
 
@@ -211,6 +220,8 @@ combine_predictions_for_insn (insn, bb)
   rtx *pnote = &REG_NOTES (insn);
   int best_probability = PROB_EVEN;
   int best_predictor = END_PREDICTORS;
+  int combined_probability = REG_BR_PROB_BASE / 2;
+  int d;
 
   if (rtl_dump_file)
     fprintf (rtl_dump_file, "Predictions for insn %i bb %i\n", INSN_UID (insn),
@@ -230,16 +241,33 @@ combine_predictions_for_insn (insn, bb)
 	  if (best_predictor > predictor)
 	    best_probability = probability, best_predictor = predictor;
 	  *pnote = XEXP (*pnote, 1);
+
+	  d = (combined_probability * probability
+	       + (REG_BR_PROB_BASE - combined_probability)
+	       * (REG_BR_PROB_BASE - probability));
+	  /* An FP math to avoid overflows of 32bit integers.  */
+	  combined_probability = (((double)combined_probability) * probability
+				  * REG_BR_PROB_BASE / d + 0.5);
 	}
       else
         pnote = &XEXP (*pnote, 1);
     }
+  if (predictor_info [best_predictor].flags & PRED_FLAG_FIRST_MATCH)
+    combined_probability = best_probability;
   dump_prediction (PRED_FIRST_MATCH, best_probability, bb);
+  dump_prediction (PRED_COMBINED, combined_probability, bb);
   if (!prob_note)
     {
       REG_NOTES (insn)
 	= gen_rtx_EXPR_LIST (REG_BR_PROB,
-			     GEN_INT (best_probability), REG_NOTES (insn));
+			     GEN_INT (combined_probability), REG_NOTES (insn));
+      /* Save the prediction into CFG in case we are seeing non-degenerated
+	 conditional jump.  */
+      if (bb->succ->succ_next)
+	{
+	  BRANCH_EDGE (bb)->probability = combined_probability;
+	  FALLTHRU_EDGE (bb)->probability = REG_BR_PROB_BASE - combined_probability;
+	}
     }
 }
 
@@ -280,7 +308,8 @@ estimate_probability (loops_info)
 	      /* Loop branch heruistics - predict as taken an edge back to
 	         a loop's head.  */
 	      for (e = BASIC_BLOCK(j)->succ; e; e = e->succ_next)
-		if (e->dest == loops_info->array[i].header)
+		if (e->dest == loops_info->array[i].header
+		    && e->src == loops_info->array[i].latch)
 		  {
 		    header_found = 1;
 		    predict_edge_def (e, PRED_LOOP_BRANCH, TAKEN);
@@ -296,10 +325,7 @@ estimate_probability (loops_info)
 	}
     }
 
-  /* Attempt to predict conditional jumps using a number of heuristics.
-     For each conditional jump, we try each heuristic in a fixed order.
-     If more than one heuristic applies to a particular branch, the first
-     is used as the prediction for the branch.  */
+  /* Attempt to predict conditional jumps using a number of heuristics.  */
   for (i = 0; i < n_basic_blocks; i++)
     {
       basic_block bb = BASIC_BLOCK (i);

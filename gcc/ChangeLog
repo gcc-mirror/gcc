@@ -1,3 +1,30 @@
+Sat Jul 28 23:35:22 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* basic-block.h (EDGE_FREQUENCY): New macro.
+	* bb-reorder (fixup_reorder_chain): Set counts and frequencies
+	for new BB/edges.
+	* flow.c (find_sub_basic_blocks): Likewise.
+	(try_crossjump_to_edge): Likewise; use EDGE_FREQUENCY
+	(redirect_edge_and_branch): Use EDGE_FREQUENCY.
+
+	* predict.c (DEF_PREDICTOR): New argument FLAGS.
+	(HITRATE): New macro.
+	(PRED_FLAG_FIRST_MATCH): New constant.
+	(predictor_info): New field flgags.
+	(combine_predictions_for_insn): Use DS theory to combine
+	probabilities; set the edge probabilities when finished.
+	(estimate_probability): Avoid duplicated matches
+	of LOOP_BRANCH heuristics for nested loops; update comment.
+	* predict.def: Add flags for each prediction, set probabilities
+	according to B&L paper.
+	* predict.h (DEF_PREDICTOR): New argument FLAGS.
+
+	* profile.c (compute_branch_probabilities):  Cleanup way the edge
+	probabilities are computed and REG_BR_PROB notes are dropped; if
+	values does not match, emit error.
+	(init_branch_prob): Do error instead of warning when profile driven
+	feedback is missing or corrupt.
+
 2001-07-27  DJ Delorie  <dj@redhat.com>
 
 	* ifcvt.c (noce_get_alt_condition): If the condition is a compare

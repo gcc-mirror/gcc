@@ -216,7 +216,6 @@ compute_branch_probabilities ()
   int hist_br_prob[20];
   int num_never_executed;
   int num_branches;
-  int bad_counts = 0;
   struct bb_info *bb_infos;
 
   /* Attach extra info block to each bb.  */
@@ -418,84 +417,63 @@ compute_branch_probabilities ()
     {
       basic_block bb = BASIC_BLOCK (i);
       edge e;
-      rtx insn;
       gcov_type total;
       rtx note;
 
       total = bb->count;
-      if (!total)
-	continue;
-      for (e = bb->succ; e; e = e->succ_next)
+      if (total)
+	for (e = bb->succ; e; e = e->succ_next)
+	  {
+	      e->probability = (e->count * REG_BR_PROB_BASE + total / 2) / total;
+	      if (e->probability < 0 || e->probability > REG_BR_PROB_BASE)
+		{
+		  error ("Corrupted profile info: prob for %d-%d thought to be %d\n",
+			 e->src->index, e->dest->index, e->probability);
+		  e->probability = REG_BR_PROB_BASE / 2;
+		}
+	  }
+      if (any_condjump_p (bb->end)
+	  && bb->succ->succ_next)
 	{
-	  if (any_condjump_p (e->src->end)
-	      && !EDGE_INFO (e)->ignore
-	      && !(e->flags & (EDGE_ABNORMAL | EDGE_ABNORMAL_CALL | EDGE_FAKE)))
-	    {
-	      int prob;
-	      /* This calculates the branch probability as an integer between
-		 0 and REG_BR_PROB_BASE, properly rounded to the nearest
-		 integer.  Perform the arithmetic in double to avoid
-		 overflowing the range of ints.  */
-	      if (total == 0)
-		prob = -1;
-	      else
-		{
-		  prob = (((double)e->count * REG_BR_PROB_BASE)
-			  + (total >> 1)) / total;
-		  if (prob < 0 || prob > REG_BR_PROB_BASE)
-		    {
-		      if (rtl_dump_file)
-			fprintf (rtl_dump_file, "bad count: prob for %d-%d thought to be %d (forcibly normalized)\n",
-				 e->src->index, e->dest->index, prob);
+	  int prob;
+	  edge e;
 
-		      bad_counts = 1;
-		      prob = REG_BR_PROB_BASE / 2;
-		    }
-		  
-		  /* Match up probability with JUMP pattern.  */
-		  if (e->flags & EDGE_FALLTHRU)
-		    prob = REG_BR_PROB_BASE - prob;
-		}
-	      
-	      if (prob == -1)
-		num_never_executed++;
-	      else
-		{
-		  int index = prob * 20 / REG_BR_PROB_BASE;
-		  if (index == 20)
-		    index = 19;
-		  hist_br_prob[index]++;
-		}
-	      num_branches++;
-	      
-	      note = find_reg_note (e->src->end, REG_BR_PROB, 0);
+	  if (total == 0)
+	    prob = -1;
+	  else
+	  if (total == -1)
+	    num_never_executed++;
+	  else
+	    {
+	      int index;
+
+	      /* Find the branch edge.  It is possible that we do have fake
+		 edges here.  */
+	      for (e = bb->succ; e->flags & (EDGE_FAKE | EDGE_FALLTHRU);
+		   e = e->succ_next)
+		continue; /* Loop body has been intentionally left blank.  */
+
+	      prob = e->probability;
+	      index = prob * 20 / REG_BR_PROB_BASE;
+	  
+	      if (index == 20)
+		index = 19;
+	      hist_br_prob[index]++;
+
+	      note = find_reg_note (bb->end, REG_BR_PROB, 0);
 	      /* There may be already note put by some other pass, such
-	         as builtin_expect expander.  */
+		 as builtin_expect expander.  */
 	      if (note)
 		XEXP (note, 0) = GEN_INT (prob);
 	      else
-		REG_NOTES (e->src->end)
+		REG_NOTES (bb->end)
 		  = gen_rtx_EXPR_LIST (REG_BR_PROB, GEN_INT (prob),
-				       REG_NOTES (e->src->end));
+				       REG_NOTES (bb->end));
 	    }
+	  num_branches++;
+	  
 	}
-
-      /* Add a REG_EXEC_COUNT note to the first instruction of this block.  */
-      insn = next_nonnote_insn (bb->head);
-
-      if (GET_CODE (bb->head) == CODE_LABEL)
-	insn = next_nonnote_insn (insn);
-
-      /* Avoid crash on empty basic blocks.  */
-      if (insn && INSN_P (insn))
-	REG_NOTES (insn)
-	  = gen_rtx_EXPR_LIST (REG_EXEC_COUNT, GEN_INT (total),
-			       REG_NOTES (insn));
     }
-  
-  /* This should never happen.  */
-  if (bad_counts)
-    warning ("Arc profiling: some edge counts were bad.");
 
   if (rtl_dump_file)
     {
@@ -1004,10 +982,10 @@ end_branch_prob ()
 	     flag will not be set until an attempt is made to read
 	     past the end of the file. */
 	  if (feof (da_file))
-	    warning (".da file contents exhausted too early\n");
+	    error (".da file contents exhausted too early");
 	  /* Should be at end of file now.  */
 	  if (__read_long (&temp, da_file, 8) == 0)
-	    warning (".da file contents not exhausted\n");
+	    error (".da file contents not exhausted");
 	  fclose (da_file);
 	}
     }

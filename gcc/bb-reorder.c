@@ -719,6 +719,8 @@ fixup_reorder_chain ()
       nb->global_live_at_start = OBSTACK_ALLOC_REG_SET (&flow_obstack);
       nb->global_live_at_end = OBSTACK_ALLOC_REG_SET (&flow_obstack);
       nb->local_set = 0;
+      nb->count = e_fall->count;
+      nb->frequency = EDGE_FREQUENCY (e_fall);
 
       COPY_REG_SET (nb->global_live_at_start, bb->global_live_at_start);
       COPY_REG_SET (nb->global_live_at_end, bb->global_live_at_start);
@@ -735,6 +737,8 @@ fixup_reorder_chain ()
       /* Link to new block.  */
       make_edge (NULL, nb, e_fall->dest, 0);
       redirect_edge_succ (e_fall, nb);
+      nb->succ->count = e_fall->count;
+      nb->succ->probability = REG_BR_PROB_BASE;
 
       /* Don't process this new block.  */
       bb = nb;
