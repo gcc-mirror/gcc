@@ -1,3 +1,8 @@
+2001-12-03  Jason Merrill  <jason@redhat.com>
+
+	* class.c (finish_vtbls): Fill in BINFO_VPTR_FIELD in the
+	immediate binfos for our virtual bases.
+
 2001-12-02  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* call.c (build_java_interface_fn_ref): Similarly.
