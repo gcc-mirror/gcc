@@ -703,8 +703,8 @@ you must define @code{POINTERS_EXTEND_UNSIGNED}.
 @findex POINTERS_EXTEND_UNSIGNED
 @item POINTERS_EXTEND_UNSIGNED
 A C expression whose value is nonzero if pointers that need to be
-extended from being @code{POINTER_SIZE} bits wide to @code{Pmode}
-are sign-extended and zero if they are zero-extended.
+extended from being @code{POINTER_SIZE} bits wide to @code{Pmode} are to
+be zero-extended and zero if they are to be sign-extended.
 
 You need not define this macro if the @code{POINTER_SIZE} is equal
 to the width of @code{Pmode}.
