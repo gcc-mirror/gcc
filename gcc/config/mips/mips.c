@@ -838,8 +838,6 @@ double_memory_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
-  rtx addr;
-
   if (GET_CODE (op) != MEM
       || ! memory_operand (op, mode))
     {
@@ -939,14 +937,12 @@ double_memory_operand (op, mode)
   /* Make sure that 4 added to the address is a valid memory address.
      This essentially just checks for overflow in an added constant.  */
 
-  addr = XEXP (op, 0);
-
-  if (CONSTANT_ADDRESS_P (addr))
+  if (CONSTANT_ADDRESS_P (XEXP (op, 0)))
     return 1;
 
-  return memory_address_p ((GET_MODE_CLASS (mode) == MODE_INT
-			    ? SImode : SFmode),
-			   plus_constant (addr, 4));
+  op = adjust_address_nv (op, GET_MODE_CLASS (mode) == MODE_INT
+			  ? SImode : SFmode, 4);
+  return memory_address_p (XEXP (op, 0));
 }
 
 /* Return nonzero if the code of this rtx pattern is EQ or NE.  */
