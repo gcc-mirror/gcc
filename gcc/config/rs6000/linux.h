@@ -25,6 +25,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define CPP_PREDEFINES \
  "-DPPC -D__ELF__ -Dunix -Dlinux -Dpowerpc -Asystem(unix) -Asystem(linux) -Acpu(powerpc) -Amachine(powerpc)"
 
+#undef	CPP_OS_DEFAULT_SPEC
+#define CPP_OS_DEFAULT_SPEC "%(cpp_os_linux)"
+
 #undef LINK_SPEC
 #define LINK_SPEC "-m elf32ppc %{G*} %{shared:-shared} \
   %{!shared: \
