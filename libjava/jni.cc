@@ -10,6 +10,7 @@ details.  */
 
 #include <config.h>
 
+#include <stdio.h>
 #include <stddef.h>
 #include <string.h>
 
@@ -2028,9 +2029,9 @@ _Jv_GetJNIEnvNewFrame (jclass klass)
 // This is `extern "C"' because the compiler uses it.
 extern "C" void *
 _Jv_LookupJNIMethod (jclass klass, _Jv_Utf8Const *name,
-		     _Jv_Utf8Const *signature)
+		     _Jv_Utf8Const *signature, int args_size)
 {
-  char buf[10 + 6 * (name->length + signature->length)];
+  char buf[10 + 6 * (name->length + signature->length) + 12];
   int long_start;
   void *function;
 
@@ -2050,18 +2051,72 @@ _Jv_LookupJNIMethod (jclass klass, _Jv_Utf8Const *name,
     return function;
 
   // If there was no override, then look in the symbol table.
-  mangled_name (klass, name, signature, buf, &long_start);
-  char c = buf[long_start];
-  buf[long_start] = '\0';
-  function = _Jv_FindSymbolInExecutable (buf);
+  buf[0] = '_';
+  mangled_name (klass, name, signature, buf + 1, &long_start);
+  char c = buf[long_start + 1];
+  buf[long_start + 1] = '\0';
+
+  function = _Jv_FindSymbolInExecutable (buf + 1);
+#ifdef WIN32
+  // On Win32, we use the "stdcall" calling convention (see JNICALL
+  // in jni.h).
+  // 
+  // For a function named 'fooBar' that takes 'nn' bytes as arguments,
+  // by default, MinGW GCC exports it as 'fooBar@nn', MSVC exports it
+  // as '_fooBar@nn' and Borland C exports it as 'fooBar'. We try to
+  // take care of all these variations here.
+
+  char asz_buf[12];    /* '@' + '2147483647' (32-bit INT_MAX) + '\0' */
+  char long_nm_sv[11]; /* Ditto, except for the '\0'. */
+
   if (function == NULL)
     {
-      buf[long_start] = c;
+      // We have tried searching for the 'fooBar' form (BCC) - now
+      // try the others.
+
+      // First, save the part of the long name that will be damaged
+      // by appending '@nn'.
+      memcpy (long_nm_sv, (buf + long_start + 1 + 1), sizeof (long_nm_sv));
+
+      sprintf (asz_buf, "@%d", args_size);
+      strcat (buf, asz_buf);
+
+      // Search for the '_fooBar@nn' form (MSVC).
       function = _Jv_FindSymbolInExecutable (buf);
+
+      if (function == NULL)
+        {
+          // Search for the 'fooBar@nn' form (MinGW GCC).
+          function = _Jv_FindSymbolInExecutable (buf + 1);
+        }
+    }
+#else /* WIN32 */
+  args_size;  /* Dummy statement to avoid unused parameter warning */
+#endif /* ! WIN32 */
+
+  if (function == NULL)
+    {
+      buf[long_start + 1] = c;
+#ifdef WIN32
+      // Restore the part of the long name that was damaged by 
+      // appending the '@nn'.
+      memcpy ((buf + long_start + 1 + 1), long_nm_sv, sizeof (long_nm_sv));
+#endif /* WIN32 */
+      function = _Jv_FindSymbolInExecutable (buf + 1);
       if (function == NULL)
 	{
-	  jstring str = JvNewStringUTF (name->data);
-	  throw new java::lang::UnsatisfiedLinkError (str);
+#ifdef WIN32
+          strcat (buf, asz_buf);
+          function = _Jv_FindSymbolInExecutable (buf);
+          if (function == NULL)
+            function = _Jv_FindSymbolInExecutable (buf + 1);
+
+          if (function == NULL)
+#endif /* WIN32 */
+            {
+              jstring str = JvNewStringUTF (name->data);
+              throw new java::lang::UnsatisfiedLinkError (str);
+            }
 	}
     }
 
@@ -2092,9 +2147,17 @@ _Jv_JNIMethod::call (ffi_cif *, void *ret, ffi_raw *args, void *__this)
     // time.
     JvSynchronize sync (global_ref_table);
     if (_this->function == NULL)
-      _this->function = _Jv_LookupJNIMethod (_this->defining_class,
-					     _this->self->name,
-					     _this->self->signature);
+      {
+        int args_size = sizeof (JNIEnv *) + _this->args_raw_size;
+
+        if (_this->self->accflags & java::lang::reflect::Modifier::STATIC)
+          args_size += sizeof (_this->defining_class);
+
+        _this->function = _Jv_LookupJNIMethod (_this->defining_class,
+                                               _this->self->name,
+                                               _this->self->signature,
+                                               args_size);
+      }
   }
 
   JvAssert (_this->args_raw_size % sizeof (ffi_raw) == 0);
