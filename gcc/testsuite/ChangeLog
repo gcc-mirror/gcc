@@ -1,3 +1,7 @@
+2004-10-26  Geoffrey Keating  <geoffk@apple.com>
+
+	* gcc.c-torture/compile/20041026-1.c: New.
+
 2004-10-26  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/18093
