@@ -92,7 +92,7 @@ F77 f77: f771
 # Tell GNU make to ignore these if they exist.
 .PHONY: F77 f77 f77.all.build f77.all.cross \
   f77.start.encap f77.rest.encap f77.info f77.dvi \
-  f77.install-normal install-libf77 \
+  f77.install-normal \
   f77.install-common f77.install-info f77.install-man \
   f77.uninstall f77.mostlyclean f77.clean f77.distclean \
   f77.maintainer-clean f77.realclean f77.stage1 f77.stage2 f77.stage3 \
@@ -303,7 +303,7 @@ f77.rebuilt: $(srcdir)/f/g77.info $(srcdir)/f/BUGS $(srcdir)/f/INSTALL \
 # Install hooks:
 # f771 is installed elsewhere as part of $(COMPILERS).
 
-f77.install-normal: install-libf77
+f77.install-normal:
 
 # Install the driver program as $(target)-g77
 # and also as either g77 (if native) or $(tooldir)/bin/g77.
