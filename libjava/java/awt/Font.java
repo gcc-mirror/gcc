@@ -42,6 +42,7 @@ import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.font.LineMetrics;
 import java.awt.font.TextAttribute;
+import java.awt.font.TransformAttribute;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.peer.FontPeer;
@@ -50,15 +51,21 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Locale;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.StringTokenizer;
 import java.text.CharacterIterator;
 import java.text.AttributedCharacterIterator;
+import java.text.StringCharacterIterator;
+
+import gnu.java.awt.ClasspathToolkit;
+import gnu.java.awt.peer.ClasspathFontPeer;
 
 /**
   * This class represents a windowing system font.
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
   * @author Warren Levy <warrenl@cygnus.com>
+ * @author Graydon Hoare <graydon@redhat.com>
   */
 public class Font implements Serializable
 {
@@ -160,32 +167,9 @@ public static final int HANGING_BASELINE = 2;
 // Serialization constant
 private static final long serialVersionUID = -4206021311591459213L;
 
-/*************************************************************************/
 
-/*
- * Instance Variables
- */
-
-/**
-  * The name of this font
-  */
-protected String name;
-
-/**
-  * The font style, which is a combination (by summing, not OR-ing) of
-  * the font style constants in this class.
-  */
-protected int style;
-
-/**
-  * The font point size.
-  */
-protected int size;
-
-protected float pointSize;
-
-// The native peer for this font
-private FontPeer peer;
+  // The ClasspathToolkit-provided peer which implements this font
+  private ClasspathFontPeer peer;
 
 /*************************************************************************/
 
@@ -208,8 +192,7 @@ private FontPeer peer;
   * style if none is specified is PLAIN.  The default size if none
   * is specified is 12.
   */
-public static Font
-decode(String fontspec)
+  public static Font decode (String fontspec)
 {
   String name = null;
   int style = PLAIN;
@@ -237,7 +220,7 @@ decode(String fontspec)
         }
       if (token.toUpperCase().equals("BOLDITALIC"))
         {
-          style = BOLD + ITALIC;
+            style = BOLD | ITALIC;
           continue;
         }
 
@@ -252,8 +235,45 @@ decode(String fontspec)
         size = tokenval;
     }
 
-  return(new Font(name, style, size));
+    return getFontFromToolkit (name, attrsToMap (style, size));
 }
+
+  /* These methods delegate to the toolkit. */
+
+  protected static ClasspathToolkit tk ()
+  {
+    return (ClasspathToolkit)(Toolkit.getDefaultToolkit ());
+  }
+
+  protected static Map attrsToMap(int style, int size)
+  {
+    Map attrs = new HashMap();
+    attrs.put (TextAttribute.SIZE, new Float ((float)size));
+    
+    if ((style & BOLD) == BOLD)
+      attrs.put (TextAttribute.WEIGHT, TextAttribute.WEIGHT_BOLD);
+    else
+      attrs.put (TextAttribute.WEIGHT, TextAttribute.WEIGHT_REGULAR);
+
+    if ((style & ITALIC) == ITALIC)
+      attrs.put (TextAttribute.POSTURE, TextAttribute.POSTURE_OBLIQUE);
+    else
+      attrs.put (TextAttribute.POSTURE, TextAttribute.POSTURE_REGULAR);
+    return attrs;
+  }
+
+  /* Every factory method in Font should eventually call this. */
+  protected static Font getFontFromToolkit (String name, Map attribs)
+  {
+    return tk ().getFont (name, attribs);
+  }
+
+  /* Every Font constructor should eventually call this. */
+  protected static ClasspathFontPeer getPeerFromToolkit (String name, Map attrs)
+  {
+    return tk ().getClasspathFontPeer (name, attrs);
+  }
+
 
 /*************************************************************************/
 
@@ -266,14 +286,12 @@ decode(String fontspec)
   * @return The requested font, or <code>default</code> if the property 
   * not exist or is malformed.
   */
-public static Font
-getFont(String propname, Font defval)
+  public static Font getFont (String propname, Font defval)
 {
   String propval = System.getProperty(propname);
   if (propval != null)
-    return(decode(propval));
-
-  return(defval);
+      return decode (propval);
+    return defval;
 }
 
 /*************************************************************************/
@@ -286,10 +304,9 @@ getFont(String propname, Font defval)
   * @return The requested font, or <code>null</code> if the property 
   * not exist or is malformed.
   */
-public static Font
-getFont(String propname)
+  public static Font getFont (String propname)
 {
-  return(getFont(propname, null));
+    return getFont (propname, (Font)null);
 }
 
 /*************************************************************************/
@@ -306,19 +323,22 @@ getFont(String propname)
   * @param style The font style.
   * @param size The font point size.
   */
-public
-Font(String name, int style, int size)
+
+  public Font (String name, int style, int size)
+  {
+    this.peer = getPeerFromToolkit (name, attrsToMap (style, size));
+  }
+
+  public Font (Map attrs)
 {
-  this.name = name;
-  this.style = style;
-  this.size = size;
-  this.pointSize = size;
+    this.peer = getPeerFromToolkit (null, attrs);
 }
 
-public  
-Font(Map attributes)
+  /* This extra constructor is here to permit ClasspathToolkit and to build
+     a font with a "logical name" as well as attrs.  */
+  public Font (String name, Map attrs)
 {
-  throw new UnsupportedOperationException();
+    this.peer = getPeerFromToolkit (name, attrs);
 }
 
 /*************************************************************************/
@@ -328,20 +348,19 @@ Font(Map attributes)
  */
 
 /**
-  * Returns the logical name of the font.  A logical name describes a very
-  * general typographic style (such as Sans Serif). It is less specific
-  * than both a font family name (such as Helvetica) and a font face name
-  * (such as Helvetica Bold).
+   * Returns the logical name of the font.  A logical name is the name the
+   * font was constructed with. It may be the name of a logical font (one
+   * of 6 required names in all java environments) or it may be a face
+   * name.
   *
   * @return The logical name of the font.
   *
   * @see getFamily()
   * @see getFontName()
   */
-public String
-getName()
+  public String getName ()
 {
-  return(name);
+    return peer.getName (this);
 }
 
 /*************************************************************************/
@@ -351,16 +370,14 @@ getName()
   * 
   * @return The font style.
   */
-public int
-getSize()
+  public int getSize ()
 {
-  return(size);
+    return (int) peer.getSize (this);
 }
 
-public float
-getSize2D()
+  public float getSize2D ()
 {
-  return pointSize;
+    return peer.getSize (this);
 }
 
 /*************************************************************************/
@@ -372,13 +389,9 @@ getSize2D()
   * @return <code>true</code> if this is a plain font, <code>false</code>
   * otherwise.
   */
-public boolean
-isPlain()
+  public boolean isPlain ()
 {
-  if (style == PLAIN)
-    return(true);
-  else
-    return(false);
+    return peer.isPlain (this); 
 }
 
 /*************************************************************************/
@@ -389,13 +402,9 @@ isPlain()
   * @return <code>true</code> if this font is bold, <code>false</code>
   * otherwise.
   */
-public boolean
-isBold()
+  public boolean isBold ()
 {
-  if ((style == BOLD) || (style == (BOLD+ITALIC)))
-    return(true);
-  else
-    return(false);
+    return peer.isBold (this);
 }
 
 /*************************************************************************/
@@ -406,22 +415,17 @@ isBold()
   * @return <code>true</code> if this font is italic, <code>false</code>
   * otherwise.
   */
-public boolean
-isItalic()
+  public boolean isItalic ()
 {
-  if ((style == ITALIC) || (style == (BOLD+ITALIC)))
-    return(true);
-  else
-    return(false);
+    return peer.isItalic (this);
 }
 
 /*************************************************************************/
 
 /**
-  * Returns the family name of this font. A family name describes a
-  * typographic style (such as Helvetica or Palatino). It is more specific
-  * than a logical font name (such as Sans Serif) but less specific than a
-  * font face name (such as Helvetica Bold).
+   * Returns the family name of this font. A family name describes a design
+   * or "brand name" (such as Helvetica or Palatino). It is less specific
+   * than a font face name (such as Helvetica Bold).
   *
   * @return A string containing the font family name.
   *
@@ -431,11 +435,9 @@ isItalic()
   * @see getFontName()
   * @see GraphicsEnvironment.getAvailableFontFamilyNames()
   */
-public String
-getFamily()
+  public String getFamily ()
 {
-  // FIXME: How do I implement this?
-  return(name);
+    return peer.getFamily (this);
 }
 
 /**
@@ -448,10 +450,9 @@ getFamily()
   * @see isBold()
   * @see isItalic()
   */
-public int
-getStyle()
+  public int getStyle ()
 {
-  return style;
+    return peer.getStyle (this);
 }
 
 /**
@@ -463,10 +464,9 @@ getStyle()
   *
   * @since 1.2
   */
-public boolean 
-canDisplay(char c)
+  public boolean canDisplay (char c)
 {
-  throw new UnsupportedOperationException ();
+    return peer.canDisplay (this, c);    
 }
 
 /**
@@ -481,10 +481,10 @@ canDisplay(char c)
   *
   * @since 1.2
   */
-public int 
-canDisplayUpTo(String s)
+  public int canDisplayUpTo (String s)
 {
-  throw new UnsupportedOperationException ();
+    return peer.canDisplayUpTo (this, new StringCharacterIterator (s), 
+                                0, s.length () - 1);
 }
 
 /**
@@ -504,10 +504,10 @@ canDisplayUpTo(String s)
   * @throws IndexOutOfBoundsException if the range [start, limit] is
   * invalid in <code>text</code>.
   */
-public int
-canDisplayUpTo(char[] text, int start, int limit)
+  public int canDisplayUpTo (char[] text, int start, int limit)
 {
-  throw new UnsupportedOperationException ();
+    return peer.canDisplayUpTo 
+      (this, new StringCharacterIterator (new String (text)), start, limit);
 }
 
 /**
@@ -527,10 +527,9 @@ canDisplayUpTo(char[] text, int start, int limit)
   * @throws IndexOutOfBoundsException if the range [start, limit] is
   * invalid in <code>i</code>.
   */
-public int
-canDisplayUpTo(CharacterIterator i, int start, int limit)
+  public int canDisplayUpTo (CharacterIterator i, int start, int limit)
 {
-  throw new UnsupportedOperationException ();
+    return peer.canDisplayUpTo (this, i, start, limit);    
 }
 
 /**
@@ -554,11 +553,10 @@ canDisplayUpTo(CharacterIterator i, int start, int limit)
   *
   * @since 1.3
   */
-public static Font 
-createFont(int fontFormat, InputStream is) 
+  public static Font createFont (int fontFormat, InputStream is) 
   throws FontFormatException, IOException
 {
-  throw new UnsupportedOperationException ();
+    return tk().createFont (fontFormat, is);
 }
 
 /**
@@ -576,10 +574,9 @@ createFont(int fontFormat, InputStream is)
   *
   * @see layoutGlyphVector()
   */
-public GlyphVector
-createGlyphVector(FontRenderContext ctx, String str)
+  public GlyphVector createGlyphVector (FontRenderContext ctx, String str)
 {
-  throw new UnsupportedOperationException ();
+    return peer.createGlyphVector (this, ctx, new StringCharacterIterator (str));
 }
 
 /**
@@ -597,10 +594,9 @@ createGlyphVector(FontRenderContext ctx, String str)
   *
   * @see layoutGlyphVector()
   */
-public GlyphVector
-createGlyphVector(FontRenderContext ctx, CharacterIterator i)
+  public GlyphVector createGlyphVector (FontRenderContext ctx, CharacterIterator i)
 {
-  throw new UnsupportedOperationException ();
+    return peer.createGlyphVector (this, ctx, i);
 }
 
 /**
@@ -618,10 +614,10 @@ createGlyphVector(FontRenderContext ctx, CharacterIterator i)
   *
   * @see layoutGlyphVector()
   */
-public GlyphVector
-createGlyphVector(FontRenderContext ctx, char[] chars)
+  public GlyphVector createGlyphVector (FontRenderContext ctx, char[] chars)
 {
-  throw new UnsupportedOperationException ();
+    return peer.createGlyphVector 
+      (this, ctx, new StringCharacterIterator (new String (chars)));
 }
 
 /**
@@ -642,10 +638,10 @@ createGlyphVector(FontRenderContext ctx, char[] chars)
   * purpose was to transport character codes inside integers. I assume it
   * is mis-documented in the Sun documentation.
   */
-public GlyphVector
-createGlyphVector(FontRenderContext ctx, int[] glyphCodes)
+
+  public GlyphVector createGlyphVector (FontRenderContext ctx, int[] glyphCodes)
 {
-  throw new UnsupportedOperationException ();
+    return peer.createGlyphVector (this, ctx, glyphCodes);
 }
 
 /**
@@ -658,10 +654,9 @@ createGlyphVector(FontRenderContext ctx, int[] glyphCodes)
   *
   * @since 1.2
   */
-public Font
-deriveFont(float size)
+  public Font deriveFont (float size)
 {
-  throw new UnsupportedOperationException ();
+    return peer.deriveFont (this, size);
 }
 
 /**
@@ -674,10 +669,9 @@ deriveFont(float size)
   *
   * @since 1.2
   */
-public Font
-deriveFont(int style)
+  public Font deriveFont (int style)
 {
-  throw new UnsupportedOperationException ();
+    return peer.deriveFont (this, style);
 }
 
 /**
@@ -695,10 +689,12 @@ deriveFont(int style)
   *
   * @since 1.2
   */
-public Font
-deriveFont(int style, AffineTransform a)
+  public Font deriveFont (int style, AffineTransform a)
 {
-  throw new UnsupportedOperationException ();
+    if (a == null)
+      throw new IllegalArgumentException ("Affine transformation is null");
+
+    return peer.deriveFont (this, style, a);
 }
 
 /**
@@ -711,10 +707,9 @@ deriveFont(int style, AffineTransform a)
   *
   * @since 1.2
   */
-public Font
-deriveFont(Map attributes)
+  public Font deriveFont (Map attributes)
 {
-  throw new UnsupportedOperationException ();
+    return peer.deriveFont (this, attributes);
 }
 
 /**
@@ -726,10 +721,9 @@ deriveFont(Map attributes)
   * @see java.text.AttributedCharacterIterator.Attribute
   * @see java.awt.font.TextAttribute
   */
-public Map
-getAttributes()
+  public Map getAttributes ()
 {
-  throw new UnsupportedOperationException ();
+    return peer.getAttributes (this);
 }
 
 /**
@@ -741,10 +735,9 @@ getAttributes()
   * @see java.text.AttributedCharacterIterator.Attribute
   * @see java.awt.font.TextAttribute
   */
-public AttributedCharacterIterator.Attribute[]
-getAvailableAttributes()
+  public AttributedCharacterIterator.Attribute[] getAvailableAttributes()
 {
-  throw new UnsupportedOperationException ();
+    return peer.getAvailableAttributes (this);
 }
 
 /**
@@ -768,10 +761,9 @@ getAvailableAttributes()
   *
   * @see LineMetrics.getBaselineOffsets()
   */
-public byte 
-getBaselineFor(char c)
+  public byte getBaselineFor (char c)
 {
-  throw new UnsupportedOperationException ();
+    return peer.getBaselineFor (this, c);
 }
 
 /**
@@ -792,10 +784,9 @@ getBaselineFor(char c)
   * @see GraphicsEnvironment.getAvailableFontFamilyNames()
   * @see Locale
   */
-public String
-getFamily(Locale lc)
+  public String getFamily (Locale lc)
 {
-  throw new UnsupportedOperationException ();
+    return peer.getFamily (this, lc); 
 }
 
 /**
@@ -809,10 +800,9 @@ getFamily(Locale lc)
   *
   * @see TextAttribure  
   */
-public static Font
-getFont(Map attributes)
+  public static Font getFont (Map attributes)
 {
-  throw new UnsupportedOperationException ();
+    return getFontFromToolkit (null, attributes);
 }
 
 /**
@@ -828,17 +818,15 @@ getFont(Map attributes)
   * @see getName()
   * @see getFamily()
   */
-public String
-getFontName()
+  public String getFontName ()
 {
-  throw new UnsupportedOperationException ();
+    return peer.getFontName (this);
 }
 
 /**
   * Returns the font face name of the font.  A font face name describes a
   * specific variant of a font family (such as Helvetica Bold). It is more
-  * specific than both a font family name (such as Helvetica) and a logical
-  * font name (such as Sans Serif).
+   * specific than both a font family name (such as Helvetica).
   *
   * @param lc The locale in which to describe the name of the font face.
   *
@@ -850,10 +838,9 @@ getFontName()
   * @see getName()
   * @see getFamily()
   */
-public String
-getFontName(Locale lc)
+  public String getFontName (Locale lc)
 {
-  throw new UnsupportedOperationException ();
+    return peer.getFontName (this, lc);
 }
 
 /**
@@ -865,10 +852,9 @@ getFontName(Locale lc)
   *
   * @see TextAttribute.POSTURE
   */
-public float
-getItalicAngle()
+  public float getItalicAngle ()
 {
-  throw new UnsupportedOperationException ();
+    return peer.getItalicAngle (this);
 }
 
 /**
@@ -885,10 +871,11 @@ getItalicAngle()
   * @throws IndexOutOfBoundsException if the range [begin, limit] is
   * invalid in <code>text</code>.
   */
-public LineMetrics
-getLineMetrics(String text, int begin, int limit, FontRenderContext rc)
+  public LineMetrics getLineMetrics(String text, int begin, 
+                                    int limit, FontRenderContext rc)
 {
-  throw new UnsupportedOperationException ();
+    return peer.getLineMetrics (this, new StringCharacterIterator (text), 
+                                begin, limit, rc);
 }
 
 /**
@@ -905,10 +892,11 @@ getLineMetrics(String text, int begin, int limit, FontRenderContext rc)
   * @throws IndexOutOfBoundsException if the range [begin, limit] is
   * invalid in <code>chars</code>.
   */
-public LineMetrics
-getLineMetrics(char[] chars, int begin, int limit, FontRenderContext rc)
+  public LineMetrics getLineMetrics(char[] chars, int begin, 
+                                    int limit, FontRenderContext rc)
 {
-  throw new UnsupportedOperationException ();
+    return peer.getLineMetrics (this, new StringCharacterIterator (new String(chars)), 
+                                begin, limit, rc);
 }
 
 /**
@@ -925,10 +913,10 @@ getLineMetrics(char[] chars, int begin, int limit, FontRenderContext rc)
   * @throws IndexOutOfBoundsException if the range [begin, limit] is
   * invalid in <code>ci</code>.
   */
-public LineMetrics
-getLineMetrics(CharacterIterator ci, int begin, int limit, FontRenderContext rc)
+  public LineMetrics getLineMetrics (CharacterIterator ci, int begin, 
+                                     int limit, FontRenderContext rc)
 {
-  throw new UnsupportedOperationException ();
+    return peer.getLineMetrics (this, ci, begin, limit, rc);
 }
 
 /**
@@ -940,10 +928,9 @@ getLineMetrics(CharacterIterator ci, int begin, int limit, FontRenderContext rc)
   *
   * @return The maximal bounding box.
   */
-public Rectangle2D
-getMaxCharBounds(FontRenderContext rc)
+  public Rectangle2D getMaxCharBounds (FontRenderContext rc)
 {
-  throw new UnsupportedOperationException ();
+    return peer.getMaxCharBounds (this, rc);
 }
 
 /**
@@ -955,10 +942,9 @@ getMaxCharBounds(FontRenderContext rc)
   *
   * @since 1.2
   */
-public int
-getMissingGlyphCode()
+  public int getMissingGlyphCode ()
 {
-  throw new UnsupportedOperationException ();
+    return peer.getMissingGlyphCode (this);
 }
 
 /**
@@ -971,10 +957,9 @@ getMissingGlyphCode()
   * 
   * @since 1.2
   */
-public int
-getNumGlyphs()
+  public int getNumGlyphs ()
 {
-  throw new UnsupportedOperationException ();
+    return peer.getMissingGlyphCode (this);
 }
 
 /**
@@ -988,10 +973,9 @@ getNumGlyphs()
   * @see getFamily()
   * @see getFontName()
   */
-public String
-getPSName()
+  public String getPSName ()
 {
-  throw new UnsupportedOperationException ();
+    return peer.getPostScriptName (this);
 }
 
 /**
@@ -1009,10 +993,9 @@ getPSName()
   *
   * @see createGlyphVector()
   */
-public Rectangle2D
-getStringBounds(String str, FontRenderContext frc)
+  public Rectangle2D getStringBounds (String str, FontRenderContext frc)
 {
-  throw new UnsupportedOperationException ();
+    return getStringBounds (str, 0, str.length () - 1, frc);
 }
 
 /**
@@ -1037,10 +1020,10 @@ getStringBounds(String str, FontRenderContext frc)
   *
   * @see createGlyphVector()
   */
-public Rectangle2D
-getStringBounds(String str, int begin, int limit, FontRenderContext frc)
+  public Rectangle2D getStringBounds (String str, int begin, 
+                                      int limit, FontRenderContext frc)
 {
-  throw new UnsupportedOperationException ();
+    return peer.getStringBounds (this, new StringCharacterIterator(str), begin, limit, frc);
 }
 
 /**
@@ -1065,10 +1048,10 @@ getStringBounds(String str, int begin, int limit, FontRenderContext frc)
   *
   * @see createGlyphVector()
   */
-public Rectangle2D
-getStringBounds(CharacterIterator ci, int begin, int limit, FontRenderContext frc)
+  public Rectangle2D getStringBounds (CharacterIterator ci, int begin, 
+                                      int limit, FontRenderContext frc)
 {
-  throw new UnsupportedOperationException ();
+    return peer.getStringBounds (this, ci, begin, limit, frc);
 }
 
 /**
@@ -1093,10 +1076,11 @@ getStringBounds(CharacterIterator ci, int begin, int limit, FontRenderContext fr
   *
   * @see createGlyphVector()
   */
-public Rectangle2D
-getStringBounds(char[] chars, int begin, int limit, FontRenderContext frc)
+  public Rectangle2D getStringBounds (char[] chars, int begin, 
+                                      int limit, FontRenderContext frc)
 {
-  throw new UnsupportedOperationException ();
+    return peer.getStringBounds (this, new StringCharacterIterator (new String (chars)), 
+                                 begin, limit, frc);
 }
 
 /**
@@ -1105,10 +1089,9 @@ getStringBounds(char[] chars, int begin, int limit, FontRenderContext frc)
   *
   * @return The current transformation.
  */
-public AffineTransform
-getTransform()
+  public AffineTransform getTransform ()
 {
-  throw new UnsupportedOperationException ();
+    return peer.getTransform (this);
 }
 
 /**
@@ -1123,10 +1106,9 @@ getTransform()
   * @see LineMetrics
   * @see getLineMetrics()
   */
-public boolean
-hasUniformLineMetrics()
+  public boolean hasUniformLineMetrics ()
 {
-  throw new UnsupportedOperationException ();
+    return peer.hasUniformLineMetrics (this);
 }
 
 /**
@@ -1136,10 +1118,9 @@ hasUniformLineMetrics()
   * @return <code>true</code> iff the font has a non-identity affine
   * transformation applied to it.
   */
-public boolean
-isTransformed()
+  public boolean isTransformed ()
 {
-  throw new UnsupportedOperationException ();  
+    return peer.isTransformed (this);
 }
 
 /**
@@ -1169,14 +1150,13 @@ isTransformed()
   * @throws IndexOutOfBoundsException if the range [begin, limit] is
   * invalid in <code>chars</code>. 
   */
-public GlyphVector
-layoutGlyphVector(FontRenderContext frc, char[] chars, int start, int limit, int flags)
+  public GlyphVector layoutGlyphVector (FontRenderContext frc, 
+                                        char[] chars, int start, 
+                                        int limit, int flags)
 {
-  throw new UnsupportedOperationException ();  
+    return peer.layoutGlyphVector (this, frc, chars, start, limit, flags);
 }
 
-
-/*************************************************************************/
 
 /**
   * Returns a native peer object for this font.
@@ -1185,30 +1165,22 @@ layoutGlyphVector(FontRenderContext frc, char[] chars, int start, int limit, int
   *
   * @deprecated
   */
-public FontPeer
-getPeer()
+  public FontPeer getPeer ()
 {
-  if (peer != null)
-    return(peer);
-
-  peer = Toolkit.getDefaultToolkit().getFontPeer(name, style);
-  return(peer);
+    return peer;
 }
 
-/*************************************************************************/
 
 /**
   * Returns a hash value for this font.
   * 
   * @return A hash for this font.
   */
-public int
-hashCode()
+  public int hashCode()
 {
-  return((new String(name + size + style)).hashCode());
+    return this.toString().hashCode();
 }
 
-/*************************************************************************/
 
 /**
   * Tests whether or not the specified object is equal to this font.  This
@@ -1217,7 +1189,7 @@ hashCode()
   * <ul>
   * <li>The object is not <code>null</code>.
   * <li>The object is an instance of <code>Font</code>.
-  * <li>The object has the same name, style, and size as this object.
+  * <li>The object has the same names, style, size, and transform as this object.
   * </ul>
   *
   * @return <code>true</code> if the specified object is equal to this
@@ -1226,21 +1198,20 @@ hashCode()
 public boolean
 equals(Object obj)
 {
+  if (obj == null)
+    return(false);
+
   if (!(obj instanceof Font))
     return(false);
 
   Font f = (Font)obj;
 
-  if (!f.name.equals(name))
-    return(false);
-
-  if (f.size != size)
-    return(false);
-
-  if (f.style != style)
-    return(false);
-
-  return(true);
+  return (f.getName ().equals (this.getName ()) &&
+          f.getFamily ().equals (this.getFamily ()) &&
+          f.getFontName ().equals (this.getFontName ()) &&
+          f.getTransform ().equals (this.getTransform ()) &&
+          f.getSize() == this.getSize() &&
+          f.getStyle() == this.getStyle());
 } 
 
 /*************************************************************************/
@@ -1253,8 +1224,13 @@ equals(Object obj)
 public String
 toString()
 {
-  return(getClass().getName() + "(name=" + name + ",style=" + style +
-         ",size=" + size + ")");
+  return(getClass().getName() 
+         + "(logical=" + getName () 
+         + ",family=" + getFamily ()
+         + ",face=" + getFontName ()
+         + ",style=" + getStyle ()
+         + ",size=" + getSize ()
+         + ",transform=" + getTransform () + ")");
 }
 
 
@@ -1278,7 +1254,8 @@ toString()
    */
   public LineMetrics getLineMetrics(String str, FontRenderContext frc)
   {
-    throw new UnsupportedOperationException(); // FIXME
+    return getLineMetrics (str, 0, str.length () - 1, frc);
   }
+
 } // class Font 
 

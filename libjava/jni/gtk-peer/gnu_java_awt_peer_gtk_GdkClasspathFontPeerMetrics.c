@@ -37,7 +37,6 @@
 
 #include <math.h>
 
-#include "gtkpeer.h"
 #include "gdkfont.h"
 #include "gnu_java_awt_peer_gtk_GdkClasspathFontPeerMetrics.h"
 

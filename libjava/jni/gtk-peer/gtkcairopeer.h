@@ -1,4 +1,7 @@
-/* GtkCanvasPeer.java
+#ifndef __GTKCAIROPEER_H__
+#define __GTKCAIROPEER_H__
+
+/* gtkcairopeer.h -- Some global variables and #defines
    Copyright (C) 1998, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -35,66 +38,41 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+#include "gtkpeer.h"
+#include <cairo.h>
+#include <gdk-pixbuf/gdk-pixbuf.h>
 
-package gnu.java.awt.peer.gtk;
+/* 
+   A graphics2d struct is both simpler and uglier than a graphics
+   struct. 
 
-import java.awt.AWTEvent;
-import java.awt.Canvas;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.event.PaintEvent;
-import java.awt.peer.CanvasPeer;
+   Most of the graphics2d drawing state is held in the referenced cairo_t
+   and corresponding cairo_surface_t, so we can ignore it.
 
-public class GtkCanvasPeer extends GtkComponentPeer implements CanvasPeer
+   In addition to the cairo_t, we need to hold an extra reference to the
+   underlying GdkDrawable so its refcount matches the lifecycle of the java
+   Graphics object which is peering with us; also a reference to a byte
+   buffer and cairo_surface_t which contain the pattern you're drawing from
+   (if it exists).
+
+   Finally, it is possible that we are using a non-RENDER capable X server,
+   therefore we will be drawing to an cairo_surface_t which is actually a
+   pixbuf. When this is the case, the pointer to a GdkPixbuf will be
+   non-NULL and any drawing operation needs to be bracketed by pixbuf
+   load/save operations. If the GdkPixbuf pointer is NULL, we will treat
+   the cairo_surface_t as RENDER-capable.
+ */
+
+struct graphics2d
 {
-  native void create ();
+  cairo_t *cr;
+  cairo_surface_t *surface;
+  GdkDrawable *drawable;
+  GdkWindow *win;
+  GdkPixbuf *drawbuf;
+  char *pattern_pixels;
+  cairo_surface_t *pattern;
+  gboolean debug;
+};
 
-  public GtkCanvasPeer (Canvas c)
-  {
-    super (c);
-  }
-
-  public Graphics getGraphics ()
-  {
-    if (GtkToolkit.useGraphics2D ())
-      return new GdkGraphics2D (this);
-    else
-    return new GdkGraphics (this);
-  }
-
-  public void handleEvent (AWTEvent event)
-  {
-    int id = event.getID();
-      
-    switch (id)
-      {
-      case PaintEvent.PAINT:
-      case PaintEvent.UPDATE:
-	{
-	  try 
-	    {
-	      Graphics g = getGraphics ();
-	      g.setClip (((PaintEvent)event).getUpdateRect());
-		
-	      if (id == PaintEvent.PAINT)
-		awtComponent.paint (g);
-	      else
-		awtComponent.update (g);
-	      
-	      g.dispose ();
-	    } 
-	  catch (InternalError e)
-	    { 
-	      System.err.println (e);
-	    }
-	}
-	break;
-      }
-  }
-
-  /* Preferred size for a drawing widget is always what the user requested */
-  public Dimension getPreferredSize ()
-  {
-    return awtComponent.getSize ();
-  }
-}
+#endif /* __GTKCAIROPEER_H */

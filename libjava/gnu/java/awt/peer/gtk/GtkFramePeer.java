@@ -41,6 +41,7 @@ package gnu.java.awt.peer.gtk;
 import java.awt.Component;
 import java.awt.Frame;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.MenuBar;
@@ -109,8 +110,12 @@ public class GtkFramePeer extends GtkWindowPeer
 
   public Graphics getGraphics ()
   {
-    GdkGraphics g = new GdkGraphics (this);
-    g.translateNative (-insets.left, -insets.top);
+    Graphics g;
+    if (GtkToolkit.useGraphics2D ())
+      g = new GdkGraphics2D (this);
+    else
+      g = new GdkGraphics (this);
+    g.translate (-insets.left, -insets.top);
     return g;
   }
 
