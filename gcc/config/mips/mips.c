@@ -1660,10 +1660,13 @@ gen_int_relational (test_code, result, cmp0, cmp1, p_invert)
 	       ? (unsigned HOST_WIDE_INT) new > INTVAL (cmp1)
 	       : new > INTVAL (cmp1))
 	      != (p_info->const_add > 0))
-	    /* 1 is the right value in the LE and LEU case.
-	       In the GT and GTU case, *p_invert is already set,
-	       so this is effectively 0.  */
-	    return force_reg (SImode, const1_rtx);
+	    {
+	      /* This test is always true, but if INVERT is true then
+		 the result of the test needs to be inverted so 0 should
+		 be returned instead.  */
+	      emit_move_insn (result, invert ? const0_rtx : const_true_rtx);
+	      return result;
+	    }
 	  else
 	    cmp1 = GEN_INT (new);
 	}
