@@ -40,7 +40,7 @@ via `http://egcs.cygnus.com/onlinedocs/g77_bugs.html'.  Follow the
 port, build, and install `g77', see "Problems Installing" in
 `egcs/gcc/f/INSTALL'.
 
-   The following information was last updated on 1999-03-15:
+   The following information was last updated on 1999-04-03:
 
    * Automatic arrays possibly aren't working on HP-UX systems, at
      least in HP-UX version 10.20.  Writing into them apparently causes
@@ -140,19 +140,6 @@ port, build, and install `g77', see "Problems Installing" in
      This problem is largely resolved as of version 0.5.23.  Version
      0.6 should solve most or all remaining problems (such as
      cross-compiling involving 64-bit machines).
-
-   * Maintainers of `gcc' report that the back end definitely has
-     "broken" support for `COMPLEX' types.  Based on their input, it
-     seems many of the problems affect only the more-general facilities
-     for gcc's `__complex__' type, such as `__complex__ int' (where the
-     real and imaginary parts are integers) that GNU Fortran does not
-     use.
-
-     Version 0.5.20 of `g77' works around this problem by not using the
-     back end's support for `COMPLEX'.  The new option
-     `-fno-emulate-complex' avoids the work-around, reverting to using
-     the same "broken" mechanism as that used by versions of `g77'
-     prior to 0.5.20.
 
    * `g77' currently inserts needless padding for things like `COMMON
      A,IPAD' where `A' is `CHARACTER*1' and `IPAD' is `INTEGER(KIND=1)'
