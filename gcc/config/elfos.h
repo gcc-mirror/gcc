@@ -387,7 +387,7 @@ const_section ()						\
   else if (TREE_CODE (DECL) == CONSTRUCTOR)			\
     {								\
       if ((flag_pic && RELOC)					\
-	  || !TREE_READONLY (DECL) || TREE_SIDE_EFFECTS (DECL)	\
+	  || TREE_SIDE_EFFECTS (DECL)				\
 	  || ! TREE_CONSTANT (DECL))				\
 	data_section ();					\
       else							\
