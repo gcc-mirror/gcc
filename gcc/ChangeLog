@@ -1,5 +1,14 @@
 Sun Apr 19 07:48:37 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* configure.in (stab.h): Check for it.
+	(i386-*-vsta): Include xm-i386.h too.
+	* dbxout.c (stab.h): Include based on autoconf results.
+	* vax/xm-vms.h (NO_STAB_H): Deleted.
+	* alpha/xm-vms.h, xm-mips.h, i386/xm-mingw32.h, i386/go32.h: Likewise.
+	* i386/xm-cygwin32.h: Likewise.
+	* i386/xm-vsta.h (NO_STAB_H): Likewise.
+	(i386/xm-i386.h): No longer include.
+
 	* mips.c: Cleanups and reformatting throughout.
 	({expand,output}_block_move): Use HOST_WIDE_INT for sizes.
 	(mips_debugger_offset, compute_frame_size): Likewise.
