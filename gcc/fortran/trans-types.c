@@ -81,6 +81,7 @@ int gfc_index_integer_kind;
 /* The default kinds of the various types.  */
 
 int gfc_default_integer_kind;
+int gfc_max_integer_kind;
 int gfc_default_real_kind;
 int gfc_default_double_kind;
 int gfc_default_character_kind;
@@ -134,6 +135,9 @@ gfc_init_kinds (void)
 
       i_index += 1;
     }
+
+  /* Set the maximum integer kind.  Used with at least BOZ constants.  */
+  gfc_max_integer_kind = gfc_integer_kinds[i_index - 1].kind;
 
   for (r_index = 0, mode = MIN_MODE_FLOAT; mode <= MAX_MODE_FLOAT; mode++)
     {
