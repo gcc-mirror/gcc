@@ -504,6 +504,7 @@ static int copy_prop_count;
 
 extern char *current_function_name;
 extern int current_function_calls_setjmp;
+extern int current_function_calls_longjmp;
 
 /* These variables are used by classic GCSE.
    Normally they'd be defined a bit later, but `rd_gen' needs to
