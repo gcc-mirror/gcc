@@ -297,7 +297,7 @@ mode_for_extraction (enum extraction_pattern pattern, int opno)
 rtx
 store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 		 unsigned HOST_WIDE_INT bitnum, enum machine_mode fieldmode,
-		 rtx value, HOST_WIDE_INT total_size)
+		 rtx value)
 {
   unsigned int unit
     = (MEM_P (str_rtx)) ? BITS_PER_UNIT : BITS_PER_WORD;
@@ -307,12 +307,6 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
   int byte_offset;
 
   enum machine_mode op_mode = mode_for_extraction (EP_insv, 3);
-
-  /* Discount the part of the structure before the desired byte.
-     We need to know how many bytes are safe to reference after it.  */
-  if (total_size >= 0)
-    total_size -= (bitpos / BIGGEST_ALIGNMENT
-		   * (BIGGEST_ALIGNMENT / BITS_PER_UNIT));
 
   while (GET_CODE (op0) == SUBREG)
     {
@@ -542,8 +536,7 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	  store_bit_field (op0, MIN (BITS_PER_WORD,
 				     bitsize - i * BITS_PER_WORD),
 			   bitnum + bit_offset, word_mode,
-			   operand_subword_force (value, wordnum, fieldmode),
-			   total_size);
+			   operand_subword_force (value, wordnum, fieldmode));
 	}
       return value;
     }
@@ -650,8 +643,7 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	  /* Fetch that unit, store the bitfield in it, then store
 	     the unit.  */
 	  tempreg = copy_to_reg (op0);
-	  store_bit_field (tempreg, bitsize, bitpos, fieldmode, value,
-			   total_size);
+	  store_bit_field (tempreg, bitsize, bitpos, fieldmode, value);
 	  emit_move_insn (op0, tempreg);
 	  return value;
 	}
@@ -1051,8 +1043,7 @@ store_split_bit_field (rtx op0, unsigned HOST_WIDE_INT bitsize,
 rtx
 extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 		   unsigned HOST_WIDE_INT bitnum, int unsignedp, rtx target,
-		   enum machine_mode mode, enum machine_mode tmode,
-		   HOST_WIDE_INT total_size)
+		   enum machine_mode mode, enum machine_mode tmode)
 {
   unsigned int unit
     = (MEM_P (str_rtx)) ? BITS_PER_UNIT : BITS_PER_WORD;
@@ -1066,12 +1057,6 @@ extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
   enum machine_mode extzv_mode = mode_for_extraction (EP_extzv, 0);
   enum machine_mode mode1;
   int byte_offset;
-
-  /* Discount the part of the structure before the desired byte.
-     We need to know how many bytes are safe to reference after it.  */
-  if (total_size >= 0)
-    total_size -= (bitpos / BIGGEST_ALIGNMENT
-		   * (BIGGEST_ALIGNMENT / BITS_PER_UNIT));
 
   if (tmode == VOIDmode)
     tmode = mode;
@@ -1286,7 +1271,7 @@ extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	    = extract_bit_field (op0, MIN (BITS_PER_WORD,
 					   bitsize - i * BITS_PER_WORD),
 				 bitnum + bit_offset, 1, target_part, mode,
-				 word_mode, total_size);
+				 word_mode);
 
 	  if (target_part == 0)
 	    abort ();

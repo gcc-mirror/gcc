@@ -5591,8 +5591,7 @@ expand_builtin_signbit (tree exp, rtx target)
 	bitpos = GET_MODE_BITSIZE (imode) - 1 - bitpos;
       temp = copy_to_mode_reg (imode, temp);
       temp = extract_bit_field (temp, 1, bitpos, 1,
-				NULL_RTX, rmode, rmode,
-				GET_MODE_SIZE (imode));
+				NULL_RTX, rmode, rmode);
     }
   else
     {

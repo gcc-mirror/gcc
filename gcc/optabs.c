@@ -1956,12 +1956,12 @@ expand_vector_binop (enum machine_mode mode, optab binoptab, rtx op0,
 	    a = simplify_gen_subreg (submode, op0, mode, i * subsize);
 	  else
 	    a = extract_bit_field (op0, subbitsize, i * subbitsize, unsignedp,
-				   NULL_RTX, submode, submode, size);
+				   NULL_RTX, submode, submode);
 	  if (CONSTANT_P (op1))
 	    b = simplify_gen_subreg (submode, op1, mode, i * subsize);
 	  else
 	    b = extract_bit_field (op1, subbitsize, i * subbitsize, unsignedp,
-				   NULL_RTX, submode, submode, size);
+				   NULL_RTX, submode, submode);
 
 	  if (binoptab->code == DIV)
 	    {
@@ -1982,8 +1982,7 @@ expand_vector_binop (enum machine_mode mode, optab binoptab, rtx op0,
 	  if (t)
 	    emit_move_insn (t, res);
 	  else
-	    store_bit_field (target, subbitsize, i * subbitsize, submode, res,
-			     size);
+	    store_bit_field (target, subbitsize, i * subbitsize, submode, res);
 	}
       break;
 
@@ -2075,15 +2074,14 @@ expand_vector_unop (enum machine_mode mode, optab unoptab, rtx op0,
 	a = simplify_gen_subreg (submode, op0, mode, i * subsize);
       else
 	a = extract_bit_field (op0, subbitsize, i * subbitsize, unsignedp,
-			       t, submode, submode, size);
+			       t, submode, submode);
 
       res = expand_unop (submode, unoptab, a, t, unsignedp);
 
       if (t)
 	emit_move_insn (t, res);
       else
-	store_bit_field (target, subbitsize, i * subbitsize, submode, res,
-			 size);
+	store_bit_field (target, subbitsize, i * subbitsize, submode, res);
     }
 
   seq = get_insns ();

@@ -1886,7 +1886,7 @@ emit_group_load (rtx dst, rtx orig_src, tree type ATTRIBUTE_UNUSED, int ssize)
 		  && (!REG_P (tmps[i]) || GET_MODE (tmps[i]) != mode))
 		tmps[i] = extract_bit_field (tmps[i], bytelen * BITS_PER_UNIT,
 					     (bytepos % slen0) * BITS_PER_UNIT,
-					     1, NULL_RTX, mode, mode, ssize);
+					     1, NULL_RTX, mode, mode);
 	    }
 	  else if (bytepos == 0)
 	    {
@@ -1919,7 +1919,7 @@ emit_group_load (rtx dst, rtx orig_src, tree type ATTRIBUTE_UNUSED, int ssize)
       else
 	tmps[i] = extract_bit_field (src, bytelen * BITS_PER_UNIT,
 				     bytepos * BITS_PER_UNIT, 1, NULL_RTX,
-				     mode, mode, ssize);
+				     mode, mode);
 
       if (shift)
 	tmps[i] = expand_shift (LSHIFT_EXPR, mode, tmps[i],
@@ -2073,7 +2073,7 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED, int ssize)
 	emit_move_insn (adjust_address (dest, mode, bytepos), tmps[i]);
       else
 	store_bit_field (dest, bytelen * BITS_PER_UNIT, bytepos * BITS_PER_UNIT,
-			 mode, tmps[i], ssize);
+			 mode, tmps[i]);
     }
 
   emit_queue ();
@@ -2159,9 +2159,7 @@ copy_blkmode_from_reg (rtx tgtblk, rtx srcreg, tree type)
       store_bit_field (dst, bitsize, bitpos % BITS_PER_WORD, word_mode,
 		       extract_bit_field (src, bitsize,
 					  xbitpos % BITS_PER_WORD, 1,
-					  NULL_RTX, word_mode, word_mode,
-					  BITS_PER_WORD),
-		       BITS_PER_WORD);
+					  NULL_RTX, word_mode, word_mode));
     }
 
   return tgtblk;
@@ -5445,8 +5443,7 @@ store_field (rtx target, HOST_WIDE_INT bitsize, HOST_WIDE_INT bitpos,
 	}
 
       /* Store the value in the bitfield.  */
-      store_bit_field (target, bitsize, bitpos, mode, temp,
-		       int_size_in_bytes (type));
+      store_bit_field (target, bitsize, bitpos, mode, temp);
 
       if (value_mode != VOIDmode)
 	{
@@ -5473,8 +5470,7 @@ store_field (rtx target, HOST_WIDE_INT bitsize, HOST_WIDE_INT bitpos,
 	    }
 
 	  return extract_bit_field (target, bitsize, bitpos, unsignedp,
-				    NULL_RTX, value_mode, VOIDmode,
-				    int_size_in_bytes (type));
+				    NULL_RTX, value_mode, VOIDmode);
 	}
       return const0_rtx;
     }
@@ -7303,8 +7299,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	    op0 = extract_bit_field (op0, bitsize, bitpos, unsignedp,
 				     (modifier == EXPAND_STACK_PARM
 				      ? NULL_RTX : target),
-				     ext_mode, ext_mode,
-				     int_size_in_bytes (TREE_TYPE (tem)));
+				     ext_mode, ext_mode);
 
 	    /* If the result is a record type and BITSIZE is narrower than
 	       the mode of OP0, an integral mode, and this is a big endian
