@@ -99,14 +99,18 @@ _Jv_PthreadGetMutex (_Jv_Mutex_t *mu)
 // This is a convenience function used only by the pthreads thread
 // implementation.  This is slow, but that's too bad -- we need to do
 // the checks for correctness.  It might be nice to be able to compile
-// this out.
+// this out.  Returns 0 if the lock is held by the current thread, and
+// 1 otherwise.
 inline int
 _Jv_PthreadCheckMonitor (_Jv_Mutex_t *mu)
 {
-  pthread_mutex_t *pmu = _Jv_PthreadGetMutex (mu);
+  pthread_mutex_t *pmu;
+#ifdef HAVE_RECURSIVE_MUTEX
+  pmu = _Jv_PthreadGetMutex (mu);
   // See if the mutex is locked by this thread.
   if (pthread_mutex_trylock (pmu))
     return 1;
+
 #if defined (PTHREAD_MUTEX_HAVE_M_COUNT)
   // On Linux we exploit knowledge of the implementation.
   int r = pmu->m_count == 1;
@@ -117,6 +121,17 @@ _Jv_PthreadCheckMonitor (_Jv_Mutex_t *mu)
 #else
   int r = mu->count == 0;
 #endif
+
+#else /* HAVE_RECURSIVE_MUTEX */
+  // In this case we must lock our structure and then see if this
+  // thread owns the mutex.
+  pmu = &mu->mutex;
+  if (pthread_mutex_lock (pmu))
+    return 1;
+
+  int r = mu->thread != pthread_self () || mu->count == 0;
+#endif /* HAVE_RECURSIVE_MUTEX */
+
   pthread_mutex_unlock (pmu);
   return r;
 }
