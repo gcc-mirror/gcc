@@ -314,6 +314,7 @@ find_basic_blocks (f, nregs, file, live_reachable_p)
     register RTX_CODE prev_code = JUMP_INSN;
     register RTX_CODE code;
     int eh_region = 0;
+    int call_had_abnormal_edge = 0;
 
     max_uid_for_flow = 0;
 
@@ -335,7 +336,7 @@ find_basic_blocks (f, nregs, file, live_reachable_p)
 	      i++;
 	    else if (prev_code == CALL_INSN)
 	      {
-		if (nonlocal_label_list != 0 || eh_region)
+		if (call_had_abnormal_edge)
 		  i++;
 		else
 		  {
@@ -359,6 +360,10 @@ find_basic_blocks (f, nregs, file, live_reachable_p)
 	   new block.  */
 	if (code == CALL_INSN && in_libcall_block)
 	  code = INSN;
+
+        /* Record whether this call created an edge.  */
+        if (code == CALL_INSN)
+	  call_had_abnormal_edge = (nonlocal_label_list != 0 || eh_region);
 
 	if (code != NOTE)
 	  prev_code = code;
