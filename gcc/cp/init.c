@@ -2024,7 +2024,8 @@ build_new (placement, decl, init, use_global_new)
       else
 	t = type;
 	
-      rval = build_min_nt (NEW_EXPR, placement, t, init);
+      rval = build_min (NEW_EXPR, build_pointer_type (type), 
+			placement, t, init);
       NEW_EXPR_USE_GLOBAL (rval) = use_global_new;
       return rval;
     }

@@ -1,3 +1,17 @@
+2003-01-22  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/9354
+	* init.c (build_new): Set the type of the new-expression, even
+	when processing_templte_decl.
+
+	PR c++/9216
+	* parser.c (cp_parser_primary_expression): Improve error message
+	for templates used in an expression context.
+
+	PR c++/8696
+	* parser.c (cp_parser_decl_specifier_seq): Commit to tentative
+	parse when encountering "typedef".
+
 2003-01-22  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* class.c, parser.c: ANSIfy function definitions and declarations.
