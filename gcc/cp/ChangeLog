@@ -1,5 +1,8 @@
 2000-01-16  Mark Mitchell  <mark@codesourcery.com>
 
+	* init.c (construct_virtual_bases): Don't look up the addresses of
+	virtual bases at run-time.
+
 	* class.c (build_vbase_pointer): Relocate.
 	(build_vbase_pointer_fields): Likewise.
 	(dfs_build_vbase_offset_vtbl_entries): Likewise.
