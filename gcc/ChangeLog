@@ -13,6 +13,12 @@ Sun May 24 09:38:17 1998  John Wehle  (john@feith.com)
 
 Sun May 24 08:59:27 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* fold-const.c (fold, case EQ_EXPR): Split COMPLEX_TYPE operands
+	if either is COMPLEX_CST in addition to COMPLEX_EXPR.
+
+	* expr.c (do_jump, case EQ_EXPR, case NE_EXPR): Check for COMPLEX
+	before testing for operand 1 being zero.
+
 	* genattrtab.c (optimize): Define.
 
 	* configure.lang: Fix substitution of target_alias.
