@@ -266,6 +266,9 @@ extern int errno;
 #define MIN(X,Y) ((X) < (Y) ? (X) : (Y))
 #define MAX(X,Y) ((X) > (Y) ? (X) : (Y))
 
+/* Returns the least number N such that N * Y >= X.  */
+#define CEIL(x,y) (((x) + (y) - 1) / (y))
+
 #ifdef HAVE_SYS_WAIT_H
 #include <sys/wait.h>
 #endif

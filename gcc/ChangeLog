@@ -1,3 +1,11 @@
+2000-01-02  Mark Mitchell  <mark@codesourcery.com>
+
+	* system.h (CEIL): Define.
+	* builtins.c (CEIL): Remove.
+	* expmed.c (CEIL): Likewise.
+	* expr.c (CEIL): Likewise.
+	* stor-layout.c (CEIL): Likewise.
+	
 2000-01-02  Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
 
 	* expr.c (store_constructor_field): Fix typo introduced with last

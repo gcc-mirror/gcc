@@ -43,8 +43,6 @@ Boston, MA 02111-1307, USA.  */
 #include "ggc.h"
 #include "tm_p.h"
 
-#define CEIL(x,y) (((x) + (y) - 1) / (y))
-
 /* Decide whether a function's arguments should be processed
    from first to last or from last to first.
 

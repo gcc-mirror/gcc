@@ -30,8 +30,6 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "ggc.h"
 
-#define CEIL(x,y) (((x) + (y) - 1) / (y))
-
 /* Data type for the expressions representing sizes of data types.
    It is the first integer type laid out.  */
 
