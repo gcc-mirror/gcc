@@ -6478,6 +6478,8 @@ process_init_element (value)
       && TREE_CODE (TREE_TYPE (constructor_type)) == INTEGER_TYPE
       && integer_zerop (constructor_unfilled_index))
     {
+      if (constructor_stack->replacement_value)
+        error_init ("excess elements in char array initializer");
       constructor_stack->replacement_value = value;
       return;
     }
