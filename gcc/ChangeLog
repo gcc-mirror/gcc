@@ -1,3 +1,14 @@
+2001-07-15  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.h (TARGET_ABI_OSF): New.
+	(TARGET_ABI_WINDOWS_NT, TARGET_ABI_OPEN_VMS): Rename; update users.
+	* config/alpha/alpha-protos.h: Update TARGET_ABI_* users.
+	* config/alpha/alpha.c: Likewise.
+	* config/alpha/alpha.md: Likewise.
+	* config/alpha/alpha32.h: Likewise.
+	* config/alpha/vms.h: Likewise.
+	(OPEN_VMS): Remove.
+
 2001-07-14  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.md: Use define_constants for unspec values.

@@ -111,7 +111,7 @@ extern int check_float_value PARAMS ((enum machine_mode,
 				     REAL_VALUE_TYPE *, int));
 #endif
 
-#if OPEN_VMS
+#if TARGET_ABI_OPEN_VMS
 #ifdef HAVE_MACHINE_MODES
 extern enum avms_arg_type alpha_arg_type PARAMS ((enum machine_mode));
 #endif
@@ -121,7 +121,7 @@ extern rtx alpha_arg_info_reg_val PARAMS ((CUMULATIVE_ARGS));
 #ifdef BUFSIZ
 extern void alpha_write_linkage PARAMS ((FILE *));
 #endif
-#endif /* OPEN_VMS */
+#endif /* TARGET_ABI_OPEN_VMS */
 
 #ifdef RTX_CODE
 extern rtx alpha_need_linkage PARAMS ((const char *, int));

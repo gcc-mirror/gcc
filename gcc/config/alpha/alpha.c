@@ -133,7 +133,7 @@ static void alpha_output_function_end_prologue
   PARAMS ((FILE *));
 
 /* Get the number of args of a function in one of two ways.  */
-#ifdef OPEN_VMS
+#if TARGET_ABI_OPEN_VMS
 #define NUM_ARGS current_function_args_info.num_args
 #else
 #define NUM_ARGS current_function_args_info
@@ -143,7 +143,7 @@ static void alpha_output_function_end_prologue
 #define REG_RA 26
 
 /* Initialize the GCC target structure.  */
-#ifdef OPEN_VMS
+#if TARGET_ABI_OPEN_VMS
    static int vms_valid_decl_attribute_p PARAMS ((tree, tree, tree, tree));
 #  undef TARGET_VALID_DECL_ATTRIBUTE
 #  define TARGET_VALID_DECL_ATTRIBUTE vms_valid_decl_attribute_p
@@ -740,9 +740,17 @@ call_operand (op, mode)
   if (mode != Pmode)
     return 0;
 
-  return (GET_CODE (op) == SYMBOL_REF
-	  || (GET_CODE (op) == REG
-	      && (TARGET_OPEN_VMS || TARGET_WINDOWS_NT || REGNO (op) == 27)));
+  if (GET_CODE (op) == SYMBOL_REF)
+    return 1;
+  if (GET_CODE (op) == REG)
+    {
+      if (TARGET_ABI_OSF)
+	return REGNO (op) == 27;
+      else
+	return 1;
+    }
+
+  return 0;
 }
 
 /* Return 1 if OP is a valid Alpha comparison operator.  Here we know which
@@ -1059,7 +1067,9 @@ addition_operation (op, mode)
 int
 direct_return ()
 {
-  return (! TARGET_OPEN_VMS && reload_completed && alpha_sa_size () == 0
+  return (! TARGET_ABI_OPEN_VMS
+	  && reload_completed
+	  && alpha_sa_size () == 0
 	  && get_frame_size () == 0
 	  && current_function_outgoing_args_size == 0
 	  && current_function_pretend_args_size == 0);
@@ -2156,7 +2166,7 @@ alpha_lookup_xfloating_lib_func (code)
      knowledge of the G_floating routines.  */
   if (TARGET_FLOAT_VAX)
     {
-      if (TARGET_OPEN_VMS)
+      if (TARGET_ABI_OPEN_VMS)
 	{
 	  if (code == FLOAT_EXTEND)
 	    return "OTS$CVT_FLOAT_G_X";
@@ -2172,7 +2182,7 @@ alpha_lookup_xfloating_lib_func (code)
 	}
     }
 
-  if (TARGET_OPEN_VMS)
+  if (TARGET_ABI_OPEN_VMS)
     ops = vms_xfloating_ops;
   else
     ops = osf_xfloating_ops;
@@ -4057,7 +4067,7 @@ alpha_initialize_trampoline (tramp, fnaddr, cxt, fnofs, cxtofs, jmpofs)
 {
   rtx temp, temp1, addr;
   /* VMS really uses DImode pointers in memory at this point.  */
-  enum machine_mode mode = TARGET_OPEN_VMS ? Pmode : ptr_mode;
+  enum machine_mode mode = TARGET_ABI_OPEN_VMS ? Pmode : ptr_mode;
 
 #ifdef POINTERS_EXTEND_UNSIGNED
   fnaddr = convert_memory_address (mode, fnaddr);
@@ -4126,7 +4136,14 @@ function_arg (cum, mode, type, named)
   int basereg;
   int num_args;
 
-#ifndef OPEN_VMS
+#if TARGET_ABI_OPEN_VMS
+  if (mode == VOIDmode)
+    return alpha_arg_info_reg_val (cum);
+
+  num_args = cum.num_args;
+  if (num_args >= 6 || MUST_PASS_IN_STACK (mode, type))
+    return NULL_RTX;
+#else
   if (cum >= 6)
     return NULL_RTX;
   num_args = cum;
@@ -4138,14 +4155,7 @@ function_arg (cum, mode, type, named)
     return NULL_RTX;
   else if (FUNCTION_ARG_PASS_BY_REFERENCE (cum, mode, type, named))
     basereg = 16;
-#else
-  if (mode == VOIDmode)
-    return alpha_arg_info_reg_val (cum);
-
-  num_args = cum.num_args;
-  if (num_args >= 6 || MUST_PASS_IN_STACK (mode, type))
-    return NULL_RTX;
-#endif /* OPEN_VMS */
+#endif /* TARGET_ABI_OPEN_VMS */
   else if (TARGET_FPREGS
 	   && (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT
 	       || GET_MODE_CLASS (mode) == MODE_FLOAT))
@@ -4161,7 +4171,7 @@ alpha_build_va_list ()
 {
   tree base, ofs, record, type_decl;
 
-  if (TARGET_OPEN_VMS)
+  if (TARGET_ABI_OPEN_VMS)
     return ptr_type_node;
 
   record = make_lang_type (RECORD_TYPE);
@@ -4198,7 +4208,7 @@ alpha_va_start (stdarg_p, valist, nextarg)
   if (TREE_CODE (TREE_TYPE (valist)) == ERROR_MARK)
     return;
 
-  if (TARGET_OPEN_VMS)
+  if (TARGET_ABI_OPEN_VMS)
     std_expand_builtin_va_start (stdarg_p, valist, nextarg);
 
   /* For Unix, SETUP_INCOMING_VARARGS moves the starting address base
@@ -4246,7 +4256,7 @@ alpha_va_arg (valist, type)
   tree wide_type, wide_ofs;
   int indirect = 0;
 
-  if (TARGET_OPEN_VMS)
+  if (TARGET_ABI_OPEN_VMS)
     return std_expand_builtin_va_arg (valist, type);
 
   tsize = ((TREE_INT_CST_LOW (TYPE_SIZE (type)) / BITS_PER_UNIT + 7) / 8) * 8;
@@ -4343,7 +4353,7 @@ alpha_sa_mask (imaskP, fmaskP)
   if (!current_function_is_thunk)
 #endif
     {
-      if (TARGET_OPEN_VMS && vms_is_stack_procedure)
+      if (TARGET_ABI_OPEN_VMS && vms_is_stack_procedure)
 	imask |= (1L << HARD_FRAME_POINTER_REGNUM);
 
       /* One for every register we have to save.  */
@@ -4396,7 +4406,7 @@ alpha_sa_size ()
 	  sa_size++;
     }
 
-  if (TARGET_OPEN_VMS)
+  if (TARGET_ABI_OPEN_VMS)
     {
       /* Start by assuming we can use a register procedure if we don't
 	 make any calls (REG_RA not used) or need to save any
@@ -4462,7 +4472,7 @@ alpha_using_fp ()
   return vms_unwind_regno == HARD_FRAME_POINTER_REGNUM;
 }
 
-#ifdef OPEN_VMS
+#if TARGET_ABI_OPEN_VMS
 
 static int
 vms_valid_decl_attribute_p (decl, attributes, identifier, args)
@@ -4484,7 +4494,7 @@ alpha_does_function_need_gp ()
   rtx insn;
 
   /* We never need a GP for Windows/NT or VMS.  */
-  if (TARGET_WINDOWS_NT || TARGET_OPEN_VMS)
+  if (TARGET_ABI_WINDOWS_NT || TARGET_ABI_OPEN_VMS)
     return 0;
 
   if (TARGET_PROFILING_NEEDS_GP && profile_flag)
@@ -4593,7 +4603,7 @@ alpha_expand_prologue ()
   sa_size = alpha_sa_size ();
 
   frame_size = get_frame_size ();
-  if (TARGET_OPEN_VMS)
+  if (TARGET_ABI_OPEN_VMS)
     frame_size = ALPHA_ROUND (sa_size 
 			      + (vms_is_stack_procedure ? 8 : 0)
 			      + frame_size
@@ -4604,7 +4614,7 @@ alpha_expand_prologue ()
 		  + ALPHA_ROUND (frame_size
 				 + current_function_pretend_args_size));
 
-  if (TARGET_OPEN_VMS)
+  if (TARGET_ABI_OPEN_VMS)
     reg_offset = 8;
   else
     reg_offset = ALPHA_ROUND (current_function_outgoing_args_size);
@@ -4612,7 +4622,7 @@ alpha_expand_prologue ()
   alpha_sa_mask (&imask, &fmask);
 
   /* Emit an insn to reload GP, if needed.  */
-  if (!TARGET_OPEN_VMS && !TARGET_WINDOWS_NT)
+  if (TARGET_ABI_OSF)
     {
       alpha_function_needs_gp = alpha_does_function_need_gp ();
       if (alpha_function_needs_gp)
@@ -4682,7 +4692,7 @@ alpha_expand_prologue ()
 	  emit_move_insn (last, const0_rtx);
 	}
 
-      if (TARGET_WINDOWS_NT)
+      if (TARGET_ABI_WINDOWS_NT)
 	{
 	  /* For NT stack unwind (done by 'reverse execution'), it's
 	     not OK to take the result of a loop, even though the value
@@ -4737,7 +4747,7 @@ alpha_expand_prologue ()
     }
     
   /* Save regs in stack order.  Beginning with VMS PV.  */
-  if (TARGET_OPEN_VMS && vms_is_stack_procedure)
+  if (TARGET_ABI_OPEN_VMS && vms_is_stack_procedure)
     {
       mem = gen_rtx_MEM (DImode, stack_pointer_rtx);
       set_mem_alias_set (mem, alpha_sr_alias_set);
@@ -4773,7 +4783,7 @@ alpha_expand_prologue ()
 	reg_offset += 8;
       }
 
-  if (TARGET_OPEN_VMS)
+  if (TARGET_ABI_OPEN_VMS)
     {
       if (!vms_is_stack_procedure)
 	/* Register frame procedures fave the fp.  */
@@ -4847,7 +4857,7 @@ alpha_start_function (file, fnname, decl)
   sa_size = alpha_sa_size ();
 
   frame_size = get_frame_size ();
-  if (TARGET_OPEN_VMS)
+  if (TARGET_ABI_OPEN_VMS)
     frame_size = ALPHA_ROUND (sa_size 
 			      + (vms_is_stack_procedure ? 8 : 0)
 			      + frame_size
@@ -4858,7 +4868,7 @@ alpha_start_function (file, fnname, decl)
 		  + ALPHA_ROUND (frame_size
 				 + current_function_pretend_args_size));
 
-  if (TARGET_OPEN_VMS)
+  if (TARGET_ABI_OPEN_VMS)
     reg_offset = 8;
   else
     reg_offset = ALPHA_ROUND (current_function_outgoing_args_size);
@@ -4883,7 +4893,7 @@ alpha_start_function (file, fnname, decl)
     }
 
   /* Issue function start and label.  */
-  if (TARGET_OPEN_VMS || !flag_inhibit_size_directive)
+  if (TARGET_ABI_OPEN_VMS || !flag_inhibit_size_directive)
     {
       fputs ("\t.ent ", file);
       assemble_name (file, fnname);
@@ -4891,8 +4901,7 @@ alpha_start_function (file, fnname, decl)
 
       /* If the function needs GP, we'll write the "..ng" label there.
 	 Otherwise, do it here.  */
-      if (! TARGET_OPEN_VMS && ! TARGET_WINDOWS_NT
-	  && ! alpha_function_needs_gp)
+      if (TARGET_ABI_OSF && ! alpha_function_needs_gp)
 	{
 	  putc ('$', file);
 	  assemble_name (file, fnname);
@@ -4901,15 +4910,15 @@ alpha_start_function (file, fnname, decl)
     }
 
   strcpy (entry_label, fnname);
-  if (TARGET_OPEN_VMS)
+  if (TARGET_ABI_OPEN_VMS)
     strcat (entry_label, "..en");
   ASM_OUTPUT_LABEL (file, entry_label);
   inside_function = TRUE;
 
-  if (TARGET_OPEN_VMS)
+  if (TARGET_ABI_OPEN_VMS)
     fprintf (file, "\t.base $%d\n", vms_base_regno);
 
-  if (!TARGET_OPEN_VMS && TARGET_IEEE_CONFORMANT
+  if (!TARGET_ABI_OPEN_VMS && TARGET_IEEE_CONFORMANT
       && !flag_inhibit_size_directive)
     {
       /* Set flags in procedure descriptor to request IEEE-conformant
@@ -4925,7 +4934,7 @@ alpha_start_function (file, fnname, decl)
   /* Describe our frame.  If the frame size is larger than an integer,
      print it as zero to avoid an assembler error.  We won't be
      properly describing such a frame, but that's the best we can do.  */
-  if (TARGET_OPEN_VMS)
+  if (TARGET_ABI_OPEN_VMS)
     {
       fprintf (file, "\t.frame $%d,", vms_unwind_regno);
       fprintf (file, HOST_WIDE_INT_PRINT_DEC,
@@ -4945,7 +4954,7 @@ alpha_start_function (file, fnname, decl)
     }
 
   /* Describe which registers were spilled.  */
-  if (TARGET_OPEN_VMS)
+  if (TARGET_ABI_OPEN_VMS)
     {
       if (imask)
         /* ??? Does VMS care if mask contains ra?  The old code did'nt
@@ -4979,7 +4988,7 @@ alpha_start_function (file, fnname, decl)
 	}
     }
 
-#ifdef OPEN_VMS
+#if TARGET_ABI_OPEN_VMS
   /* Ifdef'ed cause readonly_section and link_section are only
      available then.  */
   readonly_section ();
@@ -5009,9 +5018,9 @@ static void
 alpha_output_function_end_prologue (file)
      FILE *file;
 {
-  if (TARGET_OPEN_VMS)
+  if (TARGET_ABI_OPEN_VMS)
     fputs ("\t.prologue\n", file);
-  else if (TARGET_WINDOWS_NT)
+  else if (TARGET_ABI_WINDOWS_NT)
     fputs ("\t.prologue 0\n", file);
   else if (!flag_inhibit_size_directive)
     fprintf (file, "\t.prologue %d\n", alpha_function_needs_gp);
@@ -5046,7 +5055,7 @@ alpha_expand_epilogue ()
   sa_size = alpha_sa_size ();
 
   frame_size = get_frame_size ();
-  if (TARGET_OPEN_VMS)
+  if (TARGET_ABI_OPEN_VMS)
     frame_size = ALPHA_ROUND (sa_size 
 			      + (vms_is_stack_procedure ? 8 : 0)
 			      + frame_size
@@ -5057,15 +5066,15 @@ alpha_expand_epilogue ()
 		  + ALPHA_ROUND (frame_size
 				 + current_function_pretend_args_size));
 
-  if (TARGET_OPEN_VMS)
+  if (TARGET_ABI_OPEN_VMS)
     reg_offset = 8;
   else
     reg_offset = ALPHA_ROUND (current_function_outgoing_args_size);
 
   alpha_sa_mask (&imask, &fmask);
 
-  fp_is_frame_pointer = ((TARGET_OPEN_VMS && vms_is_stack_procedure)
-			 || (!TARGET_OPEN_VMS && frame_pointer_needed));
+  fp_is_frame_pointer = ((TARGET_ABI_OPEN_VMS && vms_is_stack_procedure)
+			 || (!TARGET_ABI_OPEN_VMS && frame_pointer_needed));
   fp_offset = 0;
   sa_reg = stack_pointer_rtx;
 
@@ -5077,9 +5086,9 @@ alpha_expand_epilogue ()
   if (sa_size)
     {
       /* If we have a frame pointer, restore SP from it.  */
-      if ((TARGET_OPEN_VMS
+      if ((TARGET_ABI_OPEN_VMS
 	   && vms_unwind_regno == HARD_FRAME_POINTER_REGNUM)
-	  || (!TARGET_OPEN_VMS && frame_pointer_needed))
+	  || (!TARGET_ABI_OPEN_VMS && frame_pointer_needed))
 	FRP (emit_move_insn (stack_pointer_rtx, hard_frame_pointer_rtx));
 
       /* Cope with very large offsets to the register save area.  */
@@ -5188,7 +5197,7 @@ alpha_expand_epilogue ()
 	  set_mem_alias_set (mem, alpha_sr_alias_set);
 	  FRP (emit_move_insn (hard_frame_pointer_rtx, mem));
 	}
-      else if (TARGET_OPEN_VMS)
+      else if (TARGET_ABI_OPEN_VMS)
 	{
 	  emit_insn (gen_blockage ());
 	  FRP (emit_move_insn (hard_frame_pointer_rtx,
@@ -5202,7 +5211,7 @@ alpha_expand_epilogue ()
     }
   else 
     {
-      if (TARGET_OPEN_VMS && !vms_is_stack_procedure)
+      if (TARGET_ABI_OPEN_VMS && !vms_is_stack_procedure)
         {
           emit_insn (gen_blockage ());
           FRP (emit_move_insn (hard_frame_pointer_rtx,
@@ -6270,7 +6279,7 @@ check_float_value (mode, d, overflow)
   return 0;
 }
 
-#if OPEN_VMS
+#if TARGET_ABI_OPEN_VMS
 
 /* Return the VMS argument type corresponding to MODE.  */
 
@@ -6466,4 +6475,4 @@ alpha_need_linkage (name, is_local)
   return NULL_RTX;
 }
 
-#endif /* OPEN_VMS */
+#endif /* TARGET_ABI_OPEN_VMS */
