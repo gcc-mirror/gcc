@@ -497,7 +497,8 @@ namespace std
 
 	// At this point, base is determined. If not hex, only allow
 	// base digits as valid input.
-	const size_t __len = __base == 16 ? __num_base::_S_iend - __num_base::_S_izero : __base;
+	const size_t __len = (__base == 16 ? __num_base::_S_iend
+			      - __num_base::_S_izero : __base);
 
 	// Extract.
 	string __found_grouping;
@@ -1043,21 +1044,12 @@ namespace std
 	const locale& __loc = __io._M_getloc();
 	const __cache_type* __lc = __uc(__loc);
 
-	// Note: digits10 is rounded down: add 1 to ensure the maximum
-	// available precision.  Then, in general, one more 1 needs to
-	// be added since, when the %{g,G} conversion specifiers are
-	// chosen inside _S_format_float, the precision field is "the
-	// maximum number of significant digits", *not* the "number of
-	// digits to appear after the decimal point", as happens for
-	// %{e,E,f,F} (C99, 7.19.6.1,4).
-	const int __max_digits = numeric_limits<_ValueT>::digits10 + 2;
-
 	// Use default precision if out of range.
 	streamsize __prec = __io.precision();
-	if (__prec > static_cast<streamsize>(__max_digits))
-	  __prec = static_cast<streamsize>(__max_digits);
-	else if (__prec < static_cast<streamsize>(0))
+	if (__prec < static_cast<streamsize>(0))
 	  __prec = static_cast<streamsize>(6);
+
+	const int __max_digits = numeric_limits<_ValueT>::digits10;
 
 	// [22.2.2.2.2] Stage 1, numeric conversion to character.
 	int __len;
@@ -1065,7 +1057,7 @@ namespace std
 	char __fbuf[16];
 
 #ifdef _GLIBCXX_USE_C99
-	// First try a buffer perhaps big enough (for sure sufficient
+	// First try a buffer perhaps big enough (most probably sufficient
 	// for non-ios_base::fixed outputs)
 	int __cs_size = __max_digits * 3;
 	char* __cs = static_cast<char*>(__builtin_alloca(__cs_size));
@@ -1088,13 +1080,13 @@ namespace std
 	const int __max_exp = numeric_limits<_ValueT>::max_exponent10;
 
 	// The size of the output string is computed as follows.
-	// ios_base::fixed outputs may need up to __max_exp+1 chars
-	// for the integer part + up to __max_digits chars for the
-	// fractional part + 3 chars for sign, decimal point, '\0'. On
-	// the other hand, for non-fixed outputs __max_digits*3 chars
-	// are largely sufficient.
-	const int __cs_size = __fixed ? __max_exp + __max_digits + 4
-	                              : __max_digits * 3;
+	// ios_base::fixed outputs may need up to __max_exp + 1 chars
+	// for the integer part + __prec chars for the fractional part
+	// + 3 chars for sign, decimal point, '\0'. On the other hand,
+	// for non-fixed outputs __max_digits * 2 + __prec chars are
+	// largely sufficient.
+	const int __cs_size = __fixed ? __max_exp + __prec + 4
+	                              : __max_digits * 2 + __prec;
 	char* __cs = static_cast<char*>(__builtin_alloca(__cs_size));
 
 	__num_base::_S_format_float(__io, __fbuf, __mod);
