@@ -97,10 +97,6 @@ fimplicit-none
 F95
 Specify that no implicit typing is allowed, unless overridden by explicit IMPLICIT statements
 
-ffixed-line-length-72
-F95 RejectNegative
-Use 72 character line width in fixed mode
-
 ffixed-line-length-80
 F95 RejectNegative
 Use 80 character line width in fixed mode
