@@ -1,3 +1,18 @@
+2002-03-13  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config/mmix/mmix.c: Improve comments.
+	(mmix_target_asm_function_prologue): Drop variable
+	empty_stack_frame.  Don't allocate unused slot above fp.
+	(mmix_target_asm_function_epilogue): Mirror prologue changes.
+	(mmix_expand_builtin_va_arg): Do all computations on trees.
+	* config/mmix/mmix.h (MMIX_GNU_ABI_REG_ALLOC_ORDER): Don't have
+	brace in first column.
+	(enum reg_class): Ditto.
+	(FIRST_PARM_OFFSET): Now 0.
+	(USER_LABEL_PREFIX): Remove #if 0:d definition.
+	(LINK_SPEC): Don't defsym __.MMIX.start..text if linking
+	relocatably.  Always produce ELF, not mmo if linking relocatably.
+
 2002-03-13  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.h (PAD_VARARGS_DOWN): Define.
