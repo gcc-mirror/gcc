@@ -3389,19 +3389,41 @@ arm_rtx_costs_1 (rtx x, enum rtx_code code, enum rtx_code outer)
 	{
 	  unsigned HOST_WIDE_INT i = (INTVAL (XEXP (x, 1))
 				      & (unsigned HOST_WIDE_INT) 0xffffffff);
-	  int add_cost = const_ok_for_arm (i) ? 4 : 8;
-	  int j;
+	  int cost, const_ok = const_ok_for_arm (i);
+	  int j, booth_unit_size;
+
+	  if (arm_tune_xscale)
+	    {
+	      unsigned HOST_WIDE_INT masked_const;
+
+	      /* The cost will be related to two insns.
+		 First a load of the constant (MOV or LDR), then a multiply. */
+	      cost = 2;
+	      if (! const_ok)
+		cost += 1;      /* LDR is probably more expensive because
+				   of longer result latency. */
+	      masked_const = i & 0xffff8000;
+	      if (masked_const != 0 && masked_const != 0xffff8000)
+		{
+		  masked_const = i & 0xf8000000;
+		  if (masked_const == 0 || masked_const == 0xf8000000)
+		    cost += 1;
+		  else
+		    cost += 2;
+		}
+	      return cost;
+	    }
 	  
 	  /* Tune as appropriate.  */ 
-	  int booth_unit_size = ((tune_flags & FL_FAST_MULT) ? 8 : 2);
-	  
+	  cost = const_ok ? 4 : 8;
+	  booth_unit_size = ((tune_flags & FL_FAST_MULT) ? 8 : 2);
 	  for (j = 0; i && j < 32; j += booth_unit_size)
 	    {
 	      i >>= booth_unit_size;
-	      add_cost += 2;
+	      cost += 2;
 	    }
 
-	  return add_cost;
+	  return cost;
 	}
 
       return (((tune_flags & FL_FAST_MULT) ? 8 : 30)
