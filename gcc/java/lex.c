@@ -87,7 +87,6 @@ java_init_lex ()
     ctxp->incomplete_class = NULL_TREE;
   
   bzero (ctxp->modifier_ctx, 11*sizeof (ctxp->modifier_ctx[0]));
-  classpath = NULL;
   bzero (current_jcf, sizeof (JCF));
   ctxp->current_parsed_class = NULL;
   ctxp->package = NULL_TREE;

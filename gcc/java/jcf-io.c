@@ -25,8 +25,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "config.h"
 #include "system.h"
 
-#define ENABLE_UNZIP 1
-
 #include "jcf.h"
 #include <sys/stat.h>
 #include <sys/wait.h>
@@ -35,8 +33,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #ifndef O_BINARY
 #define O_BINARY 0 /* MS-DOS brain-damage */
 #endif
-
-char *classpath;
 
 int
 DEFUN(jcf_unexpected_eof, (jcf, count),
@@ -89,15 +85,14 @@ DEFUN(jcf_filbuf_from_stdio, (jcf, count),
   return 0;
 }
 
-#if ENABLE_UNZIP
 #include "zipfile.h"
 
 struct ZipFileCache *SeenZipFiles = NULL;
 
 int
-DEFUN(open_in_zip, (jcf, 
-zipfile, zipmember),
-      JCF *jcf AND const char *zipfile AND const char *zipmember)
+DEFUN(open_in_zip, (jcf, zipfile, zipmember),
+      JCF *jcf AND const char *zipfile AND const char *zipmember
+      AND int is_system)
 {
   struct ZipFileCache* zipf;
   ZipDirectory *zipd;
@@ -108,7 +103,7 @@ zipfile, zipmember),
 	{
 	  char magic [4];
 	  int fd = open (zipfile, O_RDONLY | O_BINARY);
-	  jcf_dependency_add_file (zipfile, 0);	/* FIXME: system file? */
+	  jcf_dependency_add_file (zipfile, is_system);
 	  if (read (fd, magic, 4) != 4 || GET_u4 (magic) != (JCF_u4)ZIPMAGIC)
 	    return -1;
 	  lseek (fd, 0L, SEEK_SET);
@@ -165,7 +160,6 @@ zipfile, zipmember),
     }
   return -1;
 }
-#endif /* ENABLE_UNZIP */
 
 #if JCF_USE_STDIO
 char*
@@ -260,156 +254,175 @@ DEFUN(find_class, (classname, classname_length, jcf, do_class_file),
 #else
   int fd;
 #endif
-  int i, j, k, java, class;
+  int i, k, java, class;
   struct stat java_buf, class_buf;
   char *dep_file;
-
-  /* A temporary buffer that we grow to be large enough to hold
-     whatever class name we're working on.  */
-  static int temp_len = 0;
-  static char *temp_buffer = NULL;
+  void *entry, *java_entry;
+  char *java_buffer;
 
   /* Allocate and zero out the buffer, since we don't explicitly put a
      null pointer when we're copying it below.  */
-  int buflen = strlen (classpath) + classname_length + 10;
+  int buflen = jcf_path_max_len () + classname_length + 10;
   char *buffer = (char *) ALLOC (buflen);
   bzero (buffer, buflen);
 
-  if (buflen > temp_len)
-    {
-      temp_len = buflen;
-      if (temp_buffer == NULL)
-	temp_buffer = (char *) ALLOC (temp_len);
-      else
-	temp_buffer = (char *) REALLOC (temp_buffer, temp_len);
-    }
+  java_buffer = (char *) alloca (buflen);
 
   jcf->java_source = jcf->outofsynch = 0;
-  for (j = 0; classpath[j] != '\0'; )
+
+  for (entry = jcf_path_start (); entry != NULL; entry = jcf_path_next (entry))
     {
-      for (i = 0; classpath[j] != ':' && classpath[j] != '\0'; i++, j++)
-	buffer[i] = classpath[j];
-      if (classpath[j] == ':')
-	j++;
-      if (i > 0)  /* Empty directory is redundant */
+      int dir_len;
+
+      strcpy (buffer, jcf_path_name (entry));
+      i = strlen (buffer);
+
+      dir_len = i - 1;
+
+      for (k = 0; k < classname_length; k++, i++)
 	{
-	  int dir_len;
-	  if (buffer[i-1] != '/')
-	    buffer[i++] = '/';
-	  dir_len = i-1;
-	  for (k = 0; k < classname_length; k++, i++)
-	    {
-	      char ch = classname[k];
-	      buffer[i] = ch == '.' ? '/' : ch;
-	    }
-	  if (do_class_file)
-	    strcpy (buffer+i, ".class");
-#if ENABLE_UNZIP
-	  if (dir_len > 4
-	      && buffer[dir_len-4] == '.' && buffer[dir_len-3] == 'z'
-	      && buffer[dir_len-2] == 'i' && buffer[dir_len-1] == 'p')
-	    {
-	      int err_code;
-	      JCF _jcf;
-	      if (!do_class_file)
-		strcpy (buffer+i, "/");
-	      buffer[dir_len] = '\0';
-	      if (do_class_file)
-		SOURCE_FRONTEND_DEBUG 
-		  (("Trying [...%s]:%s", 
-		    &buffer[dir_len-(dir_len > 15 ? 15 : dir_len)], 
-		    buffer+dir_len+1));
-	      if (jcf == NULL)
-		jcf = &_jcf;
-	      err_code = open_in_zip (jcf, buffer, buffer+dir_len+1);
-	      if (err_code == 0)
-		{
-		  if (!do_class_file)
-		    jcf->seen_in_zip = 1;
-		  else
-		    {
-		      buffer[dir_len] = '(';
-		      strcpy (buffer+i, ".class)");
-		    }
-		  if (jcf == &_jcf)
-		    JCF_FINISH (jcf);
-		  return buffer;
-		}
-	      else
-		continue;
-	    }
-#endif
-	  /* If we do directories, do them here */
-	  if (!do_class_file)
-	    {
-	      struct stat dir_buff;
-	      int dir;
-	      buffer[i] = '\0';	/* Was previously unterminated here. */
-	      if (!(dir = stat (buffer, &dir_buff)))
-		{
-		  jcf->seen_in_zip = 0;
-		  goto found;
-		}
-	    }
-
-	  /* Check for out of synch .class/.java files */
-	  class = stat (buffer, &class_buf);
-	  strcpy (buffer+i, ".java");
-	  /* Stash the name of the .java file in the temp buffer.  */
-	  strcpy (temp_buffer, buffer);
-	  java = stat (buffer, &java_buf);
-	  if ((!java && !class) && java_buf.st_mtime >= class_buf.st_mtime)
-	    jcf->outofsynch = 1;
-
-	  if (! java)
-	    dep_file = temp_buffer;
-	  else
-	    dep_file = buffer;
-#if JCF_USE_STDIO
-	  if (!class)
-	    {
-	      strcpy (buffer+i, ".class");
-	      SOURCE_FRONTEND_DEBUG (("Trying %s", buffer));
-	      stream = fopen (buffer, "rb");
-	      if (stream)
-		goto found;
-	    }
-	  /* Give .java a try, if necessary */
-	  if (!java)
-	    {
-	      strcpy (buffer+i, ".java");
-	      SOURCE_FRONTEND_DEBUG (("Trying %s", buffer));
-	      stream = fopen (buffer, "r");
-	      if (stream)
-		{
-		  jcf->java_source = 1;
-		  goto found;
-		}
-	    }
-#else
-	  if (!class)
-	    {
-	      strcpy (buffer+i, ".class");
-	      SOURCE_FRONTEND_DEBUG (("Trying %s", buffer));
-	      fd = open (buffer, O_RDONLY | O_BINARY);
-	      if (fd >= 0)
-		goto found;
-	    }
-	  /* Give .java a try, if necessary */
-	  if (!java)
-	    {
-	      if (do_class_file)
-		strcpy (buffer+i, ".java");
-	      SOURCE_FRONTEND_DEBUG (("Trying %s", buffer));
-	      fd = open (buffer, O_RDONLY | O_BINARY);
-	      if (fd >= 0)
-		{
-		  jcf->java_source = 1;
-		  goto found;
-		}
-	    }
-#endif
+	  char ch = classname[k];
+	  buffer[i] = ch == '.' ? '/' : ch;
 	}
+      if (do_class_file)
+	strcpy (buffer+i, ".class");
+
+      if (jcf_path_is_zipfile (entry))
+	{
+	  int err_code;
+	  JCF _jcf;
+	  if (!do_class_file)
+	    strcpy (buffer+i, "/");
+	  buffer[dir_len] = '\0';
+	  if (do_class_file)
+	    SOURCE_FRONTEND_DEBUG 
+	      (("Trying [...%s]:%s", 
+		&buffer[dir_len-(dir_len > 15 ? 15 : dir_len)], 
+		buffer+dir_len+1));
+	  if (jcf == NULL)
+	    jcf = &_jcf;
+	  err_code = open_in_zip (jcf, buffer, buffer+dir_len+1,
+				  jcf_path_is_system (entry));
+	  if (err_code == 0)
+	    {
+	      if (!do_class_file)
+		jcf->seen_in_zip = 1;
+	      else
+		{
+		  buffer[dir_len] = '(';
+		  strcpy (buffer+i, ".class)");
+		}
+	      if (jcf == &_jcf)
+		JCF_FINISH (jcf);
+	      return buffer;
+	    }
+	  else
+	    continue;
+	}
+
+      /* If we do directories, do them here */
+      if (!do_class_file)
+	{
+	  struct stat dir_buff;
+	  int dir;
+	  buffer[i] = '\0';	/* Was previously unterminated here. */
+	  if (!(dir = stat (buffer, &dir_buff)))
+	    {
+	      jcf->seen_in_zip = 0;
+	      goto found;
+	    }
+	}
+
+      class = stat (buffer, &class_buf);
+      /* This is a little odd: if we didn't find the class file, we
+	 can just skip to the next iteration.  However, if this is the
+	 last iteration, then we want to search for the .java file as
+	 well.  It was a little easier to implement this with two
+	 loops, as opposed to checking for each type of file each time
+	 through the loop.  */
+      if (class && jcf_path_next (entry))
+	continue;
+
+      /* Check for out of synch .class/.java files.  */
+      java = 1;
+      for (java_entry = jcf_path_start ();
+	   java && java_entry != NULL;
+	   java_entry = jcf_path_next (java_entry))
+	{
+	  int m, l;
+	  extern int saw_java_source; /* FIXME: temporary.   */
+
+	  if (jcf_path_is_zipfile (java_entry))
+	    continue;
+
+	  /* Compute name of .java file.  */
+	  strcpy (java_buffer, jcf_path_name (java_entry));
+	  l = strlen (java_buffer);
+	  for (m = 0; m < classname_length; ++m)
+	    {
+	      java_buffer[m + l] = (classname[m] == '.'
+				    ? '/'
+				    : classname[m]);
+	    }
+	  strcpy (java_buffer + m + l, ".java");
+
+	  /* FIXME: until the `.java' parser is fully working, we only
+	     look for a .java file when one was mentioned on the
+	     command line.  This lets us test the .java parser fairly
+	     easily, without compromising our ability to use the
+	     .class parser without fear.  */
+	  if (saw_java_source)
+	    java = stat (java_buffer, &java_buf);
+	}
+
+      if (! java && ! class && java_buf.st_mtime >= class_buf.st_mtime)
+	jcf->outofsynch = 1;
+
+      if (! java)
+	dep_file = java_buffer;
+      else
+	dep_file = buffer;
+#if JCF_USE_STDIO
+      if (!class)
+	{
+	  SOURCE_FRONTEND_DEBUG (("Trying %s", buffer));
+	  stream = fopen (buffer, "rb");
+	  if (stream)
+	    goto found;
+	}
+      /* Give .java a try, if necessary */
+      if (!java)
+	{
+	  strcpy (buffer, java_buffer);
+	  SOURCE_FRONTEND_DEBUG (("Trying %s", buffer));
+	  stream = fopen (buffer, "r");
+	  if (stream)
+	    {
+	      jcf->java_source = 1;
+	      goto found;
+	    }
+	}
+#else
+      if (!class)
+	{
+	  SOURCE_FRONTEND_DEBUG (("Trying %s", buffer));
+	  fd = open (buffer, O_RDONLY | O_BINARY);
+	  if (fd >= 0)
+	    goto found;
+	}
+      /* Give .java a try, if necessary */
+      if (!java)
+	{
+	  strcpy (buffer, java_buffer);
+	  SOURCE_FRONTEND_DEBUG (("Trying %s", buffer));
+	  fd = open (buffer, O_RDONLY);
+	  if (fd >= 0)
+	    {
+	      jcf->java_source = 1;
+	      goto found;
+	    }
+	}
+#endif
     }
   free (buffer);
   return NULL;

@@ -222,7 +222,6 @@ typedef struct JCF {
 #define CONSTANT_Utf8 1
 #define CONSTANT_Unicode 2
 
-extern char *classpath;
 #define DEFAULT_CLASS_PATH "."
 
 extern char *find_class PROTO ((const char *, int, JCF*, int));
@@ -261,9 +260,22 @@ extern int quiet_flag;
 extern void jcf_dependency_reset PROTO ((void));
 extern void jcf_dependency_set_target PROTO ((char *));
 extern void jcf_dependency_add_target PROTO ((char *));
-extern void jcf_dependency_set_dep_file PROTO ((char *));
+extern void jcf_dependency_set_dep_file PROTO ((const char *));
 extern void jcf_dependency_add_file PROTO ((const char *, int));
 extern void jcf_dependency_write PROTO ((void));
 extern void jcf_dependency_init PROTO ((int));
+
+/* Declarations for path handling code.  */
+extern void jcf_path_init PROTO ((void));
+extern void jcf_path_classpath_arg PROTO ((char *));
+extern void jcf_path_CLASSPATH_arg PROTO ((char *));
+extern void jcf_path_include_arg PROTO ((char *));
+extern void jcf_path_seal PROTO ((void));
+extern void *jcf_path_start PROTO ((void));
+extern void *jcf_path_next PROTO ((void *));
+extern char *jcf_path_name PROTO ((void *));
+extern int jcf_path_is_zipfile PROTO ((void *));
+extern int jcf_path_is_system PROTO ((void *));
+extern int jcf_path_max_len PROTO ((void));
 
 #endif

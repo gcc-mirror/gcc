@@ -37,3 +37,6 @@ DEFINE_LANG_NAME ("Java")
   { "-MMD", "Print dependencies to FILE.d" },
   { "-M", "Print dependencies to stdout" },
   { "-MM", "Print dependencies to stdout" },
+  { "-fclasspath", "Set class path and suppress system path" },
+  { "-fCLASSPATH", "Set class path" },
+  { "-I", "Add directory to class path" },

@@ -28,6 +28,8 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 #include <assert.h>
 
+#include "jcf.h"
+
 
 
 /* We keep a linked list of all the files we've already read.  */
@@ -95,8 +97,6 @@ add_entry (entp, name)
 void
 jcf_dependency_reset ()
 {
-  struct entry *ent, *next;
-
   free_entry (&dependencies);
   free_entry (&targets);
 
@@ -139,11 +139,9 @@ jcf_dependency_set_dep_file (name)
 
 void
 jcf_dependency_add_file (filename, system_p)
-     char *filename;
+     const char *filename;
      int system_p;
 {
-  struct entry *ent;
-
   /* Just omit system files.  */
   if (system_p && ! system_files)
     return;
@@ -253,7 +251,6 @@ void
 jcf_dependency_write ()
 {
   int column = 0;
-  struct entry *ent;
 
   if (! dep_out)
     return;

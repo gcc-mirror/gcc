@@ -517,7 +517,6 @@ extern void set_super_info PROTO ((int, tree, tree, int));
 extern int get_access_flags_from_decl PROTO ((tree));
 extern int interface_of_p PROTO ((tree, tree));
 extern int inherits_from_p PROTO ((tree, tree));
-extern void fix_classpath PROTO (());
 extern void complete_start_java_method PROTO ((tree));
 extern void emit_handlers PROTO (());
 extern void init_outgoing_cpool PROTO (());

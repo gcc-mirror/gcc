@@ -712,44 +712,37 @@ DEFUN(main, (argc, argv),
   if (argc <= 1)
     usage ();
 
+  jcf_path_init ();
+
   for (argi = 1; argi < argc; argi++)
     {
       char *arg = argv[argi];
+
+      /* Just let all arguments be given in either "-" or "--" form.  */
+      if (arg[0] != '-' || ! strcmp (arg, "--"))
+	break;
+
       if (arg[0] == '-')
 	{
 	  if (strcmp (arg, "-o") == 0 && argi + 1 < argc)
 	    output_file = argv[++argi];
-	  else if (arg[1] == '-')
-	    {
-	      arg++;
-	      if (strcmp (arg, "-classpath") == 0 && argi + 1 < argc)
-		classpath = argv[++argi];
-	      else if (strcmp (arg, "-verbose") == 0)
-		verbose++;
-	      else if (strcmp (arg, "-print-main") == 0)
-		flag_print_main++;
-	      else if (strcmp (arg, "-javap") == 0)
-		{
-		  flag_javap_compatible++;
-		  flag_print_constant_pool = 0;
-		}
-	      else if (arg[2] == '\0')
-		break;
-	      else
-		{
-		  fprintf (stderr, "%s: illegal argument\n", argv[argi]);
-		  exit (FATAL_EXIT_CODE);
-		}
-	      
-	    }
 	  else if (strcmp (arg, "-classpath") == 0 && argi + 1 < argc)
-	    classpath = argv[++argi];
+	    jcf_path_classpath_arg (argv[++argi]);
+	  else if (strcmp (arg, "-CLASSPATH") == 0 && argi + 1 < argc)
+	    jcf_path_CLASSPATH_arg (argv[++argi]);
+	  else if (strncmp (arg, "-I", 2) == 0)
+	    jcf_path_include_arg (arg + 2);
 	  else if (strcmp (arg, "-verbose") == 0)
 	    verbose++;
 	  else if (strcmp (arg, "-print-main") == 0)
 	    flag_print_main++;
 	  else if (strcmp (arg, "-c") == 0)
 	    flag_disassemble_methods++;
+	  else if (strcmp (arg, "-javap") == 0)
+	    {
+	      flag_javap_compatible++;
+	      flag_print_constant_pool = 0;
+	    }
 	  else
 	    {
 	      fprintf (stderr, "%s: illegal argument\n", argv[argi]);
@@ -759,8 +752,12 @@ DEFUN(main, (argc, argv),
       else
 	break;
     }
+
   if (argi == argc)
     usage ();
+
+  jcf_path_seal ();
+
   if (flag_print_main)
     {
       flag_print_fields = 0;
@@ -768,13 +765,6 @@ DEFUN(main, (argc, argv),
       flag_print_constant_pool = 0;
       flag_print_attributes = 0;
       flag_print_class_info = 0;
-    }
-
-  if (classpath == NULL)
-    {
-      classpath = (char *) getenv ("CLASSPATH");
-      if (classpath == NULL)
-	classpath = "";
     }
 
   if (output_file)

@@ -1,5 +1,5 @@
 /* Parser for Java(TM) .class files.
-   Copyright (C) 1996 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -60,6 +60,11 @@ tree current_class = NULL_TREE;
 
 /* The class we started with. */
 tree main_class = NULL_TREE;
+
+/* This is true if the user specified a `.java' file on the command
+   line.  Otherwise it is 0.  FIXME: this is temporary, until our
+   .java parser is fully working.  */
+int saw_java_source = 0;
 
 /* The FIELD_DECL for the current field. */
 static tree current_field = NULL_TREE;
@@ -413,22 +418,6 @@ get_class_constant (JCF *jcf , int i)
 }
 
 void
-fix_classpath ()
-{
-  static char default_path[] = DEFAULT_CLASS_PATH;
-
-  if (classpath == NULL)
-    {
-      classpath = (char *) getenv ("CLASSPATH");
-      if (classpath == NULL)
-	{
-	  warning ("CLASSPATH not set");
-	  classpath = default_path;
-	}
-    }
-}
-
-void
 DEFUN(jcf_out_of_synch, (jcf),
       JCF *jcf)
 {
@@ -465,8 +454,6 @@ load_class (class_or_name, verbose)
 
   push_obstacks (&permanent_obstack, &permanent_obstack);
 
-  if (!classpath)
-    fix_classpath ();
   /* Search in current zip first.  */
   if (find_in_current_zip (IDENTIFIER_POINTER (name),
 			   IDENTIFIER_LENGTH (name), &jcf) == 0)
@@ -475,11 +462,14 @@ load_class (class_or_name, verbose)
       {
 	if (verbose)
 	  {
-	    error ("Cannot find class file class %s.", 
+	    error ("Cannot find class file for class %s.",
 		   IDENTIFIER_POINTER (name));
 	    TYPE_SIZE (class_or_name) = error_mark_node;
+#if 0
+	    /* FIXME: what to do here?  */
 	    if (!strcmp (classpath, DEFAULT_CLASS_PATH))
 	      fatal ("giving up");
+#endif
 	    pop_obstacks ();	/* FIXME: one pop_obstack() per function */
 	  }
 	return;
@@ -730,12 +720,16 @@ yyparse ()
 
       if (list[0]) 
 	{
-	  char *value;
+	  char *value, len;
+
+	  len = strlen (list);
+	  if (len > 5 && ! strcmp (&list[len - 5], ".java"))
+	    saw_java_source = 1;
 
 	  if (*list != '/' && several_files)
 	    obstack_grow (&temporary_obstack, "./", 2);
-      
-	  obstack_grow0 (&temporary_obstack, list, strlen (list));
+
+	  obstack_grow0 (&temporary_obstack, list, len);
 	  value = obstack_finish (&temporary_obstack);
 	  node = get_identifier (value);
 	  IS_A_COMMAND_LINE_FILENAME_P (node) = 1;
@@ -936,7 +930,8 @@ DEFUN(jcf_figure_file_type, (jcf),
   if (magic == 0xcafebabe)
     return JCF_CLASS;
 
-  if (!open_in_zip (jcf, input_filename, NULL))
+  /* FIXME: is it a system file?  */
+  if (!open_in_zip (jcf, input_filename, NULL, 0))
     {
       localToFile = ALLOC (sizeof (struct ZipFileCache));
       bcopy (SeenZipFiles, localToFile, sizeof (struct ZipFileCache));

@@ -4322,8 +4322,6 @@ read_import_dir (wfl)
   char *founddirname, *d_name;
 
   jcf = &jcfr;
-  if (!classpath)
-    fix_classpath ();
   if (!(founddirname = find_class (name, name_len, jcf, 0)))
     fatal ("Can't import `%s'", name);
   if (jcf->outofsynch)
