@@ -231,6 +231,9 @@ struct nesting
 	  rtx start_label;
 	  /* Label at the end of the whole construct.  */
 	  rtx end_label;
+	  /* Label before a jump that branches to the end of the whole
+	     construct.  This is where destructors go if any.  */
+	  rtx alt_end_label;
 	  /* Label for `continue' statement to jump to;
 	     this is in front of the stepper of the loop.  */
 	  rtx continue_label;
@@ -2026,6 +2029,7 @@ expand_start_loop (exit_flag)
   thisloop->depth = ++nesting_depth;
   thisloop->data.loop.start_label = gen_label_rtx ();
   thisloop->data.loop.end_label = gen_label_rtx ();
+  thisloop->data.loop.alt_end_label = 0;
   thisloop->data.loop.continue_label = thisloop->data.loop.start_label;
   thisloop->exit_label = exit_flag ? thisloop->data.loop.end_label : 0;
   loop_stack = thisloop;
@@ -2162,19 +2166,25 @@ expand_end_loop ()
 	      && SET_DEST (PATTERN (insn)) == pc_rtx
 	      && GET_CODE (SET_SRC (PATTERN (insn))) == IF_THEN_ELSE
 	      && ((GET_CODE (XEXP (SET_SRC (PATTERN (insn)), 1)) == LABEL_REF
-		   && (XEXP (XEXP (SET_SRC (PATTERN (insn)), 1), 0)
-		       == loop_stack->data.loop.end_label))
+		   && ((XEXP (XEXP (SET_SRC (PATTERN (insn)), 1), 0)
+			== loop_stack->data.loop.end_label)
+		       || (XEXP (XEXP (SET_SRC (PATTERN (insn)), 1), 0)
+			   == loop_stack->data.loop.alt_end_label)))
 		  || (GET_CODE (XEXP (SET_SRC (PATTERN (insn)), 2)) == LABEL_REF
-		      && (XEXP (XEXP (SET_SRC (PATTERN (insn)), 2), 0)
-			  == loop_stack->data.loop.end_label))))
+		      && ((XEXP (XEXP (SET_SRC (PATTERN (insn)), 2), 0)
+			   == loop_stack->data.loop.end_label)
+			  || (XEXP (XEXP (SET_SRC (PATTERN (insn)), 2), 0)
+			      == loop_stack->data.loop.alt_end_label)))))
 	    last_test_insn = insn;
 
 	  if (last_test_insn == 0 && GET_CODE (insn) == JUMP_INSN
 	      && GET_CODE (PATTERN (insn)) == SET
 	      && SET_DEST (PATTERN (insn)) == pc_rtx
 	      && GET_CODE (SET_SRC (PATTERN (insn))) == LABEL_REF
-	      && (XEXP (SET_SRC (PATTERN (insn)), 0)
-		  == loop_stack->data.loop.end_label))
+	      && ((XEXP (SET_SRC (PATTERN (insn)), 0)
+		   == loop_stack->data.loop.end_label)
+		  || (XEXP (SET_SRC (PATTERN (insn)), 0)
+		      == loop_stack->data.loop.alt_end_label)))
 	    /* Include BARRIER.  */
 	    last_test_insn = NEXT_INSN (insn);
 	}
@@ -2275,7 +2285,12 @@ expand_exit_loop_if_false (whichloop, cond)
 	 necessary, they go before the unconditional branch.  */
 
       rtx label = gen_label_rtx ();
+      rtx last_insn;
+
       do_jump (cond, NULL_RTX, label);
+      last_insn = get_last_insn ();
+      if (GET_CODE (last_insn) == CODE_LABEL)
+	whichloop->data.loop.alt_end_label = last_insn;
       expand_goto_internal (NULL_TREE, whichloop->data.loop.end_label,
 			    NULL_RTX);
       emit_label (label);
