@@ -2114,7 +2114,7 @@ rtl_verify_flow_info_1 (void)
 	}
 
       if (BB_END (bb) == x)
-	/* Do checks for empty blocks her. e */
+	/* Do checks for empty blocks here.  */
 	;
       else
 	for (x = NEXT_INSN (x); x; x = NEXT_INSN (x))
