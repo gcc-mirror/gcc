@@ -1,3 +1,21 @@
+2003-01-07  Michael Koch  <konqueror@gmx.de>
+ 
+ 	* java/net/DatagramSocket.java:
+ 	Added classpath license info.
+ 	(DatagramSocket): Merged description with classpath.
+ 	(close): Merged description with classpath.
+ 	(getChannel): Merged description with classpath.
+ 	(getInetAddress): Merged description with classpath.
+ 	(getPort): Merged description with classpath.
+ 	(getLocalAddress): Merged description with classpath.
+ 	(getLocalPort): Merged description with classpath.
+ 	(getSoTimeout): Merged description with classpath.
+ 	(setSoTimeout): Merged description with classpath.
+ 	(getSendBufferSize): Merged description with classpath.
+ 	(setSendBufferSize): Merged description with classpath.
+ 	(getReceiveBufferSize): Merged description with classpath.
+ 	(setReceiveBufferSize): Merged description with classpath.
+	
 2003-01-07  Tom Tromey  <tromey@redhat.com>
 
 	* include/posix.h (_Jv_platform_usleep): Wrap in ifdef
