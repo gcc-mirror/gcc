@@ -399,7 +399,7 @@ do {								\
 #endif
 #endif
 
-#ifdef BUFSIZE		/* stdio.h has been included, ok to use FILE * */
+#ifdef BUFSIZ		/* stdio.h has been included, ok to use FILE * */
 #define STDIO_PROTO(ARGS) PROTO(ARGS)
 #else
 #define STDIO_PROTO(ARGS) ()
