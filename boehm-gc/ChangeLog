@@ -1,3 +1,10 @@
+2002-03-21  Loren J. Rittle  <ljrittle@acm.org>
+
+	* include/private/gcconfig.h: Add unified test for FreeBSD.
+	Support FreeBSD/alpha.
+	* os_dep.c: Do not include <machine/trap.h> unless available.
+	(GC_freebsd_stack_base): Fix types.
+
 2002-03-17  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* Makefile.am: Make a convenience library.
