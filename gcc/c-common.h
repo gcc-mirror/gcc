@@ -813,12 +813,6 @@ extern tree finish_label_address_expr		PARAMS ((tree));
    different implementations.  Used in c-common.c.  */
 extern tree lookup_label			PARAMS ((tree));
 
-/* If this variable is defined to a non-NULL value, it will be called
-   after the file has been completely parsed.  The argument will be
-   the GLOBAL_NAMESPACE in C++, or the list of top-level declarations
-   in C.  */
-extern void (*back_end_hook) PARAMS ((tree));
-
 /* enum expand_modified is in expr.h, as is the macro below.  */
 
 #ifdef QUEUED_VAR
