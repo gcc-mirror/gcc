@@ -1194,8 +1194,10 @@ dwarf2out_frame_debug (insn)
 	      if (GET_CODE (XEXP (src, 0)) != REG
 		  || REGNO (XEXP (src, 0)) != cfa_temp_reg)
 		abort ();
+	      if (cfa_reg != STACK_POINTER_REGNUM)
+		abort ();
 	      cfa_store_reg = REGNO (dest);
-	      cfa_store_offset -= cfa_temp_value;
+	      cfa_store_offset = cfa_offset - cfa_temp_value;
 	    }
 	  break;
 

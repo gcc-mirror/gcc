@@ -5011,9 +5011,32 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 	  base_offset  = gp_offset;
 	  if (file == (FILE *)0)
 	    {
-	      insn = emit_move_insn (base_reg_rtx, GEN_INT (gp_offset));
-	      if (store_p)
-		RTX_FRAME_RELATED_P (insn) = 1;
+	      rtx gp_offset_rtx = GEN_INT (gp_offset);
+
+	      /* Instruction splitting doesn't preserve the RTX_FRAME_RELATED_P
+		 bit, so make sure that we don't emit anything that can be
+		 split.  */
+	      /* ??? There is no DImode ori immediate pattern, so we can only
+		 do this for 32 bit code.  */
+	      if (large_int (gp_offset_rtx)
+		  && GET_MODE (base_reg_rtx) == SImode)
+		{
+		  insn = emit_move_insn (base_reg_rtx,
+					 GEN_INT (gp_offset & 0xffff0000));
+		  if (store_p)
+		    RTX_FRAME_RELATED_P (insn) = 1;
+		  insn = emit_insn (gen_iorsi3 (base_reg_rtx, base_reg_rtx,
+						GEN_INT (gp_offset & 0x0000ffff)));
+		  if (store_p)
+		    RTX_FRAME_RELATED_P (insn) = 1;
+		}
+	      else
+		{
+		  insn = emit_move_insn (base_reg_rtx, gp_offset_rtx);
+		  if (store_p)
+		    RTX_FRAME_RELATED_P (insn) = 1;
+		}
+
 	      if (TARGET_LONG64)
 		insn = emit_insn (gen_adddi3 (base_reg_rtx, base_reg_rtx, stack_pointer_rtx));
 	      else
@@ -5131,7 +5154,32 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 	  base_offset  = fp_offset;
 	  if (file == (FILE *)0)
 	    {
-	      insn = emit_move_insn (base_reg_rtx, GEN_INT (fp_offset));
+	      rtx fp_offset_rtx = GEN_INT (fp_offset);
+
+	      /* Instruction splitting doesn't preserve the RTX_FRAME_RELATED_P
+		 bit, so make sure that we don't emit anything that can be
+		 split.  */
+	      /* ??? There is no DImode ori immediate pattern, so we can only
+		 do this for 32 bit code.  */
+	      if (large_int (fp_offset_rtx)
+		  && GET_MODE (base_reg_rtx) == SImode)
+		{
+		  insn = emit_move_insn (base_reg_rtx,
+					 GEN_INT (fp_offset & 0xffff0000));
+		  if (store_p)
+		    RTX_FRAME_RELATED_P (insn) = 1;
+		  insn = emit_insn (gen_iorsi3 (base_reg_rtx, base_reg_rtx,
+						GEN_INT (fp_offset & 0x0000ffff)));
+		  if (store_p)
+		    RTX_FRAME_RELATED_P (insn) = 1;
+		}
+	      else
+		{
+		  insn = emit_move_insn (base_reg_rtx, fp_offset_rtx);
+		  if (store_p)
+		    RTX_FRAME_RELATED_P (insn) = 1;
+		}
+
 	      if (store_p)
 		RTX_FRAME_RELATED_P (insn) = 1;
 	      if (TARGET_LONG64)
