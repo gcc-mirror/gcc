@@ -1,3 +1,9 @@
+2002-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/6290
+	* config/rs6000/rs6000.c (easy_vector_constant): Return 1 if the
+	CONST_VECTOR is { 0, ... 0 }.
+
 2002-04-15  Loren J. Rittle  <ljrittle@acm.org>
 
 	* doc/install.texi (Installing GCC: Configuration): Clarify
