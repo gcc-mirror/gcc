@@ -48,12 +48,7 @@ fix = {
 
 
 /* 
- * Determine if we're on Interactive Unix 2.2 or later, in which case we
- * need to fix some additional files.  This is the same test for ISC that
- * Autoconf uses.  On Interactive 2.2, certain traditional Unix
- * definitions (notably getc and putc in stdio.h) are omitted if __STDC__
- * is defined, not just if _POSIX_SOURCE is defined.  This makes it
- * impossible to compile any nontrivial program except with -posix.
+ * Remove erroneous parentheses in sym.h on Alpha OSF/1.
  */
 fix = {
     hackname = alpha_parens;
@@ -114,6 +109,7 @@ fix = {
 /*
  *  For C++, avoid any typedef or macro definition of bool,
  *  and use the built in type instead.
+ *  HP/UX 10.20 also has it in curses_colr/curses.h.
  */
 fix = {
     hackname = avoid_bool;
@@ -133,25 +129,6 @@ fix = {
 
     sed = "/^typedef[ \t][ \t]*char[ \t][ \t]*bool[ \t]*;/a\\\n"
                 "#endif\n";
-};
-
-
-/*
- *  rpc/types.h on OSF1/2.0 is not C++ ready, even though NO_IMPLICIT_EXTERN_C
- *  is defined for the alpha.  The problem is the declaration of malloc.
- */
-fix = {
-    hackname = bad_malloc_decl;
-    files    = rpc/types.h;
-    bypass   = '"C"';
-    sed      = "1i\\\n"
-               "#ifdef __cplusplus\\\n"
-               "extern \"C\" {\\\n"
-               "#endif\\\n\n";
-    sed      = "$a\\\n"
-               "#ifdef __cplusplus\\\n"
-               "}\\\n"
-               "#endif\n";
 };
 
 
@@ -252,7 +229,22 @@ fix = {
     sed = "/#[ \t]*define[ \t]*[ \t]BSD43__IO/" 's/\'\([cgx]\)\'/\1/g';
 };
 
-#IFDEF no_more
+
+/*
+ *  Fix <c_asm.h> on Digital UNIX V4.0:
+ *  It contains a prototype for a DEC C internal asm() function,
+ *  clashing with gcc's asm keyword.  So protect this with __DECC.
+ */
+fix = {
+    hackname = dec_intern_asm;
+    files    = c_asm.h;
+    sed = "/^[ \t]*float[ \t]*fasm/i\n#ifdef __DECC\n";
+    sed = "/^[ \t]*#[ \t]*pragma[ \t]*intrinsic([ \t]*dasm/a\n"
+          "#endif\n";
+};
+
+
+#ifdef no_more
 /*
  *  And also with the HP-UX 10 and HP-UX 11 sys/pci.h file
  */
@@ -304,8 +296,8 @@ fix = {
 /*
  *  Remove the double-slash comments
  *  They *must* be removed so it will not create nested comments!!
- *  However, they will *not* be removed if '++' is in any part of
- *  the file name, or if the name ends with ".hh" or ".H".
+ *  However, they will *not* be removed if the file name ends with
+ *  any of "++", ".hh" or ".H", or if the file name contains "cxx/".
  *
  *  There *used* to be a number of similar problems in various OSes:
 
@@ -320,27 +312,27 @@ fix = {
  *  There is a similar problem with the VxWorks drv/netif/if_med.h file.
 
  *  And also with the HP-UX 10 and HP-UX 11 sys/pci.h file
+
+ *  Now that we delete the // comments instead of converting them to / * * /,
+ *  traditional hacks like irix_bogus_cxx_cmnt, no longer work (which
+ *  strangely enough was also used on alpha-dec-osf4.0d).  If we skip the
+ *  hack whenever we see ``"//"'', then the need for the secondary hack
+ *  disappears.  Note: it is painful to ensure that the first quote
+ *  exists, so we just check for the trailing quote directly abutting
+ *  the //.  Note: We should never touch a line that has // completely
+ *  within quotes but this is somewhat hard to check for.
+
+ *  Ultimately, this fix ought to go inside of C code where
+ *  we can do a better analysis on the need and method for fixing.
  */
 fix = {
     hackname = no_double_slash;
-    test     = '-z "`echo ${file}|egrep \'++$|\.hh$|\.H$\'`"';
-    select = '//[^*]';
-    sed    = '/\/\/[^*]/' "s|//.*$||g";
-};
-
-
-/*
- *  Multiline comment after typedef on IRIX 4.0.1.
- */
-fix = {
-    hackname = irix_bogus_cxx_cmnt;
-    files  = "elf_abi.h";
-    files  = "elf.h";
     /*
-     *  This really looks like it is replacing "/ * * /" with "//"
-     *  Shouldn't the replacement really be " ## "?
+     *  Test that the file-to-fix does not look like a C++ file
      */
-    sed      = 's@"/\*"\*/@"//"@';
+    test     = '-z "`echo ${file}|egrep \'cxx/|++$|\.hh$|\.H$\'`"';
+    select = '//[^"*]';
+    sed    = '/\/\/[^"*]/' "s|//.*$||g";
 };
 
 
@@ -444,10 +436,14 @@ fix = {
 /*
  *  sys/mman.h on HP/UX is not C++ ready,
  *  even though NO_IMPLICIT_EXTERN_C is defined on HP/UX.
+ *
+ *  rpc/types.h on OSF1/2.0 is not C++ ready, even though NO_IMPLICIT_EXTERN_C
+ *  is defined for the alpha.  The problem is the declaration of malloc.
  */
 fix = {
-    hackname = hpux_cxx_unready;
+    hackname = cxx_unready;
     files    = sys/mman.h;
+    files    = rpc/types.h;
     bypass = '"C"|__BEGIN_DECLS';
 
     sed      = "1i\\\n"
@@ -487,13 +483,18 @@ fix = {
 
 
 /*
- *  Fix various _IO* defines, but do *not* quote the characters cgxtf.
+ *  Determine if we're on Interactive Unix 2.2 or later, in which case we
+ *  need to fix some additional files.  This is the same test for ISC that
+ *  Autoconf uses.  On Interactive 2.2, certain traditional Unix
+ *  definitions (notably getc and putc in stdio.h) are omitted if __STDC__
+ *  is defined, not just if _POSIX_SOURCE is defined.  This makes it
+ *  impossible to compile any nontrivial program except with -posix.
  */
 fix = {
     hackname = interactv_add1;
 
-    test   = "-d /etc/conf/kconfig.d";
-    test   = '-n "`grep _POSIX_VERSION /usr/include/sys/unistd.h`"';
+    test   = " -d /etc/conf/kconfig.d";
+    test   = ' -n "`grep _POSIX_VERSION /usr/include/sys/unistd.h`"';
 
     files  = "stdio.h";
     files  = "math.h";
@@ -509,8 +510,8 @@ fix = {
 fix = {
     hackname = interactv_add2;
 
-    test   = "-d /etc/conf/kconfig.d";
-    test   = '-n "`grep _POSIX_VERSION /usr/include/sys/unistd.h`"';
+    test   = " -d /etc/conf/kconfig.d";
+    test   = ' -n "`grep _POSIX_VERSION /usr/include/sys/unistd.h`"';
 
     files  = math.h;
     sed    = "s/fmod(double)/fmod(double, double)/";
@@ -519,8 +520,8 @@ fix = {
 fix = {
     hackname = interactv_add3;
 
-    test   = "-d /etc/conf/kconfig.d";
-    test   = '-n "`grep _POSIX_VERSION /usr/include/sys/unistd.h`"';
+    test   = " -d /etc/conf/kconfig.d";
+    test   = ' -n "`grep _POSIX_VERSION /usr/include/sys/unistd.h`"';
 
     files  = sys/limits.h;
 
@@ -530,14 +531,13 @@ fix = {
 
 
 /*
- *  Remove erroneous parentheses in sym.h on Alpha OSF/1.
+ *  Fix various _IO* defines, but do *not* quote the characters cgxtf.
  */
 fix = {
     hackname = io_def_quotes;
-    select = "[ \t]_IO[A-Z]*[ \t]*\\([A-Za-z]";
-    sed = "s/\\([ \t]_IO[A-Z]*[ \t]*(\\)\\([A-Za-z]\\),/\\1'\\2',/";
-    sed = "/#[ \t]*define[ \t]*[ \t]_IO/"
-              "s/'\\([cgxtf]\\)'/\\1/g";
+    select = "[ \t](_|DES)IO[A-Z]*[ \t]*\\( *[^,']";
+    sed = "s/\\([ \t](_|DES)IO[A-Z]*[ \t]*(\\)\\([^,']\\),/\\1'\\2',/";
+    sed = "/#[ \t]*define[ \t]*[ \t]_IO/"       "s/'\\([cgxtf]\\)'/\\1/g";
     sed = "/#[ \t]*define[ \t]*[ \t]DESIOC/"    's/\'\([cdgx]\)\'/\1/g';
 };
 
@@ -629,6 +629,7 @@ fix = {
  */
 fix = {
     hackname = motorola_nested;
+    mach     = "m68k-motorola-sysv*";
     files    = limits.h;
     files    = sys/limits.h;
     sed = "s@^\\(#undef[ \t][ \t]*PIPE_BUF[ \t]*"
@@ -675,7 +676,7 @@ fix = {
     files  = "Xm.acorn/XmP.h";
     files  = bsd43/bsd43_.h;
     select = '/\*\*/';
-    sed    = 's|/\*\*/| ## |g';
+    sed    = 's|/\*\*/|##|g';
 };
 
 
@@ -727,13 +728,16 @@ fix = {
 fix = {
     hackname = lynxos_fcntl_proto;
     files    = fcntl.h;
-
-  sed = 's/\(fcntl.*(int, int, \)int)/\1...)/';
+    select   = 'fcntl.*\(int, int, int\)';
+    sed      = 's/\(fcntl.*(int, int, \)int)/\1...)/';
 };
 
 
 /*
- *  Fix incorrect S_IF* definitions on m88k-sysv3.
+ *  libm.a on m88k-motorola-sysv3 contains a stupid optimization for
+ *  function hypot(), which returns the second argument without even
+ *  looking at its value, if the other is 0.0.  Another drawback is
+ *  that fix-header doesn't fix fabs' prototype, and I have no idea why.
  */
 fix = {
     hackname = m88k_bad_hypot_opt;
@@ -760,11 +764,8 @@ fix = {
 
 
 /*
- *  Fix non-ansi machine name defines
- *  This is split into two parts:  the shell version as a single
- *  patch, and the program version with each patch separate.
- *  Each is substantially faster for the particular environment.
- * You have a dual maintenance problem here.  */
+ *  Fix incorrect S_IF* definitions on m88k-sysv3.
+ */
 fix = {
     hackname = m88k_bad_s_if;
     mach     = "m88k-*-sysv3*";
@@ -793,19 +794,19 @@ fix = {
     shell    =
       "echo Fixing $file, to protect against multiple inclusion. >&2
       cpp_wrapper=`echo $file | sed -e 's,\\.,_,g' -e 's,/,_,g'`
-      sed -e \"1i\\\n"
-        "#ifndef __GCC_GOT_${cpp_wrapper}_\\\n"
-        "#define __GCC_GOT_${cpp_wrapper}_\\\n\" \\\n"
-                "\t-e \"$a\\\n"
-        "#endif /* ! __GCC_GOT_${cpp_wrapper}_ */\n\"";
+      echo \"#ifndef __GCC_GOT_${cpp_wrapper}_\"
+      echo \"#define __GCC_GOT_${cpp_wrapper}_\"
+      cat
+      echo \"#endif /* ! __GCC_GOT_${cpp_wrapper}_ */\"";
 };
 
 
 /*
- *  libm.a on m88k-motorola-sysv3 contains a stupid optimization for
- *  function hypot(), which returns the second argument without even
- *  looking at its value if the other is 0.0 Another drawback is that
- *  fix-header doesn't fix fabs' prototype, and I have no idea why.
+ *  Fix non-ansi machine name defines
+ *  This is split into two parts:  the shell version as a single
+ *  patch, and the program version with each patch separate.
+ *  Each is substantially faster for the particular environment.
+ *  You have a dual maintenance problem here.
  */
 fix = {
     hackname = machine_name;
@@ -932,51 +933,36 @@ fix = {
 fix = {
     hackname = math_gcc_ifndefs;
     files    = math.h;
-    shell    = " dbl_max_def="
-        "\"`egrep 'define[ \t]+DBL_MAX[ \t]+.*' ${SRCDIR}/float.h "
-                "2>/dev/null`\"\n\n"
 
-        "\tif ( test -n \"${dbl_max_def}\" \\\n"
-        "\t\t-a -n \"`egrep '#define[ \t]*HUGE_VAL[ \t]+DBL_MAX' $file`\" \\\n"
-        "\t\t-a -z \"`egrep '#define[ \t]+DBL_MAX[ \t]+' $file`\"\n"
-              "\t   ) > /dev/null 2>&1\n"
+    shell    =
+    /*
+     *  First see if we have a definition for DBL_MAX in float.h
+     *  If we do, we will replace the one in math.h with that one.
+     */
 
-        "\tthen sed -e '/define[ \t]HUGE_VAL[ \t]/i\\\n"
-            "#ifndef HUGE_VAL\n' \\\n"
-        "\t-e '/define[ \t]HUGE_VAL[ \t]/a\\\n#endif\n'\\\n"
-        "\t-e \"/define[ \t]HUGE_VAL[ \t]DBL_MAX/s/DBL_MAX/$dbl_max_def/\"\n"
+    /*
+     *  IF we have such a define *and* HUGE_VAL is defined to be DBL_MAX
+     *     *and* DBL_MAX is _not_ defined in the current file (math.h),
+     *  THEN replace the defined value of HUGE_VAL
+     *  ELSE just copy stdin to stdout so the main filter can process it
+     */
 
-        "\telse sed -e '/define[ \t]HUGE_VAL[ \t]/i\\\n"
-            "#ifndef HUGE_VAL\n' \\\n"
-        "\t-e '/define[ \t]HUGE_VAL[ \t]/a\\\n#endif\n'\n"
-        "\tfi";
-};
+    /*
+     *  Put conditional guards around the HUGE_VAL definition.
+     */
 
+    "\tdbl_max_def=`egrep 'define[ \t]+DBL_MAX[ \t]+.*' float.h "
+                "2>/dev/null`\n\n"
 
-/*
- * libm.a on m88k-motorola-sysv3 contains a stupid optimization for
- * function hypot(), which returns the second argument without even
- * looking at its value
- */
-fix = {
-    hackname = motorola_stupid_opt;
-    mach     = "m88k-motorola-sysv3*";
-    files    = math.h;
-    select   = "^extern double hypot();$";
-    sed      =
-          '/^extern double hypot();$/a' "\\\n"
-          '\/* Workaround a stupid Motorola optimization if one' "\\\n"
-          '   of x or y is 0.0 and the other is negative!  *\/' "\\\n"
-          '#ifdef __STDC__' "\\\n"
-          'static __inline__ double fake_hypot (double x, double y)' "\\\n"
-          '#else' "\\\n"
-          'static __inline__ double fake_hypot (x, y)' "\\\n"
-          "\tdouble x, y;\\\n"
-          '#endif' "\\\n"
-          '{' "\\\n"
-          "\treturn fabs (hypot (x, y));\\\n"
-          '}' "\\\n"
-          "#define hypot\tfake_hypot\n";
+    "\tif ( test -n \"${dbl_max_def}\" \\\n"
+    "\t\t-a -n \"`egrep '#define[ \t]*HUGE_VAL[ \t]+DBL_MAX' $file`\" \\\n"
+    "\t\t-a -z \"`egrep '#define[ \t]+DBL_MAX[ \t]+' $file`\"\n"
+             "\t   ) > /dev/null 2>&1\n"
+    "\tthen sed -e '/define[ \t]HUGE_VAL[ \t]DBL_MAX/s/DBL_MAX/$dbl_max_def/'"
+    "\n\telse cat ; fi |\n"
+
+    "\tsed -e'/define[ \t]HUGE_VAL[ \t]/i\\\n#ifndef HUGE_VAL\n' "
+          "-e'/define[ \t]HUGE_VAL[ \t]/a\\\n#endif\n'";
 };
 
 
@@ -1087,10 +1073,10 @@ fix = {
     hackname = osf_namespace_a;
     files    = reg_types.h;
     files    = sys/lc_core.h;
-    test     =    "-r reg_types.h"
-               "-a -r sys/lc_core.h"
-               "-a -n \"`grep '} regex_t;' reg_types.h`\""
-               "-a -z \"`grep __regex_t regex.h`\"";
+    test     = " -r reg_types.h";
+    test     = " -r sys/lc_core.h";
+    test     = " -n \"`grep '} regex_t;' reg_types.h`\"";
+    test     = " -z \"`grep __regex_t regex.h`\"";
 
     sed      = "s/regex_t/__regex_t/g";
     sed      = "s/regoff_t/__regoff_t/g";
@@ -1100,10 +1086,11 @@ fix = {
 fix = {
     hackname = osf_namespace_b;
     files    = regex.h;
-    test     =    "-r reg_types.h"
-               "-a -r sys/lc_core.h"
-               "-a -n \"`grep '} regex_t;' reg_types.h`\""
-               "-a -z \"`grep __regex_t regex.h`\"";
+    test     = " -r reg_types.h";
+    test     = " -r sys/lc_core.h";
+    test     = " -n \"`grep '} regex_t;' reg_types.h`\"";
+    test     = " -z \"`grep __regex_t regex.h`\"";
+
     sed      = "/#include <reg_types.h>/a\\\n"
                "typedef __regex_t\tregex_t;\\\n"
                "typedef __regoff_t\tregoff_t;\\\n"
@@ -1182,8 +1169,8 @@ fix = {
 fix = {
     hackname = sony_ctype;
     files    = ctype.h;
-    test     = "-x /bin/sony";
-    test     = "! -z \"`if /bin/sony ; then echo true ; fi`\"";
+    test     = " -x /bin/sony";
+    test     = " ! -z \"`if /bin/sony ; then echo true ; fi`\"";
     sed      = "s/__ctype/_ctype/g";
 };
 #endif
@@ -1206,8 +1193,8 @@ fix = {
 fix = {
     hackname = sony_stdio;
     files    = stdio.h;
-    test     = "-x /bin/sony";
-    test     = "! -z \"`if /bin/sony ; then echo true ; fi`\"";
+    test     = " -x /bin/sony";
+    test     = " ! -z \"`if /bin/sony ; then echo true ; fi`\"";
     sed      = "s/__filbuf/_filbuf/g\n"
                "s/__flsbuf/_flsbuf/g\n"
                "s/__iob/_iob/g";
@@ -1447,21 +1434,6 @@ fix = {
 
 
 /*
- *  This file on SunOS 4 has a very large macro.  When the sed loop
- *  tries pull it in, it overflows the pattern space size of the SunOS
- *  sed (GNU sed does not have this problem).  Since the file does not
- *  require fixing, we remove it from the fixed directory.
- */
-fix = {
-    hackname = sunos_large_macro;
-    files    = sundev/ipi_error.h;
-    shell    =
-        "echo \"Removing incorrect fix to SunOS <sundev/ipi_error.h>\" >&2\n"
-         "rm -f ${DESTDIR}/$file ${DESTDIR}/$file.\ncat > /dev/null";
-};
-
-
-/*
  *  math.h on SunOS 4 puts the declaration of matherr before the definition
  *  of struct exception, so the prototype (added by fixproto) causes havoc.
  */
@@ -1469,14 +1441,10 @@ fix = {
     hackname = sunos_matherr_decl;
     files    = math.h;
     /*
-     *  Find the first occurrance of 'struct exception'.
-     *  If it is the definition, then the file is okay.
-     *  If it is a usage, then the order is wrong and we
-     *  must insert a forward reference.
+     *  Once a declaration for 'struct exception' is found,
+     *  stop trying to insert a forward reference for it.
      */
-    test = "\"`fgrep 'struct exception' $file | line`\""
-                  " != 'struct exception {'";
-
+    sed = "/^struct exception/,$b";
     sed = "/matherr/i\\\nstruct exception;\n";
 };
 
@@ -1927,14 +1895,13 @@ fix = {
 
 
 /*
- *  Replace definitions of size_t, ptrdiff_t and wchar_t
- *  Install the proper definition of the three standard types
- *  in header files that they come from.
+ *  Fix return type of exit and abort in <stdlib.h> on SunOS 4.1.
+ *  Also wrap protection around size_t for m88k-sysv3 systems.
  */
 fix = {
     hackname = sysz_stdlib_for_sun;
-    mach     = "*-sun-*";
-    mach     = "m88k-*-sysv3*";
+    mach     = "*-sun*";
+    mach     = "m88k-*sysv3*";
     files    = stdlib.h;
 
     sed   = "s/int\tabort/void\tabort/g";
@@ -2193,9 +2160,9 @@ fix = {
 fix = {
     hackname = vxworks_needs_vxworks;
     files    = sys/stat.h;
-    test     = "-r types/vxTypesOld.h";
-    test     = "-n \"`fgrep '#include' $file`\"";
-    test     = "-n \"`fgrep ULONG $file`\"";
+    test     = " -r types/vxTypesOld.h";
+    test     = " -n \"`egrep '#include' $file`\"";
+    test     = " -n \"`egrep ULONG $file`\"";
     select   = "#[ \t]define[ \t][ \t]*__INCstath";
 
     sed = "/#[ \t]define[ \t][ \t]*__INCstath/a\\\n"
@@ -2210,7 +2177,7 @@ fix = {
     hackname = vxworks_time;
     files    = time.h;
     select   = "VOIDFUNCPTR";
-    test     = "-r vxWorks.h";
+    test     = " -r vxWorks.h";
     sed      = "/VOIDFUNCPTR/i\\\n"
                "#ifndef __gcc_VOIDFUNCPTR_defined\\\n"
                "#ifdef __cplusplus\\\n"
@@ -2294,8 +2261,9 @@ fix = {
     files    = sys/ki_iface.h;
     select   = 'These definitions are for HP Internal developers';
     shell    =
-        "echo \"Removing incorrect fix to HP-UX <$file>\" >&2\n"
-         "rm -f ${DESTDIR}/$file ${DESTDIR}/$file.\ncat > /dev/null";
+         "echo \"Removing incorrect fix to <$file>\" >&2\n"
+         "rm -f ${DESTDIR}/$file ${DESTDIR}/$file.\n"
+         "cat > /dev/null";
 };
 
 
@@ -2307,8 +2275,9 @@ fix = {
     files    = sys/ki.h;
     select   = '11.00 HP-UX LP64';
     shell    =
-        "echo \"Removing incorrect fix to HP-UX <$file>\" >&2\n"
-         "rm -f ${DESTDIR}/$file ${DESTDIR}/$file.\ncat > /dev/null";
+         "echo \"Removing incorrect fix to <$file>\" >&2\n"
+         "rm -f ${DESTDIR}/$file ${DESTDIR}/$file.\n"
+         "cat > /dev/null";
 };
 
 
@@ -2320,8 +2289,9 @@ fix = {
     files    = sys/ki_calls.h;
     select   = 'KI_MAX_PROCS is an arbitrary number';
     shell    =
-        "echo \"Removing incorrect fix to HP-UX <$file>\" >&2\n"
-         "rm -f ${DESTDIR}/$file ${DESTDIR}/$file.\ncat > /dev/null";
+         "echo \"Removing incorrect fix to <$file>\" >&2\n"
+         "rm -f ${DESTDIR}/$file ${DESTDIR}/$file.\n"
+         "cat > /dev/null";
 };
 
 
@@ -2333,8 +2303,26 @@ fix = {
     files    = sys/ki_defs.h;
     select   = 'Kernel Instrumentation Definitions';
     shell    =
-        "echo \"Removing incorrect fix to HP-UX <$file>\" >&2\n"
-         "rm -f ${DESTDIR}/$file ${DESTDIR}/$file.\ncat > /dev/null";
+         "echo \"Removing incorrect fix to <$file>\" >&2\n"
+         "rm -f ${DESTDIR}/$file ${DESTDIR}/$file.\n"
+         "cat > /dev/null";
+};
+
+
+/*
+ *  This file on SunOS 4 has a very large macro.  When the sed loop
+ *  tries pull it in, it overflows the pattern space size of the SunOS
+ *  sed (GNU sed does not have this problem).  Since the file does not
+ *  require fixing, we remove it from the fixed directory.
+ */
+fix = {
+    hackname = zzz_bad_fixes;
+    files    = sundev/ipi_error.h;
+    /* shouldn't there be a select expression here??? */
+    shell    =
+         "echo \"Removing incorrect fix to <$file>\" >&2\n"
+         "rm -f ${DESTDIR}/$file ${DESTDIR}/$file.\n"
+         "cat > /dev/null";
 };
 
 
@@ -2346,8 +2334,9 @@ fix = {
     files    = sys/time.h;
     select   = 'For CASPEC, look in';
     shell    =
-        "echo \"Removing incorrect fix to HP-UX <$file>\" >&2\n"
-         "rm -f ${DESTDIR}/$file ${DESTDIR}/$file.\ncat > /dev/null";
+         "echo \"Removing incorrect fix to <$file>\" >&2\n"
+         "rm -f ${DESTDIR}/$file ${DESTDIR}/$file.\n"
+         "cat > /dev/null";
 };
 
 
