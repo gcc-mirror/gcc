@@ -1,3 +1,14 @@
+2001-12-20  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* configure.in (all_headers, all_lib2funcs): Remove.
+	* configure: Regenerate.
+	* Makefile.in (LANG_EXTRA_HEADERS): Remove.
+	(USER_H): Don't include $(LANG_EXTRA_HEADERS).
+	* config/alpha/t-interix (USER_H): Don't include
+	$(LANG_EXTRA_HEADERS).
+	* config/i386/t-interix: Likewise.
+	* config/t-openbsd: Likewise.
+
 2001-12-20  Andreas Jaeger  <aj@suse.de>
 
 	* libgcc2.c (__bb_exit_func): Remove unused variable.

@@ -5,5 +5,4 @@ interix.o: $(srcdir)/config/i386/interix.c
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(srcdir)/config/i386/interix.c
 
 # System headers will track gcc's needs.
-# Even LANG_EXTRA_HEADERS may be temporary.
-USER_H=$(LANG_EXTRA_HEADERS)
+USER_H=

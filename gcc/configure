@@ -7890,8 +7890,6 @@ all_stagestuff=
 all_outputs='Makefile intl/Makefile fixinc/Makefile gccbug mklibgcc'
 # List of language makefile fragments.
 all_lang_makefiles=
-all_headers=
-all_lib2funcs=
 
 # Add the language fragments.
 # Languages are added via two mechanisms.  Some information must be
@@ -7911,9 +7909,7 @@ do
 		boot_language=
 		compilers=
 		stagestuff=
-		headers=
 		outputs=
-		lib2funcs=
 		. ${srcdir}/$s/config-lang.in
 		if test "x$language" = x
 		then
@@ -7931,9 +7927,7 @@ do
 		fi
 		all_compilers="$all_compilers $compilers"
 		all_stagestuff="$all_stagestuff $stagestuff"
-		all_headers="$all_headers $headers"
 		all_outputs="$all_outputs $outputs"
-		all_lib2funcs="$all_lib2funcs $lib2funcs"
 	fi
 done
 
@@ -8067,8 +8061,6 @@ objdir=`pwd`
 ${CONFIG_SHELL-/bin/sh} $srcdir/configure.frag $srcdir "$subdirs" "$dep_host_xmake_file" "$dep_tmake_file"
 
 # Substitute configuration variables
-
-
 
 
 
@@ -8393,10 +8385,8 @@ s%@objdir@%$objdir%g
 s%@subdirs@%$subdirs%g
 s%@all_boot_languages@%$all_boot_languages%g
 s%@all_compilers@%$all_compilers%g
-s%@all_headers@%$all_headers%g
 s%@all_lang_makefiles@%$all_lang_makefiles%g
 s%@all_languages@%$all_languages%g
-s%@all_lib2funcs@%$all_lib2funcs%g
 s%@all_stagestuff@%$all_stagestuff%g
 s%@build_exeext@%$build_exeext%g
 s%@build_install_headers_dir@%$build_install_headers_dir%g
