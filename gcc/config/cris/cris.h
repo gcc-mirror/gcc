@@ -211,7 +211,7 @@ extern const char *cris_elinux_stacksize_str;
 #define CRIS_LINK_SUBTARGET_SPEC \
  "-mcriself\
   %{sim2:%{!T*:-Tdata 0x4000000 -Tbss 0x8000000}}\
-  %{O2|O3: --gc-sections}"
+  %{!r:%{O2|O3: --gc-sections}}"
 
 /* Which library to get.  The only difference from the default is to get
    libsc.a if -sim is given to the driver.  Repeat -lc -lsysX
