@@ -11,10 +11,8 @@
 #define __GNUC_VA_LIST
 
 typedef struct {
-  long __va_arg;		/* Current argument number. */
-  long *__va_stack;		/* Start of arguments on stack */
-  long *__va_iregs;		/* Integer parameter registers ($16-$21) */
-  long *__va_fregs;		/* FP parameter registers ($f16-$f21) */
+  char *__base;			/* Pointer to first integer register. */
+  long __offset;		/* Byte offset of args so far. */
 } __gnuc_va_list;
 #endif /* not __GNUC_VA_LIST */
 
@@ -81,110 +79,18 @@ enum {
 #define __extension__
 #endif
 
-/* Get the rounded number of words of a type.  */
+/* Get the size of a type in bytes, rounded up to an integral number
+   of words.  */
 
-#define __va_nwords(__type)  \
-  ((sizeof (__type) + sizeof (long) - 1) / sizeof (long))
+#define __va_tsize(__type)  \
+  (((sizeof (__type) + sizeof (long) - 1) / sizeof (long)) * sizeof (long))
 
 #define va_arg(__va, __type)						\
-__extension__								\
-(* (__type *)								\
- ({									\
-  register void *__rv;  /* result value */				\
-  switch (__builtin_classify_type (* (__type *) 0))			\
-    {			        					\
-    case __real_type_class:						\
-									\
-      /* Get a pointer to the value.  If we want a float instead of	\
-	 a double, we have to make one and point to it instead.  */     \
-									\
-      __rv = (void *) & ((__va).__va_arg < 6				\
-			 ? (__va).__va_fregs[(__va).__va_arg]		\
-			 : (__va).__va_stack[(__va).__va_arg - 6]);	\
-									\
-      if (sizeof (__type) == sizeof (float))				\
-	{								\
-	  float __rf = * ((double *) __rv);				\
-									\
-	  __rv = (void *) &__rf;					\
-	}								\
-									\
-      break;								\
-	      								\
-    case __void_type_class:						\
-    case __integer_type_class:						\
-    case __char_type_class:						\
-    case __enumeral_type_class:						\
-    case __boolean_type_class:						\
-    case __pointer_type_class:						\
-    case __reference_type_class:					\
-    case __offset_type_class:						\
-    case __record_type_class:						\
-    case __union_type_class:						\
-									\
-      /* Force this on the stack if it's alignment isn't right.  */	\
-									\
-      if ((__va).__va_arg < 6)						\
-	switch (sizeof (__type))					\
-	  {								\
-	  case sizeof (char):						\
-	    break;							\
-	  case sizeof (short):						\
-	    if (__alignof__ (__type) < sizeof (short))			\
-	      (__va).__va_arg = 6;					\
-	    break;							\
-	  case 3:							\
-	  case sizeof (int):						\
-	    if (__alignof__ (__type) < sizeof (int))			\
-	      (__va).__va_arg = 6;					\
-	    break;							\
-	  default:							\
-	    if (__alignof__ (__type) < sizeof (long))			\
-	      (__va).__va_arg = 6;					\
-	    break;							\
-	  }								\
-									\
-      /* If this object is only one word long, just get it.  If it is   \
-	 longer, we need to worry about the possibility that it is	\
-	 passed both in registers and in memory.  */			\
-									\
-      if (sizeof (__type) <= sizeof (long)				\
-	  || (__va).__va_arg >= 6					\
-	  || (__va).__va_arg + __va_nwords (__type) < 6)		\
-	__rv = (void *) & ((__va).__va_arg < 6				\
-			   ? (__va).__va_iregs[(__va).__va_arg]		\
-			   : (__va).__va_stack[(__va).__va_arg - 6]);	\
-      else								\
-	{								\
-	  long __obj[__va_nwords (__type)];				\
-	  int __i;							\
-									\
-	  for (__i = 0; __i < __va_nwords (__type); __i++)		\
-	    __obj[__i] = ((__va).__va_arg + __i < 6			\
-			  ? (__va).__va_iregs[(__va).__va_arg + __i]	\
-			  : (__va).__va_stack[(__va).__va_arg + __i - 6]); \
-									\
-	  __rv = (void *) &__obj[0];					\
-	}								\
-      break;								\
-									\
-    case __complex_type_class:						\
-    case __function_type_class:						\
-    case __method_type_class:						\
-    case __array_type_class:						\
-    case __string_type_class:						\
-    case __set_type_class:						\
-    case __file_type_class:						\
-    case __lang_type_class:						\
-    case __no_type_class:						\
-    default:								\
-	abort ();							\
-    }									\
-									\
-  (__va).__va_arg += __va_nwords (__type);				\
-									\
-  __rv;									\
-}))
+(*(((__va).__offset += __va_tsize (__type)),				\
+   (__type *)((__va).__base + (__va).__offset				\
+	      - (((__builtin_classify_type (* (__type *) 0)		\
+		   == __real_type_class) && (__va).__offset <= (6 * 8))	\
+		 ? (6 * 8) + 8 : __va_tsize (__type)))))
 
 #endif /* defined (_STDARG_H) || defined (_VARARGS_H) */
 
