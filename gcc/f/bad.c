@@ -39,6 +39,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "proj.h"
 #include <ctype.h>
 #include "bad.h"
+#include "flags.j"
 #include "com.h"
 #include "where.h"
 

@@ -4,6 +4,7 @@ Wed Jun 10 13:17:32 1998  Dave Brolley  <brolley@cygnus.com>
 	* top.c (ffe_decode_option): New argc/argv interface.
 	* parse.c (yyparse): New argc/argv interface for ffe_decode_option.
 	* com.c (lang_decode_option): New argc/argv interface.
+
 Mon Jun  1 19:37:42 1998  Craig Burley  <burley@gnu.org>
 
 	* com.c (ffecom_init_0): Fix setup of INTEGER(KIND=7)
@@ -13,6 +14,106 @@ Mon Jun  1 19:37:42 1998  Craig Burley  <burley@gnu.org>
 	%LOC(expr) or LOC(expr).
 	Delete FFEGLOBAL_argsummaryPTR.
 	* global.c, global.h: Delete FFEGLOBAL_argsummaryPTR.
+
+Thu May 28 21:32:18 1998  Craig Burley  <burley@gnu.org>
+
+	Restore circa-0.5.22 capabilities of `g77' driver:
+	* Make-lang.in (g77spec.o): Depend on f/version.h.
+	(g77version.o): New rule to compile g77 version info.
+	(g77$(exeext)): Depend on and link in g77version.o.
+	* g77spec.c: Rewrite to be more like 0.5.22 version
+	of g77.c, making filtering of command line smarter
+	so mixed Fortran and C (etc.) can be compiled, verbose
+	version info can be obtained, etc.
+	* lang-specs.h (f77-version): New "language" to support
+	"g77 -v" command under new gcc 2.8 regime.
+	* lex.c (ffelex_file_fixed): If -fnull-version, just
+	substitute a "source file" that prints out version info.
+	* top.c, top.h: Support -fnull-version.
+
+	* lang-specs.h: Use "%O" instead of OO macro to specify
+	object extension.  Remove old stringizing cruft.
+
+	* Make-lang.in (g77.c, g77spec.o, g77.o, g77$(exeext),
+	g77-cross$(exeext), f771,
+	$(srcdir)/f/g77.info, $(srcdir)/f/g77.dvi,
+	$(srcdir)/f/intdoc.texi,
+	f77.install-common, f77.install-info, f77.install-man,
+	f77.uninstall, $(G77STAGESTUFF), f77.stage1, f77.stage2,
+	f77.stage3, f77.stage4, f77.distdir): Don't do anything
+	unless user specified "f77" or "F77" in $LANGUAGES either
+	during configuration or explicitly.  For convenience of
+	various tests and to work around lack of the assignment
+	"LANGUAGES=$(BOOT_LANGUAGES)" in the "make stage1" command
+	of "make bootstrap" in gcc, use a touch file named "lang-f77"
+	to communicate whether this is the case.
+
+	* Make-lang.in (F77_FLAGS_TO_PASS): Delete this macro,
+	replace with minimal expansion of its former self in
+	each of the two instances where it was used.
+
+	* Makefile.in (HOST_CC): Delete this definition.
+
+	* com.c (index, rindex): Delete these declarations.
+
+	* proj.h: (isascii): Delete this.
+
+	* Make-lang.in (f77.install-common): Warn if `f77-install-ok'
+	flag-file exists, since it no longer triggers any activity.
+
+	Rename libf2c.a and f2c.h to libg2c.a and g2c.h,
+	normalize and simplify g77/libg2c build process:
+	* Make-lang.in: Remove all support for overwriting
+	/usr/bin/f77 etc., or whatever the actual names are
+	via $(prefix) and $(local_prefix).  (g++ overwrites
+	/usr/bin/c++, but then it's often the only C++ compiler
+	on the system; f77 often exists on systems that are
+	installing g77.)
+	(f77.realclean): Remove obsolete target.
+	(g77.c, g77$(exeext)): Minor changes to look more like g++'s
+	stuff.
+	(f771): Now built with srcdir=gcc/f, not srcdir=gcc, to be
+	more like g++ and such.
+	(f/Makefile): Removed, as g++ doesn't need this rule.
+	(f77.install-common): No longer install f77, etc.
+	(f77.install-man): No longer install f77.1.
+	(f77.uninstall): No longer uninstall f77, f77.1, etc.
+	(f77.stage1, f77.stage2, f77.stage3, f77.stage4): Do work
+	only if "f77" appears in $(LANGUAGES).
+	(Note: gcc's Makefile.in's bootstrap target should set
+	LANGUAGES=$(BOOT_LANGUAGES) when making the stage1 target.)
+	* Makefile.in: Update vis-a-vis gcc/cp/Makefile.in.
+	(none): Remove.
+	(g77-only): Relocate.
+	(all.indirect, f771, *.o): Now assumes current directory
+	is this dir (gcc/f), not the parent directory.
+	(TAGS): Remove "echo 'parse.y,0'  >> TAGS ;" line.
+	* config-lang.in: Delete commented-out code.
+	Fix stagestuff definition.  Add more stuff to
+	diff_excludes definition.  Don't create any directories.
+	Set outputs to f/Makefile, to get variable substition
+	to happen (what does that really do, anyway?!).
+	* g77spec.c: Rename libf2c to libg2c.
+
+	* com.h: Remove all of the gcc back-end decls,
+	since egcs should have all of them correct.
+
+	* com.c: Include "proj.h" before anything else,
+	as that's how things are supposed to work.
+	* ste.c: Ditto.
+
+	* bad.c: Include "flags.j" here, since some diagnostics
+	check flag_pedantic_errors.
+
+	* Makefile.in (f/*.o): Rebuild dependencies via
+	deps-kinda.
+
+	* output.j: New source file.
+	* Make-lang.in (F77_SRCS): Update accordingly.
+	* Makefile.in (OUTPUT_H): Ditto.
+	(deps-kinda): Ditto.
+	* com.c: Include "output.j" here.
+	* lex.c: Ditto.
 
 Mon May 25 03:34:42 1998  Craig Burley  <burley@gnu.org>
 

@@ -338,53 +338,11 @@ tree ffecom_temp_label (void);
 tree ffecom_truth_value (tree expr);
 tree ffecom_truth_value_invert (tree expr);
 tree ffecom_which_entrypoint_decl (void);
-#endif	/* FFECOM_targetCURRENT == FFECOM_targetGCC */
 
-/* ~~~Eliminate these when possible, since the back end should be
-   declaring them in some .h file.  */
+/* These need to be in the front end with exactly these interfaces,
+   as they're called by the back end.  */
 
-#if FFECOM_targetCURRENT == FFECOM_targetGCC
-extern int flag_pedantic_errors;
-void emit_nop (void);
-void announce_function (tree decl);
-extern FILE *asm_out_file;
-void assemble_string (char *, int);
-void assemble_variable (tree decl, int top_level, int at_end,
-			int dont_output_data);
-void assemble_zeros (int size);
-int count_error (int warningp);
-void error (char *s, ...);
-void expand_decl (tree decl);
-void expand_computed_goto (tree exp);
-void expand_function_end (char *filename, int line, int end_bindings);
-void expand_function_start (tree subr, int parms_have_cleanups);
-void expand_main_function (void);
-void fatal (char *s, ...);
-void init_function_start (tree subr, char *filename, int line);
-void make_function_rtl (tree decl);
-void make_decl_rtl (tree decl, char *asmspec, int top_level);
-void make_var_volatile (tree var);
 int mark_addressable (tree expr);
-void output_inline_function (tree fndecl);
-void pedwarn (char *s, ...);
-void pop_function_context (void);
-void pop_momentary_nofree (void);
-void preserve_initializer (void);
-void print_node (FILE *file, char *prefix, tree node, int indent);
-void push_function_context (void);
-void push_obstacks (struct obstack *current, struct obstack *saveable);
-void put_var_into_stack (tree decl);
-void remember_end_note (tree block);
-void report_error_function (char *file);
-void rest_of_compilation (tree decl);
-void rest_of_decl_compilation (tree decl, char *asmspec, int top_level,
-			       int at_end);
-void resume_temporary_allocation (void);
-void set_identifier_size (int size);
-void temporary_allocation (void);
-tree truthvalue_conversion (tree expr);
-void warning_with_decl (tree decl, char *s, ...);
-void warning (char *s, ...);
 #endif	/* FFECOM_targetCURRENT == FFECOM_targetGCC */
 
 /* Define macros. */

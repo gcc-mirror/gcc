@@ -80,6 +80,7 @@ bool ffe_is_ident_ = TRUE;
 bool ffe_is_init_local_zero_ = FFETARGET_defaultIS_INIT_LOCAL_ZERO;
 bool ffe_is_mainprog_;		/* TRUE if current prog unit known to be
 				   main. */
+bool ffe_is_null_version_ = FALSE;
 bool ffe_is_onetrip_ = FALSE;
 bool ffe_is_silent_ = TRUE;
 bool ffe_is_typeless_boz_ = FALSE;
@@ -175,7 +176,7 @@ ffe_decode_option (argc, argv)
 	  ffe_is_do_internal_checks_ = TRUE;
 	}
       else if (strcmp (&opt[2], "null-version") == 0)
-	;	/* Someday generate program to print version info.  */
+	ffe_set_is_null_version (TRUE);
       else if (strcmp (&opt[2], "ident") == 0)
 	ffe_set_is_ident (TRUE);
       else if (strcmp (&opt[2], "no-ident") == 0)

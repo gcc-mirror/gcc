@@ -1,5 +1,5 @@
 # Top level makefile fragment for GNU Fortran.           -*-makefile-*-
-#   Copyright (C) 1995-1997 Free Software Foundation, Inc.
+#   Copyright (C) 1995-1998 Free Software Foundation, Inc.
 
 #This file is part of GNU Fortran.
 
@@ -15,8 +15,8 @@
 
 #You should have received a copy of the GNU General Public License
 #along with GNU Fortran; see the file COPYING.  If not, write to
-#the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
-#02111-1307, USA.
+#the Free Software Foundation, 59 Temple Place - Suite 330,
+#Boston, MA 02111-1307, USA.
 
 # This file provides the language dependent support in the main Makefile.
 # Each language makefile fragment must provide the following targets:
@@ -32,55 +32,16 @@
 #
 # It should also provide rules for:
 #
-# - making any compiler driver (eg: g77)
-# - the compiler proper (eg: f771)
+# - making any compiler driver (eg: g++)
+# - the compiler proper (eg: cc1plus)
 # - define the names for selecting the language in LANGUAGES.
 #
 # $(srcdir) must be set to the gcc/ source directory (not gcc/f/).
 #
-# Extra flags to pass to recursive makes (and to sub-configure).
-# Use different quoting rules compared with FLAGS_TO_PASS so we can use
-# this to set environment variables as well
-# Note that GCC_FOR_TARGET, GCC_FLAGS aren't in here -- treated separately.
-F77_FLAGS_TO_PASS = \
-	CROSS="$(CROSS)" \
-	AR_FLAGS="$(AR_FLAGS)" \
-	AR="$(AR)" \
-	BISON="$(BISON)" \
-	BISONFLAGS="$(BISONFLAGS)" \
-	CC="$(CC)" \
-	CFLAGS="$(CFLAGS)" \
-	X_CFLAGS="$(X_CFLAGS)" \
-	LDFLAGS="$(LDFLAGS)" \
-	LEX="$(LEX)" \
-	LEXFLAGS="$(LEXFLAGS)" \
-	MAKEINFO="$(MAKEINFO)" \
-	MAKEINFOFLAGS="$(MAKEINFOFLAGS)" \
-	RANLIB="$(RANLIB)" \
-	RANLIB_TEST="$(RANLIB_TEST)" \
-	SHELL="$(SHELL)" \
-	exec_prefix="$(exec_prefix)" \
-	prefix="$(prefix)" \
-	tooldir="$(tooldir)" \
-	bindir="$(bindir)" \
-	libsubdir="$(libsubdir)"
-#	"F77_FOR_BUILD=$(F77_FOR_BUILD)" \
-#	"F77FLAGS=$(F77FLAGS)" \
-#	"F77_FOR_TARGET=$(F77_FOR_TARGET)"
-
-# This flag controls whether to install (overwrite) f77 on this system,
-# and also whether to uninstall it when using the uninstall target.
-# As shipped, the flag is a test of whether the `f77_install_ok'
-# file exists in the build or source directories (top level), but
-# you can just change it here if you like.
-F77_INSTALL_FLAG = [ -f f77-install-ok -o -f $(srcdir)/f77-install-ok ]
-
-# Actual names to use when installing a native compiler.
-F77_INSTALL_NAME = `t='$(program_transform_name)'; echo f77 | sed $$t`
+# Actual name to use when installing a native compiler.
 G77_INSTALL_NAME = `t='$(program_transform_name)'; echo g77 | sed $$t`
 
-# Actual names to use when installing a cross-compiler.
-F77_CROSS_NAME = `t='$(program_transform_cross_name)'; echo f77 | sed $$t`
+# Actual name to use when installing a cross-compiler.
 G77_CROSS_NAME = `t='$(program_transform_cross_name)'; echo g77 | sed $$t`
 #
 # Define the names for selecting f77 in LANGUAGES.
@@ -95,34 +56,62 @@ F77 f77: f771$(exeext)
   f77.install-normal \
   f77.install-common f77.install-info f77.install-man \
   f77.uninstall f77.mostlyclean f77.clean f77.distclean \
-  f77.maintainer-clean f77.realclean f77.stage1 f77.stage2 f77.stage3 \
-  f77.stage4 f77.distdir f77.rebuilt
+  f77.extraclean f77.maintainer-clean f77.distdir f77.rebuilt \
+  f77.stage1 f77.stage2 f77.stage3 f77.stage4
 
 g77.c: $(srcdir)/gcc.c
-	-rm -f $@
-	$(LN_S) $(srcdir)/gcc.c $@
+	case "$(LANGUAGES)" in \
+	  *[fF]77*) touch lang-f77;; \
+	  *) rm -f lang-f77;; \
+	esac
+	if [ -f lang-f77 ]; then \
+	  rm -f g77.c; \
+	  $(LN_S) $(srcdir)/gcc.c g77.c; \
+	fi
 
-g77spec.o: $(srcdir)/f/g77spec.c
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(srcdir)/f/g77spec.c
+g77spec.o: $(srcdir)/f/g77spec.c $(srcdir)/f/version.h
+	case "$(LANGUAGES)" in \
+	  *[fF]77*) touch lang-f77;; \
+	  *) rm -f lang-f77;; \
+	esac
+	if [ -f lang-f77 ]; then \
+	  $(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(srcdir)/f/g77spec.c; \
+	fi
+
+g77version.o: $(srcdir)/f/version.c
+	case "$(LANGUAGES)" in \
+	  *[fF]77*) touch lang-f77;; \
+	  *) rm -f lang-f77;; \
+	esac
+	if [ -f lang-f77 ]; then \
+	  $(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -o g77version.o \
+	    $(srcdir)/f/version.c; \
+	fi
 
 # N.B.: This is a copy of the gcc.o rule, with -DLANG_SPECIFIC_DRIVER added.
 # It'd be nice if we could find an easier way to do this---rather than have
 # to track changes to the toplevel gcc Makefile as well.
 # We depend on g77.c last, to make it obvious where it came from.
 g77.o: $(CONFIG_H) multilib.h config.status $(lang_specs_files) g77.c
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-	$(DRIVER_DEFINES) \
-	-DLANG_SPECIFIC_DRIVER -c g77.c
+	if [ -f lang-f77 ]; then \
+	  $(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(DRIVER_DEFINES) \
+	   -DLANG_SPECIFIC_DRIVER -c g77.c; \
+	fi
 
 # Create the compiler driver for g77.
-g77$(exeext): g77.o g77spec.o version.o choose-temp.o pexecute.o prefix.o $(LIBDEPS) $(EXTRA_GCC_OBJS)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ g77.o g77spec.o prefix.o version.o \
-	  choose-temp.o pexecute.o $(EXTRA_GCC_OBJS) $(LIBS)
+g77$(exeext): g77.o g77spec.o g77version.o version.o choose-temp.o pexecute.o prefix.o \
+  $(LIBDEPS) $(EXTRA_GCC_OBJS)
+	if [ -f lang-f77 ]; then \
+	  $(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ g77.o g77spec.o g77version.o \
+	   version.o choose-temp.o pexecute.o prefix.o $(EXTRA_GCC_OBJS) $(LIBS); \
+	fi
 
 # Create a version of the g77 driver which calls the cross-compiler.
 g77-cross$(exeext): g77$(exeext)
-	-rm -f g77-cross$(exeext)
-	cp g77$(exeext) g77-cross$(exeext)
+	if [ -f lang-f77 ]; then \
+	  rm -f g77-cross$(exeext); \
+	  cp g77$(exeext) g77-cross$(exeext); \
+	fi
 
 F77_SRCS = \
  $(srcdir)/f/assert.j \
@@ -170,6 +159,7 @@ F77_SRCS = \
  $(srcdir)/f/malloc.h \
  $(srcdir)/f/name.c \
  $(srcdir)/f/name.h \
+ $(srcdir)/f/output.j \
  $(srcdir)/f/parse.c \
  $(srcdir)/f/proj.c \
  $(srcdir)/f/proj.h \
@@ -228,11 +218,11 @@ F77_SRCS = \
  $(srcdir)/f/where.c \
  $(srcdir)/f/where.h
 
-f771$(exeext): $(P) $(F77_SRCS) $(LIBDEPS) stamp-objlist f/Makefile
-	$(MAKE) -f f/Makefile $(FLAGS_TO_PASS) VPATH=$(srcdir) srcdir=$(srcdir) f771$(exeext)
-
-f/Makefile: $(srcdir)/f/Makefile.in $(srcdir)/configure
-	$(SHELL) config.status
+f771$(exeext): $(P) $(F77_SRCS) $(LIBDEPS) stamp-objlist
+	touch lang-f77
+	cd f; $(MAKE) $(FLAGS_TO_PASS) \
+	  HOST_CC="$(HOST_CC)" HOST_CFLAGS="$(HOST_CFLAGS)" HOST_CPPFLAGS="$(HOST_CPPFLAGS)" \
+	  ../f771$(exeext)
 
 #
 # Build hooks:
@@ -249,12 +239,25 @@ f77.dvi: f/g77.dvi
 f/g77.info: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
 	    $(srcdir)/f/g77install.texi $(srcdir)/f/news.texi \
 	    $(srcdir)/f/intdoc.texi
-	$(MAKEINFO) -I$(srcdir)/f -o f/g77.info $(srcdir)/f/g77.texi
+	case "$(LANGUAGES)" in \
+	  *[fF]77*) touch lang-f77;; \
+	  *) rm -f lang-f77;; \
+	esac
+	if [ -f lang-f77 ]; then \
+	  rm $(srcdir)/f/g77.info-*; \
+	  $(MAKEINFO) -I$(srcdir)/f -o f/g77.info $(srcdir)/f/g77.texi; \
+	fi
 
 f/g77.dvi: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
-		     $(srcdir)/f/g77install.texi $(srcdir)/f/news.texi \
-		     $(srcdir)/f/intdoc.texi
-	$(TEXI2DVI) -I$(srcdir)/f -o f/g77.dvi $(srcdir)/f/g77.texi
+	    $(srcdir)/f/g77install.texi $(srcdir)/f/news.texi \
+	    $(srcdir)/f/intdoc.texi
+	case "$(LANGUAGES)" in \
+	  *[fF]77*) touch lang-f77;; \
+	  *) rm -f lang-f77;; \
+	esac
+	if [ -f lang-f77 ]; then \
+	  $(TEXI2DVI) -I$(srcdir)/f -o f/g77.dvi $(srcdir)/f/g77.texi; \
+	fi
 
 # This dance is all about producing accurate documentation for g77's
 # intrinsics with minimum fuss.  f/ansify appends "\n\" to C strings
@@ -276,13 +279,19 @@ f/g77.dvi: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
 # been found only upon reading the documentation that was automatically
 # produced from it.
 $(srcdir)/f/intdoc.texi: f/intdoc.c f/intdoc.in f/ansify.c f/intrin.def f/intrin.h
-	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) \
-	      `echo $(srcdir)/f/ansify.c | sed 's,^\./,,'` -o f/ansify
-	f/ansify < $(srcdir)/f/intdoc.in > f/intdoc.h0 $(srcdir)/f/intdoc.in
-	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -I./f \
-	      `echo $(srcdir)/f/intdoc.c | sed 's,^\./,,'` -o f/intdoc
-	f/intdoc > $(srcdir)/f/intdoc.texi
-	rm f/intdoc f/ansify f/intdoc.h0
+	case "$(LANGUAGES)" in \
+	  *[fF]77*) touch lang-f77;; \
+	  *) rm -f lang-f77;; \
+	esac
+	if [ -f lang-f77 ]; then \
+	  $(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) \
+	   `echo $(srcdir)/f/ansify.c | sed 's,^\./,,'` -o f/ansify; \
+	  f/ansify < $(srcdir)/f/intdoc.in > f/intdoc.h0 $(srcdir)/f/intdoc.in; \
+	  $(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -I./f \
+	   `echo $(srcdir)/f/intdoc.c | sed 's,^\./,,'` -o f/intdoc; \
+	  f/intdoc > $(srcdir)/f/intdoc.texi; \
+	  rm f/intdoc f/ansify f/intdoc.h0; \
+	fi
 
 $(srcdir)/f/BUGS: f/bugs0.texi f/bugs.texi
 	cd $(srcdir)/f; $(MAKEINFO) -D BUGSONLY --no-header --no-split \
@@ -308,30 +317,39 @@ f77.install-normal:
 # Install the driver program as $(target)-g77
 # and also as either g77 (if native) or $(tooldir)/bin/g77.
 f77.install-common:
-	-if [ -f f771$(exeext) ] ; then \
+	case "$(LANGUAGES)" in \
+	  *[fF]77*) touch lang-f77;; \
+	  *) rm -f lang-f77;; \
+	esac
+	-if [ -f lang-f77 -a -f f771$(exeext) ] ; then \
 	  if [ -f g77-cross$(exeext) ] ; then \
 	    rm -f $(bindir)/$(G77_CROSS_NAME)$(exeext); \
 	    $(INSTALL_PROGRAM) g77-cross$(exeext) $(bindir)/$(G77_CROSS_NAME)$(exeext); \
 	    chmod a+x $(bindir)/$(G77_CROSS_NAME)$(exeext); \
-	    if $(F77_INSTALL_FLAG) ; then \
-	      rm -f $(bindir)/$(F77_CROSS_NAME)$(exeext); \
-	      $(LN) $(bindir)/$(G77_CROSS_NAME)$(exeext) $(bindir)/$(F77_CROSS_NAME)$(exeext); \
-	    fi ; \
 	  else \
 	    rm -f $(bindir)/$(G77_INSTALL_NAME)$(exeext); \
 	    $(INSTALL_PROGRAM) g77$(exeext) $(bindir)/$(G77_INSTALL_NAME)$(exeext); \
 	    chmod a+x $(bindir)/$(G77_INSTALL_NAME)$(exeext); \
-	    if $(F77_INSTALL_FLAG) ; then \
-	      rm -f $(bindir)/$(F77_INSTALL_NAME)$(exeext); \
-	      $(LN) $(bindir)/$(G77_INSTALL_NAME)$(exeext) $(bindir)/$(F77_INSTALL_NAME)$(exeext); \
-	    fi ; \
 	  fi ; \
 	else true; fi
+	@if [ -f f77-install-ok -o -f $(srcdir)/f77-install-ok ]; then \
+	  echo ''; \
+	  echo 'Warning: egcs no longer installs an f77 command.'; \
+	  echo '         You must do so yourself.  For more information,'; \
+	  echo '         read "Distributing Binaries" in the egcs g77 docs.'; \
+	  echo '         (To turn off this warning, delete the file'; \
+	  echo '         f77-install-ok in the source or build directory.)'; \
+	  echo ''; \
+	fi
 
 # $(INSTALL_DATA) might be a relative pathname, so we can't cd into srcdir
 # to do the install.  The sed rule was copied from stmp-int-hdrs.
 f77.install-info: f77.info
-	if [ -f f/g77.info ] ; then \
+	case "$(LANGUAGES)" in \
+	  *[fF]77*) touch lang-f77;; \
+	  *) rm -f lang-f77;; \
+	esac
+	if [ -f lang-f77 -a -f f/g77.info ] ; then \
 	  rm -f $(infodir)/g77.info*; \
 	  for f in f/g77.info*; do \
 	      realfile=`echo $$f | sed -e 's|.*/\([^/]*\)$$|\1|'`; \
@@ -347,44 +365,40 @@ f77.install-info: f77.info
 	else : ; fi
 
 f77.install-man: $(srcdir)/f/g77.1
-	-if [ -f f771$(exeext) ] ; then \
+	case "$(LANGUAGES)" in \
+	  *[fF]77*) touch lang-f77;; \
+	  *) rm -f lang-f77;; \
+	esac
+	-if [ -f lang-f77 -a -f f771$(exeext) ] ; then \
 	  if [ -f g77-cross$(exeext) ] ; then \
 	    rm -f $(mandir)/$(G77_CROSS_NAME)$(manext); \
 	    $(INSTALL_DATA) $(srcdir)/f/g77.1 $(mandir)/$(G77_CROSS_NAME)$(manext); \
 	    chmod a-x $(mandir)/$(G77_CROSS_NAME)$(manext); \
-	    if $(F77_INSTALL_FLAG) ; then \
-	      rm -f $(mandir)/$(F77_CROSS_NAME)$(manext); \
-	      $(LN) $(mandir)/$(G77_CROSS_NAME)$(manext) $(mandir)/$(F77_CROSS_NAME)$(manext); \
-	    fi ;\
 	  else \
 	    rm -f $(mandir)/$(G77_INSTALL_NAME)$(manext); \
 	    $(INSTALL_DATA) $(srcdir)/f/g77.1 $(mandir)/$(G77_INSTALL_NAME)$(manext); \
 	    chmod a-x $(mandir)/$(G77_INSTALL_NAME)$(manext); \
-	    if $(F77_INSTALL_FLAG) ; then \
-	      rm -f $(mandir)/$(F77_INSTALL_NAME)$(manext); \
-	      $(LN) $(mandir)/$(G77_INSTALL_NAME)$(manext) $(mandir)/$(F77_INSTALL_NAME)$(manext); \
-	    fi ;\
 	  fi; \
 	else true; fi
 
 f77.uninstall:
+	case "$(LANGUAGES)" in \
+	  *[fF]77*) touch lang-f77;; \
+	  *) rm -f lang-f77;; \
+	esac
 	@if [ -f lang-f77 ] ; then \
 	  if $(SHELL) -c 'install-info --version | sed 1q | fgrep -s -v -i debian' >/dev/null 2>&1; then \
 	    echo " install-info --delete --info-dir=$(infodir) $(infodir)/g77.info"; \
 	    install-info --delete --info-dir=$(infodir) $(infodir)/g77.info || : ; \
 	  else : ; fi; \
 	else : ; fi
-	-if $(F77_INSTALL_FLAG) ; then \
-	  rm -rf $(bindir)/$(F77_INSTALL_NAME)$(exeext) ; \
-	  rm -rf $(bindir)/$(F77_CROSS_NAME)$(exeext) ; \
-	  rm -rf $(mandir)/$(F77_INSTALL_NAME)$(manext) ; \
-	  rm -rf $(mandir)/$(F77_CROSS_NAME)$(manext) ; \
+	-if [ -f lang-f77 ]; then \
+	  rm -rf $(bindir)/$(G77_INSTALL_NAME)$(exeext); \
+	  rm -rf $(bindir)/$(G77_CROSS_NAME)$(exeext); \
+	  rm -rf $(mandir)/$(G77_INSTALL_NAME)$(manext); \
+	  rm -rf $(mandir)/$(G77_CROSS_NAME)$(manext); \
+	  rm -rf $(infodir)/g77.info*; \
 	fi
-	-rm -rf $(bindir)/$(G77_INSTALL_NAME)$(exeext)
-	-rm -rf $(bindir)/$(G77_CROSS_NAME)$(exeext)
-	-rm -rf $(mandir)/$(G77_INSTALL_NAME)$(manext)
-	-rm -rf $(mandir)/$(G77_CROSS_NAME)$(manext)
-	-rm -rf $(infodir)/g77.info*
 #
 # Clean hooks:
 # A lot of the ancillary files are deleted by the main makefile.
@@ -392,36 +406,52 @@ f77.uninstall:
 
 f77.mostlyclean:
 	-rm -f f/*$(objext)
-	-rm -f f/fini f/f771$(exeext) f/stamp-str f/str-*.h f/str-*.j f/intdoc f/ansify f/intdoc.h0
+	-rm -f f/fini f/stamp-str f/str-*.h f/str-*.j
+	-rm -f f/intdoc f/ansify f/intdoc.h0
 f77.clean:
 	-rm -f g77.c g77.o g77spec.o g77version.o
 f77.distclean:
-	-rm -f f/Makefile
-# realclean is the pre-2.7.0 name for maintainer-clean
-f77.maintainer-clean f77.realclean: f77.distclean
+	-rm -f lang-f77 f/Makefile
+f77.extraclean:
+f77.maintainer-clean:
 	-rm -f f/g77.info* f/g77.*aux f/TAGS f/BUGS f/INSTALL f/NEWS f/intdoc.texi
 #
 # Stage hooks:
 # The main makefile has already created stage?/f.
 
-G77STAGESTUFF = f/*$(objext) f/fini f/stamp-str f/str-*.h f/str-*.j g77.o g77spec.o g77version.o
+G77STAGESTUFF = f/*$(objext) f/fini f/stamp-str f/str-*.h f/str-*.j \
+  lang-f77 g77.o g77spec.o g77version.o
 
 f77.stage1: stage1-start
-	-mv $(G77STAGESTUFF) stage1/f
+	-if [ -f lang-f77 ]; then \
+	  mv $(G77STAGESTUFF) stage1/f; \
+	fi
 f77.stage2: stage2-start
-	-mv $(G77STAGESTUFF) stage2/f
+	-if [ -f lang-f77 ]; then \
+	  mv $(G77STAGESTUFF) stage2/f; \
+	fi
 f77.stage3: stage3-start
-	-mv $(G77STAGESTUFF) stage3/f
+	-if [ -f lang-f77 ]; then \
+	  mv $(G77STAGESTUFF) stage3/f; \
+	fi
 f77.stage4: stage4-start
-	-mv $(G77STAGESTUFF) stage4/f
+	-if [ -f lang-f77 ]; then \
+	  mv $(G77STAGESTUFF) stage4/f; \
+	fi
 #
 # Maintenance hooks:
 
 # This target creates the files that can be rebuilt, but go in the
 # distribution anyway.  It then copies the files to the distdir directory.
 f77.distdir: f77.rebuilt
-	mkdir tmp/f
-	cd f; \
-	for file in *[0-9a-zA-Z+]; do \
-	  ($LN) $$file ../tmp/f
-	done
+	case "$(LANGUAGES)" in \
+	  *[fF]77*) touch lang-f77;; \
+	  *) rm -f lang-f77;; \
+	esac
+	-if [ -f lang-f77 ]; then \
+	  mkdir tmp/f; \
+	  cd f; \
+	  for file in *[0-9a-zA-Z+]; do \
+	    $(LN_S) $$file ../tmp/f; \
+	  done; \
+	fi

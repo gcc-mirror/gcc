@@ -5,7 +5,7 @@
 @c The text of this file appears in the file BUGS
 @c in the G77 distribution, as well as in the G77 manual.
 
-@c 1998-05-19
+@c 1998-05-20
 
 @ifclear NEWSONLY
 @node News
@@ -98,7 +98,7 @@ and the corresponding alias-analysis code.
 
 (Version 1.0.1 of @code{egcs} has the alias-analysis
 code, but not the @code{__restrict__} keyword.
-@code{g77} users benefit from the alias-analysis
+@code{egcs} @code{g77} users benefit from the alias-analysis
 code despite the lack of the @code{__restrict__} keyword,
 which is a C-language construct.)
 
@@ -215,7 +215,7 @@ archive members.
 
 This should make it easier to write portable applications
 that have their own (non-Fortran) @code{main()} routine
-to properly set up the @code{libf2c} environment, even
+properly set up the @code{libf2c} environment, even
 when @code{libf2c} (now @code{libg2c}) is a shared library.
 
 @item
@@ -227,7 +227,7 @@ Other cleaning up of the configuration and build process
 has been performed as well.
 
 @item
-Use @code{install-info} to update the directory of
+@code{install-info} now used to update the directory of
 Info documentation to contain an entry for @code{g77}
 (during installation).
 

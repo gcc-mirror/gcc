@@ -18,6 +18,32 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+/* This file contains a filter for the main `gcc' driver, which is
+   replicated for the `g77' driver by adding this filter.  The purpose
+   of this filter is to be basically identical to gcc (in that
+   it faithfully passes all of the original arguments to gcc) but,
+   unless explicitly overridden by the user in certain ways, ensure
+   that the needs of the language supported by this wrapper are met.
+
+   For GNU Fortran (g77), we do the following to the argument list
+   before passing it to `gcc':
+
+   1.  Make sure `-lg2c -lm' is at the end of the list.
+
+   2.  Make sure each time `-lg2c' or `-lm' is seen, it forms
+       part of the series `-lg2c -lm'.
+
+   #1 and #2 are not done if `-nostdlib' or any option that disables
+   the linking phase is present, or if `-xfoo' is in effect.  Note that
+   a lack of source files or -l options disables linking.
+
+   This program was originally made out of gcc/cp/g++spec.c, but the
+   way it builds the new argument list was rewritten so it is much
+   easier to maintain, improve the way it decides to add or not add
+   extra arguments, etc.  And several improvements were made in the
+   handling of arguments, primarily to make it more consistent with
+   `gcc' itself.  */
+
 #include "config.h"
 
 #include <sys/types.h>
@@ -33,22 +59,210 @@ Boston, MA 02111-1307, USA.  */
 #include <string.h>
 #endif
 
-/* This bit is set if we saw a `-xfoo' language specification.  */
-#define LANGSPEC	(1<<1)
-/* This bit is set if they did `-lm' or `-lmath'.  */
-#define MATHLIB		(1<<2)
-/* This bit is set if they did `-lc'.  */
-#define WITHLIBC	(1<<3)
+#include <f/version.h>
 
 #ifndef MATH_LIBRARY
 #define MATH_LIBRARY "-lm"
 #endif
 
 #ifndef FORTRAN_LIBRARY
-#define FORTRAN_LIBRARY "-lf2c"
+#define FORTRAN_LIBRARY "-lg2c"
 #endif
 
+/* Options this driver needs to recognize, not just know how to
+   skip over.  */
+typedef enum
+{
+  OPTION_b,			/* Aka --prefix. */
+  OPTION_B,			/* Aka --target. */
+  OPTION_c,			/* Aka --compile. */
+  OPTION_driver,		/* Wrapper-specific option. */
+  OPTION_E,			/* Aka --preprocess. */
+  OPTION_help,			/* --help. */
+  OPTION_i,			/* -imacros, -include, -include-*. */
+  OPTION_l,
+  OPTION_L,			/* Aka --library-directory. */
+  OPTION_M,			/* Aka --dependencies. */
+  OPTION_MM,			/* Aka --user-dependencies. */
+  OPTION_nostdlib,		/* Aka --no-standard-libraries, or
+				   -nodefaultlibs. */
+  OPTION_o,			/* Aka --output. */
+  OPTION_S,			/* Aka --assemble. */
+  OPTION_syntax_only,		/* -fsyntax-only. */
+  OPTION_v,			/* Aka --verbose. */
+  OPTION_version,		/* --version. */
+  OPTION_V,			/* Aka --use-version. */
+  OPTION_x,			/* Aka --language. */
+  OPTION_			/* Unrecognized or unimportant. */
+} Option;
+
+/* The original argument list and related info is copied here.  */
+static int g77_xargc;
+static char **g77_xargv;
+static void (*g77_fn)();
+
+/* The new argument list will be built here.  */
+static int g77_newargc;
+static char **g77_newargv;
+
 extern char *xmalloc PROTO((size_t));
+
+/* --- This comes from gcc.c (2.8.1) verbatim: */
+
+/* This defines which switch letters take arguments.  */
+
+#define DEFAULT_SWITCH_TAKES_ARG(CHAR)      \
+  ((CHAR) == 'D' || (CHAR) == 'U' || (CHAR) == 'o' \
+   || (CHAR) == 'e' || (CHAR) == 'T' || (CHAR) == 'u' \
+   || (CHAR) == 'I' || (CHAR) == 'm' || (CHAR) == 'x' \
+   || (CHAR) == 'L' || (CHAR) == 'A')
+
+#ifndef SWITCH_TAKES_ARG
+#define SWITCH_TAKES_ARG(CHAR) DEFAULT_SWITCH_TAKES_ARG(CHAR)
+#endif
+
+/* This defines which multi-letter switches take arguments.  */
+
+#define DEFAULT_WORD_SWITCH_TAKES_ARG(STR)		\
+ (!strcmp (STR, "Tdata") || !strcmp (STR, "Ttext")	\
+  || !strcmp (STR, "Tbss") || !strcmp (STR, "include")	\
+  || !strcmp (STR, "imacros") || !strcmp (STR, "aux-info") \
+  || !strcmp (STR, "idirafter") || !strcmp (STR, "iprefix") \
+  || !strcmp (STR, "iwithprefix") || !strcmp (STR, "iwithprefixbefore") \
+  || !strcmp (STR, "isystem") || !strcmp (STR, "specs"))
+
+#ifndef WORD_SWITCH_TAKES_ARG
+#define WORD_SWITCH_TAKES_ARG(STR) DEFAULT_WORD_SWITCH_TAKES_ARG (STR)
+#endif
+
+/* --- End of verbatim.  */
+
+/* Assumes text[0] == '-'.  Returns number of argv items that belong to
+   (and follow) this one, an option id for options important to the
+   caller, and a pointer to the first char of the arg, if embedded (else
+   returns NULL, meaning no arg or it's the next argv).
+
+   Note that this also assumes gcc.c's pass converting long options
+   to short ones, where available, has already been run.  */
+
+static void
+lookup_option (xopt, xskip, xarg, text)
+     Option *xopt;
+     int *xskip;
+     char **xarg;
+     char *text;
+{
+  Option opt = OPTION_;
+  int skip;
+  char *arg = NULL;
+
+  if ((skip = SWITCH_TAKES_ARG (text[1])))
+    skip -= (text[2] != '\0');	/* See gcc.c. */
+
+  if (text[1] == 'B')
+    opt = OPTION_B, skip = (text[2] == '\0'), arg = text + 2;
+  else if (text[1] == 'b')
+    opt = OPTION_b, skip = (text[2] == '\0'), arg = text + 2;
+  else if ((text[1] == 'c') && (text[2] == '\0'))
+    opt = OPTION_c, skip = 0;
+  else if ((text[1] == 'E') && (text[2] == '\0'))
+    opt = OPTION_E, skip = 0;
+  else if (text[1] == 'i')
+    opt = OPTION_i, skip = 0;
+  else if (text[1] == 'l')
+    opt = OPTION_l;
+  else if (text[1] == 'L')
+    opt = OPTION_L, arg = text + 2;
+  else if (text[1] == 'o')
+    opt = OPTION_o;
+  else if ((text[1] == 'S') && (text[2] == '\0'))
+    opt = OPTION_S, skip = 0;
+  else if (text[1] == 'V')
+    opt = OPTION_V, skip = (text[2] == '\0');
+  else if ((text[1] == 'v') && (text[2] == '\0'))
+    opt = OPTION_v, skip = 0;
+  else if (text[1] == 'x')
+    opt = OPTION_x, arg = text + 2;
+  else
+    {
+      if ((skip = WORD_SWITCH_TAKES_ARG (text + 1)) != 0)  /* See gcc.c. */
+	;
+      else if (! strncmp (text, "-fdriver", 8))  /* Really --driver!! */
+	opt = OPTION_driver;	/* Never mind arg, this is unsupported. */
+      else if (! strcmp (text, "-fhelp"))  /* Really --help!! */
+	opt = OPTION_help;
+      else if (! strcmp (text, "-M"))
+	opt = OPTION_M;
+      else if (! strcmp (text, "-MM"))
+	opt = OPTION_MM;
+      else if (! strcmp (text, "-nostdlib")
+	       || ! strcmp (text, "-nodefaultlibs"))
+	opt = OPTION_nostdlib;
+      else if (! strcmp (text, "-fsyntax-only"))
+	opt = OPTION_syntax_only;
+      else if (! strcmp (text, "-dumpversion"))
+	opt = OPTION_version;
+      else if (! strcmp (text, "-Xlinker")
+	       || ! strcmp (text, "-specs"))
+	skip = 1;
+      else
+	skip = 0;
+    }
+
+  if (xopt != NULL)
+    *xopt = opt;
+  if (xskip != NULL)
+    *xskip = skip;
+  if (xarg != NULL)
+    {
+      if ((arg != NULL)
+	  && (arg[0] == '\0'))
+	*xarg = NULL;
+      else
+	*xarg = arg;
+    }
+}
+
+/* Append another argument to the list being built.  As long as it is
+   identical to the corresponding arg in the original list, just increment
+   the new arg count.  Otherwise allocate a new list, etc.  */
+
+static void
+append_arg (arg)
+     char *arg;
+{
+  static int newargsize;
+
+#if 0
+  fprintf (stderr, "`%s'\n", arg);
+#endif
+
+  if (g77_newargv == g77_xargv
+      && g77_newargc < g77_xargc
+      && (arg == g77_xargv[g77_newargc]
+	  || ! strcmp (arg, g77_xargv[g77_newargc])))
+    {
+      ++g77_newargc;
+      return;			/* Nothing new here. */
+    }
+
+  if (g77_newargv == g77_xargv)
+    {				/* Make new arglist. */
+      int i;
+
+      newargsize = (g77_xargc << 2) + 20;	/* This should handle all. */
+      g77_newargv = (char **) xmalloc (newargsize * sizeof (char *));
+
+      /* Copy what has been done so far.  */
+      for (i = 0; i < g77_newargc; ++i)
+	g77_newargv[i] = g77_xargv[i];
+    }
+
+  if (g77_newargc == newargsize)
+    (*g77_fn) ("overflowed output arg list for `%s'", arg);
+
+  g77_newargv[g77_newargc++] = arg;
+}
 
 void
 lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
@@ -57,227 +271,304 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
      char ***in_argv;
      int *in_added_libraries;
 {
-  int i, j;
+  int argc = *in_argc;
+  char **argv = *in_argv;
+  int i;
+  int verbose = 0;
+  Option opt;
+  int skip;
+  char *arg;
 
-  /* If non-zero, the user gave us the `-v' flag.  */ 
-  int saw_verbose_flag = 0;
+  /* This will be NULL if we encounter a situation where we should not
+     link in libf2c.  */
+  char *library = FORTRAN_LIBRARY;
 
-  /* This will be 0 if we encounter a situation where we should not
-     link in libstdf77.  */
-  int library = 1;
+  /* This will become 0 if anything other than -v and kin (like -V)
+     is seen, meaning the user is trying to accomplish something.
+     If it remains nonzero, and the user wants version info, add stuff to
+     the command line to make gcc invoke all the appropriate phases
+     to get all the version info.  */
+  int add_version_magic = 1;
 
-  /* The number of arguments being added to what's in argv, other than
-     libraries.  We use this to track the number of times we've inserted
-     -xf77/-xnone.  */
-  int added = 2;
-
-  /* Used to track options that take arguments, so we don't go wrapping
-     those with -xf77/-xnone.  */
-  char *quote = NULL;
-
-  /* The new argument list will be contained in this.  */
-  char **arglist;
-
-  /* Non-zero if we saw a `-xfoo' language specification on the
-     command line.  Used to avoid adding our own -xf77 if the user
-     already gave a language for the file.  */
+  /* 0 => -xnone in effect.
+     1 => -xfoo in effect.  */
   int saw_speclang = 0;
 
-  /* "-lm" or "-lmath" if it appears on the command line.  */
-  char *saw_math = 0;
+  /* 0 => initial/reset state
+     1 => last arg was -l<library>
+     2 => last two args were -l<library> -lm.  */
+  int saw_library = 0;
 
-  /* "-lc" if it appears on the command line.  */
-  char *saw_libc = 0;
+  /* The number of input and output files in the incoming arg list.  */
+  int n_infiles = 0;
+  int n_outfiles = 0;
 
-  /* An array used to flag each argument that needs a bit set for
-     LANGSPEC, MATHLIB, or WITHLIBC.  */
-  int *args;
+#if 0
+  fprintf (stderr, "Incoming:");
+  for (i = 0; i < argc; i++)
+    fprintf (stderr, " %s", argv[i]);
+  fprintf (stderr, "\n");
+#endif
 
-  /* By default, we throw on the math library.  */
-  int need_math = 1;
+  g77_xargc = argc;
+  g77_xargv = argv;
+  g77_newargc = 0;
+  g77_newargv = argv;
+  g77_fn = fn;
 
-  /* The total number of arguments with the new stuff.  */
-  int argc;
+  /* First pass through arglist.
 
-  /* The argument list.  */
-  char **argv;
+     If -nostdlib or a "turn-off-linking" option is anywhere in the
+     command line, don't do any library-option processing (except
+     relating to -x).  Also, if -v is specified, but no other options
+     that do anything special (allowing -V version, etc.), remember
+     to add special stuff to make gcc command actually invoke all
+     the different phases of the compilation process so all the version
+     numbers can be seen.
 
-  /* The number of libraries added in.  */
-  int added_libraries;
+     Also, here is where all problems with missing arguments to options
+     are caught.  If this loop is exited normally, it means all options
+     have the appropriate number of arguments as far as the rest of this
+     program is concerned.  */
 
-  /* The total number of arguments with the new stuff.  */
-  int num_args = 1;
-
-  argc = *in_argc;
-  argv = *in_argv;
-  added_libraries = *in_added_libraries;
-
-  args = (int *) xmalloc (argc * sizeof (int));
-  bzero ((char *) args, argc * sizeof (int));
-
-  for (i = 1; i < argc; i++)
+  for (i = 1; i < argc; ++i)
     {
-      /* If the previous option took an argument, we swallow it here.  */
-      if (quote)
+      if ((argv[i][0] == '+') && (argv[i][1] == 'e'))
 	{
-	  quote = NULL;
+	  add_version_magic = 0;
 	  continue;
 	}
 
-      /* We don't do this anymore, since we don't get them with minus
-	 signs on them.  */
-      if (argv[i][0] == '\0' || argv[i][1] == '\0')
-	continue;
-
-      if (argv[i][0] == '-')
+      if ((argv[i][0] != '-') || (argv[i][1] == '\0'))
 	{
-	  if (library != 0 && (strcmp (argv[i], "-nostdlib") == 0
-			       || strcmp (argv[i], "-nodefaultlibs") == 0))
-	    {
-	      library = 0;
-	    }
-	  else if (strcmp (argv[i], "-lm") == 0
-		   || strcmp (argv[i], "-lmath") == 0
-#ifdef ALT_LIBM
-		   || strcmp (argv[i], ALT_LIBM) == 0
-#endif
-		  )
-	    {
-	      args[i] |= MATHLIB;
-	      need_math = 0;
-	    }
-	  else if (strcmp (argv[i], "-lc") == 0)
-	    args[i] |= WITHLIBC;
-	  else if (strcmp (argv[i], "-v") == 0)
-	    {
-	      saw_verbose_flag = 1;
-	      if (argc == 2)
-		{
-		  /* If they only gave us `-v', don't try to link in libf2c. */ 
-		  library = 0;
-		}
-	    }
-	  else if (strncmp (argv[i], "-x", 2) == 0)
-	    saw_speclang = 1;
-	  else if (((argv[i][2] == '\0'
-		     && (char *)strchr ("bBVDUoeTuIYmLiA", argv[i][1]) != NULL)
-		    || strcmp (argv[i], "-Tdata") == 0))
-	    quote = argv[i];
-	  else if (library != 0 && ((argv[i][2] == '\0'
-		     && (char *) strchr ("cSEM", argv[i][1]) != NULL)
-		    || strcmp (argv[i], "-MM") == 0))
-	    {
-	      /* Don't specify libraries if we won't link, since that would
-		 cause a warning.  */
-	      library = 0;
-	      added -= 2;
-	    }
-	  else
-	    /* Pass other options through.  */
-	    continue;
+	  ++n_infiles;
+	  add_version_magic = 0;
+	  continue;
 	}
-      else
-	{
-	  int len; 
 
-	  if (saw_speclang)
+      lookup_option (&opt, &skip, NULL, argv[i]);
+
+      switch (opt)
+	{
+	case OPTION_nostdlib:
+	case OPTION_c:
+	case OPTION_S:
+	case OPTION_syntax_only:
+	case OPTION_E:
+	case OPTION_M:
+	case OPTION_MM:
+	  /* These options disable linking entirely or linking of the
+	     standard libraries.  */
+	  library = 0;
+	  add_version_magic = 0;
+	  break;
+
+	case OPTION_l:
+	  ++n_infiles;
+	  add_version_magic = 0;
+	  break;
+
+	case OPTION_o:
+	  ++n_outfiles;
+	  add_version_magic = 0;
+	  break;
+
+	case OPTION_v:
+	  if (! verbose)
+	    fprintf (stderr, "g77 version %s\n", ffe_version_string);
+	  verbose = 1;
+	  break;
+
+	case OPTION_b:
+	case OPTION_B:
+	case OPTION_L:
+	case OPTION_i:
+	case OPTION_V:
+	  /* These options are useful in conjunction with -v to get
+	     appropriate version info.  */
+	  break;
+
+	case OPTION_version:
+	  printf ("\
+GNU Fortran %s\n\
+Copyright (C) 1997 Free Software Foundation, Inc.\n\
+For more version information on components of the GNU Fortran\n\
+compilation system, especially useful when reporting bugs,\n\
+type the command `g77 --verbose'.\n\
+\n\
+GNU Fortran comes with NO WARRANTY, to the extent permitted by law.\n\
+You may redistribute copies of GNU Fortran\n\
+under the terms of the GNU General Public License.\n\
+For more information about these matters, see the file named COPYING\n\
+or type the command `info -f g77 Copying'.\n\
+", ffe_version_string);
+	  exit (0);
+	  break;
+
+	case OPTION_help:
+	  printf ("\
+Usage: g77 [OPTION]... FORTRAN-SOURCE...\n\
+\n\
+Compile and link Fortran source code to produce an executable program,\n\
+which by default is named `a.out', and can be invoked with the UNIX\n\
+command `./a.out'.\n\
+\n\
+Options:\n\
+--debug                include debugging information in executable.\n\
+--help                 display this help and exit.\n\
+--optimize[=LEVEL]     take extra time and memory to make generated\n\
+                         executable run faster.  LEVEL is 0 for no\n\
+                         optimization, 1 for normal optimization, and\n\
+                         increases through 3 for more optimization.\n\
+--output=PROGRAM       name the executable PROGRAM instead of a.out;\n\
+                         invoke with the command `./PROGRAM'.\n\
+--version              display version information and exit.\n\
+\n\
+Many other options exist to tailor the compilation process, specify\n\
+the dialect of the Fortran source code, specify details of the\n\
+code-generation methodology, and so on.\n\
+\n\
+For more information on g77 and gcc, type the commands `info -f g77'\n\
+and `info -f gcc' to read the Info documentation.\n\
+\n\
+Report bugs to <egcs-bugs@cygnus.org>.\n");
+	  exit (0);
+	  break;
+
+	case OPTION_driver:
+	  (*fn) ("--driver no longer supported", argv[i]);
+	  break;
+
+	default:
+	  add_version_magic = 0;
+	  break;
+	}
+
+      /* This is the one place we check for missing arguments in the
+	 program.  */
+
+      if (i + skip < argc)
+	i += skip;
+      else
+	(*fn) ("argument to `%s' missing", argv[i]);
+    }
+
+  if ((n_outfiles != 0) && (n_infiles == 0))
+    (*fn) ("No input files; unwilling to write output files");
+
+  /* Second pass through arglist, transforming arguments as appropriate.  */
+
+  append_arg (argv[0]);	/* Start with command name, of course. */
+
+  for (i = 1; i < argc; ++i)
+    {
+      if (argv[i][0] == '\0')
+	{
+	  append_arg (argv[i]);	/* Interesting.  Just append as is. */
+	  continue;
+	}
+
+      if ((argv[i][0] == '-') && (argv[i][1] != 'l'))
+	{
+	  /* Not a filename or library. */
+
+	  if (saw_library == 1)	/* -l<library>. */
+	    append_arg (MATH_LIBRARY);
+
+	  saw_library = 0;
+
+	  lookup_option (&opt, &skip, &arg, argv[i]);
+
+	  if (argv[i][1] == '\0')
 	    {
-	      saw_speclang = 0;
+	      append_arg (argv[i]);	/* "-" == Standard input. */
 	      continue;
 	    }
 
-	  /* If the filename ends in .c or .i, put options around it.
-	     But not if a specified -x option is currently active.  */
-	  len = strlen (argv[i]);
-	  if (len > 2
-	      && (argv[i][len - 1] == 'c' || argv[i][len - 1] == 'i')
-	      && argv[i][len - 2] == '.')
+	  if (opt == OPTION_x)
 	    {
-	      args[i] |= LANGSPEC;
-	      added += 2;
+	      /* Track input language. */
+	      char *lang;
+
+	      if (arg == NULL)
+		lang = argv[i+1];
+	      else
+		lang = arg;
+
+	      saw_speclang = (strcmp (lang, "none") != 0);
+	    }
+
+	  append_arg (argv[i]);
+
+	  for (; skip != 0; --skip)
+	    append_arg (argv[++i]);
+
+	  continue;
+	}
+
+      /* A filename/library, not an option. */
+
+      if (saw_speclang)
+	saw_library = 0;	/* -xfoo currently active. */
+      else
+	{			/* -lfoo or filename. */
+	  if (strcmp (argv[i], MATH_LIBRARY) == 0
+#ifdef ALT_LIBM
+	      || strcmp (argv[i], ALT_LIBM) == 0
+#endif
+	      )
+	    {
+	      if (saw_library == 1)
+		saw_library = 2;	/* -l<library> -lm. */
+	    }
+	  else if (strcmp (argv[i], FORTRAN_LIBRARY) == 0)
+	    saw_library = 1;	/* -l<library>. */
+	  else
+	    {		/* Other library, or filename. */
+	      if (saw_library == 1)
+		append_arg (MATH_LIBRARY);
+	      saw_library = 0;
 	    }
 	}
+      append_arg (argv[i]);
     }
 
-  if (quote)
-    (*fn) ("argument to `%s' missing\n", quote);
+  /* Append `-lg2c -lm' as necessary.  */
 
-  /* If we know we don't have to do anything, bail now.  */
-  if (! added && ! library)
-    {
-      free (args);
-      return;
-    }
+  if (! add_version_magic && library)
+    {				/* Doing a link and no -nostdlib. */
+      if (saw_speclang)
+	append_arg ("-xnone");
 
-  num_args = argc + added + need_math;
-  arglist = (char **) xmalloc (num_args * sizeof (char *));
-
-  /* NOTE: We start at 1 now, not 0.  */
-  for (i = 0, j = 0; i < argc; i++, j++)
-    {
-      arglist[j] = argv[i];
-
-      /* Make sure -lf2c is before the math library, since libf2c
-	 itself uses those math routines.  */
-      if (!saw_math && (args[i] & MATHLIB) && library)
+      switch (saw_library)
 	{
-	  --j;
-	  saw_math = argv[i];
+	case 0:
+	  append_arg (library);
+	case 1:
+	  append_arg (MATH_LIBRARY);
+	default:
+	  break;
 	}
-
-      if (!saw_libc && (args[i] & WITHLIBC) && library)
-	{
-	  --j;
-	  saw_libc = argv[i];
-	}
-
-      /* Wrap foo.c and foo.i files in a language specification to
-	 force the gcc compiler driver to run cc1plus on them.  */
-      if (args[i] & LANGSPEC)
-	{
-	  int len = strlen (argv[i]);
-	  switch (argv[i][len - 1])
-	    {
-	    case 'F':
-	      arglist[j++] = "-xf77-cpp-input";
-	      break;
-	    case 'r':
-	      /* Don't do ratfor for ".for".  */
-	      if (argv[i][len - 2] == '.')
-		{
-		  arglist[j++] = "-xratfor";
-		  break;
-		}
-	    default:
-	      arglist[j++] = "-xf77";
-	      break;
-	    }
-	  arglist[j++] = argv[i];
-	  arglist[j] = "-xnone";
-	}
-  }
-
-  /* Add `-lf2c' if we haven't already done so.  */
-  if (library)
-    {
-      arglist[j++] = FORTRAN_LIBRARY;
-      added_libraries++;
     }
-  if (saw_math)
-    arglist[j++] = saw_math;
-  else if (library)
+  else if (add_version_magic && verbose)
     {
-      arglist[j++] = MATH_LIBRARY;
-      added_libraries++;
+      append_arg ("-c");
+      append_arg ("-xf77-version");
+      append_arg ("/dev/null");
+      append_arg ("-xnone");
     }
-  if (saw_libc)
-    arglist[j++] = saw_libc;
 
-  arglist[j] = NULL;
+  if (verbose
+      && g77_newargv != g77_xargv)
+    {
+      fprintf (stderr, "Driving:");
+      for (i = 0; i < g77_newargc; i++)
+	fprintf (stderr, " %s", g77_newargv[i]);
+      fprintf (stderr, "\n");
+    }
 
-  *in_argc = j;
-  *in_argv = arglist;
-  *in_added_libraries = added_libraries;
+  *in_argc = g77_newargc;
+  *in_argv = g77_newargv;
 }
 
 /* Called before linking.  Returns 0 on success and -1 on failure. */
