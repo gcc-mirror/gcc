@@ -1,5 +1,5 @@
 /* Language-level data type conversion for GNU C++.
-   Copyright (C) 1987, 88, 92, 93, 94, 95, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92-96, 1998 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -294,7 +294,7 @@ cp_convert_to_pointer (type, expr)
 
   if (INTEGRAL_CODE_P (form))
     {
-      if (type_precision (intype) == POINTER_SIZE)
+      if (TYPE_PRECISION (intype) == POINTER_SIZE)
 	return build1 (CONVERT_EXPR, type, expr);
       expr = cp_convert (type_for_size (POINTER_SIZE, 0), expr);
       /* Modes may be different but sizes should be the same.  */
