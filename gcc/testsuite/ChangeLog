@@ -1,3 +1,8 @@
+Tue May 26 23:58:03 1998  Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+
+	* gcc.dg/980526-1.c: New test.
+	* gcc.c-torture/execute/980526-2.c: New test.
+
 Tue May 26 23:40:40 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.dg/980523-1.c: Change "ppc" to "powerpc".
