@@ -1,0 +1,72 @@
+CROSS_LIBGCC1 = libgcc1-asm.a
+LIB1ASMSRC = arc/lib1funcs.asm
+LIB1ASMFUNCS = _mulsi3 _umulsidi3 _udivsi3 _divsi3 _umodsi3 _modsi3 _divmod_tools
+
+# We need libgcc routines to be mangled according to which cpu they
+# were compiled for.
+# ??? -mmangle-cpu passed by default for now.
+#LIBGCC2_CFLAGS = -g1 -O2 $(LIBGCC2_INCLUDES) $(GCC_CFLAGS) -mmangle-cpu
+
+# These are really part of libgcc1, but this will cause them to be
+# built correctly, so...
+
+LIB2FUNCS_EXTRA = fp-bit.c dp-bit.c
+
+dp-bit.c: $(srcdir)/config/fp-bit.c
+	echo '#ifndef __big_endian__' > dp-bit.c
+	echo '#define FLOAT_BIT_ORDER_MISMATCH' >> dp-bit.c
+	echo '#endif' >> dp-bit.c
+	cat $(srcdir)/config/fp-bit.c >> dp-bit.c
+
+fp-bit.c: $(srcdir)/config/fp-bit.c
+	echo '#define FLOAT' > fp-bit.c
+	echo '#ifndef __big_endian__' >> fp-bit.c
+	echo '#define FLOAT_BIT_ORDER_MISMATCH' >> fp-bit.c
+	echo '#endif' >> fp-bit.c
+	cat $(srcdir)/config/fp-bit.c >> fp-bit.c
+
+# .init/.fini section routines
+
+x-crtinit.o: $(srcdir)/config/arc/initfini.c $(GCC_PASSES) $(CONFIG_H)
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(CRTSTUFF_T_CFLAGS) \
+	  -DCRT_INIT -finhibit-size-directive -fno-inline-functions \
+	  -g0 -c $(srcdir)/config/arc/initfini.c -o $(dir)/crtinit.o
+
+x-crtfini.o: $(srcdir)/config/arc/initfini.c $(GCC_PASSES) $(CONFIG_H)
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(CRTSTUFF_T_CFLAGS) \
+	  -DCRT_FINI -finhibit-size-directive -fno-inline-functions \
+	  -g0 -c $(srcdir)/config/arc/initfini.c -o $(dir)/crtfini.o
+
+MULTILIB_OPTIONS = EB
+MULTILIB_DIRNAMES = be
+
+# We need our own versions to build multiple copies of crt*.o.
+# ??? Use new support in Makefile.
+
+LIBGCC = stmp-multilib-arc
+INSTALL_LIBGCC = install-multilib-arc
+
+stmp-multilib-arc: stmp-multilib
+	for i in `$(GCC_FOR_TARGET) --print-multi-lib`; do \
+	  dir=`echo $$i | sed -e 's/;.*$$//'`; \
+	  flags=`echo $$i | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`; \
+	  $(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
+	    CC="$(CC)" CFLAGS="$(CFLAGS)" \
+	    HOST_PREFIX="$(HOST_PREFIX)" HOST_PREFIX_1="$(HOST_PREFIX_1)" \
+	    GCC_CFLAGS="$(GCC_CFLAGS) $${flags}" \
+	    INCLUDES="$(INCLUDES)" CRTSTUFF_T_CFLAGS=$(CRTSTUFF_T_CFLAGS) \
+	    dir="$${dir}" x-crtinit.o x-crtfini.o; \
+	  if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
+	done
+	touch stmp-multilib-arc
+
+install-multilib-arc: install-multilib
+	for i in `$(GCC_FOR_TARGET) --print-multi-lib`; do \
+	  dir=`echo $$i | sed -e 's/;.*$$//'`; \
+	  rm -f $(libsubdir)/$${dir}/crtinit.o; \
+	  $(INSTALL_DATA) $${dir}/crtinit.o $(libsubdir)/$${dir}/crtinit.o; \
+	  chmod a-x $(libsubdir)/$${dir}/crtinit.o; \
+	  rm -f $(libsubdir)/$${dir}/crtfini.o; \
+	  $(INSTALL_DATA) $${dir}/crtfini.o $(libsubdir)/$${dir}/crtfini.o; \
+	  chmod a-x $(libsubdir)/$${dir}/crtfini.o; \
+	done
