@@ -1328,7 +1328,9 @@ eisnan (x)
 }
 
 /*  Fill external format number with infinity pattern (IEEE)
-    or largest possible number (non-IEEE). */
+    or largest possible number (non-IEEE).
+    Before calling einfin, you should either call eclear 
+    or set up the sign bit by hand.  */
 
 void 
 einfin (x)
@@ -1458,7 +1460,7 @@ emovo (a, b)
 	}
 #endif
       einfin (b);
-	return;
+      return;
     }
 #endif
   /* skip over guard word */
@@ -2635,8 +2637,9 @@ e53toe (pe, y)
 	}
 #endif
 #endif  /* NANS */
+      eclear (y);
       einfin (y);
-      if (r & 0x8000)
+      if (yy[0])
 	eneg (y);
       return;
     }
@@ -2728,6 +2731,7 @@ e64toe (pe, y)
 	}
 #endif
 #endif /* NANS */
+      eclear (y);
       einfin (y);
       if (*p & 0x8000)
 	eneg (y);
@@ -2787,8 +2791,9 @@ e24toe (pe, y)
 	}
 #endif
 #endif  /* NANS */
+      eclear (y);
       einfin (y);
-      if (r & 0x8000)
+      if (yy[0])
 	eneg (y);
       return;
     }
