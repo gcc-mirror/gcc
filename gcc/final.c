@@ -45,6 +45,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include "config.h"
 #include "gvarargs.h"
+#include "tree.h"
 #include "rtl.h"
 #include "regs.h"
 #include "insn-config.h"
@@ -136,6 +137,9 @@ static rtx debug_insn = 0;
 
 /* Line number of last NOTE.  */
 static int last_linenum;
+
+/* Filename of last NOTE.  */
+static char *last_filename;
 
 /* Number of basic blocks seen so far;
    used if profile_block_flag is set.  */
@@ -239,6 +243,37 @@ rtx final_sequence;
 /* Indexed by line number, nonzero if there is a note for that line.  */
 
 static char *line_note_exists;
+
+/* Linked list to hold line numbers for each basic block.  */
+
+struct bb_list {
+  struct bb_list *next;		/* pointer to next basic block */
+  int line_num;			/* line number */
+  int file_label_num;		/* LPBC<n> label # for stored filename */
+  int func_label_num;		/* LPBC<n> label # for stored function name */
+};
+
+static struct bb_list *bb_head	= 0;		/* Head of basic block list */
+static struct bb_list **bb_tail = &bb_head;	/* Ptr to store next bb ptr */
+static int bb_file_label_num	= -1;		/* Current label # for file */
+static int bb_func_label_num	= -1;		/* Current label # for func */
+
+/* Linked list to hold the strings for each file and function name output.  */
+
+struct bb_str {
+  struct bb_str *next;		/* pointer to next string */
+  char *string;			/* string */
+  int label_num;		/* label number */
+  int length;			/* string length */
+};
+
+static struct bb_str *sbb_head	= 0;		/* Head of string list.  */
+static struct bb_str **sbb_tail	= &sbb_head;	/* Ptr to store next bb str */
+static int sbb_label_num	= 0;		/* Last label used */
+
+static int add_bb_string PROTO((char *, int));
+static void add_bb PROTO((FILE *));
+
 
 /* Initialize data in final at the beginning of a compilation.  */
 
@@ -264,34 +299,81 @@ end_final (filename)
 
   if (profile_block_flag)
     {
-      char name[12];
+      char name[20];
+      int align = exact_log2 (BIGGEST_ALIGNMENT / BITS_PER_UNIT);
+      int size = (INT_TYPE_SIZE / BITS_PER_UNIT) * count_basic_blocks;
+      int rounded = size;
+      struct bb_list *ptr;
+      struct bb_str *sptr;
+
+      rounded += (BIGGEST_ALIGNMENT / BITS_PER_UNIT) - 1;
+      rounded = (rounded / (BIGGEST_ALIGNMENT / BITS_PER_UNIT)
+		 * (BIGGEST_ALIGNMENT / BITS_PER_UNIT));
 
       data_section ();
 
-      /* Output the main header, of 6 words:
+      /* Output the main header, of 10 words:
 	 0:  1 if this file's initialized, else 0.
-	 1:  address of file name.
-	 2:  address of table of counts.
-	 4:  number of counts in the table.
-	 5:  always 0, for compatibility with Sun.
-	 6:  extra word added by GNU: address of address table
-	      which contains addresses of basic blocks,
-	      in parallel with the table of counts.  */
-      ASM_OUTPUT_ALIGN (asm_out_file,
-			exact_log2 (BIGGEST_ALIGNMENT / BITS_PER_UNIT));
+	 1:  address of file name (LPBX1).
+	 2:  address of table of counts (LPBX2).
+	 3:  number of counts in the table.
+	 4:  always 0, for compatibility with Sun.
+
+         The following are GNU extensions:
+
+	 5:  address of table of start addrs of basic blocks (LPBX3).
+	 6:  Number of bytes in this header.
+	 7:  address of table of function names (LPBX4).
+	 8:  address of table of line numbers (LPBX5) or 0.
+	 9:  address of table of file names (LPBX6) or 0.  */
+
+      ASM_OUTPUT_ALIGN (asm_out_file, align);
 
       ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "LPBX", 0);
+      /* zero word */
       assemble_integer (const0_rtx, UNITS_PER_WORD, 1);
+
+      /* address of filename */
       ASM_GENERATE_INTERNAL_LABEL (name, "LPBX", 1);
       assemble_integer (gen_rtx (SYMBOL_REF, Pmode, name), UNITS_PER_WORD, 1);
+
+      /* address of count table */
       ASM_GENERATE_INTERNAL_LABEL (name, "LPBX", 2);
       assemble_integer (gen_rtx (SYMBOL_REF, Pmode, name), UNITS_PER_WORD, 1);
+
+      /* count of the # of basic blocks */
       assemble_integer (GEN_INT (count_basic_blocks), UNITS_PER_WORD, 1);
+
+      /* zero word (link field) */
       assemble_integer (const0_rtx, UNITS_PER_WORD, 1);
+
+      /* address of basic block start address table */
       ASM_GENERATE_INTERNAL_LABEL (name, "LPBX", 3);
       assemble_integer (gen_rtx (SYMBOL_REF, Pmode, name), UNITS_PER_WORD, 1);
 
-      /* Output the file name.  */
+      /* byte count for extended structure.  */
+      assemble_integer (GEN_INT (10 * UNITS_PER_WORD), UNITS_PER_WORD, 1);
+
+      /* address of function name table */
+      ASM_GENERATE_INTERNAL_LABEL (name, "LPBX", 4);
+      assemble_integer (gen_rtx (SYMBOL_REF, Pmode, name), UNITS_PER_WORD, 1);
+
+      /* address of line number and filename tables if debugging.  */
+      if (write_symbols != NO_DEBUG)
+	{
+	  ASM_GENERATE_INTERNAL_LABEL (name, "LPBX", 5);
+	  assemble_integer (gen_rtx (SYMBOL_REF, Pmode, name), UNITS_PER_WORD, 1);
+	  ASM_GENERATE_INTERNAL_LABEL (name, "LPBX", 6);
+	  assemble_integer (gen_rtx (SYMBOL_REF, Pmode, name), UNITS_PER_WORD, 1);
+	}
+      else
+	{
+	  assemble_integer (const0_rtx, UNITS_PER_WORD, 1);
+	  assemble_integer (const0_rtx, UNITS_PER_WORD, 1);
+	}
+
+      /* Output the file name changing the suffix to .d for Sun tcov
+	 compatibility.  */
       ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "LPBX", 1);
       {
 	int len = strlen (filename);
@@ -302,27 +384,96 @@ end_final (filename)
 	assemble_string (data_file, strlen (data_file) + 1);
       }
 
-      /* Realign data section.  */
-      ASM_OUTPUT_ALIGN (asm_out_file,
-			exact_log2 (BIGGEST_ALIGNMENT / BITS_PER_UNIT));
-
       /* Make space for the table of counts.  */
-      ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "LPBX", 2);
-      if (count_basic_blocks != 0)
-	assemble_zeros (INT_TYPE_SIZE / BITS_PER_UNIT * count_basic_blocks);
+      if (flag_no_common || size == 0)
+	{
+	  /* Realign data section.  */
+	  ASM_OUTPUT_ALIGN (asm_out_file, align);
+	  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "LPBX", 2);
+	  if (size != 0)
+	    assemble_zeros (size);
+	}
+      else
+	{
+	  ASM_GENERATE_INTERNAL_LABEL (name, "LPBX", 2);
+#ifdef ASM_OUTPUT_SHARED_LOCAL
+	  if (flag_shared_data)
+	    ASM_OUTPUT_SHARED_LOCAL (asm_out_file, name, size, rounded);
+	  else
+#endif
+#ifdef ASM_OUTPUT_ALIGNED_LOCAL
+	    ASM_OUTPUT_ALIGNED_LOCAL (asm_out_file, name, size, align);
+#else
+	    ASM_OUTPUT_LOCAL (asm_out_file, name, size, rounded);
+#endif
+	}
+
+      /* Output any basic block strings */
+      readonly_data_section ();
+      if (sbb_head)
+	{
+	  ASM_OUTPUT_ALIGN (asm_out_file, align);
+	  for (sptr = sbb_head; sptr != 0; sptr = sptr->next)
+	    {
+	      ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "LPBC", sptr->label_num);
+	      assemble_string (sptr->string, sptr->length);
+	    }
+	}
 
       /* Output the table of addresses.  */
-      readonly_data_section ();
       /* Realign in new section */
-      ASM_OUTPUT_ALIGN (asm_out_file,
-			floor_log2 (BIGGEST_ALIGNMENT / BITS_PER_UNIT));
+      ASM_OUTPUT_ALIGN (asm_out_file, align);
       ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "LPBX", 3);
       for (i = 0; i < count_basic_blocks; i++)
 	{
-	  char name[12];
 	  ASM_GENERATE_INTERNAL_LABEL (name, "LPB", i);
 	  assemble_integer (gen_rtx (SYMBOL_REF, Pmode, name),
 			    UNITS_PER_WORD, 1);
+	}
+
+      /* Output the table of function names.  */
+      ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "LPBX", 4);
+      for ((ptr = bb_head), (i = 0); ptr != 0; (ptr = ptr->next), i++)
+	{
+	  if (ptr->func_label_num >= 0)
+	    {
+	      ASM_GENERATE_INTERNAL_LABEL (name, "LPBC", ptr->func_label_num);
+	      assemble_integer (gen_rtx (SYMBOL_REF, Pmode, name),
+				UNITS_PER_WORD, 1);
+	    }
+	  else
+	    assemble_integer (const0_rtx, UNITS_PER_WORD, 1);
+	}
+
+      for ( ; i < count_basic_blocks; i++)
+	assemble_integer (const0_rtx, UNITS_PER_WORD, 1);
+
+      if (write_symbols != NO_DEBUG)
+	{
+	  /* Output the table of line numbers.  */
+	  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "LPBX", 5);
+	  for ((ptr = bb_head), (i = 0); ptr != 0; (ptr = ptr->next), i++)
+	    assemble_integer (GEN_INT (ptr->line_num), UNITS_PER_WORD, 1);
+
+	  for ( ; i < count_basic_blocks; i++)
+	    assemble_integer (const0_rtx, UNITS_PER_WORD, 1);
+
+	  /* Output the table of file names.  */
+	  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "LPBX", 6);
+	  for ((ptr = bb_head), (i = 0); ptr != 0; (ptr = ptr->next), i++)
+	    {
+	      if (ptr->file_label_num >= 0)
+		{
+		  ASM_GENERATE_INTERNAL_LABEL (name, "LPBC", ptr->file_label_num);
+		  assemble_integer (gen_rtx (SYMBOL_REF, Pmode, name),
+				    UNITS_PER_WORD, 1);
+		}
+	      else
+		assemble_integer (const0_rtx, UNITS_PER_WORD, 1);
+	    }
+
+	  for ( ; i < count_basic_blocks; i++)
+	    assemble_integer (const0_rtx, UNITS_PER_WORD, 1);
 	}
 
       /* End with the address of the table of addresses,
@@ -761,6 +912,15 @@ final_start_function (first, file, optimize)
     profile_after_prologue (file);
 
   profile_label_no++;
+
+  /* If we are doing basic block profiling, remember a printable version
+     of the function name.  */
+  if (profile_block_flag)
+    {
+      char *junk = "function";
+      bb_func_label_num =
+	add_bb_string ((*decl_printable_name) (current_function_decl, &junk), FALSE);
+    }
 }
 
 static void
@@ -894,9 +1054,92 @@ final_end_function (first, file, optimize)
     xcoffout_end_epilogue (file);
 #endif
 
+  bb_func_label_num = -1;	/* not in function, nuke label # */
+
   /* If FUNCTION_EPILOGUE is not defined, then the function body
      itself contains return instructions wherever needed.  */
 }
+
+/* Add a block to the linked list that remembers the current line/file/function
+   for basic block profiling.  Emit the label in front of the basic block and
+   the instructions that increment the count field.  */
+
+static void
+add_bb (file)
+     FILE *file;
+{
+  struct bb_list *ptr = (struct bb_list *) permalloc (sizeof (struct bb_list));
+
+  /* Add basic block to linked list.  */
+  ptr->next = 0;
+  ptr->line_num = last_linenum;
+  ptr->file_label_num = bb_file_label_num;
+  ptr->func_label_num = bb_func_label_num;
+  *bb_tail = ptr;
+  bb_tail = &ptr->next;
+
+  /* Enable the table of basic-block use counts
+     to point at the code it applies to.  */
+  ASM_OUTPUT_INTERNAL_LABEL (file, "LPB", count_basic_blocks);
+
+  /* Before first insn of this basic block, increment the
+     count of times it was entered.  */
+#ifdef BLOCK_PROFILER
+  BLOCK_PROFILER (file, count_basic_blocks);
+  CC_STATUS_INIT;
+#endif
+
+  new_block = 0;
+  count_basic_blocks++;
+}
+
+/* Add a string to be used for basic block profiling.  */
+
+static int
+add_bb_string (string, perm_p)
+     char *string;
+     int perm_p;
+{
+  int len;
+  struct bb_str *ptr = 0;
+
+  if (!string)
+    {
+      string = "<unknown>";
+      perm_p = TRUE;
+    }
+
+  /* Allocate a new string if the current string isn't permanent.  If
+     the string is permanent search for the same string in other
+     allocations.  */
+
+  len = strlen (string) + 1;
+  if (!perm_p)
+    {
+      char *p = (char *) permalloc (len);
+      bcopy (string, p, len);
+      string = p;
+    }
+  else
+    for (ptr = sbb_head; ptr != (struct bb_str *)0; ptr = ptr->next)
+      if (ptr->string == string)
+	break;
+
+  /* Allocate a new string block if we need to.  */
+  if (!ptr)
+    {
+      ptr = (struct bb_str *) permalloc (sizeof (*ptr));
+      ptr->next = 0;
+      ptr->length = len;
+      ptr->label_num = sbb_label_num++;
+      ptr->string = string;
+      *sbb_tail = ptr;
+      sbb_tail = &ptr->next;
+    }
+
+  return ptr->label_num;
+}
+
 
 /* Output assembler code for some insns: all or part of a function.
    For description of args, see `final_start_function', above.
@@ -974,19 +1217,7 @@ final (first, file, optimize, prescan)
   /* Do basic-block profiling here
      if the last insn was a conditional branch.  */
   if (profile_block_flag && new_block)
-    {
-      new_block = 0;
-      /* Enable the table of basic-block use counts
-	 to point at the code it applies to.  */
-      ASM_OUTPUT_INTERNAL_LABEL (file, "LPB", count_basic_blocks);
-      /* Before first insn of this basic block, increment the
-	 count of times it was entered.  */
-#ifdef BLOCK_PROFILER
-      BLOCK_PROFILER (file, count_basic_blocks);
-      CC_STATUS_INIT;
-#endif
-      count_basic_blocks++;
-    }
+    add_bb (file);
 }
 
 /* The final scan for one insn, INSN.
@@ -1354,19 +1585,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	/* Do basic-block profiling when we reach a new block.
 	   Done here to avoid jump tables.  */
 	if (profile_block_flag && new_block)
-	  {
-	    new_block = 0;
-	    /* Enable the table of basic-block use counts
-	       to point at the code it applies to.  */
-	    ASM_OUTPUT_INTERNAL_LABEL (file, "LPB", count_basic_blocks);
-	    /* Before first insn of this basic block, increment the
-	       count of times it was entered.  */
-#ifdef BLOCK_PROFILER
-	    BLOCK_PROFILER (file, count_basic_blocks);
-	    CC_STATUS_INIT;
-#endif
-	    count_basic_blocks++;
-	  }
+	  add_bb (file);
 
 	if (GET_CODE (body) == ASM_INPUT)
 	  {
@@ -1777,6 +1996,15 @@ output_source_line (file, insn)
   char ltext_label_name[100];
   register char *filename = NOTE_SOURCE_FILE (insn);
 
+  /* Remember filename for basic block profiling.
+     Filenames are allocated on the permanent obstack
+     or are passed in ARGV, so we don't have to save
+     the string.  */
+
+  if (profile_block_flag && last_filename != filename)
+    bb_file_label_num = add_bb_string (filename, TRUE);
+
+  last_filename = filename;
   last_linenum = NOTE_LINE_NUMBER (insn);
 
   if (write_symbols != NO_DEBUG)

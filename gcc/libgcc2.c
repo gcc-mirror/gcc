@@ -1285,35 +1285,199 @@ __eprintf (string, expression, line, filename)
 #endif
 
 #ifdef L_bb
-/* Avoid warning from ranlib about empty object file.  */
-void
-__bb_avoid_warning ()
-{}
 
-#if defined (__sun__) && defined (__mc68000__)
+/* Structure emitted by -a  */
 struct bb
 {
-  int initialized;
-  char *filename;
-  int *counts;
-  int ncounts;
-  int zero_word;
-  int *addresses;
+  long zero_word;
+  const char *filename;
+  long *counts;
+  long ncounts;
+  struct bb *next;
+  const unsigned long *addresses;
+
+  /* Older GCC's did not emit these fields.  */
+  long nwords;
+  const char **functions;
+  const long *line_nums;
+  const char **filenames;
 };
 
-extern int ___tcov_init;
+#ifdef BLOCK_PROFILER_CODE
+BLOCK_PROFILER_CODE
+#else
 
-__bb_init_func (blocks)
-	struct bb *blocks;
+/* Simple minded basic block profiling output dumper for
+   systems that don't provde tcov support.  At present,
+   it requires atexit and stdio.  */
+
+#include <stdio.h>
+
+#ifdef HAVE_ATEXIT
+extern void atexit (void (*) (void));
+#define ON_EXIT(FUNC,ARG) atexit ((FUNC))
+#else
+#ifdef sun
+extern void on_exit (void*, void*);
+#define ON_EXIT(FUNC,ARG) on_exit ((FUNC), (ARG))
+#endif
+#endif
+
+static struct bb *bb_head = (struct bb *)0;
+
+/* Return the number of digits needed to print a value */
+/* __inline__ */ static int num_digits (long value, int base)
 {
-  if (! ___tcov_init)
-    ___tcov_init_func ();
+  int minus = (value < 0 && base != 16);
+  unsigned long v = (minus) ? -value : value;
+  int ret = minus;
 
-  ___bb_link (blocks->filename, blocks->counts, blocks->ncounts);
+  do
+    {
+      v /= base;
+      ret++;
+    }
+  while (v);
+
+  return ret;
 }
 
+void
+__bb_exit_func (void)
+{
+  FILE *file = fopen ("bb.out", "a");
+  long time_value;
+
+  if (!file)
+    perror ("bb.out");
+
+  else
+    {
+      struct bb *ptr;
+
+      /* This is somewhat type incorrect, but it avoids worrying about
+	 exactly where time.h is included from.  It should be ok unless
+	 a void * differs from other pointer formats, or if sizeof(long)
+	 is < sizeof (time_t).  It would be nice if we could assume the
+	 use of rationale standards here.  */
+
+      time((void *) &time_value);
+      fprintf (file, "Basic block profiling finished on %s\n", ctime ((void *) &time_value));
+
+      /* We check the length field explicitly in order to allow compatibility
+	 with older GCC's which did not provide it.  */
+
+      for (ptr = bb_head; ptr != (struct bb *)0; ptr = ptr->next)
+	{
+	  int i;
+	  int func_p	= (ptr->nwords >= sizeof (struct bb) && ptr->nwords <= 1000);
+	  int line_p	= (func_p && ptr->line_nums);
+	  int file_p	= (func_p && ptr->filenames);
+	  long ncounts	= ptr->ncounts;
+	  long cnt_max  = 0;
+	  long line_max = 0;
+	  long addr_max = 0;
+	  int file_len	= 0;
+	  int func_len	= 0;
+	  int blk_len	= num_digits (ncounts, 10);
+	  int cnt_len;
+	  int line_len;
+	  int addr_len;
+
+	  fprintf (file, "File %s, %ld basic blocks \n\n",
+		   ptr->filename, ncounts);
+
+	  /* Get max values for each field.  */
+	  for (i = 0; i < ncounts; i++)
+	    {
+	      const char *p;
+	      int len;
+
+	      if (cnt_max < ptr->counts[i])
+		cnt_max = ptr->counts[i];
+
+	      if (addr_max < ptr->addresses[i])
+		addr_max = ptr->addresses[i];
+
+	      if (line_p && line_max < ptr->line_nums[i])
+		line_max = ptr->line_nums[i];
+
+	      if (func_p)
+		{
+		  p = (ptr->functions[i]) ? (ptr->functions[i]) : "<none>";
+		  len = strlen (p);
+		  if (func_len < len)
+		    func_len = len;
+		}
+
+	      if (file_p)
+		{
+		  p = (ptr->filenames[i]) ? (ptr->filenames[i]) : "<none>";
+		  len = strlen (p);
+		  if (file_len < len)
+		    file_len = len;
+		}
+	    }
+
+	  addr_len = num_digits (addr_max, 16);
+	  cnt_len  = num_digits (cnt_max, 10);
+	  line_len = num_digits (line_max, 10);
+
+	  /* Now print out the basic block information.  */
+	  for (i = 0; i < ncounts; i++)
+	    {
+	      fprintf (file,
+		       "    Block #%*d: executed %*ld time(s) address=0x%.*lx",
+		       blk_len, i+1,
+		       cnt_len, ptr->counts[i],
+		       addr_len, ptr->addresses[i]);
+
+	      if (func_p)
+		fprintf (file, " function=%-*s", func_len,
+			 (ptr->functions[i]) ? ptr->functions[i] : "<none>");
+
+	      if (line_p)
+		fprintf (file, " line=%*d", line_len, ptr->line_nums[i]);
+
+	      if (file_p)
+		fprintf (file, " file=%s",
+			 (ptr->filenames[i]) ? ptr->filenames[i] : "<none>");
+
+	      fprintf (file, "\n");
+	    }
+
+	  fprintf (file, "\n");
+	  fflush (file);
+	}
+
+      fprintf (file, "\n\n");
+      fclose (file);
+    }
+}
+
+void
+__bb_init_func (struct bb *blocks)
+{
+  /* User is supposed to check whether the first word is non-0,
+     but just in case.... */
+
+  if (blocks->zero_word)
+    return;
+
+#ifdef ON_EXIT
+  /* Initialize destructor.  */
+  if (!bb_head)
+    ON_EXIT (__bb_exit_func, 0);
 #endif
-#endif
+
+  /* Set up linked list.  */
+  blocks->zero_word = 1;
+  blocks->next = bb_head;
+  bb_head = blocks;
+}
+
+#endif	/* !BLOCK_PROFILER_CODE */
+#endif	/* L_bb */
 
 /* frills for C++ */
 
