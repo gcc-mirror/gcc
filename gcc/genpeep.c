@@ -291,7 +291,7 @@ match_rtx (x, path, fail_label)
 	  int j;
 	  printf ("  if (XVECLEN (x, %d) != %d) goto L%d;\n",
 		  i, XVECLEN (x, i), fail_label);
-	  for (j = XVECLEN (x, i) - 1; j >= 0; j--)
+	  for (j = 0; j < XVECLEN (x, i); j++)
 	    {
 	      link.vecelt = j;
 	      match_rtx (XVECEXP (x, i, j), &link, fail_label);
