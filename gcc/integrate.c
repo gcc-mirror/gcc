@@ -1973,7 +1973,6 @@ integrate_decl_tree (let, level, map)
   for (t = BLOCK_VARS (let); t; t = TREE_CHAIN (t))
     {
       tree d;
-      tree newd;
 
       push_obstacks_nochange ();
       saveable_allocation ();
@@ -1992,28 +1991,13 @@ integrate_decl_tree (let, level, map)
 	}
       /* These args would always appear unused, if not for this.  */
       TREE_USED (d) = 1;
+      /* Prevent warning for shadowing with these.  */
+      DECL_ABSTRACT_ORIGIN (d) = t;
 
       if (DECL_LANG_SPECIFIC (d))
 	copy_lang_decl (d);
 
-      /* Must set DECL_ABSTRACT_ORIGIN here for local variables, to ensure
-	 that we don't get -Wshadow warnings.  But don't set it here if
-	 pushdecl might return a duplicate decl, as that will result in
-	 incorrect DWARF debug info.  */
-      if (! DECL_EXTERNAL (d) || ! TREE_PUBLIC (d))
-	/* Prevent warning for shadowing with these.  */
-	DECL_ABSTRACT_ORIGIN (d) = t;
-
-      newd = pushdecl (d);
-
-      /* If we didn't set DECL_ABSTRACT_ORIGIN above, then set it now.
-	 Simpler to just set it always rather than checking.
-	 If the decl we get back is the copy of 't' that we started with,
-	 then set the DECL_ABSTRACT_ORIGIN.  Otherwise, we must have a
-	 duplicate decl, and we got the older one back.  In that case, setting
-	 DECL_ABSTRACT_ORIGIN is not appropriate.  */
-      if (newd == d)
-	DECL_ABSTRACT_ORIGIN (d) = t;
+      pushdecl (d);
     }
 
   for (t = BLOCK_SUBBLOCKS (let); t; t = TREE_CHAIN (t))
