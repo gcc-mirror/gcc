@@ -913,8 +913,9 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
 
 #define FUNCTION_VALUE(VALTYPE, FUNC)	\
   gen_rtx (REG,							\
-	   (INTEGRAL_TYPE_P (VALTYPE)				\
-	    && TYPE_PRECISION (VALTYPE) < BITS_PER_WORD) 	\
+	   ((INTEGRAL_TYPE_P (VALTYPE)				\
+	     && TYPE_PRECISION (VALTYPE) < BITS_PER_WORD)	\
+	    || POINTER_TYPE_P (VALTYPE))			\
 	   ? word_mode : TYPE_MODE (VALTYPE),			\
 	   ((TARGET_FPREGS					\
 	     && (TREE_CODE (VALTYPE) == REAL_TYPE		\
