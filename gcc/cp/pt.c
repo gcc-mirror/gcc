@@ -4741,6 +4741,9 @@ tsubst (t, args, in_decl)
 
 	  t = copy_node (t);
 
+	  /* Make sure type isn't a typedef copy.  */
+	  type = BINFO_TYPE (TYPE_BINFO (type));
+
 	  if (type == TREE_TYPE (t))
 	    return t;
 
