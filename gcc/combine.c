@@ -7878,10 +7878,10 @@ recog_for_combine (pnewpat, insn, pnotes)
   /* If PAT is a PARALLEL, check to see if it contains the CLOBBER
      we use to indicate that something didn't match.  If we find such a
      thing, force rejection.  */
-  if (GET_CODE (pat) == CLOBBER)
+  if (GET_CODE (pat) == PARALLEL)
     for (i = XVECLEN (pat, 0) - 1; i >= 0; i--)
-      if (GET_CODE (XVECEXP (pat, i, 0)) == CLOBBER
-	  && XEXP (XVECEXP (pat, i, 0), 0) == const0_rtx)
+      if (GET_CODE (XVECEXP (pat, 0, i)) == CLOBBER
+	  && XEXP (XVECEXP (pat, 0, i), 0) == const0_rtx)
 	return -1;
 
   /* Is the result of combination a valid instruction?  */
