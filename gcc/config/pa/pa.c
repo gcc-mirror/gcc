@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for HPPA.
-   Copyright (C) 1992 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993 Free Software Foundation, Inc.
    Contributed by Tim Moore (moore@cs.utah.edu), based on sparc.c
 
 This file is part of GNU CC.
@@ -705,15 +705,14 @@ hppa_legitimize_address (x, oldx, mode)
       if (GET_CODE (y) == CONST)
 	y = XEXP (y, 0);
 
-      /* 'y' had better be a PLUS or MINUS expression at this point.  */
-      if (GET_CODE (y) != PLUS && GET_CODE (y) != MINUS)
-	abort();
-
-      regx1 = force_reg (Pmode, force_operand (XEXP (x, 0), 0));
-      regy1 = force_reg (Pmode, force_operand (XEXP (y, 0), 0));
-      regy2 = force_reg (Pmode, force_operand (XEXP (y, 1), 0));
-      regx1 = force_reg (Pmode, gen_rtx (GET_CODE (y), Pmode, regx1, regy2));
-      return force_reg (Pmode, gen_rtx (PLUS, Pmode, regx1, regy1));
+      if (GET_CODE (y) == PLUS || GET_CODE (y) == MINUS)
+	{
+	  regx1 = force_reg (Pmode, force_operand (XEXP (x, 0), 0));
+	  regy1 = force_reg (Pmode, force_operand (XEXP (y, 0), 0));
+	  regy2 = force_reg (Pmode, force_operand (XEXP (y, 1), 0));
+	  regx1 = force_reg (Pmode, gen_rtx (GET_CODE (y), Pmode, regx1, regy2));
+	  return force_reg (Pmode, gen_rtx (PLUS, Pmode, regx1, regy1));
+	}
     }
 
   if (flag_pic) 
