@@ -1318,7 +1318,7 @@ expand_builtin_strlen (exp, target, mode)
 	{
 	  icode = strlen_optab->handlers[(int) insn_mode].insn_code;
 	  if (icode != CODE_FOR_nothing)
-	    return 0;
+	    break;
 
 	  insn_mode = GET_MODE_WIDER_MODE (insn_mode);
 	}

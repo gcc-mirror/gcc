@@ -1,3 +1,7 @@
+Sat Oct  2 10:55:25 1999  Jan Hubicka  <hubicka@freesoft.cz>
+
+	* builtins.c (expand_builtin_strlen): Fix best mode searching loop.
+
 Sat Oct  2 10:53:22 1999  Jan Hubicka  <hubicka@freesoft.cz>
 
 	* i386.md (ffs expander): Emit Pentium friendly code for
