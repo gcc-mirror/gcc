@@ -1662,17 +1662,40 @@ move_block_from_reg (regno, x, nregs, size)
     }
 }
 
-/* Mark NREGS consecutive regs, starting at REGNO, as being live now.  */
+/* Mark REG as holding parameter for the CALL_INSN.  */
 
 void
-use_regs (regno, nregs)
+use_reg (call_fusage, reg)
+     rtx *call_fusage, reg;
+{
+  if (GET_CODE (reg) == REG
+      && REGNO (reg) >= FIRST_PSEUDO_REGISTER)
+    abort();
+
+  *call_fusage
+    = gen_rtx (EXPR_LIST, VOIDmode,
+               gen_rtx (USE, reg_raw_mode[REGNO (reg)], reg), *call_fusage);
+
+}
+
+/* Mark NREGS consecutive regs, starting at REGNO, as holding parameters
+   for the CALL_INSN.  */
+
+void
+use_regs (call_fusage, reg, regno, nregs)
+     rtx *call_fusage, reg;
      int regno;
      int nregs;
 {
-  int i;
+  if (nregs <= 1 && reg)
+    use_reg (call_fusage, reg);
+  else
+   {
+     int i;
 
-  for (i = 0; i < nregs; i++)
-    emit_insn (gen_rtx (USE, VOIDmode, gen_rtx (REG, reg_raw_mode[regno + i], regno + i)));
+     for (i = 0; i < nregs; i++)
+        use_reg (call_fusage, gen_rtx (REG, word_mode, regno + i));
+   }
 }
 
 /* Write zeros through the storage of OBJECT.
@@ -7663,7 +7686,7 @@ expand_builtin_apply (function, arguments, argsize)
   enum machine_mode mode;
   rtx incoming_args, result, reg, dest, call_insn;
   rtx old_stack_level = 0;
-  rtx use_insns = 0;
+  rtx call_fusage = 0;
 
   /* Create a block where the return registers can be saved.  */
   result = assign_stack_local (BLKmode, apply_result_size (), -1);
@@ -7720,10 +7743,7 @@ expand_builtin_apply (function, arguments, argsize)
 					plus_constant (XEXP (arguments, 0),
 						       size)));
 
-	push_to_sequence (use_insns);
-	emit_insn (gen_rtx (USE, VOIDmode, reg));
-	use_insns = get_insns ();
-	end_sequence ();
+	use_reg (&call_fusage, reg);
 	size += GET_MODE_SIZE (mode);
       }
 
@@ -7739,17 +7759,12 @@ expand_builtin_apply (function, arguments, argsize)
 						     size)));
       emit_move_insn (struct_value_rtx, value);
       if (GET_CODE (struct_value_rtx) == REG)
-	{
-	  push_to_sequence (use_insns);
-	  emit_insn (gen_rtx (USE, VOIDmode, struct_value_rtx));
-	  use_insns = get_insns ();
-	  end_sequence ();
-	}
+	  use_reg (&call_fusage, struct_value_rtx);
       size += GET_MODE_SIZE (Pmode);
     }
 
   /* All arguments and registers used for the call are set up by now!  */
-  function = prepare_call_address (function, NULL_TREE, &use_insns, 0);
+  function = prepare_call_address (function, NULL_TREE, &call_fusage, 0);
 
   /* Ensure address is valid.  SYMBOL_REF is already valid, so no need,
      and we don't want to load it into a register as an optimization,
@@ -7793,7 +7808,7 @@ expand_builtin_apply (function, arguments, argsize)
 #endif
     abort ();
 
-  /* Find the CALL insn we just emitted and write the USE insns before it.  */
+  /* Find the CALL insn we just emitted.  */
   for (call_insn = get_last_insn ();
        call_insn && GET_CODE (call_insn) != CALL_INSN;
        call_insn = PREV_INSN (call_insn))
@@ -7802,8 +7817,8 @@ expand_builtin_apply (function, arguments, argsize)
   if (! call_insn)
     abort ();
 
-  /* Put the USE insns before the CALL.  */
-  emit_insns_before (use_insns, call_insn);
+  /* Put the register usage information on the CALL.  */
+  CALL_INSN_FUNCTION_USAGE (call_insn) = call_fusage;
 
   /* Restore the stack.  */
   emit_stack_restore (SAVE_BLOCK, old_stack_level, NULL_RTX);
@@ -7821,7 +7836,7 @@ expand_builtin_return (result)
   int size, align, regno;
   enum machine_mode mode;
   rtx reg;
-  rtx use_insns = 0;
+  rtx call_fusage = 0;
 
   apply_result_size ();
   result = gen_rtx (MEM, BLKmode, result);
@@ -7849,15 +7864,15 @@ expand_builtin_return (result)
 					plus_constant (XEXP (result, 0),
 						       size)));
 
-	push_to_sequence (use_insns);
+	push_to_sequence (call_fusage);
 	emit_insn (gen_rtx (USE, VOIDmode, reg));
-	use_insns = get_insns ();
+	call_fusage = get_insns ();
 	end_sequence ();
 	size += GET_MODE_SIZE (mode);
       }
 
   /* Put the USE insns before the return.  */
-  emit_insns (use_insns);
+  emit_insns (call_fusage);
 
   /* Return whatever values was restored by jumping directly to the end
      of the function.  */
