@@ -1,4 +1,5 @@
 /* { dg-do compile { target i?86-*-* } } */
+/* { dg-forbid-option "-m64" } */
 /* { dg-options "-O2 -march=pentiumpro" } */
 
 extern __inline  double

@@ -1,4 +1,5 @@
 // { dg-do run { target i?86-*-* } }
+// { dg-forbid-option "-m64" }
 // { dg-options "-fabi-version=0" }
 
 struct A { virtual void f(); char c1; };

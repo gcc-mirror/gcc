@@ -6,6 +6,7 @@
 
 // { dg-do compile }
 // { dg-options "-mtune=i586 -O2" { target i?86-*-* } }
+// { dg-forbid-option "-m64" { target i?86-*-* } }
 
 struct array {
   double data;

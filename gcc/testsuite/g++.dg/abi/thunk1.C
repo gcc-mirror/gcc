@@ -1,4 +1,5 @@
 // { dg-do compile { target i?86-*-* } }
+// { dg-forbid-option "-m64" }
 
 struct A {
   virtual void f ();

@@ -1,5 +1,6 @@
 /* PR optimization/8599 */
 /* { dg-do run { target i?86-*-* } } */
+/* { dg-forbid-option "-m64" } */
 /* { dg-options "-mtune=k6 -O2 -funroll-loops" } */
 
 extern void exit (int);

@@ -1,4 +1,5 @@
 // { dg-do assemble { target i?86-*-* } }
+// { dg-forbid-option "-m64" }
 // Test for using prefix attributes in a parameter decl.
 // Contributed by Jason Merrill <jason@cygnus.com>
 

@@ -446,6 +446,37 @@ proc dg-require-effective-target { args } {
     }
 }
 
+# ARGS is a list.  The 0th element is the line number at which the
+# dg-forbid-option directive appeared in the source file.  The 1st
+# element is a regular expression.  If the regular expression matches
+# the command-line options implied by the current multilib, then the
+# test will be treated as unsupported.  The 2nd element of the list,
+# if present, is a target selector conditionalizing this directive;
+# if the target selector does not match the current target, this
+# dg-forbid-option directive is ignored.
+
+proc dg-forbid-option { args } {
+    set target_name [target_info name]
+    set pattern [lindex $args 1]
+
+    if {[llength $args] > 2} {
+	set selector [lindex $args 2]
+	if { [dg-process-target $selector] == "N" } {
+	    return
+	}
+    }
+	
+    # Check to see if the option occurs in the multilib options
+    # for this target.
+    if {[board_info $target_name exists multilib_flags]} {
+	set multilib_flags [board_info $target_name multilib_flags]
+	if { [regexp -- ${pattern} $multilib_flags] } {
+	    upvar dg-do-what dg-do-what
+	    set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+	}
+    }
+}
+
 # Prune any messages matching ARGS[1] (a regexp) from test output.
 proc dg-prune-output { args } {
     global additional_prunes

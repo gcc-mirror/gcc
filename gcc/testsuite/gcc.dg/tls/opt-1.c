@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fPIC" } */
 /* { dg-options "-O2 -fPIC -mtune=i686" { target i?86-*-* } } */
+/* { dg-forbid-option "-m64" { target i?86-*-* } } */
 
 extern __thread int thr;
 

@@ -1,6 +1,7 @@
 /* PR optimization/9888 */
 /* Originator: Jim Bray <jb@as220.org> */
 /* { dg-do run { target i?86-*-* } } */
+/* { dg-forbid-option "-m64" } */
 /* { dg-options "-mtune=k6 -Os" } */
 
 enum reload_type

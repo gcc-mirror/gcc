@@ -1,4 +1,5 @@
 /* { dg-do compile { target i?86-*-* } } */
+/* { dg-forbid-option "-m64" } */
 /* { dg-options "-W -Wall" } */
 
 /* Verify that GCC correctly detects non-matching regparm attributes.  */
