@@ -922,8 +922,10 @@ process_gcj_properties ()
     // Null terminate the strings.
     while (_Jv_Environment_Properties[i].key)
       {
-	_Jv_Environment_Properties[i].key[_Jv_Environment_Properties[i].key_length] = 0;
-	_Jv_Environment_Properties[i++].value[_Jv_Environment_Properties[i].value_length] = 0;
+        property_pair *prop = &_Jv_Environment_Properties[i];
+	prop->key[prop->key_length] = 0;
+	prop->value[prop->value_length] = 0;
+	i++;
       }
   }
 }

@@ -1,3 +1,8 @@
+2004-07-19  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* prims.cc (process_gcj_properties): Don't increment i within LHS
+	of assignment.
+
 2004-07-19  Per Bothner  <per@bothner.com>
 
 	Print -verbose:message on "loading", not initialization.
