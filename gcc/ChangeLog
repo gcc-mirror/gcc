@@ -1,3 +1,8 @@
+2002-06-11  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/6997
+	* config/cris/cris.md ("sleu"): Set attribute "cc" to "none".
+
 2002-06-11  Zack Weinberg  <zack@codesourcery.com>
 
 	* config.gcc: Make the name of the extra-modes file adjustable

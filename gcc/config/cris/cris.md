@@ -3768,7 +3768,8 @@
 	(leu:SI (cc0) (const_int 0)))]
   ""
   "sls %0"
-  [(set_attr "slottable" "yes")])
+  [(set_attr "slottable" "yes")
+   (set_attr "cc" "none")])
 
 (define_insn "slt"
   [(set (match_operand:SI 0 "register_operand" "=r")
