@@ -399,8 +399,6 @@ namespace std
 	      __atomic_add(&_S_force_new, 1);
 	    else
 	      __atomic_add(&_S_force_new, -1);
-	    // Trust but verify...
-	    assert(_S_force_new != 0);
 	  }
 
 	if ((__n > (size_t) _MAX_BYTES) || (_S_force_new > 0))

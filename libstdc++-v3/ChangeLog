@@ -1,3 +1,8 @@
+2003-02-18  Paolo Carlini  <pcarlini@unitus.it>
+
+	PR libstdc++/9582
+	* include/bits/stl_alloc.h (__pool_alloc::allocate): Remove assert.
+
 2003-02-17  Paolo Carlini  <pcarlini@unitus.it>
 
 	* src/locale-inst.cc: Do not include <cassert>.
