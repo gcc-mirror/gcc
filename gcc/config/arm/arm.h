@@ -30,32 +30,6 @@ Boston, MA 02111-1307, USA.  */
    should default to that used by the OS.
 */
 
-
-extern void output_func_epilogue ();
-extern char *output_add_immediate ();
-extern char *output_call ();
-extern char *output_call_mem ();
-extern char *output_move_double ();
-extern char *output_mov_double_fpu_from_arm ();
-extern char *output_mov_double_arm_from_fpu ();
-extern char *output_mov_long_double_fpu_from_arm ();
-extern char *output_mov_long_double_arm_from_fpu ();
-extern char *output_mov_long_double_arm_from_arm ();
-extern char *output_mov_immediate ();
-extern char *output_return_instruction ();
-extern char *output_load_symbol ();
-extern char *emit_ldm_seq ();
-extern char *emit_stm_seq ();
-extern char *fp_immediate_constant ();
-extern struct rtx_def *gen_compare_reg ();
-extern struct rtx_def *arm_gen_store_multiple ();
-extern struct rtx_def *arm_gen_load_multiple ();
-extern struct rtx_def *gen_rotated_half_load ();
-extern int is_pic ();
-#ifdef AOF_ASSEMBLER
-extern struct rtx_def *aof_pic_entry ();
-#endif
-
 #define TARGET_CPU_arm2		0x0000
 #define TARGET_CPU_arm250	0x0000
 #define TARGET_CPU_arm3		0x0000
@@ -137,31 +111,60 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 
 #define CPP_SPEC "%(cpp_cpu_arch) %(cpp_apcs_pc) %(cpp_float) %(cpp_endian)"
 
+/* Set the architecture define -- if -march= is set, then it overrides
+   the -mcpu= setting.  */
 #define CPP_CPU_ARCH_SPEC "\
 %{m2:-D__arm2__ -D__ARM_ARCH_2__} \
 %{m3:-D__arm2__ -D__ARM_ARCH_2__} \
 %{m6:-D__arm6__ -D__ARM_ARCH_3__} \
-%{mcpu=arm2:-D__ARM_ARCH_2__} \
-%{mcpu=arm250:-D__ARM_ARCH_2__} \
-%{mcpu=arm3:-D__ARM_ARCH_2__} \
-%{mcpu=arm6:-D__ARM_ARCH_3__} \
-%{mcpu=arm600:-D__ARM_ARCH_3__} \
-%{mcpu=arm610:-D__ARM_ARCH_3__} \
-%{mcpu=arm7:-D__ARM_ARCH_3__} \
-%{mcpu=arm700:-D__ARM_ARCH_3__} \
-%{mcpu=arm710:-D__ARM_ARCH_3__} \
-%{mcpu=arm7100:-D__ARM_ARCH_3__} \
-%{mcpu=arm7500:-D__ARM_ARCH_3__} \
-%{mcpu=arm7500fe:-D__ARM_ARCH_3__} \
-%{mcpu=arm7m:-D__ARM_ARCH_3M__} \
-%{mcpu=arm7dm:-D__ARM_ARCH_3M__} \
-%{mcpu=arm7dmi:-D__ARM_ARCH_3M__} \
-%{mcpu=arm7tdmi:-D__ARM_ARCH_4T__} \
-%{mcpu=arm8:-D__ARM_ARCH_4__} \
-%{mcpu=arm810:-D__ARM_ARCH_4__} \
-%{mcpu=strongarm:-D__ARM_ARCH_4__} \
-%{mcpu=strongarm110:-D__ARM_ARCH_4__} \
-%{!mcpu*:%{!m6:%{!m2:%{!m3:%(cpp_cpu_arch_default)}}}} \
+%{march=arm2:-D__ARM_ARCH_2__} \
+%{march=arm250:-D__ARM_ARCH_2__} \
+%{march=arm3:-D__ARM_ARCH_2__} \
+%{march=arm6:-D__ARM_ARCH_3__} \
+%{march=arm600:-D__ARM_ARCH_3__} \
+%{march=arm610:-D__ARM_ARCH_3__} \
+%{march=arm7:-D__ARM_ARCH_3__} \
+%{march=arm700:-D__ARM_ARCH_3__} \
+%{march=arm710:-D__ARM_ARCH_3__} \
+%{march=arm7100:-D__ARM_ARCH_3__} \
+%{march=arm7500:-D__ARM_ARCH_3__} \
+%{march=arm7500fe:-D__ARM_ARCH_3__} \
+%{march=arm7m:-D__ARM_ARCH_3M__} \
+%{march=arm7dm:-D__ARM_ARCH_3M__} \
+%{march=arm7dmi:-D__ARM_ARCH_3M__} \
+%{march=arm7tdmi:-D__ARM_ARCH_4T__} \
+%{march=arm8:-D__ARM_ARCH_4__} \
+%{march=arm810:-D__ARM_ARCH_4__} \
+%{march=strongarm:-D__ARM_ARCH_4__} \
+%{march=strongarm110:-D__ARM_ARCH_4__} \
+%{march=armv2:-D__ARM_ARCH_2__} \
+%{march=armv2a:-D__ARM_ARCH_2__} \
+%{march=armv3:-D__ARM_ARCH_3__} \
+%{march=armv3m:-D__ARM_ARCH_3M__} \
+%{march=armv4:-D__ARM_ARCH_4__} \
+%{march=armv4t:-D__ARM_ARCH_4T__} \
+%{!march=*: \
+ %{mcpu=arm2:-D__ARM_ARCH_2__} \
+ %{mcpu=arm250:-D__ARM_ARCH_2__} \
+ %{mcpu=arm3:-D__ARM_ARCH_2__} \
+ %{mcpu=arm6:-D__ARM_ARCH_3__} \
+ %{mcpu=arm600:-D__ARM_ARCH_3__} \
+ %{mcpu=arm610:-D__ARM_ARCH_3__} \
+ %{mcpu=arm7:-D__ARM_ARCH_3__} \
+ %{mcpu=arm700:-D__ARM_ARCH_3__} \
+ %{mcpu=arm710:-D__ARM_ARCH_3__} \
+ %{mcpu=arm7100:-D__ARM_ARCH_3__} \
+ %{mcpu=arm7500:-D__ARM_ARCH_3__} \
+ %{mcpu=arm7500fe:-D__ARM_ARCH_3__} \
+ %{mcpu=arm7m:-D__ARM_ARCH_3M__} \
+ %{mcpu=arm7dm:-D__ARM_ARCH_3M__} \
+ %{mcpu=arm7dmi:-D__ARM_ARCH_3M__} \
+ %{mcpu=arm7tdmi:-D__ARM_ARCH_4T__} \
+ %{mcpu=arm8:-D__ARM_ARCH_4__} \
+ %{mcpu=arm810:-D__ARM_ARCH_4__} \
+ %{mcpu=strongarm:-D__ARM_ARCH_4__} \
+ %{mcpu=strongarm110:-D__ARM_ARCH_4__} \
+ %{!mcpu*:%{!m6:%{!m2:%{!m3:%(cpp_cpu_arch_default)}}}}} \
 "
 
 /* Define __APCS_26__ if the PC also contains the PSR */
@@ -239,8 +242,8 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 /* Run-time compilation parameters selecting different hardware subsets.  */
 extern int target_flags;
 
-/* These two are used by TARGET_OPTIONS, they are parsed in OVERRIDE_OPTIONS */
-extern char *target_fpe_name;
+/* The floating point instruction architecture, can be 2 or 3 */
+extern char *target_fp_name;
 
 /* Nonzero if the function prologue (and epilogue) should obey
    the ARM Procedure Call Standard.  */
@@ -358,8 +361,9 @@ extern char *target_fpe_name;
 #define TARGET_OPTIONS			\
 {					\
   {"cpu=",  &arm_select[1].string},	\
-  {"tune=", &arm_select[2].string},	\
-  {"fpe=",  &target_fpe_name}		\
+  {"arch=", &arm_select[2].string},	\
+  {"tune=", &arm_select[3].string},	\
+  {"fp=",   &target_fp_name}		\
 }
 
 /* arm_select[0] is reserved for the default cpu.  */
@@ -381,7 +385,8 @@ extern struct arm_cpu_select arm_select[];
 #define TARGET_CPU_DEFAULT ((char *) 0)
 #endif
 
-/* Which processor we are running on.  */
+/* Which processor we are running on, for instruction scheduling 
+   purposes.  */
 enum processor_type 
 {
   PROCESSOR_ARM2,
@@ -389,10 +394,10 @@ enum processor_type
   PROCESSOR_ARM6,
   PROCESSOR_ARM7,
   PROCESSOR_ARM8,
-  PROCESSOR_STARM
+  PROCESSOR_STARM,
+  PROCESSOR_NONE	/* NOTE: This must be last, since it doesn't
+			   appear in the attr_cpu list */
 };
-
-/* Recast the cpu class to be the cpu attribute. */
 
 /* Recast the cpu class to be the cpu attribute.  */
 #define arm_cpu_attr ((enum attr_cpu)arm_cpu)
@@ -422,23 +427,25 @@ enum floating_point_type
 /* Recast the floating point class to be the floating point attribute.  */
 #define arm_fpu_attr ((enum attr_fpu) arm_fpu)
 
+/* What type of floating point to tune for */
 extern enum floating_point_type arm_fpu;
+
+/* What type of floating point instructions are available */
+extern enum floating_point_type arm_fpu_arch;
+
+/* Default floating point archtitecture.  Override in sub-target if
+   necessary.  */
+#define FP_DEFAULT FP_SOFT2
 
 /* Nonzero if the processor has a fast multiply insn, and one that does
    a 64-bit multiply of two 32-bit values.  */
 extern int arm_fast_multiply;
 
-/* Nonzero if this chip support the ARM Architecture 4 extensions */
+/* Nonzero if this chip supports the ARM Architecture 4 extensions */
 extern int arm_arch4;
 
 #ifndef TARGET_DEFAULT
 #define TARGET_DEFAULT  0
-#endif
-
-/* A particular target can define this to a particular cpu name, eg "arm710dmi"
-   and the code generated should then be appropriate for that processor.  */
-#ifndef ARM_CPU_NAME
-#define ARM_CPU_NAME NULL
 #endif
 
 /* The frame pointer register used in gcc has nothing to do with debugging;
@@ -1694,6 +1701,7 @@ extern int arm_compare_fp;
 /* Define the codes that are matched by predicates in arm.c */
 #define PREDICATE_CODES							\
   {"s_register_operand", {SUBREG, REG}},				\
+  {"f_register_operand", {SUBREG, REG}},				\
   {"arm_add_operand", {SUBREG, REG, CONST_INT}},			\
   {"fpu_add_operand", {SUBREG, REG, CONST_DOUBLE}},			\
   {"arm_rhs_operand", {SUBREG, REG, CONST_INT}},			\
@@ -1925,3 +1933,113 @@ do {									\
      return address.  This does not apply to ARM6 and later processors	\
      when running in 32 bit mode.  */					\
   ((!TARGET_APCS_32) ? (GEN_INT (0x03fffffc)) : (GEN_INT (0xffffffff)))
+
+/* Prototypes for arm.c -- actually, they aren't since the types aren't 
+   fully defined yet.  */
+
+void arm_override_options (/* void */);
+int use_return_insn (/* void */);
+int const_ok_for_arm (/* HOST_WIDE_INT */);
+int const_ok_for_op (/* HOST_WIDE_INT, enum rtx_code, 
+			enum machine_mode */);
+int arm_split_constant (/* enum rtx_code, enum machine_mode, 
+			   HOST_WIDE_INT, struct rtx_def *,
+			   struct rtx_def *, int */);
+enum rtx_code arm_canonicalize_comparison (/* enum rtx_code, 
+					      struct rtx_def ** */);
+int arm_return_in_memory (/* union tree_node * */);
+int legitimate_pic_operand_p (/* struct rtx_def * */);
+struct rtx_def *legitimize_pic_address (/* struct rtx_def *, 
+					   enum machine_mode,
+					   struct rtx_def * */);
+int is_pic (/* struct rtx_def * */);
+void arm_finalize_pic (/* void */);
+int arm_rtx_costs (/* struct rtx_def *, enum rtx_code, enum rtx_code */);
+int arm_adjust_code (/* struct rtx_def *, struct rtx_def *, 
+			struct rtx_def *, int */);
+int const_double_rtx_ok_for_fpu (/* struct rtx_def * */);
+int neg_const_double_rtx_ok_for_fpu (/* struct rtx_def * */);
+int s_register_operand (/* struct rtx_def *, enum machine_mode */);
+int f_register_operand (/* struct rtx_def *, enum machine_mode */);
+int reg_or_int_operand (/* struct rtx_def *, enum machine_mode */);
+int reload_memory_operand (/* struct rtx_def *, enum machine_mode */);
+int arm_rhs_operand (/* struct rtx_def *, enum machine_mode */);
+int arm_rhsm_operand (/* struct rtx_def *, enum machine_mode */);
+int arm_add_operand (/* struct rtx_def *, enum machine_mode */);
+int arm_not_operand (/* struct rtx_def *, enum machine_mode */);
+int offsettable_memory_operand (/* struct rtx_def *, enum machine_mode */);
+int alignable_memory_operand (/* struct rtx_def *, enum machine_mode */);
+int fpu_rhs_operand (/* struct rtx_def *, enum machine_mode */);
+int fpu_add_operand (/* struct rtx_def *, enum machine_mode */);
+int power_of_two_operand (/* struct rtx_def *, enum machine_mode */);
+int di_operand (/* struct rtx_def *, enum machine_mode */);
+int soft_df_operand (/* struct rtx_def *, enum machine_mode */);
+int index_operand (/* struct rtx_def *, enum machine_mode */);
+int const_shift_operand (/* struct rtx_def *, enum machine_mode */);
+int shiftable_operator (/* struct rtx_def *, enum machine_mode */);
+int shift_operator (/* struct rtx_def *, enum machine_mode */);
+int equality_operator (/* struct rtx_def *, enum machine_mode */);
+int minmax_operator (/* struct rtx_def *, enum machine_mode */);
+int cc_register (/* struct rtx_def *, enum machine_mode */);
+int dominant_cc_register (/* struct rtx_def *, enum machine_mode */);
+int symbol_mentioned_p (/* struct rtx_def * */);
+int label_mentioned_p (/* struct rtx_def * */);
+enum rtx_code minmax_code (/* struct rtx_def * */);
+int adjacent_mem_locations (/* struct rtx_def *, struct rtx_def * */);
+int load_multiple_operation (/* struct rtx_def *, enum machine_mode */);
+int store_multiple_operation (/* struct rtx_def *, enum machine_mode */);
+int load_multiple_sequence (/* struct rtx_def **, int, int *, int *,
+			       HOST_WIDE_INT * */);
+char *emit_ldm_seq (/* struct rtx_def **, int */);
+int store_multiple_sequence (/* struct rtx_def **, int, int *, int *,
+				HOST_WIDE_INT * */);
+char *emit_stm_seq (/* struct rtx_def **, int */);
+int multi_register_push (/* struct rtx_def *, enum machine_mode */);
+int arm_valid_machine_decl_attribute (/* union tree_node *, union tree_node *,
+					 union tree_node *,
+					 union tree_node * */);
+struct rtx_def *arm_gen_load_multiple (/* int, int, struct rtx_def *, 
+					  int, int */);
+struct rtx_def *arm_gen_store_multiple (/* int, int, struct rtx_def *,
+					   int, int */);
+int arm_gen_movstrqi (/* struct rtx_def ** */);
+struct rtx_def *gen_rotated_half_load (/* struct rtx_def * */);
+enum machine_mode arm_select_cc_mode (/* enum rtx_code, struct rtx_def *,
+					 struct rtx_def * */);
+struct rtx_def *gen_compare_reg (/* enum rtx_code, struct rtx_def *,
+				    struct rtx_def * */);
+void arm_reload_in_hi (/* struct rtx_def ** */);
+void arm_reload_out_hi (/* struct rtx_def ** */);
+void arm_reorg (/* struct rtx_def * */);
+char *fp_immediate_constant (/* struct rtx_def * */);
+void print_multi_reg (/* FILE *, char *, int, int */);
+char *output_call (/* struct rtx_def ** */);
+char *output_call_mem (/* struct rtx_def ** */);
+char *output_mov_long_double_fpu_from_arm (/* struct rtx_def ** */);
+char *output_mov_long_double_arm_from_fpu (/* struct rtx_def ** */);
+char *output_mov_long_double_arm_from_arm (/* struct rtx_def ** */);
+char *output_mov_double_fpu_from_arm (/* struct rtx_def ** */);
+char *output_mov_double_arm_from_fpu (/* struct rtx_def ** */);
+char *output_mov_double (/* struct rtx_def ** */);
+char *output_mov_immediate (/* struct rtx_def ** */);
+char *output_add_immediate (/* struct rtx_def ** */);
+char *arithmetic_instr (/* struct rtx_def *, int */);
+void output_ascii_pseudo_op (/* FILE *, unsigned char *, int */);
+char *output_return_instruction (/* struct rtx_def *, int, int */);
+int arm_volatile_func (/* void */);
+void output_func_prologue (/* FILE *, int */);
+void output_func_epilogue (/* FILE *, int */);
+void arm_expand_prologue (/* void */);
+void arm_print_operand (/* FILE *, struct rtx_def *, int */);
+void arm_asm_output_label (/* FILE *, char * */);
+void output_lcomm_directive (/* FILE *, char *, int, int */);
+void final_prescan_insn (/* struct rtx_def *, struct rtx_def **, int */);
+#ifdef AOF_ASSEMBLER
+struct rtx_def *aof_pic_entry (/* struct rtx_def * */);
+void aof_dump_pic_table (/* FILE * */);
+char *aof_text_section (/* void */);
+char *aof_data_section (/* void */);
+void aof_add_import (/* char * */);
+void aof_delete_import (/* char * */);
+void aof_dump_imports (/* FILE * */);
+#endif
