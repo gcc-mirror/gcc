@@ -3097,20 +3097,18 @@ h8300_adjust_insn_length (insn, length)
      rtx insn;
      int length ATTRIBUTE_UNUSED;
 {
-  rtx pat;
+  rtx pat = PATTERN (insn);
 
   /* We must filter these out before calling get_attr_adjust_length.  */
-  if (GET_CODE (PATTERN (insn)) == USE
-      || GET_CODE (PATTERN (insn)) == CLOBBER
-      || GET_CODE (PATTERN (insn)) == SEQUENCE
-      || GET_CODE (PATTERN (insn)) == ADDR_VEC
-      || GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC)
+  if (GET_CODE (pat) == USE
+      || GET_CODE (pat) == CLOBBER
+      || GET_CODE (pat) == SEQUENCE
+      || GET_CODE (pat) == ADDR_VEC
+      || GET_CODE (pat) == ADDR_DIFF_VEC)
     return 0;
 
   if (get_attr_adjust_length (insn) == ADJUST_LENGTH_NO)
     return 0;
-
-  pat = PATTERN (insn);
 
   /* Adjust length for reg->mem and mem->reg copies.  */
   if (GET_CODE (pat) == SET
