@@ -1,3 +1,33 @@
+2001-12-15  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* java-tree.h (otable_methods, otable_decl, otable_syms_decl,
+	otable_type, otable_ptr_type, method_symbol_type, 
+	method_symbols_array_type, method_symbols_array_ptr_type): New
+	field/global tree definitions.
+	(flag_indirect_dispatch): New flag.
+	* decl.c (java_init_decl_processing): Initialize new otable and 
+	otable_syms type nodes and decls. Add new field "index" to
+	method_type_node.
+	* class.c (build_method_symbols_entry): New function.
+	(make_method_value): Set "index" to to method's vtable index for
+	virtual methods when indirect-dispatch is not used.
+	(make_class_data): For indirect-dispatch, dont emit the dtable_decl,
+	and set vtable_method_count to -1. Set otable and otable_syms field
+	if indirect-dispatch is used and there was something to put in them.
+	(build_method_symbols_entry): New function.
+	(emit_offset_symbol_table): New function.
+	* expr.c (get_offset_table_index): New function.
+	(build_invokevirtual): Build array reference to otable at the index 
+	returned by get_offset_table_index, and use the result as the vtable
+	offset.
+	(build_invokeinterface): Similar.
+	* jcf-parse.c (yyparse): If indirect-dispatch, call 
+	emit_offset_symbol_table at the end of compilation, after all classes 
+	have been generated.
+	* jvspec.c: Don't pass findirect-dispatch to jvgenmain.
+	* lang.c (flag_indirect_dispatch): Define.
+	(lang_f_options): Add indirect-dispatch flag.
+
 2001-12-14  Matthias Klose  <doko@debian.org>
 
 	* gcj.texi: Markup for man page generation. Document missing

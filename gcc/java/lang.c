@@ -153,6 +153,10 @@ int flag_force_classes_archive_check;
    be tested alone, use STATIC_CLASS_INITIALIZATION_OPTIMIZATION_P instead.  */
 int flag_optimize_sci = 1;
 
+/* When non zero, use offset tables for virtual method calls
+   in order to improve binary compatibility. */
+int flag_indirect_dispatch = 0;
+
 /* When non zero, print extra version information.  */
 static int version_flag = 0;
 
@@ -174,7 +178,8 @@ lang_f_options[] =
   {"jni", &flag_jni, 1},
   {"check-references", &flag_check_references, 1},
   {"force-classes-archive-check", &flag_force_classes_archive_check, 1},
-  {"optimize-static-class-initialization", &flag_optimize_sci, 1 }
+  {"optimize-static-class-initialization", &flag_optimize_sci, 1 },
+  {"indirect-dispatch", &flag_indirect_dispatch, 1}
 };
 
 static struct string_option

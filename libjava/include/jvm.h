@@ -57,6 +57,12 @@ struct _Jv_VTable
 #endif
 
   static size_t vtable_elt_size() { return sizeof(vtable_elt); }
+
+  // Given a method index, return byte offset from the vtable pointer.
+  static jint idx_to_offset (int index)
+  {
+    return (2 * sizeof (void *)) + (index * vtable_elt_size ());
+  }
   static _Jv_VTable *new_vtable (int count);
 };
 

@@ -70,6 +70,8 @@ struct _Jv_Method
   _Jv_Utf8Const *signature;
   // Access flags.
   _Jv_ushort accflags;
+  // Method's index in the vtable.
+  _Jv_ushort index;
   // Pointer to underlying function.
   void *ncode;
   // NULL-terminated list of exception class names; can be NULL if
@@ -112,6 +114,19 @@ union _Jv_Self
 {
   char *vtable_ptr;
   jclass self;
+};
+
+struct _Jv_MethodSymbol
+{
+  _Jv_Utf8Const *class_name;
+  _Jv_Utf8Const *name;
+  _Jv_Utf8Const *signature;
+};
+
+struct _Jv_OffsetTable
+{
+  jint state;
+  jint offsets[];
 };
 
 #define JV_PRIMITIVE_VTABLE ((_Jv_VTable *) -1)
@@ -303,6 +318,10 @@ private:
   friend jstring _Jv_GetMethodString(jclass, _Jv_Utf8Const *);
   friend jshort _Jv_AppendPartialITable (jclass, jclass, void **, jshort);
   friend jshort _Jv_FindIIndex (jclass *, jshort *, jshort);
+  friend void _Jv_LinkOffsetTable (jclass);
+  friend void _Jv_LayoutVTableMethods (jclass klass);
+  friend void _Jv_SetVTableEntries (jclass, _Jv_VTable *);
+  friend void _Jv_MakeVTable (jclass);
 
   // Return array class corresponding to element type KLASS, creating it if
   // necessary.
@@ -367,6 +386,10 @@ private:
   jshort static_field_count;
   // The vtbl for all objects of this class.
   _Jv_VTable *vtable;
+  // Virtual method offset table.
+  _Jv_OffsetTable *otable;
+  // Offset table symbols.
+  _Jv_MethodSymbol *otable_syms;
   // Interfaces implemented by this class.
   jclass *interfaces;
   // The class loader for this class.

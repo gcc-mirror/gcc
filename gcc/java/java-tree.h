@@ -141,6 +141,18 @@ extern int compiling_from_source;
 /* List of all class filenames seen so far.  */
 #define all_class_filename java_global_trees [JTI_ALL_CLASS_FILENAME]
 
+/* List of virtual method decls called in this translation unit, used to 
+   generate virtual method offset symbol table. */
+#define otable_methods java_global_trees [JTI_OTABLE_METHODS]
+
+/* The virtual method offset table. This is emitted as uninitialized data of 
+   the required length, and filled out at run time during class linking. */
+#define otable_decl java_global_trees [JTI_OTABLE_DECL]
+
+/* The virtual method offset symbol table. Used by the runtime to fill out the
+   otable. */
+#define otable_syms_decl java_global_trees [JTI_OTABLE_SYMS_DECL]
+
 extern int flag_emit_class_files;
 
 extern int flag_filelist_file;
@@ -195,6 +207,10 @@ extern int flag_check_references;
 /* Used through STATIC_CLASS_INIT_OPT_P to check whether static
    initialization optimization should be performed.  */
 extern int flag_optimize_sci;
+
+/* When non zero, use offset tables for virtual method calls
+   in order to improve binary compatibility. */
+extern int flag_indirect_dispatch;
 
 /* Encoding used for source files.  */
 extern const char *current_encoding;
@@ -331,6 +347,11 @@ enum java_tree_index
   JTI_LINENUMBERS_TYPE,
   JTI_METHOD_TYPE_NODE,
   JTI_METHOD_PTR_TYPE_NODE,
+  JTI_OTABLE_TYPE,
+  JTI_OTABLE_PTR_TYPE,
+  JTI_METHOD_SYMBOL_TYPE,
+  JTI_METHOD_SYMBOLS_ARRAY_TYPE,
+  JTI_METHOD_SYMBOLS_ARRAY_PTR_TYPE,
 
   JTI_END_PARAMS_NODE,
 
@@ -369,6 +390,10 @@ enum java_tree_index
   JTI_CURRENT_CLASS,
   JTI_ALL_CLASS_LIST,
   JTI_ALL_CLASS_FILENAME,
+
+  JTI_OTABLE_METHODS,
+  JTI_OTABLE_DECL,
+  JTI_OTABLE_SYMS_DECL,
 
   JTI_MAX
 };
@@ -565,6 +590,16 @@ extern tree java_global_trees[JTI_MAX];
   java_global_trees[JTI_METHOD_TYPE_NODE]
 #define method_ptr_type_node \
   java_global_trees[JTI_METHOD_PTR_TYPE_NODE]
+#define otable_type \
+  java_global_trees[JTI_OTABLE_TYPE]
+#define otable_ptr_type \
+  java_global_trees[JTI_OTABLE_PTR_TYPE]
+#define method_symbol_type \
+  java_global_trees[JTI_METHOD_SYMBOL_TYPE]
+#define method_symbols_array_type \
+  java_global_trees[JTI_METHOD_SYMBOLS_ARRAY_TYPE]
+#define method_symbols_array_ptr_type \
+  java_global_trees[JTI_METHOD_SYMBOLS_ARRAY_PTR_TYPE]
 
 #define end_params_node \
   java_global_trees[JTI_END_PARAMS_NODE]
@@ -1098,6 +1133,7 @@ extern void make_class_data PARAMS ((tree));
 extern void register_class PARAMS ((void));
 extern int alloc_name_constant PARAMS ((int, tree));
 extern void emit_register_classes PARAMS ((void));
+extern void emit_offset_symbol_table PARAMS ((void));
 extern void lang_init_source PARAMS ((int));
 extern void write_classfile PARAMS ((tree));
 extern char *print_int_node PARAMS ((tree));

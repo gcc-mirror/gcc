@@ -84,6 +84,7 @@ static tree case_identity PARAMS ((tree, tree));
 static unsigned char peek_opcode_at_pc PARAMS ((struct JCF *, int, int));
 static bool emit_init_test_initialization PARAMS ((struct hash_entry *,
 						   PTR ptr));
+static int get_offset_table_index PARAMS ((tree));
 
 static tree operand_type[59];
 extern struct obstack permanent_obstack;
@@ -1856,6 +1857,40 @@ invoke_build_dtable (is_invoke_interface, arg_list)
   return dtable;
 }
 
+/* Determine the index in the virtual offset table (otable) for a call to
+   METHOD. If this method has not been seen before, it will be added to the 
+   otable_methods. If it has, the existing otable slot will be reused. */
+
+int
+get_offset_table_index (method)
+     tree method;
+{
+  int i = 1;
+  tree method_list;
+  
+  if (otable_methods == NULL_TREE)
+    {
+      otable_methods = build_tree_list (method, method);
+      return 1;
+    }
+  
+  method_list = otable_methods;
+  
+  while (1)
+    {
+      if (TREE_VALUE (method_list) == method)
+        return i;
+      i++;
+      if (TREE_CHAIN (method_list) == NULL_TREE)
+        break;
+      else
+        method_list = TREE_CHAIN (method_list);
+    }
+
+  TREE_CHAIN (method_list) = build_tree_list (method, method);
+  return i;
+}
+
 tree 
 build_invokevirtual (dtable, method)
      tree dtable, method;
@@ -1863,20 +1898,33 @@ build_invokevirtual (dtable, method)
   tree func;
   tree nativecode_ptr_ptr_type_node
     = build_pointer_type (nativecode_ptr_type_node);
-  tree method_index = convert (sizetype, DECL_VINDEX (method));
+  tree method_index;
+  tree otable_index;
 
-  if (TARGET_VTABLE_USES_DESCRIPTORS)
-    /* Add one to skip bogus descriptor for class and GC descriptor. */
-    method_index = size_binop (PLUS_EXPR, method_index, size_int (1));
+  if (flag_indirect_dispatch)
+    {
+      otable_index = build_int_2 (get_offset_table_index (method), 0);
+      method_index = build (ARRAY_REF, integer_type_node, otable_decl, 
+			    otable_index);
+    }
   else
-    /* Add 1 to skip "class" field of dtable, and 1 to skip GC descriptor.  */
-    method_index = size_binop (PLUS_EXPR, method_index, size_int (2));
-  method_index = size_binop (MULT_EXPR, method_index,
-			     TYPE_SIZE_UNIT (nativecode_ptr_ptr_type_node));
+    {
+      method_index = convert (sizetype, DECL_VINDEX (method));
 
-  if (TARGET_VTABLE_USES_DESCRIPTORS)
-    method_index = size_binop (MULT_EXPR, method_index,
-			       size_int (TARGET_VTABLE_USES_DESCRIPTORS));
+      if (TARGET_VTABLE_USES_DESCRIPTORS)
+	/* Add one to skip bogus descriptor for class and GC descriptor. */
+	method_index = size_binop (PLUS_EXPR, method_index, size_int (1));
+      else
+	/* Add 1 to skip "class" field of dtable, and 1 to skip GC descriptor.  */
+	method_index = size_binop (PLUS_EXPR, method_index, size_int (2));
+
+      method_index = size_binop (MULT_EXPR, method_index,
+				 TYPE_SIZE_UNIT (nativecode_ptr_ptr_type_node));
+
+      if (TARGET_VTABLE_USES_DESCRIPTORS)
+	method_index = size_binop (MULT_EXPR, method_index,
+				   size_int (TARGET_VTABLE_USES_DESCRIPTORS));
+    }
 
   func = fold (build (PLUS_EXPR, nativecode_ptr_ptr_type_node, dtable,
 		      convert (nativecode_ptr_ptr_type_node, method_index)));
@@ -1898,6 +1946,7 @@ build_invokeinterface (dtable, method)
   tree interface;
   tree idx;
   tree meth;
+  tree otable_index;
   int i;
 
   /* We expand invokeinterface here.  _Jv_LookupInterfaceMethod() will
@@ -1917,16 +1966,24 @@ build_invokeinterface (dtable, method)
   interface = DECL_CONTEXT (method);
   layout_class_methods (interface);
   
-  i = 1;
-  for (meth = TYPE_METHODS (interface); ; meth = TREE_CHAIN (meth), i++)
+  if (flag_indirect_dispatch)
     {
-      if (meth == method)
-        {
-	  idx = build_int_2 (i, 0);
-	  break;
+      otable_index = build_int_2 (get_offset_table_index (method), 0);
+      idx = build (ARRAY_REF, integer_type_node, otable_decl, otable_index);
+    }
+  else
+    {
+      i = 1;
+      for (meth = TYPE_METHODS (interface); ; meth = TREE_CHAIN (meth), i++)
+	{
+	  if (meth == method)
+            {
+	      idx = build_int_2 (i, 0);
+	      break;
+	    }
+	  if (meth == NULL_TREE)
+	    abort ();
 	}
-      if (meth == NULL_TREE)
-	abort ();
     }
 
   lookup_arg = tree_cons (NULL_TREE, dtable,
