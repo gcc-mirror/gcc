@@ -1,3 +1,8 @@
+2001-09-29  Jeff Sturm  <jsturm@one-point.com>
+
+	* Makefile.am (libgcj_la_LDFLAGS): Added $(GCLIBS), $(ZLIBS).
+	* Makefile.in: Rebuilt.
+
 2001-09-27  Tom Tromey  <tromey@redhat.com>
 
 	* java/util/IdentityHashMap.java (containsKey): Use getHash.
