@@ -254,6 +254,7 @@ enum dump_file_index
   DFI_eh,
   DFI_jump,
   DFI_ssa,
+  DFI_ssa_ccp,
   DFI_ssa_dce,
   DFI_ussa,
   DFI_cse,
@@ -290,7 +291,7 @@ enum dump_file_index
    Remaining -d letters:
 
 	"              o q   u     "
-	"       H  K   OPQ  TUVW YZ"
+	"       H  K   OPQ  TUV  YZ"
 */
 
 struct dump_file_info dump_file[DFI_MAX] =
@@ -300,6 +301,7 @@ struct dump_file_info dump_file[DFI_MAX] =
   { "eh",	'h', 0, 0, 0 },
   { "jump",	'j', 0, 0, 0 },
   { "ssa",	'e', 1, 0, 0 },
+  { "ssaccp",	'W', 1, 0, 0 },
   { "ssadce",	'X', 1, 0, 0 },
   { "ussa",	'e', 1, 0, 0 },	/* Yes, duplicate enable switch.  */
   { "cse",	's', 0, 0, 0 },
@@ -818,7 +820,10 @@ int flag_gnu_linker = 1;
 /* Enable SSA.  */
 int flag_ssa = 0;
 
-/* Enable dead code elimination. */
+/* Enable ssa conditional constant propagation.  */
+int flag_ssa_ccp = 0;
+
+/* Enable ssa aggressive dead code elimination.  */
 int flag_ssa_dce = 0;
 
 /* Tag all structures with __attribute__(packed).  */
@@ -1142,6 +1147,8 @@ lang_independent_options f_options[] =
    N_("Instrument function entry/exit with profiling calls") },
   {"ssa", &flag_ssa, 1,
    N_("Enable SSA optimizations") },
+  {"ssa-ccp", &flag_ssa_ccp, 1,
+   N_("Enable SSA conditonal constant propagation") },
   {"ssa-dce", &flag_ssa_dce, 1,
    N_("Enable aggressive SSA dead code elimination") },
   {"leading-underscore", &flag_leading_underscore, 1,
@@ -2963,6 +2970,22 @@ rest_of_compilation (decl)
 
       close_dump_file (DFI_ssa, print_rtl_with_bb, insns);
       timevar_pop (TV_TO_SSA);
+
+      /* Perform sparse conditional constant propagation, if requested.  */
+      if (flag_ssa_ccp)
+	{
+	  timevar_push (TV_SSA_CCP);
+	  open_dump_file (DFI_ssa_ccp, decl);
+
+	  ssa_const_prop ();
+
+	  close_dump_file (DFI_ssa_ccp, print_rtl_with_bb, get_insns ());
+	  timevar_pop (TV_SSA_CCP);
+	}
+
+      /* It would be useful to cleanup the CFG at this point, but block
+	 merging and possibly other transformations might leave a PHI
+	 node in the middle of a basic block, which is a strict no-no.  */
 
       /* The SSA implementation uses basic block numbers in its phi
 	 nodes.  Thus, changing the control-flow graph or the basic

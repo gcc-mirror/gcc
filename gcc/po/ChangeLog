@@ -1,3 +1,7 @@
+Mon Jul  9 13:27:15 2001  Jeffrey A Law  (law@cygnus.com)
+
+        * POTFILES.in: Add ssa-ccp.c
+
 Thu Jun 28 16:11:30 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* POTFILES.in: Add df.c and df.h

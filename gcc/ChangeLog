@@ -1,3 +1,20 @@
+Mon Jul  9 13:26:40 2001  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (OBJS): Add ssa-ccp.o
+	(ssa-ccp.o): Add dependencies.
+	* toplev.c (DFI_ssa_ccp): New dump file enum.
+	(dump_file): Add entry for dumping after SSA CCP.
+	(flag_ssa_ccp): New flag variable.
+	(f_options): Add -fssa-ccp.
+	(rest_of_compilation): Run SSA CCP if requested.
+	* timevar.def (TV_SSA_CCP): New timevar.
+	* ssa.c (mark_phi_and_copy_regs): Handle deleted PHI nodes.
+	* doc/gcc.texi (Passes): Add documentation for SSA CCP pass.
+	Fix minor typo in SSA DCE documentation.
+	* doc/invoke.texi: Add documentation for new flag -fssa-ccp.
+	Add documentation for new dump option.  Renumber dump files
+	appropriately.
+
 Mon Jul  9 21:36:00 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* emit-rtl.c (gen_highpart_mode): New.
@@ -235,8 +252,13 @@ Mon Jul  9 06:41:07 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	Delete.
 	* config/m88k/m88k.c (m88k_end_prologue, m88k_begin_epilogue): Rename
 	an use in target struct, make static.
+<<<<<<< ChangeLog
+	* ia64/ia64.h (FUNCTION_END_PROLOGUE, FUNCTION_BEGIN_EPILOGUE): Delete.
+=======
 	* config/ia64/ia64.h (FUNCTION_END_PROLOGUE, FUNCTION_BEGIN_EPILOGUE):
 	Delete.
+>>>>>>> 1.10591
+
 
 2001-07-08  Richard Henderson  <rth@redhat.com>
 
