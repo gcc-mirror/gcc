@@ -1,3 +1,8 @@
+2004-10-19  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* include/private/gc_priv.h (GC_generic_malloc_words_small_inner):
+	Add prototype.
+
 2004-10-13  Kazuhiro Inaoka <inaoka.kazuhiro@renesas.com>
 
 	* include/private/gcconfig.h: Add m32r-linux target.

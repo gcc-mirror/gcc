@@ -1632,6 +1632,10 @@ ptr_t GC_generic_malloc_ignore_off_page GC_PROTO((size_t b, int k));
   				/* are ignored.				*/
 ptr_t GC_generic_malloc_inner GC_PROTO((word lb, int k));
   				/* Ditto, but I already hold lock, etc.	*/
+ptr_t GC_generic_malloc_words_small_inner GC_PROTO((word lw, int k));
+				/* Analogous to the above, but assumes	*/
+				/* a small object size, and bypasses	*/
+				/* MERGE_SIZES mechanism.		*/
 ptr_t GC_generic_malloc_words_small GC_PROTO((size_t lw, int k));
   				/* As above, but size in units of words */
   				/* Bypasses MERGE_SIZES.  Assumes	*/
