@@ -319,3 +319,18 @@ do {									\
   ASM_OUTPUT_INT (FILE, const0_rtx);					\
   ASM_OUTPUT_INT (FILE, const0_rtx);					\
 }
+
+/* Redefine since we are using a different trampoline */
+#undef TRAMPOLINE_SIZE
+#define TRAMPOLINE_SIZE 18
+
+/* Emit RTL insns to initialize the variable parts of a trampoline.
+   FNADDR is an RTX for the address of the function's pure code.
+   CXT is an RTX for the static chain value for the function.  */
+
+#undef INITIALIZE_TRAMPOLINE
+#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)                       \
+{                                                                       \
+  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 10)), CXT); \
+  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 14)), FNADDR); \
+}
