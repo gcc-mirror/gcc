@@ -216,7 +216,7 @@ static void vect_generate_tmps_on_preheader (loop_vec_info,
 static tree vect_build_loop_niters (loop_vec_info);
 static void vect_update_ivs_after_vectorizer (struct loop *, tree); 
 
-/* Loop transformations prior to vectorizeration.  */
+/* Loop transformations prior to vectorization.  */
 
 /* Loop transformations entry point function. 
    It can be used outside of the vectorizer 
@@ -955,7 +955,7 @@ tree_duplicate_loop_to_edge (struct loop *loop, struct loops *loops,
   definitions = marked_ssa_names ();
   allocate_new_names (definitions);
   update_phis_for_duplicate_loop (loop, new_loop, e == exit_e);
-  /* Here, using assumption (5), we do not propagate new names futher 
+  /* Here, using assumption (5), we do not propagate new names further 
      than on phis of the exit from the second loop.  */
   rename_variables_in_loop (new_loop);
   free_new_names (definitions);
@@ -1012,7 +1012,7 @@ tree_duplicate_loop_to_edge (struct loop *loop, struct loops *loops,
   /* 4c. Add condition at the end of preheader bb.  */
   skip_e = add_loop_guard (pre_header_bb, pre_condition, first_exit_bb);
 
-  /* 4d. Updtae phis at first loop exit and propagate changes 
+  /* 4d. Update phis at first loop exit and propagate changes 
      to the phis of second loop.  */
   update_phi_nodes_for_guard (skip_e, first_loop);
 
@@ -2951,7 +2951,7 @@ vect_update_ivs_after_vectorizer (struct loop *loop, tree niters)
 }
 
 
-/* This function is the main driver of tranformation 
+/* This function is the main driver of transformation 
    to be done for loop before vectorizing it in case of 
    unknown loop bound.  */
 
