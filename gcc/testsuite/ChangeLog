@@ -1,3 +1,7 @@
+2004-08-17  Paolo Bonzini  <bonzini@gnu.org>
+
+	* gcc.dg/pr17036-1.c: New test.
+	
 2004-08-16  Devang Patel  <dpatel@apple.com>
 
 	* gcc.dg/darwin-20040809-1.c: New test.

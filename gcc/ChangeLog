@@ -1,5 +1,12 @@
 2004-08-17  Paolo Bonzini  <bonzini@gnu.org>
 
+	PR middle-end/17036
+	* fold-const.c (fold): Check for integer operand when
+	folding (A >> N) & 1 ? (1 << N) : 0.  Fix from Andrew
+	Pinski  <pinskia@physics.uc.edu>.
+
+2004-08-17  Paolo Bonzini  <bonzini@gnu.org>
+
 	* configure.ac: Trust toplevel's notion of BISON/FLEX/MAKEINFO.
 	No need to check if in a cross configuration.
 	* configure: Regenerate.
@@ -131,10 +138,9 @@
 2004-08-16  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* tree-ssa-copyrename.c (copy_rename_partition_coalesce):
-	Check for arificial variables, not is_gimple_tmp_var.
+	Check for artificial variables, not is_gimple_tmp_var.
 	* tree-ssa-live.c (var_union): Likewise.
 
->>>>>>> 2.4930
 2004-08-16  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* calls.c (load_register_parameters): Remove spurious FIXME token.
