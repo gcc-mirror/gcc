@@ -666,7 +666,7 @@ extern char * reg_names[];
    An XRF register can hold any mode, but two GRF registers are required
    for larger modes.  */
 #define HARD_REGNO_NREGS(REGNO, MODE)					\
-  ((REGNO < FIRST_PSEUDO_REGISTER && REGNO >= FIRST_EXTENDED_REGISTER)	\
+  (XRF_REGNO_P (REGNO)                                                 \
    ? 1 : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
@@ -679,8 +679,8 @@ extern char * reg_names[];
    registers.  The compiler should be allowed to use these as a fast spill
    area.  */
 #define HARD_REGNO_MODE_OK(REGNO, MODE)					\
-  ((REGNO < FIRST_PSEUDO_REGISTER && REGNO >= FIRST_EXTENDED_REGISTER)	\
-    ? TARGET_88110							\
+  (XRF_REGNO_P(REGNO)							\
+    ? (TARGET_88110 && GET_MODE_CLASS (MODE) == MODE_FLOAT)             \
     : (((MODE) != DImode && (MODE) != DFmode && (MODE) != DCmode)	\
        || ((REGNO) & 1) == 0))
 
@@ -689,8 +689,10 @@ extern char * reg_names[];
    If HARD_REGNO_MODE_OK could produce different values for MODE1 and MODE2,
    for any hard reg, then this must be 0 for correct output.  */
 #define MODES_TIEABLE_P(MODE1, MODE2) \
-  (((MODE1) == DFmode || (MODE1) == DCmode || (MODE1) == DImode) \
-   == ((MODE2) == DFmode || (MODE2) == DCmode || (MODE2) == DImode))
+  (((MODE1) == DFmode || (MODE1) == DCmode || (MODE1) == DImode \
+    || (TARGET_88110 && GET_MODE_CLASS (MODE1) == MODE_FLOAT)) \
+   == ((MODE2) == DFmode || (MODE2) == DCmode || (MODE2) == DImode \
+       || (TARGET_88110 && GET_MODE_CLASS (MODE2) == MODE_FLOAT)))
 
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
