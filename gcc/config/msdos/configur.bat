@@ -17,6 +17,12 @@ sed -f config/msdos/top.sed Makefile.in >> Makefile
 
 set LANG=
 
+if not exist ada\make-lang.in goto no_ada
+sed -f config/msdos/top.sed ada\make-lang.in >> Makefile
+sed -f config/msdos/top.sed ada\makefile.in > ada\Makefile
+set LANG=%LANG% ada.&   
+:no_ada
+
 if not exist cp\make-lang.in goto no_cp
 sed -f config/msdos/top.sed cp\make-lang.in >> Makefile
 sed -f config/msdos/top.sed cp\makefile.in > cp\Makefile
