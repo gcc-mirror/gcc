@@ -2031,6 +2031,7 @@ distclean: clean bytecode.distclean lang.distclean
 	-rm -f tm.h config.h tconfig.h hconfig.h md
 	-rm -f config.status config.run config.cache config.bak
 	-rm -f Make-host Make-target Make-lang Make-hooks
+	-rm -f */Make-host */Make-target */Make-lang */Make-hooks
 	-rm -f Makefile specs.h options.h *.oaux
 	-rm -fr stage1 stage2 stage3 stage4
 	-rm -f */stage1 */stage2 */stage3 */stage4 */include
