@@ -1,3 +1,7 @@
+2004-05-28  Geoffrey Keating  <geoffk@apple.com>
+
+	* stringpool.c: Add comments to PCH saving/restoring routines.
+
 2004-05-28  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* c-common.c (c_estimate_num_insns_1): Kill.
