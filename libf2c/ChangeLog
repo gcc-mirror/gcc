@@ -1,3 +1,8 @@
+2002-05-20  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* Makefile.in: Use @SHELL@, not /bin/sh for SHELL
+	definition.
+
 2002-05-16  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* Makefile.in: Allow for PWDCMD to override hardcoded pwd.
