@@ -2,12 +2,12 @@
 
 ########################################################################
 #
-# File:   gcc_build
+# File:   gcc_release
 # Author: Jeffrey Law, Bernd Schmidt, Mark Mitchell
-# Date:   07/10/2000
+# Date:   2001-05-25
 #
 # Contents:
-#   Script to automatically download and build GCC.
+#   Script to create a GCC release.
 #
 # Copyright (c) 2001 Free Software Foundation.
 #
@@ -37,7 +37,7 @@
 # Here is an example usage of this script, to create the GCC 3.0.2
 # release:
 #
-#   gcc -r 3.0.2
+#   gcc_release -r 3.0.2
 #
 # This script will automatically use the head of the release branch
 # to generate the release.
@@ -67,6 +67,9 @@ cat <<EOF
 gcc_release     [-d destination]
                 [-u username]
 		[-r release]
+		[-t tag]
+		[-p previous-tarball]
+		[-b] [-s] [-f]
 EOF
     exit 1
 }
@@ -101,6 +104,13 @@ build_sources() {
     || error "Could not create \`${WORKING_DIRECTORY}'"
   changedir "${WORKING_DIRECTORY}"
 
+  if [ -n "${TAG}" ]; then
+    inform "Tagging release sources"
+    ${CVS} -z 9 rtag -r ${BRANCH} ${TAG} gcc || \
+      error "Could not tag release sources"
+    BRANCH=$TAG
+  fi
+
   # Export the current sources.
   inform "Retrieving release sources"
   ${CVS} \
@@ -116,9 +126,14 @@ build_sources() {
   # files that are supposed to go in the source directory.  This is
   # also a good sanity check to make sure that the release builds
   # on at least one platform.
-  inform "Building compiler"
-  contrib/gcc_build -d ${SOURCE_DIRECTORY} -o ../objdir build || \
-    error "Could not rebuild GCC"
+  if [ $SNAPSHOT -ne 1 ]; then
+    inform "Building compiler"
+    contrib/gcc_build -d ${SOURCE_DIRECTORY} -o ../objdir build || \
+      error "Could not rebuild GCC"
+  fi
+
+  # Move message catalogs to source directory.
+  mv ../objdir/gcc/po/*.gmo gcc/po/
 
   # Create a `.brik' file to use for checking the validity of the
   # release.
@@ -143,12 +158,13 @@ build_tarfile() {
   # Build the tar file itself.
   (${TAR} cf - "$@" | ${GZIP} > ${TARFILE}) || \
     error "Could not build tarfile"
+  FILE_LIST="${FILE_LIST} ${TARFILE}"
 }
 
 # Build the various tar files for the release.
 
 build_tarfiles() {
-  inform "Building tafiles"
+  inform "Building tarfiles"
 
   changedir "${WORKING_DIRECTORY}"
 
@@ -170,6 +186,56 @@ build_tarfiles() {
   done
   build_tarfile gcc-core-${RELEASE} ${EXCLUDES} \
     `basename ${SOURCE_DIRECTORY}`
+
+  # Possibly build diffs.
+  if [ -n "$OLD_TARS" ]; then
+    for old_tar in $OLD_TARS; do
+      build_diffs $old_tar
+    done
+  fi
+
+  # Possibly build .bz2 files.
+  if [ $CREATE_BZIP2 -ne 0 ]; then
+    for f in ${FILE_LIST}; do
+      bzfile=${f%.gz}.bz2
+      zcat $f | ${BZIP2} > ${bzfile}
+      FILE_LIST="${FILE_LIST} ${bzfile}"
+    done
+  fi
+}
+
+# Build diffs against an old release.
+build_diffs() {
+  old_dir=${1%/*}
+  old_file=${1##*/}
+  old_vers=${old_file%.tar.gz}
+  old_vers=${old_vers#gcc-}
+  inform "Building diffs against version $old_vers"
+  for f in gcc gcc-g++ gcc-g77 gcc-java gcc-objc gcc-testsuite gcc-core; do
+    old_tar=${old_dir}/${f}-${old_vers}.tar.gz
+    new_tar=${WORKING_DIRECTORY}/${f}-${RELEASE}.tar.gz
+    if [ -e $old_tar ] && [ -e $new_tar ]; then
+      build_diff $old_tar gcc-${old_vers} $new_tar gcc-${RELEASE} \
+        ${f}-${old_vers}-${RELEASE}.diff.gz
+    fi
+  done
+}
+
+# Build an individual diff.
+build_diff() {
+  changedir "${WORKING_DIRECTORY}"
+  tmpdir=gccdiff.$$
+  mkdir $tmpdir || error "Could not create directory $tmpdir"
+  changedir $tmpdir
+  tar xfz $1 || error "Could not unpack $1 for diffs"
+  tar xfz $3 || error "Could not unpack $3 for diffs"
+  ${DIFF} $2 $4 | ${GZIP} > ../$5
+  if [ $? -eq 2 ]; then
+    error "Trouble making diffs from $1 to $3"
+  fi
+  changedir ..
+  rm -rf $tmpdir
+  FILE_LIST="${FILE_LIST} $5"
 }
 
 # Upload the files to the FTP server.
@@ -180,9 +246,11 @@ upload_files() {
   changedir "${WORKING_DIRECTORY}"
 
   # Copy the tar files to the FTP server.
-  for x in "" g++- g77- java- objc- testsuite- core-; do
-    ${SCP} gcc-${x}${RELEASE}.tar.gz ${FTP_PATH} || \
-      error "Could not upload gcc-${x}${RELEASE}.tar.gz"
+  for x in gcc*.gz gcc*.bz2; do
+    if [ -e ${x} ]; then
+      ${SCP} ${x} ${FTP_PATH} || \
+        error "Could not upload ${x}"
+    fi
   done
 }
 
@@ -220,6 +288,12 @@ RELEASE=""
 # The name of the branch from which the release should be made.
 BRANCH=""
 
+# The tag to apply to the sources used for the release.
+TAG=""
+
+# The old tarballs from which to generate diffs.
+OLD_TARS=""
+
 # The directory that will be used to construct the release.  The
 # release itself will be placed in a subdirectory of this diretory.
 DESTINATION=${HOME}
@@ -239,14 +313,26 @@ TESTSUITE_DIRS="gcc/testsuite"
 # Non-zero if this is the final release, rather than a prerelease.
 FINAL=0
 
+# Non-zero if we create .bz2 files.
+CREATE_BZIP2=0
+
+# Non-zero if we are building a snapshot, and don't build gcc or
+# include generated files.
+SNAPSHOT=0
+
 # Major operation modes.
 MODE_SOURCES=0
 MODE_TARFILES=0
 MODE_UPLOAD=0
 
+# Files generated to upload.
+FILE_LIST=""
+
 # Programs we use.
 
+BZIP2="${BZIP2:-bzip2}"
 CVS="${CVS:-cvs -f -Q}"
+DIFF="${DIFF:-diff -Nrc3pad}"
 GZIP="${GZIP:-gzip --best}"
 SCP="${SCP:-scp}"
 TAR="${TAR:-tar}"
@@ -256,12 +342,16 @@ TAR="${TAR:-tar}"
 ########################################################################
 
 # Parse the options.
-while getopts "d:f:r:u:" ARG; do
+while getopts "d:fr:u:t:p:bs" ARG; do
     case $ARG in
     d)    DESTINATION="${OPTARG}";;
     r)    RELEASE="${OPTARG}";;
+    t)    TAG="${OPTARG}";;
     u)    CVS_USERNAME="${OPTARG}";;
     f)    FINAL=1;;
+    b)    CREATE_BZIP2=1;;
+    s)    SNAPSHOT=1;;
+    p)    OLD_TARS="${OLD_TARS} ${OPTARG}";;
     \?)   usage;;
     esac
 done

@@ -1,3 +1,10 @@
+2001-05-27  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc_release: Support creating diffs.  Support creating .bz2
+	files.  Support creating CVS tags.  Support creating snapshots
+	without generated files.  Move generated .gmo files to the source
+	directory.  Update comments.  Fix typos.
+
 2001-05-21  Mark Mitchell  <mark@codesourcery.com>
 
 	* gcc_build: Use -d when invoking gcc_update.
