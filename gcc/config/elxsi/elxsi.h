@@ -573,13 +573,17 @@ enum reg_class { NO_REGS, GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES };
   if (GET_CODE (X) == REG) goto ADDR;					\
   if (CONSTANT_ADDRESS_P (X)) goto ADDR; 				\
   if (GET_CODE (X) == PLUS)						\
-    { /* Handle [index]<address> represented with index-sum outermost */\
-      if (GET_CODE (XEXP (X, 0)) == REG && \
-	  GET_CODE (XEXP (X, 1)) == CONST_INT) \
+    {									\
+      /* Handle [index]<address> represented with index-sum outermost */\
+      if (GET_CODE (XEXP (X, 0)) == REG					\
+	  && REG_OK_FOR_BASE_P (XEXP (X, 0))				\
+	  && GET_CODE (XEXP (X, 1)) == CONST_INT)			\
 	goto ADDR;							\
-      if (GET_CODE (XEXP (X, 1)) == REG && \
-	  GET_CODE (XEXP (X, 0)) == CONST_INT) \
-	goto ADDR; } \
+      if (GET_CODE (XEXP (X, 1)) == REG					\
+	  && REG_OK_FOR_BASE_P (XEXP (X, 0))				\
+	  && GET_CODE (XEXP (X, 0)) == CONST_INT)			\
+	goto ADDR;							\
+    }									\
  }
 
 
