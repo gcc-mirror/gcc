@@ -1,3 +1,7 @@
+2004-07-11  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* LANGUAGES: Remove obsolete information.
+
 2004-07-11  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/linux.h (MD_FALLBACK_FRAME_STATE_FOR): For SIGSEGV and 
