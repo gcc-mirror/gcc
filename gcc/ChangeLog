@@ -1,3 +1,8 @@
+2001-11-26  Ian Lance Taylor  <ian@zembu.com>
+
+	* config/i386/i386.md (movstrsi): Use strmovqi rather than
+	strmovsi for final byte move.
+
 2001-11-26  Alan Modra  <amodra@bigpond.net.au>
 
 	* final.c: (insn_lengths): Make it an int *, so that large jump
