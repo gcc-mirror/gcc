@@ -66,7 +66,8 @@
 #       poisoning			empoisonnement
 # msgid "poisoning existing macro \"%s\""
 # msgstr "empoisonnement de la macro existente « %s »"
-# MR 9-jan 2004: poisoning etc... transformé par corruption corrompu etc..
+# MR  9-jan 2004: poisoning etc... transformé par corruption corrompu etc..
+# MR 24-mai 2004: poison etc...suite au msg concernant le #pragma once et #pragma poison 
 #
 # Autres règles:
 # 	- j'ai ajouté un adjectif par rapport à l'anglais si le message est
@@ -81,7 +82,7 @@
 #   - s/en-ligne/enligne/  modifié 18-février-2004 MR pcq expression ou terme enlignage vs inlining
 #   - hors gamme  a été changé pour hors limite ...MR 09-jan-2004
 #   - literal
-#   - chaine de format => formatage
+#   - chaîne de format => formatage
 #   - scope
 #   - supporté est un faux ami
 #
@@ -118,7 +119,7 @@ msgstr ""
 "Project-Id-Version: GNU gcc 3.4.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2004-04-18 18:00-0700\n"
-"PO-Revision-Date: 2004-05-15 15:00-0500\n"
+"PO-Revision-Date: 2004-05-24 20:00-0500\n"
 "Last-Translator: Michel Robitaille <robitail@IRO.UMontreal.CA>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "MIME-Version: 1.0\n"
@@ -4653,7 +4654,7 @@ msgstr "directive #ident invalide"
 #: cpplib.c:1027
 #, c-format
 msgid "registering \"%s\" as both a pragma and a pragma namespace"
-msgstr "enregistrement de \"%s\" à la fois comme une pragma un espace de nom de pragma"
+msgstr "enregistrement de \"%s\" à la fois comme une pragma et un espace de nom de pragma"
 
 #: cpplib.c:1030
 #, c-format
@@ -4668,18 +4669,18 @@ msgstr "la #pragma %s est déjà enregistrée"
 # FIXME
 #: cpplib.c:1175
 msgid "#pragma once in main file"
-msgstr "#pragma utilisé une seule fois dans le fichier principal"
+msgstr "#pragma once utilisée une seule fois dans le fichier principal"
 
 # FIXME
 #: cpplib.c:1198
 msgid "invalid #pragma GCC poison directive"
-msgstr "la directive corrompue #pragma GCC est invalide"
+msgstr "la directive GCC #pragma poison est invalide"
 
 # FIXME
 #: cpplib.c:1207
 #, c-format
 msgid "poisoning existing macro \"%s\""
-msgstr "corruption de la macro existente « %s »"
+msgstr "élimination de la macro existente « %s »"
 
 #: cpplib.c:1228
 msgid "#pragma system_header ignored outside include file"
@@ -7522,27 +7523,27 @@ msgstr "trop d'options pour #pragma pour align=reset"
 #: config/darwin-c.c:95 config/darwin-c.c:98 config/darwin-c.c:100
 #: config/darwin-c.c:102
 msgid "malformed '#pragma options', ignoring"
-msgstr "'#pragma options» mal composé, ignoré"
+msgstr "« #pragma options » mal composé, ignoré"
 
 #: config/darwin-c.c:105
 msgid "junk at end of '#pragma options'"
-msgstr "rebut à la fin de '#pragma options'"
+msgstr "rebut à la fin de « #pragma options »"
 
 #: config/darwin-c.c:115
 msgid "malformed '#pragma options align={mac68k|power|reset}', ignoring"
-msgstr "'#pragma options align={mac68k|power|reset}» mal composé, ignoré"
+msgstr "« #pragma options align={mac68k|power|reset} » mal composé, ignoré"
 
 #: config/darwin-c.c:127
 msgid "missing '(' after '#pragma unused', ignoring"
-msgstr "«(» manquante après '#pragma unused', ignoré"
+msgstr "« ( » manquante après « #pragma unused », ignoré"
 
 #: config/darwin-c.c:145
 msgid "missing ')' after '#pragma unused', ignoring"
-msgstr "«(» manquante après '#pragma unused', ignoré"
+msgstr "« ( » manquante après « #pragma unused », ignoré"
 
 #: config/darwin-c.c:148
 msgid "junk at end of '#pragma unused'"
-msgstr "rebut à la fin de '#pragma unused'"
+msgstr "rebut à la fin de « #pragma unused »"
 
 #: config/darwin.c:1347
 msgid "internal and protected visibility attributes not supportedin this configuration; ignored"
@@ -21855,7 +21856,7 @@ msgstr "mno-cygwin et mno-win32 ne sont pas compatibles"
 
 # FIXME
 #~ msgid "#pragma once is obsolete"
-#~ msgstr "utiliser #pragma une seule fois est obsolète"
+#~ msgstr "utiliser #pragma once est obsolète"
 
 #~ msgid "the conditional began here"
 #~ msgstr "la condition débute ici"
