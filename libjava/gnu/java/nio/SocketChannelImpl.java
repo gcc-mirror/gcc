@@ -174,7 +174,7 @@ public final class SocketChannelImpl extends SocketChannel
     if (!isOpen())
       throw new ClosedChannelException();
     
-    if (!connectionPending)
+    if (!isConnected() && !connectionPending)
       throw new NoConnectionPendingException();
     
     if (isConnected())
