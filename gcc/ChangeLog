@@ -1,3 +1,7 @@
+2000-06-24  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cpp.texi: Clarify #pragma GCC namespace.	
+
 2000-06-24  Philipp Thomas  <pthomas@suse.de>
 
 	* aclocal.m4(AM_GNU_GETTEXT): If LINGUAS isn't set, build
