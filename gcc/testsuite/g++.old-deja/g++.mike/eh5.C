@@ -14,7 +14,7 @@ int main(void)
   try {
     f.cause_error();
   }
-  catch (char cp[]) {
+  catch (const char cp[]) {
     return 0;
   }
   return 1;
