@@ -1462,9 +1462,9 @@ literal_section ()						\
 /* This is how to output an assembler line defining an `int' constant.  */
 
 #define ASM_OUTPUT_INT(FILE,VALUE)  		\
-( fprintf (FILE, "\t.long "),			\
-  output_addr_const (FILE, (VALUE)),		\
-  fprintf (FILE, "\n"))
+  fprintf (FILE, "\t.long %d\n",		\
+    (GET_CODE (VALUE) == CONST_INT		\
+     ? INTVAL (VALUE) & 0xffffffff : (abort (), 0)))
 
 /* This is how to output an assembler line defining a `long' constant.  */
 
@@ -1476,14 +1476,14 @@ literal_section ()						\
 /* Likewise for `char' and `short' constants.  */
 
 #define ASM_OUTPUT_SHORT(FILE,VALUE)  \
-( fprintf (FILE, "\t.word "),			\
-  output_addr_const (FILE, (VALUE)),		\
-  fprintf (FILE, "\n"))
+  fprintf (FILE, "\t.short %d\n",		\
+    (GET_CODE (VALUE) == CONST_INT		\
+     ? INTVAL (VALUE) & 0xffff : (abort (), 0)))
 
 #define ASM_OUTPUT_CHAR(FILE,VALUE)		\
-( fprintf (FILE, "\t.byte "),			\
-  output_addr_const (FILE, (VALUE)),		\
-  fprintf (FILE, "\n"))
+  fprintf (FILE, "\t.byte %d\n",		\
+    (GET_CODE (VALUE) == CONST_INT		\
+     ? INTVAL (VALUE) & 0xff : (abort (), 0)))
 
 /* We use the default ASCII-output routine, except that we don't write more
    than 50 characters since the assembler doesn't support very long lines.  */
@@ -1548,7 +1548,7 @@ literal_section ()						\
 /* This is how to output an assembler line for a numeric constant byte.  */
 
 #define ASM_OUTPUT_BYTE(FILE,VALUE)  \
-  fprintf (FILE, "\t.byte 0x%x\n", (VALUE))
+  fprintf (FILE, "\t.byte 0x%x\n", (VALUE) & 0xff)
 
 /* This is how to output an element of a case-vector that is absolute.  */
 
