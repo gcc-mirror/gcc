@@ -2334,8 +2334,7 @@ compile_file (name)
 
   /* In case there were missing block closers,
      get us back to the global binding level.  */
-  while (! global_bindings_p ())
-    poplevel (0, 0, 0);
+  (*lang_hooks.clear_binding_stack) ();
 
   /* Compilation is now finished except for writing
      what's left of the symbol table output.  */

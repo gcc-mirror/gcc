@@ -1,3 +1,8 @@
+2001-10-25  Zack Weinberg  <zack@codesourcery.com>
+
+	* cp-lang.c: Redefine LANG_HOOKS_CLEAR_BINDING_STACK to
+	pop_everything.
+
 Tue Oct 23 14:00:20 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* cp-lang.c (cxx_get_alias_set): New function.
@@ -108,7 +113,7 @@ Tue Oct 23 14:00:20 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-10-10  Richard Henderson  <rth@redhat.com>
 
-        * parse.y (asm_operand): Allow named operands.
+	* parse.y (asm_operand): Allow named operands.
 	* semantics.c (finish_asm_stmt): Tweek for changed location
 	of the operand constrant.
 
@@ -144,7 +149,7 @@ Tue Oct 23 14:00:20 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* class.c (build_vtable_entry_ref): Const-ify.
 	* decl.c (predefined_identifier,
-	initialize_predefined_identifiers): Likewise. 
+	initialize_predefined_identifiers): Likewise.
 	* init.c (build_new_1): Likewise.
 	* lex.c (cplus_tree_code_type, cplus_tree_code_length, resword):
 	Likewise.
