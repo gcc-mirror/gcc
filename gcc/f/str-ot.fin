@@ -22,26 +22,29 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 }
 
 FFESTR_other // // ffestrOther ffestr_other 1 1
-;And AND
+And AND
 ;Dimension DIMENSION
-;Eq EQ
-;Eqv EQV
-;Ge GE
-;Gt GT
+Eq EQ
+Eqv EQV
+False FALSE
+GE GE
+GT GT
 In IN
 InOut INOUT
 Kind KIND
-;Le LE
+LE LE
 Len LEN
-;Lt LT
-;Ne NE
-;Neqv NEQV
-;Not NOT
+LT LT
+NE NE
+NEqv NEQV
+Not NOT
 ;Only ONLY
-;Or OR
+Or OR
 Out OUT
 ;Pointer POINTER
 ;Private PRIVATE
 ;Public PUBLIC
 Result RESULT
 ;Stat STAT
+True TRUE
+XOr XOR
