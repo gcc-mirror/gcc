@@ -1462,14 +1462,6 @@ build_offset_ref (tree type, tree name, bool address_p)
       return error_mark_node;
     }
 
-  if (processing_template_decl)
-    {
-      if (TREE_CODE (orig_name) == TEMPLATE_ID_EXPR)
-	return build_min (SCOPE_REF, TREE_TYPE (member), type, orig_name);
-      else
-	return build_min (SCOPE_REF, TREE_TYPE (member), type, name);
-    }
-
   if (TREE_CODE (member) == TYPE_DECL)
     {
       TREE_USED (member) = 1;

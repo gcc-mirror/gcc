@@ -12236,7 +12236,8 @@ build_non_dependent_expr (tree expr)
   if (TREE_CODE (inner_expr) == OVERLOAD 
       || TREE_CODE (inner_expr) == FUNCTION_DECL
       || TREE_CODE (inner_expr) == TEMPLATE_DECL
-      || TREE_CODE (inner_expr) == TEMPLATE_ID_EXPR)
+      || TREE_CODE (inner_expr) == TEMPLATE_ID_EXPR
+      || TREE_CODE (inner_expr) == OFFSET_REF)
     return expr;
   /* Preserve string constants; conversions from string constants to
      "char *" are allowed, even though normally a "const char *"

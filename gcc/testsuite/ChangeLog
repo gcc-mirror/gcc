@@ -1,3 +1,8 @@
+2005-03-06  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/19311
+	* g++.dg/template/non-dependent11.C: New test.
+
 2005-03-04  David Billinghurst  <David.Billinghurst@riotinto.com>
 
 	* gcc.dg/cpp/assert4.c:  Fix for cygwin
