@@ -1957,7 +1957,7 @@ compiler knows that both source and destination are word-aligned,
 it may provide the value 4 for this operand.
 
 Descriptions of multiple @code{movstr@var{m}} patterns can only be
-beneficial if the patterns for smaller modes have less restrictions
+beneficial if the patterns for smaller modes have fewer restrictions
 on their first, second and fourth operands.  Note that the mode @var{m}
 in @code{movstr@var{m}} does not impose any restriction on the mode of
 individually moved data units in the block.
