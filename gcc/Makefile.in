@@ -873,10 +873,10 @@ stamp-objlist: $(OBJS)
 # We call this executable `xgcc' rather than `gcc'
 # to avoid confusion if the current directory is in the path
 # and CC is `gcc'.  It is renamed to `gcc' when it is installed.
-xgcc$(exeext): gcc.o version.o choose-temp.o intl.o pexecute.o prefix.o \
-   version.o mkstemp.o $(LIBDEPS) $(EXTRA_GCC_OBJS)
+xgcc$(exeext): gcc.o version.o intl.o prefix.o \
+   version.o $(LIBDEPS) $(EXTRA_GCC_OBJS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ gcc.o prefix.o version.o \
-	  choose-temp.o pexecute.o mkstemp.o $(EXTRA_GCC_OBJS) $(LIBS)
+	  $(EXTRA_GCC_OBJS) $(LIBS)
 
 # Dump a specs file to make -B./ read these specs over installed ones.
 specs: xgcc$(exeext)
@@ -1337,11 +1337,11 @@ graph.o: graph.c $(CONFIG_H) system.h toplev.h flags.h output.h $(RTL_H) \
     hard-reg-set.h $(BASIC_BLOCK_H)
 sbitmap.o: sbitmap.c $(CONFIG_H) system.h $(RTL_H) flags.h $(BASIC_BLOCK_H)
 
-collect2$(exeext): collect2.o tlink.o hash.o cplus-dem.o underscore.o \
-	version.o choose-temp.o mkstemp.o $(LIBDEPS)
+collect2$(exeext): collect2.o tlink.o hash.o underscore.o \
+	version.o $(LIBDEPS)
 
-COLLECT2_OBJS = collect2.o tlink.o hash.o choose-temp.o cplus-dem.o \
- intl.o underscore.o version.o mkstemp.o 
+COLLECT2_OBJS = collect2.o tlink.o hash.o \
+ intl.o underscore.o version.o 
 collect2 : $(COLLECT2_OBJS) $(LIBDEPS)
 # Don't try modifying collect2 (aka ld) in place--it might be linking this.
 	-rm -f collect2$(exeext)
@@ -1355,16 +1355,6 @@ collect2.o : collect2.c $(CONFIG_H) system.h gstab.h intl.h \
 
 tlink.o: tlink.c $(DEMANGLE_H) hash.h $(CONFIG_H) system.h toplev.h collect2.h
 hash.o: hash.c hash.h system.h toplev.h
-
-cplus-dem.o: $(srcdir)/../libiberty/cplus-dem.c $(DEMANGLE_H)
-	rm -f cplus-dem.c
-	$(LN_S) $(srcdir)/../libiberty/cplus-dem.c cplus-dem.c
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) cplus-dem.c
-
-pexecute.o: $(srcdir)/../libiberty/pexecute.c $(CONFIG_H) system.h
-	rm -f pexecute.c
-	$(LN_S) $(srcdir)/../libiberty/pexecute.c pexecute.c
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) pexecute.c
 
 vfprintf.o: $(srcdir)/../libiberty/vfprintf.c $(CONFIG_H) system.h
 	rm -f vfprintf.c
@@ -1432,16 +1422,6 @@ obstack.o: $(srcdir)/../libiberty/obstack.c $(CONFIG_H)
 	rm -f obstack.c
 	$(LN_S) $(srcdir)/../libiberty/obstack.c obstack.c
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) obstack.c
-
-choose-temp.o: $(srcdir)/../libiberty/choose-temp.c $(CONFIG_H) system.h
-	rm -f choose-temp.c
-	$(LN_S) $(srcdir)/../libiberty/choose-temp.c choose-temp.c
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) choose-temp.c
-
-mkstemp.o: $(srcdir)/../libiberty/mkstemp.c $(CONFIG_H) system.h
-	rm -f mkstemp.c
-	$(LN_S) $(srcdir)/../libiberty/mkstemp.c mkstemp.c
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) mkstemp.c
 
 prefix.o: prefix.c $(CONFIG_H) system.h Makefile prefix.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
@@ -2021,8 +2001,7 @@ cppalloc.o: cppalloc.c $(CONFIG_H) cpplib.h machmode.h system.h
 
 proto: config.status protoize$(exeext) unprotoize$(exeext) SYSCALLS.c.X
 
-PROTO_OBJS = choose-temp.o getopt.o getopt1.o getpwd.o \
-  intl.o pexecute.o version.o mkstemp.o
+PROTO_OBJS = getpwd.o intl.o version.o 
 
 protoize$(exeext): protoize.o $(PROTO_OBJS) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ protoize.o $(PROTO_OBJS) $(LIBS)
@@ -2051,16 +2030,6 @@ unprotoize.o: unprotoize.c protoize.c $(srcdir)/../include/getopt.h \
 	  -DLOCAL_INCLUDE_DIR=\"$(includedir)\" \
 	  -DSTD_PROTO_DIR=\"$(libsubdir)\" \
 	  $(srcdir)/unprotoize.c
-
-getopt.o: $(srcdir)/../libiberty/getopt.c $(srcdir)/../include/getopt.h
-	rm -f getopt.c
-	$(LN_S) $(srcdir)/../libiberty/getopt.c getopt.c
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) getopt.c
-
-getopt1.o: $(srcdir)/../libiberty/getopt1.c $(srcdir)/../include/getopt.h
-	rm -f getopt1.c
-	$(LN_S) $(srcdir)/../libiberty/getopt1.c getopt1.c
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) getopt1.c
 
 # This info describes the target machine, so compile with GCC just built.
 SYSCALLS.c.X: $(srcdir)/sys-types.h $(srcdir)/sys-protos.h $(GCC_PASSES) \

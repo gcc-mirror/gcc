@@ -6,6 +6,13 @@ Wed Feb  3 21:56:27 1999  Jeffrey A Law  (law@cygnus.com)
 
 Wed Feb  3 21:55:56 1999  Marc Espie <Marc.Espie@liafa.jussieu.fr>
 
+	* Makefile.in (xgcc$(exeext)): Remove choose-temp, pexecute and
+	mkstemp.  Get them from libiberty.
+	(COLLECT2_OBJS): Similarly for choose-temp, cplus-dem and mkstemp.
+	(PROTO_OBJS): Similarly for choose-temp, getopt, getopt1 and pexecute.
+	(cplus-dem.o, pexecute.o, choose-temp.o): Remove build rules.
+	(mkstemp.o, getopt1.o, getopt.o): Likewise.
+
 	* pa-gas.h (TARGET_DEFAULT): Use symbolic values rather than numeric
 	values.
 	* pa-hpux.h (LINK_SPEC): Likewise.
