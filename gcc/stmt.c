@@ -4253,9 +4253,7 @@ mark_seen_cases (type, cases_seen, count, sparseness)
 			      &xlo, &xhi);
 		}
 	      
-	      if (xhi != 0 || xlo < 0 || xlo >= count)
-		fatal ("internal error - mark_cases_seen");
-	      else
+	      if (xhi == 0 && xlo >= 0 && xlo < count)
 		BITARRAY_SET (cases_seen, xlo);
 	    }
 	  add_double (TREE_INT_CST_LOW (val), TREE_INT_CST_HIGH (val),
