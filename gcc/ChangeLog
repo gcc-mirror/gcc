@@ -1,5 +1,10 @@
 2004-06-09  Richard Henderson  <rth@redhat.com>
 
+	* config/alpha/alpha.c (alpha_gimplify_va_arg_1,
+	alpha_gimplify_va_arg, TARGET_GIMPLIFY_VA_ARG_EXPR): New.
+
+2004-06-09  Richard Henderson  <rth@redhat.com>
+
 	* expmed.c (emit_store_flag): Cope with FLOAT_STORE_FLAG_VALUE.
 
 2004-06-09  Geoffrey Keating  <geoffk@apple.com>
