@@ -1,3 +1,18 @@
+2000-12-01  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* src/cmath.cc: Remove.
+	* src/Makefile.am (c_base_headers): Add bits/cmath.tcc.
+	(sources): Remove cmath.cc
+	* src/Makefile.in: Regenerate.
+
+	* include/c/bits/std_cmath.h (__cmath_power<>): Declare.
+	(__cmath_abs<>): New function.
+	(abs, fabs): Use __cmath_abs when no direct support is available.
+	(__pow_helper<>): New function.
+	(pow): Define here.  Use __pow_helper<>.
+
+	* include/c/bits/cmath.tcc: New file.
+
 2000-11-29  Benjamin Kosnik  <bkoz@redhat.com>
 
 	Fixes for build directories with colons, AIX build problems.
