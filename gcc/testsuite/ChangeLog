@@ -1,3 +1,7 @@
+2004-10-07  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.c-torture/compile/20041007-1.c: New test.
+
 2004-09-27  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/17585

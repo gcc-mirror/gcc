@@ -865,6 +865,18 @@ fixup_fallthru_exit_predecessor (void)
     {
       basic_block c = ENTRY_BLOCK_PTR->next_bb;
 
+      /* If the very first block is the one with the fall-through exit
+	 edge, we have to split that block.  */
+      if (c == bb)
+	{
+	  bb = split_block (bb, NULL)->dest;
+	  cfg_layout_initialize_rbi (bb);
+	  bb->rbi->next = c->rbi->next;
+	  c->rbi->next = bb;
+	  bb->rbi->footer = c->rbi->footer;
+	  c->rbi->footer = NULL;
+	}
+
       while (c->rbi->next != bb)
 	c = c->rbi->next;
 

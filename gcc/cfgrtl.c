@@ -483,9 +483,21 @@ rtl_split_block (basic_block bb, void *insnp)
   edge e;
   rtx insn = insnp;
 
-  /* There is no point splitting the block after its end.  */
-  if (BB_END (bb) == insn)
-    return 0;
+  if (!insn)
+    {
+      insn = first_insn_after_basic_block_note (bb);
+
+      if (insn)
+	insn = PREV_INSN (insn);
+      else
+	insn = get_last_insn ();
+    }
+
+  /* We probably should check type of the insn so that we do not create
+     inconsistent cfg.  It is checked in verify_flow_info anyway, so do not
+     bother.  */
+  if (insn == BB_END (bb))
+    emit_note_after (NOTE_INSN_DELETED, insn);
 
   /* Create the new basic block.  */
   new_bb = create_basic_block (NEXT_INSN (insn), BB_END (bb), bb);
