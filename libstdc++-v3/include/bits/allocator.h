@@ -49,8 +49,8 @@
 #define _ALLOCATOR_H 1
 
 #if 1
-# include <ext/mt_allocator.h>
-# define __glibcxx_default_allocator  __gnu_cxx::__mt_alloc
+# include <ext/new_allocator.h>
+# define __glibcxx_default_allocator  __gnu_cxx::new_allocator
 #endif
 
 #if 0

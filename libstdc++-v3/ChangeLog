@@ -1,3 +1,8 @@
+2004-01-29  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/allocator.h: Temporary switch to new_allocator as
+	the default to unjam bootstraps.
+	
 2004-01-28  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/Makefile.am (bits_headers): Remove allocator_traits.h.
