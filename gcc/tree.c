@@ -200,7 +200,7 @@ tree_size (tree node)
    Achoo!  I got a code in the node.  */
 
 tree
-make_node (enum tree_code code)
+make_node_stat (enum tree_code code MEM_STAT_DECL)
 {
   tree t;
   int type = TREE_CODE_CLASS (code);
@@ -269,7 +269,7 @@ make_node (enum tree_code code)
   tree_node_sizes[(int) kind] += length;
 #endif
 
-  t = ggc_alloc_tree (length);
+  t = ggc_alloc_zone_stat (length, tree_zone PASS_MEM_STAT);
 
   memset (t, 0, length);
 
@@ -340,14 +340,14 @@ make_node (enum tree_code code)
    TREE_CHAIN is zero and it has a fresh uid.  */
 
 tree
-copy_node (tree node)
+copy_node_stat (tree node MEM_STAT_DECL)
 {
   tree t;
   enum tree_code code = TREE_CODE (node);
   size_t length;
 
   length = tree_size (node);
-  t = ggc_alloc_tree (length);
+  t = ggc_alloc_zone_stat (length, tree_zone PASS_MEM_STAT);
   memcpy (t, node, length);
 
   TREE_CHAIN (t) = 0;
@@ -554,7 +554,7 @@ build_complex (tree type, tree real, tree imag)
 /* Build a newly constructed TREE_VEC node of length LEN.  */
 
 tree
-make_tree_vec (int len)
+make_tree_vec_stat (int len MEM_STAT_DECL)
 {
   tree t;
   int length = (len - 1) * sizeof (tree) + sizeof (struct tree_vec);
@@ -564,9 +564,10 @@ make_tree_vec (int len)
   tree_node_sizes[(int) vec_kind] += length;
 #endif
 
-  t = ggc_alloc_tree (length);
+  t = ggc_alloc_zone_stat (length, tree_zone PASS_MEM_STAT);
 
   memset (t, 0, length);
+
   TREE_SET_CODE (t, TREE_VEC);
   TREE_VEC_LENGTH (t) = len;
 
@@ -1024,9 +1025,9 @@ nreverse (tree t)
    purpose and value fields are PARM and VALUE.  */
 
 tree
-build_tree_list (tree parm, tree value)
+build_tree_list_stat (tree parm, tree value MEM_STAT_DECL)
 {
-  tree t = make_node (TREE_LIST);
+  tree t = make_node_stat (TREE_LIST PASS_MEM_STAT);
   TREE_PURPOSE (t) = parm;
   TREE_VALUE (t) = value;
   return t;
@@ -1037,11 +1038,12 @@ build_tree_list (tree parm, tree value)
    and whose TREE_CHAIN is CHAIN.  */
 
 tree
-tree_cons (tree purpose, tree value, tree chain)
+tree_cons_stat (tree purpose, tree value, tree chain MEM_STAT_DECL)
 {
   tree node;
 
-  node = ggc_alloc_tree (sizeof (struct tree_list));
+  node = ggc_alloc_zone_stat (sizeof (struct tree_list),
+			      tree_zone PASS_MEM_STAT);
 
   memset (node, 0, sizeof (struct tree_common));
 
@@ -2296,7 +2298,7 @@ stabilize_reference_1 (tree e)
    magic within the build macro.  */
 
 tree
-build0 (enum tree_code code, tree tt)
+build0_stat (enum tree_code code, tree tt MEM_STAT_DECL)
 {
   tree t;
 
@@ -2305,14 +2307,14 @@ build0 (enum tree_code code, tree tt)
     abort ();
 #endif
 
-  t = make_node (code);
+  t = make_node_stat (code PASS_MEM_STAT);
   TREE_TYPE (t) = tt;
 
   return t;
 }
 
 tree
-build1 (enum tree_code code, tree type, tree node)
+build1_stat (enum tree_code code, tree type, tree node MEM_STAT_DECL)
 {
   int length = sizeof (struct tree_exp);
 #ifdef GATHER_STATISTICS
@@ -2343,7 +2345,7 @@ build1 (enum tree_code code, tree type, tree node)
     abort ();
 #endif /* ENABLE_CHECKING */
 
-  t = ggc_alloc_tree (length);
+  t = ggc_alloc_zone_stat (length, tree_zone PASS_MEM_STAT);
 
   memset (t, 0, sizeof (struct tree_common));
 
@@ -2429,7 +2431,7 @@ build1 (enum tree_code code, tree type, tree node)
   } while (0)
 
 tree
-build2 (enum tree_code code, tree tt, tree arg0, tree arg1)
+build2_stat (enum tree_code code, tree tt, tree arg0, tree arg1 MEM_STAT_DECL)
 {
   bool constant, read_only, side_effects;
   tree t;
@@ -2440,7 +2442,7 @@ build2 (enum tree_code code, tree tt, tree arg0, tree arg1)
     abort ();
 #endif
 
-  t = make_node (code);
+  t = make_node_stat (code PASS_MEM_STAT);
   TREE_TYPE (t) = tt;
 
   /* Below, we automatically set TREE_SIDE_EFFECTS and TREE_READONLY for the
@@ -2487,7 +2489,8 @@ build2 (enum tree_code code, tree tt, tree arg0, tree arg1)
 }
 
 tree
-build3 (enum tree_code code, tree tt, tree arg0, tree arg1, tree arg2)
+build3_stat (enum tree_code code, tree tt, tree arg0, tree arg1,
+	     tree arg2 MEM_STAT_DECL)
 {
   bool constant, read_only, side_effects;
   tree t;
@@ -2508,7 +2511,7 @@ build3 (enum tree_code code, tree tt, tree arg0, tree arg1, tree arg2)
     abort ();
 #endif
 
-  t = make_node (code);
+  t = make_node_stat (code PASS_MEM_STAT);
   TREE_TYPE (t) = tt;
 
   fro = first_rtl_op (code);
@@ -2525,8 +2528,8 @@ build3 (enum tree_code code, tree tt, tree arg0, tree arg1, tree arg2)
 }
 
 tree
-build4 (enum tree_code code, tree tt, tree arg0, tree arg1,
-	tree arg2, tree arg3)
+build4_stat (enum tree_code code, tree tt, tree arg0, tree arg1,
+	     tree arg2, tree arg3 MEM_STAT_DECL)
 {
   bool constant, read_only, side_effects;
   tree t;
@@ -2537,7 +2540,7 @@ build4 (enum tree_code code, tree tt, tree arg0, tree arg1,
     abort ();
 #endif
 
-  t = make_node (code);
+  t = make_node_stat (code PASS_MEM_STAT);
   TREE_TYPE (t) = tt;
 
   fro = first_rtl_op (code);
@@ -2631,11 +2634,11 @@ build_nt (enum tree_code code, ...)
    Other slots are initialized to 0 or null pointers.  */
 
 tree
-build_decl (enum tree_code code, tree name, tree type)
+build_decl_stat (enum tree_code code, tree name, tree type MEM_STAT_DECL)
 {
   tree t;
 
-  t = make_node (code);
+  t = make_node_stat (code PASS_MEM_STAT);
 
 /*  if (type == error_mark_node)
     type = integer_type_node; */

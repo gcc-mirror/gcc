@@ -2527,6 +2527,7 @@ finalize (void)
       dump_rtx_statistics ();
       dump_varray_statistics ();
       dump_alloc_pool_statistics ();
+      dump_ggc_loc_statistics ();
     }
 
   /* Free up memory for the benefit of leak detectors.  */

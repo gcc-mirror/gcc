@@ -173,11 +173,11 @@ rtvec_alloc (int n)
    all the rest is initialized to zero.  */
 
 rtx
-rtx_alloc (RTX_CODE code)
+rtx_alloc_stat (RTX_CODE code MEM_STAT_DECL)
 {
   rtx rt;
 
-  rt = ggc_alloc_rtx (code);
+  rt = ggc_alloc_typed_stat (gt_ggc_e_7rtx_def, RTX_SIZE (code) PASS_MEM_STAT);
 
   /* We want to clear everything up to the FLD array.  Normally, this
      is one int, but we don't want to assume that and it isn't very
@@ -309,11 +309,12 @@ copy_rtx (rtx orig)
 /* Create a new copy of an rtx.  Only copy just one level.  */
 
 rtx
-shallow_copy_rtx (rtx orig)
+shallow_copy_rtx_stat (rtx orig MEM_STAT_DECL)
 {
   rtx copy;
 
-  copy = ggc_alloc_rtx (GET_CODE (orig));
+  copy = ggc_alloc_typed_stat (gt_ggc_e_7rtx_def, RTX_SIZE (GET_CODE (orig))
+			       PASS_MEM_STAT);
   memcpy (copy, orig, RTX_SIZE (GET_CODE (orig)));
   return copy;
 }

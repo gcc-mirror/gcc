@@ -25,6 +25,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "machmode.h"
 #include "version.h"
 #include "input.h"
+#include "statistics.h"
 
 /* Codes of tree nodes */
 
@@ -2066,11 +2067,13 @@ extern size_t tree_size (tree);
    The TREE_CODE is the only argument.  Contents are initialized
    to zero except for a few of the common fields.  */
 
-extern tree make_node (enum tree_code);
+extern tree make_node_stat (enum tree_code MEM_STAT_DECL);
+#define make_node(t) make_node_stat (t MEM_STAT_INFO)
 
 /* Make a copy of a node, with all the same contents.  */
 
-extern tree copy_node (tree);
+extern tree copy_node_stat (tree MEM_STAT_DECL);
+#define copy_node(t) copy_node_stat (t MEM_STAT_INFO)
 
 /* Make a copy of a chain of TREE_LIST nodes.  */
 
@@ -2078,7 +2081,8 @@ extern tree copy_list (tree);
 
 /* Make a TREE_VEC.  */
 
-extern tree make_tree_vec (int);
+extern tree make_tree_vec_stat (int MEM_STAT_DECL);
+#define make_tree_vec(t) make_tree_vec_stat (t MEM_STAT_INFO)
 
 /* Return the (unique) IDENTIFIER_NODE node for a given name.
    The name is supplied as a char *.  */
@@ -2124,11 +2128,17 @@ extern tree build_nt (enum tree_code, ...);
 #define _buildC2(x,a1,a2,a3,a4,a5,a6,a7,a8,a9,c,...) c
 #endif
 
-extern tree build0 (enum tree_code, tree);
-extern tree build1 (enum tree_code, tree, tree);
-extern tree build2 (enum tree_code, tree, tree, tree);
-extern tree build3 (enum tree_code, tree, tree, tree, tree);
-extern tree build4 (enum tree_code, tree, tree, tree, tree, tree);
+extern tree build0_stat (enum tree_code, tree MEM_STAT_DECL);
+#define build0(c,t) build0_stat (c,t MEM_STAT_INFO)
+extern tree build1_stat (enum tree_code, tree, tree MEM_STAT_DECL);
+#define build1(c,t1,t2) build1_stat (c,t1,t2 MEM_STAT_INFO)
+extern tree build2_stat (enum tree_code, tree, tree, tree MEM_STAT_DECL);
+#define build2(c,t1,t2,t3) build2_stat (c,t1,t2,t3 MEM_STAT_INFO)
+extern tree build3_stat (enum tree_code, tree, tree, tree, tree MEM_STAT_DECL);
+#define build3(c,t1,t2,t3,t4) build3_stat (c,t1,t2,t3,t4 MEM_STAT_INFO)
+extern tree build4_stat (enum tree_code, tree, tree, tree, tree,
+			 tree MEM_STAT_DECL);
+#define build4(c,t1,t2,t3,t4,t5) build4_stat (c,t1,t2,t3,t4,t5 MEM_STAT_INFO)
 
 extern tree build_int_2_wide (unsigned HOST_WIDE_INT, HOST_WIDE_INT);
 extern tree build_vector (tree, tree);
@@ -2136,8 +2146,10 @@ extern tree build_constructor (tree, tree);
 extern tree build_real_from_int_cst (tree, tree);
 extern tree build_complex (tree, tree, tree);
 extern tree build_string (int, const char *);
-extern tree build_tree_list (tree, tree);
-extern tree build_decl (enum tree_code, tree, tree);
+extern tree build_tree_list_stat (tree, tree MEM_STAT_DECL);
+#define build_tree_list(t,q) build_tree_list_stat(t,q MEM_STAT_INFO)
+extern tree build_decl_stat (enum tree_code, tree, tree MEM_STAT_DECL);
+#define build_decl(c,t,q) build_decl_stat (c,t,q MEM_STAT_INFO)
 extern tree build_block (tree, tree, tree, tree, tree);
 extern tree build_expr_wfl (tree, const char *, int, int);
 
@@ -2495,7 +2507,8 @@ extern tree chainon (tree, tree);
 
 /* Make a new TREE_LIST node from specified PURPOSE, VALUE and CHAIN.  */
 
-extern tree tree_cons (tree, tree, tree);
+extern tree tree_cons_stat (tree, tree, tree MEM_STAT_DECL);
+#define tree_cons(t,q,w) tree_cons_stat (t,q,w MEM_STAT_INFO)
 
 /* Return the last tree node in a chain.  */
 

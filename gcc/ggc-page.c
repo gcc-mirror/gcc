@@ -1044,23 +1044,25 @@ static unsigned char size_lookup[257] =
 /* Typed allocation function.  Does nothing special in this collector.  */
 
 void *
-ggc_alloc_typed (enum gt_types_enum type ATTRIBUTE_UNUSED, size_t size)
+ggc_alloc_typed_stat (enum gt_types_enum type ATTRIBUTE_UNUSED, size_t size
+		      MEM_STAT_DECL)
 {
-  return ggc_alloc (size);
+  return ggc_alloc_stat (size PASS_MEM_STAT);
 }
 
 /* Zone allocation function.  Does nothing special in this collector.  */
 
 void *
-ggc_alloc_zone (size_t size, struct alloc_zone *zone ATTRIBUTE_UNUSED)
+ggc_alloc_zone_stat (size_t size, struct alloc_zone *zone ATTRIBUTE_UNUSED
+		     MEM_STAT_DECL)
 {
-  return ggc_alloc (size);
+  return ggc_alloc_stat (size PASS_MEM_STAT);
 }
 
 /* Allocate a chunk of memory of SIZE bytes.  Its contents are undefined.  */
 
 void *
-ggc_alloc (size_t size)
+ggc_alloc_stat (size_t size MEM_STAT_DECL)
 {
   size_t order, word, bit, object_offset, object_size;
   struct page_entry *entry;
@@ -1171,6 +1173,9 @@ ggc_alloc (size_t size)
       G.page_tails[order]->next = entry;
       G.page_tails[order] = entry;
     }
+#ifdef GATHER_STATISTICS
+  ggc_record_overhead (OBJECT_SIZE (order), OBJECT_SIZE (order) - size PASS_MEM_STAT);
+#endif
 
   /* Calculate the object's address.  */
   result = entry->page + object_offset;

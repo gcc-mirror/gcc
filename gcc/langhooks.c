@@ -562,4 +562,10 @@ lhd_callgraph_analyze_expr (tree *tp ATTRIBUTE_UNUSED,
   return NULL;
 }
 
+tree
+lhd_make_node (enum tree_code code)
+{
+  return make_node (code);
+}
+
 #include "gt-langhooks.h"

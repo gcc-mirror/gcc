@@ -129,22 +129,22 @@ ggc_mark_roots (void)
 
 /* Allocate a block of memory, then clear it.  */
 void *
-ggc_alloc_cleared (size_t size)
+ggc_alloc_cleared_stat (size_t size MEM_STAT_DECL)
 {
-  void *buf = ggc_alloc (size);
+  void *buf = ggc_alloc_stat (size PASS_MEM_STAT);
   memset (buf, 0, size);
   return buf;
 }
 
 /* Resize a block of memory, possibly re-allocating it.  */
 void *
-ggc_realloc (void *x, size_t size)
+ggc_realloc_stat (void *x, size_t size MEM_STAT_DECL)
 {
   void *r;
   size_t old_size;
 
   if (x == NULL)
-    return ggc_alloc (size);
+    return ggc_alloc_stat (size PASS_MEM_STAT);
 
   old_size = ggc_get_size (x);
 
@@ -166,7 +166,7 @@ ggc_realloc (void *x, size_t size)
       return x;
     }
 
-  r = ggc_alloc (size);
+  r = ggc_alloc_stat (size PASS_MEM_STAT);
 
   /* Since ggc_get_size returns the size of the pool, not the size of the
      individually allocated object, we'd access parts of the old object
@@ -759,5 +759,142 @@ init_ggc_heuristics (void)
 #if !defined ENABLE_GC_CHECKING && !defined ENABLE_GC_ALWAYS_COLLECT
   set_param_value ("ggc-min-expand", ggc_min_expand_heuristic());
   set_param_value ("ggc-min-heapsize", ggc_min_heapsize_heuristic());
+#endif
+}
+
+#ifdef GATHER_STATISTICS
+
+/* Datastructure used to store per-call-site statistics.  */
+struct loc_descriptor
+{
+  const char *file;
+  int line;
+  const char *function;
+  int times;
+  size_t allocated;
+  size_t overhead;
+};
+
+/* Hashtable used for statistics.  */
+static htab_t loc_hash;
+
+/* Hash table helpers functions.  */
+static hashval_t
+hash_descriptor (const void *p)
+{
+  const struct loc_descriptor *d = p;
+
+  return htab_hash_pointer (d->function) | d->line;
+}
+
+static int
+eq_descriptor (const void *p1, const void *p2)
+{
+  const struct loc_descriptor *d = p1;
+  const struct loc_descriptor *d2 = p2;
+
+  return (d->file == d2->file && d->line == d2->line
+	  && d->function == d2->function);
+}
+
+/* Return descriptor for given call site, create new one if needed.  */
+static struct loc_descriptor *
+loc_descriptor (const char *name, int line, const char *function)
+{
+  struct loc_descriptor loc;
+  struct loc_descriptor **slot;
+
+  loc.file = name;
+  loc.line = line;
+  loc.function = function;
+  if (!loc_hash)
+    loc_hash = htab_create (10, hash_descriptor, eq_descriptor, NULL);
+
+  slot = (struct loc_descriptor **) htab_find_slot (loc_hash, &loc, 1);
+  if (*slot)
+    return *slot;
+  *slot = xcalloc (sizeof (**slot), 1);
+  (*slot)->file = name;
+  (*slot)->line = line;
+  (*slot)->function = function;
+  return *slot;
+}
+
+/* Record ALLOCATED and OVERHEAD bytes to descritor NAME:LINE (FUNCTION).  */
+void ggc_record_overhead (size_t allocated, size_t overhead,
+			  const char *name, int line, const char *function)
+{
+  struct loc_descriptor *loc = loc_descriptor (name, line, function);
+
+  loc->times++;
+  loc->allocated+=allocated;
+  loc->overhead+=overhead;
+}
+
+/* Helper for qsort; sort descriptors by amount of memory consumed.  */
+static int
+cmp_statistic (const void *loc1, const void *loc2)
+{
+  struct loc_descriptor *l1 = *(struct loc_descriptor **) loc1;
+  struct loc_descriptor *l2 = *(struct loc_descriptor **) loc2;
+  return (l1->allocated + l1->overhead) - (l2->allocated + l2->overhead);
+}
+
+/* Collect array of the descriptors from hashtable.  */
+struct loc_descriptor **loc_array;
+static int
+add_statistics (void **slot, void *b)
+{
+  int *n = (int *)b;
+  loc_array[*n] = (struct loc_descriptor *) *slot;
+  (*n)++;
+  return 1;
+}
+
+/* Dump per-site memory statistics.  */
+#endif
+void dump_ggc_loc_statistics (void)
+{
+#ifdef GATHER_STATISTICS
+  int nentries = 0;
+  char s[4096];
+  size_t count, size, overhead;
+  int i;
+
+  loc_array = xcalloc (sizeof (*loc_array), loc_hash->n_elements);
+  fprintf (stderr, "-------------------------------------------------------\n");
+  fprintf (stderr, "\n%-60s %10s %10s %10s\n",
+	   "source location", "Times", "Allocated", "Overhead");
+  fprintf (stderr, "-------------------------------------------------------\n");
+  count = 0;
+  size = 0;
+  overhead = 0;
+  htab_traverse (loc_hash, add_statistics, &nentries);
+  qsort (loc_array, nentries, sizeof (*loc_array), cmp_statistic);
+  for (i = 0; i < nentries; i++)
+    {
+      struct loc_descriptor *d = loc_array[i];
+      size += d->allocated;
+      count += d->times;
+      overhead += d->overhead;
+    }
+  for (i = 0; i < nentries; i++)
+    {
+      struct loc_descriptor *d = loc_array[i];
+      if (d->allocated)
+	{
+	  const char *s1 = d->file;
+	  const char *s2;
+	  while ((s2 = strstr (s1, "gcc/")))
+	    s1 = s2 + 4;
+	  sprintf (s, "%s:%i (%s)", s1, d->line, d->function);
+	  fprintf (stderr, "%-60s %10i %10li %10li:%.3f%%\n", s,
+		   d->times, (long)d->allocated, (long)d->overhead,
+		   (d->allocated + d->overhead) *100.0 / (size + overhead));
+	}
+    }
+  fprintf (stderr, "%-60s %10ld %10ld %10ld\n",
+	   "Total", (long)count, (long)size, (long)overhead);
+  fprintf (stderr, "-------------------------------------------------------\n");
 #endif
 }
