@@ -1,3 +1,8 @@
+Wed Jul 26 19:44:05 2000   Hans-Peter Nilsson  <hp@axis.com>
+
+	* reload.c (find_reloads_toplev): Reload a paradoxical subreg of a
+	mem if the address is a mode_dependent_address_p.
+
 2000-07-26  Kazu Hirata  <kazu@hxi.com>
 
 	* h8300.c (print_operand): Print ":8" when the 'R' operand is
