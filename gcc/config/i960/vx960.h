@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Vxworks i960 version.
-   Copyright (C) 1994 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -18,11 +18,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* This file just exists to give specs for the 960 running on VxWorks.  */
-
-#include "i960/i960.h"
-
-/* VxWorks does all the library stuff itself.  */
+/* This file just exists to give specs for the 960 running on VxWorks. 
+   VxWorks does all the library stuff itself.  */
 
 #undef LIB_SPEC
 #define LIB_SPEC ""
