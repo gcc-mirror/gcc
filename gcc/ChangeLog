@@ -1,3 +1,9 @@
+Tue May  4 13:17:55 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* resource.c (mark_set_resources): Handle UNSPEC_VOLATILE,
+	ASM_INPUT, TRAP_IF, and ASM_OPERANDS just like in
+	mark_referenced_resources.
+
 Mon May  3 22:38:41 1999  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000/aix43.h (SUBTARGET_OVERRIDE_OPTIONS): Change non-PowerPC
