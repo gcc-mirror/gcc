@@ -1,3 +1,8 @@
+2001-03-16  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/sh/sh.c (sh_expand_prologue): Insns that set up the PIC
+	register may be dead.
+
 2001-03-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* dwarf2out.c (rtl_for_decl_location): Use DECL_RTL_IF_SET.
