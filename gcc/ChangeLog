@@ -1,3 +1,8 @@
+2000-02-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* fixinc/Makefile.in (HDR): Add machname.h.
+	(clean): Likewise.
+
 2000-02-05  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.h (c4x_compare_op0, c4x_compare_op1): Move ...
