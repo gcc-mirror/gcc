@@ -1,4 +1,9 @@
 2005-01-31  Dale Johannesen  <dalej@apple.com>
+	
+	* config/rs6000/darwin.md (movsf_low_di):  Make work.
+	(movdf_low_di):  Make work.
+
+2005-01-31  Dale Johannesen  <dalej@apple.com>
 
 	* config/rs6000/darwin-tramp.asm (__trampoline_setup):
 	Make work for 64 bit.
