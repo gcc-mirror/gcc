@@ -1,3 +1,8 @@
+2005-02-11  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/19755
+	* g++.dg/warn/Wbraces1.C: New test.
+
 2005-02-10  Richard Guenther  <rguenth@gcc.gnu.org>
 
 	* gcc.dg/builtins-52.c: New testcase.
