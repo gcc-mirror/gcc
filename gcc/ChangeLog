@@ -1,3 +1,8 @@
+Wed Jun  2 00:08:34 1999  Robert Lipe  <robertlipe@usa.net>
+
+	* configure.in (i[34567]86-*-udk*): Install headers with cpio.
+	* configure: Rebuilt.
+
 Wed Jun  2 00:49:00 EDT 1999  John Wehle  (john@feith.com)
 
 	* flow.c (mark_regs_live_at_end, insn_dead_p,
