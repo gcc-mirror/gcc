@@ -547,7 +547,7 @@ cris_print_index (index, file)
 	fprintf (file, "[$%s].d", reg_names[REGNO (inner)]);
     }
   else
-    cris_operand_lossage ("unexpected index-type in cris_print_index", 
+    cris_operand_lossage ("unexpected index-type in cris_print_index",
 			  index);
 }
 
@@ -563,7 +563,7 @@ cris_print_base (base, file)
   else if (GET_CODE (base) == POST_INC)
     fprintf (file, "$%s+", reg_names[REGNO (XEXP (base, 0))]);
   else
-    cris_operand_lossage ("unexpected base-type in cris_print_base", 
+    cris_operand_lossage ("unexpected base-type in cris_print_base",
 			  base);
 }
 
@@ -1094,7 +1094,7 @@ cris_target_asm_function_epilogue (file, size)
 	      fprintf (file, save_last);
 	      *save_last = 0;
 	    }
-	
+
 	  if (file)
 	    fprintf (file, "\tAdd%s %d,$sp\n",
 		     ADDITIVE_SIZE_MODIFIER (argspace_offset),
@@ -2689,11 +2689,11 @@ cris_split_movdx (operands)
 
           if (GET_CODE (addr) == POST_INC)
 	    {
-	      emit_insn (gen_rtx_SET (VOIDmode, 
+	      emit_insn (gen_rtx_SET (VOIDmode,
 				      operand_subword (dest, 0, TRUE, mode),
 				      change_address (src, SImode, addr)));
 	      emit_insn (gen_rtx_SET (VOIDmode,
-				      operand_subword (dest, 1, TRUE, mode), 
+				      operand_subword (dest, 1, TRUE, mode),
 				      change_address (src, SImode, addr)));
 	    }
 	  else
@@ -3014,7 +3014,7 @@ rtx
 Xvecexp (x, n, m)
      rtx x;
      int n;
-{ 
+{
   return XVECEXP (x, n, m);
 }
 
