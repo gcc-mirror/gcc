@@ -1,5 +1,8 @@
 1998-07-23  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* decl2.c (import_export_template): Fold in...
+	(import_export_class): ...to here.  Handle dllimport/export.
+
 	* class.c (build_vtable): Pass at_eof to import_export_vtable.
 	(prepare_fresh_vtable): Likewise.
 	* decl2.c (import_export_class): Split out...
