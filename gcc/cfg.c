@@ -455,6 +455,8 @@ redirect_edge_succ_nodup (e, new_succ)
     {
       s->flags |= e->flags;
       s->probability += e->probability;
+      if (s->probability > REG_BR_PROB_BASE)
+	s->probability = REG_BR_PROB_BASE;
       s->count += e->count;
       remove_edge (e);
       e = s;
