@@ -200,7 +200,7 @@ void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
 #define __va_next_addr(__AP, __type)					\
   (((__builtin_classify_type (* (__type *) 0) < __record_type_class	\
      && __alignof__ (__type) > 4)					\
-    ? __AP = (char *) (((int) __AP + 8 - 1) & -8)			\
+    ? __AP = (char *) (((__PTRDIFF_TYPE__) __AP + 8 - 1) & -8)		\
     : (char *) 0),							\
    (__builtin_classify_type (* (__type *) 0) >= __record_type_class	\
     ? (__AP += __va_reg_size) - __va_reg_size				\
@@ -240,8 +240,9 @@ void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
 #ifdef __mips64
 #ifdef __MIPSEB__
 #define va_arg(__AP, __type)                                    \
-  ((__type *) (void *) (__AP = (char *) ((((__PTRDIFF_TYPE__)__AP + 8 - 1) & -8) \
-					 + __va_rounded_size (__type))))[-1]
+  ((__type *) (void *) (__AP = (char *)                         \ 
+                       ((((__PTRDIFF_TYPE__)__AP + 8 - 1) & -8) \
+			   + __va_rounded_size (__type))))[-1]
 #else
 #define va_arg(__AP, __type)                                    \
   ((__AP = (char *) ((((__PTRDIFF_TYPE__)__AP + 8 - 1) & -8)	\
@@ -255,16 +256,16 @@ void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
 /* For big-endian machines.  */
 #define va_arg(__AP, __type)					\
   ((__AP = (char *) ((__alignof__ (__type) > 4			\
-		      ? ((int)__AP + 8 - 1) & -8		\
-		      : ((int)__AP + 4 - 1) & -4)		\
+		      ? ((__PTRDIFF_TYPE__)__AP + 8 - 1) & -8	\
+		      : ((__PTRDIFF_TYPE__)__AP + 4 - 1) & -4)	\
 		     + __va_rounded_size (__type))),		\
    *(__type *) (void *) (__AP - __va_rounded_size (__type)))
 #else
 /* For little-endian machines.  */
 #define va_arg(__AP, __type)						    \
   ((__type *) (void *) (__AP = (char *) ((__alignof__(__type) > 4	    \
-					  ? ((int)__AP + 8 - 1) & -8	    \
-					  : ((int)__AP + 4 - 1) & -4)	    \
+				? ((__PTRDIFF_TYPE__)__AP + 8 - 1) & -8	    \
+				: ((__PTRDIFF_TYPE__)__AP + 4 - 1) & -4)    \
 					 + __va_rounded_size(__type))))[-1]
 #endif
 #endif

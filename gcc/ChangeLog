@@ -1,3 +1,8 @@
+Mon Feb 16 09:11:48 1998  Gavin Koch  <gavin@cygnus.com>
+
+	* ginclude/va-mips.h: Replace casts of pointers to int with
+	casts of pointers to __PTRDIFF_TYPE__.
+
 Mon Feb 16 08:17:14 1998  John Carr  <jfc@mit.edu>
 
 	* loop.c (strength_reduce, record_biv, record_giv): Use
