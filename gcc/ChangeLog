@@ -1,3 +1,9 @@
+2004-12-06  Nick Clifton  <nickc@redhat.com>
+
+	* gcc.dg/builtins-config.h: Use <sys/types.h> instead of
+	<limits.h> because the latter comes from gcc's include/ directory
+	and not the newlib/libc/include directory.
+
 2004-12-05  Daniel Berlin <dberlin@dberlin.org>
 
 	* tree-ssa-alias.c (create_global_var): Use void_type_node,
