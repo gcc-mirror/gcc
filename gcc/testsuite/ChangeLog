@@ -1,3 +1,7 @@
+2003-09-15  Andreas Jaeger  <aj@suse.de>
+
+	* gcc.dg/Wold-style-definition-1.c: New test.
+
 2003-09-14  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/3907
