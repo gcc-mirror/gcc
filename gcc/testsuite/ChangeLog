@@ -1,3 +1,8 @@
+2001-05-07  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.old-deja/g++.other/op2.C: Don't use `glob' as a variable.
+	* g++.old-deja/g++.other/op3.C: Likewise.
+
 2001-05-06  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* gcc.dg/cpp/syshdr.h: New file.
