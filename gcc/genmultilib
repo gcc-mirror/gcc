@@ -1,6 +1,6 @@
 #!/bin/sh 
 # Generates multilib.h.
-#   Copyright (C) 1994 Free Software Foundation, Inc.
+#   Copyright (C) 1994, 1995 Free Software Foundation, Inc.
 
 #This file is part of GNU CC.
 
@@ -161,12 +161,10 @@ else
   dirout="${dirout}" optout="${optout}" ./tmpmultilib2 $@
   l=`echo ${first} | sed -e 's/=.*$//' -e 's/?/=/g'`
   r=`echo ${first} | sed -e 's/^.*=//' -e 's/?/=/g'`
-  case " ${optout} " in
-  *" ${l} "*)
+  if expr " ${optout} " : ".* ${l} .*" > /dev/null; then
     newopt=`echo " ${optout} " | sed -e "s/ ${l} / ${r} /" -e 's/^ //' -e 's/ $//'`
     dirout="${dirout}" optout="${newopt}" ./tmpmultilib2 $@
-    ;;
-  esac
+  fi
 fi
 EOF
 chmod +x tmpmultilib2
@@ -210,12 +208,10 @@ for combo in ${combinations}; do
     setopts=`echo ${set} | sed -e 's|/| |g'`
     found=
     for opt in ${setopts}; do
-      case "${combo}" in
-      *"/${opt}/"*)
+      if expr "${combo} " : ".*/${opt}/.*" > /dev/null; then
 	optout="${optout} ${opt}"
 	found=yes
-	;;
-      esac
+      fi
     done
     if [ "${found}" = "" ]; then
       for opt in ${setopts}; do
