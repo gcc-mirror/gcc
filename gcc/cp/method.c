@@ -480,6 +480,7 @@ use_thunk (tree thunk_fndecl, bool emit_p)
 	 doesn't work for varargs.  */
 
       tree a, t;
+      int saved_check_access;
 
       if (varargs_function_p (function))
 	error ("generic thunk code fails for method `%#D' which uses `...'",
@@ -501,8 +502,11 @@ use_thunk (tree thunk_fndecl, bool emit_p)
       start_function (NULL_TREE, thunk_fndecl, NULL_TREE, SF_PRE_PARSED);
       /* We don't bother with a body block for thunks.  */
 
+      /* There's no need to check accessibility inside the thunk body.  */
+      saved_check_access = scope_chain->check_access;
+      scope_chain->check_access = 0;
+
       t = a;
-      
       if (this_adjusting)
 	t = thunk_adjust (t, /*this_adjusting=*/1,
 			  fixed_offset, virtual_offset);
@@ -528,6 +532,9 @@ use_thunk (tree thunk_fndecl, bool emit_p)
 
       /* But we don't want debugging information about it.  */
       DECL_IGNORED_P (thunk_fndecl) = 1;
+
+      /* Re-enable access control.  */
+      scope_chain->check_access = saved_check_access;
 
       expand_body (finish_function (0));
     }

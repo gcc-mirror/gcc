@@ -1,3 +1,8 @@
+2003-01-04  Mark Mitchell  <mark@codesourcery.com>
+
+	* method.c (use_thunk): Disable access control while building the
+	body of the thunk.
+
 2003-01-03  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* cvt.c, decl.c, decl2.c: This is the C++ front end, not the C 
