@@ -1,3 +1,8 @@
+2002-01-08  Dale Johannesen  <dalej@apple.com>
+
+	* config/rs6000/rs6000.md: Add missing int register
+	target case to movdf_low.
+
 2002-01-08  Zack Weinberg  <zack@codesourcery.com>
 
 	* Makefile.in (cs-tconfig.h): Don't depend on $(CONFIG_H) or
