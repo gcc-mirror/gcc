@@ -2860,6 +2860,9 @@ expand_vec_init (decl, base, maxindex, init, from_array)
 	expand_eh_region_start ();
       expand_start_loop_continue_elsewhere (1);
 
+      /* The initialization of each array element is a full-expression.  */
+      expand_start_target_temps ();
+
       if (from_array)
 	{
 	  tree to = build1 (INDIRECT_REF, type, base);
@@ -2895,6 +2898,10 @@ expand_vec_init (decl, base, maxindex, init, from_array)
       if (base2)
 	expand_assignment (base2,
 			   build (PLUS_EXPR, build_pointer_type (type), base2, size), 0, 0);
+
+      /* Cleanup any temporaries needed for the initial value.  */
+      expand_end_target_temps ();
+
       expand_loop_continue_here ();
       expand_exit_loop_if_false (0, build (NE_EXPR, boolean_type_node,
 					   build (PREDECREMENT_EXPR, ptrdiff_type_node, iterator, integer_one_node), minus_one));
