@@ -455,7 +455,8 @@ static int reg_set_flag;
 
 static void
 reg_set_p_1 (x, pat)
-     rtx x, pat;
+     rtx x;
+     rtx pat ATTRIBUTE_UNUSED;
 {
   /* We don't want to return 1 if X is a MEM that contains a register
      within REG_SET_REG.  */

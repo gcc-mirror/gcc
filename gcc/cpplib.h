@@ -663,6 +663,11 @@ extern cpp_buffer *cpp_pop_buffer PARAMS ((cpp_reader *));
 
 extern cpp_hashnode *cpp_lookup PARAMS ((cpp_reader *, const unsigned char *,
 					 int, int));
+extern void cpp_reader_init PARAMS ((cpp_reader *));
+extern void cpp_options_init PARAMS ((cpp_options *));
+extern int cpp_start_read PARAMS ((cpp_reader *, char *));
+extern int cpp_read_check_assertion PARAMS ((cpp_reader *));
+extern void skip_rest_of_line PARAMS ((cpp_reader *));
 
 #ifdef __cplusplus
 }

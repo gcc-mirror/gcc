@@ -139,6 +139,10 @@ extern rtx catch_clauses;
 
 #endif
 
+/* Test: is exception handling turned on? */
+
+extern int doing_eh				       PROTO ((int));
+
 /* Toplevel initialization for EH.  */
 
 extern void init_eh				PROTO((void));

@@ -49,6 +49,7 @@ Boston, MA 02111-1307, USA.  */
 #include "except.h"
 #include "function.h"
 #include "output.h"
+#include "toplev.h"
 
 /* This is the default way of generating a method name.  */
 /* I am not sure it is really correct.
@@ -695,9 +696,9 @@ lang_decode_option (p)
 
 void
 lang_print_xnode (file, node, indent)
-     FILE *file;
-     tree node;
-     int indent;
+     FILE *file ATTRIBUTE_UNUSED;
+     tree node ATTRIBUTE_UNUSED;
+     int indent ATTRIBUTE_UNUSED;
 {
 }
 
@@ -6419,7 +6420,7 @@ start_protocol (code, name, list)
 
 void
 finish_protocol (protocol)
-	tree protocol;
+	tree protocol ATTRIBUTE_UNUSED;
 {
 }
 

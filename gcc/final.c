@@ -68,6 +68,7 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "except.h"
 #include "toplev.h"
+#include "reload.h"
 
 /* Get N_SLINE and N_SOL from stab.h if we can expect the file to exist.  */
 #if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
@@ -989,7 +990,8 @@ shorten_branches (first)
   min_labelno = get_first_label_num ();
   label_align
     = (short*) xmalloc ((max_labelno - min_labelno + 1) * sizeof (short));
-  bzero (label_align, (max_labelno - min_labelno + 1) * sizeof (short));
+  bzero ((char *) label_align,
+	 (max_labelno - min_labelno + 1) * sizeof (short));
 
   uid_shuid = (int *) xmalloc (max_uid * sizeof *uid_shuid);
 

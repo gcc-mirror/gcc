@@ -2392,7 +2392,7 @@ make_length_attrs ()
 			      "*insn_current_length"};
   static rtx (*no_address_fn[]) PROTO((rtx)) = {identity_fn, zero_fn, zero_fn};
   static rtx (*address_fn[]) PROTO((rtx)) = {max_fn, one_fn, identity_fn};
-  int i;
+  size_t i;
   struct attr_desc *length_attr, *new_attr;
   struct attr_value *av, *new_av;
   struct insn_ent *ie, *new_ie;
@@ -2443,14 +2443,14 @@ identity_fn (exp)
 
 static rtx
 zero_fn (exp)
-     rtx exp;
+     rtx exp ATTRIBUTE_UNUSED;
 {
   return make_numeric_value (0);
 }
 
 static rtx
 one_fn (exp)
-     rtx exp;
+     rtx exp ATTRIBUTE_UNUSED;
 {
   return make_numeric_value (1);
 }

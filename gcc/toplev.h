@@ -5,6 +5,8 @@
 #ifndef __GCC_TOPLEV_H__
 #define __GCC_TOPLEV_H__
 
+extern int count_error			PROTO ((int));
+extern void strip_off_ending		PROTO ((char *, int));
 extern void print_time			PROTO ((char *, int));
 extern int get_run_time			PROTO ((void));
 extern void debug_start_source_file	PROTO ((char *));
@@ -40,4 +42,8 @@ extern void warning_with_decl		PVPROTO ((union tree_node *, char *, ...));
 extern void error_with_decl		PVPROTO ((union tree_node *, char *, ...));
 extern void announce_function		PROTO ((union tree_node *));
 
+extern void error_for_asm		PVPROTO((struct rtx_def *, char *, ...))
+						ATTRIBUTE_PRINTF_2;
+extern void warning_for_asm		PVPROTO((struct rtx_def *, char *, ...))
+						ATTRIBUTE_PRINTF_2;
 #endif /* __GCC_TOPLEV_H */

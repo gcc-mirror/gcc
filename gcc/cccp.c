@@ -10224,7 +10224,7 @@ pfatal_with_name (name)
 static void
 pipe_closed (signo)
      /* If this is missing, some compilers complain.  */
-     int signo;
+     int signo ATTRIBUTE_UNUSED;
 {
   fatal ("output pipe has been closed");
 }

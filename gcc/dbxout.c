@@ -134,6 +134,13 @@ Boston, MA 02111-1307, USA.  */
 #endif
 #endif
 
+char *getpwd ();
+
+/* Typical USG systems don't have stab.h, and they also have
+   no use for DBX-format debugging info.  */
+
+#if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
+
 static int flag_minimal_debug = MINIMAL_DEBUG;
 
 /* Nonzero if we have actually used any of the GDB extensions
@@ -147,13 +154,6 @@ static int have_used_extensions = 0;
    for the N_SO filename stabs label.  */
 
 static int source_label_number = 1;
-
-char *getpwd ();
-
-/* Typical USG systems don't have stab.h, and they also have
-   no use for DBX-format debugging info.  */
-
-#if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
 
 #ifdef DEBUG_SYMS_TEXT
 #define FORCE_TEXT text_section ();

@@ -75,7 +75,7 @@ extern char *token_buffer;	/* Pointer to token buffer.  */
 
 extern tree make_pointer_declarator PROTO((tree, tree));
 extern void reinit_parse_for_function PROTO((void));
-extern void position_after_whitespace PROTO((void));
+extern void position_after_white_space PROTO((void));
 extern int check_newline PROTO((void));
 
 extern int yylex PROTO((void));

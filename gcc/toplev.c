@@ -153,12 +153,10 @@ extern void print_rtl_with_bb ();
 void rest_of_decl_compilation ();
 void error_with_file_and_line PVPROTO((char *file, int line, char *s, ...));
 void error_with_decl PVPROTO((tree decl, char *s, ...));
-void error_for_asm PVPROTO((rtx insn, char *s, ...));
 void error PVPROTO((char *s, ...));
 void fatal PVPROTO((char *s, ...));
 void warning_with_file_and_line PVPROTO((char *file, int line, char *s, ...));
 void warning_with_decl PVPROTO((tree decl, char *s, ...));
-void warning_for_asm PVPROTO((rtx insn, char *s, ...));
 void warning PVPROTO((char *s, ...));
 void pedwarn PVPROTO((char *s, ...));
 void pedwarn_with_decl PVPROTO((tree decl, char *s, ...));
@@ -189,7 +187,9 @@ static void vsorry PROTO((char *, va_list));
 static void v_really_sorry PROTO((char *, va_list));
 static void float_signal PROTO((int));
 static void pipe_closed PROTO((int));
+#if 0
 static void output_lang_identify PROTO((FILE *));
+#endif
 static void open_dump_file PROTO((char *, char *));
 static void close_dump_file PROTO((void (*) (FILE *, rtx), rtx));
 static void dump_rtl PROTO((char *, tree, void (*) (FILE *, rtx), rtx));
@@ -1989,7 +1989,7 @@ jmp_buf float_handler;
 static void
 float_signal (signo)
      /* If this is missing, some compilers complain.  */
-     int signo;
+     int signo ATTRIBUTE_UNUSED;
 {
   if (float_handled == 0)
     abort ();
@@ -2056,7 +2056,7 @@ pop_float_handler (handled, handler)
 static void
 pipe_closed (signo)
      /* If this is missing, some compilers complain.  */
-     int signo;
+     int signo ATTRIBUTE_UNUSED;
 {
   fatal ("output pipe has been closed");
 }
@@ -2138,6 +2138,7 @@ output_file_directive (asm_file, input_name)
 
 /* Routine to build language identifier for object file.  */
 
+#if 0
 static void
 output_lang_identify (asm_out_file)
      FILE *asm_out_file;
@@ -2147,6 +2148,7 @@ output_lang_identify (asm_out_file)
   sprintf (s, "__gnu_compiled_%s", lang_identify ());
   ASM_OUTPUT_LABEL (asm_out_file, s);
 }
+#endif
 
 /* Routine to open a dump file.  */
 static void

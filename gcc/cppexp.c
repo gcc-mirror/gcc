@@ -617,7 +617,7 @@ left_shift (pfile, a, unsignedp, b)
 
 static long
 right_shift (pfile, a, unsignedp, b)
-     cpp_reader *pfile;
+     cpp_reader *pfile ATTRIBUTE_UNUSED;
      long a;
      int unsignedp;
      unsigned long b;

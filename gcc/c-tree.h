@@ -149,6 +149,7 @@ struct lang_type
 extern tree lookup_interface			PROTO((tree));
 extern tree is_class_name			PROTO((tree));
 extern void maybe_objc_check_decl		PROTO((tree));
+extern void finish_file				PROTO((void));
 extern int maybe_objc_comptypes                 PROTO((tree, tree, int));
 extern tree maybe_building_objc_message_expr    PROTO((void));
 extern tree maybe_objc_method_name		PROTO((tree));
@@ -167,6 +168,9 @@ extern void check_function_format		PROTO((tree, tree, tree));
    NOP_EXPR is used as a special case (see truthvalue_conversion).  */
 extern void binary_op_error                     PROTO((enum tree_code));
 extern void c_expand_expr_stmt                  PROTO((tree));
+extern void c_expand_start_cond                 PROTO((tree, int, int));
+extern void c_expand_start_else                 PROTO((void));
+extern void c_expand_end_cond                   PROTO((void));
 /* Validate the expression after `case' and apply default promotions.  */
 extern tree check_case_value                    PROTO((tree));
 /* Concatenate a list of STRING_CST nodes into one STRING_CST.  */
@@ -366,6 +370,7 @@ extern void c_expand_return			PROTO((tree));
 extern tree c_expand_start_case                 PROTO((tree));
 
 /* in c-iterate.c */
+extern void init_iterators			PROTO((void));
 extern void iterator_expand			PROTO((tree));
 extern void iterator_for_loop_start		PROTO((tree));
 extern void iterator_for_loop_end		PROTO((tree));

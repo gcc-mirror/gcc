@@ -155,6 +155,10 @@ extern void exception_section		PROTO((void));
    The rtl is stored into DECL.  */
 extern void make_function_rtl		PROTO((tree));
 
+/* Declare DECL to be a weak symbol.  */
+extern void declare_weak		PROTO ((tree));
+#endif /* TREE_CODE */
+
 /* Decode an `asm' spec for a declaration as a register name.
    Return the register number, or -1 if nothing specified,
    or -2 if the ASMSPEC is not `cc' or `memory' and is not recognized,
@@ -164,6 +168,7 @@ extern void make_function_rtl		PROTO((tree));
    Prefixes such as % are optional.  */
 extern int decode_reg_name		PROTO((char *));
 
+#ifdef TREE_CODE
 /* Create the DECL_RTL for a declaration for a static or external variable
    or static or external function.
    ASMSPEC, if not 0, is the string which the user specified
@@ -179,6 +184,8 @@ extern void make_var_volatile		PROTO((tree));
 
 /* Output alignment directive to align for constant expression EXP.  */
 extern void assemble_constant_align	PROTO((tree));
+
+extern void assemble_alias		PROTO((tree, tree));
 
 /* Output a string of literal assembler code
    for an `asm' keyword used between functions.  */
@@ -232,7 +239,7 @@ extern void assemble_variable		PROTO((tree, int, int, int));
    (Most assemblers don't need this, so we normally output nothing.)
    Do nothing if DECL is not external.  */
 extern void assemble_external		PROTO((tree));
-#endif
+#endif /* TREE_CODE */
 
 #ifdef RTX_CODE
 /* Similar, for calling a library function FUN.  */
