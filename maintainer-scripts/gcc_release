@@ -249,14 +249,8 @@ EOF
   # Move message catalogs to source directory.
   mv ../objdir/gcc/po/*.gmo gcc/po/
 
-  # Create a `.brik' file to use for checking the validity of the
-  # release.
-  changedir "${SOURCE_DIRECTORY}"
-  BRIK_FILE=`mktemp /tmp/gcc_release.XXXXXXX`
-  ((find . -type f | sort > $BRIK_FILE) && \
-       brik -Gb -f ${BRIK_FILE} > .brik && \
-       rm ${BRIK_FILE}) || \
-     error "Could not compute brik checksum"
+  # Create a "MD5SUMS" file to use for checking the validity of the release.
+  find . -type f |sed -e 's:^\./::' -e '/MD5SUMS/d' |sort |xargs md5sum >MD5SUMS
 }
 
 # Buid a single tarfile.  The first argument is the name of the name
