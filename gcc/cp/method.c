@@ -292,7 +292,7 @@ request for member `%D' is ambiguous in multiple inheritance lattice",
 /* Return a thunk to FUNCTION.  For a virtual thunk, DELTA is the
    offset to this used to locate the vptr, and VCALL_INDEX is used to
    look up the eventual subobject location.  For a non-virtual thunk,
-   DELTA is the offset to this and VCALL_INDEX is zero.  */
+   DELTA is the offset to this and VCALL_INDEX is NULL.  */
 
 tree
 make_thunk (function, delta, vcall_index)
