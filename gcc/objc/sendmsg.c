@@ -166,6 +166,46 @@ void __objc_init_dispatch_tables()
     = sarray_new(200, __objc_init_install_dtable);
 }
 
+/* Various return functions that are used based upon the
+   return type for the selector.
+   __objc_block_return for structures.
+   __objc_double_return for floats/doubles.
+   __objc_word_return for pointers or types that fit in registers.
+   */
+#if INVISIBLE_STRUCT_RETURN
+static __big
+#else
+static id
+#endif
+__objc_block_return(IMP imp, void * args)
+{
+  void * result = __builtin_apply((apply_t)imp, args, 96);
+  if (result)
+    __builtin_return (result);
+  else
+    return;
+}
+
+static id
+__objc_word_return(IMP imp, void * args)
+{
+  void * result = __builtin_apply((apply_t)imp, args, 96);
+  if (result)
+    __builtin_return (result);
+  else
+    return;
+}
+ 
+static double
+__objc_double_return(IMP imp, void * args)
+{
+  void * result = __builtin_apply((apply_t)imp, args, 96);
+  if (result)
+    __builtin_return (result);
+  else
+    return;
+}
+
 /* This one is a bit hairy.  This function is installed in the 
    premature dispatch table, and thus called once for each class,
    namely when the very first message is send to it.  */
@@ -176,6 +216,7 @@ static void __objc_init_install_dtable(id receiver, SEL op)
   IMP imp;
   void* args;
   void* result;
+  const char *t;
 
   /* This may happen, if the programmer has taken the address of a 
      method before the dtable was initialized... too bad for him! */
@@ -217,13 +258,15 @@ already_initialized:
   /* Get real method for this in newly installed dtable */
   imp = get_imp(receiver->class_pointer, op);
 
+  /* Perform the appropriate return based upon the method return type */
   args = __builtin_apply_args();
-  result = __builtin_apply((apply_t)imp, args, 96);
-  if (result)
-    __builtin_return (result);
+  t = op->sel_types;
+  if (t && (*t == '[' || *t == '(' || *t == '{'))
+    ((id(*)())__objc_block_return)(imp, args);
+  else if (t && (*t == 'f' || *t == 'd'))
+    ((id(*)())__objc_double_return)(imp, args);
   else
-    return;
-  
+    __objc_word_return(imp, args);
 }
 
 /* Install dummy table for class which causes the first message to
