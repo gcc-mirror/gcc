@@ -306,6 +306,9 @@
 /* Define to 1 if you have the <ldfcn.h> header file. */
 #undef HAVE_LDFCN_H
 
+/* Define if your linker supports --as-needed and --no-as-needed options. */
+#undef HAVE_LD_AS_NEEDED
+
 /* Define if your linker supports --eh-frame-hdr option. */
 #undef HAVE_LD_EH_FRAME_HDR
 
