@@ -3575,7 +3575,7 @@ check_store (x, pat, data)
      rtx x, pat ATTRIBUTE_UNUSED;
      void *data;
 {
-  struct check_store_data *d = (struct check_store_data *)data;
+  struct check_store_data *d = (struct check_store_data *) data;
 
   if ((GET_CODE (x) == MEM) && rtx_equal_p (d->mem_address, XEXP (x, 0)))
     d->mem_write = 1;
@@ -3673,7 +3673,7 @@ rtx_equal_for_prefetch_p (x, y)
 
 static HOST_WIDE_INT
 remove_constant_addition (x)
-   rtx *x;
+     rtx *x;
 {
   HOST_WIDE_INT addval = 0;
   rtx exp = *x;
@@ -5309,7 +5309,7 @@ check_insn_for_givs (loop, p, not_every_iteration, maybe_multiple)
 
 	  record_giv (loop, v, p, src_reg, dest_reg, mult_val, add_val,
 		      ext_val, benefit, DEST_REG, not_every_iteration,
-		      maybe_multiple, (rtx*)0);
+		      maybe_multiple, (rtx*) 0);
 
 	}
     }
@@ -6437,13 +6437,13 @@ simplify_giv_expr (loop, x, ext_val, benefit)
 	tem = arg0, arg0 = arg1, arg1 = tem;
 
       if (GET_CODE (arg1) == PLUS)
-	  return
-	    simplify_giv_expr (loop,
-			       gen_rtx_PLUS (mode,
-					     gen_rtx_PLUS (mode, arg0,
-							   XEXP (arg1, 0)),
-					     XEXP (arg1, 1)),
-			       ext_val, benefit);
+	return
+	  simplify_giv_expr (loop,
+			     gen_rtx_PLUS (mode,
+					   gen_rtx_PLUS (mode, arg0,
+							 XEXP (arg1, 0)),
+					   XEXP (arg1, 1)),
+			     ext_val, benefit);
 
       /* Now must have MULT + MULT.  Distribute if same biv, else not giv.  */
       if (GET_CODE (arg0) != MULT || GET_CODE (arg1) != MULT)
@@ -9294,7 +9294,7 @@ get_condition_for_loop (loop, x)
      const struct loop *loop;
      rtx x;
 {
-  rtx comparison = get_condition (x, (rtx*)0);
+  rtx comparison = get_condition (x, (rtx*) 0);
 
   if (comparison == 0
       || ! loop_invariant_p (loop, XEXP (comparison, 0))
@@ -10477,7 +10477,7 @@ loop_giv_dump (v, file, verbose)
 	  break;
 	case TRUNCATE:
 	  fprintf (file, " ext tr");
-	      break;
+	  break;
 	default:
 	  abort ();
 	}

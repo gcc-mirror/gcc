@@ -1,3 +1,11 @@
+2002-01-03  Kazu Hirata  <kazu@hxi.com>
+
+	* builtins.c: Fix formatting.
+	* c-typeck.c: Likewise.
+	* combine.c: Likewise.
+	* expr.c: Likewise.
+	* loop.c: Likewise.
+
 2002-01-03  Andreas Schwab  <schwab@suse.de>
 
 	* cppfiles.c (_cpp_pop_file_buffer): Change return type to bool
