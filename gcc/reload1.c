@@ -1603,6 +1603,10 @@ reload (first, global, dumpfile)
 			    }
 			}
 		    }
+		  /* We couldn't find any registers for this reload.
+		     Abort to avoid going into an infinite loop.  */
+		  if (i == FIRST_PSEUDO_REGISTER)
+ 		    abort ();
 		}
 	    }
 
@@ -1863,7 +1867,10 @@ count_possible_groups (group_size, group_mode, max_groups)
 		  for (k = 0; k < group_size[i]; k++)
 		    SET_HARD_REG_BIT (counted_for_groups, j + k);
 		}
-	      j += k;
+	      /* Skip to the last reg in this group.  When j is incremented
+		 above, it will then point to the first reg of the next
+		 possible group.  */
+	      j += k - 1;
 	    }
       }
 
