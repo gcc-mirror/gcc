@@ -618,36 +618,23 @@ eq_operator (x, mode)
    with this attribute may be safely used in an interrupt vector.  */
 
 int
-handle_pragma (file, c)
+handle_pragma (file, t)
      FILE *file;
-     int c;
+     tree t;
 {
-  char pbuf[20];
-  int psize = 0;
+  int retval = 0;
+  register char *pname;
 
-  while (c == ' ' || c == '\t')
-    c = getc (file);
+  if (TREE_CODE (t) != IDENTIFIER_NODE)
+    return 0;
 
-  if (c != '\n' & c != EOF)
-    {
-      while (psize < sizeof (pbuf) - 1
-	     && isalpha (c))
-	{
-	  pbuf[psize++] = c;
-	  c = getc (file);
-	}
-      pbuf[psize] = 0;
+  pname = IDENTIFIER_POINTER (t);
+  if (strcmp (pname, "interrupt") == 0)
+    interrupt_handler = retval = 1;
+  else if (strcmp (pname, "saveall") == 0)
+    pragma_saveall = retval = 1;
 
-      if (strcmp (pbuf, "interrupt") == 0)
-	interrupt_handler = 1;
-      else if (strcmp (pbuf, "saveall") == 0)
-	pragma_saveall = 1;
-
-      while (c != '\n' && c != EOF)
-	c = getc (file);
-    }
-
-  return c;
+  return retval;
 }
 
 /* If the next arg with MODE and TYPE is to be passed in a register, return
