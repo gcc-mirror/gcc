@@ -376,7 +376,7 @@ public class Timer
 
   // Number of Timers created.
   // Used for creating nice Thread names.
-  private static int nr = 0;
+  private static int nr;
 
   // The queue that all the tasks are put in.
   // Given to the scheduler

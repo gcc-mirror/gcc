@@ -384,7 +384,7 @@ public class LogRecord
   /**
    * The last used sequence number for any LogRecord.
    */
-  private static long lastSeqNum = 0;
+  private static long lastSeqNum;
 
 
   /**

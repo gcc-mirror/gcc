@@ -1,3 +1,12 @@
+2004-10-18  Jeroen Frijters  <jeroen@frijters.net>
+
+	* java/util/Timer.java
+	(nr): Removed useless initializer.
+	* java/util/logging/LogRecord.java
+	(lastSeqNum): Likewise.
+	* javax/naming/spi/NamingManager.java
+	(icfb, ofb): Likewise.
+
 2004-10-18  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/net/PlainDatagramSocketImpl.java:
