@@ -1,5 +1,8 @@
 Sun Feb 14 23:05:34 1999  Jeffrey A Law  (law@cygnus.com)
 
+	Mon Aug 17 02:03:55 1998  Richard Henderson  <rth@cygnus.com>
+	* regclass.c (allocate_reg_info): Respect MIN when clearing data.
+
 	* loop.c (scan_loop): Fix typo in last change.
 
 Sat Feb 13 11:53:12 1999  Jeffrey A Law  (law@cygnus.com)
