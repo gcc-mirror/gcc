@@ -1,3 +1,11 @@
+2003-02-11  Paolo Carlini  <pcarlini@unitus.it>
+            Petur Runolfsson  <peturr02@ru.is>
+
+	PR libstdc++/9318
+	* include/bits/streambuf.tcc (__copy_streambufs):
+	Don't conditionalize the copy to __testput.
+	* testsuite/27_io/streambuf_members.cc (test09, test10): Add.
+
 2003-02-08  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* hppa/atomicity.h (__Atomicity_lock<__inst>::_S_atomicity_lock):

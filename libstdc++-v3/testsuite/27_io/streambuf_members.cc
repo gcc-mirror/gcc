@@ -31,7 +31,7 @@
 
 #include <cstring> // for memset, memcmp
 #include <streambuf>
-#include <string>
+#include <sstream>
 #include <ostream>
 #include <testsuite_hooks.h>
 
@@ -386,6 +386,51 @@ void test08()
   VERIFY( ob.getloc() == loc_de );
 }
 
+// libstdc++/9318
+class Outbuf : public std::streambuf
+{
+public:
+  typedef std::streambuf::traits_type traits_type;
+
+  std::string result() const { return str; }
+
+protected:
+  virtual int_type overflow(int_type c = traits_type::eof())
+  {
+    if (!traits_type::eq_int_type(c, traits_type::eof()))
+      str.push_back(traits_type::to_char_type(c));
+    return traits_type::not_eof(c);
+  }
+
+private:
+  std::string str;
+};
+
+// <1>
+void test09()
+{
+  bool test = true;
+  
+  std::istringstream stream("Bad Moon Rising");
+  Outbuf buf;
+  stream >> &buf;
+
+  VERIFY( buf.result() == "Bad Moon Rising" );
+}
+
+// <2>
+void test10()
+{
+  bool test = true;
+
+  std::stringbuf sbuf("Bad Moon Rising", std::ios::in);
+  Outbuf buf;
+  std::ostream stream(&buf);
+  stream << &sbuf;
+
+  VERIFY( buf.result() == "Bad Moon Rising" );
+}
+
 int main() 
 {
   test01();
@@ -397,5 +442,8 @@ int main()
 
   test07();
   test08();
+
+  test09();
+  test10();
   return 0;
 }
