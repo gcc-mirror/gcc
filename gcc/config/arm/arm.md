@@ -3976,10 +3976,10 @@
    mnf%D3s\\t%0, #%N2
    mvf%d3s\\t%0, %1
    mnf%d3s\\t%0, #%N1
-   mvf%d3\\t%0, %1\;mvf%D3\\t%0, %2
-   mvf%d3\\t%0, %1\;mnf%D3\\t%0, #%N2
-   mnf%d3\\t%0, #%N1\;mvf%D3\\t%0, %2
-   mnf%d3\\t%0, #%N1\;mnf%D3\\t%0, #%N2"
+   mvf%d3s\\t%0, %1\;mvf%D3s\\t%0, %2
+   mvf%d3s\\t%0, %1\;mnf%D3s\\t%0, #%N2
+   mnf%d3s\\t%0, #%N1\;mvf%D3s\\t%0, %2
+   mnf%d3s\\t%0, #%N1\;mnf%D3s\\t%0, #%N2"
   [(set_attr "length" "4,4,4,4,8,8,8,8")
    (set_attr "type" "ffarith")
    (set_attr "conds" "use")])
@@ -4009,10 +4009,10 @@
    mnf%D3d\\t%0, #%N2
    mvf%d3d\\t%0, %1
    mnf%d3d\\t%0, #%N1
-   mvf%d3\\t%0, %1\;mvf%D3\\t%0, %2
-   mvf%d3\\t%0, %1\;mnf%D3\\t%0, #%N2
-   mnf%d3\\t%0, #%N1\;mvf%D3\\t%0, %2
-   mnf%d3\\t%0, #%N1\;mnf%D3\\t%0, #%N2"
+   mvf%d3d\\t%0, %1\;mvf%D3d\\t%0, %2
+   mvf%d3d\\t%0, %1\;mnf%D3d\\t%0, #%N2
+   mnf%d3d\\t%0, #%N1\;mvf%D3d\\t%0, %2
+   mnf%d3d\\t%0, #%N1\;mnf%D3d\\t%0, #%N2"
   [(set_attr "length" "4,4,4,4,8,8,8,8")
    (set_attr "type" "ffarith")
    (set_attr "conds" "use")])
