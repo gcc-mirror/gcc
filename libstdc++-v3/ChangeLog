@@ -1,3 +1,10 @@
+2003-09-29  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* configure.host: Handle Solaris 2.5 micro releases explicitly.
+	Remove wildcards from Solaris 2.6, 7-9: there were no
+	micro releases.
+	Treat Solaris 10 and up like 7-9.
+
 2003-09-29  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/bits/stl_algo.h (search_n): Improve the previous

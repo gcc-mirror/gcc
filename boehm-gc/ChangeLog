@@ -1,3 +1,10 @@
+2003-09-29  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* configure.in: Remove wildcard from Solaris 8-9/Intel and Solaris
+	2.3/SPARC, there are no micro versions.
+	Treat Solaris 10 and up alike.
+	* configure: Regenerate.
+
 2003-09-22  Anthony Green  <green@redhat.com>
 
 	* os_dep.c: Fix GC_get_stack_base build problem for vanilla elf

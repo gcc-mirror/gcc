@@ -257,7 +257,7 @@ case "$host" in
  alpha*-*-linux*)
     machdep="alpha_mach_dep.lo"
     ;;
- i?86-*-solaris2.[[89]]*)
+ i?86-*-solaris2.[[89]] | i?86-*-solaris2.1?)
     AC_DEFINE(SOLARIS25_PROC_VDB_BUG_FIXED)
     ;;
  mipstx39-*-elf*)
@@ -279,7 +279,7 @@ case "$host" in
  sparc-*-netbsd*)
     machdep="sparc_netbsd_mach_dep.lo"
     ;;
- sparc-sun-solaris2.3*)
+ sparc-sun-solaris2.3)
     machdep="sparc_mach_dep.lo"
     AC_DEFINE(SUNOS53_SHARED_LIB)
     ;;
