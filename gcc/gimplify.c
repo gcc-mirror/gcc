@@ -1563,7 +1563,7 @@ gimplify_array_ref_to_plus (tree *expr_p, tree *pre_p, tree *post_p)
 
 static enum gimplify_status
 gimplify_compound_lval (tree *expr_p, tree *pre_p,
-			tree *post_p, bool want_lvalue)
+			tree *post_p, fallback_t fallback)
 {
   tree *p;
   varray_type stack;
@@ -1669,8 +1669,7 @@ gimplify_compound_lval (tree *expr_p, tree *pre_p,
     }
 
   /* Step 2 is to gimplify the base expression.  */
-  tret = gimplify_expr (p, pre_p, post_p, is_gimple_min_lval,
-			want_lvalue ? fb_lvalue : fb_rvalue);
+  tret = gimplify_expr (p, pre_p, post_p, is_gimple_min_lval, fallback);
   ret = MIN (ret, tret);
 
   /* And finally, the indices and operands to BIT_FIELD_REF.  */
@@ -1713,12 +1712,11 @@ gimplify_compound_lval (tree *expr_p, tree *pre_p,
       VARRAY_POP (stack);
     }
 
-  tret = gimplify_expr (p, pre_p, post_p, is_gimple_min_lval,
-			want_lvalue ? fb_lvalue : fb_rvalue);
+  tret = gimplify_expr (p, pre_p, post_p, is_gimple_min_lval, fallback);
   ret = MIN (ret, tret);
 
   /* If the outermost expression is a COMPONENT_REF, canonicalize its type.  */
-  if (!want_lvalue && TREE_CODE (*expr_p) == COMPONENT_REF)
+  if ((fallback & fb_rvalue) && TREE_CODE (*expr_p) == COMPONENT_REF)
     {
       canonicalize_component_ref (expr_p);
       ret = MIN (ret, GS_OK);
@@ -1806,20 +1804,12 @@ gimplify_self_mod_expr (tree *expr_p, tree *pre_p, tree *post_p,
     }
 }
 
-/*  Gimplify the CALL_EXPR node pointed by EXPR_P.
-
-      call_expr
-	      : ID '(' arglist ')'
-
-      arglist
-	      : arglist ',' val
-	      | val
-
-    PRE_P points to the list where side effects that must happen before
-	*EXPR_P should be stored.  */
+/* Gimplify the CALL_EXPR node pointed by EXPR_P.  PRE_P points to the
+   list where side effects that must happen before *EXPR_P should be stored.
+   WANT_VALUE is true if the result of the call is desired.  */
 
 static enum gimplify_status
-gimplify_call_expr (tree *expr_p, tree *pre_p, bool (*gimple_test_f) (tree))
+gimplify_call_expr (tree *expr_p, tree *pre_p, bool want_value)
 {
   tree decl;
   tree arglist;
@@ -1863,7 +1853,7 @@ gimplify_call_expr (tree *expr_p, tree *pre_p, bool (*gimple_test_f) (tree))
       if (DECL_FUNCTION_CODE (decl) == BUILT_IN_STACK_RESTORE)
 	gimplify_ctxp->save_stack = false;
 
-      new = simplify_builtin (*expr_p, gimple_test_f == is_gimple_stmt);
+      new = simplify_builtin (*expr_p, !want_value);
 
       if (new && new != *expr_p)
 	{
@@ -1887,13 +1877,24 @@ gimplify_call_expr (tree *expr_p, tree *pre_p, bool (*gimple_test_f) (tree))
        arglist = TREE_CHAIN (arglist))
     {
       enum gimplify_status t;
+      bool (*test) (tree);
+      fallback_t fb;
+
+      /* In general, we allow lvalues for function arguments to avoid
+	 extra overhead of copying large aggregates out of even larger
+	 aggregates into temporaries only to copy the temporaries to
+	 the argument list.  Make optimizers happy by pulling out to
+	 temporaries those types that fit in registers.  */
+      if (is_gimple_reg_type (TREE_TYPE (TREE_VALUE (arglist))))
+	test = is_gimple_val, fb = fb_rvalue;
+      else
+	test = is_gimple_lvalue, fb = fb_either;
 
       /* There is a sequence point before a function call.  Side effects in
 	 the argument list must occur before the actual call. So, when
 	 gimplifying arguments, force gimplify_expr to use an internal
 	 post queue which is then appended to the end of PRE_P.  */
-      t = gimplify_expr (&TREE_VALUE (arglist), pre_p, NULL, is_gimple_val,
-			 fb_rvalue);
+      t = gimplify_expr (&TREE_VALUE (arglist), pre_p, NULL, test, fb);
 
       if (t == GS_ERROR)
 	ret = GS_ERROR;
@@ -1904,7 +1905,7 @@ gimplify_call_expr (tree *expr_p, tree *pre_p, bool (*gimple_test_f) (tree))
   /* Try this again in case gimplification exposed something.  */
   if (ret != GS_ERROR && decl && DECL_BUILT_IN (decl))
     {
-      tree new = simplify_builtin (*expr_p, gimple_test_f == is_gimple_stmt);
+      tree new = simplify_builtin (*expr_p, !want_value);
 
       if (new && new != *expr_p)
 	{
@@ -2334,7 +2335,7 @@ gimplify_modify_expr_to_memcpy (tree *expr_p, bool want_value)
   args = tree_cons (NULL, t, args);
 
   to_ptr = build_fold_addr_expr (to);
-  args = tree_cons (NULL, to, args);
+  args = tree_cons (NULL, to_ptr, args);
   t = implicit_built_in_decls[BUILT_IN_MEMCPY];
   t = build_function_call_expr (t, args);
 
@@ -3508,7 +3509,7 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 	case IMAGPART_EXPR:
 	case COMPONENT_REF:
 	  ret = gimplify_compound_lval (expr_p, pre_p, post_p,
-					fallback & fb_lvalue);
+					fallback ? fallback : fb_rvalue);
 	  break;
 
 	case COND_EXPR:
@@ -3516,7 +3517,7 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 	  break;
 
 	case CALL_EXPR:
-	  ret = gimplify_call_expr (expr_p, pre_p, gimple_test_f);
+	  ret = gimplify_call_expr (expr_p, pre_p, fallback != fb_none);
 	  break;
 
 	case TREE_LIST:
@@ -3717,7 +3718,7 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 	    enum gimplify_status r0, r1, r2;
 
 	    r0 = gimplify_expr (&TREE_OPERAND (*expr_p, 0), pre_p, post_p,
-				is_gimple_min_lval, fb_either);
+				is_gimple_lvalue, fb_either);
 	    r1 = gimplify_expr (&TREE_OPERAND (*expr_p, 1), pre_p, post_p,
 				is_gimple_val, fb_rvalue);
 	    r2 = gimplify_expr (&TREE_OPERAND (*expr_p, 2), pre_p, post_p,
