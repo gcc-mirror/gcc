@@ -1,3 +1,8 @@
+Thu Nov 18 00:59:11 1999  Michael Gschwind  <mikeg@alagoas.watson.ibm.com>
+
+	* basic-block.h (update_life_extent): Remove trailing comma on
+	enumeration type list.
+
 1999-11-18 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
 
 	* varasm.c (output_constructor) Solved problem with long long

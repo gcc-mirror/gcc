@@ -257,7 +257,7 @@ enum update_life_extent
 {
   UPDATE_LIFE_LOCAL = 0,
   UPDATE_LIFE_GLOBAL = 1,
-  UPDATE_LIFE_GLOBAL_RM_NOTES = 2,
+  UPDATE_LIFE_GLOBAL_RM_NOTES = 2
 };
 
 /* Flags for life_analysis and update_life_info.  */
