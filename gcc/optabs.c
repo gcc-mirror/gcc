@@ -2577,15 +2577,15 @@ gen_move_insn (x, y)
      find a mode to do it in.  If we have a movcc, use it.  Otherwise,
      find the MODE_INT mode of the same width.  */
 
-  if (insn_code == CODE_FOR_nothing)
+  if (GET_MODE_CLASS (mode) == MODE_CC && insn_code == CODE_FOR_nothing)
     {
       enum machine_mode tmode = VOIDmode;
       rtx x1 = x, y1 = y;
 
-      if (GET_MODE_CLASS (mode) == MODE_CC && mode != CCmode
+      if (mode != CCmode
 	  && mov_optab->handlers[(int) CCmode].insn_code != CODE_FOR_nothing)
 	tmode = CCmode;
-      else if (GET_MODE_CLASS (mode) == MODE_CC)
+      else
 	for (tmode = QImode; tmode != VOIDmode;
 	     tmode = GET_MODE_WIDER_MODE (tmode))
 	  if (GET_MODE_SIZE (tmode) == GET_MODE_SIZE (mode))
