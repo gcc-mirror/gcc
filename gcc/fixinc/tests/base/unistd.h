@@ -21,3 +21,13 @@ extern pid_t getpgid(pid_t);
 extern int getpagesize();
 extern int getpgid();
 #endif  /* SOLARIS_UNISTD_CHECK */
+
+
+#if defined( ULTRIX_UNISTD_CHECK )
+@(#)unistd.h      6.1     (ULTRIX)
+	getgroups(),
+	getpagesize(),
+	fork(),
+	vfork(),
+
+#endif  /* ULTRIX_UNISTD_CHECK */

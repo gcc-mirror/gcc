@@ -22,4 +22,19 @@
 
 #endif  /* ULTRIX_STRINGS_CHECK */
 
+
+#if defined( ULTRIX_STRINGS2_CHECK )
+@(#)strings.h      6.1     (ULTRIX)
+	strncmp( const char *__s1, const char *__s2, size_t __n );
+
+extern int
+	strcasecmp( const char *__s1, const char *__s2),
+	strncasecmp( const char *__s1, const char *__s2, size_t __n );
+	strncmp();
+extern int
+	strcasecmp(),
+	strncasecmp();
+
+#endif  /* ULTRIX_STRINGS2_CHECK */
+
 #endif  /* FIXINC_WRAP_STRINGS_H_ULTRIX_STRINGS */
