@@ -119,6 +119,7 @@ struct file_name_map_list;
   OP(CPP_SCOPE,		"::")			\
   OP(CPP_DEREF_STAR,	"->*")			\
   OP(CPP_DOT_STAR,	".*")			\
+  OP(CPP_ATSIGN,	"@")  /* used in Objective C */ \
 \
   TK(CPP_NAME,		SPELL_IDENT)	/* word */			\
   TK(CPP_INT,		SPELL_STRING)	/* 23 */			\
@@ -131,7 +132,6 @@ struct file_name_map_list;
 \
   TK(CPP_STRING,	SPELL_STRING)	/* "string" */			\
   TK(CPP_WSTRING,	SPELL_STRING)	/* L"string" */			\
-  TK(CPP_OSTRING,	SPELL_STRING)	/* @"string" - Objective C */	\
   TK(CPP_HEADER_NAME,	SPELL_STRING)	/* <stdio.h> in #include */	\
 \
   TK(CPP_COMMENT,	SPELL_STRING)	/* Only if output comments.  */ \
