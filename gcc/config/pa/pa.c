@@ -37,7 +37,6 @@ Boston, MA 02111-1307, USA.  */
 #include "except.h"
 #include "expr.h"
 #include "optabs.h"
-#include "libfuncs.h"
 #include "reload.h"
 #include "integrate.h"
 #include "function.h"
@@ -4980,18 +4979,20 @@ pa_hpux_init_libfuncs (void)
   set_optab_libfunc (lt_optab, TFmode, "_U_Qflt");
   set_optab_libfunc (le_optab, TFmode, "_U_Qfle");
 
-  extendsftf2_libfunc = init_one_libfunc ("_U_Qfcnvff_sgl_to_quad");
-  extenddftf2_libfunc = init_one_libfunc ("_U_Qfcnvff_dbl_to_quad");
-  trunctfsf2_libfunc = init_one_libfunc ("_U_Qfcnvff_quad_to_sgl");
-  trunctfdf2_libfunc = init_one_libfunc ("_U_Qfcnvff_quad_to_dbl");
-  floatsitf_libfunc = init_one_libfunc ("_U_Qfcnvxf_sgl_to_quad");
-  floatditf_libfunc = init_one_libfunc ("_U_Qfcnvxf_dbl_to_quad");
-  fixtfsi_libfunc = init_one_libfunc (TARGET_64BIT
-				      ? "__U_Qfcnvfxt_quad_to_sgl"
-				      : "_U_Qfcnvfxt_quad_to_sgl");
-  fixtfdi_libfunc = init_one_libfunc ("_U_Qfcnvfxt_quad_to_dbl");
-  fixunstfsi_libfunc = init_one_libfunc ("_U_Qfcnvfxt_quad_to_usgl");
-  fixunstfdi_libfunc = init_one_libfunc ("_U_Qfcnvfxt_quad_to_udbl");
+  set_conv_libfunc (sext_optab,   TFmode, SFmode, "_U_Qfcnvff_sgl_to_quad");
+  set_conv_libfunc (sext_optab,   TFmode, DFmode, "_U_Qfcnvff_dbl_to_quad");
+  set_conv_libfunc (trunc_optab,  SFmode, TFmode, "_U_Qfcnvff_quad_to_sgl");
+  set_conv_libfunc (trunc_optab,  DFmode, TFmode, "_U_Qfcnvff_quad_to_dbl");
+
+  set_conv_libfunc (sfix_optab,   SImode, TFmode, TARGET_64BIT
+						  ? "__U_Qfcnvfxt_quad_to_sgl"
+						  : "_U_Qfcnvfxt_quad_to_sgl");
+  set_conv_libfunc (sfix_optab,   DImode, TFmode, "_U_Qfcnvfxt_quad_to_dbl");
+  set_conv_libfunc (ufix_optab,   SImode, TFmode, "_U_Qfcnvfxt_quad_to_usgl");
+  set_conv_libfunc (ufix_optab,   DImode, TFmode, "_U_Qfcnvfxt_quad_to_udbl");
+
+  set_conv_libfunc (sfloat_optab, TFmode, SImode, "_U_Qfcnvxf_sgl_to_quad");
+  set_conv_libfunc (sfloat_optab, TFmode, DImode, "_U_Qfcnvxf_dbl_to_quad");
 }
 #endif
 

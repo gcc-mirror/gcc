@@ -38,19 +38,32 @@ Boston, MA 02111-1307, USA.  */
    A few optabs, such as move_optab and cmp_optab, are used
    by special code.  */
 
+struct optab_handlers GTY(())
+{
+  enum insn_code insn_code;
+  rtx libfunc;
+};
+
 struct optab GTY(())
 {
   enum rtx_code code;
-  struct optab_handlers {
-    enum insn_code insn_code;
-    rtx libfunc;
-  } handlers [NUM_MACHINE_MODES];
+  struct optab_handlers handlers[NUM_MACHINE_MODES];
 };
 typedef struct optab * optab;
 
+/* A convert_optab is for some sort of conversion operation between
+   modes.  The first array index is the destination mode, the second
+   is the source mode.  */
+struct convert_optab GTY(())
+{
+  enum rtx_code code;
+  struct optab_handlers handlers[NUM_MACHINE_MODES][NUM_MACHINE_MODES];
+};
+typedef struct convert_optab *convert_optab;
+
 /* Given an enum insn_code, access the function to construct
    the body of that kind of insn.  */
-#define GEN_FCN(CODE) (*insn_data[(int) (CODE)].genfun)
+#define GEN_FCN(CODE) (insn_data[CODE].genfun)
 
 /* Enumeration of valid indexes into optab_table.  */
 enum optab_index
@@ -242,7 +255,7 @@ extern GTY(()) optab optab_table[OTI_MAX];
 #define log_optab (optab_table[OTI_log])
 #define floor_optab (optab_table[OTI_floor])
 #define ceil_optab (optab_table[OTI_ceil])
-#define trunc_optab (optab_table[OTI_trunc])
+#define btrunc_optab (optab_table[OTI_trunc])
 #define round_optab (optab_table[OTI_round])
 #define nearbyint_optab (optab_table[OTI_nearbyint])
 #define tan_optab (optab_table[OTI_tan])
@@ -268,13 +281,36 @@ extern GTY(()) optab optab_table[OTI_MAX];
 #define push_optab (optab_table[OTI_push])
 #define addcc_optab (optab_table[OTI_addcc])
 
-/* Tables of patterns for extending one integer mode to another.  */
-extern enum insn_code extendtab[MAX_MACHINE_MODE][MAX_MACHINE_MODE][2];
+/* Conversion optabs have their own table and indexes.  */
+enum convert_optab_index
+{
+  CTI_sext,
+  CTI_zext,
+  CTI_trunc,
 
-/* Tables of patterns for converting between fixed and floating point.  */
-extern enum insn_code fixtab[NUM_MACHINE_MODES][NUM_MACHINE_MODES][2];
-extern enum insn_code fixtrunctab[NUM_MACHINE_MODES][NUM_MACHINE_MODES][2];
-extern enum insn_code floattab[NUM_MACHINE_MODES][NUM_MACHINE_MODES][2];
+  CTI_sfix,
+  CTI_ufix,
+
+  CTI_sfixtrunc,
+  CTI_ufixtrunc,
+
+  CTI_sfloat,
+  CTI_ufloat,
+
+  CTI_MAX
+};
+
+extern GTY(()) convert_optab convert_optab_table[CTI_MAX];
+
+#define sext_optab (convert_optab_table[CTI_sext])
+#define zext_optab (convert_optab_table[CTI_zext])
+#define trunc_optab (convert_optab_table[CTI_trunc])
+#define sfix_optab (convert_optab_table[CTI_sfix])
+#define ufix_optab (convert_optab_table[CTI_ufix])
+#define sfixtrunc_optab (convert_optab_table[CTI_sfixtrunc])
+#define ufixtrunc_optab (convert_optab_table[CTI_ufixtrunc])
+#define sfloat_optab (convert_optab_table[CTI_sfloat])
+#define ufloat_optab (convert_optab_table[CTI_ufloat])
 
 /* These arrays record the insn_code of insns that may be needed to
    perform input and output reloads of special objects.  They provide a
@@ -385,6 +421,8 @@ extern void init_floattab (void);
 
 /* Call this to reset the function entry for one optab.  */
 extern void set_optab_libfunc (optab, enum machine_mode, const char *);
+extern void set_conv_libfunc (convert_optab, enum machine_mode,
+			      enum machine_mode, const char *);
 
 /* Generate code for a FLOAT_EXPR.  */
 extern void expand_float (rtx, rtx, int);

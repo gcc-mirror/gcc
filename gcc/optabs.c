@@ -58,13 +58,8 @@ optab optab_table[OTI_MAX];
 
 rtx libfunc_table[LTI_MAX];
 
-/* Tables of patterns for extending one integer mode to another.  */
-enum insn_code extendtab[MAX_MACHINE_MODE][MAX_MACHINE_MODE][2];
-
-/* Tables of patterns for converting between fixed and floating point.  */
-enum insn_code fixtab[NUM_MACHINE_MODES][NUM_MACHINE_MODES][2];
-enum insn_code fixtrunctab[NUM_MACHINE_MODES][NUM_MACHINE_MODES][2];
-enum insn_code floattab[NUM_MACHINE_MODES][NUM_MACHINE_MODES][2];
+/* Tables of patterns for converting one mode to another.  */
+convert_optab convert_optab_table[CTI_MAX];
 
 /* Contains the optab used for each rtx code.  */
 optab code_to_optab[NUM_RTX_CODE + 1];
@@ -112,11 +107,17 @@ static enum insn_code can_fix_p (enum machine_mode, enum machine_mode, int,
 static enum insn_code can_float_p (enum machine_mode, enum machine_mode, int);
 static rtx ftruncify (rtx);
 static optab new_optab (void);
+static convert_optab new_convert_optab (void);
 static inline optab init_optab (enum rtx_code);
 static inline optab init_optabv (enum rtx_code);
+static inline convert_optab init_convert_optab (enum rtx_code);
 static void init_libfuncs (optab, int, int, const char *, int);
 static void init_integral_libfuncs (optab, const char *, int);
 static void init_floating_libfuncs (optab, const char *, int);
+static void init_interclass_conv_libfuncs (convert_optab, const char *,
+					   enum mode_class, enum mode_class);
+static void init_intraclass_conv_libfuncs (convert_optab, const char *,
+					   enum mode_class, bool);
 static void emit_cmp_and_jump_insn_1 (rtx, rtx, enum machine_mode,
 				      enum rtx_code, int, rtx);
 static void prepare_float_lib_cmp (rtx *, rtx *, enum rtx_code *,
@@ -4421,12 +4422,14 @@ enum insn_code
 can_extend_p (enum machine_mode to_mode, enum machine_mode from_mode,
 	      int unsignedp)
 {
+  convert_optab tab;
 #ifdef HAVE_ptr_extend
   if (unsignedp < 0)
     return CODE_FOR_ptr_extend;
-  else
 #endif
-    return extendtab[(int) to_mode][(int) from_mode][unsignedp != 0];
+
+  tab = unsignedp ? zext_optab : sext_optab;
+  return tab->handlers[to_mode][from_mode].insn_code;
 }
 
 /* Generate the body of an insn to extend Y (with mode MFROM)
@@ -4436,7 +4439,8 @@ rtx
 gen_extend_insn (rtx x, rtx y, enum machine_mode mto,
 		 enum machine_mode mfrom, int unsignedp)
 {
-  return (GEN_FCN (extendtab[(int) mto][(int) mfrom][unsignedp != 0]) (x, y));
+  enum insn_code icode = can_extend_p (mto, mfrom, unsignedp);
+  return GEN_FCN (icode) (x, y);
 }
 
 /* can_fix_p and can_float_p say whether the target machine
@@ -4452,16 +4456,27 @@ static enum insn_code
 can_fix_p (enum machine_mode fixmode, enum machine_mode fltmode,
 	   int unsignedp, int *truncp_ptr)
 {
-  *truncp_ptr = 0;
-  if (fixtrunctab[(int) fltmode][(int) fixmode][unsignedp != 0]
-      != CODE_FOR_nothing)
-    return fixtrunctab[(int) fltmode][(int) fixmode][unsignedp != 0];
+  convert_optab tab;
+  enum insn_code icode;
 
-  if (ftrunc_optab->handlers[(int) fltmode].insn_code != CODE_FOR_nothing)
+  tab = unsignedp ? ufixtrunc_optab : sfixtrunc_optab;
+  icode = tab->handlers[fixmode][fltmode].insn_code;
+  if (icode != CODE_FOR_nothing)
+    {
+      *truncp_ptr = 0;
+      return icode;
+    }
+
+  tab = unsignedp ? ufix_optab : sfix_optab;
+  icode = tab->handlers[fixmode][fltmode].insn_code;
+  if (icode != CODE_FOR_nothing
+      && ftrunc_optab->handlers[fltmode].insn_code != CODE_FOR_nothing)
     {
       *truncp_ptr = 1;
-      return fixtab[(int) fltmode][(int) fixmode][unsignedp != 0];
+      return icode;
     }
+
+  *truncp_ptr = 0;
   return CODE_FOR_nothing;
 }
 
@@ -4469,7 +4484,10 @@ static enum insn_code
 can_float_p (enum machine_mode fltmode, enum machine_mode fixmode,
 	     int unsignedp)
 {
-  return floattab[(int) fltmode][(int) fixmode][unsignedp != 0];
+  convert_optab tab;
+
+  tab = unsignedp ? ufloat_optab : sfloat_optab;
+  return tab->handlers[fltmode][fixmode].insn_code;
 }
 
 /* Generate code to convert FROM to floating point
@@ -4642,12 +4660,12 @@ expand_float (rtx to, rtx from, int unsignedp)
       goto done;
     }
 
-  /* No hardware instruction available; call a library routine to convert from
-     SImode, DImode, or TImode into SFmode, DFmode, XFmode, or TFmode.  */
+  /* No hardware instruction available; call a library routine.  */
     {
-      rtx libfcn;
+      rtx libfunc;
       rtx insns;
       rtx value;
+      convert_optab tab = unsignedp ? ufloat_optab : sfloat_optab;
 
       to = protect_from_queue (to, 1);
       from = protect_from_queue (from, 0);
@@ -4658,56 +4676,13 @@ expand_float (rtx to, rtx from, int unsignedp)
       if (flag_force_mem)
 	from = force_not_mem (from);
 
-      if (GET_MODE (to) == SFmode)
-	{
-	  if (GET_MODE (from) == SImode)
-	    libfcn = floatsisf_libfunc;
-	  else if (GET_MODE (from) == DImode)
-	    libfcn = floatdisf_libfunc;
-	  else if (GET_MODE (from) == TImode)
-	    libfcn = floattisf_libfunc;
-	  else
-	    abort ();
-	}
-      else if (GET_MODE (to) == DFmode)
-	{
-	  if (GET_MODE (from) == SImode)
-	    libfcn = floatsidf_libfunc;
-	  else if (GET_MODE (from) == DImode)
-	    libfcn = floatdidf_libfunc;
-	  else if (GET_MODE (from) == TImode)
-	    libfcn = floattidf_libfunc;
-	  else
-	    abort ();
-	}
-      else if (GET_MODE (to) == XFmode)
-	{
-	  if (GET_MODE (from) == SImode)
-	    libfcn = floatsixf_libfunc;
-	  else if (GET_MODE (from) == DImode)
-	    libfcn = floatdixf_libfunc;
-	  else if (GET_MODE (from) == TImode)
-	    libfcn = floattixf_libfunc;
-	  else
-	    abort ();
-	}
-      else if (GET_MODE (to) == TFmode)
-	{
-	  if (GET_MODE (from) == SImode)
-	    libfcn = floatsitf_libfunc;
-	  else if (GET_MODE (from) == DImode)
-	    libfcn = floatditf_libfunc;
-	  else if (GET_MODE (from) == TImode)
-	    libfcn = floattitf_libfunc;
-	  else
-	    abort ();
-	}
-      else
+      libfunc = tab->handlers[GET_MODE (to)][GET_MODE (from)].libfunc;
+      if (!libfunc)
 	abort ();
 
       start_sequence ();
 
-      value = emit_library_call_value (libfcn, NULL_RTX, LCT_CONST,
+      value = emit_library_call_value (libfunc, NULL_RTX, LCT_CONST,
 				       GET_MODE (to), 1, from,
 				       GET_MODE (from));
       insns = get_insns ();
@@ -4748,7 +4723,6 @@ expand_fix (rtx to, rtx from, int unsignedp)
   rtx target = to;
   enum machine_mode fmode, imode;
   int must_trunc = 0;
-  rtx libfcn = 0;
 
   /* We first try to find a pair of modes, one real and one integer, at
      least as wide as FROM and TO, respectively, in which we can open-code
@@ -4889,57 +4863,16 @@ expand_fix (rtx to, rtx from, int unsignedp)
 
       expand_fix (target, from, unsignedp);
     }
-  else if (GET_MODE (from) == SFmode)
-    {
-      if (GET_MODE (to) == SImode)
-	libfcn = unsignedp ? fixunssfsi_libfunc : fixsfsi_libfunc;
-      else if (GET_MODE (to) == DImode)
-	libfcn = unsignedp ? fixunssfdi_libfunc : fixsfdi_libfunc;
-      else if (GET_MODE (to) == TImode)
-	libfcn = unsignedp ? fixunssfti_libfunc : fixsfti_libfunc;
-      else
-	abort ();
-    }
-  else if (GET_MODE (from) == DFmode)
-    {
-      if (GET_MODE (to) == SImode)
-	libfcn = unsignedp ? fixunsdfsi_libfunc : fixdfsi_libfunc;
-      else if (GET_MODE (to) == DImode)
-	libfcn = unsignedp ? fixunsdfdi_libfunc : fixdfdi_libfunc;
-      else if (GET_MODE (to) == TImode)
-	libfcn = unsignedp ? fixunsdfti_libfunc : fixdfti_libfunc;
-      else
-	abort ();
-    }
-  else if (GET_MODE (from) == XFmode)
-    {
-      if (GET_MODE (to) == SImode)
-	libfcn = unsignedp ? fixunsxfsi_libfunc : fixxfsi_libfunc;
-      else if (GET_MODE (to) == DImode)
-	libfcn = unsignedp ? fixunsxfdi_libfunc : fixxfdi_libfunc;
-      else if (GET_MODE (to) == TImode)
-	libfcn = unsignedp ? fixunsxfti_libfunc : fixxfti_libfunc;
-      else
-	abort ();
-    }
-  else if (GET_MODE (from) == TFmode)
-    {
-      if (GET_MODE (to) == SImode)
-	libfcn = unsignedp ? fixunstfsi_libfunc : fixtfsi_libfunc;
-      else if (GET_MODE (to) == DImode)
-	libfcn = unsignedp ? fixunstfdi_libfunc : fixtfdi_libfunc;
-      else if (GET_MODE (to) == TImode)
-	libfcn = unsignedp ? fixunstfti_libfunc : fixtfti_libfunc;
-      else
-	abort ();
-    }
   else
-    abort ();
-
-  if (libfcn)
     {
       rtx insns;
       rtx value;
+      rtx libfunc;
+      
+      convert_optab tab = unsignedp ? ufix_optab : sfix_optab;
+      libfunc = tab->handlers[GET_MODE (to)][GET_MODE (from)].libfunc;
+      if (!libfunc)
+	abort ();
 
       to = protect_from_queue (to, 1);
       from = protect_from_queue (from, 0);
@@ -4949,7 +4882,7 @@ expand_fix (rtx to, rtx from, int unsignedp)
 
       start_sequence ();
 
-      value = emit_library_call_value (libfcn, NULL_RTX, LCT_CONST,
+      value = emit_library_call_value (libfunc, NULL_RTX, LCT_CONST,
 				       GET_MODE (to), 1, from,
 				       GET_MODE (from));
       insns = get_insns ();
@@ -4994,6 +4927,20 @@ new_optab (void)
   return op;
 }
 
+static convert_optab
+new_convert_optab (void)
+{
+  int i, j;
+  convert_optab op = ggc_alloc (sizeof (struct convert_optab));
+  for (i = 0; i < NUM_MACHINE_MODES; i++)
+    for (j = 0; j < NUM_MACHINE_MODES; j++)
+      {
+	op->handlers[i][j].insn_code = CODE_FOR_nothing;
+	op->handlers[i][j].libfunc = 0;
+      }
+  return op;
+}
+
 /* Same, but fill in its code as CODE, and write it into the
    code_to_optab table.  */
 static inline optab
@@ -5011,6 +4958,15 @@ static inline optab
 init_optabv (enum rtx_code code)
 {
   optab op = new_optab ();
+  op->code = code;
+  return op;
+}
+
+/* Conversion optabs never go in the code_to_optab table.  */
+static inline convert_optab
+init_convert_optab (enum rtx_code code)
+{
+  convert_optab op = new_convert_optab ();
   op->code = code;
   return op;
 }
@@ -5101,6 +5057,119 @@ init_floating_libfuncs (optab optable, const char *opname, int suffix)
     init_libfuncs (optable, lmode, lmode, opname, suffix);
 }
 
+/* Initialize the libfunc fields of an entire group of entries of an
+   inter-mode-class conversion optab.  The string formation rules are
+   similar to the ones for init_libfuncs, above, but instead of having
+   a mode name and an operand count these functions have two mode names
+   and no operand count.  */
+static void
+init_interclass_conv_libfuncs (convert_optab tab, const char *opname,
+			       enum mode_class from_class,
+			       enum mode_class to_class)
+{
+  enum machine_mode first_from_mode = GET_CLASS_NARROWEST_MODE (from_class);
+  enum machine_mode first_to_mode = GET_CLASS_NARROWEST_MODE (to_class);
+  size_t opname_len = strlen (opname);
+  size_t max_mname_len = 0;
+
+  enum machine_mode fmode, tmode;
+  const char *fname, *tname;
+  const char *q;
+  char *libfunc_name, *suffix;
+  char *p;
+
+  for (fmode = first_from_mode;
+       fmode != VOIDmode;
+       fmode = GET_MODE_WIDER_MODE (fmode))
+    max_mname_len = MAX (max_mname_len, strlen (GET_MODE_NAME (fmode)));
+
+  for (tmode = first_to_mode;
+       tmode != VOIDmode;
+       tmode = GET_MODE_WIDER_MODE (tmode))
+    max_mname_len = MAX (max_mname_len, strlen (GET_MODE_NAME (tmode)));
+
+  libfunc_name = alloca (2 + opname_len + 2*max_mname_len + 1 + 1);
+  libfunc_name[0] = '_';
+  libfunc_name[1] = '_';
+  memcpy (&libfunc_name[2], opname, opname_len);
+  suffix = libfunc_name + opname_len + 2;
+
+  for (fmode = first_from_mode; fmode != VOIDmode;
+       fmode = GET_MODE_WIDER_MODE (fmode))
+    for (tmode = first_to_mode; tmode != VOIDmode;
+	 tmode = GET_MODE_WIDER_MODE (tmode))
+      {
+	fname = GET_MODE_NAME (fmode);
+	tname = GET_MODE_NAME (tmode);
+
+	p = suffix;
+	for (q = fname; *q; p++, q++)
+	  *p = TOLOWER (*q);
+	for (q = tname; *q; p++, q++)
+	  *p = TOLOWER (*q);
+
+	*p = '\0';
+
+	tab->handlers[tmode][fmode].libfunc
+	  = init_one_libfunc (ggc_alloc_string (libfunc_name,
+						p - libfunc_name));
+      }
+}
+
+/* Initialize the libfunc fields of an entire group of entries of an
+   intra-mode-class conversion optab.  The string formation rules are
+   similar to the ones for init_libfunc, above.  WIDENING says whether
+   the optab goes from narrow to wide modes or vice versa.  These functions
+   have two mode names _and_ an operand count.  */
+static void
+init_intraclass_conv_libfuncs (convert_optab tab, const char *opname,
+			       enum mode_class class, bool widening)
+{
+  enum machine_mode first_mode = GET_CLASS_NARROWEST_MODE (class);
+  size_t opname_len = strlen (opname);
+  size_t max_mname_len = 0;
+
+  enum machine_mode nmode, wmode;
+  const char *nname, *wname;
+  const char *q;
+  char *libfunc_name, *suffix;
+  char *p;
+
+  for (nmode = first_mode; nmode != VOIDmode;
+       nmode = GET_MODE_WIDER_MODE (nmode))
+    max_mname_len = MAX (max_mname_len, strlen (GET_MODE_NAME (nmode)));
+
+  libfunc_name = alloca (2 + opname_len + 2*max_mname_len + 1 + 1);
+  libfunc_name[0] = '_';
+  libfunc_name[1] = '_';
+  memcpy (&libfunc_name[2], opname, opname_len);
+  suffix = libfunc_name + opname_len + 2;
+
+  for (nmode = first_mode; nmode != VOIDmode;
+       nmode = GET_MODE_WIDER_MODE (nmode))
+    for (wmode = GET_MODE_WIDER_MODE (nmode); wmode != VOIDmode;
+	 wmode = GET_MODE_WIDER_MODE (wmode))
+      {
+	nname = GET_MODE_NAME (nmode);
+	wname = GET_MODE_NAME (wmode);
+
+	p = suffix;
+	for (q = widening ? nname : wname; *q; p++, q++)
+	  *p = TOLOWER (*q);
+	for (q = widening ? wname : nname; *q; p++, q++)
+	  *p = TOLOWER (*q);
+
+	*p++ = '2';
+	*p = '\0';
+
+	tab->handlers[widening ? nmode : wmode]
+	             [widening ? wmode : nmode].libfunc
+	  = init_one_libfunc (ggc_alloc_string (libfunc_name,
+						p - libfunc_name));
+      }
+}
+
+
 rtx
 init_one_libfunc (const char *name)
 {
@@ -5136,35 +5205,28 @@ set_optab_libfunc (optab optable, enum machine_mode mode, const char *name)
     optable->handlers[mode].libfunc = 0;
 }
 
+/* Call this to reset the function entry for one conversion optab
+   (OPTABLE) from mode FMODE to mode TMODE to NAME, which should be
+   either 0 or a string constant.  */
+void
+set_conv_libfunc (convert_optab optable, enum machine_mode tmode,
+		  enum machine_mode fmode, const char *name)
+{
+  if (name)
+    optable->handlers[tmode][fmode].libfunc = init_one_libfunc (name);
+  else
+    optable->handlers[tmode][fmode].libfunc = 0;
+}
+
 /* Call this once to initialize the contents of the optabs
    appropriately for the current target machine.  */
 
 void
 init_optabs (void)
 {
-  unsigned int i, j, k;
+  unsigned int i;
 
   /* Start by initializing all tables to contain CODE_FOR_nothing.  */
-
-  for (i = 0; i < ARRAY_SIZE (fixtab); i++)
-    for (j = 0; j < ARRAY_SIZE (fixtab[0]); j++)
-      for (k = 0; k < ARRAY_SIZE (fixtab[0][0]); k++)
-	fixtab[i][j][k] = CODE_FOR_nothing;
-
-  for (i = 0; i < ARRAY_SIZE (fixtrunctab); i++)
-    for (j = 0; j < ARRAY_SIZE (fixtrunctab[0]); j++)
-      for (k = 0; k < ARRAY_SIZE (fixtrunctab[0][0]); k++)
-	fixtrunctab[i][j][k] = CODE_FOR_nothing;
-
-  for (i = 0; i < ARRAY_SIZE (floattab); i++)
-    for (j = 0; j < ARRAY_SIZE (floattab[0]); j++)
-      for (k = 0; k < ARRAY_SIZE (floattab[0][0]); k++)
-	floattab[i][j][k] = CODE_FOR_nothing;
-
-  for (i = 0; i < ARRAY_SIZE (extendtab); i++)
-    for (j = 0; j < ARRAY_SIZE (extendtab[0]); j++)
-      for (k = 0; k < ARRAY_SIZE (extendtab[0][0]); k++)
-	extendtab[i][j][k] = CODE_FOR_nothing;
 
   for (i = 0; i < NUM_RTX_CODE; i++)
     setcc_gen_code[i] = CODE_FOR_nothing;
@@ -5239,7 +5301,7 @@ init_optabs (void)
   floor_optab = init_optab (UNKNOWN);
   ceil_optab = init_optab (UNKNOWN);
   round_optab = init_optab (UNKNOWN);
-  trunc_optab = init_optab (UNKNOWN);
+  btrunc_optab = init_optab (UNKNOWN);
   nearbyint_optab = init_optab (UNKNOWN);
   sin_optab = init_optab (UNKNOWN);
   cos_optab = init_optab (UNKNOWN);
@@ -5253,6 +5315,17 @@ init_optabs (void)
   cstore_optab = init_optab (UNKNOWN);
   push_optab = init_optab (UNKNOWN);
 
+  /* Conversions.  */
+  sext_optab = init_convert_optab (SIGN_EXTEND);
+  zext_optab = init_convert_optab (ZERO_EXTEND);
+  trunc_optab = init_convert_optab (TRUNCATE);
+  sfix_optab = init_convert_optab (FIX);
+  ufix_optab = init_convert_optab (UNSIGNED_FIX);
+  sfixtrunc_optab = init_convert_optab (UNKNOWN);
+  ufixtrunc_optab = init_convert_optab (UNKNOWN);
+  sfloat_optab = init_convert_optab (FLOAT);
+  ufloat_optab = init_convert_optab (UNSIGNED_FLOAT);
+
   for (i = 0; i < NUM_MACHINE_MODES; i++)
     {
       movstr_optab[i] = CODE_FOR_nothing;
@@ -5265,14 +5338,6 @@ init_optabs (void)
 
   /* Fill in the optabs with the insns we support.  */
   init_all_optabs ();
-
-#ifdef FIXUNS_TRUNC_LIKE_FIX_TRUNC
-  /* This flag says the same insns that convert to a signed fixnum
-     also convert validly to an unsigned one.  */
-  for (i = 0; i < NUM_MACHINE_MODES; i++)
-    for (j = 0; j < NUM_MACHINE_MODES; j++)
-      fixtrunctab[i][j][1] = fixtrunctab[i][j][0];
-#endif
 
   /* Initialize the optabs with the names of the library functions.  */
   init_integral_libfuncs (add_optab, "add", '3');
@@ -5333,26 +5398,24 @@ init_optabs (void)
   init_floating_libfuncs (le_optab, "le", '2');
   init_floating_libfuncs (unord_optab, "unord", '2');
 
-  /* Use cabs for DC complex abs, since systems generally have cabs.
-     Don't define any libcall for SCmode, so that cabs will be used.  */
-  abs_optab->handlers[(int) DCmode].libfunc
-    = init_one_libfunc ("cabs");
+  /* Conversions.  */
+  init_interclass_conv_libfuncs (sfloat_optab, "float", MODE_INT, MODE_FLOAT);
+  init_interclass_conv_libfuncs (sfix_optab, "fix",     MODE_FLOAT, MODE_INT);
+  init_interclass_conv_libfuncs (ufix_optab, "fixuns",  MODE_FLOAT, MODE_INT);
 
-  /* The ffs function operates on `int'.  */
+  /* sext_optab is also used for FLOAT_EXTEND.  */
+  init_intraclass_conv_libfuncs (sext_optab, "extend", MODE_FLOAT, true);
+  init_intraclass_conv_libfuncs (trunc_optab, "trunc", MODE_FLOAT, false);
+
+  /* Use cabs for double complex abs, since systems generally have cabs.
+     Don't define any libcall for float complex, so that cabs will be used.  */
+  if (complex_double_type_node)
+    abs_optab->handlers[TYPE_MODE (complex_double_type_node)].libfunc
+      = init_one_libfunc ("cabs");
+
+  /* The ffs function op[1erates on `int'.  */
   ffs_optab->handlers[(int) mode_for_size (INT_TYPE_SIZE, MODE_INT, 0)].libfunc
     = init_one_libfunc ("ffs");
-
-  extendsfdf2_libfunc = init_one_libfunc ("__extendsfdf2");
-  extendsfxf2_libfunc = init_one_libfunc ("__extendsfxf2");
-  extendsftf2_libfunc = init_one_libfunc ("__extendsftf2");
-  extenddfxf2_libfunc = init_one_libfunc ("__extenddfxf2");
-  extenddftf2_libfunc = init_one_libfunc ("__extenddftf2");
-
-  truncdfsf2_libfunc = init_one_libfunc ("__truncdfsf2");
-  truncxfsf2_libfunc = init_one_libfunc ("__truncxfsf2");
-  trunctfsf2_libfunc = init_one_libfunc ("__trunctfsf2");
-  truncxfdf2_libfunc = init_one_libfunc ("__truncxfdf2");
-  trunctfdf2_libfunc = init_one_libfunc ("__trunctfdf2");
 
   abort_libfunc = init_one_libfunc ("abort");
   memcpy_libfunc = init_one_libfunc ("memcpy");
@@ -5377,54 +5440,6 @@ init_optabs (void)
   unwind_sjlj_register_libfunc = init_one_libfunc ("_Unwind_SjLj_Register");
   unwind_sjlj_unregister_libfunc
     = init_one_libfunc ("_Unwind_SjLj_Unregister");
-
-  floatsisf_libfunc = init_one_libfunc ("__floatsisf");
-  floatdisf_libfunc = init_one_libfunc ("__floatdisf");
-  floattisf_libfunc = init_one_libfunc ("__floattisf");
-
-  floatsidf_libfunc = init_one_libfunc ("__floatsidf");
-  floatdidf_libfunc = init_one_libfunc ("__floatdidf");
-  floattidf_libfunc = init_one_libfunc ("__floattidf");
-
-  floatsixf_libfunc = init_one_libfunc ("__floatsixf");
-  floatdixf_libfunc = init_one_libfunc ("__floatdixf");
-  floattixf_libfunc = init_one_libfunc ("__floattixf");
-
-  floatsitf_libfunc = init_one_libfunc ("__floatsitf");
-  floatditf_libfunc = init_one_libfunc ("__floatditf");
-  floattitf_libfunc = init_one_libfunc ("__floattitf");
-
-  fixsfsi_libfunc = init_one_libfunc ("__fixsfsi");
-  fixsfdi_libfunc = init_one_libfunc ("__fixsfdi");
-  fixsfti_libfunc = init_one_libfunc ("__fixsfti");
-
-  fixdfsi_libfunc = init_one_libfunc ("__fixdfsi");
-  fixdfdi_libfunc = init_one_libfunc ("__fixdfdi");
-  fixdfti_libfunc = init_one_libfunc ("__fixdfti");
-
-  fixxfsi_libfunc = init_one_libfunc ("__fixxfsi");
-  fixxfdi_libfunc = init_one_libfunc ("__fixxfdi");
-  fixxfti_libfunc = init_one_libfunc ("__fixxfti");
-
-  fixtfsi_libfunc = init_one_libfunc ("__fixtfsi");
-  fixtfdi_libfunc = init_one_libfunc ("__fixtfdi");
-  fixtfti_libfunc = init_one_libfunc ("__fixtfti");
-
-  fixunssfsi_libfunc = init_one_libfunc ("__fixunssfsi");
-  fixunssfdi_libfunc = init_one_libfunc ("__fixunssfdi");
-  fixunssfti_libfunc = init_one_libfunc ("__fixunssfti");
-
-  fixunsdfsi_libfunc = init_one_libfunc ("__fixunsdfsi");
-  fixunsdfdi_libfunc = init_one_libfunc ("__fixunsdfdi");
-  fixunsdfti_libfunc = init_one_libfunc ("__fixunsdfti");
-
-  fixunsxfsi_libfunc = init_one_libfunc ("__fixunsxfsi");
-  fixunsxfdi_libfunc = init_one_libfunc ("__fixunsxfdi");
-  fixunsxfti_libfunc = init_one_libfunc ("__fixunsxfti");
-
-  fixunstfsi_libfunc = init_one_libfunc ("__fixunstfsi");
-  fixunstfdi_libfunc = init_one_libfunc ("__fixunstfdi");
-  fixunstfti_libfunc = init_one_libfunc ("__fixunstfti");
 
   /* For function entry/exit instrumentation.  */
   profile_function_entry_libfunc

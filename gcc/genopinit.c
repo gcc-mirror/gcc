@@ -59,32 +59,33 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    upper-case forms of the comparison, respectively.  */
 
 static const char * const optabs[] =
-{ "extendtab[$B][$A][0] = CODE_FOR_$(extend$a$b2$)",
-  "extendtab[$B][$A][1] = CODE_FOR_$(zero_extend$a$b2$)",
-  "fixtab[$A][$B][0] = CODE_FOR_$(fix$F$a$I$b2$)",
-  "fixtab[$A][$B][1] = CODE_FOR_$(fixuns$F$a$b2$)",
-  "fixtrunctab[$A][$B][0] = CODE_FOR_$(fix_trunc$F$a$I$b2$)",
-  "fixtrunctab[$A][$B][1] = CODE_FOR_$(fixuns_trunc$F$a$I$b2$)",
-  "floattab[$B][$A][0] = CODE_FOR_$(float$I$a$F$b2$)",
-  "floattab[$B][$A][1] = CODE_FOR_$(floatuns$I$a$F$b2$)",
+{ "sext_optab->handlers[$B][$A].insn_code = CODE_FOR_$(extend$a$b2$)",
+  "zext_optab->handlers[$B][$A].insn_code = CODE_FOR_$(zero_extend$a$b2$)",
+  "sfix_optab->handlers[$B][$A].insn_code = CODE_FOR_$(fix$F$a$I$b2$)",
+  "ufix_optab->handlers[$B][$A].insn_code = CODE_FOR_$(fixuns$F$a$b2$)",
+  "sfixtrunc_optab->handlers[$B][$A].insn_code = CODE_FOR_$(fix_trunc$F$a$I$b2$)",
+  "ufixtrunc_optab->handlers[$B][$A].insn_code = CODE_FOR_$(fixuns_trunc$F$a$I$b2$)",
+  "sfloat_optab->handlers[$B][$A].insn_code = CODE_FOR_$(float$I$a$F$b2$)",
+  "ufloat_optab->handlers[$B][$A].insn_code = CODE_FOR_$(floatuns$I$a$F$b2$)",
+  "trunc_optab->handlers[$B][$A].insn_code = CODE_FOR_$(trunc$a$b2$)",
   "add_optab->handlers[$A].insn_code = CODE_FOR_$(add$P$a3$)",
-  "addv_optab->handlers[(int) $A].insn_code =\n\
-    add_optab->handlers[(int) $A].insn_code = CODE_FOR_$(add$F$a3$)",
-  "addv_optab->handlers[(int) $A].insn_code = CODE_FOR_$(addv$I$a3$)",
+  "addv_optab->handlers[$A].insn_code =\n\
+    add_optab->handlers[$A].insn_code = CODE_FOR_$(add$F$a3$)",
+  "addv_optab->handlers[$A].insn_code = CODE_FOR_$(addv$I$a3$)",
   "sub_optab->handlers[$A].insn_code = CODE_FOR_$(sub$P$a3$)",
-  "subv_optab->handlers[(int) $A].insn_code =\n\
-    sub_optab->handlers[(int) $A].insn_code = CODE_FOR_$(sub$F$a3$)",
-  "subv_optab->handlers[(int) $A].insn_code = CODE_FOR_$(subv$I$a3$)",
+  "subv_optab->handlers[$A].insn_code =\n\
+    sub_optab->handlers[$A].insn_code = CODE_FOR_$(sub$F$a3$)",
+  "subv_optab->handlers[$A].insn_code = CODE_FOR_$(subv$I$a3$)",
   "smul_optab->handlers[$A].insn_code = CODE_FOR_$(mul$P$a3$)",
-  "smulv_optab->handlers[(int) $A].insn_code =\n\
-    smul_optab->handlers[(int) $A].insn_code = CODE_FOR_$(mul$F$a3$)",
-  "smulv_optab->handlers[(int) $A].insn_code = CODE_FOR_$(mulv$I$a3$)",
+  "smulv_optab->handlers[$A].insn_code =\n\
+    smul_optab->handlers[$A].insn_code = CODE_FOR_$(mul$F$a3$)",
+  "smulv_optab->handlers[$A].insn_code = CODE_FOR_$(mulv$I$a3$)",
   "umul_highpart_optab->handlers[$A].insn_code = CODE_FOR_$(umul$a3_highpart$)",
   "smul_highpart_optab->handlers[$A].insn_code = CODE_FOR_$(smul$a3_highpart$)",
   "smul_widen_optab->handlers[$B].insn_code = CODE_FOR_$(mul$a$b3$)$N",
   "umul_widen_optab->handlers[$B].insn_code = CODE_FOR_$(umul$a$b3$)$N",
   "sdiv_optab->handlers[$A].insn_code = CODE_FOR_$(div$a3$)",
-  "sdivv_optab->handlers[(int) $A].insn_code = CODE_FOR_$(div$V$I$a3$)",
+  "sdivv_optab->handlers[$A].insn_code = CODE_FOR_$(div$V$I$a3$)",
   "udiv_optab->handlers[$A].insn_code = CODE_FOR_$(udiv$I$a3$)",
   "sdivmod_optab->handlers[$A].insn_code = CODE_FOR_$(divmod$a4$)",
   "udivmod_optab->handlers[$A].insn_code = CODE_FOR_$(udivmod$a4$)",
@@ -108,13 +109,13 @@ static const char * const optabs[] =
   "pow_optab->handlers[$A].insn_code = CODE_FOR_$(pow$a3$)",
   "atan2_optab->handlers[$A].insn_code = CODE_FOR_$(atan2$a3$)",
   "neg_optab->handlers[$A].insn_code = CODE_FOR_$(neg$P$a2$)",
-  "negv_optab->handlers[(int) $A].insn_code =\n\
-    neg_optab->handlers[(int) $A].insn_code = CODE_FOR_$(neg$F$a2$)",
-  "negv_optab->handlers[(int) $A].insn_code = CODE_FOR_$(negv$I$a2$)",
+  "negv_optab->handlers[$A].insn_code =\n\
+    neg_optab->handlers[$A].insn_code = CODE_FOR_$(neg$F$a2$)",
+  "negv_optab->handlers[$A].insn_code = CODE_FOR_$(negv$I$a2$)",
   "abs_optab->handlers[$A].insn_code = CODE_FOR_$(abs$P$a2$)",
-  "absv_optab->handlers[(int) $A].insn_code =\n\
-    abs_optab->handlers[(int) $A].insn_code = CODE_FOR_$(abs$F$a2$)",
-  "absv_optab->handlers[(int) $A].insn_code = CODE_FOR_$(absv$I$a2$)",
+  "absv_optab->handlers[$A].insn_code =\n\
+    abs_optab->handlers[$A].insn_code = CODE_FOR_$(abs$F$a2$)",
+  "absv_optab->handlers[$A].insn_code = CODE_FOR_$(absv$I$a2$)",
   "sqrt_optab->handlers[$A].insn_code = CODE_FOR_$(sqrt$a2$)",
   "floor_optab->handlers[$A].insn_code = CODE_FOR_$(floor$a2$)",
   "ceil_optab->handlers[$A].insn_code = CODE_FOR_$(ceil$a2$)",
@@ -229,7 +230,7 @@ gen_insn (rtx insn)
                    look through the modes in reverse order, in case
                    EXTRA_CC_MODES was used and CC is a prefix of the
                    CC modes (as it should be).  */
-		for (i = ((int) MAX_MACHINE_MODE) - 1; i >= 0; i--)
+		for (i = (MAX_MACHINE_MODE) - 1; i >= 0; i--)
 		  {
 		    for (p = GET_MODE_NAME(i), q = np; *p; p++, q++)
 		      if (TOLOWER (*p) != *q)
@@ -303,16 +304,15 @@ gen_insn (rtx insn)
 	      putchar (TOLOWER (*np));
 	    break;
 	  case 'A':
-	    printf ("(int) %smode", GET_MODE_NAME(m1));
+	    printf ("%smode", GET_MODE_NAME(m1));
 	    break;
 	  case 'B':
-	    printf ("(int) %smode", GET_MODE_NAME(m2));
+	    printf ("%smode", GET_MODE_NAME(m2));
 	    break;
 	  case 'c':
 	    printf ("%s", GET_RTX_NAME(op));
 	    break;
 	  case 'C':
-	    printf ("(int) ");
 	    for (np = GET_RTX_NAME(op); *np; np++)
 	      putchar (TOUPPER (*np));
 	    break;
@@ -368,7 +368,17 @@ from the machine description file `md'.  */\n\n");
 	gen_insn (desc);
     }
 
-  printf ("}\n");
+  puts ("\
+\n\
+#ifdef FIXUNS_TRUNC_LIKE_FIX_TRUNC\n\
+  /* This flag says the same insns that convert to a signed fixnum\n\
+     also convert validly to an unsigned one.  */\n\
+  for (i = 0; i < NUM_MACHINE_MODES; i++)\n\
+    for (j = 0; j < NUM_MACHINE_MODES; j++)\n\
+      ufixtrunc_optab->handlers[i][j].insn_code\n\
+      = sfixtrunc_optab->handlers[i][j].insn_code;\n\
+#endif\n\
+}");
 
   fflush (stdout);
   return (ferror (stdout) != 0 ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);

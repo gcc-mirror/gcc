@@ -40,7 +40,6 @@ Boston, MA 02111-1307, USA.  */
 #include "except.h"
 #include "function.h"
 #include "optabs.h"
-#include "libfuncs.h"
 #include "toplev.h"
 #include "basic-block.h"
 #include "tm_p.h"
@@ -9145,20 +9144,23 @@ frv_init_libfuncs (void)
   set_optab_libfunc (smul_optab,     DFmode, "__muld");
   set_optab_libfunc (sdiv_optab,     DFmode, "__divd");
 
-  fixsfsi_libfunc     = init_one_libfunc ("__ftoi");
-  fixunssfsi_libfunc  = init_one_libfunc ("__ftoui");
-  fixsfdi_libfunc     = init_one_libfunc ("__ftoll");
-  fixunssfdi_libfunc  = init_one_libfunc ("__ftoull");
-  fixdfsi_libfunc     = init_one_libfunc ("__dtoi");
-  fixunsdfsi_libfunc  = init_one_libfunc ("__dtoui");
-  fixdfdi_libfunc     = init_one_libfunc ("__dtoll");
-  fixunsdfdi_libfunc  = init_one_libfunc ("__dtoull");
-  floatsisf_libfunc   = init_one_libfunc ("__itof");
-  floatdisf_libfunc   = init_one_libfunc ("__lltof");
-  floatsidf_libfunc   = init_one_libfunc ("__itod");
-  floatdidf_libfunc   = init_one_libfunc ("__lltod");
-  extendsfdf2_libfunc = init_one_libfunc ("__ftod");
-  truncdfsf2_libfunc  = init_one_libfunc ("__dtof");
+  set_conv_libfunc (sext_optab,   DFmode, SFmode, "__ftod");
+  set_conv_libfunc (trunc_optab,  SFmode, DFmode, "__dtof");
+
+  set_conv_libfunc (sfix_optab,   SImode, SFmode, "__ftoi");
+  set_conv_libfunc (sfix_optab,   DImode, SFmode, "__ftoll");
+  set_conv_libfunc (sfix_optab,   SImode, DFmode, "__dtoi");
+  set_conv_libfunc (sfix_optab,   DImode, DFmode, "__dtoll");
+
+  set_conv_libfunc (ufix_optab,   SImode, SFmode, "__ftoui");
+  set_conv_libfunc (ufix_optab,   SImode, SFmode, "__ftoull");
+  set_conv_libfunc (ufix_optab,   SImode, SFmode, "__dtoui");
+  set_conv_libfunc (ufix_optab,   SImode, SFmode, "__dtoull");
+
+  set_conv_libfunc (sfloat_optab, SFmode, SImode, "__itof");
+  set_conv_libfunc (sfloat_optab, SFmode, DImode, "__lltof");
+  set_conv_libfunc (sfloat_optab, DFmode, SImode, "__itod");
+  set_conv_libfunc (sfloat_optab, DFmode, DImode, "__lltod");
 }
 
 /* Convert an integer constant to an accumulator register.  ICODE is the
