@@ -93,3 +93,6 @@ Boston, MA 02111-1307, USA.  */
    || (CHAR) == 'z')
 
 #define STDC_0_IN_SYSTEM_HEADERS
+
+#undef LOCAL_LABEL_PREFIX
+#define LOCAL_LABEL_PREFIX "."

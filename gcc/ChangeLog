@@ -1,3 +1,8 @@
+Sun Dec 20 16:13:44 1998  John F. Carr  <jfc@mit.edu>
+
+	* configure.in: Handle Digital UNIX 5.x the same as 4.x.
+	* i386/sol2.h: Define LOCAL_LABEL_PREFIX as ".".
+
 Sun Dec 20 07:39:52 PST 1998 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
