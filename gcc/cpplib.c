@@ -296,6 +296,7 @@ static void free_token_list ();
 static int safe_read ();
 static void push_macro_expansion PARAMS ((cpp_reader *,
 					  U_CHAR*, int, HASHNODE*));
+static struct cpp_pending *nreverse_pending PARAMS ((struct cpp_pending*));
 extern char *xrealloc ();
 extern char *xcalloc ();
 static char *savestring ();
@@ -1958,10 +1959,10 @@ cpp_push_buffer (pfile, buffer, length)
      long length;
 {
 #ifdef STATIC_BUFFERS
-  register cpp_buffer *buf;
+  register cpp_buffer *buf = CPP_BUFFER (pfile);
   if (buf == pfile->buffer_stack)
     fatal ("macro or `#include' recursion too deep");
-  buf = CPP_BUFFER (pfile) - 1;
+  buf--;
   bzero ((char *) buf, sizeof (cpp_buffer));
   CPP_BUFFER (pfile) = buf;
 #else
@@ -2139,9 +2140,9 @@ cpp_buffer*
 cpp_file_buffer (pfile)
      cpp_reader *pfile;
 {
-  cpp_buffer *ip;
+  cpp_buffer *ip = CPP_BUFFER (pfile);
 
-  for (ip = CPP_BUFFER (pfile); ip != NULL; ip = CPP_PREV_BUFFER (ip))
+  for ( ; ip != CPP_NULL_BUFFER (pfile); ip = CPP_PREV_BUFFER (ip))
     if (ip->fname != NULL)
       return ip;
   return NULL;
@@ -3580,6 +3581,7 @@ do_include (pfile, keyword, unused1, unused2)
 #endif
     
     /* Actually process the file */
+    cpp_push_buffer (pfile, NULL, 0);
     if (finclude (pfile, f, fname, is_system_include (pfile, fname),
 		  searchptr != dsp ? searchptr : SELF_DIR_DUMMY))
       {
@@ -4639,7 +4641,7 @@ validate_else (pfile, directive)
 		 "text following `%s' violates ANSI standard", directive);
 }
 
-/* Get the next token, and add it to the tex in pfile->token_buffer.
+/* Get the next token, and add it to the text in pfile->token_buffer.
    Return the kind of token we got. */
   
 
@@ -5622,7 +5624,9 @@ open_include_file (filename, searchptr)
    function above).
    DIRPTR is the link in the dir path through which this file was found,
    or 0 if the file name was absolute or via the current directory.
-   Return 1 on success, 0 on failure. */
+   Return 1 on success, 0 on failure.
+
+   The caller is responsible for the cpp_push_buffer.  */
 
 static int
 finclude (pfile, f, fname, system_header_p, dirptr)
@@ -5639,18 +5643,15 @@ finclude (pfile, f, fname, system_header_p, dirptr)
   cpp_buffer *fp;			/* For input stack frame */
   int missing_newline = 0;
 
-#if 0
-  CHECK_DEPTH (return 0;);
-#endif
-
   if (file_size_and_mode (f, &st_mode, &st_size) < 0)
     {
       cpp_perror_with_name (pfile, fname);
       close (f);
+      cpp_pop_buffer (pfile);
       return 0;
     }
 
-  fp = cpp_push_buffer (pfile, NULL, 0);
+  fp = CPP_BUFFER (pfile);
   fp->nominal_fname = fp->fname = fname;
 #if 0
   fp->length = 0;
@@ -5755,6 +5756,7 @@ push_parse_file (pfile, fname)
   struct cpp_pending *pend;
   char *p;
   int f;
+  cpp_buffer *fp;
 
   /* The code looks at the defaults through this pointer, rather than through
      the constant structure above.  This pointer gets changed if an environment
@@ -5774,16 +5776,13 @@ push_parse_file (pfile, fname)
   /* Now that dollars_in_ident is known, initialize is_idchar.  */
   initialize_char_syntax (opts);
 
-#if 0
   /* Do partial setup of input buffer for the sake of generating
      early #line directives (when -g is in effect).  */
-
-  fp = &instack[++indepth];
-  if (in_fname == NULL)
-    in_fname = "";
-  fp->nominal_fname = fp->fname = in_fname;
+  fp = cpp_push_buffer (pfile, NULL, 0);
+  if (opts->in_fname == NULL)
+    opts->in_fname = "";
+  fp->nominal_fname = fp->fname = opts->in_fname;
   fp->lineno = 0;
-#endif
 
   /* Install __LINE__, etc.  Must follow initialize_char_syntax
      and option processing.  */
@@ -5865,40 +5864,30 @@ push_parse_file (pfile, fname)
 
   /* Do -U's, -D's and -A's in the order they were seen.  */
   /* First reverse the list. */
-  {
-    struct cpp_pending *prev = 0, *next;
-    for (pend = opts->pending;  pend;  pend = next)
-      {
-	next = pend->next;
-	pend->next = prev;
-	prev = pend;
-      }
-    opts->pending = prev;
+  opts->pending = nreverse_pending (opts->pending);
 
-    for (pend = opts->pending;  pend;  pend = pend->next)
-      {
-	if (pend->cmd != NULL && pend->cmd[0] == '-')
-	  {
-	    switch (pend->cmd[1])
-	      {
-	      case 'U':
-		if (opts->debug_output)
-		  output_line_command (pfile, 0, same_file);
-		do_undef (pfile, NULL, pend->arg, pend->arg + strlen (pend->arg));
-		break;
-	      case 'D':
-		if (opts->debug_output)
-		  output_line_command (pfile, 0, same_file);
-		make_definition (pfile, pend->arg);
-		break;
-	      case 'A':
-		make_assertion (pfile, "-A", pend->arg);
-		break;
-	      }
-	  }
-      }
-    opts->pending = NULL;
-  }
+  for (pend = opts->pending;  pend;  pend = pend->next)
+    {
+      if (pend->cmd != NULL && pend->cmd[0] == '-')
+	{
+	  switch (pend->cmd[1])
+	    {
+	    case 'U':
+	      if (opts->debug_output)
+		output_line_command (pfile, 0, same_file);
+	      do_undef (pfile, NULL, pend->arg, pend->arg + strlen (pend->arg));
+	      break;
+	    case 'D':
+	      if (opts->debug_output)
+		output_line_command (pfile, 0, same_file);
+	      make_definition (pfile, pend->arg);
+	      break;
+	    case 'A':
+	      make_assertion (pfile, "-A", pend->arg);
+	      break;
+	    }
+	}
+    }
 
   opts->done_initializing = 1;
 
@@ -6054,6 +6043,7 @@ push_parse_file (pfile, fname)
 	      cpp_perror_with_name (pfile, pend->arg);
 	      return FAILURE_EXIT_CODE;
 	    }
+	  cpp_push_buffer (pfile, NULL, 0);
 	  finclude (pfile, fd, pend->arg, 0, NULL_PTR);
 	  cpp_scan_buffer (pfile);
 	}
@@ -6203,9 +6193,11 @@ push_parse_file (pfile, fname)
     trigraph_pcp (fp);
 #endif
 
-  /* Scan the -include files before the main input.  */
+  /* Scan the -include files before the main input.
+   We push these in reverse order, so that the first one is handled first.  */
 
   pfile->no_record_file++;
+  opts->pending = nreverse_pending (opts->pending);
   for (pend = opts->pending;  pend;  pend = pend->next)
     {
       if (pend->cmd != NULL && strcmp (pend->cmd, "-include") == 0)
@@ -6216,8 +6208,8 @@ push_parse_file (pfile, fname)
 	      cpp_perror_with_name (pfile, pend->arg);
 	      return FAILURE_EXIT_CODE;
 	    }
+	  cpp_push_buffer (pfile, NULL, 0);
 	  finclude (pfile, fd, pend->arg, 0, NULL_PTR);
-	  cpp_scan_buffer (pfile);
 	}
     }
   pfile->no_record_file--;
@@ -6266,6 +6258,21 @@ init_parse_file (pfile)
   pfile->timebuf = NULL;
   pfile->only_seen_white = 1;
   pfile->buffer = CPP_NULL_BUFFER(pfile);
+}
+
+static struct cpp_pending *
+nreverse_pending (list)
+     struct cpp_pending *list;
+     
+{
+  register struct cpp_pending *prev = 0, *next, *pend;
+  for (pend = list;  pend;  pend = next)
+    {
+      next = pend->next;
+      pend->next = prev;
+      prev = pend;
+    }
+  return prev;
 }
 
 static void
@@ -7499,7 +7506,7 @@ cpp_error_from_errno (pfile, name)
   if (ip != NULL)
     cpp_file_line_for_message (pfile, ip->nominal_fname, ip->lineno, -1);
 
-  cpp_message (pfile, 1, "%s: %s\n", name, my_strerror (errno));
+  cpp_message (pfile, 1, "%s: %s", name, my_strerror (errno));
 }
 
 void
@@ -7507,7 +7514,7 @@ cpp_perror_with_name (pfile, name)
      cpp_reader *pfile;
      char *name;
 {
-  cpp_message (pfile, 1, "%s: %s: %s\n", progname, name, my_strerror (errno));
+  cpp_message (pfile, 1, "%s: %s: %s", progname, name, my_strerror (errno));
 }
 
 /* TODO:
@@ -7525,8 +7532,4 @@ cpp_perror_with_name (pfile, name)
  * Support for trigraphs.
  *
  * Support -dM flag (dump_all_macros).
- *
- * -include should be made to return results incrementally.
- *    (current implementation only works when cpp is used as main program)
- *
  */
