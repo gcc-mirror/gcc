@@ -45,12 +45,28 @@ Boston, MA 02111-1307, USA.  */
 
 /* Some function declarations.  */
 extern FILE *asm_out_file;
-extern char *output_multi_immediate ();
 
-HOST_WIDE_INT int_log2 PROTO ((HOST_WIDE_INT));
+static HOST_WIDE_INT int_log2 PROTO ((HOST_WIDE_INT));
+static char *output_multi_immediate PROTO ((rtx *, char *, char *, int,
+					    HOST_WIDE_INT));
 static int arm_gen_constant PROTO ((enum rtx_code, enum machine_mode,
 				    HOST_WIDE_INT, rtx, rtx, int, int));
-static int arm_naked_function_p PROTO ((tree func));
+static int arm_naked_function_p PROTO ((tree));
+static void init_fpa_table PROTO ((void));
+static enum machine_mode select_dominance_cc_mode PROTO ((enum rtx_code, rtx,
+							  rtx, HOST_WIDE_INT));
+static HOST_WIDE_INT add_constant PROTO ((rtx, enum machine_mode));
+static void dump_table PROTO ((rtx));
+static int fixit PROTO ((rtx, enum machine_mode, int));
+static rtx find_barrier PROTO ((rtx, int));
+static int broken_move PROTO ((rtx));
+static char *fp_const_from_val PROTO ((REAL_VALUE_TYPE *));
+static int eliminate_lr2ip PROTO ((rtx *));
+static char *shift_op PROTO ((rtx, HOST_WIDE_INT *));
+static int pattern_really_clobbers_lr PROTO ((rtx));
+static int function_really_clobbers_lr PROTO ((rtx));
+static void emit_multi_reg_push PROTO ((int));
+static enum arm_cond_code get_arm_condition_code PROTO ((rtx));
 
 /*  Define the information needed to generate branch insns.  This is
    stored from the compare operation. */
@@ -4116,7 +4132,7 @@ output_add_immediate (operands)
    IMMED_OP is the index of the constant slot in OPERANDS.
    N is the constant value.  */
 
-char *
+static char *
 output_multi_immediate (operands, instr1, instr2, immed_op, n)
      rtx *operands;
      char *instr1, *instr2;
@@ -4267,7 +4283,7 @@ shift_op (op, amountp)
 
 /* Obtain the shift from the POWER of two. */
 
-HOST_WIDE_INT
+static HOST_WIDE_INT
 int_log2 (power)
      HOST_WIDE_INT power;
 {
