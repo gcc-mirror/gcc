@@ -12494,6 +12494,7 @@ cp_parser_class_head (cp_parser* parser,
   bool invalid_explicit_specialization_p = false;
   bool pop_p = false;
   unsigned num_templates;
+  tree bases;
 
   /* Assume no nested-name-specifier will be present.  */
   *nested_name_specifier_p = false;
@@ -12770,17 +12771,16 @@ cp_parser_class_head (cp_parser* parser,
      is valid.  */
   if (nested_name_specifier)
     pop_p = push_scope (nested_name_specifier);
-  /* Now, look for the base-clause.  */
-  token = cp_lexer_peek_token (parser->lexer);
-  if (token->type == CPP_COLON)
-    {
-      tree bases;
+  
+  bases = NULL_TREE;
+  
+  /* Get the list of base-classes, if there is one.  */
+  if (cp_lexer_next_token_is (parser->lexer, CPP_COLON))
+    bases = cp_parser_base_clause (parser);
+  
+  /* Process the base classes.  */
+  xref_basetypes (type, bases);
 
-      /* Get the list of base-classes.  */
-      bases = cp_parser_base_clause (parser);
-      /* Process them.  */
-      xref_basetypes (type, bases);
-    }
   /* Leave the scope given by the nested-name-specifier.  We will
      enter the class scope itself while processing the members.  */
   if (pop_p)

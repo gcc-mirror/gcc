@@ -748,7 +748,7 @@ ocp_convert (tree type, tree expr, int convtype, int flags)
 	ctor = build_special_member_call (NULL_TREE, 
 					  complete_ctor_identifier,
 					  build_tree_list (NULL_TREE, ctor),
-					  TYPE_BINFO (type), flags);
+					  type, flags);
       if (ctor)
 	return build_cplus_new (type, ctor);
     }

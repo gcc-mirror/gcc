@@ -5071,8 +5071,7 @@ build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs)
 	{
 	  result = build_special_member_call (lhs, complete_ctor_identifier,
 					      build_tree_list (NULL_TREE, rhs),
-					      TYPE_BINFO (lhstype), 
-					      LOOKUP_NORMAL);
+					      lhstype, LOOKUP_NORMAL);
 	  if (result == NULL_TREE)
 	    return error_mark_node;
 	  return result;

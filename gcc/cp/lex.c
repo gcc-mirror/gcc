@@ -782,8 +782,6 @@ cxx_make_type (enum tree_code code)
 	 presence of parse errors, the normal was of assuring this
 	 might not ever get executed, so we lay it out *immediately*.  */
       build_pointer_type (t);
-
-      TYPE_BINFO (t) = make_binfo (size_zero_node, t, NULL_TREE, NULL_TREE);
     }
   else
     /* We use TYPE_ALIAS_SET for the CLASSTYPE_MARKED bits.  But,

@@ -128,7 +128,12 @@ cxx_print_type (FILE *file, tree node, int indent)
 
   if (TREE_CODE (node) == RECORD_TYPE)
     {
-      fprintf (file, " n_parents %d", BINFO_N_BASE_BINFOS (TYPE_BINFO (node)));
+      if (TYPE_BINFO (node))
+	fprintf (file, " n_parents=%d",
+		 BINFO_N_BASE_BINFOS (TYPE_BINFO (node)));
+      else
+	fprintf (file, " no-binfo");
+      
       fprintf (file, " use_template=%d", CLASSTYPE_USE_TEMPLATE (node));
       if (CLASSTYPE_INTERFACE_ONLY (node))
 	fprintf (file, " interface-only");

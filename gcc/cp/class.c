@@ -1501,12 +1501,16 @@ finish_struct_bits (tree t)
 	= TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (t);
       TYPE_POLYMORPHIC_P (variants) = TYPE_POLYMORPHIC_P (t);
       TYPE_USES_VIRTUAL_BASECLASSES (variants) = TYPE_USES_VIRTUAL_BASECLASSES (t);
+      
+      TYPE_BINFO (variants) = TYPE_BINFO (t);
+
       /* Copy whatever these are holding today.  */
       TYPE_VFIELD (variants) = TYPE_VFIELD (t);
       TYPE_METHODS (variants) = TYPE_METHODS (t);
       TYPE_FIELDS (variants) = TYPE_FIELDS (t);
       TYPE_SIZE (variants) = TYPE_SIZE (t);
       TYPE_SIZE_UNIT (variants) = TYPE_SIZE_UNIT (t);
+      
       variants = TYPE_NEXT_VARIANT (variants);
     }
 

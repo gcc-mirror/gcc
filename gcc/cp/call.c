@@ -2500,9 +2500,7 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags)
 		      || !DERIVED_FROM_P (totype, fromtype), 20011226);
 
   if (IS_AGGR_TYPE (totype))
-    ctors = lookup_fnfields (TYPE_BINFO (totype),
-			     complete_ctor_identifier,
-			     0);
+    ctors = lookup_fnfields (totype, complete_ctor_identifier, 0);
 
   if (IS_AGGR_TYPE (fromtype))
     conv_fns = lookup_conversions (fromtype);
@@ -3650,7 +3648,7 @@ build_new_op (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3,
     {
       tree fns;
 
-      fns = lookup_fnfields (TYPE_BINFO (TREE_TYPE (arg1)), fnname, 1);
+      fns = lookup_fnfields (TREE_TYPE (arg1), fnname, 1);
       if (fns == error_mark_node)
 	{
 	  result = error_mark_node;
@@ -4092,7 +4090,7 @@ check_constructor_callable (tree type, tree expr)
   build_special_member_call (NULL_TREE,
 			     complete_ctor_identifier,
 			     build_tree_list (NULL_TREE, expr), 
-			     TYPE_BINFO (type),
+			     type,
 			     LOOKUP_NORMAL | LOOKUP_ONLYCONVERTING
 			     | LOOKUP_CONSTRUCTOR_CALLABLE);
 }
@@ -4113,8 +4111,7 @@ build_temp (tree expr, tree type, int flags,
   expr = build_special_member_call (NULL_TREE,
 				    complete_ctor_identifier,
 				    build_tree_list (NULL_TREE, expr), 
-				    TYPE_BINFO (type),
-				    flags);
+				    type, flags);
   if (warningcount > savew)
     *diagnostic_fn = warning;
   else if (errorcount > savee)
@@ -5014,6 +5011,15 @@ build_special_member_call (tree instance, tree name, tree args,
 		      || name == deleting_dtor_identifier
 		      || name == ansi_assopname (NOP_EXPR),
 		      20020712);
+  if (TYPE_P (binfo))
+    {
+      /* Resolve the name.  */
+      if (!complete_type_or_else (binfo, NULL_TREE))
+	return error_mark_node;
+
+      binfo = TYPE_BINFO (binfo);
+    }
+  
   my_friendly_assert (binfo != NULL_TREE, 20020712);
 
   class_type = BINFO_TYPE (binfo);
@@ -5052,10 +5058,6 @@ build_special_member_call (tree instance, tree name, tree args,
     }
   
   my_friendly_assert (instance != NULL_TREE, 20020712);
-
-  /* Resolve the name.  */
-  if (!complete_type_or_else (BINFO_TYPE (binfo), NULL_TREE))
-    return error_mark_node;
 
   fns = lookup_fnfields (binfo, name, 1);
     
@@ -6302,8 +6304,7 @@ perform_direct_initialization_if_possible (tree type, tree expr)
     {
       expr = build_special_member_call (NULL_TREE, complete_ctor_identifier,
 					build_tree_list (NULL_TREE, expr),
-					TYPE_BINFO (type),
-					LOOKUP_NORMAL);
+					type, LOOKUP_NORMAL);
       return build_cplus_new (type, expr);
     }
 

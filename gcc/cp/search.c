@@ -270,8 +270,8 @@ accessible_base_p (tree t, tree base)
 tree
 lookup_base (tree t, tree base, base_access access, base_kind *kind_ptr)
 {
-  tree binfo = NULL;		/* The binfo we've found so far.  */
-  tree t_binfo = NULL;
+  tree binfo = NULL_TREE;	/* The binfo we've found so far.  */
+  tree t_binfo = NULL_TREE;
   base_kind bk;
   
   if (t == error_mark_node || base == error_mark_node)
@@ -287,14 +287,18 @@ lookup_base (tree t, tree base, base_access access, base_kind *kind_ptr)
       t_binfo = t;
       t = BINFO_TYPE (t);
     }
-  else 
-    t_binfo = TYPE_BINFO (t);
-
-  /* Ensure that the types are instantiated.  */
-  t = complete_type (TYPE_MAIN_VARIANT (t));
-  base = complete_type (TYPE_MAIN_VARIANT (base));
+  else  
+    {
+      t = complete_type (TYPE_MAIN_VARIANT (t));
+      t_binfo = TYPE_BINFO (t);
+    }
   
-  bk = lookup_base_r (t_binfo, base, access, 0, &binfo);
+  base = complete_type (TYPE_MAIN_VARIANT (base));
+
+  if (t_binfo)
+    bk = lookup_base_r (t_binfo, base, access, 0, &binfo);
+  else
+    bk = bk_not_base;
 
   /* Check that the base is unambiguous and accessible.  */
   if (access != ba_any)
@@ -1256,8 +1260,7 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type)
     {
       my_friendly_assert (IS_AGGR_TYPE_CODE (TREE_CODE (xbasetype)), 20030624);
       type = xbasetype;
-      basetype_path = TYPE_BINFO (type);
-      my_friendly_assert (!BINFO_INHERITANCE_CHAIN (basetype_path), 980827);
+      xbasetype = NULL_TREE;
     }
 
   if (type == current_class_type && TYPE_BEING_DEFINED (type)
@@ -1271,7 +1274,12 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type)
 	return field;
     }
 
-  complete_type (type);
+  type = complete_type (type);
+  if (!basetype_path)
+    basetype_path = TYPE_BINFO (type);
+
+  if (!basetype_path)
+    return NULL_TREE;
 
 #ifdef GATHER_STATISTICS
   n_calls_lookup_field++;
@@ -2239,6 +2247,11 @@ push_class_decls (tree type)
 {
   search_stack = push_search_level (search_stack, &search_obstack);
 
+  if (!TYPE_BINFO (type))
+    /* This occurs when parsing an invalid declarator id where the
+       scope is incomplete.  */
+    return;
+  
   /* Enter type declarations and mark.  */
   dfs_walk (TYPE_BINFO (type), dfs_push_type_decls, unmarked_pushdecls_p, 0);
 
@@ -2351,7 +2364,8 @@ lookup_conversions (tree type)
   tree conversions = NULL_TREE;
 
   complete_type (type);
-  bfs_walk (TYPE_BINFO (type), add_conversions, 0, &conversions);
+  if (TYPE_BINFO (type))
+    bfs_walk (TYPE_BINFO (type), add_conversions, 0, &conversions);
 
   for (t = conversions; t; t = TREE_CHAIN (t))
     IDENTIFIER_MARKED (DECL_NAME (OVL_CURRENT (TREE_VALUE (t)))) = 0;
