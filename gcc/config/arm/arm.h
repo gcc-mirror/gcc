@@ -301,7 +301,7 @@ extern char *target_fp_name;
 #define ARM_FLAG_BIG_END      (0x0800)
 
 /* Nonzero if we should compile for Thumb interworking.  */
-#define ARM_FLAG_THUMB                (0x1000)
+#define ARM_FLAG_THUMB          (0x1000)
 
 /* Nonzero if we should have little-endian words even when compiling for
    big-endian (for backwards compatibility with older versions of GCC).  */
@@ -331,33 +331,47 @@ extern char *target_fp_name;
 
 #define TARGET_SWITCHES  				\
 {                         				\
-  {"apcs",			ARM_FLAG_APCS_FRAME},	\
-  {"apcs-frame",		ARM_FLAG_APCS_FRAME, "Generate APCS conformant stack frames" },	\
-  {"no-apcs-frame",	       -ARM_FLAG_APCS_FRAME},	\
-  {"poke-function-name",	ARM_FLAG_POKE},		\
-  {"fpe",			ARM_FLAG_FPE},		\
-  {"6",				ARM_FLAG_ARM6},		\
-  {"2",				ARM_FLAG_ARM3},		\
-  {"3",				ARM_FLAG_ARM3},		\
-  {"apcs-32",			ARM_FLAG_APCS_32, "Use the 32bit version of the APCS" },	\
-  {"apcs-26",		       -ARM_FLAG_APCS_32, "Use the 26bit version of the APCS" },	\
-  {"apcs-stack-check",		ARM_FLAG_APCS_STACK},	\
-  {"no-apcs-stack-check",      -ARM_FLAG_APCS_STACK},	\
-  {"apcs-float",		ARM_FLAG_APCS_FLOAT, "Pass FP arguments in FP registers" },	\
-  {"no-apcs-float",	       -ARM_FLAG_APCS_FLOAT},	\
-  {"apcs-reentrant",		ARM_FLAG_APCS_REENT, "Generate re-entrant, PIC code" },	\
-  {"no-apcs-reentrant",	       -ARM_FLAG_APCS_REENT},	\
-  {"short-load-bytes",		ARM_FLAG_SHORT_BYTE, "Load shorts a byte at a time" },	\
-  {"no-short-load-bytes",      -ARM_FLAG_SHORT_BYTE},	\
-  {"short-load-words",	       -ARM_FLAG_SHORT_BYTE, "Load words a byte at a time" },	\
-  {"no-short-load-words",	ARM_FLAG_SHORT_BYTE},	\
-  {"soft-float",		ARM_FLAG_SOFT_FLOAT, "Use library calls to perform FP operations" },	\
-  {"hard-float",	       -ARM_FLAG_SOFT_FLOAT, "Use hardware floating point instructions" },	\
-  {"big-endian",		ARM_FLAG_BIG_END, "Assume target CPU is configured as big endian" },	\
-  {"little-endian",	       -ARM_FLAG_BIG_END, "Assume target CPU is configured as little endian" },	\
-  {"words-little-endian",       ARM_FLAG_LITTLE_WORDS, "Assume big endian bytes, little endian words" },	\
-  {"thumb-interwork",		ARM_FLAG_THUMB, "Support calls between THUMB and ARM instructions sets" },	\
-  {"no-thumb-interwork",       -ARM_FLAG_THUMB},	\
+  {"apcs",			ARM_FLAG_APCS_FRAME, "" }, \
+  {"apcs-frame",		ARM_FLAG_APCS_FRAME, 	\
+     "Generate APCS conformant stack frames" },		\
+  {"no-apcs-frame",	       -ARM_FLAG_APCS_FRAME, "" }, \
+  {"poke-function-name",	ARM_FLAG_POKE, 		\
+     "Store function names in object code" },		\
+  {"fpe",			ARM_FLAG_FPE,  "" },	\
+  {"6",				ARM_FLAG_ARM6, "" },	\
+  {"2",				ARM_FLAG_ARM3, "" },	\
+  {"3",				ARM_FLAG_ARM3, "" },	\
+  {"apcs-32",			ARM_FLAG_APCS_32, 	\
+     "Use the 32bit version of the APCS" },		\
+  {"apcs-26",		       -ARM_FLAG_APCS_32, 	\
+     "Use the 26bit version of the APCS" },		\
+  {"apcs-stack-check",		ARM_FLAG_APCS_STACK, "" }, \
+  {"no-apcs-stack-check",      -ARM_FLAG_APCS_STACK, "" }, \
+  {"apcs-float",		ARM_FLAG_APCS_FLOAT, 	\
+     "Pass FP arguments in FP registers" },		\
+  {"no-apcs-float",	       -ARM_FLAG_APCS_FLOAT, "" }, \
+  {"apcs-reentrant",		ARM_FLAG_APCS_REENT, 	\
+     "Generate re-entrant, PIC code" },			\
+  {"no-apcs-reentrant",	       -ARM_FLAG_APCS_REENT, "" }, \
+  {"short-load-bytes",		ARM_FLAG_SHORT_BYTE, 	\
+     "Load shorts a byte at a time" },			\
+  {"no-short-load-bytes",      -ARM_FLAG_SHORT_BYTE, "" }, \
+  {"short-load-words",	       -ARM_FLAG_SHORT_BYTE, 	\
+     "Load words a byte at a time" },			\
+  {"no-short-load-words",	ARM_FLAG_SHORT_BYTE, "" }, \
+  {"soft-float",		ARM_FLAG_SOFT_FLOAT, 	\
+     "Use library calls to perform FP operations" },	\
+  {"hard-float",	       -ARM_FLAG_SOFT_FLOAT, 	\
+     "Use hardware floating point instructions" },	\
+  {"big-endian",		ARM_FLAG_BIG_END, 	\
+     "Assume target CPU is configured as big endian" },	\
+  {"little-endian",	       -ARM_FLAG_BIG_END, 	\
+     "Assume target CPU is configured as little endian" }, \
+  {"words-little-endian",       ARM_FLAG_LITTLE_WORDS, 	\
+     "Assume big endian bytes, little endian words" },	\
+  {"thumb-interwork",		ARM_FLAG_THUMB, 	\
+     "Support calls between THUMB and ARM instructions sets" },	\
+  {"no-thumb-interwork",       -ARM_FLAG_THUMB, "" },	\
   SUBTARGET_SWITCHES					\
   {"",				TARGET_DEFAULT }	\
 }
@@ -366,7 +380,7 @@ extern char *target_fp_name;
 {					\
   {"cpu=",  & arm_select[1].string, "Specify the name of the target CPU" },	\
   {"arch=", & arm_select[2].string, "Specify the name of the target architecture" }, \
-  {"tune=", & arm_select[3].string},	\
+  {"tune=", & arm_select[3].string, "" },	\
   {"fp=",   & target_fp_name, "Specify the version of the floating point emulator"} \
 }
 

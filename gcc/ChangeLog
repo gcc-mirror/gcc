@@ -1,3 +1,8 @@
+Wed Oct 21 09:15:06 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/arm.h (TARGET_SWITCHES): Document arm specific
+	command line switches.
+
 Tue Oct 20 10:04:51 1998  Graham  <grahams@rcp.co.uk>
 
 	* reload.c (loc_mentioned_in_p): Add missing braces to bind
@@ -343,8 +348,6 @@ Fri Oct 16 15:26:24 1998  Dave Brolley  <brolley@cygnus.com>
 
         * c-lex.c (yylex): Fix unaligned access of wchar_t.
 
->>>>>>> 1.2326
->>>>>>> 1.2342
 Fri Oct 16 10:47:53 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* config/arm/arm.h (TARGET_SWITCHES): Add --help documentation.
