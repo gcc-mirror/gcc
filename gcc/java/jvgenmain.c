@@ -34,7 +34,8 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 static char * do_mangle_classname PARAMS ((const char *string));
 
-struct obstack name_obstack;
+struct obstack  name_obstack;
+struct obstack *mangle_obstack = &name_obstack;
 
 void
 gcc_obstack_init (obstack)
@@ -92,7 +93,7 @@ main (int argc, const char **argv)
 
   classname = argv[i];
 
-  gcc_obstack_init (&name_obstack);
+  gcc_obstack_init (mangle_obstack);
   mangled_classname = do_mangle_classname (classname);
 
   if (i < argc - 1 && strcmp (argv[i + 1], "-") != 0)
@@ -150,30 +151,22 @@ static char *
 do_mangle_classname (string)
      const char *string;
 {
-  char *ptr;
+  const char *ptr;
   int count = 0;
-
-#define MANGLE_NAME()						\
-  {								\
-    char buffer [128];						\
-    sprintf (buffer, "%d", count);				\
-    obstack_grow (&name_obstack, buffer, strlen (buffer));	\
-    obstack_grow (&name_obstack, & ptr [-count], count);	\
-    count = 0;							\
-  }
 
   obstack_grow (&name_obstack, "_ZN", 3);
 
-  for (ptr = (char *)string; *ptr; ptr++ )
+  for (ptr = string; *ptr; ptr++ )
     {
       if (ptr[0] == '.')
 	{
-	  MANGLE_NAME ();
+	  append_gpp_mangled_name (&ptr [-count], count);
+	  count = 0;
 	}
       else
 	count++;
     }
-  MANGLE_NAME ();
-  obstack_grow0 (&name_obstack, "6class$E", 8);
-  return obstack_finish (&name_obstack);
+  append_gpp_mangled_name (&ptr [-count], count);
+  obstack_grow (mangle_obstack, "6class$E", 8);
+  return obstack_finish (mangle_obstack);
 }

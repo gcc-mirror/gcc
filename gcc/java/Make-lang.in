@@ -100,6 +100,7 @@ $(srcdir)/java/keyword.h: $(srcdir)/java/keyword.gperf
 JAVA_OBJS = java/parse.o java/class.o java/decl.o java/expr.o \
   java/constants.o java/lang.o java/typeck.o java/except.o java/verify.o \
   java/zextract.o java/jcf-io.o java/jcf-parse.o java/mangle.o \
+  java/mangle_name.o \
   java/jcf-write.o java/buffer.o java/check-init.o java/jcf-depend.o \
   java/jcf-path.o java/xref.o java/boehm.o mkdeps.o
 
@@ -111,7 +112,7 @@ JVSCAN_OBJS = java/parse-scan.o java/jv-scan.o version.o
 JCFDUMP_OBJS = java/jcf-dump.o java/jcf-io.o java/jcf-depend.o java/jcf-path.o \
 		java/zextract.o errors.o version.o mkdeps.o
 
-JVGENMAIN_OBJS = java/jvgenmain.o
+JVGENMAIN_OBJS = java/jvgenmain.o java/mangle_name.o
 
 # Use loose warnings for this front end.
 java-warn =

@@ -56,10 +56,7 @@ static void init_mangling PARAMS ((struct obstack *));
 static tree finish_mangling PARAMS ((void));
 static void compression_table_add PARAMS ((tree));
 
-static void append_unicode_mangled_name PARAMS ((const char *, int));
-static void append_gpp_mangled_name PARAMS ((const char *, int));
-static int  unicode_mangling_length PARAMS ((const char *, int));
-static int  mangle_member_name PARAMS ((tree));
+static void mangle_member_name PARAMS ((tree));
 
 /* We use an incoming obstack, always to be provided to the interface
    functions. */
@@ -122,19 +119,14 @@ static void
 mangle_field_decl (decl)
      tree decl;
 {
-  tree name = DECL_NAME (decl);
-  int field_name_needs_escapes = 0;
-
   /* Mangle the name of the this the field belongs to */
   mangle_record_type (DECL_CONTEXT (decl), /* from_pointer = */ 0);
   
   /* Mangle the name of the field */
-  field_name_needs_escapes = mangle_member_name (name);
+  mangle_member_name (DECL_NAME (decl));
 
   /* Terminate the mangled name */
   obstack_1grow (mangle_obstack, 'E');
-  if (field_name_needs_escapes)
-    obstack_1grow (mangle_obstack, 'U');
 }
 
 /* This mangles a method decl, first mangling its name and then all
@@ -146,7 +138,6 @@ mangle_method_decl (mdecl)
 {
   tree method_name = DECL_NAME (mdecl);
   tree arglist;
-  int method_name_needs_escapes = 0;
 
   /* Mangle the name of the type that contains mdecl */
   mangle_record_type (DECL_CONTEXT (mdecl), /* from_pointer = */ 0);
@@ -166,7 +157,7 @@ mangle_method_decl (mdecl)
 	obstack_grow (mangle_obstack, "C1", 2);
     }
   else
-    method_name_needs_escapes = mangle_member_name (method_name);
+    mangle_member_name (method_name);
   obstack_1grow (mangle_obstack, 'E');
 
   /* We mangled type.methodName. Now onto the arguments. */
@@ -183,31 +174,18 @@ mangle_method_decl (mdecl)
       for (arg = arglist; arg != end_params_node;  arg = TREE_CHAIN (arg))
 	mangle_type (TREE_VALUE (arg));
     }
-
-  /* Terminate the mangled name */
-  if (method_name_needs_escapes)
-    obstack_1grow (mangle_obstack, 'U');
 }
 
 /* This mangles a member name, like a function name or a field
    name. Handle cases were `name' is a C++ keyword.  Return a non zero
    value if unicode encoding was required.  */
 
-static int
+static void
 mangle_member_name (name)
      tree name;
 {
-  const char * name_string = IDENTIFIER_POINTER (name);
-  int len = IDENTIFIER_LENGTH (name);
-  int to_return = 0;
-
-  if (unicode_mangling_length (name_string, len) > 0)
-    {
-      append_unicode_mangled_name (name_string, len);
-      to_return = 1;
-    }
-  else
-    append_gpp_mangled_name (name_string, len);
+  append_gpp_mangled_name (IDENTIFIER_POINTER (name),
+			   IDENTIFIER_LENGTH (name));
 
   /* If NAME happens to be a C++ keyword, add `$' or `.' or `_'. */
   if (cxx_keyword_p (IDENTIFIER_POINTER (name), IDENTIFIER_LENGTH (name)))
@@ -221,102 +199,6 @@ mangle_member_name (name)
       obstack_1grow (mangle_obstack, '_');
 #endif /* NO_DOT_IN_LABEL */
 #endif /* NO_DOLLAR_IN_LABEL */
-    }
-
-  return to_return;
-}
-
-/* Assuming (NAME, LEN) is a Utf8-encoding string, calculate
-   the length of the string as mangled (a la g++) including Unicode escapes.
-   If no escapes are needed, return 0. */
-
-static int
-unicode_mangling_length (name, len)
-     const char *name; 
-     int len; 
-{
-  const unsigned char *ptr;
-  const unsigned char *limit = (const unsigned char *)name + len;
-  int need_escapes = 0;
-  int num_chars = 0;
-  int underscores = 0;
-  for (ptr = (const unsigned char *) name;  ptr < limit;  )
-    {
-      int ch = UTF8_GET(ptr, limit);
-      if (ch < 0)
-	error ("internal error - invalid Utf8 name");
-      if (ch >= '0' && ch <= '9')
-	need_escapes += num_chars == 0;
-      else if (ch == '_')
-	underscores++;
-      else if (ch != '$' && (ch < 'a' || ch > 'z') && (ch < 'A' || ch > 'Z'))
-	need_escapes++;
-      num_chars++;
-    }
-  if (need_escapes)
-    return num_chars + 4 * (need_escapes + underscores);
-  else
-    return 0;
-}
-
-/* Assuming (NAME, LEN) is a Utf8-encoding string, emit the string
-   appropriately mangled (with Unicode escapes) to OBSTACK. */
-
-static void
-append_unicode_mangled_name (name, len)
-     const char *name;
-     int len;
-{
-  const unsigned char *ptr;
-  const unsigned char *limit = (const unsigned char *)name + len;
-  for (ptr = (const unsigned char *) name;  ptr < limit;  )
-    {
-      int ch = UTF8_GET(ptr, limit);
-      int emit_escape;
-      if (ch < 0)
-	{
-	  error ("internal error - bad Utf8 string");
-	  break;
-	}
-      if (ch >= '0' && ch <= '9')
-	emit_escape = (ptr == (const unsigned char *) name);
-      else
-	emit_escape = (ch < 'a' || ch > 'z') && (ch < 'A' || ch > 'Z');
-      if (emit_escape)
-	{
-	  char buf[6];
-	  sprintf (buf, "_%04x", ch);
-	  obstack_grow (mangle_obstack, buf, 5);
-	}
-      else
-	{
-	  obstack_1grow (mangle_obstack, ch);
-	}
-    }
-}
-
-/* Assuming (NAME, LEN) is a Utf8-encoding string, emit the string
-   appropriately mangled (with Unicode escapes if needed) to OBSTACK. */
-
-static void
-append_gpp_mangled_name (name, len)
-     const char *name;
-     int len;
-{
-  int encoded_len = unicode_mangling_length (name, len);
-  int needs_escapes = encoded_len > 0;
-  char buf[6];
-  if (needs_escapes)
-    {
-      sprintf (buf, "U%d", encoded_len);
-      obstack_grow (mangle_obstack, buf, strlen(buf));
-      append_unicode_mangled_name (name, len);
-    }
-  else
-    {
-      sprintf (buf, "%d", len);
-      obstack_grow (mangle_obstack, buf, strlen(buf));
-      obstack_grow (mangle_obstack, name, len);
     }
 }
 

@@ -1115,6 +1115,7 @@ extern tree java_mangle_class_field PARAMS ((struct obstack *, tree));
 extern tree java_mangle_class_field_from_string PARAMS ((struct obstack *, char *));
 extern tree java_mangle_vtable PARAMS ((struct obstack *, tree));
 extern const char *lang_printable_name_wls PARAMS ((tree, int));
+extern void append_gpp_mangled_name PARAMS ((const char *, int));
 
 /* We use ARGS_SIZE_RTX to indicate that gcc/expr.h has been included
    to declare `enum expand_modifier'. */
