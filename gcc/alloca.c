@@ -72,8 +72,8 @@ typedef char *pointer;
 
 #ifndef emacs
 #define malloc xmalloc
-extern pointer xmalloc ();
 #endif
+extern pointer malloc ();
 
 /* Define STACK_DIRECTION if you know the direction of stack
    growth for your system; otherwise it will be automatically
