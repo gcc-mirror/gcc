@@ -4289,7 +4289,18 @@ find_reloads_toplev (x, opnum, type, ind_levels, is_set_dest)
 	  && (tem = operand_subword (reg_equiv_constant[regno],
 				     SUBREG_WORD (x), 0,
 				     GET_MODE (SUBREG_REG (x)))) != 0)
-	return tem;
+	{
+	  /* TEM is now a word sized constant for the bits from X that
+	     we wanted.  However, TEM may be the wrong representation.
+
+	     Use gen_lowpart_common to convert a CONST_INT into a
+	     CONST_DOUBLE and vice versa as needed according to by the mode
+	     of the SUBREG.  */
+	  tem = gen_lowpart_common (GET_MODE (x), tem);
+	  if (!tem)
+	    abort ();
+	  return tem;
+	}
 
       /* If the SUBREG is wider than a word, the above test will fail.
 	 For example, we might have a SImode SUBREG of a DImode SUBREG_REG
