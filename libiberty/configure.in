@@ -219,6 +219,7 @@ if test "x" = "y"; then
   AC_CHECK_FUNCS(strtod strtol strtoul tmpnam vasprintf vfprintf vprintf)
   AC_CHECK_FUNCS(vsprintf waitpid getrusage on_exit psignal strerror strsignal)
   AC_CHECK_FUNCS(sysconf times sbrk gettimeofday ffs)
+  AC_CHECK_FUNCS(pstat_getstatic pstat_getdynamic)
   AC_CHECK_FUNCS(realpath canonicalize_file_name)
   AC_DEFINE(HAVE_SYS_ERRLIST, 1, [Define if you have the sys_errlist variable.])
   AC_DEFINE(HAVE_SYS_NERR,    1, [Define if you have the sys_nerr variable.])
