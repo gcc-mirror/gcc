@@ -1,3 +1,11 @@
+Mon Jan 19 09:38:18 1998  Richard Henderson  <rth@cygnus.com>
+
+	* configure.in: Find declaration for sbrk.
+	* acconfig.h (NEED_DECLARATION_SBRK): New tag.
+	* config.in, configure: Rebuild.
+	* mips-tfile.c: Properly protect declaration of sbrk and free.
+	* toplev.c: Properly protect declaration of sbrk.
+
 Sun Jan 18 20:18:01 1998  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.c (alpha_handle_trap_shadows): Ignore CLOBBERs.

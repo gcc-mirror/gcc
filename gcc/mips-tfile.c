@@ -1755,8 +1755,10 @@ STATIC void	  free_thead		__proto((thead_t *));
 STATIC char	 *local_index		__proto((const char *, int));
 STATIC char	 *local_rindex		__proto((const char *, int));
 
-#ifndef __alpha
+#ifdef NEED_DECLARATION_SBRK
 extern char  *sbrk			__proto((int));
+#endif
+#ifdef NEED_DECLARATION_FREE
 extern void   free			__proto((PTR_T));
 #endif
 extern char  *mktemp			__proto((char *));
