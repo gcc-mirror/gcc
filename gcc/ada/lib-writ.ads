@@ -403,6 +403,7 @@ package Lib.Writ is
 
    --  The dependency lines indicate the source files on which the compiled
    --  units depend. This is used by the binder for consistency checking.
+   --  These lines are also referenced by the cross-reference information.
 
    --    D source-name time-stamp checksum [subunit-name] line:file-name
 
@@ -436,6 +437,13 @@ package Lib.Writ is
    --      read, and separate sections of the file are separated by blank
    --      lines to ease readability. Blanks between fields are also
    --      ignored.
+
+   --      For entries corresponding to files that were not present (and
+   --      thus resulted in error messages), or for files that are not
+   --      part of the dependency set, both the time stamp and checksum
+   --      are set to all zero characters. These dummy entries are ignored
+   --      by the binder in dependency checking, but must be present for
+   --      proper interpretation of the cross-reference data.
 
    --------------------------
    -- Cross-Reference Data --

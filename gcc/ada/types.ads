@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.3 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -621,6 +621,10 @@ pragma Preelaborate (Types);
    --  although this is not a private type, clients should not rely on the
    --  exact way in which this string is represented, and instead should
    --  use the subprograms below.
+
+   Dummy_Time_Stamp : constant Time_Stamp_Type := (others => '0');
+   --  This is used for dummy time stamp values used in the D lines for
+   --  non-existant files, and is intended to be an impossible value.
 
    function "="  (Left, Right : Time_Stamp_Type) return Boolean;
    function "<=" (Left, Right : Time_Stamp_Type) return Boolean;

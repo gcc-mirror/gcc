@@ -1752,9 +1752,10 @@ package body Bindgen is
          end if;
       end if;
 
-      --  Generate the GNAT_Version info only for the main program. Otherwise,
-      --  it can lead under some circumstances to a symbol duplication during
-      --  the link (for instance when a C program uses 2 Ada libraries)
+      --  Generate the GNAT_Version and Ada_Main_Program_name info only for
+      --  the main program. Otherwise, it can lead under some circumstances
+      --  to a symbol duplication during the link (for instance when a
+      --  C program uses 2 Ada libraries)
 
       if Bind_Main_Program then
          WBI ("");
@@ -1762,6 +1763,17 @@ package body Bindgen is
          WBI ("                    ""GNAT Version: " &
                                    Gnat_Version_String & """;");
          WBI ("   pragma Export (C, GNAT_Version, ""__gnat_version"");");
+
+         WBI ("");
+         Set_String ("   Ada_Main_Program_Name : constant String := """);
+         Get_Name_String (Units.Table (First_Unit_Entry).Uname);
+         Set_Main_Program_Name;
+         Set_String (""" & Ascii.NUL;");
+         Write_Statement_Buffer;
+
+         WBI
+           ("   pragma Export (C, Ada_Main_Program_Name, " &
+            """__gnat_ada_main_program_name"");");
       end if;
 
       --  No need to generate a finalization routine if there is no
@@ -2006,15 +2018,21 @@ package body Bindgen is
          WBI ("void __gnat_break_start () {}");
       end if;
 
-      --  Generate the __gnat_version info only for the main program.
-      --  Otherwise, it can lead under some circumstances to a symbol
-      --  duplication during the link (for instance when a C program
-      --  uses 2 Ada libraries)
+      --  Generate the __gnat_version and __gnat_ada_main_program_name info
+      --  only for the main program. Otherwise, it can lead under some
+      --  circumstances to a symbol duplication during the link (for instance
+      --  when a C program uses 2 Ada libraries)
 
       if Bind_Main_Program then
          WBI ("");
          WBI ("char __gnat_version[] = ""GNAT Version: " &
                                    Gnat_Version_String & """;");
+
+         Set_String ("char __gnat_ada_main_program_name[] = """);
+         Get_Name_String (Units.Table (First_Unit_Entry).Uname);
+         Set_Main_Program_Name;
+         Set_String (""";");
+         Write_Statement_Buffer;
       end if;
 
       --  Generate the adafinal routine. In no runtime mode, this is

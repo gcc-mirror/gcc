@@ -1128,8 +1128,10 @@ package body ALI is
          Sdep.Increment_Last;
          Sdep.Table (Sdep.Last).Sfile := Get_Name (Lower => True);
          Sdep.Table (Sdep.Last).Stamp := Get_Stamp;
+         Sdep.Table (Sdep.Last).Dummy_Entry :=
+           (Sdep.Table (Sdep.Last).Stamp = Dummy_Time_Stamp);
 
-         --  Check for version number present, and if so store it
+         --  Acquire checksum value
 
          Skip_Space;
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.160 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -880,50 +880,60 @@ package body Lib.Writ is
       begin
          for J in 1 .. Num_Sdep loop
             Unum := Sdep_Table (J);
+            Units.Table (Unum).Dependency_Num := J;
             Sind := Units.Table (Unum).Source_Index;
 
-            --  Error defence, ignore entries with no source index
+            Write_Info_Initiate ('D');
+            Write_Info_Char (' ');
 
-            if Sind /= No_Source_File then
-               Units.Table (Unum).Dependency_Num := J;
+            --  Normal case of a dependent unit entry with a source index
 
-               if Units.Table (Unum).Dependent_Unit then
-                  Write_Info_Initiate ('D');
+            if Sind /= No_Source_File
+              and then Units.Table (Unum).Dependent_Unit
+            then
+               Write_Info_Name (File_Name (Sind));
+               Write_Info_Tab (25);
+               Write_Info_Str (String (Time_Stamp (Sind)));
+               Write_Info_Char (' ');
+               Write_Info_Str (Get_Hex_String (Source_Checksum (Sind)));
+
+               --  If subunit, add unit name, omitting the %b at the end
+
+               if Present (Cunit (Unum))
+                 and then Nkind (Unit (Cunit (Unum))) = N_Subunit
+               then
+                  Get_Decoded_Name_String (Unit_Name (Unum));
                   Write_Info_Char (' ');
-                  Write_Info_Name (File_Name (Sind));
-                  Write_Info_Tab (25);
-                  Write_Info_Str (String (Time_Stamp (Sind)));
-                  Write_Info_Char (' ');
-                  Write_Info_Str (Get_Hex_String (Source_Checksum (Sind)));
-
-                  --  If subunit, add unit name, omitting the %b at the end
-
-                  if Present (Cunit (Unum))
-                    and then Nkind (Unit (Cunit (Unum))) = N_Subunit
-                  then
-                     Get_Decoded_Name_String (Unit_Name (Unum));
-                     Write_Info_Char (' ');
-                     Write_Info_Str (Name_Buffer (1 .. Name_Len - 2));
-                  end if;
-
-                  --  If Source_Reference pragma used output information
-
-                  if Num_SRef_Pragmas (Sind) > 0 then
-                     Write_Info_Char (' ');
-
-                     if Num_SRef_Pragmas (Sind) = 1 then
-                        Write_Info_Nat (Int (First_Mapped_Line (Sind)));
-                     else
-                        Write_Info_Nat (0);
-                     end if;
-
-                     Write_Info_Char (':');
-                     Write_Info_Name (Reference_Name (Sind));
-                  end if;
-
-                  Write_Info_EOL;
+                  Write_Info_Str (Name_Buffer (1 .. Name_Len - 2));
                end if;
+
+               --  If Source_Reference pragma used output information
+
+               if Num_SRef_Pragmas (Sind) > 0 then
+                  Write_Info_Char (' ');
+
+                  if Num_SRef_Pragmas (Sind) = 1 then
+                     Write_Info_Nat (Int (First_Mapped_Line (Sind)));
+                  else
+                     Write_Info_Nat (0);
+                  end if;
+
+                  Write_Info_Char (':');
+                  Write_Info_Name (Reference_Name (Sind));
+               end if;
+
+            --  Case where there is no source index (happens for missing files)
+            --  Also come here for non-dependent units.
+
+            else
+               Write_Info_Name (Unit_File_Name (Unum));
+               Write_Info_Tab (25);
+               Write_Info_Str (String (Dummy_Time_Stamp));
+               Write_Info_Char (' ');
+               Write_Info_Str (Get_Hex_String (0));
             end if;
+
+            Write_Info_EOL;
          end loop;
       end;
 

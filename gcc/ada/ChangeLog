@@ -1,3 +1,29 @@
+2001-12-17  Ed Schonberg <schonber@gnat.com>
+
+	* sem_ch3.adb (Analyze_Variant_Part): check that type of discriminant 
+	is discrete before analyzing choices.
+	
+2001-12-17  Joel Brobecker <brobecke@gnat.com>
+
+	* bindgen.adb (Gen_Output_File_Ada): Generate a new C-like string 
+	containing the name of the Ada Main Program. This string is mainly 
+	intended for the debugger.
+	(Gen_Output_File_C): Do the equivalent change when generating a C file.
+	
+2001-12-17  Robert Dewar <dewar@gnat.com>
+
+	* ali.adb: Set new Dummy_Entry field in dependency entry
+	
+	* ali.ads: Add Dummy_Entry field to source dependency table
+	
+	* bcheck.adb (Check_Consistency): Ignore dummy D lines
+	
+	* lib-writ.adb (Writ_ALI): Write dummy D lines for missing source files
+	
+	* lib-writ.ads: Document dummy D lines for missing files.
+	
+	* types.ads: (Dummy_Time_Stamp): New value for non-existant files
+
 2001-12-17  Robert Dewar <dewar@gnat.com>
 
 	* ali.adb: Type reference does not reset current file.

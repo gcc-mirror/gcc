@@ -529,6 +529,10 @@ package body Bcheck is
          Sdep_Loop : for D in
            ALIs.Table (A).First_Sdep .. ALIs.Table (A).Last_Sdep
          loop
+            if Sdep.Table (D).Dummy_Entry then
+               goto Continue;
+            end if;
+
             Src := Source_Id (Get_Name_Table_Info (Sdep.Table (D).Sfile));
 
             --  If the time stamps match, or all checksums match, then we
@@ -587,6 +591,8 @@ package body Bcheck is
                exit Sdep_Loop;
             end if;
 
+         <<Continue>>
+            null;
          end loop Sdep_Loop;
       end loop ALIs_Loop;
    end Check_Consistency;
