@@ -586,6 +586,11 @@ print_node (file, prefix, node, indent)
 
 	case STRING_CST:
 	  fprintf (file, " \"%s\"", TREE_STRING_POINTER (node));
+	  /* Print the chain at second level.  */
+	  if (indent == 4)
+	    print_node (file, "chain", TREE_CHAIN (node), indent + 4);
+	  else
+	    print_node_brief (file, "chain", TREE_CHAIN (node), indent + 4);
 	  break;
 
 	case IDENTIFIER_NODE:
