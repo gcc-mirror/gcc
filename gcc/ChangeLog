@@ -1,3 +1,7 @@
+Mon Jul 12 23:39:08 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* rs6000.md (movsf): Do not force easy FP constants into memory.
+
 Sun Jul 11 11:21:24 1999  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* toplev.c (main): Don't complain about saying -gdwarf.
