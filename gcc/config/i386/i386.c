@@ -2373,12 +2373,16 @@ print_operand (file, x, code)
 	case 'J':
 	  switch (GET_CODE (x))
 	    {
+	      /* These conditions are appropriate for testing the result
+		 of an arithmetic operation, not for a compare operation.
+	         Cases GE, LT assume CC_NO_OVERFLOW true. All cases assume
+		 CC_Z_IN_NOT_C false and not floating point.  */
 	    case NE:  fputs ("jne", file); return;
 	    case EQ:  fputs ("je",  file); return;
-	    case GE:  fputs ("jge", file); return;
+	    case GE:  fputs ("jns", file); return;
 	    case GT:  fputs ("jg",  file); return;
 	    case LE:  fputs ("jle", file); return;
-	    case LT:  fputs ("jl",  file); return;
+	    case LT:  fputs ("js",  file); return;
 	    case GEU: fputs ("jae", file); return;
 	    case GTU: fputs ("ja",  file); return;
 	    case LEU: fputs ("jbe", file); return;
