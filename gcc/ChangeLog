@@ -1,3 +1,12 @@
+2003-06-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* arm/aout.h (ASM_OUTPUT_SKIP): Fix cast for format specifier warning.
+	* arm.c (arm_output_function_prologue): Fix format specifiers.
+	* arm.h (ARM_PRINT_OPERAND_ADDRESS): Likewise.
+	* m68k.c (m68k_output_mi_thunk): Use more readable %wd instead of
+	HOST_WIDE_INT_PRINT_DEC.
+	* vax.c (vax_output_function_prologue): Fix format specifiers.
+
 2003-06-04  Richard Henderson  <rth@redhat.com>
 
         * cse.c (find_best_addr): Consider binary operators even if second

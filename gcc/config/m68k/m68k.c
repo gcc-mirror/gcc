@@ -3681,8 +3681,7 @@ m68k_output_mi_thunk (file, thunk, delta, vcall_offset, function)
   else if (delta < 0 && delta >= -8)
     asm_fprintf (file, "\tsubq.l %I%d,4(%Rsp)\n", (int) -delta);
   else
-    asm_fprintf (file, "\tadd.l %I" HOST_WIDE_INT_PRINT_DEC ",4(%Rsp)\n",
-		 delta);
+    asm_fprintf (file, "\tadd.l %I%wd,4(%Rsp)\n", delta);
 
   xops[0] = DECL_RTL (function);
 

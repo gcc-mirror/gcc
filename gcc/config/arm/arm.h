@@ -2391,7 +2391,7 @@ extern int making_const_table;
 	    offset = INTVAL (index);					\
 	    if (is_minus)						\
 	      offset = -offset;						\
-	    asm_fprintf (STREAM, "[%r, #%d]",				\
+	    asm_fprintf (STREAM, "[%r, #%wd]",				\
 		         REGNO (base), offset);				\
 	    break;							\
 									\
@@ -2442,7 +2442,7 @@ extern int making_const_table;
     {									\
       asm_fprintf (STREAM, "[%r, ", REGNO (XEXP (X, 0)));		\
       if (GET_CODE (XEXP (XEXP (X, 1), 1)) == CONST_INT)		\
-	asm_fprintf (STREAM, "#%d]!", 					\
+	asm_fprintf (STREAM, "#%wd]!", 					\
 		     INTVAL (XEXP (XEXP (X, 1), 1)));			\
       else								\
 	asm_fprintf (STREAM, "%r]!", 					\
@@ -2452,7 +2452,7 @@ extern int making_const_table;
     {									\
       asm_fprintf (STREAM, "[%r], ", REGNO (XEXP (X, 0)));		\
       if (GET_CODE (XEXP (XEXP (X, 1), 1)) == CONST_INT)		\
-	asm_fprintf (STREAM, "#%d", 					\
+	asm_fprintf (STREAM, "#%wd", 					\
 		     INTVAL (XEXP (XEXP (X, 1), 1)));			\
       else								\
 	asm_fprintf (STREAM, "%r", 					\
