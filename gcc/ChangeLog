@@ -1,3 +1,8 @@
+2001-07-01  Mark Mitchell  <mark@codesourcery.com>
+
+	* expr.c (expand_expr, case ARRAY_REF): Correct check for
+	side-effects in the value of an array element.
+
 2001-06-29  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* objc/objc-act.c (handle_class_ref): Always place decl in

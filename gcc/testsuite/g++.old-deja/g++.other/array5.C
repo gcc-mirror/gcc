@@ -1,10 +1,20 @@
-// Build don't link:
-// We tried to create a temporary of unknown size and crashed.
+// Special g++ Options: -O1
 
-extern int a1[];
-extern int a2[];
-int foo(int p)
+int count = 0;
+
+double foo () {
+  count++;
+  return 0;
+};
+
+double bar () {
+  const double x[1] = { foo() };
+  return x[0];
+};
+
+int main () 
 {
-  int x = (p ? a1 : a2)[1];
-  return x;
-}
+  bar();
+  if (count != 1)
+    return 1;
+};
