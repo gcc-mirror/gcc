@@ -118,7 +118,7 @@ am__objects_31 = $(am__objects_2) $(am__objects_3) $(am__objects_4) \
 am__objects_32 = backspace.lo close.lo endfile.lo format.lo inquire.lo \
 	list_read.lo lock.lo open.lo read.lo rewind.lo transfer.lo \
 	unit.lo unix.lo write.lo
-am__objects_33 = associated.lo abort.lo cpu_time.lo cshift0.lo \
+am__objects_33 = associated.lo abort.lo args.lo cpu_time.lo cshift0.lo \
 	eoshift0.lo eoshift2.lo ishftc.lo pack_generic.lo size.lo \
 	spread_generic.lo string_intrinsics.lo random.lo \
 	reshape_generic.lo reshape_packed.lo selected_kind.lo \
@@ -308,6 +308,7 @@ io/io.h
 gfor_helper_src = \
 intrinsics/associated.c \
 intrinsics/abort.c \
+intrinsics/args.c \
 intrinsics/cpu_time.c \
 intrinsics/cshift0.c \
 intrinsics/eoshift0.c \
@@ -1972,6 +1973,15 @@ abort.obj: intrinsics/abort.c
 
 abort.lo: intrinsics/abort.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o abort.lo `test -f 'intrinsics/abort.c' || echo '$(srcdir)/'`intrinsics/abort.c
+
+args.o: intrinsics/args.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o args.o `test -f 'intrinsics/args.c' || echo '$(srcdir)/'`intrinsics/args.c
+
+args.obj: intrinsics/args.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o args.obj `if test -f 'intrinsics/args.c'; then $(CYGPATH_W) 'intrinsics/args.c'; else $(CYGPATH_W) '$(srcdir)/intrinsics/args.c'; fi`
+
+args.lo: intrinsics/args.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o args.lo `test -f 'intrinsics/args.c' || echo '$(srcdir)/'`intrinsics/args.c
 
 cpu_time.o: intrinsics/cpu_time.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cpu_time.o `test -f 'intrinsics/cpu_time.c' || echo '$(srcdir)/'`intrinsics/cpu_time.c
