@@ -1,3 +1,8 @@
+2001-06-29  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* lib/objc.exp (objc_target_compile): Declare rootme.  Append to
+	ld_library_path.
+
 2001-06-28  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* lib/objc.exp (objc_target_compile): Don't need -lposix4 on any

@@ -8362,13 +8362,8 @@ handle_class_ref (chain)
       pushdecl (decl);
       rest_of_decl_compilation (decl, 0, 0, 0);
 
-#ifdef __hpux__
       /* Put the decl in the variable section.  It may need relocation.  */
       variable_section (decl, 1);
-#else
-      /* Make following constant read-only (why not)?  */
-      readonly_data_section ();
-#endif
 
       exp = build1 (ADDR_EXPR, string_type_node, decl);
 
@@ -8421,9 +8416,7 @@ handle_impent (impent)
 	{
 	  sprintf (string, "%sobjc_class_name_%s",
 		   (flag_next_runtime ? "." : "__"), class_name);
-#ifdef __hpux__
 	  readonly_data_section ();
-#endif
 	  assemble_global (string);
 	  assemble_label (string);
 	}
@@ -8458,9 +8451,7 @@ handle_impent (impent)
 	  sprintf (string, "%sobjc_category_name_%s_%s",
 		   (flag_next_runtime ? "." : "__"),
 		   class_name, class_super_name);
-#ifdef __hpux__
 	  readonly_data_section ();
-#endif
 	  assemble_global (string);
 	  assemble_label (string);
 	}

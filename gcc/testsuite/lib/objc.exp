@@ -113,13 +113,14 @@ proc objc_init { args } {
 }
 
 proc objc_target_compile { source dest type options } {
+    global rootme;
     global tmpdir;
     global gluefile wrap_flags;
     global OBJC_UNDER_TEST
     global TOOL_OPTIONS
     global ld_library_path
 
-    set ld_library_path "."
+    set ld_library_path ".:${rootme}"
     lappend options "libs=-lobjc"
 
     if { [target_info needs_status_wrapper]!="" && [info exists gluefile] } {

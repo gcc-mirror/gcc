@@ -1,3 +1,10 @@
+2001-06-29  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* objc/objc-act.c (handle_class_ref): Always place decl in
+	variable section.
+	(handle_impent): Always place decl in readonly data section.
+	Fixes PRs libobjc/917, libobjc/3237, bootstrap/3251.
+
 2001-06-29  Alan Modra  <amodra@bigpond.net.au>
 
 	* recog.c (validate_replace_rtx_1): Exit early if nothing changed
