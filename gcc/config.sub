@@ -155,6 +155,7 @@ case $basic_machine in
 		| alpha | alphaev5 | alphaev56 | we32k | ns16k | clipper \
 		| i370 | sh | powerpc | powerpcle | 1750a | dsp16xx | pdp11 \
 		| mips64 | mipsel | mips64el | mips64orion | mips64orionel \
+		| mipstx39 | mipstx39el \
 		| sparc | sparclet | sparclite | sparc64)
 		basic_machine=$basic_machine-unknown
 		;;
@@ -179,7 +180,9 @@ case $basic_machine in
 	      | ns16k-* | pn-* | np1-* | xps100-* | clipper-* | orion-* \
 	      | sparclite-* | pdp11-* | sh-* | powerpc-* | powerpcle-* \
 	      | sparc64-* | mips64-* | mipsel-* \
-	      | mips64el-* | mips64orion-* | mips64orionel-* | f301-*)
+	      | mips64el-* | mips64orion-* | mips64orionel-*  \
+	      | mipstx39-* | mipstx39el-* \
+	      | f301-*)
 		;;
 	# Recognize the various machine names and aliases which stand
 	# for a CPU type and a company and sometimes even an OS.
@@ -567,6 +570,12 @@ case $basic_machine in
 	symmetry)
 		basic_machine=i386-sequent
 		os=-dynix
+		;;
+	tx39)
+		basic_machine=mipstx39-unknown
+		;;
+	tx39el)
+		basic_machine=mipstx39el-unknown
 		;;
 	tower | tower-32)
 		basic_machine=m68k-ncr
