@@ -28,7 +28,7 @@ mcore			Nick Clifton		nickc@redhat.com
 			Jim Dein		jdein@windriver.com
 mn10200 port		Jeff Law		law@cygnus.com
 mn10300 port		Jeff Law		law@cygnus.com
-mn10300 port		Alexandre Oliva		aoliva@cygnus.com
+mn10300 port		Alexandre Oliva		aoliva@redhat.com
 hppa port		Jeff Law		law@cygnus.com
 m68k port (?)		Jeff Law		law@cygnus.com
 m68k-motorola-sysv port	Philippe De Muyter	phdm@macqel.be
@@ -91,6 +91,7 @@ windows, cygwin, mingw	DJ Delorie		dj@redhat.com
 DJGPP			DJ Delorie		dj@delorie.com
 libiberty		DJ Delorie		dj@redhat.com
 build machinery (*.in)	DJ Delorie		dj@redhat.com
+build machinery (*.in)	Alexandre Oliva		aoliva@redhat.com
 
 Note individuals who maintain parts of the compiler need approval to check
 in changes outside of the parts of the compiler they maintain.
