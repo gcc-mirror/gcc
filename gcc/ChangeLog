@@ -10,6 +10,8 @@
 
 	* arm.md (call_value_symbol): Remove predicate from op2.
 
+	* arm.h (SPECIAL_MODE_PREDICATES): Define.
+	
 Sat May  6 06:25:56 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* expr.c (get_subtarget): New function.
