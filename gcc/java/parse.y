@@ -4079,7 +4079,7 @@ lookup_field_wrapper (class, name)
   /* Last chance: if we're within the context of an inner class, we
      might be trying to access a local variable defined in an outer
      context. We try to look for it now. */
-  if (INNER_CLASS_TYPE_P (class))
+  if (INNER_CLASS_TYPE_P (class) && TREE_CODE (name) == IDENTIFIER_NODE)
     {
       tree new_name;
       MANGLE_OUTER_LOCAL_VARIABLE_NAME (new_name, name);
@@ -9221,7 +9221,8 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
       previous_call_static = 0;
 
       /* It can be the keyword THIS */
-      if (EXPR_WFL_NODE (qual_wfl) == this_identifier_node)
+      if (TREE_CODE (qual_wfl) == EXPR_WITH_FILE_LOCATION
+	  && EXPR_WFL_NODE (qual_wfl) == this_identifier_node)
 	{
 	  if (!current_this)
 	    {
@@ -9272,7 +9273,8 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 	}
 
       /* 15.10.2 Accessing Superclass Members using SUPER */
-      if (EXPR_WFL_NODE (qual_wfl) == super_identifier_node)
+      if (TREE_CODE (qual_wfl) == EXPR_WITH_FILE_LOCATION
+	  && EXPR_WFL_NODE (qual_wfl) == super_identifier_node)
 	{
 	  tree node;
 	  /* Check on the restricted use of SUPER */
@@ -10844,6 +10846,10 @@ qualify_ambiguous_name (id)
     else if (code == INTEGER_CST)
       name = qual_wfl;
     
+    else if (code == CONVERT_EXPR &&
+	     TREE_CODE (TREE_OPERAND (qual_wfl, 0)) == EXPR_WITH_FILE_LOCATION)
+      name = TREE_OPERAND (qual_wfl, 0);
+    
     else if ((code == ARRAY_REF || code == CALL_EXPR || code == MODIFY_EXPR) &&
 	     TREE_CODE (TREE_OPERAND (qual_wfl, 0)) == EXPR_WITH_FILE_LOCATION)
       name = EXPR_WFL_NODE (TREE_OPERAND (qual_wfl, 0));
@@ -10858,7 +10864,7 @@ qualify_ambiguous_name (id)
 	qual_wfl = QUAL_WFL (qual);
 	again = 1;
       }
-    else 
+    else
       {
 	name = EXPR_WFL_NODE (qual_wfl);
 	if (!name)
@@ -10886,8 +10892,10 @@ qualify_ambiguous_name (id)
 	qual_wfl = QUAL_WFL (qual);
 	if (TREE_CODE (qual_wfl) == CALL_EXPR)
 	  again = 1;
-	else
+	else if (TREE_CODE (qual_wfl) == EXPR_WITH_FILE_LOCATION)
 	  name = EXPR_WFL_NODE (qual_wfl);
+	else if (TREE_CODE (qual_wfl) == NEW_CLASS_EXPR)
+	  name = TREE_OPERAND (qual_wfl, 0);
 	this_found = 1;
       }
     /* If we have a SUPER, we set the context accordingly */
@@ -12408,6 +12416,7 @@ maybe_build_primttype_type_ref (rhs, wfl)
       if (TREE_CODE (n) == VAR_DECL 
 	  && DECL_NAME (n) == TYPE_identifier_node
 	  && rhs_type == class_ptr_type
+	  && TREE_CODE (wfl) == EXPR_WITH_FILE_LOCATION
 	  && TREE_CODE (EXPR_WFL_NODE (wfl)) == IDENTIFIER_NODE)
 	{
 	  const char *self_name = IDENTIFIER_POINTER (EXPR_WFL_NODE (wfl));
