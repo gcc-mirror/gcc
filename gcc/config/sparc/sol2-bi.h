@@ -1,4 +1,4 @@
-/* Definitions of target machine for GNU compiler, for bi-arch SPARC
+/* Definitions of target machine for GCC, for bi-arch SPARC
    running Solaris 2 using the system assembler and linker.  */
 
 /* The default code model.  */
