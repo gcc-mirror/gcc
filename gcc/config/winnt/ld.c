@@ -288,6 +288,7 @@ main (argc, argv)
 	  addarg (expand_lib (&argv[i][2]));
         }
       else if (!strcmp (argv [i], "-v") 
+            || !strcmp (argv [i], "-g")
             || !strcmp (argv [i], "-noinhibit-exec"))
         {
           ;
