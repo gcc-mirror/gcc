@@ -2881,9 +2881,24 @@ pushtag (name, type, globalize)
 
 	  TYPE_CONTEXT (type) = DECL_CONTEXT (d);
 	  DECL_ASSEMBLER_NAME (d) = DECL_NAME (d);
-	  if (!uses_template_parms (type))
-	    DECL_ASSEMBLER_NAME (d)
-	      = get_identifier (build_overload_name (type, 1, 1));
+
+	  /* If this is a local class, keep track of it.  We need this
+	     information for name-mangling, and so that it is possible to find
+	     all function definitions in a translation unit in a convenient
+	     way.  (It's otherwise tricky to find a member function definition
+	     it's only pointed to from within a local class.)  */
+	  if (TYPE_CONTEXT (type) 
+	      && TREE_CODE (TYPE_CONTEXT (type)) == FUNCTION_DECL)
+	    VARRAY_PUSH_TREE (local_classes, type);
+
+	  if (!uses_template_parms (type)) 
+	    {
+	      if (flag_new_abi)
+		DECL_ASSEMBLER_NAME (d) = mangle_type (type);
+	      else
+		DECL_ASSEMBLER_NAME (d)
+		  = get_identifier (build_overload_name (type, 1, 1));
+	    }
         }
       if (b->parm_flag == 2)
 	{
@@ -6229,6 +6244,7 @@ initialize_predefined_identifiers ()
     { "_vptr", &vptr_identifier, 0 },
     { "__cp_push_exception", &cp_push_exception_identifier, 0 },
     { "__vtt_parm", &vtt_parm_identifier, 0 },
+    { "std", &std_identifier, 0 },
     { NULL, NULL, 0 }
   };
 
@@ -6577,7 +6593,8 @@ init_decl_processing ()
   record_builtin_type (RID_MAX, NULL_PTR, vtbl_ptr_type_node);
 
   std_node = build_decl (NAMESPACE_DECL,
-			 get_identifier (flag_honor_std ? "fake std":"std"),
+			 flag_honor_std 
+			 ? get_identifier ("fake std") : std_identifier,
 			 void_type_node);
   pushdecl (std_node);
   
@@ -7246,7 +7263,7 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
       /* cp_finish_decl sets DECL_EXTERNAL if DECL_IN_AGGR_P is set.  */
       DECL_IN_AGGR_P (decl) = 0;
       if ((DECL_LANG_SPECIFIC (decl) && DECL_USE_TEMPLATE (decl))
-	  || CLASSTYPE_USE_TEMPLATE (context))
+	  || CLASSTYPE_TEMPLATE_INSTANTIATION (context))
 	{
 	  SET_DECL_TEMPLATE_SPECIALIZATION (decl);
 	  /* [temp.expl.spec] An explicit specialization of a static data
@@ -9086,7 +9103,16 @@ grokvardecl (type, declarator, specbits_in, initialized, constp, in_namespace)
       type = TREE_TYPE (type);
       decl = build_lang_decl (VAR_DECL, declarator, type);
       DECL_CONTEXT (decl) = basetype;
-      DECL_ASSEMBLER_NAME (decl) = build_static_name (basetype, declarator);
+      /* DECL_ASSEMBLER_NAME is needed only for full-instantiated
+	 templates.  */
+      if (!uses_template_parms (decl))
+	{
+	  if (flag_new_abi)
+	    DECL_ASSEMBLER_NAME (decl) = mangle_decl (decl);
+	  else
+	    DECL_ASSEMBLER_NAME (decl) = build_static_name (basetype,
+							    declarator);
+	}
     }
   else
     {
@@ -9110,8 +9136,14 @@ grokvardecl (type, declarator, specbits_in, initialized, constp, in_namespace)
 	set_decl_namespace (decl, context, 0);
 
       context = DECL_CONTEXT (decl);
-      if (declarator && context && current_lang_name != lang_name_c)
-	DECL_ASSEMBLER_NAME (decl) = build_static_name (context, declarator);
+      if (declarator && context && current_lang_name != lang_name_c) 
+	{
+	  if (flag_new_abi)
+	    DECL_ASSEMBLER_NAME (decl) = mangle_decl (decl);
+	  else
+	    DECL_ASSEMBLER_NAME (decl) 
+	      = build_static_name (context, declarator);
+	}
     }
 
   if (in_namespace)
@@ -11146,19 +11178,24 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	    DECL_NAME (CLASSTYPE_TI_TEMPLATE (type))
 	      = TYPE_IDENTIFIER (type);
 
-	  /* XXX Temporarily set the scope.
-	     When returning, start_decl expects it as NULL_TREE,
-	     and will then then set it using pushdecl. */
-	  my_friendly_assert (DECL_CONTEXT (decl) == NULL_TREE, 980404);
-	  if (current_class_type)
-	    DECL_CONTEXT (decl) = current_class_type;
+	  if (flag_new_abi) 
+	    DECL_ASSEMBLER_NAME (decl) = mangle_type (type);
 	  else
-	    DECL_CONTEXT (decl) = FROB_CONTEXT (current_namespace);
-
-	  DECL_ASSEMBLER_NAME (decl) = DECL_NAME (decl);
-	  DECL_ASSEMBLER_NAME (decl)
-	    = get_identifier (build_overload_name (type, 1, 1));
-	  DECL_CONTEXT (decl) = NULL_TREE;
+	    {
+	      /* XXX Temporarily set the scope.
+		 When returning, start_decl expects it as NULL_TREE,
+		 and will then then set it using pushdecl. */
+	      my_friendly_assert (DECL_CONTEXT (decl) == NULL_TREE, 980404);
+	      if (current_class_type)
+		DECL_CONTEXT (decl) = current_class_type;
+	      else
+		DECL_CONTEXT (decl) = FROB_CONTEXT (current_namespace);
+	      
+	      DECL_ASSEMBLER_NAME (decl) = DECL_NAME (decl);
+	      DECL_ASSEMBLER_NAME (decl)
+		= get_identifier (build_overload_name (type, 1, 1));
+	      DECL_CONTEXT (decl) = NULL_TREE;
+	    }
 
 	  /* FIXME remangle member functions; member functions of a
 	     type with external linkage have external linkage.  */

@@ -588,6 +588,7 @@ enum cp_tree_index
     CPTI_PFN_OR_DELTA2_IDENTIFIER,
     CPTI_VPTR_IDENTIFIER,
     CPTI_PUSH_EXCEPTION_IDENTIFIER,
+    CPTI_STD_IDENTIFIER,
 
     CPTI_LANG_NAME_C,
     CPTI_LANG_NAME_CPLUSPLUS,
@@ -707,6 +708,8 @@ extern tree cp_global_trees[CPTI_MAX];
 /* The name of the function to call to push an exception onto the
    exception stack.  */
 #define cp_push_exception_identifier    cp_global_trees[CPTI_PUSH_EXCEPTION_IDENTIFIER]
+/* The name of the std namespace.  */
+#define std_identifier                  cp_global_trees[CPTI_STD_IDENTIFIER]
 
 #define lang_name_c                     cp_global_trees[CPTI_LANG_NAME_C]
 #define lang_name_cplusplus             cp_global_trees[CPTI_LANG_NAME_CPLUSPLUS]
@@ -1968,8 +1971,7 @@ struct lang_decl
 #define DECL_COPY_CONSTRUCTOR_P(NODE) \
   (DECL_CONSTRUCTOR_P (NODE) && copy_args_p (NODE))
 
-/* There ought to be a better way to find out whether or not something is
-   a destructor.  */
+/* Nonzero if NODE is a destructor.  */
 #define DECL_DESTRUCTOR_P(NODE)				\
   (DECL_LANG_SPECIFIC (NODE)->decl_flags.destructor_attr)
 
@@ -2118,6 +2120,13 @@ struct lang_decl
    && CP_TYPE_CONST_P (TREE_TYPE (TREE_VALUE 				 \
 				  (TYPE_ARG_TYPES (TREE_TYPE (NODE))))))
 
+/* Nonzero for FUNCTION_DECL means that this member function
+   has `this' as volatile X *const.  */
+#define DECL_VOLATILE_MEMFUNC_P(NODE)					 \
+  (DECL_NONSTATIC_MEMBER_FUNCTION_P (NODE)				 \
+   && CP_TYPE_VOLATILE_P (TREE_TYPE (TREE_VALUE				 \
+				  (TYPE_ARG_TYPES (TREE_TYPE (NODE))))))
+
 /* Nonzero for a DECL means that this member is a non-static member.  */
 #define DECL_NONSTATIC_MEMBER_P(NODE) 		\
   ((TREE_CODE (NODE) == FUNCTION_DECL 		\
@@ -2209,7 +2218,7 @@ struct lang_decl
 #define DECL_FUNCTION_SCOPE_P(NODE) \
   (DECL_CONTEXT (NODE) \
    && TREE_CODE (DECL_CONTEXT (NODE)) == FUNCTION_DECL)
-     
+
 /* For a NAMESPACE_DECL: the list of using namespace directives
    The PURPOSE is the used namespace, the value is the namespace
    that is the common ancestor. */
@@ -2225,6 +2234,12 @@ struct lang_decl
 	DECL_ABSTRACT_ORIGIN (NAMESPACE_DECL_CHECK (NODE))
 #define ORIGINAL_NAMESPACE(NODE)  \
   (DECL_NAMESPACE_ALIAS (NODE) ? DECL_NAMESPACE_ALIAS (NODE) : (NODE))
+
+/* Non-zero if NODE is the std namespace.  */
+#define DECL_NAMESPACE_STD_P(NODE)			\
+  (TREE_CODE (NODE) == NAMESPACE_DECL			\
+   && CP_DECL_CONTEXT (NODE) == global_namespace	\
+   && DECL_NAME (NODE) == std_identifier)
 
 /* In a non-local VAR_DECL with static storage duration, this is the
    initialization priority.  If this value is zero, the NODE will be
@@ -3396,6 +3411,10 @@ extern int current_class_depth;
 /* Points to the name of that function. May not be the DECL_NAME
    of CURRENT_FUNCTION_DECL due to overloading */
 extern tree original_function_name;
+
+/* An array of all local classes present in this translation unit, in
+   declaration order.  */
+extern varray_type local_classes;
 
 /* Here's where we control how name mangling takes place.  */
 
@@ -4355,7 +4374,7 @@ extern void print_candidates                    PARAMS ((tree));
 extern int instantiate_pending_templates        PARAMS ((void));
 extern tree tsubst_default_argument             PARAMS ((tree, tree, tree));
 extern tree most_general_template		PARAMS ((tree));
-
+extern tree get_mostly_instantiated_function_type PARAMS ((tree, tree *, tree *));
 extern int processing_template_parmlist;
 
 /* in repo.c */
@@ -4717,6 +4736,20 @@ extern void GNU_xref_member			PARAMS ((tree, tree));
 
 /* in dump.c */
 extern void dump_node_to_file                   PARAMS ((tree, const char *));
+
+/* in mangle.c */
+extern void init_mangle                         PARAMS ((void));
+extern tree mangle_decl                         PARAMS ((tree));
+extern const char *mangle_type_string           PARAMS ((tree));
+extern tree mangle_type                         PARAMS ((tree));
+extern tree mangle_typeinfo_for_type            PARAMS ((tree));
+extern tree mangle_typeinfo_string_for_type     PARAMS ((tree));
+extern tree mangle_vtbl_for_type                PARAMS ((tree));
+extern tree mangle_vtt_for_type                 PARAMS ((tree));
+extern tree mangle_ctor_vtbl_for_type           PARAMS ((tree, tree));
+extern tree mangle_thunk                        PARAMS ((tree, int, int)); 
+extern tree mangle_conv_op_name_for_type        PARAMS ((tree));
+extern tree mangle_guard_variable               PARAMS ((tree));
 
 /* -- end of C++ */
 

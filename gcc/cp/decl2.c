@@ -1116,7 +1116,12 @@ grokclassfn (ctype, function, flags, quals)
   if (flags == DTOR_FLAG)
     {
       DECL_DESTRUCTOR_P (function) = 1;
-      DECL_ASSEMBLER_NAME (function) = build_destructor_name (ctype);
+
+      if (flag_new_abi) 
+	set_mangled_name_for_decl (function);
+      else
+	DECL_ASSEMBLER_NAME (function) = build_destructor_name (ctype);
+
       TYPE_HAS_DESTRUCTOR (ctype) = 1;
     }
   else
@@ -1578,6 +1583,8 @@ finish_static_data_member_decl (decl, init, asmspec_tree, flags)
 
   my_friendly_assert (TREE_PUBLIC (decl), 0);
 
+  DECL_CONTEXT (decl) = current_class_type;
+
   /* We cannot call pushdecl here, because that would fill in the
      decl of our TREE_CHAIN.  Instead, we modify cp_finish_decl to do
      the right thing, namely, to put this decl out straight away.  */
@@ -1585,8 +1592,11 @@ finish_static_data_member_decl (decl, init, asmspec_tree, flags)
   if (!asmspec && current_class_type)
     {
       DECL_INITIAL (decl) = error_mark_node;
-      DECL_ASSEMBLER_NAME (decl)
-	= build_static_name (current_class_type, DECL_NAME (decl));
+      if (flag_new_abi)
+	DECL_ASSEMBLER_NAME (decl) = mangle_decl (decl);
+      else
+	DECL_ASSEMBLER_NAME (decl) 
+	  = build_static_name (current_class_type, DECL_NAME (decl));
     }
   if (! processing_template_decl)
     {
@@ -1611,7 +1621,6 @@ finish_static_data_member_decl (decl, init, asmspec_tree, flags)
     TREE_USED (decl) = 1;
   DECL_INITIAL (decl) = init;
   DECL_IN_AGGR_P (decl) = 1;
-  DECL_CONTEXT (decl) = current_class_type;
 
   cp_finish_decl (decl, init, asmspec_tree, flags);
 }
@@ -1717,9 +1726,14 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
       /* Now that we've updated the context, we need to remangle the
 	 name for this TYPE_DECL.  */
       DECL_ASSEMBLER_NAME (value) = DECL_NAME (value);
-      if (!uses_template_parms (value))
-	DECL_ASSEMBLER_NAME (value) =
-	  get_identifier (build_overload_name (TREE_TYPE (value), 1, 1));
+      if (!uses_template_parms (value)) 
+	{
+	  if (flag_new_abi)
+	    DECL_ASSEMBLER_NAME (value) = mangle_type (TREE_TYPE (value));
+	  else
+	    DECL_ASSEMBLER_NAME (value) =
+	      get_identifier (build_overload_name (TREE_TYPE (value), 1, 1));
+	}
 
       if (processing_template_decl)
 	value = push_template_decl (value);
@@ -1905,7 +1919,10 @@ grokoptypename (declspecs, declarator)
      tree declspecs, declarator;
 {
   tree t = grokdeclarator (declarator, declspecs, TYPENAME, 0, NULL_TREE);
-  return build_typename_overload (t);
+  if (flag_new_abi)
+    return mangle_conv_op_name_for_type (t);
+  else
+    return build_typename_overload (t);
 }
 
 /* When a function is declared with an initializer,
@@ -2856,16 +2873,25 @@ build_cleanup (decl)
   return temp;
 }
 
+/* Returns the initialization guard variable for the non-local
+   variable DECL.  */
+
 static tree
-get_sentry (base)
-     tree base;
+get_sentry (decl)
+     tree decl;
 {
-  tree sname = get_id_2 ("__sn", base);
+  tree sname;
+  tree sentry;
+
+  if (!flag_new_abi)
+    sname = get_id_2 ("__sn", DECL_ASSEMBLER_NAME (decl));
+  else
+    sname = mangle_guard_variable (decl);
+
   /* For struct X foo __attribute__((weak)), there is a counter
      __snfoo. Since base is already an assembler name, sname should
      be globally unique */
-  tree sentry = IDENTIFIER_GLOBAL_VALUE (sname);
-
+  sentry = IDENTIFIER_GLOBAL_VALUE (sname);
   if (! sentry)
     {
       sentry = build_decl (VAR_DECL, sname, integer_type_node);
@@ -3239,7 +3265,9 @@ start_static_initialization_or_destruction (decl, initp)
   cond = build_binary_op (TRUTH_ANDIF_EXPR, cond, init_cond);
 
   /* We need a sentry if this is an object with external linkage that
-     might be initialized in more than one place.  */
+     might be initialized in more than one place.  (For example, a
+     static data member of a template, when the data member requires
+     construction.)  */
   if (TREE_PUBLIC (decl) && (DECL_COMMON (decl) 
 			     || DECL_ONE_ONLY (decl)
 			     || DECL_WEAK (decl)))
@@ -3247,7 +3275,7 @@ start_static_initialization_or_destruction (decl, initp)
       tree sentry;
       tree sentry_cond;
 
-      sentry = get_sentry (DECL_ASSEMBLER_NAME (decl));
+      sentry = get_sentry (decl);
 
       /* We do initializations only if the SENTRY is zero, i.e., if we
 	 are the first to initialize the variable.  We do destructions

@@ -32,10 +32,6 @@ Boston, MA 02111-1307, USA.  */
 #include "except.h"
 #include "tm_p.h"
 
-#if 0
-static tree extract_aggr_init PARAMS ((tree, tree));
-static tree extract_scalar_init PARAMS ((tree, tree));
-#endif
 static rtx cplus_expand_expr PARAMS ((tree, rtx, enum machine_mode,
 				    enum expand_modifier));
 
@@ -202,86 +198,11 @@ fixup_result_decl (decl, result)
     }
 }
 
-#if 0
-/* Expand this initialization inline and see if it's simple enough that
-   it can be done at compile-time.  */
-
-static tree
-extract_aggr_init (decl, init)
-     tree decl, init;
-{
-  return 0;
-}
-
-static tree
-extract_scalar_init (decl, init)
-     tree decl, init;
-{
-  rtx value, insns, insn;
-  extern struct obstack temporary_obstack;
-  tree t = NULL_TREE;
-
-  start_sequence ();
-  value = expand_expr (init, NULL_RTX, VOIDmode, 0);
-  insns = get_insns ();
-  end_sequence ();
-  reg_scan (insns, max_reg_num (), 0);
-  jump_optimize (insns, 0, 0, 1);
-
-  for (insn = insns; insn; insn = NEXT_INSN (insn))
-    {
-      rtx r, to;
-
-      if (GET_CODE (insn) == NOTE)
-	continue;
-      else if (GET_CODE (insn) != INSN)
-	return 0;
-
-      r = PATTERN (insn);
-      if (GET_CODE (r) != SET)
-	return 0;
-
-      to = XEXP (r, 0);
-
-      if (! (to == value
-	     || (GET_CODE (to) == SUBREG && XEXP (to, 0) == value)))
-	return 0;
-
-      r = XEXP (r, 1);
-
-      switch (GET_CODE (r))
-	{
-	case CONST_INT:
-	  t = build_int_2 (XEXP (r, 0), 0);
-	  break;
-	default:
-	  return 0;
-	}
-    }
-
-  return t; 
-}
-#endif
-
 int
 extract_init (decl, init)
      tree decl ATTRIBUTE_UNUSED, init ATTRIBUTE_UNUSED;
 {
   return 0;
-
-#if 0
-  if (IS_AGGR_TYPE (TREE_TYPE (decl))
-      || TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
-    init = extract_aggr_init (decl, init);
-  else
-    init = extract_scalar_init (decl, init);
-
-  if (init == NULL_TREE)
-    return 0;
-
-  DECL_INITIAL (decl) = init;
-  return 1;
-#endif
 }
 
 void

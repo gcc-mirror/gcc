@@ -122,8 +122,8 @@ void S4::s1 ()
 // These are tricks to allow us to get raw function pointers for
 // member functions.
 extern "C" {
-void s3__2S3 ();
-void s1__2S4 ();
+void _ZN2S32s3Ev ();
+void _ZN2S42s1Ev ();
 }
 
 int main ()
@@ -147,9 +147,9 @@ int main ()
     return 4;
   // Skip the RTTI entry.
   vtbl++;
-  if (*vtbl++ != (ptrdiff_t) &s3__2S3)
+  if (*vtbl++ != (ptrdiff_t) &_ZN2S32s3Ev)
     return 5;
-  if (*vtbl++ != (ptrdiff_t) &s1__2S4)
+  if (*vtbl++ != (ptrdiff_t) &_ZN2S42s1Ev)
     return 6;
   // The S1 vbase offset.
   if (*vtbl++ != 0)

@@ -377,8 +377,14 @@ static tree
 tinfo_name (type)
      tree type;
 {
-  const char *name = build_overload_name (type, 1, 1);
-  tree name_string = combine_strings (build_string (strlen (name) + 1, name));
+  const char *name;
+  tree name_string;
+
+  if (flag_new_abi)
+    name = mangle_type_string (type);
+  else
+    name = build_overload_name (type, 1, 1);
+  name_string = combine_strings (build_string (strlen (name) + 1, name));
   return name_string;
 }
 
@@ -403,15 +409,18 @@ get_tinfo_decl (type)
     type = build_function_type (TREE_TYPE (type),
 				TREE_CHAIN (TYPE_ARG_TYPES (type)));
 
-  name = build_overload_with_type (tinfo_decl_id, type);
+  if (flag_new_abi)
+    name = mangle_typeinfo_for_type (type);
+  else
+    name = build_overload_with_type (tinfo_decl_id, type);
 
   d = IDENTIFIER_GLOBAL_VALUE (name);
   if (d)
     /* OK */;
   else if (!new_abi_rtti_p ())
     {
-      /* The tinfo decl is a function returning a reference to the type_info
-         object.  */
+      /* The tinfo decl is a function returning a reference to the
+	 type_info object.  */
       d = push_library_fn (name, tinfo_decl_type);
       DECL_NOT_REALLY_EXTERN (d) = 1;
       SET_DECL_TINFO_FN_P (d);
@@ -1298,12 +1307,18 @@ tinfo_base_init (desc, target)
   tree name_decl;
   
   {
+    tree name_name;
+    
     /* Generate the NTBS array variable.  */
-    tree name_name = build_overload_with_type (tinfo_var_id, target);
     tree name_type = build_cplus_array_type
                      (build_qualified_type (char_type_node, TYPE_QUAL_CONST),
                      NULL_TREE);
     tree name_string = tinfo_name (target);
+
+    if (flag_new_abi)
+      name_name = mangle_typeinfo_for_type (target);
+    else
+      name_name = build_overload_with_type (tinfo_var_id, target);
     name_decl = build_lang_decl (VAR_DECL, name_name, name_type);
     
     DECL_ARTIFICIAL (name_decl) = 1;
@@ -1312,7 +1327,13 @@ tinfo_base_init (desc, target)
     DECL_EXTERNAL (name_decl) = 0;
     TREE_PUBLIC (name_decl) = 1;
     comdat_linkage (name_decl);
-    DECL_ASSEMBLER_NAME (name_decl) = DECL_NAME (name_decl);
+    if (flag_new_abi)
+      /* The new ABI specifies the external name of the string
+	 containing the type's name.  */
+      DECL_ASSEMBLER_NAME (name_decl) 
+	= mangle_typeinfo_string_for_type (target);
+    else
+      DECL_ASSEMBLER_NAME (name_decl) = DECL_NAME (name_decl);
     DECL_INITIAL (name_decl) = name_string;
     cp_finish_decl (name_decl, name_string, NULL_TREE, 0);
   }
