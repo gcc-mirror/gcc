@@ -159,10 +159,12 @@ coverageexts = .{gcda,gcno}
 # STRICT_WARN and STRICT2_WARN are the additional warning flags to
 # apply to the back end and the C front end, which may be compiled
 # with other compilers.  This is partially controlled by configure in
-# stage1, as not all versions of gcc understand -Wno-long-long.
+# stage1, as not all versions of gcc understand -Wno-long-long or
+# -Wno-variadic-macros.
 LOOSE_WARN = -W -Wall -Wwrite-strings -Wstrict-prototypes -Wmissing-prototypes
 STRICT_WARN = @strict1_warn@
-STRICT2_WARN = -pedantic -Wno-long-long -Wold-style-definition @WERROR@
+STRICT2_WARN = -pedantic -Wno-long-long -Wold-style-definition \
+  -Wno-variadic-macros @WERROR@
 
 # This is set by --enable-checking.  The idea is to catch forgotten
 # "extern" tags in header files.

@@ -1377,7 +1377,7 @@ expand_call_inline (tree *tp, int *walk_subtrees, void *data)
      statements within the function to jump to.  The type of the
      statement expression is the return type of the function call.  */
   stmt = NULL;
-  expr = build (BLOCK, TREE_TYPE (TREE_TYPE (fn)), stmt);
+  expr = build (BLOCK, TREE_TYPE (TREE_TYPE (fn)));
 #endif /* INLINER_FOR_JAVA */
 
   /* Local declarations will be replaced by their equivalents in this

@@ -1,3 +1,7 @@
+2004-02-19  Richard Henderson  <rth@redhat.com>
+
+	* parse.y (switch_label): Use make_node for DEFAULT_EXPR.
+
 2004-02-16  Geoffrey Keating  <geoffk@apple.com>
 
 	* Make-lang.in (java.install-man): Add extra dependencies.
