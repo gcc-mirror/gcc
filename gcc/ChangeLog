@@ -1,4 +1,4 @@
-2003-04-21  Matt Kraii  <kraii@alumni.cmu.edu>
+2003-04-21  Matt Kraai  <kraai@alumni.cmu.edu>
 
 	* config/rs6000/rs6000.md (*movsf_softfloat): Add "h" <- "0" case.
 
