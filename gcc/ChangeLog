@@ -1,3 +1,9 @@
+Fri Jul 17 14:58:44 1998  Richard Henderson  <rth@cygnus.com>
+
+	* alloca.c: Respect USE_C_ALLOCA.
+	* gencheck.c (xmalloc): Ignore __GNUC__ for definition.
+	* gengenrtl.c (xmalloc): Likewise.
+
 Fri Jul 17 14:18:14 1998  Richard Henderson  <rth@cygnus.com>
 
 	* loop.h (struct induction): Add no_const_addval.
