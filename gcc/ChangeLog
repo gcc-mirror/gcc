@@ -1,3 +1,10 @@
+Wed Oct  3 12:22:11 EDT 2001  John Wehle  (john@feith.com)
+
+	* dwarf2asm.c (unaligned_integer_asm_op): Abort if
+	op is NULL.
+	* sparc/sysv4.h (UNALIGNED_DOUBLE_INT_ASM_OP): Use
+	only if TARGET_ARCH64.
+
 2001-10-02  Bernd Schmidt  <bernds@redhat.com>
 
 	* doc/extend.texi: Fix some problems with previous checkin.

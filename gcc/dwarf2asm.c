@@ -54,7 +54,7 @@ static inline const char *
 unaligned_integer_asm_op (size)
      int size;
 {
-  const char *op;
+  const char *op = NULL;
   switch (size)
     {
     case 1:
@@ -74,6 +74,10 @@ unaligned_integer_asm_op (size)
     default:
       abort ();
     }
+
+  if (! op)
+    abort ();
+
   return op;
 }
 #endif /* UNALIGNED_INT_ASM_OP */
