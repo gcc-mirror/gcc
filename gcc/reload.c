@@ -4104,7 +4104,9 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		for (j = n_reloads - 1; j > first_num; j--)
 		  {
 		    if (reload_when_needed[j] == type
-			&& reg_mentioned_p (reload_in[i], reload_in[j]))
+			&& (reload_secondary_p[i]
+			    ? reload_secondary_in_reload[j] == i
+			    : reg_mentioned_p (reload_in[i], reload_in[j])))
 		      {
 			reload_when_needed[i] = type;
 			break;

@@ -1,3 +1,8 @@
+Wed Nov  4 22:56:14 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* reload.c (find_reloads): Fix test for usage by other reload
+	to handle secondary reloads properly.
+
 Wed Nov  4 17:25:10 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* reload1.c (ELIMINABLE_REGS, NUM_ELIMINABLE_REGS): Introduce an
