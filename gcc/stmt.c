@@ -448,6 +448,7 @@ static void bc_expand_decl		PROTO((tree, tree));
 static void bc_expand_variable_local_init PROTO((tree));
 static void bc_expand_decl_init		PROTO((tree));
 static void expand_null_return_1	PROTO((rtx, int));
+static void expand_value_return		PROTO((rtx));
 static int tail_recursion_args		PROTO((tree, tree));
 static void expand_cleanups		PROTO((tree, tree, int, int));
 static void bc_expand_start_case	PROTO((struct nesting *, tree,
@@ -2410,7 +2411,7 @@ expand_null_return ()
 
 /* Generate RTL to return from the current function, with value VAL.  */
 
-void
+static void
 expand_value_return (val)
      rtx val;
 {
