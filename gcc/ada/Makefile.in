@@ -916,8 +916,6 @@ ifeq ($(strip $(filter-out mips sgi irix%,$(targ))),)
     s-traceb.adb<7straceb.adb \
     g-soccon.ads<3gsoccon.ads \
     system.ads<5fsystem.ads
-
-    THREADSLIB =
   endif
 
   TOOLS_TARGET_PAIRS = mlib-tgt.adb<5gml-tgt.adb
