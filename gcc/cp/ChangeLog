@@ -1,3 +1,8 @@
+2004-07-07  Andrew Pinski  <apinski@apple.com>
+
+	* class.c (instantiate_type): BUFFER_REF is dead.
+	* lex.c (init_operators): IN_EXPR is dead.
+
 2004-07-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/16334

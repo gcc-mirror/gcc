@@ -641,10 +641,6 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       pp_string (buffer, ">");
       break;
 
-    case BUFFER_REF:
-      NIY;
-      break;
-
     case ARRAY_REF:
     case ARRAY_RANGE_REF:
       op0 = TREE_OPERAND (node, 0);
@@ -1052,18 +1048,6 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       pp_string (buffer, "ABS_EXPR <");
       dump_generic_node (buffer, TREE_OPERAND (node, 0), spc, flags, false);
       pp_character (buffer, '>');
-      break;
-
-    case IN_EXPR:
-      NIY;
-      break;
-
-    case SET_LE_EXPR:
-      NIY;
-      break;
-
-    case CARD_EXPR:
-      NIY;
       break;
 
     case RANGE_EXPR:

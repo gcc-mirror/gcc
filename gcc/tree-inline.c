@@ -1184,7 +1184,6 @@ estimate_num_insns_1 (tree *tp, int *walk_subtrees, void *data)
     case COMPONENT_REF:
     case BIT_FIELD_REF:
     case INDIRECT_REF:
-    case BUFFER_REF:
     case ARRAY_REF:
     case ARRAY_RANGE_REF:
     case OBJ_TYPE_REF:

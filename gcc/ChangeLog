@@ -1,3 +1,13 @@
+2004-07-07  Andrew Pinski  <apinski@apple.com>
+
+	* expr.c (expand_expr_real_1): Fix formating.
+	BUFFER_REF and IN_EXPR are dead.
+	* fold-const.c (non_lvalue): BUFFER_REF is dead.
+	* tree-inline.c (estimate_num_insns_1): Likewise.
+	* tree-pretty-print.c (dump_generic_node): BUFFER_REF,
+	IN_EXPR, SET_LE_EXPR, and CARD_EXPR are dead.
+	* tree.def (BUFFER_REF, IN_EXPR, SET_LE_EXPR, CARD_EXPR): Kill.
+
 2004-07-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* collect2.c (dump_file): Don't call cplus_demangle if
