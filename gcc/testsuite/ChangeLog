@@ -1,3 +1,7 @@
+2004-06-27  Zack Weinberg  <zack@codesourcery.com>
+
+	* g++.old-deja/g++.mike/p7325.C: Remove.
+
 2004-06-25  Richard Sandiford  <rsandifo@redhat.com>
 
 	* gcc.dg/torture/mips-div-1.c: New test.
