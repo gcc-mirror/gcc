@@ -1,3 +1,7 @@
+2003-04-17  Phil Edwards  <pme@gcc.gnu.org>
+
+	* include/bits/c++config:  Minor cosmetic tweaks.
+
 2003-04-17  Loren J. Rittle  <ljrittle@acm.org>
 
 	* testsuite_flags.in (PCHFLAGS): Find PCH in new home.
