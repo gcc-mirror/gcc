@@ -43,15 +43,23 @@ public class WindowAttributes
     
   public Object clone()
   {
-    WindowAttributes attributes = (WindowAttributes) super.clone();
-    // In case of an exception before the stucture is copied.
-    attributes.in  = null;
-    attributes.out = null;
-    
-    // FIXME: do anything else?
+    try
+      {
+	WindowAttributes attributes = (WindowAttributes) super.clone();
+	// In case of an exception before the stucture is copied.
+	attributes.in  = null;
+	attributes.out = null;
 	
-    attributes.init(this);
-    return attributes;
+	// FIXME: do anything else?
+	
+	attributes.init(this);
+	return attributes;
+      }
+    catch (CloneNotSupportedException ex)
+      {
+	// This should never happen.
+	throw new InternalError ();
+      }
   }
 
   public native void setBackground(long pixel);

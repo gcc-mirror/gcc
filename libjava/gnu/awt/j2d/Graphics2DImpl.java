@@ -105,12 +105,20 @@ public class Graphics2DImpl extends Graphics2D implements Cloneable
     
   public Object clone()
   {
-    Graphics2DImpl gfxCopy = (Graphics2DImpl) super.clone();
-    AbstractGraphicsState stateCopy =
-      (AbstractGraphicsState) state.clone();
-    gfxCopy.setState(stateCopy);
-    
-    return gfxCopy;
+    try
+      {
+	Graphics2DImpl gfxCopy = (Graphics2DImpl) super.clone();
+	AbstractGraphicsState stateCopy =
+	  (AbstractGraphicsState) state.clone();
+	gfxCopy.setState(stateCopy);
+	
+	return gfxCopy;
+      }
+    catch (CloneNotSupportedException ex)
+      {
+	// This should never happen.
+	throw new InternalError ();
+      }
   }
 
 
