@@ -2,6 +2,10 @@
 
 	* GCC 3.2.1 Released.
 
+2002-11-19  Release Manager
+
+	* GCC 3.2.1 Released.
+
 2002-11-18  Release Manager
 
 	* GCC 3.2.1 Released.
@@ -265,7 +269,7 @@ Changes in 1.0.6 (19 Jan 1998)
 - use _fdopen instead of fdopen for MSC >= 6.0 (Thomas Fanslau)
 - added makelcc.bat for lcc-win32 (Tom St Denis)
 - in Makefile.dj2, use copy and del instead of install and rm (Frank Donahoe)
-- Avoid expanded $Id: ChangeLog,v 1.2.16.5.2.3 2002/11/19 08:04:28 mmitchel Exp $. Use "rcs -kb" or "cvs admin -kb" to avoid Id expansion.
+- Avoid expanded $Id: ChangeLog,v 1.2.16.5.2.4 2002/11/19 17:22:54 mmitchel Exp $. Use "rcs -kb" or "cvs admin -kb" to avoid Id expansion.
 - check for unistd.h in configure (for off_t)
 - remove useless check parameter in inflate_blocks_free
 - avoid useless assignment of s->check to itself in inflate_blocks_new
