@@ -268,14 +268,10 @@ translate_name (name)
   if (prefix == 0)
     prefix = PREFIX;
 
-  /* Remove any trailing directory separator from what we got. First check
-     for an empty prefix.  */
-  if (prefix[0] && IS_DIR_SEPARATOR (prefix[strlen (prefix) - 1]))
-    {
-      char * temp = xstrdup (prefix);
-      temp[strlen (temp) - 1] = 0;
-      prefix = temp;
-    }
+  /* We used to strip trailing DIR_SEPARATORs here, but that can
+     sometimes yield a result with no separator when one was coded
+     and intended by the user, causing two path components to run
+     together.  */
 
   return concat (prefix, name, NULL_PTR);
 }
