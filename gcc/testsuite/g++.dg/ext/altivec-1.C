@@ -1,4 +1,4 @@
-// { dg-do compile { target powerpc-*-* } } */
+/* { dg-do compile { target powerpc*-*-* } } */
 /* { dg-options "-maltivec" } */
 
 #include <altivec.h>

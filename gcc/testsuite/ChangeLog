@@ -1,3 +1,21 @@
+2004-02-21  Ziemowit Laski  <zlaski@apple.com>
+
+	* g++.dg/ext/altivec-1.C: Generalize target triple.
+	* g++.dg/ext/altivec-2.C: New test case.
+	* g++.dg/ext/altivec_check.h: New file.
+	* gcc.dg/altivec-1.c: Generalize target triple;
+	include altivec_check.h and call altivec_check().
+	* gcc.dg/altivec-[2-5].c: Generalize target triple.
+	* gcc.dg/altivec-6.c: New test case.
+	* gcc.dg/altivec-[7-9].c: Generalize target triple; add
+	type casts as needed.
+	* gcc.dg/altivec-10.c: Include altivec_check.h and call 
+	altivec_check().
+	* gcc.dg/altivec-12.c: New test case.
+	* gcc.dg/altivec-varargs-1.c: Generalize target triple;
+	include altivec_check.h and call altivec_check().
+	* gcc.dg/altivec_check.h: New file.
+
 2004-02-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* lib/target-supports.exp (check_alias_available): Don't mangle

@@ -217,6 +217,20 @@ static GTY(()) tree opaque_V2SI_type_node;
 static GTY(()) tree opaque_V2SF_type_node;
 static GTY(()) tree opaque_p_V2SI_type_node;
 
+/* AltiVec requires a few more basic types in addition to the vector
+   types already defined in tree.c.  */
+static GTY(()) tree bool_char_type_node;	/* __bool char */
+static GTY(()) tree bool_short_type_node;	/* __bool short */
+static GTY(()) tree bool_int_type_node;		/* __bool int */
+static GTY(()) tree pixel_type_node;		/* __pixel */
+static GTY(()) tree bool_V16QI_type_node;	/* __vector __bool char */
+static GTY(()) tree bool_V8HI_type_node;	/* __vector __bool short */
+static GTY(()) tree bool_V4SI_type_node;	/* __vector __bool int */
+static GTY(()) tree pixel_V8HI_type_node;	/* __vector __pixel */
+
+int rs6000_warn_altivec_long = 1;		/* On by default. */
+const char *rs6000_warn_altivec_long_switch;
+
 const char *rs6000_traceback_name;
 static enum {
   traceback_default = 0,
@@ -287,6 +301,7 @@ static void rs6000_assemble_visibility (tree, int);
 #endif
 static int rs6000_ra_ever_killed (void);
 static tree rs6000_handle_longcall_attribute (tree *, tree, tree, int, bool *);
+static tree rs6000_handle_altivec_attribute (tree *, tree, tree, int, bool *);
 extern const struct attribute_spec rs6000_attribute_table[];
 static void rs6000_set_default_type_attributes (tree);
 static void rs6000_output_function_prologue (FILE *, HOST_WIDE_INT);
@@ -911,6 +926,17 @@ rs6000_override_options (const char *default_cpu)
       if (*rs6000_longcall_switch != '\0')
 	error ("invalid option `%s'", base);
       rs6000_default_long_calls = (base[0] != 'n');
+    }
+
+  /* Handle -m(no-)warn-altivec-long similarly.  */
+  if (rs6000_warn_altivec_long_switch)
+    {
+      const char *base = rs6000_warn_altivec_long_switch;
+      while (base[-1] != 'm') base--;
+
+      if (*rs6000_warn_altivec_long_switch != '\0')
+	error ("invalid option `%s'", base);
+      rs6000_warn_altivec_long = (base[0] != 'n');
     }
 
   /* Handle -mprioritize-restricted-insns option.  */
@@ -5465,6 +5491,7 @@ rs6000_expand_binop_builtin (enum insn_code icode, tree arglist, rtx target)
       || icode == CODE_FOR_spe_evsrwiu)
     {
       /* Only allow 5-bit unsigned literals.  */
+      STRIP_NOPS (arg1);
       if (TREE_CODE (arg1) != INTEGER_CST
 	  || TREE_INT_CST_LOW (arg1) & ~0x1f)
 	{
@@ -5687,6 +5714,7 @@ rs6000_expand_ternop_builtin (enum insn_code icode, tree arglist, rtx target)
       || icode == CODE_FOR_altivec_vsldoi_16qi)
     {
       /* Only allow 4-bit unsigned literals.  */
+      STRIP_NOPS (arg2);
       if (TREE_CODE (arg2) != INTEGER_CST
 	  || TREE_INT_CST_LOW (arg2) & ~0xf)
 	{
@@ -5857,6 +5885,7 @@ altivec_expand_dst_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
 	    || arg2 == error_mark_node)
 	  return const0_rtx;
 
+	STRIP_NOPS (arg2);
 	if (TREE_CODE (arg2) != INTEGER_CST
 	    || TREE_INT_CST_LOW (arg2) & ~0x3)
 	  {
@@ -5963,6 +5992,7 @@ altivec_expand_builtin (tree exp, rtx target, bool *expandedp)
     case ALTIVEC_BUILTIN_DSS:
       icode = CODE_FOR_altivec_dss;
       arg0 = TREE_VALUE (arglist);
+      STRIP_NOPS (arg0);
       op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
       mode0 = insn_data[icode].operand[0].mode;
 
@@ -5982,6 +6012,15 @@ altivec_expand_builtin (tree exp, rtx target, bool *expandedp)
 
       emit_insn (gen_altivec_dss (op0));
       return NULL_RTX;
+      
+    case ALTIVEC_BUILTIN_COMPILETIME_ERROR:
+      arg0 = TREE_VALUE (arglist);
+      while (TREE_CODE (arg0) == NOP_EXPR || TREE_CODE (arg0) == ADDR_EXPR)
+	arg0 = TREE_OPERAND (arg0, 0);
+      error ("invalid parameter combination for `%s' AltiVec intrinsic",
+	     TREE_STRING_POINTER (arg0));
+
+      return const0_rtx;
     }
 
   /* Expand abs* operations.  */
@@ -6421,6 +6460,74 @@ rs6000_init_builtins (void)
   opaque_V2SF_type_node = copy_node (V2SF_type_node);
   opaque_p_V2SI_type_node = build_pointer_type (opaque_V2SI_type_node);
 
+  /* The 'vector bool ...' types must be kept distinct from 'vector unsigned ...'
+     types, especially in C++ land.  Similarly, 'vector pixel' is distinct from
+     'vector unsigned short'.  */
+
+  bool_char_type_node = copy_node (unsigned_intQI_type_node);
+  TYPE_MAIN_VARIANT (bool_char_type_node) = bool_char_type_node;
+  bool_short_type_node = copy_node (unsigned_intHI_type_node);
+  TYPE_MAIN_VARIANT (bool_short_type_node) = bool_short_type_node;
+  bool_int_type_node = copy_node (unsigned_intSI_type_node);
+  TYPE_MAIN_VARIANT (bool_int_type_node) = bool_int_type_node;
+  pixel_type_node = copy_node (unsigned_intHI_type_node);
+  TYPE_MAIN_VARIANT (pixel_type_node) = pixel_type_node;
+
+  (*lang_hooks.decls.pushdecl) (build_decl (TYPE_DECL,
+					    get_identifier ("__bool char"),
+					    bool_char_type_node));
+  (*lang_hooks.decls.pushdecl) (build_decl (TYPE_DECL,
+					    get_identifier ("__bool short"),
+					    bool_short_type_node));
+  (*lang_hooks.decls.pushdecl) (build_decl (TYPE_DECL,
+					    get_identifier ("__bool int"),
+					    bool_int_type_node));
+  (*lang_hooks.decls.pushdecl) (build_decl (TYPE_DECL,
+					    get_identifier ("__pixel"),
+					    pixel_type_node));
+
+  bool_V16QI_type_node = make_vector (V16QImode, bool_char_type_node, 1);
+  bool_V8HI_type_node = make_vector (V8HImode, bool_short_type_node, 1);
+  bool_V4SI_type_node = make_vector (V4SImode, bool_int_type_node, 1);
+  pixel_V8HI_type_node = make_vector (V8HImode, pixel_type_node, 1);
+
+  (*lang_hooks.decls.pushdecl) (build_decl (TYPE_DECL,
+					    get_identifier ("__vector unsigned char"),
+					    unsigned_V16QI_type_node));
+  (*lang_hooks.decls.pushdecl) (build_decl (TYPE_DECL,
+					    get_identifier ("__vector signed char"),
+					    V16QI_type_node));
+  (*lang_hooks.decls.pushdecl) (build_decl (TYPE_DECL,
+					    get_identifier ("__vector __bool char"),
+					    bool_V16QI_type_node));
+
+  (*lang_hooks.decls.pushdecl) (build_decl (TYPE_DECL,
+					    get_identifier ("__vector unsigned short"),
+					    unsigned_V8HI_type_node));
+  (*lang_hooks.decls.pushdecl) (build_decl (TYPE_DECL,
+					    get_identifier ("__vector signed short"),
+					    V8HI_type_node));
+  (*lang_hooks.decls.pushdecl) (build_decl (TYPE_DECL,
+					    get_identifier ("__vector __bool short"),
+					    bool_V8HI_type_node));
+
+  (*lang_hooks.decls.pushdecl) (build_decl (TYPE_DECL,
+					    get_identifier ("__vector unsigned int"),
+					    unsigned_V4SI_type_node));
+  (*lang_hooks.decls.pushdecl) (build_decl (TYPE_DECL,
+					    get_identifier ("__vector signed int"),
+					    V4SI_type_node));
+  (*lang_hooks.decls.pushdecl) (build_decl (TYPE_DECL,
+					    get_identifier ("__vector __bool int"),
+					    bool_V4SI_type_node));
+
+  (*lang_hooks.decls.pushdecl) (build_decl (TYPE_DECL,
+					    get_identifier ("__vector float"),
+					    V4SF_type_node));
+  (*lang_hooks.decls.pushdecl) (build_decl (TYPE_DECL,
+					    get_identifier ("__vector __pixel"),
+					    pixel_V8HI_type_node));
+
   if (TARGET_SPE)
     spe_init_builtins ();
   if (TARGET_ALTIVEC)
@@ -6771,11 +6878,14 @@ altivec_init_builtins (void)
     = build_function_type_list (V16QI_type_node, V16QI_type_node, NULL_TREE);
   tree v4sf_ftype_v4sf
     = build_function_type_list (V4SF_type_node, V4SF_type_node, NULL_TREE);
-  tree void_ftype_pcvoid_int_char
+  tree void_ftype_pcvoid_int_int
     = build_function_type_list (void_type_node,
 				pcvoid_type_node, integer_type_node,
-				char_type_node, NULL_TREE);
-  
+				integer_type_node, NULL_TREE);
+  tree int_ftype_pcchar
+    = build_function_type_list (integer_type_node,
+				pcchar_type_node, NULL_TREE);
+
   def_builtin (MASK_ALTIVEC, "__builtin_altivec_ld_internal_4sf", v4sf_ftype_pcfloat,
 	       ALTIVEC_BUILTIN_LD_INTERNAL_4sf);
   def_builtin (MASK_ALTIVEC, "__builtin_altivec_st_internal_4sf", void_ftype_pfloat_v4sf,
@@ -6809,10 +6919,14 @@ altivec_init_builtins (void)
   def_builtin (MASK_ALTIVEC, "__builtin_altivec_stvebx", void_ftype_v16qi_long_pvoid, ALTIVEC_BUILTIN_STVEBX);
   def_builtin (MASK_ALTIVEC, "__builtin_altivec_stvehx", void_ftype_v8hi_long_pvoid, ALTIVEC_BUILTIN_STVEHX);
 
+  /* See altivec.h for usage of "__builtin_altivec_compiletime_error".  */
+  def_builtin (MASK_ALTIVEC, "__builtin_altivec_compiletime_error", int_ftype_pcchar,
+	       ALTIVEC_BUILTIN_COMPILETIME_ERROR);
+
   /* Add the DST variants.  */
   d = (struct builtin_description *) bdesc_dst;
   for (i = 0; i < ARRAY_SIZE (bdesc_dst); i++, d++)
-    def_builtin (d->mask, d->name, void_ftype_pcvoid_int_char, d->code);
+    def_builtin (d->mask, d->name, void_ftype_pcvoid_int_int, d->code);
 
   /* Initialize the predicates.  */
   dp = (struct builtin_description_predicates *) bdesc_altivec_preds;
@@ -8896,12 +9010,12 @@ print_operand (FILE *file, rtx x, int code)
 
     case 'P':
       /* The operand must be an indirect memory reference.  The result
-	 is the register number.  */
+	 is the register name.  */
       if (GET_CODE (x) != MEM || GET_CODE (XEXP (x, 0)) != REG
 	  || REGNO (XEXP (x, 0)) >= 32)
 	output_operand_lossage ("invalid %%P value");
       else
-	fprintf (file, "%d", REGNO (XEXP (x, 0)));
+	fprintf (file, "%s", reg_names[REGNO (XEXP (x, 0))]);
       return;
 
     case 'q':
@@ -14546,10 +14660,98 @@ rs6000_initialize_trampoline (rtx addr, rtx fnaddr, rtx cxt)
 const struct attribute_spec rs6000_attribute_table[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
+  { "altivec",   1, 1, false, true,  false, rs6000_handle_altivec_attribute },
   { "longcall",  0, 0, false, true,  true,  rs6000_handle_longcall_attribute },
   { "shortcall", 0, 0, false, true,  true,  rs6000_handle_longcall_attribute },
   { NULL,        0, 0, false, false, false, NULL }
 };
+
+/* Handle the "altivec" attribute.  The attribute may have
+   arguments as follows:
+   
+	__attribute__((altivec(vector__)))
+	__attribute__((altivec(pixel__)))	(always followed by 'unsigned short')
+	__attribute__((altivec(bool__)))	(always followed by 'unsigned')
+
+  and may appear more than once (e.g., 'vector bool char') in a
+  given declaration.  */
+
+static tree
+rs6000_handle_altivec_attribute (tree *node, tree name, tree args,
+				 int flags ATTRIBUTE_UNUSED,
+				 bool *no_add_attrs)
+{
+  tree type = *node, result = NULL_TREE;
+  enum machine_mode mode;
+  int unsigned_p;
+  char altivec_type
+    = ((args && TREE_CODE (args) == TREE_LIST && TREE_VALUE (args)
+	&& TREE_CODE (TREE_VALUE (args)) == IDENTIFIER_NODE)
+       ? *IDENTIFIER_POINTER (TREE_VALUE (args))
+       : '?'); 
+
+  while (POINTER_TYPE_P (type)
+	 || TREE_CODE (type) == FUNCTION_TYPE
+	 || TREE_CODE (type) == METHOD_TYPE
+	 || TREE_CODE (type) == ARRAY_TYPE)
+    type = TREE_TYPE (type);
+
+  mode = TYPE_MODE (type);
+
+  if (rs6000_warn_altivec_long
+      && (type == long_unsigned_type_node || type == long_integer_type_node))
+    warning ("use of 'long' in AltiVec types is deprecated; use 'int'");
+
+  switch (altivec_type)
+    {
+    case 'v':
+      unsigned_p = TREE_UNSIGNED (type);
+      switch (mode)
+	{
+	  case SImode:
+	    result = (unsigned_p ? unsigned_V4SI_type_node : V4SI_type_node);
+	    break;
+	  case HImode:
+	    result = (unsigned_p ? unsigned_V8HI_type_node : V8HI_type_node);
+	    break;
+	  case QImode:
+	    result = (unsigned_p ? unsigned_V16QI_type_node : V16QI_type_node);
+	    break;
+	  case SFmode: result = V4SF_type_node; break;
+	    /* If the user says 'vector int bool', we may be handed the 'bool'
+	       attribute _before_ the 'vector' attribute, and so select the proper
+	       type in the 'b' case below.  */
+	  case V4SImode: case V8HImode: case V16QImode: result = type;
+	  default: break;
+	}
+      break;
+    case 'b':
+      switch (mode)
+	{
+	  case SImode: case V4SImode: result = bool_V4SI_type_node; break;
+	  case HImode: case V8HImode: result = bool_V8HI_type_node; break;
+	  case QImode: case V16QImode: result = bool_V16QI_type_node;
+	  default: break;
+	}
+      break;
+    case 'p':
+      switch (mode)
+	{
+	  case V8HImode: result = pixel_V8HI_type_node;
+	  default: break;
+	}
+    default: break;
+    }
+
+  *no_add_attrs = true;  /* No need to hang on to the attribute.  */
+
+  if (!result)
+    warning ("`%s' attribute ignored", IDENTIFIER_POINTER (name));
+  else
+    *node = reconstruct_complex_type (*node, result);
+
+  return NULL_TREE;
+}
 
 /* Handle a "longcall" or "shortcall" attribute; arguments as in
    struct attribute_spec.handler.  */
