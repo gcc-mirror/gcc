@@ -1,5 +1,8 @@
 2002-09-25  Tom Tromey  <tromey@redhat.com>
 
+	* resolve.cc: Include StringBuffer.
+	(_Jv_ResolvePoolEntry): Use StringBuffer to create error string.
+
 	* boehm.cc (_Jv_MarkObj): Don't fail if class object has been
 	allocated but not initialized.
 

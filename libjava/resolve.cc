@@ -20,6 +20,7 @@ details.  */
 #include <java-cpool.h>
 #include <java/lang/Class.h>
 #include <java/lang/String.h>
+#include <java/lang/StringBuffer.h>
 #include <java/lang/Thread.h>
 #include <java/lang/InternalError.h>
 #include <java/lang/VirtualMachineError.h>
@@ -201,12 +202,13 @@ _Jv_ResolvePoolEntry (jclass klass, int index)
     end_of_field_search:
       if (the_field == 0)
 	{
-	  jstring msg = JvNewStringLatin1 ("field ");
-	  msg = msg->concat (owner->getName ());
-	  msg = msg->concat (JvNewStringLatin1("."));
-	  msg = msg->concat (_Jv_NewStringUTF (field_name->data));
-	  msg = msg->concat (JvNewStringLatin1(" was not found."));
-	  throw_incompatible_class_change_error (msg);
+	  java::lang::StringBuffer *sb = new java::lang::StringBuffer();
+	  sb->append(JvNewStringLatin1("field "));
+	  sb->append(owner->getName());
+	  sb->append(JvNewStringLatin1("."));
+	  sb->append(_Jv_NewStringUTF(field_name->data));
+	  sb->append(JvNewStringLatin1(" was not found."));
+	  throw_incompatible_class_change_error(sb->toString());
 	}
 
       pool->data[index].field = the_field;
@@ -312,12 +314,13 @@ _Jv_ResolvePoolEntry (jclass klass, int index)
 
       if (the_method == 0)
 	{
-	  jstring msg = JvNewStringLatin1 ("method ");
-	  msg = msg->concat (owner->getName ());
-	  msg = msg->concat (JvNewStringLatin1("."));
-	  msg = msg->concat (_Jv_NewStringUTF (method_name->data));
-	  msg = msg->concat (JvNewStringLatin1(" was not found."));
-	  throw new java::lang::NoSuchMethodError (msg);
+	  java::lang::StringBuffer *sb = new java::lang::StringBuffer();
+	  sb->append(JvNewStringLatin1("method "));
+	  sb->append(owner->getName());
+	  sb->append(JvNewStringLatin1("."));
+	  sb->append(_Jv_NewStringUTF(method_name->data));
+	  sb->append(JvNewStringLatin1(" was not found."));
+	  throw new java::lang::NoSuchMethodError (sb->toString());
 	}
       
       pool->data[index].rmethod = 
