@@ -47,6 +47,7 @@ struct lang_hooks lang_hooks = {c_post_options};
 static void
 c_post_options ()
 {
+  cpp_post_options (parse_in);
 }
 
 /* Each of the functions defined here

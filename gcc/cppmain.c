@@ -79,6 +79,7 @@ main (argc, argv)
   argi += cpp_handle_options (pfile, argc - argi , argv + argi);
   if (argi < argc && ! CPP_FATAL_ERRORS (pfile))
     cpp_fatal (pfile, "Invalid option %s", argv[argi]);
+  cpp_post_options (pfile);
   if (CPP_FATAL_ERRORS (pfile))
     return (FATAL_EXIT_CODE);
 

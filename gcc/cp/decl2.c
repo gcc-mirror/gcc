@@ -551,6 +551,7 @@ struct lang_hooks lang_hooks = {cxx_post_options};
 static void
 cxx_post_options ()
 {
+  cpp_post_options (parse_in);
 }
 
 /* Compare two option strings, pointed two by P1 and P2, for use with
