@@ -71,7 +71,7 @@
    not defined, and so that defining this macro defines _GCC_SIZE_T.
    If we find that the macros are still defined at this point, we must
    invoke them so that the type is defined as expected.  */
-#if defined (TYPE_ptrdiff_t) && (defined (__need_ptrdiff_t) || defined (_STDDEF_H_))
+#if defined (_TYPE_ptrdiff_t) && (defined (__need_ptrdiff_t) || defined (_STDDEF_H_))
 _TYPE_ptrdiff_t;
 #undef _TYPE_ptrdiff_t
 #endif
