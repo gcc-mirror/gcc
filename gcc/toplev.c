@@ -4786,6 +4786,10 @@ main (argc, argv)
 		  case 'x':
 		    rtl_dump_and_exit = 1;
 		    break;
+		  case 'D':	/* these are handled by the preprocessor */
+		  case 'I':
+		  case 'M':
+		    break;
 		  default:
 		    warning ("unrecognised gcc debugging option: %c", p[-1]);
 		    break;
