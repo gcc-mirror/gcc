@@ -229,7 +229,7 @@ namespace std
           // Add the ending grouping if a decimal wasn't found.
 	  if (!__found_dec)
 	    __found_grouping += static_cast<char>(__sep_pos);
-          if (!__verify_grouping(__grouping, __found_grouping))
+          if (!std::__verify_grouping(__grouping, __found_grouping))
 	    __err |= ios_base::failbit;
         }
 
@@ -380,7 +380,7 @@ namespace std
         {
           // Add the ending grouping.
           __found_grouping += static_cast<char>(__sep_pos);
-          if (!__verify_grouping(__grouping, __found_grouping))
+          if (!std::__verify_grouping(__grouping, __found_grouping))
 	    __err |= ios_base::failbit;
         }
 
@@ -409,7 +409,7 @@ namespace std
           __beg = _M_extract_int(__beg, __end, __io, __err, __xtrc, __base);
 
 	  unsigned long __ul; 
-	  __convert_to_v(__xtrc.c_str(), __ul, __err, _S_c_locale, __base);
+	  std::__convert_to_v(__xtrc.c_str(), __ul, __err, _S_c_locale, __base);
 	  if (!(__err & ios_base::failbit) && __ul <= 1)
 	    __v = __ul;
 	  else 
@@ -470,7 +470,7 @@ namespace std
       string __xtrc;
       int __base;
       __beg = _M_extract_int(__beg, __end, __io, __err, __xtrc, __base);
-      __convert_to_v(__xtrc.c_str(), __v, __err, _S_c_locale, __base);
+      std::__convert_to_v(__xtrc.c_str(), __v, __err, _S_c_locale, __base);
       return __beg;
     }
 
@@ -484,7 +484,7 @@ namespace std
       int __base;
       __beg = _M_extract_int(__beg, __end, __io, __err, __xtrc, __base);
       unsigned long __ul;
-      __convert_to_v(__xtrc.c_str(), __ul, __err, _S_c_locale, __base);
+      std::__convert_to_v(__xtrc.c_str(), __ul, __err, _S_c_locale, __base);
       if (!(__err & ios_base::failbit) 
 	  && __ul <= numeric_limits<unsigned short>::max())
 	__v = static_cast<unsigned short>(__ul);
@@ -503,7 +503,7 @@ namespace std
       int __base;
       __beg = _M_extract_int(__beg, __end, __io, __err, __xtrc, __base);
       unsigned long __ul;
-      __convert_to_v(__xtrc.c_str(), __ul, __err, _S_c_locale, __base);
+      std::__convert_to_v(__xtrc.c_str(), __ul, __err, _S_c_locale, __base);
       if (!(__err & ios_base::failbit) 
 	  && __ul <= numeric_limits<unsigned int>::max())
 	__v = static_cast<unsigned int>(__ul);
@@ -521,7 +521,7 @@ namespace std
       string __xtrc;
       int __base;
       __beg = _M_extract_int(__beg, __end, __io, __err, __xtrc, __base);
-      __convert_to_v(__xtrc.c_str(), __v, __err, _S_c_locale, __base);
+      std::__convert_to_v(__xtrc.c_str(), __v, __err, _S_c_locale, __base);
       return __beg;
     }
 
@@ -535,7 +535,7 @@ namespace std
       string __xtrc;
       int __base;
       __beg = _M_extract_int(__beg, __end, __io, __err, __xtrc, __base);
-      __convert_to_v(__xtrc.c_str(), __v, __err, _S_c_locale, __base);
+      std::__convert_to_v(__xtrc.c_str(), __v, __err, _S_c_locale, __base);
       return __beg;
     }
 
@@ -548,7 +548,7 @@ namespace std
       string __xtrc;
       int __base;
       __beg = _M_extract_int(__beg, __end, __io, __err, __xtrc, __base);
-      __convert_to_v(__xtrc.c_str(), __v, __err, _S_c_locale, __base);
+      std::__convert_to_v(__xtrc.c_str(), __v, __err, _S_c_locale, __base);
       return __beg;
     }
 #endif
@@ -562,7 +562,7 @@ namespace std
       string __xtrc;
       __xtrc.reserve(32);
       __beg = _M_extract_float(__beg, __end, __io, __err, __xtrc);
-      __convert_to_v(__xtrc.c_str(), __v, __err, _S_c_locale);
+      std::__convert_to_v(__xtrc.c_str(), __v, __err, _S_c_locale);
       return __beg;
     }
 
@@ -575,7 +575,7 @@ namespace std
       string __xtrc;
       __xtrc.reserve(32);
       __beg = _M_extract_float(__beg, __end, __io, __err, __xtrc);
-      __convert_to_v(__xtrc.c_str(), __v, __err, _S_c_locale);
+      std::__convert_to_v(__xtrc.c_str(), __v, __err, _S_c_locale);
       return __beg;
     }
 
@@ -588,7 +588,7 @@ namespace std
       string __xtrc;
       __xtrc.reserve(32);
       __beg = _M_extract_float(__beg, __end, __io, __err, __xtrc);
-      __convert_to_v(__xtrc.c_str(), __v, __err, _S_c_locale);
+      std::__convert_to_v(__xtrc.c_str(), __v, __err, _S_c_locale);
       return __beg;
     }
 
@@ -613,7 +613,7 @@ namespace std
       __io.flags(__fmt);
 
       unsigned long __ul;
-      __convert_to_v(__xtrc.c_str(), __ul, __err, _S_c_locale, __base);
+      std::__convert_to_v(__xtrc.c_str(), __ul, __err, _S_c_locale, __base);
       if (!(__err & ios_base::failbit))
 	__v = reinterpret_cast<void*>(__ul);
       else 
@@ -770,8 +770,8 @@ namespace std
 	    *(__new + 1) = *(__cs + 1);
 	  }
       _CharT* __p;
-      __p = __add_grouping(__new + __off, __sep, 
-			   __grouping.c_str(),
+      __p = std::__add_grouping(__new + __off, __sep, 
+				__grouping.c_str(),
 			   __grouping.c_str() + __grouping.size(),
 			   __cs + __off, __cs + __len);
       __len = __p - __new;
@@ -826,7 +826,7 @@ namespace std
 
 	// [22.2.2.2.2] Stage 4.
 	// Write resulting, fully-formatted string to output iterator.
-	return __write(__s, __cs, __len);
+	return std::__write(__s, __cs, __len);
       } 
 
   template<typename _CharT, typename _OutIter>
@@ -840,10 +840,10 @@ namespace std
       // Add grouping, if necessary. 
       _CharT* __p2;
       int __declen = __p ? __p - __cs : __len;
-      __p2 = __add_grouping(__new, __sep, 
-			    __grouping.c_str(),
-			    __grouping.c_str() + __grouping.size(),
-			    __cs, __cs + __declen);
+      __p2 = std::__add_grouping(__new, __sep, 
+				 __grouping.c_str(),
+				 __grouping.c_str() + __grouping.size(),
+				 __cs, __cs + __declen);
       
       // Tack on decimal part.
       int __newlen = __p2 - __new;
@@ -905,16 +905,16 @@ namespace std
 	char* __cs = static_cast<char*>(__builtin_alloca(__cs_size));
 
 	_S_format_float(__io, __fbuf, __mod);
-	__len = __convert_from_v(__cs, __cs_size, __fbuf, __v,
-				 _S_c_locale, __prec);
+	__len = std::__convert_from_v(__cs, __cs_size, __fbuf, __v,
+				      _S_c_locale, __prec);
 
 	// If the buffer was not large enough, try again with the correct size.
 	if (__len >= __cs_size)
 	  {
 	    __cs_size = __len + 1; 
 	    __cs = static_cast<char*>(__builtin_alloca(__cs_size));
-	    __len = __convert_from_v(__cs, __cs_size, __fbuf, __v,
-				     _S_c_locale, __prec);
+	    __len = std::__convert_from_v(__cs, __cs_size, __fbuf, __v,
+					  _S_c_locale, __prec);
 	  }
 #else
 	// Consider the possibility of long ios_base::fixed outputs
@@ -931,7 +931,7 @@ namespace std
 	char* __cs = static_cast<char*>(__builtin_alloca(__cs_size));
 
 	_S_format_float(__io, __fbuf, __mod);
-	__len = __convert_from_v(__cs, 0, __fbuf, __v, _S_c_locale, __prec);
+	__len = std::__convert_from_v(__cs, 0, __fbuf, __v, _S_c_locale, __prec);
 #endif
 
       // [22.2.2.2.2] Stage 2, convert to char_type, using correct
@@ -975,7 +975,7 @@ namespace std
       
       // [22.2.2.2.2] Stage 4.
       // Write resulting, fully-formatted string to output iterator.
-      return __write(__s, __ws, __len);
+      return std::__write(__s, __ws, __len);
       }
 
   template<typename _CharT, typename _OutIter>
@@ -1014,7 +1014,7 @@ namespace std
 	      __cs = __cs3;
 	    }
 	  __io.width(0);
-	  __s = __write(__s, __cs, __len);
+	  __s = std::__write(__s, __cs, __len);
 	}
       return __s;
     }
@@ -1100,7 +1100,7 @@ namespace std
       const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc); 
       const _CharT* __wcs = __str.c_str();
       __ctype.narrow(__wcs, __wcs + __str.size() + 1, char(), __cs);      
-      __convert_to_v(__cs, __units, __err, _S_c_locale);
+      std::__convert_to_v(__cs, __units, __err, _S_c_locale);
       return __beg;
     }
 
@@ -1282,7 +1282,7 @@ namespace std
       // Test for grouping fidelity.
       if (__grouping.size() && __grouping_tmp.size())
 	{
-	  if (!__verify_grouping(__grouping, __grouping_tmp))
+	  if (!std::__verify_grouping(__grouping, __grouping_tmp))
 	    __testvalid = false;
 	}
 
@@ -1324,22 +1324,22 @@ namespace std
       // First try a buffer perhaps big enough.
       int __cs_size = 64;
       char* __cs = static_cast<char*>(__builtin_alloca(__cs_size));
-      int __len = __convert_from_v(__cs, __cs_size, "%.01Lf", __units, 
-				   _S_c_locale);
+      int __len = std::__convert_from_v(__cs, __cs_size, "%.01Lf", __units, 
+					_S_c_locale);
       // If the buffer was not large enough, try again with the correct size.
       if (__len >= __cs_size)
 	{
 	  __cs_size = __len + 1;
 	  __cs = static_cast<char*>(__builtin_alloca(__cs_size));
-	  __len = __convert_from_v(__cs, __cs_size, "%.01Lf", __units, 
-				   _S_c_locale);
+	  __len = std::__convert_from_v(__cs, __cs_size, "%.01Lf", __units, 
+					_S_c_locale);
 	}
 #else
       // max_exponent10 + 1 for the integer part, + 4 for sign, decimal point,
       // decimal digit, '\0'. 
       const int __cs_size = numeric_limits<long double>::max_exponent10 + 5;
       char* __cs = static_cast<char*>(__builtin_alloca(__cs_size));
-      int __len = __convert_from_v(__cs, 0, "%.01Lf", __units, _S_c_locale);
+      int __len = std::__convert_from_v(__cs, 0, "%.01Lf", __units, _S_c_locale);
 #endif
       _CharT* __ws = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) 
 							   * __cs_size));
@@ -1437,8 +1437,8 @@ namespace std
 		  const int __n = (__end - __beg) * 2;
 		  _CharT* __ws2 =
        	          static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) * __n));
-		  _CharT* __ws_end = __add_grouping(__ws2, __sep, __gbeg, 
-						    __gend, __beg, __end);
+		  _CharT* __ws_end = std::__add_grouping(__ws2, __sep, __gbeg, 
+							 __gend, __beg, __end);
 		  __value.insert(0, __ws2, __ws_end - __ws2);
 		}
 	      else
@@ -1505,7 +1505,7 @@ namespace std
 	    }
 
 	  // Write resulting, fully-formatted string to output iterator.
-	  __s = __write(__s, __res.c_str(), __len);
+	  __s = std::__write(__s, __res.c_str(), __len);
 	}
       __io.width(0);
       return __s; 
@@ -1958,7 +1958,7 @@ namespace std
       if (__i == 2 || __i == 4)
 	{
 	  long __l;
-	  __convert_to_v(__digits.c_str(), __l, __err, _S_c_locale);
+	  std::__convert_to_v(__digits.c_str(), __l, __err, _S_c_locale);
 	  if (!(__err & ios_base::failbit) && __l <= INT_MAX)
 	    {
 	      __l = __i == 2 ? __l : __l - 1900; 
@@ -2047,7 +2047,7 @@ namespace std
       __tp._M_put(__res, __maxlen, __fmt, __tm);
 
       // Write resulting, fully-formatted string to output iterator.
-      return __write(__s, __res, char_traits<char_type>::length(__res));
+      return std::__write(__s, __res, char_traits<char_type>::length(__res));
     }
 
 
@@ -2280,9 +2280,9 @@ namespace std
     {
       if (__last - __first > *__gbeg)
         {
-          __s = __add_grouping(__s,  __sep, 
-			       (__gbeg + 1 == __gend ? __gbeg : __gbeg + 1),
-			       __gend, __first, __last - *__gbeg);
+          __s = std::__add_grouping(__s,  __sep, 
+				    (__gbeg + 1 == __gend ? __gbeg : __gbeg + 1),
+				    __gend, __first, __last - *__gbeg);
           __first = __last - *__gbeg;
           *__s++ = __sep;
         }

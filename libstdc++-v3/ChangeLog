@@ -1,3 +1,11 @@
+2003-07-06  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/bits/locale_classes.h: Fully qualify standard
+	functions with std::, thus avoiding Koenig lookup.
+	* include/bits/locale_facets.tcc: Likewise.
+	* src/locale.cc: Likewise.
+	* src/localename.cc: Likewise.
+
 2003-07-06  Phil Edwards  <pme@gcc.gnu.org>
 
 	* include/bits/allocator_traits.h:  Fix doxygen markup.

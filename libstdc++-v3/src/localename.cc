@@ -150,7 +150,7 @@ namespace std
     for (size_t __i = 0; __i < _S_categories_size; ++__i)
       {
 	char* __new = new char[strlen(__imp._M_names[__i]) + 1];
-	strcpy(__new, __imp._M_names[__i]);
+	std::strcpy(__new, __imp._M_names[__i]);
 	_M_names[__i] = __new;
       }
   }
@@ -199,13 +199,13 @@ namespace std
 	delete [] _M_names;
 	__throw_exception_again;
       }
-    size_t __len = strlen(__s);
-    if (!strchr(__s, ';'))
+    size_t __len = std::strlen(__s);
+    if (!std::strchr(__s, ';'))
       {
 	for (size_t __i = 0; __i < _S_categories_size; ++__i)
 	  {
 	    _M_names[__i] = new char[__len + 1];
-	    strcpy(_M_names[__i], __s);
+	    std::strcpy(_M_names[__i], __s);
 	  }
       }
     else
@@ -213,12 +213,12 @@ namespace std
 	const char* __beg = __s;
 	for (size_t __i = 0; __i < _S_categories_size; ++__i)
 	  {
-	    __beg = strchr(__beg, '=') + 1;
-	    const char* __end = strchr(__beg, ';');
+	    __beg = std::strchr(__beg, '=') + 1;
+	    const char* __end = std::strchr(__beg, ';');
 	    if (!__end)
 	      __end = __s + __len;
 	    char* __new = new char[__end - __beg + 1];
-	    memcpy(__new, __beg, __end - __beg);
+	    std::memcpy(__new, __beg, __end - __beg);
 	    __new[__end - __beg] = '\0';
 	    _M_names[__i] = __new;
 	  }
@@ -355,12 +355,12 @@ namespace std
 	    // Need to replace entry in _M_facets with other locale's info.
 	    _M_replace_category(__imp, _S_facet_categories[__ix]);
 	    // If both have names, go ahead and mangle.
-	    if (strcmp(_M_names[__ix], "*") != 0 
-		&& strcmp(__imp->_M_names[__ix], "*") != 0)
+	    if (std::strcmp(_M_names[__ix], "*") != 0 
+		&& std::strcmp(__imp->_M_names[__ix], "*") != 0)
 	      {
 		delete [] _M_names[__ix];
-		char* __new = new char[strlen(__imp->_M_names[__ix]) + 1];
-		strcpy(__new, __imp->_M_names[__ix]);
+		char* __new = new char[std::strlen(__imp->_M_names[__ix]) + 1];
+		std::strcpy(__new, __imp->_M_names[__ix]);
 		_M_names[__ix] = __new;
 	      }
 	  }
