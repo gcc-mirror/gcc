@@ -5493,10 +5493,28 @@
   DONE;
 }")
 
-(define_insn "prologue_ldgp"
-  [(unspec_volatile [(const_int 0)] 9)]
+;; These take care of emitting the ldgp insn in the prologue. This will be
+;; an lda/ldah pair and we want to align them properly.  So we have two
+;; unspec_volatile insns, the first of which emits the ldgp assembler macro
+;; and the second of which emits nothing.  However, both are marked as type
+;; IADD (the default) so the alignment code in alpha.c does the right thing
+;; with them.
+
+(define_expand "prologue_ldgp"
+  [(unspec_volatile [(const_int 0)] 9)
+   (unspec_volatile [(const_int 0)] 10)]
   ""
+  "")
+
+(define_insn "*prologue_ldgp_1"
+  [(unspec_volatile [(const_int 0)] 9)]
+  "! TARGET_OPEN_VMS && ! TARGET_WINDOWS_NT"
   "ldgp $29,0($27)\\n$%~..ng:")
+
+(define_insn "*prologue_ldgp_2"
+  [(unspec_volatile [(const_int 0)] 10)]
+  "! TARGET_OPEN_VMS && ! TARGET_WINDOWS_NT"
+  "")
 
 (define_insn "init_fp"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -5508,12 +5526,19 @@
 (define_expand "epilogue"
   [(return)]
   ""
-  "alpha_expand_epilogue ();")
+  "
+{
+  alpha_expand_epilogue ();
+}")
 
 (define_expand "sibcall_epilogue"
   [(return)]
   "!TARGET_OPEN_VMS && !TARGET_WINDOWS_NT"
-  "alpha_expand_epilogue (); DONE;")
+  "
+{
+  alpha_expand_epilogue ();
+  DONE;
+}")
 
 (define_expand "eh_epilogue"
   [(use (match_operand:DI 0 "register_operand" "r"))

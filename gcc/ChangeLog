@@ -1,3 +1,13 @@
+Tue May 23 06:50:29 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* config/alpha/alpha.c: Remove #ifdef HAIFA since now only scheduler.
+	(alpha_start_function): Never write ..ng label if VMS or NT.
+	(alpha_align_insns): Remove GP_IN_USE arg.
+	Alignment now unsigned.
+	(alpha_reorg): Don't pass GP_IN_USE arg to alpha_align_insns.
+	* config/alpha/alpha.md (prologue_ldgp): Split into one define_expand
+	and two define_insn's.
+
 2000-05-22  Richard Henderson  <rth@cygnus.com>
 
 	* combine.c (simplify_comparison): Use trunc_int_for_mode.
