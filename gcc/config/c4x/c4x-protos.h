@@ -38,9 +38,9 @@ extern int c4x_handle_pragma PARAMS ((int (* p_getc) (void),
 				      void (* p_ungetc) (int),
 				      char *));
 
-extern void c4x_global_label (char *);
+extern void c4x_global_label (const char *);
 
-extern void c4x_external_ref (char *);
+extern void c4x_external_ref (const char *);
 
 extern void c4x_file_end (FILE *);
 

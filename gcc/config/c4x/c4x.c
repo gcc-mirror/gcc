@@ -4399,7 +4399,7 @@ c4x_handle_pragma (p_getc, p_ungetc, pname)
 struct name_list
 {
   struct name_list *next;
-  char *name;
+  const char *name;
 };
 
 static struct name_list *global_head;

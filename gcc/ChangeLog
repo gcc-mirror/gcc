@@ -1,3 +1,9 @@
+2000-03-07  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x-protos.h (c4x_global_name): Constify char *.
+	(c4x_external_ref): Likewise.
+	* config/c4x/c4x.c (struct name_list): Likewise.
+
 1999-12-16  Ben Collins  <bcollins@debian.org>
 
 	* Makefile.in: Pass a new MULTILIB_EXCLUSIONS option as the sixth
