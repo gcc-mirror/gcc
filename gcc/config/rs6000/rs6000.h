@@ -1464,6 +1464,11 @@ extern int rs6000_compare_fp_p;
    uitrunc must be defined.  */
 
 extern int rs6000_trunc_used;
+
+/* Function names to call to do floating point truncation.  */
+
+#define RS6000_ITRUNC "itrunc"
+#define RS6000_UITRUNC "uitrunc"
 
 /* Control the assembler format that we output.  */
 
