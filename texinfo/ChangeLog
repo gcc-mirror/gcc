@@ -1,3 +1,7 @@
+Tue Mar  3 10:05:46 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* makeinfo/makeinfo.c (CommandTable): Fix braces in initializer.
+
 Tue Jan 13 21:34:23 1998  H.J. Lu  (hjl@gnu.org)
 
 	* libtxi/Makefile.in (AR_FLAGS): Defined as "rc".
