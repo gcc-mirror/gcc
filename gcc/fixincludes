@@ -2371,9 +2371,9 @@ struct exception;
   fi
 fi
 
-# assert.h and sys/mman.h on HP/UX are not C++ ready, even though
+# sys/mman.h on HP/UX is not C++ ready, even though
 # NO_IMPLICIT_EXTERN_C is defined on HP/UX.
-for file in assert.h sys/mman.h; do
+for file in sys/mman.h; do
   if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
     cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
     chmod +w ${LIB}/$file 2>/dev/null
@@ -2406,45 +2406,6 @@ extern "C" {
     fi
   fi
 done
-
-# check for broken assert.h that needs stdio.h or stdlib.h
-file=assert.h
-if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
-  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
-  chmod +w ${LIB}/$file 2>/dev/null
-  chmod a+r ${LIB}/$file 2>/dev/null
-fi
-
-if [ -r ${LIB}/$file ]; then
-  if grep 'stderr' ${LIB}/$file >/dev/null 2>/dev/null; then
-    if grep 'include.*stdio.h' ${LIB}/$file >/dev/null 2>/dev/null; then
-      true
-    else
-      echo "Fixing $file (needs stdio.h)"
-      echo '#include <stdio.h>' >>${LIB}/$file
-    fi
-  fi
-  if grep 'exit *(' ${LIB}/$file >/dev/null 2>/dev/null || 
-     grep 'abort *(' ${LIB}/$file >/dev/null 2>/dev/null; then
-    if grep 'include.*stdlib.h' ${LIB}/$file >/dev/null 2>/dev/null; then
-      true
-    else
-      echo "Fixing $file (needs stdlib.h)"
-      echo '#ifdef __cplusplus
-#include <stdlib.h>
-#endif' >>${LIB}/$file
-    fi
-  fi
-  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
-    rm -f ${LIB}/$file
-  else
-    # Find any include directives that use "file".
-    for include in `egrep '^[       ]*#[    ]*include[      ]*"[^/]' ${LIB}/$file | sed -e 's/^[    ]*#[    ]*include[      ]*"\([^"]*\)".*$/\1/'`; do
-      dir=`echo $file | sed -e s'|/[^/]*$||'`
-      required="$required ${INPUT} $dir/$include ${LIB}/$dir/$include"
-    done
-  fi
-fi
 
 # Fix return value of sbrk in unistd.h on Alpha OSF/1 V2.0
 file=unistd.h
