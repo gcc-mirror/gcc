@@ -125,11 +125,9 @@ cplus_expand_expr (exp, target, tmode, modifier)
 	return_target = expand_call (call_exp, call_target, ignore);
 
 	if (call_target)
-	  {
-	    my_friendly_assert (rtx_equal_p (call_target, return_target)
-				|| TYPE_HAS_TRIVIAL_INIT_REF (type), 317);
-	    return return_target;
-	  }
+	  /* Trust that the right thing has been done; it's too hard to
+	     verify.  */
+	  return return_target;
 
 	/* If we're suffering under the ancient PCC_STATIC_STRUCT_RETURN
 	   calling convention, we need to copy the return value out of

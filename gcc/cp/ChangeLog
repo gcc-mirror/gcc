@@ -1,7 +1,10 @@
 Tue Jan 27 01:44:02 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* expr.c (cplus_expand_expr, AGGR_INIT_EXPR): Don't check that 
+	return_target and call_target are equivalent.
+
 	* pt.c (type_unification_real): Just accept function parms that
- 	don't use any template parms.
+	don't use any template parms.
 
 Sun Jan 25 03:30:00 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
