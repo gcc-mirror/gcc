@@ -1,3 +1,12 @@
+Thu Sep  2 10:19:20 1999  Richard Henderson  <rth@cygnus.com>
+
+	* c-parse.in (compstmt_primary_start): New, broken out of first
+	part of compstmt handling in primary.
+	(primary): Use it.  Add an error clause.
+	(compstmt_nostart): Renamed from compstmt; remove all
+	initial invocations of compstmt_start.
+	(compstmt): New.
+
 Thu Sep  2 01:35:50 1999  Marc Espie <espie@cvs.openbsd.org>
 
 	* protoize.c (gen_aux_info_file):  Let pexecute call choose_temp_base if

@@ -28,7 +28,7 @@ Boston, MA 02111-1307, USA.  */
 /* To whomever it may concern: I have heard that such a thing was once
    written by AT&T, but I have never seen it.  */
 
-%expect 66
+%expect 73
 
 %{
 #include "config.h"
@@ -157,7 +157,7 @@ const char * const language_string = "GNU Obj-C";
 %type <ttype> maybe_attribute attributes attribute attribute_list attrib
 %type <ttype> any_word
 
-%type <ttype> compstmt
+%type <ttype> compstmt compstmt_nostart compstmt_primary_start
 
 %type <ttype> declarator
 %type <ttype> notype_declarator after_type_declarator
@@ -756,42 +756,37 @@ primary:
 		  $$ = $2; }
 	| '(' error ')'
 		{ $$ = error_mark_node; }
-	| '('
-		{ if (current_function_decl == 0)
-		    {
-		      error ("braced-group within expression allowed only inside a function");
-		      YYERROR;
-		    }
-		  /* We must force a BLOCK for this level
-		     so that, if it is not expanded later,
-		     there is a way to turn off the entire subtree of blocks
-		     that are contained in it.  */
-		  keep_next_level ();
-		  push_iterator_stack ();
-		  push_label_level ();
-		  $<ttype>$ = expand_start_stmt_expr (); }
-	  compstmt ')'
+	| compstmt_primary_start compstmt_nostart ')'
 		{ tree rtl_exp;
 		  if (pedantic)
 		    pedwarn ("ANSI C forbids braced-groups within expressions");
 		  pop_iterator_stack ();
 		  pop_label_level ();
-		  rtl_exp = expand_end_stmt_expr ($<ttype>2);
+		  rtl_exp = expand_end_stmt_expr ($1);
 		  /* The statements have side effects, so the group does.  */
 		  TREE_SIDE_EFFECTS (rtl_exp) = 1;
 
-		  if (TREE_CODE ($3) == BLOCK)
+		  if (TREE_CODE ($2) == BLOCK)
 		    {
 		      /* Make a BIND_EXPR for the BLOCK already made.  */
 		      $$ = build (BIND_EXPR, TREE_TYPE (rtl_exp),
-				  NULL_TREE, rtl_exp, $3);
+				  NULL_TREE, rtl_exp, $2);
 		      /* Remove the block from the tree at this point.
 			 It gets put back at the proper place
 			 when the BIND_EXPR is expanded.  */
-		      delete_block ($3);
+		      delete_block ($2);
 		    }
 		  else
-		    $$ = $3;
+		    $$ = $2;
+		}
+	| compstmt_primary_start error ')'
+		{
+		  /* Make sure we call expand_end_stmt_expr.  Otherwise
+		     we are likely to lose sequences and crash later.  */
+		  pop_iterator_stack ();
+		  pop_label_level ();
+		  expand_end_stmt_expr ($1);
+		  $$ = error_mark_node;
 		}
 	| primary '(' exprlist ')'   %prec '.'
 		{ $$ = build_function_call ($1, $3); }
@@ -1709,9 +1704,9 @@ compstmt_or_error:
 
 compstmt_start: '{' { compstmt_count++; }
 
-compstmt: compstmt_start '}'
+compstmt_nostart: '}'
 		{ $$ = convert (void_type_node, integer_zero_node); }
-	| compstmt_start pushlevel maybe_label_decls decls xstmts '}'
+	| pushlevel maybe_label_decls decls xstmts '}'
 		{ emit_line_note (input_filename, lineno);
 		  expand_end_bindings (getdecls (), 1, 0);
 		  $$ = poplevel (1, 1, 0);
@@ -1719,7 +1714,7 @@ compstmt: compstmt_start '}'
 		    pop_momentary_nofree ();
 		  else
 		    pop_momentary (); }
-	| compstmt_start pushlevel maybe_label_decls error '}'
+	| pushlevel maybe_label_decls error '}'
 		{ emit_line_note (input_filename, lineno);
 		  expand_end_bindings (getdecls (), kept_level_p (), 0);
 		  $$ = poplevel (kept_level_p (), 0, 0);
@@ -1727,7 +1722,7 @@ compstmt: compstmt_start '}'
 		    pop_momentary_nofree ();
 		  else
 		    pop_momentary (); }
-	| compstmt_start pushlevel maybe_label_decls stmts '}'
+	| pushlevel maybe_label_decls stmts '}'
 		{ emit_line_note (input_filename, lineno);
 		  expand_end_bindings (getdecls (), kept_level_p (), 0);
 		  $$ = poplevel (kept_level_p (), 0, 0);
@@ -1735,6 +1730,28 @@ compstmt: compstmt_start '}'
 		    pop_momentary_nofree ();
 		  else
 		    pop_momentary (); }
+	;
+
+compstmt_primary_start:
+	'(' '{'
+		{ if (current_function_decl == 0)
+		    {
+		      error ("braced-group within expression allowed only inside a function");
+		      YYERROR;
+		    }
+		  /* We must force a BLOCK for this level
+		     so that, if it is not expanded later,
+		     there is a way to turn off the entire subtree of blocks
+		     that are contained in it.  */
+		  keep_next_level ();
+		  push_iterator_stack ();
+		  push_label_level ();
+		  $$ = expand_start_stmt_expr ();
+		  compstmt_count++;
+		}
+
+compstmt: compstmt_start compstmt_nostart
+		{ $$ = $2; }
 	;
 
 /* Value is number of statements counted as of the closeparen.  */
