@@ -1643,15 +1643,16 @@ in scope at the time of the call.
 @cindex misunderstandings in C++
 @cindex surprises in C++
 @cindex C++ misunderstandings
-C++ is a complex language and an evolving one, and its standard definition
-(the ANSI C++ draft standard) is also evolving.  As a result,
-your C++ compiler may occasionally surprise you, even when its behavior is
-correct.  This section discusses some areas that frequently give rise to
-questions of this sort.
+C++ is a complex language and an evolving one, and its standard
+definition (the ISO C++ standard) was only recently completed.  As a
+result, your C++ compiler may occasionally surprise you, even when its
+behavior is correct.  This section discusses some areas that frequently
+give rise to questions of this sort.
 
 @menu
 * Static Definitions::  Static member declarations are not definitions
 * Temporaries::         Temporaries may vanish before you expect
+* Copy Assignment::     Copy Assignment operators copy virtual bases twice
 @end menu
 
 @node Static Definitions
@@ -1745,6 +1746,61 @@ example:
 string& tmp = strfunc ();
 charfunc (tmp.c_str ());
 @end example
+
+@node Copy Assignment
+@subsection Implicit Copy-Assignment for Virtual Bases
+
+When a base class is virtual, only one subobject of the base class
+belongs to each full object. Also, the constructors and destructors are
+invoked only once, and called from the most-derived class. However, such
+objects behave unspecified when being assigned. For example:
+
+@example
+struct Base@{
+  char *name;
+  Base(char *n) : name(strdup(n))@{@}
+  Base& operator= (const Base& other)@{
+   free (name);
+   name = strdup (other.name);
+  @}
+@};
+
+struct A:virtual Base@{
+  int val;
+  A():Base("A")@{@}
+@};
+
+struct B:virtual Base@{
+  int bval;
+  B():Base("B")@{@}
+@};
+
+struct Derived:public A, public B@{
+  Derived():Base("Derived")@{@}
+@};
+
+void func(Derived &d1, Derived &d2)
+@{
+  d1 = d2;
+@}
+@end example
+
+The C++ standard specifies that @samp{Base::Base} is only called once
+when constructing or copy-constructing a Derived object. It is
+unspecified whether @samp{Base::operator=} is called more than once when
+the implicit copy-assignment for Derived objects is invoked (as it is
+inside @samp{func} in the example).
+
+g++ implements the "intuitive" algorithm for copy-assignment: assign all
+direct bases, then assign all members. In that algorithm, the virtual
+base subobject can be encountered many times. In the example, copying
+proceeds in the following order: @samp{val}, @samp{name} (via
+@code{strdup}), @samp{bval}, and @samp{name} again.
+
+If application code relies on copy-assignment, a user-defined
+copy-assignment operator removes any uncertainties. With such an
+operator, the application can define whether and how the virtual base
+subobject is assigned.
 
 @node Protoize Caveats
 @section Caveats of using @code{protoize}
