@@ -1,3 +1,8 @@
+2004-04-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/ia64/ia64.c (ia64_encode_section_info): Don't prod
+	global register variables.
+
 2004-04-07  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* fixinc/inclhack.def (rpc_xdr_lvalue_cast_a,
