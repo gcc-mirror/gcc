@@ -1,5 +1,5 @@
 # Process this file with autoconf to produce a configure script.
-#   Copyright (C) 1995 Free Software Foundation, Inc.
+#   Copyright (C) 1995, 1998 Free Software Foundation, Inc.
 #   Contributed by Dave Love (d.love@dl.ac.uk).
 #
 #This file is part of the GNU Fortran libU77 library.
@@ -34,6 +34,10 @@ else
   ac_cv_c_cross=no
 fi
 
+test "$AR" || AR=ar
+AC_SUBST(AR)
+AC_PROG_MAKE_SET
+
 dnl This is only because we (horribly) punt the chmod job to the program at
 dnl present.  Note that the result of this test could be wrong in the cross
 dnl case.
@@ -44,26 +48,6 @@ if test "$ac_cv_prog_chmod" != no || test "$CROSS"; then
 else
   MAYBES=""
 fi
-
-dnl for g77 build maybe use $(RANLIB_FOR_TARGET) always (like wise AR)
-if test "$ac_cv_c_cross" = yes; then
-  RANLIB=$RANLIB_FOR_TARGET
-  AR=$AR_FOR_TARGET
-  AC_SUBST(RANLIB)
-else
-  AC_PROG_RANLIB
-  AR=ar
-  RANLIB_TEST=true
-fi
-AC_SUBST(AR)
-dnl not needed for g77
-dnl AC_SUBST(AR_FOR_TARGET)
-dnl AC_SUBST(RANLIB_FOR_TARGET)
-dnl AC_SUBST(RANLIB_TEST_FOR_TARGET)
-dnl not needed for g77?
-dnl AC_PROG_MAKE_SET
-
-dnl Checks for libraries.
 
 dnl Checks for header files.
 AC_HEADER_STDC
@@ -113,5 +97,4 @@ AC_SUBST(MAYBES)
 AC_SUBST(CROSS)
 AC_SUBST(RANLIB)
 AC_SUBST(RANLIB_TEST)
-
 AC_OUTPUT(Makefile)

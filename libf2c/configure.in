@@ -1,5 +1,5 @@
 # Process this file with autoconf to produce a configure script.
-#   Copyright (C) 1995, 1997 Free Software Foundation, Inc.
+#   Copyright (C) 1995, 1997, 1998 Free Software Foundation, Inc.
 #   Contributed by Dave Love (d.love@dl.ac.uk).
 #
 #This file is part of GNU Fortran.
@@ -34,20 +34,11 @@ test "$AR" || AR=ar
 AC_SUBST(AR)
 if test "$RANLIB"; then :
   AC_SUBST(RANLIB)
-dnl Make sure that RANLIB_TEST is set also.
-  if test -z "$RANLIB_TEST"; then
-    RANLIB_TEST=true
-  fi
 else
-  RANLIB_TEST=true
   AC_PROG_RANLIB
 fi
-AC_SUBST(RANLIB_TEST)
-
-dnl not needed for g77?
-dnl AC_PROG_MAKE_SET
-
-dnl Checks for libraries.
+AC_PROG_INSTALL
+AC_PROG_MAKE_SET
 
 dnl Checks for header files.
 # Sanity check for the cross-compilation case:
@@ -57,181 +48,6 @@ You must have a usable C system for the target already installed, at least
 including headers and, preferably, the library, before you can configure
 the G77 runtime system.  If necessary, install gcc now with \`LANGUAGES=c',
 then the target library, then build with \`LANGUAGES=f77'.])])
-
-AC_HEADER_STDC
-dnl We could do this if we didn't know we were using gcc
-dnl AC_MSG_CHECKING(for prototype-savvy compiler)
-dnl AC_CACHE_VAL(g77_cv_sys_proto,                
-dnl   [AC_TRY_LINK(,                             
-dnl dnl looks screwy because TRY_LINK expects a function body
-dnl    [return 0;} int foo (int * bar) {],       
-dnl    g77_cv_sys_proto=yes,                      
-dnl    [g77_cv_sys_proto=no                       
-dnl     AC_DEFINE(KR_headers)])])                
-dnl AC_MSG_RESULT($g77_cv_sys_proto)              
-
-dnl for U77
-dnl AC_CHECK_HEADERS(unistd.h)
-
-AC_MSG_CHECKING(for posix)
-AC_CACHE_VAL(g77_cv_header_posix,
-  AC_EGREP_CPP(yes,
-  [#include <sys/types.h>
-#include <unistd.h>
-#ifdef _POSIX_VERSION
-  yes
-#endif
-], 
-  g77_cv_header_posix=yes,
-  g77_cv_header_posix=no))
-AC_MSG_RESULT($g77_cv_header_posix)
-
-# We can rely on the GNU library being posix-ish.  I guess checking the 
-# header isn't actually like checking the functions, though...
-AC_MSG_CHECKING(for GNU library)
-AC_CACHE_VAL(g77_cv_lib_gnu,
-  AC_EGREP_CPP(yes,
-    [#include <stdio.h>
-#ifdef __GNU_LIBRARY__
-  yes
-#endif
-], 
-  g77_cv_lib_gnu=yes, g77_cv_lib_gnu=no))
-AC_MSG_RESULT($g77_cv_lib_gnu)
-
-# Apparently cygwin needs to be special-cased.
-AC_MSG_CHECKING([for cyg\`win'32])
-AC_CACHE_VAL(g77_cv_sys_cygwin32,
-  AC_EGREP_CPP(yes,
-  [#ifdef __CYGWIN32__
-  yes
-#endif
-],
-  g77_cv_sys_cygwin32=yes,
-  g77_cv_sys_cygwin32=no))
-AC_MSG_RESULT($g77_cv_sys_cygwin32)
-
-# ditto for mingw32.
-AC_MSG_CHECKING([for mingw32])
-AC_CACHE_VAL(g77_cv_sys_mingw32,
-  AC_EGREP_CPP(yes,
-  [#ifdef __MINGW32__
-  yes
-#endif
-],
-  g77_cv_sys_mingw32=yes,
-  g77_cv_sys_mingw32=no))
-AC_MSG_RESULT($g77_cv_sys_mingw32)
-
-
-AC_CHECK_HEADER(fcntl.h,
-   test $g77_cv_header_posix = yes && AC_DEFINE(_POSIX_SOURCE),
-   AC_DEFINE(NO_FCNTL) AC_DEFINE(OPEN_DECL))
-
-dnl Checks for typedefs, structures, and compiler characteristics.
-AC_C_CONST
-AC_TYPE_SIZE_T
-
-dnl Checks for library functions.
-AC_TYPE_SIGNAL
-# we'll get atexit by default
-if test $ac_cv_header_stdc != yes; then
-AC_CHECK_FUNC(atexit,
-  AC_DEFINE(onexit,atexit),dnl just in case
-  [AC_DEFINE(NO_ONEXIT)
-  AC_CHECK_FUNC(onexit,,
-    [AC_CHECK_FUNC(on_exit,
-     AC_DEFINE(onexit,on_exit),)])])
-else true
-fi
-
-# This should always succeed on unix.
-# Apparently positive result on cygwin loses re. NON_UNIX_STDIO
-# (as of cygwin b18). Likewise on mingw.
-AC_CHECK_FUNC(fstat)
-AC_MSG_CHECKING([need for NON_UNIX_STDIO])
-if test $g77_cv_sys_cygwin32 = yes \
-  || test $g77_cv_sys_mingw32 = yes \
-  || test $ac_cv_func_fstat = no; then
-  AC_MSG_RESULT(yes)
-  AC_DEFINE(NON_UNIX_STDIO)
-else
-  AC_MSG_RESULT(no)
-fi
-
-# This is necessary for e.g. Linux:
-AC_MSG_CHECKING([for necessary members of struct FILE])
-AC_CACHE_VAL(g77_cv_struct_FILE,
-[AC_TRY_COMPILE([#include <stdio.h>],
-  [FILE s; s._ptr; s._base; s._flag;],g77_cv_struct_FILE=yes,
-  g77_cv_struct_FILE=no)])dnl
-AC_MSG_RESULT($g77_cv_struct_FILE)
-if test $g77_cv_struct_FILE = no; then
-  AC_DEFINE(MISSING_FILE_ELEMS)
-fi
-
-dnl perhaps should check also for remainder
-dnl Unfortunately, the message implies we're just checking for -lm...
-AC_CHECK_LIB(m,drem,AC_DEFINE(IEEE_drem))
-
-dnl for U77:
-dnl AC_CHECK_FUNCS(symlink getcwd lstat)
-dnl test $ac_cv_func_symlink = yes && SYMLNK=symlnk_.o
-dnl test $ac_cv_func_lstat = yes && SYMLNK="$SYMLNK lstat_.o"
-dnl AC_SUBST(SYMLNK)
-
-AC_CHECK_FUNCS(tempnam)
-
-# posix will guarantee the right behaviour for sprintf, else we can't be
-# sure; HEADER_STDC wouldn't be the right check in sunos4, for instance.
-# However, on my sunos4/gcc setup unistd.h leads us wrongly to believe
-# we're posix-conformant, so always do the test.
-AC_MSG_CHECKING(for ansi/posix sprintf result)
-dnl This loses if included as an argument to AC_CACHE_VAL because the
-dnl changequote doesn't take effect and the [] vanish.
-dnl fixme: use cached value
-AC_TRY_RUN(changequote(<<, >>)dnl
-  <<#include <stdio.h>
-    /* does sprintf return the number of chars transferred? */
-    main () {char foo[2]; (sprintf(foo, "1") == 1) ? exit(0) : exit(1);}
->>changequote([, ]),
-    g77_cv_sys_sprintf_ansi=yes,
-    g77_cv_sys_sprintf_ansi=no,
-    g77_cv_sys_sprintf_ansi=no)
-AC_CACHE_VAL(g77_cv_sys_sprintf_ansi,
-     g77_cv_sys_sprintf_ansi=$g77_cv_sys_sprintf_ansi)
-dnl We get a misleading `(cached)' message...
-AC_MSG_RESULT($g77_cv_sys_sprintf_ansi)
-
-# The cygwin patch takes steps to avoid defining USE_STRLEN here -- I don't
-# understand why.
-if test $g77_cv_sys_sprintf_ansi != yes; then 
-  AC_DEFINE(USE_STRLEN)
-fi
-
-# define NON_ANSI_RW_MODES on unix (can't hurt)
-AC_MSG_CHECKING(NON_ANSI_RW_MODES)
-AC_EGREP_CPP(yes,
-[#ifdef unix
-  yes
-#endif
-#ifdef __unix
-  yes
-#endif
-#ifdef __unix__
-  yes
-#endif
-], is_unix=yes, is_unix=no)
-if test $g77_cv_sys_cygwin32 = yes || test $g77_cv_sys_mingw32 = yes; then
-  AC_MSG_RESULT(no)
-else
-  if test $is_unix = yes; then
-    AC_DEFINE(NON_ANSI_RW_MODES)
-    AC_MSG_RESULT(yes)
-  else
-    AC_MSG_RESULT(no)
-  fi
-fi
 
 # We have to firkle with the info in hconfig.h to figure out suitable types
 # (via com.h).  proj.h and com.h are in $srcdir/.., config.h which they need
@@ -330,13 +146,6 @@ F2C_LONGINT=$g77_cv_sys_f2clongint
 ac_cpp=$late_ac_cpp
 AC_SUBST(F2C_LONGINT)
 
-dnl maybe check for drem/remainder
-
-# This EOF_CHAR is a misfeature on unix.
-AC_DEFINE(NO_EOF_CHAR_CHECK)
-
-AC_DEFINE(Skip_f2c_Undefs)
-
 # avoid confusion in case the `makefile's from the f2c distribution have
 # got put here
 test -f libF77/makefile && mv libF77/makefile  libF77/makefile.ori
@@ -357,13 +166,8 @@ AC_SUBST(gcc_version_trigger)
 AC_CANONICAL_SYSTEM
 AC_SUBST(target_alias)
 
-AC_CONFIG_SUBDIRS(libU77)
-AC_OUTPUT(Makefile g2c.h libI77/Makefile libF77/Makefile)
-
-dnl We might have configuration options to:
-dnl * change unit preconnexion in libI77/err.c (f_init.c)
-dnl * -DALWAYS_FLUSH in libI77
-dnl * -DOMIT_BLANK_CC in libI77
+AC_CONFIG_SUBDIRS(libU77 libI77 libF77)
+AC_OUTPUT(Makefile g2c.h)
 
 dnl Local Variables:
 dnl comment-start: "dnl "
