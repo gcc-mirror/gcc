@@ -570,6 +570,14 @@ public class SimpleDateFormat extends DateFormat
 	while (++fmt_index < fmt_max && pattern.charAt(fmt_index) == ch)
 	  ;
 	int fmt_count = fmt_index - first;
+
+	// We might need to limit the number of digits to parse in
+	// some cases.  We look to the next pattern character to
+	// decide.
+	boolean limit_digits = false;
+	if (fmt_index < fmt_max
+	    && standardChars.indexOf(pattern.charAt(fmt_index)) >= 0)
+	  limit_digits = true;
 	--fmt_index;
 
 	// We can handle most fields automatically: most either are
@@ -702,6 +710,8 @@ public class SimpleDateFormat extends DateFormat
 	if (is_numeric)
 	  {
 	    numberFormat.setMinimumIntegerDigits(fmt_count);
+	    if (limit_digits)
+	      numberFormat.setMaximumIntegerDigits(fmt_count);
 	    if (maybe2DigitYear)
 	      index = pos.getIndex();
 	    Number n = numberFormat.parse(dateStr, pos);

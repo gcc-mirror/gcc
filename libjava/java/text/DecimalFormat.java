@@ -1,5 +1,5 @@
 /* DecimalFormat.java -- Formats and parses numbers
-   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -693,8 +693,8 @@ public class DecimalFormat extends NumberFormat
     int index = pos.getIndex();
     StringBuffer buf = new StringBuffer ();
 
-      // We have to check both prefixes, because one might be empty.
-      // We want to pick the longest prefix that matches.
+    // We have to check both prefixes, because one might be empty.  We
+    // want to pick the longest prefix that matches.
     boolean got_pos = str.startsWith(positivePrefix, index);
     String np = (negativePrefix != null
 		 ? negativePrefix
@@ -729,11 +729,14 @@ public class DecimalFormat extends NumberFormat
 
     // FIXME: handle Inf and NaN.
 
-      // FIXME: do we have to respect minimum/maxmimum digit stuff?
-      // What about leading zeros?  What about multiplier?
+    // FIXME: do we have to respect minimum digits?
+    // What about leading zeros?  What about multiplier?
 
     int start_index = index;
     int max = str.length();
+    int last = index + maximumIntegerDigits;
+    if (last > 0 && max > last)
+      max = last;
     char zero = symbols.getZeroDigit();
     int last_group = -1;
     boolean int_part = true;
