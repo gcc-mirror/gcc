@@ -363,14 +363,9 @@ build_cplus_array_type_1 (tree elt_type, tree index_type)
   if (elt_type == error_mark_node || index_type == error_mark_node)
     return error_mark_node;
 
-  /* Don't do the minimal thing just because processing_template_decl is
-     set; we want to give string constants the right type immediately, so
-     we don't have to fix them up at instantiation time.  */
-  if ((processing_template_decl
-       && index_type && TYPE_MAX_VALUE (index_type)
-       && TREE_CODE (TYPE_MAX_VALUE (index_type)) != INTEGER_CST)
-      || uses_template_parms (elt_type) 
-      || (index_type && uses_template_parms (index_type)))
+  if (dependent_type_p (elt_type)
+      || (index_type
+	  && value_dependent_expression_p (TYPE_MAX_VALUE (index_type))))
     {
       t = make_node (ARRAY_TYPE);
       TREE_TYPE (t) = elt_type;
