@@ -74,27 +74,27 @@ package java.beans;
 
 public interface BeanInfo {
 	/** Use this as a parameter for the getIcon() command to retrieve a certain type of icon. **/
-	public static final int ICON_COLOR_16x16 = 1;
+	int ICON_COLOR_16x16 = 1;
 	/** Use this as a parameter for the getIcon() command to retrieve a certain type of icon. **/
-	public static final int ICON_COLOR_32x32 = 2;
+	int ICON_COLOR_32x32 = 2;
 	/** Use this as a parameter for the getIcon() command to retrieve a certain type of icon. **/
-	public static final int ICON_MONO_16x16 = 3;
+	int ICON_MONO_16x16 = 3;
 	/** Use this as a parameter for the getIcon() command to retrieve a certain type of icon. **/
-	public static final int ICON_MONO_32x32 = 4;
+	int ICON_MONO_32x32 = 4;
 
 	/** Get the general description of this Bean type.
 	 ** @return the BeanDescriptor for the Bean, or null if
 	 **         the BeanDescriptor should be obtained by
 	 **         Introspection.
 	 **/
-	public abstract BeanDescriptor getBeanDescriptor();
+	BeanDescriptor getBeanDescriptor();
 
 	/** Get the events this Bean type fires.
 	 ** @return the EventDescriptors representing events this
 	 **         Bean fires.  Returns <CODE>null</CODE> if the
 	 **         events are to be acquired by Introspection.
 	 **/
-	public abstract EventSetDescriptor[] getEventSetDescriptors();
+	EventSetDescriptor[] getEventSetDescriptors();
 
 	/** Get the "default" event, basically the one a RAD tool
 	 ** user is most likely to select.
@@ -102,7 +102,7 @@ public interface BeanInfo {
 	 **         that the user is most likely to use.  Returns
 	 **         <CODE>-1</CODE> if there is no default event.
 	 **/
-	public abstract int getDefaultEventIndex();
+	int getDefaultEventIndex();
 
 	/** Get the properties (get/set method pairs) this Bean
 	 ** type supports.
@@ -111,7 +111,7 @@ public interface BeanInfo {
 	 **         Returns <CODE>null</CODE> if the properties
 	 **         are to be obtained by Introspection.
 	 **/
-	public abstract PropertyDescriptor[] getPropertyDescriptors();
+	PropertyDescriptor[] getPropertyDescriptors();
 
 	/** Get the "default" property, basically the one a RAD
 	 ** tool user is most likely to select.
@@ -119,7 +119,7 @@ public interface BeanInfo {
 	 **         that the user is most likely to use.  Returns
 	 **         <CODE>-1</CODE> if there is no default event.
 	 **/
-	public abstract int getDefaultPropertyIndex();
+	int getDefaultPropertyIndex();
 
 	/** Get the methods this Bean type supports.
 	 ** @return the MethodDescriptors representing the
@@ -127,7 +127,7 @@ public interface BeanInfo {
 	 **         <CODE>null</CODE> if the methods are to be
 	 **         obtained by Introspection.
 	 **/
-	public abstract MethodDescriptor[] getMethodDescriptors();
+	MethodDescriptor[] getMethodDescriptors();
 
 	/** Get additional BeanInfos representing this Bean.
 	 ** In this version of JavaBeans, this method is used so
@@ -156,7 +156,7 @@ public interface BeanInfo {
 	 **         <CODE>null</CODE> may be returned (see Spec
 	 **         Note, above).
 	 **/
-	public abstract BeanInfo[] getAdditionalBeanInfo();
+	BeanInfo[] getAdditionalBeanInfo();
 
 	/** Get a visual icon for this Bean.
 	 ** A Bean does not have to support icons, and if it does
@@ -177,5 +177,5 @@ public interface BeanInfo {
 	 ** @return the icon, or null if that type of icon is
 	 **         unsupported by this Bean.
 	 **/
-	public abstract java.awt.Image getIcon(int iconType);
+	java.awt.Image getIcon(int iconType);
 }

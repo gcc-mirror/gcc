@@ -54,7 +54,7 @@ public interface DesignMode {
 	 * Use this name when firing <code>PropertyChangeEvent</code>s from your Bean.  
 	 * @fixme Check whether PROPERTYNAME is set to same value as Sun.
 	 */
-	public static final String PROPERTYNAME = "designTime";
+	String PROPERTYNAME = "designTime";
 
 	/**
 	 * The environment will call this method on your
@@ -82,12 +82,12 @@ public interface DesignMode {
 	 * @see java.beans.beancontext.BeanContext
 	 * @see #PROPERTYNAME
 	 */
-	public void setDesignTime(boolean designTime);
+	void setDesignTime(boolean designTime);
 
 	/**
 	 * This method should tell whether it is design time or runtime.
 	 * @return <code>true</code> if design time, <code>false</code> if
 	 *         runtime.
 	 */
-	public boolean isDesignTime();
+	boolean isDesignTime();
 }

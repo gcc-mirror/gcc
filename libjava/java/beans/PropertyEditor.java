@@ -114,14 +114,14 @@ public interface PropertyEditor {
 	 ** wrapper type.
 	 ** @param value the value to set this property to.
 	 **/
-	public abstract void setValue(Object value);
+	void setValue(Object value);
 
 	/** Accessor method to get the current value the PropertyEditor is working with.
 	 ** If the property type is native, it will be wrapped in the appropriate
 	 ** wrapper type.
 	 ** @return the current value of the PropertyEditor.
 	 **/
-	public abstract Object getValue();
+	Object getValue();
 
 
 	/** Set the value of this property using a String.
@@ -130,7 +130,7 @@ public interface PropertyEditor {
 	 ** @param text the text to set it to.
 	 ** @exception IllegalArgumentException if the String is in the wrong format or setAsText() is not supported.
 	 **/
-	public abstract void setAsText(String text) throws IllegalArgumentException;
+	void setAsText(String text) throws IllegalArgumentException;
 
 	/** Get the value of this property in String format.
 	 ** Many times this can simply use Object.toString().<P>
@@ -139,7 +139,7 @@ public interface PropertyEditor {
 	 ** getAsText() should be able to go into setAsText().
 	 ** @return the value of this property in String format.
 	 **/
-	public abstract String getAsText();
+	String getAsText();
 
 	/** Get a list of possible Strings which this property type can have.
 	 ** The value of these will be used by the RAD tool to construct some sort
@@ -149,13 +149,13 @@ public interface PropertyEditor {
 	 ** must check the value in setAsText() anyway.
 	 ** @return the list of possible String values for this property type.
 	 **/
-	public abstract String[] getTags();
+	String[] getTags();
 
 
 	/** The RAD tool calls this to find out whether the PropertyEditor can paint itself.
 	 ** @return true if it can paint itself graphically, false if it cannot.
 	 **/
-	public abstract boolean isPaintable();
+	boolean isPaintable();
 
 	/** The RAD tool calls this to paint the actual value of the property.
 	 ** The Graphics context will have the same current font, color, etc. as the
@@ -165,13 +165,13 @@ public interface PropertyEditor {
 	 ** @param g the Graphics context to paint on
 	 ** @param bounds the rectangle you have reserved to work in
 	 **/
-	public abstract void paintValue(java.awt.Graphics g, java.awt.Rectangle bounds);
+	void paintValue(java.awt.Graphics g, java.awt.Rectangle bounds);
 
 
 	/** The RAD tool calls this to find out whether the PropertyEditor supports a custom component to edit and display itself.
 	 ** @return true if getCustomEditor() will return a component, false if not.
 	 **/
-	public abstract boolean supportsCustomEditor();
+	boolean supportsCustomEditor();
 
 	/** The RAD tool calls this to grab the component that can edit this type.
 	 ** The component may be painted anywhere the RAD tool wants to paint it--
@@ -180,18 +180,18 @@ public interface PropertyEditor {
 	 ** change to the value is made, fire a PropertyChangeEvent to the source.<P>
 	 ** @return the custom editor for this property type.
 	 **/
-	public abstract java.awt.Component getCustomEditor();
+	java.awt.Component getCustomEditor();
 
 
 	/** Adds a property change listener to this PropertyEditor.
 	 ** @param listener the listener to add
 	 **/
-	public abstract void addPropertyChangeListener(PropertyChangeListener listener);
+	void addPropertyChangeListener(PropertyChangeListener listener);
 
 	/** Removes a property change listener from this PropertyEditor.
 	 ** @param listener the listener to remove
 	 **/
-	public abstract void removePropertyChangeListener(PropertyChangeListener listener);
+	void removePropertyChangeListener(PropertyChangeListener listener);
 
 	/** Get a Java language-specific String which could be used to create an Object
 	 ** of the specified type.  Every PropertyEditor must support this.<P>
@@ -205,5 +205,5 @@ public interface PropertyEditor {
 	 ** </OL>
 	 ** @return the initialization string for this object in Java.
 	 **/
-	public abstract String getJavaInitializationString();
+	String getJavaInitializationString();
 }

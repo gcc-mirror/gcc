@@ -51,11 +51,11 @@ import java.beans.beancontext.BeanContext;
 public interface AppletInitializer
 {
   /** Activate the applet.  */
-  public void activate (Applet applet);
+  void activate (Applet applet);
 
   /** This method will be called by <code>Beans.instantiate()</code>
    * to associated the new Applet with its AppletContext, AppletStub,
    * and Container.
    */
-  public void initialize (Applet applet, BeanContext context);
+  void initialize (Applet applet, BeanContext context);
 }
