@@ -101,6 +101,8 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
   /* If non-zero, the user gave us the `-v' flag.  */ 
   int saw_verbose_flag = 0;
 
+  int saw_save_temps = 0;
+
   /* This will be 0 if we encounter a situation where we should not
      link in libgcj.  */
   int library = 1;
@@ -302,6 +304,8 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 	      will_link = 0;
 	      continue;
 	    }
+          else if (strcmp (argv[i], "-save-temps") == 0)
+	    saw_save_temps = 1;
           else if (strcmp (argv[i], "-static-libgcc") == 0
                    || strcmp (argv[i], "-static") == 0)
 	    shared_libgcc = 0;
@@ -363,7 +367,8 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
       if (saw_o)
 	fatal ("cannot specify both -C and -o");
     }
-  if (saw_o && java_files_count + (saw_C ? 0 : class_files_count) > 1)
+  if ((saw_o && java_files_count + class_files_count > 1)
+      || (saw_C && java_files_count > 1))
     combine_inputs = 1;
   if (class_files_count > 1)
     combine_inputs = 1;
@@ -373,7 +378,7 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
       filelist_filename = make_temp_file ("jx");
       if (filelist_filename == NULL)
 	fatal ("cannot create temporary file");
-      record_temp_file (filelist_filename, 1, 0);
+      record_temp_file (filelist_filename, ! saw_save_temps, 0);
       filelist_file = fopen (filelist_filename, "w");
       if (filelist_file == NULL)
 	pfatal_with_name (filelist_filename);
