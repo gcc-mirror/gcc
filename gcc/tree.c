@@ -1518,6 +1518,7 @@ staticp (arg)
 #endif
 
     case ARRAY_REF:
+    case ARRAY_RANGE_REF:
       if (TREE_CODE (TYPE_SIZE (TREE_TYPE (arg))) == INTEGER_CST
 	  && TREE_CODE (TREE_OPERAND (arg, 1)) == INTEGER_CST)
 	return staticp (TREE_OPERAND (arg, 0));
@@ -2205,6 +2206,12 @@ stabilize_reference (ref)
 
     case ARRAY_REF:
       result = build_nt (ARRAY_REF,
+			 stabilize_reference (TREE_OPERAND (ref, 0)),
+			 stabilize_reference_1 (TREE_OPERAND (ref, 1)));
+      break;
+
+    case ARRAY_RANGE_REF:
+      result = build_nt (ARRAY_RANGE_REF,
 			 stabilize_reference (TREE_OPERAND (ref, 0)),
 			 stabilize_reference_1 (TREE_OPERAND (ref, 1)));
       break;

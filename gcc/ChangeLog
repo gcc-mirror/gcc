@@ -1,3 +1,15 @@
+Mon Jun  4 09:21:19 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* tree.def (ARRAY_RANGE_REF): New code.
+	* alias.c (handled_component_p, can_address_p): Handle it.
+	* dwarf2out.c (loc_descriptor_from_tree): Likewise.
+	* explow.c (set_mem_attributes): Likewise.
+	* expr.c (expand_assignment, get_inner_reference): Likewise.
+	(expand_expr, expand_expr_unaligned, do_jump): Likewise.
+	* fold-const.c (operand_equal_p): Likewise.
+	* tree.c (staticp, stabilize_reference): Likewise.
+	* varasm.c (decode_addr_const): Likewise.
+
 Sun Jun  3 21:59:51 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* reload.c (reload_inner_reg_of_subreg): Return 1 for PLUS.

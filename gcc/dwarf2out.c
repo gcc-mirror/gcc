@@ -7592,6 +7592,7 @@ loc_descriptor_from_tree (loc, addressp)
     case COMPONENT_REF:
     case BIT_FIELD_REF:
     case ARRAY_REF:
+    case ARRAY_RANGE_REF:
       {
 	tree obj, offset;
 	HOST_WIDE_INT bitsize, bitpos, bytepos;

@@ -2180,7 +2180,8 @@ decode_addr_const (exp, value)
 	  offset += int_byte_position (TREE_OPERAND (target, 1));
 	  target = TREE_OPERAND (target, 0);
 	}
-      else if (TREE_CODE (target) == ARRAY_REF)
+      else if (TREE_CODE (target) == ARRAY_REF
+	       || TREE_CODE (target) == ARRAY_RANGE_REF)
 	{
 	  offset += (tree_low_cst (TYPE_SIZE_UNIT (TREE_TYPE (target)), 1)
 		     * tree_low_cst (TREE_OPERAND (target, 1), 0));

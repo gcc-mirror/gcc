@@ -2396,6 +2396,7 @@ operand_equal_p (arg0, arg1, only_const)
 
 	case COMPONENT_REF:
 	case ARRAY_REF:
+	case ARRAY_RANGE_REF:
 	  return (operand_equal_p (TREE_OPERAND (arg0, 0),
 				   TREE_OPERAND (arg1, 0), 0)
 		  && operand_equal_p (TREE_OPERAND (arg0, 1),
