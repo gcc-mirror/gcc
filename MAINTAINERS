@@ -25,8 +25,8 @@ Richard Henderson                               rth@redhat.com
 Geoffrey Keating				geoffk@geoffk.org
 Richard Kenner					kenner@nyu.edu
 Jeff Law					law@redhat.com
-Jason Merrill					jason@redhat.com
 Michael Meissner				gnu@the-meissners.org
+Jason Merrill					jason@redhat.com
 David S. Miller					davem@redhat.com
 Mark Mitchell					mark@codesourcery.com
 Bernd Schmidt					bernds@redhat.com
@@ -204,8 +204,8 @@ Matt Kraai					kraai@alumni.cmu.edu
 Ziemowit Laski					zlaski@apple.com
 Marc Lehmann					pcg@goof.com
 Alan Lehotsky					apl@alum.mit.edu
-Warren Levy					warrenl@cruzio.com
 Kriang Lerdsuwanakij				lerdsuwa@users.sourceforge.net
+Warren Levy					warrenl@cruzio.com
 Don Lindsay					dlindsay@redhat.com
 Dave Love					d.love@dl.ac.uk
 Martin v. Löwis					loewis@informatik.hu-berlin.de
