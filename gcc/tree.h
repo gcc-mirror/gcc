@@ -1,5 +1,5 @@
 /* Front-end tree definitions for GNU compiler.
-   Copyright (C) 1989, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1993, 1994, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1370,6 +1370,12 @@ extern tree variable_size		PROTO((tree));
    and only evaluate the subexpressions once.  */
 
 extern tree stabilize_reference		PROTO((tree));
+
+/* Subroutine of stabilize_reference; this is called for subtrees of
+   references.  Any expression with side-effects must be put in a SAVE_EXPR
+   to ensure that it is only evaluated once.  */
+
+extern tree stabilize_reference_1	PROTO((tree));
 
 /* Return EXP, stripped of any conversions to wider types
    in such a way that the result of converting to type FOR_TYPE
