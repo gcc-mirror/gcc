@@ -56,8 +56,5 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* AIX is a flavor of System V */
 #define	USG
 
-/* This is the only version of nm that collect2 can work with.  */
-#define REAL_NM_FILE_NAME "/usr/ucb/nm"
-
 /* Big buffers improve performance.  */
 #define IO_BUFFER_SIZE (0x8000 - 4096)
