@@ -1,3 +1,16 @@
+Tue Oct 22 23:51:34 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md: FIx typo.
+	(sse2_cvtsi2sd, sse2_pslrdq): Fix template.
+	(sse2_umulv2siv2di3): Fix predicate.
+	(sse2_psadbw, ashrv8hi3, ashrv4si3, lshrv8hi3 lshrv4si3,
+	lshrv2di3, ashlv8hi3, ashlv4si3, ashlv2di3): Likewise.
+	* xmmintrin.h (_mm_mul_epu16): Rename to...
+	(_mm_mul_epu32): This one.
+	(_mm_cvtsi32_si128, _mm_cvtsi128_si32): New.
+
+	(contains_128bit_aligned_vector_p): Undo accidental checkin.
+
 2002-10-22  Eric Christopher  <echristo@redhat.com>
 
 	* config/sparc/sparc.h: Add #error.
