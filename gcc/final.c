@@ -3337,11 +3337,13 @@ output_asm_name ()
       if (debug_insn)
 	{
 	  register int num = INSN_CODE (debug_insn);
-	  fprintf (asm_out_file, " %s %d %s", 
+	  fprintf (asm_out_file, "\t%s %d\t%s", 
 		   ASM_COMMENT_START, INSN_UID (debug_insn), insn_name[num]);
 	  if (insn_n_alternatives[num] > 1)
 	    fprintf (asm_out_file, "/%d", which_alternative + 1);
-
+#ifdef HAVE_ATTR_length
+	  fprintf (asm_out_file, "\t[length = %d]", get_attr_length (debug_insn));
+#endif
 	  /* Clear this so only the first assembler insn
 	     of any rtl insn will get the special comment for -dp.  */
 	  debug_insn = 0;
