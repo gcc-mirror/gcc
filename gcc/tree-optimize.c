@@ -524,7 +524,9 @@ tree_rest_of_compilation (tree fndecl, bool nested_p)
 	    if (!e->inline_failed)
 	      cgraph_clone_inlined_nodes (e, true);
 	}
-      cfun->saved_tree = save_body (fndecl, &cfun->saved_args);
+      cfun->saved_static_chain_decl = cfun->static_chain_decl;
+      cfun->saved_tree = save_body (fndecl, &cfun->saved_args,
+				    &cfun->saved_static_chain_decl);
     }
 
   if (flag_inline_trees)
@@ -557,6 +559,7 @@ tree_rest_of_compilation (tree fndecl, bool nested_p)
     {
       DECL_SAVED_TREE (fndecl) = cfun->saved_tree;
       DECL_ARGUMENTS (fndecl) = cfun->saved_args;
+      cfun->static_chain_decl = cfun->saved_static_chain_decl;
 
       /* When not in unit-at-a-time mode, we must preserve out of line copy
 	 representing node before inlining.  Restore original outgoing edges
