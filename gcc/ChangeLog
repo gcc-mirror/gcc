@@ -1,5 +1,10 @@
 2000-05-15  Richard Henderson  <rth@cygnus.com>
 
+	* toplev.c (rest_of_compilation): Run full jump pass before
+	find_basic_blocks of flow2.
+
+2000-05-15  Richard Henderson  <rth@cygnus.com>
+
 	* jump.c: Fix typos and clarify commentary from last change.
 	(any_condjump_p): Verify SET_SRC is an IF_THEN_ELSE.
 	(safe_to_remove_jump_p): Remove.
