@@ -1,3 +1,8 @@
+2002-05-23  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* genautomata.c (reserv_sets_hash_value): Use shift equal to 3/4
+	of size of unsigned.
+
 2002-05-23  Richard Henderson  <rth@redhat.com>
 
 	* configure.in (HAVE_AS_TLS): New test.

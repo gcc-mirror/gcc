@@ -3413,10 +3413,10 @@ reserv_sets_hash_value (reservs)
   if (sizeof (set_el_t) <= sizeof (unsigned))
     return hash_value;
   result = 0;
-  for (i = sizeof (set_el_t); i > 0; i -= sizeof (unsigned))
+  for (i = sizeof (set_el_t); i > 0; i -= sizeof (unsigned) - 1)
     {
       result += (unsigned) hash_value;
-      hash_value >>= sizeof (unsigned) * CHAR_BIT;
+      hash_value >>= (sizeof (unsigned) - 1) * CHAR_BIT;
     }
   return result;
 }
