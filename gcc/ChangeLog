@@ -1,3 +1,7 @@
+2003-02-28  Aldy Hernandez  <aldyh@redhat.com>
+
+        * floatlib.c: Remove.
+
 2003-02-28  Jason Merrill  <jason@redhat.com>
 
 	* stor-layout.c (variable_size): Leave a "minus 1" outside the
