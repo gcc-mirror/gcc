@@ -969,7 +969,7 @@ reload (first, global, dumpfile)
 		       && !(GET_CODE (PATTERN (insn)) == SET
 			    && SET_DEST (PATTERN (insn)) == stack_pointer_rtx))
 		{
-		  if (reg_mentioned_p (after_call, PATTERN (insn)))
+		  if (reg_referenced_p (after_call, PATTERN (insn)))
 		    avoid_return_reg = after_call;
 		  after_call = 0;
 		}
@@ -3681,7 +3681,7 @@ reload_as_needed (first, live_known)
 		   && !(GET_CODE (PATTERN (insn)) == SET
 			&& SET_DEST (PATTERN (insn)) == stack_pointer_rtx))
 	    {
-	      if (reg_mentioned_p (after_call, PATTERN (insn)))
+	      if (reg_referenced_p (after_call, PATTERN (insn)))
 		avoid_return_reg = after_call;
 	      after_call = 0;
 	    }
