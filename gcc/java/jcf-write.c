@@ -546,7 +546,7 @@ get_access_flags (decl)
   if (CLASS_PUBLIC (decl))  /* same as FIELD_PUBLIC and METHOD_PUBLIC */
     flags |= ACC_PUBLIC;
   if (CLASS_FINAL (decl))  /* same as FIELD_FINAL and METHOD_FINAL */
-    flags |= ACC_PUBLIC;
+    flags |= ACC_FINAL;
   if (isfield || TREE_CODE (decl) == FUNCTION_DECL)
     {
       if (TREE_PROTECTED (decl))
@@ -571,8 +571,6 @@ get_access_flags (decl)
 	flags |= ACC_NATIVE;
       if (METHOD_STATIC (decl))
 	flags |= ACC_STATIC;
-      if (METHOD_FINAL (decl))
-	flags |= ACC_FINAL;
       if (METHOD_SYNCHRONIZED (decl))
 	flags |= ACC_SYNCHRONIZED;
       if (METHOD_ABSTRACT (decl))
@@ -663,6 +661,17 @@ push_int_const (i, state)
     }
 }
 
+static int
+find_constant_wide (lo, hi, state)
+     HOST_WIDE_INT lo, hi;
+     struct jcf_partial *state;
+{
+  HOST_WIDE_INT w1, w2;
+  lshift_double (lo, hi, -32, 64, &w1, &w2, 1);
+  return find_constant2 (&state->cpool, CONSTANT_Long,
+			 w1 & 0xFFFFFFFF, lo & 0xFFFFFFFF);
+ }
+
 /* Push 64-bit long constant on VM stack.
    Caller is responsible for doing NOTE_PUSH. */
 
@@ -683,13 +692,7 @@ push_long_const (lo, hi, state)
         OP1 (OPCODE_i2l);
       }
   else
-    {
-      HOST_WIDE_INT w1, w2;
-      lshift_double (lo, hi, -32, 64, &w1, &w2, 1);
-      hi = find_constant2 (&state->cpool, CONSTANT_Long,
-			   w1 & 0xFFFFFFFF, lo & 0xFFFFFFFF);
-      push_constant2 (hi, state);
-    }
+    push_constant2 (find_constant_wide (lo, hi, state), state);
 }
 
 static void
@@ -1441,9 +1444,10 @@ generate_bytecode_insns (exp, target, state)
 	generate_bytecode_insns (TREE_OPERAND (exp, 1), IGNORE_TARGET, state);
 	body_last = state->last_block;
 
+	switch_instruction = gen_jcf_label (state);
+	define_jcf_label (switch_instruction, state);
 	if (sw_state.default_label == NULL)
 	  sw_state.default_label = gen_jcf_label (state);
-	switch_instruction = get_jcf_label_here (state);
 
 	if (sw_state.num_cases <= 1)
 	  {
@@ -1711,6 +1715,7 @@ generate_bytecode_insns (exp, target, state)
       {
 	tree lhs = TREE_OPERAND (exp, 0);
 	tree rhs = TREE_OPERAND (exp, 1);
+	int offset = 0;
 
 	/* See if we can use the iinc instruction. */
 	if ((TREE_CODE (lhs) == VAR_DECL || TREE_CODE (lhs) == PARM_DECL)
@@ -1749,15 +1754,24 @@ generate_bytecode_insns (exp, target, state)
 	  }
 
 	if (TREE_CODE (lhs) == COMPONENT_REF)
-	  generate_bytecode_insns (TREE_OPERAND (lhs, 0), STACK_TARGET, state);
+	  {
+	    generate_bytecode_insns (TREE_OPERAND (lhs, 0),
+				     STACK_TARGET, state);
+	    offset = 1;
+	  }
 	else if (TREE_CODE (lhs) == ARRAY_REF)
 	  {
-	    generate_bytecode_insns (TREE_OPERAND(lhs, 0), STACK_TARGET, state);
-	    generate_bytecode_insns (TREE_OPERAND(lhs, 1), STACK_TARGET, state);
+	    generate_bytecode_insns (TREE_OPERAND(lhs, 0),
+				     STACK_TARGET, state);
+	    generate_bytecode_insns (TREE_OPERAND(lhs, 1),
+				     STACK_TARGET, state);
+	    offset = 2;
 	  }
+	else
+	  offset = 0;
 	generate_bytecode_insns (rhs, STACK_TARGET, state);
 	if (target != IGNORE_TARGET)
-	  emit_dup (TYPE_IS_WIDE (type) ? 2 : 1 , 1, state);
+	  emit_dup (TYPE_IS_WIDE (type) ? 2 : 1 , offset, state);
 	exp = lhs;
       }
       /* FALLTHOUGH */
@@ -1849,7 +1863,9 @@ generate_bytecode_insns (exp, target, state)
 	  RESERVE (2);
 	  if (is_long)
 	    OP1 (OPCODE_i2l);
+	  NOTE_PUSH (1 + is_long);
 	  OP1 (OPCODE_ixor + is_long);
+	  NOTE_POP (1 + is_long);
 	}
       break;
     case NEGATE_EXPR:
@@ -2005,12 +2021,14 @@ generate_bytecode_insns (exp, target, state)
     case NEW_CLASS_EXPR:
       {
 	tree class = TREE_TYPE (TREE_TYPE (exp));
+	int need_result = target != IGNORE_TARGET;
 	int index = find_class_constant (&state->cpool, class);
 	RESERVE (4);
 	OP1 (OPCODE_new);
 	OP2 (index);
-	OP1 (OPCODE_dup);
-	NOTE_PUSH (1);
+	if (need_result)
+	  OP1 (OPCODE_dup);
+	NOTE_PUSH (1 + need_result);
       }
       /* ... fall though ... */
     case CALL_EXPR:
@@ -2018,6 +2036,7 @@ generate_bytecode_insns (exp, target, state)
 	tree f = TREE_OPERAND (exp, 0);
 	tree x = TREE_OPERAND (exp, 1);
 	int save_SP = state->code_SP;
+	int nargs;
 	if (TREE_CODE (f) == ADDR_EXPR)
 	  f = TREE_OPERAND (f, 0);
 	if (f == soft_newarray_node)
@@ -2084,15 +2103,25 @@ generate_bytecode_insns (exp, target, state)
 	  {
 	    generate_bytecode_insns (TREE_VALUE (x), STACK_TARGET, state);
 	  }
+	nargs = state->code_SP - save_SP;
 	state->code_SP = save_SP;
+	if (TREE_CODE (exp) == NEW_CLASS_EXPR)
+	  NOTE_POP (1);  /* Pop implicit this. */
 	if (TREE_CODE (f) == FUNCTION_DECL && DECL_CONTEXT (f) != NULL_TREE)
 	  {
 	    int index = find_methodref_index (&state->cpool, f);
-	    RESERVE (3);
-	    if (DECL_CONSTRUCTOR_P (f))
+	    int interface = 0;
+	    RESERVE (5);
+	    if (DECL_CONSTRUCTOR_P (f) || CALL_USING_SUPER (exp)
+		|| METHOD_PRIVATE (f))
 	      OP1 (OPCODE_invokespecial);
 	    else if (METHOD_STATIC (f))
 	      OP1 (OPCODE_invokestatic);
+	    else if (CLASS_INTERFACE (TYPE_NAME (DECL_CONTEXT (f))))
+	      {
+		OP1 (OPCODE_invokeinterface);
+		interface = 1;
+	      }
 	    else
 	      OP1 (OPCODE_invokevirtual);
 	    OP2 (index);
@@ -2104,6 +2133,11 @@ generate_bytecode_insns (exp, target, state)
 		  emit_pop (size, state);
 		else
 		  NOTE_PUSH (size);
+	      }
+	    if (interface)
+	      {
+		OP1 (nargs);
+		OP1 (0);
 	      }
 	    break;
 	  }
@@ -2390,6 +2424,7 @@ generate_classfile (clas, state)
 
   for (part = TYPE_FIELDS (clas);  part;  part = TREE_CHAIN (part))
     {
+      int have_value;
       if (DECL_NAME (part) == NULL_TREE)
 	continue;
       ptr = append_chunk (NULL, 8, state);
@@ -2397,8 +2432,31 @@ generate_classfile (clas, state)
       i = find_utf8_constant (&state->cpool, DECL_NAME (part));  PUT2 (i);
       i = find_utf8_constant (&state->cpool, build_java_signature (TREE_TYPE (part)));
       PUT2(i);
-      PUT2 (0);  /* attributes_count */
-      /* FIXME - emit ConstantValue attribute when appropriate */
+      have_value = DECL_INITIAL (part) != NULL_TREE && FIELD_STATIC (part);
+      PUT2 (have_value);  /* attributes_count */
+      if (have_value)
+	{
+	  tree init = DECL_INITIAL (part);
+	  static tree ConstantValue_node = NULL_TREE;
+	  ptr = append_chunk (NULL, 8, state);
+	  if (ConstantValue_node == NULL_TREE)
+	    ConstantValue_node = get_identifier ("ConstantValue");
+	  i = find_utf8_constant (&state->cpool, ConstantValue_node);
+	  PUT2 (i);  /* attribute_name_index */
+	  PUT4 (2); /* attribute_length */
+	  if (TREE_CODE (init) == INTEGER_CST)
+	    {
+	      if (TYPE_PRECISION (TREE_TYPE (part)) <= 32)
+		i = find_constant1 (&state->cpool, CONSTANT_Integer,
+				    TREE_INT_CST_LOW (init) & 0xFFFFFFFF);
+	      else
+		i = find_constant_wide (TREE_INT_CST_LOW (init),
+					TREE_INT_CST_HIGH (init), state);
+	    }
+	  else
+	    fatal ("unimplemented ConstantValue");
+	  PUT2 (i);
+	}
       fields_count++;
     }
   ptr = fields_count_ptr;  PUT2 (fields_count);
