@@ -341,6 +341,9 @@ ada.all.cross:
 
 ada.start.encap: 
 ada.rest.encap:
+
+ada.tags: force
+	cd $(srcdir)/ada; etags *.c *.h *.ads *.adb
 
 # Generate documentation.
 #
