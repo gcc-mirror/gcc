@@ -355,8 +355,7 @@ static enum tree_code binop_lookup[19] =
     EQ_EXPR, NE_EXPR, GT_EXPR, GE_EXPR, LT_EXPR, LE_EXPR,
    };
 #define BINOP_LOOKUP(VALUE) 						\
-  binop_lookup [((VALUE) - PLUS_TK)%					\
-		(sizeof (binop_lookup) / sizeof (binop_lookup[0]))]
+  binop_lookup [((VALUE) - PLUS_TK) % ARRAY_SIZE (binop_lookup)]
 
 /* This is the end index for binary operators that can also be used
    in compound assignements. */
