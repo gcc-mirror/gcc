@@ -143,19 +143,11 @@ output_function_prologue (stream, size)
       /* Adding negative number is faster on the 68040.  */
       if (fsize + 4 < 0x8000)
 	{
-#ifdef MOTOROLA
-	  asm_fprintf (stream, "\tadd.w %0I%d,%Rsp\n", - (fsize + 4));
-#else
-	  asm_fprintf (stream, "\taddw %0I%d,%Rsp\n", - (fsize + 4));
-#endif
+	  asm_fprintf (stream, "\tadd%.w %0I%d,%Rsp\n", - (fsize + 4));
 	}
       else
 	{
-#ifdef MOTOROLA
-	  asm_fprintf (stream, "\tadd.l %0I%d,%Rsp\n", - (fsize + 4));
-#else
-	  asm_fprintf (stream, "\taddl %0I%d,%Rsp\n", - (fsize + 4));
-#endif
+	  asm_fprintf (stream, "\tadd%.l %0I%d,%Rsp\n", - (fsize + 4));
 	}
     }
 #ifdef SUPPORT_SUN_FPA
@@ -509,19 +501,11 @@ output_function_epilogue (stream, size)
     {
       if (fsize + 4 < 0x8000)
 	{
-#ifdef MOTOROLA
-	  asm_fprintf (stream, "\tadd.w %0I%d,%Rsp\n", fsize + 4);
-#else
-	  asm_fprintf (stream, "\taddw %0I%d,%Rsp\n", fsize + 4);
-#endif
+	  asm_fprintf (stream, "\tadd%.w %0I%d,%Rsp\n", fsize + 4);
 	}
       else
 	{
-#ifdef MOTOROLA
-	  asm_fprintf (stream, "\tadd.l %0I%d,%Rsp\n", fsize + 4);
-#else
-	  asm_fprintf (stream, "\taddl %0I%d,%Rsp\n", fsize + 4);
-#endif
+	  asm_fprintf (stream, "\tadd%.l %0I%d,%Rsp\n", fsize + 4);
 	}
     }
   if (current_function_pops_args)
@@ -1162,16 +1146,16 @@ compadr:
       if (addreg0)
 	{
 	  if (size == 12)
-	    output_asm_insn ("addql %#8,%0", &addreg0);
+	    output_asm_insn ("addq%.l %#8,%0", &addreg0);
 	  else
-	    output_asm_insn ("addql %#4,%0", &addreg0);
+	    output_asm_insn ("addq%.l %#4,%0", &addreg0);
 	}
       if (addreg1)
 	{
 	  if (size == 12)
-	    output_asm_insn ("addql %#8,%0", &addreg1);
+	    output_asm_insn ("addq%.l %#8,%0", &addreg1);
 	  else
-	    output_asm_insn ("addql %#4,%0", &addreg1);
+	    output_asm_insn ("addq%.l %#4,%0", &addreg1);
 	}
 
       /* Do that word.  */
@@ -1179,17 +1163,17 @@ compadr:
 
       /* Undo the adds we just did.  */
       if (addreg0)
-	output_asm_insn ("subql %#4,%0", &addreg0);
+	output_asm_insn ("subq%.l %#4,%0", &addreg0);
       if (addreg1)
-	output_asm_insn ("subql %#4,%0", &addreg1);
+	output_asm_insn ("subq%.l %#4,%0", &addreg1);
 
       if (size == 12)
 	{
 	  output_asm_insn (singlemove_string (middlehalf), middlehalf);
 	  if (addreg0)
-	    output_asm_insn ("subql %#4,%0", &addreg0);
+	    output_asm_insn ("subq%.l %#4,%0", &addreg0);
 	  if (addreg1)
-	    output_asm_insn ("subql %#4,%0", &addreg1);
+	    output_asm_insn ("subq%.l %#4,%0", &addreg1);
 	}
 
       /* Do low-numbered word.  */
@@ -1204,18 +1188,18 @@ compadr:
   if (size == 12)
     {
       if (addreg0)
-	output_asm_insn ("addql %#4,%0", &addreg0);
+	output_asm_insn ("addq%.l %#4,%0", &addreg0);
       if (addreg1)
-	output_asm_insn ("addql %#4,%0", &addreg1);
+	output_asm_insn ("addq%.l %#4,%0", &addreg1);
 
       output_asm_insn (singlemove_string (middlehalf), middlehalf);
     }
 
   /* Make any unoffsettable addresses point at high-numbered word.  */
   if (addreg0)
-    output_asm_insn ("addql %#4,%0", &addreg0);
+    output_asm_insn ("addq%.l %#4,%0", &addreg0);
   if (addreg1)
-    output_asm_insn ("addql %#4,%0", &addreg1);
+    output_asm_insn ("addq%.l %#4,%0", &addreg1);
 
   /* Do that word.  */
   output_asm_insn (singlemove_string (latehalf), latehalf);
@@ -1224,16 +1208,16 @@ compadr:
   if (addreg0)
     {
       if (size == 12)
-        output_asm_insn ("subql %#8,%0", &addreg0);
+        output_asm_insn ("subq%.l %#8,%0", &addreg0);
       else
-        output_asm_insn ("subql %#4,%0", &addreg0);
+        output_asm_insn ("subq%.l %#4,%0", &addreg0);
     }
   if (addreg1)
     {
       if (size == 12)
-        output_asm_insn ("subql %#8,%0", &addreg1);
+        output_asm_insn ("subq%.l %#8,%0", &addreg1);
       else
-        output_asm_insn ("subql %#4,%0", &addreg1);
+        output_asm_insn ("subq%.l %#4,%0", &addreg1);
     }
 
   return "";
