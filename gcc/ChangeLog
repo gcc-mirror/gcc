@@ -1,3 +1,36 @@
+2004-06-10  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* Makefile.in (df.o): Remove fibheap dependency.
+	* df.h: Do not include sbitmap.h.
+	(struct ref): New field "data".
+	(DF_REF_DATA): New accessor macro.
+	(struct df): Field "dom" removed.
+	(df_analyze_subcfg): New function.
+	(transfer_function_sbitmap, transfer_function_bitmap): Replaced by ...
+	(transfer_function): ... new type.
+	(iterative_dataflow_sbitmap, iterative_dataflow_bitmap): Replaced by ...
+	(iterative_dataflow): ... new function.
+	(enum set_representation, struct dataflow): New.
+	* df.c: Do not include fibheap.h.
+
+	(df_reg_def_chain_clean, df_reg_use_chain_clean,
+	(df_bb_table_realloc, df_analyse_subcfg, free_reg_ref_chain,
+	prune_to_subcfg, df_bb_modify): New functions.
+	(df_bitmaps_alloc, df_reg_def_chain_create, df_reg_use_chain_create,
+	df_refs_update, df_reg_table_realloc, df_ref_create,
+	df_bb_reg_def_chain_create, df_bb_reg_use_chain_create,
+	df_bb_rd_local_compute, df_bb_ru_local_compute, df_bb_lr_local_compute,
+	df_analyse_1, df_insn_modify): Support analysing only a part of the cfg.
+	
+	(dataflow_set_a_op_b, dataflow_set_copy): New functions.
+	(df_rd_transfer_function, df_ru_transfer_function,
+	df_lr_transfer_function): Type of bitmaps changed to void *.
+	(hybrid_search_bitmap, hybrid_search_sbitmap): Merge into ...
+	(hybrid_search): ... new function.
+	(iterative_dataflow_bitmap, iterative_dataflow_sbitmap): Merge into ...
+	(iterative_dataflow): ... new function. Avoid use of fibheaps for
+	a worklist.  Do not process basic blocks unnecessarily.
+
 2004-06-10  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (fold_abs_const): Make extern.

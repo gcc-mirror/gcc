@@ -24,7 +24,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define GCC_DF_H
 
 #include "bitmap.h"
-#include "sbitmap.h"
 #include "basic-block.h"
 
 #define DF_RD		1	/* Reaching definitions.  */
@@ -91,6 +90,7 @@ struct ref
   unsigned int id;		/* Ref index.  */
   enum df_ref_type type;	/* Type of ref.  */
   enum df_ref_flags flags;	/* Various flags.  */
+  void *data;			/* The data assigned to it by user.  */
 };
 
 
@@ -164,9 +164,6 @@ struct df
   bitmap insns_modified;	/* Insns that (may) have changed.  */
   bitmap bbs_modified;		/* Blocks that (may) have changed.  */
   bitmap all_blocks;		/* All blocks in CFG.  */
-  /* The sbitmap vector of dominators or NULL if not computed.
-     Ideally, this should be a pointer to a CFG object.  */
-  sbitmap *dom;
   int *dfs_order;		/* DFS order -> block number.  */
   int *rc_order;		/* Reverse completion order -> block number.  */
   int *rts_order;		/* Reverse top sort order -> block number.  */
@@ -203,6 +200,7 @@ struct df_map
 #define DF_REF_CHAIN(REF) ((REF)->chain)
 #define DF_REF_ID(REF) ((REF)->id)
 #define DF_REF_FLAGS(REF) ((REF)->flags)
+#define DF_REF_DATA(REF) ((REF)->data)
 
 /* Macros to determine the reference type.  */
 
@@ -241,6 +239,7 @@ struct df_map
 extern struct df *df_init (void);
 
 extern int df_analyze (struct df *, bitmap, int);
+extern void df_analyze_subcfg (struct df *, bitmap, int);
 
 extern void df_finish (struct df *);
 
@@ -308,7 +307,6 @@ extern struct ref *df_find_def (struct df *, rtx, rtx);
 
 extern int df_reg_used (struct df *, rtx, rtx);
 
-
 /* Functions for debugging from GDB.  */
 
 extern void debug_df_insn (rtx);
@@ -346,24 +344,39 @@ enum df_flow_dir
   };
 
 
-typedef void (*transfer_function_sbitmap) (int, int *, sbitmap, sbitmap,
-					   sbitmap, sbitmap, void *);
+typedef void (*transfer_function) (int, int *, void *, void *,
+				   void *, void *, void *);
 
-typedef void (*transfer_function_bitmap) (int, int *, bitmap, bitmap,
-					  bitmap, bitmap, void *);
+/* The description of a dataflow problem to solve.  */
 
-extern void iterative_dataflow_sbitmap (sbitmap *, sbitmap *, sbitmap *,
-					sbitmap *, bitmap, enum df_flow_dir,
-					enum df_confluence_op,
-					transfer_function_sbitmap,
-					int *, void *);
+enum set_representation
+{
+  SR_SBITMAP,		/* Represent sets by bitmaps.  */
+  SR_BITMAP		/* Represent sets by sbitmaps.  */
+};
 
-extern void iterative_dataflow_bitmap (bitmap *, bitmap *, bitmap *,
-				       bitmap *, bitmap,
-				       enum df_flow_dir,
-				       enum df_confluence_op,
-				       transfer_function_bitmap,
-				       int *, void *);
+struct dataflow
+{
+  enum set_representation repr;		/* The way the sets are represented.  */
+
+  /* The following arrays are indexed by block indices, so they must always
+     be large enough even if we restrict ourselves just to a subset of cfg.  */
+  void **gen, **kill;			/* Gen and kill sets.  */
+  void **in, **out;			/* Results.  */
+
+  enum df_flow_dir dir;			/* Dataflow direction.  */
+  enum df_confluence_op conf_op;	/* Confluence operator.  */ 
+  unsigned n_blocks;			/* Number of basic blocks in the
+					   order.  */
+  int *order;				/* The list of basic blocks to work
+					   with, in the order they should
+					   be processed in.  */
+  transfer_function transfun;		/* The transfer function.  */
+  void *data;				/* Data used by the transfer
+					   function.  */
+};
+
+extern void iterative_dataflow (struct dataflow *);
 extern bool read_modify_subreg_p (rtx);
 
 #endif /* GCC_DF_H */
