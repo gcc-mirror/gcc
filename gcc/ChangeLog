@@ -1,3 +1,15 @@
+2005-03-23  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* c-common.h (default_conversion): Remove.
+	(perform_integral_promotions): Add.
+	* c-tree.h (default_conversion): Add.
+	* c-typeck.c (perform_integral_promotions): New, split out from
+	default_conversion.
+	* c-common.c (check_case_value): Use perform_integral_promotions,
+	not default_conversion.
+	(c_add_case_label): Don't continue processing case label after
+	found to be pointer.
+
 2005-03-23  Mark Mitchell  <mark@codesourcery.com>
 
 	* gcc.c (do_spec_1): Do not add a -L path for a directory in

@@ -1352,6 +1352,55 @@ default_function_array_conversion (tree exp)
   return exp;
 }
 
+
+/* EXP is an expression of integer type.  Apply the integer promotions
+   to it and return the promoted value.  */
+
+tree
+perform_integral_promotions (tree exp)
+{
+  tree type = TREE_TYPE (exp);
+  enum tree_code code = TREE_CODE (type);
+
+  gcc_assert (INTEGRAL_TYPE_P (type));
+
+  /* Normally convert enums to int,
+     but convert wide enums to something wider.  */
+  if (code == ENUMERAL_TYPE)
+    {
+      type = c_common_type_for_size (MAX (TYPE_PRECISION (type),
+					  TYPE_PRECISION (integer_type_node)),
+				     ((TYPE_PRECISION (type)
+				       >= TYPE_PRECISION (integer_type_node))
+				      && TYPE_UNSIGNED (type)));
+
+      return convert (type, exp);
+    }
+
+  /* ??? This should no longer be needed now bit-fields have their
+     proper types.  */
+  if (TREE_CODE (exp) == COMPONENT_REF
+      && DECL_C_BIT_FIELD (TREE_OPERAND (exp, 1))
+      /* If it's thinner than an int, promote it like a
+	 c_promoting_integer_type_p, otherwise leave it alone.  */
+      && 0 > compare_tree_int (DECL_SIZE (TREE_OPERAND (exp, 1)),
+			       TYPE_PRECISION (integer_type_node)))
+    return convert (integer_type_node, exp);
+
+  if (c_promoting_integer_type_p (type))
+    {
+      /* Preserve unsignedness if not really getting any wider.  */
+      if (TYPE_UNSIGNED (type)
+	  && TYPE_PRECISION (type) == TYPE_PRECISION (integer_type_node))
+	return convert (unsigned_type_node, exp);
+
+      return convert (integer_type_node, exp);
+    }
+
+  return exp;
+}
+
+
 /* Perform default promotions for C data used in expressions.
    Arrays and functions are converted to pointers;
    enumeral types or short or char, to int.
@@ -1387,36 +1436,8 @@ default_conversion (tree exp)
   if (TREE_NO_WARNING (orig_exp))
     TREE_NO_WARNING (exp) = 1;
 
-  /* Normally convert enums to int,
-     but convert wide enums to something wider.  */
-  if (code == ENUMERAL_TYPE)
-    {
-      type = c_common_type_for_size (MAX (TYPE_PRECISION (type),
-					  TYPE_PRECISION (integer_type_node)),
-				     ((TYPE_PRECISION (type)
-				       >= TYPE_PRECISION (integer_type_node))
-				      && TYPE_UNSIGNED (type)));
-
-      return convert (type, exp);
-    }
-
-  if (TREE_CODE (exp) == COMPONENT_REF
-      && DECL_C_BIT_FIELD (TREE_OPERAND (exp, 1))
-      /* If it's thinner than an int, promote it like a
-	 c_promoting_integer_type_p, otherwise leave it alone.  */
-      && 0 > compare_tree_int (DECL_SIZE (TREE_OPERAND (exp, 1)),
-			       TYPE_PRECISION (integer_type_node)))
-    return convert (integer_type_node, exp);
-
-  if (c_promoting_integer_type_p (type))
-    {
-      /* Preserve unsignedness if not really getting any wider.  */
-      if (TYPE_UNSIGNED (type)
-	  && TYPE_PRECISION (type) == TYPE_PRECISION (integer_type_node))
-	return convert (unsigned_type_node, exp);
-
-      return convert (integer_type_node, exp);
-    }
+  if (INTEGRAL_TYPE_P (type))
+    return perform_integral_promotions (exp);
 
   if (code == VOID_TYPE)
     {

@@ -1427,15 +1427,14 @@ check_case_value (tree value)
       value = fold (value);
     }
 
-  if (TREE_CODE (value) != INTEGER_CST
-      && value != error_mark_node)
+  if (TREE_CODE (value) == INTEGER_CST)
+    /* Promote char or short to int.  */
+    value = perform_integral_promotions (value);
+  else if (value != error_mark_node)
     {
       error ("case label does not reduce to an integer constant");
       value = error_mark_node;
     }
-  else
-    /* Promote char or short to int.  */
-    value = default_conversion (value);
 
   constant_expression_warning (value);
 
@@ -3514,7 +3513,10 @@ c_add_case_label (splay_tree cases, tree cond, tree orig_type,
        && POINTER_TYPE_P (TREE_TYPE (low_value)))
       || (high_value && TREE_TYPE (high_value)
 	  && POINTER_TYPE_P (TREE_TYPE (high_value))))
-    error ("pointers are not permitted as case values");
+    {
+      error ("pointers are not permitted as case values");
+      goto error_out;
+    }
 
   /* Case ranges are a GNU extension.  */
   if (high_value && pedantic)
