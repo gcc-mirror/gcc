@@ -793,10 +793,6 @@ h8300_pr_saveall (pfile)
   pragma_saveall = 1;
 }
 
-/* If the next arg with MODE and TYPE is to be passed in a register, return
-   the rtx to represent where it is passed.  CUM represents the state after
-   the last argument.  NAMED is not used.  */
-
 static const char *const hand_list[] =
 {
   "__main",
@@ -817,8 +813,10 @@ static const char *const hand_list[] =
   0,
 };
 
-/* Return an RTX to represent where a value with mode MODE will be returned
-   from a function.  If the result is 0, the argument is pushed.  */
+/* If the next function argument with MODE and TYPE is to be passed in
+   a register, return a reg RTX for the hard register in which to pass
+   the argument.  CUM represents the state after the last argument.
+   If the argument is to be pushed, NULL_RTX is returned.  */
 
 rtx
 function_arg (cum, mode, type, named)
