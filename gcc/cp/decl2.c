@@ -2977,10 +2977,17 @@ start_objects (method_type, initp)
 
   if (flag_init_priority)
     {
+      char joiner;
+
+#ifdef JOINER
+      joiner = JOINER;
+#else
+      joiner = '_';
+#endif
       if (initp == 0)
 	initp = DEFAULT_INIT_PRIORITY;
 
-      sprintf (type, "%c%c%.5u", method_type, JOINER, initp);
+      sprintf (type, "%c%c%.5u", method_type, joiner, initp);
     }
   else
     sprintf (type, "%c", method_type);
