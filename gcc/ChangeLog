@@ -1,3 +1,8 @@
+2001-11-15  Richard Hodson  <hodsonr@dionecorp.com>
+
+	* config/h8300/h8300.c (dosize): Avoid corrupting R3 in interrupt
+	routines.
+
 2001-11-14  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* Makefile.in (POD2MAN): Don't include --section=1.

@@ -167,6 +167,7 @@ dosize (file, op, size)
      subs since this shouldn't happen often.  */
   if ((TARGET_H8300 && size <= 4)
       || ((TARGET_H8300H || TARGET_H8300S) && size <= 8)
+      || (TARGET_H8300 && interrupt_handler)
       || (TARGET_H8300 && current_function_needs_context
 	  && ! strcmp (op, "sub")))
     {
