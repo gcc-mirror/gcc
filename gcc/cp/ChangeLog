@@ -1,3 +1,9 @@
+2004-03-10  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/14510
+	* decl.c (xref_tag): Disregard non-type declarations when
+	looking up a tagged type. 
+
 2004-03-10  Jason Merrill  <jason@redhat.com>
 
 	PR c++/14452

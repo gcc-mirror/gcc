@@ -1,3 +1,8 @@
+2004-03-10  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/14510
+	* g++.dg/lookup/struct2.C: New test.
+
 2004-03-09  Nathan Sidwell  <nathan@garibaldi.home>
 
 	PR c++/14397
