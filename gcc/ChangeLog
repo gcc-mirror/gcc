@@ -1,3 +1,10 @@
+2004-06-14  Eric Christopher  <echristo@redhat.com>
+
+	* config/s390/s390.h (TARGET_SWITCHES): Change -mtpf (-mno-tpf)
+	to -mtpf-trace (-mno-tpf-trace).
+	* doc/invoke.texi (S/390 and zSeries Options): Add tpf option
+	documentation.
+
 2004-06-14  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* real.c: Fix bit count in head comment.

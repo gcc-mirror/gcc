@@ -135,8 +135,8 @@ extern int target_flags;
   { "esa",           -32, N_("ESA/390 architecture")},                   \
   { "mvcle",          64, N_("mvcle use")},                              \
   { "no-mvcle",      -64, N_("mvc&ex")},                                 \
-  { "tpf",           128, N_("enable tpf OS code")},                     \
-  { "no-tpf",       -128, N_("disable tpf OS code")},                    \
+  { "tpf-trace",     128, N_("enable tpf OS tracing code")},             \
+  { "no-tpf-trace", -128, N_("disable tpf OS tracing code")},            \
   { "no-fused-madd", 256, N_("disable fused multiply/add instructions")},\
   { "fused-madd",   -256, N_("enable fused multiply/add instructions")}, \
   { "", TARGET_DEFAULT, 0 } }
