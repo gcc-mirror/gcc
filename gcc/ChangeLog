@@ -1,3 +1,8 @@
+2004-06-24  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* tree.h (debug_find_tree): Add declaration.
+	* tree-inline.c (debug_find_tree): Remove extern declaration.
+
 2004-06-24  Eric Christopher  <echristo@redhat.com>
 
 	* config/rs6000/rs6000.md: Apply change mistakenly
