@@ -9241,7 +9241,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 
     case BUILT_IN_SETJMP:
       if (arglist == 0
-	  || ! PPOINTER_TYPE_P (TREE_TYPE (TREE_VALUE (arglist))))
+	  || ! POINTER_TYPE_P (TREE_TYPE (TREE_VALUE (arglist))))
 	break;
 
       {
