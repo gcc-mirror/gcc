@@ -776,6 +776,9 @@ consider_available (reg_use, avail_reg, avail_regs, rc, du, inum)
   if (!TEST_HARD_REG_BIT (*avail_regs, avail_reg))
     return 0;
 
+  if (fixed_regs[avail_reg])
+    return 0;
+
 #ifdef HARD_REGNO_RENAME_OK
   if (!HARD_REGNO_RENAME_OK (REGNO (reg_use), avail_reg))
     return 0;
@@ -810,9 +813,7 @@ consider_available (reg_use, avail_reg, avail_regs, rc, du, inum)
   /* If register is a callee-saved register it must be saved in the frame. 
      call saved registers can not be added to regs_ever_live after reload,
      as it would invalidate most elimination offsets */
-  if (regs_ever_live[avail_reg] || call_used_regs[avail_reg]
-      || (avail_reg == PIC_OFFSET_TABLE_REGNUM
-	  && flag_pic && (current_function_uses_pic_offset_table)))
+  if (regs_ever_live[avail_reg] || call_used_regs[avail_reg])
     return 1;
 
   return 0;
