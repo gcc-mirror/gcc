@@ -1500,6 +1500,7 @@ ia64_expand_call (rtx retval, rtx addr, rtx nextarg ATTRIBUTE_UNUSED,
   rtx insn, b0;
 
   addr = XEXP (addr, 0);
+  addr = convert_memory_address (DImode, addr);
   b0 = gen_rtx_REG (DImode, R_BR (0));
 
   /* ??? Should do this for functions known to bind local too.  */
