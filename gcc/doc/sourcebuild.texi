@@ -168,8 +168,8 @@ The GCC test suites (except for those for runtime libraries).
 
 The @file{gcc} directory is configured with an Autoconf-generated
 script @file{configure}.  The @file{configure} script is generated
-from @file{configure.in} and @file{aclocal.m4}.  From the files
-@file{configure.in} and @file{acconfig.h}, Autoheader generates the
+from @file{configure.ac} and @file{aclocal.m4}.  From the files
+@file{configure.ac} and @file{acconfig.h}, Autoheader generates the
 file @file{config.in}.  The file @file{cstamp-h.in} is used as a
 timestamp.
 
@@ -663,7 +663,7 @@ that should not be configured if this front end is not built.
 If defined to @samp{no}, this language front end is not built unless
 enabled in a @option{--enable-languages} argument.  Otherwise, front
 ends are built by default, subject to any special logic in
-@file{configure.in} (as is present to disable the Ada front end if the
+@file{configure.ac} (as is present to disable the Ada front end if the
 Ada compiler is not already installed).
 @item boot_language
 If defined to @samp{yes}, this front end is built in stage 1 of the
