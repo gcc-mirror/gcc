@@ -528,7 +528,7 @@ EXTRA_OBJS = @extra_objs@
 
 # List of extra object files that should be compiled and linked with
 # the gcc driver.
-EXTRA_GCC_OBJS =@host_extra_gcc_objs@
+EXTRA_GCC_OBJS =@extra_gcc_objs@
 
 # List of additional header files to install.
 EXTRA_HEADERS =@extra_headers_list@

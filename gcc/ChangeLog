@@ -1,3 +1,12 @@
+2004-02-25  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* config.gcc: Add comment describing extra_gcc_objs.
+	i[34567]86-*-cygwin*): Replace host_extra_gcc_objs with extra_gcc_objs.
+	* configure.ac (extra_gcc_objs): New substitution variable.
+	(host_extra_gcc_objs): Don't substitute.
+	* configure: Regenerate.
+	* Makefile.in: Use extra_gcc_objs.
+
 2004-02-25  Eric Botcazou  <ebotcazou@act-europe.fr>
 
 	* fold-const.c (fold): Treat MAX_EXPR and MIN_EXPR like

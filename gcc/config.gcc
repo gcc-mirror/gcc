@@ -84,6 +84,9 @@
 #			the compiler proper (cc1, cc1obj, cc1plus)
 #			depending on target.
 #
+#  extra_gcc_objs	List of extra objects that should be linked into
+#			the compiler driver (gcc) depending on target.
+#
 #  extra_headers	List of used header files from the directory
 #			config/${cpu_type}.
 #
@@ -1145,7 +1148,7 @@ i[34567]86-*-pe | i[34567]86-*-cygwin*)
 	extra_objs=winnt.o
 	c_target_objs=cygwin2.o
 	cxx_target_objs=cygwin2.o
-	host_extra_gcc_objs=cygwin1.o
+	extra_gcc_objs=cygwin1.o
 	if test x$enable_threads = xyes; then
 		thread_file='posix'
 	fi
