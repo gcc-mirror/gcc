@@ -670,26 +670,26 @@ alter_test_for_insn (struct queue_elem *ce_elem,
   return concat ("(", ce_test, ") && (", insn_test, ")", NULL);
 }
 
-/* Adjust all of the operand numbers in OLD to match the shift they'll
+/* Adjust all of the operand numbers in SRC to match the shift they'll
    get from an operand displacement of DISP.  Return a pointer after the
    adjusted string.  */
 
 static char *
-shift_output_template (char *dest, const char *old, int disp)
+shift_output_template (char *dest, const char *src, int disp)
 {
-  while (*old)
+  while (*src)
     {
-      char c = *old++;
+      char c = *src++;
       *dest++ = c;
       if (c == '%')
 	{
-	  c = *old++;
+	  c = *src++;
 	  if (ISDIGIT ((unsigned char) c))
 	    c += disp;
 	  else if (ISALPHA (c))
 	    {
 	      *dest++ = c;
-	      c = *old++ + disp;
+	      c = *src++ + disp;
 	    }
 	  *dest++ = c;
 	}
