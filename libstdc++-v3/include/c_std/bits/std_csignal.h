@@ -1,4 +1,4 @@
-// -*- C++ -*- header wrapper.
+// -*- C++ -*- forwarding header.
 
 // Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 //
@@ -31,37 +31,19 @@
 // ISO C++ 14882: 20.4.6  C library
 //
 
+// Note: This is not a conforming implementation.
+
 #ifndef _CPP_CSIGNAL
 #define _CPP_CSIGNAL 1
 
-namespace _C_legacy {
-  extern "C" {
-#     define _IN_C_LEGACY_
-    // XXX
-#     undef __need_sig_atomic_t
-#     undef __need_sigset_t
+#pragma GCC system_header
+#include <signal.h>
 
-#     pragma GCC system_header
-#     include_next <signal.h>
-  }
-} // namespace _C_legacy
-
-#  undef sig_atomic_t
-#  undef raise
-#  undef signal
-
-namespace std {
-  // Adopt C names into std::
-  using _C_legacy::sig_atomic_t;
-  using _C_legacy::raise;
-  using _C_legacy::signal;
-} // namespace std
-  
-# undef _IN_C_LEGACY_
+namespace std
+{
+  using ::sig_atomic_t;
+  extern "C" void (*signal(int, void (*__func)(int)))(int); 
+  extern "C" int raise(int);
+}
 
 #endif
-
-
-
-
-

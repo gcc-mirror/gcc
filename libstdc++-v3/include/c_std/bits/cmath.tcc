@@ -1,6 +1,6 @@
-// -*- C++ -*- forwarding header.
+// -*- C++ -*- C math library.
 
-// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
+// Copyright (C) 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,21 +27,27 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-//
-// ISO C++ 14882: 18.2.2  Implementation properties: C library
-//
+// This file was written by Gabriel Dos Reis <gdr@codesourcery.com>
 
-// Note: This is not a conforming implementation.
+#ifndef _CPP_BITS_CMATH_TCC
+#define _CPP_BITS_CMATH_TCC 1
 
-#ifndef _CPP_CLIMITS
-#define _CPP_CLIMITS	1
+namespace std {
+  export template<typename _Tp>
+    _Tp
+    __cmath_power(_Tp __x, unsigned int __n)
+    {
+      _Tp __y = __n % 2 ? __x : 1;
 
-#pragma GCC system_header
-#include <limits.h>
+      while (__n >>= 1)
+        {
+          __x = __x * __x;
+          if (__n % 2)
+            __y = __y * __x;
+        }
+
+      return __y;
+    }
+}
 
 #endif
-
-
-
-
-

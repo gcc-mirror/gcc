@@ -1,4 +1,4 @@
-// -*- C++ -*- header wrapper.
+// -*- C++ -*- forwarding header.
 
 // Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 //
@@ -31,33 +31,18 @@
 // ISO C++ 14882: 20.4.6  C library
 //
 
+// Note: This is not a conforming implementation.
+
 #ifndef _CPP_CSETJMP
 #define _CPP_CSETJMP 1
 
-namespace _C_legacy {
-  extern "C" {
-#     define _IN_C_LEGACY_
-#     pragma GCC system_header
-#     include_next <setjmp.h>
-  }
-  inline int 
-  _CPP_setjmp_capture(jmp_buf __jb) { return setjmp(__jb); }
-} // namespace _C_legacy
+#pragma GCC system_header
+#include <setjmp.h>
 
-#  undef jmp_buf
-#  undef setjmp
-#  define setjmp(__jb) _C_legacy::_CPP_setjmp_capture(__jb)
-#  undef longjmp
-
-namespace std {
-  // Adopt C names into std::
-  using _C_legacy::jmp_buf;
-  using _C_legacy::longjmp;
-} // namespace std
-  
-# undef _IN_C_LEGACY_
+namespace std
+{
+  using ::jmp_buf;
+  extern "C" void longjmp(jmp_buf, int);
+}
 
 #endif
-
-
-

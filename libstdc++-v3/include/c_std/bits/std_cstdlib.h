@@ -1,4 +1,4 @@
-// -*- C++ -*- header wrapper
+// -*- C++ -*- forwarding header.
 
 // Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 //
@@ -31,79 +31,24 @@
 // ISO C++ 14882: 20.4.6  C library
 //
 
-// Function decls in this header are overloaded on the 
-// extern "C"-ness of arguments.  This is a rich ground
-// for compiler bugs.
+// Note: This is not a conforming implementation.
 
 #ifndef _CPP_CSTDLIB
 #define _CPP_CSTDLIB 1
 
-# include <bits/c++config.h>
-# include <bits/std_cstddef.h>  
+#include <bits/c++config.h>
 
-namespace _C_legacy {
-  extern "C" {
-#     define _IN_C_LEGACY_
-#     pragma GCC system_header
-#     include_next <stdlib.h>
-      typedef int (*_C_cmp_fun_ptr)(const void*, const void*);  // C fn ptr
-    }
+#pragma GCC system_header
+#include <stdlib.h>
 
-  typedef div_t   _CPP_div_t_capture;
-  typedef ldiv_t  _CPP_ldiv_t_capture;
-
-# if _GLIBCPP_HAVE_LLDIV_T
-  typedef lldiv_t  _CPP_lldiv_t_capture;
-# endif
-} // namespace _C_legacy
-
-#  undef wchar_t
-#  undef div_t
-#  undef ldiv_t
-
-#  undef atof
-#  undef atoi
-#  undef atol
-#  undef strtod
-#  undef strtol
-#  undef strtoul
-#ifdef _GLIBCPP_HAVE_STRTOLD
-#  undef strtold
-#endif
-#  undef rand
-#  undef srand
-#  undef calloc
-#  undef free
-#  undef malloc
-#  undef realloc
-#  undef abort
-#  undef atexit
-#  undef exit
-#  undef getenv
-#  undef system
-#  undef bsearch
-#  undef qsort
-#  undef abs
-#  undef div
-#  undef labs
-#  undef ldiv
-#ifdef _GLIBCPP_USE_LONG_LONG
-#  undef llabs
-#  undef lldiv
-#endif
-#  undef mblen
-#  undef mbtowc
-#  undef wctomb
-#  undef mbstowcs
-#  undef wcstombs
-
-namespace std {
-  struct div_t : _C_legacy::_CPP_div_t_capture { };
-  struct ldiv_t : _C_legacy::_CPP_ldiv_t_capture { };
+namespace std 
+{
+  using ::div_t;
+  using ::ldiv_t;
 
 #ifdef _GLIBCPP_USE_LONG_LONG
 # ifdef _GLIBCPP_HAVE_LLDIV_T
-  struct lldiv_t : _C_legacy::_CPP_lldiv_t_captur { };
+  using ::lldiv_t;
 # else
   struct lldiv_t
   {
@@ -111,87 +56,71 @@ namespace std {
     long long rem;
   };
 # endif
-#endif
+#endif 
 
-  using _C_legacy::atof;
-  using _C_legacy::atoi;
-  using _C_legacy::atol;
-  using _C_legacy::strtod;
-  using _C_legacy::strtol;
-  using _C_legacy::strtoul;
-  using _C_legacy::rand;
-  using _C_legacy::srand;
-  using _C_legacy::calloc;
-  using _C_legacy::free;
-  using _C_legacy::malloc;
-  using _C_legacy::realloc;
-
-  //  using _C_legacy::abort;
-  using _C_legacy::atexit;
-  //  using _C_legacy::exit;
-  using _C_legacy::bsearch;
-  using _C_legacy::qsort; 
-
-  using _C_legacy::getenv;
-  using _C_legacy::system;
-  using _C_legacy::mbtowc;
-  using _C_legacy::wctomb;
-  using _C_legacy::mbstowcs;
-  using _C_legacy::wcstombs;
-
-  using _C_legacy::strtof;
-
-#ifdef _GLIBCPP_USE_LONG_LONG
-  using _C_legacy::strtoll;
-  using _C_legacy::strtoull;
-#endif
-
-#ifdef _GLIBCPP_HAVE_STRTOLD
-  using _C_legacy::strtold;
-#endif
-
-  using _C_legacy::mblen;
-
-  inline int 
-  abs(int __x) { return __x >= 0 ? __x : -__x; }
-
-  inline div_t 
-  div(int __n, int __d)
-  { div_t __q; __q.quot = __n / __d; __q.rem = __n % __d; return __q; }
-
-  inline long 
-  labs(long __x) { return __x >= 0 ? __x : -__x; }
-
-  inline long 
-  abs(long __x) { return __x >= 0 ? __x : -__x; }
-
-  inline ldiv_t 
-  ldiv(long __n, long __d)
-  { ldiv_t __q; __q.quot = __n / __d; __q.rem = __n % __d; return __q; }
-
-  inline ldiv_t 
-  div(long __n, long __d)
-  { ldiv_t __q; __q.quot = __n / __d; __q.rem = __n % __d; return __q; }
+  extern "C" double atof(const char*); 
+  extern "C" int atoi(const char*); 
+  extern "C" long int atol(const char*); 
+  extern "C" double strtod(const char*, char**); 
+  extern "C" float strtof(const char*, char**); 
+  extern "C" long int strtol(const char*, char**, int); 
+  extern "C" unsigned long int strtoul(const char*, char**, int);
+  extern "C" int rand(void); 
+  extern "C" void srand(unsigned int); 
+  extern "C" void* calloc(size_t, size_t); 
+  extern "C" void free(void*); 
+  extern "C" void* malloc(size_t); 
+  extern "C" void* realloc(void*, size_t); 
+  extern "C" void abort(void); 
+  extern "C" int atexit(void (*func)(void)); 
+  extern "C" void exit(int); 
+  extern "C" void _Exit(int); 
+  extern "C" char*getenv(const char*); 
+  extern "C" int system(const char*); 
+  extern "C" void* bsearch(const void*, const void*, size_t, size_t, 
+			   int (*comp)(const void *, const void *)); 
+  extern "C" void qsort(void*, size_t, size_t, 
+			int (*comp)(const void *, const void *)); 
+  extern "C" int abs(int); 
+  extern "C" long int labs(long int); 
+  extern "C" div_t div(int, int); 
+  extern "C" ldiv_t ldiv(long int, long int); 
+  extern "C" int mblen(const char*, size_t); 
+  extern "C" int mbtowc(wchar_t*, const char*, size_t); 
+  extern "C" int wctomb(char*, wchar_t); 
+  extern "C" size_t mbstowcs(wchar_t*, const char*, size_t); 
+  extern "C" size_t wcstombs(char*, const wchar_t*, size_t);
 
 #ifdef _GLIBCPP_USE_LONG_LONG
+  inline long long 
+  abs(long long __x) { return __x >= 0 ? __x : -__x; }
+
   inline long long 
   llabs(long long __x) { return __x >= 0 ? __x : -__x; }
 
-  inline long long 
-  abs(long long __x) { return __x >= 0 ? __x : -__x; }
+  inline lldiv_t 
+  div(long long __n, long long __d)
+  { lldiv_t __q; __q.quot = __n / __d; __q.rem = __n % __d; return __q; }
 
   inline lldiv_t 
   lldiv(long long __n, long long __d)
   { lldiv_t __q; __q.quot = __n / __d; __q.rem = __n % __d; return __q; }
 
-  inline lldiv_t 
-  div(long long __n, long long __d)
-  { lldiv_t __q; __q.quot = __n / __d; __q.rem = __n % __d; return __q; }
+  extern "C" long long int atoll(const char*); 
+  extern "C" long long int strtoll(const char*, char**, int); 
+  extern "C" unsigned long long int strtoull(const char*, char**, int); 
 #endif
-} // namespace std
-  
-# undef _IN_C_LEGACY_
 
+#ifdef _GLIBCPP_HAVE_STRTOLD
+  extern "C" long double strtold(const char*, char**); 
 #endif
+}
+
+#endif 
+
+
+
+
+
 
 

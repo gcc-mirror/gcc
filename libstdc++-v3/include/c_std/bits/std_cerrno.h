@@ -1,6 +1,6 @@
-// -*- C++ -*- header wrapper.
+// The -*- C++ -*- error number header.
 
-// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
+// Copyright (C) 1997-1999 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,22 +27,25 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
+//
 // ISO C++ 14882: 19.3  Error numbers
 //
+
+// Note: This is not a conforming implementation.
 
 #ifndef _CPP_CERRNO
 #define _CPP_CERRNO 1
 
-//namespace _C_legacy {
-  extern "C" {
-//#     define _IN_C_LEGACY_
-#     pragma GCC system_header
-#     include_next <errno.h>
-  }
-//} // namespace _C_legacy::
+#pragma GCC system_header
+#include <errno.h>
 
-//# undef _IN_C_LEGACY_
+namespace std 
+{
+  extern "C" int errno;
+}
 
 #endif
+
+
 
 

@@ -1,6 +1,6 @@
-// -*- C++ -*- header wrapper.
+// -*- C++ -*- C math library.
 
-// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,803 +31,562 @@
 // ISO C++ 14882: 26.5  C library
 //
 
+// Note: This is not a conforming implementation.
+
 #ifndef _CPP_CMATH
 #define _CPP_CMATH 1
 
-# include <bits/c++config.h>
+#include <bits/c++config.h>
+#include <bits/std_cstdlib.h>
+ 
+#pragma GCC system_header
+#include <math.h>
 
-namespace _C_legacy {
-  extern "C" {
-#     define _IN_C_LEGACY_
-#     pragma GCC system_header
-#     include_next <math.h>
-  }
+namespace std 
+{
+  // Forward declaration of a helper function.  This really should be
+  // an `exported' forward declaration.
+  template<typename _Tp> _Tp __cmath_power(_Tp, unsigned int);
+
+  template<typename _Tp>
+  inline _Tp
+    __cmath_abs(_Tp __x)
+    {
+      return __x < _Tp() ? -__x : __x;
+    }
+
+  inline long 
+  abs(long __i) { return ::labs(__i); }
+
+  inline ldiv_t
+  div(long __i, long __j) { return ::ldiv(__i, __j); }
+
+#if _GLIBCPP_HAVE___BUILTIN_FABSF
+  inline float 
+  abs(float __x) { return __builtin_fabsf(__x); }
+#elif _GLIBCPP_HAVE_FABSF
+  inline float 
+  abs(float __x) { return ::fabsf(__x); }
+#else
+  inline float 
+  abs(float __x) { return __cmath_abs(__x); }
+#endif
 
 #if _GLIBCPP_HAVE_ACOSF
   inline float 
-  _CPP_acos_capture(float __x) { return acosf(__x); }
+  acos(float __x) { return ::acosf(__x); }
 #else
   inline float 
-  _CPP_acos_capture(float __x) { return acos(static_cast<double>(__x)); }
+  acos(float __x) { return ::acos(static_cast<double>(__x)); }
 #endif
 
 #if _GLIBCPP_HAVE_ASINF
   inline float 
-  _CPP_asin_capture(float __x) { return asinf(__x); }
+  asin(float __x) { return ::asinf(__x); }
 #else
   inline float 
-  _CPP_asin_capture(float __x) { return asin(static_cast<double>(__x)); }
+  asin(float __x) { return ::asin(static_cast<double>(__x)); }
 #endif
 
 #if _GLIBCPP_HAVE_ATANF
   inline float 
-  _CPP_atan_capture(float __x) { return atanf(__x); }
+  atan(float __x) { return ::atanf(__x); }
 #else
   inline float 
-  _CPP_atan_capture(float __x) { return atan(static_cast<double>(__x)); }
+  atan(float __x) { return ::atan(static_cast<double>(__x)); }
 #endif
 
 #if _GLIBCPP_HAVE_ATAN2F
   inline float 
-  _CPP_atan2_capture(float __y, float __x) { return atan2f(__y, __x); }
+  atan2(float __y, float __x) { return ::atan2f(__y, __x); }
 #else
   inline float 
-  _CPP_atan2_capture(float __y, float __x) 
-  { return atan2(static_cast<double>(__y), static_cast<double>(__x)); }
+  atan2(float __y, float __x)
+  { return ::atan2(static_cast<double>(__y), static_cast<double>(__x)); }
 #endif
 
 #if _GLIBCPP_HAVE_CEILF
   inline float 
-  _CPP_ceil_capture(float __x) { return ceilf(__x); }
+  ceil(float __x) { return ::ceilf(__x); }
 #else
   inline float 
-  _CPP_ceil_capture(float __x) { return ceil(static_cast<double>(__x)); }
+  ceil(float __x) { return ::ceil(static_cast<double>(__x)); }
 #endif
 
 #if _GLIBCPP_HAVE___BUILTIN_COSF
   inline float 
-  _CPP_cos_capture(float __x) { return __builtin_cosf(__x); }
+  cos(float __x) { return __builtin_cosf(__x); }
 #elif _GLIBCPP_HAVE_COSF
   inline float 
-  _CPP_cos_capture(float __x) { return cosf(__x); }
+  cos(float __x) { return ::cosf(__x); }
 #else
   inline float 
-  _CPP_cos_capture(float __x) { return cos(static_cast<double>(__x)); }
+  cos(float __x) { return ::cos(static_cast<double>(__x)); }
 #endif
 
 #if _GLIBCPP_HAVE_COSHF
   inline float 
-  _CPP_cosh_capture(float __x) { return coshf(__x); }
+  cosh(float __x) { return ::coshf(__x); }
 #else
   inline float 
-  _CPP_cosh_capture(float __x) { return cosh(static_cast<double>(__x)); }
+  cosh(float __x) { return ::cosh(static_cast<double>(__x)); }
 #endif
 
 #if _GLIBCPP_HAVE_EXPF
   inline float 
-  _CPP_exp_capture(float __x) { return expf(__x); }
+  exp(float __x) { return ::expf(__x); }
 #else
   inline float 
-  _CPP_exp_capture(float __x) { return exp(static_cast<double>(__x)); }
+  exp(float __x) { return ::exp(static_cast<double>(__x)); }
 #endif
 
 #if _GLIBCPP_HAVE___BUILTIN_FABSF
   inline float 
-  _CPP_fabs_capture(float __x) { return __builtin_fabsf(__x); }
+  fabs(float __x) { return __builtin_fabsf(__x); }
 #elif _GLIBCPP_HAVE_FABSF
   inline float 
-  _CPP_fabs_capture(float __x) { return fabsf(__x); }
+  fabs(float __x) { return ::fabsf(__x); }
 #else
   inline float 
-  _CPP_fabs_capture(float __x) { return fabs(static_cast<double>(__x)); }
+  fabs(float __x) { return __cmath_abs(__x); }
 #endif
 
 #if _GLIBCPP_HAVE_FLOORF
   inline float 
-  _CPP_floor_capture(float __x) { return floorf(__x); }
+  floor(float __x) { return ::floorf(__x); }
 #else
   inline float 
-  _CPP_floor_capture(float __x) { return floor(static_cast<double>(__x)); }
+  floor(float __x) { return ::floor(static_cast<double>(__x)); }
 #endif
 
-#if _GLIBCPP_HAVE_FMODFF
+#if _GLIBCPP_HAVE_FMODF
   inline float 
-  _CPP_fmod_capture(float __x, float __y) { return fmodf(__x, __y); }
+  fmod(float __x, float __y) { return ::fmodf(__x, __y); }
 #else
   inline float 
-  _CPP_fmod_capture(float __x, float __y) 
-  { return fmod(static_cast<double>(__x), static_cast<double>(__y)); }
+  fmod(float __x, float __y)
+  { return ::fmod(static_cast<double>(__x), static_cast<double>(__y)); }
 #endif
 
 #if _GLIBCPP_HAVE_FREXPF
   inline float 
-  _CPP_frexp_capture(float __x, int* __exp) { return frexpf(__x, __exp); }
+  frexp(float __x, int* __exp) { return ::frexpf(__x, __exp); }
 #else
   inline float 
-  _CPP_frexp_capture(float __x, int* __exp) { return frexp(__x, __exp); }
+  frexp(float __x, int* __exp) { return ::frexp(__x, __exp); }
 #endif
 
 #if _GLIBCPP_HAVE_LDEXPF
   inline float 
-  _CPP_ldexp_capture(float __x, int __exp) { return ldexpf(__x, __exp); }
+  ldexp(float __x, int __exp) { return ::ldexpf(__x, __exp); }
 #else
   inline float 
-  _CPP_ldexp_capture(float __x, int __exp) 
-  { return ldexp(static_cast<double>(__x), __exp); }
+  ldexp(float __x, int __exp)
+  { return ::ldexp(static_cast<double>(__x), __exp); }
 #endif
 
 #if _GLIBCPP_HAVE_LOGF
   inline float 
-  _CPP_log_capture(float __x) { return logf(__x); }
+  log(float __x) { return ::logf(__x); }
 #else
-  inline float 
-  _CPP_log_capture(float __x) { return log(static_cast<double>(__x)); }
+  inline float log(float __x)
+  { return ::log(static_cast<double>(__x)); }
 #endif
 
 #if _GLIBCPP_HAVE_LOG10F
   inline float 
-  _CPP_log10_capture(float __x) { return log10f(__x); }
+  log10(float __x) { return ::log10f(__x); }
 #else
   inline float 
-  _CPP_log10_capture(float __x) { return log10(static_cast<double>(__x)); }
+  log10(float __x) { return ::log10(static_cast<double>(__x)); }
 #endif
 
 #if _GLIBCPP_HAVE_MODFF
   inline float 
-  _CPP_modf_capture(float __x, float* __iptr) { return modff(__x, __iptr); }
+  modf(float __x, float* __iptr) { return ::modff(__x, __iptr); }
 #else
   inline float 
-  _CPP_modf_capture(float __x, float* __iptr)
+  modf(float __x, float* __iptr)
   {
     double __tmp;
-    double __res = _C_legacy::modf(static_cast<double>(__x), &__tmp);
-    *__iptr = static_cast<float> (__tmp);
+    double __res = ::modf(static_cast<double>(__x), &__tmp);
+    *__iptr = static_cast<float>(__tmp);
     return __res;
   }
 #endif
+
+  template<typename _Tp>
+    inline _Tp
+    __pow_helper(_Tp __x, int __n)
+    {
+      return __n < 0
+        ? _Tp(1)/__cmath_power(__x, -__n)
+        : __cmath_power(__x, __n);
+    }
   
 #if _GLIBCPP_HAVE_POWF
   inline float 
-  _CPP_pow_capture(float __x, float __y) { return powf(__x, __y); }
+  pow(float __x, float __y) { return ::powf(__x, __y); }
 #else
   inline float 
-  _CPP_pow_capture(float __x, float __y)
-  { return pow(static_cast<double>(__x), static_cast<double>(__y)); }
+  pow(float __x, float __y)
+  { return ::pow(static_cast<double>(__x), static_cast<double>(__y)); }
 #endif
 
-  float pow(float, int);
+  inline float 
+  pow(float __x, int __n)
+  {
+    return __pow_helper(__x, __n);
+  }
 
 #if _GLIBCPP_HAVE___BUILTIN_SINF
   inline float 
-  _CPP_sin_capture(float __x) { return __builtin_sinf(__x); }
+  sin(float __x) { return __builtin_sinf(__x); }
 #elif _GLIBCPP_HAVE_SINF
   inline float 
-  _CPP_sin_capture(float __x) { return sinf(__x); }
+  sin(float __x) { return ::sinf(__x); }
 #else
   inline float 
-  _CPP_sin_capture(float __x) { return sin(static_cast<double>(__x)); }
+  sin(float __x) { return ::sin(static_cast<double>(__x)); }
 #endif
 
 #if _GLIBCPP_HAVE_SINHF
   inline float 
-  _CPP_sinh_capture(float __x) { return sinhf(__x); }
+  sinh(float __x) { return ::sinhf(__x); }
 #else
   inline float 
-  _CPP_sinh_capture(float __x) { return sinh(static_cast<double>(__x)); }
+  sinh(float __x) { return ::sinh(static_cast<double>(__x)); }
 #endif
 
 #if _GLIBCPP_HAVE___BUILTIN_SQRTF
   inline float 
-  _CPP_sqrt_capture(float __x) { return __builtin_sqrtf(__x); }
+  sqrt(float __x) { return __builtin_sqrtf(__x); }
 #elif _GLIBCPP_HAVE_SQRTF
   inline float 
-  _CPP_sqrt_capture(float __x) { return sqrtf(__x); }
+  sqrt(float __x) { return ::sqrtf(__x); }
 #else
   inline float 
-  _CPP_sqrt_capture(float __x) { return sqrt(static_cast<double>(__x)); }
+  sqrt(float __x) { return ::sqrt(static_cast<double>(__x)); }
 #endif
 
 #if _GLIBCPP_HAVE_TANF
   inline float 
-  _CPP_tan_capture(float __x) { return tanf(__x); }
+  tan(float __x) { return ::tanf(__x); }
 #else
   inline float 
-  _CPP_tan_capture(float __x) { return tan(static_cast<double>(__x)); }
+  tan(float __x) { return ::tan(static_cast<double>(__x)); }
 #endif
 
 #if _GLIBCPP_HAVE_TANHF
   inline float 
-  _CPP_tanh_capture(float __x) { return tanhf(__x); }
+  tanh(float __x) { return ::tanhf(__x); }
 #else
   inline float 
-  _CPP_tanh_capture(float __x) { return tanh(static_cast<double>(__x)); }
+  tanh(float __x) { return ::tanh(static_cast<double>(__x)); }
 #endif
 
 
-  inline double 
-  _CPP_acos_capture(double __x) { return acos(__x); }
+  extern "C" double acos(double __x);
 
-  inline double 
-  _CPP_asin_capture(double __x) { return asin(__x); }
+  extern "C" double asin(double __x);
 
-  inline double 
-  _CPP_atan_capture(double __x) { return atan(__x); }
+  extern "C" double atan(double __x);
 
-  inline double 
-  _CPP_atan2_capture(double __y, double __x) { return atan2(__y, __x); }
+  extern "C" double atan2(double __y, double __x);
 
-  inline double 
-  _CPP_ceil_capture(double __x) { return ceil(__x); }
+  extern "C" double ceil(double __x);
 
 #if _GLIBCPP_HAVE___BUILTIN_COS
   inline double 
-  _CPP_cos_capture(double __x) { return __builtin_cos(__x); }
+  cos(double __x) { return __builtin_cos(__x); }
 #else
-  inline double 
-  _CPP_cos_capture(double __x) { return cos(__x); }
+  extern "C" double cos(double __x);
 #endif
 
-  inline double 
-  _CPP_cosh_capture(double __x) { return cosh(__x); }
+  extern "C" double cosh(double __x);
 
-  inline double 
-  _CPP_exp_capture(double __x) { return exp(__x); }
+  extern "C" double exp(double __x);
 
 #if _GLIBCPP_HAVE___BUILTIN_FABS
   inline double 
-  _CPP_fabs_capture(double __x) { return __builtin_fabs(__x); }
+  fabs(double __x) { return __builtin_fabs(__x); }
 #else
-  inline double 
-  _CPP_fabs_capture(double __x) { return fabs(__x); }
+  extern "C" double fabs(double __x);
 #endif
 
+#if _GLIBCPP_HAVE___BUILTIN_FABS
   inline double 
-  _CPP_floor_capture(double __x) { return floor(__x); }
+  abs(double __x) { return __builtin_fabs(__x); }
+#else
+  inline double
+  abs(double __x) { return fabs(__x); }
+#endif
+
+  extern "C" double floor(double __x);
+
+  extern "C" double fmod(double __x, double __y);
+
+  extern "C" double frexp(double __x, int* __exp);
+
+  extern "C" double ldexp(double __x, int __exp);
+
+  extern "C" double log(double __x);
+
+  extern "C" double log10(double __x);
+
+  extern "C" double modf(double __x, double* __iptr);
+
+  extern "C" double pow(double __x, double __y);
 
   inline double 
-  _CPP_fmod_capture(double __x, double __y) { return fmod(__x, __y); }
-
-  inline double 
-  _CPP_frexp_capture(double __x, int* __exp) { return frexp(__x, __exp); }
-
-  inline double 
-  _CPP_ldexp_capture(double __x, int __exp) { return ldexp(__x, __exp); }
-
-  inline double 
-  _CPP_log_capture(double __x) { return log(__x); }
-
-  inline double 
-  _CPP_log10_capture(double __x) { return log10(__x); }
-
-  inline double 
-  _CPP_modf_capture(double __x, double* __iptr) { return modf(__x, __iptr); }
-
-  inline double 
-  _CPP_pow_capture(double __x, double __y) { return pow(__x, __y); }
+  pow(double __x, int __i)
+  {
+    return __pow_helper(__x, __i);
+  }
 
 #if _GLIBCPP_HAVE___BUILTIN_SIN
   inline double 
-  _CPP_sin_capture(double __x) { return __builtin_sin(__x); }
+  sin(double __x) { return __builtin_sin(__x); }
 #else
-  inline double 
-  _CPP_sin_capture(double __x) { return sin(__x); }
+  extern "C" double sin(double __x);
 #endif
 
-  inline double 
-  _CPP_sinh_capture(double __x) { return sinh(__x); }
+  extern "C" double sinh(double __x);
 
 #if _GLIBCPP_HAVE___BUILTIN_SQRT
   inline double 
-  _CPP_sqrt_capture(double __x) { return __builtin_fsqrt(__x); }
+  sqrt(double __x) { return __builtin_fsqrt(__x); }
 #else
-  inline double 
-  _CPP_sqrt_capture(double __x) { return sqrt(__x); }
+  extern "C" double sqrt(double __x);
 #endif
 
-  inline double 
-  _CPP_tan_capture(double __x) { return tan(__x); }
+  extern "C" double tan(double __x);
 
-  inline double 
-  _CPP_tanh_capture(double __x) { return tanh(__x); }
+  extern "C" double tanh(double __x);
+
+
+#if _GLIBCPP_HAVE___BUILTIN_FABSL
+  inline long double 
+  abs(long double __x) { return __builtin_fabsl(__x); }
+#elif _GLIBCPP_HAVE_FABSL
+  inline long double 
+  abs(long double __x) { return ::fabsl(__x); }
+#else
+  inline long double 
+  abs(long double __x) { return __cmath_abs(__x); }
+#endif
 
 #if _GLIBCPP_HAVE_ACOSL
   inline long double 
-  _CPP_acos_capture(long double __x) { return acosl(__x); }
+  acos(long double __x) { return ::acosl(__x); }
 #else
   inline long double 
-  _CPP_acos_capture(long double __x) { return acos(static_cast<double>(__x)); }
+  acos(long double __x) { return ::acos(static_cast<double>(__x)); }
 #endif
 
 #if _GLIBCPP_HAVE_ASINL
   inline long double 
-  _CPP_asin_capture(long double __x) { return asinl(__x); }
+  asin(long double __x) { return ::asinl(__x); }
 #else
   inline long double 
-  _CPP_asin_capture(long double __x) { return asin(static_cast<double>(__x)); }
+  asin(long double __x) { return ::asin(static_cast<double>(__x)); }
 #endif
 
 #if _GLIBCPP_HAVE_ATANL
   inline long double 
-  _CPP_atan_capture(long double __x) { return atanl(__x); }
+  atan(long double __x) { return ::atanl(__x); }
 #else
   inline long double 
-  _CPP_atan_capture(long double __x) { return atan(static_cast<double>(__x)); }
+  atan(long double __x) { return ::atan(static_cast<double>(__x)); }
 #endif
 
 #if _GLIBCPP_HAVE_ATAN2L
   inline long double 
-  _CPP_atan2_capture(long double __y, long double __x)
-  { return atan2l(__y, __x); }
+  atan2(long double __y, long double __x) { return ::atan2l(__y, __x); }
 #else
   inline long double 
-  _CPP_atan2_capture(long double __y, long double __x) 
-  { return atan2(static_cast<double>(__y), static_cast<double>(__x)); }
+  atan2(long double __y, long double __x) 
+  { return ::atan2(static_cast<double>(__y), static_cast<double>(__x)); }
 #endif
 
 #if _GLIBCPP_HAVE_CEILL
   inline long double 
-  _CPP_ceil_capture(long double __x) { return ceill(__x); }
+  ceil(long double __x) { return ::ceill(__x); }
 #else
   inline long double 
-  _CPP_ceil_capture(long double __x) { return ceil(static_cast<double>(__x)); }
+  ceil(long double __x) { return ::ceil(static_cast<double>(__x)); }
 #endif
 
 #if _GLIBCPP_HAVE___BUILTIN_COSL
   inline long double 
-  _CPP_cos_capture(long double __x) { return __builtin_cosl(__x); }
+  cos(long double __x) { return __builtin_cosl(__x); }
 #elif _GLIBCPP_HAVE_COSL
   inline long double 
-  _CPP_cos_capture(long double __x) { return cosl(__x); }
+  cos(long double __x) { return ::cosl(__x); }
 #else
   inline long double 
-  _CPP_cos_capture(long double __x) { return cos(static_cast<double>(__x)); }
+  cos(long double __x) { return ::cos(static_cast<double>(__x)); }
 #endif
 
 #if _GLIBCPP_HAVE_COSHL
   inline long double 
-  _CPP_cosh_capture(long double __x) { return coshl(__x); }
+  cosh(long double __x) { return ::coshl(__x); }
 #else
   inline long double 
-  _CPP_cosh_capture(long double __x) { return cosh(static_cast<double>(__x)); }
+  cosh(long double __x) { return ::cosh(static_cast<double>(__x)); }
 #endif
 
 #if _GLIBCPP_HAVE_EXPL
   inline long double 
-  _CPP_exp_capture(long double __x) { return expl(__x); }
+  exp(long double __x) { return ::expl(__x); }
 #else
   inline long double 
-  _CPP_exp_capture(long double __x) { return exp(static_cast<double>(__x)); }
+  exp(long double __x) { return ::exp(static_cast<double>(__x)); }
 #endif
 
 #if _GLIBCPP_HAVE___BUILTIN_FABSL
   inline long double 
-  _CPP_fabs_capture(long double __x) { return __builtin_fabsl(__x); }
+  fabs(long double __x) { return __builtin_fabsl(__x); }
 #elif _GLIBCPP_HAVE_FABSL
   inline long double 
-  _CPP_fabs_capture(long double __x) { return fabsl(__x); }
+  fabs(long double __x) { return ::fabsl(__x); }
 #else
   inline long double 
-  _CPP_fabs_capture(long double __x) { return fabs(static_cast<double>(__x)); }
+  fabs(long double __x) { return __cmath_abs(__x); }
 #endif
 
 #if _GLIBCPP_HAVE_FLOORL
   inline long double 
-  _CPP_floor_capture(long double __x) { return floorl(__x); }
+  floor(long double __x) { return ::floorl(__x); }
 #else
   inline long double 
-  _CPP_floor_capture(long double __x) 
-  { return floor(static_cast<double>(__x)); }
+  floor(long double __x) { return ::floor(static_cast<double>(__x)); }
 #endif
 
 #if _GLIBCPP_HAVE_FMODL
   inline long double 
-  _CPP_fmod_capture(long double __x, long double __y) 
-  { return fmodl(__x, __y); }
+  fmod(long double __x, long double __y) { return ::fmodl(__x, __y); }
 #else
   inline long double 
-  _CPP_fmod_capture(long double __x, long double __y)
-  { return fmod(static_cast<double>(__x), static_cast<double>(__y)); }
+  fmod(long double __x, long double __y) 
+  { return ::fmod(static_cast<double>(__x), static_cast<double>(__y)); }
 #endif
 
 #if _GLIBCPP_HAVE_FREXPL
   inline long double 
-  _CPP_frexp_capture(long double __x, int* __exp) 
-  { return frexpl(__x, __exp); }
+  frexp(long double __x, int* __exp) { return ::frexpl(__x, __exp); }
 #else
   inline long double 
-  _CPP_frexp_capture(long double __x, int* __exp)
-  { return frexp(static_cast<double>(__x), __exp); }
+  frexp(long double __x, int* __exp) 
+  { return ::frexp(static_cast<double>(__x), __exp); }
 #endif
 
 #if _GLIBCPP_HAVE_LDEXPL
   inline long double 
-  _CPP_ldexp_capture(long double __x, int __exp) { return ldexpl(__x, __exp); }
+  ldexp(long double __x, int __exp) { return ::ldexpl(__x, __exp); }
 #else
   inline long double 
-  _CPP_ldexp_capture(long double __x, int __exp)
-  { return ldexp(static_cast<double>(__x), __exp); }
+  ldexp(long double __x, int __exp) 
+  { return ::ldexp(static_cast<double>(__x), __exp); }
 #endif
 
 #if _GLIBCPP_HAVE_LOGL
   inline long double 
-  _CPP_log_capture(long double __x) { return logl(__x); }
+  log(long double __x) { return ::logl(__x); }
 #else
   inline long double 
-  _CPP_log_capture(long double __x) { return log(static_cast<double>(__x)); }
+  log(long double __x) { return ::log(static_cast<double>(__x)); }
 #endif
 
 #if _GLIBCPP_HAVE_LOG10L
   inline long double 
-  _CPP_log10_capture(long double __x) { return log10l(__x); }
+  log10(long double __x) { return ::log10l(__x); }
 #else
   inline long double 
-  _CPP_log10_capture(long double __x) 
-  { return log10(static_cast<double>(__x)); }
+  log10(long double __x) { return ::log10(static_cast<double>(__x)); }
 #endif
 
 #if _GLIBCPP_HAVE_MODFL
   inline long double 
-  _CPP_modf_capture(long double __x, long double* __iptr)
-  { return modfl(__x, __iptr); }
+  modf(long double __x, long double* __iptr) { return ::modfl(__x, __iptr); }
 #else
   inline long double 
-  _CPP_modf_capture(long double __x, long double* __iptr)
-  {
+  modf(long double __x, long double* __iptr) 
+  { 
     double __tmp;
-    double __res = _C_legacy::modf(static_cast<double>(__x), &__tmp);
-    *__iptr = static_cast<long double> (__tmp);
+    double __res = ::modf(static_cast<double>(__x), &__tmp);
+    * __iptr = static_cast<long double>(__tmp);
     return __res;
   }
 #endif
 
 #if _GLIBCPP_HAVE_POWL
   inline long double 
-  _CPP_pow_capture(long double __x, long double __y) { return powl(__x, __y); }
+  pow(long double __x, long double __y) { return ::powl(__x, __y); }
 #else
   inline long double 
-  _CPP_pow_capture(long double __x, long double __y)
-  { return pow(static_cast<double>(__x), static_cast<double>(__y)); }
+  pow(long double __x, long double __y) 
+  { return ::pow(static_cast<double>(__x), static_cast<double>(__y)); }
 #endif
+
+  inline long double 
+  pow(long double __x, int __n)
+  {
+    return __pow_helper(__x, __n);
+  }
 
 #if _GLIBCPP_HAVE___BUILTIN_SINL
   inline long double 
-  _CPP_sin_capture(long double __x) { return __builtin_sinl(__x); }
+  sin(long double __x) { return __builtin_sinl(__x); }
 #elif _GLIBCPP_HAVE_SINL
   inline long double 
-  _CPP_sin_capture(long double __x) { return sinl(__x); }
+  sin(long double __x) { return ::sinl(__x); }
 #else
   inline long double 
-  _CPP_sin_capture(long double __x) { return sin(static_cast<double>(__x)); }
+  sin(long double __x) { return ::sin(static_cast<double>(__x)); }
 #endif
 
 #if _GLIBCPP_HAVE_SINHL
   inline long double 
-  _CPP_sinh_capture(long double __x) { return sinhl(__x); }
+  sinh(long double __x) { return ::sinhl(__x); }
 #else
   inline long double 
-  _CPP_sinh_capture(long double __x) { return sinh(static_cast<double>(__x)); }
+  sinh(long double __x) { return ::sinh(static_cast<double>(__x)); }
 #endif
 
 #if _GLIBCPP_HAVE___BUILTIN_SQRTL
   inline long double 
-  _CPP_sqrt_capture(long double __x) { return __builtin_sqrtl(__x); }
+  sqrt(long double __x) { return __builtin_sqrtl(__x); }
 #elif _GLIBCPP_HAVE_SQRTL
   inline long double 
-  _CPP_sqrt_capture(long double __x) { return sqrtl(__x); }
+  sqrt(long double __x) { return ::sqrtl(__x); }
 #else
   inline long double 
-  _CPP_sqrt_capture(long double __x) { return sqrt(static_cast<double>(__x)); }
+  sqrt(long double __x) { return ::sqrt(static_cast<double>(__x)); }
 #endif
 
 #if _GLIBCPP_HAVE_TANL
   inline long double 
-  _CPP_tan_capture(long double __x) { return tanl(__x); }
+  tan(long double __x) { return ::tanl(__x); }
 #else
   inline long double 
-  _CPP_tan_capture(long double __x) { return tan(static_cast<double>(__x)); }
+  tan(long double __x) { return ::tan(static_cast<double>(__x)); }
 #endif
 
 #if _GLIBCPP_HAVE_TANHL
   inline long double 
-  _CPP_tanh_capture(long double __x) { return tanhl(__x); }
+  tanh(long double __x) { return ::tanhl(__x); }
 #else
   inline long double 
-  _CPP_tanh_capture(long double __x) { return tanh(static_cast<double>(__x)); }
-#endif
-} // namespace _C_legacy
-
-# undef abs
-# undef acos
-# undef asin
-# undef atan
-# undef atan2
-# undef ceil
-# undef cos
-# undef cosh
-# undef exp
-# undef fabs
-# undef floor
-# undef fmod
-# undef frexp
-# undef ldexp
-# undef log
-# undef log10
-# undef modf
-# undef pow
-# undef sin
-# undef sinh
-# undef sqrt
-# undef tan
-# undef tanh
-
-namespace std {
-  inline float 
-  abs(float __x) { return _C_legacy::_CPP_fabs_capture(__x); }
-
-  inline float 
-  acos(float __x) { return _C_legacy::_CPP_acos_capture(__x); }
-
-  inline float 
-  asin(float __x) { return _C_legacy::_CPP_asin_capture(__x); }
-
-  inline float 
-  atan(float __x) { return _C_legacy::_CPP_atan_capture(__x); }
-
-  inline float 
-  atan2(float __y, float __x) 
-  { return _C_legacy::_CPP_atan2_capture(__y, __x); }
-
-  inline float 
-  ceil(float __x) { return _C_legacy::_CPP_ceil_capture(__x); }
-
-  inline float 
-  cos(float __x) { return _C_legacy::_CPP_cos_capture(__x); }
-
-  inline float 
-  cosh(float __x) { return _C_legacy::_CPP_cosh_capture(__x); }
-
-  inline float 
-  exp(float __x) { return _C_legacy::_CPP_exp_capture(__x); }
-
-  inline float 
-  fabs(float __x) { return _C_legacy::_CPP_fabs_capture(__x); }
-
-  inline float 
-  floor(float __x) { return _C_legacy::_CPP_floor_capture(__x); }
-
-  inline float 
-  fmod(float __x, float __y) 
-  { return _C_legacy::_CPP_fmod_capture(__x, __y); }
-
-  inline float 
-  frexp(float __x, int* __exp) 
-  { return _C_legacy::_CPP_frexp_capture(__x, __exp); }
-
-  inline float 
-  ldexp(float __x, int __exp)
-  { return _C_legacy::_CPP_ldexp_capture(__x, __exp); }
-
-  inline float 
-  log(float __x) { return _C_legacy::_CPP_log_capture(__x); }
-
-  inline float 
-  log10(float __x) { return _C_legacy::_CPP_log10_capture(__x); }
-
-  inline float 
-  modf(float __x, float* __iptr) 
-  { return _C_legacy::_CPP_modf_capture(__x, __iptr); }
-
-  inline float 
-  pow(float __x, float __y) { return _C_legacy::_CPP_pow_capture(__x, __y); }
-
-  float 
-  pow(float, int);
-
-  inline float 
-  sin(float __x) { return _C_legacy::_CPP_sin_capture(__x); }
-
-  inline float 
-  sinh(float __x) { return _C_legacy::_CPP_sinh_capture(__x); }
-
-  inline float 
-  sqrt(float __x) { return _C_legacy::_CPP_sqrt_capture(__x); }
-
-  inline float 
-  tan(float __x) { return _C_legacy::_CPP_tan_capture(__x); }
-
-  inline float 
-  tanh(float __x) { return _C_legacy::_CPP_tanh_capture(__x); }
-
-  inline double 
-  abs(double __x) { return _C_legacy::_CPP_fabs_capture(__x); }
-
-  inline double 
-  acos(double __x) { return _C_legacy::_CPP_acos_capture(__x); }
-
-  inline double 
-  asin(double __x) { return _C_legacy::_CPP_asin_capture(__x); }
-
-  inline double 
-  atan(double __x) { return _C_legacy::_CPP_atan_capture(__x); }
-
-  inline double 
-  atan2(double __y, double __x) 
-  { return _C_legacy::_CPP_atan2_capture(__y, __x); }
-
-  inline double 
-  ceil(double __x) { return _C_legacy::_CPP_ceil_capture(__x); }
-
-  inline double 
-  cos(double __x) { return _C_legacy::_CPP_cos_capture(__x); }
-
-  inline double 
-  cosh(double __x) { return _C_legacy::_CPP_cosh_capture(__x); }
-
-  inline double 
-  exp(double __x) { return _C_legacy::_CPP_exp_capture(__x); }
-
-  inline double 
-  fabs(double __x) { return _C_legacy::_CPP_fabs_capture(__x); }
-
-  inline double 
-  floor(double __x) { return _C_legacy::_CPP_floor_capture(__x); }
-
-  inline double 
-  fmod(double __x, double __y) 
-  { return _C_legacy::_CPP_fmod_capture(__x, __y); }
-
-  inline double 
-  frexp(double __x, int* __exp) 
-  { return _C_legacy::_CPP_frexp_capture(__x, __exp); }
-
-  inline double 
-  ldexp(double __x, int __exp)
-  { return _C_legacy::_CPP_ldexp_capture(__x, __exp); }
-
-  inline double 
-  log(double __x) { return _C_legacy::_CPP_log_capture(__x); }
-
-  inline double 
-  log10(double __x) { return _C_legacy::_CPP_log10_capture(__x); }
-
-  inline double 
-  modf(double __x, double* __iptr) 
-  { return _C_legacy::_CPP_modf_capture(__x, __iptr); }
-
-  inline double 
-  pow(double __x, double __y) 
-  { return _C_legacy::_CPP_pow_capture(__x, __y); }
-
-  double 
-  pow(double, int);
-
-  inline double 
-  sin(double __x) { return _C_legacy::_CPP_sin_capture(__x); }
-
-  inline double 
-  sinh(double __x) { return _C_legacy::_CPP_sinh_capture(__x); }
-
-  inline double 
-  sqrt(double __x) { return _C_legacy::_CPP_sqrt_capture(__x); }
-
-  inline double 
-  tan(double __x) { return _C_legacy::_CPP_tan_capture(__x); }
-
-  inline double 
-  tanh(double __x) { return _C_legacy::_CPP_tanh_capture(__x); }
-
-  inline long double 
-  abs(long double __x) { return _C_legacy::_CPP_fabs_capture(__x); }
-
-  inline long double 
-  acos(long double __x) { return _C_legacy::_CPP_acos_capture(__x); }
-
-  inline long double 
-  asin(long double __x) { return _C_legacy::_CPP_asin_capture(__x); }
-
-  inline long double 
-  atan(long double __x) { return _C_legacy::_CPP_atan_capture(__x); }
-
-  inline long double 
-  atan2(long double __y, long double __x) 
-  { return _C_legacy::_CPP_atan2_capture(__y, __x); }
-
-  inline long double 
-  ceil(long double __x) { return _C_legacy::_CPP_ceil_capture(__x); }
-
-  inline long double 
-  cos(long double __x) { return _C_legacy::_CPP_cos_capture(__x); }
-
-  inline long double 
-  cosh(long double __x) { return _C_legacy::_CPP_cosh_capture(__x); }
-
-  inline long double 
-  exp(long double __x) { return _C_legacy::_CPP_exp_capture(__x); }
-
-  inline long double 
-  fabs(long double __x) { return _C_legacy::_CPP_fabs_capture(__x); }
-
-  inline long double 
-  floor(long double __x) { return _C_legacy::_CPP_floor_capture(__x); }
-
-  inline long double 
-  fmod(long double __x, long double __y) 
-  { return _C_legacy::_CPP_fmod_capture(__x, __y); }
-
-  inline long double 
-  frexp(long double __x, int* __exp)
-  { return _C_legacy::_CPP_frexp_capture(__x, __exp); }
-
-  inline long double 
-  ldexp(long double __x, int __exp)
-  { return _C_legacy::_CPP_ldexp_capture(__x, __exp); }
-
-  inline long double 
-  log(long double __x) { return _C_legacy::_CPP_log_capture(__x); }
-
-  inline long double 
-  log10(long double __x) { return _C_legacy::_CPP_log10_capture(__x); }
-
-  inline long double 
-  modf(long double __x, long double* __iptr) 
-  { return _C_legacy::_CPP_modf_capture(__x, __iptr); }
-
-  inline long double 
-  pow(long double __x, long double __y)
-  { return _C_legacy::_CPP_pow_capture(__x, __y); }
-
-  long double 
-  pow(long double, int);
-
-  inline long double 
-  sin(long double __x) { return _C_legacy::_CPP_sin_capture(__x); }
-
-  inline long double 
-  sinh(long double __x) { return _C_legacy::_CPP_sinh_capture(__x); }
-
-  inline long double 
-  sqrt(long double __x) { return _C_legacy::_CPP_sqrt_capture(__x); }
-
-  inline long double 
-  tan(long double __x) { return _C_legacy::_CPP_tan_capture(__x); }
-
-  inline long double 
-  tanh(long double __x) { return _C_legacy::_CPP_tanh_capture(__x); }
-
-} // namespace std
-
-# undef _IN_C_LEGACY_
-
+  tanh(long double __x) { return ::tanh(static_cast<double>(__x)); }
 #endif
 
 
+} // std
 
+#ifdef _GLIBCPP_NO_TEMPLATE_EXPORT
+#  define export
+#  include <bits/cmath.tcc>
+#endif
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#endif

@@ -1,4 +1,4 @@
-// -*- C++ -*- header wrapper.
+// -*- C++ -*- forwarding header.
 
 // Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 //
@@ -31,29 +31,18 @@
 // ISO C++ 14882: 18.1  Types
 //
 
+// Note: This is not a conforming implementation.
+
 #ifndef _CPP_CSTDDEF
 #define _CPP_CSTDDEF 1
 
-namespace _C_legacy {
-  extern "C" {
-#     define _IN_C_LEGACY_
-#     pragma GCC system_header
-// XXX
-#   define __need_size_t
-#   define __need_ptrdiff_t
-#   define __need_NULL
-#   include_next <stddef.h>
-  }
-} // namespace _C_legacy
+#pragma GCC system_header
+#include <stddef.h>
 
-#  undef ptrdiff_t  
-#  undef size_t  
-
-namespace std {
-  using _C_legacy::ptrdiff_t;
-  using _C_legacy::size_t;
-} // namespace std
-  
-# undef _IN_C_LEGACY_
+namespace std 
+{
+  using ::ptrdiff_t;
+  using ::size_t;
+}
 
 #endif
