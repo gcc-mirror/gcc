@@ -1,3 +1,7 @@
+2003-06-09  Paolo Carlini  <pcarlini@unitus.it>
+
+	* docs/html/ext/howto.html ('LWG Issues'):  Add issue 235.
+
 2003-06-06  Nathan Myers  <ncm-nospam@cantrip.org>
 
 	* include/bits/stl_iterator.h
