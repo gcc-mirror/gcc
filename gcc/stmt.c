@@ -3848,12 +3848,14 @@ check_seenlabel ()
 	    {
 	      do
 		insn = PREV_INSN (insn);
-	      while (GET_CODE (insn) != NOTE || NOTE_LINE_NUMBER (insn) < 0);
+	      while (insn && (GET_CODE (insn) != NOTE || NOTE_LINE_NUMBER (insn) < 0));
 
-	      warning_with_file_and_line (NOTE_SOURCE_FILE(insn),
-					  NOTE_LINE_NUMBER(insn),
-					  "unreachable code at beginning of %s",
-					  case_stack->data.case_stmt.printname);
+	      /* If insn is zero, then there must have been a syntax error.  */
+	      if (insn)
+		warning_with_file_and_line (NOTE_SOURCE_FILE(insn),
+					    NOTE_LINE_NUMBER(insn),
+					    "unreachable code at beginning of %s",
+					    case_stack->data.case_stmt.printname);
 	      break;
 	    }
 	}
