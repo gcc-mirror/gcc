@@ -3796,11 +3796,11 @@ extern void cp_warning_at	(const char *msgid, ...);
 extern void cp_pedwarn_at	(const char *msgid, ...);
 
 /* XXX Not i18n clean.  */
-#define cp_deprecated(STR)							\
-  do {										\
-    if (warn_deprecated)							\
-      warning ("%s is deprecated, please see the documentation for details",	\
-	       (STR));								\
+#define cp_deprecated(STR)						\
+  do {									\
+    if (warn_deprecated)						\
+      warning ("%s is deprecated, please see the documentation for details", \
+	       (STR));							\
   } while (0)
 
 /* in error.c */
@@ -4239,10 +4239,10 @@ extern tree complete_type_or_diagnostic         (tree, tree, int);
 extern int type_unknown_p			(tree);
 extern tree commonparms				(tree, tree);
 extern tree original_type			(tree);
-extern int comp_except_specs			(tree, tree, int);
+extern bool comp_except_specs			(tree, tree, bool);
 extern bool comptypes				(tree, tree, int);
 extern int comp_target_types			(tree, tree, int);
-extern int compparms				(tree, tree);
+extern bool compparms				(tree, tree);
 extern int comp_cv_qualification                (tree, tree);
 extern int comp_cv_qual_signature               (tree, tree);
 extern tree expr_sizeof				(tree);
@@ -4275,9 +4275,9 @@ extern int comp_ptr_ttypes			(tree, tree);
 extern int ptr_reasonably_similar		(tree, tree);
 extern tree build_ptrmemfunc			(tree, tree, int);
 extern int cp_type_quals                        (tree);
-extern int cp_has_mutable_p                     (tree);
-extern int at_least_as_qualified_p              (tree, tree);
-extern int more_qualified_p                     (tree, tree);
+extern bool cp_has_mutable_p                     (tree);
+extern bool at_least_as_qualified_p              (tree, tree);
+extern bool more_qualified_p                     (tree, tree);
 extern tree build_ptrmemfunc1                   (tree, tree, tree);
 extern void expand_ptrmemfunc_cst               (tree, tree *, tree *);
 extern tree pfn_from_ptrmemfunc                 (tree);

@@ -1,5 +1,16 @@
 2003-06-18  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* cp-tree.h (comp_except_specs, compparms, cp_has_mutable_p,
+	at_least_as_qualified_p, more_qualified_p): Return bool.
+	* typeck.c: ANSIFY function definitions.
+	(comp_array_types): Take redeclaration bool parameter.
+	(comptypes): Rearrange STRICT handling.
+	(at_least_as_qualified_p, more_qualified_p,
+	comp_cv_qualification): Cache cv quals.
+	(compparms): Rearrange loop.
+	
+2003-06-18  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* cp-tree.h (COMPARE_RELAXED): Rename to ...
 	(COMPARE_DERIVED): ... here. Adjust comment.
 	(resolve_typename_type_in_current_instantiation): Remove.
