@@ -13163,26 +13163,26 @@ store_parm_decls ()
 	  next = TREE_CHAIN (parm);
 	  if (TREE_CODE (parm) == PARM_DECL)
 	    {
-	      tree cleanup;
-	      
+	      tree type = TREE_TYPE (parm);
+
 	      if (doing_semantic_analysis_p ())
 		{
+		  tree cleanup;
+	      
 		  if (DECL_NAME (parm) == NULL_TREE
-		      || TREE_CODE (TREE_TYPE (parm)) != VOID_TYPE)
+		      || TREE_CODE (parm) != VOID_TYPE)
 		    pushdecl (parm);
 		  else
 		    cp_error ("parameter `%D' declared void", parm);
-		}
 
-	      if (! building_stmt_tree ()
-		  && (cleanup = maybe_build_cleanup (parm), cleanup))
-		{
-		  expand_decl (parm);
-		  parms_have_cleanups = 1;
-
-		  /* Keep track of the cleanups.  */
-		  cleanups = tree_cons (parm, cleanup, cleanups);
+		  cleanup = maybe_build_cleanup (parm);
+		  
+		  if (cleanup)
+		    cleanups = tree_cons (parm, cleanup, cleanups);
 		}
+	      else if (type != error_mark_node
+		       && TYPE_NEEDS_DESTRUCTOR (type))
+		parms_have_cleanups = 1;
 	    }
 	  else
 	    {
@@ -13200,9 +13200,6 @@ store_parm_decls ()
 	     PARM_DECLs that were pushed into scope by the loop above.  */
 	  DECL_ARGUMENTS (fndecl) = getdecls ();
 	  storetags (chainon (parmtags, gettags ()));
-
-	  /* We built up the cleanups in reversed order.  */
-	  cleanups = nreverse (cleanups);
 	}
     }
   else
@@ -13230,16 +13227,12 @@ store_parm_decls ()
   /* Now that we have initialized the parms, we can start their
      cleanups.  We cannot do this before, since expand_decl_cleanup
      should not be called before the parm can be used.  */
-  if (cleanups && !building_stmt_tree ())
-    while (cleanups)
-      {
-	if (! expand_decl_cleanup (TREE_PURPOSE (cleanups), 
-				   TREE_VALUE (cleanups)))
-	  cp_error ("parser lost in parsing declaration of `%D'",
-		    TREE_PURPOSE (cleanups));
-	
-	cleanups = TREE_CHAIN (cleanups);
-      }
+  while (cleanups)
+    {
+      finish_decl_cleanup (TREE_PURPOSE (cleanups), 
+			   TREE_VALUE (cleanups));
+      cleanups = TREE_CHAIN (cleanups);
+    }
 
   /* Create a binding contour which can be used to catch
      cleanup-generated temporaries.  Also, if the return value needs or
