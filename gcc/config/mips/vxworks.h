@@ -1,6 +1,4 @@
-/* Definitions for rtems targeting a MIPS ORION using ecoff.
-   Copyright (C) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
-   Contributed by Joel Sherrill (joel@OARcorp.com).
+/* Copyright (C) 1999 Free Software Foundation, Inc. */
 
 This file is part of GNU CC.
 
@@ -19,20 +17,9 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* Specify predefined symbols in preprocessor.  */
-
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dmips -DMIPSEB -DR4000 -D_mips -D_MIPSEB -D_R4000 \
-   -Drtems -D__rtems__ -Asystem(rtems)"
-
-/* Generate calls to memcpy, memcmp and memset.  */
-#ifndef TARGET_MEM_FUNCTIONS
-#define TARGET_MEM_FUNCTIONS
-#endif
-
-/* Undefine the following which were defined in elf64.h.  This will cause the rtems64
-   port to continue to use collect2 for constructors/destructors.  These may be removed
-   when .ctor/.dtor section support is desired. */
+/* Undefine the following which were defined in elf.h.  Thise will cause the mips-vxworks
+   port to continue to use collect2 for constructors/destructors.  This entire file may
+   be removed when .ctor/.dtor section support is desired. */
 
 #undef CTORS_SECTION_ASM_OP
 #undef DTORS_SECTION_ASM_OP
