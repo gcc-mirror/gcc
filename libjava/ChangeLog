@@ -1,3 +1,20 @@
+2001-03-19  Mark Wielaard <mark@klomp.org>
+
+	* java/util/ArrayList.java: Remove RCS keywords from comments
+	* java/util/BasicMapEntry.java: idem
+	* java/util/Dictionary.java: idem
+	* java/util/HashSet.java: idem
+
+	* java/util/EventObject.java: reindent
+	* java/util/Properties.java: idem
+	* java/util/SortedMap.java: idem
+
+	* java/util/Enumeration.java: Merge with Classpath
+	* java/util/EventListener.java: idem
+	* java/util/Observable.java: idem
+	* java/util/Observer.java: idem
+	* java/util/Stack.java: idem
+
 2001-03-17  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/natString.cc (rehash): Don't bother with memset;

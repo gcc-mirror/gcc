@@ -40,8 +40,6 @@ package java.util;
  * in the Collections framework.
  *
  * @author      Jon Zeppieri
- * @version     $Revision: 1.4 $
- * @modified    $Id: Dictionary.java,v 1.4 2000/10/26 10:19:00 bryce Exp $
  */
 public abstract class Dictionary extends Object
 {
