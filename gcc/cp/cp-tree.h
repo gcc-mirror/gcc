@@ -543,6 +543,10 @@ extern int flag_guiding_decls;
    and class qualifiers.       */
 extern int flag_do_squangling;
 
+/* Nonzero means generate separate instantiation control files and juggle
+   them at link time.  */
+extern int flag_use_repository;
+
 /* Nonzero if we want to issue diagnostics that the standard says are not
    required.  */
 extern int flag_optional_diags;

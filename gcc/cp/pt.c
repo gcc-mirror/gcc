@@ -8924,7 +8924,7 @@ do_decl_instantiation (declspecs, declarator, storage)
 	 We check DECL_INTERFACE_KNOWN so as not to complain when the
 	 first instantiation was `extern' and the second is not, and
 	 EXTERN_P for the opposite case.  */
-      if (DECL_INTERFACE_KNOWN (result) && !extern_p)
+      if (DECL_INTERFACE_KNOWN (result) && !extern_p && !flag_use_repository)
 	cp_pedwarn ("duplicate explicit instantiation of `%#D'", result);
 
       /* If we've already instantiated the template, just return now.  */
@@ -9052,8 +9052,8 @@ do_type_instantiation (t, storage)
          If CLASSTYPE_INTERFACE_ONLY, then the first explicit
 	 instantiation was `extern', and if EXTERN_P then the second
 	 is.  Both cases are OK.  */
-      if (!CLASSTYPE_INTERFACE_ONLY (t) && !extern_p)
-	cp_error ("duplicate explicit instantiation of `%#T'", t);
+      if (!CLASSTYPE_INTERFACE_ONLY (t) && !extern_p && !flag_use_repository)
+	cp_pedwarn ("duplicate explicit instantiation of `%#T'", t);
       
       /* If we've already instantiated the template, just return now.  */
       if (!CLASSTYPE_INTERFACE_ONLY (t))
