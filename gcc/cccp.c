@@ -993,7 +993,9 @@ static int deps_column;
 static int ignore_srcdir;
 
 /* Read LEN bytes at PTR from descriptor DESC, for file FILENAME,
-   retrying if necessary.  Return the actual number of bytes read.  */
+   retrying if necessary.  Return a negative value if an error occurs,
+   otherwise return the actual number of bytes read,
+   which must be LEN unless end-of-file was reached.  */
 
 static int
 safe_read (desc, ptr, len)
@@ -1942,41 +1944,25 @@ main (argc, argv)
     int size;
     int bsize;
     int cnt;
-    U_CHAR *bufp;
 
     bsize = 2000;
     size = 0;
     fp->buf = (U_CHAR *) xmalloc (bsize + 2);
-    bufp = fp->buf;
     for (;;) {
-      cnt = safe_read (f, bufp, bsize - size);
+      cnt = safe_read (f, fp->buf + size, bsize - size);
       if (cnt < 0) goto perror;	/* error! */
-      if (cnt == 0) break;	/* End of file */
       size += cnt;
-      bufp += cnt;
-      if (bsize == size) {	/* Buffer is full! */
-        bsize *= 2;
-        fp->buf = (U_CHAR *) xrealloc (fp->buf, bsize + 2);
-	bufp = fp->buf + size;	/* May have moved */
-      }
+      if (size != bsize) break;	/* End of file */
+      bsize *= 2;
+      fp->buf = (U_CHAR *) xrealloc (fp->buf, bsize + 2);
     }
     fp->length = size;
   } else {
     /* Read a file whose size we can determine in advance.
        For the sake of VMS, st_size is just an upper bound.  */
-    long i;
-    fp->length = 0;
     fp->buf = (U_CHAR *) xmalloc (st_size + 2);
-
-    while (st_size > 0) {
-      i = safe_read (f, fp->buf + fp->length, st_size);
-      if (i <= 0) {
-        if (i == 0) break;
-	goto perror;
-      }
-      fp->length += i;
-      st_size -= i;
-    }
+    fp->length = safe_read (f, fp->buf, st_size);
+    if (fp->length < 0) goto perror;
   }
   fp->bufp = fp->buf;
   fp->if_stack = if_stack;
@@ -4563,15 +4549,8 @@ finclude (f, fname, op, system_header_p, dirptr)
 
     /* Read the file contents, knowing that st_size is an upper bound
        on the number of bytes we can read.  */
-    while (st_size > 0) {
-      i = safe_read (f, fp->buf + fp->length, st_size);
-      if (i <= 0) {
-	if (i == 0) break;
-	goto nope;
-      }
-      fp->length += i;
-      st_size -= i;
-    }
+    fp->length = safe_read (f, fp->buf, st_size);
+    if (fp->length < 0) goto nope;
   }
   else if (S_ISDIR (st_mode)) {
     error ("directory `%s' specified in #include", fname);
@@ -4582,29 +4561,20 @@ finclude (f, fname, op, system_header_p, dirptr)
        First read the entire file into heap and
        copy them into buffer on stack. */
 
-    U_CHAR *bufp;
-    U_CHAR *basep;
     int bsize = 2000;
 
     st_size = 0;
-    basep = (U_CHAR *) xmalloc (bsize + 2);
-    fp->buf = basep; /* So it will get freed, on error.  */
-    bufp = basep;
+    fp->buf = (U_CHAR *) xmalloc (bsize + 2);
 
     for (;;) {
-      i = safe_read (f, bufp, bsize - st_size);
+      i = safe_read (f, fp->buf + st_size, bsize - st_size);
       if (i < 0)
 	goto nope;      /* error! */
-      if (i == 0)
-	break;	/* End of file */
       st_size += i;
-      bufp += i;
-      if (bsize == st_size) {	/* Buffer is full! */
-	  bsize *= 2;
-	  basep = (U_CHAR *) xrealloc (basep, bsize + 2);
-	  fp->buf = basep;
-	  bufp = basep + st_size;	/* May have moved */
-	}
+      if (st_size != bsize)
+	break;	/* End of file */
+      bsize *= 2;
+      fp->buf = (U_CHAR *) xrealloc (fp->buf, bsize + 2);
     }
     fp->bufp = fp->buf;
     fp->length = st_size;
@@ -4792,7 +4762,6 @@ check_precompiled (pcf, fname, limit)
   long st_size;
   int length = 0;
   char *buf;
-  int i;
   char *cp;
 
   if (pcp_outfile)
@@ -4804,16 +4773,9 @@ check_precompiled (pcf, fname, limit)
   if (S_ISREG (st_mode))
     {
       buf = xmalloc (st_size + 2);
-      while (st_size > 0)
-	{
-	  i = safe_read (pcf, buf + length, st_size);
-	  if (i < 0)
-	    goto nope;
-	  if (i == 0)
-	    break;
-	  length += i;
-	  st_size -= i;
-	}	  
+      length = safe_read (pcf, buf, st_size);
+      if (length < 0)
+	goto nope;
     }
   else
     abort ();
