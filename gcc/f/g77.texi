@@ -2,7 +2,7 @@
 @c %**start of header
 @setfilename g77.info
 
-@set last-update 2002-02-01
+@set last-update 2002-04-20
 @set copyrights-g77 1995,1996,1997,1998,1999,2000,2001,2002
 
 @include root.texi
@@ -161,7 +161,7 @@ was contributed to Craig by David Ronis (@email{ronis@@onsager.chem.mcgill.ca}).
 @sp 3
 @center Last updated @value{last-update}
 @sp 1
-@center for version @value{version-g77}
+@center for version @value{which-g77}
 @page
 @vskip 0pt plus 1filll
 Copyright @copyright{} @value{copyrights-g77} Free Software Foundation, Inc.
