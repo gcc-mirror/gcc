@@ -288,6 +288,40 @@ expunge_block (b)
   first_deleted_block = (basic_block) b;
 }
 
+/* Create an edge connecting SRC and DEST with flags FLAGS.  Return newly
+   created edge.  Use this only if you are sure that this edge can't
+   possibly already exist.  */
+
+edge
+unchecked_make_edge (src, dst, flags)
+     basic_block src, dst;
+     int flags;
+{
+  edge e;
+
+  if (first_deleted_edge)
+    {
+      e = first_deleted_edge;
+      first_deleted_edge = e->succ_next;
+    }
+  else
+    {
+      e = (edge) obstack_alloc (&flow_obstack, sizeof *e);
+      memset (e, 0, sizeof *e);
+    }
+  n_edges++;
+
+  e->succ_next = src->succ;
+  e->pred_next = dst->pred;
+  e->src = src;
+  e->dest = dst;
+  e->flags = flags;
+
+  src->succ = e;
+  dst->pred = e;
+
+  return e;
+}
 /* Create an edge connecting SRC and DST with FLAGS optionally using
    edge cache CACHE.  Return the new edge, NULL if already exist.  */
 
@@ -328,26 +362,7 @@ cached_make_edge (edge_cache, src, dst, flags)
       break;
     }
 
-  if (first_deleted_edge)
-    {
-      e = first_deleted_edge;
-      first_deleted_edge = e->succ_next;
-    }
-  else
-    {
-      e = (edge) obstack_alloc (&flow_obstack, sizeof *e);
-      memset (e, 0, sizeof *e);
-    }
-  n_edges++;
-
-  e->succ_next = src->succ;
-  e->pred_next = dst->pred;
-  e->src = src;
-  e->dest = dst;
-  e->flags = flags;
-
-  src->succ = e;
-  dst->pred = e;
+  e = unchecked_make_edge (src, dst, flags);
 
   if (use_edge_cache)
     SET_BIT (edge_cache[src->index], dst->index);

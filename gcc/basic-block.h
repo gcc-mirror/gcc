@@ -336,6 +336,8 @@ extern void connect_infinite_loops_to_exit	PARAMS ((void));
 extern int flow_call_edges_add		PARAMS ((sbitmap));
 extern edge cached_make_edge		PARAMS ((sbitmap *, basic_block,
 						 basic_block, int));
+extern edge unchecked_make_edge		PARAMS ((basic_block,
+						 basic_block, int));
 extern edge make_edge			PARAMS ((basic_block,
 						 basic_block, int));
 extern edge make_single_succ_edge	PARAMS ((basic_block,
