@@ -1,3 +1,7 @@
+2004-11-27  Andreas Schwab  <schwab@suse.de>
+
+	* Make-lang.in (ada/trans.o): Depend on $(EXPR_H).
+
 2004-11-25  Arnaud Charlet  <charlet@adacore.com>
 
 	* g-socthi-mingw.ads, g-socthi-vms.ads: Remove C_Read and C_Write from
