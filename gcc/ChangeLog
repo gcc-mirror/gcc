@@ -1,3 +1,14 @@
+2001-11-18  Craig Rodrigues  <rodrigc@gcc.gnu.org>
+
+	PR optimization/4815
+	* alias.c: Merge from mainline:
+	2001-08-05  Bernd Schmidt  <bernds@redhat.com>
+	* alias.c (rtx_equal_for_memref_p): VALUEs are only identical
+	if their CSELIB_VAL_PTRs are.
+	2001-07-25  Andrew Haley  <aph@cambridge.redhat.com>
+	* alias.c (rtx_equal_for_memref_p): Allow strings as types in
+	operands.
+
 2001-11-17  Craig Rodrigues  <rodrigc@gcc.gnu.org>
 
 	PR target/4606

@@ -1041,6 +1041,9 @@ rtx_equal_for_memref_p (x, y)
   /* Some RTL can be compared without a recursive examination.  */
   switch (code)
     {
+    case VALUE:
+     return CSELIB_VAL_PTR (x) == CSELIB_VAL_PTR (y);
+
     case REG:
       return REGNO (x) == REGNO (y);
 
@@ -1109,6 +1112,12 @@ rtx_equal_for_memref_p (x, y)
 	  if (rtx_equal_for_memref_p (XEXP (x, i), XEXP (y, i)) == 0)
 	    return 0;
 	  break;
+
+	  /* This can happen for asm operands.  */
+	case 's':
+	  if (strcmp (XSTR (x, i), XSTR (y, i)))
+	    return 0;
+	break;
 
 	/* This can happen for an asm which clobbers memory.  */
 	case '0':
