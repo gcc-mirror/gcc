@@ -1,3 +1,35 @@
+2000-08-02  Fred Fish  <fnf@be.com>
+
+	* config/i386/beos-elf.h (STARTFILE_SPEC): Add i386-mcount.o
+	when user gives -p option.  Add init_term_dyn.o for BeOS 5.0
+	and later.
+
+	* config/i386/beos-elf.h (INCLUDE_DEFAULTS): Add additional
+	Be directories to search path.
+	
+	Remove support for __declspec(dllimport) and __declspec(dllexport).
+	This is leftover cruft from the earlier BeOS gcc port when BeOS
+	used Microsoft's PE object file format.
+	* configure.in (i*86-*-beoself): Remove extra_objs=winnt.o.
+	* config/i386/t-beos (winnt.o): Remove Makefile frag.
+	* config/i386/beos-elf.h (TARGET_NOP_FUN_DLLIMPORT): Remove.
+	(VALID_MACHINE_DECL_ATTRIBUTE): Remove.
+	(VALID_MACHINE_TYPE_ATTRIBUTE): Remove.
+	(MERGE_MACHINE_DECL_ATTRIBUTES): Remove.
+	(REDO_SECTION_INFO_P): Remove.
+	(ASM_EXPORT_DECL): Remove.
+	(ASM_DECLARE_FUNCTION_NAME): Remove.
+	(ASM_DECLARE_OBJECT_NAME): Remove.
+	(ASM_OUTPUT_ALIGNED_COMMON): Remove.
+	(ASM_OUTPUT_ALIGNED_DECL_COMMON): Remove.
+	(ASM_OUTPUT_ALIGNED_LOCAL): Remove.
+	(STRIP_NAME_ENCODING): Remove.
+	
+	Remove support for obsolete version of BeOS that is no longer
+	supported by Be.
+	* configure.in (i*86-*-beospe*): Remove.
+	* config/i386/beos-pe.h: Remove.
+	
 2000-08-01  Jeffrey Oldham  <oldham@codesourcery.com>
             Mark Mitchell <mark@codesourcery.com>
 	

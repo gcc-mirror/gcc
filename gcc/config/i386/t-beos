@@ -9,6 +9,3 @@ CROSS_SYSTEM_HEADER_DIR = $(tooldir)/sys-include/posix
 
 # Use the system assert.h
 INSTALL_ASSERT_H =
-
-winnt.o: $(srcdir)/config/i386/winnt.c
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(srcdir)/config/i386/winnt.c
