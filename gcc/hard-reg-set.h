@@ -180,7 +180,7 @@ do { HARD_REG_ELT_TYPE *scan_xp_ = (X), *scan_yp_ = (Y); 	\
 	goto TO; } while (0)
 
 #else
-#if FIRST_PSEUDO_REGISTER <= 3*HOST_BITS_PER_WIDES_FAST_INT
+#if FIRST_PSEUDO_REGISTER <= 3*HOST_BITS_PER_WIDEST_FAST_INT
 #define CLEAR_HARD_REG_SET(TO)  \
 do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
      scan_tp_[0] = 0;						\
