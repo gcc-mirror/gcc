@@ -234,8 +234,8 @@ public abstract class JarURLConnection extends URLConnection
   }
 
   /**
-   * Return the JAR entry object for this connection, if any
-   *
+   * Returns the entry in this jar file specified by the URL.  
+   * 
    * @return The jar entry
    *
    * @exception IOException If an error occurs
@@ -285,7 +285,7 @@ public abstract class JarURLConnection extends URLConnection
   }
 
   /**
-   * Return the JAR file for this connection
+   * Returns a read-only JarFile object for the remote jar file
    *
    * @return The JarFile object
    *
@@ -426,13 +426,16 @@ public abstract class JarURLConnection extends URLConnection
    *
    * @exception IOException If an error occurs
    */
-  public Certificate[] getCertificates() throws IOException
+  public Certificate[] getCertificates () throws IOException
   {
-    return getJarEntry().getCertificates();
+    return getJarEntry ().getCertificates ();
   }
 
   /**
-   * Returns the main Attributes for the JAR file for this connection
+   * Returns the main Attributes for the jar file specified in the URL or
+   * null if there are none
+   *
+   * @return The main Attributes for the JAR file for this connection
    *
    * @exception IOException If an error occurs
    */
@@ -442,7 +445,10 @@ public abstract class JarURLConnection extends URLConnection
   }
 
   /**
-   * Return the Attributes object for this connection if the URL for it points
+   * Returns the Attributes for the Jar entry specified by the URL or null
+   * if none
+   *
+   * @return The Attributes object for this connection if the URL for it points
    * to a JAR file entry, null otherwise
    *
    * @exception IOException If an error occurs
@@ -454,7 +460,10 @@ public abstract class JarURLConnection extends URLConnection
   }
 
   /**
-   * Returns the Manifest for this connection, or null if none
+   * Returns a Manifest object for this jar file, or null if there is no
+   * manifest.
+   *
+   * @return The Manifest for this connection, or null if none
    *
    * @exception IOException If an error occurs
    */

@@ -1021,4 +1021,5 @@ public abstract class URLConnection
     dateFormat3 = new SimpleDateFormat("EEE MMM d hh:mm:ss yyyy", locale);
     dateformats_initialized = true;
   }
-}
+} // class URLConnection
+

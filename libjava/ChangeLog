@@ -1,5 +1,17 @@
 2003-05-09  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/JarURLConnection.java
+	(getJarEntry): Merged documentation from classpath.
+	(getJarFile): Likewise.
+	(getMainAttributes): Likewise.
+	(getAttributes): Likewise.
+	(getManifest): Likewise.
+	(getCertificates): Reformatted.
+	* java/net/URLConnection.java:
+	Little classpath merge.
+
+2003-05-09  Michael Koch  <konqueror@gmx.de>
+
 	* java/io/DataOutputStream.java
 	(writeShort): Made it synchronized.
 	(writeChar): Likewise.
