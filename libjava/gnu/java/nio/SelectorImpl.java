@@ -53,14 +53,6 @@ import gnu.classpath.Configuration;
 
 public class SelectorImpl extends AbstractSelector
 {
-  static
-  {
-    // load the shared library needed for native methods.
-    if (Configuration.INIT_LOAD_LIBRARY)
-      {
-        System.loadLibrary ("javanio");
-      }
-  }
   
   private Set keys;
   private Set selected;
@@ -139,11 +131,6 @@ public class SelectorImpl extends AbstractSelector
   {
     return select (0);
   }
-
-  // A timeout value of 0 means block forever.
-  private static native int implSelect (int[] read, int[] write,
-                                        int[] except, long timeout)
-    throws IOException;
 
   private final int[] getFDsAsArray (int ops)
   {
@@ -237,7 +224,7 @@ public class SelectorImpl extends AbstractSelector
             try
               {
                 begin();
-                result = implSelect (read, write, except, timeout);
+                result = VMSelector.select (read, write, except, timeout);
               }
             finally
               {

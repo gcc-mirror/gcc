@@ -1,6 +1,6 @@
 // natPipeImplEcos.cc
 
-/* Copyright (C) 2003  Free Software Foundation
+/* Copyright (C) 2003, 2004  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -16,10 +16,12 @@ details.  */
 #include <unistd.h>
 
 #include <gnu/java/nio/PipeImpl.h>
+#include <gnu/java/nio/VMPipe.h>
 #include <java/io/IOException.h>
 
 void
-gnu::java::nio::PipeImpl::nativeInit (::java::nio::channels::spi::SelectorProvider*)
+gnu::java::nio::VMPipe::init (gnu::java::nio::PipeImpl *self,
+			      ::java::nio::channels::spi::SelectorProvider*)
 {
   throw new ::java::io::IOException (JvNewStringUTF ("nativeInit() not implemented"));
 }

@@ -1,6 +1,6 @@
 // natPipeImplWin32.cc
 
-/* Copyright (C) 2003  Free Software Foundation
+/* Copyright (C) 2003, 2004  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -16,13 +16,15 @@ details.  */
 #include <unistd.h>
 
 #include <gnu/java/nio/PipeImpl.h>
+#include <gnu/java/nio/VMPipe.h>
 //#include <gnu/java/nio/PipeImpl$SinkChannelImpl.h>
 //#include <gnu/java/nio/PipeImpl$SourceChannelImpl.h>
 #include <java/io/IOException.h>
 #include <java/nio/channels/spi/SelectorProvider.h>
 
 void
-gnu::java::nio::PipeImpl::nativeInit (::java::nio::channels::spi::SelectorProvider* /*provider*/)
+gnu::java::nio::VMPipe::init (gnu::java::nio::PipeImpl *self,
+			      ::java::nio::channels::spi::SelectorProvider* /*provider*/)
 {
   int filedes [2];
 

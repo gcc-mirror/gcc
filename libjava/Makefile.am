@@ -2663,6 +2663,8 @@ gnu/java/nio/ServerSocketChannelImpl.java \
 gnu/java/nio/ServerSocketChannelSelectionKey.java \
 gnu/java/nio/SocketChannelImpl.java \
 gnu/java/nio/SocketChannelSelectionKey.java \
+gnu/java/nio/VMPipe.java \
+gnu/java/nio/VMSelector.java \
 gnu/java/nio/channels/FileChannelImpl.java \
 gnu/java/nio/charset/ISO_8859_1.java \
 gnu/java/nio/charset/Provider.java \

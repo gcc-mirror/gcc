@@ -1,6 +1,6 @@
 // natSelectorImplWin32.cc
 
-/* Copyright (C) 2003  Free Software Foundation
+/* Copyright (C) 2003, 2004  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -11,12 +11,12 @@ details.  */
 #include <config.h>
 #include <platform.h>
 
-#include <gnu/java/nio/SelectorImpl.h>
+#include <gnu/java/nio/VMSelector.h>
 #include <java/lang/Thread.h>
 
 jint
-gnu::java::nio::SelectorImpl::implSelect (jintArray read, jintArray write,
-                                          jintArray except, jlong timeout)
+gnu::java::nio::VMSelector::select (jintArray read, jintArray write,
+                                    jintArray except, jlong timeout)
 {
   // FIXME: The API for implSelect is biased towards POSIX implementations.
   jint* pReadFD = elements (read);

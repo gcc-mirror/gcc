@@ -781,6 +781,7 @@ am__libgcj_la_SOURCES_DIST = prims.cc jni.cc exception.cc resolve.cc \
 	gnu/java/nio/ServerSocketChannelSelectionKey.java \
 	gnu/java/nio/SocketChannelImpl.java \
 	gnu/java/nio/SocketChannelSelectionKey.java \
+	gnu/java/nio/VMPipe.java gnu/java/nio/VMSelector.java \
 	gnu/java/nio/channels/FileChannelImpl.java \
 	gnu/java/nio/charset/ISO_8859_1.java \
 	gnu/java/nio/charset/Provider.java \
@@ -3679,6 +3680,7 @@ am__objects_14 = $(am__objects_9) gnu/classpath/ServiceFactory.lo \
 	gnu/java/nio/ServerSocketChannelSelectionKey.lo \
 	gnu/java/nio/SocketChannelImpl.lo \
 	gnu/java/nio/SocketChannelSelectionKey.lo \
+	gnu/java/nio/VMPipe.lo gnu/java/nio/VMSelector.lo \
 	gnu/java/nio/channels/FileChannelImpl.lo \
 	gnu/java/nio/charset/ISO_8859_1.lo \
 	gnu/java/nio/charset/Provider.lo \
@@ -6466,6 +6468,8 @@ gnu/java/nio/ServerSocketChannelImpl.java \
 gnu/java/nio/ServerSocketChannelSelectionKey.java \
 gnu/java/nio/SocketChannelImpl.java \
 gnu/java/nio/SocketChannelSelectionKey.java \
+gnu/java/nio/VMPipe.java \
+gnu/java/nio/VMSelector.java \
 gnu/java/nio/channels/FileChannelImpl.java \
 gnu/java/nio/charset/ISO_8859_1.java \
 gnu/java/nio/charset/Provider.java \
@@ -9227,6 +9231,10 @@ gnu/java/nio/SocketChannelImpl.lo: gnu/java/nio/$(am__dirstamp) \
 	gnu/java/nio/$(DEPDIR)/$(am__dirstamp)
 gnu/java/nio/SocketChannelSelectionKey.lo:  \
 	gnu/java/nio/$(am__dirstamp) \
+	gnu/java/nio/$(DEPDIR)/$(am__dirstamp)
+gnu/java/nio/VMPipe.lo: gnu/java/nio/$(am__dirstamp) \
+	gnu/java/nio/$(DEPDIR)/$(am__dirstamp)
+gnu/java/nio/VMSelector.lo: gnu/java/nio/$(am__dirstamp) \
 	gnu/java/nio/$(DEPDIR)/$(am__dirstamp)
 gnu/java/nio/channels/FileChannelImpl.lo:  \
 	gnu/java/nio/channels/$(am__dirstamp) \
@@ -14776,6 +14784,10 @@ mostlyclean-compile:
 	-rm -f gnu/java/nio/SocketChannelImpl.lo
 	-rm -f gnu/java/nio/SocketChannelSelectionKey.$(OBJEXT)
 	-rm -f gnu/java/nio/SocketChannelSelectionKey.lo
+	-rm -f gnu/java/nio/VMPipe.$(OBJEXT)
+	-rm -f gnu/java/nio/VMPipe.lo
+	-rm -f gnu/java/nio/VMSelector.$(OBJEXT)
+	-rm -f gnu/java/nio/VMSelector.lo
 	-rm -f gnu/java/nio/channels/FileChannelImpl.$(OBJEXT)
 	-rm -f gnu/java/nio/channels/FileChannelImpl.lo
 	-rm -f gnu/java/nio/channels/natFileChannelImpl.$(OBJEXT)
@@ -19345,6 +19357,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/nio/$(DEPDIR)/ServerSocketChannelSelectionKey.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/nio/$(DEPDIR)/SocketChannelImpl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/nio/$(DEPDIR)/SocketChannelSelectionKey.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/nio/$(DEPDIR)/VMPipe.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/nio/$(DEPDIR)/VMSelector.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/nio/$(DEPDIR)/natNIOServerSocket.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/nio/$(DEPDIR)/natPipeImpl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/nio/$(DEPDIR)/natSelectorImpl.Plo@am__quote@
