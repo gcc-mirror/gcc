@@ -109,10 +109,22 @@ print_node_brief (file, prefix, node, indent)
 	fprintf (file, " overflow");
 
       if (TREE_INT_CST_HIGH (node) == 0)
-	fprintf (file, " %1u", TREE_INT_CST_LOW (node));
+	fprintf (file,
+#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
+		 " %1u",
+#else
+		 " %1lu",
+#endif
+		 TREE_INT_CST_LOW (node));
       else if (TREE_INT_CST_HIGH (node) == -1
 	       && TREE_INT_CST_LOW (node) != 0)
-	fprintf (file, " -%1u", -TREE_INT_CST_LOW (node));
+	fprintf (file,
+#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
+		 " -%1u",
+#else
+		 " -%1lu",
+#endif
+		 -TREE_INT_CST_LOW (node));
       else
 	fprintf (file,
 #if HOST_BITS_PER_WIDE_INT == 64
@@ -558,10 +570,22 @@ print_node (file, prefix, node, indent)
 	    fprintf (file, " overflow");
 
 	  if (TREE_INT_CST_HIGH (node) == 0)
-	    fprintf (file, " %1u", TREE_INT_CST_LOW (node));
+	    fprintf (file,
+#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
+		     " %1u",
+#else
+		     " %1lu",
+#endif
+		     TREE_INT_CST_LOW (node));
 	  else if (TREE_INT_CST_HIGH (node) == -1
 		   && TREE_INT_CST_LOW (node) != 0)
-	    fprintf (file, " -%1u", -TREE_INT_CST_LOW (node));
+	    fprintf (file,
+#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
+		     " -%1u",
+#else
+		     " -%1lu",
+#endif
+		     -TREE_INT_CST_LOW (node));
 	  else
 	    fprintf (file,
 #if HOST_BITS_PER_WIDE_INT == 64
