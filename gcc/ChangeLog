@@ -1,3 +1,32 @@
+2004-12-15  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR other/18665
+	* libgcc-std.ver (GCC_3.4.4): Inherit from GCC_3.4.2.
+	Export __absvti2, __addvti3, __mulvti3, __negvti2 and __subvti3.
+	* libgcc-darwin.ver (GCC_3.4.4): Inherit from GCC_3.4.
+	Export __absvti2, __addvti3, __mulvti3, __negvti2 and __subvti3.
+	* libgcc2.c (__addvsi3): Rename to __addvSI3.
+	New version if COMPAT_SIMODE_TRAPPING_ARITHMETIC.
+	(__addvdi3): Rename to __addvDI3.
+	(__subvsi3): Rename to __subvSI3.  Use word type for the result.
+	New version if COMPAT_SIMODE_TRAPPING_ARITHMETIC.
+	(__subvdi3): Rename to __subvDI3.
+	(_mulvsi3): Rename to _mulvSI3.
+	New version if COMPAT_SIMODE_TRAPPING_ARITHMETIC.
+	(_mulvdi3): Rename to _mulvDI3.
+	(__negvsi2): Rename to __negvSI2.
+	New version if COMPAT_SIMODE_TRAPPING_ARITHMETIC.
+	(__negvdi2): Rename to __negvDI2.
+	(__absvsi2): Rename to __absvSI2.
+	New version if COMPAT_SIMODE_TRAPPING_ARITHMETIC.
+	(__absvdi2): Rename to __absvDI2.
+	* libgcc2.h (64-bit targets): Define COMPAT_SIMODE_TRAPPING_ARITHMETIC.
+	(__absvSI2, __addvSI3, __subvSI3, __mulvSI3, __negvSI2, __absvDI2,
+	__addvDI3, __subvDI3, __mulvDI3, __negvDI2): Define to the appropriate
+	symbol and declare.
+	(__absvsi2, __addvsi3, __subvsi3, __mulvsi3, __negvsi2): Declare if
+	COMPAT_SIMODE_TRAPPING_ARITHMETIC.
+
 2004-12-14  Steve Ellcey  <sje@cup.hp.com>
 
 	* doc/invoke.texi (IA-64 options): Add existing options that
