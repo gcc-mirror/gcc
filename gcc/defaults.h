@@ -169,6 +169,53 @@ do { fputs (integer_asm_op (POINTER_SIZE / UNITS_PER_WORD, TRUE), FILE); \
 #endif
 #endif
 
+/* How to emit a .type directive.  */
+#ifndef ASM_OUTPUT_TYPE_DIRECTIVE
+#if defined TYPE_ASM_OP && defined TYPE_OPERAND_FMT
+#define ASM_OUTPUT_TYPE_DIRECTIVE(STREAM, NAME, TYPE)	\
+  do							\
+    {							\
+      fputs (TYPE_ASM_OP, STREAM);			\
+      assemble_name (STREAM, NAME);			\
+      fputs (", ", STREAM);				\
+      fprintf (STREAM, TYPE_OPERAND_FMT, TYPE);		\
+      putc ('\n', STREAM);				\
+    }							\
+  while (0)
+#endif
+#endif
+
+/* How to emit a .size directive.  */
+#ifndef ASM_OUTPUT_SIZE_DIRECTIVE
+#ifdef SIZE_ASM_OP
+#define ASM_OUTPUT_SIZE_DIRECTIVE(STREAM, NAME, SIZE)	\
+  do							\
+    {							\
+      HOST_WIDE_INT size_ = (SIZE);			\
+      fputs (SIZE_ASM_OP, STREAM);			\
+      assemble_name (STREAM, NAME);			\
+      fputs (", ", STREAM);				\
+      fprintf (STREAM, HOST_WIDE_INT_PRINT_DEC, size_);	\
+      putc ('\n', STREAM);				\
+    }							\
+  while (0)
+
+#define ASM_OUTPUT_MEASURED_SIZE(STREAM, BEG, END)	\
+  do							\
+    {							\
+      fputs (SIZE_ASM_OP, STREAM);			\
+      assemble_name (STREAM, BEG);			\
+      fputs (", ", STREAM);				\
+      assemble_name (STREAM, END);			\
+      putc ('-', STREAM);				\
+      assemble_name (STREAM, BEG);			\
+      putc ('\n', STREAM);				\
+    }							\
+  while (0)
+
+#endif
+#endif
+
 /* This determines whether or not we support weak symbols.  */
 #ifndef SUPPORTS_WEAK
 #if defined (ASM_WEAKEN_LABEL) || defined (ASM_WEAKEN_DECL)

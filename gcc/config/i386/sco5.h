@@ -139,13 +139,9 @@ do {									\
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)			\
   do {									\
     if (TARGET_ELF) {							\
-      fprintf (FILE, "%s", TYPE_ASM_OP);				\
-      assemble_name (FILE, NAME);					\
-      putc (',', FILE);							\
-      fprintf (FILE, TYPE_OPERAND_FMT, "function");			\
-      putc ('\n', FILE);						\
+      ASM_OUTPUT_TYPE_DIRECTIVE (FILE, NAME, "function");		\
       ASM_DECLARE_RESULT (FILE, DECL_RESULT (DECL));			\
-      ASM_OUTPUT_LABEL(FILE, NAME);					\
+      ASM_OUTPUT_LABEL (FILE, NAME);					\
     } else								\
       SCO_DEFAULT_ASM_COFF(FILE, NAME);					\
 } while (0)
@@ -153,34 +149,28 @@ do {									\
 #undef ASM_DECLARE_FUNCTION_SIZE
 #define ASM_DECLARE_FUNCTION_SIZE(FILE, FNAME, DECL)			\
   do {									\
-    if (TARGET_ELF) { if (!flag_inhibit_size_directive)			\
-      {									\
-	fprintf (FILE, "%s", SIZE_ASM_OP);				\
-	assemble_name (FILE, (FNAME));					\
-        fprintf (FILE, ",.-");						\
-	assemble_name (FILE, (FNAME));					\
-	putc ('\n', FILE);						\
-      }	}								\
+    if (TARGET_ELF && !flag_inhibit_size_directive)			\
+      ASM_OUTPUT_MEASURED_SIZE (FILE, (FNAME), ".");			\
   } while (0)
 
 #undef ASM_DECLARE_OBJECT_NAME
 #define ASM_DECLARE_OBJECT_NAME(FILE, NAME, DECL)			\
   do {									\
     if (TARGET_ELF) {							\
-      fprintf (FILE, "%s", TYPE_ASM_OP);				\
-      assemble_name (FILE, NAME);					\
-      putc (',', FILE);							\
-      fprintf (FILE, TYPE_OPERAND_FMT, "object");			\
-      putc ('\n', FILE);						\
+      HOST_WIDE_INT size;						\
+									\
+      ASM_OUTPUT_TYPE_DIRECTIVE (FILE, NAME, "object");			\
+									\
       size_directive_output = 0;					\
-      if (!flag_inhibit_size_directive && DECL_SIZE (DECL))		\
-        {								\
-  	size_directive_output = 1;					\
-	fprintf (FILE, "%s", SIZE_ASM_OP);				\
-	assemble_name (FILE, NAME);					\
-	fprintf (FILE, ",%d\n",  int_size_in_bytes (TREE_TYPE (DECL)));	\
-        }								\
-      ASM_OUTPUT_LABEL(FILE, NAME);					\
+      if (!flag_inhibit_size_directive					\
+	  && (DECL) && DECL_SIZE (DECL))				\
+	{								\
+	  size_directive_output = 1;					\
+	  size = int_size_in_bytes (TREE_TYPE (DECL));			\
+	  ASM_OUTPUT_SIZE_DIRECTIVE (FILE, NAME, size);			\
+	}								\
+									\
+      ASM_OUTPUT_LABEL (FILE, NAME);					\
     } else								\
       SCO_DEFAULT_ASM_COFF(FILE, NAME);					\
   } while (0)
@@ -198,17 +188,17 @@ do {									\
 #undef ASM_FINISH_DECLARE_OBJECT
 #define ASM_FINISH_DECLARE_OBJECT(FILE, DECL, TOP_LEVEL, AT_END)	 \
 do {									 \
-  if (TARGET_ELF) {							\
+  if (TARGET_ELF) {							 \
      const char *name = XSTR (XEXP (DECL_RTL (DECL), 0), 0);		 \
+     HOST_WIDE_INT size;						 \
      if (!flag_inhibit_size_directive && DECL_SIZE (DECL)		 \
          && ! AT_END && TOP_LEVEL					 \
 	 && DECL_INITIAL (DECL) == error_mark_node			 \
 	 && !size_directive_output)					 \
        {								 \
 	 size_directive_output = 1;					 \
-	 fprintf (FILE, "%s", SIZE_ASM_OP);			 	 \
-	 assemble_name (FILE, name);					 \
-	 fprintf (FILE, ",%d\n",  int_size_in_bytes (TREE_TYPE (DECL))); \
+	 size = int_size_in_bytes (TREE_TYPE (DECL));			 \
+	 ASM_OUTPUT_SIZE_DIRECTIVE (FILE, name, size);			 \
        }								 \
     }									 \
 } while (0)

@@ -76,14 +76,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 	  							\
 	  ASM_GENERATE_INTERNAL_LABEL (label, "Lfe", labelno);	\
 	  ASM_OUTPUT_INTERNAL_LABEL (FILE, "Lfe", labelno);	\
-	  							\
-	  fprintf (FILE, "%s", SIZE_ASM_OP);			\
-	  assemble_name (FILE, (FNAME));			\
-	  fprintf (FILE, ",");					\
-	  assemble_name (FILE, label);				\
-	  fprintf (FILE, "-");					\
-	  assemble_name (FILE, (FNAME));			\
-	  putc ('\n', FILE);					\
+	  ASM_OUTPUT_MEASURED_SIZE (FILE, FNAME, label);	\
 	}							\
       XTENSA_DECLARE_FUNCTION_SIZE(FILE, FNAME, DECL);		\
     }								\

@@ -1,3 +1,23 @@
+2002-07-24  Zack Weinberg  <zack@codesourcery.com>
+
+	* defaults.h (ASM_OUTPUT_TYPE_DIRECTIVE, ASM_OUTPUT_SIZE_DIRECTIVE,
+	ASM_OUTPUT_MEASURED_SIZE): New default definitions of new macros.
+	* doc/tm.texi: Document them.  Also document SIZE_ASM_OP,
+	TYPE_ASM_OP, and TYPE_OPERAND_FMT.
+
+	* config/elfos.h, config/netbsd-aout.h, config/openbsd.h,
+	config/alpha/elf.h, config/arm/elf.h, config/avr/avr.h,
+	config/cris/aout.h, config/i386/freebsd-aout.h,
+	config/i386/sco5.h, config/ia64/ia64.c, config/ip2k/ip2k.h,
+	config/m68k/m68kelf.h, config/m68k/m68kv4.h, config/m88k/m88k.h,
+	config/mcore/mcore-elf.h, config/mips/elf.h, config/mips/elf64.h,
+	config/mips/iris6.h, config/mips/linux.h, config/pa/pa-linux.h,
+	config/pa/pa64-hpux.h, config/rs6000/sysv4.h,
+	config/xtensa/elf.h, config/xtensa/linux.h:
+	Use the new macros.
+	Where possible, remove redundant definitions of SIZE_ASM_OP,
+	TYPE_ASM_OP, and TYPE_OPERAND_FMT.
+
 2002-07-24  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/eabi.h: Define TARGET_SPE_ABI, TARGET_SPE,

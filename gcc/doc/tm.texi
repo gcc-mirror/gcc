@@ -6399,6 +6399,70 @@ Use the expression @code{assemble_name (@var{stream}, @var{name})} to
 output the name itself; before and after that, output the additional
 assembler syntax for defining the name, and a newline.
 
+@findex SIZE_ASM_OP
+@item SIZE_ASM_OP
+A C string containing the appropriate assembler directive to specify the
+size of a symbol, without any arguments.  On systems that use ELF, the
+default (in @file{config/elfos.h}) is @samp{"\t.size\t"}; on other
+systems, the default is not to define this macro.
+
+Define this macro only if it is correct to use the default definitions
+of @code{ASM_OUTPUT_SIZE_DIRECTIVE} and @code{ASM_OUTPUT_MEASURED_SIZE}
+for your system.  If you need your own custom definitions of those
+macros, or if you do not need explicit symbol sizes at all, do not
+define this macro.
+
+@findex ASM_OUTPUT_SIZE_DIRECTIVE
+@item ASM_OUTPUT_SIZE_DIRECTIVE (@var{stream}, @var{name}, @var{size})
+A C statement (sans semicolon) to output to the stdio stream
+@var{stream} a directive telling the assembler that the size of the
+symbol @var{name} is @var{size}.  @var{size} is a @code{HOST_WIDE_INT}.
+If you define @code{SIZE_ASM_OP}, a default definition of this macro is
+provided.
+
+@findex ASM_OUTPUT_MEASURED_SIZE
+@item ASM_OUTPUT_MEASURED_SIZE (@var{stream}, @var{beg}, @var{end})
+A C statement (sans semicolon) to output to the stdio stream
+@var{stream} a directive telling the assembler to calculate the size of
+the symbol @var{beg} by subtracting its address from that of the symbol
+@var{end}.  If you define @code{SIZE_ASM_OP}, a default definition of
+this macro is provided.
+
+@findex TYPE_ASM_OP
+@item TYPE_ASM_OP
+A C string containing the appropriate assembler directive to specify the
+type of a symbol, without any arguments.  On systems that use ELF, the
+default (in @file{config/elfos.h}) is @samp{"\t.type\t"}; on other
+systems, the default is not to define this macro.
+
+Define this macro only if it is correct to use the default definition of
+@code{ASM_OUTPUT_TYPE_DIRECTIVE} for your system.  If you need your own
+custom definition of this macro, or if you do not need explicit symbol
+types at all, do not define this macro.
+
+@findex TYPE_OPERAND_FMT
+@item TYPE_OPERAND_FMT
+A C string which specifies (using @code{printf} syntax) the format of
+the second operand to @code{TYPE_ASM_OP}.  On systems that use ELF, the
+default (in @file{config/elfos.h}) is @samp{"@@%s"}; on other systems,
+the default is not to define this macro.
+
+Define this macro only if it is correct to use the default definition of
+@code{ASM_OUTPUT_TYPE_DIRECTIVE} for your system.  If you need your own
+custom definition of this macro, or if you do not need explicit symbol
+types at all, do not define this macro.
+
+@findex ASM_OUTPUT_TYPE_DIRECTIVE
+@item ASM_OUTPUT_TYPE_DIRECTIVE (@var{stream}, @var{type})
+A C statement (sans semicolon) to output to the stdio stream
+@var{stream} a directive telling the assembler that the type of the
+symbol @var{name} is @var{type}.  @var{type} is a C string; currently,
+that string is always either @samp{"function"} or @samp{"object"}, but
+you should not count on this.
+
+If you define @code{TYPE_ASM_OP} and @code{TYPE_OPERAND_FMT}, a default
+definition of this macro is provided.
+
 @findex ASM_DECLARE_FUNCTION_NAME
 @item ASM_DECLARE_FUNCTION_NAME (@var{stream}, @var{name}, @var{decl})
 A C statement (sans semicolon) to output to the stdio stream
@@ -6411,6 +6475,9 @@ outputting the label definition (perhaps using
 If this macro is not defined, then the function name is defined in the
 usual manner as a label (by means of @code{ASM_OUTPUT_LABEL}).
 
+You may wish to use @code{ASM_OUTPUT_TYPE_DIRECTIVE} in the definition
+of this macro.
+
 @findex ASM_DECLARE_FUNCTION_SIZE
 @item ASM_DECLARE_FUNCTION_SIZE (@var{stream}, @var{name}, @var{decl})
 A C statement (sans semicolon) to output to the stdio stream
@@ -6420,6 +6487,9 @@ function.  The argument @var{decl} is the @code{FUNCTION_DECL} tree node
 representing the function.
 
 If this macro is not defined, then the function size is not defined.
+
+You may wish to use @code{ASM_OUTPUT_MEASURED_SIZE} in the definition
+of this macro.
 
 @findex ASM_DECLARE_OBJECT_NAME
 @item ASM_DECLARE_OBJECT_NAME (@var{stream}, @var{name}, @var{decl})
@@ -6431,6 +6501,9 @@ label definition (perhaps using @code{ASM_OUTPUT_LABEL}).  The argument
 
 If this macro is not defined, then the variable name is defined in the
 usual manner as a label (by means of @code{ASM_OUTPUT_LABEL}).
+
+You may wish to use @code{ASM_OUTPUT_TYPE_DIRECTIVE} and/or
+@code{ASM_OUTPUT_SIZE_DIRECTIVE} in the definition of this macro.
 
 @findex ASM_DECLARE_REGISTER_GLOBAL
 @item ASM_DECLARE_REGISTER_GLOBAL (@var{stream}, @var{decl}, @var{regno}, @var{name})
@@ -6451,6 +6524,9 @@ something about the size of the object.
 
 If you don't define this macro, that is equivalent to defining it to do
 nothing.
+
+You may wish to use @code{ASM_OUTPUT_SIZE_DIRECTIVE} and/or
+@code{ASM_OUTPUT_MEASURED_SIZE} in the definition of this macro.
 
 @findex ASM_GLOBALIZE_LABEL
 @item ASM_GLOBALIZE_LABEL (@var{stream}, @var{name})
