@@ -1,3 +1,15 @@
+2003-06-08  Andreas Jaeger  <aj@suse.de>
+
+	* predict.h: Convert to ISO C90 prototypes.
+	* predict.c: Likewise.
+	* tree-dump.h: Likewise.
+	* tree-dump.c: Likewise.
+	* diagnostic.h: Likewise.
+	* diagnostic.c: Likewise.
+	* combine.c: Likewise.
+
+	* rtl.h: Convert prototypes of combine.c to ISO C90.
+
 Sun Jun  8 21:27:41 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* cfglayout.c (insn_scope): New static function
