@@ -24,6 +24,11 @@ public class MenuItem extends MenuComponent
 
   transient ActionListener actionListener;
 
+  public MenuItem ()
+  {
+    this.label = "";
+  }
+
   public MenuItem (String label)
   {
     this.label = label;
