@@ -584,7 +584,7 @@ maybe_objc_comptypes (lhs, rhs, reflexive)
 {
   if (doing_objc_thang)
     return objc_comptypes (lhs, rhs, reflexive);
-  return 2;
+  return 0;
 }
 
 static tree
