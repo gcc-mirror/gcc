@@ -463,7 +463,7 @@ emit_call_1 (rtx funexp, tree fntree, tree fndecl ATTRIBUTE_UNUSED,
    For example, if the function might return more than one time (setjmp), then
    set RETURNS_TWICE to a nonzero value.
 
-   Similarly set LONGJMP for if the function is in the longjmp family.
+   Similarly set NORETURN if the function is in the longjmp family.
 
    Set MAY_BE_ALLOCA for any memory allocation function that might allocate
    space from the stack such as alloca.  */
@@ -538,7 +538,7 @@ special_function_p (tree fndecl, int flags)
   return flags;
 }
 
-/* Return nonzero when tree represent call to longjmp.  */
+/* Return nonzero when FNDECL represents a call to setjmp.  */
 
 int
 setjmp_call_p (tree fndecl)

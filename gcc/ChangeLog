@@ -1,3 +1,9 @@
+2005-03-18  Alexey Neyman  <alex.neyman@auriga.ru>
+	    Paolo Bonzini  <gcc.gnu.org>
+
+	* calls.c (setjmp_call_p, special_function_p): Update comments
+	at the head of the functions.
+
 2005-03-18  Jan Hubicka  <jh@suse.cz>
 
 	* tree-cfg.c (fold_cond_expr_cond): Use boolean types for condition.
