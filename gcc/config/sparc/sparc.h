@@ -1345,6 +1345,8 @@ extern int sparc_arg_count,sparc_n_named_args;
       ((FNTYPE) && TYPE_ARG_TYPES (FNTYPE)			\
        ? (list_length (TYPE_ARG_TYPES (FNTYPE))			\
 	  + (TREE_CODE (TREE_TYPE (FNTYPE)) == RECORD_TYPE	\
+	     || TREE_CODE (TREE_TYPE (FNTYPE)) == QUAL_UNION_TYPE)\
+	     || TREE_CODE (TREE_TYPE (FNTYPE)) == SET_TYPE)	\
 	     || TREE_CODE (TREE_TYPE (FNTYPE)) == UNION_TYPE))	\
        /* Can't tell, treat 'em all as named.  */		\
        : 10000);						\
@@ -1448,10 +1450,8 @@ extern int sparc_arg_count,sparc_n_named_args;
 /* The SPARC ABI stipulates passing struct arguments (of any size) and
    (!v9) quad-precision floats by invisible reference.
    For Pascal, also pass arrays by reference.  */
-#define FUNCTION_ARG_PASS_BY_REFERENCE(CUM, MODE, TYPE, NAMED)		\
-  ((TYPE && (TREE_CODE (TYPE) == RECORD_TYPE				\
-	    || TREE_CODE (TYPE) == UNION_TYPE				\
-    	    || TREE_CODE (TYPE) == ARRAY_TYPE))				\
+#define FUNCTION_ARG_PASS_BY_REFERENCE(CUM, MODE, TYPE, NAMED)	\
+  ((TYPE && AGGREGATE_TYPE_P (TYPE))				\
    || (!TARGET_V9 && MODE == TFmode))
 
 /* A C expression that indicates when it is the called function's
