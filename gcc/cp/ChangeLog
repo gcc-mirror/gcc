@@ -1,3 +1,8 @@
+2001-03-22  Richard Henderson  <rth@redhat.com>
+
+	* Make-lang.in (cp/except.o): Don't depend on insn-flags.h.
+	* except.c: Don't include it.
+
 2001-03-22  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
             based on an idea from Joe Buck <jbuck@synopsys.com>
 
