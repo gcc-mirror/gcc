@@ -232,7 +232,10 @@ make_edges (basic_block min, basic_block max, int update_p)
   current_function_has_computed_jump = 0;
 
   /* If we are partitioning hot and cold basic blocks into separate
-     sections, we cannot assume there is no computed jump.  */
+     sections, we cannot assume there is no computed jump (partitioning
+     sometimes requires the use of indirect jumps; see comments about
+     partitioning at the top of bb-reorder.c:partition_hot_cold_basic_blocks 
+     for complete details).  */
 
   if (flag_reorder_blocks_and_partition)
     current_function_has_computed_jump = 1;

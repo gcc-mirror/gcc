@@ -2009,20 +2009,57 @@ reorder_basic_blocks (unsigned int flags)
    been called.  However part of this optimization may introduce new
    register usage, so it must be called before register allocation has
    occurred.  This means that this optimization is actually called
-   well before the optimization that reorders basic blocks (see function
-   above).
+   well before the optimization that reorders basic blocks (see
+   function above).
 
    This optimization checks the feedback information to determine
-   which basic blocks are hot/cold and adds
-   NOTE_INSN_UNLIKELY_EXECUTED_CODE to non-hot basic blocks.  The
+   which basic blocks are hot/cold and causes reorder_basic_blocks to
+   add NOTE_INSN_UNLIKELY_EXECUTED_CODE to non-hot basic blocks.  The
    presence or absence of this note is later used for writing out
-   sections in the .o file.  This optimization must also modify the
-   CFG to make sure there are no fallthru edges between hot & cold
-   blocks, as those blocks will not necessarily be contiguous in the
-   .o (or assembly) file; and in those cases where the architecture
-   requires it, conditional and unconditional branches that cross
-   between sections are converted into unconditional or indirect
-   jumps, depending on what is appropriate.  */
+   sections in the .o file.  Because hot and cold sections can be
+   arbitrarily large (within the bounds of memory), far beyond the
+   size of a single function, it is necessary to fix up all edges that
+   cross section boundaries, to make sure the instructions used can
+   actually span the required distance.  The fixes are described
+   below.
+
+   Fall-through edges must be changed into jumps; it is not safe or
+   legal to fall through across a section boundary.  Whenever a
+   fall-through edge crossing a section boundary is encountered, a new
+   basic block is inserted (in the same section as the fall-through
+   source), and the fall through edge is redirected to the new basic
+   block.  The new basic block contains an unconditional jump to the
+   original fall-through target.  (If the unconditional jump is
+   insufficient to cross section boundaries, that is dealt with a
+   little later, see below).
+
+   In order to deal with architectures that have short conditional
+   branches (which cannot span all of memory) we take any conditional
+   jump that attempts to cross a section boundary and add a level of
+   indirection: it becomes a conditional jump to a new basic block, in
+   the same section.  The new basic block contains an unconditional
+   jump to the original target, in the other section.
+
+   For those architectures whose unconditional branch is also
+   incapable of reaching all of memory, those unconditional jumps are
+   converted into indirect jumps, through a register.
+
+   IMPORTANT NOTE: This optimization causes some messy interactions
+   with the cfg cleanup optimizations; those optimizations want to
+   merge blocks wherever possible, and to collapse indirect jump
+   sequences (change "A jumps to B jumps to C" directly into "A jumps
+   to C").  Those optimizations can undo the jump fixes that
+   partitioning is required to make (see above), in order to ensure
+   that jumps attempting to cross section boundaries are really able
+   to cover whatever distance the jump requires (on many architectures
+   conditional or unconditional jumps are not able to reach all of
+   memory).  Therefore tests have to be inserted into each such
+   optimization to make sure that it does not undo stuff necessary to
+   cross partition boundaries.  This would be much less of a problem
+   if we could perform this optimization later in the compilation, but
+   unfortunately the fact that we may need to create indirect jumps
+   (through registers) requires that this optimization be performed
+   before register allocation.  */
 
 void
 partition_hot_cold_basic_blocks (void)

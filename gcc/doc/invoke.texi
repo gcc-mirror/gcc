@@ -4617,6 +4617,11 @@ to reduce number of taken branches, partitions hot and cold basic blocks
 into separate sections of the assembly and .o files, to improve
 paging and cache locality performance.
 
+This optimization is automatically turned off in the presence of
+exception handling, for linkonce sections, for functions with a user-defined
+section attribute and on any architecture that does not support named
+sections.
+
 @item -freorder-functions
 @opindex freorder-functions
 Reorder basic blocks in the compiled function in order to reduce number of

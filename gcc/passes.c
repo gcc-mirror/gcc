@@ -1856,8 +1856,9 @@ rest_of_compilation (void)
     rest_of_handle_if_after_combine ();
 
   /* The optimization to partition hot/cold basic blocks into separate
-     sections of the .o file does not work well with exception handling.
-     Don't call it if there are exceptions.  */
+     sections of the .o file does not work well with linkonce or with
+     user defined section attributes.  Don't call it if either case
+     arises.  */
 
   if (flag_reorder_blocks_and_partition 
       && !DECL_ONE_ONLY (current_function_decl)

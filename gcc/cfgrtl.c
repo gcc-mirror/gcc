@@ -613,10 +613,11 @@ rtl_can_merge_blocks (basic_block a,basic_block b)
      mess up unconditional or indirect jumps that cross between hot
      and cold sections.
 
-     ??? If two basic blocks could otherwise be merged (which implies
-     that the jump between the two is unconditional), and one is in a
-     hot section and the other is in a cold section, surely that means
-     that one of the section choices is wrong.  */
+     Basic block partitioning may result in some jumps that appear to
+     be optimizable (or blocks that appear to be mergeable), but which really 
+     must be left untouched (they are required to make it safely across 
+     partition boundaries).  See  the comments at the top of 
+     bb-reorder.c:partition_hot_cold_basic_blocks for complete details.  */
 
   if (flag_reorder_blocks_and_partition
       && (find_reg_note (BB_END (a), REG_CROSSING_JUMP, NULL_RTX)
@@ -672,7 +673,13 @@ try_redirect_by_replacing_jump (edge e, basic_block target, bool in_cfglayout)
 
   /* If we are partitioning hot/cold basic blocks, we don't want to
      mess up unconditional or indirect jumps that cross between hot
-     and cold sections.  */
+     and cold sections.
+
+     Basic block partitioning may result in some jumps that appear to
+     be optimizable (or blocks that appear to be mergeable), but which really 
+     must be left untouched (they are required to make it safely across 
+     partition boundaries).  See  the comments at the top of 
+     bb-reorder.c:partition_hot_cold_basic_blocks for complete details.  */
   
   if (flag_reorder_blocks_and_partition
       && (find_reg_note (insn, REG_CROSSING_JUMP, NULL_RTX)
@@ -2663,11 +2670,12 @@ cfg_layout_can_merge_blocks_p (basic_block a, basic_block b)
      mess up unconditional or indirect jumps that cross between hot
      and cold sections.
 
-     ??? If two basic blocks could otherwise be merged (which implies
-     that the jump between the two is unconditional), and one is in a
-     hot section and the other is in a cold section, surely that means
-     that one of the section choices is wrong.  */
-  
+     Basic block partitioning may result in some jumps that appear to
+     be optimizable (or blocks that appear to be mergeable), but which really 
+     must be left untouched (they are required to make it safely across 
+     partition boundaries).  See  the comments at the top of 
+     bb-reorder.c:partition_hot_cold_basic_blocks for complete details.  */
+
   if (flag_reorder_blocks_and_partition
       && (find_reg_note (BB_END (a), REG_CROSSING_JUMP, NULL_RTX)
 	  || find_reg_note (BB_END (b), REG_CROSSING_JUMP, NULL_RTX)
