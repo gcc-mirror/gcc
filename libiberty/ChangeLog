@@ -1,3 +1,8 @@
+1999-10-11  Mark Mitchell  <mark@codesourcery.com>
+
+	* cplus-dem.c (do_type): Handle pointer to member types whose
+	enclosing classes have namespace scope.
+
 Sun Oct 10 01:23:50 1999  Marc Espie <espie@cvs.openbsd.org>
 
 	* config.table:  Provide a backup shell for executing move-if-change.
