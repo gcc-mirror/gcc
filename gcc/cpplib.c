@@ -880,7 +880,8 @@ static void
 do_warning (pfile)
      cpp_reader *pfile;
 {
-  do_diagnostic (pfile, WARNING, 1);
+  /* We want #warning diagnostics to be emitted in system headers too.  */
+  do_diagnostic (pfile, WARNING_SYSHDR, 1);
 }
 
 /* Report program identification.  */
@@ -1818,7 +1819,10 @@ cpp_push_buffer (pfile, buffer, len, type, filename)
       pfile->lexer_pos.output_line = 1;
     }
 
-  new->nominal_fname = filename;
+  if (*filename == '\0')
+    new->nominal_fname = _("<stdin>");
+  else
+    new->nominal_fname = filename;
   new->type = type;
   new->prev = pfile->buffer;
   new->pfile = pfile;

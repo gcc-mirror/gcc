@@ -1,3 +1,12 @@
+2001-04-08  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cpperror.c (print_location): Don't special case <stdin>.
+	(_cpp_begin_message): Handle WARNING_SYSHDR the same as
+	WARNING, but we don't check if we're in system headers.
+	* cpphash.h (enum error_type): WARNING_SYSHDR: New.
+	* cpplib.c (do_warning): Warn in system headers.
+	(cpp_push_buffer): Give stdin buffers the name <stdin>.
+
 2001-04-07  Mumit Khan <khan@NanoTech.Wisc.EDU>
 
 	* mbchar.c: Include config.h first.
