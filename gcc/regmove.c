@@ -1059,6 +1059,12 @@ fixup_match_2 (insn, dst, src, offset, regmove_dump_file)
   return 0;
 }
 
+/* Main entry for the register move optimization.
+   F is the first instruction.
+   NREGS is one plus the highest pseudo-reg number used in the instruction.
+   REGMOVE_DUMP_FILE is a stream for output of a trace of actions taken
+   (or 0 if none should be output).  */
+
 void
 regmove_optimize (f, nregs, regmove_dump_file)
      rtx f;
@@ -1276,7 +1282,8 @@ regmove_optimize (f, nregs, regmove_dump_file)
 
 	      if (GET_CODE (dst) != REG
 		  || REGNO (dst) < FIRST_PSEUDO_REGISTER
-		  || REG_LIVE_LENGTH (REGNO (dst)) < 0)
+		  || REG_LIVE_LENGTH (REGNO (dst)) < 0
+		  || RTX_UNCHANGING_P (dst))
 		continue;
 
 	      /* If the operands already match, then there is nothing to do. */
