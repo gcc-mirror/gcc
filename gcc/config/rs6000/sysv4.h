@@ -89,6 +89,12 @@ do {									\
 
 #include "rs6000/powerpc.h"
 
+/* System V.4 uses register 13 as a pointer to the small data area,
+   so it is not available to the normal user.  */
+
+#undef	FIXED_R13
+#define FIXED_R13 1
+
 /* Override default big endianism */
 #undef  BYTES_BIG_ENDIAN
 #undef  WORDS_BIG_ENDIAN
