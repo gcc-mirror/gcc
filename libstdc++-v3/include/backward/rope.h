@@ -40,8 +40,8 @@
  * purpose.  It is provided "as is" without express or implied warranty.
  */
 
-#ifndef _CPP_BACKWARD_ROPE_H
-#define _CPP_BACKWARD_ROPE_H 1
+#ifndef _BACKWARD_ROPE_H
+#define _BACKWARD_ROPE_H 1
 
 #include "backward_warning.h"
 #include "hashtable.h"   
@@ -53,7 +53,7 @@ using __gnu_cxx::rope;
 using __gnu_cxx::crope; 
 using __gnu_cxx::wrope; 
 
-#endif /* _CPP_BACKWARD_ROPE_H */
+#endif /* _BACKWARD_ROPE_H */
 
 // Local Variables:
 // mode:C++

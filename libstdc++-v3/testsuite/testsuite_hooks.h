@@ -39,7 +39,7 @@
 //   set_memory_limits() uses setrlimit() to restrict dynamic memory
 //   allocation.  We provide a default memory limit if none is passed by the
 //   calling application.  The argument to set_memory_limits() is the
-//   limit in megabytes (a floating-point number).  If _GLIBCPP_MEM_LIMITS is
+//   limit in megabytes (a floating-point number).  If _GLIBCXX_MEM_LIMITS is
 //   not #defined before including this header, then no limiting is attempted.
 //
 // 3)  counter
@@ -55,8 +55,8 @@
 // 5) pod_char, pod_int, , abstract character classes and
 //   char_traits specializations for testing instantiations.
 
-#ifndef _GLIBCPP_TESTSUITE_HOOKS_H
-#define _GLIBCPP_TESTSUITE_HOOKS_H
+#ifndef _GLIBCXX_TESTSUITE_HOOKS_H
+#define _GLIBCXX_TESTSUITE_HOOKS_H
 
 #include <bits/c++config.h>
 #include <bits/functexcept.h>
@@ -72,11 +72,11 @@
 
 namespace __gnu_cxx_test
 {
-  // All macros are defined in GLIBCPP_CONFIGURE_TESTSUITE and imported
+  // All macros are defined in GLIBCXX_CONFIGURE_TESTSUITE and imported
   // from c++config.h
 
   // Set memory limits if possible, if not set to 0.
-#ifndef _GLIBCPP_MEM_LIMITS
+#ifndef _GLIBCXX_MEM_LIMITS
 #  define MEMLIMIT_MB 0
 #else
 # ifndef MEMLIMIT_MB
@@ -366,5 +366,5 @@ namespace std
     };
 } // namespace std
 
-#endif // _GLIBCPP_TESTSUITE_HOOKS_H
+#endif // _GLIBCXX_TESTSUITE_HOOKS_H
 

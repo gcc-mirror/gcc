@@ -37,8 +37,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef _CPP_BITS_IOSBASE_H
-#define _CPP_BITS_IOSBASE_H 1
+#ifndef _IOS_BASE_H
+#define _IOS_BASE_H 1
 
 #pragma GCC system_header
 
@@ -164,7 +164,7 @@ namespace std
     class failure : public exception
     {
     public:
-#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
+#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
       //48.  Use of non-existent exception constructor
       explicit 
       failure(const string& __str) throw();
@@ -359,7 +359,7 @@ namespace std
     /// Request a seek relative to the current end of the sequence.
     static const seekdir end = 		seekdir(SEEK_END);
 
-#ifdef _GLIBCPP_DEPRECATED
+#ifdef _GLIBCXX_DEPRECATED
     // Annex D.6
     typedef int io_state;
     typedef int open_mode;
@@ -687,7 +687,7 @@ namespace std
   protected:
     ios_base();
 
-#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
+#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
   //50.  Copy constructor and assignment operator of ios_base
   private:
     ios_base(const ios_base&);
@@ -879,5 +879,5 @@ namespace std
 
 } // namespace std
 
-#endif /* _CPP_BITS_IOSBASE_H */
+#endif /* _IOS_BASE_H */
 

@@ -52,8 +52,8 @@
 // Standard-conforming allocators have a very different interface.  The
 // standard default allocator is declared in the header <memory>.
 
-#ifndef _CPP_BACKWARD_DEFALLOC_H
-#define _CPP_BACKWARD_DEFALLOC_H 1
+#ifndef _BACKWARD_DEFALLOC_H
+#define _BACKWARD_DEFALLOC_H 1
 
 #include "backward_warning.h"
 #include "new.h"
@@ -114,4 +114,4 @@ public:
 
 
 
-#endif /* _CPP_BACKWARD_DEFALLOC_H */
+#endif /* _BACKWARD_DEFALLOC_H */

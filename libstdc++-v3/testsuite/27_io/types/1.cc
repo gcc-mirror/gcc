@@ -25,7 +25,7 @@
 // Annex D, deprecated.
 void test01()
 {
-#if _GLIBCPP_DEPRECATED
+#if _GLIBCXX_DEPRECATED
   std::ios_base::streampos spos;
   std::ios_base::streamoff soff;
 #endif

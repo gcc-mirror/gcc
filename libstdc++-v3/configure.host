@@ -92,7 +92,7 @@ case "${host_cpu}" in
     try_cpu=sparc
     ;;
   *)
-    if test -d ${glibcpp_srcdir}/config/cpu/${host_cpu}; then
+    if test -d ${glibcxx_srcdir}/config/cpu/${host_cpu}; then
       try_cpu=${host_cpu}
     else
       try_cpu=generic

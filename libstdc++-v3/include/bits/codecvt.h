@@ -38,8 +38,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef _CPP_BITS_CODECVT_H
-#define _CPP_BITS_CODECVT_H	1
+#ifndef _CODECVT_H
+#define _CODECVT_H 1
 
 #pragma GCC system_header
 
@@ -271,7 +271,7 @@
       do_max_length() const throw();
   };
 
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   // codecvt<wchar_t, char, mbstate_t> required specialization
   template<>
     class codecvt<wchar_t, char, mbstate_t> 
@@ -330,7 +330,7 @@
       virtual int 
       do_max_length() const throw();
     };
-#endif //_GLIBCPP_USE_WCHAR_T
+#endif //_GLIBCXX_USE_WCHAR_T
 
   // 22.2.1.6  Template class codecvt_byname
   template<typename _InternT, typename _ExternT, typename _StateT>
@@ -353,8 +353,8 @@
 
   // Include host and configuration specific partial specializations
   // with additional functionality, if possible.
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   #include <bits/codecvt_specializations.h>
 #endif
 
-#endif // _CPP_BITS_CODECVT_H
+#endif // _CODECVT_H

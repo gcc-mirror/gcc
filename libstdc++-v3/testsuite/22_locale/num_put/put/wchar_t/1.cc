@@ -155,7 +155,7 @@ void test01()
   // Should contain an 'x'.
   VERIFY( result1.find(L'x') == 1 );
 
-#ifdef _GLIBCPP_USE_LONG_LONG
+#ifdef _GLIBCXX_USE_LONG_LONG
   long long ll1 = 9223372036854775807LL;
   long long ll2 = -9223372036854775807LL;
 

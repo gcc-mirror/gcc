@@ -159,7 +159,7 @@ namespace std
 
   // wchar_t
   // This used to be problematic...
-#ifdef _GLIBCPP_USE_WCHAR_T  
+#ifdef _GLIBCXX_USE_WCHAR_T  
   const bool numeric_limits<wchar_t>::is_specialized;
   const int  numeric_limits<wchar_t>::digits;
   const int  numeric_limits<wchar_t>::digits10;
@@ -182,7 +182,7 @@ namespace std
   const bool numeric_limits<wchar_t>::traps;
   const bool numeric_limits<wchar_t>::tinyness_before;
   const float_round_style numeric_limits<wchar_t>::round_style;
-#endif // _GLIBCPP_USE_WCHAR_T
+#endif // _GLIBCXX_USE_WCHAR_T
 
   // short
   const bool numeric_limits<short>::is_specialized;

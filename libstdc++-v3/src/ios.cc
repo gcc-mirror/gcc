@@ -51,7 +51,7 @@ namespace __gnu_cxx
   extern stdio_filebuf<char> buf_cin;
   extern stdio_filebuf<char> buf_cerr;
 
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   extern stdio_sync_filebuf<wchar_t> buf_wcout_sync;
   extern stdio_sync_filebuf<wchar_t> buf_wcin_sync;
   extern stdio_sync_filebuf<wchar_t> buf_wcerr_sync;
@@ -71,7 +71,7 @@ namespace std
   extern ostream cerr;
   extern ostream clog;
 
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   extern wistream wcin;
   extern wostream wcout;
   extern wostream wcerr;
@@ -182,7 +182,7 @@ namespace std
 	cin.tie(&cout);
 	cerr.flags(ios_base::unitbuf);
 	
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
 	new (&buf_wcout_sync) stdio_sync_filebuf<wchar_t>(stdout);
 	new (&buf_wcin_sync) stdio_sync_filebuf<wchar_t>(stdin);
 	new (&buf_wcerr_sync) stdio_sync_filebuf<wchar_t>(stderr);
@@ -212,7 +212,7 @@ namespace std
 	    cerr.flush();
 	    clog.flush();
     
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
 	    wcout.flush();
 	    wcerr.flush();
 	    wclog.flush();    
@@ -351,7 +351,7 @@ namespace std
   bool 
   ios_base::sync_with_stdio(bool __sync)
   { 
-#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
+#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
     // 49.  Underspecification of ios_base::sync_with_stdio
     bool __ret = ios_base::Init::_S_synced_with_stdio;
 #endif
@@ -369,7 +369,7 @@ namespace std
 	buf_cin_sync.~stdio_sync_filebuf<char>();
 	buf_cerr_sync.~stdio_sync_filebuf<char>();
 
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
 	buf_wcout_sync.~stdio_sync_filebuf<wchar_t>();
 	buf_wcin_sync.~stdio_sync_filebuf<wchar_t>();
 	buf_wcerr_sync.~stdio_sync_filebuf<wchar_t>();
@@ -386,7 +386,7 @@ namespace std
 	cerr.rdbuf(&buf_cerr);
 	clog.rdbuf(&buf_cerr);
     
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
 	new (&buf_wcout) stdio_filebuf<wchar_t>(stdout, ios_base::out);
 	new (&buf_wcin) stdio_filebuf<wchar_t>(stdin, ios_base::in);
 	new (&buf_wcerr) stdio_filebuf<wchar_t>(stderr, ios_base::out);

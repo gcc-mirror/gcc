@@ -96,8 +96,8 @@ FPOS_H = @FPOS_H@
 FPOS_INC_SRCDIR = @FPOS_INC_SRCDIR@
 GCJ = @GCJ@
 GCJFLAGS = @GCJFLAGS@
-GLIBCPP_INCLUDES = @GLIBCPP_INCLUDES@
-GLIBCPP_IS_CROSS_COMPILING = @GLIBCPP_IS_CROSS_COMPILING@
+GLIBCXX_INCLUDES = @GLIBCXX_INCLUDES@
+GLIBCXX_IS_CROSS_COMPILING = @GLIBCXX_IS_CROSS_COMPILING@
 LIBMATHOBJS = @LIBMATHOBJS@
 LIBMATH_INCLUDES = @LIBMATH_INCLUDES@
 LIBSUPCXX_INCLUDES = @LIBSUPCXX_INCLUDES@
@@ -127,18 +127,18 @@ baseline_dir = @baseline_dir@
 check_msgfmt = @check_msgfmt@
 enable_shared = @enable_shared@
 enable_static = @enable_static@
-glibcpp_CXX = @glibcpp_CXX@
-glibcpp_MOFILES = @glibcpp_MOFILES@
-glibcpp_PCHFLAGS = @glibcpp_PCHFLAGS@
-glibcpp_POFILES = @glibcpp_POFILES@
-glibcpp_basedir = @glibcpp_basedir@
-glibcpp_builddir = @glibcpp_builddir@
-glibcpp_localedir = @glibcpp_localedir@
-glibcpp_prefixdir = @glibcpp_prefixdir@
-glibcpp_srcdir = @glibcpp_srcdir@
-glibcpp_thread_h = @glibcpp_thread_h@
-glibcpp_toolexecdir = @glibcpp_toolexecdir@
-glibcpp_toolexeclibdir = @glibcpp_toolexeclibdir@
+glibcxx_CXX = @glibcxx_CXX@
+glibcxx_MOFILES = @glibcxx_MOFILES@
+glibcxx_PCHFLAGS = @glibcxx_PCHFLAGS@
+glibcxx_POFILES = @glibcxx_POFILES@
+glibcxx_basedir = @glibcxx_basedir@
+glibcxx_builddir = @glibcxx_builddir@
+glibcxx_localedir = @glibcxx_localedir@
+glibcxx_prefixdir = @glibcxx_prefixdir@
+glibcxx_srcdir = @glibcxx_srcdir@
+glibcxx_thread_h = @glibcxx_thread_h@
+glibcxx_toolexecdir = @glibcxx_toolexecdir@
+glibcxx_toolexeclibdir = @glibcxx_toolexeclibdir@
 gxx_include_dir = @gxx_include_dir@
 ifGNUmake = @ifGNUmake@
 libtool_VERSION = @libtool_VERSION@
@@ -278,7 +278,7 @@ maintainer-clean-hdr:
 all-recursive install-data-recursive install-exec-recursive \
 installdirs-recursive install-recursive uninstall-recursive install-info-recursive \
 check-recursive installcheck-recursive info-recursive dvi-recursive:
-	@set fnord $$MAKEFLAGS; amf=$$2; \
+	@set fnord $(MAKEFLAGS); amf=$$2; \
 	dot_seen=no; \
 	target=`echo $@ | sed s/-recursive//`; \
 	list='$(SUBDIRS)'; for subdir in $$list; do \
@@ -298,7 +298,7 @@ check-recursive installcheck-recursive info-recursive dvi-recursive:
 
 mostlyclean-recursive clean-recursive distclean-recursive \
 maintainer-clean-recursive:
-	@set fnord $$MAKEFLAGS; amf=$$2; \
+	@set fnord $(MAKEFLAGS); amf=$$2; \
 	dot_seen=no; \
 	rev=''; list='$(SUBDIRS)'; for subdir in $$list; do \
 	  rev="$$subdir $$rev"; \

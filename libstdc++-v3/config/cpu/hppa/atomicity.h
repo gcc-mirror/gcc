@@ -17,8 +17,8 @@
    write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.  */
 
-#ifndef _BITS_ATOMICITY_H
-#define _BITS_ATOMICITY_H	1
+#ifndef _GLIBCXX_ATOMICITY_H
+#define _GLIBCXX_ATOMICITY_H	1
 
 typedef int _Atomic_word;
 
@@ -34,9 +34,9 @@ __Atomicity_lock<__inst>::_S_atomicity_lock __attribute__ ((aligned (16))) = 1;
 
 /* Because of the lack of weak support when using the hpux
    som linker, we explicitly instantiate the atomicity lock
-   in src/misc-inst.cc when _GLIBCPP_INST_ATOMICITY_LOCK
+   in src/misc-inst.cc when _GLIBCXX_INST_GLIBCXX_ATOMICITY_LOCK
    is defined.  */
-#ifndef _GLIBCPP_INST_ATOMICITY_LOCK
+#ifndef _GLIBCXX_INST_GLIBCXX_ATOMICITY_LOCK
 template volatile int __Atomicity_lock<0>::_S_atomicity_lock;
 #endif
 

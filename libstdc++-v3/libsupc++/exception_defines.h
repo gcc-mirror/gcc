@@ -31,8 +31,8 @@
 // ISO C++ 14882: 19.1  Exception classes
 //
 
-#ifndef __EXCEPTION_DEFINES_H
-#define __EXCEPTION_DEFINES_H 1
+#ifndef _EXCEPTION_DEFINES_H
+#define _EXCEPTION_DEFINES_H 1
 
 #ifndef __EXCEPTIONS
 // Iff -fno-exceptions, transform error handling code to work without it.

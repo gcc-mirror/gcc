@@ -39,8 +39,8 @@
    is includable from both C and C++. Though the C++ specific parts are not
    available in C, naturally enough.  */
 
-#ifndef __CXXABI_H
-#define __CXXABI_H 1
+#ifndef _CXXABI_H
+#define _CXXABI_H 1
 
 #ifdef __cplusplus
 

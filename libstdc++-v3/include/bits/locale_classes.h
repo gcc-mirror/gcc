@@ -37,8 +37,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef _CPP_BITS_LOCALE_CLASSES_H
-#define _CPP_BITS_LOCALE_CLASSES_H	1
+#ifndef _LOCALE_CLASSES_H
+#define _LOCALE_CLASSES_H 1
 
 #pragma GCC system_header
 
@@ -161,7 +161,7 @@ namespace std
     // macros. For GNU systems, the following are also valid:
     // LC_PAPER, LC_NAME, LC_ADDRESS, LC_TELEPHONE, LC_MEASUREMENT,
     // and LC_IDENTIFICATION.
-    static const size_t _S_categories_size = 6 + _GLIBCPP_NUM_CATEGORIES;
+    static const size_t _S_categories_size = 6 + _GLIBCXX_NUM_CATEGORIES;
 
     explicit 
     locale(_Impl*) throw();

@@ -32,8 +32,8 @@
  *  This header provides RTTI support.
  */
 
-#ifndef __TYPEINFO__
-#define __TYPEINFO__
+#ifndef _TYPEINFO
+#define _TYPEINFO
 
 #include <exception>
 

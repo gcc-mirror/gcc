@@ -20,7 +20,7 @@
 
 // Concept checking must remain sane.
 
-// { dg-options "-D_GLIBCPP_CONCEPT_CHECKS" }
+// { dg-options "-D_GLIBCXX_CONCEPT_CHECKS" }
 
 #include <vector>
 #include <string>

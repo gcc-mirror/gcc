@@ -29,7 +29,7 @@
 void test03()
 {
   bool test = true;
-#ifdef _GLIBCPP_HAVE_SETENV 
+#ifdef _GLIBCXX_HAVE_SETENV 
   const char* LC_ALL_orig = getenv("LC_ALL");
   if (!setenv("LC_ALL", "it_IT", 1))
     {

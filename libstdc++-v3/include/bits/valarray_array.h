@@ -34,8 +34,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef _CPP_BITS_ARRAY_H
-#define _CPP_BITS_ARRAY_H 1
+#ifndef _VALARRAY_ARRAY_H
+#define _VALARRAY_ARRAY_H 1
 
 #pragma GCC system_header
 
@@ -618,12 +618,12 @@ _Array_augmented_##_Name (_Array<_Tp> __a, _Array<bool> __m,		\
 
 } // std::
 
-#ifdef _GLIBCPP_NO_TEMPLATE_EXPORT
+#ifdef _GLIBCXX_NO_TEMPLATE_EXPORT
 # define export 
 # include <bits/valarray_array.tcc>    
 #endif
            
-#endif /* _CPP_BITS_ARRAY_H */
+#endif /* _ARRAY_H */
 
 // Local Variables:
 // mode:c++

@@ -145,7 +145,7 @@ void test01()
   VERIFY( &v != &cv );
   VERIFY( err == goodbit );
 
-#ifdef _GLIBCPP_USE_LONG_LONG
+#ifdef _GLIBCXX_USE_LONG_LONG
   long long ll1 = 9223372036854775807LL;
   long long ll2 = -9223372036854775807LL;
   long long ll;

@@ -27,8 +27,8 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#ifndef _CPP_CTYPE_H_
-#define _CPP_CTYPE_H_ 1
+#ifndef _GLIBCXX_CTYPE_H
+#define _GLIBCXX_CTYPE_H 1
 
 #include <cctype>
 

@@ -47,7 +47,7 @@ namespace std
       return string(catgets(__nlc, __setid, __msgid, __dfault.c_str())); 
     }
 
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   template<>
     wstring
     messages<wchar_t>::do_get(catalog, int, int, const wstring& __dfault) const

@@ -54,7 +54,7 @@ namespace std
 				size_t __n) const 
     { return __strxfrm_l(__to, __from, __n, _M_c_locale_collate); }
 
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   template<>
     int 
     collate<wchar_t>::_M_compare(const wchar_t* __one, 

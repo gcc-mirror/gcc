@@ -46,9 +46,9 @@
 // __gnu_cxx symbols into exported, namespace std symbols with the
 // appropriate symbol version name.
 // The rename syntax is 
-//   asm (".symver currentname,oldname@@GLIBCPP_3.2")
+//   asm (".symver currentname,oldname@@GLIBCXX_3.2")
 // In macro form:
-// _GLIBCPP_ASM_SYMVER(currentname, oldname, GLIBCPP_3.2)
+// _GLIBCXX_ASM_SYMVER(currentname, oldname, GLIBCXX_3.2)
 
 namespace std
 {
@@ -63,7 +63,7 @@ namespace std
   fake_ostream cerr;
   fake_ostream clog;
 
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   typedef char fake_wistream[sizeof(wistream)] 
   __attribute__ ((aligned(__alignof__(wistream))));
   typedef char fake_wostream[sizeof(wostream)] 
@@ -93,7 +93,7 @@ namespace __gnu_cxx
   fake_filebuf buf_cin;
   fake_filebuf buf_cerr;
 
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   typedef char fake_wstdiobuf[sizeof(stdio_sync_filebuf<wchar_t>)]
   __attribute__ ((aligned(__alignof__(stdio_sync_filebuf<wchar_t>))));
   fake_wstdiobuf buf_wcout_sync;
@@ -117,19 +117,19 @@ namespace __gnu_cxx
 
   typedef char fake_name_vec[sizeof(char*)]
   __attribute__ ((aligned(__alignof__(char*))));
-  fake_name_vec name_vec[6 + _GLIBCPP_NUM_CATEGORIES];
+  fake_name_vec name_vec[6 + _GLIBCXX_NUM_CATEGORIES];
 
   typedef char fake_names[sizeof(char[2])]
   __attribute__ ((aligned(__alignof__(char[2]))));
-  fake_names name_c[6 + _GLIBCPP_NUM_CATEGORIES];
+  fake_names name_c[6 + _GLIBCXX_NUM_CATEGORIES];
 
   typedef char fake_facet_vec[sizeof(locale::facet*)]
   __attribute__ ((aligned(__alignof__(locale::facet*))));
-  fake_facet_vec facet_vec[_GLIBCPP_NUM_FACETS];
+  fake_facet_vec facet_vec[_GLIBCXX_NUM_FACETS];
 
   typedef char fake_cache_vec[sizeof(locale::facet*)]
   __attribute__ ((aligned(__alignof__(locale::facet*))));
-  fake_cache_vec cache_vec[_GLIBCPP_NUM_FACETS];
+  fake_cache_vec cache_vec[_GLIBCXX_NUM_FACETS];
 
   typedef char fake_ctype_c[sizeof(std::ctype<char>)]
   __attribute__ ((aligned(__alignof__(std::ctype<char>))));
@@ -184,7 +184,7 @@ namespace __gnu_cxx
   __attribute__ ((aligned(__alignof__(messages<char>))));
   fake_messages_c messages_c;
 
-#ifdef  _GLIBCPP_USE_WCHAR_T
+#ifdef  _GLIBCXX_USE_WCHAR_T
   typedef char fake_wtype_w[sizeof(std::ctype<wchar_t>)]
   __attribute__ ((aligned(__alignof__(std::ctype<wchar_t>))));
   fake_wtype_w ctype_w;
@@ -244,7 +244,7 @@ namespace __gnu_cxx
   __attribute__ ((aligned(__alignof__(std::__numpunct_cache<char>))));
   fake_locale_cache_c numpunct_cache_c;
 
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   typedef char fake_locale_cache_w[sizeof(std::__numpunct_cache<wchar_t>)]
   __attribute__ ((aligned(__alignof__(std::__numpunct_cache<wchar_t>))));
   fake_locale_cache_w numpunct_cache_w;
@@ -255,18 +255,18 @@ namespace __gnu_cxx
   // function call to initialize a mutex.  For example, see stl_threads.h.
 #ifdef __GTHREAD_MUTEX_INIT
 #elif defined(__GTHREAD_MUTEX_INIT_FUNCTION)
-  __gthread_once_t _GLIBCPP_once = __GTHREAD_ONCE_INIT;
-  __gthread_mutex_t _GLIBCPP_mutex;
-  __gthread_mutex_t *_GLIBCPP_mutex_address;
+  __gthread_once_t _GLIBCXX_once = __GTHREAD_ONCE_INIT;
+  __gthread_mutex_t _GLIBCXX_mutex;
+  __gthread_mutex_t *_GLIBCXX_mutex_address;
   
-  // Once-only initializer function for _GLIBCPP_mutex.  
+  // Once-only initializer function for _GLIBCXX_mutex.  
   void
-  _GLIBCPP_mutex_init ()
-  { __GTHREAD_MUTEX_INIT_FUNCTION (&_GLIBCPP_mutex); }
+  _GLIBCXX_mutex_init ()
+  { __GTHREAD_MUTEX_INIT_FUNCTION (&_GLIBCXX_mutex); }
 
-  // Once-only initializer function for _GLIBCPP_mutex_address.  
+  // Once-only initializer function for _GLIBCXX_mutex_address.  
   void
-  _GLIBCPP_mutex_address_init ()
-  { __GTHREAD_MUTEX_INIT_FUNCTION (_GLIBCPP_mutex_address); }
+  _GLIBCXX_mutex_address_init ()
+  { __GTHREAD_MUTEX_INIT_FUNCTION (_GLIBCXX_mutex_address); }
 #endif
 } // namespace __gnu_cxx

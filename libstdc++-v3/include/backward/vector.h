@@ -53,8 +53,8 @@
  * purpose.  It is provided "as is" without express or implied warranty.
  */
 
-#ifndef _CPP_BACKWARD_VECTOR_H
-#define _CPP_BACKWARD_VECTOR_H 1
+#ifndef _BACKWARD_VECTOR_H
+#define _BACKWARD_VECTOR_H 1
 
 #include "backward_warning.h"
 #include "algobase.h"
@@ -63,7 +63,7 @@
 
 using std::vector;
 
-#endif /* _CPP_BACKWARD_VECTOR_H */
+#endif /* _BACKWARD_VECTOR_H */
 
 // Local Variables:
 // mode:C++

@@ -37,8 +37,8 @@
  *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
  */
 
-#ifndef _CPP_IOMANIP
-#define _CPP_IOMANIP 1
+#ifndef _IOMANIP
+#define _IOMANIP 1
 
 #pragma GCC system_header
 
@@ -266,7 +266,7 @@ namespace std
   // Inhibit implicit instantiations for required instantiations,
   // which are defined via explicit instantiations elsewhere.  
   // NB:  This syntax is a GNU extension.
-#if _GLIBCPP_EXTERN_TEMPLATE
+#if _GLIBCXX_EXTERN_TEMPLATE
   extern template ostream& operator<<(ostream&, _Setfill<char>);
   extern template ostream& operator<<(ostream&, _Setiosflags);
   extern template ostream& operator<<(ostream&, _Resetiosflags);
@@ -280,7 +280,7 @@ namespace std
   extern template istream& operator>>(istream&, _Setprecision);
   extern template istream& operator>>(istream&, _Setw);
 
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   extern template wostream& operator<<(wostream&, _Setfill<wchar_t>);
   extern template wostream& operator<<(wostream&, _Setiosflags);
   extern template wostream& operator<<(wostream&, _Resetiosflags);

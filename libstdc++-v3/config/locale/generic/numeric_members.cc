@@ -67,7 +67,7 @@ namespace std
     numpunct<char>::~numpunct()
     { delete _M_data; }
       
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   template<> 
     void
     numpunct<wchar_t>::_M_initialize_numpunct(__c_locale)

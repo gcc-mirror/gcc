@@ -34,8 +34,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef _CPP_VALARRAY_AFTER_H
-#define _CPP_VALARRAY_AFTER_H 1
+#ifndef _VALARRAY_AFTER_H
+#define _VALARRAY_AFTER_H 1
 
 #pragma GCC system_header
 

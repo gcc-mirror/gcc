@@ -53,8 +53,8 @@
  * purpose.  It is provided "as is" without express or implied warranty.
  */
 
-#ifndef _CPP_BACKWARD_TEMPBUF_H
-#define _CPP_BACKWARD_TEMPBUF_H 1
+#ifndef _BACKWARD_TEMPBUF_H
+#define _BACKWARD_TEMPBUF_H 1
 
 #include "backward_warning.h"
 #include "pair.h"
@@ -71,7 +71,7 @@ using std::get_temporary_buffer;
 using std::return_temporary_buffer;
 using __gnu_cxx::temporary_buffer;
 
-#endif /* _CPP_BACKWARD_TEMPBUF_H */
+#endif /* _BACKWARD_TEMPBUF_H */
 
 // Local Variables:
 // mode:C++

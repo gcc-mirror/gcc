@@ -58,8 +58,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef _CPP_BITS_STL_CONSTRUCT_H
-#define _CPP_BITS_STL_CONSTRUCT_H 1
+#ifndef _STL_CONSTRUCT_H
+#define _STL_CONSTRUCT_H 1
 
 #include <bits/type_traits.h>
 #include <new>
@@ -144,5 +144,5 @@ namespace std
     }
 } // namespace std
 
-#endif /* _CPP_BITS_STL_CONSTRUCT_H */
+#endif /* _STL_CONSTRUCT_H */
 

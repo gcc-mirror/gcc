@@ -58,8 +58,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef __GLIBCPP_INTERNAL_MAP_H
-#define __GLIBCPP_INTERNAL_MAP_H
+#ifndef _MAP_H
+#define _MAP_H 1
 
 #include <bits/concept_check.h>
 
@@ -91,8 +91,8 @@ namespace std
     class map
   {
     // concept requirements
-    __glibcpp_class_requires(_Tp, _SGIAssignableConcept)
-    __glibcpp_class_requires4(_Compare, bool, _Key, _Key, _BinaryFunctionConcept)
+    __glibcxx_class_requires(_Tp, _SGIAssignableConcept)
+    __glibcxx_class_requires4(_Compare, bool, _Key, _Key, _BinaryFunctionConcept)
   
   public:
     typedef _Key                                          key_type;
@@ -311,7 +311,7 @@ namespace std
     operator[](const key_type& __k)
     {
       // concept requirements
-      __glibcpp_function_requires(_DefaultConstructibleConcept<mapped_type>)
+      __glibcxx_function_requires(_DefaultConstructibleConcept<mapped_type>)
   
       iterator __i = lower_bound(__k);
       // __i->first is greater than or equivalent to __k.
@@ -655,4 +655,4 @@ namespace std
     { __x.swap(__y); }
 } // namespace std
 
-#endif /* __GLIBCPP_INTERNAL_MAP_H */
+#endif /* _MAP_H */

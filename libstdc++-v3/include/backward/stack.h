@@ -53,8 +53,8 @@
  * purpose.  It is provided "as is" without express or implied warranty.
  */
 
-#ifndef _CPP_BACKWARD_STACK_H
-#define _CPP_BACKWARD_STACK_H 1
+#ifndef _BACKWARD_STACK_H
+#define _BACKWARD_STACK_H 1
 
 #include "backward_warning.h"
 #include "vector.h"
@@ -65,7 +65,7 @@
 
 using std::stack;
 
-#endif /* _CPP_BACKWARD_STACK_H */
+#endif /* _BACKWARD_STACK_H */
 
 // Local Variables:
 // mode:C++

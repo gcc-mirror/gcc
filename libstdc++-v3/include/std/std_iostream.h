@@ -36,8 +36,8 @@
  *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
  */
 
-#ifndef _CPP_IOSTREAM
-#define _CPP_IOSTREAM	1
+#ifndef _IOSTREAM
+#define _IOSTREAM 1
 
 #pragma GCC system_header
 
@@ -65,7 +65,7 @@ namespace std
   extern ostream cerr;		///< Linked to standard error (unbuffered)
   extern ostream clog;		///< Linked to standard error (buffered)
 
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   extern wistream wcin;		///< Linked to standard input
   extern wostream wcout;	///< Linked to standard output
   extern wostream wcerr;	///< Linked to standard error (unbuffered)

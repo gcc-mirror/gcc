@@ -38,7 +38,7 @@ namespace std
   // Definitions for locale::id of standard facets that are specialized.
   locale::id ctype<char>::id;
 
-#ifdef _GLIBCPP_USE_WCHAR_T  
+#ifdef _GLIBCXX_USE_WCHAR_T  
   locale::id ctype<wchar_t>::id;
 #endif
 
@@ -51,7 +51,7 @@ namespace std
       return static_cast<const ctype<char>&>(*(__tmp->_M_facets[__i]));
     }
 
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   template<>
     const ctype<wchar_t>&
     use_facet<ctype<wchar_t> >(const locale& __loc)
@@ -124,7 +124,7 @@ namespace std
     return __hi;
   }
 
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   ctype<wchar_t>::ctype(size_t __refs) 
   : __ctype_abstract_base<wchar_t>(__refs)
   { _M_c_locale_ctype = _S_c_locale; }

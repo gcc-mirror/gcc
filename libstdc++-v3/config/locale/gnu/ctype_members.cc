@@ -51,7 +51,7 @@ namespace std
       _M_table = _M_c_locale_ctype->__ctype_b;
     }
 
-#ifdef _GLIBCPP_USE_WCHAR_T  
+#ifdef _GLIBCXX_USE_WCHAR_T  
   ctype<wchar_t>::__wmask_type
   ctype<wchar_t>::_M_convert_to_wmask(const mask __m) const
   {
@@ -229,5 +229,5 @@ namespace std
 #endif
     return __hi;
   }
-#endif //  _GLIBCPP_USE_WCHAR_T
+#endif //  _GLIBCXX_USE_WCHAR_T
 }

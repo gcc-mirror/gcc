@@ -32,8 +32,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef _GLIBCPP_CONCEPT_CHECK
-#define _GLIBCPP_CONCEPT_CHECK 1
+#ifndef _CONCEPT_CHECK_H
+#define _CONCEPT_CHECK_H 1
 
 #pragma GCC system_header
 
@@ -47,13 +47,13 @@
 // Concept-checking code is off by default unless users turn it on via
 // configure options or editing c++config.h.
 
-#ifndef _GLIBCPP_CONCEPT_CHECKS
+#ifndef _GLIBCXX_CONCEPT_CHECKS
 
-#define __glibcpp_function_requires(...)
-#define __glibcpp_class_requires(_a,_b)
-#define __glibcpp_class_requires2(_a,_b,_c)
-#define __glibcpp_class_requires3(_a,_b,_c,_d)
-#define __glibcpp_class_requires4(_a,_b,_c,_d,_e)
+#define __glibcxx_function_requires(...)
+#define __glibcxx_class_requires(_a,_b)
+#define __glibcxx_class_requires2(_a,_b,_c)
+#define __glibcxx_class_requires3(_a,_b,_c,_d)
+#define __glibcxx_class_requires4(_a,_b,_c,_d,_e)
 
 #else // the checks are on
 
@@ -61,7 +61,7 @@
 
 // Note that the obvious and elegant approach of
 //
-//#define glibcpp_function_requires(C) boost::function_requires< boost::C >()
+//#define glibcxx_function_requires(C) boost::function_requires< boost::C >()
 //
 // won't work due to concept templates with more than one parameter, e.g.,
 // BinaryPredicateConcept.  The preprocessor tries to split things up on
@@ -69,17 +69,17 @@
 // parenthesis to hide the commas, because "boost::(Temp<Foo,Bar>)" isn't
 // a valid instantiation pattern.  Thus, we steal a feature from C99.
 
-#define __glibcpp_function_requires(...)                                 \
+#define __glibcxx_function_requires(...)                                 \
             __gnu_cxx::__function_requires< __gnu_cxx::__VA_ARGS__ >();
-#define __glibcpp_class_requires(_a,_C)                                  \
-            _GLIBCPP_CLASS_REQUIRES(_a, __gnu_cxx, _C);
-#define __glibcpp_class_requires2(_a,_b,_C)                              \
-            _GLIBCPP_CLASS_REQUIRES2(_a, _b, __gnu_cxx, _C);
-#define __glibcpp_class_requires3(_a,_b,_c,_C)                           \
-            _GLIBCPP_CLASS_REQUIRES3(_a, _b, _c, __gnu_cxx, _C);
-#define __glibcpp_class_requires4(_a,_b,_c,_d,_C)                        \
-            _GLIBCPP_CLASS_REQUIRES4(_a, _b, _c, _d, __gnu_cxx, _C);
+#define __glibcxx_class_requires(_a,_C)                                  \
+            _GLIBCXX_CLASS_REQUIRES(_a, __gnu_cxx, _C);
+#define __glibcxx_class_requires2(_a,_b,_C)                              \
+            _GLIBCXX_CLASS_REQUIRES2(_a, _b, __gnu_cxx, _C);
+#define __glibcxx_class_requires3(_a,_b,_c,_C)                           \
+            _GLIBCXX_CLASS_REQUIRES3(_a, _b, _c, __gnu_cxx, _C);
+#define __glibcxx_class_requires4(_a,_b,_c,_d,_C)                        \
+            _GLIBCXX_CLASS_REQUIRES4(_a, _b, _c, _d, __gnu_cxx, _C);
 
 #endif // enable/disable
 
-#endif // _GLIBCPP_CONCEPT_CHECK
+#endif // _GLIBCXX_CONCEPT_CHECK

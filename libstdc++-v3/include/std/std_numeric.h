@@ -58,8 +58,8 @@
  *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
  */
 
-#ifndef _CPP_NUMERIC
-#define _CPP_NUMERIC 1
+#ifndef _NUMERIC
+#define _NUMERIC 1
 
 #pragma GCC system_header
 #include <bits/c++config.h>
@@ -68,7 +68,7 @@
 #include <bits/stl_function.h>
 #include <bits/stl_numeric.h>
 
-#endif /* _CPP_NUMERIC */
+#endif /* _NUMERIC */
 
 // Local Variables:
 // mode:C++

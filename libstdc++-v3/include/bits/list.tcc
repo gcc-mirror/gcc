@@ -58,8 +58,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef __GLIBCPP_INTERNAL_LIST_TCC
-#define __GLIBCPP_INTERNAL_LIST_TCC
+#ifndef _LIST_TCC
+#define _LIST_TCC 1
 
 namespace std
 {
@@ -367,4 +367,4 @@ namespace std
     }
 } // namespace std
 
-#endif /* __GLIBCPP_INTERNAL_LIST_TCC */
+#endif /* _LIST_TCC */

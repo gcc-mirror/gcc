@@ -29,8 +29,8 @@
 
 // Written by Gabriel Dos Reis <Gabriel.Dos-Reis@DPTMaths.ENS-Cachan.Fr>
 
-#ifndef _CPP_BITS_VALARRAY_ARRAY_TCC 
-#define _CPP_BITS_VALARRAY_ARRAY_TCC 1
+#ifndef _VALARRAY_ARRAY_TCC 
+#define _VALARRAY_ARRAY_TCC 1
 
 namespace std
 {
@@ -52,7 +52,7 @@ __valarray_fill (_Array<_Tp> __a, size_t __n, _Array<bool> __m, const _Tp& __t)
 
 export template<typename _Tp>
 void
-__valarray_copy (_Array<_Tp> __a, _Array<bool> __m, _Array<_Tp> __b, size_t __n)
+__valarray_copy(_Array<_Tp> __a, _Array<bool> __m, _Array<_Tp> __b, size_t __n)
 {
     _Tp* __p (__a._M_data);
     bool* __ok (__m._M_data);
@@ -154,7 +154,7 @@ __valarray_copy_construct (_Array<_Tp> __a, _Array<bool> __m,
 
 } // std::
 
-#endif /* _CPP_BITS_VALARRAY_ARRAY_TCC */
+#endif /* _VALARRAY_ARRAY_TCC */
 
 // Local Variables:
 // mode:c++

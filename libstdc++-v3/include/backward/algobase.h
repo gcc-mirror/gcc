@@ -52,8 +52,8 @@
  * purpose.  It is provided "as is" without express or implied warranty.
  */
 
-#ifndef _CPP_BACKWARD_ALGOBASE_H
-#define _CPP_BACKWARD_ALGOBASE_H 1
+#ifndef _BACKWARD_ALGOBASE_H
+#define _BACKWARD_ALGOBASE_H 1
 
 #include "backward_warning.h"
 #include "pair.h"
@@ -88,7 +88,7 @@ using __gnu_cxx::lexicographical_compare_3way;
 // Names from ext/memory
 using __gnu_cxx::uninitialized_copy_n;
 
-#endif /* _CPP_BACKWARD_ALGOBASE_H */
+#endif /* _BACKWARD_ALGOBASE_H */
 
 // Local Variables:
 // mode:C++

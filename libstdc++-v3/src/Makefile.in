@@ -94,7 +94,7 @@ FPOS_H = @FPOS_H@
 FPOS_INC_SRCDIR = @FPOS_INC_SRCDIR@
 GCJ = @GCJ@
 GCJFLAGS = @GCJFLAGS@
-GLIBCPP_IS_CROSS_COMPILING = @GLIBCPP_IS_CROSS_COMPILING@
+GLIBCXX_IS_CROSS_COMPILING = @GLIBCXX_IS_CROSS_COMPILING@
 LIBMATHOBJS = @LIBMATHOBJS@
 LIBSUPCXX_PICFLAGS = @LIBSUPCXX_PICFLAGS@
 LIBTOOL = @LIBTOOL@
@@ -120,16 +120,16 @@ baseline_dir = @baseline_dir@
 check_msgfmt = @check_msgfmt@
 enable_shared = @enable_shared@
 enable_static = @enable_static@
-glibcpp_CXX = @glibcpp_CXX@
-glibcpp_MOFILES = @glibcpp_MOFILES@
-glibcpp_PCHFLAGS = @glibcpp_PCHFLAGS@
-glibcpp_POFILES = @glibcpp_POFILES@
-glibcpp_basedir = @glibcpp_basedir@
-glibcpp_localedir = @glibcpp_localedir@
-glibcpp_prefixdir = @glibcpp_prefixdir@
-glibcpp_thread_h = @glibcpp_thread_h@
-glibcpp_toolexecdir = @glibcpp_toolexecdir@
-glibcpp_toolexeclibdir = @glibcpp_toolexeclibdir@
+glibcxx_CXX = @glibcxx_CXX@
+glibcxx_MOFILES = @glibcxx_MOFILES@
+glibcxx_PCHFLAGS = @glibcxx_PCHFLAGS@
+glibcxx_POFILES = @glibcxx_POFILES@
+glibcxx_basedir = @glibcxx_basedir@
+glibcxx_localedir = @glibcxx_localedir@
+glibcxx_prefixdir = @glibcxx_prefixdir@
+glibcxx_thread_h = @glibcxx_thread_h@
+glibcxx_toolexecdir = @glibcxx_toolexecdir@
+glibcxx_toolexeclibdir = @glibcxx_toolexeclibdir@
 gxx_include_dir = @gxx_include_dir@
 ifGNUmake = @ifGNUmake@
 libtool_VERSION = @libtool_VERSION@
@@ -141,21 +141,21 @@ MAINT_CHARSET = latin1
 mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
 
 # Cross compiler support.
-CXX = @glibcpp_CXX@
-glibcpp_srcdir = @glibcpp_srcdir@
-glibcpp_builddir = @glibcpp_builddir@
-toolexecdir = @glibcpp_toolexecdir@
-toolexeclibdir = @glibcpp_toolexeclibdir@
+CXX = @glibcxx_CXX@
+glibcxx_srcdir = @glibcxx_srcdir@
+glibcxx_builddir = @glibcxx_builddir@
+toolexecdir = @glibcxx_toolexecdir@
+toolexeclibdir = @glibcxx_toolexeclibdir@
 toolexeclib_LTLIBRARIES = libstdc++.la
-@GLIBCPP_BUILD_VERSIONED_SHLIB_TRUE@version_arg = @GLIBCPP_BUILD_VERSIONED_SHLIB_TRUE@-Wl,--version-script=libstdc++-symbol.ver
-@GLIBCPP_BUILD_VERSIONED_SHLIB_FALSE@version_arg = 
+@GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE@version_arg = @GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE@-Wl,--version-script=libstdc++-symbol.ver
+@GLIBCXX_BUILD_VERSIONED_SHLIB_FALSE@version_arg = 
 
 # Compile flags that should be constant throughout the build, both for
 # SUBDIRS and for libstdc++-v3 in general.
 OPTIMIZE_CXXFLAGS = @OPTIMIZE_CXXFLAGS@
 
 # These bits are all figured out from configure. Look in acinclude.m4
-# or configure.in to see how they are set. See GLIBCPP_EXPORT_FLAGS
+# or configure.in to see how they are set. See GLIBCXX_EXPORT_FLAGS
 CONFIG_CXXFLAGS = \
 	@SECTION_FLAGS@ @EXTRA_CXX_FLAGS@
 
@@ -165,15 +165,15 @@ WARN_CXXFLAGS = \
 	@WARN_FLAGS@ $(WERROR) -fdiagnostics-show-location=once
 
 
-# Use common includes from acinclude.m4/GLIBCPP_EXPORT_INCLUDES
-GLIBCPP_INCLUDES = @GLIBCPP_INCLUDES@
+# Use common includes from acinclude.m4/GLIBCXX_EXPORT_INCLUDES
+GLIBCXX_INCLUDES = @GLIBCXX_INCLUDES@
 LIBMATH_INCLUDES = @LIBMATH_INCLUDES@
 LIBSUPCXX_INCLUDES = @LIBSUPCXX_INCLUDES@
 TOPLEVEL_INCLUDES = @TOPLEVEL_INCLUDES@
 
 INCLUDES = \
 	-nostdinc++ \
-	$(GLIBCPP_INCLUDES) \
+	$(GLIBCXX_INCLUDES) \
 	$(LIBSUPCXX_INCLUDES) $(LIBMATH_INCLUDES) \
 	$(TOPLEVEL_INCLUDES)
 
@@ -247,7 +247,7 @@ libstdc___la_LDFLAGS = \
 
 # Use special rules for the deprecated source files so that they find
 # deprecated include files.
-GLIBCPP_INCLUDE_DIR = @glibcpp_builddir@/include
+GLIBCXX_INCLUDE_DIR = @glibcxx_builddir@/include
 
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be
 # modified in a per-library or per-sub-library way.  Need to manually
@@ -539,48 +539,48 @@ all-local all-redirect all-am all installdirs mostlyclean-generic \
 distclean-generic clean-generic maintainer-clean-generic clean \
 mostlyclean distclean maintainer-clean
 
-@GLIBCPP_BUILD_VERSIONED_SHLIB_TRUE@libstdc++-symbol.ver:  ${glibcpp_srcdir}/@SYMVER_MAP@
-@GLIBCPP_BUILD_VERSIONED_SHLIB_TRUE@	@LN_S@  ${glibcpp_srcdir}/@SYMVER_MAP@ ./libstdc++-symbol.ver || true
-@GLIBCPP_BUILD_VERSIONED_SHLIB_FALSE@libstdc++-symbol.ver:
+@GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE@libstdc++-symbol.ver:  ${glibcxx_srcdir}/@SYMVER_MAP@
+@GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE@	@LN_S@  ${glibcxx_srcdir}/@SYMVER_MAP@ ./libstdc++-symbol.ver || true
+@GLIBCXX_BUILD_VERSIONED_SHLIB_FALSE@libstdc++-symbol.ver:
 
-codecvt_members.cc: ${glibcpp_srcdir}/@CCODECVT_CC@
-	@LN_S@ ${glibcpp_srcdir}/@CCODECVT_CC@ . || true
+codecvt_members.cc: ${glibcxx_srcdir}/@CCODECVT_CC@
+	@LN_S@ ${glibcxx_srcdir}/@CCODECVT_CC@ . || true
 
-collate_members.cc: ${glibcpp_srcdir}/@CCOLLATE_CC@
-	@LN_S@ ${glibcpp_srcdir}/@CCOLLATE_CC@ . || true
+collate_members.cc: ${glibcxx_srcdir}/@CCOLLATE_CC@
+	@LN_S@ ${glibcxx_srcdir}/@CCOLLATE_CC@ . || true
 
-ctype_members.cc: ${glibcpp_srcdir}/@CCTYPE_CC@
-	@LN_S@ ${glibcpp_srcdir}/@CCTYPE_CC@ . || true
+ctype_members.cc: ${glibcxx_srcdir}/@CCTYPE_CC@
+	@LN_S@ ${glibcxx_srcdir}/@CCTYPE_CC@ . || true
 
-messages_members.cc: ${glibcpp_srcdir}/@CMESSAGES_CC@
-	@LN_S@ ${glibcpp_srcdir}/@CMESSAGES_CC@ . || true
+messages_members.cc: ${glibcxx_srcdir}/@CMESSAGES_CC@
+	@LN_S@ ${glibcxx_srcdir}/@CMESSAGES_CC@ . || true
 
-monetary_members.cc: ${glibcpp_srcdir}/@CMONEY_CC@
-	@LN_S@ ${glibcpp_srcdir}/@CMONEY_CC@ . || true
+monetary_members.cc: ${glibcxx_srcdir}/@CMONEY_CC@
+	@LN_S@ ${glibcxx_srcdir}/@CMONEY_CC@ . || true
 
-numeric_members.cc: ${glibcpp_srcdir}/@CNUMERIC_CC@
-	@LN_S@ ${glibcpp_srcdir}/@CNUMERIC_CC@ . || true
+numeric_members.cc: ${glibcxx_srcdir}/@CNUMERIC_CC@
+	@LN_S@ ${glibcxx_srcdir}/@CNUMERIC_CC@ . || true
 
-time_members.cc: ${glibcpp_srcdir}/@CTIME_CC@
-	@LN_S@ ${glibcpp_srcdir}/@CTIME_CC@ . || true
+time_members.cc: ${glibcxx_srcdir}/@CTIME_CC@
+	@LN_S@ ${glibcxx_srcdir}/@CTIME_CC@ . || true
 
-c++locale.cc: ${glibcpp_srcdir}/@CLOCALE_CC@
-	@LN_S@ ${glibcpp_srcdir}/@CLOCALE_CC@ ./$@ || true
+c++locale.cc: ${glibcxx_srcdir}/@CLOCALE_CC@
+	@LN_S@ ${glibcxx_srcdir}/@CLOCALE_CC@ ./$@ || true
 
-basic_file.cc: ${glibcpp_srcdir}/@BASIC_FILE_CC@
-	@LN_S@ ${glibcpp_srcdir}/@BASIC_FILE_CC@ ./$@ || true
+basic_file.cc: ${glibcxx_srcdir}/@BASIC_FILE_CC@
+	@LN_S@ ${glibcxx_srcdir}/@BASIC_FILE_CC@ ./$@ || true
 strstream.lo: strstream.cc
-	$(LTCXXCOMPILE) -I$(GLIBCPP_INCLUDE_DIR)/backward -Wno-deprecated -c $<
+	$(LTCXXCOMPILE) -I$(GLIBCXX_INCLUDE_DIR)/backward -Wno-deprecated -c $<
 strstream.o: strstream.cc
-	$(CXXCOMPILE) -I$(GLIBCPP_INCLUDE_DIR)/backward -Wno-deprecated -c $<
+	$(CXXCOMPILE) -I$(GLIBCXX_INCLUDE_DIR)/backward -Wno-deprecated -c $<
 
 # Use special rules for the concept-checking instantiations so that all
 # the generated template functions are also instantiated.  Force the checks
 # to be on so that the instantiations are actually seen.
 concept-inst.lo: concept-inst.cc
-	$(LTCXXCOMPILE) -D_GLIBCPP_CONCEPT_CHECKS -fimplicit-templates -c $<
+	$(LTCXXCOMPILE) -D_GLIBCXX_CONCEPT_CHECKS -fimplicit-templates -c $<
 concept-inst.o: concept-inst.cc
-	$(CXXCOMPILE) -D_GLIBCPP_CONCEPT_CHECKS -fimplicit-templates -c $<
+	$(CXXCOMPILE) -D_GLIBCXX_CONCEPT_CHECKS -fimplicit-templates -c $<
 
 # Use special rules for the demangler, so that an additional implicit
 # instantiation file is not necessary.
@@ -590,10 +590,10 @@ demangle.o: demangle.cc
 	$(CXXCOMPILE) -fimplicit-templates -c $<
 
 # Added bits to build debug library.
-@GLIBCPP_BUILD_DEBUG_TRUE@all-local: build_debug
-@GLIBCPP_BUILD_DEBUG_TRUE@install-data-local: install_debug
-@GLIBCPP_BUILD_DEBUG_FALSE@all-local:
-@GLIBCPP_BUILD_DEBUG_FALSE@install-data-local: 
+@GLIBCXX_BUILD_DEBUG_TRUE@all-local: build_debug
+@GLIBCXX_BUILD_DEBUG_TRUE@install-data-local: install_debug
+@GLIBCXX_BUILD_DEBUG_FALSE@all-local:
+@GLIBCXX_BUILD_DEBUG_FALSE@install-data-local: 
 
 # Build parallel set of debug objects here.
 stamp-debug: 
@@ -602,7 +602,7 @@ stamp-debug:
 	  (cd ${debugdir}; \
 	  sed -e 's/top_builddir = \.\./top_builddir = ..\/../' \
 	      -e 's/srcdir = \.\./srcdir = ..\/../' \
-	      -e 's/glibcpp_basedir = \.\./glibcpp_basedir = ..\/../' \
+	      -e 's/glibcxx_basedir = \.\./glibcxx_basedir = ..\/../' \
 	      -e 's/all-local: build_debug/all-local:/' \
 	      -e 's/install-data-local: install_debug/install-data-local:/' \
 	  < ../Makefile > Makefile) ; \
@@ -615,7 +615,7 @@ build_debug: stamp-debug
 # Install debug library here.
 install_debug: 
 	(cd ${debugdir} && $(MAKE) \
-	toolexeclibdir=@glibcpp_toolexeclibdir@/debug install)
+	toolexeclibdir=@glibcxx_toolexeclibdir@/debug install)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

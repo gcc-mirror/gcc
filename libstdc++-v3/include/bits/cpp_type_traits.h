@@ -34,8 +34,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef _CPP_BITS_CPP_TYPE_TRAITS_H
-#define _CPP_BITS_CPP_TYPE_TRAITS_H 1
+#ifndef _CPP_TYPE_TRAITS_H
+#define _CPP_TYPE_TRAITS_H 1
 
 #pragma GCC system_header
 
@@ -167,7 +167,7 @@ namespace std
     };
   };
 
-# ifdef _GLIBCPP_USE_WCHAR_T
+# ifdef _GLIBCXX_USE_WCHAR_T
   template<>
   struct __is_integer<wchar_t>
   {
@@ -329,4 +329,4 @@ namespace std
 } // namespace std
 
 
-#endif //_CPP_BITS_CPP_TYPE_TRAITS_H
+#endif //_CPP_TYPE_TRAITS_H

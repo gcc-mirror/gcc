@@ -28,18 +28,18 @@ MAINT_CHARSET = latin1
 mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
 
 # Cross compiler support.
-CXX = @glibcpp_CXX@
-glibcpp_srcdir=@glibcpp_srcdir@
-glibcpp_builddir=@glibcpp_builddir@
-toolexecdir = @glibcpp_toolexecdir@
-toolexeclibdir = @glibcpp_toolexeclibdir@
+CXX = @glibcxx_CXX@
+glibcxx_srcdir=@glibcxx_srcdir@
+glibcxx_builddir=@glibcxx_builddir@
+toolexecdir = @glibcxx_toolexecdir@
+toolexeclibdir = @glibcxx_toolexeclibdir@
 toolexeclib_LTLIBRARIES = libstdc++.la
 
 # Symbol versioning for shared libraries.
-if GLIBCPP_BUILD_VERSIONED_SHLIB
+if GLIBCXX_BUILD_VERSIONED_SHLIB
 version_arg = -Wl,--version-script=libstdc++-symbol.ver
-libstdc++-symbol.ver:  ${glibcpp_srcdir}/@SYMVER_MAP@
-	@LN_S@  ${glibcpp_srcdir}/@SYMVER_MAP@ ./libstdc++-symbol.ver || true
+libstdc++-symbol.ver:  ${glibcxx_srcdir}/@SYMVER_MAP@
+	@LN_S@  ${glibcxx_srcdir}/@SYMVER_MAP@ ./libstdc++-symbol.ver || true
 else
 version_arg =
 libstdc++-symbol.ver:
@@ -50,7 +50,7 @@ endif
 OPTIMIZE_CXXFLAGS = @OPTIMIZE_CXXFLAGS@
 
 # These bits are all figured out from configure. Look in acinclude.m4
-# or configure.in to see how they are set. See GLIBCPP_EXPORT_FLAGS
+# or configure.in to see how they are set. See GLIBCXX_EXPORT_FLAGS
 CONFIG_CXXFLAGS = \
 	@SECTION_FLAGS@ @EXTRA_CXX_FLAGS@
 
@@ -58,15 +58,15 @@ CONFIG_CXXFLAGS = \
 WARN_CXXFLAGS = \
 	@WARN_FLAGS@ $(WERROR) -fdiagnostics-show-location=once
 
-# Use common includes from acinclude.m4/GLIBCPP_EXPORT_INCLUDES
-GLIBCPP_INCLUDES = @GLIBCPP_INCLUDES@
+# Use common includes from acinclude.m4/GLIBCXX_EXPORT_INCLUDES
+GLIBCXX_INCLUDES = @GLIBCXX_INCLUDES@
 LIBMATH_INCLUDES = @LIBMATH_INCLUDES@
 LIBSUPCXX_INCLUDES = @LIBSUPCXX_INCLUDES@
 TOPLEVEL_INCLUDES = @TOPLEVEL_INCLUDES@
 
 INCLUDES = \
 	-nostdinc++ \
-	$(GLIBCPP_INCLUDES) \
+	$(GLIBCXX_INCLUDES) \
 	$(LIBSUPCXX_INCLUDES) $(LIBMATH_INCLUDES) \
 	$(TOPLEVEL_INCLUDES)
 
@@ -81,26 +81,26 @@ host_sources = \
 	numeric_members.cc \
 	time_members.cc
 
-codecvt_members.cc: ${glibcpp_srcdir}/@CCODECVT_CC@
-	@LN_S@ ${glibcpp_srcdir}/@CCODECVT_CC@ . || true
+codecvt_members.cc: ${glibcxx_srcdir}/@CCODECVT_CC@
+	@LN_S@ ${glibcxx_srcdir}/@CCODECVT_CC@ . || true
 
-collate_members.cc: ${glibcpp_srcdir}/@CCOLLATE_CC@
-	@LN_S@ ${glibcpp_srcdir}/@CCOLLATE_CC@ . || true
+collate_members.cc: ${glibcxx_srcdir}/@CCOLLATE_CC@
+	@LN_S@ ${glibcxx_srcdir}/@CCOLLATE_CC@ . || true
 
-ctype_members.cc: ${glibcpp_srcdir}/@CCTYPE_CC@
-	@LN_S@ ${glibcpp_srcdir}/@CCTYPE_CC@ . || true
+ctype_members.cc: ${glibcxx_srcdir}/@CCTYPE_CC@
+	@LN_S@ ${glibcxx_srcdir}/@CCTYPE_CC@ . || true
 
-messages_members.cc: ${glibcpp_srcdir}/@CMESSAGES_CC@
-	@LN_S@ ${glibcpp_srcdir}/@CMESSAGES_CC@ . || true
+messages_members.cc: ${glibcxx_srcdir}/@CMESSAGES_CC@
+	@LN_S@ ${glibcxx_srcdir}/@CMESSAGES_CC@ . || true
 
-monetary_members.cc: ${glibcpp_srcdir}/@CMONEY_CC@
-	@LN_S@ ${glibcpp_srcdir}/@CMONEY_CC@ . || true
+monetary_members.cc: ${glibcxx_srcdir}/@CMONEY_CC@
+	@LN_S@ ${glibcxx_srcdir}/@CMONEY_CC@ . || true
 
-numeric_members.cc: ${glibcpp_srcdir}/@CNUMERIC_CC@
-	@LN_S@ ${glibcpp_srcdir}/@CNUMERIC_CC@ . || true
+numeric_members.cc: ${glibcxx_srcdir}/@CNUMERIC_CC@
+	@LN_S@ ${glibcxx_srcdir}/@CNUMERIC_CC@ . || true
 
-time_members.cc: ${glibcpp_srcdir}/@CTIME_CC@
-	@LN_S@ ${glibcpp_srcdir}/@CTIME_CC@ . || true
+time_members.cc: ${glibcxx_srcdir}/@CTIME_CC@
+	@LN_S@ ${glibcxx_srcdir}/@CTIME_CC@ . || true
 
 # Source files linked in via configuration/make substitution for a
 # particular host, but with ad hoc naming rules.
@@ -108,11 +108,11 @@ host_sources_extra = \
 	basic_file.cc \
 	c++locale.cc 
 
-c++locale.cc: ${glibcpp_srcdir}/@CLOCALE_CC@
-	@LN_S@ ${glibcpp_srcdir}/@CLOCALE_CC@ ./$@ || true
+c++locale.cc: ${glibcxx_srcdir}/@CLOCALE_CC@
+	@LN_S@ ${glibcxx_srcdir}/@CLOCALE_CC@ ./$@ || true
 
-basic_file.cc: ${glibcpp_srcdir}/@BASIC_FILE_CC@
-	@LN_S@ ${glibcpp_srcdir}/@BASIC_FILE_CC@ ./$@ || true
+basic_file.cc: ${glibcxx_srcdir}/@BASIC_FILE_CC@
+	@LN_S@ ${glibcxx_srcdir}/@BASIC_FILE_CC@ ./$@ || true
 
 # Sources present in the src directory.
 sources = \
@@ -162,19 +162,19 @@ libstdc___la_LDFLAGS = \
 
 # Use special rules for the deprecated source files so that they find
 # deprecated include files.
-GLIBCPP_INCLUDE_DIR=@glibcpp_builddir@/include
+GLIBCXX_INCLUDE_DIR=@glibcxx_builddir@/include
 strstream.lo: strstream.cc
-	$(LTCXXCOMPILE) -I$(GLIBCPP_INCLUDE_DIR)/backward -Wno-deprecated -c $<
+	$(LTCXXCOMPILE) -I$(GLIBCXX_INCLUDE_DIR)/backward -Wno-deprecated -c $<
 strstream.o: strstream.cc
-	$(CXXCOMPILE) -I$(GLIBCPP_INCLUDE_DIR)/backward -Wno-deprecated -c $<
+	$(CXXCOMPILE) -I$(GLIBCXX_INCLUDE_DIR)/backward -Wno-deprecated -c $<
 
 # Use special rules for the concept-checking instantiations so that all
 # the generated template functions are also instantiated.  Force the checks
 # to be on so that the instantiations are actually seen.
 concept-inst.lo: concept-inst.cc
-	$(LTCXXCOMPILE) -D_GLIBCPP_CONCEPT_CHECKS -fimplicit-templates -c $<
+	$(LTCXXCOMPILE) -D_GLIBCXX_CONCEPT_CHECKS -fimplicit-templates -c $<
 concept-inst.o: concept-inst.cc
-	$(CXXCOMPILE) -D_GLIBCPP_CONCEPT_CHECKS -fimplicit-templates -c $<
+	$(CXXCOMPILE) -D_GLIBCXX_CONCEPT_CHECKS -fimplicit-templates -c $<
 
 # Use special rules for the demangler, so that an additional implicit
 # instantiation file is not necessary.
@@ -229,7 +229,7 @@ CXXLINK = $(LIBTOOL) --tag CXX --mode=link $(CXX) \
 
 
 # Added bits to build debug library.
-if GLIBCPP_BUILD_DEBUG
+if GLIBCXX_BUILD_DEBUG
 all-local: build_debug
 install-data-local: install_debug
 else
@@ -246,7 +246,7 @@ stamp-debug:
 	  (cd ${debugdir}; \
 	  sed -e 's/top_builddir = \.\./top_builddir = ..\/../' \
 	      -e 's/srcdir = \.\./srcdir = ..\/../' \
-	      -e 's/glibcpp_basedir = \.\./glibcpp_basedir = ..\/../' \
+	      -e 's/glibcxx_basedir = \.\./glibcxx_basedir = ..\/../' \
 	      -e 's/all-local: build_debug/all-local:/' \
 	      -e 's/install-data-local: install_debug/install-data-local:/' \
 	  < ../Makefile > Makefile) ; \
@@ -259,4 +259,4 @@ build_debug: stamp-debug
 # Install debug library here.
 install_debug: 
 	(cd ${debugdir} && $(MAKE) \
-	toolexeclibdir=@glibcpp_toolexeclibdir@/debug install)
+	toolexeclibdir=@glibcxx_toolexeclibdir@/debug install)

@@ -80,7 +80,7 @@ namespace __gnu_cxx
 	       _Distance& __n, std::input_iterator_tag)
     {
       // concept requirements
-      __glibcpp_function_requires(_InputIteratorConcept<_InputIterator>)
+      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
       while (__first != __last) { ++__first; ++__n; }
     }
 
@@ -90,7 +90,7 @@ namespace __gnu_cxx
 	       _Distance& __n, std::random_access_iterator_tag)
     {
       // concept requirements
-      __glibcpp_function_requires(_RandomAccessIteratorConcept<_RandomAccessIterator>)
+      __glibcxx_function_requires(_RandomAccessIteratorConcept<_RandomAccessIterator>)
       __n += __last - __first;
     }
 

@@ -38,25 +38,25 @@ namespace std
 {
   // filebuf
   template class basic_filebuf<char, char_traits<char> >;
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   template class basic_filebuf<wchar_t, char_traits<wchar_t> >;
 #endif
 
   // ifstream
   template class basic_ifstream<char>;
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   template class basic_ifstream<wchar_t>;
 #endif
 
   // ofstream
   template class basic_ofstream<char>;
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   template class basic_ofstream<wchar_t>;
 #endif
 
   // fstream
   template class basic_fstream<char>;
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   template class basic_fstream<wchar_t>;
 #endif
 } // namespace std

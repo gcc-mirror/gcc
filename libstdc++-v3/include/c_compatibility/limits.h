@@ -27,8 +27,8 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#ifndef _CPP_LIMITS_H_
-#define _CPP_LIMITS_H_ 1
+#ifndef _GLIBCXX_LIMITS_H
+#define _GLIBCXX_LIMITS_H 1
 
 #include <climits>
 

@@ -33,14 +33,14 @@
 
 // Written by Benjamin Kosnik <bkoz@redhat.com>
 
-#ifndef _CPP_BITS_C_LOCALE_H
-#define _CPP_BITS_C_LOCALE_H 1
+#ifndef _C_LOCALE_H
+#define _C_LOCALE_H 1
 
 #pragma GCC system_header
 
 #include <clocale>
 
-#define _GLIBCPP_NUM_CATEGORIES 0
+#define _GLIBCXX_NUM_CATEGORIES 0
 
 namespace std
 {
@@ -64,7 +64,7 @@ namespace std
       setlocale(LC_ALL, "C");
 
       int __ret;
-#ifdef _GLIBCPP_USE_C99
+#ifdef _GLIBCXX_USE_C99
       if (__prec >= 0)
         __ret = snprintf(__out, __size, __fmt, __prec, __v);
       else

@@ -28,9 +28,9 @@ mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
 
 # Cross compiler and multilib support.
 CC = @CC@
-CXX = @glibcpp_CXX@
-toolexecdir = @glibcpp_toolexecdir@
-toolexeclibdir = @glibcpp_toolexeclibdir@
+CXX = @glibcxx_CXX@
+toolexecdir = @glibcxx_toolexecdir@
+toolexeclibdir = @glibcxx_toolexeclibdir@
 
 
 # Need this library to both be part of libstdc++.a, and installed
@@ -46,7 +46,7 @@ noinst_LTLIBRARIES = libsupc++convenience.la
 OPTIMIZE_CXXFLAGS = @OPTIMIZE_CXXFLAGS@
 
 # These bits are all figured out from configure. Look in acinclude.m4
-# or configure.in to see how they are set. See GLIBCPP_EXPORT_FLAGS
+# or configure.in to see how they are set. See GLIBCXX_EXPORT_FLAGS
 # NB: DEBUGFLAGS have to be at the end so that -O2 can be overridden.
 CONFIG_CXXFLAGS = \
 	@SECTION_FLAGS@ @EXTRA_CXX_FLAGS@
@@ -57,13 +57,13 @@ WARN_CXXFLAGS = \
 
 LIBSUPCXX_CXXFLAGS = @LIBSUPCXX_PICFLAGS@
 
-# Use common includes from acinclude.m4/GLIBCPP_EXPORT_INCLUDES
-GLIBCPP_INCLUDES = @GLIBCPP_INCLUDES@
+# Use common includes from acinclude.m4/GLIBCXX_EXPORT_INCLUDES
+GLIBCXX_INCLUDES = @GLIBCXX_INCLUDES@
 LIBSUPCXX_INCLUDES = @LIBSUPCXX_INCLUDES@
 GCC_INCLUDES = -I$(toplevel_srcdir)/gcc -I$(toplevel_srcdir)/include
 
 INCLUDES = \
-	$(GCC_INCLUDES) $(GLIBCPP_INCLUDES) $(LIBSUPCXX_INCLUDES)
+	$(GCC_INCLUDES) $(GLIBCXX_INCLUDES) $(LIBSUPCXX_INCLUDES)
 
 headers = \
 	exception new typeinfo cxxabi.h exception_defines.h 
@@ -99,8 +99,8 @@ sources = \
 libsupc___la_SOURCES = $(sources) 
 libsupc__convenience_la_SOURCES = $(sources) 
 
-glibcppinstalldir = $(gxx_include_dir)
-glibcppinstall_HEADERS = $(headers)
+glibcxxinstalldir = $(gxx_include_dir)
+glibcxxinstall_HEADERS = $(headers)
 
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be
 # modified in a per-library or per-sub-library way.  Need to manually
@@ -153,20 +153,20 @@ CXXLINK = $(LIBTOOL) --tag CXX --tag disable-shared \
           @OPT_LDFLAGS@ @SECTION_LDFLAGS@ $(AM_CXXFLAGS) $(LDFLAGS) -o $@
 
 # We have to have rules modified from the default to counteract SUN make
-# prepending each of $(glibcppinstall_HEADERS) with VPATH below.
-install-glibcppinstallHEADERS: $(glibcppinstall_HEADERS)
+# prepending each of $(glibcxxinstall_HEADERS) with VPATH below.
+install-glibcxxinstallHEADERS: $(glibcxxinstall_HEADERS)
 	@$(NORMAL_INSTALL)
-	$(mkinstalldirs) $(DESTDIR)$(glibcppinstalldir)
-	@list='$(glibcppinstall_HEADERS)'; for p in $$list; do \
+	$(mkinstalldirs) $(DESTDIR)$(glibcxxinstalldir)
+	@list='$(glibcxxinstall_HEADERS)'; for p in $$list; do \
 	  q=`echo $$p | sed -e 's,.*/,,'`; \
 	  if test -f "$$p"; then d= ; else d="$(srcdir)/"; fi; \
-	  echo " $(INSTALL_DATA) $$d$$p $(DESTDIR)$(glibcppinstalldir)/$$q"; \
-	  $(INSTALL_DATA) $$d$$p $(DESTDIR)$(glibcppinstalldir)/$$q; \
+	  echo " $(INSTALL_DATA) $$d$$p $(DESTDIR)$(glibcxxinstalldir)/$$q"; \
+	  $(INSTALL_DATA) $$d$$p $(DESTDIR)$(glibcxxinstalldir)/$$q; \
 	done
 
-uninstall-glibcppinstallHEADERS:
+uninstall-glibcxxinstallHEADERS:
 	@$(NORMAL_UNINSTALL)
-	list='$(glibcppinstall_HEADERS)'; for p in $$list; do \
+	list='$(glibcxxinstall_HEADERS)'; for p in $$list; do \
 	  q=`echo $$p | sed -e 's,.*/,,'`; \
-	  rm -f $(DESTDIR)$(glibcppinstalldir)/$$q; \
+	  rm -f $(DESTDIR)$(glibcxxinstalldir)/$$q; \
 	done

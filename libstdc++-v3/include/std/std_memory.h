@@ -46,8 +46,8 @@
  *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
  */
 
-#ifndef _CPP_MEMORY
-#define _CPP_MEMORY 1
+#ifndef _MEMORY
+#define _MEMORY 1
 
 #pragma GCC system_header
 
@@ -158,7 +158,7 @@ namespace std
    *  in the libstdc++ testsuite.
    *
    *  @if maint
-   *  _GLIBCPP_RESOLVE_LIB_DEFECTS
+   *  _GLIBCXX_RESOLVE_LIB_DEFECTS
    *  127.  auto_ptr<> conversion issues
    *  These resolutions have all been incorporated.
    *  @endif

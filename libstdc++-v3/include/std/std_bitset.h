@@ -45,8 +45,8 @@
  *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
  */
 
-#ifndef _GLIBCPP_BITSET_H
-#define _GLIBCPP_BITSET_H
+#ifndef _BITSET
+#define _BITSET 1
 
 #pragma GCC system_header
 
@@ -60,9 +60,9 @@
 #include <istream>     // for istream (operator>>)
 
 
-#define _GLIBCPP_BITSET_BITS_PER_WORD  numeric_limits<unsigned long>::digits
-#define _GLIBCPP_BITSET_WORDS(__n) \
- ((__n) < 1 ? 0 : ((__n) + _GLIBCPP_BITSET_BITS_PER_WORD - 1)/_GLIBCPP_BITSET_BITS_PER_WORD)
+#define _GLIBCXX_BITSET_BITS_PER_WORD  numeric_limits<unsigned long>::digits
+#define _GLIBCXX_BITSET_WORDS(__n) \
+ ((__n) < 1 ? 0 : ((__n) + _GLIBCXX_BITSET_BITS_PER_WORD - 1)/_GLIBCXX_BITSET_BITS_PER_WORD)
 
 namespace std
 {
@@ -91,15 +91,15 @@ namespace std
 
       static size_t
       _S_whichword(size_t __pos )
-      { return __pos / _GLIBCPP_BITSET_BITS_PER_WORD; }
+      { return __pos / _GLIBCXX_BITSET_BITS_PER_WORD; }
 
       static size_t
       _S_whichbyte(size_t __pos )
-      { return (__pos % _GLIBCPP_BITSET_BITS_PER_WORD) / __CHAR_BIT__; }
+      { return (__pos % _GLIBCXX_BITSET_BITS_PER_WORD) / __CHAR_BIT__; }
 
       static size_t
       _S_whichbit(size_t __pos )
-      { return __pos % _GLIBCPP_BITSET_BITS_PER_WORD; }
+      { return __pos % _GLIBCXX_BITSET_BITS_PER_WORD; }
 
       static _WordT
       _S_maskbit(size_t __pos )
@@ -213,15 +213,15 @@ namespace std
     {
       if (__builtin_expect(__shift != 0, 1))
 	{
-	  const size_t __wshift = __shift / _GLIBCPP_BITSET_BITS_PER_WORD;
-	  const size_t __offset = __shift % _GLIBCPP_BITSET_BITS_PER_WORD;
+	  const size_t __wshift = __shift / _GLIBCXX_BITSET_BITS_PER_WORD;
+	  const size_t __offset = __shift % _GLIBCXX_BITSET_BITS_PER_WORD;
 
 	  if (__offset == 0)
 	    for (size_t __n = _Nw - 1; __n >= __wshift; --__n)
 	      _M_w[__n] = _M_w[__n - __wshift];
 	  else
 	    {
-	      const size_t __sub_offset = _GLIBCPP_BITSET_BITS_PER_WORD - __offset;
+	      const size_t __sub_offset = _GLIBCXX_BITSET_BITS_PER_WORD - __offset;
 	      for (size_t __n = _Nw - 1; __n > __wshift; --__n)
 		_M_w[__n] = (_M_w[__n - __wshift] << __offset) |
 		  (_M_w[__n - __wshift - 1] >> __sub_offset);
@@ -238,8 +238,8 @@ namespace std
     {
       if (__builtin_expect(__shift != 0, 1))
 	{
-	  const size_t __wshift = __shift / _GLIBCPP_BITSET_BITS_PER_WORD;
-	  const size_t __offset = __shift % _GLIBCPP_BITSET_BITS_PER_WORD;
+	  const size_t __wshift = __shift / _GLIBCXX_BITSET_BITS_PER_WORD;
+	  const size_t __offset = __shift % _GLIBCXX_BITSET_BITS_PER_WORD;
 	  const size_t __limit = _Nw - __wshift - 1;
 
 	  if (__offset == 0)
@@ -247,7 +247,7 @@ namespace std
 	      _M_w[__n] = _M_w[__n + __wshift];
 	  else
 	    {
-	      const size_t __sub_offset = _GLIBCPP_BITSET_BITS_PER_WORD - __offset;
+	      const size_t __sub_offset = _GLIBCXX_BITSET_BITS_PER_WORD - __offset;
 	      for (size_t __n = 0; __n < __limit; ++__n)
 		_M_w[__n] = (_M_w[__n + __wshift] >> __offset) |
 		  (_M_w[__n + __wshift + 1] << __sub_offset);
@@ -276,7 +276,7 @@ namespace std
 	{
 	  _WordT __thisword = _M_w[__i];
 	  if (__thisword != static_cast<_WordT>(0))
-	    return __i * _GLIBCPP_BITSET_BITS_PER_WORD
+	    return __i * _GLIBCXX_BITSET_BITS_PER_WORD
 	      + __builtin_ctzl(__thisword);
 	}
       // not found, so return an indication of failure.
@@ -291,7 +291,7 @@ namespace std
       ++__prev;
 
       // check out of bounds
-      if ( __prev >= _Nw * _GLIBCPP_BITSET_BITS_PER_WORD )
+      if ( __prev >= _Nw * _GLIBCXX_BITSET_BITS_PER_WORD )
 	return __not_found;
 
       // search first word
@@ -302,7 +302,7 @@ namespace std
       __thisword >>= __prev + 1;
 
       if (__thisword != static_cast<_WordT>(0))
-	return __i * _GLIBCPP_BITSET_BITS_PER_WORD
+	return __i * _GLIBCXX_BITSET_BITS_PER_WORD
 	  + __builtin_ctzl(__thisword);
 
       // check subsequent words
@@ -311,7 +311,7 @@ namespace std
 	{
 	  __thisword = _M_w[__i];
 	  if (__thisword != static_cast<_WordT>(0))
-	    return __i * _GLIBCPP_BITSET_BITS_PER_WORD
+	    return __i * _GLIBCXX_BITSET_BITS_PER_WORD
 	      + __builtin_ctzl(__thisword);
 	}
       // not found, so return an indication of failure.
@@ -337,15 +337,15 @@ namespace std
 
       static size_t
       _S_whichword(size_t __pos )
-      { return __pos / _GLIBCPP_BITSET_BITS_PER_WORD; }
+      { return __pos / _GLIBCXX_BITSET_BITS_PER_WORD; }
 
       static size_t
       _S_whichbyte(size_t __pos )
-      { return (__pos % _GLIBCPP_BITSET_BITS_PER_WORD) / __CHAR_BIT__; }
+      { return (__pos % _GLIBCXX_BITSET_BITS_PER_WORD) / __CHAR_BIT__; }
 
       static size_t
       _S_whichbit(size_t __pos )
-      {  return __pos % _GLIBCPP_BITSET_BITS_PER_WORD; }
+      {  return __pos % _GLIBCXX_BITSET_BITS_PER_WORD; }
 
       static _WordT
       _S_maskbit(size_t __pos )
@@ -414,7 +414,7 @@ namespace std
       _M_do_find_next(size_t __prev, size_t __not_found) const
       {
 	++__prev;
-	if (__prev >= ((size_t) _GLIBCPP_BITSET_BITS_PER_WORD))
+	if (__prev >= ((size_t) _GLIBCXX_BITSET_BITS_PER_WORD))
 	  return __not_found;
 
 	_WordT __x = _M_w >> __prev;
@@ -443,15 +443,15 @@ namespace std
 
       static size_t
       _S_whichword(size_t __pos )
-      { return __pos / _GLIBCPP_BITSET_BITS_PER_WORD; }
+      { return __pos / _GLIBCXX_BITSET_BITS_PER_WORD; }
 
       static size_t
       _S_whichbyte(size_t __pos )
-      { return (__pos % _GLIBCPP_BITSET_BITS_PER_WORD) / __CHAR_BIT__; }
+      { return (__pos % _GLIBCXX_BITSET_BITS_PER_WORD) / __CHAR_BIT__; }
 
       static size_t
       _S_whichbit(size_t __pos )
-      {  return __pos % _GLIBCPP_BITSET_BITS_PER_WORD; }
+      {  return __pos % _GLIBCXX_BITSET_BITS_PER_WORD; }
 
       static _WordT
       _S_maskbit(size_t __pos )
@@ -601,16 +601,16 @@ namespace std
    *  @endif
   */
   template<size_t _Nb>
-    class bitset : private _Base_bitset<_GLIBCPP_BITSET_WORDS(_Nb)>
+    class bitset : private _Base_bitset<_GLIBCXX_BITSET_WORDS(_Nb)>
   {
   private:
-    typedef _Base_bitset<_GLIBCPP_BITSET_WORDS(_Nb)> _Base;
+    typedef _Base_bitset<_GLIBCXX_BITSET_WORDS(_Nb)> _Base;
     typedef unsigned long _WordT;
 
     void
     _M_do_sanitize()
     {
-      _Sanitize<_Nb%_GLIBCPP_BITSET_BITS_PER_WORD>::
+      _Sanitize<_Nb%_GLIBCXX_BITSET_BITS_PER_WORD>::
           _S_do_sanitize(this->_M_hiword());
     }
 
@@ -930,7 +930,7 @@ namespace std
      *         as required by DR 11 to the standard.
      *
      *  @if maint
-     *  _GLIBCPP_RESOLVE_LIB_DEFECTS Note that this implementation already
+     *  _GLIBCXX_RESOLVE_LIB_DEFECTS Note that this implementation already
      *  resolves DR 11 (items 1 and 2), but does not do the range-checking
      *  required by that DR's resolution.  -pme
      *  The DR has since been changed:  range-checking is a precondition
@@ -1209,7 +1209,7 @@ namespace std
   //@}
 } // namespace std
 
-#undef _GLIBCPP_BITSET_WORDS
-#undef _GLIBCPP_BITSET_BITS_PER_WORD
+#undef _GLIBCXX_BITSET_WORDS
+#undef _GLIBCXX_BITSET_BITS_PER_WORD
 
-#endif /* _GLIBCPP_BITSET_H */
+#endif /* _BITSET */

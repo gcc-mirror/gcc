@@ -39,16 +39,16 @@
 #include <fstream>
 #include <unistd.h>
 
-#if defined(_GLIBCPP_HAVE_S_ISREG) || defined(_GLIBCPP_HAVE_S_IFREG)
+#if defined(_GLIBCXX_HAVE_S_ISREG) || defined(_GLIBCXX_HAVE_S_IFREG)
 # include <sys/stat.h>
-# ifdef _GLIBCPP_HAVE_S_ISREG
-#  define _GLIBCPP_ISREG(x) S_ISREG(x)
+# ifdef _GLIBCXX_HAVE_S_ISREG
+#  define _GLIBCXX_ISREG(x) S_ISREG(x)
 # else
-#  define _GLIBCPP_ISREG(x) (((x) & S_IFMT) == S_IFREG)
+#  define _GLIBCXX_ISREG(x) (((x) & S_IFMT) == S_IFREG)
 # endif
 #endif
 
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
 #include <cwchar>
 #endif
 
@@ -103,11 +103,11 @@ namespace __gnu_cxx
       virtual std::streamsize
       showmanyc()
       { 
-#if defined(_GLIBCPP_HAVE_S_ISREG) || defined(_GLIBCPP_HAVE_S_IFREG)
+#if defined(_GLIBCXX_HAVE_S_ISREG) || defined(_GLIBCXX_HAVE_S_IFREG)
 	// Regular files.
 	struct stat __buffer;
 	int __ret = fstat(fileno(_M_file), &__buffer);
-	if (!__ret && _GLIBCPP_ISREG(__buffer.st_mode))
+	if (!__ret && _GLIBCXX_ISREG(__buffer.st_mode))
 	  return __buffer.st_size - ftell(_M_file);
 #endif
 	return 0; 
@@ -186,7 +186,7 @@ namespace __gnu_cxx
     stdio_sync_filebuf<char>::xsputn(const char* __s, std::streamsize __n)
     { return std::fwrite(__s, 1, __n, _M_file); }
 
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   template<>
     inline stdio_sync_filebuf<wchar_t>::int_type
     stdio_sync_filebuf<wchar_t>::syncgetc()
@@ -236,9 +236,9 @@ namespace __gnu_cxx
     }
 #endif
 
-#if _GLIBCPP_EXTERN_TEMPLATE
+#if _GLIBCXX_EXTERN_TEMPLATE
   extern template class stdio_sync_filebuf<char>;
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   extern template class stdio_sync_filebuf<wchar_t>;
 #endif
 #endif

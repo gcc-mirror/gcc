@@ -30,8 +30,8 @@
 
 // Warning: this file is not meant for user inclusion. Use <locale>.
 
-#ifndef _CPP_BITS_LOCFACETS_TCC
-#define _CPP_BITS_LOCFACETS_TCC 1
+#ifndef _LOCALE_FACETS_TCC
+#define _LOCALE_FACETS_TCC 1
 
 #pragma GCC system_header
 
@@ -96,7 +96,7 @@ namespace std
     const __numpunct_cache<char>&
     __use_cache(const locale& __loc);
 
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   template<>
     const __numpunct_cache<wchar_t>&
     __use_cache(const locale& __loc);
@@ -391,7 +391,7 @@ namespace std
       return __beg;
     }
 
-#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
+#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
   //17.  Bad bool parsing
   template<typename _CharT, typename _InIter>
     _InIter
@@ -525,7 +525,7 @@ namespace std
       return __beg;
     }
 
-#ifdef _GLIBCPP_USE_LONG_LONG
+#ifdef _GLIBCXX_USE_LONG_LONG
   template<typename _CharT, typename _InIter>
     _InIter
     num_get<_CharT, _InIter>::
@@ -658,7 +658,7 @@ namespace std
 		       const _CharT* __lit, ios_base::fmtflags __flags)
     { return __int_to_char(__out, __size, __v, __lit, __flags, false); }
 
-#ifdef _GLIBCPP_USE_LONG_LONG
+#ifdef _GLIBCXX_USE_LONG_LONG
   template<typename _CharT>
     inline int
     __int_to_char(_CharT* __out, const int __size, long long __v,
@@ -835,7 +835,7 @@ namespace std
     _M_group_float(const string& __grouping, _CharT __sep, const _CharT* __p, 
 		   _CharT* __new, _CharT* __cs, int& __len) const
     {
-#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
+#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
       //282. What types does numpunct grouping refer to?
       // Add grouping, if necessary. 
       _CharT* __p2;
@@ -857,7 +857,7 @@ namespace std
     }
 
   // The following code uses snprintf (or sprintf(), when
-  // _GLIBCPP_USE_C99 is not defined) to convert floating point values
+  // _GLIBCXX_USE_C99 is not defined) to convert floating point values
   // for insertion into a stream.  An optimization would be to replace
   // them with code that works directly on a wide buffer and then use
   // __pad to do the padding.  It would be good to replace them anyway
@@ -898,7 +898,7 @@ namespace std
 	// Long enough for the max format spec.
 	char __fbuf[16];
 
-#ifdef _GLIBCPP_USE_C99
+#ifdef _GLIBCXX_USE_C99
 	// First try a buffer perhaps big enough (for sure sufficient
 	// for non-ios_base::fixed outputs)
 	int __cs_size = __max_digits * 3;
@@ -1032,7 +1032,7 @@ namespace std
            unsigned long __v) const
     { return _M_convert_int(__s, __io, __fill, __v); }
 
-#ifdef _GLIBCPP_USE_LONG_LONG
+#ifdef _GLIBCXX_USE_LONG_LONG
   template<typename _CharT, typename _OutIter>
     _OutIter
     num_put<_CharT, _OutIter>::
@@ -1320,7 +1320,7 @@ namespace std
     { 
       const locale __loc = __io.getloc();
       const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc);
-#ifdef _GLIBCPP_USE_C99
+#ifdef _GLIBCXX_USE_C99
       // First try a buffer perhaps big enough.
       int __cs_size = 64;
       char* __cs = static_cast<char*>(__builtin_alloca(__cs_size));
@@ -2295,7 +2295,7 @@ namespace std
   // Inhibit implicit instantiations for required instantiations,
   // which are defined via explicit instantiations elsewhere.  
   // NB: This syntax is a GNU extension.
-#if _GLIBCPP_EXTERN_TEMPLATE
+#if _GLIBCXX_EXTERN_TEMPLATE
   extern template class moneypunct<char, false>;
   extern template class moneypunct<char, true>;
   extern template class moneypunct_byname<char, false>;
@@ -2422,7 +2422,7 @@ namespace std
     bool
     has_facet<messages<char> >(const locale&);
 
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   extern template class moneypunct<wchar_t, false>;
   extern template class moneypunct<wchar_t, true>;
   extern template class moneypunct_byname<wchar_t, false>;

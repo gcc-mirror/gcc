@@ -100,7 +100,7 @@ struct vtable_prefix
   ptrdiff_t whole_object;
 
   // Additional padding if necessary.
-#ifdef _GLIBCPP_VTABLE_PADDING
+#ifdef _GLIBCXX_VTABLE_PADDING
   ptrdiff_t padding1;               
 #endif
 
@@ -108,7 +108,7 @@ struct vtable_prefix
   const __class_type_info *whole_type;  
 
   // Additional padding if necessary.
-#ifdef _GLIBCPP_VTABLE_PADDING
+#ifdef _GLIBCXX_VTABLE_PADDING
   ptrdiff_t padding2;               
 #endif
 

@@ -25,8 +25,8 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#ifndef _CPP_BACKWARD_FSTREAM_H
-#define _CPP_BACKWARD_FSTREAM_H 1
+#ifndef _BACKWARD_FSTREAM_H
+#define _BACKWARD_FSTREAM_H 1
 
 #include "backward_warning.h"
 #include <fstream>
@@ -37,7 +37,7 @@ using std::ofstream;
 using std::fstream;
 using std::streampos;
 
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
 using std::wfilebuf;
 using std::wifstream;
 using std::wofstream;

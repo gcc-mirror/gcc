@@ -58,8 +58,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef __GLIBCPP_INTERNAL_DEQUE_TCC
-#define __GLIBCPP_INTERNAL_DEQUE_TCC
+#ifndef _DEQUE_TCC
+#define _DEQUE_TCC 1
 
 namespace std
 { 
@@ -709,4 +709,4 @@ namespace std
     }
 } // namespace std 
   
-#endif /* __GLIBCPP_INTERNAL_DEQUE_TCC */
+#endif

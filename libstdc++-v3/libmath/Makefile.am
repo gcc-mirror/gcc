@@ -34,7 +34,7 @@ libmath_la_DEPENDENCIES = $(libmath_la_LIBADD)
 
 libmath_la_SOURCES = stubs.c
 
-# Use common includes from acinclude.m4/GLIBCPP_EXPORT_INCLUDES
+# Use common includes from acinclude.m4/GLIBCXX_EXPORT_INCLUDES
 TOPLEVEL_INCLUDES = @TOPLEVEL_INCLUDES@
 
 INCLUDES = \

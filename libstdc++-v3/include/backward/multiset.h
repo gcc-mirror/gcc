@@ -53,8 +53,8 @@
  * purpose.  It is provided "as is" without express or implied warranty.
  */
 
-#ifndef _CPP_BACKWARD_MULTISET_H
-#define _CPP_BACKWARD_MULTISET_H 1
+#ifndef _BACKWARD_MULTISET_H
+#define _BACKWARD_MULTISET_H 1
 
 #include "backward_warning.h"
 #include "tree.h"
@@ -62,7 +62,7 @@
 
 using std::multiset;
 
-#endif /* _CPP_BACKWARD_MULTISET_H */
+#endif /* _BACKWARD_MULTISET_H */
 
 // Local Variables:
 // mode:C++

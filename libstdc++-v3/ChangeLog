@@ -1,3 +1,31 @@
+2003-07-04  Benjamin Kosnik  <bkoz@redhat.com>
+
+	Move from CPP to CXX.
+	* include/bits/c++config: Move to GLIBCXX from GLIBCPP.
+	* testsuite/Makefile.am: Same.
+	* testsuite/Makefile.in: Regenerate.
+	* po/Makefile.am: Same.
+	* po/Makefile.in: Regenerate.	
+	* libsupc++/Makefile.am: Same.
+	* libsupc++/Makefile.in: Regenerate.	
+	* libmath/Makefile.am: Same.
+	* libmath/Makefile.in: Regenerate.	
+	* include/Makefile.am: Same.
+	* include/Makefile.in: Regenerate.	
+	* src/Makefile.am: Same.
+	* src/Makefile.in: Regenerate.	
+	* acconfig.h: Same.
+	* configure.host: Same.
+	* configure.in: Same.
+	* configure: Regenerate.
+	* acinclude.m4: Same.
+	* aclocal.m4: Same.
+	* src: Change all files in this directory.
+	* testsuite: Same.
+	* include: Same, standardize include guards.
+	* config: Same.
+	* libsupc++: Same.
+	
 2003-07-04  Zack Weinberg  <zack@codesourcery.com>
 
 	* testsuite/22_locale/collate/compare/wchar_t/2.cc

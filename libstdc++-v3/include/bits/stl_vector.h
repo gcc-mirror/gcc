@@ -58,8 +58,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef __GLIBCPP_INTERNAL_VECTOR_H
-#define __GLIBCPP_INTERNAL_VECTOR_H
+#ifndef _VECTOR_H
+#define _VECTOR_H 1
 
 #include <bits/stl_iterator_base_funcs.h>
 #include <bits/functexcept.h>
@@ -186,7 +186,7 @@ namespace std
     class vector : protected _Vector_base<_Tp, _Alloc>
     {
       // Concept requirements.
-      __glibcpp_class_requires(_Tp, _SGIAssignableConcept)
+      __glibcxx_class_requires(_Tp, _SGIAssignableConcept)
   
       typedef _Vector_base<_Tp, _Alloc>                     _Base;
       typedef vector<_Tp, _Alloc>                           vector_type;
@@ -968,4 +968,4 @@ namespace std
     { __x.swap(__y); }
 } // namespace std
 
-#endif /* __GLIBCPP_INTERNAL_VECTOR_H */
+#endif /* _VECTOR_H */

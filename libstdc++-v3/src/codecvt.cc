@@ -34,11 +34,11 @@ namespace std
   // Definitions for locale::id of standard facets that are specialized.
  locale::id codecvt<char, char, mbstate_t>::id;
 
-#ifdef _GLIBCPP_USE_WCHAR_T  
+#ifdef _GLIBCXX_USE_WCHAR_T  
   locale::id codecvt<wchar_t, char, mbstate_t>::id;
 #endif
 
-#ifdef _GLIBCPP_USE___ENC_TRAITS
+#ifdef _GLIBCXX_USE___ENC_TRAITS
   // Definitions for static const data members of __enc_traits.
   const int __enc_traits::_S_max_size;
 #endif 
@@ -64,7 +64,7 @@ namespace std
 	 extern_type* __to, extern_type*, 
 	 extern_type*& __to_next) const
   { 
-    // _GLIBCPP_RESOLVE_LIB_DEFECTS
+    // _GLIBCXX_RESOLVE_LIB_DEFECTS
     // According to the resolution of DR19, "If returns noconv [...]
     // there are no changes to the values in [to, to_limit)."
     __from_next = __from; 
@@ -88,7 +88,7 @@ namespace std
 	intern_type* __to, intern_type*, 
 	intern_type*& __to_next) const
   {
-    // _GLIBCPP_RESOLVE_LIB_DEFECTS
+    // _GLIBCXX_RESOLVE_LIB_DEFECTS
     // According to the resolution of DR19, "If returns noconv [...]
     // there are no changes to the values in [to, to_limit)."
     __from_next = __from; 
@@ -117,7 +117,7 @@ namespace std
   do_max_length() const throw() 
   { return 1; }
   
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   // codecvt<wchar_t, char, mbstate_t> required specialization
   codecvt<wchar_t, char, mbstate_t>::
   codecvt(size_t __refs)
@@ -147,5 +147,5 @@ namespace std
   codecvt<wchar_t, char, mbstate_t>::
   do_always_noconv() const throw()
   { return false; }
-#endif //  _GLIBCPP_USE_WCHAR_T
+#endif //  _GLIBCXX_USE_WCHAR_T
 } // namespace std

@@ -37,8 +37,8 @@
  *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
  */
 
-#ifndef _CPP_IOSFWD
-#define _CPP_IOSFWD 1
+#ifndef _IOSFWD
+#define _IOSFWD 1
 
 #pragma GCC system_header
 
@@ -100,7 +100,7 @@ namespace std
   template<typename _CharT, typename _Traits = char_traits<_CharT> >
     class ostreambuf_iterator;
 
-#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
+#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
   // Not included.   (??? Apparently no LWG number?)
   class ios_base; 
 #endif
@@ -147,7 +147,7 @@ namespace std
   typedef basic_ofstream<char> 		ofstream;	///< @isiosfwd
   typedef basic_fstream<char> 		fstream;	///< @isiosfwd
 
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   typedef basic_ios<wchar_t> 		wios;		///< @isiosfwd
   typedef basic_streambuf<wchar_t> 	wstreambuf;	///< @isiosfwd
   typedef basic_istream<wchar_t> 	wistream;	///< @isiosfwd

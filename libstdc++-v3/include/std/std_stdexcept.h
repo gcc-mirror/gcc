@@ -36,8 +36,8 @@
  *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
  */
 
-#ifndef _CPP_STDEXCEPT
-#define _CPP_STDEXCEPT 	  1
+#ifndef _STDEXCEPT
+#define _STDEXCEPT 1
 
 #pragma GCC system_header
 
@@ -145,4 +145,4 @@ namespace std
   };
 } // namespace std
 
-#endif // _CPP_STDEXCEPT
+#endif // _STDEXCEPT

@@ -32,8 +32,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef _CPP_BITS_STREAM_ITERATOR_H
-#define _CPP_BITS_STREAM_ITERATOR_H 1
+#ifndef _STREAM_ITERATOR_H
+#define _STREAM_ITERATOR_H 1
 
 #pragma GCC system_header
 

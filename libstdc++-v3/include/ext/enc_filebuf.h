@@ -53,7 +53,7 @@ namespace __gnu_cxx
 	// Set state type to something useful.
 	// Something more than copyconstructible is needed here, so
 	// require copyconstructible + assignment operator.
-	__glibcpp_class_requires(state_type, _SGIAssignableConcept);
+	__glibcxx_class_requires(state_type, _SGIAssignableConcept);
 	_M_state_cur = __state;
 	_M_state_cur._M_init();
       };

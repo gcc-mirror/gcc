@@ -46,7 +46,7 @@ namespace std
   template class money_get<char, istreambuf_iterator<char> >;
   template class money_put<char, ostreambuf_iterator<char> >;
 
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   template class moneypunct<wchar_t, false>;
   template class moneypunct<wchar_t, true>;
   template class moneypunct_byname<wchar_t, false>;
@@ -73,7 +73,7 @@ namespace std
     _M_convert_int(ostreambuf_iterator<char>, ios_base&, char, 
 		   unsigned long) const;
 
-#ifdef _GLIBCPP_USE_LONG_LONG
+#ifdef _GLIBCXX_USE_LONG_LONG
   template
     ostreambuf_iterator<char>
     num_put<char, ostreambuf_iterator<char> >::
@@ -99,7 +99,7 @@ namespace std
     _M_convert_float(ostreambuf_iterator<char>, ios_base&, char, char, 
 		     long double) const;
   
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   template class numpunct<wchar_t>;
   template struct __numpunct_cache<wchar_t>;
   template class numpunct_byname<wchar_t>;
@@ -118,7 +118,7 @@ namespace std
     _M_convert_int(ostreambuf_iterator<wchar_t>, ios_base&, wchar_t, 
 		   unsigned long) const;
 
-#ifdef _GLIBCPP_USE_LONG_LONG
+#ifdef _GLIBCXX_USE_LONG_LONG
   template
     ostreambuf_iterator<wchar_t>
     num_put<wchar_t, ostreambuf_iterator<wchar_t> >::
@@ -152,7 +152,7 @@ namespace std
   template class time_get<char, istreambuf_iterator<char> >;
   template class time_get_byname<char, istreambuf_iterator<char> >;
 
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   template class __timepunct<wchar_t>;
   template class time_put<wchar_t, ostreambuf_iterator<wchar_t> >;
   template class time_put_byname<wchar_t, ostreambuf_iterator<wchar_t> >;
@@ -163,7 +163,7 @@ namespace std
   // messages
   template class messages<char>;
   template class messages_byname<char>;
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   template class messages<wchar_t>;
   template class messages_byname<wchar_t>;
 #endif
@@ -171,7 +171,7 @@ namespace std
   // ctype
   inline template class __ctype_abstract_base<char>;
   template class ctype_byname<char>;
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   inline template class __ctype_abstract_base<wchar_t>;
   template class ctype_byname<wchar_t>;
 #endif
@@ -179,7 +179,7 @@ namespace std
   // codecvt
   inline template class __codecvt_abstract_base<char, char, mbstate_t>;
   template class codecvt_byname<char, char, mbstate_t>;
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   inline template class __codecvt_abstract_base<wchar_t, char, mbstate_t>;
   template class codecvt_byname<wchar_t, char, mbstate_t>;
 #endif
@@ -187,7 +187,7 @@ namespace std
   // collate
   template class collate<char>;
   template class collate_byname<char>;
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   template class collate<wchar_t>;
   template class collate_byname<wchar_t>;
 #endif
@@ -246,7 +246,7 @@ namespace std
     const messages<char>& 
     use_facet<messages<char> >(const locale&);
 
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   template
     const codecvt<wchar_t, char, mbstate_t>& 
     use_facet<codecvt<wchar_t, char, mbstate_t> >(locale const&);
@@ -353,7 +353,7 @@ namespace std
     bool
     has_facet<messages<char> >(const locale&);
 
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
  template 
     bool
     has_facet<ctype<wchar_t> >(const locale&);
@@ -419,7 +419,7 @@ namespace std
 
   template class __pad<char, char_traits<char> >;
 
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   template
     wchar_t*
     __add_grouping<wchar_t>(wchar_t*, wchar_t, char const*, char const*, 
@@ -452,7 +452,7 @@ namespace std
     __convert_from_v(char*, const int, const char*, unsigned long, 
 		     const __c_locale&, int);
 
-#ifdef _GLIBCPP_USE_LONG_LONG
+#ifdef _GLIBCXX_USE_LONG_LONG
   template
     int
     __convert_from_v(char*, const int, const char*, long long, 
@@ -469,20 +469,20 @@ namespace std
     __int_to_char(char*, const int, unsigned long, const char*, 
 		  ios_base::fmtflags, bool);
 
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   template
     int
     __int_to_char(wchar_t*, const int, unsigned long, const wchar_t*, 
 		  ios_base::fmtflags, bool);
 #endif
 
-#ifdef _GLIBCPP_USE_LONG_LONG
+#ifdef _GLIBCXX_USE_LONG_LONG
   template
     int
     __int_to_char(char*, const int, unsigned long long, const char*, 
 		  ios_base::fmtflags, bool);
 
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   template
     int
     __int_to_char(wchar_t*, const int, unsigned long long, const wchar_t*,

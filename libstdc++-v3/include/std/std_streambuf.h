@@ -37,8 +37,8 @@
  *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
  */
 
-#ifndef _CPP_STREAMBUF
-#define _CPP_STREAMBUF	1
+#ifndef _STREAMBUF
+#define _STREAMBUF 1
 
 #pragma GCC system_header
 
@@ -741,7 +741,7 @@ namespace std
       overflow(int_type /* __c */ = traits_type::eof())
       { return traits_type::eof(); }
 
-#ifdef _GLIBCPP_DEPRECATED
+#ifdef _GLIBCXX_DEPRECATED
     // Annex D.6
     public:
       /**
@@ -753,7 +753,7 @@ namespace std
        *  See http://gcc.gnu.org/ml/libstdc++/2002-05/msg00168.html
        *
        *  @note  This function has been deprecated by the standard.  You
-       *         must define @c _GLIBCPP_DEPRECATED to make this visible; see
+       *         must define @c _GLIBCXX_DEPRECATED to make this visible; see
        *         c++config.h.
       */
       void 
@@ -766,7 +766,7 @@ namespace std
       }
 #endif
 
-#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
+#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
     // Side effect of DR 50. 
     private:
       basic_streambuf(const __streambuf_type&) { }; 
@@ -777,10 +777,10 @@ namespace std
     };
 } // namespace std
 
-#ifdef _GLIBCPP_NO_TEMPLATE_EXPORT
+#ifdef _GLIBCXX_NO_TEMPLATE_EXPORT
 # define export
 #endif
-#ifdef  _GLIBCPP_FULLY_COMPLIANT_HEADERS
+#ifdef  _GLIBCXX_FULLY_COMPLIANT_HEADERS
 #include <bits/streambuf.tcc>
 #endif
 

@@ -16,7 +16,7 @@ AC_SUBST(PACKAGE)
 libtool_VERSION=6:0:0
 AC_SUBST(libtool_VERSION)
 
-GLIBCPP_TOPREL_CONFIGURE
+GLIBCXX_TOPREL_CONFIGURE
 
 # Gets build, host, target, *_vendor, *_cpu, *_os, etc.
 #
@@ -34,8 +34,8 @@ GLIBCPP_TOPREL_CONFIGURE
 AC_CANONICAL_SYSTEM
 
 # Runs configure.host, finds CC, CXX and assorted other critical bits.
-# Must run this before the GLIBCPP_ENABLE_* macros below.
-GLIBCPP_CONFIGURE(.)
+# Must run this before the GLIBCXX_ENABLE_* macros below.
+GLIBCXX_CONFIGURE(.)
 
 AM_INIT_AUTOMAKE($PACKAGE, $gcc_version)
 AM_CONFIG_HEADER(config.h)
@@ -46,25 +46,25 @@ AC_SUBST(enable_shared)
 AC_SUBST(enable_static)
 
 # Check for support bits and g++ features that don't require linking.
-GLIBCPP_CHECK_GNU_MAKE
-#GLIBCPP_CHECK_COMPILER_VERSION
-GLIBCPP_ENABLE_SJLJ_EXCEPTIONS
-GLIBCPP_ENABLE_LIBUNWIND_EXCEPTIONS
-GLIBCPP_ENABLE_PCH([yes])
+GLIBCXX_CHECK_GNU_MAKE
+#GLIBCXX_CHECK_COMPILER_VERSION
+GLIBCXX_ENABLE_SJLJ_EXCEPTIONS
+GLIBCXX_ENABLE_LIBUNWIND_EXCEPTIONS
+GLIBCXX_ENABLE_PCH([yes])
 
 # Enable all the variable C++ runtime options.  
 # NB: C_MBCHAR must come early.
-GLIBCPP_ENABLE_CSTDIO
-GLIBCPP_ENABLE_CLOCALE
-GLIBCPP_ENABLE_CHEADERS([$c_model])
-GLIBCPP_ENABLE_C_MBCHAR([yes])
-GLIBCPP_ENABLE_C99([yes])
-GLIBCPP_ENABLE_LONG_LONG([yes])
-GLIBCPP_ENABLE_THREADS
-GLIBCPP_ENABLE_CONCEPT_CHECKS
-GLIBCPP_ENABLE_CXX_FLAGS
-GLIBCPP_ENABLE_DEBUG([no])
-GLIBCPP_ENABLE_DEBUG_FLAGS([none])
+GLIBCXX_ENABLE_CSTDIO
+GLIBCXX_ENABLE_CLOCALE
+GLIBCXX_ENABLE_CHEADERS([$c_model])
+GLIBCXX_ENABLE_C_MBCHAR([yes])
+GLIBCXX_ENABLE_C99([yes])
+GLIBCXX_ENABLE_LONG_LONG([yes])
+GLIBCXX_ENABLE_THREADS
+GLIBCXX_ENABLE_CONCEPT_CHECKS
+GLIBCXX_ENABLE_CXX_FLAGS
+GLIBCXX_ENABLE_DEBUG([no])
+GLIBCXX_ENABLE_DEBUG_FLAGS([none])
 
 # No surprises, no surprises...
 if test $ATOMICITYH = cpu/generic ; then
@@ -82,13 +82,13 @@ fi
 if test x"$build" != x"$host"; then
 
   # We are being configured with some form of cross compiler.
-  GLIBCPP_IS_CROSS_COMPILING=true
+  GLIBCXX_IS_CROSS_COMPILING=true
 
   # This lets us hard-code the functionality we know we'll have in the cross
   # target environment.  "Let" is a sugar-coated word placed on an especially
   # dull and tedious hack, actually.
   #
-  # Here's why GLIBCPP_CHECK_MATH_SUPPORT, and other autoconf macros
+  # Here's why GLIBCXX_CHECK_MATH_SUPPORT, and other autoconf macros
   # that involve linking, can't be used:
   #    "cannot open sim-crt0.o"
   #    "cannot open crt0.o"
@@ -99,7 +99,7 @@ if test x"$build" != x"$host"; then
   # crosses can be removed.
 
   # If Canadian cross, then don't pick up tools from the build directory.
-  # Used in GLIBCPP_EXPORT_INCLUDES (and nowhere else?).
+  # Used in GLIBCXX_EXPORT_INCLUDES (and nowhere else?).
   if test -n "$with_cross_host" && test x"$build" != x"$with_cross_host" \
     && test x"$build" != x"$target"; then
     CANADIAN=yes
@@ -108,9 +108,9 @@ if test x"$build" != x"$host"; then
   fi
 
   # Construct crosses by hand, eliminating bits that need ld...
-  # GLIBCPP_CHECK_COMPILER_FEATURES
-  # GLIBCPP_CHECK_BUILTIN_MATH_SUPPORT
-  # GLIBCPP_CHECK_MATH_SUPPORT
+  # GLIBCXX_CHECK_COMPILER_FEATURES
+  # GLIBCXX_CHECK_BUILTIN_MATH_SUPPORT
+  # GLIBCXX_CHECK_MATH_SUPPORT
 
   case "${host}" in
     *-freebsd*)
@@ -121,9 +121,9 @@ if test x"$build" != x"$host"; then
         sys/time.h unistd.h])
       SECTION_FLAGS='-ffunction-sections -fdata-sections'
       AC_SUBST(SECTION_FLAGS) 
-      GLIBCPP_CHECK_LINKER_FEATURES
-      GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT
-      GLIBCPP_CHECK_WCHAR_T_SUPPORT
+      GLIBCXX_CHECK_LINKER_FEATURES
+      GLIBCXX_CHECK_COMPLEX_MATH_SUPPORT
+      GLIBCXX_CHECK_WCHAR_T_SUPPORT
       AC_DEFINE(HAVE_LC_MESSAGES)
       AC_DEFINE(HAVE_DRAND48)
       AC_DEFINE(HAVE_GETPAGESIZE)
@@ -178,9 +178,9 @@ if test x"$build" != x"$host"; then
         fp.h locale.h float.h inttypes.h])
       SECTION_FLAGS='-ffunction-sections -fdata-sections'
       AC_SUBST(SECTION_FLAGS)
-      GLIBCPP_CHECK_LINKER_FEATURES
-      GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT
-      GLIBCPP_CHECK_WCHAR_T_SUPPORT
+      GLIBCXX_CHECK_LINKER_FEATURES
+      GLIBCXX_CHECK_COMPLEX_MATH_SUPPORT
+      GLIBCXX_CHECK_WCHAR_T_SUPPORT
       AC_DEFINE(HAVE_COPYSIGN)
       AC_DEFINE(HAVE_COPYSIGNF)
       AC_DEFINE(HAVE_FREXPF)
@@ -203,9 +203,9 @@ if test x"$build" != x"$host"; then
         fp.h locale.h float.h inttypes.h])
       SECTION_FLAGS='-ffunction-sections -fdata-sections'
       AC_SUBST(SECTION_FLAGS)
-      GLIBCPP_CHECK_LINKER_FEATURES
-      GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT
-      GLIBCPP_CHECK_WCHAR_T_SUPPORT
+      GLIBCXX_CHECK_LINKER_FEATURES
+      GLIBCXX_CHECK_COMPLEX_MATH_SUPPORT
+      GLIBCXX_CHECK_WCHAR_T_SUPPORT
       AC_DEFINE(HAVE_COPYSIGN)
       AC_DEFINE(HAVE_COPYSIGNF)
       AC_DEFINE(HAVE_FINITE)
@@ -228,9 +228,9 @@ if test x"$build" != x"$host"; then
     *-mingw32*)
       os_include_dir="os/mingw32"
       AC_CHECK_HEADERS([sys/types.h locale.h float.h])
-      GLIBCPP_CHECK_LINKER_FEATURES
-      GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT
-      GLIBCPP_CHECK_WCHAR_T_SUPPORT
+      GLIBCXX_CHECK_LINKER_FEATURES
+      GLIBCXX_CHECK_COMPLEX_MATH_SUPPORT
+      GLIBCXX_CHECK_WCHAR_T_SUPPORT
       ;;
     *-netbsd*)
       os_include_dir="os/bsd/netbsd"
@@ -239,9 +239,9 @@ if test x"$build" != x"$host"; then
         fp.h locale.h float.h inttypes.h])
       SECTION_FLAGS='-ffunction-sections -fdata-sections'
       AC_SUBST(SECTION_FLAGS) 
-      GLIBCPP_CHECK_LINKER_FEATURES
-      GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT
-      GLIBCPP_CHECK_WCHAR_T_SUPPORT
+      GLIBCXX_CHECK_LINKER_FEATURES
+      GLIBCXX_CHECK_COMPLEX_MATH_SUPPORT
+      GLIBCXX_CHECK_WCHAR_T_SUPPORT
       AC_DEFINE(HAVE_COPYSIGN)
       AC_DEFINE(HAVE_COPYSIGNF)
       AC_DEFINE(HAVE_FINITEF)
@@ -262,9 +262,9 @@ if test x"$build" != x"$host"; then
       os_include_dir="os/qnx/qnx6.1"
       SECTION_FLAGS='-ffunction-sections -fdata-sections'
       AC_SUBST(SECTION_FLAGS) 
-      GLIBCPP_CHECK_LINKER_FEATURES
-      GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT
-      GLIBCPP_CHECK_WCHAR_T_SUPPORT
+      GLIBCXX_CHECK_LINKER_FEATURES
+      GLIBCXX_CHECK_COMPLEX_MATH_SUPPORT
+      GLIBCXX_CHECK_WCHAR_T_SUPPORT
       AC_DEFINE(HAVE_COSF)
       AC_DEFINE(HAVE_COSL)
       AC_DEFINE(HAVE_COSHF)
@@ -331,7 +331,7 @@ if test x"$build" != x"$host"; then
         os_include_dir="os/newlib"
         AC_DEFINE(HAVE_HYPOT)
 
-        # GLIBCPP_CHECK_STDLIB_SUPPORT
+        # GLIBCXX_CHECK_STDLIB_SUPPORT
         AC_DEFINE(HAVE_STRTOF)        
         AC_DEFINE(HAVE_STRTOLD)        
         # AC_FUNC_MMAP
@@ -402,7 +402,7 @@ else
   # We are being configured natively. We can do more elaborate tests
   # that include AC_TRY_COMPILE now, as the linker is assumed to be
   # working.
-  GLIBCPP_IS_CROSS_COMPILING=false
+  GLIBCXX_IS_CROSS_COMPILING=false
   CANADIAN=no
 
   # Check for available headers.
@@ -410,18 +410,18 @@ else
   machine/param.h sys/machine.h fp.h locale.h float.h inttypes.h gconv.h \
   sys/types.h])
 
-  GLIBCPP_CHECK_COMPILER_FEATURES
-  GLIBCPP_CHECK_LINKER_FEATURES
-  GLIBCPP_CHECK_MATH_SUPPORT
-  GLIBCPP_CHECK_BUILTIN_MATH_SUPPORT
-  GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT
-  GLIBCPP_CHECK_WCHAR_T_SUPPORT
-  GLIBCPP_CHECK_STDLIB_SUPPORT
+  GLIBCXX_CHECK_COMPILER_FEATURES
+  GLIBCXX_CHECK_LINKER_FEATURES
+  GLIBCXX_CHECK_MATH_SUPPORT
+  GLIBCXX_CHECK_BUILTIN_MATH_SUPPORT
+  GLIBCXX_CHECK_COMPLEX_MATH_SUPPORT
+  GLIBCXX_CHECK_WCHAR_T_SUPPORT
+  GLIBCXX_CHECK_STDLIB_SUPPORT
 
   # For showmanyc_helper().
   AC_CHECK_HEADERS(sys/ioctl.h sys/filio.h)
-  GLIBCPP_CHECK_POLL
-  GLIBCPP_CHECK_S_ISREG_OR_S_IFREG
+  GLIBCXX_CHECK_POLL
+  GLIBCXX_CHECK_S_ISREG_OR_S_IFREG
 
   AC_LC_MESSAGES
 
@@ -434,11 +434,11 @@ else
   AC_FUNC_MMAP
 fi
 
-# This depends on GLIBCPP_CHECK_LINKER_FEATURES, but without it assumes no.
-GLIBCPP_ENABLE_SYMVERS([yes])
+# This depends on GLIBCXX_CHECK_LINKER_FEATURES, but without it assumes no.
+GLIBCXX_ENABLE_SYMVERS([yes])
 
-# This depends on GLIBCPP_ENABLE_SYMVERS and GLIBCPP_IS_CROSS_COMPILING.
-GLIBCPP_CONFIGURE_TESTSUITE
+# This depends on GLIBCXX_ENABLE_SYMVERS and GLIBCXX_IS_CROSS_COMPILING.
+GLIBCXX_CONFIGURE_TESTSUITE
 
 # Propagate the target-specific source directories through the build chain.
 # (Nothing currently uses cpu_include_dir directly; only ATOMICITYH 
@@ -452,10 +452,10 @@ AC_SUBST(OS_INC_SRCDIR)
 
 
 # Determine cross-compile flags and all AM_CONDITIONALs.
-AC_SUBST(GLIBCPP_IS_CROSS_COMPILING)
+AC_SUBST(GLIBCXX_IS_CROSS_COMPILING)
 AM_CONDITIONAL(CANADIAN, test "$CANADIAN" = yes)
-dnl from GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT:
-AM_CONDITIONAL(GLIBCPP_BUILD_LIBMATH,  test "$need_libmath" = yes)
+dnl from GLIBCXX_CHECK_COMPLEX_MATH_SUPPORT:
+AM_CONDITIONAL(GLIBCXX_BUILD_LIBMATH,  test "$need_libmath" = yes)
  
 AC_CACHE_SAVE
 
@@ -466,11 +466,11 @@ else
 fi
 
 # Export all the install information
-GLIBCPP_EXPORT_INSTALL_INFO
+GLIBCXX_EXPORT_INSTALL_INFO
 
 # Export all the include and flag information to Makefiles.
-GLIBCPP_EXPORT_INCLUDES
-GLIBCPP_EXPORT_FLAGS
+GLIBCXX_EXPORT_INCLUDES
+GLIBCXX_EXPORT_FLAGS
 
 if ${CONFIG_SHELL-/bin/sh} ./libtool --tag CXX --features |
    grep "enable shared" > /dev/null; then
@@ -497,7 +497,7 @@ po/Makefile testsuite/Makefile scripts/check_survey scripts/testsuite_flags,
      # Ony modify Makefiles that are just being created.
      case " $CONFIG_FILES" in
        *" Makefile"*)
-	 ac_file=Makefile . ${glibcpp_basedir}/../config-ml.in
+	 ac_file=Makefile . ${glibcxx_basedir}/../config-ml.in
 	 ;;
      esac
      case $CONFIG_FILES in
@@ -527,7 +527,7 @@ with_build_subdir=${with_build_subdir}
 with_multisubdir=${with_multisubdir}
 ac_configure_args="${multilib_arg} ${ac_configure_args}"
 CONFIG_SHELL=${CONFIG_SHELL-/bin/sh}
-glibcpp_basedir=${glibcpp_basedir}
+glibcxx_basedir=${glibcxx_basedir}
 CC="${CC}"
 CXX="${CXX}"
 ORIGINAL_LD_FOR_MULTILIBS="${ORIGINAL_LD_FOR_MULTILIBS}"
@@ -543,7 +543,7 @@ dnl  [if test -n "$CONFIG_FILES"; then
 dnl    # Ony modify Makefiles that are just being created.
 dnl    case " $CONFIG_FILES" in
 dnl      *" Makefile"*)
-dnl        ac_file=Makefile . ${glibcpp_basedir}/../config-ml.in
+dnl        ac_file=Makefile . ${glibcxx_basedir}/../config-ml.in
 dnl        ;;
 dnl    esac
 dnl    case $CONFIG_FILES in
@@ -571,7 +571,7 @@ dnl  target=${target}
 dnl  with_multisubdir=${with_multisubdir}
 dnl  ac_configure_args="${multilib_arg} ${ac_configure_args}"
 dnl  CONFIG_SHELL=${CONFIG_SHELL-/bin/sh}
-dnl  glibcpp_basedir=${glibcpp_basedir}
+dnl  glibcxx_basedir=${glibcxx_basedir}
 dnl  CC="${CC}"
 dnl  CXX="${CXX}"
 dnl  )

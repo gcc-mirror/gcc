@@ -58,8 +58,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef __GLIBCPP_INTERNAL_SET_H
-#define __GLIBCPP_INTERNAL_SET_H
+#ifndef _SET_H
+#define _SET_H 1
 
 #include <bits/concept_check.h>
 
@@ -85,8 +85,8 @@ template <class _Key, class _Compare, class _Alloc>
 class set
 {
   // concept requirements
-  __glibcpp_class_requires(_Key, _SGIAssignableConcept)
-  __glibcpp_class_requires4(_Compare, bool, _Key, _Key, _BinaryFunctionConcept)
+  __glibcxx_class_requires(_Key, _SGIAssignableConcept)
+  __glibcxx_class_requires4(_Compare, bool, _Key, _Key, _BinaryFunctionConcept)
 
 public:
   // typedefs:
@@ -182,7 +182,7 @@ public:
     return _M_t.find(__x) == _M_t.end() ? 0 : 1;
   }
 
-#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
+#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
 //214.  set::find() missing const overload
   iterator find(const key_type& __x) { return _M_t.find(__x); }
   const_iterator find(const key_type& __x) const { return _M_t.find(__x); }
@@ -267,4 +267,4 @@ inline void swap(set<_Key,_Compare,_Alloc>& __x,
 
 } // namespace std
 
-#endif /* __GLIBCPP_INTERNAL_SET_H */
+#endif /* _SET_H */

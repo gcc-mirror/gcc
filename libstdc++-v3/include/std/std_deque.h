@@ -58,8 +58,8 @@
  *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
  */
 
-#ifndef _CPP_DEQUE
-#define _CPP_DEQUE 1
+#ifndef _DEQUE
+#define _DEQUE 1
 
 #pragma GCC system_header
 
@@ -70,9 +70,9 @@
 #include <bits/stl_uninitialized.h>
 #include <bits/stl_deque.h>
 
-#ifdef _GLIBCPP_NO_TEMPLATE_EXPORT
+#ifdef _GLIBCXX_NO_TEMPLATE_EXPORT
 #  include <bits/deque.tcc>
 #endif
 
-#endif /* _CPP_DEQUE */
+#endif /* _DEQUE */
 

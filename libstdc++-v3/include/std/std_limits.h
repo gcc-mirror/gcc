@@ -40,8 +40,8 @@
  *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
  */
 
-#ifndef _CPP_NUMERIC_LIMITS
-#define _CPP_NUMERIC_LIMITS 1
+#ifndef _NUMERIC_LIMITS
+#define _NUMERIC_LIMITS 1
 
 #pragma GCC system_header
 
@@ -278,7 +278,7 @@ namespace std
    *  members will all be @c false.
    *
    *  @if maint
-   *  _GLIBCPP_RESOLVE_LIB_DEFECTS:  DRs 201 and 184 (hi Gaby!) are
+   *  _GLIBCXX_RESOLVE_LIB_DEFECTS:  DRs 201 and 184 (hi Gaby!) are
    *  noted, but not incorporated in this documented (yet).
    *  @endif
   */
@@ -1140,4 +1140,4 @@ namespace std
 #undef __glibcpp_digits
 #undef __glibcpp_digits10
 
-#endif // _CPP_NUMERIC_LIMITS
+#endif // _NUMERIC_LIMITS

@@ -36,8 +36,8 @@
  *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
  */
 
-#ifndef _CPP_SSTREAM
-#define _CPP_SSTREAM	1
+#ifndef _SSTREAM
+#define _SSTREAM 1
 
 #pragma GCC system_header
 
@@ -65,7 +65,7 @@ namespace std
       // Types:
       typedef _CharT 					char_type;
       typedef _Traits 					traits_type;
-#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
+#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
 // 251. basic_stringbuf missing allocator_type
       typedef _Alloc				       	allocator_type;
 #endif
@@ -304,7 +304,7 @@ namespace std
       // Types:
       typedef _CharT 					char_type;
       typedef _Traits 					traits_type;
-#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
+#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
 // 251. basic_stringbuf missing allocator_type
       typedef _Alloc				       	allocator_type;
 #endif
@@ -423,7 +423,7 @@ namespace std
       // Types:
       typedef _CharT 					char_type;
       typedef _Traits 					traits_type;
-#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
+#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
 // 251. basic_stringbuf missing allocator_type
       typedef _Alloc				       	allocator_type;
 #endif
@@ -542,7 +542,7 @@ namespace std
       // Types:
       typedef _CharT 					char_type;
       typedef _Traits 					traits_type;
-#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
+#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
 // 251. basic_stringbuf missing allocator_type
       typedef _Alloc				       	allocator_type;
 #endif
@@ -641,10 +641,10 @@ namespace std
     };
 } // namespace std
 
-#ifdef _GLIBCPP_NO_TEMPLATE_EXPORT
+#ifdef _GLIBCXX_NO_TEMPLATE_EXPORT
 # define export
 #endif
-#ifdef  _GLIBCPP_FULLY_COMPLIANT_HEADERS
+#ifdef  _GLIBCXX_FULLY_COMPLIANT_HEADERS
 # include <bits/sstream.tcc>
 #endif
 

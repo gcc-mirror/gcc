@@ -52,8 +52,8 @@
  * purpose.  It is provided "as is" without express or implied warranty.
  */
 
-#ifndef _CPP_BACKWARD_HEAP_H
-#define _CPP_BACKWARD_HEAP_H 1
+#ifndef _BACKWARD_HEAP_H
+#define _BACKWARD_HEAP_H 1
 
 #include "backward_warning.h"
 #include <bits/c++config.h>
@@ -64,7 +64,7 @@ using std::pop_heap;
 using std::make_heap;
 using std::sort_heap;
 
-#endif /* _CPP_BACKWARD_HEAP_H */
+#endif /* _BACKWARD_HEAP_H */
 
 // Local Variables:
 // mode:C++

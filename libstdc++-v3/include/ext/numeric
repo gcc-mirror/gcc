@@ -135,8 +135,8 @@ namespace __gnu_cxx
     iota(_ForwardIter __first, _ForwardIter __last, _Tp __value)
     {
       // concept requirements
-      __glibcpp_function_requires(_Mutable_ForwardIteratorConcept<_ForwardIter>)
-      __glibcpp_function_requires(_ConvertibleConcept<_Tp,
+      __glibcxx_function_requires(_Mutable_ForwardIteratorConcept<_ForwardIter>)
+      __glibcxx_function_requires(_ConvertibleConcept<_Tp,
 	    typename std::iterator_traits<_ForwardIter>::value_type>)
 
       while (__first != __last)
