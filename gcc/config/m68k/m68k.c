@@ -1971,3 +1971,62 @@ print_operand_address (file, addr)
 	break;
     }
 }
+
+/* Check for cases where a clr insns can be omitted from code using
+   strict_low_part sets.  For example, the second clrl here is not needed:
+   clrl d0; movw a0@+,d0; use d0; clrl d0; movw a0@+; use d0; ...
+
+   MODE is the mode of this STRICT_LOW_PART set.  FIRST_INSN is the clear
+   insn we are checking for redundancy.  TARGET is the register set by the
+   clear insn.  */
+
+int
+strict_low_part_peephole_ok (mode, first_insn, target)
+     enum machine_mode mode;
+     rtx first_insn;
+     rtx target;
+{
+  rtx p;
+
+  p = prev_nonnote_insn (first_insn);
+
+  while (p)
+    {
+      /* If it isn't an insn, then give up.  */
+      if (GET_CODE (p) != INSN)
+	return 0;
+
+      if (reg_set_p (target, p))
+	{
+	  rtx set = single_set (p);
+	  rtx dest;
+
+	  /* If it isn't an easy to recognize insn, then give up.  */
+	  if (! set)
+	    return 0;
+
+	  dest = SET_DEST (set);
+
+	  /* If this sets the entire target register to zero, then our
+	     first_insn is redundant.  */
+	  if (rtx_equal_p (dest, target)
+	      && SET_SRC (set) == const0_rtx)
+	    return 1;
+	  else if (GET_CODE (dest) == STRICT_LOW_PART
+		   && GET_CODE (XEXP (dest, 0)) == REG
+		   && REGNO (XEXP (dest, 0)) == REGNO (target)
+		   && (GET_MODE_SIZE (GET_MODE (XEXP (dest, 0)))
+		       <= GET_MODE_SIZE (mode)))
+	    /* This is a strict low part set which modifies less than
+	       we are using, so it is safe.  */
+	    ;
+	  else
+	    return 0;
+	}
+
+      p = prev_nonnote_insn (p);
+
+    }
+
+  return 0;
+}
