@@ -1,3 +1,8 @@
+1999-06-05  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.f-torture/compile/19990502-0.f: Replace with new,
+	shorter, test that still fails after recent changes.
+
 Fri Jun  4 02:25:04 1999  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
 
 	* gcc.c-torture/execute/990604-1.c: New test.
