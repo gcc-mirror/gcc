@@ -359,8 +359,7 @@ DEFTREECODE (INDIRECT_REF, "indirect_ref", 'r', 1)
 DEFTREECODE (BUFFER_REF, "buffer_ref", 'r', 1)
 
 /* Array indexing in languages other than C.
-   Operand 0 is the array; operand 1 is a list of indices
-   stored as a chain of TREE_LIST nodes.  */
+   Operand 0 is the array; operand 1 is a (single) array index. */
 DEFTREECODE (ARRAY_REF, "array_ref", 'r', 2)
 
 /* Constructor: return an aggregate value made from specified components.
