@@ -1,3 +1,7 @@
+Thu Jan  4 13:54:11 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* gcc.c-torture/execute/built-in-setjmp.c: New.
+
 2001-01-03  Richard Henderson  <rth@redhat.com>
 
 	* gcc.dg/940510-1.c: Update expected error wording.
