@@ -135,14 +135,6 @@ type_for_mode (mode, unsignedp)
   if (mode == TYPE_MODE (double_type_node))
     return double_type_node;
 
-#if 0
-  if (mode == TYPE_MODE (build_pointer_type (char_type_node)))
-    return build_pointer_type (char_type_node);
-
-  if (mode == TYPE_MODE (build_pointer_type (integer_type_node)))
-    return build_pointer_type (integer_type_node);
-#endif
-
   return 0;
 }
 
@@ -331,9 +323,9 @@ build_java_array_type (element_type, length)
 		     buf, 0, 0, "");
   t = IDENTIFIER_SIGNATURE_TYPE (sig);
   if (t != NULL_TREE)
-    return t;
+    return TREE_TYPE (t);
   t = make_class ();
-  IDENTIFIER_SIGNATURE_TYPE (sig) = t;
+  IDENTIFIER_SIGNATURE_TYPE (sig) = build_pointer_type (t);
   TYPE_ARRAY_P (t) = 1;
 
   if (TREE_CODE (el_name) == POINTER_TYPE)
@@ -345,6 +337,8 @@ build_java_array_type (element_type, length)
 
   set_java_signature (t, sig);
   set_super_info (0, t, object_type_node, 0);
+  if (TREE_CODE (element_type) == RECORD_TYPE)
+    element_type = promote_type (element_type);
   TYPE_ARRAY_ELEMENT (t) = element_type;
 
   /* Add length pseudo-field. */
@@ -411,6 +405,7 @@ static tree
 parse_signature_type (ptr, limit)
      const unsigned char **ptr, *limit;
 {
+  tree type;
   if ((*ptr) >= limit)
     fatal ("bad signature string");
   switch (*(*ptr))
@@ -426,12 +421,9 @@ parse_signature_type (ptr, limit)
     case 'V':  (*ptr)++;  return void_type_node;
     case '[':
       for ((*ptr)++; (*ptr) < limit && isdigit (**ptr); ) (*ptr)++;
-      {
-	tree element_type = parse_signature_type (ptr, limit);
-	if (TREE_CODE (element_type) == RECORD_TYPE)
-	  element_type = promote_type (element_type);
-	return build_java_array_type (element_type, -1);
-      }
+      type = parse_signature_type (ptr, limit);
+      type = build_java_array_type (type, -1); 
+      break;
     case 'L':
       {
 	const unsigned char *start = ++(*ptr);
@@ -444,11 +436,13 @@ parse_signature_type (ptr, limit)
 	      break;
 	  }
 	*ptr = str+1;
-	return lookup_class (unmangle_classname (start, str - start));
+	type = lookup_class (unmangle_classname (start, str - start));
+	break;
       }
     default:
       fatal ("unrecognized signature string");
     }
+  return promote_type (type);
 }
 
 /* Parse a Java "mangled" signature string, starting at SIG_STRING,
@@ -471,12 +465,12 @@ parse_signature_string (sig_string, sig_length)
       str++;
       while (str < limit && str[0] != ')')
 	{
-	  tree argtype = promote_type (parse_signature_type (&str, limit));
+	  tree argtype = parse_signature_type (&str, limit);
 	  argtype_list = tree_cons (NULL_TREE, argtype, argtype_list);
 	}
       if (str++, str >= limit)
 	fatal ("bad signature string");
-      result_type = promote_type (parse_signature_type (&str, limit));
+      result_type = parse_signature_type (&str, limit);
       result_type = build_function_type (result_type,
 					 nreverse (argtype_list));
     }
@@ -698,32 +692,6 @@ lookup_java_method (clas, method_name, method_signature)
       clas = CLASSTYPE_SUPER (clas);
     }
   return NULL_TREE;
-}
-
-/* Search in class CLAS (and its superclasses) for methods matching
-   METHOD_NAME and METHOD_SIGNATURE. Return a list of FUNCTION_DECLs.
-   When called from here, build_java_signature doesn't take the
-   returned type into account. */
-
-tree
-match_java_method (clas, method_name, method_signature)
-     tree clas, method_name, method_signature;
-{
-  tree method;
-  tree list = NULL_TREE;
-  while (clas != NULL_TREE)
-    {
-      for (method = TYPE_METHODS (clas);
-	   method != NULL_TREE;  method = TREE_CHAIN (method))
-	{
-	  tree method_sig = build_java_argument_signature (TREE_TYPE (method));
-	  if (DECL_NAME (method) == method_name 
-	      && method_sig == method_signature)
-	    list = tree_cons (NULL_TREE, method, list);
-	}
-      clas = CLASSTYPE_SUPER (clas);
-    }
-  return list;
 }
 
 /* Search in class CLAS for a constructor matching METHOD_SIGNATURE.

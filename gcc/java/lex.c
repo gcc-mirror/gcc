@@ -51,6 +51,10 @@ Addison Wesley 1996" (http://java.sun.com/docs/books/jls/html/3.doc.html)  */
 #include <unistd.h>
 #endif
 
+#ifndef JC1_LITE
+extern struct obstack *expression_obstack;
+#endif
+
 void
 java_init_lex ()
 {
@@ -71,6 +75,13 @@ java_init_lex ()
     wfl_operator = build_expr_wfl (NULL_TREE, ctxp->filename, 0, 0);
   if (!label_id)
     label_id = get_identifier ("$L");
+  if (!wfl_append) 
+    wfl_append = build_expr_wfl (get_identifier ("append"), NULL, 0, 0);
+  if (!wfl_string_buffer)
+    wfl_string_buffer = 
+      build_expr_wfl (get_identifier ("java.lang.StringBuffer"), NULL, 0, 0);
+  if (!wfl_to_string)
+    wfl_to_string = build_expr_wfl (get_identifier ("toString"), NULL, 0, 0);
 
   ctxp->static_initialized = ctxp->non_static_initialized = 
     ctxp->incomplete_class = NULL_TREE;
@@ -885,27 +896,20 @@ java_lex (java_lval)
 
       obstack_1grow (&temporary_obstack, '\0');
       string = obstack_finish (&temporary_obstack);
-      if (!no_error || (c != '"'))
-	*string = '\0';		/* Silently turns the string to an empty one */
-      
-      JAVA_LEX_STR_LIT (string)
-      
 #ifndef JC1_LITE
-      if (*string)
+      if (!no_error || (c != '"'))
+	java_lval->node = error_mark_node; /* Requires futher testing FIXME */
+      else
 	{
-	  extern struct obstack *expression_obstack;
 	  tree s = make_node (STRING_CST);
 	  TREE_STRING_LENGTH (s) = strlen (string);
 	  TREE_STRING_POINTER (s) = 
-	    obstack_alloc (expression_obstack, strlen (string));
+	    obstack_alloc (expression_obstack, TREE_STRING_LENGTH (s)+1);
 	  strcpy (TREE_STRING_POINTER (s), string);
 	  java_lval->node = s;
 	}
-      else
-	java_lval->node = error_mark_node;
 #endif
       return STRING_LIT_TK;
-      
     }
 
   /* Separator */
@@ -1194,12 +1198,17 @@ java_lex (java_lval)
 	      SET_LVAL_NODE (null_pointer_node);
 	      return NULL_TK;
 
-	      /* We build an operator for SUPER, so we can keep its position */
+	      /* Some keyword we want to retain information on the location
+		 they where found */
+	    case CASE_TK:
+	    case DEFAULT_TK:
 	    case SUPER_TK:
 	    case THIS_TK:
 	    case RETURN_TK:
 	    case BREAK_TK:
 	    case CONTINUE_TK:
+	    case TRY_TK:
+	    case CATCH_TK:
 	      BUILD_OPERATOR (kw->token);
 
 	    default:

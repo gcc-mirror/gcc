@@ -60,15 +60,15 @@ char *main_class_name = NULL;
 int lang_specific_extra_outfiles = 0;
 
 char jvgenmain_spec[] =
-  "jvgenmain %i %{!pipe:%g.i} |\n\
-   cc1 %{!pipe:%g.i} %1 \
+  "jvgenmain %i %{!pipe:%u.i} |\n\
+   cc1 %{!pipe:%U.i} %1 \
 		   %{!Q:-quiet} -dumpbase %b.c %{d*} %{m*} %{a*}\
 		   %{g*} %{O*} \
 		   %{v:-version} %{pg:-p} %{p} %{f*}\
 		   %{aux-info*}\
 		   %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
-		   %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
-              %{!S:as %a %Y -o %w%b%O %{!pipe:%g.s} %A\n }";
+		   %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%U.s}} |\n\
+              %{!S:as %a %Y -o %d%w%u%O %{!pipe:%U.s} %A\n }";
 
 void
 lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
@@ -141,6 +141,9 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
   /* The total number of arguments with the new stuff.  */
   int num_args = 1;
 
+  /* Non-zero if linking is supposed to happen.  */
+  int will_link = 1;
+
   argc = *in_argc;
   argv = *in_argv;
   added_libraries = *in_added_libraries;
@@ -210,14 +213,18 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
 		     && (char *)strchr ("bBVDUoeTuIYmLiA", argv[i][1]) != NULL)
 		    || strcmp (argv[i], "-Tdata") == 0))
 	    quote = argv[i];
-	  else if (library != 0 && ((argv[i][2] == '\0'
-		     && (char *) strchr ("cSEM", argv[i][1]) != NULL)
-		    || strcmp (argv[i], "-MM") == 0))
+	  else if (library != 0 
+		   && ((argv[i][2] == '\0'
+			&& (char *) strchr ("cSEM", argv[i][1]) != NULL)
+		       || strcmp (argv[i], "-MM") == 0))
 	    {
 	      /* Don't specify libraries if we won't link, since that would
 		 cause a warning.  */
 	      library = 0;
 	      added -= 2;
+
+	      /* Remember this so we can confirm -fmain option.  */
+	      will_link = 0;
 	    }
 	  else
 	    /* Pass other options through.  */
@@ -270,6 +277,8 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
 
       if (strncmp (argv[i], "-fmain=", 7) == 0)
 	{
+	  if (! will_link)
+	    (*fn) ("cannot specify `main' class when not linking");
 	  --j;
 	  continue;
 	}
