@@ -387,6 +387,32 @@ comes before @code{SYSTEM_INCLUDE_DIR} in the search order.
 Cross compilers do not use this macro and do not search either
 @file{/usr/local/include} or its replacement.
 
+@findex MODIFY_TARGET_NAME
+@item MODIFY_TARGET_NAME
+Define this macro if you with to define command-line switches that modify the
+default target name
+
+For each switch, you can include a string to be appended to the first
+part of the configuration name or a string to be deleted from the
+configuration name, if present.  The definition should be an initializer
+for an array of structures.  Each array element should have three
+elements: the switch name (a string constant, including the initial
+dash), one of the enumeration codes @code{ADD} or @code{DELETE} to
+indicate whether the string should be inserted or deleted, and the string
+to be inserted or deleted (a string constant).
+
+For example, on a machine where @samp{64} at the end of the
+configuration name denotes a 64-bit target and you want the @samp{-32}
+and @samp{-64} switches to select between 32- and 64-bit targets, you would
+code
+
+@smallexample
+#define MODIFY_TARGET_NAME \
+  @{ @{ "-32", DELETE, "64"@}, \
+     @{"-64", ADD, "64"@}@}
+@end smallexample
+
+
 @findex SYSTEM_INCLUDE_DIR
 @item SYSTEM_INCLUDE_DIR
 Define this macro as a C string constant if you wish to specify a
