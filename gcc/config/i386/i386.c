@@ -35,7 +35,6 @@ Boston, MA 02111-1307, USA. */
 #include "flags.h"
 #include "except.h"
 #include "function.h"
-#include "dwarf2.h"
 
 #ifdef EXTRA_CONSTRAINT
 /* If EXTRA_CONSTRAINT is defined, then the 'S'

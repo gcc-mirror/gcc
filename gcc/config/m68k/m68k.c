@@ -31,7 +31,6 @@ Boston, MA 02111-1307, USA.  */
 #include "insn-flags.h"
 #include "output.h"
 #include "insn-attr.h"
-#include "dwarf2.h"
 
 /* Needed for use_return_insn.  */
 #include "flags.h"
