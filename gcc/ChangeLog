@@ -1,3 +1,7 @@
+2002-09-16  Jeff Law <law@redhat.com>
+
+        * libgcc2.c: Do not include machmode.h.
+
 2002-09-16  Jason Merrill  <jason@redhat.com>
 	    Danny Smith  <dannysmith@users.sourceforge.net>
 
