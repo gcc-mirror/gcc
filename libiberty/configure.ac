@@ -113,20 +113,12 @@ GCC_NO_EXECUTABLES
 AC_PROG_CC
 AC_PROG_CPP_WERROR
 
+AC_PROG_LIBTOOL
+
 if test x$GCC = xyes; then
   ac_libiberty_warn_cflags='-W -Wall -Wtraditional -pedantic'
 fi
 AC_SUBST(ac_libiberty_warn_cflags)
-
-AC_PROG_CC_C_O
-# autoconf is lame and doesn't give us any substitution variable for this.
-if eval "test \"`echo '$ac_cv_prog_cc_'${ac_cc}_c_o`\" = no"; then
-  NO_MINUS_C_MINUS_O=yes
-else
-  OUTPUT_OPTION='-o $@'
-fi
-AC_SUBST(NO_MINUS_C_MINUS_O)
-AC_SUBST(OUTPUT_OPTION)
 
 AC_C_CONST
 AC_C_INLINE
@@ -515,13 +507,16 @@ fi
 
 # Figure out which version of pexecute to use.
 case "${host}" in
-     *-*-mingw* | *-*-winnt*)	pexecute=./pex-win32.o  ;;
-     *-*-msdosdjgpp*)		pexecute=./pex-djgpp.o  ;;
-     *-*-msdos*)		pexecute=./pex-msdos.o  ;;
-     *-*-os2-emx*)		pexecute=./pex-os2.o    ;;
-     *)				pexecute=./pex-unix.o   ;;
+     *-*-mingw* | *-*-winnt*)	pex=./pex-win32  ;;
+     *-*-msdosdjgpp*)		pex=./pex-djgpp  ;;
+     *-*-msdos*)		pex=./pex-msdos  ;;
+     *-*-os2-emx*)		pex=./pex-os2    ;;
+     *)				pex=./pex-unix   ;;
 esac
+pexecute=${pex}.o
+ltpexecute=${pex}.lo
 AC_SUBST(pexecute)
+AC_SUBST(ltpexecute)
 
 libiberty_AC_FUNC_STRNCMP
 
@@ -533,16 +528,6 @@ else
   INSTALL_DEST=tooldir
 fi
 AC_SUBST(INSTALL_DEST)
-
-m4_pattern_allow(LIBOBJS)
-L=""
-for l in x $LIBOBJS; do
-  case $l in
-    x) ;;
-    *) L="$L ./$l" ;;
-  esac
-done
-LIBOBJS="$L"
 
 # We need multilib support, but only if configuring for the target.
 AC_CONFIG_FILES([Makefile testsuite/Makefile])
