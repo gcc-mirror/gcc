@@ -2129,7 +2129,6 @@ extern void pop_cp_function_context		PROTO((tree));
 extern int in_function_p			PROTO((void));
 extern void replace_defarg			PROTO((tree, tree));
 extern void print_other_binding_stack		PROTO((struct binding_level *));
-extern tree strip_attrs				PROTO((tree));
 extern void revert_static_member_fn             PROTO((tree*, tree*, tree*));
 
 /* in decl2.c */
