@@ -1,3 +1,7 @@
+2002-10-16  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* gcc.dg/weak/typeof-2.c: For S/390 targets, return before baz3 test.
+
 2002-10-16  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/7524
