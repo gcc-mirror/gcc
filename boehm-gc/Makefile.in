@@ -93,6 +93,8 @@ addobjs = @addobjs@
 gc_basedir = @gc_basedir@
 mkinstalldirs = @mkinstalldirs@
 target_all = @target_all@
+toolexecdir = @toolexecdir@
+toolexeclibdir = @toolexeclibdir@
 
 AUTOMAKE_OPTIONS = cygnus
 
@@ -105,9 +107,6 @@ MULTIDIRS =
 MULTISUBDIR = 
 MULTIDO = true
 MULTICLEAN = true
-@USE_LIBDIR_TRUE@toolexeclibdir = @USE_LIBDIR_TRUE@$(libdir)$(MULTISUBDIR)
-@USE_LIBDIR_FALSE@toolexeclibdir = @USE_LIBDIR_FALSE@$(toolexecdir)/lib$(MULTISUBDIR)
-@USE_LIBDIR_FALSE@toolexecdir = @USE_LIBDIR_FALSE@$(exec_prefix)/$(target_alias)
 
 noinst_LTLIBRARIES = libgcjgc.la libgcjgc_convenience.la
 
