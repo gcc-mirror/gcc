@@ -1,3 +1,26 @@
+2001-01-09  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* c-lang.c (lang_hooks): Update.
+        (lang_init): Rename c_init.
+        (lang_finish): Remove.
+        * toplev.c (compile_file): Use lang_hooks for lang_init ()
+        and lang_finish ().
+        * toplev.h (lang_hooks): Add init () and finish ().
+        * tree.h (lang_init, lang_finish): Remove.
+        * cp/tree.h (lang_init, lang_finish): Remove.
+        * cp/decl2.c (cxx_post_options, lang_hooks): Move to cp/lex.c.
+        * cp/lex.c (cxx_init, cxx_finish, cxx_post_options,
+        lang_hooks): New.
+        (lang_init, lang_finish): Remove.
+        * f/com.c (lang_init, lang_finish): Rename f_init, f_finish.
+        (lang_hooks): Update.
+        * java/lang.c (lang_init): Rename java_init.
+        (lang_finish): Remove.
+        (lang_hooks): Update.
+        * objc/objc-act.c (lang_init): Rename objc_init.
+        (lang_finish): Remove.
+        (lang_hoooks): Update.
+
 20001-01-09  Graham Stott  <grahams@redhat.com>
 
 	* cppfiles.c (_cpp_execute_include): Move `len` initialisation
