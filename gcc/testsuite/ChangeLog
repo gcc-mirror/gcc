@@ -1,3 +1,12 @@
+2003-11-14  Bernardo Innocenti  <bernie@develer.com>
+
+	Backport from 3.4-branch
+
+	2003-06-25  Giovanni Bajo  <giovannibajo@libero.it>
+
+        PR c++/2094
+        * g++.dg/template/ptrmem6.C: New test.
+
 2003-11-13  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* g++.dg/opt/const3.C: New test.

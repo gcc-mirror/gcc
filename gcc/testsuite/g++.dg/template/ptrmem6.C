@@ -1,10 +1,43 @@
-struct S {};
+// { dg-do compile }
+// Origin: <togawa at acm dot arg>
+// c++/2094: unsupported 'ptrmem_cst' in type unification
 
-void g(int S::**);
+struct R
+{
+   int i;
+};
 
-template <typename T>
-void f (int T::* volatile *p) {
-  g(p); // { dg-error "" }
-}
+struct S
+{
+   int i;
+   int j;
+};
 
-template void f(int S::* volatile *); // { dg-error "instantiated" }
+struct S2 : S
+{};
+
+template<int S::*p, typename>
+struct X
+{
+    X ();
+    template<typename U> X(const X<p,U> &);
+};
+
+X<&S::i,S> x  = X<&S::i,S>();
+X<&S::i,S> x2 = X<&S2::i,S>();
+X<&S::i,S> y  = X<&S::j,S>();  // { dg-error "" }
+X<&S::i,S> z  = X<&R::i,S>();  // { dg-error "" }
+
+template <class T>
+struct Foo
+{
+  void foo(void)
+  {
+     X<&T::i,T> x  = X<&T::i,T>();
+     X<&S::i,S> x2 = X<&S2::i,S>();
+     X<&S::i,S> y  = X<&S::j,S>(); // { dg-error "" }
+     X<&S::i,S> z  = X<&R::i,S>(); // { dg-error "" }
+  }
+};
+
+template struct Foo<S>;  // { dg-error "instantiated from" }
