@@ -5542,7 +5542,7 @@ Similar to @code{__builtin_nan}, except the return type is @code{long double}.
 @deftypefn {Built-in Function} double __builtin_nans (const char *str)
 Similar to @code{__builtin_nan}, except the significand is forced
 to be a signaling NaN.  The @code{nans} function is proposed by
-@uref{http://std.dkuug.dk/JTC1/SC22/WG14/www/docs/n965.htm,,WG14 N965}.
+@uref{http://www.open-std.org/jtc1/sc22/wg14/www/docs/n965.htm,,WG14 N965}.
 @end deftypefn
 
 @deftypefn {Built-in Function} float __builtin_nansf (const char *str)
