@@ -241,8 +241,8 @@ dnl to create the link will fail.
 test -d java || mkdir java
 test -d java/io || mkdir java/io
 test -d gnu || mkdir gnu
-AC_LINK_FILES(java/io/natFile${PLATFORM}.cc, java/io/natFile.cc)
-AC_LINK_FILES(java/io/natFileDescriptor${PLATFORM}.cc, java/io/natFileDescriptor.cc)
+AC_LINK_FILES(java/io/natFile${FILE-${PLATFORM}}.cc, java/io/natFile.cc)
+AC_LINK_FILES(java/io/natFileDescriptor${FILE-${PLATFORM}}.cc, java/io/natFileDescriptor.cc)
 
 dnl Likewise for ConcreteProcess.java and natConcreteProcess.cc.
 test -d java/lang || mkdir java/lang
@@ -460,6 +460,7 @@ if test -n "${with_cross_host}"; then
    AC_DEFINE(HAVE_MEMMOVE)
    AC_DEFINE(HAVE_MEMCPY)
    AC_DEFINE(HAVE_STRERROR)
+   AC_DEFINE(HAVE_TIME)
    AC_DEFINE(HAVE_GMTIME_R)
    AC_DEFINE(HAVE_LOCALTIME_R)
    dnl This is only for POSIX threads.
