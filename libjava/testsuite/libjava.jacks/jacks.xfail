@@ -185,7 +185,6 @@
 15.12.4.1-runtime-super-2
 15.14-runtime-3
 15.14-runtime-4
-15.15-precedence-5
 15.15-runtime-3
 15.15-runtime-4
 15.16-semantic-5
@@ -248,18 +247,10 @@
 15.18.1-float-8
 15.18.1-float-9
 15.18.1-valid-1
-15.18.1.1-runtime-5
 15.20-2-runtime-1
 15.21-assoc-7
 15.21-assoc-8
-15.21-type-17
-15.21-type-21
-15.21-type-22
-15.21-type-23
-15.21-type-24
-15.21-type-25
-15.21-type-30
-15.21-type-7
+15.21-equal-3
 15.25-runtime-1
 15.26.2-add-12
 15.26.2-and-10
@@ -302,7 +293,6 @@
 15.28-simple-namestr-3
 15.28-simple-namestr-4
 15.28-string-11
-15.28-string-13
 15.28-string-15
 15.28-string-16
 15.28-string-17
@@ -635,7 +625,6 @@
 8.4.6.4-multiple-4
 8.4.6.4-multiple-7
 8.4.6.4-multiple-8
-8.4.6.4-multiple-runtime-1
 8.5-inheritance-1
 8.5-inheritance-2
 8.5-inheritance-3
@@ -670,6 +659,7 @@
 8.8.5.1-qualified-2
 8.8.5.1-qualified-3
 8.8.5.1-qualified-4
+8.8.5.1-runtime-super-1
 8.8.7-accessible-default-constructor-inner-18
 8.8.7-accessible-default-constructor-inner-26
 8.8.7-runtime-accessible-default-1
@@ -686,6 +676,7 @@
 9.2-implicit-19
 9.2-implicit-2
 9.2-implicit-3
+9.2-implicit-4
 9.2-implicit-6
 9.2-implicit-7
 9.3.1-illegal-forward-1
@@ -697,9 +688,6 @@ non-jls-argument-expansion-12
 non-jls-argument-expansion-13
 non-jls-argument-expansion-error-2
 non-jls-argument-expansion-tokens-1
-non-jls-argument-expansion-tokens-2
-non-jls-argument-expansion-tokens-4
-non-jls-argument-expansion-tokens-5
 non-jls-jsr41.2-clash-1
 non-jls-jsr41.3-runtime-2
 non-jls-jsr41.4-definite-unassignment-fail-22

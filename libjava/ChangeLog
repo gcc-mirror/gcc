@@ -1,3 +1,8 @@
+2005-01-26  Ranjit Mathew  <rmathew@hotmail.com>
+
+	* testsuite/libjava.jacks/jacks.xfail: Update for PR java/19070,
+	remove other passing tests and add new XFAILs.
+
 2005-01-24  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/Class.h (next): Updated documentation.  Renamed to
