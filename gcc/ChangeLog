@@ -1,5 +1,18 @@
 2004-01-08  Geoffrey Keating  <geoffk@apple.com>
 
+	* config/rs6000/rs6000.md (cmptf_internal1): Correct branch offset.
+	(UNSPEC_FIX_TRUNC_TF): New constant.
+	(movtf_internal): Make splitter active only when insn is active.
+	(extenddftf2): Rewrite to properly load zero into low part.
+	(extenddftf2_internal): New.
+	(extendsftf2): Rewrite.
+	(truncdftf2): Correct length.
+	(floatditf2): Delete.
+	(fix_trunc_helper): New.
+	(fix_trunctfdi2): Use fix_trunc_helper.
+	(fix_trunctfsi2): Likewise.fix_trunc
+	(fix_trunctfsi2_internal): New.
+
 	* config/rs6000/rs6000.c (legitimate_lo_sum_address_p): lo_sum
 	addresses are legitimate on Darwin even when flag_pic.
 	(rs6000_legitimize_reload_address) [TARGET_MACHO]: Don't create
