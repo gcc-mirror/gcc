@@ -1,5 +1,34 @@
 2004-01-09  Michael Koch  <konqueror@gmx.de>
 
+	* javax/swing/AbstractAction.java,
+	javax/swing/AbstractSet.java,
+	javax/swing/Action.java,
+	javax/swing/ActionMap.java,
+	javax/swing/BoundedRangeModel.java,
+	javax/swing/ButtonModel.java,
+	javax/swing/CellEditor.java,
+	javax/swing/CellRendererPane.java,
+	javax/swing/ComboBoxEditor.java,
+	javax/swing/DebugGraphics.java,
+	javax/swing/DefaultCellEditor.java,
+	javax/swing/DefaultCellRenderer.java,
+	javax/swing/DefaultComboBoxModel.java,
+	javax/swing/DefaultDesktopManager.java,
+	javax/swing/DefaultFocusManager.java,
+	javax/swing/DefaultListCellRenderer.java,
+	javax/swing/Icon.java,
+	javax/swing/JButton.java,
+	javax/swing/JCheckBoxMenuItem.java,
+	javax/swing/JDesktopPane.java,
+	javax/swing/JEditorPane.java,
+	javax/swing/JMenu.java,
+	javax/swing/JPanel.java,
+	javax/swing/JPasswordField.java,
+	javax/swing/JPopupMenu.java,
+	javax/swing/JProgressBar.java: Reworked imports.
+
+2004-01-09  Michael Koch  <konqueror@gmx.de>
+
 	* java/awt/geom/PathIterator.java
 	(WIND_EVEN_ODD): Removed redundant modifiers.
 	(WIND_NON_ZERO): Likewise.

@@ -1,5 +1,5 @@
 /* DefaultCellRenderer.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,11 +37,10 @@ exception statement from your version. */
 
 package javax.swing;
 
-import java.awt.*;
-
-
 // this is what SUN basically told us to do so:
 // no icon though as that's not implemented yet....
+
+import java.awt.Component;
 
 public class DefaultCellRenderer extends JLabel implements ListCellRenderer 
 {

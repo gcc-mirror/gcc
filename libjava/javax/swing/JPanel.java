@@ -1,5 +1,5 @@
 /* JPanel.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,14 +35,14 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package javax.swing;
 
 import java.awt.FlowLayout;
 import java.awt.LayoutManager;
-import javax.swing.plaf.PanelUI;
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
+import javax.swing.plaf.PanelUI;
+
 
 /**
  * An instance of JPanel can be added to a panel, frame etc

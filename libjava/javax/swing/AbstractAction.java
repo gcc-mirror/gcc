@@ -1,5 +1,5 @@
 /* AbstractAction.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,11 +38,13 @@ exception statement from your version. */
 
 package javax.swing;
 
-import java.awt.event.*;
-import java.beans.*;
-import java.io.*;
-import javax.swing.event.*;
-import java.util.*;
+import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.util.HashMap;
+import javax.swing.event.SwingPropertyChangeSupport;
 
 /**
  * AbstractAction

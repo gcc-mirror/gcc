@@ -1,5 +1,5 @@
 /* DefaultCellEditor.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,13 +37,15 @@ exception statement from your version. */
 
 package javax.swing;
 
-// Imports
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
-import java.util.*;
-import javax.swing.table.*;
-import javax.swing.tree.*;
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.io.Serializable;
+import java.util.EventObject;
+import javax.swing.table.TableCellEditor;
+import javax.swing.tree.TreeCellEditor;
 
 /**
  * DefaultCellEditor
