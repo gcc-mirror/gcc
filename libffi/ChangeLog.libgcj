@@ -1,0 +1,7 @@
+1999-08-09  Anthony Green  <green@cygnus.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (AM_CFLAGS): Compile with -fexceptions.
+
+	* src/x86/sysv.S: Add exception handling metadata.
+

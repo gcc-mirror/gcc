@@ -24,8 +24,6 @@ MULTICLEAN = true
 toolexecdir = $(exec_prefix)/$(target_alias)
 toolexeclibdir = $(toolexecdir)/lib$(MULTISUBDIR)
 
-## We don't use `libz.la' because we don't want to conflict with a
-## system library of that name.
 toolexeclib_LTLIBRARIES = libffi.la
 
 noinst_PROGRAMS = ffitest
@@ -69,6 +67,8 @@ endif
 if ARM
 libffi_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_ARM)
 endif
+
+AM_CFLAGS = -fexceptions
 
 libffi_la_LDFLAGS = -release $(VERSION) 
 

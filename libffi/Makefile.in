@@ -62,6 +62,7 @@ AMTAR = @AMTAR@
 AMTARFLAGS = @AMTARFLAGS@
 AS = @AS@
 CC = @CC@
+CXX = @CXX@
 DLLTOOL = @DLLTOOL@
 EXEEXT = @EXEEXT@
 LD = @LD@
@@ -129,6 +130,8 @@ libffi_la_common_SOURCES = src/debug.c src/prep_cif.c src/types.c src/raw_api.c
 @M68K_TRUE@libffi_la_SOURCES = @M68K_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_M68K)
 @POWERPC_TRUE@libffi_la_SOURCES = @POWERPC_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_POWERPC)
 @ARM_TRUE@libffi_la_SOURCES = @ARM_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_ARM)
+
+AM_CFLAGS = -fexceptions
 
 libffi_la_LDFLAGS = -release $(VERSION) 
 
