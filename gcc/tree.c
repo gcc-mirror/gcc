@@ -1267,10 +1267,10 @@ array_type_nelts (tree type)
 	  : fold (build2 (MINUS_EXPR, TREE_TYPE (max), max, min)));
 }
 
-/* Return nonzero if arg is static -- a reference to an object in
+/* Return true if arg is static -- a reference to an object in
    static storage.  This is not the same as the C meaning of `static'.  */
 
-int
+bool
 staticp (tree arg)
 {
   switch (TREE_CODE (arg))
@@ -1291,7 +1291,7 @@ staticp (tree arg)
 
     case LABEL_DECL:
     case STRING_CST:
-      return 1;
+      return true;
 
     case COMPONENT_REF:
       /* If the thing being referenced is not a field, then it is 
@@ -1302,12 +1302,12 @@ staticp (tree arg)
       /* If we are referencing a bitfield, we can't evaluate an
 	 ADDR_EXPR at compile time and so it isn't a constant.  */
       if (DECL_BIT_FIELD (TREE_OPERAND (arg, 1)))
-	return 0;
+	return false;
 
       return staticp (TREE_OPERAND (arg, 0));
 
     case BIT_FIELD_REF:
-      return 0;
+      return false;
 
 #if 0
        /* This case is technically correct, but results in setting
@@ -1323,14 +1323,14 @@ staticp (tree arg)
 	  && TREE_CODE (TREE_OPERAND (arg, 1)) == INTEGER_CST)
 	return staticp (TREE_OPERAND (arg, 0));
       else
-	return 0;
+	return false;
 
     default:
       if ((unsigned int) TREE_CODE (arg)
 	  >= (unsigned int) LAST_AND_UNUSED_TREE_CODE)
 	return lang_hooks.staticp (arg);
       else
-	return 0;
+	return false;
     }
 }
 
