@@ -5633,16 +5633,36 @@ build_c_cast (type, expr)
 
       /* Convert functions and arrays to pointers and
 	 convert references to their expanded types,
-	 but don't convert any other types.  */
-      if (TREE_CODE (TREE_TYPE (value)) == FUNCTION_TYPE
-	  || (TREE_CODE (TREE_TYPE (value)) == METHOD_TYPE
-	      /* Don't do the default conversion if we want a
-		 pointer to a function.  */
-	      && ! (TREE_CODE (type) == POINTER_TYPE
-		    && TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE))
-	  || TREE_CODE (TREE_TYPE (value)) == ARRAY_TYPE
-	  || TREE_CODE (TREE_TYPE (value)) == REFERENCE_TYPE)
-	value = default_conversion (value);
+	 but don't convert any other types.  If, however, we are
+	 casting to a class type, there's no reason to do this: the
+	 cast will only succeed if there is a converting constructor,
+	 and the default conversions will be done at that point.  In
+	 fact, doing the default conversion here is actually harmful
+	 in cases like this:
+
+	     typedef int A[2];
+             struct S { S(const A&); };
+
+         since we don't want the array-to-pointer conversion done.  */
+      if (!IS_AGGR_TYPE (type))
+	{
+	  if (TREE_CODE (TREE_TYPE (value)) == FUNCTION_TYPE
+	      || (TREE_CODE (TREE_TYPE (value)) == METHOD_TYPE
+		  /* Don't do the default conversion if we want a
+		     pointer to a function.  */
+		  && ! (TREE_CODE (type) == POINTER_TYPE
+			&& TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE))
+	      || TREE_CODE (TREE_TYPE (value)) == ARRAY_TYPE
+	      || TREE_CODE (TREE_TYPE (value)) == REFERENCE_TYPE)
+	  value = default_conversion (value);
+	}
+      else if (TREE_CODE (TREE_TYPE (value)) == REFERENCE_TYPE)
+	/* However, even for class types, we still need to strip away
+	   the reference type, since the call to convert_force below
+	   does not expect the input expression to be of reference
+	   type.  */
+	value = convert_from_reference (value);
+	
       otype = TREE_TYPE (value);
 
       /* Optionally warn about potentially worrisome casts.  */
