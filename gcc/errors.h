@@ -20,17 +20,19 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* warning, error, and fatal.  These definitions are suitable for use
    in the generator programs; eventually we would like to use them in
-   cc1 too, but that's a longer term project.  */
+   cc1 too, but that's a longer term project.
+
+   N.B. We cannot presently use ATTRIBUTE_PRINTF with these functions,
+   because they can be extended with additional format specifiers which
+   GCC does not know about.  */
 
 #ifndef GCC_ERRORS_H
 #define GCC_ERRORS_H
 
-extern void warning PARAMS ((const char *, ...)) ATTRIBUTE_PRINTF_1;
-extern void error   PARAMS ((const char *, ...)) ATTRIBUTE_PRINTF_1;
-extern void fatal   PARAMS ((const char *, ...))
-    ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
-extern void internal_error   PARAMS ((const char *, ...))
-    ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
+extern void warning PARAMS ((const char *, ...));
+extern void error   PARAMS ((const char *, ...));
+extern void fatal   PARAMS ((const char *, ...)) ATTRIBUTE_NORETURN;
+extern void internal_error   PARAMS ((const char *, ...)) ATTRIBUTE_NORETURN;
 extern const char *trim_filename   PARAMS ((const char *));
 extern void fancy_abort PARAMS ((const char *, int, const char *))
     ATTRIBUTE_NORETURN;

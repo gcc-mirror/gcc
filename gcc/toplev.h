@@ -39,10 +39,8 @@ extern void strip_off_ending		PARAMS ((char *, int));
 extern void print_time			PARAMS ((const char *, long));
 extern const char *trim_filename	PARAMS ((const char *));
 extern void internal_error		PARAMS ((const char *, ...))
-					       ATTRIBUTE_PRINTF_1
 					       ATTRIBUTE_NORETURN;
 extern void fatal_io_error		PARAMS ((const char *, ...))
-					       ATTRIBUTE_PRINTF_1
 					       ATTRIBUTE_NORETURN;
 extern void _fatal_insn_not_found	PARAMS ((struct rtx_def *,
 						const char *, int,
@@ -59,26 +57,21 @@ extern void _fatal_insn			PARAMS ((const char *,
 #define fatal_insn_not_found(insn) \
 	_fatal_insn_not_found (insn, __FILE__, __LINE__, __FUNCTION__)
 
-extern void warning			PARAMS ((const char *, ...))
-					       ATTRIBUTE_PRINTF_1;
-extern void error			PARAMS ((const char *, ...))
-					       ATTRIBUTE_PRINTF_1;
+/* None of these functions are suitable for ATTRIBUTE_PRINTF, because
+   each language front end can extend them with its own set of format
+   specifiers.  */
+extern void warning			PARAMS ((const char *, ...));
+extern void error			PARAMS ((const char *, ...));
 extern void fatal_error			PARAMS ((const char *, ...))
-					       ATTRIBUTE_NORETURN
-					       ATTRIBUTE_PRINTF_1;
-extern void pedwarn			PARAMS ((const char *, ...))
-					       ATTRIBUTE_PRINTF_1;
+					       ATTRIBUTE_NORETURN;
+extern void pedwarn			PARAMS ((const char *, ...));
 extern void pedwarn_with_file_and_line	PARAMS ((const char *, int,
-						 const char *, ...))
-					       ATTRIBUTE_PRINTF_3;
+						 const char *, ...));
 extern void warning_with_file_and_line	PARAMS ((const char *, int,
-						 const char *, ...))
-					       ATTRIBUTE_PRINTF_3;
+						 const char *, ...));
 extern void error_with_file_and_line	PARAMS ((const char *, int,
-						 const char *, ...))
-					       ATTRIBUTE_PRINTF_3;
-extern void sorry			PARAMS ((const char *, ...))
-					       ATTRIBUTE_PRINTF_1;
+						 const char *, ...));
+extern void sorry			PARAMS ((const char *, ...));
 extern void report_error_function	PARAMS ((const char *));
 
 extern void rest_of_decl_compilation	PARAMS ((union tree_node *,
@@ -86,7 +79,6 @@ extern void rest_of_decl_compilation	PARAMS ((union tree_node *,
 extern void rest_of_type_compilation	PARAMS ((union tree_node *, int));
 extern void rest_of_compilation		PARAMS ((union tree_node *));
 
-/* The *_with_decl functions aren't suitable for ATTRIBUTE_PRINTF. */
 extern void pedwarn_with_decl		PARAMS ((union tree_node *,
 						 const char *, ...));
 extern void warning_with_decl		PARAMS ((union tree_node *,
@@ -97,11 +89,9 @@ extern void error_with_decl		PARAMS ((union tree_node *,
 extern void announce_function		PARAMS ((union tree_node *));
 
 extern void error_for_asm		PARAMS ((struct rtx_def *,
-						 const char *, ...))
-					       ATTRIBUTE_PRINTF_2;
+						 const char *, ...));
 extern void warning_for_asm		PARAMS ((struct rtx_def *,
-						 const char *, ...))
-					       ATTRIBUTE_PRINTF_2;
+						 const char *, ...));
 extern int do_float_handler PARAMS ((void (*) (PTR), PTR));
 
 #ifdef BUFSIZ
@@ -113,6 +103,8 @@ extern void botch			PARAMS ((const char *))
   ATTRIBUTE_NORETURN;
 
 #ifdef BUFSIZ
+  /* N.B. Unlike all the others, fnotice is just gettext+fprintf, and
+     therefore it can have ATTRIBUTE_PRINTF.  */
 extern void fnotice			PARAMS ((FILE *, const char *, ...))
 					       ATTRIBUTE_PRINTF_2;
 #endif

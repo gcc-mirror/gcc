@@ -1,3 +1,30 @@
+2001-09-23  Zack Weinberg  <zack@codesourcery.com>
+
+	* Make-lang.in (CXX_OBJS): Take out cp/errfn.o.
+	(cp/errfn.o): Delete rule.
+	(cp/error.o): Depend on flags.h.
+	* errfn.c: Delete file.
+	* cp-tree.h: Declare warn_deprecated.  Remove definitions of
+	TFF_NAMESPACE_SCOPE, TFF_CLASS_SCOPE, TFF_CHASE_NAMESPACE_ALIAS,
+	and TFF_TEMPLATE_DEFAULT_ARGUMENTS. #define cp_error, cp_warning,
+	cp_pedwarn, and cp_compiler_error to error, warning, pedwarn, and
+	internal_error respectively.  Make cp_deprecated into a macro.
+	Don't define cp_printer typedef or declare cp_printers.
+	* error.c: Include flags.h.
+	Delete: struct tree_formatting_info, print_function_argument_list,
+	print_declaration, print_expression, print_function_declaration,
+	print_function_parameter, print_type_id, print_cv_qualifier_seq,
+	print_type_specifier_seq, print_simple_type_specifier,
+	print_elaborated_type_specifier, print_rest_of_abstract_declarator,
+	print_parameter_declaration_clause, print_exception_specification,
+	print_nested_name_specifier, and definition of cp_printers.
+	(locate_error): New function.
+	(cp_error_at, cp_warning_at, cp_pedwarn_at): Moved here and
+	rewritten in terms of locate_error and diagnostic.c.
+	(cp_tree_printer): Rename cp_printer; wire up to *_to_string
+	instead of deleted print_* routines.  Handle %C, %L, %O, %Q also.
+	(init_error): Adjust to match.
+
 Sat Sep 22 09:15:31 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* Make-lang.in (CXX_C_OBJS): Add attribs.o.
@@ -58,8 +85,8 @@ Fri Sep 21 08:16:19 2001  J"orn Rennecke <amylaar@redhat.com>
 
 2001-09-15  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
-	        * Make-lang.in (cp/error.o): Depend on real.h
-	        * error.c: #include "real.h"
+		* Make-lang.in (cp/error.o): Depend on real.h
+		* error.c: #include "real.h"
 
 2001-09-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
@@ -125,10 +152,10 @@ Fri Sep 21 08:16:19 2001  J"orn Rennecke <amylaar@redhat.com>
 	(dump_decl): Fix formatting.
 
 2001-08-30  Kurt Garloff  <garloff@suse.de>
- 
+
 	* optimize.c (inlinable_function_p): Allow only smaller single
 	functions. Halve inline limit after reaching recursive limit.
- 
+
 2001-08-30  Joern Rennecke <amylaar@redhat.com>
 	    Jason Merrill  <jason_merrill@redhat.com>
 
@@ -335,7 +362,7 @@ Fri Sep 21 08:16:19 2001  J"orn Rennecke <amylaar@redhat.com>
 
 2001-07-30  Andreas Jaeger  <aj@suse.de>
 
-        * decl2.c: Remove unused var global_temp_name_counter.
+	* decl2.c: Remove unused var global_temp_name_counter.
 
 2001-07-28  Richard Henderson  <rth@redhat.com>
 
@@ -385,7 +412,7 @@ Fri Sep 21 08:16:19 2001  J"orn Rennecke <amylaar@redhat.com>
 	declaring a function, and create last_function_parms correctly.
 
 2001-07-25  Jason Merrill  <jason_merrill@redhat.com>
-	
+
 	* call.c (joust): Only prefer a non-builtin candidate to a builtin
 	one if they have the same signature.
 
@@ -573,7 +600,7 @@ Fri Sep 21 08:16:19 2001  J"orn Rennecke <amylaar@redhat.com>
 	* NEWS: Document ABI changes from GCC 3.0.
 
 2001-07-18  Xavier Delacour <xavier@fmaudio.net>,
-            Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+	    Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* NEWS (Changes in GCC 3.0): Fix typo.
 
@@ -1093,7 +1120,7 @@ Fri Sep 21 08:16:19 2001  J"orn Rennecke <amylaar@redhat.com>
 2001-05-14  Nick Clifton  <nickc@cambridge.redhat.com>
 
 	* decl.c (duplicate_decls): Suppress warning about duplicate
-        decls if the first decl is a friend.
+	decls if the first decl is a friend.
 
 2001-05-12  Zack Weinberg  <zackw@stanford.edu>
 
@@ -1218,7 +1245,7 @@ Fri Sep 21 08:16:19 2001  J"orn Rennecke <amylaar@redhat.com>
 
 2001-04-30  Richard Henderson  <rth@redhat.com>
 
-        * cvt.c: Downcase C_PROMOTING_INTEGER_TYPE_P invocations.
+	* cvt.c: Downcase C_PROMOTING_INTEGER_TYPE_P invocations.
 	* decl.c: Likewise.
 
 2001-04-30  Mark Mitchell  <mark@codesourcery.com>

@@ -665,7 +665,6 @@ cp/decl.c
 cp/decl.h
 cp/decl2.c
 cp/dump.c
-cp/errfn.c
 cp/error.c
 cp/except.c
 cp/expr.c

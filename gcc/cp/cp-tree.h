@@ -997,6 +997,10 @@ extern int warn_old_style_cast;
 
 extern int warn_reorder;
 
+/* Non-zero means warn about deprecated features.  */
+
+extern int warn_deprecated;
+
 /* Nonzero means to treat bitfields as unsigned unless they say `signed'.  */
 
 extern int flag_signed_bitfields;
@@ -3433,11 +3437,7 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, OP_FLAG, TYPENAME_FLAG };
 /* These constants can used as bit flags in the process of tree formatting.
 
    TFF_PLAIN_IDENTIFIER: unqualified part of a name.
-   TFF_NAMESPACE_SCOPE: the complete qualified-id form of a name.
-   TFF_CLASS_SCOPE: if possible, include the class-name part of a
-        qualified-id.  This flag may be implied in some circumstances by
-        TFF_NAMESPACE_SCOPE.
-   TFF_SCOPE: the combination of the two above.
+   TFF_SCOPE: include the class and namespace scope of the name.
    TFF_CHASE_TYPEDEF: print the original type-id instead of the typedef-name.
    TFF_DECL_SPECIFIERS: print decl-specifiers.
    TFF_CLASS_KEY_OR_ENUM: precede a class-type name (resp. enum name) with
@@ -3447,25 +3447,20 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, OP_FLAG, TYPENAME_FLAG };
    TFF_EXCEPTION_SPECIFICATION: show function exception specification.
    TFF_TEMPLATE_HEADER: show the template<...> header in a
        template-declaration.
-   TFF_TEMPLATE_DEFAULT_ARGUMENTS: show template parameter default values.
    TFF_TEMPLATE_NAME: show only template-name.
    TFF_EXPR_IN_PARENS: Parenthesize expressions.  */
 
 #define TFF_PLAIN_IDENTIFIER               (0)
-#define TFF_NAMESPACE_SCOPE                (1)
-#define TFF_CLASS_SCOPE                    (1 << 1)
-#define TFF_CHASE_NAMESPACE_ALIAS          (1 << 2)
-#define TFF_CHASE_TYPEDEF                  (1 << 3)
-#define TFF_DECL_SPECIFIERS                (1 << 4)
-#define TFF_CLASS_KEY_OR_ENUM              (1 << 5)
-#define TFF_RETURN_TYPE                    (1 << 6)
-#define TFF_FUNCTION_DEFAULT_ARGUMENTS     (1 << 7)
-#define TFF_EXCEPTION_SPECIFICATION        (1 << 8)
-#define TFF_TEMPLATE_HEADER                (1 << 9)
-#define TFF_TEMPLATE_DEFAULT_ARGUMENTS     (1 << 10)
-#define TFF_TEMPLATE_NAME                  (1 << 11)
-#define TFF_EXPR_IN_PARENS                 (1 << 12)
-#define TFF_SCOPE (TFF_NAMESPACE_SCOPE | TFF_CLASS_SCOPE)
+#define TFF_SCOPE                	   (1)
+#define TFF_CHASE_TYPEDEF                  (1 << 1)
+#define TFF_DECL_SPECIFIERS                (1 << 2)
+#define TFF_CLASS_KEY_OR_ENUM              (1 << 3)
+#define TFF_RETURN_TYPE                    (1 << 4)
+#define TFF_FUNCTION_DEFAULT_ARGUMENTS     (1 << 5)
+#define TFF_EXCEPTION_SPECIFICATION        (1 << 6)
+#define TFF_TEMPLATE_HEADER                (1 << 7)
+#define TFF_TEMPLATE_NAME                  (1 << 8)
+#define TFF_EXPR_IN_PARENS                 (1 << 9)
 
 /* Returns the TEMPLATE_DECL associated to a TEMPLATE_TEMPLATE_PARM
    node.  */
@@ -3779,17 +3774,24 @@ extern tree set_guard                           PARAMS ((tree));
 /* in parse.y */
 extern void cp_parse_init			PARAMS ((void));
 
-/* in errfn.c */
-/* The cp_* functions aren't suitable for ATTRIBUTE_PRINTF. */
-extern void cp_error				PARAMS ((const char *, ...));
-extern void cp_error_at				PARAMS ((const char *, ...));
-extern void cp_warning				PARAMS ((const char *, ...));
-extern void cp_warning_at			PARAMS ((const char *, ...));
-extern void cp_pedwarn				PARAMS ((const char *, ...));
-extern void cp_pedwarn_at			PARAMS ((const char *, ...));
-extern void cp_compiler_error			PARAMS ((const char *, ...));
-extern void cp_sprintf				PARAMS ((const char *, ...));
-extern void cp_deprecated                       PARAMS ((const char*));
+/* Obsolete names, formerly found in errfn.c, which no longer exists.
+   These are all variadic functions and therefore cannot be defined
+   as function-like macros.  */
+#define cp_error		error
+#define cp_warning		warning
+#define cp_pedwarn		pedwarn
+#define cp_compiler_error	internal_error
+
+extern void cp_error_at		PARAMS ((const char *msgid, ...));
+extern void cp_warning_at	PARAMS ((const char *msgid, ...));
+extern void cp_pedwarn_at	PARAMS ((const char *msgid, ...));
+
+/* XXX Not i18n clean.  */
+#define cp_deprecated(str) \
+ do { if (warn_deprecated) \
+      cp_warning("%s is deprecated, please see the documentation for details", \
+		 str); \
+ } while (0)
 
 /* in error.c */
 extern void init_error				PARAMS ((void));
@@ -3802,13 +3804,6 @@ extern const char *cp_file_of			PARAMS ((tree));
 extern int cp_line_of				PARAMS ((tree));
 extern const char *language_to_string           PARAMS ((enum languages, int));
 extern void print_instantiation_context         PARAMS ((void));
-/* cp_printer is the type of a function which converts an argument into
-   a string for digestion by printf.  The cp_printer function should deal
-   with all memory management; the functions in errfn will not free
-   the char*s returned.  See error.c for an example use of this code.  */
-typedef const char *cp_printer			PARAMS ((tree, int));
-extern cp_printer *cp_printers[256];
-
 
 /* in except.c */
 extern void init_exception_processing		PARAMS ((void));
