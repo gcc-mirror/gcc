@@ -1,5 +1,11 @@
 2001-08-20  Janis Johnson  <janis187@us.ibm.com>
 
+	* gcc.misc-tests/gcov.exp: Add support for branch information.
+	* gcc.misc-tests/gcov-2.c: Change to invoke gcov and clean up.
+	* gcc.misc-tests/gcov-4.c: New test.
+	* gcc.misc-tests/gcov-4b.c: New test.
+	* gcc.misc-tests/gcov-5b.c: New test.
+
 	* doc/invoke.texi (Profiling options): Clarify the interactions
 	between -fprofile-arcs and -ftest-coverage, -fprofile-arcs.
 
