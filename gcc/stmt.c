@@ -1618,7 +1618,11 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	  case '5':  case '6':  case '7':  case '8':  case '9':
 	    if (TREE_STRING_POINTER (TREE_PURPOSE (tail))[j]
 		>= '0' + noutputs)
-	      error ("matching constraint references invalid operand number");
+	      {
+		error
+		  ("matching constraint references invalid operand number");
+		return;
+	      }
 
 	    /* ... fall through ... */
 
