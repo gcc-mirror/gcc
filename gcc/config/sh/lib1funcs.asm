@@ -1821,6 +1821,22 @@ LOCAL(set_fpscr_L1):
 	.mode	SHmedia
 	.section	.text..SHmedia32,"ax"
 	.align	2
+	.global	GLOBAL(init_trampoline)
+GLOBAL(init_trampoline):
+	st.l	r0,8,r2
+#ifdef __LITTLE_ENDIAN__
+	movi	9,r20
+	shori	0x402b,r20
+	shori	0xd101,r20
+	shori	0xd002,r20
+#else
+	movi	0xffffffffffffd002,r20
+	shori	0xd101,r20
+	shori	0x402b,r20
+	shori	9,r20
+#endif
+	st.q	r0,0,r20
+	st.l	r0,12,r3
 	.global	GLOBAL(ic_invalidate)
 GLOBAL(ic_invalidate):
 	ocbwb	r0,0

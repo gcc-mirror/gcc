@@ -7114,6 +7114,177 @@ sh_strip_name_encoding (str)
 }
 
 
+/* 
+   On the SH1..SH4, the trampoline looks like
+   2 0002 D202     	   	mov.l	l2,r2
+   1 0000 D301     		mov.l	l1,r3
+   3 0004 422B     		jmp	@r2
+   4 0006 0009     		nop
+   5 0008 00000000 	l1:  	.long   area
+   6 000c 00000000 	l2:	.long   function
+
+   SH5 (compact) uses r1 instead of r3 for the static chain.  */
+
+
+/* Emit RTL insns to initialize the variable parts of a trampoline.
+   FNADDR is an RTX for the address of the function's pure code.
+   CXT is an RTX for the static chain value for the function.  */
+
+void
+sh_initialize_trampoline (tramp, fnaddr, cxt)
+     rtx tramp, fnaddr, cxt;
+{
+  if (TARGET_SHMEDIA64)
+    {
+      rtx tramp_templ;
+      int fixed_len;
+
+      rtx movi1 = GEN_INT (0xcc000010);
+      rtx shori1 = GEN_INT (0xc8000010);
+      rtx src, dst;
+
+      /* The following trampoline works within a +- 128 KB range for cxt:
+	 ptb/u cxt,tr1; movi fnaddr >> 48,r0; shori fnaddr >> 32,r0;
+         shori fnaddr >> 16,r0; shori fnaddr,r0; ptabs/l r0,tr0
+         gettr tr1,r1; blink tr0,r63  */
+      /* Address rounding makes it hard to compute the exact bounds of the
+	 offset for this trampoline, but we have a rather generous offset
+	 range, so frame_offset should do fine as an upper bound.  */
+      if (cxt == virtual_stack_vars_rtx && frame_offset < 0x20000)
+	{
+	  /* ??? could optimize this trampoline initialization
+	     by writing DImode words with two insns each.  */
+	  rtx mask = force_reg (DImode, GEN_INT (0x3fffc00));
+	  rtx insn = gen_rtx_MINUS (DImode, cxt, tramp);
+	  insn = gen_rtx_ASHIFT (DImode, insn, GEN_INT (10-2));
+	  insn = gen_rtx_AND (DImode, insn, mask);
+	  /* Or in ptb/u .,tr1 pattern */
+	  insn = gen_rtx_IOR (DImode, insn, gen_int_mode (0xec000010, SImode));
+	  insn = force_operand (insn, NULL_RTX);
+	  insn = gen_lowpart (SImode, insn);
+	  emit_move_insn (gen_rtx_MEM (SImode, tramp), insn);
+	  insn = gen_rtx_LSHIFTRT (DImode, fnaddr, GEN_INT (38));
+	  insn = gen_rtx_AND (DImode, insn, mask);
+	  insn = force_operand (gen_rtx_IOR (DImode, movi1, insn), NULL_RTX);
+	  insn = gen_lowpart (SImode, insn);
+	  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 4)), insn);
+	  insn = gen_rtx_LSHIFTRT (DImode, fnaddr, GEN_INT (22));
+	  insn = gen_rtx_AND (DImode, insn, mask);
+	  insn = force_operand (gen_rtx_IOR (DImode, shori1, insn), NULL_RTX);
+	  insn = gen_lowpart (SImode, insn);
+	  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 8)), insn);
+	  insn = gen_rtx_LSHIFTRT (DImode, fnaddr, GEN_INT (6));
+	  insn = gen_rtx_AND (DImode, insn, mask);
+	  insn = force_operand (gen_rtx_IOR (DImode, shori1, insn), NULL_RTX);
+	  insn = gen_lowpart (SImode, insn);
+	  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 12)),
+			  insn);
+	  insn = gen_rtx_ASHIFT (DImode, fnaddr, GEN_INT (10));
+	  insn = gen_rtx_AND (DImode, insn, mask);
+	  insn = force_operand (gen_rtx_IOR (DImode, shori1, insn), NULL_RTX);
+	  insn = gen_lowpart (SImode, insn);
+	  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 16)),
+			  insn);
+	  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 20)),
+			  GEN_INT (0x6bf10600));
+	  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 24)),
+			  GEN_INT (0x4415fc10));
+	  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 28)),
+			  GEN_INT (0x4401fff0));
+	  emit_insn (gen_ic_invalidate_line (tramp));
+	  return;
+	}
+      tramp_templ = gen_rtx_SYMBOL_REF (Pmode,"__GCC_nested_trampoline");
+      fixed_len = TRAMPOLINE_SIZE - 2 * GET_MODE_SIZE (Pmode);
+
+      tramp_templ = gen_datalabel_ref (tramp_templ);
+      dst = gen_rtx_MEM (BLKmode, tramp);
+      src = gen_rtx_MEM (BLKmode, tramp_templ);
+      set_mem_align (dst, 256);
+      set_mem_align (src, 64);
+      emit_block_move (dst, src, GEN_INT (fixed_len));
+
+      emit_move_insn (gen_rtx_MEM (Pmode, plus_constant (tramp,	fixed_len)),
+		      fnaddr);
+      emit_move_insn (gen_rtx_MEM (Pmode,
+				   plus_constant (tramp,
+						  fixed_len
+						  + GET_MODE_SIZE (Pmode))), 
+		      cxt);
+      emit_insn (gen_ic_invalidate_line (tramp));
+      return;
+    }
+  else if (TARGET_SHMEDIA)
+    {
+      /* movi fnaddr >> 16,r1; shori fnaddr,r1; ptabs/l r1,tr0
+         movi cxt >> 16,r1; shori cxt,r1; blink tr0,r63  */
+      rtx quad0 = gen_reg_rtx (DImode), cxtload = gen_reg_rtx (DImode);
+      rtx quad1 = gen_reg_rtx (DImode), quad2 = gen_reg_rtx (DImode);
+      /* movi 0,r1: 0xcc000010 shori 0,r1: c8000010  concatenated,
+	 rotated 10 right, and higer 16 bit of every 32 selected.  */
+      rtx movishori
+	= force_reg (V2HImode, (simplify_gen_subreg
+				(V2HImode, GEN_INT (0x4330432), SImode, 0)));
+      rtx ptabs = force_reg (DImode, GEN_INT (0x6bf10600));
+      rtx blink = force_reg (DImode, GEN_INT (0x4401fff0));
+
+      tramp = force_reg (Pmode, tramp);
+      fnaddr = force_reg (SImode, fnaddr);
+      cxt = force_reg (SImode, cxt);
+      emit_insn (gen_mshflo_w_x (gen_rtx_SUBREG (V4HImode, quad0, 0),
+				 gen_rtx_SUBREG (V2HImode, fnaddr, 0),
+				 movishori));
+      emit_insn (gen_rotldi3_mextr (quad0, quad0,
+				    GEN_INT (TARGET_LITTLE_ENDIAN ? 24 : 56)));
+      emit_insn (gen_ashldi3_media (quad0, quad0, GEN_INT (2)));
+      emit_move_insn (gen_rtx_MEM (DImode, tramp), quad0);
+      emit_insn (gen_mshflo_w_x (gen_rtx_SUBREG (V4HImode, cxtload, 0),
+				 gen_rtx_SUBREG (V2HImode, cxt, 0),
+				 movishori));
+      emit_insn (gen_rotldi3_mextr (cxtload, cxtload,
+				    GEN_INT (TARGET_LITTLE_ENDIAN ? 24 : 56)));
+      emit_insn (gen_ashldi3_media (cxtload, cxtload, GEN_INT (2)));
+      if (TARGET_LITTLE_ENDIAN)
+	{
+	  emit_insn (gen_mshflo_l_di (quad1, ptabs, cxtload));
+	  emit_insn (gen_mextr4 (quad2, cxtload, blink));
+	}
+      else
+	{
+	  emit_insn (gen_mextr4 (quad1, cxtload, ptabs));
+	  emit_insn (gen_mshflo_l_di (quad2, blink, cxtload));
+	}
+      emit_move_insn (gen_rtx_MEM (DImode, plus_constant (tramp, 8)), quad1);
+      emit_move_insn (gen_rtx_MEM (DImode, plus_constant (tramp, 16)), quad2);
+      emit_insn (gen_ic_invalidate_line (tramp));
+      return;
+    }
+  else if (TARGET_SHCOMPACT)
+    {
+      emit_insn (gen_initialize_trampoline (tramp, cxt, fnaddr));
+      return;
+    }
+  emit_move_insn (gen_rtx_MEM (SImode, tramp),
+		  gen_int_mode (TARGET_LITTLE_ENDIAN ? 0xd301d202 : 0xd202d301,
+				SImode));
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 4)),
+		  gen_int_mode (TARGET_LITTLE_ENDIAN ? 0x0009422b : 0x422b0009,
+				SImode));
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 8)),
+		  cxt);
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 12)),
+		  fnaddr);
+  if (TARGET_HARVARD)
+    {
+      if (TARGET_USERMODE)
+	emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__ic_invalidate"),
+			   0, VOIDmode, 1, tramp, SImode);
+      else
+	emit_insn (gen_ic_invalidate_line (tramp));
+    }
+}
+
+
 /* Machine specific built-in functions.  */
 
 struct builtin_description

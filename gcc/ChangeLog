@@ -1,4 +1,16 @@
-Wed Jul 17 14:04:10 2002  J"orn Rennecke <joern.rennecke@superh.com>
+Wed Jul 17 16:28:53 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* config/sh/lib1funcs.asm (init_trampoline): New entry point.
+	* sh-protos.h (sh_initialize_trampoline): Declare.
+	* sh.c (sh_initialize_trampoline): New function.
+	* sh.h (TRAMPOLINE_SIZE): Only 24 for TARGET_SHMEDIA32.
+	(TRAMPOLINE_ALIGNMENT): Need cache-line alignment for TARGET_SHMEDIA.
+	(INITIALIZE_TRAMPOLINE): Call sh_initialize_trampoline.
+	(TRAMPOLINE_ADJUST_ADDRESS): Not needed for SHcompact.
+	* sh.md (initialize_trampoline, double_shori): New patterns.
+	(initialize_trampoline_compact): Likewise.
+	(shmedia32_initialize_trampoline_big): Remove.
+	(shmedia32_initialize_trampoline_little): Likewise.
 
 	* sh-protos.h (binary_float_operator): Remove declaration.
 	(sh_expand_unop_v2sf, sh_expand_binop_v2sf): Declare.
