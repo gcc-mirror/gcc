@@ -8141,13 +8141,14 @@ ia64_hpux_asm_file_end (file)
 {
   while (extern_func_head)
     {
-      char *real_name;
+      const char *real_name;
       tree decl;
 
       real_name = (* targetm.strip_name_encoding) (extern_func_head->name);
-      tree decl = maybe_get_identifier (real_name);
+      decl = maybe_get_identifier (real_name);
 
-      if (!decl || ! TREE_ASM_WRITTEN (decl) && TREE_SYMBOL_REFERENCED (decl))
+      if (!decl
+	  || (! TREE_ASM_WRITTEN (decl) && TREE_SYMBOL_REFERENCED (decl)))
         {
 	  if (decl)
 	    TREE_ASM_WRITTEN (decl) = 1;
