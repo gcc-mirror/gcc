@@ -1,3 +1,8 @@
+2005-04-06  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/cpu/s390/atomicity.h (__exchange_and_add): Add "memory"
+	clobber to inline assembly statement.
+
 2005-04-05  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	* include/tr1/memory, include/tr1/boost_shared_ptr.h: Use mutex
