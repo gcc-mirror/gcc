@@ -1701,7 +1701,7 @@ expand_builtin_mathfn (tree exp, rtx target, rtx subtarget)
   tree arglist = TREE_OPERAND (exp, 1);
   enum machine_mode mode;
   bool errno_set = false;
-  tree arg;
+  tree arg, narg;
 
   if (!validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
     return 0;
@@ -1771,25 +1771,15 @@ expand_builtin_mathfn (tree exp, rtx target, rtx subtarget)
   if (! flag_errno_math || ! HONOR_NANS (mode))
     errno_set = false;
 
-  /* Stabilize and compute the argument.  */
-  if (errno_set)
-    switch (TREE_CODE (arg))
-      {
-      case VAR_DECL:
-      case PARM_DECL:
-      case SAVE_EXPR:
-      case REAL_CST:
-	break;
-
-      default:
-	/* Wrap the computation of the argument in a SAVE_EXPR, as we
-	   need to expand the argument again in expand_errno_check.  This
-	   way, we will not perform side-effects more the once.  */
-	arg = save_expr (arg);
-	arglist = build_tree_list (NULL_TREE, arg);
-	exp = build_function_call_expr (fndecl, arglist);
-	break;
-      }
+  /* Wrap the computation of the argument in a SAVE_EXPR, as we may
+     need to expand the argument again.  This way, we will not perform
+     side-effects more the once.  */
+  narg = save_expr (arg);
+  if (narg != arg)
+    {
+      arglist = build_tree_list (NULL_TREE, arg);
+      exp = build_function_call_expr (fndecl, arglist);
+    }
 
   op0 = expand_expr (arg, subtarget, VOIDmode, 0);
 
@@ -1800,13 +1790,13 @@ expand_builtin_mathfn (tree exp, rtx target, rtx subtarget)
      Set TARGET to wherever the result comes back.  */
   target = expand_unop (mode, builtin_optab, op0, target, 0);
 
-  /* If we were unable to expand via the builtin, stop the
-     sequence (without outputting the insns) and return 0, causing
-     a call to the library function.  */
+  /* If we were unable to expand via the builtin, stop the sequence
+     (without outputting the insns) and call to the library function
+     with the stabilized argument list.  */
   if (target == 0)
     {
       end_sequence ();
-      return 0;
+      return expand_call (exp, target, target == const0_rtx);
     }
 
   if (errno_set)
@@ -1834,7 +1824,7 @@ expand_builtin_mathfn_2 (tree exp, rtx target, rtx subtarget)
   rtx op0, op1, insns;
   tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
   tree arglist = TREE_OPERAND (exp, 1);
-  tree arg0, arg1, temp;
+  tree arg0, arg1, temp, narg;
   enum machine_mode mode;
   bool errno_set = true;
   bool stable = true;
@@ -1866,45 +1856,27 @@ expand_builtin_mathfn_2 (tree exp, rtx target, rtx subtarget)
   if (! flag_errno_math || ! HONOR_NANS (mode))
     errno_set = false;
 
-  /* Stabilize the arguments.  */
-  if (errno_set)
+  /* Alway stabilize the argument list.  */
+  narg = save_expr (arg1);
+  if (narg != arg1)
     {
-      switch (TREE_CODE (arg1))
-	{
-	case VAR_DECL:
-	case PARM_DECL:
-	case SAVE_EXPR:
-	case REAL_CST:
-	  temp = TREE_CHAIN (arglist);
-	  break;
-
-	default:
-	  stable = false;
-	  arg1 = save_expr (arg1);
-	  temp = build_tree_list (NULL_TREE, arg1);
-	  break;
-        }
-
-      switch (TREE_CODE (arg0))
-	{
-	case VAR_DECL:
-	case PARM_DECL:
-	case SAVE_EXPR:
-	case REAL_CST:
-	  if (! stable)
-	    arglist = tree_cons (NULL_TREE, arg0, temp);
-	  break;
-
-	default:
-	  stable = false;
-	  arg0 = save_expr (arg0);
-	  arglist = tree_cons (NULL_TREE, arg0, temp);
-	  break;
-	}
-
-      if (! stable)
-	exp = build_function_call_expr (fndecl, arglist);
+      temp = build_tree_list (NULL_TREE, narg);
+      stable = false;
     }
+  else
+    temp = TREE_CHAIN (arglist);
+
+  narg = save_expr (arg0);
+  if (narg != arg0)
+    {
+      arglist = tree_cons (NULL_TREE, narg, temp);
+      stable = false;
+    }
+  else if (! stable)
+    arglist = tree_cons (NULL_TREE, arg0, temp);
+
+  if (! stable)
+    exp = build_function_call_expr (fndecl, arglist);
 
   op0 = expand_expr (arg0, subtarget, VOIDmode, 0);
   op1 = expand_expr (arg1, 0, VOIDmode, 0);
@@ -1917,13 +1889,13 @@ expand_builtin_mathfn_2 (tree exp, rtx target, rtx subtarget)
   target = expand_binop (mode, builtin_optab, op0, op1,
 			 target, 0, OPTAB_DIRECT);
 
-  /* If we were unable to expand via the builtin, stop the
-     sequence (without outputting the insns) and return 0, causing
-     a call to the library function.  */
+  /* If we were unable to expand via the builtin, stop the sequence
+     (without outputting the insns) and call to the library function
+     with the stabilized argument list.  */
   if (target == 0)
     {
       end_sequence ();
-      return 0;
+      return expand_call (exp, target, target == const0_rtx);
     }
 
   if (errno_set)
