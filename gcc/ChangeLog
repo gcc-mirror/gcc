@@ -176,7 +176,6 @@ Thu Jun  7 12:12:58 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* emit-rtl.c (operand_subword): Remove unused variable.
 
->>>>>>> 1.10284
 Wed Jun  6 14:51:05 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (floatdi?f): Avoid usinf of SSE instructions
