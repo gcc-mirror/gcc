@@ -1,5 +1,8 @@
 2004-05-13  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	* tree-outof-ssa.c (rewrite_vars_out_of_ssa): Free map at
+	the end of the block.
+
 	* tree-into-ssa.c (def_blocks_free): XFREE bitmaps allocated
 	with BITMAP_XMALLOC.
 

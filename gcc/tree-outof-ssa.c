@@ -2098,6 +2098,9 @@ rewrite_vars_out_of_ssa (bitmap vars)
 	  var_ann (referenced_var (i))->out_of_ssa_tag = 0;
 	});
 
+     /* Free the map as we are done with it.  */
+     delete_var_map (map);
+
     }
 }
 
