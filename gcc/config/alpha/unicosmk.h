@@ -431,7 +431,7 @@ ssib_section ()			\
 #define ASM_OUTPUT_DOUBLE(FILE,VALUE)			\
   do { long t[2];					\
        REAL_VALUE_TO_TARGET_DOUBLE ((VALUE), t);	\
-       fprintf (FILE, "\t.quad ^X%x\n", t[0]);		\
+       fprintf (FILE, "\t.quad ^X%lx\n", t[0]);		\
   } while(0)
 #endif
  
@@ -452,13 +452,13 @@ ssib_section ()			\
 #define ASM_OUTPUT_FLOAT(FILE,VALUE)			\
   do { long t;						\
        REAL_VALUE_TO_TARGET_SINGLE ((VALUE), t);	\
-       fprintf (FILE, "\t.long ^X%x\n", t & 0xffffffff);\
+       fprintf (FILE, "\t.long ^X%lx\n", t & 0xffffffff);\
   } while (0)
 #else
 #define ASM_OUTPUT_FLOAT(FILE,VALUE)			\
   do { long t;						\
        REAL_VALUE_TO_TARGET_SINGLE ((VALUE), t);	\
-       fprintf (FILE, "\t.long ^X%x\n", (t >> 32) & 0xffffffff);\
+       fprintf (FILE, "\t.long ^X%lx\n", (t >> 32) & 0xffffffff);\
   } while(0)
 #endif
 

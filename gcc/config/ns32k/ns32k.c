@@ -1145,7 +1145,7 @@ print_operand (file, x, code)
 	  {
 	    union { float f; long l; } uu;
 	    uu.f = u.d;
-	    fprintf (file, "0Fx%08x", uu.l);
+	    fprintf (file, "0Fx%08lx", uu.l);
 	  }
 #else
 	  fprintf (file, "0f%.20e", u.d); 

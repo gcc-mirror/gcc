@@ -1679,7 +1679,7 @@ sdbout_end_function (line)
 static void
 sdbout_end_epilogue ()
 {
-  const char *const name
+  const char *const name ATTRIBUTE_UNUSED
     = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (current_function_decl));
 
 #ifdef PUT_SDB_EPILOGUE_END

@@ -96,10 +96,10 @@ Boston, MA 02111-1307, USA.  */
 
 #ifdef NO_UNDERSCORES
 #define ASM_GENERATE_INTERNAL_LABEL(BUF,PREFIX,NUMBER)	\
-    sprintf ((BUF), "*.%s%d", (PREFIX), (NUMBER))
+    sprintf ((BUF), "*.%s%ld", (PREFIX), (long)(NUMBER))
 #else
 #define ASM_GENERATE_INTERNAL_LABEL(BUF,PREFIX,NUMBER)	\
-    sprintf ((BUF), "*%s%d", (PREFIX), (NUMBER))
+    sprintf ((BUF), "*%s%ld", (PREFIX), (long)(NUMBER))
 #endif
 
 /* This is how to output an internal numbered label where

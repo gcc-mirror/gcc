@@ -47,7 +47,7 @@ Boston, MA 02111-1307, USA.  */
   do {									\
     long hex[2];							\
     REAL_VALUE_TO_TARGET_DOUBLE (VALUE, hex);				\
-    fprintf (FILE, "\t.long 0x%x\n\t.long 0x%x\n", hex[0], hex[1]);	\
+    fprintf (FILE, "\t.long 0x%lx\n\t.long 0x%lx\n", hex[0], hex[1]);	\
   } while (0)
 #else
 #define ASM_OUTPUT_DOUBLE(FILE,VALUE)					\
@@ -74,7 +74,7 @@ Boston, MA 02111-1307, USA.  */
   do {									\
     long hex;								\
     REAL_VALUE_TO_TARGET_SINGLE (VALUE, hex);				\
-    fprintf (FILE, "\t.long 0x%x\n", hex);				\
+    fprintf (FILE, "\t.long 0x%lx\n", hex);				\
   } while (0)
 #else
 #define ASM_OUTPUT_FLOAT(FILE,VALUE)					\
@@ -99,7 +99,7 @@ Boston, MA 02111-1307, USA.  */
   do {									\
     long hex;								\
     REAL_VALUE_TO_TARGET_SINGLE (VALUE, hex);				\
-    fprintf (FILE, "#0%c%x", (CODE) == 'f' ? 'b' : 'x', hex);		\
+    fprintf (FILE, "#0%c%lx", (CODE) == 'f' ? 'b' : 'x', hex);		\
   } while (0)
 #else
 #define ASM_OUTPUT_FLOAT_OPERAND(CODE,FILE,VALUE)		\
@@ -109,7 +109,7 @@ Boston, MA 02111-1307, USA.  */
           long l;						\
           REAL_VALUE_TO_TARGET_SINGLE (VALUE, l);		\
           if (sizeof (int) == sizeof (long))			\
-            asm_fprintf ((FILE), "%I0x%x", l);			\
+            asm_fprintf ((FILE), "%I0x%x", (int) l);		\
           else							\
             asm_fprintf ((FILE), "%I0x%lx", l);			\
         }							\
@@ -134,7 +134,7 @@ Boston, MA 02111-1307, USA.  */
   do {									\
     long hex[2];							\
     REAL_VALUE_TO_TARGET_DOUBLE (VALUE, hex);				\
-    fprintf (FILE, "#0b%x%08x", hex[0], hex[1]);			\
+    fprintf (FILE, "#0b%lx%08lx", hex[0], hex[1]);			\
   } while (0)
 #else
 #define ASM_OUTPUT_DOUBLE_OPERAND(FILE,VALUE)				\

@@ -285,7 +285,7 @@ do { char dstr[30];					\
       else								\
         { long l;							\
           REAL_VALUE_TO_TARGET_SINGLE (r, l);				\
-          fprintf (FILE, "#0x%x", l);					\
+          fprintf (FILE, "#0x%lx", l);					\
         }}								\
   else if (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) == XFmode)	\
     { REAL_VALUE_TYPE r;						\

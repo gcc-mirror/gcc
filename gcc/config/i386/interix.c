@@ -31,14 +31,14 @@ Boston, MA 02111-1307, USA.  */
    suffix consisting of an atsign (@) followed by the number of bytes of 
    arguments */
 
-char *
+const char *
 gen_stdcall_suffix (decl)
   tree decl;
 {
   int total = 0;
   /* ??? This probably should use XSTR (XEXP (DECL_RTL (decl), 0), 0) instead
      of DECL_ASSEMBLER_NAME.  */
-  char *asmname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+  const char *const asmname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
   char *newsym;
 
   if (TYPE_ARG_TYPES (TREE_TYPE (decl)))

@@ -2974,7 +2974,7 @@ do { long l;						\
 /* This is how to output an assembler line for a numeric constant byte.  */
 
 #define ASM_OUTPUT_BYTE(FILE,VALUE)  \
-  asm_fprintf ((FILE), "%s0x%x\n", ASM_BYTE_OP, (VALUE))
+  asm_fprintf ((FILE), "%s0x%x\n", ASM_BYTE_OP, (int) (VALUE))
 
 /* This is how to output an insn to push a register on the stack.
    It need not be very fast code.  */

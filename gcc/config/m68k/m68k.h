@@ -1952,7 +1952,7 @@ __transfer_from_trampoline ()					\
    This is suitable for output with `assemble_name'.  */
 
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
-  sprintf (LABEL, "*%s%s%d", LOCAL_LABEL_PREFIX, PREFIX, NUM)
+  sprintf (LABEL, "*%s%s%ld", LOCAL_LABEL_PREFIX, PREFIX, (long)(NUM))
 
 /* This is how to output a `long double' extended real constant.  */
   
@@ -2000,7 +2000,7 @@ do { long l;						\
 /* This is how to output an assembler line for a numeric constant byte.  */
 
 #define ASM_OUTPUT_BYTE(FILE,VALUE)  \
-  fprintf (FILE, "\t.byte 0x%x\n", (VALUE))
+  fprintf (FILE, "\t.byte 0x%x\n", (int)(VALUE))
 
 /* This is how to output an insn to push a register on the stack.
    It need not be very fast code.  */

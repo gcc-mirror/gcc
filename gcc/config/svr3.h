@@ -187,7 +187,7 @@ Boston, MA 02111-1307, USA.
 
 #undef ASM_GENERATE_INTERNAL_LABEL
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
-  sprintf (LABEL, "*%s%s%d", LOCAL_LABEL_PREFIX, PREFIX, NUM)
+  sprintf (LABEL, "*%s%s%ld", LOCAL_LABEL_PREFIX, PREFIX, (long)(NUM))
 
 /* We want local labels to start with period if made with asm_fprintf.  */
 #undef LOCAL_LABEL_PREFIX

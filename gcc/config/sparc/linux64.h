@@ -353,7 +353,7 @@ do {									\
 
 #undef  ASM_GENERATE_INTERNAL_LABEL
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
-  sprintf (LABEL, "*.L%s%d", PREFIX, NUM)
+  sprintf (LABEL, "*.L%s%ld", PREFIX, (long)(NUM))
 
 /* Define the names of various pseudo-ops used by the Sparc/svr4 assembler.
    ??? If ints are 64 bits then UNALIGNED_INT_ASM_OP (defined elsewhere) is

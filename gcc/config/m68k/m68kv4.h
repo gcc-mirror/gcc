@@ -215,7 +215,7 @@ do {									\
 #undef ASM_OUTPUT_ASCII
 #define ASM_OUTPUT_ASCII(FILE,PTR,LEN)				\
 do {								\
-  register int sp = 0, lp = 0, ch;				\
+  register int sp = 0, ch;					\
   fprintf ((FILE), "%s", BYTE_ASM_OP);				\
   do {								\
     ch = (PTR)[sp];						\

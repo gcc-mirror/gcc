@@ -5852,7 +5852,7 @@ mips_output_external (file, decl, name)
 #ifdef ASM_OUTPUT_UNDEF_FUNCTION
 int
 mips_output_external_libcall (file, name)
-     FILE *file;
+     FILE *file ATTRIBUTE_UNUSED;
      const char *name;
 {
   register struct extern_list *p;
@@ -6090,8 +6090,6 @@ void
 mips_asm_file_start (stream)
      FILE *stream;
 {
-  const char * abi_string = NULL;
-
   ASM_OUTPUT_SOURCE_FILENAME (stream, main_input_filename);
 
   /* Versions of the MIPS assembler before 2.20 generate errors if a branch
@@ -6111,6 +6109,7 @@ mips_asm_file_start (stream)
 	 bits.  GDB needs this information in order to be able to correctly
 	 debug these binaries. See the function mips_gdbarch_init() in
 	 gdb/mips-tdep.c.  */
+      const char * abi_string = NULL;
 
       switch (mips_abi)
 	{

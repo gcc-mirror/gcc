@@ -283,7 +283,7 @@ do{  if (PREFIX[0] == 'L' && PREFIX[1] == 'I')		\
 #define ASM_OUTPUT_LONG_DOUBLE(FILE,VALUE)  				\
 do { long l[3];								\
      REAL_VALUE_TO_TARGET_LONG_DOUBLE (VALUE, l);			\
-     fprintf (FILE, "\tlong 0x%x,0x%x,0x%x\n", l[0], l[1], l[2]);	\
+     fprintf (FILE, "\tlong 0x%lx,0x%lx,0x%lx\n", l[0], l[1], l[2]);	\
    } while (0)
   
 /* This is how to output an assembler line defining an `int' constant.  */
@@ -308,7 +308,7 @@ do { long l[3];								\
 /* This is how to output an assembler line for a numeric constant byte.  */
 
 #define ASM_OUTPUT_BYTE(FILE,VALUE)  \
-  fprintf (FILE, "\tbyte 0x%x\n", (VALUE))
+  fprintf (FILE, "\tbyte 0x%x\n", (int)(VALUE))
 
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)  \
   fprintf (FILE, "\tlong L%d\n", VALUE)

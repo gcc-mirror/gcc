@@ -350,7 +350,8 @@ while (0)
 
    stddef renaming does NOT apply to Alpha.  */
 
-char *gen_stdcall_suffix ();
+union tree_node;
+const char *gen_stdcall_suffix PARAMS ((union tree_node *));
 
 #undef ENCODE_SECTION_INFO
 #define ENCODE_SECTION_INFO(DECL) 					\

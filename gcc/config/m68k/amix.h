@@ -100,7 +100,7 @@ do {									\
 #undef ASM_OUTPUT_ASCII
 #define ASM_OUTPUT_ASCII(FILE,PTR,LEN)				\
 do {								\
-  register int sp = 0, lp = 0, ch;				\
+  register int sp = 0, ch;					\
   fprintf ((FILE), "%s", BYTE_ASM_OP);				\
   do {								\
     ch = (PTR)[sp];						\
@@ -137,9 +137,9 @@ do {								\
 #undef ASM_GENERATE_INTERNAL_LABEL
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
   if (flag_pic && !strcmp(PREFIX,"LC"))			\
-    sprintf (LABEL, "*%s%%%d", PREFIX, NUM);		\
+    sprintf (LABEL, "*%s%%%ld", PREFIX, (long)(NUM));		\
   else							\
-    sprintf (LABEL, "*%s%s%d", LOCAL_LABEL_PREFIX, PREFIX, NUM)
+    sprintf (LABEL, "*%s%s%ld", LOCAL_LABEL_PREFIX, PREFIX, (long)(NUM))
 
 #undef ASM_OUTPUT_INTERNAL_LABEL
 #define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)	\

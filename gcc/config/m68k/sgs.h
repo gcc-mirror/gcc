@@ -115,7 +115,7 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_OUTPUT_LONG_DOUBLE(FILE,VALUE)  			\
 do { long l[3];							\
      REAL_VALUE_TO_TARGET_LONG_DOUBLE (VALUE, l);		\
-     fprintf ((FILE), "%s0x%x,0x%x,0x%x\n", LONG_ASM_OP,	\
+     fprintf ((FILE), "%s0x%lx,0x%lx,0x%lx\n", LONG_ASM_OP,	\
 	     l[0], l[1], l[2]);					\
    } while (0)
 
@@ -125,7 +125,7 @@ do { long l[3];							\
 #define ASM_OUTPUT_DOUBLE(FILE,VALUE)			\
 do { long l[2];						\
      REAL_VALUE_TO_TARGET_DOUBLE (VALUE, l);		\
-     fprintf ((FILE), "%s0x%x,0x%x\n", LONG_ASM_OP,	\
+     fprintf ((FILE), "%s0x%lx,0x%lx\n", LONG_ASM_OP,	\
 	      l[0], l[1]);				\
    } while (0)
 
@@ -135,7 +135,7 @@ do { long l[2];						\
 #define ASM_OUTPUT_FLOAT(FILE,VALUE)			\
 do { long l;						\
      REAL_VALUE_TO_TARGET_SINGLE (VALUE, l);		\
-     fprintf ((FILE), "%s0x%x\n", LONG_ASM_OP, l);	\
+     fprintf ((FILE), "%s0x%lx\n", LONG_ASM_OP, l);	\
    } while (0)
 
 /* This is how to output an assembler line that says to advance the
@@ -157,7 +157,7 @@ do { long l;						\
 
 #define ASM_OUTPUT_ASCII(FILE,PTR,LEN)				\
 do {								\
-  register int sp = 0, lp = 0, ch;				\
+  register int sp = 0, ch;					\
   fprintf ((FILE), "%s", BYTE_ASM_OP);				\
   do {								\
     ch = (PTR)[sp];						\
@@ -213,14 +213,14 @@ do {								\
 #define ASM_OUTPUT_FLOAT_OPERAND(CODE,FILE,VALUE)	\
   do { long l;						\
        REAL_VALUE_TO_TARGET_SINGLE (VALUE, l);		\
-       asm_fprintf ((FILE), "%I0x%x", l);		\
+       asm_fprintf ((FILE), "%I0x%lx", l);		\
      } while (0)
   
 #undef ASM_OUTPUT_DOUBLE_OPERAND
 #define ASM_OUTPUT_DOUBLE_OPERAND(FILE,VALUE)		\
   do { long l[2];					\
        REAL_VALUE_TO_TARGET_DOUBLE (VALUE, l);		\
-       asm_fprintf ((FILE), "%I0x%x%08x", l[0], l[1]);	\
+       asm_fprintf ((FILE), "%I0x%lx%08lx", l[0], l[1]);\
      } while (0)
 
 /* How to output a block of SIZE zero bytes.  Note that the `space' pseudo,

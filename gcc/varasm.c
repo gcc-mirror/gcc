@@ -1805,7 +1805,7 @@ assemble_external_libcall (fun)
 
 void
 assemble_global (name)
-     const char *name;
+     const char *name ATTRIBUTE_UNUSED;
 {
   ASM_GLOBALIZE_LABEL (asm_out_file, name);
 }

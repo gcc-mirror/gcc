@@ -244,7 +244,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef ASM_GENERATE_INTERNAL_LABEL
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL, PREFIX, NUM)	\
-  sprintf ((LABEL), "%s%%%d", (PREFIX), (NUM))
+  sprintf ((LABEL), "%s%%%ld", (PREFIX), (long)(NUM))
 
 #undef ASM_OUTPUT_INTERNAL_LABEL
 #define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)	\
@@ -259,21 +259,21 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_OUTPUT_DOUBLE(FILE,VALUE)  \
 do { long l[2];						\
      REAL_VALUE_TO_TARGET_DOUBLE (VALUE, l);		\
-     fprintf (FILE, "\tlong 0x%x,0x%x\n", l[0], l[1]); \
+     fprintf (FILE, "\tlong 0x%lx,0x%lx\n", l[0], l[1]); \
    } while (0)
 
 #undef ASM_OUTPUT_LONG_DOUBLE
 #define ASM_OUTPUT_LONG_DOUBLE(FILE,VALUE)  				\
 do { long l[3];								\
      REAL_VALUE_TO_TARGET_LONG_DOUBLE (VALUE, l);			\
-     fprintf (FILE, "\tlong 0x%x,0x%x,0x%x\n", l[0], l[1], l[2]);	\
+     fprintf (FILE, "\tlong 0x%lx,0x%lx,0x%lx\n", l[0], l[1], l[2]);	\
    } while (0)
 
 #undef ASM_OUTPUT_FLOAT
 #define ASM_OUTPUT_FLOAT(FILE,VALUE)  \
 do { long l;					\
      REAL_VALUE_TO_TARGET_SINGLE (VALUE, l);	\
-     fprintf ((FILE), "\tlong 0x%x\n", l);	\
+     fprintf ((FILE), "\tlong 0x%lx\n", l);	\
    } while (0)
 
 /* This is how to output an assembler line defining an `int' constant.  */
@@ -302,7 +302,7 @@ do { long l;					\
 
 #undef ASM_OUTPUT_BYTE
 #define ASM_OUTPUT_BYTE(FILE,VALUE)  \
-  fprintf (FILE, "\tbyte 0x%x\n", (VALUE))
+  fprintf (FILE, "\tbyte 0x%x\n", (int)(VALUE))
 
 #undef ASM_OUTPUT_ADDR_VEC_ELT
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)  \
@@ -364,7 +364,7 @@ do { long l;					\
     { REAL_VALUE_TYPE r; long l;					\
       REAL_VALUE_FROM_CONST_DOUBLE (r, X);				\
       REAL_VALUE_TO_TARGET_SINGLE (r, l);				\
-      fprintf (FILE, "&0x%x", l); }					\
+      fprintf (FILE, "&0x%lx", l); }					\
   else if (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) == DFmode)	\
     { REAL_VALUE_TYPE r; int i[2];					\
       REAL_VALUE_FROM_CONST_DOUBLE (r, X);				\

@@ -4218,21 +4218,21 @@ print_operand (file, x, code)
     case 'k':
       if (GET_CODE (x) == CONST_INT)
 	{
-	  fprintf (file, "%d", ~INTVAL (x));
+	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, ~INTVAL (x));
 	  return;
 	}
       abort ();
     case 'Q':
       if (GET_CODE (x) == CONST_INT)
 	{
-	  fprintf (file, "%d", 64 - (INTVAL (x) & 63));
+	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, 64 - (INTVAL (x) & 63));
 	  return;
 	}
       abort ();
     case 'L':
       if (GET_CODE (x) == CONST_INT)
 	{
-	  fprintf (file, "%d", 32 - (INTVAL (x) & 31));
+	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, 32 - (INTVAL (x) & 31));
 	  return;
 	}
       abort ();
@@ -4246,14 +4246,14 @@ print_operand (file, x, code)
     case 'p':
       if (GET_CODE (x) == CONST_INT)
 	{
-	  fprintf (file, "%d", 63 - (INTVAL (x) & 63));
+	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, 63 - (INTVAL (x) & 63));
 	  return;
 	}
       abort ();
     case 'P':
       if (GET_CODE (x) == CONST_INT)
 	{
-	  fprintf (file, "%d", 31 - (INTVAL (x) & 31));
+	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, 31 - (INTVAL (x) & 31));
 	  return;
 	}
       abort ();
@@ -4595,13 +4595,15 @@ output_div_insn (operands, unsignedp, insn)
 	}
       if (unsignedp)
 	{
-	  sprintf (buf, "$$divU_%d", INTVAL (operands[0]));
+	  sprintf (buf, "$$divU_");
+	  sprintf (buf + 7, HOST_WIDE_INT_PRINT_DEC, INTVAL (operands[0]));
 	  return output_millicode_call (insn,
 					gen_rtx_SYMBOL_REF (SImode, buf));
 	}
       else
 	{
-	  sprintf (buf, "$$divI_%d", INTVAL (operands[0]));
+	  sprintf (buf, "$$divI_");
+	  sprintf (buf + 7, HOST_WIDE_INT_PRINT_DEC, INTVAL (operands[0]));
 	  return output_millicode_call (insn,
 					gen_rtx_SYMBOL_REF (SImode, buf));
 	}

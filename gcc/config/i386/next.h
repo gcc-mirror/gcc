@@ -50,7 +50,7 @@ Boston, MA 02111-1307, USA.  */
     REAL_VALUE_TO_TARGET_LONG_DOUBLE (VALUE, hex);			\
     if (sizeof (int) == sizeof (long))					\
       fprintf (FILE, "\t.long 0x%x\n\t.long 0x%x\n\t.long 0x%x\n",	\
-		hex[0], hex[1], hex[2]);				\
+		(int) hex[0], (int) hex[1], (int) hex[2]);		\
     else								\
       fprintf (FILE, "\t.long 0x%lx\n\t.long 0x%lx\n\t.long 0x%lx\n",	\
 		hex[0], hex[1], hex[2]);				\
@@ -64,7 +64,8 @@ Boston, MA 02111-1307, USA.  */
     long hex[2];							\
     REAL_VALUE_TO_TARGET_DOUBLE (VALUE, hex);				\
     if (sizeof (int) == sizeof (long))					\
-      fprintf (FILE, "\t.long 0x%x\n\t.long 0x%x\n", hex[0], hex[1]);	\
+      fprintf (FILE, "\t.long 0x%x\n\t.long 0x%x\n",			\
+        (int) hex[0], (int) hex[1]);					\
     else								\
       fprintf (FILE, "\t.long 0x%lx\n\t.long 0x%lx\n", hex[0], hex[1]);	\
   } while (0)
@@ -79,7 +80,7 @@ Boston, MA 02111-1307, USA.  */
     long hex;								\
     REAL_VALUE_TO_TARGET_SINGLE (VALUE, hex);				\
     if (sizeof (int) == sizeof (long))					\
-      fprintf (FILE, "\t.long 0x%x\n", hex);				\
+      fprintf (FILE, "\t.long 0x%x\n", (int) hex);			\
     else								\
       fprintf (FILE, "\t.long 0x%lx\n", hex);				\
   } while (0)
@@ -143,7 +144,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef	ASM_GENERATE_INTERNAL_LABEL
 #define ASM_GENERATE_INTERNAL_LABEL(BUF,PREFIX,NUMBER)	\
-    sprintf ((BUF), "*%s%d", (PREFIX), (NUMBER))
+    sprintf ((BUF), "*%s%ld", (PREFIX), (long)(NUMBER))
 
 #undef ASM_OUTPUT_INTERNAL_LABEL
 #define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)	\
