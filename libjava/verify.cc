@@ -17,6 +17,8 @@ details.  */
 #include <java-insns.h>
 #include <java-interp.h>
 
+#ifdef INTERPRETER
+
 #include <java/lang/Class.h>
 #include <java/lang/VerifyError.h>
 #include <java/lang/Throwable.h>
@@ -2435,3 +2437,5 @@ verify_fail (char *s)
   strcat (buf, s);
   throw new java::lang::VerifyError (JvNewStringLatin1 (buf));
 }
+
+#endif	/* INTERPRETER */
