@@ -1,3 +1,9 @@
+2001-07-02  Tom Tromey  <tromey@redhat.com>
+
+	* configure: Rebuilt.
+	* configure.in: Added aux-dir hacks to satisfy automake and
+	in-tree builds.
+
 2001-05-21  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* configure.in: Use correct include dir for new Boehm GC.
