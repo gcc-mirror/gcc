@@ -1072,6 +1072,18 @@ if [ -r ${LIB}/$file ]; then
   fi
 fi
 
+# There is a similar problem with the VxWorks drv/netif/if_med.h file.
+file=drv/netif/if_med.h
+if [ -r ${LIB}/$file ]; then
+  if egrep 'Wind River' ${LIB}/$file > /dev/null; then
+    echo Fixing $file, overeager sed script
+    rm ${LIB}/$file
+    sed -e 's|//.*$||g' $file > ${LIB}/$file
+    chmod +w ${LIB}/$file 2>/dev/null
+    chmod a+r ${LIB}/$file 2>/dev/null
+  fi
+fi
+
 # Some IRIX header files contains the string "//"
 for file in elf_abi.h elf.h; do
   if [ -r ${LIB}/$file ]; then
