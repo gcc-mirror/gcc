@@ -1,3 +1,9 @@
+2003-07-08  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR Target/11453
+	* pa.md: Disparage all mtsar constraints.
+	(extzv, extv, insv): Don't fail on length of {32|64}.
+
 2003-07-08  Zack Weinberg  <zack@codesourcery.com>
 
 	* system.h: Poison MAP_CHARACTER.

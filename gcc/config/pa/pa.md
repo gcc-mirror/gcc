@@ -2264,9 +2264,9 @@
 
 (define_insn ""
   [(set (match_operand:SI 0 "reg_or_nonsymb_mem_operand"
-				"=r,r,r,r,r,r,Q,*q,!f,f,*TR")
+				"=r,r,r,r,r,r,Q,!*q,!f,f,*TR")
 	(match_operand:SI 1 "move_operand"
-				"A,r,J,N,K,RQ,rM,rM,!fM,*RT,f"))]
+				"A,r,J,N,K,RQ,rM,!rM,!fM,*RT,f"))]
   "(register_operand (operands[0], SImode)
     || reg_or_0_operand (operands[1], SImode))
    && ! TARGET_SOFT_FLOAT"
@@ -2288,9 +2288,9 @@
 
 (define_insn ""
   [(set (match_operand:SI 0 "reg_or_nonsymb_mem_operand"
-				"=r,r,r,r,r,r,Q,*q")
+				"=r,r,r,r,r,r,Q,!*q")
 	(match_operand:SI 1 "move_operand"
-				"A,r,J,N,K,RQ,rM,rM"))]
+				"A,r,J,N,K,RQ,rM,!rM"))]
   "(register_operand (operands[0], SImode)
     || reg_or_0_operand (operands[1], SImode))
    && TARGET_SOFT_FLOAT"
@@ -2699,8 +2699,8 @@
 }")
 
 (define_insn ""
-  [(set (match_operand:HI 0 "reg_or_nonsymb_mem_operand" "=r,r,r,r,r,Q,*q,!*f")
-	(match_operand:HI 1 "move_operand" "r,J,N,K,RQ,rM,rM,!*fM"))]
+  [(set (match_operand:HI 0 "reg_or_nonsymb_mem_operand" "=r,r,r,r,r,Q,!*q,!*f")
+	(match_operand:HI 1 "move_operand" "r,J,N,K,RQ,rM,!rM,!*fM"))]
   "register_operand (operands[0], HImode)
    || reg_or_0_operand (operands[1], HImode)"
   "@
@@ -2814,8 +2814,8 @@
 }")
 
 (define_insn ""
-  [(set (match_operand:QI 0 "reg_or_nonsymb_mem_operand" "=r,r,r,r,r,Q,*q,!*f")
-	(match_operand:QI 1 "move_operand" "r,J,N,K,RQ,rM,rM,!*fM"))]
+  [(set (match_operand:QI 0 "reg_or_nonsymb_mem_operand" "=r,r,r,r,r,Q,!*q,!*f")
+	(match_operand:QI 1 "move_operand" "r,J,N,K,RQ,rM,!rM,!*fM"))]
   "register_operand (operands[0], QImode)
    || reg_or_0_operand (operands[1], QImode)"
   "@
@@ -3137,9 +3137,9 @@
 
 (define_insn ""
   [(set (match_operand:DF 0 "reg_or_nonsymb_mem_operand"
-				"=r,r,r,r,r,Q,*q,!f,f,*TR")
+				"=r,r,r,r,r,Q,!*q,!f,f,*TR")
 	(match_operand:DF 1 "move_operand"
-				"r,J,N,K,RQ,rM,rM,!fM,*RT,f"))]
+				"r,J,N,K,RQ,rM,!rM,!fM,*RT,f"))]
   "(register_operand (operands[0], DFmode)
     || reg_or_0_operand (operands[1], DFmode))
    && ! TARGET_SOFT_FLOAT && TARGET_64BIT"
@@ -3296,9 +3296,9 @@
 
 (define_insn ""
   [(set (match_operand:DI 0 "reg_or_nonsymb_mem_operand"
-				"=r,r,r,r,r,r,Q,*q,!f,f,*TR")
+				"=r,r,r,r,r,r,Q,!*q,!f,f,*TR")
 	(match_operand:DI 1 "move_operand"
-				"A,r,J,N,K,RQ,rM,rM,!fM,*RT,f"))]
+				"A,r,J,N,K,RQ,rM,!rM,!fM,*RT,f"))]
   "(register_operand (operands[0], DImode)
     || reg_or_0_operand (operands[1], DImode))
    && ! TARGET_SOFT_FLOAT && TARGET_64BIT"
@@ -3992,9 +3992,9 @@
   (set_attr "length" "8")])
 
 (define_insn ""
-  [(set (match_operand:DI 0 "register_operand" "=r,r,q")
-	(minus:DI (match_operand:DI 1 "arith11_operand" "r,I,U")
-		  (match_operand:DI 2 "register_operand" "r,r,r")))]
+  [(set (match_operand:DI 0 "register_operand" "=r,r,!q")
+	(minus:DI (match_operand:DI 1 "arith11_operand" "r,I,!U")
+		  (match_operand:DI 2 "register_operand" "r,r,!r")))]
   "TARGET_64BIT"
   "@
    sub %1,%2,%0
@@ -4022,9 +4022,9 @@
    (set_attr "length" "4,4")])
 
 (define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=r,r,q")
-	(minus:SI (match_operand:SI 1 "arith11_operand" "r,I,S")
-		  (match_operand:SI 2 "register_operand" "r,r,r")))]
+  [(set (match_operand:SI 0 "register_operand" "=r,r,!q")
+	(minus:SI (match_operand:SI 1 "arith11_operand" "r,I,!S")
+		  (match_operand:SI 2 "register_operand" "r,r,!r")))]
   "TARGET_PA_20"
   "@
    sub %1,%2,%0
@@ -7158,12 +7158,17 @@
     FAIL;
 
   if (TARGET_64BIT)
-    emit_insn (gen_extzv_64 (operands[0], operands[1],
-			     operands[2], operands[3]));
+    {
+      if ((unsigned HOST_WIDE_INT) INTVAL (operands[2]) > 64
+          || (unsigned HOST_WIDE_INT) INTVAL (operands[3]) > 63)
+	FAIL;
+      emit_insn (gen_extzv_64 (operands[0], operands[1],
+			       operands[2], operands[3]));
+    }
   else
     {
-      if (! uint5_operand (operands[2], SImode)
-	  || ! uint5_operand (operands[3], SImode))
+      if ((unsigned HOST_WIDE_INT) INTVAL (operands[2]) > 32
+          || (unsigned HOST_WIDE_INT) INTVAL (operands[3]) > 31)
 	FAIL;
       emit_insn (gen_extzv_32 (operands[0], operands[1],
 			       operands[2], operands[3]));
@@ -7174,8 +7179,8 @@
 (define_insn "extzv_32"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(zero_extract:SI (match_operand:SI 1 "register_operand" "r")
-			 (match_operand:SI 2 "uint5_operand" "")
-			 (match_operand:SI 3 "uint5_operand" "")))]
+			 (match_operand:SI 2 "uint32_operand" "")
+			 (match_operand:SI 3 "uint32_operand" "")))]
   ""
   "{extru|extrw,u} %1,%3+%2-1,%2,%0"
   [(set_attr "type" "shift")
@@ -7224,12 +7229,17 @@
     FAIL;
 
   if (TARGET_64BIT)
-    emit_insn (gen_extv_64 (operands[0], operands[1],
-			    operands[2], operands[3]));
+    {
+      if ((unsigned HOST_WIDE_INT) INTVAL (operands[2]) > 64
+          || (unsigned HOST_WIDE_INT) INTVAL (operands[3]) > 63)
+	FAIL;
+      emit_insn (gen_extv_64 (operands[0], operands[1],
+			      operands[2], operands[3]));
+    }
   else
     {
-      if (! uint5_operand (operands[2], SImode)
-	  || ! uint5_operand (operands[3], SImode))
+      if ((unsigned HOST_WIDE_INT) INTVAL (operands[2]) > 32
+          || (unsigned HOST_WIDE_INT) INTVAL (operands[3]) > 31)
 	FAIL;
       emit_insn (gen_extv_32 (operands[0], operands[1],
 			      operands[2], operands[3]));
@@ -7240,8 +7250,8 @@
 (define_insn "extv_32"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(sign_extract:SI (match_operand:SI 1 "register_operand" "r")
-			 (match_operand:SI 2 "uint5_operand" "")
-			 (match_operand:SI 3 "uint5_operand" "")))]
+			 (match_operand:SI 2 "uint32_operand" "")
+			 (match_operand:SI 3 "uint32_operand" "")))]
   ""
   "{extrs|extrw,s} %1,%3+%2-1,%2,%0"
   [(set_attr "type" "shift")
@@ -7287,12 +7297,17 @@
   "
 {
   if (TARGET_64BIT)
-    emit_insn (gen_insv_64 (operands[0], operands[1],
-			    operands[2], operands[3]));
+    {
+      if ((unsigned HOST_WIDE_INT) INTVAL (operands[2]) > 64
+          || (unsigned HOST_WIDE_INT) INTVAL (operands[3]) > 63)
+	FAIL;
+      emit_insn (gen_insv_64 (operands[0], operands[1],
+			      operands[2], operands[3]));
+    }
   else
     {
-      if (! uint5_operand (operands[2], SImode)
-	  || ! uint5_operand (operands[3], SImode))
+      if ((unsigned HOST_WIDE_INT) INTVAL (operands[2]) > 32
+          || (unsigned HOST_WIDE_INT) INTVAL (operands[3]) > 31)
 	FAIL;
       emit_insn (gen_insv_32 (operands[0], operands[1],
 			      operands[2], operands[3]));
@@ -7302,8 +7317,8 @@
 
 (define_insn "insv_32"
   [(set (zero_extract:SI (match_operand:SI 0 "register_operand" "+r,r")
-			 (match_operand:SI 1 "uint5_operand" "")
-			 (match_operand:SI 2 "uint5_operand" ""))
+			 (match_operand:SI 1 "uint32_operand" "")
+			 (match_operand:SI 2 "uint32_operand" ""))
 	(match_operand:SI 3 "arith5_operand" "r,L"))]
   ""
   "@
