@@ -1964,7 +1964,7 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 	     settings which would invalidate this.  */
 	  if (dest_reg_was_split)
 	    {
-	      int regno = REGNO (SET_DEST (pattern));
+	      int regno = REGNO (SET_DEST (set));
 
 	      if ((size_t) regno < VARRAY_SIZE (map->const_equiv_varray)
 		  && (VARRAY_CONST_EQUIV (map->const_equiv_varray, regno).age
