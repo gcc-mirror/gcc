@@ -1,3 +1,8 @@
+2003-02-16  Jeff Sturm  <jsturm@one-point.com>
+
+	* libjava.lang/CompareNaN.java: New test.
+	* libjava.lang/CompareNaN.out: New test.
+
 2003-02-16  Mark Wielaard  <mark@klomp.org>
 
 	* libjava.mauve/xfails: Add Class.reflect2 and String.getBytes FAILs.
