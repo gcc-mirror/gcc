@@ -4951,11 +4951,13 @@ tree_check (node, code, file, line, nofatal)
      int nofatal;
 {
   if (TREE_CODE (node) != code)
-    if (nofatal)
-      return 0;
-    else
-      fatal ("%s:%d: Expect %s, have %s\n", file, line,
-	     tree_code_name[code], tree_code_name[TREE_CODE (node)]);
+    {
+      if (nofatal)
+	return 0;
+      else
+	fatal ("%s:%d: Expect %s, have %s\n", file, line,
+	       tree_code_name[code], tree_code_name[TREE_CODE (node)]);
+    }
 
   return node;
 }
@@ -4971,11 +4973,13 @@ tree_class_check (node, cl, file, line, nofatal)
      int nofatal;
 {
   if (TREE_CODE_CLASS (TREE_CODE (node)) != cl)
-    if (nofatal)
-      return 0;
-    else
-      fatal ("%s:%d: Expect '%c', have '%s'\n", file, line,
-	     cl, tree_code_name[TREE_CODE (node)]);
+    {
+      if (nofatal)
+	return 0;
+      else
+	fatal ("%s:%d: Expect '%c', have '%s'\n", file, line,
+	       cl, tree_code_name[TREE_CODE (node)]);
+    }
 
   return node;
 }
