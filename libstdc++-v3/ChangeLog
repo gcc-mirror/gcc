@@ -1,3 +1,11 @@
+2001-04-05  Benjamin Kosnik  <bkoz@redhat.com>
+
+	Prepare for libstdc++-2.92.
+	* docs/html/17_intro/RELEASE-NOTES (New): Update.
+	* docs/html/configopts.html: Fix formatting.
+	* README (file): Updates.
+	* include/bits/c++config (__GLIBCPP__): Update.
+
 2001-04-05  Phil Edwards  <pme@sources.redhat.com>
 
 	* docs/doxygen/run_doxygen:  Check for the existence of Doxygen.

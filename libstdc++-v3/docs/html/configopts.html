@@ -7,7 +7,7 @@
    <META NAME="GENERATOR" CONTENT="vi and eight fingers">
    <TITLE>libstdc++-v3 configure options</TITLE>
 <LINK REL=StyleSheet HREF="lib3styles.css">
-<!-- $Id: configopts.html,v 1.7 2001/02/15 22:21:12 pme Exp $ -->
+<!-- $Id: configopts.html,v 1.8 2001/04/02 19:00:13 bkoz Exp $ -->
 </HEAD>
 <BODY>
 
@@ -69,16 +69,17 @@ options</A></H1>
         abstraction.  The default is 'stdio'.
      </P>
 
- <DT><TT>--enable-clocale  </TT>
- <DD><P>This is an abbreviated form of <TT>'--enable-clocale=generic'</TT>
-        (described next).
-     </P>
-
  <DT><TT>--enable-sjlj-exceptions </TT> 
  <DD><P> Forces old, short-jump/long-jump exception handling model. If
  at all possible, the new, frame unwinding exception handling routines
  should be used instead, as they significantly reduce both runtime
  memory usage and executable size.
+     </P>
+
+
+ <DT><TT>--enable-clocale  </TT>
+ <DD><P>This is an abbreviated form of <TT>'--enable-clocale=generic'</TT>
+        (described next).
      </P>
 
  <DT><TT>--enable-clocale=MODEL </TT> <DD><P>Select a target-specific
@@ -196,7 +197,7 @@ options</A></H1>
 
 <HR>
 <P CLASS="fineprint"><EM>
-$Id: configopts.html,v 1.7 2001/02/15 22:21:12 pme Exp $
+$Id: configopts.html,v 1.8 2001/04/02 19:00:13 bkoz Exp $
 </EM></P>
 
 
