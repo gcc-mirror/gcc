@@ -609,7 +609,9 @@ read_scan_file (in_fname, argc, argv)
 
   obstack_init (&scan_file_obstack); 
 
+  cpp_init ();			/* Initialize cpplib.   */
   cpp_reader_init (&scan_in);
+
   /* We are going to be scanning a header file out of its proper context,
      so ignore warnings and errors.  */
   CPP_OPTION (&scan_in, inhibit_warnings) = 1;
@@ -1078,8 +1080,6 @@ main (argc, argv)
 	       progname);
       exit (FATAL_EXIT_CODE);
     }
-
-  cpp_init ();			/* Initialize cpplib.   */
 
   inc_filename = argv[1];
   inc_filename_length = strlen (inc_filename);
