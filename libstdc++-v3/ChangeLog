@@ -1,3 +1,15 @@
+2001-09-14  Phil Edwards  <pme@sources.redhat.com>
+
+	* docs/html/17_intro/headers_cc.txt:  "Sync"/copy real file over.
+	* docs/html/17_intro/howto.html:  Spacing and HTML markup fixes.
+	* docs/html/18_support/howto.html:  It won't compile; it's not code.
+	* docs/html/19_diagnostics/howto.html:  Point diagram seekers to
+	doxygen'd pages.
+	* docs/html/22_locale/howto.html:  Comment for future work.
+	* docs/html/23_containers/howto.html:  More comments.
+	* docs/html/25_algorithms/howto.html:  It's a comment, not a
+	blunt command to the reader.  (English grammar.)
+
 2001-09-14  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* config/locale/moneypunct_members_gnu.cc: Fix initialization of

@@ -8,7 +8,7 @@
    <META NAME="GENERATOR" CONTENT="vi and eight fingers">
    <TITLE>libstdc++-v3 HOWTO:  Chapter 17</TITLE>
 <LINK REL=StyleSheet HREF="../lib3styles.css">
-<!-- $Id: howto.html,v 1.5 2001/05/31 02:45:03 ljrittle Exp $ -->
+<!-- $Id: howto.html,v 1.6 2001/06/08 03:53:35 ljrittle Exp $ -->
 </HEAD>
 <BODY>
 
@@ -70,8 +70,7 @@
       definition that SGI</A> uses for their STL subset.
       <EM>Please see the many cautions given in HOWTOs on containers.</EM>
    </P>
-   <P>
-      Here is another attempt at explaining the dangers of using the
+   <P>Here is another attempt at explaining the dangers of using the
       STL with threading support without understanding some important
       details.  The STL implementation is currently configured to use
       the high-speed caching memory allocator.  If you absolutely
@@ -82,22 +81,21 @@
       libstdc++-v3 when you provide -D__USE_MALLOC on the command line
       or make a change to that configuration file.
    </P>
-   <P>
-      If you don't like caches of objects being retained inside the
-      STL, then you might be tempted to define __USE_MALLOC either on
-      the command line or by rebuilding c++config.h.  Please note,
-      once you define __USE_MALLOC, only the malloc allocator is
-      visible to application code (i.e. the typically higher-speed
-      allocator is not even available in this configuration).  There
-      is a better way: It is possible to force the malloc-based
-      allocator on a per-case-basis for some application code even
-      when the above macro symbol is not defined.  The author of this
-      comment believes that is a better way to tune an application for
-      high-speed using this implementation of the STL.  Here is one
-      possible example displaying the forcing of the malloc-based
+   <P>If you don't like caches of objects being retained inside the STL, then
+      you might be tempted to define __USE_MALLOC either on the command
+      line or by rebuilding c++config.h.  Please note, once you define
+      __USE_MALLOC, only the malloc allocator is visible to application code
+      (i.e. the typically higher-speed allocator is not even available
+      in this configuration).  There is a better way:  It is possible
+      to force the malloc-based allocator on a per-case-basis for some
+      application code even when the above macro symbol is not defined.
+      The library team generally believes that this is a better way to tune
+      an application for high-speed using this implementation of the STL.
+      Here is one possible example displaying the forcing of the malloc-based
       allocator over the typically higher-speed default allocator:
-
-      std::list <void*, std::malloc_alloc> my_malloc_based_list;
+      <PRE>
+      std::list &lt;void*, std::malloc_alloc&gt;  my_malloc_based_list;
+      </PRE>
    </P>
    <P>A recent journal article has described &quot;atomic integer
       operations,&quot; which would allow us to, well, perform updates
@@ -114,16 +112,18 @@
       latest-to-oldest order.
       <UL>
         <LI><A HREF="http://gcc.gnu.org/ml/libstdc++/2001-05/msg00384.html">
-	inspired this most recent updating of issues with threading
-	and the SGI STL library.  It also contains some example
-	POSIX-multithreaded STL code.</A>
-	<LI> <A HREF="http://gcc.gnu.org/ml/libstdc++/2001-05/msg00136.html">
-	an early analysis of why __USE_MALLOC should be disable for
-	the 3.0 release of libstdc++.</A>
+        inspired this most recent updating of issues with threading
+        and the SGI STL library.  It also contains some example
+        POSIX-multithreaded STL code.</A>
+        <LI> <A HREF="http://gcc.gnu.org/ml/libstdc++/2001-05/msg00136.html">
+        an early analysis of why __USE_MALLOC should be disabled for
+        the 3.0 release of libstdc++.</A>
       </UL>
       <BR>
       Here are discussions that took place before the current snapshot;
-      they are still relevant and instructive.
+      they are still relevant and instructive.  (Some of them may not work;
+      as the drive containing some of the 1999 archives crashed, and nobody
+      has had time to recover the backups.)
       <BR>
       <UL>
         <LI>One way of preventing memory leaks by the old default memory
@@ -181,7 +181,7 @@
 <P CLASS="fineprint"><EM>
 Comments and suggestions are welcome, and may be sent to
 <A HREF="mailto:libstdc++@gcc.gnu.org">the mailing list</A>.
-<BR> $Id: howto.html,v 1.5 2001/05/31 02:45:03 ljrittle Exp $
+<BR> $Id: howto.html,v 1.6 2001/06/08 03:53:35 ljrittle Exp $
 </EM></P>
 
 

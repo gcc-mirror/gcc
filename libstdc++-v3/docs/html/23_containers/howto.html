@@ -8,7 +8,7 @@
    <META NAME="GENERATOR" CONTENT="vi and eight fingers">
    <TITLE>libstdc++-v3 HOWTO:  Chapter 23</TITLE>
 <LINK REL=StyleSheet HREF="../lib3styles.css">
-<!-- $Id: howto.html,v 1.6 2001/06/08 03:53:35 ljrittle Exp $ -->
+<!-- $Id: howto.html,v 1.7 2001/08/24 20:34:34 pme Exp $ -->
 </HEAD>
 <BODY>
 
@@ -26,6 +26,7 @@
    <LI><A HREF="#2">Variable-sized bitmasks</A>
    <LI><A HREF="#3">Containers and multithreading</A>
    <LI><A HREF="#4">&quot;Hinting&quot; during insertion</A>
+   <LI><A HREF="#5">Bitmasks and string arguments</A>
 </UL>
 
 <HR>
@@ -298,13 +299,19 @@
           between <TT>h</TT> and <TT>h</TT>'s predecessor.
      </UL>
    </P>
+   <P>For <TT>multimap</TT> and <TT>multiset</TT>, the restrictions are
+      slightly looser:  &quot;greater than&quot; should be replaced by
+      &quot;not less than&quot; and &quot;less than&quot; should be replaced
+      by &quot;not greater than.&quot;  (Why not replace greater with
+      greater-than-or-equal-to?  You probably could in your head, but the
+      mathematicians will tell you that it isn't the same thing.)
+   </P>
    <P>If the conditions are not met, then the hint is not used, and the
       insertion proceeds as if you had called <TT> a.insert(t) </TT>
       instead.  (<STRONG>Note </STRONG> that GCC releases prior to 3.0.2
-      had a bug in the case with <TT>hint == begin()</TT>.  You should not
-      use a hint argument in those releases.)
-(Was it just with map or with all the rbtree-using containers?  Still need
-to check that.)
+      had a bug in the case with <TT>hint == begin()</TT> for the
+      <TT>map</TT> and <TT>set</TT> classes.  You should not use a hint
+      argument in those releases.)
    </P>
    <P>This behavior goes well with other container's <TT>insert()</TT>
       functions which take an iterator:  if used, the new item will be
@@ -326,6 +333,29 @@ to check that.)
       <A HREF="../faq/index.html">to the FAQ</A>.
    </P>
 
+<HR>
+<H2><A NAME="5">Bitmasks and string arguments</A></H2>
+   <P>Bitmasks do not take char* nor const char* arguments in their
+      constructors.  This is something of an accident, but you can read
+      about the problem:  follow the library's &quot;Links&quot; from the
+      homepage, and from the C++ information &quot;defect reflector&quot;
+      link, select the library issues list.  Issue number 116 describes the
+      problem.
+   </P>
+   <P>For now you can simply make a temporary string object using the
+      constructor expression:
+      <PRE>
+      std::bitset&lt;5&gt; b ( std::string(&quot;10110&quot;) );
+      </PRE>
+      instead of
+      <PRE>
+      std::bitset&lt;5&gt; b ( &quot;10110&quot; );    // invalid
+      </PRE>
+   </P>
+   <P>Return <A HREF="#top">to top of page</A> or
+      <A HREF="../faq/index.html">to the FAQ</A>.
+   </P>
+ 
 
 <!-- ####################################################### -->
 
@@ -333,7 +363,7 @@ to check that.)
 <P CLASS="fineprint"><EM>
 Comments and suggestions are welcome, and may be sent to
 <A HREF="mailto:libstdc++@gcc.gnu.org">the mailing list</A>.
-<BR> $Id: howto.html,v 1.6 2001/06/08 03:53:35 ljrittle Exp $
+<BR> $Id: howto.html,v 1.7 2001/08/24 20:34:34 pme Exp $
 </EM></P>
 
 
