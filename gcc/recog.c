@@ -1847,6 +1847,7 @@ offsettable_address_p (strictp, mode, y)
   rtx *y2;
   int (*addressp) PARAMS ((enum machine_mode, rtx)) =
     (strictp ? strict_memory_address_p : memory_address_p);
+  unsigned int mode_sz = GET_MODE_SIZE (mode);
 
   if (CONSTANT_ADDRESS_P (y))
     return 1;
@@ -1857,6 +1858,13 @@ offsettable_address_p (strictp, mode, y)
   if (mode_dependent_address_p (y))
     return 0;
 
+  /* ??? How much offset does an offsettable BLKmode reference need?
+     Clearly that depends on the situation in which it's being used.
+     However, the current situation in which we test 0xffffffff is
+     less than ideal.  Caveat user.  */
+  if (mode_sz == 0)
+    mode_sz = BIGGEST_ALIGNMENT / BITS_PER_UNIT;
+
   /* If the expression contains a constant term,
      see if it remains valid when max possible offset is added.  */
 
@@ -1865,7 +1873,7 @@ offsettable_address_p (strictp, mode, y)
       int good;
 
       y1 = *y2;
-      *y2 = plus_constant (*y2, GET_MODE_SIZE (mode) - 1);
+      *y2 = plus_constant (*y2, mode_sz - 1);
       /* Use QImode because an odd displacement may be automatically invalid
 	 for any wider mode.  But it should be valid for a single byte.  */
       good = (*addressp) (QImode, y);
@@ -1884,7 +1892,7 @@ offsettable_address_p (strictp, mode, y)
      of the specified mode.  We assume that if Y and Y+c are
      valid addresses then so is Y+d for all 0<d<c.  */
 
-  z = plus_constant_for_output (y, GET_MODE_SIZE (mode) - 1);
+  z = plus_constant_for_output (y, mode_sz - 1);
 
   /* Use QImode because an odd displacement may be automatically invalid
      for any wider mode.  But it should be valid for a single byte.  */

@@ -1,3 +1,8 @@
+2000-05-24  Richard Henderson  <rth@cygnus.com>
+
+	* recog.c (offsettable_address_p): If mode size is zero, assume
+	BIGGEST_ALIGNMENT.
+
 2000-05-24  J. David Anglin  <dave@hiauly.hia.nrc.ca>
 
 	* configure.in: Check for -Wno-long-long option support and improve
