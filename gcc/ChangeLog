@@ -1,3 +1,11 @@
+2000-11-09  Graham Stott  <grahams@redhat.com>
+
+        * config/i386/i386.md (mmx_pinsrw): Output operands in correct
+	order for -mintel-syntax.  Remove comment now that the operand
+	order has been checked.
+	(mmx_pextrw): Likewise.
+	(mmx_pshufw): Likewise.
+
 2000-11-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* builtins.c (c_strlen): Use TREE_STRING_LENGTH - 1 for max.
