@@ -2501,6 +2501,14 @@ duplicate_decls (newdecl, olddecl)
 	      cp_error_at ("conflicts with previous declaration `%#D'",
 			   olddecl);
 	    }
+	  else if (TREE_CODE (DECL_TEMPLATE_RESULT (olddecl)) == FUNCTION_DECL
+		   && TREE_CODE (DECL_TEMPLATE_RESULT (newdecl)) == FUNCTION_DECL
+		   && compparms (TYPE_ARG_TYPES (TREE_TYPE (DECL_TEMPLATE_RESULT (olddecl))),
+				 TYPE_ARG_TYPES (TREE_TYPE (DECL_TEMPLATE_RESULT (newdecl))), 3))
+	    {
+	      cp_error ("new declaration `%#D'", newdecl);
+	      cp_error_at ("ambiguates old declaration `%#D'", olddecl);
+	    }
 	  return 0;
 	}
       if (TREE_CODE (newdecl) == FUNCTION_DECL)
@@ -3044,8 +3052,15 @@ pushdecl (x)
 	    }
 	  else if (TREE_CODE (t) != TREE_CODE (x))
 	    {
-	      if ((TREE_CODE (t) == TYPE_DECL && DECL_ARTIFICIAL (t))
-		  || (TREE_CODE (x) == TYPE_DECL && DECL_ARTIFICIAL (x)))
+	      if ((TREE_CODE (t) == TYPE_DECL && DECL_ARTIFICIAL (t)
+		   && TREE_CODE (x) != TYPE_DECL
+		   && ! (TREE_CODE (x) == TEMPLATE_DECL
+			 && TREE_CODE (DECL_TEMPLATE_RESULT (x)) == TYPE_DECL))
+		  || (TREE_CODE (x) == TYPE_DECL && DECL_ARTIFICIAL (x)
+		      && TREE_CODE (t) != TYPE_DECL
+		      && ! (TREE_CODE (t) == TEMPLATE_DECL
+			    && (TREE_CODE (DECL_TEMPLATE_RESULT (t))
+				== TYPE_DECL))))
 		{
 		  /* We do nothing special here, because C++ does such nasty
 		     things with TYPE_DECLs.  Instead, just let the TYPE_DECL
@@ -3714,7 +3729,12 @@ redeclaration_error_message (newdecl, olddecl)
     }
   else if (TREE_CODE (newdecl) == TEMPLATE_DECL)
     {
-      if (DECL_INITIAL (olddecl) && DECL_INITIAL (newdecl))
+      if ((TREE_CODE (DECL_TEMPLATE_RESULT (newdecl)) == FUNCTION_DECL
+	   && DECL_INITIAL (DECL_TEMPLATE_RESULT (newdecl))
+	   && DECL_INITIAL (DECL_TEMPLATE_RESULT (olddecl)))
+	  || (TREE_CODE (DECL_TEMPLATE_RESULT (newdecl)) == TYPE_DECL
+	      && TYPE_SIZE (TREE_TYPE (newdecl))
+	      && TYPE_SIZE (TREE_TYPE (olddecl))))
 	return "redefinition of `%#D'";
       return 0;
     }
@@ -5737,7 +5757,7 @@ start_decl (declarator, declspecs, initialized, raises)
 
   /* Don't lose if destructors must be executed at file-level.  */
   if (! current_template_parms && TREE_STATIC (decl)
-      && TYPE_NEEDS_DESTRUCTOR (type)
+      && TYPE_NEEDS_DESTRUCTOR (complete_type (type))
       && !TREE_PERMANENT (decl))
     {
       push_obstacks (&permanent_obstack, &permanent_obstack);
@@ -6028,6 +6048,10 @@ grok_reference_init (decl, type, init, cleanupp)
       cp_error ("ANSI C++ forbids use of initializer list to initialize reference `%D'", decl);
       return;
     }
+
+  if (TREE_TYPE (init) && TREE_CODE (TREE_TYPE (init)) == UNKNOWN_TYPE)
+    /* decay_conversion is probably wrong for references to functions.  */
+    init = decay_conversion (instantiate_type (TREE_TYPE (type), init, 1));
 
   if (TREE_CODE (init) == TREE_LIST)
     init = build_compound_expr (init);
@@ -6417,7 +6441,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
   if (TREE_CODE (decl) == VAR_DECL)
     {
       if (DECL_SIZE (decl) == NULL_TREE
-	  && TYPE_SIZE (TREE_TYPE (decl)) != NULL_TREE)
+	  && TYPE_SIZE (complete_type (TREE_TYPE (decl))) != NULL_TREE)
 	layout_decl (decl, 0);
 
       if (TREE_STATIC (decl) && DECL_SIZE (decl) == NULL_TREE)
@@ -10152,6 +10176,7 @@ grok_op_properties (decl, virtualp, friendp)
 	    {
 	      if ((name == ansi_opname[(int) POSTINCREMENT_EXPR]
 		   || name == ansi_opname[(int) POSTDECREMENT_EXPR])
+		  && ! current_template_parms
 		  && TREE_VALUE (TREE_CHAIN (argtypes)) != integer_type_node)
 		{
 		  if (methodp)
@@ -10259,11 +10284,16 @@ xref_tag (code_type_node, name, binfo, globalize)
     }
   else
     t = IDENTIFIER_TYPE_VALUE (name);
-  if (t && TREE_CODE (t) != code)
+  if (t && TREE_CODE (t) != code && TREE_CODE (t) != TEMPLATE_TYPE_PARM)
     t = NULL_TREE;
 
   if (! globalize)
     {
+      if (pedantic && t && TREE_CODE (t) == TEMPLATE_TYPE_PARM)
+	{
+	  cp_pedwarn ("redeclaration of template type-parameter `%T'", name);
+	  cp_pedwarn_at ("  previously declared here", t);
+	}
       /* If we know we are defining this tag, only look it up in this scope
        * and don't try to find it as a type. */
       if (t && TYPE_CONTEXT(t) && TREE_MANGLED (name))

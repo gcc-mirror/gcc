@@ -209,7 +209,10 @@ dump_type (t, v)
       break;
 
     case TEMPLATE_TYPE_PARM:
-      OB_PUTID (TYPE_IDENTIFIER (t));
+      if (TYPE_IDENTIFIER (t))
+	OB_PUTID (TYPE_IDENTIFIER (t));
+      else
+	OB_PUTS ("{anonymous template type parm}");
       break;
 
       /* This is not always necessary for pointers and such, but doing this
@@ -941,6 +944,7 @@ dump_expr (t, nop)
     case FIELD_DECL:
     case CONST_DECL:
     case FUNCTION_DECL:
+    case TEMPLATE_DECL:
       dump_decl (t, -1);
       break;
 

@@ -253,6 +253,8 @@ push_template_decl (decl)
       CLASSTYPE_TEMPLATE_INFO (TREE_TYPE (tmpl)) = info;
       DECL_NAME (decl) = classtype_mangled_name (TREE_TYPE (decl));
     }
+  else if (! DECL_LANG_SPECIFIC (decl))
+    cp_error ("template declaration of `%#D'", decl);
   else
     DECL_TEMPLATE_INFO (decl) = info;
 }
@@ -352,12 +354,24 @@ coerce_template_parms (parms, arglist, in_decl)
 	  continue;
 	}
       if (is_type)
-	val = groktypename (arg);
+	{
+	  val = groktypename (arg);
+	  if (! current_template_parms)
+	    {
+	      tree t = target_type (val);
+	      if (IS_AGGR_TYPE (t)
+		  && decl_function_context (TYPE_MAIN_DECL (t)))
+		{
+		  cp_error ("type `%T' composed from a local class is not a valid template-argument", val);
+		  return error_mark_node;
+		}
+	    }
+	}
       else
 	{
 	  tree t = tsubst (TREE_TYPE (parm), &TREE_VEC_ELT (vec, 0),
 			   TREE_VEC_LENGTH (vec), in_decl);
-	  if (current_template_parms && uses_template_parms (arg))
+	  if (current_template_parms)
 	    val = arg;
 	  else
 	    val = digest_init (t, arg, (tree *) 0);
@@ -844,6 +858,7 @@ uses_template_parms (t)
       /* NOTREACHED */
       return 0;
 
+    case LOOKUP_EXPR:
     case TYPENAME_TYPE:
       return 1;
 
@@ -857,7 +872,7 @@ uses_template_parms (t)
 	{
 	case '1':
 	case '2':
-	case '3':
+	case 'e':
 	case '<':
 	  {
 	    int i;
@@ -980,11 +995,7 @@ instantiate_class_template (type)
   pattern = TREE_TYPE (template);
 
   if (TYPE_SIZE (pattern) == NULL_TREE)
-    {
-      cp_error_at ("no definition available for `%#D'", template);
-      cp_error ("  trying to instantiate `%#T'", type);
-      return error_mark_node;
-    }
+    return type;
 
   TYPE_BEING_DEFINED (type) = 1;
 
@@ -1608,7 +1619,7 @@ tsubst (t, args, nargs, in_decl)
 
 	for (i = 0; i < len; i++)
 	  {
-	    elts[i] = tsubst_copy (TREE_VEC_ELT (t, i), args, nargs, in_decl);
+	    elts[i] = tsubst_expr (TREE_VEC_ELT (t, i), args, nargs, in_decl);
 	    if (elts[i] != TREE_VEC_ELT (t, i))
 	      need_new = 1;
 	  }
@@ -2287,7 +2298,7 @@ instantiate_template (tmpl, targ_ptr)
       if (TREE_CODE_CLASS (TREE_CODE (t)) == 't')
 	{
 	  tree nt = target_type (t);
-	  if (IS_AGGR_TYPE (nt) && decl_function_context (TYPE_STUB_DECL (nt)))
+	  if (IS_AGGR_TYPE (nt) && decl_function_context (TYPE_MAIN_DECL (nt)))
 	    {
 	      cp_error ("type `%T' composed from a local class is not a valid template-argument", t);
 	      cp_error ("  trying to instantiate `%D'", tmpl);
@@ -2695,6 +2706,12 @@ do_function_instantiation (declspecs, declarator, storage)
   tree fn;
   tree result = NULL_TREE;
   int extern_p = 0;
+
+  if (! DECL_LANG_SPECIFIC (decl))
+    {
+      cp_error ("explicit instantiation of non-template `%#D'", decl);
+      return;
+    }
 
   /* If we've already seen this template instance, use it.  */
   if (name = DECL_ASSEMBLER_NAME (decl),

@@ -427,7 +427,10 @@ template_type_parm:
 		  if (TREE_PURPOSE ($$) == signature_type_node)
 		    sorry ("signature as template type parameter");
 		  else if (TREE_PURPOSE ($$) != class_type_node)
-		    pedwarn ("template type parameters must use the keyword `class'");
+		    {
+		      pedwarn ("template type parameters must use the keyword `class'");
+		      TREE_PURPOSE ($$) = class_type_node;
+		    }
 		}
 	| aggr identifier
 		{ $$ = build_tree_list ($1, $2); goto ttpa; }
@@ -2129,8 +2132,24 @@ named_class_head:
 	| named_complex_class_head_sans_basetype maybe_base_class_list
 		{ 
 		  $$ = TREE_TYPE ($1);
+		  if (TREE_INT_CST_LOW (current_aggr) == union_type 
+		      && TREE_CODE ($$) != UNION_TYPE)
+		    cp_pedwarn ("`union' tag used in declaring `%#T'", $$);
+		  else if (TREE_CODE ($$) == UNION_TYPE
+			   && TREE_INT_CST_LOW (current_aggr) != union_type)
+		    cp_pedwarn ("non-`union' tag used in declaring `%#T'", $$);
 		  if ($2)
-		    xref_basetypes (current_aggr, $1, $$, $2); 
+		    {
+		      if (IS_AGGR_TYPE ($$) && CLASSTYPE_USE_TEMPLATE ($$))
+		        {
+		          if (CLASSTYPE_IMPLICIT_INSTANTIATION ($$)
+			      && TYPE_SIZE ($$) == NULL_TREE)
+			    SET_CLASSTYPE_TEMPLATE_SPECIALIZATION ($$);
+			  else if (CLASSTYPE_TEMPLATE_INSTANTIATION ($$))
+			    cp_error ("specialization after instantiation of `%T'", $$);
+			}
+		      xref_basetypes (current_aggr, $1, $$, $2); 
+		    }
 		}
 	;
 

@@ -4842,9 +4842,12 @@ root_lang_context_p ()
 
 /* Type instantiation routines.  */
 
-/* This function will instantiate the type of the expression given
-   in RHS to match the type of LHSTYPE.  If LHSTYPE is NULL_TREE,
-   or other errors exist, the TREE_TYPE of RHS will be ERROR_MARK_NODE.
+/* This function will instantiate the type of the expression given in
+   RHS to match the type of LHSTYPE.  If errors exist, then return
+   error_mark_node.  If only complain is COMPLAIN is set.  If we are
+   not complaining, never modify rhs, as overload resolution wants to
+   try many possible instantiations, in hopes that at least one will
+   work.
 
    This function is used in build_modify_expr, convert_arguments,
    build_c_cast, and compute_conversion_costs.  */
@@ -4880,14 +4883,18 @@ instantiate_type (lhstype, rhs, complain)
 
     case INDIRECT_REF:
     case ARRAY_REF:
-      TREE_TYPE (rhs) = lhstype;
-      lhstype = build_pointer_type (lhstype);
-      TREE_OPERAND (rhs, 0)
-	= instantiate_type (lhstype, TREE_OPERAND (rhs, 0), complain);
-      if (TREE_OPERAND (rhs, 0) == error_mark_node)
-	return error_mark_node;
+      {
+	tree new_rhs;
 
-      return rhs;
+	new_rhs = instantiate_type (build_pointer_type (lhstype),
+				    TREE_OPERAND (rhs, 0), complain);
+	if (new_rhs == error_mark_node)
+	  return error_mark_node;
+
+	TREE_TYPE (rhs) = lhstype;
+	TREE_OPERAND (rhs, 0) = new_rhs;
+	return rhs;
+      }
 
     case NOP_EXPR:
       rhs = copy_node (TREE_OPERAND (rhs, 0));
@@ -5262,13 +5269,12 @@ instantiate_type (lhstype, rhs, complain)
 	    error ("type for resolving address of overloaded function must be pointer type");
 	  return error_mark_node;
 	}
-      TREE_TYPE (rhs) = lhstype;
-      lhstype = TREE_TYPE (lhstype);
       {
-	tree fn = instantiate_type (lhstype, TREE_OPERAND (rhs, 0), complain);
+	tree fn = instantiate_type (TREE_TYPE (lhstype), TREE_OPERAND (rhs, 0), complain);
 	if (fn == error_mark_node)
 	  return error_mark_node;
 	mark_addressable (fn);
+	TREE_TYPE (rhs) = lhstype;
 	TREE_OPERAND (rhs, 0) = fn;
 	TREE_CONSTANT (rhs) = staticp (fn);
       }
