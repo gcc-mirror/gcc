@@ -269,6 +269,10 @@ package Prj.Tree is
    pragma Inline (String_Value_Of);
    --  Only valid for N_With_Clause, N_Literal_String nodes or N_Comment
 
+   function Source_Index_Of (Node : Project_Node_Id) return Int;
+   pragma Inline (Source_Index_Of);
+   --  Only valid for N_Literal_String and N_Attribute_Declaration nodes
+
    function First_With_Clause_Of
      (Node : Project_Node_Id) return Project_Node_Id;
    pragma Inline (First_With_Clause_Of);
@@ -694,6 +698,11 @@ package Prj.Tree is
       To   : Project_Node_Id);
    pragma Inline (Set_Package_Node_Of);
 
+   procedure Set_Source_Index_Of
+     (Node : Project_Node_Id;
+      To   : Int);
+   pragma Inline (Set_Source_Index_Of);
+
    procedure Set_String_Type_Of
      (Node : Project_Node_Id;
       To   : Project_Node_Id);
@@ -772,6 +781,10 @@ package Prj.Tree is
 
          Name : Name_Id := No_Name;
          --  See below for what Project_Node_Kind it is used
+
+         Src_Index : Int := 0;
+         --  Index of a unit in a multi-unit source.
+         --  Onli for some N_Attribute_Declaration and N_Literal_String.
 
          Path_Name : Name_Id := No_Name;
          --  See below for what Project_Node_Kind it is used

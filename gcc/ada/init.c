@@ -1281,11 +1281,14 @@ __gnat_initialize (void)
 
 #elif defined (VMS)
 
+#ifdef IN_RTS
+
 /* The prehandler actually gets control first on a condition. It swaps the
    stack pointer and calls the handler (__gnat_error_handler). */
 extern long __gnat_error_prehandler (void);
 
 extern char *__gnat_error_prehandler_stack;   /* Alternate signal stack */
+#endif
 
 /* Conditions that don't have an Ada exception counterpart must raise
    Non_Ada_Error.  Since this is defined in s-auxdec, it should only be
@@ -1474,6 +1477,7 @@ void
 __gnat_install_handler (void)
 {
   long prvhnd;
+#ifdef IN_RTS
   char *c;
 
   c = (char *) xmalloc (2049);
@@ -1482,6 +1486,9 @@ __gnat_install_handler (void)
 
   /* __gnat_error_prehandler is an assembly function.  */
   SYS$SETEXV (1, __gnat_error_prehandler, 3, &prvhnd);
+#else
+  SYS$SETEXV (1, __gnat_error_handler, 3, &prvhnd);
+#endif
   __gnat_handler_installed = 1;
 }
 

@@ -562,6 +562,12 @@ package body Switch.M is
 
             case Switch_Chars (Ptr) is
 
+               --  processing for eI switch
+
+               when 'I' =>
+                  Ptr := Ptr + 1;
+                  Scan_Pos (Switch_Chars, Max, Ptr, Main_Index);
+
                --  processing for eL switch
 
                when 'L' =>

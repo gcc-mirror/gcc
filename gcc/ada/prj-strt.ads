@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2001-2003 Free Software Foundation, Inc.       --
+--             Copyright (C) 2001-2004 Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -70,7 +70,8 @@ private package Prj.Strt is
    procedure Parse_Expression
      (Expression      : out Project_Node_Id;
       Current_Project : Project_Node_Id;
-      Current_Package : Project_Node_Id);
+      Current_Package : Project_Node_Id;
+      Optional_Index  : Boolean);
    --  Parse a simple string expression or a string list expression.
    --  Current_Project is the node of the project file being parsed.
    --  Current_Package is the node of the package being parsed,

@@ -1182,13 +1182,8 @@ package body Exp_Attr is
                   Res := Is_Constrained (Etype (Ent));
                end if;
 
-               if Res then
-                  Rewrite (N,
-                    New_Reference_To (Standard_True, Loc));
-               else
-                  Rewrite (N,
-                    New_Reference_To (Standard_False, Loc));
-               end if;
+               Rewrite (N,
+                 New_Reference_To (Boolean_Literals (Res), Loc));
             end;
 
          --  Prefix is not an entity name. These are also cases where
@@ -1196,16 +1191,13 @@ package body Exp_Attr is
          --  and type of the prefix.
 
          else
-            if not Is_Variable (Pref)
-              or else Nkind (Pref) = N_Explicit_Dereference
-              or else Is_Constrained (Etype (Pref))
-            then
-               Rewrite (N,
-                 New_Reference_To (Standard_True, Loc));
-            else
-               Rewrite (N,
-                 New_Reference_To (Standard_False, Loc));
-            end if;
+            Rewrite (N,
+              New_Reference_To (
+                Boolean_Literals (
+                  not Is_Variable (Pref)
+                    or else Nkind (Pref) = N_Explicit_Dereference
+                    or else Is_Constrained (Etype (Pref))),
+                Loc));
          end if;
 
          Analyze_And_Resolve (N, Standard_Boolean);

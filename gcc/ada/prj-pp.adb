@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2001-2003 Free Software Foundation, Inc.       --
+--             Copyright (C) 2001-2004 Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -454,6 +454,11 @@ package body Prj.PP is
                   pragma Debug (Indicate_Tested (N_Literal_String));
                   Output_String (String_Value_Of (Node));
 
+                  if Source_Index_Of (Node) /= 0 then
+                     Write_String (" at ");
+                     Write_String (Source_Index_Of (Node)'Img);
+                  end if;
+
                when N_Attribute_Declaration =>
                   pragma Debug (Indicate_Tested (N_Attribute_Declaration));
                   Print (First_Comment_Before (Node), Indent);
@@ -464,6 +469,12 @@ package body Prj.PP is
                   if Associative_Array_Index_Of (Node) /= No_Name then
                      Write_String (" (");
                      Output_String (Associative_Array_Index_Of (Node));
+
+                     if Source_Index_Of (Node) /= 0 then
+                        Write_String (" at ");
+                        Write_String (Source_Index_Of (Node)'Img);
+                     end if;
+
                      Write_String (")");
                   end if;
 

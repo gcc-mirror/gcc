@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2001-2002 Free Software Foundation, Inc.       --
+--             Copyright (C) 2001-2004 Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -53,13 +53,16 @@ package Prj.Attr is
    type Attribute_Kind is
      (Single,
       Associative_Array,
-      Case_Insensitive_Associative_Array);
+      Optional_Index_Associative_Array,
+      Case_Insensitive_Associative_Array,
+      Optional_Index_Case_Insensitive_Associative_Array);
 
    type Attribute_Record is record
-      Name     : Name_Id;
-      Kind_1   : Variable_Kind;
-      Kind_2   : Attribute_Kind;
-      Next     : Attribute_Node_Id;
+      Name           : Name_Id;
+      Kind_1         : Variable_Kind;
+      Optional_Index : Boolean;
+      Kind_2         : Attribute_Kind;
+      Next           : Attribute_Node_Id;
    end record;
 
    package Attributes is

@@ -5735,19 +5735,16 @@ package body Exp_Ch9 is
       RTS_Call   : Entity_Id;
 
    begin
-      if Abort_Present (N) then
-         Abortable := New_Occurrence_Of (Standard_True, Loc);
-      else
-         Abortable := New_Occurrence_Of (Standard_False, Loc);
-      end if;
+      Abortable :=
+        New_Occurrence_Of (Boolean_Literals (Abort_Present (N)), Loc);
 
-      --  Set up the target object.
+      --  Set up the target object
 
       Extract_Entry (N, Concval, Ename, Index);
       Conctyp := Etype (Concval);
       New_Param := Concurrent_Ref (Concval);
 
-      --  The target entry index and abortable flag are the same for all cases.
+      --  The target entry index and abortable flag are the same for all cases
 
       Params := New_List (
         Entry_Index_Expression (Loc, Entity (Ename), Index, Conctyp),
@@ -5804,7 +5801,7 @@ package body Exp_Ch9 is
          end if;
       end loop;
 
-      --  Create the GNARLI call.
+      --  Create the GNARLI call
 
       Rcall := Make_Procedure_Call_Statement (Loc,
         Name =>

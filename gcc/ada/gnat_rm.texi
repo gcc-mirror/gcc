@@ -2970,14 +2970,13 @@ There are no semantic dependencies on the package Ada.Calendar.
 @item No_Relative_Delay
 There are no delay_relative_statements.
 
-@item No_Task_Attributes
-There are no semantic dependencies on the Ada.Task_Attributes package and
-there are no references to the attributes Callable and Terminated [RM 9.9].
+@item No_Task_Attributes_Package
+There are no semantic dependencies on the Ada.Task_Attributes package.
 
-@item Boolean_Entry_Barriers
-Entry barrier condition expressions shall be boolean
-objects which are declared in the protected type
-which contains the entry.
+@item Simple_Barriers
+Entry barrier condition expressions shall be either static
+boolean expressions or boolean objects which are declared in
+the protected type which contains the entry.
 
 @item Max_Asynchronous_Select_Nesting = 0
 [RM D.7] Specifies the maximum dynamic nesting level of asynchronous_selects.
@@ -3023,7 +3022,7 @@ and whose most recent description is available at
 
 The above set is a superset of the restrictions provided by pragma
 @code{Restricted_Run_Time}, it includes five additional restrictions
-(@code{Boolean_Entry_Barriers}, @code{No_Select_Statements},
+(@code{Simple_Barriers}, @code{No_Select_Statements},
 @code{No_Calendar},
 @code{No_Relative_Delay} and @code{No_Task_Termination}).  This means
 that pragma @code{Ravenscar}, like the pragma @code{Restricted_Run_Time},
@@ -3054,7 +3053,7 @@ A configuration pragma that establishes the following set of restrictions:
 @item No_Protected_Type_Allocators
 @item No_Local_Protected_Objects
 @item No_Requeue_Statements
-@item No_Task_Attributes
+@item No_Task_Attributes_Package
 @item Max_Asynchronous_Select_Nesting =  0
 @item Max_Task_Entries =  0
 @item Max_Protected_Entries = 1
@@ -6847,13 +6846,14 @@ then all compilation units in the partition must obey the restriction.
 
 @table @code
 
-@item Boolean_Entry_Barriers
-@findex Boolean_Entry_Barriers
+@item Simple_Barriers
+@findex Simple_Barriers
 This restriction ensures at compile time that barriers in entry declarations
-for protected types are restricted to references to simple boolean variables
-defined in the private part of the protected type.  No other form of entry
-barriers is permitted.  This is one of the restrictions of the Ravenscar
-profile for limited tasking (see also pragma @code{Ravenscar}).
+for protected types are restricted to either static boolean expressions or
+references to simple boolean variables defined in the private part of the
+protected type.  No other form of entry barriers is permitted.  This is one
+of the restrictions of the Ravenscar profile for limited tasking (see also
+pragma @code{Ravenscar}).
 
 @item Max_Entry_Queue_Depth => Expr
 @findex Max_Entry_Queue_Depth
@@ -6990,8 +6990,8 @@ user-defined storage pool.
 This restriction ensures at compile time that there are no implicit or
 explicit dependencies on the package @code{Ada.Streams}.
 
-@item No_Task_Attributes
-@findex No_Task_Attributes
+@item No_Task_Attributes_Package
+@findex No_Task_Attributes_Package
 This restriction ensures at compile time that there are no implicit or
 explicit dependencies on the package @code{Ada.Task_Attributes}.
 

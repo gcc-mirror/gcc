@@ -70,8 +70,11 @@ extern long   __gnat_named_file_length             (char *);
 extern void   __gnat_tmp_name			   (char *);
 extern char  *__gnat_readdir                       (DIR *, char *);
 extern int    __gnat_readdir_is_thread_safe        (void);
-extern time_t __gnat_file_time_name                (char *);
-extern time_t __gnat_file_time_fd                  (int);
+
+extern OS_Time __gnat_file_time_name                (char *);
+extern OS_Time __gnat_file_time_fd                  (int);
+/* return -1 in case of error */
+
 extern void   __gnat_set_file_time_name		   (char *, time_t);
 extern void   __gnat_get_env_value_ptr             (char *, int *,
 						    char **);

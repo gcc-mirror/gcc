@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -309,6 +309,9 @@ package Stand is
    Last_Standard_List_Id : List_Id;
    --  Highest List_Id value used by Standard (including those used by
    --  normal list headers, element list headers, and list elements)
+
+   Boolean_Literals : array (Boolean) of Entity_Id;
+   --  Entities for the two boolean literals, used by the expander
 
    -------------------------------------
    -- Semantic Phase Special Entities --

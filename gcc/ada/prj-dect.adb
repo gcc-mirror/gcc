@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2001-2003 Free Software Foundation, Inc          --
+--           Copyright (C) 2001-2004 Free Software Foundation, Inc          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,6 +33,7 @@ with Scans;    use Scans;
 with Snames;
 with Types;    use Types;
 with Prj.Attr; use Prj.Attr;
+with Uintp;    use Uintp;
 
 package body Prj.Dect is
 
@@ -121,6 +122,7 @@ package body Prj.Dect is
       Current_Attribute      : Attribute_Node_Id := First_Attribute;
       Full_Associative_Array : Boolean           := False;
       Attribute_Name         : Name_Id           := No_Name;
+      Optional_Index         : Boolean           := False;
 
    begin
       Attribute := Default_Project_Node (Of_Kind => N_Attribute_Declaration);
@@ -194,8 +196,9 @@ package body Prj.Dect is
 
          --  Set, if appropriate the index case insensitivity flag
 
-         elsif Attributes.Table (Current_Attribute).Kind_2 =
-           Case_Insensitive_Associative_Array
+         elsif Attributes.Table (Current_Attribute).Kind_2 in
+           Case_Insensitive_Associative_Array ..
+             Optional_Index_Case_Insensitive_Associative_Array
          then
             Set_Case_Insensitive (Attribute, To => True);
          end if;
@@ -245,6 +248,40 @@ package body Prj.Dect is
          if Token = Tok_String_Literal then
             Set_Associative_Array_Index_Of (Attribute, Token_Name);
             Scan; --  past the literal string index
+
+            if Token = Tok_At then
+               case Attributes.Table (Current_Attribute).Kind_2 is
+                  when Optional_Index_Associative_Array |
+                       Optional_Index_Case_Insensitive_Associative_Array =>
+                     Scan;
+                     Expect (Tok_Integer_Literal, "integer literal");
+
+                     if Token = Tok_Integer_Literal then
+                        declare
+                           Index : constant Int :=
+                                     UI_To_Int (Int_Literal_Value);
+                        begin
+                           if Index = 0 then
+                              Error_Msg ("index cannot be zero", Token_Ptr);
+
+                           else
+                              --  Set the index
+                              Set_Source_Index_Of (Attribute, To => Index);
+                           end if;
+                        end;
+
+                        Scan;
+                     end if;
+
+                  when others =>
+                     Error_Msg ("index not allowed here", Token_Ptr);
+                     Scan;
+
+                     if Token = Tok_Integer_Literal then
+                        Scan;
+                     end if;
+               end case;
+            end if;
          end if;
 
          Expect (Tok_Right_Paren, "`)`");
@@ -271,6 +308,7 @@ package body Prj.Dect is
       if Current_Attribute /= Empty_Attribute then
          Set_Expression_Kind_Of
            (Attribute, To => Attributes.Table (Current_Attribute).Kind_1);
+         Optional_Index := Attributes.Table (Current_Attribute).Optional_Index;
       end if;
 
       Expect (Tok_Use, "USE");
@@ -439,7 +477,8 @@ package body Prj.Dect is
                Parse_Expression
                  (Expression      => Expression,
                   Current_Project => Current_Project,
-                  Current_Package => Current_Package);
+                  Current_Package => Current_Package,
+                  Optional_Index  => Optional_Index);
                Set_Expression_Of (Attribute, To => Expression);
 
                --  If the expression is legal, but not of the right kind
@@ -1225,7 +1264,8 @@ package body Prj.Dect is
       Parse_Expression
         (Expression      => Expression,
          Current_Project => Current_Project,
-         Current_Package => Current_Package);
+         Current_Package => Current_Package,
+         Optional_Index  => False);
       Set_Expression_Of (Variable, To => Expression);
 
       if Expression /= Empty_Node then

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -876,24 +876,22 @@ package body Exp_Disp is
                Node2 => Position)));
       end;
 
-      --  Generate: Set_Remotely_Callable (DT_Ptr, status);
-      --  where status is described in E.4 (18)
+      --  Generate: Set_Remotely_Callable (DT_Ptr, Status);
+      --  where Status is described in E.4 (18)
 
       declare
          Status : Entity_Id;
 
       begin
-         if Is_Pure (Typ)
-           or else Is_Shared_Passive (Typ)
-           or else
-             ((Is_Remote_Types (Typ) or else Is_Remote_Call_Interface (Typ))
-                 and then Original_View_In_Visible_Part (Typ))
-           or else not Comes_From_Source (Typ)
-         then
-            Status := Standard_True;
-         else
-            Status := Standard_False;
-         end if;
+         Status :=
+           Boolean_Literals
+             (Is_Pure (Typ)
+                or else Is_Shared_Passive (Typ)
+                or else
+                  ((Is_Remote_Types (Typ)
+                      or else Is_Remote_Call_Interface (Typ))
+                   and then Original_View_In_Visible_Part (Typ))
+                or else not Comes_From_Source (Typ));
 
          Append_To (Elab_Code,
            Make_DT_Access_Action (Typ,

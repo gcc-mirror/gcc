@@ -152,7 +152,7 @@ db_accepted_codes (void)
 
   if (accepted_codes == -1)
     {
-      char * db_env = getenv ("EH_DEBUG");
+      char * db_env = (char *) getenv ("EH_DEBUG");
 
       accepted_codes = db_env ? (atoi (db_env) | DB_ERR) : 0;
       /* Arranged for ERR stuff to always be visible when the variable

@@ -88,6 +88,8 @@ package body Sem_Ch6 is
    --  subsequenty used for inline expansions at call sites. If subprogram can
    --  be inlined (depending on size and nature of local declarations) this
    --  function returns true. Otherwise subprogram body is treated normally.
+   --  If proper warnings are enabled and the subprogram contains a construct
+   --  that cannot be inlined, the offending construct is flagged accordingly.
 
    type Conformance_Type is
      (Type_Conformant, Mode_Conformant, Subtype_Conformant, Fully_Conformant);
@@ -2985,6 +2987,17 @@ package body Sem_Ch6 is
             return not Is_Generic_Actual_Type (T1)
               or else not Is_Generic_Actual_Type (T2)
               or else Scope (T1) /= Scope (T2);
+
+         --  In some cases a type imported through a limited_with clause,
+         --  and its non-limited view are both visible, for example in an
+         --  anonymous access_to_classwide type in a formal. Both entities
+         --  designate the same type.
+
+         elsif From_With_Type (T1)
+           and then Ekind (T1) = E_Incomplete_Type
+           and then T2 = Non_Limited_View (T1)
+         then
+            return True;
 
          else
             return False;

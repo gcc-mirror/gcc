@@ -182,7 +182,8 @@ package body Prj.Proc is
                         Kind     => Single,
                         Location => No_Location,
                         Default  => True,
-                        Value    => Empty_String);
+                        Value    => Empty_String,
+                        Index    => 0);
 
                   --  List attributes have a default value of nil list
 
@@ -275,6 +276,7 @@ package body Prj.Proc is
 
                   when Single =>
                      Add (Result.Value, String_Value_Of (The_Current_Term));
+                     Result.Index := Source_Index_Of (The_Current_Term);
 
                   when List =>
 
@@ -295,6 +297,7 @@ package body Prj.Proc is
                      Last := String_Elements.Last;
                      String_Elements.Table (Last) :=
                        (Value    => String_Value_Of (The_Current_Term),
+                        Index    => Source_Index_Of (The_Current_Term),
                         Display_Value => No_Name,
                         Location => Location_Of (The_Current_Term),
                         Flag     => False,
@@ -342,7 +345,8 @@ package body Prj.Proc is
                         Display_Value => No_Name,
                         Location => Value.Location,
                         Flag     => False,
-                        Next     => Nil_String);
+                        Next     => Nil_String,
+                        Index    => Value.Index);
 
                      loop
                         --  Add the other element of the literal string list
@@ -370,7 +374,8 @@ package body Prj.Proc is
                            Display_Value => No_Name,
                            Location => Value.Location,
                            Flag     => False,
-                           Next     => Nil_String);
+                           Next     => Nil_String,
+                           Index    => Value.Index);
                      end loop;
 
                   end if;
@@ -560,7 +565,8 @@ package body Prj.Proc is
                                  Kind     => Single,
                                  Location => No_Location,
                                  Default  => True,
-                                 Value    => Empty_String);
+                                 Value    => Empty_String,
+                                 Index    => 0);
                            end if;
                         end if;
                      end;
@@ -623,7 +629,8 @@ package body Prj.Proc is
                                  Display_Value => No_Name,
                                  Location => Location_Of (The_Current_Term),
                                  Flag     => False,
-                                 Next     => Nil_String);
+                                 Next     => Nil_String,
+                                 Index    => 0);
 
                            when List =>
 
@@ -653,7 +660,8 @@ package body Prj.Proc is
                                        Location => Location_Of
                                                           (The_Current_Term),
                                        Flag     => False,
-                                       Next     => Nil_String);
+                                       Next     => Nil_String,
+                                       Index    => 0);
                                     The_List :=
                                       String_Elements.Table (The_List).Next;
                                  end loop;
@@ -725,7 +733,8 @@ package body Prj.Proc is
                            Display_Value => No_Name,
                            Location => Location_Of (The_Current_Term),
                            Flag     => False,
-                           Next     => Nil_String);
+                           Next     => Nil_String,
+                           Index    => 0);
 
                   end case;
                end;
@@ -1582,6 +1591,7 @@ package body Prj.Proc is
 
                               Array_Elements.Table (The_Array_Element) :=
                                 (Index  => Index_Name,
+                                 Src_Index => Source_Index_Of (Current_Item),
                                  Index_Case_Sensitive =>
                                  not Case_Insensitive (Current_Item),
                                  Value  => New_Value,

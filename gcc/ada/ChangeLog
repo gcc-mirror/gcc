@@ -1,3 +1,165 @@
+2004-05-05  Emmanuel Briot  <briot@act-europe.fr>
+
+	* g-os_lib.ads (Invalid_Time): New constant
+
+	* adaint.h, adaint.c (__gnat_file_time_name, __gnat_file_time_fd): Now
+	return OS_Time instead of time_t to match what is imported by Ada.
+	Now return -1 if the file doesn't exist, instead of a random value
+
+2004-05-05  Robert Dewar  <dewar@gnat.com>
+
+	* usage.adb: Add line for -gnatR?s switch
+
+	* sem_ch13.adb, exp_ch2.adb: Minor reformatting
+
+	* g-regpat.ads, g-regpat.adb: Add documentation on handling of Size
+	and for Match (Data_First, Data_last)
+
+	* lib-writ.adb (Write_With_Lines): Ensure that correct index number is
+	written when we are dealing with multi-unit files.
+
+2004-05-05  Jerome Guitton  <guitton@act-europe.fr>
+
+	* Makefile.in: Remove unused targets and variables.
+
+2004-05-05  Vincent Celier  <celier@gnat.com>
+
+	* switch-m.adb: New gnatmake switch -eI
+
+	* vms_data.ads: Add VMS equivalents of new gnatclean swith -innn and
+	of new gnatmake switch -eInnn.
+
+	* makegpr.adb: Take into account new parameters Index and Src_Index in
+	Prj.Util.
+
+	* clean.adb: Implement support for multi-unit sources, including new
+	switch -i.
+
+	* gnatcmd.adb (GNATCmd): Call Prj.Util.Value_Of with new parameter
+	Src_Index.
+
+	* make.ads, make.adb (Insert_Q): New parameter Index, defaulted to 0
+	(Extract_From_Q): New out parameter Index
+	(Mark, Is_Marked): Subprograms moved to Makeutl
+	(Switches_Of): New parameter Source_Index
+	(Add_Switch): New parameter Index
+	(Check): New parameter Source_Index
+	(Collect_Arguments): New parameter Source_Index
+	(Collect_Arguments_And_Compile): New parameter Source_Index
+	(Compile): New parameter Source_Index
+	Put subprograms in alphabetical order
+	Add support for multi-source sources, including in project files.
+
+	* makeutl.ads, makeutl.adb (Unit_Index_Of): New function
+	(Mark, Is_Marked, Delete_All_Marks): New subprograms, moved from
+	Make.
+
+	* makeusg.adb: New gnatmake switch -eInnn
+
+	* mlib-prj.adb (Build_Library): Add new parameter Src_Index to call to
+	Prj.Util.Value_Of.
+
+	* opt.ads (Main_Index): New variable, defaulted to 0.
+
+	* osint.ads, osinte.adb (Add_File): New parameter Index
+	(Current_Source_Index): New function
+
+	* prj.adb: Take into account new components Index and Src_Index
+
+	* prj.ads (String_Element): New component Index
+	(Variable_Value): New component Index
+	(Array_Element): New component Src_Index
+
+	* prj-attr.adb: Indicate that optional index may be specified for
+	attributes Main, Executable, Spec, Body and some of Switches.
+
+	* prj-attr.ads (Attribute_Kind): New values for optional indexes
+	(Attribute_Record): New component Optional_Index
+
+	* prj-com.ads (File_Name_Data): New component Index
+
+	* prj-dect.adb (Parse_Attribute_Declaration): Process optional index
+
+	* prj-env.adb (Put): Output optional index
+
+	* prj-makr.adb: Put indexes for multi-unit sources in SFN pragmas and
+	attributes Spec and Body.
+
+	* prj-nmsc.adb: Process optional indexes
+
+	* prj-pp.adb: Ouput "at" for optional indexes
+
+	* prj-proc.adb: Take into account optional indexes
+
+	* prj-strt.ads, prj-strt.adb (Terms): New Boolean parameter
+	Optional_Index. For string literal,
+	process optional index when Optional_Index is True.
+	(Parse_Expresion): New Boolean parameter Optional_Index
+
+	* prj-tree.ads, prj-tree.adb (Source_Index_Of): New function
+	(Set_Source_Index_Of): New procedure
+
+	* prj-util.adb (Executable_Of, Value_Of): Take into account optional
+	index.
+
+	* prj-util.ads (Executable_Of): New parameter Index
+	(Value_Of (Name_Id, Array_Element_Id) returning Variable_Value):
+	New parameter Src_Index, defaulted to 0.
+
+2004-05-05  Ed Schonberg  <schonberg@gnat.com>
+
+	PR ada/15257
+	* sem_ch3.adb (Access_Definition): If this is an access parameter
+	whose designated type is imported through a limited_with clause, do
+	not add the enclosing subprogram to the list of private dependents of
+	the type.
+
+2004-05-05  Ed Schonberg  <schonberg@gnat.com>
+
+	PR ada/15258
+	* sem_ch6.adb (Base_Types_Match): True if one type is imported through
+	a limited_with clause, and the other is its non-limited view.
+
+2004-05-05  Thomas Quinot  <quinot@act-europe.fr>
+
+	* cstand.adb (Create_Standard): Initialize Stand.Boolean_Literals.
+
+	* exp_attr.adb, exp_ch5.adb, exp_ch9.adb, exp_disp.adb, 
+	exp_fixd.adb, sem_attr.adb, sem_dist.adb, sem_util.adb: Use
+	Stand.Boolean_Literals to produce references to entities
+	Standard_False and Standard_True from compile-time computed boolean
+	values.
+
+	* stand.ads (Boolean_Literals): New variable, provides the entity
+	values for False and True, for use by the expander.
+
+2004-05-05  Doug Rupp  <rupp@gnat.com>
+
+	* 5vinmaop.adb, 5[vx]system.ads: Add Short_Address subtype
+	5vinmaop.adb: Unchecked convert Short_Address vice Address
+
+	* adaint.c, raise.c: Caste CRTL function return value
+	to avoid gcc error on 32/64 bit IVMS.
+
+	* Makefile.in [VMS]: Use iar archiver if host = Alpha/VMS and
+	target = IA64/VMS.
+
+	* init.c[VMS]: Only call Alpha specific __gnat_error_prehandler IN_RTS.
+
+	* 5qsystem.ads (Address): Declare as Long_Integer
+	(Short_Address): Declare as 32 bit subtype of Address
+	Declare  abstract address operations to avoid gratuitous ambiguities.
+
+2004-05-05  Jose Ruiz  <ruiz@act-europe.fr>
+
+	* gnat_rm.texi: Use the new restriction Simple_Barriers (AI-249)
+	instead of the old Boolean_Entry_Barriers.
+	Ditto for No_Task_Attributes_Package instead of No_Task_Attributes.
+
+2004-05-05  GNAT Script  <nobody@gnat.com>
+
+	* Make-lang.in: Makefile automatically updated
+
 2004-05-03  Arnaud Charlet  <charlet@act-europe.fr>
 
 	* 50system.ads, 59system.ads, s-thread.ads: Removed, no longer used.

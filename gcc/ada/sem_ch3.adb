@@ -734,9 +734,12 @@ package body Sem_Ch3 is
       --  discriminant, in a private or a full type declaration. In
       --  the case of a subprogram, If the designated type is incomplete,
       --  the operation will be a primitive operation of the full type, to
-      --  be updated subsequently.
+      --  be updated subsequently. If the type is imported through a limited
+      --  with clause, it is not a primitive operation of the type (which
+      --  is declared elsewhere in some other scope).
 
       if Ekind (Desig_Type) = E_Incomplete_Type
+        and then not From_With_Type (Desig_Type)
         and then Is_Overloadable (Current_Scope)
       then
          Append_Elmt (Current_Scope, Private_Dependents (Desig_Type));
@@ -9988,7 +9991,7 @@ package body Sem_Ch3 is
              Defining_Identifier => T,
              Subtype_Indication  => Relocate_Node (Obj_Def)));
 
-         --  This subtype may need freezing and it will not be done
+         --  This subtype may need freezing, and this will not be done
          --  automatically if the object declaration is not in a
          --  declarative part. Since this is an object declaration, the
          --  type cannot always be frozen here. Deferred constants do not
@@ -10125,7 +10128,7 @@ package body Sem_Ch3 is
       elsif Can_Derive_From (Standard_Long_Long_Float) then
          Base_Typ := Standard_Long_Long_Float;
 
-      --  If we can't derive from any existing type, use long long float
+      --  If we can't derive from any existing type, use long_long_float
       --  and give appropriate message explaining the problem.
 
       else

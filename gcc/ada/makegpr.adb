@@ -178,7 +178,6 @@ package body Makegpr is
    Options : array (Programming_Language) of Comp_Opts.Instance;
    --  Tables to store compiling options for the different compilers
 
-
    package Linker_Options is new Table.Table
      (Table_Component_Type => String_Access,
       Table_Index_Type     => Integer,
@@ -354,9 +353,9 @@ package body Makegpr is
    --  or Linker (depending on Proc) of a specified project file.
 
    procedure Build_Archive (Project : Project_Id; Unconditionally : Boolean);
-   --  Build the archive for a specified project.
-   --  If Unconditionally is False, first check if the archive is up to date,
-   --  and build it only if it is not.
+   --  Build the archive for a specified project. If Unconditionally is
+   --  False, first check if the archive is up to date, and build it only
+   --  if it is not.
 
    procedure Check_Compilation_Needed
      (Source          : Other_Source;
@@ -369,7 +368,7 @@ package body Makegpr is
 
    procedure Compile
      (Source_Id    : Other_Source_Id;
-      Data         : in Project_Data;
+      Data         : Project_Data;
       Local_Errors : in out Boolean);
 
    procedure Compile_Individual_Sources;
@@ -378,9 +377,8 @@ package body Makegpr is
 
    procedure Compile_Link_With_Gnatmake (Mains_Specified : Boolean);
    --  Compile/Link with gnatmake when there are Ada sources in the main
-   --  project.
-   --  Arguments may already contain options to be used by gnatmake.
-   --  Used for both Ada mains and mains of other languages.
+   --  project. Arguments may already contain options to be used by
+   --  gnatmake. Used for both Ada mains and mains of other languages.
    --  When Compile_Only is True, do not use the linking options
 
    procedure Compile_Sources;
@@ -390,7 +388,9 @@ package body Makegpr is
    --  Output the Copyright notice
 
    procedure Create_Archive_Dependency_File
-     (Name : String; First_Source : Other_Source_Id);
+     (Name         : String;
+      First_Source : Other_Source_Id);
+   --  ??? needs comment
 
    procedure Display_Command (Name : String; Path : String_Access);
    --  Display the command for a spawned process, if in Verbose_Mode or
@@ -431,6 +431,7 @@ package body Makegpr is
    --  Process one command line argument
 
    function Strip_CR_LF (Text : String) return String;
+   --  Needs comment ???
 
    procedure Usage;
    --  Display the usage
@@ -467,6 +468,7 @@ package body Makegpr is
             --  Nothing to do if the project has already been processed
 
             if not Data.Seen then
+
                --  Mark the project as processed, to avoid processing it again
 
                Projects.Table (Project).Seen := True;
@@ -496,6 +498,7 @@ package body Makegpr is
 
                if Data.Sources_Present then
                   if Data.Library then
+
                      --  If it is a library project file, nothing to do if
                      --  gnatmake will be invoked, because gnatmake will take
                      --  care of it, even if the library is not an Ada library.
@@ -633,16 +636,20 @@ package body Makegpr is
       --  Nothing to do if no argument is specified or if argument is empty
 
       if Arg /= null or else Arg'Length = 0 then
+
          --  Reallocate arrays if necessary
 
          if Last_Argument = Arguments'Last then
             declare
                New_Arguments : constant Argument_List_Access :=
-                 new Argument_List
-                   (1 .. Last_Argument + Initial_Argument_Count);
+                                 new Argument_List
+                                   (1 .. Last_Argument +
+                                           Initial_Argument_Count);
+
                New_Arguments_Displayed : constant Booleans :=
-                 new Boolean_Array
-                   (1 .. Last_Argument + Initial_Argument_Count);
+                                           new Boolean_Array
+                                             (1 .. Last_Argument +
+                                                     Initial_Argument_Count);
 
             begin
                New_Arguments (Arguments'Range) := Arguments.all;
@@ -672,6 +679,7 @@ package body Makegpr is
 
    procedure Add_Argument (Arg : String; Display : Boolean) is
       Argument : String_Access := null;
+
    begin
       --  Nothing to do if argument is empty
 
@@ -750,18 +758,21 @@ package body Makegpr is
 
    procedure Add_Option (Arg : String) is
       Option : constant String_Access := new String'(Arg);
+
    begin
       case Current_Processor is
          when None =>
             null;
 
          when Linker =>
+
             --  Add option to the linker table
 
             Linker_Options.Increment_Last;
             Linker_Options.Table (Linker_Options.Last) := Option;
 
          when Compiler =>
+
             --  Add option to the compiler option table, depending on the
             --  value of Current_Language.
 
@@ -783,8 +794,9 @@ package body Makegpr is
       if Last_Source = Source_Indexes'Last then
          declare
             New_Indexes : constant Source_Indexes_Ref :=
-              new Source_Index_Array
-                (1 .. Source_Indexes'Last + Initial_Source_Index_Count);
+                            new Source_Index_Array
+                              (1 .. Source_Indexes'Last +
+                                      Initial_Source_Index_Count);
          begin
             New_Indexes (Source_Indexes'Range) := Source_Indexes.all;
             Free (Source_Indexes);
@@ -801,7 +813,8 @@ package body Makegpr is
    ----------------------------
 
    procedure Add_Search_Directories
-     (Data : Project_Data; Language : Programming_Language)
+     (Data     : Project_Data;
+      Language : Programming_Language)
    is
    begin
       --  If a GNU compiler is used, set the CPATH environment variable,
@@ -858,6 +871,7 @@ package body Makegpr is
       end case;
 
       --  Get the Switches ("file name"), if they exist
+
       Switches_Array := Prj.Util.Value_Of
         (Name      => Name_Switches,
          In_Arrays =>
@@ -865,8 +879,9 @@ package body Makegpr is
 
       Switches :=
         Prj.Util.Value_Of
-          (Index => File_Name,
-           In_Array => Switches_Array);
+          (Index     => File_Name,
+           Src_Index => 0,
+           In_Array  => Switches_Array);
 
       --  Otherwise, get the Default_Switches ("language"), if they exist
 
@@ -875,8 +890,9 @@ package body Makegpr is
            (Name      => Name_Default_Switches,
             In_Arrays => Packages.Table (Pkg).Decl.Arrays);
          Switches := Prj.Util.Value_Of
-           (Index    => Lang_Name_Ids (Language),
-            In_Array => Defaults);
+           (Index     => Lang_Name_Ids (Language),
+            Src_Index => 0,
+            In_Array  => Defaults);
       end if;
 
       --  If there are switches, add them to Arguments
@@ -923,6 +939,7 @@ package body Makegpr is
       Time_Stamp  : Time_Stamp_Type;
 
       Saved_Last_Argument : Natural;
+
    begin
       --  First, make sure that the archive builder (ar) is on the path
 
@@ -960,6 +977,8 @@ package body Makegpr is
             if Verbose_Mode then
                Write_Line ("      -> archive does not exist");
             end if;
+
+         --  Archive does exist
 
          else
             --  Check the archive dependency file
@@ -1000,8 +1019,7 @@ package body Makegpr is
                   Object_Name := Name_Find;
                   Source_Id := No_Other_Source;
 
-                  --  Check if this object file is for a source of this
-                  --  project.
+                  --  Check if this object file is for a source of this project
 
                   for S in 1 .. Last_Source loop
                      if (not Source_Indexes (S).Found) and then
@@ -1088,6 +1106,7 @@ package body Makegpr is
                Close (File);
 
                if not Need_To_Rebuild then
+
                   --  Now, check if all object files of the project have been
                   --  accounted for. If any of them is not in the dependency
                   --  file, the archive needs to be rebuilt.
@@ -1120,6 +1139,7 @@ package body Makegpr is
       --  Build the archive if necessary
 
       if Need_To_Rebuild then
+
          --  If an archive is built, then linking will need to occur
          --  unconditionally.
 
@@ -1131,10 +1151,12 @@ package body Makegpr is
          --  in the library directory.
 
          if Data.Library then
+
             --  If there are sources in Ada, then gnatmake will build the
             --  library, so nothing to do.
 
             if not Data.Languages (Lang_Ada) then
+
                --  Get all the object files of the project
 
                Source_Id := Data.First_Other_Source;
@@ -1174,13 +1196,11 @@ package body Makegpr is
                end if;
             end if;
 
-            --  Create a fake empty archive, to be able to check its time stamp
-            --  later.
+            --  Create fake empty archive, so we can check its time stamp later
 
             declare
                Archive : Ada.Text_IO.File_Type;
                use Ada.Text_IO;
-
             begin
                Create (Archive, Out_File, Archive_Name);
                Close (Archive);
@@ -1239,6 +1259,7 @@ package body Makegpr is
          end loop;
 
          if Success then
+
             --  If the archive was built, run the archive indexer (ranlib),
             --  if there is one.
 
@@ -1251,6 +1272,7 @@ package body Makegpr is
                Spawn (Archive_Indexer_Path.all, Arguments (1 .. 1), Success);
 
                if not Success then
+
                   --  Running ranlib failed, delete the dependency file,
                   --  if it exists.
 
@@ -1309,7 +1331,9 @@ package body Makegpr is
       --  object file.
 
       Dep_File : Prj.Util.Text_File;
-      Start, Finish : Natural;
+      Start    : Natural;
+      Finish   : Natural;
+
    begin
       --  Assume the worst, so that statement "return;" may be used if there
       --  is any problem.
@@ -1378,8 +1402,7 @@ package body Makegpr is
 
       Open (Dep_File, Dep_Name);
 
-      --  If the dependency file cannot be open, we need to recompile the
-      --  source.
+      --  If dependency file cannot be open, we need to recompile the source
 
       if not Is_Valid (Dep_File) then
          if Verbose_Mode then
@@ -1392,6 +1415,7 @@ package body Makegpr is
 
       declare
          End_Of_File_Reached : Boolean := False;
+
       begin
          loop
             if End_Of_File (Dep_File) then
@@ -1445,8 +1469,10 @@ package body Makegpr is
             declare
                Line : constant String := Name_Buffer (1 .. Name_Len);
                Last : constant Natural := Name_Len;
+
             begin
                Name_Loop : loop
+
                   --  Find the beginning of the next source path name
 
                   while Start < Last and then Line (Start) = ' ' loop
@@ -1484,13 +1510,13 @@ package body Makegpr is
 
                   declare
                      Src_Name : constant String :=
-                       Normalize_Pathname
-                         (Name => Line (Start .. Finish),
-                          Case_Sensitive => False);
+                                  Normalize_Pathname
+                                    (Name           => Line (Start .. Finish),
+                                     Case_Sensitive => False);
                      Src_TS   : Time_Stamp_Type;
+
                   begin
-                     --  If it is the original source,
-                     --  set Source_In_Dependencies.
+                     --  If it is original source, set Source_In_Dependencies
 
                      if Src_Name = Source_Path then
                         Source_In_Dependencies := True;
@@ -1599,6 +1625,7 @@ package body Makegpr is
    is
       Source  : Other_Source := Other_Sources.Table (Source_Id);
       Success : Boolean;
+
    begin
       --  If the compiler is not know yet, get its path name
 
@@ -1668,6 +1695,7 @@ package body Makegpr is
 
                   declare
                      S : constant String := Strip_CR_LF (Expect_Out (FD));
+
                   begin
                      --  Each line of the output is put in the dependency
                      --  file, including errors. If there are errors, the
@@ -1679,8 +1707,8 @@ package body Makegpr is
                   end;
                end loop;
 
-               --  If we are here, it means we had a timeout.
-               --  So, the dependency file may be incomplete: it is safer to
+               --  If we are here, it means we had a timeout, so the
+               --  dependency file may be incomplete. It is safer to
                --  delete it, otherwise the dependencies may be wrong.
 
                Close (FD, Status);
@@ -1688,13 +1716,15 @@ package body Makegpr is
                Delete_File (Get_Name_String (Source.Dep_Name), Success);
 
             exception
-               when Process_Died =>
-                  --  This is the normal outcome. Just close the file.
+            when Process_Died =>
+
+                  --  This is the normal outcome. Just close the file
 
                   Close (FD, Status);
                   Close (Dep_File);
 
-               when others =>
+            when others =>
+
                   --  Something wrong happened. It is safer to delete the
                   --  dependency file, otherwise the dependencies may be wrong.
 
@@ -1719,10 +1749,9 @@ package body Makegpr is
 
       Last_Argument := 0;
 
-      --  For GCC compilers, make sure the language is always
-      --  specified to the GCC driver, in case the extension is
-      --  not recognized by the GCC driver as a source of the
-      --  language.
+      --  For GCC compilers, make sure the language is always specified to
+      --  to the GCC driver, in case the extension is not recognized by the
+      --  GCC driver as a source of the language.
 
       if Compiler_Is_Gcc (Source.Language) then
          Add_Argument (Dash_x, Verbose_Mode);
@@ -1731,13 +1760,14 @@ package body Makegpr is
       end if;
 
       --  Specify the source to be compiled
+
       Add_Argument (Dash_c, True);
       Add_Argument (Get_Name_String (Source.Path_Name), True);
 
-      --  If it is a non static library project, compile with the PIC option
-      --  if there is one (when there is no PIC option, function
-      --  MLib.Tgt.PIC_Option returns an empty string, and Add_Argument with
-      --  an empty string has no effect).
+      --  If non static library project, compile with the PIC option if there
+      --  is one (when there is no PIC option, function MLib.Tgt.PIC_Option
+      --  returns an empty string, and Add_Argument with an empty string has
+      --  no effect).
 
       if Data.Library and then Data.Library_Kind /= Static then
          Add_Argument (PIC_Option, True);
@@ -1790,6 +1820,7 @@ package body Makegpr is
          Success);
 
       if Success then
+
          --  Compilation was successful, update the time stamp
          --  of the object file.
 
@@ -1812,8 +1843,7 @@ package body Makegpr is
                " has not been modified");
 
          else
-            --  Everything looks fine, update the Other_Sources
-            --  table.
+            --  Everything looks fine, update the Other_Sources table
 
             Other_Sources.Table (Source_Id) := Source;
          end if;
@@ -1832,13 +1862,15 @@ package body Makegpr is
    --------------------------------
 
    procedure Compile_Individual_Sources is
-      Data      : Project_Data := Projects.Table (Main_Project);
-      Source_Id : Other_Source_Id;
-      Source    : Other_Source;
-      Source_Name : Name_Id;
+      Data         : Project_Data := Projects.Table (Main_Project);
+      Source_Id    : Other_Source_Id;
+      Source       : Other_Source;
+      Source_Name  : Name_Id;
       Project_Name : String := Get_Name_String (Data.Name);
       Dummy        : Boolean := False;
+
       Ada_Is_A_Language : constant Boolean := Data.Languages (Lang_Ada);
+
    begin
       Ada_Mains.Init;
 
@@ -1914,6 +1946,7 @@ package body Makegpr is
       end if;
 
       if Ada_Mains.Last > 0 then
+
          --  Invoke gnatmake for all sources that are not of a non Ada language
 
          Last_Argument := 0;
@@ -1933,8 +1966,9 @@ package body Makegpr is
    --------------------------------
 
    procedure Compile_Link_With_Gnatmake (Mains_Specified : Boolean) is
-      Data : constant Project_Data := Projects.Table (Main_Project);
+      Data    : constant Project_Data := Projects.Table (Main_Project);
       Success : Boolean;
+
    begin
       --  Array Arguments may already contain some arguments, so we don't
       --  set Last_Argument to 0.
@@ -2074,9 +2108,8 @@ package body Makegpr is
       Source       : Other_Source;
 
       Local_Errors : Boolean := False;
-      --  Set to True when there is a compilation error.
-      --  Used only when Keep_Going is True, to inhibit the building of the
-      --  archive.
+      --  Set to True when there is a compilation error. Used only when
+      --  Keep_Going is True, to inhibit the building of the archive.
 
       Need_To_Compile : Boolean;
       --  Set to True when a source needs to be compiled/recompiled.
@@ -2092,6 +2125,7 @@ package body Makegpr is
          Data := Projects.Table (Project);
 
          if not Data.Virtual then
+
             --  If the imported directory switches are unknown, compute them
 
             if not Data.Include_Data_Set then
@@ -2100,8 +2134,7 @@ package body Makegpr is
                Projects.Table (Project) := Data;
             end if;
 
-            --  Nothing to do when there are no sources of language other than
-            --  Ada.
+            --  Nothing to do when no sources of language other than Ada
 
             if Data.Sources_Present then
                Need_To_Rebuild_Archive := Force_Compilations;
@@ -2116,7 +2149,6 @@ package body Makegpr is
 
                while Source_Id /= No_Other_Source loop
                   Source := Other_Sources.Table (Source_Id);
-
                   Need_To_Compile := Force_Compilations;
 
                   --  Check if compilation is needed
@@ -2128,11 +2160,11 @@ package body Makegpr is
                   --  Proceed, if compilation is needed
 
                   if Need_To_Compile then
+
                      --  If a source is compiled/recompiled, of course the
                      --  archive will need to be built/rebuilt.
 
                      Need_To_Rebuild_Archive := True;
-
                      Compile (Source_Id, Data, Local_Errors);
                   end if;
 
@@ -2175,11 +2207,12 @@ package body Makegpr is
    ------------------------------------
 
    procedure Create_Archive_Dependency_File
-     (Name : String; First_Source : Other_Source_Id)
+     (Name         : String;
+      First_Source : Other_Source_Id)
    is
       Source_Id : Other_Source_Id := First_Source;
       Source    : Other_Source;
-      Dep_File : Ada.Text_IO.File_Type;
+      Dep_File  : Ada.Text_IO.File_Type;
       use Ada.Text_IO;
 
    begin
@@ -2246,14 +2279,18 @@ package body Makegpr is
       --  The id of the package IDE in the project file
 
       Compiler : constant Variable_Value :=
-        Value_Of (Lang_Name_Ids (For_Language), Name_Compiler_Command, Ide);
-      --  The value of Compiler_Command ("language") in package IDE, if it is
-      --  defined.
+        Value_Of
+          (Name                    => Lang_Name_Ids (For_Language),
+           Index                   => 0,
+           Attribute_Or_Array_Name => Name_Compiler_Command,
+           In_Package              => Ide);
+      --  The value of Compiler_Command ("language") in package IDE, if defined
 
    begin
       --  No need to do it again if the compiler is known for this language
 
       if Compiler_Names (For_Language) = null then
+
          --  If compiler command is not defined for this language in package
          --  IDE, use the default compiler for this language.
 
@@ -2266,8 +2303,7 @@ package body Makegpr is
               new String'(Get_Name_String (Compiler.Value));
          end if;
 
-         --  Check if compiler is a GCC compiler: its name end with "gcc" or
-         --  "g++".
+         --  Check we have a GCC compiler (name ends with "gcc" or "g++")
 
          declare
             Comp_Name : constant String := Compiler_Names (For_Language).all;
@@ -2277,7 +2313,6 @@ package body Makegpr is
                Last3 := Comp_Name (Comp_Name'Last - 2 .. Comp_Name'Last);
                Compiler_Is_Gcc (For_Language) :=
                  (Last3 = "gcc") or (Last3 = "g++");
-
             else
                Compiler_Is_Gcc (For_Language) := False;
             end if;
@@ -2315,6 +2350,7 @@ package body Makegpr is
       Data    : in out Project_Data)
    is
       Imported_Projects : Project_List := Data.Imported_Projects;
+
       Path_Length : Natural := 0;
       Position    : Natural := 0;
 
@@ -2380,8 +2416,9 @@ package body Makegpr is
       ------------------------
 
       procedure Recursive_Get_Dirs (Prj : Project_Id) is
-         Data : Project_Data;
+         Data     : Project_Data;
          Imported : Project_List;
+
       begin
          --  Nothing to do if project is undefined
 
@@ -2391,6 +2428,7 @@ package body Makegpr is
             --  Nothing to do if project has already been processed
 
             if not Data.Seen then
+
                --  Mark the project as processed, to avoid multiple processing
                --  of the same project.
 
@@ -2427,8 +2465,7 @@ package body Makegpr is
 
       Last_Argument := 0;
 
-      --  Process this project individually, the project data are already
-      --  known.
+      --  Process this project individually, project data are already known
 
       Projects.Table (Project).Seen := True;
 
@@ -2518,7 +2555,6 @@ package body Makegpr is
          end if;
 
       else
-
          --  First compile sources and build archives, if necessary
 
          Compile_Sources;
@@ -2676,6 +2712,7 @@ package body Makegpr is
 
                File : Ada.Text_IO.File_Type;
                use Ada.Text_IO;
+
             begin
                Create (File, Out_File, Cpp_Linker);
 
@@ -2693,11 +2730,8 @@ package body Makegpr is
          end if;
       end Choose_C_Plus_Plus_Link_Process;
 
-
-
    begin
-      --  If no mains were specified, get the mains from attribute Main, if
-      --  it exists.
+      --  If no mains specified, get mains from attribute Main, if it exists
 
       if not Mains_Specified then
          declare
@@ -2844,6 +2878,7 @@ package body Makegpr is
                           (Executable_Of
                              (Project  => Main_Project,
                               Main     => Other_Mains.Table (Main).File_Name,
+                              Index    => 0,
                               Ada_Main => False)),
                         True);
                   end if;
@@ -2959,24 +2994,30 @@ package body Makegpr is
                         Executable_Name : constant String :=
                           Get_Name_String
                             (Executable_Of
-                                 (Main_Project, Main_Id, Ada_Main => False));
+                                 (Project  => Main_Project,
+                                  Main     => Main_Id,
+                                  Index    => 0,
+                                  Ada_Main => False));
                         --  File name of the executable
 
                         Executable_Path : constant String :=
-                          Get_Name_String (Data.Exec_Directory) &
-                        Directory_Separator & Executable_Name;
+                                            Get_Name_String
+                                              (Data.Exec_Directory) &
+                                            Directory_Separator &
+                                            Executable_Name;
                         --  Path name of the executable
 
                         Exec_Time_Stamp : Time_Stamp_Type;
-                     begin
 
+                     begin
                         --  Now, check if the executable is up to date.
                         --  It is considered up to date if its time stamp is
                         --  not earlier that the time stamp of any archive.
                         --  Only do that if we don't know if we need to link.
 
                         if not Need_To_Relink then
-                           --  Get the time stamp of the excutable
+
+                           --  Get the time stamp of the executable
 
                            Name_Len := 0;
                            Add_Str_To_Name_Buffer (Executable_Path);
@@ -3003,6 +3044,7 @@ package body Makegpr is
 
                               declare
                                  Prj_Data : Project_Data;
+
                               begin
                                  for Prj in 1 .. Projects.Last loop
                                     Prj_Data := Projects.Table (Prj);
@@ -3052,7 +3094,6 @@ package body Makegpr is
                               end;
                            end if;
 
-
                            --  If Need_To_Relink is False, we are done
 
                            if Verbose_Mode and (not Need_To_Relink) then
@@ -3076,7 +3117,10 @@ package body Makegpr is
                               Directory_Separator &
                               Get_Name_String
                                 (Executable_Of
-                                   (Main_Project, Main_Id, Ada_Main => False)),
+                                   (Project  => Main_Project,
+                                    Main     => Main_Id,
+                                    Index    => 0,
+                                    Ada_Main => False)),
                               True);
 
                            --  Specify the object file of the main source
@@ -3156,7 +3200,10 @@ package body Makegpr is
                      Write_Str
                        (Get_Name_String
                           (Executable_Of
-                             (Main_Project, Main_Id, Ada_Main => False)));
+                             (Project  => Main_Project,
+                              Main     => Main_Id,
+                              Index    => 0,
+                              Ada_Main => False)));
                      Write_Line (""" up to date");
                   end;
 
@@ -3173,10 +3220,12 @@ package body Makegpr is
    ------------------
 
    procedure Report_Error
-     (S1 : String; S2 : String := ""; S3 : String := "")
+     (S1 : String;
+      S2 : String := "";
+      S3 : String := "")
    is
    begin
-      --  If keep_Going is True, output the error message, preceded by the
+      --  If Keep_Going is True, output the error message, preceded by the
       --  error header.
 
       if Keep_Going then
@@ -3231,7 +3280,6 @@ package body Makegpr is
       if Project_File_Name_Expected then
          if Arg (1) = '-' then
             Osint.Fail ("project file name missing after -P");
-
          else
             Project_File_Name_Expected := False;
             Project_File_Name := new String'(Arg);
@@ -3243,7 +3291,6 @@ package body Makegpr is
       elsif Output_File_Name_Expected then
          if Arg (1) = '-' then
             Osint.Fail ("output file name missing after -o");
-
          else
             Output_File_Name_Expected := False;
             Output_File_Name := new String'(Arg);
@@ -3255,10 +3302,11 @@ package body Makegpr is
 
       elsif Arg'Length >= 6 and then
          Arg (Arg'First .. Arg'First + 1) = "-c" and then
-         Arg (Arg'Last - 3 .. Arg'Last) = "args"
+      Arg (Arg'Last - 3 .. Arg'Last) = "args"
+
       then
          declare
-            OK : Boolean := False;
+            OK          : Boolean := False;
             Args_String : constant String :=
                             Arg (Arg'First + 2 .. Arg'Last - 4);
 
@@ -3287,9 +3335,8 @@ package body Makegpr is
       elsif Arg = "-gargs" then
          Current_Processor := None;
 
-      --  A special test is needed for the -o switch within a -largs
-      --  since that is another way to specify the name of the final
-      --  executable.
+      --  A special test is needed for the -o switch within a -largs since
+      --  that is another way to specify the name of the final executable.
 
       elsif Current_Processor = Linker and then Arg = "-o" then
          Osint.Fail

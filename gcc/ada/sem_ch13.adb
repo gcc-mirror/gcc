@@ -1399,6 +1399,10 @@ package body Sem_Ch13 is
             --  Return true if the entity is a procedure with an
             --  appropriate profile for the write attribute.
 
+            ----------------------
+            -- Has_Good_Profile --
+            ----------------------
+
             function Has_Good_Profile (Subp : Entity_Id) return Boolean is
                F     : Entity_Id;
                Ok    : Boolean := False;

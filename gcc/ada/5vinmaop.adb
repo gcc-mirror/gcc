@@ -114,7 +114,7 @@ package body System.Interrupt_Management.Operations is
    --------------------
 
    function To_unsigned_long is new
-     Unchecked_Conversion (System.Address, unsigned_long);
+     Unchecked_Conversion (System.Short_Address, unsigned_long);
 
    function Interrupt_Wait (Mask : access Interrupt_Mask)
      return Interrupt_ID

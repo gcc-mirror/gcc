@@ -34,6 +34,7 @@ with Prj.Env;
 with Prj.Err;  use Prj.Err;
 with Scans;    use Scans;
 with Snames;   use Snames;
+with Uintp;    use Uintp;
 
 with GNAT.OS_Lib; use GNAT.OS_Lib;
 
@@ -240,6 +241,7 @@ package body Prj is
    begin
       if not Initialized then
          Initialized := True;
+         Uintp.Initialize;
          Name_Len := 0;
          The_Empty_String := Name_Find;
          Empty_Name := The_Empty_String;
@@ -321,13 +323,15 @@ package body Prj is
 
       if not Found then
          Element :=
-           (Index => Lang,
+           (Index     => Lang,
+            Src_Index => 0,
             Index_Case_Sensitive => False,
             Value => (Project  => No_Project,
                       Kind     => Single,
                       Location => No_Location,
                       Default  => False,
-                      Value    => Default_Spec_Suffix),
+                      Value    => Default_Spec_Suffix,
+                      Index    => 0),
             Next  => Std_Naming_Data.Spec_Suffix);
          Array_Elements.Increment_Last;
          Array_Elements.Table (Array_Elements.Last) := Element;
@@ -357,13 +361,15 @@ package body Prj is
 
       if not Found then
          Element :=
-           (Index => Lang,
+           (Index     => Lang,
+            Src_Index => 0,
             Index_Case_Sensitive => False,
             Value => (Project  => No_Project,
                       Kind     => Single,
                       Location => No_Location,
                       Default  => False,
-                      Value    => Default_Body_Suffix),
+                      Value    => Default_Body_Suffix,
+                      Index    => 0),
             Next  => Std_Naming_Data.Body_Suffix);
          Array_Elements.Increment_Last;
          Array_Elements.Table (Array_Elements.Last) := Element;
