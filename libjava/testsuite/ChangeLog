@@ -1,3 +1,7 @@
+Thu Apr 22 14:19:35 1999  Anthony Green  <green@cygnus.com>
+
+	* libjava.compile/OperatorBenchmark.java: New file.
+
 1999-04-09  Warren Levy  <warrenl@cygnus.com>
 
 	* libjava.mauve/mauve.exp (KEYS): Default to libgcj.
