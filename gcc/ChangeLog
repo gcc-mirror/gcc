@@ -1,3 +1,8 @@
+Tue Jun 15 12:51:23 1999  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* config/mips/mips.c (mips_output_conditional_branch): Add `break' 
+	between `default' label and `close braces'.
+
 Tue Jun 15 01:55:20 1999  David O'Brien <obrien@FreeBSD.org>
 
 	* i386/freebsd-elf.h (LINK_SPEC): clean up the linking library 
