@@ -1,3 +1,11 @@
+2003-08-27  Daniel Jacobowitz  <drow@mvista.com>
+
+	* gcc.c (STANDARD_EXEC_PREFIX, STANDARD_STARTFILE_PREFIX)
+	(TOOLDIR_BASE_PREFIX, STANDARD_BINDIR_PREFIX): Remove unnecessary
+	definitions.
+	(main): Only use standard_startfile_prefix if native.
+	* doc/tm.texi (STANDARD_STARTFILE_PREFIX): Update.
+
 2003-08-27  Per Bothner  <pbothner@apple.com>
 
 	* cpperror.c (print_location):  Don't check for !pfile->buffer.  That

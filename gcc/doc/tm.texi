@@ -449,8 +449,10 @@ to the list of directories used to find the assembler in @file{configure.in}.
 
 @defmac STANDARD_STARTFILE_PREFIX
 Define this macro as a C string constant if you wish to override the
-standard choice of @file{/usr/local/lib/} as the default prefix to
+standard choice of @code{libdir} as the default prefix to
 try when searching for startup files such as @file{crt0.o}.
+@code{STANDARD_STARTFILE_PREFIX} is not searched when the compiler
+is built as a cross compiler.
 @end defmac
 
 @defmac MD_STARTFILE_PREFIX
