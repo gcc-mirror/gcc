@@ -813,7 +813,7 @@ Perform superblock formation via tail duplication
 ; (user-visible) trap.  This is the case, for example, in nonstop
 ; IEEE 754 arithmetic.
 ftrapping-math
-Common Report Var(flag_trapping_math)
+Common Report Var(flag_trapping_math) Init(1)
 Assume floating-point operations can trap
 
 ftrapv

@@ -1,3 +1,7 @@
+2004-09-02  James E Wilson  <wilson@specifixinc.com>
+
+	* common.opt (ftrapping-math): Default to on.
+
 2004-09-02  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm/predicates.md (arm_reload_memory_operand): Allow MEM.
