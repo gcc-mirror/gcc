@@ -1,3 +1,9 @@
+Fri May 15 17:26:18 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* expr.c (expand_expr, case EXPR_WITH_FILE_LOCATION): Save/restore
+	input_filename and lineno around expand_expr call.  Set them to values
+	in WFL before expand_expr call.
+
 Fri May 15 12:44:57 1998  Benjamin Kosnik  <bkoz@rhino.cygnus.com>
 
 	* stor-layout.c (set_sizetype): Set TYPE_NAME on bitsizetype.
