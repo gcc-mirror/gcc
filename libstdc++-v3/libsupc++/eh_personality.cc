@@ -197,7 +197,7 @@ PERSONALITY_FUNCTION (int version,
     }
   else
     {
-      _Unwind_Ptr cs_lp, cs_action;
+      _Unwind_Word cs_lp, cs_action;
       do
 	{
 	  p = read_uleb128 (p, &cs_lp);
@@ -216,7 +216,8 @@ PERSONALITY_FUNCTION (int version,
   // Search the call-site table for the action associated with this IP.
   while (p < info.action_table)
     {
-      _Unwind_Ptr cs_start, cs_len, cs_lp, cs_action;
+      _Unwind_Ptr cs_start, cs_len, cs_lp;
+      _Unwind_Word cs_action;
 
       // Note that all call-site encodings are "absolute" displacements.
       p = read_encoded_value (0, info.call_site_encoding, p, &cs_start);
