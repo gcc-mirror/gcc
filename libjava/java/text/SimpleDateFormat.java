@@ -358,13 +358,13 @@ public class SimpleDateFormat extends DateFormat
    * object.  This will be true if and only if the specified object:
    * <p>
    * <ul>
-   * <li>Is not <code>null</code>.
-   * <li>Is an instance of <code>SimpleDateFormat</code>.
+   * <li>Is not <code>null</code>.</li>
+   * <li>Is an instance of <code>SimpleDateFormat</code>.</li>
    * <li>Is equal to this object at the superclass (i.e., <code>DateFormat</code>)
-   *     level.
-   * <li>Has the same formatting pattern.
-   * <li>Is using the same formatting symbols.
-   * <li>Is using the same century for two digit years.
+   *     level.</li>
+   * <li>Has the same formatting pattern.</li>
+   * <li>Is using the same formatting symbols.</li>
+   * <li>Is using the same century for two digit years.</li>
    * </ul>
    *
    * @param obj The object to compare for equality against.

@@ -123,7 +123,7 @@ public abstract class IdentityScope extends Identity
   }
 
   /**
-   * <p>Sets the system's identity scope.</p>
+   * Sets the system's identity scope.
    *
    * <p>First, if there is a security manager, its <code>checkSecurityAccess()
    * </code> method is called with <code>"setSystemScope"</code> as its argument
@@ -131,7 +131,7 @@ public abstract class IdentityScope extends Identity
    *
    * @param scope the scope to set.
    * @throws SecurityException if a security manager exists and its
-   * <code>checkSecurityAccess()<code> method doesn't allow setting the
+   * <code>checkSecurityAccess()</code> method doesn't allow setting the
    * identity scope.
    * @see #getSystemScope()
    * @see SecurityManager#checkSecurityAccess(String)

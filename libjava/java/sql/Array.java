@@ -165,13 +165,13 @@ public interface Array
   /**
    * This method returns a portion of the array as a <code>ResultSet</code>.
    * The returned portion will start at <code>index</code> into the
-   * array and up to <cod>count</code> elements will be returned.
-   * <p>
-   * Each row of the result set will have two columns.  The first will be
+   * array and up to <code>count</code> elements will be returned.
+   *
+   * <p> Each row of the result set will have two columns.  The first will be
    * the index into the array of that row's contents.  The second will be
    * the actual value of that array element.  The specified <code>Map</code>
    * will be used to override selected default mappings of SQL types to
-   * Java classes.
+   * Java classes.</p>
    *
    * @param offset The index into the array to start returning elements from.
    * @param length The requested number of elements to return.

@@ -89,7 +89,7 @@ public class ServerCloneException extends CloneNotSupportedException
    * This method returns a message indicating what went wrong, in this
    * format:
    * <code>super.getMessage() + (detail == null ? ""
-   *    : "; nested exception is:\n\t" + detail)<code>.
+   *    : "; nested exception is:\n\t" + detail)</code>.
    *
    * @return the chained message
    */

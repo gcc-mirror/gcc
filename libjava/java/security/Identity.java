@@ -151,7 +151,7 @@ public abstract class Identity implements Principal, Serializable
    * @throws KeyManagementException if another identity in the identity's scope
    * has the same public key, or if another exception occurs.
    * @throws SecurityException if a security manager exists and its
-   * <code>checkSecurityAccess()<code> method doesn't allow setting the public
+   * <code>checkSecurityAccess()</code> method doesn't allow setting the public
    * key.
    * @see #getPublicKey()
    * @see SecurityManager#checkSecurityAccess(String)

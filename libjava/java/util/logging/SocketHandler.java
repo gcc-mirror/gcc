@@ -68,7 +68,7 @@ package java.util.logging;
  *
  * <li><code>java.util.SocketHandler.encoding</code> - specifies
  *     the name of the character encoding. Default value:
- *     the default platform encoding.
+ *     the default platform encoding.</li>
  *
  * <li><code>java.util.SocketHandler.host</code> - specifies
  *     the name of the host to which records are published.

@@ -183,10 +183,10 @@ public abstract class Collator implements Comparator, Cloneable
    * object.  This will be true if and only if the following conditions are
    * met:
    * <ul>
-   * <li>The specified object is not <code>null</code>.
-   * <li>The specified object is an instance of <code>Collator</code>.
+   * <li>The specified object is not <code>null</code>.</li>
+   * <li>The specified object is an instance of <code>Collator</code>.</li>
    * <li>The specified object has the same strength and decomposition
-   * settings as this object.
+   * settings as this object.</li>
    * </ul>
    *
    * @param obj The <code>Object</code> to test for equality against

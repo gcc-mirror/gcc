@@ -54,7 +54,7 @@ import java.io.Serializable;
  * are not required, to throw the {@link UnsupportedOperationException} that
  * the underlying collection would throw during an attempt at modification.
  * For example,
- * <code>Collections.singleton("").addAll(Collections.EMPTY_SET)<code>
+ * <code>Collections.singleton("").addAll(Collections.EMPTY_SET)</code>
  * does not throw a exception, even though addAll is an unsupported operation
  * on a singleton; the reason for this is that addAll did not attempt to
  * modify the set.

@@ -196,7 +196,7 @@ public class StringTokenizer implements Enumeration
 
   /**
    * This does the same as hasMoreTokens. This is the
-   * <code>Enumeration</code interface method.
+   * <code>Enumeration</code> interface method.
    *
    * @return true, if the next call of nextElement() will succeed
    * @see #hasMoreTokens()
@@ -208,7 +208,7 @@ public class StringTokenizer implements Enumeration
 
   /**
    * This does the same as nextTokens. This is the
-   * <code>Enumeration</code interface method.
+   * <code>Enumeration</code> interface method.
    *
    * @return the next token with respect to the current delimiter characters
    * @throws NoSuchElementException if there are no more tokens

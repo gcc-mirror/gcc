@@ -93,7 +93,7 @@ public class NamingException extends Exception
   /**
    * Creates a new NamingException without a message. Does not set any of the
    * <code>rootException</code>, <code>resolvedName</code>,
-   * <code>resolvedObj</code> or <code>remainingObject,<code> fields.
+   * <code>resolvedObj</code> or <code>remainingObject</code> fields.
    * These fields can be set later.
    */
   public NamingException ()
@@ -104,7 +104,7 @@ public class NamingException extends Exception
   /**
    * Creates a new NamingException with a detailed message. Does not set
    * the <code>rootException</code>, <code>resolvedName</code>,
-   * <code>resolvedObj</code> or <code>remainingObject,<code> fields.
+   * <code>resolvedObj</code> or <code>remainingObject,</code> fields.
    * These fields can be set later.
    */
   public NamingException (String msg)

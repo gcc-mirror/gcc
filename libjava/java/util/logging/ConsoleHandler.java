@@ -67,7 +67,7 @@ package java.util.logging;
  *
  * <li><code>java.util.logging.ConsoleHandler.encoding</code> - specifies
  *     the name of the character encoding. Default value:
- *     the default platform encoding.
+ *     the default platform encoding.</li>
  *
  * </ul>
  *

@@ -1,5 +1,5 @@
 /* Security.java --- Java base security class implementation
-   Copyright (C) 1999, 2001, 2002, 2003, Free Software Foundation, Inc.
+   Copyright (C) 1999, 2001, 2002, 2003, 2004, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -59,7 +59,7 @@ import java.util.Vector;
  *
  * @author Mark Benvenuto <ivymccough@worldnet.att.net>
  */
-public final class Security extends Object
+public final class Security
 {
   private static final String ALG_ALIAS = "Alg.Alias.";
 
@@ -670,7 +670,7 @@ public final class Security extends Object
     outer: for (int r = 0; r < 3; r++) // guard against circularity
       {
         serviceDotAlgorithm = (svc+"."+String.valueOf(algo)).trim();
-        inner: for (it = p.keySet().iterator(); it.hasNext(); )
+        for (it = p.keySet().iterator(); it.hasNext(); )
           {
             key = (String) it.next();
             if (key.equalsIgnoreCase(serviceDotAlgorithm)) // eureka

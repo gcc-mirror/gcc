@@ -56,43 +56,42 @@ import gnu.java.security.Engine;
  * two is the initialization of the object:</p>
  *
  * <ul>
- *    <li><b>Algorithm-Independent Initialization</b><br/>
- *    All key pair generators share the concepts of a <i>keysize</i> and a
- *    <i>source of randomness</i>. The <i>keysize</i> is interpreted differently
- *    for different algorithms (e.g., in the case of the <i>DSA</i> algorithm,
- *    the <i>keysize</i> corresponds to the length of the modulus). There is an
- *    <code>initialize()</code> method in this <code>KeyPairGenerator</code>
- *    class that takes these two universally shared types of arguments. There
- *    is also one that takes just a <i>keysize</i> argument, and uses the
- *    {@link SecureRandom} implementation of the highest-priority installed
- *    provider as the <i>source of randomness</i>. (If none of the installed
- *    providers supply an implementation of {@link SecureRandom}, a
- *    system-provided source of randomness is used.)<br/><br/>
+ * <li><b>Algorithm-Independent Initialization</b><br/>
+ *     All key pair generators share the concepts of a <i>keysize</i> and a
+ *     <i>source of randomness</i>. The <i>keysize</i> is interpreted differently
+ *     for different algorithms (e.g., in the case of the <i>DSA</i> algorithm,
+ *     the <i>keysize</i> corresponds to the length of the modulus). There is an
+ *     <code>initialize()</code> method in this <code>KeyPairGenerator</code>
+ *     class that takes these two universally shared types of arguments. There
+ *     is also one that takes just a <i>keysize</i> argument, and uses the
+ *     {@link SecureRandom} implementation of the highest-priority installed
+ *     provider as the <i>source of randomness</i>. (If none of the installed
+ *     providers supply an implementation of {@link SecureRandom}, a
+ *     system-provided source of randomness is used.)
  *
- *    Since no other parameters are specified when you call the above
- *    algorithm-independent initialize methods, it is up to the provider what
- *    to do about the algorithm-specific parameters (if any) to be associated
- *    with each of the keys.<br/><br/>
+ *     <p>Since no other parameters are specified when you call the above
+ *     algorithm-independent initialize methods, it is up to the provider what
+ *     to do about the algorithm-specific parameters (if any) to be associated
+ *     with each of the keys.</p>
  *
- *    If the algorithm is the <i>DSA</i> algorithm, and the <i>keysize</i>
- *    (modulus size) is <code>512</code>, <code>768</code>, or <code>1024</code>,
- *    then the <b>GNU</b> provider uses a set of precomputed values for the
- *    <code>p</code>, <code>q</code>, and <code>g</code> parameters. If the
- *    <i>modulus size</i> is not one of the above values, the <b>GNU</b>
- *    provider creates a new set of parameters. Other providers might have
- *    precomputed parameter sets for more than just the three modulus sizes
- *    mentioned above. Still others might not have a list of precomputed
- *    parameters at all and instead always create new parameter sets.<br/></li>
- *
- *    <li><b>Algorithm-Specific Initialization</b><br/>
- *    For situations where a set of algorithm-specific parameters already
- *    exists (e.g., so-called <i>community parameters</i> in <i>DSA</i>), there
- *    are two initialize methods that have an {@link AlgorithmParameterSpec}
- *    argument. One also has a {@link SecureRandom} argument, while the the
- *    other uses the {@link SecureRandom} implementation of the highest-priority
- *    installed provider as the source of randomness. (If none of the installed
- *    providers supply an implementation of {@link SecureRandom}, a
- *    system-provided source of randomness is used.)</li>
+ *     <p>If the algorithm is the <i>DSA</i> algorithm, and the <i>keysize</i>
+ *     (modulus size) is <code>512</code>, <code>768</code>, or <code>1024</code>,
+ *     then the <b>GNU</b> provider uses a set of precomputed values for the
+ *     <code>p</code>, <code>q</code>, and <code>g</code> parameters. If the
+ *     <i>modulus size</i> is not one of the above values, the <b>GNU</b>
+ *     provider creates a new set of parameters. Other providers might have
+ *     precomputed parameter sets for more than just the three modulus sizes
+ *     mentioned above. Still others might not have a list of precomputed
+ *     parameters at all and instead always create new parameter sets.</p></li>
+ * <li><b>Algorithm-Specific Initialization</b><br/>
+ *     For situations where a set of algorithm-specific parameters already
+ *     exists (e.g., so-called <i>community parameters</i> in <i>DSA</i>), there
+ *     are two initialize methods that have an {@link AlgorithmParameterSpec}
+ *     argument. One also has a {@link SecureRandom} argument, while the the
+ *     other uses the {@link SecureRandom} implementation of the highest-priority
+ *     installed provider as the source of randomness. (If none of the installed
+ *     providers supply an implementation of {@link SecureRandom}, a
+ *     system-provided source of randomness is used.)</li>
  * </ul>
  *
  * <p>In case the client does not explicitly initialize the

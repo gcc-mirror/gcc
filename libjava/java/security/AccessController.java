@@ -1,5 +1,5 @@
 /* AccessController.java --- Access control context and permission checker
-   Copyright (C) 2001 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -91,7 +91,7 @@ public final class AccessController
    *
    * @param action the <code>PrivilegedAction</code> whose <code>run()</code>
    * should be be called.
-   * @returns the result of the <code>action.run()</code> method.
+   * @return the result of the <code>action.run()</code> method.
    */
   public static Object doPrivileged(PrivilegedAction action)
   {
@@ -110,7 +110,7 @@ public final class AccessController
    * should be be called.
    * @param context the <code>AccessControlContext</code> whose protection
    * domains should be added to the protection domain of the calling class.
-   * @returns the result of the <code>action.run()</code> method.
+   * @return the result of the <code>action.run()</code> method.
    */
   public static Object doPrivileged(PrivilegedAction action,
 				    AccessControlContext context)
@@ -130,7 +130,7 @@ public final class AccessController
    *
    * @param action the <code>PrivilegedExceptionAction</code> whose
    * <code>run()</code> should be be called.
-   * @returns the result of the <code>action.run()</code> method.
+   * @return the result of the <code>action.run()</code> method.
    * @exception PrivilegedActionException wrapped around any exception that
    * is thrown in the <code>run()</code> method.
    */
@@ -162,7 +162,7 @@ public final class AccessController
    * <code>run()</code> should be be called.
    * @param context the <code>AccessControlContext</code> whose protection
    * domains should be added to the protection domain of the calling class.
-   * @returns the result of the <code>action.run()</code> method.
+   * @return the result of the <code>action.run()</code> method.
    * @exception PrivilegedActionException wrapped around any exception that
    * is thrown in the <code>run()</code> method.
    */

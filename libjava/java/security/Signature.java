@@ -83,20 +83,20 @@ import gnu.java.security.Engine;
  * either signing data or verifying a signature:</p>
  *
  * <ol>
- *    <li>Initialization, with either
- *      <ul>
- *        <li>a public key, which initializes the signature for verification
- *        (see <code>initVerify()</code>), or</li>
- *        <li>a private key (and optionally a Secure Random Number Generator),
- *        which initializes the signature for signing (see
- *        {@link #initSign(PrivateKey)} and {@link #initSign(PrivateKey, SecureRandom)}
- *        ).</li>
- *      </ul></li>
- *    <li>Updating<br/>
- *      Depending on the type of initialization, this will update the bytes to
- *      be signed or verified. See the update methods.<br/></li>
- *    <li>Signing or Verifying a signature on all updated bytes. See the
- *    <code>sign()</code> methods and the <code>verify()</code> method.</li>
+ * <li>Initialization, with either
+ *     <ul>
+ *     <li>a public key, which initializes the signature for verification
+ *         (see <code>initVerify()</code>), or</li>
+ *     <li>a private key (and optionally a Secure Random Number Generator),
+ *         which initializes the signature for signing (see
+ *         {@link #initSign(PrivateKey)} and {@link #initSign(PrivateKey, SecureRandom)}
+ *         ).</li>
+ *     </ul></li>
+ * <li>Updating<br/>
+ *     Depending on the type of initialization, this will update the bytes to
+ *     be signed or verified. See the update methods.<br/></li>
+ * <li>Signing or Verifying a signature on all updated bytes. See the
+ *     <code>sign()</code> methods and the <code>verify()</code> method.</li>
  *  </ol>
  *
  * <p>Note that this class is abstract and extends from {@link SignatureSpi} for
@@ -105,7 +105,7 @@ import gnu.java.security.Engine;
  * superclass are intended for cryptographic service providers who wish to
  * supply their own implementations of digital signature algorithms.
  *
- * @author Mark Benvenuto <ivymccough@worldnet.att.net>
+ * @author Mark Benvenuto  (ivymccough@worldnet.att.net)
  */
 public abstract class Signature extends SignatureSpi
 {

@@ -1,5 +1,5 @@
 /* DSAParameterSpec.java --- DSA Parameter Specificaton class
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -48,7 +48,7 @@ import java.math.BigInteger;
 
 	@author Mark Benvenuto
 */
-public class DSAParameterSpec extends Object implements AlgorithmParameterSpec, DSAParams
+public class DSAParameterSpec implements AlgorithmParameterSpec, DSAParams
 {
   private BigInteger p = null;
   private BigInteger q = null;

@@ -116,10 +116,10 @@ public class ParsePosition
    * all of the following conditions are met.
    * <p>
    * <ul>
-   * <li>The specified object is not <code>null</code>.
-   * <li>The specified object is an instance of <code>ParsePosition</code>.
+   * <li>The specified object is not <code>null</code>.</li>
+   * <li>The specified object is an instance of <code>ParsePosition</code>.</li>
    * <li>The specified object has the same index and error index as
-   *     this object.  
+   *     this object.</li>
    * </ul>
    *
    * @param obj The <code>Object</code> to test for equality against
