@@ -477,8 +477,9 @@ ssa_prop_init (void)
 
   VARRAY_BB_INIT (cfg_blocks, 20, "cfg_blocks");
 
-  /* Initially assume that every edge in the CFG is not executable.  */
-  FOR_EACH_BB (bb)
+  /* Initially assume that every edge in the CFG is not executable
+     (including the edges coming out of ENTRY_BLOCK_PTR).  */
+  FOR_ALL_BB (bb)
     {
       block_stmt_iterator si;
 

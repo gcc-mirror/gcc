@@ -1,3 +1,8 @@
+2004-11-18  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-ssa-propagate.c (ssa_prop_init): Use FOR_ALL_BB instead
+	of FOR_EACH_BB.
+
 2004-11-18  Jon Grimm <jgrimm2@us.ibm.com>
 
 	* Makefile.in (macro_list): Depend on s-macro_list.
