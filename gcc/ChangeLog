@@ -1,3 +1,7 @@
+Tue Oct 19 17:22:39 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* c-typeck.c (c_expand_asm_operands): Fix typo.
+
 Tue Oct 19 18:42:58 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* arm.c (fpu_rhs_operand): Verify modes.
