@@ -1,3 +1,7 @@
+2003-03-14  Hans Boehm  <Hans.Boehm@hp.com>
+
+	* java/lang/natObject.cc (JV_SYNC_HASH): replace signed % by &.
+
 2003-02-14  Jeroen Frijters  <jeroen@sumatra.nl>
 
 	* java/io/ObjectInputStream.java (readObject): Cleaned up the class

@@ -351,7 +351,7 @@ struct heavy_lock {
   obj_addr_t address;		// Object to which this lock corresponds.
 				// Should not be traced by GC.
   				// Cleared as heavy_lock is destroyed.
-  				// Together with the rest of the hevy lock
+  				// Together with the rest of the heavy lock
   				// chain, this is protected by the lock
   				// bit in the hash table entry to which
   				// the chain is attached.
@@ -457,12 +457,12 @@ struct hash_entry {
 };
 
 #ifndef JV_SYNC_TABLE_SZ
-# define JV_SYNC_TABLE_SZ 2048
+# define JV_SYNC_TABLE_SZ 2048	// Must be power of 2.
 #endif
 
 hash_entry light_locks[JV_SYNC_TABLE_SZ];
 
-#define JV_SYNC_HASH(p) (((long)p ^ ((long)p >> 10)) % JV_SYNC_TABLE_SZ)
+#define JV_SYNC_HASH(p) (((long)p ^ ((long)p >> 10)) & (JV_SYNC_TABLE_SZ-1))
 
 // Note that the light_locks table is scanned conservatively by the
 // collector.  It is essential the the heavy_locks field is scanned.
