@@ -1044,8 +1044,27 @@ dbxout_type (type, full, show_arg_types)
 		   TYPE_SYMTAB_ADDRESS (type),
 		   TREE_INT_CST_LOW (size_in_bytes (TREE_TYPE (type))));
 	  CHARS (15);		/* The number is probably incorrect here.  */
-	} else
-	  abort (); /* What to do with CSImode complex? */
+	}
+      else
+	{
+	  /* Output a complex integer type as a structure,
+	     pending some other way to do it.  */
+	  fprintf (asmfile, "s%d", TREE_INT_CST_LOW (size_in_bytes (type)));
+
+	  fprintf (asmfile, "real:");
+	  CHARS (10);
+	  dbxout_type (TREE_TYPE (type), 0, 0);
+	  fprintf (asmfile, ",%d,%d;",
+		   0, TYPE_PRECISION (TREE_TYPE (type)));
+	  CHARS (8);
+	  fprintf (asmfile, "imag:");
+	  CHARS (5);
+	  dbxout_type (TREE_TYPE (type), 0, 0);
+	  fprintf (asmfile, ",%d,%d;;",
+		   TYPE_PRECISION (TREE_TYPE (type)),
+		   TYPE_PRECISION (TREE_TYPE (type)));
+	  CHARS (9);
+	}
       break;
 
     case SET_TYPE:
