@@ -336,9 +336,8 @@ static int libcall_dead_p		PARAMS ((struct propagate_block_info *,
 static void mark_set_regs		PARAMS ((struct propagate_block_info *,
 						 rtx, rtx));
 static void mark_set_1			PARAMS ((struct propagate_block_info *,
-						 rtx, rtx, rtx));
-static int mark_set_reg			PARAMS ((struct propagate_block_info *,
-						 rtx, rtx, int *, int *));
+						 enum rtx_code, rtx, rtx,
+						 rtx, int));
 #ifdef AUTO_INC_DEC
 static void find_auto_inc		PARAMS ((struct propagate_block_info *,
 						 rtx, rtx));
@@ -3408,16 +3407,17 @@ propagate_one_insn (pbi, insn)
 	       note;
 	       note = XEXP (note, 1))
 	    if (GET_CODE (XEXP (note, 0)) == CLOBBER)
-	      mark_set_1 (pbi, XEXP (XEXP (note, 0), 0), cond, insn);
+	      mark_set_1 (pbi, CLOBBER, XEXP (XEXP (note, 0), 0),
+			  cond, insn, pbi->flags);
 
 	  /* Calls change all call-used and global registers.  */
 	  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	    if (call_used_regs[i] && ! global_regs[i]
 		&& ! fixed_regs[i])
 	      {
-		int dummy;
-		mark_set_reg (pbi, gen_rtx_REG (reg_raw_mode[i], i),
-			      cond, &dummy, &dummy);
+		/* We do not want REG_UNUSED notes for these registers.  */
+		mark_set_1 (pbi, CLOBBER, gen_rtx_REG (reg_raw_mode[i], i),
+			    cond, insn, pbi->flags & ~PROP_DEATH_NOTES);
 	      }
 	}
 
@@ -3895,13 +3895,14 @@ mark_set_regs (pbi, x, insn)
      rtx x, insn;
 {
   rtx cond = NULL_RTX;
+  enum rtx_code code;
 
  retry:
-  switch (GET_CODE (x))
+  switch (code = GET_CODE (x))
     {
     case SET:
     case CLOBBER:
-      mark_set_1 (pbi, SET_DEST (x), cond, insn);
+      mark_set_1 (pbi, code, SET_DEST (x), cond, insn, pbi->flags);
       return;
 
     case COND_EXEC:
@@ -3915,7 +3916,7 @@ mark_set_regs (pbi, x, insn)
 	for (i = XVECLEN (x, 0) - 1; i >= 0; i--)
 	  {
 	    rtx sub = XVECEXP (x, 0, i);
-	    switch (GET_CODE (sub))
+	    switch (code = GET_CODE (sub))
 	      {
 	      case COND_EXEC:
 		if (cond != NULL_RTX)
@@ -3929,7 +3930,7 @@ mark_set_regs (pbi, x, insn)
 
 	      case SET:
 	      case CLOBBER:
-		mark_set_1 (pbi, SET_DEST (sub), cond, insn);
+		mark_set_1 (pbi, code, SET_DEST (sub), cond, insn, pbi->flags);
 		break;
 
 	      default:
@@ -3947,12 +3948,14 @@ mark_set_regs (pbi, x, insn)
 /* Process a single SET rtx, X.  */
 
 static void
-mark_set_1 (pbi, reg, cond, insn)
+mark_set_1 (pbi, code, reg, cond, insn, flags)
      struct propagate_block_info *pbi;
+     enum rtx_code code;
      rtx reg, cond, insn;
+     int flags;
 {
-  register int regno = -1;
-  int flags = pbi->flags;
+  int regno_first = -1, regno_last = -1;
+  int i;
 
   /* Some targets place small structures in registers for
      return values of functions.  We have to detect this
@@ -3960,10 +3963,8 @@ mark_set_1 (pbi, reg, cond, insn)
   if (GET_CODE (reg) == PARALLEL
       && GET_MODE (reg) == BLKmode)
     {
-      register int i;
-
       for (i = XVECLEN (reg, 0) - 1; i >= 0; i--)
-	mark_set_1 (pbi, XVECEXP (reg, 0, i), cond, insn);
+	mark_set_1 (pbi, code, XVECEXP (reg, 0, i), cond, insn, flags);
       return;
     }
 
@@ -4037,23 +4038,35 @@ mark_set_1 (pbi, reg, cond, insn)
     }
 
   if (GET_CODE (reg) == REG
-      && (regno = REGNO (reg),
-	  ! (regno == FRAME_POINTER_REGNUM
+      && (regno_first = REGNO (reg),
+	  ! (regno_first == FRAME_POINTER_REGNUM
 	     && (! reload_completed || frame_pointer_needed)))
 #if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
-      && ! (regno == HARD_FRAME_POINTER_REGNUM
+      && ! (regno_first == HARD_FRAME_POINTER_REGNUM
 	    && (! reload_completed || frame_pointer_needed))
 #endif
 #if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
-      && ! (regno == ARG_POINTER_REGNUM && fixed_regs[regno])
+      && ! (regno_first == ARG_POINTER_REGNUM && fixed_regs[regno_first])
 #endif
       )
     {
-      int some_was_live, some_was_dead;
+      int some_was_live = 0, some_was_dead = 0;
 
-      /* Perform the pbi datastructure update.  */
-      if (! mark_set_reg (pbi, reg, cond, &some_was_live, &some_was_dead))
-	return;
+      if (regno_first < FIRST_PSEUDO_REGISTER)
+	regno_last = (regno_first
+		      + HARD_REGNO_NREGS (regno_first, GET_MODE (reg)) - 1);
+      else
+        regno_last = regno_first;
+
+      for (i = regno_first; i <= regno_last; ++i)
+	{
+	  int needed_regno = REGNO_REG_SET_P (pbi->reg_live, i);
+	  if (pbi->local_set)
+	    SET_REGNO_REG_SET (pbi->local_set, i);
+
+	  some_was_live |= needed_regno;
+	  some_was_dead |= ! needed_regno;
+	}
 
       /* Additional data to record if this is the final pass.  */
       if (flags & (PROP_LOG_LINKS | PROP_REG_INFO
@@ -4064,56 +4077,44 @@ mark_set_1 (pbi, reg, cond, insn)
 
 	  y = NULL_RTX;
 	  if (flags & (PROP_LOG_LINKS | PROP_AUTOINC))
-	    y = pbi->reg_next_use[regno];
-
-	  /* If this is a hard reg, record this function uses the reg.  */
-
-	  if (regno < FIRST_PSEUDO_REGISTER)
 	    {
-	      register int i;
-	      int endregno = regno + HARD_REGNO_NREGS (regno, GET_MODE (reg));
+	      y = pbi->reg_next_use[regno_first];
 
-	      if (flags & (PROP_LOG_LINKS | PROP_AUTOINC))
-	        for (i = regno; i < endregno; i++)
-		  {
-		    /* The next use is no longer "next", since a store
-		       intervenes.  */
-		    pbi->reg_next_use[i] = 0;
-		  }
-
-	      if (flags & PROP_REG_INFO)
-	        for (i = regno; i < endregno; i++)
-		  {
-		    regs_ever_live[i] = 1;
-		    REG_N_SETS (i)++;
-		  }
+	      /* The next use is no longer next, since a store intervenes.  */
+	      for (i = regno_first; i <= regno_last; ++i)
+		pbi->reg_next_use[i] = 0;
 	    }
-	  else
+
+	  if (flags & PROP_REG_INFO)
 	    {
-	      /* The next use is no longer "next", since a store
-		 intervenes.  */
-	      if (flags & (PROP_LOG_LINKS | PROP_AUTOINC))
-	        pbi->reg_next_use[regno] = 0;
-
-	      /* Keep track of which basic blocks each reg appears in.  */
-
-	      if (flags & PROP_REG_INFO)
+	      for (i = regno_first; i <= regno_last; ++i)
 		{
-	          if (REG_BASIC_BLOCK (regno) == REG_BLOCK_UNKNOWN)
-		    REG_BASIC_BLOCK (regno) = blocknum;
-	          else if (REG_BASIC_BLOCK (regno) != blocknum)
-		    REG_BASIC_BLOCK (regno) = REG_BLOCK_GLOBAL;
-
-	          /* Count (weighted) references, stores, etc.  This counts a
+		  /* Count (weighted) references, stores, etc.  This counts a
 		     register twice if it is modified, but that is correct.  */
-	          REG_N_SETS (regno)++;
-	          REG_N_REFS (regno) += pbi->bb->loop_depth + 1;
-		  
+		  REG_N_SETS (i) += 1;
+		  REG_N_REFS (i) += (optimize_size ? 1
+				     : pbi->bb->loop_depth + 1);
+
 	          /* The insns where a reg is live are normally counted
 		     elsewhere, but we want the count to include the insn
 		     where the reg is set, and the normal counting mechanism
 		     would not count it.  */
-	          REG_LIVE_LENGTH (regno)++;
+	          REG_LIVE_LENGTH (i) += 1;
+		}
+
+	      /* If this is a hard reg, record this function uses the reg.  */
+	      if (regno_first < FIRST_PSEUDO_REGISTER)
+		{
+		  for (i = regno_first; i <= regno_last; i++)
+		    regs_ever_live[i] = 1;
+		}
+	      else
+		{
+		  /* Keep track of which basic blocks each reg appears in.  */
+		  if (REG_BASIC_BLOCK (regno_first) == REG_BLOCK_UNKNOWN)
+		    REG_BASIC_BLOCK (regno_first) = blocknum;
+		  else if (REG_BASIC_BLOCK (regno_first) != blocknum)
+		    REG_BASIC_BLOCK (regno_first) = REG_BLOCK_GLOBAL;
 		}
 	    }
 
@@ -4131,7 +4132,7 @@ mark_set_1 (pbi, reg, cond, insn)
 		     even if reload can make what appear to be valid
 		     assignments later.  */
 		  if (y && (BLOCK_NUM (y) == blocknum)
-		      && (regno >= FIRST_PSEUDO_REGISTER
+		      && (regno_first >= FIRST_PSEUDO_REGISTER
 			  || asm_noperands (PATTERN (y)) < 0))
 		    LOG_LINKS (y) = alloc_INSN_LIST (insn, LOG_LINKS (y));
 		}
@@ -4139,7 +4140,7 @@ mark_set_1 (pbi, reg, cond, insn)
 	  else if (! some_was_live)
 	    {
 	      if (flags & PROP_REG_INFO)
-		REG_N_DEATHS (REGNO (reg))++;
+		REG_N_DEATHS (regno_first) += 1;
 
 	      if (flags & PROP_DEATH_NOTES)
 		{
@@ -4162,24 +4163,32 @@ mark_set_1 (pbi, reg, cond, insn)
 		     for those parts that were not needed.  This case should
 		     be rare.  */
 
-		  int i;
-
-		  for (i = HARD_REGNO_NREGS (regno, GET_MODE (reg)) - 1;
-		       i >= 0; i--)
-		    if (! REGNO_REG_SET_P (pbi->reg_live, regno + i))
+		  for (i = regno_first; i <= regno_last; ++i)
+		    if (! REGNO_REG_SET_P (pbi->reg_live, i))
 		      REG_NOTES (insn)
-			= (alloc_EXPR_LIST
-			   (REG_UNUSED,
-			    gen_rtx_REG (reg_raw_mode[regno + i], regno + i),
-			    REG_NOTES (insn)));
+			= alloc_EXPR_LIST (REG_UNUSED,
+					   gen_rtx_REG (reg_raw_mode[i], i),
+					   REG_NOTES (insn));
 		}
 	    }
+	}
+
+      /* Mark the register as being dead.  */
+      if (some_was_live
+	  /* The stack pointer is never dead.  Well, not strictly true,
+	     but it's very difficult to tell from here.  Hopefully
+	     combine_stack_adjustments will fix up the most egregious
+	     errors.  */
+	  && regno_first != STACK_POINTER_REGNUM)
+	{
+	  for (i = regno_first; i <= regno_last; ++i)
+	    SET_REGNO_REG_SET (pbi->new_dead, i);
 	}
     }
   else if (GET_CODE (reg) == REG)
     {
       if (flags & (PROP_LOG_LINKS | PROP_AUTOINC))
-	pbi->reg_next_use[regno] = 0;
+	pbi->reg_next_use[regno_first] = 0;
     }
 
   /* If this is the last pass and this is a SCRATCH, show it will be dying
@@ -4190,63 +4199,6 @@ mark_set_1 (pbi, reg, cond, insn)
 	REG_NOTES (insn)
 	  = alloc_EXPR_LIST (REG_UNUSED, reg, REG_NOTES (insn));
     }
-}
-
-/* Update data structures for a (possibly conditional) store into REG.
-   Return true if REG is now unconditionally dead.  */
-
-static int
-mark_set_reg (pbi, reg, cond, p_some_was_live, p_some_was_dead)
-     struct propagate_block_info *pbi;
-     rtx reg;
-     rtx cond ATTRIBUTE_UNUSED;
-     int *p_some_was_live, *p_some_was_dead;
-{
-  int regno = REGNO (reg);
-  int some_was_live = REGNO_REG_SET_P (pbi->reg_live, regno);
-  int some_was_dead = ! some_was_live;
-
-  /* Mark it as a significant register for this basic block.  */
-  if (pbi->local_set)
-    SET_REGNO_REG_SET (pbi->local_set, regno);
-
-  /* A hard reg in a wide mode may really be multiple registers.
-     If so, mark all of them just like the first.  */
-  if (regno < FIRST_PSEUDO_REGISTER)
-    {
-      int n = HARD_REGNO_NREGS (regno, GET_MODE (reg));
-      while (--n > 0)
-	{
-	  int regno_n = regno + n;
-	  int needed_regno = REGNO_REG_SET_P (pbi->reg_live, regno_n);
-	  if (pbi->local_set)
-	    SET_REGNO_REG_SET (pbi->local_set, regno_n);
-
-	  some_was_live |= needed_regno;
-	  some_was_dead |= ! needed_regno;
-	}
-    }
-
-  *p_some_was_live = some_was_live;
-  *p_some_was_dead = some_was_dead;
-
-  /* The stack pointer is never dead.  Well, not strictly true, but it's
-     very difficult to tell from here.  Hopefully combine_stack_adjustments
-     will fix up the most egregious errors.  */
-  if (regno == STACK_POINTER_REGNUM)
-    return 0;
-
-  /* Mark it as dead before this insn.  */
-  SET_REGNO_REG_SET (pbi->new_dead, regno);
-  if (regno < FIRST_PSEUDO_REGISTER)
-    {
-      int n = HARD_REGNO_NREGS (regno, GET_MODE (reg));
-      while (--n > 0)
-	SET_REGNO_REG_SET (pbi->new_dead, regno + n);
-    }
-
-  /* Unconditionally dead.  */
-  return 1;
 }
 
 #ifdef AUTO_INC_DEC
