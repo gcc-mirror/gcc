@@ -978,11 +978,23 @@ _cpp_lex_direct (pfile)
       parse_number (pfile, &result->val.str, c, 0);
       break;
 
-    case '$':
-      if (!CPP_OPTION (pfile, dollars_in_ident))
-	goto random_char;
-      /* Fall through...  */
+    case 'L':
+      /* 'L' may introduce wide characters or strings.  */
+	{
+	  const unsigned char *pos = buffer->cur;
 
+	  c = get_effective_char (pfile);
+	  if (c == '\'' || c == '"')
+	    {
+	      result->type = (c == '"' ? CPP_WSTRING: CPP_WCHAR);
+	      parse_string (pfile, result, c);
+	      break;
+	    }
+	  buffer->cur = pos;
+	}
+	/* Fall through.  */
+
+    start_ident:
     case '_':
     case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
     case 'g': case 'h': case 'i': case 'j': case 'k': case 'l':
@@ -990,26 +1002,15 @@ _cpp_lex_direct (pfile)
     case 's': case 't': case 'u': case 'v': case 'w': case 'x':
     case 'y': case 'z':
     case 'A': case 'B': case 'C': case 'D': case 'E': case 'F':
-    case 'G': case 'H': case 'I': case 'J': case 'K': case 'L':
+    case 'G': case 'H': case 'I': case 'J': case 'K':
     case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R':
     case 'S': case 'T': case 'U': case 'V': case 'W': case 'X':
     case 'Y': case 'Z':
       result->type = CPP_NAME;
       result->val.node = parse_identifier (pfile);
 
-      /* 'L' may introduce wide characters or strings.  */
-      if (result->val.node == pfile->spec_nodes.n_L)
-	{
-	  c = *buffer->cur;
-	  if (c == '\'' || c == '"')
-	    {
-	      buffer->cur++;
-	      result->type = (c == '"' ? CPP_WSTRING: CPP_WCHAR);
-	      parse_string (pfile, result, c);
-	    }
-	}
       /* Convert named operators to their proper types.  */
-      else if (result->val.node->flags & NODE_OPERATOR)
+      if (result->val.node->flags & NODE_OPERATOR)
 	{
 	  result->flags |= NAMED_OP;
 	  result->type = result->val.node->value.operator;
@@ -1272,6 +1273,11 @@ _cpp_lex_direct (pfile)
 
       /* @ is a punctuator in Objective C.  */
     case '@': result->type = CPP_ATSIGN; break;
+
+    case '$':
+      if (CPP_OPTION (pfile, dollars_in_ident))
+	goto start_ident;
+      /* Fall through...  */
 
     random_char:
     default:

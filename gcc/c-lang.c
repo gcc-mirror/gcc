@@ -23,33 +23,22 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "config.h"
 #include "system.h"
 #include "tree.h"
-#include "tree-inline.h"
 #include "function.h"
-#include "input.h"
 #include "toplev.h"
-#include "diagnostic.h"
-#include "output.h"
 #include "flags.h"
 #include "ggc.h"
 #include "rtl.h"
 #include "expr.h"
 #include "c-tree.h"
-#include "c-common.h"
-#include "c-lex.h"
-#include "cpplib.h"
-#include "insn-config.h"
-#include "integrate.h"
 #include "varray.h"
 #include "langhooks.h"
 #include "langhooks-def.h"
 
-static int c_tree_printer PARAMS ((output_buffer *));
-static int c_missing_noreturn_ok_p PARAMS ((tree));
 static const char *c_init PARAMS ((const char *));
 static void c_init_options PARAMS ((void));
 static void c_post_options PARAMS ((void));
-static int c_disregard_inline_limits PARAMS ((tree));
-static int c_cannot_inline_tree_fn PARAMS ((tree *));
+
+/* ### When changing hooks, consider if ObjC needs changing too!! ### */
 
 #undef LANG_HOOKS_NAME
 #define LANG_HOOKS_NAME "GNU C"
@@ -82,6 +71,8 @@ static int c_cannot_inline_tree_fn PARAMS ((tree *));
 #define LANG_HOOKS_TREE_INLINING_ANON_AGGR_TYPE_P \
   anon_aggr_type_p
 
+/* ### When changing hooks, consider if ObjC needs changing too!! ### */
+
 /* Each front end provides its own.  */
 const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 
@@ -104,29 +95,7 @@ static const char *
 c_init (filename)
      const char *filename;
 {
-  c_init_decl_processing ();
-
-  filename = c_common_init (filename);
-
-  add_c_tree_codes ();
-
-  /* If still unspecified, make it match -std=c99
-     (allowing for -pedantic-errors).  */
-  if (mesg_implicit_function_declaration < 0)
-    {
-      if (flag_isoc99)
-	mesg_implicit_function_declaration = flag_pedantic_errors ? 2 : 1;
-      else
-	mesg_implicit_function_declaration = 0;
-    }
-
-  save_lang_status = &push_c_function_context;
-  restore_lang_status = &pop_c_function_context;
-  mark_lang_status = &mark_c_function_context;
-  lang_expand_expr = &c_expand_expr;
-  diagnostic_format_decoder (global_dc) = &c_tree_printer;
-  lang_expand_decl_stmt = &c_expand_decl_stmt;
-  lang_missing_noreturn_ok_p = &c_missing_noreturn_ok_p;
+  filename = c_objc_common_init (filename);
 
   VARRAY_TREE_INIT (deferred_fns, 32, "deferred_fns");
   ggc_add_tree_varray_root (&deferred_fns, 1);
@@ -304,200 +273,4 @@ finish_file ()
 	dump_end (TDI_all, stream);
       }
   }
-}
-
-/* Called during diagnostic message formatting process to print a
-   source-level entity onto BUFFER.  The meaning of the format specifiers
-   is as follows:
-   %D: a general decl,
-   %F: a function declaration,
-   %T: a type.
-
-   These format specifiers form a subset of the format specifiers set used
-   by the C++ front-end.
-   Please notice when called, the `%' part was already skipped by the
-   diagnostic machinery.  */
-static int
-c_tree_printer (buffer)
-     output_buffer *buffer;
-{
-  tree t = va_arg (output_buffer_format_args (buffer), tree);
-
-  switch (*output_buffer_text_cursor (buffer))
-    {
-    case 'D':
-    case 'F':
-    case 'T':
-      {
-        const char *n = DECL_NAME (t)
-          ? (*decl_printable_name) (t, 2)
-          : "({anonymous})";
-        output_add_string (buffer, n);
-      }
-      return 1;
-
-    default:
-      return 0;
-    }
-}
-
-static int
-c_missing_noreturn_ok_p (decl)
-     tree decl;
-{
-  /* A missing noreturn is not ok for freestanding implementations and
-     ok for the `main' function in hosted implementations.  */
-  return flag_hosted && MAIN_NAME_P (DECL_ASSEMBLER_NAME (decl));
-}
-
-/* We want to inline `extern inline' functions even if this would
-   violate inlining limits.  Some glibc and linux constructs depend on
-   such functions always being inlined when optimizing.  */
-
-static int
-c_disregard_inline_limits (fn)
-     tree fn;
-{
-  return DECL_DECLARED_INLINE_P (fn) && DECL_EXTERNAL (fn);
-}
-
-static tree inline_forbidden_p PARAMS ((tree *, int *, void *));
-
-static tree
-inline_forbidden_p (nodep, walk_subtrees, fn)
-     tree *nodep;
-     int *walk_subtrees ATTRIBUTE_UNUSED;
-     void *fn;
-{
-  tree node = *nodep;
-  tree t;
-
-  switch (TREE_CODE (node))
-    {
-    case CALL_EXPR:
-      t = get_callee_fndecl (node);
-
-      if (! t)
-	break;
-
-      /* We cannot inline functions that call setjmp.  */
-      if (setjmp_call_p (t))
-	return node;
-
-      switch (DECL_FUNCTION_CODE (t))
-	{
-	  /* We cannot inline functions that take a variable number of
-	     arguments.  */
-	case BUILT_IN_VARARGS_START:
-	case BUILT_IN_STDARG_START:
-#if 0
-	  /* Functions that need information about the address of the
-             caller can't (shouldn't?) be inlined.  */
-	case BUILT_IN_RETURN_ADDRESS:
-#endif
-	  return node;
-
-	default:
-	  break;
-	}
-
-      break;
-
-    case DECL_STMT:
-      /* We cannot inline functions that contain other functions.  */
-      if (TREE_CODE (TREE_OPERAND (node, 0)) == FUNCTION_DECL
-	  && DECL_INITIAL (TREE_OPERAND (node, 0)))
-	return node;
-      break;
-
-    case GOTO_STMT:
-    case GOTO_EXPR:
-      t = TREE_OPERAND (node, 0);
-
-      /* We will not inline a function which uses computed goto.  The
-	 addresses of its local labels, which may be tucked into
-	 global storage, are of course not constant across
-	 instantiations, which causes unexpected behaviour.  */
-      if (TREE_CODE (t) != LABEL_DECL)
-	return node;
-
-      /* We cannot inline a nested function that jumps to a nonlocal
-         label.  */
-      if (TREE_CODE (t) == LABEL_DECL
-	  && DECL_CONTEXT (t) && DECL_CONTEXT (t) != fn)
-	return node;
-
-      break;
-
-    default:
-      break;
-    }
-
-  return NULL_TREE;
-}
-
-static int
-c_cannot_inline_tree_fn (fnp)
-     tree *fnp;
-{
-  tree fn = *fnp;
-  tree t;
-
-  if (! function_attribute_inlinable_p (fn))
-    {
-      DECL_UNINLINABLE (fn) = 1;
-      return 1;
-    }
-
-  /* If a function has pending sizes, we must not defer its
-     compilation, and we can't inline it as a tree.  */
-  if (fn == current_function_decl)
-    {
-      t = get_pending_sizes ();
-      put_pending_sizes (t);
-
-      if (t)
-	{
-	  DECL_UNINLINABLE (fn) = 1;
-	  return 1;
-	}
-    }
-
-  if (DECL_CONTEXT (fn))
-    {
-      /* If a nested function has pending sizes, we may have already
-         saved them.  */
-      if (DECL_LANG_SPECIFIC (fn)->pending_sizes)
-	{
-	  DECL_UNINLINABLE (fn) = 1;
-	  return 1;
-	}
-    }
-  else
-    {
-      /* We rely on the fact that this function is called upfront,
-	 just before we start expanding a function.  If FN is active
-	 (i.e., it's the current_function_decl or a parent thereof),
-	 we have to walk FN's saved tree.  Otherwise, we can safely
-	 assume we have done it before and, if we didn't mark it as
-	 uninlinable (in which case we wouldn't have been called), it
-	 is inlinable.  Unfortunately, this strategy doesn't work for
-	 nested functions, because they're only expanded as part of
-	 their enclosing functions, so the inlinability test comes in
-	 late.  */
-      t = current_function_decl;
-
-      while (t && t != fn)
-	t = DECL_CONTEXT (t);
-      if (! t)
-	return 0;
-    }
-    
-  if (walk_tree (&DECL_SAVED_TREE (fn), inline_forbidden_p, fn, NULL))
-    {
-      DECL_UNINLINABLE (fn) = 1;
-      return 1;
-    }
-
-  return 0;
 }

@@ -159,7 +159,6 @@ struct lexer_state
 /* Special nodes - identifiers with predefined significance.  */
 struct spec_nodes
 {
-  cpp_hashnode *n_L;			/* L"str" */
   cpp_hashnode *n_defined;		/* defined operator */
   cpp_hashnode *n_true;			/* C++ keyword true */
   cpp_hashnode *n_false;		/* C++ keyword false */
