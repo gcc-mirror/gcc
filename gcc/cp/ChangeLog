@@ -1,3 +1,7 @@
+Tue Jan  6 01:42:44 1998  Mumit Khan <khan@xraylith.wisc.edu>
+
+	* lex.c (file_name_nondirectory): Also check for '/'.
+
 Mon Feb  2 11:24:22 1998  Mark Mitchell  <mmitchell@usa.net>
 
 	* parse.y (primary): Deal with statement-expressions in
