@@ -155,7 +155,7 @@ static tree fold_builtin_pow (tree, tree, tree);
 static tree fold_builtin_sin (tree);
 static tree fold_builtin_cos (tree, tree, tree);
 static tree fold_builtin_tan (tree);
-static tree fold_builtin_atan (tree);
+static tree fold_builtin_atan (tree, tree);
 static tree fold_builtin_trunc (tree);
 static tree fold_builtin_floor (tree);
 static tree fold_builtin_ceil (tree);
