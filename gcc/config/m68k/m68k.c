@@ -1077,15 +1077,15 @@ output_move_double (operands)
   if (optype0 == REGOP
       && (optype1 == OFFSOP || optype1 == MEMOP))
     {
-      if (reg_mentioned_p (operands[0], XEXP (operands[1], 0))
-	  && reg_mentioned_p (latehalf[0], XEXP (operands[1], 0)))
+      if (reg_overlap_mentioned_p (operands[0], XEXP (operands[1], 0))
+	  && reg_overlap_mentioned_p (latehalf[0], XEXP (operands[1], 0)))
 	{
 	  /* If both halves of dest are used in the src memory address,
 	     compute the address into latehalf of dest.  */
 compadr:
 	  xops[0] = latehalf[0];
 	  xops[1] = XEXP (operands[1], 0);
-	  output_asm_insn ("lea%L0,%a1,%0", xops);
+	  output_asm_insn ("lea %a1,%0", xops);
 	  if( GET_MODE (operands[1]) == XFmode )
 	    {
 	      operands[1] = gen_rtx (MEM, XFmode, latehalf[0]);
@@ -1099,16 +1099,17 @@ compadr:
 	    }
 	}
       else if (size == 12
-		 && reg_mentioned_p (middlehalf[0], XEXP (operands[1], 0)))
+	       && reg_overlap_mentioned_p (middlehalf[0],
+					   XEXP (operands[1], 0)))
 	{
 	  /* Check for two regs used by both source and dest. */
-	  if (reg_mentioned_p (operands[0], XEXP (operands[1], 0))
-		|| reg_mentioned_p (latehalf[0], XEXP (operands[1], 0)))
-		goto compadr;
+	  if (reg_overlap_mentioned_p (operands[0], XEXP (operands[1], 0))
+	      || reg_overlap_mentioned_p (latehalf[0], XEXP (operands[1], 0)))
+	    goto compadr;
 
 	  /* JRV says this can't happen: */
 	  if (addreg0 || addreg1)
-	      abort();
+	    abort ();
 
 	  /* Only the middle reg conflicts; simply put it last. */
 	  output_asm_insn (singlemove_string (operands), operands);
@@ -1116,7 +1117,7 @@ compadr:
 	  output_asm_insn (singlemove_string (middlehalf), middlehalf);
 	  return "";
 	}
-      else if (reg_mentioned_p (operands[0], XEXP (operands[1], 0)))
+      else if (reg_overlap_mentioned_p (operands[0], XEXP (operands[1], 0)))
 	/* If the low half of dest is mentioned in the source memory
 	   address, the arrange to emit the move late half first.  */
 	dest_overlapped_low = 1;
