@@ -1,3 +1,14 @@
+2003-10-14  Ziemowit Laski  <zlaski@apple.com>
+
+	* c-parse.in (methoddef, methodproto): Call objc_add_method()
+	instead of add_method().
+	* objc/objc-act.c (objc_check_decl): Do not check for
+	constant_string_type.
+	(add_method): Rename to objc_add_method().
+	(really_start_method): Call objc_add_method() instead of
+	add_method().
+	* objc/objc-act.h (add_method): Rename to objc_add_method().
+
 2003-10-14  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390-protos.h (s390_alc_comparison): Add prototype.

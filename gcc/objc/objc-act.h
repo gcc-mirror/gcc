@@ -54,7 +54,7 @@ tree is_ivar (tree, tree);
 int is_private (tree);
 int is_public (tree, tree);
 tree add_instance_variable (tree, int, tree, tree, tree);
-tree add_method (tree, tree, int);
+tree objc_add_method (tree, tree, int);
 tree get_super_receiver (void);
 void objc_clear_super_receiver (void);
 tree get_class_ivars_from_name (tree);
