@@ -153,5 +153,5 @@ java::lang::System::getenv0 (jstring name)
   const char *value = ::getenv (buf);
   if (value == NULL)
     return NULL;
-  return JvNewStringLatin1 (value);
+  return JvNewStringUTF (value);
 }
