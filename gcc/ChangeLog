@@ -1,3 +1,8 @@
+2003-09-23  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* config.gcc (powerpc-*-gnu-gnualtivec*): Disable fixproto
+	(accidentally missed in last pass).
+
 2003-09-23  Andrew Pinski  <apinski@apple.com>
 
 	PR bootstrap/12383

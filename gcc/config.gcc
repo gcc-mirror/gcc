@@ -1691,6 +1691,7 @@ powerpc-*-gnu-gnualtivec*)
 	if test x$enable_threads = xyes; then
 		thread_file='posix'
 	fi
+	use_fixproto=no
 	;;
 powerpc-*-gnu*)
 	tm_file="${cpu_type}/${cpu_type}.h elfos.h svr4.h freebsd-spec.h gnu.h rs6000/sysv4.h rs6000/linux.h rs6000/gnu.h"
