@@ -1,3 +1,8 @@
+2005-04-01  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* gfortran.fortran-torture/execute/backspace.f90: Check
+	after backspace and read was incorrect.
+
 2005-04-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/19406
