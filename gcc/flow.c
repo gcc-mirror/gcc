@@ -853,10 +853,10 @@ life_analysis (f, nregs)
 	   consider the stack pointer live at the end of the function.  */
 	basic_block_live_at_end[n_basic_blocks - 1]
 	  [STACK_POINTER_REGNUM / REGSET_ELT_BITS]
-	    |= 1 << (STACK_POINTER_REGNUM % REGSET_ELT_BITS);
+	    |= (REGSET_ELT_TYPE) 1 << (STACK_POINTER_REGNUM % REGSET_ELT_BITS);
 	basic_block_new_live_at_end[n_basic_blocks - 1]
 	  [STACK_POINTER_REGNUM / REGSET_ELT_BITS]
-	    |= 1 << (STACK_POINTER_REGNUM % REGSET_ELT_BITS);
+	    |= (REGSET_ELT_TYPE) 1 << (STACK_POINTER_REGNUM % REGSET_ELT_BITS);
       }
 
   /* Mark all global registers as being live at the end of the function
@@ -867,9 +867,11 @@ life_analysis (f, nregs)
       if (global_regs[i])
 	{
 	  basic_block_live_at_end[n_basic_blocks - 1]
-	    [i / REGSET_ELT_BITS] |= 1 << (i % REGSET_ELT_BITS);
+	    [i / REGSET_ELT_BITS]
+	      |= (REGSET_ELT_TYPE) 1 << (i % REGSET_ELT_BITS);
 	  basic_block_new_live_at_end[n_basic_blocks - 1]
-	    [i / REGSET_ELT_BITS] |= 1 << (i % REGSET_ELT_BITS);
+	    [i / REGSET_ELT_BITS]
+	      |= (REGSET_ELT_TYPE) 1 << (i % REGSET_ELT_BITS);
 	}
 
   /* Propagate life info through the basic blocks
@@ -1430,7 +1432,7 @@ propagate_block (old, first, last, final, significant, bnum)
 		  register struct sometimes *p = regs_sometimes_live;
 
 		  for (i = 0; i < sometimes_max; i++, p++)
-		    if (old[p->offset] & (1 << p->bit))
+		    if (old[p->offset] & ((REGSET_ELT_TYPE) 1 << p->bit))
 		      reg_n_calls_crossed[p->offset * REGSET_ELT_BITS + p->bit]+= 1;
 		}
 	    }
@@ -2639,7 +2641,8 @@ dump_flow_info (file)
       for (regno = 0; regno < max_regno; regno++)
 	{
 	  register int offset = regno / REGSET_ELT_BITS;
-	  register int bit = 1 << (regno % REGSET_ELT_BITS);
+	  register REGSET_ELT_TYPE bit
+	    = (REGSET_ELT_TYPE) 1 << (regno % REGSET_ELT_BITS);
 	  if (basic_block_live_at_start[i][offset] & bit)
 	      fprintf (file, " %d", regno);
 	}
