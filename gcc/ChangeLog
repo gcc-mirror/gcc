@@ -1,3 +1,8 @@
+2003-08-21  Kazu Hirata  <kazu@cs.umass.edu>
+
+	PR target/11805
+	* config/h8300/h8300.md (two anonymous patterns): Remove.
+
 2003-08-21  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.h (MUST_PASS_IN_STACK): Remove BLKmode clause.
