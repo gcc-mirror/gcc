@@ -1,3 +1,7 @@
+2002-06-29  T.J. Mather  <tjmather@maxmind.com>
+
+	* gcj.texi: Fixed gcj invocation example so that it compiles.
+
 2002-06-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* lex.c (java_init_lex): Avoid incorrect hardcoded constant 11.
