@@ -185,11 +185,7 @@ Boston, MA 02111-1307, USA.  */
    is explicitly defined, then ASM_FINISH_DECLARE_OBJECT will be used.  */
 
 #define ASM_DECLARE_OBJECT_NAME(ASM_OUT_FILE,NAME,DECL)		\
-{ if (output_bytecode)						\
-    BC_OUTPUT_LABEL ((ASM_OUT_FILE), (NAME));				\
-  else								\
-    ASM_OUTPUT_LABEL ((ASM_OUT_FILE), (NAME));			\
-}
+  ASM_OUTPUT_LABEL ((ASM_OUT_FILE), (NAME))
 
 /* We don't need to do anything special to finish the current object, but it
    should now be safe to output any deferred external global declarations.  */
