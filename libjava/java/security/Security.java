@@ -40,6 +40,8 @@ package java.security;
 
 import gnu.java.security.action.GetPropertyAction;
 
+import gnu.classpath.Configuration;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -81,20 +83,27 @@ public final class Security
       if (!loadProviders (base, "classpath")
 	  && !loaded
 	  && providers.size() == 0)
-        {
-	  // No providers found and both security files failed to load properly.
-	  System.err.println
-	    ("WARNING: could not properly read security provider files:");
-	  System.err.println
-	    ("         " + base + "/security/" + vendor + ".security");
-	  System.err.println
-	    ("         " + base + "/security/" + "classpath" + ".security");
-	  System.err.println
-	    ("         Falling back to standard GNU security provider");
-	  providers.addElement (new gnu.java.security.provider.Gnu());
-        }
-  }
-
+	  {
+	      if (Configuration.DEBUG)
+		  {
+		      /* No providers found and both security files failed to
+		       * load properly. Give a warning in case of DEBUG is
+		       * enabled. Could be done with java.util.logging later.
+		       */
+		      System.err.println
+			  ("WARNING: could not properly read security provider files:");
+		      System.err.println
+			  ("         " + base + "/security/" + vendor
+			   + ".security");
+		      System.err.println
+			  ("         " + base + "/security/" + "classpath"
+			   + ".security");
+		      System.err.println
+			  ("         Falling back to standard GNU security provider");
+		  }
+	      providers.addElement (new gnu.java.security.provider.Gnu());
+	  }
+    }
   // This class can't be instantiated.
   private Security()
   {

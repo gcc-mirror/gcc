@@ -1,3 +1,8 @@
+2004-11-16  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* java/security/Security.java (Security): Silence the warning about no
+	providers found in the no debug case.
+
 2004-11-16  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/InetAddress.java
