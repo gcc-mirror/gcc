@@ -190,10 +190,12 @@ namespace std
       virtual int_type
       underflow()
       {
+	int_type __ret;
 	if (this->_M_in_cur < this->_M_in_end)
-	  return traits_type::to_int_type(*this->_M_in_cur);
+	  __ret = traits_type::to_int_type(*this->_M_in_cur);
 	else
-	  return traits_type::eof();
+	  __ret = traits_type::eof();
+	return __ret;
       }
 
       // [documentation is inherited]
