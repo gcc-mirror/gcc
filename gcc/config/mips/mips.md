@@ -164,15 +164,28 @@
 		   (eq (symbol_ref "mips16") (const_int 0)))
   [(and (eq_attr "dslot" "no") (eq_attr "length" "4"))
    (nil)
-   (and (eq_attr "branch_likely" "yes") (and (eq_attr "dslot" "no") (eq_attr "length" "4")))])
+   (and (eq_attr "branch_likely" "yes")
+	(and (eq_attr "dslot" "no")
+	     (eq_attr "length" "4")))])
 
 (define_delay (eq_attr "type" "jump")
-  [(and (eq_attr "dslot" "no") (eq_attr "length" "4"))
+  [(and (eq_attr "dslot" "no")
+	;; ADJUST_INSN_LENGTH divides length by 2 on mips16, so cope
+	;; with it here.  It doesn't matter for branches above,
+	;; because mips16 branches don't have delay slots anyway.
+	(ior (and (eq (symbol_ref "mips16") (const_int 0))
+		  (eq_attr "length" "4"))
+	     (and (ne (symbol_ref "mips16") (const_int 0))
+		  (eq_attr "length" "2"))))
    (nil)
    (nil)])
 
 (define_delay (and (eq_attr "type" "call") (eq_attr "abicalls" "no"))
-  [(and (eq_attr "dslot" "no") (eq_attr "length" "4"))
+  [(and (eq_attr "dslot" "no")
+	(ior (and (eq (symbol_ref "mips16") (const_int 0))
+		  (eq_attr "length" "4"))
+	     (and (ne (symbol_ref "mips16") (const_int 0))
+		  (eq_attr "length" "2"))))
    (nil)
    (nil)])
 
