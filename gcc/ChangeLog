@@ -1,3 +1,10 @@
+2003-01-30  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/arm/arm.c: Fix comment typos.
+	* config/arm/arm.h: Likewise.
+	* config/arm/netbsd-elf.h: Likewise.
+	* config/arm/netbsd.h: Likewise.
+
 2003-01-30  Geoffrey Keating  <geoffk@apple.com>
 
 	* gengtype.c (struct walk_type_data): Add needs_cast_p.
