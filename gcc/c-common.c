@@ -5099,10 +5099,11 @@ c_common_nodes_and_builtins ()
   tree temp;
   tree memcpy_ftype, memset_ftype, strlen_ftype;
   tree bzero_ftype, bcmp_ftype, puts_ftype, printf_ftype;
+  tree fputs_ftype, fputc_ftype, fwrite_ftype;
   tree endlink, int_endlink, double_endlink, unsigned_endlink;
   tree cstring_endlink, sizetype_endlink;
   tree ptr_ftype, ptr_ftype_unsigned;
-  tree void_ftype_any, void_ftype_int, int_ftype_any, sizet_ftype_any;
+  tree void_ftype_any, void_ftype_int, int_ftype_any;
   tree double_ftype_double, double_ftype_double_double;
   tree float_ftype_float, ldouble_ftype_ldouble;
   tree int_ftype_cptr_cptr_sizet, sizet_ftype_cstring_cstring;
@@ -5170,7 +5171,6 @@ c_common_nodes_and_builtins ()
   /* We realloc here because sizetype could be int or unsigned.  S'ok.  */
   ptr_ftype_sizetype = build_function_type (ptr_type_node, sizetype_endlink);
 
-  sizet_ftype_any = build_function_type (sizetype, NULL_TREE);
   int_ftype_any = build_function_type (integer_type_node, NULL_TREE);
   void_ftype_any = build_function_type (void_type_node, NULL_TREE);
   void_ftype = build_function_type (void_type_node, endlink);
@@ -5324,6 +5324,30 @@ c_common_nodes_and_builtins ()
     = build_function_type (integer_type_node,
 			   tree_cons (NULL_TREE, const_string_type_node,
 				      NULL_TREE));
+
+  /* These stdio prototypes are declared using void* in place of
+     FILE*.  They are only used for __builtin_ style calls, regular
+     style builtin prototypes omit the arguments and merge those
+     provided by stdio.h.  */
+  /* Prototype for fwrite.  */
+  fwrite_ftype
+    = build_function_type (c_size_type_node,
+			   tree_cons (NULL_TREE, const_ptr_type_node,
+				      tree_cons (NULL_TREE, c_size_type_node,
+						 tree_cons (NULL_TREE, c_size_type_node,
+							    tree_cons (NULL_TREE, ptr_type_node, endlink)))));
+
+  /* Prototype for fputc.  */
+  fputc_ftype
+    = build_function_type (integer_type_node,
+			   tree_cons (NULL_TREE, integer_type_node,
+				      tree_cons (NULL_TREE, ptr_type_node, endlink)));
+
+  /* Prototype for fputs.  */
+  fputs_ftype
+    = build_function_type (integer_type_node,
+			   tree_cons (NULL_TREE, const_string_type_node,
+				      tree_cons (NULL_TREE, ptr_type_node, endlink)));
 
   builtin_function ("__builtin_constant_p", default_function_type,
 		    BUILT_IN_CONSTANT_P, BUILT_IN_NORMAL, NULL_PTR);
@@ -5571,21 +5595,19 @@ c_common_nodes_and_builtins ()
   builtin_function_2 ("__builtin_printf", "printf",
 		      printf_ftype, printf_ftype,
 		      BUILT_IN_PRINTF, BUILT_IN_FRONTEND, 1, 0, 0);
-  /* We declare these without argument so that the initial declaration
-     for these identifiers is a builtin.  That allows us to redeclare
-     them later with argument without worrying about the explicit
-     declarations in stdio.h being taken as the initial declaration.
-     Also, save the _DECL for these so we can use them later.  */
   built_in_decls[BUILT_IN_FWRITE] =
-    builtin_function ("__builtin_fwrite", sizet_ftype_any,
+    builtin_function ("__builtin_fwrite", fwrite_ftype,
 		      BUILT_IN_FWRITE, BUILT_IN_NORMAL, "fwrite");
   built_in_decls[BUILT_IN_FPUTC] =
-    builtin_function_2 ("__builtin_fputc", "fputc",
-			int_ftype_any, int_ftype_any,
-			BUILT_IN_FPUTC, BUILT_IN_NORMAL, 1, 0, 0);
+    builtin_function ("__builtin_fputc", fputc_ftype,
+		      BUILT_IN_FPUTC, BUILT_IN_NORMAL, "fputc");
+  /* Declare the __builtin_ style with arguments and the regular style
+     without them.  We rely on stdio.h to supply the arguments for the
+     regular style declaration since we had to use void* instead of
+     FILE* in the __builtin_ prototype supplied here.  */
   built_in_decls[BUILT_IN_FPUTS] =
     builtin_function_2 ("__builtin_fputs", "fputs",
-			int_ftype_any, int_ftype_any,
+			fputs_ftype, int_ftype_any,
 			BUILT_IN_FPUTS, BUILT_IN_NORMAL, 1, 0, 0);
 
   /* Declare these functions non-returning

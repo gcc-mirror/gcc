@@ -1,3 +1,9 @@
+2001-01-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-common.c (c_common_nodes_and_builtins): Set prototype
+	parameters for __builtin_fputs, __builtin_fputc and
+	__builtin_fwrite.  Don't declare plain fputc as a builtin.
+
 2001-01-01  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
         * loop.c (add_label_notes): Increment the label usage count when
