@@ -58,7 +58,7 @@ typedef struct {
   _FT_( "machine_name",     machine_name_test )
 
 #define TEST_FOR_FIX_PROC_HEAD( test )          \
-t_test_proc test;  /* avoid warning */          \
+apply_fix_p_t test PARAMS(( tCC* file, tCC* text ));  /* avoid warning */          \
 static apply_fix_p_t test ( fname, text )       \
     tCC* fname;                                 \
     tCC* text;
