@@ -407,6 +407,8 @@ remove_phi_arg_num (tree phi, int i)
 {
   int num_elem = PHI_NUM_ARGS (phi);
 
+  gcc_assert (i < num_elem);
+
   /* If we are not at the last element, switch the last element
      with the element we want to delete.  */
   if (i != num_elem - 1)
@@ -421,11 +423,6 @@ remove_phi_arg_num (tree phi, int i)
   PHI_ARG_EDGE (phi, num_elem - 1) = NULL;
   PHI_ARG_NONZERO (phi, num_elem - 1) = false;
   PHI_NUM_ARGS (phi)--;
-
-  /* If we removed the last PHI argument, then go ahead and
-     remove the PHI node.  */
-  if (PHI_NUM_ARGS (phi) == 0)
-    remove_phi_node (phi, NULL, bb_for_stmt (phi));
 }
 
 /* Remove PHI node PHI from basic block BB.  If PREV is non-NULL, it is

@@ -1,3 +1,9 @@
+2004-10-27  Steven Bosscher  <stevenb@suse.de>
+
+	* tree-phinodes.c (remove_phi_arg_num): Don't remove PHIs
+	without any PHI arguments left.  Make sure the argument that
+	we're supposed to remove exists at all.
+
 2004-10-27  Paul Brook  <paul@codesourcery.com>
 
 	* configure.ac: Don't test for [build] __cxa_atexit when building a
@@ -161,7 +167,7 @@
 
 2004-10-26  Fariborz Jahanian <fjahanian@apple.com>
 
-	* config/rs6000/rs6000.md (andsi3_internal8): Set CR when splitting
+	* config/rs6000/rs6000.md (andsi3_internal8): Set CR when splitting 
 	into rotlsi3.
 
 2004-10-26  Kazu Hirata  <kazu@cs.umass.edu>
