@@ -569,7 +569,7 @@ recognized_function (fname, fname_length,
 
   if (fn == NULL)
     return;
-  if (fn->params[0] == '\0' || strcmp (fn->params, "void") == 0)
+  if (fn->params[0] == '\0')
     return;
 
   /* We only have a partial function declaration,
