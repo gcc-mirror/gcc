@@ -1,3 +1,7 @@
+2001-06-13  Phil Edwards  <pme@sources.redhat.com>
+
+	* doc/contrib.texi:  Link to libstdc++'s thanks.html for now.
+
 2001-06-13  Zack Weinberg  <zackw@stanford.edu>
 
 	* Makefile.in: Move _bb and __gcc_bcmp to LIB2FUNCS_ST.
