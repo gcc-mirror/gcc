@@ -1,3 +1,8 @@
+1999-11-08  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (store_parm_decls): Generate cleanup code at
+	semantic-analysis time.  Destroy objects in the correct order.
+
 1999-11-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (begin_new_placement): Remove.
