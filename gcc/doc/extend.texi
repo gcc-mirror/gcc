@@ -472,6 +472,7 @@ extensions, accepted by GCC in C89 mode and in C++.
 * Offsetof::            Special syntax for implementing @code{offsetof}.
 * Other Builtins::      Other built-in functions.
 * Target Builtins::     Built-in functions specific to particular targets.
+* Target Format Checks:: Format checks specific to particular targets.
 * Pragmas::             Pragmas accepted by GCC.
 * Unnamed Fields::      Unnamed struct/union fields within structs/unions.
 * Thread-Local::        Per-thread variables.
@@ -2172,6 +2173,10 @@ modify the header file @file{stdio.h}.  In C99 mode, the functions
 standard modes, the X/Open function @code{strfmon} is also checked as
 are @code{printf_unlocked} and @code{fprintf_unlocked}.
 @xref{C Dialect Options,,Options Controlling C Dialect}.
+
+The target may provide additional types of format checks.
+@xref{Target Format Checks,,Format Checks Specific to Particular
+Target Machines}.
 
 @item format_arg (@var{string-index})
 @cindex @code{format_arg} function attribute
@@ -7208,6 +7213,25 @@ vector signed int vec_any_numeric (vector float);
 
 vector signed int vec_any_out (vector float, vector float);
 @end smallexample
+
+@node Target Format Checks
+@section Format Checks Specific to Particular Target Machines
+
+For some target machines, GCC supports additional options to the
+format attribute
+(@pxref{Function Attributes,,Declaring Attributes of Functions}).
+
+@menu
+* Solaris Format Checks::
+@end menu
+
+@node Solaris Format Checks
+@subsection Solaris Format Checks
+
+Solaris targets support the @code{cmn_err} (or @code{__cmn_err__}) format
+check.  @code{cmn_err} accepts a subset of the standard @code{printf}
+conversions, and the two-argument @code{%b} conversion for displaying
+bit-fields.  See the Solaris man page for @code{cmn_err} for more information.
 
 @node Pragmas
 @section Pragmas Accepted by GCC

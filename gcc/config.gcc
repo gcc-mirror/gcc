@@ -972,7 +972,9 @@ i[34567]86-*-sco3.2v5*)	# 80386 running SCO Open Server 5
 i[34567]86-*-solaris2*)
 	xm_defines="SMALL_ARG_MAX"
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h svr4.h i386/sysv4.h sol2.h i386/sol2.h"
-	tmake_file="i386/t-sol2 t-svr4"
+	tmake_file="t-sol2 i386/t-sol2 t-svr4"
+	c_target_objs="sol2-c.o"
+	cxx_target_objs="sol2-c.o"
 	if test x$gnu_ld = xyes; then
 		tmake_file="$tmake_file t-slibgcc-elf-ver"
 	else
@@ -1851,12 +1853,14 @@ sparc64-*-solaris2* | sparcv9-*-solaris2*)
 	if test x$gas = xyes; then
 		tm_file="${tm_file} sparc/sol2-gas-bi.h"
 	fi
-	tmake_file="sparc/t-sol2 sparc/t-sol2-64 sparc/t-crtfm"
+	tmake_file="t-sol2 sparc/t-sol2 sparc/t-sol2-64 sparc/t-crtfm"
 	if test x$gnu_ld = xyes; then
 		tmake_file="$tmake_file t-slibgcc-elf-ver"
 	else
 		tmake_file="$tmake_file t-slibgcc-sld"
 	fi
+	c_target_objs="sol2-c.o"
+	cxx_target_objs="sol2-c.o"
 	extra_parts="crt1.o crti.o crtn.o gcrt1.o crtbegin.o crtend.o"
 	case ${enable_threads}:${have_pthread_h}:${have_thread_h} in
 	  no:*:*) ;;
@@ -1870,7 +1874,7 @@ sparc-*-solaris2*)
 	if test x$gnu_ld = xyes; then
 		tm_file="${tm_file} sparc/sol2-gld.h"
 	fi
-	tmake_file="sparc/t-sol2 sparc/t-crtfm"
+	tmake_file="t-sol2 sparc/t-sol2 sparc/t-crtfm"
 	if test x$gnu_ld = xyes; then
 		tmake_file="$tmake_file t-slibgcc-elf-ver"
 	else
@@ -1894,6 +1898,8 @@ sparc-*-solaris2*)
 		need_64bit_hwint=yes
 		;;
 	esac
+	c_target_objs="sol2-c.o"
+	cxx_target_objs="sol2-c.o"
 	extra_parts="crt1.o crti.o crtn.o gcrt1.o gmon.o crtbegin.o crtend.o"
 	case ${enable_threads}:${have_pthread_h}:${have_thread_h} in
 	  no:*:*) ;;

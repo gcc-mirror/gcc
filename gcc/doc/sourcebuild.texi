@@ -766,6 +766,9 @@ pragmas supported.
 Documentation in @file{gcc/doc/extend.texi} of any target-specific
 built-in functions supported.
 @item
+Documentation in @file{gcc/doc/extend.texi} of any target-specific
+format checking styles supported.
+@item
 Documentation in @file{gcc/doc/md.texi} of any target-specific
 constraint letters (@pxref{Machine Constraints, , Constraints for
 Particular Machines}).

@@ -2113,7 +2113,7 @@ specified, and that the conversions specified in the format string make
 sense.  This includes standard functions, and others specified by format
 attributes (@pxref{Function Attributes}), in the @code{printf},
 @code{scanf}, @code{strftime} and @code{strfmon} (an X/Open extension,
-not in the C standard) families.
+not in the C standard) families (or other target-specific families).
 
 The formats are checked against the format features supported by GNU
 libc version 2.2.  These include all ISO C90 and C99 features, as well

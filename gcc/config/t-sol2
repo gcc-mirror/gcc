@@ -1,0 +1,5 @@
+# Solaris-specific format checking
+sol2-c.o: $(srcdir)/config/sol2-c.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+  tree.h c-format.h intl.h
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+	  $(srcdir)/config/sol2-c.c

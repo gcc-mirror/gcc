@@ -1440,7 +1440,7 @@ attribs.o : attribs.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(FL
 	builtin-types.def $(TARGET_H) langhooks.h
 
 c-format.o : c-format.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) langhooks.h \
-	$(C_COMMON_H) $(FLAGS_H) toplev.h intl.h $(DIAGNOSTIC_H)
+	$(C_COMMON_H) $(FLAGS_H) toplev.h intl.h $(DIAGNOSTIC_H) c-format.h
 
 c-semantics.o : c-semantics.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
 	$(C_TREE_H) $(FLAGS_H) toplev.h output.h c-pragma.h $(RTL_H) $(GGC_H) \

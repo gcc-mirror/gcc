@@ -48,3 +48,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef SUN_INTEGER_MULTIPLY_64
 #define SUN_INTEGER_MULTIPLY_64 0
+
+/* Don't include Solaris-specific format checks.  */
+#undef TARGET_N_FORMAT_TYPES
+#undef TARGET_FORMAT_TYPES

@@ -205,3 +205,6 @@ __enable_execute_stack (void *addr)					\
       perror ("mprotect of trampoline code");				\
   }									\
 }
+
+#define TARGET_N_FORMAT_TYPES 1
+#define TARGET_FORMAT_TYPES solaris_format_types

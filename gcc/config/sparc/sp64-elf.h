@@ -122,3 +122,7 @@ crtbegin.o%s \
 
 #undef PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
+
+/* Don't include Solaris-specific format checks.  */
+#undef TARGET_N_FORMAT_TYPES
+#undef TARGET_FORMAT_TYPES
