@@ -3944,17 +3944,15 @@ tsubst (t, args, in_decl)
 	tree parms;
 	tree* new_parms;
 	tree spec;
+	int is_template_template_parm = DECL_TEMPLATE_TEMPLATE_PARM_P (t);
 
-	if (TREE_CODE (decl) == TYPE_DECL
-	    && TREE_CODE (TREE_TYPE (decl)) == TEMPLATE_TEMPLATE_PARM)
-	  /* There is no tsubst'ing to be done in a template template
-	     parameter.  */
-	  return t;
-
-	/* We might already have an instance of this template. */
-	spec = retrieve_specialization (t, args);
-	if (spec != NULL_TREE)
-	  return spec;
+	if (!is_template_template_parm)
+	  {
+	    /* We might already have an instance of this template. */
+	    spec = retrieve_specialization (t, args);
+	    if (spec != NULL_TREE)
+	      return spec;
+	  }
 
 	/* Make a new template decl.  It will be similar to the
 	   original, but will record the current template arguments. 
@@ -3966,6 +3964,15 @@ tsubst (t, args, in_decl)
 	my_friendly_assert (DECL_LANG_SPECIFIC (tmpl) != 0, 0);
 	DECL_CHAIN (tmpl) = NULL_TREE;
 	TREE_CHAIN (tmpl) = NULL_TREE;
+
+	if (is_template_template_parm)
+	  {
+	    tree new_decl = tsubst (decl, args, in_decl);
+	    DECL_RESULT (tmpl) = new_decl;
+	    TREE_TYPE (tmpl) = TREE_TYPE (new_decl);
+	    return tmpl;
+	  }
+
 	DECL_CONTEXT (tmpl) = tsubst (DECL_CONTEXT (t),
 				      args, in_decl);
 	DECL_CLASS_CONTEXT (tmpl) = tsubst (DECL_CLASS_CONTEXT (t),
@@ -4311,7 +4318,11 @@ tsubst (t, args, in_decl)
       {
 	tree r = copy_node (t);
 	TREE_TYPE (r) = type;
-	DECL_INITIAL (r) = TREE_TYPE (r);
+	if (TREE_CODE (DECL_INITIAL (r)) != TEMPLATE_PARM_INDEX)
+	  DECL_INITIAL (r) = TREE_TYPE (r);
+	else
+	  DECL_INITIAL (r) = tsubst (DECL_INITIAL (r), args, in_decl);
+
 	DECL_CONTEXT (r) = NULL_TREE;
 #ifdef PROMOTE_PROTOTYPES
 	if ((TREE_CODE (type) == INTEGER_TYPE
@@ -5565,6 +5576,27 @@ type_unification_real (tparms, targs, parms, args, subr,
   return 0;
 }
 
+/* Returns the level of DECL, which declares a template parameter.  */
+
+static int
+template_decl_level (decl)
+     tree decl;
+{
+  switch (TREE_CODE (decl))
+    {
+    case TYPE_DECL:
+    case TEMPLATE_DECL:
+      return TEMPLATE_TYPE_LEVEL (TREE_TYPE (decl));
+
+    case PARM_DECL:
+      return TEMPLATE_PARM_LEVEL (DECL_INITIAL (decl));
+
+    default:
+      my_friendly_abort (0);
+      break;
+    }
+}
+
 /* Tail recursion is your friend.  */
 
 static int
@@ -5575,6 +5607,7 @@ unify (tparms, targs, ntparms, parm, arg, strict, explicit_mask)
 {
   int idx;
   tree targ;
+  tree tparm;
 
   /* I don't think this will do the right thing with respect to types.
      But the only case I've seen it in so far has been array bounds, where
@@ -5587,7 +5620,11 @@ unify (tparms, targs, ntparms, parm, arg, strict, explicit_mask)
     return 1;
   if (arg == unknown_type_node)
     return 1;
-  if (arg == parm)
+  /* If PARM uses template parameters, then we can't bail out here,
+     even in ARG == PARM, since we won't record unifications for the
+     template parameters.  We might need them if we're trying to
+     figure out which of two things is more specialized.  */
+  if (arg == parm && !uses_template_parms (parm))
     return 0;
 
   /* We can't remove cv-quals when strict.  */
@@ -5606,53 +5643,24 @@ unify (tparms, targs, ntparms, parm, arg, strict, explicit_mask)
       return 0;
 
     case TEMPLATE_TYPE_PARM:
-      idx = TEMPLATE_TYPE_IDX (parm);
-      targ = TREE_VEC_ELT (targs, idx);
-      /* Check for mixed types and values.  */
-      if (TREE_CODE (TREE_VALUE (TREE_VEC_ELT (tparms, idx))) != TYPE_DECL)
-	return 1;
-
-      if (!strict && targ != NULL_TREE 
-	  && explicit_mask && explicit_mask[idx])
-	/* An explicit template argument.  Don't even try to match
-	   here; the overload resolution code will manage check to
-	   see whether the call is legal.  */ 
-	return 0;
-
-      if (strict && (TYPE_READONLY (arg) < TYPE_READONLY (parm)
-		     || TYPE_VOLATILE (arg) < TYPE_VOLATILE (parm)))
-	return 1;
-#if 0
-      /* Template type parameters cannot contain cv-quals; i.e.
-         template <class T> void f (T& a, T& b) will not generate
-	 void f (const int& a, const int& b).  */
-      if (TYPE_READONLY (arg) > TYPE_READONLY (parm)
-	  || TYPE_VOLATILE (arg) > TYPE_VOLATILE (parm))
-	return 1;
-      arg = TYPE_MAIN_VARIANT (arg);
-#else
-      {
-	int constp = TYPE_READONLY (arg) > TYPE_READONLY (parm);
-	int volatilep = TYPE_VOLATILE (arg) > TYPE_VOLATILE (parm);
-	arg = cp_build_type_variant (arg, constp, volatilep);
-      }
-#endif
-      /* Simple cases: Value already set, does match or doesn't.  */
-      if (targ != NULL_TREE 
-	  && (comptypes (targ, arg, 1)
-	      || (explicit_mask && explicit_mask[idx])))
-	return 0;
-      else if (targ)
-	return 1;
-      TREE_VEC_ELT (targs, idx) = arg;
-      return 0;
-
     case TEMPLATE_TEMPLATE_PARM:
+      tparm = TREE_VALUE (TREE_VEC_ELT (tparms, 0));
+
+      if (TEMPLATE_TYPE_LEVEL (parm)
+	  != template_decl_level (tparm))
+	/* The PARM is not one we're trying to unify.  Just check
+	   to see if it matches ARG.  */
+	return (TREE_CODE (arg) == TREE_CODE (parm)
+		&& comptypes (parm, arg, 1) == 0) ? 0 : 1;
       idx = TEMPLATE_TYPE_IDX (parm);
       targ = TREE_VEC_ELT (targs, idx);
+      tparm = TREE_VALUE (TREE_VEC_ELT (tparms, idx));
 
       /* Check for mixed types and values.  */
-      if (TREE_CODE (TREE_VALUE (TREE_VEC_ELT (tparms, idx))) != TEMPLATE_DECL)
+      if ((TREE_CODE (parm) == TEMPLATE_TYPE_PARM
+	   && TREE_CODE (tparm) != TYPE_DECL)
+	  || (TREE_CODE (parm) == TEMPLATE_TEMPLATE_PARM 
+	      && TREE_CODE (tparm) != TEMPLATE_DECL))
 	return 1;
 
       if (!strict && targ != NULL_TREE 
@@ -5662,51 +5670,76 @@ unify (tparms, targs, ntparms, parm, arg, strict, explicit_mask)
 	   see whether the call is legal.  */ 
 	return 0;
 
-      if (CLASSTYPE_TEMPLATE_INFO (parm))
+      if (TREE_CODE (parm) == TEMPLATE_TEMPLATE_PARM)
 	{
-	  /* We arrive here when PARM does not involve template 
-	     specialization.  */
+	  if (CLASSTYPE_TEMPLATE_INFO (parm))
+	    {
+	      /* We arrive here when PARM does not involve template 
+		 specialization.  */
 
-	  /* ARG must be constructed from a template class.  */
-	  if (TREE_CODE (arg) != RECORD_TYPE || !CLASSTYPE_TEMPLATE_INFO (arg))
-	    return 1;
+	      /* ARG must be constructed from a template class.  */
+	      if (TREE_CODE (arg) != RECORD_TYPE || !CLASSTYPE_TEMPLATE_INFO (arg))
+		return 1;
 
-	  {
-	    tree parmtmpl = CLASSTYPE_TI_TEMPLATE (parm);
-	    tree parmvec = CLASSTYPE_TI_ARGS (parm);
-	    tree argvec = CLASSTYPE_TI_ARGS (arg);
-	    tree argtmplvec
-	      = DECL_INNERMOST_TEMPLATE_PARMS (CLASSTYPE_TI_TEMPLATE (arg));
-	    int i;
+	      {
+		tree parmtmpl = CLASSTYPE_TI_TEMPLATE (parm);
+		tree parmvec = CLASSTYPE_TI_ARGS (parm);
+		tree argvec = CLASSTYPE_TI_ARGS (arg);
+		tree argtmplvec
+		  = DECL_INNERMOST_TEMPLATE_PARMS (CLASSTYPE_TI_TEMPLATE (arg));
+		int i;
 
-	    /* The parameter and argument roles have to be switched here 
-	       in order to handle default arguments properly.  For example, 
-		 template<template <class> class TT> void f(TT<int>) 
-	       should be able to accept vector<int> which comes from 
-		 template <class T, class Allcator = allocator> 
+		/* The parameter and argument roles have to be switched here 
+		   in order to handle default arguments properly.  For example, 
+		   template<template <class> class TT> void f(TT<int>) 
+		   should be able to accept vector<int> which comes from 
+		   template <class T, class Allcator = allocator> 
 		   class vector.  */
 
-	    if (coerce_template_parms (argtmplvec, parmvec, parmtmpl, 1, 1, 0)
-		== error_mark_node)
-	      return 1;
-	  
-	    /* Deduce arguments T, i from TT<T> or TT<i>.  */
-	    for (i = 0; i < TREE_VEC_LENGTH (parmvec); ++i)
-	      {
-		tree t = TREE_VEC_ELT (parmvec, i);
-		if (TREE_CODE (t) != TEMPLATE_TYPE_PARM
-		    && TREE_CODE (t) != TEMPLATE_TEMPLATE_PARM
-		    && TREE_CODE (t) != TEMPLATE_PARM_INDEX)
-		  continue;
-
-		/* This argument can be deduced.  */
-
-		if (unify (tparms, targs, ntparms, t, 
-			   TREE_VEC_ELT (argvec, i), strict, explicit_mask))
+		if (coerce_template_parms (argtmplvec, parmvec, parmtmpl, 1, 1, 0)
+		    == error_mark_node)
 		  return 1;
+	  
+		/* Deduce arguments T, i from TT<T> or TT<i>.  */
+		for (i = 0; i < TREE_VEC_LENGTH (parmvec); ++i)
+		  {
+		    tree t = TREE_VEC_ELT (parmvec, i);
+		    if (TREE_CODE (t) != TEMPLATE_TYPE_PARM
+			&& TREE_CODE (t) != TEMPLATE_TEMPLATE_PARM
+			&& TREE_CODE (t) != TEMPLATE_PARM_INDEX)
+		      continue;
+
+		    /* This argument can be deduced.  */
+
+		    if (unify (tparms, targs, ntparms, t, 
+			       TREE_VEC_ELT (argvec, i), strict, explicit_mask))
+		      return 1;
+		  }
 	      }
+	      arg = CLASSTYPE_TI_TEMPLATE (arg);
+	    }
+	}
+      else
+	{
+	  if (strict && (TYPE_READONLY (arg) < TYPE_READONLY (parm)
+			 || TYPE_VOLATILE (arg) < TYPE_VOLATILE (parm)))
+	    return 1;
+
+#if 0
+	  /* Template type parameters cannot contain cv-quals; i.e.
+	     template <class T> void f (T& a, T& b) will not generate
+	     void f (const int& a, const int& b).  */
+	  if (TYPE_READONLY (arg) > TYPE_READONLY (parm)
+	      || TYPE_VOLATILE (arg) > TYPE_VOLATILE (parm))
+	    return 1;
+	  arg = TYPE_MAIN_VARIANT (arg);
+#else
+	  {
+	    int constp = TYPE_READONLY (arg) > TYPE_READONLY (parm);
+	    int volatilep = TYPE_VOLATILE (arg) > TYPE_VOLATILE (parm);
+	    arg = cp_build_type_variant (arg, constp, volatilep);
 	  }
-	  arg = CLASSTYPE_TI_TEMPLATE (arg);
+#endif
 	}
 
       /* Simple cases: Value already set, does match or doesn't.  */
@@ -5720,8 +5753,18 @@ unify (tparms, targs, ntparms, parm, arg, strict, explicit_mask)
       return 0;
 
     case TEMPLATE_PARM_INDEX:
+      tparm = TREE_VALUE (TREE_VEC_ELT (tparms, 0));
+
+      if (TEMPLATE_PARM_LEVEL (parm) 
+	  != template_decl_level (tparm))
+	/* The PARM is not one we're trying to unify.  Just check
+	   to see if it matches ARG.  */
+	return (TREE_CODE (arg) == TREE_CODE (parm)
+		&& cp_tree_equal (parm, arg) == 0) ? 0 : 1;
+
       idx = TEMPLATE_PARM_IDX (parm);
       targ = TREE_VEC_ELT (targs, idx);
+
       if (targ)
 	{
 	  int i = cp_tree_equal (targ, arg);
