@@ -145,8 +145,7 @@ static HARD_REG_SET *block_out_reg_set;
 static short *block_number;
 
 /* This is the register file for all register after conversion */
-static rtx SFmode_reg[FIRST_PSEUDO_REGISTER];
-static rtx DFmode_reg[FIRST_PSEUDO_REGISTER];
+static rtx FP_mode_reg[FIRST_PSEUDO_REGISTER][(int) MAX_MACHINE_MODE];
 
 /* ??? set of register to delete after ASM_OPERAND */
 HARD_REG_SET asm_regs;
@@ -164,8 +163,6 @@ extern rtx gen_movdf ();
 extern rtx find_regno_note ();
 extern rtx emit_jump_insn_before ();
 extern rtx emit_label_after ();
-
-extern rtx dconst0_rtx;
 
 /* Forward declarations */
 
@@ -225,15 +222,15 @@ reg_to_stack (first, file)
   register rtx insn;
   register int i;
   int stack_reg_seen = 0;
+  enum machine_mode mode;
 
   current_function_returns_real
     = TREE_CODE (TREE_TYPE (DECL_RESULT (current_function_decl))) == REAL_TYPE;
 
-  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-    {
-      SFmode_reg[i] = gen_rtx (REG, SFmode, i);
-      DFmode_reg[i] = gen_rtx (REG, DFmode, i);
-    }
+  for (mode = GET_CLASS_NARROWEST_MODE (MODE_FLOAT); mode != VOIDmode;
+       mode = GET_MODE_WIDER_MODE (mode))
+    for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+      FP_mode_reg[i][(int) mode] = gen_rtx (REG, mode, i);
 
   /* Count the basic blocks.  Also find maximum insn uid.  */
   {
@@ -599,7 +596,8 @@ record_reg_life (insn, block, regstack)
 	       cannot be used on these insns, because they do not appear in
 	       block_number[]. */
 
-	    pat = gen_rtx (SET, VOIDmode, DFmode_reg[reg], dconst0_rtx);
+	    pat = gen_rtx (SET, VOIDmode, FP_mode_reg[reg][(int) DFmode],
+			   CONST0_RTX (DFmode));
 	    init = emit_insn_after (pat, insn);
 	    PUT_MODE (init, QImode);
 
@@ -839,7 +837,8 @@ stack_reg_life_analysis (first)
       {
 	rtx init_rtx;
 
-	init_rtx = gen_rtx (SET, VOIDmode, DFmode_reg[reg], dconst0_rtx);
+	init_rtx = gen_rtx (SET, VOIDmode, FP_mode_reg[reg][(int) DFmode],
+			    CONST0_RTX (DFmode));
 	block_begin[0] = emit_insn_after (init_rtx, first);
 	PUT_MODE (block_begin[0], QImode);
 
@@ -867,12 +866,10 @@ replace_reg (reg, regno)
       || ! STACK_REG_P (*reg))
     abort ();
 
-  if (GET_MODE (*reg) == DFmode)
-    *reg = DFmode_reg[regno];
-  else if (GET_MODE (*reg) == SFmode)
-    *reg = SFmode_reg[regno];
-  else
-    abort ();
+  if (GET_MODE_CLASS (GET_MODE (*reg)) != MODE_FLOAT)
+    abort;
+
+  *reg = FP_mode_reg[regno][(int) GET_MODE (*reg)];
 }
 
 /* Remove a note of type NOTE, which must be found, for register
@@ -957,14 +954,14 @@ emit_pop_insn (insn, regstack, reg, when)
   if (hard_regno < FIRST_STACK_REG)
     abort ();
 
-  pop_rtx = gen_rtx (SET, VOIDmode, DFmode_reg[hard_regno],
-		     DFmode_reg[FIRST_STACK_REG]);
+  pop_rtx = gen_rtx (SET, VOIDmode, FP_mode_reg[hard_regno][(int) DFmode],
+		     FP_mode_reg[FIRST_STACK_REG][(int) DFmode]);
 
   pop_insn = (*when) (pop_rtx, insn);
   PUT_MODE (pop_insn, VOIDmode);
 
-  REG_NOTES (pop_insn) = gen_rtx (EXPR_LIST,
-				  REG_DEAD, DFmode_reg[FIRST_STACK_REG],
+  REG_NOTES (pop_insn) = gen_rtx (EXPR_LIST, REG_DEAD,
+				  FP_mode_reg[FIRST_STACK_REG][(int) DFmode],
 				  REG_NOTES (pop_insn));
 
   regstack->reg[regstack->top - (hard_regno - FIRST_STACK_REG)]
@@ -997,7 +994,8 @@ emit_hard_swap_insn (insn, regstack, hard_regno, when)
   if (hard_regno == FIRST_STACK_REG)
     return;
 
-  swap_rtx = gen_swapdf (DFmode_reg[hard_regno], DFmode_reg[FIRST_STACK_REG]);
+  swap_rtx = gen_swapdf (FP_mode_reg[hard_regno][(int) DFmode],
+			 FP_mode_reg[FIRST_STACK_REG][(int) DFmode]);
   swap_insn = (*when) (swap_rtx, insn);
   PUT_MODE (swap_insn, VOIDmode);
 
@@ -1526,7 +1524,7 @@ change_stack (insn, old, new)
 
   for (reg = old->top; reg >= 0; reg--)
     if (! TEST_HARD_REG_BIT (new->reg_set, old->reg[reg]))
-      emit_pop_insn (insn, old, DFmode_reg[old->reg[reg]],
+      emit_pop_insn (insn, old, FP_mode_reg[old->reg[reg]][(int) DFmode],
 		     emit_insn_before);
 
   if (new->top == -2)
@@ -1575,7 +1573,8 @@ change_stack (insn, old, new)
 	      if (reg == -1)
 		abort ();
 
-	      emit_swap_insn (insn, old, DFmode_reg[old->reg[reg]],
+	      emit_swap_insn (insn, old,
+			      FP_mode_reg[old->reg[reg]][(int) DFmode],
 			      emit_insn_before);
 	    }
 
@@ -1586,7 +1585,8 @@ change_stack (insn, old, new)
 	  for (reg = new->top; reg >= 0; reg--)
 	    if (new->reg[reg] != old->reg[reg])
 	      {
-		emit_swap_insn (insn, old, DFmode_reg[old->reg[reg]],
+		emit_swap_insn (insn, old,
+				FP_mode_reg[old->reg[reg]][(int) DFmode],
 				emit_insn_before);
 		break;
 	      }
@@ -1791,7 +1791,8 @@ convert_regs ()
   for (reg = regstack.top; reg >= 0; reg--)
     if (! current_function_returns_real
 	|| regstack.reg[reg] != FIRST_STACK_REG)
-      insn = emit_pop_insn (insn, &regstack, DFmode_reg[regstack.reg[reg]],
+      insn = emit_pop_insn (insn, &regstack,
+			    FP_mode_reg[regstack.reg[reg]][(int) DFmode],
 			    emit_insn_after);
 }
 
