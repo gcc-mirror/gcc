@@ -567,7 +567,7 @@ HOST_PRINT = $(HOST_PREFIX)print-rtl.o
 # Both . and srcdir are used, in that order,
 # so that tm.h and config.h will be found in the compilation
 # subdirectory rather than in the source directory.
-INCLUDES = -I. -I$(srcdir) -I$(srcdir)/config
+INCLUDES = -I. -I$(srcdir) -I$(srcdir)/config -I$(srcdir)/../include
 
 # Always use -I$(srcdir)/config when compiling.
 .c.o:
@@ -1910,7 +1910,7 @@ unprotoize$(exeext): unprotoize.o getopt.o getopt1.o getpwd.o version.o \
 	  unprotoize.o getopt.o getopt1.o getpwd.o version.o \
 	  pexecute.o choose-temp.o mkstemp.o $(LIBS)
 
-protoize.o: protoize.c getopt.h $(CONFIG_H) system.h
+protoize.o: protoize.c $(srcdir)/../include/getopt.h $(CONFIG_H) system.h
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
           -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
 	  -DGPLUSPLUS_INCLUDE_DIR=\"$(gxx_include_dir)\" \
@@ -1920,7 +1920,7 @@ protoize.o: protoize.c getopt.h $(CONFIG_H) system.h
 	  -DSTD_PROTO_DIR=\"$(libsubdir)\" \
 	  $(srcdir)/protoize.c
 
-unprotoize.o: unprotoize.c protoize.c getopt.h $(CONFIG_H) system.h
+unprotoize.o: unprotoize.c protoize.c $(srcdir)/../include/getopt.h $(CONFIG_H) system.h
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
           -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
 	  -DGPLUSPLUS_INCLUDE_DIR=\"$(gxx_include_dir)\" \
@@ -1930,10 +1930,15 @@ unprotoize.o: unprotoize.c protoize.c getopt.h $(CONFIG_H) system.h
 	  -DSTD_PROTO_DIR=\"$(libsubdir)\" \
 	  $(srcdir)/unprotoize.c
 
-getopt.o: getopt.c getopt.h
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(srcdir)/getopt.c
-getopt1.o: getopt1.c getopt.h
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(srcdir)/getopt1.c
+getopt.o: $(srcdir)/../libiberty/getopt.c $(srcdir)/../include/getopt.h
+	rm -f getopt.c
+	$(LN_S) $(srcdir)/../libiberty/getopt.c getopt.c
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) getopt.c
+
+getopt1.o: $(srcdir)/../libiberty/getopt1.c $(srcdir)/../include/getopt.h
+	rm -f getopt1.c
+	$(LN_S) $(srcdir)/../libiberty/getopt1.c getopt1.c
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) getopt1.c
 
 # This info describes the target machine, so compile with GCC just built.
 SYSCALLS.c.X: $(srcdir)/sys-types.h $(srcdir)/sys-protos.h $(GCC_PASSES) \
