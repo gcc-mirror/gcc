@@ -1,3 +1,8 @@
+Sun Nov  9 01:40:40 1997  Manfred Hollstein  (manfred@s-direktnet.de)
+
+	* m88k/dgux.h (ASM_CPU_SPEC): Reformatted to suppress wrong whitespace
+	in generated `specs' file.
+
 Sun Nov  9 01:37:11 1997  Jim Wilson  (wilson@cygnus.com)
 
 	* flags.h (flag_rerun_loop_opt): Declare.

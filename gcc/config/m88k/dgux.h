@@ -30,7 +30,7 @@ Boston, MA 02111-1307, USA.  */
   (TARGET_SVR4 ? DWARF_DEBUG : SDB_DEBUG)
 
 #ifndef VERSION_INFO2
-#define VERSION_INFO2   "$Revision: 1.24 $"
+#define VERSION_INFO2   "$Revision: 1.1.1.1 $"
 #endif
 #ifndef NO_BUGS
 #define AS_BUG_IMMEDIATE_LABEL
@@ -137,13 +137,13 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_CPU_SPEC "\
 		  %{v:-V}\
 		  %{g:\
-		  %{mno-legend:-Wc,off}\
-		  %{!mno-legend:-Wc,-fix-bb,-s\"%i\"\
-		  %{traditional:,-lc}\
-		  %{!traditional:,-lansi-c}\
-		  %{mstandard:,-keep-std}\
-		  %{mexternal-legend:,-external}\
-		  %{mocs-frame-position:,-ocs}}}"
+%{mno-legend:-Wc,off}\
+%{!mno-legend:-Wc,-fix-bb,-s\"%i\"\
+%{traditional:,-lc}\
+%{!traditional:,-lansi-c}\
+%{mstandard:,-keep-std}\
+%{mexternal-legend:,-external}\
+%{mocs-frame-position:,-ocs}}}"
 
 #define CPP_CPU_SPEC "\
                   %{!m88000:%{!m88100:%{m88110:-D__m88110__}}} \
