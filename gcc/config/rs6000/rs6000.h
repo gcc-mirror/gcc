@@ -1304,14 +1304,15 @@ extern int rs6000_sysv_varargs_p;
    fp1, unless -msoft-float.  */
 
 #define FUNCTION_VALUE(VALTYPE, FUNC)	\
-  gen_rtx (REG, TYPE_MODE (VALTYPE),	\
-	   TREE_CODE (VALTYPE) == REAL_TYPE && TARGET_HARD_FLOAT ? 33 : 3)
+  gen_rtx_REG (TYPE_MODE (VALTYPE),	\
+	       TREE_CODE (VALTYPE) == REAL_TYPE && TARGET_HARD_FLOAT ? 33 : 3)
 
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
 
 #define LIBCALL_VALUE(MODE)		\
-  gen_rtx (REG, MODE, GET_MODE_CLASS (MODE) == MODE_FLOAT && TARGET_HARD_FLOAT ? 33 : 3)
+  gen_rtx_REG (MODE, (GET_MODE_CLASS (MODE) == MODE_FLOAT	 \
+		      && TARGET_HARD_FLOAT ? 33 : 3)
 
 /* The definition of this macro implies that there are cases where
    a scalar value cannot be returned in registers.
@@ -1624,12 +1625,15 @@ typedef struct rs6000_args
    frame pointer.  */
 #define RETURN_ADDR_RTX(count, frame)			\
   ((count == -1)					\
-   ? gen_rtx (REG, Pmode, 65)				\
-   : gen_rtx (MEM, Pmode,				\
-	      memory_address (Pmode, 			\
-			      plus_constant (copy_to_reg (gen_rtx (MEM, Pmode, \
-								   memory_address (Pmode, frame))), \
-					     RETURN_ADDRESS_OFFSET))))
+   ? gen_rtx_REG (Pmode, 65)				\
+   : gen_rtx_MEM (Pmode,				\
+		  memory_address			\
+		  (Pmode, 				\
+		   plus_constant (copy_to_reg		\
+				  (gen_rtx_MEM (Pmode,	\
+						memory_address (Pmode, \
+								frame))), \
+				  RETURN_ADDRESS_OFFSET))))
 
 /* Definitions for register eliminations.
 
@@ -1900,9 +1904,9 @@ typedef struct rs6000_args
       low_int = INTVAL (XEXP (X, 1)) & 0xffff;				\
       if (low_int & 0x8000)						\
 	high_int += 0x10000, low_int |= ((HOST_WIDE_INT) -1) << 16;	\
-      sum = force_operand (gen_rtx (PLUS, Pmode, XEXP (X, 0),		\
-				    GEN_INT (high_int)), 0);		\
-      (X) = gen_rtx (PLUS, Pmode, sum, GEN_INT (low_int));		\
+      sum = force_operand (gen_rtx_PLUS (Pmode, XEXP (X, 0),		\
+					 GEN_INT (high_int)), 0);	\
+      (X) = gen_rtx_PLUS (Pmode, sum, GEN_INT (low_int));		\
       goto WIN;								\
     }									\
   else if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 0)) == REG	\
@@ -1911,8 +1915,8 @@ typedef struct rs6000_args
 	   && (TARGET_64BIT || (MODE) != DImode)			\
 	   && (MODE) != TImode)						\
     {									\
-      (X) = gen_rtx (PLUS, Pmode, XEXP (X, 0),				\
-		     force_reg (Pmode, force_operand (XEXP (X, 1), 0))); \
+      (X) = gen_rtx_PLUS (Pmode, XEXP (X, 0),				\
+			  force_reg (Pmode, force_operand (XEXP (X, 1), 0))); \
       goto WIN;								\
     }									\
   else if (TARGET_ELF && TARGET_32BIT && TARGET_NO_TOC			\
@@ -1924,7 +1928,7 @@ typedef struct rs6000_args
     {									\
       rtx reg = gen_reg_rtx (Pmode);					\
       emit_insn (gen_elf_high (reg, (X)));				\
-      (X) = gen_rtx (LO_SUM, Pmode, reg, (X));				\
+      (X) = gen_rtx_LO_SUM (Pmode, reg, (X));				\
     }									\
 }
 

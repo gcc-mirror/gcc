@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Vax version.
-   Copyright (C) 1987, 88, 91, 93-96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 91, 93-97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -343,8 +343,7 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
 /* Given an rtx for the address of a frame,
    return an rtx for the address of the word in the frame
    that holds the dynamic chain--the previous frame's address.  */
-#define DYNAMIC_CHAIN_ADDRESS(frame) \
-gen_rtx (PLUS, Pmode, frame, gen_rtx (CONST_INT, VOIDmode, 12))
+#define DYNAMIC_CHAIN_ADDRESS(FRAME) plus_constant ((FRAME)(, 12)
 
 /* If we generate an insn to push BYTES bytes,
    this says how many the stack pointer really advances by.
@@ -373,14 +372,14 @@ gen_rtx (PLUS, Pmode, frame, gen_rtx (CONST_INT, VOIDmode, 12))
 /* On the Vax the return value is in R0 regardless.  */   
 
 #define FUNCTION_VALUE(VALTYPE, FUNC)  \
-  gen_rtx (REG, TYPE_MODE (VALTYPE), 0)
+  gen_rtx_REG (TYPE_MODE (VALTYPE), 0)
 
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
 
 /* On the Vax the return value is in R0 regardless.  */   
 
-#define LIBCALL_VALUE(MODE)  gen_rtx (REG, MODE, 0)
+#define LIBCALL_VALUE(MODE)  gen_rtx_REG (MODE, 0)
 
 /* Define this if PCC uses the nonreentrant convention for returning
    structure and union values.  */
@@ -526,14 +525,14 @@ gen_rtx (PLUS, Pmode, frame, gen_rtx (CONST_INT, VOIDmode, 12))
      movl $STATIC,r0   (store the functions static chain)
      jmp  *$FUNCTION   (jump to function code at address FUNCTION)  */
 
-#define TRAMPOLINE_TEMPLATE(FILE)					\
-{									\
-  ASM_OUTPUT_SHORT (FILE, const0_rtx);					\
-  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x8fd0));	\
-  ASM_OUTPUT_INT (FILE, const0_rtx);					\
-  ASM_OUTPUT_BYTE  (FILE, 0x50+STATIC_CHAIN_REGNUM);			\
-  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x9f17));	\
-  ASM_OUTPUT_INT (FILE, const0_rtx);					\
+#define TRAMPOLINE_TEMPLATE(FILE)			\
+{							\
+  ASM_OUTPUT_SHORT (FILE, const0_rtx);			\
+  ASM_OUTPUT_SHORT (FILE, GEN_INT (0x8fd0));		\
+  ASM_OUTPUT_INT (FILE, const0_rtx);			\
+  ASM_OUTPUT_BYTE  (FILE, 0x50 + STATIC_CHAIN_REGNUM);	\
+  ASM_OUTPUT_SHORT (FILE, GEN_INT (0x9f17));		\
+  ASM_OUTPUT_INT (FILE, const0_rtx);			\
 }
 
 /* Length in units of the trampoline for entering a nested function.  */
@@ -548,12 +547,12 @@ gen_rtx (PLUS, Pmode, frame, gen_rtx (CONST_INT, VOIDmode, 12))
    to the start of the trampoline.  */
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
 {									\
-  emit_insn (gen_rtx (ASM_INPUT, VOIDmode,				\
-		      "movpsl -(sp)\n\tpushal 1(pc)\n\trei"));		\
-  emit_move_insn (gen_rtx (MEM, HImode, TRAMP),				\
-		  gen_rtx (MEM, HImode, FNADDR));			\
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 4)), CXT);\
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 11)),	\
+  emit_insn (gen_rtx_ASM_INPUT (VOIDmode,				\
+				"movpsl -(sp)\n\tpushal 1(pc)\n\trei")); \
+  emit_move_insn (gen_rtx_MEM (HImode, TRAMP),				\
+		  gen_rtx_MEM (HImode, FNADDR));			\
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 4)), CXT);\
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 11)),	\
 		  plus_constant (FNADDR, 2));				\
 }
 
@@ -569,7 +568,7 @@ gen_rtx (PLUS, Pmode, frame, gen_rtx (CONST_INT, VOIDmode, 12))
 
 #define RETURN_ADDR_RTX(COUNT, FRAME)	\
   ((COUNT == 0)				\
-   ? gen_rtx (MEM, Pmode, plus_constant (FRAME, RETURN_ADDRESS_OFFSET)) \
+   ? gen_rtx_MEM (Pmode, plus_constant (FRAME, RETURN_ADDRESS_OFFSET)) \
    : (rtx) 0)
 
 

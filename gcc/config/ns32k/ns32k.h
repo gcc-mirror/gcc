@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  NS32000 version.
-   Copyright (C) 1988, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1988, 93, 94, 95, 96, 97, 1998 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -421,8 +421,8 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, GEN_AND_FP_REGS,
 
 #define FUNCTION_VALUE(VALTYPE, FUNC)  \
   (TREE_CODE (VALTYPE) == REAL_TYPE && TARGET_32081 \
-   ? gen_rtx (REG, TYPE_MODE (VALTYPE), 8) \
-   : gen_rtx (REG, TYPE_MODE (VALTYPE), 0))
+   ? gen_rtx_REG (TYPE_MODE (VALTYPE), 8) \
+   : gen_rtx_REG (TYPE_MODE (VALTYPE), 0))
 
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
@@ -432,8 +432,8 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, GEN_AND_FP_REGS,
 
 #define LIBCALL_VALUE(MODE)  \
   (((MODE) == DFmode || (MODE) == SFmode) && TARGET_32081 \
-   ? gen_rtx (REG, MODE, 8) \
-   : gen_rtx (REG, MODE, 0))
+   ? gen_rtx_REG (MODE, 8) \
+   : gen_rtx_REG (MODE, 0))
 
 /* Define this if PCC uses the nonreentrant convention for returning
    structure and union values.  */
@@ -498,7 +498,7 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, GEN_AND_FP_REGS,
    It exists only to test register calling conventions.  */
 
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
-((TARGET_REGPARM && (CUM) < 8) ? gen_rtx (REG, (MODE), (CUM) / 4) : 0)
+((TARGET_REGPARM && (CUM) < 8) ? gen_rtx_REG ((MODE), (CUM) / 4) : 0)
 
 /* For an arg passed partly in registers and partly in memory,
    this is the number of registers used.
@@ -784,8 +784,8 @@ operands on the 32k are stored).  */
 
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			     \
 {									     \
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 12)), CXT);    \
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 16)), FNADDR); \
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 12)), CXT);    \
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 16)), FNADDR); \
 }
 
 /* This is the library routine that is used

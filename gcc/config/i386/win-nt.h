@@ -1,6 +1,6 @@
 /* Operating system specific defines to be used when targeting GCC for
    Windows NT 3.x on an i386.
-   Copyright (C) 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1998 Free Software Foundation, Inc.
    Contributed by Douglas B. Rupp (drupp@cs.washington.edu).
 
 This file is part of GNU CC.
@@ -118,7 +118,7 @@ do									\
       if (lookup_attribute ("stdcall",					\
 			    TYPE_ATTRIBUTES (TREE_TYPE (DECL))))	\
         XEXP (DECL_RTL (DECL), 0) = 					\
-          gen_rtx (SYMBOL_REF, Pmode, gen_stdcall_suffix (DECL)); 	\
+          gen_rtx_SYMBOL_REF (Pmode, gen_stdcall_suffix (DECL)); 	\
   }									\
 while (0)
 #endif

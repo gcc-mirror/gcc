@@ -1,6 +1,6 @@
 /* Definitions of target machine parameters for GNU compiler,
    for Pyramid 90x, 9000, and MIServer Series.
-   Copyright (C) 1989, 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -511,19 +511,19 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
    --> its type.   */
 
 #define FUNCTION_VALUE(VALTYPE, FUNC)  \
-  gen_rtx (REG, TYPE_MODE (VALTYPE), PYR_TREG(0))
+  gen_rtx_REG (TYPE_MODE (VALTYPE), PYR_TREG(0))
 
 /* --> but the callee has to leave it in PR0(/PR1) */
 
 #define FUNCTION_OUTGOING_VALUE(VALTYPE, FUNC)	\
-  gen_rtx (REG, TYPE_MODE (VALTYPE), PYR_PREG(0))
+  gen_rtx_REG (TYPE_MODE (VALTYPE), PYR_PREG(0))
 
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
 
 /* --> On Pyramid the return value is in TR0/TR1 regardless.  */
 
-#define LIBCALL_VALUE(MODE)  gen_rtx (REG, MODE, PYR_TREG(0))
+#define LIBCALL_VALUE(MODE)  gen_rtx_REG (MODE, PYR_TREG(0))
 
 /* Define this if PCC uses the nonreentrant convention for returning
    structure and union values.  */
@@ -652,7 +652,7 @@ extern int inner_param_safe_helper();
 		   + ((MODE) == BLKmode				\
 		      ? (int_size_in_bytes (TYPE) + 3) / 4	\
 		      : (GET_MODE_SIZE (MODE) + 3) / 4))	\
-    ? gen_rtx (REG, (MODE), PYR_TREG(CUM))			\
+    ? gen_rtx_REG ((MODE), PYR_TREG(CUM))			\
     : 0)							\
  : 0)
 #ifdef __GNUC__
@@ -673,7 +673,7 @@ extern void* pyr_function_arg ();
 	   + ((MODE) == BLKmode				\
 	      ? (int_size_in_bytes (TYPE) + 3) / 4	\
 	      : (GET_MODE_SIZE (MODE) + 3) / 4))	\
-    ? gen_rtx (REG, (MODE), PYR_PREG(CUM))		\
+    ? gen_rtx_REG ((MODE), PYR_PREG(CUM))		\
     : 0)						\
  : 0)
 
@@ -736,10 +736,10 @@ extern void* pyr_function_arg ();
 	jump $<func>		# S2R
  */
 #define TRAMPOLINE_TEMPLATE(FILE) \
-{ ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x2100001C));	\
-  ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x00000000));	\
-  ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x40000000));	\
-  ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x00000000)); }
+{ ASM_OUTPUT_INT (FILE, GEN_INT (0x2100001C));	\
+  ASM_OUTPUT_INT (FILE, GEN_INT (0x00000000));	\
+  ASM_OUTPUT_INT (FILE, GEN_INT (0x40000000));	\
+  ASM_OUTPUT_INT (FILE, GEN_INT (0x00000000)); }
 
 #define TRAMPOLINE_SIZE		16
 #define TRAMPOLINE_ALIGNMENT	32
@@ -749,12 +749,13 @@ extern void* pyr_function_arg ();
    CXT is an RTX for the static chain value for the function.  */
 
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT) \
-{ emit_move_insn (gen_rtx (MEM, Pmode, plus_constant (TRAMP, 4)), CXT);	\
+{ emit_move_insn (gen_rtx_MEM (Pmode, plus_constant (TRAMP, 4)), CXT);	\
   emit_move_insn (gen_rtx (MEM, Pmode, plus_constant (TRAMP, 12)), FNADDR); \
-  emit_call_insn (gen_call (gen_rtx (MEM, QImode,			\
-				     gen_rtx (SYMBOL_REF, Pmode,	\
-					      "__enable_execute_stack")), \
-			    const0_rtx));				\
+  emit_call_insn (gen_call						\
+		  (gen_rtx_MEM						\
+		   (QImode,						\
+		    gen_rtx_SYMBOL_REF (Pmode, "__enable_execute_stack")), \
+		   const0_rtx));				\
 }
 
 /* Output assembler code to FILE to increment profiler label # LABELNO

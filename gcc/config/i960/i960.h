@@ -755,7 +755,7 @@ enum reg_class { NO_REGS, GLOBAL_REGS, LOCAL_REGS, LOCAL_OR_GLOBAL_REGS,
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
 
-#define LIBCALL_VALUE(MODE) gen_rtx ((REG), (MODE), 0)
+#define LIBCALL_VALUE(MODE) gen_rtx_REG ((MODE), 0)
 
 /* 1 if N is a possible register number for a function value
    as seen by the caller.
@@ -859,7 +859,7 @@ extern struct rtx_def *i960_function_arg ();
    otherwise, FUNC is 0.  */
 
 #define FUNCTION_VALUE(TYPE, FUNC) \
-  gen_rtx (REG, TYPE_MODE (TYPE), 0)
+  gen_rtx_REG (TYPE_MODE (TYPE), 0)
 
 /* Force aggregates and objects larger than 16 bytes to be returned in memory,
    since we only have 4 registers available for return values.  */
@@ -1469,11 +1469,11 @@ extern struct rtx_def *gen_compare_reg ();
 
 #define TRAMPOLINE_TEMPLATE(FILE)					\
 {									\
-  ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x8C203000));	\
-  ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x00000000));	\
-  ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x8C183000));	\
-  ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x00000000));	\
-  ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x84212000));	\
+  ASM_OUTPUT_INT (FILE, GEN_INT (0x8C203000));	\
+  ASM_OUTPUT_INT (FILE, GEN_INT (0x00000000));	\
+  ASM_OUTPUT_INT (FILE, GEN_INT (0x8C183000));	\
+  ASM_OUTPUT_INT (FILE, GEN_INT (0x00000000));	\
+  ASM_OUTPUT_INT (FILE, GEN_INT (0x84212000));	\
 }
 
 /* Length in units of the trampoline for entering a nested function.  */
@@ -1486,10 +1486,8 @@ extern struct rtx_def *gen_compare_reg ();
 
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
 {									\
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 4)),	\
-		  FNADDR);						\
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 12)),	\
-		  CXT);							\
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 4)), FNADDR); \
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 12)), CXT); \
 }
 
 /* Generate RTL to flush the register windows so as to make arbitrary frames

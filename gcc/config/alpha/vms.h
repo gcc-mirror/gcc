@@ -177,12 +177,12 @@ extern struct rtx_def *alpha_arg_info_reg_val ();
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED)	\
 ((MODE) == VOIDmode ? alpha_arg_info_reg_val (CUM)		\
  : ((CUM.num_args) < 6 && ! MUST_PASS_IN_STACK (MODE, TYPE)	\
-    ? gen_rtx(REG, (MODE),					\
-	      ((CUM).num_args + 16				\
-	       + ((TARGET_FPREGS				\
-		   && (GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT \
-		       || GET_MODE_CLASS (MODE) == MODE_FLOAT)) \
-		  * 32)))			\
+    ? gen_rtx_REG ((MODE),					\
+		   ((CUM).num_args + 16				\
+		    + ((TARGET_FPREGS				\
+			&& (GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT \
+			    || GET_MODE_CLASS (MODE) == MODE_FLOAT)) \
+		       * 32)))			\
     : 0))
 
 #undef FUNCTION_ARG_ADVANCE
@@ -234,7 +234,7 @@ extern struct rtx_def *alpha_arg_info_reg_val ();
     {							\
       if (! (NO_RTL))					\
 	{						\
-	  emit_move_insn (gen_rtx (REG, DImode, 1),	\
+	  emit_move_insn (gen_rtx_REG (DImode, 1),	\
 			  virtual_incoming_args_rtx);	\
 	  emit_insn (gen_arg_home ());			\
 	}						\
@@ -357,16 +357,16 @@ literals_section ()						\
    CXT is an RTX for the static chain value for the function.  */
 
 #undef INITIALIZE_TRAMPOLINE
-#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			  \
-{									  \
-  emit_move_insn (gen_rtx (MEM, Pmode,                                    \
-			   memory_address (Pmode,			  \
-					   plus_constant ((TRAMP), 16))), \
-		  (FNADDR));		                                  \
-  emit_move_insn (gen_rtx (MEM, Pmode,					  \
-			   memory_address (Pmode,			  \
+#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
+{									\
+  emit_move_insn (gen_rtx_MEM (Pmode,                                   \
+			       memory_address (Pmode,			\
+					       plus_constant ((TRAMP), 16))), \
+		  (FNADDR));		                                \
+  emit_move_insn (gen_rtx_MEM (Pmode,					\
+			   memory_address (Pmode,			\
 					   plus_constant ((TRAMP), 24))), \
-		  (CXT));						  \
+		  (CXT));						\
 }
 
 #undef TRANSFER_FROM_TRAMPOLINE

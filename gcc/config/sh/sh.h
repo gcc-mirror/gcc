@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler for Hitachi Super-H.
-   Copyright (C) 1993, 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1993, 94, 95, 96, 97, 1998 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com).
    Improved by Jim Wilson (wilson@cygnus.com).
 
@@ -726,7 +726,7 @@ extern enum reg_class reg_class_from_letter[];
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
 #define LIBCALL_VALUE(MODE) \
-  gen_rtx (REG, (MODE), BASE_RETURN_VALUE_REG (MODE));
+  gen_rtx_REG ((MODE), BASE_RETURN_VALUE_REG (MODE));
 
 /* 1 if N is a possible register number for a function value. */
 #define FUNCTION_VALUE_REGNO_P(REGNO) \
@@ -836,8 +836,8 @@ struct sh_args {
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
   ((PASS_IN_REG_P ((CUM), (MODE), (TYPE))				\
     && ((NAMED) || TARGET_SH3E))					\
-   ? gen_rtx (REG, (MODE),						\
-	      (BASE_ARG_REG (MODE) + ROUND_REG ((CUM), (MODE)))) \
+   ? gen_rtx_REG ((MODE),						\
+		  (BASE_ARG_REG (MODE) + ROUND_REG ((CUM), (MODE))))	\
    : 0)
 
 /* For an arg passed partly in registers and partly in memory,
@@ -918,13 +918,13 @@ extern int current_function_anonymous_args;
 
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
 {									\
-  emit_move_insn (gen_rtx (MEM, SImode, (TRAMP)),			\
+  emit_move_insn (gen_rtx_MEM (SImode, (TRAMP)),			\
 		  GEN_INT (TARGET_LITTLE_ENDIAN ? 0xd301dd02 : 0xdd02d301));\
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant ((TRAMP), 4)),	\
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant ((TRAMP), 4)),	\
 		  GEN_INT (TARGET_LITTLE_ENDIAN ? 0x00094d2b : 0x4d2b0009));\
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant ((TRAMP), 8)),	\
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant ((TRAMP), 8)),	\
 		  (CXT));						\
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant ((TRAMP), 12)),	\
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant ((TRAMP), 12)),	\
 		  (FNADDR));						\
 }
 
@@ -935,7 +935,7 @@ extern int current_function_anonymous_args;
 
 #define RETURN_ADDR_RTX(COUNT, FRAME)	\
   (((COUNT) == 0)				\
-   ? gen_rtx (MEM, Pmode, gen_rtx (REG, Pmode, RETURN_ADDRESS_POINTER_REGNUM)) \
+   ? gen_rtx_MEM (Pmode, gen_rtx_REG (Pmode, RETURN_ADDRESS_POINTER_REGNUM)) \
    : (rtx) 0)
 
 /* Generate necessary RTL for __builtin_saveregs().
@@ -1164,7 +1164,7 @@ extern struct rtx_def *sh_builtin_saveregs ();
 			      GEN_INT (offset_base), NULL_RTX, 0, \
 			      OPTAB_LIB_WIDEN);			\
                                                                 \
-	  (X) = gen_rtx (PLUS, Pmode, sum, GEN_INT (offset - offset_base)); \
+	  (X) = gen_rtx_PLUS (Pmode, sum, GEN_INT (offset - offset_base)); \
 	  goto WIN;						\
 	}							\
     }								\

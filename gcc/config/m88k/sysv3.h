@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    Motorola m88100 running the AT&T/Unisoft/Motorola V.3 reference port.
-   Copyright (C) 1990, 1991, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1990, 1991, 1997, 1998 Free Software Foundation, Inc.
    Contributed by Ray Essick (ressick@mot.com)
    Enhanced by Tom Wood (Tom_Wood@NeXT.com)
 
@@ -141,10 +141,11 @@ do {									\
 #undef INITIALIZE_TRAMPOLINE 
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
 {									\
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 40)), FNADDR); \
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 36)), CXT); \
-  emit_call_insn (gen_call (gen_rtx (MEM, SImode,			\
-				     gen_rtx (SYMBOL_REF, Pmode,	\
-					     "__enable_execute_stack")), \
-			   const0_rtx));				\
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 40)), FNADDR); \
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 36)), CXT); \
+  emit_call_insn (gen_call						\
+		  (gen_rtx_MEM						\
+		   (SImode,						\
+		    gen_rtx_SYMBOL_REF (Pmode, "__enable_execute_stack")), \
+		   const0_rtx));					\
 }

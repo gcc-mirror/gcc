@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  System/370 version.
-   Copyright (C) 1989, 1993, 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1989, 93, 95, 96, 97, 1998 Free Software Foundation, Inc.
    Contributed by Jan Stein (jan@cd.chalmers.se).
    Modified for C/370 MVS by Dave Pitts (dpitts@nyx.cs.du.edu)
 
@@ -467,12 +467,12 @@ enum reg_class
 /* On the 370 the return value is in R15 or R16.  */
 
 #define FUNCTION_VALUE(VALTYPE, FUNC)  					\
-  gen_rtx(REG, TYPE_MODE (VALTYPE), RET_REG(TYPE_MODE(VALTYPE)))
+  gen_rtx_REG (TYPE_MODE (VALTYPE), RET_REG (TYPE_MODE (VALTYPE)))
 
 /* Define how to find the value returned by a library function assuming
    the value has mode MODE.  */
 
-#define LIBCALL_VALUE(MODE)  gen_rtx(REG, MODE, RET_REG(MODE))
+#define LIBCALL_VALUE(MODE)  gen_rtx_REG (MODE, RET_REG (MODE))
 
 /* 1 if N is a possible register number for a function value.
    On the 370 under C/370, R15 and R16 are thus used.  */
@@ -577,13 +577,12 @@ enum reg_class
 
 #define TRAMPOLINE_TEMPLATE(FILE)					\
 {									\
-  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x05E0));	\
-  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x5800 | 	\
-			   STATIC_CHAIN_REGNUM << 4));			\
-  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 0xE00A));	\
-  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x58F0)); 	\
-  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 0xE00E));	\
-  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x07FF));	\
+  ASM_OUTPUT_SHORT (FILE, GEN_INT (0x05E0));				\
+  ASM_OUTPUT_SHORT (FILE, GEN_INT (0x5800 | STATIC_CHAIN_REGNUM << 4)); \
+  ASM_OUTPUT_SHORT (FILE, GEN_INT (0xE00A));				\
+  ASM_OUTPUT_SHORT (FILE, GEN_INT (0x58F0)); 				\
+  ASM_OUTPUT_SHORT (FILE, GEN_INT (0xE00E));				\
+  ASM_OUTPUT_SHORT (FILE, GEN_INT (0x07FF));				\
   ASM_OUTPUT_SHORT (FILE, const0_rtx);					\
   ASM_OUTPUT_SHORT (FILE, const0_rtx);					\
   ASM_OUTPUT_SHORT (FILE, const0_rtx);					\
@@ -598,8 +597,8 @@ enum reg_class
 
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
 {									\
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 12)), CXT); \
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 16)), FNADDR); \
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 12)), CXT); \
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 16)), FNADDR); \
 }
 
 /* Output assembler code to FILE to increment profiler label # LABELNO
@@ -770,17 +769,17 @@ enum reg_class
 #define LEGITIMIZE_ADDRESS(X, OLDX, MODE, WIN)				\
 {									\
   if (GET_CODE (X) == PLUS && CONSTANT_ADDRESS_P (XEXP (X, 1)))		\
-    (X) = gen_rtx (PLUS, SImode, XEXP (X, 0),				\
-		   copy_to_mode_reg (SImode, XEXP (X, 1)));		\
+    (X) = gen_rtx_PLUS (SImode, XEXP (X, 0),				\
+			copy_to_mode_reg (SImode, XEXP (X, 1)));	\
   if (GET_CODE (X) == PLUS && CONSTANT_ADDRESS_P (XEXP (X, 0)))		\
-    (X) = gen_rtx (PLUS, SImode, XEXP (X, 1),				\
-		   copy_to_mode_reg (SImode, XEXP (X, 0)));		\
+    (X) = gen_rtx_PLUS (SImode, XEXP (X, 1),				\
+			copy_to_mode_reg (SImode, XEXP (X, 0)));	\
   if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 0)) == MULT)		\
-    (X) = gen_rtx (PLUS, SImode, XEXP (X, 1),				\
-		   force_operand (XEXP (X, 0), 0));			\
+    (X) = gen_rtx_PLUS (SImode, XEXP (X, 1),				\
+			force_operand (XEXP (X, 0), 0));		\
   if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 1)) == MULT)		\
-    (X) = gen_rtx (PLUS, SImode, XEXP (X, 0),				\
-		   force_operand (XEXP (X, 1), 0));			\
+    (X) = gen_rtx_PLUS (SImode, XEXP (X, 0),				\
+			force_operand (XEXP (X, 1), 0));		\
   if (memory_address_p (MODE, X))					\
     goto WIN;								\
 }

@@ -1070,15 +1070,14 @@ extern int sparc_mode_class[];
 #define STRUCT_VALUE \
   (TARGET_ARCH64					\
    ? 0							\
-   : gen_rtx (MEM, Pmode,				\
-	      gen_rtx (PLUS, Pmode, stack_pointer_rtx,	\
-		       gen_rtx (CONST_INT, VOIDmode, STRUCT_VALUE_OFFSET))))
+   : gen_rtx_MEM (Pmode, plus_constant (stack_pointer_rtx, \
+					STRUCT_VALUE_OFFSET))))
+
 #define STRUCT_VALUE_INCOMING \
-  (TARGET_ARCH64					\
-   ? 0							\
-   : gen_rtx (MEM, Pmode,				\
-	      gen_rtx (PLUS, Pmode, frame_pointer_rtx,	\
-		       gen_rtx (CONST_INT, VOIDmode, STRUCT_VALUE_OFFSET))))
+  (TARGET_ARCH64						\
+   ? 0								\
+   : gen_rtx_MEM (Pmode, plus_constant (frame_pointer_rtx,	\
+					STRUCT_VALUE_OFFSET))))
 
 /* Define the classes of registers for register constraints in the
    machine description.  Also define ranges of constants.
@@ -1340,8 +1339,8 @@ extern char leaf_reg_remap[];
 #define SECONDARY_MEMORY_NEEDED_RTX(MODE) \
   (get_frame_size () == 0						\
    ? assign_stack_local (MODE, GET_MODE_SIZE (MODE), 0)			\
-   : gen_rtx (MEM, MODE, gen_rtx (PLUS, Pmode, frame_pointer_rtx,	\
-				  GEN_INT (STARTING_FRAME_OFFSET))))
+   : gen_rtx_MEM (MODE, plus_constant (frame_pointer_rtx,		\
+				       STARTING_FRAME_OFFSET))
 
 /* Get_secondary_mem widens its argument to BITS_PER_WORD which loses on v9
    because the movsi and movsf patterns don't handle r/f moves.
@@ -1474,19 +1473,21 @@ extern char leaf_reg_remap[];
 
 /* On SPARC the value is found in the first "output" register.  */
 
-#define FUNCTION_VALUE(VALTYPE, FUNC)  \
-  gen_rtx (REG, TYPE_MODE (VALTYPE), BASE_RETURN_VALUE_REG (TYPE_MODE (VALTYPE)))
+#define FUNCTION_VALUE(VALTYPE, FUNC)   \
+  gen_rtx_REG (TYPE_MODE (VALTYPE),	\
+	       BASE_RETURN_VALUE_REG (TYPE_MODE (VALTYPE)))
 
 /* But the called function leaves it in the first "input" register.  */
 
 #define FUNCTION_OUTGOING_VALUE(VALTYPE, FUNC)  \
-  gen_rtx (REG, TYPE_MODE (VALTYPE), BASE_OUTGOING_VALUE_REG (TYPE_MODE (VALTYPE)))
+  gen_rtx_REG (TYPE_MODE (VALTYPE),		\
+	       BASE_OUTGOING_VALUE_REG (TYPE_MODE (VALTYPE)))
 
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
 
 #define LIBCALL_VALUE(MODE)	\
-  gen_rtx (REG, MODE, BASE_RETURN_VALUE_REG (MODE))
+  gen_rtx_REG (MODE, BASE_RETURN_VALUE_REG (MODE))
 
 /* 1 if N is a possible register number for a function value
    as seen by the caller.
@@ -2094,11 +2095,11 @@ do {									\
     }									\
   else									\
     {									\
-      ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x00000000));	\
-      ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x00000000));	\
-      ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x00000000));	\
-      ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x81C04000));	\
-      ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x00000000));	\
+      ASM_OUTPUT_INT (FILE, GEN_INT (0x00000000));			\
+      ASM_OUTPUT_INT (FILE, GEN_INT (0x00000000));			\
+      ASM_OUTPUT_INT (FILE, GEN_INT (0x00000000));			\
+      ASM_OUTPUT_INT (FILE, GEN_INT (0x81C04000));			\
+      ASM_OUTPUT_INT (FILE, GEN_INT (0x00000000));			\
     }									\
 } while (0)
 
@@ -2148,8 +2149,7 @@ extern struct rtx_def *sparc_builtin_saveregs ();
    return an rtx for the address of the word in the frame
    that holds the dynamic chain--the previous frame's address.
    ??? -mflat support? */
-#define DYNAMIC_CHAIN_ADDRESS(frame) \
-  gen_rtx (PLUS, Pmode, frame, gen_rtx (CONST_INT, VOIDmode, 14 * UNITS_PER_WORD))
+#define DYNAMIC_CHAIN_ADDRESS(frame) plus_constant (frame, 14 * UNITS_PER_WORD)
 
 /* The return address isn't on the stack, it is in a register, so we can't
    access it from the current frame pointer.  We can access it from the
@@ -2168,16 +2168,17 @@ extern struct rtx_def *sparc_builtin_saveregs ();
    returns, and +12 for structure returns.  */
 #define RETURN_ADDR_RTX(count, frame)		\
   ((count == -1)				\
-   ? gen_rtx (REG, Pmode, 31)			\
-   : gen_rtx (MEM, Pmode,			\
-	      memory_address (Pmode, plus_constant (frame, 15 * UNITS_PER_WORD))))
+   ? gen_rtx_REG (Pmode, 31)			\
+   : gen_rtx_MEM (Pmode,			\
+		  memory_address (Pmode, plus_constant (frame, \
+							15 * UNITS_PER_WORD))))
 
 /* Before the prologue, the return address is %o7 + 8.  OK, sometimes it's
    +12, but always using +8 is close enough for frame unwind purposes.
    Actually, just using %o7 is close enough for unwinding, but %o7+8
    is something you can return to.  */
 #define INCOMING_RETURN_ADDR_RTX \
-  gen_rtx (PLUS, word_mode, gen_rtx (REG, word_mode, 15), GEN_INT (8))
+  plus_constant (gen_rtx_REG (word_mode, 15), 8)
 
 /* The offset from the incoming value of %sp to the top of the stack frame
    for the current function.  On sparc64, we have to account for the stack
@@ -2413,30 +2414,31 @@ extern struct rtx_def *legitimize_pic_address ();
 #define LEGITIMIZE_ADDRESS(X,OLDX,MODE,WIN)	\
 { rtx sparc_x = (X);						\
   if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 0)) == MULT)	\
-    (X) = gen_rtx (PLUS, Pmode, XEXP (X, 1),			\
-		   force_operand (XEXP (X, 0), NULL_RTX));	\
+    (X) = gen_rtx_PLUS (Pmode, XEXP (X, 1),			\
+			force_operand (XEXP (X, 0), NULL_RTX));	\
   if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 1)) == MULT)	\
-    (X) = gen_rtx (PLUS, Pmode, XEXP (X, 0),			\
-		   force_operand (XEXP (X, 1), NULL_RTX));	\
+    (X) = gen_rtx_PLUS (Pmode, XEXP (X, 0),			\
+			force_operand (XEXP (X, 1), NULL_RTX));	\
   if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 0)) == PLUS)	\
-    (X) = gen_rtx (PLUS, Pmode, force_operand (XEXP (X, 0), NULL_RTX),\
-		   XEXP (X, 1));				\
+    (X) = gen_rtx_PLUS (Pmode, force_operand (XEXP (X, 0), NULL_RTX),\
+			XEXP (X, 1));				\
   if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 1)) == PLUS)	\
-    (X) = gen_rtx (PLUS, Pmode, XEXP (X, 0),			\
-		   force_operand (XEXP (X, 1), NULL_RTX));	\
+    (X) = gen_rtx_PLUS (Pmode, XEXP (X, 0),			\
+			force_operand (XEXP (X, 1), NULL_RTX));	\
   if (sparc_x != (X) && memory_address_p (MODE, X))		\
     goto WIN;							\
   if (flag_pic) (X) = legitimize_pic_address (X, MODE, 0);	\
   else if (GET_CODE (X) == PLUS && CONSTANT_ADDRESS_P (XEXP (X, 1)))	\
-    (X) = gen_rtx (PLUS, Pmode, XEXP (X, 0),			\
-		   copy_to_mode_reg (Pmode, XEXP (X, 1)));	\
+    (X) = gen_rtx_PLUS (Pmode, XEXP (X, 0),			\
+			copy_to_mode_reg (Pmode, XEXP (X, 1)));	\
   else if (GET_CODE (X) == PLUS && CONSTANT_ADDRESS_P (XEXP (X, 0)))	\
-    (X) = gen_rtx (PLUS, Pmode, XEXP (X, 1),			\
-		   copy_to_mode_reg (Pmode, XEXP (X, 0)));	\
+    (X) = gen_rtx_PLUS (Pmode, XEXP (X, 1),			\
+			copy_to_mode_reg (Pmode, XEXP (X, 0)));	\
   else if (GET_CODE (X) == SYMBOL_REF || GET_CODE (X) == CONST	\
 	   || GET_CODE (X) == LABEL_REF)			\
-    (X) = gen_rtx (LO_SUM, Pmode,				\
-		   copy_to_mode_reg (Pmode, gen_rtx (HIGH, Pmode, X)), X); \
+    (X) = gen_rtx_LO_SUM (Pmode,				\
+			  copy_to_mode_reg (Pmode,		\
+					    gen_rtx_HIGH (Pmode, X)), X); \
   if (memory_address_p (MODE, X))				\
     goto WIN; }
 
@@ -2485,7 +2487,7 @@ extern struct rtx_def *legitimize_pic_address ();
 
 /* This is how to refer to the variable errno.  */
 #define GEN_ERRNO_RTX \
-  gen_rtx (MEM, SImode, gen_rtx (SYMBOL_REF, Pmode, "errno"))
+  gen_rtx_MEM (SImode, gen_rtx_SYMBOL_REF (Pmode, "errno"))
 #endif /* 0 */
 
 /* Define if operations between registers always perform the operation
@@ -2618,32 +2620,32 @@ extern struct rtx_def *legitimize_pic_address ();
 #define INIT_TARGET_OPTABS						\
   do {									\
     add_optab->handlers[(int) TFmode].libfunc				\
-      = gen_rtx (SYMBOL_REF, Pmode, ADDTF3_LIBCALL);			\
+      = gen_rtx_SYMBOL_REF (Pmode, ADDTF3_LIBCALL);			\
     sub_optab->handlers[(int) TFmode].libfunc				\
-      = gen_rtx (SYMBOL_REF, Pmode, SUBTF3_LIBCALL);			\
+      = gen_rtx_SYMBOL_REF (Pmode, SUBTF3_LIBCALL);			\
     neg_optab->handlers[(int) TFmode].libfunc				\
-      = gen_rtx (SYMBOL_REF, Pmode, NEGTF2_LIBCALL);			\
+      = gen_rtx_SYMBOL_REF (Pmode, NEGTF2_LIBCALL);			\
     smul_optab->handlers[(int) TFmode].libfunc				\
-      = gen_rtx (SYMBOL_REF, Pmode, MULTF3_LIBCALL);			\
+      = gen_rtx_SYMBOL_REF (Pmode, MULTF3_LIBCALL);			\
     flodiv_optab->handlers[(int) TFmode].libfunc			\
-      = gen_rtx (SYMBOL_REF, Pmode, DIVTF3_LIBCALL);			\
-    eqtf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, EQTF2_LIBCALL);		\
-    netf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, NETF2_LIBCALL);		\
-    gttf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, GTTF2_LIBCALL);		\
-    getf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, GETF2_LIBCALL);		\
-    lttf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, LTTF2_LIBCALL);		\
-    letf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, LETF2_LIBCALL);		\
-    trunctfsf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, TRUNCTFSF2_LIBCALL);   \
-    trunctfdf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, TRUNCTFDF2_LIBCALL);   \
-    extendsftf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, EXTENDSFTF2_LIBCALL); \
-    extenddftf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, EXTENDDFTF2_LIBCALL); \
-    floatsitf_libfunc = gen_rtx (SYMBOL_REF, Pmode, FLOATSITF2_LIBCALL);    \
-    fixtfsi_libfunc = gen_rtx (SYMBOL_REF, Pmode, FIX_TRUNCTFSI2_LIBCALL);  \
+      = gen_rtx_SYMBOL_REF (Pmode, DIVTF3_LIBCALL);			\
+    eqtf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, EQTF2_LIBCALL);		\
+    netf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, NETF2_LIBCALL);		\
+    gttf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, GTTF2_LIBCALL);		\
+    getf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, GETF2_LIBCALL);		\
+    lttf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, LTTF2_LIBCALL);		\
+    letf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, LETF2_LIBCALL);		\
+    trunctfsf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, TRUNCTFSF2_LIBCALL);   \
+    trunctfdf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, TRUNCTFDF2_LIBCALL);   \
+    extendsftf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, EXTENDSFTF2_LIBCALL); \
+    extenddftf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, EXTENDDFTF2_LIBCALL); \
+    floatsitf_libfunc = gen_rtx_SYMBOL_REF (Pmode, FLOATSITF2_LIBCALL);    \
+    fixtfsi_libfunc = gen_rtx_SYMBOL_REF (Pmode, FIX_TRUNCTFSI2_LIBCALL);  \
     fixunstfsi_libfunc							\
-      = gen_rtx (SYMBOL_REF, Pmode, FIXUNS_TRUNCTFSI2_LIBCALL);		\
+      = gen_rtx_SYMBOL_REF (Pmode, FIXUNS_TRUNCTFSI2_LIBCALL);		\
     if (TARGET_FPU)							\
       sqrt_optab->handlers[(int) TFmode].libfunc			\
-	= gen_rtx (SYMBOL_REF, Pmode, "_Q_sqrt");			\
+	= gen_rtx_SYMBOL_REF (Pmode, "_Q_sqrt");			\
     INIT_SUBTARGET_OPTABS;						\
   } while (0)
 

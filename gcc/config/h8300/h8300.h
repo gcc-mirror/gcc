@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler. 
    Hitachi H8/300 version generating coff 
-   Copyright (C) 1992, 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93, 94, 95, 96, 1998 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com),
    Jim Wilson (wilson@cygnus.com), and Doug Evans (dje@cygnus.com).
 
@@ -526,7 +526,7 @@ enum reg_class {
    On the H8 the return value is in R0/R1.  */
 
 #define FUNCTION_VALUE(VALTYPE, FUNC) \
-  gen_rtx (REG, TYPE_MODE (VALTYPE), 0)
+  gen_rtx_REG (TYPE_MODE (VALTYPE), 0)
 
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
@@ -534,7 +534,7 @@ enum reg_class {
 /* On the h8 the return value is in R0/R1 */
 
 #define LIBCALL_VALUE(MODE) \
-  gen_rtx (REG, MODE, 0)
+  gen_rtx_REG (MODE, 0)
 
 /* 1 if N is a possible register number for a function value.
    On the H8, R0 is the only register thus used.  */
@@ -713,10 +713,11 @@ struct rtx_def *function_arg();
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)				\
 {										\
   enum machine_mode mode = TARGET_H8300H || TARGET_H8300S? SImode : HImode; \
-  emit_move_insn (gen_rtx (MEM, mode, plus_constant ((TRAMP), 2)), CXT);    \
-  emit_move_insn (gen_rtx (MEM, mode, plus_constant ((TRAMP), 6)), FNADDR); \
-  if (TARGET_H8300H || TARGET_H8300S)					    \
-    emit_move_insn (gen_rtx (MEM, QImode, plus_constant ((TRAMP), 6)), GEN_INT (0x5A)); \
+  emit_move_insn (gen_rtx_MEM (mode, plus_constant ((TRAMP), 2)), CXT);    \
+  emit_move_insn (gen_rtx_MEM (mode, plus_constant ((TRAMP), 6)), FNADDR); \
+  if (TARGET_H8300H || TARGET_H8300S)					   \
+    emit_move_insn (gen_rtx_MEM (QImode, plus_constant ((TRAMP), 6)),	   \
+		    GEN_INT (0x5A)); 					   \
 }
 
 /* Addressing modes, and classification of registers for them.  */
@@ -1378,15 +1379,15 @@ do { char dstr[30];					\
 #define INIT_TARGET_OPTABS \
   do { \
     smul_optab->handlers[(int) HImode].libfunc		\
-      = gen_rtx (SYMBOL_REF, Pmode, MULHI3_LIBCALL);	\
+      = gen_rtx_SYMBOL_REF (Pmode, MULHI3_LIBCALL);	\
     sdiv_optab->handlers[(int) HImode].libfunc		\
-      = gen_rtx (SYMBOL_REF, Pmode, DIVHI3_LIBCALL);	\
+      = gen_rtx_SYMBOL_REF (Pmode, DIVHI3_LIBCALL);	\
     udiv_optab->handlers[(int) HImode].libfunc		\
-      = gen_rtx (SYMBOL_REF, Pmode, UDIVHI3_LIBCALL);	\
+      = gen_rtx_SYMBOL_REF (Pmode, UDIVHI3_LIBCALL);	\
     smod_optab->handlers[(int) HImode].libfunc		\
-      = gen_rtx (SYMBOL_REF, Pmode, MODHI3_LIBCALL);	\
+      = gen_rtx_SYMBOL_REF (Pmode, MODHI3_LIBCALL);	\
     umod_optab->handlers[(int) HImode].libfunc		\
-      = gen_rtx (SYMBOL_REF, Pmode, UMODHI3_LIBCALL);	\
+      = gen_rtx_SYMBOL_REF (Pmode, UMODHI3_LIBCALL);	\
   } while (0)
 
 #define MOVE_RATIO 3

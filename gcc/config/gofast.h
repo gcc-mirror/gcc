@@ -1,5 +1,5 @@
 /* US Software GOFAST floating point library support.
-   Copyright (C) 1994 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -44,33 +44,33 @@ Boston, MA 02111-1307, USA.  */
   } while (0)
 
 #define GOFAST_RENAME_LIBCALLS \
-  add_optab->handlers[(int) SFmode].libfunc = gen_rtx (SYMBOL_REF, Pmode, "fpadd"); \
-  add_optab->handlers[(int) DFmode].libfunc = gen_rtx (SYMBOL_REF, Pmode, "dpadd"); \
-  sub_optab->handlers[(int) SFmode].libfunc = gen_rtx (SYMBOL_REF, Pmode, "fpsub"); \
-  sub_optab->handlers[(int) DFmode].libfunc = gen_rtx (SYMBOL_REF, Pmode, "dpsub"); \
-  smul_optab->handlers[(int) SFmode].libfunc = gen_rtx (SYMBOL_REF, Pmode, "fpmul"); \
-  smul_optab->handlers[(int) DFmode].libfunc = gen_rtx (SYMBOL_REF, Pmode, "dpmul"); \
-  flodiv_optab->handlers[(int) SFmode].libfunc = gen_rtx (SYMBOL_REF, Pmode, "fpdiv"); \
-  flodiv_optab->handlers[(int) DFmode].libfunc = gen_rtx (SYMBOL_REF, Pmode, "dpdiv"); \
-  cmp_optab->handlers[(int) SFmode].libfunc = gen_rtx (SYMBOL_REF, Pmode, "fpcmp"); \
-  cmp_optab->handlers[(int) DFmode].libfunc = gen_rtx (SYMBOL_REF, Pmode, "dpcmp"); \
+  add_optab->handlers[(int) SFmode].libfunc = gen_rtx_SYMBOL_REF (Pmode, "fpadd"); \
+  add_optab->handlers[(int) DFmode].libfunc = gen_rtx_SYMBOL_REF (Pmode, "dpadd"); \
+  sub_optab->handlers[(int) SFmode].libfunc = gen_rtx_SYMBOL_REF (Pmode, "fpsub"); \
+  sub_optab->handlers[(int) DFmode].libfunc = gen_rtx_SYMBOL_REF (Pmode, "dpsub"); \
+  smul_optab->handlers[(int) SFmode].libfunc = gen_rtx_SYMBOL_REF (Pmode, "fpmul"); \
+  smul_optab->handlers[(int) DFmode].libfunc = gen_rtx_SYMBOL_REF (Pmode, "dpmul"); \
+  flodiv_optab->handlers[(int) SFmode].libfunc = gen_rtx_SYMBOL_REF (Pmode, "fpdiv"); \
+  flodiv_optab->handlers[(int) DFmode].libfunc = gen_rtx_SYMBOL_REF (Pmode, "dpdiv"); \
+  cmp_optab->handlers[(int) SFmode].libfunc = gen_rtx_SYMBOL_REF (Pmode, "fpcmp"); \
+  cmp_optab->handlers[(int) DFmode].libfunc = gen_rtx_SYMBOL_REF (Pmode, "dpcmp"); \
 \
-  extendsfdf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, "fptodp"); \
-  truncdfsf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, "dptofp"); \
+  extendsfdf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "fptodp"); \
+  truncdfsf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "dptofp"); \
 \
-  eqsf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, "fpcmp"); \
-  nesf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, "fpcmp"); \
-  gtsf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, "fpcmp"); \
-  gesf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, "fpcmp"); \
-  ltsf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, "fpcmp"); \
-  lesf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, "fpcmp"); \
+  eqsf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "fpcmp"); \
+  nesf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "fpcmp"); \
+  gtsf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "fpcmp"); \
+  gesf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "fpcmp"); \
+  ltsf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "fpcmp"); \
+  lesf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "fpcmp"); \
 \
-  eqdf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, "dpcmp"); \
-  nedf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, "dpcmp"); \
-  gtdf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, "dpcmp"); \
-  gedf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, "dpcmp"); \
-  ltdf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, "dpcmp"); \
-  ledf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, "dpcmp"); \
+  eqdf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "dpcmp"); \
+  nedf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "dpcmp"); \
+  gtdf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "dpcmp"); \
+  gedf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "dpcmp"); \
+  ltdf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "dpcmp"); \
+  ledf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "dpcmp"); \
 \
   eqxf2_libfunc = NULL_RTX; \
   nexf2_libfunc = NULL_RTX; \

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  ISI 68000/68020 version.
    Intended only for use with GAS, and not ISI's assembler, which is buggy
-   Copyright (C) 1988, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1996, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -74,7 +74,7 @@ Boston, MA 02111-1307, USA.  */
 #define FUNCTION_VALUE(VALTYPE,FUNC) LIBCALL_VALUE (TYPE_MODE (VALTYPE))
 
 #define LIBCALL_VALUE(MODE) \
- gen_rtx (REG, (MODE), ((TARGET_68881 && ((MODE) == SFmode || (MODE) == DFmode)) ? 16 : 0))
+ gen_rtx_REG ((MODE), ((TARGET_68881 && ((MODE) == SFmode || (MODE) == DFmode)) ? 16 : 0))
 
 /* 1 if N is a possible register number for a function value.
    D0 may be used, and F0 as well if -m68881 is specified.  */

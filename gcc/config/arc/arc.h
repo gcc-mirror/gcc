@@ -601,10 +601,12 @@ extern enum reg_class arc_regno_reg_class[];
    farther back is at [%fp,4].  */
 #if 0 /* The default value should work.  */
 #define RETURN_ADDR_RTX(COUNT, FRAME) \
-(((COUNT) == -1)				\
- ? gen_rtx (REG, Pmode, 31)			\
- : copy_to_reg (gen_rtx (MEM, Pmode,		\
-			 memory_address (Pmode, plus_constant ((FRAME), UNITS_PER_WORD)))))
+(((COUNT) == -1)							\
+ ? gen_rtx_REG (Pmode, 31)						\
+ : copy_to_reg (gen_rtx_MEM (Pmode,					\
+			     memory_address (Pmode,			\
+					     plus_constant ((FRAME),	\
+							    UNITS_PER_WORD)))))
 #endif
 
 /* Register to use for pushing function arguments.  */
@@ -723,7 +725,7 @@ extern int current_function_varargs;
    and the rest are pushed.  */
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
 (PASS_IN_REG_P ((CUM), (MODE), (TYPE), (NAMED))				\
- ? gen_rtx (REG, (MODE), ROUND_ADVANCE_CUM ((CUM), (MODE), (TYPE)))	\
+ ? gen_rtx_REG ((MODE), ROUND_ADVANCE_CUM ((CUM), (MODE), (TYPE)))	\
  : 0)
 
 /* A C expression for the number of words, at the beginning of an
@@ -813,11 +815,11 @@ arc_setup_incoming_varargs(&ARGS_SO_FAR, MODE, TYPE, &PRETEND_SIZE, NO_RTL)
    VALTYPE is the data type of the value (as a tree).
    If the precise function being called is known, FUNC is its FUNCTION_DECL;
    otherwise, FUNC is 0.  */
-#define FUNCTION_VALUE(VALTYPE, FUNC) gen_rtx (REG, TYPE_MODE (VALTYPE), 0)
+#define FUNCTION_VALUE(VALTYPE, FUNC) gen_rtx_REG (TYPE_MODE (VALTYPE), 0)
 
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
-#define LIBCALL_VALUE(MODE) gen_rtx (REG, MODE, 0)
+#define LIBCALL_VALUE(MODE) gen_rtx_REG (MODE, 0)
 
 /* 1 if N is a possible register number for a function value
    as seen by the caller.  */
@@ -910,9 +912,9 @@ do { \
    CXT is an RTX for the static chain value for the function.  */
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT) \
 do { \
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 4)), CXT); \
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 12)), FNADDR); \
-  emit_insn (gen_flush_icache (validize_mem (gen_rtx (MEM, SImode, TRAMP)))); \
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 4)), CXT); \
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 12)), FNADDR); \
+  emit_insn (gen_flush_icache (validize_mem (gen_rtx_MEM (SImode, TRAMP)))); \
 } while (0)
 
 /* Library calls.  */

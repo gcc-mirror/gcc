@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler. Matsushita MN10300 series
-   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998 Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
 This file is part of GNU CC.
@@ -485,12 +485,12 @@ extern struct rtx_def *function_arg ();
    otherwise, FUNC is 0.   */
 
 #define FUNCTION_VALUE(VALTYPE, FUNC) \
-  gen_rtx (REG, TYPE_MODE (VALTYPE), POINTER_TYPE_P (VALTYPE) ? 4 : 0)
+  gen_rtx_REG (TYPE_MODE (VALTYPE), POINTER_TYPE_P (VALTYPE) ? 4 : 0)
 
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
 
-#define LIBCALL_VALUE(MODE) gen_rtx (REG, MODE, 0)
+#define LIBCALL_VALUE(MODE) gen_rtx_REG (MODE, 0)
 
 /* 1 if N is a possible register number for a function value.  */
 
@@ -544,9 +544,9 @@ extern struct rtx_def *function_arg ();
 
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
 {									\
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant ((TRAMP), 0x14)),	\
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant ((TRAMP), 0x14)),	\
  		 (CXT));						\
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant ((TRAMP), 0x18)),	\
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant ((TRAMP), 0x18)),	\
 		 (FNADDR));						\
 }
 /* A C expression whose value is RTL representing the value of the return
@@ -560,7 +560,7 @@ extern struct rtx_def *function_arg ();
 
 #define RETURN_ADDR_RTX(COUNT, FRAME)   \
   ((COUNT == 0)                         \
-   ? gen_rtx (MEM, Pmode, arg_pointer_rtx) \
+   ? gen_rtx_MEM (Pmode, arg_pointer_rtx) \
    : (rtx) 0)
 
 /* Emit code for a call to builtin_saveregs.  We must emit USE insns which

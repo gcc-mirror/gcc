@@ -991,7 +991,7 @@ while (0)
 #define DWARF_FRAME_RETURN_COLUMN (FP_REG_LAST + 1)
 
 /* Before the prologue, RA lives in r31.  */
-#define INCOMING_RETURN_ADDR_RTX  gen_rtx (REG, VOIDmode, GP_REG_FIRST + 31)
+#define INCOMING_RETURN_ADDR_RTX  gen_rtx_REG (VOIDmode, GP_REG_FIRST + 31)
 
 /* Overrides for the COFF debug format.  */
 #define PUT_SDB_SCL(a)					\
@@ -1904,7 +1904,7 @@ extern enum reg_class	mips_secondary_reload_class ();
 
 #define RETURN_ADDR_RTX(count, frame)			\
   ((count == 0)						\
-   ? gen_rtx (MEM, Pmode, gen_rtx (REG, Pmode, RETURN_ADDRESS_POINTER_REGNUM))\
+   ? gen_rtx_MEM (Pmode, gen_rtx_REG (Pmode, RETURN_ADDRESS_POINTER_REGNUM))\
    : (rtx) 0)
 
 /* Structure to be filled in by compute_frame_size with register
@@ -2124,12 +2124,12 @@ extern struct mips_frame_info current_frame_info;
    assuming the value has mode MODE.  */
 
 #define LIBCALL_VALUE(MODE)						\
-  gen_rtx (REG, MODE,							\
-	   ((GET_MODE_CLASS (MODE) == MODE_FLOAT			\
-	     && (! TARGET_SINGLE_FLOAT					\
-		 || GET_MODE_SIZE (MODE) <= 4))				\
-	    ? FP_RETURN							\
-	    : GP_RETURN))
+  gen_rtx_REG (MODE,							\
+	       ((GET_MODE_CLASS (MODE) == MODE_FLOAT			\
+		 && (! TARGET_SINGLE_FLOAT				\
+		     || GET_MODE_SIZE (MODE) <= 4))			\
+		? FP_RETURN						\
+		: GP_RETURN))
 
 /* Define how to find the value returned by a function.
    VALTYPE is the data type of the value (as a tree).
@@ -2382,20 +2382,20 @@ typedef struct mips_args {
   rtx addr = ADDR;							    \
   if (TARGET_LONG64)							    \
     {									    \
-      emit_move_insn (gen_rtx (MEM, DImode, plus_constant (addr, 32)), FUNC); \
-      emit_move_insn (gen_rtx (MEM, DImode, plus_constant (addr, 40)), CHAIN);\
+      emit_move_insn (gen_rtx_MEM (DImode, plus_constant (addr, 32)), FUNC); \
+      emit_move_insn (gen_rtx_MEM (DImode, plus_constant (addr, 40)), CHAIN);\
     }									    \
   else									    \
     {									    \
-      emit_move_insn (gen_rtx (MEM, SImode, plus_constant (addr, 32)), FUNC); \
-      emit_move_insn (gen_rtx (MEM, SImode, plus_constant (addr, 36)), CHAIN);\
+      emit_move_insn (gen_rtx_MEM (SImode, plus_constant (addr, 32)), FUNC); \
+      emit_move_insn (gen_rtx_MEM (SImode, plus_constant (addr, 36)), CHAIN);\
     }									    \
 									    \
   /* Flush both caches.  We need to flush the data cache in case	    \
      the system has a write-back cache.  */				    \
   /* ??? Should check the return value for errors.  */			    \
-  emit_library_call (gen_rtx (SYMBOL_REF, Pmode, CACHE_FLUSH_FUNC),	    \
-		     0, VOIDmode, 3, addr, Pmode,			    \
+  emit_library_call (gen_rtx_SYMBOL_REF (Pmode, CACHE_FLUSH_FUNC),	    \
+		     0, VOIDmode, 3, addr4, Pmode,			    \
 		     GEN_INT (TRAMPOLINE_SIZE), TYPE_MODE (integer_type_node),\
 		     GEN_INT (3), TYPE_MODE (integer_type_node));	    \
 }
@@ -2686,8 +2686,10 @@ typedef struct mips_args {
   if (mips_split_addresses && mips_check_split (X, MODE))		\
     {									\
       /* ??? Is this ever executed?  */					\
-      X = gen_rtx (LO_SUM, Pmode,					\
-		   copy_to_mode_reg (Pmode, gen_rtx (HIGH, Pmode, X)), X); \
+      X = gen_rtx_LO_SUM (Pmode,					\
+			  copy_to_mode_reg (Pmode,			\
+					    gen_rtx (HIGH, Pmode, X)),	\
+			  X);						\
       goto WIN;								\
     }									\
 									\
@@ -2701,7 +2703,7 @@ typedef struct mips_args {
 									\
       emit_move_insn (ptr_reg, XEXP (XEXP (xinsn, 0), 0));		\
 									\
-      X = gen_rtx (PLUS, Pmode, ptr_reg, constant);			\
+      X = gen_rtx_PLUS (Pmode, ptr_reg, constant);			\
       if (SMALL_INT (constant))						\
 	goto WIN;							\
       /* Otherwise we fall through so the code below will fix the	\
@@ -2733,12 +2735,12 @@ typedef struct mips_args {
 	  emit_move_insn (int_reg,					\
 			  GEN_INT (INTVAL (xplus1) & ~ 0x7fff));	\
 									\
-	  emit_insn (gen_rtx (SET, VOIDmode,				\
-			      ptr_reg,					\
-			      gen_rtx (PLUS, Pmode, xplus0, int_reg)));	\
+	  emit_insn (gen_rtx_SET (VOIDmode,				\
+				  ptr_reg,				\
+				  gen_rtx_PLUS (Pmode, xplus0, int_reg))); 
 									\
-	  X = gen_rtx (PLUS, Pmode, ptr_reg,				\
-		       GEN_INT (INTVAL (xplus1) & 0x7fff));		\
+	  X = gen_rtx_PLUS (Pmode, ptr_reg,				\
+			    GEN_INT (INTVAL (xplus1) & 0x7fff));	\
 	  goto WIN;							\
 	}								\
     }									\

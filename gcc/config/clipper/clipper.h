@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Clipper version.
-   Copyright (C) 1987, 88, 91, 93-95, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 91, 93-96, 1998 Free Software Foundation, Inc.
    Contributed by Holger Teutsch (holger@hotbso.rhein-main.de)
 
 This file is part of GNU CC.
@@ -393,15 +393,15 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS, LIM_REG_CLASSES};
    otherwise, FUNC is 0.  */
 
 #define FUNCTION_VALUE(VALTYPE, FUNC)  \
-  gen_rtx (REG, TYPE_MODE (VALTYPE), ((TYPE_MODE (VALTYPE) == SFmode ||\
-				       TYPE_MODE (VALTYPE) == DFmode) ? \
-				        16 : 0))
+  gen_rtx_REG (TYPE_MODE (VALTYPE), ((TYPE_MODE (VALTYPE) == SFmode ||\
+				      TYPE_MODE (VALTYPE) == DFmode) ? \
+				     16 : 0))
 
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
 
 #define LIBCALL_VALUE(MODE)  \
-  gen_rtx (REG, (MODE), ((MODE) == SFmode || (MODE) == DFmode ? 16 : 0))
+  gen_rtx_REG ((MODE), ((MODE) == SFmode || (MODE) == DFmode ? 16 : 0))
 
 
 /* 1 if N is a possible register number for a function value
@@ -527,8 +527,9 @@ do									      \
     && (GET_MODE_SIZE (MODE) <= 8)					     \
     && ((TYPE) == NULL || !AGGREGATE_TYPE_P(TYPE))			     \
     && ((MODE) != DImode || (CUM).num == 0))				     \
-   ? gen_rtx (REG, (MODE),						     \
-	      GET_MODE_CLASS(MODE) == MODE_FLOAT ? (CUM).num+16 : (CUM).num) \
+   ? gen_rtx_REG ((MODE),						     \
+		  GET_MODE_CLASS(MODE) == MODE_FLOAT			     \
+		  ? (CUM).num+16 : (CUM).num)				     \
    : 0)
 
 /* If defined, a C expression that gives the alignment boundary, in bits,
@@ -633,8 +634,8 @@ do									      \
 
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
 {									\
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 24)), CXT); \
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 28)), FNADDR); \
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 24)), CXT); \
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 28)), FNADDR); \
 }
 
 /* Addressing modes, and classification of registers for them.  */

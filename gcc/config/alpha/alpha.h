@@ -917,25 +917,24 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
    $f0 for floating-point functions.  */
 
 #define FUNCTION_VALUE(VALTYPE, FUNC)	\
-  gen_rtx (REG,							\
-	   ((INTEGRAL_TYPE_P (VALTYPE)				\
-	     && TYPE_PRECISION (VALTYPE) < BITS_PER_WORD)	\
-	    || POINTER_TYPE_P (VALTYPE))			\
-	   ? word_mode : TYPE_MODE (VALTYPE),			\
-	   ((TARGET_FPREGS					\
-	     && (TREE_CODE (VALTYPE) == REAL_TYPE		\
-		 || TREE_CODE (VALTYPE) == COMPLEX_TYPE))	\
-	    ? 32 : 0))
+  gen_rtx_REG (((INTEGRAL_TYPE_P (VALTYPE)			\
+		 && TYPE_PRECISION (VALTYPE) < BITS_PER_WORD)	\
+		|| POINTER_TYPE_P (VALTYPE))			\
+	       ? word_mode : TYPE_MODE (VALTYPE),		\
+	       ((TARGET_FPREGS					\
+		 && (TREE_CODE (VALTYPE) == REAL_TYPE		\
+		     || TREE_CODE (VALTYPE) == COMPLEX_TYPE))	\
+		? 32 : 0))
 
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
 
 #define LIBCALL_VALUE(MODE)	\
-   gen_rtx (REG, MODE,						\
-	    (TARGET_FPREGS					\
-	     && (GET_MODE_CLASS (MODE) == MODE_FLOAT		\
-		 || GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT) \
-	     ? 32 : 0))
+   gen_rtx_REG (MODE,						\
+		(TARGET_FPREGS					\
+		 && (GET_MODE_CLASS (MODE) == MODE_FLOAT	\
+		     || GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT) \
+		 ? 32 : 0))
 
 /* The definition of this macro implies that there are cases where
    a scalar value cannot be returned in registers.
@@ -1013,11 +1012,12 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
 
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED)	\
 ((CUM) < 6 && ! MUST_PASS_IN_STACK (MODE, TYPE)	\
- ? gen_rtx(REG, (MODE),				\
-	   (CUM) + 16 + ((TARGET_FPREGS		\
-			  && (GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT  \
-			      || GET_MODE_CLASS (MODE) == MODE_FLOAT)) \
-			 * 32))			\
+ ? gen_rtx_REG ((MODE),				\
+		(CUM) + 16			\
+		+ ((TARGET_FPREGS		\
+		    && (GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT  \
+			|| GET_MODE_CLASS (MODE) == MODE_FLOAT)) \
+		   * 32))			\
  : 0)
 
 /* Specify the padding direction of arguments.
@@ -1071,15 +1071,15 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
 	{								\
 	  move_block_from_reg						\
 	    (16 + CUM,							\
-	     gen_rtx (MEM, BLKmode,					\
-		      plus_constant (virtual_incoming_args_rtx,		\
-				     ((CUM) + 6)* UNITS_PER_WORD)),	\
+	     gen_rtx_MEM (BLKmode,					\
+			  plus_constant (virtual_incoming_args_rtx,	\
+					 ((CUM) + 6)* UNITS_PER_WORD)),	\
 	     6 - (CUM), (6 - (CUM)) * UNITS_PER_WORD);			\
 	  move_block_from_reg						\
 	    (16 + (TARGET_FPREGS ? 32 : 0) + CUM,			\
-	     gen_rtx (MEM, BLKmode,					\
-		      plus_constant (virtual_incoming_args_rtx,		\
-				     (CUM) * UNITS_PER_WORD)),		\
+	     gen_rtx_MEM (BLKmode,					\
+			  plus_constant (virtual_incoming_args_rtx,	\
+					 (CUM) * UNITS_PER_WORD)),	\
 	     6 - (CUM), (6 - (CUM)) * UNITS_PER_WORD);			\
 	 }								\
       PRETEND_SIZE = 12 * UNITS_PER_WORD;				\

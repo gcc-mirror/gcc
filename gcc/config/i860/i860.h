@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for Intel 860.
-   Copyright (C) 1989, 91, 93, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1989, 91, 93, 95-97, 1998 Free Software Foundation, Inc.
    Hacked substantially by Ron Guilmette (rfg@monkeys.com) to cater to
    the whims of the System V Release 4 assembler.
 
@@ -428,17 +428,17 @@ enum reg_class { NO_REGS, GENERAL_REGS, FP_REGS, ALL_REGS, LIM_REG_CLASSES };
 /* On the i860, the value register depends on the mode.  */
 
 #define FUNCTION_VALUE(VALTYPE, FUNC)  \
-  gen_rtx (REG, TYPE_MODE (VALTYPE),				\
-	   (GET_MODE_CLASS (TYPE_MODE (VALTYPE)) == MODE_FLOAT	\
-	    ? 40 : 16))
+  gen_rtx_REG (TYPE_MODE (VALTYPE),				\
+	       (GET_MODE_CLASS (TYPE_MODE (VALTYPE)) == MODE_FLOAT	\
+		? 40 : 16))
 
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
 
 #define LIBCALL_VALUE(MODE)				\
-  gen_rtx (REG, MODE,					\
-	   (GET_MODE_CLASS ((MODE)) == MODE_FLOAT	\
-	    ? 40 : 16))
+  gen_rtx_REG (MODE,					\
+	       (GET_MODE_CLASS ((MODE)) == MODE_FLOAT	\
+		? 40 : 16))
 
 /* 1 if N is a possible register number for a function value
    as seen by the caller.  */
@@ -523,17 +523,17 @@ struct cumulative_args { int ints, floats; };
   ? 0							\
   : GET_MODE_CLASS ((MODE)) == MODE_FLOAT || (MODE) == DImode	\
   ? (ROUNDUP ((CUM).floats, GET_MODE_SIZE ((MODE))) < 32	\
-     ? gen_rtx (REG, (MODE),				\
-		40+(ROUNDUP ((CUM).floats,		\
-			     GET_MODE_SIZE ((MODE)))	\
-		    / 4))				\
+     ? gen_rtx_REG ((MODE),				\
+		    40 + (ROUNDUP ((CUM).floats,	\
+				   GET_MODE_SIZE ((MODE)))	\
+			  / 4))				\
      : 0)						\
   : GET_MODE_CLASS ((MODE)) == MODE_INT			\
   ? (ROUNDUP ((CUM).ints, GET_MODE_SIZE ((MODE))) < 48	\
-     ? gen_rtx (REG, (MODE),				\
-		16+(ROUNDUP ((CUM).ints,		\
-			     GET_MODE_SIZE ((MODE)))	\
-		    / 4))				\
+     ? gen_rtx_REG ((MODE),				\
+		    16 + (ROUNDUP ((CUM).ints,		\
+				   GET_MODE_SIZE ((MODE)))	\
+			  / 4))				\
      : 0)						\
   : 0)
 
@@ -618,11 +618,11 @@ struct cumulative_args { int ints, floats; };
      or #BOTTOM_OF_STATIC,r29,r29  */
 #define TRAMPOLINE_TEMPLATE(FILE)					\
 {									\
-  ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0xec1f0000));	\
-  ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0xe7ff0000));	\
-  ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0xec1d0000));	\
-  ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x4000f800));	\
-  ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0xe7bd0000));	\
+  ASM_OUTPUT_INT (FILE, GEN_INT (0xec1f0000));	\
+  ASM_OUTPUT_INT (FILE, GEN_INT (0xe7ff0000));	\
+  ASM_OUTPUT_INT (FILE, GEN_INT (0xec1d0000));	\
+  ASM_OUTPUT_INT (FILE, GEN_INT (0x4000f800));	\
+  ASM_OUTPUT_INT (FILE, GEN_INT (0xe7bd0000));	\
 }
 
 /* Length in units of the trampoline for entering a nested function.  */
@@ -644,13 +644,13 @@ struct cumulative_args { int ints, floats; };
 			     size_int (16), 0, 0);			\
   rtx hi_fn = expand_shift (RSHIFT_EXPR, SImode, fn,			\
 			    size_int (16), 0, 0);			\
-  emit_move_insn (gen_rtx (MEM, HImode, plus_constant (TRAMP, 16)),	\
+  emit_move_insn (gen_rtx_MEM (HImode, plus_constant (TRAMP, 16)),	\
 		  gen_lowpart (HImode, cxt));				\
-  emit_move_insn (gen_rtx (MEM, HImode, plus_constant (TRAMP, 4)),	\
+  emit_move_insn (gen_rtx_MEM (HImode, plus_constant (TRAMP, 4)),	\
 		  gen_lowpart (HImode, fn));				\
-  emit_move_insn (gen_rtx (MEM, HImode, plus_constant (TRAMP, 8)),	\
+  emit_move_insn (gen_rtx_MEM (HImode, plus_constant (TRAMP, 8)),	\
 		  gen_lowpart (HImode, hi_cxt));			\
-  emit_move_insn (gen_rtx (MEM, HImode, plus_constant (TRAMP, 0)),	\
+  emit_move_insn (gen_rtx_MEM (HImode, plus_constant (TRAMP, 0)),	\
 		  gen_lowpart (HImode, hi_fn));				\
 }
 
@@ -803,25 +803,25 @@ struct cumulative_args { int ints, floats; };
 
 #define LEGITIMIZE_ADDRESS(X,OLDX,MODE,WIN)	\
 { if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 0)) == MULT)	\
-    (X) = gen_rtx (PLUS, SImode, XEXP (X, 1),			\
-		   force_operand (XEXP (X, 0), 0));		\
+    (X) = gen_rtx_PLUS (SImode, XEXP (X, 1),			\
+			force_operand (XEXP (X, 0), 0));	\
   if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 1)) == MULT)	\
-    (X) = gen_rtx (PLUS, SImode, XEXP (X, 0),			\
-		   force_operand (XEXP (X, 1), 0));		\
+    (X) = gen_rtx_PLUS (SImode, XEXP (X, 0),			\
+			force_operand (XEXP (X, 1), 0));	\
   if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 0)) == PLUS)	\
-    (X) = gen_rtx (PLUS, SImode, XEXP (X, 1),			\
-		   force_operand (XEXP (X, 0), 0));		\
+    (X) = gen_rtx_PLUS (SImode, XEXP (X, 1),			\
+			force_operand (XEXP (X, 0), 0));	\
   if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 1)) == PLUS)	\
-    (X) = gen_rtx (PLUS, SImode, XEXP (X, 0),			\
-		   force_operand (XEXP (X, 1), 0));		\
+    (X) = gen_rtx_PLUS (SImode, XEXP (X, 0),			\
+			force_operand (XEXP (X, 1), 0));	\
   if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 0)) != REG	\
       && GET_CODE (XEXP (X, 0)) != CONST_INT)			\
-    (X) = gen_rtx (PLUS, SImode, XEXP (X, 1),			\
-		   copy_to_mode_reg (SImode, XEXP (X, 0)));	\
+    (X) = gen_rtx_PLUS (SImode, XEXP (X, 1),			\
+			copy_to_mode_reg (SImode, XEXP (X, 0))); \
   if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 1)) != REG	\
       && GET_CODE (XEXP (X, 1)) != CONST_INT)			\
-    (X) = gen_rtx (PLUS, SImode, XEXP (X, 0),			\
-		   copy_to_mode_reg (SImode, XEXP (X, 1)));	\
+    (X) = gen_rtx_PLUS (SImode, XEXP (X, 0),			\
+			copy_to_mode_reg (SImode, XEXP (X, 1))); \
   if (GET_CODE (x) == SYMBOL_REF)				\
     (X) = copy_to_reg (X);					\
   if (GET_CODE (x) == CONST)					\

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    SysV68 Motorola 3300 Delta Series.
-   Copyright (C) 1987, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 93, 94, 95, 96, 97, 1998 Free Software Foundation, Inc.
    Contributed by Abramo and Roberto Bagnara (bagnara@dipisa.di.unipi.it)
    based on Alex Crain's 3B1 definitions.
    Maintained by Philippe De Muyter (phdm@info.ucl.ac.be).
@@ -295,20 +295,21 @@ dtors_section ()							\
 /* sysV68 (brain damaged) cc convention support. */
 #define FUNCTION_VALUE(VALTYPE,FUNC) \
   (TREE_CODE (VALTYPE) == REAL_TYPE && TARGET_68881 	\
-   ? gen_rtx (REG, TYPE_MODE (VALTYPE), 16)		\
+   ? gen_rtx_REG (TYPE_MODE (VALTYPE), 16)		\
    : (POINTER_TYPE_P (VALTYPE)				\
-      ? gen_rtx (REG, TYPE_MODE (VALTYPE), 8)		\
-      : gen_rtx (REG, TYPE_MODE (VALTYPE), 0)))
+      ? gen_rtx_REG (TYPE_MODE (VALTYPE), 8)		\
+      : gen_rtx_REG (TYPE_MODE (VALTYPE), 0)))
 
 /* If TARGET_68881, SF and DF values are returned in fp0 instead of d0.  */
 
 /* Is LIBCALL_VALUE never called with a pointer ? */
 #undef LIBCALL_VALUE
-#define LIBCALL_VALUE(MODE)						   \
- gen_rtx (REG, (MODE),							   \
-	  ((TARGET_68881						   \
-	    && ((MODE) == SFmode || (MODE) == DFmode || (MODE) == XFmode)) \
-	   ? 16 : 0))
+#define LIBCALL_VALUE(MODE)					\
+ gen_rtx_REG ((MODE),						\
+	      ((TARGET_68881					\
+		&& ((MODE) == SFmode || (MODE) == DFmode	\
+		    || (MODE) == XFmode))			\
+	       ? 16 : 0))
 
 /* 1 if N is a possible register number for a function value.
    d0 may be used, and fp0 as well if -msoft-float is not specified.  */
@@ -769,8 +770,8 @@ do {(CUM).offset = 0;\
 
 #undef FUNCTION_ARG
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
-(((CUM).libcall && (CUM).offset == 0) ? gen_rtx(REG, (MODE), 0)\
-: (TARGET_REGPARM && (CUM).offset < 8) ? gen_rtx (REG, (MODE), (CUM).offset / 4) : 0)
+(((CUM).libcall && (CUM).offset == 0) ? gen_rtx_REG ((MODE), 0)\
+: (TARGET_REGPARM && (CUM).offset < 8) ? gen_rtx_REG ((MODE), (CUM).offset / 4) : 0)
 
 #undef FUNCTION_ARG_PARTIAL_NREGS
 #define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED) \
@@ -812,5 +813,5 @@ do {(CUM).offset = 0;\
   if (!TARGET_68040)			\
     ;					\
   else					\
-    emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "__clear_insn_cache"), \
+    emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__clear_insn_cache"), \
 		       0, VOIDmode, 0)

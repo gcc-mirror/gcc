@@ -1,5 +1,5 @@
 /* Target definitions for GNU compiler for mc680x0 running NeXTSTEP
-   Copyright (C) 1989, 90-94, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1989, 90-94, 96, 97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -186,8 +186,8 @@ Boston, MA 02111-1307, USA.  */
 
 #undef FINALIZE_TRAMPOLINE
 #define FINALIZE_TRAMPOLINE(TRAMP) \
-  emit_library_call(gen_rtx(SYMBOL_REF, Pmode, "__enable_execute_stack"), \
-		    0, VOIDmode, 1, memory_address(SImode, (TRAMP)), Pmode)
+  emit_library_call(gen_rtx_SYMBOL_REF (Pmode, "__enable_execute_stack"), \
+		    0, VOIDmode, 1, memory_address (SImode, (TRAMP)), Pmode)
 
 /* A C expression used to clear the instruction cache from 
    address BEG to address END.   On NeXTSTEP this i a system trap. */

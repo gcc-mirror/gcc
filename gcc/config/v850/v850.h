@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler. NEC V850 series
-   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998 Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
 This file is part of GNU CC.
@@ -740,13 +740,13 @@ extern int current_function_anonymous_args;
    otherwise, FUNC is 0.   */
    
 #define FUNCTION_VALUE(VALTYPE, FUNC) \
-  gen_rtx (REG, TYPE_MODE (VALTYPE), 10)
+  gen_rtx_REG (TYPE_MODE (VALTYPE), 10)
 
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
 
 #define LIBCALL_VALUE(MODE) \
-  gen_rtx (REG, MODE, 10)
+  gen_rtx_REG (MODE, 10)
 
 /* 1 if N is a possible register number for a function value.  */
 
@@ -796,9 +796,9 @@ extern int current_function_anonymous_args;
 
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
 {									\
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant ((TRAMP), 16)),	\
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant ((TRAMP), 16)),	\
  		 (CXT));						\
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant ((TRAMP), 20)),	\
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant ((TRAMP), 20)),	\
 		 (FNADDR));						\
 }
 

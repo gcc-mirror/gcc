@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for SPUR chip.
-   Copyright (C) 1988, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1995, 1996, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -355,17 +355,17 @@ enum reg_class { NO_REGS, GENERAL_REGS, FP_REGS, ALL_REGS, LIM_REG_CLASSES };
 /* On SPUR the value is found in the second "output" register.  */
 
 #define FUNCTION_VALUE(VALTYPE, FUNC)  \
-  gen_rtx (REG, TYPE_MODE (VALTYPE), 27)
+  gen_rtx_REG (TYPE_MODE (VALTYPE), 27)
 
 /* But the called function leaves it in the second "input" register.  */
 
 #define FUNCTION_OUTGOING_VALUE(VALTYPE, FUNC)  \
-  gen_rtx (REG, TYPE_MODE (VALTYPE), 11)
+  gen_rtx_REG (TYPE_MODE (VALTYPE), 11)
 
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
 
-#define LIBCALL_VALUE(MODE)  gen_rtx (REG, MODE, 27)
+#define LIBCALL_VALUE(MODE)  gen_rtx_REG (MODE, 27)
 
 /* 1 if N is a possible register number for a function value
    as seen by the caller.
@@ -449,7 +449,7 @@ enum reg_class { NO_REGS, GENERAL_REGS, FP_REGS, ALL_REGS, LIM_REG_CLASSES };
        + ((MODE) == BLKmode				\
 	  ? (int_size_in_bytes (TYPE) + 3) / 4		\
 	  : (GET_MODE_SIZE (MODE) + 3) / 4))		\
- ? gen_rtx (REG, (MODE), 27 + (CUM))			\
+ ? gen_rtx_REG ((MODE), 27 + (CUM))			\
  : 0)
 
 /* Define where a function finds its arguments.
@@ -460,7 +460,7 @@ enum reg_class { NO_REGS, GENERAL_REGS, FP_REGS, ALL_REGS, LIM_REG_CLASSES };
        + ((MODE) == BLKmode				\
 	  ? (int_size_in_bytes (TYPE) + 3) / 4		\
 	  : (GET_MODE_SIZE (MODE) + 3) / 4))		\
- ? gen_rtx (REG, (MODE), 11 + (CUM))			\
+ ? gen_rtx_REG ((MODE), 11 + (CUM))			\
  : 0)
 
 /* For an arg passed partly in registers and partly in memory,
@@ -714,17 +714,17 @@ extern int current_function_pretend_args_size;
 
 #define LEGITIMIZE_ADDRESS(X,OLDX,MODE,WIN)	\
 { if (GET_CODE (X) == PLUS && CONSTANT_ADDRESS_P (XEXP (X, 1)))	\
-    (X) = gen_rtx (PLUS, SImode, XEXP (X, 0),			\
-		   copy_to_mode_reg (SImode, XEXP (X, 1)));	\
+    (X) = gen_rtx_PLUS (SImode, XEXP (X, 0),			\
+			copy_to_mode_reg (SImode, XEXP (X, 1))); \
   if (GET_CODE (X) == PLUS && CONSTANT_ADDRESS_P (XEXP (X, 0)))	\
-    (X) = gen_rtx (PLUS, SImode, XEXP (X, 1),			\
-		   copy_to_mode_reg (SImode, XEXP (X, 0)));	\
+    (X) = gen_rtx_PLUS (SImode, XEXP (X, 1),			\
+			copy_to_mode_reg (SImode, XEXP (X, 0))); \
   if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 0)) == MULT)	\
-    (X) = gen_rtx (PLUS, SImode, XEXP (X, 1),			\
-		   force_operand (XEXP (X, 0), 0));		\
+    (X) = gen_rtx_PLUS (SImode, XEXP (X, 1),			\
+			force_operand (XEXP (X, 0), 0));	\
   if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 1)) == MULT)	\
-    (X) = gen_rtx (PLUS, SImode, XEXP (X, 0),			\
-		   force_operand (XEXP (X, 1), 0));		\
+    (X) = gen_rtx_PLUS (SImode, XEXP (X, 0),			\
+			force_operand (XEXP (X, 1), 0));	\
   if (memory_address_p (MODE, X))				\
     goto WIN; }
 

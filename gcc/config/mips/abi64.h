@@ -127,7 +127,7 @@ extern struct rtx_def *mips_function_value ();
 		ptr = plus_constant (virtual_incoming_args_rtx,		\
 				     - (mips_save_gp_regs		\
 					* UNITS_PER_WORD));		\
-	      mem = gen_rtx (MEM, BLKmode, ptr);			\
+	      mem = gen_rtx_MEM (BLKmode, ptr);			\
 	      /* va_arg is an array access in this case, which causes	\
 		 it to get MEM_IN_STRUCT_P set.  We must set it here	\
 		 so that the insn scheduler won't assume that these	\
@@ -160,15 +160,15 @@ extern struct rtx_def *mips_function_value ();
 	      for (i = 0; i < mips_save_fp_regs; i++)			\
 		{							\
 		  rtx tem =						\
-		    gen_rtx (MEM, mode,					\
-			     plus_constant (virtual_incoming_args_rtx,	\
-					    off));			\
+		    gen_rtx_MEM (mode,					\
+				 plus_constant (virtual_incoming_args_rtx, \
+						off));			\
 		  emit_move_insn (tem,					\
-				  gen_rtx (REG, mode,			\
-					   ((CUM).fp_arg_words		\
-					    + FP_ARG_FIRST		\
-					    + i				\
-					    + mips_fp_off)));		\
+				  gen_rtx_REG (mode,			\
+					       ((CUM).fp_arg_words	\
+						+ FP_ARG_FIRST		\
+						+ i			\
+						+ mips_fp_off)));	\
 		  off += size;						\
 		  if (! TARGET_FLOAT64 || TARGET_SINGLE_FLOAT)		\
 		    ++i;						\

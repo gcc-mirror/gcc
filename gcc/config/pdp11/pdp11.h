@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for the pdp-11
-   Copyright (C) 1994, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1996, 1998 Free Software Foundation, Inc.
    Contributed by Michael K. Gschwind (mike@vlsivie.tuwien.ac.at).
 
 This file is part of GNU CC.
@@ -542,18 +542,18 @@ extern int current_first_parm_offset;
 not without FPU!!!! ) */
 
 #define FUNCTION_VALUE(VALTYPE, FUNC)  \
-  gen_rtx (REG, TYPE_MODE (VALTYPE), BASE_RETURN_VALUE_REG(TYPE_MODE(VALTYPE)))
+  gen_rtx_REG (TYPE_MODE (VALTYPE), BASE_RETURN_VALUE_REG(TYPE_MODE(VALTYPE)))
 
 /* and the called function leaves it in the first register.
    Difference only on machines with register windows.  */
 
 #define FUNCTION_OUTGOING_VALUE(VALTYPE, FUNC)  \
-  gen_rtx (REG, TYPE_MODE (VALTYPE), BASE_RETURN_VALUE_REG(TYPE_MODE(VALTYPE)))
+  gen_rtx_REG (TYPE_MODE (VALTYPE), BASE_RETURN_VALUE_REG(TYPE_MODE(VALTYPE)))
 
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
 
-#define LIBCALL_VALUE(MODE)  gen_rtx (REG, MODE, BASE_RETURN_VALUE_REG(MODE))
+#define LIBCALL_VALUE(MODE)  gen_rtx_REG (MODE, BASE_RETURN_VALUE_REG(MODE))
 
 /* 1 if N is a possible register number for a function value
    as seen by the caller.
@@ -1256,14 +1256,14 @@ MV	#STATIC, $4	0x940Y	0x0000 <- STATIC; Y = STATIC_CHAIN_REGNUM
 JMP	FUNCTION	0x0058  0x0000 <- FUNCTION
 */
 
-#define TRAMPOLINE_TEMPLATE(FILE)	\
-{					\
-  if (TARGET_SPLIT)			\
-    abort();				\
-					\
-  ASM_OUTPUT_INT (FILE, gen_rtx(CONST_INT, VOIDmode, 0x9400+STATIC_CHAIN_REGNUM)); \
+#define TRAMPOLINE_TEMPLATE(FILE)				\
+{								\
+  if (TARGET_SPLIT)						\
+    abort();							\
+								\
+  ASM_OUTPUT_INT (FILE, GEN_INT (0x9400+STATIC_CHAIN_REGNUM));	\
   ASM_OUTPUT_INT (FILE, const0_rtx);				\
-  ASM_OUTPUT_INT (FILE, gen_rtx(CONST_INT, VOIDmode, 0x0058));	\
+  ASM_OUTPUT_INT (FILE, GEN_INT (0x0058));			\
   ASM_OUTPUT_INT (FILE, const0_rtx);				\
 }
 
@@ -1279,8 +1279,8 @@ JMP	FUNCTION	0x0058  0x0000 <- FUNCTION
   if (TARGET_SPLIT)			\
     abort();				\
 					\
-  emit_move_insn (gen_rtx (MEM, HImode, plus_constant (TRAMP, 2)), CXT); \
-  emit_move_insn (gen_rtx (MEM, HImode, plus_constant (TRAMP, 6)), FNADDR); \
+  emit_move_insn (gen_rtx_MEM (HImode, plus_constant (TRAMP, 2)), CXT); \
+  emit_move_insn (gen_rtx_MEM (HImode, plus_constant (TRAMP, 6)), FNADDR); \
 }
 
 

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  Elxsi version.
-   Copyright (C) 1987, 1988, 1992, 1995, 1996 Free Software Foundation, Inc.
-   This port, contributed by Mike Stump <mrs@cygnus.com> in 1988, is the first
+   Copyright (C) 1987, 88, 92, 95, 96, 1998 Free Software Foundation, Inc.
+   Contributed by Mike Stump <mrs@cygnus.com> in 1988.  This is the first
    64 bit port of GNU CC.
    Based upon the VAX port.
 
@@ -319,14 +319,14 @@ enum reg_class { NO_REGS, GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES };
 /* On the Vax the return value is in R0 regardless.  */   
 
 #define FUNCTION_VALUE(VALTYPE, FUNC)  \
-  gen_rtx (REG, TYPE_MODE (VALTYPE), 0)
+  gen_rtx_REG (TYPE_MODE (VALTYPE), 0)
 
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
 
 /* On the Vax the return value is in R0 regardless.  */   
 
-#define LIBCALL_VALUE(MODE)  gen_rtx (REG, MODE, 0)
+#define LIBCALL_VALUE(MODE)  gen_rtx_REG (MODE, 0)
 
 /* Define this if PCC uses the nonreentrant convention for returning
    structure and union values.  */
@@ -482,11 +482,11 @@ enum reg_class { NO_REGS, GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES };
   else if (GET_CODE (ADDR) == PLUS && XEXP (ADDR, 0) == frame_pointer_rtx) \
     { rtx other_reg = XEXP (ADDR, 1);					\
       offset = 0;							\
-      regs = gen_rtx (PLUS, Pmode, stack_pointer_rtx, other_reg); }	\
+      regs = gen_rtx_PLUS (Pmode, stack_pointer_rtx, other_reg); }	\
   else if (GET_CODE (ADDR) == PLUS && XEXP (ADDR, 1) == frame_pointer_rtx) \
     { rtx other_reg = XEXP (ADDR, 0);					\
       offset = 0;							\
-      regs = gen_rtx (PLUS, Pmode, stack_pointer_rtx, other_reg); }	\
+      regs = gen_rtx_PLUS (Pmode, stack_pointer_rtx, other_reg); }	\
   if (offset >= 0)							\
     { int regno;							\
       extern char call_used_regs[];					\

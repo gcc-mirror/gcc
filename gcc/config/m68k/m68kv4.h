@@ -1,5 +1,5 @@
 /* Target definitions for GNU compiler for mc680x0 running System V.4
-   Copyright (C) 1991, 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1991, 93, 94, 95, 96, 1998 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@monkeys.com) and
    Fred Fish (fnf@cygnus.com).
 
@@ -167,10 +167,10 @@ while (0)
 #undef FUNCTION_VALUE
 #define FUNCTION_VALUE(VALTYPE, FUNC)					\
   (TREE_CODE (VALTYPE) == REAL_TYPE && TARGET_68881			\
-   ? gen_rtx (REG, TYPE_MODE (VALTYPE), 16)				\
+   ? gen_rtx_REG (TYPE_MODE (VALTYPE), 16)				\
    : (POINTER_TYPE_P (VALTYPE)						\
-      ? gen_rtx (REG, TYPE_MODE (VALTYPE), 8)				\
-      : gen_rtx (REG, TYPE_MODE (VALTYPE), 0)))
+      ? gen_rtx_REG (TYPE_MODE (VALTYPE), 8)				\
+      : gen_rtx_REG (TYPE_MODE (VALTYPE), 0)))
 
 /* For compatibility with the large body of existing code which does not
    always properly declare external functions returning pointer types, the
@@ -196,8 +196,8 @@ do {									\
 #define LIBCALL_VALUE(MODE)						\
   ((((MODE) == SFmode || (MODE) == DFmode || (MODE) == XFmode)		\
     && TARGET_68881)							\
-   ? gen_rtx (REG, (MODE), 16)						\
-   : gen_rtx (REG, (MODE), 0))
+   ? gen_rtx_REG ((MODE), 16)						\
+   : gen_rtx_REG ((MODE), 0))
 
 /* Boundary (in *bits*) on which stack pointer should be aligned.
    The m68k/SVR4 convention is to keep the stack pointer longword aligned. */
@@ -321,13 +321,13 @@ int switch_table_difference_label_flag;
 #undef TRAMPOLINE_TEMPLATE
 #define TRAMPOLINE_TEMPLATE(FILE)					\
 {									\
-  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x227a));	\
-  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 8));		\
-  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x2f3a));	\
-  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 8));		\
-  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x4e75));	\
-  ASM_OUTPUT_INT (FILE, const0_rtx);					\
-  ASM_OUTPUT_INT (FILE, const0_rtx);					\
+  ASM_OUTPUT_SHORT (FILE, GEN_INT (0x227a));	\
+  ASM_OUTPUT_SHORT (FILE, GEN_INT (8));		\
+  ASM_OUTPUT_SHORT (FILE, GEN_INT (0x2f3a));	\
+  ASM_OUTPUT_SHORT (FILE, GEN_INT (8));		\
+  ASM_OUTPUT_SHORT (FILE, GEN_INT (0x4e75));	\
+  ASM_OUTPUT_INT (FILE, const0_rtx);		\
+  ASM_OUTPUT_INT (FILE, const0_rtx);		\
 }
 
 /* Redefine since we are using a different trampoline */
@@ -341,6 +341,6 @@ int switch_table_difference_label_flag;
 #undef INITIALIZE_TRAMPOLINE
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)                       \
 {                                                                       \
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 10)), CXT); \
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 14)), FNADDR); \
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 10)), CXT); \
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 14)), FNADDR); \
 }

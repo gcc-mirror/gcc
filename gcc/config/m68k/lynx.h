@@ -1,5 +1,5 @@
 /* Definitions for Motorola 680x0 running LynxOS.
-   Copyright (C) 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1995, 1996, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -62,9 +62,10 @@ Boston, MA 02111-1307, USA.  */
 
 #undef LIBCALL_VALUE
 #define LIBCALL_VALUE(MODE)                                                \
- gen_rtx (REG, (MODE),                                                     \
-          ((TARGET_68881                                                   \
-            && ((MODE) == SFmode || (MODE) == DFmode || (MODE) == XFmode)) \
+ gen_rtx_REG ((MODE),						\
+	      ((TARGET_68881					\
+		&& ((MODE) == SFmode || (MODE) == DFmode	\
+		    || (MODE) == XFmode))			\
            ? 16 : 0))
 
 #undef FUNCTION_VALUE_REGNO_P

@@ -116,14 +116,14 @@ crt2.o%s "
 #undef FUNCTION_VALUE
 #define FUNCTION_VALUE(VALTYPE, FUNC)                                  \
   (TREE_CODE (VALTYPE) == REAL_TYPE && TARGET_68881                    \
-   ? gen_rtx (REG, TYPE_MODE (VALTYPE), 16)                            \
+   ? gen_rtx_REG (TYPE_MODE (VALTYPE), 16)                            \
    : (POINTER_TYPE_P (VALTYPE)		                               \
-      ? gen_rtx (REG, TYPE_MODE (VALTYPE), 8)                           \
-      : gen_rtx (REG, TYPE_MODE (VALTYPE), 0)))
+      ? gen_rtx_REG (TYPE_MODE (VALTYPE), 8)                           \
+      : gen_rtx_REG (TYPE_MODE (VALTYPE), 0)))
                     
 #undef LIBCALL_VALUE
 #define LIBCALL_VALUE(MODE)						\
-  gen_rtx (REG, (MODE), ((TARGET_68881 &&				\
+  gen_rtx_REG ((MODE), ((TARGET_68881 &&				\
 			 ((MODE) == SFmode || (MODE) == DFmode)) ? 16 : 0))
 
 /* 1 if N is a possible register number for a function value.
@@ -167,9 +167,9 @@ crt2.o%s "
 
 #undef FINALIZE_TRAMPOLINE
 #define FINALIZE_TRAMPOLINE(TRAMP)					\
-  emit_library_call(gen_rtx(SYMBOL_REF, Pmode, "__clear_cache"),	\
-		    0, VOIDmode, 2, TRAMP, Pmode,			\
-		    plus_constant(TRAMP, TRAMPOLINE_SIZE), Pmode);
+  emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__clear_cache"),	\
+		     0, VOIDmode, 2, TRAMP, Pmode,			\
+		     plus_constant (TRAMP, TRAMPOLINE_SIZE), Pmode);
 
 /* Clear the instruction cache from `beg' to `end'.  This makes an 
    inline system call to SYS_sysm68k.  The arguments are as follows:

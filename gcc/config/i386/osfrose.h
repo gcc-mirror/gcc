@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    Intel 386 (OSF/1 with OSF/rose) version.
-   Copyright (C) 1991, 1992, 1993, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1992, 1993, 1996, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -221,8 +221,8 @@ do									\
 	    rtx symref;							\
 									\
 	    HALF_PIC_EXTERNAL ("_mcount_ptr");				\
-	    symref = HALF_PIC_PTR (gen_rtx (SYMBOL_REF, Pmode,		\
-					    "_mcount_ptr"));		\
+	    symref = HALF_PIC_PTR (gen_rtx_SYMBOL_REF (Pmode,		\
+						       "_mcount_ptr"));	\
 									\
 	    fprintf (FILE, "\tmovl $%sP%d,%%edx\n", lprefix, labelno);	\
 	    fprintf (FILE, "\tmovl %s%s,%%eax\n", prefix,		\
@@ -294,7 +294,7 @@ do									\
 	    rtx symdef;							\
 									\
 	    HALF_PIC_EXTERNAL ("mcount");				\
-	    symdef = HALF_PIC_PTR (gen_rtx (SYMBOL_REF, Pmode, "mcount")); \
+	    symdef = HALF_PIC_PTR (gen_rtx_SYMBOL_REF (Pmode, "mcount")); \
 	    fprintf (FILE, "\tmovl $%sP%d,%%edx\n", lprefix, labelno);	\
 	    fprintf (FILE, "\tcall *%s%s\n", prefix, XSTR (symdef, 0));	\
 	  }								\

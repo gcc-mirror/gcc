@@ -938,15 +938,15 @@ enum reg_class
    otherwise, FUNC is 0.  */
 #define FUNCTION_VALUE(VALTYPE, FUNC)  \
   (GET_MODE_CLASS (TYPE_MODE (VALTYPE)) == MODE_FLOAT && TARGET_HARD_FLOAT \
-   ? gen_rtx (REG, TYPE_MODE (VALTYPE), 16) \
-   : gen_rtx (REG, TYPE_MODE (VALTYPE), 0))
+   ? gen_rtx_REG (TYPE_MODE (VALTYPE), 16) \
+   : gen_rtx_REG (TYPE_MODE (VALTYPE), 0))
 
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
 #define LIBCALL_VALUE(MODE)  \
   (GET_MODE_CLASS (MODE) == MODE_FLOAT && TARGET_HARD_FLOAT \
-   ? gen_rtx (REG, MODE, 16) \
-   : gen_rtx (REG, MODE, 0))
+   ? gen_rtx_REG (MODE, 16) \
+   : gen_rtx_REG (MODE, 0))
 
 /* 1 if N is a possible register number for a function value.
    On the ARM, only r0 and f0 can return results.  */
@@ -985,7 +985,7 @@ enum reg_class
    stack if necessary).  */
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED)  \
   ((NAMED)						\
-   ? ((CUM) >= 16 ? 0 : gen_rtx (REG, MODE, (CUM) / 4))	\
+   ? ((CUM) >= 16 ? 0 : gen_rtx_REG (MODE, (CUM) / 4))	\
    : 0)
 
 /* For an arg passed partly in registers and partly in memory,
@@ -1178,9 +1178,9 @@ enum reg_class
    CXT is an RTX for the static chain value for the function.  */
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)  \
 {									\
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant ((TRAMP), 8)),	\
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant ((TRAMP), 8)),	\
 		  (CXT));						\
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant ((TRAMP), 12)),	\
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant ((TRAMP), 12)),	\
 		  (FNADDR));						\
 }
 
@@ -1476,14 +1476,14 @@ extern struct rtx_def *legitimize_pic_address ();
 	      n -= low_n;						 \
 	    }								 \
 	  base_reg = gen_reg_rtx (SImode);				 \
-	  val = force_operand (gen_rtx (PLUS, SImode, xop0,		 \
-					GEN_INT (n)), NULL_RTX);	 \
+	  val = force_operand (gen_rtx_PLUS (SImode, xop0,		 \
+					     GEN_INT (n)), NULL_RTX);	 \
 	  emit_move_insn (base_reg, val);				 \
 	  (X) = (low_n == 0 ? base_reg					 \
-		 : gen_rtx (PLUS, SImode, base_reg, GEN_INT (low_n)));	 \
+		 : gen_rtx_PLUS (SImode, base_reg, GEN_INT (low_n)));	 \
 	}								 \
       else if (xop0 != XEXP (X, 0) || xop1 != XEXP (x, 1))		 \
-	(X) = gen_rtx (PLUS, SImode, xop0, xop1);			 \
+	(X) = gen_rtx_PLUS (SImode, xop0, xop1);			 \
     }									 \
   else if (GET_CODE (X) == MINUS)					 \
     {									 \
@@ -1495,7 +1495,7 @@ extern struct rtx_def *legitimize_pic_address ();
       if (CONSTANT_P (xop1) && ! symbol_mentioned_p (xop1))		 \
 	xop1 = force_reg (SImode, xop1);				 \
       if (xop0 != XEXP (X, 0) || xop1 != XEXP (X, 1))			 \
-	(X) = gen_rtx (MINUS, SImode, xop0, xop1);			 \
+	(X) = gen_rtx_MINUS (SImode, xop0, xop1);			 \
     }									 \
   if (flag_pic)								 \
     (X) = legitimize_pic_address (OLDX, MODE, NULL_RTX);		 \
@@ -1939,7 +1939,7 @@ do {									\
 
 #define RETURN_ADDR_RTX(COUNT, FRAME)	\
   ((COUNT == 0)				\
-   ? gen_rtx (MEM, Pmode, plus_constant (FRAME, -4)) \
+   ? gen_rtx_MEM (Pmode, plus_constant (FRAME, -4)) \
    : NULL_RTX)
 
 /* Used to mask out junk bits from the return address, such as

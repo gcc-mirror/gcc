@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  AT&T we32000 version.
-   Copyright (C) 1991, 92, 93, 94, 95, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1991, 92, 93, 94, 95, 96, 1998 Free Software Foundation, Inc.
    Contributed by John Wehle (john@feith1.uucp)
 
 This file is part of GNU CC.
@@ -319,14 +319,14 @@ enum reg_class { NO_REGS, GENERAL_REGS,
 /* On the we32000 the return value is in r0 regardless.  */
 
 #define FUNCTION_VALUE(VALTYPE, FUNC)  \
-  gen_rtx (REG, TYPE_MODE (VALTYPE), 0)
+  gen_rtx_REG (TYPE_MODE (VALTYPE), 0)
 
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
 
 /* On the we32000 the return value is in r0 regardless.  */
 
-#define LIBCALL_VALUE(MODE)  gen_rtx (REG, MODE, 0)
+#define LIBCALL_VALUE(MODE)  gen_rtx_REG (MODE, 0)
 
 /* 1 if N is a possible register number for a function value.
    On the we32000, r0 is the only register thus used.  */
@@ -478,15 +478,15 @@ enum reg_class { NO_REGS, GENERAL_REGS,
      mov #STATIC,%r8
      jmp #FUNCTION */
 
-#define TRAMPOLINE_TEMPLATE(FILE)					\
-{									\
-  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x844f));	\
-  ASM_OUTPUT_SHORT (FILE, const0_rtx);					\
-  ASM_OUTPUT_SHORT (FILE, const0_rtx);					\
-  ASM_OUTPUT_CHAR (FILE, gen_rtx (CONST_INT, VOIDmode, 0x48));		\
-  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x247f));	\
-  ASM_OUTPUT_SHORT (FILE, const0_rtx);					\
-  ASM_OUTPUT_SHORT (FILE, const0_rtx);					\
+#define TRAMPOLINE_TEMPLATE(FILE)		\
+{						\
+  ASM_OUTPUT_SHORT (FILE, GEN_INT (0x844f));	\
+  ASM_OUTPUT_SHORT (FILE, const0_rtx);		\
+  ASM_OUTPUT_SHORT (FILE, const0_rtx);		\
+  ASM_OUTPUT_CHAR  (FILE, GEN_INT (0x48));	\
+  ASM_OUTPUT_SHORT (FILE, GEN_INT (0x247f));	\
+  ASM_OUTPUT_SHORT (FILE, const0_rtx);		\
+  ASM_OUTPUT_SHORT (FILE, const0_rtx);		\
 }
 
 /* Length in units of the trampoline for entering a nested function.  */
@@ -499,8 +499,8 @@ enum reg_class { NO_REGS, GENERAL_REGS,
 
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
 {									\
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 2)), CXT); \
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 9)), FNADDR); \
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 2)), CXT); \
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 9)), FNADDR); \
 }
 
 /* Generate calls to memcpy() and memset() rather

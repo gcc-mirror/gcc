@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler. Matsushita MN10200 series
-   Copyright (C) 1997 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998 Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
 This file is part of GNU CC.
@@ -524,12 +524,12 @@ extern struct rtx_def *function_arg();
    otherwise, FUNC is 0.   */
    
 #define FUNCTION_VALUE(VALTYPE, FUNC) \
-  gen_rtx (REG, TYPE_MODE (VALTYPE), TYPE_MODE (VALTYPE) == PSImode ? 4 : 0)
+  gen_rtx_REG (TYPE_MODE (VALTYPE), TYPE_MODE (VALTYPE) == PSImode ? 4 : 0)
 
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
 
-#define LIBCALL_VALUE(MODE) gen_rtx (REG, MODE, (MODE) == PSImode ? 4 : 0)
+#define LIBCALL_VALUE(MODE) gen_rtx_REG (MODE, (MODE) == PSImode ? 4 : 0)
 
 /* 1 if N is a possible register number for a function value.  */
 
@@ -590,9 +590,9 @@ extern struct rtx_def *function_arg();
 
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
 {									\
-  emit_move_insn (gen_rtx (MEM, PSImode, plus_constant ((TRAMP), 20)),  \
+  emit_move_insn (gen_rtx_MEM (PSImode, plus_constant ((TRAMP), 20)),	\
 		  (CXT));						\
-  emit_move_insn (gen_rtx (MEM, PSImode, plus_constant ((TRAMP), 24)),  \
+  emit_move_insn (gen_rtx_MEM (PSImode, plus_constant ((TRAMP), 24)),	\
 		  (FNADDR));						\
 }
 
@@ -601,7 +601,7 @@ extern struct rtx_def *function_arg();
 
 #define RETURN_ADDR_RTX(COUNT, FRAME)   \
   ((COUNT == 0)                         \
-   ? gen_rtx (MEM, Pmode, frame_pointer_rtx) \
+   ? gen_rtx_MEM (Pmode, frame_pointer_rtx) \
    : (rtx) 0)
 
 
@@ -1052,9 +1052,9 @@ do { char dstr[30];					\
 #define INIT_TARGET_OPTABS \
   do { \
     sdiv_optab->handlers[(int) HImode].libfunc		\
-      = gen_rtx (SYMBOL_REF, Pmode, DIVHI3_LIBCALL);	\
+      = gen_rtx_SYMBOL_REF (Pmode, DIVHI3_LIBCALL);	\
     smod_optab->handlers[(int) HImode].libfunc		\
-      = gen_rtx (SYMBOL_REF, Pmode, MODHI3_LIBCALL);	\
+      = gen_rtx_SYMBOL_REF (Pmode, MODHI3_LIBCALL);	\
   } while (0)
 
 /* The assembler op to get a word.  */

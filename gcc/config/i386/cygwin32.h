@@ -144,7 +144,7 @@ do									\
       if (lookup_attribute ("stdcall",					\
 			    TYPE_ATTRIBUTES (TREE_TYPE (DECL))))	\
         XEXP (DECL_RTL (DECL), 0) = 					\
-          gen_rtx (SYMBOL_REF, Pmode, gen_stdcall_suffix (DECL)); 	\
+          gen_rtx_SYMBOL_REF (Pmode, gen_stdcall_suffix (DECL)); 	\
   }									\
 while (0)
 #endif

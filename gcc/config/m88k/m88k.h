@@ -198,13 +198,13 @@ extern char * reg_names[];
    Redefined in sysv4.h, and luna.h.  */
 #define VERSION_INFO1	"m88k, "
 #ifndef VERSION_INFO2
-#define VERSION_INFO2   "$Revision: 1.75 $"
+#define VERSION_INFO2   "$Revision: 1.76 $"
 #endif
 
 #ifndef VERSION_STRING
 #define VERSION_STRING  version_string
 #ifdef __STDC__
-#define TM_RCS_ID      "@(#)" __FILE__ " $Revision: 1.75 $ " __DATE__
+#define TM_RCS_ID      "@(#)" __FILE__ " $Revision: 1.76 $ " __DATE__
 #else
 #define TM_RCS_ID      "$What: <@(#) m88k.h,v	1.1.1.2.2.2> $"
 #endif  /* __STDC__ */
@@ -992,9 +992,8 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
    If the precise function being called is known, FUNC is its FUNCTION_DECL;
    otherwise, FUNC is 0.  */
 #define FUNCTION_VALUE(VALTYPE, FUNC) \
-  gen_rtx (REG, \
-	   TYPE_MODE (VALTYPE) == BLKmode ? SImode : TYPE_MODE (VALTYPE), \
-	   2)
+  gen_rtx_REG (TYPE_MODE (VALTYPE) == BLKmode ? SImode : TYPE_MODE (VALTYPE), \
+	       2)
 
 /* Define this if it differs from FUNCTION_VALUE.  */
 /* #define FUNCTION_OUTGOING_VALUE(VALTYPE, FUNC) ... */
@@ -1014,7 +1013,7 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
-#define LIBCALL_VALUE(MODE)  gen_rtx (REG, MODE, 2)
+#define LIBCALL_VALUE(MODE)  gen_rtx_REG (MODE, 2)
 
 /* True if N is a possible register number for a function value
    as seen by the caller.  */
@@ -1241,8 +1240,8 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
 {									\
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 40)), FNADDR); \
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 36)), CXT); \
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 40)), FNADDR); \
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 36)), CXT); \
 }
 
 /*** Library Subroutine Names ***/
@@ -1420,23 +1419,23 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 #define LEGITIMIZE_ADDRESS(X,OLDX,MODE,WIN)			\
 {								\
   if (GET_CODE (X) == PLUS && CONSTANT_ADDRESS_P (XEXP (X, 1)))	\
-    (X) = gen_rtx (PLUS, SImode, XEXP (X, 0),			\
-		   copy_to_mode_reg (SImode, XEXP (X, 1)));	\
+    (X) = gen_rtx_PLUS (SImode, XEXP (X, 0),			\
+			copy_to_mode_reg (SImode, XEXP (X, 1))); \
   if (GET_CODE (X) == PLUS && CONSTANT_ADDRESS_P (XEXP (X, 0)))	\
-    (X) = gen_rtx (PLUS, SImode, XEXP (X, 1),			\
-		   copy_to_mode_reg (SImode, XEXP (X, 0)));	\
+    (X) = gen_rtx_PLUS (SImode, XEXP (X, 1),			\
+			copy_to_mode_reg (SImode, XEXP (X, 0))); \
   if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 0)) == MULT)	\
-    (X) = gen_rtx (PLUS, SImode, XEXP (X, 1),			\
-		   force_operand (XEXP (X, 0), 0));		\
+    (X) = gen_rtx_PLUS (SImode, XEXP (X, 1),			\
+			force_operand (XEXP (X, 0), 0));	\
   if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 1)) == MULT)	\
-    (X) = gen_rtx (PLUS, SImode, XEXP (X, 0),			\
-		   force_operand (XEXP (X, 1), 0));		\
+    (X) = gen_rtx_PLUS (SImode, XEXP (X, 0),			\
+			force_operand (XEXP (X, 1), 0));	\
   if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 0)) == PLUS)	\
-    (X) = gen_rtx (PLUS, Pmode, force_operand (XEXP (X, 0), NULL_RTX),\
-		   XEXP (X, 1));				\
+    (X) = gen_rtx_PLUS (Pmode, force_operand (XEXP (X, 0), NULL_RTX),\
+			XEXP (X, 1));				\
   if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 1)) == PLUS)	\
-    (X) = gen_rtx (PLUS, Pmode, XEXP (X, 0),			\
-		   force_operand (XEXP (X, 1), NULL_RTX));	\
+    (X) = gen_rtx_PLUS (Pmode, XEXP (X, 0),			\
+			force_operand (XEXP (X, 1), NULL_RTX));	\
   if (GET_CODE (X) == SYMBOL_REF || GET_CODE (X) == CONST	\
 	   || GET_CODE (X) == LABEL_REF)			\
     (X) = legitimize_address (flag_pic, X, 0, 0);		\

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Alliant FX version.
-   Copyright (C) 1989, 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1989, 93, 94, 95, 96, 1998 Free Software Foundation, Inc.
    Adapted from m68k.h by Paul Petersen (petersen@uicsrd.csrd.uiuc.edu)
    and Joe Weening (weening@gang-of-four.stanford.edu).
 
@@ -453,8 +453,8 @@ extern enum reg_class regno_reg_class[];
 
 #define FUNCTION_VALUE(VALTYPE, FUNC)  \
   (TREE_CODE (VALTYPE) == REAL_TYPE \
-   ? gen_rtx (REG, TYPE_MODE (VALTYPE), 16) \
-   : gen_rtx (REG, TYPE_MODE (VALTYPE), 0))
+   ? gen_rtx_REG (TYPE_MODE (VALTYPE), 16) \
+   : gen_rtx_REG (TYPE_MODE (VALTYPE), 0))
 
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
@@ -467,8 +467,8 @@ extern enum reg_class regno_reg_class[];
 
 #define LIBCALL_VALUE(MODE)  \
   (((MODE) == DFmode || (MODE) == SFmode) \
-   ? gen_rtx (REG, MODE, 16) \
-   : gen_rtx (REG, MODE, 0))
+   ? gen_rtx_REG (MODE, 16) \
+   : gen_rtx_REG (MODE, 0))
 
 /* 1 if N is a possible register number for a function value.
    On the Alliant, D0 and FP0 are the only registers thus used.

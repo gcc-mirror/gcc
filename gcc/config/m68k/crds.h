@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler;
    Charles River Data Systems UNiverse/32.
-   Copyright (C) 1987, 1993, 1994, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 93, 94, 96, 97, 1998 Free Software Foundation, Inc.
    Contributed by Gary E. Miller (Gary_Edmunds_Miller@cup.portal.com)
 
 This file is part of GNU CC.
@@ -79,7 +79,7 @@ Boston, MA 02111-1307, USA.  */
 
 #if 0
 #define HAVE_probe 1
-#define gen_probe()  gen_rtx(ASM_INPUT, VOIDmode, "tstb -2048(sp)\t;probe\n")
+#define gen_probe()  gen_rtx_ASM_INPUT (VOIDmode, "tstb -2048(sp)\t;probe\n")
 #else
 #undef NEED_PROBE
 #define NEED_PROBE (-2048)
@@ -109,7 +109,7 @@ Boston, MA 02111-1307, USA.  */
 /* unos uses ".comm c.sac" returns &c.sac in d0 */
 /* make pointer to c.sac ?
 #undef STRUCT_VALUE_REGNUM
-#define STRUCT_VALUE gen_rtx(MEM, Pmode, gen_rtx( , , ) )
+#define STRUCT_VALUE gen_rtx_MEM (Pmode, gen_rtx( , , ) )
 */
 
 #define BSS_SECTION_ASM_OP ".bss"

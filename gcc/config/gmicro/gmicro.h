@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Gmicro (TRON) version.
-   Copyright (C) 1987, 88, 89, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 95, 96, 97, 1998 Free Software Foundation, Inc.
    Contributed by Masanobu Yuhara, Fujitsu Laboratories LTD.
    (yuhara@flab.fujitsu.co.jp)
 
@@ -478,9 +478,10 @@ extern enum reg_class regno_reg_class[];
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
 
-#define LIBCALL_VALUE(MODE)	\
-  (gen_rtx (REG, (MODE),		\
-    ((TARGET_FPU && ((MODE) == SFmode || (MODE) == DFmode)) ? 16 : 0)))
+#define LIBCALL_VALUE(MODE)						\
+  (gen_rtx_REG ((MODE),							\
+		((TARGET_FPU && ((MODE) == SFmode || (MODE) == DFmode))	\
+		 ? 16 : 0)))
 
 
 /* 1 if N is a possible register number for a function value.
@@ -547,7 +548,7 @@ extern enum reg_class regno_reg_class[];
    It exists only to test register calling conventions.  */
 
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
-((TARGET_REGPARM && (CUM) < 8) ? gen_rtx (REG, (MODE), (CUM) / 4) : 0)
+((TARGET_REGPARM && (CUM) < 8) ? gen_rtx_REG ((MODE), (CUM) / 4) : 0)
 
 /* For an arg passed partly in registers and partly in memory,
    this is the number of registers used.
@@ -831,25 +832,25 @@ extern enum reg_class regno_reg_class[];
   else if (GET_CODE (ADDR) == PLUS && XEXP (ADDR, 0) == frame_pointer_rtx) \
     { rtx other_reg = XEXP (ADDR, 1);					\
       offset = 0;							\
-      regs = gen_rtx (PLUS, Pmode, stack_pointer_rtx, other_reg); }	\
+      regs = gen_rtx_PLUS (Pmode, stack_pointer_rtx, other_reg); }	\
   else if (GET_CODE (ADDR) == PLUS && XEXP (ADDR, 1) == frame_pointer_rtx) \
     { rtx other_reg = XEXP (ADDR, 0);					\
       offset = 0;							\
-      regs = gen_rtx (PLUS, Pmode, stack_pointer_rtx, other_reg); }	\
+      regs = gen_rtx_PLUS (Pmode, stack_pointer_rtx, other_reg); }	\
   else if (GET_CODE (ADDR) == PLUS					\
 	   && GET_CODE (XEXP (ADDR, 0)) == PLUS				\
 	   && XEXP (XEXP (ADDR, 0), 0) == frame_pointer_rtx		\
 	   && GET_CODE (XEXP (ADDR, 1)) == CONST_INT)			\
     { rtx other_reg = XEXP (XEXP (ADDR, 0), 1);				\
       offset = INTVAL (XEXP (ADDR, 1));					\
-      regs = gen_rtx (PLUS, Pmode, stack_pointer_rtx, other_reg); }	\
+      regs = gen_rtx_PLUS (Pmode, stack_pointer_rtx, other_reg); }	\
   else if (GET_CODE (ADDR) == PLUS					\
 	   && GET_CODE (XEXP (ADDR, 0)) == PLUS				\
 	   && XEXP (XEXP (ADDR, 0), 1) == frame_pointer_rtx		\
 	   && GET_CODE (XEXP (ADDR, 1)) == CONST_INT)			\
     { rtx other_reg = XEXP (XEXP (ADDR, 0), 0);				\
       offset = INTVAL (XEXP (ADDR, 1));					\
-      regs = gen_rtx (PLUS, Pmode, stack_pointer_rtx, other_reg); }	\
+      regs = gen_rtx_PLUS (Pmode, stack_pointer_rtx, other_reg); }	\
   if (offset >= 0)							\
     { int regno;							\
       extern char call_used_regs[];					\
