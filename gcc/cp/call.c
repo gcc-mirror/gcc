@@ -4278,11 +4278,9 @@ cxx_type_promotes_to (tree type)
 {
   tree promote;
 
-  if (TREE_CODE (type) == ARRAY_TYPE)
-    return build_pointer_type (TREE_TYPE (type));
-
-  if (TREE_CODE (type) == FUNCTION_TYPE)
-    return build_pointer_type (type);
+  /* Perform the array-to-pointer and function-to-pointer
+     conversions.  */
+  type = type_decays_to (type);
 
   promote = type_promotes_to (type);
   if (same_type_p (type, promote))

@@ -2971,10 +2971,6 @@ nullify_returns_r (tree* tp, int* walk_subtrees, void* data)
 void
 cxx_expand_function_start (void)
 {
-  /* Let everybody know that we're expanding this function, not doing
-     semantic analysis.  */
-  expanding_p = 1;
-
   /* Give our named return value the same RTL as our RESULT_DECL.  */
   if (current_function_return_value)
     COPY_DECL_RTL (DECL_RESULT (cfun->decl), current_function_return_value);

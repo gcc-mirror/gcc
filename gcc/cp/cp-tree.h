@@ -798,7 +798,6 @@ struct language_function GTY(())
   int returns_abnormally;
   int in_function_try_handler;
   int in_base_initializer;
-  int x_expanding_p;
 
   /* True if this function can throw an exception.  */
   bool can_throw : 1;
@@ -859,17 +858,6 @@ struct language_function GTY(())
 
 #define current_function_returns_abnormally \
   cp_function_chain->returns_abnormally
-
-/* Nonzero if we should generate RTL for functions that we process.
-   When this is zero, we just accumulate tree structure, without
-   interacting with the back end.  */
-
-#define expanding_p cp_function_chain->x_expanding_p
-
-/* Nonzero if we are in the semantic analysis phase for the current
-   function.  */
-
-#define doing_semantic_analysis_p() (!expanding_p)
 
 /* Nonzero if we are processing a base initializer.  Zero elsewhere.  */
 #define in_base_initializer cp_function_chain->in_base_initializer
@@ -2942,15 +2930,24 @@ typedef enum cp_lvalue_kind {
 
 /* The kinds of scopes we recognize.  */
 typedef enum scope_kind {
-  sk_block,          /* An ordinary block scope.  */
+  sk_block = 0,      /* An ordinary block scope.  This enumerator must
+			have the value zero because "cp_binding_level"
+			is initialized by using "memset" to set the
+			contents to zero, and the default scope kind
+			is "sk_block".  */
   sk_try,	     /* A try-block.  */
   sk_catch,          /* A catch-block.  */
   sk_for,            /* The scope of the variable declared in a
 			for-init-statement.  */
+  sk_function_parms, /* The scope containing function parameters.  */
+  sk_class,          /* The scope containing the members of a class.  */
+  sk_namespace,      /* The scope containing the members of a
+			namespace, including the global scope.  */
   sk_template_parms, /* A scope for template parameters.  */
-  sk_template_spec   /* A scope corresponding to a template
-			specialization.  There is never anything in
-			this scope.  */
+  sk_template_spec   /* Like sk_template_parms, but for an explicit
+			specialization.  Since, by definition, an
+			explicit specialization is introduced by
+			"template <>", this scope is always empty.  */
 } scope_kind;
 
 /* Various kinds of template specialization, instantiation, etc.  */
@@ -3622,6 +3619,7 @@ extern void cxx_mark_function_context		(struct function *);
 extern int toplevel_bindings_p			(void);
 extern int namespace_bindings_p			(void);
 extern void keep_next_level			(int);
+extern scope_kind innermost_scope_kind          (void);
 extern int template_parm_scope_p		(void);
 extern void set_class_shadows			(tree);
 extern void maybe_push_cleanup_level		(tree);

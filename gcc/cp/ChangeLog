@@ -1,3 +1,73 @@
+2003-09-12  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/3907
+	* class.c (maybe_note_name_used_in_class): Refine test for whether
+	or not we are in a class scope.
+
+	* cp-tree.h (language_function): Remove x_expanding_p.
+	(expanding_p): Remove.
+	(doing_semantic_analysis_p): Remove.
+	(scope_kind): Add sk_function_parms, sk_class,
+	sk_namespace.
+	(innermost_scope_kind): New method.
+	* call.c (cxx_type_promotes_to): Use type_decays_to.
+	* cp-lang.c (LANG_HOOKS_PUSHLEVEL): Redefine.
+	(LANG_HOOKS_POPLEVEL): Likewise.
+	* decl.c (cp_binding_level): Remove parm_flag, template_parms_p,
+	template_spec_p, namespace_p, is_for_scope, is_try_scope, and
+	is_catch_scope.  Add kind and explicit_spec_p.
+	(cxx_scope_descriptor): Use a lookup table.
+	(find_class_binding_level): Use "kind" field in binding_level, not
+	the various flags.
+	(pop_binding_level): Likewise.
+	(innermost_nonclass_level): Likewise.
+	(toplevel_bindings_p): Likewise.
+	(namespace_bindings_p): Likewise.
+	(template_parm_scope_p): Likewise.
+	(innermost_scope_kind): New method.
+	(current_tmpl_spec_kind): Use "kind" field in binding_level, not
+	the various flags.
+	(pushlevel): Remove check for doing_semantic_analysis_p.
+	(begin_scope): Simplify.
+	(add_decl_to_level): Use "kind" field in binding_level, not
+	the various flags.
+	(push_local_binding): Likewise.
+	(pop_label): Remove check for doing_semantic_analysis_p.
+	(poplevel): Use "kind" field in binding_level, not
+	the various flags.
+	(set_block): Remove check for doing_semantic_analysis_p.
+	(pushlevel_class): Use "kind" field in binding_level, not
+	the various flags. 
+	(poplevel_class): Likewise.
+	(initial_push_namespace_scope): Likewise.
+	(maybe_push_to_top_level): Likewise.
+	(set_identifier_type_value_with_scope): Likewise.
+	(pop_everything): Likewise.
+	(maybe_process_template_type_declaration): Likewise.
+	(pushtag): Likewise.
+	(pushdecl): Likewise.
+	(pushdecl_with_scope): Likewise.
+	(check_previous_goto_1): Likewise.
+	(define_label): Likewise.
+	(finish_case_label): Likewise.
+	(lookup_tag): Likewise.
+	(unqualified_namespace_lookup): Likewise.
+	(lookup_name_real): Likewise.
+	(lookup_name_current_level): Likewise.
+	(lookup_type_current_level): Likewise.
+	(record_builtin_type): Likewise.
+	(cp_make_fname_decl): Likewise.
+	(maybe_inject_for_scope_var): Likewise.
+	(cp_finish_decl): Remove check for doing_semantic_analysis_p.
+	(start_function): Use begin_scope, not pushlevel.
+	(finish_function): Use "kind" field in binding_level, not
+	the various flags.
+	(start_method): Use begin_scope, not pushlevel.
+	(make_label_decl): Do not check expanding_p.
+	(save_function-data): Do not set expanding_p.
+	(cxx_push_function_context): Do not clear expanding_p.
+	* semantics.c (cxx_expand_function_start): Do not set expanding_p.
+	
 2003-09-14  Mark Mitchell  <mark@codesourcery.com>
 
 	* class.c (layout_class_type): Make DECL_MODE match TYPE_MODE for

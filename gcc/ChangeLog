@@ -1,3 +1,10 @@
+2003-09-12  Mark Mitchell  <mark@codesourcery.com>
+
+	* coverage.c (create_coverage): Do not call pushlevel/poplevel.
+	* langhooks-def.h (lhd_do_nothing_iii_return_null_tree): New
+	function.
+	* langhooks.c (lhd_do_nothing_iii_return_null_tree): Define it.
+	
 2003-09-14  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* combine.c (simplify_comparison): Convert
