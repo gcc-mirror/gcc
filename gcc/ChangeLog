@@ -1,3 +1,7 @@
+2002-03-11  Andreas Jaeger  <aj@suse.de>
+
+	* cfg.c (dump_flow_info): Remove unused variable.
+
 2002-03-11  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config/mmix/mmix.c (mmix_expand_builtin_va_arg): Do all
@@ -22,7 +26,7 @@
 
 	PR preprocessor/5899
 	* cppinit.c (init_dependency_output): Don't ignore -dM etc.
-	
+
 2002-03-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* mbchar.c (JIS_state_table, JIS_action_table): Const-ify.
