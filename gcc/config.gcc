@@ -3172,11 +3172,6 @@ sparc64-*-linux*)		# 64-bit Sparc's running GNU/Linux
 	fi
 	float_format=sparc
 	;;
-stormy16-*-elf)
-	tm_file="elfos.h svr4.h ${tm_file}"
-	tmake_file="stormy16/t-stormy16"
-	extra_parts="crtbegin.o crtend.o"
-	;;
 strongarm-*-elf*)
 	tm_file="arm/strongarm-elf.h elfos.h arm/unknown-elf.h arm/elf.h"
 	tmake_file=arm/t-strongarm-elf
@@ -3272,6 +3267,15 @@ xscale-*-coff)
 	tmake_file=arm/t-xscale-coff
 	out_file=arm/arm.c
 	md_file=arm/arm.md
+	;;
+xstormy16-*-elf)
+	# For historical reasons, the target files omit the 'x'.
+	tm_file="elfos.h svr4.h stormy16/stormy16.h"
+	tm_p_file=stormy16/stormy16-protos.h
+	md_file=stormy16/stormy16.md
+	out_file=stormy16/stormy16.c
+	tmake_file="stormy16/t-stormy16"
+	extra_parts="crtbegin.o crtend.o"
 	;;
 *)
 	echo "Configuration $machine not supported" 1>&2
