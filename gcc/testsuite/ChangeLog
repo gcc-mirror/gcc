@@ -1,3 +1,7 @@
+2000-10-05  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.old-deja/g++.pt/crash59.C: New test.
+
 2000-10-04  Will Cohen  <wcohen@redhat.com>
 
 	* gcc.dg/20000926-1.c: New test.
