@@ -1,5 +1,11 @@
 2004-02-17  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.md (*one_complsi2_h8300): Change to
+	*one_cmplsi2_h8300.
+	(*one_complsi2_h8300hs): Change to *one_cmplsi2_h8300hs.
+
+2004-02-17  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300-protos.h: Update the prototype of
 	fix_bit_operand().
 	* config/h8300/h8300.c (fix_bit_operand): Remove the second
