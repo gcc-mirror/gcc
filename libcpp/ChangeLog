@@ -1,3 +1,9 @@
+2004-05-25  Paolo Bonzini  <bonzini@gnu.org>
+
+	* Makefile.am: the correct directory for
+	gettext include files is given by @INCINTL@.
+	* Makefile.in: Regenerate.
+
 2004-05-24  Paolo Bonzini  <bonzini@gnu.org>
 
 	* system.h [!ENABLE_NLS]: dgettext takes two
