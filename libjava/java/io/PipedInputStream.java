@@ -209,7 +209,7 @@ public class PipedInputStream extends InputStream
   /**
     * This method reads bytes from the stream into a caller supplied buffer.
     * It starts storing bytes at position <code>offset</code> into the buffer and
-    * reads a maximum of <cod>>len</code> bytes.  Note that this method can actually
+    * reads a maximum of <code>len</code> bytes.  Note that this method can actually
     * read fewer than <code>len</code> bytes.  The actual number of bytes read is
     * returned.  A -1 is returned to indicated that no bytes can be read
     * because the end of the stream was reached.  If the stream is already
@@ -240,7 +240,7 @@ public class PipedInputStream extends InputStream
   /**
     * This method reads bytes from the stream into a caller supplied buffer.
     * It starts storing bytes at position <code>offset</code> into the buffer and
-    * reads a maximum of <cod>>len</code> bytes.  Note that this method can actually
+    * reads a maximum of <code>len</code> bytes.  Note that this method can actually
     * read fewer than <code>len</code> bytes.  The actual number of bytes read is
     * returned.  A -1 is returned to indicated that no bytes can be read
     * because the end of the stream was reached - ie close() was called on the

@@ -1,6 +1,6 @@
 /* ObjectStreamClass.java -- Class used to write class information
    about serialized objects.
-   Copyright (C) 1998, 1999, 2000  Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -186,7 +186,7 @@ public class ObjectStreamClass implements Serializable
 
   // Returns the <code>ObjectStreamClass</code> that represents the
   // class that is the superclass of the class this
-  // <code>ObjectStreamClass</cdoe> represents.  If the superclass is
+  // <code>ObjectStreamClass</code> represents.  If the superclass is
   // not Serializable, null is returned.
   ObjectStreamClass getSuper ()
   {

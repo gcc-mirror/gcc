@@ -1,5 +1,5 @@
 /* java.beans.PropertyDescriptor
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -208,7 +208,7 @@ public class PropertyDescriptor extends FeatureDescriptor {
 	 ** will be undefined.<P>
 	 **
 	 ** When a property is bound, its set method is required to fire the
-	 ** <CODE>PropertyChangeListener.propertyChange())</CODE event
+	 ** <CODE>PropertyChangeListener.propertyChange())</CODE> event
 	 ** after the value has changed.
 	 ** @param bound whether the property is bound or not.
 	 **/

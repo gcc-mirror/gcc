@@ -197,7 +197,7 @@ public class PipedReader extends Reader
   /**
     * This method reads chars from the stream into a caller supplied buffer.
     * It starts storing chars at position <code>offset</code> into the buffer and
-    * reads a maximum of <cod>>len</code> chars.  Note that this method can actually
+    * reads a maximum of <code>len</code> chars.  Note that this method can actually
     * read fewer than <code>len</code> chars.  The actual number of chars read is
     * returned.  A -1 is returned to indicated that no chars can be read
     * because the end of the stream was reached.  If the stream is already
@@ -228,7 +228,7 @@ public class PipedReader extends Reader
   /**
     * This method reads characters from the stream into a caller supplied buffer.
     * It starts storing chars at position <code>offset</code> into the buffer and
-    * reads a maximum of <cod>>len</code> chars.  Note that this method can actually
+    * reads a maximum of <code>len</code> chars.  Note that this method can actually
     * read fewer than <code>len</code> chars.  The actual number of chars read is
     * returned.  A -1 is returned to indicated that no chars can be read
     * because the end of the stream was reached - ie close() was called on the
