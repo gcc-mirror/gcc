@@ -751,8 +751,8 @@ extern void		sbss_section PARAMS ((void));
 				 || ISA_MIPS64)
 
 /* This is a catch all for the other new mips4 instructions: indexed load and
-   indexed prefetch instructions, the FP madd,msub,nmadd, and nmsub
-   instructions, and the FP recip and recip sqrt instructions */
+   indexed prefetch instructions, the FP madd and msub instructions,
+   and the FP recip and recip sqrt instructions */
 #define ISA_HAS_FP4             ((ISA_MIPS4				\
 				  || ISA_MIPS64)       			\
  				 && !TARGET_MIPS16)
