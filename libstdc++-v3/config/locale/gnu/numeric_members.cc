@@ -106,9 +106,6 @@ namespace std
 	  _M_data->_M_decimal_point = L'.';
 	  _M_data->_M_thousands_sep = L',';
 
-#if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
-	  __c_locale __old = __uselocale(_S_get_c_locale());
-#endif
 	  // Use ctype::widen code without the facet...
 	  unsigned char uc;
 	  for (size_t __i = 0; __i < __num_base::_S_oend; ++__i)
@@ -122,9 +119,6 @@ namespace std
 	      uc = static_cast<unsigned char>(__num_base::_S_atoms_in[__i]);
 	      _M_data->_M_atoms_in[__i] = btowc(uc);
 	    }
-#if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
-	  __uselocale(__old);
-#endif
 	}
       else
 	{
