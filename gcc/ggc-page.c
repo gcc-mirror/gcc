@@ -1001,16 +1001,6 @@ ggc_set_mark (p)
   return 0;
 }
 
-/* Mark P, but check first that it was allocated by the collector.  */
-
-void
-ggc_mark_if_gcable (p)
-     const void *p;
-{
-  if (p && ggc_allocated_p (p))
-    ggc_set_mark (p);
-}
-
 /* Return the size of the gc-able object P.  */
 
 size_t

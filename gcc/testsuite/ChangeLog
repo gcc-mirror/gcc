@@ -1,3 +1,10 @@
+2001-02-19  Zack Weinberg  <zackw@stanford.edu>
+
+	* g77.dg: New directory.
+	* g77.dg/20010216-1.f: New test case.
+	* g77.dg/dg.exp: New driver.
+	* lib/g77-dg.exp: New driver library.
+
 2001-02-18  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* g++.old-deja/g++.other/inline19.c: Remove XFAIL.

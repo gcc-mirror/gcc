@@ -1,3 +1,15 @@
+2001-02-19  Zack Weinberg  <zackw@stanford.edu>
+
+	* sibcall.c (skip_copy_to_return_value): Call
+	identify_call_return_value here, and return orig_insn if it
+	returns zero.  Hardret and softret arguments now unnecessary.
+	(call_ends_block_p): Don't call identify_call_return_value here.
+
+	* ggc-common.c (ggc_mark_rtx_children): No need to mark 'S' or
+	's' slots in RTXen.
+	* ggc-page.c, ggc-simple.c (ggc_mark_if_gcable): Delete	function.
+	* ggc.h (ggc_mark_if_gcable): Delete prototype.
+
 Mon Feb 19 20:30:16 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.c (move_operand): Accept code to load the address of a
