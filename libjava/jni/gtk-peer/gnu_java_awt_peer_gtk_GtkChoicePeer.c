@@ -85,9 +85,11 @@ Java_gnu_java_awt_peer_gtk_GtkChoicePeer_append
   ptr = NSA_GET_PTR (env, obj);
 
   gdk_threads_enter ();
+
   menu = GTK_MENU (gtk_option_menu_get_menu (GTK_OPTION_MENU (ptr)));
 
-  if (!gtk_container_children (GTK_CONTAINER (menu)))
+  /* Are we adding the first element? */
+  if (gtk_option_menu_get_history (GTK_OPTION_MENU (ptr)) < 0)
       need_set_history = 1;
 
   count = (*env)->GetArrayLength (env, items);
@@ -110,7 +112,8 @@ Java_gnu_java_awt_peer_gtk_GtkChoicePeer_append
 
       (*env)->ReleaseStringUTFChars (env, item, label);
     }
-  
+
+  /* If we just added the first element select it. */  
   if (need_set_history)
     gtk_option_menu_set_history (GTK_OPTION_MENU (ptr), 0);
 
@@ -118,12 +121,13 @@ Java_gnu_java_awt_peer_gtk_GtkChoicePeer_append
 }
 
 JNIEXPORT void JNICALL 
-Java_gnu_java_awt_peer_gtk_GtkChoicePeer_add 
+Java_gnu_java_awt_peer_gtk_GtkChoicePeer_nativeAdd 
   (JNIEnv *env, jobject obj, jstring item, jint index)
 {
   void *ptr;
   const char *label;
   GtkWidget *menu, *menuitem;
+  int current;
   int need_set_history = 0;
 
   ptr = NSA_GET_PTR (env, obj);
@@ -131,17 +135,24 @@ Java_gnu_java_awt_peer_gtk_GtkChoicePeer_add
   label = (*env)->GetStringUTFChars (env, item, 0);      
 
   gdk_threads_enter ();
-  menu = gtk_option_menu_get_menu (GTK_OPTION_MENU (ptr));
+  
+  current = gtk_option_menu_get_history (GTK_OPTION_MENU (ptr));
 
-  if (!gtk_container_children (GTK_CONTAINER (menu)))
+  /* Are we adding the first element or below or at the currently
+     selected one? */
+  if ((current < 0) || (current >= index))
       need_set_history = 1;
 
+  menu = gtk_option_menu_get_menu (GTK_OPTION_MENU (ptr));
   menuitem = gtk_menu_item_new_with_label (label);
   gtk_menu_insert (GTK_MENU (menu), menuitem, index);
   gtk_widget_show (menuitem);
 
   connect_choice_item_selectable_hook (env, obj, GTK_ITEM (menuitem), label);
 
+  /* If we just added the first element select it.
+     If we added at of below the currently selected position make
+     the first item the selected one. */  
   if (need_set_history)
     gtk_option_menu_set_history (GTK_OPTION_MENU (ptr), 0);
 
@@ -151,13 +162,15 @@ Java_gnu_java_awt_peer_gtk_GtkChoicePeer_add
 }
 
 JNIEXPORT void JNICALL 
-Java_gnu_java_awt_peer_gtk_GtkChoicePeer_remove 
+Java_gnu_java_awt_peer_gtk_GtkChoicePeer_nativeRemove 
   (JNIEnv *env, jobject obj, jint index)
 {
   void *ptr;
   GtkContainer *menu;
   GtkWidget *menuitem;
   GList *children;
+  int need_set_history = 0;
+  int i, from, to;
 
   ptr = NSA_GET_PTR (env, obj);
 
@@ -165,9 +178,38 @@ Java_gnu_java_awt_peer_gtk_GtkChoicePeer_remove
 
   menu = GTK_CONTAINER (gtk_option_menu_get_menu (GTK_OPTION_MENU (ptr)));
   children = gtk_container_children (menu);
-  menuitem = GTK_WIDGET (g_list_nth (children, index)->data);
-  gtk_container_remove (menu, menuitem);
-  gtk_widget_destroy (menuitem);
+
+  if (index == -1)
+    {
+      /* Remove all elements (removeAll) */
+      from = g_list_length (children) - 1;
+      to = 0;
+
+      /* Select the first item to prevent spurious activate signals */
+      gtk_option_menu_set_history (GTK_OPTION_MENU (ptr), 0);
+    }
+  else
+    {
+      /* Remove the specific index element */
+      from = index;
+      to = index;
+
+      /* Are we removing the currently selected element? */
+      if (gtk_option_menu_get_history (GTK_OPTION_MENU (ptr)) == index)
+        need_set_history = 1;
+    }
+
+  for (i = from; i >= to; i--)
+    {
+      menuitem = GTK_WIDGET (g_list_nth (children, i)->data);
+      gtk_container_remove (menu, menuitem);
+      gtk_widget_destroy (menuitem);
+    }
+
+  /* If we just removed the currently selected element and there are
+     still elements left in the list, make the first item the selected one. */  
+  if (need_set_history && gtk_container_children (menu))
+    gtk_option_menu_set_history (GTK_OPTION_MENU (ptr), 0);
 
   gdk_threads_leave ();
 }
@@ -183,6 +225,24 @@ Java_gnu_java_awt_peer_gtk_GtkChoicePeer_select
   gdk_threads_enter ();
   gtk_option_menu_set_history (GTK_OPTION_MENU (ptr), index);
   gdk_threads_leave ();
+}
+
+JNIEXPORT jint JNICALL 
+Java_gnu_java_awt_peer_gtk_GtkChoicePeer_getHistory 
+  (JNIEnv *env, jobject obj)
+{
+  void *ptr;
+  int index;
+
+  ptr = NSA_GET_PTR (env, obj);
+
+  gdk_threads_enter ();
+
+  index = gtk_option_menu_get_history (GTK_OPTION_MENU (ptr));
+
+  gdk_threads_leave ();
+
+  return index;
 }
 
 static void
@@ -205,7 +265,7 @@ item_removed (gpointer data,
 {
   struct item_event_hook_info *ie = data;
 
-  free (ie->label);
+  free ((void *) ie->label);
   free (ie);
 }
 
