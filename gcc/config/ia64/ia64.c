@@ -186,7 +186,7 @@ static rtx gen_movdi_x (rtx, rtx, rtx);
 static rtx gen_fr_spill_x (rtx, rtx, rtx);
 static rtx gen_fr_restore_x (rtx, rtx, rtx);
 
-static enum machine_mode hfa_element_mode (tree, int);
+static enum machine_mode hfa_element_mode (tree, bool);
 static void ia64_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
 					 tree, int *, int);
 static bool ia64_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
@@ -2968,16 +2968,23 @@ ia64_setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 
    An aggregate is a homogeneous floating point aggregate is if all
    fields/elements in it have the same floating point type (e.g,
-   SFmode).  128-bit quad-precision floats are excluded.  */
+   SFmode).  128-bit quad-precision floats are excluded.
+
+   Variable sized aggregates should never arrive here, since we should
+   have already decided to pass them by reference.  Top-level zero-sized
+   aggregates are excluded because our parallels crash the middle-end.  */
 
 static enum machine_mode
-hfa_element_mode (tree type, int nested)
+hfa_element_mode (tree type, bool nested)
 {
   enum machine_mode element_mode = VOIDmode;
   enum machine_mode mode;
   enum tree_code code = TREE_CODE (type);
   int know_element_mode = 0;
   tree t;
+
+  if (!nested && (!TYPE_SIZE (type) || integer_zerop (TYPE_SIZE (type))))
+    return VOIDmode;
 
   switch (code)
     {
