@@ -1,5 +1,5 @@
 /* Specific flags and argument handling of the Fortran front-end.
-   Copyright (C) 1997 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -427,7 +427,8 @@ code-generation methodology, and so on.\n\
 For more information on g77 and gcc, type the commands `info -f g77'\n\
 and `info -f gcc' to read the Info documentation.\n\
 \n\
-Report bugs to <egcs-bugs@cygnus.org>.\n");
+Report bugs to <egcs-bugs@egcs.cygnus.com>.\n\
+See <URL:http://egcs.cygnus.com/faq.html#bugreport> for details.\n");
 	  exit (0);
 	  break;
 #endif
