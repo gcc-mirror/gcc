@@ -1,5 +1,11 @@
 2004-11-29  Paolo Carlini  <pcarlini@suse.de>
 
+	* testsuite/21_strings/basic_string/capacity/char/18654.cc: Use
+        better names.
+	* testsuite/21_strings/basic_string/capacity/wchar_t/18654.cc: Same.
+
+2004-11-29  Paolo Carlini  <pcarlini@suse.de>
+
 	PR libstdc++/18654
 	* include/bits/basic_string.tcc (_Rep::_S_create): When shrinking,
 	do not round to pagesize.

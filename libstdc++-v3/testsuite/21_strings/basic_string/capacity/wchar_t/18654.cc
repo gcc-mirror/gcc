@@ -34,9 +34,9 @@ void test01()
   // Our current implementation provides exact shrink-to-size
   // and shrink-to-fit (in the future, maybe this will change
   // for short strings).
-  size_type min = 2 << 0;
-  size_type max = 2 << 20;
-  for (size_type i = min; i <= max; i *= 2)
+  const size_type minsize = 2 << 0;
+  const size_type maxsize = 2 << 20;
+  for (size_type i = minsize; i <= maxsize; i *= 2)
     {
       wstring str(i, L'x');
       str.reserve(3 * i);
