@@ -4704,6 +4704,15 @@ assign_parms (tree fndecl)
 
 	 Set DECL_RTL to that place.  */
 
+      if (GET_CODE (entry_parm) == PARALLEL && nominal_mode != BLKmode)
+	{
+	  /* Objects the size of a register can be combined in registers */
+	  rtx parmreg = gen_reg_rtx (nominal_mode);
+	  emit_group_store (parmreg, entry_parm, TREE_TYPE (parm),
+			    int_size_in_bytes (TREE_TYPE (parm)));
+	  SET_DECL_RTL (parm, parmreg);
+	}
+
       if (nominal_mode == BLKmode
 #ifdef BLOCK_REG_PADDING
 	  || (locate.where_pad == (BYTES_BIG_ENDIAN ? upward : downward)
@@ -4727,7 +4736,8 @@ assign_parms (tree fndecl)
 		 assign_stack_local if space was not allocated in the argument
 		 list.  If it was, this will not work if PARM_BOUNDARY is not
 		 a multiple of BITS_PER_WORD.  It isn't clear how to fix this
-		 if it becomes a problem.  */
+		 if it becomes a problem.  Exception is when BLKmode arrives
+		 with arguments not conforming to word_mode.  */
 
 	      if (stack_parm == 0)
 		{
@@ -4735,7 +4745,9 @@ assign_parms (tree fndecl)
 		  PUT_MODE (stack_parm, GET_MODE (entry_parm));
 		  set_mem_attributes (stack_parm, parm, 1);
 		}
-
+	      else if (GET_CODE (entry_parm) == PARALLEL 
+		       && GET_MODE(entry_parm) == BLKmode)
+		;
 	      else if (PARM_BOUNDARY % BITS_PER_WORD != 0)
 		abort ();
 
@@ -4798,7 +4810,10 @@ assign_parms (tree fndecl)
 		move_block_from_reg (REGNO (entry_parm), mem,
 				     size_stored / UNITS_PER_WORD);
 	    }
-	  SET_DECL_RTL (parm, stack_parm);
+	  /* If parm is already bound to register pair, don't change 
+	     this binding. */
+	  if (! DECL_RTL_SET_P (parm))
+	    SET_DECL_RTL (parm, stack_parm);
 	}
       else if (! ((! optimize
 		   && ! DECL_REGISTER (parm))
