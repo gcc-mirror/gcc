@@ -1,11 +1,6 @@
 # Makefile configuration for Commodore Amiga running SVR4.
 # (configure amiga-amix)
 
-# Under SVR4, the ucb version of install is compatible, but not normally
-# first in the shell search path, so specify it explicitly.
-
-INSTALL = /usr/ucb/install -c
-
 # The Amiga ships with gcc installed, so use it as the default CC.
 
 CC = /usr/public/bin/gcc
@@ -31,10 +26,14 @@ LDFLAGS = -ansi
 mandir = /usr/man/1l
 manext =
 
-# Set up flags to use when compiling and linking enquire.
+# These should be in a t-amix file...if they are really needed.
+# But I'd like to see if they are really needed
+# before I create a t-amix file. -- rms.
+## Set up flags to use when compiling and linking enquire.
+#ENQUIRE_CFLAGS = -DNO_SC -DNO_MEM -DNO_STDDEF -ansi
 
-ENQUIRE_CFLAGS = -DNO_SC -DNO_MEM -DNO_STDDEF -ansi
+# For svr4 we link stuff *without* dynamic libraries for now... at least
+# until there is a version of GDB which understands *both* Dwarf *and*
+# svr4 shared libraries.
 
-# Use SVR4 version of fixincludes.
-
-FIXINCLUDES = fixinc.svr4
+X_CFLAGS=-static
