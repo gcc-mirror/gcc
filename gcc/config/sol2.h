@@ -76,6 +76,9 @@ Boston, MA 02111-1307, USA.  */
 	TARGET_SUB_OS_CPP_BUILTINS();			\
     } while (0)
 
+/* The system headers under Solaris (at least 2.5.1 and up) are C++-aware.  */
+#define NO_IMPLICIT_EXTERN_C
+
 /* The sun bundled assembler doesn't accept -Yd, (and neither does gas).
    It's safe to pass -s always, even if -g is not used.  */
 #undef ASM_SPEC
