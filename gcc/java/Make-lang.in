@@ -93,7 +93,7 @@ jvspec.o: $(srcdir)/java/jvspec.c
 # to track changes to the toplevel gcc Makefile as well.
 # We depend on $(GCJ).c last, to make it obvious where it came from.
 $(GCJ).o: $(CONFIG_H) multilib.h config.status $(lang_specs_files) $(GCJ).c \
-       system.h
+       system.h prefix.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	$(DRIVER_DEFINES) \
 	-DLANG_SPECIFIC_DRIVER \
