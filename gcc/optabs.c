@@ -2901,6 +2901,9 @@ expand_abs (mode, op0, target, result_unsignedp, safe)
 {
   rtx temp, op1;
 
+  if (! flag_trapv)
+    result_unsignedp = 1;
+
   temp = expand_abs_nojump (mode, op0, target, result_unsignedp);
   if (temp != 0)
     return temp;

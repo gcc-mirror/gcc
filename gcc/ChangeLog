@@ -1,3 +1,8 @@
+2003-06-08  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* optabs.c (expand_abs): Set result_unsignedp to 1 if
+	flag_trav is zero.
+
 2003-06-07  Richard Henderson  <rth@redhat.com>
 
         * c-cppbuiltin.c (c_cpp_builtins): Define __EXCEPTIONS for C also.
