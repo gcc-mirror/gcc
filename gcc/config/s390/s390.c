@@ -8017,5 +8017,25 @@ s390_conditional_register_usage (void)
     }
 }
 
+/* Corresponding function to eh_return expander.  */
+
+static GTY(()) rtx s390_tpf_eh_return_symbol;
+void
+s390_emit_tpf_eh_return (rtx target)
+{
+  rtx insn, reg;
+
+  if (!s390_tpf_eh_return_symbol)
+    s390_tpf_eh_return_symbol = gen_rtx_SYMBOL_REF (Pmode, "__tpf_eh_return");
+
+  reg = gen_rtx_REG (Pmode, 2);
+
+  emit_move_insn (reg, target);
+  insn = s390_emit_call (s390_tpf_eh_return_symbol, NULL_RTX, reg,
+                                     gen_rtx_REG (Pmode, RETURN_REGNUM));
+  use_reg (&CALL_INSN_FUNCTION_USAGE (insn), reg);
+
+  emit_move_insn (EH_RETURN_HANDLER_RTX, reg);
+}
 
 #include "gt-s390.h"

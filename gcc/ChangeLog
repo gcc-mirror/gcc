@@ -1,3 +1,22 @@
+2004-09-22  P.J. Darcy  <darcypj@us.ibm.com>
+
+	* config/s390/s390-protos.h (s390_emit_tpf_eh_return): Add prototype.
+	* config/s390/s390.c (s390_emit_tpf_eh_return): New function.
+	* config/s390/s390.h (TARGET_TPF): New macro.
+	* config/s390/s390.md ("eh_return"): New expander.
+	* config/s390/t-tpf (LIB2ADDEH): Use unwind-dw2-fde.c rather than
+	unwind-dw2-fde-glibc.c.  Add config/s390/tpf-eh.c.
+	(LIB2ADDEHDEP): Remove unwind-dw2-fde.c.
+	* config/s390/tpf.h (TARGET_TPF): Define to 1.
+	(STACK_POINTER_OFFSET): Increase to 448.
+	(TARGET_DEFAULT): Set -mtpf-trace on as default.
+	(TPF_LOC_DIFF_OFFSET): New macro.
+	(ASM_PREFERRED_EH_DATA_FORMAT): Redefine to always use absolute
+	encoding.
+	(__isPATrange): Add prototype.
+	(MD_FALLBACK_FRAME_STATE_FOR): Define.
+	* config/s390/tpf-eh.c: New file.
+
 2004-09-22  Diego Novillo  <dnovillo@redhat.com>
 
 	* fold-const.c (fold): Avoid non INTEGER_TYPEs when widening
