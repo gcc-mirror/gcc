@@ -1,3 +1,8 @@
+2003-06-07  Richard Henderson  <rth@redhat.com>
+
+	* g++.dg/other/offsetof3.C: Use size_t.
+	* g++.dg/other/offsetof4.C: Likewise.
+
 2003-06-07  H.J. Lu <hongjiu.lu@intel.com>
 
 	* lib/copy-file.exp: New. Implement gcc_copy_files.
