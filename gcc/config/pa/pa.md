@@ -7153,6 +7153,10 @@
   ""
   "
 {
+  /* PA extraction insns don't support zero length bitfields.  */
+  if (INTVAL (operands[2]) == 0)
+    FAIL;
+
   if (TARGET_64BIT)
     emit_insn (gen_extzv_64 (operands[0], operands[1],
 			     operands[2], operands[3]));
@@ -7215,6 +7219,10 @@
   ""
   "
 {
+  /* PA extraction insns don't support zero length bitfields.  */
+  if (INTVAL (operands[2]) == 0)
+    FAIL;
+
   if (TARGET_64BIT)
     emit_insn (gen_extv_64 (operands[0], operands[1],
 			    operands[2], operands[3]));

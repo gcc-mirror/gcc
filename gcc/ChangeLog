@@ -3,6 +3,10 @@
 	* calls.c (expand_call): Prevent sibcall optimization for calls to
 	nested subprograms.
 
+	* expmed.c (extract_bit_field): Reverse operands of && condition to
+        prevent a potential division by zero in the previously first branch.
+	* config/pa/pa.md (extv, extzv): FAIL if the bitfield length is zero.
+
 2003-04-21  Joel Brobecker  <brobecker@gnat.com>
 
 	* dwarf2out.c (is_ada, is_ada_subrange_type): New functions.
