@@ -59,7 +59,11 @@
    (UNSPEC_PIC_SYM   3) ; A symbol that has been treated properly for pic
 			;   usage, that is, we will add the pic_register
 			;   value to it before trying to dereference it.
-   (UNSPEC_PRLG_STK  4) ; A special barrier that prevents frame accesses 
+   (UNSPEC_PIC_BASE  4)	; Adding the PC value to the offset to the
+			;   GLOBAL_OFFSET_TABLE.  The operation is fully
+			;   described by the RTL but must be wrapped to
+			;   prevent combine from trying to rip it apart.
+   (UNSPEC_PRLG_STK  5) ; A special barrier that prevents frame accesses 
 			;   being scheduled before the stack adjustment insn.
    (UNSPEC_CLZ	     5) ; `clz' instruction, count leading zeros (SImode):
 			;   operand 0 is the result,
@@ -4202,7 +4206,9 @@
 
 (define_insn "pic_add_dot_plus_four"
   [(set (match_operand:SI 0 "register_operand" "+r")
-	(plus:SI (match_dup 0) (const (plus:SI (pc) (const_int 4)))))
+	(unspec:SI [(plus:SI (match_dup 0)
+			     (const (plus:SI (pc) (const_int 4))))]
+		   UNSPEC_PIC_BASE))
    (use (label_ref (match_operand 1 "" "")))]
   "TARGET_THUMB && flag_pic"
   "*
@@ -4215,7 +4221,9 @@
 
 (define_insn "pic_add_dot_plus_eight"
   [(set (match_operand:SI 0 "register_operand" "+r")
-	(plus:SI (match_dup 0) (const (plus:SI (pc) (const_int 8)))))
+	(unspec:SI [(plus:SI (match_dup 0)
+			     (const (plus:SI (pc) (const_int 8))))]
+		   UNSPEC_PIC_BASE))
    (use (label_ref (match_operand 1 "" "")))]
   "TARGET_ARM && flag_pic"
   "*

@@ -1,3 +1,10 @@
+2003-03-20  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR 10066
+	* arm.md (UNSPEC_PIC_BASE): New constant.
+	(pic_add_dot_plus_four): Wrap with unspec.
+	(pic_add_dot_plus_eight): Likewise.
+
 2003-03-19  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (s390_preferred_reload_class): Do not
