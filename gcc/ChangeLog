@@ -1,3 +1,8 @@
+2005-01-13  Aldy Hernandez  <aldyh@redhat.com>
+
+	* function.c (assign_parm_setup_block): Look inside original
+	entry_parm when inspecting PARALLEL.
+
 2005-01-13  Ralf Corsepius  <ralf.corsepius@rtems.org>
 	    Joel Sherrill  <joel@oarcorp.com>
 
