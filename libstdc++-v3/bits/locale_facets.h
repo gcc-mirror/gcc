@@ -284,72 +284,84 @@ namespace std
       do_is(mask, char_type) const
       {
 	// XXX Need definitions for these abstract mf's.
+	return true;
       }
 
       virtual const char_type*
-      do_is(const char_type*, const char_type*, mask*) const
+      do_is(const char_type*  __lo, const char_type*, mask*) const
       {
 	// XXX Need definitions for these abstract mf's.
+	return __lo;
       }
 
       virtual const char_type*
-      do_scan_is(mask, const char_type*, const char_type*) const
+      do_scan_is(mask, const char_type* __lo, const char_type*) const
       {
 	// XXX Need definitions for these abstract mf's.
+	return __lo;
       }
 
       virtual const char_type*
-      do_scan_not(mask, const char_type*, const char_type*) const
+      do_scan_not(mask, const char_type* __lo, const char_type*) const
       {
 	// XXX Need definitions for these abstract mf's.
+	return __lo;
       }
 
       virtual char_type 
-      do_toupper(char_type) const
+      do_toupper(char_type __c) const
       {
 	// XXX Need definitions for these abstract mf's.
+	return __c;
       }
 
       virtual const char_type*
-      do_toupper(char_type*, const char_type*) const
+      do_toupper(char_type* __lo, const char_type*) const
       {
 	// XXX Need definitions for these abstract mf's.
+	return __lo;
       }
 
       virtual char_type 
-      do_tolower(char_type) const
+      do_tolower(char_type __c) const
       {
 	// XXX Need definitions for these abstract mf's.
+	return __c;
       }
 
       virtual const char_type*
-      do_tolower(char_type*, const char_type*) const
+      do_tolower(char_type* __lo, const char_type*) const
       {
 	// XXX Need definitions for these abstract mf's.
+	return __lo;
       }
       
       virtual char_type 
-      do_widen(char) const
+      do_widen(char __c) const
       {
 	// XXX Need definitions for these abstract mf's.
+	return __c;
       }
 
       virtual const char*
-      do_widen(const char*, const char*, char_type*) const
+      do_widen(const char* __lo, const char*, char_type*) const
       {
 	// XXX Need definitions for these abstract mf's.
+	return __lo;
       }
 
       virtual char 
-      do_narrow(char_type, char) const
+      do_narrow(char_type, char __c) const
       {
 	// XXX Need definitions for these abstract mf's.
+	return __c;
       }
 
       virtual const char_type*
-      do_narrow(const char_type*, const char_type*, char, char*) const
+      do_narrow(const char_type* __lo, const char_type*, char, char*) const
       {
 	// XXX Need definitions for these abstract mf's.
+	return __lo;
       }
     };
 
