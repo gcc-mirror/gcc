@@ -8303,6 +8303,11 @@ expand_builtin_setjmp (buf_addr, target)
 #endif
       abort ();
 
+#ifdef HAVE_builtin_setjmp_receiver
+  if (HAVE_builtin_setjmp_receiver)
+    emit_insn (gen_builtin_setjmp_receiver ());
+#endif
+
   emit_move_insn (target, const1_rtx);
   emit_label (lab2);
   return target;
