@@ -3592,7 +3592,8 @@ finish_decl (decl, init, asmspec_tree)
 
   if (TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == FUNCTION_DECL)
     {
-      if (flag_traditional && allocation_temporary_p ())
+      if ((flag_traditional || TREE_PERMANENT (decl))
+	  && allocation_temporary_p ())
 	{
 	  push_obstacks_nochange ();
 	  end_temporary_allocation ();
