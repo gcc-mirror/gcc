@@ -1,3 +1,7 @@
+2002-09-27  Zack Weinberg  <zack@codesourcery.com>
+
+	* gcc.dg/cpp/20020927-1.c: New.
+
 2002-09-26  David S. Miller  <davem@redhat.com>
 
 	* gcc.c-torture/compile/trunctfdf.c: New.
@@ -98,7 +102,7 @@ Tue Sep 17 13:59:45 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 	* objc.dg/comp-types-3.m: New test.
 	* objc.dg/comp-types-4.m: New test.
 	* objc.dg/comp-types-5.m: New test.
-	* objc.dg/comp-types-6.m: New test.	
+	* objc.dg/comp-types-6.m: New test.
 
 2002-09-17  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
@@ -107,9 +111,9 @@ Tue Sep 17 13:59:45 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 2002-09-16  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.dg/other/do1.C: New test.
-	
+
 	* g++.dg/template/subst1.C: New test.
-	
+
 2002-09-16  Steve Ellcey  <sje@cup.hp.com>
 
 	* gcc.dg/20020312-2.c: Change __parisc__ to __hppa__.
