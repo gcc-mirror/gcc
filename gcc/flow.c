@@ -1,5 +1,5 @@
 /* Data flow analysis for GNU compiler.
-   Copyright (C) 1987, 1988, 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1992, 1993, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1969,6 +1969,7 @@ find_auto_inc (needed, x, insn)
 {
   rtx addr = XEXP (x, 0);
   int offset = 0;
+  rtx set;
 
   /* Here we detect use of an index register which might be good for
      postincrement, postdecrement, preincrement, or predecrement.  */
@@ -1985,13 +1986,14 @@ find_auto_inc (needed, x, insn)
       int regno = REGNO (addr);
 
       /* Is the next use an increment that might make auto-increment? */
-      incr = reg_next_use[regno];
-      if (incr && GET_CODE (PATTERN (incr)) == SET
+      if ((incr = reg_next_use[regno]) != 0
+	  && (set = single_set (incr)) != 0
+	  && GET_CODE (set) == SET
 	  && BLOCK_NUM (incr) == BLOCK_NUM (insn)
 	  /* Can't add side effects to jumps; if reg is spilled and
 	     reloaded, there's no way to store back the altered value.  */
 	  && GET_CODE (insn) != JUMP_INSN
-	  && (y = SET_SRC (PATTERN (incr)), GET_CODE (y) == PLUS)
+	  && (y = SET_SRC (set), GET_CODE (y) == PLUS)
 	  && XEXP (y, 0) == addr
 	  && GET_CODE (XEXP (y, 1)) == CONST_INT
 	  && (0
@@ -2013,7 +2015,7 @@ find_auto_inc (needed, x, insn)
 	      use != 0 && use != (rtx) 1))
 	{
 	  int win = 0;
-	  rtx q = SET_DEST (PATTERN (incr));
+	  rtx q = SET_DEST (set);
 
 	  if (dead_or_set_p (incr, addr))
 	    win = 1;
@@ -2097,14 +2099,14 @@ find_auto_inc (needed, x, insn)
 
 	      /* Modify the old increment-insn to simply copy
 		 the already-incremented value of our register.  */
-	      SET_SRC (PATTERN (incr)) = addr;
+	      SET_SRC (set) = addr;
 	      /* Indicate insn must be re-recognized.  */
 	      INSN_CODE (incr) = -1;
 
 	      /* If that makes it a no-op (copying the register into itself)
 		 then delete it so it won't appear to be a "use" and a "set"
 		 of this register.  */
-	      if (SET_DEST (PATTERN (incr)) == addr)
+	      if (SET_DEST (set) == addr)
 		{
 		  PUT_CODE (incr, NOTE);
 		  NOTE_LINE_NUMBER (incr) = NOTE_INSN_DELETED;
