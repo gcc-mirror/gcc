@@ -1,3 +1,9 @@
+2004-04-12  Fariborz Jahanian <fjahanian@apple.com>
+
+	* config/rs6000/altivec.h (vec_mergeh, vec_mergel):
+	Definition of these two macros are corrected by adding
+	matchine right paren.
+
 2004-04-12  Jonathan Larmour  <jifl@eCosCentric.com>
 
 	* fix-header.c: kill(), putenv() and tzset() are POSIX not ANSI.
