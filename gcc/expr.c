@@ -2830,13 +2830,14 @@ emit_move_insn_1 (x, y)
 							GEN_INT (offset2))),
 			  gen_imagpart (submode, y));
 	}
+      else
 #endif
       /* If this is a stack, push the highpart first, so it
 	 will be in the argument order.
 
 	 In that case, change_address is used only to convert
 	 the mode, not to change the address.  */
-      else if (stack)
+      if (stack)
 	{
 	  /* Note that the real part always precedes the imag part in memory
 	     regardless of machine's endianness.  */

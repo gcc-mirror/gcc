@@ -1,3 +1,7 @@
+2001-03-14  Richard Henderson  <rth@redhat.com>
+
+	* expr.c (emit_move_insn_1): Fix else if around #endif.
+
 Wed Mar 14 22:39:12 CET 2001  Jan Hubicka  <jh@suse.cz>
 			      Vojtech Pavlik
 
