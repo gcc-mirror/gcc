@@ -5643,11 +5643,17 @@ build_const_cast (type, expr)
       return t;
     }
 
-  if (!POINTER_TYPE_P (type) && !TYPE_PTRMEMFUNC_P (type))
+  if (!POINTER_TYPE_P (type))
     {
-      cp_error ("`%T' is not a pointer, reference, or pointer-to-member type",
+      cp_error ("`%T' is not a pointer, reference, or pointer-to-data-member type",
 		type);
       cp_error ("as required by const_cast");
+    }
+  else if (TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE)
+    {
+      cp_error ("`%T' is a pointer or reference to a function type",
+		type);
+      cp_error ("which is forbidden by const_cast");
       return error_mark_node;
     }
 

@@ -1,3 +1,7 @@
+1999-05-03  Mark Mitchell  <mark@codesourcery.com>
+
+	* typeck.c (build_const_cast): Tighten checks for legality.
+
 1999-05-02  Martin von Löwis  <loewis@informatik.hu-berlin.de>
 
 	* init.c (build_member_call): Lookup names coming from
