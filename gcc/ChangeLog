@@ -1,3 +1,9 @@
+2003-01-09  Josef Zlomek  <zlomj9am@artax.karlin.mff.cuni.cz>
+
+	* Makefile.in (PARTITION_H): New.
+	(BASIC_BLOCK_H): Added hard-reg-set.h and $(PARTITION_H).
+	* basic-block.h: Include hard-reg-set.h.
+
 2003-01-09  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR inline-asm/8832
