@@ -1,3 +1,16 @@
+2000-08-21  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-common.c (init_dollar_format_checking,
+	maybe_read_dollar_number, finish_dollar_format_checking): New
+	functions.
+	(dollar_arguments_used, dollar_arguments_count,
+	dollar_first_arg_num, dollar_max_arg_used, dollar_format_warned):
+	New variables.
+	(check_format_info): Support $ formats for scanf and printf width
+	and precision.  Always increment format_chars to advance past the
+	'*' of precision, not just when the format parameters are
+	available to check.
+
 2000-08-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* mips.c (block_move_loop, expand_block_move,
