@@ -1,3 +1,11 @@
+2003-07-05  Neil Booth  <neil@daikokuya.co.uk>
+
+	PR driver/11417
+	* c-opts.c (permit_fortran_options): New.
+	(c_common_init_options): Accept fortran front end options if
+	it looks like we might be preprocessing Fortran.
+	(c_common_handle_option): Don't reject switch if permit_fotran_options.
+
 2003-07-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* genattr.c (internal_dfa_insn_code): Output prototype.

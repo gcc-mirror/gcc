@@ -94,6 +94,9 @@ static size_t deferred_count;
 /* Number of deferred options scanned for -include.  */
 static size_t include_cursor;
 
+/* Permit Fotran front-end options.  */
+static bool permit_fortran_options;
+
 void missing_arg (enum opt_code);
 static void set_Wimplicit (int);
 static void print_help (void);
@@ -199,6 +202,7 @@ unsigned int
 c_common_init_options (unsigned int argc, const char **argv ATTRIBUTE_UNUSED)
 {
   static const unsigned int lang_flags[] = {CL_C, CL_ObjC, CL_CXX, CL_ObjCXX};
+  unsigned int result;
 
   /* This is conditionalized only because that is the way the front
      ends used to do it.  Maybe this should be unconditional?  */
@@ -230,7 +234,20 @@ c_common_init_options (unsigned int argc, const char **argv ATTRIBUTE_UNUSED)
   deferred_opts = (struct deferred_opt *)
     xmalloc (argc * sizeof (struct deferred_opt));
 
-  return lang_flags[c_language];
+  result = lang_flags[c_language];
+
+  /* If potentially preprocessing Fortran we have to accept its front
+     end options since the driver passes most of them through.  */
+#ifdef CL_F77
+  if (c_language == clk_c && argc > 2
+      && !strcmp (argv[2], "-traditional-cpp" ))
+    {
+      permit_fortran_options = true;
+      result |= CL_F77;
+    }
+#endif
+
+  return result;
 }
 
 /* Handle switch SCODE with argument ARG.  ON is true, unless no-
@@ -259,7 +276,8 @@ c_common_handle_option (size_t scode, const char *arg, int value)
   switch (code)
     {
     default:
-      return 0;
+      result = permit_fortran_options;
+      break;
 
     case OPT__help:
       print_help ();
