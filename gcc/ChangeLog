@@ -3,6 +3,9 @@
 	* tree-ssa-pre.c (phi_translate): Use find_edge to find the
 	index of a PHI argument.
 
+	* tree-ssa-loop-manip.c (lv_adjust_loop_header_phi): Use
+	find_edge to find the index of a PHI argument.
+
 2004-11-24  Steven Bosscher  <stevenb@suse.de>
 
 	* expr.c (expand_expr_real_1): Remove cases for EXIT_BLOCK_EXPR 
