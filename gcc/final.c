@@ -999,7 +999,9 @@ shorten_branches (first)
     if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
       {
 	rtx old = insn;
-	insn = try_split (PATTERN (old), old, 1);
+	/* Don't split the insn if it has been deleted.  */
+	if (! INSN_DELETED_P (old))
+	  insn = try_split (PATTERN (old), old, 1);
 	/* When not optimizing, the old insn will be still left around
 	   with only the 'deleted' bit set.  Transform it into a note
 	   to avoid confusion of subsequent processing.  */
