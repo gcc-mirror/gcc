@@ -1,3 +1,10 @@
+2003-03-11  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/rs6000/rs6000.c (rs6000_stack_info): Remove
+        insn_chain_scanned.  Use insn_chain_scanned_p in machine_function.
+
+        * config/rs6000/rs6000.h (machine_function): Add insn_chain_scanned_p.
+
 Tue Mar 11 21:19:03 2003  Alexandre Oliva  <aoliva@redhat.com>
 
 	* toplev.c (independent_decode_option): Return success for --help,
