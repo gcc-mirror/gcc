@@ -17,4 +17,4 @@ extern const int c;
 X<c> z; // ok, c has external linkage
 
 extern const int c = 3;
-X<c> z_; // gets bogus error - using c as constant - XFAIL *-*-*
+X<c> z_; // gets bogus error - using c as constant

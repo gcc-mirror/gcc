@@ -1,5 +1,8 @@
 1999-07-22  Mark Mitchell  <mark@codesourcery.com>
 
+	* pt.c (convert_nontype_argument): Don't call decl_constant_value
+	if we're converting to a reference type.
+
 	* call.c (NEED_TEMPORARY_P): New macro.
 	(standard_conversion): Set it, for derived-to-base conversions.
 	(reference_related_p): New function.
