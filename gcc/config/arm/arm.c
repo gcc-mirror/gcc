@@ -5700,13 +5700,15 @@ arm_print_operand (stream, x, code)
 
     case 'B':
       if (GET_CODE (x) == CONST_INT)
-	fprintf (stream,
-#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
-		 "%d",
-#else
-		 "%ld",
-#endif
-		 ARM_SIGN_EXTEND (~ INTVAL (x)));
+	{
+	  HOST_WIDE_INT val;
+	  val = ARM_SIGN_EXTEND (~ INTVAL (x));
+
+	  if (val < -1000 || val > 1000)
+	    fprintf (stream, HOST_WIDE_INT_PRINT_HEX, val);
+	  else
+	    fprintf (stream, HOST_WIDE_INT_PRINT_DEC, val);
+	}
       else
 	{
 	  putc ('~', stream);
@@ -5725,21 +5727,21 @@ arm_print_operand (stream, x, code)
     case 'S':
       {
 	HOST_WIDE_INT val;
-	char *shift = shift_op (x, &val);
+	char * shift = shift_op (x, & val);
 
 	if (shift)
 	  {
-	    fprintf (stream, ", %s ", shift_op (x, &val));
+	    fprintf (stream, ", %s ", shift_op (x, & val));
 	    if (val == -1)
 	      arm_print_operand (stream, XEXP (x, 1), 0);
 	    else
-	      fprintf (stream,
-#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
-		       "#%d",
-#else
-		       "#%ld",
-#endif
-		       val);
+	      {
+		fputc ('#', stream);
+		if (val < -1000 || val > 1000)
+		  fprintf (stream, HOST_WIDE_INT_PRINT_HEX (val));
+		else
+		  fprintf (stream, HOST_WIDE_INT_PRINT_DEC (val));
+	      }
 	  }
       }
       return;
