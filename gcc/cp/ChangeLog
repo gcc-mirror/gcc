@@ -1,5 +1,9 @@
 2003-05-05  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
+	* decl.c: Fix typos.
+
+2003-05-05  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
 	PR c++/4494
 	* decl.c (start_function): Use same_type_p to check return type
 	of main.
