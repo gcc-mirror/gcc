@@ -1,5 +1,12 @@
 2005-04-05  Kelley Cook  <kcook@gcc.gnu.org>
 
+	* linkage.m4 (GLIBCXX_CHECK_BUILTIN_MATH_DEC): Use m4 translit macro 
+	to convert to uppercase instead of shelling out to tr.
+	* acconfig.h: Remove now redundant HAVE__BUILTINS_*.
+	* configure, config.h.in: Regenerate.
+
+2005-04-05  Kelley Cook  <kcook@gcc.gnu.org>
+
 	* acconfig.h (HAVE_TANL): Correct cut-and-paste typo.
 	* config.h.in: Regenerate.
 
