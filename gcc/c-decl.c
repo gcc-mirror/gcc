@@ -5767,8 +5767,6 @@ start_function (tree declspecs, tree declarator, tree attributes)
   push_scope ();
   declare_parm_level ();
 
-  make_decl_rtl (current_function_decl, NULL);
-
   restype = TREE_TYPE (TREE_TYPE (current_function_decl));
   /* Promote the value to int before returning it.  */
   if (c_promoting_integer_type_p (restype))
@@ -5783,11 +5781,6 @@ start_function (tree declspecs, tree declarator, tree attributes)
     }
   DECL_RESULT (current_function_decl)
     = build_decl (RESULT_DECL, NULL_TREE, restype);
-
-  /* If this fcn was already referenced via a block-scope `extern' decl
-     (or an implicit decl), propagate certain information about the usage.  */
-  if (TREE_ADDRESSABLE (DECL_ASSEMBLER_NAME (current_function_decl)))
-    TREE_ADDRESSABLE (current_function_decl) = 1;
 
   immediate_size_expand = old_immediate_size_expand;
 

@@ -1,3 +1,8 @@
+2004-06-21  Zack Weinberg  <zack@codesourcery.com>
+
+	* c-decl.c (start_function): Don't call make_decl_rtl.  Don't
+	look at TREE_ADDRESSABLE of symbol name.
+
 2004-06-21  Kelley Cook  <kcook@gcc.gnu.org>
 
 	PR target/15551
@@ -8,7 +13,7 @@
 	(allocate_stack_worker_rex64_postreload):  Likewise.
 
 2004-06-21  Daniel Berlin  <dberlin@dberlin.org>
-    
+
 	Fix PR optimization/15982
 	* tree-ssa-pre.c: Update a few comments and todos to
 	reflect constants change.
@@ -157,7 +162,7 @@
 	A & N ? N : 0 where N is a power of two.  Avoid
 	relying on canonicalization and recursion for
 	foldings of COND_EXPR to happen.
-	
+
 2004-06-20  David Ayers  <d.ayers@inode.at>
 
 	* objc/objc-act.h (get_object_reference): Rename to
