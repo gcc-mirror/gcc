@@ -1,3 +1,7 @@
+1999-03-25  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+
+	* gxxint.texi: Remove old discussion on copying virtual bases.
+
 1999-03-25  Zack Weinberg  <zack@rabi.columbia.edu>
 
 	* Make-lang.in: Remove all references to g++.o/g++.c.

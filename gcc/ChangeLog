@@ -1,4 +1,8 @@
-999-03-25 Zack Weinberg  <zack@rabi.columbia.edu>
+Thu Mar 25 22:53:27 1999  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+
+	* gcc.texi (Copy Assignment): New node.
+
+1999-03-25 Zack Weinberg  <zack@rabi.columbia.edu>
 
 	* gcc.c: Compile unconditionally all code formerly dependent
 	on #ifdef LANG_SPECIFIC_DRIVER.

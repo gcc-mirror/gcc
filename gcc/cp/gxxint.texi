@@ -23,7 +23,6 @@ Questions and comments to Benjamin Kosnik @code{<bkoz@@cygnus.com>}.
 * Access Control::              
 * Error Reporting::             
 * Parser::                      
-* Copying Objects::             
 * Exception Handling::          
 * Free Store::                  
 * Mangling::  Function name mangling for C++ and Java
@@ -931,7 +930,7 @@ To have the line number on the error message indicate the line of the
 DECL, use @code{cp_error_at} and its ilk; to indicate which argument you want,
 use @code{%+D}, or it will default to the first.
 
-@node Parser, Copying Objects, Error Reporting, Top
+@node Parser, Exception Handling, Error Reporting, Top
 @section Parser
 
 Some comments on the parser:
@@ -1022,33 +1021,7 @@ conflicts.
 
 Unlike the others, this ambiguity is not recognized by the Working Paper.
 
-@node  Copying Objects, Exception Handling, Parser, Top
-@section Copying Objects
-
-The generated copy assignment operator in g++ does not currently do the
-right thing for multiple inheritance involving virtual bases; it just
-calls the copy assignment operators for its direct bases.  What it
-should probably do is:
-
-1) Split up the copy assignment operator for all classes that have
-vbases into "copy my vbases" and "copy everything else" parts.  Or do
-the trickiness that the constructors do to ensure that vbases don't get
-initialized by intermediate bases.
-
-2) Wander through the class lattice, find all vbases for which no
-intermediate base has a user-defined copy assignment operator, and call
-their "copy everything else" routines.  If not all of my vbases satisfy
-this criterion, warn, because this may be surprising behavior.
-
-3) Call the "copy everything else" routine for my direct bases.
-
-If we only have one direct base, we can just foist everything off onto
-them.
-
-This issue is currently under discussion in the core reflector
-(2/28/94).
-
-@node  Exception Handling, Free Store, Copying Objects, Top
+@node  Exception Handling, Free Store, Parser, Top
 @section Exception Handling
 
 Note, exception handling in g++ is still under development.  
