@@ -2818,11 +2818,16 @@ allocation when it finishes.
 
 @item -fprofile-arcs
 @opindex fprofile-arcs
-Instrument @dfn{arcs} during compilation to generate coverage data
-or for profile-directed block ordering.  During execution the program
+Instrument @dfn{arcs} during compilation to generate coverage data or
+for profile-directed block ordering.  During execution the program
 records how many times each branch is executed and how many times it is
 taken.  When the compiled program exits it saves this data to a file
-called @file{@var{sourcename}.da} for each source file.
+called @file{@var{auxname}.da} for each source file.  @var{auxname} is
+generated from the name of the output file, if explicitly specified and
+it is not the final executable, otherwise it is the basename of the
+source file. In both cases any suffix is removed (e.g.  @file{foo.da}
+for input file @file{dir/foo.c}, or @file{dir/foo.da} for output file
+specified as @option{-o dir/foo.o}).
 
 For profile-directed block ordering, compile the program with
 @option{-fprofile-arcs} plus optimization and code generation options,
@@ -2863,19 +2868,19 @@ information to estimate all branch probabilities.
 @item -ftest-coverage
 @opindex ftest-coverage
 Create data files for the @code{gcov} code-coverage utility
-(@pxref{Gcov,, @code{gcov}: a GCC Test Coverage Program}).
-The data file names begin with the name of your source file:
+(@pxref{Gcov,, @code{gcov}: a GCC Test Coverage Program}).  See
+@option{-fprofile-arcs} option above for a description of @var{auxname}.
 
 @table @gcctabopt
-@item @var{sourcename}.bb
+@item @var{auxname}.bb
 A mapping from basic blocks to line numbers, which @code{gcov} uses to
 associate basic block execution counts with line numbers.
 
-@item @var{sourcename}.bbg
+@item @var{auxname}.bbg
 A list of all arcs in the program flow graph.  This allows @code{gcov}
 to reconstruct the program flow graph, so that it can compute all basic
 block and arc execution counts from the information in the
-@code{@var{sourcename}.da} file.
+@file{@var{auxname}.da} file.
 @end table
 
 Use @option{-ftest-coverage} with @option{-fprofile-arcs}; the latter
@@ -2883,9 +2888,9 @@ option adds instrumentation to the program, which then writes
 execution counts to another data file:
 
 @table @gcctabopt
-@item @var{sourcename}.da
+@item @var{auxname}.da
 Runtime arc execution counts, used in conjunction with the arc
-information in the file @code{@var{sourcename}.bbg}.
+information in the file @file{@var{auxname}.bbg}.
 @end table
 
 Coverage data will map better to the source files if
@@ -2896,8 +2901,12 @@ Coverage data will map better to the source files if
 Says to make debugging dumps during compilation at times specified by
 @var{letters}.  This is used for debugging the compiler.  The file names
 for most of the dumps are made by appending a pass number and a word to
-the source file name (e.g.  @file{foo.c.00.rtl} or @file{foo.c.01.sibling}).
-Here are the possible letters for use in @var{letters}, and their meanings:
+the @var{dumpname}. @var{dumpname} is generated from the name of the
+output file, if explicitly specified and it is not an executable,
+otherwise it is the basename of the source file. In both cases any
+suffix is removed (e.g.  @file{foo.00.rtl} or @file{foo.01.sibling}).
+Here are the possible letters for use in @var{letters}, and their
+meanings:
 
 @table @samp
 @item A
