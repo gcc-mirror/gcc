@@ -146,6 +146,7 @@ struct function
   struct label_node *caught_return_label_stack;
   tree protect_list;
   rtx ehc;
+  rtx eh_return_stub_label;
 
   /* For expr.c.  */
   rtx pending_chain;
