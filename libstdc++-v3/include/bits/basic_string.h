@@ -2286,7 +2286,7 @@ namespace std
     inline bool
     operator<=(const _CharT* __lhs,
 	       const basic_string<_CharT, _Traits, _Alloc>& __rhs)
-  { return __rhs.compare(__lhs) >= 0; }
+    { return __rhs.compare(__lhs) >= 0; }
 
   // operator >=
   /**
@@ -2382,7 +2382,7 @@ namespace std
    *  delim was encountered, it is extracted but not stored into @a str.
    */
   template<typename _CharT, typename _Traits, typename _Alloc>
-    basic_istream<_CharT,_Traits>&
+    basic_istream<_CharT, _Traits>&
     getline(basic_istream<_CharT, _Traits>& __is,
 	    basic_string<_CharT, _Traits, _Alloc>& __str, _CharT __delim);
 
@@ -2399,9 +2399,21 @@ namespace std
    *  encountered, it is extracted but not stored into @a str.
    */
   template<typename _CharT, typename _Traits, typename _Alloc>
-    inline basic_istream<_CharT,_Traits>&
+    inline basic_istream<_CharT, _Traits>&
     getline(basic_istream<_CharT, _Traits>& __is,
 	    basic_string<_CharT, _Traits, _Alloc>& __str);
+    
+  template<>
+    basic_istream<char>&
+    getline(basic_istream<char>& __in, basic_string<char>& __str,
+	    char __delim);
+
+#ifdef _GLIBCXX_USE_WCHAR_T
+  template<>
+    basic_istream<wchar_t>&
+    getline(basic_istream<wchar_t>& __in, basic_string<wchar_t>& __str,
+	    wchar_t __delim);
+#endif  
 } // namespace std
 
 #endif /* _BASIC_STRING_H */

@@ -1,3 +1,14 @@
+2004-11-17  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/istream.tcc (getline(basic_istream<>&, basic_string<>&,
+	_CharT)): Remove temporary kludge for libstdc++/15002.
+	* include/std/std_streambuf.h (class basic_streambuf): Declare
+	getline(basic_istream<>&, basic_string<>&, _CharT) as friend.
+	* include/bits/basic_string.h (getline(basic_istream<>&,
+	basic_string<>&, _CharT)): Declare optimized specializations for
+	char and wchar_t, using protected members of basic_streambuf.
+	* src/istream.cc: Define the latter.
+
 2004-11-16  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	* docs/html/19_diagnostics/howto.html: Document change from
