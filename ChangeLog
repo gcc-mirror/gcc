@@ -115,6 +115,24 @@ Fri Jul 17 13:30:18 1998  Ian Lance Taylor  <ian@cygnus.com>
         * ylwrap: Don't use a full path name if the source file is in the
         same directory.  From hjl@lucon.org (H.J. Lu).
 
+Tue Jul 14 13:22:18 1998  Ian Lance Taylor  <ian@cygnus.com>
+
+	* ltmain.sh: Add some hacks to make SunOS --enable-shared work
+	when using GNU ld.
+
+Fri Jul 10 13:18:23 1998  Ian Lance Taylor  <ian@cygnus.com>
+
+	* ltmain.sh: Correct install when using a different shell.
+
+Tue Jul  7 15:24:38 1998  Ian Lance Taylor  <ian@cygnus.com>
+
+	* ltconfig, ltmain.sh: Update to libtool 1.2b.
+
+
+Wed Jul  1 16:45:21 1998  Ian Lance Taylor  <ian@cygnus.com>
+
+	* ltconfig: Update to correct AIX handling.
+
 Sat Jun 27 22:46:32 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (BASE_FLAGS_TO_PASS): Add TARGET_SUBDIR.
@@ -174,6 +192,13 @@ Thu Jun 18 11:26:03 1998  Robert Lipe  <robertl@dgii.com>
 Wed Jun 10 11:19:47 1998  Ian Lance Taylor  <ian@cygnus.com>
 
 	* missing: Update to version from automake 1.3.
+
+	* ltmain.sh: On installation, don't get confused if the same name
+	appears more than once in the list of library names.
+
+Thu May 28 19:31:13 1998  Ian Lance Taylor  <ian@cygnus.com>
+
+	* ltconfig, ltmain.sh: Bring in Visual C++ support.
 
 Sat May 23 23:44:13 1998  Alexandre Oliva <oliva@dcc.unicamp.br>
 
