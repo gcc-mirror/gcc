@@ -3994,12 +3994,6 @@ main (argc, argv, envp)
 #ifdef INSN_SCHEDULING
 	      else if (!strncmp (p, "sched-verbose-",14))
 		fix_sched_param("verbose",&p[14]);
-	      else if (!strncmp (p, "sched-max-",10))
-		fix_sched_param("max",&p[10]);
-	      else if (!strncmp (p, "sched-inter-max-b-",18))
-		fix_sched_param("interblock-max-blocks",&p[18]);
-	      else if (!strncmp (p, "sched-inter-max-i-",18))
-		fix_sched_param("interblock-max-insns",&p[18]);
 #endif
 #endif  /* HAIFA */
 	      else if (!strncmp (p, "fixed-", 6))
