@@ -2691,12 +2691,8 @@
 			      plus_constant_for_output (XEXP (word0, 0), 4));
   rtx high_part = gen_highpart (SImode, operands[0]);
   rtx low_part = gen_lowpart (SImode, operands[0]);
-  int self_reference;
 
-  self_reference = reg_overlap_mentioned_p (operands[0],
-					    XEXP (XEXP (word1, 0), 0));
-  if (self_reference != 0
-      && WORDS_BIG_ENDIAN)
+  if (reg_overlap_mentioned_p (high_part, word1))
     {
       emit_insn (gen_movsi (low_part, word1));
       emit_insn (gen_movsi (high_part, word0));
@@ -3206,15 +3202,11 @@
   rtx word0 = change_address (operands[1], SFmode, NULL_RTX);
   rtx word1 = change_address (operands[1], SFmode,
 			      plus_constant_for_output (XEXP (word0, 0), 4));
-  int self_reference;
 
-  self_reference = reg_overlap_mentioned_p (operands[0],
-					    XEXP (XEXP (word1, 0), 0));
   if (GET_CODE (operands[0]) == SUBREG)
     operands[0] = alter_subreg (operands[0]);
 
-  if (self_reference != 0
-      && WORDS_BIG_ENDIAN)
+  if (reg_overlap_mentioned_p (gen_highpart (SFmode, operands[0]), word1))
     {
       emit_insn (gen_movsf (gen_lowpart (SFmode, operands[0]),
 			    word1));
@@ -3439,8 +3431,6 @@
   rtx word1 = change_address (operands[1], DFmode,
 			      plus_constant_for_output (XEXP (word0, 0), 8));
   rtx dest1, dest2;
-  int self_reference = reg_overlap_mentioned_p (operands[0],
-						XEXP (XEXP (word1, 0), 0));
 
   /* Ugly, but gen_highpart will crap out here for 32-bit targets.  */
   dest1 = gen_rtx_SUBREG (DFmode, operands[0], WORDS_BIG_ENDIAN == 0);
@@ -3448,8 +3438,8 @@
 
   /* Now output, ordering such that we don't clobber any registers
      mentioned in the address.  */
-  if (self_reference != 0
-      && WORDS_BIG_ENDIAN)
+  if (reg_overlap_mentioned_p (dest1, word1))
+
     {
       emit_insn (gen_movdf (dest2, word1));
       emit_insn (gen_movdf (dest1, word0));
@@ -6626,8 +6616,8 @@
    operands[3] = gen_rtx_raw_REG (SFmode, REGNO (operands[1]));
    operands[4] = gen_rtx_raw_REG (SFmode, REGNO (operands[0]) + 1);
    operands[5] = gen_rtx_raw_REG (SFmode, REGNO (operands[1]) + 1);
-   operands[6] = gen_rtx_raw_REG (SFmode, REGNO (operands[0]) + 2);
-   operands[7] = gen_rtx_raw_REG (SFmode, REGNO (operands[1]) + 2);")
+   operands[6] = gen_rtx_raw_REG (DFmode, REGNO (operands[0]) + 2);
+   operands[7] = gen_rtx_raw_REG (DFmode, REGNO (operands[1]) + 2);")
 
 (define_insn "*negtf2_v9"
   [(set (match_operand:TF 0 "register_operand" "=e,e")
