@@ -22,5 +22,3 @@ Boston, MA 02111-1307, USA.  */
 /* Doubles are stored in memory with the high order word first.  This
    matters when cross-compiling.  */
 #define HOST_WORDS_BIG_ENDIAN 1
-
-#include <xm-linux.h>

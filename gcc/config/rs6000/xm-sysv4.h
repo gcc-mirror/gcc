@@ -24,10 +24,6 @@ Boston, MA 02111-1307, USA.  */
    matters when cross-compiling.  */
 #define HOST_WORDS_BIG_ENDIAN 1
 
-#ifdef __linux__
-#include "xm-linux.h"
-#endif
-
 /* if not compiled with GNU C, use only int bitfields. */
 #ifndef __GNUC__
 #undef ONLY_INT_FIELDS

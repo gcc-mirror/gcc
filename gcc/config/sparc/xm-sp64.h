@@ -18,8 +18,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include <sparc/xm-sparc.h>
-
 /* This describes the machine the compiler is hosted on.  */
 #if defined(__arch64__) || defined(__sparcv9)
 #undef HOST_BITS_PER_LONG
