@@ -1,3 +1,15 @@
+2001-09-16  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cppmain.c (scan_translation_unit): Don't worry about
+	putting a space after hashes.
+	* cpplib.c (directive_diagnostics): New.
+	(_cpp_handle_directive): Update to use directive_diagnostics.
+	(run_directive): Don't toggle prevent_expansion.
+	(do_line): Backup in case of the line extension.
+	* cpplib.h (cpp_lexer_pos): Remove.
+	* cppmacro.c (_cpp_create_definition): Precede a leading #
+	with whitespace.
+
 2001-09-15  Richard Henderson  <rth@redhat.com>
 
 	* c-typeck.c (comptypes): Handle zero-length arrays properly.
