@@ -1,3 +1,17 @@
+2002-04-08  Tom Tromey  <tromey@redhat.com>
+
+	For PR libgcj/5303:
+	* .cvsignore: Added rmic.1 and rmiregistry.1.
+	* gcj.texi (Top): Link to new nodes.
+	(Invoking rmic): New node.
+	(Invoking rmiregistry): Likewise.
+	* Make-lang.in (java.generated-manpages): Added rmic.1 and
+	rmiregistry.1.
+	(java.maintainer-clean): Likewise.
+	($(srcdir)/java/rmic.1): New target.
+	($(srcdir)/java/rmiregistry.1): Likewise.
+	(java.install-man): Handle rmic.1 and rmiregistry.1.
+
 2002-04-08  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* gcj.texi (Invocation): Update JvAttachCurrentThread documentation.

@@ -36,6 +36,10 @@
 * gij: (gcj)Invoking gij.   GNU interpreter for Java bytecode
 * jv-convert: (gcj)Invoking jv-convert.
                             Convert file from one encoding to another
+* rmic: (gcj)Invoking rmic.
+                            Generate stubs for Remote Method Invocation.
+* rmiregistry: (gcj)Invoking rmiregistry.
+                            The remote object registry.
 @end direntry
 @end format
 
@@ -113,7 +117,7 @@ files and object files, and it can read both Java source code and
 @file{.class} files.
 
 @menu
-* Copying::		The GNU General Public License
+* Copying::		 The GNU General Public License
 * GNU Free Documentation License::
 			How you can share and copy this manual
 * Invoking gcj::	Compiler options supported by @command{gcj}
@@ -123,6 +127,8 @@ files and object files, and it can read both Java source code and
 * Invoking jcf-dump::   Print information about class files
 * Invoking gij::	Interpreting Java bytecodes
 * Invoking jv-convert:: Converting from one encoding to another
+* Invoking rmic::        Generate stubs for Remote Method Invocation.
+* Invoking rmiregistry:: The remote object registry.
 * About CNI::           Description of the Cygnus Native Interface
 * Resources::		Where to look for more information
 @end menu
@@ -784,7 +790,7 @@ Print version number, then exit.
 
 @c man title jv-convert Convert file from one encoding to another
 
-@c man begin synopsis jv-convert
+@c man begin SYNOPSIS jv-convert
 @command{jv-convert} [@option{OPTION}] @dots{} [@var{INPUTFILE} [@var{OUTPUTFILE}]]
 @ignore
 
@@ -837,6 +843,121 @@ Print version information, then exit.
 @end table
 
 @c man end
+
+@node Invoking rmic
+@chapter Invoking rmic
+
+@c man title rmic Generate stubs for Remote Method Invocation
+
+@c man begin SYNOPSIS rmic
+@command{rmic} [@option{OPTION}] @dots{} @var{class} @dots{}
+@ignore
+  [@option{-keep}]
+  [@option{-keepgenerated}]
+  [@option{-v1.1}]
+  [@option{-vcompat}]
+  [@option{-v1.2}]
+  [@option{-nocompile}]
+  [@option{-verbose}]
+  [@option{-d} @var{directory}]
+  [@option{-help}]
+  [@option{-version}]
+@end ignore
+@c man end
+
+@c man begin DESCRIPTION rmic
+
+@command{rmic} is a utility included with @code{libgcj} which generates
+stubs for remote objects.
+
+@c FIXME: Add real information here.
+@c This really isn't much more than the --help output.
+
+Note that this program isn't yet fully compatible with the JDK
+@command{rmic}.  Some options, such as @option{-classpath}, are
+recognized but currently ignored.  We have left these options
+undocumented for now.
+
+Long options can also be given with a GNU-style leading @samp{--}.  For
+instance, @option{--help} is accepted.
+
+@c man end
+
+@c man begin OPTIONS rmic
+
+@table @gcctabopt
+@item -keep
+@itemx -keepgenerated
+By default, @command{rmic} deletes intermediate files.  Either of these
+options causes it not to delete such files.
+
+@item -v1.1
+Cause @command{rmic} to create stubs and skeletons for the 1.1
+protocol version.
+
+@item -vcompat
+Cause @command{rmic} to create stubs and skeletons compatible with both
+the 1.1 and 1.2 protocol versions.  This is the default.
+
+@item -v1.2
+Cause @command{rmic} to create stubs and skeletons for the 1.2
+protocol version.
+
+@item -nocompile
+Don't compile the generated files.
+
+@item -verbose
+Print information about what @command{rmic} is doing.
+
+@item -d @var{directory}
+Put output files in @var{directory}.  By default the files are put in
+the current working directory.
+
+@item -help
+Print a help message, then exit.
+
+@item -version
+Print version information, then exit.
+@end table
+
+@c man end
+
+
+@node Invoking rmiregistry
+@chapter Invoking rmiregistry
+
+@c man title rmiregistry Remote object registry
+
+@c man begin SYNOPSIS rmiregistry
+@command{rmic} [@option{OPTION}] @dots{} [@var{port}]
+@ignore
+  [@option{--help}]
+  [@option{--version}]
+@end ignore
+@c man end
+
+@c man begin DESCRIPTION rmiregistry
+
+@command{rmiregistry} starts a remote object registry on the current
+host.  If no port number is specified, then port 1099 is used.
+
+@c FIXME: Add real information here.
+@c This really isn't much more than the --help output.
+
+@c man end
+
+@c man begin OPTIONS rmiregistry
+
+@table @gcctabopt
+@item --help
+Print a help message, then exit.
+
+@item --version
+Print version information, then exit.
+@end table
+
+@c man end
+
 
 @node About CNI
 @chapter About CNI
