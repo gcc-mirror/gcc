@@ -149,6 +149,7 @@ static void mips_unique_section			PARAMS ((tree, int))
 	ATTRIBUTE_UNUSED;
 static void mips_select_rtx_section PARAMS ((enum machine_mode, rtx,
 					     unsigned HOST_WIDE_INT));
+static int mips_use_dfa_pipeline_interface      PARAMS ((void));
 static void mips_encode_section_info		PARAMS ((tree, int));
 
 /* Structure to be filled in by compute_frame_size with register
@@ -592,7 +593,10 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
   /* MIPS III */
   { "r4000", PROCESSOR_R4000, 3 },
   { "vr4100", PROCESSOR_R4100, 3 },
+  { "vr4111", PROCESSOR_R4111, 3 },
+  { "vr4121", PROCESSOR_R4121, 3 },
   { "vr4300", PROCESSOR_R4300, 3 },
+  { "vr4320", PROCESSOR_R4320, 3 },
   { "r4400", PROCESSOR_R4000, 3 }, /* = r4000 */
   { "r4600", PROCESSOR_R4600, 3 },
   { "orion", PROCESSOR_R4600, 3 }, /* = r4600 */
@@ -601,6 +605,9 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
   /* MIPS IV */
   { "r8000", PROCESSOR_R8000, 4 },
   { "vr5000", PROCESSOR_R5000, 4 },
+  { "vr5400", PROCESSOR_R5400, 4 },
+  { "vr5500", PROCESSOR_R5500, 4 },
+
 
   /* MIPS 32 */
   { "4kc", PROCESSOR_R4KC, 32 },
@@ -609,6 +616,7 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
   /* MIPS 64 */
   { "5kc", PROCESSOR_R5KC, 64 },
   { "20kc", PROCESSOR_R20KC, 64 },
+  { "sr71000", PROCESSOR_SR71000, 64 },
 
   /* Broadcom SB-1 CPU core */
   { "sb1", PROCESSOR_SB1, 64 },
@@ -645,6 +653,8 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
 #define TARGET_SCHED_ADJUST_COST mips_adjust_cost
 #undef TARGET_SCHED_ISSUE_RATE
 #define TARGET_SCHED_ISSUE_RATE mips_issue_rate
+#undef TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE
+#define TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE mips_use_dfa_pipeline_interface
 
 #undef TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO mips_encode_section_info
@@ -3981,7 +3991,9 @@ output_block_move (insn, operands, num_regs, move_type)
 	}
 
       /* ??? Fails because of a MIPS assembler bug?  */
-      else if (TARGET_64BIT && bytes >= 8 && ! TARGET_MIPS16)
+      else if (TARGET_64BIT && bytes >= 8
+	       && ! TARGET_SR71K
+	       && ! TARGET_MIPS16)
 	{
 	  if (BYTES_BIG_ENDIAN)
 	    {
@@ -4018,7 +4030,9 @@ output_block_move (insn, operands, num_regs, move_type)
 	  bytes -= 4;
 	}
 
-      else if (bytes >= 4 && ! TARGET_MIPS16)
+      else if (bytes >= 4
+	       && ! TARGET_SR71K
+	       && ! TARGET_MIPS16)
 	{
 	  if (BYTES_BIG_ENDIAN)
 	    {
@@ -10455,8 +10469,9 @@ mips_issue_rate ()
 {
   switch (mips_tune)
     {
-    case PROCESSOR_R3000:
-      return 1;
+    case PROCESSOR_R3000: return 1;
+    case PROCESSOR_R5400: return 2;
+    case PROCESSOR_R5500: return 2;
 
     default:
       return 1;
@@ -10465,6 +10480,25 @@ mips_issue_rate ()
   abort ();
 
 }
+
+/* Implements TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE.  Return true for
+   processors that have a DFA pipeline description.  */
+
+static int
+mips_use_dfa_pipeline_interface ()
+{
+  switch (mips_tune)
+    {
+    case PROCESSOR_R5400:
+    case PROCESSOR_R5500:
+    case PROCESSOR_SR71000:
+      return true;
+
+    default:
+      return false;
+    }
+}
+
 
 const char *
 mips_emit_prefetch (operands)

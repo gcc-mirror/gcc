@@ -1,3 +1,8 @@
+2002-08-15  Eric Christopher  <echristo@redhat.com>
+
+	* config.sub: Import from master repository.
+	* config.guess: Ditto.
+
 2002-08-19  Alexandre Oliva  <aoliva@redhat.com>
 
 	* Makefile.in (GCC_FOR_TARGET): Prepend STAGE_CC_WRAPPER.
@@ -84,7 +89,7 @@
 	C++ headers if --enable-version-specific-runtime-libs is used.
 
 2002-07-04  Steve Ellcey  <sje@cup.hp.com>
-	
+
 	* ltcf-cxx.sh (hpux*): Modify to support ia64-*-hpux*.
 
 2002-07-03  Nathanael Nerode  <neroden@gcc.gnu.org>
@@ -132,7 +137,7 @@
 2002-06-26  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* config.if (libstdcxx_incdir): Version C++ headers.
-	(cxx_incdir): Remove. 
+	(cxx_incdir): Remove.
 
 2002-06-25  Nathanael Nerode  <neroden@gcc.gnu.org>
 
@@ -168,7 +173,7 @@ Tue Jun 18 22:37:35 2002  Denis Chertykov  <denisc@overta.ru>
 
 	* config.sub: Add support for avr target.
 	Import from master sources, rev 1.255
-	
+
 2002-06-19  Phil Edwards  <pme@gcc.gnu.org>
 
 	* configure, .cvsignore:  Revert previous change...
@@ -376,7 +381,7 @@ Tue Jun 18 22:37:35 2002  Denis Chertykov  <denisc@overta.ru>
 	* configure.in (target_libs): Remove target-libchill.
 	Do not compute CHILL_FOR_TARGET.
 	* libchill: Remove directory.
-	
+
 2002-04-11  DJ Delorie  <dj@redhat.com>
 
 	* Makefile.in, configure.in: Sync with binutils, entries
@@ -559,7 +564,7 @@ Tue Mar 19 09:05:08 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* gcc/Makefile.in: Removed libstdc++-v3 dependancy for libjava and
 	boehm-gc
-	
+
 2002-02-09  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config.guess: Updated to 2002-01-30's version.
@@ -588,8 +593,8 @@ Thu Feb  7 12:40:58 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-01-26  Jason Thorpe  <thorpej@wasabisystems.com>
 
-	* configure.in (*-*-netbsd*): New.  Skip target-newlib, 
-	target-libiberty, and target-libgloss.  Skip Java-related 
+	* configure.in (*-*-netbsd*): New.  Skip target-newlib,
+	target-libiberty, and target-libgloss.  Skip Java-related
 	libraries if not supported for NetBSD on target CPU.
 
 2002-01-25  Douglas B Rupp  <rupp@gnat.com>
