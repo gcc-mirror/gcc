@@ -1,3 +1,8 @@
+1999-04-09  Tom Tromey  <tromey@cygnus.com>
+
+	* libjava.compile/plusplus.java: New file.
+	From MoT <Sebastien.Villemot@ens.fr>.
+
 1999-04-06  Tom Tromey  <tromey@cygnus.com>
 
 	* libjava.mauve/mauve.exp (test_mauve_sim): Reference
