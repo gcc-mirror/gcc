@@ -46,19 +46,6 @@ extern int errno;
 #include <sys/wait.h>
 #endif
 
-#ifdef vfork /* Autoconf may define this to fork for us. */
-# define VFORK_STRING "fork"
-#else
-# define VFORK_STRING "vfork"
-#endif
-#ifdef HAVE_VFORK_H
-#include <vfork.h>
-#endif
-#ifdef VMS
-#define vfork() (decc$$alloc_vfork_blocks() >= 0 ? \
-               lib$get_current_invo_context(decc$$get_vfork_jmpbuf()) : -1)
-#endif /* VMS */
-
 #include "libiberty.h"
 
 /* stdin file number.  */
@@ -714,9 +701,10 @@ pexecute (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg, flags)
 
   /* Fork a subprocess; wait and retry if it fails.  */
   sleep_interval = 1;
+  pid = -1;
   for (retries = 0; retries < 4; retries++)
     {
-      pid = vfork ();
+      pid = fork ();
       if (pid >= 0)
 	break;
       sleep (sleep_interval);
@@ -726,11 +714,9 @@ pexecute (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg, flags)
   switch (pid)
     {
     case -1:
-      {
-	*errmsg_fmt = VFORK_STRING;
-	*errmsg_arg = NULL;
-	return -1;
-      }
+      *errmsg_fmt = "fork";
+      *errmsg_arg = NULL;
+      return -1;
 
     case 0: /* child */
       /* Move the input and output pipes into place, if necessary.  */
@@ -754,7 +740,6 @@ pexecute (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg, flags)
       /* Exec the program.  */
       (*func) (program, argv);
 
-      /* Note: Calling fprintf and exit here doesn't seem right for vfork.  */
       fprintf (stderr, "%s: ", this_pname);
       fprintf (stderr, install_error_msg, program);
       fprintf (stderr, ": %s\n", xstrerror (errno));
