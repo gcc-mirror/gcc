@@ -904,6 +904,13 @@ cfg_layout_redirect_edge (e, dest)
   src->next_bb = NULL;
   if (e->flags & EDGE_FALLTHRU)
     {
+      /* Redirect any branch edges unified with the fallthru one.  */
+      if (GET_CODE (src->end) == JUMP_INSN
+	  && JUMP_LABEL (src->end) == e->dest->head)
+	{
+          if (!redirect_jump (src->end, block_label (dest), 0))
+	    abort ();
+	}
       /* In case we are redirecting fallthru edge to the branch edge
          of conditional jump, remove it.  */
       if (src->succ->succ_next
