@@ -1,3 +1,8 @@
+2002-11-19  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	PR fortran/8587
+	* news.texi: Show PR fortran/8587 fixed.
+
 2002-11-19  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* g77spec.c (lang_specific_spec_functions): New.
