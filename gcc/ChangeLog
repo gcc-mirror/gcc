@@ -1,3 +1,9 @@
+Wed Sep  8 00:33:43 1999  Alasdair Baird  <alasdair@wildcat.demon.co.uk>
+
+	* flow.c (insn_dead_p): Use XEXP rather than SUBREG_REG.
+	* haifa-sched.c (sched_analyze_1): Use XEXP rather than SUBREG_REG
+	and SET_DEST. Update comment.
+
 Wed Sep  8 18:55:17 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.c: Include ggc.h. 
