@@ -12620,6 +12620,15 @@ cp_parser_class_head (cp_parser* parser,
   else if (nested_name_specifier)
     {
       tree scope;
+
+      /* Reject typedef-names in class heads.  */
+      if (!DECL_IMPLICIT_TYPEDEF_P (type))
+	{
+	  error ("invalid class name in declaration of %qD", type);
+	  type = NULL_TREE;
+	  goto done;
+	}
+
       /* Figure out in what scope the declaration is being placed.  */
       scope = current_scope ();
       /* If that scope does not contain the scope in which the
