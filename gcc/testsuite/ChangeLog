@@ -1,3 +1,7 @@
+1998-05-20  Dave Love  <d.love@dl.ac.uk>
+
+	* g77.f-torture/execute/980520-1.f: New test.
+
 1998-05-15  Dave Love  <d.love@dl.ac.uk>
 
 	* lib/mike-g77.exp: New file.
