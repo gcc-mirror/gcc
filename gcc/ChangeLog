@@ -1,5 +1,9 @@
 2002-05-17  Andreas Schwab  <schwab@suse.de>
 
+	* config/ia64/sysv4.h (DO_SELECT_SECTION): Factored out of
+	SELECT_SECTION.
+        (UNIQUE_SECTION): Define to get small data correctly.
+
 	* varasm.c (resolve_unique_section): Add third parameter
 	flag_function_or_data_sections and use it instead of
 	flag_function_sections.
