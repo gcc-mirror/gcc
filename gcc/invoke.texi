@@ -2125,9 +2125,10 @@ initializer warnings and relies on default initialization to zero in the
 traditional C case.
 
 @item
-Conversions by prototypes.  This is similar to @samp{-Wconversion} in
-that it warns about width changes and fixed/floating point conversions,
-however it does not warn about changes in signedness.
+Conversions by prototypes between fixed/floating point values and vice
+versa.  The absence of these prototypes when compiling with traditional
+C would cause serious problems.  This is a subset of the possible
+conversion warnings, for the full set use @samp{-Wconversion}.
 @end itemize
 
 @item -Wundef
