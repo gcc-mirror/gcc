@@ -1,3 +1,7 @@
+Fri Oct  2 08:22:01 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* h8300.c (get_shift_alg): Fix typo in asm string; "n" should be "\n".
+
 Wed Sep 30 15:53:17 1998  Klaus Espenlaub  <kespenla@student.informatik.uni-ulm.de>
 
 	* rs6000.h (ASM_OUTPUT_CONSTRUCTOR, ASM_OUTPUT_DESTRUCTOR): Delete.
