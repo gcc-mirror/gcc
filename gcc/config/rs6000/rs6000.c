@@ -5372,10 +5372,7 @@ altivec_expand_predicate_builtin (enum insn_code icode, const char *opcode,
 }
 
 static rtx
-altivec_expand_lv_builtin (icode, arglist, target)
-     enum insn_code icode;
-     tree arglist;
-     rtx target;
+altivec_expand_lv_builtin (enum insn_code icode, tree arglist, rtx target)
 {
   rtx pat, addr;
   tree arg0 = TREE_VALUE (arglist);
@@ -10945,7 +10942,7 @@ get_TOC_alias_set (void)
    load_toc_* patterns.  */
 
 int
-uses_TOC () 
+uses_TOC (void) 
 {
   rtx insn;
 
@@ -14204,9 +14201,7 @@ pad_groups (FILE *dump, int sched_verbose, rtx prev_head_insn, rtx tail)
    After reload, it inserts nops at insn group bundling.  */
 
 static void
-rs6000_sched_finish (dump, sched_verbose)
-     FILE *dump;
-     int sched_verbose;
+rs6000_sched_finish (FILE *dump, int sched_verbose)
 {
   int n_groups;
 
