@@ -110,6 +110,12 @@ In `egcs' 1.2 (versus 1.1.2):
      recognized by `g77' as if they ended in `.for' and `.fpp',
      respectively.
 
+   * The order of arguments to the *subroutine* forms of the `CTime',
+     `DTime', `ETime', and `TtyNam' intrinsics has been swapped.  The
+     argument serving as the returned value for the corresponding
+     function forms now is the *second* argument, making these
+     consistent with the other subroutine forms of `libU77' intrinsics.
+
    * `g77' now warns about a reference to an intrinsic that has an
      interface that is not Year 2000 (Y2K) compliant.  Also, the
      `libg2c' has been changed to increase the likelihood of catching

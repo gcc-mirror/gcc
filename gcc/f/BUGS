@@ -40,14 +40,7 @@ via `http://egcs.cygnus.com/onlinedocs/g77_bugs.html'.  Follow the
 port, build, and install `g77', see "Problems Installing" in
 `egcs/gcc/f/INSTALL'.
 
-   The following information was last updated on 1999-04-20:
-
-   * Automatic arrays possibly aren't working on HP-UX systems, at
-     least in HP-UX version 10.20.  Writing into them apparently causes
-     over-writing of statically declared data in the main program.
-     This probably means the arrays themselves are being
-     under-allocated, or pointers to them being improperly handled,
-     e.g. not passed to other procedures as they should be.
+   The following information was last updated on 1999-05-06:
 
    * `g77' fails to warn about use of a "live" iterative-DO variable as
      an implied-DO variable in a `WRITE' or `PRINT' statement (although
