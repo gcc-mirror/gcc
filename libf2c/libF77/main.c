@@ -14,6 +14,7 @@ extern int atexit (void (*)(void));
 extern void f_init (void);
 extern int MAIN__ (void);
 
+int
 main (int argc, char **argv)
 {
   f_setarg (argc, argv);

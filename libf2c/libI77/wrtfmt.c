@@ -247,6 +247,7 @@ wrt_H (int a, char *s)
   return (1);
 }
 
+int
 wrt_L (Uint * n, int len, ftnlen sz)
 {
   int i;
@@ -320,6 +321,7 @@ wrt_G (ufloat * p, int w, int d, int e, ftnlen len)
   return (wrt_E (p, w, d, e, len));
 }
 
+int
 w_ed (struct syl * p, char *ptr, ftnlen len)
 {
   int i;
@@ -369,6 +371,7 @@ w_ed (struct syl * p, char *ptr, ftnlen len)
     }
 }
 
+int
 w_ned (struct syl * p)
 {
   switch (p->op)

@@ -75,6 +75,7 @@ char *F_err[] = {
 };
 #define MAXERR (sizeof(F_err)/sizeof(char *)+100)
 
+int
 f__canseek (FILE * f) /*SYSDEP*/
 {
 #ifdef NON_UNIX_STDIO
@@ -199,6 +200,7 @@ f_init (void)
   p->uwrt = 1;
 }
 
+int
 f__nowreading (unit * x)
 {
   off_t loc;
@@ -229,6 +231,7 @@ done:
   return 0;
 }
 
+int
 f__nowwriting (unit * x)
 {
   off_t loc;

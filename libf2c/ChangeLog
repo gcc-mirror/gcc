@@ -1,3 +1,25 @@
+Sun Jun  2 08:59:50 2002  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* libF77/main.c (main): Avoid implicit int.
+	* libI77/dfe.c (y_rsk, y_getc, c_dfe): Likewise.
+	* libI77/due.c (c_due): Likewise.
+	* libI77/err.c (f__canseek, f__nowreading, f__nowwriting):
+	Likewise.
+	* libI77/fmt.c (op_gen, ne_d, e_d, pars_f, type_f, en_fio):
+	Likewise.
+	* libI77/iio.c (z_getc, z_rnew, c_si, z_wnew): Likewise.
+	* libI77/lread.c (t_getc, c_le, l_read): Likewise.
+	* libI77/lwrite.c (l_write): Likewise.
+	* libI77/open.c (fk_open): Likewise.
+	* libI77/rdfmt.c (rd_ed, rd_ned): Likewise.
+	* libI77/rsfe.c (xrd_SL, x_getc, x_endp, x_rev): Likewise.
+	* libI77/rsne.c (t_getc, x_rsne): Likewise.
+	* libI77/sfe.c (c_sfe): Likewise.
+	* libI77/sue.c (c_sue): Likewise.
+	* libI77/uio.c (do_us): Likewise.
+	* libI77/wref.c (wrt_E, wrt_F): Likewise.
+	* libI77/wrtfmt.c (wrt_L, w_ed, w_ned): Likewise.
+
 Sun Jun  2 08:58:05 2002  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* libI77/rdfmt.c (rd_I): Delete unused variable(s).

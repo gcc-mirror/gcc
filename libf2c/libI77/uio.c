@@ -3,6 +3,7 @@
 #include <sys/types.h>
 uiolen f__reclen;
 
+int
 do_us (ftnint * number, char *ptr, ftnlen len)
 {
   if (f__reading)

@@ -4,6 +4,7 @@
 extern uiolen f__reclen;
 off_t f__recloc;
 
+int
 c_sue (cilist * a)
 {
   f__external = f__sequential = 1;

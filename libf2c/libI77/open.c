@@ -277,6 +277,7 @@ f_open (olist * a)
   return (0);
 }
 
+int
 fk_open (int seq, int fmt, ftnint n)
 {
   char nbuf[10];
