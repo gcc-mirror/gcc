@@ -20,11 +20,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 
-/*
- *  Looks like all multiprocessors have this bug!
- */
-
-#define SEQUENT_ADDRESS_BUG 1
+#define EXTERNAL_PREFIX '?'
+#define IMMEDIATE_PREFIX '$'
 
 #include "ns32k.h"
 
@@ -53,7 +50,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef FUNCTION_PROFILER
 #undef ASM_OUTPUT_LABELREF_AS_INT
 
-#define TARGET_DEFAULT 25  /* 32532 with 32081 (guessing) */
+#define TARGET_DEFAULT 9  /* 32332 with 32081.  */
 #define TARGET_VERSION fprintf (stderr, " (32000, Encore syntax)");
 /* Note Encore does not standardly do -Dencore.  */
 /* budd: should have a -ns32332 (or -apc) switch! but no harm for now */
@@ -147,6 +144,8 @@ do {									\
   fprintf ((file), "\"\n");				\
 }
 
+#define NO_ABSOLUTE_PREFIX_IF_SYMBOLIC
+
  /*
   *  Dollar signs are required before immediate operands, double
   *  floating point constants use $0f syntax, and external addresses
@@ -238,3 +237,5 @@ do {									\
 
 #define FUNCTION_PROFILER(FILE, LABELNO)  \
    fprintf (FILE, "\taddr .LP%d,r0\n\tjsr mcount\n", (LABELNO))
+
+#define ENCORE_ASM
