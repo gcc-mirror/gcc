@@ -53,10 +53,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "tm.h"
 
 #ifndef CTORS_SECTION_ASM_OP
-#define CTORS_SECTION_ASM_OP	"\t.section\t.ctors,\"a\",@progbits"
+#define CTORS_SECTION_ASM_OP	".section\t.ctors,\"a\",@progbits"
 #endif
 #ifndef DTORS_SECTION_ASM_OP
-#define DTORS_SECTION_ASM_OP	"\t.section\t.dtors,\"a\",@progbits"
+#define DTORS_SECTION_ASM_OP	".section\t.dtors,\"a\",@progbits"
 #endif
 
 #include "gbl-ctors.h"
