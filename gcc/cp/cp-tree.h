@@ -1543,17 +1543,17 @@ struct lang_type
    which have no specified initialization.  */
 #define CLASSTYPE_READONLY_FIELDS_NEED_INIT(NODE)	\
   (TYPE_LANG_SPECIFIC (NODE)				\
-   ? LANG_TYPE_CLASS_CHECK (NODE)->h.const_needs_init : 0)
+   ? TYPE_LANG_SPECIFIC (NODE)->const_needs_init : 0)
 #define SET_CLASSTYPE_READONLY_FIELDS_NEED_INIT(NODE, VALUE) \
-  (LANG_TYPE_CLASS_CHECK (NODE)->h.const_needs_init = (VALUE))
+  (TYPE_LANG_SPECIFIC (NODE)->const_needs_init = (VALUE))
 
 /* Nonzero if this class has ref members
    which have no specified initialization.  */
 #define CLASSTYPE_REF_FIELDS_NEED_INIT(NODE)		\
   (TYPE_LANG_SPECIFIC (NODE)				\
-   ? LANG_TYPE_CLASS_CHECK (NODE)->h.ref_needs_init : 0)
+   ? TYPE_LANG_SPECIFIC (NODE)->ref_needs_init : 0)
 #define SET_CLASSTYPE_REF_FIELDS_NEED_INIT(NODE, VALUE) \
-  (LANG_TYPE_CLASS_CHECK (NODE)->h.ref_needs_init = (VALUE))
+  (TYPE_LANG_SPECIFIC (NODE)->ref_needs_init = (VALUE))
 
 /* Nonzero if this class is included from a header file which employs
    `#pragma interface', and it is not included in its implementation file.  */
