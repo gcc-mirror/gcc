@@ -1,3 +1,7 @@
+2003-03-08  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (*extzv_16_8): New.
+
 Sat Mar  8 14:13:35 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* c-decl.c: (finish_function): Update call of tree_inlinable_function_p.
