@@ -1800,7 +1800,7 @@ simplify_plus_minus (code, mode, op0, op1)
 	      if (n_ops != 7)
 		{
 		  ops[n_ops].op = constm1_rtx;
-		  ops[n_ops].neg = this_neg;
+		  ops[n_ops++].neg = this_neg;
 		  ops[i].op = XEXP (this_op, 0);
 		  ops[i].neg = !this_neg;
 		  changed = 1;
@@ -1865,7 +1865,13 @@ simplify_plus_minus (code, mode, op0, op1)
 		    && ! (GET_CODE (tem) == CONST
 			  && GET_CODE (XEXP (tem, 0)) == ncode
 			  && XEXP (XEXP (tem, 0), 0) == lhs
-			  && XEXP (XEXP (tem, 0), 1) == rhs))
+			  && XEXP (XEXP (tem, 0), 1) == rhs)
+		    /* Don't allow -x + -1 -> ~x simplifications in the
+		       first pass.  This allows us the chance to combine
+		       the -1 with other constants.  */
+		    && ! (first
+			  && GET_CODE (tem) == NOT
+			  && XEXP (tem, 0) == rhs))
 		  {
 		    lneg &= rneg;
 		    if (GET_CODE (tem) == NEG)
