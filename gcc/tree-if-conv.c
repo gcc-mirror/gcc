@@ -889,9 +889,9 @@ combine_blocks (struct loop *loop)
 
       /* It is time to remove this basic block.	 First remove edges.  */
       while (EDGE_COUNT (bb->succs) > 0)
-	ssa_remove_edge (EDGE_SUCC (bb, 0));
+	remove_edge (EDGE_SUCC (bb, 0));
       while (EDGE_COUNT (bb->preds) > 0)
-	ssa_remove_edge (EDGE_PRED (bb, 0));
+	remove_edge (EDGE_PRED (bb, 0));
 
       /* Remove labels and make stmts member of loop->header.  */
       for (bsi = bsi_start (bb); !bsi_end_p (bsi); )

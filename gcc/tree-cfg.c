@@ -1972,7 +1972,7 @@ remove_phi_nodes_and_edges_for_unreachable_block (basic_block bb)
 
   /* Remove edges to BB's successors.  */
   while (EDGE_COUNT (bb->succs) > 0)
-    ssa_remove_edge (EDGE_SUCC (bb, 0));
+    remove_edge (EDGE_SUCC (bb, 0));
 }
 
 
@@ -2109,7 +2109,7 @@ cleanup_control_expr_graph (basic_block bb, block_stmt_iterator bsi)
 	    {
 	      taken_edge->probability += e->probability;
 	      taken_edge->count += e->count;
-	      ssa_remove_edge (e);
+	      remove_edge (e);
 	      retval = true;
 	    }
 	  else
@@ -5294,7 +5294,7 @@ tree_purge_dead_eh_edges (basic_block bb)
     {
       if (e->flags & EDGE_EH)
 	{
-	  ssa_remove_edge (e);
+	  remove_edge (e);
 	  changed = true;
 	}
       else

@@ -36,6 +36,13 @@
 	* tree-phinodes.c (remove_phi_arg_num): Make it static.
 	* tree-flow.h: Remove the corresponding prototype.
 
+	* tree-ssa.c (ssa_remove_edge): Remove.
+	* tree-flow.h: Remove the corresponding prototype.
+	* tree-cfg.c: Replace ssa_remove_edge with remove_edge.
+	* basic-block.h: Likewise.
+	* tree-if-conv.c: Likewise.
+	* tree-ssa-threadupdate.c: Likewise.
+
 2004-11-23  Ben Elliston  <bje@au.ibm.com>
 
 	* doc/cfg.texi (Maintaining the CFG): Use @ftable instead of
