@@ -1628,7 +1628,7 @@ switch_label:
 		}
 |	DEFAULT_TK REL_CL_TK
 		{ 
-		  tree lab = build1 (DEFAULT_EXPR, NULL_TREE, NULL_TREE);
+		  tree lab = build (DEFAULT_EXPR, NULL_TREE, NULL_TREE);
 		  EXPR_WFL_LINECOL (lab) = $1.location;
 		  java_method_add_stmt (current_function_decl, lab);
 		}
