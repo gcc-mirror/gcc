@@ -253,8 +253,12 @@ combine_predictions_for_insn (insn, bb)
 	     * (REG_BR_PROB_BASE - probability));
 
 	/* Use FP math to avoid overflows of 32bit integers.  */
-	combined_probability = (((double) combined_probability) * probability
-				* REG_BR_PROB_BASE / d + 0.5);
+	if (d == 0)
+	  /* If one probability is 0% and one 100%, avoid division by zero.  */
+	  combined_probability = REG_BR_PROB_BASE / 2;
+	else
+	  combined_probability = (((double) combined_probability) * probability
+				  * REG_BR_PROB_BASE / d + 0.5);
       }
 
   /* Decide which heuristic to use.  In case we didn't match anything,

@@ -1,5 +1,9 @@
 2002-01-07  Jakub Jelinek  <jakub@redhat.com>
 
+	* predict.c (combine_predictions_for_insn): Avoid division by zero.
+
+2002-01-07  Jakub Jelinek  <jakub@redhat.com>
+
 	* simplify-rtx.c (simplify_plus_minus): Bump n_ops for NOT.
 	Don't allow -1 - x -> ~x simplifications in the first pass.
 
