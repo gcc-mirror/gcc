@@ -1,3 +1,10 @@
+1998-06-16  Andrew MacLeod  <amacleod@cygnus.com>
+
+	* decl.c (grokvardecl): Don't build external assembler names for 
+	TYPENAMEs in other namespaces as there is no declarator.
+	* error.c (cp_file_of, cp_line_of): Don't extract file or line number
+	info from DECL_CONTEXT if it is NULL.
+
 1998-06-16  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* call.c (check_dtor_name): Split out.
