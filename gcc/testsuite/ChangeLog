@@ -1,3 +1,9 @@
+2001-08-14  David Billinghurst <David.Billinghurst@riotinto.com>
+
+	* lib/g77-dg.exp:  Use prune.exp for common procedures
+	(g77-dg-prune): Replace prune_g77_output with prune_gcc_output 
+	* lib/g77.exp: (g77-dg-prune) Remove 
+
 2001-08-13  Jason Merrill  <jason_merrill@redhat.com>
 
 	* lib/scanasm.exp (scan-assembler*): Use expr instead of concat.

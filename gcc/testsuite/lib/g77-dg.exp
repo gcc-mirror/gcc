@@ -18,6 +18,7 @@ load_lib dg.exp
 load_lib file-format.exp
 load_lib target-supports.exp
 load_lib scanasm.exp
+load_lib prune.exp
 
 if ![info exists TORTURE_OPTIONS] {
     # It is theoretically beneficial to group all of the O2/O3 options together,
@@ -100,7 +101,7 @@ proc g77-dg-test { prog do_what extra_tool_flags } {
 }
 
 proc g77-dg-prune { system text } {
-    set text [prune_g77_output $text]
+    set text [prune_gcc_output $text]
 
     # If we see "region xxx is full" then the testcase is too big for ram.
     # This is tricky to deal with in a large testsuite like c-torture so
