@@ -1,3 +1,7 @@
+2005-01-22  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* java-except.h, java-tree.h: Remove unused prototypes.
+
 2005-01-20  Andrew Pinski  <pinskia@gcc.gnu.org>
 
 	PR java/18091:
