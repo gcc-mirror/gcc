@@ -1,5 +1,10 @@
 2002-11-10  Tom Tromey  <tromey@redhat.com>
 
+	* java/io/natFileDescriptorWin32.cc (read): Handle case where
+	count is 0.
+	* java/io/natFileDescriptorPosix.cc (read): Handle case where
+	count is 0.
+
 	* java/io/Externalizable.java, java/io/FilePermission.java,
 	java/io/ObjectStreamConstants.java, java/io/Serializable.java,
 	java/io/SerializablePermission.java, java/text/Format.java,
