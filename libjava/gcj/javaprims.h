@@ -211,6 +211,7 @@ extern "Java"
       class UnsupportedOperationException;
       class VMClassLoader;
       class VMSecurityManager;
+      class VMThrowable;
       class VerifyError;
       class VirtualMachineError;
       class Void;

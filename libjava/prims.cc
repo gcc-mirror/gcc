@@ -53,6 +53,7 @@ details.  */
 #include <java/lang/NullPointerException.h>
 #include <java/lang/OutOfMemoryError.h>
 #include <java/lang/System.h>
+#include <java/lang/VMThrowable.h>
 #include <java/lang/reflect/Modifier.h>
 #include <java/io/PrintStream.h>
 #include <java/lang/UnsatisfiedLinkError.h>
@@ -910,8 +911,8 @@ _Jv_CreateJavaVM (void* /*vm_args*/)
   _Jv_InitPrimClass (&_Jv_voidClass,    "void",    'V', 0, &_Jv_voidVTable);
 
   // Turn stack trace generation off while creating exception objects.
-  _Jv_InitClass (&java::lang::Throwable::class$);
-  java::lang::Throwable::trace_enabled = 0;
+  _Jv_InitClass (&java::lang::VMThrowable::class$);
+  java::lang::VMThrowable::trace_enabled = 0;
   
   INIT_SEGV;
 #ifdef HANDLE_FPE
@@ -923,7 +924,7 @@ _Jv_CreateJavaVM (void* /*vm_args*/)
 
   no_memory = new java::lang::OutOfMemoryError;
 
-  java::lang::Throwable::trace_enabled = 1;
+  java::lang::VMThrowable::trace_enabled = 1;
 
 #ifdef USE_LTDL
   LTDL_SET_PRELOADED_SYMBOLS ();
