@@ -2895,7 +2895,7 @@ mips_output_move (dest, src)
       if (dest_code == REG)
 	{
 	  if (GP_REG_P (REGNO (dest)))
-	    return "or\t%0,%z1,$0";
+	    return "move\t%0,%z1";
 
 	  if (MD_REG_P (REGNO (dest)))
 	    return "mt%0\t%z1";
@@ -2962,7 +2962,7 @@ mips_output_move (dest, src)
 	  break;
 
 	case CONSTANT_GP:
-	  return "or\t%0,%1,$0";
+	  return "move\t%0,%1";
 
 	case CONSTANT_RELOC:
 	  return (TARGET_MIPS16 ? "li\t%0,0\n\taddiu\t%0,%1" : "li\t%0,%1");
