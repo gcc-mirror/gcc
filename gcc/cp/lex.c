@@ -529,6 +529,9 @@ handle_pragma_interface (cpp_reader* dfile ATTRIBUTE_UNUSED )
   struct c_fileinfo *finfo;
   const char *main_filename;
 
+  warning ("`#pragma interface' is deprecated and will be removed in a "
+	   "future version of GCC");
+
   if (fname == (tree)-1)
     return;
   else if (fname == 0)
@@ -570,6 +573,9 @@ handle_pragma_implementation (cpp_reader* dfile ATTRIBUTE_UNUSED )
   tree fname = parse_strconst_pragma ("implementation", 1);
   const char *main_filename;
   struct impl_files *ifiles = impl_file_chain;
+
+  warning ("`#pragma implementation' is deprecated and will be removed in a "
+	   "future version of GCC");
 
   if (fname == (tree)-1)
     return;
