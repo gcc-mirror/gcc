@@ -46,16 +46,15 @@
 #include "target-def.h"
 #include "langhooks.h"
 
-static void d30v_print_operand_memory_reference PARAMS ((FILE *, rtx));
-static void d30v_build_long_insn PARAMS ((HOST_WIDE_INT, HOST_WIDE_INT,
-					  rtx, rtx));
-static struct machine_function * d30v_init_machine_status PARAMS ((void));
-static void d30v_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
-static void d30v_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
-static int d30v_adjust_cost PARAMS ((rtx, rtx, rtx, int));
-static int d30v_issue_rate PARAMS ((void));
-static bool d30v_rtx_costs PARAMS ((rtx, int, int, int *));
-static tree d30v_build_builtin_va_list PARAMS ((void));
+static void d30v_print_operand_memory_reference (FILE *, rtx);
+static void d30v_build_long_insn (HOST_WIDE_INT, HOST_WIDE_INT, rtx, rtx);
+static struct machine_function * d30v_init_machine_status (void);
+static void d30v_output_function_prologue (FILE *, HOST_WIDE_INT);
+static void d30v_output_function_epilogue (FILE *, HOST_WIDE_INT);
+static int d30v_adjust_cost (rtx, rtx, rtx, int);
+static int d30v_issue_rate (void);
+static bool d30v_rtx_costs (rtx, int, int, int *);
+static tree d30v_build_builtin_va_list (void);
 
 /* Define the information needed to generate branch and scc insns.  This is
    stored from the compare operation.  */

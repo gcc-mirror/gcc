@@ -22,77 +22,76 @@ Boston, MA 02111-1307, USA.  */
    complications.  */
 #define Mmode enum machine_mode
 
-extern void   sbss_section			PARAMS ((void));
-extern void   sdata_section			PARAMS ((void));
-extern void   m32r_init				PARAMS ((void));
-extern void   m32r_init_expanders		PARAMS ((void));
-extern unsigned m32r_compute_frame_size		PARAMS ((int));
-extern int    m32r_first_insn_address		PARAMS ((void));
-extern void   m32r_expand_prologue		PARAMS ((void));
-extern void   m32r_finalize_pic			PARAMS ((void));
-extern int    direct_return 			PARAMS ((void));
+extern void   sbss_section (void);
+extern void   sdata_section (void);
+extern void   m32r_init (void);
+extern void   m32r_init_expanders (void);
+extern unsigned m32r_compute_frame_size (int);
+extern int    m32r_first_insn_address (void);
+extern void   m32r_expand_prologue (void);
+extern void   m32r_finalize_pic (void);
+extern int    direct_return (void);
 #ifdef TREE_CODE
-extern enum m32r_function_type m32r_compute_function_type PARAMS ((tree));
+extern enum m32r_function_type m32r_compute_function_type (tree);
 
 #ifdef HAVE_MACHINE_MODES
-extern void   m32r_setup_incoming_varargs	PARAMS ((CUMULATIVE_ARGS *, Mmode, tree, int *, int));
-extern int    function_arg_partial_nregs	PARAMS ((CUMULATIVE_ARGS *, Mmode, tree, int));
+extern void   m32r_setup_incoming_varargs (CUMULATIVE_ARGS *, Mmode, tree, int *, int);
+extern int    function_arg_partial_nregs (CUMULATIVE_ARGS *, Mmode, tree, int);
 #endif
 #endif /* TREE_CODE */
 
 #ifdef RTX_CODE
-extern int    easy_di_const			PARAMS ((rtx));
-extern int    easy_df_const			PARAMS ((rtx));
-extern rtx    gen_compare			PARAMS ((enum rtx_code, rtx, rtx, int));
-extern rtx    gen_split_move_double		PARAMS ((rtx *));
-extern int    m32r_address_code			PARAMS ((rtx));
-extern void   m32r_initialize_trampoline	PARAMS ((rtx, rtx, rtx));
-extern int    zero_and_one			PARAMS ((rtx, rtx));
-extern char * emit_cond_move			PARAMS ((rtx *, rtx));
-extern void   m32r_output_block_move 		PARAMS ((rtx, rtx *));
-extern void   m32r_expand_block_move 		PARAMS ((rtx *));
-extern void   m32r_print_operand		PARAMS ((FILE *, rtx, int));
-extern void   m32r_print_operand_address	PARAMS ((FILE *, rtx));
-extern int    m32r_not_same_reg 		PARAMS ((rtx, rtx));
-extern int    m32r_hard_regno_rename_ok		PARAMS ((unsigned int,
-							 unsigned int));
+extern int    easy_di_const (rtx);
+extern int    easy_df_const (rtx);
+extern rtx    gen_compare (enum rtx_code, rtx, rtx, int);
+extern rtx    gen_split_move_double (rtx *);
+extern int    m32r_address_code (rtx);
+extern void   m32r_initialize_trampoline (rtx, rtx, rtx);
+extern int    zero_and_one (rtx, rtx);
+extern char * emit_cond_move (rtx *, rtx);
+extern void   m32r_output_block_move (rtx, rtx *);
+extern void   m32r_expand_block_move (rtx *);
+extern void   m32r_print_operand (FILE *, rtx, int);
+extern void   m32r_print_operand_address (FILE *, rtx);
+extern int    m32r_not_same_reg (rtx, rtx);
+extern int    m32r_hard_regno_rename_ok (unsigned int, unsigned int);
 
 #ifdef HAVE_MACHINE_MODES
-extern int    call_address_operand		PARAMS ((rtx, Mmode));
-extern int    call_operand			PARAMS ((rtx, Mmode));
-extern int    symbolic_operand			PARAMS ((rtx, Mmode));
-extern int    small_data_operand		PARAMS ((rtx, Mmode));
-extern int    addr24_operand			PARAMS ((rtx, Mmode));
-extern int    addr32_operand			PARAMS ((rtx, Mmode));
-extern int    call26_operand			PARAMS ((rtx, Mmode));
-extern int    seth_add3_operand			PARAMS ((rtx, Mmode));
-extern int    cmp_int16_operand			PARAMS ((rtx, Mmode));
-extern int    uint16_operand			PARAMS ((rtx, Mmode));
-extern int    reg_or_int16_operand		PARAMS ((rtx, Mmode));
-extern int    reg_or_uint16_operand		PARAMS ((rtx, Mmode));
-extern int    reg_or_cmp_int16_operand		PARAMS ((rtx, Mmode));
-extern int    two_insn_const_operand		PARAMS ((rtx, Mmode));
-extern int    move_src_operand			PARAMS ((rtx, Mmode));
-extern int    move_double_src_operand		PARAMS ((rtx, Mmode));
-extern int    move_dest_operand			PARAMS ((rtx, Mmode));
-extern int    eqne_comparison_operator		PARAMS ((rtx, Mmode));
-extern int    signed_comparison_operator	PARAMS ((rtx, Mmode));
-extern int    memreg_operand			PARAMS ((rtx, Mmode));
-extern int    small_insn_p			PARAMS ((rtx, Mmode));
-extern int    large_insn_p			PARAMS ((rtx, Mmode));
-extern int    conditional_move_operand		PARAMS ((rtx, Mmode));
-extern int    carry_compare_operand		PARAMS ((rtx, Mmode));
-extern int    m32r_block_immediate_operand 	PARAMS ((rtx, Mmode));
-extern int    extend_operand			PARAMS ((rtx, Mmode));
-extern int    reg_or_eq_int16_operand		PARAMS ((rtx, Mmode));
-extern int    int8_operand			PARAMS ((rtx, Mmode));
-extern int    reg_or_zero_operand               PARAMS ((rtx, Mmode));
+extern int    call_address_operand (rtx, Mmode);
+extern int    call_operand (rtx, Mmode);
+extern int    symbolic_operand (rtx, Mmode);
+extern int    small_data_operand (rtx, Mmode);
+extern int    addr24_operand (rtx, Mmode);
+extern int    addr32_operand (rtx, Mmode);
+extern int    call26_operand (rtx, Mmode);
+extern int    seth_add3_operand (rtx, Mmode);
+extern int    cmp_int16_operand (rtx, Mmode);
+extern int    uint16_operand (rtx, Mmode);
+extern int    reg_or_int16_operand (rtx, Mmode);
+extern int    reg_or_uint16_operand (rtx, Mmode);
+extern int    reg_or_cmp_int16_operand (rtx, Mmode);
+extern int    two_insn_const_operand (rtx, Mmode);
+extern int    move_src_operand (rtx, Mmode);
+extern int    move_double_src_operand (rtx, Mmode);
+extern int    move_dest_operand (rtx, Mmode);
+extern int    eqne_comparison_operator (rtx, Mmode);
+extern int    signed_comparison_operator (rtx, Mmode);
+extern int    memreg_operand (rtx, Mmode);
+extern int    small_insn_p (rtx, Mmode);
+extern int    large_insn_p (rtx, Mmode);
+extern int    conditional_move_operand (rtx, Mmode);
+extern int    carry_compare_operand (rtx, Mmode);
+extern int    m32r_block_immediate_operand (rtx, Mmode);
+extern int    extend_operand (rtx, Mmode);
+extern int    reg_or_eq_int16_operand (rtx, Mmode);
+extern int    int8_operand (rtx, Mmode);
+extern int    reg_or_zero_operand (rtx, Mmode);
 
 #endif /* HAVE_MACHINE_MODES */
 
 #ifdef TREE_CODE
-extern struct rtx_def * m32r_va_arg		PARAMS ((tree, tree));
-extern int m32r_pass_by_reference		PARAMS ((tree));
+extern struct rtx_def * m32r_va_arg (tree, tree);
+extern int m32r_pass_by_reference (tree);
 #endif /* TREE_CODE */
 #endif /* RTX_CODE */
 

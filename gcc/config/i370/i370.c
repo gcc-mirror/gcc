@@ -99,22 +99,22 @@ static label_node_t *free_anchor = 0;
 /* Assembler source file descriptor.  */
 static FILE *assembler_source = 0;
 
-static label_node_t * mvs_get_label PARAMS ((int));
-static void i370_label_scan PARAMS ((void));
+static label_node_t * mvs_get_label (int);
+static void i370_label_scan (void);
 #ifdef TARGET_HLASM
-static bool i370_hlasm_assemble_integer PARAMS ((rtx, unsigned int, int));
-static void i370_globalize_label PARAMS ((FILE *, const char *));
+static bool i370_hlasm_assemble_integer (rtx, unsigned int, int);
+static void i370_globalize_label (FILE *, const char *);
 #endif
-static void i370_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
-static void i370_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
-static void i370_file_start PARAMS ((void));
-static void i370_file_end PARAMS ((void));
+static void i370_output_function_prologue (FILE *, HOST_WIDE_INT);
+static void i370_output_function_epilogue (FILE *, HOST_WIDE_INT);
+static void i370_file_start (void);
+static void i370_file_end (void);
 
 #ifdef LONGEXTERNAL
-static int mvs_hash_alias PARAMS ((const char *));
+static int mvs_hash_alias (const char *);
 #endif
-static void i370_internal_label PARAMS ((FILE *, const char *, unsigned long));
-static bool i370_rtx_costs PARAMS ((rtx, int, int, int *));
+static void i370_internal_label (FILE *, const char *, unsigned long);
+static bool i370_rtx_costs (rtx, int, int, int *);
 
 /* ===================================================== */
 /* defines and functions specific to the HLASM assembler */

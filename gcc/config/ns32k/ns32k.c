@@ -64,15 +64,15 @@ const enum reg_class regclass_map[FIRST_PSEUDO_REGISTER] =
 
 static const char *const ns32k_out_reg_names[] = OUTPUT_REGISTER_NAMES;
 
-static rtx gen_indexed_expr PARAMS ((rtx, rtx, rtx));
-static const char *singlemove_string PARAMS ((rtx *));
-static void move_tail PARAMS ((rtx[], int, int));
-static tree ns32k_handle_fntype_attribute PARAMS ((tree *, tree, tree, int, bool *));
+static rtx gen_indexed_expr (rtx, rtx, rtx);
+static const char *singlemove_string (rtx *);
+static void move_tail (rtx[], int, int);
+static tree ns32k_handle_fntype_attribute (tree *, tree, tree, int, bool *);
 const struct attribute_spec ns32k_attribute_table[];
-static void ns32k_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
-static void ns32k_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
-static bool ns32k_rtx_costs PARAMS ((rtx, int, int, int *));
-static int ns32k_address_cost PARAMS ((rtx));
+static void ns32k_output_function_prologue (FILE *, HOST_WIDE_INT);
+static void ns32k_output_function_epilogue (FILE *, HOST_WIDE_INT);
+static bool ns32k_rtx_costs (rtx, int, int, int *);
+static int ns32k_address_cost (rtx);
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ATTRIBUTE_TABLE

@@ -65,10 +65,10 @@ int mn10300_protect_label;
 				|| regs_ever_live[16] || regs_ever_live[17]))
 
 
-static int mn10300_address_cost_1 PARAMS ((rtx, int *));
-static int mn10300_address_cost PARAMS ((rtx));
-static bool mn10300_rtx_costs PARAMS ((rtx, int, int, int *));
-static void mn10300_file_start PARAMS ((void));
+static int mn10300_address_cost_1 (rtx, int *);
+static int mn10300_address_cost (rtx);
+static bool mn10300_rtx_costs (rtx, int, int, int *);
+static void mn10300_file_start (void);
 
 
 /* Initialize the GCC target structure.  */

@@ -22,24 +22,24 @@ Boston, MA 02111-1307, USA.  */
 /* Prototypes for functions in ns32k.c */
 
 #ifdef RTX_CODE
-extern enum reg_class secondary_reload_class PARAMS ((enum reg_class,
-						      enum machine_mode, rtx));
-extern int reg_or_mem_operand PARAMS ((rtx, enum machine_mode));
+extern enum reg_class secondary_reload_class (enum reg_class,
+					      enum machine_mode, rtx);
+extern int reg_or_mem_operand (rtx, enum machine_mode);
 
-extern void split_di PARAMS ((rtx[], int, rtx[], rtx[]));
-extern void expand_block_move PARAMS ((rtx[]));
-extern int global_symbolic_reference_mentioned_p PARAMS ((rtx, int));
-extern void print_operand PARAMS ((FILE *, rtx, int));
-extern void print_operand_address PARAMS ((FILE *, rtx));
-extern const char *output_move_double PARAMS ((rtx *));
-extern const char *output_shift_insn PARAMS ((rtx *));
-extern int symbolic_reference_mentioned_p PARAMS ((rtx));
+extern void split_di (rtx[], int, rtx[], rtx[]);
+extern void expand_block_move (rtx[]);
+extern int global_symbolic_reference_mentioned_p (rtx, int);
+extern void print_operand (FILE *, rtx, int);
+extern void print_operand_address (FILE *, rtx);
+extern const char *output_move_double (rtx *);
+extern const char *output_shift_insn (rtx *);
+extern int symbolic_reference_mentioned_p (rtx);
 #endif /* RTX_CODE */
 
 #ifdef TREE_CODE
-extern int ns32k_return_pops_args PARAMS ((tree, tree, int));
+extern int ns32k_return_pops_args (tree, tree, int);
 #endif /* TREE_CODE */
 
-extern int hard_regno_mode_ok PARAMS ((int, enum machine_mode));
-extern int register_move_cost PARAMS ((enum reg_class, enum reg_class));
-extern const char *output_move_dconst PARAMS ((int, const char *));
+extern int hard_regno_mode_ok (int, enum machine_mode);
+extern int register_move_cost (enum reg_class, enum reg_class);
+extern const char *output_move_dconst (int, const char *);

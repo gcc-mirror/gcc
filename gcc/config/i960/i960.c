@@ -46,12 +46,12 @@ Boston, MA 02111-1307, USA.  */
 #include "target.h"
 #include "target-def.h"
 
-static void i960_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
-static void i960_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
-static void i960_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT,
-					  HOST_WIDE_INT, tree));
-static bool i960_rtx_costs PARAMS ((rtx, int, int, int *));
-static int i960_address_cost PARAMS ((rtx));
+static void i960_output_function_prologue (FILE *, HOST_WIDE_INT);
+static void i960_output_function_epilogue (FILE *, HOST_WIDE_INT);
+static void i960_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
+				  HOST_WIDE_INT, tree);
+static bool i960_rtx_costs (rtx, int, int, int *);
+static int i960_address_cost (rtx);
 static tree i960_build_builtin_va_list (void);
 
 /* Save the operands last given to a compare for use when we
@@ -1235,10 +1235,10 @@ struct reg_group
   char length;
 };
 
-static int i960_form_reg_groups PARAMS ((int, int, int *, int, struct reg_group *));
-static int i960_reg_group_compare PARAMS ((const void *, const void *));
-static int i960_split_reg_group PARAMS ((struct reg_group *, int, int));
-static void i960_arg_size_and_align PARAMS ((enum machine_mode, tree, int *, int *));
+static int i960_form_reg_groups (int, int, int *, int, struct reg_group *);
+static int i960_reg_group_compare (const void *, const void *);
+static int i960_split_reg_group (struct reg_group *, int, int);
+static void i960_arg_size_and_align (enum machine_mode, tree, int *, int *);
 
 /* The following functions forms the biggest as possible register
    groups with registers in STATE.  REGS contain states of the

@@ -24,32 +24,32 @@ Boston, MA 02111-1307, USA.  */
 #ifndef GCC_I370_PROTOS_H
 #define GCC_I370_PROTOS_H
 
-extern void override_options PARAMS ((void));
+extern void override_options (void);
 
 #ifdef RTX_CODE
-extern int i370_branch_dest PARAMS ((rtx));
-extern int i370_branch_length PARAMS ((rtx));
-extern int i370_short_branch PARAMS ((rtx));
-extern int s_operand PARAMS ((rtx, enum machine_mode));
-extern int r_or_s_operand PARAMS ((rtx, enum machine_mode));
-extern int unsigned_jump_follows_p PARAMS ((rtx));
+extern int i370_branch_dest (rtx);
+extern int i370_branch_length (rtx);
+extern int i370_short_branch (rtx);
+extern int s_operand (rtx, enum machine_mode);
+extern int r_or_s_operand (rtx, enum machine_mode);
+extern int unsigned_jump_follows_p (rtx);
 #endif /* RTX_CODE */
 
 #ifdef TREE_CODE
-extern int handle_pragma PARAMS ((int (*)(void), void (*)(int), const char *));
+extern int handle_pragma (int (*)(void), void (*)(int), const char *);
 #endif /* TREE_CODE */
 
-extern void mvs_add_label PARAMS ((int));
-extern int mvs_check_label PARAMS ((int));
-extern int mvs_check_page PARAMS ((FILE *, int, int));
-extern int mvs_function_check PARAMS ((const char *));
-extern void mvs_add_alias PARAMS ((const char *, const char *, int));
-extern int mvs_need_alias PARAMS ((const char *));
-extern int mvs_get_alias PARAMS ((const char *, char *));
-extern int mvs_check_alias PARAMS ((const char *, char *));
-extern void check_label_emit PARAMS ((void));
-extern void mvs_free_label_list PARAMS ((void));
+extern void mvs_add_label (int);
+extern int mvs_check_label (int);
+extern int mvs_check_page (FILE *, int, int);
+extern int mvs_function_check (const char *);
+extern void mvs_add_alias (const char *, const char *, int);
+extern int mvs_need_alias (const char *);
+extern int mvs_get_alias (const char *, char *);
+extern int mvs_check_alias (const char *, char *);
+extern void check_label_emit (void);
+extern void mvs_free_label_list (void);
 
-extern void i370_pr_map PARAMS ((struct cpp_reader *));
+extern void i370_pr_map (struct cpp_reader *);
 
 #endif /* ! GCC_I370_PROTOS_H */

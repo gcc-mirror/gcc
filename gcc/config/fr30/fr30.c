@@ -120,8 +120,8 @@ static struct fr30_frame_info 	current_frame_info;
 /* Zero structure to initialize current_frame_info.  */
 static struct fr30_frame_info 	zero_frame_info;
 
-static rtx fr30_pass_by_reference PARAMS ((tree, tree));
-static rtx fr30_pass_by_value PARAMS ((tree, tree));
+static rtx fr30_pass_by_reference (tree, tree);
+static rtx fr30_pass_by_value (tree, tree);
 
 #define FRAME_POINTER_MASK 	(1 << (FRAME_POINTER_REGNUM))
 #define RETURN_POINTER_MASK 	(1 << (RETURN_POINTER_REGNUM))
