@@ -1,3 +1,8 @@
+2000-04-28  Kazu Hirata  <kazu@hxi.com>
+
+	* h8300.c (function_epilogue): Clean up flags when the last insn
+	in a function is a barrier.
+
 2000-04-28  Chris Demetriou  <cgd@sibyte.com>
 
 	* configure.in (sparc-hal-solaris2*): protect [] glob from
