@@ -1,5 +1,5 @@
 /* libgcc routines for M68HC11 & M68HC12.
-   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -352,39 +352,27 @@ End:
 
 ___adddi3:
 	tsx
-	pshb
-	psha
-	ldd	8,x
+	xgdy
+	ldd	8,x		; Add LSB
 	addd	16,x
-	pshb
-	psha
+	std	6,y		; Save (carry preserved)
 
 	ldd	6,x
 	adcb	15,x
 	adca	14,x
-	pshb
-	psha
+	std	4,y
 
 	ldd	4,x
 	adcb	13,x
 	adca	12,x
-	pshb
-	psha
+	std	2,y
 	
 	ldd	2,x
-	adcb	11,x
+	adcb	11,x		; Add MSB
 	adca	10,x
-	tsx
-	ldy	6,x
-
 	std	0,y
-	pulx
-	stx	2,y
-	pulx
-	stx	4,y
-	pulx
-	stx	6,y
-	pulx
+
+	xgdy
 	rts
 #endif
 
@@ -394,40 +382,27 @@ ___adddi3:
 
 ___subdi3:
 	tsx
-	pshb
-	psha
-	ldd	8,x
+	xgdy
+	ldd	8,x		; Subtract LSB
 	subd	16,x
-	pshb
-	psha
+	std	6,y		; Save, borrow preserved
 
 	ldd	6,x
 	sbcb	15,x
 	sbca	14,x
-	pshb
-	psha
+	std	4,y
 
 	ldd	4,x
 	sbcb	13,x
 	sbca	12,x
-	pshb
-	psha
+	std	2,y
 	
-	ldd	2,x
+	ldd	2,x		; Subtract MSB
 	sbcb	11,x
 	sbca	10,x
-	
-	tsx
-	ldy	6,x
-
 	std	0,y
-	pulx
-	stx	2,y
-	pulx
-	stx	4,y
-	pulx
-	stx	6,y
-	pulx
+
+	xgdy			;
 	rts
 #endif
 	
@@ -457,6 +432,7 @@ ___notdi2:
 	coma
 	comb
 	std	0,x
+	xgdx
 	rts
 #endif
 	
@@ -798,24 +774,73 @@ ___mulhi3:
 	emul
 	exg	x,y
 	pulx
-#else
-	stx	*_.tmp
-	pshb
-	ldab	*_.tmp+1
-	mul			; A.high * B.low
-	ldaa	*_.tmp
-	stab	*_.tmp
-	pulb
-	pshb
-	mul			; A.low * B.high
-	addb	*_.tmp
-	stab	*_.tmp
-	ldaa	*_.tmp+1
-	pulb
-	mul			; A.low * B.low
-	adda	*_.tmp
-#endif
 	rts
+#else
+#ifdef NO_TMP
+	;
+	; 16 bit multiplication without temp memory location.
+	; (smaller but slower)
+	;
+	pshx			; (4)
+	ins			; (3)
+	pshb			; (3)
+	psha			; (3)
+	pshx			; (4)
+	pula			; (4)
+	pulx			; (5)
+	mul			; (10) B.high * A.low
+	xgdx			; (3)
+	mul			; (10) B.low * A.high
+	abx			; (3)
+	pula			; (4)
+	pulb			; (4)
+	mul			; (10) B.low * A.low
+	pshx			; (4) 
+	tsx			; (3)
+	adda	1,x		; (4)
+	pulx			; (5)
+	rts			; (5) 20 bytes
+				; ---
+				; 91 cycles
+#else
+	stx	_.tmp		; (4/5)
+	pshb			; (3)
+	ldab	_.tmp+1		; (3/4)
+	mul			; (10) B.high * A.low
+	xgdx			; (3)
+	pulb			; (4)
+	stab	_.tmp		; (3/4)
+	mul			; (10) B.low * A.high
+	abx			; (3)
+	ldd	_.tmp		; (4/5)
+	mul			; (10) B.low * A.low
+	stx	_.tmp		; (4) 
+	adda	_.tmp+1		; (4/5)
+	rts			; (5) 20/26 bytes
+				; ---
+				; 70/76 cycles
+
+#ifdef OLD_MUL
+	stx	*_.tmp		; (4)
+	pshb			; (3)
+	ldab	*_.tmp+1	; (3)
+	mul			; (10) A.high * B.low
+	ldaa	*_.tmp		; (3)
+	stab	*_.tmp		; (3)
+	pulb			; (4)
+	pshb			; (4)
+	mul			; (10) A.low * B.high
+	addb	*_.tmp		; (4)
+	stab	*_.tmp		; (3)
+	ldaa	*_.tmp+1	; (3)
+	pulb			; (4)
+	mul			; (10) A.low * B.low
+	adda	*_.tmp		; (4)
+	rts			; (5) 24/32 bytes
+				; 77/85 cycles
+#endif
+#endif
+#endif
 #endif
 
 #ifdef L_mulhi32
@@ -830,13 +855,17 @@ ___mulhi3:
 ;	b = value on stack
 ;
 ;	+---------------+
-;       |  B low	| <- 5,x
+;       |  B low	| <- 7,x
 ;	+---------------+
-;       |  B high	| <- 4,x
+;       |  B high	| <- 6,x
 ;	+---------------+
 ;       |  PC low	|  
 ;	+---------------+
 ;       |  PC high	|  
+;	+---------------+
+;	|  Tmp low	|
+;	+---------------+
+;	|  Tmp high     |
 ;	+---------------+
 ;	|  A low	|
 ;	+---------------+
@@ -855,22 +884,24 @@ __mulhi32:
 	ldy	2,sp
 	emul
 	exg	x,y
+	rts
 #else
+	pshx			; Room for temp value
 	pshb
 	psha
 	tsx
-	ldab	4,x
+	ldab	6,x
 	mul
 	xgdy			; A.high * B.high
-	ldab	5,x
+	ldab	7,x
 	pula
 	mul			; A.high * B.low
-	std	*_.tmp
+	std	2,x
 	ldaa	1,x
-	ldab	4,x
+	ldab	6,x
 	mul			; A.low * B.high
-	addd	*_.tmp
-	stab	*_.tmp
+	addd	2,x
+	stab	2,x
 	tab
 	aby
 	bcc	N
@@ -878,18 +909,18 @@ __mulhi32:
 	aby
 	iny
 N:
-	ldab	5,x
+	ldab	7,x
 	pula
 	mul			; A.low * B.low
-	adda	*_.tmp
-	bcc	Ret
-	iny
-Ret:
-	pshy
+	adda	2,x
+	pulx			; Drop temp location
+	pshy			; Put high part in X
 	pulx
-#endif
+	bcc	Ret
+	inx
+Ret:
 	rts
-	
+#endif	
 #endif
 
 #ifdef L_mulsi3
@@ -946,7 +977,7 @@ A_high	=	2
 ;
 ; If A.high is 0, optimize into: (A.low * B.high) << 16 + (A.low * B.low)
 ;
-	stx	*_.tmp
+	cpx	#0
 	beq	A_high_zero
 	bsr	___mulhi3		; A.high * B.low
 ;
@@ -1050,7 +1081,8 @@ A_low_B_low:
 
 	.sect	.install2,"ax",@progbits
 	.globl	__map_data_section
-
+	.globl __data_image
+	.globl __data_section_size
 __map_data_section:
 	ldd	#__data_section_size
 	beq	Done
@@ -1061,14 +1093,12 @@ Loop:
 	movb	1,x+,1,y+
 	dbne	d,Loop
 #else
-	psha
 	ldaa	0,x
 	staa	0,y
-	pula
 	inx
 	iny
-	subd	#1
-	bne	Loop
+	cpx	#__data_image_end
+	blt	Loop
 #endif
 Done:
 

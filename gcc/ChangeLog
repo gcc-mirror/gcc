@@ -1,5 +1,12 @@
 2002-03-15  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
+	* config/m68hc11/larith.asm (___adddi3): Optimize saving of result.
+	(___subdi3): Likewise.
+	(__mulsi3, __mulhi32): Avoid using _.tmp scratch location.
+	(__map_data_section): Optimize 68hc11 case.
+
+2002-03-15  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
 	* config/m68hc11/m68hc11.c (m6812_cost): Make cost of add higher
 	than a shift to avoid adding a register with itself.
 	(m68hc11_memory_move_cost): Take into account NO_REGS.
