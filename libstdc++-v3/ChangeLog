@@ -1,4 +1,17 @@
 2002-04-09  Benjamin Kosnik  <bkoz@redhat.com>
+
+	libstdc++/1072
+	* include/bits/localefwd.h (locale::_Impl::_M_facets): Change from
+	pointer to vector.
+	Remove forward declaration of vector.
+	Include vector.
+	* include/bits/locale_facets.tcc: Remove vector include.
+	(use_locale): Adjust.
+	(has_locale): Adjust.
+	* src/locale.cc: Adjust.
+	* src/localename.cc: Same.
+	
+2002-04-09  Benjamin Kosnik  <bkoz@redhat.com>
 	    Richard Henderson  <rth@redhat.com>
 
 	* include/bits/sstream.tcc: Clean up bit ops.

@@ -46,7 +46,8 @@
 #include <bits/c++locale.h>     // Defines __c_locale, config-specific includes
 #include <climits>		// For CHAR_BIT
 #include <cctype>		// For isspace, etc.
-#include <string> 		// For string
+#include <string> 		// For string.
+#include <vector>		// For vector.
 #include <bits/functexcept.h>
 
 #include <bits/atomicity.h>
@@ -61,8 +62,6 @@ namespace std
 #endif
 
   // 22.1.1 Locale
-  template<typename _Tp, typename _Alloc> 
-    class vector;
   class locale;
 
   // 22.1.3 Convenience interfaces
@@ -320,7 +319,7 @@ namespace std
   private:
     // Data Members.
     _Atomic_word			_M_references;
-    __vec_facet* 			_M_facets;
+    __vec_facet 			_M_facets;
     string 				_M_names[_S_num_categories];
     static const locale::id* const 	_S_id_ctype[];
     static const locale::id* const 	_S_id_numeric[];
