@@ -1,3 +1,9 @@
+Sat Oct  2 02:48:21 1999  Mark P. Mitchell  <mark@codesourcery.com>
+
+	* tree.c (build): Don't look at TREE_SIDE_EFFECTS or TREE_RAISES 
+	for non-trees.
+	(build1): Likewise.
+	
 Fri Oct  1 18:01:11 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* i386elf.h (TARGET_DEFAULT): Use symbolic constants.
