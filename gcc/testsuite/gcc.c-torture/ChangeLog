@@ -1,6 +1,14 @@
+2000-04-03  Geoff Keating  <geoffk@cygnus.com>
+
+	* execute/20000402-1.c: New test.
+
 Mon Apr  3 14:10:34 2000  Donald Lindsay  <dlindsay@cygnus.com>
 
-	* execute/va-arg-{15,16,17,18,19}.c: New test.
+	* execute/va-arg-15.c: New test.
+	* execute/va-arg-16.c: New test.
+	* execute/va-arg-17.c: New test.
+	* execute/va-arg-18.c: New test.
+	* execute/va-arg-19.c: New test.
 
 2000-03-26  Bernd Schmidt  <bernds@cygnus.co.uk>
 
