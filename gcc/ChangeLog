@@ -1,5 +1,12 @@
 2002-09-16  Richard Henderson  <rth@redhat.com>
 
+	* real.c (do_fix_trunc): New.
+	(real_arithmetic): Call it.
+	* simplify-rtx.c (simplify_unary_operation): Handle FIX
+	with a floating-point result mode.
+
+2002-09-16  Richard Henderson  <rth@redhat.com>
+
 	* builtin-types.def (BT_FN_FLOAT_CONST_STRING): New.
 	(BT_FN_DOUBLE_CONST_STRING, BT_FN_LONG_DOUBLE_CONST_STRING): New.
 	* builtins.def (__builtin_nan, __builtin_nanf, __builtin_nanl): New.
