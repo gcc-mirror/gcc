@@ -945,7 +945,7 @@ ${host_builddir}/gthr-default.h: ${toplevel_srcdir}/gcc/${glibcxx_thread_h} \
 
 # Build a precompiled C++ include, stdc++.h.gch.
 ${pch_input}: ${allstamped} ${host_builddir}/c++config.h ${pch_source}
-	cp ${pch_source} ${pch_input}; \
+	touch ${pch_input}; \
 	if [ ! -d "${pch_output_builddir}" ]; then \
 	  mkdir -p ${pch_output_builddir}; \
 	fi; \
