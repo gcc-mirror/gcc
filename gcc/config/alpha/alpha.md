@@ -4534,11 +4534,11 @@
 ;; If it is more than 4096 bytes, we need to probe the stack
 ;; periodically. 
 (define_expand "allocate_stack"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (reg:DI 30)
 	(plus:DI (reg:DI 30)
 		 (match_operand:DI 1 "reg_or_cint_operand" "")))
-   (set (reg:DI 30)
-	(plus:DI (reg:DI 30) (match_dup 1)))]
+   (set (match_operand:DI 0 "register_operand" "=r")
+	(match_dup 2))]
   ""
   "
 {
@@ -4561,6 +4561,7 @@
 	}
 
       operands[1] = GEN_INT (- INTVAL (operands[1]));
+      operands[2] = virtual_stack_dynamic_rtx;
     }
   else
     {
@@ -4599,8 +4600,7 @@
 	emit_label (out_label);
 
       emit_move_insn (stack_pointer_rtx, want);
-      emit_move_insn (operands[0], want);
-
+      emit_move_insn (operands[0], virtual_stack_dynamic_rtx);
       DONE;
     }
 }")
