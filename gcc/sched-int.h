@@ -1,7 +1,7 @@
 /* Instruction scheduling pass.  This file contains definitions used
    internally in the scheduler.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -272,7 +272,7 @@ extern int no_real_insns_p PARAMS ((rtx, rtx));
 
 extern void rm_line_notes PARAMS ((rtx, rtx));
 extern void save_line_notes PARAMS ((int, rtx, rtx));
-extern void restore_line_notes PARAMS ((int, rtx, rtx));
+extern void restore_line_notes PARAMS ((rtx, rtx));
 extern void rm_redundant_line_notes PARAMS ((void));
 extern void rm_other_notes PARAMS ((rtx, rtx));
 

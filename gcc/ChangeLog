@@ -1,5 +1,11 @@
 2001-01-12  Andreas Jaeger  <aj@suse.de>
 
+	* haifa-sched.c (restore_line_notes): Remove argument block B
+	since it's unused.
+	* sched-ebb.c (schedule_ebb): Change caller.
+	* sched-rgn.c (schedule_region): Likewise.
+	* sched-int.h (restore_line_notes): Adjust prototype.
+
 	* loop.h: Remove wrong declaration of doloop_condition_get.
 
 2001-01-12  Phil Edwards  <pme@sources.redhat.com>

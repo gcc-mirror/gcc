@@ -2864,7 +2864,7 @@ schedule_region (rgn)
 	{
 	  rtx head, tail;
 	  get_block_head_tail (BB_TO_BLOCK (bb), &head, &tail);
-	  restore_line_notes (BB_TO_BLOCK (bb), head, tail);
+	  restore_line_notes (head, tail);
 	}
     }
 
