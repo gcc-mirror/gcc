@@ -28,7 +28,7 @@ noinst_LTLIBRARIES = libmath.la
 EXTRA_LONG_DOUBLE_yes = \
 	ccosl.c cexpl.c c_logl.c clog10l.c cpowl.c csinhl.c \
 	csqrtl.c ctanhl.c ctanl.c cargl.c hypotl.c \
-	signbitl.c cabsl.c 
+	signbitl.c
 
 EXTRA_DIST = \
 	ccos.c ccosf.c ccosh.c ccoshf.c ccoshl.c \

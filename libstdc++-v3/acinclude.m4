@@ -737,7 +737,7 @@ AC_DEFUN(GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT, [
   dnl Check for complex versions of math functions of platform.
   AC_CHECK_HEADERS([complex.h])
   AC_CHECK_LIB(m, main)
-  AC_REPLACE_MATHFUNCS(cabs cabsf ccos ccosf ccosh ccoshf cexp cexpf \
+  AC_REPLACE_MATHFUNCS(ccos ccosf ccosh ccoshf cexp cexpf \
   c_log c_logf clog10 clog10f cpow cpowf csin csinf csinh csinhf csqrt \
   csqrtf ctan ctanf ctanh ctanhf carg cargf nan hypot hypotf atan2f expf \
   copysignf)
@@ -750,7 +750,7 @@ AC_DEFUN(GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT, [
   if test x$ac_cv_func_atan2l = x"yes" \
      && test x$ac_cv_func_copysignl = x"yes"; then
     USE_COMPLEX_LONG_DOUBLE=yes
-    AC_REPLACE_MATHFUNCS(cabsl ccoshl ccosl cexpl cpowl csinhl csinl \
+    AC_REPLACE_MATHFUNCS(ccoshl ccosl cexpl cpowl csinhl csinl \
     csqrtl ctanhl ctanl cargl hypotl signbitl c_logl clog10l)
   fi
 

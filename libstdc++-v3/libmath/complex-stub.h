@@ -78,17 +78,5 @@ double carg (__complex__ double x);
 float cargf (__complex__ float x);
 long double cargl (__complex__ long double x);
 
-/* Some systems (like IRIX 6.5) already define these functions in 
-   <math.h>.  */
-#ifndef _GLIBCPP_HAVE_CABS
-double cabs (__complex__ double x);
-#endif /* defined(_GLIBCPP_HAVE_CABS) */
-#ifndef _GLIBCPP_HAVE_CABSF
-float cabsf (__complex__ float x);
-#endif /* defined(_GLIBCPP_HAVE_CABSF) */
-#ifndef _GLIBCPP_HAVE_CABSL
-long double cabsl (__complex__ long double x);
-#endif /* defined(_GLIBCPP_HAVE_CABSL) */
-
 #endif
 

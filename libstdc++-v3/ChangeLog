@@ -1,5 +1,19 @@
 2000-11-26  Gabriel Dos Reis  <gdr@codesourcery.com>
 
+	* libmath/Makefile.am (EXTRA_LONG_DOUBLE_yes): Remove cabsl.c 
+	* libmath/Makefile.in: Regenerate.
+	* libmath/cabs.c: Remove.
+	* libmath/cabsf.c: Likewise.
+	* libmath/cabsl.c: Likewise.
+	* libmath/complex-stub.h: Remove declarations for cabs*.
+
+	* acinclude.m4: Remove check for cabs*. 
+	* aclocal.m4: Regenerate.
+
+	* Makefile.in: Regenerate.
+
+2000-11-26  Gabriel Dos Reis  <gdr@codesourcery.com>
+
 	* tests_flags.in: New file. Split out of ...
 	* mkcheck.in: ... this. Move flags computation into
 	tests_flags.in. 
