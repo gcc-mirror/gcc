@@ -201,14 +201,6 @@ extern size_t   strlen ()
 
 #define NONCONST
 
-/* Define a STRINGIFY macro that's right for ANSI or traditional C.  */
-
-#if defined(HAVE_CPP_STRINGIFY) || (defined(__GNUC__) && defined(__STDC__))
-#define STRINGIFY(STRING) #STRING
-#else
-#define STRINGIFY(STRING) "STRING"
-#endif
-
 /* Define a default place to find the SYSCALLS.X file.  */
 
 #ifndef STD_PROTO_DIR

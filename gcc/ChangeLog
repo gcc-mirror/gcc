@@ -1,3 +1,9 @@
+Tue May 12 10:21:36 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* system.h: Define the STRINGIFY macro here.
+	* protoize.c: Not here.
+	* gengenrtl.c (DEF_RTL_EXPR): Use the STRINGIFY macro.
+
 Tue May 12 00:47:33 1998  John Wehle  (john@feith.com)
 
 	* varasm.c (assemble_variable): Compute the alignment of the data 
