@@ -1,3 +1,9 @@
+2003-08-04  Matthias Klose  <doko@debian.org>
+
+	* libart.m4: check for libart-config binary
+	  under the name libart2-config as well.
+	* configure, aclocal.m4: regenerated.
+
 2003-08-02  Michael Koch  <konqueror@gmx.de>
 
 	* java/nio/ByteBufferImpl.java
