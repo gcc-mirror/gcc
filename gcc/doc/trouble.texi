@@ -163,7 +163,7 @@ Naturally, this does not happen when you use GCC@.
 You must specify all three options explicitly.
 
 @item
-On a Sparc, GCC aligns all values of type @code{double} on an 8-byte
+On a SPARC, GCC aligns all values of type @code{double} on an 8-byte
 boundary, and it expects every @code{double} to be so aligned.  The Sun
 compiler usually gives @code{double} values 8-byte alignment, with one
 exception: function arguments of type @code{double} may not be aligned.
@@ -202,7 +202,7 @@ Storing into the pointer can be done likewise with the same union.
 @item
 On Solaris, the @code{malloc} function in the @file{libmalloc.a} library
 may allocate memory that is only 4 byte aligned.  Since GCC on the
-Sparc assumes that doubles are 8 byte aligned, this may result in a
+SPARC assumes that doubles are 8 byte aligned, this may result in a
 fatal signal if doubles are stored in memory allocated by the
 @file{libmalloc.a} library.
 
@@ -219,7 +219,7 @@ when linking, compile and link against the file
 @file{mit/util/misc/dlsym.c} from the MIT version of X windows.
 
 @item
-The 128-bit long double format that the Sparc port supports currently
+The 128-bit long double format that the SPARC port supports currently
 works by using the architecturally defined quad-word floating point
 instructions.  Since there is no hardware that supports these
 instructions they must be emulated by the operating system.  Long

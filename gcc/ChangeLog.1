@@ -7018,7 +7018,7 @@ Thu Jan  7 03:08:17 1999  Richard Henderson  <rth@cygnus.com>
 Thu Jan  7 03:03:42 1999  Stan Cox  <scox@cygnus.com>
 			  Richard Henderson  <rth@cygnus.com>
 
-	Support for Hypersparc and Sparclite86x:
+	Support for HyperSPARC and SPARClite86x:
 	* sparc.h (TARGET_CPU_hypersparc, TARGET_CPU_sparclite86x): New.
 	(CPP_CPU32_DEFAULT_SPEC): Fix up for the new targets.
 	(ASM_CPU32_DEFAULT_SPEC): Likewise.
@@ -15068,7 +15068,7 @@ Mon Aug 10 19:02:55 1998  John Carr  <jfc@mit.edu>
 Mon Aug 10 04:28:13 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 			  Richard Henderson  <rth@cygnus.com>
 
-	Rewrite Sparc backend for better code generation and
+	Rewrite SPARC backend for better code generation and
 	improved sparc64 support.
 	* config/sparc/sp64-elf.h: Set JUMP_TABLES_IN_TEXT_SECTION to
 	zero.
@@ -15155,7 +15155,7 @@ Mon Aug 10 04:28:13 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 	(define_function_unit ieu1): New, executes compare, call, and
 	uncond_branch type insns.
 	(define_function_units for type fdivs, fdivd, fsqrt): These
-	execute in the fpu multiply unit not the adder on UltraSparc.
+	execute in the fpu multiply unit not the adder on UltraSPARC.
 	(define_expand cmpdi): Disallow TARGET_V8PLUS.
 	(define_insn cmpsi_insn): Rename to cmpsi_insn_sp32.
 	(define_insn cmpsi_insn_sp64): New, same as sp32 variant except it
@@ -15570,7 +15570,7 @@ Mon Jul 27 14:22:36 1998  Dave Brolley  <brolley@cygnus.com>
 
 Mon Jul 27 11:43:54 1998  Stan Cox  <scox@cygnus.com>
 
-	* longlong.h (count_leading_zeros): Sparclite scan instruction was
+	* longlong.h (count_leading_zeros): SPARClite scan instruction was
 	being invoked incorrectly.
 
 	* i386.c (ix86_prologue): Added SUBTARGET_PROLOGUE invocation.

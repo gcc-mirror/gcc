@@ -251,7 +251,7 @@ uw_init_context (struct _Unwind_Context *context)
 }
 
 /* ??? There appear to be bugs in integrate.c wrt __builtin_longjmp and
-   virtual-stack-vars.  An inline version of this segfaults on Sparc.  */
+   virtual-stack-vars.  An inline version of this segfaults on SPARC.  */
 #define uw_install_context(CURRENT, TARGET)		\
   do							\
     {							\

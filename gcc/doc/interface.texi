@@ -57,7 +57,7 @@ compiler for the system.  We may implement register argument passing on
 certain machines once we have a complete GNU system so that we can
 compile the libraries with GCC@.
 
-On some machines (particularly the Sparc), certain types of arguments
+On some machines (particularly the SPARC), certain types of arguments
 are passed ``by invisible reference''.  This means that the value is
 stored in memory, and the address of the memory location is passed to
 the subroutine.

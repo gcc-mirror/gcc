@@ -576,7 +576,7 @@ enum reg_class
    registers, but not memory.  Some machines allow copying all registers to and
    from memory, but require a scratch register for stores to some memory
    locations (e.g., those with symbolic address on the RT, and those with
-   certain symbolic address on the Sparc when compiling PIC).  In some cases,
+   certain symbolic address on the SPARC when compiling PIC).  In some cases,
    both an intermediate and a scratch register are required.
 
    You should define these macros to indicate to the reload phase that it may
@@ -841,7 +841,7 @@ enum reg_class
 
 /* If defined, a C expression that produces the machine-specific code to setup
    the stack so that arbitrary frames can be accessed.  For example, on the
-   Sparc, we must flush all of the register windows to the stack before we can
+   SPARC, we must flush all of the register windows to the stack before we can
    access arbitrary stack frames.  This macro will seldom need to be defined.  */
 /* #define SETUP_FRAME_ADDRESSES() */
 
@@ -2189,7 +2189,7 @@ do {							\
 /* #define EXTRA_CC_MODES */
 
 /* Returns a mode from class `MODE_CC' to be used when comparison operation
-   code OP is applied to rtx X and Y.  For example, on the Sparc,
+   code OP is applied to rtx X and Y.  For example, on the SPARC,
    `SELECT_CC_MODE' is defined as (see *note Jump Patterns::.  for a
    description of the reason for this definition)
 
@@ -2227,7 +2227,7 @@ do {							\
 
    You need not define this macro if it would always returns zero or if the
    floating-point format is anything other than `IEEE_FLOAT_FORMAT'.  For
-   example, here is the definition used on the Sparc, where floating-point
+   example, here is the definition used on the SPARC, where floating-point
    inequality comparisons are always given `CCFPEmode':
 
         #define REVERSIBLE_CC_MODE(MODE)  ((MODE) != CCFPEmode)  */

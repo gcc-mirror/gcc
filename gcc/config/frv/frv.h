@@ -2568,7 +2568,7 @@ __asm__("\n"								\
 
 
 /* Returns a mode from class `MODE_CC' to be used when comparison operation
-   code OP is applied to rtx X and Y.  For example, on the Sparc,
+   code OP is applied to rtx X and Y.  For example, on the SPARC,
    `SELECT_CC_MODE' is defined as (see *note Jump Patterns::.  for a
    description of the reason for this definition)
 
@@ -2594,7 +2594,7 @@ __asm__("\n"								\
 
    You need not define this macro if it would always returns zero or if the
    floating-point format is anything other than `IEEE_FLOAT_FORMAT'.  For
-   example, here is the definition used on the Sparc, where floating-point
+   example, here is the definition used on the SPARC, where floating-point
    inequality comparisons are always given `CCFPEmode':
 
         #define REVERSIBLE_CC_MODE(MODE)  ((MODE) != CCFPEmode)  */

@@ -451,7 +451,7 @@ later. The list of keywords follows:
 @{ - used to start the statements in a function
 @} - used to end the statements in a function
 ( - start list of function arguments, or to change the precedence of operators in an expression
-) - end list or prioritised operators in expression
+) - end list or prioritized operators in expression
 , - used to separate parameters in a function prototype or in a function call 
 ; - used to end a statement
 + - addition
