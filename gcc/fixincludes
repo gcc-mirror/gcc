@@ -112,18 +112,21 @@ while [ $# != 0 ]; do
 # is much faster than actually trying to fix it.
 # But the argument to egrep must be kept small, or many versions of egrep
 # won't be able to handle it.
+# rms: I removed `|#[el].*if.*[^/ 	]' because it made egrep fail.
     if egrep '[ 	_]_IO|CTRL|#define.NULL|#[el]*if.*([0-9]|#e[nl]|sparc|vax|sun|pyr)' $file > /dev/null; then
       echo Fixing $file
       if [ -r $file ]; then
 	cp $file $2/$file >/dev/null 2>&1	\
 	|| echo "Can't copy $file"
 	chmod +w $2/$file
+# Following two lines removed.
+#	  s%^\([ 	]*#[ 	]*endif[ 	]*\)\([^/ 	].*\)$%\1/* \2 */%
+#	  s%^\([ 	]*#[ 	]*else[ 	]*\)\([^/ 	].*\)$%\1/* \2 */%
+
 	sed -e '
 				   :loop
 	  /\\$/			N
 	  /\\$/			b loop
-	  s%\(#[ 	]*endif[ 	]*\)\([^/ 	].*\)$%\1/* \2 */%
-	  s%\(#[ 	]*else[ 	]*\)\([^/ 	].*\)$%\1/* \2 */%
 	  /[ 	]_IO[A-Z]*[ 	]*(/	s/(\(.\),/('\''\1'\'',/
 	  /[ 	]BSD43__IO[A-Z]*[ 	]*(/	s/(\(.\),/('\''\1'\'',/
 	  /#define._IO/		s/'\''x'\''/x/g
@@ -313,6 +316,24 @@ EOF
   fi
 fi
 
+# Remove nested comments created by #endifs in a comment (Ultrix 4.1)
+# Only needed if commenting out junk after #endif.
+#file=signal.h
+#if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+#  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+#  chmod +w ${LIB}/$file 2>/dev/null
+#fi
+#
+#if [ -r ${LIB}/$file ]; then
+#  echo Fixing $file, nested comments
+#  sed -e 's/#endif.*/#endif/' ${LIB}/$file > ${LIB}/${file}.sed
+#  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+#  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+#    echo Deleting ${LIB}/$file\; no fixes were needed.
+#    rm -f ${LIB}/$file
+#  fi
+#fi
+
 # Check for superfluous `static' (in Ultrix 4.2)
 file=machine/cpu.h
 if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
@@ -340,7 +361,7 @@ EOF
   fi
 fi
 
-# Deal with yet another challenge, this in X11/Xmu.h
+# Incorrect sprintf declaration in X11/Xmu.h
 file=X11/Xmu.h
 if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
   mkdir ${LIB}/X11 2>/dev/null
@@ -382,7 +403,7 @@ if [ -r ${LIB}/$file ]; then
   fi
 fi
 
-# Fix the CAT macro in memvar.h.
+# Fix the CAT macro in SunOS memvar.h.
 file=pixrect/memvar.h
 if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
   mkdir ${LIB}/pixrect 2>/dev/null
@@ -508,6 +529,45 @@ fi
 if [ -r ${LIB}/$file ]; then
   echo Fixing $file
   sed -e 's/\#ifdef __i386__ || __vax__/\#if __i386__ || __vax__/g' \
+    ${LIB}/$file > ${LIB}/${file}.sed
+  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+    echo Deleting ${LIB}/$file\; no fixes were needed.
+    rm -f ${LIB}/$file
+  fi
+fi
+
+# Incorrect #include in Sony News-OS 3.2.
+file=machine/machparam.h
+if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+  mkdir ${LIB}/machine 2>/dev/null
+  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+  chmod +w ${LIB}/$file 2>/dev/null
+fi
+
+if [ -r ${LIB}/$file ]; then
+  echo Fixing $file, incorrect \#include
+  sed -e 's@"../machine/endian.h"@<machine/endian.h>@' \
+    ${LIB}/$file > ${LIB}/${file}.sed
+  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+    echo Deleting ${LIB}/$file\; no fixes were needed.
+    rm -f ${LIB}/$file
+  fi
+fi
+
+# Multiline comment after typedef on IRIX 4.0.1.
+file=sys/types.h
+if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+  mkdir ${LIB}/sys 2>/dev/null
+  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+  chmod +w ${LIB}/$file 2>/dev/null
+fi
+
+if [ -r ${LIB}/$file ]; then
+  echo Fixing $file, comment in the middle of \#ifdef
+  sed -e 's@type of the result@type of the result */@' \
+    -e 's@of the sizeof@/* of the sizeof@' \
     ${LIB}/$file > ${LIB}/${file}.sed
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
