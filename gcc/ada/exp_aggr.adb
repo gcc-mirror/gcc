@@ -71,8 +71,8 @@ package body Exp_Aggr is
    --  sorted order.
 
    function Has_Default_Init_Comps (N : Node_Id) return Boolean;
-   --  N is an aggregate (record or array). Checks the presence of
-   --  default initialization (<>) in any component.
+   --  N is an aggregate (record or array). Checks the presence of default
+   --  initialization (<>) in any component (Ada0Y: AI-287)
 
    ------------------------------------------------------
    -- Local subprograms for Record Aggregate Expansion --
@@ -1540,8 +1540,8 @@ package body Exp_Aggr is
              Selector_Name => Make_Identifier (Loc, Name_uController));
          Set_Assignment_OK (Ref);
 
-         --  Give support to default initialization of limited types and
-         --  components
+         --  Ada0Y (AI-287): Give support to default initialization of limited
+         --  types and components
 
          if (Nkind (Target) = N_Identifier
              and then Is_Limited_Type (Etype (Target)))
@@ -1678,8 +1678,8 @@ package body Exp_Aggr is
                   Check_Ancestor_Discriminants (Entity (A));
                end if;
 
-            --  If the ancestor part is a limited type, a recursive call
-            --  expands the ancestor.
+            --  Ada0Y (AI-287): If the ancestor part is a limited type, a
+            --  recursive call expands the ancestor.
 
             elsif Is_Limited_Type (Etype (A)) then
                Ancestor_Is_Expression := True;
@@ -4144,6 +4144,9 @@ package body Exp_Aggr is
         or else Has_Controlled_Component (Base_Type (Typ))
       then
          Convert_To_Assignments (N, Typ);
+
+      --  Ada0Y (AI-287): In case of default initialized components we convert
+      --  the aggregate into assignments.
 
       elsif Has_Default_Init_Comps (N) then
          Convert_To_Assignments (N, Typ);

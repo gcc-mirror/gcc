@@ -228,7 +228,7 @@ procedure Gnatmem is
    procedure Usage is
    begin
       New_Line;
-      Put ("GNATMEM Pro ");
+      Put ("GNATMEM ");
       Put (Gnat_Version_String);
       Put_Line (" Copyright 1997-2003 Free Software Foundation, Inc.");
       New_Line;

@@ -69,6 +69,9 @@ package body Prj.Attr is
      "LVlibrary_options#" &
      "SVlibrary_src_dir#" &
      "SVlibrary_gcc#" &
+     "SVlibrary_symbol_file#" &
+     "SVlibrary_symbol_policy#" &
+     "SVlibrary_reference_symbol_file#" &
      "LVmain#" &
      "LVlanguages#" &
      "SVmain_language#" &

@@ -416,15 +416,21 @@ pragma Elaborate_Body (OS_Lib);
 
    function Is_Absolute_Path (Name : String) return Boolean;
    --  Returns True if Name is an absolute path name, i.e. it designates
-   --  a directory absolutely, rather than relative to another directory.
+   --  a file or a directory absolutely, rather than relative to another
+   --  directory.
 
    function Is_Regular_File (Name : String) return Boolean;
    --  Determines if the given string, Name, is the name of an existing
-   --  regular file. Returns True if so, False otherwise.
+   --  regular file. Returns True if so, False otherwise. Name may be an
+   --  absolute path name or a relative path name, including a simple file
+   --  name. If it is a relative path name, it is relative to the current
+   --  working directory.
 
    function Is_Directory (Name : String) return Boolean;
    --  Determines if the given string, Name, is the name of a directory.
-   --  Returns True if so, False otherwise.
+   --  Returns True if so, False otherwise. Name may be an absolute path
+   --  name or a relative path name, including a simple file name. If it is
+   --  a relative path name, it is relative to the current working directory.
 
    function Is_Readable_File (Name : String) return Boolean;
    --  Determines if the given string, Name, is the name of an existing

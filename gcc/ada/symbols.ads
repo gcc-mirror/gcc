@@ -33,6 +33,20 @@ with GNAT.OS_Lib;         use GNAT.OS_Lib;
 
 package Symbols is
 
+   type Policy is
+   --  Symbol policy:
+
+     (Autonomous,
+      --  Create a symbol file without considering any reference
+
+      Compliant,
+      --  Either create a symbol file with the same major and minor IDs if
+      --  all symbols are already found in the reference file or with an
+      --  incremented minor ID, if not.
+
+       Controlled);
+      --  Fail if symbols are not the same as those in the reference file
+
    type Symbol_Kind is (Data, Proc);
    --  To distinguish between the different kinds of symbols
 
@@ -52,16 +66,18 @@ package Symbols is
    --  The symbol tables
 
    Original_Symbols : Symbol_Table.Instance;
-   --  The symbols, if any, found in the original symbol table
+   --  The symbols, if any, found in the reference symbol table
 
    Complete_Symbols : Symbol_Table.Instance;
    --  The symbols, if any, found in the objects files
 
    procedure Initialize
-     (Symbol_File : String;
-      Force       : Boolean;
-      Quiet       : Boolean;
-      Success     : out Boolean);
+     (Symbol_File   : String;
+      Reference     : String;
+      Symbol_Policy : Policy;
+      Quiet         : Boolean;
+      Version       : String;
+      Success       : out Boolean);
    --  Initialize a symbol file. This procedure must be called before
    --  Processing any object file. Depending on the platforms and the
    --  circumstances, additional messages may be issued if Quiet is False.

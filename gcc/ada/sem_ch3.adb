@@ -690,6 +690,10 @@ package body Sem_Ch3 is
       --  if the designated type is.
 
       Set_Is_Public          (Anon_Type, Is_Public (Scope (Anon_Type)));
+
+      --  Ada0Y (AI-50217): Propagate the attribute that indicates that the
+      --  designated type comes from the limited view (for back-end purposes).
+
       Set_From_With_Type     (Anon_Type, From_With_Type (Desig_Type));
 
       --  The context is either a subprogram declaration or an access
@@ -857,9 +861,9 @@ package body Sem_Ch3 is
       --  access type is also imported, and therefore restricted in its use.
       --  The access type may already be imported, so keep setting otherwise.
 
-      --  If the non-limited view of the designated type is available, use
-      --  it as the designated type of the access type, so that the back-end
-      --  gets a usable entity.
+      --  Ada0Y (AI-50217): If the non-limited view of the designated type is
+      --  available, use it as the designated type of the access type, so that
+      --  the back-end gets a usable entity.
 
       if From_With_Type (Desig) then
          Set_From_With_Type (T);
@@ -2448,9 +2452,11 @@ package body Sem_Ch3 is
    begin
       Prev := Find_Type_Name (N);
 
-      --  The full view, if present, now points to the current type. If the
-      --  type was previously decorated when imported through a LIMITED WITH
-      --  clause, it appears as incomplete but has no full view.
+      --  The full view, if present, now points to the current type
+
+      --  Ada0Y (AI-50217): If the type was previously decorated when imported
+      --  through a LIMITED WITH clause, it appears as incomplete but has no
+      --  full view.
 
       if Ekind (Prev) = E_Incomplete_Type
         and then Present (Full_View (Prev))
@@ -6234,8 +6240,8 @@ package body Sem_Ch3 is
            or else Is_Limited_Composite (T))
         and then not In_Instance
       then
-         --  Relax the strictness of the front-end in case of limited
-         --  aggregates and extension aggregates.
+         --  Ada0Y (AI-287): Relax the strictness of the front-end in case of
+         --  limited aggregates and extension aggregates.
 
          if Extensions_Allowed
            and then (Nkind (Exp) = N_Aggregate

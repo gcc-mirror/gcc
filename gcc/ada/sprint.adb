@@ -929,6 +929,8 @@ package body Sprint is
             Sprint_Bar_List (Choices (Node));
             Write_Str (" => ");
 
+            --  Ada0Y (AI-287): Print the mbox if present
+
             if Box_Present (Node) then
                Write_Str_With_Col_Check ("<>");
             else
@@ -2495,6 +2497,9 @@ package body Sprint is
 
             else
                if First_Name (Node) or else not Dump_Original_Only then
+
+                  --  Ada0Y (AI-50217): Print limited with_clauses
+
                   if Limited_Present (Node) then
                      Write_Indent_Str ("limited with ");
                   else
@@ -2513,7 +2518,6 @@ package body Sprint is
             end if;
 
          when N_With_Type_Clause =>
-
             Write_Indent_Str ("with type ");
             Sprint_Node_Sloc (Name (Node));
 

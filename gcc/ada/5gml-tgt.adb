@@ -103,6 +103,7 @@ package body MLib.Tgt is
       Interfaces   : Argument_List;
       Lib_Filename : String;
       Lib_Dir      : String;
+      Symbol_Data  : Symbol_Record;
       Driver_Name  : Name_Id := No_Name;
       Lib_Address  : String  := "";
       Lib_Version  : String  := "";
@@ -112,6 +113,7 @@ package body MLib.Tgt is
       pragma Unreferenced (Foreign);
       pragma Unreferenced (Afiles);
       pragma Unreferenced (Interfaces);
+      pragma Unreferenced (Symbol_Data);
       pragma Unreferenced (Lib_Address);
       pragma Unreferenced (Relocatable);
 

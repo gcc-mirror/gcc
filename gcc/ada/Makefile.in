@@ -626,6 +626,10 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworksae,$(targ))),)
   s-parame.ads<5yparame.ads \
   s-taprop.adb<5ztaprop.adb \
   s-taspri.ads<5ztaspri.ads \
+  s-thread.adb<5zthread.adb \
+  s-thrini.ads<2sthrini.ads \
+  s-thrini.adb<5zthrini.adb \
+  s-tiitho.adb<5ytiitho.adb \
   s-tpopsp.adb<5ztpopsp.adb \
   s-vxwork.ads<5pvxwork.ads \
   g-soccon.ads<3zsoccon.ads \
@@ -640,8 +644,8 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworksae,$(targ))),)
 
   EXTRA_RAVEN_SOURCES=i-vxwork.ads s-vxwork.ads
   EXTRA_RAVEN_OBJS=i-vxwork.o s-vxwork.o
-  EXTRA_GNATRTL_NONTASKING_OBJS=i-vxwork.o i-vxwoio.o
-  EXTRA_GNATRTL_TASKING_OBJS=i-vthrea.o s-tpae65.o s-vxwork.o
+  EXTRA_GNATRTL_NONTASKING_OBJS=i-vxwork.o i-vxwoio.o s-thread.o s-thrini.o
+  EXTRA_GNATRTL_TASKING_OBJS=s-vxwork.o
   HIE_RAVEN_TARGET_PAIRS=\
   $(HIE_NONE_TARGET_PAIRS) \
   a-reatim.ads<1areatim.ads \
@@ -688,6 +692,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworksae,$(targ))),)
   s-soflin.ads<2ssoflin.ads \
   s-stalib.adb<1sstalib.adb \
   s-stalib.ads<1sstalib.ads \
+  s-thrini.adb<5zthrini.adb \
   s-thrini.ads<2sthrini.ads \
   s-thrini.adb<5zthrini.adb \
   s-tiitho.adb<5ytiitho.adb \
@@ -964,6 +969,25 @@ ifeq ($(strip $(filter-out %86 linux%,$(arch) $(osys))),)
 
     THREADSLIB = -lgthreads -lmalloc
   endif
+endif
+
+ifeq ($(strip $(filter-out %86 freebsd%,$(arch) $(osys))),)
+  LIBGNAT_TARGET_PAIRS = \
+  a-intnam.ads<45intnam.ads \
+  g-soccon.ads<35soccon.ads \
+  s-inmaop.adb<7sinmaop.adb \
+  s-intman.adb<7sintman.adb \
+  s-mastop.adb<5omastop.adb \
+  s-osinte.adb<55osinte.adb \
+  s-osinte.ads<55osinte.ads \
+  s-osprim.adb<7sosprim.adb \
+  s-taprop.adb<7staprop.adb \
+  s-taspri.ads<7staspri.ads \
+  s-tpopsp.adb<7stpopsp.adb \
+  system.ads<56system.ads
+
+  THREADSLIB=
+  LIBRARY_VERSION := $(strip $(shell grep Library_Version $(fsrcpfx)gnatvsn.ads | sed -e 's/.*GNAT Lib v\(.*\)[ "].*/\1/'))
 endif
 
 ifeq ($(strip $(filter-out mips sgi irix%,$(targ))),)

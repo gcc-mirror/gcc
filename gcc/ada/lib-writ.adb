@@ -214,7 +214,8 @@ package body Lib.Writ is
          Item := First (Context_Items (Cunit));
          while Present (Item) loop
 
-            --  limited_with_clauses do not create dependencies.
+            --  Ada0Y (AI-50217): limited with_clauses do not create
+            --  dependencies
 
             if Nkind (Item) = N_With_Clause
                and then not (Limited_Present (Item))

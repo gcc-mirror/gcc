@@ -75,6 +75,21 @@ package Prj is
 
    type Lib_Kind is (Static, Dynamic, Relocatable);
 
+   type Policy is (Autonomous, Compliant, Controlled);
+   --  See explaination about this type in package Symbol
+
+   type Symbol_Record is record
+      Symbol_File   : Name_Id := No_Name;
+      Reference     : Name_Id := No_Name;
+      Symbol_Policy : Policy  := Autonomous;
+   end record;
+   --  Type to keep the symbol data to be used when building a shared library
+
+   No_Symbols : Symbol_Record :=
+     (Symbol_File   => No_Name,
+      Reference     => No_Name,
+      Symbol_Policy => Autonomous);
+
    function Empty_String return Name_Id;
 
    type Project_Id is new Nat;
@@ -417,6 +432,9 @@ package Prj is
       Lib_Auto_Init  : Boolean := False;
       --  For non static Standalone Library Project Files, indicate if
       --  the library initialisation should be automatic.
+
+      Symbol_Data : Symbol_Record := No_Symbols;
+      --  Symbol file name, reference symbol file name, symbol policy
 
       Sources_Present : Boolean := True;
       --  A flag that indicates if there are sources in this project file.

@@ -77,6 +77,7 @@ package body Sem_Ch10 is
    --  in a limited_with clause. If the package was not previously analyzed
    --  then it also performs a basic decoration of the real entities; this
    --  is required to do not pass non-decorated entities to the back-end.
+   --  Implements Ada0Y (AI-50217).
 
    procedure Check_Body_Needed_For_SAL (Unit_Name : Entity_Id);
    --  Check whether the source for the body of a compilation unit must
@@ -95,11 +96,12 @@ package body Sem_Ch10 is
    --  and not in an inner frame.
 
    procedure Expand_Limited_With_Clause (Nam : Node_Id; N : Node_Id);
-   --  if a child unit appears in a limited_with clause, there are implicit
+   --  If a child unit appears in a limited_with clause, there are implicit
    --  limited_with clauses on all parents that are not already visible
    --  through a regular with clause. This procedure creates the implicit
    --  limited with_clauses for the parents and loads the corresponding units.
    --  The shadow entities are created when the inserted clause is analyzed.
+   --  Implements Ada0Y (AI-50217).
 
    procedure Expand_With_Clause (Nam : Node_Id; N : Node_Id);
    --  When a child unit appears in a context clause, the implicit withs on
@@ -127,11 +129,11 @@ package body Sem_Ch10 is
 
    procedure Install_Limited_Context_Clauses (N : Node_Id);
    --  Subsidiary to Install_Context. Process only limited with_clauses
-   --  for current unit.
+   --  for current unit. Implements Ada0Y (AI-50217).
 
    procedure Install_Limited_Withed_Unit (N : Node_Id);
    --  Place shadow entities for a limited_with package in the visibility
-   --  structures for the current compilation.
+   --  structures for the current compilation. Implements Ada0Y (AI-50217).
 
    procedure Install_Withed_Unit (With_Clause : Node_Id);
    --  If the unit is not a child unit, make unit immediately visible.
@@ -174,7 +176,7 @@ package body Sem_Ch10 is
 
    procedure Remove_Limited_With_Clause (N : Node_Id);
    --  Remove from visibility the shadow entities introduced for a package
-   --  mentioned in a limited_with clause.
+   --  mentioned in a limited_with clause. Implements Ada0Y (AI-50217).
 
    procedure Remove_Parents (Lib_Unit : Node_Id);
    --  Remove_Parents checks if Lib_Unit is a child spec. If so then the parent
@@ -611,6 +613,9 @@ package body Sem_Ch10 is
          begin
             Item := First (Context_Items (N));
             while Present (Item) loop
+
+               --  Ada0Y (AI-50217): Do not consider limited-withed units
+
                if Nkind (Item) = N_With_Clause
                   and then not Implicit_With (Item)
                   and then not Limited_Present (Item)
@@ -788,8 +793,8 @@ package body Sem_Ch10 is
       --  Loop through context items. This is done is three passes:
       --  a) The first pass analyze non-limited with-clauses.
       --  b) The second pass add implicit limited_with clauses for
-      --     the parents of child units.
-      --  c) The third pass analyzes limited_with clauses.
+      --     the parents of child units (Ada0Y: AI-50217)
+      --  c) The third pass analyzes limited_with clauses (Ada0Y: AI-50217)
 
       Item := First (Context_Items (N));
       while Present (Item) loop
@@ -1590,8 +1595,8 @@ package body Sem_Ch10 is
 
    begin
       if Limited_Present (N) then
-
-         --  Build visibility structures but do not analyze unit
+         --  Ada0Y (AI-50217): Build visibility structures but do not
+         --  analyze unit
 
          Build_Limited_Views (N);
          return;
@@ -4006,8 +4011,9 @@ package body Sem_Ch10 is
       Unit_Name : Entity_Id;
 
    begin
-      --  We remove the context clauses in two phases: limited-views first
-      --  and regular-views later (to maintain the stack model).
+      --  Ada0Y (AI-50217): We remove the context clauses in two phases:
+      --  limited-views first and regular-views later (to maintain the
+      --  stack model).
 
       --  First Phase: Remove limited_with context clauses
 

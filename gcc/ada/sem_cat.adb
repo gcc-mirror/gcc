@@ -761,7 +761,7 @@ package body Sem_Cat is
          return;
       end if;
 
-      --  Process explicit with_clauses that are not limited.
+      --  Ada0Y (AI-50217): Process explicit with_clauses that are not limited
 
       declare
          Item             : Node_Id;

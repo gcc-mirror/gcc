@@ -113,6 +113,7 @@ package MLib.Tgt is
       Interfaces   : Argument_List;
       Lib_Filename : String;
       Lib_Dir      : String;
+      Symbol_Data  : Symbol_Record;
       Driver_Name  : Name_Id := No_Name;
       Lib_Address  : String  := "";
       Lib_Version  : String  := "";
@@ -125,23 +126,33 @@ package MLib.Tgt is
    --  Afiles is the list of ALI files for the Ada object files.
    --  Options is a list of options to be passed to the tool (gcc or other)
    --  that effectively builds the dynamic library.
+   --
    --  Interfaces is the list of ALI files for the interfaces of a SAL.
    --  It is empty if the library is not a SAL.
+   --
    --  Lib_Filename is the name of the library, without any prefix or
    --  extension. For example, on Unix, if Lib_Filename is "toto", the name of
    --  the library file will be "libtoto.so".
+   --
    --  Lib_Dir is the directory path where the library will be located.
+   --
    --  Lib_Address is the base address of the library for a non relocatable
    --  library, given as an hexadecimal string.
-   --  For OSes that support symbolic links, Lib_Version, if non null, is
-   --  the actual file name of the library. For example on Unix,
-   --  if Lib_Filename is "toto" and Lib_Version is "libtoto.so.2.1",
-   --  "libtoto.so" will be a symbolic link to "libtoto.so.2.1" which will
-   --  be the actual library file.
+   --
+   --  For OSes that support symbolic links, Lib_Version, if non null,
+   --  is the actual file name of the library. For example on Unix, if
+   --  Lib_Filename is "toto" and Lib_Version is "libtoto.so.2.1",
+   --  "libtoto.so" will be a symbolic link to "libtoto.so.2.1" which
+   --  will be the actual library file.
+   --
    --  Relocatable indicates if the library should be relocatable or not,
    --  for those OSes that actually support non relocatable dynamic libraries.
    --  Relocatable indicates that automatic elaboration/finalization must be
    --  indicated to the linker, if possible.
+   --
+   --  Symbol_Data is used for some patforms, including VMS, to generate
+   --  the symbols to be exported by the library.
+   --
    --  Note: Depending on the OS, some of the parameters may not be taken
    --  into account. For example, on Linux, Foreign, Afiles Lib_Address and
    --  Relocatable are ignored.

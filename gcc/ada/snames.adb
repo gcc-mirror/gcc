@@ -618,8 +618,10 @@ package body Snames is
      "library_kind#" &
      "library_name#" &
      "library_options#" &
+     "library_reference_symbol_file#" &
      "library_src_dir#" &
      "library_symbol_file#" &
+     "library_symbol_policy#" &
      "library_version#" &
      "linker#" &
      "local_configuration_pragmas#" &

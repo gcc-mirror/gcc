@@ -987,6 +987,7 @@ package body Sem_Ch12 is
                       Defining_Identifier (Analyzed_Formal));
 
                   if No (Match) then
+                     Error_Msg_Sloc := Sloc (Gen_Unit);
                      Error_Msg_NE
                        ("missing actual&",
                          Instantiation_Node, Defining_Identifier (Formal));
@@ -1075,6 +1076,7 @@ package body Sem_Ch12 is
                       Defining_Identifier (Original_Node (Analyzed_Formal)));
 
                   if No (Match) then
+                     Error_Msg_Sloc := Sloc (Gen_Unit);
                      Error_Msg_NE
                        ("missing actual&",
                          Instantiation_Node, Defining_Identifier (Formal));
@@ -1111,6 +1113,8 @@ package body Sem_Ch12 is
          end loop;
 
          if Num_Actuals > Num_Matched then
+            Error_Msg_Sloc := Sloc (Gen_Unit);
+
             if Present (Selector_Name (Actual)) then
                Error_Msg_NE
                  ("unmatched actual&",
@@ -2347,6 +2351,8 @@ package body Sem_Ch12 is
          return;
 
       elsif Ekind (Gen_Unit) /= E_Generic_Package then
+
+         --  Ada0Y (AI-50217): Instance can not be used in limited with_clause
 
          if From_With_Type (Gen_Unit) then
             Error_Msg_N
@@ -6620,6 +6626,7 @@ package body Sem_Ch12 is
          end if;
 
       else
+         Error_Msg_Sloc := Sloc (Scope (Analyzed_S));
          Error_Msg_NE
            ("missing actual&", Instantiation_Node, Formal_Sub);
          Error_Msg_NE
@@ -6746,6 +6753,9 @@ package body Sem_Ch12 is
       Subt_Decl : Node_Id := Empty;
 
    begin
+      --  Sloc for error message on missing actual.
+      Error_Msg_Sloc := Sloc (Scope (Defining_Identifier (Analyzed_Formal)));
+
       if Get_Instance_Of (Formal_Id) /= Formal_Id then
          Error_Msg_N ("duplicate instantiation of generic parameter", Actual);
       end if;

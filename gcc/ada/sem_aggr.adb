@@ -866,6 +866,8 @@ package body Sem_Aggr is
          Error_Msg_N ("aggregate type cannot have limited component", N);
          Explain_Limited_Type (Typ, N);
 
+      --  Ada0Y (AI-287): Limited aggregates allowed
+
       elsif Is_Limited_Type (Typ)
         and not Extensions_Allowed
       then
@@ -1915,12 +1917,17 @@ package body Sem_Aggr is
          Error_Msg_N ("type of extension aggregate must be tagged", N);
          return;
 
-      elsif Is_Limited_Type (Typ)
-        and not Extensions_Allowed
-      then
-         Error_Msg_N ("aggregate type cannot be limited", N);
-         Explain_Limited_Type (Typ, N);
-         return;
+      elsif Is_Limited_Type (Typ) then
+
+         --  Ada0Y (AI-287): Limited aggregates are allowed
+
+         if Extensions_Allowed then
+            null;
+         else
+            Error_Msg_N ("aggregate type cannot be limited", N);
+            Explain_Limited_Type (Typ, N);
+            return;
+         end if;
 
       elsif Is_Class_Wide_Type (Typ) then
          Error_Msg_N ("aggregate cannot be of a class-wide type", N);
@@ -2023,12 +2030,12 @@ package body Sem_Aggr is
 
       Mbox_Present : Boolean := False;
       Others_Mbox  : Boolean := False;
-      --  Variables used in case of default initialization to provide a
-      --  functionality similar to Others_Etype. Mbox_Present indicates
-      --  that the component takes its default initialization; Others_Mbox
-      --  indicates that at least one component takes its default initiali-
-      --  zation. Similar to Others_Etype, they are also updated as a side
-      --  effect of function Get_Value.
+      --  Ada0Y (AI-287): Variables used in case of default initialization to
+      --  provide a functionality similar to Others_Etype. Mbox_Present
+      --  indicates that the component takes its default initialization;
+      --  Others_Mbox indicates that at least one component takes its default
+      --  initialization. Similar to Others_Etype, they are also updated as a
+      --  side effect of function Get_Value.
 
       procedure Add_Association
         (Component   : Entity_Id;
@@ -2212,6 +2219,7 @@ package body Sem_Aggr is
                and then Comes_From_Source (Compon)
                and then not In_Instance_Body
             then
+               --  Ada0Y (AI-287): Limited aggregates are allowed
 
                if Extensions_Allowed
                  and then Present (Expression (Assoc))
@@ -2250,6 +2258,10 @@ package body Sem_Aggr is
                      --  one component (small optimization possible???), but
                      --  indispensable otherwise, because each one must be
                      --  expanded individually to preserve side-effects.
+
+                     --  Ada0Y (AI-287): In case of default initialization of
+                     --  components, we duplicate the corresponding default
+                     --  expression (from the record type declaration).
 
                      if Box_Present (Assoc) then
                         Others_Mbox  := True;
@@ -2845,9 +2857,10 @@ package body Sem_Aggr is
 
          if Mbox_Present and then Is_Limited_Type (Etype (Component)) then
 
-            --  In case of default initialization of a limited component we
-            --  pass the limited component to the expander. The expander will
-            --  generate calls to the corresponding initialization subprograms.
+            --  Ada0Y (AI-287): In case of default initialization of a limited
+            --  component we pass the limited component to the expander. The
+            --  expander will generate calls to the corresponding initiali-
+            --  zation subprograms.
 
             Add_Association
               (Component   => Component,
@@ -2884,6 +2897,9 @@ package body Sem_Aggr is
             Typech := Empty;
 
             if Nkind (Selectr) = N_Others_Choice then
+
+               --  Ada0Y (AI-287):  others choice may have expression or mbox
+
                if No (Others_Etype)
                   and then not Others_Mbox
                then

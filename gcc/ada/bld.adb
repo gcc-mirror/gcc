@@ -40,7 +40,7 @@ with GNAT.OS_Lib;               use GNAT.OS_Lib;
 
 with Erroutc;  use Erroutc;
 with Err_Vars; use Err_Vars;
-with Gnatvsn;
+with Gnatvsn;  use Gnatvsn;
 with Namet;    use Namet;
 with Opt;      use Opt;
 with Output;   use Output;
@@ -1559,9 +1559,9 @@ package body Bld is
                            Put ("src.list_file:=" &
                                 "$(strip $(shell gprcmd to_absolute $(");
                            Put (Project_Name);
-                           Put (".base_dir) $(");
+                           Put (".base_dir) '$(");
                            Put_Attribute (Project, Pkg, Item_Name, No_Name);
-                           Put_Line (")))");
+                           Put_Line (")'))");
 
                            if In_Case then
                               if Source_List_File_Declaration = False then
@@ -1595,9 +1595,9 @@ package body Bld is
                            Put (".obj_dir:=" &
                                 "$(strip $(shell gprcmd to_absolute $(");
                            Put (Project_Name);
-                           Put (".base_dir) $(");
+                           Put (".base_dir) '$(");
                            Put_Attribute (Project, Pkg, Item_Name, No_Name);
-                           Put_Line (")))");
+                           Put_Line (")'))");
 
                         elsif Item_Name = Snames.Name_Exec_Dir then
 
@@ -1611,9 +1611,9 @@ package body Bld is
                            Put ("EXEC_DIR:=" &
                                 "$(strip $(shell gprcmd to_absolute $(");
                            Put (Project_Name);
-                           Put (".base_dir) $(");
+                           Put (".base_dir) '$(");
                            Put_Attribute (Project, Pkg, Item_Name, No_Name);
-                           Put_Line (")))");
+                           Put_Line (")'))");
 
                         elsif Item_Name = Snames.Name_Main then
 

@@ -36,9 +36,31 @@ package body Symbols is
    Symbol_Vector   : constant String := "SYMBOL_VECTOR=(";
    Equal_Data      : constant String := "=DATA)";
    Equal_Procedure : constant String := "=PROCEDURE)";
+   Gsmatch         : constant String := "gsmatch=equal,";
 
    Symbol_File_Name : String_Access := null;
    --  Name of the symbol file
+
+   Sym_Policy : Policy := Autonomous;
+   --  The symbol policy. Set by Initialize
+
+   Major_ID : Integer := 1;
+   --  The Major ID. May be modified by Initialize if Library_Version is
+   --  specified or if it is read from the reference symbol file.
+
+   Soft_Major_ID : Boolean := True;
+   --  False if library version is specified in procedure Initialize.
+   --  When True, Major_ID may be modified if found in the reference symbol
+   --  file.
+
+   Minor_ID : Natural := 0;
+   --  The Minor ID. May be modified if read from the reference symbol file
+
+   Soft_Minor_ID : Boolean := True;
+   --  False if symbol policy is Autonomous, if library version is specified
+   --  in procedure Initialize and is not the same as the major ID read from
+   --  the reference symbol file. When True, Minor_ID may be increased in
+   --  Compliant symbol policy.
 
    subtype Byte is Character;
    --  Object files are stream of bytes, but some of these bytes, those for
@@ -67,6 +89,9 @@ package body Symbols is
    Number_Of_Characters : Natural := 0;
    --  The number of characters of each section
 
+   --  The following variables are used by procedure Process when reading an
+   --  object file.
+
    Code   : Number := 0;
    Length : Natural := 0;
 
@@ -86,6 +111,10 @@ package body Symbols is
 
    procedure Get (N : out Natural);
    --  Read two bytes from the object file, LSByte first, as a Natural
+
+
+   function Image (N : Integer) return String;
+   --  Returns the image of N, without the initial space
 
    -----------
    -- Equal --
@@ -121,15 +150,32 @@ package body Symbols is
       N := Natural (Result);
    end Get;
 
+   -----------
+   -- Image --
+   -----------
+
+   function Image (N : Integer) return String is
+      Result : constant String := N'Img;
+   begin
+      if Result (Result'First) = ' ' then
+         return Result (Result'First + 1 .. Result'Last);
+
+      else
+         return Result;
+      end if;
+   end Image;
+
    ----------------
    -- Initialize --
    ----------------
 
    procedure Initialize
-     (Symbol_File : String;
-      Force       : Boolean;
-      Quiet       : Boolean;
-      Success     : out Boolean)
+     (Symbol_File   : String;
+      Reference     : String;
+      Symbol_Policy : Policy;
+      Quiet         : Boolean;
+      Version       : String;
+      Success       : out Boolean)
    is
       File : Ada.Text_IO.File_Type;
       Line : String (1 .. 1_000);
@@ -140,6 +186,40 @@ package body Symbols is
 
       Symbol_File_Name := new String'(Symbol_File);
 
+      --  Record the policy
+
+      Sym_Policy := Symbol_Policy;
+
+      --  Record the version (Major ID)
+
+      if Version = "" then
+         Major_ID := 1;
+         Soft_Major_ID := True;
+
+      else
+         begin
+            Major_ID := Integer'Value (Version);
+            Soft_Major_ID := False;
+
+            if Major_ID <= 0 then
+               raise Constraint_Error;
+            end if;
+
+         exception
+            when Constraint_Error =>
+               if not Quiet then
+                  Put_Line ("Version """ & Version & """ is illegal.");
+                  Put_Line ("On VMS, version must be a positive number");
+               end if;
+
+               Success := False;
+               return;
+         end;
+      end if;
+
+      Minor_ID := 0;
+      Soft_Minor_ID := Sym_Policy /= Autonomous;
+
       --  Empty the symbol tables
 
       Symbol_Table.Set_Last (Original_Symbols, 0);
@@ -149,11 +229,11 @@ package body Symbols is
 
       Success := True;
 
-      --  If Force is not set, attempt to read the symbol file
+      --  If policy is not autonomous, attempt to read the reference file
 
-      if not Force then
+      if Sym_Policy /= Autonomous then
          begin
-            Open (File, In_File, Symbol_File);
+            Open (File, In_File, Reference);
 
          exception
             when Ada.Text_IO.Name_Error =>
@@ -161,7 +241,7 @@ package body Symbols is
 
             when X : others =>
                if not Quiet then
-                  Put_Line ("could not open """ & Symbol_File & """");
+                  Put_Line ("could not open """ & Reference & """");
                   Put_Line (Exception_Message (X));
                end if;
 
@@ -169,20 +249,31 @@ package body Symbols is
                return;
          end;
 
+         --  Read line by line
+
          while not End_Of_File (File) loop
             Get_Line (File, Line, Last);
 
+            --  Ignore empty lines
+
             if Last = 0 then
                null;
+
+            --  Ignore lines starting with "case_sensitive="
 
             elsif Last > Case_Sensitive'Length
               and then Line (1 .. Case_Sensitive'Length) = Case_Sensitive
             then
                null;
 
+            --  Line starting with "SYMBOL_VECTOR=("
+
             elsif Last > Symbol_Vector'Length
               and then Line (1 .. Symbol_Vector'Length) = Symbol_Vector
             then
+
+               --  SYMBOL_VECTOR=(<symbol>=DATA)
+
                if Last > Symbol_Vector'Length + Equal_Data'Length and then
                  Line (Last - Equal_Data'Length + 1 .. Last) = Equal_Data
                then
@@ -194,6 +285,8 @@ package body Symbols is
                                            Last - Equal_Data'Length)),
                        Kind => Data,
                        Present => True);
+
+               --  SYMBOL_VECTOR=(<symbol>=PROCEDURE)
 
                elsif Last > Symbol_Vector'Length + Equal_Procedure'Length
                  and then
@@ -209,9 +302,11 @@ package body Symbols is
                      Kind => Proc,
                      Present => True);
 
+               --  Anything else is incorrectly formatted
+
                else
                   if not Quiet then
-                     Put_Line ("symbol file """ & Symbol_File &
+                     Put_Line ("symbol file """ & Reference &
                                """ is incorrectly formatted:");
                      Put_Line ("""" & Line (1 .. Last) & """");
                   end if;
@@ -221,10 +316,95 @@ package body Symbols is
                   return;
                end if;
 
+            --  Lines with "gsmatch=equal,<Major_ID>,<Minor_Id>
+
+            elsif Last > Gsmatch'Length
+              and then Line (1 .. Gsmatch'Length) = Gsmatch
+            then
+               declare
+                  Start  : Positive := Gsmatch'Length + 1;
+                  Finish : Positive := Start;
+                  OK     : Boolean  := True;
+                  ID     : Integer;
+
+               begin
+                  loop
+                     if Line (Finish) not in '0' .. '9'
+                       or else Finish >= Last - 1
+                     then
+                        OK := False;
+                        exit;
+                     end if;
+
+                     exit when Line (Finish + 1) = ',';
+
+                     Finish := Finish + 1;
+                  end loop;
+
+                  if OK then
+                     ID := Integer'Value (Line (Start .. Finish));
+                     OK := ID /= 0;
+
+                     --  If Soft_Major_ID is True, it means that
+                     --  Library_Version was not specified.
+
+                     if Soft_Major_ID then
+                        Major_ID := ID;
+
+                     --  If the Major ID in the reference file is different
+                     --  from the Library_Version, then the Minor ID will be 0
+                     --  because there is no point in taking the Minor ID in
+                     --  the reference file, or incrementing it. So, we set
+                     --  Soft_Minor_ID to False, so that we don't modify
+                     --  the Minor_ID later.
+
+                     elsif Major_ID /= ID then
+                        Soft_Minor_ID := False;
+                     end if;
+
+                     Start := Finish + 2;
+                     Finish := Start;
+
+                     loop
+                        if Line (Finish) not in '0' .. '9' then
+                           OK := False;
+                           exit;
+                        end if;
+
+                        exit when Finish = Last;
+
+                        Finish := Finish + 1;
+                     end loop;
+
+                     --  Only set Minor_ID if Soft_Minor_ID is True (see above)
+
+                     if OK and then Soft_Minor_ID then
+                        Minor_ID := Integer'Value (Line (Start .. Finish));
+                     end if;
+                  end if;
+
+                  --  If OK is not True, that means the line is not correctly
+                  --  formatted.
+
+                  if not OK then
+                     if not Quiet then
+                        Put_Line ("symbol file """ & Reference &
+                                  """ is incorrectly formatted");
+                        Put_Line ("""" & Line (1 .. Last) & """");
+                     end if;
+
+                     Close (File);
+                     Success := False;
+                     return;
+                  end if;
+               end;
+
+            --  Anything else is incorrectly formatted
+
             else
                if not Quiet then
                   Put_Line ("unexpected line in symbol file """ &
-                            Symbol_File & """");
+                            Reference & """");
                   Put_Line ("""" & Line (1 .. Last) & """");
                end if;
 
@@ -247,7 +427,8 @@ package body Symbols is
       Success     : out Boolean)
    is
    begin
-      --  Open the object file. Return with Success = False if this fails.
+      --  Open the object file with Byte_IO. Return with Success = False if
+      --  this fails.
 
       begin
          Open (File, In_File, Object_File);
@@ -410,8 +591,9 @@ package body Symbols is
 
       else
 
-         --  First find if the symbols in the symbol file are also in the
-         --  object files.
+         --  First find if the symbols in the reference symbol file are also
+         --  in the object files. Note that this is not done if the policy is
+         --  Autonomous, because no reference symbol file has been read.
 
          --  Expect the first symbol in the symbol file to also be the first
          --  in Complete_Symbols.
@@ -450,13 +632,27 @@ package body Symbols is
             --  If the symbol is not found, mark it as such in the table
 
             if not Found then
-               if not Quiet then
+               if (not Quiet) or else Sym_Policy = Controlled then
                   Put_Line ("symbol """ & S_Data.Name.all &
                             """ is no longer present in the object files");
                end if;
 
+               if Sym_Policy = Controlled then
+                  Success := False;
+                  return;
+
+               elsif Soft_Minor_ID then
+                  Minor_ID := Minor_ID + 1;
+                  Soft_Minor_ID := False;
+               end if;
+
                Original_Symbols.Table (Index_1).Present := False;
                Free (Original_Symbols.Table (Index_1).Name);
+
+               if Soft_Minor_ID then
+                  Minor_ID := Minor_ID + 1;
+                  Soft_Minor_ID := False;
+               end if;
             end if;
          end loop;
 
@@ -466,6 +662,18 @@ package body Symbols is
             S_Data := Complete_Symbols.Table (Index);
 
             if S_Data.Present then
+
+               if Sym_Policy = Controlled then
+                  Put_Line ("symbol """ & S_Data.Name.all &
+                            """ is not in the reference symbol file");
+                  Success := False;
+                  return;
+
+               elsif Soft_Minor_ID then
+                  Minor_ID := Minor_ID + 1;
+                  Soft_Minor_ID := False;
+               end if;
+
                Symbol_Table.Increment_Last (Original_Symbols);
                Original_Symbols.Table (Symbol_Table.Last (Original_Symbols)) :=
                  S_Data;
@@ -500,6 +708,13 @@ package body Symbols is
 
          Put (File, Case_Sensitive);
          Put_Line (File, "NO");
+
+         --  Put the version IDs
+
+         Put (File, Gsmatch);
+         Put (File, Image (Major_ID));
+         Put (File, ',');
+         Put_Line  (File, Image (Minor_ID));
 
          --  And we are done
 
