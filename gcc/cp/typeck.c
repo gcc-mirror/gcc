@@ -1707,7 +1707,8 @@ build_class_member_access_expr (tree object, tree member,
 	 actually used the offsetof macro, since there's no way to know at this
 	 point.  So we just give a warning, instead of a pedwarn.  */
       if (null_object_p && warn_invalid_offsetof
-	  && CLASSTYPE_NON_POD_P (object_type))
+	  && CLASSTYPE_NON_POD_P (object_type)
+	  && ! skip_evaluation)
 	{
 	  warning ("invalid access to non-static data member `%D' of NULL object", 
 		   member);
