@@ -4148,6 +4148,15 @@ expand_expr (exp, target, tmode, modifier)
 
 	  /* Mark as non-local and addressable.  */
 	  DECL_NONLOCAL (exp) = 1;
+
+	  /* This is currently too late to be useful, since
+	     init_function_start needs to know whether a static chain
+	     is needed. However, it would be a useful optimization
+	     if we could defer setting up static chains and trampolines
+	     until we see that we actually need them due to references
+	     to non-local non-static variables.  */
+	  FUNCTION_NEEDS_STATIC_CHAIN (current_function_decl) = 1;
+
 	  mark_addressable (exp);
 	  if (GET_CODE (DECL_RTL (exp)) != MEM)
 	    abort ();
@@ -6178,7 +6187,7 @@ expand_expr (exp, target, tmode, modifier)
 
       /* Are we taking the address of a nested function?  */
       if (TREE_CODE (TREE_OPERAND (exp, 0)) == FUNCTION_DECL
-	  && decl_function_context (TREE_OPERAND (exp, 0)) != 0)
+	  && FUNCTION_NEEDS_STATIC_CHAIN (TREE_OPERAND (exp, 0)))
 	{
 	  op0 = trampoline_address (TREE_OPERAND (exp, 0));
 	  op0 = force_operand (op0, target);
