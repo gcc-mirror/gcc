@@ -4754,6 +4754,16 @@ build_common_tree_nodes (int signed_char)
   long_long_integer_type_node = make_signed_type (LONG_LONG_TYPE_SIZE);
   long_long_unsigned_type_node = make_unsigned_type (LONG_LONG_TYPE_SIZE);
 
+  /* Define a boolean type.  This type only represents boolean values but
+     may be larger than char depending on the value of BOOL_TYPE_SIZE.
+     Front ends which want to override this size (i.e. Java) can redefine
+     boolean_type_node before calling build_common_tree_nodes_2.  */
+  boolean_type_node = make_unsigned_type (BOOL_TYPE_SIZE);
+  TREE_SET_CODE (boolean_type_node, BOOLEAN_TYPE);
+  TYPE_MAX_VALUE (boolean_type_node) = build_int_2 (1, 0);
+  TREE_TYPE (TYPE_MAX_VALUE (boolean_type_node)) = boolean_type_node;
+  TYPE_PRECISION (boolean_type_node) = 1;
+
   intQI_type_node = make_signed_type (GET_MODE_BITSIZE (QImode));
   intHI_type_node = make_signed_type (GET_MODE_BITSIZE (HImode));
   intSI_type_node = make_signed_type (GET_MODE_BITSIZE (SImode));
@@ -4783,6 +4793,9 @@ build_common_tree_nodes_2 (int short_double)
   bitsize_zero_node = bitsize_int (0);
   bitsize_one_node = bitsize_int (1);
   bitsize_unit_node = bitsize_int (BITS_PER_UNIT);
+
+  boolean_false_node = TYPE_MIN_VALUE (boolean_type_node);
+  boolean_true_node = TYPE_MAX_VALUE (boolean_type_node);
 
   void_type_node = make_node (VOID_TYPE);
   layout_type (void_type_node);

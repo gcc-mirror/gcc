@@ -100,9 +100,9 @@ cpp_reader *parse_in;		/* Declared in c-pragma.h.  */
 	tree long_unsigned_type_node;
 	tree long_long_unsigned_type_node;
 
-	tree boolean_type_node;
-	tree boolean_false_node;
-	tree boolean_true_node;
+	tree truthvalue_type_node;
+	tree truthvalue_false_node;
+	tree truthvalue_true_node;
 
 	tree ptrdiff_type_node;
 
@@ -2258,40 +2258,40 @@ shorten_compare (tree *op0_ptr, tree *op1_ptr, tree *restype_ptr,
       if (code == NE_EXPR)
 	{
 	  if (max_lt || min_gt)
-	    val = boolean_true_node;
+	    val = truthvalue_true_node;
 	}
       else if (code == EQ_EXPR)
 	{
 	  if (max_lt || min_gt)
-	    val = boolean_false_node;
+	    val = truthvalue_false_node;
 	}
       else if (code == LT_EXPR)
 	{
 	  if (max_lt)
-	    val = boolean_true_node;
+	    val = truthvalue_true_node;
 	  if (!min_lt)
-	    val = boolean_false_node;
+	    val = truthvalue_false_node;
 	}
       else if (code == GT_EXPR)
 	{
 	  if (min_gt)
-	    val = boolean_true_node;
+	    val = truthvalue_true_node;
 	  if (!max_gt)
-	    val = boolean_false_node;
+	    val = truthvalue_false_node;
 	}
       else if (code == LE_EXPR)
 	{
 	  if (!max_gt)
-	    val = boolean_true_node;
+	    val = truthvalue_true_node;
 	  if (min_gt)
-	    val = boolean_false_node;
+	    val = truthvalue_false_node;
 	}
       else if (code == GE_EXPR)
 	{
 	  if (!min_lt)
-	    val = boolean_true_node;
+	    val = truthvalue_true_node;
 	  if (max_lt)
-	    val = boolean_false_node;
+	    val = truthvalue_false_node;
 	}
 
       /* If primop0 was sign-extended and unsigned comparison specd,
@@ -2330,9 +2330,9 @@ shorten_compare (tree *op0_ptr, tree *op1_ptr, tree *restype_ptr,
 
       if (TREE_CODE (primop0) != INTEGER_CST)
 	{
-	  if (val == boolean_false_node)
+	  if (val == truthvalue_false_node)
 	    warning ("comparison is always false due to limited range of data type");
-	  if (val == boolean_true_node)
+	  if (val == truthvalue_true_node)
 	    warning ("comparison is always true due to limited range of data type");
 	}
 
@@ -2404,7 +2404,7 @@ shorten_compare (tree *op0_ptr, tree *op1_ptr, tree *restype_ptr,
 			&& ! TREE_OVERFLOW (convert (c_common_signed_type (type),
 						     primop0))))
 		warning ("comparison of unsigned expression >= 0 is always true");
-	      value = boolean_true_node;
+	      value = truthvalue_true_node;
 	      break;
 
 	    case LT_EXPR:
@@ -2413,7 +2413,7 @@ shorten_compare (tree *op0_ptr, tree *op1_ptr, tree *restype_ptr,
 			&& ! TREE_OVERFLOW (convert (c_common_signed_type (type),
 						     primop0))))
 		warning ("comparison of unsigned expression < 0 is always false");
-	      value = boolean_false_node;
+	      value = truthvalue_false_node;
 	      break;
 
 	    default:
@@ -2434,7 +2434,7 @@ shorten_compare (tree *op0_ptr, tree *op1_ptr, tree *restype_ptr,
   *op0_ptr = convert (type, primop0);
   *op1_ptr = convert (type, primop1);
 
-  *restype_ptr = boolean_type_node;
+  *restype_ptr = truthvalue_type_node;
 
   return 0;
 }
@@ -2544,10 +2544,10 @@ pointer_int_sum (enum tree_code resultcode, tree ptrop, tree intop)
    This preparation consists of taking the ordinary
    representation of an expression expr and producing a valid tree
    boolean expression describing whether expr is nonzero.  We could
-   simply always do build_binary_op (NE_EXPR, expr, boolean_false_node, 1),
+   simply always do build_binary_op (NE_EXPR, expr, truthvalue_false_node, 1),
    but we optimize comparisons, &&, ||, and !.
 
-   The resulting type should always be `boolean_type_node'.  */
+   The resulting type should always be `truthvalue_type_node'.  */
 
 tree
 c_common_truthvalue_conversion (tree expr)
@@ -2562,15 +2562,15 @@ c_common_truthvalue_conversion (tree expr)
     {
     case RECORD_TYPE:
       error ("struct type value used where scalar is required");
-      return boolean_false_node;
+      return truthvalue_false_node;
 
     case UNION_TYPE:
       error ("union type value used where scalar is required");
-      return boolean_false_node;
+      return truthvalue_false_node;
 
     case ARRAY_TYPE:
       error ("array type value used where scalar is required");
-      return boolean_false_node;
+      return truthvalue_false_node;
 
     default:
       break;
@@ -2587,17 +2587,17 @@ c_common_truthvalue_conversion (tree expr)
     case TRUTH_OR_EXPR:
     case TRUTH_XOR_EXPR:
     case TRUTH_NOT_EXPR:
-      TREE_TYPE (expr) = boolean_type_node;
+      TREE_TYPE (expr) = truthvalue_type_node;
       return expr;
 
     case ERROR_MARK:
       return expr;
 
     case INTEGER_CST:
-      return integer_zerop (expr) ? boolean_false_node : boolean_true_node;
+      return integer_zerop (expr) ? truthvalue_false_node : truthvalue_true_node;
 
     case REAL_CST:
-      return real_zerop (expr) ? boolean_false_node : boolean_true_node;
+      return real_zerop (expr) ? truthvalue_false_node : truthvalue_true_node;
 
     case ADDR_EXPR:
       /* If we are taking the address of an external decl, it might be zero
@@ -2607,10 +2607,10 @@ c_common_truthvalue_conversion (tree expr)
 	break;
 
       if (TREE_SIDE_EFFECTS (TREE_OPERAND (expr, 0)))
-	return build (COMPOUND_EXPR, boolean_type_node,
-		      TREE_OPERAND (expr, 0), boolean_true_node);
+	return build (COMPOUND_EXPR, truthvalue_type_node,
+		      TREE_OPERAND (expr, 0), truthvalue_true_node);
       else
-	return boolean_true_node;
+	return truthvalue_true_node;
 
     case COMPLEX_EXPR:
       return build_binary_op ((TREE_SIDE_EFFECTS (TREE_OPERAND (expr, 1))
@@ -2632,14 +2632,14 @@ c_common_truthvalue_conversion (tree expr)
       /* These don't change whether an object is zero or nonzero, but
 	 we can't ignore them if their second arg has side-effects.  */
       if (TREE_SIDE_EFFECTS (TREE_OPERAND (expr, 1)))
-	return build (COMPOUND_EXPR, boolean_type_node, TREE_OPERAND (expr, 1),
+	return build (COMPOUND_EXPR, truthvalue_type_node, TREE_OPERAND (expr, 1),
 		      c_common_truthvalue_conversion (TREE_OPERAND (expr, 0)));
       else
 	return c_common_truthvalue_conversion (TREE_OPERAND (expr, 0));
 
     case COND_EXPR:
       /* Distribute the conversion into the arms of a COND_EXPR.  */
-      return fold (build (COND_EXPR, boolean_type_node, TREE_OPERAND (expr, 0),
+      return fold (build (COND_EXPR, truthvalue_type_node, TREE_OPERAND (expr, 0),
 		c_common_truthvalue_conversion (TREE_OPERAND (expr, 1)),
 		c_common_truthvalue_conversion (TREE_OPERAND (expr, 2))));
 
@@ -2683,9 +2683,9 @@ c_common_truthvalue_conversion (tree expr)
 
     case BIT_AND_EXPR:
       if (integer_onep (TREE_OPERAND (expr, 1))
-	  && TREE_TYPE (expr) != boolean_type_node)
+	  && TREE_TYPE (expr) != truthvalue_type_node)
 	/* Using convert here would cause infinite recursion.  */
-	return build1 (NOP_EXPR, boolean_type_node, expr);
+	return build1 (NOP_EXPR, truthvalue_type_node, expr);
       break;
 
     case MODIFY_EXPR:
@@ -4418,7 +4418,7 @@ tree
 boolean_increment (enum tree_code code, tree arg)
 {
   tree val;
-  tree true_res = (c_dialect_cxx () ? boolean_true_node : c_bool_true_node);
+  tree true_res = boolean_true_node;
 
   arg = stabilize_reference (arg);
   switch (code)

@@ -578,26 +578,26 @@ expr_no_commas:
 	| expr_no_commas ANDAND
 		{ $1 = c_common_truthvalue_conversion
 		    (default_conversion ($1));
-		  skip_evaluation += $1 == boolean_false_node; }
+		  skip_evaluation += $1 == truthvalue_false_node; }
 	  expr_no_commas
-		{ skip_evaluation -= $1 == boolean_false_node;
+		{ skip_evaluation -= $1 == truthvalue_false_node;
 		  $$ = parser_build_binary_op (TRUTH_ANDIF_EXPR, $1, $4); }
 	| expr_no_commas OROR
 		{ $1 = c_common_truthvalue_conversion
 		    (default_conversion ($1));
-		  skip_evaluation += $1 == boolean_true_node; }
+		  skip_evaluation += $1 == truthvalue_true_node; }
 	  expr_no_commas
-		{ skip_evaluation -= $1 == boolean_true_node;
+		{ skip_evaluation -= $1 == truthvalue_true_node;
 		  $$ = parser_build_binary_op (TRUTH_ORIF_EXPR, $1, $4); }
 	| expr_no_commas '?'
 		{ $1 = c_common_truthvalue_conversion
 		    (default_conversion ($1));
-		  skip_evaluation += $1 == boolean_false_node; }
+		  skip_evaluation += $1 == truthvalue_false_node; }
           expr ':'
-		{ skip_evaluation += (($1 == boolean_true_node)
-				      - ($1 == boolean_false_node)); }
+		{ skip_evaluation += (($1 == truthvalue_true_node)
+				      - ($1 == truthvalue_false_node)); }
 	  expr_no_commas
-		{ skip_evaluation -= $1 == boolean_true_node;
+		{ skip_evaluation -= $1 == truthvalue_true_node;
 		  $$ = build_conditional_expr ($1, $4, $7); }
 	| expr_no_commas '?'
 		{ if (pedantic)
@@ -606,9 +606,9 @@ expr_no_commas:
 		  $<ttype>2 = save_expr ($1);
 		  $1 = c_common_truthvalue_conversion
 		    (default_conversion ($<ttype>2));
-		  skip_evaluation += $1 == boolean_true_node; }
+		  skip_evaluation += $1 == truthvalue_true_node; }
 	  ':' expr_no_commas
-		{ skip_evaluation -= $1 == boolean_true_node;
+		{ skip_evaluation -= $1 == truthvalue_true_node;
 		  $$ = build_conditional_expr ($1, $<ttype>2, $5); }
 	| expr_no_commas '=' expr_no_commas
 		{ char class;

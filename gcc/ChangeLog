@@ -1,3 +1,17 @@
+2003-07-24  Jason Merrill  <jason@redhat.com>
+
+	* tree.h (boolean_type_node): Move from C/C++/Java frontends.
+	(boolean_true_node, boolean_false_node): Likewise.
+	(enum tree_index): Add TI_BOOLEAN_{TYPE,FALSE,TRUE}.
+	* tree.c (build_common_tree_nodes): Init boolean_type_node.
+	(build_common_tree_nodes_2): Init boolean_{true,false}_node.
+	* stor-layout.c (set_sizetype): Handle an early BOOLEAN_TYPE.
+	* c-common.h (truthvalue_type_node): Renamed from boolean_type_node.
+	(truthvalue_true_node): Renamed from boolean_true_node.
+	(truthvalue_false_node): Renamed from boolean_false_node.
+	* c-decl.c: Just set truthvalue_* to integer_*.
+	* c-*.[ch]: s/boolean/truthvalue/.  s/c_bool/boolean/.
+
 2003-07-24  Roger Sayle  <roger@eyesopen.com>
 
 	* c-decl.c (match_builtin_function_types): New subroutine of

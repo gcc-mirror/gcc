@@ -1941,7 +1941,8 @@ set_sizetype (tree type)
      for the sizes in them.  */
   for (t = early_type_list; t != 0; t = TREE_CHAIN (t))
     {
-      if (TREE_CODE (TREE_VALUE (t)) != INTEGER_TYPE)
+      if (TREE_CODE (TREE_VALUE (t)) != INTEGER_TYPE
+	  && TREE_CODE (TREE_VALUE (t)) != BOOLEAN_TYPE)
 	abort ();
 
       TREE_TYPE (TYPE_SIZE (TREE_VALUE (t))) = bitsizetype;

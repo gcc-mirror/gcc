@@ -1779,6 +1779,9 @@ enum tree_index
   TI_BITSIZE_ONE,
   TI_BITSIZE_UNIT,
 
+  TI_BOOLEAN_FALSE,
+  TI_BOOLEAN_TRUE,
+
   TI_COMPLEX_INTEGER_TYPE,
   TI_COMPLEX_FLOAT_TYPE,
   TI_COMPLEX_DOUBLE_TYPE,
@@ -1794,6 +1797,7 @@ enum tree_index
   TI_SIZE_TYPE,
   TI_PTRDIFF_TYPE,
   TI_VA_LIST_TYPE,
+  TI_BOOLEAN_TYPE,
 
   TI_VOID_LIST_NODE,
 
@@ -1879,6 +1883,10 @@ extern GTY(()) tree global_trees[TI_MAX];
 #define size_type_node                  global_trees[TI_SIZE_TYPE]
 #define ptrdiff_type_node		global_trees[TI_PTRDIFF_TYPE]
 #define va_list_type_node		global_trees[TI_VA_LIST_TYPE]
+
+#define boolean_type_node		global_trees[TI_BOOLEAN_TYPE]
+#define boolean_false_node		global_trees[TI_BOOLEAN_FALSE]
+#define boolean_true_node		global_trees[TI_BOOLEAN_TRUE]
 
 /* The node that should be placed at the end of a parameter list to
    indicate that the function does not take a variable number of

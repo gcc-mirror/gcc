@@ -668,7 +668,7 @@ genrtl_switch_stmt (tree t)
   if (cond == error_mark_node)
     /* The code is in error, but we don't want expand_end_case to
        crash.  */
-    cond = boolean_false_node;
+    cond = truthvalue_false_node;
 
   emit_line_note (input_location);
   expand_start_case (1, cond, TREE_TYPE (cond), "switch statement");

@@ -287,8 +287,6 @@ enum java_tree_index
   JTI_DECIMAL_INT_MAX_NODE,
   JTI_DECIMAL_LONG_MAX_NODE,
 
-  JTI_BOOLEAN_TYPE_NODE,
-
   JTI_OBJECT_TYPE_NODE,
   JTI_UNQUALIFIED_OBJECT_ID_NODE,
   JTI_OBJECT_PTR_TYPE_NODE,
@@ -337,9 +335,6 @@ enum java_tree_index
   JTI_ONE_ELT_ARRAY_DOMAIN_TYPE,
 
   JTI_RETURN_ADDRESS_TYPE_NODE,
-
-  JTI_BOOLEAN_TRUE_NODE, 
-  JTI_BOOLEAN_FALSE_NODE,
 
   JTI_LONG_ZERO_NODE,
   JTI_FLOAT_ZERO_NODE,
@@ -457,9 +452,6 @@ extern GTY(()) tree java_global_trees[JTI_MAX];
 #define decimal_long_max \
   java_global_trees[JTI_DECIMAL_LONG_MAX_NODE]
 
-#define boolean_type_node \
-  java_global_trees[JTI_BOOLEAN_TYPE_NODE]
-
 #define object_type_node \
   java_global_trees[JTI_OBJECT_TYPE_NODE]
 #define unqualified_object_id_node \
@@ -555,12 +547,6 @@ extern GTY(()) tree java_global_trees[JTI_MAX];
 /* The type of the return address of a subroutine. */
 #define return_address_type_node \
   java_global_trees[JTI_RETURN_ADDRESS_TYPE_NODE]
-
-/* Nodes for boolean constants TRUE and FALSE. */
-#define boolean_true_node \
-  java_global_trees[JTI_BOOLEAN_TRUE_NODE]
-#define boolean_false_node \
-  java_global_trees[JTI_BOOLEAN_FALSE_NODE]
 
 /* Integer constants not declared in tree.h. */
 #define long_zero_node \

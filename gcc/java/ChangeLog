@@ -1,3 +1,7 @@
+2003-07-24  Jason Merrill  <jason@redhat.com>
+
+	* java-tree.h: Move boolean_type_node et al to the back end.
+
 2003-07-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* class.c java-tree.h jcf-write.c jvspec.c: Remove unnecessary
