@@ -1,5 +1,15 @@
 1999-03-06  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* cp-tree.h (struct lang_type): Add anon_union field.
+	(ANON_UNION_TYPE_P): Use it instead of examining type.
+	(SET_ANON_UNION_TYPE_P): New macro.
+	* decl.c (check_tag_decl): Use it.
+
+	* search.c (compute_access): Handle non-type contexts earlier, and
+	handle NULL_TREE.
+
+	* tree.c (build_exception_variant): Use copy_to_permanent.
+
 	* decl2.c (setup_initp): Give statics with no priority the default
 	priority here.
 	(do_dtors, do_ctors, finish_file): Remove special handling of
