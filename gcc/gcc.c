@@ -136,6 +136,10 @@ static int print_help_list;
 
 static int verbose_flag;
 
+/* Flag indicating to print target specific command line options. */
+
+static int target_help_flag;
+
 /* Flag indicating whether we should report subprocess execution times
    (if this is supported by the system - see pexecute.c).  */
 
@@ -597,6 +601,7 @@ static const char *cc1_options =
  %{g*} %{O*} %{W*} %{w} %{pedantic*} %{std*} %{ansi}\
  %{traditional} %{v:-version} %{pg:-p} %{p} %{f*}\
  %{aux-info*} %{Qn:-fno-ident} %{--help:--help}\
+ %{--target-help:--target-help}\
  %{!fsyntax-only:%{S:%W{o*}%{!o*:-o %b.s}}}\
  %{fsyntax-only:-o %j}";
 
@@ -2760,6 +2765,7 @@ display_help ()
 
   fputs (_("  -pass-exit-codes         Exit with highest error code from a phase\n"), stdout);
   fputs (_("  --help                   Display this information\n"), stdout);
+  fputs (_("  --target-help            Display target specific command line options\n"), stdout);
   if (! verbose_flag)
     fputs (_("  (Use '-v --help' to display command line options of sub-processes)\n"), stdout);
   fputs (_("  -dumpspecs               Display all of the built in spec strings\n"), stdout);
@@ -3085,6 +3091,19 @@ process_command (argc, argv)
 	  add_assembler_option ("--help", 6);
 	  add_linker_option ("--help", 6);
 	}
+      else if (strcmp (argv[i], "-ftarget-help") == 0)
+        {
+          /* translate_options() has turned --target-help into -ftarget-help. */
+          target_help_flag = 1;
+
+          /* We will be passing a dummy file on to the sub-processes.  */
+          n_infiles++;
+          n_switches++;
+
+          add_preprocessor_option ("--target-help", 13);
+          add_assembler_option ("--target-help", 13);
+          add_linker_option ("--target-help", 13);
+        }
       else if (! strcmp (argv[i], "-pass-exit-codes"))
 	{
 	  pass_exit_codes = 1;
@@ -3525,6 +3544,22 @@ process_command (argc, argv)
 	;
       else if (! strcmp (argv[i], "-print-multi-directory"))
 	;
+      else if (strcmp (argv[i], "-ftarget-help") == 0)
+        {
+           /* Create a dummy input file, so that we can pass --target-help on to
+              the various sub-processes.  */
+           infiles[n_infiles].language = "c";
+           infiles[n_infiles++].name   = "target-dummy";
+
+           /* Preserve the --target-help switch so that it can be caught by
+              the cc1 spec string.  */
+           switches[n_switches].part1     = "--target-help";
+           switches[n_switches].args      = 0;
+           switches[n_switches].live_cond = SWITCH_OK;
+           switches[n_switches].validated     = 0;
+
+           n_switches++;
+        }
       else if (strcmp (argv[i], "-fhelp") == 0)
 	{
 	  if (verbose_flag)
@@ -5485,6 +5520,16 @@ main (argc, argv)
       else
 	printf ("%s\n", multilib_dir);
       return (0);
+    }
+
+  if (target_help_flag)
+   {
+      /* Print if any target specific options.*/
+
+      /* We do not exit here. Instead we have created a fake input file
+         called 'target-dummy' which needs to be compiled, and we pass this
+         on to the various sub-processes, along with the --target-help
+         switch. */
     }
 
   if (print_help_list)
