@@ -1,3 +1,8 @@
+Wed Feb  4 01:26:49 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* expr.c (cplus_expand_expr, PCC_STATIC_STRUCT_RETURN code):
+	Call convert_from_reference sooner.
+
 Tue Feb  3 23:50:52 1998  Mark Mitchell  <mmitchell@usa.net>
 
 	* cvt.c (ocp_convert): Obtain the constant values from constant
