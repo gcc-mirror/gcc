@@ -1,3 +1,12 @@
+2004-03-24  Kelley Cook  <kcook@gcc.gnu.org>
+
+	Backport:
+	2004-03-01  Mark Mitchell  <mark@codesourcery.com>
+
+	PR bootstrap/14356
+	* gcc.c (process_command): Remove const-qualification from argv.
+	(main): Likewise.
+
 2004-03-24  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR preprocessor/14438
