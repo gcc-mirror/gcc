@@ -1,3 +1,7 @@
+2004-01-20  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/arm.md (insv): Use gen_int_mode.
+
 2005-01-20  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/freebsd.h (ASM_OUTPUT_INTERNAL_LABELREF): Delete.

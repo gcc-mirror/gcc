@@ -1895,7 +1895,7 @@
 
 	emit_insn (gen_andsi3 (op1, operands[0], GEN_INT (~mask2)));
 	emit_insn (gen_iorsi3 (subtarget, op1,
-			       GEN_INT (op3_value << start_bit)));
+			       gen_int_mode (op3_value << start_bit, SImode)));
       }
     else if (start_bit == 0
 	     && !(const_ok_for_arm (mask)
