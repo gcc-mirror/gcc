@@ -1,5 +1,8 @@
 Wed Jul 28 13:18:35 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* pa.md (adddi3, subdi3): Turn into a define_expand/define_insn
+	pair.
+
 	* pa.c (store_reg): Do not call add_high_const generator directly.
 	(load_reg, set_reg_plus_d): Likewise.
 	* pa.md (add_high_const): No longer a named pattern.

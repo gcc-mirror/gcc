@@ -2924,7 +2924,14 @@
 
 ;;- arithmetic instructions
 
-(define_insn "adddi3"
+(define_expand "adddi3"
+  [(set (match_operand:DI 0 "register_operand" "")
+	(plus:DI (match_operand:DI 1 "register_operand" "")
+		 (match_operand:DI 2 "arith11_operand" "")))]
+  ""
+  "")
+
+(define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(plus:DI (match_operand:DI 1 "register_operand" "%r")
 		 (match_operand:DI 2 "arith11_operand" "rI")))]
@@ -3049,7 +3056,14 @@
   [(set_attr "type" "binary")
    (set_attr "length" "8")])
 
-(define_insn "subdi3"
+(define_expand "subdi3"
+  [(set (match_operand:DI 0 "register_operand" "")
+	(minus:DI (match_operand:DI 1 "register_operand" "")
+		  (match_operand:DI 2 "register_operand" "")))]
+  ""
+  "")
+
+(define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(minus:DI (match_operand:DI 1 "register_operand" "r")
 		  (match_operand:DI 2 "register_operand" "r")))]
