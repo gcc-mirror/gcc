@@ -1,3 +1,15 @@
+2004-03-31  Richard Henderson  <rth@redhat.com>
+
+	* hashtab.c (htab_size): Move to top of file; mark inline.
+	(htab_elements): Likewise.
+	(htab_mod, htab_mod_m2): New.
+	(htab_delete): Refactor htab->size and htab->entries.
+	(htab_empty): Likewise.
+	(find_empty_slot_for_expand): Use htab_size, htab_mod, htab_mod_m2.
+	(htab_find_with_hash, htab_find_slot_with_hash): Likewise.
+	(htab_clear_slot): Use htab_size, htab_elements.
+	(htab_traverse_noresize, htab_traverse): Likewise.
+
 2004-03-17  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	* pex-unix.c (pexecute): Use vfork instead of fork, with
