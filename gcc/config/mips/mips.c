@@ -942,7 +942,7 @@ double_memory_operand (op, mode)
 
   op = adjust_address_nv (op, GET_MODE_CLASS (mode) == MODE_INT
 			  ? SImode : SFmode, 4);
-  return memory_address_p (XEXP (op, 0));
+  return memory_address_p (GET_MODE (op), XEXP (op, 0));
 }
 
 /* Return nonzero if the code of this rtx pattern is EQ or NE.  */
