@@ -15,7 +15,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-AC_INIT(Makefile.in)
+AC_INIT
+AC_CONFIG_SRCDIR([Makefile.in])
 
 # This is an autoconf 2.5x script.
 AC_PREREQ([2.57])
