@@ -102,7 +102,7 @@ static rtx expand_builtin_classify_type	PARAMS ((tree));
 static void expand_errno_check		PARAMS ((tree, rtx));
 static rtx expand_builtin_mathfn	PARAMS ((tree, rtx, rtx));
 static rtx expand_builtin_mathfn_2	PARAMS ((tree, rtx, rtx));
-static rtx expand_builtin_constant_p	PARAMS ((tree));
+static rtx expand_builtin_constant_p	PARAMS ((tree, enum machine_mode));
 static rtx expand_builtin_args_info	PARAMS ((tree));
 static rtx expand_builtin_next_arg	PARAMS ((tree));
 static rtx expand_builtin_va_start	PARAMS ((tree));
@@ -144,7 +144,7 @@ static rtx builtin_memset_gen_str	PARAMS ((PTR, HOST_WIDE_INT,
 static rtx expand_builtin_memset	PARAMS ((tree, rtx,
 						 enum machine_mode));
 static rtx expand_builtin_bzero		PARAMS ((tree));
-static rtx expand_builtin_strlen	PARAMS ((tree, rtx));
+static rtx expand_builtin_strlen	PARAMS ((tree, rtx, enum machine_mode));
 static rtx expand_builtin_strstr	PARAMS ((tree, rtx,
 						 enum machine_mode));
 static rtx expand_builtin_strpbrk	PARAMS ((tree, rtx,
@@ -156,7 +156,7 @@ static rtx expand_builtin_strrchr	PARAMS ((tree, rtx,
 static rtx expand_builtin_alloca	PARAMS ((tree, rtx));
 static rtx expand_builtin_unop		PARAMS ((enum machine_mode,
 						 tree, rtx, rtx, optab));
-static rtx expand_builtin_frame_address	PARAMS ((tree));
+static rtx expand_builtin_frame_address	PARAMS ((tree, tree));
 static rtx expand_builtin_fputs		PARAMS ((tree, int, int));
 static tree stabilize_va_list		PARAMS ((tree, int));
 static rtx expand_builtin_expect	PARAMS ((tree, rtx));
@@ -1443,11 +1443,10 @@ expand_builtin_classify_type (arglist)
 /* Expand expression EXP, which is a call to __builtin_constant_p.  */
 
 static rtx
-expand_builtin_constant_p (exp)
-     tree exp;
+expand_builtin_constant_p (arglist, target_mode)
+     tree arglist;
+     enum machine_mode target_mode;
 {
-  tree arglist = TREE_OPERAND (exp, 1);
-  enum machine_mode value_mode = TYPE_MODE (TREE_TYPE (exp));
   rtx tmp;
 
   if (arglist == 0)
@@ -1461,7 +1460,7 @@ expand_builtin_constant_p (exp)
   current_function_calls_constant_p = 1;
 
   tmp = expand_expr (arglist, NULL_RTX, VOIDmode, 0);
-  tmp = gen_rtx_CONSTANT_P_RTX (value_mode, tmp);
+  tmp = gen_rtx_CONSTANT_P_RTX (target_mode, tmp);
   return tmp;
 }
 
@@ -1907,13 +1906,11 @@ expand_builtin_mathfn_2 (exp, target, subtarget)
    try to get the result in TARGET, if convenient.  */
 
 static rtx
-expand_builtin_strlen (exp, target)
-     tree exp;
+expand_builtin_strlen (arglist, target, target_mode)
+     tree arglist;
      rtx target;
+     enum machine_mode target_mode;
 {
-  tree arglist = TREE_OPERAND (exp, 1);
-  enum machine_mode value_mode = TYPE_MODE (TREE_TYPE (exp));
-
   if (!validate_arglist (arglist, POINTER_TYPE, VOID_TYPE))
     return 0;
   else
@@ -1921,14 +1918,14 @@ expand_builtin_strlen (exp, target)
       rtx pat;
       tree len, src = TREE_VALUE (arglist);
       rtx result, src_reg, char_rtx, before_strlen;
-      enum machine_mode insn_mode = value_mode, char_mode;
+      enum machine_mode insn_mode = target_mode, char_mode;
       enum insn_code icode = CODE_FOR_nothing;
       int align;
 
       /* If the length can be computed at compile-time, return it.  */
       len = c_strlen (src);
       if (len)
-	return expand_expr (len, target, value_mode, EXPAND_NORMAL);
+	return expand_expr (len, target, target_mode, EXPAND_NORMAL);
 
       align = get_pointer_alignment (src, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
 
@@ -1992,12 +1989,12 @@ expand_builtin_strlen (exp, target)
 	emit_insn_before (pat, get_insns ());
 
       /* Return the value in the proper mode for this function.  */
-      if (GET_MODE (result) == value_mode)
+      if (GET_MODE (result) == target_mode)
 	target = result;
       else if (target != 0)
 	convert_move (target, result, 0);
       else
-	target = convert_to_mode (value_mode, result, 0);
+	target = convert_to_mode (target_mode, result, 0);
 
       return target;
     }
@@ -2432,12 +2429,11 @@ expand_builtin_bcopy (arglist)
    convenient).  */
 
 static rtx
-expand_builtin_strcpy (exp, target, mode)
-     tree exp;
+expand_builtin_strcpy (arglist, target, mode)
+     tree arglist;
      rtx target;
      enum machine_mode mode;
 {
-  tree arglist = TREE_OPERAND (exp, 1);
   tree fn, len;
 
   if (!validate_arglist (arglist, POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
@@ -2632,13 +2628,11 @@ builtin_memset_gen_str (data, offset, mode)
    convenient).  */
 
 static rtx
-expand_builtin_memset (exp, target, mode)
-     tree exp;
+expand_builtin_memset (arglist, target, mode)
+     tree arglist;
      rtx target;
      enum machine_mode mode;
 {
-  tree arglist = TREE_OPERAND (exp, 1);
-
   if (!validate_arglist (arglist,
 			 POINTER_TYPE, INTEGER_TYPE, INTEGER_TYPE, VOID_TYPE))
     return 0;
@@ -2748,12 +2742,10 @@ expand_builtin_memset (exp, target, mode)
    if we failed the caller should emit a normal call.  */
 
 static rtx
-expand_builtin_bzero (exp)
-     tree exp;
+expand_builtin_bzero (arglist)
+     tree arglist;
 {
-  tree arglist = TREE_OPERAND (exp, 1);
   tree dest, size, newarglist;
-  rtx result;
 
   if (!validate_arglist (arglist, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
     return NULL_RTX;
@@ -2770,13 +2762,7 @@ expand_builtin_bzero (exp)
   newarglist = tree_cons (NULL_TREE, integer_zero_node, newarglist);
   newarglist = tree_cons (NULL_TREE, dest, newarglist);
 
-  TREE_OPERAND (exp, 1) = newarglist;
-  result = expand_builtin_memset (exp, const0_rtx, VOIDmode);
-
-  /* Always restore the original arguments.  */
-  TREE_OPERAND (exp, 1) = arglist;
-
-  return result;
+  return expand_builtin_memset (newarglist, const0_rtx, VOIDmode);
 }
 
 /* Expand expression EXP, which is a call to the memcmp built-in function.
@@ -3410,10 +3396,9 @@ expand_builtin_saveregs ()
    is controlled by the definition of CUMULATIVE_ARGS.  */
 
 static rtx
-expand_builtin_args_info (exp)
-     tree exp;
+expand_builtin_args_info (arglist)
+     tree arglist;
 {
-  tree arglist = TREE_OPERAND (exp, 1);
   int nwords = sizeof (CUMULATIVE_ARGS) / sizeof (int);
   int *word_ptr = (int *) &current_function_args_info;
 
@@ -3817,12 +3802,9 @@ expand_builtin_va_copy (arglist)
    __builtin_return_address.  */
 
 static rtx
-expand_builtin_frame_address (exp)
-     tree exp;
+expand_builtin_frame_address (fndecl, arglist)
+     tree fndecl, arglist;
 {
-  tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
-  tree arglist = TREE_OPERAND (exp, 1);
-
   /* The argument must be a nonnegative integer constant.
      It counts the number of frames to scan up the stack.
      The value is the return address saved in that frame.  */
@@ -4446,7 +4428,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       return expand_builtin_saveregs ();
 
     case BUILT_IN_ARGS_INFO:
-      return expand_builtin_args_info (exp);
+      return expand_builtin_args_info (arglist);
 
       /* Return the address of the first anonymous stack arg.  */
     case BUILT_IN_NEXT_ARG:
@@ -4456,11 +4438,11 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       return expand_builtin_classify_type (arglist);
 
     case BUILT_IN_CONSTANT_P:
-      return expand_builtin_constant_p (exp);
+      return expand_builtin_constant_p (arglist, target_mode);
 
     case BUILT_IN_FRAME_ADDRESS:
     case BUILT_IN_RETURN_ADDRESS:
-      return expand_builtin_frame_address (exp);
+      return expand_builtin_frame_address (fndecl, arglist);
 
     /* Returns the address of the area where the structure is returned.
        0 otherwise.  */
@@ -4524,13 +4506,13 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       break;
 
     case BUILT_IN_STRLEN:
-      target = expand_builtin_strlen (exp, target);
+      target = expand_builtin_strlen (arglist, target, target_mode);
       if (target)
 	return target;
       break;
 
     case BUILT_IN_STRCPY:
-      target = expand_builtin_strcpy (exp, target, mode);
+      target = expand_builtin_strcpy (arglist, target, mode);
       if (target)
 	return target;
       break;
@@ -4622,13 +4604,13 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       break;
 
     case BUILT_IN_MEMSET:
-      target = expand_builtin_memset (exp, target, mode);
+      target = expand_builtin_memset (arglist, target, mode);
       if (target)
 	return target;
       break;
 
     case BUILT_IN_BZERO:
-      target = expand_builtin_bzero (exp);
+      target = expand_builtin_bzero (arglist);
       if (target)
 	return target;
       break;
