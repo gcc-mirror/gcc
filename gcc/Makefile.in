@@ -736,7 +736,7 @@ cp-parse.o : $(srcdir)/cp-parse.c $(CONFIG_H) $(CPLUS_TREE_H) flags.h
   `echo $(srcdir)/cp-parse.c | sed 's,^\./,,'`
 
 $(srcdir)/cp-parse.c $(srcdir)/cp-parse.h : $(srcdir)/cp-parse.y
-	@echo expect 30 shift/reduce conflicts and 14 reduce/reduce conflicts
+	@echo expect 29 shift/reduce conflicts and 14 reduce/reduce conflicts
 	cd $(srcdir); $(BISON) $(BISONFLAGS) -d -o cp-parse.c cp-parse.y
 	cd $(srcdir); grep '^#define[ 	]*YYEMPTY' cp-parse.c >>cp-parse.h
 
