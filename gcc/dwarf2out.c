@@ -7923,6 +7923,9 @@ loc_descriptor_from_tree (loc, addressp)
       indirect_p = 1;
       break;
 
+    case COMPOUND_EXPR:
+      return loc_descriptor_from_tree (TREE_OPERAND (loc, 1), addressp);
+
     case NOP_EXPR:
     case CONVERT_EXPR:
     case NON_LVALUE_EXPR:
