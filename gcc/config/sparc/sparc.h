@@ -3238,7 +3238,7 @@ do {									\
 {"call_operand", {MEM}},						\
 {"call_operand_address", {SYMBOL_REF, LABEL_REF, CONST, CONST_DOUBLE,	\
 	ADDRESSOF, SUBREG, REG, PLUS, LO_SUM, CONST_INT}},		\
-{"symbolic_operand", {SYMBOL_REF, LABEL_REF, CONST, CONST_DOUBLE}},	\
+{"symbolic_operand", {SYMBOL_REF, LABEL_REF, CONST}},			\
 {"symbolic_memory_operand", {SUBREG, MEM}},				\
 {"label_ref_operand", {LABEL_REF}},					\
 {"sp64_medium_pic_operand", {CONST}},					\
