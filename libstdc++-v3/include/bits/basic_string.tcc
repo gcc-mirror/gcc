@@ -490,6 +490,13 @@ namespace std
       // else nothing (in particular, avoid calling _M_mutate() unnecessarily.)
     }
   
+  // This is the general replace helper, which gets instantiated both
+  // for input-iterators and forward-iterators. It buffers internally and
+  // then calls _M_replace_safe. For input-iterators this is almost the
+  // best we can do, but for forward-iterators many optimizations could be
+  // conceived: f.i., when source and destination ranges do not overlap
+  // buffering is not really needed. In order to easily implement them, it
+  // could become useful to add an _M_replace(forward_iterator_tag)
   template<typename _CharT, typename _Traits, typename _Alloc>
     template<typename _InputIter>
       basic_string<_CharT, _Traits, _Alloc>&
@@ -497,16 +504,21 @@ namespace std
       _M_replace(iterator __i1, iterator __i2, _InputIter __k1, 
 		 _InputIter __k2, input_iterator_tag)
       {
+	// Save concerned source string data in a temporary.
 	basic_string __s(__k1, __k2);
-	return this->replace(__i1, __i2, __s._M_ibegin(), __s._M_iend());
+	return _M_replace_safe(__i1, __i2, __s._M_ibegin(), __s._M_iend());
       }
 
+  // This is a special replace helper, which does not buffer internally
+  // and can be used in the "safe" situations involving forward-iterators,
+  // i.e., when source and destination ranges are known to not overlap.
+  // Presently, is called by _M_replace and by the various append.
   template<typename _CharT, typename _Traits, typename _Alloc>
-    template<typename _ForwardIter>
+    template<typename _InputIter>
       basic_string<_CharT, _Traits, _Alloc>&
       basic_string<_CharT, _Traits, _Alloc>::
-      _M_replace(iterator __i1, iterator __i2, _ForwardIter __k1, 
-		 _ForwardIter __k2, forward_iterator_tag)
+      _M_replace_safe(iterator __i1, iterator __i2, _InputIter __k1, 
+		      _InputIter __k2)
       {
 	size_type __dnew = static_cast<size_type>(distance(__k1, __k2));
 	size_type __dold = __i2 - __i1;
@@ -515,16 +527,11 @@ namespace std
 	if (__dmax <= __dnew)
 	  __throw_length_error("basic_string::_M_replace");
 	size_type __off = __i1 - _M_ibegin();
-
-	// Save concerned source string data in a temporary.
-	basic_string __temp(__k1, __k2);
 	_M_mutate(__off, __dold, __dnew);
-	
-	// Invalidated __i1, __i2 (and clobbered original source string
-	// data when destination string == source string and the string
-	// is unshared).
+
+	// Invalidated __i1, __i2
         if (__dnew)
-	  _S_copy_chars(_M_data() + __off, __temp.begin(), __temp.end());
+	  _S_copy_chars(_M_data() + __off, __k1, __k2);
 
 	return *this;
       }
@@ -537,7 +544,7 @@ namespace std
     {
       return this->replace(_M_check(__pos1), _M_fold(__pos1, __n1),
 			   __str._M_check(__pos2), 
-			   __str._M_fold(__pos2, __n2));
+			   __str._M_fold(__pos2, __n2));      
     }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
@@ -552,8 +559,8 @@ namespace std
       size_type __len = __size + this->size();
       if (__len > this->capacity())
 	this->reserve(__len);
-      return this->replace(_M_iend(), _M_iend(), __str._M_ibegin(),
-			   __str._M_iend());
+      return _M_replace_safe(_M_iend(), _M_iend(), __str._M_ibegin(),
+			     __str._M_iend());
     }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
@@ -567,8 +574,8 @@ namespace std
       size_type __len = min(__str.size() - __pos, __n) + this->size();
       if (__len > this->capacity())
 	this->reserve(__len);
-      return this->replace(_M_iend(), _M_iend(), __str._M_check(__pos),
-			   __str._M_fold(__pos, __n));
+      return _M_replace_safe(_M_iend(), _M_iend(), __str._M_check(__pos),
+			     __str._M_fold(__pos, __n));
     }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
@@ -579,7 +586,7 @@ namespace std
       size_type __len = __n + this->size();
       if (__len > this->capacity())
 	this->reserve(__len);
-      return this->replace(_M_iend(), _M_iend(), __s, __s + __n);
+      return _M_replace_safe(_M_iend(), _M_iend(), __s, __s + __n);
     }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
