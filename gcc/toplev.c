@@ -3696,15 +3696,15 @@ display_help ()
   const char * lang;
   
 #ifndef USE_CPPLIB  
-  printf ("Usage: %s input [switches]\n", progname);
-  printf ("Switches:\n");
+  printf (_("Usage: %s input [switches]\n"), progname);
+  printf (_("Switches:\n"));
 #endif
-  printf ("  -ffixed-<register>      Mark <register> as being unavailable to the compiler\n");
-  printf ("  -fcall-used-<register>  Mark <register> as being corrupted by function calls\n");
-  printf ("  -fcall-saved-<register> Mark <register> as being preserved across functions\n");
-  printf ("  -finline-limit=<number> Limits the size of inlined functions to <number>\n");
-  printf ("  -fmessage-length=<number> Limits diagnostics messages lengths to <number> characters per line.  0 suppresses line-wrapping\n");
-  printf ("  -fdiagnostics-show-location=[once | never] Indicates how often source location information should be emitted, as prefix, at the beginning of diagnostics when line-wrapping\n");
+  printf (_("  -ffixed-<register>      Mark <register> as being unavailable to the compiler\n"));
+  printf (_("  -fcall-used-<register>  Mark <register> as being corrupted by function calls\n"));
+  printf (_("  -fcall-saved-<register> Mark <register> as being preserved across functions\n"));
+  printf (_("  -finline-limit=<number> Limits the size of inlined functions to <number>\n"));
+  printf (_("  -fmessage-length=<number> Limits diagnostics messages lengths to <number> characters per line.  0 suppresses line-wrapping\n"));
+  printf (_("  -fdiagnostics-show-location=[once | never] Indicates how often source location information should be emitted, as prefix, at the beginning of diagnostics when line-wrapping\n"));
 
   for (i = NUM_ELEM (f_options); i--;)
     {
@@ -3715,12 +3715,12 @@ display_help ()
 		f_options[i].string, description);
     }
   
-  printf ("  -O[number]              Set optimisation level to [number]\n");
-  printf ("  -Os                     Optimise for space rather than speed\n");
-  printf ("  -pedantic               Issue warnings needed by strict compliance to ANSI C\n");
-  printf ("  -pedantic-errors        Like -pedantic except that errors are produced\n");
-  printf ("  -w                      Suppress warnings\n");
-  printf ("  -W                      Enable extra warnings\n");
+  printf (_("  -O[number]              Set optimisation level to [number]\n"));
+  printf (_("  -Os                     Optimise for space rather than speed\n"));
+  printf (_("  -pedantic               Issue warnings needed by strict compliance to ANSI C\n"));
+  printf (_("  -pedantic-errors        Like -pedantic except that errors are produced\n"));
+  printf (_("  -w                      Suppress warnings\n"));
+  printf (_("  -W                      Enable extra warnings\n"));
   
   for (i = NUM_ELEM (W_options); i--;)
     {
@@ -3731,19 +3731,20 @@ display_help ()
 		W_options[i].string, description);
     }
   
-  printf ("  -Wunused                Enable unused warnings\n");
-  printf ("  -Wid-clash-<num>        Warn if 2 identifiers have the same first <num> chars\n");
-  printf ("  -Wlarger-than-<number>  Warn if an object is larger than <number> bytes\n");
-  printf ("  -p                      Enable function profiling\n");
+  printf (_("  -Wunused                Enable unused warnings\n"));
+  printf (_("  -Wid-clash-<num>        Warn if 2 identifiers have the same first <num> chars\n"));
+  printf (_("  -Wlarger-than-<number>  Warn if an object is larger than <number> bytes\n"));
+  printf (_("  -p                      Enable function profiling\n"));
 #if defined (BLOCK_PROFILER) || defined (FUNCTION_BLOCK_PROFILER)
-  printf ("  -a                      Enable block profiling \n");
+  printf (_("  -a                      Enable block profiling \n"));
 #endif  
 #if defined (BLOCK_PROFILER) || defined (FUNCTION_BLOCK_PROFILER) || defined FUNCTION_BLOCK_PROFILER_EXIT
-  printf ("  -ax                     Enable jump profiling \n");
+  printf (_("  -ax                     Enable jump profiling \n"));
 #endif  
-  printf ("  -o <file>               Place output into <file> \n");
-  printf ("  -G <number>             Put global and static data smaller than <number>\n");
-  printf ("                           bytes into a special section (on some targets)\n");
+  printf (_("  -o <file>               Place output into <file> \n"));
+  printf (_("\
+  -G <number>             Put global and static data smaller than <number>\n\
+                          bytes into a special section (on some targets)\n"));
   
   for (i = NUM_ELEM (debug_args); i--;)
     {
@@ -3751,15 +3752,15 @@ display_help ()
 	printf ("  -g%-21s %s\n", debug_args[i].arg, debug_args[i].description);
     }
   
-  printf ("  -aux-info <file>        Emit declaration info into <file>.X\n");
-  printf ("  -quiet                  Do not display functions compiled or elapsed time\n");
-  printf ("  -version                Display the compiler's version\n");
-  printf ("  -d[letters]             Enable dumps from specific passes of the compiler\n");
-  printf ("  -dumpbase <file>        Base name to be used for dumps from specific passes\n");
+  printf (_("  -aux-info <file>        Emit declaration info into <file>.X\n"));
+  printf (_("  -quiet                  Do not display functions compiled or elapsed time\n"));
+  printf (_("  -version                Display the compiler's version\n"));
+  printf (_("  -d[letters]             Enable dumps from specific passes of the compiler\n"));
+  printf (_("  -dumpbase <file>        Base name to be used for dumps from specific passes\n"));
 #if defined INSN_SCHEDULING
-  printf ("  -fsched-verbose=<number> Set the verbosity level of the scheduler\n");
+  printf (_("  -fsched-verbose=<number> Set the verbosity level of the scheduler\n"));
 #endif
-  printf ("  --help                  Display this information\n");
+  printf (_("  --help                  Display this information\n"));
 
   undoc = 0;
   lang  = "language";
@@ -3774,7 +3775,7 @@ display_help ()
   
   if (NUM_ELEM (documented_lang_options) > 1)
     {
-      printf ("\nLanguage specific options:\n");
+      printf (_("\nLanguage specific options:\n"));
 
       for (i = 0; i < NUM_ELEM (documented_lang_options); i++)
 	{
@@ -3786,7 +3787,7 @@ display_help ()
 	      undoc = 1;
 
 	      if (extra_warnings)
-		printf ("  %-23.23s [undocumented]\n", option);
+		printf (_("  %-23.23s [undocumented]\n"), option);
 	    }
 	  else if (* description == 0)
 	    continue;
@@ -3794,11 +3795,11 @@ display_help ()
 	    {
 	      if (undoc)
 		printf
-		  ("\nThere are undocumented %s specific options as well.\n",
+		  (_("\nThere are undocumented %s specific options as well.\n"),
 			lang);
 	      undoc = 0;
 	      
-	      printf ("\n Options for %s:\n", description);
+	      printf (_("\n Options for %s:\n"), description);
 
 	      lang = description;
 	    }
@@ -3808,7 +3809,7 @@ display_help ()
     }
 
   if (undoc)
-    printf ("\nThere are undocumented %s specific options as well.\n", lang);
+    printf (_("\nThere are undocumented %s specific options as well.\n"), lang);
 
   if (NUM_ELEM (target_switches) > 1
 #ifdef TARGET_OPTIONS
@@ -3820,7 +3821,7 @@ display_help ()
       
       undoc = 0;
   
-      printf ("\nTarget specific options:\n");
+      printf (_("\nTarget specific options:\n"));
 
       for (i = NUM_ELEM (target_switches); i--;)
 	{
@@ -3834,7 +3835,7 @@ display_help ()
 	      undoc = 1;
 	      
 	      if (extra_warnings)
-		printf ("  -m%-21.21s [undocumented]\n", option);
+		printf (_("  -m%-21.21s [undocumented]\n"), option);
 	    }
 	  else if (* description != 0)
 	    doc += printf ("  -m%-21.21s %s\n", option, description);
@@ -3853,7 +3854,7 @@ display_help ()
 	      undoc = 1;
 	      
 	      if (extra_warnings)
-		printf ("  -m%-21.21s [undocumented]\n", option);
+		printf (_("  -m%-21.21s [undocumented]\n"), option);
 	    }
 	  else if (* description != 0)
 	    doc += printf ("  -m%-21.21s %s\n", option, description);
@@ -3862,9 +3863,9 @@ display_help ()
       if (undoc)
 	{
 	  if (doc)
-	    printf ("\nThere are undocumented target specific options as well.\n");
+	    printf (_("\nThere are undocumented target specific options as well.\n"));
 	  else
-	    printf ("  They exist, but they are not documented.\n");
+	    printf (_("  They exist, but they are not documented.\n"));
 	}
     }
 }

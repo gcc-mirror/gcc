@@ -5059,11 +5059,15 @@ parmlist_tags_warning ()
 		  : "enum"),
 		 IDENTIFIER_POINTER (TREE_PURPOSE (elt)));
       else
-	warning ("anonymous %s declared inside parameter list",
-		 (code == RECORD_TYPE ? "struct"
-		  : code == UNION_TYPE ? "union"
-		  : "enum"));
-
+        {
+          /* For translation these need to be seperate warnings */
+          if (code == RECORD_TYPE)
+	    warning ("anonymous struct declared inside parameter list");
+	  else if (code == UNION_TYPE)
+	    warning ("anonymous union declared inside parameter list");
+	  else	  
+	    warning ("anonymous enum declared inside parameter list");
+	}
       if (! already)
 	{
 	  warning ("its scope is only this definition or declaration, which is probably not what you want.");
@@ -5207,10 +5211,10 @@ finish_struct (t, fieldlist, attributes)
       {
 	if (pedantic)
 	  pedwarn ("%s defined inside parms",
-		   TREE_CODE (t) == UNION_TYPE ? "union" : "structure");
+		   TREE_CODE (t) == UNION_TYPE ? _("union") : _("structure"));
 	else if (! flag_traditional)
 	  warning ("%s defined inside parms",
-		   TREE_CODE (t) == UNION_TYPE ? "union" : "structure");
+		   TREE_CODE (t) == UNION_TYPE ? _("union") : _("structure"));
       }
 
   if (pedantic)
@@ -5220,9 +5224,9 @@ finish_struct (t, fieldlist, attributes)
 	  break;
 
       if (x == 0)
-	pedwarn ("%s has no %smembers",
-		 TREE_CODE (t) == UNION_TYPE ? "union" : "struct",
-		 fieldlist ? "named " : "");
+	pedwarn ("%s has no %s",
+		 TREE_CODE (t) == UNION_TYPE ? _("union") : _("struct"),
+		 fieldlist ? _("named members") : _("members"));
     }
 
   /* Install struct as DECL_CONTEXT of each field decl.

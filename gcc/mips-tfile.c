@@ -603,6 +603,7 @@ Boston, MA 02111-1307, USA.  */
 #include "config.h"
 #include "system.h"
 #include "version.h"
+#include "intl.h"
 
 #ifndef __SABER__
 #define saber_stop()
@@ -4947,23 +4948,23 @@ main (argc, argv)
 
   if (object_name == (char *) 0 || had_errors || optind != argc - 1)
     {
-      fprintf (stderr, "Calling Sequence:\n");
-      fprintf (stderr, "\tmips-tfile [-d <num>] [-v] [-i <o-in-file>] -o <o-out-file> <s-file> (or)\n");
-      fprintf (stderr, "\tmips-tfile [-d <num>] [-v] [-I <o-in-file>] -o <o-out-file> <s-file> (or)\n");
-      fprintf (stderr, "\tmips-tfile [-d <num>] [-v] <s-file> <o-in-file> <o-out-file>\n");
+      fprintf (stderr, _("Calling Sequence:\n"));
+      fprintf (stderr, _("\tmips-tfile [-d <num>] [-v] [-i <o-in-file>] -o <o-out-file> <s-file> (or)\n"));
+      fprintf (stderr, _("\tmips-tfile [-d <num>] [-v] [-I <o-in-file>] -o <o-out-file> <s-file> (or)\n"));
+      fprintf (stderr, _("\tmips-tfile [-d <num>] [-v] <s-file> <o-in-file> <o-out-file>\n"));
       fprintf (stderr, "\n");
-      fprintf (stderr, "Debug levels are:\n");
-      fprintf (stderr, "    1\tGeneral debug + trace functions/blocks.\n");
-      fprintf (stderr, "    2\tDebug level 1 + trace externals.\n");
-      fprintf (stderr, "    3\tDebug level 2 + trace all symbols.\n");
-      fprintf (stderr, "    4\tDebug level 3 + trace memory allocations.\n");
+      fprintf (stderr, _("Debug levels are:\n"));
+      fprintf (stderr, _("    1\tGeneral debug + trace functions/blocks.\n"));
+      fprintf (stderr, _("    2\tDebug level 1 + trace externals.\n"));
+      fprintf (stderr, _("    3\tDebug level 2 + trace all symbols.\n"));
+      fprintf (stderr, _("    4\tDebug level 3 + trace memory allocations.\n"));
       return 1;
     }
 
 
   if (version)
     {
-      fprintf (stderr, "mips-tfile version %s", version_string);
+      fprintf (stderr, _("mips-tfile version %s"), version_string);
 #ifdef TARGET_VERSION
       TARGET_VERSION;
 #endif

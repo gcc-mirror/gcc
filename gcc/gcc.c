@@ -2804,49 +2804,52 @@ convert_filename (name, do_exe)
 static void
 display_help ()
 {
-  printf ("Usage: %s [options] file...\n", programname);
-  printf ("Options:\n");
+  printf (_("Usage: %s [options] file...\n"), programname);
+  fputs (_("Options:\n"), stdout);
 
-  printf ("  -pass-exit-codes         Exit with highest error code from a phase\n");
-  printf ("  --help                   Display this information\n");
+  fputs (_("  -pass-exit-codes         Exit with highest error code from a phase\n"), stdout);
+  fputs (_("  --help                   Display this information\n"), stdout);
   if (! verbose_flag)
-    printf ("  (Use '-v --help' to display command line options of sub-processes)\n");
-  printf ("  -dumpspecs               Display all of the built in spec strings\n");
-  printf ("  -dumpversion             Display the version of the compiler\n");
-  printf ("  -dumpmachine             Display the compiler's target processor\n");
-  printf ("  -print-search-dirs       Display the directories in the compiler's search path\n");
-  printf ("  -print-libgcc-file-name  Display the name of the compiler's companion library\n");
-  printf ("  -print-file-name=<lib>   Display the full path to library <lib>\n");
-  printf ("  -print-prog-name=<prog>  Display the full path to compiler component <prog>\n");
-  printf ("  -print-multi-directory   Display the root directory for versions of libgcc\n");
-  printf ("  -print-multi-lib         Display the mapping between command line options and\n");
-  printf ("                            multiple library search directories\n");
-  printf ("  -Wa,<options>            Pass comma-separated <options> on to the assembler\n");
-  printf ("  -Wp,<options>            Pass comma-separated <options> on to the preprocessor\n");
-  printf ("  -Wl,<options>            Pass comma-separated <options> on to the linker\n");
-  printf ("  -Xlinker <arg>           Pass <arg> on to the linker\n");
-  printf ("  -save-temps              Do not delete intermediate files\n");
-  printf ("  -pipe                    Use pipes rather than intermediate files\n");
-  printf ("  -time                    Time the execution of each subprocess\n");
-  printf ("  -specs=<file>            Override builtin specs with the contents of <file>\n");
-  printf ("  -std=<standard>          Assume that the input sources are for <standard>\n");
-  printf ("  -B <directory>           Add <directory> to the compiler's search paths\n");
-  printf ("  -b <machine>             Run gcc for target <machine>, if installed\n");
-  printf ("  -V <version>             Run gcc version number <version>, if installed\n");
-  printf ("  -v                       Display the programs invoked by the compiler\n");
-  printf ("  -E                       Preprocess only; do not compile, assemble or link\n");
-  printf ("  -S                       Compile only; do not assemble or link\n");
-  printf ("  -c                       Compile and assemble, but do not link\n");
-  printf ("  -o <file>                Place the output into <file>\n");
-  printf ("  -x <language>            Specify the language of the following input files\n");
-  printf ("                            Permissable languages include: c c++ assembler none\n");
-  printf ("                            'none' means revert to the default behaviour of\n");
-  printf ("                            guessing the language based on the file's extension\n");
+    fputs (_("  (Use '-v --help' to display command line options of sub-processes)\n"), stdout);
+  fputs (_("  -dumpspecs               Display all of the built in spec strings\n"), stdout);
+  fputs (_("  -dumpversion             Display the version of the compiler\n"), stdout);
+  fputs (_("  -dumpmachine             Display the compiler's target processor\n"), stdout);
+  fputs (_("  -print-search-dirs       Display the directories in the compiler's search path\n"), stdout);
+  fputs (_("  -print-libgcc-file-name  Display the name of the compiler's companion library\n"), stdout);
+  fputs (_("  -print-file-name=<lib>   Display the full path to library <lib>\n"), stdout);
+  fputs (_("  -print-prog-name=<prog>  Display the full path to compiler component <prog>\n"), stdout);
+  fputs (_("  -print-multi-directory   Display the root directory for versions of libgcc\n"), stdout);
+  fputs (_("\
+  -print-multi-lib         Display the mapping between command line options and\n\
+                           multiple library search directories\n"), stdout);
+  fputs (_("  -Wa,<options>            Pass comma-separated <options> on to the assembler\n"), stdout);
+  fputs (_("  -Wp,<options>            Pass comma-separated <options> on to the preprocessor\n"), stdout);
+  fputs (_("  -Wl,<options>            Pass comma-separated <options> on to the linker\n"), stdout);
+  fputs (_("  -Xlinker <arg>           Pass <arg> on to the linker\n"), stdout);
+  fputs (_("  -save-temps              Do not delete intermediate files\n"), stdout);
+  fputs (_("  -pipe                    Use pipes rather than intermediate files\n"), stdout);
+  fputs (_("  -time                    Time the execution of each subprocess\n"), stdout);
+  fputs (_("  -specs=<file>            Override builtin specs with the contents of <file>\n"), stdout);
+  fputs (_("  -std=<standard>          Assume that the input sources are for <standard>\n"), stdout);
+  fputs (_("  -B <directory>           Add <directory> to the compiler's search paths\n"), stdout);
+  fputs (_("  -b <machine>             Run gcc for target <machine>, if installed\n"), stdout);
+  fputs (_("  -V <version>             Run gcc version number <version>, if installed\n"), stdout);
+  fputs (_("  -v                       Display the programs invoked by the compiler\n"), stdout);
+  fputs (_("  -E                       Preprocess only; do not compile, assemble or link\n"), stdout);
+  fputs (_("  -S                       Compile only; do not assemble or link\n"), stdout);
+  fputs (_("  -c                       Compile and assemble, but do not link\n"), stdout);
+  fputs (_("  -o <file>                Place the output into <file>\n"), stdout);
+  fputs (_("\
+  -x <language>            Specify the language of the following input files\n\
+                           Permissable languages include: c c++ assembler none\n\
+                           'none' means revert to the default behaviour of\n\
+                           guessing the language based on the file's extension\n\
+"), stdout);
 
-  printf ("\nOptions starting with -g, -f, -m, -O or -W are automatically passed on to\n");
-  printf ("the various sub-processes invoked by %s.  In order to pass other options\n",
-	  programname);
-  printf ("on to these processes the -W<letter> options must be used.\n");
+  printf (_("\n\
+Options starting with -g, -f, -m, -O or -W are automatically passed on to\n\
+the various sub-processes invoked by %s.  In order to pass other options\n\
+on to these processes the -W<letter> options must be used.\n\"), programname);
 
   /* The rest of the options are displayed by invocations of the various
      sub-processes.  */
@@ -5428,9 +5431,9 @@ main (argc, argv)
 
   if (print_search_dirs)
     {
-      printf ("install: %s%s\n", standard_exec_prefix, machine_suffix);
-      printf ("programs: %s\n", build_search_list (&exec_prefixes, "", 0));
-      printf ("libraries: %s\n", build_search_list (&startfile_prefixes, "", 0));
+      printf (_("install: %s%s\n"), standard_exec_prefix, machine_suffix);
+      printf (_("programs: %s\n"), build_search_list (&exec_prefixes, "", 0));
+      printf (_("libraries: %s\n"), build_search_list (&startfile_prefixes, "", 0));
       return (0);
     }
 
@@ -5468,7 +5471,7 @@ main (argc, argv)
 
       if (! verbose_flag)
 	{
-	  printf ("\nFor bug reporting instructions, please see:\n");
+	  printf (_("\nFor bug reporting instructions, please see:\n"));
 	  printf ("%s.\n", GCCBUGURL);
 	  
 	  return (0);
@@ -5645,7 +5648,7 @@ main (argc, argv)
 
   if (print_help_list)
     {
-      printf ("\nFor bug reporting instructions, please see:\n");
+      printf (("\nFor bug reporting instructions, please see:\n"));
       printf ("%s\n", GCCBUGURL);
     }
   

@@ -729,7 +729,7 @@ v_message_with_decl (decl, warn, msgid, ap)
     {
       const char *n = (DECL_NAME (decl)
 		 ? (*decl_printable_name) (decl, 2)
-		 : "((anonymous))");
+		 : _("((anonymous))"));
       if (doing_line_wrapping ())
         output_add_string (&buffer, n);
       else

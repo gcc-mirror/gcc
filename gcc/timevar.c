@@ -427,7 +427,7 @@ timevar_print (fp)
      TIMEVAR. */
   start_time = now;
 
-  fprintf (fp, "\nExecution times (seconds)\n");
+  fprintf (fp, _("\nExecution times (seconds)\n"));
   for (id = 0; id < TIMEVAR_LAST; ++id)
     {
       struct timevar_def *tv = &timevars[id];
@@ -475,7 +475,7 @@ timevar_print (fp)
     }
 
   /* Print total time.  */
-  fprintf (fp, " TOTAL                 :");
+  fprintf (fp, _(" TOTAL                 :"));
 #ifdef HAVE_USER_TIME
   fprintf (fp, "%4ld.%02ld          ", 
 	   total->user / 1000000, (total->user % 1000000) / 10000);
@@ -514,7 +514,7 @@ print_time (str, total)
 {
   long all_time = get_run_time ();
   fprintf (stderr,
-	   "time in %s: %ld.%06ld (%ld%%)\n",
+	   _("time in %s: %ld.%06ld (%ld%%)\n"),
 	   str, total / 1000000, total % 1000000,
  	   all_time == 0 ? 0
  	   : (long) (((100.0 * (double) total) / (double) all_time) + .5));

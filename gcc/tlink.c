@@ -424,7 +424,7 @@ read_repo_file (f)
   FILE *stream = fopen ((char*) f->root.key, "r");
 
   if (tlink_verbose >= 2)
-    fprintf (stderr, "collect: reading %s\n", 
+    fprintf (stderr, _("collect: reading %s\n"), 
 	     (char*) f->root.key);
 
   while (fscanf (stream, "%c ", &c) == 1)
@@ -525,7 +525,7 @@ recompile_files ()
       command = obstack_copy0 (&temporary_obstack, f->main, strlen (f->main));
 
       if (tlink_verbose)
-	fprintf (stderr, "collect: recompiling %s\n", f->main);
+	fprintf (stderr, _("collect: recompiling %s\n"), f->main);
       if (tlink_verbose >= 3)
 	fprintf (stderr, "%s\n", command);
 
@@ -676,7 +676,7 @@ scan_linker_output (fname)
       if (sym && !sym->tweaking)
 	{
 	  if (tlink_verbose >= 2)
-	    fprintf (stderr, "collect: tweaking %s in %s\n",
+	    fprintf (stderr, _("collect: tweaking %s in %s\n"),
 		     (char*) sym->root.key, (char*) sym->file->root.key);
 	  sym->tweaking = 1;
 	  file_push (sym->file);
@@ -723,7 +723,7 @@ do_tlink (ld_argv, object_lst)
 	    if (! recompile_files ())
 	      break;
 	    if (tlink_verbose)
-	      fprintf (stderr, "collect: relinking\n");
+	      fprintf (stderr, _("collect: relinking\n"));
 	    exit = tlink_execute ("ld", ld_argv, ldout);
 	  }
     }
