@@ -1,3 +1,9 @@
+2001-09-11  Per Bothner  <per@bothner.com>
+
+	* include/Makefile.am:  New file.  It defines include_HEADERS.
+	* Makefile.am (SUBDIRS):  New macro, set to include.
+	* configure.in (AC_OUTPUT):  Add include/Makefile.
+
 2001-08-20  Tom Tromey  <tromey@redhat.com>
 
 	* configure: Rebuilt.
