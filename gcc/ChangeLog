@@ -1,3 +1,13 @@
+2000-04-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* tree.c (tree_expr_nonnegative_p): New function.
+
+	* tree.h (tree_expr_nonnegative_p): Declare.
+
+	* c-typeck.c (build_binary_op): Call `tree_expr_nonnegative_p' to
+	elide some sign_compare warnings.
+	(build_conditional_expr): Likewise.
+
 Sat Apr  8 00:21:51 EDT 2000  John Wehle  (john@feith.com)
 
 	* i386.md (ashrsi3, ashrhi3, ashrqi3): Fix typo.

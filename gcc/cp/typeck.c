@@ -3960,11 +3960,10 @@ build_binary_op (code, orig_op0, orig_op1)
 	    /* OK */;
 	  /* Do not warn if the signed quantity is an unsuffixed
 	     integer literal (or some static constant expression
+	     involving such literals or a conditional expression
 	     involving such literals) and it is non-negative.  */
-	  else if ((op0_signed && TREE_CODE (orig_op0) == INTEGER_CST
-		    && tree_int_cst_sgn (orig_op0) >= 0)
-		   || (op1_signed && TREE_CODE (orig_op1) == INTEGER_CST
-		       && tree_int_cst_sgn (orig_op1) >= 0))
+	  else if ((op0_signed && tree_expr_nonnegative_p (orig_op0))
+		   || (op1_signed && tree_expr_nonnegative_p (orig_op1)))
 	    /* OK */;
 	  /* Do not warn if the comparison is an equality operation,
 	     the unsigned quantity is an integral constant and it does

@@ -2416,11 +2416,12 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 		  else
 		    sop = xop1, uop = xop0;
 
-		  /* Do not warn if the signed quantity is an unsuffixed
-		     integer literal (or some static constant expression
-		     involving such literals) and it is non-negative.  */
-		  if (TREE_CODE (sop) == INTEGER_CST
-		      && tree_int_cst_sgn (sop) >= 0)
+		  /* Do not warn if the signed quantity is an
+		     unsuffixed integer literal (or some static
+		     constant expression involving such literals or a
+		     conditional expression involving such literals)
+		     and it is non-negative.  */
+		  if (tree_expr_nonnegative_p (sop))
 		    /* OK */;
 		  /* Do not warn if the comparison is an equality operation,
 		     the unsigned quantity is an integral constant, and it
@@ -3383,10 +3384,8 @@ build_conditional_expr (ifexp, op1, op2)
 	      /* Do not warn if the signed quantity is an unsuffixed
 		 integer literal (or some static constant expression
 		 involving such literals) and it is non-negative.  */
-	      else if ((unsigned_op2 && TREE_CODE (op1) == INTEGER_CST
-			&& tree_int_cst_sgn (op1) >= 0)
-		       || (unsigned_op1 && TREE_CODE (op2) == INTEGER_CST
-			   && tree_int_cst_sgn (op2) >= 0))
+	      else if ((unsigned_op2 && tree_expr_nonnegative_p (op1))
+		       || (unsigned_op1 && tree_expr_nonnegative_p (op2)))
 		/* OK */;
 	      else
 		warning ("signed and unsigned type in conditional expression");

@@ -1,3 +1,8 @@
+2000-04-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* typeck.c (build_binary_op): Call `tree_expr_nonnegative_p' to elide
+	some sign_compare warnings.
+
 2000-04-07  Nathan Sidwell  <nathan@codesourcery.com>
 
 	Rename abi::__vmi_class_type_info members.

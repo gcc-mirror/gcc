@@ -4370,6 +4370,25 @@ tree_int_cst_sgn (t)
     return 1;
 }
 
+/* Return true if `t' is known to be non-negative.  */
+
+int
+tree_expr_nonnegative_p (t)
+     tree t;
+{
+  switch (TREE_CODE (t))
+    {
+    case INTEGER_CST:
+      return tree_int_cst_sgn (t) >= 0;
+    case COND_EXPR:
+      return tree_expr_nonnegative_p (TREE_OPERAND (t, 1))
+	&& tree_expr_nonnegative_p (TREE_OPERAND (t, 2));
+    default:
+      /* We don't know sign of `t', so be safe and return false.  */
+      return 0;
+    }
+}
+
 /* Compare two constructor-element-type constants.  Return 1 if the lists
    are known to be equal; otherwise return 0.  */
 
