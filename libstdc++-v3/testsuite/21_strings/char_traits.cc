@@ -109,6 +109,7 @@ int test01(void)
   return test;
 }
 
+#if _GLIBCPP_USE_WCHAR_T
 int test02(void)
 {
   bool test = true;
@@ -193,12 +194,14 @@ int test02(void)
 
   return test;
 }
-  
+#endif  //_GLIBCPP_USE_WCHAR_T
 
 int main()
 { 
   test01();
+#if _GLIBCPP_USE_WCHAR_T
   test02();
+#endif
 }
 
 
