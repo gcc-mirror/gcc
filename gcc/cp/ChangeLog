@@ -1,3 +1,7 @@
+2003-01-07  Nathanael Nerode <neroden@gcc.gnu.org>
+
+	* tree.c: Delete bogus #if 0 code.
+
 2003-01-07  Andreas Schwab  <schwab@suse.de>
 
 	* class.c (layout_class_type): Don't use
