@@ -1477,17 +1477,20 @@ rtx_equal_for_loop_p (x, y, movables)
      equal.  */
   if (GET_CODE (x) == REG && n_times_set[REGNO (x)] == -2
       && CONSTANT_P (y))
-    for (m = movables; m; m = m->next)
-      if (m->move_insn && m->regno == REGNO (x)
-	  && rtx_equal_p (m->set_src, y))
-	return 1;
-
+    {
+      for (m = movables; m; m = m->next)
+	if (m->move_insn && m->regno == REGNO (x)
+	    && rtx_equal_p (m->set_src, y))
+	  return 1;
+    }
   else if (GET_CODE (y) == REG && n_times_set[REGNO (y)] == -2
 	   && CONSTANT_P (x))
-    for (m = movables; m; m = m->next)
-      if (m->move_insn && m->regno == REGNO (y)
-	  && rtx_equal_p (m->set_src, x))
-	return 1;
+    {
+      for (m = movables; m; m = m->next)
+	if (m->move_insn && m->regno == REGNO (y)
+	    && rtx_equal_p (m->set_src, x))
+	  return 1;
+    }
 
   /* Otherwise, rtx's of different codes cannot be equal.  */
   if (code != GET_CODE (y))
