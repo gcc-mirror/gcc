@@ -319,35 +319,35 @@ h8300_init_once ()
      See http://gcc.gnu.org/ml/gcc-patches/2002-07/msg01858.html
      If optimizing for size, change shift_alg for those shift to
      SHIFT_LOOP.  */
-  if(optimize_size)
+  if (optimize_size)
     {
-      /* H8300 */
-      shift_alg_hi[H8_300][SHIFT_ASHIFT][5] = SHIFT_LOOP ;
-      shift_alg_hi[H8_300][SHIFT_ASHIFT][6] = SHIFT_LOOP ;
-      shift_alg_hi[H8_300][SHIFT_ASHIFT][13] = SHIFT_LOOP ;
-      shift_alg_hi[H8_300][SHIFT_ASHIFT][14] = SHIFT_LOOP ;
+      /* H8/300 */
+      shift_alg_hi[H8_300][SHIFT_ASHIFT][5] = SHIFT_LOOP;
+      shift_alg_hi[H8_300][SHIFT_ASHIFT][6] = SHIFT_LOOP;
+      shift_alg_hi[H8_300][SHIFT_ASHIFT][13] = SHIFT_LOOP;
+      shift_alg_hi[H8_300][SHIFT_ASHIFT][14] = SHIFT_LOOP;
 
-      shift_alg_hi[H8_300][SHIFT_LSHIFTRT][13] = SHIFT_LOOP ;
-      shift_alg_hi[H8_300][SHIFT_LSHIFTRT][14] = SHIFT_LOOP ;
+      shift_alg_hi[H8_300][SHIFT_LSHIFTRT][13] = SHIFT_LOOP;
+      shift_alg_hi[H8_300][SHIFT_LSHIFTRT][14] = SHIFT_LOOP;
 
-      shift_alg_hi[H8_300][SHIFT_ASHIFTRT][13] = SHIFT_LOOP ;
-      shift_alg_hi[H8_300][SHIFT_ASHIFTRT][14] = SHIFT_LOOP ;
+      shift_alg_hi[H8_300][SHIFT_ASHIFTRT][13] = SHIFT_LOOP;
+      shift_alg_hi[H8_300][SHIFT_ASHIFTRT][14] = SHIFT_LOOP;
 
-      /* H8300H */
-      shift_alg_hi[H8_300H][SHIFT_ASHIFT][5] = SHIFT_LOOP ;
-      shift_alg_hi[H8_300H][SHIFT_ASHIFT][6] = SHIFT_LOOP ;
+      /* H8/300H */
+      shift_alg_hi[H8_300H][SHIFT_ASHIFT][5] = SHIFT_LOOP;
+      shift_alg_hi[H8_300H][SHIFT_ASHIFT][6] = SHIFT_LOOP;
 
-      shift_alg_hi[H8_300H][SHIFT_LSHIFTRT][5] = SHIFT_LOOP ;
-      shift_alg_hi[H8_300H][SHIFT_LSHIFTRT][6] = SHIFT_LOOP ;
+      shift_alg_hi[H8_300H][SHIFT_LSHIFTRT][5] = SHIFT_LOOP;
+      shift_alg_hi[H8_300H][SHIFT_LSHIFTRT][6] = SHIFT_LOOP;
 
-      shift_alg_hi[H8_300H][SHIFT_ASHIFTRT][5] = SHIFT_LOOP ;
-      shift_alg_hi[H8_300H][SHIFT_ASHIFTRT][6] = SHIFT_LOOP ;
-      shift_alg_hi[H8_300H][SHIFT_ASHIFTRT][13] = SHIFT_LOOP ;
-      shift_alg_hi[H8_300H][SHIFT_ASHIFTRT][14] = SHIFT_LOOP ;
+      shift_alg_hi[H8_300H][SHIFT_ASHIFTRT][5] = SHIFT_LOOP;
+      shift_alg_hi[H8_300H][SHIFT_ASHIFTRT][6] = SHIFT_LOOP;
+      shift_alg_hi[H8_300H][SHIFT_ASHIFTRT][13] = SHIFT_LOOP;
+      shift_alg_hi[H8_300H][SHIFT_ASHIFTRT][14] = SHIFT_LOOP;
 
       /* H8S */
-      shift_alg_hi[H8_S][SHIFT_ASHIFTRT][13] = SHIFT_LOOP ;
-      shift_alg_hi[H8_S][SHIFT_ASHIFTRT][14] = SHIFT_LOOP ;
+      shift_alg_hi[H8_S][SHIFT_ASHIFTRT][13] = SHIFT_LOOP;
+      shift_alg_hi[H8_S][SHIFT_ASHIFTRT][14] = SHIFT_LOOP;
     }
 }
 

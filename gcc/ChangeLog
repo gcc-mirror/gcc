@@ -1,4 +1,9 @@
+2002-09-13  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c (h8300_init_once): Fix formatting.
+
 2002-09-13  Matt Austern  <austern@apple.com>
+
 	* cp/cp-tree.h, cp/tree.c: New function non_cast_lvalue_p.
 	* cp/call.c: Change call-by-const-reference mechanism to use
 	non_cast_lvalue_p when deciding whether the create a temporary.
