@@ -1,3 +1,7 @@
+2004-09-06  Release Manager
+
+	* GCC 3.4.2 released.
+
 2004-09-01  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/opt/loop1.C: Do not XFAIL.
