@@ -1,3 +1,7 @@
+2002-01-28  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config.gcc: Revert previous change.
+
 2002-01-28  Andris Pavenis  <pavenis@latnet.lv>
 
 	* config/i386/djgpp.h: Use STRIP_NAME_ENCODING in macro UNIQUE_SECTION
