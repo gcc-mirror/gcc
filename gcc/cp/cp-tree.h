@@ -1009,11 +1009,6 @@ extern int warn_implicit;
 
 extern int warn_ctor_dtor_privacy;
 
-/* Nonzero means warn about function definitions that default the return type
-   or that use a null return and have a return-type other than void.  */
-
-extern int warn_return_type;
-
 /* Nonzero means warn about deprecated conversion from string constant to
    `char *'.  */
 
@@ -4317,7 +4312,6 @@ extern tree finish_global_stmt_expr             PARAMS ((tree));
 /* in spew.c */
 extern void init_spew				PARAMS ((void));
 extern int peekyylex				PARAMS ((void));
-extern int yylex				PARAMS ((void));
 extern tree arbitrate_lookup			PARAMS ((tree, tree, tree));
 extern tree frob_opname                         PARAMS ((tree));
 extern void maybe_snarf_defarg			PARAMS ((void));
