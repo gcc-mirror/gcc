@@ -355,21 +355,19 @@ gen_rtx_CONST_INT (mode, arg)
    only at run-time.  */
 
 rtx
-gen_rtx_CONST_DOUBLE (mode, arg0, arg1, arg2)
+gen_rtx_CONST_DOUBLE (mode, arg0, arg1)
      enum machine_mode mode;
-     rtx arg0;
-     HOST_WIDE_INT arg1, arg2;
+     HOST_WIDE_INT arg0, arg1;
 {
   rtx r = rtx_alloc (CONST_DOUBLE);
   int i;
 
   PUT_MODE (r, mode);
-  XEXP (r, 0) = arg0;
-  X0EXP (r, 1) = NULL_RTX;
+  X0EXP (r, 0) = NULL_RTX;
+  XWINT (r, 1) = arg0;
   XWINT (r, 2) = arg1;
-  XWINT (r, 3) = arg2;
 
-  for (i = GET_RTX_LENGTH (CONST_DOUBLE) - 1; i > 3; --i)
+  for (i = GET_RTX_LENGTH (CONST_DOUBLE) - 1; i > 2; --i)
     XWINT (r, i) = 0;
 
   return r;
@@ -516,10 +514,10 @@ gen_rtx VPARAMS ((enum rtx_code code, enum machine_mode mode, ...))
 
     case CONST_DOUBLE:
       {
-	rtx arg0 = va_arg (p, rtx);
+	HOST_WIDE_INT arg0 = va_arg (p, HOST_WIDE_INT);
 	HOST_WIDE_INT arg1 = va_arg (p, HOST_WIDE_INT);
-	HOST_WIDE_INT arg2 = va_arg (p, HOST_WIDE_INT);
-        rt_val = gen_rtx_CONST_DOUBLE (mode, arg0, arg1, arg2);
+
+        rt_val = gen_rtx_CONST_DOUBLE (mode, arg0, arg1);
       }
       break;
 
@@ -4683,7 +4681,6 @@ init_emit_once (line_numbers)
 	    CONST_DOUBLE_HIGH (tem) = 0;
 
 	  memcpy (&CONST_DOUBLE_LOW (tem), &u, sizeof u);
-	  CONST_DOUBLE_MEM (tem) = cc0_rtx;
 	  CONST_DOUBLE_CHAIN (tem) = NULL_RTX;
 	  PUT_MODE (tem, mode);
 

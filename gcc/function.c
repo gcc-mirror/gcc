@@ -386,7 +386,6 @@ pop_function_context_from (context)
   reg_renumber = 0;
 
   restore_emit_status (p);
-  restore_varasm_status (p);
 
   if (restore_lang_status)
     (*restore_lang_status) (p);
