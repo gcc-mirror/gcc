@@ -195,8 +195,6 @@ extern int errno;
 #define WEXITSTATUS(S) (((S) & 0xff00) >> 8)
 #endif
 
-
-
 #ifndef bcopy
 # ifdef HAVE_BCOPY
 #  ifdef NEED_DECLARATION_BCOPY
@@ -255,10 +253,6 @@ extern double atof ();
 extern long atol();
 #endif
 
-#ifdef NEED_DECLARATION_FREE
-extern void free ();
-#endif
-
 #ifdef NEED_DECLARATION_GETCWD
 extern char *getcwd ();
 #endif
@@ -273,6 +267,26 @@ extern char *getwd ();
 
 #ifdef NEED_DECLARATION_SBRK
 extern char *sbrk ();
+#endif
+
+#ifdef HAVE_MALLOC_H
+#include <malloc.h>
+#endif
+
+#ifdef NEED_DECLARATION_FREE
+extern void free ();
+#endif
+
+#ifdef NEED_DECLARATION_MALLOC
+extern char *malloc ();
+#endif
+
+#ifdef NEED_DECLARATION_CALLOC
+extern char *calloc ();
+#endif
+
+#ifdef NEED_DECLARATION_REMALLOC
+extern char *realloc ();
 #endif
 
 #ifdef HAVE_STRERROR
