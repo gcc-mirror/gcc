@@ -2108,6 +2108,8 @@ delete_unreachable_blocks ()
 {
   int i;
 
+  find_unreachable_blocks ();
+
   /* Delete all unreachable basic blocks.  Count down so that we
      don't interfere with the block renumbering that happens in
      flow_delete_block.  */
