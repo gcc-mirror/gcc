@@ -1,5 +1,5 @@
 /* Define per-register tables for data flow info and register allocation.
-   Copyright (C) 1987 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -146,3 +146,12 @@ extern int caller_save_needed;
 #ifndef CALLER_SAVE_PROFITABLE
 #define CALLER_SAVE_PROFITABLE(REFS, CALLS)  (4 * (CALLS) < (REFS))
 #endif
+
+/* Allocated in local_alloc.  */
+
+/* A list of SCRATCH rtl allocated by local-alloc.  */
+extern rtx *scratch_list;
+/* The basic block in which each SCRATCH is used.  */
+extern int *scratch_block;
+/* The length of the arrays pointed to by scratch_block and scratch_list.  */
+extern int scratch_list_length;
