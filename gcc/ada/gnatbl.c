@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2001 Free Software Foundation, Inc.          *
+ *          Copyright (C) 1992-2003 Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -289,7 +289,7 @@ main (int argc, char **argv)
 	{
 	  if (done_an_ali)
 	    {
-	      fprintf (stderr, 
+	      fprintf (stderr,
 		       "Sorry - cannot handle more than one ALI file\n");
 	      exit (1);
 	    }
@@ -323,7 +323,7 @@ main (int argc, char **argv)
 		    exit (retcode);
 		}
 	    }
-	  else 
+	  else
 	    addarg (argv[i]);
 	}
 #ifdef MSDOS

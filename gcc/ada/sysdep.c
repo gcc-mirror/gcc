@@ -45,6 +45,9 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include "time.h"
+#ifdef VMS
+#include <unixio.h>
+#endif
 #else
 #include "config.h"
 #include "system.h"

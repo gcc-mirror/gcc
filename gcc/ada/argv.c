@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *         Copyright (C) 1992-2002 Free Software Foundation, Inc.           *
+ *         Copyright (C) 1992-2003 Free Software Foundation, Inc.           *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -83,7 +83,7 @@ __gnat_len_arg (int arg_num)
 }
 
 void
-__gnat_fill_arg ( char *a, int i)
+__gnat_fill_arg (char *a, int i)
 {
   strncpy (a, gnat_argv[i], strlen(gnat_argv[i]));
 }

@@ -82,17 +82,17 @@ extern struct Machine_State *(*Get_Machine_State_Addr) (void);
 
 #define Check_Abort_Status     \
                       system__soft_links__check_abort_status
-extern int    (*Check_Abort_Status) (void);
+extern int (*Check_Abort_Status) (void);
 
 #define Raise_From_Signal_Handler \
                       ada__exceptions__raise_from_signal_handler
-extern void   Raise_From_Signal_Handler (struct Exception_Data *, const char *);
+extern void Raise_From_Signal_Handler (struct Exception_Data *, const char *);
 
 #define Propagate_Signal_Exception \
                       __gnat_propagate_sig_exc
-extern void   Propagate_Signal_Exception (struct Machine_State *, 
-                                          struct Exception_Data *,
-                                          const char *);
+extern void Propagate_Signal_Exception (struct Machine_State *,
+                                        struct Exception_Data *,
+                                        const char *);
 
 /* Copies of global values computed by the binder */
 int   __gl_main_priority            = -1;

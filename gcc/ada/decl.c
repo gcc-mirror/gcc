@@ -166,7 +166,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	&& UI_Is_In_Int_Range (Esize (gnat_entity)))
        ? MIN (UI_To_Int (Esize (gnat_entity)),
 	      IN (kind, Float_Kind)
-	      ? LONG_DOUBLE_TYPE_SIZE
+	      ? fp_prec_to_size (LONG_DOUBLE_TYPE_SIZE)
 	      : IN (kind, Access_Kind) ? POINTER_SIZE * 2
 	      : LONG_LONG_TYPE_SIZE)
        : LONG_LONG_TYPE_SIZE);
@@ -1337,14 +1337,15 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  gnu_type = make_signed_type (esize);
 	  TYPE_VAX_FLOATING_POINT_P (gnu_type) = 1;
 	  SET_TYPE_DIGITS_VALUE (gnu_type,
-				 UI_To_Int (Digits_Value (gnat_entity)));
+				 UI_To_gnu (Digits_Value (gnat_entity),
+					    sizetype));
 	  break;
 	}
 
       /* The type of the Low and High bounds can be our type if this is
 	 a type from Standard, so set them at the end of the function.  */
       gnu_type = make_node (REAL_TYPE);
-      TYPE_PRECISION (gnu_type) = esize;
+      TYPE_PRECISION (gnu_type) = fp_size_to_prec (esize);
       layout_type (gnu_type);
       break;
 
@@ -1560,8 +1561,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	tem = gnat_to_gnu_type (Component_Type (gnat_entity));
 
 	/* Get and validate any specified Component_Size, but if Packed,
-	   ignore it since the front end will have taken care of it.  Also,
-	   allow sizes not a multiple of Storage_Unit if packed.  */
+	   ignore it since the front end will have taken care of it. */
 	gnu_comp_size
 	  = validate_size (Component_Size (gnat_entity), tem,
 			   gnat_entity,
@@ -1884,8 +1884,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    }
 
 	  /* Get and validate any specified Component_Size, but if Packed,
-	     ignore it since the front end will have taken care of it.  Also,
-	     allow sizes not a multiple of Storage_Unit if packed.  */
+	     ignore it since the front end will have taken care of it. */
 	  gnu_comp_size
 	    = validate_size (Component_Size (gnat_entity), gnu_type,
 			     gnat_entity,
@@ -4924,10 +4923,14 @@ gnat_to_gnu_field (Entity_Id gnat_field,
     gnu_size = validate_size (Esize (gnat_field), gnu_field_type,
 			      gnat_field, FIELD_DECL, 0, 1);
 
-  /* If the field's type is a left-justified modular type, make the field
-     the type of the inner object unless it is aliases.  We don't need
-     the the wrapper here and it can prevent packing.  */
-  if (! Is_Aliased (gnat_field) && TREE_CODE (gnu_field_type) == RECORD_TYPE
+  /* If the field's type is left-justified modular, the wrapper can prevent
+     packing so we make the field the type of the inner object unless the
+     situation forbids it. We may not do that when the field is addressable_p,
+     typically because in that case this field may later be passed by-ref for
+     a formal argument expecting the left justification.  The condition below
+     is then matching the addressable_p code for COMPONENT_REF.  */
+  if (! Is_Aliased (gnat_field) && flag_strict_aliasing
+      && TREE_CODE (gnu_field_type) == RECORD_TYPE
       && TYPE_LEFT_JUSTIFIED_MODULAR_P (gnu_field_type))
     gnu_field_type = TREE_TYPE (TYPE_FIELDS (gnu_field_type));
 
@@ -5050,17 +5053,6 @@ gnat_to_gnu_field (Entity_Id gnat_field,
 
       if (Is_Atomic (gnat_field))
 	check_ok_for_atomic (gnu_field_type, gnat_field, 0);
-
-      if (gnu_pos != 0 && TYPE_MODE (gnu_field_type) == BLKmode
-	  && (! integer_zerop (size_binop (TRUNC_MOD_EXPR, gnu_pos,
-					   bitsize_unit_node)))
-	  && TYPE_MODE (gnu_field_type) == BLKmode)
-	{
-	  post_error_ne ("fields of& must start at storage unit boundary",
-			 First_Bit (Component_Clause (gnat_field)),
-			 Etype (gnat_field));
-	  gnu_pos = 0;
-	}
     }
 
   /* If the record has rep clauses and this is the tag field, make a rep
@@ -5070,17 +5062,6 @@ gnat_to_gnu_field (Entity_Id gnat_field,
     {
       gnu_pos = bitsize_zero_node;
       gnu_size = TYPE_SIZE (gnu_field_type);
-    }
-
-  /* If a size is specified and this is a BLKmode field, it must be an
-     integral number of bytes.  */
-  if (gnu_size != 0 && TYPE_MODE (gnu_field_type) == BLKmode
-      && ! integer_zerop (size_binop (TRUNC_MOD_EXPR, gnu_size,
-				      bitsize_unit_node)))
-    {
-      post_error_ne ("size of fields of& must be multiple of a storage unit",
-		     gnat_field, Etype (gnat_field));
-      gnu_pos = gnu_size = 0;
     }
 
   /* We need to make the size the maximum for the type if it is
@@ -5341,11 +5322,11 @@ components_to_record (tree gnu_record_type,
 	  gnu_variant_list = gnu_field;
 	}
 
-      /* We can delete any empty variants from the end.  This may leave none
-	 left.  Note we cannot delete variants from anywhere else.  */
-      while (gnu_variant_list != 0
-	     && TYPE_FIELDS (TREE_TYPE (gnu_variant_list)) == 0)
-	gnu_variant_list = TREE_CHAIN (gnu_variant_list);
+      /* We use to delete the empty variants from the end. However,
+         we no longer do that because we need them to generate complete
+         debugging information for the variant record.  Otherwise,
+         the union type definition will be missing the fields associated
+         to these empty variants.  */
 
       /* Only make the QUAL_UNION_TYPE if there are any non-empty variants.  */
       if (gnu_variant_list != 0)

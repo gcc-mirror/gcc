@@ -48,7 +48,7 @@ package System.Threads is
 
    type ATSD_Access is access ATSD;
 
-   --  Get/Set for the attributes of the current thread.
+   --  Get/Set for the attributes of the current thread
 
    function  Get_Jmpbuf_Address return  Address;
    pragma Inline (Get_Jmpbuf_Address);
@@ -64,6 +64,73 @@ package System.Threads is
 
    function Get_Current_Excep return EOA;
    pragma Inline (Get_Current_Excep);
+
+   --------------------------
+   -- Thread Body Handling --
+   --------------------------
+
+   --  The subprograms in this section are called by the expansion of a
+   --  subprogram body to which a Thread_Body pragma has been applied:
+
+   --  Given a subprogram body
+
+   --     procedure xyz (params ....) is    -- can also be a function
+   --       <user declarations>
+   --     begin
+   --       <user statements>
+   --     <user exception handlers>
+   --     end xyz;
+
+   --  The expansion resulting from use of the Thread_Body pragma is:
+
+   --     procedure xyz (params ...) is
+
+   --       _Secondary_Stack : aliased
+   --          Storage_Elements.Storage_Array
+   --            (1 .. Storage_Offset (Sec_Stack_Size));
+   --       for _Secondary_Stack'Alignment use Standard'Maximum_Alignment;
+
+   --       _Process_ATSD : aliased System.Threads.ATSD;
+
+   --     begin
+   --        System.Threads.Thread_Body_Enter;
+   --          (_Secondary_Stack'Address,
+   --           _Secondary_Stack'Length,
+   --           _Process_ATSD'Address);
+
+   --        declare
+   --           <user declarations>
+   --        begin
+   --           <user statements>
+   --        <user exception handlers>
+   --        end;
+
+   --       System.Threads.Thread_Body_Leave;
+
+   --     exception
+   --        when E : others =>
+   --          System.Threads.Thread_Body_Exceptional_Exit (E);
+   --     end;
+
+   --  Note the exception handler is omitted if pragma Restriction
+   --  No_Exception_Handlers is currently active.
+
+   --  Note: the secondary stack size (Sec_Stack_Size) comes either from
+   --  the pragma, if specified, or is the default value taken from
+   --  the declaration in System.Secondary_Stack.
+
+   procedure Thread_Body_Enter
+     (Sec_Stack_Address    : System.Address;
+      Sec_Stack_Size       : Natural;
+      Process_ATSD_Address : System.Address);
+   --  Enter thread body, see above for details
+
+   procedure Thread_Body_Leave;
+   --  Leave thread body (normally), see above for details
+
+   procedure Thread_Body_Exceptional_Exit
+     (EO : Ada.Exceptions.Exception_Occurrence);
+   --  Leave thread body (abnormally on exception), see above for details
 
 private
 

@@ -120,20 +120,21 @@ get_target_long_long_size (void)
 Pos
 get_target_float_size (void)
 {
-  return FLOAT_TYPE_SIZE;
+  return fp_prec_to_size (FLOAT_TYPE_SIZE);
 }
 
 Pos
 get_target_double_size (void)
 {
-  return DOUBLE_TYPE_SIZE;
+  return fp_prec_to_size (DOUBLE_TYPE_SIZE);
 }
 
 Pos
 get_target_long_double_size (void)
 {
-  return WIDEST_HARDWARE_FP_SIZE;
+  return fp_prec_to_size (WIDEST_HARDWARE_FP_SIZE);
 }
+
 
 Pos
 get_target_pointer_size (void)

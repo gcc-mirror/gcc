@@ -3363,7 +3363,10 @@ package body Make is
          --  cannot be specified on the command line.
 
          if Osint.Number_Of_Files /= 0 then
-            if Projects.Table (Main_Project).Library then
+            if Projects.Table (Main_Project).Library
+              and then not Unique_Compile
+              and then ((not Make_Steps) or else Bind_Only or else Link_Only)
+            then
                Make_Failed ("cannot specify a main program " &
                             "on the command line for a library project file");
 

@@ -97,76 +97,73 @@ package body GNAT.Traceback.Symbolic is
        Value, Value),
        User_Act_Proc);
 
-   function Demangle_Ada (Mangled : String) return String;
-   --  Demangles an Ada symbol. Removes leading "_ada_" and trailing
+   function Decode_Ada_Name (Encoded_Name : String) return String;
+   --  Decodes an Ada identifier name. Removes leading "_ada_" and trailing
    --  __{DIGIT}+ or ${DIGIT}+, converts other "__" to '.'
 
+   ---------------------
+   -- Decode_Ada_Name --
+   ---------------------
 
-   ------------------
-   -- Demangle_Ada --
-   ------------------
+   function Decode_Ada_Name (Encoded_Name : String) return String is
+      Decoded_Name : String (1 .. Encoded_Name'Length);
+      Pos          : Integer := Encoded_Name'First;
+      Last         : Integer := Encoded_Name'Last;
+      DPos         : Integer := 1;
 
-   function Demangle_Ada (Mangled : String) return String is
-      Demangled : String (1 .. Mangled'Length);
-      Pos  : Integer := Mangled'First;
-      Last : Integer := Mangled'Last;
-      DPos : Integer := 1;
    begin
-
       if Pos > Last then
          return "";
       end if;
 
       --  Skip leading _ada_
 
-      if Mangled'Length > 4 and then Mangled (Pos .. Pos + 4) = "_ada_" then
+      if Encoded_Name'Length > 4
+        and then Encoded_Name (Pos .. Pos + 4) = "_ada_"
+      then
          Pos := Pos + 5;
       end if;
 
       --  Skip trailing __{DIGIT}+ or ${DIGIT}+
 
-      if Mangled (Last) in '0' .. '9' then
-
+      if Encoded_Name (Last) in '0' .. '9' then
          for J in reverse Pos + 2 .. Last - 1 loop
-
-            case Mangled (J) is
+            case Encoded_Name (J) is
                when '0' .. '9' =>
                   null;
                when '$' =>
                   Last := J - 1;
                   exit;
                when '_' =>
-                  if Mangled (J - 1) = '_' then
+                  if Encoded_Name (J - 1) = '_' then
                      Last := J - 2;
                   end if;
                   exit;
                when others =>
                   exit;
             end case;
-
          end loop;
-
       end if;
 
-      --  Now just copy Mangled to Demangled, converting "__" to '.' on the fly
+      --  Now just copy encoded name to decoded name, converting "__" to '.'
 
       while Pos <= Last loop
-
-         if Mangled (Pos) = '_' and then Mangled (Pos + 1) = '_'
-           and then Pos /= Mangled'First then
-            Demangled (DPos) := '.';
+         if Encoded_Name (Pos) = '_' and then Encoded_Name (Pos + 1) = '_'
+           and then Pos /= Encoded_Name'First
+         then
+            Decoded_Name (DPos) := '.';
             Pos := Pos + 2;
+
          else
-            Demangled (DPos) := Mangled (Pos);
+            Decoded_Name (DPos) := Encoded_Name (Pos);
             Pos := Pos + 1;
          end if;
 
          DPos := DPos + 1;
-
       end loop;
 
-      return Demangled (1 .. DPos - 1);
-   end Demangle_Ada;
+      return Decoded_Name (1 .. DPos - 1);
+   end Decode_Ada_Name;
 
    ------------------------
    -- Symbolic_Traceback --
@@ -225,7 +222,7 @@ package body GNAT.Traceback.Symbolic is
                First : Integer := Len + 1;
                Last  : Integer := First + 80 - 1;
                Pos   : Integer;
-               Routine_Name_D : String := Demangle_Ada
+               Routine_Name_D : String := Decode_Ada_Name
                  (To_Ada
                     (Routine_Name.Data (1 .. size_t (Routine_Name.Count)),
                      False));

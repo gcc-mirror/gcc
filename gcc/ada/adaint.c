@@ -50,6 +50,10 @@
 
 #endif /* VxWorks */
 
+#ifdef VMS
+#define _POSIX_EXIT 1
+#endif
+
 #ifdef IN_RTS
 #include "tconfig.h"
 #include "tsystem.h"
@@ -57,6 +61,9 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <time.h>
+#ifdef VMS
+#include <unixio.h>
+#endif
 
 /* We don't have libiberty, so use malloc.  */
 #define xmalloc(S) malloc (S)
@@ -1463,8 +1470,13 @@ __gnat_is_symbolic_link (char *name ATTRIBUTE_UNUSED)
 
 #ifdef VMS
 /* Defined in VMS header files. */
+#if defined (__ALPHA)
 #define fork() (decc$$alloc_vfork_blocks() >= 0 ? \
-               LIB$GET_CURRENT_INVO_CONTEXT (decc$$get_vfork_jmpbuf()) : -1)
+		LIB$GET_CURRENT_INVO_CONTEXT (decc$$get_vfork_jmpbuf()) : -1)
+#elif defined (__IA64)
+#define fork() (decc$$alloc_vfork_blocks() >= 0 ? \
+		LIB$I64_GET_CURR_INVO_CONTEXT(decc$$get_vfork_jmpbuf()) : -1)
+#endif
 #endif
 
 #if defined (sun) && defined (__SVR4)
@@ -1816,12 +1828,7 @@ __gnat_waitpid (int pid)
 void
 __gnat_os_exit (int status)
 {
-#ifdef VMS
-  /* Exit without changing 0 to 1.  */
-  __posix_exit (status);
-#else
   exit (status);
-#endif
 }
 
 /* Locate a regular file, give a Path value.  */

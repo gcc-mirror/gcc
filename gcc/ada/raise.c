@@ -940,8 +940,8 @@ get_action_description_for (_Unwind_Context *uw_context,
 static void
 setup_to_install (_Unwind_Context *uw_context,
                   _Unwind_Exception *uw_exception,
-                  int uw_filter,
-                  _Unwind_Ptr uw_landing_pad)
+                  _Unwind_Ptr uw_landing_pad,
+                  int uw_filter)
 {
 #ifndef EH_RETURN_DATA_REGNO
   /* We should not be called if the appropriate underlying support is not

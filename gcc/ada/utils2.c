@@ -153,8 +153,8 @@ known_alignment (tree exp)
      We always compute a type_alignment value and return the MAX of it
      compared with what we get from the expression tree. Just set the
      type_alignment value to 0 when the type information is to be ignored.  */
-  type_alignment 
-    = ((POINTER_TYPE_P (TREE_TYPE (exp)) 
+  type_alignment
+    = ((POINTER_TYPE_P (TREE_TYPE (exp))
 	&& ! TYPE_IS_DUMMY_P (TREE_TYPE (TREE_TYPE (exp))))
        ? TYPE_ALIGN (TREE_TYPE (TREE_TYPE (exp))) : 0);
 
@@ -165,7 +165,7 @@ known_alignment (tree exp)
     case NON_LVALUE_EXPR:
       /* Conversions between pointers and integers don't change the alignment
 	 of the underlying object.  */
-      this_alignment = known_alignment (TREE_OPERAND (exp, 0));	 
+      this_alignment = known_alignment (TREE_OPERAND (exp, 0));	
       break;
 
     case PLUS_EXPR:
@@ -357,7 +357,7 @@ compare_arrays (tree result_type, tree a1, tree a2)
       tree comparison, this_a1_is_null, this_a2_is_null;
 
       /* If the length of the first array is a constant, swap our operands
-	 unless the length of the second array is the constant zero.  
+	 unless the length of the second array is the constant zero.
 	 Note that we have set the `length' values to the length - 1.  */
       if (TREE_CODE (length1) == INTEGER_CST
 	  && ! integer_zerop (fold (build (PLUS_EXPR, bt, length2,
@@ -406,7 +406,7 @@ compare_arrays (tree result_type, tree a1, tree a2)
 	  nbt = get_base_type (TREE_TYPE (ub1));
 
 	  comparison
-	    = build_binary_op (EQ_EXPR, result_type, 
+	    = build_binary_op (EQ_EXPR, result_type,
 			       build_binary_op (MINUS_EXPR, nbt, ub1, lb1),
 			       build_binary_op (MINUS_EXPR, nbt, ub2, lb2));
 
@@ -491,7 +491,7 @@ compare_arrays (tree result_type, tree a1, tree a2)
    modulus.  */
 
 static tree
-nonbinary_modular_operation (enum tree_code op_code, 
+nonbinary_modular_operation (enum tree_code op_code,
                              tree type,
                              tree lhs,
                              tree rhs)
@@ -591,8 +591,8 @@ nonbinary_modular_operation (enum tree_code op_code,
    have to do here is validate the work done by SEM and handle subtypes.  */
 
 tree
-build_binary_op (enum tree_code op_code, 
-                 tree result_type, 
+build_binary_op (enum tree_code op_code,
+                 tree result_type,
                  tree left_operand,
                  tree right_operand)
 {
@@ -937,7 +937,7 @@ build_binary_op (enum tree_code op_code,
 	    gigi_abort (505);
 	}
 
-      /* If we are comparing a fat pointer against zero, we need to 
+      /* If we are comparing a fat pointer against zero, we need to
 	 just compare the data pointer.  */
       else if (TYPE_FAT_POINTER_P (left_base_type)
 	       && TREE_CODE (right_operand) == CONSTRUCTOR
@@ -1651,7 +1651,7 @@ build_simple_component_ref (tree record_variable,
 	  if (DECL_INTERNAL_P (new_field))
 	    {
 	      tree field_ref
-		= build_simple_component_ref (record_variable, 
+		= build_simple_component_ref (record_variable,
 					      NULL_TREE, new_field, no_fold_p);
 	      ref = build_simple_component_ref (field_ref, NULL_TREE, field,
 						no_fold_p);
@@ -1731,7 +1731,7 @@ build_call_alloc_dealloc (tree gnu_obj,
 
   if (Present (gnat_proc))
     {
-      /* The storage pools are obviously always tagged types, but the 
+      /* The storage pools are obviously always tagged types, but the
 	 secondary stack uses the same mechanism and is not tagged */
       if (Is_Tagged_Type (Etype (gnat_pool)))
 	{
@@ -1763,7 +1763,7 @@ build_call_alloc_dealloc (tree gnu_obj,
 					convert (gnu_size_type, gnu_size)));
 	  gnu_args
 	    = chainon (gnu_args,
-		       build_tree_list (NULL_TREE, 
+		       build_tree_list (NULL_TREE,
 					convert (gnu_size_type, gnu_align)));
 
 	  gnu_call = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (gnu_proc)),
@@ -1776,7 +1776,7 @@ build_call_alloc_dealloc (tree gnu_obj,
       else
 	{
 	  /* The size is the second parameter */
-	  Entity_Id gnat_size_type 
+	  Entity_Id gnat_size_type
 	    = Etype (Next_Formal (First_Formal (gnat_proc)));
 	  tree gnu_size_type = gnat_to_gnu_type (gnat_size_type);
 	  tree gnu_proc = gnat_to_gnu (gnat_proc);
@@ -1998,7 +1998,7 @@ build_allocator (tree type,
   return convert (result_type, result);
 }
 
-/* Fill in a VMS descriptor for EXPR and return a constructor for it. 
+/* Fill in a VMS descriptor for EXPR and return a constructor for it.
    GNAT_FORMAL is how we find the descriptor record.  */
 
 tree

@@ -43,6 +43,8 @@ package body System.Threads is
    function From_Address is
       new Unchecked_Conversion (Address, ATSD_Access);
 
+
+
    -----------------------
    -- Get_Current_Excep --
    -----------------------
@@ -97,5 +99,42 @@ package body System.Threads is
       pragma Assert (Current_ATSD /= System.Null_Address);
       CTSD.Sec_Stack_Addr := Addr;
    end Set_Sec_Stack_Addr;
+
+   -----------------------
+   -- Thread_Body_Enter --
+   -----------------------
+
+   procedure Thread_Body_Enter
+     (Sec_Stack_Address    : System.Address;
+      Sec_Stack_Size       : Natural;
+      Process_ATSD_Address : System.Address)
+   is
+      pragma Unreferenced (Sec_Stack_Address);
+      pragma Unreferenced (Sec_Stack_Size);
+      pragma Unreferenced (Process_ATSD_Address);
+   begin
+      null;
+   end Thread_Body_Enter;
+
+   ----------------------------------
+   -- Thread_Body_Exceptional_Exit --
+   ----------------------------------
+
+   procedure Thread_Body_Exceptional_Exit
+     (EO : Ada.Exceptions.Exception_Occurrence)
+   is
+      pragma Unreferenced (EO);
+   begin
+      null;
+   end Thread_Body_Exceptional_Exit;
+
+   -----------------------
+   -- Thread_Body_Leave --
+   -----------------------
+
+   procedure Thread_Body_Leave is
+   begin
+      null;
+   end Thread_Body_Leave;
 
 end System.Threads;

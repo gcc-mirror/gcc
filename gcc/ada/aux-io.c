@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *           Copyright (C) 1992-2001 Free Software Foundation, Inc.         *
+ *           Copyright (C) 1992-2003 Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -52,20 +52,20 @@ void *null_function (void);
 int c_fileno (FILE *);
 
 FILE *
-c_stdin (void) 
-{ 
-  return stdin; 
+c_stdin (void)
+{
+  return stdin;
 }
 
 FILE *
-c_stdout (void) 
-{ 
+c_stdout (void)
+{
   return stdout;
 }
 
 FILE *
-c_stderr (void) 
-{ 
+c_stderr (void)
+{
   return stderr;
 }
 
@@ -75,25 +75,25 @@ c_stderr (void)
 #define SEEK_END 2  /* Set file pointer to the size of the file plus offset */
 #endif
 
-int   
-seek_set_function (void)  
-{ 
-  return SEEK_SET; 
+int
+seek_set_function (void)
+{
+  return SEEK_SET;
 }
 
-int   
-seek_end_function (void)  
-{ 
-  return SEEK_END; 
+int
+seek_end_function (void)
+{
+  return SEEK_END;
 }
 
-void *null_function (void)  
-{ 
-  return NULL;     
+void *null_function (void)
+{
+  return NULL;
 }
 
-int 
-c_fileno (FILE *s) 
-{ 
-  return fileno (s); 
+int
+c_fileno (FILE *s)
+{
+  return fileno (s);
 }
