@@ -977,15 +977,7 @@ ereal_isneg (x)
  * this affects only the atan2 function and others that use it.
  */
 
-/*
-Cephes Math Library Release 2.1:  January, 1989
-Copyright 1984, 1987, 1989 by Stephen L. Moshier
-Direct inquiries to 30 Frost Street, Cambridge, MA 02140
-*/
-
-
-/* Constant definitions for math error conditions
- */
+/* Constant definitions for math error conditions.  */
 
 #define DOMAIN		1	/* argument domain error */
 #define SING		2	/* argument singularity */
