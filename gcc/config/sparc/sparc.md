@@ -806,20 +806,21 @@
 ;; in an fp register, or an fp number is an integer register.
 
 (define_insn ""
-  [(set (match_operand:SI 0 "reg_or_nonsymb_mem_operand" "=r,r,r,f,Q,Q")
-	(match_operand:SI 1 "move_operand" "rI,K,Q,!Q,rJ,!f"))]
+  [(set (match_operand:SI 0 "reg_or_nonsymb_mem_operand" "=r,f,r,r,f,Q,Q")
+	(match_operand:SI 1 "move_operand" "rI,!f,K,Q,!Q,rJ,!f"))]
   "register_operand (operands[0], SImode)
    || register_operand (operands[1], SImode)
    || operands[1] == const0_rtx"
   "@
    mov %1,%0
+   fmovs %1,%0
    sethi %%hi(%a1),%0
    ld %1,%0
    ld %1,%0
    st %r1,%0
    st %r1,%0"
-  [(set_attr "type" "move,move,load,load,store,store")
-   (set_attr "length" "*,1,*,*,*,*")])
+  [(set_attr "type" "move,fp,move,load,load,store,store")
+   (set_attr "length" "*,*,1,*,*,*,*")])
 
 ;; Special pic pattern, for loading the address of a label into a register.
 ;; It clobbers o7 because the call puts the return address (i.e. pc value)
