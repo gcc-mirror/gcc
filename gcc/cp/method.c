@@ -1,6 +1,6 @@
 /* Handle the hair of processing (but not expanding) inline functions.
    Also manage function and variable name overloading.
-   Copyright (C) 1987, 89, 92, 93, 94, 95, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 89, 92-96, 1997 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
    This file is part of GNU CC.
@@ -1039,8 +1039,10 @@ build_overload_name (parmtypes, begin, end)
 	  }
 
 	case UNKNOWN_TYPE:
-	  /* This will take some work.  */
-	  OB_PUTC ('?');
+	  /* We can get here if __null is defined to have type ({unkown
+	     type}*), which it is if -ansi is not used.  Treat this
+	     like 'void*'.  */
+	  OB_PUTC ('v');
 	  break;
 
 	case TEMPLATE_TYPE_PARM:
