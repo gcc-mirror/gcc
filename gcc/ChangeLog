@@ -1,5 +1,8 @@
 Wed Nov 28 08:21:47 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* stor-layout.c (put_pending_size): Look for SAVE_EXPR if not at top
+	level; only add to pending_sizes if find it.
+
 	* langhooks.c (lhd_safe_from_p): Add ATTRIBUTE_UNUSED.
 
 	* df.c (iterate_dataflow_sbitmap, iterate_dataflow_bitmap):
