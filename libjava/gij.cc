@@ -31,7 +31,8 @@ help ()
   printf ("  --cp LIST         set class path\n");
   printf ("  --classpath LIST  set class path\n");
   printf ("  -DVAR=VAL         define property VAR with value VAL\n");
-  printf ("  --help            print this help, then exit\n");
+  printf ("  -?, --help        print this help, then exit\n");
+  printf ("  -X                print help on supported -X options, then exit\n");
   printf ("  --ms=NUMBER       set initial heap size\n");
   printf ("  --mx=NUMBER       set maximum heap size\n");
   printf ("  --showversion     print version number, then keep going\n");
