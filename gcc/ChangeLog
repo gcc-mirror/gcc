@@ -9,11 +9,13 @@
 
 2003-02-03  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	PR ice-on-legal-code/9493
 	* cfgcleanup.c (try_forward_edges): Check for null insn.
 
 2003-02-03  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 	Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	PR wrong-code/9492
 	Backport following patches:
 
 	2002-09-16  Richard Henderson  <rth@redhat.com>
