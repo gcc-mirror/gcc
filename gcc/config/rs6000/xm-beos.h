@@ -1,5 +1,5 @@
 /* Configuration for GNU C-compiler for BeOS host.
-   Copyright (C) 1997 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1999 Free Software Foundation, Inc.
    Contributed by Fred Fish (fnf@cygnus.com), based on xm-rs6000.h
    by Richard Kenner (kenner@vlsi1.ultra.nyu.edu).
 
@@ -77,9 +77,6 @@ extern void *alloca ();
 #endif
 #ifndef HAVE_PUTENV
 #define HAVE_PUTENV
-#endif
-#ifndef HAVE_ATEXIT
-#define HAVE_ATEXIT
 #endif
 #ifndef HAVE_RENAME
 #define HAVE_RENAME

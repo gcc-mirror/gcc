@@ -25,9 +25,6 @@ Boston, MA 02111-1307, USA.  */
 /* Do not assume anything about header files.  */
 #define NO_IMPLICIT_EXTERN_C
 
-/* We have libgcc2.  */
-#define HAVE_ATEXIT
-
 #ifndef SUBTARGET_DEFAULT_APCS26
 /* Default is to use APCS-32 mode.  */
 # define TARGET_DEFAULT (ARM_FLAG_APCS_32 | ARM_FLAG_SHORT_BYTE)

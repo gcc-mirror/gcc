@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    DECstation (OSF/1 reference port with OSF/rose) version.
-   Copyright (C) 1991, 1992, 1995, 1996, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1992, 1995, 1996, 1998, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -112,10 +112,6 @@ Boston, MA 02111-1307, USA.  */
 
 /* Default to -G 0 unless doing ecoff work.  */
 #define MIPS_DEFAULT_GVALUE ((TARGET_MIPS_AS) ? 8 : 0)
-
-/* Use atexit for static constructors/destructors, instead of defining
-   our own exit function.  */
-#define HAVE_ATEXIT
 
 /* Generate calls to memcpy, etc., not bcopy, etc.  */
 #define TARGET_MEM_FUNCTIONS

@@ -139,9 +139,6 @@ Boston, MA 02111-1307, USA.  */
 
 /* Miscellaneous parameters.  */
 
-/* Tell libgcc2.c that OpenBSD targets support atexit.  */
-#define HAVE_ATEXIT
-
 /* Controlling debugging info: dbx options.  */
 
 /* Don't use the `xsTAG;' construct in DBX output; OpenBSD systems that

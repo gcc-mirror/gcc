@@ -1,5 +1,5 @@
 /* Definitions for DECstation running BSD as target machine for GNU compiler.
-   Copyright (C) 1993, 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995, 1996, 1997, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -51,10 +51,6 @@ Boston, MA 02111-1307, USA.  */
 #define LINK_SPEC \
   "%{G*} %{EB} %{EL} %{mips1} %{mips2} %{mips3} \
    %{!nostartfiles:%{!r*:%{!e*:-e __start}}} -dc -dp %{static:-Bstatic} %{assert*}"
-
-/* We have atexit(3).  */
-
-#define HAVE_ATEXIT
 
 /* Implicit library calls should use memcpy, not bcopy, etc.  */
 

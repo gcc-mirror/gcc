@@ -2251,8 +2251,5 @@ do {									\
     cost = 20;								\
 } while (0)								\
 
-/* For the sake of libgcc2.c, indicate target supports atexit.  */
-#define HAVE_ATEXIT
-
 #define SH_DYNAMIC_SHIFT_COST \
   (TARGET_HARD_SH4 ? 1 : TARGET_SH3 ? (TARGET_SMALLCODE ? 1 : 2) : 20)

@@ -71,10 +71,6 @@ Boston, MA 02111-1307, USA.  */
  "%{!fsigned-char:-D__CHAR_UNSIGNED__ -D_CHAR_UNSIGNED}"
 #endif
 
-/* Use atexit for static destructors, instead of defining
-   our own exit function.  */
-#define HAVE_ATEXIT
-
 /* Specify the size_t type.  */
 #define SIZE_TYPE "unsigned int"
 

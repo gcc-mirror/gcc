@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for SunOS 4.x
-   Copyright (C) 1994 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -47,3 +47,8 @@ Boston, MA 02111-1307, USA.  */
 	       "ta	0x21\n\t"			\
 	       : /* no outputs */			\
 	       : "r" (ms_flags), "r" (ms_saveret));
+
+/* SunOS has on_exit instead of atexit.  */
+extern int on_exit (void *, void *);	/* The man page says it returns int. */
+#define ON_EXIT(FUNC) on_exit ((FUNC), 0)
+#define NEED_ATEXIT

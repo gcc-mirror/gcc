@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  HP-UX 68000/68020 version.
-   Copyright (C) 1987, 88, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 93, 94, 95, 96, 1997, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -55,10 +55,6 @@ Boston, MA 02111-1307, USA.  */
 
 /* Be compatible with system stddef.h.  */
 #define SIZE_TYPE "unsigned int"
-
-/* Use atexit for static constructors/destructors, instead of defining
-   our own exit function.  */
-#define HAVE_ATEXIT
 
 #include "m68k/m68k.h"
 

@@ -1,5 +1,5 @@
 /* Definitions for non-Linux based ARM systems using ELF
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
    Contributed by Catherine Moore <clm@cygnus.com>
 
 This file is part of GNU CC.
@@ -23,14 +23,6 @@ Boston, MA 02111-1307, USA.  */
 #ifndef TARGET_VERSION
 #define TARGET_VERSION	fputs (" (ARM/ELF non-Linux)", stderr);
 #endif
-
-/* If you don't define HAVE_ATEXIT, and the object file format/OS/whatever 
-   does not support constructors/destructors, then gcc implements destructors
-   by defining its own exit function, which calls the destructors.  This gcc
-   exit function overrides the C library's exit function, and this can cause
-   all kinds of havoc if the C library has a non-trivial exit function.  You
-   really don't want to use the exit function in libgcc2.c.  */
-#define HAVE_ATEXIT
 
 /* Default to using APCS-32 and software floating point.  */
 #ifndef TARGET_DEFAULT

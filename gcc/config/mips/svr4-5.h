@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    MIPS RISC-OS 5.0 System V.4 version.
-   Copyright (C) 1992 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -65,10 +65,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define getpagesize()	sysconf(_SC_PAGE_SIZE)
 #endif /*  L_trampoline */
-
-/* Use atexit for static constructors/destructors, instead of defining
-   our own exit function.  */
-#define HAVE_ATEXIT
 
 /* Generate calls to memcpy, etc., not bcopy, etc.  */
 #define TARGET_MEM_FUNCTIONS

@@ -1752,10 +1752,6 @@ do {									\
    few bits. */
 #define SHIFT_COUNT_TRUNCATED 1
 
-/* Use atexit for static constructors/destructors, instead of defining
-   our own exit function.  */
-#define HAVE_ATEXIT
-
 /* The EV4 is dual issue; EV5/EV6 are quad issue.  */
 #define ISSUE_RATE  (alpha_cpu == PROCESSOR_EV4 ? 2 : 4)
 

@@ -1,7 +1,7 @@
 /* Operating system specific defines to be used when targeting GCC for some
    embedded system running pSOS. We assume GNU tools with ELF, but
    try to maintain compatibility with the MRI tools. Based on svr4.h.
-   Copyright (C) 1996 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -175,9 +175,3 @@ dtors_section ()							\
 /* For pSOS we use DBX debugging info.  */
 
 #define DBX_DEBUGGING_INFO
-
-
-/* Prevent generation of an exit function.  */
-
-#define HAVE_ATEXIT
-

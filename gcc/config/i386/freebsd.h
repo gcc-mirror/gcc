@@ -57,8 +57,6 @@ Boston, MA 02111-1307, USA.  */
 #undef WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE BITS_PER_WORD
 
-#define HAVE_ATEXIT
-
 /* Override the default comment-starter of "/".  */
 
 #undef ASM_COMMENT_START

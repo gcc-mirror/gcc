@@ -1,5 +1,5 @@
 /* Definitions for SPARC running Linux-based GNU systems with a.out.
-   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1999 Free Software Foundation, Inc.
    Contributed by Eddie C. Dost (ecd@skynet.be)
 
 This file is part of GNU CC.
@@ -24,9 +24,6 @@ Boston, MA 02111-1307, USA.  */
 
 /* Don't assume anything about the header files. */
 #define NO_IMPLICIT_EXTERN_C
-
-#undef HAVE_ATEXIT
-#define HAVE_ATEXIT
 
 /* GNU/Linux uses ctype from glibc.a. I am not sure how complete it is.
    For now, we play safe. It may change later. */

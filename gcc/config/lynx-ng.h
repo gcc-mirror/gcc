@@ -1,5 +1,5 @@
 /* Target independent definitions for LynxOS, using Lynx's old as and ld.
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -97,10 +97,6 @@ Boston, MA 02111-1307, USA.  */
     warning ("-msystem-v and -p are incompatible");		\
   if (TARGET_SYSTEM_V && TARGET_THREADS)			\
     warning ("-msystem-v and -mthreads are incompatible"); }
-
-/* Define this so that C++ destructors will use atexit.  */
-
-#define HAVE_ATEXIT
 
 /* This is defined only so that we can find the assembler.  Everything else
    is in /bin.  */

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  SNI SINIX version.
-   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1999 Free Software Foundation, Inc.
    Contributed by Marco Walther (Marco.Walther@mch.sni.de).
 
 This file is part of GNU CC.
@@ -53,10 +53,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define getpagesize()	sysconf(_SC_PAGE_SIZE)
 #endif /*  L_trampoline */
-
-/* Use atexit for static constructors/destructors, instead of defining
-   our own exit function.  */
-#define HAVE_ATEXIT
 
 /* Generate calls to memcpy, etc., not bcopy, etc.  */
 #define TARGET_MEM_FUNCTIONS

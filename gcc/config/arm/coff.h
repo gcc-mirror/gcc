@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for ARM with COFF obj format.
-   Copyright (C) 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
    Contributed by Doug Evans (dje@cygnus.com).
    
 This file is part of GNU CC.
@@ -207,14 +207,6 @@ dtors_section ()							\
 
 #undef DO_GLOBAL_CTORS_BODY
 #undef DO_GLOBAL_DTORS_BODY
-
-/* If you don't define HAVE_ATEXIT, and the object file format/OS/whatever 
-   does not support constructors/destructors, then gcc implements destructors
-   by defining its own exit function, which calls the destructors.  This gcc
-   exit function overrides the C library's exit function, and this can cause
-   all kinds of havoc if the C library has a non-trivial exit function.  You
-   really don't want to use the exit function in libgcc2.c.  */
-#define HAVE_ATEXIT
 
 /* The ARM development system defines __main.  */
 #define NAME__MAIN  "__gccmain"

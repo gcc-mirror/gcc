@@ -38,7 +38,7 @@ Boston, MA 02111-1307, USA.  */
 /* atexit is not present prior to Concentrix 2.2. Uncomment the following
    if you're on 2.1 or older. */
  
-/* #undef HAVE_ATEXIT */
+/* #define NEED_ATEXIT */
 
 #define I860_STRICT_ABI_PROLOGUES
 

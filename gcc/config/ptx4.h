@@ -27,9 +27,6 @@ Boston, MA 02111-1307, USA.
 /* Define a symbol indicating that we are using svr4.h.  */
 #define USING_SVR4_H
 
-/* For the sake of libgcc2.c, indicate target supports atexit.  */
-#define HAVE_ATEXIT
-
 /* Cpp, assembler, linker, library, and startfile spec's.  */
 
 /* This defines which switch letters take arguments.  On svr4, most of

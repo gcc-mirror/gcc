@@ -1,6 +1,6 @@
 /* Operating system specific defines to be used when targeting GCC
    for NeXTSTEP.
-   Copyright (C) 1989, 90-93, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1989, 90-93, 1996, 1997, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -80,10 +80,6 @@ Boston, MA 02111-1307, USA.  */
 /* Make -fnext-runtime the default.  */
 
 #define NEXT_OBJC_RUNTIME
-
-/* We have atexit.  */
-
-#define HAVE_ATEXIT
 
 /* Enable recent gcc to compile under the old gcc in Next release 1.0.  */
 

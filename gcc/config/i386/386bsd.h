@@ -28,10 +28,6 @@
 #undef WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE 16
 
-/* 386BSD does have atexit.  */
-
-#define HAVE_ATEXIT
-
 /* Redefine this to use %eax instead of %edx.  */
 #undef FUNCTION_PROFILER
 #define FUNCTION_PROFILER(FILE, LABELNO)  \

@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler.
    PC532 with National 32532, running Minix.
    Works with pc532 Minix 1.5hybrid.
-   Copyright (C) 1990 Free Software Foundation, Inc.
+   Copyright (C) 1990, 1999 Free Software Foundation, Inc.
 
    Derived from SEQUENT NS32000, written originally
    by Bruce Culbertson <culberts@hplabs.hp.com>,
@@ -35,7 +35,3 @@ Boston, MA 02111-1307, USA.  */
    call-saved-regs in a function calling setjmp */
 
 #define NON_SAVING_SETJMP (current_function_calls_setjmp)
-
-/* at least with estdio there's no _cleanup() but we have atexit() */
-
-#define HAVE_ATEXIT

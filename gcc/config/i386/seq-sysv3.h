@@ -40,3 +40,6 @@
 /* Assembler pseudo-op for uninitialized shared local variables (.shbss). */
 #undef  SHARED_BSS_SECTION_ASM_OP
 #define SHARED_BSS_SECTION_ASM_OP ".section .shbss, \"bs\""
+
+/* seq2-sysv3.h used to define HAVE_ATEXIT, so I assume ptx1 needs this...  */
+#define NEED_ATEXIT

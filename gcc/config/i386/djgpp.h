@@ -167,10 +167,6 @@ dtor_section ()							\
 #define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN) \
   asm_output_aligned_bss ((FILE), (DECL), (NAME), (SIZE), (ALIGN))
 
-/* djgpp has atexit ().  */
-#undef HAVE_ATEXIT
-#define HAVE_ATEXIT
-
 /* djgpp automatically calls its own version of __main, so don't define one
    in libgcc, nor call one in main().  */
 #define HAS_INIT_SECTION

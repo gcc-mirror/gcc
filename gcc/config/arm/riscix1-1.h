@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  ARM RISCiX 1.1x version.
-   Copyright (C) 1993, 1995, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995, 1997, 1999 Free Software Foundation, Inc.
    Contributed by Richard Earnshaw (rwe11@cl.cam.ac.uk), based on original
 	      work by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    	      and Martin Simmons (@harleqn.co.uk).
@@ -62,12 +62,15 @@ Boston, MA 02111-1307, USA.  */
 #define DEFAULT_SIGNED_CHAR  1
 #endif
 
-/* Define this if the target system supports the function atexit form the
-   ANSI C standard.  If this is not defined, and INIT_SECTION_ASM_OP is not
+/* Define this if the target system lacks the function atexit from the
+   ANSI C standard.  If this is defined, and ON_EXIT is not
    defined, a default exit function will be provided to support C++.  
    The man page only describes on_exit, but atexit is also there.  
-   This seems to be missing in early versions. */
-/*#define HAVE_ATEXIT 1 */
+   This seems to be missing in early versions.
+
+   FIXME Should we define ON_EXIT here?  */
+#define NEED_ATEXIT
+
 /* Some systems use __main in a way incompatible with its use in gcc, in these
    cases use the macros NAME__MAIN to give a quoted symbol and SYMBOL__MAIN to
    give the same symbol without quotes for an alternative entry point.  You
