@@ -1,5 +1,8 @@
 1999-05-07  Ulrich Drepper  <drepper@cygnus.com>
 
+	* std/bastring.h (class basic_string::Rep): Make release member
+	function thread-safe for ix86 (x>=4) and UltraSPARC.
+
 	* stlinst.cc: Make it possible to compile with __USE_MALLOC.
 
 Mon Apr 26 02:24:47 1999 "Loren J. Rittle" <rittle@supra.rsch.comm.mot.com>
