@@ -1,3 +1,9 @@
+2002-10-16  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/7524
+	* method.c (do_build_assign_ref): Use cp_build_qualified_type, not
+	build_qualified_type.
+
 2002-10-14  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/7176

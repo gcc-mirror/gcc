@@ -688,7 +688,7 @@ do_build_assign_ref (fndecl)
 
 	  comp = build (COMPONENT_REF, TREE_TYPE (field), comp, field);
 	  init = build (COMPONENT_REF,
-	                build_qualified_type (TREE_TYPE (field), cvquals),
+	                cp_build_qualified_type (TREE_TYPE (field), cvquals),
 	                init, field);
 
 	  if (DECL_NAME (field))

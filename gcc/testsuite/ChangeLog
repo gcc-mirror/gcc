@@ -1,3 +1,8 @@
+2002-10-16  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/7524
+	* g++.dg/init/array7.C: New test.
+
 2002-10-15  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	PR target/7370
