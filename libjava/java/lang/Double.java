@@ -18,7 +18,7 @@ package java.lang;
  * Status:  Believed complete and correct.
  */
 
-public final class Double extends Number
+public final class Double extends Number implements Comparable
 {
   public static final double MIN_VALUE = 5e-324;
   public static final double MAX_VALUE = 1.7976931348623157e+308;
@@ -147,5 +147,26 @@ public final class Double extends Number
   public static native long doubleToLongBits (double value);
 
   public static native double longBitsToDouble (long bits);
-}
 
+  public int compareTo (Double d)
+  {
+    double v = d.value;
+    if (isNaN (value))
+      return isNaN (v) ? 1 : 0;
+    else if (isNaN (v))
+      return -1;
+    else if (value == 0.0 && v == -0.0)
+      return 1;
+    else if (value == -0.0 && v == 0.0)
+      return -1;
+    else if (value == v)
+      return 0;
+
+    return value > v ? 1 : -1;
+  }
+
+  public int compareTo (Object o)
+  {
+    return compareTo ((Double) o);
+  }
+}

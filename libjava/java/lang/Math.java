@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -109,6 +109,16 @@ public final class Math
   public static native float max (float a, float b);
 
   public static native double max (double a, double b);
+
+  public static double toDegrees (double radians)
+  {
+    return radians * 180 / PI;
+  }
+
+  public static double toRadians (double degrees)
+  {
+    return degrees * PI / 180;
+  }
 
   // Don't allow objects to be made.
   private Math ()
