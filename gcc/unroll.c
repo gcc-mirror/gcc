@@ -2797,6 +2797,9 @@ final_biv_value (bl, loop_start, loop_end)
 	     case it is needed later.  */
 
 	  tem = gen_reg_rtx (bl->biv->mode);
+	  /* Make sure loop_end is not the last insn.  */
+	  if (NEXT_INSN (loop_end) == 0)
+	    emit_note_after (NOTE_INSN_DELETED, loop_end);
 	  emit_iv_add_mult (increment, GEN_INT (loop_n_iterations),
 			    bl->initial_value, tem, NEXT_INSN (loop_end));
 
