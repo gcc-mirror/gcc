@@ -109,7 +109,9 @@ java::io::FileDescriptor::open (jstring path, jint jflags)
   if (fd == -1)
     {
       char msg[MAXPATHLEN + 200];
-      sprintf (msg, "%s: %s", buf, strerror (errno));
+      // We choose the formatting here for JDK compatibility, believe
+      // it or not.
+      sprintf (msg, "%s (%s)", buf, strerror (errno));
       throw new FileNotFoundException (JvNewStringLatin1 (msg));
     }
   return fd;

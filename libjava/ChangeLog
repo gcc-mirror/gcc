@@ -1,3 +1,8 @@
+2001-06-25  Tom Tromey  <tromey@redhat.com>
+
+	* java/io/natFileDescriptorPosix.cc (open): Change error message
+	formatting.  From David Brownell.
+
 2001-06-21  Tom Tromey  <tromey@redhat.com>
 
 	* include/java-interp.h (_Jv_InterpClass): Use JV_MARKOBJ_DECL.
