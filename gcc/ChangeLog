@@ -1,3 +1,8 @@
+Mon Nov 15 20:46:45 1999  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.c (alpha_build_va_list): Use make_lang_type and
+	initialize TYPE_NAME for the va_list record.
+
 Tue Nov 16 14:37:52 1999  Geoffrey Keating  <geoffk@cygnus.com>
 
 	* config/rs6000/rs6000.c (first_reg_to_save): Save

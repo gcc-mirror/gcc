@@ -3161,12 +3161,16 @@ alpha_initialize_trampoline (tramp, fnaddr, cxt, fnofs, cxtofs, jmpofs)
 tree
 alpha_build_va_list ()
 {
-  tree base, ofs, record;
+  tree base, ofs, record, type_decl;
 
   if (TARGET_OPEN_VMS)
     return ptr_type_node;
 
-  record = make_node (RECORD_TYPE);
+  record = make_lang_type (RECORD_TYPE);
+  type_decl = build_decl (TYPE_DECL, get_identifier ("__va_list_tag"), record);
+  TREE_CHAIN (record) = type_decl;
+  TYPE_NAME (record) = type_decl;
+
   /* C++? SET_IS_AGGR_TYPE (record, 1); */
 
   ofs = build_decl (FIELD_DECL, get_identifier ("__offset"),
