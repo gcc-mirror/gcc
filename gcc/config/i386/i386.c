@@ -1,6 +1,6 @@
 /* Subroutines used for code generation on IA-32.
-   Copyright (C) 1988, 1992, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001
-   Free Software Foundation, Inc.
+   Copyright (C) 1988, 1992, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
+   2002 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -44,7 +44,7 @@ Boston, MA 02111-1307, USA.  */
 #include "target-def.h"
 
 #ifndef CHECK_STACK_LIMIT
-#define CHECK_STACK_LIMIT -1
+#define CHECK_STACK_LIMIT (-1)
 #endif
 
 /* Processor costs (relative to an add) */
@@ -401,7 +401,7 @@ const int x86_decompose_lea = m_PENT4;
    the style used.  */
 static int use_fast_prologue_epilogue;
 
-#define AT_BP(mode) (gen_rtx_MEM ((mode), hard_frame_pointer_rtx))
+#define AT_BP(MODE) (gen_rtx_MEM ((MODE), hard_frame_pointer_rtx))
 
 static const char *const hi_reg_name[] = HI_REGISTER_NAMES; /* names for 16 bit regs */
 static const char *const qi_reg_name[] = QI_REGISTER_NAMES; /* names for 8 bit regs (low) */
@@ -446,11 +446,11 @@ int const dbx_register_map[FIRST_PSEUDO_REGISTER] =
   -1, -1, -1, -1, -1, -1, -1, -1,	/* extended SSE registers */
 };
 
-static int x86_64_int_parameter_registers[6] = {5 /*RDI*/, 4 /*RSI*/,
+static int const x86_64_int_parameter_registers[6] = {5 /*RDI*/, 4 /*RSI*/,
 					        1 /*RDX*/, 2 /*RCX*/,
 					        FIRST_REX_INT_REG /*R8 */,
 					        FIRST_REX_INT_REG + 1 /*R9 */};
-static int x86_64_int_return_registers[4] = {0 /*RAX*/, 1 /*RDI*/, 5, 4};
+static int const x86_64_int_return_registers[4] = {0 /*RAX*/, 1 /*RDI*/, 5, 4};
 
 /* The "default" register map used in 64bit mode.  */
 int const dbx64_register_map[FIRST_PSEUDO_REGISTER] =
@@ -532,8 +532,8 @@ int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER] =
 /* Test and compare insns in i386.md store the information needed to
    generate branch and scc insns here.  */
 
-struct rtx_def *ix86_compare_op0 = NULL_RTX;
-struct rtx_def *ix86_compare_op1 = NULL_RTX;
+rtx ix86_compare_op0 = NULL_RTX;
+rtx ix86_compare_op1 = NULL_RTX;
 
 #define MAX_386_STACK_LOCALS 3
 /* Size of the register save area.  */
@@ -756,7 +756,7 @@ static int classify_argument PARAMS ((enum machine_mode, tree,
 static int examine_argument PARAMS ((enum machine_mode, tree, int, int *,
 				     int *));
 static rtx construct_container PARAMS ((enum machine_mode, tree, int, int, int,
-					int *, int));
+					const int *, int));
 static enum x86_64_reg_class merge_classes PARAMS ((enum x86_64_reg_class,
 						    enum x86_64_reg_class));
 
@@ -1868,7 +1868,8 @@ construct_container (mode, type, in_return, nintregs, nsseregs, intreg, sse_regn
      tree type;
      int in_return;
      int nintregs, nsseregs;
-     int *intreg, sse_regno;
+     const int * intreg;
+     int sse_regno;
 {
   enum machine_mode tmpmode;
   int bytes =
@@ -2073,7 +2074,7 @@ function_arg_advance (cum, mode, type, named)
    NAMED is nonzero if this argument is a named parameter
     (otherwise it is an extra parameter matching an ellipsis).  */
 
-struct rtx_def *
+rtx
 function_arg (cum, mode, type, named)
      CUMULATIVE_ARGS *cum;	/* current arg information */
      enum machine_mode mode;	/* current arg mode */

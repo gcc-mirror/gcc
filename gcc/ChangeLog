@@ -1,5 +1,14 @@
 2002-01-07  Graham Stott  <grahams@redhat.com>
 
+	* config/i386/i386.c: Update copyright.
+	(CHECK_STACK_LIMIT): Add parenthesis.
+	(AT_BP): Uppercase macro parameter.
+	(x86_64_int_parameter_registers): Constify.
+	(x86_64_int_return_registers): Likewise.
+	(ix86_compare_op0): Use rtx.
+	(construct_container): Constify INTREG parameter.
+	(function_arg): Use rtx.
+
 	* diagnostic.h: Update copyright date.
 	(output_buffer_state): Add parenthesis.
 	(output_buffer_format_args): Likewise.
