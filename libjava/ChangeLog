@@ -1,3 +1,9 @@
+2003-12-26  Guilhem Lavaux  <guilhem@kaffe.org>
+
+	* java/io/FileInputStream.java
+	(FileInputStream(String)): Call FileInputStream(File).
+	(FileInputStream(File)): Check whether the argument is a directory.
+
 2003-12-26  Michael Koch  <konqueror@gmx.de>
 
 	* Makefile.am (rmi_java_source_files):
