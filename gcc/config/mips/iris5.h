@@ -123,6 +123,7 @@ Boston, MA 02111-1307, USA.  */
 #undef DBX_DEBUGGING_INFO
 #undef SDB_DEBUGGING_INFO
 #undef MIPS_DEBUGGING_INFO
+#undef PREFERRED_DEBUGGING_TYPE
 
 /* Likewise, the assembler doesn't handle DWARF2 directives.  */
 #define DWARF2_UNWIND_INFO 0
