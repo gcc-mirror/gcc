@@ -878,9 +878,8 @@ do_includes (pfile, p, scan)
 }
 
 /* This is called after options have been processed.  Setup for
-   processing input from the file named FNAME.  (Use standard input if
-   FNAME == NULL.)  Return 1 on success, 0 on failure.  */
-
+   processing input from the file named FNAME, or stdin if it is the
+   empty string.  Return 1 on success, 0 on failure.  */
 int
 cpp_start_read (pfile, fname)
      cpp_reader *pfile;
@@ -908,19 +907,9 @@ cpp_start_read (pfile, fname)
       fprintf (stderr, _("End of search list.\n"));
     }
 
-  if (CPP_OPTION (pfile, in_fname) == NULL
-      || *CPP_OPTION (pfile, in_fname) == 0)
-    {
-      CPP_OPTION (pfile, in_fname) = fname;
-      if (CPP_OPTION (pfile, in_fname) == NULL)
-	CPP_OPTION (pfile, in_fname) = "";
-    }
-  if (CPP_OPTION (pfile, out_fname) == NULL)
-    CPP_OPTION (pfile, out_fname) = "";
-
   if (CPP_OPTION (pfile, print_deps))
     /* Set the default target (if there is none already).  */
-    deps_add_default_target (pfile->deps, CPP_OPTION (pfile, in_fname));
+    deps_add_default_target (pfile->deps, fname);
 
   /* Open the main input file.  This must be done early, so we have a
      buffer to stand on.  */
@@ -1047,7 +1036,6 @@ new_pending_directive (pend, text, handler)
 /* This is the list of all command line options, with the leading
    "-" removed.  It must be sorted in ASCII collating order.  */
 #define COMMAND_LINE_OPTIONS                                                  \
-  DEF_OPT("",                         0,      OPT_stdin_stdout)               \
   DEF_OPT("$",                        0,      OPT_dollar)                     \
   DEF_OPT("+",                        0,      OPT_plus)                       \
   DEF_OPT("-help",                    0,      OPT__help)                      \
@@ -1220,15 +1208,16 @@ cpp_handle_option (pfile, argc, argv)
   int i = 0;
   struct cpp_pending *pend = CPP_OPTION (pfile, pending);
 
-  if (argv[i][0] != '-')
+  /* Interpret "-" or a non-option as a file name.  */
+  if (argv[i][0] != '-' || argv[i][1] == '\0')
     {
-      if (CPP_OPTION (pfile, out_fname) != NULL)
-	cpp_fatal (pfile, "Too many arguments. Type %s --help for usage info",
-		   progname);
-      else if (CPP_OPTION (pfile, in_fname) != NULL)
+      if (CPP_OPTION (pfile, in_fname) == NULL)
+	CPP_OPTION (pfile, in_fname) = argv[i];
+      else if (CPP_OPTION (pfile, out_fname) == NULL)
 	CPP_OPTION (pfile, out_fname) = argv[i];
       else
-	CPP_OPTION (pfile, in_fname) = argv[i];
+	cpp_fatal (pfile, "Too many filenames. Type %s --help for usage info",
+		   progname);
     }
   else
     {
@@ -1411,21 +1400,13 @@ cpp_handle_option (pfile, argc, argv)
 	  CPP_OPTION (pfile, no_standard_cplusplus_includes) = 1;
 	  break;
 	case OPT_o:
-	  if (CPP_OPTION (pfile, out_fname) != NULL)
+	  if (CPP_OPTION (pfile, out_fname) == NULL)
+	    CPP_OPTION (pfile, out_fname) = arg;
+	  else
 	    {
 	      cpp_fatal (pfile, "Output filename specified twice");
 	      return argc;
 	    }
-	  CPP_OPTION (pfile, out_fname) = arg;
-	  if (!strcmp (CPP_OPTION (pfile, out_fname), "-"))
-	    CPP_OPTION (pfile, out_fname) = "";
-	  break;
-	case OPT_stdin_stdout:
-	  /* JF handle '-' as file name meaning stdin or stdout.  */
-	  if (CPP_OPTION (pfile, in_fname) == NULL)
-	    CPP_OPTION (pfile, in_fname) = "";
-	  else if (CPP_OPTION (pfile, out_fname) == NULL)
-	    CPP_OPTION (pfile, out_fname) = "";
 	  break;
 	case OPT_d:
 	  /* Args to -d specify what parts of macros to dump.
@@ -1689,6 +1670,16 @@ void
 cpp_post_options (pfile)
      cpp_reader *pfile;
 {
+  /* Canonicalize in_fname and out_fname.  We guarantee they are not
+     NULL, and that the empty string represents stdin / stdout.  */
+  if (CPP_OPTION (pfile, in_fname) == NULL
+      || !strcmp (CPP_OPTION (pfile, in_fname), "-"))
+    CPP_OPTION (pfile, in_fname) = "";
+
+  if (CPP_OPTION (pfile, out_fname) == NULL
+      || !strcmp (CPP_OPTION (pfile, out_fname), "-"))
+    CPP_OPTION (pfile, out_fname) = "";
+
   /* -Wtraditional is not useful in C++ mode.  */
   if (CPP_OPTION (pfile, cplusplus))
     CPP_OPTION (pfile, warn_traditional) = 0;

@@ -1,3 +1,17 @@
+2001-02-21  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * cppfiles.c: Update comments.   
+        (_cpp_read_file): Don't check for NULL filenames any more.
+        * cppinit.c (cpp_start_read): Don't do canonicalization of
+        in_fname and out_fname.  Use the passed file name exclusively.
+        (_cpp_handle_options): Don't treat "-" as a command line option,
+        but as a normal filename.
+        (_cpp_post_options): Canonicalize in_fname and out_fname.
+        * cppmain.c (printer_init): Don't check out_fname for NULL.
+        * c-lex.c (orig_filename): Rename cpp_filename for clarity.
+        (init_c_lex): Update, and use "" to represent stdin to CPP.
+        (yyparse): Update.
+
 2001-02-21  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.md (iorsi3): Do not output an extra newline

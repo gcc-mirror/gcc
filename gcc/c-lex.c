@@ -53,8 +53,8 @@ Boston, MA 02111-1307, USA.  */
 #define GET_ENVIRONMENT(ENV_VALUE,ENV_NAME) ((ENV_VALUE) = getenv (ENV_NAME))
 #endif
 
-/* The original file name, before changing "-" to "stdin".  */
-static const char *orig_filename;
+/* The input filename as understood by CPP, where "" represents stdin.  */
+static const char *cpp_filename;
 
 /* We may keep statistics about how long which files took to compile.  */
 static int header_time, body_time;
@@ -102,8 +102,6 @@ init_c_lex (filename)
   struct cpp_callbacks *cb;
   struct c_fileinfo *toplevel;
 
-  orig_filename = filename;
-
   /* Set up filename timing.  Must happen before cpp_start_read.  */
   file_info_tree = splay_tree_new ((splay_tree_compare_fn)strcmp,
 				   0,
@@ -136,8 +134,11 @@ init_c_lex (filename)
       cb->undef = cb_undef;
     }
 
+
   if (filename == 0 || !strcmp (filename, "-"))
-    filename = "stdin";
+    filename = "stdin", cpp_filename = "";
+  else
+    cpp_filename = filename;
 
   /* Start it at 0.  */
   lineno = 0;
@@ -151,7 +152,7 @@ init_c_lex (filename)
 int
 yyparse()
 {
-  if (! cpp_start_read (parse_in, orig_filename))
+  if (! cpp_start_read (parse_in, cpp_filename))
     return 1;			/* cpplib has emitted an error.  */
 
   return yyparse_1();
