@@ -6356,7 +6356,7 @@ output_die (die)
 	  if (AT_string_form (a) == DW_FORM_strp)
 	    dw2_asm_output_offset (DWARF_OFFSET_SIZE,
 				   a->dw_attr_val.v.val_str->label,
-				   "%s", name);
+				   "%s: \"%s\"", name, AT_string (a));
 	  else
 	    dw2_asm_output_nstring (AT_string (a), -1, "%s", name);
 	  break;

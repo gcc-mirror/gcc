@@ -1,3 +1,8 @@
+2001-12-14  Jason Merrill  <jason@redhat.com>
+
+	* dwarf2out.c (output_die): Print the string in the comment for
+	a DW_FORM_strp.
+
 2001-12-14  Richard Earnshaw  <rearnsha@arm.com>
 
 	* netbsd.h (COLLECT_SHARED_INIT_FUNC)
@@ -16,9 +21,9 @@
 
 2001-12-13  Aldy Hernandez  <aldyh@redhat.com>
 
-        * attribs.c (c_common_attribute_table): Swap decl_req and type_req
+	* attribs.c (c_common_attribute_table): Swap decl_req and type_req
 	for the mode attribute.
-        (handle_mode_attribute): Handle types, not decls.
+	(handle_mode_attribute): Handle types, not decls.
 
 2001-12-13  Jason Merrill  <jason@redhat.com>
 
