@@ -1,3 +1,9 @@
+Wed Apr 29 21:45:16 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* sched.c (new_insn_dead_notes): Check if the register was
+	used in the original instruction.
+	* haifa-sched.c (new_insn_dead_notes): Likewise.
+
 Wed Apr 29 13:46:03 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* dwarf2out.c (scope_die_for): If could not find proper scope,
