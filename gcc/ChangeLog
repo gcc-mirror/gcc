@@ -1,3 +1,8 @@
+Sat May  8 01:34:19 1999  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
+
+	* reload1.c (gen_mode_int): New function.
+	(reload_cse_move2add): Use it to generate the new constants.
+
 Sat May  8 01:25:09 1999  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
 
 	* varasm.c (output_constant): Do nothing if -fsyntax-only.
