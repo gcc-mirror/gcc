@@ -95,6 +95,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define HWI_SIGN_EXTEND(low) \
  ((((HOST_WIDE_INT) low) < 0) ? ((HOST_WIDE_INT) -1) : ((HOST_WIDE_INT) 0))
 
+static rtx neg_const_int PARAMS ((enum machine_mode, rtx));
 static int simplify_plus_minus_op_data_cmp PARAMS ((const void *,
 						    const void *));
 static rtx simplify_plus_minus		PARAMS ((enum rtx_code,
@@ -105,6 +106,17 @@ static void simplify_unary_real		PARAMS ((PTR));
 static void simplify_binary_real	PARAMS ((PTR));
 #endif
 static void simplify_binary_is2orm1	PARAMS ((PTR));
+
+
+/* Negate a CONST_INT rtx, truncating (because a conversion from a
+   maximally negative number can overflow). */
+static rtx
+neg_const_int (mode, i)
+     enum machine_mode mode;
+     rtx i;
+{
+  return GEN_INT (trunc_int_for_mode (- INTVAL (i), mode));
+}
 
 
 /* Make a binary operation by properly ordering the operands and 
@@ -136,10 +148,9 @@ simplify_gen_binary (code, mode, op0, op1)
       && GET_MODE (op0) != VOIDmode
       && (code == PLUS || code == MINUS))
     {
-      HOST_WIDE_INT value = INTVAL (op1);
       if (code == MINUS)
-	value = -value;
-      return plus_constant (op0, value);
+	op1 = neg_const_int (mode, op1);
+      return plus_constant (op0, INTVAL (op1));
     }
   else
     return gen_rtx_fmt_ee (code, mode, op0, op1);
@@ -1276,7 +1287,9 @@ simplify_binary_operation (code, mode, op0, op1)
 
 	  /* Don't let a relocatable value get a negative coeff.  */
 	  if (GET_CODE (op1) == CONST_INT && GET_MODE (op0) != VOIDmode)
-	    return plus_constant (op0, - INTVAL (op1));
+	    return simplify_gen_binary (PLUS, mode,
+					op0,
+					neg_const_int (mode, op1));
 
 	  /* (x - (x & y)) -> (x & ~y) */
 	  if (GET_CODE (op1) == AND)
@@ -1787,7 +1800,7 @@ simplify_plus_minus (code, mode, op0, op1)
 	    case CONST_INT:
 	      if (this_neg)
 		{
-		  ops[i].op = GEN_INT (- INTVAL (this_op));
+		  ops[i].op = neg_const_int (mode, this_op);
 		  ops[i].neg = 0;
 		  changed = 1;
 		}
@@ -1848,7 +1861,7 @@ simplify_plus_minus (code, mode, op0, op1)
 		    if (GET_CODE (tem) == NEG)
 		      tem = XEXP (tem, 0), lneg = !lneg;
 		    if (GET_CODE (tem) == CONST_INT && lneg)
-		      tem = GEN_INT (- INTVAL (tem)), lneg = 0;
+		      tem = neg_const_int (mode, tem), lneg = 0;
 
 		    ops[i].op = tem;
 		    ops[i].neg = lneg;
@@ -1881,10 +1894,10 @@ simplify_plus_minus (code, mode, op0, op1)
       && GET_CODE (ops[n_ops - 1].op) == CONST_INT
       && CONSTANT_P (ops[n_ops - 2].op))
     {
-      HOST_WIDE_INT value = INTVAL (ops[n_ops - 1].op);
+      rtx value = ops[n_ops - 1].op;
       if (ops[n_ops - 1].neg ^ ops[n_ops - 2].neg)
-	value = -value;
-      ops[n_ops - 2].op = plus_constant (ops[n_ops - 2].op, value);
+	value = neg_const_int (mode, value);
+      ops[n_ops - 2].op = plus_constant (ops[n_ops - 2].op, INTVAL (value));
       n_ops--;
     }
 

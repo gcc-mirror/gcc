@@ -512,7 +512,8 @@ validate_replace_rtx_1 (loc, from, to, object)
          separated from this function.  */
       if (GET_CODE (XEXP (x, 1)) == CONST_INT)
 	validate_change (object, loc,
-			 plus_constant (XEXP (x, 0), INTVAL (XEXP (x, 1))), 1);
+			 simplify_gen_binary
+			 (PLUS, GET_MODE (x), XEXP (x, 0), XEXP (x, 1)), 1);
       break;
     case MINUS:
       if (GET_CODE (XEXP (x, 1)) == CONST_INT
