@@ -835,8 +835,6 @@ fn.def2:
 return_id:
 	  RETURN_KEYWORD IDENTIFIER
 		{
-		  if (! current_function_parms_stored)
-		    store_parm_decls ();
 		  $$ = $2;
 		}
 	;
@@ -863,9 +861,6 @@ base_init:
 .set_base_init:
 	  /* empty */
 		{
-		  if (! current_function_parms_stored)
-		    store_parm_decls ();
-
 		  if (DECL_CONSTRUCTOR_P (current_function_decl))
 		    /* Make a contour for the initializer list.  */
 		    do_pushlevel ();
@@ -1723,8 +1718,6 @@ string:
 nodecls:
 	  /* empty */
 		{
-		  if (! current_function_parms_stored)
-		    store_parm_decls ();
 		  setup_vtbl_ptr (NULL_TREE, NULL_TREE);
 		}
 	;

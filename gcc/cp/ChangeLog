@@ -1,3 +1,46 @@
+2000-09-11  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (struct saved_scope): Remove x_function_parms.
+	(current_function_parms): Don't define.
+	(struct cp_language_function): Remove parms_stored.
+	(current_function_just_assigned_this): Don't define.
+	(current_function_parms_stored): Likewise.
+	(static_ctors): Declare.
+	(static_dtors): Likewise.
+	(SF_EXPAND): Don't define.
+	(expand_start_early_try_stmts): Remove declaration.
+	(store_parm_decls): Likewise.
+	* decl.c (static_ctors): Don't declare.
+	(static_dtors): Likewise.
+	(struct binding_level): Remove this_block.
+	(poplevel): Remove dead code.
+	(set_block): Likewise.
+	(mark_binding_level): Don't mark this_block.
+	(mark_saved_scope): Don't mark x_function_parms.
+	(init_decl_processing): Don't add current_function_parms as a GC
+	root.
+	(check_function_type): Change prototype.
+	(start_function): Remove RTL-generation code.
+	(expand_start_early_try_stmts): Remove.
+	(store_parm_decls): Give it internal linkage.  Remove
+	RTL-generation code.
+	(finish_function): Remove RTL-generation code.
+	* decl2.c (static_ctors): Fix formatting.
+	(static_dtors): Likewise.
+	* method.c (use_thunk): Don't call store_parm_decls.
+	(synthesize_method): Likewise.
+	* optimize.c (maybe_clone_body): Likewise.
+	* parse.y (fn.def2): Likewise.
+	(.set_base_init): Likewise.
+	(nodecls): Likewise.
+	* pt.c (instantiate_decl): Likewise.
+	* rtti.c (synthesize_tinfo_fn): Likewise.
+	* semantics.c (genrtl_try_block): Simplify.
+	(expand_body): Use genrtl_start_function and
+	genrtl_finish_function.
+	(genrtl_start_function): New function.
+	(genrtl_finish_function): Likewise.
+
 2000-09-11  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* error.c (cp_tree_printer, case 'P'): Append break.

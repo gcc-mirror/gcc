@@ -1,3 +1,10 @@
+2000-09-11  Mark Mitchell  <mark@codesourcery.com>
+
+	* c-common.h (genrtl_clear_out_block): Remove.
+	* c-semantics.c (genrtl_clear_out_block): Remove.
+	(genrtl_while_stmt): Don't call it.
+	(genrtl_for_stmt): Likewise.
+
 2000-09-11  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cppfiles.c: Move all default-#defines to top of file.

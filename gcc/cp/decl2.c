@@ -128,7 +128,8 @@ int at_eof;
 
 /* Functions called along with real static constructors and destructors.  */
 
-tree static_ctors, static_dtors;
+tree static_ctors;
+tree static_dtors;
 
 /* The :: namespace. */
 

@@ -1195,7 +1195,6 @@ synthesize_tinfo_fn (fndecl)
   start_function (NULL_TREE, fndecl, NULL_TREE, 
 		  SF_DEFAULT | SF_PRE_PARSED);
   DECL_DEFER_OUTPUT (fndecl) = 1;
-  store_parm_decls ();
   clear_last_expr ();
 
   /* Begin the body of the function.  */

@@ -57,6 +57,8 @@ static void genrtl_ctor_stmt PARAMS ((tree));
 static void genrtl_subobject PARAMS ((tree));
 static void genrtl_named_return_value PARAMS ((void));
 static void cp_expand_stmt PARAMS ((tree));
+static void genrtl_start_function PARAMS ((tree));
+static void genrtl_finish_function PARAMS ((tree));
 
 /* Finish processing the COND, the SUBSTMT condition for STMT.  */
 
@@ -596,17 +598,9 @@ genrtl_try_block (t)
     }
   else
     {
-      if (FN_TRY_BLOCK_P (t)) 
-	{
-	  if (! current_function_parms_stored)
-	    store_parm_decls ();
-	  expand_start_early_try_stmts ();
-	} 
-      else 
-	{
-	  emit_line_note (input_filename, lineno);
-	  expand_start_try_stmts ();
-	}
+      if (!FN_TRY_BLOCK_P (t)) 
+	emit_line_note (input_filename, lineno);
+      expand_start_try_stmts ();
 
       expand_stmt (TRY_STMTS (t));
 
@@ -2387,7 +2381,6 @@ emit_associated_thunks (fn)
     }
 }
 
-
 /* Generate RTL for FN.  */
 
 void
@@ -2484,8 +2477,7 @@ expand_body (fn)
   lineno = DECL_SOURCE_LINE (fn);
   input_filename = DECL_SOURCE_FILE (fn);
 
-  start_function (NULL_TREE, fn, NULL_TREE, SF_PRE_PARSED | SF_EXPAND);
-  store_parm_decls ();
+  genrtl_start_function (fn);
   current_function_is_thunk = DECL_THUNK_P (fn);
 
   /* We don't need to redeclare __FUNCTION__, __PRETTY_FUNCTION__, or
@@ -2505,7 +2497,7 @@ expand_body (fn)
   lineno = STMT_LINENO (DECL_SAVED_TREE (fn));
 
   /* Generate code for the function.  */
-  finish_function (0);
+  genrtl_finish_function (fn);
 
   /* If possible, obliterate the body of the function so that it can
      be garbage collected.  */
@@ -2526,6 +2518,287 @@ expand_body (fn)
   extract_interface_info ();
 
   timevar_pop (TV_EXPAND);
+}
+
+/* Start generating the RTL for FN.  */
+
+static void
+genrtl_start_function (fn)
+     tree fn;
+{
+  tree parm;
+
+  /* Tell everybody what function we're processing.  */
+  current_function_decl = fn;
+  /* Get the RTL machinery going for this function.  */
+  init_function_start (fn, DECL_SOURCE_FILE (fn), DECL_SOURCE_LINE (fn));
+  /* Let everybody know that we're expanding this function, not doing
+     semantic analysis.  */
+  expanding_p = 1;
+
+  /* Even though we're inside a function body, we still don't want to
+     call expand_expr to calculate the size of a variable-sized array.
+     We haven't necessarily assigned RTL to all variables yet, so it's
+     not safe to try to expand expressions involving them.  */
+  immediate_size_expand = 0;
+  cfun->x_dont_save_pending_sizes_p = 1;
+
+  /* Let the user know we're compiling this function.  */
+  announce_function (fn);
+
+  /* Initialize the per-function data.  */
+  my_friendly_assert (!DECL_PENDING_INLINE_P (fn), 20000911);
+  if (DECL_SAVED_FUNCTION_DATA (fn))
+    {
+      /* If we already parsed this function, and we're just expanding it
+	 now, restore saved state.  */
+      *cp_function_chain = *DECL_SAVED_FUNCTION_DATA (fn);
+
+      /* This function is being processed in whole-function mode; we
+	 already did semantic analysis.  */
+      cfun->x_whole_function_mode_p = 1;
+
+      /* If we decided that we didn't want to inline this function,
+	 make sure the back-end knows that.  */
+      if (!current_function_cannot_inline)
+	current_function_cannot_inline = cp_function_chain->cannot_inline;
+
+      /* We don't need the saved data anymore.  */
+      free (DECL_SAVED_FUNCTION_DATA (fn));
+      DECL_SAVED_FUNCTION_DATA (fn) = NULL;
+    }
+
+  /* Tell the cross-reference machinery that we're defining this
+     function.  */
+  GNU_xref_function (fn, DECL_ARGUMENTS (fn));
+
+  /* Keep track of how many functions we're presently expanding.  */
+  ++function_depth;
+
+  /* Create a binding level for the parameters.  */
+  expand_start_bindings (2);
+  /* Clear out any previously saved instructions for this function, in
+     case it was defined more than once.  */
+  DECL_SAVED_INSNS (fn) = NULL;
+  /* Go through the PARM_DECLs for this function to see if any need
+     cleanups.  */
+  for (parm = DECL_ARGUMENTS (fn); parm; parm = TREE_CHAIN (parm))
+    if (TREE_TYPE (parm) != error_mark_node
+	&& TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (parm)))
+      {
+	expand_function_start (fn, /*parms_have_cleanups=*/1);
+	break;
+      }
+  if (!parm)
+    expand_function_start (fn, /*parms_have_cleanups=*/0);
+  /* If this function is `main'.  */
+  if (DECL_MAIN_P (fn))
+    expand_main_function ();
+  /* Create a binding contour which can be used to catch
+     cleanup-generated temporaries.  */
+  expand_start_bindings (2);
+}
+
+/* Finish generating the RTL for FN.  */
+
+static void
+genrtl_finish_function (fn)
+     tree fn;
+{
+  int returns_null;
+  int returns_value;
+  tree no_return_label = NULL_TREE;
+
+#if 0
+  if (write_symbols != NO_DEBUG)
+    {
+      /* Keep this code around in case we later want to control debug info
+	 based on whether a type is "used".  (jason 1999-11-11) */
+
+      tree ttype = target_type (fntype);
+      tree parmdecl;
+
+      if (IS_AGGR_TYPE (ttype))
+	/* Let debugger know it should output info for this type.  */
+	note_debug_info_needed (ttype);
+
+      for (parmdecl = DECL_ARGUMENTS (fndecl); parmdecl; parmdecl = TREE_CHAIN (parmdecl))
+	{
+	  ttype = target_type (TREE_TYPE (parmdecl));
+	  if (IS_AGGR_TYPE (ttype))
+	    /* Let debugger know it should output info for this type.  */
+	    note_debug_info_needed (ttype);
+	}
+    }
+#endif
+
+  /* Clean house because we will need to reorder insns here.  */
+  do_pending_stack_adjust ();
+
+  if (!dtor_label && !DECL_CONSTRUCTOR_P (fn)
+      && return_label != NULL_RTX
+      && current_function_return_value == NULL_TREE
+      && ! DECL_NAME (DECL_RESULT (current_function_decl)))
+    no_return_label = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
+
+  if (flag_exceptions)
+    expand_exception_blocks ();
+
+  /* If this function is supposed to return a value, ensure that
+     we do not fall into the cleanups by mistake.  The end of our
+     function will look like this:
+
+     user code (may have return stmt somewhere)
+     goto no_return_label
+     cleanup_label:
+     cleanups
+     goto return_label
+     no_return_label:
+     NOTE_INSN_FUNCTION_END
+     return_label:
+     things for return
+
+     If the user omits a return stmt in the USER CODE section, we
+     will have a control path which reaches NOTE_INSN_FUNCTION_END.
+     Otherwise, we won't.  */
+  if (no_return_label)
+    {
+      DECL_CONTEXT (no_return_label) = fn;
+      DECL_INITIAL (no_return_label) = error_mark_node;
+      DECL_SOURCE_FILE (no_return_label) = input_filename;
+      DECL_SOURCE_LINE (no_return_label) = lineno;
+      expand_goto (no_return_label);
+    }
+
+  if (cleanup_label)
+    {
+      /* Remove the binding contour which is used to catch
+	 cleanup-generated temporaries.  */
+      expand_end_bindings (0, 0, 0);
+      poplevel (0, 0, 0);
+
+      /* Emit label at beginning of cleanup code for parameters.  */
+      emit_label (cleanup_label);
+    }
+
+  /* Get return value into register if that's where it's supposed to
+     be.  */
+  if (original_result_rtx)
+    fixup_result_decl (DECL_RESULT (fn), original_result_rtx);
+
+  /* Finish building code that will trigger warnings if users forget
+     to make their functions return values.  */
+  if (no_return_label || cleanup_label)
+    emit_jump (return_label);
+  if (no_return_label)
+    {
+      /* We don't need to call `expand_*_return' here because we don't
+	 need any cleanups here--this path of code is only for error
+	 checking purposes.  */
+      expand_label (no_return_label);
+    }
+
+  /* We hard-wired immediate_size_expand to zero in start_function.
+     Expand_function_end will decrement this variable.  So, we set the
+     variable to one here, so that after the decrement it will remain
+     zero.  */
+  immediate_size_expand = 1;
+
+  /* Generate rtl for function exit.  */
+  expand_function_end (input_filename, lineno, 1);
+
+  /* So we can tell if jump_optimize sets it to 1.  */
+  can_reach_end = 0;
+
+  /* Before we call rest_of_compilation (which will pop the
+     CURRENT_FUNCTION), we must save these values.  */
+  returns_null = current_function_returns_null;
+  returns_value = current_function_returns_value;
+
+  /* If this is a nested function (like a template instantiation that
+     we're compiling in the midst of compiling something else), push a
+     new GC context.  That will keep local variables on the stack from
+     being collected while we're doing the compilation of this
+     function.  */
+  if (function_depth > 1)
+    ggc_push_context ();
+
+  /* Run the optimizers and output the assembler code for this
+     function.  */
+  rest_of_compilation (fn);
+
+  /* Undo the call to ggc_push_context above.  */
+  if (function_depth > 1)
+    ggc_pop_context ();
+
+  if (DECL_SAVED_INSNS (fn) && ! TREE_ASM_WRITTEN (fn))
+    {
+      /* Set DECL_EXTERNAL so that assemble_external will be called as
+	 necessary.  We'll clear it again in finish_file.  */
+      if (! DECL_EXTERNAL (fn))
+	DECL_NOT_REALLY_EXTERN (fn) = 1;
+      DECL_EXTERNAL (fn) = 1;
+      defer_fn (fn);
+    }
+
+#if 0
+  /* Keep this code around in case we later want to control debug info
+     based on whether a type is "used".  (jason 1999-11-11) */
+
+  if (ctype && TREE_ASM_WRITTEN (fn))
+    note_debug_info_needed (ctype);
+#endif
+
+  /* If this function is marked with the constructor attribute, add it
+     to the list of functions to be called along with constructors
+     from static duration objects.  */
+  if (DECL_STATIC_CONSTRUCTOR (fn))
+    static_ctors = tree_cons (NULL_TREE, fn, static_ctors);
+
+  /* If this function is marked with the destructor attribute, add it
+     to the list of functions to be called along with destructors from
+     static duration objects.  */
+  if (DECL_STATIC_DESTRUCTOR (fn))
+    static_dtors = tree_cons (NULL_TREE, fn, static_dtors);
+
+  if (DECL_NAME (DECL_RESULT (fn)))
+    returns_value |= can_reach_end;
+  else
+    returns_null |= can_reach_end;
+
+  if (TREE_THIS_VOLATILE (fn) && returns_null)
+    warning ("`noreturn' function does return");
+  else if (returns_null
+	   && TREE_CODE (TREE_TYPE (TREE_TYPE (fn))) != VOID_TYPE)
+    {
+      /* Always complain if there's just no return statement.  */
+      if (!returns_value)
+	warning ("no return statement in function returning non-void");
+      else if (warn_return_type || pedantic)
+	/* If this function returns non-void and control can drop through,
+	       complain.  */
+	warning ("control reaches end of non-void function");
+    }
+
+  --function_depth;
+
+  if (!DECL_SAVED_INSNS (fn)
+      && !(flag_inline_trees && DECL_INLINE (fn)))
+    {
+      tree t;
+
+      /* Stop pointing to the local nodes about to be freed.  */
+      /* But DECL_INITIAL must remain nonzero so we know this
+	 was an actual function definition.  */
+      DECL_INITIAL (fn) = error_mark_node;
+      for (t = DECL_ARGUMENTS (fn); t; t = TREE_CHAIN (t))
+	DECL_RTL (t) = DECL_INCOMING_RTL (t) = NULL_RTX;
+    }
+
+  /* Let the error reporting routines know that we're outside a
+     function.  For a nested function, this value is used in
+     pop_cp_function_context and then reset via pop_function_context.  */
+  current_function_decl = NULL_TREE;
 }
 
 /* Perform initialization related to this module.  */

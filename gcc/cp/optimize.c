@@ -932,7 +932,6 @@ maybe_clone_body (fn)
       /* Start processing the function.  */
       push_to_top_level ();
       start_function (NULL_TREE, clone, NULL_TREE, SF_PRE_PARSED);
-      store_parm_decls ();
 
       /* Just clone the body, as if we were making an inline call.
 	 But, remap the parameters in the callee to the parameters of

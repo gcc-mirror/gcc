@@ -9686,7 +9686,6 @@ instantiate_decl (d, defer_ok)
 
       /* Set up context.  */
       start_function (NULL_TREE, d, NULL_TREE, SF_PRE_PARSED);
-      store_parm_decls ();
 
       /* We already set up __FUNCTION__, etc., so we don't want to do
 	 it again now.  */

@@ -2258,7 +2258,6 @@ use_thunk (thunk_fndecl, emit_p)
     DECL_RESULT (thunk_fndecl) = NULL_TREE;
 
     start_function (NULL_TREE, thunk_fndecl, NULL_TREE, SF_PRE_PARSED);
-    store_parm_decls ();
 
     /* Adjust the this pointer by the constant.  */
     t = ssize_int (delta);
@@ -2530,7 +2529,6 @@ synthesize_method (fndecl)
 
   interface_unknown = 1;
   start_function (NULL_TREE, fndecl, NULL_TREE, SF_DEFAULT | SF_PRE_PARSED);
-  store_parm_decls ();
   clear_last_expr ();
 
   if (DECL_OVERLOADED_OPERATOR_P (fndecl) == NOP_EXPR)

@@ -570,7 +570,6 @@ enum c_tree_code {
 
 extern void add_c_tree_codes		        PARAMS ((void));
 extern void genrtl_do_pushlevel                 PARAMS ((void));
-extern void genrtl_clear_out_block              PARAMS ((void));
 extern void genrtl_goto_stmt                    PARAMS ((tree));
 extern void genrtl_expr_stmt                    PARAMS ((tree));
 extern void genrtl_decl_stmt                    PARAMS ((tree));
