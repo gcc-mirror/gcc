@@ -657,10 +657,14 @@ extern struct rtx_def *hppa_pic_save_rtx PARAMS ((void));
     && REGNO (IN) < FIRST_PSEUDO_REGISTER)			\
    ? NO_REGS : secondary_reload_class (CLASS, MODE, IN))
 
+#define MAYBE_FP_REG_CLASS_P(CLASS) \
+  reg_classes_intersect_p ((CLASS), FP_REGS)
+
 /* On the PA it is not possible to directly move data between
    GENERAL_REGS and FP_REGS.  */
-#define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, MODE)  \
-  (FP_REG_CLASS_P (CLASS1) != FP_REG_CLASS_P (CLASS2))
+#define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, MODE)		\
+  (MAYBE_FP_REG_CLASS_P (CLASS1) != FP_REG_CLASS_P (CLASS2)	\
+   || MAYBE_FP_REG_CLASS_P (CLASS2) != FP_REG_CLASS_P (CLASS1))
 
 /* Return the stack location to use for secondary memory needed reloads.  */
 #define SECONDARY_MEMORY_NEEDED_RTX(MODE) \

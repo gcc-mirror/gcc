@@ -1,3 +1,15 @@
+2003-08-03  Mark Mitchell  <mark@codesourcery.com>
+
+	* Makefile.in (STAGE2_FLAGS_TO_PASS): Pass AR_FOR_TARGET and
+	RANLIB_FOR_TARGET.
+	(stage1_build): Likewise.
+
+2003-08-03  Jan Hubicka  <jh@suse.cz>
+
+        PR 9929
+        * config/pa/pa.h (MAYBE_FP_REG_CLASS_P): New.
+        (SECONDARY_MEMORY_NEEDED): Use it.
+	
 2003-08-01  Geoffrey Keating  <geoffk@apple.com>
 
 	PR 11709 (partial fix)
