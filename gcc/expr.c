@@ -9774,6 +9774,7 @@ do_jump (exp, if_false_label, if_true_label)
     case COMPOUND_EXPR:
       push_temp_slots ();
       expand_expr (TREE_OPERAND (exp, 0), const0_rtx, VOIDmode, 0);
+      preserve_temp_slots (NULL_RTX);
       free_temp_slots ();
       pop_temp_slots ();
       emit_queue ();
