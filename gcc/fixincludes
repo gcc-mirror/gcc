@@ -2348,9 +2348,7 @@ if [ -r ${LIB}/$file ]; then
       true
     else
       echo "Fixing $file (needs stdio.h)"
-      echo '#ifdef __cplusplus
-#include <stdio.h>
-#endif' >>${LIB}/$file
+      echo '#include <stdio.h>' >>${LIB}/$file
     fi
   fi
   if grep 'exit *(' ${LIB}/$file >/dev/null 2>/dev/null || 
