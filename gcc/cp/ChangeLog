@@ -1,3 +1,9 @@
+2002-02-11  Jason Merrill  <jason@redhat.com>
+
+	* parse.y (reserved_declspecs): Don't handle attributes.
+	(reserved_typespecquals): Handle them here.
+	* Make-lang.in (parse.c): Adjust expected conflicts.
+
 2002-02-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* parse.y (primary, primary_no_id): Use compstmt_or_stmtexpr
@@ -1603,8 +1609,8 @@ Fri Sep 21 08:16:19 2001  J"orn Rennecke <amylaar@redhat.com>
 
 2001-09-15  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
-		* Make-lang.in (cp/error.o): Depend on real.h
-		* error.c: #include "real.h"
+	* Make-lang.in (cp/error.o): Depend on real.h
+	* error.c: #include "real.h"
 
 2001-09-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 

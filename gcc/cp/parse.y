@@ -1895,10 +1895,6 @@ reserved_declspecs:
 		    warning ("`%s' is not at beginning of declaration",
 			     IDENTIFIER_POINTER ($2));
 		  $$ = tree_cons (NULL_TREE, $2, $$); }
-	| reserved_declspecs attributes
-		{ $$ = tree_cons ($2, NULL_TREE, $1); }
-	| attributes
-		{ $$ = tree_cons ($1, NULL_TREE, NULL_TREE); }
 	;
 
 /* List of just storage classes and type modifiers.
@@ -1966,6 +1962,10 @@ reserved_typespecquals:
 		{ $$ = build_tree_list (NULL_TREE, $1.t); }
 	| reserved_typespecquals typespecqual_reserved
 		{ $$ = tree_cons (NULL_TREE, $2.t, $1); }
+	| reserved_typespecquals attributes
+		{ $$ = tree_cons ($2, NULL_TREE, $1); }
+	| attributes %prec EMPTY
+		{ $$ = tree_cons ($1, NULL_TREE, NULL_TREE); }
 	;
 
 /* A typespec (but not a type qualifier).
