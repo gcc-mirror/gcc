@@ -1,5 +1,17 @@
 2003-11-12  Mark Mitchell  <mark@codesourcery.com>
 
+	* decl.c (finish_case_label): Do not check that we are within a
+	switch statement here.
+	* parser.c (struct cp_parser): Add in_iteration_statement_p and
+	in_switch_statement_p.
+	(cp_parser_new): Initialize them.
+	(cp_parser_labeled_statement): Check validity of case labels
+	here.
+	(cp_parser_selection_statement): Set in_switch_statement_p.
+	(cp_parser_iteration_statement): Set in_iteration_statement_p.
+	(cp_parser_jump_statement): Check validity of break/continue
+	statements here.
+
 	PR c++/12735
 	* cp-tree.h (duplicate_decls): Return a tree.
 	* decl.c (duplicate_decls): Clarify documentation.  Return

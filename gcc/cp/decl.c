@@ -2433,18 +2433,6 @@ finish_case_label (tree low_value, tree high_value)
   tree cond, r;
   register struct cp_binding_level *p;
 
-  if (! switch_stack)
-    {
-      if (high_value)
-	error ("case label not within a switch statement");
-      else if (low_value)
-	error ("case label `%E' not within a switch statement",
-		  low_value);
-      else
-	error ("`default' label not within a switch statement");
-      return NULL_TREE;
-    }
-
   if (processing_template_decl)
     {
       tree label;
