@@ -8299,20 +8299,31 @@ is_aligning_offset (tree offset, tree exp)
 tree
 string_constant (tree arg, tree *ptr_offset)
 {
+  tree array, offset;
   STRIP_NOPS (arg);
 
-  if (TREE_CODE (arg) == ADDR_EXPR
-      && TREE_CODE (TREE_OPERAND (arg, 0)) == STRING_CST)
+  if (TREE_CODE (arg) == ADDR_EXPR)
     {
-      *ptr_offset = size_zero_node;
-      return TREE_OPERAND (arg, 0);
-    }
-  if (TREE_CODE (arg) == ADDR_EXPR
-      && TREE_CODE (TREE_OPERAND (arg, 0)) == ARRAY_REF
-      && TREE_CODE (TREE_OPERAND (TREE_OPERAND (arg, 0), 0)) == STRING_CST)
-    {
-      *ptr_offset = convert (sizetype, TREE_OPERAND (TREE_OPERAND (arg, 0), 1));
-      return TREE_OPERAND (TREE_OPERAND (arg, 0), 0);
+      if (TREE_CODE (TREE_OPERAND (arg, 0)) == STRING_CST)
+	{
+	  *ptr_offset = size_zero_node;
+	  return TREE_OPERAND (arg, 0);
+	}
+      else if (TREE_CODE (TREE_OPERAND (arg, 0)) == VAR_DECL)
+	{
+	  array = TREE_OPERAND (arg, 0);
+	  offset = size_zero_node;
+	}
+      else if (TREE_CODE (TREE_OPERAND (arg, 0)) == ARRAY_REF)
+	{
+	  array = TREE_OPERAND (TREE_OPERAND (arg, 0), 0);
+	  offset = TREE_OPERAND (TREE_OPERAND (arg, 0), 1);
+	  if (TREE_CODE (array) != STRING_CST
+	      && TREE_CODE (array) != VAR_DECL)
+	    return 0;
+	}
+      else
+	return 0;
     }
   else if (TREE_CODE (arg) == PLUS_EXPR)
     {
@@ -8323,17 +8334,62 @@ string_constant (tree arg, tree *ptr_offset)
       STRIP_NOPS (arg1);
 
       if (TREE_CODE (arg0) == ADDR_EXPR
-	  && TREE_CODE (TREE_OPERAND (arg0, 0)) == STRING_CST)
+	  && (TREE_CODE (TREE_OPERAND (arg0, 0)) == STRING_CST
+	      || TREE_CODE (TREE_OPERAND (arg0, 0)) == VAR_DECL))
 	{
-	  *ptr_offset = convert (sizetype, arg1);
-	  return TREE_OPERAND (arg0, 0);
+	  array = TREE_OPERAND (arg0, 0);
+	  offset = arg1;
 	}
       else if (TREE_CODE (arg1) == ADDR_EXPR
-	       && TREE_CODE (TREE_OPERAND (arg1, 0)) == STRING_CST)
+	       && (TREE_CODE (TREE_OPERAND (arg1, 0)) == STRING_CST
+		   || TREE_CODE (TREE_OPERAND (arg1, 0)) == VAR_DECL))
 	{
-	  *ptr_offset = convert (sizetype, arg0);
-	  return TREE_OPERAND (arg1, 0);
+	  array = TREE_OPERAND (arg1, 0);
+	  offset = arg0;
 	}
+      else
+	return 0;
+    }
+  else
+    return 0;
+
+  if (TREE_CODE (array) == STRING_CST)
+    {
+      *ptr_offset = convert (sizetype, offset);
+      return array;
+    }
+  else if (TREE_CODE (array) == VAR_DECL)
+    {
+      int length;
+
+      /* Variables initialized to string literals can be handled too.  */
+      if (DECL_INITIAL (array) == NULL_TREE
+	  || TREE_CODE (DECL_INITIAL (array)) != STRING_CST)
+	return 0;
+
+      /* If they are read-only, non-volatile and bind locally.  */
+      if (! TREE_READONLY (array)
+	  || TREE_SIDE_EFFECTS (array)
+	  || ! targetm.binds_local_p (array))
+	return 0;
+
+      /* Avoid const char foo[4] = "abcde";  */
+      if (DECL_SIZE_UNIT (array) == NULL_TREE
+	  || TREE_CODE (DECL_SIZE_UNIT (array)) != INTEGER_CST
+	  || (length = TREE_STRING_LENGTH (DECL_INITIAL (array))) <= 0
+	  || compare_tree_int (DECL_SIZE_UNIT (array), length) < 0)
+	return 0;
+
+      /* If variable is bigger than the string literal, OFFSET must be constant
+	 and inside of the bounds of the string literal.  */
+      offset = convert (sizetype, offset);
+      if (compare_tree_int (DECL_SIZE_UNIT (array), length) > 0
+	  && (! host_integerp (offset, 1)
+	      || compare_tree_int (offset, length) >= 0))
+	return 0;
+
+      *ptr_offset = offset;
+      return DECL_INITIAL (array);
     }
 
   return 0;
