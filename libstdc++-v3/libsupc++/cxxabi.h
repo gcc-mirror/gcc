@@ -520,6 +520,22 @@ void __cxa_guard_abort (__guard *);
 extern "C" void
 __cxa_pure_virtual (void);
 
+/* exception handling */
+
+extern "C" void
+__cxa_bad_cast ();
+
+extern "C" void
+__cxa_bad_typeid ();
+
+/* DSO destruction */
+
+extern "C" int
+__cxa_atexit (void (*)(void *), void *, void *);
+
+extern "C" int
+__cxa_finalize (void *);
+
 /* demangling routines */
 
 extern "C" 
