@@ -41,6 +41,7 @@ Boston, MA 02111-1307, USA.  */
 #include "regs.h"
 #include "defaults.h"
 #include "real.h"
+#include "toplev.h"
 
 #include "obstack.h"
 #include "c-pragma.h"

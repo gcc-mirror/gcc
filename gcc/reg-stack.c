@@ -166,6 +166,7 @@ Boston, MA 02111-1307, USA.  */
 #include "hard-reg-set.h"
 #include "flags.h"
 #include "insn-flags.h"
+#include "toplev.h"
 
 #ifdef STACK_REGS
 

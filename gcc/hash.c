@@ -22,6 +22,8 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "system.h"
 #include "hash.h"
 #include "obstack.h"
+#include "gansidecl.h"
+#include "toplev.h"
 
 /* Obstack allocation and deallocation routines.  */
 #define obstack_chunk_alloc xmalloc

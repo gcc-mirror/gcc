@@ -35,6 +35,7 @@ Boston, MA 02111-1307, USA.  */
 #include "basic-block.h"
 #include "output.h"
 #include "real.h"
+#include "toplev.h"
 
 /* This file contains the reload pass of the compiler, which is
    run after register allocation has been done.  It checks that

@@ -38,6 +38,7 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "typeclass.h"
 #include "defaults.h"
+#include "toplev.h"
 
 #define CEIL(x,y) (((x) + (y) - 1) / (y))
 

@@ -51,6 +51,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "tree.h"
 #include "output.h"
 #include "gcov-io.h"
+#include "toplev.h"
 
 extern char * xmalloc ();
 

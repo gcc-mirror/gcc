@@ -26,6 +26,7 @@ Boston, MA 02111-1307, USA.  */
 #include "tree.h"
 #include "flags.h"
 #include "convert.h"
+#include "toplev.h"
 
 /* Convert EXPR to some pointer or reference type TYPE.
 
