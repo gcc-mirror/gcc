@@ -6655,7 +6655,8 @@
    (use (match_operand 2 "" ""))
    (clobber (reg:SI LR_REGNUM))]
   "TARGET_THUMB
-   && operands[2] == const0_rtx && (GET_CODE (operands[0]) == SYMBOL_REF)"
+   && GET_CODE (operands[0]) == SYMBOL_REF
+   && !arm_is_longcall_p (operands[0], INTVAL (operands[2]), 1)"
   "bl\\t%a0"
   [(set_attr "length" "4")
    (set_attr "type" "call")]
@@ -6668,7 +6669,8 @@
    (use (match_operand 3 "" ""))
    (clobber (reg:SI LR_REGNUM))]
   "TARGET_THUMB
-   && operands[3] == const0_rtx && (GET_CODE (operands[1]) == SYMBOL_REF)"
+   && GET_CODE (operands[1]) == SYMBOL_REF
+   && !arm_is_longcall_p (operands[1], INTVAL (operands[3]), 1)"
   "bl\\t%a1"
   [(set_attr "length" "4")
    (set_attr "type" "call")]
