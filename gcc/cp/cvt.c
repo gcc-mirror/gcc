@@ -35,7 +35,7 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "decl.h"
 
-static tree cp_convert_to_pointer PARAMS ((tree, tree));
+static tree cp_convert_to_pointer PARAMS ((tree, tree, int));
 static tree convert_to_pointer_force PARAMS ((tree, tree));
 static tree build_up_reference PARAMS ((tree, tree, int));
 static void warn_ref_binding PARAMS ((tree, tree, tree));
@@ -67,11 +67,14 @@ static void warn_ref_binding PARAMS ((tree, tree, tree));
      else if dealing with method pointers, delegate
      else convert blindly
    else if converting class, pass off to build_type_conversion
-   else try C-style pointer conversion  */
+   else try C-style pointer conversion.  If FORCE is true then allow
+   conversions via virtual bases (these are permitted by reinterpret_cast,
+   but not static_cast).  */
 
 static tree
-cp_convert_to_pointer (type, expr)
+cp_convert_to_pointer (type, expr, force)
      tree type, expr;
+     int force;
 {
   register tree intype = TREE_TYPE (expr);
   register enum tree_code form;
@@ -184,6 +187,7 @@ cp_convert_to_pointer (type, expr)
 	  tree b1; 
 	  tree b2;
 	  tree binfo;
+	  tree virt_binfo;
 	  enum tree_code code;
 
 	  b1 = TYPE_OFFSET_BASETYPE (TREE_TYPE (type));
@@ -201,11 +205,21 @@ cp_convert_to_pointer (type, expr)
 	  if (binfo == error_mark_node)
 	    return error_mark_node;
 
-	  if (binfo_from_vbase (binfo))
+          virt_binfo = binfo_from_vbase (binfo);
+          if (virt_binfo)
 	    {
-	      cp_error ("conversion to `%T' from pointer to member of virtual base `%T'",
-			type, intype);
-	      return error_mark_node;
+	      if (force)
+	        cp_warning ("pointer to member cast via virtual base `%T' of `%T' will only work for objects of dynamic type `%T'",
+	                    BINFO_TYPE (virt_binfo),
+                            BINFO_TYPE (BINFO_INHERITANCE_CHAIN (virt_binfo)),
+                            code == MINUS_EXPR ? b2 : b1);
+              else
+                {
+	          cp_error ("pointer to member cast via virtual base `%T' of `%T'",
+	                    BINFO_TYPE (virt_binfo),
+                            BINFO_TYPE (BINFO_INHERITANCE_CHAIN (virt_binfo)));
+	          return error_mark_node;
+	        }
 	    }
 	      
 	  if (TREE_CODE (expr) == PTRMEM_CST)
@@ -334,7 +348,7 @@ convert_to_pointer_force (type, expr)
 	}
     }
 
-  return cp_convert_to_pointer (type, expr);
+  return cp_convert_to_pointer (type, expr, 1);
 }
 
 /* We are passing something to a function which requires a reference.
@@ -777,7 +791,7 @@ ocp_convert (type, expr, convtype, flags)
     }
   if (code == POINTER_TYPE || code == REFERENCE_TYPE
       || TYPE_PTRMEMFUNC_P (type))
-    return fold (cp_convert_to_pointer (type, e));
+    return fold (cp_convert_to_pointer (type, e, 0));
   if (code == REAL_TYPE || code == COMPLEX_TYPE)
     {
       if (IS_AGGR_TYPE (TREE_TYPE (e)))

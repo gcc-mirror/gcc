@@ -4265,7 +4265,7 @@ extern tree current_scope			PARAMS ((void));
 extern int at_function_scope_p                  PARAMS ((void));
 extern tree lookup_conversions			PARAMS ((tree));
 extern tree binfo_for_vtable			PARAMS ((tree));
-extern int  binfo_from_vbase			PARAMS ((tree));
+extern tree binfo_from_vbase			PARAMS ((tree));
 extern tree dfs_walk                            PARAMS ((tree,
 						       tree (*)(tree, void *),
 						       tree (*) (tree, void *),

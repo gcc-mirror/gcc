@@ -3362,18 +3362,19 @@ binfo_for_vtable (var)
   return binfo;
 }
 
-/* Returns 1 iff BINFO is from a direct or indirect virtual base.  */
+/* Returns the binfo of the first direct or indirect virtual base from
+   which BINFO is derrived, or NULL if binfo is not via virtual.  */
 
-int
+tree
 binfo_from_vbase (binfo)
      tree binfo;
 {
   for (; binfo; binfo = BINFO_INHERITANCE_CHAIN (binfo))
     {
       if (TREE_VIA_VIRTUAL (binfo))
-	return 1;
+	return binfo;
     }
-  return 0;
+  return NULL_TREE;
 }
 
 /* Returns the BINFO (if any) for the virtual baseclass T of the class
