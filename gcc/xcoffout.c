@@ -53,8 +53,8 @@ Boston, MA 02111-1307, USA.  */
 /* Line number of beginning of current function, minus one.
    Negative means not in a function or not using xcoff.  */
 
-int xcoff_begin_function_line = -1;
-int xcoff_inlining = 0;
+static int xcoff_begin_function_line = -1;
+static int xcoff_inlining = 0;
 
 /* Name of the current include file.  */
 
@@ -65,7 +65,7 @@ char *xcoff_current_include_file;
    (by including that file of course), then the line number will be
    absolute.  */
 
-char *xcoff_current_function_file;
+static char *xcoff_current_function_file;
 
 /* Names of bss and data sections.  These should be unique names for each
    compilation unit.  */
@@ -145,14 +145,14 @@ xcoff_output_standard_types (syms)
 {
   /* Handle built-in C types here.  */
 
-  assign_type_number (syms, "int", (TARGET_64BIT ? -31 : -1));
+  assign_type_number (syms, "int", -1);
   assign_type_number (syms, "char", -2);
   assign_type_number (syms, "short int", -3);
   assign_type_number (syms, "long int", (TARGET_64BIT ? -31 : -4));
   assign_type_number (syms, "unsigned char", -5);
   assign_type_number (syms, "signed char", -6);
   assign_type_number (syms, "short unsigned int", -7);
-  assign_type_number (syms, "unsigned int", (TARGET_64BIT ? -32 : -8));
+  assign_type_number (syms, "unsigned int", -8);
   /* No such type "unsigned".  */
   assign_type_number (syms, "long unsigned int", (TARGET_64BIT ? -32 : -10));
   assign_type_number (syms, "void", -11);
