@@ -502,17 +502,23 @@ extern void		sbss_section PARAMS ((void));
 #endif
 
 #ifndef MULTILIB_ISA_DEFAULT
-#if MIPS_ISA_DEFAULT == 1
-#define MULTILIB_ISA_DEFAULT "mips1"
-#elif MIPS_ISA_DEFAULT == 2
-#define MULTILIB_ISA_DEFAULT "mips2"
-#elif MIPS_ISA_DEFAULT == 3
-#define MULTILIB_ISA_DEFAULT "mips3"
-#elif MIPS_ISA_DEFAULT == 4
-#define MULTILIB_ISA_DEFAULT "mips4"
-#else
-#define MULTILIB_ISA_DEFAULT "mips1"
-#endif
+#  if MIPS_ISA_DEFAULT == 1
+#    define MULTILIB_ISA_DEFAULT "mips1"
+#  else
+#    if MIPS_ISA_DEFAULT == 2
+#      define MULTILIB_ISA_DEFAULT "mips2"
+#    else
+#      if MIPS_ISA_DEFAULT == 3
+#        define MULTILIB_ISA_DEFAULT "mips3"
+#      else
+#        if MIPS_ISA_DEFAULT == 4
+#          define MULTILIB_ISA_DEFAULT "mips4"
+#        else
+#          define MULTILIB_ISA_DEFAULT "mips1"
+#        endif
+#      endif
+#    endif
+#  endif
 #endif
 
 #ifndef MULTILIB_DEFAULTS
