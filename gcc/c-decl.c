@@ -772,13 +772,16 @@ void
 finish_incomplete_decl (decl)
      tree decl;
 {
-  if (TREE_CODE (decl) == VAR_DECL && TREE_TYPE (decl) != error_mark_node)
+  if (TREE_CODE (decl) == VAR_DECL)
     {
       tree type = TREE_TYPE (decl);
-      if (TREE_CODE (type) == ARRAY_TYPE
-	  && TYPE_DOMAIN (type) == 0
-	  && TREE_CODE (decl) != TYPE_DECL)
+      if (type != error_mark_node
+	  && TREE_CODE (type) == ARRAY_TYPE
+	  && TYPE_DOMAIN (type) == 0)
 	{
+	  if (! DECL_EXTERNAL (decl))
+	    warning_with_decl (decl, "array `%s' assumed to have one element");
+
 	  complete_array_type (type, NULL_TREE, 1);
 
 	  layout_decl (decl, 0);
