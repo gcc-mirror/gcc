@@ -1,3 +1,13 @@
+2003-08-30  Zack Weinberg  <zack@codesourcery.com>
+
+	* c-tree.h (C_TYPE_INCOMPLETE_VARS): New macro.
+	* c-decl.c (struct c_scope): Remove "incomplete" field.
+	(pushdecl): Attach variables with incomplete types to
+	the TYPE_MAIN_VARIANT of the incomplete type in question.
+	(finish_struct): Look at C_TYPE_INCOMPLETE_VARS for variables
+	to complete, not at current_scope->incomplete.  All such
+	variables do need completion.
+
 2003-08-30  Richard Earnshaw  <rearnsha@arm.com>
 	Nicolas Pitre <nico@cam.org>
 
@@ -16,20 +26,20 @@
 	Split into separate conditionally-compiled units.
 	Use RETLDM to return from routines.
 	* arm/ieee754-sf.S: Similarly.
-	* t-arm-elf (LIB1ASMFUNCS): Remove _ieee754_dp and _ieee754_sp. 
+	* t-arm-elf (LIB1ASMFUNCS): Remove _ieee754_dp and _ieee754_sp.
 	Add _negdf2 _addsubdf3 _muldivdf3 _cmpdf2 _unorddf2 _fixdfsi
 	_truncdfsf2 _negsf2 _addsubsf3 _muldivsf3 _cmpsf2 _unordsf2
 	_fixsfsi and _fixunssfsi.
 
-	* arm/ieee754-df.S (__muldf3): Fix bug when result of a 
+	* arm/ieee754-df.S (__muldf3): Fix bug when result of a
 	multiplication underflows to zero.
-	(__adddf3): Fix bug when using VFP ordering on little-endian 
+	(__adddf3): Fix bug when using VFP ordering on little-endian
 	processors.
 	(__fixdfsi): Use rrx to extract the carry into a register instead of
 	MRS instruction.  Optimize later use of result.
 	* arm/ieee754-sf.S (__fixsfsi): Likewise.
 	(__fixunssfsi): Use a better sequence for handling negative-or-zero.
-	
+
 2003-08-29  Richard Henderson  <rth@redhat.com>
 
 	* tree-optimize.c: New file.
@@ -68,8 +78,8 @@
 
 2003-08-29  Nathanael Nerode  <neroden@gcc.gnu.org>
 
-        * config.gcc: Don't use negated character class in shell case
-        clause.
+	* config.gcc: Don't use negated character class in shell case
+	clause.
 
 2003-08-29  Richard Henderson  <rth@redhat.com>
 
@@ -127,7 +137,7 @@
 	(fsf-funding.7): Likewise.
 	($(objdir)/%.info): New pattern rule.
 	(%.dvi): Likewise.
-	
+
 2003-08-29  Kelley Cook  <kelleycook@wideopenwest.com>
 
 	* Makefile.in (restage1): Pass BOOT_CFLAGS to recursive make.
@@ -186,15 +196,15 @@
 	* tree.h (tree_index): Add TI_FLOAT_PTR_TYPE, TI_DOUBLE_PTR_TYPE,
 	TI_LONG_DOUBLE_PTR_TYPE, TI_INTEGER_PTR_TYPE.
 	(float_ptr_type_node, double_ptr_type_node,
-	long_double_ptr_type_node, integer_ptr_type_node): New type_nodes. 
-	
+	long_double_ptr_type_node, integer_ptr_type_node): New type_nodes.
+
 	* doc/extend.texi: Document new builtins.
 
 2003-08-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtin-types.def (BT_FN_FLOAT_INT_FLOAT,
 	BT_FN_DOUBLE_INT_DOUBLE, BT_FN_LONGDOUBLE_INT_LONGDOUBLE): New.
-	
+
 	* builtins.def (BUILT_IN_ERF, BUILT_IN_ERFC, BUILT_IN_ERFCF,
 	BUILT_IN_ERFCL, BUILT_IN_ERFF, BUILT_IN_ERFL, BUILT_IN_GAMMA,
 	BUILT_IN_GAMMAF, BUILT_IN_GAMMAL, BUILT_IN_J0, BUILT_IN_J0F,
@@ -205,13 +215,13 @@
 	BUILT_IN_TGAMMAF, BUILT_IN_TGAMMAL, BUILT_IN_Y0, BUILT_IN_Y0F,
 	BUILT_IN_Y0L, BUILT_IN_Y1, BUILT_IN_Y1F, BUILT_IN_Y1L,
 	BUILT_IN_YN, BUILT_IN_YNF, BUILT_IN_YNL): New.
-	
+
 	* doc/extend.texi: Document new builtins.
 
 2003-08-28  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* fixinc/mkfixinc.sh: Remove special case code for unsupported
-	variants of i?86, powerpcle, and thumb. 
+	variants of i?86, powerpcle, and thumb.
 	* fixinc/mkfixinc.sh: Remove special case code for unsupported
 	arm and hppa variants.
 
@@ -285,13 +295,13 @@
 	("jump"): Likewise.
 	("call"): Use BRASL on zSeries machines.
 	("call_value", "call_value_tls"): Likewise.
-	("brasl", "bras", "basr_64", "basr_31", "bas_64", "bas_31"): Remove 
+	("brasl", "bras", "basr_64", "basr_31", "bas_64", "bas_31"): Remove
 	and replace by ...
 	("*bras", "*brasl", "*basr") ... these new insns.
-	("brasl_r", "bras_r", "basr_64_r", "basr_31_r", "bas_64_r", 
+	("brasl_r", "bras_r", "basr_64_r", "basr_31_r", "bas_64_r",
 	"bas_31_r"): Remove and replace by ...
 	("*bras_r", "*brasl_r", "*basr_r") ... these new insns.
-	("brasl_tls", "bras_tls", "basr_64_tls", "basr_31_tls", 
+	("brasl_tls", "bras_tls", "basr_64_tls", "basr_31_tls",
 	"bas_64_tls", "bas_31_tls"): Remove and replace by ...
 	("*bras_tls", "*brasl_tls", "*basr_tls") ... these new insns.
 	("*return_si", "*return_di"): Remove and replace by ...
@@ -304,11 +314,11 @@
 	("*andsi3_ni", "*andhi3_ni", "*andqi3_ni"): Likewise.
 	("*iorsi3_ni", "*iorhi3_ni", "*iorqi3_ni"): Likewise.
 	("*extendqisi2"): Use LB in z/Architecture mode.
-	("*zero_extendqisi2_64", "*zero_extendqisi2_31"): Use LLGC in 
+	("*zero_extendqisi2_64", "*zero_extendqisi2_31"): Use LLGC in
 	z/Architecture mode.
-	("zero_extendqihi2", "*zero_extendqihi2_64", "*zero_extendqihi2_31"): 
+	("zero_extendqihi2", "*zero_extendqihi2_64", "*zero_extendqihi2_31"):
 	Likewise.
-	
+
 	* config/s390/s390.md ("*tmdi_ext"): Allow in both 64-bit
 	and 31-bit mode.
 	("ptr_extend"): Allow only in 64-bit mode.
@@ -340,19 +350,19 @@
 
 	* config/s390/s390.c (struct machine_function): Remove member
 	literal_pool_label.
-	(s390_optimize_prolog): Replace TEMP_REG argument with 
+	(s390_optimize_prolog): Replace TEMP_REG argument with
 	TEMP_USED and BASE_USED.  Do not check get_pool_size ().
-	(general_s_operand): Accept all immediates before reload if 
-	ALLOW_IMMEDIATE.  If not ALLOW_IMMEDIATE, reject literal pool 
+	(general_s_operand): Accept all immediates before reload if
+	ALLOW_IMMEDIATE.  If not ALLOW_IMMEDIATE, reject literal pool
 	references.
 	(s390_output_symbolic_const): Remove UNSPEC_LTREL_OFFSET handling.
 	(find_constant_pool_ref): Ignore UNSPECV_POOL_ENTRY insns.
 	(s390_alloc_pool): New function.
 	(s390_new_pool): Call it.
 	(s390_dump_pool): Add REMOTE_LABEL argument.
-	(s390_chunkify_start): Add BASE_REG argument.  Do not check 
+	(s390_chunkify_start): Add BASE_REG argument.  Do not check
 	get_pool_size ().
-	(s390_chunkify_finish): Add BASE_REG argument.  Adapt 
+	(s390_chunkify_finish): Add BASE_REG argument.  Adapt
 	s390_dump_pool call.
 	(s390_pool_count, s390_nr_constants): Remove.
 	(s390_output_constant_pool): Remove.
@@ -360,7 +370,7 @@
 	(s390_mainpool_finish): New function.
 	(s390_mainpool_cancel): New function.
 	(s390_reorg): Implement main literal pool handling.
-	(s390_emit_prologue): Emit main_pool placeholder instead of 
+	(s390_emit_prologue): Emit main_pool placeholder instead of
 	literal_pool_31 / literal_pool_64 insns.
 	* config/s390/s390.h (s390_pool_count, s390_nr_constants): Remove.
 	(ASM_OUTPUT_POOL_PROLOGUE, ASM_OUTPUT_SPECIAL_POOL_ENTRY): Remove.
@@ -430,9 +440,9 @@
 	from fixinc.svr4.
 	* fixinc/inclhack.def (ptx_pwd_h): New disabled fix, ported
 	from fixinc.ptx.
-        * fixinc/inclhack.def (ptx_sys_mc_param_h): New disabled fix,
-        ported from fixinc.ptx.
-	
+	* fixinc/inclhack.def (ptx_sys_mc_param_h): New disabled fix,
+	ported from fixinc.ptx.
+
 2003-08-26  Per Bothner  <pbothner@apple.com>
 
 	* cpplib.h (struct cpp_token):  Change type of field line to fileline.
@@ -455,13 +465,13 @@
 2003-08-26  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (emit_prologue): Don't check literal pool size.
-	* config/s390/s390.h (ASM_OUTPUT_SPECIAL_POOL_ENTRY): Call 
+	* config/s390/s390.h (ASM_OUTPUT_SPECIAL_POOL_ENTRY): Call
 	s390_output_pool_entry.
 
 2003-08-26  Nathanael Nerode  <neroden@gcc.gnu.org>
 
-	* fixinc/inclhack.def (svr4_preproc_lint_on, 
-	svr4_preproc_lint_off, svr4_preproc_machine): New disabled 
+	* fixinc/inclhack.def (svr4_preproc_lint_on,
+	svr4_preproc_lint_off, svr4_preproc_machine): New disabled
 	fixes, ported from fixinc.svr4.
 
 2003-08-26  Mark Mitchell  <mark@codesourcery.com>
@@ -502,7 +512,7 @@
 
 2003-08-26  Andreas Krebbel <krebbel1@de.ibm.com>
 
-	* config/s390/s390.md ("*fmadddf", "*fmsubdf", 
+	* config/s390/s390.md ("*fmadddf", "*fmsubdf",
 	"*fmaddsf", "*fmsubsf"): New insns.
 
 2003-08-26  Roger Sayle  <roger@eyesopen.com>
@@ -532,7 +542,7 @@
 	(clear_storage_via_libcall): Likewise.
 	* tree.c (build): Set TREE_SIDE_EFFECTS for non-const, non-pure
 	CALL_EXPRs.
-	
+
 	* gcse.c (is_too_expensive): New function.
 	(gcse_main, delete_null_pointer_checks, bypass_jumps): Use it.
 

@@ -185,7 +185,7 @@ static int current_extern_inline;
    the end of the list on each insertion, or reverse the lists later,
    we maintain a pointer to the last list entry for each of the lists.
 
-   The order of the tags, shadowed, shadowed_tags, and incomplete
+   The order of the tags, shadowed, and shadowed_tags
    lists does not matter, so we just prepend to these lists.  */
 
 struct c_scope GTY(())
@@ -224,9 +224,6 @@ struct c_scope GTY(())
      for all the scopes that were entered and exited one level down.  */
   tree blocks;
   tree blocks_last;
-
-  /* Variable declarations with incomplete type in this scope.  */
-  tree incomplete;
 
   /* True if we are currently filling this scope with parameter
      declarations.  */
@@ -1745,14 +1742,15 @@ pushdecl (tree x)
       IDENTIFIER_SYMBOL_VALUE (name) = x;
       C_DECL_INVISIBLE (x) = 0;
 
-      /* Keep list of variables in this scope with incomplete type.
+      /* If x's type is incomplete because it's based on a
+	 structure or union which has not yet been fully declared,
+	 attach it to that structure or union type, so we can go
+	 back and complete the variable declaration later, if the
+	 structure or union gets fully declared.
+
 	 If the input is erroneous, we can have error_mark in the type
 	 slot (e.g. "f(void a, ...)") - that doesn't count as an
-	 incomplete type.
-
-	 FIXME: Chain these off the TYPE_DECL for the incomplete type,
-	 then we don't have to do (potentially quite costly) searches
-	 in finish_struct.  */
+	 incomplete type.  */
       if (TREE_TYPE (x) != error_mark_node
 	  && !COMPLETE_TYPE_P (TREE_TYPE (x)))
 	{
@@ -1760,11 +1758,14 @@ pushdecl (tree x)
 
 	  while (TREE_CODE (element) == ARRAY_TYPE)
 	    element = TREE_TYPE (element);
+	  element = TYPE_MAIN_VARIANT (element);
+
 	  if ((TREE_CODE (element) == RECORD_TYPE
 	       || TREE_CODE (element) == UNION_TYPE)
 	      && (TREE_CODE (x) != TYPE_DECL
 		  || TREE_CODE (TREE_TYPE (x)) == ARRAY_TYPE))
-	    scope->incomplete = tree_cons (NULL_TREE, x, scope->incomplete);
+	    C_TYPE_INCOMPLETE_VARS (element)
+	      = tree_cons (NULL_TREE, x, C_TYPE_INCOMPLETE_VARS (element));
 	}
     }
 
@@ -5143,63 +5144,24 @@ finish_struct (tree t, tree fieldlist, tree attributes)
 
   /* If this structure or union completes the type of any previous
      variable declaration, lay it out and output its rtl.  */
-
-  if (current_scope->incomplete != NULL_TREE)
+  for (x = C_TYPE_INCOMPLETE_VARS (TYPE_MAIN_VARIANT (t));
+       x;
+       x = TREE_CHAIN (x))
     {
-      tree prev = NULL_TREE;
-
-      for (x = current_scope->incomplete; x; x = TREE_CHAIN (x))
-        {
-	  tree decl = TREE_VALUE (x);
-
-	  if (TYPE_MAIN_VARIANT (TREE_TYPE (decl)) == TYPE_MAIN_VARIANT (t)
-	      && TREE_CODE (decl) != TYPE_DECL)
-	    {
-	      layout_decl (decl, 0);
-	      /* This is a no-op in c-lang.c or something real in
-		 objc-act.c.  */
-	      if (c_dialect_objc ())
-		objc_check_decl (decl);
-	      rest_of_decl_compilation (decl, NULL, toplevel, 0);
-	      if (! toplevel)
-		expand_decl (decl);
-	      /* Unlink X from the incomplete list.  */
-	      if (prev)
-		TREE_CHAIN (prev) = TREE_CHAIN (x);
-	      else
-	        current_scope->incomplete = TREE_CHAIN (x);
-	    }
-	  else if (!COMPLETE_TYPE_P (TREE_TYPE (decl))
-		   && TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
-	    {
-	      tree element = TREE_TYPE (decl);
-	      while (TREE_CODE (element) == ARRAY_TYPE)
-		element = TREE_TYPE (element);
-	      if (element == t)
-		{
-		  layout_array_type (TREE_TYPE (decl));
-		  if (TREE_CODE (decl) != TYPE_DECL)
-		    {
-		      layout_decl (decl, 0);
-		      if (c_dialect_objc ())
-			objc_check_decl (decl);
-		      rest_of_decl_compilation (decl, NULL, toplevel, 0);
-		      if (! toplevel)
-			expand_decl (decl);
-		    }
-		  /* Unlink X from the incomplete list.  */
-		  if (prev)
-		    TREE_CHAIN (prev) = TREE_CHAIN (x);
-		  else
-		    current_scope->incomplete = TREE_CHAIN (x);
-		}
-	      else
-		prev = x;
-	    }
-	  else
-	    prev = x;
+      tree decl = TREE_VALUE (x);
+      if (TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
+	layout_array_type (TREE_TYPE (decl));
+      if (TREE_CODE (decl) != TYPE_DECL)
+	{
+	  layout_decl (decl, 0);
+	  if (c_dialect_objc ())
+	    objc_check_decl (decl);
+	  rest_of_decl_compilation (decl, NULL, toplevel, 0);
+	  if (! toplevel)
+	    expand_decl (decl);
 	}
     }
+  C_TYPE_INCOMPLETE_VARS (TYPE_MAIN_VARIANT (t)) = 0;
 
   /* Finish debugging output for this type.  */
   rest_of_type_compilation (t, toplevel);
