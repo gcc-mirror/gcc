@@ -4690,24 +4690,14 @@ tsubst_expr (t, args, in_decl)
     {
     case RETURN_STMT:
       lineno = TREE_COMPLEXITY (t);
-      emit_line_note (input_filename, lineno);
-      c_expand_return
-	(tsubst_expr (TREE_OPERAND (t, 0), args, in_decl));
-      finish_stmt ();
+      finish_return_stmt (tsubst_expr (RETURN_EXPR (t),
+				       args, in_decl));
       break;
 
     case EXPR_STMT:
       lineno = TREE_COMPLEXITY (t);
-      emit_line_note (input_filename, lineno);
-      t = tsubst_expr (TREE_OPERAND (t, 0), args, in_decl);
-      /* Do default conversion if safe and possibly important,
-	 in case within ({...}).  */
-      if ((TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE && lvalue_p (t))
-	  || TREE_CODE (TREE_TYPE (t)) == FUNCTION_TYPE)
-	t = default_conversion (t);
-      cplus_expand_expr_stmt (t);
-      clear_momentary ();
-      finish_stmt ();
+      finish_expr_stmt (tsubst_expr (EXPR_STMT_EXPR (t),
+				     args, in_decl));
       break;
 
     case DECL_STMT:
@@ -4731,184 +4721,117 @@ tsubst_expr (t, args, in_decl)
     case FOR_STMT:
       {
 	tree tmp;
-	int init_scope = (flag_new_for_scope > 0 && TREE_OPERAND (t, 0)
-			  && TREE_CODE (TREE_OPERAND (t, 0)) == DECL_STMT);
-	int cond_scope = (TREE_OPERAND (t, 1)
-			  && TREE_CODE (TREE_OPERAND (t, 1)) == DECL_STMT);
-
 	lineno = TREE_COMPLEXITY (t);
-	emit_line_note (input_filename, lineno);
-	if (init_scope)
-	  do_pushlevel ();
-	for (tmp = TREE_OPERAND (t, 0); tmp; tmp = TREE_CHAIN (tmp))
+
+	begin_for_stmt ();
+	for (tmp = FOR_INIT_STMT (t); tmp; tmp = TREE_CHAIN (tmp))
 	  tsubst_expr (tmp, args, in_decl);
-	emit_nop ();
-	emit_line_note (input_filename, lineno);
-	expand_start_loop_continue_elsewhere (1); 
-
-	if (cond_scope)
-	  do_pushlevel ();
-	tmp = tsubst_expr (TREE_OPERAND (t, 1), args, in_decl);
-	emit_line_note (input_filename, lineno);
-	if (tmp)
-	  expand_exit_loop_if_false (0, condition_conversion (tmp));
-
-	if (! cond_scope)
-	  do_pushlevel ();
-	tsubst_expr (TREE_OPERAND (t, 3), args, in_decl);
-	do_poplevel ();
-
-	emit_line_note (input_filename, lineno);
-	expand_loop_continue_here ();
-	tmp = tsubst_expr (TREE_OPERAND (t, 2), args, in_decl);
-	if (tmp)
-	  cplus_expand_expr_stmt (tmp);
-
-	expand_end_loop ();
-	if (init_scope)
-	  do_poplevel ();
-	finish_stmt ();
+	finish_for_init_stmt (NULL_TREE);
+	finish_for_cond (tsubst_expr (FOR_COND (t), args,
+				      in_decl),
+			 NULL_TREE);
+	tmp = tsubst_expr (FOR_EXPR (t), args, in_decl);
+	finish_for_expr (tmp, NULL_TREE);
+	tsubst_expr (FOR_BODY (t), args, in_decl);
+	finish_for_stmt (tmp, NULL_TREE);
       }
       break;
 
     case WHILE_STMT:
       {
-	tree cond;
-
 	lineno = TREE_COMPLEXITY (t);
-	emit_nop ();
-	emit_line_note (input_filename, lineno);
-	expand_start_loop (1); 
-
-	cond = TREE_OPERAND (t, 0);
-	if (TREE_CODE (cond) == DECL_STMT)
-	  do_pushlevel ();
-	cond = tsubst_expr (cond, args, in_decl);
-	emit_line_note (input_filename, lineno);
-	expand_exit_loop_if_false (0, condition_conversion (cond));
-
-	if (TREE_CODE (TREE_OPERAND (t, 0)) != DECL_STMT)
-	  do_pushlevel ();
-	tsubst_expr (TREE_OPERAND (t, 1), args, in_decl);
-	do_poplevel ();
-
-	expand_end_loop ();
-	finish_stmt ();
+	begin_while_stmt ();
+	finish_while_stmt_cond (tsubst_expr (WHILE_COND (t),
+					     args, in_decl),
+				NULL_TREE);
+	tsubst_expr (WHILE_BODY (t), args, in_decl);
+	finish_while_stmt (NULL_TREE);
       }
       break;
 
     case DO_STMT:
       {
-	tree cond;
-
 	lineno = TREE_COMPLEXITY (t);
-	emit_nop ();
-	emit_line_note (input_filename, lineno);
-	expand_start_loop_continue_elsewhere (1); 
-
-	tsubst_expr (TREE_OPERAND (t, 0), args, in_decl);
-	expand_loop_continue_here ();
-
-	cond = tsubst_expr (TREE_OPERAND (t, 1), args, in_decl);
-	emit_line_note (input_filename, lineno);
-	expand_exit_loop_if_false (0, condition_conversion (cond));
-	expand_end_loop ();
-
-	clear_momentary ();
-	finish_stmt ();
+	begin_do_stmt ();
+	tsubst_expr (DO_BODY (t), args, in_decl);
+	finish_do_body (NULL_TREE);
+	finish_do_stmt (tsubst_expr (DO_COND (t), args,
+				     in_decl),
+			NULL_TREE);
       }
       break;
 
     case IF_STMT:
       {
 	tree tmp;
-	int cond_scope = (TREE_CODE (TREE_OPERAND (t, 0)) == DECL_STMT);
 
 	lineno = TREE_COMPLEXITY (t);
-	if (cond_scope)
-	  do_pushlevel ();
-	tmp = tsubst_expr (TREE_OPERAND (t, 0), args, in_decl);
-	emit_line_note (input_filename, lineno);
-	expand_start_cond (condition_conversion (tmp), 0);
-	
-	if (tmp = TREE_OPERAND (t, 1), tmp)
-	  tsubst_expr (tmp, args, in_decl);
+	begin_if_stmt ();
+	finish_if_stmt_cond (tsubst_expr (IF_COND (t),
+					  args, in_decl),
+			     NULL_TREE);
 
-	if (tmp = TREE_OPERAND (t, 2), tmp)
+	if (tmp = THEN_CLAUSE (t), tmp)
 	  {
-	    expand_start_else ();
 	    tsubst_expr (tmp, args, in_decl);
+	    finish_then_clause (NULL_TREE);
 	  }
 
-	expand_end_cond ();
+	if (tmp = ELSE_CLAUSE (t), tmp)
+	  {
+	    begin_else_clause ();
+	    tsubst_expr (tmp, args, in_decl);
+	    finish_else_clause (NULL_TREE);
+	  }
 
-	if (cond_scope)
-	  do_poplevel ();
-
-	finish_stmt ();
+	finish_if_stmt ();
       }
       break;
 
     case COMPOUND_STMT:
       {
-	tree substmt = TREE_OPERAND (t, 0);
+	tree substmt;
 
 	lineno = TREE_COMPLEXITY (t);
-
-	if (COMPOUND_STMT_NO_SCOPE (t) == 0)
-	  do_pushlevel ();
-
-	for (; substmt; substmt = TREE_CHAIN (substmt))
+	begin_compound_stmt (COMPOUND_STMT_NO_SCOPE (t));
+	for (substmt = COMPOUND_BODY (t); 
+	     substmt != NULL_TREE;
+	     substmt = TREE_CHAIN (substmt))
 	  tsubst_expr (substmt, args, in_decl);
-
-	if (COMPOUND_STMT_NO_SCOPE (t) == 0)
-	  return do_poplevel ();
+	return finish_compound_stmt (COMPOUND_STMT_NO_SCOPE (t), 
+				     NULL_TREE);
       }
       break;
 
     case BREAK_STMT:
       lineno = TREE_COMPLEXITY (t);
-      emit_line_note (input_filename, lineno);
-      if (! expand_exit_something ())
-	error ("break statement not within loop or switch");
+      finish_break_stmt ();
       break;
 
     case CONTINUE_STMT:
       lineno = TREE_COMPLEXITY (t);
-      emit_line_note (input_filename, lineno);
-      if (! expand_continue_loop (0))
-	error ("continue statement not within a loop");
+      finish_continue_stmt ();
       break;
 
     case SWITCH_STMT:
       {
 	tree val, tmp;
-	int cond_scope = (TREE_CODE (TREE_OPERAND (t, 0)) == DECL_STMT);
 
 	lineno = TREE_COMPLEXITY (t);
-	if (cond_scope)
-	  do_pushlevel ();
-	val = tsubst_expr (TREE_OPERAND (t, 0), args, in_decl);
-	emit_line_note (input_filename, lineno);
-	c_expand_start_case (val);
-	push_switch ();
+	begin_switch_stmt ();
+	val = tsubst_expr (SWITCH_COND (t), args, in_decl);
+	finish_switch_cond (val);
 	
 	if (tmp = TREE_OPERAND (t, 1), tmp)
 	  tsubst_expr (tmp, args, in_decl);
 
-	expand_end_case (val);
-	pop_switch ();
-
-	if (cond_scope)
-	  do_poplevel ();
-
-	finish_stmt ();
+	finish_switch_stmt (val, NULL_TREE);
       }
       break;
 
     case CASE_LABEL:
-      do_case (tsubst_expr (TREE_OPERAND (t, 0), args, in_decl),
-	       tsubst_expr (TREE_OPERAND (t, 1), args, in_decl));
+      finish_case_label (tsubst_expr (CASE_LOW (t), args, in_decl),
+			 tsubst_expr (CASE_HIGH (t), args, in_decl));
       break;
 
     case LABEL_DECL:
@@ -4920,47 +4843,47 @@ tsubst_expr (t, args, in_decl)
 
     case GOTO_STMT:
       lineno = TREE_COMPLEXITY (t);
-      emit_line_note (input_filename, lineno);
-      if (TREE_CODE (TREE_OPERAND (t, 0)) == IDENTIFIER_NODE)
-	{
-	  tree decl = lookup_label (TREE_OPERAND (t, 0));
-	  TREE_USED (decl) = 1;
-	  expand_goto (decl);
-	}
-      else
-	expand_computed_goto
-	  (tsubst_expr (TREE_OPERAND (t, 0), args, in_decl));
+      finish_goto_stmt (tsubst_expr (GOTO_DESTINATION (t),
+				     args, in_decl));
+      break;
+
+    case ASM_STMT:
+      lineno = TREE_COMPLEXITY (t);
+      finish_asm_stmt (tsubst_expr (ASM_CV_QUAL (t), args, in_decl),
+		       tsubst_expr (ASM_STRING (t), args, in_decl),
+		       tsubst_expr (ASM_OUTPUTS (t), args, in_decl),
+		       tsubst_expr (ASM_INPUTS (t), args, in_decl), 
+		       tsubst_expr (ASM_CLOBBERS (t), args, in_decl));
       break;
 
     case TRY_BLOCK:
       lineno = TREE_COMPLEXITY (t);
-      emit_line_note (input_filename, lineno);
-      expand_start_try_stmts ();
-      tsubst_expr (TREE_OPERAND (t, 0), args, in_decl);
-      expand_start_all_catch ();
+      begin_try_block ();
+      tsubst_expr (TRY_STMTS (t), args, in_decl);
+      finish_try_block (NULL_TREE);
       {
-	tree handler = TREE_OPERAND (t, 1);
+	tree handler = TRY_HANDLERS (t);
 	for (; handler; handler = TREE_CHAIN (handler))
 	  tsubst_expr (handler, args, in_decl);
       }
-      expand_end_all_catch ();
+      finish_handler_sequence (NULL_TREE);
       break;
 
     case HANDLER:
       lineno = TREE_COMPLEXITY (t);
-      do_pushlevel ();
-      if (TREE_OPERAND (t, 0))
+      begin_handler ();
+      if (HANDLER_PARMS (t))
 	{
-	  tree d = TREE_OPERAND (t, 0);
+	  tree d = HANDLER_PARMS (t);
 	  expand_start_catch_block
 	    (tsubst (TREE_OPERAND (d, 1), args, in_decl),
 	     tsubst (TREE_OPERAND (d, 0), args, in_decl));
 	}
       else
 	expand_start_catch_block (NULL_TREE, NULL_TREE);
-      tsubst_expr (TREE_OPERAND (t, 1), args, in_decl);
-      expand_end_catch_block ();
-      do_poplevel ();
+      finish_handler_parms (NULL_TREE);
+      tsubst_expr (HANDLER_BODY (t), args, in_decl);
+      finish_handler (NULL_TREE);
       break;
 
     case TAG_DEFN:

@@ -263,7 +263,7 @@ empty_parms ()
 %type <ttype> complete_type_name notype_identifier nonnested_type
 %type <ttype> complex_type_name nested_name_specifier_1
 %type <ttype> new_initializer new_placement
-%type <ttype> using_decl .poplevel
+%type <ttype> using_decl
 %type <ttype> typename_sub typename_sub0 typename_sub1 typename_sub2
 %type <ttype> explicit_template_type
 /* in order to recognize aggr tags as defining and thus shadowing.  */
@@ -1002,7 +1002,7 @@ paren_expr_or_null:
 			 cond_stmt_keyword);
 		  $$ = integer_zero_node; }
 	| '(' expr ')'
-		{ $$ = condition_conversion ($2); }
+                { $$ = $2; }
 	;
 
 paren_cond_or_null:
@@ -1011,7 +1011,7 @@ paren_cond_or_null:
 			 cond_stmt_keyword);
 		  $$ = integer_zero_node; }
 	| '(' condition ')'
-		{ $$ = condition_conversion ($2); }
+                { $$ = $2; }
 	;
 
 xcond:
@@ -1062,24 +1062,9 @@ compstmtend:
 
 already_scoped_stmt:
 	  '{'
-		{
-		  if (processing_template_decl)
-		    {
-		      $<ttype>$ = build_min_nt (COMPOUND_STMT, NULL_TREE);
-		      COMPOUND_STMT_NO_SCOPE ($<ttype>$) = 1;
-		      add_tree ($<ttype>$);
-		    }
-		}
+                { $<ttype>$ = begin_compound_stmt (1); }
 	  compstmtend
-		{ 
-		  if (processing_template_decl)
-		    {
-		      TREE_OPERAND ($<ttype>2, 0) = TREE_CHAIN ($<ttype>2);
-		      TREE_CHAIN ($<ttype>2) = NULL_TREE;
-		      last_tree = $<ttype>2;
-		    }
-		  finish_stmt (); 
-		}
+                { finish_compound_stmt (1, $<ttype>2); }
 	| simple_stmt
 	;
 
@@ -3437,20 +3422,6 @@ errstmt:
 	  error ';'
 	;
 
-/* build the LET_STMT node before parsing its contents,
-  so that any LET_STMTs within the context can have their display pointers
-  set up to point at this one.  */
-
-.pushlevel:
-	  /* empty */
-		{ do_pushlevel (); }
-	;
-
-.poplevel:
-	  /* empty */
-		{ $$ = do_poplevel (); }
-	;
-
 /* Read zero or more forward-declarations for labels
    that nested functions can jump to.  */
 maybe_label_decls:
@@ -3487,92 +3458,33 @@ compstmt_or_error:
 
 compstmt:
 	  '{'
-		{
-		  if (processing_template_decl)
-		    {
-		      $<ttype>$ = build_min_nt (COMPOUND_STMT, NULL_TREE);
-		      add_tree ($<ttype>$);
-		    }
-		}
-	  .pushlevel compstmtend .poplevel
-		{
-		  if (processing_template_decl)
-		    {
-		      TREE_OPERAND ($<ttype>2, 0) = TREE_CHAIN ($<ttype>2);
-		      TREE_CHAIN ($<ttype>2) = NULL_TREE;
-		      last_tree = $<ttype>2;
-		    }
-		  $$ = $5;
-		}
+                { $<ttype>$ = begin_compound_stmt (0); }
+	  compstmtend 
+                { $$ = finish_compound_stmt (0, $<ttype>2); }
 	;
 
 simple_if:
 	  IF
 		{
-		  if (processing_template_decl)
-		    {
-		      $<ttype>$ = build_min_nt (IF_STMT, NULL_TREE, NULL_TREE,
-					        NULL_TREE);
-		      add_tree ($<ttype>$);
-		    }
-                  cond_stmt_keyword = "if";
+		  $<ttype>$ = begin_if_stmt ();
+		  cond_stmt_keyword = "if";
 		}
-	  .pushlevel paren_cond_or_null
-		{
-		  if (processing_template_decl)
-		    {
-		      if (last_tree != $<ttype>2)
-		        {
-			  TREE_OPERAND ($<ttype>2, 0) = last_tree;
-			  TREE_CHAIN ($<ttype>2) = NULL_TREE;
-			  last_tree = $<ttype>2;
-			}
-		      else
-		        TREE_OPERAND ($<ttype>2, 0) = $4;
-		    }
-		  else
-		    {
-		      emit_line_note (input_filename, lineno);
-		      expand_start_cond ($4, 0);
-		    }
-		}
-	  implicitly_scoped_stmt
-		{
-		  if (processing_template_decl)
-		    {
-		      TREE_OPERAND ($<ttype>2, 1) = TREE_CHAIN ($<ttype>2);
-		      TREE_CHAIN ($<ttype>2) = NULL_TREE;
-		      $<ttype>$ = last_tree = $<ttype>2;
-		    }
-		}
+            paren_cond_or_null
+                { finish_if_stmt_cond ($3, $<ttype>2); }
+	    implicitly_scoped_stmt
+                { $<ttype>$ = finish_then_clause ($<ttype>2); }
 	;
 
 implicitly_scoped_stmt:
 	  compstmt
-		{ finish_stmt (); }
-	| .pushlevel
-		{
-		  if (processing_template_decl)
-		    {
-		      $<ttype>$ = build_min_nt (COMPOUND_STMT, NULL_TREE);
-		      add_tree ($<ttype>$);
-		    }
-		}
-	  simple_stmt .poplevel
-		{
-		  if (processing_template_decl)
-		    {
-		      TREE_OPERAND ($<ttype>2, 0) = TREE_CHAIN ($<ttype>2);
-		      TREE_CHAIN ($<ttype>2) = NULL_TREE;
-		      last_tree = $<ttype>2;
-		    }
-		  $$ = $4;
-		}
+	|       { $<ttype>$ = begin_compound_stmt (0); }
+	  simple_stmt 
+                { $$ = finish_compound_stmt (0, $<ttype>1); }
 	;
 
 stmt:
 	  compstmt
-		{ finish_stmt (); }
+                {}
 	| simple_stmt
 	;
 
@@ -3580,346 +3492,93 @@ simple_stmt:
 	  decl
 		{ finish_stmt (); }
 	| expr ';'
-		{
-		  tree expr = $1;
-		  if (! processing_template_decl)
-		    {
-		      emit_line_note (input_filename, lineno);
-		      /* Do default conversion if safe and possibly important,
-		         in case within ({...}).  */
-		      if ((TREE_CODE (TREE_TYPE (expr)) == ARRAY_TYPE
-		           && lvalue_p (expr))
-		          || TREE_CODE (TREE_TYPE (expr)) == FUNCTION_TYPE)
-		        expr = default_conversion (expr);
-		    }
-		  cplus_expand_expr_stmt (expr);
-		  clear_momentary ();
-		  finish_stmt (); }
+                { finish_expr_stmt ($1); }
 	| simple_if ELSE
-		{ if (! processing_template_decl) expand_start_else (); }
+                { begin_else_clause (); }
 	  implicitly_scoped_stmt
-		{
-		  if (processing_template_decl)
-		    {
-		      TREE_OPERAND ($<ttype>1, 2) = TREE_CHAIN ($<ttype>1);
-		      TREE_CHAIN ($<ttype>1) = NULL_TREE;
-		      last_tree = $<ttype>1;
-		    }
-		  else
-		    expand_end_cond ();
+                { 
+		  finish_else_clause ($<ttype>1); 
+		  finish_if_stmt ();
 		}
-	  .poplevel
-		{ finish_stmt (); }
 	| simple_if  %prec IF
-		{ if (! processing_template_decl) expand_end_cond ();
-		  do_poplevel ();
-		  finish_stmt (); }
+                { finish_if_stmt (); }
 	| WHILE
 		{
-		  if (processing_template_decl)
-		    {
-		      $<ttype>$ = build_min_nt (WHILE_STMT, NULL_TREE, NULL_TREE);
-		      add_tree ($<ttype>$);
-		    }
-		  else
-		    {
-		      emit_nop ();
-		      emit_line_note (input_filename, lineno);
-		      expand_start_loop (1); 
-		    }
+		  $<ttype>$ = begin_while_stmt ();
 		  cond_stmt_keyword = "while";
 		}
-	  .pushlevel paren_cond_or_null
-		{
-		  if (processing_template_decl)
-		    {
-		      if (last_tree != $<ttype>2)
-		        {
-			  TREE_OPERAND ($<ttype>2, 0) = last_tree;
-			  TREE_CHAIN ($<ttype>2) = NULL_TREE;
-			  last_tree = $<ttype>2;
-			}
-		      else
-		        TREE_OPERAND ($<ttype>2, 0) = $4;
-		    }
-		  else
-		    {
-		      emit_line_note (input_filename, lineno);
-		      expand_exit_loop_if_false (0, $4);
-		    }
-
-		  /* If the condition wasn't a declaration, clear out the
-		     block we made for it and start a new one here so the
-		     optimization in expand_end_loop will work.  */
-		  if (getdecls () == NULL_TREE)
-		    {
-		      do_poplevel ();
-		      do_pushlevel ();
-		    }
-		}
-	  already_scoped_stmt .poplevel
-		{
-		  if (processing_template_decl)
-		    {
-		      TREE_OPERAND ($<ttype>2, 1) = TREE_CHAIN ($<ttype>2);
-		      TREE_CHAIN ($<ttype>2) = NULL_TREE;
-		      last_tree = $<ttype>2;
-		    }
-		  else
-		    expand_end_loop ();
-		  finish_stmt ();
-		}
+	  paren_cond_or_null
+                { finish_while_stmt_cond ($3, $<ttype>2); }
+	  already_scoped_stmt
+                { finish_while_stmt ($<ttype>2); }
 	| DO
-		{
-		  if (processing_template_decl)
-		    {
-		      $<ttype>$ = build_min_nt (DO_STMT, NULL_TREE, NULL_TREE);
-		      add_tree ($<ttype>$);
-		    }
-		  else
-		    {
-		      emit_nop ();
-		      emit_line_note (input_filename, lineno);
-		      expand_start_loop_continue_elsewhere (1);
-		    }
-		}
+                { $<ttype>$ = begin_do_stmt (); }
 	  implicitly_scoped_stmt WHILE
 		{
-		  if (processing_template_decl)
-		    {
-		      TREE_OPERAND ($<ttype>2, 0) = TREE_CHAIN ($<ttype>2);
-		      TREE_CHAIN ($<ttype>2) = NULL_TREE;
-		      last_tree = $<ttype>2;
-		    }
-		  else
-		    {
-		      expand_loop_continue_here ();
-		      cond_stmt_keyword = "do";
-		    }
+		  finish_do_body ($<ttype>2);
+		  cond_stmt_keyword = "do";
 		}
 	  paren_expr_or_null ';'
-		{
-		  if (processing_template_decl)
-		    TREE_OPERAND ($<ttype>2, 1) = $6;
-		  else
-		    {
-		      emit_line_note (input_filename, lineno);
-		      expand_exit_loop_if_false (0, $6);
-		      expand_end_loop ();
-		    }
-		  clear_momentary ();
-		  finish_stmt ();
-		}
+                { finish_do_stmt ($6, $<ttype>2); }
 	| FOR
-		{ if (processing_template_decl)
-		    {
-		      $<ttype>$ = build_min_nt (FOR_STMT, NULL_TREE, NULL_TREE, 
-					        NULL_TREE, NULL_TREE);
-		      add_tree ($<ttype>$);
-		    }
-                  else
-		    emit_line_note (input_filename, lineno);
-		  if (flag_new_for_scope > 0)
-		    {
-		      /* Conditionalize .pushlevel */
-		      pushlevel (0);
-		      note_level_for_for ();
-		      clear_last_expr ();
-		      push_momentary ();
-		      expand_start_bindings (0);
-		    }
-		}
+                { $<ttype>$ = begin_for_stmt (); }
 	  '(' for.init.statement
-		{
-		  if (processing_template_decl)
-		    {
-		      if (last_tree != $<ttype>2)
-			{
-			  TREE_OPERAND ($<ttype>2, 0) = TREE_CHAIN ($<ttype>2);
-			  TREE_CHAIN ($<ttype>2) = NULL_TREE;
-			  last_tree = $<ttype>2;
-			}
-		    }
-		  else
-		    {
-		      emit_nop ();
-		      emit_line_note (input_filename, lineno);
-		      expand_start_loop_continue_elsewhere (1); 
-		    }
-		}
-	  .pushlevel xcond ';'
-		{
-		  if (processing_template_decl)
-		    {
-		      if (last_tree != $<ttype>2)
-		        {
-			  TREE_OPERAND ($<ttype>2, 1) = last_tree;
-			  TREE_CHAIN ($<ttype>2) = NULL_TREE;
-			  last_tree = $<ttype>2;
-			}
-		      else
-		        TREE_OPERAND ($<ttype>2, 1) = $7;
-		    }
-		  else
-		    {
-		      emit_line_note (input_filename, lineno);
-		      if ($7) expand_exit_loop_if_false (0, $7);
-		    }
-
-		  /* If the condition wasn't a declaration, clear out the
-		     block we made for it and start a new one here so the
-		     optimization in expand_end_loop will work.  */
-		  if (getdecls () == NULL_TREE)
-		    {
-		      do_poplevel ();
-		      do_pushlevel ();
-		    }
-		}
+                { finish_for_init_stmt ($<ttype>2); }
+	  xcond ';'
+                { finish_for_cond ($6, $<ttype>2); }
 	  xexpr ')'
-		/* Don't let the tree nodes for $10 be discarded
-		   by clear_momentary during the parsing of the next stmt.  */
-		{
-		  if (processing_template_decl)
-		    TREE_OPERAND ($<ttype>2, 2) = $10;
-		  push_momentary ();
-		}
-	  already_scoped_stmt .poplevel
-		{
-		  if (processing_template_decl)
-		    {
-		      TREE_OPERAND ($<ttype>2, 3) = TREE_CHAIN ($<ttype>2);
-		      TREE_CHAIN ($<ttype>2) = NULL_TREE;
-		      last_tree = $<ttype>2;
-		    }
-		  else
-		    {
-		      emit_line_note (input_filename, lineno);
-		      expand_loop_continue_here ();
-		      if ($10) cplus_expand_expr_stmt ($10);
-		      expand_end_loop ();
-		    }
-		  pop_momentary ();
-		  if (flag_new_for_scope > 0)
-		    {
-		      do_poplevel ();
-		    }
-		  finish_stmt (); }
-	| SWITCH .pushlevel '(' condition ')'
-		{
-		  if (processing_template_decl)
-		    {
-		      $<ttype>$ = build_min_nt (SWITCH_STMT, $4, NULL_TREE);
-		      add_tree ($<ttype>$);
-		    }
-		  else
-		    {
-		      emit_line_note (input_filename, lineno);
-		      c_expand_start_case ($4);
-		    }
-		  push_switch ();
-		  /* Don't let the tree nodes for $4 be discarded by
-		     clear_momentary during the parsing of the next stmt.  */
-		  push_momentary ();
-		}
+                { finish_for_expr ($9, $<ttype>2); }
+	  already_scoped_stmt
+                { finish_for_stmt ($9, $<ttype>2); }
+	| SWITCH 
+                { begin_switch_stmt (); }
+	    '(' condition ')'
+                { $<ttype>$ = finish_switch_cond ($4); }
 	  implicitly_scoped_stmt
-		{
-		  if (processing_template_decl)
-		    {
-		      TREE_OPERAND ($<ttype>6, 1) = TREE_CHAIN ($<ttype>6);
-		      TREE_CHAIN ($<ttype>6) = NULL_TREE;
-		      last_tree = $<ttype>6;
-		    }
-		  else
-		    expand_end_case ($4);
-		  pop_momentary ();
-		  pop_switch (); 
-		}
-	  .poplevel
-		{ finish_stmt (); }
+                { finish_switch_stmt ($4, $<ttype>6); }
 	| CASE expr_no_commas ':'
-		{ do_case ($2, NULL_TREE); }
+                { finish_case_label ($2, NULL_TREE); }
 	  stmt
 	| CASE expr_no_commas ELLIPSIS expr_no_commas ':'
-		{ do_case ($2, $4); }
+                { finish_case_label ($2, $4); }
 	  stmt
 	| DEFAULT ':'
-		{ do_case (NULL_TREE, NULL_TREE); }
+		{ finish_case_label (NULL_TREE, NULL_TREE); }
 	  stmt
 	| BREAK ';'
-		{ emit_line_note (input_filename, lineno);
-		  if (processing_template_decl)
-		    add_tree (build_min_nt (BREAK_STMT));
-		  else if ( ! expand_exit_something ())
-		    error ("break statement not within loop or switch"); }
+                { finish_break_stmt (); }
 	| CONTINUE ';'
-		{ emit_line_note (input_filename, lineno);
-		  if (processing_template_decl)
-		    add_tree (build_min_nt (CONTINUE_STMT));
-		  else if (! expand_continue_loop (0))
-		    error ("continue statement not within a loop"); }
+                { finish_continue_stmt (); }
 	| RETURN ';'
-		{ emit_line_note (input_filename, lineno);
-		  c_expand_return (NULL_TREE); }
+                { finish_return_stmt (NULL_TREE); }
 	| RETURN expr ';'
-		{ emit_line_note (input_filename, lineno);
-		  c_expand_return ($2);
-		  finish_stmt ();
-		}
+                { finish_return_stmt ($2); }
 	| asm_keyword maybe_cv_qualifier '(' string ')' ';'
-		{ if (TREE_CHAIN ($4)) $4 = combine_strings ($4);
-		  emit_line_note (input_filename, lineno);
-		  expand_asm ($4);
-		  finish_stmt ();
+		{ 
+		  finish_asm_stmt ($2, $4, NULL_TREE, NULL_TREE,
+				   NULL_TREE); 
 		}
 	/* This is the case with just output operands.  */
 	| asm_keyword maybe_cv_qualifier '(' string ':' asm_operands ')' ';'
-		{ if (TREE_CHAIN ($4)) $4 = combine_strings ($4);
-		  emit_line_note (input_filename, lineno);
-		  c_expand_asm_operands ($4, $6, NULL_TREE, NULL_TREE,
-					 $2 == ridpointers[(int)RID_VOLATILE],
-					 input_filename, lineno);
-		  finish_stmt ();
+		{ 
+		  finish_asm_stmt ($2, $4, $6, NULL_TREE,
+				   NULL_TREE); 
 		}
 	/* This is the case with input operands as well.  */
 	| asm_keyword maybe_cv_qualifier '(' string ':' asm_operands ':' asm_operands ')' ';'
-		{ if (TREE_CHAIN ($4)) $4 = combine_strings ($4);
-		  emit_line_note (input_filename, lineno);
-		  c_expand_asm_operands ($4, $6, $8, NULL_TREE,
-					 $2 == ridpointers[(int)RID_VOLATILE],
-					 input_filename, lineno);
-		  finish_stmt ();
-		}
+		{ finish_asm_stmt ($2, $4, $6, $8, NULL_TREE); }
 	/* This is the case with clobbered registers as well.  */
 	| asm_keyword maybe_cv_qualifier '(' string ':' asm_operands ':'
 	  asm_operands ':' asm_clobbers ')' ';'
-		{ if (TREE_CHAIN ($4)) $4 = combine_strings ($4);
-		  emit_line_note (input_filename, lineno);
-		  c_expand_asm_operands ($4, $6, $8, $10,
-					 $2 == ridpointers[(int)RID_VOLATILE],
-					 input_filename, lineno);
-		  finish_stmt ();
-		}
+		{ finish_asm_stmt ($2, $4, $6, $8, $10); }
 	| GOTO '*' expr ';'
-		{
-		  if (processing_template_decl)
-		    add_tree (build_min_nt (GOTO_STMT, $3));
-		  else
-		    { emit_line_note (input_filename, lineno);
-		      expand_computed_goto ($3); }
+                { 
+		  if (pedantic)
+		    pedwarn ("ANSI C++ forbids computed gotos");
+		  finish_goto_stmt ($3);
 		}
 	| GOTO identifier ';'
-		{
-		  if (processing_template_decl)
-		    add_tree (build_min_nt (GOTO_STMT, $2));
-		  else
-		    {
-		      tree decl;
-		      emit_line_note (input_filename, lineno);
-		      decl = lookup_label ($2);
-		      TREE_USED (decl) = 1;
-		      expand_goto (decl); 
-		    }
-		}
+                { finish_goto_stmt ($2); }
 	| label_colon stmt
 		{ finish_stmt (); }
 	| label_colon '}'
@@ -3951,41 +3610,11 @@ function_try_block:
 
 try_block:
 	  TRY
-		{
-		  if (processing_template_decl)
-		    {
-		      $<ttype>$ = build_min_nt (TRY_BLOCK, NULL_TREE,
-						NULL_TREE);
-		      add_tree ($<ttype>$);
-		    }
-		  else
-		    {
-		      emit_line_note (input_filename, lineno);
-		      expand_start_try_stmts ();
-		    }
-		}
+                { $<ttype>$ = begin_try_block (); }
 	  compstmt
-		{
-		  if (processing_template_decl)
-		    {
-		      TREE_OPERAND ($<ttype>2, 0) = TREE_CHAIN ($<ttype>2);
-		      TREE_CHAIN ($<ttype>2) = NULL_TREE;
-		      last_tree = $<ttype>2;
-		    }
-		  else
-		    expand_start_all_catch ();
-		}
+                { finish_try_block ($<ttype>2); }
 	  handler_seq
-		{
-		  if (processing_template_decl)
-		    {
-		      TREE_OPERAND ($<ttype>2, 1) = TREE_CHAIN ($<ttype>2);
-		      TREE_CHAIN ($<ttype>2) = NULL_TREE;
-		      last_tree = $<ttype>2;
-		    }
-		  else
-		    expand_end_all_catch ();
-		}
+                { finish_handler_sequence ($<ttype>2); }
 	;
 
 handler_seq:
@@ -3995,35 +3624,11 @@ handler_seq:
 
 handler:
 	  CATCH
-		{
-		  if (processing_template_decl)
-		    {
-		      $<ttype>$ = build_min_nt (HANDLER, NULL_TREE,
-						NULL_TREE);
-		      add_tree ($<ttype>$);
-		    }
-		}
-	  .pushlevel handler_args
-		{
-		  if (processing_template_decl)
-		    {
-		      TREE_OPERAND ($<ttype>2, 0) = TREE_CHAIN ($<ttype>2);
-		      TREE_CHAIN ($<ttype>2) = NULL_TREE;
-		      last_tree = $<ttype>2;
-		    }
-		}	  
+                { $<ttype>$ = begin_handler(); }
+          handler_args
+                { finish_handler_parms ($<ttype>2); }
 	  compstmt
-		{
-		  if (processing_template_decl)
-		    {
-		      TREE_OPERAND ($<ttype>2, 1) = TREE_CHAIN ($<ttype>2);
-		      TREE_CHAIN ($<ttype>2) = NULL_TREE;
-		      last_tree = $<ttype>2;
-		    }
-		  else
-		    expand_end_catch_block ();
-		}	  
-	  .poplevel
+                { finish_handler ($<ttype>2); }
 	;
 
 type_specifier_seq:
