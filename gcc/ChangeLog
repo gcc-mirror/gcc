@@ -1,3 +1,8 @@
+Wed Mar 18 17:07:54 1998  Ken Raeburn  <raeburn@cygnus.com>
+
+	* regclass.c (init_reg_sets): Delete init of reg-move cost tables.
+	(init_reg_sets_1): Put it here.
+
 Wed Mar 18 16:43:11 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* calls.c (expand_call): Fix typos in n_named_args computation.
