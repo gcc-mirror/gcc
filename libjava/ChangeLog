@@ -1,5 +1,10 @@
 2004-07-09  Bryce McKinlay  <mckinlay@redhat.com>
 
+	* javax/swing/plaf/basic/BasicMenuUI.java (mousePressed): Remove 
+	illegal protected method calls.
+
+2004-07-09  Bryce McKinlay  <mckinlay@redhat.com>
+
 	Fix or remove some bogus test cases.
 	* testsuite/libjava.compile/pr10459_2.java: Removed.
 	* testsuite/libjava.compile/pr10459.java: Test using its own method,
