@@ -6517,6 +6517,12 @@ cxx_init_decl_processing ()
       flag_inline_functions = 0;
     }
 
+  /* Force minimum function alignment if using the least significant
+     bit of function pointers to store the virtual bit.  */
+  if (TARGET_PTRMEMFUNC_VBIT_LOCATION == ptrmemfunc_vbit_in_pfn
+      && force_align_functions_log < 1)
+    force_align_functions_log = 1;
+
   /* Initially, C.  */
   current_lang_name = lang_name_c;
 

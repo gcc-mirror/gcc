@@ -1194,6 +1194,8 @@ assemble_start_function (decl, fnname)
 
   /* Tell assembler to move to target machine's alignment for functions.  */
   align = floor_log2 (FUNCTION_BOUNDARY / BITS_PER_UNIT);
+  if (align < force_align_functions_log)
+    align = force_align_functions_log;
   if (align > 0)
     {
       ASM_OUTPUT_ALIGN (asm_out_file, align);
