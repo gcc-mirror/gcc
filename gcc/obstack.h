@@ -381,6 +381,11 @@ __extension__								\
      _obstack_newchunk (__o, __len);					\
    (void) 0; })
 
+#define obstack_empty_p(OBSTACK)					\
+  __extension__								\
+  ({ struct obstack *__o = (OBSTACK);					\
+     (__o->chunk->prev == 0 && __o->next_free - __o->chunk->contents == 0); })
+
 #define obstack_grow(OBSTACK,where,length)				\
 __extension__								\
 ({ struct obstack *__o = (OBSTACK);					\
@@ -493,6 +498,9 @@ __extension__								\
 
 #define obstack_room(h)		\
  (unsigned) ((h)->chunk_limit - (h)->next_free)
+
+#define obstack_empty_p(h) \
+ (h->chunk->prev == 0 && h->next_free - h->chunk->contents == 0)
 
 /* Note that the call to _obstack_newchunk is enclosed in (..., 0)
    so that we can avoid having void expressions
