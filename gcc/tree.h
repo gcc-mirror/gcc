@@ -3167,11 +3167,6 @@ extern int integer_nonzerop (tree);
 
 extern int staticp (tree);
 
-/* Gets an error if argument X is not an lvalue.
-   Also returns 1 if X is an lvalue, 0 if not.  */
-
-extern int lvalue_or_else (tree, const char *);
-
 /* save_expr (EXP) returns an expression equivalent to EXP
    but it can be used multiple times within context CTX
    and only evaluate EXP once.  */

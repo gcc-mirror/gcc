@@ -80,6 +80,7 @@ static void add_pending_init (tree, tree);
 static void set_nonincremental_init (void);
 static void set_nonincremental_init_from_string (tree);
 static tree find_init_member (tree);
+static int lvalue_or_else (tree, const char *);
 
 /* Do `exp = require_complete_type (exp);' to make sure exp
    does not have an incomplete type.  (That includes void types.)  */
@@ -2629,7 +2630,7 @@ lvalue_p (tree ref)
 /* Return nonzero if REF is an lvalue valid for this language;
    otherwise, print an error message and return zero.  */
 
-int
+static int
 lvalue_or_else (tree ref, const char *msgid)
 {
   int win = lvalue_p (ref);

@@ -1,3 +1,8 @@
+2004-06-06  Roger Sayle  <roger@eyesopen.com>
+
+	* tree.h (lvalue_or_else): Delete function prototype.
+	* c-typeck.c (lvalue_or_else): Make static.  Add static prototype.
+
 2004-06-06  Stephane Carrez  <stcarrez@nerim.fr>
 
 	PR target/14542
