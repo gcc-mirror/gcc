@@ -1,4 +1,4 @@
-@c Copyright (C) 1988,1989,1992,1993,1994,1996,1998,1999,2000,2001,2002,2003,2004
+@c Copyright (C) 1988,1989,1992,1993,1994,1996,1998,1999,2000,2001,2002,2003,2004,2005
 @c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -381,8 +381,8 @@ bar (int *array, int offset, int size)
 @end smallexample
 
 Nested function definitions are permitted within functions in the places
-where variable definitions are allowed; that is, in any block, before
-the first statement in the block.
+where variable definitions are allowed; that is, in any block, mixed
+with the other declarations and statements in the block.
 
 It is possible to call the nested function from outside the scope of its
 name by storing its address or passing the address to another function:
