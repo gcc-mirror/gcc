@@ -662,6 +662,9 @@ case "${target}" in
   mipstx39-*-*)
     noconfigdirs="$noconfigdirs gprof ${libgcj}"   # same as generic mips
     ;;
+  mips64*-*-linux*)
+    noconfigdirs="$noconfigdirs target-newlib ${libgcj}"
+    ;;
   mips*-*-linux*)
     noconfigdirs="$noconfigdirs target-newlib target-libgloss"
     ;;
