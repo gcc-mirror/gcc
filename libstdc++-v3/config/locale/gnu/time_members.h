@@ -46,7 +46,7 @@
 
   template<typename _CharT>
     __timepunct<_CharT>::__timepunct(__c_locale __cloc, 
-				 const char* __s __attribute__ ((__unused__)), 
+				     const char* __s,
 				     size_t __refs) 
     : locale::facet(__refs)
     { 

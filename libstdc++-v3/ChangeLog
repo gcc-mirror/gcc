@@ -1,3 +1,29 @@
+2003-01-06  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/locale_facets.h (messages): Move ctor, dtor
+	definitions to..
+	(__timepunct): Same.
+	* config/locale/gnu/messages_members.h (messages): Add dtor, ctor
+	definitions. Conditionalize for GNU systems.
+	* config/locale/generic/messages_members.h (messages): Add dtor, ctor
+	definitions.
+	* config/locale/gnu/time_members.h (messages): New. Add dtor, ctor
+	definitions. Conditionalize for GNU systems.
+	* config/locale/generic/time_members.h (messages): New. Add dtor, ctor
+	definitions.
+	* include/bits/localefwd.h (locale::facet::_S_c_name): Add.
+	* src/locale.cc: Define.
+	* src/localename.cc (locale::_Impl::_Impl(facet**, size_t, bool):
+	Use it.
+	* config/locale/gnu/time_members.h: Use it.
+	* config/locale/gnu/messages_members.h: Use it.
+	* config/linker-map.gnu: Add locale::facets details.	
+	* include/Makefile.am (target_headers_extra): Add time_members.h.
+	* include/Makefile.in: Regenerate.
+	* acinclude.m4: Export CTIME_H.
+	* aclocal.m4: Regenerate.
+	* configure: Regnerate.
+
 2003-01-06  Paolo Carlini  <pcarlini@unitus.it>
 
 	* src/codecvt.cc
