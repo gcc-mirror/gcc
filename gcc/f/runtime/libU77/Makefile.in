@@ -58,7 +58,7 @@ OBJS =  VersionU.o gerror_.o perror_.o ierrno_.o itime_.o time_.o \
         vxttime_.o vxtidate_.o gmtime_.o fdate_.o secnds_.o \
 	bes.o dbes.o \
 	chdir_.o chmod_.o lnblnk_.o hostnm_.o rename_.o fgetc_.o fputc_.o \
-        umask_.o system_clock_.o date_.o second_.o flush1_.o mclock_.o \
+        umask_.o sys_clock_.o date_.o second_.o flush1_.o mclock_.o \
 	alarm_.o
 SRCS =  Version.c gerror_.c perror_.c ierrno_.c itime_.c time_.c \
 	unlink_.c fnum_.c getpid_.c getuid_.c getgid_.c kill_.c rand_.c \
@@ -68,7 +68,7 @@ SRCS =  Version.c gerror_.c perror_.c ierrno_.c itime_.c time_.c \
         vxttime_.c vxtidate_.c gmtime_.c fdate_.c secnds_.c \
 	bes.c dbes.c \
 	chdir_.c chmod_.c lnblnk_.c hostnm_.c rename_.c fgetc_.c fputc_.c \
-	umask_.c system_clock_.c date_.c second_.c flush1_.c mclock_.c \
+	umask_.c sys_clock_.c date_.c second_.c flush1_.c mclock_.c \
 	alarm_.c
 
 F2C_H = ../../../include/f2c.h
@@ -146,7 +146,7 @@ hostnm_.o: hostnm_.c
 rename_.o: rename_.c
 fputc_.o: fputc_.c
 fgetc_.o: fgetc_.c
-system_clock_.o: system_clock_.c
+sys_clock_.o: sys_clock_.c
 umask_.o: umask_.c
 flush1_.o: flush1_.c
 mclock_.o: mclock_.c

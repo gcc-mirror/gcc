@@ -66,6 +66,8 @@ double G77_etime_0 (real tarray[2])
   if (! clk_tck) clk_tck = CLOCKS_PER_SECOND;
 #  elif defined CLK_TCK
   if (! clk_tck) clk_tck = CLK_TCK;
+#  elif defined HZ
+  if (! clk_tck) clk_tck = HZ;
 #  elif defined HAVE_GETRUSAGE
 #  else
   #error Dont know clock tick length

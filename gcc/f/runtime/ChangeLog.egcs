@@ -1,3 +1,14 @@
+Wed Oct  1 01:46:16 1997  Philippe De Muyter  <phdm@info.ucl.ac.be>
+
+	* libU77/sys_clock_.c: File renamed from system_clock_.c.
+	libU77/Makefile.in, Makefile.in : Reference sys_clock_.*, not
+	system_clock_.*.
+	* libU77/dtime_.c (clk_tck): Try also HZ macro.
+	* libU77/access.c (G77_access_0): Check malloc return value against 0,
+	not NULL.
+	libU77/getlog_.c, libU77/ttynam_.c, libU77/chdir_.c: Ditto.
+	libU77/chmod_.c, libU77/rename_.c: Ditto.
+
 1997-09-19  Dave Love  <d.love@dl.ac.uk>
 
 	* libU77/dtime_.c (G77_dtime_0): Fix types in HAVE_GETRUSAGE case

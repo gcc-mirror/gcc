@@ -49,7 +49,7 @@ integer G77_chdir_0 (const char *name, const ftnlen Lname)
   int i;
 
   buff = malloc (Lname+1);
-  if (buff == NULL) return -1;
+  if (!buff) return -1;
   g_char (name, Lname, buff);
   i = chdir (buff);
   free (buff);
