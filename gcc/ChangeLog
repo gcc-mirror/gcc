@@ -1,3 +1,8 @@
+2005-02-01  Janis Johnson  <janis187@us.ibm.com>
+
+	* doc/sourcebuild.texi (Test directives): Describe selector
+	expressions.
+
 2005-02-01  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config.gcc (powerpc64-*-linux*): Default to -m64 also for

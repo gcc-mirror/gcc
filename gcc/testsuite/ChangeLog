@@ -1,5 +1,9 @@
 2005-02-01  Janis Johnson  <janis187@us.ibm.com>
 
+	* lib/gcc-dg.exp (selector_opd, selector_list, selector_expression):
+	New procs.
+	(dg-process-target (local override)): Handle selector expressions.
+
 	* gcc.test-framework/README: Describe tests in source directory.
 	* gcc.test-framework/test-framework.awk: Handle dg- tests.
 	* gcc.test-framework/test-framework.exp: Handle dg- tests.
