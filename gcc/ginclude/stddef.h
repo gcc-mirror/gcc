@@ -42,6 +42,12 @@
 #endif
 #endif /* _ANSI_H_ */
 
+/* Sequent's header files use _PTRDIFF_T_ in some conflicting way.
+   Just ignore it.  */
+#if defined (__sequent__) && defined (_PTRDIFF_T_)
+#undef _PTRDIFF_T_
+#endif
+
 /* In case nobody has defined these types, but we aren't running under
    GCC 2.00, make sure that __PTRDIFF_TYPE__, __SIZE__TYPE__, and
    __WCHAR_TYPE__ have reasonable values.  This can happen if the
