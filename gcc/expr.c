@@ -5804,7 +5804,8 @@ highest_pow2_factor (exp)
       else if (host_integerp (exp, 0))
 	{
 	  c0 = tree_low_cst (exp, 0);
-	  return c0 < 0 ? - c0 : c0;
+	  c0 = c0 < 0 ? - c0 : c0;
+	  return c0 & -c0;
 	}
       break;
 
