@@ -117,7 +117,7 @@ extern int target_flags;
     { "nosky", -0200},				\
     { "68020-40", 0407},				\
     { "68030", -01400},				\
-    { "68030", 7},				\
+    { "68030", 5},				\
     { "68040", 01007},			\
     { "", TARGET_DEFAULT}}
 /* TARGET_DEFAULT is defined in sun*.h and isi.h, etc.  */
