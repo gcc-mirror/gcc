@@ -2088,11 +2088,15 @@ extern struct mips_frame_info current_frame_info;
 
 #define FUNCTION_VALUE_REGNO_P(N) ((N) == GP_RETURN || (N) == FP_RETURN)
 
-/* 1 if N is a possible register number for function argument passing.  */
+/* 1 if N is a possible register number for function argument passing.
+   We have no FP argument registers when soft-float.  When FP registers
+   are 32 bits, we can't directly reference the odd numbered ones.  */
 
-#define FUNCTION_ARG_REGNO_P(N) (((N) >= GP_ARG_FIRST && (N) <= GP_ARG_LAST)   \
-				 || ((N) >= FP_ARG_FIRST && (N) <= FP_ARG_LAST \
-				     && (0 == (N) % 2)))
+#define FUNCTION_ARG_REGNO_P(N)					\
+  (((N) >= GP_ARG_FIRST && (N) <= GP_ARG_LAST)			\
+   || (! TARGET_SOFT_FLOAT					\
+       && ((N) >= FP_ARG_FIRST && (N) <= FP_ARG_LAST)		\
+       && (TARGET_FLOAT64 || (0 == (N) % 2))))
 
 /* A C expression which can inhibit the returning of certain function
    values in registers, based on the type of value.  A nonzero value says
