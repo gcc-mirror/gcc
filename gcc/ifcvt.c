@@ -642,14 +642,16 @@ noce_try_store_flag_constants (if_info)
   int reversep;
   HOST_WIDE_INT itrue, ifalse, diff, tmp;
   int normalize, can_reverse;
+  enum machine_mode mode;
 
   if (! no_new_pseudos
       && GET_CODE (if_info->a) == CONST_INT
       && GET_CODE (if_info->b) == CONST_INT)
     {
+      mode = GET_MODE (if_info->x);
       ifalse = INTVAL (if_info->a);
       itrue = INTVAL (if_info->b);
-      diff = itrue - ifalse;
+      diff = trunc_int_for_mode (mode, itrue - ifalse);
 
       can_reverse = (reversed_comparison_code (if_info->cond, if_info->jump)
 		     != UNKNOWN);
@@ -680,7 +682,7 @@ noce_try_store_flag_constants (if_info)
       if (reversep)
       	{
 	  tmp = itrue; itrue = ifalse; ifalse = tmp;
-	  diff = -diff;
+	  diff = trunc_int_for_mode (mode, -diff);
 	}
 
       start_sequence ();
@@ -695,7 +697,7 @@ noce_try_store_flag_constants (if_info)
 	 =>   x = 3 + (test == 0);  */
       if (diff == STORE_FLAG_VALUE || diff == -STORE_FLAG_VALUE)
 	{
-	  target = expand_binop (GET_MODE (if_info->x),
+	  target = expand_binop (mode,
 				 (diff == STORE_FLAG_VALUE
 				  ? add_optab : sub_optab),
 				 GEN_INT (ifalse), target, if_info->x, 0,
@@ -706,7 +708,7 @@ noce_try_store_flag_constants (if_info)
 	 =>   x = (test != 0) << 3;  */
       else if (ifalse == 0 && (tmp = exact_log2 (itrue)) >= 0)
 	{
-	  target = expand_binop (GET_MODE (if_info->x), ashl_optab,
+	  target = expand_binop (mode, ashl_optab,
 				 target, GEN_INT (tmp), if_info->x, 0,
 				 OPTAB_WIDEN);
 	}
@@ -715,7 +717,7 @@ noce_try_store_flag_constants (if_info)
 	 =>   x = -(test != 0) | b;  */
       else if (itrue == -1)
 	{
-	  target = expand_binop (GET_MODE (if_info->x), ior_optab,
+	  target = expand_binop (mode, ior_optab,
 				 target, GEN_INT (ifalse), if_info->x, 0,
 				 OPTAB_WIDEN);
 	}
@@ -724,11 +726,11 @@ noce_try_store_flag_constants (if_info)
 	 =>   x = (-(test != 0) & (b - a)) + a;  */
       else
 	{
-	  target = expand_binop (GET_MODE (if_info->x), and_optab,
+	  target = expand_binop (mode, and_optab,
 				 target, GEN_INT (diff), if_info->x, 0,
 				 OPTAB_WIDEN);
 	  if (target)
-	    target = expand_binop (GET_MODE (if_info->x), add_optab,
+	    target = expand_binop (mode, add_optab,
 				   target, GEN_INT (ifalse), if_info->x, 0,
 				   OPTAB_WIDEN);
 	}

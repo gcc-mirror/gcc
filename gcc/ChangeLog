@@ -1,3 +1,8 @@
+2001-07-19  Geoffrey Keating  <geoffk@redhat.com>
+
+	* ifcvt.c (noce_try_store_flag_constants): Use trunc_int_for_mode
+	when negating constants.
+
 2001-07-19  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* tree.def: Document restriction on {L|R}SHIFT_EXPR's second argument.
