@@ -1095,7 +1095,12 @@ const_binop (code, arg1, arg2, notrunc)
 			 &low, &hi,
 			 !uns);
 	  t = build_int_2 (low, hi);
-	  break;
+	  TREE_TYPE (t) = TREE_TYPE (arg1);
+	  if (!notrunc)
+	    force_fit_type (t, 0);
+	  TREE_CONSTANT_OVERFLOW (t)
+	    = TREE_CONSTANT_OVERFLOW (arg1) | TREE_CONSTANT_OVERFLOW (arg2);
+	  return t;
 
 	case RROTATE_EXPR:
 	  int2l = - int2l;
