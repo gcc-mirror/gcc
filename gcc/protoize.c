@@ -139,22 +139,8 @@ typedef char * const_pointer_type;
 #if defined(POSIX)
 
 #include <signal.h>
-#include <sys/wait.h>
 
 #else /* !defined(POSIX) */
-
-#ifndef WIFSIGNALED
-#define WIFSIGNALED(S) (((S) & 0xff) != 0 && ((S) & 0xff) != 0x7f)
-#endif
-#ifndef WTERMSIG
-#define WTERMSIG(S) ((S) & 0x7f)
-#endif
-#ifndef WIFEXITED
-#define WIFEXITED(S) (((S) & 0xff) == 0)
-#endif
-#ifndef WEXITSTATUS
-#define WEXITSTATUS(S) (((S) & 0xff00) >> 8)
-#endif
 
 /* Declaring stat or __flsbuf with a prototype
    causes conflicts with system headers on some systems.  */
