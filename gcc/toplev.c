@@ -2950,7 +2950,7 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 	      if (write_symbols == XCOFF_DEBUG && !strncmp (str, "ggdb", len)
 		  && len >= 2)
 		use_gdb_dbx_extensions = 1;
-	      else if (write_symbols == DBX_DEBUG
+	      else if (write_symbols == XCOFF_DEBUG
 		       && !strncmp (str, "gxcoff", len) && len >= 2)
 		use_gdb_dbx_extensions = 0;
 	      else
@@ -3053,6 +3053,7 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 
   compile_file (filename);
 
+#ifndef OS2
 #ifndef VMS
   if (flag_print_mem)
     {
@@ -3069,6 +3070,7 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 #endif /* not USG */
     }
 #endif /* not VMS */
+#endif /* not OS2 */
 
   if (errorcount)
     exit (FATAL_EXIT_CODE);
