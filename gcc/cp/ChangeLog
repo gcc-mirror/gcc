@@ -1,3 +1,7 @@
+1998-11-15  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* typeck2.c (my_friendly_abort): Add URL in the other case, too.
+
 1998-11-13  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* rtti.c (synthesize_tinfo_fn): Call import_export_decl here.
