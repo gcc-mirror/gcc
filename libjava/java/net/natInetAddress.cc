@@ -1,4 +1,4 @@
-// natClass.cc - Implementation of java.lang.Class native methods.
+// natInetAddress.cc
 
 /* Copyright (C) 1998, 1999  Cygnus Solutions
 

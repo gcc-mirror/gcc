@@ -24,13 +24,28 @@ import java.io.IOException;
 
 class PlainDatagramSocketImpl extends DatagramSocketImpl
 {
+  // These fields are mirrored for use in native code to avoid cpp conflicts
+  // when the #defines in system header files are the same as the public fields.
+  static final int _Jv_TCP_NODELAY_ = SocketOptions.TCP_NODELAY,
+                   _Jv_SO_BINDADDR_ = SocketOptions.SO_BINDADDR,
+                   _Jv_SO_REUSEADDR_ = SocketOptions.SO_REUSEADDR,
+		   _Jv_IP_MULTICAST_IF_ = SocketOptions.IP_MULTICAST_IF,
+                   _Jv_SO_LINGER_ = SocketOptions.SO_LINGER,
+                   _Jv_SO_TIMEOUT_ = SocketOptions.SO_TIMEOUT,
+                   _Jv_SO_SNDBUF_ = SocketOptions.SO_SNDBUF,
+                   _Jv_SO_RCVBUF_ = SocketOptions.SO_RCVBUF;
+
   int fnum = -1;
   InetAddress address;	// TBD: DatagramSocket.getLocalAddress()?
+  // FIXME: These values are set/read by setOption/getOption.
+  int timeout = 0;
+  InetAddress iface = null;
+  int ttl = -1;
 
   // FIXME: Probably should have bind (and create?) calls from DatagramSocket
   // constuctor.  If so, then same change should be made to the corresponding
   // Socket (non-datagram) classes.  This allows the implementation more
-  // compleete control over how the socket is set up and used (e.g. connect,
+  // complete control over how the socket is set up and used (e.g. connect,
   // setting options, etc.).
   public PlainDatagramSocketImpl()
   {
@@ -40,17 +55,39 @@ class PlainDatagramSocketImpl extends DatagramSocketImpl
 	throws SocketException;
   protected native void create() throws SocketException;
   protected native int peek(InetAddress i) throws IOException;
-  protected native void setTTL(byte ttl) throws IOException;
-  protected native byte getTTL() throws IOException;
   protected native void setTimeToLive(int ttl) throws IOException;
   protected native int getTimeToLive() throws IOException;
-  protected native void join(InetAddress inetaddr) throws IOException;
-  protected native void leave(InetAddress inetaddr) throws IOException;
   protected native void send(DatagramPacket p) throws IOException;
   protected native void receive(DatagramPacket p) throws IOException;
+  public native void setOption(int optID, Object value) throws SocketException;
+  public native Object getOption(int optID) throws SocketException;
+  private native void mcastGrp(InetAddress inetaddr, boolean join)
+	throws IOException;
 
   protected void close() throws IOException
   {
     fd.close();
+  }
+
+  // Deprecated in JDK 1.2.
+  protected byte getTTL() throws IOException
+  {
+    return (byte) getTimeToLive();
+  }
+
+  // Deprecated in JDK 1.2.
+  protected void setTTL(byte ttl) throws IOException
+  {
+    setTimeToLive(((int) ttl) & 0xFF);
+  }
+
+  protected void join(InetAddress inetaddr) throws IOException
+  {
+    mcastGrp(inetaddr, true);
+  }
+
+  protected void leave(InetAddress inetaddr) throws IOException
+  {
+    mcastGrp(inetaddr, false);
   }
 }

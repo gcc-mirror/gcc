@@ -17,12 +17,10 @@ import java.io.*;
   */
 
 /** Written using on-line Java Platform 1.2 API Specification.
-  * Believed complete and correct, except for implementation of toString.
+  * Believed complete and correct.
   */
 
-// JDK1.2: needs to implement SocketOptions.
-// JDK1.2: public abstract class SocketImpl implements SocketOptions
-public abstract class SocketImpl
+public abstract class SocketImpl implements SocketOptions
 {
   protected InetAddress address;
 
@@ -65,8 +63,14 @@ public abstract class SocketImpl
 
   protected int getLocalPort () { return localport; }
 
+  public abstract Object getOption(int optID) throws SocketException;
+
+  public abstract void setOption(int optID, Object value)
+    throws SocketException;
+
   public String toString ()
   {
-    return super.toString();  // FIXME
+    return "[addr=" + address.toString() + ",port=" + Integer.toString(port) +
+      ",localport=" + Integer.toString(localport) + "]";
   }
 }

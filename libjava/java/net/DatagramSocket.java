@@ -56,12 +56,19 @@ public class DatagramSocket
     // TBD: if this is right then the same should be done in Socket().
     try
     {
-      impl.bind(port, laddr == null ? InetAddress.getLocalHost() : laddr);
+      if (laddr == null)
+	laddr = InetAddress.getLocalHost();
     }
     catch (UnknownHostException e)
     {
       throw new BindException(e.getMessage());
     }
+
+    // For multicasting, set the socket to be reused (Stevens pp. 195-6).
+    if (this instanceof MulticastSocket)
+      impl.setOption(SocketOptions.SO_REUSEADDR, new Boolean(true));
+
+    impl.bind(port, laddr);
     this.laddr = laddr;
   }
 
@@ -82,8 +89,11 @@ public class DatagramSocket
 
   public synchronized int getSoTimeout() throws SocketException
   {
-    // FIXME: TODO - DatagramSocket.getSoTimeout
-     throw new SocketException("DatagramSocket.getSoTimeout - not yet implemented");
+    Object timeout = impl.getOption(SocketOptions.SO_TIMEOUT);
+    if (timeout instanceof Integer) 
+      return ((Integer)timeout).intValue();
+    else
+      return 0;
   }
 
   public synchronized void receive(DatagramPacket p) throws IOException
@@ -114,8 +124,10 @@ public class DatagramSocket
 
   public synchronized void setSoTimeout(int timeout) throws SocketException
   {
-    // FIXME: TODO - DatagramSocket.setSoTimeout
-    throw new SocketException("DatagramSocket.setSoTimeout - not yet implemented");
+    if (timeout < 0)
+      throw new IllegalArgumentException("Invalid timeout: " + timeout);
+
+    impl.setOption(SocketOptions.SO_TIMEOUT, new Integer(timeout));
   }
 
   // JDK1.2

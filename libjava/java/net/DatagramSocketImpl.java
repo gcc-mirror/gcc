@@ -23,9 +23,7 @@ import java.io.FileDescriptor;
  * Status:  Believed complete and correct.
  */
 
-// JDK1.2: needs to implement SocketOptions.
-// JDK1.2: public abstract class DatagramSocketImpl implements SocketOptions
-public abstract class DatagramSocketImpl
+public abstract class DatagramSocketImpl implements SocketOptions
 {
   protected int localport;
   protected FileDescriptor fd;
@@ -47,6 +45,10 @@ public abstract class DatagramSocketImpl
   protected abstract int getTimeToLive() throws IOException;
   protected abstract void join(InetAddress inetaddr) throws IOException;
   protected abstract void leave(InetAddress inetaddr) throws IOException;
+
+  public abstract Object getOption(int optID) throws SocketException;
+  public abstract void setOption(int optID, Object value)
+    throws SocketException;
 
   protected FileDescriptor getFileDescriptor()
   {
