@@ -4699,7 +4699,19 @@ expand_expr (exp, target, tmode, modifier)
     case CONVERT_EXPR:
     case REFERENCE_EXPR:
       if (mode == TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0))))
-	return expand_expr (TREE_OPERAND (exp, 0), target, VOIDmode, modifier);
+	{
+	  op0 = expand_expr (TREE_OPERAND (exp, 0), target, VOIDmode,
+			     modifier);
+
+	  /* If the signedness of the conversion differs and OP0 is
+	     a promoted SUBREG, clear that indication since we now
+	     have to do the proper extension.  */
+	  if (TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp, 0))) != unsignedp
+	      && GET_CODE (op0) == SUBREG)
+	    SUBREG_PROMOTED_VAR_P (op0) = 0;
+
+	  return op0;
+	}
 
       if (TREE_CODE (type) == UNION_TYPE)
 	{
