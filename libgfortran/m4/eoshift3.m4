@@ -29,15 +29,15 @@ include(iparm.m4)dnl
 static const char zeros[16] =
   {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-extern void __eoshift3_`'atype_kind (gfc_array_char *, gfc_array_char *,
+extern void eoshift3_`'atype_kind (gfc_array_char *, gfc_array_char *,
 				     atype *, const gfc_array_char *,
 				     atype_name *);
-export_proto_np(__eoshift3_`'atype_kind);
+export_proto(eoshift3_`'atype_kind);
 
 void
-__eoshift3_`'atype_kind (gfc_array_char *ret, gfc_array_char *array,
-			 atype *h, const gfc_array_char *bound,
-			 atype_name *pwhich)
+eoshift3_`'atype_kind (gfc_array_char *ret, gfc_array_char *array,
+		       atype *h, const gfc_array_char *bound,
+		       atype_name *pwhich)
 {
   /* r.* indicates the return array.  */
   index_type rstride[GFC_MAX_DIMENSIONS - 1];

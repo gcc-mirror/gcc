@@ -25,11 +25,11 @@ Boston, MA 02111-1307, USA.  */
 #include "libgfortran.h"
 
 
-extern void __product_c4 (gfc_array_c4 *, gfc_array_c4 *, index_type *);
-export_proto_np(__product_c4);
+extern void product_c4 (gfc_array_c4 *, gfc_array_c4 *, index_type *);
+export_proto(product_c4);
 
 void
-__product_c4 (gfc_array_c4 *retarray, gfc_array_c4 *array, index_type *pdim)
+product_c4 (gfc_array_c4 *retarray, gfc_array_c4 *array, index_type *pdim)
 {
   index_type count[GFC_MAX_DIMENSIONS - 1];
   index_type extent[GFC_MAX_DIMENSIONS - 1];
@@ -149,12 +149,13 @@ __product_c4 (gfc_array_c4 *retarray, gfc_array_c4 *array, index_type *pdim)
 }
 
 
-extern void __mproduct_c4 (gfc_array_c4 *, gfc_array_c4 *, index_type *,
-						gfc_array_l4 *);
-export_proto_np(__mproduct_c4);
+extern void mproduct_c4 (gfc_array_c4 *, gfc_array_c4 *, index_type *,
+					       gfc_array_l4 *);
+export_proto(mproduct_c4);
 
 void
-__mproduct_c4 (gfc_array_c4 * retarray, gfc_array_c4 * array, index_type *pdim, gfc_array_l4 * mask)
+mproduct_c4 (gfc_array_c4 * retarray, gfc_array_c4 * array,
+				  index_type *pdim, gfc_array_l4 * mask)
 {
   index_type count[GFC_MAX_DIMENSIONS - 1];
   index_type extent[GFC_MAX_DIMENSIONS - 1];

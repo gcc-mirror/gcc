@@ -26,15 +26,15 @@ Boston, MA 02111-1307, USA.  */
 #include "libgfortran.h"'
 include(iparm.m4)dnl
 
-void __cshift1_`'atype_kind (const gfc_array_char * ret,
-			     const gfc_array_char * array,
-			     const atype * h, const atype_name * pwhich);
-export_proto_np(__cshift1_`'atype_kind);
+void cshift1_`'atype_kind (const gfc_array_char * ret,
+			   const gfc_array_char * array,
+			   const atype * h, const atype_name * pwhich);
+export_proto(cshift1_`'atype_kind);
 
 void
-__cshift1_`'atype_kind (const gfc_array_char * ret,
-			const gfc_array_char * array,
-			const atype * h, const atype_name * pwhich)
+cshift1_`'atype_kind (const gfc_array_char * ret,
+		      const gfc_array_char * array,
+		      const atype * h, const atype_name * pwhich)
 {
   /* r.* indicates the return array.  */
   index_type rstride[GFC_MAX_DIMENSIONS - 1];

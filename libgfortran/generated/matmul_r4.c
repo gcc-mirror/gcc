@@ -37,11 +37,11 @@ Boston, MA 02111-1307, USA.  */
          C(I,J) = C(I,J)+A(I,K)*B(K,J)
 */
 
-extern void __matmul_r4 (gfc_array_r4 * retarray, gfc_array_r4 * a, gfc_array_r4 * b);
-export_proto_np(__matmul_r4);
+extern void matmul_r4 (gfc_array_r4 * retarray, gfc_array_r4 * a, gfc_array_r4 * b);
+export_proto(matmul_r4);
 
 void
-__matmul_r4 (gfc_array_r4 * retarray, gfc_array_r4 * a, gfc_array_r4 * b)
+matmul_r4 (gfc_array_r4 * retarray, gfc_array_r4 * a, gfc_array_r4 * b)
 {
   GFC_REAL_4 *abase;
   GFC_REAL_4 *bbase;

@@ -24,11 +24,11 @@ Boston, MA 02111-1307, USA.  */
 #include "libgfortran.h"'
 include(iparm.m4)dnl
 
-extern void `__transpose_'rtype_kind (rtype * ret, rtype * source);
-export_proto_np(`__transpose_'rtype_kind);
+extern void transpose_`'rtype_kind (rtype * ret, rtype * source);
+export_proto(transpose_`'rtype_kind);
 
 void
-`__transpose_'rtype_kind (rtype * ret, rtype * source)
+transpose_`'rtype_kind (rtype * ret, rtype * source)
 {
   /* r.* indicates the return array.  */
   index_type rxstride, rystride;

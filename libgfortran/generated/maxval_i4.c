@@ -26,11 +26,11 @@ Boston, MA 02111-1307, USA.  */
 #include "libgfortran.h"
 
 
-extern void __maxval_i4 (gfc_array_i4 *, gfc_array_i4 *, index_type *);
-export_proto_np(__maxval_i4);
+extern void maxval_i4 (gfc_array_i4 *, gfc_array_i4 *, index_type *);
+export_proto(maxval_i4);
 
 void
-__maxval_i4 (gfc_array_i4 *retarray, gfc_array_i4 *array, index_type *pdim)
+maxval_i4 (gfc_array_i4 *retarray, gfc_array_i4 *array, index_type *pdim)
 {
   index_type count[GFC_MAX_DIMENSIONS - 1];
   index_type extent[GFC_MAX_DIMENSIONS - 1];
@@ -151,12 +151,13 @@ __maxval_i4 (gfc_array_i4 *retarray, gfc_array_i4 *array, index_type *pdim)
 }
 
 
-extern void __mmaxval_i4 (gfc_array_i4 *, gfc_array_i4 *, index_type *,
-						gfc_array_l4 *);
-export_proto_np(__mmaxval_i4);
+extern void mmaxval_i4 (gfc_array_i4 *, gfc_array_i4 *, index_type *,
+					       gfc_array_l4 *);
+export_proto(mmaxval_i4);
 
 void
-__mmaxval_i4 (gfc_array_i4 * retarray, gfc_array_i4 * array, index_type *pdim, gfc_array_l4 * mask)
+mmaxval_i4 (gfc_array_i4 * retarray, gfc_array_i4 * array,
+				  index_type *pdim, gfc_array_l4 * mask)
 {
   index_type count[GFC_MAX_DIMENSIONS - 1];
   index_type extent[GFC_MAX_DIMENSIONS - 1];

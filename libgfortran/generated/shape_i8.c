@@ -24,11 +24,11 @@ Boston, MA 02111-1307, USA.  */
 #include <assert.h>
 #include "libgfortran.h"
 
-extern void __shape_8 (gfc_array_i8 * ret, const gfc_array_i8 * array);
-export_proto_np(__shape_8);
+extern void shape_8 (gfc_array_i8 * ret, const gfc_array_i8 * array);
+export_proto(shape_8);
 
 void
-__shape_8 (gfc_array_i8 * ret, const gfc_array_i8 * array)
+shape_8 (gfc_array_i8 * ret, const gfc_array_i8 * array)
 {
   int n;
   index_type stride;

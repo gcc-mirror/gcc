@@ -25,11 +25,11 @@ Boston, MA 02111-1307, USA.  */
 #include "libgfortran.h"
 
 
-extern void __any_l8 (gfc_array_l8 *, gfc_array_l8 *, index_type *);
-export_proto_np(__any_l8);
+extern void any_l8 (gfc_array_l8 *, gfc_array_l8 *, index_type *);
+export_proto(any_l8);
 
 void
-__any_l8 (gfc_array_l8 *retarray, gfc_array_l8 *array, index_type *pdim)
+any_l8 (gfc_array_l8 *retarray, gfc_array_l8 *array, index_type *pdim)
 {
   index_type count[GFC_MAX_DIMENSIONS - 1];
   index_type extent[GFC_MAX_DIMENSIONS - 1];

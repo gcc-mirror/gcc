@@ -25,11 +25,11 @@ Boston, MA 02111-1307, USA.  */
 #include <assert.h>
 #include "libgfortran.h"
 
-extern void __transpose (gfc_array_char *, gfc_array_char *);
-export_proto_np(__transpose);
+extern void transpose (gfc_array_char *, gfc_array_char *);
+export_proto(transpose);
 
 void
-__transpose (gfc_array_char * ret, gfc_array_char * source)
+transpose (gfc_array_char *ret, gfc_array_char *source)
 {
   /* r.* indicates the return array.  */
   index_type rxstride, rystride;

@@ -1,5 +1,17 @@
 2004-12-12  Richard Henderson  <rth@redhat.com>
 
+	* intrinsics/cshift0.c, intrinsics/eoshift0.c, intrinsics/eoshift2.c,
+	intrinsics/pack_generic.c, intrinsics/reshape_generic.c,
+	intrinsics/spread_generic.c, intrinsics/transpose_generic.c,
+	intrinsics/unpack_generic.c, m4/cshift1.m4, m4/dotprod.m4,
+	m4/dotprodc.m4, m4/dotprodl.m4, m4/eoshift1.m4, m4/eoshift3.m4,
+	m4/iforeach.m4, m4/ifunction.m4, m4/matmul.m4, m4/matmull.m4,
+	m4/reshape.m4, m4/shape.m4, m4/transpose.m4: Use standard prefix
+	instead of "__".
+	* generated/*: Rebuild.
+
+2004-12-12  Richard Henderson  <rth@redhat.com>
+
 	* acinclude.m4 (LIBGFOR_CHECK_ATTRIBUTE_VISIBILITY): New.
 	(LIBGFOR_CHECK_ATTRIBUTE_DLLEXPORT): New.
 	(LIBGFOR_CHECK_ATTRIBUTE_ALIAS): New.
