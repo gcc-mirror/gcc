@@ -1,3 +1,9 @@
+Tue Aug 25 13:19:46 1998  Dave Brolley  <brolley@cygnus.com>
+
+	* regclass.c (regclass): Use xmalloc/free instead of alloca.
+	* stupid.c (stupid_life_analysis): Ditto.
+	* reload1.c (reload): Ditto.
+
 Tue Aug 25 05:48:18 1998  Jakub Jelinek  <jj@sunsite.ms.mff.cuni.cz>
 
 	* config/sparc/sparc.c (arith_4096_operand, arith_add_operand,
