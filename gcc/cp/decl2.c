@@ -93,7 +93,7 @@ static tree get_guard_bits PARAMS ((tree));
 
 /* A list of static class variables.  This is needed, because a
    static class variable can be declared inside the class without
-   an initializer, and then initialized, staticly, outside the class.  */
+   an initializer, and then initialized, statically, outside the class.  */
 static varray_type pending_statics;
 #define pending_statics_used \
   (pending_statics ? pending_statics->elements_used : 0)

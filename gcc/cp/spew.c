@@ -1355,7 +1355,7 @@ do_pending_defargs ()
         {
           /* This function's default args depend on unprocessed default args
              of defarg_fns. We will need to reprocess this function, and
-             check for circular dependancies.  */
+             check for circular dependencies.  */
           tree a, b;
           
           for (a = defarg_depfns, b = TREE_PURPOSE (current); a && b; 

@@ -1557,7 +1557,7 @@ mark_primary_virtual_base (base_binfo, type)
   if (BINFO_PRIMARY_P (shared_binfo))
     {
       /* It's already allocated in the hierarchy. BINFO won't have a
-         primary base in this hierachy, even though the complete object
+         primary base in this hierarchy, even though the complete object
          BINFO is for, would do.  */
       return NULL_TREE;
     }
