@@ -118,7 +118,7 @@ namespace std
 		this->_M_fnumget->get(*this, 0, *this, __err, __n);
 	      this->setstate(__err);
 	    }
-	  catch(exception& __fail)
+	  catch(...)
 	    {
 	      // 27.6.1.2.1 Common requirements.
 	      // Turn this on without causing an ios::failure to be thrown.
@@ -155,7 +155,7 @@ namespace std
 #endif
 	      this->setstate(__err);
 	    }
-	  catch(exception& __fail)
+	  catch(...)
 	    {
 	      // 27.6.1.2.1 Common requirements.
 	      // Turn this on without causing an ios::failure to be thrown.
@@ -182,7 +182,7 @@ namespace std
 		this->_M_fnumget->get(*this, 0, *this, __err, __n);
 	      this->setstate(__err);
 	    }
-	  catch(exception& __fail)
+	  catch(...)
 	    {
 	      // 27.6.1.2.1 Common requirements.
 	      // Turn this on without causing an ios::failure to be thrown.
@@ -219,7 +219,7 @@ namespace std
 #endif
 	      this->setstate(__err);
 	    }
-	  catch(exception& __fail)
+	  catch(...)
 	    {
 	      // 27.6.1.2.1 Common requirements.
 	      // Turn this on without causing an ios::failure to be thrown.
@@ -246,7 +246,7 @@ namespace std
 		this->_M_fnumget->get(*this, 0, *this, __err, __n);
 	      this->setstate(__err);
 	    }
-	  catch(exception& __fail)
+	  catch(...)
 	    {
 	      // 27.6.1.2.1 Common requirements.
 	      // Turn this on without causing an ios::failure to be thrown.
@@ -273,7 +273,7 @@ namespace std
 		this->_M_fnumget->get(*this, 0, *this, __err, __n);
 	      this->setstate(__err);
 	    }
-	  catch(exception& __fail)
+	  catch(...)
 	    {
 	      // 27.6.1.2.1 Common requirements.
 	      // Turn this on without causing an ios::failure to be thrown.
@@ -300,7 +300,7 @@ namespace std
 		this->_M_fnumget->get(*this, 0, *this, __err, __n);
 	      this->setstate(__err);
 	    }
-	  catch(exception& __fail)
+	  catch(...)
 	    {
 	      // 27.6.1.2.1 Common requirements.
 	      // Turn this on without causing an ios::failure to be thrown.
@@ -328,7 +328,7 @@ namespace std
 		this->_M_fnumget->get(*this, 0, *this, __err, __n);
 	      this->setstate(__err);
 	    }
-	  catch(exception& __fail)
+	  catch(...)
 	    {
 	      // 27.6.1.2.1 Common requirements.
 	      // Turn this on without causing an ios::failure to be thrown.
@@ -355,7 +355,7 @@ namespace std
 		this->_M_fnumget->get(*this, 0, *this, __err, __n);
 	      this->setstate(__err);
 	    }
-	  catch(exception& __fail)
+	  catch(...)
 	    {
 	      // 27.6.1.2.1 Common requirements.
 	      // Turn this on without causing an ios::failure to be thrown.
@@ -383,7 +383,7 @@ namespace std
 		this->_M_fnumget->get(*this, 0, *this, __err, __n);
 	      this->setstate(__err);
 	    }
-	  catch(exception& __fail)
+	  catch(...)
 	    {
 	      // 27.6.1.2.1 Common requirements.
 	      // Turn this on without causing an ios::failure to be thrown.
@@ -410,7 +410,7 @@ namespace std
 		this->_M_fnumget->get(*this, 0, *this, __err, __n);
 	      this->setstate(__err);
 	    }
-	  catch(exception& __fail)
+	  catch(...)
 	    {
 	      // 27.6.1.2.1 Common requirements.
 	      // Turn this on without causing an ios::failure to be thrown.
@@ -437,7 +437,7 @@ namespace std
 		this->_M_fnumget->get(*this, 0, *this, __err, __n);
 	      this->setstate(__err);
 	    }
-	  catch(exception& __fail)
+	  catch(...)
 	    {
 	      // 27.6.1.2.1 Common requirements.
 	      // Turn this on without causing an ios::failure to be thrown.
@@ -464,7 +464,7 @@ namespace std
 		this->_M_fnumget->get(*this, 0, *this, __err, __n);
 	      this->setstate(__err);
 	    }
-	  catch(exception& __fail)
+	  catch(...)
 	    {
 	      // 27.6.1.2.1 Common requirements.
 	      // Turn this on without causing an ios::failure to be thrown.
@@ -495,7 +495,7 @@ namespace std
 	       if (!__sbout || !__xtrct)
 		 this->setstate(ios_base::failbit);
 	     }
-	   catch(exception& __fail)
+	   catch(...)
 	     {
 	       // 27.6.2.5.1 Common requirements.
 	       // Turn this on without causing an ios::failure to be thrown.
@@ -527,7 +527,7 @@ namespace std
 	      else
 		this->setstate(ios_base::eofbit | ios_base::failbit);
 	    }
-	  catch(exception& __fail)
+	  catch(...)
 	    {
 	      // 27.6.1.3 paragraph 1
 	      // Turn this on without causing an ios::failure to be thrown.
@@ -561,7 +561,7 @@ namespace std
 	      else
 		this->setstate(ios_base::eofbit | ios_base::failbit);
 	    }
-	  catch(exception& __fail)
+	  catch(...)
 	    {
 	      // 27.6.1.3 paragraph 1
 	      // Turn this on without causing an ios::failure to be thrown.
@@ -600,7 +600,7 @@ namespace std
 	      if (traits_type::eq_int_type(__c, __eof))
 		this->setstate(ios_base::eofbit);
 	    }
-	  catch(exception& __fail)
+	  catch(...)
 	    {
 	      // 27.6.1.3 paragraph 1
 	      // Turn this on without causing an ios::failure to be thrown.
@@ -643,7 +643,7 @@ namespace std
 	      if (traits_type::eq_int_type(__c, __eof))
 		this->setstate(ios_base::eofbit);
 	    }
-	  catch(exception& __fail)
+	  catch(...)
 	    {
 	      // 27.6.1.3 paragraph 1
 	      // Turn this on without causing an ios::failure to be thrown.
@@ -694,7 +694,7 @@ namespace std
 		    this->setstate(ios_base::failbit);
 		}
 	    }
-	  catch(exception& __fail)
+	  catch(...)
 	    {
 	      // 27.6.1.3 paragraph 1
 	      // Turn this on without causing an ios::failure to be thrown.
@@ -735,7 +735,7 @@ namespace std
 	      if (traits_type::eq_int_type(__c, __eof))
 		this->setstate(ios_base::eofbit);
 	    }
-	  catch(exception& __fail)
+	  catch(...)
 	    {
 	      // 27.6.1.3 paragraph 1
 	      // Turn this on without causing an ios::failure to be thrown.
@@ -759,7 +759,7 @@ namespace std
 	{
 	  try 
 	    { __c = this->rdbuf()->sgetc(); }
-	  catch(exception& __fail)
+	  catch(...)
 	    {
 	      // 27.6.1.3 paragraph 1
 	      // Turn this on without causing an ios::failure to be thrown.
@@ -786,7 +786,7 @@ namespace std
 	      if (_M_gcount != __n)
 		this->setstate(ios_base::eofbit | ios_base::failbit);
 	    }	    
-	  catch(exception& __fail)
+	  catch(...)
 	    {
 	      // 27.6.1.3 paragraph 1
 	      // Turn this on without causing an ios::failure to be thrown.
@@ -822,7 +822,7 @@ namespace std
 	      else
 		this->setstate(ios_base::eofbit);		    
 	    }
-	  catch(exception& __fail)
+	  catch(...)
 	    {
 	      // 27.6.1.3 paragraph 1
 	      // Turn this on without causing an ios::failure to be thrown.
@@ -853,7 +853,7 @@ namespace std
 		  || traits_type::eq_int_type(__sb->sputbackc(__c), __eof))
 		this->setstate(ios_base::badbit);		    
 	    }
-	  catch(exception& __fail)
+	  catch(...)
 	    {
 	      // 27.6.1.3 paragraph 1
 	      // Turn this on without causing an ios::failure to be thrown.
@@ -884,7 +884,7 @@ namespace std
 		  || traits_type::eq_int_type(__sb->sungetc(), __eof))
 		this->setstate(ios_base::badbit);		    
 	    }
-	  catch(exception& __fail)
+	  catch(...)
 	    {
 	      // 27.6.1.3 paragraph 1
 	      // Turn this on without causing an ios::failure to be thrown.
@@ -919,7 +919,7 @@ namespace std
 		    __ret = 0;
 		}
 	    }
-	  catch(exception& __fail)
+	  catch(...)
 	    {
 	      // 27.6.1.3 paragraph 1
 	      // Turn this on without causing an ios::failure to be thrown.
@@ -995,7 +995,7 @@ namespace std
 	{
 	  try 
 	    { __in.get(__c); }
-	  catch(exception& __fail)
+	  catch(...)
 	    {
 	      // 27.6.1.2.1 Common requirements.
 	      // Turn this on without causing an ios::failure to be thrown.
@@ -1052,7 +1052,7 @@ namespace std
 #endif
 	      __in.width(0);
 	    }
-	  catch(exception& __fail)
+	  catch(...)
 	    {
 	      // 27.6.1.2.1 Common requirements.
 	      // Turn this on without causing an ios::failure to be thrown.
