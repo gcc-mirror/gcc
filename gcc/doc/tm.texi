@@ -1233,7 +1233,7 @@ This macro need not be defined if there is no work for it to do.
 @findex TARGET_FLOAT_FORMAT
 @item TARGET_FLOAT_FORMAT
 A code distinguishing the floating point format of the target machine.
-There are three defined values:
+There are five defined values:
 
 @table @code
 @findex IEEE_FLOAT_FORMAT
@@ -1244,6 +1244,14 @@ need to define this macro when the format is IEEE@.
 @findex VAX_FLOAT_FORMAT
 @item VAX_FLOAT_FORMAT
 This code indicates the peculiar format used on the Vax.
+
+@findex IBM_FLOAT_FORMAT
+@item IBM_FLOAT_FORMAT
+This code indicates the format used on the IBM System/370.
+
+@findex C4X_FLOAT_FORMAT
+@item C4X_FLOAT_FORMAT
+This code indicates the format used on the TMS320C3x/C4x.
 
 @findex UNKNOWN_FLOAT_FORMAT
 @item UNKNOWN_FLOAT_FORMAT
@@ -1335,6 +1343,12 @@ target machine.  If this is undefined, the default is
 @code{CHAR_TYPE_SIZE}.  Otherwise, it is the constant value that is the
 largest value that @code{CHAR_TYPE_SIZE} can have at run-time.  This is
 used in @code{cpp}.
+
+@findex BOOL_TYPE_SIZE
+@item BOOL_TYPE_SIZE
+A C expression for the size in bits of the C++ type @code{bool} on the
+target machine.  If you don't define this, the default is
+@code{CHAR_TYPE_SIZE}.
 
 @findex FLOAT_TYPE_SIZE
 @item FLOAT_TYPE_SIZE
