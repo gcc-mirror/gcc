@@ -17,9 +17,12 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-/* $Id: jartool.c,v 1.1 2000/12/09 03:08:23 apbianco Exp $
+/* $Id: jartool.c,v 1.2 2000/12/13 18:11:57 tromey Exp $
 
    $Log: jartool.c,v $
+   Revision 1.2  2000/12/13 18:11:57  tromey
+   	* jartool.c (extract_jar): Use strchr, not index.
+
    Revision 1.1  2000/12/09 03:08:23  apbianco
    2000-12-08  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
@@ -169,23 +172,22 @@
 #endif
 
 static char version_string[] = VERSION;
-static char rcsid[] = "$Id: jartool.c,v 1.1 2000/12/09 03:08:23 apbianco Exp $";
 
 extern int errno;
 
-void usage(char*);
+void usage(const char*);
 void add_entry(struct zipentry *);
-void init_headers();
+void init_headers(void);
 
 int consume(pb_file *, int);
 int list_jar(int, char**, int);
 int extract_jar(int, char**, int);
-int add_file_to_jar(int, int, char*, struct stat*);
-int add_to_jar(int, char*, char*);
+int add_file_to_jar(int, int, const char*, struct stat*);
+int add_to_jar(int, const char*, const char*);
 int create_central_header(int);
-int make_manifest(int, char*);
+int make_manifest(int, const char*);
 static void init_args(char **, int);
-static char *get_next_arg ();
+static char *get_next_arg (void);
 
 /* global variables */
 ub1 file_header[30];
@@ -371,7 +373,7 @@ int main(int argc, char **argv){
   }
 
   if(action == ACTION_CREATE || action == ACTION_UPDATE){
-    char *arg;
+    const char *arg;
     init_headers();
 
    if((action == ACTION_UPDATE) && file) {
@@ -397,8 +399,8 @@ int main(int argc, char **argv){
     while ((arg = get_next_arg ())){
 
       if(!strcmp(arg, "-C")){
-	char *dir_to_change = get_next_arg ();
-	char *file_to_add = get_next_arg ();
+	const char *dir_to_change = get_next_arg ();
+	const char *file_to_add = get_next_arg ();
         if(!dir_to_change 
 	   || !file_to_add
 	   || add_to_jar(jarfd, dir_to_change, file_to_add)){
@@ -570,7 +572,7 @@ void add_entry(struct zipentry *ze){
   number_of_entries++;
 }
 
-int make_manifest(int jfd, char *mf_name){
+int make_manifest(int jfd, const char *mf_name){
   time_t current_time;
   int nlen;   /* length of file name */
   int mod_time; /* file modification time */
@@ -622,14 +624,14 @@ int make_manifest(int jfd, char *mf_name){
     int mf_len = 37 + strlen(VERSION);
     char *mf;
 
-    if(mf = (char *) malloc(mf_len + 1)) {
+    if((mf = (char *) malloc(mf_len + 1))) {
     uLong crc;
 
     sprintf(mf, "Manifest-Version: 1.0\nCreated-By: %s\n\n", VERSION);
 
     crc = crc32(0L, Z_NULL, 0);
     
-    crc = crc32(crc, mf, mf_len);
+    crc = crc32(crc, (const unsigned char *)mf, mf_len);
 
     nlen = 20;  /* once again, trust me */
 
@@ -703,7 +705,7 @@ int make_manifest(int jfd, char *mf_name){
   return 0;
 }
 
-int add_to_jar(int fd, char *new_dir, char *file){
+int add_to_jar(int fd, const char *new_dir, const char *file){
   struct stat statbuf;
   DIR *dir;
   struct dirent *de;
@@ -857,7 +859,7 @@ int add_to_jar(int fd, char *new_dir, char *file){
   return 0;
 }
 
-int add_file_to_jar(int jfd, int ffd, char *fname, struct stat *statbuf){
+int add_file_to_jar(int jfd, int ffd, const char *fname, struct stat *statbuf){
 
   unsigned short file_name_length;
   unsigned long mod_time;
@@ -1259,7 +1261,7 @@ int extract_jar(int fd, char **files, int file_num){
       handle = FALSE;
       
       for(j = 0; j < file_num; j++)
-        if(strcmp(files[j], filename) == 0){
+        if(strcmp(files[j], (const char *)filename) == 0){
           handle = TRUE;
           break;
         }
@@ -1271,16 +1273,16 @@ int extract_jar(int fd, char **files, int file_num){
     /* OK, there is some directory information in the file.  Nothing to do
        but ensure the directory(s) exist, and create them if they don't.
        What a pain! */
-    if(strchr(filename, '/') != NULL && handle){
+    if(strchr((const char *)filename, '/') != NULL && handle){
       /* Loop through all the directories in the path, (everything w/ a '/') */
-      ub1 *start = filename;
+      const ub1 *start = filename;
       char *tmp_buff;
       struct stat sbuf;
 
-      tmp_buff = malloc(sizeof(char) * strlen(filename));
+      tmp_buff = malloc(sizeof(char) * strlen((const char *)filename));
 
       for(;;){
-        ub1 *idx = strchr(start, '/');
+        const ub1 *idx = (const unsigned char *)strchr((const char *)start, '/');
 
         if(idx == NULL)
           break;
@@ -1290,7 +1292,7 @@ int extract_jar(int fd, char **files, int file_num){
         }
         start = idx + 1;
 
-        strncpy(tmp_buff, filename, (idx - filename));
+        strncpy(tmp_buff, (const char *)filename, (idx - filename));
         tmp_buff[(idx - filename)] = '\0';
 
 #ifdef DEBUG    
@@ -1327,26 +1329,26 @@ int extract_jar(int fd, char **files, int file_num){
       }
 
       /* only a directory */
-      if(strlen(start) == 0)
+      if(strlen((const char *)start) == 0)
         dir = TRUE;
 
 #ifdef DEBUG    
-      printf("Leftovers are \"%s\" (%d)\n", start, strlen(start));
+      printf("Leftovers are \"%s\" (%d)\n", start, strlen((const char *)start));
 #endif
 
       /* If the entry was just a directory, don't write to file, etc */
-      if(strlen(start) == 0)
+      if(strlen((const char *)start) == 0)
         f_fd = -1;
 
       free(tmp_buff);
     }
 
     if(f_fd != -1 && handle){
-      f_fd = creat(filename, 00644);
+      f_fd = creat((const char *)filename, 00644);
 
       if(f_fd < 0){
         fprintf(stderr, "Error extracting JAR archive!\n");
-        perror(filename);
+        perror((const char *)filename);
         exit(1);
       }
     }
@@ -1568,7 +1570,7 @@ int list_jar(int fd, char **files, int file_num){
          we'll only display those, otherwise we'll display everything */
       if(file_num > 0){
         for(j = 0; j < file_num; j++)
-          if(strcmp(files[j], filename) == 0){
+          if(strcmp(files[j], (const char *)filename) == 0){
             if(verbose)
               printf("%6d %s %s\n", usize, ascii_date, filename);
             else
@@ -1705,7 +1707,7 @@ int list_jar(int fd, char **files, int file_num){
         
 
 #ifdef DEBUG
-        printf("Skipping %d bytes\n", size);
+        printf("Skipping %ld bytes\n", (long)size);
 #endif
 
         consume(&pbf, size);
@@ -1713,7 +1715,7 @@ int list_jar(int fd, char **files, int file_num){
       /* print out the listing */
       if(file_num > 0){
         for(j = 0; j < file_num; j++)
-          if(strcmp(files[j], filename) == 0){
+          if(strcmp(files[j], (const char *)filename) == 0){
             if(verbose)
               printf("%6d %s %s\n", usize, ascii_date, filename);
             else
@@ -1755,8 +1757,37 @@ int consume(pb_file *pbf, int amt){
   return 0;
 }
 
-void usage(char *filename){
-  fprintf(stderr, "Usage: %s {ctxuV}[vfm0ME@] [jar-file] [manifest-file] [-C dir] files ...\nOptions\n -c  create new archive\n -t  list table of contents for archive\n -x  extract named (or all) files from archive\n -u  update existing archive\n -V  display version information\n -v  generate verbose output on standard output\n -f  specify archive file name\n -m  include manifest information from specified manifest file\n -0  store only; use no ZIP compression\n -M  Do not create a manifest file for the entries\n -C  change to the specified directory and include the following file\n -E  don't include the files found in a directory\n -@  Read names from stdin\nIf any file is a directory then it is processed recursively.\nThe manifest file name and the archive file name needs to be specified\nin the same order the 'm' and 'f' flags are specified.\n\nExample 1: to archive two class files into an archive called classes.jar: \n     jar cvf classes.jar Foo.class Bar.class \nExample 2: use an existing manifest file 'mymanifest' and archive all the\n     files in the foo/ directory into 'classes.jar': \n     jar cvfm classes.jar mymanifest -C foo/ .\n", filename);
+void usage(const char *filename){
+  fprintf(stderr, "\
+Usage: %s {ctxuV}[vfm0ME@] [jar-file] [manifest-file] [-C dir] files ...\n\
+Options\n\
+ -c  create new archive\n\
+ -t  list table of contents for archive\n\
+ -x  extract named (or all) files from archive\n\
+", filename);
+  fprintf(stderr, "\
+ -u  update existing archive\n\
+ -V  display version information\n\
+ -v  generate verbose output on standard output\n\
+ -f  specify archive file name\n\
+ -m  include manifest information from specified manifest file\n\
+ -0  store only; use no ZIP compression\n\
+ -M  Do not create a manifest file for the entries\n\
+ -C  change to the specified directory and include the following file\n\
+ -E  don't include the files found in a directory\n\
+ -@  Read names from stdin\n\
+");
+  fprintf(stderr, "\
+If any file is a directory then it is processed recursively.\n\
+The manifest file name and the archive file name needs to be specified\n\
+in the same order the 'm' and 'f' flags are specified.\n\
+\n\
+Example 1: to archive two class files into an archive called classes.jar: \n\
+     jar cvf classes.jar Foo.class Bar.class \n\
+Example 2: use an existing manifest file 'mymanifest' and archive all the\n\
+     files in the foo/ directory into 'classes.jar': \n\
+     jar cvfm classes.jar mymanifest -C foo/ .\n\
+");
 
   exit(1);
 }

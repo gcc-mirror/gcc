@@ -1,6 +1,11 @@
-/* $Id: compress.h,v 1.1.1.1 1999/12/06 03:09:12 toast Exp $
+/* $Id: compress.h,v 1.1 2000/12/09 03:08:23 apbianco Exp $
 
    $Log: compress.h,v $
+   Revision 1.1  2000/12/09 03:08:23  apbianco
+   2000-12-08  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+           * fastjar: Imported.
+
    Revision 1.1.1.1  1999/12/06 03:09:12  toast
    initial checkin..
 
@@ -38,14 +43,15 @@
  */
 
 /* Initializes the compression data structure(s) */
-void init_compression();
+void init_compression(void);
 
 /* Compresses the file specified by in_fd and appends it to out_fd */
 int compress_file(int in_fd, int out_fd, struct zipentry *ze);
 
 /* Frees memory used by compression function */
-void end_compression();
+void end_compression(void);
 
-void init_inflation();
+void init_inflation(void);
 int inflate_file(pb_file *, int, struct zipentry *);
-void end_inflation();
+void end_inflation(void);
+Bytef *inflate_string(pb_file *, ub4 *, ub4 *);

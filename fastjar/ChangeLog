@@ -1,3 +1,30 @@
+2000-12-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* compress.c: Include stdlib.h and compress.h.
+	(rcsid): Delete.
+	(report_str_error): Make static.
+	(ez_inflate_str): Delete unused variable.  Add parens in if-stmt.
+	(hrd_inflate_str): Likewise.
+
+	* compress.h (init_compression, end_compression, init_inflation,
+	end_inflation): Prototype void arguments.
+
+	* dostime.c (rcsid): Delete.
+
+	* jargrep.c: Include ctype.h, stdlib.h, zlib.h and compress.h.
+	Make functions static.  Cast ctype function argument to `unsigned
+	char'.  Add parens in if-stmts.  Constify.
+	(Usage): Change into a macro.
+	(jargrep): Remove unused parameter.
+
+	* jartool.c: Constify.  Add parens in if-stmts.  Align
+	signed/unsigned char pointers in functions calls using casts.
+	(rcsid): Delete.
+	(list_jar): Fix printf format specifier.
+	(usage): Chop long string into bits.  Reformat.
+
+	* pushback.c (rcsid): Delete.
+
 2000-12-13  Tom Tromey  <tromey@redhat.com>
 
 	* jartool.c (extract_jar): Use strchr, not index.

@@ -1,6 +1,11 @@
-/* $Id: pushback.c,v 1.2 2000/08/23 19:42:17 cory Exp $
+/* $Id: pushback.c,v 1.1 2000/12/09 03:08:23 apbianco Exp $
 
    $Log: pushback.c,v $
+   Revision 1.1  2000/12/09 03:08:23  apbianco
+   2000-12-08  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+           * fastjar: Imported.
+
    Revision 1.2  2000/08/23 19:42:17  cory
    Added support for more Unix platforms.  The following code has been hacked
    to work on AIX, Solaris, True 64, and HP-UX.
@@ -42,8 +47,6 @@
 
 #include "jartool.h"
 #include "pushback.h"
-
-static char rcsid[] = "$Id: pushback.c,v 1.2 2000/08/23 19:42:17 cory Exp $";
 
 void pb_init(pb_file *pbf, int fd){
   pbf->fd = fd;
