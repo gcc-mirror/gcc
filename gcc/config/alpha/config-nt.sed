@@ -18,11 +18,11 @@ out_object_file=alpha.obj
 /^md_file/ c\
 md_file=config/alpha/alpha.md
 /^tm_file/ c\
-tm_file=config/alpha/winnt.h
+tm_file=config/alpha/alpha.h config/alpha/winnt.h
 /^build_xm_file/ c\
-build_xm_file=config/alpha/xm-winnt.h
+build_xm_file=config/alpha/xm-alpha.h config/winnt/xm-winnt.h config/alpha/xm-winnt.h
 /^host_xm_file/ c\
-host_xm_file=config/alpha/xm-winnt.h
+host_xm_file=config/alpha/xm-alpha.h config/winnt/xm-winnt.h config/alpha/xm-winnt.h
 /^####target/ i\
 CC = cl \
 CLIB = libc.lib kernel32.lib \
