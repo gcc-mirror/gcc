@@ -563,6 +563,7 @@ package body Sem_Warn is
                                 (Ekind (E) = E_Function
                                   or else Ekind (E) = E_Package_Body
                                   or else Ekind (E) = E_Procedure
+                                  or else Ekind (E) = E_Subprogram_Body
                                   or else Ekind (E) = E_Block)))
 
                --  Exclude instantiations, since there is no reason why
@@ -670,7 +671,7 @@ package body Sem_Warn is
                Unreferenced_Entities.Increment_Last;
                Unreferenced_Entities.Table (Unreferenced_Entities.Last) := E1;
 
-               --  Force warning on entity.
+               --  Force warning on entity
 
                Set_Referenced (E1, False);
             end if;
@@ -994,7 +995,7 @@ package body Sem_Warn is
             Un : constant Node_Id := Sinfo.Unit (Cnode);
 
             function Check_Use_Clause (N : Node_Id) return Traverse_Result;
-            --  If N is a use_clause for Pack, emit warning.
+            --  If N is a use_clause for Pack, emit warning
 
             procedure Check_Use_Clauses is new
               Traverse_Proc (Check_Use_Clause);
@@ -1484,22 +1485,13 @@ package body Sem_Warn is
                      if Warn_On_Modified_Unread
                        and then not Is_Imported (E)
 
-                        --  Suppress the message for aliased, renamed
-                        --  and access variables since there may be
-                        --  other entities that read the memory location.
+                        --  Suppress the message for aliased or renamed
+                        --  variables, since there may be other entities
+                        --  read the same memory location.
 
                        and then not Is_Aliased (E)
                        and then No (Renamed_Object (E))
-                       and then not (Is_Access_Type (Etype (E))
-                                       or else
 
-                        --  Case of private access type, must examine the
-                        --  full view due to visibility issues.
-
-                                       (Is_Private_Type (Etype (E))
-                                          and then
-                                          Is_Access_Type
-                                            (Full_View (Etype (E)))))
                      then
                         Error_Msg_N
                           ("variable & is assigned but never read?", E);

@@ -2631,7 +2631,7 @@ package body Sem_Util is
    begin
       Get_Unit_Name_String (Unit_Name_Id);
 
-      --  Remove seven last character (" (spec)" or " (body)").
+      --  Remove seven last character (" (spec)" or " (body)")
 
       Name_Len := Name_Len - 7;
       pragma Assert (Name_Buffer (Name_Len + 1) = ' ');
@@ -3136,6 +3136,7 @@ package body Sem_Util is
 
    procedure Insert_Explicit_Dereference (N : Node_Id) is
       New_Prefix : constant Node_Id := Relocate_Node (N);
+      Ent        : Entity_Id := Empty;
       I          : Interp_Index;
       It         : Interp;
       T          : Entity_Id;
@@ -3166,6 +3167,21 @@ package body Sem_Util is
          end loop;
 
          End_Interp_List;
+
+      else
+         --  Prefix is unambiguous: mark the original prefix (which might
+         --  Come_From_Source) as a reference, since the new (relocated) one
+         --  won't be taken into account.
+
+         if Is_Entity_Name (New_Prefix) then
+            Ent := Entity (New_Prefix);
+         elsif Nkind (New_Prefix) = N_Selected_Component then
+            Ent := Entity (Selector_Name (New_Prefix));
+         end if;
+
+         if Present (Ent) then
+            Generate_Reference (Ent, New_Prefix);
+         end if;
       end if;
    end Insert_Explicit_Dereference;
 
