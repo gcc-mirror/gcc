@@ -1,3 +1,11 @@
+2003-08-19  Geoffrey Keating  <geoffk@apple.com>
+
+	* gcc.dg/pch/warn-1.c: New.
+	* gcc.dg/pch/warn-1.hs: New.
+
+	* lib/dg-pch.exp (dg-pch): Use 'return' not 'continue' to skip
+	not-tested file.
+
 2003-08-19  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* gcc.dg/uninit-E.c: Add forgotten dg-warning marker.
