@@ -62,7 +62,6 @@ static tree convert_sequence PROTO((tree, tree));
 static tree lookup_anon_field PROTO((tree, tree));
 static tree pointer_diff PROTO((tree, tree, tree));
 static tree qualify_type PROTO((tree, tree));
-static tree expand_target_expr PROTO((tree));
 static tree get_delta_difference PROTO((tree, tree, int));
 
 /* Return the target type of TYPE, which meas return T for:
@@ -5725,40 +5724,6 @@ build_c_cast (type, expr)
   return value;
 }
 
-static tree
-expand_target_expr (t)
-     tree t;
-{
-  extern int temp_slot_level;
-  extern int target_temp_slot_level;
-  int old_temp_level = target_temp_slot_level;
-
-  tree xval = make_node (RTL_EXPR);
-  rtx rtxval;
-
-  /* Any TARGET_EXPR temps live only as long as the outer temp level.
-     Since they are preserved in this new inner level, we know they
-     will make it into the outer level.  */
-  push_temp_slots ();
-  target_temp_slot_level = temp_slot_level;
-
-  do_pending_stack_adjust ();
-  start_sequence_for_rtl_expr (xval);
-  emit_note (0, -1);
-  rtxval = expand_expr (t, NULL_RTX, VOIDmode, EXPAND_NORMAL);
-  do_pending_stack_adjust ();
-  TREE_SIDE_EFFECTS (xval) = 1;
-  RTL_EXPR_SEQUENCE (xval) = get_insns ();
-  end_sequence ();
-  RTL_EXPR_RTL (xval) = rtxval;
-  TREE_TYPE (xval) = TREE_TYPE (t);
-
-  pop_temp_slots ();
-  target_temp_slot_level = old_temp_level;
-
-  return xval;
-}
-
 /* Build an assignment expression of lvalue LHS from value RHS.
    MODIFYCODE is the code for a binary operator that we use
    to combine the old value of LHS with RHS to get the new value.

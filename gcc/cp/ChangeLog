@@ -1,5 +1,7 @@
 Sun Mar 29 00:47:32 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* typeck.c (expand_target_expr): Delete dead function.
+
 	* search.c: Put various prototypes inside #ifdef MI_MATRIX.
 
 	* repo.c (save_string): Delete dead function.
