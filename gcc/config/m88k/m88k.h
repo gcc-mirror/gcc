@@ -204,9 +204,9 @@ extern char * reg_names[];
 /* Print subsidiary information on the compiler version in use.
    Redefined in m88kv4.h, and m88kluna.h.  */
 #define VERSION_INFO1	"88open OCS/BCS, "
-#define VERSION_INFO2	"20 Mar 1992"
+#define VERSION_INFO2	"01 Apr 1992"
 #define VERSION_STRING	version_string
-#define	TM_SCCS_ID	"@(#)m88k.h	2.0.3.6 20 Mar 1992 08:33:40"
+#define	TM_SCCS_ID	"@(#)m88k.h	2.1.2.2 01 Apr 1992 06:40:42"
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
@@ -1415,6 +1415,8 @@ enum reg_class { NO_REGS, AP_REG, GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES };
 #undef	FINI_SECTION_ASM_OP
 #undef	TYPE_ASM_OP
 #undef	SIZE_ASM_OP
+#undef	SKIP_ASM_OP
+#undef	COMMON_ASM_OP
 
 /* These are used in varasm.c as well.  */
 #define TEXT_SECTION_ASM_OP	"text"
@@ -1443,7 +1445,7 @@ enum reg_class { NO_REGS, AP_REG, GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES };
 #define ALIGN_ASM_OP		"align"
 #define SKIP_ASM_OP		"zero"
 #define COMMON_ASM_OP		"comm"
-#define LOCAL_ASM_OP		"bss"
+#define BSS_ASM_OP		"bss"
 #define FLOAT_ASM_OP		"float"
 #define DOUBLE_ASM_OP		"double"
 #define INT_ASM_OP		"word"
@@ -1674,6 +1676,7 @@ enum reg_class { NO_REGS, AP_REG, GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES };
    PREFIX is the class of label and NUM is the number within the class.
    For V.4, labels use `.' rather than `@'.  */
 
+#undef ASM_OUTPUT_INTERNAL_LABEL
 #ifdef AS_BUG_DOT_LABELS /* The assembler requires a declaration of local.  */
 #define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)			\
   fprintf (FILE, VERSION_0300_SYNTAX ? ".%s%d:\n\t%s\t .%s%d\n" : "@%s%d:\n", \
@@ -1690,6 +1693,7 @@ enum reg_class { NO_REGS, AP_REG, GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES };
    with ASM_OUTPUT_INTERNAL_LABEL above, except for being prefixed
    with an `*'.  */
 
+#undef ASM_GENERATE_INTERNAL_LABEL
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)			\
   sprintf (LABEL, VERSION_0300_SYNTAX ? "*.%s%d" : "*@%s%d", PREFIX, NUM)
 
@@ -1837,7 +1841,7 @@ enum reg_class { NO_REGS, AP_REG, GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES };
 #undef	ASM_OUTPUT_ALIGNED_LOCAL
 #define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE, ROUNDED)	\
 ( fprintf ((FILE), "\t%s\t ",				\
-	   ((SIZE) ? (SIZE) : 1) <= m88k_gp_threshold ? SBSS_ASM_OP : LOCAL_ASM_OP), \
+	   ((SIZE) ? (SIZE) : 1) <= m88k_gp_threshold ? SBSS_ASM_OP : BSS_ASM_OP), \
   assemble_name ((FILE), (NAME)),			\
   fprintf ((FILE), ",%u,%d\n", (SIZE) ? (SIZE) : 1, (SIZE) <= 4 ? 4 : 8))
 
