@@ -1,5 +1,5 @@
 /* Time.java -- Wrapper around java.util.Date
-   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,113 +41,81 @@ package java.sql;
 import java.text.SimpleDateFormat;
 
 /**
-  * This class is a wrapper around java.util.Date to allow the JDBC
-  * driver to identify the value as a SQL Time.
-  *
-  * @author Aaron M. Renn (arenn@urbanophile.com)
-  */
+ * This class is a wrapper around java.util.Date to allow the JDBC
+ * driver to identify the value as a SQL Time.
+ *
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ */
 public class Time extends java.util.Date
 {
+  static final long serialVersionUID = 8397324403548013681L;
 
-/*
- * Class Variables
- */
+  /**
+   * Used for parsing and formatting this date.
+   */
+  private static SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
 
-/**
-  * Used for parsing and formatting this date.
-  */
-private static SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
 
-/**
-  * This is the serialization UID for this class.
-  */
-private static final long serialVersionUID = 8397324403548013681L;
+  /**
+   * This method returns a new instance of this class by parsing a
+   * date in JDBC format into a Java date.
+   *
+   * @param str The string to parse.
+   * @return The resulting <code>java.sql.Time</code> value. 
+   */
+  public static Time valueOf(String str)
+  {
+    try
+      {
+	java.util.Date d = (java.util.Date) sdf.parseObject(str);
+	return new Time(d.getTime());
+      }
+    catch (Exception e)
+      {
+	return null;
+      }
+  }
 
-/*************************************************************************/
+  /**
+    * This method initializes a new instance of this class with the
+    * specified year, month, and day.
+    *
+    * @param hour The hour for this Time (0-23)
+    * @param minute The minute for this time (0-59)
+    * @param second The second for this time (0-59)
+    * @deprecated
+    */
+  public Time(int hour, int minute, int second)
+  {
+    super(System.currentTimeMillis());
 
-/*
- * Class Methods
- */
+    setHours(hour);
+    setMinutes(minute);
+    setSeconds(second);
+  }
 
-/**
-  * This method returns a new instance of this class by parsing a
-  * date in JDBC format into a Java date.
-  *
-  * @param str The string to parse.
-  *
-  * @return The resulting <code>java.sql.Time</code> value. 
-  */
-public static Time
-valueOf(String str)
-{
-  try
-    {
-      java.util.Date d = (java.util.Date)sdf.parseObject(str);
-      return(new Time(d.getTime()));
-    }
-  catch(Exception e)
-    {
-      return(null);
-    }
+  /**
+   * This method initializes a new instance of this class with the
+   * specified time value representing the number of seconds since 
+   * Jan 1, 1970 at 12:00 midnight GMT.
+   *
+   * @param time The time value to intialize this <code>Time</code> to.
+   */
+  public Time(long date)
+  {
+    super(date);
+  }
+
+  /**
+   * This method returns this date in JDBC format.
+   *
+   * @return This date as a string.
+   */
+  public String
+  toString()
+  {
+    return sdf.format(this);
+  }
+
 }
-
-/*************************************************************************/
-
-/*
- * Constructors
- */
-
-/**
-  * This method initializes a new instance of this class with the
-  * specified year, month, and day.
-  *
-  * @param hour The hour for this Time (0-23)
-  * @param minute The minute for this time (0-59)
-  * @param second The second for this time (0-59)
-  *
-  * @deprecated
-  */
-public 
-Time(int hour, int minute, int second)
-{
-  super(System.currentTimeMillis());
-
-  setHours(hour);
-  setMinutes(minute);
-  setSeconds(second);
-}
-
-/*************************************************************************/
-
-/**
-  * This method initializes a new instance of this class with the
-  * specified time value representing the number of seconds since 
-  * Jan 1, 1970 at 12:00 midnight GMT.
-  *
-  * @param time The time value to intialize this <code>Time</code> to.
-  */
-public
-Time(long date)
-{
-  super(date);
-}
-
-/*************************************************************************/
-
-/*
- * Instance Methods
- */
-
-/**
-  * This method returns this date in JDBC format.
-  *
-  * @return This date as a string.
-  */
-public String
-toString()
-{
-  return(sdf.format(this));
-}
-
-} // class Time
 

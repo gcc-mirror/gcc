@@ -768,6 +768,20 @@ javax/naming/ldap/UnsolicitedNotification.java \
 javax/naming/ldap/UnsolicitedNotificationEvent.java \
 javax/naming/ldap/UnsolicitedNotificationListener.java \
 javax/naming/OperationNotSupportedException.java \
+javax/sql/ConnectionEvent.java \
+javax/sql/ConnectionEventListener.java \
+javax/sql/ConnectionPoolDataSource.java \
+javax/sql/DataSource.java \
+javax/sql/PooledConnection.java \
+javax/sql/RowSetEvent.java \
+javax/sql/RowSetInternal.java \
+javax/sql/RowSet.java \
+javax/sql/RowSetListener.java \
+javax/sql/RowSetMetaData.java \
+javax/sql/RowSetReader.java \
+javax/sql/RowSetWriter.java \
+javax/sql/XAConnection.java \
+javax/sql/XADataSource.java \
 javax/transaction/xa/XAException.java \
 javax/transaction/xa/XAResource.java \
 javax/transaction/xa/Xid.java \
@@ -1366,14 +1380,17 @@ java/sql/Date.java \
 java/sql/Driver.java \
 java/sql/DriverManager.java \
 java/sql/DriverPropertyInfo.java \
+java/sql/ParameterMetaData.java \
 java/sql/PreparedStatement.java	\
 java/sql/Ref.java \
 java/sql/ResultSet.java	\
 java/sql/ResultSetMetaData.java	\
+java/sql/Savepoint.java \
 java/sql/SQLData.java \
 java/sql/SQLException.java \
 java/sql/SQLInput.java \
 java/sql/SQLOutput.java \
+java/sql/SQLPermission.java \
 java/sql/SQLWarning.java \
 java/sql/Statement.java	\
 java/sql/Struct.java	\
@@ -2506,13 +2523,15 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/sql/Connection.P .deps/java/sql/DataTruncation.P \
 .deps/java/sql/DatabaseMetaData.P .deps/java/sql/Date.P \
 .deps/java/sql/Driver.P .deps/java/sql/DriverManager.P \
-.deps/java/sql/DriverPropertyInfo.P .deps/java/sql/PreparedStatement.P \
-.deps/java/sql/Ref.P .deps/java/sql/ResultSet.P \
-.deps/java/sql/ResultSetMetaData.P .deps/java/sql/SQLData.P \
-.deps/java/sql/SQLException.P .deps/java/sql/SQLInput.P \
-.deps/java/sql/SQLOutput.P .deps/java/sql/SQLWarning.P \
-.deps/java/sql/Statement.P .deps/java/sql/Struct.P \
-.deps/java/sql/Time.P .deps/java/sql/Timestamp.P .deps/java/sql/Types.P \
+.deps/java/sql/DriverPropertyInfo.P .deps/java/sql/ParameterMetaData.P \
+.deps/java/sql/PreparedStatement.P .deps/java/sql/Ref.P \
+.deps/java/sql/ResultSet.P .deps/java/sql/ResultSetMetaData.P \
+.deps/java/sql/SQLData.P .deps/java/sql/SQLException.P \
+.deps/java/sql/SQLInput.P .deps/java/sql/SQLOutput.P \
+.deps/java/sql/SQLPermission.P .deps/java/sql/SQLWarning.P \
+.deps/java/sql/Savepoint.P .deps/java/sql/Statement.P \
+.deps/java/sql/Struct.P .deps/java/sql/Time.P \
+.deps/java/sql/Timestamp.P .deps/java/sql/Types.P \
 .deps/java/text/Annotation.P \
 .deps/java/text/AttributedCharacterIterator.P \
 .deps/java/text/AttributedString.P \
@@ -2659,6 +2678,14 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/javax/naming/spi/ObjectFactoryBuilder.P \
 .deps/javax/naming/spi/ResolveResult.P \
 .deps/javax/naming/spi/Resolver.P .deps/javax/naming/spi/StateFactory.P \
+.deps/javax/sql/ConnectionEvent.P \
+.deps/javax/sql/ConnectionEventListener.P \
+.deps/javax/sql/ConnectionPoolDataSource.P .deps/javax/sql/DataSource.P \
+.deps/javax/sql/PooledConnection.P .deps/javax/sql/RowSet.P \
+.deps/javax/sql/RowSetEvent.P .deps/javax/sql/RowSetInternal.P \
+.deps/javax/sql/RowSetListener.P .deps/javax/sql/RowSetMetaData.P \
+.deps/javax/sql/RowSetReader.P .deps/javax/sql/RowSetWriter.P \
+.deps/javax/sql/XAConnection.P .deps/javax/sql/XADataSource.P \
 .deps/javax/transaction/HeuristicCommitException.P \
 .deps/javax/transaction/HeuristicMixedException.P \
 .deps/javax/transaction/HeuristicRollbackException.P \

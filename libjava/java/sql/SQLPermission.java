@@ -1,5 +1,5 @@
-/* DriverPropertyInfo.java -- Property information about drivers.
-   Copyright (C) 1999 Free Software Foundation, Inc.
+/* SQLPermission.java
+   Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,51 +38,20 @@ exception statement from your version. */
 
 package java.sql;
 
+import java.security.BasicPermission;
+
 /**
- * This class holds a driver property that can be used for querying or
- * setting driver configuration parameters.
- *
- * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @since 1.3
  */
-public class DriverPropertyInfo 
+public final class SQLPermission extends BasicPermission 
 {
-  /**
-   * The name of the property.
-   */
-  public String name;
-
-  /**
-   * A description of the property, possibly <code>null</code>.
-   */
-  public String description;
-
-  /**
-   * A flag indicating whether or not a value for this property is required
-   * in order to connect to the database.
-   */
-  public boolean required;
-
-  /**
-   * This is the value of the property.
-   */
-  public String value;
-
-  /**
-    * If values are restricted to certain choices, this is the list of valid
-    * ones.  Otherwise it is <code>null</code>.
-    */
-  public String[] choices;
-
-  /**
-   * This method initializes a new instance of <code>DriverPropertyInfo</code>
-   * with the specified name and value.  All other fields are defaulted.
-   *
-   * @param name The name of the property.
-   * @param value The value to assign to the property.
-   */
-  public DriverPropertyInfo(String name, String value)
+  public SQLPermission(String name)
   {
-    this.name = name;
-    this.value = value;
+    super(name);
+  }
+
+  public SQLPermission(String name, String actions)
+  {
+    super(name, actions);
   }
 }

@@ -1,5 +1,5 @@
 /* Blob.java -- Access a SQL Binary Large OBject.
-   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,97 +35,97 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package java.sql;
 
 import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
-  * This interface specified methods for accessing a SQL BLOB (Binary
-  * Large OBject) type.
-  *
-  * @author Aaron M. Renn (arenn@urbanophile.com)
-  */
-public interface Blob
+ * This interface specified methods for accessing a SQL BLOB (Binary
+ * Large OBject) type.
+ *
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @since 1.2
+ */
+public interface Blob 
 {
+  /**
+   * This method returns the number of bytes in the BLOB.
+   *
+   * @return The number of bytes in the BLOB.
+   * @exception SQLException If an error occurs.
+   */
+  public long length() throws SQLException;
 
-/*************************************************************************/
+  /**
+   * This method returns up to the requested bytes of this BLOB as a 
+   * <code>byte</code> array.
+   *
+   * @param pos The index into the BLOB to start returning bytes from.
+   * @param length The requested number of bytes to return.
+   * @return The requested bytes from the BLOB.
+   * @exception SQLException If an error occurs.
+   */
+  public byte[] getBytes(long pos, int length) throws SQLException;
 
-/**
-  * This method returns the number of bytes in the BLOB.
-  *
-  * @return The number of bytes in the BLOB.
-  *
-  * @exception SQLException If an error occurs.
-  */
-public abstract long
-length() throws SQLException;
+  /**
+   * This method returns a stream that will read the bytes of the BLOB.
+   *
+   * @return A stream that will read the bytes of the BLOB.
+   * @exception SQLException If an error occurs.
+   */
+  public InputStream getBinaryStream() throws SQLException;
 
-/*************************************************************************/
+  /**
+   * This method returns the index into the BLOB at which the first instance
+   * of the specified bytes occur.  The searching starts at the specified
+   * index into the BLOB.
+   *
+   * @param pattern The byte pattern to search for.
+   * @param offset The index into the BLOB to starting searching for the pattern.
+   * @return The offset at which the pattern is first found, or -1 if the
+   *         pattern is not found.
+   * @exception SQLException If an error occurs.
+   */
+  public long position(byte[] pattern, long start) throws SQLException;
 
-/**
-  * This method returns up to the requested bytes of this BLOB as a 
-  * <code>byte</code> array.
-  *
-  * @param offset The index into the BLOB to start returning bytes from.
-  * @param length The requested number of bytes to return.
-  *
-  * @return The requested bytes from the BLOB.
-  *
-  * @exception SQLException If an error occurs.
-  */
-public abstract byte[]
-getBytes(long offset, int length) throws SQLException;
+  /**
+   * This method returns the index into the BLOB at which the first instance
+   * of the specified pattern occurs.  The searching starts at the specified
+   * index into this BLOB.  The bytes in the specified <code>Blob</code> are
+   * used as the search pattern.
+   *
+   * @param pattern The <code>Blob</code> containing the byte pattern to
+   *        search for.
+   * @param offset The index into the BLOB to starting searching for the pattern.
+   * @return The offset at which the pattern is first found, or -1 if the
+   *         pattern is not found.
+   * @exception SQLException If an error occurs.
+   */
+  public long position(Blob pattern, long start) throws SQLException;
 
-/*************************************************************************/
+  /**
+   * @exception SQLException If an error occurs.
+   * @since 1.4
+   */
+  public int setBytes(long pos, byte[] bytes) throws SQLException;
 
-/**
-  * This method returns a stream that will read the bytes of the BLOB.
-  *
-  * @return A stream that will read the bytes of the BLOB.
-  *
-  * @exception SQLException If an error occurs.
-  */
-public abstract InputStream
-getBinaryStream() throws SQLException;
+  /**
+   * @exception SQLException If an error occurs.
+   * @since 1.4
+   */
+  public int setBytes(long pos, byte[] bytes, int offset, int len)
+    throws SQLException;
 
-/*************************************************************************/
+  /**
+   * @exception SQLException If an error occurs.
+   * @since 1.4
+   */
+  public OutputStream setBinaryStream(long pos) throws SQLException;
 
-/**
-  * This method returns the index into the BLOB at which the first instance
-  * of the specified bytes occur.  The searching starts at the specified
-  * index into the BLOB.
-  *
-  * @param pattern The byte pattern to search for.
-  * @param offset The index into the BLOB to starting searching for the pattern.
-  *
-  * @return The offset at which the pattern is first found, or -1 if the
-  * pattern is not found.
-  *
-  * @exception SQLException If an error occurs.
-  */
-public abstract long
-position(byte[] pattern, long offset) throws SQLException;
-
-/*************************************************************************/
-
-/**
-  * This method returns the index into the BLOB at which the first instance
-  * of the specified pattern occurs.  The searching starts at the specified
-  * index into this BLOB.  The bytes in the specified <code>Blob</code> are
-  * used as the search pattern.
-  *
-  * @param pattern The <code>Blob</code> containing the byte pattern to
-  * search for.
-  * @param offset The index into the BLOB to starting searching for the pattern.
-  *
-  * @return The offset at which the pattern is first found, or -1 if the
-  * pattern is not found.
-  *
-  * @exception SQLException If an error occurs.
-  */
-public abstract long
-position(Blob pattern, long offset) throws SQLException;
-
-} // interface Blob
-
+  /**
+   * @exception SQLException If an error occurs.
+   * @since 1.4
+   */
+  public void truncate(long len) throws SQLException;
+}

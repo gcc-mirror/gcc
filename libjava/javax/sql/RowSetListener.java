@@ -1,5 +1,5 @@
-/* DriverPropertyInfo.java -- Property information about drivers.
-   Copyright (C) 1999 Free Software Foundation, Inc.
+/* RowSetListener.java 
+   Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -36,53 +36,27 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 
-package java.sql;
+package javax.sql;
+
+import java.util.EventListener;
 
 /**
- * This class holds a driver property that can be used for querying or
- * setting driver configuration parameters.
- *
- * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @since 1.4
  */
-public class DriverPropertyInfo 
+public interface RowSetListener extends EventListener 
 {
   /**
-   * The name of the property.
+   * @since 1.4
    */
-  public String name;
+  public void rowSetChanged(RowSetEvent event);
 
   /**
-   * A description of the property, possibly <code>null</code>.
+   * @since 1.4
    */
-  public String description;
+  public void rowChanged(RowSetEvent event);
 
   /**
-   * A flag indicating whether or not a value for this property is required
-   * in order to connect to the database.
+   * @since 1.4
    */
-  public boolean required;
-
-  /**
-   * This is the value of the property.
-   */
-  public String value;
-
-  /**
-    * If values are restricted to certain choices, this is the list of valid
-    * ones.  Otherwise it is <code>null</code>.
-    */
-  public String[] choices;
-
-  /**
-   * This method initializes a new instance of <code>DriverPropertyInfo</code>
-   * with the specified name and value.  All other fields are defaulted.
-   *
-   * @param name The name of the property.
-   * @param value The value to assign to the property.
-   */
-  public DriverPropertyInfo(String name, String value)
-  {
-    this.name = name;
-    this.value = value;
-  }
+  public void cursorMoved(RowSetEvent event);
 }

@@ -1,5 +1,5 @@
 /* SQLWarning.java -- Database access warnings.
-   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,120 +39,82 @@ exception statement from your version. */
 package java.sql;
 
 /**
-  * This exception is thrown when a database warning occurs.
-  *
-  * @author Aaron M. Renn (arenn@urbanophile.com)
-  */
-public class SQLWarning extends SQLException
-{
-
-/*************************************************************************/
-
-/**
-  * Static Variables
-  */
-
-/**
-  * This is the serialization UID for this class
-  */
-private static final long serialVersionUID = 3917336774604784856L;
-
-/*************************************************************************/
-
-/*
- * Constructors
+ * This exception is thrown when a database warning occurs.
+ *
+ * @author Aaron M. Renn (arenn@urbanophile.com)
  */
-
-/**
-  * This method initializes a new instance of <code>SQLWarning</code>
-  * that does not have a descriptive messages and SQL state, and which
-  * has a vendor error code of 0.
-  */
-public 
-SQLWarning()
+public class SQLWarning extends SQLException 
 {
-  this(null, null, 0);
+  static final long serialVersionUID = 3917336774604784856L;
+
+  /**
+   * This method initializes a nwe instance of <code>SQLWarning</code>
+   * with the specified descriptive error message, SQL state string, and
+   * vendor code.
+   *
+   * @param message A string describing the nature of the error.
+   * @param SQLState A string containing the SQL state of the error.
+   * @param vendorCode The vendor error code associated with this error.
+   */
+  public SQLWarning(String reason, String SQLState, int vendorCode)
+  {
+    super(reason, SQLState, vendorCode);
+  }
+
+  /**
+   * This method initializes a new instance of <code>SQLWarning</code>
+   * with the specified descriptive error message and SQL state string.
+   * The vendor error code of this instance will be 0.
+   *
+   * @param message A string describing the nature of the error.
+   * @param SQLState A string containing the SQL state of the error.
+   */
+  public SQLWarning(String message, String SQLState)
+  {
+    super(message, SQLState);
+  }
+
+  /**
+   * This method initializes a new instance of <code>SQLWarning</code>
+   * with the specified descriptive error message.  The SQL state of this
+   * instance will be <code>null</code> and the vendor error code will be 0.
+   *
+   * @param message A string describing the nature of the error.
+   */
+  public SQLWarning(String message)
+  {
+    super(message);
+  }
+
+  /**
+   * This method initializes a new instance of <code>SQLWarning</code>
+   * that does not have a descriptive messages and SQL state, and which
+   * has a vendor error code of 0.
+   */
+  public SQLWarning()
+  {
+    super();
+  }
+
+  /**
+   * This method returns the exception that is chained to this object.
+   *
+   * @return The exception chained to this object, which may be 
+   *         <code>null</code>.
+   */
+  public SQLWarning getNextWarning()
+  {
+    return (SQLWarning) super.getNextException();
+  }
+
+  /**
+   * This method adds a new exception to the end of the chain of exceptions
+   * that are chained to this object.
+   *
+   * @param w The exception to add to the end of the chain.
+   */
+  public void setNextWarning(SQLWarning w)
+  {
+    super.setNextException(w);
+  }
 }
-
-/*************************************************************************/
-
-/**
-  * This method initializes a new instance of <code>SQLWarning</code>
-  * with the specified descriptive error message.  The SQL state of this
-  * instance will be <code>null</code> and the vendor error code will be 0.
-  *
-  * @param message A string describing the nature of the error.
-  */
-public 
-SQLWarning(String message)
-{
-  this(message, null, 0);
-}
-
-/*************************************************************************/
-
-/**
-  * This method initializes a new instance of <code>SQLWarning</code>
-  * with the specified descriptive error message and SQL state string.
-  * The vendor error code of this instance will be 0.
-  *
-  * @param message A string describing the nature of the error.
-  * @param SQLState A string containing the SQL state of the error.
-  */
-public
-SQLWarning(String message, String SQLState)
-{
-  this(message, SQLState, 0);
-}
-
-/*************************************************************************/
-
-/**
-  * This method initializes a nwe instance of <code>SQLWarning</code>
-  * with the specified descriptive error message, SQL state string, and
-  * vendor code.
-  *
-  * @param message A string describing the nature of the error.
-  * @param SQLState A string containing the SQL state of the error.
-  * @param vendorCode The vendor error code associated with this error.
-  */
-public
-SQLWarning(String message, String SQLState, int vendorCode)
-{
-  super(message, SQLState, vendorCode);
-}
-
-/*************************************************************************/
-
-/*
- * Instance Methods
- */
-
-/**
-  * This method returns the exception that is chained to this object.
-  *
-  * @return The exception chained to this object, which may be 
-  * <code>null</code>.
-  */
-public SQLWarning
-getNextWarning()
-{
-  return((SQLWarning)super.getNextException());
-}
-
-/*************************************************************************/
-
-/**
-  * This method adds a new exception to the end of the chain of exceptions
-  * that are chained to this object.
-  *
-  * @param e The exception to add to the end of the chain.
-  */
-public void
-setNextWarning(SQLWarning e)
-{
-  super.setNextException(e);
-}
-
-} // class SQLWarning
-

@@ -39,47 +39,34 @@ exception statement from your version. */
 package java.sql;
 
 /**
-  * This interface is used for mapping SQL data to user defined datatypes.
-  *
-  * @author Aaron M. Renn (arenn@urbanophile.com)
-  */
-public interface SQLData
+ * This interface is used for mapping SQL data to user defined datatypes.
+ *
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ */
+public interface SQLData 
 {
+  /**
+   * This method returns the user defined datatype name for this object.
+   *
+   * @return The user defined data type name for this object.
+   * @exception SQLException If an error occurs.
+   */
+  public String getSQLTypeName() throws SQLException;
 
-/**
-  * This method returns the user defined datatype name for this object.
-  *
-  * @return The user defined data type name for this object.
-  *
-  * @exception SQLException If an error occurs.
-  */
-public abstract String
-getSQLTypeName() throws SQLException;
+  /**
+   * This method populates the data in the object from the specified stream.
+   *
+   * @param stream The stream to read the data from.
+   * @param name The data type name of the data on the stream.
+   * @exception SQLException If an error occurs.
+   */
+  public void readSQL(SQLInput stream, String typeName) throws SQLException;
 
-/*************************************************************************/
-
-/**
-  * This method populates the data in the object from the specified stream.
-  *
-  * @param stream The stream to read the data from.
-  * @param name The data type name of the data on the stream.
-  *
-  * @exception SQLException If an error occurs.
-  */
-public abstract void
-readSQL(SQLInput stream, String name) throws SQLException;
-
-/*************************************************************************/
-
-/**
-  * This method writes the data in this object to the specified stream.
-  *
-  * @param stream The stream to write the data to.
-  *
-  * @exception SQLException If an error occurs.
-  */
-public abstract void
-writeSQL(SQLOutput stream) throws SQLException;
-
-} // interface SQLData
-
+  /**
+   * This method writes the data in this object to the specified stream.
+   *
+   * @param stream The stream to write the data to.
+   * @exception SQLException If an error occurs.
+   */
+  public void writeSQL(SQLOutput stream) throws SQLException;
+}

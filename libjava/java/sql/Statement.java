@@ -1,5 +1,5 @@
 /* Statement.java -- Interface for executing SQL statements.
-   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,386 +39,328 @@ exception statement from your version. */
 package java.sql;
 
 /**
-  * This interface provides a mechanism for executing SQL statements.
-  *
-  * @author Aaron M. Renn (arenn@urbanophile.com)
-  */
-public interface Statement
+ * This interface provides a mechanism for executing SQL statements.
+ *
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ */
+public interface Statement 
 {
+  public static final int CLOSE_CURRENT_RESULT = 1;
+  public static final int KEEP_CURRENT_RESULT = 2;
+  public static final int CLOSE_ALL_RESULTS = 3;
+  public static final int SUCCESS_NO_INFO = -2;
+  public static final int EXECUTE_FAILED = -3;
+  public static final int RETURN_GENERATED_KEYS = 1;
+  public static final int NO_GENERATED_KEYS = 2;
 
-/**
-  * This method executes the specified SQL SELECT statement and returns a
-  * (possibly empty) <code>ResultSet</code> with the results of the query.
-  *
-  * @param sql The SQL statement to execute.
-  *
-  * @return The result set of the SQL statement.
-  *
-  * @exception SQLException If an error occurs.
-  */
-public abstract ResultSet
-executeQuery(String sql) throws SQLException;
+  /**
+   * This method executes the specified SQL SELECT statement and returns a
+   * (possibly empty) <code>ResultSet</code> with the results of the query.
+   *
+   * @param sql The SQL statement to execute.
+   * @return The result set of the SQL statement.
+   * @exception SQLException If an error occurs.
+   */
+  public ResultSet executeQuery(String sql) throws SQLException;
 
-/*************************************************************************/
+  /**
+   * This method executes the specified SQL INSERT, UPDATE, or DELETE statement
+   * and returns the number of rows affected, which may be 0.
+   * 
+   * @param sql The SQL statement to execute.
+   * @return The number of rows affected by the SQL statement.
+   * @exception SQLException If an error occurs.
+   */
+  public int executeUpdate(String sql) throws SQLException;
 
-/**
-  * This method executes the specified SQL INSERT, UPDATE, or DELETE statement
-  * and returns the number of rows affected, which may be 0.
-  * 
-  * @param sql The SQL statement to execute.
-  *
-  * @return The number of rows affected by the SQL statement.
-  *
-  * @exception SQLException If an error occurs.
-  */
-public abstract int
-executeUpdate(String sql) throws SQLException;
+  /**
+   * This method closes the statement and frees any associated resources.
+   *
+   * @exception SQLException If an error occurs.
+   */
+  public void close() throws SQLException;
 
-/*************************************************************************/
+  /**
+   * This method returns the maximum length of any column value in bytes.
+   *
+   * @return The maximum length of any column value in bytes.
+   * @exception SQLException If an error occurs.
+   */
+  public int getMaxFieldSize() throws SQLException;
 
-/**
-  * This method closes the statement and frees any associated resources.
-  *
-  * @exception SQLException If an error occurs.
-  */
-public abstract void
-close() throws SQLException;
+  /**
+   * This method sets the limit for the maximum length of any column in bytes.
+   *
+   * @param maxsize The new maximum length of any column in bytes.
+   * @exception SQLException If an error occurs.
+   */
+  public void setMaxFieldSize(int max) throws SQLException;
 
-/*************************************************************************/
+  /**
+   * This method returns the maximum possible number of rows in a result set.
+   *
+   * @return The maximum possible number of rows in a result set.
+   * @exception SQLException If an error occurs.
+   */
+  public int getMaxRows() throws SQLException;
 
-/**
-  * This method returns the maximum length of any column value in bytes.
-  *
-  * @return The maximum length of any column value in bytes.
-  *
-  * @exception SQLException If an error occurs.
-  */
-public abstract int
-getMaxFieldSize() throws SQLException;
+  /**
+   * This method sets the maximum number of rows that can be present in a
+   * result set.
+   *
+   * @param maxrows The maximum possible number of rows in a result set.
+   * @exception SQLException If an error occurs.
+   */
+  public void setMaxRows(int max) throws SQLException;
 
-/*************************************************************************/
+  /**
+   * This method sets the local escape processing mode on or off.  The
+   * default value is on.
+   *
+   * @param escape <code>true</code> to enable local escape processing, 
+   *        <code>false</code> to disable it.
+   * @exception SQLException If an error occurs.
+   */
+  public void setEscapeProcessing(boolean enable) throws SQLException;
 
-/**
-  * This method sets the limit for the maximum length of any column in bytes.
-  *
-  * @param maxsize The new maximum length of any column in bytes.
-  *
-  * @exception SQLException If an error occurs.
-  */
-public abstract void
-setMaxFieldSize(int maxsize) throws SQLException;
+  /**
+   * The method returns the number of seconds a statement may be in process
+   * before timing out.  A value of 0 means there is no timeout.
+   *
+   * @return The SQL statement timeout in seconds.
+   * @exception SQLException If an error occurs.
+   */
+  public int getQueryTimeout() throws SQLException;
 
-/*************************************************************************/
+  /**
+   * This method sets the number of seconds a statement may be in process
+   * before timing out.  A value of 0 means there is no timeout.
+   *
+   * @param timeout The new SQL statement timeout value.
+   * @exception SQLException If an error occurs.
+   */
+  public void setQueryTimeout(int seconds) throws SQLException;
 
-/**
-  * This method returns the maximum possible number of rows in a result set.
-  *
-  * @return The maximum possible number of rows in a result set.
-  *
-  * @exception SQLException If an error occurs.
-  */
-public abstract int
-getMaxRows() throws SQLException;
+  /**
+   * This method cancels an outstanding statement, if the database supports
+   * that operation.
+   *
+   * @exception SQLException If an error occurs.
+   */
+  public void cancel() throws SQLException;
 
-/*************************************************************************/
+  /**
+   * This method returns the first SQL warning attached to this statement.
+   * Subsequent warnings will be chained to this one.
+   *
+   * @return The first SQL warning for this statement.
+   * @exception SQLException If an error occurs.
+   */
+  public SQLWarning getWarnings() throws SQLException;
 
-/**
-  * This method sets the maximum number of rows that can be present in a
-  * result set.
-  *
-  * @param maxrows The maximum possible number of rows in a result set.
-  *
-  * @exception SQLException If an error occurs.
-  */
-public abstract void
-setMaxRows(int maxrows) throws SQLException;
+  /**
+   * This method clears any SQL warnings that have been attached to this
+   * statement.
+   *
+   * @exception SQLException If an error occurs.
+   */
+  public void clearWarnings() throws SQLException;
 
-/*************************************************************************/
+  /**
+   * This method sets the cursor name that will be used by the result set.
+   *
+   * @param name The cursor name to use for this statement.
+   * @exception SQLException If an error occurs.
+   */
+  public void setCursorName(String name) throws SQLException;
 
-/**
-  * This method sets the local escape processing mode on or off.  The
-  * default value is on.
-  *
-  * @param escape <code>true</code> to enable local escape processing, 
-  * <code>false</code> to disable it.
-  *
-  * @exception SQLException If an error occurs.
-  */
-public abstract void
-setEscapeProcessing(boolean esacpe) throws SQLException;
+  /**
+   * This method executes an arbitrary SQL statement of any time.  The
+   * methods <code>getResultSet</code>, <code>getMoreResults</code> and
+   * <code>getUpdateCount</code> retrieve the results.
+   *
+   * @return <code>true</code> if a result set was returned, <code>false</code>
+   *         if an update count was returned.
+   * @exception SQLException If an error occurs.
+   */
+  public boolean execute(String sql) throws SQLException;
 
-/*************************************************************************/
+  /**
+   * This method returns the result set of the SQL statement that was
+   * executed.  This should be called only once per result set returned.
+   *
+   * @return The result set of the query, or <code>null</code> if there was
+   *         no result set (for example, if the statement was an UPDATE).
+   * @exception SQLException If an error occurs.
+   * @see execute
+   */
+  public ResultSet getResultSet() throws SQLException;
 
-/**
-  * The method returns the number of seconds a statement may be in process
-  * before timing out.  A value of 0 means there is no timeout.
-  *
-  * @return The SQL statement timeout in seconds.
-  *
-  * @exception SQLException If an error occurs.
-  */
-public abstract int
-getQueryTimeout() throws SQLException;
+  /**
+   * This method returns the update count of the SQL statement that was
+   * executed.  This should be called only once per executed SQL statement.
+   *
+   * @return The update count of the query, or -1 if there was no update
+   *         count (for example, if the statement was a SELECT).
+   * @exception SQLException If an error occurs.
+   * @see execute
+   */
+  public int getUpdateCount() throws SQLException;
 
-/*************************************************************************/
+  /**
+   * This method advances the result set pointer to the next result set, 
+   * which can then be retrieved using <code>getResultSet</code>
+   *
+   * @return <code>true</code> if there is another result set, 
+   *         <code>false</code> otherwise (for example, the next result is an
+   *         update count).
+   * @exception SQLException If an error occurs.
+   * @see execute
+   */
+  public boolean getMoreResults() throws SQLException;
 
-/**
-  * This method sets the number of seconds a statement may be in process
-  * before timing out.  A value of 0 means there is no timeout.
-  *
-  * @param timeout The new SQL statement timeout value.
-  *
-  * @exception SQLException If an error occurs.
-  */
-public abstract void
-setQueryTimeout(int timeout) throws SQLException;
+  /**
+   * This method informs the driver which direction the result set will
+   * be accessed in.
+   *
+   * @param direction The direction the result set will be accessed in (?????)
+   * @exception SQLException If an error occurs.
+   */
+  public void setFetchDirection(int direction) throws SQLException;
 
-/*************************************************************************/
+  /**
+   * This method returns the current direction that the driver thinks the
+   * result set will be accessed int.
+   *
+   * @return The direction the result set will be accessed in (????)
+   * @exception SQLException If an error occurs.
+   */
+  public int getFetchDirection() throws SQLException;
 
-/**
-  * This method cancels an outstanding statement, if the database supports
-  * that operation.
-  *
-  * @exception SQLException If an error occurs.
-  */
-public abstract void
-cancel() throws SQLException;
+  /**
+   * This method informs the driver how many rows it should fetch from the
+   * database at a time.
+   *
+   * @param numrows The number of rows the driver should fetch at a time
+   *        to populate the result set.
+   * @exception SQLException If an error occurs.
+   */
+  public void setFetchSize(int rows) throws SQLException;
 
-/*************************************************************************/
+  /**
+   * This method returns the number of rows the driver believes should be
+   * fetched from the database at a time.
+   *
+   * @return The number of rows that will be fetched from the database at a time.
+   * @exception SQLException If an error occurs.
+   */
+  public int getFetchSize() throws SQLException;
 
-/**
-  * This method returns the first SQL warning attached to this statement.
-  * Subsequent warnings will be chained to this one.
-  *
-  * @return The first SQL warning for this statement.
-  *
-  * @exception SQLException If an error occurs.
-  */
-public abstract SQLWarning
-getWarnings() throws SQLException;
+  /**
+   * This method returns the concurrency type of the result set for this
+   * statement. This will be one of the concurrency types defined in
+   * <code>ResultSet</code>.
+   *
+   * @return The concurrency type of the result set for this statement.
+   * @exception SQLException If an error occurs.
+   * @see ResultSet
+   */
+  public int getResultSetConcurrency() throws SQLException;
 
-/*************************************************************************/
+  /**
+   * This method returns the result set type for this statement.  This will
+   * be one of the result set types defined in <code>ResultSet</code>.
+   *
+   * @return The result set type for this statement.
+   * @exception SQLException If an error occurs.
+   * @see ResultSet
+   */
+  public int getResultSetType() throws SQLException;
 
-/**
-  * This method clears any SQL warnings that have been attached to this
-  * statement.
-  *
-  * @exception SQLException If an error occurs.
-  */
-public abstract void
-clearWarnings() throws SQLException;
+  /**
+   * This method adds a SQL statement to a SQL batch.  A driver is not
+   * required to implement this method.
+   *
+   * @param sql The sql statement to add to the batch.
+   * @exception SQLException If an error occurs.
+   */
+  public void addBatch(String sql) throws SQLException;
 
-/*************************************************************************/
+  /**
+   * This method clears out any SQL statements that have been populated in
+   * the current batch.  A driver is not required to implement this method.
+   *
+   * @exception SQLException If an error occurs.
+   */
+  public void clearBatch() throws SQLException;
 
-/**
-  * This method sets the cursor name that will be used by the result set.
-  *
-  * @param name The cursor name to use for this statement.
-  *
-  * @exception SQLException If an error occurs.
-  */
-public abstract void
-setCursorName(String name) throws SQLException;
+  /**
+   * This method executes the SQL batch and returns an array of update
+   * counts - one for each SQL statement in the batch - ordered in the same
+   * order the statements were added to the batch.  A driver is not required
+   * to implement this method.
+   *
+   * @return An array of update counts for this batch.
+   * @exception SQLException If an error occurs.
+   */
+  public int[] executeBatch() throws SQLException;
 
-/*************************************************************************/
+  /**
+   * This method returns the <code>Connection</code> instance that was
+   * used to create this object.
+   *
+   * @return The connection used to create this object.
+   * @exception SQLException If an error occurs.
+   */
+  public Connection getConnection() throws SQLException;
 
-/**
-  * This method executes an arbitrary SQL statement of any time.  The
-  * methods <code>getResultSet</code>, <code>getMoreResults</code> and
-  * <code>getUpdateCount</code> retrieve the results.
-  *
-  * @return <code>true</code> if a result set was returned, <code>false</code>
-  * if an update count was returned.
-  *
-  * @exception SQLException If an error occurs.
-  */
-public abstract boolean
-execute(String sql) throws SQLException;
+  /**
+   * @since 1.4
+   */
+  public boolean getMoreResults(int current) throws SQLException;
 
-/*************************************************************************/
+  /**
+   * @since 1.4
+   */
+  public ResultSet getGeneratedKeys() throws SQLException;
 
-/**
-  * This method returns the result set of the SQL statement that was
-  * executed.  This should be called only once per result set returned.
-  *
-  * @return The result set of the query, or <code>null</code> if there was
-  * no result set (for example, if the statement was an UPDATE).
-  *
-  * @exception SQLException If an error occurs.
-  *
-  * @see execute
-  */
-public abstract ResultSet
-getResultSet() throws SQLException;
+  /**
+   * @since 1.4
+   */
+  public int executeUpdate(String sql, int autoGeneratedKeys)
+    throws SQLException;
 
-/*************************************************************************/
+  /**
+   * @since 1.4
+   */
+  public int executeUpdate(String sql, int[] columnIndexes)
+    throws SQLException;
 
-/**
-  * This method returns the update count of the SQL statement that was
-  * executed.  This should be called only once per executed SQL statement.
-  *
-  * @return The update count of the query, or -1 if there was no update
-  * count (for example, if the statement was a SELECT).
-  *
-  * @exception SQLException If an error occurs.
-  *
-  * @see execute
-  */
-public abstract int
-getUpdateCount() throws SQLException;
+  /**
+   * @since 1.4
+   */
+  public int executeUpdate(String sql, String[] columnNames)
+    throws SQLException;
 
-/*************************************************************************/
+  /**
+   * @since 1.4
+   */
+  public boolean execute(String sql, int autoGeneratedKeys)
+    throws SQLException;
 
-/**
-  * This method advances the result set pointer to the next result set, 
-  * which can then be retrieved using <code>getResultSet</code>
-  *
-  * @return <code>true</code> if there is another result set, 
-  * <code>false</code> otherwise (for example, the next result is an
-  * update count).
-  *
-  * @exception SQLException If an error occurs.
-  *
-  * @see execute
-  */
-public abstract boolean
-getMoreResults() throws SQLException;
+  /**
+   * @since 1.4
+   */
+  public boolean execute(String sql, int[] columnIndexes) throws SQLException;
 
-/*************************************************************************/
+  /**
+   * @since 1.4
+   */
+  public boolean execute(String sql, String[] columnNames)
+    throws SQLException;
 
-/**
-  * This method returns the current direction that the driver thinks the
-  * result set will be accessed int.
-  *
-  * @return The direction the result set will be accessed in (????)
-  *
-  * @exception SQLException If an error occurs.
-  */
-public abstract int
-getFetchDirection() throws SQLException;
-
-/*************************************************************************/
-
-/**
-  * This method informs the driver which direction the result set will
-  * be accessed in.
-  *
-  * @param direction The direction the result set will be accessed in (?????)
-  *
-  * @exception SQLException If an error occurs.
-  */
-public abstract void
-setFetchDirection(int direction) throws SQLException;
-  
-/*************************************************************************/
-
-/**
-  * This method returns the number of rows the driver believes should be
-  * fetched from the database at a time.
-  *
-  * @return The number of rows that will be fetched from the database at a time.
-  *
-  * @exception SQLException If an error occurs.
-  */
-public abstract int
-getFetchSize() throws SQLException;
-
-/*************************************************************************/
-
-/**
-  * This method informs the driver how many rows it should fetch from the
-  * database at a time.
-  *
-  * @param numrows The number of rows the driver should fetch at a time
-  * to populate the result set.
-  *
-  * @exception SQLException If an error occurs.
-  */
-public abstract void
-setFetchSize(int numrows) throws SQLException;
-
-/*************************************************************************/
-
-/**
-  * This method returns the concurrency type of the result set for this
-  * statement. This will be one of the concurrency types defined in
-  * <code>ResultSet</code>.
-  *
-  * @return The concurrency type of the result set for this statement.
-  *
-  * @exception SQLException If an error occurs.
-  *
-  * @see ResultSet
-  */
-public abstract int
-getResultSetConcurrency() throws SQLException;
-
-/*************************************************************************/
-
-/**
-  * This method returns the result set type for this statement.  This will
-  * be one of the result set types defined in <code>ResultSet</code>.
-  *
-  * @return The result set type for this statement.
-  *
-  * @exception SQLException If an error occurs.
-  *
-  * @see ResultSet
-  */
-public abstract int
-getResultSetType() throws SQLException;
-
-/*************************************************************************/
-
-/**
-  * This method adds a SQL statement to a SQL batch.  A driver is not
-  * required to implement this method.
-  *
-  * @param sql The sql statement to add to the batch.
-  *
-  * @exception SQLException If an error occurs.
-  */
-public abstract void
-addBatch(String sql) throws SQLException;
-
-/*************************************************************************/
-
-/**
-  * This method clears out any SQL statements that have been populated in
-  * the current batch.  A driver is not required to implement this method.
-  *
-  * @exception SQLException If an error occurs.
-  */
-public abstract void
-clearBatch() throws SQLException;
-
-/*************************************************************************/
-
-/**
-  * This method executes the SQL batch and returns an array of update
-  * counts - one for each SQL statement in the batch - ordered in the same
-  * order the statements were added to the batch.  A driver is not required
-  * to implement this method.
-  *
-  * @return An array of update counts for this batch.
-  *
-  * @exception SQLException If an error occurs.
-  */
-public abstract int[]
-executeBatch() throws SQLException;
-
-/*************************************************************************/
-
-/**
-  * This method returns the <code>Connection</code> instance that was
-  * used to create this object.
-  *
-  * @return The connection used to create this object.
-  *
-  * @exception SQLException If an error occurs.
-  */
-public abstract Connection
-getConnection() throws SQLException;
-
-} // interface Statement
-
+  /**
+   * @since 1.4
+   */
+  public int getResultSetHoldability() throws SQLException;
+}

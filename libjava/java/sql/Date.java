@@ -35,7 +35,6 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package java.sql;
 
 import java.text.SimpleDateFormat;
@@ -46,104 +45,69 @@ import java.text.SimpleDateFormat;
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
   */
-public class Date extends java.util.Date
+public class Date extends java.util.Date 
 {
+  static final long serialVersionUID = 1511598038487230103L;
 
-/*
- * Class Variables
- */
+  /**
+   * Used for parsing and formatting this date.
+   */
+  private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
-/**
-  * Used for parsing and formatting this date.
-  */
-private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+  /**
+   * This method initializes a new instance of this class with the
+   * specified year, month, and day.
+   *
+   * @param year The year of this date minue 1900.
+   * @param month The month of this date (0-11).
+   * @param day The day of this date (1-31).
+   *
+   * @deprecated
+   */
+  public Date(int year, int month, int day)
+  {
+    super(year, month, day);  
+  }
 
-/**
-  * This is the serialization UID for this class.
-  */
-private static final long serialVersionUID = 1511598038487230103L;
+  /**
+   * This method initializes a new instance of this class with the
+   * specified time value representing the number of seconds since 
+   * Jan 1, 1970 at 12:00 midnight GMT.
+   *
+   * @param time The time value to intialize this date to.
+   */
+  public Date(long date)
+  {
+    super(date);
+  }
 
-/*************************************************************************/
+  /**
+   * This method returns a new instance of this class by parsing a
+   * date in JDBC format into a Java date.
+   *
+   * @param str The string to parse.
+   * @return The resulting <code>java.sql.Date</code> value. 
+   */
+  public static Date valueOf(String str)
+  {
+    try
+      {
+	java.util.Date d = (java.util.Date) sdf.parseObject(str);
+	return(new Date(d.getTime()));
+      }
+    catch(Exception e)
+      {
+	return(null);
+      }
+  }
 
-/*
- * Class Methods
- */
-
-/**
-  * This method returns a new instance of this class by parsing a
-  * date in JDBC format into a Java date.
-  *
-  * @param str The string to parse.
-  *
-  * @return The resulting <code>java.sql.Date</code> value. 
-  */
-public static Date
-valueOf(String str)
-{
-  try
-    {
-      java.util.Date d = (java.util.Date)sdf.parseObject(str);
-      return(new Date(d.getTime()));
-    }
-  catch(Exception e)
-    {
-      return(null);
-    }
+  /**
+   * This method returns this date in JDBC format.
+   *
+   * @return This date as a string.
+   */
+  public String toString()
+  {
+    return(sdf.format(this));
+  }
 }
-
-/*************************************************************************/
-
-/*
- * Constructors
- */
-
-/**
-  * This method initializes a new instance of this class with the
-  * specified year, month, and day.
-  *
-  * @param year The year of this date minue 1900.
-  * @param month The month of this date (0-11).
-  * @param day The day of this date (1-31).
-  *
-  * @deprecated
-  */
-public 
-Date(int year, int month, int day)
-{
-  super(year, month, day);
-}
-
-/*************************************************************************/
-
-/**
-  * This method initializes a new instance of this class with the
-  * specified time value representing the number of seconds since 
-  * Jan 1, 1970 at 12:00 midnight GMT.
-  *
-  * @param time The time value to intialize this date to.
-  */
-public
-Date(long date)
-{
-  super(date);
-}
-
-/*************************************************************************/
-
-/*
- * Instance Methods
- */
-
-/**
-  * This method returns this date in JDBC format.
-  *
-  * @return This date as a string.
-  */
-public String
-toString()
-{
-  return(sdf.format(this));
-}
-
-} // class Date
-

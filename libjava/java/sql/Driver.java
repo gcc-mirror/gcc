@@ -35,7 +35,6 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package java.sql;
 
 import java.util.Properties;
@@ -54,95 +53,71 @@ import java.util.Properties;
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
   */
-public interface Driver
+public interface Driver 
 {
+  /**
+   * This method connects to the specified database using the connection
+   * properties supplied.  If the driver does not understand the database
+   * URL, it should return <code>null</code> instead of throwing an
+   * exception since the <code>DriverManager</code> will probe a driver
+   * in this manner.
+   * 
+   * @param url The URL string for this connection.
+   * @param properties The list of database connection properties.
+   * @return A <code>Connection</code> object for the newly established
+   *         connection, or <code>null</code> if the URL is not understood.
+   * @exception SQLException If an error occurs.
+   */
+  public Connection connect(String url, Properties info) throws SQLException;
 
-/**
-  * This method returns the major version number of the driver.
-  *
-  * @return The major version number of the driver.
-  */
-public abstract int
-getMajorVersion();
+  /**
+   * This method tests whether or not the driver believes it can connect to
+   * the specified database.  The driver should only test whether it 
+   * understands and accepts the URL. It should not necessarily attempt to 
+   * probe the database for a connection.
+   *
+   * @param The database URL string.
+   * @return <code>true</code> if the drivers can connect to the database, 
+   *         <code>false</code> otherwise.
+   * @exception SQLException If an error occurs.
+   */
+  public boolean acceptsURL(String url) throws SQLException;
 
-/*************************************************************************/
+   /**
+   * This method returns an array of possible properties that could be
+   * used to connect to the specified database.
+   *
+   * @param url The URL string of the database to connect to.
+   * @param properties The list of properties the caller is planning to use
+   *        to connect to the database.
+   * @return A list of possible additional properties for a connection to this
+   *         database.  This list may be empty.
+   * @exception SQLException If an error occurs.
+   */
+  public DriverPropertyInfo[] getPropertyInfo(String url, Properties properties)
+    throws SQLException;
 
-/**
-  * This method returns the minor version number of the driver.
-  *
-  * @return The minor version number of the driver.
-  */
-public abstract int
-getMinorVersion();
+  /**
+   * This method returns the major version number of the driver.
+   *
+   * @return The major version number of the driver.
+   */      
+  public int getMajorVersion();
 
-/*************************************************************************/
+  /**
+   * This method returns the minor version number of the driver.
+   *
+   * @return The minor version number of the driver.
+   */
+  public int getMinorVersion();
 
-/**
-  * This method tests whether or not the driver is JDBC compliant.  This
-  * method should only return <code>true</code> if the driver has been
-  * certified as JDBC compliant.
-  *
-  * @return <code>true</code> if the driver has been certified JDBC compliant,
-  * <code>false</code> otherwise.
-  */
-public abstract boolean
-jdbcCompliant();
-
-/*************************************************************************/
-
-/**
-  * This method returns an array of possible properties that could be
-  * used to connect to the specified database.
-  *
-  * @param url The URL string of the database to connect to.
-  * @param properties The list of properties the caller is planning to use
-  * to connect to the database.
-  *
-  * @return A list of possible additional properties for a connection to this
-  * database.  This list may be empty.
-  *
-  * @exception SQLException If an error occurs.
-  */
-public abstract DriverPropertyInfo[]
-getPropertyInfo(String url, Properties properties) throws SQLException;
-
-/*************************************************************************/
-
-/**
-  * This method tests whether or not the driver believes it can connect to
-  * the specified database.  The driver should only test whether it 
-  * understands and accepts the URL. It should not necessarily attempt to 
-  * probe the database for a connection.
-  *
-  * @param The database URL string.
-  *
-  * @return <code>true</code> if the drivers can connect to the database, 
-  * <code>false</code> otherwise.
-  *
-  * @exception SQLException If an error occurs.
-  */
-public abstract boolean
-acceptsURL(String url) throws SQLException;
-
-/*************************************************************************/
-
-/**
-  * This method connects to the specified database using the connection
-  * properties supplied.  If the driver does not understand the database
-  * URL, it should return <code>null</code> instead of throwing an
-  * exception since the <code>DriverManager</code> will probe a driver
-  * in this manner.
-  * 
-  * @param url The URL string for this connection.
-  * @param properties The list of database connection properties.
-  *
-  * @return A <code>Connection</code> object for the newly established
-  * connection, or <code>null</code> if the URL is not understood.
-  *
-  * @exception SQLException If an error occurs.
-  */
-public abstract Connection
-connect(String url, Properties properties) throws SQLException;
-
-} // interface Driver
-
+  /**
+   * This method tests whether or not the driver is JDBC compliant.  This
+   * method should only return <code>true</code> if the driver has been
+   * certified as JDBC compliant.
+   *
+   * @return <code>true</code> if the driver has been certified JDBC compliant,
+   *         <code>false</code> otherwise.
+   */
+  public boolean jdbcCompliant();
+}

@@ -1,5 +1,5 @@
 /* BatchUpdateException.java -- Exception for batch oriented SQL errors
-   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,146 +35,107 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package java.sql;
 
 /**
-  * This class extends <code>SQLException</code> to count the successful
-  * updates in each statement in a batch that was successfully updated prior 
-  * to the error.
-  *
-  * @author Aaron M. Renn (arenn@urbanophile.com)
-  */
+ * This class extends <code>SQLException</code> to count the successful
+ * updates in each statement in a batch that was successfully updated prior 
+ * to the error.
+ *
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ */
 public class BatchUpdateException extends SQLException 
 {
+  static final long serialVersionUID = 5977529877145521757L;
 
-/*************************************************************************/
+  /**
+   * This is the array of update counts for the commands which completed
+   * successfully prior to the error.
+   */
+  private int[] updateCounts;
 
-/*
- * Instance Variables
- */
+  /**
+   * This method initializes a new instance of <code>BatchUpdateException</code>
+   * with the specified descriptive error message, SQL state, and update count
+   * information.  The vendor specific error code will be initialized to 0.
+   *
+   * @param message The descriptive error message.
+   * @param SQLState The SQL state information for this error.
+   * @param vendorCode
+   * @param updateCounts The update count information for this error.
+   */
+  public BatchUpdateException(String message, String SQLState, int vendorCode,
+    int[] updateCounts)
+  {
+    super(message, SQLState, vendorCode);
+    this.updateCounts = updateCounts;
+  }
 
-/**
-  * This is the array of update counts for the commands which completed
-  * successfully prior to the error.
-  * @serialized
-  */
-private int[] updateCounts;
+  /**
+   * This method initializes a new instance of <code>BatchUpdateException</code>
+   * with the specified descriptive error message, SQL state, and update count
+   * information.  The vendor specific error code will be initialized to 0.
+   *
+   * @param message The descriptive error message.
+   * @param SQLState The SQL state information for this error.
+   * @param updateCounts The update count information for this error.
+   */
+  public BatchUpdateException(String message, String SQLState,
+    int[] updateCounts)
+  {
+    super(message, SQLState);
+    this.updateCounts = updateCounts;  
+  }
 
-/*************************************************************************/
+  /**
+   * This method initializes a new instance of <code>BatchUpdateException</code>
+   * with the specified descriptive error message and update count information.
+   * The SQL state will be initialized to <code>null</code> and the vendor
+   * specific error code will be initialized to 0.
+   *
+   * @param message The descriptive error message.
+   * @param updateCounts The update count information for this error.
+   */
+  public BatchUpdateException(String message, int[] updateCounts)
+  {
+    super(message);
+    this.updateCounts = updateCounts;
+  }
 
-/*
- * Constructors
- */
+  /**
+   * Initializes a new instance of <code>BatchUpdateException</code>
+   * with the specified update count information and no descriptive error
+   * message.  This SQL state will be initialized to <code>null</code> and
+   * the vendor specific error code will be initialized to 0.
+   *
+   * @param updateCounts The update count array.
+   */
+  public BatchUpdateException(int[] updateCounts)
+  {
+    this.updateCounts = updateCounts;
+  }
 
-/**
-  * This method initializes a new instance of <code>BatchUpdateException</code>
-  * with no descriptive error message.  The SQL state and update count will
-  * be initialized to <code>null</code> and the vendor specific error code will 
-  * initialized to 0.
-  */
-public
-BatchUpdateException()
-{
-  super();
-} 
+  /**
+   * Initializes a new instance of <code>BatchUpdateException</code>
+   * with no descriptive error message.  The SQL state and update count will
+   * be initialized to <code>null</code> and the vendor specific error code will 
+   * initialized to 0.
+   */
+  public BatchUpdateException()
+  {
+    super();
+  }
 
-/*************************************************************************/
-
-/**
-  * This method initializes a new instance of <code>BatchUpdateException</code>
-  * with the specified update count information and no descriptive error
-  * message.  This SQL state will be initialized to <code>null</code> and
-  * the vendor specific error code will be initialized to 0.
-  *
-  * @param updateCounts The update count array.
-  */
-public
-BatchUpdateException(int[] updateCounts)
-{
-  super();
-  
-  this.updateCounts = updateCounts;
+  /**
+   * This method returns the update count information for this error.  If
+   * not <code>null</code> this is an array of <code>int</code>'s that are
+   * the update accounts for each command that was successfully executed.
+   * The array elements are in the order that the commands were executed.
+   *
+   * @return The update count information, which may be <code>null</code>.
+   */
+  public int[] getUpdateCounts()
+  {
+    return updateCounts;
+  }
 }
-
-/*************************************************************************/
-
-/**
-  * This method initializes a new instance of <code>BatchUpdateException</code>
-  * with the specified descriptive error message and update count information.
-  * The SQL state will be initialized to <code>null</code> and the vendor
-  * specific error code will be initialized to 0.
-  *
-  * @param message The descriptive error message.
-  * @param updateCounts The update count information for this error.
-  */
-public
-BatchUpdateException(String message, int[] updateCounts)
-{
-  super(message);
-
-  this.updateCounts = updateCounts;
-}
-
-/*************************************************************************/
-
-/**
-  * This method initializes a new instance of <code>BatchUpdateException</code>
-  * with the specified descriptive error message, SQL state, and update count
-  * information.  The vendor specific error code will be initialized to 0.
-  *
-  * @param message The descriptive error message.
-  * @param SQLState The SQL state information for this error.
-  * @param updateCounts The update count information for this error.
-  */
-public
-BatchUpdateException(String message, String SQLState, int[] updateCounts)
-{
-  super(message, SQLState);
-
-  this.updateCounts = updateCounts;
-}
-
-/*************************************************************************/
-
-/**
-  * This method initializes a new instance of <code>BatchUpdateException</code>
-  * with the specified descriptive error message, SQL state, vendor
-  * specific error code and update count information.
-  *
-  * @param message The descriptive error message.
-  * @param SQLState The SQL state information for this error.
-  * @param vendorCode The vendor specific error code for this error.
-  * @param updateCounts The update count information for this error.
-  */
-public
-BatchUpdateException(String message, String SQLState, int vendorCode,
-                     int[] updateCounts)
-{
-  super(message, SQLState, vendorCode);
-
-  this.updateCounts = updateCounts;
-}
-
-/*************************************************************************/
-
-/*
- * Instance Methods
- */
-
-/**
-  * This method returns the update count information for this error.  If
-  * not <code>null</code> this is an array of <code>int</code>'s that are
-  * the update accounts for each command that was successfully executed.
-  * The array elements are in the order that the commands were executed.
-  *
-  * @return The update count information, which may be <code>null</code>.
-  */
-public int[]
-getUpdateCounts()
-{
-  return(updateCounts);
-}
-
-} // class BatchUpdateException
-
