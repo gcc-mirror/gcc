@@ -23,7 +23,7 @@ public:
 };
 
 void TCRCB::eat () {
- void *vp = (TIRD*)this->itc;
+ void *vp = (void *)((TIRD*)this)->itc;
  this->itc();
 }
 
