@@ -37,6 +37,17 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    Floating-Point Computations", by Seppo Linnainmaa, ACM TOMS vol 7
    no 3, September 1961, pages 272-283.  */
 
+/* Each long double is made up of two IEEE doubles.  The value of the
+   long double is the sum of the values of the two parts.  The most
+   significant part is required to be the value of the long double
+   rounded to the nearest double, as specified by IEEE.  For Inf
+   values, the least significant part is required to be one of +0.0 or
+   -0.0.  No other requirements are made; so, for example, 1.0 may be
+   represented as (1.0, +0.0) or (1.0, -0.0), and the low part of a
+   NaN is don't-care.
+
+   This code currently assumes big-endian.  */
+
 #define fabs(x) __builtin_fabs(x)
 
 #define unlikely(x) __builtin_expect ((x), 0)
@@ -68,11 +79,8 @@ _xlqadd (double a, double b, double c, double d)
   FPR_zero = 0.0;
   FPR_PosInf = FPKINF;
 
-  if (unlikely (a != a) || unlikely (c != c)) {
-    z.dval[0] = a + c;		/* NaN result.	*/
-    z.dval[1] = a + c;		/* NaN result.	*/
-    return z.ldval;
-  }
+  if (unlikely (a != a) || unlikely (c != c)) 
+    return a + c;  /* NaN result.  */
 
   /* Ordered operands are arranged in order of their magnitudes.  */
 
@@ -110,18 +118,14 @@ _xlqadd (double a, double b, double c, double d)
   t = (tau + b) + a;	     /* Sum values in ascending magnitude order.  */
 
   /* Infinite or zero result.  */
-  if (unlikely (fabs (t) == FPR_PosInf) || unlikely (t == FPR_zero))
-    {
-      z.dval[0] = t;
-      z.dval[1] = t >= 0.0 ? (fabs (t) >= 0.0 ? t : 0.0) : -0.0;
-      return z.ldval;
-    }
+  if (unlikely (t == FPR_zero) || unlikely (fabs (t) == FPR_PosInf))
+    return t;
 
   /* Usual case.  */
   tau = (((a-t) + b) + c) + d;
   u = t + tau;
   z.dval[0] = u;	       /* Final fixup for long double result.  */
-  z.dval[1] = (u - t) + tau;
+  z.dval[1] = (t - u) + tau;
   return z.ldval;
 }
 
@@ -142,22 +146,10 @@ _xlqmul (double a, double b, double c, double d)
 
   t = a * c;			/* Highest order double term.  */
 
-  if (unlikely (t != t) || unlikely (t == FPR_zero)) 
-    {
-      /* NaN or zero result.  */
-      z.dval[0] = t;
-      z.dval[1] = t;
-      return z.ldval;
-    }
+  if (unlikely (t != t) || unlikely (t == FPR_zero) 
+      || unlikely (fabs (t) == FPR_PosInf))
+    return t;
 
-  if (unlikely (fabs(t) == FPR_PosInf))
-    {
-      /* Infinite result.  */
-      z.dval[0] = t;
-      z.dval[1] = t >= 0 ? 0.0 : -0.0;
-      return z.ldval;
-    }
-  
   /* Finite nonzero result requires summing of terms of two highest
      orders.	*/
   
@@ -170,7 +162,7 @@ _xlqmul (double a, double b, double c, double d)
 
   /* Construct long double result.  */
   z.dval[0] = u;
-  z.dval[1] = (u - t) + tau;
+  z.dval[1] = (t - u) + tau;
   return z.ldval;
 }
 
@@ -185,21 +177,9 @@ _xlqdiv (double a, double b, double c, double d)
   
   t = a / c;                    /* highest order double term */
   
-  if (unlikely (t != t) || unlikely (t == FPR_zero))
-    {
-      /* NaN or zero result.  */
-      z.dval[0] = t;
-      z.dval[1] = t;
-      return z.ldval;
-    }
-
-  if (unlikely (fabs (t) == FPR_PosInf))
-    {
-      /* Infinite result.  */
-      z.dval[0] = t;
-      z.dval[1] = t >= 0.0 ? 0.0 : -0.0;
-      return z.ldval;
-    }
+  if (unlikely (t != t) || unlikely (t == FPR_zero) 
+      || unlikely (fabs (t) == FPR_PosInf))
+    return t;
 
   /* Finite nonzero result requires corrections to the highest order term.  */
 

@@ -6,6 +6,15 @@
 
 2004-01-09  Geoffrey Keating  <geoffk@apple.com>
 
+	* config/rs6000/darwin-ldouble.c: Add big comment explaining
+	exactly what is expected as a 'long double'.
+	(_xlqadd): When a value to be returned is representable as a
+	'double', just return it directly, do not construct it using a union.
+	Also, correct final fixup.
+	(_xlqmul): Likewise.
+	(_xlqdiv): Likewise.
+	* real.c (encode_ibm_extended): Make consistent with darwin-ldouble.c.
+
 	* config/rs6000/rs6000.md (fix_trunctfdi2): Delete.
 
 2004-01-09  Richard Henderson  <rth@redhat.com>
