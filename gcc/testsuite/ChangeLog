@@ -1,3 +1,8 @@
+2003-11-29  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c/10333
+	* gcc.dg/bitfld-7.c: New test.
+
 2003-11-29  Richard Sandiford  <rsandifo@redhat.com>
 
 	* gcc.dg/tls/asm-1.C: New test.
