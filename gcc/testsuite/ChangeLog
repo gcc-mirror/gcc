@@ -1,3 +1,7 @@
+2005-04-04  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.dg/template/spec23.C: Fix dg-error text.
+
 2005-04-03  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR c++/19199
