@@ -1,5 +1,8 @@
 2001-03-27  Richard Henderson  <rth@redhat.com>
 
+	* stmt.c (expand_return): Remove always true predicate.
+	(expand_decl_cleanup_no_eh): Remove dead code.
+
 	* sched-deps.c (sched_analyze_insn): Consolidate scheduling
 	barrier code.  Add a scheduling barrier if a non-call insn
 	can throw internally.

@@ -2922,7 +2922,6 @@ expand_return (retval)
   rtx result_rtl;
   register rtx val = 0;
   tree retval_rhs;
-  int cleanups;
 
   /* If function wants no value, give it none.  */
   if (TREE_CODE (TREE_TYPE (TREE_TYPE (current_function_decl))) == VOID_TYPE)
@@ -2932,17 +2931,6 @@ expand_return (retval)
       expand_null_return ();
       return;
     }
-
-  /* Are any cleanups needed?  E.g. C++ destructors to be run?  */
-  /* This is not sufficient.  We also need to watch for cleanups of the
-     expression we are about to expand.  Unfortunately, we cannot know
-     if it has cleanups until we expand it, and we want to change how we
-     expand it depending upon if we need cleanups.  We can't win.  */
-#if 0
-  cleanups = any_pending_cleanups (1);
-#else
-  cleanups = 1;
-#endif
 
   if (retval == error_mark_node)
     {
@@ -2962,9 +2950,7 @@ expand_return (retval)
   else
     retval_rhs = NULL_TREE;
 
-  /* Only use `last_insn' if there are cleanups which must be run.  */
-  if (cleanups || cleanup_label != 0)
-    last_insn = get_last_insn ();
+  last_insn = get_last_insn ();
 
   /* Distribute return down conditional expr if either of the sides
      may involve tail recursion (see test below).  This enhances the number
@@ -3108,11 +3094,10 @@ expand_return (retval)
 
       expand_value_return (result_reg);
     }
-  else if (cleanups
-      && retval_rhs != 0
-      && !VOID_TYPE_P (TREE_TYPE (retval_rhs))
-      && (GET_CODE (result_rtl) == REG
-	  || (GET_CODE (result_rtl) == PARALLEL)))
+  else if (retval_rhs != 0
+	   && !VOID_TYPE_P (TREE_TYPE (retval_rhs))
+	   && (GET_CODE (result_rtl) == REG
+	       || (GET_CODE (result_rtl) == PARALLEL)))
     {
       /* Calculate the return value into a temporary (usually a pseudo
          reg).  */
@@ -4121,25 +4106,6 @@ expand_decl_cleanup (decl, cleanup)
     }
   return 1;
 }
-
-/* Like expand_decl_cleanup, but suppress generating an exception handler
-   to perform the cleanup.  */
-
-#if 0
-int
-expand_decl_cleanup_no_eh (decl, cleanup)
-     tree decl, cleanup;
-{
-  int save_eh = using_eh_for_cleanups_p;
-  int result;
-
-  using_eh_for_cleanups_p = 0;
-  result = expand_decl_cleanup (decl, cleanup);
-  using_eh_for_cleanups_p = save_eh;
-
-  return result;
-}
-#endif
 
 /* Arrange for the top element of the dynamic cleanup chain to be
    popped if we exit the current binding contour.  DECL is the
