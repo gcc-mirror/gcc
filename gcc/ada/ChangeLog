@@ -1,5 +1,10 @@
 2001-10-25  Ed Schonberg <schonber@gnat.com>
 
+	* sem_util.adb (Enter_Name): better handling of cascaded error 
+        messages when a unit appears in its own context.
+
+2001-10-25  Ed Schonberg <schonber@gnat.com>
+
 	* sem_util.adb (Defining_Entity): in case of error, attach created 
         entity to specification, so that semantic analysis can proceed.
 
