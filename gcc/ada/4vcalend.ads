@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.3 $                              --
+--                            $Revision: 1.1 $
 --                                                                          --
 -- This specification is adapted from the Ada Reference Manual for use with --
 -- GNAT.  In accordance with the copyright of that document, you can freely --

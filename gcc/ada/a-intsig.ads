@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---                             $Revision: 1.1 $                             --
+--                             $Revision: 1.1.16.1 $
 --                                                                          --
 --              Copyright (C) 2000 Free Software Foundation, Inc.           --
 --                                                                          --

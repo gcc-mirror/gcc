@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --            (Version for IBM Mainframe Packed Decimal Format)             --
 --                                                                          --
---                            $Revision: 1.1 $                              --
+--                            $Revision: 1.1.16.1 $
 --                                                                          --
 --     Copyright (C) 1992,1993,1994,1995 Free Software Foundation, Inc.     --
 --                                                                          --

@@ -7,7 +7,7 @@
 --                                  B o d y                                 --
 --                 (dummy version where polling is not used)                --
 --                                                                          --
---                             $Revision: 1.1 $                             --
+--                             $Revision: 1.1.16.1 $
 --                                                                          --
 --          Copyright (C) 1992-1998, Free Software Foundation, Inc.         --
 --                                                                          --
