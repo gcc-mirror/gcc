@@ -1,3 +1,16 @@
+Tue Jun 12 17:24:07 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* simplify-rtx.c (simplify_subreg): Allow volatile memory
+	to be subregged in case we don't have move instruction.
+
+Tue Jun 12 12:20:12 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* loop.c: Include predict.h
+	(strength_reduce): Drop branch prediction note in case
+	number of iterations is known.
+	* predict.def (PRED_LOOP_ITERATIONS): new.
+	* Makefile.in (loop.o): Add dependancy on predict.h
+
 2001-06-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-decl.c (grokdeclarator): Use INTEGRAL_TYPE_P.
