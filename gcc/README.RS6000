@@ -5,11 +5,18 @@ pseudo-op references symbols in certain sections.  If GCC is invoked with
 the -g debugging option (including during bootstrapping), incorrect object
 files will be produced and the AIX linker will fail with a severe error.
 A fix for APAR IX74254 (64BIT DISASSEMBLED OUPUT FROM COMPILER FAILS TO
-ASSEMBLE/BIND) is available from IBM Customer Support and IBM's
+ASSEMBLE/BIND) is available from IBM Customer Support and from its
 service.boulder.ibm.com website as PTF U453956.
 
 
 			      AIX 4.1 binder
+
+Some versions of the AIX binder (linker) can fail with a relocation
+overflow severe error when the -bbigtoc option is used to link
+GCC-produced object files into an executable that overflows the TOC.
+Linking f771, the GNU Fortran backend, will fail in this manner.  A fix
+for APAR IX75823 (OVERFLOW DURING LINK WHEN USING GCC AND -BBIGTOC) is
+available from IBM Customer Support and from its website as PTF U455193.
 
 Due to changes in the way that GCC invokes the binder (linker) for AIX 4.1,
 the link step now may produce warnings of duplicate symbols which were not
@@ -104,8 +111,7 @@ assembler.
 
 Any customer can order and get the replacement assembler, and install it on
 one or more machines.  It is available on diskette from IBM Customer Support
-and from the IBM Internet fix anonymous ftp server (FixDist) at
-service.boulder.ibm.com (198.17.57.66).
+and from its website.
 
 If you contact IBM Customer Support, they may also ask you for your customer
 number.  If you do not know it, you will still be able to get the fix, but
