@@ -84,7 +84,6 @@
   rtx br_insn = NEXT_INSN (insn);
   RTX_CODE br_code;
 
-  extern int swap_operands;
   if (GET_CODE (br_insn) != JUMP_INSN)
     abort();
   br_code =  GET_CODE (XEXP (XEXP (PATTERN (br_insn), 1), 0));
@@ -201,7 +200,6 @@
   "weird_memory_memory (operands[0], operands[1])"
   "*
 {
-  extern int swap_operands;
   rtx br_insn = NEXT_INSN (insn);
 
   if (GET_CODE (br_insn) != JUMP_INSN)
@@ -272,7 +270,6 @@
   "weird_memory_memory (operands[0], operands[1])"
   "*
 {
-  extern int swap_operands;
   rtx br_insn = NEXT_INSN (insn);
   RTX_CODE br_code;
 
@@ -1207,14 +1204,13 @@
   "movdi_possible (operands)"
   "*
 {
-  extern int swap_operands;
   output_asm_insn (\"# COMBINE movw %1,%0\", operands);
   output_asm_insn (\"# COMBINE movw %3,%2\", operands);
   movdi_possible (operands);
   if (CONSTANT_P (operands[1]))
-    return (swap_operands) ? \"movl %3,%0\" : \"movl %1,%2\";
+    return (swap_operands ? \"movl %3,%0\" : \"movl %1,%2\");
 
-  return (swap_operands) ? \"movl %1,%0\" : \"movl %3,%2\";
+  return (swap_operands ? \"movl %1,%0\" : \"movl %3,%2\");
 }")
 
 ;; Optimize certain tests after memory stores.
