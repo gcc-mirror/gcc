@@ -1,5 +1,5 @@
 /* Configuration for GNU C-compiler for PA-RISC.
-   Copyright (C) 1988 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1995 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com).
 
 This file is part of GNU CC.
@@ -49,6 +49,13 @@ extern int errno;
 
 /* Don't try to use sys_siglist.  */
 #define NO_SYS_SIGLIST
+
+/* We have strerror, don't try to use sys_errlist.  */
+#define HAVE_STRERROR
+
+/* 4.3BSD, OSF1 and Lites on the PA are all derived from NET2 or
+   later code from Berkeley.  */
+#define __BSD_NET2__
 
 /* HP's compiler has problems with enum bitfields.  */
 #define ONLY_INT_FIELDS
