@@ -7200,7 +7200,7 @@ static void
 end_artificial_method_body (mdecl)
      tree mdecl;
 {
-  BLOCK_EXPR_BODY (DECL_FUNCTION_BODY (mdecl)) = exit_blcok ();
+  BLOCK_EXPR_BODY (DECL_FUNCTION_BODY (mdecl)) = exit_block ();
   exit_block ();
 }
 
