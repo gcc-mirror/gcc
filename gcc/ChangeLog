@@ -1,3 +1,11 @@
+2002-10-24  Marek Michalkiewicz  <marekm@amelek.gda.pl>
+
+	* doc/install.texi (avr): Update required binutils version.
+
+2002-10-24  Theodore A. Roth  <troth@openavr.org>
+
+	* doc/install.texi: Point avr users at more up-to-date information.
+
 2002-10-24  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.md (movdi, movsi, movhi, movqi): Add peepholes2
