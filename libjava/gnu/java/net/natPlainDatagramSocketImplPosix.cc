@@ -81,9 +81,9 @@ gnu::java::net::PlainDatagramSocketImpl::create ()
 
   _Jv_platform_close_on_exec (sock);
 
-  // We use fnum in place of fd here.  From leaving fd null we avoid
+  // We use native_fd in place of fd here.  From leaving fd null we avoid
   // the double close problem in FileDescriptor.finalize.
-  fnum = sock;
+  native_fd = sock;
 }
 
 void
@@ -121,20 +121,20 @@ gnu::java::net::PlainDatagramSocketImpl::bind (jint lport,
   else
     throw new ::java::net::SocketException (JvNewStringUTF ("invalid length"));
 
-  if (_Jv_bind (fnum, ptr, len) == 0)
+  if (_Jv_bind (native_fd, ptr, len) == 0)
     {
       socklen_t addrlen = sizeof(u);
 
       if (lport != 0)
         localPort = lport;
-      else if (::getsockname (fnum, (sockaddr*) &u, &addrlen) == 0)
+      else if (::getsockname (native_fd, (sockaddr*) &u, &addrlen) == 0)
         localPort = ntohs (u.address.sin_port);
       else
         goto error;
 
       /* Allow broadcast by default. */
       int broadcast = 1;
-      if (::setsockopt (fnum, SOL_SOCKET, SO_BROADCAST, (char *) &broadcast, 
+      if (::setsockopt (native_fd, SOL_SOCKET, SO_BROADCAST, (char *) &broadcast, 
                         sizeof (broadcast)) != 0)
         goto error;
 
@@ -167,7 +167,7 @@ gnu::java::net::PlainDatagramSocketImpl::peek (::java::net::InetAddress *i)
   union SockAddr u;
   socklen_t addrlen = sizeof(u);
   ssize_t retlen =
-    ::recvfrom (fnum, (char *) NULL, 0, MSG_PEEK, (sockaddr*) &u,
+    ::recvfrom (native_fd, (char *) NULL, 0, MSG_PEEK, (sockaddr*) &u,
       &addrlen);
   if (retlen < 0)
     goto error;
@@ -212,23 +212,23 @@ gnu::java::net::PlainDatagramSocketImpl::peekData (::java::net::DatagramPacket *
   ssize_t retlen = 0;
 
   // Do timeouts via select since SO_RCVTIMEO is not always available.
-  if (timeout > 0 && fnum >= 0 && fnum < FD_SETSIZE)
+  if (timeout > 0 && native_fd >= 0 && native_fd < FD_SETSIZE)
     {
       fd_set rset;
       struct timeval tv;
       FD_ZERO(&rset);
-      FD_SET(fnum, &rset);
+      FD_SET(native_fd, &rset);
       tv.tv_sec = timeout / 1000;
       tv.tv_usec = (timeout % 1000) * 1000;
       int retval;
-      if ((retval = _Jv_select (fnum + 1, &rset, NULL, NULL, &tv)) < 0)
+      if ((retval = _Jv_select (native_fd + 1, &rset, NULL, NULL, &tv)) < 0)
         goto error;
       else if (retval == 0)
         throw new ::java::io::InterruptedIOException ();
     }
 
   retlen =
-    ::recvfrom (fnum, (char *) dbytes, p->getLength(), MSG_PEEK, (sockaddr*) &u,
+    ::recvfrom (native_fd, (char *) dbytes, p->getLength(), MSG_PEEK, (sockaddr*) &u,
       &addrlen);
   if (retlen < 0)
     goto error;
@@ -275,8 +275,8 @@ gnu::java::net::PlainDatagramSocketImpl::close ()
 
   // The method isn't declared to throw anything, so we disregard
   // the return value.
-  _Jv_close (fnum);
-  fnum = -1;
+  _Jv_close (native_fd);
+  native_fd = -1;
   timeout = 0;
 }
 
@@ -310,7 +310,7 @@ gnu::java::net::PlainDatagramSocketImpl::send (::java::net::DatagramPacket *p)
   else
     throw new ::java::net::SocketException (JvNewStringUTF ("invalid length"));
 
-  if (::sendto (fnum, (char *) dbytes, p->getLength(), 0, ptr, len) >= 0)
+  if (::sendto (native_fd, (char *) dbytes, p->getLength(), 0, ptr, len) >= 0)
     return;
 
   char* strerr = strerror (errno);
@@ -331,23 +331,23 @@ gnu::java::net::PlainDatagramSocketImpl::receive (::java::net::DatagramPacket *p
   ssize_t retlen = 0;
 
   // Do timeouts via select since SO_RCVTIMEO is not always available.
-  if (timeout > 0 && fnum >= 0 && fnum < FD_SETSIZE)
+  if (timeout > 0 && native_fd >= 0 && native_fd < FD_SETSIZE)
     {
       fd_set rset;
       struct timeval tv;
       FD_ZERO(&rset);
-      FD_SET(fnum, &rset);
+      FD_SET(native_fd, &rset);
       tv.tv_sec = timeout / 1000;
       tv.tv_usec = (timeout % 1000) * 1000;
       int retval;
-      if ((retval = _Jv_select (fnum + 1, &rset, NULL, NULL, &tv)) < 0)
+      if ((retval = _Jv_select (native_fd + 1, &rset, NULL, NULL, &tv)) < 0)
         goto error;
       else if (retval == 0)
         throw new ::java::io::InterruptedIOException ();
     }
 
   retlen =
-    ::recvfrom (fnum, (char *) dbytes, p->getLength(), 0, (sockaddr*) &u,
+    ::recvfrom (native_fd, (char *) dbytes, p->getLength(), 0, (sockaddr*) &u,
       &addrlen);
   if (retlen < 0)
     goto error;
@@ -392,7 +392,7 @@ gnu::java::net::PlainDatagramSocketImpl::setTimeToLive (jint ttl)
   char val = (char) ttl;
   socklen_t val_len = sizeof(val);
 
-  if (::setsockopt (fnum, IPPROTO_IP, IP_MULTICAST_TTL, &val, val_len) == 0)
+  if (::setsockopt (native_fd, IPPROTO_IP, IP_MULTICAST_TTL, &val, val_len) == 0)
     return;
 
   char* strerr = strerror (errno);
@@ -406,7 +406,7 @@ gnu::java::net::PlainDatagramSocketImpl::getTimeToLive ()
   char val;
   socklen_t val_len = sizeof(val);
 
-  if (::getsockopt (fnum, IPPROTO_IP, IP_MULTICAST_TTL, &val, &val_len) == 0)
+  if (::getsockopt (native_fd, IPPROTO_IP, IP_MULTICAST_TTL, &val, &val_len) == 0)
     return ((int) val) & 0xFF;
 
   char* strerr = strerror (errno);
@@ -466,7 +466,7 @@ gnu::java::net::PlainDatagramSocketImpl::mcastGrp (::java::net::InetAddress *ine
   else
     throw new ::java::net::SocketException (JvNewStringUTF ("invalid length"));
 
-  if (::setsockopt (fnum, level, opname, ptr, len) == 0)
+  if (::setsockopt (native_fd, level, opname, ptr, len) == 0)
     return;
 
   char* strerr = strerror (errno);
@@ -480,7 +480,7 @@ gnu::java::net::PlainDatagramSocketImpl::setOption (jint optID,
   int val;
   socklen_t val_len = sizeof (val);
 
-  if (fnum < 0)
+  if (native_fd < 0)
     throw new ::java::net::SocketException (JvNewStringUTF ("Socket closed"));
 
   if (_Jv_IsInstanceOf (value, &::java::lang::Boolean::class$))
@@ -513,7 +513,7 @@ gnu::java::net::PlainDatagramSocketImpl::setOption (jint optID,
         return;
 
       case _Jv_SO_BROADCAST_ :
-        if (::setsockopt (fnum, SOL_SOCKET, SO_BROADCAST, (char *) &val,
+        if (::setsockopt (native_fd, SOL_SOCKET, SO_BROADCAST, (char *) &val,
                           val_len) != 0)
           goto error;
 	break;
@@ -528,7 +528,7 @@ gnu::java::net::PlainDatagramSocketImpl::setOption (jint optID,
 #if defined(SO_SNDBUF) && defined(SO_RCVBUF)
         int opt;
         optID == _Jv_SO_SNDBUF_ ? opt = SO_SNDBUF : opt = SO_RCVBUF;
-        if (::setsockopt (fnum, SOL_SOCKET, opt, (char *) &val, val_len) != 0)
+        if (::setsockopt (native_fd, SOL_SOCKET, opt, (char *) &val, val_len) != 0)
 	  goto error;    
 #else
         throw new ::java::lang::InternalError (
@@ -537,7 +537,7 @@ gnu::java::net::PlainDatagramSocketImpl::setOption (jint optID,
         return;
       case _Jv_SO_REUSEADDR_ :
 #if defined(SO_REUSEADDR)
-	if (::setsockopt (fnum, SOL_SOCKET, SO_REUSEADDR, (char *) &val,
+	if (::setsockopt (native_fd, SOL_SOCKET, SO_REUSEADDR, (char *) &val,
 	    val_len) != 0)
 	  goto error;
 #else
@@ -583,7 +583,7 @@ gnu::java::net::PlainDatagramSocketImpl::setOption (jint optID,
 	  throw
 	    new ::java::net::SocketException (JvNewStringUTF ("invalid length"));
 
-	if (::setsockopt (fnum, level, opname, ptr, len) != 0)
+	if (::setsockopt (native_fd, level, opname, ptr, len) != 0)
 	  goto error;
         return;
 	
@@ -598,7 +598,7 @@ gnu::java::net::PlainDatagramSocketImpl::setOption (jint optID,
         break;
 	
       case _Jv_IP_TOS_ :
-        if (::setsockopt (fnum, SOL_SOCKET, IP_TOS, (char *) &val,
+        if (::setsockopt (native_fd, SOL_SOCKET, IP_TOS, (char *) &val,
 	   val_len) != 0)
 	  goto error;    
 	return;
@@ -639,7 +639,7 @@ gnu::java::net::PlainDatagramSocketImpl::getOption (jint optID)
         break;
 	
       case _Jv_SO_BROADCAST_ :
-	if (::getsockopt (fnum, SOL_SOCKET, SO_BROADCAST, (char *) &val,
+	if (::getsockopt (native_fd, SOL_SOCKET, SO_BROADCAST, (char *) &val,
 	    &val_len) != 0)
 	  goto error;
 	return new ::java::lang::Boolean (val != 0);
@@ -654,7 +654,7 @@ gnu::java::net::PlainDatagramSocketImpl::getOption (jint optID)
 #if defined(SO_SNDBUF) && defined(SO_RCVBUF)
         int opt;
         optID == _Jv_SO_SNDBUF_ ? opt = SO_SNDBUF : opt = SO_RCVBUF;
-        if (::getsockopt (fnum, SOL_SOCKET, opt, (char *) &val, &val_len) != 0)
+        if (::getsockopt (native_fd, SOL_SOCKET, opt, (char *) &val, &val_len) != 0)
 	  goto error;    
         else
 	  return new ::java::lang::Integer (val);
@@ -668,7 +668,7 @@ gnu::java::net::PlainDatagramSocketImpl::getOption (jint optID)
 	if (localAddress == NULL)
 	  {	
 	    jbyteArray laddr;
-	    if (::getsockname (fnum, (sockaddr*) &u, &addrlen) != 0)
+	    if (::getsockname (native_fd, (sockaddr*) &u, &addrlen) != 0)
 	      goto error;
 	    if (u.address.sin_family == AF_INET)
 	      {
@@ -691,7 +691,7 @@ gnu::java::net::PlainDatagramSocketImpl::getOption (jint optID)
 	break;
       case _Jv_SO_REUSEADDR_ :
 #if defined(SO_REUSEADDR)
-	if (::getsockopt (fnum, SOL_SOCKET, SO_REUSEADDR, (char *) &val,
+	if (::getsockopt (native_fd, SOL_SOCKET, SO_REUSEADDR, (char *) &val,
 	    &val_len) != 0)
 	  goto error;
 	return new ::java::lang::Boolean (val != 0);
@@ -707,7 +707,7 @@ gnu::java::net::PlainDatagramSocketImpl::getOption (jint optID)
 	char *bytes;
 
   	inaddr_len = sizeof(inaddr);
-	if (::getsockopt (fnum, IPPROTO_IP, IP_MULTICAST_IF, (char *) &inaddr,
+	if (::getsockopt (native_fd, IPPROTO_IP, IP_MULTICAST_IF, (char *) &inaddr,
 	    &inaddr_len) != 0)
 	  goto error;
 
@@ -729,13 +729,13 @@ gnu::java::net::PlainDatagramSocketImpl::getOption (jint optID)
         break;
 	
       case _Jv_IP_MULTICAST_LOOP_ :
-	if (::getsockopt (fnum, SOL_SOCKET, IP_MULTICAST_LOOP, (char *) &val,
+	if (::getsockopt (native_fd, SOL_SOCKET, IP_MULTICAST_LOOP, (char *) &val,
 	    &val_len) != 0)
 	  goto error;
 	return new ::java::lang::Boolean (val != 0);
 	
       case _Jv_IP_TOS_ :
-        if (::getsockopt (fnum, SOL_SOCKET, IP_TOS, (char *) &val,
+        if (::getsockopt (native_fd, SOL_SOCKET, IP_TOS, (char *) &val,
            &val_len) != 0)
           goto error;
         return new ::java::lang::Integer (val);
