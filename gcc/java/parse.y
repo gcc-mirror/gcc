@@ -326,8 +326,8 @@ static tree build_dot_class_method_invocation (tree);
 static void create_new_parser_context (int);
 static tree maybe_build_class_init_for_field (tree, tree);
 
-static int attach_init_test_initialization_flags (PTR *, PTR);
-static int emit_test_initialization (PTR *, PTR);
+static int attach_init_test_initialization_flags (void **, void *);
+static int emit_test_initialization (void **, void *);
 
 static char *string_convert_int_cst (tree);
 
@@ -2663,11 +2663,11 @@ create_new_parser_context (copy_from_previous)
   new =  (struct parser_ctxt *) ggc_alloc (sizeof (struct parser_ctxt));
   if (copy_from_previous)
     {
-      memcpy ((PTR)new, (PTR)ctxp, sizeof (struct parser_ctxt));
+      memcpy (new, ctxp, sizeof (struct parser_ctxt));
       new->saved_data_ctx = 1;
     }
   else
-    memset ((PTR) new, 0, sizeof (struct parser_ctxt));
+    memset (new, 0, sizeof (struct parser_ctxt));
 
   new->next = ctxp;
   ctxp = new;
@@ -7035,7 +7035,7 @@ register_package (name)
      tree name;
 {
   static htab_t pht;
-  PTR *e;
+  void **e;
 
   if (pht == NULL)
     pht = htab_create (50, htab_hash_pointer, htab_eq_pointer, NULL);
@@ -16191,8 +16191,8 @@ init_src_parse ()
 
 static int
 attach_init_test_initialization_flags (entry, ptr)
-     PTR *entry;
-     PTR ptr;
+     void **entry;
+     void *ptr;
 {
   tree block = (tree)ptr;
   struct treetreehash_entry *ite = (struct treetreehash_entry *) *entry;
@@ -16213,8 +16213,8 @@ attach_init_test_initialization_flags (entry, ptr)
 
 static int
 emit_test_initialization (entry_p, info)
-     PTR *entry_p;
-     PTR info;
+     void **entry_p;
+     void *info;
 {
   tree l = (tree) info;
   tree decl, init;
