@@ -1,3 +1,7 @@
+Wed Aug  4 02:15:32 1999  Richard Henderson <rth@cygnus.com>
+
+	* jump.c (delete_insn): Delete the addr_vec when deleting a tablejump.
+
 Wed Aug  4 01:08:44 1999  Jeffrey A Law  (law@cygnus.com)
 
         * flow.c (delete_unreachable_blocks): Do not call merge_blocks

@@ -3998,20 +3998,36 @@ delete_insn (insn)
      and delete the label if it is now unused.  */
 
   if (GET_CODE (insn) == JUMP_INSN && JUMP_LABEL (insn))
-    if (--LABEL_NUSES (JUMP_LABEL (insn)) == 0)
-      {
-	/* This can delete NEXT or PREV,
-	   either directly if NEXT is JUMP_LABEL (INSN),
-	   or indirectly through more levels of jumps.  */
-	delete_insn (JUMP_LABEL (insn));
-	/* I feel a little doubtful about this loop,
-	   but I see no clean and sure alternative way
-	   to find the first insn after INSN that is not now deleted.
-	   I hope this works.  */
-	while (next && INSN_DELETED_P (next))
-	  next = NEXT_INSN (next);
-	return next;
-      }
+    {
+      rtx lab = JUMP_LABEL (insn), lab_next;
+
+      if (--LABEL_NUSES (lab) == 0)
+	{
+	  /* This can delete NEXT or PREV,
+	     either directly if NEXT is JUMP_LABEL (INSN),
+	     or indirectly through more levels of jumps.  */
+	  delete_insn (lab);
+
+	  /* I feel a little doubtful about this loop,
+	     but I see no clean and sure alternative way
+	     to find the first insn after INSN that is not now deleted.
+	     I hope this works.  */
+	  while (next && INSN_DELETED_P (next))
+	    next = NEXT_INSN (next);
+	  return next;
+	}
+      else if ((lab_next = next_nonnote_insn (lab)) != NULL
+	       && GET_CODE (lab_next) == JUMP_INSN
+	       && (GET_CODE (PATTERN (lab_next)) == ADDR_VEC
+		   || GET_CODE (PATTERN (lab_next)) == ADDR_DIFF_VEC))
+	{
+	  /* If we're deleting the tablejump, delete the dispatch table.
+	     We may not be able to kill the label immediately preceeding
+	     just yet, as it might be referenced in code leading up to
+	     the tablejump.  */
+	  delete_insn (lab_next);
+	}
+    }
 
   /* Likewise if we're deleting a dispatch table.  */
 
