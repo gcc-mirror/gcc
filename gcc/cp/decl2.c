@@ -3628,7 +3628,8 @@ finish_file ()
     {
       tree decl = VARRAY_TREE (saved_inlines, i);
       
-      if (DECL_NOT_REALLY_EXTERN (decl))
+      if (DECL_NOT_REALLY_EXTERN (decl) && !DECL_COMDAT (decl)
+	  && DECL_INITIAL (decl)) 
 	DECL_EXTERNAL (decl) = 0;
     }
 
@@ -3636,12 +3637,28 @@ finish_file ()
      initialization.  Do that now.  */
   do
     {
-      if (saved_inlines)
-	reconsider 
-	  |= wrapup_global_declarations (&VARRAY_TREE (saved_inlines, 0),
-					 saved_inlines_used);
-      reconsider 
-	= walk_namespaces (wrapup_globals_for_namespace, /*data=*/0);
+      reconsider = 0;
+
+      /* Above, we hung back on weak functions; they will be defined
+	 where they are needed.  But, here we loop again, so that we
+	 output the things that *are* needed.  */
+      for (i = 0; i < saved_inlines_used; ++i)
+	{
+	  tree decl = VARRAY_TREE (saved_inlines, i);
+      
+	  if (DECL_NOT_REALLY_EXTERN (decl)
+	      && DECL_INITIAL (decl)
+	      && TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
+	    DECL_EXTERNAL (decl) = 0;
+	}
+
+      if (saved_inlines_used
+	  && wrapup_global_declarations (&VARRAY_TREE (saved_inlines, 0),
+					 saved_inlines_used))
+	reconsider = 1;
+
+      if (walk_namespaces (wrapup_globals_for_namespace, /*data=*/0))
+	reconsider = 1;
 
       /* Static data members are just like namespace-scope globals.  */
       for (i = 0; i < pending_statics_used; ++i) 
@@ -3653,10 +3670,10 @@ finish_file ()
 	  if (DECL_NOT_REALLY_EXTERN (decl) && ! DECL_IN_AGGR_P (decl))
 	    DECL_EXTERNAL (decl) = 0;
 	}
-      if (pending_statics)
-	reconsider 
-	  |= wrapup_global_declarations (&VARRAY_TREE (pending_statics, 0),
-					 pending_statics_used);
+      if (pending_statics
+	  && wrapup_global_declarations (&VARRAY_TREE (pending_statics, 0),
+					 pending_statics_used))
+	reconsider = 1;
     }
   while (reconsider);
 
