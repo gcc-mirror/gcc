@@ -1253,7 +1253,7 @@ do { fputs (current_function_varargs || current_function_stdarg         \
 #define CAN_DEBUG_WITHOUT_FP 
 
 /* How to renumber registers for dbx and gdb.  */
-extern short pj_debugreg_renumber_vec[];
+extern short pj_debugreg_renumber_vec[FIRST_PSEUDO_REGISTER];
 
 #define DBX_REGISTER_NUMBER(REG) (pj_debugreg_renumber_vec[REG])
 

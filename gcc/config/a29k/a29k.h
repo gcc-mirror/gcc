@@ -1416,7 +1416,7 @@ literal_section ()						\
 
 /* How to renumber registers for dbx and gdb.  */
 
-extern int a29k_debug_reg_map[];
+extern int a29k_debug_reg_map[FIRST_PSEUDO_REGISTER];
 #define DBX_REGISTER_NUMBER(REGNO) a29k_debug_reg_map[REGNO]
 
 /* Switch into a generic section.  */

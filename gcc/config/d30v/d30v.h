@@ -1503,7 +1503,7 @@ enum reg_class
    REGNO.  In general there is more than one such class; choose a class which
    is "minimal", meaning that no smaller class also contains the register.  */
 
-extern enum reg_class regno_reg_class[];
+extern enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
 #define REGNO_REG_CLASS(REGNO) regno_reg_class[ (REGNO) ]
 
 /* A macro whose definition is the name of the class to which a valid base
@@ -1533,7 +1533,7 @@ extern enum reg_class regno_reg_class[];
 	'V', 'X'
 	'g', 'i', 'm', 'n', 'o', 'p', 'r', 's' */
 
-extern enum reg_class reg_class_from_letter[];
+extern enum reg_class reg_class_from_letter[256];
 #define REG_CLASS_FROM_LETTER(CHAR) reg_class_from_letter[(unsigned char)(CHAR)]
 
 /* A C expression which is nonzero if register number NUM is suitable for use

@@ -46,7 +46,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* Externals defined here.  */
 
-const ffebldArity ffebld_arity_op_[]
+const ffebldArity ffebld_arity_op_[(int) FFEBLD_op]
 =
 {
 #define FFEBLD_OP(KWD,NAME,ARITY) ARITY,

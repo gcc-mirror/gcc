@@ -62,8 +62,8 @@ enum section { Init, Normal, Konst, Static };
 #define DATALBL_ARRSIZ 256
 #define JMPLBL_ARRSIZ  256
 #ifndef __datalbl
-extern struct datalabel_array datalbl[];
-extern struct jumplabel_array jmplbl[];
+extern struct datalabel_array datalbl[DATALBL_ARRSIZ];
+extern struct jumplabel_array jmplbl[JMPLBL_ARRSIZ];
 extern int datalbl_ndx, jmplbl_ndx, label_pending, program_counter;
 extern enum section current_section;
 extern const char *const sectname[4];

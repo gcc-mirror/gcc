@@ -651,7 +651,7 @@ extern enum m32r_sdata m32r_sdata;
 ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.  */
-extern unsigned int m32r_hard_regno_mode_ok[];
+extern unsigned int m32r_hard_regno_mode_ok[FIRST_PSEUDO_REGISTER];
 extern unsigned int m32r_mode_class[];
 #define HARD_REGNO_MODE_OK(REGNO, MODE) \
 ((m32r_hard_regno_mode_ok[REGNO] & m32r_mode_class[MODE]) != 0)
@@ -1823,7 +1823,7 @@ do {							\
 
 /* A C expression which evaluates to true if CODE is a valid
    punctuation character for use in the `PRINT_OPERAND' macro.  */
-extern char m32r_punct_chars[];
+extern char m32r_punct_chars[256];
 #define PRINT_OPERAND_PUNCT_VALID_P(CHAR) \
   m32r_punct_chars[(unsigned char) (CHAR)]
 

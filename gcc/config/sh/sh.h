@@ -804,7 +804,7 @@ enum reg_class
    reg number REGNO.  This could be a conditional expression
    or could index an array.  */
 
-extern int regno_reg_class[];
+extern int regno_reg_class[FIRST_PSEUDO_REGISTER];
 #define REGNO_REG_CLASS(REGNO) regno_reg_class[(REGNO)]
 
 /* When defined, the compiler allows registers explicitly used in the
