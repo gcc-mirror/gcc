@@ -2230,31 +2230,31 @@ vec_lde (int a1, const unsigned long *a2)
 /* vec_lvewx */
 
 inline vector float
-vec_lvewx (int a1, const float *a2)
+vec_lvewx (int a1, float *a2)
 {
   return (vector float) __builtin_altivec_lvewx (a1, (void *) a2);
 }
 
 inline vector signed int
-vec_lvewx (int a1, const int *a2)
+vec_lvewx (int a1, int *a2)
 {
   return (vector signed int) __builtin_altivec_lvewx (a1, (void *) a2);
 }
 
 inline vector unsigned int
-vec_lvewx (int a1, const unsigned int *a2)
+vec_lvewx (int a1, unsigned int *a2)
 {
   return (vector unsigned int) __builtin_altivec_lvewx (a1, (void *) a2);
 }
 
 inline vector signed int
-vec_lvewx (int a1, const long *a2)
+vec_lvewx (int a1, long *a2)
 {
   return (vector signed int) __builtin_altivec_lvewx (a1, (void *) a2);
 }
 
 inline vector unsigned int
-vec_lvewx (int a1, const unsigned long *a2)
+vec_lvewx (int a1, unsigned long *a2)
 {
   return (vector unsigned int) __builtin_altivec_lvewx (a1, (void *) a2);
 }
@@ -2262,13 +2262,13 @@ vec_lvewx (int a1, const unsigned long *a2)
 /* vec_lvehx */
 
 inline vector signed short
-vec_lvehx (int a1, const short *a2)
+vec_lvehx (int a1, short *a2)
 {
   return (vector signed short) __builtin_altivec_lvehx (a1, (void *) a2);
 }
 
 inline vector unsigned short
-vec_lvehx (int a1, const unsigned short *a2)
+vec_lvehx (int a1, unsigned short *a2)
 {
   return (vector unsigned short) __builtin_altivec_lvehx (a1, (void *) a2);
 }
@@ -2276,13 +2276,13 @@ vec_lvehx (int a1, const unsigned short *a2)
 /* vec_lvebx */
 
 inline vector signed char
-vec_lvebx (int a1, const signed char *a2)
+vec_lvebx (int a1, signed char *a2)
 {
   return (vector signed char) __builtin_altivec_lvebx (a1, (void *) a2);
 }
 
 inline vector unsigned char
-vec_lvebx (int a1, const int *a2)
+vec_lvebx (int a1, unsigned char *a2)
 {
   return (vector unsigned char) __builtin_altivec_lvebx (a1, (void *) a2);
 }
