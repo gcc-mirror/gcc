@@ -9,6 +9,14 @@
 	* c-decl.c (c_init_decl_processing): Remove useless calls to
 	build_function_type.
 
+	* builtins.c (fold_trunc_transparent_mathfn,
+	fold_fixed_mathfn, fold_builtin_atan, fold_builtin_trunc,
+	fold_builtin_floor, fold_builtin_ceil, fold_builtin_round,
+	fold_builtin_lround, fold_builtin_bitop, fold_builtin_memcpy,
+	fold_builtin_strcpy, fold_builtin_strncpy,
+	fold_builtin_signbit): Use TYPE (TYPE (fndecl)) instead of
+	TREE_TYPE (exp).
+
 2005-03-13  Andy Hutchinson  <HutchinsonAndy@netscape.net>
 
 	PR target/18251
