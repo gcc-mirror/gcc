@@ -1,3 +1,8 @@
+2004-12-01  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/12817
+	* config/rs6000/rs6000.c (rs6000_emit_prologue): Use r0 for vrsave.
+
 2004-11-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* fold-const.c (extract_muldiv_1) <case ABS_EXPR>: If ctype is
