@@ -37,8 +37,7 @@ exception statement from your version. */
 
 package java.rmi.server;
 
-public abstract class RemoteStub
-  extends RemoteObject
+public abstract class RemoteStub extends RemoteObject
 {
   static final long serialVersionUID = -1585587260594494182l;
 
