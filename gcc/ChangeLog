@@ -1,3 +1,8 @@
+2001-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-typeck.c (common_type): push and pop binding level around
+	calling common_type on function parameters.
+
 Mon Feb  5 14:30:37 2001  Christopher Faylor <cgf@cygnus.com>
 
 	* config/i386/cygwin.h (CPP_SPEC): Add missing space after -idirafter.
