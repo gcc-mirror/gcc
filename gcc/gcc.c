@@ -534,14 +534,14 @@ static int n_default_compilers
 /* Have gcc do the search.  */
 /* -u* was put back because both BSD and SysV seem to support it.  */
 static char *link_command_spec = "\
-%{!c:%{!M:%{!MM:%{!E:%{!S:ld %X %l %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} \
+%{!c:%{!M:%{!MM:%{!E:%{!S:ld %l %X %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} \
 			%{r} %{s} %{T*} %{t} %{u*} %{x} %{z}\
 			%{!A:%{!nostdlib:%S}} \
 			%{L*} %D %o %{!nostdlib:libgcc.a%s %L libgcc.a%s %{!A:%E}}\n }}}}}";
 #else
 /* Use -l and have the linker do the search.  */
 static char *link_command_spec = "\
-%{!c:%{!M:%{!MM:%{!E:%{!S:ld %X %l %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} \
+%{!c:%{!M:%{!MM:%{!E:%{!S:ld %l %X %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} \
 			%{r} %{s} %{T*} %{t} %{u*} %{x} %{z}\
 			%{!A:%{!nostdlib:%S}} \
 			%{L*} %D %o %{!nostdlib:-lgcc %L -lgcc %{!A:%E}}\n }}}}}";
@@ -1371,19 +1371,19 @@ pexecute (func, program, argv, not_last)
   FILE *argfile;
   int i;
 
-  scmd = (char *)malloc(strlen(program) + strlen(temp_filename) + 6);
-  sprintf(scmd, "%s @%s.gp", program, temp_filename);
-  argfile = fopen(scmd+strlen(program)+2, "w");
+  scmd = (char *)malloc (strlen (program) + strlen (temp_filename) + 6);
+  sprintf (scmd, "%s @%s.gp", program, temp_filename);
+  argfile = fopen (scmd+strlen (program) + 2, "w");
   if (argfile == 0)
-    pfatal_with_name(scmd+strlen(program)+2);
+    pfatal_with_name (scmd + strlen (program) + 2);
 
   for (i=1; argv[i]; i++)
-    fprintf(argfile, "%s\n", argv[i]);
-  fclose(argfile);
+    fprintf (argfile, "%s\n", argv[i]);
+  fclose (argfile);
 
-  i = system(scmd);
+  i = system (scmd);
 
-  remove(scmd+strlen(program)+2);
+  remove (scmd + strlen (program) + 2);
   return i << 8;
 }
 
@@ -2210,6 +2210,10 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	      {
 		struct prefix_list *pl
 		  = (i == 0 ? library_prefix.plist : startfile_prefix.plist);
+		int bufsize = 100;
+		char *buffer = (char *) xmalloc (bufsize);
+		int idx;
+
 		for (; pl; pl = pl->next)
 		  {
 #ifdef RELATIVE_PREFIX_NOT_LINKDIR
@@ -2230,7 +2234,15 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 			    do_spec_1 (" ", 0, 0);
 #endif
 			    do_spec_1 (pl->prefix, 1, 0);
-			    do_spec_1 (machine_suffix, 1, 0);
+			    /* Remove slash from machine_suffix.  */
+			    if (strlen (machine_suffix) >= bufsize)
+			      bufsize = strlen (machine_suffix) * 2 + 1;
+			    buffer = (char *) xrealloc (buffer, bufsize);
+			    strcpy (buffer, machine_suffix);
+			    idx = strlen (buffer);
+			    if (buffer[idx - 1] == '/')
+			      buffer[idx - 1] = 0;
+			    do_spec_1 (buffer, 1, 0);
 			    /* Make this a separate argument.  */
 			    do_spec_1 (" ", 0, 0);
 			  }
@@ -2243,12 +2255,21 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 #ifdef SPACE_AFTER_L_OPTION
 			    do_spec_1 (" ", 0, 0);
 #endif
-			    do_spec_1 (pl->prefix, 1, 0);
+			    /* Remove slash from pl->prefix.  */
+			    if (strlen (pl->prefix) >= bufsize)
+			      bufsize = strlen (pl->prefix) * 2 + 1;
+			    buffer = (char *) xrealloc (buffer, bufsize);
+			    strcpy (buffer, pl->prefix);
+			    idx = strlen (buffer);
+			    if (buffer[idx - 1] == '/')
+			      buffer[idx - 1] = 0;
+			    do_spec_1 (buffer, 1, 0);
 			    /* Make this a separate argument.  */
 			    do_spec_1 (" ", 0, 0);
 			  }
 		      }
 		  }
+		free (buffer);
 	      }
 	    break;
 
