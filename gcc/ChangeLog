@@ -1,3 +1,17 @@
+2000-08-08  Rodney Brown  <RodneyBrown@mynd.com>
+
+	* alpha/alpha.c (alpha_emit_xfloating_libcall):
+	Use GEN_CALL_VALUE define.
+	* alpha/alpha.md (untyped_call): Use GEN_CALL define.
+	* clipper/clipper.md (untyped_call): Likewise.
+	* dsp16xx/dsp16xx.md (untyped_call): Likewise.
+	* fx80/fx80.md (untyped_call): Likewise.
+	* mips/mips.md (untyped_call): Likewise.
+	* ns32k/ns32k.md (untyped_call): Likewise.
+	* pa/pa.md (untyped_call): Likewise.
+	* romp/romp.md (untyped_call): Likewise.
+	* sparc/sparc.md (untyped_call): Likewise.
+
 2000-08-08  Jason Eckhardt  <jle@cygnus.com>
 
 	* config/i860/i860.c (singlemove_string): Do not generate assembler
