@@ -1,3 +1,7 @@
+2003-02-11  John Leuner  <jewel@debian.org>
+
+	* java/util/zip/ZipInputStream.java: idem
+
 2003-02-11  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/nio/ByteBufferImpl.java:

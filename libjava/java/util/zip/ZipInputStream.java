@@ -1,5 +1,5 @@
 /* java.util.zip.ZipInputStream
-   Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -286,6 +286,8 @@ public class ZipInputStream extends InflaterInputStream implements ZipConstants
    */
   public int read(byte[] b, int off, int len) throws IOException
   {
+    if (len == 0)
+      return 0;
     if (crc == null)
       throw new IOException("Stream closed.");
     if (entry == null)
