@@ -6183,7 +6183,7 @@ contains (insn, vec)
 
 void
 thread_prologue_and_epilogue_insns (f)
-     rtx f;
+     rtx f ATTRIBUTE_UNUSED;
 {
 #ifdef HAVE_prologue
   if (HAVE_prologue)
@@ -6284,7 +6284,7 @@ thread_prologue_and_epilogue_insns (f)
 
 void
 reposition_prologue_and_epilogue_notes (f)
-     rtx f;
+     rtx f ATTRIBUTE_UNUSED;
 {
 #if defined (HAVE_prologue) || defined (HAVE_epilogue)
   /* Reposition the prologue and epilogue notes.  */

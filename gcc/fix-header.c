@@ -397,7 +397,7 @@ lookup_std_proto (name, name_length)
       if (hash_tab[i] == 0)
 	return NULL;
       fn = &std_protos[hash_tab[i]];
-      if (strlen (fn->fname) == name_length
+      if ((int) strlen (fn->fname) == name_length
 	  && strncmp (fn->fname, name, name_length) == 0)
 	return fn;
       i = (i+1) % HASH_SIZE;
@@ -1326,7 +1326,7 @@ main (argc, argv)
 
 void
 cpp_file_line_for_message (pfile, filename, line, column)
-     cpp_reader * pfile;
+     cpp_reader * pfile ATTRIBUTE_UNUSED;
      char *filename;
      int line, column;
 {
@@ -1418,7 +1418,7 @@ fatal VPROTO ((const char *str, ...))
 }
 
 void
-cpp_fatal VPROTO ((cpp_reader * pfile, const char *str, ...))
+cpp_fatal VPROTO ((cpp_reader * pfile ATTRIBUTE_UNUSED, const char *str, ...))
 {
 #ifndef __STDC__
   cpp_reader * pfile;

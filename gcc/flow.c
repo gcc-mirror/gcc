@@ -122,6 +122,7 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "except.h"
 #include "toplev.h"
+#include "recog.h"
 
 #include "obstack.h"
 #define obstack_chunk_alloc xmalloc
@@ -3687,7 +3688,7 @@ void
 sbitmap_copy (dst, src)
      sbitmap dst, src;
 {
-  bcopy (src->elms, dst->elms, sizeof (SBITMAP_ELT_TYPE) * dst->size);
+  bcopy ((PTR) src->elms, (PTR) dst->elms, sizeof (SBITMAP_ELT_TYPE) * dst->size);
 }
 
 /* Zero all elements in a bitmap.  */

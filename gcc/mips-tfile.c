@@ -3472,7 +3472,7 @@ parse_end (start)
     }
 
   /* Get the function name, skipping whitespace.  */
-  for (start_func = start; ISSPACE (*start_func); start_func++)
+  for (start_func = start; ISSPACE ((unsigned char)*start_func); start_func++)
     ;
 
   ch = *start_func;
@@ -3531,7 +3531,7 @@ parse_ent (start)
       return;
     }
 
-  for (start_func = start; ISSPACE (*start_func); start_func++)
+  for (start_func = start; ISSPACE ((unsigned char)*start_func); start_func++)
     ;
 
   ch = *start_func;
@@ -3871,16 +3871,16 @@ parse_input __proto((void))
   while ((p = read_line ()) != (char *) 0)
     {
       /* Skip leading blanks */
-      while (ISSPACE (*p))
+      while (ISSPACE ((unsigned char)*p))
 	p++;
 
       /* See if it's a directive we handle.  If so, dispatch handler.  */
       for (i = 0; i < sizeof (pseudo_ops) / sizeof (pseudo_ops[0]); i++)
 	if (memcmp (p, pseudo_ops[i].name, pseudo_ops[i].len) == 0
-	    && ISSPACE (p[pseudo_ops[i].len]))
+	    && ISSPACE ((unsigned char)(p[pseudo_ops[i].len])))
 	  {
 	    p += pseudo_ops[i].len;	/* skip to first argument */
-	    while (ISSPACE (*p))
+	    while (ISSPACE ((unsigned char)*p))
 	      p++;
 
 	    (*pseudo_ops[i].func)( p );

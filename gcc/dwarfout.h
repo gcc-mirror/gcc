@@ -35,6 +35,8 @@ extern void dwarfout_end_epilogue	PROTO ((void));
 extern void dwarfout_begin_block	PROTO ((unsigned));
 extern void dwarfout_end_block		PROTO ((unsigned));
 
+#ifdef RTX_CODE
 extern void dwarfout_label		PROTO ((rtx));
+#endif
 extern void dwarfout_line		PROTO ((char *, unsigned));
 

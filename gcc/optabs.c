@@ -4034,7 +4034,7 @@ init_libfuncs (optable, first_mode, last_mode, opname, suffix)
       for (q = opname; *q; )
 	*p++ = *q++;
       for (q = mname; *q; q++)
-	*p++ = tolower (*q);
+	*p++ = tolower ((unsigned char)*q);
       *p++ = suffix;
       *p++ = '\0';
       optable->handlers[(int) mode].libfunc

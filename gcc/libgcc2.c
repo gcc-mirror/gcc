@@ -3637,7 +3637,7 @@ next_stack_level (void *pc, frame_state *udata, frame_state *caller_udata)
    If we find one, then we unwind the frames down to the one that
    has the handler and transfer control into the handler.  */
 
-extern void __throw(void) __attribute__ ((__noreturn__));
+/*extern void __throw(void) __attribute__ ((__noreturn__));*/
 
 void
 __throw ()

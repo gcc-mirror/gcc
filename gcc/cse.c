@@ -702,7 +702,7 @@ notreg_cost (x)
 int
 rtx_cost (x, outer_code)
      rtx x;
-     enum rtx_code outer_code;
+     enum rtx_code outer_code ATTRIBUTE_UNUSED;
 {
   register int i, j;
   register enum rtx_code code;

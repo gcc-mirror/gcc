@@ -3447,8 +3447,8 @@ find_rightmost_formals_list (clean_text_p)
 
     while (*end_formals != ')')
       {
-	if (ISSPACE (*end_formals))
-	  while (ISSPACE (*end_formals))
+	if (ISSPACE ((unsigned char)*end_formals))
+	  while (ISSPACE ((unsigned char)*end_formals))
 	    check_source (--end_formals > clean_read_ptr, 0);
 	else
 	  check_source (--end_formals > clean_read_ptr, 0);

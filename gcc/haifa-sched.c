@@ -166,6 +166,7 @@
 #include "insn-attr.h"
 #include "except.h"
 #include "toplev.h"
+#include "recog.h"
 
 extern char *reg_known_equiv_p;
 extern rtx *reg_known_value;
@@ -2858,7 +2859,7 @@ blockage_range (unit, insn)
   unsigned int blockage = INSN_BLOCKAGE (insn);
   unsigned int range;
 
-  if (UNIT_BLOCKED (blockage) != unit + 1)
+  if ((int) UNIT_BLOCKED (blockage) != unit + 1)
     {
       range = function_units[unit].blockage_range_function (insn);
       /* We only cache the blockage range for one unit and then only if

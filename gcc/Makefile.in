@@ -1477,7 +1477,7 @@ loop.o : loop.c $(CONFIG_H) system.h $(RTL_H) flags.h loop.h insn-config.h \
 unroll.o : unroll.c $(CONFIG_H) system.h $(RTL_H) insn-config.h \
    integrate.h $(REGS_H) $(RECOG_H) flags.h $(EXPR_H) loop.h toplev.h
 flow.o : flow.c $(CONFIG_H) system.h $(RTL_H) flags.h insn-config.h \
-   $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h output.h toplev.h
+   $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h output.h toplev.h recog.h
 combine.o : combine.c $(CONFIG_H) system.h $(RTL_H) flags.h  \
    insn-config.h insn-flags.h insn-codes.h insn-attr.h $(REGS_H) $(EXPR_H) \
    $(BASIC_BLOCK_H) $(RECOG_H) real.h hard-reg-set.h toplev.h

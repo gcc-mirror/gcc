@@ -1,3 +1,53 @@
+Sat Oct 17 23:18:08 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (flow.o): Depend on recog.h.
+
+	* cpplib.h (directive_table): Add missing initializiers.
+	(finclude): Change type of variable `bsize' to size_t.
+	
+	* cse.c (rtx_cost): Mark parameter `outer_code' with ATTRIBUTE_UNUSED.
+
+	* dwarfout.h (dwarfout_label): Wrap prototype in macro RTX_CODE.
+
+	* fix-header.c (lookup_std_proto): Cast the result of `strlen' to
+	`int' when comparing against one.
+	(cpp_file_line_for_message): Mark parameter `pfile' with
+	ATTRIBUTE_UNUSED.
+	(cpp_fatal): Mark parameter `pfile' with ATTRIBUTE_UNUSED.
+
+	* flow.c: Include recog.h.
+	(sbitmap_copy): Cast arguments 1 & 2 of `bcopy' to (PTR).
+
+	* function.c (thread_prologue_and_epilogue_insns): Mark parameter
+	`f' with ATTRIBUTE_UNUSED.
+	(reposition_prologue_and_epilogue_notes): Likewise.
+
+	* genopinit.c (gen_insn): Cast argument of ctype functions to
+	`unsigned char'.
+
+	* haifa-sched.c: Include recog.h.
+	(blockage_range): Cast result of UNIT_BLOCKED macro to (int) when
+	comparing against one.
+
+	* libgcc2.a (__throw): Revert ATTRIBUTE_UNUSED change for now.
+
+	* mips-tfile.c (parse_end): Cast the argument of ctype function to
+	`unsigned char'.
+	(parse_ent): Likewise.
+	(parse_input): Likewise.
+
+	* optabs.c (init_libfuncs): Likewise.
+
+	* protoize.c (find_rightmost_formals_list): Likewise.
+
+	* recog.h (const_double_operand): Fix typo in prototype.
+
+	* tlink.c (scan_linker_output): Cast the argument of ctype
+	function to `unsigned char'.
+
+	* toplev.c (check_lang_option): Cast the result of `strlen' to
+	`int' when comparing against one.
+
 Sat Oct 17 13:09:09 1998  Graham  <grahams@rcp.co.uk>
 
 	* gcse.c (dump_cuid_table): Correct typo.
