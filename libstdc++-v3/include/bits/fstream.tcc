@@ -215,7 +215,7 @@ namespace std
 	    {
 	      char* __buf = static_cast<char*>(__builtin_alloca(__buflen));
 	      __elen = _M_file.xsgetn(__buf, __buflen);
-	      
+ 
 	      const char* __eend;
 	      char_type* __iend;
 	      codecvt_base::result __r;
@@ -246,7 +246,15 @@ namespace std
 	      __ret = traits_type::to_int_type(*this->gptr());
 	      if (__bump)
 		this->gbump(1);
-	    }	   	    
+	    }
+	  else if (__elen == 0)
+	    {
+	      // If the actual end of file is reached, set 'uncommitted'
+	      // mode, thus allowing an immediate write without an 
+	      // intervening seek.
+	      _M_set_buffer(-1);
+	      _M_reading = false;
+	    }
 	}
       _M_last_overflowed = false;	
       return __ret;
