@@ -1382,11 +1382,6 @@ typedef struct rs6000_stack {
    + RS6000_VARARGS_AREA						\
    + RS6000_SAVE_AREA)
 
-/* How far (in bytes) is the start of the frame from the stack
-   alignment.  For ppc 32bits, the stack is aligned to 128 bits, but
-   the frame starts 64bits later.  */
-#define STARTING_FRAME_PHASE (TARGET_32BIT ? 8 : 0)
-
 /* Offset from the stack pointer register to an item dynamically
    allocated on the stack, e.g., by `alloca'.
 
