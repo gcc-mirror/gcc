@@ -3,7 +3,7 @@
 
 /* Mostly it's like a Sequent 386 without GAS. */
 
-#include "seq386.h"
+#include "i386/sequent.h"
 
 /* A C statement or statements which output an assembler instruction
    opcode to the stdio stream STREAM.  The macro-operand PTR is a
@@ -37,7 +37,7 @@
    count is in %cl.  Some assemblers require %cl as an argument;
    some don't.
 
-   GAS requires the %cl argument, so override unx386.h. */
+   GAS requires the %cl argument, so override i386/unix.h. */
 
 #undef AS3_SHIFT_DOUBLE
 #define AS3_SHIFT_DOUBLE(a,b,c,d) AS3 (a,b,c,d)
