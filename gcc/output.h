@@ -208,12 +208,6 @@ extern void named_section		PARAMS ((tree, const char *, int));
 /* Tell assembler to switch to the section for function DECL.  */
 extern void function_section		PARAMS ((tree));
 
-/* Tell assembler to switch to the section for the exception table.  */
-extern void default_exception_section	PARAMS ((void));
-
-/* Tell assembler to switch to the section for the EH frames.  */
-extern void default_eh_frame_section	PARAMS ((void));
-
 /* Tell assembler to switch to the section for string merging.  */
 extern void mergeable_string_section	PARAMS ((tree, unsigned HOST_WIDE_INT,
 						 unsigned int));
@@ -461,6 +455,12 @@ extern int profile_label_no;
 
 /* Default target function prologue and epilogue assembler output.  */
 extern void default_function_pro_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
+
+/* Tell assembler to switch to the section for the exception table.  */
+extern void default_exception_section	PARAMS ((void));
+
+/* Tell assembler to switch to the section for the EH frames.  */
+extern void default_eh_frame_section	PARAMS ((void));
 
 /* Default target hook that outputs nothing to a stream.  */
 extern void no_asm_to_stream PARAMS ((FILE *));

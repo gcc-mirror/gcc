@@ -460,7 +460,7 @@ STATIC int __FRAME_END__[]
      __attribute__ ((unused, mode(SI), section(EH_FRAME_SECTION_NAME),
 		     aligned(4)))
      = { 0 };
-#endif /* EH_FRAME_SECTION */
+#endif /* EH_FRAME_SECTION_NAME */
 
 #ifdef JCR_SECTION_NAME
 /* Null terminate the .jcr section array.  */

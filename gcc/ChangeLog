@@ -1,3 +1,13 @@
+2001-10-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* dwarf2out.c (PTR_SIZE, default_eh_frame_section): Move outside
+	of macro guards. Fix #endif comment.
+
+	* output.h (default_exception_section, default_eh_frame_section):
+	Move prototypes outside of macro guard.
+	
+	* crtstuff.c: Fix #endif comment.
+
 Thu Oct 25 12:21:58 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* doc/md.texi (movMM): Clarify semantics of storing into a 
