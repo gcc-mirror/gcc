@@ -10,10 +10,10 @@
 static void cls_ret_uint_fn(ffi_cif* cif,void* resp,void** args,
 			     void* userdata)
  {
-   *(unsigned int*)resp = *(unsigned int *)args[0];
+   *(ffi_arg *)resp = *(unsigned int *)args[0];
 
    printf("%d: %d\n",*(unsigned int *)args[0],
-	  *(unsigned int *)resp);
+	  *(ffi_arg *)resp);
  }
 typedef unsigned int (*cls_ret_uint)(unsigned int);
 
