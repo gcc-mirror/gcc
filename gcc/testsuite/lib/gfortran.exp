@@ -161,6 +161,10 @@ proc gfortran_init { args } {
     global GFORTRAN_UNDER_TEST
     global TESTING_IN_BUILD_TREE
 
+    # We set LC_ALL and LANG to C so that we get the same error messages as expected.
+    setenv LC_ALL C
+    setenv LANG C
+
     if ![info exists GFORTRAN_UNDER_TEST] then {
 	if [info exists TOOL_EXECUTABLE] {
 	    set GFORTRAN_UNDER_TEST $TOOL_EXECUTABLE;

@@ -94,6 +94,10 @@ proc objc_init { args } {
     global TOOL_EXECUTABLE
     global objc_libgcc_s_path
 
+    # We set LC_ALL and LANG to C so that we get the same error messages as expected.
+    setenv LC_ALL C
+    setenv LANG C
+
     if { $objc_initialized == 1 } { return; }
 
     if ![info exists OBJC_UNDER_TEST] then {

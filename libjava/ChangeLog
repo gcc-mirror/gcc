@@ -1,3 +1,8 @@
+2004-11-12  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR other/14264
+	* testsuite/lib/libjava.exp: Set LC_ALL and LANG to C.
+
 2004-11-11  Casey Marshall  <csm@gnu.org>
 
 	* gnu/java/nio/FileLock.java (isValid): locks are valid if the

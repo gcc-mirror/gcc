@@ -1,3 +1,8 @@
+2004-11-12  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR other/14264
+	* testsuite/lib/libstdc++.exp: Set LC_ALL and LANG to C.
+
 2004-11-09  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/locale_facets.tcc (time_get<>::do_get_weekday,

@@ -91,6 +91,12 @@ proc treelang_init { args } {
     global TOOL_EXECUTABLE
     global treelang_libgcc_s_path
 
+
+    # We set LC_ALL and LANG to C so that we get the same error messages as expected.
+    setenv LC_ALL C
+    setenv LANG C
+
+
     if { $treelang_initialized == 1 } { return; }
 
     if ![info exists TREELANG_UNDER_TEST] then {
