@@ -27,7 +27,7 @@
    <li><a href="#4">&quot;Hinting&quot; during insertion</a>
    <li><a href="#5">Bitmasks and string arguments</a>
    <li><a href="#6"><code>std::list::size()</code> is O(n)!</a>
-   <li><a href="#7">Memory management for vectors</a>
+   <li><a href="#7">Space overhead management for vectors</a>
 </ul>
 
 <hr>
@@ -434,17 +434,19 @@
    </p>
 
 <hr>
-<h2><a name="7">Memory management for vectors</h2>
+<h2><a name="7">Space overhead management for vectors</h2>
    <p>In
       <a href="http://gcc.gnu.org/ml/libstdc++/2002-04/msg00105.html">this
       message to the list</a>, Daniel Kostecky announced work on an
       alternate form of <code>std::vector</code> that would support hints
-      about free store management.  The design was also described, along
-      with possible implementation choices.
+      on the number of elements to be over-allocated.  The design was also
+      described, along with possible implementation choices.
    </p>
-   <p>The first alpha release was announced
-      <a href="http://gcc.gnu.org/ml/libstdc++/2002-07/msg00048.html">recently</a>
-      and the releases themselves are available at
+   <p>The first two alpha releases were announced
+      <a href="http://gcc.gnu.org/ml/libstdc++/2002-07/msg00048.html">here</a>
+      and
+      <a href="http://gcc.gnu.org/ml/libstdc++/2002-07/msg00111.html">here</a>.
+      The releases themselves are available at
       <a href="http://www.kotelna.sk/dk/sw/caphint/">
       http://www.kotelna.sk/dk/sw/caphint/</a>.
    </p>

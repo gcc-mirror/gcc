@@ -715,7 +715,7 @@ public:
    *  of a %list this operation can be done in constant time.  You should
    *  consider using push_front(value_type()) instead.
    *
-   *  @note This was deprecated in 3.2 and will be removed in 3.3.  You must
+   *  @note This was deprecated in 3.2 and will be removed in 3.4.  You must
    *        define @c _GLIBCPP_DEPRECATED to make this visible in 3.2; see
    *        c++config.h.
   */
@@ -758,7 +758,7 @@ public:
    *  of a %list this operation can be done in constant time.  You should
    *  consider using push_back(value_type()) instead.
    *
-   *  @note This was deprecated in 3.2 and will be removed in 3.3.  You must
+   *  @note This was deprecated in 3.2 and will be removed in 3.4.  You must
    *        define @c _GLIBCPP_DEPRECATED to make this visible in 3.2; see
    *        c++config.h.
   */
@@ -810,7 +810,7 @@ public:
    *  Due to the nature of a %list this operation can be done in constant
    *  time, and does not invalidate iterators and references.
    *
-   *  @note This was deprecated in 3.2 and will be removed in 3.3.  You must
+   *  @note This was deprecated in 3.2 and will be removed in 3.4.  You must
    *        define @c _GLIBCPP_DEPRECATED to make this visible in 3.2; see
    *        c++config.h.
   */

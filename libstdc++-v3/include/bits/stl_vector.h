@@ -253,7 +253,7 @@ public:
   explicit
   vector(size_type __n)
     : _Base(__n, allocator_type())
-    { _M_finish = uninitialized_fill_n(_M_start, __n, _Tp()); }
+    { _M_finish = uninitialized_fill_n(_M_start, __n, value_type()); }
 
   /**
    *  @brief  %Vector copy constructor.
@@ -489,7 +489,6 @@ public:
   */
   reference
   operator[](size_type __n) { return *(begin() + __n); }
-  // XXX do we need to convert to normal_iterator first?
 
   /**
    *  @brief  Subscript access to the data contained in the %vector.
@@ -545,7 +544,6 @@ public:
   */
   reference
   front() { return *begin(); }
-  // XXX do we need to convert to normal_iterator first?
 
   /**
    *  Returns a read-only (constant) reference to the data at the first
@@ -631,7 +629,7 @@ public:
    *  Note that this kind of operation could be expensive for a vector and if
    *  it is frequently used the user should consider using std::list.
    *
-   *  @note This was deprecated in 3.2 and will be removed in 3.3.  You must
+   *  @note This was deprecated in 3.2 and will be removed in 3.4.  You must
    *        define @c _GLIBCPP_DEPRECATED to make this visible in 3.2; see
    *        c++config.h.
   */
@@ -914,7 +912,7 @@ protected:
 */
 template <typename _Tp, typename _Alloc>
   inline bool
-  operator==(const vector<_Tp, _Alloc>& __x, const vector<_Tp, _Alloc>& __y)
+  operator==(const vector<_Tp,_Alloc>& __x, const vector<_Tp,_Alloc>& __y)
   {
     return __x.size() == __y.size() &&
            equal(__x.begin(), __x.end(), __y.begin());
@@ -933,7 +931,7 @@ template <typename _Tp, typename _Alloc>
 */
 template <typename _Tp, typename _Alloc>
   inline bool
-  operator<(const vector<_Tp, _Alloc>& __x, const vector<_Tp, _Alloc>& __y)
+  operator<(const vector<_Tp,_Alloc>& __x, const vector<_Tp,_Alloc>& __y)
   {
     return lexicographical_compare(__x.begin(), __x.end(),
                                    __y.begin(), __y.end());
@@ -941,40 +939,34 @@ template <typename _Tp, typename _Alloc>
 
 /// Based on operator==
 template <typename _Tp, typename _Alloc>
-inline bool
-operator!=(const vector<_Tp, _Alloc>& __x, const vector<_Tp, _Alloc>& __y) {
-  return !(__x == __y);
-}
+  inline bool
+  operator!=(const vector<_Tp,_Alloc>& __x, const vector<_Tp,_Alloc>& __y)
+  { return !(__x == __y); }
 
 /// Based on operator<
 template <typename _Tp, typename _Alloc>
-inline bool
-operator>(const vector<_Tp, _Alloc>& __x, const vector<_Tp, _Alloc>& __y) {
-  return __y < __x;
-}
+  inline bool
+  operator>(const vector<_Tp,_Alloc>& __x, const vector<_Tp,_Alloc>& __y)
+  { return __y < __x; }
 
 /// Based on operator<
 template <typename _Tp, typename _Alloc>
-inline bool
-operator<=(const vector<_Tp, _Alloc>& __x, const vector<_Tp, _Alloc>& __y) {
-  return !(__y < __x);
-}
+  inline bool
+  operator<=(const vector<_Tp,_Alloc>& __x, const vector<_Tp,_Alloc>& __y)
+  { return !(__y < __x); }
 
 /// Based on operator<
 template <typename _Tp, typename _Alloc>
-inline bool
-operator>=(const vector<_Tp, _Alloc>& __x, const vector<_Tp, _Alloc>& __y) {
-  return !(__x < __y);
-}
+  inline bool
+  operator>=(const vector<_Tp,_Alloc>& __x, const vector<_Tp,_Alloc>& __y)
+  { return !(__x < __y); }
 
 /// See std::vector::swap().
 template <typename _Tp, typename _Alloc>
-inline void swap(vector<_Tp, _Alloc>& __x, vector<_Tp, _Alloc>& __y)
-{
-  __x.swap(__y);
-}
+  inline void
+  swap(vector<_Tp,_Alloc>& __x, vector<_Tp,_Alloc>& __y)
+  { __x.swap(__y); }
 
 } // namespace std
 
 #endif /* __GLIBCPP_INTERNAL_VECTOR_H */
-

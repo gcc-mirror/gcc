@@ -1,3 +1,20 @@
+2002-07-20  Phil Edwards  <pme@gcc.gnu.org>
+
+	* docs/html/abi.txt:  New file.
+	* docs/html/23_containers/howto.html:  Tweak vector-overhead text.
+	* docs/html/ext/lwg-active.html, docs/html/ext/lwg-defects.html:
+	Import from upstream, R22.
+
+	* include/bits/char_traits.h, include/bits/stl_iterator.h,
+	include/bits/stl_iterator_base_types.h, libsupc++/exception,
+	libsupc++/new, libsupc++/typeinfo:  Use @brief markup.
+
+	* include/bits/deque.tcc, include/bits/stl_alloc.h,
+	include/bits/stl_deque.h, include/bits/stl_list.h:  Postpone removal
+	of deprecated functions until 3.4.  (Same timeframe, different text.)
+	* include/bits/stl_vector.h:  Ditto.  Also do the same cleanups that
+	the other sequence classes received.
+
 2002-07-18  Brendan Kehoe  <brendan@zen.org>
 
 	* bits/slice_array.h (_DEFINE_VALARRAY_OPERATOR): Fix typo of

@@ -46,9 +46,13 @@
 
 namespace std 
 {
-  /// 21.1.2 Basis for explicit _Traits specialization 
-  /// NB: That for any given actual character type this definition is
-  /// probably wrong.
+  // 21.1.2
+  /**
+   *  @brief  Basis for explicit traits specializations.
+   *
+   *  @note  For any given actual character type, this definition is
+   *  probably wrong.
+  */
   template<class _CharT>
     struct char_traits
     {

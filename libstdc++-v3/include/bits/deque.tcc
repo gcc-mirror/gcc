@@ -516,7 +516,7 @@ template <typename _Tp, typename _Alloc>
 // Nothing seems to actually use this.  According to the pattern followed by
 // the rest of the SGI code, it would be called by the deprecated insert(pos)
 // function, but that has been replaced.  We'll take our time removing this
-// anyhow; mark for 3.3.  -pme
+// anyhow; mark for 3.4.  -pme
 template <typename _Tp, typename _Alloc>
   typename deque<_Tp,_Alloc>::iterator 
   deque<_Tp,_Alloc>::

@@ -68,13 +68,12 @@
 
 namespace std
 {
-  /**
+  /** @{
    *  @defgroup iterator_tags Iterator Tags
    *  These are empty types, used to distinguish different iterators.  The
    *  distinction is not made by what they contain, but simply by what they
    *  are.  Different underlying algorithms can then be used based on the
    *  different operations supporetd by different iterator types.
-   *  @{
   */
   ///  Marking input iterators.
   struct input_iterator_tag {};
@@ -90,6 +89,8 @@ namespace std
 
 
   /**
+   *  @brief  Common %iterator class.
+   *
    *  This class does nothing but define nested typedefs.  %Iterator classes
    *  can inherit from this class to save some work.  The typedefs are then
    *  used in specializations and overloading.
@@ -98,8 +99,9 @@ namespace std
    *  such as @c operator++ and the like.  (How could there be?)
   */
   template<typename _Category, typename _Tp, typename _Distance = ptrdiff_t,
-	   typename _Pointer = _Tp*, typename _Reference = _Tp&>
-    struct iterator {
+           typename _Pointer = _Tp*, typename _Reference = _Tp&>
+    struct iterator
+    {
       /// One of the @link iterator_tags tag types@endlink.
       typedef _Category  iterator_category;
       /// The type "pointed to" by the iterator.

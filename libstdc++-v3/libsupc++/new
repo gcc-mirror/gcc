@@ -45,7 +45,10 @@ extern "C++" {
 
 namespace std 
 {
-  /** @c bad_alloc (or classes derived from it) is used to report allocation
+  /**
+   *  @brief  Exception possibly thrown by @c new.
+   *
+   *  @c bad_alloc (or classes derived from it) is used to report allocation
    *  errors from the throwing forms of @c new.  */
   class bad_alloc : public exception 
   {
