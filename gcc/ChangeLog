@@ -1,3 +1,7 @@
+Wed May 22 18:25:29 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* c-common.c (cb_register_builtins): Don't indent '#' of #define.
+
 Wed May 22 17:08:48 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* t-sh (LIB2FUNCS_EXTRA): Now embed-bb.c.
