@@ -1,3 +1,8 @@
+2003-02-21  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/8724
+	* g++.dg/expr/dtor1.C: New test.
+
 2003-02-21  Zack Weinberg  <zack@codesourcery.com>
 
 	* gcc.dg/cpp/include3.c: New test.
