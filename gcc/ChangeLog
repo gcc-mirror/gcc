@@ -1,3 +1,10 @@
+2003-07-18  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR optimization/11083
+	* toplev.c (rest_of_handle_addresof): Rename into
+	rest_of_handle_addressof.  Delete unreachable blocks
+	if dead edges were purged after the addressof pass.
+
 2003-07-18  Neil Booth  <neil@daikokuya.co.uk>
 
 	* Makefile.in, configure, configure.in: Remove handling of
