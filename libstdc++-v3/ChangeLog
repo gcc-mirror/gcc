@@ -1,4 +1,9 @@
 2003-12-09  Paolo Carlini  <pcaelini@suse.de>
+	
+	* include/bits/demangle.h (struct implementation_details):
+	Keep in comments the names of the unused parameters.
+
+2003-12-09  Paolo Carlini  <pcaelini@suse.de>
 
 	* include/bits/demangle.h (struct implementation_details):
 	Fix unused parameters warning.
