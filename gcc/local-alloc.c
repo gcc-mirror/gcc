@@ -589,6 +589,7 @@ equiv_init_movable_p (x, regno)
     case SET:
       return equiv_init_movable_p (SET_SRC (x), regno);
 
+    case CC0:
     case CLOBBER:
       return 0;
 

@@ -728,30 +728,34 @@ cb_leave_file (pfile)
 {
   /* Bleah, need a better interface to this.  */
   const char *flags = cpp_syshdr_flags (pfile, CPP_BUFFER (pfile));
-#if 0
-  if (indent_level != input_file_stack->indent_level)
-    {
-      warning_with_file_and_line
-	(input_filename, lex_lineno,
-	 "This file contains more '%c's than '%c's.",
-	 indent_level > input_file_stack->indent_level ? '{' : '}',
-	 indent_level > input_file_stack->indent_level ? '}' : '{');
-    }
-#endif
-  /* We get called for the main buffer, but we mustn't pop it.  */
+
   if (input_file_stack->next)
-    pop_srcloc ();
-  in_system_header = (flags[0] != 0);
-#ifndef NO_IMPLICIT_EXTERN_C
-  if (c_header_level && --c_header_level == 0)
     {
-      if (flags[2] != 0)
-	warning ("badly nested C headers from preprocessor");
-      --pending_lang_change;
-    }
+#ifndef NO_IMPLICIT_EXTERN_C
+      if (c_header_level && --c_header_level == 0)
+	{
+	  if (flags[2] != 0)
+	    warning ("badly nested C headers from preprocessor");
+	  --pending_lang_change;
+	}
 #endif
+#if 0
+      if (indent_level != input_file_stack->indent_level)
+	{
+	  warning_with_file_and_line
+	    (input_filename, lex_lineno,
+	     "This file contains more '%c's than '%c's.",
+	     indent_level > input_file_stack->indent_level ? '{' : '}',
+	     indent_level > input_file_stack->indent_level ? '}' : '{');
+	}
+#endif
+      /* We get called for the main buffer, but we mustn't pop it.  */
+      pop_srcloc ();
+      debug_end_source_file (input_file_stack->line);
+    }
+
+  in_system_header = (flags[0] != 0);
   lex_lineno = CPP_BUFFER (pfile)->lineno;
-  debug_end_source_file (input_file_stack->line);
 
   update_header_times (input_file_stack->name);
   /* Hook for C++.  */

@@ -1096,6 +1096,15 @@ main (argc, argv)
 	*c_ptr++ = obstack_copy0 (&permanent_obstack, q, strlen (q));
       if (strncmp (q, "-shared", sizeof ("-shared") - 1) == 0)
 	shared_obj = 1;
+      if (*q == '-' && q[1] == 'B')
+	{
+	  *c_ptr++ = obstack_copy0 (&permanent_obstack, q, strlen (q));
+	  if (q[2] == 0)
+	    {
+	      q = extract_string (&p);
+	      *c_ptr++ = obstack_copy0 (&permanent_obstack, q, strlen (q));
+	    }
+	}
     }
   obstack_free (&temporary_obstack, temporary_firstobj);
   *c_ptr++ = "-fno-exceptions";

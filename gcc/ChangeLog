@@ -1,3 +1,13 @@
+2000-11-13  Hans-Peter Nilsson  <hp@axis.com>
+
+	* c-lex.c (cb_leave_file): Harmonize conditions and order of
+	statements to those of process_directive for (action == act_pop).
+
+	* collect2.c (main): Pass on -B options from COLLECT_GCC_OPTIONS.
+
+	* local-alloc.c (equiv_init_movable_p): References to CC0 are not
+	movable.
+
 2000-11-13  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-parse.in (stmts_and_decls): Deprecate use of label at end of
