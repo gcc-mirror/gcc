@@ -882,7 +882,7 @@ stmp-multilib: $(LIBGCC1) libgcc2.c libgcc2.ready $(CONFIG_H) \
 	  dir=`echo $$i | sed -e 's/;.*$$//'`; \
 	  flags=`echo $$i | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`; \
 	  $(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
-	    AR="$(AR)" AR_FLAGS="$(AR_FLAGS)" CC="$(CC) CFLAGS=$(CFLAGS) \
+	    AR="$(AR)" AR_FLAGS="$(AR_FLAGS)" CC="$(CC)" CFLAGS="$(CFLAGS)" \
 	    RANLIB="$(RANLIB)" RANLIB_TEST="$(RANLIB_TEST)" \
 	    HOST_PREFIX="$(HOST_PREFIX)" HOST_PREFIX_1="$(HOST_PREFIX_1)" \
 	    LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS) $${flags}" \
@@ -896,7 +896,7 @@ stmp-multilib: $(LIBGCC1) libgcc2.c libgcc2.ready $(CONFIG_H) \
 stmp-multilib-sub:
 	rm -f $(dir)/libgcc.a $(LIBGCC2)
 	$(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
-	  AR="$(AR)" AR_FLAGS="$(AR_FLAGS)" CC="$(CC) CFLAGS=$(CFLAGS) \
+	  AR="$(AR)" AR_FLAGS="$(AR_FLAGS)" CC="$(CC)" CFLAGS="$(CFLAGS)" \
 	  HOST_PREFIX="$(HOST_PREFIX)" HOST_PREFIX_1="$(HOST_PREFIX_1)" \
 	  LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS)" $(LIBGCC2)
 	if [ x$(LIBGCC1) != xlibgcc1-asm.a ]; \
@@ -907,7 +907,7 @@ stmp-multilib-sub:
 	then true; \
 	else \
 	  $(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
-	    AR="$(AR)" AR_FLAGS="$(AR_FLAGS)" CC="$(CC) CFLAGS=$(CFLAGS) \
+	    AR="$(AR)" AR_FLAGS="$(AR_FLAGS)" CC="$(CC)" CFLAGS="$(CFLAGS)" \
 	    HOST_PREFIX="$(HOST_PREFIX)" HOST_PREFIX_1="$(HOST_PREFIX_1)" \
 	    LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS)" $(LIBGCC1); \
 	fi
