@@ -1,3 +1,10 @@
+2003-03-23  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/7086
+	* semantics.c (genrtl_named_return_value): Adjust calls to
+	put_var_into_stack.
+	* typeck.c (cxx_mark_addressable): Likewise.
+	
 2003-03-20  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/6412

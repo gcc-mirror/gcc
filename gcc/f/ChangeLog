@@ -1,3 +1,10 @@
+Sun Mar 23 23:43:45 2003  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/7086
+	* com.c (ffecom_sym_transform_): Adjust calls to
+	put_var_into_stack.
+	(ffe_mark_addressable): Likewise.
+
 2003-03-22  Bud Davis  <bdavis9659@comcast.net>
 
 	* com.c (ffecom_constantunion_with_type): New function.

@@ -1324,12 +1324,16 @@ init_temp_slots ()
   target_temp_slot_level = 0;
 }
 
-/* Retroactively move an auto variable from a register to a stack slot.
-   This is done when an address-reference to the variable is seen.  */
+/* Retroactively move an auto variable from a register to a stack
+   slot.  This is done when an address-reference to the variable is
+   seen.  If RESCAN is true, all previously emitted instructions are
+   examined and modified to handle the fact that DECL is now
+   addressable.  */
 
 void
-put_var_into_stack (decl)
+put_var_into_stack (decl, rescan)
      tree decl;
+     bool rescan;
 {
   rtx reg;
   enum machine_mode promoted_mode, decl_mode;
@@ -1404,7 +1408,7 @@ put_var_into_stack (decl)
 	 to put things in the stack for the sake of setjmp, try to keep it
 	 in a register until we know we actually need the address.  */
       if (can_use_addressof)
-	gen_mem_addressof (reg, decl);
+	gen_mem_addressof (reg, decl, rescan);
       else
 	put_reg_into_stack (function, reg, TREE_TYPE (decl), promoted_mode,
 			    decl_mode, volatilep, 0, usedp, 0);
@@ -1451,7 +1455,7 @@ put_var_into_stack (decl)
       /* Prevent sharing of rtl that might lose.  */
       if (GET_CODE (XEXP (reg, 0)) == PLUS)
 	XEXP (reg, 0) = copy_rtx (XEXP (reg, 0));
-      if (usedp)
+      if (usedp && rescan)
 	{
 	  schedule_fixup_var_refs (function, reg, TREE_TYPE (decl),
 				   promoted_mode, 0);
@@ -2891,15 +2895,19 @@ static int cfa_offset;
 #define ARG_POINTER_CFA_OFFSET(FNDECL) FIRST_PARM_OFFSET (FNDECL)
 #endif
 
-/* Build up a (MEM (ADDRESSOF (REG))) rtx for a register REG that just had its
-   address taken.  DECL is the decl or SAVE_EXPR for the object stored in the
-   register, for later use if we do need to force REG into the stack.  REG is
-   overwritten by the MEM like in put_reg_into_stack.  */
+/* Build up a (MEM (ADDRESSOF (REG))) rtx for a register REG that just
+   had its address taken.  DECL is the decl or SAVE_EXPR for the
+   object stored in the register, for later use if we do need to force
+   REG into the stack.  REG is overwritten by the MEM like in
+   put_reg_into_stack.  RESCAN is true if previously emitted
+   instructions must be rescanned and modified now that the REG has
+   been transformed.  */
 
 rtx
-gen_mem_addressof (reg, decl)
+gen_mem_addressof (reg, decl, rescan)
      rtx reg;
      tree decl;
+     bool rescan;
 {
   rtx r = gen_rtx_ADDRESSOF (Pmode, gen_reg_rtx (GET_MODE (reg)),
 			     REGNO (reg), decl);
@@ -2937,10 +2945,11 @@ gen_mem_addressof (reg, decl)
       if (DECL_P (decl) && decl_rtl == reg)
 	SET_DECL_RTL (decl, reg);
 
-      if (TREE_USED (decl) || (DECL_P (decl) && DECL_INITIAL (decl) != 0))
+      if (rescan 
+	  && (TREE_USED (decl) || (DECL_P (decl) && DECL_INITIAL (decl) != 0)))
 	fixup_var_refs (reg, GET_MODE (reg), TREE_UNSIGNED (type), reg, 0);
     }
-  else
+  else if (rescan)
     fixup_var_refs (reg, GET_MODE (reg), 0, reg, 0);
 
   return reg;
@@ -5023,7 +5032,7 @@ assign_parms (fndecl)
 		 stack.  So, we go back to that sequence, just so that
 		 the fixups will happen.  */
 	      push_to_sequence (conversion_insns);
-	      put_var_into_stack (parm);
+	      put_var_into_stack (parm, /*rescan=*/true);
 	      conversion_insns = get_insns ();
 	      end_sequence ();
 	    }
@@ -5559,7 +5568,7 @@ setjmp_protect (block)
 	    ||
 #endif
 	    ! DECL_REGISTER (decl)))
-      put_var_into_stack (decl);
+      put_var_into_stack (decl, /*rescan=*/true);
   for (sub = BLOCK_SUBBLOCKS (block); sub; sub = TREE_CHAIN (sub))
     setjmp_protect (sub);
 }
@@ -5586,7 +5595,7 @@ setjmp_protect_args ()
 	    ||
 #endif
 	    ! DECL_REGISTER (decl)))
-      put_var_into_stack (decl);
+      put_var_into_stack (decl, /*rescan=*/true);
 }
 
 /* Return the context-pointer register corresponding to DECL,

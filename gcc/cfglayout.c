@@ -460,6 +460,9 @@ fixup_reorder_chain ()
 		      && e_fall->dest == EXIT_BLOCK_PTR))
 		continue;
 
+	      if (!e_taken)
+		e_taken = e_fall;
+
 	      /* There is one special case: if *neither* block is next,
 		 such as happens at the very end of a function, then we'll
 		 need to add a new unconditional jump.  Choose the taken

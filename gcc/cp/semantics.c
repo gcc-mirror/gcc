@@ -1029,7 +1029,7 @@ genrtl_named_return_value ()
 	 the return value.  */
       SET_DECL_RTL (decl, gen_reg_rtx (GET_MODE (DECL_RTL (decl))));
       if (TREE_ADDRESSABLE (decl))
-	put_var_into_stack (decl);
+	put_var_into_stack (decl, /*rescan=*/true);
     }
 
   emit_local_var (decl);
