@@ -1,3 +1,9 @@
+2001-07-20  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cppinit.c (remove_dup_dir): Make static.
+	(remove_dup_dirs): Make static. Only warn about preempting a
+	system directory with a non-system directory.
+
 2001-07-19  Geoffrey Keating  <geoffk@redhat.com>
 
 	* ifcvt.c (noce_try_store_flag_constants): Correct order
