@@ -5,12 +5,12 @@
 # being used in secondary stage builds).  We need to pass
 # the -Wf,-XNg1500 option so the compiler can compile the
 # G++ file cp-parse.c.  Otherwise it complains about
-# too many case statements.  Down with fixed size tables!
+# too many case statements.  The -Olimit is so the user
+# can use -O2.  Down with fixed size tables!
 
 CC		= $(OLDCC)
-OLDCC		= cc -Wf,-XNg1500
-
-X_CFLAGS	= -O1
+OPT		= -O1
+OLDCC		= cc -Wf,-XNg1500 -Olimit 3000 $(OPT)
 
 # The bison output files are machine-indep,
 # so different flags for a particular machine are not useful.
