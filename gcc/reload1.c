@@ -8268,7 +8268,7 @@ reload_cse_simplify_operands (insn)
   n_alternatives = insn_n_alternatives[insn_code_number];
   
   if (n_alternatives == 0 || n_operands == 0)
-    return;
+    return 0;
   insn_extract (insn);
 
   /* Figure out which alternative currently matches.  */
