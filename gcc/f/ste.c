@@ -317,6 +317,17 @@ ffeste_begin_iterdo_ (ffestw block, tree *xtvar, tree *xtincr,
   tvar = ffecom_expr_rw (var);
   tincr = ffecom_expr (incr);
 
+  if (TREE_CODE (tvar) == ERROR_MARK
+      || TREE_CODE (tincr) == ERROR_MARK)
+    {
+      if (block)
+	ffestw_set_do_tvar (block, error_mark_node);
+      else
+	*xtvar = error_mark_node;
+      pop_momentary ();
+      return;
+    }
+
   /* Check whether incr is known to be zero, complain and fix.  */
 
   if (integer_zerop (tincr) || real_zerop (tincr))
@@ -335,6 +346,18 @@ ffeste_begin_iterdo_ (ffestw block, tree *xtvar, tree *xtincr,
 
   tstart = ffecom_expr (start);
   tend = ffecom_expr (end);
+
+  if (TREE_CODE (tstart) == ERROR_MARK
+      || TREE_CODE (tend) == ERROR_MARK)
+    {
+      if (block)
+	ffestw_set_do_tvar (block, error_mark_node);
+      else
+	*xtvar = error_mark_node;
+      pop_momentary ();
+      pop_momentary ();
+      return;
+    }
 
   {				/* For warnings only, nothing else
 				   happens here.  */
@@ -491,6 +514,9 @@ ffeste_end_iterdo_ (tree tvar, tree tincr, tree itersvar)
 {
   tree expr;
   tree niters = itersvar;
+
+  if (tvar == error_mark_node)
+    return;
 
   expand_loop_continue_here ();
 

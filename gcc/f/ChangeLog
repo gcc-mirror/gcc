@@ -1,3 +1,13 @@
+Mon Apr  5 02:11:23 1999  Craig Burley  <craig@jcb-sc.com>
+
+	Fix bugs exposed by configuring with --enable-checking:
+	* com.c (ffecom_do_entry_, ffecom_expr_, ffecom_arg_ptr_to_expr,
+	ffecom_list_expr, ffecom_list_ptr_to_expr, finish_function,
+	pop_f_function_context, store_parm_decls, poplevel): Handle
+	error_mark_node properly.
+	* ste.c (ffeste_begin_iterdo_, ffeste_end_iterdo_): Ditto.
+	* version.c: Bump version.
+
 Sat Apr  3 23:57:56 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* g77.texi: Fix up docs for -fset-g77-defaults, and
