@@ -4241,9 +4241,14 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, width)
       /* Actual typedefs come to us as TYPE_DECL nodes.  */
       else if (TREE_CODE (id) == TYPE_DECL)
 	{
-	  type = TREE_TYPE (id);
-	  decl_attr = DECL_ATTRIBUTES (id);
-	  typedef_decl = id;
+	  if (TREE_TYPE (id) == error_mark_node)
+	    ; /* Allow the type to default to int to avoid cascading errors.  */
+	  else
+	    {
+	      type = TREE_TYPE (id);
+	      decl_attr = DECL_ATTRIBUTES (id);
+	      typedef_decl = id;
+	    }
 	}
       /* Built-in types come as identifiers.  */
       else if (TREE_CODE (id) == IDENTIFIER_NODE)
