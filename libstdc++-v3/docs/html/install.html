@@ -31,12 +31,16 @@
 <!-- ####################################################### -->
 <hr />
 <h2>Contents</h2>
+
+<p>Because libstdc++-v3 is part of GCC, the primary source for
+   installation instructions is
+   <a href="http://gcc.gnu.org/install/">the GCC install page</a>.
+   Additional data is given here only where it applies to libstdc++-v3.
+</p>
+
 <ul>
    <li><a href="#prereqs">Tools you will need beforehand</a></li>
-   <li><a href="#srcsetup">Setting up the source directories</a></li>
    <li><a href="#config">Configuring</a></li>
-   <li><a href="#install">Building and installing the library</a></li>
-   <li><a href="#postinstall">Post-installation</a></li>
    <li><a href="#usage">Using the library</a></li>
 </ul>
 
@@ -45,52 +49,24 @@
 <!-- ####################################################### -->
 
 <h2><a name="prereqs">Tools you will need beforehand</a></h2>
-   <p>You will need a recent version of g++ to compile the snapshot of
-      libstdc++, such as one of the GCC 3.x snapshots (insert standard
-      caveat about using snapshots rather than formal releases).  You will
-      need the full source distribution to whatever compiler release you are
-      using.  The GCC snapshots can be had from one of the sites on their
-      <a href="http://gcc.gnu.org/mirrors.html">mirror list</a>.
-   </p>
-
-   <p>In addition, if you plan to modify the makefiles or regenerate the
-      configure scripts you'll need recent versions of the GNU Autotools:
-      autoconf (version 2.57 or later) and
-      automake (version 1.7.6 or later),
-      in order to rebuild the files.  Libtool is built from special sources
-      in the GCC source tree.
-      These tools are all required to be installed in the same location
-      (most linux distributions install these tools by default, so no
-      worries as long as the versions are correct).
-   </p>
-
-   <p>To test your build, you will need either DejaGNU 1.4 (to run
-      <code>'make check'</code> like
-      <a href="http://gcc.gnu.org/install/test.html">the rest of GCC</a>),
-      or Bash 2.x (to run <code>'make check-script'</code>).
+   <p>The list of software needed to build the library is kept with the
+      rest of the compiler, at
+      <a href="http://gcc.gnu.org/install/prerequisites.html">
+      http://gcc.gnu.org/install/prerequisites.html</a>.  The same page
+      also lists the tools you will need if you wish to modify the source.
    </p>
 
    <p>As of June 19, 2000, libstdc++ attempts to use tricky and
       space-saving features of the GNU toolchain, enabled with
-      <code>-ffunction-sections -fdata-sections
-      -Wl,--gc-sections</code>.  To obtain maximum benefit from this,
-      binutils after this date should also be used (bugs were fixed
-      with C++ exception handling related to this change in
-      libstdc++-v3).  The version of these tools should be
-      <code>2.10.90</code>, or later, and you can get snapshots (as
+      <code>-ffunction-sections -fdata-sections -Wl,--gc-sections</code>.
+      To obtain maximum benefit from this, binutils after this date should
+      also be used (bugs were fixed with C++ exception handling related
+      to this change in libstdc++-v3).  The version of these tools should
+      be <code>2.10.90</code>, or later, and you can get snapshots (as
       well as releases) of binutils
       <a href="ftp://sources.redhat.com/pub/binutils">here</a>. The
-      configure process will automatically detect and use these
-      features if the underlying support is present.
-   </p>
-
-   <p>If you are using a 3.1-series libstdc++ snapshot, then the
-      requirements are slightly more stringent: the compiler sources
-      must also be 3.1 or later (for both technical and licensing
-      reasons), and your binutils must be 2.11.95 or later if you want
-      to use symbol versioning in shared libraries. Again, the
-      configure process will automatically detect and use these
-      features if the underlying support is present.
+      configure process will automatically detect and use these features
+      if the underlying support is present.
    </p>
 
    <p>Finally, a few system-specific requirements: </p>
@@ -125,9 +101,12 @@ en_US.UTF-8         UTF-8
 es_MX               ISO-8859-1
 fr_FR               ISO-8859-1
 fr_FR@euro          ISO-8859-15
+is_IS               UTF-8
 it_IT               ISO-8859-1
 ja_JP.eucjp         EUC-JP
 se_NO.UTF-8         UTF-8
+ta_IN               UTF-8
+zh_TW               BIG5
 </pre>
       <p>Failure to have the underlying "C" library locale
       information installed will mean that C++ named locales for the
@@ -174,66 +153,6 @@ se_NO.UTF-8         UTF-8
 
 <hr />
 
-<h2><a name="srcsetup">Setting up the source directories</a></h2>
-   <p>The following definitions will be used throughout the rest of this
-      document:
-   </p>
-      <ul>
-         <li><em>gccsrcdir</em>:  The directory holding the source of the
-                 compiler.  It should have several subdirectories like
-                 <em>gccsrcdir</em>/libiberty and <em>gccsrcdir</em>/gcc.
-         </li>
-         <li><em>libsrcdir</em>:  The directory holding the source of the
-                 C++ library.
-         </li>
-         <li><em>gccbuilddir</em>:  The build directory for the compiler
-                 in <em>gccsrcdir</em>.  GCC requires that it be built in
-                 a different directory than its sources.
-         </li>
-         <li><em>libbuilddir</em>:  The build directory for libstdc++.
-         </li>
-         <li><em>destdir</em>:  The eventual installation directory for
-                 the compiler/libraries, set with the --prefix option to
-                 the configure script.
-         </li>
-      </ul>
-      <p> Note: </p>
-      <ol>
-         <li>The 3.0 version and following are intended to replace the
-             library that comes with the compiler, so <em>libsrcdir</em>
-             and <em>libbuilddir</em> must be contained under
-             <em>gccsrcdir</em> and <em>gccbuilddir</em>, respectively.
-         </li>
-         <li>The source, build, and installation directories should
-             not be parents of one another; i.e., these should all be
-             separate directories. Please don't build out of the
-             source directory.
-         </li>
-      </ol>
-
-   <p>Check out or download the GCC sources: the resulting source directory
-      (<code>gcc</code> or <code>gcc-3.0.3</code>, for example) is
-      <em>gccsrcdir</em>.
-      Once in <em>gccsrcdir</em>, you'll need to rename or delete the
-      libstdc++-v3 directory which comes with that snapshot:
-   </p>
-   <pre>
-   mv libstdc++-v3 libstdc++-v3-previous  <strong>[OR]</strong>
-   rm -r libstdc++-v3</pre>
-   <p>Next, unpack the libstdc++-v3 library tarball into this
-      <em>gccsrcdir</em> directory; it will create a
-      <em>libsrcdir</em> called <code>libstdc++-<em>version</em></code>:
-   </p>
-   <pre>
-   gzip -dc libstdc++-version.tar.gz | tar xf -</pre>
-   <p>Finally, rename <em>libsrcdir</em> to <code>libstdc++-v3</code> so that
-      gcc's configure flags will be able to deal with the new library.
-   </p>
-   <pre>
-   mv <em>libsrcdir</em> libstdc++-v3</pre>
-
-
-<hr />
 <h2><a name="config">Configuring</a></h2>
    <p>If you have never done this before, you should read the basic
       <a href="http://gcc.gnu.org/install/">GCC Installation
@@ -253,63 +172,6 @@ se_NO.UTF-8         UTF-8
    cd <em>gccbuilddir</em>
    <em>gccsrcdir</em>/configure --prefix=<em>destdir</em> --other-opts...</pre>
 
-
-<hr />
-<h2><a name="install">Building and installing the library</a></h2>
-   <p>Now you have a few options:</p>
-   <h3>[re]building <em>everything</em></h3>
-   <p>If you're building GCC from scratch, you can do the usual
-      <code> 'make bootstrap' </code> here, and libstdc++-v3 will be built
-      as its default C++ library.  The generated g++ will magically
-      use the correct headers, link against the correct library
-      binary, and in general using libstdc++-v3 will be a piece of
-      cake.  You're done; run <code>'make install'</code> (see the GCC
-      installation instructions) to put the new compiler and libraries
-      into place.
-   </p>
-
-   <h3>[re]building only libstdc++</h3>
-   <p>To rebuild just libstdc++, use: </p>
-   <pre>
-   make all-target-libstdc++-v3</pre>
-   <p>
-      This will configure and build the C++ library in the
-      <em>gccbuilddir/cpu-vendor-os/</em>libstdc++ directory.
-   </p>
-   <p>If you are rebuilding from a previous build [attempt], some
-      information is kept in a cache file.  This is stored in
-      <em>gccbuilddir/cpu-vendor-os/</em> if you are building with
-      multilibs (the default), or in
-      <em>gccbuilddir/cpu-vendor-os/</em>libstdc++-v3 if you have
-      multilibs disabled.  The filename is config.cache; if previous
-      information is causing problems, you can delete it entirely, or
-      simply edit it and remove lines.
-   </p>
-   <p>You're done.  Now install the rebuilt pieces with</p>
-   <pre>
-   make install</pre>
-   <p>or</p>
-   <pre>
-   make install-gcc
-   make install-target-libstdc++-v3</pre>
-
-
-<hr />
-<h2><a name="postinstall">Post-installation</a></h2>
-   <p>Installation will create the <em>destdir</em> directory and
-      populate it with subdirectories:
-   </p>
-   <pre>
-   lib/
-   include/c++/<em>gcc-version</em>
-      backward/
-      bits/
-      <em>cpu-vendor-os</em>/bits/
-      ext/</pre>
-   <p>If you used the version-specific-libs configure option, then most of
-      the headers and library files will be moved under
-      <code>lib/gcc-lib/</code> instead.
-   </p>
 
 <hr />
 <h2><a name="usage">Using the library</a></h2>
