@@ -25,6 +25,7 @@ Boston, MA 02111-1307, USA.  */
 #include "c-tree.h"
 #include "flags.h"
 #include "obstack.h"
+#include "toplev.h"
 
 #ifndef WCHAR_TYPE_SIZE
 #ifdef INT_TYPE_SIZE

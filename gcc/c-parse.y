@@ -64,6 +64,7 @@ State 434 contains 2 shift/reduce conflicts.  (Four ways to parse this.)  */
 #include "c-tree.h"
 #include "flags.h"
 #include "output.h"
+#include "toplev.h"
 
 #ifdef MULTIBYTE_CHARS
 #include <locale.h>

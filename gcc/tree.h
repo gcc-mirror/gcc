@@ -2106,34 +2106,6 @@ extern void make_decl_rtl		PROTO ((tree, char *, int));
 extern void make_decl_one_only		PROTO ((tree));
 extern void variable_section		PROTO ((tree, int));
 
-/* toplev.c */
-extern void print_time			PROTO ((char *, int));
-extern int get_run_time			PROTO ((void));
-extern void debug_start_source_file	PROTO ((char *));
-extern void debug_end_source_file	PROTO ((unsigned));
-extern void debug_define		PROTO ((unsigned, char *));
-extern void debug_undef			PROTO ((unsigned, char *));
-extern void rest_of_decl_compilation	PROTO ((tree, char *, int, int));
-extern void rest_of_type_compilation	PROTO ((tree, int));
-extern void rest_of_compilation		PROTO ((tree));
-extern void fatal			PVPROTO ((char *, ...));
-extern void fatal_io_error		PROTO ((char *));
-#if 0
-extern void warning			PVPROTO ((char *, ...));
-extern void error			PVPROTO ((char *, ...));
-#endif
-extern void pedwarn			PVPROTO ((char *, ...));
-extern void pedwarn_with_decl		PVPROTO ((tree, char *, ...));
-extern void pedwarn_with_file_and_line	PVPROTO ((char *, int, char *, ...));
-extern void warning_with_file_and_line	PVPROTO ((char *, int, char *, ...));
-extern void warning_with_decl		PVPROTO ((tree, char *, ...));
-extern void error_with_decl		PVPROTO ((tree, char *, ...));
-extern void error_with_file_and_line	PVPROTO ((char *, int, char *, ...));
-extern void sorry			PVPROTO ((char *s, ...));
-extern void default_print_error_function PROTO ((char *));
-extern void report_error_function	PROTO ((char *));
-extern void announce_function		PROTO ((tree));
-
 /* In fold-const.c */
 extern int div_and_round_double		PROTO ((enum tree_code, int,
 						HOST_WIDE_INT, HOST_WIDE_INT,

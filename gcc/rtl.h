@@ -1294,22 +1294,6 @@ extern rtx expand_mult_highpart		PROTO ((enum machine_mode, rtx,
 						unsigned HOST_WIDE_INT, rtx,
 						int, int));
 
-/* In toplev.c */
-extern void strip_off_ending		PROTO ((char *, int));
-extern void print_time			PROTO ((char *, int));
-extern int get_run_time			PROTO ((void));
-#if 0
-extern void fatal			PVPROTO ((char *, ...));
-extern void warning			PVPROTO ((char *, ...));
-extern void error			PVPROTO ((char *, ...));
-#endif
-extern void pfatal_with_name		PROTO ((char *));
-extern void fancy_abort			PROTO ((void));
-extern int count_error			PROTO ((int));
-extern void pedwarn			PVPROTO ((char *, ...));
-extern void warning_for_asm		PVPROTO ((rtx, char *, ...));
-extern void error_for_asm		PVPROTO ((rtx, char *, ...));
-
 /* In global.c */
 #ifdef BUFSIZ
 extern int global_alloc			PROTO ((FILE *));
