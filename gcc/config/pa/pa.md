@@ -4697,6 +4697,44 @@
   [(set_attr "type" "branch")
    (set_attr "length" "4")])
 
+;;; EH does longjmp's from and within the data section.  Thus,
+;;; an interspace branch is required for the longjmp implementation.
+;;; Registers r1 and r2 are not saved in the jmpbuf environment.
+;;; Thus, they can be used as scratch registers for the jump.
+(define_insn "interspace_jump"
+  [(set (pc) (match_operand:SI 0 "register_operand" "a"))
+  (clobber (reg:SI 2))]
+  ""
+  "ldsid (%%sr0,%0),%%r2\; mtsp %%r2,%%sr0\; be%* 0(%%sr0,%0)"
+   [(set_attr "type" "branch")
+    (set_attr "length" "12")])
+
+(define_expand "builtin_longjmp"
+  [(unspec_volatile [(match_operand 0 "register_operand" "r")] 3)]
+  ""
+  "
+{
+  /* The elements of the buffer are, in order:  */
+  rtx fp = gen_rtx_MEM (Pmode, operands[0]);
+  rtx lab = gen_rtx_MEM (Pmode, plus_constant (operands[0], 4));
+  rtx stack = gen_rtx_MEM (Pmode, plus_constant (operands[0], 8));
+  rtx pv = gen_rtx_REG (Pmode, 1);
+
+  /* This bit is the same as expand_builtin_longjmp.  */
+  emit_move_insn (hard_frame_pointer_rtx, fp);
+  emit_stack_restore (SAVE_NONLOCAL, stack, NULL_RTX);
+  emit_insn (gen_rtx_USE (VOIDmode, hard_frame_pointer_rtx));
+  emit_insn (gen_rtx_USE (VOIDmode, stack_pointer_rtx));
+
+  /* Load the label we are jumping through into r1 so that we know
+     where to look for it when we get back to setjmp's function for
+     restoring the gp.  */
+  emit_move_insn (pv, lab);
+  emit_jump_insn (gen_interspace_jump (pv));
+  emit_barrier ();
+  DONE;
+}")
+
 (define_insn "extzv"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(zero_extract:SI (match_operand:SI 1 "register_operand" "r")
