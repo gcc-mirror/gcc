@@ -394,11 +394,9 @@ static void inc_for_reload		PROTO((rtx, rtx, int));
 static int constraint_accepts_reg_p	PROTO((char *, rtx));
 static int count_occurrences		PROTO((rtx, rtx));
 static void reload_cse_invalidate_regno	PROTO((int, enum machine_mode, int));
-static int reload_cse_mem_conflict_p	PROTO((rtx, rtx, enum machine_mode,
-					       rtx));
+static int reload_cse_mem_conflict_p	PROTO((rtx, rtx));
 static void reload_cse_invalidate_mem	PROTO((rtx));
 static void reload_cse_invalidate_rtx	PROTO((rtx, rtx));
-static void reload_cse_regs		PROTO((rtx));
 static int reload_cse_regno_equal_p	PROTO((int, rtx, enum machine_mode));
 static int reload_cse_noop_set_p	PROTO((rtx, rtx));
 static void reload_cse_simplify_set	PROTO((rtx, rtx));
@@ -2136,10 +2134,6 @@ reload (first, global, dumpfile)
 	    XEXP (reg_equiv_mem[i], 0) = addr;
 	}
     }
-
-  /* Do a very simple CSE pass over just the hard registers.  */
-  if (optimize > 0)
-    reload_cse_regs (first);
 
 #ifdef PRESERVE_DEATH_INFO_REGNO_P
   /* Make a pass over all the insns and remove death notes for things that
@@ -7674,15 +7668,12 @@ reload_cse_invalidate_regno (regno, mode, clobber)
     }
 }
 
-/* The memory at address (plus MEM_BASE MEM_OFFSET), where MEM_OFFSET
-   is a CONST_INT, is being changed.  MEM_MODE is the mode of the
-   memory reference.  Return whether this change will invalidate VAL.  */
+/* The memory at address MEM_BASE is being changed.  MEM_MODE is the mode of
+   the memory reference.  Return whether this change will invalidate VAL.  */
 
 static int
-reload_cse_mem_conflict_p (mem_base, mem_offset, mem_mode, val)
+reload_cse_mem_conflict_p (mem_base, val)
      rtx mem_base;
-     rtx mem_offset;
-     enum machine_mode mem_mode;
      rtx val;
 {
   enum rtx_code code;
@@ -7705,37 +7696,7 @@ reload_cse_mem_conflict_p (mem_base, mem_offset, mem_mode, val)
       return 0;
 
     case MEM:
-      {
-	rtx val_base, val_offset;
-
-	if (mem_mode == BLKmode || GET_MODE (val) == BLKmode)
-	  return 1;
-
-	val_offset = const0_rtx;
-	val_base = eliminate_constant_term (XEXP (val, 0), &val_offset);
-
-	/* If MEM_BASE and VAL_BASE are the same, but the offsets do
-	   not overlap, then we do not have a conflict on this MEM.
-	   For complete safety, we still need to check that VAL_BASE
-	   itself does not contain an overlapping MEM.
-
-	   We can't simplify the check to just OFFSET + SIZE <=
-	   OTHER_OFFSET, because SIZE might cause OFFSET to wrap from
-	   positive to negative.  If we used unsigned arithmetic, we
-	   would have the same problem wrapping around zero.  */
-
-	if (rtx_equal_p (mem_base, val_base)
-	    && ((INTVAL (mem_offset) < INTVAL (val_offset)
-		 && (INTVAL (mem_offset) + GET_MODE_SIZE (mem_mode)
-		     <= INTVAL (val_offset)))
-		|| (INTVAL (val_offset) < INTVAL (mem_offset)
-		    && (INTVAL (val_offset) + GET_MODE_SIZE (GET_MODE (val))
-			<= INTVAL (mem_offset)))))
-	  return reload_cse_mem_conflict_p (mem_base, mem_offset, mem_mode,
-					    val_base);
-
-	return 1;
-      }
+      return anti_dependence (val, mem_base);
 
     default:
       break;
@@ -7747,8 +7708,7 @@ reload_cse_mem_conflict_p (mem_base, mem_offset, mem_mode, val)
     {
       if (fmt[i] == 'e')
 	{
-	  if (reload_cse_mem_conflict_p (mem_base, mem_offset, mem_mode,
-					 XEXP (val, i)))
+	  if (reload_cse_mem_conflict_p (mem_base, XEXP (val, i)))
 	    return 1;
 	}
       else if (fmt[i] == 'E')
@@ -7756,8 +7716,7 @@ reload_cse_mem_conflict_p (mem_base, mem_offset, mem_mode, val)
 	  int j;
 
 	  for (j = 0; j < XVECLEN (val, i); j++)
-	    if (reload_cse_mem_conflict_p (mem_base, mem_offset, mem_mode,
-					   XVECEXP (val, i, j)))
+	    if (reload_cse_mem_conflict_p (mem_base, XVECEXP (val, i, j)))
 	      return 1;
 	}
     }
@@ -7774,15 +7733,6 @@ reload_cse_invalidate_mem (mem_rtx)
      rtx mem_rtx;
 {
   register int i;
-  rtx mem_base, mem_offset;
-  enum machine_mode mem_mode;
-
-  /* We detect certain cases where memory addresses can not conflict:
-     if they use the same register, and the offsets do not overlap.  */
-
-  mem_offset = const0_rtx;
-  mem_base = eliminate_constant_term (XEXP (mem_rtx, 0), &mem_offset);
-  mem_mode = GET_MODE (mem_rtx);
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
@@ -7791,8 +7741,7 @@ reload_cse_invalidate_mem (mem_rtx)
       for (x = reg_values[i]; x; x = XEXP (x, 1))
 	{
 	  if (XEXP (x, 0) != 0
-	      && reload_cse_mem_conflict_p (mem_base, mem_offset, mem_mode,
-					    XEXP (x, 0)))
+	      && reload_cse_mem_conflict_p (mem_rtx, XEXP (x, 0)))
 	    {
 	      /* If this is the only entry on the list, clear
                  reg_values[i].  Otherwise, just clear this entry on
@@ -7841,7 +7790,7 @@ reload_cse_invalidate_rtx (dest, ignore)
    registers) changes it to simply copy the first register into the
    second register.  */
 
-static void
+void
 reload_cse_regs (first)
      rtx first;
 {
@@ -7849,6 +7798,8 @@ reload_cse_regs (first)
   rtx callmem;
   register int i;
   rtx insn;
+
+  init_alias_analysis ();
 
   reg_values = (rtx *) alloca (FIRST_PSEUDO_REGISTER * sizeof (rtx));
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
@@ -7931,8 +7882,9 @@ reload_cse_regs (first)
 	  /* If every action in a PARALLEL is a noop, we can delete
              the entire PARALLEL.  */
 	  for (i = XVECLEN (body, 0) - 1; i >= 0; --i)
-	    if (GET_CODE (XVECEXP (body, 0, i)) != SET
-		|| ! reload_cse_noop_set_p (XVECEXP (body, 0, i), insn))
+	    if ((GET_CODE (XVECEXP (body, 0, i)) != SET
+		 || ! reload_cse_noop_set_p (XVECEXP (body, 0, i), insn))
+		&& GET_CODE (XVECEXP (body, 0, i)) != CLOBBER)
 	      break;
 	  if (i < 0)
 	    {
