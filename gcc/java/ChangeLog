@@ -1,3 +1,8 @@
+2001-01-23  Tom Tromey  <tromey@redhat.com>
+
+	* gcj.texi (Copying): New node.
+	Added copyright information.
+
 2001-01-21  Per Bothner  <per@bothner.com>
 
 	Various fixes to allow compiling a compressed .jar/.zip archive.
