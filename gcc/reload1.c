@@ -299,7 +299,6 @@ static struct elim_table
   int can_eliminate_previous;	/* Value of CAN_ELIMINATE in previous scan over
 				   insns made by reload.  */
   int offset;			/* Current offset between the two regs.  */
-  int max_offset;		/* Maximum offset between the two regs.  */
   int previous_offset;		/* Offset at end of previous insn.  */
   int ref_outside_mem;		/* "to" has been referenced outside a MEM.  */
   rtx from_rtx;			/* REG rtx for the register to be eliminated.
@@ -378,6 +377,8 @@ static void update_eliminable_offsets	PROTO((void));
 static void mark_not_eliminable		PROTO((rtx, rtx));
 static void set_initial_elim_offsets	PROTO((void));
 static void verify_initial_elim_offsets	PROTO((void));
+static void set_initial_label_offsets	PROTO((void));
+static void set_offsets_for_label	PROTO((rtx));
 static void init_elim_table		PROTO((void));
 static void update_eliminables		PROTO((HARD_REG_SET *));
 static void spill_hard_reg		PROTO((int, FILE *, int));
@@ -824,6 +825,7 @@ reload (first, global, dumpfile)
       starting_frame_size = get_frame_size ();
 
       set_initial_elim_offsets ();
+      set_initial_label_offsets ();
 
       /* For each pseudo register that has an equivalent location defined,
 	 try to eliminate any eliminable registers (such as the frame pointer)
@@ -2449,19 +2451,7 @@ set_label_offsets (x, insn, initial_p)
       else if (x == insn
 	       && (tem = prev_nonnote_insn (insn)) != 0
 	       && GET_CODE (tem) == BARRIER)
-	{
-	  num_not_at_initial_offset = 0;
-	  for (i = 0; i < NUM_ELIMINABLE_REGS; i++)
-	    {
-	      reg_eliminate[i].offset = reg_eliminate[i].previous_offset
-		= offsets_at[CODE_LABEL_NUMBER (x)][i];
-	      if (reg_eliminate[i].can_eliminate
-		  && (reg_eliminate[i].offset
-		      != reg_eliminate[i].initial_offset))
-		num_not_at_initial_offset++;
-	    }
-	}
-
+	set_offsets_for_label (insn);
       else
 	/* If neither of the above cases is true, compare each offset
 	   with those previously recorded and suppress any eliminations
@@ -3381,12 +3371,6 @@ update_eliminable_offsets ()
       ep->previous_offset = ep->offset;
       if (ep->can_eliminate && ep->offset != ep->initial_offset)
 	num_not_at_initial_offset++;
-
-#ifdef STACK_GROWS_DOWNWARD
-      ep->max_offset = MAX (ep->max_offset, ep->offset);
-#else
-      ep->max_offset = MIN (ep->max_offset, ep->offset);
-#endif
     }
 }
 
@@ -3462,41 +3446,57 @@ verify_initial_elim_offsets ()
 static void
 set_initial_elim_offsets ()
 {
-  rtx x;
+  struct elim_table *ep = reg_eliminate;
 
 #ifdef ELIMINABLE_REGS
-  struct elim_table *ep;
-
-  for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
+  for (; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
     {
       INITIAL_ELIMINATION_OFFSET (ep->from, ep->to, ep->initial_offset);
-      ep->previous_offset = ep->offset
-	= ep->max_offset = ep->initial_offset;
+      ep->previous_offset = ep->offset = ep->initial_offset;
     }
 #else
-#ifdef INITIAL_FRAME_POINTER_OFFSET
-  INITIAL_FRAME_POINTER_OFFSET (reg_eliminate[0].initial_offset);
-#else
-  if (!FRAME_POINTER_REQUIRED)
-    abort ();
-  reg_eliminate[0].initial_offset = 0;
-#endif
-  reg_eliminate[0].previous_offset = reg_eliminate[0].max_offset
-    = reg_eliminate[0].offset = reg_eliminate[0].initial_offset;
+  INITIAL_FRAME_POINTER_OFFSET (ep->initial_offset);
+  ep->previous_offset = ep->offset = ep->initial_offset;
 #endif
 
   num_not_at_initial_offset = 0;
+}
 
+/* Initialize the known label offsets.
+   Set a known offset for each forced label to be at the initial offset
+   of each elimination.  We do this because we assume that all
+   computed jumps occur from a location where each elimination is
+   at its initial offset.
+   For all other labels, show that we don't know the offsets.  */
+
+static void
+set_initial_label_offsets ()
+{
+  rtx x;
   bzero ((char *) &offsets_known_at[get_first_label_num ()], num_labels);
-
-  /* Set a known offset for each forced label to be at the initial offset
-     of each elimination.  We do this because we assume that all
-     computed jumps occur from a location where each elimination is
-     at its initial offset.  */
 
   for (x = forced_labels; x; x = XEXP (x, 1))
     if (XEXP (x, 0))
       set_label_offsets (XEXP (x, 0), NULL_RTX, 1);
+}
+
+/* Set all elimination offsets to the known values for the code label given
+   by INSN.  */
+static void
+set_offsets_for_label (insn)
+     rtx insn;
+{
+  int i;
+  int label_nr = CODE_LABEL_NUMBER (insn);
+  struct elim_table *ep;
+
+  num_not_at_initial_offset = 0;
+  for (i = 0, ep = reg_eliminate; i < NUM_ELIMINABLE_REGS; ep++, i++)
+    {
+      ep->offset = ep->previous_offset = offsets_at[label_nr][i];
+      if (ep->can_eliminate && ep->offset != ep->initial_offset)
+	num_not_at_initial_offset++;
+    }
 }
 
 /* See if anything that happened changes which eliminations are valid.
@@ -4056,22 +4056,7 @@ reload_as_needed (live_known)
   reg_has_output_reload = (char *) alloca (max_regno);
   CLEAR_HARD_REG_SET (reg_reloaded_valid);
 
-  /* Reset all offsets on eliminable registers to their initial values.  */
-#ifdef ELIMINABLE_REGS
-  for (i = 0; i < (int) NUM_ELIMINABLE_REGS; i++)
-    {
-      INITIAL_ELIMINATION_OFFSET (reg_eliminate[i].from, reg_eliminate[i].to,
-				  reg_eliminate[i].initial_offset);
-      reg_eliminate[i].previous_offset
-	= reg_eliminate[i].offset = reg_eliminate[i].initial_offset;
-    }
-#else
-  INITIAL_FRAME_POINTER_OFFSET (reg_eliminate[0].initial_offset);
-  reg_eliminate[0].previous_offset
-    = reg_eliminate[0].offset = reg_eliminate[0].initial_offset;
-#endif
-
-  num_not_at_initial_offset = 0;
+  set_initial_elim_offsets ();
 
   for (chain = reload_insn_chain; chain; chain = chain->next)
     {
@@ -4082,18 +4067,7 @@ reload_as_needed (live_known)
       /* If we pass a label, copy the offsets from the label information
 	 into the current offsets of each elimination.  */
       if (GET_CODE (insn) == CODE_LABEL)
-	{
-	  num_not_at_initial_offset = 0;
-	  for (i = 0; i < (int) NUM_ELIMINABLE_REGS; i++)
-	    {
-	      reg_eliminate[i].offset = reg_eliminate[i].previous_offset
-		= offsets_at[CODE_LABEL_NUMBER (insn)][i];
-	      if (reg_eliminate[i].can_eliminate
-		  && (reg_eliminate[i].offset
-		      != reg_eliminate[i].initial_offset))
-		num_not_at_initial_offset++;
-	    }
-	}
+	set_offsets_for_label (insn);
 
       else if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
 	{
