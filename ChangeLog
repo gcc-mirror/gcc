@@ -1,3 +1,7 @@
+Tue Jan 13 01:13:24 1998   Robert Lipe (robertl@dgii.com)
+
+	* config.guess: Recognize i[3456]-i586-UnixWare7-sysv5.
+
 Sun Jan  4 01:06:55 1998  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* config.sub: Add mingw32 support.
