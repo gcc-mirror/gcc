@@ -1,3 +1,11 @@
+2003-10-20  David S. Miller  <davem@redhat.com>
+
+	* config/sparc/sparc.md (type attribute): Add new insn types
+	fpa, fpm_pack, fgm_mul, fgm_pdist, and fgm_cmp for VIS.
+	(patterns emitting VIS insns): Use them.
+	* config/sparc/ultra1_2.md: Add VIS scheduling rules.
+	* config/sparc/ultra3.md: Likewise.
+
 2003-10-20  Falk Hueffner  <falk@debian.org>
 
 	PR target/12654
