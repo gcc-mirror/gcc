@@ -125,6 +125,7 @@
 2001-06-07  Loren J. Rittle  <ljrittle@acm.org>
 	    John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
+	c++/3082
 	* libsupc++/eh_alloc.cc: Ensure that required macros are
 	defined before including gthr.h.  Ensure that we get the
 	version of gthr.h for which we know how to provide a
