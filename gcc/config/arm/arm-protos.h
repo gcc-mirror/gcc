@@ -24,11 +24,11 @@
 #define GCC_ARM_PROTOS_H
 
 extern void arm_override_options (void);
-extern int use_return_insn (int);
+extern int use_return_insn (int, rtx);
 extern int arm_regno_class (int);
 extern void arm_finalize_pic (int);
 extern int arm_volatile_func (void);
-extern const char *arm_output_epilogue (int);
+extern const char *arm_output_epilogue (rtx);
 extern void arm_expand_prologue (void);
 extern HOST_WIDE_INT arm_get_frame_size	(void);
 extern const char *arm_strip_name_encoding (const char *);

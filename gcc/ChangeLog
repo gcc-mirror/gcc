@@ -1,3 +1,17 @@
+2003-11-20  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.c (use_return_insn): New argument, SIBLING.  Support returning
+	with a single instruction if the stack has been decremented by 4
+	and we have a frame pointer.  Update all callers.
+	(output_return_instruction): Likewise.
+	(arm_output_epilogue): Change argument to SIBLING.  Calculate
+	really_return from the new argument.  Update all callers.
+	* arm.h (USE_RETURN_INSN): Pass NULL for the sibling.
+	* arm.md (sibcall_epilogue): Call use_return_insn directly, and
+	pass the sibling call.
+	* arm-protos.h (use_return_insn, arm_output_epilogue): Update
+	prototypes.
+
 2003-11-20  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* Makefile.in (extraclean): Delete.
