@@ -1,3 +1,7 @@
+ 1999-06-08  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.old-deja/g++.eh/catch1.C: New test.
+
 Mon Jun  7 23:39:16 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* g++.old-deja/g++.mike/p6610a.C: Expect failure on freebsd-elf.
