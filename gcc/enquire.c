@@ -19,6 +19,7 @@
    Include sys/types.h before signal.h, Apr 92.
    Support NO_LONG_DOUBLE_IO in f_define and f_rep; new fn fake_f_rep, Apr 92.
    Enclose -f output in #ifndef _FLOAT_H___, Richard Stallman, May 92.
+   Add #undef before every #define, Jim Wilson, Dec 92.
 
    COMPILING
    With luck and a following wind, just the following will work:
@@ -780,6 +781,7 @@ Procedure i_define(desc, extra, sort, name, val, lim, req, mark)
      char *desc, *extra, *sort, *name; long val, lim, req; char *mark; {
 	/* Produce a #define for a signed int type */
 	describe(desc, extra);
+	printf("#undef %s%s\n", sort, name);
 	if (val >= 0) {
 		printf("#define %s%s %ld%s\n", sort, name, val, mark);
 	} else if (val + lim < 0) {
@@ -807,6 +809,7 @@ Procedure u_define(desc, extra, sort, name, val, req, mark)
      char *desc, *extra, *sort, *name; unsigned long val, req; char *mark; {
 	/* Produce a #define for an unsigned value */
 	describe(desc, extra);
+	printf("#undef %s%s\n", sort, name);
 	printf("#define %s%s %lu%s%s\n", sort, name, val, U, mark);
 	if (val != req) {
 		printf("%s*** Verify failed for above #define!\n", co);
@@ -821,6 +824,7 @@ Procedure f_define(desc, extra, sort, name, precision, val, mark)
      Long_double val; char *mark; {
 	/* Produce a #define for a float/double/long double */
 	describe(desc, extra);
+	printf ("#undef %s%s\n", sort, name);
 	if (stdc) {
 #ifdef NO_LONG_DOUBLE_IO
 		static int union_defined = 0;
