@@ -4169,8 +4169,10 @@ m68hc11_check_z_replacement (rtx insn, struct replace_info *info)
 	{
 	  if ((GET_CODE (src) == REG && REGNO (src) == HARD_Z_REGNUM)
 	      || (GET_CODE (src) == COMPARE &&
-		  (rtx_equal_p (XEXP (src, 0), z_reg)
-		   || rtx_equal_p (XEXP (src, 1), z_reg))))
+		  ((rtx_equal_p (XEXP (src, 0), z_reg)
+                    && H_REG_P (XEXP (src, 1)))
+		   || (rtx_equal_p (XEXP (src, 1), z_reg)
+                       && H_REG_P (XEXP (src, 0))))))
 	    {
 	      if (insn == info->first)
 		{
