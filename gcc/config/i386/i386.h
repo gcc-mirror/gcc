@@ -94,6 +94,7 @@ extern int target_flags;
 #define MASK_NO_MOVE		000004000000	/* Don't generate mem->mem */
 #define MASK_NO_PSEUDO		000010000000	/* Move op's args -> pseudos */
 #define MASK_DEBUG_ARG		000020000000	/* Debug function_arg */   
+#define MASK_SCHEDULE_PROLOGUE  000040000000    /* Emit prologue as rtl */
 
 /* Use the floating point instructions */
 #define TARGET_80387 (target_flags & MASK_80387)
@@ -135,6 +136,9 @@ extern int target_flags;
    and division by constants, but sometimes cause reload problems.  */
 #define TARGET_NO_WIDE_MULTIPLY (target_flags & MASK_NO_WIDE_MULTIPLY)
 #define TARGET_WIDE_MULTIPLY (!TARGET_NO_WIDE_MULTIPLY)
+
+/* Emit/Don't emit prologue as rtl */
+#define TARGET_SCHEDULE_PROLOGUE (target_flags & MASK_SCHEDULE_PROLOGUE)
 
 /* Debug GO_IF_LEGITIMATE_ADDRESS */
 #define TARGET_DEBUG_ADDR (target_flags & MASK_DEBUG_ADDR)
@@ -189,6 +193,8 @@ extern int target_flags;
   { "no-omit-leaf-frame-pointer",-MASK_OMIT_LEAF_FRAME_POINTER },       \
   { "no-wide-multiply",		 MASK_NO_WIDE_MULTIPLY },		\
   { "wide-multiply",		-MASK_NO_WIDE_MULTIPLY },		\
+  { "schedule-prologue",	 MASK_SCHEDULE_PROLOGUE },		\
+  { "no-schedule-prologue",	-MASK_SCHEDULE_PROLOGUE },		\
   { "debug-addr",		 MASK_DEBUG_ADDR },			\
   { "no-debug-addr",		-MASK_DEBUG_ADDR },			\
   { "move",			-MASK_NO_MOVE },			\
@@ -196,7 +202,7 @@ extern int target_flags;
   { "debug-arg",		 MASK_DEBUG_ARG },			\
   { "no-debug-arg",		-MASK_DEBUG_ARG },			\
   SUBTARGET_SWITCHES							\
-  { "", TARGET_DEFAULT}}
+  { "", MASK_SCHEDULE_PROLOGUE | TARGET_DEFAULT}}
 
 /* Which processor to schedule for. The cpu attribute defines a list that
    mirrors this list, so changes to i386.md must be made at the same time.  */
