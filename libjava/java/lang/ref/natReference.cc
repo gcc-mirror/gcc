@@ -258,9 +258,7 @@ finalize_referred_to_object (jobject obj)
 	{
 	  java::lang::ref::Reference *ref
 	    = reinterpret_cast<java::lang::ref::Reference *> (head->reference);
-	  // If the copy is already NULL then the user must have
-	  // called Reference.clear().
-	  if (ref->copy != NULL)
+	  if (! ref->cleared)
 	    ref->enqueue ();
 
 	  object_list *next = head->next;
