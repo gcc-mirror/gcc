@@ -22,17 +22,14 @@ Boston, MA 02111-1307, USA.  */
 
 #define DBX_DEBUGGING_INFO 1
 #define SDB_DEBUGGING_INFO 1
+
+#undef PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 
 #define TARGET_VERSION fprintf (stderr, " (x86 Cygwin)"); 
 #define TARGET_EXECUTABLE_SUFFIX ".exe"
 
 #include <stdio.h>
-#include "i386/i386.h"
-#include "i386/unix.h"
-#include "i386/bsd.h"
-#include "i386/gas.h"
-#include "dbxcoff.h"
 
 /* Masks for subtarget switches used by other files.  */
 #define MASK_NOP_FUN_DLLIMPORT 0x08000000 /* Ignore dllimport for functions */

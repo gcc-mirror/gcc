@@ -1,3 +1,10 @@
+2003-02-27  Roger Sayle  <roger@eyesopen.com>
+
+	* config/i386/cygwin.h: Don't include any other files directly.
+	* config/i386/mingw32.h: Don't include cygwin.h directly.
+	* config.gcc (cygwin, mingw32, uwin): Instead make these files
+	explicit in the tm_files variable.
+
 2003-02-27  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.md: Add TI constant splitter.
