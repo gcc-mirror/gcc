@@ -4566,9 +4566,10 @@ maybe_process_template_type_declaration (tree type, int globalize,
 /* Push a tag name NAME for struct/class/union/enum type TYPE.
    Normally put it into the inner-most non-sk_cleanup scope,
    but if GLOBALIZE is true, put it in the inner-most non-class scope.
-   The latter is needed for implicit declarations.  */
+   The latter is needed for implicit declarations.
+   Returns TYPE upon success and ERROR_MARK_NODE otherwise.  */
 
-void
+tree
 pushtag (tree name, tree type, int globalize)
 {
   struct cp_binding_level *b;
@@ -4633,6 +4634,8 @@ pushtag (tree name, tree type, int globalize)
 
 	  d = maybe_process_template_type_declaration (type,
 						       globalize, b);
+	  if (d == error_mark_node)
+	    return error_mark_node;
 
 	  if (b->kind == sk_class)
 	    {
@@ -4695,7 +4698,7 @@ pushtag (tree name, tree type, int globalize)
       tree d = build_decl (TYPE_DECL, NULL_TREE, type);
       TYPE_STUB_DECL (type) = pushdecl_with_scope (d, b);
     }
-  timevar_pop (TV_NAME_LOOKUP);
+  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, type);
 }
 
 /* Subroutines for reverting temporarily to top-level for instantiation

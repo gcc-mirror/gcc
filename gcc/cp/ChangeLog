@@ -1,3 +1,12 @@
+2004-11-29  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/18652
+	* name-lookup.c (pushtag): Change return type to tree.
+	* cp-tree.h (pushtag): Adjust declaration.
+	* decl.c (xref_tag, start_enum): Use return value of pushtag.
+	* pt.c (push_template_decl_real): Return immediately if
+	pushdecl_namespace_level returns error_mark_node.
+
 2004-11-27  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* pt.c: Fix a comment typo.
