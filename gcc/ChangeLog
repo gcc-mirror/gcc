@@ -1,3 +1,8 @@
+2001-04-14  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/mn10300/mn10300.md (cmpsi): Tell reload to disregard the
+	first alternative.
+
 2001-04-14  Alan Modra  <amodra@one.net.au>
 
 	* pa.c (force_mode): New function.
