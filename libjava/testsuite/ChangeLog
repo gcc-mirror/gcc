@@ -1,3 +1,9 @@
+2000-12-18  Tom Tromey  <tromey@redhat.com>
+
+	* libjava.mauve/mauve.exp (test_mauve): Don't look for exceptions
+	thrown in the test harness.
+	(test_mauve_sim): Likewise.
+
 2000-12-16  Tom Tromey  <tromey@redhat.com>
 
 	* lib/libjava.exp (test_libjava_from_javac): Strange quoting trick

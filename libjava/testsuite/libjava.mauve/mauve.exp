@@ -186,17 +186,6 @@ proc test_mauve {} {
     set result [libjava_load [pwd]/DejaGNUTestHarness \
 		  "$env(MAUVEDIR) $class" ""]
 
-    # Test for an exception thrown in the test harness itself.  This
-    # isn't enough to test for all faults in the test harness, but
-    # it's better than nothing.
-    set output [lindex $result 1];
-    if [regexp "Exception: " $output] then {
-      fail $output
-      continue
-    }
-
-    pass "Execute for $class"
-
     # Extract pass/failure info from output.
     foreach line [split [lindex $result 1] \n] {
       if {[regexp -- {^(PASS|FAIL): (.*)$} $line ignore what msg]} then {
@@ -353,17 +342,6 @@ proc test_mauve_sim {} {
 
     set result [libjava_load [pwd]/DejaGNUTestHarness \
 		  "$env(MAUVEDIR) $class" ""]
-
-    # Test for an exception thrown in the test harness itself.  This
-    # isn't enough to test for all faults in the test harness, but
-    # it's better than nothing.
-    set output [lindex $result 1];
-    if [regexp "Exception: " $output] then {
-      fail $output
-      continue
-    }
-
-    pass "Execute for $class"
 
     # Extract pass/failure info from output.
     foreach line [split [lindex $result 1] \n] {
