@@ -52,10 +52,10 @@ import java.util.Vector;
  * This sounds complicated, but that is because I did a poor job of
  * explaining it.  Consider the following example:
  * <p>
- * <pre>
- * terminators = { 1, ChoiceFormat.nextDouble(1) }
- * formats = { "file", "files" }
- * </pre>
+ *
+<pre>terminators = { 1, ChoiceFormat.nextDouble(1) }
+formats = { "file", "files" }</pre>
+ *
  * <p>
  * In this case if the actual number tested is one or less, then the word
  * "file" is used as the format value.  If the number tested is greater than
