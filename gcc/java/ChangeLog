@@ -1,5 +1,7 @@
 2004-03-19  Per Bothner  <per@bothner.com>
 
+	* gcj.texi (Code Generation):  Document new flags and assert defaults.
+
 	* class.c (assume_compiled_node_struct):  Rename type to
 	class_flag_node_struct, as it is now also used for enable_assertions.
 	Rename assume_compiled_node typedef.  Rename excludep field to value.

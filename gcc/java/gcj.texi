@@ -431,6 +431,27 @@ to initialize static classes upon their first use (this optimization
 isn't carried out if @code{-C} was specified.) When compiling to native
 code, @code{-fno-optimize-static-class-initialization} will turn this
 optimization off, regardless of the optimization level in use.
+
+@item --disable-assertions[=@var{class-or-package}]
+Don't include code for checking assertions in the compiled code.
+If @code{=@var{class-or-package}} is missing disables assertion code
+generation for all classes, unless overrideen by a more
+specific @code{--enable-assertions} flag.
+If @var{class-or-package} is a class name, only disables generating
+assertion checks within the named class or its inner classes.
+If @var{class-or-package} is a package name, disables generating
+assertion checks within the named package or a subpackage.
+
+By default, assertions are enabled when generating class files
+or when not optimizaing, and disabled when generating optimized binaries.
+
+@item --enable-assertions[=@var{class-or-package}]
+Generates code to check assertions.  The option is perhaps misnamed,
+as you still need to turn on assertion checking at run-time,
+and we don't support any easy way to do that.
+So this flag isn't very useful yet, except to partially override
+@code{--disable-assertions}.
+
 @end table
 
 
