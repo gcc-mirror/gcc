@@ -1,5 +1,9 @@
 2004-05-15  Joseph S. Myers  <jsm@polyomino.org.uk>
 
+	* gcc.c-torture/execute/20000603-1.c: Update WG14 URL.
+
+2004-05-15  Joseph S. Myers  <jsm@polyomino.org.uk>
+
 	PR c/15444
 	* gcc.dg/format/xopen-1.c: Adjust expected message.
 	* gcc.dg/format/xopen-3.c: New test.
