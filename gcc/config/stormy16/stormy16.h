@@ -2538,12 +2538,6 @@ do {							\
    You need not define this macro if it would do nothing.  */
 /* #define ASM_OUTPUT_SPECIAL_POOL_ENTRY(FILE, X, MODE, ALIGN, LABELNO, JUMPTO) */
 
-/* Define this macro as a C expression which is nonzero if the constant EXP, of
-   type `tree', should be output after the code for a function.  The compiler
-   will normally output all constants before the function; you need not define
-   this macro if this is OK.  */
-/* #define CONSTANT_AFTER_FUNCTION_P(EXP) */
-
 /* A C statement to output assembler commands to at the end of the constant
    pool for a function.  FUNNAME is a string giving the name of the function.
    Should the return type of the function be required, you can obtain it via

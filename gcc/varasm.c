@@ -155,7 +155,6 @@ static void mark_constant_pool		PARAMS ((void));
 static void mark_constants		PARAMS ((rtx));
 static int mark_constant		PARAMS ((rtx *current_rtx, void *data));
 static int output_addressed_constants	PARAMS ((tree));
-static void output_after_function_constants PARAMS ((void));
 static unsigned HOST_WIDE_INT array_size_for_constructor PARAMS ((tree));
 static unsigned min_align		PARAMS ((unsigned, unsigned));
 static void output_constructor		PARAMS ((tree, HOST_WIDE_INT,
@@ -1199,9 +1198,6 @@ assemble_end_function (decl, fnname)
       output_constant_pool (fnname, decl);
       function_section (decl);	/* need to switch back */
     }
-
-  /* Output any constants which should appear after the function.  */
-  output_after_function_constants ();
 }
 
 /* Assemble code to leave SIZE bytes of zeros.  */
@@ -2482,10 +2478,6 @@ struct deferred_constant
 
 static struct deferred_constant *deferred_constants;
 
-/* Another list of constants which should be output after the
-   function.  */
-static struct deferred_constant *after_function_constants;
-
 /* Nonzero means defer output of addressed subconstants
    (i.e., those for which output_constant_def is called.)  */
 static int defer_addressed_constants_flag;
@@ -2519,23 +2511,6 @@ output_deferred_addressed_constants ()
     }
 
   deferred_constants = 0;
-}
-
-/* Output any constants which should appear after a function.  */
-
-static void
-output_after_function_constants ()
-{
-  struct deferred_constant *p, *next;
-
-  for (p = after_function_constants; p; p = next)
-    {
-      output_constant_def_contents (p->exp, p->reloc, p->labelno);
-      next = p->next;
-      free (p);
-    }
-
-  after_function_constants = 0;
 }
 
 /* Make a copy of the whole tree structure for a constant.  This
@@ -2631,7 +2606,6 @@ output_constant_def (exp, defer)
   char label[256];
   int reloc;
   int found = 1;
-  int after_function = 0;
   int labelno = -1;
   rtx rtl;
 
@@ -2709,15 +2683,9 @@ output_constant_def (exp, defer)
       desc->label = XSTR (XEXP (desc->rtl, 0), 0);
     }
 
-#ifdef CONSTANT_AFTER_FUNCTION_P
-  if (current_function_decl != 0
-      && CONSTANT_AFTER_FUNCTION_P (exp))
-    after_function = 1;
-#endif
-
   if (found
       && STRING_POOL_ADDRESS_P (XEXP (rtl, 0))
-      && (!defer || defer_addressed_constants_flag || after_function))
+      && (!defer || defer_addressed_constants_flag))
     {
       defstr = (struct deferred_string **)
 	htab_find_slot_with_hash (const_str_htab, desc->label,
@@ -2737,7 +2705,7 @@ output_constant_def (exp, defer)
      output it (or defer its output for later).  */
   if (! found)
     {
-      if (defer_addressed_constants_flag || after_function)
+      if (defer_addressed_constants_flag)
 	{
 	  struct deferred_constant *p
 	    = (struct deferred_constant *)
@@ -2746,16 +2714,8 @@ output_constant_def (exp, defer)
 	  p->exp = desc->value;
 	  p->reloc = reloc;
 	  p->labelno = labelno;
-	  if (after_function)
-	    {
-	      p->next = after_function_constants;
-	      after_function_constants = p;
-	    }
-	  else
-	    {
-	      p->next = deferred_constants;
-	      deferred_constants = p;
-	    }
+	  p->next = deferred_constants;
+	  deferred_constants = p;
 	}
       else
 	{
