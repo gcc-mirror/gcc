@@ -1,3 +1,8 @@
+Tue Jun 30 00:56:19 1998  Bruno Haible <haible@ilog.fr>
+
+	* invoke.texi: Document new implicit structure initialization
+	warning.
+
 Mon Jun 29 22:12:06 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* Merge from gcc2 June 9, 1998 snapshot.  See ChangeLog.13 for

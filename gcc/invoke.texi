@@ -1534,6 +1534,16 @@ struct s @{ int f, g; @};
 struct t @{ struct s h; int i; @};
 struct t x = @{ 1, 2, 3 @};
 @end smallexample
+
+@item
+An aggregate has an initializer which does not initialize all members.
+For example, the following code would cause such a warning, because
+@code{x.h} would be implicitly initialized to zero:
+
+@smallexample
+struct s @{ int f, g, h; @};
+struct s x = @{ 3, 4 @};
+@end smallexample
 @end itemize
 
 @item -Wtraditional
