@@ -1,3 +1,25 @@
+Fri May 15 10:52:49 1998  Craig Burley  <burley@gnu.org>
+
+	* com.c (ffecom_convert_narrow_, ffecom_convert_widen_):
+	Be even more persnickety in checking for internal bugs.
+	Also, if precision isn't changing, just return the expr.
+	(ffecom_expr_): Add ltkt variable for clarity.
+
+	* expr.c Use ffestrOther in place of ffeexprDotdot_.
+	(ffeexpr_token_number_): Call
+	ffeexpr_make_float_const_ to make an integer.
+	(ffeexpr_make_float_const_): Handle making an integer.
+
+	* intrin.c (ffeintrin_init_0): Distinguish between
+	crashes on bad arg base and kind types.
+
+	* Makefile.in (f/expr.c): Now depends on f/stamp-str.
+	* str-ot.fin: Add more keywords for expr.c.
+
+	* intdoc.c (dumpimp): Trivial fix.
+
+	* stb.c (ffestb_R100110_): Fix an assertion.
+
 Tue Apr 28 09:23:10 1998  Craig Burley  <burley@gnu.org>
 
 	Fix 980427-0.f:
