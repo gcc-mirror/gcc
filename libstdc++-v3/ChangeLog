@@ -1,5 +1,9 @@
 2004-12-25  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/tr1/type_traits (is_enum): Minor tweak.
+
+2004-12-25  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/tr1/type_traits: Implement is_enum (usual caveats about
 	the nasty consequences of c++/19076...).
 	* testsuite/testsuite_tr1.h: Add ConvType.
