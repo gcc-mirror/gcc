@@ -426,17 +426,6 @@ cond_exec_process_if_block (ce_info, do_multiple_p)
 #ifdef IFCVT_MODIFY_TESTS
   /* If the machine description needs to modify the tests, such as setting a
      conditional execution register from a comparison, it can do so here.  */
-  IFCVT_MODIFY_TESTS (true_expr, false_expr, test_bb, then_bb, else_bb,
-		      join_bb);
-
-  /* See if the conversion failed */
-  if (!true_expr || !false_expr)
-    goto fail;
-#endif
-
-#ifdef IFCVT_MODIFY_TESTS
-  /* If the machine description needs to modify the tests, such as setting a
-     conditional execution register from a comparison, it can do so here.  */
   IFCVT_MODIFY_TESTS (ce_info, true_expr, false_expr);
 
   /* See if the conversion failed */
@@ -459,6 +448,9 @@ cond_exec_process_if_block (ce_info, do_multiple_p)
     {
       basic_block bb = test_bb;
       basic_block last_test_bb = ce_info->last_test_bb;
+
+      if (! false_expr)
+	goto fail;
 
       do
 	{
