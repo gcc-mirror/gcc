@@ -48,9 +48,6 @@ import java.net.UnknownServiceException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Properties;
 import javax.xml.transform.ErrorListener;
 import javax.xml.transform.OutputKeys;
@@ -67,7 +64,6 @@ import javax.xml.transform.stream.StreamResult;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.DOMImplementation;
-import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.Text;
 import org.xml.sax.ContentHandler;
@@ -76,8 +72,6 @@ import org.xml.sax.ext.LexicalHandler;
 import gnu.xml.dom.DomDoctype;
 import gnu.xml.dom.DomDocument;
 import gnu.xml.dom.ls.WriterOutputStream;
-import gnu.xml.xpath.Expr;
-import gnu.xml.xpath.Root;
 
 /**
  * The transformation process for a given stylesheet.

@@ -38,6 +38,11 @@ exception statement from your version. */
 
 package gnu.java.security.provider;
 
+import gnu.java.security.OID;
+import gnu.java.security.der.BitString;
+import gnu.java.security.der.DERReader;
+import gnu.java.security.der.DERValue;
+
 import java.io.IOException;
 
 import java.math.BigInteger;
@@ -45,15 +50,12 @@ import java.math.BigInteger;
 import java.security.AlgorithmParameters;
 import java.security.InvalidKeyException;
 import java.security.Key;
-import java.security.KeyFactory;
 import java.security.KeyFactorySpi;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 
 import java.security.spec.DSAParameterSpec;
-import java.security.spec.DSAPrivateKeySpec;
-import java.security.spec.DSAPublicKeySpec;
 import java.security.spec.InvalidParameterSpecException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
@@ -63,12 +65,6 @@ import java.security.spec.RSAPublicKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 
 import javax.crypto.spec.DHParameterSpec;
-
-import gnu.java.security.OID;
-import gnu.java.security.der.BitString;
-import gnu.java.security.der.DER;
-import gnu.java.security.der.DERReader;
-import gnu.java.security.der.DERValue;
 
 /**
  * A factory for keys encoded in either the X.509 format (for public

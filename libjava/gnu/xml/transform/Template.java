@@ -39,9 +39,7 @@ package gnu.xml.transform;
 
 import java.io.PrintStream;
 import javax.xml.namespace.QName;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
-import javax.xml.xpath.XPathExpressionException;
 import org.w3c.dom.Node;
 import gnu.xml.xpath.Expr;
 import gnu.xml.xpath.NameTest;

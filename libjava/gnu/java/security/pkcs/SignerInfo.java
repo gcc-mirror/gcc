@@ -41,11 +41,9 @@ import gnu.java.security.ber.BER;
 import gnu.java.security.ber.BEREncodingException;
 import gnu.java.security.ber.BERReader;
 import gnu.java.security.ber.BERValue;
-import gnu.java.security.der.BitString;
 import gnu.java.security.der.DERValue;
 
 import java.io.IOException;
-import java.io.InputStream;
 
 import java.math.BigInteger;
 

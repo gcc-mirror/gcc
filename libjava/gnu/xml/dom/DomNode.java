@@ -40,7 +40,6 @@ package gnu.xml.dom;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import javax.xml.XMLConstants;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.DOMException;
@@ -58,7 +57,6 @@ import org.w3c.dom.events.EventTarget;
 import org.w3c.dom.events.MutationEvent;
 import org.w3c.dom.traversal.NodeFilter;
 import org.w3c.dom.traversal.NodeIterator;
-import org.w3c.dom.traversal.TreeWalker;
 
 /**
  * <p> "Node", "EventTarget", and "DocumentEvent" implementation.

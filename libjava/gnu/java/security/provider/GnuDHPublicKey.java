@@ -49,7 +49,6 @@ import gnu.java.security.OID;
 import gnu.java.security.der.BitString;
 import gnu.java.security.der.DER;
 import gnu.java.security.der.DERValue;
-import gnu.java.security.der.DERWriter;
 
 public class GnuDHPublicKey implements DHPublicKey
 {

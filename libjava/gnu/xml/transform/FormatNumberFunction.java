@@ -38,7 +38,6 @@ exception statement from your version. */
 package gnu.xml.transform;
 
 import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

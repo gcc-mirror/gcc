@@ -40,7 +40,6 @@ package gnu.java.security.x509.ext;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.util.List;
 
 import gnu.java.security.OID;
 import gnu.java.security.der.DER;

@@ -38,7 +38,6 @@ exception statement from your version. */
 
 package gnu.java.security.x509;
 
-import java.io.InputStream;
 import java.io.IOException;
 
 import java.math.BigInteger;

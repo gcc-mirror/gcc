@@ -45,12 +45,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import javax.xml.namespace.QName;
-import javax.xml.transform.TransformerException;
 import javax.xml.xpath.XPathVariableResolver;
-import org.w3c.dom.Document;
-import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Node;
-import gnu.xml.xpath.Expr;
 
 /**
  * The set of variable bindings in effect for a stylesheet.

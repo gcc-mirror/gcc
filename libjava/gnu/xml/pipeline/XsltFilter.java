@@ -44,7 +44,6 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.sax.*;
 import javax.xml.transform.stream.StreamSource;
 
-import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
 

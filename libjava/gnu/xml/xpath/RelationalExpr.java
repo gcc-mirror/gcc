@@ -37,7 +37,6 @@ exception statement from your version. */
 
 package gnu.xml.xpath;
 
-import java.util.Collection;
 import org.w3c.dom.Node;
 
 /**

@@ -37,8 +37,9 @@ exception statement from your version. */
 
 package gnu.xml.pipeline;
 
-import java.io.*;
-
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.EmptyStackException;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -46,10 +47,15 @@ import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
-import org.xml.sax.*;
-import org.xml.sax.ext.*;
+import org.xml.sax.Attributes;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.Locator;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
+import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
-
 
 /**
  * This class checks SAX2 events to report validity errors; it works as

@@ -39,7 +39,6 @@ exception statement from your version. */
 package gnu.java.security.x509.ext;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.security.cert.PolicyQualifierInfo;
 
 import java.util.ArrayList;

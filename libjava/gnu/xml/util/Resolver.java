@@ -37,13 +37,13 @@ exception statement from your version. */
 
 package gnu.xml.util;
 
-import java.io.*;
-
+import java.io.File;
+import java.io.IOException;
 import java.util.Dictionary;
-import java.util.Hashtable;
 
-import org.xml.sax.*;
-
+import org.xml.sax.EntityResolver;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
  * Utility implementation of a SAX resolver, which can be used to improve

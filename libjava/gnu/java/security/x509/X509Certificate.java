@@ -38,17 +38,13 @@ exception statement from your version. */
 
 package gnu.java.security.x509;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.IOException;
-import java.io.ObjectStreamException;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.StringWriter;
 
 import java.math.BigInteger;
-
-import java.net.InetAddress;
 
 import java.security.AlgorithmParameters;
 import java.security.InvalidKeyException;
@@ -79,7 +75,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;

@@ -40,7 +40,6 @@ package gnu.xml.dom;
 import java.io.InputStream;
 import java.io.IOException;
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Document;
 import org.w3c.dom.DOMConfiguration;
 import org.w3c.dom.DOMImplementation;
