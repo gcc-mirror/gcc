@@ -1859,6 +1859,7 @@ fi
 # comment.  Fortunately, HP/UX already uses #ifndefs in limits.h; if
 # we find a #ifndef FLT_MIN we assume that all the required #ifndefs
 # are there, and we do not add them ourselves.
+# Also fix a nested comment problem in sys/limits.h on Motorola sysV68 R3V7.1
 for file in limits.h sys/limits.h; do
   if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
     mkdir ${LIB}/sys 2>/dev/null
@@ -1908,6 +1909,7 @@ for file in limits.h sys/limits.h; do
 	  -e '/[ 	]DBL_DIG[ 	]/a\
 #endif
 '\
+	  -e '/^\(\/\*#define	HUGE_VAL	3\.[0-9e+]* *\)\/\*/s//\1/'\
 	${LIB}/$file > ${LIB}/${file}.sed
       rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
     fi
