@@ -1,3 +1,11 @@
+2002-02-06  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/bits/locale_facets.tcc (money_get::do_get(string)):
+	In case money_base::symbol deal properly with multi-char sign
+	for patterns {X,Y,Z,symbol} and {X,Y,symbol,none}.
+	* testsuite/22_locale/money_get_members_char.cc: Add test07.
+	* testsuite/22_locale/money_get_members_wchar_t.cc: Add test07.
+
 2002-02-05  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/bits/locale_facets.tcc (money_get::do_get(string)):
