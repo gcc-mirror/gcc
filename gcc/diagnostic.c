@@ -644,7 +644,7 @@ build_message_string VPARAMS ((const char *msg, ...))
   return str;
 }
 
-/* Same as diagnsotic_build_prefix, but only the source FILE is given.  */
+/* Same as diagnostic_build_prefix, but only the source FILE is given.  */
 char *
 file_name_as_prefix (f)
      const char *f;
@@ -817,7 +817,7 @@ diagnostic_set_info (diagnostic, msgid, args, file, line, kind)
 {
   diagnostic->message.format_spec = msgid;
   diagnostic->message.args_ptr = args;
-  /* If the diagnostic message doesn't specify a loccation,
+  /* If the diagnostic message doesn't specify a location,
      use FILE and LINE.  */
   if (!text_specifies_location (&diagnostic->message, &diagnostic->location))
     {

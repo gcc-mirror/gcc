@@ -478,7 +478,7 @@ struct loop
 
      This does not include loop exits due to return instructions.
      This is because all bivs and givs are pseudos, and hence must be
-     dead after a return, so the presense of a return does not affect
+     dead after a return, so the presence of a return does not affect
      any of the optimizations that use this info.  It is simpler to
      just not include return instructions on this list.  */
   rtx exit_labels;

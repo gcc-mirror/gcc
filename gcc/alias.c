@@ -64,7 +64,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
    To see whether two alias sets can point to the same memory, we must
    see if either alias set is a subset of the other. We need not trace
-   past immediate descendents, however, since we propagate all
+   past immediate descendants, however, since we propagate all
    grandchildren up one level.
 
    Alias set zero is implicitly a superset of all other alias sets.
@@ -77,7 +77,7 @@ typedef struct alias_set_entry
   HOST_WIDE_INT alias_set;
 
   /* The children of the alias set.  These are not just the immediate
-     children, but, in fact, all descendents.  So, if we have:
+     children, but, in fact, all descendants.  So, if we have:
 
        struct T { struct S s; float f; }
 
@@ -1953,7 +1953,7 @@ adjust_offset_for_component_ref (x, offset)
   return GEN_INT (ioffset);
 }
 
-/* Return nonzero if we can deterimine the exprs corresponding to memrefs
+/* Return nonzero if we can determine the exprs corresponding to memrefs
    X and Y and they do not overlap.  */
 
 static int

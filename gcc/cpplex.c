@@ -607,7 +607,7 @@ unescaped_terminator_p (pfile, dest)
 {
   const unsigned char *start, *temp;
 
-  /* In #include-style directives, terminators are not escapeable.  */
+  /* In #include-style directives, terminators are not escapable.  */
   if (pfile->state.angled_headers)
     return 1;
 

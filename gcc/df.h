@@ -57,7 +57,7 @@ enum df_ref_flags
        and where the mode change of that subreg expression is invalid for
        this class.  Note, that this flag can also be set on df_refs
        representing the REG itself (i.e. one might not see the subreg
-       anyore).  Also note, that this flag is set also for hardreg refs.
+       anymore).  Also note, that this flag is set also for hardreg refs.
        I.e. you must check yourself if it's a pseudo.  */
     DF_REF_MODE_CHANGE = 2
   };
@@ -80,7 +80,7 @@ struct insn_info
 {
   struct df_link *defs;		/* Head of insn-def chain.  */
   struct df_link *uses;		/* Head of insn-use chain.  */
-  /* ???? The following luid field should be considerd private so that
+  /* ???? The following luid field should be considered private so that
      we can change it on the fly to accommodate new insns?  */
   int luid;			/* Logical UID.  */
 #if 0

@@ -434,7 +434,7 @@ extern const char *progname;
    entries for all identifiers: either macros defined by #define
    commands (type NT_MACRO), assertions created with #assert
    (NT_ASSERTION), or neither of the above (NT_VOID).  Builtin macros
-   like __LINE__ are flagged NODE_BUILTIN.  Poisioned identifiers are
+   like __LINE__ are flagged NODE_BUILTIN.  Poisoned identifiers are
    flagged NODE_POISONED.  NODE_OPERATOR (C++ only) indicates an
    identifier that behaves like an operator such as "xor".
    NODE_DIAGNOSTIC is for speed in lex_token: it indicates a
@@ -544,7 +544,7 @@ extern int cpp_handle_option PARAMS ((cpp_reader *, int, char **));
    too.  If there was an error opening the file, it returns NULL.
 
    If you want cpplib to manage its own hashtable, pass in a NULL
-   pointer.  Otherise you should pass in an initialized hash table
+   pointer.  Otherwise you should pass in an initialized hash table
    that cpplib will share; this technique is used by the C front
    ends.  */
 extern const char *cpp_read_main_file PARAMS ((cpp_reader *, const char *,
@@ -654,7 +654,7 @@ extern cpp_num cpp_interpret_integer PARAMS ((cpp_reader *, const cpp_token *,
    others assumed clear, to fill out a cpp_num structure.  */
 cpp_num cpp_num_sign_extend PARAMS ((cpp_num, size_t));
 
-/* Diagnostic levels.  To get a dianostic without associating a
+/* Diagnostic levels.  To get a diagnostic without associating a
    position in the translation unit with it, use cpp_error_with_line
    with a line number of zero.  */
 

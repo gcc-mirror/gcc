@@ -424,7 +424,7 @@ handle_pragma_extern_prefix (dummy)
 }
 #endif
 
-/* Hook from the front ends to apply the results of one of the preceeding
+/* Hook from the front ends to apply the results of one of the preceding
    pragmas that rename variables.  */
 
 tree

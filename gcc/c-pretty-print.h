@@ -42,7 +42,7 @@ struct c_pretty_print_info
   int *offset_list;
 
   /* These must be overridden by each of the C and C++ front-end to
-     reflect their understanding of syntatic productions when they differ.  */
+     reflect their understanding of syntactic productions when they differ.  */
   c_pretty_print_fn declaration;
   c_pretty_print_fn declaration_specifiers;
   c_pretty_print_fn type_specifier;

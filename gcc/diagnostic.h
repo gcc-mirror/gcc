@@ -33,7 +33,7 @@ typedef struct
   va_list *args_ptr;
 } text_info;
 
-/* Contants used to discreminate diagnostics.  */
+/* Contants used to discriminate diagnostics.  */
 typedef enum
 {
 #define DEFINE_DIAGNOSTIC_KIND(K, M) K,  
@@ -282,7 +282,7 @@ extern diagnostic_context *global_dc;
 
 #define report_diagnostic(D) diagnostic_report_diagnostic (global_dc, D)
 
-/* Dignostic related functions.  */
+/* Diagnostic related functions.  */
 extern void diagnostic_initialize	PARAMS ((diagnostic_context *));
 extern void diagnostic_report_current_module PARAMS ((diagnostic_context *));
 extern void diagnostic_report_current_function PARAMS ((diagnostic_context *));

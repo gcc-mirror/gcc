@@ -2922,7 +2922,7 @@ start_decl (declarator, declspecs, initialized, attributes)
 
      Thread-local variables are never common, since there's no entrenched
      body of code to break, and it allows more efficient variable references
-     in the presense of dynamic linking.  */
+     in the presence of dynamic linking.  */
 
   if (TREE_CODE (decl) == VAR_DECL
       && !initialized
@@ -5024,7 +5024,7 @@ grokfield (filename, line, declarator, declspecs, width)
 	     again this is an anonymous struct.
 	   Otherwise this is an error.
 
-	 Oh what a horrid tangled web we weave.  I wonder if MS consiously
+	 Oh what a horrid tangled web we weave.  I wonder if MS consciously
 	 took this from Plan 9 or if it was an accident of implementation
 	 that took root before someone noticed the bug...  */
 

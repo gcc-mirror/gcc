@@ -33,7 +33,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
      - Edge redirection with updating and optimizing of insn chain
 	 block_label, redirect_edge_and_branch,
 	 redirect_edge_and_branch_force, tidy_fallthru_edge, force_nonfallthru
-     - Edge splitting and commiting to edges
+     - Edge splitting and committing to edges
 	 split_edge, insert_insn_on_edge, commit_edge_insertions
      - Dumping and debugging
 	 print_rtl_with_bb, dump_bb, debug_bb, debug_bb_n

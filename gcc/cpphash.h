@@ -362,7 +362,7 @@ struct cpp_reader
      _cpp_maybe_push_include_file has yet to restore the line map.  */
   struct pending_option **next_include_file;
 
-  /* Multiple inlcude optimisation.  */
+  /* Multiple include optimisation.  */
   const cpp_hashnode *mi_cmacro;
   const cpp_hashnode *mi_ind_cmacro;
   bool mi_valid;

@@ -572,7 +572,7 @@ dump_flow_info (file)
 
       /* Check the consistency of profile information.  We can't do that
 	 in verify_flow_info, as the counts may get invalid for incompletely
-	 solved graphs, later elliminating of conditionals or roundoff errors.
+	 solved graphs, later eliminating of conditionals or roundoff errors.
 	 It is still practical to have them reported for debugging of simple
 	 testcases.  */
       sum = 0;
