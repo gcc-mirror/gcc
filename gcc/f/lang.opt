@@ -1,0 +1,329 @@
+; Options for the Fortran 77 front end.
+; Copyright (C) 2003 Free Software Foundation, Inc.
+;
+; This file is part of GCC.
+;
+; GCC is free software; you can redistribute it and/or modify it under
+; the terms of the GNU General Public License as published by the Free
+; Software Foundation; either version 2, or (at your option) any later
+; version.
+; 
+; GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+; WARRANTY; without even the implied warranty of MERCHANTABILITY or
+; FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+; for more details.
+; 
+; You should have received a copy of the GNU General Public License
+; along with GCC; see the file COPYING.  If not, write to the Free
+; Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+; 02111-1307, USA.
+
+
+; This file is processed by the script opts.sh.  It is a database of
+; command line options, with each record separated by a blank line,
+; and each field appearing on its own line.  The first field is the
+; command-line switch with the leading "-" removed.  All options
+; beginning with "f" or "W" are implicitly assumed to take a "no-"
+; form; this form should not be listed.  If you do not want this
+; negative form and you want it to be automatically rejected, add
+; RejectNegative to the second field.
+
+; The second field should contain "F77".  If the switch takes an
+; argument, then you should also specify "Joined" and/or "Separate" to
+; indicate where the argument can appear.
+
+; Comments can appear on their own line anwhere in the file, preceded
+; by a semicolon.  Whitespace is permitted before the semicolon.
+
+; For each switch XXX below, an enumeration constant is created by the
+; script opts.sh spelt OPT_XXX, but with all non-alphanumeric
+; characters replaced with an underscore.
+
+; Please try to keep this file in ASCII collating order.
+
+I
+F77 Joined
+
+Wall
+F77
+
+Wcomment
+F77
+
+Wcomments
+F77
+
+Wglobals
+F77
+
+Wimplicit
+F77
+
+Wimport
+F77
+
+Wsurprising
+F77
+
+Wtrigraphs
+F77
+
+fautomatic
+F77
+
+fbackslash
+F77
+
+fbadu77-intrinsics-delete
+F77 RejectNegative
+
+fbadu77-intrinsics-disable
+F77 RejectNegative
+
+fbadu77-intrinsics-enable
+F77 RejectNegative
+
+fbadu77-intrinsics-hide
+F77 RejectNegative
+
+fcase-initcap
+F77 RejectNegative
+
+fcase-lower
+F77 RejectNegative
+
+fcase-preserve
+F77 RejectNegative
+
+fcase-strict-lower
+F77 RejectNegative
+
+fcase-strict-upper
+F77 RejectNegative
+
+fcase-upper
+F77 RejectNegative
+
+fdebug-kludge
+F77
+
+fdollar-ok
+F77
+
+femulate-complex
+F77
+
+ff2c
+F77
+
+ff2c-intrinsics-delete
+F77 RejectNegative
+
+ff2c-intrinsics-disable
+F77 RejectNegative
+
+ff2c-intrinsics-enable
+F77 RejectNegative
+
+ff2c-intrinsics-hide
+F77 RejectNegative
+
+ff2c-library
+F77
+
+ff66
+F77
+
+ff77
+F77
+
+ff90
+F77
+
+ff90-intrinsics-delete
+F77 RejectNegative
+
+ff90-intrinsics-disable
+F77 RejectNegative
+
+ff90-intrinsics-enable
+F77 RejectNegative
+
+ff90-intrinsics-hide
+F77 RejectNegative
+
+ff90-not-vxt
+F77 RejectNegative
+
+ffixed-form
+F77
+
+ffixed-line-length-
+F77 Joined
+
+fflatten-arrays
+F77
+
+ffortran-bounds-check
+F77
+
+ffree-form
+F77
+
+fglobals
+F77
+
+fgnu-intrinsics-delete
+F77 RejectNegative
+
+fgnu-intrinsics-disable
+F77 RejectNegative
+
+fgnu-intrinsics-enable
+F77 RejectNegative
+
+fgnu-intrinsics-hide
+F77 RejectNegative
+
+finit-local-zero
+F77
+
+fintrin-case-any
+F77 RejectNegative
+
+fintrin-case-initcap
+F77 RejectNegative
+
+fintrin-case-lower
+F77 RejectNegative
+
+fintrin-case-upper
+F77 RejectNegative
+
+fmatch-case-any
+F77 RejectNegative
+
+fmatch-case-initcap
+F77 RejectNegative
+
+fmatch-case-lower
+F77 RejectNegative
+
+fmatch-case-upper
+F77 RejectNegative
+
+fmil-intrinsics-delete
+F77 RejectNegative
+
+fmil-intrinsics-disable
+F77 RejectNegative
+
+fmil-intrinsics-enable
+F77 RejectNegative
+
+fmil-intrinsics-hide
+F77 RejectNegative
+
+fonetrip
+F77
+
+fpedantic
+F77
+
+fsecond-underscore
+F77
+
+fsilent
+F77
+
+fsource-case-lower
+F77 RejectNegative
+
+fsource-case-preserve
+F77 RejectNegative
+
+fsource-case-upper
+F77 RejectNegative
+
+fsymbol-case-any
+F77 RejectNegative
+
+fsymbol-case-initcap
+F77 RejectNegative
+
+fsymbol-case-lower
+F77 RejectNegative
+
+fsymbol-case-upper
+F77 RejectNegative
+
+ftypeless-boz
+F77
+
+fugly
+F77
+
+fugly-args
+F77
+
+fugly-assign
+F77
+
+fugly-assumed
+F77
+
+fugly-comma
+F77
+
+fugly-complex
+F77
+
+fugly-init
+F77
+
+fugly-logint
+F77
+
+funderscoring
+F77
+
+funix-intrinsics-delete
+F77 RejectNegative
+
+funix-intrinsics-disable
+F77 RejectNegative
+
+funix-intrinsics-enable
+F77 RejectNegative
+
+funix-intrinsics-hide
+F77 RejectNegative
+
+fversion
+F77 RejectNegative
+
+fvxt
+F77
+
+fvxt-intrinsics-delete
+F77 RejectNegative
+
+fvxt-intrinsics-disable
+F77 RejectNegative
+
+fvxt-intrinsics-enable
+F77 RejectNegative
+
+fvxt-intrinsics-hide
+F77 RejectNegative
+
+fvxt-not-f90
+F77 RejectNegative
+
+fxyzzy
+F77
+
+fzeros
+F77
+
+; This comment is to ensure we retain the blank line above.

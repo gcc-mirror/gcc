@@ -389,7 +389,6 @@ static tree start_decl (tree decl, bool is_top_level);
 static void start_function (tree name, tree type, int nested, int public);
 static void ffecom_file_ (const char *name);
 static void ffecom_close_include_ (FILE *f);
-static int ffecom_decode_include_option_ (char *spec);
 static FILE *ffecom_open_include_ (char *name, ffewhereLine l,
 				   ffewhereColumn c);
 
@@ -10697,12 +10696,6 @@ ffecom_close_include (FILE *f)
   ffecom_close_include_ (f);
 }
 
-int
-ffecom_decode_include_option (char *spec)
-{
-  return ffecom_decode_include_option_ (spec);
-}
-
 /* End a compound statement (block).  */
 
 tree
@@ -14148,8 +14141,8 @@ struct language_function GTY(())
 #define LANG_HOOKS_FINISH		ffe_finish
 #undef  LANG_HOOKS_INIT_OPTIONS
 #define LANG_HOOKS_INIT_OPTIONS		ffe_init_options
-#undef  LANG_HOOKS_DECODE_OPTION
-#define LANG_HOOKS_DECODE_OPTION	ffe_decode_option
+#undef  LANG_HOOKS_HANDLE_OPTION
+#define LANG_HOOKS_HANDLE_OPTION	ffe_handle_option
 #undef  LANG_HOOKS_POST_OPTIONS
 #define LANG_HOOKS_POST_OPTIONS		ffe_post_options
 #undef  LANG_HOOKS_PARSE_FILE
@@ -15119,7 +15112,7 @@ static int max_include_len = 0;
 struct file_name_list
   {
     struct file_name_list *next;
-    char *fname;
+    const char *fname;
     /* Mapping of file names for this directory.  */
     struct file_name_map *name_map;
     /* Nonzero if name_map is valid.  */
@@ -15486,26 +15479,20 @@ ffecom_close_include_ (FILE *f)
   ffewhere_column_kill (instack[indepth].column);
 }
 
-static int
-ffecom_decode_include_option_ (char *spec)
+void
+ffecom_decode_include_option (const char *dir)
 {
-  struct file_name_list *dirtmp;
-
-  if (! ignore_srcdir && !strcmp (spec, "-"))
+  if (! ignore_srcdir && !strcmp (dir, "-"))
     ignore_srcdir = 1;
   else
     {
-      dirtmp = (struct file_name_list *)
+      struct file_name_list *dirtmp = (struct file_name_list *)
 	xmalloc (sizeof (struct file_name_list));
       dirtmp->next = 0;		/* New one goes on the end */
-      dirtmp->fname = spec;
+      dirtmp->fname = dir;
       dirtmp->got_name_map = 0;
-      if (spec[0] == 0)
-	error ("directory name must immediately follow -I");
-      else
-	append_include_chain (dirtmp, dirtmp);
+      append_include_chain (dirtmp, dirtmp);
     }
-  return 1;
 }
 
 /* Open INCLUDEd file.  */
@@ -15560,9 +15547,10 @@ ffecom_open_include_ (char *name, ffewhereLine l, ffewhereColumn c)
 	      if (ep != NULL)
 		{
 		  n = ep - nam;
-		  dsp[0].fname = (char *) xmalloc (n + 1);
-		  strncpy (dsp[0].fname, nam, n);
-		  dsp[0].fname[n] = '\0';
+		  fname = xmalloc (n + 1);
+		  strncpy (fname, nam, n);
+		  fname[n] = '\0';
+		  dsp[0].fname = fname;
 		  if (n + INCLUDE_LEN_FUDGE > max_include_len)
 		    max_include_len = n + INCLUDE_LEN_FUDGE;
 		}
@@ -15670,7 +15658,7 @@ ffecom_open_include_ (char *name, ffewhereLine l, ffewhereColumn c)
     }
 
   if (dsp[0].fname != NULL)
-    free (dsp[0].fname);
+    free ((char *) dsp[0].fname);
 
   if (f == NULL)
     return NULL;
