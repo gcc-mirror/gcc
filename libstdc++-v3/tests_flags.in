@@ -29,8 +29,9 @@
 #        LTCXX       libtoolized command to compile a C++ program
 #        LIBS        flags to pass to the linker
 #        LTEXE       libtoolized command to run a compiled C++ program
+#	 CXX         which C++ compiler is being used
+#        CXXFLAGS    special C++ flags used
 #
-
 
 ##
 ## Utility functions
@@ -173,5 +174,5 @@ case ${query} in
     ;;
 esac
 
-echo ${BUILD_DIR}:${SRC_DIR}:${PREFIX_DIR}:${LTCXX}:${LIBS}:${LTEXE}
+echo ${BUILD_DIR}:${SRC_DIR}:${PREFIX_DIR}:${LTCXX}:${LIBS}:${LTEXE}:${CXX}:${CXXFLAGS}
 exit 0

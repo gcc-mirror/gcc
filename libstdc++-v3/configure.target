@@ -84,6 +84,9 @@ case "${target_os}" in
   bsd* | freebsd*)
     os_include_dir="config/os/bsd"
     ;;
+  cygwin*)
+    os_include_dir="config/os/newlib"
+    ;;
   linux*)
     os_include_dir="config/os/gnu-linux"
     ;;

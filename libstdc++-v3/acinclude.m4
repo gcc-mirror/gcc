@@ -929,7 +929,7 @@ AC_DEFUN(GLIBCPP_CHECK_CTYPE_SUPPORT, [
     ctype_newlib=yes, ctype_newlib=no)
     AC_MSG_RESULT($ctype_newlib)
     if test $ctype_newlib = "yes"; then
-      ctype_include_dir="config/newlib"
+      ctype_include_dir="config/os/newlib"
       ctype_default=no
     fi
     fi

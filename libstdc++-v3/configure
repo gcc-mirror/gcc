@@ -18081,7 +18081,7 @@ fi
 rm -f conftest*
     echo "$ac_t""$ctype_newlib" 1>&6
     if test $ctype_newlib = "yes"; then
-      ctype_include_dir="config/newlib"
+      ctype_include_dir="config/os/newlib"
       ctype_default=no
     fi
     fi
