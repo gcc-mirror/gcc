@@ -1,8 +1,14 @@
 2000-01-14  Clinton Popetz  <cpopetz@cygnus.com>
 
+	* config/mips/mips.c (mips_va_arg): Fix fprv for the 32 bit 
+	eabi, and make sure queued POSTINCREMENT rtl is emitted at 
+	the right point.
+
+2000-01-14  Clinton Popetz  <cpopetz@cygnus.com>
+
 	* builtins.c (PAD_VARARGS_DOWN): Define. 
 	(std_expand_builtin_va_arg): Use the above macro.
-	* config/mips/mips.c (PAD_VARARGS_DOWN): Define.
+	* config/mips/mips.h (PAD_VARARGS_DOWN): Define.
 	* tm.texi (Register Arguments): Document the above macro.
 	
 2000-01-14  Nick Clifton  <nickc@cygnus.com>
