@@ -36,6 +36,10 @@ port.
 Alasdair Baird for various bug fixes.
 
 @item
+Peter Barada for his work to improve code generation for new
+ColdFire cores.
+
+@item
 Gerald Baumgartner added the signature extension to the C++ front end.
 
 @item
@@ -166,6 +170,10 @@ Alex Crain provided changes for the 3b1.
 
 @item
 Ian Dall for major improvements to the NS32k port.
+
+@item
+Paul Dale for his work to add uClinux platform support to the
+m68k backend.
 
 @item
 Dario Dariol contributed the four varieties of sample programs
@@ -329,6 +337,10 @@ Steve Holmgren for MachTen patches.
 
 @item
 Jan Hubicka for his x86 port improvements.
+
+@item
+Bernardo Innocenti for his m68k work, including merging of
+ColdFire improvements and uClinux support.
 
 @item
 Christian Iseli for various bug fixes.
