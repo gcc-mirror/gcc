@@ -71,7 +71,6 @@
 	PR middle-end/18903
 	* gcc.c-torture/compile/pr18903.c: New test.
 
->>>>>>> 1.4750
 2004-12-10  Richard Sandiford  <rsandifo@redhat.com>
 
 	* gcc.c-torture/execute/20041210-1.c: New test.
