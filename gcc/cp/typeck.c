@@ -2327,8 +2327,8 @@ build_indirect_ref (ptr, errorstring)
           return error_mark_node;
         }
       else if (TREE_CODE (pointer) == ADDR_EXPR
-	  && !flag_volatile
-	  && same_type_p (t, TREE_TYPE (TREE_OPERAND (pointer, 0))))
+	       && !flag_volatile
+	       && same_type_p (t, TREE_TYPE (TREE_OPERAND (pointer, 0))))
 	/* The POINTER was something like `&x'.  We simplify `*&x' to
 	   `x'.  */
 	return TREE_OPERAND (pointer, 0);
