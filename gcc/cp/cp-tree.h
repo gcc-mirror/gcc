@@ -557,6 +557,9 @@ enum cp_tree_index
     CPTI_TERMINATE,
     CPTI_ATEXIT,
     CPTI_DSO_HANDLE,
+    CPTI_BAD_CAST,
+    CPTI_BAD_TYPEID,
+    CPTI_DCAST,
 
     CPTI_MAX
 };
@@ -658,6 +661,15 @@ extern tree cp_global_trees[CPTI_MAX];
 
 /* A pointer to `__dso_handle'.  */
 #define dso_handle_node                 cp_global_trees[CPTI_DSO_HANDLE]
+
+/* The declaration of __throw_bad_cast.  */
+#define throw_bad_cast_node             cp_global_trees[CPTI_BAD_CAST]
+
+/* The declaration of __throw_bad_typeid.  */
+#define throw_bad_typeid_node           cp_global_trees[CPTI_BAD_TYPEID]
+
+/* The declaration of the dynamic_cast runtime.  */
+#define dynamic_cast_node               cp_global_trees[CPTI_DCAST]
 
 /* The type of a destructor.  */
 #define cleanup_type                    cp_global_trees[CPTI_CLEANUP_TYPE]

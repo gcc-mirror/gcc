@@ -1,5 +1,20 @@
 2000-01-24  Nathan Sidwell  <sidwell@codesourcery.com>
 
+	* cp-tree.h (CPTI_BAD_CAST, CPTI_BAD_TYPEID, CPTI_DCAST): New
+	cp_tree_index values.
+	(throw_bad_cast_node, throw_bad_typeid_node, dynamic_cast_node):
+	New global node #defines for them.
+	* rtti.c (call_void_fn): Replace with ...
+	(build_runtime_decl): ... new static function.
+	(throw_bad_cast): Use throw_bad_cast_node and build_runtime_decl.
+	(throw_bad_typeid): Use throw_bad_typeid_node and build_runtime_decl.
+	(build_dynamic_cast_1): Always produce correctly typed result.
+	Explicitly produce type_info addresses. Use dynamic_cast_node.
+	* exception.cc (__throw_bad_cast): Return `void *'.
+	(__throw_bad_typeid): Return `const type_info &'.
+
+2000-01-24  Nathan Sidwell  <sidwell@codesourcery.com>
+
 	* cp-tree.h (get_vtable_decl): Prototype new function.
 	* class.c (get_vtable_decl): New function. Broken out from ...
 	(build_vtable): ... here. Use it.

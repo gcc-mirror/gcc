@@ -35,7 +35,7 @@ Boston, MA 02111-1307, USA.  */
 
 extern struct obstack permanent_obstack;
 
-static tree call_void_fn PROTO((const char *));
+static tree build_runtime_decl PROTO((const char *, tree));
 static tree build_headof_sub PROTO((tree));
 static tree build_headof PROTO((tree));
 static tree get_tinfo_var PROTO((tree));
@@ -133,20 +133,22 @@ build_headof (exp)
 		cp_convert (ptrdiff_type_node, offset));
 }
 
-/* Build a call to a generic entry point taking and returning void.  */
+/* Build a decl to a runtime entry point taking void and returning TYPE. 
+   Although the entry point may never return, making its return type
+   consistent is necessary.  */
 
 static tree
-call_void_fn (name)
+build_runtime_decl (name, type)
      const char *name;
+     tree type;
 {
   tree d = get_identifier (name);
-  tree type;
   
   if (IDENTIFIER_GLOBAL_VALUE (d))
     d = IDENTIFIER_GLOBAL_VALUE (d);
   else
     {
-      type = build_function_type (void_type_node, void_list_node);
+      type = build_function_type (type, void_list_node);
       d = build_lang_decl (FUNCTION_DECL, d, type);
       DECL_EXTERNAL (d) = 1;
       TREE_PUBLIC (d) = 1;
@@ -156,7 +158,7 @@ call_void_fn (name)
     }
 
   mark_used (d);
-  return build_call (d, void_type_node, NULL_TREE);
+  return d;
 }
 
 /* Get a bad_cast node for the program to throw...
@@ -166,13 +168,28 @@ call_void_fn (name)
 static tree
 throw_bad_cast ()
 {
-  return call_void_fn ("__throw_bad_cast");
+  if (!throw_bad_cast_node)
+    throw_bad_cast_node = build_runtime_decl
+        ("__throw_bad_cast", ptr_type_node);
+  
+  return build_call (throw_bad_cast_node,
+                     TREE_TYPE (TREE_TYPE (throw_bad_cast_node)),
+                     NULL_TREE);
 }
 
 static tree
 throw_bad_typeid ()
 {
-  return call_void_fn ("__throw_bad_typeid");
+  if (!throw_bad_typeid_node)
+    throw_bad_typeid_node = build_runtime_decl
+        ("__throw_bad_typeid",
+         build_reference_type
+          (build_qualified_type
+            (type_info_type_node, TYPE_QUAL_CONST)));
+
+  return build_call (throw_bad_typeid_node,
+                     TREE_TYPE (TREE_TYPE (throw_bad_typeid_node)),
+                     NULL_TREE);
 }
 
 /* Return a pointer to type_info function associated with the expression EXP.
@@ -624,9 +641,12 @@ build_dynamic_cast_1 (type, expr)
 	      if (TREE_CODE (old_expr) == VAR_DECL
 		  && TREE_CODE (TREE_TYPE (old_expr)) == RECORD_TYPE)
 		{
+	          tree expr = throw_bad_cast ();
 		  cp_warning ("dynamic_cast of `%#D' to `%#T' can never succeed",
 			      old_expr, type);
-		  return throw_bad_cast ();
+	          /* Bash it to the expected type.  */
+	          TREE_TYPE (expr) = type;
+		  return expr;
 		}
 	    }
 	  /* Ditto for dynamic_cast<D*>(&b).  */
@@ -658,12 +678,11 @@ build_dynamic_cast_1 (type, expr)
 	    td1 = get_tinfo_decl_dynamic (build_indirect_ref (expr, NULL_PTR));
 	  else
 	    td1 = get_tinfo_decl_dynamic (expr);
-	  td1 = decay_conversion (td1);
 	  
 	  target_type = TYPE_MAIN_VARIANT (TREE_TYPE (type));
 	  static_type = TYPE_MAIN_VARIANT (TREE_TYPE (exprtype));
-	  td2 = decay_conversion (get_tinfo_decl (target_type));
-	  td3 = decay_conversion (get_tinfo_decl (static_type));
+	  td2 = build_unary_op (ADDR_EXPR, get_tinfo_decl (target_type), 0);
+	  td3 = build_unary_op (ADDR_EXPR, get_tinfo_decl (static_type), 0);
 
           /* Determine how T and V are related.  */
           boff = get_dynamic_cast_base_type (static_type, target_type);
@@ -676,29 +695,32 @@ build_dynamic_cast_1 (type, expr)
 	        (NULL_TREE, td3, tree_cons
 		 (NULL_TREE, expr1, NULL_TREE))))));
 
-	  dcast_fn = get_identifier ("__dynamic_cast_2");
-	  if (IDENTIFIER_GLOBAL_VALUE (dcast_fn))
-	    dcast_fn = IDENTIFIER_GLOBAL_VALUE (dcast_fn);
-	  else
+	  dcast_fn = dynamic_cast_node;
+	  if (!dcast_fn)
 	    {
 	      tree tmp;
-
+	      tree tinfo_ptr = build_pointer_type (tinfo_decl_type);
+  	      
 	      tmp = tree_cons
-		(NULL_TREE, TREE_TYPE (td1), tree_cons
-		 (NULL_TREE, TREE_TYPE (td1), tree_cons
-	          (NULL_TREE, integer_type_node, tree_cons
-		   (NULL_TREE, ptr_type_node, tree_cons
-		    (NULL_TREE, TREE_TYPE (td1), tree_cons
-		     (NULL_TREE, ptr_type_node, void_list_node))))));
+		    (NULL_TREE, tinfo_ptr, tree_cons
+		      (NULL_TREE, tinfo_ptr, tree_cons
+	                (NULL_TREE, integer_type_node, tree_cons
+		          (NULL_TREE, ptr_type_node, tree_cons
+		            (NULL_TREE, tinfo_ptr, tree_cons
+		              (NULL_TREE, ptr_type_node, void_list_node))))));
+
 	      tmp = build_function_type (ptr_type_node, tmp);
-	      dcast_fn = build_lang_decl (FUNCTION_DECL, dcast_fn, tmp);
+	      dcast_fn = build_lang_decl (FUNCTION_DECL,
+	                                  get_identifier ("__dynamic_cast_2"),
+	                                  tmp);
 	      DECL_EXTERNAL (dcast_fn) = 1;
 	      TREE_PUBLIC (dcast_fn) = 1;
 	      DECL_ARTIFICIAL (dcast_fn) = 1;
 	      pushdecl_top_level (dcast_fn);
 	      make_function_rtl (dcast_fn);
+	      
+	      dynamic_cast_node = dcast_fn;
 	    }
-	  
 	  mark_used (dcast_fn);
           result = build_call
 	    (dcast_fn, TREE_TYPE (TREE_TYPE (dcast_fn)), elems);

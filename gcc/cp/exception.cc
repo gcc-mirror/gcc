@@ -317,16 +317,21 @@ __check_eh_spec (int n, const void **spec)
     }
 }
 
-extern "C" void
-__throw_bad_cast (void)
+// Helpers for rtti. Although these don't return, we give them return types so
+// that the type system is not broken.
+
+extern "C" void *
+__throw_bad_cast ()
 {
   throw std::bad_cast ();
+  return 0;
 }
 
-extern "C" void
-__throw_bad_typeid (void)
+extern "C" type_info const &
+__throw_bad_typeid ()
 {
   throw std::bad_typeid ();
+  return typeid (void);
 }
 
 /* Has the current exception been caught?  */
