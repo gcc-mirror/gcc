@@ -2738,24 +2738,8 @@ subst_constants (rtx *loc, rtx insn, struct inline_remap *map, int memonly)
 
 	  if (op_mode == VOIDmode)
 	    op_mode = GET_MODE (XEXP (x, 1));
-	  new = simplify_relational_operation (code, op_mode,
+	  new = simplify_relational_operation (code, GET_MODE (x), op_mode,
 					       XEXP (x, 0), XEXP (x, 1));
-#ifdef FLOAT_STORE_FLAG_VALUE
-	  if (new != 0 && GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
-	    {
-	      enum machine_mode mode = GET_MODE (x);
-	      if (new == const0_rtx)
-		new = CONST0_RTX (mode);
-	      else
-		{
-		  REAL_VALUE_TYPE val;
-
-		  /* Avoid automatic aggregate initialization.  */
-		  val = FLOAT_STORE_FLAG_VALUE (mode);
-		  new = CONST_DOUBLE_FROM_REAL_VALUE (val, mode);
-		}
-	    }
-#endif
 	  break;
 	}
 
@@ -2783,10 +2767,10 @@ subst_constants (rtx *loc, rtx insn, struct inline_remap *map, int memonly)
 		/* We have compare of two VOIDmode constants for which
 		   we recorded the comparison mode.  */
 		rtx temp =
-		  simplify_relational_operation (GET_CODE (op0),
-						 map->compare_mode,
-						 XEXP (op0, 0),
-						 XEXP (op0, 1));
+		  simplify_const_relational_operation (GET_CODE (op0),
+						       map->compare_mode,
+						       XEXP (op0, 0),
+						       XEXP (op0, 1));
 
 		if (temp == const0_rtx)
 		  new = XEXP (x, 2);

@@ -1338,7 +1338,7 @@ simplify_cmp_and_jump_insns (enum rtx_code code, enum machine_mode mode,
 {
   rtx t, insn;
 
-  t = simplify_relational_operation (code, mode, op0, op1);
+  t = simplify_const_relational_operation (code, mode, op0, op1);
   if (!t)
     {
       enum rtx_code scode = signed_condition (code);

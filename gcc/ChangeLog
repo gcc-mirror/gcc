@@ -1,3 +1,26 @@
+2004-03-09  Roger Sayle  <roger@eyesopen.com>
+
+	* simplify-rtx.c (simplify_const_relational_operation): New function
+	renamed from simplify_relational_operation.
+	(simplify_relational_operation): Change prototype to accept an
+	additional mode argument.  Call simplify_const_relational_operation.
+	(simplify_gen_relational): Update simplify_relational_operation call.
+	(simplify_ternary_operation): Update simplify_relational_operation
+	subroutine call to use simplify_const_relational_operation instead.
+
+	* rtl.h (simplify_const_relational_operation): Prototype here.
+	(simplify_relational_operation): Add addtional mode argument.
+
+	* combine.c (combine_simplify_rtx): Update calls to
+	simplify_relational_operation.
+	(simplify_set): Likewise.
+	(gen_binary): Likewise.
+	* cse.c (fold_rtx): Likewise.
+	* dojump.c (compare_from_rtx): Likewise.
+	(do_compare_rtx_and_jump): Likewise.
+	* integrate.c (subst_constants): Likewise.
+	* unroll.c (simplify_cmp_and_jump_insns): Likewise.
+
 2004-03-09  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/m32r/m32r.md: Remove all define_peephole's.

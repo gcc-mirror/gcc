@@ -787,7 +787,8 @@ compare_from_rtx (rtx op0, rtx op1, enum rtx_code code, int unsignedp,
   do_pending_stack_adjust ();
 
   ucode = unsignedp ? unsigned_condition (code) : code;
-  if ((tem = simplify_relational_operation (ucode, mode, op0, op1)) != 0)
+  tem = simplify_const_relational_operation (ucode, mode, op0, op1);
+  if (tem != 0)
     return tem;
 
 #if 0
@@ -865,7 +866,8 @@ do_compare_rtx_and_jump (rtx op0, rtx op1, enum rtx_code code, int unsignedp,
   do_pending_stack_adjust ();
 
   ucode = unsignedp ? unsigned_condition (code) : code;
-  if ((tem = simplify_relational_operation (ucode, mode, op0, op1)) != 0)
+  tem = simplify_const_relational_operation (ucode, mode, op0, op1);
+  if (tem != 0)
     {
       if (tem == const_true_rtx)
         {
