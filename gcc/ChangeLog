@@ -1,3 +1,9 @@
+Thu Oct 31 12:45:55 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.h (binary_logical_operator): Declare.
+	* sh.c (binary_logical_operator): New function.
+	* sh.md (xordi3+1): New combiner splitter pattern.
+
 2002-10-31  David O'Brien  <obrien@FreeBSD.org>
 
 	* config/sparc/freebsd.h (TRANSFER_FROM_TRAMPOLINE): Define
