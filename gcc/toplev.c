@@ -4170,8 +4170,7 @@ decode_W_option (arg)
     {
       larger_than_size = read_integral_parameter (option_value, arg - 2, -1);
 
-      if (larger_than_size != -1)
-	warn_larger_than = 1;
+      warn_larger_than = larger_than_size != -1;
     }
   else if (!strcmp (arg, "unused"))
     {

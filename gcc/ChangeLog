@@ -1,3 +1,10 @@
+2001-01-30  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * c-decl.c (c_expand_body): Check TYPE_SIZE_UNIT (ret_type)
+        is not NULL.
+        * toplev.c (decode_W_option): Update warn_larger_than
+        unconditionally for each processed switch.
+
 2001-01-30  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa.c (pa_init_machine_status): Initialize pic_offset_table_save_rtx

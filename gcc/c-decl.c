@@ -6728,7 +6728,8 @@ c_expand_body (fndecl, nested_p)
     {
       tree ret_type = TREE_TYPE (TREE_TYPE (fndecl));
 
-      if (ret_type && TREE_CODE (TYPE_SIZE_UNIT (ret_type)) == INTEGER_CST
+      if (ret_type && TYPE_SIZE_UNIT (ret_type)
+	  && TREE_CODE (TYPE_SIZE_UNIT (ret_type)) == INTEGER_CST
 	  && 0 < compare_tree_int (TYPE_SIZE_UNIT (ret_type),
 				   larger_than_size))
 	{
