@@ -1,3 +1,102 @@
+2003-05-10  Petur Runolfsson  <peturr02@ru.is>
+
+	PR libstdc++/9027
+	PR libstdc++/9520
+	PR libstdc++/10096
+	* include/bits/fstream.tcc (basic_file::_M_underflow):  Add generic
+	implementation, based on old wchar_t specialization, add support
+	for codecvt::in() return value of codecvt_base::noconv, remove
+	_M_file.sys_ungetc() call.
+	* include/std/std_fstream.h (basic_file::underflow,
+	basic_file::uflow, basic_file::_M_underflow):  Remove
+	specialization declarations, call _M_underflow from generic versions
+	of underflow and uflow.
+	* src/fstream.cc (basic_file::underflow, basic_file::uflow,
+	basic_file::_M_underflow):  Remove specializations.
+	* src/Makefile.am (sources):  Remove fstream.cc.
+	* src/Makefile.in:  Regenerated.
+	* testsuite/27_io/basic_filebuf/underflow/10096.cc:  New test.
+	* testsuite/27_io/basic_filebuf/underflow/char/1.cc:  New test.
+	* testsuite/27_io/basic_filebuf/underflow/char/9027.cc:  New test.
+	* testsuite/27_io/basic_filebuf/underflow/wchar_t/9520.cc:  New test.
+
+2003-05-10  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/ext/stdio_filebuf.h (__stdio_filebuf): Remove stack
+	buffer.
+	* config/io/basic_file_stdio.h (__basic_file::xsgetn): Remove
+	unbuffered bits.
+	(__basic_file::xsputn): Same.
+	(__basic_file::seekoff): Same.
+	(__basic_file::seekpos): Same.
+	(__basic_file::showmanyc): Same.
+	* config/io/basic_file_stdio.cc: Same.
+	* include/std/std_fstream.h: Same.
+	* include/bits/fstream.tcc: Same.
+	* src/fstream.cc: Same.
+	* testsuite/27_io/basic_filebuf/sgetn/char/1.cc (test05): Tidy.
+	
+2003-05-10  Petur Runolfsson  <peturr02@ru.is>
+
+	PR libstdc++/9520
+	PR libstdc++/9661
+	PR libstdc++/9662
+	* include/ext/stdio_sync_filebuf.h:  New file.
+	(basic_stdiobuf):  New.
+	* include/Makefile.am (ext_headers): Add ext/stdio_sync_filebuf.h
+	* include/Makefile.in: Regenerate.
+	* include/bits/ios_base.h (Init::_S_create_buffers,
+	Init::_S_destroy_buffers):  Remove declarations.
+	* src/globals.cc (buf_cout_sync, buf_cin_sync, buf_cerr_sync, 
+	buf_wcout_sync, buf_wcin_sync, buf_wcerr_sync):  Define.
+	* src/ios.cc (Init::_S_create_buffers,
+	Init::_S_destroy_buffers):  Remove.
+	(Init::Init):  Create and use syncronized buffers.
+	(ios_base::sync_with_stdio):  Destroy syncronized buffers,
+	create and install unsyncronized buffers.
+	* testsuite/27_io/objects/char/10.cc:  New test.
+	* testsuite/27_io/objects/char/9.cc:  New test.
+	* testsuite/27_io/objects/char/9661-1.cc:  New test.
+	* testsuite/27_io/objects/char/9661-2_xin.cc:  New test.
+	* testsuite/27_io/objects/char/9661-2_xin.in:  New.
+	* testsuite/27_io/objects/wchar_t/1.cc:  New test.
+	* testsuite/27_io/objects/wchar_t/10.cc:  New test.
+	* testsuite/27_io/objects/wchar_t/2.cc:  New test.
+	* testsuite/27_io/objects/wchar_t/2523-1_xin.cc:  New test.
+	* testsuite/27_io/objects/wchar_t/2523-1_xin.in:  New.
+	* testsuite/27_io/objects/wchar_t/2523-2_xin.cc:  New test.
+	* testsuite/27_io/objects/wchar_t/2523-2_xin.in:  New.
+	* testsuite/27_io/objects/wchar_t/3045.cc:  New test.
+	* testsuite/27_io/objects/wchar_t/3647.cc:  New test.
+	* testsuite/27_io/objects/wchar_t/3_xin.cc:  New test.
+	* testsuite/27_io/objects/wchar_t/3_xin.in:  New.
+	* testsuite/27_io/objects/wchar_t/4_xin.cc:  New test.
+	* testsuite/27_io/objects/wchar_t/4_xin.in:  New.
+	* testsuite/27_io/objects/wchar_t/5.cc:  New test.
+	* testsuite/27_io/objects/wchar_t/5268.cc:  New test.
+	* testsuite/27_io/objects/wchar_t/5280_xin.cc:  New test.
+	* testsuite/27_io/objects/wchar_t/5280_xin.in:  New.
+	* testsuite/27_io/objects/wchar_t/6.cc:  New test.
+	* testsuite/27_io/objects/wchar_t/6548_xin.cc:  New test.
+	* testsuite/27_io/objects/wchar_t/6548_xin.in:  New.
+	* testsuite/27_io/objects/wchar_t/6648-1_xin.cc:  New test.
+	* testsuite/27_io/objects/wchar_t/6648-1_xin.in:  New.
+	* testsuite/27_io/objects/wchar_t/6648-2_xin.cc:  New test.
+	* testsuite/27_io/objects/wchar_t/6648-2_xin.in:  New.
+	* testsuite/27_io/objects/wchar_t/7.cc:  New test.
+	* testsuite/27_io/objects/wchar_t/7744_xin.cc:  New test.
+	* testsuite/27_io/objects/wchar_t/7744_xin.in:  New.
+	* testsuite/27_io/objects/wchar_t/8.cc:  New test.
+	* testsuite/27_io/objects/wchar_t/9_xin.cc:  New test.
+	* testsuite/27_io/objects/wchar_t/9_xin.in:  New.
+	* testsuite/27_io/objects/wchar_t/9520.cc:  New test.
+	* testsuite/27_io/objects/wchar_t/9661-1.cc:  New test.
+	* testsuite/27_io/objects/wchar_t/9661-2_xin.cc:  New test.
+	* testsuite/27_io/objects/wchar_t/9661-2_xin.in:  New.
+	* testsuite/27_io/objects/wchar_t/9662.cc:  New test.
+	* testsuite/ext/stdiobuf_char.cc:  New test.
+	* testsuite/ext/stdiobuf_wchar_t.cc:  New test.
+
 2003-05-10  Paolo Carlini  <pcarlini@unitus.it>
 
 	* testsuite/27_io/basic_filebuf/close/char/3.cc: Remove

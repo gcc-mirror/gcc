@@ -56,6 +56,7 @@ namespace std
     {
       // Underlying data source/sink.
       __c_file* 	_M_cfile;
+
       // True iff we opened _M_cfile, and thus must close it ourselves.
       bool 		_M_cfile_created;
 
@@ -93,25 +94,25 @@ namespace std
       ~__basic_file();
 
       streamsize 
-      xsputn(const char* __s, streamsize __n, bool __stdio);
+      xsputn(const char* __s, streamsize __n);
 
       streamsize 
-      xsgetn(char* __s, streamsize __n, bool __stdio);
+      xsgetn(char* __s, streamsize __n);
 
       streamoff
-      seekoff(streamoff __off, ios_base::seekdir __way, bool __stdio,
+      seekoff(streamoff __off, ios_base::seekdir __way, 
 	      ios_base::openmode __mode = ios_base::in | ios_base::out);
 
       streamoff
-      seekpos(streamoff __pos, bool __stdio,
+      seekpos(streamoff __pos, 
 	      ios_base::openmode __mode = ios_base::in | ios_base::out);
 
       int 
       sync();
 
       streamsize
-      showmanyc_helper(bool __stdio);
+      showmanyc();
     };
 }  // namespace std
 
-#endif	// _CPP_BASIC_FILE
+#endif	

@@ -205,77 +205,41 @@ namespace std
     return __retval;
   }
  
-  // In the next four functions we want to use stdio functions only
-  // when synced with stdio (_M_buf_size == 1): I/O primitives do not
-  // block until the asked number of bytes are available.
   streamsize 
-  __basic_file<char>::xsgetn(char* __s, streamsize __n, bool __stdio)
+  __basic_file<char>::xsgetn(char* __s, streamsize __n)
   {
-    if (__stdio)
-      return fread(__s, 1, __n, _M_cfile);
-    else
-      {
-	streamsize __ret;
-        do
-	  __ret = read(this->fd(), __s, __n);
-	while (__ret == -1L && errno == EINTR);
-	return __ret;
-      }
+    streamsize __ret;
+    do
+      __ret = read(this->fd(), __s, __n);
+    while (__ret == -1L && errno == EINTR);
+    return __ret;
   }
     
   streamsize 
-  __basic_file<char>::xsputn(const char* __s, streamsize __n, bool __stdio)
+  __basic_file<char>::xsputn(const char* __s, streamsize __n)
   {
-    if (__stdio)
-      return fwrite(__s, 1, __n, _M_cfile);
-    else
-      {
-	streamsize __ret;
-        do
-	  __ret = write(this->fd(), __s, __n);
-	while (__ret == -1L && errno == EINTR);
-	return __ret;
-      }
+    streamsize __ret;
+    do
+      __ret = write(this->fd(), __s, __n);
+    while (__ret == -1L && errno == EINTR);
+    return __ret;
   }
   
   streamoff
   __basic_file<char>::seekoff(streamoff __off, ios_base::seekdir __way, 
-			      bool __stdio, ios_base::openmode /*__mode*/)
-  { 
-    if (!__stdio)
-      return lseek(this->fd(), __off, __way);
-    else
-      {
-	if (!fseek(_M_cfile, __off, __way))
-	  return ftell(_M_cfile); 
-	else
-	  // Fseek failed.
-	  return -1L;
-      }
-  }
+			      ios_base::openmode /*__mode*/)
+  { return lseek(this->fd(), __off, __way); }
 
   streamoff
-  __basic_file<char>::seekpos(streamoff __pos, bool __stdio,
-			      ios_base::openmode /*__mode*/)
-  { 
-    if (!__stdio)
-      return lseek(this->fd(), __pos, ios_base::beg);
-    else
-      {
-	if (!fseek(_M_cfile, __pos, ios_base::beg))
-	  return ftell(_M_cfile);
-	else
-	  // Fseek failed.
-	  return -1L;
-      }
-  }
+  __basic_file<char>::seekpos(streamoff __pos, ios_base::openmode /*__mode*/)
+  { return lseek(this->fd(), __pos, ios_base::beg); }
   
   int 
   __basic_file<char>::sync() 
   { return fflush(_M_cfile); }
 
   streamsize
-  __basic_file<char>::showmanyc_helper(bool __stdio)
+  __basic_file<char>::showmanyc()
   {
 #ifdef FIONREAD
     // Pipes and sockets.    
@@ -299,9 +263,6 @@ namespace std
     struct stat __buffer;
     int __ret = fstat(this->fd(), &__buffer);
     if (!__ret && _GLIBCPP_ISREG(__buffer.st_mode))
-      if (__stdio)
-	return __buffer.st_size - ftell(_M_cfile);
-      else
 	return __buffer.st_size - lseek(this->fd(), 0, ios_base::cur);
 #endif
     return 0;
