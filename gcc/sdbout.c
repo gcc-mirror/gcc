@@ -929,7 +929,12 @@ sdbout_symbol (decl, local)
 	      PUT_SDB_SCL (C_AUTO);
 	    }
 
-	  type = build_pointer_type (TREE_TYPE (decl));
+	  /* Effectively do build_pointer_type, but don't cache this type,
+	     since it might be temporary whereas the type it points to
+	     might have been saved for inlining.  */
+	  /* Don't use REFERENCE_TYPE because dbx can't handle that.  */
+	  type = make_node (POINTER_TYPE);
+	  TREE_TYPE (type) = TREE_TYPE (decl);
 	}
       else if (GET_CODE (value) == MEM
 	       && ((GET_CODE (XEXP (value, 0)) == PLUS
