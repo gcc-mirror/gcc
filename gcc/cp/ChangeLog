@@ -1,3 +1,22 @@
+Sun Mar 15 02:07:26 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cp-tree.h (TEMPLATE_PARMS_FOR_INLINE): New macro.
+	* pt.c (inline_needs_template_parms): New fn.
+	(original_template): New fn.
+	(push_inline_template_parms_recursive): New fn.
+	(maybe_begin_member_template_processing): Use them.
+	(maybe_end_member_template_processing): Likewise.
+	(is_member_or_friend_template): Rename to is_member_template.
+	Member functions of local classes are never member templates.
+
+Sun Mar 15 01:14:22 1998  Kriang Lerdsuwanakij  <lerdsuwa@scf.usc.edu>
+
+	* lex.c (do_identifier): Handle TEMPLATE_DECL that was
+	added in the class scope to catch redefinition error.
+
+	* pt.c (reduce_template_parm_level): Also copy 
+	the DECL_TEMPLATE_PARMS field.
+
 Sun Mar 15 10:54:08 1998  Mark Mitchell  <mmitchell@usa.net>
 
 	* pt.c (tsubst): Clear TYPE_REFERENCE_TO when creating a
@@ -15,7 +34,8 @@ Sun Mar 15 12:26:02 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 	
 Thu Mar 12 09:39:40 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 
-	* lang-specs.h: Properly put brackets around array elements in initializer.
+	* lang-specs.h: Properly put brackets around array elements in 
+	initializer.
 
 	* typeck.c (build_binary_op_nodefault): Correctly place parens around
 	&& and || in expression.
@@ -32,7 +52,8 @@ Thu Mar 12 09:26:04 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 	* except.c (do_unwind): #if 0 definition of unused variables fcall
 	and next_pc.
 
-	* expr.c (extract_scalar_init): #if 0 prototype and function definition.
+	* expr.c (extract_scalar_init): #if 0 prototype and function 
+	definition.
 
 	* init.c (expand_aggr_init_1): Remove unused variable init_type.
 	(build_new_1): Remove unused variable t.
