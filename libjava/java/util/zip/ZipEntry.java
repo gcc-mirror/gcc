@@ -84,11 +84,15 @@ public class ZipEntry implements ZipConstants, Cloneable
    * Creates a zip entry with the given name.
    * @param name the name. May include directory components separated
    * by '/'.
+   *
+   * @exception NullPointerException when name is null.
+   * @exception IllegalArgumentException when name is bigger then 65535 chars.
    */
   public ZipEntry(String name)
   {
-    if (name == null)
-      throw new NullPointerException();
+    int length = name.length();
+    if (length > 65535)
+      throw new IllegalArgumentException("name length is " + length);
     this.name = name;
   }
 
