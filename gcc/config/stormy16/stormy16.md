@@ -379,11 +379,11 @@
 ;; Unsigned division giving both quotient and remainder
 (define_insn "udivmodhi4"
   [(set (match_operand:HI 0 "register_operand" "=a")
-	(div:HI (match_operand:HI 1 "register_operand" "a")
-		(match_operand:HI 2 "register_operand" "c")))
+	(udiv:HI (match_operand:HI 1 "register_operand" "a")
+		 (match_operand:HI 2 "register_operand" "c")))
    (set (match_operand:HI 3 "register_operand" "=b")
-	(mod:HI (match_dup 1)
-		(match_dup 2)))]
+	(umod:HI (match_dup 1)
+		 (match_dup 2)))]
   ""
   "div"
   [(set_attr "psw_operand" "nop")])

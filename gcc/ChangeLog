@@ -1,3 +1,8 @@
+2001-08-30  Geoffrey Keating  <geoffk@redhat.com>
+
+	* config/stormy16/stormy16.md (udivmodhi4): Express using UDIV/UMOD,
+	not DIV/MOD, of course.
+
 2001-08-30  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* rtl.def: Undo my patch commited 2001-08-27.
