@@ -1,4 +1,9 @@
-2004-10-26 Fariborz Jahanian <fjahanian@apple.com>
+2004-10-26  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR 18162
+	* c-parse.in (designator): Finish with a semi-colon.
+
+2004-10-26  Fariborz Jahanian <fjahanian@apple.com>
 
         * config/rs6000/rs6000.md (andsi3_internal8): Set CR when splitting 
         into rotlsi3.
