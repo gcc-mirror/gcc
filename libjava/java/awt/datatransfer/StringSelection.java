@@ -38,7 +38,7 @@ exception statement from your version. */
 
 package java.awt.datatransfer;
 
-import java.io.StringBufferInputStream;
+import java.io.StringReader;
 import java.io.IOException;
 
 /**
@@ -140,7 +140,15 @@ getTransferData(DataFlavor flavor) throws UnsupportedFlavorException,
   if (!isDataFlavorSupported(flavor))
     throw new UnsupportedFlavorException(flavor);
 
-  return(new StringBufferInputStream(data));
+  if (DataFlavor.plainTextFlavor == flavor)
+      /* The behavior of this method for DataFlavor.plainTextFlavor and
+         equivalent DataFlavors is inconsistent with the definition of
+         DataFlavor.plainTextFlavor. We choose to do like Sun's implementation
+         and return a Reader instead of an InputString. */
+      /* return(new StringBufferInputStream(data)); */
+      return(new StringReader(data));
+  else // DataFlavor.stringFlavor
+      return data;
 }
 
 /*************************************************************************/
