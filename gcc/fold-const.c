@@ -2285,8 +2285,17 @@ truth_value_p (enum tree_code code)
 int
 operand_equal_p (tree arg0, tree arg1, unsigned int flags)
 {
+  /* If one is specified and the other isn't, they aren't equal and if
+     neither is specified, they are.
+
+     ??? This is temporary and is meant only to handle the cases of the
+     optional operands for COMPONENT_REF and ARRAY_REF.  */
+  if ((arg0 && !arg1) || (!arg0 && arg1))
+    return 0;
+  else if (!arg0 && !arg1)
+    return 1;
   /* If either is ERROR_MARK, they aren't equal.  */
-  if (TREE_CODE (arg0) == ERROR_MARK || TREE_CODE (arg1) == ERROR_MARK)
+  else if (TREE_CODE (arg0) == ERROR_MARK || TREE_CODE (arg1) == ERROR_MARK)
     return 0;
 
   /* If both types don't have the same signedness, then we can't consider
@@ -2378,17 +2387,6 @@ operand_equal_p (tree arg0, tree arg1, unsigned int flags)
   if (flags & OEP_ONLY_CONST)
     return 0;
 
-/* Define macros to test an operan from arg0 and arg1 for equality and a
-   variant that allows null and views null as being different from any
-   non-null value.  In the latter case, if either is null, the both
-   must be; otherwise, do the normal comparison.  */
-#define OP_SAME(N) operand_equal_p (TREE_OPERAND (arg0, N),	\
-				    TREE_OPERAND (arg1, N), flags)
-
-#define OP_SAME_WITH_NULL(N)				\
-  ((!TREE_OPERAND (arg0, N) || !TREE_OPERAND (arg1, N))	\
-   ? TREE_OPERAND (arg0, N) == TREE_OPERAND (arg1, N) : OP_SAME (N))
-
   switch (TREE_CODE_CLASS (TREE_CODE (arg0)))
     {
     case '1':
@@ -2409,11 +2407,15 @@ operand_equal_p (tree arg0, tree arg1, unsigned int flags)
 	  break;
 	}
 
-      return OP_SAME (0);
+      return operand_equal_p (TREE_OPERAND (arg0, 0),
+			      TREE_OPERAND (arg1, 0), flags);
 
     case '<':
     case '2':
-      if (OP_SAME (0) && OP_SAME (1))
+      if (operand_equal_p (TREE_OPERAND (arg0, 0),
+			   TREE_OPERAND (arg1, 0), flags)
+	  && operand_equal_p (TREE_OPERAND (arg0, 1),
+			      TREE_OPERAND (arg1, 1), flags))
 	return 1;
 
       /* For commutative ops, allow the other order.  */
@@ -2435,23 +2437,37 @@ operand_equal_p (tree arg0, tree arg1, unsigned int flags)
 	case INDIRECT_REF:
 	case REALPART_EXPR:
 	case IMAGPART_EXPR:
-	  return OP_SAME (0);
+	  return operand_equal_p (TREE_OPERAND (arg0, 0),
+				  TREE_OPERAND (arg1, 0), flags);
 
 	case ARRAY_REF:
 	case ARRAY_RANGE_REF:
-	  /* Operands 2 and 3 may be null.  */
-	  return (OP_SAME (0)
-		  && OP_SAME (1)
-		  && OP_SAME_WITH_NULL (2)
-		  && OP_SAME_WITH_NULL (3));
+	  return (operand_equal_p (TREE_OPERAND (arg0, 0),
+				   TREE_OPERAND (arg1, 0), flags)
+		  && operand_equal_p (TREE_OPERAND (arg0, 1),
+				      TREE_OPERAND (arg1, 1), flags)
+		  && operand_equal_p (TREE_OPERAND (arg0, 2),
+				      TREE_OPERAND (arg1, 2), flags)
+		  && operand_equal_p (TREE_OPERAND (arg0, 3),
+				      TREE_OPERAND (arg1, 3), flags));
+
 
 	case COMPONENT_REF:
-	  /* Handle operand 2 the same as for ARRAY_REF.  */
-	  return OP_SAME (0) && OP_SAME (1) && OP_SAME_WITH_NULL (2);
+	  return (operand_equal_p (TREE_OPERAND (arg0, 0),
+				   TREE_OPERAND (arg1, 0), flags)
+		  && operand_equal_p (TREE_OPERAND (arg0, 1),
+				      TREE_OPERAND (arg1, 1), flags)
+		  && operand_equal_p (TREE_OPERAND (arg0, 2),
+				      TREE_OPERAND (arg1, 2), flags));
+
 
 	case BIT_FIELD_REF:
-	  return OP_SAME (0) && OP_SAME (1) && OP_SAME (2);
-
+	  return (operand_equal_p (TREE_OPERAND (arg0, 0),
+				   TREE_OPERAND (arg1, 0), flags)
+		  && operand_equal_p (TREE_OPERAND (arg0, 1),
+				      TREE_OPERAND (arg1, 1), flags)
+		  && operand_equal_p (TREE_OPERAND (arg0, 2),
+				      TREE_OPERAND (arg1, 2), flags));
 	default:
 	  return 0;
 	}
@@ -2461,28 +2477,33 @@ operand_equal_p (tree arg0, tree arg1, unsigned int flags)
 	{
 	case ADDR_EXPR:
 	case TRUTH_NOT_EXPR:
-	  return OP_SAME (0);
+	  return operand_equal_p (TREE_OPERAND (arg0, 0),
+				  TREE_OPERAND (arg1, 0), flags);
 
 	case TRUTH_ANDIF_EXPR:
 	case TRUTH_ORIF_EXPR:
-	  return OP_SAME (0) && OP_SAME (1);
+	  return operand_equal_p (TREE_OPERAND (arg0, 0),
+				  TREE_OPERAND (arg1, 0), flags)
+		 && operand_equal_p (TREE_OPERAND (arg0, 1),
+				     TREE_OPERAND (arg1, 1), flags);
 
 	case TRUTH_AND_EXPR:
 	case TRUTH_OR_EXPR:
 	case TRUTH_XOR_EXPR:
-	  if (OP_SAME (0) && OP_SAME (1))
-	    return 1;
-
-	  /* Otherwise take into account this is a commutative operation.  */
 	  return (operand_equal_p (TREE_OPERAND (arg0, 0),
-				   TREE_OPERAND (arg1, 1), flags)
+				   TREE_OPERAND (arg1, 0), flags)
 		  && operand_equal_p (TREE_OPERAND (arg0, 1),
-				      TREE_OPERAND (arg1, 0), flags));
+				      TREE_OPERAND (arg1, 1), flags))
+		 || (operand_equal_p (TREE_OPERAND (arg0, 0),
+				      TREE_OPERAND (arg1, 1), flags)
+		     && operand_equal_p (TREE_OPERAND (arg0, 1),
+					 TREE_OPERAND (arg1, 0), flags));
 
 	case CALL_EXPR:
 	  /* If the CALL_EXPRs call different functions, then they
 	     clearly can not be equal.  */
-	  if (!OP_SAME (0))
+	  if (! operand_equal_p (TREE_OPERAND (arg0, 0),
+				 TREE_OPERAND (arg1, 0), flags))
 	    return 0;
 
 	  {
@@ -2528,9 +2549,6 @@ operand_equal_p (tree arg0, tree arg1, unsigned int flags)
     default:
       return 0;
     }
-
-#undef OP_SAME
-#undef OP_SAME_WITH_NULL
 }
 
 /* Similar to operand_equal_p, but see if ARG0 might have been made by
