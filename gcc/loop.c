@@ -1476,7 +1476,7 @@ add_label_notes (x, insns)
   char *fmt;
   rtx insn;
 
-  if (code == LABEL_REF)
+  if (code == LABEL_REF && !LABEL_REF_NONLOCAL_P (x))
     {
       for (insn = insns; insn; insn = NEXT_INSN (insn))
 	if (reg_mentioned_p (XEXP (x, 0), insn))
