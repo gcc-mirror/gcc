@@ -1,3 +1,10 @@
+2004-01-26  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/pdp11/pdp11.c (TARGET_STRUCT_VALUE_RTX): New.
+	(TARGET_RETURN_IN_MEMORY): Likewise.
+	* config/pdp11/pdp11.h (STRUCT_VALUE): Remove.
+	(RETURN_IN_MEMORY): Likewise.
+
 2004-01-26  Fariborz Jahanian <fjahanian@apple.com>
 
          * config/rs6000/rs6000.c (rs6000_emit_move): split slow
