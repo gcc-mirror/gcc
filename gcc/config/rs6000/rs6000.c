@@ -4303,19 +4303,10 @@ setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
   int reg_size = TARGET_32BIT ? 4 : 8;
   rtx save_area = NULL_RTX, mem;
   int first_reg_offset, set;
-  tree fntype;
-  int stdarg_p;
 
-  fntype = TREE_TYPE (current_function_decl);
-  stdarg_p = (TYPE_ARG_TYPES (fntype) != 0
-	      && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
-		  != void_type_node));
-
-  /* For varargs, we do not want to skip the dummy va_dcl argument.
-     For stdargs, we do want to skip the last named argument.  */
+  /* Skip the last named argument.  */
   next_cum = *cum;
-  if (stdarg_p)
-    function_arg_advance (&next_cum, mode, type, 1);
+  function_arg_advance (&next_cum, mode, type, 1);
 
   if (DEFAULT_ABI == ABI_V4)
     {
