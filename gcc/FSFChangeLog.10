@@ -4259,7 +4259,7 @@ Wed Nov 29 14:06:13 1995  Jim Wilson  <wilson@cygnus.com>
 
 Wed Nov 29 13:59:58 1995  J"orn Rennecke (amylaar@meolyon.hanse.de)
 
-	* c-decl.c (duplicate_decls): Add new parameter different_binding_level.
+	* c-decl.c (duplicate_decls): Add new paramter different_binding_level.
 	Lots of changes to use new new parameter.
 	(pushdecl): Delete variable declared_global.  New variable
 	different_binding_level and code to set it.  Move extern/static
@@ -5226,7 +5226,7 @@ Thu Sep 14 14:15:16 1995  Stan Cox  (coxs@dg-rtp.dg.com)
 
 	* m88k.h (VERSION_INFO1): Removed BCS reference.
 	* m88k/dgux.h (ASM_SPEC, *_LEGEND):
-	Added -mno-legend option. -mstandard no longer implies that
+	Added -mno-legend option. -mstandard no longer implies that legend
 	legend information not be produced.
 	(LINK_SPEC): Removed -z text
 
@@ -5422,7 +5422,7 @@ Thu Aug 31 08:31:40 1995  Richard Kenner  (kenner@vlsi1.ultra.nyu.edu)
 
 	* va-alpha.h (__gnuc_va_list): Make __offset an int.
 	* alpha.c (alpha_builtin_saveregs): Properly compute address
-	of __offset both OSF and WINNT.
+	of __offset both both OSF and WINNT.
 
 	* xm-alpha.h (sbrk): Don't define here.
 	* gmon.c (sbrk): Define here for __alpha.

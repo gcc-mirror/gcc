@@ -539,10 +539,10 @@ prdecl (d)
 	  fprintf (stderr, dname);
 	}
       else
-	fprintf (stderr, "<<Not a Decl!!!>>");
+	fprintf (stderr, "<<?>>");
     }
   else
-    fprintf (stderr, "<<NULL!!>>");
+    fprintf (stderr, "<<0>>");
 }
 
 /* Print Iterator List -- names only */

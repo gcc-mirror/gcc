@@ -1,3 +1,25 @@
+Wed Jan 27 02:20:48 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* Merge gcc2 snapshot 19980929.
+
+	* cccp.c (PRINTF_PROTO): Remove.
+	(PRINTF_PROTO_{1,2,3,4}: Likewise.
+	* cexp.y: Likewise.
+	* system.h: Add PRINTF_PROTO and PRINTF_PROTO_{1,2,3,4}.
+
+	* fix-header.c (cpp_file_lin_for_message): Delete.  In libcpp.
+	(cpp_print_containing_files, v_cpp_message, cpp_message): Likewise.
+	(cpp_fatal, cpp-Pfatal_with_name): Likewise.
+
+	* gen-protos.c (hashf): Delete in cpphash.o
+	* gen-protos.c (hashf): Delete in cpphash.o
+
+	* expr.c: Do not merge SAVE_STACKAREA_MODE changes.
+	* expmed.c: Likewise.
+	* rs6000.md: Likewise.
+
+	* rs6000.c, rs6000.md: Do not merge formatting changes yet.
+
 Wed Jan 27 01:13:42 1999  Richard Henderson  <rth@cygnus.com>
 
 	* rs6000.c (input_operand): Don't expect CONST around CONSTANT_P_RTX.

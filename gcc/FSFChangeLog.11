@@ -6291,7 +6291,7 @@ Sun Apr 20 10:45:35 1997  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(based_loc_descr): Likewise.
 	(add_bound_info): Delete default case.
 	Add cases for CONVERT_EXPR and NON_LVALUE_EXPR; treat like NOP_EXPR.
-	Change NOP_EXPR to recursive call.
+	Change NOP_EXPR to to recursive call.
 	(add_type_attribute): Ignore unnamed subtype of integral or FP.
 	(gen_subprogram_die): Use reg_loc_descriptor.
 	(dwarf2out_decl): Ignore nested functions.
@@ -11751,7 +11751,7 @@ Mon Jul  8 18:00:33 1996  Jim Wilson  <wilson@cygnus.com>
 	enclose it in a PARALLEL and set the PARALLEL mode correctly.
 	* mips.md (call_value): Call gen_call_value_multiple_internal0
 	only if there are multiple return values.  Strip the PARALLEL off
-	if there is only one return value.
+	if there there is only one return value.
 
 Mon Jul  8 16:27:33 1996  Jeffrey A. Law  <law@cygnus.com>
 

@@ -36,11 +36,11 @@ Boston, MA 02111-1307, USA.  */
 #undef LIB_SPEC
 #define LIB_SPEC ""
 
-/* VxWorks uses object files, not loadable images.  make linker just
-   combine objects. */
+/* VxWorks uses object files, not loadable images.  Make linker just combine
+   objects.  Also show using 32 bit mode and set start of text to 0.  */
 
 #undef LINK_SPEC
-#define LINK_SPEC "-r"
+#define LINK_SPEC "-r -taso -T 0"
 
 /* VxWorks provides the functionality of crt0.o and friends itself.  */
 

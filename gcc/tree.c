@@ -3324,7 +3324,7 @@ valid_machine_attribute (attr_name, attr_args, decl, type)
   tree decl ATTRIBUTE_UNUSED;
   tree type ATTRIBUTE_UNUSED;
 {
-  int valid = 0;
+  int validated = 0;
 #ifdef VALID_MACHINE_DECL_ATTRIBUTE
   tree decl_attr_list = decl != 0 ? DECL_MACHINE_ATTRIBUTES (decl) : 0;
 #endif
@@ -3354,12 +3354,12 @@ valid_machine_attribute (attr_name, attr_args, decl, type)
 	  decl = build_decl_attribute_variant (decl, decl_attr_list);
 	}
 
-      valid = 1;
+      validated = 1;
     }
 #endif
 
 #ifdef VALID_MACHINE_TYPE_ATTRIBUTE
-  if (valid)
+  if (validated)
     /* Don't apply the attribute to both the decl and the type.  */;
   else if (VALID_MACHINE_TYPE_ATTRIBUTE (type, type_attr_list, attr_name,
 					 attr_args))
@@ -3388,7 +3388,7 @@ valid_machine_attribute (attr_name, attr_args, decl, type)
 	}
       if (decl != 0)
 	TREE_TYPE (decl) = type;
-      valid = 1;
+      validated = 1;
     }
 
   /* Handle putting a type attribute on pointer-to-function-type by putting
@@ -3415,11 +3415,11 @@ valid_machine_attribute (attr_name, attr_args, decl, type)
       if (decl != 0)
 	TREE_TYPE (decl) = build_pointer_type (inner_type);
 
-      valid = 1;
+      validated = 1;
     }
 #endif
 
-  return valid;
+  return validated;
 }
 
 /* Return non-zero if IDENT is a valid name for attribute ATTR,

@@ -148,6 +148,11 @@ int current_function_contains_functions;
 
 int current_function_sp_is_unchanging;
 
+/* Nonzero if the function being compiled has the address of its
+   labels taken. */
+
+int current_function_addresses_labels;
+
 /* Nonzero if the current function is a thunk (a lightweight function that
    just adjusts one of its arguments and forwards to another function), so
    we should try to cut corners where we can.  */
@@ -520,6 +525,7 @@ push_function_context_to (context)
   p->has_nonlocal_label = current_function_has_nonlocal_label;
   p->has_nonlocal_goto = current_function_has_nonlocal_goto;
   p->contains_functions = current_function_contains_functions;
+  p->addresses_labels = current_function_addresses_labels;
   p->is_thunk = current_function_is_thunk;
   p->args_size = current_function_args_size;
   p->pretend_args_size = current_function_pretend_args_size;
@@ -592,6 +598,7 @@ pop_function_context_from (context)
   current_function_contains_functions
     = p->contains_functions || p->inline_obstacks
       || context == current_function_decl;
+  current_function_addresses_labels = p->addresses_labels;
   current_function_name = p->name;
   current_function_decl = p->decl;
   current_function_pops_args = p->pops_args;
@@ -2670,7 +2677,9 @@ optimize_bit_field (body, insn, equiv_mem)
 	      while (GET_CODE (dest) == SUBREG
 		     && SUBREG_WORD (dest) == 0
 		     && (GET_MODE_CLASS (GET_MODE (dest))
-			 == GET_MODE_CLASS (GET_MODE (SUBREG_REG (dest)))))
+			 == GET_MODE_CLASS (GET_MODE (SUBREG_REG (dest))))
+		     && (GET_MODE_SIZE (GET_MODE (SUBREG_REG (dest)))
+			 <= UNITS_PER_WORD))
 		dest = SUBREG_REG (dest);
 
 	      validate_change (insn, &SET_DEST (body), dest, 1);
@@ -2860,13 +2869,14 @@ purge_addressof_1 (loc, insn, force, store)
 	 overwriting a REG rtx which is always shared.  */
       rtx sub = copy_rtx (XEXP (XEXP (x, 0), 0));
 
-      if (validate_change (insn, loc, sub, 0))
+      if (validate_change (insn, loc, sub, 0)
+	  || validate_replace_rtx (x, sub, insn))
 	return;
-
+  
       start_sequence ();
-      if (! validate_change (insn, loc,
-			     force_operand (sub, NULL_RTX),
-			     0))
+      sub = force_operand (sub, NULL_RTX);
+      if (! validate_change (insn, loc, sub, 0)
+	  && ! validate_replace_rtx (x, sub, insn))
 	abort ();
 
       insns = gen_sequence ();
@@ -2877,9 +2887,15 @@ purge_addressof_1 (loc, insn, force, store)
   else if (code == MEM && GET_CODE (XEXP (x, 0)) == ADDRESSOF && ! force)
     {
       rtx sub = XEXP (XEXP (x, 0), 0);
+      rtx sub2;
 
       if (GET_CODE (sub) == MEM)
-	sub = gen_rtx_MEM (GET_MODE (x), copy_rtx (XEXP (sub, 0)));
+	{
+	  sub2 = gen_rtx_MEM (GET_MODE (x), copy_rtx (XEXP (sub, 0)));
+	  MEM_COPY_ATTRIBUTES (sub2, sub);
+	  RTX_UNCHANGING_P (sub2) = RTX_UNCHANGING_P (sub);
+	  sub = sub2;
+	}
 
       if (GET_CODE (sub) == REG
 	  && (MEM_VOLATILE_P (x) || GET_MODE (x) == BLKmode))
@@ -4083,7 +4099,7 @@ assign_parms (fndecl, second_time)
 	 In this case, we call FUNCTION_ARG with NAMED set to 1 instead of
 	 0 as it was the previous time.  */
 
-      locate_and_pad_parm (promoted_mode, passed_type,
+      locate_and_pad_parm (nominal_mode, passed_type,
 #ifdef STACK_PARMS_IN_REG_PARM_AREA
 			   1,
 #else
@@ -4105,9 +4121,9 @@ assign_parms (fndecl, second_time)
 	  rtx offset_rtx = ARGS_SIZE_RTX (stack_offset);
 
 	  if (offset_rtx == const0_rtx)
-	    stack_parm = gen_rtx_MEM (promoted_mode, internal_arg_pointer);
+	    stack_parm = gen_rtx_MEM (nominal_mode, internal_arg_pointer);
 	  else
-	    stack_parm = gen_rtx_MEM (promoted_mode,
+	    stack_parm = gen_rtx_MEM (nominal_mode,
 				      gen_rtx_PLUS (Pmode,
 						    internal_arg_pointer,
 						    offset_rtx));
@@ -4179,6 +4195,8 @@ assign_parms (fndecl, second_time)
 	 to indicate there is no preallocated stack slot for the parm.  */
 
       if (entry_parm == stack_parm
+          || (GET_CODE (entry_parm) == PARALLEL
+              && XEXP (XVECEXP (entry_parm, 0, 0), 0) == NULL_RTX)
 #if defined (REG_PARM_STACK_SPACE) && ! defined (MAYBE_REG_PARM_STACK_SPACE)
 	  /* On some machines, even if a parm value arrives in a register
 	     there is still an (uninitialized) stack slot allocated for it.
@@ -5546,6 +5564,7 @@ init_function_start (subr, filename, line)
   current_function_has_nonlocal_goto = 0;
   current_function_contains_functions = 0;
   current_function_sp_is_unchanging = 0;
+  current_function_addresses_labels = 0;
   current_function_is_thunk = 0;
 
   current_function_returns_pcc_struct = 0;

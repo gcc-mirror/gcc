@@ -36,6 +36,7 @@ compilation is specified by a string called a "spec".  */
 #include <signal.h>
 
 #include "obstack.h"
+#include "intl.h"
 #include "prefix.h"
 
 #ifdef VMS
@@ -194,9 +195,12 @@ static void print_multilib_info	PROTO((void));
 static void pfatal_with_name	PROTO((char *)) ATTRIBUTE_NORETURN;
 static void perror_with_name	PROTO((char *));
 static void pfatal_pexecute	PROTO((char *, char *)) ATTRIBUTE_NORETURN;
+static void fatal		PVPROTO((char *, ...)) ATTRIBUTE_NORETURN;
+static void error		PVPROTO((char *, ...));
 static void fatal		PVPROTO((char *, ...))
   ATTRIBUTE_NORETURN ATTRIBUTE_PRINTF_1;
 static void error		PVPROTO((char *, ...)) ATTRIBUTE_PRINTF_1;
+static void notice		PVPROTO((char *, ...));
 static void display_help 	PROTO((void));
 
 void fancy_abort		PROTO((void)) ATTRIBUTE_NORETURN;
@@ -1039,15 +1043,13 @@ xstrerror(e)
 
 #else
 
-  static char buffer[30];
   if (!e)
-    return "cannot access";
+    return "errno = 0";
 
   if (e > 0 && e < sys_nerr)
     return sys_errlist[e];
 
-  sprintf (buffer, "Unknown error %d", e);
-  return buffer;
+  return "errno = ?";
 #endif
 }
 
@@ -1152,7 +1154,7 @@ init_spec ()
     return;			/* already initialized */
 
   if (verbose_flag)
-    fprintf (stderr, "Using builtin specs.\n");
+    notice ("Using builtin specs.\n");
 
 #ifdef EXTRA_SPECS
   extra_specs = (struct spec_list *)
@@ -1237,7 +1239,7 @@ set_spec (name, spec)
 
 #ifdef DEBUG_SPECS
   if (verbose_flag)
-    fprintf (stderr, "Setting spec %s to '%s'\n\n", name, *(sl->ptr_spec));
+    notice ("Setting spec %s to '%s'\n\n", name, *(sl->ptr_spec));
 #endif
 
   /* Free the old spec */
@@ -1435,7 +1437,7 @@ read_specs (filename, main_p)
   register char *p;
 
   if (verbose_flag)
-    fprintf (stderr, "Reading specs from %s\n", filename);
+    notice ("Reading specs from %s\n", filename);
 
   /* Open and stat the file.  */
   desc = open (filename, O_RDONLY, 0);
@@ -1513,7 +1515,7 @@ read_specs (filename, main_p)
 	      if (new_filename)
 		read_specs (new_filename, FALSE);
 	      else if (verbose_flag)
-		fprintf (stderr, "Could not find specs file %s\n", p1);
+		notice ("Could not find specs file %s\n", p1);
 	      continue;
 	    }
 	  else if (!strncmp (p1, "%rename", sizeof "%rename" - 1)
@@ -1571,9 +1573,9 @@ read_specs (filename, main_p)
 
 	      if (verbose_flag)
 		{
-		  fprintf (stderr, "rename spec %s to %s\n", p1, p2);
+		  notice ("rename spec %s to %s\n", p1, p2);
 #ifdef DEBUG_SPECS
-		  fprintf (stderr, "spec is '%s'\n\n", *(sl->ptr_spec));
+		  notice ("spec is '%s'\n\n", *(sl->ptr_spec));
 #endif
 		}
 
@@ -2246,7 +2248,7 @@ execute ()
 	}
       fflush (stderr);
 #ifdef DEBUG
-      fprintf (stderr, "\nGo ahead? (y or n) ");
+      notice ("\nGo ahead? (y or n) ");
       fflush (stderr);
       i = getchar ();
       if (i != '\n')
@@ -2334,7 +2336,7 @@ execute ()
    is a null-terminated vector containing the following arguments.
    The `live_cond' field is 1 if the switch is true in a conditional spec,
    -1 if false (overridden by a later switch), and is initialized to zero.
-   The `valid' field is nonzero if any spec has looked at this switch;
+   The `validated' field is nonzero if any spec has looked at this switch;
    if it remains zero at the end of the run, it must be meaningless.  */
 
 struct switchstr
@@ -2342,7 +2344,7 @@ struct switchstr
   char *part1;
   char **args;
   int live_cond;
-  int valid;
+  int validated;
 };
 
 static struct switchstr *switches;
@@ -3129,7 +3131,7 @@ process_command (argc, argv)
 	      switches[n_switches].part1     = "--help";
 	      switches[n_switches].args      = 0;
 	      switches[n_switches].live_cond = 0;
-	      switches[n_switches].valid     = 0;
+	      switches[n_switches].validated     = 0;
 	      
 	      n_switches++;
 	    }
@@ -3144,7 +3146,7 @@ process_command (argc, argv)
 	  switches[n_switches].part1 = &argv[i][0];
 	  switches[n_switches].args = 0;
 	  switches[n_switches].live_cond = 0;
-	  switches[n_switches].valid = 0;
+	  switches[n_switches].validated = 0;
 	  n_switches++;
 	}
       else if (strncmp (argv[i], "-Wl,", 4) == 0)
@@ -3243,15 +3245,15 @@ process_command (argc, argv)
 	    switches[n_switches].args = 0;
 
 	  switches[n_switches].live_cond = 0;
-	  switches[n_switches].valid = 0;
+	  switches[n_switches].validated = 0;
 	  /* This is always valid, since gcc.c itself understands it.  */
 	  if (!strcmp (p, "save-temps"))
-	    switches[n_switches].valid = 1;
+	    switches[n_switches].validated = 1;
           else
             {
               char ch = switches[n_switches].part1[0];
               if (ch == 'V' || ch == 'b' || ch == 'B')
-                switches[n_switches].valid = 1;
+                switches[n_switches].validated = 1;
             }
 	  n_switches++;
 	}
@@ -3407,7 +3409,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	    if (i < n_switches)
 	      {
 		input_from_pipe = 1;
-		switches[i].valid = 1;
+		switches[i].validated = 1;
 		break;
 	      }
 	    else
@@ -3593,7 +3595,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	    break;
 
 	  case 'e':
-	    /* {...:%efoo} means report an error with `foo' as error message
+	    /* %efoo means report an error with `foo' as error message
 	       and don't execute any more commands for this file.  */
 	    {
 	      char *q = p;
@@ -3602,7 +3604,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	      buf = (char *) alloca (p - q + 1);
 	      strncpy (buf, q, p - q);
 	      buf[p - q] = 0;
-	      error ("%s", buf);
+	      error (buf);
 	      return -1;
 	    }
 	    break;
@@ -4072,8 +4074,8 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		  {
 		    name = *(sl->ptr_spec);
 #ifdef DEBUG_SPECS
-		    fprintf (stderr, "Processing spec %c%s%c, which is '%s'\n",
-			     c, sl->name, (c == '(') ? ')' : ']', name);
+		    notice ("Processing spec %c%s%c, which is '%s'\n",
+			    c, sl->name, (c == '(') ? ')' : ']', name);
 #endif
 		    break;
 		  }
@@ -4434,7 +4436,7 @@ check_live_switch (switchnum, prefix_length)
 	for (i = switchnum + 1; i < n_switches; i++)
 	  if (switches[i].part1[0] == 'O')
 	    {
-	      switches[switchnum].valid = 1;
+	      switches[switchnum].validated = 1;
 	      switches[switchnum].live_cond = -1;
 	      return 0;
 	    }
@@ -4448,7 +4450,7 @@ check_live_switch (switchnum, prefix_length)
 	    if (switches[i].part1[0] == name[0]
 		&& ! strcmp (&switches[i].part1[1], &name[4]))
 	    {
-	      switches[switchnum].valid = 1;
+	      switches[switchnum].validated = 1;
 	      switches[switchnum].live_cond = -1;
 	      return 0;
 	    }
@@ -4463,7 +4465,7 @@ check_live_switch (switchnum, prefix_length)
 		&& switches[i].part1[3] == '-'
 		&& !strcmp (&switches[i].part1[4], &name[1]))
 	    {
-	      switches[switchnum].valid = 1;
+	      switches[switchnum].validated = 1;
 	      switches[switchnum].live_cond = -1;
 	      return 0;
 	    }
@@ -4511,7 +4513,7 @@ give_switch (switchnum, omit_first_word, include_blanks)
     }
 
   do_spec_1 (" ", 0, NULL_PTR);
-  switches[switchnum].valid = 1;
+  switches[switchnum].validated = 1;
 }
 
 /* Search for a file named NAME trying various prefixes including the
@@ -4624,6 +4626,10 @@ main (argc, argv)
   p = argv[0] + strlen (argv[0]);
   while (p != argv[0] && p[-1] != '/' && p[-1] != DIR_SEPARATOR) --p;
   programname = p;
+
+  setlocale (LC_MESSAGES, "");
+  bindtextdomain (PACKAGE, localedir);
+  textdomain (PACKAGE);
 
   if (signal (SIGINT, SIG_IGN) != SIG_IGN)
     signal (SIGINT, fatal_error);
@@ -4887,7 +4893,7 @@ main (argc, argv)
   /* Warn about any switches that no pass was interested in.  */
 
   for (i = 0; (int)i < n_switches; i++)
-    if (! switches[i].valid)
+    if (! switches[i].validated)
       error ("unrecognized option `-%s'", switches[i].part1);
 
   /* Obey some of the options.  */
@@ -4958,10 +4964,10 @@ main (argc, argv)
 
       if (! strncmp (version_string, compiler_version, n)
 	  && compiler_version[n] == 0)
-	fprintf (stderr, "gcc version %s\n", version_string);
+	notice ("gcc version %s\n", version_string);
       else
-	fprintf (stderr, "gcc driver version %s executing gcc version %s\n",
-		 version_string, compiler_version);
+	notice ("gcc driver version %s executing gcc version %s\n",
+		version_string, compiler_version);
 
       if (n_infiles == 0)
 	exit (0);
@@ -5249,7 +5255,9 @@ static void
 pfatal_with_name (name)
      char *name;
 {
-  fatal ("%s: %s", name, xstrerror (errno));
+  perror_with_name (name);
+  delete_temp_files ();
+  exit (1);
 }
 
 static void
@@ -5264,17 +5272,19 @@ pfatal_pexecute (errmsg_fmt, errmsg_arg)
      char *errmsg_fmt;
      char *errmsg_arg;
 {
-  int save_errno = errno;
-
   if (errmsg_arg)
     {
+      int save_errno = errno;
+
       /* Space for trailing '\0' is in %s.  */
       char *msg = xmalloc (strlen (errmsg_fmt) + strlen (errmsg_arg));
       sprintf (msg, errmsg_fmt, errmsg_arg);
       errmsg_fmt = msg;
+
+      errno = save_errno;
     }
 
-  fatal ("%s: %s", errmsg_fmt, xstrerror (save_errno));
+  pfatal_with_name (errmsg_fmt);
 }
 
 /* More 'friendly' abort that prints the line and file.
@@ -5289,21 +5299,21 @@ fancy_abort ()
 /* Output an error message and exit */
 
 static void
-fatal VPROTO((char *format, ...))
+fatal VPROTO((char *msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
-  char *format;
+  char *msgid;
 #endif
   va_list ap;
 
-  VA_START (ap, format);
+  VA_START (ap, msgid);
 
 #ifndef ANSI_PROTOTYPES
-  format = va_arg (ap, char *);
+  msgid = va_arg (ap, char *);
 #endif
 
   fprintf (stderr, "%s: ", programname);
-  vfprintf (stderr, format, ap);
+  vfprintf (stderr, _(msgid), ap);
   va_end (ap);
   fprintf (stderr, "\n");
   delete_temp_files ();
@@ -5311,25 +5321,44 @@ fatal VPROTO((char *format, ...))
 }
 
 static void
-error VPROTO((char *format, ...))
+error VPROTO((char *msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
-  char *format;
+  char *msgid;
 #endif
   va_list ap;
 
-  VA_START (ap, format);
+  VA_START (ap, msgid);
 
 #ifndef ANSI_PROTOTYPES
-  format = va_arg (ap, char *);
+  msgid = va_arg (ap, char *);
 #endif
 
   fprintf (stderr, "%s: ", programname);
-  vfprintf (stderr, format, ap);
+  vfprintf (stderr, _(msgid), ap);
   va_end (ap);
 
   fprintf (stderr, "\n");
 }
+
+static void
+notice VPROTO((char *msgid, ...))
+{
+#ifndef ANSI_PROTOTYPES
+  char *msgid;
+#endif
+  va_list ap;
+
+  VA_START (ap, msgid);
+
+#ifndef ANSI_PROTOTYPES
+  msgid = va_arg (ap, char *);
+#endif
+
+  vfprintf (stderr, _(msgid), ap);
+  va_end (ap);
+}
+
 
 static void
 validate_all_switches ()
@@ -5401,7 +5430,7 @@ validate_switches (start)
       --p;
       for (i = 0; i < n_switches; i++)
 	if (!strncmp (switches[i].part1, filter, p - filter))
-	  switches[i].valid = 1;
+	  switches[i].validated = 1;
     }
   else
     {
@@ -5410,7 +5439,7 @@ validate_switches (start)
 	{
 	  if (!strncmp (switches[i].part1, filter, p - filter)
 	      && switches[i].part1[p - filter] == 0)
-	    switches[i].valid = 1;
+	    switches[i].validated = 1;
 	}
     }
 }

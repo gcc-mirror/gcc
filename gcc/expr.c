@@ -4771,6 +4771,9 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
   else
     {
       mode = TYPE_MODE (TREE_TYPE (exp));
+      if (mode == BLKmode)
+	size_tree = TYPE_SIZE (TREE_TYPE (exp));
+
       *pbitsize = GET_MODE_BITSIZE (mode);
       *punsignedp = TREE_UNSIGNED (TREE_TYPE (exp));
     }
@@ -5600,11 +5603,17 @@ expand_expr (exp, target, tmode, modifier)
 	    p->forced_labels = gen_rtx_EXPR_LIST (VOIDmode,
 						  label_rtx (exp),
 						  p->forced_labels);
+	    p->addresses_labels = 1;
 	    pop_obstacks ();
 	  }
-	else if (modifier == EXPAND_INITIALIZER)
-	  forced_labels = gen_rtx_EXPR_LIST (VOIDmode,
-					     label_rtx (exp), forced_labels);
+	else
+	  {
+	    current_function_addresses_labels = 1;
+	    if (modifier == EXPAND_INITIALIZER)
+	      forced_labels = gen_rtx_EXPR_LIST (VOIDmode,
+						 label_rtx (exp),
+						 forced_labels);
+	  }
 	temp = gen_rtx_MEM (FUNCTION_MODE,
 			    gen_rtx_LABEL_REF (Pmode, label_rtx (exp)));
 	if (function != current_function_decl
@@ -6012,7 +6021,7 @@ expand_expr (exp, target, tmode, modifier)
 
     case EXIT_BLOCK_EXPR:
       if (EXIT_BLOCK_RETURN (exp))
-	really_sorry ("returned value in block_exit_expr");
+	sorry ("returned value in block_exit_expr");
       expand_goto (LABELED_BLOCK_LABEL (EXIT_BLOCK_LABELED_BLOCK (exp)));
       return const0_rtx;
 

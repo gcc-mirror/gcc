@@ -30,6 +30,7 @@ extern char *getenv ();
 #endif /* not EMACS */
 
 #include "cpplib.h"
+#include "intl.h"
 
 char *progname;
 
@@ -67,6 +68,10 @@ main (argc, argv)
   p = argv[0] + strlen (argv[0]);
   while (p != argv[0] && p[-1] != '/') --p;
   progname = p;
+
+  setlocale (LC_MESSAGES, "");
+  bindtextdomain (PACKAGE, localedir);
+  textdomain (PACKAGE);
 
   cpp_reader_init (&parse_in);
   parse_in.opts = opts;

@@ -1311,71 +1311,6 @@ main (argc, argv)
   return 0;
 }
 
-/* Stub error functions.  These replace cpperror.c,
-   because we want to suppress error messages.  */
-
-void
-cpp_file_line_for_message (pfile, filename, line, column)
-     cpp_reader * pfile ATTRIBUTE_UNUSED;
-     char *filename;
-     int line, column;
-{
-  if (!verbose)
-    return;
-  if (column > 0)
-    fprintf (stderr, "%s:%d:%d: ", filename, line, column);
-  else
-    fprintf (stderr, "%s:%d: ", filename, line);
-}
-
-void
-cpp_print_containing_files (pfile)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
-{
-}
-
-/* IS_ERROR is 2 for fatal error, 1 for error, 0 for warning */
-
-void
-v_cpp_message (pfile, is_error, msg, ap)
-     cpp_reader *pfile;
-     int is_error;
-     const char *msg;
-     va_list ap;
-{
-  if (is_error == 1)
-    pfile->errors++;
-  else if (is_error > 1)
-    pfile->errors = CPP_FATAL_LIMIT;
-  if (!verbose)
-    return;
-  if (!is_error)
-    fprintf (stderr, "warning: ");
-  vfprintf (stderr, msg, ap);
-  fprintf (stderr, "\n");
-}
-
-void
-cpp_message VPROTO ((cpp_reader *pfile, int is_error, const char *msg, ...))
-{
-#ifndef ANSI_PROTOTYPES
-  cpp_reader *pfile;
-  int is_error;
-  const char *msg;
-#endif
-  va_list ap;
-  
-  VA_START (ap, msg);
-  
-#ifndef ANSI_PROTOTYPES
-  pfile = va_arg (ap, cpp_reader *);
-  is_error = va_arg (ap, const int);
-  msg = va_arg (ap, const char *);
-#endif
-
-  v_cpp_message(pfile, is_error, msg, ap);
-  va_end(ap);
-}
 
 static void
 v_fatal (str, ap)
@@ -1405,33 +1340,4 @@ fatal VPROTO ((const char *str, ...))
 
   v_fatal(str, ap);
   va_end(ap);
-}
-
-void
-cpp_fatal VPROTO ((cpp_reader * pfile ATTRIBUTE_UNUSED, const char *str, ...))
-{
-#ifndef ANSI_PROTOTYPES
-  cpp_reader * pfile;
-  const char *str;
-#endif
-  va_list ap;
-  
-  VA_START(ap, str);
-
-#ifndef ANSI_PROTOTYPES
-  pfile = va_arg (ap, cpp_reader *);
-  str = va_arg (ap, const char *);
-#endif
-
-  v_fatal(str, ap);
-  va_end(ap);
-}
-
-void
-cpp_pfatal_with_name (pfile, name)
-     cpp_reader *pfile;
-     const char *name;
-{
-  cpp_perror_with_name (pfile, name);
-  exit (FATAL_EXIT_CODE);
 }

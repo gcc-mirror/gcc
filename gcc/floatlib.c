@@ -17,6 +17,7 @@ host such as a VAX.
 
 If you'd like to work on completing this, please talk to rms@gnu.ai.mit.edu.
 
+--> Double precision floating support added by James Carlson on 20 April 1998.
 
 **
 ** Pat Wood
@@ -54,7 +55,6 @@ If you'd like to work on completing this, please talk to rms@gnu.ai.mit.edu.
 */
 
 /* the following deal with IEEE single-precision numbers */
-#define D_PHANTOM_BIT   0x00100000
 #define EXCESS		126
 #define SIGNBIT		0x80000000
 #define HIDDEN		(1 << 23)
@@ -70,10 +70,12 @@ If you'd like to work on completing this, please talk to rms@gnu.ai.mit.edu.
 #define SIGND(fp)	((fp.l.upper) & SIGNBIT)
 #define MANTD(fp)	(((((fp.l.upper) & 0xFFFFF) | HIDDEND) << 10) | \
 				(fp.l.lower >> 22))
+#define HIDDEND_LL	((long long)1 << 52)
+#define MANTD_LL(fp)	((fp.ll & (HIDDEND_LL-1)) | HIDDEND_LL)
+#define PACKD_LL(s,e,m)	(((long long)((s)+((e)<<20))<<32)|(m))
 
 /* define SWAP for 386/960 reverse-byte-order brain-damaged CPUs */
-union double_long
-  {
+union double_long {
     double d;
 #ifdef SWAP
     struct {
@@ -86,7 +88,8 @@ union double_long
       unsigned long lower;
     } l;
 #endif
-  };
+    long long ll;
+};
 
 union float_long
   {
@@ -94,38 +97,7 @@ union float_long
     long l;
   };
 
-   struct _ieee {
-#ifdef SWAP
-      unsigned mantissa2 : 32;
-      unsigned mantissa1 : 20;
-      unsigned exponent  : 11;
-      unsigned sign      : 1;
-#else
-      unsigned exponent  : 11;
-      unsigned sign      : 1;
-      unsigned mantissa2 : 32;
-      unsigned mantissa1 : 20;
-#endif
-   };
-
-   union _doubleu {
-      double d;
-      struct _ieee ieee;
-#ifdef SWAP
-      struct {
-         unsigned long lower;
-         long upper;
-      } l;
-#else
-      struct {
-         long upper;
-         unsigned long lower;
-      } l;
-#endif
-   };
-
 /* add two floats */
-
 float
 __addsf3 (float a1, float a2)
 {
@@ -138,18 +110,22 @@ __addsf3 (float a1, float a2)
   fl2.f = a2;
 
   /* check for zero args */
-  if (!fl1.l)
-    return (fl2.f);
+  if (!fl1.l) {
+      fl1.f = fl2.f;
+      goto test_done;
+  }
   if (!fl2.l)
-    return (fl1.f);
+      goto test_done;
 
   exp1 = EXP (fl1.l);
   exp2 = EXP (fl2.l);
 
   if (exp1 > exp2 + 25)
-    return (fl1.l);
-  if (exp2 > exp1 + 25)
-    return (fl2.l);
+      goto test_done;
+  if (exp2 > exp1 + 25) {
+      fl1.f = fl2.f;
+      goto test_done;
+  }
 
   /* do everything in excess precision so's we can round later */
   mant1 = MANT (fl1.l) << 6;
@@ -176,8 +152,10 @@ __addsf3 (float a1, float a2)
       mant1 = -mant1;
       sign = SIGNBIT;
     }
-  else if (!mant1)
-    return (0);
+  else if (!mant1) {
+      fl1.f = 0;
+      goto test_done;
+  }
 
   /* normalize up */
   while (!(mant1 & 0xE0000000))
@@ -211,11 +189,11 @@ __addsf3 (float a1, float a2)
 
   /* pack up and go home */
   fl1.l = PACK (sign, exp1, mant1);
+test_done:
   return (fl1.f);
 }
 
 /* subtract two floats */
-
 float
 __subsf3 (float a1, float a2)
 {
@@ -236,7 +214,6 @@ __subsf3 (float a1, float a2)
 }
 
 /* compare two floats */
-
 long
 __cmpsf2 (float a1, float a2)
 {
@@ -258,7 +235,6 @@ __cmpsf2 (float a1, float a2)
 }
 
 /* multiply two floats */
-
 float
 __mulsf3 (float a1, float a2)
 {
@@ -270,8 +246,10 @@ __mulsf3 (float a1, float a2)
   fl1.f = a1;
   fl2.f = a2;
 
-  if (!fl1.l || !fl2.l)
-    return (0);
+  if (!fl1.l || !fl2.l) {
+      fl1.f = 0;
+      goto test_done;
+  }
 
   /* compute sign and exponent */
   sign = SIGN (fl1.l) ^ SIGN (fl2.l);
@@ -286,29 +264,34 @@ __mulsf3 (float a1, float a2)
   result += ((fl1.l & 0xFF) * (fl2.l >> 8)) >> 8;
   result += ((fl2.l & 0xFF) * (fl1.l >> 8)) >> 8;
 
-  if (result & 0x80000000)
+  result >>= 2;
+  if (result & 0x20000000)
     {
       /* round */
-      result += 0x80;
-      result >>= 8;
+      result += 0x20;
+      result >>= 6;
     }
   else
     {
       /* round */
-      result += 0x40;
-      result >>= 7;
+      result += 0x10;
+      result >>= 5;
       exp--;
     }
+  if (result & (HIDDEN<<1)) {
+    result >>= 1;
+    exp++;
+  }
 
   result &= ~HIDDEN;
 
   /* pack up and go home */
   fl1.l = PACK (sign, exp, result);
+test_done:
   return (fl1.f);
 }
 
 /* divide two floats */
-
 float
 __divsf3 (float a1, float a2)
 {
@@ -375,7 +358,6 @@ __divsf3 (float a1, float a2)
 }
 
 /* convert int to double */
-
 double
 __floatsidf (register long a1)
 {
@@ -415,8 +397,50 @@ __floatsidf (register long a1)
   return (dl.d);
 }
 
-/* negate a float */
+double
+__floatdidf (register long long a1)
+{
+    register int exp = 63 + EXCESSD;
+    union double_long dl;
 
+    dl.l.upper = dl.l.lower = 0;
+    if (a1 == 0)
+	return (dl.d);
+
+    if (a1 < 0) {
+	dl.l.upper = SIGNBIT;
+	a1 = -a1;
+    }
+
+    while (a1 < (long long)1<<54) {
+	a1 <<= 8;
+	exp -= 8;
+    }
+    while (a1 < (long long)1<<62) {
+	a1 <<= 1;
+	exp -= 1;
+    }
+
+  /* pack up and go home */
+    dl.ll |= (a1 >> 10) & ~HIDDEND_LL;
+    dl.l.upper |= exp << 20;
+
+    return (dl.d);
+}
+
+float
+__floatsisf (register long a1)
+{
+    (float)__floatsidf(a1);
+}
+
+float
+__floatdisf (register long long a1)
+{
+    (float)__floatdidf(a1);
+}
+
+/* negate a float */
 float
 __negsf2 (float a1)
 {
@@ -431,7 +455,6 @@ __negsf2 (float a1)
 }
 
 /* negate a double */
-
 double
 __negdf2 (double a1)
 {
@@ -447,7 +470,6 @@ __negdf2 (double a1)
 }
 
 /* convert float to double */
-
 double
 __extendsfdf2 (float a1)
 {
@@ -473,7 +495,6 @@ __extendsfdf2 (float a1)
 }
 
 /* convert double to float */
-
 float
 __truncdfsf2 (double a1)
 {
@@ -485,7 +506,7 @@ __truncdfsf2 (double a1)
   dl1.d = a1;
 
   if (!dl1.l.upper && !dl1.l.lower)
-    return (0);
+    return (float)(0);
 
   exp = EXPD (dl1) - EXCESSD + EXCESS;
 
@@ -497,7 +518,7 @@ __truncdfsf2 (double a1)
   mant >>= 1;
 
   /* did the round overflow? */
-  if (mant & 0xFF000000)
+  if (mant & 0xFE000000)
     {
       mant >>= 1;
       exp++;
@@ -511,7 +532,6 @@ __truncdfsf2 (double a1)
 }
 
 /* compare two doubles */
-
 long
 __cmpdf2 (double a1, double a2)
 {
@@ -537,7 +557,6 @@ __cmpdf2 (double a1, double a2)
 }
 
 /* convert double to int */
-
 long
 __fixdfsi (double a1)
 {
@@ -554,7 +573,7 @@ __fixdfsi (double a1)
   l = MANTD (dl1);
 
   if (exp > 0)
-    return (0x7FFFFFFF | SIGND (dl1)); /* largest integer */
+      return SIGND(dl1) ? (1<<31) : ((1ul<<31)-1);
 
   /* shift down until exp = 0 or l = 0 */
   if (exp < 0 && exp > -32 && l)
@@ -565,10 +584,41 @@ __fixdfsi (double a1)
   return (SIGND (dl1) ? -l : l);
 }
 
-/* convert double to unsigned int */
+/* convert double to int */
+long long
+__fixdfdi (double a1)
+{
+    register union double_long dl1;
+    register int exp;
+    register long long l;
 
-unsigned
-long __fixunsdfsi (double a1)
+    dl1.d = a1;
+
+    if (!dl1.l.upper && !dl1.l.lower)
+	return (0);
+
+    exp = EXPD (dl1) - EXCESSD - 64;
+    l = MANTD_LL(dl1);
+
+    if (exp > 0) {
+	l = (long long)1<<63;
+	if (!SIGND(dl1))
+	    l--;
+	return l;
+    }
+
+    /* shift down until exp = 0 or l = 0 */
+    if (exp < 0 && exp > -64 && l)
+	l >>= -exp;
+    else
+	return (0);
+
+    return (SIGND (dl1) ? -l : l);
+}
+
+/* convert double to unsigned int */
+unsigned long
+__fixunsdfsi (double a1)
 {
   register union double_long dl1;
   register int exp;
@@ -583,7 +633,7 @@ long __fixunsdfsi (double a1)
   l = (((((dl1.l.upper) & 0xFFFFF) | HIDDEND) << 11) | (dl1.l.lower >> 21));
 
   if (exp > 0)
-    return (0xFFFFFFFF);	/* largest integer */
+    return (0xFFFFFFFFul);	/* largest integer */
 
   /* shift down until exp = 0 or l = 0 */
   if (exp < 0 && exp > -32 && l)
@@ -594,245 +644,302 @@ long __fixunsdfsi (double a1)
   return (l);
 }
 
-/* For now, the hard double-precision routines simply
-   punt and do it in single */
-/* addtwo doubles */
+/* convert double to unsigned int */
+unsigned long long
+__fixunsdfdi (double a1)
+{
+    register union double_long dl1;
+    register int exp;
+    register unsigned long long l;
 
+    dl1.d = a1;
+
+    if (dl1.ll == 0)
+	return (0);
+
+    exp = EXPD (dl1) - EXCESSD - 64;
+
+    l = dl1.ll;
+
+    if (exp > 0)
+	return (unsigned long long)-1;
+
+    /* shift down until exp = 0 or l = 0 */
+    if (exp < 0 && exp > -64 && l)
+	l >>= -exp;
+    else
+	return (0);
+
+    return (l);
+}
+
+/* addtwo doubles */
 double
 __adddf3 (double a1, double a2)
 {
-  return ((float) a1 + (float) a2);
+    register long long mant1, mant2;
+    register union double_long fl1, fl2;
+    register int exp1, exp2;
+    int sign = 0;
+
+    fl1.d = a1;
+    fl2.d = a2;
+
+    /* check for zero args */
+    if (!fl2.ll)
+	goto test_done;
+    if (!fl1.ll) {
+	fl1.d = fl2.d;
+	goto test_done;
+    }
+
+    exp1 = EXPD(fl1);
+    exp2 = EXPD(fl2);
+
+    if (exp1 > exp2 + 54)
+	goto test_done;
+    if (exp2 > exp1 + 54) {
+	fl1.d = fl2.d;
+	goto test_done;
+    }
+
+    /* do everything in excess precision so's we can round later */
+    mant1 = MANTD_LL(fl1) << 9;
+    mant2 = MANTD_LL(fl2) << 9;
+
+    if (SIGND(fl1))
+	mant1 = -mant1;
+    if (SIGND(fl2))
+	mant2 = -mant2;
+
+    if (exp1 > exp2)
+	mant2 >>= exp1 - exp2;
+    else {
+	mant1 >>= exp2 - exp1;
+	exp1 = exp2;
+    }
+    mant1 += mant2;
+
+    if (mant1 < 0) {
+	mant1 = -mant1;
+	sign = SIGNBIT;
+    } else if (!mant1) {
+	fl1.d = 0;
+	goto test_done;
+    }
+
+    /* normalize up */
+    while (!(mant1 & ((long long)7<<61))) {
+	mant1 <<= 1;
+	exp1--;
+    }
+
+    /* normalize down? */
+    if (mant1 & ((long long)3<<62)) {
+	mant1 >>= 1;
+	exp1++;
+    }
+
+    /* round to even */
+    mant1 += (mant1 & (1<<9)) ? (1<<8) : ((1<<8)-1);
+
+    /* normalize down? */
+    if (mant1 & ((long long)3<<62)) {
+	mant1 >>= 1;
+	exp1++;
+    }
+
+    /* lose extra precision */
+    mant1 >>= 9;
+
+    /* turn off hidden bit */
+    mant1 &= ~HIDDEND_LL;
+
+    /* pack up and go home */
+    fl1.ll = PACKD_LL(sign,exp1,mant1);
+
+test_done:
+    return (fl1.d);
 }
 
 /* subtract two doubles */
-
 double
 __subdf3 (double a1, double a2)
 {
-  return ((float) a1 - (float) a2);
+    register union double_long fl1, fl2;
+
+    fl1.d = a1;
+    fl2.d = a2;
+
+    /* check for zero args */
+    if (!fl2.ll)
+	return (fl1.d);
+    /* twiddle sign bit and add */
+    fl2.l.upper ^= SIGNBIT;
+    if (!fl1.ll)
+	return (fl2.d);
+    return __adddf3 (a1, fl2.d);
 }
 
 /* multiply two doubles */
-
 double
 __muldf3 (double a1, double a2)
 {
-  return ((float) a1 * (float) a2);
+    register union double_long fl1, fl2;
+    register unsigned long long result;
+    register int exp;
+    int sign;
+
+    fl1.d = a1;
+    fl2.d = a2;
+
+    if (!fl1.ll || !fl2.ll) {
+	fl1.d = 0;
+	goto test_done;
+    }
+
+    /* compute sign and exponent */
+    sign = SIGND(fl1) ^ SIGND(fl2);
+    exp = EXPD(fl1) - EXCESSD;
+    exp += EXPD(fl2);
+
+    fl1.ll = MANTD_LL(fl1);
+    fl2.ll = MANTD_LL(fl2);
+
+  /* the multiply is done as one 31x31 multiply and two 31x21 multiples */
+    result = (fl1.ll >> 21) * (fl2.ll >> 21);
+    result += ((fl1.ll & 0x1FFFFF) * (fl2.ll >> 21)) >> 21;
+    result += ((fl2.ll & 0x1FFFFF) * (fl1.ll >> 21)) >> 21;
+
+    result >>= 2;
+    if (result & ((long long)1<<61)) {
+	/* round */
+	result += 1<<8;
+	result >>= 9;
+    } else {
+	/* round */
+	result += 1<<7;
+	result >>= 8;
+	exp--;
+    }
+    if (result & (HIDDEND_LL<<1)) {
+	result >>= 1;
+	exp++;
+    }
+
+    result &= ~HIDDEND_LL;
+
+    /* pack up and go home */
+    fl1.ll = PACKD_LL(sign,exp,result);
+test_done:
+    return (fl1.d);
 }
-
-/*
- *
- * Name:   Barrett Richardson
- * E-mail: barrett@iglou.com
- * When:   Thu Dec 15 10:31:11 EST 1994
- *
- *    callable function:
- *
- *       double __divdf3(double a1, double a2);
- *
- *       Does software divide of a1 / a2.
- *
- *       Based largely on __divsf3() in floatlib.c in the gcc
- *       distribution.
- *
- *    Purpose: To be used in conjunction with the -msoft-float
- *             option of gcc. You should be able to tack it to the
- *             end of floatlib.c included in the gcc distribution,
- *             and delete the __divdf3() already there which just 
- *             calls the single precision function (or may just
- *             use the floating point processor with some configurations).
- *
- *   You may use this code for whatever your heart desires.
- */
-
-
-
-
-/*
- * Compare the mantissas of two doubles.
- * Each mantissa is in two longs.
- * 
- *   return      1   if x1's mantissa is greater than x2's
- *              -1   if x1's mantissa is less than x2's
- *               0   if the two mantissa's are equal.
- *
- *   The Mantissas won't fit into a 4 byte word, so they are
- *   broken up into two parts.
- *
- *   This function is used internally by __divdf3()
- */
-
-int
-__dcmp (long x1m1, long x1m2, long x2m1, long x2m2)
-{
-   if (x1m1 > x2m1)
-      return 1;
-
-   if (x1m1 < x2m1)
-      return -1;
-
- /*  If the first word in the two mantissas were equal check the second word */
-
-   if (x1m2 > x2m2)
-      return 1;
-
-   if (x1m2 < x2m2)
-      return -1;
-
-   return 0;
-}
-
 
 /* divide two doubles */
-
 double
 __divdf3 (double a1, double a2)
 {
+    register union double_long fl1, fl2;
+    register long long mask,result;
+    register int exp, sign;
 
-   int  sign,
-        exponent,
-        bit_bucket;
+    fl1.d = a1;
+    fl2.d = a2;
 
-   register unsigned long mantissa1,
-                          mantissa2,
-                          x1m1,
-                          x1m2,
-                          x2m1,
-                          x2m2,
-                          mask;
+    /* subtract exponents */
+    exp = EXPD(fl1) - EXPD(fl2) + EXCESSD;
 
-   union _doubleu x1,
-                  x2,
-                  result;
+    /* compute sign */
+    sign = SIGND(fl1) ^ SIGND(fl2);
 
+    /* numerator zero??? */
+    if (fl1.ll == 0) {
+	/* divide by zero??? */
+	if (fl2.ll == 0)
+	    fl1.ll = ((unsigned long long)1<<63)-1;	/* NaN */
+	else
+	    fl1.ll = 0;
+	goto test_done;
+    }
 
-   x1.d = a1;
-   x2.d = a2;
-
-   exponent = x1.ieee.exponent - x2.ieee.exponent + EXCESSD;
-
-   sign = x1.ieee.sign ^ x2.ieee.sign;
-
-   x2.ieee.sign = 0;  /* don't want the sign bit to affect any zero */
-                      /* comparisons when checking for zero divide  */
-
-   if (!x2.l.lower && !x2.l.upper) { /* check for zero divide */
-      result.l.lower = 0x0;
-      if (sign)
-         result.l.upper = 0xFFF00000;   /* negative infinity */
-      else
-         result.l.upper = 0x7FF00000;   /* positive infinity */
-      return result.d;
-   }
-
-   if (!x1.l.upper && !x1.l.lower)  /* check for 0.0 numerator */
-      return (0.0);
-
-   x1m1 = x1.ieee.mantissa1 | D_PHANTOM_BIT;  /* turn on phantom bit */
-   x1m2 = x1.ieee.mantissa2;
-
-   x2m1 = x2.ieee.mantissa1 | D_PHANTOM_BIT;  /* turn on phantom bit */
-   x2m2 = x2.ieee.mantissa2;
-
-   if (__dcmp(x1m1,x1m2,x2m1,x2m2) < 0) {
-
-   /* if x1's mantissa is less than x2's shift it left one and decrement */
-   /* the exponent to accommodate the change in the mantissa             */
-
-      x1m1 <<= 1;               /*                          */
-      bit_bucket = x1m2 >> 31;  /*  Shift mantissa left one */
-      x1m1 |= bit_bucket;       /*                          */
-      x1m2 <<= 1;               /*                          */
-
-      exponent--;
-   }
+    /* return +Inf or -Inf */
+    if (fl2.ll == 0) {
+	fl1.ll = PACKD_LL(SIGND(fl1),2047,0);
+	goto test_done;
+    }
 
 
-   mantissa1 = 0;
-   mantissa2 = 0;
+    /* now get mantissas */
+    fl1.ll = MANTD_LL(fl1);
+    fl2.ll = MANTD_LL(fl2);
 
+    /* this assures we have 54 bits of precision in the end */
+    if (fl1.ll < fl2.ll) {
+	fl1.ll <<= 1;
+	exp--;
+    }
 
-  /* Get the first part of the results mantissa using successive */
-  /* subtraction.                                                */
+    /* now we perform repeated subtraction of fl2.ll from fl1.ll */
+    mask = (long long)1<<53;
+    result = 0;
+    while (mask) {
+	if (fl1.ll >= fl2.ll)
+	{
+	    result |= mask;
+	    fl1.ll -= fl2.ll;
+	}
+	fl1.ll <<= 1;
+	mask >>= 1;
+    }
 
-   mask = 0x00200000;
-   while (mask) {
+    /* round */
+    result += 1;
 
-      if (__dcmp(x1m1,x1m2,x2m1,x2m2) >= 0) {
+    /* normalize down */
+    exp++;
+    result >>= 1;
 
-     /* subtract x2's mantissa from x1's */
+    result &= ~HIDDEND_LL;
 
-         mantissa1 |= mask;   /* turn on a bit in the result */
+    /* pack up and go home */
+    fl1.ll = PACKD_LL(sign, exp, result);
 
-         if (x2m2 > x1m2)
-            x1m1--;
-         x1m2 -= x2m2; 
-         x1m1 -= x2m1;
-      }
+test_done:
+    return (fl1.d);
+}
 
-      x1m1 <<= 1;               /*                          */
-      bit_bucket = x1m2 >> 31;  /*  Shift mantissa left one */
-      x1m1 |= bit_bucket;       /*                          */
-      x1m2 <<= 1;               /*                          */
+int
+__gtdf2 (double a1, double a2)
+{
+    return __cmpdf2 ((float) a1, (float) a2) > 0;
+}
 
-      mask >>= 1;
-   }
+int
+__gedf2 (double a1, double a2)
+{
+    return (__cmpdf2 ((float) a1, (float) a2) >= 0) - 1;
+}
 
-  /* Get the second part of the results mantissa using successive */
-  /* subtraction.                                                 */
+int
+__ltdf2 (double a1, double a2)
+{
+    return - (__cmpdf2 ((float) a1, (float) a2) < 0);
+}
 
-   mask = 0x80000000;
-   while (mask) {
+int
+__ledf2 (double a1, double a2)
+{
+    return __cmpdf2 ((float) a1, (float) a2) > 0;
+}
 
-      if (__dcmp(x1m1,x1m2,x2m1,x2m2) >= 0) {
+int
+__eqdf2 (double a1, double a2)
+{
+    return *(long long *) &a1 == *(long long *) &a2;
+}
 
-     /* subtract x2's mantissa from x1's */
-
-         mantissa2 |= mask;   /* turn on a bit in the result */
-
-         if (x2m2 > x1m2)
-            x1m1--;
-         x1m2 -= x2m2; 
-         x1m1 -= x2m1;
-      }
-      x1m1 <<= 1;               /*                          */
-      bit_bucket = x1m2 >> 31;  /*  Shift mantissa left one */
-      x1m1 |= bit_bucket;       /*                          */
-      x1m2 <<= 1;               /*                          */
-
-      mask >>= 1;
-   }
-
-  /* round up by adding 1 to mantissa */
-
-   if (mantissa2 == 0xFFFFFFFF) {  /* check for over flow */
-
-   /* spill if overflow */
-
-      mantissa2 = 0;
-      mantissa1++;
-   }
-   else
-      mantissa2++;
-
-   exponent++;   /* increment exponent (mantissa must be shifted right */
-                 /* also)                                              */
-
- /* shift mantissa right one and assume a phantom bit (which really gives */
- /* 53 bits of precision in the mantissa)                                 */
-
-   mantissa2 >>= 1;
-   bit_bucket = mantissa1 & 1;
-   mantissa2 |= (bit_bucket << 31);
-   mantissa1 >>= 1;
-
-  /* put all the info into the result */
-
-   result.ieee.exponent  = exponent;
-   result.ieee.sign      = sign;
-   result.ieee.mantissa1 = mantissa1;
-   result.ieee.mantissa2 = mantissa2;
-
-
-   return result.d;
+int
+__nedf2 (double a1, double a2)
+{
+    return *(long long *) &a1 != *(long long *) &a2;
 }

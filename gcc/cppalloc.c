@@ -1,5 +1,5 @@
 /* Part of CPP library.  (memory allocation - xmalloc etc)
-   Copyright (C) 1986, 87, 89, 92 - 95, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1986, 87, 89, 92, 93, 94, 1995, 1998 Free Software Foundation, Inc.
    Written by Per Bothner, 1994.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -31,7 +31,7 @@ static void memory_full PROTO ((void)) ATTRIBUTE_NORETURN;
 static void
 memory_full ()
 {
-  fprintf (stderr, "%s: Memory exhausted.\n", progname);
+  cpp_notice ("%s: Memory exhausted.\n", progname);
   exit (FATAL_EXIT_CODE);
 }
 
