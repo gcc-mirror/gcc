@@ -331,7 +331,7 @@ extern enum processor_type rs6000_cpu;
    SUBTARGET_OPTIONS				\
 }
 
-/* rs6000_select[0] is reserved for the default cpu defined via --enable-cpu */
+/* rs6000_select[0] is reserved for the default cpu defined via --with-cpu */
 struct rs6000_cpu_select
 {
   char *string;
