@@ -8,7 +8,7 @@
 	* g++.dg/abi/cookie2.C: Likewise.
 
 	PR c++/9524
-	* g++.dg/parse/field1.C: New test.
+	* g++.dg/template/field1.C: New test.
 
 	PR c++/9912
 	* g++.dg/parse/class1.C: New test.
