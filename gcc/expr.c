@@ -7820,7 +7820,7 @@ result_vector (savep, result)
 	align = GET_MODE_ALIGNMENT (mode) / BITS_PER_UNIT;
 	if (size % align != 0)
 	  size = CEIL (size, align) * align;
-	reg = gen_rtx (REG, mode, savep ? INCOMING_REGNO (regno) : regno);
+	reg = gen_rtx (REG, mode, savep ? regno : INCOMING_REGNO (regno));
 	mem = change_address (result, mode,
 			      plus_constant (XEXP (result, 0), size));
 	savevec[nelts++] = (savep
