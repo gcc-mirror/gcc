@@ -1,3 +1,8 @@
+2002-02-28  Jim Meyering  <meyering@lucent.com>
+
+	* cpplex.c (cpp_parse_escape): Restore mistakenly-removed code:
+	\a still means TARGET_BELL.
+
 2002-02-28  Richard Henderson  <rth@redhat.com>
 
 	* haifa-sched.c (sched_emit_insn): New.

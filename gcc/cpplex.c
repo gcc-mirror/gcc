@@ -1721,6 +1721,7 @@ cpp_parse_escape (pfile, pstr, limit, mask)
     case 'a':
       if (CPP_WTRADITIONAL (pfile))
 	cpp_warning (pfile, "the meaning of '\\a' is different in traditional C");
+      c = TARGET_BELL;
       break;
 
     case 'e': case 'E':
