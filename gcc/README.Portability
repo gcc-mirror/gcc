@@ -123,8 +123,8 @@ int myfunc PARAMS ((double, int *));
 
 int
 myfunc (var1, var2)
-	double var1;
-	int *var2;
+     double var1;
+     int *var2;
 {
   ...
 }
@@ -132,7 +132,7 @@ myfunc (var1, var2)
 This implies that if the function takes no arguments, it should be
 declared and defined as follows:
 
-int myfunc PARAMS ((void))
+int myfunc PARAMS ((void));
 
 int
 myfunc ()
@@ -300,8 +300,8 @@ long and int are not the same size.
 Second, if you write a function definition with no return type at
 all:
 
-  operate(a, b)
-      int a, b;
+  operate (a, b)
+       int a, b;
   {
     ...
   }
@@ -314,8 +314,8 @@ Implicit function declarations always have return type int.  So if you
 correct the above definition to
 
   void
-  operate(a, b)
-      int a, b;
+  operate (a, b)
+       int a, b;
   ...
 
 but operate() is called above its definition, you will get an error
