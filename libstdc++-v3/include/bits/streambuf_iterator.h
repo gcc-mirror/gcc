@@ -132,9 +132,8 @@ namespace std
       bool 
       equal(const istreambuf_iterator& __b) const
       {
-	const int_type __eof = traits_type::eof();
-	bool __thiseof = _M_at_eof();
-	bool __beof = __b._M_at_eof();
+	const bool __thiseof = _M_at_eof();
+	const bool __beof = __b._M_at_eof();
 	return (__thiseof && __beof || (!__thiseof && !__beof));
       }
 
