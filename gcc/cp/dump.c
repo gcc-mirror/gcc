@@ -788,6 +788,34 @@ dequeue_and_dump (di)
       dump_next_stmt (di, t);
       break;
 
+    case START_CATCH_STMT:
+      dump_stmt (di, t);
+      if (dump_children_p)
+	queue_and_dump_type (di, TREE_TYPE (t), /*dump_children_p=*/1);
+      dump_next_stmt (di, t);
+      break;
+
+    case CLEANUP_STMT:
+      dump_stmt (di, t);
+      if (dump_children_p)
+	{
+	  dump_child ("decl", CLEANUP_DECL (t));
+	  dump_child ("expr", CLEANUP_EXPR (t));
+	}
+      dump_next_stmt (di, t);
+      break;
+
+    case SCOPE_STMT:
+      dump_stmt (di, t);
+      if (SCOPE_BEGIN_P (t))
+	dump_string (di, "begn");
+      else
+	dump_string (di, "end");
+      if (SCOPE_NULLIFIED_P (t))
+	dump_string (di, "null");
+      dump_next_stmt (di, t);
+      break;
+
     case INTEGER_CST:
       if (TREE_INT_CST_HIGH (t))
 	dump_int (di, "high", TREE_INT_CST_HIGH (t));
