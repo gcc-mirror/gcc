@@ -1,5 +1,9 @@
 2000-05-06  Richard Henderson  <rth@cygnus.com>
 
+	* c-typeck.c (build_c_cast): Remove dead code.
+
+2000-05-06  Richard Henderson  <rth@cygnus.com>
+
 	* flow.c (split_edge): Don't allocate global_live_at_start for
 	the new block unless the old blocks had them as well.
 
