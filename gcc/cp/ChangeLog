@@ -1,5 +1,9 @@
 2003-12-12  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/13114, c++/13115
+	* class.c (layout_empty_base): Propagate the move of an empty base
+	to offset zero.
+
 	PR c++/12881
 	* method.c (make_thunk): Deal with thunk aliases when searching
 	for a thunk. Robustify assertion.

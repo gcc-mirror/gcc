@@ -3576,14 +3576,18 @@ layout_empty_base (tree binfo, tree eoc, splay_tree offsets)
   /* This routine should only be used for empty classes.  */
   my_friendly_assert (is_empty_class (basetype), 20000321);
   alignment = ssize_int (CLASSTYPE_ALIGN_UNIT (basetype));
-  
-  if (abi_version_at_least (2))
-    BINFO_OFFSET (binfo) = size_zero_node;
-  if (warn_abi && !integer_zerop (BINFO_OFFSET (binfo)))
-    warning ("offset of empty base `%T' may not be ABI-compliant and may"
-	     "change in a future version of GCC",
-	     BINFO_TYPE (binfo));
 
+  if (!integer_zerop (BINFO_OFFSET (binfo)))
+    {
+      if (abi_version_at_least (2))
+	propagate_binfo_offsets
+	  (binfo, size_diffop (size_zero_node, BINFO_OFFSET (binfo)));
+      else if (warn_abi)
+	warning ("offset of empty base `%T' may not be ABI-compliant and may"
+		 "change in a future version of GCC",
+		 BINFO_TYPE (binfo));
+    }
+  
   /* This is an empty base class.  We first try to put it at offset
      zero.  */
   if (layout_conflict_p (binfo,

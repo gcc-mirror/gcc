@@ -2,7 +2,7 @@
 
 // Copyright (C) 2003 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 12 Dec 2003 <nathan@codesourcery.com>
-// Origin: Volker Reichelt <reichelt@igpm.rwth-aachen.de>
+// Origin: grigory@stl.sarov.ru
 
 // PR c++/12881. ICE in thunk generation
 
