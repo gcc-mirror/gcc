@@ -1,3 +1,8 @@
+2001-02-27  DJ Delorie  <dj@redhat.com>
+
+	* config/m68k/m68k.c (output_function_prologue): Save the new CFA
+	register, *then* define it as the new CFA.
+
 Tue Feb 27 16:49:13 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.c (override_options): Promote -fpic to -fPIC.

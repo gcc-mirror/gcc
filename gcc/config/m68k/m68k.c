@@ -220,8 +220,8 @@ output_function_prologue (stream, size)
           l = (char *) dwarf2out_cfi_label ();   
 	  cfa_store_offset += 4;
 	  cfa_offset = cfa_store_offset;
-	  dwarf2out_def_cfa (l, FRAME_POINTER_REGNUM, cfa_offset);
 	  dwarf2out_reg_save (l, FRAME_POINTER_REGNUM, -cfa_store_offset);
+	  dwarf2out_def_cfa (l, FRAME_POINTER_REGNUM, cfa_offset);
 	  cfa_store_offset += fsize;
 	}
     }
