@@ -5261,54 +5261,6 @@ compute_preds_succs (s_preds, s_succs, num_preds, num_succs)
 		   num_preds, num_succs);
 }
 
-void
-dump_bb_data (file, preds, succs, live_info)
-     FILE *file;
-     int_list_ptr *preds;
-     int_list_ptr *succs;
-     int live_info;
-{
-  int bb;
-  int_list_ptr p;
-
-  fprintf (file, "BB data\n\n");
-  for (bb = 0; bb < n_basic_blocks; bb++)
-    {
-      fprintf (file, "BB %d, start %d, end %d\n", bb,
-	       INSN_UID (BLOCK_HEAD (bb)), INSN_UID (BLOCK_END (bb)));
-      fprintf (file, "  preds:");
-      for (p = preds[bb]; p != NULL; p = p->next)
-	{
-	  int pred_bb = INT_LIST_VAL (p);
-	  if (pred_bb == ENTRY_BLOCK)
-	    fprintf (file, " entry");
-	  else
-	    fprintf (file, " %d", pred_bb);
-	}
-      fprintf (file, "\n");
-      fprintf (file, "  succs:");
-      for (p = succs[bb]; p != NULL; p = p->next)
-	{
-	  int succ_bb = INT_LIST_VAL (p);
-	  if (succ_bb == EXIT_BLOCK)
-	    fprintf (file, " exit");
-	  else
-	    fprintf (file, " %d", succ_bb);
-	}
-      if (live_info)
-	{
-	  int regno;
-	  fprintf (file, "\nRegisters live at start:");
-	  for (regno = 0; regno < max_regno; regno++)
-	    if (REGNO_REG_SET_P (BASIC_BLOCK (bb)->global_live_at_start, regno))
-	      fprintf (file, " %d", regno);
-	  fprintf (file, "\n");
-	}
-      fprintf (file, "\n");
-    }
-  fprintf (file, "\n");
-}
-
 /* Free basic block data storage.  */
 
 void
