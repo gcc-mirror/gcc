@@ -8619,10 +8619,7 @@ unify (tparms, targs, parm, arg, strict)
 	  t1 = TREE_OPERAND (parm, 0);
 	  t2 = TREE_OPERAND (parm, 1);
 
-	  /* Should this be a regular fold?  */
-	  t = maybe_fold_nontype_arg (build (PLUS_EXPR,
-					     integer_type_node,
-					     arg, t2));
+	  t = fold (build (PLUS_EXPR, integer_type_node, arg, t2));
 
 	  return unify (tparms, targs, t1, t, strict);
 	}
