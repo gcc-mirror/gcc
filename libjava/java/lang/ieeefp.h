@@ -32,6 +32,14 @@
 #define __IEEE_BIG_ENDIAN
 #endif
 
+#ifdef __m32r__
+#ifdef __LITTLE_ENDIAN__
+#define __IEEE_LITTLE_ENDIAN
+#else
+#define __IEEE_BIG_ENDIAN
+#endif
+#endif
+
 #if defined(__m68k__) || defined(__mc68000__)
 #define __IEEE_BIG_ENDIAN
 #endif
