@@ -1,5 +1,16 @@
 2000-11-20  Tom Tromey  <tromey@cygnus.com>
 
+	* lex.c (yylex): Added STRICT_TK case.
+	* parse.y (STRICT_TK): Added.
+	* parse-scan.y (STRICT_TK): Added.
+	* Make-lang.in ($(srcdir)/java/keyword.h): Added missing `\' and
+	`;'.  Use 4, not 3, with -k option.  Correctly rename resulting
+	file.
+	* keyword.h: Rebuilt.
+	* keyword.gperf (strictfp): Added.
+
+2000-11-20  Tom Tromey  <tromey@cygnus.com>
+
 	* lex.c (yylex): Recognize floating point constants with leading
 	0.
 

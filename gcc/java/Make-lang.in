@@ -89,12 +89,12 @@ $(srcdir)/java/parse-scan.c:  $(srcdir)/java/parse-scan.y
 
 $(srcdir)/java/keyword.h: $(srcdir)/java/keyword.gperf
 	(cd $(srcdir)/java || exit 1; \
-	gperf -L C -F ', 0' -p -t -j1 -i 1 -g -o -N java_keyword -k1,3,$$ \
-		keyword.gperf > k$$$$.h || {
+	gperf -L C -F ', 0' -p -t -j1 -i 1 -g -o -N java_keyword -k1,4,$$ \
+		keyword.gperf > k$$$$.h || { \
 	echo "Please update gperf from ftp://ftp.gnu.org/pub/gnu/gperf/" >&2; \
 	rm -f k$$$$.h; \
-	exit 1; } \
-	mv -f k$$$$.h keyword.gperf)
+	exit 1; } ; \
+	mv -f k$$$$.h keyword.h)
 
 # Executables built by this Makefile:
 JAVA_OBJS = java/parse.o java/class.o java/decl.o java/expr.o \

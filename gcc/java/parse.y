@@ -463,6 +463,7 @@ static tree currently_caught_type_list;
 %token   STATIC_TK       FINAL_TK           SYNCHRONIZED_TK
 %token   VOLATILE_TK     TRANSIENT_TK       NATIVE_TK
 %token   PAD_TK          ABSTRACT_TK        MODIFIER_TK
+%token   STRICT_TK
 
 /* Keep those two in order, too */
 %token   DECR_TK INCR_TK

@@ -82,6 +82,7 @@ continue, CONTINUE_TK
 goto, GOTO_TK
 package, PACKAGE_TK
 this, THIS_TK
+strictfp, STRICT_TK
 # true, false and null aren't keyword. But we match them easily this way
 true, TRUE_TK
 false, FALSE_TK
