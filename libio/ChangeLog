@@ -1,3 +1,8 @@
+1998-06-26  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* config.shared (FLAGS_TO_PASS): Add gcc_version_trigger.
+	(Makefile): Add dependency upon $(gcc_version_trigger).
+
 1998-06-24  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* Makefile.in (install): Install _G_config.h depending on new flag
