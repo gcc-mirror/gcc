@@ -1,3 +1,10 @@
+2001-10-11  Robert Dewar <dewar@gnat.com>
+	
+	* usage.adb: Add lines for V switch.
+
+	* gnatcmd.adb (COMPILE): Revise translations for -gnatV 
+	(/VALIDITY_CHECKING).
+
 2001-10-11  Ed Schonberg <schonber@gnat.com>
 
 	* sem_type.adb (Add_One_Interp): an operator for a type declared in 

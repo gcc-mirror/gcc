@@ -6,7 +6,7 @@
 --                                                                          --
 --                                B o d y                                   --
 --                                                                          --
---                           $Revision: 1.116 $
+--                           $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -287,9 +287,25 @@ begin
 
    --  Line for -gnatV switch
 
-   Write_Switch_Char ("V?");
+   Write_Switch_Char ("Vxx");
    Write_Line
-     ("Validity checking (?=ndcte or 0-4 None/Default/Copy/Test/Exprs)");
+     ("Enable selected validity checking mode, xx = list of parameters:");
+   Write_Line ("        a    turn on all validity checking options");
+   Write_Line ("        c    turn on validity checking for copies");
+   Write_Line ("        C    turn off validity checking for copies");
+   Write_Line ("        f    turn on validity checking for floating-point");
+   Write_Line ("        F    turn off validity checking for floating-point");
+   Write_Line ("        i    turn on validity checking for in params");
+   Write_Line ("        I    turn off validity checking for in params");
+   Write_Line ("        m    turn on validity checking for in out params");
+   Write_Line ("        M    turn off validity checking for in out params");
+   Write_Line ("        r    turn on validity checking for returns");
+   Write_Line ("        R    turn off validity checking for returns");
+   Write_Line ("        s    turn on validity checking for subscripts");
+   Write_Line ("        S    turn off validity checking for subscripts");
+   Write_Line ("        t    turn on validity checking for tests");
+   Write_Line ("        T    turn off validity checking for tests");
+   Write_Line ("        n    turn off all validity checks (including RM)");
 
    --  Lines for -gnatw switch
 
