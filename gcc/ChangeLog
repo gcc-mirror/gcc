@@ -1,3 +1,10 @@
+2005-02-23  Roger Sayle  <roger@eyesopen.com>
+
+	PR target/20018
+	PR rtl-optimization/20097
+	* simplify-rtx.c (simplify_relational_operation_1): Avoid creating
+	BImode SUBREGs of SImode registers which confuse the ia64 backend.
+
 2005-02-23  David Edelsohn  <edelsohn@gnu.org>
 
 	* t-aix43 (SHLIB_INSTALL): Create directory for shared library.

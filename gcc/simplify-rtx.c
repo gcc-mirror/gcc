@@ -2887,6 +2887,8 @@ simplify_relational_operation_1 (enum rtx_code code, enum machine_mode mode,
       && op1 == const0_rtx
       && GET_MODE_CLASS (mode) == MODE_INT
       && cmp_mode != VOIDmode
+      /* ??? Work-around BImode bugs in the ia64 backend.  */
+      && mode != BImode
       && cmp_mode != BImode
       && nonzero_bits (op0, cmp_mode) == 1
       && STORE_FLAG_VALUE == 1)
