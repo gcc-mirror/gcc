@@ -531,64 +531,6 @@ static const char *mips_lo_relocs[NUM_SYMBOL_TYPES];
 /* Likewise for HIGHs.  */
 static const char *mips_hi_relocs[NUM_SYMBOL_TYPES];
 
-/* Hardware names for the registers.  If -mrnames is used, this
-   will be overwritten with mips_sw_reg_names.  */
-
-char mips_reg_names[][8] =
-{
- "$0",   "$1",   "$2",   "$3",   "$4",   "$5",   "$6",   "$7",
- "$8",   "$9",   "$10",  "$11",  "$12",  "$13",  "$14",  "$15",
- "$16",  "$17",  "$18",  "$19",  "$20",  "$21",  "$22",  "$23",
- "$24",  "$25",  "$26",  "$27",  "$28",  "$sp",  "$fp",  "$31",
- "$f0",  "$f1",  "$f2",  "$f3",  "$f4",  "$f5",  "$f6",  "$f7",
- "$f8",  "$f9",  "$f10", "$f11", "$f12", "$f13", "$f14", "$f15",
- "$f16", "$f17", "$f18", "$f19", "$f20", "$f21", "$f22", "$f23",
- "$f24", "$f25", "$f26", "$f27", "$f28", "$f29", "$f30", "$f31",
- "hi",   "lo",   "",     "$fcc0","$fcc1","$fcc2","$fcc3","$fcc4",
- "$fcc5","$fcc6","$fcc7","", "", "$arg", "$frame", "$fakec",
- "$c0r0", "$c0r1", "$c0r2", "$c0r3", "$c0r4", "$c0r5", "$c0r6", "$c0r7",
- "$c0r8", "$c0r9", "$c0r10","$c0r11","$c0r12","$c0r13","$c0r14","$c0r15",
- "$c0r16","$c0r17","$c0r18","$c0r19","$c0r20","$c0r21","$c0r22","$c0r23",
- "$c0r24","$c0r25","$c0r26","$c0r27","$c0r28","$c0r29","$c0r30","$c0r31",
- "$c2r0", "$c2r1", "$c2r2", "$c2r3", "$c2r4", "$c2r5", "$c2r6", "$c2r7",
- "$c2r8", "$c2r9", "$c2r10","$c2r11","$c2r12","$c2r13","$c2r14","$c2r15",
- "$c2r16","$c2r17","$c2r18","$c2r19","$c2r20","$c2r21","$c2r22","$c2r23",
- "$c2r24","$c2r25","$c2r26","$c2r27","$c2r28","$c2r29","$c2r30","$c2r31",
- "$c3r0", "$c3r1", "$c3r2", "$c3r3", "$c3r4", "$c3r5", "$c3r6", "$c3r7",
- "$c3r8", "$c3r9", "$c3r10","$c3r11","$c3r12","$c3r13","$c3r14","$c3r15",
- "$c3r16","$c3r17","$c3r18","$c3r19","$c3r20","$c3r21","$c3r22","$c3r23",
- "$c3r24","$c3r25","$c3r26","$c3r27","$c3r28","$c3r29","$c3r30","$c3r31"
-};
-
-/* Mips software names for the registers, used to overwrite the
-   mips_reg_names array.  */
-
-char mips_sw_reg_names[][8] =
-{
-  "$zero","$at",  "$v0",  "$v1",  "$a0",  "$a1",  "$a2",  "$a3",
-  "$t0",  "$t1",  "$t2",  "$t3",  "$t4",  "$t5",  "$t6",  "$t7",
-  "$s0",  "$s1",  "$s2",  "$s3",  "$s4",  "$s5",  "$s6",  "$s7",
-  "$t8",  "$t9",  "$k0",  "$k1",  "$gp",  "$sp",  "$fp",  "$ra",
-  "$f0",  "$f1",  "$f2",  "$f3",  "$f4",  "$f5",  "$f6",  "$f7",
-  "$f8",  "$f9",  "$f10", "$f11", "$f12", "$f13", "$f14", "$f15",
-  "$f16", "$f17", "$f18", "$f19", "$f20", "$f21", "$f22", "$f23",
-  "$f24", "$f25", "$f26", "$f27", "$f28", "$f29", "$f30", "$f31",
-  "hi",   "lo",   "",     "$fcc0","$fcc1","$fcc2","$fcc3","$fcc4",
-  "$fcc5","$fcc6","$fcc7","$rap", "", "$arg", "$frame", "$fakec",
-  "$c0r0", "$c0r1", "$c0r2", "$c0r3", "$c0r4", "$c0r5", "$c0r6", "$c0r7",
-  "$c0r8", "$c0r9", "$c0r10","$c0r11","$c0r12","$c0r13","$c0r14","$c0r15",
-  "$c0r16","$c0r17","$c0r18","$c0r19","$c0r20","$c0r21","$c0r22","$c0r23",
-  "$c0r24","$c0r25","$c0r26","$c0r27","$c0r28","$c0r29","$c0r30","$c0r31",
-  "$c2r0", "$c2r1", "$c2r2", "$c2r3", "$c2r4", "$c2r5", "$c2r6", "$c2r7",
-  "$c2r8", "$c2r9", "$c2r10","$c2r11","$c2r12","$c2r13","$c2r14","$c2r15",
-  "$c2r16","$c2r17","$c2r18","$c2r19","$c2r20","$c2r21","$c2r22","$c2r23",
-  "$c2r24","$c2r25","$c2r26","$c2r27","$c2r28","$c2r29","$c2r30","$c2r31",
-  "$c3r0", "$c3r1", "$c3r2", "$c3r3", "$c3r4", "$c3r5", "$c3r6", "$c3r7",
-  "$c3r8", "$c3r9", "$c3r10","$c3r11","$c3r12","$c3r13","$c3r14","$c3r15",
-  "$c3r16","$c3r17","$c3r18","$c3r19","$c3r20","$c3r21","$c3r22","$c3r23",
-  "$c3r24","$c3r25","$c3r26","$c3r27","$c3r28","$c3r29","$c3r30","$c3r31"
-};
-
 /* Map hard register number to register class */
 const enum reg_class mips_regno_to_class[] =
 {
@@ -4836,14 +4778,6 @@ override_options (void)
       && TARGET_ABICALLS
       && (target_flags_explicit & MASK_EXPLICIT_RELOCS) == 0)
     target_flags &= ~MASK_EXPLICIT_RELOCS;
-
-  /* -mrnames says to use the MIPS software convention for register
-     names instead of the hardware names (ie, $a0 instead of $4).
-     We do this by switching the names in mips_reg_names, which the
-     reg_names points into via the REGISTER_NAMES macro.  */
-
-  if (TARGET_NAME_REGS)
-    memcpy (mips_reg_names, mips_sw_reg_names, sizeof (mips_reg_names));
 
   /* -mvr4130-align is a "speed over size" optimization: it usually produces
      faster code, but at the expense of more nops.  Enable it at -O3 and
