@@ -1,5 +1,9 @@
 2003-04-23  Mark Mitchell  <mark@codesourcery.com>
 
+	* g++.dg/parse/typedef1.C: Tweak after fix for PR 10428.
+
+2003-04-23  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/10451
 	* g++.dg/parse/crash4.C: New test.
 	
