@@ -1,3 +1,9 @@
+2003-12-23  Kazu Hirata  <kazu@cs.umass.edu>
+
+	PR target/11576
+	* config/h8300/h8300.h (CONSTANT_ADDRESS_P): Allow CONST and
+	HIGH on all variants.
+
 2003-12-23  Matthias Klose  <doko@debian.org>
 
 	* config/mips/linux.h (LIB_SPEC): Use -lpthread when
