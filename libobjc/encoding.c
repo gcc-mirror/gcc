@@ -30,14 +30,17 @@ Boston, MA 02111-1307, USA.  */
 #include "objc-api.h"
 #include "encoding.h"
 
+#undef  MAX
 #define MAX(X, Y)                    \
   ({ typeof(X) __x = (X), __y = (Y); \
      (__x > __y ? __x : __y); })
 
+#undef  MIN
 #define MIN(X, Y)                    \
   ({ typeof(X) __x = (X), __y = (Y); \
      (__x < __y ? __x : __y); })
 
+#undef  ROUND
 #define ROUND(V, A) \
   ({ typeof(V) __v=(V); typeof(A) __a=(A); \
      __a*((__v+__a-1)/__a); })
