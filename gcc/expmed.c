@@ -2153,9 +2153,11 @@ expand_mult (mode, op0, op1, target, unsignedp)
 	  for (opno = 1; opno < alg.ops; opno++)
 	    {
 	      int log = alg.log[opno];
-	      rtx shift_subtarget = preserve_subexpressions_p () ? 0 : accum;
+	      int preserve = preserve_subexpressions_p ();
+	      rtx shift_subtarget = preserve ? 0 : accum;
 	      rtx add_target = opno == alg.ops - 1 && target != 0 ? target : 0;
-
+	      rtx accum_target = preserve ? 0 : accum;
+	      
 	      switch (alg.op[opno])
 		{
 		case alg_shift:
@@ -2168,7 +2170,7 @@ expand_mult (mode, op0, op1, target, unsignedp)
 		  tem = expand_shift (LSHIFT_EXPR, mode, op0,
 				      build_int_2 (log, 0), NULL_RTX, 0);
 		  accum = force_operand (gen_rtx (PLUS, mode, accum, tem),
-					 add_target ? add_target : accum);
+					 add_target ? add_target : accum_target);
 		  val_so_far += (HOST_WIDE_INT) 1 << log;
 		  break;
 
@@ -2176,23 +2178,25 @@ expand_mult (mode, op0, op1, target, unsignedp)
 		  tem = expand_shift (LSHIFT_EXPR, mode, op0,
 				      build_int_2 (log, 0), NULL_RTX, 0);
 		  accum = force_operand (gen_rtx (MINUS, mode, accum, tem),
-					 add_target ? add_target : accum);
+					 add_target ? add_target : accum_target);
 		  val_so_far -= (HOST_WIDE_INT) 1 << log;
 		  break;
 
 		case alg_add_t2_m:
 		  accum = expand_shift (LSHIFT_EXPR, mode, accum,
-					build_int_2 (log, 0), accum, 0);
+					build_int_2 (log, 0), shift_subtarget,
+					0);
 		  accum = force_operand (gen_rtx (PLUS, mode, accum, op0),
-					 add_target ? add_target : accum);
+					 add_target ? add_target : accum_target);
 		  val_so_far = (val_so_far << log) + 1;
 		  break;
 
 		case alg_sub_t2_m:
 		  accum = expand_shift (LSHIFT_EXPR, mode, accum,
-					build_int_2 (log, 0), accum, 0);
+					build_int_2 (log, 0), shift_subtarget,
+					0);
 		  accum = force_operand (gen_rtx (MINUS, mode, accum, op0),
-					 add_target ? add_target : accum);
+					 add_target ? add_target : accum_target);
 		  val_so_far = (val_so_far << log) - 1;
 		  break;
 
@@ -2200,7 +2204,7 @@ expand_mult (mode, op0, op1, target, unsignedp)
 		  tem = expand_shift (LSHIFT_EXPR, mode, accum,
 				      build_int_2 (log, 0), NULL_RTX, 0);
 		  accum = force_operand (gen_rtx (PLUS, mode, accum, tem),
-					 add_target ? add_target : accum);
+					 add_target ? add_target : accum_target);
 		  val_so_far += val_so_far << log;
 		  break;
 
@@ -2208,7 +2212,8 @@ expand_mult (mode, op0, op1, target, unsignedp)
 		  tem = expand_shift (LSHIFT_EXPR, mode, accum,
 				      build_int_2 (log, 0), NULL_RTX, 0);
 		  accum = force_operand (gen_rtx (MINUS, mode, tem, accum),
-					 add_target ? add_target : tem);
+					 (add_target ? add_target
+					  : preserve ? 0 : tem));
 		  val_so_far = (val_so_far << log) - val_so_far;
 		  break;
 
