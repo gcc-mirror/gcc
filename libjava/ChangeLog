@@ -1,3 +1,9 @@
+2004-10-22  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* gnu/java/net/natPlainSocketImplPosix.cc
+	(gnu::java::net::PlainSocketImpl::available): Call FIONREAD ioctl
+	with 'int *' argument instead of 'long *'.
+
 2004-10-21  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/NetworkInterface.java,
