@@ -1,3 +1,12 @@
+2002-01-22  Loren Rittle <ljrittle@acm.org>
+
+	* include/Makefile.am (c_base_builddir): Remove redundant slash.
+	(std_builddir): Likewise.
+	(std_headers_rename): Fix cut-n-paste typo.
+	(install-data-local): Concat path per element instead of once to
+	first element of list.
+	* include/Makefile.in: Rebuilt.
+
 2002-01-22  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* config/os/aix/bits/ctype_noninline.h: Fix formatting.

@@ -160,7 +160,7 @@ ext_headers = \
 
 # This is the common subset of files that all three "C" header models use.
 c_base_srcdir = @C_INCLUDE_DIR@
-c_base_builddir = ./
+c_base_builddir = .
 c_base_headers = \
 	${c_base_srcdir}/std_cassert.h \
 	${c_base_srcdir}/std_cctype.h \
@@ -204,7 +204,7 @@ c_base_headers_rename = \
 	cwctype 
 
 std_srcdir = ${glibcpp_srcdir}/include/std
-std_builddir = ./
+std_builddir = .
 std_headers = \
 	${std_srcdir}/std_algorithm.h \
 	${std_srcdir}/std_bitset.h \
@@ -256,7 +256,7 @@ std_headers_rename = \
 	memory \
 	numeric \
 	ostream \
-	${std_builddir}/queue \
+	queue \
 	set \
 	sstream \
 	stack \
@@ -425,13 +425,15 @@ install-data-local:
 	for file in ${ext_headers}; do \
 	  $(INSTALL_DATA) $${file} ${gxx_include_dir}/${ext_builddir}; done
 	$(INSTALL) -d ${gxx_include_dir}/${c_base_builddir}
-	for file in ${c_base_builddir}/${c_base_headers_rename}; do \
-	  $(INSTALL_DATA) $${file} ${gxx_include_dir}/${c_base_builddir}; done
+	for file in ${c_base_headers_rename}; do \
+	  $(INSTALL_DATA) ${c_base_builddir}/$${file} \
+	    ${gxx_include_dir}/${c_base_builddir}; done
 	for file in ${c_base_headers_extra}; do \
 	  $(INSTALL_DATA) $${file} ${gxx_include_dir}/${c_base_builddir}; done
 	$(INSTALL) -d ${gxx_include_dir}/${std_builddir}
-	for file in ${std_builddir}/${std_headers_rename}; do \
-	  $(INSTALL_DATA) $${file} ${gxx_include_dir}/${std_builddir}; done
+	for file in ${std_headers_rename}; do \
+	  $(INSTALL_DATA) ${std_builddir}/$${file} \
+	    ${gxx_include_dir}/${std_builddir}; done
 	$(INSTALL) -d ${gxx_include_dir}/${target_builddir}
 	for file in ${target_headers} ${extra_target_headers}; do \
 	  $(INSTALL_DATA) $${file} ${gxx_include_dir}/${target_builddir}; done
