@@ -611,7 +611,12 @@ do{  if (PREFIX[0] == 'L' && PREFIX[1] == 'I')		\
 #else /* not HPUX_ASM */
 
 #undef FUNCTION_PROFILER
-#define FUNCTION_PROFILER(FILE, LABELNO)  \
-   fprintf (FILE, "\tmovl #LP%d,d0\n\tjsr mcount\n", (LABELNO));
+
+/* HP-UX needs the call to mcount before the link instruction.
+   Copy the return address onto the stack before the call to fake it out.  */
+#define FUNCTION_PROFILER(FILE, LABEL_NO) \
+   fprintf (FILE, "\tmovel a6@(4),sp@-\n" \
+                  "\tmovl #LP%d,a0\n\tjsr mcount\n" \
+                  "\taddqw #4,sp\n", (LABEL_NO));
 
 #endif /* not HPUX_ASM */
