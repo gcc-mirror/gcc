@@ -548,12 +548,17 @@ save_for_inline_copying (fndecl)
 	  break;
 
 	case INSN:
-	case CALL_INSN:
 	case JUMP_INSN:
+	case CALL_INSN:
 	  copy = rtx_alloc (GET_CODE (insn));
+
+	  if (GET_CODE (insn) == CALL_INSN)
+	    CALL_INSN_FUNCTION_USAGE (copy) =
+	           copy_for_inline (CALL_INSN_FUNCTION_USAGE (insn));
+
 	  PATTERN (copy) = copy_for_inline (PATTERN (insn));
 	  INSN_CODE (copy) = -1;
-	  LOG_LINKS (copy) = NULL;
+	  LOG_LINKS (copy) = NULL_RTX;
 	  RTX_INTEGRATED_P (copy) = RTX_INTEGRATED_P (insn);
 	  break;
 
@@ -1757,6 +1762,11 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
 	case CALL_INSN:
 	  pattern = copy_rtx_and_substitute (PATTERN (insn), map);
 	  copy = emit_call_insn (pattern);
+
+	  /* Because the USAGE information potentially contains objects other
+	     than hard registers, we need to copy it.  */
+	  CALL_INSN_FUNCTION_USAGE (copy) =
+	     copy_rtx_and_substitute (CALL_INSN_FUNCTION_USAGE (insn), map);
 
 #ifdef HAVE_cc0
 	  if (cc0_insn)
