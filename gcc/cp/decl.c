@@ -6214,9 +6214,9 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
 	}
 
       /* cp_finish_decl sets DECL_EXTERNAL if DECL_IN_AGGR_P is set.  */
-      if (DECL_LANG_SPECIFIC (decl))
-	DECL_IN_AGGR_P (decl) = 0;
-      if (DECL_USE_TEMPLATE (decl) || CLASSTYPE_USE_TEMPLATE (context))
+      DECL_IN_AGGR_P (decl) = 0;
+      if ((DECL_LANG_SPECIFIC (decl) && DECL_USE_TEMPLATE (decl)) 
+	  || CLASSTYPE_USE_TEMPLATE (context))
 	SET_DECL_TEMPLATE_SPECIALIZATION (decl);
 
       /* Stupid stupid stupid stupid  (jason 7/21/95) */
