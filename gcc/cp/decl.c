@@ -11907,15 +11907,22 @@ grokparms (first_parm)
 	    {
 	      /* [dcl.fct]/6, parameter types cannot contain pointers
 		 (references) to arrays of unknown bound.  */
-	      tree t = type;
+	      tree t = TREE_TYPE (type);
+	      int ptr = TYPE_PTR_P (type);
 
-	      while (POINTER_TYPE_P (t)
-		     || (TREE_CODE (t) == ARRAY_TYPE
-			 && TYPE_DOMAIN (t) != NULL_TREE))
-		t = TREE_TYPE (t);
+              while (1)
+                {
+                  if (TYPE_PTR_P (t))
+                    ptr = 1;
+                  else if (TREE_CODE (t) != ARRAY_TYPE)
+                    break;
+                  else if (!TYPE_DOMAIN (t))
+	            break;
+	          t = TREE_TYPE (t);
+	        }
 	      if (TREE_CODE (t) == ARRAY_TYPE)
 		cp_error ("parameter `%D' includes %s to array of unknown bound `%T'",
-			  decl, TYPE_PTR_P (type) ? "pointer" : "reference", t);
+			  decl, ptr ? "pointer" : "reference", t);
 	    }
 
 	  DECL_ARG_TYPE (decl) = TREE_TYPE (decl);
