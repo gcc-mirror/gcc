@@ -3396,7 +3396,7 @@ simplify_rtx (x, op0_mode, last, in_dest)
 	 take the low bits.  On a little-endian machine, that's
 	 always valid.  On a big-endian machine, it's valid
 	 only if the constant's mode fits in one word.   Note that we
-	 cannot use subreg_lowpart_p since we SUBREG_REG may be VOIDmode.  */
+	 cannot use subreg_lowpart_p since SUBREG_REG may be VOIDmode.  */
       if (CONSTANT_P (SUBREG_REG (x))
 	  && ((GET_MODE_SIZE (op0_mode) <= UNITS_PER_WORD
 	      || ! WORDS_BIG_ENDIAN)
