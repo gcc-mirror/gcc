@@ -1,3 +1,9 @@
+2004-06-28  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/cpp_type_traits.h: Move the additions to
+	namespace __gnu_internal outside of namespace std; trivial
+	formatting fixes.
+
 2004-06-28  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/debug/safe_base.h (__gnu_debug::_Safe_sequence_base):
