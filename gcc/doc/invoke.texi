@@ -5088,7 +5088,10 @@ predefined macro, except for macros that start with @samp{__} or with
 C@.
 
 @item %I
-Substitute a @option{-iprefix} option made from @env{GCC_EXEC_PREFIX}.
+Substitute any of @option{-iprefix} (made from @env{GCC_EXEC_PREFIX}),
+@option{-isysroot} (made from @env{TARGET_SYSTEM_ROOT}), and
+@option{-isystem} (made from @env{COMPILER_PATH} and @option{-B} options)
+as necessary.
 
 @item %s
 Current argument is the name of a library or startup file of some sort.

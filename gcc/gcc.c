@@ -204,6 +204,10 @@ static int report_times;
 
 static const char *target_system_root = TARGET_SYSTEM_ROOT;
 
+/* Nonzero means pass the updated target_system_root to the compiler.  */
+
+static int target_system_root_changed;
+
 /* Nonzero means write "temp" files in source directory
    and use the source file's name in them, and don't delete them.  */
 
@@ -445,7 +449,9 @@ or with constant text in a single argument.
  %P	like %p, but puts `__' before and after the name of each macro.
 	(Except macros that already have __.)
 	This is for ANSI C.
- %I	Substitute a -iprefix option made from GCC_EXEC_PREFIX.
+ %I	Substitute any of -iprefix (made from GCC_EXEC_PREFIX), -isysroot
+	(made from TARGET_SYSTEM_ROOT), and -isystem (made from COMPILER_PATH
+	and -B options) as necessary.
  %s     current argument is the name of a library or startup file of some sort.
         Search for that file in a standard list of directories
 	and substitute the full name found.
@@ -3830,14 +3836,23 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 	      concat (tooldir_prefix, "lib", dir_separator_str, NULL),
 	      "BINUTILS", PREFIX_PRIORITY_LAST, 0, NULL, 1);
 
+#if defined(TARGET_SYSTEM_ROOT_RELOCATABLE) && !defined(VMS)
+  /* If the normal TARGET_SYSTEM_ROOT is inside of $exec_prefix,
+     then consider it to relocate with the rest of the GCC installation
+     if GCC_EXEC_PREFIX is set.
+     ``make_relative_prefix'' is not compiled for VMS, so don't call it.  */
   if (target_system_root && gcc_exec_prefix)
     {
       char *tmp_prefix = make_relative_prefix (argv[0],
 					       standard_bindir_prefix,
 					       target_system_root);
       if (tmp_prefix && access_check (tmp_prefix, F_OK) == 0)
-	target_system_root = tmp_prefix;
+	{
+	  target_system_root = tmp_prefix;
+	  target_system_root_changed = 1;
+	}
     }
+#endif
 
   /* More prefixes are enabled in main, after we read the specs file
      and determine whether this is cross-compilation or not.  */
@@ -4743,6 +4758,15 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		  /* Make this a separate argument.  */
 		  do_spec_1 (" ", 0, NULL);
 		  do_spec_1 (gcc_exec_prefix, 1, NULL);
+		  do_spec_1 (" ", 0, NULL);
+		}
+
+	      if (target_system_root_changed)
+		{
+		  do_spec_1 ("-isysroot", 1, NULL);
+		  /* Make this a separate argument.  */
+		  do_spec_1 (" ", 0, NULL);
+		  do_spec_1 (target_system_root, 1, NULL);
 		  do_spec_1 (" ", 0, NULL);
 		}
 

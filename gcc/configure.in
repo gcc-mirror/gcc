@@ -496,6 +496,22 @@ AC_ARG_WITH(sysroot,
    
  TARGET_SYSTEM_ROOT_DEFINE='-DTARGET_SYSTEM_ROOT=\"$(TARGET_SYSTEM_ROOT)\"'
  CROSS_SYSTEM_HEADER_DIR='$(TARGET_SYSTEM_ROOT)$(NATIVE_SYSTEM_HEADER_DIR)'
+
+ if test "x$exec_prefix" = xNONE; then
+  if test "x$prefix" = xNONE; then
+   test_prefix=/usr/local
+  else
+   test_prefix=$prefix
+  fi
+ else
+  test_prefix=$exec_prefix
+ fi
+ case ${TARGET_SYSTEM_ROOT} in
+ ${test_prefix}*)
+   t="$TARGET_SYSTEM_ROOT_DEFINE -DTARGET_SYSTEM_ROOT_RELOCATABLE"
+   TARGET_SYSTEM_ROOT_DEFINE="$t"
+   ;;
+ esac
 ], [
  TARGET_SYSTEM_ROOT=
  TARGET_SYSTEM_ROOT_DEFINE='-DTARGET_SYSTEM_ROOT=0'
@@ -2410,7 +2426,8 @@ case "$target" in
     ;;
 esac
 
-if test "$prefix" != "/usr" && test "x$prefix" != "x$local_prefix" ; then
+if test x$with_sysroot = x && x$host = x$target \
+   && test "$prefix" != "/usr" && test "x$prefix" != "x$local_prefix" ; then
   AC_DEFINE_UNQUOTED(PREFIX_INCLUDE_DIR, "$prefix/include")
 fi
 

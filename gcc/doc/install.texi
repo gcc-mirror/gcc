@@ -906,16 +906,9 @@ searched in there.  The specified directory is not copied into the
 install tree, unlike the options @option{--with-headers} and
 @option{--with-libs} that this option obsoletes.  The default value,
 in case @option{--with-sysroot} is not given an argument, is
-@option{$@{gcc_tooldir@}/sys-root}.  Starting the pathname with
-@option{$@{gcc_tooldir@}/}, in such a way that this variable is not
-expanded by the shell, but rather by the gcc Makefile, enables the
-target sysroot directory to be relocatable along with the entire
-install tree, but it will require the gcc tool directory to be created
-@emph{before} the build is started.  This directory, as well as its
-intermediate pathnames, can be easily created by running @command{make
-install-gcc-tooldir} the gcc build directory.  This is not done
-automatically to avoid touching the install tree without explicit
-permission.
+@option{$@{gcc_tooldir@}/sys-root}.  If the specified directory is a
+subdirectory of @option{$@{exec_prefix@}}, then it will be found relative to
+the GCC binaries if the installation tree is moved.
 
 @item --with-headers
 @itemx --with-headers=@var{dir}
