@@ -1,5 +1,97 @@
 2000-07-03  Zack Weinberg  <zack@wolery.cumb.org>
 
+	* fix-header.c (struct partial_proto): Remove unnecessary fields.
+	(recognized_extern, recognized_function, read_scan_file):
+	Update for new scheme.
+	(check_protection): It's still a multiple include guard even
+	if it doesn't always trigger.
+	* scan-decls.c (skip_to_closing_brace, scan_decls): Update for
+	new scheme.
+	* scan.h: Declare struct cpp_token.  Update prototypes.
+
+2000-07-03  Neil Booth  <neilb@earthling.net>
+	    Zack Weinberg  <zack@wolery.cumb.org>
+
+	Complete overhaul of the lexer and macro expander.
+
+	* cpphash.c (object_defn, funct_defn, push_macro_expansion,
+	arg, arglist, argdata, reflist, collect_objlike_expansion,
+	collect_funlike_expansion, collect_params,
+	warn_trad_stringify, trad_stringify, duplicate_arg_p, add_pat,
+	unsafe_chars, macarg, compare_defs, special_symbol,
+	scan_arguments, stringify, funlike_macroexpand,
+	_cpp_quote_string, monthnames): Delete.
+	(cpp_lookup, _cpp_free_definition, dump_funlike_macro,
+	_cpp_create_definition, _cpp_dump_definition,
+	dump_hash_helper): Adjust.
+	(find_param, count_params, parse_define, var_args_str,
+	check_macro_redefinition, save_expansion): New.
+
+	* cpplex.c (skip_block_comment, skip_line_comment, parse_name,
+        parse_string, output_line_command, trigraph_replace,
+        lex_line, cpp_push_buffer, cpp_pop_buffer, cpp_output_tokens,
+        cpp_scan_buffer_nooutput, cpp_scan_buffer, cpp_free_toklist,
+        cpp_idcmp, _cpp_get_directive_token, _cpp_init_input_buffer,
+	_cpp_skip_rest_of_line): Modify.
+
+        (maybe_macroexpand, skip_comment, copy_comment, skip_string,
+	find_position, null_warning, bump_column, expand_name_space,
+	pedantic_whitespace, _cpp_output_list, _cpp_slice_toklist,
+	_cpp_squeeze_toklist, _cpp_scan_until, _cpp_skip_hspace,
+	_cpp_parse_name, _cpp_lex_token, cpp_get_non_space_token,
+	_cpp_prescan): Delete.
+
+	(dump_param_spelling, process_directive, lex_next,
+        is_macro_disabled, stringify_arg, expand_context_stack,
+        output_token, make_string_token, alloc_number_token,
+        special_symbol, duplicate_token, maybe_paste_with_next,
+        can_paste, prevent_macro_expansion, restore_macro_expansion,
+        get_temp_token, release_temp_tokens, quote_string,
+        token_names, token_spellings, _cpp_expand_name_space,
+        _cpp_glue_header_name, _cpp_reserve_name_space,
+        digraph_spellings, trigraph_ok, skip_whitespace, save_comment,
+        placemarker_token, eof_token, cpp_context, macro_args,
+        get_raw_token, parse_arg, parse_args, save_token,
+        push_arg_context, push_macro_context, pop_context,
+        do_pop_context, free_macro_args, _cpp_get_line,
+        _cpp_run_directive): New.
+
+	* cpplib.c (validate_else, parse_include, push_conditional,
+	pass_thru_directive, read_line_number, parse_ifdef,
+	detect_if_not_defined, _cpp_check_directive, do_define,
+	do_undef, do_include, do_import, do_include_next, do_error,
+	do_warning, do_ident, do_pragma, pragma_dispatch, gcc_pragmas,
+	top_pragmas, do_pragma_gcc, do_pragma_implementation,
+	do_pragma_poison, do_pragma_system_header,
+	do_pragma_dependency, do_sccs, do_ifdef, do_ifndef, do_else,
+	dl_elif, do_endif, _cpp_unwind_if_stack, do_assert,
+	do_unassert, cpp_define, cpp_undef, cpp_assert, cpp_unassert,
+	cpp_defined): Update for new scheme.
+	(strtoul_for_line, get_define_node, dump_macro_name,
+	_cpp_check_linemarker, _cpp_parse_assertion): New.
+	(_cpp_handle_directive, do_pragma_default): Delete.
+	
+	* cpphash.h (struct predicate): Now struct answer.
+	(enum spell_type, struct token_spelling, struct directive,
+	directive_handler): New.
+	Update prototypes.  Remove unused macros.
+	* cpplib.h: Update prototypes.  Remove unused macros,
+	structure definitions, and fields.
+
+	* cpperror.c (print_containing_files, v_message): Adjust.
+	* cppexp.c (parse_assertion, lex, parse_escape, 
+	_cpp_parse_expr): Adjust.
+	* cppfiles.c (open_include_file, _cpp_execute_include,
+	_cpp_compare_file_date, cpp_read_file, read_include_file):
+	Adjust.
+	* cppinit.c (dump_special_to_buffer): Delete.
+	(append_include_chain, merge_include_chains, cpp_reader_init,
+	cpp_cleanup, initialize_builtins, builtin_array, cpp_start_read,
+	cpp_finish, handle_option, print_help): Adjust.
+	* cppmain.c (main): Adjust.
+
+2000-07-03  Zack Weinberg  <zack@wolery.cumb.org>
+
 	* cppspec.c (lang_specific_driver): Use double quotes in error
 	message.
 

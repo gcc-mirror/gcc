@@ -215,8 +215,6 @@ static void append_include_chain	PARAMS ((cpp_reader *,
 						 char *, int, int));
 static void merge_include_chains	PARAMS ((cpp_reader *));
 
-static void dump_special_to_buffer	PARAMS ((cpp_reader *, const U_CHAR *,
-						 size_t));
 static void initialize_dependency_output PARAMS ((cpp_reader *));
 static void initialize_standard_includes PARAMS ((cpp_reader *));
 static void new_pending_directive		PARAMS ((struct cpp_pending *,
@@ -345,7 +343,7 @@ append_include_chain (pfile, pend, dir, path, cxx_aware)
       if (errno != ENOENT)
 	cpp_notice_from_errno (pfile, dir);
       else if (CPP_OPTION (pfile, verbose))
-	fprintf (stderr, _("ignoring nonexistent directory `%s'\n"), dir);
+	fprintf (stderr, _("ignoring nonexistent directory \"%s\"\n"), dir);
       return;
     }
 
@@ -442,7 +440,7 @@ merge_include_chains (pfile)
 	    && cur->dev == other->dev)
           {
 	    if (CPP_OPTION (pfile, verbose))
-	      fprintf (stderr, _("ignoring duplicate directory `%s'\n"),
+	      fprintf (stderr, _("ignoring duplicate directory \"%s\"\n"),
 		       cur->name);
 
 	    prev->next = cur->next;
@@ -462,7 +460,7 @@ merge_include_chains (pfile)
 	    && cur->dev == other->dev)
           {
 	    if (CPP_OPTION (pfile, verbose))
-	      fprintf (stderr, _("ignoring duplicate directory `%s'\n"),
+	      fprintf (stderr, _("ignoring duplicate directory \"%s\"\n"),
 		       cur->name);
 
 	    prev->next = cur->next;
@@ -481,7 +479,7 @@ merge_include_chains (pfile)
 	  if (quote == qtail)
 	    {
 	      if (CPP_OPTION (pfile, verbose))
-		fprintf (stderr, _("ignoring duplicate directory `%s'\n"),
+		fprintf (stderr, _("ignoring duplicate directory \"%s\"\n"),
 			 quote->name);
 
 	      free (quote->name);
@@ -495,7 +493,7 @@ merge_include_chains (pfile)
 		  cur = cur->next;
 	      cur->next = brack;
 	      if (CPP_OPTION (pfile, verbose))
-		fprintf (stderr, _("ignoring duplicate directory `%s'\n"),
+		fprintf (stderr, _("ignoring duplicate directory \"%s\"\n"),
 			 qtail->name);
 
 	      free (qtail->name);
@@ -513,24 +511,6 @@ merge_include_chains (pfile)
 }
 
 
-/* Write out a #define command for the special named MACRO_NAME
-   to PFILE's token_buffer.  */
-
-static void
-dump_special_to_buffer (pfile, macro_name, macro_len)
-     cpp_reader *pfile;
-     const U_CHAR *macro_name;
-     size_t macro_len;
-{
-  static const char define_directive[] = "#define ";
-  CPP_RESERVE (pfile, sizeof(define_directive) + macro_len);
-  CPP_PUTS_Q (pfile, define_directive, sizeof(define_directive)-1);
-  CPP_PUTS_Q (pfile, macro_name, macro_len);
-  CPP_PUTC_Q (pfile, ' ');
-  _cpp_expand_to_buffer (pfile, macro_name, macro_len);
-  CPP_PUTC (pfile, '\n');
-}
-
 /* Initialize a cpp_reader structure. */
 void
 cpp_reader_init (pfile)
@@ -545,6 +525,7 @@ cpp_reader_init (pfile)
   CPP_OPTION (pfile, dollars_in_ident) = 1;
   CPP_OPTION (pfile, cplusplus_comments) = 1;
   CPP_OPTION (pfile, warn_import) = 1;
+  CPP_OPTION (pfile, warn_paste) = 1;
   CPP_OPTION (pfile, discard_comments) = 1;
   CPP_OPTION (pfile, show_column) = 1;
   CPP_OPTION (pfile, tabstop) = 8;
@@ -596,25 +577,19 @@ cpp_cleanup (pfile)
       pfile->token_buffer = NULL;
     }
 
-  if (pfile->input_buffer)
-    {
-      free (pfile->input_buffer);
-      pfile->input_buffer = NULL;
-      pfile->input_buffer_len = 0;
-    }
-
   if (pfile->deps)
     deps_free (pfile->deps);
 
   htab_delete (pfile->hashtab);
   splay_tree_delete (pfile->all_include_files);
+  _cpp_free_temp_tokens (pfile);
 }
 
 
 /* This structure defines one built-in macro.  A node of type TYPE will
    be entered in the macro hash table under the name NAME, with value
-   VALUE (if any).  FLAGS tweaks the behavior a little:
-   DUMP		write debug info for this macro
+   VALUE (if any).  Two values are not compile time constants, so we tag
+   them in the FLAGS field instead:
    VERS		value is the global version_string, quoted
    ULP		value is the global user_label_prefix
  */
@@ -622,18 +597,17 @@ cpp_cleanup (pfile)
 struct builtin
 {
   const U_CHAR *name;
-  const U_CHAR *value;
+  const char *value;
   unsigned short type;
   unsigned short flags;
   unsigned int len;
 };
-#define DUMP 0x01
-#define VERS 0x02
-#define ULP  0x04
+#define VERS 0x01
+#define ULP  0x02
 
-#define B(n, t)       { U n,   0, t,       0,      sizeof n - 1 }
-#define C(n, v)       { U n, U v, T_CONST, DUMP,   sizeof n - 1 }
-#define X(n, v, t, f) { U n, U v, t,       DUMP|f, sizeof n - 1 }
+#define B(n, t)       { U n, 0, t,       0, sizeof n - 1 }
+#define C(n, v)       { U n, v, T_MACRO, 0, sizeof n - 1 }
+#define X(n, f)       { U n, 0, T_MACRO, f, sizeof n - 1 }
 static const struct builtin builtin_array[] =
 {
   B("__TIME__",		 T_TIME),
@@ -642,10 +616,10 @@ static const struct builtin builtin_array[] =
   B("__BASE_FILE__",	 T_BASE_FILE),
   B("__LINE__",		 T_SPECLINE),
   B("__INCLUDE_LEVEL__", T_INCLUDE_LEVEL),
+  B("__STDC__",		 T_STDC),
 
-  X("__VERSION__",		0,   T_XCONST, VERS),
-  X("__USER_LABEL_PREFIX__",	0,   T_CONST,  ULP),
-  X("__STDC__",			"1", T_STDC,   0),
+  X("__VERSION__",		VERS),
+  X("__USER_LABEL_PREFIX__",	ULP),
   C("__REGISTER_PREFIX__",	REGISTER_PREFIX),
   C("__HAVE_BUILTIN_SETJMP__",	"1"),
 #ifndef NO_BUILTIN_SIZE_TYPE
@@ -671,35 +645,47 @@ initialize_builtins (pfile)
      cpp_reader *pfile;
 {
   const struct builtin *b;
-  const U_CHAR *val;
-  cpp_hashnode *hp;
   for(b = builtin_array; b < builtin_array_end; b++)
     {
-      if (b->type == T_STDC && CPP_TRADITIONAL (pfile))
-	continue;
-
-      if (b->flags & ULP)
-	val = (const U_CHAR *) user_label_prefix;
-      else if (b->flags & VERS)
+      if (b->type == T_MACRO)
 	{
-	  val = (const U_CHAR *) xmalloc (strlen (version_string) + 3);
-	  sprintf ((char *)val, "\"%s\"", version_string);
+	  const char *val;
+	  char *str;
+
+	  if (b->flags & VERS)
+	    {
+	      /* Allocate enough space for 'name="value"\0'.  */
+	      str = xmalloc (b->len + strlen (version_string) + 4);
+	      sprintf (str, "%s=\"%s\"", b->name, version_string);
+	    }
+	  else
+	    {
+	      if (b->flags & ULP)
+		val = user_label_prefix;
+	      else
+		val = b->value;
+
+	      /* Allocate enough space for "name=value\0".  */
+	      str = xmalloc (b->len + strlen (val) + 2);
+	      sprintf(str, "%s=%s", b->name, val);
+	    }
+	  cpp_define (pfile, str);
 	}
       else
-	val = b->value;
+	{
+	  cpp_hashnode *hp;
+	  
+	  if (b->type == T_STDC && CPP_TRADITIONAL (pfile))
+	    continue;
 
-      hp = cpp_lookup (pfile, b->name, b->len);
-      hp->value.cpval = val;
-      hp->type = b->type;
-
-      if ((b->flags & DUMP) && CPP_OPTION (pfile, debug_output))
-	dump_special_to_buffer (pfile, b->name, b->len);
+	  hp = cpp_lookup (pfile, b->name, b->len);
+	  hp->type = b->type;
+	}
     }
 }
-#undef DUMP
-#undef STDC
 #undef VERS
 #undef ULP
+#undef builtin_array_end
 
 /* Another subroutine of cpp_start_read.  This one sets up to do
    dependency-file output. */
@@ -889,6 +875,13 @@ cpp_start_read (pfile, print, fname)
   if (CPP_OPTION (pfile, cplusplus))
     CPP_OPTION (pfile, warn_traditional) = 0;
 
+  /* Do not warn about illegal token pasting if -traditional,
+     -lang-fortran, or -lang-asm.  */
+  if (CPP_OPTION (pfile, traditional)
+      || CPP_OPTION (pfile, lang_fortran)
+      || CPP_OPTION (pfile, lang_asm))
+    CPP_OPTION (pfile, warn_paste) = 0;
+
   /* Set this if it hasn't been set already. */
   if (user_label_prefix == NULL)
     user_label_prefix = USER_LABEL_PREFIX;
@@ -897,6 +890,16 @@ cpp_start_read (pfile, print, fname)
      preprocessing.  */
   if (CPP_OPTION (pfile, preprocessed))
     pfile->no_macro_expand++;
+
+  /* Figure out if we need to save function macro parameter spellings.
+     We don't use CPP_PEDANTIC() here because that depends on whether
+     or not the current file is a system header, and there is no
+     current file yet.  */
+  pfile->save_parameter_spellings =
+    CPP_OPTION (pfile, pedantic)
+    || CPP_OPTION (pfile, debug_output)
+    || CPP_OPTION (pfile, dump_macros) == dump_definitions
+    || CPP_OPTION (pfile, dump_macros) == dump_only;
 
   /* Set up the IStable.  This doesn't do anything if we were compiled
      with a compiler that supports C99 designated initializers.  */
@@ -946,13 +949,12 @@ cpp_start_read (pfile, print, fname)
      as line 0.  */
 
   CPP_BUFFER (pfile)->lineno = 0;
-
   if (print)
     {
-      print->lineno = 0;
       print->last_fname = CPP_BUFFER (pfile)->nominal_fname;
       print->last_id = pfile->include_depth;
       print->written = CPP_WRITTEN (pfile);
+      print->lineno = 0;
     }
 
   /* Install __LINE__, etc.  */
@@ -968,10 +970,13 @@ cpp_start_read (pfile, print, fname)
       p = q;
     }
   pfile->done_initializing = 1;
-  pfile->only_seen_white = 2;
+
+  /* Now flush any output recorded during initialization, and advance
+     to line 1 of the main input file.  */
   CPP_BUFFER (pfile)->lineno = 1;
+
   if (print && ! CPP_OPTION (pfile, no_output))
-    cpp_output_tokens (pfile, print);
+    cpp_output_tokens (pfile, print, 1);
 
   /* The -imacros files can be scanned now, but the -include files
      have to be pushed onto the include stack and processed later,
@@ -992,7 +997,7 @@ cpp_start_read (pfile, print, fname)
     {
       if (cpp_read_file (pfile, p->arg)
 	  && print && ! CPP_OPTION (pfile, no_output))
-	cpp_output_tokens (pfile, print);
+	cpp_output_tokens (pfile, print, 1);  /* record entry to file */
       q = p->next;
       free (p);
       p = q;
@@ -1073,7 +1078,7 @@ cpp_finish (pfile, print)
   /* Flush any pending output.  */
   if (print)
     {
-      cpp_output_tokens (pfile, print);
+      cpp_output_tokens (pfile, print, print->lineno);
       if (ferror (print->outf) || fclose (print->outf))
 	cpp_notice_from_errno (pfile, CPP_OPTION (pfile, out_fname));
     }
@@ -1753,6 +1758,8 @@ handle_option (pfile, argc, argv)
 	    CPP_OPTION (pfile, warn_undef) = 1;
 	  else if (!strcmp (argv[i], "-Wimport"))
 	    CPP_OPTION (pfile, warn_import) = 1;
+	  else if (!strcmp (argv[i], "-Wpaste"))
+	    CPP_OPTION (pfile, warn_paste) = 1;
 	  else if (!strcmp (argv[i], "-Werror"))
 	    CPP_OPTION (pfile, warnings_are_errors) = 1;
 	  else if (!strcmp (argv[i], "-Wno-traditional"))
@@ -1767,6 +1774,8 @@ handle_option (pfile, argc, argv)
 	    CPP_OPTION (pfile, warn_undef) = 0;
 	  else if (!strcmp (argv[i], "-Wno-import"))
 	    CPP_OPTION (pfile, warn_import) = 0;
+	  else if (!strcmp (argv[i], "-Wno-paste"))
+	    CPP_OPTION (pfile, warn_paste) = 0;
 	  else if (!strcmp (argv[i], "-Wno-error"))
 	    CPP_OPTION (pfile, warnings_are_errors) = 0;
 	  break;
@@ -1836,10 +1845,10 @@ Switches:\n\
                              (dirs specified with -isystem will still be used)\n\
   -nostdinc++               Do not search system include directories for C++\n\
   -o <file>                 Put output into <file>\n\
-  -pedantic                 Issue all warnings demanded by strict ANSI C\n\
+  -pedantic                 Issue all warnings demanded by strict ISO C\n\
   -pedantic-errors          Issue -pedantic warnings as errors instead\n\
   -traditional              Follow K&R pre-processor behaviour\n\
-  -trigraphs                Support ANSI C trigraphs\n\
+  -trigraphs                Support ISO C trigraphs\n\
   -lang-c                   Assume that the input sources are in C\n\
   -lang-c89                 Assume that the input sources are in C89\n\
   -lang-c++                 Assume that the input sources are in C++\n\

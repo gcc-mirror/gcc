@@ -180,7 +180,7 @@ open_include_file (pfile, filename)
 #ifdef EACCES
       if (errno == EACCES)
 	{
-	  cpp_error (pfile, "included file `%s' exists but is not readable",
+	  cpp_error (pfile, "included file \"%s\" exists but is not readable",
 		     filename);
 	}
 #endif
@@ -360,16 +360,16 @@ cpp_make_system_header (pfile, pbuf, flag)
 
 #define PRINT_THIS_DEP(p, b) (CPP_PRINT_DEPS(p) > (b||p->system_include_depth))
 void
-_cpp_execute_include (pfile, f, len, no_reinclude, search_start)
+_cpp_execute_include (pfile, f, len, no_reinclude, search_start, angle_brackets)
      cpp_reader *pfile;
-     U_CHAR *f;
+     const U_CHAR *f;
      unsigned int len;
      int no_reinclude;
      struct file_name_list *search_start;
+     int angle_brackets;
 {
   struct include_file *inc;
-  char *fname = (char *)f;
-  int angle_brackets = fname[0] == '<';
+  char *fname;
 
   if (!search_start)
     {
@@ -387,9 +387,8 @@ _cpp_execute_include (pfile, f, len, no_reinclude, search_start)
       return;
     }
 
-  /* Remove quote marks.  */
-  fname++;
-  len -= 2;
+  fname = alloca (len + 1);
+  memcpy (fname, f, len);
   fname[len] = '\0';
 
   inc = find_include_file (pfile, fname, search_start);
@@ -470,32 +469,27 @@ _cpp_execute_include (pfile, f, len, no_reinclude, search_start)
    if F cannot be located or dated, 1, if it is newer and 0 if older.  */
 
 int
-_cpp_compare_file_date (pfile, f, len, search_start)
+_cpp_compare_file_date (pfile, f, len, angle_brackets)
      cpp_reader *pfile;
-     U_CHAR *f;
+     const U_CHAR *f;
      unsigned int len;
-     struct file_name_list *search_start;
+     int angle_brackets;
 {
-  char *fname = (char *)f;
-  int angle_brackets = fname[0] == '<';
+  char *fname;
+  struct file_name_list *search_start;
   struct include_file *inc;
-  struct include_file *current_include = cpp_file_buffer (pfile)->inc;
+  struct include_file *current_include = CPP_BUFFER (pfile)->inc;
 
-  if (!search_start)
-    {
-      if (angle_brackets)
-	search_start = CPP_OPTION (pfile, bracket_include);
-      else if (CPP_OPTION (pfile, ignore_srcdir))
-	search_start = CPP_OPTION (pfile, quote_include);
-      else
-	search_start = CPP_BUFFER (pfile)->actual_dir;
-    }
+  if (angle_brackets)
+    search_start = CPP_OPTION (pfile, bracket_include);
+  else if (CPP_OPTION (pfile, ignore_srcdir))
+    search_start = CPP_OPTION (pfile, quote_include);
+  else
+    search_start = CPP_BUFFER (pfile)->actual_dir;
 
-  /* Remove quote marks.  */
-  fname++;
-  len -= 2;
+  fname = alloca (len + 1);
+  memcpy (fname, f, len);
   fname[len] = '\0';
-  
   inc = find_include_file (pfile, fname, search_start);
   
   if (!inc)
@@ -534,6 +528,12 @@ cpp_read_file (pfile, fname)
 
   f = open_include_file (pfile, fname);
 
+  if (f == NULL)
+    {
+      cpp_error_from_errno (pfile, fname);
+      return 0;
+    }
+
   return read_include_file (pfile, f);
 }
 
@@ -550,12 +550,17 @@ read_include_file (pfile, inc)
   cpp_buffer *fp;
   int fd = inc->fd;
 
+  /* Ensures we dump our current line before entering an include file.  */
+  if (CPP_BUFFER (pfile) && pfile->printer)
+    cpp_output_tokens (pfile, pfile->printer,
+		       CPP_BUF_LINE (CPP_BUFFER (pfile)));
+
   fp = cpp_push_buffer (pfile, NULL, 0);
 
   if (fp == 0)
     goto push_fail;
 
-  if (fstat (fd, &st) < 0)
+  if (fd < 0 || fstat (fd, &st) < 0)
     goto perror_fail;
   
   inc->date = st.st_mtime;
@@ -622,9 +627,6 @@ read_include_file (pfile, inc)
   
   if (length == 0)
     inc->cmacro = NEVER_REREAD;
-  else
-    /* Temporary - I hope.  */
-    length = _cpp_prescan (pfile, fp, length);
 
   fp->rlimit = fp->buf + length;
   fp->cur = fp->buf;
@@ -637,13 +639,13 @@ read_include_file (pfile, inc)
     fp->actual_dir = actual_directory (pfile, inc->name);
 
   pfile->input_stack_listing_current = 0;
-  pfile->only_seen_white = 2;
   return 1;
 
  perror_fail:
   cpp_error_from_errno (pfile, inc->name);
   /* Do not try to read this file again.  */
-  close (fd);
+  if (fd != -1)
+    close (fd);
   inc->fd = -1;
   inc->cmacro = NEVER_REREAD;
  fail:
