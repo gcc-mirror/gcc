@@ -1,3 +1,7 @@
+2004-12-15  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.md: Fix missing modes on cmove splitters.
+
 2004-12-15 Jan Beulich  <jbeulich@novell.com>
 
 	* mklibgcc.in (libgcc2_c_dep): Add dependency on libgcc2.h.
