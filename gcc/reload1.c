@@ -357,6 +357,7 @@ static int num_labels;
 struct hard_reg_n_uses { int regno; int uses; };
 
 static void dump_needs			PROTO((FILE *));
+static void maybe_fix_stack_asms	PROTO((void));
 static int calculate_needs_all_insns	PROTO((int));
 static int calculate_needs		PROTO((struct insn_chain *, rtx, int));
 static int find_reload_regs		PROTO((int, FILE *));
@@ -868,6 +869,8 @@ reload (first, global, dumpfile)
 
   order_regs_for_reload ();
 
+  maybe_fix_stack_asms ();
+
   /* So far, no hard regs have been spilled.  */
   n_spills = 0;
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
@@ -1278,6 +1281,119 @@ reload (first, global, dumpfile)
   unused_insn_chains = 0;
 
   return failure;
+}
+
+/* Yet another special case.  Unfortunately, reg-stack forces people to
+   write incorrect clobbers in asm statements.  These clobbers must not
+   cause the register to appear in bad_spill_regs, otherwise we'll call
+   fatal_insn later.  We clear the corresponding regnos in the live
+   register sets to avoid this.
+   The whole thing is rather sick, I'm afraid.  */
+static void
+maybe_fix_stack_asms ()
+{
+#ifdef STACK_REGS
+  char *constraints[MAX_RECOG_OPERANDS];
+  enum machine_mode operand_mode[MAX_RECOG_OPERANDS];
+  struct insn_chain *chain;
+
+  for (chain = reload_insn_chain; chain != 0; chain = chain->next)
+    {
+      int i, noperands;
+      HARD_REG_SET clobbered, allowed;
+      rtx pat;
+
+      if (GET_RTX_CLASS (GET_CODE (chain->insn)) != 'i'
+	  || (noperands = asm_noperands (PATTERN (chain->insn))) < 0)
+	continue;
+      pat = PATTERN (chain->insn);
+      if (GET_CODE (pat) != PARALLEL)
+	continue;
+
+      CLEAR_HARD_REG_SET (clobbered);
+      CLEAR_HARD_REG_SET (allowed);
+
+      /* First, make a mask of all stack regs that are clobbered.  */
+      for (i = 0; i < XVECLEN (pat, 0); i++)
+	{
+	  rtx t = XVECEXP (pat, 0, i);
+	  if (GET_CODE (t) == CLOBBER && STACK_REG_P (XEXP (t, 0)))
+	    SET_HARD_REG_BIT (clobbered, REGNO (XEXP (t, 0)));
+	}
+
+      /* Get the operand values and constraints out of the insn.  */
+      decode_asm_operands (pat, recog_operand, recog_operand_loc,
+			   constraints, operand_mode);
+
+      /* For every operand, see what registers are allowed.  */
+      for (i = 0; i < noperands; i++)
+	{
+	  char *p = constraints[i];
+	  /* For every alternative, we compute the class of registers allowed
+	     for reloading in CLS, and merge its contents into the reg set
+	     ALLOWED.  */
+	  int cls = (int) NO_REGS;
+
+	  for (;;)
+	    {
+	      char c = *p++;
+
+	      if (c == '\0' || c == ',' || c == '#')
+		{
+		  /* End of one alternative - mark the regs in the current
+		     class, and reset the class.  */
+		  IOR_HARD_REG_SET (allowed, reg_class_contents[cls]);
+		  cls = NO_REGS;
+		  if (c == '#')
+		    do {
+		      c = *p++;
+		    } while (c != '\0' && c != ',');
+		  if (c == '\0')
+		    break;
+		  continue;
+		}
+
+	      switch (c)
+		{
+		case '=': case '+': case '*': case '%': case '?': case '!':
+		case '0': case '1': case '2': case '3': case '4': case 'm':
+		case '<': case '>': case 'V': case 'o': case '&': case 'E':
+		case 'F': case 's': case 'i': case 'n': case 'X': case 'I':
+		case 'J': case 'K': case 'L': case 'M': case 'N': case 'O':
+		case 'P':
+#ifdef EXTRA_CONSTRAINT
+		case 'Q': case 'R': case 'S': case 'T': case 'U':
+#endif
+		  break;
+
+		case 'p':
+		  cls = (int) reg_class_subunion[cls][(int) BASE_REG_CLASS];
+		  break;
+
+		case 'g':
+		case 'r':
+		  cls = (int) reg_class_subunion[cls][(int) GENERAL_REGS];
+		  break;
+
+		default:
+		  cls = (int) reg_class_subunion[cls][(int) REG_CLASS_FROM_LETTER (c)];
+		
+		}
+	    }
+	}
+      /* Those of the registers which are clobbered, but allowed by the
+	 constraints, must be usable as reload registers.  So clear them
+	 out of the life information.  */
+      AND_HARD_REG_SET (allowed, clobbered);
+      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	if (TEST_HARD_REG_BIT (allowed, i))
+	  {
+	    CLEAR_REGNO_REG_SET (chain->live_before, i);
+	    CLEAR_REGNO_REG_SET (chain->live_after, i);
+	  }
+    }
+
+#endif
 }
 
 /* Walk the insns of the current function, starting with FIRST, and collect
