@@ -711,6 +711,13 @@ fi
 # Uncomment the following line if you don't have working templates.
 # echo "#define ${macro_prefix}NO_TEMPLATES"
 
+# Override bogus definitions of NULL in system headers.
+cat <<EOF
+#undef NULL
+#define __need_NULL
+#include <stddef.h>
+EOF
+
 rm -f dummy.C dummy.o dummy.c dummy.out TMP core a.out
 
 echo "#endif /* !${macro_prefix}config_h */"
