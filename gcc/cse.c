@@ -3178,7 +3178,7 @@ simplify_unary_operation (code, mode, op, op_mode)
 	  abort ();
 	}
 
-      x = immed_real_const_1 (d, mode);
+      x = CONST_DOUBLE_FROM_REAL_VALUE (d, mode);
       set_float_handler (NULL_PTR);
       return x;
     }
@@ -3334,7 +3334,7 @@ simplify_binary_operation (code, mode, op0, op1)
 
       value = real_value_truncate (mode, value);
       set_float_handler (NULL_PTR);
-      return immed_real_const_1 (value, mode);
+      return CONST_DOUBLE_FROM_REAL_VALUE (value, mode);
     }
 #endif  /* not REAL_IS_NOT_DOUBLE, or REAL_ARITHMETIC */
 
@@ -5160,7 +5160,8 @@ fold_rtx (x, insn)
 #ifdef FLOAT_STORE_FLAG_VALUE
 	  if (GET_MODE_CLASS (mode) == MODE_FLOAT)
 	    {
-	      true = immed_real_const_1 (FLOAT_STORE_FLAG_VALUE, mode);
+	      true = CONST_DOUBLE_FROM_REAL_VALUE (FLOAT_STORE_FLAG_VALUE,
+						   mode);
 	      false = CONST0_RTX (mode);
 	    }
 #endif
@@ -5269,7 +5270,8 @@ fold_rtx (x, insn)
 #ifdef FLOAT_STORE_FLAG_VALUE
 	      if (GET_MODE_CLASS (mode) == MODE_FLOAT)
 		{
-		  true = immed_real_const_1 (FLOAT_STORE_FLAG_VALUE, mode);
+		  true = CONST_DOUBLE_FROM_REAL_VALUE (FLOAT_STORE_FLAG_VALUE,
+						       mode);
 		  false = CONST0_RTX (mode);
 		}
 #endif
@@ -5298,7 +5300,7 @@ fold_rtx (x, insn)
 #ifdef FLOAT_STORE_FLAG_VALUE
       if (new != 0 && GET_MODE_CLASS (mode) == MODE_FLOAT)
 	new = ((new == const0_rtx) ? CONST0_RTX (mode)
-	       : immed_real_const_1 (FLOAT_STORE_FLAG_VALUE, mode));
+	       : CONST_DOUBLE_FROM_REAL_VALUE (FLOAT_STORE_FLAG_VALUE, mode));
 #endif
       break;
 
