@@ -46,7 +46,7 @@ extern char *ctime ();
 extern int flag_traditional;
 extern FILE *asm_out_file;
 
-static char out_sccs_id[] = "@(#)m88k.c	2.1.4.6 20 Apr 1992 14:30:40";
+static char out_sccs_id[] = "@(#)m88k.c	2.1.11.5 19 May 1992 08:15:15";
 static char tm_sccs_id [] = TM_SCCS_ID;
 
 char *m88k_pound_sign = "";	/* Either # for SVR4 or empty for SVR3 */
@@ -1350,6 +1350,8 @@ output_options (file, f_options, f_len, W_options, W_len,
     pos = output_option (file, sep, "-traditional", "", indent, pos, max);
   if (profile_flag)
     pos = output_option (file, sep, "-p", "", indent, pos, max);
+  if (profile_block_flag)
+    pos = output_option (file, sep, "-a", "", indent, pos, max);
 
   for (j = 0; j < f_len; j++)
     if (*f_options[j].variable == f_options[j].on_value)
@@ -1678,7 +1680,7 @@ m88k_layout_frame ()
   frame_size = get_frame_size ();
 
   /* Since profiling requires a call, make sure r1 is saved.  */
-  if (profile_flag)
+  if (profile_flag || profile_block_flag)
     save_regs[1] = 1;
 
   /* If we are producing debug information, store r1 and r30 where the
@@ -1744,14 +1746,10 @@ m88k_layout_frame ()
   /* The first two saved registers are placed above the new frame pointer
      if any.  In the only case this matters, they are r1 and r30. */
   if (frame_pointer_needed || sp_size)
-    {
-      m88k_fp_offset = ROUND_CALL_BLOCK_SIZE (sp_size - STARTING_FRAME_OFFSET);
-      m88k_stack_size = m88k_fp_offset + STARTING_FRAME_OFFSET;
-    }
+    m88k_fp_offset = ROUND_CALL_BLOCK_SIZE (sp_size - STARTING_FRAME_OFFSET);
   else
-    {
-      m88k_stack_size = m88k_fp_offset = 0;
-    }
+    m88k_fp_offset = -STARTING_FRAME_OFFSET;
+  m88k_stack_size = m88k_fp_offset + STARTING_FRAME_OFFSET;
 
   /* First, combine m88k_stack_size and size.  If m88k_stack_size is
      non-zero, align the frame size to 8 mod 16; otherwise align the
@@ -2455,11 +2453,21 @@ output_function_block_profiler (file, labelno)
 		 m88k_pound_sign, &block[1]);
   fprintf (file, "\tbcnd\t %sne0,%s,%s\n",
 		 m88k_pound_sign, reg_names[26], &label[1]);
+  fprintf (file, "\tsubu\t %s,%s,64\n", reg_names[31], reg_names[31]);
+  fprintf (file, "\tst.d\t %s,%s,32\n", reg_names[2], reg_names[31]);
+  fprintf (file, "\tst.d\t %s,%s,40\n", reg_names[4], reg_names[31]);
+  fprintf (file, "\tst.d\t %s,%s,48\n", reg_names[6], reg_names[31]);
+  fprintf (file, "\tst.d\t %s,%s,56\n", reg_names[8], reg_names[31]);
   fputs ("\tbsr.n\t ", file);
   ASM_OUTPUT_LABELREF (file, "__bb_init_func");
   putc ('\n', file);
   fprintf (file, "\tor\t %s,%s,%slo16(%s)\n", reg_names[2], reg_names[27],
 		 m88k_pound_sign, &block[1]);
+  fprintf (file, "\tld.d\t %s,%s,32\n", reg_names[2], reg_names[31]);
+  fprintf (file, "\tld.d\t %s,%s,40\n", reg_names[4], reg_names[31]);
+  fprintf (file, "\tld.d\t %s,%s,48\n", reg_names[6], reg_names[31]);
+  fprintf (file, "\tld.d\t %s,%s,56\n", reg_names[8], reg_names[31]);
+  fprintf (file, "\taddu\t %s,%s,64\n", reg_names[31], reg_names[31]);
   ASM_OUTPUT_INTERNAL_LABEL (file, "LPY", labelno);
 }
 
@@ -2473,7 +2481,7 @@ output_block_profiler (file, blockno)
 {
   char block[256];
 
-  ASM_GENERATE_INTERNAL_LABEL (block, "LPBX", 0);
+  ASM_GENERATE_INTERNAL_LABEL (block, "LPBX", 2);
 
   /* @@ Need to deal with PIC.  I'm not sure what the requirements are on
      register usage, so I used r26/r27 to be safe.  */
