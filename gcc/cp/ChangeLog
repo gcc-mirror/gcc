@@ -1,3 +1,44 @@
+2001-07-21  Nathan Sidwell  <nathan@codesourcery.com>
+
+	Remove flag_vtable_thunk. It is always on for the 3.0 ABI.
+	* cp-tree.h (CPTI_DELTA2_IDENTIFIER): Remove.
+	(CPTI_INDEX_IDENTIFIER): Remove.
+	(CPT_PFN_OR_DELTA2_IDENTIFIER): Remove.
+	(delta2_identifier): Remove.
+	(index_identifier): Remove.
+	(pfn_or_delta2_identifier): Remove.
+	(flag_vtable_thunks): Remove.
+	(VTABLE_DELTA2_NAME): Remove.
+	(VTABLE_INDEX_NAME): Remove.
+	(FNADDR_FROM_VTABLE_ENTRY): Adjust.
+	(vfunc_ptr_type_node): Adjust.
+	(VTABLE_NAME_PREFIX): Adjust.
+	(build_vfn_ref): Lose first parameter.
+	(fixup_all_virtual_upcast_offsets): Remove.
+	* decl.c (initialize_predefined_identifiers): Remove
+	delta2_identifier, index_identifier, pfn_or_delta2_identifier.
+	(init_decl_processing): Remove no-vtable-thunk code.
+	* decl2.c (flag_vtable_thunks): Remove.
+	(mark_vtable_entries): Remove no-vtable-thunk code.
+	* error.c (dump_decl): Remove no-vtable-thunk code.
+	(dump_expr): Adjust ptr to member function code.
+	* init.c (initialize_vtable_ptrs): Remove no-vtable-thunk
+	code.
+	* rtti.c (build_headof): Remove no-vtable-thunk code.
+	(get_tinfo_decl_dynamic): Adjust build_vfn_ref call.
+	* search.c (get_base_distance): Remove expand_upcast_fixups case.
+	(virtual_context) Remove.
+	(expand_upcast_fixups): Remove.
+	(fixup_virtual_upcast_offsets): Remove.
+	(fixup_all_virtual_upcast_offsets): Remove.
+	* typeck.c (get_member_function_from_ptrfunc): Remove
+	no-vtable-thunk code.
+	* call.c (build_over_call): Adjust call to build_vfn_ref.
+	* class.c (build_vfn_ref): Lose first parameter. Remove
+	no-vtable-thunk code.
+	(build_rtti_vtbl_entries): Remove no-vtable-thunk code.
+	(build_vtable_entry): Remove no-vtable-thunk code.
+
 2001-07-20  Nathan Sidwell  <nathan@codesourcery.com>
 
 	Remove old-abi remnants. Remove comments about old abi

@@ -950,13 +950,8 @@ dump_decl (t, flags)
       if (DECL_NAME (t) && VTABLE_NAME_P (DECL_NAME (t)))
 	{
 	  output_add_string (scratch_buffer, "vtable for ");
-	  if (TYPE_P (DECL_CONTEXT (t)))
-	    dump_type (DECL_CONTEXT (t), flags);
-	  else
-	    /* This case can arise with -fno-vtable-thunks.  See
-	       expand_upcast_fixups.  It's not clear what to print
-	       here.  */
-	    print_identifier (scratch_buffer, "<unknown type>");
+	  my_friendly_assert (TYPE_P (DECL_CONTEXT (t)), 20010720);
+	  dump_type (DECL_CONTEXT (t), flags);
 	  break;
 	}
       /* else fall through */
@@ -1918,16 +1913,9 @@ dump_expr (t, flags)
     case CONSTRUCTOR:
       if (TREE_TYPE (t) && TYPE_PTRMEMFUNC_P (TREE_TYPE (t)))
 	{
-	  tree idx = build_component_ref (t, index_identifier, NULL_TREE, 0);
+	  tree idx = build_component_ref (t, pfn_identifier, NULL_TREE, 0);
 
-	  if (integer_all_onesp (idx))
-	    {
-	      tree pfn = PFN_FROM_PTRMEMFUNC (t);
-	      dump_unary_op ("&", pfn, flags | TFF_EXPR_IN_PARENS);
-	      break;
-	    }
-	  else if (TREE_CODE (idx) == INTEGER_CST
-		   && tree_int_cst_equal (idx, integer_zero_node))
+	  if (integer_zerop (idx))
 	    {
 	      /* A NULL pointer-to-member constant.  */
 	      output_add_string (scratch_buffer, "((");

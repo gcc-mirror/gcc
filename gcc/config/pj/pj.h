@@ -1321,9 +1321,6 @@ do {                                                                          \
 #define INCOMING_RETURN_ADDR_RTX  \
   plus_constant (gen_rtx_REG (Pmode, OPTOP_REG), 4)
 
-/* Use thunks for vtables.  */
-#define DEFAULT_VTABLE_THUNKS 1
-
 /* Rewrite the rtl to use take advantage of the opstack.  */
 #define MACHINE_DEPENDENT_REORG(INSNS) pj_machine_dependent_reorg(INSNS)
 

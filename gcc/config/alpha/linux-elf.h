@@ -37,11 +37,6 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 #ifndef USE_GNULIBC_1
-#undef DEFAULT_VTABLE_THUNKS
-#define DEFAULT_VTABLE_THUNKS 1
-#endif
-
-#ifndef USE_GNULIBC_1
 #undef LIB_SPEC
 #define LIB_SPEC \
 "%{shared:-lc}%{!shared:%{pthread:-lpthread }%{profile:-lc_p}%{!profile:-lc}} "

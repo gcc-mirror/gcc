@@ -1320,19 +1320,6 @@ The ordering of the component words of floating point values stored in
 memory is controlled by @code{FLOAT_WORDS_BIG_ENDIAN} for the target
 machine and @code{HOST_FLOAT_WORDS_BIG_ENDIAN} for the host.
 
-@findex DEFAULT_VTABLE_THUNKS
-@item DEFAULT_VTABLE_THUNKS
-GCC supports two ways of implementing C++ vtables:  traditional or with
-so-called ``thunks''.  The flag @option{-fvtable-thunk} chooses between them.
-Define this macro to be a C expression for the default value of that flag.
-If @code{DEFAULT_VTABLE_THUNKS} is 0, GCC uses the traditional
-implementation by default.  The ``thunk'' implementation is more efficient
-(especially if you have provided an implementation of
-@code{ASM_OUTPUT_MI_THUNK}, see @ref{Function Entry}), but is not binary
-compatible with code compiled using the traditional implementation.
-If you are writing a new port, define @code{DEFAULT_VTABLE_THUNKS} to 1.
-
-If you do not define this macro, the default for @option{-fvtable-thunk} is 0.
 @end table
 
 @node Type Layout

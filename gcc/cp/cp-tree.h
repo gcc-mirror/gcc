@@ -552,15 +552,12 @@ enum cp_tree_index
     CPTI_COMPLETE_DTOR_IDENTIFIER,
     CPTI_BASE_DTOR_IDENTIFIER,
     CPTI_DELETING_DTOR_IDENTIFIER,
-    CPTI_DELTA2_IDENTIFIER,
     CPTI_DELTA_IDENTIFIER,
     CPTI_IN_CHARGE_IDENTIFIER,
     CPTI_VTT_PARM_IDENTIFIER,
-    CPTI_INDEX_IDENTIFIER,
     CPTI_NELTS_IDENTIFIER,
     CPTI_THIS_IDENTIFIER,
     CPTI_PFN_IDENTIFIER,
-    CPTI_PFN_OR_DELTA2_IDENTIFIER,
     CPTI_VPTR_IDENTIFIER,
     CPTI_STD_IDENTIFIER,
 
@@ -594,8 +591,7 @@ extern tree cp_global_trees[CPTI_MAX];
 #define wchar_decl_node			cp_global_trees[CPTI_WCHAR_DECL]
 #define vtable_entry_type		cp_global_trees[CPTI_VTABLE_ENTRY_TYPE]
 /* The type used to represent an offset by which to adjust the `this'
-   pointer in pointer-to-member types and, when not using vtable
-   thunks, in vtables.  */
+   pointer in pointer-to-member types.  */
 #define delta_type_node			cp_global_trees[CPTI_DELTA_TYPE]
 /* The type used to represent an index into the vtable.  */
 #define vtable_index_type               cp_global_trees[CPTI_VTABLE_INDEX_TYPE]
@@ -671,20 +667,14 @@ extern tree cp_global_trees[CPTI_MAX];
 /* The name of a destructor that destroys virtual base classes, and
    then deletes the entire object.  */
 #define deleting_dtor_identifier        cp_global_trees[CPTI_DELETING_DTOR_IDENTIFIER]
-
-#define delta2_identifier               cp_global_trees[CPTI_DELTA2_IDENTIFIER]
 #define delta_identifier                cp_global_trees[CPTI_DELTA_IDENTIFIER]
 #define in_charge_identifier            cp_global_trees[CPTI_IN_CHARGE_IDENTIFIER]
-
 /* The name of the parameter that contains a pointer to the VTT to use
    for this subobject constructor or destructor.  */
 #define vtt_parm_identifier             cp_global_trees[CPTI_VTT_PARM_IDENTIFIER]
-
-#define index_identifier                cp_global_trees[CPTI_INDEX_IDENTIFIER]
 #define nelts_identifier                cp_global_trees[CPTI_NELTS_IDENTIFIER]
 #define this_identifier                 cp_global_trees[CPTI_THIS_IDENTIFIER]
 #define pfn_identifier                  cp_global_trees[CPTI_PFN_IDENTIFIER]
-#define pfn_or_delta2_identifier        cp_global_trees[CPTI_PFN_OR_DELTA2_IDENTIFIER]
 #define vptr_identifier                 cp_global_trees[CPTI_VPTR_IDENTIFIER]
 /* The name of the std namespace.  */
 #define std_identifier                  cp_global_trees[CPTI_STD_IDENTIFIER]
@@ -1031,11 +1021,6 @@ extern int warn_reorder;
 
 extern int flag_signed_bitfields;
 
-/* True for more efficient but incompatible (not fully tested)
-   vtable implementation (using thunks).
-   0 is old behavior; 1 is new behavior.  */
-extern int flag_vtable_thunks;
-
 /* INTERFACE_ONLY nonzero means that we are in an "interface"
    section of the compiler.  INTERFACE_UNKNOWN nonzero means
    we cannot trust the value of INTERFACE_ONLY.  If INTERFACE_UNKNOWN
@@ -1180,11 +1165,9 @@ enum languages { lang_c, lang_cplusplus, lang_java };
 /* Virtual function addresses can be gotten from a virtual function
    table entry using this macro.  */
 #define FNADDR_FROM_VTABLE_ENTRY(ENTRY)					\
-  (!flag_vtable_thunks ?						\
-     TREE_VALUE (TREE_CHAIN (TREE_CHAIN (CONSTRUCTOR_ELTS (ENTRY))))	\
-   : !DECL_THUNK_P (TREE_OPERAND ((ENTRY), 0))				\
-   ? (ENTRY)								\
-   : DECL_INITIAL (TREE_OPERAND ((ENTRY), 0)))
+  (DECL_THUNK_P (TREE_OPERAND ((ENTRY), 0))				\
+   : DECL_INITIAL (TREE_OPERAND ((ENTRY), 0))				\
+   ? (ENTRY))
 
 #define FUNCTION_ARG_CHAIN(NODE) \
   (TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (NODE))))
@@ -2555,9 +2538,11 @@ extern int flag_new_for_scope;
        ptrdiff_t __delta;
      };
 
-   (As the vtable is always the first thing in the object, we don't
-   need an offset to it.)  If the function is virtual, then PFN is one
-   plus twice the index into the vtable; otherwise, it is just a
+   If __pfn is NULL, it is a NULL pointer-to-member-function.
+  
+   (Because the vtable is always the first thing in the object, we
+   don't need its offset.)  If the function is virtual, then PFN is
+   one plus twice the index into the vtable; otherwise, it is just a
    pointer to the function.
 
    Unfortunately, using the lowest bit of PFN doesn't work in
@@ -3087,8 +3072,7 @@ extern tree error_mark_list;
 
 /* Node for "pointer to (virtual) function".
    This may be distinct from ptr_type_node so gdb can distinguish them.  */
-#define vfunc_ptr_type_node \
-  (flag_vtable_thunks ? vtable_entry_type : ptr_type_node)
+#define vfunc_ptr_type_node  vtable_entry_type
 
 
 /* For building calls to `delete'.  */
@@ -3156,7 +3140,7 @@ extern varray_type local_classes;
 #define AUTO_TEMP_NAME "_$tmp_"
 #define AUTO_TEMP_FORMAT "_$tmp_%d"
 #define VTABLE_BASE "$vb"
-#define VTABLE_NAME_PREFIX (flag_vtable_thunks ? "__vt_" : "_vt$")
+#define VTABLE_NAME_PREFIX "__vt_"
 #define VFIELD_BASE "$vf"
 #define VFIELD_NAME "_vptr$"
 #define VFIELD_NAME_FORMAT "_vptr$%s"
@@ -3178,7 +3162,7 @@ extern varray_type local_classes;
 #define AUTO_TEMP_NAME "_.tmp_"
 #define AUTO_TEMP_FORMAT "_.tmp_%d"
 #define VTABLE_BASE ".vb"
-#define VTABLE_NAME_PREFIX (flag_vtable_thunks ? "__vt_" : "_vt.")
+#define VTABLE_NAME_PREFIX "__vt_"
 #define VFIELD_BASE ".vf"
 #define VFIELD_NAME "_vptr."
 #define VFIELD_NAME_FORMAT "_vptr.%s"
@@ -3207,7 +3191,7 @@ extern varray_type local_classes;
 #define AUTO_TEMP_FORMAT "__tmp_%d"
 #define VTABLE_BASE "__vtb"
 #define VTABLE_NAME "__vt_"
-#define VTABLE_NAME_PREFIX (flag_vtable_thunks ? "__vt_" : "_vt_")
+#define VTABLE_NAME_PREFIX "__vt_"
 #define VTABLE_NAME_P(ID_NODE) \
   (!strncmp (IDENTIFIER_POINTER (ID_NODE), VTABLE_NAME, \
 	     sizeof (VTABLE_NAME) - 1))
@@ -3247,9 +3231,7 @@ extern varray_type local_classes;
 
 #define VTBL_PTR_TYPE		"__vtbl_ptr_type"
 #define VTABLE_DELTA_NAME	"__delta"
-#define VTABLE_INDEX_NAME	"__index"
 #define VTABLE_PFN_NAME		"__pfn"
-#define VTABLE_DELTA2_NAME	"__delta2"
 
 #define EXCEPTION_CLEANUP_NAME	"exception cleanup"
 
@@ -3592,7 +3574,7 @@ extern tree perform_implicit_conversion         PARAMS ((tree, tree));
 /* in class.c */
 extern tree build_vbase_path			PARAMS ((enum tree_code, tree, tree, tree, int));
 extern tree build_vtbl_ref			PARAMS ((tree, tree));
-extern tree build_vfn_ref			PARAMS ((tree *, tree, tree));
+extern tree build_vfn_ref			PARAMS ((tree, tree));
 extern tree get_vtable_decl                     PARAMS ((tree, int));
 extern void add_method				PARAMS ((tree, tree, int));
 extern int currently_open_class			PARAMS ((tree));
@@ -4106,7 +4088,6 @@ extern tree convert_pointer_to_vbase            PARAMS ((tree, tree));
 extern tree find_vbase_instance                 PARAMS ((tree, tree));
 extern tree binfo_for_vbase                     PARAMS ((tree, tree));
 extern tree binfo_via_virtual                   PARAMS ((tree, tree));
-extern void fixup_all_virtual_upcast_offsets    PARAMS ((tree));
 
 /* in semantics.c */
 extern void init_cp_semantics                   PARAMS ((void));

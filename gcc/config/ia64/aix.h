@@ -66,9 +66,6 @@ Boston, MA 02111-1307, USA.  */
 #undef  ENDFILE_SPEC
 #define ENDFILE_SPEC "%{!shared:crtend.o%s} %{shared:crtendS.o%s} crtn.o%s"
 
-#undef DEFAULT_VTABLE_THUNKS
-#define DEFAULT_VTABLE_THUNKS 1
-
 /* Define this so we can compile MS code for use with WINE.  */
 #define HANDLE_PRAGMA_PACK_PUSH_POP
 

@@ -33,10 +33,6 @@ Boston, MA 02111-1307, USA.  */
 	{ "marm", "mlittle-endian", "mhard-float", "mapcs-32", "mno-thumb-interwork" }
 #define CPP_APCS_PC_DEFAULT_SPEC "-D__APCS_32__"
 
-/* This was defined in linux.h.  Define it here also. */
-#undef  DEFAULT_VTABLE_THUNKS
-#define DEFAULT_VTABLE_THUNKS   1
-
 /* Handle #pragma weak and #pragma pack.  */
 #define HANDLE_SYSV_PRAGMA
 

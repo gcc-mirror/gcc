@@ -150,10 +150,6 @@ is built with the --enable-threads configure-time option.}		\
    libraries compiled with the native cc.  */
 #undef NO_DOLLAR_IN_LABEL
 
-/* Use more efficient ``thunks'' to implement C++ vtables.  */
-#undef DEFAULT_VTABLE_THUNKS
-#define DEFAULT_VTABLE_THUNKS 1
-
 /* The GNU tools operate better with dwarf2 than stabs.  Since we
    don't have any native tools to be compatible with, default to
    dwarf2.  */

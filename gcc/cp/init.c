@@ -182,14 +182,6 @@ initialize_vtbl_ptrs (addr)
 		 NULL, dfs_unmarked_real_bases_queue_p, list);
   dfs_walk (TYPE_BINFO (type), dfs_unmark,
 	    dfs_marked_real_bases_queue_p, type);
-
-  /* If we're not using thunks, we may need to adjust the deltas in
-     the vtable to handle virtual base classes correctly.  When we are
-     using thunks, we either use construction vtables (which are
-     preloaded with the right answers) or nothing (in which case
-     vitual function calls sometimes don't work right.)  */
-  if (TYPE_USES_VIRTUAL_BASECLASSES (type) && !flag_vtable_thunks)
-    fixup_all_virtual_upcast_offsets (addr);
 }
 
 /* [dcl.init]:

@@ -2858,7 +2858,7 @@ get_member_function_from_ptrfunc (instance_ptrptr, function)
 
   if (TYPE_PTRMEMFUNC_P (TREE_TYPE (function)))
     {
-      tree fntype, idx, e1, delta, delta2, e2, e3, aref, vtbl;
+      tree fntype, idx, e1, delta, delta2, e2, e3, vtbl;
       tree instance, basetype;
 
       tree instance_ptr = *instance_ptrptr;
@@ -2940,26 +2940,8 @@ get_member_function_from_ptrfunc (instance_ptrptr, function)
 	 build_pointer_type (build_pointer_type (vtable_entry_type)),
 	 vtbl, cp_convert (ptrdiff_type_node, delta2));
       vtbl = build_indirect_ref (vtbl, NULL);
-      aref = build_array_ref (vtbl, idx);
+      e2 = build_array_ref (vtbl, idx);
 
-      if (! flag_vtable_thunks)
-	{
-	  aref = save_expr (aref);
-	  
-	  delta = cp_build_binary_op
-	    (PLUS_EXPR,
-	     build_conditional_expr (e1,
-				     build_component_ref (aref,
-							  delta_identifier,
-							  NULL_TREE, 0),
-				     integer_zero_node),
-	     delta);
-	}
-
-      if (flag_vtable_thunks)
-	e2 = aref;
-      else
-	e2 = build_component_ref (aref, pfn_identifier, NULL_TREE, 0);
       TREE_TYPE (e2) = TREE_TYPE (e3);
       e1 = build_conditional_expr (e1, e2, e3);
       

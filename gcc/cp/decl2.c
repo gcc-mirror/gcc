@@ -189,11 +189,6 @@ int warn_long_long = 1;
 
 int warn_ctor_dtor_privacy = 1;
 
-/* True if we want to implement vtables using "thunks".
-   The default is off.  */
-
-int flag_vtable_thunks = 1;
-
 /* Nonzero means generate separate instantiation control files and juggle
    them at link time.  */
 
@@ -2247,12 +2242,9 @@ mark_vtable_entries (decl)
 
   for (; entries; entries = TREE_CHAIN (entries))
     {
-      tree fnaddr;
+      tree fnaddr = TREE_VALUE (entries);
       tree fn;
-
-      fnaddr = (flag_vtable_thunks ? TREE_VALUE (entries) 
-		: FNADDR_FROM_VTABLE_ENTRY (TREE_VALUE (entries)));
-
+      
       if (TREE_CODE (fnaddr) != ADDR_EXPR)
 	/* This entry is an offset: a virtual base class offset, a
 	   virtual call offset, an RTTI offset, etc.  */
