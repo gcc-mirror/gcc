@@ -1,3 +1,10 @@
+2004-04-22  Michael Koch  <konqueror@gmx.de>
+
+	* java/net/Socket.java
+	(impl): Made package-private.
+	* java/net/ServerSocket.java
+	(implAccept): Access Socket.impl field directly.
+
 2004-04-22  Dalibor Topic  <robilad@kaffe.org>
 
 	* java/util/prefs/Preferences.java,
