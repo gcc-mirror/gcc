@@ -360,6 +360,9 @@ push_secondary_reload (in_p, x, opnum, optional, reload_class, reload_mode,
   /* If X is a paradoxical SUBREG, use the inner value to determine both the
      mode and object being reloaded.  */
   if (GET_CODE (x) == SUBREG
+#ifdef CLASS_CANNOT_CHANGE_SIZE
+      && reload_class != CLASS_CANNOT_CHANGE_SIZE
+#endif
       && (GET_MODE_SIZE (GET_MODE (x))
 	  > GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)))))
     {
