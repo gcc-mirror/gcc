@@ -1,3 +1,12 @@
+2002-06-17  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/7042
+	* config/cris/cris.c (cris_simple_epilogue): Kludge around reorg.c
+	bug by saing that the epilogue isn't simple if there's a
+	non-empty current_function_epilogue_delay_list.
+	* config/cris/cris.md ("return"): Add sanity check asserting that
+	current_function_epilogue_delay_list is empty.
+
 2002-06-17  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.h (BIGGEST_FIELD_ALIGNMENT): Define instead

@@ -2042,6 +2042,14 @@ cris_simple_epilogue ()
       || current_function_outgoing_args_size
       || current_function_calls_eh_return
 
+      /* Kludge for 3.1: when reorg changes branches to the return label
+	 into return insns, it does not handle the case where there's a
+	 delay list for the epilogue: it just drops the insns in
+	 current_function_epilogue_delay_list on the floor, resulting in
+	 invalid code.  We kludge around it in that case by saying that
+	 we don't have a simple enough epilogue to use return insns.  */
+      || current_function_epilogue_delay_list != NULL
+
       /* If we're not supposed to emit prologue and epilogue, we must
 	 not emit return-type instructions.  */
       || !TARGET_PROLOGUE_EPILOGUE)
