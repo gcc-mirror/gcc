@@ -455,6 +455,10 @@ fi
 if [ -r ${LIB}/$file ]; then
   echo Fixing $file
   sed -e 's/int	abort/void	abort/g' \
+  -e 's/int	free/void	free/g' \
+  -e 's/char \*	calloc/void \*	calloc/g' \
+  -e 's/char \*	malloc/void \*	malloc/g' \
+  -e 's/char \*	realloc/void \*	realloc/g' \
   -e 's/int	exit/void	exit/g' ${LIB}/$file > ${LIB}/${file}.sed
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
