@@ -6961,7 +6961,10 @@ cse_basic_block (from, to, next_branch, around_loop)
       if (simplejump_p (insn))
 	{
 	  if (to == 0)
-	    return 0;
+	    {
+	      free (qty_table + max_reg);
+	      return 0;
+	    }
 
 	  if (JUMP_LABEL (insn) == to)
 	    to_usage = 1;
@@ -6993,13 +6996,19 @@ cse_basic_block (from, to, next_branch, around_loop)
 
 	  /* If TO was the last insn in the function, we are done.  */
 	  if (insn == 0)
-	    return 0;
+	    {
+	      free (qty_table + max_reg);
+	      return 0;
+	    }
 
 	  /* If TO was preceded by a BARRIER we are done with this block
 	     because it has no continuation.  */
 	  prev = prev_nonnote_insn (to);
 	  if (prev && GET_CODE (prev) == BARRIER)
-	    return insn;
+	    {
+	      free (qty_table + max_reg);
+	      return insn;
+	    }
 
 	  /* Find the end of the following block.  Note that we won't be
 	     following branches in this case.  */
