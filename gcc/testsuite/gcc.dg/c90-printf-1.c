@@ -244,5 +244,5 @@ foo (int i, int i1, int i2, unsigned int u, double d, char *s, void *p,
   printf ("%++d", i); /* { dg-warning "repeated" "repeated flag warning" } */
   printf ("%n", cn); /* { dg-warning "constant" "%n with const" } */
   printf ((const char *)L"foo"); /* { dg-warning "wide" "wide string" } */
-  /* Can we test for the warning for unterminated string formats?  */
+  printf ("%n", (int *)0); /* { dg-warning "null" "%n with NULL" } */
 }

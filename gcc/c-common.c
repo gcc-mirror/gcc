@@ -3119,6 +3119,15 @@ check_format_types (status, types)
 	      if (TREE_CODE (cur_type) == ERROR_MARK)
 		break;
 
+	      /* Check for writing through a NULL pointer.  */
+	      if (types->writing_in_flag
+		  && i == 0
+		  && cur_param != 0
+		  && integer_zerop (cur_param))
+		status_warning (status,
+				"writing through null pointer (arg %d)",
+				arg_num);
+
 	      if (cur_param != 0 && TREE_CODE (cur_param) == ADDR_EXPR)
 		cur_param = TREE_OPERAND (cur_param, 0);
 	      else
