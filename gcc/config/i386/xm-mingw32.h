@@ -34,12 +34,6 @@ Boston, MA 02111-1307, USA. */
 #endif
 
 #define NO_SYS_SIGLIST 1
-#define bcmp(a,b,c) memcmp (a,b,c)
-#define bcopy(a,b,c) memcpy (b,a,c)
-#define bzero(a,b) memset (a,0,b)
-#define index  strchr
-#define rindex strrchr
-#define kill(a,b) raise(b)
 #define link(a,b) -1
 #define environ _environ
 

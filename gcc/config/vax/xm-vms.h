@@ -134,12 +134,6 @@ Boston, MA 02111-1307, USA.  */
 #define QSORT_WORKAROUND	/* do not use VAXCRTL's qsort */
 
 /* use ANSI/SYSV style byte manipulation routines instead of BSD ones */
-#define bcopy(s,d,n)	memcpy((d),(s),(n))
-#define bzero(d,n)	memset((d),0,(n))
-#define bcmp(l,r,n)	memcmp((l),(r),(n))
-#define index	strchr
-#define rindex	strrchr
-
 /* rename all too-long external symbol names to avoid warnings */
 #define bc_check_for_full_enumeration_handling	bc_check_for_full_enum_handling
 #define check_for_full_enumeration_handling	check_for_full_enum_handling
