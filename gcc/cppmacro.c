@@ -74,7 +74,8 @@ static const cpp_token *stringify_arg PARAMS ((cpp_reader *, macro_arg *));
 static void paste_all_tokens PARAMS ((cpp_reader *, const cpp_token *));
 static bool paste_tokens PARAMS ((cpp_reader *, const cpp_token **,
 				  const cpp_token *));
-static void replace_args PARAMS ((cpp_reader *, cpp_hashnode *, macro_arg *));
+static void replace_args PARAMS ((cpp_reader *, cpp_hashnode *, cpp_macro *,
+				  macro_arg *));
 static _cpp_buff *funlike_invocation_p PARAMS ((cpp_reader *, cpp_hashnode *));
 
 /* #define directive parsing and handling.  */
@@ -546,34 +547,15 @@ collect_args (pfile, node)
 	    arg++;
 	}
     }
-  while (token->type != CPP_CLOSE_PAREN
-	 && token->type != CPP_EOF
-	 && token->type != CPP_HASH);
+  while (token->type != CPP_CLOSE_PAREN && token->type != CPP_EOF);
 
-  if (token->type == CPP_EOF || token->type == CPP_HASH)
+  if (token->type == CPP_EOF)
     {
-      bool step_back = false;
-
-      /* 6.10.3 paragraph 11: If there are sequences of preprocessing
-	 tokens within the list of arguments that would otherwise act
-	 as preprocessing directives, the behavior is undefined.
-
-	 This implementation will report a hard error, terminate the
-	 macro invocation, and proceed to process the directive.  */
-      if (token->type == CPP_HASH)
-	{
-	  cpp_error (pfile,
-		     "directives may not be used inside a macro argument");
-	  step_back = true;
-	}
-      else
-	step_back = (pfile->context->prev || pfile->state.in_directive);
-
       /* We still need the CPP_EOF to end directives, and to end
 	 pre-expansion of a macro argument.  Step back is not
 	 unconditional, since we don't want to return a CPP_EOF to our
 	 callers at the end of an -include-d file.  */
-      if (step_back)
+      if (pfile->context->prev || pfile->state.in_directive)
 	_cpp_backup_tokens (pfile, 1);
       cpp_error (pfile, "unterminated argument list invoking macro \"%s\"",
 		 NODE_NAME (node));
@@ -697,8 +679,8 @@ enter_macro_context (pfile, node)
 	      return 0;
 	    }
 
-	  if (node->value.macro->paramc > 0)
-	    replace_args (pfile, node, (macro_arg *) buff->base);
+	  if (macro->paramc > 0)
+	    replace_args (pfile, node, macro, (macro_arg *) buff->base);
 	  _cpp_release_buff (pfile, buff);
 	}
 
@@ -720,9 +702,10 @@ enter_macro_context (pfile, node)
    Expand each argument before replacing, unless it is operated upon
    by the # or ## operators.  */
 static void
-replace_args (pfile, node, args)
+replace_args (pfile, node, macro, args)
      cpp_reader *pfile;
      cpp_hashnode *node;
+     cpp_macro *macro;
      macro_arg *args;
 {
   unsigned int i, total;
@@ -730,13 +713,11 @@ replace_args (pfile, node, args)
   const cpp_token **dest, **first;
   macro_arg *arg;
   _cpp_buff *buff;
-  cpp_macro *macro;
 
   /* First, fully macro-expand arguments, calculating the number of
      tokens in the final expansion as we go.  The ordering of the if
      statements below is subtle; we must handle stringification before
      pasting.  */
-  macro = node->value.macro;
   total = macro->count;
   limit = macro->expansion + macro->count;
 

@@ -1,3 +1,9 @@
+2002-02-27  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* gcc.dg/cpp/undef1.c: Remove.
+	* gcc.dg/cpp/directiv.c: Update.
+	* gcc.dg/cpp/mac-dir-1.c, mac-dir-2.c: New tests.
+
 2002-02-27  Michael Meissner  <meissner@redhat.com>
 
 	* gcc.c-torture/execute/20020226-1.c: New test.

@@ -316,8 +316,17 @@ _cpp_handle_directive (pfile, indented)
 {
   const directive *dir = 0;
   const cpp_token *dname;
+  bool was_parsing_args = pfile->state.parsing_args;
   int skip = 1;
 
+  if (was_parsing_args)
+    {
+      if (CPP_OPTION (pfile, pedantic))
+	cpp_pedwarn (pfile,
+	     "embedding a directive within macro arguments is not portable");
+      pfile->state.parsing_args = 0;
+      pfile->state.prevent_expansion = 0;
+    }
   start_directive (pfile);
   dname = _cpp_lex_token (pfile);
 
@@ -393,6 +402,13 @@ _cpp_handle_directive (pfile, indented)
     _cpp_backup_tokens (pfile, 1);
 
   end_directive (pfile, skip);
+  if (was_parsing_args)
+    {
+      /* Restore state when within macro args.  */
+      pfile->state.parsing_args = 2;
+      pfile->state.prevent_expansion = 1;
+      pfile->buffer->saved_flags |= PREV_WHITE;
+    }
   return skip;
 }
 
