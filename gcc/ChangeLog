@@ -1,3 +1,14 @@
+2000-02-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* tsystem.h: New file.
+
+	* Makefile.in (libgcc2.a, stmp-multilib, crtbegin.o, crtend.o,
+	s-crtS): Depend on tsystem.h.
+
+	* crtstuff.c: Include tsystem.h.
+	* frame.c: Likewise.
+	* libgcc2.c: Likewise.
+
 Tue Feb  1 19:53:27 CET 2000  Jan Hubicka  <jh@suse.cz>
 
 	* builtins.c (expand_builtin_memset): Expand for variable sized

@@ -32,36 +32,10 @@ Boston, MA 02111-1307, USA.  */
    do not apply.  */
 
 #include "tconfig.h"
-
-/* We disable this when inhibit_libc, so that gcc can still be built without
-   needing header files first.  */
-/* ??? This is not a good solution, since prototypes may be required in
-   some cases for correct code.  See also frame.c/crtstuff.c.  */
-#ifndef inhibit_libc
-/* fixproto guarantees these system headers exist. */
-#include <stdlib.h>
-#include <unistd.h>
-
-#else
-#ifndef L_trampoline
-#include <stddef.h>
-#ifndef malloc
-extern void *malloc (size_t);
-#endif
-#ifndef free
-extern void free (void *);
-#endif
-#ifndef atexit
-extern int atexit(void (*)(void));
-#endif
-#endif
-#endif
+#include "tsystem.h"
 
 #include "machmode.h"
 #include "defaults.h" 
-#ifndef L_trampoline
-#include <stddef.h>
-#endif
 
 /* Don't use `fancy_abort' here even if config.h says to use it.  */
 #ifdef abort
