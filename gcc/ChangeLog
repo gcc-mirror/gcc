@@ -1,3 +1,7 @@
+2003-06-04  Daniel Jacobowitz  <drow@mvista.com>
+
+	* config.gcc: Revert accidentally committed ARM changes.
+
 2003-06-04  Roger Sayle  <roger@eyesopen.com>
 
 	* builtins.c (dconstpi, dconste): New mathematical constants.
