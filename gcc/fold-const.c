@@ -109,6 +109,7 @@ static bool fold_real_zero_addition_p (tree, tree, int);
 static tree fold_mathfn_compare (enum built_in_function, enum tree_code,
 				 tree, tree, tree);
 static tree fold_inf_compare (enum tree_code, tree, tree, tree);
+static tree fold_div_compare (enum tree_code, tree, tree, tree);
 static bool reorder_operands_p (tree, tree);
 static bool tree_swap_operands_p (tree, tree, bool);
 
@@ -5215,6 +5216,156 @@ fold_inf_compare (enum tree_code code, tree type, tree arg0, tree arg1)
   return NULL_TREE;
 }
 
+/* Subroutine of fold() that optimizes comparisons of a division by
+   a non-zero integer constant against an integer constant, i.e.
+   X/C1 op C2.
+
+   CODE is the comparison operator: EQ_EXPR, NE_EXPR, GT_EXPR, LT_EXPR,
+   GE_EXPR or LE_EXPR.  TYPE is the type of the result and ARG0 and ARG1
+   are the operands of the comparison.  ARG1 must be a TREE_REAL_CST.
+
+   The function returns the constant folded tree if a simplification
+   can be made, and NULL_TREE otherwise.  */
+
+static tree
+fold_div_compare (enum tree_code code, tree type, tree arg0, tree arg1)
+{
+  tree prod, tmp, hi, lo;
+  tree arg00 = TREE_OPERAND (arg0, 0);
+  tree arg01 = TREE_OPERAND (arg0, 1);
+  unsigned HOST_WIDE_INT lpart;
+  HOST_WIDE_INT hpart;
+  int overflow;
+
+  /* We have to do this the hard way to detect unsigned overflow.
+     prod = int_const_binop (MULT_EXPR, arg01, arg1, 0);  */
+  overflow = mul_double (TREE_INT_CST_LOW (arg01),
+			 TREE_INT_CST_HIGH (arg01),
+			 TREE_INT_CST_LOW (arg1),
+			 TREE_INT_CST_HIGH (arg1), &lpart, &hpart);
+  prod = build_int_2 (lpart, hpart);
+  TREE_TYPE (prod) = TREE_TYPE (arg00);
+  TREE_OVERFLOW (prod) = force_fit_type (prod, overflow)
+			 || TREE_INT_CST_HIGH (prod) != hpart
+			 || TREE_INT_CST_LOW (prod) != lpart;
+  TREE_CONSTANT_OVERFLOW (prod) = TREE_OVERFLOW (prod);
+
+  if (TYPE_UNSIGNED (TREE_TYPE (arg0)))
+    {
+      tmp = int_const_binop (MINUS_EXPR, arg01, integer_one_node, 0);
+      lo = prod;
+
+      /* Likewise hi = int_const_binop (PLUS_EXPR, prod, tmp, 0).  */
+      overflow = add_double (TREE_INT_CST_LOW (prod),
+			     TREE_INT_CST_HIGH (prod),
+			     TREE_INT_CST_LOW (tmp),
+			     TREE_INT_CST_HIGH (tmp),
+			     &lpart, &hpart);
+      hi = build_int_2 (lpart, hpart);
+      TREE_TYPE (hi) = TREE_TYPE (arg00);
+      TREE_OVERFLOW (hi) = force_fit_type (hi, overflow)
+			   || TREE_INT_CST_HIGH (hi) != hpart
+			   || TREE_INT_CST_LOW (hi) != lpart
+			   || TREE_OVERFLOW (prod);
+      TREE_CONSTANT_OVERFLOW (hi) = TREE_OVERFLOW (hi);
+    }
+  else if (tree_int_cst_sgn (arg01) >= 0)
+    {
+      tmp = int_const_binop (MINUS_EXPR, arg01, integer_one_node, 0);
+      switch (tree_int_cst_sgn (arg1))
+	{
+	case -1:
+	  lo = int_const_binop (MINUS_EXPR, prod, tmp, 0);
+	  hi = prod;
+	  break;
+
+	case  0:
+	  lo = fold_negate_const (tmp, TREE_TYPE (arg0));
+	  hi = tmp;
+	  break;
+
+	case  1:
+          hi = int_const_binop (PLUS_EXPR, prod, tmp, 0);
+	  lo = prod;
+	  break;
+
+	default:
+	  abort ();
+	}
+    }
+  else
+    {
+      tmp = int_const_binop (PLUS_EXPR, arg01, integer_one_node, 0);
+      switch (tree_int_cst_sgn (arg1))
+	{
+	case -1:
+	  hi = int_const_binop (MINUS_EXPR, prod, tmp, 0);
+	  lo = prod;
+	  break;
+
+	case  0:
+	  hi = fold_negate_const (tmp, TREE_TYPE (arg0));
+	  lo = tmp;
+	  break;
+
+	case  1:
+          lo = int_const_binop (PLUS_EXPR, prod, tmp, 0);
+	  hi = prod;
+	  break;
+
+	default:
+	  abort ();
+	}
+    }
+
+  switch (code)
+    {
+    case EQ_EXPR:
+      if (TREE_OVERFLOW (lo) && TREE_OVERFLOW (hi))
+	return omit_one_operand (type, integer_zero_node, arg00);
+      if (TREE_OVERFLOW (hi))
+	return fold (build2 (GE_EXPR, type, arg00, lo));
+      if (TREE_OVERFLOW (lo))
+	return fold (build2 (LE_EXPR, type, arg00, hi));
+      return build_range_check (type, arg00, 1, lo, hi);
+
+    case NE_EXPR:
+      if (TREE_OVERFLOW (lo) && TREE_OVERFLOW (hi))
+	return omit_one_operand (type, integer_one_node, arg00);
+      if (TREE_OVERFLOW (hi))
+	return fold (build2 (LT_EXPR, type, arg00, lo));
+      if (TREE_OVERFLOW (lo))
+	return fold (build2 (GT_EXPR, type, arg00, hi));
+      return build_range_check (type, arg00, 0, lo, hi);
+
+    case LT_EXPR:
+      if (TREE_OVERFLOW (lo))
+	return omit_one_operand (type, integer_zero_node, arg00);
+      return fold (build2 (LT_EXPR, type, arg00, lo));
+
+    case LE_EXPR:
+      if (TREE_OVERFLOW (hi))
+	return omit_one_operand (type, integer_one_node, arg00);
+      return fold (build2 (LE_EXPR, type, arg00, hi));
+
+    case GT_EXPR:
+      if (TREE_OVERFLOW (hi))
+	return omit_one_operand (type, integer_zero_node, arg00);
+      return fold (build2 (GT_EXPR, type, arg00, hi));
+
+    case GE_EXPR:
+      if (TREE_OVERFLOW (lo))
+	return omit_one_operand (type, integer_one_node, arg00);
+      return fold (build2 (GE_EXPR, type, arg00, lo));
+
+    default:
+      break;
+    }
+
+  return NULL_TREE;
+}
+
+
 /* If CODE with arguments ARG0 and ARG1 represents a single bit
    equality/inequality test, then return a simplified form of
    the test using shifts and logical operations.  Otherwise return
@@ -7900,6 +8051,20 @@ fold (tree expr)
 				build1 (INDIRECT_REF, char_type_node,
 					TREE_VALUE(arglist)),
 				integer_zero_node));
+	}
+
+      /* We can fold X/C1 op C2 where C1 and C2 are integer constants
+	 into a single range test.  */
+      if (TREE_CODE (arg0) == TRUNC_DIV_EXPR
+	  && TREE_CODE (arg1) == INTEGER_CST
+	  && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST
+	  && !integer_zerop (TREE_OPERAND (arg0, 1))
+	  && !TREE_OVERFLOW (TREE_OPERAND (arg0, 1))
+	  && !TREE_OVERFLOW (arg1))
+	{
+	  t1 = fold_div_compare (code, type, arg0, arg1);
+	  if (t1 != NULL_TREE)
+	    return t1;
 	}
 
       /* Both ARG0 and ARG1 are known to be constants at this point.  */

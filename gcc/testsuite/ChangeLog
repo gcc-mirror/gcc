@@ -1,3 +1,9 @@
+2004-05-08  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.c-torture/execute/divcmp-1.c: New test case.
+	* gcc.c-torture/execute/divcmp-2.c: New test case.
+	* gcc.c-torture/execute/divcmp-3.c: New test case.
+
 2004-05-07  Eric Botcazou <ebotcazou@libertysurf.fr>
 
 	* g++.dg/other/pragma-re-2.C: New test.
