@@ -1,3 +1,10 @@
+2000-02-28  Jason Merrill  <jason@casey.cygnus.com>
+
+	* search.c (protected_accessible_p): Also allow the access if
+	the member is public in DERIVED.  Lose TYPE parm.
+	(friend_accessible_p): Lose TYPE parm.
+	(accessible_p): Adjust.
+
 Sun Feb 27 16:40:33 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* class.c (dfs_build_vtable_offset_vtbl_entries): Don't use size_binop
