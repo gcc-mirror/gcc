@@ -1,3 +1,8 @@
+2003-02-03  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.c-torture/exectue/ieee/20000320-1.c: The ARM VFP format is
+	'natural-endian'.
+
 2003-02-01  Richard Sandiford  <rsandifo@redhat.com>
 
 	* g++.dg/init/new1.C: Remove -fvolatile dg-options line.
