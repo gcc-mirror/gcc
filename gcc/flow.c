@@ -1438,9 +1438,6 @@ split_block (bb, insn)
   rtx bb_note;
   int i, j;
 
-  if (BLOCK_FOR_INSN (insn) != bb)
-    abort ();
-
   /* There is no point splitting the block after its end.  */
   if (bb->end == insn)
     return 0;
@@ -1510,7 +1507,7 @@ split_block (bb, insn)
 	 propagate_block to determine which registers are live.  */
       COPY_REG_SET (new_bb->global_live_at_start, bb->global_live_at_end);
       propagate_block (new_bb, new_bb->global_live_at_start, NULL, 0);
-      COPY_REG_SET (new_bb->global_live_at_end, 
+      COPY_REG_SET (bb->global_live_at_end, 
 		    new_bb->global_live_at_start);
     }
 

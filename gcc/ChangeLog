@@ -1,3 +1,8 @@
+2000-09-13  Michael Hayes  <mhayes@cygnus.com>
+
+	* flow.c (split_block): Fix update of registers live at
+	end of split block.
+
 Tue Sep 12 01:51:38 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (add?i_3, add?i_5): New.
