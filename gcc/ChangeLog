@@ -1,3 +1,10 @@
+2003-01-21  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* dwarf2out.c (fde_table_in_use): Mark GTY.
+	(dwarf2out_cfi_label_num): New variable, marked GTY.
+	(dwarf2out_cfi_label): Use it instead of static label_num.
+	* emit-rtl.c (label_num): Mark GTY.
+
 2003-01-21  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.c (output_plussi): Support H8/300.
