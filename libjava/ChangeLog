@@ -1,3 +1,7 @@
+2000-12-26  Petter Reinholdtsen  <pere@hungry.com>
+
+	* java/sql/SQLWarning.java: Fixed typo in comment.
+
 2000-12-26  Tom Tromey  <tromey@redhat.com>
 
 	* java/awt/MenuItem.java (paramString): Now protected.

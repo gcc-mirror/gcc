@@ -53,7 +53,7 @@ private static final long serialVersionUID = 3917336774604784856L;
  */
 
 /**
-  * This method initializes a new instance of <code>SQLWxception</code>
+  * This method initializes a new instance of <code>SQLWarning</code>
   * that does not have a descriptive messages and SQL state, and which
   * has a vendor error code of 0.
   */
