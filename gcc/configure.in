@@ -2971,6 +2971,37 @@ fi
 # the first file included by config.h.
 null_defines=
 host_xm_file="auto-config.h ${host_xm_file}"
+
+# If host=build, it is correct to have hconfig include auto-config.h
+# as well.  If host!=build, we are in error and need to do more 
+# work to find out the build config parameters.
+if test x$host = x$build
+then
+	build_xm_file="auto-config.h ${build_xm_file}"
+else
+	# We create a subdir, then run autoconf in the subdir.
+	# To prevent recursion we set host and build for the new
+	# invocation of configure to the build for this invocation
+	# of configure. 
+	tempdir=build.$$
+	rm -rf $tempdir
+	mkdir $tempdir
+	cd $tempdir
+	case ${srcdir} in
+	/*) realsrcdir=${srcdir};;
+	*) realsrcdir=../${srcdir};;
+	esac
+	CC=${CC_FOR_BUILD} ${realsrcdir}/configure \
+		--target=$target --host=$build --build=$build
+
+	# We just finished tests for the build machine, so rename
+	# the file auto-build.h in the gcc directory.
+	mv auto-config.h ../auto-build.h
+	cd ..
+	rm -rf $tempdir
+	build_xm_file="auto-build.h ${build_xm_file}"
+fi
+
 vars="host_xm_file tm_file xm_file build_xm_file"
 links="config.h tm.h tconfig.h hconfig.h"
 defines="host_xm_defines null_defines xm_defines build_xm_defines"
@@ -3125,12 +3156,20 @@ done
 
 host_xm_file_list=
 for f in $host_xm_file; do
-	host_xm_file_list="${host_xm_file_list} \$(srcdir)/config/$f"
+	if [[ $f != "auto-config.h" ]]; then
+		host_xm_file_list="${host_xm_file_list} \$(srcdir)/config/$f"
+	else
+		host_xm_file_list="${host_xm_file_list} $f"
+	fi
 done
 
 build_xm_file_list=
 for f in $build_xm_file; do
-	build_xm_file_list="${build_xm_file_list} \$(srcdir)/config/$f"
+	if [[ $f != "auto-config.h" -a $f != "auto-build.h" ]]; then
+		build_xm_file_list="${build_xm_file_list} \$(srcdir)/config/$f"
+	else
+		build_xm_file_list="${build_xm_file_list} $f"
+	fi
 done
 
 # Define macro CROSS_COMPILE in compilation
