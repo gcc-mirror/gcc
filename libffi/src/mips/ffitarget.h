@@ -138,9 +138,14 @@ typedef enum ffi_abi {
   FFI_O32,
   FFI_N32,
   FFI_N64,
+  FFI_O32_SOFT_FLOAT,
 
 #ifdef FFI_MIPS_O32
+#ifdef __mips_soft_float
+  FFI_DEFAULT_ABI = FFI_O32_SOFT_FLOAT,
+#else
   FFI_DEFAULT_ABI = FFI_O32,
+#endif
 #else
   FFI_DEFAULT_ABI = FFI_N32,
 #endif
