@@ -226,8 +226,7 @@ build_cplus_new (type, init)
 
   /* Make sure that we're not trying to create an instance of an
      abstract class.  */
-  if (CLASSTYPE_ABSTRACT_VIRTUALS (type))
-    abstract_virtuals_error (NULL_TREE, type);
+  abstract_virtuals_error (NULL_TREE, type);
 
   if (TREE_CODE (init) != CALL_EXPR && TREE_CODE (init) != AGGR_INIT_EXPR)
     return convert (type, init);

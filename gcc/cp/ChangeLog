@@ -1,3 +1,11 @@
+1999-07-26  Mark Mitchell  <mark@codesourcery.com>
+
+	* tree.c (build_cplus_new): Adjust call to abstract_virtuals_error
+	as per 1999-07-26 change.
+
+	* typeck.c (c_sizeof): Don't allow non-static data members.
+	(expr_sizeof): Likewise.
+
 1999-07-26  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* input.c (feed_input): Only touch lineno and input_filename

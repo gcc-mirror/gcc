@@ -1603,21 +1603,16 @@ c_sizeof (type)
   if (code == REFERENCE_TYPE)
     type = TREE_TYPE (type);
 
-  /* We couldn't find anything in the ARM or the draft standard that says,
-     one way or the other, if doing sizeof on something that doesn't have
-     an object associated with it is correct or incorrect.  For example, if
-     you declare `struct S { char str[16]; };', and in your program do
-     a `sizeof (S::str)', should we flag that as an error or should we give
-     the size of it?  Since it seems like a reasonable thing to do, we'll go
-     with giving the value.  */
-  if (code == OFFSET_TYPE)
-    type = TREE_TYPE (type);
-
   /* @@ This also produces an error for a signature ref.
         In that case we should be able to do better.  */
   if (IS_SIGNATURE (type))
     {
       error ("`sizeof' applied to a signature type");
+      return size_int (0);
+    }
+  else if (code == OFFSET_TYPE)
+    {
+      cp_error ("`sizeof' applied to non-static member");
       return size_int (0);
     }
 
@@ -1665,6 +1660,15 @@ expr_sizeof (e)
       incomplete_type_error (e, TREE_TYPE (e));
       return size_int (1);
     }
+  /* It's illegal to say `sizeof (X::i)' for `i' a non-static data
+     member unless you're in a non-static member of X.  But, we used
+     to support this usage, so we still permit it unless we're being
+     pedantic.  */
+  else if (TREE_CODE (e) == OFFSET_REF)
+    e = resolve_offset_ref (e);
+
+  if (e == error_mark_node)
+    return e;
 
   return c_sizeof (TREE_TYPE (e));
 }
