@@ -1,3 +1,9 @@
+2003-10-18  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/12495
+	* pt.c (lookup_template_class): Handle when current_class_type
+	is a local class.
+
 2003-10-17  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/2513

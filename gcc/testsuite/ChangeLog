@@ -1,3 +1,8 @@
+2003-10-18  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/12495
+	* g++.dg/template/crash21.C: New test.
+
 2003-10-17  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/2513
