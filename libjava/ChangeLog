@@ -1,5 +1,9 @@
 2003-10-08  Michael Koch  <konqueror@gmx.de>
 
+	* java/security/Security.java: Reformated.
+
+2003-10-08  Michael Koch  <konqueror@gmx.de>
+
 	* java/text/SimpleDateFormat.java
 	(compileFormat): Replace Character.isLetter() test with
 	Character.isLowerCase() || Character.isUpperCase().
