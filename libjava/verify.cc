@@ -946,25 +946,25 @@ private:
 
   jint get_ushort ()
   {
-    jbyte b1 = get_byte ();
-    jbyte b2 = get_byte ();
+    jint b1 = get_byte ();
+    jint b2 = get_byte ();
     return (jint) ((b1 << 8) | b2) & 0xffff;
   }
 
   jint get_short ()
   {
-    jbyte b1 = get_byte ();
-    jbyte b2 = get_byte ();
+    jint b1 = get_byte ();
+    jint b2 = get_byte ();
     jshort s = (b1 << 8) | b2;
     return (jint) s;
   }
 
   jint get_int ()
   {
-    jbyte b1 = get_byte ();
-    jbyte b2 = get_byte ();
-    jbyte b3 = get_byte ();
-    jbyte b4 = get_byte ();
+    jint b1 = get_byte ();
+    jint b2 = get_byte ();
+    jint b3 = get_byte ();
+    jint b4 = get_byte ();
     return (b1 << 24) | (b2 << 16) | (b3 << 8) | b4;
   }
 
@@ -1644,10 +1644,10 @@ private:
     return get_one_type (p);
   }
 
-  void check_return_type (type expected)
+  void check_return_type (type onstack)
   {
     type rt = compute_return_type (current_method->self->signature);
-    if (! expected.compatible (rt))
+    if (! rt.compatible (onstack))
       verify_fail ("incompatible return type", start_PC);
   }
 
