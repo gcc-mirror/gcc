@@ -2609,7 +2609,7 @@ do { fprintf (asm_out_file, "\t.sdef\t");		\
 /* MOVE_RATIO is the number of move instructions that is better than a
    block move.  */
 
-#define MOVE_RATIO 2		/* Default value.  */
+#define MOVE_RATIO 3
 
 #define BSS_SECTION_ASM_OP "\t.bss"
 
@@ -2638,20 +2638,23 @@ do { fprintf (asm_out_file, "\t.sdef\t");		\
 
 #define MACHINE_DEPENDENT_REORG(INSNS) c4x_process_after_reload(INSNS)
 
-#define DBR_OUTPUT_SEQEND(FILE)		\
-if (final_sequence != NULL_RTX)		\
-{					\
- int count;				\
- int laj = GET_CODE (XVECEXP (final_sequence, 0, 0)) == CALL_INSN; \
-					\
- count = dbr_sequence_length();		\
- while (count < (laj ? 2 : 3))		\
- {					\
-    fputs("\tnop\n", FILE);		\
-    count++;				\
- }					\
- if (laj)				\
-    fputs("\tpush\tr11\n", FILE);	\
+#define DBR_OUTPUT_SEQEND(FILE)				\
+if (final_sequence != NULL_RTX)				\
+{							\
+ int count;						\
+ rtx insn = XVECEXP (final_sequence, 0, 0); 		\
+ int laj = GET_CODE (insn) == CALL_INSN 		\
+	   || (GET_CODE (insn) == INSN			\
+	       && GET_CODE (PATTERN (insn)) == TRAP_IF);\
+							\
+ count = dbr_sequence_length();				\
+ while (count < (laj ? 2 : 3))				\
+ {							\
+    fputs("\tnop\n", FILE);				\
+    count++;						\
+ }							\
+ if (laj)						\
+    fputs("\tpush\tr11\n", FILE);			\
 }
 
 #define NO_FUNCTION_CSE
@@ -2692,3 +2695,27 @@ if (final_sequence != NULL_RTX)		\
   {"parallel_operand", {SUBREG, REG, MEM}},			\
   {"symbolic_address_operand", {SYMBOL_REF, LABEL_REF, CONST}},	\
   {"mem_operand", {MEM}},					
+
+
+/* Define the intrinsic functions for the c3x/c4x.  */
+
+enum c4x_builtins
+{
+			/*	intrinsic name		*/
+  C4X_BUILTIN_ABS,	/*	abs			*/
+  C4X_BUILTIN_FABS,	/*	fabs			*/
+  C4X_BUILTIN_LABS,	/*	labs			*/
+  C4X_BUILTIN_FIX,	/*	fast_ftoi		*/
+  C4X_BUILTIN_FIX_ANSI,	/*	ansi_ftoi		*/
+  C4X_BUILTIN_MPYI,	/*	fast_imult (only C3x)	*/
+  C4X_BUILTIN_TOIEEE,	/*	toieee	   (only C4x)	*/
+  C4X_BUILTIN_FRIEEE,	/*	frieee	   (only C4x)	*/
+  C4X_BUILTIN_RCPF	/*	fast_invf  (only C4x)	*/
+};
+
+#define MD_INIT_BUILTINS do { \
+    c4x_init_builtins (); \
+  } while (0)
+
+#define MD_EXPAND_BUILTIN(EXP, TARGET, SUBTARGET, MODE, IGNORE) \
+    c4x_expand_builtin ((EXP), (TARGET), (SUBTARGET), (MODE), (IGNORE))
