@@ -227,7 +227,7 @@ java::io::File::performSetReadOnly (void)
   // FIXME?
   buf[total] = '\0';
 
-#ifdef HAVE_STAT && HAVE_CHMOD
+#if defined (HAVE_STAT) && defined (HAVE_CHMOD)
   struct stat sb;
   if (::stat (buf, &sb))
     return false;
@@ -328,8 +328,8 @@ java::io::File::performDelete (void)
 #ifdef HAVE_RMDIR
   if (! ::rmdir (buf))
     return true;
-#endif // HAVE_RMDIR
   if (errno == ENOTDIR)
+#endif // HAVE_RMDIR
     return ::unlink (buf) == 0;
 #endif // HAVE_UNLINK
   return false;

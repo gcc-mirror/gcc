@@ -1,3 +1,8 @@
+2001-04-30  Matt Kraai  <kraai@alumni.carnegiemellon.edu>
+
+	* java/io/natFile.cc (performSetReadOnly): Fix #ifdef test.
+	(performDelete): Fix #endif placement.
+
 2001-04-27  Tom Tromey  <tromey@redhat.com>
 
 	* jni.cc (_Jv_JNI_GetPrimitiveArrayRegion): Fixed bounds
