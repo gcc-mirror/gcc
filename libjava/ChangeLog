@@ -1,3 +1,8 @@
+2004-10-14  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* jni.cc (_Jv_JNIMethod::call): Use ffi_java_raw_call instead of
+	ffi_raw_call if FFI_NATIVE_RAW_API is not defined.
+
 2004-10-13  Andrew Haley  <aph@redhat.com>
 
 	* interpret.cc (_Jv_InterpMethod::run): Initialize

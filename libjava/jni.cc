@@ -2213,8 +2213,13 @@ _Jv_JNIMethod::call (ffi_cif *, void *ret, ffi_raw *args, void *__this)
   memcpy (&real_args[offset], args, _this->args_raw_size);
 
   // The actual call to the JNI function.
+#if FFI_NATIVE_RAW_API
   ffi_raw_call (&_this->jni_cif, (void (*)()) _this->function,
 		ret, real_args);
+#else
+  ffi_java_raw_call (&_this->jni_cif, (void (*)()) _this->function,
+		     ret, real_args);
+#endif
 
   if (sync != NULL)
     _Jv_MonitorExit (sync);
