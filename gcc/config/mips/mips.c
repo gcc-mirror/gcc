@@ -7929,12 +7929,12 @@ mips_function_value (valtype, func, mode)
     {
       mode = TYPE_MODE (valtype);
       unsignedp = TREE_UNSIGNED (valtype);
+
+      /* Since we define PROMOTE_FUNCTION_RETURN, we must promote
+	 the mode just as PROMOTE_MODE does.  */
+      mode = promote_mode (valtype, mode, &unsignedp, 1);
     }
   mclass = GET_MODE_CLASS (mode);
-
-  /* Since we define PROMOTE_FUNCTION_RETURN, we must promote the mode
-     just as PROMOTE_MODE does.  */
-  mode = promote_mode (valtype, mode, &unsignedp, 1);
 
   if (mclass == MODE_FLOAT && GET_MODE_SIZE (mode) <= UNITS_PER_FPVALUE)
     reg = FP_RETURN;
