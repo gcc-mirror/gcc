@@ -17,8 +17,6 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-#ifdef HANDLE_SYSV_PRAGMA
-
 /* Support #pragma weak by default if WEAK_ASM_OP and ASM_OUTPUT_DEF
    are defined.  */
 #if !defined (HANDLE_PRAGMA_WEAK) && defined (WEAK_ASM_OP) && defined (ASM_OUTPUT_DEF)
@@ -45,4 +43,3 @@ extern void handle_pragma_weak PROTO((enum pragma_state, char *, char *));
 
 /* Handle a C style pragma */
 extern void handle_pragma_token PROTO((char *, tree));
-#endif /* HANDLE_SYSV_PRAGMA */
