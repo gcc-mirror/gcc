@@ -122,17 +122,22 @@ build_sources() {
            -r ${BRANCH} gcc || \
            error "Could not check out release sources"
     for x in `find ${SOURCE_DIRECTORY} -name ChangeLog`; do
-      cat - ${x} > ${x}.new <<EOF
+      # Update this ChangeLog file only if it does not yet contain the
+      # entry we are going to add.  (This is a safety net for repeated
+      # runs of this script for the same release.)
+      if ! grep "GCC ${RELEASE} released." ${x} > /dev/null ; then       
+        cat - ${x} > ${x}.new <<EOF
 ${LONG_DATE}  Release Manager
 
-	* GCC ${RELEASE} Released.
+	* GCC ${RELEASE} released.
 
 EOF
-      mv ${x}.new ${x} || \
-        error "Could not update ${x}"
-      (changedir `dirname ${x}` && \
-        ${CVS} ci -m 'Mark ChangeLog' `basename ${x}`) || \
-        error "Could not commit ${x}"
+        mv ${x}.new ${x} || \
+            error "Could not update ${x}"
+        (changedir `dirname ${x}` && \
+            ${CVS} ci -m 'Mark ChangeLog' `basename ${x}`) || \
+            error "Could not commit ${x}"
+      fi
     done
 
     # Update `gcc/version.c'.
