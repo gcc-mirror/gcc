@@ -4315,11 +4315,20 @@ do {									\
   fprintf (STREAM, "\n");						\
 } while (0)
 
-/* Likewise for 64 bit, `char' and `short' constants.  */
+/* Likewise for 64 bit, `char' and `short' constants.  
+
+   FIXME: operand_subword can't handle some complex constant expressions
+   that output_addr_const can (for example it does not call
+   simplify_subtraction).  Since GAS can handle dword, even for mipsII, 
+   rely on that to avoid operand_subword for most of the cases where this
+   matters.  Try gcc.c-torture/compile/930326-1.c with -mips2 -mlong64,
+   or the same case with the type of 'i' changed to long long.
+
+*/
 
 #define ASM_OUTPUT_DOUBLE_INT(STREAM,VALUE)				\
 do {									\
-  if (TARGET_64BIT)							\
+  if (TARGET_64BIT || TARGET_GAS)					\
     {									\
       fprintf (STREAM, "\t.dword\t");					\
       if (HOST_BITS_PER_WIDE_INT < 64 || GET_CODE (VALUE) != CONST_INT)	\
