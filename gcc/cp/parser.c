@@ -6349,6 +6349,8 @@ cp_parser_declaration (cp_parser* parser)
   if (token1.type != CPP_EOF)
     token2 = *cp_lexer_peek_nth_token (parser->lexer, 2);
 
+  c_lex_string_translate = true;
+
   /* If the next token is `extern' and the following token is a string
      literal, then we have a linkage specification.  */
   if (token1.keyword == RID_EXTERN
@@ -6398,8 +6400,6 @@ cp_parser_declaration (cp_parser* parser)
   else
     /* Try to parse a block-declaration, or a function-definition.  */
     cp_parser_block_declaration (parser, /*statement_p=*/false);
-
-  c_lex_string_translate = true;
 }
 
 /* Parse a block-declaration.
