@@ -34,3 +34,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    call-saved-regs in a function calling setjmp */
 
 #define NON_SAVING_SETJMP (current_function_calls_setjmp)
+
+/* at least with estdio there's no _cleanup() but we have atexit() */
+
+#define HAVE_ATEXIT
