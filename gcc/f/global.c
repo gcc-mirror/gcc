@@ -124,7 +124,7 @@ ffeglobal_new_ (ffename n)
    ffeglobal_init_1();	*/
 
 void
-ffeglobal_init_1 ()
+ffeglobal_init_1 (void)
 {
 #if FFEGLOBAL_ENABLED
   if (ffeglobal_filewide_ != NULL)
@@ -1584,6 +1584,6 @@ ffeglobal_size_common (ffesymbol s, ffetargetOffset size)
 
 #endif
 void
-ffeglobal_terminate_1 ()
+ffeglobal_terminate_1 (void)
 {
 }

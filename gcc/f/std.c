@@ -555,7 +555,7 @@ ffestd_stmt_new_ (ffestdStmtId_ id)
    ffestd_stmt_pass_();	 */
 
 static void
-ffestd_stmt_pass_ ()
+ffestd_stmt_pass_ (void)
 {
   ffestdStmt_ stmt;
   ffestdExprItem_ expr;		/* For traversing lists. */
@@ -1102,7 +1102,7 @@ ffestd_subr_labels_ (bool unexpected)
    ffestd_subr_vxt_();	*/
 
 static void
-ffestd_subr_vxt_ ()
+ffestd_subr_vxt_ (void)
 {
   ffebad_start (FFEBAD_VXT_UNSUPPORTED);
   ffebad_here (0, ffelex_token_where_line (ffesta_tokens[0]),
@@ -1121,7 +1121,7 @@ ffestd_subr_vxt_ ()
    handling them as a single block rather than one statement at a time).  */
 
 void
-ffestd_begin_uses ()
+ffestd_begin_uses (void)
 {
 }
 
@@ -1177,7 +1177,7 @@ ffestd_end_R807 (bool ok UNUSED)
    ffestd_exec_begin();	 */
 
 void
-ffestd_exec_begin ()
+ffestd_exec_begin (void)
 {
   ffecom_exec_transition ();
 
@@ -1209,7 +1209,7 @@ ffestd_exec_begin ()
    ffestd_exec_end();  */
 
 void
-ffestd_exec_end ()
+ffestd_exec_end (void)
 {
   location_t old_loc = input_location;
 
@@ -1251,7 +1251,7 @@ ffestd_exec_end ()
    ffestd_init_3();  */
 
 void
-ffestd_init_3 ()
+ffestd_init_3 (void)
 {
   ffestd_stmt_list_.first = (ffestdStmt_) &ffestd_stmt_list_.first;
   ffestd_stmt_list_.last = (ffestdStmt_) &ffestd_stmt_list_.first;
@@ -1312,7 +1312,7 @@ ffestd_labeldef_useless (ffelab label UNUSED)
    Verify that SAVE is valid here, and flag everything as SAVEd.  */
 
 void
-ffestd_R522 ()
+ffestd_R522 (void)
 {
   ffestd_check_simple_ ();
 }
@@ -1324,7 +1324,7 @@ ffestd_R522 ()
    Verify that SAVE is valid here, and begin accepting items in the list.  */
 
 void
-ffestd_R522start ()
+ffestd_R522start (void)
 {
   ffestd_check_start_ ();
 }
@@ -1360,7 +1360,7 @@ ffestd_R522item_cblock (ffelexToken name UNUSED)
    Just wrap up any local activities.  */
 
 void
-ffestd_R522finish ()
+ffestd_R522finish (void)
 {
   ffestd_check_finish_ ();
 }
@@ -1396,7 +1396,7 @@ ffestd_R524_item (ffelexToken name UNUSED, ffesttDimList dims UNUSED)
    Just wrap up any local activities.  */
 
 void
-ffestd_R524_finish ()
+ffestd_R524_finish (void)
 {
   ffestd_check_finish_ ();
 }
@@ -1408,7 +1408,7 @@ ffestd_R524_finish ()
    Verify that PARAMETER is valid here, and begin accepting items in the list.	*/
 
 void
-ffestd_R537_start ()
+ffestd_R537_start (void)
 {
   ffestd_check_start_ ();
 }
@@ -1433,7 +1433,7 @@ ffestd_R537_item (ffebld dest UNUSED, ffebld source UNUSED)
    Just wrap up any local activities.  */
 
 void
-ffestd_R537_finish ()
+ffestd_R537_finish (void)
 {
   ffestd_check_finish_ ();
 }
@@ -1445,7 +1445,7 @@ ffestd_R537_finish ()
    Verify that the IMPLICIT NONE statement is ok here and implement.  */
 
 void
-ffestd_R539 ()
+ffestd_R539 (void)
 {
   ffestd_check_simple_ ();
 }
@@ -1457,7 +1457,7 @@ ffestd_R539 ()
    Verify that the IMPLICIT statement is ok here and implement.	 */
 
 void
-ffestd_R539start ()
+ffestd_R539start (void)
 {
   ffestd_check_start_ ();
 }
@@ -1483,7 +1483,7 @@ ffestd_R539item (ffestpType type UNUSED, ffebld kind UNUSED,
    Finish up any local activities.  */
 
 void
-ffestd_R539finish ()
+ffestd_R539finish (void)
 {
   ffestd_check_finish_ ();
 }
@@ -1495,7 +1495,7 @@ ffestd_R539finish ()
    Verify that NAMELIST is valid here, and begin accepting items in the list.  */
 
 void
-ffestd_R542_start ()
+ffestd_R542_start (void)
 {
   ffestd_check_start_ ();
 }
@@ -1531,7 +1531,7 @@ ffestd_R542_item_nitem (ffelexToken name UNUSED)
    Just wrap up any local activities.  */
 
 void
-ffestd_R542_finish ()
+ffestd_R542_finish (void)
 {
   ffestd_check_finish_ ();
 }
@@ -1543,7 +1543,7 @@ ffestd_R542_finish ()
    Verify that COMMON is valid here, and begin accepting items in the list.  */
 
 void
-ffestd_R547_start ()
+ffestd_R547_start (void)
 {
   ffestd_check_start_ ();
 }
@@ -1580,7 +1580,7 @@ ffestd_R547_item_cblock (ffelexToken name UNUSED)
    Just wrap up any local activities.  */
 
 void
-ffestd_R547_finish ()
+ffestd_R547_finish (void)
 {
   ffestd_check_finish_ ();
 }
@@ -2096,7 +2096,7 @@ ffestd_R843 (ffebld expr)
    Make sure an OPEN is valid in the current context, and implement it.	 */
 
 void
-ffestd_R904 ()
+ffestd_R904 (void)
 {
   ffestdStmt_ stmt;
 
@@ -2151,7 +2151,7 @@ ffestd_R904 ()
    Make sure a CLOSE is valid in the current context, and implement it.	 */
 
 void
-ffestd_R907 ()
+ffestd_R907 (void)
 {
   ffestdStmt_ stmt;
 
@@ -2246,7 +2246,7 @@ ffestd_R909_item (ffebld expr, ffelexToken expr_token)
    Just wrap up any local activities.  */
 
 void
-ffestd_R909_finish ()
+ffestd_R909_finish (void)
 {
   ffestd_check_finish_ ();
 }
@@ -2323,7 +2323,7 @@ ffestd_R910_item (ffebld expr, ffelexToken expr_token)
    Just wrap up any local activities.  */
 
 void
-ffestd_R910_finish ()
+ffestd_R910_finish (void)
 {
   ffestd_check_finish_ ();
 }
@@ -2383,7 +2383,7 @@ ffestd_R911_item (ffebld expr, ffelexToken expr_token)
    Just wrap up any local activities.  */
 
 void
-ffestd_R911_finish ()
+ffestd_R911_finish (void)
 {
   ffestd_check_finish_ ();
 }
@@ -2395,7 +2395,7 @@ ffestd_R911_finish ()
    Make sure a BACKSPACE is valid in the current context, and implement it.  */
 
 void
-ffestd_R919 ()
+ffestd_R919 (void)
 {
   ffestdStmt_ stmt;
 
@@ -2416,7 +2416,7 @@ ffestd_R919 ()
    Make sure a ENDFILE is valid in the current context, and implement it.  */
 
 void
-ffestd_R920 ()
+ffestd_R920 (void)
 {
   ffestdStmt_ stmt;
 
@@ -2437,7 +2437,7 @@ ffestd_R920 ()
    Make sure a REWIND is valid in the current context, and implement it.  */
 
 void
-ffestd_R921 ()
+ffestd_R921 (void)
 {
   ffestdStmt_ stmt;
 
@@ -2506,7 +2506,7 @@ ffestd_R923A (bool by_file)
    list.  */
 
 void
-ffestd_R923B_start ()
+ffestd_R923B_start (void)
 {
   ffestdStmt_ stmt;
 
@@ -2551,7 +2551,7 @@ ffestd_R923B_item (ffebld expr)
    Just wrap up any local activities.  */
 
 void
-ffestd_R923B_finish ()
+ffestd_R923B_finish (void)
 {
   ffestd_check_finish_ ();
 }
@@ -3168,7 +3168,7 @@ ffestd_R1112 (bool ok UNUSED)
    Verify that EXTERNAL is valid here, and begin accepting items in the list.  */
 
 void
-ffestd_R1207_start ()
+ffestd_R1207_start (void)
 {
   ffestd_check_start_ ();
 }
@@ -3193,7 +3193,7 @@ ffestd_R1207_item (ffelexToken name)
    Just wrap up any local activities.  */
 
 void
-ffestd_R1207_finish ()
+ffestd_R1207_finish (void)
 {
   ffestd_check_finish_ ();
 }
@@ -3205,7 +3205,7 @@ ffestd_R1207_finish ()
    Verify that INTRINSIC is valid here, and begin accepting items in the list.	*/
 
 void
-ffestd_R1208_start ()
+ffestd_R1208_start (void)
 {
   ffestd_check_start_ ();
 }
@@ -3230,7 +3230,7 @@ ffestd_R1208_item (ffelexToken name)
    Just wrap up any local activities.  */
 
 void
-ffestd_R1208_finish ()
+ffestd_R1208_finish (void)
 {
   ffestd_check_finish_ ();
 }
@@ -3495,7 +3495,7 @@ ffestd_S3P4 (ffebld filename)
    Verify that VOLATILE is valid here, and begin accepting items in the list.  */
 
 void
-ffestd_V014_start ()
+ffestd_V014_start (void)
 {
   ffestd_check_start_ ();
 }
@@ -3531,7 +3531,7 @@ ffestd_V014_item_cblock (ffelexToken name UNUSED)
    Just wrap up any local activities.  */
 
 void
-ffestd_V014_finish ()
+ffestd_V014_finish (void)
 {
   ffestd_check_finish_ ();
 }
@@ -3569,7 +3569,7 @@ ffestd_V020_item (ffebld expr UNUSED)
    Just wrap up any local activities.  */
 
 void
-ffestd_V020_finish ()
+ffestd_V020_finish (void)
 {
   ffestd_check_finish_ ();
 }
@@ -3581,7 +3581,7 @@ ffestd_V020_finish ()
    Verify that PARAMETER is valid here, and begin accepting items in the list.	*/
 
 void
-ffestd_V027_start ()
+ffestd_V027_start (void)
 {
   ffestd_check_start_ ();
   ffestd_subr_vxt_ ();
@@ -3607,7 +3607,7 @@ ffestd_V027_item (ffelexToken dest_token UNUSED, ffebld source UNUSED)
    Just wrap up any local activities.  */
 
 void
-ffestd_V027_finish ()
+ffestd_V027_finish (void)
 {
   ffestd_check_finish_ ();
 }
@@ -3615,7 +3615,7 @@ ffestd_V027_finish ()
 /* Any executable statement.  */
 
 void
-ffestd_any ()
+ffestd_any (void)
 {
   ffestdStmt_ stmt;
 

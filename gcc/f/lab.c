@@ -94,7 +94,7 @@ ffelab_find (ffelabValue v)
    Kill all the labels on the list.  */
 
 void
-ffelab_finish ()
+ffelab_finish (void)
 {
   ffelab l;
   ffelab pl;
@@ -115,7 +115,7 @@ ffelab_finish ()
    unit is going to be processed.  */
 
 void
-ffelab_init_3 ()
+ffelab_init_3 (void)
 {
   ffelab_list_ = NULL;
   ffelab_num_news_ = 0;

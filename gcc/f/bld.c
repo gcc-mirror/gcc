@@ -2380,7 +2380,7 @@ ffebld_constantarray_put (ffebldConstantArray array, ffeinfoBasictype bt,
    ffebld_init_0();  */
 
 void
-ffebld_init_0 ()
+ffebld_init_0 (void)
 {
   assert (FFEBLD_op == ARRAY_SIZE (ffebld_op_string_));
   assert (FFEBLD_op == ARRAY_SIZE (ffebld_arity_op_));
@@ -2391,7 +2391,7 @@ ffebld_init_0 ()
    ffebld_init_1();  */
 
 void
-ffebld_init_1 ()
+ffebld_init_1 (void)
 {
 #if FFEBLD_whereconstCURRENT_ == FFEBLD_whereconstFILE_
   int i;
@@ -2452,7 +2452,7 @@ ffebld_init_1 ()
    ffebld_init_2();  */
 
 void
-ffebld_init_2 ()
+ffebld_init_2 (void)
 {
 #if FFEBLD_whereconstCURRENT_ == FFEBLD_whereconstPROGUNIT_
   int i;
@@ -2726,7 +2726,7 @@ ffebld_new_two (ffebldOp o, ffebld left, ffebld right)
    ffebld_pool_pop();  */
 
 void
-ffebld_pool_pop ()
+ffebld_pool_pop (void)
 {
   ffebldPoolstack_ ps;
 

@@ -1,5 +1,6 @@
 /* intdoc.c
-   Copyright (C) 1997, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1997, 2000, 2001, 2003
+   Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
@@ -237,13 +238,13 @@ dumpif (ffeintrinFamily fam)
 }
 
 static void
-dumpendif ()
+dumpendif (void)
 {
   in_ifset = 2;
 }
 
 static void
-dumpclearif ()
+dumpclearif (void)
 {
   if ((in_ifset == 2)
       || (latest_family != FFEINTRIN_familyNONE))
@@ -253,7 +254,7 @@ dumpclearif ()
 }
 
 static void
-dumpem ()
+dumpem (void)
 {
   int i;
 

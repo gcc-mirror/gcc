@@ -1,5 +1,5 @@
 /* malloc.c -- Implementation File (module.c template V1.0)
-   Copyright (C) 1995 Free Software Foundation, Inc.
+   Copyright (C) 1995, 2003 Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
@@ -136,7 +136,7 @@ malloc_verify_area_ (mallocPool pool UNUSED, mallocArea_ a UNUSED)
    Call malloc_init before you do anything else.  */
 
 void
-malloc_init ()
+malloc_init (void)
 {
   if (malloc_reserve_ != NULL)
     return;

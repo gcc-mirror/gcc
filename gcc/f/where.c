@@ -1,5 +1,5 @@
 /* where.c -- Implementation File (module.c template V1.0)
-   Copyright (C) 1995, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1995, 2002, 2003 Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
@@ -161,7 +161,7 @@ ffewhere_file_set (ffewhereFile wf, bool have_num, ffewhereLineNumber ln)
 /* Do initializations.  */
 
 void
-ffewhere_init_1 ()
+ffewhere_init_1 (void)
 {
   ffewhere_root_line_.first = ffewhere_root_line_.last
   = (ffewhereLine) &ffewhere_root_line_.first;

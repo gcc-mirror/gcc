@@ -1,5 +1,5 @@
 /* implic.c -- Implementation File (module.c template V1.0)
-   Copyright (C) 1995, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1995, 2002, 2003 Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
@@ -220,7 +220,7 @@ ffeimplic_establish_symbol (ffesymbol s)
    Allows for holes in the sequence of letters (i.e. EBCDIC).  */
 
 void
-ffeimplic_init_2 ()
+ffeimplic_init_2 (void)
 {
   ffeimplic_ imp;
   char c;
@@ -312,7 +312,7 @@ ffeimplic_init_2 ()
    Assigns null type information to all initial letters.  */
 
 void
-ffeimplic_none ()
+ffeimplic_none (void)
 {
   ffeimplic_ imp;
 
@@ -378,6 +378,6 @@ ffeimplic_peek_symbol_type (ffesymbol s, const char *name)
    Kills info object for each entry in table.  */
 
 void
-ffeimplic_terminate_2 ()
+ffeimplic_terminate_2 (void)
 {
 }

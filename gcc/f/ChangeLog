@@ -1,3 +1,36 @@
+2003-07-06  Andreas Jaeger  <aj@suse.de>
+
+	* bad.c: Convert () to (void) in function definitions.
+	* bld.c: Likewise.
+	* data.c: Likewise.
+	* equiv.c: Likewise.
+	* expr.c: Likewise.
+	* global.c: Likewise.
+	* implic.c: Likewise.
+	* info.c: Likewise.
+	* intdoc.c: Likewise.
+	* intrin.c: Likewise.
+	* lab.c: Likewise.
+	* lex.c: Likewise.
+	* malloc.c: Likewise.
+	* src.c: Likewise.
+	* st.c: Likewise.
+	* sta.c: Likewise.
+	* stb.c: Likewise.
+	* stc.c: Likewise.
+	* std.c: Likewise.
+	* ste.c: Likewise.
+	* storag.c: Likewise.
+	* stt.c: Likewise.
+	* stw.c: Likewise.
+	* symbol.c: Likewise.
+	* top.c: Likewise.
+	* where.c: Likewise.
+
+	* com.c: Convert prototypes to ISO C90.
+	* com.h: Likewise.
+	* g77spec.c: Likewise.
+
 Sun Jul  6 20:01:29 2003  Neil Booth  <neil@daikokuya.co.uk>
 
 	* top.c (ffe_handle_option): Don't handle filenames.

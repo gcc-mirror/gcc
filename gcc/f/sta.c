@@ -183,7 +183,7 @@ ffesta_add_possible_ (ffelexHandler fn, bool exec, bool named)
    invocation of ffestc_exec_transition.  */
 
 static bool
-ffesta_inhibited_exec_transition_ ()
+ffesta_inhibited_exec_transition_ (void)
 {
   bool result;
 
@@ -208,7 +208,7 @@ ffesta_inhibited_exec_transition_ ()
    Clears the lists of executable and nonexecutable statements.	 */
 
 static void
-ffesta_reset_possibles_ ()
+ffesta_reset_possibles_ (void)
 {
   ffesta_num_possibles_ = 0;
 
@@ -1123,7 +1123,7 @@ ffesta_send_two_ (ffelexToken t)
    yet been set.  */
 
 void
-ffesta_confirmed ()
+ffesta_confirmed (void)
 {
   if (ffesta_inhibit_confirmation_)
     return;
@@ -1147,7 +1147,7 @@ ffesta_confirmed ()
       processing a statement (make and destroy pools, et cetera).  */
 
 void
-ffesta_eof ()
+ffesta_eof (void)
 {
   ffesta_tokens[0] = ffelex_token_new_eof ();
 
@@ -1314,7 +1314,7 @@ ffesta_first (ffelexToken t)
    this list.  Initializes the executable and nonexecutable lists.  */
 
 void
-ffesta_init_0 ()
+ffesta_init_0 (void)
 {
   ffestaPossible_ ptr;
   int i;
@@ -1339,7 +1339,7 @@ ffesta_init_0 ()
    ffesta_init_3();  */
 
 void
-ffesta_init_3 ()
+ffesta_init_3 (void)
 {
   ffesta_output_pool = NULL;	/* May be doing this just before reaching */
   ffesta_scratch_pool = NULL;	/* ffesta_zero or ffesta_two. */
@@ -1376,7 +1376,7 @@ ffesta_init_3 ()
    the ffestb call would be completely dropped without this mechanism.	*/
 
 bool
-ffesta_is_inhibited ()
+ffesta_is_inhibited (void)
 {
   assert (ffesta_confirmed_current_ || ffesta_inhibit_confirmation_);
   return ffesta_is_inhibited_;
@@ -1525,7 +1525,7 @@ ffesta_ffebad_2t (ffebad errnum, ffelexToken t1, ffelexToken t2)
 }
 
 ffestaPooldisp
-ffesta_outpooldisp ()
+ffesta_outpooldisp (void)
 {
   return ffesta_outpooldisp_;
 }
@@ -1540,7 +1540,7 @@ ffesta_set_outpooldisp (ffestaPooldisp d)
    user with a diagnostic if we're not inhibited.  */
 
 void
-ffesta_shutdown ()
+ffesta_shutdown (void)
 {
   if (ffesta_is_inhibited_)
     ffesta_current_shutdown_ = TRUE;

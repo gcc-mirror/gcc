@@ -815,7 +815,7 @@ ffestb_subr_ambig_nope_ (ffelexToken t)
    in _ents_ (perform housekeeping tasks).  */
 
 static void
-ffestb_subr_ambig_to_ents_ ()
+ffestb_subr_ambig_to_ents_ (void)
 {
   ffelexToken nt;
 
@@ -9460,7 +9460,7 @@ ffestb_subr_kill_easy_ (ffestpInquireIx max)
 
 #if !FFESTB_KILL_EASY_
 static void
-ffestb_subr_kill_accept_ ()
+ffestb_subr_kill_accept_ (void)
 {
   ffestpAcceptIx ix;
 
@@ -9486,7 +9486,7 @@ ffestb_subr_kill_accept_ ()
 
 #if !FFESTB_KILL_EASY_
 static void
-ffestb_subr_kill_beru_ ()
+ffestb_subr_kill_beru_ (void)
 {
   ffestpBeruIx ix;
 
@@ -9511,7 +9511,7 @@ ffestb_subr_kill_beru_ ()
 
 #if !FFESTB_KILL_EASY_
 static void
-ffestb_subr_kill_close_ ()
+ffestb_subr_kill_close_ (void)
 {
   ffestpCloseIx ix;
 
@@ -9536,7 +9536,7 @@ ffestb_subr_kill_close_ ()
 
 #if !FFESTB_KILL_EASY_
 static void
-ffestb_subr_kill_delete_ ()
+ffestb_subr_kill_delete_ (void)
 {
   ffestpDeleteIx ix;
 
@@ -9561,7 +9561,7 @@ ffestb_subr_kill_delete_ ()
 
 #if !FFESTB_KILL_EASY_
 static void
-ffestb_subr_kill_inquire_ ()
+ffestb_subr_kill_inquire_ (void)
 {
   ffestpInquireIx ix;
 
@@ -9586,7 +9586,7 @@ ffestb_subr_kill_inquire_ ()
 
 #if !FFESTB_KILL_EASY_
 static void
-ffestb_subr_kill_open_ ()
+ffestb_subr_kill_open_ (void)
 {
   ffestpOpenIx ix;
 
@@ -9611,7 +9611,7 @@ ffestb_subr_kill_open_ ()
 
 #if !FFESTB_KILL_EASY_
 static void
-ffestb_subr_kill_print_ ()
+ffestb_subr_kill_print_ (void)
 {
   ffestpPrintIx ix;
 
@@ -9636,7 +9636,7 @@ ffestb_subr_kill_print_ ()
 
 #if !FFESTB_KILL_EASY_
 static void
-ffestb_subr_kill_read_ ()
+ffestb_subr_kill_read_ (void)
 {
   ffestpReadIx ix;
 
@@ -9661,7 +9661,7 @@ ffestb_subr_kill_read_ ()
 
 #if !FFESTB_KILL_EASY_
 static void
-ffestb_subr_kill_rewrite_ ()
+ffestb_subr_kill_rewrite_ (void)
 {
   ffestpRewriteIx ix;
 
@@ -9686,7 +9686,7 @@ ffestb_subr_kill_rewrite_ ()
 
 #if !FFESTB_KILL_EASY_
 static void
-ffestb_subr_kill_type_ ()
+ffestb_subr_kill_type_ (void)
 {
   ffestpTypeIx ix;
 
@@ -9711,7 +9711,7 @@ ffestb_subr_kill_type_ ()
 
 #if !FFESTB_KILL_EASY_
 static void
-ffestb_subr_kill_write_ ()
+ffestb_subr_kill_write_ (void)
 {
   ffestpWriteIx ix;
 

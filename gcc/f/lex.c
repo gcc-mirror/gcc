@@ -834,7 +834,7 @@ ffelex_file_push_ (int old_lineno, const char *filename)
    typical fixed-form cases.  */
 
 static void
-ffelex_prepare_eos_ ()
+ffelex_prepare_eos_ (void)
 {
   if (ffelex_token_->type != FFELEX_typeNONE)
     {
@@ -883,7 +883,7 @@ ffelex_prepare_eos_ ()
 }
 
 static void
-ffelex_finish_statement_ ()
+ffelex_finish_statement_ (void)
 {
   if ((ffelex_number_of_tokens_ == 0)
       && (ffelex_token_->type == FFELEX_typeNONE))
@@ -1398,7 +1398,7 @@ ffelex_image_char_ (int c, ffewhereColumnNumber column)
 }
 
 static void
-ffelex_include_ ()
+ffelex_include_ (void)
 {
   ffewhereFile include_wherefile = ffelex_include_wherefile_;
   FILE *include_file = ffelex_include_file_;
@@ -1508,7 +1508,7 @@ ffelex_is_free_nonc_ctx_contin_ (ffewhereColumnNumber col)
 }
 
 static void
-ffelex_next_line_ ()
+ffelex_next_line_ (void)
 {
   ffelex_linecount_current_ = ffelex_linecount_next_;
   ++ffelex_linecount_next_;
@@ -1516,7 +1516,7 @@ ffelex_next_line_ ()
 }
 
 static void
-ffelex_send_token_ ()
+ffelex_send_token_ (void)
 {
   ++ffelex_number_of_tokens_;
 
@@ -1590,7 +1590,7 @@ ffelex_swallow_tokens_ (ffelexToken t)
 }
 
 static ffelexToken
-ffelex_token_new_ ()
+ffelex_token_new_ (void)
 {
   ffelexToken t;
 
@@ -1688,7 +1688,7 @@ ffelex_display_token (ffelexToken t)
    return FALSE.  */
 
 bool
-ffelex_expecting_character ()
+ffelex_expecting_character (void)
 {
   return (ffelex_raw_mode_ != 0);
 }
@@ -3825,7 +3825,7 @@ ffelex_hash_kludge (FILE *finput)
 }
 
 void
-ffelex_init_1 ()
+ffelex_init_1 (void)
 {
   unsigned int i;
 
@@ -3906,7 +3906,7 @@ ffelex_init_1 ()
    Must be called while lexer is active, obviously.  */
 
 bool
-ffelex_is_names_expected ()
+ffelex_is_names_expected (void)
 {
   return ffelex_names_;
 }
@@ -3915,7 +3915,7 @@ ffelex_is_names_expected ()
    ffelex_linecount_current_.  */
 
 char *
-ffelex_line ()
+ffelex_line (void)
 {
   return ffelex_card_image_;
 }
@@ -3927,7 +3927,7 @@ ffelex_line ()
    Must be called while lexer is active, obviously.  */
 
 ffewhereColumnNumber
-ffelex_line_length ()
+ffelex_line_length (void)
 {
   return ffelex_card_length_;
 }
@@ -3936,7 +3936,7 @@ ffelex_line_length ()
    is current.  */
 
 ffewhereLineNumber
-ffelex_line_number ()
+ffelex_line_number (void)
 {
   return ffelex_linecount_current_;
 }
@@ -4371,7 +4371,7 @@ ffelex_token_new_character (const char *s, ffewhereLine l, ffewhereColumn c)
 /* Make a new EOF token right after end of file.  */
 
 ffelexToken
-ffelex_token_new_eof ()
+ffelex_token_new_eof (void)
 {
   ffelexToken t;
 

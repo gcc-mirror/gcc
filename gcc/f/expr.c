@@ -6319,7 +6319,7 @@ ffeexpr_convert_to_sym (ffebld source, ffelexToken source_token,
 /* Initializes the module.  */
 
 void
-ffeexpr_init_2 ()
+ffeexpr_init_2 (void)
 {
   ffeexpr_stack_ = NULL;
   ffeexpr_level_ = 0;
@@ -8484,7 +8484,7 @@ ffeexpr_expr_kill_ (ffeexprExpr_ e)
    Allocates and initializes a new expression object, returns it.  */
 
 static ffeexprExpr_
-ffeexpr_expr_new_ ()
+ffeexpr_expr_new_ (void)
 {
   ffeexprExpr_ e;
 
@@ -8792,7 +8792,7 @@ again:
    requisite type-assignment.  */
 
 static void
-ffeexpr_reduce_ ()
+ffeexpr_reduce_ (void)
 {
   ffeexprExpr_ operand;		/* This is B in -B or A+B. */
   ffeexprExpr_ left_operand;	/* When operator is binary, this is A in A+B. */
@@ -18534,7 +18534,7 @@ ffeexpr_token_anything_ (ffelexToken ft UNUSED, ffebld expr UNUSED,
 /* Terminate module.  */
 
 void
-ffeexpr_terminate_2 ()
+ffeexpr_terminate_2 (void)
 {
   assert (ffeexpr_stack_ == NULL);
   assert (ffeexpr_level_ == 0);

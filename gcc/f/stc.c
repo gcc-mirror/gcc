@@ -599,7 +599,7 @@ ffestc_establish_impletter_ (ffelexToken first, ffelexToken last)
    ffestc_init_3();  */
 
 void
-ffestc_init_3 ()
+ffestc_init_3 (void)
 {
   ffestv_save_state_ = FFESTV_savestateNONE;
   ffestc_entry_num_ = 0;
@@ -614,7 +614,7 @@ ffestc_init_3 ()
    defs, and statement function defs.  */
 
 void
-ffestc_init_4 ()
+ffestc_init_4 (void)
 {
   ffestc_saved_entry_num_ = ffestc_entry_num_;
   ffestc_entry_num_ = 0;
@@ -683,7 +683,7 @@ ffestc_kindtype_star_ (ffeinfoBasictype bt, ffetargetCharacterSize val)
 /* Define label as usable for anything without complaint.  */
 
 static void
-ffestc_labeldef_any_ ()
+ffestc_labeldef_any_ (void)
 {
   if ((ffesta_label_token == NULL)
       || !ffestc_labeldef_begin_ ())
@@ -700,7 +700,7 @@ ffestc_labeldef_any_ ()
    ffestc_labeldef_begin_();  */
 
 static bool
-ffestc_labeldef_begin_ ()
+ffestc_labeldef_begin_ (void)
 {
   ffelabValue label_value;
   ffelab label;
@@ -757,7 +757,7 @@ ffestc_labeldef_begin_ ()
    ffestc_labeldef_branch_begin_();  */
 
 static void
-ffestc_labeldef_branch_begin_ ()
+ffestc_labeldef_branch_begin_ (void)
 {
   if ((ffesta_label_token == NULL)
       || (ffestc_shriek_after1_ != NULL)
@@ -841,7 +841,7 @@ ffestc_labeldef_branch_begin_ ()
    which case they must issue a diagnostic).  */
 
 static void
-ffestc_labeldef_branch_end_ ()
+ffestc_labeldef_branch_end_ (void)
 {
   if (ffesta_label_token == NULL)
     return;
@@ -865,7 +865,7 @@ ffestc_labeldef_branch_end_ ()
    ffestc_labeldef_endif_();  */
 
 static void
-ffestc_labeldef_endif_ ()
+ffestc_labeldef_endif_ (void)
 {
   if ((ffesta_label_token == NULL)
       || (ffestc_shriek_after1_ != NULL)
@@ -954,7 +954,7 @@ ffestc_labeldef_endif_ ()
    ffestc_labeldef_format_();  */
 
 static void
-ffestc_labeldef_format_ ()
+ffestc_labeldef_format_ (void)
 {
   if ((ffesta_label_token == NULL)
       || (ffestc_shriek_after1_ != NULL))
@@ -1037,7 +1037,7 @@ ffestc_labeldef_format_ ()
    ffestc_labeldef_invalid_();	*/
 
 static void
-ffestc_labeldef_invalid_ ()
+ffestc_labeldef_invalid_ (void)
 {
   if ((ffesta_label_token == NULL)
       || (ffestc_shriek_after1_ != NULL)
@@ -1062,7 +1062,7 @@ ffestc_labeldef_invalid_ ()
    be in the "then" part of a logical IF, such as a block-IF statement.  */
 
 static void
-ffestc_labeldef_notloop_ ()
+ffestc_labeldef_notloop_ (void)
 {
   if (ffesta_label_token == NULL)
     return;
@@ -1156,7 +1156,7 @@ ffestc_labeldef_notloop_ ()
    loop-ending label.  */
 
 static void
-ffestc_labeldef_notloop_begin_ ()
+ffestc_labeldef_notloop_begin_ (void)
 {
   if ((ffesta_label_token == NULL)
       || (ffestc_shriek_after1_ != NULL)
@@ -1244,7 +1244,7 @@ ffestc_labeldef_notloop_begin_ ()
    ffestc_labeldef_useless_();	*/
 
 static void
-ffestc_labeldef_useless_ ()
+ffestc_labeldef_useless_ (void)
 {
   if ((ffesta_label_token == NULL)
       || (ffestc_shriek_after1_ != NULL)
@@ -1750,7 +1750,7 @@ ffestc_labelref_is_loopend_ (ffelexToken label_token, ffelab *x_label)
        return;	*/
 
 static ffestcOrder_
-ffestc_order_actiondo_ ()
+ffestc_order_actiondo_ (void)
 {
   recurse:
 
@@ -1795,7 +1795,7 @@ ffestc_order_actiondo_ ()
        return;	*/
 
 static ffestcOrder_
-ffestc_order_actionif_ ()
+ffestc_order_actionif_ (void)
 {
   bool update;
 
@@ -1879,7 +1879,7 @@ recurse:
        return;	*/
 
 static ffestcOrder_
-ffestc_order_actionwhere_ ()
+ffestc_order_actionwhere_ (void)
 {
   bool update;
 
@@ -1961,7 +1961,7 @@ recurse:
    doesn't produce any diagnostics.  */
 
 static void
-ffestc_order_any_ ()
+ffestc_order_any_ (void)
 {
   bool update;
 
@@ -2047,7 +2047,7 @@ recurse:
    now.	 */
 
 static void
-ffestc_order_bad_ ()
+ffestc_order_bad_ (void)
 {
   if (ffewhere_line_is_unknown (ffestw_line (ffestw_stack_top ())))
     {
@@ -2073,7 +2073,7 @@ ffestc_order_bad_ ()
        return;	*/
 
 static ffestcOrder_
-ffestc_order_blockdata_ ()
+ffestc_order_blockdata_ (void)
 {
   recurse:
 
@@ -2111,7 +2111,7 @@ ffestc_order_blockdata_ ()
        return;	*/
 
 static ffestcOrder_
-ffestc_order_blockspec_ ()
+ffestc_order_blockspec_ (void)
 {
   recurse:
 
@@ -2186,7 +2186,7 @@ ffestc_order_blockspec_ ()
        return;	*/
 
 static ffestcOrder_
-ffestc_order_data_ ()
+ffestc_order_data_ (void)
 {
   recurse:
 
@@ -2263,7 +2263,7 @@ ffestc_order_data_ ()
        return;	*/
 
 static ffestcOrder_
-ffestc_order_data77_ ()
+ffestc_order_data77_ (void)
 {
   recurse:
 
@@ -2341,7 +2341,7 @@ ffestc_order_data77_ ()
        return;	*/
 
 static ffestcOrder_
-ffestc_order_do_ ()
+ffestc_order_do_ (void)
 {
   switch (ffestw_state (ffestw_stack_top ()))
     {
@@ -2369,7 +2369,7 @@ ffestc_order_do_ ()
        return;	*/
 
 static ffestcOrder_
-ffestc_order_entry_ ()
+ffestc_order_entry_ (void)
 {
   recurse:
 
@@ -2434,7 +2434,7 @@ ffestc_order_entry_ ()
        return;	*/
 
 static ffestcOrder_
-ffestc_order_exec_ ()
+ffestc_order_exec_ (void)
 {
   bool update;
 
@@ -2519,7 +2519,7 @@ recurse:
        return;	*/
 
 static ffestcOrder_
-ffestc_order_format_ ()
+ffestc_order_format_ (void)
 {
   recurse:
 
@@ -2587,7 +2587,7 @@ ffestc_order_format_ ()
        return;	*/
 
 static ffestcOrder_
-ffestc_order_function_ ()
+ffestc_order_function_ (void)
 {
   recurse:
 
@@ -2625,7 +2625,7 @@ ffestc_order_function_ ()
        return;	*/
 
 static ffestcOrder_
-ffestc_order_iface_ ()
+ffestc_order_iface_ (void)
 {
   switch (ffestw_state (ffestw_stack_top ()))
     {
@@ -2658,7 +2658,7 @@ ffestc_order_iface_ ()
        return;	*/
 
 static ffestcOrder_
-ffestc_order_ifthen_ ()
+ffestc_order_ifthen_ (void)
 {
   switch (ffestw_state (ffestw_stack_top ()))
     {
@@ -2686,7 +2686,7 @@ ffestc_order_ifthen_ ()
        return;	*/
 
 static ffestcOrder_
-ffestc_order_implicit_ ()
+ffestc_order_implicit_ (void)
 {
   recurse:
 
@@ -2757,7 +2757,7 @@ ffestc_order_implicit_ ()
        return;	*/
 
 static ffestcOrder_
-ffestc_order_implicitnone_ ()
+ffestc_order_implicitnone_ (void)
 {
   recurse:
 
@@ -2821,7 +2821,7 @@ ffestc_order_implicitnone_ ()
        return;	*/
 
 static ffestcOrder_
-ffestc_order_parameter_ ()
+ffestc_order_parameter_ (void)
 {
   recurse:
 
@@ -2901,7 +2901,7 @@ ffestc_order_parameter_ ()
        return;	*/
 
 static ffestcOrder_
-ffestc_order_program_ ()
+ffestc_order_program_ (void)
 {
   recurse:
 
@@ -2943,7 +2943,7 @@ ffestc_order_program_ ()
        return;	*/
 
 static ffestcOrder_
-ffestc_order_progspec_ ()
+ffestc_order_progspec_ (void)
 {
   recurse:
 
@@ -3025,7 +3025,7 @@ ffestc_order_progspec_ ()
        return;	*/
 
 static ffestcOrder_
-ffestc_order_selectcase_ ()
+ffestc_order_selectcase_ (void)
 {
   switch (ffestw_state (ffestw_stack_top ()))
     {
@@ -3054,7 +3054,7 @@ ffestc_order_selectcase_ ()
        return;	*/
 
 static ffestcOrder_
-ffestc_order_sfunc_ ()
+ffestc_order_sfunc_ (void)
 {
   recurse:
 
@@ -3113,7 +3113,7 @@ ffestc_order_sfunc_ ()
        return;	*/
 
 static ffestcOrder_
-ffestc_order_subroutine_ ()
+ffestc_order_subroutine_ (void)
 {
   recurse:
 
@@ -3151,7 +3151,7 @@ ffestc_order_subroutine_ ()
        return;	*/
 
 static ffestcOrder_
-ffestc_order_typedecl_ ()
+ffestc_order_typedecl_ (void)
 {
   recurse:
 
@@ -3226,7 +3226,7 @@ ffestc_order_typedecl_ ()
        return;	*/
 
 static ffestcOrder_
-ffestc_order_unit_ ()
+ffestc_order_unit_ (void)
 {
   switch (ffestw_state (ffestw_stack_top ()))
     {
@@ -3563,7 +3563,7 @@ ffestc_promote_sfdummy_ (ffelexToken t)
    of a main program unit.  */
 
 static void
-ffestc_shriek_begin_program_ ()
+ffestc_shriek_begin_program_ (void)
 {
   ffestw b;
   ffesymbol s;
@@ -4107,7 +4107,7 @@ ffestc_subr_unit_ (ffestpFile *spec)
    like "DO 10", "IF (...) THEN", "10 ELSE", "END IF", "END".  */
 
 static void
-ffestc_try_shriek_do_ ()
+ffestc_try_shriek_do_ (void)
 {
   ffelab lab;
   ffelabType ty;
@@ -4236,7 +4236,7 @@ ffestc_decl_item (ffelexToken name, ffebld kind, ffelexToken kindt,
    Gonna specify values for the object now.  */
 
 void
-ffestc_decl_itemstartvals ()
+ffestc_decl_itemstartvals (void)
 {
   switch (ffestc_local_.decl.is_R426)
     {
@@ -4298,7 +4298,7 @@ ffestc_decl_itemendvals (ffelexToken t)
    Just wrap up any local activities.  */
 
 void
-ffestc_decl_finish ()
+ffestc_decl_finish (void)
 {
   switch (ffestc_local_.decl.is_R426)
     {
@@ -4339,7 +4339,7 @@ ffestc_elsewhere (ffelexToken where)
    it.	*/
 
 void
-ffestc_end ()
+ffestc_end (void)
 {
   ffestw b;
 
@@ -4422,7 +4422,7 @@ recurse:
    block's shriek function to clean up to state NIL.  */
 
 void
-ffestc_eof ()
+ffestc_eof (void)
 {
   if (ffestw_state (ffestw_stack_top ()) != FFESTV_stateNIL)
     {
@@ -4457,7 +4457,7 @@ ffestc_eof ()
    seeing the unrecognized statement?  we do the former at the moment).  */
 
 bool
-ffestc_exec_transition ()
+ffestc_exec_transition (void)
 {
   bool update;
 
@@ -4561,7 +4561,7 @@ ffestc_ffebad_here_doiter (ffebadIndex i, ffesymbol s)
    is the R1219 function-stmt case).  */
 
 bool
-ffestc_is_decl_not_R1219 ()
+ffestc_is_decl_not_R1219 (void)
 {
   switch (ffestw_state (ffestw_stack_top ()))
     {
@@ -4591,7 +4591,7 @@ ffestc_is_decl_not_R1219 ()
    if the ENTRY is in a function context.  */
 
 bool
-ffestc_is_entry_in_subr ()
+ffestc_is_entry_in_subr (void)
 {
   ffestvState s;
 
@@ -4630,7 +4630,7 @@ recurse:
    explicit typing of name.  */
 
 bool
-ffestc_is_let_not_V027 ()
+ffestc_is_let_not_V027 (void)
 {
   switch (ffestw_state (ffestw_stack_top ()))
     {
@@ -4659,7 +4659,7 @@ ffestc_is_let_not_V027 ()
    defs, and statement function defs.  */
 
 void
-ffestc_terminate_4 ()
+ffestc_terminate_4 (void)
 {
   ffestc_entry_num_ = ffestc_saved_entry_num_;
 }
@@ -5023,7 +5023,7 @@ ffestc_R501_item (ffelexToken name, ffebld kind, ffelexToken kindt,
    Gonna specify values for the object now.  */
 
 void
-ffestc_R501_itemstartvals ()
+ffestc_R501_itemstartvals (void)
 {
   ffestc_check_item_startvals_ ();
 
@@ -5091,7 +5091,7 @@ ffestc_R501_itemendvals (ffelexToken t)
    Just wrap up any local activities.  */
 
 void
-ffestc_R501_finish ()
+ffestc_R501_finish (void)
 {
   ffestc_check_finish_ ();
 }
@@ -5103,7 +5103,7 @@ ffestc_R501_finish ()
    Verify that SAVE is valid here, and flag everything as SAVEd.  */
 
 void
-ffestc_R522 ()
+ffestc_R522 (void)
 {
   ffestc_check_simple_ ();
   if (ffestc_order_blockspec_ () != FFESTC_orderOK_)
@@ -5153,7 +5153,7 @@ ffestc_R522 ()
    Verify that SAVE is valid here, and begin accepting items in the list.  */
 
 void
-ffestc_R522start ()
+ffestc_R522start (void)
 {
   ffestc_check_start_ ();
   if (ffestc_order_blockspec_ () != FFESTC_orderOK_)
@@ -5315,7 +5315,7 @@ ffestc_R522item_cblock (ffelexToken name)
    Just wrap up any local activities.  */
 
 void
-ffestc_R522finish ()
+ffestc_R522finish (void)
 {
   ffestc_check_finish_ ();
   if (!ffestc_ok_)
@@ -5487,7 +5487,7 @@ ffestc_R524_item (ffelexToken name, ffesttDimList dims)
    Just wrap up any local activities.  */
 
 void
-ffestc_R524_finish ()
+ffestc_R524_finish (void)
 {
   ffestc_check_finish_ ();
   if (!ffestc_ok_)
@@ -5503,7 +5503,7 @@ ffestc_R524_finish ()
    Verify that DATA is valid here, and begin accepting items in the list.  */
 
 void
-ffestc_R528_start ()
+ffestc_R528_start (void)
 {
   ffestcOrder_ order;
 
@@ -5561,7 +5561,7 @@ ffestc_R528_item_object (ffebld expr, ffelexToken expr_token UNUSED)
    No more objects, gonna specify values for the list of objects now.  */
 
 void
-ffestc_R528_item_startvals ()
+ffestc_R528_item_startvals (void)
 {
   ffestc_check_item_startvals_ ();
   if (!ffestc_ok_)
@@ -5644,7 +5644,7 @@ ffestc_R528_item_endvals (ffelexToken t)
    Just wrap up any local activities.  */
 
 void
-ffestc_R528_finish ()
+ffestc_R528_finish (void)
 {
   ffestc_check_finish_ ();
 
@@ -5662,7 +5662,7 @@ ffestc_R528_finish ()
    list.  */
 
 void
-ffestc_R537_start ()
+ffestc_R537_start (void)
 {
   ffestc_check_start_ ();
   if (ffestc_order_parameter_ () != FFESTC_orderOK_)
@@ -5745,7 +5745,7 @@ ffestc_R537_item (ffebld dest, ffelexToken dest_token, ffebld source,
    Just wrap up any local activities.  */
 
 void
-ffestc_R537_finish ()
+ffestc_R537_finish (void)
 {
   ffestc_check_finish_ ();
   if (!ffestc_ok_)
@@ -5761,7 +5761,7 @@ ffestc_R537_finish ()
    Verify that the IMPLICIT NONE statement is ok here and implement.  */
 
 void
-ffestc_R539 ()
+ffestc_R539 (void)
 {
   ffestc_check_simple_ ();
   if (ffestc_order_implicitnone_ () != FFESTC_orderOK_)
@@ -5780,7 +5780,7 @@ ffestc_R539 ()
    Verify that the IMPLICIT statement is ok here and implement.	 */
 
 void
-ffestc_R539start ()
+ffestc_R539start (void)
 {
   ffestc_check_start_ ();
   if (ffestc_order_implicit_ () != FFESTC_orderOK_)
@@ -5835,7 +5835,7 @@ ffestc_R539item (ffestpType type, ffebld kind, ffelexToken kindt,
    Finish up any local activities.  */
 
 void
-ffestc_R539finish ()
+ffestc_R539finish (void)
 {
   ffestc_check_finish_ ();
   if (!ffestc_ok_)
@@ -5852,7 +5852,7 @@ ffestc_R539finish ()
    list.  */
 
 void
-ffestc_R542_start ()
+ffestc_R542_start (void)
 {
   ffestc_check_start_ ();
   if (ffestc_order_progspec_ () != FFESTC_orderOK_)
@@ -6017,7 +6017,7 @@ ffestc_R542_item_nitem (ffelexToken name)
    Just wrap up any local activities.  */
 
 void
-ffestc_R542_finish ()
+ffestc_R542_finish (void)
 {
   ffestc_check_finish_ ();
   if (!ffestc_ok_)
@@ -6036,7 +6036,7 @@ ffestc_R542_finish ()
    list.  */
 
 void
-ffestc_R544_start ()
+ffestc_R544_start (void)
 {
   ffestc_check_start_ ();
   if (ffestc_order_blockspec_ () != FFESTC_orderOK_)
@@ -6163,7 +6163,7 @@ ffestc_R544_equiv_ (ffebld expr, ffelexToken t)
    Just wrap up any local activities.  */
 
 void
-ffestc_R544_finish ()
+ffestc_R544_finish (void)
 {
   ffestc_check_finish_ ();
 }
@@ -6175,7 +6175,7 @@ ffestc_R544_finish ()
    Verify that COMMON is valid here, and begin accepting items in the list.  */
 
 void
-ffestc_R547_start ()
+ffestc_R547_start (void)
 {
   ffestc_check_start_ ();
   if (ffestc_order_blockspec_ () != FFESTC_orderOK_)
@@ -6444,7 +6444,7 @@ ffestc_R547_item_cblock (ffelexToken name)
    Just wrap up any local activities.  */
 
 void
-ffestc_R547_finish ()
+ffestc_R547_finish (void)
 {
   ffestc_check_finish_ ();
   if (!ffestc_ok_)
@@ -6875,7 +6875,7 @@ ffestc_R810 (ffesttCaseList cases, ffelexToken name)
 	       && ((ffeinfo_basictype (ffebld_info (caseobj->expr1))
 		    != s->type)
 		   || ((ffeinfo_kindtype (ffebld_info (caseobj->expr1))
-		       != s->kindtype) 
+		       != s->kindtype)
 		       && (ffeinfo_kindtype (ffebld_info (caseobj->expr1)) != FFEINFO_kindtypeINTEGER1 ))
 	      || ((caseobj->range)
 		  && (caseobj->expr2 != NULL)
@@ -7788,7 +7788,7 @@ ffestc_R840 (ffebld expr, ffelexToken expr_token UNUSED,
    ffestc_R841();  */
 
 void
-ffestc_R841 ()
+ffestc_R841 (void)
 {
   ffestc_check_simple_ ();
 
@@ -7860,7 +7860,7 @@ ffestc_R843 (ffebld expr, ffelexToken expr_token UNUSED)
    Make sure an OPEN is valid in the current context, and implement it.	 */
 
 void
-ffestc_R904 ()
+ffestc_R904 (void)
 {
   int i;
   int expect_file;
@@ -8105,7 +8105,7 @@ ffestc_R904 ()
    Make sure a CLOSE is valid in the current context, and implement it.	 */
 
 void
-ffestc_R907 ()
+ffestc_R907 (void)
 {
   static const char *const status_strs[] =
   {
@@ -8497,7 +8497,7 @@ ffestc_R909_item (ffebld expr, ffelexToken expr_token)
    Just wrap up any local activities.  */
 
 void
-ffestc_R909_finish ()
+ffestc_R909_finish (void)
 {
   ffestc_check_finish_ ();
   if (!ffestc_ok_)
@@ -8518,7 +8518,7 @@ ffestc_R909_finish ()
    list.  */
 
 void
-ffestc_R910_start ()
+ffestc_R910_start (void)
 {
   ffestvUnit unit;
   ffestvFormat format;
@@ -8737,7 +8737,7 @@ ffestc_R910_item (ffebld expr, ffelexToken expr_token)
    Just wrap up any local activities.  */
 
 void
-ffestc_R910_finish ()
+ffestc_R910_finish (void)
 {
   ffestc_check_finish_ ();
   if (!ffestc_ok_)
@@ -8758,7 +8758,7 @@ ffestc_R910_finish ()
    list.  */
 
 void
-ffestc_R911_start ()
+ffestc_R911_start (void)
 {
   ffestvFormat format;
 
@@ -8822,7 +8822,7 @@ ffestc_R911_item (ffebld expr, ffelexToken expr_token)
    Just wrap up any local activities.  */
 
 void
-ffestc_R911_finish ()
+ffestc_R911_finish (void)
 {
   ffestc_check_finish_ ();
   if (!ffestc_ok_)
@@ -8842,7 +8842,7 @@ ffestc_R911_finish ()
    Make sure a BACKSPACE is valid in the current context, and implement it.  */
 
 void
-ffestc_R919 ()
+ffestc_R919 (void)
 {
   ffestc_check_simple_ ();
   if (ffestc_order_actionif_ () != FFESTC_orderOK_)
@@ -8867,7 +8867,7 @@ ffestc_R919 ()
    Make sure a ENDFILE is valid in the current context, and implement it.  */
 
 void
-ffestc_R920 ()
+ffestc_R920 (void)
 {
   ffestc_check_simple_ ();
   if (ffestc_order_actionif_ () != FFESTC_orderOK_)
@@ -8892,7 +8892,7 @@ ffestc_R920 ()
    Make sure a REWIND is valid in the current context, and implement it.  */
 
 void
-ffestc_R921 ()
+ffestc_R921 (void)
 {
   ffestc_check_simple_ ();
   if (ffestc_order_actionif_ () != FFESTC_orderOK_)
@@ -8917,7 +8917,7 @@ ffestc_R921 ()
    Make sure an INQUIRE is valid in the current context, and implement it.  */
 
 void
-ffestc_R923A ()
+ffestc_R923A (void)
 {
   bool by_file;
   bool by_unit;
@@ -8994,7 +8994,7 @@ ffestc_R923A ()
    list.  */
 
 void
-ffestc_R923B_start ()
+ffestc_R923B_start (void)
 {
   ffestc_check_start_ ();
   if (ffestc_order_actionif_ () != FFESTC_orderOK_)
@@ -9032,7 +9032,7 @@ ffestc_R923B_item (ffebld expr, ffelexToken expr_token UNUSED)
    Just wrap up any local activities.  */
 
 void
-ffestc_R923B_finish ()
+ffestc_R923B_finish (void)
 {
   ffestc_check_finish_ ();
   if (!ffestc_ok_)
@@ -9254,7 +9254,7 @@ ffestc_R1112 (ffelexToken name)
    Verify that EXTERNAL is valid here, and begin accepting items in the list.  */
 
 void
-ffestc_R1207_start ()
+ffestc_R1207_start (void)
 {
   ffestc_check_start_ ();
   if (ffestc_order_progspec_ () != FFESTC_orderOK_)
@@ -9328,7 +9328,7 @@ ffestc_R1207_item (ffelexToken name)
    Just wrap up any local activities.  */
 
 void
-ffestc_R1207_finish ()
+ffestc_R1207_finish (void)
 {
   ffestc_check_finish_ ();
   if (!ffestc_ok_)
@@ -9344,7 +9344,7 @@ ffestc_R1207_finish ()
    Verify that INTRINSIC is valid here, and begin accepting items in the list.	*/
 
 void
-ffestc_R1208_start ()
+ffestc_R1208_start (void)
 {
   ffestc_check_start_ ();
   if (ffestc_order_progspec_ () != FFESTC_orderOK_)
@@ -9447,7 +9447,7 @@ ffestc_R1208_item (ffelexToken name)
    Just wrap up any local activities.  */
 
 void
-ffestc_R1208_finish ()
+ffestc_R1208_finish (void)
 {
   ffestc_check_finish_ ();
   if (!ffestc_ok_)
@@ -10232,7 +10232,7 @@ ffestc_S3P4 (ffebld filename, ffelexToken filename_token UNUSED)
    list.  */
 
 void
-ffestc_V014_start ()
+ffestc_V014_start (void)
 {
   ffestc_check_start_ ();
   if (ffestc_order_progspec_ () != FFESTC_orderOK_)
@@ -10288,7 +10288,7 @@ ffestc_V014_item_cblock (ffelexToken name)
    Just wrap up any local activities.  */
 
 void
-ffestc_V014_finish ()
+ffestc_V014_finish (void)
 {
   ffestc_check_finish_ ();
   if (!ffestc_ok_)
@@ -10305,7 +10305,7 @@ ffestc_V014_finish ()
    list.  */
 
 void
-ffestc_V020_start ()
+ffestc_V020_start (void)
 {
   ffestvFormat format;
 
@@ -10369,7 +10369,7 @@ ffestc_V020_item (ffebld expr, ffelexToken expr_token)
    Just wrap up any local activities.  */
 
 void
-ffestc_V020_finish ()
+ffestc_V020_finish (void)
 {
   ffestc_check_finish_ ();
   if (!ffestc_ok_)
@@ -10389,7 +10389,7 @@ ffestc_V020_finish ()
    Verify that PARAMETER is valid here, and begin accepting items in the list.	*/
 
 void
-ffestc_V027_start ()
+ffestc_V027_start (void)
 {
   ffestc_check_start_ ();
   if (ffestc_order_parameter_ () != FFESTC_orderOK_)
@@ -10429,7 +10429,7 @@ ffestc_V027_item (ffelexToken dest_token, ffebld source,
    Just wrap up any local activities.  */
 
 void
-ffestc_V027_finish ()
+ffestc_V027_finish (void)
 {
   ffestc_check_finish_ ();
   if (!ffestc_ok_)
@@ -10442,7 +10442,7 @@ ffestc_V027_finish ()
    like the statement for a logical IF are reset.  */
 
 void
-ffestc_any ()
+ffestc_any (void)
 {
   ffestc_check_simple_ ();
 

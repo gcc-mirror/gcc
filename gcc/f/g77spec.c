@@ -93,9 +93,8 @@ typedef enum
 /* The original argument list and related info is copied here.  */
 static int g77_xargc;
 static const char *const *g77_xargv;
-static void lookup_option PARAMS ((Option *, int *, const char **,
-				   const char *));
-static void append_arg PARAMS ((const char *));
+static void lookup_option (Option *, int *, const char **, const char *);
+static void append_arg (const char *);
 
 /* The new argument list will be built here.  */
 static int g77_newargc;
@@ -118,11 +117,7 @@ static const char **g77_newargv;
    to short ones, where available, has already been run.  */
 
 static void
-lookup_option (xopt, xskip, xarg, text)
-     Option *xopt;
-     int *xskip;
-     const char **xarg;
-     const char *text;
+lookup_option (Option *xopt, int *xskip, const char **xarg, const char *text)
 {
   Option opt = OPTION_;
   int skip;
@@ -202,8 +197,7 @@ lookup_option (xopt, xskip, xarg, text)
    the new arg count.  Otherwise allocate a new list, etc.  */
 
 static void
-append_arg (arg)
-     const char *arg;
+append_arg (const char *arg)
 {
   static int newargsize;
 
@@ -239,10 +233,8 @@ append_arg (arg)
 }
 
 void
-lang_specific_driver (in_argc, in_argv, in_added_libraries)
-     int *in_argc;
-     const char *const **in_argv;
-     int *in_added_libraries ATTRIBUTE_UNUSED;
+lang_specific_driver (int *in_argc, const char *const **in_argv,
+		      int *in_added_libraries ATTRIBUTE_UNUSED)
 {
   int argc = *in_argc;
   const char *const *argv = *in_argv;
@@ -532,7 +524,7 @@ or type the command `info -f g77 Copying'.\n\
 }
 
 /* Called before linking.  Returns 0 on success and -1 on failure. */
-int lang_specific_pre_link ()  /* Not used for F77. */
+int lang_specific_pre_link (void)  /* Not used for F77. */
 {
   return 0;
 }

@@ -1,5 +1,5 @@
 /* st.c -- Implementation File (module.c template V1.0)
-   Copyright (C) 1995 Free Software Foundation, Inc.
+   Copyright (C) 1995, 2003 Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
@@ -141,7 +141,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    yet been set.  */
 
 void
-ffest_confirmed ()
+ffest_confirmed (void)
 {
   ffesta_confirmed ();
 }
@@ -160,7 +160,7 @@ ffest_confirmed ()
       processing a statement (make and destroy pools, et cetera).  */
 
 void
-ffest_eof ()
+ffest_eof (void)
 {
   ffesta_eof ();
 }
@@ -242,7 +242,7 @@ ffest_first (ffelexToken t)
    this list.  Initializes the executable and nonexecutable lists.  */
 
 void
-ffest_init_0 ()
+ffest_init_0 (void)
 {
   ffesta_init_0 ();
   ffestb_init_0 ();
@@ -271,7 +271,7 @@ ffest_init_0 ()
    this list.  Initializes the executable and nonexecutable lists.  */
 
 void
-ffest_init_1 ()
+ffest_init_1 (void)
 {
   ffesta_init_1 ();
   ffestb_init_1 ();
@@ -300,7 +300,7 @@ ffest_init_1 ()
    this list.  Initializes the executable and nonexecutable lists.  */
 
 void
-ffest_init_2 ()
+ffest_init_2 (void)
 {
   ffesta_init_2 ();
   ffestb_init_2 ();
@@ -321,7 +321,7 @@ ffest_init_2 ()
    ffest_init_3();  */
 
 void
-ffest_init_3 ()
+ffest_init_3 (void)
 {
   ffesta_init_3 ();
   ffestb_init_3 ();
@@ -344,7 +344,7 @@ ffest_init_3 ()
    ffest_init_4();  */
 
 void
-ffest_init_4 ()
+ffest_init_4 (void)
 {
   ffesta_init_4 ();
   ffestb_init_4 ();
@@ -366,7 +366,7 @@ ffest_init_4 ()
    Else returns FALSE.  */
 
 bool
-ffest_is_entry_valid ()
+ffest_is_entry_valid (void)
 {
   return ffesta_is_entry_valid;
 }
@@ -396,7 +396,7 @@ ffest_is_entry_valid ()
    the ffestb call would be completely dropped without this mechanism.	*/
 
 bool
-ffest_is_inhibited ()
+ffest_is_inhibited (void)
 {
   return ffesta_is_inhibited ();
 }
@@ -412,7 +412,7 @@ ffest_is_inhibited ()
    is being run.  */
 
 bool
-ffest_seen_first_exec ()
+ffest_seen_first_exec (void)
 {
   return ffesta_seen_first_exec;
 }
@@ -421,7 +421,7 @@ ffest_seen_first_exec ()
    user with a diagnostic if we're not inhibited.  */
 
 void
-ffest_shutdown ()
+ffest_shutdown (void)
 {
   ffesta_shutdown ();
 }
@@ -453,7 +453,7 @@ ffest_sym_exec_transition (ffesymbol s)
    ffest_terminate_0();	 */
 
 void
-ffest_terminate_0 ()
+ffest_terminate_0 (void)
 {
   ffesta_terminate_0 ();
   ffestb_terminate_0 ();
@@ -474,7 +474,7 @@ ffest_terminate_0 ()
    ffest_terminate_1();	 */
 
 void
-ffest_terminate_1 ()
+ffest_terminate_1 (void)
 {
   ffesta_terminate_1 ();
   ffestb_terminate_1 ();
@@ -495,7 +495,7 @@ ffest_terminate_1 ()
    ffest_terminate_2();	 */
 
 void
-ffest_terminate_2 ()
+ffest_terminate_2 (void)
 {
   ffesta_terminate_2 ();
   ffestb_terminate_2 ();
@@ -516,7 +516,7 @@ ffest_terminate_2 ()
    ffest_terminate_3();	 */
 
 void
-ffest_terminate_3 ()
+ffest_terminate_3 (void)
 {
   ffesta_terminate_3 ();
   ffestb_terminate_3 ();
@@ -537,7 +537,7 @@ ffest_terminate_3 ()
    ffest_terminate_4();	 */
 
 void
-ffest_terminate_4 ()
+ffest_terminate_4 (void)
 {
   ffesta_terminate_4 ();
   ffestb_terminate_4 ();

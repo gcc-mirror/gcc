@@ -1,5 +1,5 @@
 /* src.c -- Implementation File
-   Copyright (C) 1995 Free Software Foundation, Inc.
+   Copyright (C) 1995, 2003 Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
@@ -93,7 +93,7 @@ bool ffesrc_ok_match_noninit_lower_;
 /* Initialize table of alphabetic matches. */
 
 void
-ffesrc_init_1 ()
+ffesrc_init_1 (void)
 {
   int i;
 
