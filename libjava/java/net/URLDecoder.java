@@ -82,12 +82,12 @@ public class URLDecoder
   {
     try
       {
-	return decode(s, "UTF-8");
+        return decode(s, "UTF-8");
       }
     catch (UnsupportedEncodingException uee)
       {
-	// Should never happen since UTF-8 encoding should always be supported
-	return s;
+        // Should never happen since UTF-8 encoding should always be supported
+        return s;
       }
   }
 
