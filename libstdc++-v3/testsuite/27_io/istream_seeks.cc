@@ -249,7 +249,7 @@ void test05(void)
   state02 = is03.rdstate();
   pos05 = is03.tellg(); 
   VERIFY( pos05 == pos06 ); // as only out buffer 
-  VERIFY( state01 == state02 );
+  VERIFY( state01 != state02 );
   pos06 = is03.tellg(); 
   VERIFY( pos05 == pos06 ); 
 
