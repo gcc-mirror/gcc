@@ -500,6 +500,7 @@ do_pop_exception (handler)
   cleanup = build_function_call (fn, expr_tree_cons
 				 (NULL_TREE, cleanup, expr_tree_cons
 				  (NULL_TREE, handler, NULL_TREE)));
+  return cleanup;
 }
 
 /* This routine creates the cleanup for the current exception.  */
