@@ -2300,7 +2300,7 @@ emit_hpdiv_const (operands, unsignedp)
 				 gen_rtx (unsignedp ? UDIV : DIV, SImode,
 					  gen_rtx (REG, SImode, 26),
 					  operands[2])),
-		     gen_rtx (CLOBBER, VOIDmode, gen_rtx (SCRATCH, SImode, 0)),
+		     gen_rtx (CLOBBER, VOIDmode, operands[3]),
 		     gen_rtx (CLOBBER, VOIDmode, gen_rtx (REG, SImode, 26)),
 		     gen_rtx (CLOBBER, VOIDmode, gen_rtx (REG, SImode, 25)),
 		     gen_rtx (CLOBBER, VOIDmode, gen_rtx (REG, SImode, 31)))));
