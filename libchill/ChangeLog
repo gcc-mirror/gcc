@@ -1,3 +1,7 @@
+Sun Jan  3 21:04:53 1999  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* readrecord.c: Include <sys/types.h> for off_t.
+
 1998-11-26  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* configure.in (compiler_name): Add check to detect if this

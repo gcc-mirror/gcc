@@ -1,5 +1,5 @@
 /* Implement Input/Output runtime actions for CHILL.
-   Copyright (C) 1992,1993 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1998 Free Software Foundation, Inc.
    Author: Wilfried Moser, et al
 
 This file is part of GNU CC.
@@ -28,6 +28,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include <setjmp.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 #include "fileio.h"
