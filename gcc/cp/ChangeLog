@@ -1,8 +1,14 @@
+2001-12-10  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR g++/72
+	* decl.c (add_binding): Don't reject duplicate typedefs involving
+	template parameters.
+
 2001-12-10  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* parse.y, semantics.c: Similarly.
 
-2001-12-04  Nathan Sidwell  <nathan@codesourcery.com>
+2001-12-09  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR g++/87
 	* cp-tree.h (DECL_COPY_CONSTRUCTOR_P): Use copy_fn_p.

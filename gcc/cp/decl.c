@@ -981,8 +981,12 @@ add_binding (id, decl)
   else if (TREE_CODE (BINDING_VALUE (binding)) == TYPE_DECL
 	   && TREE_CODE (decl) == TYPE_DECL
 	   && DECL_NAME (decl) == DECL_NAME (BINDING_VALUE (binding))
-	   && same_type_p (TREE_TYPE (decl),
-			   TREE_TYPE (BINDING_VALUE (binding))))
+	   && (same_type_p (TREE_TYPE (decl),
+			    TREE_TYPE (BINDING_VALUE (binding)))
+	       /* If either type involves template parameters, we must
+		  wait until instantiation.  */
+	       || uses_template_parms (TREE_TYPE (decl))
+	       || uses_template_parms (TREE_TYPE (BINDING_VALUE (binding)))))
     /* We have two typedef-names, both naming the same type to have
        the same name.  This is OK because of:
 
