@@ -1,3 +1,8 @@
+1998-08-24  Mark Mitchell  <mark@markmitchell.com>
+
+	* typeck.c (convert_for_initialization): Move check for odd uses
+	of NULL to avoid duplicate warnings.
+
 1998-08-24  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* tree.c (lvalue_type): Fix for arrays.
