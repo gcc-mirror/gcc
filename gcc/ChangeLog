@@ -1,3 +1,9 @@
+2004-07-20  Andrew Pinski  <apinski@apple.com>
+
+	PR target/16557
+	* config/i386/darwin.h (CC1_SPEC): Move the -g SPECs from ...
+	(ASM_SPEC): here.
+
 2004-07-21  Paul brook  <paul@codesourcery.com>
 
 	* config/arm/arm.c (thumb_expand_prologue): Remove bogus GEN_INT.
