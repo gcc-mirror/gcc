@@ -1,3 +1,12 @@
+Wed Oct 13 21:04:45 1999  Richard Henderson  <rth@cygnus.com>
+			  Jim Wilson  <wilson@cygnus.com>
+
+	* genrecog.c (maybe_both_true_2): Don't compare modes of
+	two DT_pred tests.
+	(process_tree): Elide peephole2_insns.  Invoke simplify_tests
+	after find_afterward.
+	(debug_decision_1): Dump next and afterward codes.
+
 Wed Oct 13 20:35:16 1999  Richard Henderson  <rth@cygnus.com>
 
 	* rtl.c (dump_and_abort): Remove.
