@@ -1,3 +1,9 @@
+2001-08-13  H.J. Lu  (hjl@gnu.org)
+
+	* testsuite/lib/libstdc++-v3-dg.exp (libstdc++-v3-copy-files):
+	New. Copy files.
+	(libstdc++-v3-init ): Use it.
+
 2001-08-13  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
 	* include/bits/ostream.tcc (__pad_char): Change toplevel '__fmt'

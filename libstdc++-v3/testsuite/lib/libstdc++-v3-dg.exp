@@ -19,6 +19,21 @@
 load_lib dg.exp
 load_lib libgloss.exp
 
+proc libstdc++-v3-copy-files {srcfiles dstdir} {
+    foreach f $srcfiles {
+	if { [catch { set symlink [file readlink $f] } x] } then {
+	    file copy -force $f $dstdir
+	} else {
+	    if { [regexp "^/" "$symlink"] } then {
+		file copy -force $symlink $dstdir
+	    } else {
+		set dirname [file dirname $f]
+		file copy -force $dirname/$symlink $dstdir
+	    }
+	}
+    }
+}
+
 proc libstdc++-v3-init { args } {
     global srcdir
     global outdir
@@ -37,12 +52,8 @@ proc libstdc++-v3-init { args } {
     set dg-do-what-default run
 
     # Copy any required data files.
-    foreach tst [glob -nocomplain "$srcdir/*/*.tst"] {
-	file copy -force $tst $outdir
-    }
-    foreach txt [glob -nocomplain "$srcdir/*/*.txt"] {
-	file copy -force $txt $outdir
-    }
+    libstdc++-v3-copy-files [glob -nocomplain "$srcdir/*/*.tst"] $outdir
+    libstdc++-v3-copy-files [glob -nocomplain "$srcdir/*/*.txt"] $outdir
 
     # set LD_LIBRARY_PATH so that libgcc_s, libstdc++ binaries can be found.
     set gccpath [get_multilibs]
