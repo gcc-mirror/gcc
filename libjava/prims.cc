@@ -394,19 +394,13 @@ _Jv_NewObjectArray (jsize count, jclass elementClass, jobject init)
 
   JvAssert (! elementClass->isPrimitive ());
 
+  // Ensure that elements pointer is properly aligned.
   jobjectArray obj = NULL;
-  size_t size = (size_t) _Jv_GetArrayElementFromElementType (obj,
-							     elementClass);
-
-  // Check for overflow.
-  if (__builtin_expect ((size_t) count > 
-			(SIZE_T_MAX - size) / sizeof (jobject), false))
-    JvThrow (no_memory);
-
+  size_t size = (size_t) elements (obj);
   size += count * sizeof (jobject);
 
-  // FIXME: second argument should be "current loader" //
-  jclass klass = _Jv_FindArrayClass (elementClass, 0);
+  // FIXME: second argument should be "current loader"
+  jclass klass = _Jv_GetArrayClass (elementClass, 0);
 
   obj = (jobjectArray) _Jv_AllocArray (size, klass);
   if (__builtin_expect (! obj, false))
@@ -414,11 +408,11 @@ _Jv_NewObjectArray (jsize count, jclass elementClass, jobject init)
   // Cast away const.
   jsize *lp = const_cast<jsize *> (&obj->length);
   *lp = count;
-  jobject *ptr = elements(obj);
   // We know the allocator returns zeroed memory.  So don't bother
   // zeroing it again.
   if (init)
     {
+      jobject *ptr = elements(obj);
       while (--count >= 0)
 	*ptr++ = init;
     }
@@ -443,7 +437,7 @@ _Jv_NewPrimArray (jclass eltype, jint count)
 			(SIZE_T_MAX - size) / elsize, false))
     JvThrow (no_memory);
 
-  jclass klass = _Jv_FindArrayClass (eltype, 0);
+  jclass klass = _Jv_GetArrayClass (eltype, 0);
 
   __JArray *arr = (__JArray*) _Jv_AllocObj (size + elsize * count, klass);
   if (__builtin_expect (! arr, false))
@@ -529,7 +523,7 @@ public:
       // the same order they are declared in Class.h.
       next = NULL;
       name = _Jv_makeUtf8Const ((char *) cname, -1);
-      accflags = Modifier::PUBLIC | Modifier::FINAL;
+      accflags = Modifier::PUBLIC | Modifier::FINAL | Modifier::ABSTRACT;
       superclass = NULL;
       constants.size = 0;
       constants.tags = NULL;
@@ -547,10 +541,15 @@ public:
       interface_count = 0;
       state = JV_STATE_DONE;
       thread = NULL;
+      depth = -1;
+      ancestors = NULL;
+      idt = NULL;
 
       // Note that we have to set `methods' to NULL.
       if (sig != 'V')
-	_Jv_FindArrayClass (this, NULL, (_Jv_VTable *) array_vtable);
+	_Jv_NewArrayClass (this, NULL, (_Jv_VTable *) array_vtable);
+      else
+        arrayclass = NULL;
     }
 };
 
@@ -606,8 +605,8 @@ _Jv_FindClassFromSignature (char *sig, java::lang::ClassLoader *loader)
 
       }
     case '[':
-      return _Jv_FindArrayClass (_Jv_FindClassFromSignature (&sig[1], loader),
-				 loader);
+      return _Jv_GetArrayClass (_Jv_FindClassFromSignature (&sig[1], loader),
+				loader);
     }
   JvFail ("couldn't understand class signature");
   return NULL;			// Placate compiler.

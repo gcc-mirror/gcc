@@ -1441,6 +1441,7 @@ make_class_data (type)
   PUSH_FIELD_VALUE (cons, "depth", integer_zero_node);
   PUSH_FIELD_VALUE (cons, "ancestors", null_pointer_node);
   PUSH_FIELD_VALUE (cons, "idt", null_pointer_node);
+  PUSH_FIELD_VALUE (cons, "arrayclass", null_pointer_node);
 
   FINISH_RECORD_CONSTRUCTOR (cons);
 

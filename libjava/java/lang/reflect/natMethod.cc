@@ -286,7 +286,7 @@ _Jv_GetTypesFromSignature (jmethodID method,
 
       // FIXME: 2'nd argument should be "current loader"
       while (--num_arrays >= 0)
-	type = _Jv_FindArrayClass (type, 0);
+	type = _Jv_GetArrayClass (type, 0);
       // ARGPTR can be NULL if we are processing the return value of a
       // call from Constructor.
       if (argPtr)

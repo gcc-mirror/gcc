@@ -1,3 +1,33 @@
+2001-01-08  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/lang/Class.h (_Jv_InitClass): Use __builtin_expect.
+	(_Jv_NewArrayClass): Renamed from _Jv_FindArrayClass.
+	(_Jv_GetArrayClass): New inline function.
+	(arrayclass): New field.
+	* prims.cc (_Jv_NewObjectArray): Use _Jv_GetArrayClass. Don't use
+	_Jv_GetArrayElementFromElementType. 
+	(_Jv_NewPrimArray): Ditto.
+	(_Jv_PrimClass constructor): Initialize "depth", "ancestors", and
+	"idt" for completeness. Initialze "arrayclass" using _Jv_NewArrayClass.
+	Set Modifier::ABSTRACT.
+	* java/lang/natClassLoader.cc (_Jv_NewClass): Initialize "arrayclass".
+	(_Jv_NewArrayClass): Renamed from _Jv_FindArrayClass. Now void. 
+	Now synchronized. Array classes are now referenced from
+	elementClass->arrayclass. Don't use _Jv_FindClassInCache.
+	Set array classes' accessibility flags correctly. Optimize so that
+	all array classes share the same IDT.
+	* java/lang/reflect/natArray.cc (newInstance): Use _Jv_GetArrayClass.
+	* java/lang/reflect/natMethod.cc (_Jv_GetTypesFromSignature): Ditto.
+	* java/lang/natClass.cc (_getFields): Increment offset. Prevent fields
+	in superclasses from overwriting classes own fields.
+	(_Jv_IsAssignableFrom): Check for NULL source idt instead of calling
+	Modifier::isAbstract().
+	(null_idt): New static field.
+	(_Jv_PrepareConstantTimeTables): Optimize case where class implements
+	no interfaces.
+	(_Jv_IndexOf): Made inline.
+	* boehm.cc (_Jv_MarkObj): Mark "arrayclass" field.
+
 2001-01-08  Tom Tromey  <tromey@redhat.com>
 
 	Fix for PR java/1586:

@@ -421,7 +421,7 @@ java::lang::Class::_getFields (JArray<java::lang::reflect::Field *> *result,
 	  rfield->offset = (char *) field - (char *) fields;
 	  rfield->declaringClass = this;
 	  rfield->name = _Jv_NewStringUtf8Const (field->name);
-	  (elements (result))[offset + i] = rfield;
+	  (elements (result))[offset++] = rfield;
 	}
     }
   jclass superclass = getSuperclass();
@@ -929,8 +929,7 @@ _Jv_IsAssignableFrom (jclass target, jclass source)
       // Abstract classes have no IDT, and IDTs provide no way to check
       // two interfaces for assignability.
       if (__builtin_expect 
-         (java::lang::reflect::Modifier::isAbstract (source->accflags)
-          || source->isInterface(), false))
+          (source->idt == NULL || source->isInterface(), false))
         return _Jv_InterfaceAssignableFrom (target, source);
 	
       _Jv_IDispatchTable *cl_idt = source->idt;
@@ -1007,6 +1006,8 @@ _Jv_CheckArrayStore (jobject arr, jobject obj)
 #define INITIAL_IOFFSETS_LEN 4
 #define INITIAL_IFACES_LEN 4
 
+static _Jv_IDispatchTable null_idt = { {SHRT_MAX, 0, NULL} };
+
 // Generate tables for constant-time assignment testing and interface
 // method lookup. This implements the technique described by Per Bothner
 // <per@bothner.com> on the java-discuss mailing list on 1999-09-02:
@@ -1028,8 +1029,10 @@ _Jv_PrepareConstantTimeTables (jclass klass)
   // interfaces or primitive types.
    
   jclass klass0 = klass;
+  jboolean has_interfaces = 0;
   while (klass0 != &ObjectClass)
     {
+      has_interfaces += klass0->interface_count;
       klass0 = klass0->superclass;
       klass->depth++;
     }
@@ -1051,6 +1054,14 @@ _Jv_PrepareConstantTimeTables (jclass klass)
     
   if (java::lang::reflect::Modifier::isAbstract (klass->accflags))
     return;
+  
+  // Optimization: If class implements no interfaces, use a common
+  // predefined interface table.
+  if (!has_interfaces)
+    {
+      klass->idt = &null_idt;
+      return;
+    }
 
   klass->idt = 
     (_Jv_IDispatchTable *) _Jv_Malloc (sizeof (_Jv_IDispatchTable));
@@ -1095,7 +1106,7 @@ _Jv_PrepareConstantTimeTables (jclass klass)
 }
 
 // Return index of item in list, or -1 if item is not present.
-jshort
+inline jshort
 _Jv_IndexOf (void *item, void **list, jshort list_len)
 {
   for (int i=0; i < list_len; i++)
