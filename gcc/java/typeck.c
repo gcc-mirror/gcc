@@ -137,7 +137,14 @@ convert (tree type, tree expr)
 	  && TARGET_FLOAT_FORMAT == IEEE_FLOAT_FORMAT)
 	return fold (convert_ieee_real_to_integer (type, expr));
       else
-	return fold (convert_to_integer (type, expr));
+	{
+	  /* fold very helpfully sets the overflow status if a type
+	     overflows in a narrowing integer conversion, but Java
+	     doesn't care.  */
+	  tree tmp = fold (convert_to_integer (type, expr));
+	  TREE_OVERFLOW (tmp) = 0;
+	  return tmp;
+	}
     }	  
   if (code == REAL_TYPE)
     return fold (convert_to_real (type, expr));

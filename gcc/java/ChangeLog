@@ -1,3 +1,9 @@
+2004-03-12  Andrew Haley  <aph@redhat.com>
+
+	PR java/14551
+	* typeck.c (convert): Clear TREE_OVERFLOW after an integer
+	conversion.
+
 2004-02-29  Roger Sayle  <roger@eyesopen.com>
 
 	* jcf-parse.c (java_parse_file): Handle the case that input_filename
