@@ -1,3 +1,12 @@
+2004-02-04  Dhruv Matani  <dhruvbird@gmx.net>
+
+	* include/ext/debug_allocator.h: _M_extra now stands for the
+	number of extra objects instead of the number of extra bytes.
+	(debug_allocator::allocate): Adjust.
+	(debug_allocator::deallocate): Adjust.
+
+	* include/ext/pool_allocator.h: Fix typo.
+
 2004-02-03  Felix Yen  <fwy@alumni.brown.edu>
 	    Benjamin Kosnik  <bkoz@redhat.com>
 	

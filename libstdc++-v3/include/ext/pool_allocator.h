@@ -40,7 +40,7 @@
  * purpose.  It is provided "as is" without express or implied warranty.
  */
 
-/** @file ext/debug_allocator.h
+/** @file ext/pool_allocator.h
  *  This file is a GNU extension to the Standard C++ Library.
  *  You should only include this header if you are using GCC 3 or later.
  */
