@@ -2210,6 +2210,11 @@ output_addr_const (file, x)
       output_addr_const (file, XEXP (x, 1));
       break;
 
+    case ZERO_EXTEND:
+    case SIGN_EXTEND:
+      output_addr_const (file, XEXP (x, 0));
+      break;
+
     default:
       output_operand_lossage ("invalid expression as operand");
     }
