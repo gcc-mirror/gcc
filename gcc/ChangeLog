@@ -1,3 +1,8 @@
+Tue Apr 21 20:48:37 1998  John Carr  <jfc@mit.edu>
+
+	* genemit.c (gen_exp): Allow machine description to set mode of
+	MATCH_OP_DUP.
+
 Tue Apr 21 16:36:01 1998  John Carr  <jfc@mit.edu>
 
 	* alias.c (mode_alias_check): New function.
