@@ -367,6 +367,11 @@ char mips_hard_regno_mode_ok[(int)MAX_MACHINE_MODE][FIRST_PSEUDO_REGISTER];
    constant pool is output.  */
 int mips_string_length;
 
+/* When generating mips16 code, a list of all strings that are to be
+   output after the current function.  */
+
+static GTY(()) rtx mips16_strings;
+
 /* In mips16 mode, we build a list of all the string constants we see
    in a particular function.  */
 
@@ -7711,6 +7716,7 @@ mips_output_function_epilogue (file, size)
      HOST_WIDE_INT size ATTRIBUTE_UNUSED;
 {
   const char *fnname = "";	/* FIXME: Correct initialisation?  */
+  rtx string;
 
 #ifndef FUNCTION_NAME_ALREADY_DECLARED
   /* Get the function name the same way that toplev.c does before calling
@@ -7774,6 +7780,17 @@ mips_output_function_epilogue (file, size)
       free (string_constants);
       string_constants = next;
     }
+
+  /* If any following function uses the same strings as this one, force
+     them to refer those strings indirectly.  Nearby functions could
+     refer them using pc-relative addressing, but it isn't safe in
+     general.  For instance, some functions may be placed in sections
+     other than .text, and we don't know whether they be close enough
+     to this one.  In large files, even other .text functions can be
+     too far away.  */
+  for (string = mips16_strings; string != 0; string = XEXP (string, 1))
+    SYMBOL_REF_FLAG (XEXP (string, 0)) = 0;
+  free_EXPR_LIST_list (&mips16_strings);
 
   /* Restore the output file if optimizing the GP (optimizing the GP causes
      the text to be diverted to a tempfile, so that data decls come before
@@ -8153,7 +8170,11 @@ mips_encode_section_info (decl, first)
 	  && (! current_function_decl
 	      || ! DECL_ONE_ONLY (current_function_decl)))
 	{
-	  SYMBOL_REF_FLAG (XEXP (TREE_CST_RTL (decl), 0)) = 1;
+	  rtx symref;
+
+	  symref = XEXP (TREE_CST_RTL (decl), 0);
+	  mips16_strings = alloc_EXPR_LIST (0, symref, mips16_strings);
+	  SYMBOL_REF_FLAG (symref) = 1;
 	  mips_string_length += TREE_STRING_LENGTH (decl);
 	}
     }

@@ -1,5 +1,12 @@
 2002-10-01  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.c (mips16_strings): New variable.
+	(mips_output_function_epilogue): Clear the SYMBOL_REF_FLAG of every
+	symbol in mips16_strings.  Free the list.
+	(mips_encode_section_info): Keep track of local strings.
+
+2002-10-01  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.md (bunge, bltgt, bungt): New define_expands.
 	(sordered_df, sordered_sf): Remove.
 	* config/mips/mips.c (get_float_compare_codes): New fn.
