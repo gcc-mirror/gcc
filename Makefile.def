@@ -213,3 +213,21 @@ flags_to_pass = { flag= LIBCXXFLAGS_FOR_TARGET ; };
 flags_to_pass = { flag= NM_FOR_TARGET ; };
 flags_to_pass = { flag= RANLIB_FOR_TARGET ; };
 flags_to_pass = { flag= WINDRES_FOR_TARGET ; };
+
+// Toplevel bootstrap
+bootstrap_stage = {
+	id=1 ; next=2 ;
+	extra_configure_flags='--disable-intermodule \
+	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)"' ;
+	extra_make_flags='CFLAGS="$(STAGE1_CFLAGS)"' ; };
+bootstrap_stage = {
+	id=2 ; prev=1 ; next=3 ;
+	extra_configure_flags="@stage2_werror_flag@" ;
+	extra_make_flags="$(POSTSTAGE1_FLAGS_TO_PASS)" ; };
+bootstrap_stage = {
+	id=3 ; prev=2 ;
+	compare_target=compare ;
+	bootstrap_target=new-bootstrap ;
+	cleanstrap_target=new-cleanstrap ;
+	extra_configure_flags="@stage2_werror_flag@" ;
+	extra_make_flags="$(POSTSTAGE1_FLAGS_TO_PASS)" ; };
