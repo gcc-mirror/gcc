@@ -1,3 +1,9 @@
+2001-12-09  Tom Tromey  <tromey@redhat.com>
+
+	* check-init.c (check_init): Don't allow pre- or post- increment
+	or decrement of final variable.
+	(final_assign_error): Minor error message rewording.
+
 2001-12-08  Tom Tromey  <tromey@redhat.com>
 
 	* java-tree.h: Fixed typo.
