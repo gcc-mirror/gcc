@@ -1,5 +1,8 @@
 2003-03-19  Alan Modra  <amodra@bigpond.net.au>
 
+	* config/rs6000/rs6000.c (rs6000_stack_info): Only require a frame
+	when debugging on XCOFF targets.  Delete "abi" temp.
+
 	PR target/10073
 	* combine.c (force_to_mode <NOT>): Use gen_int_mode.
 

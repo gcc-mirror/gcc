@@ -9168,7 +9168,6 @@ rs6000_stack_info ()
   static rs6000_stack_t info, zero_info;
   rs6000_stack_t *info_ptr = &info;
   int reg_size = TARGET_POWERPC64 ? 8 : 4;
-  enum rs6000_abi abi;
   int ehrd_size;
   int total_raw_size;
 
@@ -9186,15 +9185,15 @@ rs6000_stack_info ()
     }
 
   /* Select which calling sequence.  */
-  info_ptr->abi = abi = DEFAULT_ABI;
+  info_ptr->abi = DEFAULT_ABI;
 
   /* Calculate which registers need to be saved & save area size.  */
   info_ptr->first_gp_reg_save = first_reg_to_save ();
   /* Assume that we will have to save RS6000_PIC_OFFSET_TABLE_REGNUM, 
      even if it currently looks like we won't.  */
   if (((TARGET_TOC && TARGET_MINIMAL_TOC)
-       || (flag_pic == 1 && abi == ABI_V4)
-       || (flag_pic && abi == ABI_DARWIN))
+       || (flag_pic == 1 && DEFAULT_ABI == ABI_V4)
+       || (flag_pic && DEFAULT_ABI == ABI_DARWIN))
       && info_ptr->first_gp_reg_save > RS6000_PIC_OFFSET_TABLE_REGNUM)
     info_ptr->gp_size = reg_size * (32 - RS6000_PIC_OFFSET_TABLE_REGNUM);
   else
@@ -9237,7 +9236,7 @@ rs6000_stack_info ()
       || (info_ptr->first_fp_reg_save != 64
 	  && !FP_SAVE_INLINE (info_ptr->first_fp_reg_save))
       || info_ptr->first_altivec_reg_save <= LAST_ALTIVEC_REGNO
-      || (abi == ABI_V4 && current_function_calls_alloca)
+      || (DEFAULT_ABI == ABI_V4 && current_function_calls_alloca)
       || (DEFAULT_ABI == ABI_DARWIN
 	  && flag_pic
 	  && current_function_uses_pic_offset_table)
@@ -9253,7 +9252,7 @@ rs6000_stack_info ()
       || regs_ever_live[CR4_REGNO])
     {
       info_ptr->cr_save_p = 1;
-      if (abi == ABI_V4)
+      if (DEFAULT_ABI == ABI_V4)
 	info_ptr->cr_size = reg_size;
     }
 
@@ -9299,7 +9298,7 @@ rs6000_stack_info ()
     }
 
   /* Calculate the offsets.  */
-  switch (abi)
+  switch (DEFAULT_ABI)
     {
     case ABI_NONE:
     default:
@@ -9428,14 +9427,18 @@ rs6000_stack_info ()
   if (info_ptr->calls_p)
     info_ptr->push_p = 1;
 
-  else if (abi == ABI_V4)
+  else if (DEFAULT_ABI == ABI_V4)
     info_ptr->push_p = total_raw_size > info_ptr->fixed_size;
 
+  else if (frame_pointer_needed)
+    info_ptr->push_p = 1;
+
+  else if (TARGET_XCOFF && write_symbols != NO_DEBUG)
+    info_ptr->push_p = 1;
+
   else
-    info_ptr->push_p = (frame_pointer_needed
-			|| (abi != ABI_DARWIN && write_symbols != NO_DEBUG)
-			|| ((total_raw_size - info_ptr->fixed_size)
-			    > (TARGET_32BIT ? 220 : 288)));
+    info_ptr->push_p
+      = total_raw_size - info_ptr->fixed_size > (TARGET_32BIT ? 220 : 288);
 
   /* Zero offsets if we're not saving those registers.  */
   if (info_ptr->fp_size == 0)
