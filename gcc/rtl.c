@@ -364,7 +364,6 @@ rtx_equal_p (rtx x, rtx y)
     case SCRATCH:
     case CONST_DOUBLE:
     case CONST_INT:
-    case CONST_VECTOR:
       return 0;
 
     default:

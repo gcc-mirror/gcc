@@ -1,5 +1,10 @@
 2005-01-30  Richard Henderson  <rth@redhat.com>
 
+	* rtl.c (rtx_equal_p): No early exit for CONST_VECTOR.
+	* varasm.c (const_rtx_hash_1): Handle CONST_VECTOR.
+
+2005-01-30  Richard Henderson  <rth@redhat.com>
+
 	PR target/19700
 	* config/i386/i386.c (ix86_expand_copysign): New.
 	(ix86_split_copysign_const): New.
