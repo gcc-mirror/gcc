@@ -980,7 +980,7 @@ direct_call_operand (op, mode)
 }
 
 /* Return true if OP is a LABEL_REF, or SYMBOL_REF or CONST referencing
-   a variable known to be defined in this file.  */
+   a (non-tls) variable known to be defined in this file.  */
 
 int
 local_symbolic_operand (op, mode)
@@ -1014,7 +1014,7 @@ local_symbolic_operand (op, mode)
 
   str = XSTR (op, 0);
 
-  /* If @[VS], then alpha_encode_section_info sez it's local.  */
+  /* If @[LS], then alpha_encode_section_info sez it's local.  */
   if (str[0] == '@' && (str[1] == 'L' || str[1] == 'S'))
     return 1;
 
