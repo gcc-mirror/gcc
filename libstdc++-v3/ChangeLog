@@ -1,3 +1,9 @@
+2000-12-18  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* docs/html/17_intro/COPYING: Update to current
+	ftp://ftp.gnu.org/pub/gnu/Licenses/COPYING-2.0 (fixes references
+	to 19yy as example year in copyright notice).
+
 2000-12-14  Benjamin Kosnik  <bkoz@fillmore.redhat.com>
 
 	* src/Makefile.am (myinstallheaders): Install backwards headers in
