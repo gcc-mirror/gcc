@@ -1,3 +1,12 @@
+2003-09-16  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (tree_swap_operands_p): New function to determine
+	the prefered ordering of operands.
+	(fold): Numerous clean-ups.  Use tree_swap_operands_p when swapping
+	operands to commutative, comparison or ternary operators.  Replace
+	uses of TREE_SET_CODE with recursive call to fold.  Remove duplicate
+	transformation of A ? B : C into !A ? C : B.
+
 2003-09-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/linux.h (LINK_GCC_C_SEQUENCE_SPEC): Define.
