@@ -700,9 +700,15 @@ public class ObjectInputStream extends InputStream
     final ObjectStreamClass clazz = this.currentObjectStreamClass;
     final byte[] prim_field_data = new byte[clazz.primFieldSize];
     final Object[] objs = new Object[clazz.objectFieldCount];
+
+    // Apparently Block data is not used with GetField as per
+    // empirical evidence against JDK 1.2.  Also see Mauve test
+    // java.io.ObjectInputOutput.Test.GetPutField.
+    setBlockDataMode (false);
     readFully (prim_field_data);
     for (int i = 0; i < objs.length; ++ i)
       objs[i] = readObject ();
+    setBlockDataMode (true);
 
     return new GetField ()
     {
@@ -843,7 +849,8 @@ public class ObjectInputStream extends InputStream
       public Object get (String name, Object defvalue)
 	throws IOException, IllegalArgumentException
       {
-	ObjectStreamField field = getField (name, null);
+	ObjectStreamField field =
+	  getField (name, defvalue == null ? null : defvalue.getClass ());
 
 	if (field == null)
 	  return defvalue;
@@ -862,7 +869,7 @@ public class ObjectInputStream extends InputStream
 	Class field_type = field.getType ();
 
 	if (type == field_type ||
-	    (type != null && field_type.isPrimitive ()))
+	    (type == null && ! field_type.isPrimitive ()))
 	  return field;
 
 	throw new IllegalArgumentException ("Field requested is of type "

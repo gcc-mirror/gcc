@@ -138,7 +138,7 @@ public class ObjectOutputStream extends OutputStream
      output stream by writing out information about its class, then
      writing out each of the objects non-transient, non-static
      fields.  If any of these fields are other objects,
-     the are written out in the same manner.
+     they are written out in the same manner.
 
      This method can be overriden by a class by implementing
      <code>private void writeObject (ObjectOutputStream)</code>.
@@ -846,7 +846,7 @@ public class ObjectOutputStream extends OutputStream
 	  {
 	    ObjectStreamField field
 	      = currentObjectStreamClass.getField (name);
-	    checkType (field, 'B');
+	    checkType (field, 'C');
 	    int off = field.getOffset ();
 	    prim_field_data[off++] = (byte)(value >>> 8);
 	    prim_field_data[off] = (byte)value;
@@ -857,7 +857,7 @@ public class ObjectOutputStream extends OutputStream
 	  {
 	    ObjectStreamField field
 	      = currentObjectStreamClass.getField (name);
-	    checkType (field, 'B');
+	    checkType (field, 'D');
 	    int off = field.getOffset ();
 	    long l_value = Double.doubleToLongBits (value);
 	    prim_field_data[off++] = (byte)(l_value >>> 52);
@@ -875,7 +875,7 @@ public class ObjectOutputStream extends OutputStream
 	  {
 	    ObjectStreamField field
 	      = currentObjectStreamClass.getField (name);
-	    checkType (field, 'B');
+	    checkType (field, 'F');
 	    int off = field.getOffset ();
 	    int i_value = Float.floatToIntBits (value);
 	    prim_field_data[off++] = (byte)(i_value >>> 24);
@@ -889,7 +889,7 @@ public class ObjectOutputStream extends OutputStream
 	  {
 	    ObjectStreamField field
 	      = currentObjectStreamClass.getField (name);
-	    checkType (field, 'B');
+	    checkType (field, 'I');
 	    int off = field.getOffset ();
 	    prim_field_data[off++] = (byte)(value >>> 24);
 	    prim_field_data[off++] = (byte)(value >>> 16);
@@ -902,7 +902,7 @@ public class ObjectOutputStream extends OutputStream
 	  {
 	    ObjectStreamField field
 	      = currentObjectStreamClass.getField (name);
-	    checkType (field, 'B');
+	    checkType (field, 'J');
 	    int off = field.getOffset ();
 	    prim_field_data[off++] = (byte)(value >>> 52);
 	    prim_field_data[off++] = (byte)(value >>> 48);
@@ -919,7 +919,7 @@ public class ObjectOutputStream extends OutputStream
 	  {
 	    ObjectStreamField field
 	      = currentObjectStreamClass.getField (name);
-	    checkType (field, 'B');
+	    checkType (field, 'S');
 	    int off = field.getOffset ();
 	    prim_field_data[off++] = (byte)(value >>> 8);
 	    prim_field_data[off] = (byte)value;
@@ -930,16 +930,22 @@ public class ObjectOutputStream extends OutputStream
 	  {
 	    ObjectStreamField field
 	      = currentObjectStreamClass.getField (name);
-	    if (! field.getType ().isAssignableFrom (value.getClass ()))
+	    if (value != null &&
+	    	! field.getType ().isAssignableFrom (value.getClass ()))
 	      throw new IllegalArgumentException ();
 	    objs[field.getOffset ()] = value;
 	  }
 
 	public void write (ObjectOutput out) throws IOException
 	  {
+	    // Apparently Block data is not used with PutField as per
+	    // empirical evidence against JDK 1.2.  Also see Mauve test
+	    // java.io.ObjectInputOutput.Test.GetPutField.
+	    setBlockDataMode (false);
 	    out.write (prim_field_data);
 	    for (int i = 0; i < objs.length; ++ i)
 	      out.writeObject (objs[i]);
+	    setBlockDataMode (true);
 	  }
 
 	private void checkType (ObjectStreamField field, char type)

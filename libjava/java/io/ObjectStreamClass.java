@@ -350,15 +350,15 @@ public class ObjectStreamClass implements Serializable
 
     try
     {
-      Field serialPersistantFields
-	= cl.getDeclaredField ("serialPersistantFields");
-      int modifiers = serialPersistantFields.getModifiers ();
+      Field serialPersistentFields
+	= cl.getDeclaredField ("serialPersistentFields");
+      int modifiers = serialPersistentFields.getModifiers ();
 
       if (Modifier.isStatic (modifiers)
 	  && Modifier.isFinal (modifiers)
 	  && Modifier.isPrivate (modifiers))
       {
-	fields = getSerialPersistantFields (cl);
+	fields = getSerialPersistentFields (cl);
 	Arrays.sort (fields);
 	calculateOffsets ();
 	return;
@@ -569,15 +569,15 @@ public class ObjectStreamClass implements Serializable
   }
 
   // Returns the value of CLAZZ's private static final field named
-  // `serialPersistantFields'.
-  private ObjectStreamField[] getSerialPersistantFields (Class clazz)
+  // `serialPersistentFields'.
+  private ObjectStreamField[] getSerialPersistentFields (Class clazz)
   {
     ObjectStreamField[] o = null;
     try
       {
 	// Use getDeclaredField rather than getField for the same reason
 	// as above in getDefinedSUID.
-	Field f = clazz.getDeclaredField ("getSerialPersistantFields");
+	Field f = clazz.getDeclaredField ("getSerialPersistentFields");
 	o = (ObjectStreamField[])f.get (null);
       }
     catch (java.lang.NoSuchFieldException e)

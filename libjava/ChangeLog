@@ -1,3 +1,23 @@
+2000-08-03  Warren Levy  <warrenl@cygnus.com>
+
+	* java/io/ObjectInputStream.java (readFields): Turn off
+	readDataFromBlock while reading via GetField.
+	(GetField$1.get(String, Object)): Pass Class of default value to
+	getField.
+	(getField): Allow for null default values.
+
+	* java/io/ObjectOutputStream.java: Fixed typo in comment.
+	(PutField$1.put): Fixed calls of checkType in most of the put
+	methods to pass the correct parameter.
+	(PutField$1.put(String, Object)): Allow for null value arg.
+	(PutField$1.write): Turn off writeDataAsBlocks while writing via
+	PutField.
+
+	* java/io/ObjectStreamClass.java (serialPersistentFields): Fixed
+	typo in spec'ed field name.
+	(getSerialPersistentFields): Changed spelling of method to match
+	the correct spelling of the spec'ed field name.
+
 2000-08-03  Tom Tromey  <tromey@cygnus.com>
 
 	* Makefile.in: Rebuilt.
