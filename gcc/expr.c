@@ -7854,16 +7854,6 @@ expand_expr (tree exp, rtx target, enum machine_mode tmode,
 	  op0 = expand_expr (TREE_OPERAND (exp, 0), subtarget, VOIDmode,
 			     EXPAND_SUM);
 
-	  /* If we knew for certain that this is arithmetic for an array
-	     reference, and we knew the bounds of the array, then we could
-	     apply the distributive law across (PLUS X C) for constant C.
-	     Without such knowledge, we risk overflowing the computation
-	     when both X and C are large, but X+C isn't.  */
-	  /* ??? Could perhaps special-case EXP being unsigned and C being
-	     positive.  In that case we are certain that X+C is no smaller
-	     than X and so the transformed expression will overflow iff the
-	     original would have.  */
-
 	  if (GET_CODE (op0) != REG)
 	    op0 = force_operand (op0, NULL_RTX);
 	  if (GET_CODE (op0) != REG)

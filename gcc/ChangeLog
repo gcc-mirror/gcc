@@ -1,3 +1,12 @@
+2003-10-31  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/11968
+	* expr.c (expand_expr <MULT_EXPR>): Remove inappropriate and
+	confusing comment; distributivity isn't handled in expand_expr.
+	* fold-const.c (extract_muldiv_1 <PLUS_EXPR>):  Allow overflow
+	in distributivity, if wrap-around semantics are specified with
+	-fwrapv.
+
 2003-11-01  Alan Modra  <amodra@bigpond.net.au>
 
 	PR 12315
