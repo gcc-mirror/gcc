@@ -836,6 +836,20 @@ mark_set_resources (rtx x, struct resources *res, int in_dest,
       }
 }
 
+/* Return TRUE if INSN is a return, possibly with a filled delay slot.  */
+
+static bool
+return_insn_p (rtx insn)
+{
+  if (GET_CODE (insn) == JUMP_INSN && GET_CODE (PATTERN (insn)) == RETURN)
+    return true;
+
+  if (GET_CODE (insn) == INSN && GET_CODE (PATTERN (insn)) == SEQUENCE)
+    return return_insn_p (XVECEXP (PATTERN (insn), 0, 0));
+
+  return false;
+}
+
 /* Set the resources that are live at TARGET.
 
    If TARGET is zero, we refer to the end of the current function and can
@@ -891,6 +905,14 @@ mark_target_live_regs (rtx insns, rtx target, struct resources *res)
   if (target == 0)
     {
       *res = end_of_function_needs;
+      return;
+    }
+
+  /* Handle return insn.  */
+  else if (return_insn_p (target))
+    {
+      *res = end_of_function_needs;
+      mark_referenced_resources (target, res, 0);
       return;
     }
 
@@ -1204,8 +1226,12 @@ init_resource_info (rtx epilogue_insn)
   start_of_epilogue_needs = end_of_function_needs;
 
   while ((epilogue_insn = next_nonnote_insn (epilogue_insn)))
-    mark_set_resources (epilogue_insn, &end_of_function_needs, 0,
-			MARK_SRC_DEST_CALL);
+    {
+      mark_set_resources (epilogue_insn, &end_of_function_needs, 0,
+			  MARK_SRC_DEST_CALL);
+      if (return_insn_p (epilogue_insn))
+	break;
+    }
 
   /* Allocate and initialize the tables used by mark_target_live_regs.  */
   target_hash_table = xcalloc (TARGET_HASH_PRIME, sizeof (struct target_info *));
