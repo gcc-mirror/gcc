@@ -102,8 +102,8 @@ Ada front end		Arnaud Charlet		charlet@act-europe.fr
 fortran			Richard Henderson	rth@redhat.com
 fortran			Toon Moene		toon@moene.indiv.nluug.nl
 fortran 95		Paul Brook		paul@nowt.org
-fortran 95		Steven Bosscher		steven@gcc.gnu.org
-fortran	95		Toon Moene		toon@moene.indiv.nluug.nl
+fortran 95		Steven Bosscher		stevenb@suse.de
+fortran 95		Toon Moene		toon@moene.indiv.nluug.nl
 c++			Jason Merrill		jason@redhat.com
 c++                     Mark Mitchell		mark@codesourcery.com
 cpplib			Dave Brolley		brolley@redhat.com
