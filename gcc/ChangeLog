@@ -1,3 +1,8 @@
+2000-03-15  Jason Merrill  <jason@casey.cygnus.com>
+
+	* calls.c (emit_call_1): Nothrow functions can still have nonlocal
+	gotos.
+
 2000-03-15  Geoff Keating  <geoffk@cygnus.com>
 
 	See the ChangeLog on the branch for more details.

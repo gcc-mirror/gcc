@@ -495,7 +495,7 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
   /* If this call can't throw, attach a REG_EH_REGION reg note to that
      effect.  */
   if (nothrow)
-    REG_NOTES (call_insn) = gen_rtx_EXPR_LIST (REG_EH_REGION, GEN_INT (-1),
+    REG_NOTES (call_insn) = gen_rtx_EXPR_LIST (REG_EH_REGION, const0_rtx,
 					       REG_NOTES (call_insn));
 
   /* Restore this now, so that we do defer pops for this call's args
