@@ -181,14 +181,18 @@ struct eh_region
     } fixup;
   } u;
 
-  /* The region of code generated, or contained within, the region.  */
-  rtx label, last;
+  /* Entry point for this region's handler before landing pads are built.  */
+  rtx label;
 
-  /* Entry point for this region from the runtime eh library.  */
+  /* Entry point for this region's handler from the runtime eh library.  */
   rtx landing_pad;
 
-  /* Entry point for this region from an inner region.  */
+  /* Entry point for this region's handler from an inner region.  */
   rtx post_landing_pad;
+
+  /* The RESX insn for handing off control to the next outermost handler,
+     if appropriate.  */
+  rtx resume;
 };
 
 /* Used to save exception status for each function.  */
@@ -250,6 +254,8 @@ static void add_type_for_runtime		PARAMS ((tree));
 static tree lookup_type_for_runtime		PARAMS ((tree));
 
 static struct eh_region *expand_eh_region_end	PARAMS ((void));
+
+static rtx get_exception_filter			PARAMS ((void));
 
 static void collect_eh_region_array		PARAMS ((void));
 static void resolve_fixup_regions		PARAMS ((void));
@@ -497,7 +503,7 @@ mark_eh_region (region)
     }
 
   ggc_mark_rtx (region->label);
-  ggc_mark_rtx (region->last);
+  ggc_mark_rtx (region->resume);
   ggc_mark_rtx (region->landing_pad);
   ggc_mark_rtx (region->post_landing_pad);
 }
@@ -711,6 +717,7 @@ expand_eh_region_end_cleanup (handler)
 {
   struct eh_region *region;
   rtx around_label;
+  rtx data_save[2];
 
   if (! doing_eh (0))
     return;
@@ -728,7 +735,17 @@ expand_eh_region_end_cleanup (handler)
   if (protect_cleanup_actions)
     expand_eh_region_start ();
 
+  /* In case this cleanup involves an inline destructor with a try block in
+     it, we need to save the EH return data registers around it.  */
+  data_save[0] = gen_reg_rtx (Pmode);
+  emit_move_insn (data_save[0], get_exception_pointer ());
+  data_save[1] = gen_reg_rtx (Pmode);
+  emit_move_insn (data_save[1], get_exception_filter ());
+
   expand_expr (handler, const0_rtx, VOIDmode, 0);
+
+  emit_move_insn (cfun->eh->exc_ptr, data_save[0]);
+  emit_move_insn (cfun->eh->filter, data_save[1]);
 
   if (protect_cleanup_actions)
     expand_eh_region_end_must_not_throw (protect_cleanup_actions);
@@ -736,10 +753,9 @@ expand_eh_region_end_cleanup (handler)
   /* We delay the generation of the _Unwind_Resume until we generate
      landing pads.  We emit a marker here so as to get good control
      flow data in the meantime.  */
-  emit_jump_insn (gen_rtx_RESX (VOIDmode, region->region_number));
+  region->resume
+    = emit_jump_insn (gen_rtx_RESX (VOIDmode, region->region_number));
   emit_barrier ();
-
-  region->last = get_last_insn ();
 
   emit_label (around_label);
 }
@@ -812,8 +828,6 @@ expand_end_catch ()
   try_region = cfun->eh->try_region;
 
   emit_jump (try_region->u.try.continue_label);
-
-  catch_region->last = get_last_insn ();
 }
 
 /* End a sequence of catch handlers for a try block.  */
@@ -864,8 +878,6 @@ expand_eh_region_end_allowed (allowed, failure)
   emit_label (region->label);
   expand_expr (failure, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
-  region->last = get_last_insn ();
-
   emit_label (around_label);
 }
 
@@ -900,8 +912,6 @@ expand_eh_region_end_must_not_throw (failure)
 
   emit_label (region->label);
   expand_expr (failure, const0_rtx, VOIDmode, EXPAND_NORMAL);
-
-  region->last = get_last_insn ();
 
   emit_label (around_label);
 }
@@ -948,7 +958,7 @@ expand_eh_region_end_fixup (handler)
   fixup->u.fixup.cleanup_exp = handler;
 }
 
-/* Return a tree expression for a pointer to the exception object
+/* Return an rtl expression for a pointer to the exception object
    within a handler.  */
 
 rtx
@@ -963,6 +973,20 @@ get_exception_pointer ()
   return exc_ptr;
 }
 
+/* Return an rtl expression for the exception dispatch filter
+   within a handler.  */
+
+static rtx
+get_exception_filter ()
+{
+  rtx filter = cfun->eh->filter;
+  if (! filter)
+    {
+      filter = gen_reg_rtx (Pmode);
+      cfun->eh->filter = filter;
+    }
+  return filter;
+}
 
 /* Begin a region that will contain entries created with
    add_partial_entry.  */
@@ -1323,10 +1347,10 @@ duplicate_eh_region_1 (o, map)
 
   if (o->label)
     n->label = get_label_from_map (map, CODE_LABEL_NUMBER (o->label));
-  if (o->last)
+  if (o->resume)
     {
-      n->last = map->insn_map[INSN_UID (o->last)];
-      if (n->last == NULL)
+      n->resume = map->insn_map[INSN_UID (o->resume)];
+      if (n->resume == NULL)
 	abort ();
     }
 
@@ -1719,10 +1743,17 @@ build_post_landing_pads ()
 	      }
 	  }
 
+	  /* We delay the generation of the _Unwind_Resume until we generate
+	     landing pads.  We emit a marker here so as to get good control
+	     flow data in the meantime.  */
+	  region->resume
+	    = emit_jump_insn (gen_rtx_RESX (VOIDmode, region->region_number));
+	  emit_barrier ();
+
 	  seq = get_insns ();
 	  end_sequence ();
 
-	  region->last = emit_insns_before (seq, region->u.try.catch->label);
+	  emit_insns_before (seq, region->u.try.catch->label);
 	  break;
 
 	case ERT_ALLOWED_EXCEPTIONS:
@@ -1737,10 +1768,17 @@ build_post_landing_pads ()
 				   EQ, NULL_RTX, word_mode, 0, 0,
 				   region->label);
 
+	  /* We delay the generation of the _Unwind_Resume until we generate
+	     landing pads.  We emit a marker here so as to get good control
+	     flow data in the meantime.  */
+	  region->resume
+	    = emit_jump_insn (gen_rtx_RESX (VOIDmode, region->region_number));
+	  emit_barrier ();
+
 	  seq = get_insns ();
 	  end_sequence ();
 
-	  region->last = emit_insns_before (seq, region->label);
+	  emit_insns_before (seq, region->label);
 	  break;
 
 	case ERT_CLEANUP:
@@ -1759,6 +1797,9 @@ build_post_landing_pads ()
     }
 }
 
+/* Replace RESX patterns with jumps to the next handler if any, or calls to
+   _Unwind_Resume otherwise.  */
+
 static void
 connect_post_landing_pads ()
 {
@@ -1768,44 +1809,15 @@ connect_post_landing_pads ()
     {
       struct eh_region *region = cfun->eh->region_array[i];
       struct eh_region *outer;
-      rtx before = NULL_RTX, after = NULL_RTX, seq;
+      rtx seq;
 
       /* Mind we don't process a region more than once.  */
       if (!region || region->region_number != i)
 	continue;
 
-      switch (region->type)
-	{
-	case ERT_CLEANUP:
-	  after = region->last;
-	  if (GET_CODE (after) == BARRIER
-	      && GET_CODE (PREV_INSN (after)) == JUMP_INSN
-	      && GET_CODE (PATTERN (PREV_INSN (after))) == RESX)
-	    {
-	      before = PREV_INSN (after);
-	      after = NULL_RTX;
-	    }
-	  break;
-
-	case ERT_TRY:
-	  after = region->last;
-	  break;
-
-	case ERT_ALLOWED_EXCEPTIONS:
-	  before = region->label;
-	  break;
-
-	case ERT_MUST_NOT_THROW:
-	case ERT_CATCH:
-	case ERT_THROW:
-	  continue;
-
-	default:
-	  abort ();
-	}
-
-      /* If there's no fallthru, no need to add branches.  */
-      if (after && GET_CODE (after) == BARRIER)
+      /* If there is no RESX, or it has been deleted by flow, there's
+	 nothing to fix up.  */
+      if (! region->resume || INSN_DELETED_P (region->resume))
 	continue;
 
       /* Search for another landing pad in this function.  */
@@ -1823,10 +1835,9 @@ connect_post_landing_pads ()
 
       seq = get_insns ();
       end_sequence ();
-      if (before)
-	emit_insns_before (seq, before);
-      else
-        emit_insns_after (seq, after);
+      emit_insns_before (seq, region->resume);
+
+      /* Leave the RESX to be deleted by flow.  */
     }
 }
 
@@ -2329,7 +2340,7 @@ finish_eh_generation ()
   /* These registers are used by the landing pads.  Make sure they
      have been generated.  */
   get_exception_pointer ();
-  cfun->eh->filter = gen_reg_rtx (word_mode);
+  get_exception_filter ();
 
   /* Construct the landing pads.  */
 
@@ -2709,6 +2720,9 @@ reachable_handlers (insn)
       type_thrown = region->u.throw.type;
       region = region->outer;
     }
+  else if (GET_CODE (insn) == JUMP_INSN
+	   && GET_CODE (PATTERN (insn)) == RESX)
+    region = region->outer;
 
   for (; region; region = region->outer)
     if (reachable_next_level (region, type_thrown, &info) >= RNL_CAUGHT)

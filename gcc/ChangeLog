@@ -1,3 +1,21 @@
+2001-04-24  Jason Merrill  <jason_merrill@redhat.com>
+
+	* except.c (reachable_handlers): Step out one level from a RESX.
+
+	* except.c (struct eh_region): Rename 'last' to 'resume'.
+	(mark_eh_region, duplicate_eh_region_1): Adjust.
+	(expand_eh_region_end_cleanup): Remember the jump, not the barrier.
+	(build_post_landing_pads): Likewise.
+	(expand_end_catch, expand_eh_region_end_allowed): Don't set it.
+	(expand_eh_region_end_must_not_throw): Likewise.
+	(connect_post_landing_pads): Thread (only) regions with non-deleted
+	resume insns.
+
+	* except.c (expand_eh_region_end_cleanup): Save the EH return data
+	registers around the cleanup.
+	(get_exception_filter): New fn.
+	(finish_eh_generation): Use it.
+
 2001-04-24  Nathan Sidwell <nathan@codesourcery.com>
 
 	* c-semantics.c (add_scope_stmt): Don't call
