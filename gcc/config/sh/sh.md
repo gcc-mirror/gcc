@@ -198,7 +198,7 @@
 (define_delay
   (and (eq_attr "type" "cbranch")
        (eq_attr "cpu" "sh2,sh3"))
-  [(eq_attr "in_delay_slot" "yes") (const_int 1) (nil)])
+  [(eq_attr "in_delay_slot" "yes") (eq_attr "in_delay_slot" "yes") (nil)])
 
 ;; -------------------------------------------------------------------------
 ;; SImode signed integer comparisons
