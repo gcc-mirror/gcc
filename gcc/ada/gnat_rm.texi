@@ -1362,11 +1362,10 @@ SOURCE_TRACE    ::= STRING_LITERAL
 @end smallexample
 
 @noindent
-
 This pragma indicates that the given entity is not used outside the
-compilation unit it is defined in. The entity an explicitly declared
-subprogram, including subprogram declared by subprogram instantiations and
-subprograms declared in package instantiations.
+compilation unit it is defined in. The entity must be an explicitly declared
+subprogram; this includes  generic subprogram instances and
+subprograms declared in generic package instances.
 
 If the entity to be eliminated is a library level subprogram, then
 the first form of pragma @code{Eliminate} is used with only a single argument.
@@ -14142,4 +14141,3 @@ environment in which the gnat tool will execute.
 @contents
 
 @bye
-

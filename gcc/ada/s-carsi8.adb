@@ -31,15 +31,11 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with System.Address_Operations; use System.Address_Operations;
+
 with Unchecked_Conversion;
 
 package body System.Compare_Array_Signed_8 is
-
-   function "+" (Left, Right : Address) return Address;
-   pragma Import (Intrinsic, "+");
-   --  Provide addition operation on type Address (this may not be directly
-   --  available if type System.Address is non-private and the operations on
-   --  the type are made abstract to hide them from public users of System.
 
    type Word is mod 2 ** 32;
    --  Used to process operands by words
@@ -70,15 +66,14 @@ package body System.Compare_Array_Signed_8 is
      (Left      : System.Address;
       Right     : System.Address;
       Left_Len  : Natural;
-      Right_Len : Natural)
-      return      Integer
+      Right_Len : Natural) return Integer
    is
       Compare_Len : constant Natural := Natural'Min (Left_Len, Right_Len);
 
    begin
       --  If operands are non-aligned, or length is too short, go by bytes
 
-      if (((Left or Right) and 2#11#) /= 0) or else Compare_Len < 4 then
+      if ModA (OrA (Left, Right), 4) /= 0 or else Compare_Len < 4 then
          return Compare_Array_S8_Unaligned (Left, Right, Left_Len, Right_Len);
       end if;
 
@@ -94,15 +89,15 @@ package body System.Compare_Array_Signed_8 is
          for J in 0 .. Clen4 loop
             if LeftP (J) /= RightP (J) then
                return Compare_Array_S8_Unaligned
-                        (Left  + Address (4 * J),
-                         Right + Address (4 * J),
+                        (AddA (Left,  Address (4 * J)),
+                         AddA (Right, Address (4 * J)),
                          4, 4);
             end if;
          end loop;
 
          return Compare_Array_S8_Unaligned
-                  (Left      + Address (Clen4F),
-                   Right     + Address (Clen4F),
+                  (AddA (Left,  Address (Clen4F)),
+                   AddA (Right, Address (Clen4F)),
                    Left_Len  - Clen4F,
                    Right_Len - Clen4F);
       end;
@@ -116,8 +111,7 @@ package body System.Compare_Array_Signed_8 is
      (Left      : System.Address;
       Right     : System.Address;
       Left_Len  : Natural;
-      Right_Len : Natural)
-      return      Integer
+      Right_Len : Natural) return Integer
    is
       Compare_Len : constant Natural := Natural'Min (Left_Len, Right_Len);
 

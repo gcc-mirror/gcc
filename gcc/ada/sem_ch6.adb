@@ -3031,31 +3031,37 @@ package body Sem_Ch6 is
            or else Subtypes_Statically_Match (Type_1, Full_View (Type_2));
       end if;
 
-      --  Ada 0Y (AI-254): Detect anonymous access to subprogram types. In
-      --  case of anonymous access to protected subprogram types the anonymous
-      --  type declaration has been replaced by an occurrence of an internal
-      --  access to subprogram type declaration
+      --  Ada 0Y (AI-254): Detect anonymous access to subprogram types.
 
       Are_Anonymous_Access_To_Subprogram_Types :=
+
+         --  Case 1: Anonymous access to subprogram types
+
         (Ekind (Type_1) = E_Anonymous_Access_Subprogram_Type
            and then Ekind (Type_2) = E_Anonymous_Access_Subprogram_Type)
-      or else
-        ((Ekind (Type_1) = E_Access_Protected_Subprogram_Type
-          and then Ekind (Type_2) = E_Access_Protected_Subprogram_Type)
-         and then (not Comes_From_Source (Type_1)
-                     and not Comes_From_Source (Type_2))
-         and then (Present (Original_Access_Type (Type_1))
-                     and Present (Original_Access_Type (Type_2)))
-         and then (Ekind (Original_Access_Type (Type_1))
-                     = E_Anonymous_Access_Protected_Subprogram_Type
-                   and Ekind (Original_Access_Type (Type_2))
-                     = E_Anonymous_Access_Protected_Subprogram_Type));
+
+         --  Case 2: Anonymous access to PROTECTED subprogram types. In this
+         --  case the anonymous type_declaration has been replaced by an
+         --  occurrence of an internal access to subprogram type declaration
+         --  available through the Original_Access_Type attribute
+
+        or else
+          (Ekind (Type_1) = E_Access_Protected_Subprogram_Type
+            and then Ekind (Type_2) = E_Access_Protected_Subprogram_Type
+            and then not Comes_From_Source (Type_1)
+            and then not Comes_From_Source (Type_2)
+            and then Present (Original_Access_Type (Type_1))
+            and then Present (Original_Access_Type (Type_2))
+            and then Ekind (Original_Access_Type (Type_1)) =
+                       E_Anonymous_Access_Protected_Subprogram_Type
+            and then Ekind (Original_Access_Type (Type_2)) =
+                       E_Anonymous_Access_Protected_Subprogram_Type);
 
       --  Test anonymous access type case. For this case, static subtype
       --  matching is required for mode conformance (RM 6.3.1(15))
 
       if (Ekind (Type_1) = E_Anonymous_Access_Type
-          and then Ekind (Type_2) = E_Anonymous_Access_Type)
+            and then Ekind (Type_2) = E_Anonymous_Access_Type)
         or else Are_Anonymous_Access_To_Subprogram_Types --  Ada 0Y (AI-254)
       then
          declare
@@ -3065,7 +3071,7 @@ package body Sem_Ch6 is
          begin
             Desig_1 := Directly_Designated_Type (Type_1);
 
-            --  An access parameter can designate an incomplete type.
+            --  An access parameter can designate an incomplete type
 
             if Ekind (Desig_1) = E_Incomplete_Type
               and then Present (Full_View (Desig_1))

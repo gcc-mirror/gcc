@@ -1841,9 +1841,7 @@ static int function_nesting_depth;
 void
 begin_subprog_body (tree subprog_decl)
 {
-  tree param_decl_list;
   tree param_decl;
-  tree next_param;
 
   if (function_nesting_depth++ != 0)
     push_function_context ();
@@ -1859,32 +1857,14 @@ begin_subprog_body (tree subprog_decl)
      the C sense!  */
   TREE_STATIC (subprog_decl)   = 1;
 
-  /* Enter a new binding level.  */
+  /* Enter a new binding level and show that all the parameters belong to
+     this function.  */
   current_function_decl = subprog_decl;
   pushlevel (0);
 
-  /* Push all the PARM_DECL nodes onto the current scope (i.e. the scope of the
-     subprogram body) so that they can be recognized as local variables in the
-     subprogram.
-
-     The list of PARM_DECL nodes is stored in the right order in
-     DECL_ARGUMENTS.  Since ..._DECL nodes get stored in the reverse order in
-     which they are transmitted to `pushdecl' we need to reverse the list of
-     PARM_DECLs if we want it to be stored in the right order. The reason why
-     we want to make sure the PARM_DECLs are stored in the correct order is
-     that this list will be retrieved in a few lines with a call to `getdecl'
-     to store it back into the DECL_ARGUMENTS field.  */
-    param_decl_list = nreverse (DECL_ARGUMENTS (subprog_decl));
-
-    for (param_decl = param_decl_list; param_decl; param_decl = next_param)
-      {
-	next_param = TREE_CHAIN (param_decl);
-	TREE_CHAIN (param_decl) = NULL;
-	pushdecl (param_decl);
-      }
-
-  /* Store back the PARM_DECL nodes. They appear in the right order. */
-  DECL_ARGUMENTS (subprog_decl) = getdecls ();
+  for (param_decl = DECL_ARGUMENTS (subprog_decl); param_decl;
+       param_decl = TREE_CHAIN (param_decl))
+    DECL_CONTEXT (param_decl) = subprog_decl;
 
   init_function_start (subprog_decl);
   expand_function_start (subprog_decl, 0);

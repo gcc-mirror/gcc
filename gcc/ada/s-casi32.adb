@@ -31,15 +31,11 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with System.Address_Operations; use System.Address_Operations;
+
 with Unchecked_Conversion;
 
 package body System.Compare_Array_Signed_32 is
-
-   function "+" (Left, Right : Address) return Address;
-   pragma Import (Intrinsic, "+");
-   --  Provide addition operation on type Address (this may not be directly
-   --  available if type System.Address is non-private and the operations on
-   --  the type are made abstract to hide them from public users of System.
 
    type Word is range -2**31 .. 2**31 - 1;
    for Word'Size use 32;
@@ -66,8 +62,7 @@ package body System.Compare_Array_Signed_32 is
      (Left      : System.Address;
       Right     : System.Address;
       Left_Len  : Natural;
-      Right_Len : Natural)
-      return      Integer
+      Right_Len : Natural) return Integer
    is
       Clen : Natural := Natural'Min (Left_Len, Right_Len);
       --  Number of elements left to compare
@@ -79,7 +74,7 @@ package body System.Compare_Array_Signed_32 is
    begin
       --  Case of going by aligned words
 
-      if ((Left or Right) and (4 - 1)) = 0 then
+      if ModA (OrA (Left, Right), 4) = 0 then
          while Clen /= 0 loop
             if W (L).all /= W (R).all then
                if W (L).all > W (R).all then
@@ -90,8 +85,8 @@ package body System.Compare_Array_Signed_32 is
             end if;
 
             Clen := Clen - 1;
-            L := L + 4;
-            R := R + 4;
+            L := AddA (L, 4);
+            R := AddA (R, 4);
          end loop;
 
       --  Case of going by unaligned words
@@ -107,8 +102,8 @@ package body System.Compare_Array_Signed_32 is
             end if;
 
             Clen := Clen - 1;
-            L := L + 4;
-            R := R + 4;
+            L := AddA (L, 4);
+            R := AddA (R, 4);
          end loop;
       end if;
 

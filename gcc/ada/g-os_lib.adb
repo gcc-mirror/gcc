@@ -1110,16 +1110,13 @@ package body GNAT.OS_Lib is
    ----------------------
 
    function Is_Absolute_Path (Name : String) return Boolean is
-      function Is_Absolute_Path (Name : Address) return Integer;
+      function Is_Absolute_Path
+        (Name   : Address;
+         Length : Integer) return Integer;
       pragma Import (C, Is_Absolute_Path, "__gnat_is_absolute_path");
 
-      F_Name : String (1 .. Name'Length + 1);
-
    begin
-      F_Name (1 .. Name'Length) := Name;
-      F_Name (F_Name'Last)      := ASCII.NUL;
-
-      return Is_Absolute_Path (F_Name'Address) /= 0;
+      return Is_Absolute_Path (Name'Address, Name'Length) /= 0;
    end Is_Absolute_Path;
 
    ------------------

@@ -31,28 +31,17 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with System;                   use System;
-with System.Storage_Elements; use System.Storage_Elements;
-with Ada.Unchecked_Conversion; use Ada;
+with System;                    use System;
+with System.Address_Operations; use System.Address_Operations;
+with System.Storage_Elements;   use System.Storage_Elements;
+
+with Unchecked_Conversion;
 
 package body System.Generic_Vector_Operations is
 
-   --  Provide arithmetic operations on type Address (these may not be
-   --  directly available if type System.Address is non-private and the
-   --  operations on the type are made abstract to hide them from public
-   --  users of System.
-
-   function "mod" (Left, Right : Address) return Address;
-   pragma Import (Intrinsic, "mod");
-
-   function "+" (Left, Right : Address) return Address;
-   pragma Import (Intrinsic, "+");
-
-   function "-" (Left, Right : Address) return Address;
-   pragma Import (Intrinsic, "-");
-
-   VU : constant Address := Vectors.Vector'Size / Storage_Unit;
-   EU : constant Address := Element_Array'Component_Size / Storage_Unit;
+   IU : constant Integer := Integer (Storage_Unit);
+   VU : constant Address := Address (Vectors.Vector'Size / IU);
+   EU : constant Address := Address (Element_Array'Component_Size / IU);
 
    ----------------------
    -- Binary_Operation --
@@ -67,8 +56,11 @@ package body System.Generic_Vector_Operations is
       YA : Address := Y;
       --  Address of next element to process in R, X and Y
 
-      Unaligned : constant Boolean := (RA or XA or YA)  mod VU /= 0;
-      --  False iff one or more argument addresses is not aligned
+      VI : constant Integer_Address := To_Integer (VU);
+
+      Unaligned : constant Integer_Address :=
+                    Boolean'Pos (ModA (OrA (OrA (RA, XA), YA), VU) /= 0) - 1;
+      --  Zero iff one or more argument addresses is not aligned, else all 1's
 
       type Vector_Ptr is access all Vectors.Vector;
       type Element_Ptr is access all Element;
@@ -76,23 +68,24 @@ package body System.Generic_Vector_Operations is
       function VP is new Unchecked_Conversion (Address, Vector_Ptr);
       function EP is new Unchecked_Conversion (Address, Element_Ptr);
 
-      SA : constant Address := XA + ((Length + 0) / VU * VU
-                           and (Boolean'Pos (Unaligned) - Address'(1)));
+      SA : constant Address :=
+             AddA (XA, To_Address
+                         ((Integer_Address (Length) / VI * VI) and Unaligned));
       --  First address of argument X to start serial processing
 
    begin
       while XA < SA loop
          VP (RA).all := Vector_Op (VP (XA).all, VP (YA).all);
-         XA := XA + VU;
-         YA := YA + VU;
-         RA := RA + VU;
+         XA := AddA (XA, VU);
+         YA := AddA (YA, VU);
+         RA := AddA (RA, VU);
       end loop;
 
       while XA < X + Length loop
          EP (RA).all := Element_Op (EP (XA).all, EP (YA).all);
-         XA := XA + EU;
-         YA := YA + EU;
-         RA := RA + EU;
+         XA := AddA (XA, EU);
+         YA := AddA (YA, EU);
+         RA := AddA (RA, EU);
       end loop;
    end Binary_Operation;
 
@@ -108,8 +101,11 @@ package body System.Generic_Vector_Operations is
       XA : Address := X;
       --  Address of next element to process in R and X
 
-      Unaligned : constant Boolean := (RA or XA)  mod VU /= 0;
-      --  False iff one or more argument addresses is not aligned
+      VI : constant Integer_Address := To_Integer (VU);
+
+      Unaligned : constant Integer_Address :=
+                    Boolean'Pos (ModA (OrA (RA, XA), VU) /= 0) - 1;
+      --  Zero iff one or more argument addresses is not aligned, else all 1's
 
       type Vector_Ptr is access all Vectors.Vector;
       type Element_Ptr is access all Element;
@@ -117,21 +113,22 @@ package body System.Generic_Vector_Operations is
       function VP is new Unchecked_Conversion (Address, Vector_Ptr);
       function EP is new Unchecked_Conversion (Address, Element_Ptr);
 
-      SA : constant Address := XA + ((Length + 0) / VU * VU
-                           and (Boolean'Pos (Unaligned) - Address'(1)));
+      SA : constant Address :=
+             AddA (XA, To_Address
+                         ((Integer_Address (Length) / VI * VI) and Unaligned));
       --  First address of argument X to start serial processing
 
    begin
       while XA < SA loop
          VP (RA).all := Vector_Op (VP (XA).all);
-         XA := XA + VU;
-         RA := RA + VU;
+         XA := AddA (XA, VU);
+         RA := AddA (RA, VU);
       end loop;
 
       while XA < X + Length loop
          EP (RA).all := Element_Op (EP (XA).all);
-         XA := XA + EU;
-         RA := RA + EU;
+         XA := AddA (XA, EU);
+         RA := AddA (RA, EU);
       end loop;
    end Unary_Operation;
 

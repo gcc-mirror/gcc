@@ -31,15 +31,11 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with System.Address_Operations; use System.Address_Operations;
+
 with Unchecked_Conversion;
 
 package body System.Compare_Array_Unsigned_16 is
-
-   function "+" (Left, Right : Address) return Address;
-   pragma Import (Intrinsic, "+");
-   --  Provide addition operation on type Address (this may not be directly
-   --  available if type System.Address is non-private and the operations on
-   --  the type are made abstract to hide them from public users of System.
 
    type Word is mod 2 ** 32;
    --  Used to process operands by words
@@ -71,8 +67,7 @@ package body System.Compare_Array_Unsigned_16 is
      (Left      : System.Address;
       Right     : System.Address;
       Left_Len  : Natural;
-      Right_Len : Natural)
-      return      Integer
+      Right_Len : Natural) return Integer
    is
       Clen : Natural := Natural'Min (Left_Len, Right_Len);
       --  Number of elements left to compare
@@ -84,19 +79,19 @@ package body System.Compare_Array_Unsigned_16 is
    begin
       --  Go by words if possible
 
-      if ((Left or Right) and (4 - 1)) = 0 then
+      if ModA (OrA (Left, Right), 4) = 0 then
          while Clen > 1
            and then W (L).all = W (R).all
          loop
             Clen := Clen - 2;
-            L := L + 4;
-            R := R + 4;
+            L := AddA (L, 4);
+            R := AddA (R, 4);
          end loop;
       end if;
 
       --  Case of going by aligned half words
 
-      if ((Left or Right) and (2 - 1)) = 0 then
+      if ModA (OrA (Left, Right), 2) = 0 then
          while Clen /= 0 loop
             if H (L).all /= H (R).all then
                if H (L).all > H (R).all then
@@ -107,8 +102,8 @@ package body System.Compare_Array_Unsigned_16 is
             end if;
 
             Clen := Clen - 1;
-            L := L + 2;
-            R := R + 2;
+            L := AddA (L, 2);
+            R := AddA (R, 2);
          end loop;
 
       --  Case of going by unaligned half words
@@ -124,8 +119,8 @@ package body System.Compare_Array_Unsigned_16 is
             end if;
 
             Clen := Clen - 1;
-            L := L + 2;
-            R := R + 2;
+            L := AddA (L, 2);
+            R := AddA (R, 2);
          end loop;
       end if;
 

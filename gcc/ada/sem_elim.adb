@@ -264,10 +264,9 @@ package body Sem_Elim is
          return;
       end if;
 
-      Elmt := Elim_Hash_Table.Get (Chars (E));
-
       --  Loop through homonyms for this key
 
+      Elmt := Elim_Hash_Table.Get (Chars (E));
       while Elmt /= null loop
          declare
             procedure Set_Eliminated;
@@ -354,7 +353,7 @@ package body Sem_Elim is
                Set_Eliminated;
                return;
 
-               --  Check for case of subprogram
+            --  Check for case of subprogram
 
             elsif Ekind (E) = E_Function
               or else Ekind (E) = E_Procedure
@@ -366,7 +365,7 @@ package body Sem_Elim is
 
                   declare
                      Sloc_Trace : constant String :=
-                       Name_Buffer (1 .. Name_Len);
+                                    Name_Buffer (1 .. Name_Len);
 
                      Idx : Natural := Sloc_Trace'First;
                      --  Index in Sloc_Trace, if equals to 0, then we have
@@ -413,6 +412,10 @@ package body Sem_Elim is
                      --  non-space character in Sloc_Trace to the right of
                      --  Idx. Returns 0 if there is no such character.
 
+                     -----------------------------
+                     -- Different_Trace_Lengths --
+                     -----------------------------
+
                      function Different_Trace_Lengths return Boolean is
                      begin
                         P := Instantiation (Sindex);
@@ -422,8 +425,8 @@ package body Sem_Elim is
                            (P /= No_Location and then Idx = 0)
                         then
                            return True;
-                        else
 
+                        else
                            if P /= No_Location then
                               Sindex := Get_Source_File_Index (P);
                               Get_Name_String (File_Name (Sindex));
@@ -434,10 +437,14 @@ package body Sem_Elim is
                      end Different_Trace_Lengths;
 
                      function File_Mame_Match return Boolean is
-                        Tmp_Idx : Positive;
-                        End_Idx : Positive;
-                     begin
+                        Tmp_Idx : Positive := 1;
+                        End_Idx : Positive := 1;
+                        --  Initializations are to stop warnings
 
+                        --  But are warnings possibly valid ???
+                        --  Why are loops below guaranteed to exit ???
+
+                     begin
                         if Idx = 0 then
                            return False;
                         end if;
@@ -467,42 +474,40 @@ package body Sem_Elim is
                         else
                            return False;
                         end if;
-
                      end File_Mame_Match;
+
+                     --------------------
+                     -- Line_Num_Match --
+                     --------------------
 
                      function Line_Num_Match return Boolean is
                         N : Int := 0;
-                     begin
 
+                     begin
                         if Idx = 0 then
                            return False;
                         end if;
 
                         while Idx <= Last
-                           and then
-                              Sloc_Trace (Idx) in '0' .. '9'
+                           and then Sloc_Trace (Idx) in '0' .. '9'
                         loop
                            N := N * 10 +
                             (Character'Pos (Sloc_Trace (Idx)) -
                              Character'Pos ('0'));
-
                            Idx := Idx + 1;
                         end loop;
 
                         if Get_Physical_Line_Number (P) =
                            Physical_Line_Number (N)
                         then
-
                            while Sloc_Trace (Idx) /= '['
-                               and then
-                                 Idx <= Last
+                               and then Idx <= Last
                            loop
                               Idx := Idx + 1;
                            end loop;
 
                            if Sloc_Trace (Idx) = '['
-                             and then
-                               Idx < Last
+                             and then Idx < Last
                            then
                               Idx := Idx + 1;
                               Idx := Skip_Spaces;
@@ -514,13 +519,16 @@ package body Sem_Elim is
                         else
                            return False;
                         end if;
-
                      end Line_Num_Match;
+
+                     -----------------
+                     -- Skip_Spaces --
+                     -----------------
 
                      function Skip_Spaces return Natural is
                         Res : Natural := Idx;
-                     begin
 
+                     begin
                         while Sloc_Trace (Res) = ' ' loop
                            Res := Res + 1;
 
@@ -534,14 +542,12 @@ package body Sem_Elim is
                      end Skip_Spaces;
 
                   begin
-                     P      := Sloc (E);
+                     P := Sloc (E);
                      Sindex := Get_Source_File_Index (P);
                      Get_Name_String (File_Name (Sindex));
 
                      Idx := Skip_Spaces;
-
                      while Idx > 0 loop
-
                         if not File_Mame_Match then
                            goto Continue;
                         elsif not Line_Num_Match then
@@ -572,10 +578,8 @@ package body Sem_Elim is
                   Form := First_Formal (E);
 
                   if No (Form)
-                   and then
-                    Elmt.Parameter_Types'Length = 1
-                   and then
-                    Elmt.Parameter_Types (1) = No_Name
+                    and then Elmt.Parameter_Types'Length = 1
+                    and then Elmt.Parameter_Types (1) = No_Name
                   then
                      --  Parameterless procedure matches
 
@@ -607,9 +611,10 @@ package body Sem_Elim is
                Set_Eliminated;
                return;
             end if;
-
-            <<Continue>> Elmt := Elmt.Homonym;
          end;
+
+      <<Continue>>
+         Elmt := Elmt.Homonym;
       end loop;
 
       return;
@@ -779,8 +784,11 @@ package body Sem_Elim is
             String_To_Name_Buffer (Strval (Arg_Parameter_Types));
 
             if Name_Len = 0 then
+
                --  Parameterless procedure
+
                Data.Parameter_Types := new Names'(1 => No_Name);
+
             else
                Data.Parameter_Types := new Names'(1 => Name_Find);
             end if;

@@ -337,7 +337,6 @@ package body Snames is
      "gnat#" &
      "gpl#" &
      "ieee_float#" &
-     "homonym_number#" &
      "internal#" &
      "link_name#" &
      "lowercase#" &

@@ -1,3 +1,79 @@
+2004-04-23  Emmanuel Briot  <briot@act-europe.fr>
+
+	* adaint.c (__gnat_try_lock): No longer requires that the parent
+	directory be writable, the directory itself is enough.
+	(gnat_is_absolute_path): Change profile, so that the call from
+	GNAT.OS_Lib can be made more efficient.
+
+	* adaint.h (gnat_is_absolute_path): Change profile, so that the call
+	from GNAT.OS_Lib can be made more efficient.
+
+	* g-os_lib.adb (Is_Absolute_Path): More efficient implementation, avoid
+	one copy of the file name. Found by code reading.
+
+2004-04-23  Vincent Celier  <celier@gnat.com>
+
+	* gnat_ugn.texi: Add documentation for gnatmake switch -eL
+	Correct documentation on gnatmake switches transmitted to the compiler
+
+	* ali.ads: Minor comment fix
+
+2004-04-23  Javier Miranda  <miranda@gnat.com>
+
+	* sem_ch6.adb: (Confirming Types): Code cleanup
+
+	* decl.c (gnat_to_gnu_entity): Give support to anonymous access to
+	subprogram types: E_Anonymous_Access_Subprogram_Type and
+	E_Anonymous_Access_Protected_Subprogram_Type.
+
+2004-04-23  Thomas Quinot  <quinot@act-europe.fr>
+
+	* sem_dist.adb: Add a new paramter to the RAS_Access TSS indicating
+	whether a pragma All_Calls_Remote applies to the subprogram on which
+	'Access is taken.
+	No functional change is introduced by this revision; the new parameter
+	will be used to allow calls to local RCI subprograms to be optimized
+	to not use the PCS in the case where no pragma All_Calls_Remote applies,
+	as is already done in the PolyORB implementation of the DSA.
+
+	* exp_dist.adb: Add a new paramter to the RAS_Access TSS indicating
+	whether a pragma All_Calls_Remote applies to the subprogram on which
+	'Access is taken.
+	No functional change is introduced by this revision; the new parameter
+	will be used to allow calls to local RCI subprograms to be optimized
+	to not use the PCS in the case where no pragma All_Calls_Remote applies,
+	as is already done in the PolyORB implementation of the DSA.
+
+2004-04-23  Robert Dewar  <dewar@gnat.com>
+
+	* Makefile.rtl: Add entry for s-addope.o in run time library list
+	* Make-lang.in: Add entry for s-addope.o to GNAT1 objects
+	* s-addope.ads, s-addope.adb: New files.
+
+	* s-carsi8.adb, s-carun8.adb, s-casi16.adb, s-casi32.adb, 
+	s-casi64.adb, s-caun16.adb, s-caun32.adb, s-caun64.adb, 
+	s-finimp.adb, s-geveop.adb, s-stoele.adb: Modifications to allow
+	System.Address to be non-private and signed.
+
+	* sem_elim.adb: Minor reformatting (fairly extensive)
+	Some minor code reorganization from code reading
+	Add a couple of ??? comments
+
+2004-04-23  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* trans.c (tree_transform, build_unit_elab): Don't call getdecls.
+        (tree_transform, case N_If_Statement): Remove non-determinism.
+
+	* utils.c (begin_subprog_body): Just set DECL_CONTEXT in PARM_DECL.
+
+2004-04-23  Sergey Rybin  <rybin@act-europe.fr>
+
+	* gnat_rm.texi: Small fixes in the changes made in the 'pragma
+	Eliminate' section.
+
+	* snames.ads, snames.adb: Remove Name_Homonym_Number (Homonym_Number is
+	no longer used as a parameter name for Eliminate pragma).
+
 2004-04-22  Laurent GUERBY <laurent@guerby.net>
 
 	PR optimization/14984

@@ -476,7 +476,7 @@ package ALI is
       --  Indicates presence of ED parameter
 
       Interface : Boolean := False;
-      --  True if the Unit is an Interface of a Stand-Alole Library
+      --  True if the Unit is an Interface of a Stand-Alone Library
 
    end record;
 
