@@ -1,3 +1,12 @@
+Thu Nov 19 19:34:13 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* i386.md (jump): Explicitly set "memory" attribute.
+	(indirect_jump, prologue_set_stack_ptr): Likewise.
+	(prologue_get_pc_and_set_got, pop): Likewise.
+	(allocate_stack_worder, blockage, return_internal): Likewise.
+	(return_pop_internal, nop): Likewise.
+	(epilogue_set_stack_ptr, leave): Likewise.
+
 Thu Nov 19 15:42:54 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* config/arm/coff.h: Set USER_LABEL_PREFIX to "_".
