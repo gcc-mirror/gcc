@@ -1922,6 +1922,13 @@ extern tree get_identifier		PARAMS ((const char *));
 
 extern tree maybe_get_identifier	PARAMS ((const char *));
 
+/* Look up an identifier with the name TEXT, replace its identifier
+   node with NODE, and return the old identifier node.  This is used
+   by languages which need to enable and disable keywords based on
+   context; e.g. see remember_protocol_qualifiers in objc/objc-act.c.  */
+
+extern tree set_identifier		PARAMS ((const char *, tree));
+
 /* Construct various types of nodes.  */
 
 #define build_int_2(LO,HI)  \
