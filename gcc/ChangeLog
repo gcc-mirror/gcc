@@ -1,5 +1,10 @@
 2003-08-11  Kelley Cook  <kelleycook@wideopenwest.com>
 
+	* configure.in (intermodule): Make switch test more portable.
+	* configure: Regenerate.
+
+2003-08-11  Kelley Cook  <kelleycook@wideopenwest.com>
+
 	* Makefile.in (cleanstrap): Pass BOOT_CFLAGS to bootstrap.
 	(restrap): Likewise.
 
