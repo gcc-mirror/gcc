@@ -19,6 +19,10 @@
 
 2004-05-14  Jeff Law  <law@redhat.com>
 
+	* tree-ssa-dom.c (redirect_edges_and_update_ssa_graph): Don't even
+	bother marking bypassed virtuals for out-of-ssa.  Instead merge
+        bypassed virtuals into vars_to_rename just before into-ssa pass.
+
 	* tree-ssa-dom.c (simplify_rhs_and_lookup_avail_expr): Reorganize
 	so that it picks up more opportunities to eliminate ABS expressions
 	or turn them into negations.

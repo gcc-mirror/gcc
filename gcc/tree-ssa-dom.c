@@ -312,12 +312,14 @@ set_value_for (tree var, tree value, varray_type table)
 static void
 redirect_edges_and_update_ssa_graph (varray_type redirection_edges)
 {
-  basic_block tgt;
+  basic_block tgt, bb;
+  tree phi;
   unsigned int i;
   size_t old_num_referenced_vars = num_referenced_vars;
+  bitmap virtuals_to_rename = BITMAP_XMALLOC ();
 
   /* First note any variables which we are going to have to take
-     out of SSA form.  */
+     out of SSA form as well as any virtuals which need updating.  */
   for (i = 0; i < VARRAY_ACTIVE_SIZE (redirection_edges); i += 2)
     {
       block_stmt_iterator bsi;
@@ -333,7 +335,11 @@ redirect_edges_and_update_ssa_graph (varray_type redirection_edges)
       for (phi = phi_nodes (e->dest); phi; phi = TREE_CHAIN (phi))
 	{
 	  tree result = SSA_NAME_VAR (PHI_RESULT (phi));
-	  bitmap_set_bit (vars_to_rename, var_ann (result)->uid);
+
+	  if (is_gimple_reg (PHI_RESULT (phi)))
+	    bitmap_set_bit (vars_to_rename, var_ann (result)->uid);
+	  else
+	    bitmap_set_bit (virtuals_to_rename, var_ann (result)->uid);
         }
 
       /* Any variables set by statements at the start of the block we
@@ -362,7 +368,7 @@ redirect_edges_and_update_ssa_graph (varray_type redirection_edges)
 	  for (j = 0; j < NUM_VDEFS (vdefs); j++)
 	    {
 	      tree op = VDEF_RESULT (vdefs, j);
-	      bitmap_set_bit (vars_to_rename, var_ann (op)->uid);
+	      bitmap_set_bit (virtuals_to_rename, var_ann (op)->uid);
 	    }
 	}
 
@@ -371,20 +377,11 @@ redirect_edges_and_update_ssa_graph (varray_type redirection_edges)
       for (phi = phi_nodes (tgt); phi; phi = TREE_CHAIN (phi))
 	{
 	  tree result = SSA_NAME_VAR (PHI_RESULT (phi));
-	  int j;
 
-	  bitmap_set_bit (vars_to_rename, var_ann (result)->uid);
-
-	  for (j = 0; j < PHI_NUM_ARGS (phi); j++)
-	    {
-	      tree arg = PHI_ARG_DEF (phi, j);
-
-	      if (TREE_CODE (arg) != SSA_NAME)
-		continue;
-
-	      arg = SSA_NAME_VAR (arg);
-	      bitmap_set_bit (vars_to_rename, var_ann (arg)->uid);
-	    }
+	  if (is_gimple_reg (PHI_RESULT (phi)))
+	    bitmap_set_bit (vars_to_rename, var_ann (result)->uid);
+	  else
+	    bitmap_set_bit (virtuals_to_rename, var_ann (result)->uid);
         }
     }
 
@@ -497,6 +494,28 @@ redirect_edges_and_update_ssa_graph (varray_type redirection_edges)
       bitmap_set_bit (vars_to_rename, i);
       var_ann (referenced_var (i))->out_of_ssa_tag = 0;
     }
+
+  bitmap_a_or_b (vars_to_rename, vars_to_rename, virtuals_to_rename);
+
+  /* We must remove any PHIs for virtual variables that we are going to
+     re-rename.  Hopefully we'll be able to simply update these incrementally
+     soon.  */
+  FOR_EACH_BB (bb)
+    {
+      tree next;
+
+      for (phi = phi_nodes (bb); phi; phi = next)
+	{
+	  tree result = PHI_RESULT (phi);
+
+	  next = TREE_CHAIN (phi);
+
+	  if (bitmap_bit_p (virtuals_to_rename,
+			    var_ann (SSA_NAME_VAR (result))->uid))
+	    remove_phi_node (phi, NULL, bb);
+	}
+    }
+  BITMAP_XFREE (virtuals_to_rename);
 }
 
 /* Jump threading, redundancy elimination and const/copy propagation. 
