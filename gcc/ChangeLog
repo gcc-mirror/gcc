@@ -1,3 +1,8 @@
+2004-09-20  Richard Sandiford  <rsandifo@redhat.com>
+
+	PR target/17565
+	* config/mips/mips.md (define_asm_attributes): Set can_delay to no.
+
 2004-09-20  Jan Hubicka  <jh@suse.cz>
 
 	* predict.c (estimate_probability): Remove unnecesary code.

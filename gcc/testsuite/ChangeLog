@@ -1,3 +1,7 @@
+2004-09-20  Richard Sandiford  <rsandifo@redhat.com>
+
+	* gcc.target/mips/asm-1.c: New test.
+
 2004-09-19  Ira Rosen  <irar@il.ibm.com>
 
 	* gcc.dg/vect/vect-13.c: Now vectorized on ppc*.
