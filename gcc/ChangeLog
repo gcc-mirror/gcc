@@ -1,3 +1,22 @@
+2004-11-19  Dorit Naishlos  <dorit@il.ibm.com>
+
+	* tree-vectorizer.c (slpeel_tree_peel_loop_to_edge): New name for
+	function previously called tree_duplicate_loop_to_edge.
+	(slpeel_tree_duplicate_loop_to_edge_cfg): New name for function
+	previously called tree_duplicate_loop_to_edge_cfg.
+	(slpeel_update_phis_for_duplicate_loop): Prefix 'slpeel' added to
+	function name.
+	(slpeel_update_phi_nodes_for_guard): Likewise.
+	(slpeel_make_loop_iterate_ntimes): Likewise.
+	(slpeel_add_loop_guard): Likewise.
+	(allocate_new_names, free_new_names): Function declaration moved to top
+	of file.
+	(rename_use_op, rename_def_op): Likewise.
+	(rename_variables_in_bb, rename_variables_in_loop): Likewise.
+	(vect_generate_tmps_on_preheader): Function declaration moved.
+	(vect_transform_for_unknown_loop_bound): Added missing function
+	declaration.
+
 2004-11-19  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/18507

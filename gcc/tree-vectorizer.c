@@ -146,6 +146,39 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tree-vectorizer.h"
 #include "tree-pass.h"
 
+
+/*************************************************************************
+  Simple Loop Peeling Utilities
+ *************************************************************************/
+   
+/* Entry point for peeling of simple loops.
+   Peel the first/last iterations of a loop.
+   It can be used outside of the vectorizer for loops that are simple enough
+   (see function documentation).  In the vectorizer it is used to peel the
+   last few iterations when the loop bound is unknown or does not evenly
+   divide by the vectorization factor, and to peel the first few iterations
+   to force the alignment of data references in the loop.  */
+struct loop *slpeel_tree_peel_loop_to_edge 
+  (struct loop *, struct loops *, edge, tree, tree, bool);
+static struct loop *slpeel_tree_duplicate_loop_to_edge_cfg 
+  (struct loop *, struct loops *, edge);
+static void slpeel_update_phis_for_duplicate_loop 
+  (struct loop *, struct loop *, bool after);
+static void slpeel_update_phi_nodes_for_guard (edge, struct loop *);
+static void slpeel_make_loop_iterate_ntimes (struct loop *, tree, tree, tree);
+static edge slpeel_add_loop_guard (basic_block, tree, basic_block);
+static void allocate_new_names (bitmap);
+static void rename_use_op (use_operand_p);
+static void rename_def_op (def_operand_p, tree);
+static void rename_variables_in_bb (basic_block);
+static void free_new_names (bitmap);
+static void rename_variables_in_loop (struct loop *);
+
+
+/*************************************************************************
+  Vectorization Utilities. 
+ *************************************************************************/
+
 /* Main analysis functions.  */
 static loop_vec_info vect_analyze_loop (struct loop *);
 static loop_vec_info vect_analyze_loop_form (struct loop *);
@@ -184,8 +217,8 @@ static bool vect_get_first_index (tree, tree *);
 static bool vect_can_force_dr_alignment_p (tree, unsigned int);
 static struct data_reference * vect_analyze_pointer_ref_access 
   (tree, tree, bool);
-static bool vect_analyze_loop_with_symbolic_num_of_iters (tree niters, 
- 							  struct loop *loop);
+static bool vect_analyze_loop_with_symbolic_num_of_iters 
+  (tree niters, struct loop *loop);
 static tree vect_get_base_and_bit_offset
   (struct data_reference *, tree, tree, loop_vec_info, tree *, bool*);
 static struct data_reference * vect_analyze_pointer_ref_access
@@ -212,47 +245,19 @@ static tree vect_build_symbol_bound (tree, int, struct loop *);
 static void vect_finish_stmt_generation 
   (tree stmt, tree vec_stmt, block_stmt_iterator *bsi);
 
-static void vect_generate_tmps_on_preheader (loop_vec_info, 
-					     tree *, tree *, 
-					     tree *);
+/* Utility function dealing with loop peeling (not peeling itself).  */
+static void vect_generate_tmps_on_preheader 
+  (loop_vec_info, tree *, tree *, tree *);
 static tree vect_build_loop_niters (loop_vec_info);
 static void vect_update_ivs_after_vectorizer (struct loop *, tree); 
-
-/* Loop transformations prior to vectorization.  */
-
-/* Loop transformations entry point function. 
-   It can be used outside of the vectorizer 
-   in case the loop to be manipulated answers conditions specified
-   in function documentation.  */
-struct loop *tree_duplicate_loop_to_edge (struct loop *, 
-					  struct loops *, edge, 
-					  tree, tree, bool);
-
-static void allocate_new_names (bitmap);
-static void rename_use_op (use_operand_p);
-static void rename_def_op (def_operand_p, tree);
-static void rename_variables_in_bb (basic_block);
-static void free_new_names (bitmap);
-static void rename_variables_in_loop (struct loop *);
-static void copy_phi_nodes (struct loop *, struct loop *, bool);
-static void update_phis_for_duplicate_loop (struct loop *,
-					    struct loop *, 
-					    bool after);
-static void update_phi_nodes_for_guard (edge, struct loop *);  
-static void make_loop_iterate_ntimes (struct loop *, tree, tree, tree);
-static struct loop *tree_duplicate_loop_to_edge_cfg (struct loop *, 
-						     struct loops *, 
-						     edge);
-static edge add_loop_guard (basic_block, tree, basic_block);
-static bool verify_loop_for_duplication (struct loop *, bool, edge);
-
-/* Utilities dealing with loop peeling (not peeling itself).  */
 static tree vect_gen_niters_for_prolog_loop (loop_vec_info, tree);
 static void vect_update_niters_after_peeling (loop_vec_info, tree);
-static void vect_update_inits_of_dr (struct data_reference *, struct loop *, 
-				     tree niters);
+static void vect_update_inits_of_dr 
+  (struct data_reference *, struct loop *, tree niters);
 static void vect_update_inits_of_drs (loop_vec_info, tree);
 static void vect_do_peeling_for_alignment (loop_vec_info, struct loops *);
+static void vect_transform_for_unknown_loop_bound 
+  (loop_vec_info, tree *, struct loops *);
 
 /* Utilities for creation and deletion of vec_info structs.  */
 loop_vec_info new_loop_vec_info (struct loop *loop);
@@ -263,7 +268,11 @@ static bool vect_debug_stats (struct loop *loop);
 static bool vect_debug_details (struct loop *loop);
 
 
-/* Utilities to support loop peeling for vectorization purposes.  */
+/*************************************************************************
+  Simple Loop Peeling Utilities
+
+  Utilities to support loop peeling for vectorization purposes.
+ *************************************************************************/
 
 
 /* For each definition in DEFINITIONS this function allocates 
@@ -463,8 +472,8 @@ copy_phi_nodes (struct loop *loop, struct loop *new_loop,
    executes after LOOP, and false if it executes before it.  */
 
 static void
-update_phis_for_duplicate_loop (struct loop *loop,
-                                struct loop *new_loop, bool after)
+slpeel_update_phis_for_duplicate_loop (struct loop *loop,
+				       struct loop *new_loop, bool after)
 {
   edge old_latch;
   tree *new_name_ptr, new_ssa_name;
@@ -553,7 +562,7 @@ update_phis_for_duplicate_loop (struct loop *loop,
    new edge from bb0 to bb4.  */
 
 static void
-update_phi_nodes_for_guard (edge guard_true_edge, struct loop * loop)
+slpeel_update_phi_nodes_for_guard (edge guard_true_edge, struct loop * loop)
 {
   tree phi, phi1;
   basic_block bb = loop->exit_edges[0]->dest;
@@ -599,8 +608,8 @@ update_phi_nodes_for_guard (edge guard_true_edge, struct loop * loop)
    that starts at zero, increases by one and its limit is NITERS.  */
 
 static void
-make_loop_iterate_ntimes (struct loop *loop, tree niters,
-			  tree begin_label, tree exit_label)
+slpeel_make_loop_iterate_ntimes (struct loop *loop, tree niters,
+				 tree begin_label, tree exit_label)
 {
   tree indx_before_incr, indx_after_incr, cond_stmt, cond;
   tree orig_cond;
@@ -645,8 +654,8 @@ make_loop_iterate_ntimes (struct loop *loop, tree niters,
    on E which is either the entry or exit of LOOP.  */
 
 static struct loop *
-tree_duplicate_loop_to_edge_cfg (struct loop *loop, struct loops *loops, 
-				 edge e)
+slpeel_tree_duplicate_loop_to_edge_cfg (struct loop *loop, struct loops *loops, 
+					edge e)
 {
   struct loop *new_loop;
   basic_block *new_bbs, *bbs;
@@ -765,7 +774,7 @@ tree_duplicate_loop_to_edge_cfg (struct loop *loop, struct loops *loops,
    Returns the skip edge.  */
 
 static edge
-add_loop_guard (basic_block guard_bb, tree cond, basic_block exit_bb)
+slpeel_add_loop_guard (basic_block guard_bb, tree cond, basic_block exit_bb)
 {
   block_stmt_iterator bsi;
   edge new_e, enter_e;
@@ -793,8 +802,8 @@ add_loop_guard (basic_block guard_bb, tree cond, basic_block exit_bb)
 /* This function verifies that certain restrictions apply to LOOP.  */
 
 static bool
-verify_loop_for_duplication (struct loop *loop,
-			     bool update_first_loop_count, edge e)
+slpeel_verify_loop_for_duplication (struct loop *loop,
+				    bool update_first_loop_count, edge e)
 {
   edge exit_e = loop->exit_edges [0];
   edge entry_e = loop_preheader_edge (loop);
@@ -928,9 +937,9 @@ verify_loop_for_duplication (struct loop *loop,
    transformations failed.  */
    
 struct loop*
-tree_duplicate_loop_to_edge (struct loop *loop, struct loops *loops, 
-			     edge e, tree first_niters, 
-			     tree niters, bool update_first_loop_count)
+slpeel_tree_peel_loop_to_edge (struct loop *loop, struct loops *loops, 
+			       edge e, tree first_niters, 
+			       tree niters, bool update_first_loop_count)
 {
   struct loop *new_loop = NULL, *first_loop, *second_loop;
   edge skip_e;
@@ -942,7 +951,7 @@ tree_duplicate_loop_to_edge (struct loop *loop, struct loops *loops,
 
   gcc_assert (!any_marked_for_rewrite_p ());
 
-  if (!verify_loop_for_duplication (loop, update_first_loop_count, e))
+  if (!slpeel_verify_loop_for_duplication (loop, update_first_loop_count, e))
       return NULL;
 
   /* We have to initialize cfg_hooks. Then, when calling 
@@ -952,7 +961,7 @@ tree_duplicate_loop_to_edge (struct loop *loop, struct loops *loops,
   tree_register_cfg_hooks ();
 
   /* 1. Generate a copy of LOOP and put it on E (entry or exit).  */
-  if (!(new_loop = tree_duplicate_loop_to_edge_cfg (loop, loops, e)))
+  if (!(new_loop = slpeel_tree_duplicate_loop_to_edge_cfg (loop, loops, e)))
     {
       if (vect_debug_stats (loop) || vect_debug_details (loop))	
 	fprintf (dump_file,
@@ -962,7 +971,7 @@ tree_duplicate_loop_to_edge (struct loop *loop, struct loops *loops,
 
   definitions = marked_ssa_names ();
   allocate_new_names (definitions);
-  update_phis_for_duplicate_loop (loop, new_loop, e == exit_e);
+  slpeel_update_phis_for_duplicate_loop (loop, new_loop, e == exit_e);
   /* Here, using assumption (5), we do not propagate new names further 
      than on phis of the exit from the second loop.  */
   rename_variables_in_loop (new_loop);
@@ -994,7 +1003,7 @@ tree_duplicate_loop_to_edge (struct loop *loop, struct loops *loops,
       tree first_loop_latch_lbl = tree_block_label (first_loop->latch);
       tree first_loop_exit_lbl = tree_block_label (first_exit_bb);
 
-      make_loop_iterate_ntimes (first_loop, first_niters,
+      slpeel_make_loop_iterate_ntimes (first_loop, first_niters,
 				first_loop_latch_lbl,
 				first_loop_exit_lbl);
     }
@@ -1018,11 +1027,11 @@ tree_duplicate_loop_to_edge (struct loop *loop, struct loops *loops,
 			   first_niters, integer_zero_node);
 
   /* 4c. Add condition at the end of preheader bb.  */
-  skip_e = add_loop_guard (pre_header_bb, pre_condition, first_exit_bb);
+  skip_e = slpeel_add_loop_guard (pre_header_bb, pre_condition, first_exit_bb);
 
   /* 4d. Update phis at first loop exit and propagate changes 
      to the phis of second loop.  */
-  update_phi_nodes_for_guard (skip_e, first_loop);
+  slpeel_update_phi_nodes_for_guard (skip_e, first_loop);
 
   /* 5. Add the guard before second loop:
 
@@ -1043,8 +1052,8 @@ tree_duplicate_loop_to_edge (struct loop *loop, struct loops *loops,
 			   first_niters, niters);
 
   /* 5c. Add condition at the end of preheader bb.  */
-  skip_e = add_loop_guard (first_exit_bb, pre_condition, second_exit_bb);
-  update_phi_nodes_for_guard (skip_e, second_loop);
+  skip_e = slpeel_add_loop_guard (first_exit_bb, pre_condition, second_exit_bb);
+  slpeel_update_phi_nodes_for_guard (skip_e, second_loop);
 
   BITMAP_XFREE (definitions);
   unmark_all_for_rewrite ();
@@ -1055,6 +1064,10 @@ tree_duplicate_loop_to_edge (struct loop *loop, struct loops *loops,
 
 
 /* Here the proper Vectorizer starts.  */
+
+/*************************************************************************
+  Vectorization Utilities.
+ *************************************************************************/
 
 /* Function new_stmt_vec_info.
 
@@ -3042,8 +3055,8 @@ vect_transform_for_unknown_loop_bound (loop_vec_info loop_vinfo, tree * ratio,
 #ifdef ENABLE_CHECKING
   loop_num  = loop->num; 
 #endif
-  new_loop = tree_duplicate_loop_to_edge (loop, loops, loop->exit_edges[0],
-					  ratio_mult_vf_name, ni_name, true); 
+  new_loop = slpeel_tree_peel_loop_to_edge (loop, loops, loop->exit_edges[0],
+					    ratio_mult_vf_name, ni_name, true); 
 #ifdef ENABLE_CHECKING
   gcc_assert (new_loop);
   gcc_assert (loop_num == loop->num);
@@ -3227,8 +3240,8 @@ vect_do_peeling_for_alignment (loop_vec_info loop_vinfo, struct loops *loops)
   
 
   /* Peel the prolog loop and iterate it niters_of_prolog_loop.  */
-  tree_duplicate_loop_to_edge (loop, loops, loop_preheader_edge(loop), 
-				  niters_of_prolog_loop, ni_name, false); 
+  slpeel_tree_peel_loop_to_edge (loop, loops, loop_preheader_edge(loop), 
+				 niters_of_prolog_loop, ni_name, false); 
 
   /* Update number of times loop executes.  */
   vect_update_niters_after_peeling (loop_vinfo, niters_of_prolog_loop);
