@@ -4351,7 +4351,12 @@ main (argc, argv)
 
   if (verbose_flag)
     {
-      fprintf (stderr, "gcc version %s\n", version_string);
+      if (! strcmp (version_string, compiler_version))
+	fprintf (stderr, "gcc version %s\n", version_string);
+      else
+	fprintf (stderr, "gcc driver version %s executing gcc version %s\n",
+		 version_string, compiler_version);
+
       if (n_infiles == 0)
 	exit (0);
     }
