@@ -1,3 +1,10 @@
+2001-02-26  Phil Edwards  <pme@sources.redhat.com>
+
+	Fixes libstdc++/2079
+	* include/backward/iomanip.h:  Expose <ios> manipulators to global
+	  namespace.
+	* include/backward/iostream.h:  Also expose std::ws.
+
 2001-02-25  Greg Freemyer <freemyer@NorcrossGroup.com>
 
 	* libmath/mathconf.h (GET_LDOUBLE_MSW64): Fix thinko.

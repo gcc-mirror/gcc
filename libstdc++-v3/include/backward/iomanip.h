@@ -31,6 +31,30 @@
 #include <iostream.h>
 #include <bits/std_iomanip.h>
 
+// These are from <ios> as per [27.4].
+using std::boolalpha;
+using std::noboolalpha;
+using std::showbase;
+using std::noshowbase;
+using std::showpoint;
+using std::noshowpoint;
+using std::showpos;
+using std::noshowpos;
+using std::skipws;
+using std::noskipws;
+using std::uppercase;
+using std::nouppercase;
+using std::internal;
+using std::left;
+using std::right;
+using std::dec;
+using std::hex;
+using std::oct;
+using std::fixed;
+using std::scientific;
+
+// These are from <iomanip> as per [27.6].  Manipulators from <istream>
+// and <ostream> (e.g., endl) are made available via <iostream.h>.
 using std::resetiosflags;
 using std::setiosflags;
 using std::setbase;
