@@ -1,5 +1,8 @@
 Fri Dec 12 01:19:48 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* flow.c (flow_analysis): Be consistent with find_basic_blocks in
+	determining when a new basic block starts.
+
 	* alpha/osf2or3.h (LIB_SPEC): Restore missing defn.
 
 	* pa.h (TEXT_SPACE_P): Use TREE_CODE_CLASS.
