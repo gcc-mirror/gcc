@@ -1,5 +1,10 @@
 2003-02-21  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/9749
+	* g++.dg/parse/varmod1.C: New test.
+
+2003-02-21  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/9727
 	* g++.dg/template/op1.C: New test.
 
