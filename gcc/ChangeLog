@@ -1,3 +1,8 @@
+Mon Feb  2 10:38:41 1998  Klaus Kaempf  <kkaempf@progis.de>
+
+	* makefile.vms: Remove bytecode references.
+	Create genrtl files.
+
 Mon Feb  2 02:08:04 1998  Michael P. Hayes  <michaelh@ongaonga.chch.cri.nz>
 
 	* jump.c (jump_optimize): Allow conditional loading of floating point

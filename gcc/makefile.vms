@@ -27,7 +27,7 @@ LFLAGS=/map/full
 #LFLAGS=
 else
 ifeq ($(ARCH),ALPHA)
-CFLAGS=/float=ieee/noopt/debug/define=("HAVE_CONFIG_H=1","USE_COLLECT2" $(HAIFA))\
+CFLAGS=/names=as_is/float=ieee/noopt/debug/define=("HAVE_CONFIG_H=1","USE_COLLECT2" $(HAIFA))\
 /warning=disable=(missingreturn,implicitfunc,ptrmismatch,undefescap,longextern,duptypespec)
 else
 CFLAGS=/noopt/debug/define=("HAVE_CONFIG_H=1","USE_COLLECT2" $(HAIFA))
@@ -58,13 +58,12 @@ else
 SCHED=haifa-sched
 endif
 
-BIOBJS=[]bi-parser.obj,bi-lexer.obj,bi-reverse.obj
 GENOBJS=[]rtl.obj,obstack.obj
 
 INDEPOBJS= []toplev.obj,version.obj,tree.obj,print-tree.obj,stor-layout.obj,\
 fold-const.obj,function.obj,stmt.obj,except.obj,expr.obj,calls.obj,expmed.obj,\
 explow.obj,optabs.obj,varasm.obj,rtl.obj,print-rtl.obj,rtlanal.obj,\
-emit-rtl.obj,real.obj,regmove.obj,dbxout.obj,sdbout.obj,dwarfout.obj,\
+emit-rtl.obj,genrtl.obj,real.obj,regmove.obj,dbxout.obj,sdbout.obj,dwarfout.obj,\
 dwarf2out.obj,xcoffout.obj,bitmap.obj,alias.obj,\
 integrate.obj,jump.obj,cse.obj,loop.obj,unroll.obj,flow.obj,stupid.obj,\
 combine.obj,regclass.obj,local-alloc.obj,global.obj,reload.obj,\
@@ -76,7 +75,7 @@ aux-output.obj,getpwd.obj,convert.obj
 
 CC1OBJS=[]c-parse.obj,c-lang.obj,c-lex.obj,c-pragma.obj,c-decl.obj,\
 c-typeck.obj,c-convert.obj,c-aux-info.obj,c-common.obj,c-iterate.obj,\
-bc-emit.obj,bc-optab.obj,obstack.obj
+obstack.obj
 
 OBJCOBJS=
 
@@ -93,12 +92,11 @@ CC1PLUSOBJS=[.cp]call.obj,[.cp]decl2.obj,\
 [.cp]sig.obj,[.cp]typeck2.obj,[.cp]repo.obj,\
 [.cp]input.obj,\
 []obstack.obj,\
-[]bc-emit.obj,[]bc-optab.obj,\
 []c-common.obj,[]c-pragma.obj
 
 CCCPOBJS=[]cccp.obj,cexp.obj,version.obj,prefix.obj
 
-ALLOCA=,[]alloca.obj,vms_abort.obj
+ALLOCA=,[]alloca.obj
 
 LIBIBERTY = [-.libiberty]libiberty.olb
 
@@ -111,7 +109,6 @@ CXX_LIB2FUNCS = [.cp]tinfo.obj,[.cp]tinfo2.obj,\
 .cc.obj:
 	$(CC)/plus/CPP="-nostdinc++" $(CFLAGS) $(CINCL_CP) $</obj=$@
 
-BC_INCLUDES=bc-arity.h bc-opcode.h bc-opname.h
 INSN_INCLUDES=insn-attr.h insn-codes.h insn-config.h insn-flags.h
 
 #
@@ -156,24 +153,6 @@ libgcc2.olb:
 
 libgccplus.olb: $(CXX_LIB2FUNCS)
 	lib/create libgccplus $(CXX_LIB2FUNCS)
-
-bi-arity.exe: bi-arity.obj,$(BIOBJS)$(ALLOCA)
-	$(LINK) $(LFLAGS)/exe=$@ $^$(LIBS)
-
-bc-arity.h: bi-arity.exe bytecode.def
-	mcr $(PWD)bi-arity.exe < bytecode.def > $@
-
-bi-opcode.exe: bi-opcode.obj,$(BIOBJS)$(ALLOCA)
-	$(LINK) $(LFLAGS)/exe=$@ $^$(LIBS)
-
-bc-opcode.h: bi-opcode.exe bytecode.def
-	mcr $(PWD)bi-opcode.exe < bytecode.def > $@
-
-bi-opname.exe: bi-opname.obj,$(BIOBJS)$(ALLOCA)
-	$(LINK) $(LFLAGS)/exe=$@ $^$(LIBS)
-
-bc-opname.h: bi-opname.exe bytecode.def
-	mcr $(PWD)bi-opname.exe < bytecode.def > $@
 
 genattr.exe: genattr.obj,$(GENOBJS)$(ALLOCA)
 	$(LINK) $(LFLAGS)/exe=$@ $^$(LIBS)
@@ -241,28 +220,32 @@ genattrtab.exe: genattrtab.obj,rtlanal.obj,$(GENOBJS)$(ALLOCA)
 insn-attrtab.c: genattrtab.exe $(MDFILE)
 	mcr $(PWD)genattrtab.exe $(MDFILE) > $@
 
+gengenrtl.exe: gengenrtl.obj,obstack.obj,$(ALLOCA)
+	$(LINK) $(LFLAGS)/exe=$@ $^$(LIBS)
+
+genrtl.h genrtl.c: gengenrtl.exe
+	mcr $(PWD)gengenrtl.exe	genrtl.h genrtl.c
+
 cccp.obj: cccp.c config.h
 aux-output.obj: aux-output.c insn-attr.h insn-flags.h insn-config.h
-bc-emit.obj: bc-emit.c bc-arity.h bc-opcode.h
-bc-optab.obj: bc-optab.c bc-opcode.h
-bi-parser.obj: bi-parser.c bi-parser.y
 caller-save.obj: caller-save.c insn-config.h
 calls.obj: calls.c insn-flags.h
 combine.obj: combine.c insn-attr.h insn-flags.h insn-codes.h insn-config.h
 cse.obj: cse.c insn-config.h
 c-decl.obj: c-decl.c expr.h integrate.h insn-codes.h insn-config.h
+c-lex.obj: c-lex.c genrtl.h
 c-typeck.obj: c-typeck.c
 dbxout.obj: dbxout.c insn-config.h
 dwarfout.obj: dwarfout.c insn-config.h
 dwarf2out.obj: dwarf2out.c insn-config.h
-emit-rtl.obj: emit-rtl.c bc-opcode.h bc-opname.h insn-config.h
+emit-rtl.obj: emit-rtl.c insn-config.h
 except.obj: except.c insn-flags.h insn-codes.h insn-config.h
 explow.obj: explow.c insn-flags.h insn-codes.h insn-config.h
 expmed.obj: expmed.c insn-flags.h insn-codes.h insn-config.h
-expr.obj: expr.c bc-opcode.h insn-flags.h insn-config.h
+expr.obj: expr.c insn-flags.h insn-config.h
 final.obj: final.c tm.h insn-attr.h insn-flags.h insn-codes.h insn-config.h
 flow.obj: flow.c insn-config.h
-function.obj: bc-opcode.h function.c insn-flags.h insn-codes.h insn-config.h insn-codes.h insn-config.h
+function.obj: function.c insn-flags.h insn-codes.h insn-config.h insn-codes.h insn-config.h
 genattrtab.obj: genattrtab.c insn-config.h
 genextract.obj: genextract.c insn-config.h
 global.obj: global.c insn-config.h
@@ -281,10 +264,10 @@ reload1.obj: reload1.c insn-flags.h insn-codes.h insn-config.h
 reorg.obj: reorg.c insn-attr.h insn-flags.h insn-config.h
 sched.obj: sched.c insn-attr.h insn-config.h
 haifa-sched.obj: haifa-sched.c insn-attr.h insn-config.h
-stmt.obj: stmt.c bc-opcode.h insn-flags.h insn-codes.h insn-config.h
+stmt.obj: stmt.c insn-flags.h insn-codes.h insn-config.h
 stor-layout.obj: stor-layout.c
 stupid.obj: stupid.c
-toplev.obj: toplev.c bc-opcode.h insn-attr.h insn-config.h
+toplev.obj: toplev.c insn-attr.h insn-config.h
 unroll.obj: unroll.c insn-config.h
 
 insn-attrtab.obj: insn-attrtab.c insn-attr.h insn-config.h
@@ -298,8 +281,6 @@ varasm.obj: varasm.c tm.h
 toplev.obj: toplev.c tm.h
 
 cexp.c: cexp.y
-	$(BISON) $(BISON_FLAGS)/output=$@ $<
-bi-parser.c: bi-parser.y
 	$(BISON) $(BISON_FLAGS)/output=$@ $<
 c-parse.c: c-parse.y
 	$(BISON) $(BISON_FLAGS)/output=$@ $<
@@ -362,9 +343,6 @@ clean:
 	$(RM) *.sched;
 	$(RM) *.sched2;
 	$(RM) *.map;
-	$(RM) bi-arity.exe;,bc-arity.h;
-	$(RM) bi-opcode.exe;,bc-opcode.h;
-	$(RM) bi-opname.exe;,bc-opname.h;
 	$(RM) genattr.exe;,insn-attr.h;
 	$(RM) genflags.exe;,insn-flags.h;
 	$(RM) gencodes.exe;,insn-codes.h;
@@ -376,6 +354,7 @@ clean:
 	$(RM) genoutput.exe;,insn-output.c;
 	$(RM) genemit.exe;,insn-emit.c;
 	$(RM) genattrtab.exe;,insn-attrtab.c;
+	$(RM) gengenrtl.exe;,genrtl.c;,genrtl.h;
 	$(RM) cc1.exe;
 	$(RM) cpp.exe;
 	$(RM) cc1plus.exe;
