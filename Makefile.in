@@ -1444,7 +1444,7 @@ bootstrap bootstrap-lean bootstrap2 bootstrap2-lean bootstrap3 bootstrap3-lean b
 	s=`cd $(srcdir); pwd`; export s; \
 	$(SET_LIB_PATH) \
 	echo "Bootstrapping the compiler"; \
-	cd gcc; $(MAKE) $(GCC_FLAGS_TO_PASS) $@
+	cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) $@
 	@r=`pwd`; export r; \
 	s=`cd $(srcdir); pwd`; export s; \
 	case "$@" in \
@@ -1460,7 +1460,7 @@ bootstrap bootstrap-lean bootstrap2 bootstrap2-lean bootstrap3 bootstrap3-lean b
 	esac; \
 	$(SET_LIB_PATH) \
 	echo "$$msg"; \
-	cd gcc; $(MAKE) $(GCC_FLAGS_TO_PASS) $$compare
+	cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) $$compare
 	@r=`pwd`; export r; \
 	s=`cd $(srcdir); pwd` ; export s; \
 	$(SET_LIB_PATH) \
@@ -1473,7 +1473,7 @@ cross: all-texinfo all-bison all-byacc all-binutils all-gas all-ld
 	s=`cd $(srcdir); pwd`; export s; \
 	$(SET_LIB_PATH) \
 	echo "Building the C and C++ compiler"; \
-	cd gcc; $(MAKE) $(GCC_FLAGS_TO_PASS) LANGUAGES="c c++"
+	cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) LANGUAGES="c c++"
 	@r=`pwd`; export r; \
 	s=`cd $(srcdir); pwd` ; export s; \
 	$(SET_LIB_PATH) \
@@ -1791,7 +1791,7 @@ do-proto-toplev: $(DEVO_SUPPORT) $(SUPPORT_FILES) texinfo/texinfo.tex
 	    fi ; \
 	  else ln -s ../$$d proto-toplev/$$d ; fi ; \
 	done
-	cd etc ; $(MAKE) info
+	cd etc && $(MAKE) info
 	$(MAKE) distclean
 	#
 	mkdir proto-toplev/etc

@@ -1,3 +1,9 @@
+2000-10-04  Andris Pavenis  <pavenis@latnet.lv>
+
+	* Makefile.in (bootstrap): avoid recursion if subdir missing
+	(cross): ditto
+	(do-proto-toplev): ditto
+
 2000-09-30  Alexandre Oliva  <aoliva@redhat.com>
 
 	* Makefile.in (DEVO_SUPPORT): Added gettext.m4, libtool.m4,
