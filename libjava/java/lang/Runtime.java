@@ -23,8 +23,7 @@ import java.util.StringTokenizer;
 /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
  * "The Java Language Specification", ISBN 0-201-63451-1
  * plus online API docs for JDK 1.2 beta from http://www.javasoft.com.
- * Status:  All 1.1 methods exist.  exec(), load(), and loadLibrary()
- * are not fully implemented.
+ * Status:  All 1.1 methods exist.  exec() is not fully implemented.
  */
 
 public class Runtime
@@ -94,8 +93,17 @@ public class Runtime
       s.checkLink(lib);
   }
 
-  public native void load (String pathname);
-  public native void loadLibrary (String libname);
+  private native void _load (String pathname, boolean do_search);
+
+  public void load (String pathname)
+  {
+    _load (pathname, false);
+  }
+
+  public void loadLibrary (String libname)
+  {
+    _load (libname, true);
+  }
 
   // This is a helper function for the ClassLoader which can load
   // compiled libraries.  Returns true if library (which is just the
