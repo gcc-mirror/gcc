@@ -1,5 +1,9 @@
 2002-10-31  Steve Ellcey  <sje@cup.hp.com>
 
+	* expmed.c (store_bit_field): Check FUNCTION_ARG_REG_LITTLE_ENDIAN.
+
+2002-10-31  Steve Ellcey  <sje@cup.hp.com>
+
 	* config/ia64/hpux.h (MEMBER_TYPE_FORCES_BLK): Set for non-floats.
 
 Thu Oct 31  Dale Johannesen  <dalej@apple.com>
