@@ -1,11 +1,28 @@
 /* java.lang.ThreadGroup
    Copyright (C) 1998, 2000 Free Software Foundation, Inc.
- 
-This file is part of libgcj.
 
-This software is copyrighted work licensed under the terms of the
-Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
-details.  */
+This file is part of GNU Classpath.
+
+GNU Classpath is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+ 
+GNU Classpath is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Classpath; see the file COPYING.  If not, write to the
+Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+02111-1307 USA.
+
+As a special exception, if you link this library with other files to
+produce an executable, this library does not by itself cause the
+resulting executable to be covered by the GNU General Public License.
+This exception does not however invalidate any other reasons why the
+executable file might be covered by the GNU General Public License. */
  
 package java.lang;
 
@@ -42,8 +59,7 @@ public class ThreadGroup
   private Vector groups = new Vector();
   private boolean daemon_flag = false;
   private boolean destroyed_flag = false;
-
-  int maxpri = Thread.MAX_PRIORITY;
+  private int maxpri = Thread.MAX_PRIORITY;
 
   private ThreadGroup()
   {
@@ -76,7 +92,7 @@ public class ThreadGroup
     this.name = name;
     maxpri = parent.maxpri;
     daemon_flag = parent.daemon_flag;
-    parent.add(this);
+    parent.addGroup(this);
   }
 
   /** Get the name of this ThreadGroup.
@@ -416,7 +432,7 @@ public class ThreadGroup
       throw new IllegalThreadStateException("Already destroyed.");
     checkDestroy ();
     if (parent != null)
-      parent.remove(this);
+      parent.removeGroup(this);
     destroyed_flag = true;
     parent = null;
 
@@ -515,7 +531,7 @@ public class ThreadGroup
   }
 
   // This is called to add a Thread to our internal list.
-  final void add(Thread t)
+  final void addThread(Thread t)
   {
     if (destroyed_flag)
       throw new IllegalThreadStateException ("ThreadGroup is destroyed");
@@ -524,7 +540,7 @@ public class ThreadGroup
   }
 
   // This is called to remove a Thread from our internal list.
-  final void remove(Thread t)
+  final void removeThread(Thread t)
   {
     if (destroyed_flag)
       throw new IllegalThreadStateException ();
@@ -535,19 +551,19 @@ public class ThreadGroup
       {
 	// We inline destroy to avoid the access check.
 	if (parent != null)
-	  parent.remove(this);
+	  parent.removeGroup(this);
 	destroyed_flag = true;
       }
   }
 
   // This is called to add a ThreadGroup to our internal list.
-  final void add(ThreadGroup g)
+  final void addGroup(ThreadGroup g)
   {
     groups.addElement(g);
   }
 
   // This is called to remove a ThreadGroup from our internal list.
-  final void remove(ThreadGroup g)
+  final void removeGroup(ThreadGroup g)
   {
     groups.removeElement(g);
     // Daemon groups are automatically destroyed when all their threads die.
@@ -555,7 +571,7 @@ public class ThreadGroup
       {
 	// We inline destroy to avoid the access check.
 	if (parent != null)
-	  parent.remove(this);	
+	  parent.removeGroup(this);	
 	destroyed_flag = true;
       }
   }

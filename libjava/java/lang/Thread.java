@@ -220,7 +220,7 @@ public class Thread implements Runnable
       throw new NullPointerException ();
 
     name = n;
-    group.add(this);
+    group.addThread(this);
     runnable = r;
 
     data = null;
