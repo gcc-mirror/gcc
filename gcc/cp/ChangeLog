@@ -1,3 +1,14 @@
+2004-02-07  Zack Weinberg  <zack@codesourcery.com>
+
+	Bug 13856
+	* optimize.c (maybe_clone_body): Don't update DECL_ESTIMATED_INSNS.
+	* decl.c (duplicate_decls, start_function): Likewise.
+
+2004-02-07  Zack Weinberg  <zack@codesourcery.com>
+
+	* name-lookup.c (pushdecl): Issue shadow warnings directly.
+	* parser.c (free_parser_stacks): Delete.
+
 2004-02-07  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* rtti.c: Update copyright.
@@ -45,7 +56,7 @@
 2003-02-05  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/14008
-	* parser.c (cp_parser_diagnose_invalid_typename): Removed parsing 
+	* parser.c (cp_parser_diagnose_invalid_typename): Removed parsing
 	code, only emits the diagnostic now. Added lookup of the identifier
 	and support for qualified ids.
 	(cp_parser_parse_and_diagnose_invalid_type_name): New function.
@@ -177,10 +188,10 @@
 
 2004-01-30  Richard Henderson  <rth@redhat.com>
 
-        PR c++/13693
-        * method.c (use_thunk): Don't force_target_expr for void thunks.
-        * tree.c (build_target_expr_with_type): Assert non-void type.
-        (force_target_expr): Likewise.
+	PR c++/13693
+	* method.c (use_thunk): Don't force_target_expr for void thunks.
+	* tree.c (build_target_expr_with_type): Assert non-void type.
+	(force_target_expr): Likewise.
 
 2004-01-30  Michael Matz  <matz@suse.de>
 
@@ -207,7 +218,7 @@
 
 2004-01-28  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
-	* parser.c (cp_parser_template_id): Parse tentatively `[:' after a 
+	* parser.c (cp_parser_template_id): Parse tentatively `[:' after a
 	template name as it was `<::' (digraph typo).
 	(cp_parser_nth_token_starts_template_argument_list_p): New function.
 	(cp_parser_id_expression): Use it.
@@ -237,7 +248,7 @@
 	* name-lookup.c: Include "debug.h"
 	(do_namespace_alias): Invoke debug_hooks to emit debug info
 	for namespace alias.
-	(do_local_using_decl): Invoke debug_hooks to emit debug info 
+	(do_local_using_decl): Invoke debug_hooks to emit debug info
 	for using decl.
 	(do_class_using_decl): Same.
 	(do_toplevel_using_decl): Same.
@@ -295,7 +306,7 @@
 2004-01-25  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/13810
-	* parser.c (cp_parser_type_parameter): When cp_parser_id_expression 
+	* parser.c (cp_parser_type_parameter): When cp_parser_id_expression
 	returns a TYPE_DECL. no further lookup is required.
 	* semantics.c (check_template_template_default_arg): A TYPE_DECL
 	is invalid. Rework to give better diagnostics.
@@ -336,7 +347,7 @@
 
 2004-01-20  Kelley Cook  <kcook@gcc.gnu.org>
 
-	* Make-lang.in (CXX_INSTALL_NAME, GXX_INSTALL_NAME, 
+	* Make-lang.in (CXX_INSTALL_NAME, GXX_INSTALL_NAME,
 	CXX_TARGET_INSTALL_NAME, GXX_TARGET_INSTALL_NAME): Define via a
 	immediate $(shell) instead of deferred backquote.
 
@@ -444,7 +455,7 @@
 2004-01-15  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/8856
-	* parser.c (cp_parser_template_name): Don't try to parse a 
+	* parser.c (cp_parser_template_name): Don't try to parse a
 	conversion-function-id, as it cannot be a template-name.
 	(cp_parser_simple_type_specifier): Check for invalid template-ids
 	even after a built-in type.
@@ -555,7 +566,7 @@
 
 	DR 337
 	PR c++/9256
-	* pt.c (tsubst): Substitution must fail if we are attempting to 
+	* pt.c (tsubst): Substitution must fail if we are attempting to
 	create an array with element type that is an abstract class type.
 	* decl.c (cp_finish_decl): Strip pointers and array types recursively
 	before calling abstract_virtuals_error.

@@ -1,3 +1,14 @@
+2004-02-07  Zack Weinberg  <zack@codesourcery.com>
+
+	Bug 13856
+	* gcc.dg/visibility-8.c: New testcase.
+
+2004-02-07  Zack Weinberg  <zack@codesourcery.com>
+
+	* gcc.c-torture/execute/string-opt-15.c: Define memcmp with void *
+	arguments.
+	* gcc.dg/fwritable-strings-1.c: Expect the deprecation notice.
+
 2004-02-07  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/13696
@@ -130,7 +141,7 @@
 	* g++.dg/template/sizeof7.C: New test.
 
 2004-02-02  Eric Christopher  <echristo@redhat.com>
-            Zack Weinberg  <zack@codesourcery.com>
+	    Zack Weinberg  <zack@codesourcery.com>
 
 	* gcc.c-torture/execute/wchar_t-1.c: Add -finput-charset.
 

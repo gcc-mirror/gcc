@@ -1,3 +1,29 @@
+2004-02-07  Zack Weinberg  <zack@codesourcery.com>
+
+	Bug 13856
+	* c-decl.c (diagnose_mismatched_decls): Only give special
+	treatment when olddecl is DECL_BUILT_IN, if C_DECL_INVISIBLE
+	is also true.
+	(merge_decls): Don't clear DECL_BUILT_IN_CLASS and
+	DECL_FUNCTION_CODE when defining a built-in function.
+	Don't update DECL_ESTIMATED_INSNS.
+	* dwarf2out.c (dwarf2out_decl): Don't ignore built-in
+	FUNCTION_DECLs.
+	* tree.h: Delete DECL_ESTIMATED_INSNS.
+	* tree-inline.c (struct inline_data): Delete inlined_insns field.
+	(expand_call_inline, optimize_inline_calls): Don't update
+	DECL_ESTIMATED_INSNS nor inlined_insns.
+	* cgraphunit.c (cgraph_analyze_function): Don't update
+	DECL_ESTIMATED_INSNS.
+
+2004-02-07  Zack Weinberg  <zack@codesourcery.com>
+
+	* c-common.c (shadow_warning): Delete.
+	* c-common.h (free_parser_stacks, shadow_warning, sw_kind): Delete.
+	* c-decl.c (warn_if_shadowing): Issue shadow warnings directly.
+	* c-opts.c (c_common_parse_file): Don't call free_parser_stacks.
+	* c-parse.in (free_parser_stacks): Delete.
+
 2004-02-07  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* Makefile.in, config/t-slibgcc-darwin, config/t-slibgcc-elf-ver,
@@ -114,7 +140,7 @@
 
 2004-02-06  Andrew Pinski  <pinskia@physics.uc.edu>
 
-	* dwarf2out.c (loclabel_num): Move into #ifdef 
+	* dwarf2out.c (loclabel_num): Move into #ifdef
 	DWARF2_DEBUGGING_INFO.
 
 2004-02-06  Ziemowit Laski  <zlaski@apple.com>
@@ -130,7 +156,7 @@
 	(eliminate_regs_in_insn): Likewise.
 
 2004-02-06  Daniel Berlin <dberlin@dberlin.org>
-            Josef Zlomek  <zlomekj@suse.cz>
+	    Josef Zlomek  <zlomekj@suse.cz>
 
 	* dwarf2out.c (struct gcc_debug_hooks): Call dwarf2out_begin_function
 	at the beginning of function, call dwarf2out_var_location for
@@ -166,7 +192,7 @@
 	all insns forces by an insn, not just the first one.
 
 2004-02-06  Josef Zlomek  <zlomekj@suse.cz>
-            Daniel Berlin <dberlin@dberlin.org>
+	    Daniel Berlin <dberlin@dberlin.org>
 
 	Josef Zlomek  <zlomekj@suse.cz>
 	* Makefile.in (var-tracking.o): New.
@@ -175,31 +201,31 @@
 	* gengtype.c (adjust_field_rtx_def): NOTE_INSN_VAR_LOCATION was added.
 	* opts.c (common_handle_option): Add OPT_fvar_tracking.
 	* print-rtl.c (print_rtx): NOTE_INSN_VAR_LOCATION was added.
-        * rtl.c (note_insn_name): Likewise.
-        * rtl.def (VAR_LOCATION): New.
-        * rtl.h (NOTE_VAR_LOCATION): New.
-        (NOTE_VAR_LOCATION_DECL): New.
-        (NOTE_VAR_LOCATION_LOC): New.
-        (enum insn_note): NOTE_INSN_VAR_LOCATION was added.
-        (variable_tracking_main): New exported function.
-        * timevar.def (TV_VAR_TRACKING): New.
-        * toplev.c (enum dump_file_index): Added DFI_vartrack.
-        (dump_file): "vartrack" was added (-dV).
-        (flag_var_tracking): New.
-        (f_options): "var-tracking" was added.
+	* rtl.c (note_insn_name): Likewise.
+	* rtl.def (VAR_LOCATION): New.
+	* rtl.h (NOTE_VAR_LOCATION): New.
+	(NOTE_VAR_LOCATION_DECL): New.
+	(NOTE_VAR_LOCATION_LOC): New.
+	(enum insn_note): NOTE_INSN_VAR_LOCATION was added.
+	(variable_tracking_main): New exported function.
+	* timevar.def (TV_VAR_TRACKING): New.
+	* toplev.c (enum dump_file_index): Added DFI_vartrack.
+	(dump_file): "vartrack" was added (-dV).
+	(flag_var_tracking): New.
+	(f_options): "var-tracking" was added.
 	(rest_of_handle_variable_tracking): New function.
-        (rest_of_compilation): Run variable tracking.
+	(rest_of_compilation): Run variable tracking.
 	(process_options): If user has not specified flag_var_tracking set it
 	according to optimize, debug_info_level and debug_hooks.
 	* tree.h (frame_base_decl): New.
-        * var-tracking.c: New file.
+	* var-tracking.c: New file.
 	* config/ia64/ia64.c (ia64_flag_var_tracking): New variable.
 	(ia64_override_options): Set flags to run variable tracking in machine
 	dependent reorg instead of toplev.c.
 	(ia64_reorg): Run variable tracking if wanted.
-        * doc/invoke.texi: Mention variable tracking in -dV,
+	* doc/invoke.texi: Mention variable tracking in -dV,
 	add and -fvar-tracking.
-        * doc/passes.texi: Added variable tracking pass.
+	* doc/passes.texi: Added variable tracking pass.
 
 	Daniel Berlin <dberlin@dberlin.org>
 	* debug.h (struct gcc_debug_hooks): Added var_location debug hook.
@@ -210,8 +236,8 @@
 	* dwarfout.c (dwarf_debug_hooks): Likewise.
 	* sdbout.c (sdb_debug_hooks): Likewise.
 	* vmsdbgout.c (vmsdbg_debug_hooks): Likewise.
-	* final.c (final_scan_insn): Call var_location debug hook for each 
-	NOTE_INSN_VAR_LOCATION. 
+	* final.c (final_scan_insn): Call var_location debug hook for each
+	NOTE_INSN_VAR_LOCATION.
 
 2004-02-06  Jan Hubicka  <jh@suse.cz>
 
@@ -407,7 +433,7 @@
 
 	* dwarf2out.c (force_type_die): Look up input type itself
 	instead of root_type() of type.
-	
+
 2004-02-05  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.md ("*tmqidi_ext"): New insn.
@@ -611,8 +637,8 @@
 	by reference if ARCH32.
 
 2004-02-04  Aldy Hernandez  <aldyh@redhat.com>
- 
-        * cgraphunit.c (cgraph_postorder): Fix typo in comment.
+
+	* cgraphunit.c (cgraph_postorder): Fix typo in comment.
 
 2004-02-04  Ulrich Weigand  <uweigand@de.ibm.com>
 
@@ -697,7 +723,7 @@
 	pointer when all VALUE's locations has been invalidated.
 	(rtx_equal_for_memref_p): Simplify checking of VALUEs.
 
-2004-02-03  Wolfgang Bangerth  <bangerth@dealii.org> 
+2004-02-03  Wolfgang Bangerth  <bangerth@dealii.org>
 
 	* doc/invoke.texi (x86 options): Fix spelling/wording.
 
@@ -1223,8 +1249,8 @@
 
 2004-02-02  Richard Henderson  <rth@redhat.com>
 
-        PR target/13789
-        * expr.c (store_expr): Use force_operand before emit_move_insn.
+	PR target/13789
+	* expr.c (store_expr): Use force_operand before emit_move_insn.
 
 2004-02-02  Jeff Law  <law@redhat.com>
 	    Roger Sayle  <roger@eyesopen.com>
@@ -1260,24 +1286,24 @@
 	gen_rtx.
 
 2004-02-02  Eric Christopher  <echristo@redhat.com>
-            Zack Weinberg  <zack@codesourcery.com>
+	    Zack Weinberg  <zack@codesourcery.com>
 
 	* c-opts.c (c_common_handle_option): Add -finput-charset.
-        * c.opt: Ditto.
-        * cppcharset.c (one_iso88591_to_utf8): Remove.
-        (convert_iso88591_utf8): Ditto.
-        (conversion_tab): Remove 8859-1 converter.
-        (_cpp_input_to_utf8): Remove.
-        (_cpp_init_iconv_buffer): Ditto.
-        (_cpp_close_iconv_buffer): Ditto.
-        (_cpp_convert_input): New function.
-        (_cpp_default_encoding): Ditto.
-        * cpphash.h: Add/remove prototypes for above.
-        * cppfiles.c (read_file_guts): Use _cpp_convert_input.
-        * cppinit.c (cpp_create_reader): Use _cpp_default_encoding
-        for narrow execution and input character sets.
-        * cpplib.c (cpp_push_buffer): Delete uses of removed functions.
-        * doc/cppopts.texi: Document -finput-charset.
+	* c.opt: Ditto.
+	* cppcharset.c (one_iso88591_to_utf8): Remove.
+	(convert_iso88591_utf8): Ditto.
+	(conversion_tab): Remove 8859-1 converter.
+	(_cpp_input_to_utf8): Remove.
+	(_cpp_init_iconv_buffer): Ditto.
+	(_cpp_close_iconv_buffer): Ditto.
+	(_cpp_convert_input): New function.
+	(_cpp_default_encoding): Ditto.
+	* cpphash.h: Add/remove prototypes for above.
+	* cppfiles.c (read_file_guts): Use _cpp_convert_input.
+	* cppinit.c (cpp_create_reader): Use _cpp_default_encoding
+	for narrow execution and input character sets.
+	* cpplib.c (cpp_push_buffer): Delete uses of removed functions.
+	* doc/cppopts.texi: Document -finput-charset.
 
 2004-02-02  David Edelsohn  <edelsohn@gnu.org>
 
@@ -1717,7 +1743,7 @@
 
 2004-01-30  Fariborz Jahanian <fjahanian@apple.com>
 
-        * config/rs6000/rs6000.c (rs6000_emit_move): Remove #if 0.
+	* config/rs6000/rs6000.c (rs6000_emit_move): Remove #if 0.
 	Copy operands[1] to pseudo for simplify_gen_subreg.
 
 2004-01-30  Kazu Hirata  <kazu@cs.umass.edu>
@@ -1736,7 +1762,7 @@
 	commuting XOR with ASHIFTRT.
 
 2004-01-30  Kazu Hirata  <kazu@cs.umass.edu>
-            Eric Botcazou  <ebotcazou@libertysurf.fr>
+	    Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sparc-protos.h: Remove the prototype for
 	sparc_builtin_saveregs.
