@@ -1,5 +1,5 @@
 /* InflaterInputStream.java - Input stream filter for decompressing
-   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -245,4 +245,18 @@ public class InflaterInputStream extends FilterInputStream
 
     return skipped;
  }
+
+  public boolean markSupported()
+  {
+    return false;
+  }
+
+  public void mark(int readLimit)
+  {
+  }
+
+  public void reset() throws IOException
+  {
+    throw new IOException("reset not supported");
+  }
 }
