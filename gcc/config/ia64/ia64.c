@@ -1086,8 +1086,7 @@ ia64_expand_load_address (dest, src, scratch)
       if (! scratch)
 	scratch = no_new_pseudos ? subtarget : gen_reg_rtx (DImode);
 
-      emit_insn (gen_load_symptr (subtarget, plus_constant (sym, hi),
-				  scratch));
+      ia64_expand_load_address (subtarget, plus_constant (sym, hi), scratch);
       emit_insn (gen_adddi3 (temp, subtarget, GEN_INT (lo)));
     }
   else

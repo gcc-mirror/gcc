@@ -1,3 +1,9 @@
+2004-07-23  James E Wilson  <wilson@specifixinc.com>
+
+	PR target/16559
+	* ia64.c (ia64_expand_load_address): For CONST, replace
+	gen_load_symptr call with recursive call.
+
 2004-07-17  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	Backport from mainline:
