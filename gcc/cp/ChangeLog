@@ -1,3 +1,8 @@
+2004-05-30  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* cp-lang.c (cp_expand_decl): Remove.
+	(LANG_HOOKS_EXPAND_DECL): Use c_expand_decl.
+
 2004-05-30  Andreas Jaeger  <aj@suse.de>
 
 	* lang-specs.h: Add missing initializers for .ii.

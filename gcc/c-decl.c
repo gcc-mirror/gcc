@@ -6361,47 +6361,26 @@ finish_function (void)
   current_function_decl = NULL;
 }
 
-/* Generate the RTL for the body of FNDECL.  If NESTED_P is nonzero,
-   then we are already in the process of generating RTL for another
-   function.  */
-
-static void
-c_expand_body_1 (tree fndecl, int nested_p)
-{
-  if (nested_p)
-    {
-      /* Make sure that we will evaluate variable-sized types involved
-	 in our function's type.  */
-      expand_pending_sizes (DECL_LANG_SPECIFIC (fndecl)->pending_sizes);
-
-      /* Squirrel away our current state.  */
-      push_function_context ();
-    }
-    
-  tree_rest_of_compilation (fndecl, nested_p);
-
-  if (nested_p)
-    /* Return to the enclosing function.  */
-    pop_function_context ();
-
-  if (DECL_STATIC_CONSTRUCTOR (fndecl)
-      && targetm.have_ctors_dtors)
-    targetm.asm_out.constructor (XEXP (DECL_RTL (fndecl), 0),
-				 DEFAULT_INIT_PRIORITY);
-  if (DECL_STATIC_DESTRUCTOR (fndecl)
-      && targetm.have_ctors_dtors)
-    targetm.asm_out.destructor (XEXP (DECL_RTL (fndecl), 0),
-				DEFAULT_INIT_PRIORITY);
-}
-
-/* Like c_expand_body_1 but only for unnested functions.  */
+/* Generate the RTL for the body of FNDECL.  */
 
 void
 c_expand_body (tree fndecl)
 {
 
-  if (DECL_INITIAL (fndecl) && DECL_INITIAL (fndecl) != error_mark_node)
-    c_expand_body_1 (fndecl, 0);
+  if (!DECL_INITIAL (fndecl)
+      || DECL_INITIAL (fndecl) == error_mark_node)
+    return;
+
+  tree_rest_of_compilation (fndecl, false);
+
+  if (DECL_STATIC_CONSTRUCTOR (fndecl)
+      && targetm.have_ctors_dtors)
+    targetm.asm_out.constructor (XEXP (DECL_RTL (fndecl), 0),
+                                 DEFAULT_INIT_PRIORITY);
+  if (DECL_STATIC_DESTRUCTOR (fndecl)
+      && targetm.have_ctors_dtors)
+    targetm.asm_out.destructor (XEXP (DECL_RTL (fndecl), 0),
+                                DEFAULT_INIT_PRIORITY);
 }
 
 /* Check the declarations given in a for-loop for satisfying the C99
@@ -6595,34 +6574,6 @@ c_begin_compound_stmt (void)
   stmt = add_stmt (build_stmt (COMPOUND_STMT, NULL_TREE));
 
   return stmt;
-}
-
-/* Expand DECL if it declares an entity not handled by the
-   common code.  */
-
-int
-c_expand_decl (tree decl)
-{
-  if (TREE_CODE (decl) == VAR_DECL && !TREE_STATIC (decl))
-    {
-      /* Let the back-end know about this variable.  */
-      if (!anon_aggr_type_p (TREE_TYPE (decl)))
-	emit_local_var (decl);
-      else
-	expand_anon_union_decl (decl, NULL_TREE, 
-				DECL_ANON_UNION_ELEMS (decl));
-    }
-  else if (TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl))
-    make_rtl_for_local_static (decl);
-  /* Expand nested functions.  */
-  else if (TREE_CODE (decl) == FUNCTION_DECL
-	   && DECL_CONTEXT (decl) == current_function_decl
-	   && DECL_SAVED_TREE (decl))
-    c_expand_body_1 (decl, 1);
-  else
-    return 0;
-
-  return 1;
 }
 
 /* Return the global value of T as a symbol.  */

@@ -1,3 +1,13 @@
+2004-05-30  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* c-decl.c (c_expand_body_1): Remove and fold back into ...
+	(c_expand_body): here.
+	(c_expand_decl): Move to ...
+	* c-common.c (c_expand_decl): Here and remove check for nested
+	functions.
+	* c-common.h (c_expand_decl): Add prototype.
+	* c-tree.h (c_expand_decl): Remove.
+
 2004-05-30  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (combine_comparisons, optimize_bit_field_compare,
