@@ -1,3 +1,8 @@
+2000-10-07  Anthony Green  <green@redhat.com>
+
+	* class.c (layout_class): Handle case where superclass can't be
+	layed out yet.
+
 2000-10-07  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* Makefile.in (keyword.h): Refer to GNU FTP site for updated
@@ -152,7 +157,6 @@ Wed Sep 13 11:50:35 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(argument_types_convertible): Likewise.
 	(patch_cast): Rename wfl_op parameter to avoid macro conflicts.
 	
->>>>>>> 1.531
 2000-09-14  Tom Tromey  <tromey@cygnus.com>
 
 	* lex.h: Use HAVE_ICONV_H, not HAVE_ICONV.
