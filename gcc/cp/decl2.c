@@ -650,14 +650,6 @@ cxx_decode_option (argc, argv)
 	warn_nontemplate_friend = setting;
       else if (!strcmp (p, "deprecated"))
         warn_deprecated = setting;
-      else if (!strcmp (p, "comment"))
-	;			/* cpp handles this one.  */
-      else if (!strcmp (p, "comments"))
-	;			/* cpp handles this one.  */
-      else if (!strcmp (p, "trigraphs"))
-	;			/* cpp handles this one.  */
-      else if (!strcmp (p, "import"))
-	;			/* cpp handles this one.  */
       else if (!strcmp (p, "all"))
 	{
 	  warn_return_type = setting;
