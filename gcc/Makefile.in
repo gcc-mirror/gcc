@@ -3364,18 +3364,19 @@ paranoia: paranoia.o real.o $(LIBIBERTY)
 
 # Update the tags table.
 TAGS: lang.tags
-	(cd $(srcdir);						     \
-	incs= ;							     \
-	list='$(SUBDIRS)'; for dir in $$list; do		     \
-	  if test -f $$dir/TAGS; then				     \
-	    incs="$$incs --include $$dir/TAGS";			     \
-	  fi;							     \
-	done;							     \
-	mkdir tmp-tags;						     \
-	mv -f c-parse.[ch] tmp-tags;				     \
-	etags *.y *.h *.c $$incs;				     \
-	mv tmp-tags/* .;					     \
-	rmdir tmp-tags)
+	(cd $(srcdir);					\
+	incs= ;						\
+	list='$(SUBDIRS)'; for dir in $$list; do	\
+	  if test -f $$dir/TAGS; then			\
+	    incs="$$incs --include $$dir/TAGS.sub";	\
+	  fi;						\
+	done;						\
+	mkdir tmp-tags;					\
+	mv -f c-parse.[ch] tmp-tags;			\
+	etags -o TAGS.sub *.y *.h *.c;			\
+	mv tmp-tags/* .;				\
+	rmdir tmp-tags;					\
+	etags --include TAGS.sub $$incs)
 
 # ------------------------------------------------------
 # Bootstrap-related targets (not used during 'make all')

@@ -1,4 +1,4 @@
-# Top level makefile fragment for the GNU compiler for the Java(TM)
+# Top level -*- makefile -*- fragment for the GNU compiler for the Java(TM)
 # language.
 #   Copyright (C) 1996, 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
@@ -158,7 +158,10 @@ java.rest.encap:
 
 
 java.tags: force
-	cd $(srcdir)/java; etags *.y *.c *.h --language=none --regex='/DEFTREECODE [(]\([A-Z_]+\)/\1/' java-tree.def
+	cd $(srcdir)/java; etags -o TAGS.sub *.y *.c *.h --language=none \
+	  --regex='/DEFTREECODE [(]\([A-Z_]+\)/\1/' java-tree.def; \
+	etags --include TAGS.sub --include ../TAGS.sub
+
 
 info:: $(docobjdir)/gcj.info
 dvi:: $(docobjdir)/gcj.dvi

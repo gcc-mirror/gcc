@@ -1,4 +1,4 @@
-# Top level makefile fragment for GNU Fortran.           -*-makefile-*-
+# Top level -*- makefile -*- fragment for GNU Fortran.
 #   Copyright (C) 1995, 1996, 1997, 1998, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 #This file is part of GNU Fortran.
@@ -146,7 +146,8 @@ f77.start.encap: g77$(exeext)
 f77.rest.encap:
 
 f77.tags: force
-	cd $(srcdir)/f; etags *.c *.h
+	cd $(srcdir)/f; etags -o TAGS.sub *.c *.h; \
+	etags --include TAGS.sub --include ../TAGS.sub
 
 info:: $(docobjdir)/g77.info
 dvi:: $(docobjdir)/g77.dvi
@@ -311,7 +312,7 @@ f77.distclean:
 	-rm -f f/Makefile
 f77.extraclean:
 f77.maintainer-clean:
-	-rm -f f/g77.info* f/g77.*aux f/TAGS f/BUGS f/NEWS f/intdoc.texi
+	-rm -f f/g77.info* f/g77.*aux f/TAGS f/TAGS.sub f/BUGS f/NEWS f/intdoc.texi
 #
 # Stage hooks:
 # The main makefile has already created stage?/f.

@@ -1,4 +1,4 @@
-# Top level makefile fragment for GNU Ada (GNAT).
+# Top level -*- makefile -*- fragment for GNU Ada (GNAT).
 #   Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003
 #   Free Software Foundation, Inc.
 
@@ -432,7 +432,9 @@ ada.start.encap:
 ada.rest.encap: 
 
 ada.tags: force
-	cd $(srcdir)/ada; etags *.c *.h *.ads *.adb
+	cd $(srcdir)/ada; etags -o TAGS.sub *.c *.h *.ads *.adb; \
+	etags --include TAGS.sub --include ../TAGS.sub
+
 ada.generated-manpages:
 
 # Generate documentation.

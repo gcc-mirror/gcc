@@ -1,3 +1,8 @@
+2003-11-16  Jason Merrill  <jason@redhat.com>
+
+	* Make-lang.in (java.tags): Create TAGS.sub files in each directory
+	and TAGS files that include them for each front end.
+
 2003-11-15  Tom Tromey  <tromey@redhat.com>
 
 	* gjavah.c (print_stub_or_jni): Pass `env' to FatalError.
