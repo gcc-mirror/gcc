@@ -1,3 +1,8 @@
+2004-10-02  Frank Ch. Eigler  <fche@redhat.com>
+
+	* testsuite/libmudflap.c/pass50-frag.c, fail33-frag.c, fail34-frag.c:
+	New tests for proper base/limit checking for aggregates.
+
 2004-09-15  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* testsuite/libmudflap.c/pass35-frag.c: Update expected message.
