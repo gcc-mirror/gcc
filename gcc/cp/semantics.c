@@ -58,7 +58,6 @@ static void emit_associated_thunks PARAMS ((tree));
 static void genrtl_try_block PARAMS ((tree));
 static void genrtl_eh_spec_block PARAMS ((tree));
 static void genrtl_handler PARAMS ((tree));
-static void genrtl_named_return_value PARAMS ((void));
 static void cp_expand_stmt PARAMS ((tree));
 static void genrtl_start_function PARAMS ((tree));
 static void genrtl_finish_function PARAMS ((tree));
@@ -145,13 +144,13 @@ do_poplevel ()
 /* Begin a new scope.  */ 
 
 void
-do_pushlevel ()
+do_pushlevel (scope_kind sk)
 {
   if (stmts_are_full_exprs_p ())
     {
       if (!processing_template_decl)
 	add_scope_stmt (/*begin_p=*/1, /*partial_p=*/0);
-      pushlevel (0);
+      begin_scope (sk);
     }
 }
 
@@ -245,7 +244,7 @@ tree
 begin_if_stmt ()
 {
   tree r;
-  do_pushlevel ();
+  do_pushlevel (sk_block);
   r = build_stmt (IF_STMT, NULL_TREE, NULL_TREE, NULL_TREE);
   add_stmt (r);
   return r;
@@ -309,7 +308,7 @@ begin_while_stmt ()
   tree r;
   r = build_stmt (WHILE_STMT, NULL_TREE, NULL_TREE);
   add_stmt (r);
-  do_pushlevel ();
+  do_pushlevel (sk_block);
   return r;
 }
 
@@ -429,10 +428,7 @@ begin_for_stmt ()
 		  NULL_TREE, NULL_TREE);
   NEW_FOR_SCOPE_P (r) = flag_new_for_scope > 0;
   if (NEW_FOR_SCOPE_P (r))
-    {
-      do_pushlevel ();
-      note_level_for_for ();
-    }
+    do_pushlevel (sk_for);
   add_stmt (r);
 
   return r;
@@ -447,7 +443,7 @@ finish_for_init_stmt (for_stmt)
 {
   if (last_tree != for_stmt)
     RECHAIN_STMTS (for_stmt, FOR_INIT_STMT (for_stmt));
-  do_pushlevel ();
+  do_pushlevel (sk_block);
 }
 
 /* Finish the COND of a for-statement, which may be given by
@@ -534,7 +530,7 @@ tree
 begin_switch_stmt ()
 {
   tree r;
-  do_pushlevel ();
+  do_pushlevel (sk_block);
   r = build_stmt (SWITCH_STMT, NULL_TREE, NULL_TREE, NULL_TREE);
   add_stmt (r);
   return r;
@@ -766,8 +762,7 @@ begin_handler ()
   add_stmt (r);
   /* Create a binding level for the eh_info and the exception object
      cleanup.  */
-  do_pushlevel ();
-  note_level_for_catch ();
+  do_pushlevel (sk_catch);
   return r;
 }
 
@@ -834,11 +829,7 @@ begin_compound_stmt (has_no_scope)
   last_expr_type = NULL_TREE;
 
   if (!has_no_scope)
-    {
-      do_pushlevel ();
-      if (is_try)
-      	note_level_for_try ();
-    }
+    do_pushlevel (is_try ? sk_try : sk_block);
   else
     /* Normally, we try hard to keep the BLOCK for a
        statement-expression.  But, if it's a statement-expression with
@@ -1011,88 +1002,6 @@ finish_eh_cleanup (cleanup)
   tree r = build_stmt (CLEANUP_STMT, NULL_TREE, cleanup);
   CLEANUP_EH_ONLY (r) = 1;
   add_stmt (r);
-}
-
-/* Generate the RTL for a RETURN_INIT.  */
-
-static void
-genrtl_named_return_value ()
-{
-  tree decl = DECL_RESULT (current_function_decl);
-
-  /* If this named return value comes in a register, put it in a
-     pseudo-register.  */
-  if (DECL_REGISTER (decl))
-    {
-      /* Note that the mode of the old DECL_RTL may be wider than the
-	 mode of DECL_RESULT, depending on the calling conventions for
-	 the processor.  For example, on the Alpha, a 32-bit integer
-	 is returned in a DImode register -- the DECL_RESULT has
-	 SImode but the DECL_RTL for the DECL_RESULT has DImode.  So,
-	 here, we use the mode the back-end has already assigned for
-	 the return value.  */
-      SET_DECL_RTL (decl, gen_reg_rtx (GET_MODE (DECL_RTL (decl))));
-      if (TREE_ADDRESSABLE (decl))
-	put_var_into_stack (decl);
-    }
-
-  emit_local_var (decl);
-}
-
-/* Bind a name and initialization to the return value of
-   the current function.  */
-
-void
-finish_named_return_value (return_id, init)
-     tree return_id, init;
-{
-  tree decl = DECL_RESULT (current_function_decl);
-
-  /* Give this error as many times as there are occurrences, so that
-     users can use Emacs compilation buffers to find and fix all such
-     places.  */
-  if (pedantic)
-    pedwarn ("ISO C++ does not permit named return values");
-  cp_deprecated ("the named return value extension");
-
-  if (return_id != NULL_TREE)
-    {
-      if (DECL_NAME (decl) == NULL_TREE)
-	DECL_NAME (decl) = return_id;
-      else
-	{
-	  error ("return identifier `%D' already in place", return_id);
-	  return;
-	}
-    }
-
-  /* Can't let this happen for constructors.  */
-  if (DECL_CONSTRUCTOR_P (current_function_decl))
-    {
-      error ("can't redefine default return value for constructors");
-      return;
-    }
-
-  /* If we have a named return value, put that in our scope as well.  */
-  if (DECL_NAME (decl) != NULL_TREE)
-    {
-      /* Let `cp_finish_decl' know that this initializer is ok.  */
-      DECL_INITIAL (decl) = init;
-      if (doing_semantic_analysis_p ())
-	pushdecl (decl);
-      if (!processing_template_decl) 
-	{
-	  cp_finish_decl (decl, init, NULL_TREE, 0);
-	  add_stmt (build_stmt (RETURN_INIT, NULL_TREE, NULL_TREE));
-	}
-      else
-	add_stmt (build_stmt (RETURN_INIT, return_id, init));
-    }
-
-  /* Don't use tree-inlining for functions with named return values.
-     That doesn't work properly because we don't do any translation of
-     the RETURN_INITs when they are copied.  */
-  DECL_UNINLINABLE (current_function_decl) = 1;
 }
 
 /* Begin processing a mem-initializer-list.  */
@@ -2265,10 +2174,6 @@ cp_expand_stmt (t)
 
     case HANDLER:
       genrtl_handler (t);
-      break;
-
-    case RETURN_INIT:
-      genrtl_named_return_value ();
       break;
 
     case USING_STMT:

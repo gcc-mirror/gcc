@@ -1,5 +1,38 @@
 2002-12-31  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.def (RETURN_INIT): Remove.
+	* cp-tree.h (DECL_IN_MEMORY_P): Remove.
+	(scope_kind): Add sk_block, sk_try, sk_catch, sk_for.
+	(note_level_for_for): Remove.
+	(note_level_for_try): Likewise.
+	(note_level_for_catch): Likewise.
+	(finish_named_return_value): Likewise.
+	(do_pushlevel): Change prototype.
+	(pending_lang_change): Remove.
+	* decl.c (begin_scope): Handle sk_block, sk_try, sk_catch,
+	sk_for.
+	(note_level_for_for): Remove.
+	(note_level_for_try): Likewise.
+	(note_level_for_catch): Likewise.
+	(maybe_inject_for_scope_var): Remove use of DECL_IN_MEMORY_P.
+	* parser.c (cp_parser_context_free_list): Make it "deletable".
+	(cp_parser_template_argument): Remove misleading comment.
+	* pt.c (tsubst_expr): Remove RETURN_INIT code.
+	* semantics.c (genrtl_named_return_value): Remove.
+	(do_pushlevel): Take a scope kind as an argument.
+	(begin_if_stmt): Adjust.
+	(begin_while_stmt): Likewise.
+	(begin_for_stmt): Likewise.
+	(finish_for_init_stmt): Likewise.
+	(begin_switch_stmt): Likewise.
+	(begin_handler): Likewise.
+	(begin_compound_stmt): Likewise.
+	(finish_named_return_value): Remove.
+	(cp_expand_stmt): Remove RETURN_INIT case.
+	* tree.c (cp_statement_code_p): Remove RETURN_INIT case.
+	
+2002-12-31  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/9112
 	* parser.c (cp_parser_direct_declarator): Handle erroneous
 	parenthesized declarators correctly.
