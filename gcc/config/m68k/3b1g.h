@@ -55,10 +55,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
     : GET_MODE_BITSIZE (MODE) < PARM_BOUNDARY)				\
    ? downward : none)
 
-/* Override part of the obstack macros.  */
-#define __PTR_TO_INT(P) ((int)(P))
-#define __INT_TO_PTR(P) ((char *)(P))
-
 /* Every structure or union's size must be a multiple of 2 bytes.  */
 #define STRUCTURE_SIZE_BOUNDARY 16
 
