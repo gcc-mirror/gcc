@@ -152,6 +152,15 @@ while [ $# != 0 ]; do
 # which isn't much of a reason. -- rms.
 #	  /^[ 	]*#[ 	]*ident/d
 
+# This code makes Solaris SCSI fail, because it changes the
+# alignment within some critical structures.  See <sys/scsi/impl/commands.h>.
+#	  s/u_char\([ 	][ 	]*[a-zA-Z0-9_][a-zA-Z0-9_]*[ 	]*:[ 	]*[0-9][0-9]*\)/u_int\1/
+# Disable these also, since they probably aren't safe either.
+#	  s/u_short\([ 	][ 	]*[a-zA-Z0-9_][a-zA-Z0-9_]*[ 	]*:[ 	]*[0-9][0-9]*\)/u_int\1/
+#	  s/ushort\([ 	][ 	]*[a-zA-Z0-9_][a-zA-Z0-9_]*[ 	]*:[ 	]*[0-9][0-9]*\)/u_int\1/
+#	  s/evcm_t\([ 	][ 	]*[a-zA-Z0-9_][a-zA-Z0-9_]*[ 	]*:[ 	]*[0-9][0-9]*\)/u_int\1/
+#	  s/Pbyte\([ 	][ 	]*[a-zA-Z0-9_][a-zA-Z0-9_]*[ 	]*:[ 	]*SEQSIZ\)/unsigned int\1/
+
 # The change of u_char, etc, to u_int
 # applies to bit fields.
 	sed -e '
@@ -173,11 +182,6 @@ while [ $# != 0 ]; do
 	  /#[a-z]*if.*[	 (]ns32000/	s/\([^_]\)ns32000/\1__ns32000__/g
 	  /#[a-z]*if.*[	 (]pyr/		s/\([^_]\)pyr/\1__pyr__/g
 	  /#[a-z]*if.*[	 (]is68k/	s/\([^_]\)is68k/\1__is68k__/g
-	  s/u_char\([ 	][ 	]*[a-zA-Z0-9_][a-zA-Z0-9_]*[ 	]*:[ 	]*[0-9][0-9]*\)/u_int\1/
-	  s/u_short\([ 	][ 	]*[a-zA-Z0-9_][a-zA-Z0-9_]*[ 	]*:[ 	]*[0-9][0-9]*\)/u_int\1/
-	  s/ushort\([ 	][ 	]*[a-zA-Z0-9_][a-zA-Z0-9_]*[ 	]*:[ 	]*[0-9][0-9]*\)/u_int\1/
-	  s/evcm_t\([ 	][ 	]*[a-zA-Z0-9_][a-zA-Z0-9_]*[ 	]*:[ 	]*[0-9][0-9]*\)/u_int\1/
-	  s/Pbyte\([ 	][ 	]*[a-zA-Z0-9_][a-zA-Z0-9_]*[ 	]*:[ 	]*SEQSIZ\)/unsigned int\1/
 	  s/__STDC__ == 0/!defined (__STRICT_ANSI__)/g
 	  s/__STDC__ != 0/defined (__STRICT_ANSI__)/g
 	  s/__STDC__ - 0 == 0/!defined (__STRICT_ANSI__)/g
