@@ -3749,14 +3749,24 @@ expand_decl (decl)
 
   type = TREE_TYPE (decl);
 
-  /* Only automatic variables need any expansion done.
-     Static and external variables, and external functions,
-     will be handled by `assemble_variable' (called from finish_decl).
-     TYPE_DECL and CONST_DECL require nothing.
-     PARM_DECLs are handled in `assign_parms'.  */
+  /* For a CONST_DECL, set mode, alignment, and sizes from those of the
+     type in case this node is used in a reference.  */
+  if (TREE_CODE (decl) == CONST_DECL)
+    {
+      DECL_MODE (decl) = TYPE_MODE (type);
+      DECL_ALIGN (decl) = TYPE_ALIGN (type);
+      DECL_SIZE (decl) = TYPE_SIZE (type);
+      DECL_SIZE_UNIT (decl) = TYPE_SIZE_UNIT (type);
+      return;
+    }
 
+  /* Otherwise, only automatic variables need any expansion done.  Static and
+     external variables, and external functions, will be handled by
+     `assemble_variable' (called from finish_decl).  TYPE_DECL requires
+     nothing.  PARM_DECLs are handled in `assign_parms'.  */
   if (TREE_CODE (decl) != VAR_DECL)
     return;
+
   if (TREE_STATIC (decl) || DECL_EXTERNAL (decl))
     return;
 
