@@ -1,5 +1,7 @@
 1999-07-06  Tom Tromey  <tromey@cygnus.com>
 
+	* libjava.lang/Final.xfail: Output fails, not exec.
+
 	* libjava.lang/Final.xfail: New file.
 	* libjava.compile/Case.xfail: New file.
 	* libjava.compile/Where.xfail: New file.
