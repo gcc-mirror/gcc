@@ -1,5 +1,9 @@
 2003-02-02  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
+	* doc/install.texi (hppa*-hp-hpux11*): Update installation notes.
+
+2003-02-02  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
 	* pa-protos.h (attr_length_millicode_call): Remove second argument.
 	(attr_length_indirect_call, attr_length_indirect_call,
 	attr_length_save_restore_dltp): New prototypes.
