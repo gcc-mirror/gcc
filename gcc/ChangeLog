@@ -1,3 +1,7 @@
+Sun Mar  1 18:14:46 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* ginclude/va-ppc.h (va_arg): Fix typo in long long support.
+
 Tue Feb 24 09:32:24 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* expr.c (emit_move_insn_1): Fix minor buglet in last change
