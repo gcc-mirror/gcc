@@ -1183,15 +1183,9 @@ noce_get_alt_condition (if_info, target, earliest)
 	  if (GET_CODE (src) == CONST_INT)
 	    {
 	      if (rtx_equal_p (op_a, SET_DEST (PATTERN (prev_insn))))
-		{
-		  op_a = src;
-		  if_info->cond_earliest = prev_insn;
-		}
+		op_a = src;
 	      else if (rtx_equal_p (op_b, SET_DEST (PATTERN (prev_insn))))
-		{
-		  op_b = src;
-		  if_info->cond_earliest = prev_insn;
-		}
+		op_b = src;
 
 	      if (GET_CODE (op_a) == CONST_INT)
 		{
