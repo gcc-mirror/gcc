@@ -1,5 +1,8 @@
 Tue Apr 28 17:53:33 1998  Jim Wilson  <wilson@cygnus.com>
 
+	* expr.c (expand_builtin, case BUILT_IN_MEMSET): Break if either
+	val or len has TREE_SIDE_EFFECTS set.
+
 	* sparc.md (mulsidi3): Call const v8plus and v8plus routines.
 	(mulsidi3_v8plus, const_mulsidi3_v8plus): Delete asterisk from name.
 	(smuldi3_highpart): Call const v8plus routine.
