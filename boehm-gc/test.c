@@ -958,17 +958,17 @@ void run_one_test()
 		"This test program is not designed for leak detection mode\n");
 	(void)GC_printf0("Expect lots of problems.\n");
 #   endif
-    if (GC_size(GC_malloc(7)) != 8
+    if (GC_size(GC_malloc(7)) != 8 &&
+	GC_size(GC_malloc(7)) != MIN_WORDS * sizeof(GC_word)
 	|| GC_size(GC_malloc(15)) != 16) {
 	    (void)GC_printf0("GC_size produced unexpected results\n");
 	    FAIL;
     }
-    if (GC_size(GC_malloc(0)) != 4 && GC_size(GC_malloc(0)) != 8) {
+    if (GC_size(GC_malloc(0)) != MIN_WORDS * sizeof(GC_word)) {
     	(void)GC_printf0("GC_malloc(0) failed\n");
 	    FAIL;
     }
-    if (GC_size(GC_malloc_uncollectable(0)) != 4
-        && GC_size(GC_malloc_uncollectable(0)) != 8) {
+    if (GC_size(GC_malloc_uncollectable(0)) != MIN_WORDS * sizeof(GC_word)) {
     	(void)GC_printf0("GC_malloc_uncollectable(0) failed\n");
 	    FAIL;
     }

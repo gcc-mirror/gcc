@@ -107,13 +107,17 @@ extern signed_word GC_mem_found;
     {
 	register unsigned i;
 
-	/* Map size 0 to 1.  This avoids problems at lower levels. */
-	  GC_size_map[0] = 1;
+	/* Map size 0 to something bigger.			   */
+        /* This avoids problems at lower levels. 		   */
 	/* One word objects don't have to be 2 word aligned.	   */
-	  for (i = 1; i < sizeof(word); i++) {
-	      GC_size_map[i] = 1;
+	  for (i = 0; i < sizeof(word); i++) {
+	      GC_size_map[i] = MIN_WORDS;
 	  }
-	  GC_size_map[sizeof(word)] = ROUNDED_UP_WORDS(sizeof(word));
+#	  if MIN_WORDS > 1
+	    GC_size_map[sizeof(word)] = MIN_WORDS;
+#	  else
+	    GC_size_map[sizeof(word)] = ROUNDED_UP_WORDS(sizeof(word));
+#	  endif
 	for (i = sizeof(word) + 1; i <= 8 * sizeof(word); i++) {
 #           ifdef ALIGN_DOUBLE
 	      GC_size_map[i] = (ROUNDED_UP_WORDS(i) + 1) & (~1);
@@ -202,10 +206,10 @@ extern signed_word GC_mem_found;
  */
 word GC_stack_last_cleared = 0;	/* GC_no when we last did this */
 # ifdef THREADS
-#   define CLEAR_SIZE 2048
-# else
-#   define CLEAR_SIZE 213
+#   define BIG_CLEAR_SIZE 2048	/* Clear this much now and then.	*/
+#   define SMALL_CLEAR_SIZE 256 /* Clear this much every time.		*/
 # endif
+# define CLEAR_SIZE 213  /* Granularity for GC_clear_stack_inner */
 # define DEGRADE_RATE 50
 
 word GC_min_sp;		/* Coolest stack pointer value from which we've */
@@ -262,10 +266,12 @@ ptr_t arg;
 {
     register word sp = (word)GC_approx_sp();  /* Hotter than actual sp */
 #   ifdef THREADS
-        word dummy[CLEAR_SIZE];
-#   else
-    	register word limit;
+        word dummy[SMALL_CLEAR_SIZE];
+	unsigned random_no = 0;  /* Should be more random than it is ... */
+				 /* Used to occasionally clear a bigger	 */
+				 /* chunk.				 */
 #   endif
+    register word limit;
     
 #   define SLOP 400
 	/* Extra bytes we clear every time.  This clears our own	*/
@@ -283,7 +289,14 @@ ptr_t arg;
 	/* thus more junk remains accessible, thus the heap gets	*/
 	/* larger ...							*/
 # ifdef THREADS
-    BZERO(dummy, CLEAR_SIZE*sizeof(word));
+    if (++random_no % 13 == 0) {
+	limit = sp;
+	MAKE_HOTTER(limit, BIG_CLEAR_SIZE*sizeof(word));
+	return GC_lear_stack_inner(arg, limit);
+    } else {
+	BZERO(dummy, SMALL_CLEAR_SIZE*sizeof(word));
+	return arg;
+    }
 # else
     if (GC_gc_no > GC_stack_last_cleared) {
         /* Start things over, so we clear the entire stack again */

@@ -611,7 +611,7 @@ void * GC_start_routine(void * arg)
 	/* Needs to be plausible, since an asynchronous stack mark	*/
 	/* should not crash.						*/
 #   else
-      me -> stack_end = (ptr_t)(((word)(&dummy) & ~(GC_page_size - 1));
+      me -> stack_end = (ptr_t)((word)(&dummy) & ~(GC_page_size - 1));
       me -> stack_ptr = me -> stack_end + 0x10;
 #   endif
     /* This is dubious, since we may be more than a page into the stack, */
