@@ -1,3 +1,10 @@
+2003-01-29  Christian Cornelssen  <ccorn@cs.tu-berlin.de>
+
+	* Make-lang.in (gnattools, ada.install-common):
+	Complete indentation fixes.
+	(ada.install-common): Now really remove the erroneous and
+	redundant gnatchop installation commands.
+
 2003-01-28  Laurent Guerby <guerby@acm.org>
 
 	PR ada/8344
