@@ -7,13 +7,15 @@ x =]
  * files which are fixed to work correctly with ANSI C and placed in a
  * directory that GNU C will search.
  *
- * This script contains [=_eval fix _count =] fixup scripts.
+ * This file contains [=_eval fix _count =] fixup descriptions.
  *
  * See README-fixinc for more information.
  *
+ *  inclhack copyright (c) [=_eval "date +%Y" _shell
+                                =] The Free Software Foundation, Inc.
+ *
 [=_eval inclhack "# *  " _gpl=]
- *[=
-
+ *[=_EVAL "re_ct=0" _shell=][=
 
 _FOR fix =]
  *
@@ -52,7 +54,9 @@ tSCC* apz[=hackname _cap=]Machs[] = {[=
   _IF exesel _exist=]
 
 /*
- *  content selection pattern
+ *  content selection pattern - do fix if pattern found
+ *  This is a special pattern that not all egrep commands
+ *  are capable of coping with.  We use the GNU library, tho :)
  */[=
     _FOR exesel =]
 tSCC z[=hackname _cap=]Select[=_eval _index=][] =
@@ -62,7 +66,7 @@ tSCC z[=hackname _cap=]Select[=_eval _index=][] =
   _ELIF select _exist=]
 
 /*
- *  content selection pattern
+ *  content selection pattern - do fix if pattern found
  */[=
     _FOR select =]
 tSCC z[=hackname _cap=]Select[=_eval _index=][] =
@@ -73,7 +77,7 @@ tSCC z[=hackname _cap=]Select[=_eval _index=][] =
   _IF bypass _exist=]
 
 /*
- *  content bypass pattern
+ *  content bypass pattern - skip fix if pattern found
  */[=
     _FOR bypass =]
 tSCC z[=hackname _cap=]Bypass[=_eval _index=][] =
@@ -84,7 +88,7 @@ tSCC z[=hackname _cap=]Bypass[=_eval _index=][] =
   _IF test _exist=]
 
 /*
- *  content test pattern.  A shell will deal with it later.
+ *  perform the 'test' shell command - do fix on success
  */[=
     _FOR test =]
 tSCC z[=hackname _cap=]Test[=_eval _index=][] =
@@ -92,41 +96,61 @@ tSCC z[=hackname _cap=]Test[=_eval _index=][] =
     /test =][=
   _ENDIF =][=
 
-  _IF exesel _exist select _exist bypass _exist test _exist | | |
+
+#  Build the array of test descriptions for this fix: =][=
+
+  _IF exesel       _exist
+      select       _exist |
+      bypass       _exist |
+      test         _exist |
 =]
 
 #define    [=hackname _up =]_TEST_CT  [=
     _IF exesel _exist =][=
-       _eval test _count bypass _count exesel _count + + =][=
+       _eval exesel       _count
+      	     bypass       _count +
+      	     test         _count + =][=
     _ELSE =][=
-       _eval test _count bypass _count select _count + + =][=
+       _eval select       _count
+      	     bypass       _count +
+      	     test         _count + =][=
+    _ENDIF =]
+#define    [=hackname _up =]_RE_CT    [=
+    _IF exesel _exist =][=
+       _eval exesel _count bypass _count
+             "#2$ct=`expr %d + %d` ; re_ct=`expr $ct + $re_ct` ; echo $ct"
+             _printf _shell =][=
+    _ELSE =][=
+       _eval select _count bypass _count
+             "#2$ct=`expr %d + %d` ; re_ct=`expr $ct + $re_ct` ; echo $ct"
+             _printf _shell =][=
     _ENDIF =]
 tTestDesc a[=hackname _cap=]Tests[] = {[=
 
-    _IF test _exist =][=
-      _FOR test=]
-    { TT_TEST,   z[=hackname _cap=]Test[=_eval _index=], 0 /* unused */ },[=
-      /test =][=
-    _ENDIF =][=
+    _FOR test =]
+  { TT_TEST,   z[=hackname _cap=]Test[=_eval _index=],     0 /* unused */ },[=
+    /test =][=
 
-    _IF bypass _exist =][=
-      _FOR bypass=]
-    { TT_NEGREP, z[=hackname _cap=]Bypass[=_eval _index=], (regex_t*)NULL },[=
-      /bypass =][=
-    _ENDIF =][=
+    _FOR bypass =]
+  { TT_NEGREP, z[=hackname _cap=]Bypass[=_eval _index=],   (regex_t*)NULL },[=
+    /bypass =][=
 
+    #  IF there is an exesel, then use that (those) selection
+          expressions, instead of the regular select expressions
+    =][=
     _IF exesel _exist =][=
-      _FOR exesel ,=]
-    { TT_EGREP,  z[=hackname _cap=]Select[=_eval _index=], (regex_t*)NULL }[=
+      _FOR exesel =]
+  { TT_EGREP,  z[=hackname _cap=]Select[=_eval _index=],   (regex_t*)NULL },[=
       /exesel =][=
 
-    _ELIF select _exist =][=
-      _FOR select ,=]
-    { TT_EGREP,  z[=hackname _cap=]Select[=_eval _index=], (regex_t*)NULL }[=
+    _ELSE =][=
+      _FOR select =]
+  { TT_EGREP,  z[=hackname _cap=]Select[=_eval _index=],   (regex_t*)NULL },[=
       /select =][=
     _ENDIF =] };[=
   _ELSE =]
 #define [=hackname _up=]_TEST_CT  0
+#define [=hackname _up=]_RE_CT    0
 #define a[=hackname _cap=]Tests   (tTestDesc*)NULL[=
   _ENDIF =]
 
@@ -136,12 +160,8 @@ tTestDesc a[=hackname _cap=]Tests[] = {[=
 const char* apz[=hackname _cap=]Patch[] = {[=
     _IF   sed         _exist =] "sed"[=_FOR sed=],
     "-e", [=sed _str=][=/sed=][=
-    _ELIF replacement _exist =] "sed",
-    "s@[=select[]=]@[=replacement=]@"[=
     _ELIF shell       _exist =] "sh", "-c",
     [=shell _str=][=
-    _ELSE =][=_ERROR hackname _get "Error:  %s has two fixup specifications"
-                 _printf =][=
     _ENDIF=],
     (char*)NULL };
 
@@ -150,10 +170,9 @@ const char* apz[=hackname _cap=]Patch[] = {[=
  *
  *  List of all fixes
  */
-#define  REGEX_COUNT  [=_eval fix.select _count
-                              fix.bypass _count + =]
+#define  REGEX_COUNT  [=_eval "echo $re_ct" _shell =]
 #define  FIX_COUNT    [=_eval fix _count =]
-tFixDesc fixDescList[ [=_eval fix _count =] ] = {[=
+tFixDesc fixDescList[ FIX_COUNT ] = {[=
 
 
 _FOR fix ",\n" =]

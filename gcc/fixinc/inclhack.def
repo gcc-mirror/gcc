@@ -328,11 +328,13 @@ fix = {
 fix = {
     hackname = no_double_slash;
     /*
-     *  Test that the file-to-fix does not look like a C++ file
+     *  Test that the file-to-fix does not from a C++ directory
+     *  Also, only accept double slashes that are not part of URL's
+     *  and are not the end of a quoted string.
      */
-    test     = '-z "`echo ${file}|egrep \'(cxx/|\+\+$|\.hh$|\.H$|\.hxx$)\'`"';
-    select = '//[^"*]';
-    sed    = '/\/\/[^"*]/' "s|//.*$||g";
+    test   = '-z `echo ${file} | egrep \'(cxx|\+\+)/\' `';
+    select = '(^|[^:])//[^"*]';
+    sed    = '/\(^|[^:]\)\/\/[^"*]/' "s|//.*$||g";
 };
 
 
@@ -827,14 +829,12 @@ fix = {
     exesel = "^#[ \t]*(if|elif).*[^a-zA-Z0-9_]"
              "("
                   "M32"
-                 "|_*("
-                       "MIPSE[LB]"
-                      "|SYSTYPE_[A-Z0-9]"
-                      "|[Rr][34]000"
-                      "|host_mips"
-                      "|i386"
-                      "|mips"
-                    ")($|[^a-zA-Z0-9_])"
+                 "|_*MIPSE[LB]"
+                 "|_*SYSTYPE_[A-Z0-9]"
+                 "|_*[Rr][34]000"
+                 "|_*host_mips"
+                 "|_*i386"
+                 "|_*mips"
                  "|bsd4"
                  "|is68k"
                  "|m[68]8k"
