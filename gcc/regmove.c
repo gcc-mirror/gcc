@@ -431,6 +431,9 @@ optimize_reg_copy_1 (rtx insn, rtx dest, rtx src)
 	  || (sregno < FIRST_PSEUDO_REGISTER
 	      && asm_noperands (PATTERN (p)) >= 0
 	      && reg_overlap_mentioned_p (src, PATTERN (p)))
+	  /* Don't change hard registers used by a call.  */
+	  || (CALL_P (p) && sregno < FIRST_PSEUDO_REGISTER
+	      && find_reg_fusage (p, USE, src))
 	  /* Don't change a USE of a register.  */
 	  || (GET_CODE (PATTERN (p)) == USE
 	      && reg_overlap_mentioned_p (src, XEXP (PATTERN (p), 0))))
