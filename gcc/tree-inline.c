@@ -2452,8 +2452,6 @@ debug_find_tree_1 (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED, void *data)
     return NULL;
 }
 
-extern bool debug_find_tree (tree top, tree search);
-
 bool
 debug_find_tree (tree top, tree search)
 {

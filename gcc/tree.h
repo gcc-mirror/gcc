@@ -3476,6 +3476,9 @@ extern void print_node_brief (FILE *, const char *, tree, int);
 extern void indent_to (FILE *, int);
 #endif
 
+/* In tree-inline.c:  */
+extern bool debug_find_tree (tree, tree);
+
 /* In expr.c */
 extern rtx expand_builtin_return_addr (enum built_in_function, int, rtx);
 extern void check_max_integer_computation_mode (tree);
