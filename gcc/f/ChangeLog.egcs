@@ -1,3 +1,15 @@
+Mon Aug 25 23:24:32 1997  H.J. Lu  (hjl@gnu.ai.mit.edu)
+
+	* Make-lang.in ($(srcdir)/f/runtime/configure,
+	$(srcdir)/f/runtime/libU77/configure, f77.mostlyclean,
+	f77.clean, f77.distclean, f77.maintainer-clean, f77.realclean):
+	Handle absolute pathname of $(srcdir).
+	(stmp-f2c.h): New.
+	(include/f2c.h, f/runtime/Makefile, f/runtime/libF77/Makefile,
+	f/runtime/libI77/Makefile, f/runtime/libU77/Makefile): Only
+	depend on stmp-f2c.h.
+	(f77.maintainer-clean): Don't make itself.
+
 Sun Aug 24 17:00:27 1997  Jim Wilson  <wilson@cygnus.com>
 
 	* Make-lang.in (f77.install-info): Don't cd into srcdir.  Add srcdir

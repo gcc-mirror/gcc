@@ -169,12 +169,12 @@ CROSS_FLAGS_TO_PASS = \
 	RANLIB_TEST="$(RANLIB_TEST)" \
 	SHELL="$(SHELL)"
 
-all: ../../include/f2c.h libi77 libf77 libu77 $(lib)
+all: ../../include/f2c.h $(lib)
 
 $(lib): stamp-lib ; @true
-stamp-lib: $(FOBJ) $(IOBJ) $(UOBJ)
+stamp-lib: stamp-libf77 stamp-libi77 stamp-libu77
 	rm -f stamp-lib
-	$(AR) $(AR_FLAGS) $(lib) $?
+	$(AR) $(AR_FLAGS) $(lib) $(FOBJ) $(IOBJ) $(UOBJ)
 	for name in $(F2CEXT); \
 	do \
 	  echo $${name}; \
@@ -189,26 +189,32 @@ stamp-lib: $(FOBJ) $(IOBJ) $(UOBJ)
 	  else true; fi
 	touch stamp-lib
 
-libi77: libI77/Makefile
+stamp-libi77: libI77/Makefile
+	rm -f stamp-libi77
 	if test "$(CROSS)"; then \
 	  cd libI77;  $(MAKE) -f Makefile $(CROSS_FLAGS_TO_PASS) all ; \
 	else \
 	  cd libI77;  $(MAKE) -f Makefile $(FLAGS_TO_PASS) all ; \
 	fi
+	touch stamp-libi77
 
-libf77: libF77/Makefile
+stamp-libf77: libF77/Makefile
+	rm -f stamp-libf77
 	if test "$(CROSS)"; then \
 	  cd libF77;  $(MAKE) -f Makefile $(CROSS_FLAGS_TO_PASS) all ; \
 	else \
 	  cd libF77;  $(MAKE) -f Makefile $(FLAGS_TO_PASS) all ; \
 	fi
+	touch stamp-libf77
 
-libu77: libU77/Makefile
+stamp-libu77: libU77/Makefile
+	rm -f stamp-libu77
 	if test "$(CROSS)"; then \
 	  cd libU77;  $(MAKE) -f Makefile $(CROSS_FLAGS_TO_PASS) all ; \
 	else \
 	  cd libU77;  $(MAKE) -f Makefile $(FLAGS_TO_PASS) all ; \
 	fi
+	touch stamp-libu77
 
 ${srcdir}/configure: ${srcdir}/configure.in
 	rm -f config.cache && cd ${srcdir} && autoconf && rm -f config.cache
@@ -231,11 +237,20 @@ libU77/Makefile: $(srcdir)/libU77/Makefile.in
 #	cd libU77; $(FLAGS_TO_PASS) CONFIG_SITE=/dev/null $(SHELL) config.status --recheck
 
 mostlyclean:
-	for i in libI77 libF77 libU77; do cd $$i; $(MAKE) -f Makefile mostlyclean; cd ..;  done
+	-rm -f stamp-*
+	for i in libI77 libF77 libU77; do \
+	  if [ -f $$i/Makefile ]; then \
+	    cd $$i; $(MAKE) -f Makefile mostlyclean; cd ..; \
+	  fi; \
+	done
 
 clean:
-	-rm -f config.log config.cache
-	for i in libI77 libF77 libU77; do cd $$i; $(MAKE) -f Makefile clean; cd ..;  done
+	-rm -f config.log config.cache stamp-*
+	for i in libI77 libF77 libU77; do \
+	  if [ -f $$i/Makefile ]; then \
+	    cd $$i; $(MAKE) -f Makefile clean; cd ..; \
+	  fi; \
+	done
 
 distclean: clean
 	-rm -f Makefile lib?77/Makefile config.status libU77/config.status ../../include/f2c.h

@@ -264,11 +264,7 @@ f77-runtime-unsafe:
 # configure, not a Cygnus-type one.  It needs to be run *after* the
 # appropriate (cross-)compiler has been built, thus depend on GCC_PARTS.
 # NB, sh uses the *first* value of $a from `a=fred a=joe prog'.
-include/f2c.h \
-f/runtime/Makefile \
-f/runtime/libF77/Makefile \
-f/runtime/libI77/Makefile \
-f/runtime/libU77/Makefile: \
+stmp-f2c.h: \
   $(srcdir)/f/runtime/f2c.h.in \
   $(srcdir)/f/com.h $(srcdir)/f/proj.h \
   $(srcdir)/f/runtime/Makefile.in \
@@ -279,6 +275,7 @@ f/runtime/libU77/Makefile: \
   $(srcdir)/f/runtime/libU77/configure \
   $(GCC_PARTS)
 # The make "stage?" in compiler spec. is fully qualified as above
+	rm -f stmp-f2c.h
 	top=`pwd`; \
 	src=`cd $(srcdir); pwd`; \
 	  cd f/runtime; \
@@ -295,6 +292,14 @@ f/runtime/libU77/Makefile: \
 	     *) echo '$(GCC_FOR_TARGET)';; esac`" \
 	  $(F77_FLAGS_TO_PASS) CONFIG_SITE=/dev/null $(SHELL) \
 	  $${src}/f/runtime/libU77/configure --srcdir=$${src}/f/runtime/libU77
+	touch stmp-f2c.h
+
+# Support parallel build.
+include/f2c.h \
+f/runtime/Makefile \
+f/runtime/libF77/Makefile \
+f/runtime/libI77/Makefile \
+f/runtime/libU77/Makefile: stmp-f2c.h
 
 #For now, omit f2c stuff.  -- burley
 #f2c: stmp-headers f/f2c/Makefile
@@ -346,10 +351,15 @@ $(srcdir)/f/NEWS: f/news0.texi f/news.texi
 	  --no-validate news0.texi -o NEWS
 
 $(srcdir)/f/runtime/configure: $(srcdir)/f/runtime/configure.in 
-	cd f/runtime && $(MAKE) srcdir=../../$(srcdir)/f/runtime -f ../../$(srcdir)/f/runtime/Makefile.in rebuilt
+	case $(srcdir) in \
+	/*) cd f/runtime && $(MAKE) srcdir=$(srcdir)/f/runtime -f $(srcdir)/f/runtime/Makefile.in rebuilt;; \
+	*) cd f/runtime && $(MAKE) srcdir=../../$(srcdir)/f/runtime -f ../../$(srcdir)/f/runtime/Makefile.in rebuilt;; \
+	esac
 $(srcdir)/f/runtime/libU77/configure: $(srcdir)/f/runtime/libU77/configure.in
-	cd f/runtime && $(MAKE) srcdir=../../$(srcdir)/f/runtime -f ../../$(srcdir)/f/runtime/Makefile.in rebuilt
-
+	case $(srcdir) in \
+	/*) cd f/runtime && $(MAKE) srcdir=$(srcdir)/f/runtime -f $(srcdir)/f/runtime/Makefile.in rebuilt;; \
+	*) cd f/runtime && $(MAKE) srcdir=../../$(srcdir)/f/runtime -f ../../$(srcdir)/f/runtime/Makefile.in rebuilt;; \
+	esac
 f77.rebuilt: $(srcdir)/f/g77.info $(srcdir)/f/BUGS $(srcdir)/f/INSTALL \
   $(srcdir)/f/NEWS $(srcdir)/f/runtime/configure \
   $(srcdir)/f/runtime/libU77/configure
@@ -494,11 +504,20 @@ f77.uninstall:
 f77.mostlyclean:
 	-rm -f f/*$(objext)
 	-rm -f f/fini f/f771 f/stamp-str f/str-*.h f/str-*.j f/intdoc
-	-cd f/runtime; $(MAKE) -f ../../$(srcdir)/f/runtime/Makefile.in mostlyclean
+	-case $(srcdir) in \
+	/*) cd f/runtime; $(MAKE) -f $(srcdir)/f/runtime/Makefile.in mostlyclean;; \
+	*) cd f/runtime; $(MAKE) -f ../../$(srcdir)/f/runtime/Makefile.in mostlyclean;; \
+	esac
 f77.clean:
-	-cd f/runtime; $(MAKE) -f ../../$(srcdir)/f/runtime/Makefile.in clean
+	-case $(srcdir) in \
+	/*) cd f/runtime; $(MAKE) -f $(srcdir)/f/runtime/Makefile.in clean;; \
+	*) cd f/runtime; $(MAKE) -f ../../$(srcdir)/f/runtime/Makefile.in clean;; \
+	esac
 f77.distclean:
-	-cd f/runtime; $(MAKE) -f ../../$(srcdir)/f/runtime/Makefile.in distclean
+	-case $(srcdir) in \
+	/*) cd f/runtime; $(MAKE) -f $(srcdir)/f/runtime/Makefile.in distclean;; \
+	*) cd f/runtime; $(MAKE) -f ../../$(srcdir)/f/runtime/Makefile.in distclean;; \
+	esac
 	-rm -f f/Makefile
 # like gcc's extraclean, which does clean f/ for us, but not f/gbe,
 # f/runtime, f/runtime/libF77, f/runtime/libI77, and f/runtime/libU77,
@@ -516,8 +535,10 @@ f77.extraclean: f77.distclean
 	-rm -f f/*/*/*lose f/*/*/*.s f/*/*/*.s[0-9] f/*/*/*.i
 # realclean is the pre-2.7.0 name for maintainer-clean
 f77.maintainer-clean f77.realclean: f77.distclean
-	-cd f/runtime; $(MAKE) -f ../../$(srcdir)/f/runtime/Makefile.in maintainer-clean
-	-$(MAKE) f77.maintainer-clean
+	-case $(srcdir) in \
+	/*) cd f/runtime; $(MAKE) -f $(srcdir)/f/runtime/Makefile.in maintainer-clean;; \
+	*) cd f/runtime; $(MAKE) -f ../../$(srcdir)/f/runtime/Makefile.in maintainer-clean;; \
+	esac
 	-rm -f f/g77.info* f/g77.*aux f/TAGS f/BUGS f/INSTALL f/NEWS f/intdoc.texi
 # Stage hooks:
 # The main makefile has already created stage?/f.
