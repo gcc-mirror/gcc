@@ -1,3 +1,8 @@
+2004-03-02  Jan Hubicka  <jh@suse.cz>
+
+	* configure.host: Pass -fno-omit-frame-pointer for i386.
+	* configure.in: Likewise.
+
 2004-03-01  Per Bothner  <per@bothner.com>
 
 	* java/lang/natPosixProcess.cc (startProcess):  Fix thinko.

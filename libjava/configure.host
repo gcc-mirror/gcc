@@ -90,7 +90,7 @@ case "${host}" in
 	;;
   i686-*|i586-*|i486-*|i386-*)
 	sysdeps_dir=i386
-	libgcj_flags="${libgcj_flags} -ffloat-store"
+	libgcj_flags="${libgcj_flags} -ffloat-store -fno-omit-frame-pointer"
 	libgcj_interpreter=yes
 	libgcj_cxxflags=
 	libgcj_cflags=
