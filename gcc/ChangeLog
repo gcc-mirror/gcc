@@ -1,3 +1,8 @@
+2003-06-14  Nick Clifton  <nickc@redhat.com>
+
+	* doc/install.texi (Specific): Add description of different
+	ARM supported file format targets.
+
 Sat Jun 14 11:12:04 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* reorg.c (emit_delay_sequence, dbr_schedule): Clear insn locators

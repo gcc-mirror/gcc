@@ -1839,7 +1839,10 @@ GNU Compiler Collection on your machine.
 @item
 @uref{#arc-*-elf,,arc-*-elf}
 @item
-@uref{#arm-*-*,,arm-*-*}
+@uref{#arm-*-elf,,arm-*-elf}
+@uref{#arm-*-coff,,arm-*-coff}
+@uref{#arm-*-aof,,arm-*-aof}
+@uref{#arm-*-aout,,arm-*-aout}
 @item
 @uref{#xscale-*-*,,xscale-*-*}
 @item
@@ -2100,10 +2103,34 @@ This configuration is intended for embedded systems.
 @html
 <hr />
 @end html
-@heading @anchor{arm-*-*}arm-*-*
+@heading @anchor{arm-*-elf}arm-*-elf
 @heading @anchor{xscale-*-*}xscale-*-*
-Advanced RISC Machines ARM-family processors.  Subtargets that use the
-ELF object format require GNU binutils 2.13 or newer.
+ARM-family processors.  Subtargets that use the ELF object format
+require GNU binutils 2.13 or newer.  Such subtargets include:
+@code{arm-*-freebsd}, @code{arm-*-netbsdelf}, @code{arm-*-*linux},
+@code{arm-*-rtems} and @code{arm-*-kaos}.
+
+@html
+<hr />
+@end html
+@heading @anchor{arm-*-coff}arm-*-coff
+ARM-family processors.  Note that there are two diffierent varieties
+of PE format subtarget supported: @code{arm-wince-pe} and
+@code{arm-pe} as well as a standard COFF target @code{arm-*-coff}.
+
+@html
+<hr />
+@end html
+@heading @anchor{arm-*-aof}arm-*-aof
+ARM-family processors.  These targets support the AOF file format:
+@code{arm-*-aof}, @code{arm-*-risix*}.
+
+@html
+<hr />
+@end html
+@heading @anchor{arm-*-aout}arm-*-aout
+ARM-family processors.  These targets support the AOUT file format:
+@code{arm-*-aout}, @code{arm-*-netbsd}.
 
 @html
 <hr />
