@@ -3525,6 +3525,7 @@ extern tree initialize_reference (tree, tree, tree);
 extern tree make_temporary_var_for_ref_to_temp (tree, tree);
 extern tree strip_top_quals (tree);
 extern tree perform_implicit_conversion (tree, tree);
+extern tree perform_direct_initialization_if_possible (tree, tree);
 extern tree in_charge_arg_for_name (tree);
 extern tree build_cxx_call (tree, tree, tree);
 
