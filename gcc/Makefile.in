@@ -1820,7 +1820,7 @@ mips-tdump.o : mips-tdump.c $(CONFIG_H) $(RTL_H) $(SYSTEM_H) coretypes.h $(TM_H)
 # FIXME: writing proper dependencies for this is a *LOT* of work.
 libbackend.o : $(OBJS-common:.o=.c) $(out_file) \
   insn-config.h insn-flags.h insn-codes.h insn-constants.h \
-  insn-attr.h options_.h
+  insn-attr.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  -DTARGET_NAME=\"$(target_alias)\" \
 	  -DLOCALEDIR=\"$(localedir)\" \
@@ -2793,7 +2793,7 @@ mostlyclean: lang.mostlyclean
 	-rm -f xlimits.h
 # Delete other built files.
 	-rm -f xsys-protos.hT
-	-rm -f specs.h options_.h gencheck.h options.c options.h
+	-rm -f specs.h gencheck.h options.c options.h
 # Delete the stamp and temporary files.
 	-rm -f s-* tmp-* stamp-* stmp-*
 	-rm -f */stamp-* */tmp-*
