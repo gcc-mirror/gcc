@@ -1,3 +1,15 @@
+2001-10-25  Zack Weinberg  <zack@codesourcery.com>
+
+	* langhooks.c (lang_hook_default_clear_binding_stack): New.
+	(lang_hook_default_get_alias_set): Move next to other alias
+	hooks.
+	* langhooks.h: Prototype lang_hook_default_clear_binding_stack.
+	(LANG_HOOKS_CLEAR_BINDING_STACK): New macro.
+	(LANG_HOOKS_INITIALIZER): Add it.
+	* toplev.h (struct lang_hooks): Add clear_binding_stack.
+	* toplev.c (compile_file):  Call lang_hooks.clear_binding_stack
+	instead of a loop calling poplevel.
+
 2001-10-25  Nick Clifton  <nickc@cambridge.redhat.com>
 
 	* config/mips/isa3264.h (SUBTARGET_CPP_SIZE_SPEC): Replace
@@ -37,7 +49,7 @@ Wed Oct 24 18:43:42 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* dwarf2out.c (file_info_cmp): Always return consistent results.
 
 2001-10-24  Roger Sayle <roger@eyesopen.com>
- 
+
 	* stmt.c (expand_end_case): Index jumptables from zero for
 	suitably small values of minval.
 

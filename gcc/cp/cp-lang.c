@@ -32,6 +32,8 @@ static HOST_WIDE_INT cxx_get_alias_set PARAMS ((tree));
 #define LANG_HOOKS_INIT cxx_init
 #undef LANG_HOOKS_FINISH
 #define LANG_HOOKS_FINISH cxx_finish
+#undef LANG_HOOKS_CLEAR_BINDING_STACK
+#define LANG_HOOKS_CLEAR_BINDING_STACK pop_everything
 #undef LANG_HOOKS_INIT_OPTIONS
 #define LANG_HOOKS_INIT_OPTIONS cxx_init_options
 #undef LANG_HOOKS_DECODE_OPTION

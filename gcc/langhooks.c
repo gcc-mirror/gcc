@@ -36,16 +36,6 @@ lang_hook_default_do_nothing ()
 {
 }
 
-/* Provide a default routine for alias sets that always returns -1.  This
-   is used by languages that don't need to do anything special.  */
-
-HOST_WIDE_INT
-lang_hook_default_get_alias_set (t)
-     tree t ATTRIBUTE_UNUSED;
-{
-  return -1;
-}
-
 /* Do nothing; the default hook to decode an option.  */
 
 int
@@ -54,6 +44,25 @@ lang_hook_default_decode_option (argc, argv)
      char **argv ATTRIBUTE_UNUSED;
 {
   return 0;
+}
+
+/* Provide a default routine to clear the binding stack.  This is used
+   by languages that don't need to do anything special.  */
+void
+lang_hook_default_clear_binding_stack ()
+{
+  while (! global_bindings_p ())
+    poplevel (0, 0, 0);
+}
+
+/* Provide a default routine for alias sets that always returns -1.  This
+   is used by languages that don't need to do anything special.  */
+
+HOST_WIDE_INT
+lang_hook_default_get_alias_set (t)
+     tree t ATTRIBUTE_UNUSED;
+{
+  return -1;
 }
 
 /* Provide a hook routine for alias sets that always returns 0.  This is

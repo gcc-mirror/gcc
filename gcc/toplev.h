@@ -149,6 +149,9 @@ struct lang_hooks
   /* Called last, as a finalizer.  */
   void (*finish) PARAMS ((void));
 
+  /* Called immediately after parsing to clear the binding stack.  */
+  void (*clear_binding_stack) PARAMS ((void));
+
   /* Called to initialize options, before any calls to decode_option.  */
   void (*init_options) PARAMS ((void));
 
