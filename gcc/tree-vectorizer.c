@@ -4415,7 +4415,11 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
     {
       struct data_reference *dr = VARRAY_GENERIC_PTR (loop_write_datarefs, i);
       if (dr == LOOP_VINFO_UNALIGNED_DR (loop_vinfo))
-	DR_MISALIGNMENT (dr) = 0;
+	{
+	  DR_MISALIGNMENT (dr) = 0;
+	  if (vect_debug_details (loop) || vect_debug_stats (loop))
+	    fprintf (dump_file, "Alignment of access forced using peeling.");
+	}
       else
 	DR_MISALIGNMENT (dr) = -1;
     }
@@ -4423,7 +4427,11 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
     {
       struct data_reference *dr = VARRAY_GENERIC_PTR (loop_read_datarefs, i);
       if (dr == LOOP_VINFO_UNALIGNED_DR (loop_vinfo))
-	DR_MISALIGNMENT (dr) = 0;
+	{
+	  DR_MISALIGNMENT (dr) = 0;
+	  if (vect_debug_details (loop) || vect_debug_stats (loop))
+	    fprintf (dump_file, "Alignment of access forced using peeling.");
+	}
       else
 	DR_MISALIGNMENT (dr) = -1;
     }
@@ -4481,6 +4489,9 @@ vect_analyze_data_refs_alignment (loop_vec_info loop_vinfo)
 	    fprintf (dump_file, "not vectorized: unsupported unaligned load.");
 	  return false;
 	}
+      if (supportable_dr_alignment != dr_aligned 
+	  && (vect_debug_details (loop) || vect_debug_stats (loop)))
+	fprintf (dump_file, "Vectorizing an unaligned access.");
     }
   for (i = 0; i < VARRAY_ACTIVE_SIZE (loop_write_datarefs); i++)
     {
@@ -4492,6 +4503,9 @@ vect_analyze_data_refs_alignment (loop_vec_info loop_vinfo)
 	    fprintf (dump_file, "not vectorized: unsupported unaligned store.");
 	  return false;
 	}
+      if (supportable_dr_alignment != dr_aligned 
+	  && (vect_debug_details (loop) || vect_debug_stats (loop)))
+	fprintf (dump_file, "Vectorizing an unaligned access.");
     }
 
   return true;

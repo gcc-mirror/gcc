@@ -15,7 +15,7 @@ int main1 ()
   short sc[N] = {0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45};
   short sb[N] = {0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45};
 
-  /* Not vetorizable yet (multiple types with different nunits in vector).  */
+  /* Not vectorizable yet (multiple types with different nunits in vector).  */
   for (i = 0; i < N; i++)
     {
       ia[i] = ib[i] + ic[i];

@@ -89,15 +89,7 @@ foo (int n)
   char block[N][N];
 
 
-  /* Test 1 - unknown loop bound.  */
-  for (i = 0; i < n; i++)
-    {
-      a[i] = b[i];
-    }
-  fbar (a);
-
-
-  /* Test 2 - type cast.  */
+  /* Test 1 - type cast.  */
   for (i = 0; i < N; i++)
     {
       ia[i] = (int) sb[i];
@@ -105,7 +97,7 @@ foo (int n)
   fbar (a);
 
 
-  /* Test 3 - strided access pattern.  */
+  /* Test 2 - strided access pattern.  */
   for (i = 0; i < N/2; i++)
     {
       a[i] = b[2*i+1] * c[2*i+1] - b[2*i] * c[2*i];
@@ -114,7 +106,7 @@ foo (int n)
   fbar (a);
 
 
-  /* Test 4 - no target support for integer mult.  */
+  /* Test 3 - no target support for integer mult.  */
   for (i = 0; i < N; i++)
     {
       ia[i] = ib[i] * ic[i];
@@ -122,7 +114,7 @@ foo (int n)
   ibar (ia);
 
 
-  /* Test 5 - two types with different nunits in vector.  */
+  /* Test 4 - two types with different nunits in vector.  */
   for (i = 0; i < N; i++)
     {
       ia[i] = ib[i] + ic[i];
@@ -132,7 +124,7 @@ foo (int n)
   sbar (sa);
 
 
-  /* Test 6 - too conservative dependence test.  */
+  /* Test 5 - too conservative dependence test.  */
   for (i = 0; i < N; i++){
     a[i] = b[i] + c[i];
     a[i+1] = b[i] + c[i];
@@ -140,14 +132,14 @@ foo (int n)
   fbar (a);
 
 
-  /* Test 7 - condition in loop.  */
+  /* Test 6 - condition in loop.  */
   for (i = 0; i < N; i++){
     a[i] = (b[i] > 0 ? b[i] : 0);
   }
   fbar (a);
 
 
-  /* Test 8 - cross-iteration cycle.  */
+  /* Test 7 - cross-iteration cycle.  */
   diff = 0;
   for (i = 0; i < N; i++) {
     diff += (cb[i] - cc[i]);
@@ -155,7 +147,7 @@ foo (int n)
   ibar (&diff);
 
 
-  /* Test 9 - outer-loop not attempted; inner-loop has cross 
+  /* Test 8 - outer-loop not attempted; inner-loop has cross 
      iteration cycle and multi-dimensional arrays.  */
   diff = 0;
   for (i = 0; i < N; i++) {
@@ -166,14 +158,14 @@ foo (int n)
   ibar (&diff);
 
 
-  /* Test 10 - induction.  */
+  /* Test 9 - induction.  */
   for ( i = 0; i < N; i++) {
     a[i] = i;
   }
   fbar (a);
 
 
-  /* Test 11 - reverse access and forward access.  */
+  /* Test 10 - reverse access and forward access.  */
   for (i = N; i > 0; i--)
     {
       a[N-i] = b[i-1];
@@ -189,5 +181,4 @@ foo (int n)
 }
 
 /* { dg-final { scan-tree-dump-times "vectorized " 3 "vect"} } */
-/* { dg-final { scan-tree-dump-times "vectorized 0 loops" 2 "vect"} } */
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
+/* { dg-final { scan-tree-dump-times "vectorized 0 loops" 3 "vect"} } */

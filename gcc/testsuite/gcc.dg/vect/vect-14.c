@@ -11,7 +11,7 @@ int main1 ()
   int ia[N];
 
 
-  /* Not vetorizable yet (induction).  */
+  /* Not vectorizable yet (induction).  */
   for ( i = 0; i < N; i++) {
     ia[i] = i;
   }

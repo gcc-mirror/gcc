@@ -29,7 +29,7 @@ foo (int n)
   char image[N][N];
   char block[N][N];
 
-  /* Not vetorizable yet (cross-iteration cycle).  */
+  /* Not vectorizable yet (cross-iteration cycle).  */
   diff = 0;
   for (i = 0; i < N; i++) {
     diff += (cb[i] - cc[i]);
@@ -37,7 +37,7 @@ foo (int n)
   ibar (&diff);
 
 
-  /* Not vetorizable yet (outer-loop: not attempted. 
+  /* Not vectorizable yet (outer-loop: not attempted. 
      inner-loop: cross iteration cycle; multi-dimensional arrays).  */
   diff = 0;
   for (i = 0; i < N; i++) {
@@ -62,7 +62,7 @@ foo (int n)
   fbar (a);
 
 
-  /* Not vetorizable yet (access pattern).  */
+  /* Not vectorizable yet (access pattern).  */
   for (i = 0; i < N/2; i++){
     a[i] = b[2*i+1] * c[2*i+1] - b[2*i] * c[2*i];
     d[i] = b[2*i] * c[2*i+1] + b[2*i+1] * c[2*i];
@@ -99,3 +99,4 @@ foo (int n)
 }
 
 /* { dg-final { scan-tree-dump-times "vectorized 3 loops" 1 "vect" } } */
+/* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 0 "vect" } } */
