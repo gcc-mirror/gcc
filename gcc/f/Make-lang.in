@@ -136,7 +136,7 @@ f/str-op.h f/str-op.j: f/fini$(build_exeext) f/str-op.fin
 f/str-ot.h f/str-ot.j: f/fini$(build_exeext) f/str-ot.fin
 	./f/fini$(build_exeext) $(srcdir)/f/str-ot.fin f/str-ot.j f/str-ot.h
 
-f/fini: f/fini.o f/proj-h.o
+f/fini$(build_exeext): f/fini.o f/proj-h.o
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o f/fini$(build_exeext) \
 		f/fini.o f/proj-h.o
 
