@@ -285,7 +285,7 @@ static int consec_sets_invariant_p PROTO((rtx, int, rtx));
 static rtx libcall_other_reg PROTO((rtx, rtx));
 static int labels_in_range_p PROTO((rtx, int));
 static void count_loop_regs_set PROTO((rtx, rtx, char *, rtx *, int *, int));
-static void note_addr_stored PROTO((rtx));
+static void note_addr_stored PROTO((rtx, rtx));
 static int loop_reg_used_before_p PROTO((rtx, rtx, rtx, rtx, rtx));
 static void scan_loop PROTO((rtx, rtx, int, int));
 #if 0
@@ -2825,8 +2825,9 @@ labels_in_range_p (insn, end)
 /* Record that a memory reference X is being set.  */
 
 static void
-note_addr_stored (x)
+note_addr_stored (x, y)
      rtx x;
+     rtx y ATTRIBUTE_UNUSED;
 {
   register int i;
 

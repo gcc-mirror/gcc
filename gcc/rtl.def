@@ -1,7 +1,7 @@
 /* This file contains the definitions and documentation for the
    Register Transfer Expressions (rtx's) that make up the
    Register Transfer Language (rtl) used in the Back End of the GNU compiler.
-   Copyright (C) 1987, 88, 92, 94, 95, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92, 94, 95, 97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -54,6 +54,7 @@ Boston, MA 02111-1307, USA.  */
      "b" an rtx code for a bit-field operation (ZERO_EXTRACT, SIGN_EXTRACT)
      "i" an rtx code for a machine insn (INSN, JUMP_INSN, CALL_INSN)
      "m" an rtx code for something that matches in insns (e.g, MATCH_DUP)
+     "g" an rtx code for grouping insns together (e.g, GROUP_PARALLEL)
      "x" everything else
      
    */
@@ -163,6 +164,11 @@ DEF_RTL_EXPR(MATCH_PAR_DUP, "match_par_dup", "iE", 'm')
    Should be used only in attribute tests.
    The predicate in operand 0 is applied to the whole insn being checked.  */
 DEF_RTL_EXPR(MATCH_INSN, "match_insn", "s", 'm')
+
+/* Appears only in machine descriptions.
+   Operand 0 is the operand number, as in match_operand.
+   Operand 1 is the predicate to apply to the insn.  */
+DEF_RTL_EXPR(MATCH_INSN2, "match_insn2", "is", 'm')
 
 /* Appears only in machine descriptions.
    Defines the pattern for one kind of instruction.
