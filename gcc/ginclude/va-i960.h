@@ -36,9 +36,12 @@ typedef unsigned __gnuc_va_list[2];
 #endif
 
 #ifdef _STDARG_H
+/* Call __builtin_next_arg even though we aren't using its value, so that
+   we can verify that firstarg is correct.  */
 #define va_start(AP, LASTARG)				\
 __extension__						\
-({ __asm__ ("st	g14,%0" : "=m" (*(AP)));		\
+({ __builtin_next_arg (LASTARG);			\
+   __asm__ ("st	g14,%0" : "=m" (*(AP)));		\
    (AP)[1] = (__builtin_args_info (0) + __builtin_args_info (1)) * 4; })
 
 #else
