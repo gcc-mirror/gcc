@@ -1351,20 +1351,9 @@ decay_conversion (tree exp)
       cxx_incomplete_type_error (exp, TREE_TYPE (exp));
       return error_mark_node;
     }
-  
-  /* Constants can be used directly unless they're not loadable.  */
-  if (TREE_CODE (exp) == CONST_DECL)
-    exp = DECL_INITIAL (exp);
-  /* Replace a nonvolatile const static variable with its value.  We
-     don't do this for arrays, though; we want the address of the
-     first element of the array, not the address of the first element
-     of its initializing constant.  */
-  else if (code != ARRAY_TYPE)
-    {
-      exp = decl_constant_value (exp);
-      type = TREE_TYPE (exp);
-    }
 
+  exp = integral_constant_value (exp);
+  
   /* build_c_cast puts on a NOP_EXPR to make the result not an lvalue.
      Leave such NOP_EXPRs, since RHS is being used in non-lvalue context.  */
 
@@ -4450,7 +4439,6 @@ build_x_compound_expr (tree op1, tree op2)
 tree
 build_compound_expr (tree lhs, tree rhs)
 {
-  lhs = decl_constant_value (lhs);
   lhs = convert_to_void (lhs, "left-hand operand of comma");
   
   if (lhs == error_mark_node || rhs == error_mark_node)
@@ -4666,7 +4654,6 @@ build_static_cast_1 (tree type, tree expr, bool c_cast_p,
       || (INTEGRAL_OR_ENUMERATION_TYPE_P (type)
 	  && INTEGRAL_OR_ENUMERATION_TYPE_P (intype)))
     {
-      expr = decl_constant_value (expr);
       expr = ocp_convert (type, expr, CONV_C_CAST, LOOKUP_NORMAL);
 
       /* Ignore any integer overflow caused by the cast.  */
@@ -4918,10 +4905,7 @@ build_reinterpret_cast_1 (tree type, tree expr, bool c_cast_p,
     ;
   else if ((TYPE_PTRFN_P (type) && TYPE_PTRFN_P (intype))
 	   || (TYPE_PTRMEMFUNC_P (type) && TYPE_PTRMEMFUNC_P (intype)))
-    {
-      expr = decl_constant_value (expr);
-      return fold_if_not_in_template (build_nop (type, expr));
-    }
+    return fold_if_not_in_template (build_nop (type, expr));
   else if ((TYPE_PTRMEM_P (type) && TYPE_PTRMEM_P (intype))
 	   || (TYPE_PTROBV_P (type) && TYPE_PTROBV_P (intype)))
     {
@@ -4938,7 +4922,7 @@ build_reinterpret_cast_1 (tree type, tree expr, bool c_cast_p,
 	warning ("cast from %qT to %qT increases required alignment of "
 		 "target type",
 		 intype, type);
-      expr = decl_constant_value (expr);
+      
       return fold_if_not_in_template (build_nop (type, expr));
     }
   else if ((TYPE_PTRFN_P (type) && TYPE_PTROBV_P (intype))
@@ -4950,8 +4934,6 @@ build_reinterpret_cast_1 (tree type, tree expr, bool c_cast_p,
  	   addresses this issue, but as of 2004/10/26 is still in
  	   drafting.  */
  	warning ("ISO C++ forbids casting between pointer-to-function and pointer-to-object");
-      
-      expr = decl_constant_value (expr);
       return fold_if_not_in_template (build_nop (type, expr));
     }
   else if (TREE_CODE (type) == VECTOR_TYPE)
@@ -5926,16 +5908,6 @@ convert_for_assignment (tree type, tree rhs,
   if (TREE_CODE (rhs) == CONST_DECL)
     rhs = DECL_INITIAL (rhs);
   
-  /* We do not use decl_constant_value here because of this case:
-
-       const char* const s = "s";
- 
-     The conversion rules for a string literal are more lax than for a
-     variable; in particular, a string literal can be converted to a
-     "char *" but the variable "s" cannot be converted in the same
-     way.  If the conversion is allowed, the optimization should be
-     performed while creating the converted expression.  */
-
   /* [expr.ass]
 
      The expression is implicitly converted (clause _conv_) to the

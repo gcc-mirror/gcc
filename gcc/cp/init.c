@@ -1558,46 +1558,48 @@ build_offset_ref (tree type, tree name, bool address_p)
   return member;
 }
 
-/* If DECL is a `const' declaration, and its value is a known
-   constant, then return that value.  */
+/* If DECL is a CONST_DECL, or a constant VAR_DECL initialized by
+   constant of integral or enumeration type, then return that value.
+   These are those variables permitted in constant expressions by
+   [5.19/1].  FIXME:If we did lazy folding, this could be localized.  */
+
+tree
+integral_constant_value (tree decl)
+{
+  if ((TREE_CODE (decl) == CONST_DECL
+      || (TREE_CODE (decl) == VAR_DECL
+	  /* And so are variables with a 'const' type -- unless they
+	     are also 'volatile'.  */
+	  && CP_TYPE_CONST_NON_VOLATILE_P (TREE_TYPE (decl))
+	  && DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl)))
+      && DECL_INITIAL (decl)
+      && DECL_INITIAL (decl) != error_mark_node
+      && TREE_TYPE (DECL_INITIAL (decl))
+      && INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (decl)))
+    return DECL_INITIAL (decl);
+  return decl;
+}
+
+/* A more relaxed version of integral_constant_value, for which type
+   is not considered.  This is used by the common C/C++ code, and not
+   directly by the C++ front end.  */
 
 tree
 decl_constant_value (tree decl)
 {
-  /* When we build a COND_EXPR, we don't know whether it will be used
-     as an lvalue or as an rvalue.  If it is an lvalue, it's not safe
-     to replace the second and third operands with their
-     initializers.  So, we do that here.  */
-  if (TREE_CODE (decl) == COND_EXPR)
-    {
-      tree d1;
-      tree d2;
-
-      d1 = decl_constant_value (TREE_OPERAND (decl, 1));
-      d2 = decl_constant_value (TREE_OPERAND (decl, 2));
-
-      if (d1 != TREE_OPERAND (decl, 1) || d2 != TREE_OPERAND (decl, 2))
-	return build3 (COND_EXPR,
-		       TREE_TYPE (decl),
-		       TREE_OPERAND (decl, 0), d1, d2);
-    }
-
-  if (DECL_P (decl)
-      && (/* Enumeration constants are constant.  */
-	  TREE_CODE (decl) == CONST_DECL
+  if ((TREE_CODE (decl) == CONST_DECL
+      || (TREE_CODE (decl) == VAR_DECL
 	  /* And so are variables with a 'const' type -- unless they
-	     are also 'volatile'.  */
-	  || CP_TYPE_CONST_NON_VOLATILE_P (TREE_TYPE (decl)))
-      && TREE_CODE (decl) != PARM_DECL
+             are also 'volatile'.  */
+	  && CP_TYPE_CONST_NON_VOLATILE_P (TREE_TYPE (decl))))
       && DECL_INITIAL (decl)
       && DECL_INITIAL (decl) != error_mark_node
-      /* This is invalid if initial value is not constant.
-	 If it has either a function call, a memory reference,
-	 or a variable, then re-evaluating it could give different results.  */
-      && TREE_CONSTANT (DECL_INITIAL (decl))
-      /* Check for cases where this is sub-optimal, even though valid.  */
-      && TREE_CODE (DECL_INITIAL (decl)) != CONSTRUCTOR)
+      /* This is invalid if initial value is not constant.  If it has
+       	 either a function call, a memory reference, or a variable,
+       	 then re-evaluating it could give different results.  */
+      && TREE_CONSTANT (DECL_INITIAL (decl)))
     return DECL_INITIAL (decl);
+  
   return decl;
 }
 

@@ -621,7 +621,7 @@ ocp_convert (tree type, tree expr, int convtype, int flags)
   complete_type (type);
   complete_type (TREE_TYPE (expr));
 
-  e = decl_constant_value (e);
+  e = integral_constant_value (e);
 
   if (IS_AGGR_TYPE (type) && (convtype & CONV_FORCE_TEMP)
       /* Some internal structures (vtable_entry_type, sigtbl_ptr_type)
@@ -945,10 +945,7 @@ convert (tree type, tree expr)
   intype = TREE_TYPE (expr);
 
   if (POINTER_TYPE_P (type) && POINTER_TYPE_P (intype))
-    {
-      expr = decl_constant_value (expr);
-      return fold_if_not_in_template (build_nop (type, expr));
-    }
+    return fold_if_not_in_template (build_nop (type, expr));
 
   return ocp_convert (type, expr, CONV_OLD_CONVERT,
 		      LOOKUP_NORMAL|LOOKUP_NO_CONVERSION);

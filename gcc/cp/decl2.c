@@ -917,12 +917,11 @@ grokfield (const cp_declarator *declarator,
 
 	  if (!processing_template_decl)
 	    {
-	      if (TREE_CODE (init) == CONST_DECL)
-		init = DECL_INITIAL (init);
-	      else if (TREE_READONLY_DECL_P (init))
-		init = decl_constant_value (init);
-	      else if (TREE_CODE (init) == CONSTRUCTOR)
+	      if (TREE_CODE (init) == CONSTRUCTOR)
 		init = digest_init (TREE_TYPE (value), init, (tree *)0);
+	      else
+		init = integral_constant_value (init);
+	      
 	      if (init != error_mark_node && ! TREE_CONSTANT (init))
 		{
 		  /* We can allow references to things that are effectively
