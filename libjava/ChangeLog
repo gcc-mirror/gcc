@@ -1,3 +1,19 @@
+2003-11-27  Guilhem Lavaux <guilhem@kaffe.org>
+
+	* java/text/NumberFormat.java:
+	(getIntegerInstance) Added the java version in the comments.
+
+2003-11-27  Mark Wielaard  <mark@klomp.org>
+
+	* java/text/NumberFormat.java: Import java.io.InvalidObjectException.
+	(readResolve): Reformat.
+
+2003-11-27  Guilhem Lavaux <guilhem@kaffe.org>
+
+	* java/text/NumberFormat.java
+	(NumberFormat.Field): New implemented class to match Java 1.4. 
+	(getIntegerInstance): Two new Java 1.4 methods.o
+
 2003-11-27  Ito Kazumitsu  <kaz@maczuka.gcd.org>
 
 	* java/util/GregorianCalendar.java (getLinearTime): Avoid counting
