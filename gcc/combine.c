@@ -9173,6 +9173,13 @@ gen_binary (code, mode, op0, op1)
 	      && GET_RTX_CLASS (GET_CODE (op1)) != 'o')))
     return gen_rtx_combine (code, mode, op1, op0);
 
+  /* If we are turning off bits already known off in OP0, we need not do
+     an AND.  */
+  else if (code == AND && GET_CODE (op1) == CONST_INT
+	   && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
+	   && (nonzero_bits (op0, mode) & ~ INTVAL (op1)) == 0)
+    return op0;
+
   return gen_rtx_combine (code, mode, op0, op1);
 }
 
@@ -9976,6 +9983,32 @@ simplify_comparison (code, pop0, pop1)
 	      op0 = gen_lowpart_for_combine (tmode, XEXP (op0, 0));
 	      continue;
 	    }
+
+	  /* If this is (and:M1 (subreg:M2 X 0) (const_int C1)) where C1 fits
+	     in both M1 and M2 and the SUBREG is either paradoxical or
+	     represents the low part, permute the SUBREG and the AND and
+	     try again.  */
+	  if (GET_CODE (XEXP (op0, 0)) == SUBREG
+	      && ((mode_width
+		   >= GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (XEXP (op0, 0)))))
+		  || subreg_lowpart_p (XEXP (op0, 0)))
+	      && GET_CODE (XEXP (op0, 1)) == CONST_INT
+	      && mode_width <= HOST_BITS_PER_WIDE_INT
+	      && (GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (XEXP (op0, 0))))
+		  <= HOST_BITS_PER_WIDE_INT)
+	      && (INTVAL (XEXP (op0, 1)) & ~ mask) == 0
+	      && 0 == (~ GET_MODE_MASK (GET_MODE (SUBREG_REG (XEXP (op0, 0))))
+		       & INTVAL (XEXP (op0, 1))))
+		       
+	    {
+	      op0
+		= gen_lowpart_for_combine
+		  (mode,
+		   gen_binary (AND, GET_MODE (SUBREG_REG (XEXP (op0, 0))),
+			       SUBREG_REG (XEXP (op0, 0)), XEXP (op0, 1)));
+	      continue;
+	    }
+
 	  break;
 
 	case ASHIFT:
