@@ -4518,7 +4518,7 @@ fold (expr)
 		      arg0, integer_zero_node);
 
       /* If X is unsigned, convert X < (1 << Y) into X >> Y == 0
-	 and similarly for <= into !=.  */
+	 and similarly for >= into !=.  */
       if ((code == LT_EXPR || code == GE_EXPR)
 	  && TREE_UNSIGNED (TREE_TYPE (arg0))
 	  && TREE_CODE (arg1) == LSHIFT_EXPR
