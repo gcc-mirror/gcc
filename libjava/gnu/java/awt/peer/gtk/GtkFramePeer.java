@@ -53,7 +53,7 @@ import java.awt.peer.MenuBarPeer;
 public class GtkFramePeer extends GtkWindowPeer
     implements FramePeer
 {
-  int menuBarHeight = 0;
+  private int menuBarHeight;
   private MenuBarPeer menuBar;
   native int getMenuBarHeight (MenuBarPeer bar);
 
@@ -76,9 +76,20 @@ public class GtkFramePeer extends GtkWindowPeer
         removeMenuBarPeer(menuBar);
       menuBar = (MenuBarPeer) ((MenuBar) bar).getPeer();
       setMenuBarPeer(menuBar);      
+      menuBarHeight = getMenuBarHeight (menuBar);
+      insets.top += menuBarHeight;
+      awtComponent.doLayout();
     }
   }
 
+  public void setBounds (int x, int y, int width, int height)
+  {
+    nativeSetBounds (x, y,
+		     width - insets.left - insets.right,
+		     height - insets.top - insets.bottom
+		     + menuBarHeight);
+  }  
+  
   public void setResizable (boolean resizable)
   {
     // Call setSize; otherwise when resizable is changed from true to
@@ -89,18 +100,15 @@ public class GtkFramePeer extends GtkWindowPeer
              + menuBarHeight);
     set ("allow_shrink", resizable);
     set ("allow_grow", resizable);
-  }
-
-  protected void postSizeAllocateEvent()
+  }  
+  
+  protected void postInsetsChangedEvent (int top, int left,
+					 int bottom, int right)
   {
-    if (menuBar != null)
-    {
-      if (menuBarHeight != 0)
-        insets.top -= menuBarHeight;
-      menuBarHeight = getMenuBarHeight(menuBar);
-      insets.top += menuBarHeight;
-    }
-    awtComponent.doLayout();
+    insets.top = top + menuBarHeight;
+    insets.left = left;
+    insets.bottom = bottom;
+    insets.right = right;
   }
 
   public GtkFramePeer (Frame frame)

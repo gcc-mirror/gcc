@@ -1,3 +1,17 @@
+2004-01-26  Kim Ho  <kho@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GtkFramePeer.java (menuBarHeight): Mark
+	private.
+	(setMenuBar): Grab MenuBar height and change insets.
+	(setBounds): Account for MenuBar height.
+	(postInsetsChangedEvent): Ditto.
+	(postSizeAllocateEvent): Remove.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.c
+	(menubar_resize_cb): Remove
+	(setMenuBarPeer): Remove callback.
+	(getMenuBarHeight): Use size requisition instead of
+	allocation.
+
 2004-01-25  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* java/awt/TextArea.java: Fix indentation.  Flesh out javadocs.
