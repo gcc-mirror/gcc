@@ -207,8 +207,8 @@ Boston, MA 02111-1307, USA.  */
 #undef	STARTFILE_SPEC
 #define STARTFILE_SPEC "%{!shared:%{!symbolic:%{pg:gcrt1.o%s} 		\
 			                      %{!pg:%{p:/lib/mcrt1.o%s}	\
-					      %{!p:/lib/crt1.o%s}}} 	\
-			%{pg:gcrti.o%s}%{!pg:/lib/crti.o%s}} 		\
+					     %{!p:/lib/crt1.o%s}}}}    \
+		       %{pg:gcrti.o%s}%{!pg:/lib/crti.o%s}	     \
 			crtbegin.o%s 					\
 			%{ansi:/lib/values-Xc.o%s} 			\
 			%{!ansi:%{traditional:/lib/values-Xt.o%s} 	\

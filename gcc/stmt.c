@@ -88,45 +88,6 @@ static rtx last_block_end_note;
 /* Number of binding contours started so far in this function.  */
 
 int block_start_count;
-
-/* Nonzero if function being compiled needs to
-   return the address of where it has put a structure value.  */
-
-extern int current_function_returns_pcc_struct;
-
-/* Label that will go on parm cleanup code, if any.
-   Jumping to this label runs cleanup code for parameters, if
-   such code must be run.  Following this code is the logical return label.  */
-
-extern rtx cleanup_label;
-
-/* Label that will go on function epilogue.
-   Jumping to this label serves as a "return" instruction
-   on machines which require execution of the epilogue on all returns.  */
-
-extern rtx return_label;
-
-/* Offset to end of allocated area of stack frame.
-   If stack grows down, this is the address of the last stack slot allocated.
-   If stack grows up, this is the address for the next slot.  */
-extern int frame_offset;
-
-/* Label to jump back to for tail recursion, or 0 if we have
-   not yet needed one for this function.  */
-extern rtx tail_recursion_label;
-
-/* Place after which to insert the tail_recursion_label if we need one.  */
-extern rtx tail_recursion_reentry;
-
-/* Location at which to save the argument pointer if it will need to be
-   referenced.  There are two cases where this is done: if nonlocal gotos
-   exist, or if vars whose is an offset from the argument pointer will be
-   needed by inner routines.  */
-
-extern rtx arg_pointer_save_area;
-
-/* Chain of all RTL_EXPRs that have insns in them.  */
-extern tree rtl_expr_chain;
 
 /* Functions and data structures for expanding case statements.  */
 
