@@ -1,3 +1,14 @@
+2005-03-27  Steven Bosscher  <stevenb@suse.de>
+
+	* vax-protos.h (vax_output_int_move, vax_output_int_add,
+	vax_output_conditional_branch): New prototypes.
+	* vax.c (vax_output_int_move, vax_output_int_add): New functions,
+	extracted from vax.md mov and add patterns.
+	(vax_output_conditional_branch): New function to output conditional
+	branch instructions.
+	* vax.md: Use mode macros for arithmetic and mov patterns.
+	Use code macros for the jump patterns.
+
 2005-03-26  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* Makefile.in (libbackend.o): Depend on version files;
@@ -56,7 +67,7 @@
 2005-03-25  John David Anglin  <dave.anglin@nrc-crnc.gc.ca>
 
 	PR target/15491
-        * vax.c (vax_rtx_costs_1): Merge with vax_rtx_costs.
+	* vax.c (vax_rtx_costs_1): Merge with vax_rtx_costs.
 	(vax_rtx_costs): Return false when passed unsupported rtx's.  Handle
 	FLOAT_EXTEND, FLOAT_TRUNCATE and TRUNCATE.  Fix costs for POST_INC,
 	PRE_DEC, NEG and NOT.
@@ -284,7 +295,7 @@
 
 2005-03-22  Richard Guenther <rguenth@tat.physik.uni-tuebingen.de>
 	    Jan Hubicka  <jh@suse.cz>
-	    Steven Bosscher <stevenb@suse.de
+	    Steven Bosscher <stevenb@suse.de>
 
 	* cgraphunit.c (cgraph_estimate_size_after_inlining): Compute
 	call cost based on argument sizes.

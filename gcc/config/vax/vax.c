@@ -899,3 +899,201 @@ vax_notice_update_cc (rtx exp, rtx insn ATTRIBUTE_UNUSED)
   /* Actual condition, one line up, should be that value2's address
      depends on value1, but that is too much of a pain.  */
 }
+
+/* Output integer move instructions.  */
+
+const char *
+vax_output_int_move (rtx insn ATTRIBUTE_UNUSED, rtx *operands,
+		     enum machine_mode mode)
+{
+  switch (mode)
+    {
+    case SImode:
+      if (GET_CODE (operands[1]) == SYMBOL_REF || GET_CODE (operands[1]) == CONST)
+	{
+	  if (push_operand (operands[0], SImode))
+	    return "pushab %a1";
+	  return "movab %a1,%0";
+	}
+      if (operands[1] == const0_rtx)
+	return "clrl %0";
+      if (GET_CODE (operands[1]) == CONST_INT
+	  && (unsigned) INTVAL (operands[1]) >= 64)
+	{
+	  int i = INTVAL (operands[1]);
+	  if ((unsigned)(~i) < 64)
+	    return "mcoml %N1,%0";
+	  if ((unsigned)i < 0x100)
+	    return "movzbl %1,%0";
+	  if (i >= -0x80 && i < 0)
+	    return "cvtbl %1,%0";
+	  if ((unsigned)i < 0x10000)
+	    return "movzwl %1,%0";
+	  if (i >= -0x8000 && i < 0)
+	    return "cvtwl %1,%0";
+	}
+      if (push_operand (operands[0], SImode))
+	return "pushl %1";
+      return "movl %1,%0";
+
+    case HImode:
+      if (GET_CODE (operands[1]) == CONST_INT)
+	{
+	  int i = INTVAL (operands[1]);
+	  if (i == 0)
+	    return "clrw %0";
+	  else if ((unsigned int)i < 64)
+	    return "movw %1,%0";
+	  else if ((unsigned int)~i < 64)
+	    return "mcomw %H1,%0";
+	  else if ((unsigned int)i < 256)
+	    return "movzbw %1,%0";
+	}
+      return "movw %1,%0";
+
+    case QImode:
+      if (GET_CODE (operands[1]) == CONST_INT)
+	{
+	  int i = INTVAL (operands[1]);
+	  if (i == 0)
+	    return "clrb %0";
+	  else if ((unsigned int)~i < 64)
+	    return "mcomb %B1,%0";
+	}
+      return "movb %1,%0";
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
+/* Output integer add instructions.
+
+   The space-time-opcode tradeoffs for addition vary by model of VAX.
+
+   On a VAX 3 "movab (r1)[r2],r3" is faster than "addl3 r1,r2,r3",
+   but it not faster on other models.
+
+   "movab #(r1),r2" is usually shorter than "addl3 #,r1,r2", and is
+   faster on a VAX 3, but some VAXen (e.g. VAX 9000) will stall if
+   a register is used in an address too soon after it is set.
+   Compromise by using movab only when it is shorter than the add
+   or the base register in the address is one of sp, ap, and fp,
+   which are not modified very often.  */
+
+const char *
+vax_output_int_add (rtx insn ATTRIBUTE_UNUSED, rtx *operands,
+		    enum machine_mode mode)
+{
+  switch (mode)
+    {
+    case SImode:
+      if (rtx_equal_p (operands[0], operands[1]))
+	{
+	  if (operands[2] == const1_rtx)
+	    return "incl %0";
+	  if (operands[2] == constm1_rtx)
+	    return "decl %0";
+	  if (GET_CODE (operands[2]) == CONST_INT
+	      && (unsigned) (- INTVAL (operands[2])) < 64)
+	    return "subl2 $%n2,%0";
+	  if (GET_CODE (operands[2]) == CONST_INT
+	      && (unsigned) INTVAL (operands[2]) >= 64
+	      && GET_CODE (operands[1]) == REG
+	      && ((INTVAL (operands[2]) < 32767 && INTVAL (operands[2]) > -32768)
+		   || REGNO (operands[1]) > 11))
+	    return "movab %c2(%1),%0";
+	  return "addl2 %2,%0";
+	}
+
+      if (rtx_equal_p (operands[0], operands[2]))
+	return "addl2 %1,%0";
+
+      if (GET_CODE (operands[2]) == CONST_INT
+	  && INTVAL (operands[2]) < 32767
+	  && INTVAL (operands[2]) > -32768
+	  && GET_CODE (operands[1]) == REG
+	  && push_operand (operands[0], SImode))
+	return "pushab %c2(%1)";
+
+      if (GET_CODE (operands[2]) == CONST_INT
+	  && (unsigned) (- INTVAL (operands[2])) < 64)
+	return "subl3 $%n2,%1,%0";
+
+      if (GET_CODE (operands[2]) == CONST_INT
+	  && (unsigned) INTVAL (operands[2]) >= 64
+	  && GET_CODE (operands[1]) == REG
+	  && ((INTVAL (operands[2]) < 32767 && INTVAL (operands[2]) > -32768)
+	       || REGNO (operands[1]) > 11))
+	return "movab %c2(%1),%0";
+
+      /* Add this if using gcc on a VAX 3xxx:
+      if (REG_P (operands[1]) && REG_P (operands[2]))
+	return "movab (%1)[%2],%0";
+      */
+      return "addl3 %1,%2,%0";
+
+    case HImode:
+      if (rtx_equal_p (operands[0], operands[1]))
+	{
+	  if (operands[2] == const1_rtx)
+	    return "incw %0";
+	  if (operands[2] == constm1_rtx)
+	    return "decw %0";
+	  if (GET_CODE (operands[2]) == CONST_INT
+	      && (unsigned) (- INTVAL (operands[2])) < 64)
+	    return "subw2 $%n2,%0";
+	  return "addw2 %2,%0";
+	}
+      if (rtx_equal_p (operands[0], operands[2]))
+	return "addw2 %1,%0";
+      if (GET_CODE (operands[2]) == CONST_INT
+	  && (unsigned) (- INTVAL (operands[2])) < 64)
+	return "subw3 $%n2,%1,%0";
+      return "addw3 %1,%2,%0";
+
+    case QImode:
+      if (rtx_equal_p (operands[0], operands[1]))
+	{
+	  if (operands[2] == const1_rtx)
+	    return "incb %0";
+	  if (operands[2] == constm1_rtx)
+	    return "decb %0";
+	  if (GET_CODE (operands[2]) == CONST_INT
+	      && (unsigned) (- INTVAL (operands[2])) < 64)
+	    return "subb2 $%n2,%0";
+	  return "addb2 %2,%0";
+	}
+      if (rtx_equal_p (operands[0], operands[2]))
+	return "addb2 %1,%0";
+      if (GET_CODE (operands[2]) == CONST_INT
+	  && (unsigned) (- INTVAL (operands[2])) < 64)
+	return "subb3 $%n2,%1,%0";
+      return "addb3 %1,%2,%0";
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
+/* Output a conditional branch.  */
+const char *
+vax_output_conditional_branch (enum rtx_code code)
+{
+  switch (code)
+    {
+      case EQ:  return "jeql %l0";
+      case NE:  return "jneq %l0";
+      case GT:  return "jgtr %l0";
+      case LT:  return "jlss %l0";
+      case GTU: return "jgtru %l0";
+      case LTU: return "jlssu %l0";
+      case GE:  return "jgeq %l0";
+      case LE:  return "jleq %l0";
+      case GEU: return "jgequ %l0";
+      case LEU: return "jlequ %l0";
+      default:
+        gcc_unreachable ();
+    }
+}
+
