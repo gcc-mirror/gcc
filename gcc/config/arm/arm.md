@@ -8278,6 +8278,7 @@
   "TARGET_ARM
    && !BYTES_BIG_ENDIAN
    && !TARGET_MMU_TRAPS
+   && !arm_arch4
    && REGNO (operands[0]) != FRAME_POINTER_REGNUM
    && REGNO (operands[1]) != FRAME_POINTER_REGNUM
    && (GET_CODE (operands[2]) != REG
@@ -8296,6 +8297,7 @@
   "TARGET_ARM
    && !BYTES_BIG_ENDIAN
    && !TARGET_MMU_TRAPS
+   && !arm_arch4
    && REGNO (operands[0]) != FRAME_POINTER_REGNUM
    && REGNO (operands[1]) != FRAME_POINTER_REGNUM
    && (GET_CODE (operands[2]) != REG
@@ -8460,6 +8462,7 @@
   "TARGET_ARM
    && !BYTES_BIG_ENDIAN
    && !TARGET_MMU_TRAPS
+   && !arm_arch4
    && REGNO (operands[0]) != FRAME_POINTER_REGNUM
    && REGNO (operands[1]) != FRAME_POINTER_REGNUM
    && REGNO (operands[3]) != FRAME_POINTER_REGNUM"
@@ -8480,6 +8483,7 @@
   "TARGET_ARM
    && !BYTES_BIG_ENDIAN
    && !TARGET_MMU_TRAPS
+   && !arm_arch4
    && REGNO (operands[0]) != FRAME_POINTER_REGNUM
    && REGNO (operands[1]) != FRAME_POINTER_REGNUM
    && REGNO (operands[3]) != FRAME_POINTER_REGNUM"
@@ -8543,6 +8547,7 @@
   "TARGET_ARM
    && !BYTES_BIG_ENDIAN
    && !TARGET_MMU_TRAPS
+   && !arm_arch4
    && REGNO (operands[0]) != REGNO(operands[1])
    && (GET_CODE (operands[2]) != REG
        || REGNO(operands[0]) != REGNO (operands[2]))"

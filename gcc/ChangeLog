@@ -1,3 +1,10 @@
+2002-03-25  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/2623
+	* arm.md (loadhi_preinc, loadhi_predec, loadhi_shiftpreinc)
+	(loadhi_shiftpredec, loadhi-with-writeback peephole): Don't use
+	these patterns on arm_archv4.
+
 2002-03-22  Nick Clifton  <nickc@cambridge.redhat.com>
 
 	* config/mcore/mcore.h (CC1_SPEC): Define only if not already
