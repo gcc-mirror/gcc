@@ -1,7 +1,22 @@
+2004-03-04  Steven Bosscher  <stevenb@suse.de>
+
+	* ppro.md: Rewrite as a DFA pipeline description.
+	* i386.md: Remove all uses of the ppro_uops attribute.
+	* i386.c: (ix86_safe_ppro_uops, ix86_dump_ppro_packet,
+	ix86_reorder_insn, ix86_sched_reorder_ppro, ix86_sched_init,
+	ix86_sched_reorder, ix86_variable_issue,
+	struct ix86_sched_data, TARGET_SCHED_VARIABLE_ISSUE,
+	TARGET_SCHED_INIT, TARGET_SCHED_REORDER): Remove.
+	(ia32_use_dfa_pipeline_interface): Add TARGET_PENTIUMPRO.
+	(ia32_multipass_dfa_lookahead): Add TARGET_PENTIUMPRO.
+	* athlon.md (athlon_ssecmp_load): Fix comment
+
 2004-03-04  Stuart Hastings  <stuart@apple.com>
+
 	* gcc/doc/invoke.texi: Document -mlongcall for Darwin/PPC.
 
 2004-03-04  Stuart Hastings  <stuart@apple.com>
+
 	* gcc/config/i386/darwin.h: Darwin/x86 doesn't support CPUs before
 	686, tell Darwin assembler to allow prefetch insns, non-empty def
 	of SUBTARGET_OPTION_TRANSLATE_TABLE.
