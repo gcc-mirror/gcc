@@ -38,7 +38,7 @@
   ctype<char>::
   is(mask __m, char __c) const throw()
   { 
-    if (__m & digit || __m & xdigit)
+    if (__m & (digit | xdigit))
       return __isctype(__c, __m);
     else
       return __istype(__c, __m);
