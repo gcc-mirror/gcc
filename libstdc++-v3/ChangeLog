@@ -1,3 +1,9 @@
+2001-04-12  Jason Merrill  <jason_merrill@redhat.com>
+
+	* testsuite/lib/libstdc++.exp (libstdc++-dg-test): Prepend "./" to
+	output_file.
+	(dg-test): Revert rth's change.
+
 2001-04-12  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* libsupc++/eh_alloc.cc (__cxa_allocate_exception): Don't
