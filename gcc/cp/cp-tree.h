@@ -1899,6 +1899,23 @@ struct lang_decl GTY(())
 #define DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P(NODE) \
   (TREE_LANG_FLAG_2 (VAR_DECL_CHECK (NODE)))
 
+/* Nonzero for a VAR_DECL that can be used in an integral constant
+   expression.    
+
+      [expr.const]
+
+      An integral constant-expression can only involve ... const
+      variables of static or enumeration types initialized with
+      constant expressions ...
+  
+   The standard does not require that the expression be non-volatile.
+   G++ implements the proposed correction in DR 457.  */
+#define DECL_INTEGRAL_CONSTANT_VAR_P(NODE)		\
+  (TREE_CODE (NODE) == VAR_DECL				\
+   && CP_TYPE_CONST_NON_VOLATILE_P (TREE_TYPE (NODE))	\
+   && INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (NODE))	\
+   && DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (NODE))
+
 /* Nonzero if the DECL was initialized in the class definition itself,
    rather than outside the class.  This is used for both static member
    VAR_DECLS, and FUNTION_DECLS that are defined in the class.  */

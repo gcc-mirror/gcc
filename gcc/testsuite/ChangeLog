@@ -1,3 +1,15 @@
+2004-08-01  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/16338
+	* g++.dg/init/null1.C: New test.
+	* g++.dg/tc1/dr76.C: Adjust error marker.
+	
+	PR c++/16489
+	* g++.dg/parse/namespace10.C: New test.
+	
+	PR c++/16810
+	* g++.dg/inherit/ptrmem2.C: New test.
+
 2004-07-28  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/13092

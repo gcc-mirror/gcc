@@ -2567,25 +2567,15 @@ finish_id_expression (tree id_expression,
       /* Only certain kinds of names are allowed in constant
        expression.  Enumerators and template parameters 
        have already been handled above.  */
-      if (integral_constant_expression_p)
+      if (integral_constant_expression_p
+	  && !DECL_INTEGRAL_CONSTANT_VAR_P (decl))
 	{
-	    /* Const variables or static data members of integral or
-	      enumeration types initialized with constant expressions
-	      are OK.  */
-	  if (TREE_CODE (decl) == VAR_DECL
-	      && CP_TYPE_CONST_P (TREE_TYPE (decl))
-	      && INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (decl))
-	      && DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl))
-	    ;
-	  else
+	  if (!allow_non_integral_constant_expression_p)
 	    {
-	      if (!allow_non_integral_constant_expression_p)
-		{
-		  error ("`%D' cannot appear in a constant-expression", decl);
-		  return error_mark_node;
-		}
-	      *non_integral_constant_expression_p = true;
+	      error ("`%D' cannot appear in a constant-expression", decl);
+	      return error_mark_node;
 	    }
+	  *non_integral_constant_expression_p = true;
 	}
       
       if (TREE_CODE (decl) == NAMESPACE_DECL)
