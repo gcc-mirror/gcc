@@ -43,11 +43,13 @@ LIBDEPS = \
 /^SUBDIR_MALLOC/s/`.*`//
 
 # Point includes at parent directly correctly.
-/^INCLUDES = .*$/s/:\./::/g
-/^INCLUDES = .*$/s/"{srcdir}"\.\./"{topsrcdir}"gcc:/g
+/^INCLUDES = /s/:\./::/g
+/^INCLUDES = /s/"{srcdir}"\.\./"{topsrcdir}"gcc:/g
+/^INCLUDES = /s,"{srcdir}"/\.\.,"{topsrcdir}"gcc:,g
+/^INCLUDES = /s,"{srcdir}":config,"{topsrcdir}"gcc:config:,g
 
 # Add the special MPW include dirs.
-/^INCLUDES = .*$/s/$/ -i "{topsrcdir}"include:mpw: -i :::extra-include:/
+/^INCLUDES = /s/$/ -i "{topsrcdir}"include:mpw: -i :::extra-include:/
 
 # A nasty hack to reduce confusion.
 /true/s/ ; @true$//
@@ -101,7 +103,7 @@ LIBDEPS = \
 
 # Fix the compile line for the generated parser.
 /{CC} -c/,/echo {PARSE_C}/c\
-	{CC} {ALL_CFLAGS} {ALL_CPPFLAGS} {INCLUDES} {BIG_SWITCHFLAG} "{o}"parse.c -o "{o}"parse.c.o\
+	{CC} @DASH_C_FLAG@ {ALL_CFLAGS} {ALL_CPPFLAGS} {INCLUDES} {BIG_SWITCHFLAG} "{o}"parse.c -o "{o}"parse.c.o\
 
 # Change all Rez commands to use mac-gcc.r.
 /{REZ}/s/"{s}"[-a-zA-Z{}]*\.r/"{topsrcdir}"gcc:mac-gcc.r/

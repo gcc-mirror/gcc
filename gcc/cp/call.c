@@ -2449,12 +2449,6 @@ build_method_call (instance, name, parms, basetype_path, flags)
   function = DECL_MAIN_VARIANT (function);
   mark_used (function);
 
-  if (pedantic && DECL_THIS_INLINE (function) && ! DECL_ARTIFICIAL (function)
-      && ! DECL_INITIAL (function) && ! DECL_PENDING_INLINE_INFO (function)
-      && ! (DECL_TEMPLATE_INFO (function)
-	    && TREE_LANG_FLAG_0 (DECL_TEMPLATE_INFO (function))))
-    cp_warning ("inline function `%#D' called before definition", function);
-
   fntype = TREE_TYPE (function);
   if (TREE_CODE (fntype) == POINTER_TYPE)
     fntype = TREE_TYPE (fntype);
@@ -5122,12 +5116,6 @@ build_over_call (fn, convs, args, flags)
     }
 
   mark_used (fn);
-
-  if (pedantic && DECL_THIS_INLINE (fn) && ! DECL_ARTIFICIAL (fn)
-      && ! DECL_INITIAL (fn) && ! DECL_PENDING_INLINE_INFO (fn)
-      && ! (DECL_TEMPLATE_INFO (fn)
-	    && TREE_LANG_FLAG_0 (DECL_TEMPLATE_INFO (fn))))
-    cp_warning ("inline function `%#D' called before definition", fn);
 
   if (DECL_CONTEXT (fn) && IS_SIGNATURE (DECL_CONTEXT (fn)))
     return build_signature_method_call (fn, converted_args);

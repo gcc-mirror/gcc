@@ -1,3 +1,36 @@
+Wed Sep 18 04:24:07 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* method.c (make_thunk): Call comdat_linkage before setting the
+ 	TREE_CODE.
+
+	* decl2.c (comdat_linkage): Use make_decl_one_only.
+	(import_export_decl): Likewise.
+	* decl.c (init_decl_processing): Check supports_one_only instead of
+	SUPPORTS_WEAK.
+
+Sat Sep 14 08:34:41 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl2.c (grokfield): Tighten checking for access decls.
+
+	* decl.c (make_typename_type): Resolve references to
+ 	current_class_type.  Set CLASSTYPE_GOT_SEMICOLON.
+	(lookup_name_real): Types that depend on a template parameter get
+ 	an implicit 'typename' unless they're in the current scope.
+	(start_decl_1): We don't care about incomplete types that depend
+ 	on a template parm.
+	(grokdeclarator): Resolve 'typename's in the type specifier that
+ 	refer to members of the current scope.
+
+	* call.c (build_over_call): Remove 'inline called before
+ 	definition' diagnostic.
+	(build_method_call): Likewise.
+	* decl.c (duplicate_decls): Downgrade 'used before declared
+ 	inline' to a warning, only with -Winline.
+
+Fri Sep 13 17:31:40 1996  Stan Shebs  <shebs@andros.cygnus.com>
+
+	* mpw-make.sed: Fix include paths, add @DASH_C_FLAG@ to compile.
+
 Wed Sep 11 22:38:13 1996  Gerald Baumgartner  <gb@cs.purdue.edu>
 
 	* call.c (build_method_call): When calling a signature

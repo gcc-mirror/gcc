@@ -2594,27 +2594,13 @@ duplicate_decls (newdecl, olddecl)
 		  }
 	      }
 
-	  if (DECL_THIS_INLINE (newdecl) && ! DECL_THIS_INLINE (olddecl))
+	  if (DECL_THIS_INLINE (newdecl) && ! DECL_THIS_INLINE (olddecl)
+	      && TREE_ADDRESSABLE (olddecl) && warn_inline)
 	    {
-#if 0 /* I think this will be correct, but it's really annoying.  We should
-	 fix the compiler to find vtables by indirection so it isn't
-	 necessary.  (jason 8/25/95) */
-	      if (DECL_VINDEX (olddecl) && ! DECL_ABSTRACT_VIRTUAL_P (olddecl))
-		{
-		  cp_pedwarn ("virtual function `%#D' redeclared inline",
-			      newdecl);
-		  cp_pedwarn_at ("previous non-inline declaration here",
-				 olddecl);
-		}
-	      else
-#endif
-	      if (TREE_ADDRESSABLE (olddecl))
-		{
-		  cp_pedwarn ("`%#D' was used before it was declared inline",
-			      newdecl);
-		  cp_pedwarn_at ("previous non-inline declaration here",
-				 olddecl);
-		}
+	      cp_warning ("`%#D' was used before it was declared inline",
+			  newdecl);
+	      cp_warning_at ("previous non-inline declaration here",
+			     olddecl);
 	    }
 	}
       /* These bits are logically part of the type for non-functions.  */
@@ -2796,9 +2782,7 @@ duplicate_decls (newdecl, olddecl)
 
   /* Merge the storage class information.  */
   DECL_WEAK (newdecl) |= DECL_WEAK (olddecl);
-#ifdef DECL_ONE_ONLY
   DECL_ONE_ONLY (newdecl) |= DECL_ONE_ONLY (olddecl);
-#endif
   TREE_PUBLIC (newdecl) = TREE_PUBLIC (olddecl);
   TREE_STATIC (olddecl) = TREE_STATIC (newdecl) |= TREE_STATIC (olddecl);
   if (! DECL_EXTERNAL (olddecl))
@@ -4329,7 +4313,8 @@ make_typename_type (context, name)
     my_friendly_abort (2000);
 
   if (! current_template_parms
-      || ! uses_template_parms (context))
+      || ! uses_template_parms (context)
+      || context == current_class_type)
     {
       t = lookup_field (context, name, 0, 1);
       if (t == NULL_TREE)
@@ -4350,6 +4335,7 @@ make_typename_type (context, name)
   TYPE_CONTEXT (t) = context;
   TYPE_MAIN_DECL (TREE_TYPE (d)) = d;
   DECL_CONTEXT (d) = context;
+  CLASSTYPE_GOT_SEMICOLON (t) = 1;
 
   return t;
 }
@@ -4434,8 +4420,9 @@ lookup_name_real (name, prefer_type, nonclass)
       else
 	val = NULL_TREE;
 
-#if 0
+#if 1
       if (got_scope && current_template_parms
+	  && got_scope != current_class_type
 	  && uses_template_parms (got_scope)
 	  && val && TREE_CODE (val) == TYPE_DECL
 	  && ! DECL_ARTIFICIAL (val))
@@ -5507,7 +5494,7 @@ init_decl_processing ()
       flag_inline_functions = 0;
     }
 
-  if (! SUPPORTS_WEAK)
+  if (! supports_one_only ())
     flag_weak = 0;
 
   /* Create the global bindings for __FUNCTION__ and __PRETTY_FUNCTION__.  */
@@ -6015,7 +6002,8 @@ start_decl_1 (decl)
       && TREE_CODE (decl) != TEMPLATE_DECL
       && IS_AGGR_TYPE (type) && ! DECL_EXTERNAL (decl))
     {
-      if (TYPE_SIZE (complete_type (type)) == NULL_TREE)
+      if ((! current_template_parms || ! uses_template_parms (type))
+	  && TYPE_SIZE (complete_type (type)) == NULL_TREE)
 	{
 	  cp_error ("aggregate `%#D' has incomplete type and cannot be initialized",
 		 decl);
@@ -7864,6 +7852,18 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	  else
 	    {
 	      type = TREE_TYPE (id);
+	      if (TREE_CODE (type) == TYPENAME_TYPE
+		  && TYPE_CONTEXT (type) == current_class_type)
+		{
+		  /* Members of the current class get resolved immediately;
+		     we couldn't catch this one earlier because we hadn't
+		     pushed into the class yet.  */
+		  if (TREE_TYPE (type))
+		    type = TREE_TYPE (type);
+		  else
+		    type = make_typename_type (TYPE_CONTEXT (type),
+					       TYPE_IDENTIFIER (type));
+		}
 	      TREE_VALUE (spec) = type;
 	    }
 	  goto found;
@@ -8861,6 +8861,19 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		continue;
 	      }
 	    ctype = TREE_OPERAND (declarator, 0);
+
+	    if (TREE_CODE (ctype) == TYPENAME_TYPE
+		&& TYPE_CONTEXT (ctype) == current_class_type)
+	      {
+		/* Members of the current class get resolved immediately;
+		   we couldn't catch this one earlier because we hadn't
+		   pushed into the class yet.  */
+		if (TREE_TYPE (ctype))
+		  ctype = TREE_TYPE (ctype);
+		else
+		  ctype = make_typename_type (TYPE_CONTEXT (ctype),
+					      TYPE_IDENTIFIER (ctype));
+	      }
 
 	    if (sname == NULL_TREE)
 	      goto done_scoping;
