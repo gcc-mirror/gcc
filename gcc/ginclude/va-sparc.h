@@ -48,6 +48,8 @@ typedef void * __va___list;
    passed by invisible reference.  ??? RECORD_TYPE args passed
    in the stack are made to be word-aligned; for an aggregate that is
    not word-aligned, we advance the pointer to the first non-reg slot.  */
+/* We don't declare the union member `d' to have type TYPE
+   because that would lose in C++ if TYPE has a constructor.  */
 #define va_arg(pvar,TYPE)					\
 __extension__							\
 ({ TYPE __va_temp;						\
@@ -55,10 +57,10 @@ __extension__							\
     ? ((pvar) += __va_rounded_size (TYPE *),			\
        **(TYPE **) ((pvar) - __va_rounded_size (TYPE *)))	\
     : __va_rounded_size (TYPE) == 8				\
-    ? ({ union {TYPE d; int i[2];} u;				\
-	 u.i[0] = ((int *) (pvar))[0];				\
-	 u.i[1] = ((int *) (pvar))[1];				\
+    ? ({ union {char __d[sizeof (TYPE)]; int __i[2];} __u;	\
+	 __u.__i[0] = ((int *) (pvar))[0];			\
+	 __u.__i[1] = ((int *) (pvar))[1];			\
 	 (pvar) += 8;						\
-	 u.d; })						\
+	 *(TYPE *)__u.__d; })					\
     : ((pvar) += __va_rounded_size (TYPE),			\
        *((TYPE *) ((pvar) - __va_rounded_size (TYPE)))));})
