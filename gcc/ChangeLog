@@ -1,5 +1,8 @@
 2003-09-24  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* config.gcc: Clean up and reindent $with_cpu=yes|no clause and
+	the section giving $with_cpu defaults by target.
+
 	* config.gcc (arm-*-coff*, armel-*-coff*, arm*-*-ecos-elf,
 	arm*-*-elf, ep9312-*-elf, arm*-wince-pe*, arm*-*-pe*, arm*-*-pe*,
 	rs6000-ibm-aix4.[3456789]*, powerpc-ibm-aix4.[3456789]*,
