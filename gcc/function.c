@@ -852,7 +852,7 @@ assign_temp (tree type_or_decl, int keep, int memory_required,
       /* If we still haven't been able to get a size, see if the language
 	 can compute a maximum size.  */
       if (size == -1
-	  && (size_tree = lang_hooks.type_max_size (type)) != 0
+	  && (size_tree = lang_hooks.types.max_size (type)) != 0
 	  && host_integerp (size_tree, 1))
 	size = tree_low_cst (size_tree, 1);
 

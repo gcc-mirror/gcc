@@ -1,3 +1,8 @@
+2004-07-05  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* function.c, langhooks-def.h, langhooks.h: Move max_size hook
+	to type hooks; remove bogus PARAMS.
+
 2004-07-05  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* c-tree.h (TYPE_ACTUAL_ARG_TYPES): Use TYPE_LANG_SLOT_1.
