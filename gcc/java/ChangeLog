@@ -1,3 +1,9 @@
+2001-10-08  Tom Tromey  <tromey@redhat.com>
+
+	Fix for PR java/4489:
+	* jcf-write.c (generate_bytecode_insns) [SWITCH_EXPR]: Always
+	force a new label when computing `body_block'.
+
 2001-10-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* jcf-io.c (format_uint): Const-ify.
