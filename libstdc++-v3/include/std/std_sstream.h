@@ -191,7 +191,7 @@ namespace std
       underflow()
       {
 	if (this->_M_in_cur < this->_M_in_end)
-	  return traits_type::to_int_type(*gptr());
+	  return traits_type::to_int_type(*this->_M_in_cur);
 	else
 	  return traits_type::eof();
       }
@@ -230,7 +230,6 @@ namespace std
 	    
 	    // Step 2: Use the external array.
 	    this->_M_buf = __s;
-	    this->_M_buf_size = __n;
 	    _M_really_sync(__s, 0, 0);
 	  }
 	return this;

@@ -1,3 +1,16 @@
+2003-04-26  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/bits/streambuf.tcc (__copy_streambufs): Don't
+	use in_avail(), simplify.
+
+2003-04-26  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/std/std_sstream.h (setbuf): don't set _M_buf_size,
+	in basic_stringbuf it's unused.
+	
+	* include/std/std_sstream.h (underflow): consistently use
+	_M_in_cur, not gptr().
+
 2003-04-25  Ranjit Mathew  <rmathew@hotmail.com>
             Phil Edwards  <pme@gcc.gnu.org>
 	
