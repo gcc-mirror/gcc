@@ -35,16 +35,8 @@
  * for Cygnus Support, July 1992.
  */
 
-#ifndef lint
-static char sccsid[] = "@(#)gmon.c	5.3 (Berkeley) 5/22/91";
-#endif /* not lint */
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <limits.h>
-#include <unistd.h>
-#include <fcntl.h>
+#include "config.h"
+#include "system.h"
 
 #if 0
 #include "sparc/gmon.h"
@@ -96,7 +88,9 @@ static int	s_scale;
 
 #define	MSG "No space for profiling buffer(s)\n"
 
-static void moncontrol();
+static void moncontrol	PROTO ((int));
+extern void monstartup	PROTO ((char *, char *));
+extern void _mcleanup	PROTO ((void));
 
 void monstartup(lowpc, highpc)
     char	*lowpc;
@@ -185,7 +179,7 @@ _mcleanup()
     int			toindex;
     struct rawarc	rawarc;
     char		*profdir;
-    char		*proffile;
+    const char		*proffile;
     char		*progname;
     char		 buf[PATH_MAX];
     extern char	       **___Argv;
@@ -275,6 +269,8 @@ _mcleanup()
  * -- [eichin:19920702.1107EST]
  */
 
+static void internal_mcount PROTO((char *, unsigned short *)) ATTRIBUTE_UNUSED;
+
 /* i7 == last ret, -> frompcindex */
 /* o7 == current ret, -> selfpc */
 /* Solaris 2 libraries use _mcount.  */
@@ -297,9 +293,9 @@ static void internal_mcount(selfpc, frompcindex)
 	 */
 
 	if(!already_setup) {
-          extern etext();
+          extern char etext[];
 	  already_setup = 1;
-	  monstartup(0, etext);
+	  monstartup(0, (char *)etext);
 #ifdef USE_ONEXIT
 	  on_exit(_mcleanup, 0);
 #else

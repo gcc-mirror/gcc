@@ -2285,10 +2285,10 @@
 {
   /* Where possible, convert CONST_DOUBLE into a CONST_INT.  */
   if (GET_CODE (operands[1]) == CONST_DOUBLE
-#if HOST_BITS_PER_WIDE_INT != 64
+#if HOST_BITS_PER_WIDE_INT == 32
       && ((CONST_DOUBLE_HIGH (operands[1]) == 0
 	   && (CONST_DOUBLE_LOW (operands[1]) & 0x80000000) == 0)
-	  || (CONST_DOUBLE_HIGH (operands[1]) == 0xffffffff
+	  || (CONST_DOUBLE_HIGH (operands[1]) == (HOST_WIDE_INT) 0xffffffff
 	      && (CONST_DOUBLE_LOW (operands[1]) & 0x80000000) != 0))
 #endif
       )
@@ -7704,7 +7704,9 @@
   ""
   "
 {
+#if 0
   rtx chain = operands[0];
+#endif
   rtx fp = operands[1];
   rtx stack = operands[2];
   rtx lab = operands[3];
