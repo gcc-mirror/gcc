@@ -1,3 +1,8 @@
+2001-11-20  Brad Kaiser  <bkaiser@acelink.net>
+ 
+	* reload1.c (elimination_effects): Use function_invariant_p
+	instead of CONSTANT_P when considering register equivalences.
+
 2001-11-20  David O'Brien  <obrien@FreeBSD.org>
 
 	* config.gcc: Add FreeBSD/PowerPC target.
