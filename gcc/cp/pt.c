@@ -9503,13 +9503,11 @@ most_specialized_class (tmpl, args)
   return champ;
 }
 
-/* called from the parser.  */
+/* Explicitly instantiate DECL.  */
 
 void
-do_decl_instantiation (declspecs, declarator, storage)
-     tree declspecs, declarator, storage;
+do_decl_instantiation (tree decl, tree storage)
 {
-  tree decl = grokdeclarator (declarator, declspecs, NORMAL, 0, NULL);
   tree result = NULL_TREE;
   int extern_p = 0;
 

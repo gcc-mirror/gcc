@@ -4125,7 +4125,7 @@ extern tree tinst_for_decl			PARAMS ((void));
 extern void mark_decl_instantiated		PARAMS ((tree, int));
 extern int more_specialized			PARAMS ((tree, tree, int, int));
 extern void mark_class_instantiated		PARAMS ((tree, int));
-extern void do_decl_instantiation		PARAMS ((tree, tree, tree));
+extern void do_decl_instantiation		(tree, tree);
 extern void do_type_instantiation		PARAMS ((tree, tree, tsubst_flags_t));
 extern tree instantiate_decl			PARAMS ((tree, int));
 extern tree get_bindings			PARAMS ((tree, tree, tree));
