@@ -415,7 +415,7 @@ save_for_inline_copying (fndecl)
 
   /* The pointer used to track the true location of the memory used
      for LABEL_MAP.  */
-  rtx *real_label_map = NULL_PTR;
+  rtx *real_label_map = 0;
 
   /* Make and emit a return-label if we have not already done so. 
      Do this before recording the bounds on label numbers.  */
@@ -1253,7 +1253,7 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 
   /* The pointer used to track the true location of the memory used
      for MAP->LABEL_MAP.  */
-  rtx *real_label_map = NULL_PTR;
+  rtx *real_label_map = 0;
 
   /* Allow for equivalences of the pseudos we make for virtual fp and ap.  */
   max_regno = MAX_REGNUM (header) + 3;
