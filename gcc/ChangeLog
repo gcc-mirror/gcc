@@ -1,6 +1,6 @@
 2002-02-19  Philip Blundell  <pb@nexus.co.uk>
 
-	PR 5185
+	PR 5399
 	* config/arm/arm.h (THUMB_LEGITIMATE_CONSTANT_P): Accept anything
 	if generating PIC.
 
