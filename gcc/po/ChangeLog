@@ -1,3 +1,7 @@
+1999-07-10  Manfred Hollstein  <mhollstein@cygnus.com
+
+	* POTFILES.in: Track files recently added/deleted.
+
 1999-03-21  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* POTFILES.in: Track latest file renamings.
