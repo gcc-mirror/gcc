@@ -54,7 +54,7 @@ Boston, MA 02111-1307, USA.  */
 #define ASSERT_PLT_UNSPEC(x)					\
   do								\
     {								\
-      if (XEXP (x, 1) != NULL_RTX				\
+      if (XINT (x, 1) != CRIS_UNSPEC_PLT			\
 	  || (GET_CODE (XVECEXP (x, 0, 0)) != SYMBOL_REF	\
 	      && GET_CODE (XVECEXP (x, 0, 0)) != LABEL_REF))	\
 	abort ();						\
@@ -67,10 +67,14 @@ Boston, MA 02111-1307, USA.  */
       return;					\
     } while (0)
 
+enum cris_retinsn_type
+ { CRIS_RETINSN_UNKNOWN = 0, CRIS_RETINSN_RET, CRIS_RETINSN_JUMP };
+
 /* Per-function machine data.  */
 struct machine_function GTY(())
  {
    int needs_return_address_on_stack;
+   enum cris_retinsn_type return_type;
  };
 
 /* This little fix suppresses the 'u' or 's' when '%e' in assembly
@@ -109,9 +113,11 @@ static int saved_regs_mentioned (rtx);
 
 static void cris_target_asm_function_prologue (FILE *, HOST_WIDE_INT);
 
-static void cris_target_asm_function_epilogue (FILE *, HOST_WIDE_INT);
-
 static void cris_operand_lossage (const char *, rtx);
+
+static int cris_reg_saved_in_regsave_area  (unsigned int, bool);
+
+static int cris_movem_load_rest_p (rtx, int);
 
 static void cris_asm_output_mi_thunk
   (FILE *, tree, HOST_WIDE_INT, HOST_WIDE_INT, tree);
@@ -167,9 +173,6 @@ int cris_cpu_version = CRIS_DEFAULT_CPU_VERSION;
 
 #undef TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE cris_target_asm_function_prologue
-
-#undef TARGET_ASM_FUNCTION_EPILOGUE
-#define TARGET_ASM_FUNCTION_EPILOGUE cris_target_asm_function_epilogue
 
 #undef TARGET_ASM_OUTPUT_MI_THUNK
 #define TARGET_ASM_OUTPUT_MI_THUNK cris_asm_output_mi_thunk
@@ -454,7 +457,7 @@ cris_general_operand_or_plt_symbol (rtx op, enum machine_mode mode)
    (MEM (cris_general_operand_or_symbol)).  The second one isn't a valid
    memory_operand, so we need this predicate to recognize call
    destinations before we change them to a PLT operand (by wrapping in
-   UNSPEC 0).  */
+   UNSPEC CRIS_UNSPEC_PLT).  */
 
 int
 cris_mem_call_operand (rtx op, enum machine_mode mode)
@@ -470,6 +473,94 @@ cris_mem_call_operand (rtx op, enum machine_mode mode)
   xmem = XEXP (op, 0);
 
   return cris_general_operand_or_symbol (xmem, GET_MODE (op));
+}
+
+/* Helper for cris_load_multiple_op and cris_ret_movem_op.  */
+
+static int
+cris_movem_load_rest_p (rtx op, int offs)
+{
+  unsigned int reg_count = XVECLEN (op, 0) - offs;
+  rtx src_addr;
+  int i;
+  rtx elt;
+  int setno;
+  int regno_dir = 1;
+  unsigned int regno = 0;
+
+  /* Perform a quick check so we don't blow up below.  FIXME: Adjust for
+     other than (MEM reg).  */
+  if (reg_count <= 1
+      || GET_CODE (XVECEXP (op, 0, offs)) != SET
+      || GET_CODE (SET_DEST (XVECEXP (op, 0, offs))) != REG
+      || GET_CODE (SET_SRC (XVECEXP (op, 0, offs))) != MEM)
+    return 0;
+
+  /* Check a possible post-inc indicator.  */
+  if (GET_CODE (SET_SRC (XVECEXP (op, 0, offs + 1))) == PLUS)
+    {
+      rtx reg = XEXP (SET_SRC (XVECEXP (op, 0, offs + 1)), 0);
+      rtx inc = XEXP (SET_SRC (XVECEXP (op, 0, offs + 1)), 1);
+
+      reg_count--;
+
+      if (reg_count == 1
+	  || !REG_P (reg)
+	  || !REG_P (SET_DEST (XVECEXP (op, 0, offs + 1)))
+	  || REGNO (reg) != REGNO (SET_DEST (XVECEXP (op, 0, offs + 1)))
+	  || GET_CODE (inc) != CONST_INT
+	  || INTVAL (inc) != (HOST_WIDE_INT) reg_count * 4)
+	return 0;
+      i = offs + 2;
+    }
+  else
+    i = offs + 1;
+
+  /* FIXME: These two only for pre-v32.  */
+  regno_dir = -1;
+  regno = reg_count - 1;
+
+  elt = XVECEXP (op, 0, offs);
+  src_addr = XEXP (SET_SRC (elt), 0);
+
+  if (GET_CODE (elt) != SET
+      || GET_CODE (SET_DEST (elt)) != REG
+      || GET_MODE (SET_DEST (elt)) != SImode
+      || REGNO (SET_DEST (elt)) != regno
+      || GET_CODE (SET_SRC (elt)) != MEM
+      || GET_MODE (SET_SRC (elt)) != SImode
+      || !memory_address_p (SImode, src_addr))
+    return 0;
+
+  for (setno = 1; i < XVECLEN (op, 0); setno++, i++)
+    {
+      rtx elt = XVECEXP (op, 0, i);
+      regno += regno_dir;
+
+      if (GET_CODE (elt) != SET
+	  || GET_CODE (SET_DEST (elt)) != REG
+	  || GET_MODE (SET_DEST (elt)) != SImode
+	  || REGNO (SET_DEST (elt)) != regno
+	  || GET_CODE (SET_SRC (elt)) != MEM
+	  || GET_MODE (SET_SRC (elt)) != SImode
+	  || GET_CODE (XEXP (SET_SRC (elt), 0)) != PLUS
+	  || ! rtx_equal_p (XEXP (XEXP (SET_SRC (elt), 0), 0), src_addr)
+	  || GET_CODE (XEXP (XEXP (SET_SRC (elt), 0), 1)) != CONST_INT
+	  || INTVAL (XEXP (XEXP (SET_SRC (elt), 0), 1)) != setno * 4)
+	return 0;
+    }
+
+  return 1;
+}
+
+/* Predicate for the parallel contents in a movem from-memory.  */
+
+int
+cris_load_multiple_op (op, mode)
+     rtx op;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  return cris_movem_load_rest_p (op, 0);
 }
 
 /* The CONDITIONAL_REGISTER_USAGE worker.  */
@@ -657,6 +748,33 @@ cris_fatal (char *arg)
   return 0;
 }
 
+/* Return nonzero if REGNO is an ordinary register that *needs* to be
+   saved together with other registers, possibly by a MOVEM instruction,
+   or is saved for target-independent reasons.  There may be
+   target-dependent reasons to save the register anyway; this is just a
+   wrapper for a complicated conditional.  */
+
+static int
+cris_reg_saved_in_regsave_area (unsigned int regno, bool got_really_used)
+{
+  return
+    (((regs_ever_live[regno]
+       && !call_used_regs[regno])
+      || (regno == PIC_OFFSET_TABLE_REGNUM
+	  && (got_really_used
+	      /* It is saved anyway, if there would be a gap.  */
+	      || (flag_pic
+		  && regs_ever_live[regno + 1]
+		  && !call_used_regs[regno + 1]))))
+     && (regno != FRAME_POINTER_REGNUM || !frame_pointer_needed)
+     && regno != CRIS_SRP_REGNUM)
+    || (current_function_calls_eh_return
+	&& (regno == EH_RETURN_DATA_REGNO (0)
+	    || regno == EH_RETURN_DATA_REGNO (1)
+	    || regno == EH_RETURN_DATA_REGNO (2)
+	    || regno == EH_RETURN_DATA_REGNO (3)));
+}
+
 /* This variable belongs to cris_target_asm_function_prologue but must
    be located outside it for GTY reasons.  */
 static GTY(()) unsigned long cfa_label_num = 0;
@@ -676,9 +794,8 @@ cris_target_asm_function_prologue (FILE *file, HOST_WIDE_INT size)
   int faked_args_size = 0;
   int cfa_write_offset = 0;
   static char cfa_label[30];
-  int return_address_on_stack
-    = regs_ever_live[CRIS_SRP_REGNUM]
-    || cfun->machine->needs_return_address_on_stack != 0;
+  bool return_address_on_stack = cris_return_address_on_stack ();
+  bool got_really_used = current_function_uses_pic_offset_table;
 
   /* Don't do anything if no prologues or epilogues are wanted.  */
   if (!TARGET_PROLOGUE_EPILOGUE)
@@ -771,21 +888,7 @@ cris_target_asm_function_prologue (FILE *file, HOST_WIDE_INT size)
      to be saved.  */
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
     {
-      if ((((regs_ever_live[regno]
-	     && !call_used_regs[regno])
-	    || (regno == (int) PIC_OFFSET_TABLE_REGNUM
-		&& (current_function_uses_pic_offset_table
-		    /* It is saved anyway, if there would be a gap.  */
-		    || (flag_pic
-			&& regs_ever_live[regno + 1]
-			&& !call_used_regs[regno + 1]))))
-	   && (regno != FRAME_POINTER_REGNUM || !frame_pointer_needed)
-	   && regno != CRIS_SRP_REGNUM)
-	  || (current_function_calls_eh_return
-	      && (regno == EH_RETURN_DATA_REGNO (0)
-		  || regno == EH_RETURN_DATA_REGNO (1)
-		  || regno == EH_RETURN_DATA_REGNO (2)
-		  || regno == EH_RETURN_DATA_REGNO (3))))
+      if (cris_reg_saved_in_regsave_area (regno, got_really_used))
 	{
 	  /* Check if movem may be used for registers so far.  */
 	  if (regno == last_movem_reg + 1)
@@ -997,239 +1100,6 @@ saved_regs_mentioned (rtx x)
   return 0;
 }
 
-/* Textual function epilogue.  */
-
-static void
-cris_target_asm_function_epilogue (FILE *file, HOST_WIDE_INT size)
-{
-  int regno;
-  int last_movem_reg = -1;
-  rtx insn = get_last_insn ();
-  int argspace_offset = current_function_outgoing_args_size;
-  int pretend =	 current_function_pretend_args_size;
-  int return_address_on_stack
-    = regs_ever_live[CRIS_SRP_REGNUM]
-    || cfun->machine->needs_return_address_on_stack != 0;
-  char save_last[80];
-
-  save_last[0] = 0;
-
-  if (!TARGET_PROLOGUE_EPILOGUE)
-    return;
-
-  if (TARGET_PDEBUG)
-    fprintf (file, ";;\n");
-
-  /* Align byte count of stack frame.  */
-  if (TARGET_STACK_ALIGN)
-    size = TARGET_ALIGN_BY_32 ? (size + 3) & ~3 : (size + 1) & ~1;
-
-  /* If the last insn was a BARRIER, we don't have to write any code,
-     then all returns were covered by "return" insns.  */
-  if (GET_CODE (insn) == NOTE)
-    insn = prev_nonnote_insn (insn);
-  if (insn
-      && (GET_CODE (insn) == BARRIER
-	  /* We must make sure that the insn really is a "return" and
-	     not a conditional branch.  Try to match the return exactly,
-	     and if it doesn't match, assume it is a conditional branch
-	     (and output an epilogue).  */
-	  || (GET_CODE (insn) == JUMP_INSN
-	      && GET_CODE (PATTERN (insn)) == RETURN)))
-    {
-      if (TARGET_PDEBUG)
-	fprintf (file, ";;;;;\n");
-      return;
-    }
-
-  /* Check how many saved regs we can movem.  They start at r0 and must
-     be contiguous.  */
-  for (regno = 0;
-       regno < FIRST_PSEUDO_REGISTER;
-       regno++)
-    if ((((regs_ever_live[regno]
-	   && !call_used_regs[regno])
-	  || (regno == (int) PIC_OFFSET_TABLE_REGNUM
-	      && (current_function_uses_pic_offset_table
-		  /* It is saved anyway, if there would be a gap.  */
-		  || (flag_pic
-		      && regs_ever_live[regno + 1]
-		      && !call_used_regs[regno + 1]))))
-	 && (regno != FRAME_POINTER_REGNUM || !frame_pointer_needed)
-	 && regno != CRIS_SRP_REGNUM)
-	|| (current_function_calls_eh_return
-	    && (regno == EH_RETURN_DATA_REGNO (0)
-		|| regno == EH_RETURN_DATA_REGNO (1)
-		|| regno == EH_RETURN_DATA_REGNO (2)
-		|| regno == EH_RETURN_DATA_REGNO (3))))
-
-      {
-	if (regno == last_movem_reg + 1)
-	  last_movem_reg++;
-	else
-	  break;
-      }
-
-  for (regno = FIRST_PSEUDO_REGISTER - 1;
-       regno > last_movem_reg;
-       regno--)
-    if ((((regs_ever_live[regno]
-	   && !call_used_regs[regno])
-	  || (regno == (int) PIC_OFFSET_TABLE_REGNUM
-	      && (current_function_uses_pic_offset_table
-		  /* It is saved anyway, if there would be a gap.  */
-		  || (flag_pic
-		      && regs_ever_live[regno + 1]
-		      && !call_used_regs[regno + 1]))))
-	 && (regno != FRAME_POINTER_REGNUM || !frame_pointer_needed)
-	 && regno != CRIS_SRP_REGNUM)
-	|| (current_function_calls_eh_return
-	    && (regno == EH_RETURN_DATA_REGNO (0)
-		|| regno == EH_RETURN_DATA_REGNO (1)
-		|| regno == EH_RETURN_DATA_REGNO (2)
-		|| regno == EH_RETURN_DATA_REGNO (3))))
-      {
-	if (argspace_offset)
-	  {
-	    /* There is an area for outgoing parameters located before
-	       the saved registers.  We have to adjust for that.  */
-	    fprintf (file, "\tAdd%s %d,$sp\n",
-		     ADDITIVE_SIZE_MODIFIER (argspace_offset),
-		     argspace_offset);
-
-	    /* Make sure we only do this once.  */
-	    argspace_offset = 0;
-	  }
-
-	/* Flush previous non-movem:ed registers.  */
-	if (*save_last)
-	  fprintf (file, save_last);
-	sprintf (save_last, "\tPop $%s\n", reg_names[regno]);
-      }
-
-  if (last_movem_reg != -1)
-    {
-      if (argspace_offset)
-	{
-	  /* Adjust for the outgoing parameters area, if that's not
-	     handled yet.  */
-	  if (*save_last)
-	    {
-	      fprintf (file, save_last);
-	      *save_last = 0;
-	    }
-
-	  fprintf (file, "\tAdd%s %d,$sp\n",
-		   ADDITIVE_SIZE_MODIFIER (argspace_offset),
-		   argspace_offset);
-	  argspace_offset = 0;
-	}
-      /* Flush previous non-movem:ed registers.  */
-      else if (*save_last)
-	fprintf (file, save_last);
-      sprintf (save_last, "\tmovem [$sp+],$%s\n", reg_names[last_movem_reg]);
-    }
-
-  /* Restore frame pointer if necessary.  */
-  if (frame_pointer_needed)
-    {
-      if (*save_last)
-	fprintf (file, save_last);
-
-      fprintf (file, "\tmove.d $%s,$sp\n",
-	       reg_names[FRAME_POINTER_REGNUM]);
-      sprintf (save_last, "\tPop $%s\n",
-	       reg_names[FRAME_POINTER_REGNUM]);
-    }
-  else
-    {
-      /* If there was no frame-pointer to restore sp from, we must
-	 explicitly deallocate local variables.  */
-
-      /* Handle space for outgoing parameters that hasn't been handled
-	 yet.  */
-      size += argspace_offset;
-
-      if (size)
-	{
-	  if (*save_last)
-	    fprintf (file, save_last);
-
-	  sprintf (save_last, "\tadd%s "HOST_WIDE_INT_PRINT_DEC",$sp\n",
-		   ADDITIVE_SIZE_MODIFIER (size), size);
-	}
-
-      /* If the size was not in the range for a "quick", we must flush
-	 it here.  */
-      if (size > 63)
-	{
-	  fprintf (file, save_last);
-	  *save_last = 0;
-	}
-    }
-
-  /* If this function has no pushed register parameters
-     (stdargs/varargs), and if it is not a leaf function, then we can
-     just jump-return here.  */
-  if (return_address_on_stack && pretend == 0)
-    {
-      if (*save_last)
-	fprintf (file, save_last);
-      *save_last = 0;
-
-      if (current_function_calls_eh_return)
-	{
-	  /* The installed EH-return address is in *this* frame, so we
-	     need to pop it before we return.  */
-	  fprintf (file, "\tpop $srp\n");
-	  fprintf (file, "\tret\n");
-	  fprintf (file, "\tadd.d $%s,$sp\n", reg_names[CRIS_STACKADJ_REG]);
-	}
-      else
-	fprintf (file, "\tJump [$sp+]\n");
-
-      return;
-    }
-
-  /* Rather than add current_function_calls_eh_return conditions
-     everywhere in the following code (and not be able to test it
-     thoroughly), assert the assumption that all usage of
-     __builtin_eh_return are handled above.  */
-  if (current_function_calls_eh_return)
-    internal_error ("unexpected function type needing stack adjustment for\
- __builtin_eh_return");
-
-  /* If we pushed some register parameters, then adjust the stack for
-     them.  */
-  if (pretend)
-    {
-      /* Since srp is stored on the way, we need to restore it first.  */
-      if (return_address_on_stack)
-	{
-	  if (*save_last)
-	    fprintf (file, save_last);
-	  *save_last = 0;
-
-	  fprintf (file, "\tpop $srp\n");
-	}
-
-      if (*save_last)
-	fprintf (file, save_last);
-
-      sprintf (save_last, "\tadd%s %d,$sp\n",
-	       ADDITIVE_SIZE_MODIFIER (pretend), pretend);
-    }
-
-  fprintf (file, "\tRet\n");
-
-  /* If the GCC did not do it, we have to use whatever insn we have, or
-     a nop.  */
-  if (*save_last)
-    fprintf (file, save_last);
-  else
-    fprintf (file, "\tnOp\n");
-}
-
 /* The PRINT_OPERAND worker.  */
 
 void
@@ -1270,6 +1140,49 @@ cris_print_operand (FILE *file, rtx x, int code)
       cris_pic_sympart_only++;
       cris_output_addr_const (file, x);
       cris_pic_sympart_only--;
+      return;
+
+    case 'o':
+      {
+	/* A movem modifier working on a parallel; output the register
+	   name.  */
+	int regno;
+
+	if (GET_CODE (x) != PARALLEL)
+	  LOSE_AND_RETURN ("invalid operand for 'o' modifier", x);
+
+	/* The second item can be (set reg (plus reg const)) to denote a
+	   postincrement.  */
+	regno
+	  = (GET_CODE (SET_SRC (XVECEXP (x, 0, 1))) == PLUS
+	     ? XVECLEN (x, 0) - 2
+	     : XVECLEN (x, 0) - 1);
+
+	fprintf (file, "$%s", reg_names [regno]);
+      }
+      return;
+
+    case 'O':
+      {
+	/* A similar movem modifier; output the memory operand.  */
+	rtx addr;
+
+	if (GET_CODE (x) != PARALLEL)
+	  LOSE_AND_RETURN ("invalid operand for 'O' modifier", x);
+
+	/* The lowest mem operand is in the first item, but perhaps it
+	   needs to be output as postincremented.  */
+	addr = GET_CODE (SET_SRC (XVECEXP (x, 0, 0))) == MEM
+	  ? XEXP (SET_SRC (XVECEXP (x, 0, 0)), 0)
+	  : XEXP (SET_DEST (XVECEXP (x, 0, 0)), 0);
+
+	/* The second item can be a (set reg (plus reg const)) to denote a
+	   post-increment.  */
+	if (GET_CODE (SET_SRC (XVECEXP (x, 0, 1))) == PLUS)
+	  addr = gen_rtx_POST_INC (SImode, addr);
+
+	output_address (addr);
+      }
       return;
 
     case 'P':
@@ -1647,10 +1560,21 @@ cris_return_addr_rtx (int count, rtx frameaddr ATTRIBUTE_UNUSED)
 /* Accessor used in cris.md:return because cfun->machine isn't available
    there.  */
 
-int
+bool
 cris_return_address_on_stack ()
 {
-  return cfun->machine->needs_return_address_on_stack;
+  return regs_ever_live[CRIS_SRP_REGNUM]
+    || cfun->machine->needs_return_address_on_stack;
+}
+
+/* Accessor used in cris.md:return because cfun->machine isn't available
+   there.  */
+
+bool
+cris_return_address_on_stack_for_return ()
+{
+  return cfun->machine->return_type == CRIS_RETINSN_RET ? false
+    : cris_return_address_on_stack ();
 }
 
 /* This used to be the INITIAL_FRAME_POINTER_OFFSET worker; now only
@@ -1663,24 +1587,11 @@ cris_initial_frame_pointer_offset (void)
 
   /* Initial offset is 0 if we don't have a frame pointer.  */
   int offs = 0;
+  bool got_really_used = current_function_uses_pic_offset_table;
 
   /* And 4 for each register pushed.  */
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-    if ((((regs_ever_live[regno]
-	   && !call_used_regs[regno])
-	  || (regno == (int) PIC_OFFSET_TABLE_REGNUM
-	      && (current_function_uses_pic_offset_table
-		  /* It is saved anyway, if there would be a gap.  */
-		  || (flag_pic
-		      && regs_ever_live[regno + 1]
-		      && !call_used_regs[regno + 1]))))
-	 && (regno != FRAME_POINTER_REGNUM || !frame_pointer_needed)
-	 && regno != CRIS_SRP_REGNUM)
-	|| (current_function_calls_eh_return
-	    && (regno == EH_RETURN_DATA_REGNO (0)
-		|| regno == EH_RETURN_DATA_REGNO (1)
-		|| regno == EH_RETURN_DATA_REGNO (2)
-		|| regno == EH_RETURN_DATA_REGNO (3))))
+    if (cris_reg_saved_in_regsave_area (regno, got_really_used))
       offs += 4;
 
   /* And then, last, we add the locals allocated.  */
@@ -1709,9 +1620,7 @@ cris_initial_elimination_offset (int fromreg, int toreg)
 
   /* We should be able to use regs_ever_live and related prologue
      information here, or alpha should not as well.  */
-  int return_address_on_stack
-    = regs_ever_live[CRIS_SRP_REGNUM]
-    || cfun->machine->needs_return_address_on_stack != 0;
+  bool return_address_on_stack = cris_return_address_on_stack ();
 
   /* Here we act as if the frame-pointer were needed.  */
   int ap_fp_offset = 4 + (return_address_on_stack ? 4 : 0);
@@ -2003,15 +1912,15 @@ cris_notice_update_cc (rtx exp, rtx insn)
 }
 
 /* Return != 0 if the return sequence for the current function is short,
-   like "ret" or "jump [sp+]".  Prior to reloading, we can't tell how
-   many registers must be saved, so return 0 then.  */
+   like "ret" or "jump [sp+]".  Prior to reloading, we can't tell if
+   registers must be saved, so return 0 then.  */
 
-int
+bool
 cris_simple_epilogue (void)
 {
-  int regno;
-  int reglimit = STACK_POINTER_REGNUM;
-  int lastreg = -1;
+  unsigned int regno;
+  unsigned int reglimit = STACK_POINTER_REGNUM;
+  bool got_really_used = current_function_uses_pic_offset_table;
 
   if (! reload_completed
       || frame_pointer_needed
@@ -2024,25 +1933,36 @@ cris_simple_epilogue (void)
       /* If we're not supposed to emit prologue and epilogue, we must
 	 not emit return-type instructions.  */
       || !TARGET_PROLOGUE_EPILOGUE)
-    return 0;
+    return false;
 
-  /* We allow a "movem [sp+],rN" to sit in front if the "jump [sp+]" or
-     in the delay-slot of the "ret".  */
+  /* No simple epilogue if there are saved registers.  */
   for (regno = 0; regno < reglimit; regno++)
-    if ((regs_ever_live[regno] && ! call_used_regs[regno])
-	|| (regno == (int) PIC_OFFSET_TABLE_REGNUM
-	    && (current_function_uses_pic_offset_table
-		/* It is saved anyway, if there would be a gap.  */
-		|| (flag_pic
-		    && regs_ever_live[regno + 1]
-		    && !call_used_regs[regno + 1]))))
-      {
-	if (lastreg != regno - 1)
-	  return 0;
-	lastreg = regno;
-      }
+    if (cris_reg_saved_in_regsave_area (regno, got_really_used))
+      return false;
 
-  return 1;
+  return true;
+}
+
+/* Expand a return insn (just one insn) marked as using SRP or stack
+   slot depending on parameter ON_STACK.  */
+
+void
+cris_expand_return (bool on_stack)
+{
+  /* FIXME: emit a parallel with a USE for SRP or the stack-slot, to
+     tell "ret" from "jump [sp+]".  Some, but not all, other parts of
+     GCC expect just (return) to do the right thing when optimizing, so
+     we do that until they're fixed.  Currently, all return insns in a
+     function must be the same (not really a limiting factor) so we need
+     to check that it doesn't change half-way through.  */
+  emit_jump_insn (gen_rtx_RETURN (VOIDmode));
+
+  if ((cfun->machine->return_type == CRIS_RETINSN_RET && on_stack)
+      || (cfun->machine->return_type == CRIS_RETINSN_JUMP && !on_stack))
+    abort ();
+
+  cfun->machine->return_type
+    = on_stack ? CRIS_RETINSN_JUMP : CRIS_RETINSN_RET;
 }
 
 /* Compute a (partial) cost for rtx X.  Return true if the complete
@@ -2884,6 +2804,239 @@ cris_split_movdx (rtx *operands)
   val = get_insns ();
   end_sequence ();
   return val;
+}
+
+/* The expander for the epilogue pattern.  */
+
+void
+cris_expand_epilogue (void)
+{
+  int regno;
+  int size = get_frame_size ();
+  int last_movem_reg = -1;
+  int argspace_offset = current_function_outgoing_args_size;
+  int pretend =	 current_function_pretend_args_size;
+  rtx mem;
+  bool return_address_on_stack = cris_return_address_on_stack ();
+  /* A reference may have been optimized out
+     (like the abort () in fde_split in unwind-dw2-fde.c, at least 3.2.1)
+     so check that it's still used.  */
+  int got_really_used = current_function_uses_pic_offset_table;
+  int n_movem_regs = 0;
+
+  if (!TARGET_PROLOGUE_EPILOGUE)
+    return;
+
+  /* Align byte count of stack frame.  */
+  if (TARGET_STACK_ALIGN)
+    size = TARGET_ALIGN_BY_32 ? (size + 3) & ~3 : (size + 1) & ~1;
+
+  /* Check how many saved regs we can movem.  They start at r0 and must
+     be contiguous.  */
+  for (regno = 0;
+       regno < FIRST_PSEUDO_REGISTER;
+       regno++)
+    if (cris_reg_saved_in_regsave_area (regno, got_really_used))
+      {
+	n_movem_regs++;
+
+	if (regno == last_movem_reg + 1)
+	  last_movem_reg = regno;
+	else
+	  break;
+      }
+
+  /* If there was only one register that really needed to be saved
+     through movem, don't use movem.  */
+  if (n_movem_regs == 1)
+    last_movem_reg = -1;
+
+  /* Now emit "normal" move insns for all regs higher than the movem
+     regs.  */
+  for (regno = FIRST_PSEUDO_REGISTER - 1;
+       regno > last_movem_reg;
+       regno--)
+    if (cris_reg_saved_in_regsave_area (regno, got_really_used))
+      {
+	if (argspace_offset)
+	  {
+	    /* There is an area for outgoing parameters located before
+	       the saved registers.  We have to adjust for that.  */
+	    emit_insn (gen_rtx_SET (VOIDmode,
+				    stack_pointer_rtx,
+				    plus_constant (stack_pointer_rtx,
+						   argspace_offset)));
+	    /* Make sure we only do this once.  */
+	    argspace_offset = 0;
+	  }
+
+	mem = gen_rtx_MEM (SImode, gen_rtx_POST_INC (SImode,
+						     stack_pointer_rtx));
+	set_mem_alias_set (mem, get_frame_alias_set ());
+	emit_move_insn (gen_rtx_raw_REG (SImode, regno), mem);
+      }
+
+  /* If we have any movem-restore, do it now.  */
+  if (last_movem_reg != -1)
+    {
+      if (argspace_offset)
+	{
+	  emit_insn (gen_rtx_SET (VOIDmode,
+				  stack_pointer_rtx,
+				  plus_constant (stack_pointer_rtx,
+						 argspace_offset)));
+	  argspace_offset = 0;
+	}
+
+      mem = gen_rtx_MEM (SImode,
+			 gen_rtx_POST_INC (SImode, stack_pointer_rtx));
+      set_mem_alias_set (mem, get_frame_alias_set ());
+      emit_insn (cris_gen_movem_load (mem, GEN_INT (last_movem_reg + 1), 0));
+    }
+
+  /* If we don't clobber all of the allocated stack area (we've already
+     deallocated saved registers), GCC might want to schedule loads from
+     the stack to *after* the stack-pointer restore, which introduces an
+     interrupt race condition.  This happened for the initial-value
+     SRP-restore for g++.dg/eh/registers1.C (noticed by inspection of
+     other failure for that test).  It also happened for the stack slot
+     for the return value in (one version of)
+     linux/fs/dcache.c:__d_lookup, at least with "-O2
+     -fno-omit-frame-pointer".  */
+
+  /* Restore frame pointer if necessary.  */
+  if (frame_pointer_needed)
+    {
+      emit_insn (gen_cris_frame_deallocated_barrier ());
+
+      emit_move_insn (stack_pointer_rtx, frame_pointer_rtx);
+      mem = gen_rtx_MEM (SImode, gen_rtx_POST_INC (SImode,
+						   stack_pointer_rtx));
+      set_mem_alias_set (mem, get_frame_alias_set ());
+      emit_move_insn (frame_pointer_rtx, mem);
+    }
+  else if ((size + argspace_offset) != 0)
+    {
+      emit_insn (gen_cris_frame_deallocated_barrier ());
+
+      /* If there was no frame-pointer to restore sp from, we must
+	 explicitly deallocate local variables.  */
+
+      /* Handle space for outgoing parameters that hasn't been handled
+	 yet.  */
+      size += argspace_offset;
+
+      emit_insn (gen_rtx_SET (VOIDmode,
+			      stack_pointer_rtx,
+			      plus_constant (stack_pointer_rtx, size)));
+    }
+
+  /* If this function has no pushed register parameters
+     (stdargs/varargs), and if it is not a leaf function, then we have
+     the return address on the stack.  */
+  if (return_address_on_stack && pretend == 0)
+    {
+      if (current_function_calls_eh_return)
+	{
+	  rtx mem;
+	  rtx srpreg = gen_rtx_raw_REG (SImode, CRIS_SRP_REGNUM);
+	  mem = gen_rtx_MEM (SImode,
+			     gen_rtx_POST_INC (SImode,
+					       stack_pointer_rtx));
+	  set_mem_alias_set (mem, get_frame_alias_set ());
+	  emit_move_insn (srpreg, mem);
+
+	  emit_insn (gen_addsi3 (stack_pointer_rtx,
+				 stack_pointer_rtx,
+				 gen_rtx_raw_REG (SImode,
+						  CRIS_STACKADJ_REG)));
+	  cris_expand_return (false);
+	}
+      else
+	cris_expand_return (true);
+
+      return;
+    }
+
+  /* If we pushed some register parameters, then adjust the stack for
+     them.  */
+  if (pretend != 0)
+    {
+      /* If SRP is stored on the way, we need to restore it first.  */
+      if (return_address_on_stack)
+	{
+	  rtx mem;
+	  rtx srpreg = gen_rtx_raw_REG (SImode, CRIS_SRP_REGNUM);
+	  mem = gen_rtx_MEM (SImode,
+			     gen_rtx_POST_INC (SImode,
+					       stack_pointer_rtx));
+	  set_mem_alias_set (mem, get_frame_alias_set ());
+	  emit_move_insn (srpreg, mem);
+	}
+
+      emit_insn (gen_rtx_SET (VOIDmode,
+			      stack_pointer_rtx,
+			      plus_constant (stack_pointer_rtx, pretend)));
+    }
+
+  /* Perform the "physical" unwinding that the EH machinery calculated.  */
+  if (current_function_calls_eh_return)
+    emit_insn (gen_addsi3 (stack_pointer_rtx,
+			   stack_pointer_rtx,
+			   gen_rtx_raw_REG (SImode,
+					    CRIS_STACKADJ_REG)));
+  cris_expand_return (false);
+}
+
+/* Worker function for generating movem from mem for load_multiple.  */
+
+rtx
+cris_gen_movem_load (rtx osrc, rtx nregs_rtx, int nprefix)
+{
+  int nregs = INTVAL (nregs_rtx);
+  rtvec vec;
+  int eltno = 1;
+  int i;
+  rtx srcreg = XEXP (osrc, 0);
+  rtx src = osrc;
+  unsigned int regno = nregs - 1;
+  int regno_inc = -1;
+
+  if (GET_CODE (srcreg) == POST_INC)
+    srcreg = XEXP (srcreg, 0);
+
+  if (!REG_P (srcreg))
+    abort ();
+
+  /* Don't use movem for just one insn.  The insns are equivalent except
+     for the pipeline hazard; movem does not forward the loaded
+     registers so there's a three cycles penalty for use.  */
+  if (nregs == 1)
+    return gen_movsi (gen_rtx_REG (SImode, regno), osrc);
+
+  vec = rtvec_alloc (nprefix + nregs
+		     + (GET_CODE (XEXP (osrc, 0)) == POST_INC));
+  src = replace_equiv_address (osrc, srcreg);
+  RTVEC_ELT (vec, nprefix)
+    = gen_rtx_SET (VOIDmode, gen_rtx_REG (SImode, regno), src);
+  regno += regno_inc;
+
+  if (GET_CODE (XEXP (osrc, 0)) == POST_INC)
+    {
+      RTVEC_ELT (vec, nprefix + 1)
+	= gen_rtx_SET (VOIDmode, srcreg, plus_constant (srcreg, nregs * 4));
+      eltno++;
+    }
+
+  for (i = 1; i < nregs; i++, eltno++)
+    {
+      RTVEC_ELT (vec, nprefix + eltno)
+	= gen_rtx_SET (VOIDmode, gen_rtx_REG (SImode, regno),
+		       adjust_address_nv (src, SImode, i * 4));
+      regno += regno_inc;
+    }
+
+  return gen_rtx_PARALLEL (VOIDmode, vec);
 }
 
 /* Use from within code, from e.g. PRINT_OPERAND and

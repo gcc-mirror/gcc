@@ -1,3 +1,42 @@
+2005-04-05  Hans-Peter Nilsson  <hp@axis.com>
+
+	CRIS epilogue as RTL.
+	* config/cris/cris.md: Change all 0 in unspec 0 to
+	CRIS_UNSPEC_PLT.
+ 	(CRIS_UNSPEC_PLT, CRIS_UNSPEC_FRAME_DEALLOC): New constants.
+	("*cris_load_multiple", "cris_frame_deallocated_barrier"): New
+	patterns.
+	("return"): Change to define_expand.  Call cris_expand_return for
+	actual expansion.
+	("*return_expanded"): New pattern.
+	("epilogue"): New define_expand.
+	* config/cris/cris.h (PREDICATE_CODES): Add
+	cris_load_multiple_op.
+	* config/cris/cris.c (ASSERT_PLT_UNSPEC): Correct test for unspec
+	type.
+	(enum cris_retinsn_type): New.
+	(struct machine_function): New member return_type.
+	(TARGET_ASM_FUNCTION_EPILOGUE): Don't override.
+	(cris_target_asm_function_epilogue): Remove, moving RTLified
+	contents to...
+	(cris_expand_epilogue): New function.
+	(cris_reg_saved_in_regsave_area, cris_movem_load_rest_p,
+	(cris_gen_movem_load, cris_load_multiple_op)
+	(cris_return_address_on_stack_for_return, cris_expand_return): New
+	functions.
+	(cris_target_asm_function_prologue)
+	(cris_initial_frame_pointer_offset): Call
+	cris_reg_saved_in_regsave_area instead of complicated expression.
+	Call cris_return_address_on_stack instead of an expression.
+	(cris_print_operand) <case 'o', case 'O'>: New cases.
+	(cris_return_address_on_stack): Change return-type to bool.
+	(cris_simple_epilogue): Ditto.  Return false if registers are
+	saved.
+	* config/cris/cris-protos.h (cris_simple_epilogue)
+	(cris_return_address_on_stack): Adjust prototype return type.
+	(cris_gen_movem_load, cris_expand_epilogue, cris_expand_return)
+	(cris_return_address_on_stack_for_return): New prototypes.
+
 2005-04-04  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/frv/frv.h (PREDICATE_CODES): Add CONST to
