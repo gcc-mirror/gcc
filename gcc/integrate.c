@@ -1599,7 +1599,8 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 
       if (GET_CODE (XEXP (loc, 0)) == REG)
 	{
-	  temp = force_reg (Pmode, structure_value_addr);
+	  temp = force_reg (Pmode,
+			    force_operand (structure_value_addr, NULL_RTX));
 	  map->reg_map[REGNO (XEXP (loc, 0))] = temp;
 	  if ((CONSTANT_P (structure_value_addr)
 	       || (GET_CODE (structure_value_addr) == PLUS
