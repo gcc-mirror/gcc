@@ -594,6 +594,8 @@ CVS, but should not delete anything checked into CVS@.
 @itemx stage2
 @itemx stage3
 @itemx stage4
+@itemx stageprofile
+@itemx stagefeedback
 Move to the stage directory files not included in @code{stagestuff} in
 @file{config-lang.in} or otherwise moved by the main @file{Makefile}.
 @end table

@@ -1,3 +1,7 @@
+Thu Jun  5 20:51:09 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* sourcebuild.texi (Front End Directory): Document new hooks.
+
 Fri Jun  6 11:02:35 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* function.c (FLOOR_ROUND, CEIL_ROUND): Fix.
@@ -111,6 +115,8 @@ Thu Jun  5 18:32:46 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* install.tex: Document profiledbootstrap.
 
+	* configure.in:  Add support for lang.stageprofile and
+	lang.stagefeedback
 	* Makefile.in (clean, distclean): Kill new stages
 	(POSTSTAGE1_FLAGS_TO_PASS): Break from ...
 	(STAGE2_FLAGS_TO_PASS): ... this one.
