@@ -1,3 +1,8 @@
+Sat Jun 13 15:49:53 1998  Carol LePage  <carolo@kemah.hal.com>
+
+	* configure.in (sparc-hal-solaris2*): New target.
+	* sparc/hal.h, sparc/t-halos: New files.
+
 Sat Jun 13 14:30:25 1998  David W. Schuler  <schuld@btv.ibm.com>
 
 	* i386/aix386ng.h (CPP_SPEC): Remove bogus quote.
