@@ -1,5 +1,7 @@
 1999-07-05  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
+	* typename1.C, typename2.C: New tests.
+
 	* template3.C: Fixed.
 
 	* ns3.C: New test.
