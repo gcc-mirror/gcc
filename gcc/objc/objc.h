@@ -123,51 +123,38 @@ typedef struct objc_protocol {
   struct objc_method_description_list *instance_methods, *class_methods; 
 } Protocol; 
 
-#else
-
+#else /* __OBJC__ */
 @class Protocol;
 #endif 
 
 typedef void* retval_t;		/* return value */
 typedef void(*apply_t)(void);	/* function pointer */
+typedef union {
+  char *arg_ptr;
+  char arg_regs[sizeof (char*)];
+} *arglist_t;			/* argument frame */
 
-#if defined(REG_ARGS) || defined(STACK_ARGS) 
-
-typedef struct {
-  char* arg_pointer;
-#ifdef STRUCT_RETURN
-  void* struct_return;
-#endif
-#ifdef REG_ARGS
-  void* regs[2];
-#endif
-} *arglist_t;
-
-#ifdef REG_ARGS
-#define __objc_frame_receiver(FRAME)  (FRAME)->regs[0]
-#define __objc_frame_selector(FRAME)  ((SEL)(FRAME)->regs[1])
-
-#else
-#define __objc_frame_receiver(FRAME) ((id*)(FRAME)->arg_pointer)[0]
-#define __objc_frame_selector(FRAME) ((SEL*)(FRAME)->arg_pointer)[1]
-#endif
-#else
-
-typedef void* arglist_t;
-
-#endif
 
 #if defined(__OBJC__) 
-
 #include "objc/sarray.h"
 
-static id nil_method(id rcv, SEL op, ...) { return rcv; }
+/*
+  This is the function called when messages are send to nil.  You may
+  set a breakpoint in your debugger at this function to catch messages
+  too nil.
+*/
+extern id nil_method(id rcv, SEL op, ...);
 
+/*
+  The messager is inlined, thus it is defined here directly.  The
+  inlining is quite time-consuming when optimizing.  This will be
+  taken care of later by hand-coding the messager in the compiler.
+*/
 extern __inline__ IMP
 objc_msg_lookup(id receiver, SEL op)
 {
   if(receiver)
-    return sarray_get(receiver->class_pointer->dtable, (size_t) op);
+    return sarray_get(receiver->class_pointer->dtable, (size_t)(op));
   else
     return nil_method;
 }
