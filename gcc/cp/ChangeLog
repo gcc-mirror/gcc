@@ -1,3 +1,9 @@
+1998-05-21  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (tsubst_friend_class): Don't call redeclare_class_template
+	if the template we looked up is the same as the one we already
+	have.
+
 Thu May 21 11:54:44 1998  Dave Brolley  <brolley@cygnus.com>
 
 	* lex.c: (handle_sysv_pragma): FILE* parameter not used.
