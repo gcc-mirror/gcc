@@ -1,3 +1,8 @@
+2004-09-14  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/arm.c (arm_expand_prologue): Make args_to_push a
+	HOST_WIDE_INT.
+
 2004-09-13  Daniel Jacobowitz  <dan@debian.org>
 
 	* fold-const.c (fold_checksum_tree): Ignore TYPE_CACHED_VALUES.
