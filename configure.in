@@ -112,6 +112,8 @@ if test -f $gcc_version_trigger ; then
       ac_configure_args="$ac_configure_args --with-gcc-version-trigger=$gcc_version_trigger"
       ;;
   esac
+else
+  gcc_version_trigger=
 fi
 
 ### To add a new directory to the tree, first choose whether it is a target

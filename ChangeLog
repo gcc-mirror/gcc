@@ -1,5 +1,10 @@
 2004-12-02  Richard Sandiford  <rsandifo@redhat.com>
 
+	* configure.in: Clear gcc_version_trigger if the file doesn't exist.
+	* configure: Regenerate.
+
+2004-12-02  Richard Sandiford  <rsandifo@redhat.com>
+
 	* configure.in: Include config/gcc-version.m4.  Use TL_AC_GCC_VERSION
 	to set gcc_version_trigger.  Remove some now-redundant AC_SUBSTs.
 	* configure: Regenerate.
