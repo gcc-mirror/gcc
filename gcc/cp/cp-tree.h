@@ -1565,7 +1565,7 @@ struct lang_type
 #define CLASSTYPE_TAGS(NODE)		(TYPE_LANG_SPECIFIC(NODE)->tags)
 
 /* Nonzero if NODE has a primary base class, i.e., a base class with
-   which it shares the virtual fucntion table pointer.  */
+   which it shares the virtual function table pointer.  */
 #define CLASSTYPE_HAS_PRIMARY_BASE_P(NODE) \
   (CLASSTYPE_PRIMARY_BINFO (NODE) != NULL_TREE)
 
