@@ -533,7 +533,6 @@ ALL_MODULES = \
 	all-bison \
 	all-byacc \
 	all-bzip2 \
-	all-cvssrc \
 	all-db \
 	all-dejagnu \
 	all-diff \
@@ -554,9 +553,7 @@ ALL_MODULES = \
 	all-gzip \
 	all-hello \
 	all-indent \
-	all-inet \
 	all-intl \
-	all-ispell \
 	all-itcl \
 	all-ld \
 	all-libgui \
@@ -583,7 +580,6 @@ ALL_MODULES = \
 	all-tcl \
 	all-texinfo \
 	all-textutils \
-	all-tgas \
 	all-time \
 	all-uudecode \
 	all-wdiff \
@@ -612,7 +608,6 @@ CROSS_CHECK_MODULES = \
 	check-bfd \
 	check-binutils \
 	check-bzip2 \
-	check-cvssrc \
 	check-db \
 	check-dejagnu \
 	check-diff \
@@ -629,9 +624,7 @@ CROSS_CHECK_MODULES = \
 	check-gzip \
 	check-hello \
 	check-indent \
-	check-inet \
 	check-intl \
-	check-ispell \
 	check-itcl \
 	check-ld \
 	check-libgui \
@@ -657,7 +650,6 @@ CROSS_CHECK_MODULES = \
 	check-tcl \
 	check-texinfo \
 	check-textutils \
-	check-tgas \
 	check-time \
 	check-uudecode \
 	check-wdiff \
@@ -683,7 +675,6 @@ INSTALL_MODULES = \
 	install-binutils \
 	install-bison \
 	install-byacc \
-	install-cvssrc \
 	install-db \
 	install-dejagnu \
 	install-diff \
@@ -704,9 +695,7 @@ INSTALL_MODULES = \
 	install-gzip \
 	install-hello \
 	install-indent \
-	install-inet \
 	install-intl \
-	install-ispell \
 	install-tcl \
 	install-itcl \
 	install-ld \
@@ -730,7 +719,6 @@ INSTALL_MODULES = \
 	install-snavigator \
 	install-tar \
 	install-textutils \
-	install-tgas \
 	install-time \
 	install-uudecode \
 	install-wdiff \
@@ -856,7 +844,6 @@ CLEAN_MODULES = \
 	clean-bison \
 	clean-byacc \
 	clean-bzip2 \
-	clean-cvssrc \
 	clean-db \
 	clean-dejagnu \
 	clean-diff \
@@ -877,9 +864,7 @@ CLEAN_MODULES = \
 	clean-gzip \
 	clean-hello \
 	clean-indent \
-	clean-inet \
 	clean-intl \
-	clean-ispell \
 	clean-itcl \
 	clean-ld \
 	clean-libgui \
@@ -906,7 +891,6 @@ CLEAN_MODULES = \
 	clean-tcl \
 	clean-texinfo \
 	clean-textutils \
-	clean-tgas \
 	clean-time \
 	clean-uudecode \
 	clean-wdiff \
@@ -1158,11 +1142,6 @@ install.all: install-no-fixedincludes
 	else \
 		true ; \
 	fi
-
-# inet-install is used because the I*Net wants DejaGNU installed but
-# not built.  Similarly, gzip is built but not installed.
-inet-install:
-	$(MAKE) INSTALL_MODULES="`echo $(INSTALL_MODULES) | sed -e 's/install-dejagnu//' -e 's/install-gzip//'`" install
 
 # install-no-fixedincludes is used because Cygnus can not distribute
 # the fixed header files.
@@ -1697,7 +1676,6 @@ configure-target-bsp: $(ALL_GCC_C)
 all-target-bsp: configure-target-bsp
 all-byacc:
 all-bzip2:
-all-cvssrc:
 configure-target-cygmon: $(ALL_GCC_C)
 all-target-cygmon: configure-target-cygmon all-target-libiberty all-target-libstub all-target-bsp
 all-db:
@@ -1729,7 +1707,6 @@ all-guile:
 all-gzip: all-libiberty
 all-hello: all-libiberty
 all-indent:
-all-inet: all-tcl all-send-pr all-perl
 all-intl:
 all-itcl: all-tcl all-tk
 all-ld: all-libiberty all-bfd all-opcodes all-bison all-byacc all-flex all-intl
@@ -1781,7 +1758,6 @@ all-tclX: all-tcl all-tk
 all-tk: all-tcl
 all-texinfo: all-libiberty
 all-textutils:
-all-tgas: all-libiberty all-bfd all-opcodes
 all-time:
 all-tix: all-tcl all-tk
 all-wdiff:
