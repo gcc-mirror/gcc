@@ -2340,7 +2340,7 @@ output_and (operands)
 
 /* Return a string to perform a bitwise-and of operands[1] with operands[2]
    storing the result in operands[0].  */
-char *
+const char *
 output_64bit_and (operands)
      rtx *operands;
 {
@@ -2422,7 +2422,7 @@ output_ior (operands)
 
 /* Return a string to perform a bitwise-and of operands[1] with operands[2]
    storing the result in operands[0].  */
-char *
+const char *
 output_64bit_ior (operands)
      rtx *operands;
 {
@@ -6840,7 +6840,7 @@ pa_combine_instructions (insns)
     }
 }
 
-int
+static int
 pa_can_combine_p (new, anchor, floater, reversed, dest, src1, src2)
      rtx new, anchor, floater;
      int reversed;
@@ -6936,7 +6936,7 @@ function_arg (cum, mode, type, named, incoming)
      CUMULATIVE_ARGS *cum;
      enum machine_mode mode;
      tree type;
-     int named;
+     int named ATTRIBUTE_UNUSED;
      int incoming;
 {
   int max_arg_words = (TARGET_64BIT ? 8 : 4);
@@ -6967,7 +6967,7 @@ function_arg (cum, mode, type, named, incoming)
   /* The 32bit ABIs and the 64bit ABIs are rather different,
      particularly in their handling of FP registers.  We might
      be able to cleverly share code between them, but I'm not
-     going to bother in the hope that spltting them up results
+     going to bother in the hope that splitting them up results
      in code that is more easily understood. 
 
      The 64bit code probably is very wrong for structure passing.  */
@@ -7122,7 +7122,7 @@ function_arg_partial_nregs (cum, mode, type, named)
      CUMULATIVE_ARGS *cum;
      enum machine_mode mode;
      tree type;
-     int named;
+     int named ATTRIBUTE_UNUSED;
 {
   int max_arg_words = 8;
   int offset = 0;

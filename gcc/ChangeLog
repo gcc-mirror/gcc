@@ -1,3 +1,13 @@
+2000-10-16  Rodney Brown  <RodneyBrown@mynd.com>
+
+	* config/pa/pa/pa-protos.h (output_64bit_and, output_64bit_ior):
+	Constify char * return value.
+	* config/pa/pa/pa.c
+	(output_64bit_and, output_64bit_ior): Constify char * return value.
+	(pa_can_combine_p): Make static.
+	(function_arg): Decorate unused `named' argument. Fix comment typo.
+	(function_arg_partial_nregs): Decorate unused `named' argument.
+
 2000-10-16  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-common.c (format_check_results): New structure.

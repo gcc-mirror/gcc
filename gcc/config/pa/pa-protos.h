@@ -144,8 +144,8 @@ extern int ior_mask_p PARAMS ((unsigned HOST_WIDE_INT));
 extern void compute_zdepdi_operands PARAMS ((unsigned HOST_WIDE_INT,
 					     unsigned *));
 #ifdef RTX_CODE
-extern char * output_64bit_and PARAMS ((rtx *));
-extern char * output_64bit_ior PARAMS ((rtx *));
+extern const char * output_64bit_and PARAMS ((rtx *));
+extern const char * output_64bit_ior PARAMS ((rtx *));
 extern int cmpib_comparison_operator PARAMS ((rtx, enum machine_mode));
 #endif
 
