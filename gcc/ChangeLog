@@ -1,3 +1,9 @@
+2004-03-04  Josef Zlomek  <zlomekj@suse.cz>
+
+	PR/14362
+	* var-tracking.c (track_expr_p): Do not track variables which
+	should be ignored for debugging purposes.
+
 2004-03-04  Alan Modra  <amodra@bigpond.net.au>
 
 	* real.c (encode_ibm_extended): Don't bother rounding low double.
