@@ -11059,6 +11059,17 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 		}
 	    }
 
+	  /* Convert (ne (and (not X) 1) 0) to (eq (and X 1) 0).  */
+	  if (const_op == 0 && equality_comparison_p
+	      && XEXP (op0, 1) == const1_rtx
+	      && GET_CODE (XEXP (op0, 0)) == NOT)
+	    {
+	      op0 = simplify_and_const_int
+		(op0, mode, XEXP (XEXP (op0, 0), 0), (HOST_WIDE_INT) 1);
+	      code = (code == NE ? EQ : NE);
+	      continue;
+	    }
+
 	  /* Convert (ne (and (lshiftrt (not X)) 1) 0) to
 	     (eq (and (lshiftrt X) 1) 0).  */
 	  if (const_op == 0 && equality_comparison_p
