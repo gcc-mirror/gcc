@@ -2311,16 +2311,13 @@ do { tree _node = (NODE); \
     }
 
   /* Now see what's inside.  If it's an INDIRECT_REF, copy our properties from
-     it.  If it's a decl, it's invariant and constant if the decl is static.
-     It's also invariant if it's a decl in the current function.  (Taking the
-     address of a volatile variable is not volatile.)  If it's a constant,
-     the address is both invariant and constant.  Otherwise it's neither.  */
+     the address, since &(*a)->b is a form of addition.  If it's a decl, it's
+     invariant and constant if the decl is static.  It's also invariant if it's
+     a decl in the current function.  Taking the address of a volatile variable
+     is not volatile.  If it's a constant, the address is both invariant and
+     constant.  Otherwise it's neither.  */
   if (TREE_CODE (node) == INDIRECT_REF)
-    {
-      /* If this is &((T*)0)->field, then this is a form of addition.  */
-      if (TREE_CODE (TREE_OPERAND (node, 0)) != INTEGER_CST)
-	UPDATE_TITCSE (node);
-    }
+    UPDATE_TITCSE (TREE_OPERAND (node, 0));
   else if (DECL_P (node))
     {
       if (staticp (node))
