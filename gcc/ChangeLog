@@ -1,3 +1,9 @@
+2003-01-07  Sylvain Pion <Sylvain.Pion@mpi-sb.mpg.de>
+  
+	* config/i386/i386.c (ix86_init_mmx_sse_builtins):
+	__builtin_ia32_ldmxcsr and __builtin_ia32_stmxcsr are SSE, not MXX.
+	* config/i386/i386.md (ldmxcsr, stmxcsr): SSE, not MMX.
+
 2003-01-07  Benjamin Kosnik  <bkoz@redhat.com>
 	    Sunil Davasam  <sunil.k.davasam@intel.com>
 
@@ -54,9 +60,9 @@
 
 	Segher Boessenkool  <segher@koffie.nl>
 
-        * config/rs6000/rs6000.c (rs6000_reg_names): Add missing registers.
-        (alt_reg_names): Ditto, fix formatting.
-        * config/rs6000/rs6000.h (DEBUG_REGISTER_NAMES): Fix formatting.
+	* config/rs6000/rs6000.c (rs6000_reg_names): Add missing registers.
+	(alt_reg_names): Ditto, fix formatting.
+	* config/rs6000/rs6000.h (DEBUG_REGISTER_NAMES): Fix formatting.
 
 2003-01-06  Kazu Hirata  <kazu@cs.umass.edu>
 
@@ -76,8 +82,8 @@
 
 	Segher Boessenkool  <segher@koffie.nl>
 
-        * config/rs6000/altivec.md: Remove spaces from assembler
-        instruction argument lists.
+	* config/rs6000/altivec.md: Remove spaces from assembler
+	instruction argument lists.
 	
 2003-01-07  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
