@@ -612,6 +612,12 @@ char *lang_options[] =
   "-Wno-overloaded-virtual",
   "-Wenum-clash",
   "-Wno-enum-clash",
+
+  /* these are for obj c */
+  "-lang-objc",
+  "-gen-decls",
+  "-Wselector",
+  "-Wno-selector",
   0
 };
 
