@@ -1,3 +1,9 @@
+2000-11-01  Richard Henderson  <rth@redhat.com>
+
+	* dwarf2out.c (loc_descriptor_from_tree): Check for null result
+	from rtl_for_decl_location.
+	(add_location_or_const_value_attribute): Likewise.
+
 2000-11-01  Neil Booth  <neilb@earthling.net>
 
         * cpplib.c (run_directive): Use correct line number for output

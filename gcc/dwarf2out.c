@@ -7506,7 +7506,9 @@ loc_descriptor_from_tree (loc, addressp)
 	rtx rtl = rtl_for_decl_location (loc);
 	enum machine_mode mode = DECL_MODE (loc);
 
-	if (CONSTANT_P (rtl))
+	if (rtl == NULL_RTX)
+	  break;
+	else if (CONSTANT_P (rtl))
 	  {
 	    ret = new_loc_descr (DW_OP_addr, 0, 0);
 	    ret->dw_loc_oprnd1.val_class = dw_val_class_addr;
@@ -8274,6 +8276,8 @@ add_location_or_const_value_attribute (die, decl)
     abort ();
 
   rtl = rtl_for_decl_location (decl);
+  if (rtl == NULL_RTX)
+    return;
 
   switch (GET_CODE (rtl))
     {
