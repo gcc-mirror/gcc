@@ -1,3 +1,8 @@
+2002-03-18  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* parse.y (parser_check_super_interface): Fix error message
+	grammar/order.
+
 2002-03-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* jcf-parse.c (get_constant): Delete unused variables.
