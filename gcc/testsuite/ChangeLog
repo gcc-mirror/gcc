@@ -1,3 +1,8 @@
+2005-01-30  Bud Davis  <bdavis@gfortran.org>
+
+	PR fortran/19647
+	* gfortan.dg/inquire_7.f90
+
 2005-01-29  Richard Guenther <richard.guenther@uni-tuebingen.de>
 
 	PR tree-optimization/15791

@@ -256,7 +256,7 @@ inquire_via_unit (gfc_unit * u)
 	    internal_error ("inquire_via_unit(): Bad delim");
 	  }
 
-      cf_strcpy (ioparm.access, ioparm.access_len, p);
+      cf_strcpy (ioparm.delim, ioparm.delim_len, p);
     }
 
   if (ioparm.pad != NULL)
