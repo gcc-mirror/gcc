@@ -1,3 +1,8 @@
+Wed Mar 14 13:17:44 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* alias.c (handled_component_p, can_address_p): New functions.
+	(get_alias_set): Use them.
+
 2001-03-14  Mark Mitchell  <mark@codesourcery.com>
 
 	* expr.c (expand_expr): Revove bogus conditional.
