@@ -61,8 +61,9 @@ import java.util.Enumeration;
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
  */
-public abstract class BasicPermission extends Permission implements
-  Serializable
+public abstract class BasicPermission extends java.security.Permission
+  implements Serializable
+  // FIXME extends with fully qualified classname as workaround for gcj 3.0.4
 {
   /**
    * This method initializes a new instance of <code>BasicPermission</code>

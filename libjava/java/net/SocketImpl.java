@@ -1,5 +1,5 @@
 /* SocketImpl.java -- Abstract socket implementation class
-   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -39,37 +39,35 @@ package java.net;
 
 import java.io.*;
 
- /* Written using on-line Java Platform 1.2 API Specification.
-  * Believed complete and correct.
-  */
+/* Written using on-line Java Platform 1.2 API Specification.
+ * Believed complete and correct.
+ */
 
-  /**
-   * This abstract class serves as the parent class for socket implementations.
-   * The implementation class serves an intermediary to native routines that
-   * perform system specific socket operations.
-   * <p>
-   * A default implementation is provided by the system, but this can be
-   * changed via installing a <code>SocketImplFactory</code> (through a call 
-   * to the static method <code>Socket.setSocketImplFactory</code>).  A 
-   * subclass of <code>Socket</code> can also pass in a <code>SocketImpl</code>
-   * to the <code>Socket(SocketImpl)</code> constructor to use an 
-   * implementation different from the system default without installing
-   * a factory.
-   *
-   * @author Aaron M. Renn (arenn@urbanophile.com)
-   * @author Per Bothner <bothner@cygnus.com>
-   */
+/**
+ * This abstract class serves as the parent class for socket implementations.
+ * The implementation class serves an intermediary to native routines that
+ * perform system specific socket operations.
+ * <p>
+ * A default implementation is provided by the system, but this can be
+ * changed via installing a <code>SocketImplFactory</code> (through a call
+ * to the static method <code>Socket.setSocketImplFactory</code>).  A
+ * subclass of <code>Socket</code> can also pass in a <code>SocketImpl</code>
+ * to the <code>Socket(SocketImpl)</code> constructor to use an
+ * implementation different from the system default without installing
+ * a factory.
+ *
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Per Bothner <bothner@cygnus.com>
+ */
 public abstract class SocketImpl implements SocketOptions
 {
-
-
   /**
    * The address of the remote end of the socket connection
    */
   protected InetAddress address;
 
   /**
-   * A FileDescriptor object representing this socket connection.  
+   * A FileDescriptor object representing this socket connection.
    */
   protected FileDescriptor fd;
 
@@ -86,7 +84,7 @@ public abstract class SocketImpl implements SocketOptions
   /**
    * Default, no-argument constructor for use by subclasses.
    */
-  public SocketImpl ()
+  public SocketImpl()
   {
   }
 
@@ -98,7 +96,7 @@ public abstract class SocketImpl implements SocketOptions
    *
    * @param stream true for a stream socket, false for a datagram socket
    */
-  protected abstract void create (boolean stream) throws IOException;
+  protected abstract void create(boolean stream) throws IOException;
 
   /**
    * Connects to the remote hostname and port specified as arguments.
@@ -108,7 +106,7 @@ public abstract class SocketImpl implements SocketOptions
    *
    * @exception IOException If an error occurs
    */
-  protected abstract void connect (String host, int port) throws IOException;
+  protected abstract void connect(String host, int port) throws IOException;
 
   /**
    * Connects to the remote address and port specified as arguments.
@@ -118,7 +116,7 @@ public abstract class SocketImpl implements SocketOptions
    *
    * @exception IOException If an error occurs
    */
-  protected abstract void connect (InetAddress host, int port)
+  protected abstract void connect(InetAddress host, int port)
     throws IOException;
 
   /**
@@ -133,7 +131,7 @@ public abstract class SocketImpl implements SocketOptions
    *
    * @exception IOException If an error occurs
    */
-  protected abstract void bind (InetAddress host, int port) throws IOException;
+  protected abstract void bind(InetAddress host, int port) throws IOException;
 
   /**
    * Starts listening for connections on a socket. The backlog parameter
@@ -142,10 +140,10 @@ public abstract class SocketImpl implements SocketOptions
    * number, additional connections will be refused.
    *
    * @param backlog The length of the pending connection queue
-   * 
+   *
    * @exception IOException If an error occurs
    */
-  protected abstract void listen (int backlog) throws IOException;
+  protected abstract void listen(int backlog) throws IOException;
 
   /**
    * Accepts a connection on this socket.
@@ -154,7 +152,7 @@ public abstract class SocketImpl implements SocketOptions
    *
    * @exception IOException If an error occurs
    */
-  protected abstract void accept (SocketImpl s) throws IOException;
+  protected abstract void accept(SocketImpl s) throws IOException;
 
   /**
    * Returns an <code>InputStream</code> object for reading from this socket.
@@ -167,7 +165,7 @@ public abstract class SocketImpl implements SocketOptions
 
   /**
    * Returns an <code>OutputStream</code> object for writing to this socket
-   * 
+   *
    * @return An <code>OutputStream</code> for writing to this socket.
    *
    * @exception IOException If an error occurs.
@@ -182,7 +180,7 @@ public abstract class SocketImpl implements SocketOptions
    *
    * @exception IOException If an error occurs
    */
-  protected abstract int available () throws IOException;
+  protected abstract int available() throws IOException;
 
   /**
    * Closes the socket.  This will normally cause any resources, such as the
@@ -193,45 +191,77 @@ public abstract class SocketImpl implements SocketOptions
    *
    * @exception IOException If an error occurs
    */
-  protected abstract void close () throws IOException;
+  protected abstract void close() throws IOException;
 
   /**
    * Returns the FileDescriptor objects for this socket.
    *
    * @return A FileDescriptor for this socket.
    */
-  protected FileDescriptor getFileDescriptor () { return fd; }
+  protected FileDescriptor getFileDescriptor() { return fd; }
 
   /**
    * Returns the remote address this socket is connected to
    *
    * @return The remote address
    */
-  protected InetAddress getInetAddress () { return address; }
+  protected InetAddress getInetAddress() { return address; }
 
   /**
    * Returns the remote port this socket is connected to
    *
    * @return The remote port
    */
-  protected int getPort () { return port; }
+  protected int getPort() { return port; }
 
   /**
    * Returns the local port this socket is bound to
    *
    * @return The local port
    */
-  protected int getLocalPort () { return localport; }
+  protected int getLocalPort() { return localport; }
 
   /**
-   * Returns a <code>String</code> representing the remote host and port of this
-   * socket.
+   * Returns a <code>String</code> representing the remote host and port of
+   * this socket.
    *
    * @return A <code>String</code> for this socket.
    */
-  public String toString ()
+  public String toString()
   {
-    return "[addr=" + address.toString() + ",port=" + Integer.toString(port) +
-      ",localport=" + Integer.toString(localport) + "]";
+    return "[addr=" + address.toString() + ",port=" + Integer.toString(port)
+      + ",localport=" + Integer.toString(localport) + "]";
   }
+
+  /**
+   * Sets the specified option on a socket to the passed in object.  For
+   * options that take an integer argument, the passed in object is an
+   * <code>Integer</code>.  For options that are set to on or off, the
+   * value passed will be a <code>Boolean</code>.   The <code>option_id</code> 
+   * parameter is one of the defined constants in the superinterface.
+   *
+   * @param option_id The identifier of the option
+   * @param val The value to set the option to
+   *
+   * @exception SocketException If an error occurs
+   * @XXX This redeclaration from SocketOptions is a workaround to a gcj bug.
+   */
+  public abstract void setOption(int option_id, Object val)
+    throws SocketException;
+
+  /**
+   * Returns the current setting of the specified option.  The 
+   * <code>Object</code> returned will be an <code>Integer</code> for options 
+   * that have integer values.  For options that are set to on or off, a 
+   * <code>Boolean</code> will be returned.   The <code>option_id</code>
+   * is one of the defined constants in the superinterface.
+   *
+   * @param option_id The option identifier
+   *
+   * @return The current value of the option
+   *
+   * @exception SocketException If an error occurs
+   * @XXX This redeclaration from SocketOptions is a workaround to a gcj bug.
+   */
+  public abstract Object getOption(int option_id) throws SocketException;
 }

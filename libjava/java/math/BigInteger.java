@@ -37,7 +37,7 @@ exception statement from your version. */
 
 package java.math;
 
-import gnu.java.math.*;
+import gnu.java.math.MPN;
 import java.util.Random;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;

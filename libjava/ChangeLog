@@ -1,3 +1,40 @@
+2002-02-14  Mark Wielaard  <mark@klomp.org>
+
+	* java/math/BigInteger.java: import gnu.java.math.MPN not the whole
+	package as a workaround for gcj 3.0.x
+
+2002-02-14  Mark Wielaard <mark@klomp.org>
+
+	* java/security/BasicPermission.java: extends with fully qualified
+	classname as workaround for gcj 3.0.4.
+
+2002-02-14  Eric Blake  <ebb9@email.byu.edu>
+
+	* java/net/DatagramSocketImpl.java (setOption, getOption): Work
+	around gcj bug of wrong emitted qualifier for inherited method.
+	* java/net/SocketImpl.java (setOption, getOption): Ditto.
+	* java/util/WeakHashMap.java (WeakEntrySet): Add non-private
+	constructor to reduce amount of emitted bytecode. While this
+	happens to work around a jikes 1.15 bug, it is still a useful
+	patch even for correct compilers.
+	* java/rmi/server/RMIClassLoader.java (MyClassLoader): Ditto.
+	* gnu/java/rmi/server/UnicastRemoteCall.java
+	(DummyObjectOutputStream, DummyObjectInputStream): Ditto.
+
+2002-02-14  Eric Blake  <ebb9@email.byu.edu>
+
+	* java/net/DatagramSocketImpl.java: Reformat (no code changes).
+	* java/net/SocketImpl.java: Ditto.
+	* java/rmi/server/RMIClassLoader.java: Ditto.
+	* gnu/java/rmi/server/UnicastRemoteCall.java: Ditto.
+
+2002-02-14  Mark Wielaard <mark@klomp.org>
+
+	Thanks to Takashi Okamoto
+	* java/util/Arrays.java (ArrayList.indexOf()): this.equals().
+	* java/util/Arrays.java (ArrayList.lastIndexOf()): Likewise.
+	* java/util/WeakHashMap.java (WeakEntry.getEntry()): this.get().
+
 2002-02-13  Todd Stock  <toddastock@yahoo.com>
 
 	Fix for PR libgcj/5670:
