@@ -1,3 +1,7 @@
+Thu Sep  2 01:36:12 1999  Marc Espie <espie@cvs.openbsd.org>
+
+	* pexecute.c (pexecute):  Fill in temp_base when needed.
+
 1999-08-31  Richard Henderson  <rth@cygnus.com>
 
 	* getpwd.c: Check HAVE_GETCWD before defining it away.
