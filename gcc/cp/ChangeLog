@@ -1,3 +1,9 @@
+2000-07-02  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (duplicate_decls): Preserve DECL_ORIGINAL_TYPE for a
+	TYPE_DECL.
+	* typeck.c (commonparms): Remove obstack manipulations.
+
 2000-07-01  Benjamin Chelf  <chelf@codesourcery.com>
 
         * Make-lang.in (cc1plus$(exeext)): Added c-semantics.o.
