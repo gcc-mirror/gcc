@@ -965,6 +965,20 @@
 [(set_attr "conds" "set")
  (set_attr "type" "mult")])
 
+;; Unnamed template to match long long multiply-accumlate (smlal)
+
+(define_insn "*mulsidi3adddi"
+  [(set (match_operand:DI 0 "s_register_operand" "=&r,&r,&r")
+	(plus:DI
+	  (mult:DI (sign_extend:DI
+	 	    (match_operand:SI 2 "s_register_operand" "r,0,1"))
+		   (sign_extend:DI
+		    (match_operand:SI 1 "s_register_operand" "%r,r,r")))
+	  (match_dup 0)))]
+  "arm_fast_multiply"
+  "smlal%?\\t%Q0, %R0, %1, %2"
+[(set_attr "type" "mult")])
+
 (define_insn "mulsidi3"
   [(set (match_operand:DI 0 "s_register_operand" "=&r")
       (mult:DI (sign_extend:DI
@@ -983,6 +997,20 @@
                 (match_operand:SI 2 "s_register_operand" "r"))))]
   "arm_fast_multiply"
   "umull%?\\t%Q0, %R0, %1, %2"
+[(set_attr "type" "mult")])
+
+;; Unnamed template to match long long unsigned multiply-accumlate (umlal)
+
+(define_insn "*umulsidi3adddi"
+  [(set (match_operand:DI 0 "s_register_operand" "=&r,&r,&r")
+	(plus:DI
+	  (mult:DI (zero_extend:DI
+	 	    (match_operand:SI 2 "s_register_operand" "r,0,1"))
+		   (zero_extend:DI
+		    (match_operand:SI 1 "s_register_operand" "%r,r,r")))
+	  (match_dup 0)))]
+  "arm_fast_multiply"
+  "umlal%?\\t%Q0, %R0, %1, %2"
 [(set_attr "type" "mult")])
 
 (define_insn "smulsi3_highpart"
