@@ -56,6 +56,10 @@ details.  */
 #if !defined (O_DSYNC) && defined (O_FSYNC)
 #define O_DSYNC O_FSYNC
 #endif
+// If O_DSYNC is still not defined, use O_SYNC (needed for newlib)
+#if !defined (O_DSYNC) 
+#define O_DSYNC O_SYNC
+#endif
 
 // Separator for file name components.
 #define _Jv_platform_file_separator ((jchar) '/')
