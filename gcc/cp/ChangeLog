@@ -1,3 +1,8 @@
+2005-01-07  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/19298
+	* pt.c (tsubst_qualified_id): Call convert_from_reference.
+
 2005-01-06  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/19244
