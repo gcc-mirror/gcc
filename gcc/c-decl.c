@@ -377,7 +377,8 @@ static struct binding_level *global_binding_level;
 /* Binding level structures are initialized by copying this one.  */
 
 static struct binding_level clear_binding_level
-  = {NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0};
+  = {NULL, NULL, NULL, NULL, NULL, NULL_BINDING_LEVEL, 0, 0, 0, 0, 0, 0,
+     NULL};
 
 /* Nonzero means unconditionally make a BLOCK for the next level pushed.  */
 
@@ -560,7 +561,7 @@ c_decode_option (p)
       dollars_in_ident = 1;
 #endif
     }
-  else if (!strcmp (p, "-fnodollars-in-identifiers"))
+  else if (!strcmp (p, "-fno-dollars-in-identifiers"))
     dollars_in_ident = 0;
   else if (!strcmp (p, "-fsigned-char"))
     flag_signed_char = 1;
