@@ -1,3 +1,12 @@
+2001-10-13  Michael Collison  <collison@dhcp-12-114.townisp.com>
+
+	* config/dsp16xx/dsp16xx.md: Rewrite for more efficient code and 
+	add scheduling support.
+	* config/dsp16xx/dsp16xx.h: Rewrite for more efficient code.
+	* config/dsp16xx/dsp16xx.c: Rewrite for more efficient code.
+	* config/dsp16xx/dsp16xx-protos.h: Add new function prototypes.
+
+
 2001-10-13  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/cris.c (cris_legitimate_pic_operand): Kludge around
