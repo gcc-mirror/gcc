@@ -1055,7 +1055,7 @@ memrefs_conflict_p (xsize, x, ysize, y, c)
      at least as large as the alignment, assume no other overlap.  */
   if (GET_CODE (x) == AND && GET_CODE (XEXP (x, 1)) == CONST_INT)
     {
-      if (ysize < -INTVAL (XEXP (x, 1)))
+      if (GET_CODE (y) == AND || ysize < -INTVAL (XEXP (x, 1)))
 	xsize = -1;
       return memrefs_conflict_p (xsize, XEXP (x, 0), ysize, y, c);
     }
@@ -1065,7 +1065,7 @@ memrefs_conflict_p (xsize, x, ysize, y, c)
 	 may yet be able to determine that we can not overlap.  But we 
 	 also need to that we are far enough from the end not to overlap
 	 a following reference, so we do nothing with that for now.  */
-      if (xsize < -INTVAL (XEXP (y, 1)))
+      if (GET_CODE (x) == AND || xsize < -INTVAL (XEXP (y, 1)))
 	ysize = -1;
       return memrefs_conflict_p (xsize, x, ysize, XEXP (y, 0), c);
     }
