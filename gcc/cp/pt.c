@@ -167,7 +167,6 @@ static void copy_default_args_to_explicit_spec (tree);
 static int invalid_nontype_parm_type_p (tree, tsubst_flags_t);
 static int eq_local_specializations (const void *, const void *);
 static bool dependent_type_p_r (tree);
-static bool dependent_template_id_p (tree, tree);
 static tree tsubst (tree, tree, tsubst_flags_t, tree);
 static tree tsubst_expr	(tree, tree, tsubst_flags_t, tree);
 static tree tsubst_copy	(tree, tree, tsubst_flags_t, tree);
@@ -3594,9 +3593,6 @@ convert_template_argument (tree parm,
       if (invalid_nontype_parm_type_p (t, complain))
         return error_mark_node;
       
-      if (processing_template_decl)
-	arg = maybe_fold_nontype_arg (arg);
-
       if (!uses_template_parms (arg) && !uses_template_parms (t))
 	/* We used to call digest_init here.  However, digest_init
 	   will report errors, which we don't want when complain
@@ -7108,9 +7104,8 @@ tsubst_baselink (tree baselink, tree object_type,
 	template_id_p = true;
 	template_args = TREE_OPERAND (fns, 1);
 	fns = TREE_OPERAND (fns, 0);
-	template_args = tsubst_copy (template_args, args,
-				     complain, in_decl);
-	maybe_fold_nontype_args (template_args);
+	template_args = tsubst_copy_and_build (template_args, args,
+					       complain, in_decl);
       }
     name = DECL_NAME (get_first_fn (fns));
     baselink = lookup_fnfields (qualifying_scope, name, /*protect=*/1);
@@ -8003,30 +7998,17 @@ tsubst_copy_and_build (tree t,
 
     case PREDECREMENT_EXPR:
     case PREINCREMENT_EXPR:
-      if (TREE_TYPE (t))
-	return tsubst_copy (t, args, complain, in_decl);
-      else
-	return build_x_unary_op
-	  (TREE_CODE (t),
-	   tsubst_copy_and_build (TREE_OPERAND (t, 0), args, complain,
-				  in_decl));
-
     case NEGATE_EXPR:
     case BIT_NOT_EXPR:
-      if (TREE_TYPE (t))
-	return tsubst_copy (t, args, complain, in_decl);
-      else
-	return build_x_unary_op
-	  (TREE_CODE (t),
-	   tsubst_copy_and_build (TREE_OPERAND (t, 0), args, complain,
-				  in_decl));
-
     case ABS_EXPR:
-      if (TREE_TYPE (t))
-	return t;
-      return build_x_unary_op
-	(TREE_CODE (t),
-	 tsubst_copy_and_build (TREE_OPERAND (t, 0), args, complain, in_decl));
+    case TRUTH_NOT_EXPR:
+    case CONVERT_EXPR:  /* Unary + */
+    case REALPART_EXPR:
+    case IMAGPART_EXPR:
+      return (build_x_unary_op
+	      (TREE_CODE (t),
+	       tsubst_copy_and_build (TREE_OPERAND (t, 0), args, complain,
+				      in_decl)));
 
     case ADDR_EXPR:
       op1 = TREE_OPERAND (t, 0);
@@ -8036,18 +8018,6 @@ tsubst_copy_and_build (tree t,
       else
 	op1 = tsubst_copy_and_build (op1, args, complain, in_decl);
       return build_x_unary_op (ADDR_EXPR, op1);
-
-    case TRUTH_NOT_EXPR:
-    case CONVERT_EXPR:  /* Unary + */
-    case REALPART_EXPR:
-    case IMAGPART_EXPR:
-      if (TREE_TYPE (t))
-	return tsubst_copy (t, args, complain, in_decl);
-      else
-	return build_x_unary_op
-	  (TREE_CODE (t),
-	   tsubst_copy_and_build (TREE_OPERAND (t, 0), args, complain,
-				  in_decl));
 
     case PLUS_EXPR:
     case MINUS_EXPR:
@@ -8119,15 +8089,25 @@ tsubst_copy_and_build (tree t,
 
     case SIZEOF_EXPR:
     case ALIGNOF_EXPR:
-      {
-	tree r =
-	  tsubst_copy_and_build (TREE_OPERAND (t, 0), args, complain, in_decl);
-	if (!TYPE_P (r))
-	  return TREE_CODE (t) == SIZEOF_EXPR ?
-	    expr_sizeof (r) : c_alignof_expr (r);
-	else
-	  return cxx_sizeof_or_alignof_type (r, TREE_CODE (t), true);
-      }
+      op1 = TREE_OPERAND (t, 0);
+      if (!args)
+	{
+	  /* When there are no ARGS, we are trying to evaluate a
+	     non-dependent expression from the parser.  Trying to do
+	     the substitutions may not work.  */
+	  if (!TYPE_P (op1))
+	    op1 = TREE_TYPE (op1);
+	}
+      else
+	{
+	  ++skip_evaluation;
+	  op1 = tsubst_copy_and_build (op1, args, complain, in_decl);
+	  --skip_evaluation;
+	}
+      if (TREE_CODE (t) == SIZEOF_EXPR)
+	return finish_sizeof (op1);
+      else
+	return finish_alignof (op1);
 
     case MODOP_EXPR:
       return build_x_modify_expr
@@ -8162,15 +8142,11 @@ tsubst_copy_and_build (tree t,
 	DELETE_EXPR_USE_GLOBAL (t));
 
     case COMPOUND_EXPR:
-      {
-	if (tsubst_copy (TREE_OPERAND (t, 1), args, complain, in_decl)
-	    == NULL_TREE)
-	  return build_x_compound_expr
-	    (tsubst_copy_and_build (TREE_OPERAND (t, 0), args, complain,
-				    in_decl));
-	else
-	  abort ();
-      }
+      return (build_x_compound_expr
+	      (tsubst_copy_and_build (TREE_OPERAND (t, 0), args, complain, 
+				      in_decl),
+	       tsubst_copy_and_build (TREE_OPERAND (t, 1), args, complain, 
+				      in_decl)));
 
     case CALL_EXPR:
       {
@@ -8210,25 +8186,23 @@ tsubst_copy_and_build (tree t,
 					   complain, in_decl);
 	  
 	if (BASELINK_P (function))
-	  return build_call_from_tree (function, call_args, 1);
-	else
-	  {
-	    if (call_args != NULL_TREE && koenig_name)
-	      function = lookup_arg_dependent (koenig_name,
-					       function, 
-					       call_args);
+	  qualified_p = 1;
 
-	    if (TREE_CODE (function) == OFFSET_REF)
-	      return build_offset_ref_call_from_tree (function, call_args);
-	    if (TREE_CODE (function) == COMPONENT_REF)
-	      return (build_new_method_call 
-		      (TREE_OPERAND (function, 0),
-		       TREE_OPERAND (function, 1),
-		       call_args, NULL_TREE, 
-		       qualified_p ? LOOKUP_NONVIRTUAL : LOOKUP_NORMAL));
-	    return finish_call_expr (function, call_args, 
-				     /*disallow_virtual=*/qualified_p);
-	  }
+	if (call_args != NULL_TREE && koenig_name)
+	  function = lookup_arg_dependent (koenig_name,
+					   function, 
+					   call_args);
+
+	if (TREE_CODE (function) == OFFSET_REF)
+	  return build_offset_ref_call_from_tree (function, call_args);
+	if (TREE_CODE (function) == COMPONENT_REF)
+	  return (build_new_method_call 
+		  (TREE_OPERAND (function, 0),
+		   TREE_OPERAND (function, 1),
+		   call_args, NULL_TREE, 
+		   qualified_p ? LOOKUP_NONVIRTUAL : LOOKUP_NORMAL));
+	return finish_call_expr (function, call_args, 
+				 /*disallow_virtual=*/qualified_p);
       }
 
     case COND_EXPR:
@@ -8389,6 +8363,11 @@ tsubst_copy_and_build (tree t,
     case VAR_DECL:
       if (args)
 	t = tsubst_copy (t, args, complain, in_decl);
+      else
+	/* If there are no ARGS, then we are evaluating a
+	   non-dependent expression.  If the expression is
+	   non-dependent, the variable must be a constant.  */
+	t = DECL_INITIAL (t);
       return convert_from_reference (t);
 
     case VA_ARG_EXPR:
@@ -11491,26 +11470,46 @@ value_dependent_expression_p (tree expression)
      with an expression that is value-dependent.  */
   if (TREE_CODE (expression) == VAR_DECL
       && DECL_INITIAL (expression)
-      && INTEGRAL_OR_ENUMERATION_TYPE_P (expression)
+      && INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (expression))
       && value_dependent_expression_p (DECL_INITIAL (expression)))
     return true;
   /* These expressions are value-dependent if the type to which the
      cast occurs is dependent or the expression being casted is
      value-dependent.  */
-  if ((TREE_CODE (expression) == DYNAMIC_CAST_EXPR
-       || TREE_CODE (expression) == STATIC_CAST_EXPR
-       || TREE_CODE (expression) == CONST_CAST_EXPR
-       || TREE_CODE (expression) == REINTERPRET_CAST_EXPR
-       || TREE_CODE (expression) == CAST_EXPR)
-      && (dependent_type_p (TREE_TYPE (expression))
-   || value_dependent_expression_p (TREE_OPERAND (expression, 0))))
-    return true;
-  /* A `sizeof' expression where the sizeof operand is a type is
-     value-dependent if the type is dependent.  If the type was not
-     dependent, we would no longer have a SIZEOF_EXPR, so any
-     SIZEOF_EXPR is dependent.  */
-  if (TREE_CODE (expression) == SIZEOF_EXPR)
-    return true;
+  if (TREE_CODE (expression) == DYNAMIC_CAST_EXPR
+      || TREE_CODE (expression) == STATIC_CAST_EXPR
+      || TREE_CODE (expression) == CONST_CAST_EXPR
+      || TREE_CODE (expression) == REINTERPRET_CAST_EXPR
+      || TREE_CODE (expression) == CAST_EXPR)
+    {
+      if (dependent_type_p (TREE_TYPE (expression)))
+	return true;
+      /* A functional cast has a list of operands.  */
+      expression = TREE_OPERAND (expression, 0);
+      if (TREE_CODE (expression) == TREE_LIST)
+	{
+	  do
+	    {
+	      if (value_dependent_expression_p (TREE_VALUE (expression)))
+		return true;
+	      expression = TREE_CHAIN (expression);
+	    }
+	  while (expression);
+	  return false;
+	}
+      else
+	return value_dependent_expression_p (expression);
+    }
+  /* A `sizeof' expression is value-dependent if the operand is
+     type-dependent.  */
+  if (TREE_CODE (expression) == SIZEOF_EXPR
+      || TREE_CODE (expression) == ALIGNOF_EXPR)
+    {
+      expression = TREE_OPERAND (expression, 0);
+      if (TYPE_P (expression))
+	return dependent_type_p (expression);
+      return type_dependent_expression_p (expression);
+    }
   /* A constant expression is value-dependent if any subexpression is
      value-dependent.  */
   if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (expression))))
@@ -11574,10 +11573,11 @@ type_dependent_expression_p (tree expression)
       || TREE_CODE (expression) == REINTERPRET_CAST_EXPR
       || TREE_CODE (expression) == CAST_EXPR)
     return dependent_type_p (TREE_TYPE (expression));
+
   /* The types of these expressions depends only on the type created
      by the expression.  */
-  else if (TREE_CODE (expression) == NEW_EXPR
-	   || TREE_CODE (expression) == VEC_NEW_EXPR)
+  if (TREE_CODE (expression) == NEW_EXPR
+      || TREE_CODE (expression) == VEC_NEW_EXPR)
     {
       /* For NEW_EXPR tree nodes created inside a template, either
 	 the object type itself or a TREE_LIST may appear as the
@@ -11601,12 +11601,53 @@ type_dependent_expression_p (tree expression)
 	   INNERMOST_TEMPLATE_ARGS (DECL_TI_ARGS (expression)))))
     return true;
 
+  if (TREE_TYPE (expression) == unknown_type_node)
+    {
+      if (TREE_CODE (expression) == ADDR_EXPR)
+	return type_dependent_expression_p (TREE_OPERAND (expression, 0));
+      if (TREE_CODE (expression) == BASELINK)
+	expression = BASELINK_FUNCTIONS (expression);
+      if (TREE_CODE (expression) == TEMPLATE_ID_EXPR)
+	{
+	  if (any_dependent_template_arguments_p (TREE_OPERAND (expression, 
+								1)))
+	    return true;
+	  expression = TREE_OPERAND (expression, 0);
+	}
+      if (TREE_CODE (expression) == OVERLOAD)
+	{
+	  while (expression)
+	    {
+	      if (type_dependent_expression_p (OVL_CURRENT (expression)))
+		return true;
+	      expression = OVL_NEXT (expression);
+	    }
+	  return false;
+	}
+      abort ();
+    }
+  
   return (dependent_type_p (TREE_TYPE (expression)));
+}
+
+/* Returns TRUE if ARGS (a TREE_LIST of arguments to a function call)
+   contains a type-dependent expression.  */
+
+bool
+any_type_dependent_arguments_p (tree args)
+{
+  while (args)
+    {
+      if (type_dependent_expression_p (TREE_VALUE (args)))
+	return true;
+      args = TREE_CHAIN (args);
+    }
+  return false;
 }
 
 /* Returns TRUE if the ARG (a template argument) is dependent.  */
 
-bool
+static bool
 dependent_template_arg_p (tree arg)
 {
   if (!processing_template_decl)
@@ -11622,18 +11663,36 @@ dependent_template_arg_p (tree arg)
 	    || value_dependent_expression_p (arg));
 }
 
-/* Returns TRUE if the specialization TMPL<ARGS> is dependent.  */
+/* Returns true if ARGS (a collection of template arguments) contains
+   any dependent arguments.  */
 
-static bool
-dependent_template_id_p (tree tmpl, tree args)
+bool
+any_dependent_template_arguments_p (tree args)
 {
-  int i;
+  if (!args)
+    return false;
 
-  if (dependent_template_p (tmpl))
-    return true;
-  for (i = 0; i < TREE_VEC_LENGTH (args); ++i)
-    if (dependent_template_arg_p (TREE_VEC_ELT (args, i)))
-      return true;
+  my_friendly_assert (TREE_CODE (args) == TREE_LIST
+		      || TREE_CODE (args) == TREE_VEC,
+		      20030707);
+
+  if (TREE_CODE (args) == TREE_LIST)
+    {
+      while (args)
+	{
+	  if (dependent_template_arg_p (TREE_VALUE (args)))
+	    return true;
+	  args = TREE_CHAIN (args);
+	}
+    }
+  else
+    {
+      int i; 
+      for (i = 0; i < TREE_VEC_LENGTH (args); ++i)
+	if (dependent_template_arg_p (TREE_VEC_ELT (args, i)))
+	  return true;
+    }
+
   return false;
 }
 
@@ -11646,10 +11705,22 @@ dependent_template_p (tree tmpl)
   if (DECL_TEMPLATE_TEMPLATE_PARM_P (tmpl)
       || TREE_CODE (tmpl) == TEMPLATE_TEMPLATE_PARM)
     return true;
+  /* So are qualified names that have not been looked up.  */
+  if (TREE_CODE (tmpl) == SCOPE_REF)
+    return true;
   /* So are member templates of dependent classes.  */
   if (TYPE_P (CP_DECL_CONTEXT (tmpl)))
     return dependent_type_p (DECL_CONTEXT (tmpl));
   return false;
+}
+
+/* Returns TRUE if the specialization TMPL<ARGS> is dependent.  */
+
+bool
+dependent_template_id_p (tree tmpl, tree args)
+{
+  return (dependent_template_p (tmpl)
+	  || any_dependent_template_arguments_p (args));
 }
 
 /* TYPE is a TYPENAME_TYPE.  Returns the ordinary TYPE to which the
@@ -11728,6 +11799,56 @@ resolve_typename_type (tree type, bool only_current_p)
   pop_scope (scope);
 
   return type;
+}
+
+/* EXPR is an expression which is not type-dependent.  Return a proxy
+   for EXPR that can be used to compute the types of larger
+   expressions containing EXPR.  */
+
+tree
+build_non_dependent_expr (tree expr)
+{
+  /* Preserve null pointer constants so that the type of things like 
+     "p == 0" where "p" is a pointer can be determined.  */
+  if (null_ptr_cst_p (expr))
+    return expr;
+  /* Preserve OVERLOADs; the functions must be available to resolve
+     types.  */
+  if (TREE_CODE (expr) == OVERLOAD)
+    return expr;
+  /* Otherwise, build a NON_DEPENDENT_EXPR.  
+
+     REFERENCE_TYPEs are not stripped for expressions in templates
+     because doing so would play havoc with mangling.  Consider, for
+     example:
+
+       template <typename T> void f<T& g>() { g(); } 
+
+     In the body of "f", the expression for "g" will have
+     REFERENCE_TYPE, even though the standard says that it should
+     not.  The reason is that we must preserve the syntactic form of
+     the expression so that mangling (say) "f<g>" inside the body of
+     "f" works out correctly.  Therefore, the REFERENCE_TYPE is
+     stripped here.  */
+  return build (NON_DEPENDENT_EXPR, non_reference (TREE_TYPE (expr)));
+}
+
+/* ARGS is a TREE_LIST of expressions as arguments to a function call.
+   Return a new TREE_LIST with the various arguments replaced with
+   equivalent non-dependent expressions.  */
+
+tree
+build_non_dependent_args (tree args)
+{
+  tree a;
+  tree new_args;
+
+  new_args = NULL_TREE;
+  for (a = args; a; a = TREE_CHAIN (a))
+    new_args = tree_cons (NULL_TREE, 
+			  build_non_dependent_expr (TREE_VALUE (a)),
+			  new_args);
+  return nreverse (new_args);
 }
 
 #include "gt-cp-pt.h"

@@ -2908,7 +2908,8 @@ make_range (tree exp, int *pin_p, tree *plow, tree *phigh)
 
       if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (code)))
 	{
-	  arg0 = TREE_OPERAND (exp, 0);
+	  if (first_rtl_op (code) > 0)
+	    arg0 = TREE_OPERAND (exp, 0);
 	  if (TREE_CODE_CLASS (code) == '<'
 	      || TREE_CODE_CLASS (code) == '1'
 	      || TREE_CODE_CLASS (code) == '2')

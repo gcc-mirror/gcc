@@ -21,9 +21,9 @@ namespace std
     Foo (__alignof__ (x));
     Foo (x->~I ());
     //    Foo (typeid (I));
-    Foo (delete x);
-    Foo (delete[] x);
-    Foo (throw x);
+    Foo (delete x); // { dg-error "" }
+    Foo (delete[] x); // { dg-error "" }
+    Foo (throw x); // { dg-error "" }
   }
 
 }

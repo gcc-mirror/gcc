@@ -2019,6 +2019,19 @@ write_expression (tree expr)
 	  write_type (TREE_OPERAND (expr, 0));
 	  if (TREE_CODE (TREE_OPERAND (expr, 1)) == IDENTIFIER_NODE)
 	    write_source_name (TREE_OPERAND (expr, 1));
+	  else if (TREE_CODE (TREE_OPERAND (expr, 1)) == TEMPLATE_ID_EXPR)
+	    {
+	      tree template_id;
+	      tree name;
+
+	      template_id = TREE_OPERAND (expr, 1);
+	      name = TREE_OPERAND (template_id, 0);
+	      /* FIXME: What about operators?  */
+	      my_friendly_assert (TREE_CODE (name) == IDENTIFIER_NODE,
+				  20030707);
+	      write_source_name (TREE_OPERAND (template_id, 0));
+	      write_template_args (TREE_OPERAND (template_id, 1));
+	    }
 	  else
 	    {
 	      /* G++ 3.2 incorrectly put out both the "sr" code and

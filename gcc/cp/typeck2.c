@@ -980,44 +980,48 @@ build_scoped_ref (tree datum, tree basetype, tree* binfo_p)
    delegation is detected.  */
 
 tree
-build_x_arrow (tree datum)
+build_x_arrow (tree expr)
 {
+  tree orig_expr = expr;
   tree types_memoized = NULL_TREE;
-  register tree rval = datum;
-  tree type = TREE_TYPE (rval);
+  tree type = TREE_TYPE (expr);
   tree last_rval = NULL_TREE;
 
   if (type == error_mark_node)
     return error_mark_node;
 
   if (processing_template_decl)
-    return build_min_nt (ARROW_EXPR, rval);
+    {
+      if (type_dependent_expression_p (expr))
+	return build_min_nt (ARROW_EXPR, expr);
+      expr = build_non_dependent_expr (expr);
+    }
 
   if (TREE_CODE (type) == REFERENCE_TYPE)
     {
-      rval = convert_from_reference (rval);
-      type = TREE_TYPE (rval);
+      expr = convert_from_reference (expr);
+      type = TREE_TYPE (expr);
     }
 
   if (IS_AGGR_TYPE (type))
     {
-      while ((rval = build_new_op (COMPONENT_REF, LOOKUP_NORMAL, rval,
+      while ((expr = build_new_op (COMPONENT_REF, LOOKUP_NORMAL, expr,
 				   NULL_TREE, NULL_TREE)))
 	{
-	  if (rval == error_mark_node)
+	  if (expr == error_mark_node)
 	    return error_mark_node;
 
-	  if (value_member (TREE_TYPE (rval), types_memoized))
+	  if (value_member (TREE_TYPE (expr), types_memoized))
 	    {
 	      error ("circular pointer delegation detected");
 	      return error_mark_node;
 	    }
 	  else
 	    {
-	      types_memoized = tree_cons (NULL_TREE, TREE_TYPE (rval),
+	      types_memoized = tree_cons (NULL_TREE, TREE_TYPE (expr),
 					  types_memoized);
 	    }
-	  last_rval = rval;
+	  last_rval = expr;
 	}     
 
       if (last_rval == NULL_TREE)
@@ -1030,10 +1034,17 @@ build_x_arrow (tree datum)
 	last_rval = convert_from_reference (last_rval);
     }
   else
-    last_rval = decay_conversion (rval);
+    last_rval = decay_conversion (expr);
 
   if (TREE_CODE (TREE_TYPE (last_rval)) == POINTER_TYPE)
-    return build_indirect_ref (last_rval, NULL);
+    {
+      if (processing_template_decl)
+	return build_min (ARROW_EXPR, 
+			  TREE_TYPE (TREE_TYPE (last_rval)), 
+			  orig_expr);
+
+      return build_indirect_ref (last_rval, NULL);
+    }
 
   if (types_memoized)
     error ("result of `operator->()' yields non-pointer result");

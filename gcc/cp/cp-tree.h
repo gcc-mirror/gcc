@@ -215,6 +215,7 @@ struct diagnostic_context;
 
 #define abi_version_at_least(N) \
   (flag_abi_version == 0 || flag_abi_version >= (N))
+
 
 /* Language-dependent contents of an identifier.  */
 
@@ -3775,7 +3776,6 @@ extern void import_export_tinfo	(tree, tree, bool);
 extern void finish_file				(void);
 extern tree build_cleanup			(tree);
 extern tree build_offset_ref_call_from_tree     (tree, tree);
-extern tree build_call_from_tree                (tree, tree, bool);
 extern void set_decl_namespace (tree, tree, bool);
 extern tree current_decl_namespace              (void);
 extern void push_decl_namespace                 (tree);
@@ -3853,7 +3853,6 @@ extern int is_aggr_type				(tree, int);
 extern tree get_aggr_from_typedef		(tree, int);
 extern tree get_type_value			(tree);
 extern tree build_zero_init       		(tree, tree, bool);
-extern tree build_member_call			(tree, tree, tree);
 extern tree build_offset_ref			(tree, tree);
 extern tree resolve_offset_ref			(tree);
 extern tree build_new				(tree, tree, tree, int);
@@ -3974,12 +3973,16 @@ extern tree current_instantiation               (void);
 extern tree maybe_get_template_decl_from_type_decl (tree);
 extern int processing_template_parmlist;
 extern bool dependent_type_p                    (tree);
-extern bool dependent_template_arg_p            (tree);
+extern bool any_dependent_template_arguments_p  (tree);
 extern bool dependent_template_p                (tree);
+extern bool dependent_template_id_p             (tree, tree);
 extern bool type_dependent_expression_p         (tree);
+extern bool any_type_dependent_arguments_p      (tree);
 extern bool value_dependent_expression_p        (tree);
 extern tree resolve_typename_type               (tree, bool);
 extern tree template_for_substitution           (tree);
+extern tree build_non_dependent_expr            (tree);
+extern tree build_non_dependent_args            (tree);
 
 /* in repo.c */
 extern void repo_template_used (tree);
@@ -4267,7 +4270,7 @@ extern tree build_x_binary_op			(enum tree_code, tree, tree);
 extern tree build_x_unary_op			(enum tree_code, tree);
 extern tree unary_complex_lvalue		(enum tree_code, tree);
 extern tree build_x_conditional_expr		(tree, tree, tree);
-extern tree build_x_compound_expr		(tree);
+extern tree build_x_compound_expr		(tree, tree);
 extern tree build_compound_expr			(tree);
 extern tree build_static_cast			(tree, tree);
 extern tree build_reinterpret_cast		(tree, tree);

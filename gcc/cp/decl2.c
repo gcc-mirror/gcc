@@ -398,59 +398,77 @@ grokclassfn (tree ctype, tree function, enum overload_flags flags, tree quals)
 tree
 grok_array_decl (tree array_expr, tree index_exp)
 {
-  tree type = TREE_TYPE (array_expr);
-  tree p1, p2, i1, i2;
+  tree type;
+  tree expr;
+  tree orig_array_expr = array_expr;
+  tree orig_index_exp = index_exp;
 
-  if (type == error_mark_node || index_exp == error_mark_node)
+  if (error_operand_p (array_expr) || error_operand_p (index_exp))
     return error_mark_node;
+
   if (processing_template_decl)
-    return build_min (ARRAY_REF, type ? TREE_TYPE (type) : NULL_TREE,
-		      array_expr, index_exp);
+    {
+      if (type_dependent_expression_p (array_expr)
+	  || type_dependent_expression_p (index_exp))
+	return build_min_nt (ARRAY_REF, array_expr, index_exp);
+      array_expr = build_non_dependent_expr (array_expr);
+      index_exp = build_non_dependent_expr (index_exp);
+    }
 
+  type = TREE_TYPE (array_expr);
   my_friendly_assert (type, 20030626);
-
   type = non_reference (type);
 
   /* If they have an `operator[]', use that.  */
   if (IS_AGGR_TYPE (type) || IS_AGGR_TYPE (TREE_TYPE (index_exp)))
-    return build_new_op (ARRAY_REF, LOOKUP_NORMAL,
+    expr = build_new_op (ARRAY_REF, LOOKUP_NORMAL,
 			 array_expr, index_exp, NULL_TREE);
-
-  /* Otherwise, create an ARRAY_REF for a pointer or array type.  It
-     is a little-known fact that, if `a' is an array and `i' is an
-     int, you can write `i[a]', which means the same thing as `a[i]'.  */
-
-  if (TREE_CODE (type) == ARRAY_TYPE)
-    p1 = array_expr;
-  else
-    p1 = build_expr_type_conversion (WANT_POINTER, array_expr, false);
-
-  if (TREE_CODE (TREE_TYPE (index_exp)) == ARRAY_TYPE)
-    p2 = index_exp;
-  else
-    p2 = build_expr_type_conversion (WANT_POINTER, index_exp, false);
-
-  i1 = build_expr_type_conversion (WANT_INT | WANT_ENUM, array_expr, false);
-  i2 = build_expr_type_conversion (WANT_INT | WANT_ENUM, index_exp, false);
-
-  if ((p1 && i2) && (i1 && p2))
-    error ("ambiguous conversion for array subscript");
-
-  if (p1 && i2)
-    array_expr = p1, index_exp = i2;
-  else if (i1 && p2)
-    array_expr = p2, index_exp = i1;
   else
     {
-      error ("invalid types `%T[%T]' for array subscript",
-		type, TREE_TYPE (index_exp));
-      return error_mark_node;
+      tree p1, p2, i1, i2;
+
+      /* Otherwise, create an ARRAY_REF for a pointer or array type.
+	 It is a little-known fact that, if `a' is an array and `i' is
+	 an int, you can write `i[a]', which means the same thing as
+	 `a[i]'.  */
+      if (TREE_CODE (type) == ARRAY_TYPE)
+	p1 = array_expr;
+      else
+	p1 = build_expr_type_conversion (WANT_POINTER, array_expr, false);
+
+      if (TREE_CODE (TREE_TYPE (index_exp)) == ARRAY_TYPE)
+	p2 = index_exp;
+      else
+	p2 = build_expr_type_conversion (WANT_POINTER, index_exp, false);
+
+      i1 = build_expr_type_conversion (WANT_INT | WANT_ENUM, array_expr, 
+				       false);
+      i2 = build_expr_type_conversion (WANT_INT | WANT_ENUM, index_exp, 
+				       false);
+
+      if ((p1 && i2) && (i1 && p2))
+	error ("ambiguous conversion for array subscript");
+
+      if (p1 && i2)
+	array_expr = p1, index_exp = i2;
+      else if (i1 && p2)
+	array_expr = p2, index_exp = i1;
+      else
+	{
+	  error ("invalid types `%T[%T]' for array subscript",
+		    type, TREE_TYPE (index_exp));
+	  return error_mark_node;
+	}
+
+      if (array_expr == error_mark_node || index_exp == error_mark_node)
+	error ("ambiguous conversion for array subscript");
+
+      expr = build_array_ref (array_expr, index_exp);
     }
-
-  if (array_expr == error_mark_node || index_exp == error_mark_node)
-    error ("ambiguous conversion for array subscript");
-
-  return build_array_ref (array_expr, index_exp);
+  if (processing_template_decl && expr != error_mark_node)
+    return build_min (ARRAY_REF, TREE_TYPE (expr), orig_array_expr, 
+		      orig_index_exp);
+  return expr;
 }
 
 /* Given the cast expression EXP, checking out its validity.   Either return
@@ -2949,8 +2967,37 @@ tree
 build_offset_ref_call_from_tree (tree fn, tree args)
 {
   tree object_addr;
+  tree orig_fn;
+  tree orig_args;
+  tree expr;
 
-  my_friendly_assert (TREE_CODE (fn) == OFFSET_REF, 20020725);
+  orig_fn = fn;
+  orig_args = args;
+
+  if (processing_template_decl)
+    {
+      tree object;
+      tree object_type;
+
+      my_friendly_assert (TREE_CODE (fn) == DOTSTAR_EXPR
+			  || TREE_CODE (fn) == MEMBER_REF,
+			  20030708);
+      if (type_dependent_expression_p (fn)
+	  || any_type_dependent_arguments_p (args))
+	return build_min_nt (CALL_EXPR, fn, args);
+
+      /* Transform the arguments and add the implicit "this"
+	 parameter.  That must be done before the FN is transformed
+	 because we depend on the form of FN.  */
+      args = build_non_dependent_args (args);
+      object_type = TREE_TYPE (TREE_OPERAND (fn, 0));
+      if (TREE_CODE (fn) == DOTSTAR_EXPR)
+	object_type = build_pointer_type (non_reference (object_type));
+      object = build (NON_DEPENDENT_EXPR, object_type);
+      args = tree_cons (NULL_TREE, object, args);
+      /* Now that the arguments are done, transform FN.  */
+      fn = build_non_dependent_expr (fn);
+    }
 
   /* A qualified name corresponding to a bound pointer-to-member is
      represented as an OFFSET_REF:
@@ -2958,79 +3005,18 @@ build_offset_ref_call_from_tree (tree fn, tree args)
 	struct B { void g(); };
 	void (B::*p)();
 	void B::g() { (this->*p)(); }  */
-  if (TREE_CODE (TREE_OPERAND (fn, 1)) == FIELD_DECL)
-    /* This case should now be handled elsewhere.  */
-    abort ();
-  else
+  if (TREE_CODE (fn) == OFFSET_REF)
     {
       object_addr = build_unary_op (ADDR_EXPR, TREE_OPERAND (fn, 0), 0);
       fn = TREE_OPERAND (fn, 1);
       fn = get_member_function_from_ptrfunc (&object_addr, fn);
       args = tree_cons (NULL_TREE, object_addr, args);
     }
-  return build_function_call (fn, args);
-}
 
-/* FN indicates the function to call.  Name resolution has been
-   performed on FN.  ARGS are the arguments to the function.  They
-   have already been semantically analyzed.  DISALLOW_VIRTUAL is true
-   if the function call should be determined at compile time, even if
-   FN is virtual.  */
-
-tree
-build_call_from_tree (tree fn, tree args, bool disallow_virtual)
-{
-  tree template_args;
-  tree template_id;
-  tree f;
-  
-  /* Check to see that name lookup has already been performed.  */
-  my_friendly_assert (TREE_CODE (fn) != OFFSET_REF, 20020725);
-  my_friendly_assert (TREE_CODE (fn) != SCOPE_REF, 20020725);
-
-  /* In the future all of this should be eliminated.  Instead,
-     name-lookup for a member function should simply return a
-     baselink, instead of a FUNCTION_DECL, TEMPLATE_DECL, or
-     TEMPLATE_ID_EXPR.  */
-
-  if (TREE_CODE (fn) == TEMPLATE_ID_EXPR)
-    {
-      template_id = fn;
-      template_args = TREE_OPERAND (fn, 1);
-      fn = TREE_OPERAND (fn, 0);
-    }
-  else
-    {
-      template_id = NULL_TREE;
-      template_args = NULL_TREE;
-    }
-
-  f = (TREE_CODE (fn) == OVERLOAD) ? get_first_fn (fn) : fn;
-  /* Make sure we have a baselink (rather than simply a
-     FUNCTION_DECL) for a member function.  */
-  if (current_class_type
-      && ((TREE_CODE (f) == FUNCTION_DECL
-	   && DECL_FUNCTION_MEMBER_P (f))
-	  || (DECL_FUNCTION_TEMPLATE_P (f) 
-	      && DECL_FUNCTION_MEMBER_P (f))))
-    {
-      f = lookup_member (current_class_type, DECL_NAME (f), 
-			 /*protect=*/1, /*want_type=*/false);
-      if (f)
-	fn = f;
-    }
-
-  if (template_id)
-    {
-      if (BASELINK_P (fn))
-	  BASELINK_FUNCTIONS (fn) = build_nt (TEMPLATE_ID_EXPR, 
-					      BASELINK_FUNCTIONS (fn),
-					      template_args);
-      else
-	fn = template_id;
-    }
-
-  return finish_call_expr (fn, args, disallow_virtual);
+  expr = build_function_call (fn, args);
+  if (processing_template_decl && expr != error_mark_node)
+    return build_min (CALL_EXPR, TREE_TYPE (expr), orig_fn, orig_args);
+  return expr;
 }
 
 /* Returns true if ROOT (a namespace, class, or function) encloses
