@@ -1567,7 +1567,8 @@ ra-build.o : ra-build.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TM_P_H) \
 ra-colorize.o : ra-colorize.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TM_P_H) \
     function.h $(REGS_H) hard-reg-set.h $(BASIC_BLOCK_H) df.h output.h ra.h
 ra-debug.o : ra-debug.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H)  insn-config.h \
-   $(RECOG_H) function.h hard-reg-set.h $(BASIC_BLOCK_H) df.h output.h ra.h
+   $(RECOG_H) function.h hard-reg-set.h $(BASIC_BLOCK_H) df.h output.h ra.h \
+   $(TM_P_H)
 ra-rewrite.o : ra-rewrite.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TM_P_H) \
    function.h $(REGS_H) hard-reg-set.h $(BASIC_BLOCK_H) df.h expr.h \
    output.h except.h ra.h reload.h insn-config.h
