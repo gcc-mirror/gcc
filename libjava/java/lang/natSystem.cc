@@ -171,9 +171,14 @@ java::lang::System::arraycopy (jobject src, jint src_offset,
 	dst_elts = (char *) elements ((jdoubleArray) dst);
       dst_elts += size * dst_offset;
 
+#if HAVE_MEMMOVE
       // We don't bother trying memcpy.  It can't be worth the cost of
       // the check.
-      memmove ((void *) dst_elts, (void *) src_elts, count * size);
+      // Don't cast to (void*), as memmove may expect (char*)
+      memmove (dst_elts, src_elts, count * size);
+#else
+      bcopy (src_elts, dst_elts, count * size);
+#endif
     }
   else
     {
