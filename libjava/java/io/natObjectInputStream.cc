@@ -20,6 +20,11 @@ details.  */
 #include <java/lang/reflect/Modifier.h>
 #include <java/lang/reflect/Method.h>
 
+#ifdef DEBUG
+#include <java/lang/System.h>
+#include <java/io/PrintStream.h>
+#endif
+
 jobject
 java::io::ObjectInputStream::allocateObject (jclass klass)
 {
@@ -74,3 +79,39 @@ java::io::ObjectInputStream::getMethod (jclass klass, jstring name,
   return klass->getPrivateMethod (name, arg_types);
 }
 
+#ifdef DEBUG
+void
+java::io::ObjectInputStream::setDump (jboolean dump)
+{
+  java::io::ObjectInputStream::dump = dump;
+}
+
+void
+java::io::ObjectInputStream::dumpElement (jstring msg)
+{
+  if (dump)
+    java::lang::System::out->print (msg);
+}
+
+void
+java::io::ObjectInputStream::dumpElementln (jstring msg)
+{
+  if (dump)
+    java::lang::System::out->println (msg);
+}
+#else
+void
+java::io::ObjectInputStream::setDump (jboolean dump)
+{
+}
+
+void
+java::io::ObjectInputStream::dumpElement (jstring msg)
+{
+}
+
+void
+java::io::ObjectInputStream::dumpElementln (jstring msg)
+{
+}
+#endif
