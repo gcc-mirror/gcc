@@ -1,3 +1,11 @@
+2004-12-25  Marek Michalkiewicz  <marekm@amelek.gda.pl>
+
+	PR target/19059
+	* config/avr/avr.c (avr_mcu_types): Move attiny{13,2313} from avr4
+	to avr2.
+	* config/avr/avr.h (LINK_SPEC): Ditto.
+	* config/avr/t-avr (MULTILIB_MATCHES): Ditto.
+
 2004-12-25  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/19137
