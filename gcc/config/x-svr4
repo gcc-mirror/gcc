@@ -4,3 +4,6 @@
 # bootstrapping.  Do this by defining ALLOCA.
 
 ALLOCA = alloca.o
+
+# See all the declarations.
+FIXPROTO_DEFINES = -D_XOPEN_SOURCE
