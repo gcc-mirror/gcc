@@ -1,3 +1,8 @@
+Fri Feb 12 23:20:54 1999  Michael P. Hayes  <michaelh@ongaonga.chch.cri.nz>
+
+	* loop.c (scan_loop): Call reg_in_basic_block_p before
+	loop_reg_used_before_p.
+
 Thu Feb 11 01:53:10 1999  Jeffrey A Law  (law@cygnus.com)
 
 	Wed Nov 18 22:13:00 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
