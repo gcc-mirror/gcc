@@ -1,6 +1,6 @@
 /* real.c - implementation of REAL_ARITHMETIC, REAL_VALUE_ATOF,
    and support for XFmode IEEE extended real floating point arithmetic.
-   Copyright (C) 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1995 Free Software Foundation, Inc.
    Contributed by Stephen L. Moshier (moshier@world.std.com).
 
 This file is part of GNU CC.
@@ -2957,9 +2957,9 @@ e64toe (pe, y)
 	*p-- = *e++;
     }
 #endif
-  p = yy;
-  q = y;
 #ifdef INFINITY
+  /* Point to the exponent field and check max exponent cases.  */
+  p = &yy[NE - 1];
   if (*p == 0x7fff)
     {
 #ifdef NANS
@@ -2967,7 +2967,9 @@ e64toe (pe, y)
 	{
 	  for (i = 0; i < 4; i++)
 	    {
-	      if (pe[i] != 0)
+	      if ((i != 3 && pe[i] != 0)
+		  /* Anything but 0x8000 here, including 0, is a NaN.  */
+		  || (i == 3 && pe[i] != 0x8000))
 		{
 		  enan (y, (*p & 0x8000) != 0);
 		  return;
@@ -2993,6 +2995,8 @@ e64toe (pe, y)
       return;
     }
 #endif  /* INFINITY */
+  p = yy;
+  q = y;
   for (i = 0; i < NE; i++)
     *q++ = *p++;
 }
@@ -3385,6 +3389,17 @@ toe64 (a, b)
     }
   else
     {
+#ifdef INFINITY
+      if (eiisinf (a))
+	{
+	  /* Intel long double infinity significand.  */
+	  *q-- = 0x8000;
+	  *q-- = 0;
+	  *q-- = 0;
+	  *q = 0;
+	  return;
+	}
+#endif
       for (i = 0; i < 4; i++)
 	*q-- = *p++;
     }
