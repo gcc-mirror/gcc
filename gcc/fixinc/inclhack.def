@@ -597,7 +597,8 @@ fix = {
     hackname  = arm_norcroft_hint;
     select    = "___type p_type";
     files     = "X11/Intrinsic.h";
-    sed      = "s/___type p_type/p_type/";
+    c_fix     = format;
+    c_fix_arg = "p_type";
     test_text = "___type p_type mumble;";
 };
 
@@ -627,8 +628,10 @@ fix = {
     hackname = aux_asm;
     files    = sys/param.h;
     select   = "#ifndef NOINLINE";
-    sed      = "s|#ifndef NOINLINE"
-                "|#if !defined(NOINLINE) \\&\\& !defined(__GNUC__)|";
+
+    c_fix     = format;
+    c_fix_arg = "#if !defined(NOINLINE) && !defined(__GNUC__)";
+
     test_text =
     "#ifndef NOINLINE /* ain't got no inline, so we got it */\n"
     "#endif /* NOINLINE */";
@@ -641,46 +644,35 @@ fix = {
  *  HP/UX 10.20 also has it in curses_colr/curses.h.
  */
 fix = {
-    hackname = avoid_bool;
+    hackname  = avoid_bool_define;
+    files     = curses.h;
+    files     = curses_colr/curses.h;
+    files     = term.h;
+    files     = tinfo.h;
+
+    select    = "#[ \t]*define[ \t]+bool[ \t]";
+
+    c_fix     = format;
+    c_fix_arg = "#ifndef __cplusplus\n%0\n#endif";
+    c_fix_arg = "^[ \t]*#[ \t]*define[ \t]+bool[ \t].*";
+
+    test_text = "# define bool\t char \n";
+};
+
+fix = {
+    hackname = avoid_bool_type;
     files    = curses.h;
     files    = curses_colr/curses.h;
     files    = term.h;
     files    = tinfo.h;
 
-    select   = "char[ \t]+bool|bool[ \t]+char";
-    bypass   = "we must use the C\\+\\+ compiler's type";
+    select    = "^[ \t]*typedef[ \t].*[ \t]bool[ \t]*;";
 
-    sed = "/^#[ \t]*define[ \t][ \t]*bool[ \t][ \t]*char[ \t]*$/i\\\n"
-                "#ifndef __cplusplus\n";
+    c_fix     = format;
+    c_fix_arg = "#ifndef __cplusplus\n%0\n#endif";
+    c_fix_arg = "^[ \t]*typedef[ \t].*[ \t]bool[ \t]*;.*";
 
-    sed = "/^#[ \t]*define[ \t][ \t]*bool[ \t][ \t]*char[ \t]*$/a\\\n"
-                "#endif\n";
-
-    sed = "/^typedef[ \t][ \t]*char[ \t][ \t]*bool[ \t]*;/i\\\n"
-                "#ifndef __cplusplus\n";
-
-    sed = "/^typedef[ \t][ \t]*char[ \t][ \t]*bool[ \t]*;/a\\\n"
-                "#endif\n";
-
-    sed = "/^[ ]*typedef[ \t][ \t]*unsigned char[ \t][ \t]*bool[ \t]*;/i\\\n"
-                "#ifndef __cplusplus\n";
-
-    sed = "/^[ ]*typedef[ \t][ \t]*unsigned char[ \t][ \t]*bool[ \t]*;/a\\\n"
-                "#endif\n";
-
-    sed = "/^typedef[ \t][ \t]*int[ \t][ \t]*bool[ \t]*;/i\\\n"
-                "#ifndef __cplusplus\n";
-
-    sed = "/^typedef[ \t][ \t]*int[ \t][ \t]*bool[ \t]*;/a\\\n"
-                "#endif\n";
-
-    sed = "/^[ ]*typedef[ \t][ \t]*unsigned int[ \t][ \t]*bool[ \t]*;/i\\\n"
-                "#ifndef __cplusplus\n";
-
-    sed = "/^[ ]*typedef[ \t][ \t]*unsigned int[ \t][ \t]*bool[ \t]*;/a\\\n"
-                "#endif\n";
-    test_text = "# define bool\t char \n"
-                "typedef unsigned int\tbool \t; /* bool type */";
+    test_text = "typedef unsigned int\tbool \t; /* bool type */";
 };
 
 
@@ -727,11 +719,12 @@ fix = {
  *  Fix `typedef struct term;' on hppa1.1-hp-hpux9.
  */
 fix = {
-    hackname = bad_struct_term;
-    files  = curses.h;
-    select = "^[ \t]*typedef[ \t]+struct[ \t]+term[ \t]*;";
-    sed    = "s/^[ \t]*typedef[ \t][ \t]*"
-             "\\(struct[ \t][ \t]*term[ \t]*;[ \t]*\\)$/\\1/";
+    hackname  = bad_struct_term;
+    files     = curses.h;
+    select    = "^[ \t]*typedef[ \t]+struct[ \t]+term[ \t]*;";
+    c_fix     = format;
+    c_fix_arg = "struct term;";
+
     test_text = 'typedef struct term;';
 };
 
@@ -741,9 +734,12 @@ fix = {
  *  a mismatched quote not inside a C comment.
  */
 fix = {
-    hackname = badquote;
-    files    = sundev/vuid_event.h;
-    sed      = "s/doesn't/does not/";
+    hackname  = badquote;
+    files     = sundev/vuid_event.h;
+    select    = "doesn't";
+    c_fix     = format;
+    c_fix_arg = "does not";
+
     test_text = "/* doesn't have matched single quotes */";
 };
 
@@ -788,8 +784,11 @@ fix = {
     hackname = broken_cabs;
     files  = "math.h";
     select = '^extern double cabs';
-    sed    = 's/^extern double cabs();//';
-    sed    = 's/^extern double cabs(struct dbl_hypot);//';
+
+    c_fix     = format;
+    c_fix_arg = "";
+    c_fix_arg = "^extern double cabs\\((struct dbl_hypot|)\\);";
+
     test_text = "#ifdef __STDC__\n"
                 "extern double cabs(struct dbl_hypot);\n"
                 "#else\n"
@@ -819,7 +818,7 @@ fix = {
  */
 fix = {
     hackname  = ctrl_quotes_def;
-    select    = "define[ \t]+[A-Z0-9_]+CTRL\\(([a-zA-Z]).*'\\1'";
+    select    = "define[ \t]+[A-Z0-9_]+CTRL\\([a-zA-Z],";
     c_fix     = char_macro_def;
     c_fix_arg = "CTRL";
     test_text = "#define BSD43_CTRL(n, x) (('n'<<8)+x)";
@@ -838,8 +837,10 @@ fix = {
  *  sys/mman.h on HP/UX is not C++ ready,
  *  even though NO_IMPLICIT_EXTERN_C is defined on HP/UX.
  *
- *  rpc/types.h on OSF1/2.0 is not C++ ready, even though NO_IMPLICIT_EXTERN_C
- *  is defined for the alpha.  The problem is the declaration of malloc.
+ *  rpc/types.h on OSF1/2.0 is not C++ ready,
+ *  even though NO_IMPLICIT_EXTERN_C is defined for the alpha.
+ *
+ *  The problem is the declaration of malloc.
  */
 fix = {
     hackname = cxx_unready;
@@ -882,10 +883,13 @@ fix = {
  * Fix these Sun OS files to avoid an invalid identifier in an #ifdef.
  */
 fix = {
-    hackname = ecd_cursor;
-    files  = "sunwindow/win_lock.h";
-    files  = "sunwindow/win_cursor.h";
-    sed    = "s/ecd.cursor/ecd_cursor/";
+    hackname  = ecd_cursor;
+    files     = "sunwindow/win_lock.h";
+    files     = "sunwindow/win_cursor.h";
+    select    = 'ecd\.cursor';
+    c_fix     = format;
+    c_fix_arg = 'ecd_cursor';
+
     test_text = "#ifdef ecd.cursor\n#error bogus\n#endif /* ecd+cursor */";
 };
 
@@ -911,14 +915,18 @@ fix = {
  *    /usr/include/machine/inline.h
  */
 fix = {
-    hackname = hp_inline;
-    files  = sys/spinlock.h;
-    select = 'include.*"\.\./machine/';
-    sed    = "s,\"../machine/inline.h\",<machine/inline.h>,";
-    sed    = "s,\"../machine/psl.h\",<machine/psl.h>,";
-    test_text = '# include "../machine/inline.h"' "\n"
-                '# include "../machine/dontfix.h"' "\n"
-                '# include "../machine/psl.h"';
+    hackname  = hp_inline;
+    files     = sys/spinlock.h;
+    files     = machine/machparam.h;
+    select    = "[ \t]*#[ \t]*include[ \t]+"  '"\.\./machine/';
+
+    c_fix     = format;
+    c_fix_arg = "%1<machine/%2.h>";
+
+    c_fix_arg = "([ \t]*#[ \t]*include[ \t]+)"  '"\.\./machine/'
+                '([a-z]+)\.h"';
+
+    test_text = ' # include "../machine/mumble.h"';
 };
 
 
@@ -929,7 +937,11 @@ fix = {
     hackname  = hp_sysfile;
     files     = sys/file.h;
     select    = "HPUX_SOURCE";
-    sed       = 's/(\.\.\.)/(struct file *, ...)/';
+
+    c_fix     = format;
+    c_fix_arg = "(struct file *, ...)";
+    c_fix_arg = '\(\.\.\.\)';
+
     test_text = "extern void foo(...); /* HPUX_SOURCE - bad varargs */";
 };
 
@@ -955,23 +967,6 @@ fix = {
 
 
 /*
- *  get rid of bogus inline definitions in HP-UX 8.0
- */
-fix = {
-    hackname = hpux8_bogus_inlines;
-    files    = math.h;
-    select   = inline;
-    sed = "s@inline int abs(int [a-z][a-z]*) {.*}"
-           "@extern \"C\" int abs(int);@";
-    sed = "s@inline double abs(double [a-z][a-z]*) {.*}@@";
-    sed = "s@inline int sqr(int [a-z][a-z]*) {.*}@@";
-    sed = "s@inline double sqr(double [a-z][a-z]*) {.*}@@";
-    test_text = "inline int abs(int v) { return (v>=0)?v:-v; }\n"
-                "inline double sqr(double v) { return v**0.5; }";
-};
-
-
-/* 
  * In inttypes.h on HPUX 11, the use of __CONCAT__ in the definition 
  * of UINT32_C has undefined behavior according to ISO/ANSI:
  * the arguments to __CONCAT__ are not macro expanded before the
@@ -998,6 +993,24 @@ fix = {
     "#define UINT32_C(__c)\t__CONCAT__(__CONCAT_U__(__c),l)";
 };
 
+
+/*
+ *  get rid of bogus inline definitions in HP-UX 8.0
+ */
+fix = {
+    hackname = hpux8_bogus_inlines;
+    files    = math.h;
+    select   = inline;
+    sed = "s@inline int abs(int [a-z][a-z]*) {.*}"
+           "@extern \"C\" int abs(int);@";
+    sed = "s@inline double abs(double [a-z][a-z]*) {.*}@@";
+    sed = "s@inline int sqr(int [a-z][a-z]*) {.*}@@";
+    sed = "s@inline double sqr(double [a-z][a-z]*) {.*}@@";
+    test_text = "inline int abs(int v) { return (v>=0)?v:-v; }\n"
+                "inline double sqr(double v) { return v**0.5; }";
+};
+
+
 /*
  *  On Interactive Unix 2.2, certain traditional Unix definitions
  *  (notably getc and putc in stdio.h) are omitted if __STDC__ is
@@ -1021,6 +1034,7 @@ fix = {
                 "\nint foo;\n#endif";
 };
 
+
 /*
  *  Fix various macros used to define ioctl numbers.
  *  The traditional syntax was:
@@ -1040,10 +1054,13 @@ fix = {
  */
 fix = {
     hackname  = io_quotes_def;
-    select    = "define[ \t]+[A-Z0-9_]+IO[A-Z]*\\(([a-zA-Z]).*'\\1'";
+    select    = "define[ \t]+[A-Z0-9_]+IO[A-Z]*\\([a-zA-Z],";
     c_fix     = char_macro_def;
     c_fix_arg = "IO";
-    test_text = "#define BSD43__IOWR(n, x) (('n'<<8)+x)";
+    test_text =
+    "#define BSD43__IOWR(n, x) (('n'<<8)+x)\n"
+    "#define _IOWN(x,y,t)  (_IOC_IN|(((t)&_IOCPARM_MASK)<<16)|('x'<<8)|y)\n"
+    "#define _IO(x,y)      ('x'<<8|y)";
 };
 
 fix = {
@@ -1063,11 +1080,11 @@ fix = {
     hackname  = hpux_maxint;
     files     = sys/param.h;
     select    = "^#[ \t]*define[ \t]*MAXINT[ \t]";
-    sed      = "/^#[ \t]*define[ \t]*MAXINT[ \t]/i\\\n"
-               "#ifndef MAXINT\n";
 
-    sed      = "/^#[ \t]*define[ \t]*MAXINT[ \t]/a\\\n"
-               "#endif\n";
+    c_fix     = format;
+    c_fix_arg = "#ifndef MAXINT\n%0\n#endif";
+    c_fix_arg = "^#[ \t]*define[ \t]*MAXINT[ \t].*";
+
     test_text = '#define MAXINT 0x7FFFFFFF';
 };
 

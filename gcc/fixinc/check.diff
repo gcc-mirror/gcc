@@ -128,13 +128,18 @@
 *** inc/curses.h
 --- res/curses.h
 ***************
-*** 1,16 ****
+*** 1,21 ****
   
   
-  #if defined( AVOID_BOOL_CHECK )
+  #if defined( AVOID_BOOL_DEFINE_CHECK )
   # define bool	 char 
+  
+  #endif  /* AVOID_BOOL_DEFINE_CHECK */
+  
+  
+  #if defined( AVOID_BOOL_TYPE_CHECK )
   typedef unsigned int	bool 	; /* bool type */
-  #endif  /* AVOID_BOOL_CHECK */
+  #endif  /* AVOID_BOOL_TYPE_CHECK */
   
   
   #if defined( BAD_STRUCT_TERM_CHECK )
@@ -145,17 +150,22 @@
   #if defined( LYNX_VOID_INT_CHECK )
 ! # define	void	int 	/* curses foiled again */
   #endif  /* LYNX_VOID_INT_CHECK */
---- 1,20 ----
+--- 1,25 ----
   
   
-  #if defined( AVOID_BOOL_CHECK )
+  #if defined( AVOID_BOOL_DEFINE_CHECK )
 + #ifndef __cplusplus
   # define bool	 char 
 + #endif
+  
+  #endif  /* AVOID_BOOL_DEFINE_CHECK */
+  
+  
+  #if defined( AVOID_BOOL_TYPE_CHECK )
 + #ifndef __cplusplus
   typedef unsigned int	bool 	; /* bool type */
 + #endif
-  #endif  /* AVOID_BOOL_CHECK */
+  #endif  /* AVOID_BOOL_TYPE_CHECK */
   
   
   #if defined( BAD_STRUCT_TERM_CHECK )
@@ -499,7 +509,7 @@
   #if defined( ECD_CURSOR_CHECK )
 ! #ifdef ecd.cursor
   #error bogus
-! #endif /* ecd+cursor */
+  #endif /* ecd+cursor */
   #endif  /* ECD_CURSOR_CHECK */
 --- 1,7 ----
   
@@ -507,7 +517,7 @@
   #if defined( ECD_CURSOR_CHECK )
 ! #ifdef ecd_cursor
   #error bogus
-! #endif /* ecd_cursor */
+  #endif /* ecd+cursor */
   #endif  /* ECD_CURSOR_CHECK */
 *** inc/sym.h
 --- res/sym.h
@@ -645,21 +655,17 @@
 *** inc/sys/spinlock.h
 --- res/sys/spinlock.h
 ***************
-*** 1,7 ****
+*** 1,5 ****
   
   
   #if defined( HP_INLINE_CHECK )
-! # include "../machine/inline.h"
-  # include "../machine/dontfix.h"
-! # include "../machine/psl.h"
+!  # include "../machine/mumble.h"
   #endif  /* HP_INLINE_CHECK */
---- 1,7 ----
+--- 1,5 ----
   
   
   #if defined( HP_INLINE_CHECK )
-! # include <machine/inline.h>
-  # include "../machine/dontfix.h"
-! # include <machine/psl.h>
+!  # include <machine/mumble.h>
   #endif  /* HP_INLINE_CHECK */
 *** inc/sys/stat.h
 --- res/sys/stat.h
@@ -723,7 +729,7 @@
 *** inc/testing.h
 --- res/testing.h
 ***************
-*** 1,33 ****
+*** 1,35 ****
   
   
   #if defined( CTRL_QUOTES_DEF_CHECK )
@@ -738,6 +744,8 @@
   
   #if defined( IO_QUOTES_DEF_CHECK )
 ! #define BSD43__IOWR(n, x) (('n'<<8)+x)
+! #define _IOWN(x,y,t)  (_IOC_IN|(((t)&_IOCPARM_MASK)<<16)|('x'<<8)|y)
+! #define _IO(x,y)      ('x'<<8|y)
   #endif  /* IO_QUOTES_DEF_CHECK */
   
   
@@ -755,7 +763,7 @@
   #define NULL	((void*)0)
   
   #endif  /* UNDEFINE_NULL_CHECK */
---- 1,37 ----
+--- 1,39 ----
   
   
   #if defined( CTRL_QUOTES_DEF_CHECK )
@@ -770,6 +778,8 @@
   
   #if defined( IO_QUOTES_DEF_CHECK )
 ! #define BSD43__IOWR(n, x) ((n<<8)+x)
+! #define _IOWN(x,y,t)  (_IOC_IN|(((t)&_IOCPARM_MASK)<<16)|(x<<8)|y)
+! #define _IO(x,y)      (x<<8|y)
   #endif  /* IO_QUOTES_DEF_CHECK */
   
   
