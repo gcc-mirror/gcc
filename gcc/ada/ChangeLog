@@ -91,8 +91,8 @@
 
 2004-05-24  Eric Botcazou  <ebotcazou@act-europe.fr>
 
-	(tree_transform) <N_Identifier>: Do the dereference directly through
-	the DECL_INITIAL for renamed variables.
+	trans.c (tree_transform) <N_Identifier>: Do the dereference directly
+	through the DECL_INITIAL for renamed variables.
 
 2004-05-24  Arnaud Charlet  <charlet@act-europe.fr>
 
