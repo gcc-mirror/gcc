@@ -1,3 +1,7 @@
+Mon Aug 17 02:03:55 1998  Richard Henderson  <rth@cygnus.com>
+
+	* regclass.c (allocate_reg_info): Respect MIN when clearing data.
+
 Sun Aug 16 17:37:06 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 
 	* config/sparc/sparc.c (ultra_code_from_mask,
