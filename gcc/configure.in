@@ -2689,7 +2689,11 @@ case "$target" in
     AC_MSG_CHECKING(whether the assembler has explicit relocation support)
     if test x$gcc_cv_mips_explicit_relocs = x; then
       gcc_cv_mips_explicit_relocs=no
-      if test x$gcc_cv_as != x; then
+      if test $in_tree_gas = yes; then
+        gcc_GAS_VERSION_GTE_IFELSE(2,14,0,[
+	  gcc_cv_mips_explicit_relocs=yes
+	])
+      elif test x$gcc_cv_as != x; then
 	echo '  lw $4,%gp_rel(foo)($4)' > conftest.s
 	if $gcc_cv_as conftest.s -o conftest.o > /dev/null 2>&1; then
 	  gcc_cv_mips_explicit_relocs=yes

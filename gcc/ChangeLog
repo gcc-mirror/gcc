@@ -1,4 +1,10 @@
 2003-06-09  Richard Sandiford  <rsandifo@redhat.com>
+
+	* configure.in: Assume gas 2.14 and above can handle MIPS relocation
+	operators.
+	* configure: Regenerated.
+
+2003-06-09  Richard Sandiford  <rsandifo@redhat.com>
 	    Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/mips/mips.h (GLOBAL_POINTER_REGNUM): New macro.
