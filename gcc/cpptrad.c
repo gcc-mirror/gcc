@@ -907,6 +907,9 @@ scan_parameters (cpp_reader *pfile, cpp_macro *macro)
       break;
     }
 
+  if (!ok)
+    cpp_error (pfile, CPP_DL_ERROR, "syntax error in macro parameter list");
+
   CUR (pfile->context) = cur + (*cur == ')');
 
   return ok;
@@ -982,14 +985,17 @@ _cpp_create_trad_definition (cpp_reader *pfile, cpp_macro *macro)
   /* Is this a function-like macro?  */
   if (* CUR (context) == '(')
     {
+      bool ok = scan_parameters (pfile, macro);
+
+      /* Remember the params so we can clear NODE_MACRO_ARG flags.  */
+      macro->params = (cpp_hashnode **) BUFF_FRONT (pfile->a_buff);
+
       /* Setting macro to NULL indicates an error occurred, and
 	 prevents unnecessary work in _cpp_scan_out_logical_line.  */
-      if (!scan_parameters (pfile, macro))
+      if (!ok)
 	macro = NULL;
       else
 	{
-	  /* Success.  Commit the parameter array.  */
-	  macro->params = (cpp_hashnode **) BUFF_FRONT (pfile->a_buff);
 	  BUFF_FRONT (pfile->a_buff) = (uchar *) &macro->params[macro->paramc];
 	  macro->fun_like = 1;
 	}

@@ -272,14 +272,17 @@ prepare_directive_trad (cpp_reader *pfile)
 			&& ! (pfile->directive->flags & EXPAND));
       bool was_skipping = pfile->state.skipping;
 
-      pfile->state.skipping = false;
       pfile->state.in_expression = (pfile->directive == &dtable[T_IF]
 				    || pfile->directive == &dtable[T_ELIF]);
+      if (pfile->state.in_expression)
+	pfile->state.skipping = false;
+
       if (no_expand)
 	pfile->state.prevent_expansion++;
       _cpp_scan_out_logical_line (pfile, NULL);
       if (no_expand)
 	pfile->state.prevent_expansion--;
+
       pfile->state.skipping = was_skipping;
       _cpp_overlay_buffer (pfile, pfile->out.base,
 			   pfile->out.cur - pfile->out.base);
@@ -520,22 +523,26 @@ do_undef (cpp_reader *pfile)
 {
   cpp_hashnode *node = lex_macro_node (pfile);
 
-  /* 6.10.3.5 paragraph 2: [#undef] is ignored if the specified identifier
-     is not currently defined as a macro name.  */
-  if (node && node->type == NT_MACRO)
+  if (node)
     {
       if (pfile->cb.undef)
 	pfile->cb.undef (pfile, pfile->directive_line, node);
 
-      if (node->flags & NODE_WARN)
-	cpp_error (pfile, CPP_DL_WARNING,
-		   "undefining \"%s\"", NODE_NAME (node));
+      /* 6.10.3.5 paragraph 2: [#undef] is ignored if the specified
+	 identifier is not currently defined as a macro name.  */
+      if (node->type == NT_MACRO)
+	{
+	  if (node->flags & NODE_WARN)
+	    cpp_error (pfile, CPP_DL_WARNING,
+		       "undefining \"%s\"", NODE_NAME (node));
 
-      if (CPP_OPTION (pfile, warn_unused_macros))
-	_cpp_warn_if_unused_macro (pfile, node, NULL);
+	  if (CPP_OPTION (pfile, warn_unused_macros))
+	    _cpp_warn_if_unused_macro (pfile, node, NULL);
 
-      _cpp_free_definition (node);
+	  _cpp_free_definition (node);
+	}
     }
+
   check_eol (pfile);
 }
 
