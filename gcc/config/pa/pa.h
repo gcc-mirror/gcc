@@ -561,6 +561,9 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
 #define INDEX_REG_CLASS GENERAL_REGS
 #define BASE_REG_CLASS GENERAL_REGS
 
+#define FP_REG_CLASS_P(CLASS) \
+  (CLASS == FP_REGS || CLASS == SNAKE_FP_REGS || CLASS == HI_SNAKE_FP_REGS)
+
 /* Get reg_class from a letter such as appears in the machine description.  */
 
 #define REG_CLASS_FROM_LETTER(C) \
@@ -1479,16 +1482,20 @@ while (0)
   (GET_CODE (RTX) == REG ? 1 : hppa_address_cost (RTX))
 
 /* Compute extra cost of moving data between one register class
-   and another.  */
+   and another.
+
+   Make moves from SAR so expensive they should never happen.
+
+   Copies involving a FP register and a non-FP register are relatively 
+   expensive because they must go through memory.
+
+   Other copies are reasonably cheap.  */
 #define REGISTER_MOVE_COST(CLASS1, CLASS2) \
- ((((CLASS1 == FP_REGS || CLASS1 == SNAKE_FP_REGS	\
-     || CLASS1 == HI_SNAKE_FP_REGS)			\
-    && (CLASS2 == R1_REGS || CLASS2 == GENERAL_REGS	\
-	|| CLASS2 == SHIFT_REGS))			\
-   || ((CLASS1 == R1_REGS || CLASS1 == GENERAL_REGS	\
-	|| CLASS1 == SHIFT_REGS)			\
-       && (CLASS2 == FP_REGS || CLASS2 == SNAKE_FP_REGS	\
-	   || CLASS2 == HI_SNAKE_FP_REGS))) ? 16 : 2)	
+ (CLASS1 == SHIFT_REGS ? 0xffff					\
+  : FP_REG_CLASS_P (CLASS1) && ! FP_REG_CLASS_P (CLASS2) ? 16	\
+  : FP_REG_CLASS_P (CLASS2) && ! FP_REG_CLASS_P (CLASS1) ? 16	\
+  : 2)
+
 
 /* Provide the costs of a rtl expression.  This is in the body of a
    switch on CODE.  The purpose for the cost of MULT is to encourage
