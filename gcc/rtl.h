@@ -1041,6 +1041,7 @@ extern int computed_jump_p		PROTO((rtx));
 typedef int (*rtx_function)             PROTO((rtx *, void *));
 extern int for_each_rtx                 PROTO((rtx *, rtx_function, void *));
 extern rtx regno_use_in			PROTO((int, rtx));
+extern int auto_inc_p			PROTO((rtx));
 
 /* flow.c */
 

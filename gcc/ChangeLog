@@ -1,3 +1,11 @@
+Mon Mar 15 22:50:18 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* rtlanal.c (auto_inc_p): New function.
+        * rtl.h (auto_inc_p): Prototype it.
+	* reload1.c (add_auto_inc_notes): New function.
+	(reload): Strip REG_INC notes and call add_auto_inc_notes
+	for each insn to restore them correctly.
+
 1999-03-15  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* fixinc/Makefile.in (procopen.o): List the actual
