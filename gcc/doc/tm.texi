@@ -2550,9 +2550,9 @@ A C expression that is true if, for a register in
 @code{CLASS_CANNOT_CHANGE_MODE}, the requested mode punning is invalid.
 
 For the example, loading 32-bit integer or floating-point objects into
-floating-point registers on the Alpha extends them to 64-bits.
+floating-point registers on the Alpha extends them to 64 bits.
 Therefore loading a 64-bit object and then storing it as a 32-bit object
-does not store the low-order 32-bits, as would be the case for a normal
+does not store the low-order 32 bits, as would be the case for a normal
 register.  Therefore, @file{alpha.h} defines @code{CLASS_CANNOT_CHANGE_MODE}
 as @code{FLOAT_REGS} and @code{CLASS_CANNOT_CHANGE_MODE_P} restricts
 mode changes to same-size modes.
