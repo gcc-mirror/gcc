@@ -2245,16 +2245,16 @@ extern struct rtx_def *sparc_builtin_saveregs ();
    has been allocated, which happens in local-alloc.c.  */
 
 #define REGNO_OK_FOR_INDEX_P(REGNO) \
-((REGNO) < 32 || (unsigned) reg_renumber[REGNO] < 32)
+((REGNO) < 32 || (unsigned) reg_renumber[REGNO] < 32U)
 #define REGNO_OK_FOR_BASE_P(REGNO) \
-((REGNO) < 32 || (unsigned) reg_renumber[REGNO] < 32)
+((REGNO) < 32 || (unsigned) reg_renumber[REGNO] < 32U)
 #define REGNO_OK_FOR_FP_P(REGNO) \
-  (((unsigned) (REGNO) - 32 < (TARGET_V9 ? 64 : 32)) \
-   || ((unsigned) reg_renumber[REGNO] - 32 < (TARGET_V9 ? 64 : 32)))
+  (((unsigned) (REGNO) - 32 < (TARGET_V9 ? 64U : 32U)) \
+   || ((unsigned) reg_renumber[REGNO] - 32 < (TARGET_V9 ? 64U : 32U)))
 #define REGNO_OK_FOR_CCFP_P(REGNO) \
  (TARGET_V9 \
-  && (((unsigned) (REGNO) - 96 < 4) \
-      || ((unsigned) reg_renumber[REGNO] - 96 < 4)))
+  && (((unsigned) (REGNO) - 96 < 4U) \
+      || ((unsigned) reg_renumber[REGNO] - 96 < 4U)))
 
 /* Now macros that check whether X is a register and also,
    strictly, whether it is in a specified class.
