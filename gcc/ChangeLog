@@ -1,3 +1,14 @@
+2004-06-27  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (fold) <BIT_IOR_EXPR>: Optimize ~X|X and X|~X as -1.
+	<BIT_XOR_EXPR>: Optimize ~X|X and X|~X as -1.
+	<BIT_AND_EXPR>: Optimize ~X&X and X&~X as 0.
+	<TRUTH_AND_EXPR, TRUTH_ANDIF_EXPR>: Optimize !X&&X and X&&!X as false.
+        <TRUTH_OR_EXPR, TRUTH_ORIF_EXPR>: Optimize !X||X and !X||X as true.
+	<TRUTH_XOR_EXPR>: Optimize !X^X and X^X! as true.  Now that
+	TRUTH_XOR_EXPR is a commutative tree code, don't test whether arg0
+	is a constant.
+
 2004-06-26  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR 13334
