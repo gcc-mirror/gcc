@@ -1004,7 +1004,7 @@ branch_prob (void)
 			{
 		          expanded_location s;
 		          NOTE_EXPANDED_LOCATION (s, insn);
-			  output_location (s.file, NOTE_LINE_NUMBER (insn), &offset, bb);
+			  output_location (s.file, s.line, &offset, bb);
 			}
 		    }
 		  insn = NEXT_INSN (insn);
