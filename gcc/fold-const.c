@@ -117,7 +117,7 @@ static tree fold_range_test (tree);
 static tree fold_cond_expr_with_comparison (tree, tree, tree, tree);
 static tree unextend (tree, int, int, tree);
 static tree fold_truthop (enum tree_code, tree, tree, tree);
-static tree optimize_minmax_comparison (tree);
+static tree optimize_minmax_comparison (enum tree_code, tree, tree, tree);
 static tree extract_muldiv (tree, tree, enum tree_code, tree);
 static tree extract_muldiv_1 (tree, tree, enum tree_code, tree);
 static int multiple_of_p (tree, tree, tree);
@@ -4959,12 +4959,11 @@ fold_truthop (enum tree_code code, tree truth_type, tree lhs, tree rhs)
    constant.  */
 
 static tree
-optimize_minmax_comparison (tree t)
+optimize_minmax_comparison (enum tree_code code, tree type, tree op0, tree op1)
 {
-  tree type = TREE_TYPE (t);
-  tree arg0 = TREE_OPERAND (t, 0);
+  tree arg0 = op0;
   enum tree_code op_code;
-  tree comp_const = TREE_OPERAND (t, 1);
+  tree comp_const = op1;
   tree minmax_const;
   int consts_equal, consts_lt;
   tree inner;
@@ -4983,24 +4982,33 @@ optimize_minmax_comparison (tree t)
       || TREE_CONSTANT_OVERFLOW (comp_const)
       || TREE_CODE (minmax_const) != INTEGER_CST
       || TREE_CONSTANT_OVERFLOW (minmax_const))
-    return t;
+    return NULL_TREE;
 
   /* Now handle all the various comparison codes.  We only handle EQ_EXPR
      and GT_EXPR, doing the rest with recursive calls using logical
      simplifications.  */
-  switch (TREE_CODE (t))
+  switch (code)
     {
     case NE_EXPR:  case LT_EXPR:  case LE_EXPR:
-      return
-	invert_truthvalue (optimize_minmax_comparison (invert_truthvalue (t)));
+      {
+	/* FIXME: We should be able to invert code without building a
+	   scratch tree node, but doing so would require us to
+	   duplicate a part of invert_truthvalue here.  */
+	tree tem = invert_truthvalue (build2 (code, type, op0, op1));
+	tem = optimize_minmax_comparison (TREE_CODE (tem),
+					  TREE_TYPE (tem),
+					  TREE_OPERAND (tem, 0),
+					  TREE_OPERAND (tem, 1));
+	return invert_truthvalue (tem);
+      }
 
     case GE_EXPR:
       return
 	fold (build2 (TRUTH_ORIF_EXPR, type,
 		      optimize_minmax_comparison
-		      (build2 (EQ_EXPR, type, arg0, comp_const)),
+		      (EQ_EXPR, type, arg0, comp_const),
 		      optimize_minmax_comparison
-		      (build2 (GT_EXPR, type, arg0, comp_const))));
+		      (GT_EXPR, type, arg0, comp_const)));
 
     case EQ_EXPR:
       if (op_code == MAX_EXPR && consts_equal)
@@ -5047,7 +5055,7 @@ optimize_minmax_comparison (tree t)
 	return fold (build2 (GT_EXPR, type, inner, comp_const));
 
     default:
-      return t;
+      return NULL_TREE;
     }
 }
 
@@ -9142,7 +9150,13 @@ fold_binary (tree expr)
 	       && (TREE_CODE (arg0) == MIN_EXPR
 		   || TREE_CODE (arg0) == MAX_EXPR)
 	       && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST)
-	return optimize_minmax_comparison (t);
+	{
+	  tem = optimize_minmax_comparison (code, type, op0, op1);
+	  if (tem)
+	    return tem;
+
+	  return t;
+	}
 
       /* If we are comparing an ABS_EXPR with a constant, we can
 	 convert all the cases into explicit comparisons, but they may
