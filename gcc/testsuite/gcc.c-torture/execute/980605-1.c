@@ -45,6 +45,8 @@ getval (void)
   return x++;
 }
 
+char buf[10];
+
 void
 f ()
 {
@@ -64,7 +66,7 @@ f ()
 
   k = f2 (17.0);
 
-  printf ("%d\n", a + b + c + d + e + f + g + h + i + j + k);
+  sprintf (buf, "%d\n", a + b + c + d + e + f + g + h + i + j + k);
   if (a + b + c + d + e + f + g + h + i + j + k != 227)
     abort ();
 }

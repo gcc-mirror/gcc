@@ -1,3 +1,10 @@
+Fri Mar 12 16:17:28 1999  Jim Wilson  <wilson@cygnus.com>
+
+	* execute/970312-1.c, execute/980605-1.c (f): Change printf to sprintf.
+	* execute/bf-sign-2.c (struct X): Add u15 field.
+	(main): Add check for u15.  Conditionalize u31 check depending on
+	whether ints are <32 bits or >=32 bits.
+	
 1999-03-01 Zack Weinberg  <zack@rabi.columbia.edu>
 
 	* noncompile/noncompile.exp (951025-1.c): Accept an error
