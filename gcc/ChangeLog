@@ -1,3 +1,11 @@
+2002-03-06  Ulrich Weigand  <uweigand@de.ibm.com>
+
+        * reload1.c (reload): Unshare all rtl after reload is done.
+
+	* simplify-rtx.c (simplify_plus_minus): Do not abort, 
+	but simply fail if the expression is too complex to simplify.
+	(simplify_gen_binary): Handle simplify_plus_minus failures.
+
 Wed Mar  6 20:32:09 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* toplev.c (rest_of_compilation): Do jump threading before SSA path;
