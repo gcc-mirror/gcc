@@ -125,7 +125,7 @@ _U_Qfgt
 	; Load the additional argument and call the comparison routine.
 	;
 	bl _U_Qfcmp,%r2
-	ldi 23,%r24
+	ldi 17,%r24
 
 	;
 	; The return from _U_Qfcmp is the masked C bit from the FP
@@ -162,7 +162,7 @@ _U_Qfge
 	; Load the additional argument and call the comparison routine.
 	;
 	bl _U_Qfcmp,%r2
-	ldi 23,%r24
+	ldi 21,%r24
 
 	;
 	; The return from _U_Qfcmp is the masked C bit from the FP
