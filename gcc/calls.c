@@ -3695,7 +3695,7 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
 	    {
 	      tree type = type_for_mode (mode, 0);
 
-	      slot = gen_rtx_MEM (Pmode,
+	      slot = gen_rtx_MEM (mode,
 				  expand_expr (build1 (ADDR_EXPR,
 						       build_pointer_type
 						       (type),
