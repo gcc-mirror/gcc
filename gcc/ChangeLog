@@ -1,3 +1,8 @@
+2003-12-01  James E Wilson  <wilson@specifixinc.com>
+
+	* config/ia64/ia64.h (FUNCTION_ARG_REGNO_P): Use AR_REG_FIRST not
+	GR_ARG_FIRST.
+
 2003-12-01  Zack Weinberg  <zack@codesourcery.com>
 
 	* common.opt: Remove -fgnu-linker.
