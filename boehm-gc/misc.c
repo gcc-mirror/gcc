@@ -499,6 +499,10 @@ void GC_init_inner()
 #   ifdef PRINTSTATS
       GC_print_stats = 1;
 #   endif
+#   if defined(MSWIN32) || defined(MSWINCE)
+	InitializeCriticalSection(&GC_write_cs);
+#   endif
+
     if (0 != GETENV("GC_PRINT_STATS")) {
       GC_print_stats = 1;
     } 
@@ -536,9 +540,6 @@ void GC_init_inner()
     if (ALIGNMENT > GC_DS_TAGS && EXTRA_BYTES != 0) {
       GC_obj_kinds[NORMAL].ok_descriptor = ((word)(-ALIGNMENT) | GC_DS_LENGTH);
     }
-#   if defined(MSWIN32) || defined(MSWINCE)
-	InitializeCriticalSection(&GC_write_cs);
-#   endif
     GC_setpagesize();
     GC_exclude_static_roots(beginGC_arrays, endGC_arrays);
     GC_exclude_static_roots(beginGC_obj_kinds, endGC_obj_kinds);

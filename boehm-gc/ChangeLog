@@ -1,3 +1,10 @@
+2002-03-15  Anthony Green  <green@redhat.com>
+
+	* misc.c (GC_init_inner): Initialize GC_write_cs before use.
+	* configure.in: Disable use of getenv for win32 targets (some of
+	which have broken implementations).
+	* configure: Rebuilt.
+
 2002-03-12  Adam Megacz  <adam@xwt.org>
 
         * dyn_load.c: Renamed GC_win32s to GC_no_win32_dlls.

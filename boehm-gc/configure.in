@@ -109,6 +109,7 @@ case "$THREADS" in
     ;;
  win32)
     AC_DEFINE(GC_WIN32_THREADS)
+    AC_DEFINE(NO_GETENV)
     ;;
  decosf1 | irix | mach | os2 | solaris | dce | vxworks)
     AC_MSG_ERROR(thread package $THREADS not yet supported)
