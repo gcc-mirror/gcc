@@ -55,7 +55,6 @@
 #undef _G_USING_THUNKS
 #define _G_USING_THUNKS 0
 
-#define __glibcpp_plain_char_is_signed false
 #define __glibcpp_long_double_bits 64
 
 #if !defined(_AIX51) || !defined(__64BIT__)
