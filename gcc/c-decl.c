@@ -5380,7 +5380,7 @@ parmlist_tags_warning ()
       enum tree_code code = TREE_CODE (TREE_VALUE (elt));
       /* An anonymous union parm type is meaningful as a GNU extension.
 	 So don't warn for that.  */
-      if (code == UNION_TYPE && !pedantic)
+      if (code == UNION_TYPE && TREE_PURPOSE (elt) == 0 && !pedantic)
 	continue;
       if (TREE_PURPOSE (elt) != 0)
 	warning ("`%s %s' declared inside parameter list",
