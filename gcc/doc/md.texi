@@ -5448,18 +5448,18 @@ generated from the old description.  Furthermore, its speed is not dependent
 on processor complexity.  The instruction issue is possible if there is
 a transition from one automaton state to another one.
 
-You can use any model to describe processor pipeline characteristics
-or even a mix of them.  You could use the old description for some
-processor submodels and the @acronym{DFA}-based one for the rest
+You can use either model to describe processor pipeline
+characteristics or even mix them.  You could use the old description
+for some processor submodels and the @acronym{DFA}-based one for other
 processor submodels.
 
-In general, the usage of the automaton based description is more
-preferable.  Its model is more rich.  It permits to describe more
-accurately pipeline characteristics of processors which results in
-improving code quality (although sometimes only on several percent
-fractions).  It will be also used as an infrastructure to implement
-sophisticated and practical insn scheduling which will try many
-instruction sequences to choose the best one.
+In general, using the automaton based description is preferred.  Its
+model is richer and makes it possible to more accurately describe
+pipeline characteristics of processors, which results in improved
+code quality (although sometimes only marginally).  It will also be
+used as an infrastructure to implement sophisticated and practical
+instruction scheduling which will try many instruction sequences to
+choose the best one.
 
 
 @menu
@@ -5687,7 +5687,7 @@ is negative, the cost is considered to be zero).  You can always
 change the default costs for any description by using the target hook
 @code{TARGET_SCHED_ADJUST_COST} (@pxref{Scheduling}).
 
-@var{insn-names} is a string giving the internal name of the insn.  The
+@var{insn-name} is a string giving the internal name of the insn.  The
 internal names are used in constructions @code{define_bypass} and in
 the automaton description file generated for debugging.  The internal
 name has nothing in common with the names in @code{define_insn}.  It is a
@@ -5773,7 +5773,7 @@ the common part by the following construction
 @var{reservation-name} is a string giving name of @var{regexp}.
 Functional unit names and reservation names are in the same name
 space.  So the reservation names should be different from the
-functional unit names and can not be reserved name @samp{nothing}.
+functional unit names and can not be the reserved name @samp{nothing}.
 
 @findex define_bypass
 @cindex instruction latency time
@@ -5805,10 +5805,10 @@ of insn @samp{store} (not a stored value).
 @findex final_absence_set
 @cindex VLIW
 @cindex RISC
-Usually the following three constructions are used to describe
-@acronym{VLIW} processors (more correctly to describe a placement of
-small insns into @acronym{VLIW} insn slots).  Although they can be
-used for @acronym{RISC} processors too.
+The following five constructions are usually used to describe
+@acronym{VLIW} processors, or more precisely, to describe a placement
+of small instructions into @acronym{VLIW} instruction slots.  They
+can be used for @acronym{RISC} processors, too.
 
 @smallexample
 (exclusion_set @var{unit-names} @var{unit-names})

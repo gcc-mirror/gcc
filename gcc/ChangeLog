@@ -1,3 +1,7 @@
+2003-06-03  Ben Elliston  <bje@wasabisystems.com>
+
+	* doc/md.texi (Processor pipeline description): Improve wording.
+
 2003-06-03  Neil Booth  <neil@daikokuya.co.uk>
 
 	* c-opts.c (c_common_handle_option): New, pulled out of
@@ -24,7 +28,7 @@
 	(FUNCTION_ARG_1): Break out of:
 	(FUNCTION_ARG).  Use OLD_ARG_MODE.
 
-2003-04-16  Kazuhiro Inaoka  <inaoka.kazuhiro@renesas.com>
+2003-06-02  Kazuhiro Inaoka  <inaoka.kazuhiro@renesas.com>
 
         * gcc/config.gcc Add support multilib parts for m32rx processor.
 
