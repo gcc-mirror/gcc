@@ -1,3 +1,20 @@
+2001-05-02  Geoff Keating  <geoffk@redhat.com>
+
+	* config/rs6000/rs6000.md (ctrsi_internal1, ctrsi_internal2,
+	ctrsi_internal3, ctrsi_internal4, ctrsi_internal5,
+	ctrsi_internal6, ctrdi_internal1, ctrdi_internal2,
+	ctrdi_internal3, ctrdi_internal4, ctrdi_internal5,
+	ctrdi_internal6): In the short-branch case, this insn is only 4
+	bytes long.  Reported by Reza Yazdani <reza@apple.com>.
+
+	* config/rs6000/rs6000.c (rs6000_float_const): Remove warning.
+	(setup_incoming_varargs): Remove warning.
+
+	* config/rs6000/rs6000.c (validate_condition_mode): When
+	flag_fast_math, allow floating-point conditionals to be reversed.
+	(rs6000_generate_compare): When flag_fast_math, don't generate
+	cror operations for FP conditionals.
+
 2001-05-02  Dale Johannesen  <dalej@apple.com>
 
 	* config/rs6000/rs6000.h (RS6000_ARG_SIZE): Remove unused NAMED

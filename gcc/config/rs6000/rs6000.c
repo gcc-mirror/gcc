@@ -471,7 +471,8 @@ rs6000_float_const (string, mode)
      const char *string;
      enum machine_mode mode;
 {
-  REAL_VALUE_TYPE value = REAL_VALUE_ATOF (string, mode);
+  REAL_VALUE_TYPE value;
+  value = REAL_VALUE_ATOF (string, mode);
   return immed_real_const_1 (value, mode);
 }
 
@@ -2196,7 +2197,7 @@ setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
 {
   CUMULATIVE_ARGS next_cum;
   int reg_size = TARGET_32BIT ? 4 : 8;
-  rtx save_area, mem;
+  rtx save_area = NULL_RTX, mem;
   int first_reg_offset, set;
   tree fntype;
   int stdarg_p;
@@ -3226,8 +3227,9 @@ validate_condition_mode (code, mode)
 	  || code == UNGE || code == UNLE))
     abort();
   
-  /* These should never be generated.  */
+  /* These should never be generated except for fast_math.  */
   if (mode == CCFPmode
+      && ! flag_fast_math
       && (code == LE || code == GE
 	  || code == UNEQ || code == LTGT
 	  || code == UNGT || code == UNLT))
@@ -4440,8 +4442,10 @@ rs6000_generate_compare (code)
 					   rs6000_compare_op0, 
 					   rs6000_compare_op1)));
   
-  /* Some kinds of FP comparisons need an OR operation.  */
+  /* Some kinds of FP comparisons need an OR operation;
+     except that for fast_math we don't bother.  */
   if (rs6000_compare_fp_p
+      && ! flag_fast_math
       && (code == LE || code == GE
 	  || code == UNEQ || code == LTGT
 	  || code == UNGT || code == UNLT))
