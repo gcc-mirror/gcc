@@ -62,10 +62,10 @@ int c_lex_string_translate = 1;
 
 static tree interpret_integer (const cpp_token *, unsigned int);
 static tree interpret_float (const cpp_token *, unsigned int);
-static enum integer_type_kind
-  narrowest_unsigned_type (tree, unsigned int);
-static enum integer_type_kind
-  narrowest_signed_type (tree, unsigned int);
+static enum integer_type_kind narrowest_unsigned_type
+	(unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT, unsigned int);
+static enum integer_type_kind narrowest_signed_type
+	(unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT, unsigned int);
 static enum cpp_ttype lex_string (const cpp_token *, tree *, bool);
 static tree lex_charconst (const cpp_token *);
 static void update_header_times (const char *);
@@ -461,10 +461,13 @@ c_lex (tree *value)
 }
 
 /* Returns the narrowest C-visible unsigned type, starting with the
-   minimum specified by FLAGS, that can fit VALUE, or itk_none if
+   minimum specified by FLAGS, that can fit HIGH:LOW, or itk_none if
    there isn't one.  */
+
 static enum integer_type_kind
-narrowest_unsigned_type (tree value, unsigned int flags)
+narrowest_unsigned_type (unsigned HOST_WIDE_INT low,
+			 unsigned HOST_WIDE_INT high,
+			 unsigned int flags)
 {
   enum integer_type_kind itk;
 
@@ -475,20 +478,23 @@ narrowest_unsigned_type (tree value, unsigned int flags)
   else
     itk = itk_unsigned_long_long;
 
-  /* int_fits_type_p must think the type of its first argument is
-     wider than its second argument, or it won't do the proper check.  */
-  TREE_TYPE (value) = widest_unsigned_literal_type_node;
-
   for (; itk < itk_none; itk += 2 /* skip unsigned types */)
-    if (int_fits_type_p (value, integer_types[itk]))
-      return itk;
+    {
+      tree upper = TYPE_MAX_VALUE (integer_types[itk]);
+
+      if ((unsigned HOST_WIDE_INT)TREE_INT_CST_HIGH (upper) > high
+	  || ((unsigned HOST_WIDE_INT)TREE_INT_CST_HIGH (upper) == high
+	      && TREE_INT_CST_LOW (upper) >= low))
+	return itk;
+    }
 
   return itk_none;
 }
 
 /* Ditto, but narrowest signed type.  */
 static enum integer_type_kind
-narrowest_signed_type (tree value, unsigned int flags)
+narrowest_signed_type (unsigned HOST_WIDE_INT low,
+		       unsigned HOST_WIDE_INT high, unsigned int flags)
 {
   enum integer_type_kind itk;
 
@@ -499,13 +505,16 @@ narrowest_signed_type (tree value, unsigned int flags)
   else
     itk = itk_long_long;
 
-  /* int_fits_type_p must think the type of its first argument is
-     wider than its second argument, or it won't do the proper check.  */
-  TREE_TYPE (value) = widest_unsigned_literal_type_node;
 
   for (; itk < itk_none; itk += 2 /* skip signed types */)
-    if (int_fits_type_p (value, integer_types[itk]))
-      return itk;
+    {
+      tree upper = TYPE_MAX_VALUE (integer_types[itk]);
+      
+      if ((unsigned HOST_WIDE_INT)TREE_INT_CST_HIGH (upper) > high
+	  || ((unsigned HOST_WIDE_INT)TREE_INT_CST_HIGH (upper) == high
+	      && TREE_INT_CST_LOW (upper) >= low))
+	return itk;
+    }
 
   return itk_none;
 }
@@ -521,18 +530,19 @@ interpret_integer (const cpp_token *token, unsigned int flags)
 
   integer = cpp_interpret_integer (parse_in, token, flags);
   integer = cpp_num_sign_extend (integer, options->precision);
-  value = build_int_2 (integer.low, integer.high);
 
   /* The type of a constant with a U suffix is straightforward.  */
   if (flags & CPP_N_UNSIGNED)
-    itk = narrowest_unsigned_type (value, flags);
+    itk = narrowest_unsigned_type (integer.low, integer.high, flags);
   else
     {
       /* The type of a potentially-signed integer constant varies
 	 depending on the base it's in, the standard in use, and the
 	 length suffixes.  */
-      enum integer_type_kind itk_u = narrowest_unsigned_type (value, flags);
-      enum integer_type_kind itk_s = narrowest_signed_type (value, flags);
+      enum integer_type_kind itk_u
+	= narrowest_unsigned_type (integer.low, integer.high, flags);
+      enum integer_type_kind itk_s
+	= narrowest_signed_type (integer.low, integer.high, flags);
 
       /* In both C89 and C99, octal and hex constants may be signed or
 	 unsigned, whichever fits tighter.  We do not warn about this
@@ -578,11 +588,13 @@ interpret_integer (const cpp_token *token, unsigned int flags)
     pedwarn ("integer constant is too large for \"%s\" type",
 	     (flags & CPP_N_UNSIGNED) ? "unsigned long" : "long");
 
+  value = build_int_2 (integer.low, integer.high);
   TREE_TYPE (value) = type;
 
   /* Convert imaginary to a complex type.  */
   if (flags & CPP_N_IMAGINARY)
-    value = build_complex (NULL_TREE, convert (type, integer_zero_node), value);
+    value = build_complex (NULL_TREE,
+			   convert (type, integer_zero_node), value);
 
   return value;
 }
