@@ -26,7 +26,6 @@
 
 with ALI;         use ALI;
 with Binde;       use Binde;
-with Butil;       use Butil;
 with Casing;      use Casing;
 with Fname;       use Fname;
 with GNAT.OS_Lib; use GNAT.OS_Lib;
@@ -1203,7 +1202,7 @@ package body Bindgen is
 
       for J in Elab_Order.First .. Elab_Order.Last loop
          Set_String ("   --  ");
-         Get_Unit_Name_String (Units.Table (Elab_Order.Table (J)).Uname);
+         Get_Name_String (Units.Table (Elab_Order.Table (J)).Uname);
          Set_Name_Buffer;
          Write_Statement_Buffer;
       end loop;
@@ -1221,7 +1220,7 @@ package body Bindgen is
       WBI ("/* BEGIN ELABORATION ORDER");
 
       for J in Elab_Order.First .. Elab_Order.Last loop
-         Get_Unit_Name_String (Units.Table (Elab_Order.Table (J)).Uname);
+         Get_Name_String (Units.Table (Elab_Order.Table (J)).Uname);
          Set_Name_Buffer;
          Write_Statement_Buffer;
       end loop;
