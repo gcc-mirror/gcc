@@ -3295,14 +3295,17 @@ propagate_block (old, first, last, significant, bnum, flags)
 
 	  /* We almost certainly don't want to delete prologue or epilogue
 	     instructions.  Warn about probable compiler losage.  */
-	  if ((flags & PROP_KILL_DEAD_CODE)
-	      && insn_is_dead
+	  if (insn_is_dead
 	      && reload_completed
 	      && (HAVE_epilogue || HAVE_prologue)
 	      && prologue_epilogue_contains (insn))
 	    {
-	      warning ("ICE: would have deleted prologue/epilogue insn");
-	      debug_rtx (insn);
+	      if (flags & PROP_KILL_DEAD_CODE)
+	        { 
+	      	  warning ("ICE: would have deleted prologue/epilogue insn");
+	      	  if (!inhibit_warnings)
+	  	    debug_rtx (insn);
+	        }
 	      libcall_is_dead = insn_is_dead = 0;
 	    }
 
