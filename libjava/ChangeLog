@@ -1,3 +1,7 @@
+2001-01-14  Mark Wielaard  <mark@klomp.org>
+	* java/net/URLDecoder.java: Thanks Edgar Villanueva (edgarvil@home.com)
+	(decode): Merge comments with Classpath, don't throw Exception
+
 2001-01-12  Tom Tromey  <tromey@redhat.com>
 
 	* gnu/awt/gtk/natGtkComponentPeer.cc (getLocationOnScreen):
