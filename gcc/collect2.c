@@ -402,7 +402,7 @@ is_ctor_dtor (s)
 #endif
 #else
     { "GLOBAL_$I$", sizeof ("GLOBAL_$I$")-1, 1, 0 },
-    { "GLOBAL_$D$", sizeof ("GLOBAL_$I$")-1, 2, 0 },
+    { "GLOBAL_$D$", sizeof ("GLOBAL_$D$")-1, 2, 0 },
 #endif
 #ifdef CFRONT_LOSSAGE /* Don't collect cfront initialization functions.
 			 cfront has its own linker procedure to collect them;
