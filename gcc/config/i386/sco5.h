@@ -573,12 +573,11 @@ do {									\
   ((TARGET_ELF) ? DWARF_DEBUG: SDB_DEBUG)
 
 #undef EXTRA_SECTIONS
-#define EXTRA_SECTIONS in_const, in_bss, in_init, in_fini, in_ctors, in_dtors
+#define EXTRA_SECTIONS in_const, in_init, in_fini, in_ctors, in_dtors
 
 #undef EXTRA_SECTION_FUNCTIONS
 #define EXTRA_SECTION_FUNCTIONS						\
   CONST_SECTION_FUNCTION						\
-  BSS_SECTION_FUNCTION							\
   INIT_SECTION_FUNCTION							\
   FINI_SECTION_FUNCTION							\
   CTORS_SECTION_FUNCTION						\
@@ -608,18 +607,6 @@ fini_section ()								\
     {									\
       fprintf (asm_out_file, "%s\n", FINI_SECTION_ASM_OP);		\
       in_section = in_fini;						\
-    }									\
-}
-
-#undef BSS_SECTION_FUNCTION
-#define BSS_SECTION_FUNCTION						\
-void									\
-bss_section ()								\
-{									\
-  if (in_section != in_bss)						\
-    {									\
-      fprintf (asm_out_file, "%s\n", BSS_SECTION_ASM_OP);		\
-      in_section = in_bss;						\
     }									\
 }
 
