@@ -767,39 +767,18 @@
   ""
   "*
 {
-  unsigned long x = INTVAL (operands[1]);
-  int i;
+  return output_zdepi (operands);
+}"
+  [(set_attr "type" "move")
+   (set_attr "length" "1")])
 
-  for (i = 0; i < 32; i++)
-    {
-      if ((x & 1) != 0)
-        break;
-      x >>= 1;
-    }
-
-  if ((x & 0x10) == 0)
-    {
-      operands[1] = gen_rtx (CONST_INT, VOIDmode, x);
-      operands[2] = gen_rtx (CONST_INT, VOIDmode, 31 - i);
-      operands[3] = gen_rtx (CONST_INT, VOIDmode, 32 - i < 4 ? 32 - i : 4);
-    }
-  else
-    {
-      operands[1] = gen_rtx (CONST_INT, VOIDmode, (x & 0xf) - 0x10);
-      operands[2] = gen_rtx (CONST_INT, VOIDmode, 31 - i);
-
-      x >>= 5;
-      for (i = 0; i < 32; i++)
-	{
-	  if ((x & 1) == 0)
-	    break;
-	  x >>= 1;
-	}
-
-      operands[3] = gen_rtx (CONST_INT, VOIDmode, i + 5);
-    }
-
-  return \"zdepi %1,%2,%3,%0\";
+(define_insn ""
+  [(set (match_operand:HI 0 "register_operand" "=r")
+	(match_operand:HI 1 "zdepi_operand" "n"))]
+  ""
+  "*
+{
+  return output_zdepi (operands);
 }"
   [(set_attr "type" "move")
    (set_attr "length" "1")])
@@ -1896,7 +1875,7 @@
 (define_expand "ashlsi3"
   [(set (match_operand:SI 0 "register_operand" "")
 	(ashift:SI (match_operand:SI 1 "register_operand" "")
-		   (match_operand:SI 2 "arith5_operand" "")))]
+		   (match_operand:SI 2 "arith32_operand" "")))]
   ""
   "
 {
@@ -1921,18 +1900,15 @@
 (define_insn ""
  [(set (match_operand:SI 0 "register_operand" "=r")
        (ashift:SI (match_operand:SI 1 "register_operand" "r")
-		  (match_operand:SI 2 "int5_operand" "L")))]
+		  (match_operand:SI 2 "const_int_operand" "n")))]
  ""
  "*
 {
-  rtx xoperands[4];
-  xoperands[0] = operands[0];  xoperands[1] = operands[1];
-  xoperands[2] = gen_rtx (CONST_INT, VOIDmode,
-			  31 - INTVAL (operands[2]));
-  xoperands[3] = gen_rtx (CONST_INT, VOIDmode,
-			  32 - INTVAL (operands[2]));
-  output_asm_insn (\"zdep %1,%2,%3,%0\", xoperands);
-  return \"\";
+  operands[3] = gen_rtx (CONST_INT, VOIDmode,
+                         32 - (INTVAL (operands[2]) & 31));
+  operands[2] = gen_rtx (CONST_INT, VOIDmode,
+                         31 - (INTVAL (operands[2]) & 31));
+  return \"zdep %1,%2,%3,%0\";
 }")
 
 (define_insn ""
@@ -1946,7 +1922,7 @@
 (define_expand "ashrsi3"
   [(set (match_operand:SI 0 "register_operand" "")
 	(ashiftrt:SI (match_operand:SI 1 "register_operand" "")
-		     (match_operand:SI 2 "arith5_operand" "")))]
+		     (match_operand:SI 2 "arith32_operand" "")))]
   ""
   "
 {
@@ -1971,33 +1947,29 @@
 (define_insn ""
  [(set (match_operand:SI 0 "register_operand" "=r")
        (ashiftrt:SI (match_operand:SI 1 "register_operand" "r")
-		    (match_operand:SI 2 "int5_operand" "L")))]
+		    (match_operand:SI 2 "const_int_operand" "n")))]
  ""
  "*
 {
-  rtx xoperands[4];
-  xoperands[0] = operands[0];  xoperands[1] = operands[1];
-  xoperands[2] = gen_rtx (CONST_INT, VOIDmode,
-			  31 - INTVAL (operands[2]));
-  xoperands[3] = gen_rtx (CONST_INT, VOIDmode,
-			  32 - INTVAL (operands[2]));
-  output_asm_insn (\"extrs %1,%2,%3,%0\", xoperands);
-  return \"\";
+  operands[3] = gen_rtx (CONST_INT, VOIDmode,
+                         32 - (INTVAL (operands[2]) & 31));
+  operands[2] = gen_rtx (CONST_INT, VOIDmode,
+                         31 - (INTVAL (operands[2]) & 31));
+  return \"extrs %1,%2,%3,%0\";
 }")
-
 
 (define_insn ""
  [(set (match_operand:SI 0 "register_operand" "=r")
        (ashiftrt:SI (match_operand:SI 1 "register_operand" "r")
-		  (minus:SI (const_int 31)
-			    (reg:SI 112))))]
+		    (minus:SI (const_int 31)
+			      (reg:SI 112))))]
  ""
  "vextrs %1,32,%0")
 
 (define_expand "lshrsi3"
   [(set (match_operand:SI 0 "register_operand" "")
 	(lshiftrt:SI (match_operand:SI 1 "register_operand" "")
-		     (match_operand:SI 2 "arith5_operand" "")))]
+		     (match_operand:SI 2 "arith32_operand" "")))]
   ""
   "
 {
@@ -2022,25 +1994,22 @@
 (define_insn ""
  [(set (match_operand:SI 0 "register_operand" "=r")
        (lshiftrt:SI (match_operand:SI 1 "register_operand" "r")
-		    (match_operand:SI 2 "uint5_operand" "K")))]
+		    (match_operand:SI 2 "const_int_operand" "n")))]
  ""
  "*
 {
-  rtx xoperands[4];
-  xoperands[0] = operands[0];  xoperands[1] = operands[1];
-  xoperands[2] = gen_rtx (CONST_INT, VOIDmode,
-			  31 - INTVAL (operands[2]));
-  xoperands[3] = gen_rtx (CONST_INT, VOIDmode,
-			  32 - INTVAL (operands[2]));
-  output_asm_insn (\"extru %1,%2,%3,%0\", xoperands);
-  return \"\";
+  operands[3] = gen_rtx (CONST_INT, VOIDmode,
+			 32 - (INTVAL (operands[2]) & 31));
+  operands[2] = gen_rtx (CONST_INT, VOIDmode,
+			 31 - (INTVAL (operands[2]) & 31));
+  return \"extru %1,%2,%3,%0\";
 }")
 
 (define_insn ""
  [(set (match_operand:SI 0 "register_operand" "=r")
        (lshiftrt:SI (match_operand:SI 1 "register_operand" "r")
-		  (minus:SI (const_int 31)
-			    (reg:SI 112))))]
+		    (minus:SI (const_int 31)
+			      (reg:SI 112))))]
  ""
  "vextru %1,32,%0")
 
