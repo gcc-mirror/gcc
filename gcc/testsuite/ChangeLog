@@ -1,3 +1,7 @@
+Fri Jan 11 12:13:30 2002  Nicola Pero  <n.pero@mi.flashnet.it>
+
+	* objc.dg/special/unclaimed-category-1.m: Include objc/objc-api.h.
+
 2002-01-10  Aldy Hernandez  <aldyh@redhat.com>
 
         * gcc.dg/altivec-4.c: Add tests for lvebx, lvehx, lvewx, lvxl,
