@@ -1,3 +1,9 @@
+2003-12-18  Jason Merrill  <jason@redhat.com>
+
+	PR middle-end/13234
+	* tree-dump.c (dequeue_and_dump): Handle 'r' and 's' code
+	classes.
+
 2003-12-18  Steven Bosscher  <stevenb@suse.de>
 
 	* Makefile.in (tracer.o, bb-reorder.o): Depend on timevar.h

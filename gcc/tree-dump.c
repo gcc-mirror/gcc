@@ -302,6 +302,8 @@ dequeue_and_dump (dump_info_p di)
 	  break;
 
 	case 'e':
+	case 'r':
+	case 's':
 	  /* These nodes are handled explicitly below.  */
 	  break;
 
