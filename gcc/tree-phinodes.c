@@ -295,12 +295,14 @@ create_phi_node (tree var, basic_block bb)
 void
 add_phi_arg (tree *phi, tree def, edge e)
 {
+  basic_block bb = e->dest;
   int i = PHI_NUM_ARGS (*phi);
+
+  gcc_assert (bb == bb_for_stmt (*phi));
 
   if (i >= PHI_ARG_CAPACITY (*phi))
     {
       tree old_phi = *phi;
-      basic_block bb;
 
       /* Resize the phi.  Unfortunately, this will relocate it.  */
       resize_phi_node (phi, ideal_phi_node_len (i + 4));
@@ -310,13 +312,6 @@ add_phi_arg (tree *phi, tree def, edge e)
 
       /* The result of the phi is defined by this phi node.  */
       SSA_NAME_DEF_STMT (PHI_RESULT (*phi)) = *phi;
-
-      /* Extract the basic block for the PHI from the PHI's annotation
-	 rather than the edge.  This works better as the edge's
-	 destination may not currently be the block with the PHI node
-	 if we are in the process of threading the edge to a new
-	 destination.  */
-      bb = bb_for_stmt (*phi);
 
       release_phi_node (old_phi);
 
