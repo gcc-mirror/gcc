@@ -3632,8 +3632,11 @@ finish_file ()
   walk_globals (vtable_decl_p, prune_vtable_vardecl, /*data=*/0);
 
   /* Now, issue warnings about static, but not defined, functions,
-     etc.  */
+     etc., and emit debugging information.  */
   walk_namespaces (wrapup_globals_for_namespace, /*data=*/&reconsider);
+  if (pending_statics)
+    check_global_declarations (&VARRAY_TREE (pending_statics, 0),
+			       pending_statics_used);
 
   finish_repo ();
 
