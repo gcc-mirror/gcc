@@ -3358,8 +3358,8 @@ They have been replaced with @samp{-mcpu=xxx}.
 Set the instruction set, register set, and instruction scheduling parameters
 for machine type @var{cpu_type}.  Supported values for @var{cpu_type} are
 @samp{v7}, @samp{cypress}, @samp{v8}, @samp{supersparc}, @samp{sparclite},
-@samp{f930}, @samp{f934}, @samp{sparclet}, @samp{tsc701}, @samp{v9}, and
-@samp{ultrasparc}.
+@samp{hypersparc}, @samp{sparclite86x}, @samp{f930}, @samp{f934},
+@samp{sparclet}, @samp{tsc701}, @samp{v9}, and @samp{ultrasparc}.
 
 Default instruction scheduling parameters are used for values that select
 an architecture and not an implementation.  These are @samp{v7}, @samp{v8},
@@ -3370,8 +3370,8 @@ implementations.
 
 @smallexample
     v7:             cypress
-    v8:             supersparc
-    sparclite:      f930, f934
+    v8:             supersparc, hypersparc
+    sparclite:      f930, f934, sparclite86x
     sparclet:       tsc701
     v9:             ultrasparc
 @end smallexample
@@ -3384,7 +3384,8 @@ option @samp{-mcpu=}@var{cpu_type} would.
 The same values for @samp{-mcpu=}@var{cpu_type} are used for
 @samp{-mtune=}@*@var{cpu_type}, though the only useful values are those that
 select a particular cpu implementation: @samp{cypress}, @samp{supersparc},
-@samp{f930}, @samp{f934}, @samp{tsc701}, @samp{ultrasparc}.
+@samp{hypersparc}, @samp{f930}, @samp{f934}, @samp{sparclite86x},
+@samp{tsc701}, @samp{ultrasparc}.
 
 @item -malign-loops=@var{num}
 Align loops to a 2 raised to a @var{num} byte boundary.  If
