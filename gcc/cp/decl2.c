@@ -206,11 +206,6 @@ int warn_write_strings;
 
 int warn_cast_qual;
 
-/* Nonzero means warn that dbx info for template class methods isn't fully
-   supported yet.  */
-
-int warn_template_debugging;
-
 /* Nonzero means warn about sizeof(function) or addition/subtraction
    of function pointers.  */
 
@@ -753,7 +748,6 @@ lang_decode_option (argc, argv)
 	     warning about not using it without also specifying -O.  */
 	  if (warn_uninitialized != 1)
 	    warn_uninitialized = (setting ? 2 : 0);
-	  warn_template_debugging = setting;
 	  warn_reorder = setting;
 	  warn_sign_promo = setting;
 	  /* Only warn about unknown pragmas that are not in system

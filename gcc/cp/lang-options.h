@@ -99,8 +99,6 @@ Boston, MA 02111-1307, USA.  */
   "-Wno-return-type",
   "-Woverloaded-virtual",
   "-Wno-overloaded-virtual",
-  "-Wtemplate-debugging",
-  "-Wno-template-debugging",
   "-Wctor-dtor-privacy",
   "-Wno-ctor-dtor-privacy",
   "-Wnon-virtual-dtor",

@@ -1,3 +1,7 @@
+1998-06-30  Benjamin Kosnik  <bkoz@bliss.nabi.net>
+
+        * dbxout.c (dbxout_type_methods): Remove warn_template_debugging.
+
 Tue Jun 30 14:03:34 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* aclocal.m4 (GCC_NEED_DECLARATION): Accept an optional second
