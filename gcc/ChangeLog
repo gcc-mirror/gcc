@@ -1,3 +1,7 @@
+2003-06-01  Andreas Schwab  <schwab@suse.de>
+
+	* config/m68k/linux.h: Remove code protected by USE_GNULIBC_1.
+
 2003-06-01  Andreas Jaeger  <aj@suse.de>
 
 	* gen-protos.c (main): Revert patch to check for argument.
