@@ -2733,10 +2733,19 @@ classtype_mangled_name (t)
       && PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (t)))
     {
       tree name = DECL_NAME (CLASSTYPE_TI_TEMPLATE (t));
+      /* We do not pass in the context here since that is only needed
+	 when mangling the name of instantiations, not the primary
+	 template declaration.  In reality, it should not be needed
+	 then either, but the way lookup_template_class operates
+	 requires the context for the moment.  In the long run,
+	 lookup_template_class should not be looking for existing
+	 instantiations by matching mangled names, but rather by
+	 matching the templates, and then scanning the instantiation
+	 list.  */
       char *mangled_name = mangle_class_name_for_template
 	(IDENTIFIER_POINTER (name),
 	 DECL_INNERMOST_TEMPLATE_PARMS (CLASSTYPE_TI_TEMPLATE (t)),
-	 CLASSTYPE_TI_ARGS (t), DECL_CONTEXT (t));
+	 CLASSTYPE_TI_ARGS (t), NULL_TREE);
       tree id = get_identifier (mangled_name);
       IDENTIFIER_TEMPLATE (id) = name;
       return id;

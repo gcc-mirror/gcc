@@ -1240,15 +1240,15 @@ delete_duplicate_fields_1 (field, fields)
 			   || TREE_CODE (x) == CONST_DECL)
 		    cp_error_at ("duplicate field `%D' (as enum and non-enum)",
 				x);
-		  else if (TREE_CODE (field) == TYPE_DECL
-			   && TREE_CODE (x) == TYPE_DECL)
+		  else if (DECL_DECLARES_TYPE_P (field)
+			   && DECL_DECLARES_TYPE_P (x))
 		    {
-		      if (TREE_TYPE (field) == TREE_TYPE (x))
+		      if (comptypes (TREE_TYPE (field), TREE_TYPE (x), 1))
 			continue;
 		      cp_error_at ("duplicate nested type `%D'", x);
 		    }
-		  else if (TREE_CODE (field) == TYPE_DECL
-			   || TREE_CODE (x) == TYPE_DECL)
+		  else if (DECL_DECLARES_TYPE_P (field)
+			   || DECL_DECLARES_TYPE_P (x))
 		    {
 		      /* Hide tag decls.  */
 		      if ((TREE_CODE (field) == TYPE_DECL
@@ -4392,9 +4392,14 @@ finish_struct (t, list_of_fieldlists, attributes, warn_anon)
       CLASSTYPE_TAGS (t) = x = nreverse (CLASSTYPE_TAGS (t));
       while (x)
 	{
+	  tree tag_type = TREE_VALUE (x);
 	  tree tag = TYPE_MAIN_DECL (TREE_VALUE (x));
 
-	  TREE_NONLOCAL_FLAG (TREE_VALUE (x)) = 0;
+	  if (IS_AGGR_TYPE_CODE (TREE_CODE (tag_type))
+	      && CLASSTYPE_IS_TEMPLATE (tag_type))
+	    tag = CLASSTYPE_TI_TEMPLATE (tag_type);
+
+	  TREE_NONLOCAL_FLAG (tag_type) = 0;
 	  x = TREE_CHAIN (x);
 	  last_x = chainon (last_x, tag);
 	}
@@ -4744,10 +4749,16 @@ pushclass (type, modify)
 
       for (tags = CLASSTYPE_TAGS (type); tags; tags = TREE_CHAIN (tags))
 	{
-	  TREE_NONLOCAL_FLAG (TREE_VALUE (tags)) = 1;
+	  tree tag_type = TREE_VALUE (tags);
+
+	  TREE_NONLOCAL_FLAG (tag_type) = 1;
 	  if (! TREE_PURPOSE (tags))
 	    continue;
-	  pushtag (TREE_PURPOSE (tags), TREE_VALUE (tags), 0);
+	  if (! (IS_AGGR_TYPE_CODE (TREE_CODE (tag_type))
+		 && CLASSTYPE_IS_TEMPLATE (tag_type)))
+	    pushtag (TREE_PURPOSE (tags), tag_type, 0);
+	  else
+	    pushdecl_class_level (CLASSTYPE_TI_TEMPLATE (tag_type));
 	}
 
       current_function_decl = this_fndecl;

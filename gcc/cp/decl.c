@@ -2303,8 +2303,19 @@ pushtag (name, type, globalize)
 		 if appropriate.  */ 
 	      if (!globalize && b->pseudo_global &&
 		  b->level_chain->parm_flag == 2)
-		pushdecl_with_scope (CLASSTYPE_TI_TEMPLATE (type),
-				     b->level_chain);
+		{
+		  pushdecl_with_scope (CLASSTYPE_TI_TEMPLATE (type),
+				       b->level_chain);
+		  /* Put this tag on the list of tags for the class,
+		     since that won't happen below because B is not
+		     the class binding level, but is instead the
+		     pseudo-global level.  */
+		  b->level_chain->tags = 
+		    saveable_tree_cons (name, type, b->level_chain->tags);
+		  TREE_NONLOCAL_FLAG (type) = 1;
+		  if (TYPE_SIZE (current_class_type) == NULL_TREE)
+		    CLASSTYPE_TAGS (current_class_type) = b->level_chain->tags;
+		}
 	    }
 
 	  if (b->parm_flag == 2)
@@ -3756,7 +3767,7 @@ pushdecl_class_level (x)
 	      /* Don't complain about inherited names.  */
 	      && id_in_current_class (name)
 	      /* Or shadowed tags.  */
-	      && !(TREE_CODE (icv) == TYPE_DECL
+	      && !(DECL_DECLARES_TYPE_P (icv)
 		   && DECL_CONTEXT (icv) == current_class_type))
 	    {
 	      cp_error ("declaration of identifier `%D' as `%#D'", name, x);
@@ -4469,9 +4480,11 @@ lookup_tag (form, name, binding_level, thislevel_only)
 	{
 	  if (level->pseudo_global)
 	    {
-	      tree t = IDENTIFIER_NAMESPACE_VALUE (name);
-	      if (t && TREE_CODE (t) == TEMPLATE_DECL
-		  && TREE_CODE (DECL_TEMPLATE_RESULT (t)) == TYPE_DECL)
+	      tree t = IDENTIFIER_CLASS_VALUE (name);
+	      if (t && DECL_CLASS_TEMPLATE_P (t))
+		return TREE_TYPE (t);
+	      t = IDENTIFIER_NAMESPACE_VALUE (name);
+	      if (t && DECL_CLASS_TEMPLATE_P (t))
 		return TREE_TYPE (t);
 	    }
 	  return NULL_TREE;

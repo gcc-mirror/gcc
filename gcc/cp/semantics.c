@@ -1337,3 +1337,25 @@ begin_inline_definitions ()
   /* Undo the begin_tree in begin_class_definition.  */
   end_tree ();
 }
+
+/* Finish processing the declaration of a member class template
+   TYPES whose template parameters are given by PARMS.  */
+
+tree
+finish_member_class_template (parms, types)
+     tree parms;
+     tree types;
+{
+  note_list_got_semicolon (types);
+  grok_x_components (types, NULL_TREE); 
+  if (TYPE_CONTEXT (TREE_VALUE (types)) != current_class_type)
+    /* The component was in fact a friend declaration.  We avoid
+       finish_member_template_decl performing certain checks by
+       unsetting TYPES.  */
+    types = NULL_TREE;
+  finish_member_template_decl (parms, types);
+  /* As with other component type declarations, we do
+     not store the new DECL on the list of
+     component_decls.  */
+  return NULL_TREE;
+}

@@ -737,6 +737,10 @@ struct lang_type
 #define SET_CLASSTYPE_MARKED6(NODE)	(CLASSTYPE_MARKED6(NODE) = 1)
 #define CLEAR_CLASSTYPE_MARKED6(NODE)	(CLASSTYPE_MARKED6(NODE) = 0)
 
+/* A list of the nested tag-types (class, struct, union, or enum)
+   found within this class.  The TREE_PURPOSE of each node is the name
+   of the type; the TREE_VALUE is the type itself.  This list includes
+   nested member class templates.  */
 #define CLASSTYPE_TAGS(NODE)		(TYPE_LANG_SPECIFIC(NODE)->tags)
 
 /* If this class has any bases, this is the number of the base class from
@@ -1473,6 +1477,10 @@ extern int flag_new_for_scope;
   (TREE_CODE (NODE) == TEMPLATE_DECL \
    && TREE_CODE (DECL_TEMPLATE_RESULT (NODE)) == TYPE_DECL \
    && !DECL_TEMPLATE_TEMPLATE_PARM_P (NODE))
+
+/* Nonzero if NODE which declares a type.  */
+#define DECL_DECLARES_TYPE_P(NODE) \
+  (TREE_CODE (NODE) == TYPE_DECL || DECL_CLASS_TEMPLATE_P (NODE))
 
 /* A `primary' template is one that has its own template header.  A
    member function of a class template is a template, but not primary.
@@ -2690,6 +2698,7 @@ extern tree begin_class_definition              PROTO((tree));
 extern tree finish_class_definition             PROTO((tree, tree, tree, int));
 extern void finish_default_args                 PROTO((void));
 extern void begin_inline_definitions            PROTO((void));
+extern tree finish_member_class_template        PROTO((tree, tree));
 
 /* in sig.c */
 extern tree build_signature_pointer_type	PROTO((tree, int, int));
