@@ -1,3 +1,9 @@
+2003-03-26  Roger Sayle  <roger@eyesopen.com>
+
+	PR fortran/9793
+	* target.h (ffetarget_divide_integer1): Perform division by -1
+	using negation to prevent possible overflow trap on the host.
+
 2003-03-25  Marcelo Abreu  <mmabreu@inf.ufrgs.br>
 
 	PR fortran/10204
