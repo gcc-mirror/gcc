@@ -48,6 +48,9 @@ static htab_t cgraph_hash = 0;
 /* The linked list of cgraph nodes.  */
 struct cgraph_node *cgraph_nodes;
 
+/* Queue of cgraph nodes scheduled to be lowered.  */
+struct cgraph_node *cgraph_nodes_queue;
+
 /* Number of nodes in existence.  */
 int cgraph_n_nodes;
 
@@ -79,7 +82,7 @@ eq_node (p1, p2)
      const void *p2;
 {
   return ((DECL_ASSEMBLER_NAME (((struct cgraph_node *) p1)->decl)) ==
-	  DECL_ASSEMBLER_NAME ((tree) p2));
+	  (tree) p2);
 }
 
 /* Return cgraph node assigned to DECL.  Create new one when needed.  */
@@ -100,7 +103,8 @@ cgraph_node (decl)
     }
 
   slot =
-    (struct cgraph_node **) htab_find_slot_with_hash (cgraph_hash, decl,
+    (struct cgraph_node **) htab_find_slot_with_hash (cgraph_hash,
+						      DECL_ASSEMBLER_NAME (decl),
 						      htab_hash_pointer
 						      (DECL_ASSEMBLER_NAME
 						       (decl)), 1);
@@ -123,6 +127,30 @@ cgraph_node (decl)
     }
   VARRAY_PUSH_TREE (known_fns, decl);
   return node;
+}
+
+/* Try to find existing function for identifier ID.  */
+struct cgraph_node *
+cgraph_node_for_identifier (id)
+     tree id;
+{
+  struct cgraph_node **slot;
+
+  if (TREE_CODE (id) != IDENTIFIER_NODE)
+    abort ();
+
+  if (!cgraph_hash)
+    {
+      cgraph_hash = htab_create (10, hash_node, eq_node, NULL);
+      VARRAY_TREE_INIT (known_fns, 32, "known_fns");
+    }
+
+  slot =
+    (struct cgraph_node **) htab_find_slot_with_hash (cgraph_hash, id,
+						      htab_hash_pointer (id), 0);
+  if (!slot)
+    return NULL;
+  return *slot;
 }
 
 /* Create edge from CALLER to CALLEE in the cgraph.  */
@@ -192,6 +220,28 @@ cgraph_remove_node (node)
     node->next->previous = node->previous;
   DECL_SAVED_TREE (node->decl) = NULL;
   /* Do not free the structure itself so the walk over chain can continue.  */
+}
+
+/* Notify finalize_compilation_unit that given node is reachable
+   or needed.  */
+void
+cgraph_mark_needed_node (node, needed)
+     struct cgraph_node *node;
+     int needed;
+{
+  if (needed)
+    {
+      node->needed = 1;
+    }
+  if (!node->reachable)
+    {
+      node->reachable = 1;
+      if (DECL_SAVED_TREE (node->decl))
+	{
+	  node->aux = cgraph_nodes_queue;
+	  cgraph_nodes_queue = node;
+        }
+    }
 }
 
 

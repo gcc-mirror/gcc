@@ -55,40 +55,35 @@ cgraph_finalize_function (decl, body)
 
   node->decl = decl;
 
-  node->local.can_inline_once = tree_inlinable_function_p (decl, 1);
+  if (/* Externally visible functions must be output.  The exception are
+	 COMDAT functions that must be output only when they are needed.
+	 Similarly are handled defered functions and
+	 external functions (GCC extension "extern inline") */
+      (TREE_PUBLIC (decl) && !DECL_COMDAT (decl) && !DECL_EXTERNAL (decl))
+      /* ??? Constructors and destructors not called otherwise can be inlined
+	 into single construction/destruction function per section to save some
+	 resources.  For now just mark it as reachable.  */
+      || DECL_STATIC_CONSTRUCTOR (decl)
+      || DECL_STATIC_DESTRUCTOR (decl)
+      /* Function whose name is output to the assembler file must be produced.
+	 It is possible to assemble the name later after finalizing the function
+	 and the fact is noticed in assemble_name then.  */
+      || (DECL_ASSEMBLER_NAME_SET_P (decl)
+	  && TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))))
+    {
+      cgraph_mark_needed_node (node, 1);
+    }
+
+  if (!node->needed && !DECL_COMDAT (node->decl))
+    node->local.can_inline_once = tree_inlinable_function_p (decl, 1);
+  else
+    node->local.can_inline_once = 0;
   if (flag_inline_trees)
     node->local.inline_many = tree_inlinable_function_p (decl, 0);
   else
     node->local.inline_many = 0;
 
   (*debug_hooks->deferred_inline_function) (decl);
-}
-
-static struct cgraph_node *queue = NULL;
-
-/* Notify finalize_compilation_unit that given node is reachable
-   or needed.  */
-
-void
-cgraph_mark_needed_node (node, needed)
-     struct cgraph_node *node;
-     int needed;
-{
-  if (needed)
-    {
-      if (DECL_SAVED_TREE (node->decl))
-        announce_function (node->decl);
-      node->needed = 1;
-    }
-  if (!node->reachable)
-    {
-      node->reachable = 1;
-      if (DECL_SAVED_TREE (node->decl))
-	{
-	  node->aux = queue;
-	  queue = node;
-        }
-    }
 }
 
 /* Walk tree and record all calls.  Called via walk_tree.  */
@@ -108,15 +103,8 @@ record_call_1 (tp, walk_subtrees, data)
     }
   else if (TREE_CODE (*tp) == CALL_EXPR)
     {
-      /* We cannot use get_callee_fndecl here because it actually tries
-	 too hard to get the function declaration, looking for indirect
-	 references and stripping NOPS.  As a result, get_callee_fndecl
-	 finds calls that shouldn't be in the call graph.  */
-
-      tree decl = TREE_OPERAND (*tp, 0);
-      if (TREE_CODE (decl) == ADDR_EXPR)
-	decl = TREE_OPERAND (decl, 0);
-      if (TREE_CODE (decl) == FUNCTION_DECL)
+      tree decl = get_callee_fndecl (*tp);
+      if (decl && TREE_CODE (decl) == FUNCTION_DECL)
 	{
 	  if (DECL_BUILT_IN (decl))
 	    return NULL;
@@ -156,39 +144,30 @@ cgraph_finalize_compilation_unit ()
   struct cgraph_node *node;
   struct cgraph_edge *edge;
 
-  /* Collect entry points to the unit.  */
-
   if (!quiet_flag)
-    fprintf (stderr, "\n\nUnit entry points:");
-
-  for (node = cgraph_nodes; node; node = node->next)
     {
-      tree decl = node->decl;
-
-      if (!DECL_SAVED_TREE (decl))
-	continue;
-      if ((TREE_PUBLIC (decl) && !DECL_COMDAT (decl) && !DECL_EXTERNAL (decl))
-	  || (DECL_ASSEMBLER_NAME_SET_P (decl)
-	      && TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))))
-	{
-	  /* This function can be called from outside this compliation
-	     unit, so it most definitely is needed.  */
-	  cgraph_mark_needed_node (node, 1);
-	}
+      fprintf (stderr, "\n\nInitial entry points:");
+      for (node = cgraph_nodes; node; node = node->next)
+	if (node->needed && DECL_SAVED_TREE (node->decl))
+	  announce_function (node->decl);
     }
 
   /* Propagate reachability flag and lower representation of all reachable
      functions.  In the future, lowering will introduce new functions and
      new entry points on the way (by template instantiation and virtual
      method table generation for instance).  */
-  while (queue)
+  while (cgraph_nodes_queue)
     {
-      tree decl = queue->decl;
+      tree decl = cgraph_nodes_queue->decl;
 
-      node = queue;
-      queue = queue->aux;
+      node = cgraph_nodes_queue;
+      cgraph_nodes_queue = cgraph_nodes_queue->aux;
+
       if (node->lowered || !node->reachable || !DECL_SAVED_TREE (decl))
 	abort ();
+
+      if (lang_hooks.callgraph.lower_function)
+	(*lang_hooks.callgraph.lower_function) (decl);
 
       /* At the moment frontend automatically emits all nested functions.  */
       if (node->nested)
@@ -200,9 +179,6 @@ cgraph_finalize_compilation_unit ()
 	      cgraph_mark_needed_node (node2, 0);
 	}
 
-      if (lang_hooks.callgraph.lower_function)
-	(*lang_hooks.callgraph.lower_function) (decl);
-
       /* First kill forward declaration so reverse inling works properly.  */
       cgraph_create_edges (decl, DECL_SAVED_TREE (decl));
 
@@ -212,6 +188,15 @@ cgraph_finalize_compilation_unit ()
             cgraph_mark_needed_node (edge->callee, 0);
 	}
       node->lowered = true;
+    }
+  /* Collect entry points to the unit.  */
+
+  if (!quiet_flag)
+    {
+      fprintf (stderr, "\n\nUnit entry points:");
+      for (node = cgraph_nodes; node; node = node->next)
+	if (node->needed && DECL_SAVED_TREE (node->decl))
+	  announce_function (node->decl);
     }
 
   if (!quiet_flag)
@@ -248,7 +233,8 @@ cgraph_mark_functions_to_output ()
 	  && (node->needed
 	      || (!node->local.inline_many && !node->global.inline_once
 		  && node->reachable)
-	      || TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
+	      || (DECL_ASSEMBLER_NAME_SET_P (decl)
+	          && TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))))
 	  && !TREE_ASM_WRITTEN (decl) && !node->origin
 	  && !DECL_EXTERNAL (decl))
 	node->output = 1;
@@ -331,7 +317,7 @@ cgraph_expand_functions ()
   for (node = cgraph_nodes; node; node = node->next)
     node->aux = NULL;
   for (node = cgraph_nodes; node; node = node->next)
-    if (node->output && !node->aux)
+    if (!node->aux)
       {
 	node2 = node;
 	if (!node->callers)
@@ -400,6 +386,7 @@ cgraph_mark_local_functions ()
     {
       node->local.local = (!node->needed
 		           && DECL_SAVED_TREE (node->decl)
+			   && !DECL_COMDAT (node->decl)
 		           && !TREE_PUBLIC (node->decl));
       if (node->local.local)
 	announce_function (node->decl);

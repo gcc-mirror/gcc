@@ -100,6 +100,7 @@ struct cgraph_edge
 extern struct cgraph_node *cgraph_nodes;
 extern int cgraph_n_nodes;
 extern bool cgraph_global_info_ready;
+extern struct cgraph_node *cgraph_nodes_queue;
 
 /* In cgraph.c  */
 void dump_cgraph			PARAMS ((FILE *));
@@ -107,6 +108,7 @@ void cgraph_remove_call			PARAMS ((tree, tree));
 void cgraph_remove_node			PARAMS ((struct cgraph_node *));
 struct cgraph_edge *cgraph_record_call	PARAMS ((tree, tree));
 struct cgraph_node *cgraph_node		PARAMS ((tree decl));
+struct cgraph_node *cgraph_node_for_identifier	PARAMS ((tree id));
 bool cgraph_calls_p			PARAMS ((tree, tree));
 struct cgraph_local_info *cgraph_local_info PARAMS ((tree));
 struct cgraph_global_info *cgraph_global_info PARAMS ((tree));
