@@ -1738,19 +1738,18 @@ do {									\
    to define a global common symbol.  */
 
 #define ASM_OUTPUT_COMMON(FILE, NAME, SIZE, ROUNDED)  \
-( fputs ("\t.global ", (FILE)),			\
+( fputs ("\t.common ", (FILE)),		\
   assemble_name ((FILE), (NAME)),		\
-  fputs ("\n\t.common ", (FILE)),		\
-  assemble_name ((FILE), (NAME)),		\
-  fprintf ((FILE), ",%u,\"bss\"\n", (ROUNDED)))
+  fprintf ((FILE), ",%u,\"bss\"\n", (SIZE)))
 
-/* This says how to output an assembler line
-   to define a local common symbol.  */
+/* This says how to output an assembler line to define a local common
+   symbol.  */
 
-#define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE, ROUNDED)  \
-( fputs ("\n\t.reserve ", (FILE)),		\
-  assemble_name ((FILE), (NAME)),		\
-  fprintf ((FILE), ",%u,\"bss\"\n", (ROUNDED)))
+#define ASM_OUTPUT_ALIGNED_LOCAL(FILE, NAME, SIZE, ALIGNED)		\
+( fputs ("\t.reserve ", (FILE)),					\
+  assemble_name ((FILE), (NAME)),					\
+  fprintf ((FILE), ",%u,\"bss\",%u\n",					\
+	   (SIZE), ((ALIGNED) / BITS_PER_UNIT)))
 
 /* Store in OUTPUT a string (made with alloca) containing
    an assembler-name for a local static variable named NAME.
