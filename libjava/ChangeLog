@@ -1,3 +1,8 @@
+2004-06-24  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* testsuite/libjava.jacks/jacks.xfail: Remove
+	15.9.1-qualified-concrete-20.
+
 2004-06-22  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* gnu/gcj/convert/BytesToUnicode.java (getDecoder): Pass original
