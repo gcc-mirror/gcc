@@ -1356,13 +1356,11 @@ typedef struct ix86_args {
        || ! FLOAT_MODE_P (TYPE_MODE (TREE_TYPE (TREE_TYPE (DECL)))) \
        || FLOAT_MODE_P (TYPE_MODE (TREE_TYPE (TREE_TYPE (cfun->decl))))))
 
-/* This macro is invoked just before the start of a function.
-   It is used here to output code for -fpic that will load the
-   return address into %ebx.  */
+/* This macro is invoked at the end of compilation.  It is used here to
+   output code for -fpic that will load the return address into %ebx.  */
 
-#undef ASM_OUTPUT_FUNCTION_PREFIX
-#define ASM_OUTPUT_FUNCTION_PREFIX(FILE, FNNAME) \
-  asm_output_function_prefix (FILE, FNNAME)
+#undef ASM_FILE_END
+#define ASM_FILE_END(FILE)  ix86_asm_file_end (FILE)
 
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */

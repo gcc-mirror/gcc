@@ -1689,44 +1689,53 @@ ix86_can_use_return_insn_p ()
   return tsize == 0 && nregs == 0;
 }
 
-static const char *pic_label_name;
-static int pic_label_output;
+static char pic_label_name[32];
 
 /* This function generates code for -fpic that loads %ebx with
    the return address of the caller and then returns.  */
 
 void
-asm_output_function_prefix (file, name)
+ix86_asm_file_end (file)
      FILE *file;
-     const char *name ATTRIBUTE_UNUSED;
 {
   rtx xops[2];
-  int pic_reg_used = flag_pic && (current_function_uses_pic_offset_table
-				  || current_function_uses_const_pool);
+
+  if (! TARGET_DEEP_BRANCH_PREDICTION || pic_label_name[0] == 0)
+    return;
+
+#ifdef ASM_OUTPUT_SECTION_NAME
+  /* The trick here is to create a linkonce section containing the
+     pic label thunk, but to refer to it with an internal label.
+     Because the label is internal, we don't have inter-dso name
+     binding issues on hosts that don't support ".hidden".
+
+     In order to use these macros, however, we must create a fake
+     function decl.  */
+  {
+    tree decl = build_decl (FUNCTION_DECL,
+			    get_identifier ("i686.get_pc_thunk"),
+			    error_mark_node);
+    DECL_ONE_ONLY (decl) = 1;
+    UNIQUE_SECTION (decl, 0);
+    named_section (decl, NULL, 0);
+  }
+#else
+  text_section ();
+#endif
+
+  /* This used to call ASM_DECLARE_FUNCTION_NAME() but since it's an
+     internal (non-global) label that's being emitted, it didn't make
+     sense to have .type information for local labels.   This caused
+     the SCO OpenServer 5.0.4 ELF assembler grief (why are you giving
+     me debug info for a label that you're declaring non-global?) this
+     was changed to call ASM_OUTPUT_LABEL() instead.  */
+
+  ASM_OUTPUT_LABEL (file, pic_label_name);
+
   xops[0] = pic_offset_table_rtx;
-  xops[1] = stack_pointer_rtx;
-
-  /* Deep branch prediction favors having a return for every call.  */
-  if (pic_reg_used && TARGET_DEEP_BRANCH_PREDICTION)
-    {
-      if (!pic_label_output)
-	{
-	  /* This used to call ASM_DECLARE_FUNCTION_NAME() but since it's an
-	     internal (non-global) label that's being emitted, it didn't make
-	     sense to have .type information for local labels.   This caused
-	     the SCO OpenServer 5.0.4 ELF assembler grief (why are you giving
-	     me debug info for a label that you're declaring non-global?) this
-	     was changed to call ASM_OUTPUT_LABEL() instead.  */
-
-	  ASM_OUTPUT_LABEL (file, pic_label_name);
-
-	  xops[1] = gen_rtx_MEM (SImode, xops[1]);
-	  output_asm_insn ("mov{l}\t{%1, %0|%0, %1}", xops);
-	  output_asm_insn ("ret", xops);
-
-	  pic_label_output = 1;
-	}
-    }
+  xops[1] = gen_rtx_MEM (SImode, stack_pointer_rtx);
+  output_asm_insn ("mov{l}\t{%1, %0|%0, %1}", xops);
+  output_asm_insn ("ret", xops);
 }
 
 void
@@ -1738,12 +1747,8 @@ load_pic_register ()
 
   if (TARGET_DEEP_BRANCH_PREDICTION)
     {
-      if (pic_label_name == NULL)
-	{
-	  char buf[32];
-	  ASM_GENERATE_INTERNAL_LABEL (buf, "LPR", 0);
-	  pic_label_name = ggc_strdup (buf);
-	}
+      if (! pic_label_name[0])
+	ASM_GENERATE_INTERNAL_LABEL (pic_label_name, "LPR", 0);
       pclab = gen_rtx_MEM (QImode, gen_rtx_SYMBOL_REF (Pmode, pic_label_name));
     }
   else
@@ -1951,8 +1956,8 @@ ix86_emit_save_regs ()
 void
 ix86_expand_prologue ()
 {
-  HOST_WIDE_INT tsize = ix86_compute_frame_size (get_frame_size (), (int *) 0, (int *) 0,
-						 (int *) 0);
+  HOST_WIDE_INT tsize = ix86_compute_frame_size (get_frame_size (), (int *) 0,
+						 (int *) 0, (int *) 0);
   rtx insn;
   int pic_reg_used = flag_pic && (current_function_uses_pic_offset_table
 				  || current_function_uses_const_pool);
