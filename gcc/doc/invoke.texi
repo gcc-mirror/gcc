@@ -479,7 +479,8 @@ in the following sections.
 -m4650  -msingle-float  -mmad @gol
 -EL  -EB  -G @var{num}  -nocpp @gol
 -mabi=32  -mabi=n32  -mabi=64  -mabi=eabi  -mabi-fake-default @gol
--mfix7000  -mno-crt0 -mflush-func=@var{func} -mno-flush-func @gol
+-mfix7000  -mfix-sb1  -mno-fix-sb1 @gol
+-mno-crt0 -mflush-func=@var{func} -mno-flush-func @gol
 -mbranch-likely -mno-branch-likely}
 
 @emph{i386 and x86-64 Options}
@@ -8167,6 +8168,13 @@ assembler files (with a @samp{.s} suffix) when assembling them.
 Pass an option to gas which will cause nops to be inserted if
 the read of the destination register of an mfhi or mflo instruction
 occurs in the following two instructions.
+
+@item -mfix-sb1
+@itemx -mno-fix-sb1
+@opindex mfix-sb1
+Work around certain SB-1 CPU core errata.
+(This flag currently works around the SB-1 revision 2
+``F1'' and ``F2'' floating point errata.)
 
 @item -no-crt0
 @opindex no-crt0
