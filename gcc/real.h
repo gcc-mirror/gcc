@@ -166,7 +166,8 @@ extern REAL_VALUE_TYPE ereal_from_double PROTO((HOST_WIDE_INT *));
 /* These return REAL_VALUE_TYPE: */
 #define REAL_VALUE_RNDZINT(x) (etrunci (x))
 #define REAL_VALUE_UNSIGNED_RNDZINT(x) (etruncui (x))
-extern REAL_VALUE_TYPE real_value_truncate ();
+extern REAL_VALUE_TYPE real_value_truncate	PROTO ((enum machine_mode,
+							REAL_VALUE_TYPE));
 #define REAL_VALUE_TRUNCATE(mode, x)  real_value_truncate (mode, x)
 
 /* These return HOST_WIDE_INT: */
@@ -360,7 +361,8 @@ extern double (atof) ();
    size and where `float' is SFmode.  */
 
 /* Don't use REAL_VALUE_TRUNCATE directly--always call real_value_truncate.  */
-extern REAL_VALUE_TYPE real_value_truncate ();
+extern REAL_VALUE_TYPE real_value_truncate	PROTO ((enum machine_mode,
+							REAL_VALUE_TYPE));
 
 #ifndef REAL_VALUE_TRUNCATE
 #define REAL_VALUE_TRUNCATE(mode, x) \
@@ -421,11 +423,12 @@ union real_extract
    or cc0_rtx if it is not on the chain.  */
 #define CONST_DOUBLE_MEM(r) XEXP (r, 0)
 
+/* Given a CONST_DOUBLE in FROM, store into TO the value it represents.  */
 /* Function to return a real value (not a tree node)
    from a given integer constant.  */
-REAL_VALUE_TYPE real_value_from_int_cst ();
-
-/* Given a CONST_DOUBLE in FROM, store into TO the value it represents.  */
+union tree_node;
+REAL_VALUE_TYPE real_value_from_int_cst	PROTO ((union tree_node *,
+						union tree_node *));
 
 #define REAL_VALUE_FROM_CONST_DOUBLE(to, from)		\
 do { union real_extract u;				\
@@ -448,5 +451,14 @@ extern struct rtx_def *immed_real_const_1	PROTO((REAL_VALUE_TYPE,
 
 /* Replace R by 1/R in the given machine mode, if the result is exact.  */
 extern int exact_real_inverse PROTO((enum machine_mode, REAL_VALUE_TYPE *));
+
+extern int target_isnan			PROTO ((REAL_VALUE_TYPE));
+extern int target_isinf			PROTO ((REAL_VALUE_TYPE));
+extern int target_negative		PROTO ((REAL_VALUE_TYPE));
+extern void debug_real			PROTO ((REAL_VALUE_TYPE));
+
+/* In varasm.c */
+extern void assemble_real		PROTO ((REAL_VALUE_TYPE,
+						enum machine_mode));
 
 #endif /* Not REAL_H_INCLUDED */
