@@ -5697,7 +5697,11 @@ rs6000_encode_section_info (decl)
 
 
 /* Return a REG that occurs in ADDR with coefficient 1.
-   ADDR can be effectively incremented by incrementing REG.  */
+   ADDR can be effectively incremented by incrementing REG.
+
+   r0 is special and we must not select it as an address
+   register by this routine since our caller will try to
+   increment the returned register via an "la" instruction.  */
 
 struct rtx_def *
 find_addr_reg (addr)
@@ -5705,9 +5709,11 @@ find_addr_reg (addr)
 {
   while (GET_CODE (addr) == PLUS)
     {
-      if (GET_CODE (XEXP (addr, 0)) == REG)
+      if (GET_CODE (XEXP (addr, 0)) == REG
+	  && REGNO (XEXP (addr, 0)) != 0)
 	addr = XEXP (addr, 0);
-      else if (GET_CODE (XEXP (addr, 1)) == REG)
+      else if (GET_CODE (XEXP (addr, 1)) == REG
+	       && REGNO (XEXP (addr, 1)) != 0)
 	addr = XEXP (addr, 1);
       else if (CONSTANT_P (XEXP (addr, 0)))
 	addr = XEXP (addr, 1);
@@ -5716,7 +5722,7 @@ find_addr_reg (addr)
       else
 	abort ();
     }
-  if (GET_CODE (addr) == REG)
+  if (GET_CODE (addr) == REG && REGNO (addr) != 0)
     return addr;
   abort ();
 }
