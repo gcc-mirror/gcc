@@ -1143,6 +1143,20 @@ add_binding (id, decl)
       BINDING_VALUE (binding) = decl;
       INHERITED_VALUE_BINDING_P (binding) = 0;
     }
+  else if (TREE_CODE (BINDING_VALUE (binding)) == TYPE_DECL
+	   && TREE_CODE (decl) == TYPE_DECL
+	   && DECL_NAME (decl) == DECL_NAME (BINDING_VALUE (binding))
+	   && same_type_p (TREE_TYPE (decl),
+			   TREE_TYPE (BINDING_VALUE (binding))))
+    /* We have two typedef-names, both naming the same type to have
+       the same name.  This is OK because of:
+
+         [dcl.typedef]
+
+	 In a given scope, a typedef specifier can be used to redefine
+	 the name of any type declared in that scope to refer to the
+	 type to which it already refers.  */
+    ok = 0;
   else
     {
       cp_error ("declaration of `%#D'", decl);
