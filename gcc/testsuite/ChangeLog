@@ -1,3 +1,7 @@
+2003-06-10  Richard Henderson  <rth@redhat.com>
+
+        * gcc.dg/asm-7.c: Adjust expected warning text.
+
 2003-06-08  Richard Henderson  <rth@redhat.com>
 
         * gcc.dg/20011029-2.c: Fix the array reference.

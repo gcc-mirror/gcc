@@ -11,8 +11,8 @@ void test(void)
   __asm__ ("" : : "m"(r));	/* { dg-warning "address of register" } */
   __asm__ ("" : : "m"(i));
   __asm__ ("" : : "m"(m));
-  __asm__ ("" : : "m"(0));	/* { dg-warning "deprecated memory input" } */
-  __asm__ ("" : : "m"(i+1));	/* { dg-warning "deprecated memory input" } */
+  __asm__ ("" : : "m"(0));	/* { dg-warning "input without lvalue" } */
+  __asm__ ("" : : "m"(i+1));	/* { dg-warning "input without lvalue" } */
 
   __asm__ ("" : : "g"(r));
   __asm__ ("" : : "g"(i));
