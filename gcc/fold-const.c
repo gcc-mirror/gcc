@@ -3424,7 +3424,11 @@ fold (expr)
 
     case COMPONENT_REF:
       if (TREE_CODE (arg0) == CONSTRUCTOR)
-	t = TREE_VALUE (purpose_member (arg1, CONSTRUCTOR_ELTS (arg0)));
+	{
+	  tree m = purpose_member (arg1, CONSTRUCTOR_ELTS (arg0));
+	  if (m)
+	    t = TREE_VALUE (m);
+	}
       return t;
 
     case RANGE_EXPR:
