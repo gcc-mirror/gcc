@@ -1,5 +1,10 @@
 2003-10-15  Michael Koch  <konqueror@gmx.de>
 
+	* java/text/AttributedCharacterIterator.java,
+	java/text/CharacterIterator.java: Reformated.
+
+2003-10-15  Michael Koch  <konqueror@gmx.de>
+
 	* javax/swing/UIDefaults.java (putDefaults):
 	Readded accidently removed "public" modifier.
 
