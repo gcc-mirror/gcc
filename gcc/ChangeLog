@@ -1,3 +1,8 @@
+Thu Jul 26 22:22:21 2001  Denis Chertykov  <denisc@overta.ru>
+
+	* cse.c (cse_process_notes): Replace any registers if the address
+	remains valid.
+
 Thu Jul 26 14:04:03 EDT 2001  John Wehle  (john@feith.com)
 
 	* basic-block.h (PROP_ALLOW_CFG_CHANGES): Define.
