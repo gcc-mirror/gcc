@@ -103,6 +103,13 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
  "%a0", "%a1", "%a2", "%a3", "%a4", "%a5", "%fp", "%sp",	\
  "%fp0", "%fp1", "%fp2", "%fp3", "%fp4", "%fp5", "%fp6", "%fp7"}
 
+#undef FUNCTION_EXTRA_EPILOGUE
+#define FUNCTION_EXTRA_EPILOGUE(FILE, SIZE)				\
+  { extern int current_function_returns_pointer;			\
+    if ((current_function_returns_pointer) &&				\
+      ! find_equiv_reg (0, get_last_insn (), 0, 0, 0, 8, Pmode))        \
+      asm_fprintf (FILE, "\tmovl %Rd0,%Ra0\n"); } 
+
 #undef FUNCTION_PROFILER
 #define FUNCTION_PROFILER(FILE, LABEL_NO)	\
     fprintf (FILE, "\tmov.l &LP%%%d,%%a0\n\tjsr mcount%%\n", (LABEL_NO))
