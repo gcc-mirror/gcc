@@ -2322,7 +2322,7 @@
 {
   if (const_float_1_operand (operands[1], DFmode))
     if (!(ISA_HAS_FP4 && flag_unsafe_math_optimizations))
-      FAIL;
+      operands[1] = force_reg (DFmode, operands[1]);
 })
 
 ;; This pattern works around the early SB-1 rev2 core "F1" erratum:
@@ -2372,7 +2372,7 @@
 {
   if (const_float_1_operand (operands[1], SFmode))
     if (!(ISA_HAS_FP4 && flag_unsafe_math_optimizations))
-      FAIL;
+      operands[1] = force_reg (SFmode, operands[1]);
 })
 
 ;; This pattern works around the early SB-1 rev2 core "F1" erratum (see

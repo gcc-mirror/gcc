@@ -1,3 +1,9 @@
+2004-06-25  Richard Sandiford  <rsandifo@redhat.com>
+
+	PR target/16144
+	* config/mips/mips.md (divsf, divdf): Don't FAIL if the first operand
+	is 1.0; force it into a register instead.
+
 2004-06-25  Bernardo Innocenti  <bernie@develer.com>
 
 	* config/m68k/m68k.h: Restore valid comment removed by mistake with
