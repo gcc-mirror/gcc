@@ -1,5 +1,8 @@
 Fri Apr 21 13:30:26 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* stor-layout.c (layout_decl): Only set DECL_MODE if not already set.
+	(place_field): Properly compute know and actual alignment.
+
 	* gengenrtl.c (gencode): Write obstack_alloc_rtx function start
 	in proper format.
 
