@@ -2042,7 +2042,7 @@ out_shift_with_cnt (template,insn,operands,len)
       if (len)
 	++*len;
       else
-	strcat (str, "ldi %3,lo8(%2)");
+	strcat (str, "ldi %3,lo8((%2)-1)");
       second_label = 0;
     }
   else if (GET_CODE (operands[2]) == MEM)
