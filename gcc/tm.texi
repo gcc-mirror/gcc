@@ -2901,6 +2901,8 @@ the data type of the argument as a tree node or 0 if that is not known
 (which happens for C support library functions); and @var{named},
 which is 1 for an ordinary argument and 0 for nameless arguments that
 correspond to @samp{@dots{}} in the called function's prototype.
+@var{type} can be an incomplete type if a syntax error has previously
+occurred.
 
 The value of the expression is usually either a @code{reg} RTX for the
 hard register in which to pass the argument, or zero to pass the
