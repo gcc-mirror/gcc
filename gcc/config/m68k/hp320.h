@@ -74,6 +74,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define ASM_SPEC "%{m68000:+X}%{mc68000:+X}"
 
+#define NO_DOT_IN_LABEL
+
 #if TARGET_DEFAULT & 02  /* -m68881 is the default */
 
 /* These definitions differ from those used for GAS by defining __HPUX_ASM__.
