@@ -2082,6 +2082,23 @@ implicitly_declare (tree functionid)
 	      implicit_decl_warning (functionid, decl);
 	      C_DECL_IMPLICIT (decl) = 1;
 	    }
+	  if (DECL_BUILT_IN (decl))
+	    {
+	      if (!comptypes (default_function_type, TREE_TYPE (decl)))
+		{
+		  warning ("incompatible implicit declaration of built-in"
+			   " function %qD", decl);
+		}
+	    }
+	  else
+	    {
+	      if (!comptypes (default_function_type, TREE_TYPE (decl)))
+		{
+		  error ("incompatible implicit declaration of function %qD",
+			 decl);
+		  locate_old_decl (decl, error);
+		}
+	    }
 	  bind (functionid, decl, current_scope,
 		/*invisible=*/false, /*nested=*/true);
 	  return decl;

@@ -1,3 +1,8 @@
+2004-08-03  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* c-decl.c (implicitly_declare): Diagnose incompatible implicit
+	declarations.
+
 2004-08-03  Mike Stump  <mrs@apple.com>
 
 	* config/darwin-c.c: Don't search in "/Local/Library/Frameworks"
