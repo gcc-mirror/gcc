@@ -233,7 +233,7 @@ extern int rs6000_pic_labelno;
    implies.  */
 #undef ASM_SPEC
 #define ASM_SPEC \
-  "-u -mppc %{V} %{v:%{!V:-V}} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Yd,*} %{Wa,*:%*}"
+  "-u -mppc %{V} %{v:%{!V:-V}} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Yd,*} %{Wa,*:%*} %{mrelocatable}"
 /* This is the end of what might become sysv4.h.  */
 
 /* Allow stabs and dwarf, prefer dwarf.  */
