@@ -1320,11 +1320,22 @@ shortpath (cwd, filename)
           path_p++;
           unmatched_slash_count++;
         }
+
+      /* Find out how many directory levels in cwd were *not* matched.  */
       while (*cwd_p)
         if (*cwd_p++ == '/')
-                unmatched_slash_count++;
+	  unmatched_slash_count++;
+
+      /* Now we know how long the "short name" will be.
+	 Reject it if longer than the input.  */
+      if (unmatched_slash_count * 3 + strlen (path_p) >= filename_len)
+	return filename;
+
+      /* For each of them, put a `../' at the beginning of the short name.  */
       while (unmatched_slash_count--)
         {
+	  /* Give up if the result gets to be longer
+	     than the absolute path name.  */
 	  if (rel_buffer + filename_len <= rel_buf_p + 3)
 	    return filename;
           *rel_buf_p++ = '.';
@@ -1332,6 +1343,7 @@ shortpath (cwd, filename)
           *rel_buf_p++ = '/';
         }
 
+      /* Then tack on the unmatched part of the desired file's name.  */
       do
 	{
 	  if (rel_buffer + filename_len <= rel_buf_p)
