@@ -63,6 +63,7 @@ static void save_comment PARAMS ((cpp_reader *, cpp_token *, const uchar *,
 				  cppchar_t));
 static void create_literal PARAMS ((cpp_reader *, cpp_token *, const uchar *,
 				    unsigned int, enum cpp_ttype));
+static bool warn_in_comment PARAMS ((cpp_reader *, _cpp_line_note *));
 static int name_p PARAMS ((cpp_reader *, const cpp_string *));
 static cppchar_t maybe_read_ucn PARAMS ((cpp_reader *, const uchar **));
 static tokenrun *next_tokenrun PARAMS ((tokenrun *));
@@ -180,6 +181,36 @@ _cpp_clean_line (pfile)
   buffer->next_line = s + 1;
 }
 
+/* Return true if the trigraph indicated by NOTE should be warned
+   about in a comment.  */
+static bool
+warn_in_comment (pfile, note)
+     cpp_reader *pfile;
+     _cpp_line_note *note;
+{
+  const uchar *p;
+
+  /* Within comments we don't warn about trigraphs, unless the
+     trigraph forms an escaped newline, as that may change
+     behaviour.  */
+  if (note->type != '/')
+    return false;
+
+  /* If -trigraphs, then this was an escaped newline iff the next note
+     is coincident.  */
+  if (CPP_OPTION (pfile, trigraphs))
+    return note[1].pos == note->pos;
+
+  /* Otherwise, see if this forms an escaped newline.  */
+  p = note->pos + 3;
+  while (is_nvspace (*p))
+    p++;
+
+  /* There might have been escaped newlines between the trigraph and the
+     newline we found.  Hence the position test.  */
+  return (*p == '\n' && p < note[1].pos);
+}
+
 /* Process the notes created by add_line_note as far as the current
    location.  */
 void
@@ -219,7 +250,8 @@ _cpp_process_line_notes (pfile, in_comment)
 	}
       else if (_cpp_trigraph_map[note->type])
 	{
-	  if (!in_comment && CPP_OPTION (pfile, warn_trigraphs))
+	  if (CPP_OPTION (pfile, warn_trigraphs)
+	      && (!in_comment || warn_in_comment (pfile, note)))
 	    {
 	      if (CPP_OPTION (pfile, trigraphs))
 		cpp_error_with_line (pfile, DL_WARNING, pfile->line, col,
@@ -284,6 +316,7 @@ _cpp_skip_block_comment (pfile)
 	}
     }
 
+  _cpp_process_line_notes (pfile, true);
   return false;
 }
 

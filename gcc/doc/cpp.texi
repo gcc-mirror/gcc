@@ -293,16 +293,18 @@ obsolete systems that lack some of C's punctuation to use C@.  For
 example, @samp{??/} stands for @samp{\}, so @t{'??/n'} is a character
 constant for a newline.
 
-Trigraphs are not popular and many compilers implement them incorrectly.
-Portable code should not rely on trigraphs being either converted or
-ignored.  If you use the @option{-Wall} or @option{-Wtrigraphs} options,
-GCC will warn you when a trigraph would change the meaning of your
-program if it were converted.
+Trigraphs are not popular and many compilers implement them
+incorrectly.  Portable code should not rely on trigraphs being either
+converted or ignored.  With @option{-Wtrigraphs} GCC will warn you
+when a trigraph may change the meaning of your program if it were
+converted.  @xref{Wtrigraphs}.
 
-In a string constant, you can prevent a sequence of question marks from
-being confused with a trigraph by inserting a backslash between the
-question marks.  @t{"(??\?)"} is the string @samp{(???)}, not
-@samp{(?]}.  Traditional C compilers do not recognize this idiom.
+In a string constant, you can prevent a sequence of question marks
+from being confused with a trigraph by inserting a backslash between
+the question marks, or by separating the string literal at the
+trigraph and making use of string literal concatenation.  @t{"(??\?)"}
+is the string @samp{(???)}, not @samp{(?]}.  Traditional C compilers
+do not recognize these idioms.
 
 The nine trigraphs and their replacements are
 

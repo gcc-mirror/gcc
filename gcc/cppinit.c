@@ -149,6 +149,7 @@ cpp_create_reader (lang, table)
   CPP_OPTION (pfile, show_column) = 1;
   CPP_OPTION (pfile, tabstop) = 8;
   CPP_OPTION (pfile, operator_names) = 1;
+  CPP_OPTION (pfile, warn_trigraphs) = 2;
   CPP_OPTION (pfile, warn_endif_labels) = 1;
   CPP_OPTION (pfile, warn_deprecated) = 1;
   CPP_OPTION (pfile, warn_long_long) = !CPP_OPTION (pfile, c99);
@@ -553,6 +554,9 @@ post_options (pfile)
       pfile->state.prevent_expansion = 1;
       CPP_OPTION (pfile, traditional) = 0;
     }
+
+  if (CPP_OPTION (pfile, warn_trigraphs) == 2)
+    CPP_OPTION (pfile, warn_trigraphs) = !CPP_OPTION (pfile, trigraphs);
 
   if (CPP_OPTION (pfile, traditional))
     {
