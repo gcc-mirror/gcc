@@ -8,7 +8,7 @@
 2003-06-02  Ben Elliston  <bje@wasabisystems.com>
 
 	* config/arm/arm.c (arm_use_dfa_pipeline_interface): Declare.
-	(TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE): Define if not already defined.
+	(TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE): Define if not already.
 	(arm_use_dfa_pipeline_interface): Implement.
 	* config/arm/arm.md (arm): New automaton.
 	(write_buf): Remove function units; new cpu unit.
