@@ -1334,10 +1334,10 @@ notice_update_cc (exp)
       if (SET_DEST (XVECEXP (exp, 0, 0)) == cc0_rtx)
 	{
 	  CC_STATUS_INIT;
-	  if (! stack_regs_mentioned_p (SET_SRC (XVECEXP (exp, 0, 0))))
+	  if (stack_regs_mentioned_p (SET_SRC (XVECEXP (exp, 0, 0))))
+	    cc_status.flags |= CC_IN_80387;
+	  else
 	    cc_status.value1 = SET_SRC (XVECEXP (exp, 0, 0));
-
-	  cc_status.flags |= CC_IN_80387;
 	  return;
 	}
       CC_STATUS_INIT;
