@@ -4815,3 +4815,81 @@ get_set_constructor_bytes (init, buffer, wd_size)
     }
   return non_const_bits;
 }
+
+#ifdef ENABLE_CHECKING
+
+/* Complain if the tree code does not match the expected one.
+   NODE is the tree node in question, CODE is the expected tree code,
+   and FILE and LINE are the filename and line number, respectively,
+   of the line on which the check was done.  If NONFATAL is nonzero,
+   don't abort if the reference is invalid; instead, return 0.
+   If the reference is valid, return NODE.  */
+
+tree
+tree_check (node, code, file, line, nofatal)
+     tree node;
+     enum tree_code code;
+     char *file;
+     int line;
+     int nofatal;
+{
+  if (TREE_CODE (node) == code)
+    return node;
+  else if (nofatal)
+    return 0;
+  else
+    fatal ("%s:%d: Expect %s, have %s\n", file, line,
+	   tree_code_name[code], tree_code_name[TREE_CODE (node)]);
+}
+
+/* Similar to above, except that we check for a class of tree
+   code, given in CL.  */
+
+tree
+tree_class_check (node, cl, file, line, nofatal)
+     tree node;
+     char cl;
+     char *file;
+     int line;
+     int nofatal;
+{
+  if (TREE_CODE_CLASS (TREE_CODE (node)) == cl)
+    return node;
+  else if (nofatal)
+    return 0;
+  else
+    fatal ("%s:%d: Expect '%c', have '%s'\n", file, line,
+	   cl, tree_code_name[TREE_CODE (node)]);
+}
+
+/* Likewise, but complain if the tree node is not an expression.  */
+
+tree
+expr_check (node, ignored, file, line, nofatal)
+     tree node;
+     int ignored;
+     char *file;
+     int line;
+     int nofatal;
+{
+  switch (TREE_CODE_CLASS (TREE_CODE (node)))
+    {
+    case 'r':
+    case 's':
+    case 'e':
+    case '<':
+    case '1':
+    case '2':
+      break;
+
+    default:
+      if (nofatal)
+	return 0;
+      else
+	fatal ("%s:%d: Expect expression, have '%s'\n", file, line,
+	       tree_code_name[TREE_CODE (node)]);
+    }
+
+  return node;
+}
+#endif
