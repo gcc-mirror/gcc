@@ -1,3 +1,10 @@
+Wed Mar 31 10:48:29 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+        * Makefile.in (hash.h): Generate using gperf language 'C', not
+        'KR-C', so gperf uses the `const' keyword on strings.
+	 
+        * gxx.gperf (resword): Const-ify a char*.
+
 1999-03-30  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* cp-tree.h (IDENTIFIER_AS_DESC, IDENTIFIER_AS_LIST, 

@@ -1,7 +1,7 @@
-/* KR-C code produced by gperf version 2.7.1 (19981006 egcs) */
-/* Command-line: gperf -L KR-C -F , 0, 0 -p -j1 -g -o -t -N is_reserved_word -k1,4,7,$ ../../../gcc/cp/gxx.gperf  */
+/* C code produced by gperf version 2.7.1 (19981006 egcs) */
+/* Command-line: gperf -L C -F , 0, 0 -p -j1 -g -o -t -N is_reserved_word -k1,4,7,$ ./gxx.gperf  */
 /* Command-line: gperf -L KR-C -F ', 0, 0' -p -j1 -g -o -t -N is_reserved_word -k1,4,$,7 gplus.gperf  */
-struct resword { char *name; short token; enum rid rid;};
+struct resword { const char *name; short token; enum rid rid;};
 
 #define TOTAL_KEYWORDS 106
 #define MIN_WORD_LENGTH 2
@@ -15,7 +15,7 @@ __inline
 #endif
 static unsigned int
 hash (str, len)
-     register char *str;
+     register const char *str;
      register unsigned int len;
 {
   static unsigned char asso_values[] =
@@ -72,7 +72,7 @@ __inline
 #endif
 struct resword *
 is_reserved_word (str, len)
-     register char *str;
+     register const char *str;
      register unsigned int len;
 {
   static struct resword wordlist[] =
@@ -227,7 +227,7 @@ is_reserved_word (str, len)
 
       if (key <= MAX_HASH_VALUE && key >= 0)
         {
-          register char *s = wordlist[key].name;
+          register const char *s = wordlist[key].name;
 
           if (*str == *s && !strcmp (str + 1, s + 1))
             return &wordlist[key];
