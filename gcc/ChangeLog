@@ -1,3 +1,8 @@
+Mon Apr  5 16:57:10 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* varasm.c (initializer_constant_valid_p, case MINUS_EXPR):
+	Don't think valid if both operands are invalid.
+
 Sun Apr  4 13:55:20 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* c-tree.h (initializer_constant_valid_p): Delete decl from here.
