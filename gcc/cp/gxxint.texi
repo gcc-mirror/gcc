@@ -1217,24 +1217,25 @@ The below points out some things that work in g++'s exception handling.
 All completely constructed temps and local variables are cleaned up in
 all unwinded scopes.  Completely constructed parts of partially
 constructed objects are cleaned up.  This includes partially built
-arrays.  Exception specifications are now handled.
+arrays.  Exception specifications are now handled.  Thrown objects are
+now cleaned up all the time.
 
 The below points out some flaws in g++'s exception handling, as it now
 stands.
 
 Only exact type matching or reference matching of throw types works when
--fno-rtti is used.  Only works on a SPARC (like Suns), i386, arm and
-rs6000 machines.  Partial support is in for all other machines, but a
-stack unwinder called __unwind_function has to be written, and added to
-libgcc2 for them.  See below for details on __unwind_function.  Don't
-expect exception handling to work right if you optimize, in fact the
-compiler will probably core dump.  RTL_EXPRs for EH cond variables for
-&& and || exprs should probably be wrapped in UNSAVE_EXPRs, and
-RTL_EXPRs tweaked so that they can be unsaved, and the UNSAVE_EXPR code
-should be in the backend, or alternatively, UNSAVE_EXPR should be ripped
-out and exactly one finalization allowed to be expanded by the backend.
-I talked with kenner about this, and we have to allow multiple
-expansions.
+-fno-rtti is used.  Only works on a SPARC (like Suns), i386, arm,
+rs6000, Alpha and mips machines.  Partial support is in for all other
+machines, but a stack unwinder called __unwind_function has to be
+written, and added to libgcc2 for them.  See below for details on
+__unwind_function.  Don't expect exception handling to work right if you
+optimize, in fact the compiler will probably core dump.  RTL_EXPRs for
+EH cond variables for && and || exprs should probably be wrapped in
+UNSAVE_EXPRs, and RTL_EXPRs tweaked so that they can be unsaved, and the
+UNSAVE_EXPR code should be in the backend, or alternatively, UNSAVE_EXPR
+should be ripped out and exactly one finalization allowed to be expanded
+by the backend.  I talked with kenner about this, and we have to allow
+multiple expansions.
 
 We only do pointer conversions on exception matching a la 15.3 p2 case
 3: `A handler with type T, const T, T&, or const T& is a match for a
@@ -1266,12 +1267,13 @@ build_exception_variant should sort the incoming list, so that it
 implements set compares, not exact list equality.  Type smashing should
 smash exception specifications using set union.
 
-Thrown objects are usually allocated on the heap, in the usual way, but
-they are never deleted.  They should be deleted by the catch clauses.
-If one runs out of heap space, throwing an object will probably never
-work.  This could be relaxed some by passing an __in_chrg parameter to
-track who has control over the exception object.  Thrown objects are not
-allocated on the heap when they are pointer to object types.
+Thrown objects are usually allocated on the heap, in the usual way.  If
+one runs out of heap space, throwing an object will probably never work.
+This could be relaxed some by passing an __in_chrg parameter to track
+who has control over the exception object.  Thrown objects are not
+allocated on the heap when they are pointer to object types.  We should
+extend it so that all small (<4*sizeof(void*)) objects are stored
+directly, instead of allocated on the heap.
 
 When the backend returns a value, it can create new exception regions
 that need protecting.  The new region should rethrow the object in

@@ -1199,7 +1199,7 @@ process_init_constructor (type, init, elts)
 
 /* Given a structure or union value DATUM, construct and return
    the structure or union component which results from narrowing
-   that value by the types specified in TYPES.  For example, given the
+   that value by the type specified in BASETYPE.  For example, given the
    hierarchy
 
    class L { int ii; };
@@ -1213,23 +1213,16 @@ process_init_constructor (type, init, elts)
 
    then the expression
 
-   x::C::A::L::ii refers to the ii member of the L part of
+   x.A::ii refers to the ii member of the L part of
    of A part of the C object named by X.  In this case,
-   DATUM would be x, and TYPES would be a SCOPE_REF consisting of
-
-	SCOPE_REF
-		SCOPE_REF
-			C	A
-		L
-
-   The last entry in the SCOPE_REF is always an IDENTIFIER_NODE.
+   DATUM would be x, and BASETYPE would be A.
 
 */
 
 tree
-build_scoped_ref (datum, types)
+build_scoped_ref (datum, basetype)
      tree datum;
-     tree types;
+     tree basetype;
 {
   tree ref;
   tree type = TREE_TYPE (datum);
@@ -1242,62 +1235,17 @@ build_scoped_ref (datum, types)
 
   type = TYPE_MAIN_VARIANT (type);
 
-  if (TREE_CODE (types) == SCOPE_REF)
-    {
-      /* We have some work to do.  */
-      struct type_chain
-	{ tree type; struct type_chain *next; }
-      *chain = NULL, *head = NULL, scratch;
-      ref = build_unary_op (ADDR_EXPR, datum, 0);
-      while (TREE_CODE (types) == SCOPE_REF)
-	{
-	  tree t = TREE_OPERAND (types, 1);
-	  if (is_aggr_typedef (t, 1))
-	    {
-	      head = (struct type_chain *)alloca (sizeof (struct type_chain));
-	      head->type = IDENTIFIER_TYPE_VALUE (t);
-	      head->next = chain;
-	      chain = head;
-	      types = TREE_OPERAND (types, 0);
-	    }
-	  else return error_mark_node;
-	}
-      if (! is_aggr_typedef (types, 1))
-	return error_mark_node;
-
-      head = &scratch;
-      head->type = IDENTIFIER_TYPE_VALUE (types);
-      head->next = chain;
-      chain = head;
-      while (chain)
-	{
-	  tree binfo = chain->type;
-	  type = TREE_TYPE (TREE_TYPE (ref));
-	  if (binfo != TYPE_BINFO (type))
-	    {
-	      binfo = get_binfo (binfo, type, 1);
-	      if (binfo == error_mark_node)
-		return error_mark_node;
-	      if (binfo == 0)
-		return error_not_base_type (chain->type, type);
-	      ref = convert_pointer_to (binfo, ref);
-	    }
-	  chain = chain->next;
-	}
-      return build_indirect_ref (ref, "(compiler error in build_scoped_ref)");
-    }
-
   /* This is an easy conversion.  */
-  if (is_aggr_typedef (types, 1))
+  if (is_aggr_type (basetype, 1))
     {
-      tree binfo = TYPE_BINFO (IDENTIFIER_TYPE_VALUE (types));
+      tree binfo = TYPE_BINFO (basetype);
       if (binfo != TYPE_BINFO (type))
 	{
 	  binfo = get_binfo (binfo, type, 1);
 	  if (binfo == error_mark_node)
 	    return error_mark_node;
 	  if (binfo == 0)
-	    return error_not_base_type (IDENTIFIER_TYPE_VALUE (types), type);
+	    return error_not_base_type (basetype, type);
 	}
 
       switch (TREE_CODE (datum))

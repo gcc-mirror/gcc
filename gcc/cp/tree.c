@@ -820,8 +820,8 @@ layout_basetypes (rec, binfos)
 		goto got_it;
 	    }
 	  sprintf (name, VBASE_NAME_FORMAT, TYPE_NAME_STRING (basetype));
-	  decl = build_lang_decl (FIELD_DECL, get_identifier (name),
-				  build_pointer_type (basetype));
+	  decl = build_lang_field_decl (FIELD_DECL, get_identifier (name),
+					build_pointer_type (basetype));
 	  /* If you change any of the below, take a look at all the
 	     other VFIELD_BASEs and VTABLE_BASEs in the code, and change
 	     them too. */
@@ -1137,7 +1137,8 @@ get_decl_list (value)
   if (TREE_CODE (value) == IDENTIFIER_NODE)
     list = get_identifier_list (value);
   else if (TREE_CODE (value) == RECORD_TYPE
-	   && TYPE_LANG_SPECIFIC (value))
+	   && TYPE_LANG_SPECIFIC (value)
+	   && value == TYPE_MAIN_VARIANT (value))
     list = CLASSTYPE_AS_LIST (value);
 
   if (list != NULL_TREE)

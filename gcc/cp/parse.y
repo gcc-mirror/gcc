@@ -140,7 +140,7 @@ empty_parms ()
 
 /* the reserved words... C++ extensions */
 %token <ttype> AGGR
-%token <itype> VISSPEC
+%token <ttype> VISSPEC
 %token DELETE NEW OVERLOAD THIS OPERATOR CXX_TRUE CXX_FALSE
 %token NAMESPACE TYPENAME_KEYWORD USING
 %token LEFT_RIGHT TEMPLATE
@@ -236,7 +236,7 @@ empty_parms ()
 %type <ttype> named_complex_class_head_sans_basetype
 %type <ttype> unnamed_class_head
 %type <ttype> class_head base_class_list
-%type <itype> base_class_access_list
+%type <ttype> base_class_access_list
 %type <ttype> base_class maybe_base_class_list base_class.1
 %type <ttype> exception_specification_opt ansi_raise_identifier ansi_raise_identifiers
 %type <ttype> operator_name
@@ -779,13 +779,13 @@ member_init: '(' nonnull_exprlist ')'
 		  expand_member_init (C_C_D, NULL_TREE, void_type_node);
 		}
 	| notype_identifier '(' nonnull_exprlist ')'
-		{ expand_member_init (C_C_D, $<ttype>$, $3); }
+		{ expand_member_init (C_C_D, $1, $3); }
 	| notype_identifier LEFT_RIGHT
-		{ expand_member_init (C_C_D, $<ttype>$, void_type_node); }
+		{ expand_member_init (C_C_D, $1, void_type_node); }
 	| complete_type_name '(' nonnull_exprlist ')'
-		{ expand_member_init (C_C_D, $<ttype>$, $3); }
+		{ expand_member_init (C_C_D, $1, $3); }
 	| complete_type_name LEFT_RIGHT
-		{ expand_member_init (C_C_D, $<ttype>$, void_type_node); }
+		{ expand_member_init (C_C_D, $1, void_type_node); }
 	/* GNU extension */
 	| notype_qualified_id '(' nonnull_exprlist ')'
 		{
@@ -1589,7 +1589,7 @@ primary:
 	| object overqualified_id '(' nonnull_exprlist ')'
 		{
 		  got_object = NULL_TREE;
-		  if (IS_SIGNATURE (IDENTIFIER_TYPE_VALUE (OP0 ($2))))
+		  if (IS_SIGNATURE (OP0 ($2)))
 		    {
 		      warning ("signature name in scope resolution ignored");
 		      $$ = build_method_call ($$, OP1 ($2), $4, NULL_TREE,
@@ -1601,7 +1601,7 @@ primary:
 	| object overqualified_id LEFT_RIGHT
 		{
 		  got_object = NULL_TREE;
-		  if (IS_SIGNATURE (IDENTIFIER_TYPE_VALUE (OP0 ($2))))
+		  if (IS_SIGNATURE (OP0 ($2)))
 		    {
 		      warning ("signature name in scope resolution ignored");
 		      $$ = build_method_call ($$, OP1 ($2), NULL_TREE, NULL_TREE,
@@ -2349,9 +2349,8 @@ base_class_list:
 base_class:
 	  base_class.1
 		{
-		  tree type;
-		  type = IDENTIFIER_TYPE_VALUE ($$);
-		  if (! is_aggr_typedef ($$, 1))
+		  tree type = $1;
+		  if (! is_aggr_type (type, 1))
 		    $$ = NULL_TREE;
 		  else if (current_aggr == signature_type_node
 			   && (! type) && (! IS_SIGNATURE (type)))
@@ -2363,7 +2362,7 @@ base_class:
 		    {
 		      sorry ("signature inheritance, base type `%s' ignored",
 			     IDENTIFIER_POINTER ($$));
-		      $$ = build_tree_list ((tree)access_public, $$);
+		      $$ = build_tree_list (access_public_node, $$);
 		    }
 		  else if (type && IS_SIGNATURE (type))
 		    {
@@ -2371,15 +2370,14 @@ base_class:
 		      $$ = NULL_TREE;
 		    }
 		  else
-		    $$ = build_tree_list ((tree)access_default, $$);
+		    $$ = build_tree_list (access_default_node, $$);
 		}
 	| base_class_access_list see_typename base_class.1
 		{
-		  tree type;
-		  type = IDENTIFIER_TYPE_VALUE ($3);
+		  tree type = $3;
 		  if (current_aggr == signature_type_node)
 		    error ("access and source specifiers not allowed in signature");
-		  if (! is_aggr_typedef ($3, 1))
+		  if (! IS_AGGR_TYPE (type))
 		    $$ = NULL_TREE;
 		  else if (current_aggr == signature_type_node
 			   && (! type) && (! IS_SIGNATURE (type)))
@@ -2391,7 +2389,7 @@ base_class:
 		    {
 		      sorry ("signature inheritance, base type `%s' ignored",
 			     IDENTIFIER_POINTER ($$));
-		      $$ = build_tree_list ((tree)access_public, $3);
+		      $$ = build_tree_list (access_public_node, $3);
 		    }
 		  else if (type && IS_SIGNATURE (type))
 		    {
@@ -2399,7 +2397,7 @@ base_class:
 		      $$ = NULL_TREE;
 		    }
 		  else
-		    $$ = build_tree_list ((tree) $$, $3);
+		    $$ = build_tree_list ($$, $3);
 		}
 	;
 
@@ -2412,8 +2410,7 @@ base_class.1:
 		      if (IS_AGGR_TYPE (TREE_TYPE ($3)))
 			{
 			  sorry ("`sigof' as base signature specifier");
-			  /* need to return some dummy signature identifier */
-			  $$ = $3;
+			  $$ = TREE_TYPE ($3);
 			}
 		      else
 			{
@@ -2434,8 +2431,7 @@ base_class.1:
 		      if (IS_AGGR_TYPE (groktypename ($3)))
 			{
 			  sorry ("`sigof' as base signature specifier");
-			  /* need to return some dummy signature identifier */
-			  $$ = $3;
+			  $$ = groktypename ($3);
 			}
 		      else
 			{
@@ -2456,40 +2452,40 @@ base_class_access_list:
 	| SCSPEC see_typename
 		{ if ($<ttype>$ != ridpointers[(int)RID_VIRTUAL])
 		    sorry ("non-virtual access");
-		  $$ = access_default_virtual; }
+		  $$ = access_default_virtual_node; }
 	| base_class_access_list VISSPEC see_typename
 		{ int err = 0;
-		  if ($2 == access_protected)
+		  if ($2 == access_protected_node)
 		    {
 		      warning ("`protected' access not implemented");
-		      $2 = access_public;
+		      $2 = access_public_node;
 		      err++;
 		    }
-		  else if ($2 == access_public)
+		  else if ($2 == access_public_node)
 		    {
-		      if ($1 == access_private)
+		      if ($1 == access_private_node)
 			{
 			mixed:
 			  error ("base class cannot be public and private");
 			}
-		      else if ($1 == access_default_virtual)
-			$$ = access_public_virtual;
+		      else if ($1 == access_default_virtual_node)
+			$$ = access_public_virtual_node;
 		    }
-		  else /* $2 == access_private */
+		  else /* $2 == access_private_node */
 		    {
-		      if ($1 == access_public)
+		      if ($1 == access_public_node)
 			goto mixed;
-		      else if ($1 == access_default_virtual)
-			$$ = access_private_virtual;
+		      else if ($1 == access_default_virtual_node)
+			$$ = access_private_virtual_node;
 		    }
 		}
 	| base_class_access_list SCSPEC see_typename
 		{ if ($2 != ridpointers[(int)RID_VIRTUAL])
 		    sorry ("non-virtual access");
-		  if ($$ == access_public)
-		    $$ = access_public_virtual;
-		  else if ($$ == access_private)
-		    $$ = access_private_virtual; }
+		  if ($$ == access_public_node)
+		    $$ = access_public_virtual_node;
+		  else if ($$ == access_private_node)
+		    $$ = access_private_virtual_node; }
 	;
 
 left_curly: '{'
@@ -2564,18 +2560,18 @@ opt.component_decl_list:
 	| component_decl_list
 		{
 		  if (current_aggr == signature_type_node)
-		    $$ = build_tree_list ((tree) access_public, $$);
+		    $$ = build_tree_list (access_public_node, $$);
 		  else
-		    $$ = build_tree_list ((tree) access_default, $$);
+		    $$ = build_tree_list (access_default_node, $$);
 		}
 	| opt.component_decl_list VISSPEC ':' component_decl_list
 		{
-		  tree visspec = (tree) $2;
+		  tree visspec = $2;
 
 		  if (current_aggr == signature_type_node)
 		    {
 		      error ("access specifier not allowed in signature");
-		      visspec = (tree) access_public;
+		      visspec = access_public_node;
 		    }
 		  $$ = chainon ($$, build_tree_list (visspec, $4));
 		}
@@ -2861,23 +2857,20 @@ after_type_declarator:
 qualified_type_name:
 	  type_name %prec EMPTY
 		{
+		  $$ = TREE_TYPE ($1);
 		  /* Remember that this name has been used in the class
 		     definition, as per [class.scope0] */
 		  if (current_class_type
 		      && TYPE_BEING_DEFINED (current_class_type)
-		      && ! IDENTIFIER_CLASS_VALUE ($$))
-		    {
-		      tree t = lookup_name ($$, -2);
-		      if (t)
-			pushdecl_class_level (t);
-		    }
+		      && ! IDENTIFIER_CLASS_VALUE ($1))
+		    pushdecl_class_level (lookup_name ($1, -2));
 		}
 	| nested_type
 	;
 
 nested_type:
 	nested_name_specifier type_name %prec EMPTY
-		{ $$ = $2; }
+		{ $$ = TREE_TYPE ($2); }
 	;
 
 direct_after_type_declarator:
@@ -2941,9 +2934,9 @@ complex_direct_notype_declarator:
 	| direct_notype_declarator '[' ']'
 		{ $$ = build_parse_node (ARRAY_REF, $$, NULL_TREE); }
 	| notype_qualified_id
-		{ if (TREE_TYPE (OP0 ($$)) != current_class_type)
+		{ if (OP0 ($$) != current_class_type)
 		    {
-		      push_nested_class (TREE_TYPE (OP0 ($$)), 3);
+		      push_nested_class (OP0 ($$), 3);
 		      TREE_COMPLEXITY ($$) = current_class_depth;
 		    }
 		}
@@ -2991,11 +2984,11 @@ nested_name_specifier:
    inline here?!?  (jason) */
 nested_name_specifier_1:
 	  TYPENAME SCOPE
-		{ got_scope = TREE_TYPE ($$); }
+		{ got_scope = $$ = TREE_TYPE ($1); }
 	| NSNAME SCOPE
-		{ got_scope = $$; }
+		{ got_scope = $$ = $1; }
 	| template_type SCOPE
-		{ got_scope = TREE_TYPE ($$); }
+		{ got_scope = $$ = TREE_TYPE ($1); }
 /* 	These break 'const i;'
 	| IDENTIFIER SCOPE
 		{

@@ -127,13 +127,6 @@ process_template_parm (list, next)
       decl = build_decl (TYPE_DECL, TREE_VALUE (parm), t);
       TYPE_MAIN_DECL (t) = decl;
       parm = decl;
-      if (defval)
-	{
-	  if (IDENTIFIER_HAS_TYPE_VALUE (defval))
-	    defval = IDENTIFIER_TYPE_VALUE (defval);
-	  else
-	    defval = TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (defval));
-	}
     }
   SET_DECL_ARTIFICIAL (decl);
   pushdecl (decl);

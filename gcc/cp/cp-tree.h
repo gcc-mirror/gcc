@@ -1727,15 +1727,14 @@ extern int current_function_parms_stored;
    can have.  These are sensible combinations of {public,private,protected}
    cross {virtual,non-virtual}.  */
 
-enum access_type {
-  access_default,
-  access_public,
-  access_protected,
-  access_private,
-  access_default_virtual,
-  access_public_virtual,
-  access_private_virtual
-};
+/* in class.c. */
+extern tree access_default_node; /* 0 */
+extern tree access_public_node; /* 1 */
+extern tree access_protected_node; /* 2 */
+extern tree access_private_node; /* 3 */
+extern tree access_default_virtual_node; /* 4 */
+extern tree access_public_virtual_node; /* 5 */
+extern tree access_private_virtual_node; /* 6 */
 
 /* in lex.c  */
 extern tree current_unit_name, current_unit_language;
@@ -2311,7 +2310,7 @@ extern void push_memoized_context		PROTO((tree, int));
 extern void pop_memoized_context		PROTO((int));
 extern tree get_binfo				PROTO((tree, tree, int));
 extern int get_base_distance			PROTO((tree, tree, int, tree *));
-extern enum access_type compute_access		PROTO((tree, tree));
+extern tree compute_access			PROTO((tree, tree));
 extern tree lookup_field			PROTO((tree, tree, int, int));
 extern tree lookup_nested_field			PROTO((tree, int));
 extern tree lookup_fnfields			PROTO((tree, tree, int));
@@ -2333,7 +2332,7 @@ extern void build_mi_virtuals			PROTO((int, int));
 extern void add_mi_virtuals			PROTO((int, tree));
 extern void report_ambiguous_mi_virtuals	PROTO((int, tree));
 extern void note_debug_info_needed		PROTO((tree));
-extern void push_class_decls			PROTO((tree));
+extern void push_class_decls			PROTO((tree, int));
 extern void pop_class_decls			PROTO((tree));
 extern void unuse_fields			PROTO((tree));
 extern void unmark_finished_struct		PROTO((tree));

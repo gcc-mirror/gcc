@@ -1,3 +1,137 @@
+Wed Jan 17 10:18:01 1996  Mike Stump  <mrs@cygnus.com>
+
+	* decl2.c (warn_pointer_arith): Default to on.
+
+Tue Jan 16 12:45:38 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* lex.c (is_rid): New function.
+	* decl.c (grokdeclarator): Diagnose reserved words used as
+	declarator-ids.
+
+Tue Jan 16 11:39:40 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* tree.c (get_decl_list): Don't lose cv-quals.
+
+	* decl.c (grokdeclarator): Fix SCOPE_REF handling and diagnose
+	typespecs used as declarator-ids.
+
+Tue Jan 16 11:09:42 1996  Mike Stump  <mrs@cygnus.com>
+
+	* decl.c (poplevel): When poping a level, don't give a warning for
+	any subblocks that already exist.
+
+Tue Jan 16 00:25:33 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* typeck.c (build_object_ref): Finish what I started.
+
+	* parse.y (qualified_type_name): Don't check TYPE_BUILT_IN.
+
+	* decl2.c (constructor_name_full): Handle TEMPLATE_TYPE_PARMs.
+
+	* decl.c (grokdeclarator): Also accept TEMPLATE_TYPE_PARM as a
+ 	scope.
+
+Mon Jan 15 16:19:32 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (xref_tag): Handle passing a type in directly.
+
+	* parse.y (qualified_type_name): Pull out the type.
+	(nested_type): Ditto.
+	Take types directly instead of as identifiers.
+	* call.c (build_scoped_method_call): Take types directly instead of
+ 	as identifiers.
+  	* decl.c (xref_basetypes): Ditto.
+	* init.c (expand_member_init): Ditto.
+	(build_member_call): Ditto.
+	(build_offset_ref): Ditto.
+	* typeck2.c (build_scoped_ref): Ditto, remove bogus code.
+	* method.c (do_build_assign_ref): Ditto.
+	* decl.c (grokdeclarator): Handle a type appearing as the
+	declarator-id for constructors.
+	* method.c (do_build_copy_constructor): current_base_init_list now
+	uses the types directly, not their names.
+	* init.c (sort_base_init): Ditto.
+	(expand_member_init): Ditto.
+	* init.c (is_aggr_type): New function, like is_aggr_typedef.
+	* class.c (pushclass): If !modify and
+ 	CLASSTYPE_LOCAL_TYPEDECLS (type)), do set up IDENTIFIER_TYPE_VALUE
+	for inherited types.
+
+Mon Jan 15 08:45:01 1996  Jeffrey A Law  (law@cygnus.com)
+
+	* tree.c (layout_basetypes): Call build_lang_field_decl instead
+	of build_lang_decl if first arg is a FIELD_DECL.
+	(tree_copy_lang_decl_for_deferred_output): Reverse test for when
+	to copy DECL_MAIN_VARIANT and DECL_CHAIN.
+
+Thu Jan 11 14:55:07 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* decl.c (cp_finish_decl): Only clear TREE_USED if DECL_NAME is
+	non-empty.
+	* except.c (expand_start_catch_block): Set TREE_USED to avoid
+	warnings about the catch handler.
+
+Mon Jan  8 17:35:12 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* typeck.c (build_modify_expr): Use a COMPOUND_EXPR instead of
+ 	expand_target_expr.
+
+Thu Jan  4 12:30:32 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	Fix access control to use trees rather than integers.
+	* class.c (access_{default, public, protected, private,
+	default_virtual, public_virtual, private_virtual}_node): Add
+	definitions.
+	(init_class_processing): Do creation of those nodes.
+	* cp-tree.h (access_type): Delete enum decl.
+	(access_{default, public, protected, private, default_virtual,
+	public_virtual, private_virtual}_node): Add decls.
+	(compute_access): Change return type.
+	* search.c (compute_access): Have tree return type, instead of enum.
+	(lookup_field): Declare THIS_V and NEW_V to be tree nodes.
+	* lex.c (real_yylex): Use yylval.ttype for giving the value of the
+	access_* node for each of RID_{PUBLIC, PRIVATE, PROTECTED}.
+	* parse.y (VISSPEC): Make ttype rather than itype.
+	(base_class_access_list): Likewise.
+	* *.[cy]: Change all refs of `access_public' to `access_public_node',
+	etc.
+	* call.c (build_method_call): Make ACCESS be a tree.
+	* class.c (alter_access, finish_struct_1, filter_struct): Likewise.
+	* cvt.c (convert_to_aggr): Likewise.
+	* init.c (build_offset_ref, resolve_offset_ref, build_delete):
+	Likewise.
+	* method.c (hack_identifier): Likewise.
+	* typeck.c (build_component_ref_1, build_component_ref): ): Likewise.
+
+Thu Jan  4 11:02:20 1996  Mike Stump  <mrs@cygnus.com>
+
+	* typeck.c (pointer_int_sum, pointer_diff): Make code agree with C
+	frontend, and make it more consistent with respect to
+	warn_pointer_arith.
+
+Tue Jan  2 00:13:38 1996  Rusty Russell  <rusty@adelaide.maptek.com.au>
+
+	* decl.c (pushdecl): Check for duplicate parameter names.
+
+Wed Jan  3 09:25:48 1996  Mike Stump  <mrs@cygnus.com>
+
+	* decl.c (expand_static_init): Call assemble_external for atexit.
+
+Wed Jan  3 07:55:19 1996  Mike Stump  <mrs@cygnus.com>
+
+	* except.c (do_unwind): Remove some generated dead code.
+	(eh_outer_context): New routine, factor out some common code from
+	expand_builtin_throw and end_eh_unwinder.  Add code to do return
+	address masking for the PA.
+	(expand_builtin_throw): Use eh_outer_context instead of open coding
+	it here.
+	(end_eh_unwinder): Ditto.
+
+Tue Jan  2 17:00:56 1996  Mike Stump  <mrs@cygnus.com>
+
+	* except.c (expand_throw): Call assemble_external for __empty, if we
+	use it.
+
 Thu Dec 28 11:13:15 1995  Mike Stump  <mrs@cygnus.com>
 
 	* except.c (expand_builtin_throw): Use RETURN_ADDR_OFFSET instead of
@@ -3977,7 +4111,7 @@ Fri Dec  9 18:17:37 1994  Doug Evans  <dje@cygnus.com>
 	(PARSE_H): Depend on $(PARSE_C), for parallel makes.
 	(PARSE_C): Undo last patch.
 
-Fri Dec  2 10:44:36 1994  Mike Stump  (mrs@wombat.gnu.ai.mit.edu)
+Fri Dec  2 10:44:36 1994  Mike Stump  <mrs@cygnus.com>
 
 	* Makefile.in (BISONFLAGS): Add --yacc so that output winds up in
 	y.tab.c.
