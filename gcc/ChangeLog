@@ -1,3 +1,8 @@
+2004-09-26  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* builtins.c (get_memory_rtx): Set mem attributes for non-ADDR_EXPR
+	expressions.  Always clear MEM_SIZE and alias set.
+
 2004-09-26  Roger Sayle  <roger@eyesopen.com>
 	    Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
