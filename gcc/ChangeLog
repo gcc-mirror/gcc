@@ -1,3 +1,7 @@
+2003-03-30  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (a peephole2): Remove useless code.
+
 2003-03-29  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (*iorsi3_and_ashift): New.
