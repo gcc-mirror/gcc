@@ -1961,7 +1961,11 @@ expand_mult (mode, op0, op1, target, unsignedp)
 	const_op1 = gen_rtx (CONST_INT, VOIDmode, CONST_DOUBLE_LOW (op1));
     }
 
-  if (GET_CODE (const_op1) == CONST_INT && ! mult_is_very_cheap && optimize)
+  /* We used to test optimize here, on the grounds that it's better to
+     produce a smaller program when -O is not used.
+     But this causes such a terrible slowdown sometimes
+     that it seems better to use synth_mult always.  */
+  if (GET_CODE (const_op1) == CONST_INT && ! mult_is_very_cheap)
     {
       struct algorithm alg;
       struct algorithm neg_alg;
