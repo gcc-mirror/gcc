@@ -293,9 +293,9 @@ tree base_init_expr;
    Identifiers for `this' in member functions and the auto-delete
    parameter for destructors.  */
 tree this_identifier, in_charge_identifier;
-/* Used in pointer to member functions, and in vtables. */
+/* Used in pointer to member functions, in vtables, and in sigtables. */
 tree pfn_identifier, index_identifier, delta_identifier, delta2_identifier;
-tree pfn_or_delta2_identifier;
+tree pfn_or_delta2_identifier, tag_identifier, offset_identifier;
 
 /* A list (chain of TREE_LIST nodes) of named label uses.
    The TREE_PURPOSE field is the list of variables defined
@@ -1575,7 +1575,56 @@ print_binding_stack ()
   print_binding_level (global_binding_level);
 }
 
-/* Push into the scope of the NAME namespace.  */
+extern char * first_global_object_name;
+
+/* Get a unique name for each call to this routine for unnamed namespaces.
+   Mostly copied from get_file_function_name.  */
+static tree
+get_unique_name ()
+{
+  static int temp_name_counter = 0;
+  char *buf;
+  register char *p;
+
+  if (first_global_object_name)
+    p = first_global_object_name;
+  else if (main_input_filename)
+    p = main_input_filename;
+  else
+    p = input_filename;
+
+#define UNNAMED_NAMESPACE_FORMAT "__%s_%d"
+
+  buf = (char *) alloca (sizeof (UNNAMED_NAMESPACE_FORMAT) + strlen (p));
+
+  sprintf (buf, UNNAMED_NAMESPACE_FORMAT, p, temp_name_counter++);
+
+  /* Don't need to pull weird characters out of global names.  */
+  if (p != first_global_object_name)
+    {
+      for (p = buf+11; *p; p++)
+	if (! ((*p >= '0' && *p <= '9')
+#if 0 /* we always want labels, which are valid C++ identifiers (+ `$') */
+#ifndef ASM_IDENTIFY_GCC	/* this is required if `.' is invalid -- k. raeburn */
+	       || *p == '.'
+#endif
+#endif
+#ifndef NO_DOLLAR_IN_LABEL	/* this for `$'; unlikely, but... -- kr */
+	       || *p == '$'
+#endif
+#ifndef NO_DOT_IN_LABEL		/* this for `.'; unlikely, but... */
+	       || *p == '.'
+#endif
+	       || (*p >= 'A' && *p <= 'Z')
+	       || (*p >= 'a' && *p <= 'z')))
+	  *p = '_';
+    }
+
+  return get_identifier (buf);
+}
+
+/* Push into the scope of the NAME namespace.  If NAME is NULL_TREE, then we
+   select a name that is unique to this compilation unit.  */
 void
 push_namespace (name)
      tree name;
@@ -1584,6 +1633,12 @@ push_namespace (name)
   tree old_id = get_namespace_id ();
   char *buf;
   tree d = make_node (NAMESPACE_DECL);
+
+  if (! name)
+    {
+      /* Create a truely ugly name! */
+      name = get_unique_name ();
+    }
 
   DECL_NAME (d) = name;
   DECL_ASSEMBLER_NAME (d) = name;
@@ -2547,10 +2602,23 @@ duplicate_decls (newdecl, olddecl)
 		  }
 	      }
 
-	  if (DECL_THIS_INLINE (newdecl) && ! DECL_THIS_INLINE (olddecl)
-	      && TREE_ADDRESSABLE (olddecl))
-	    cp_pedwarn ("`%#D' was used before it was declared inline",
-			newdecl);
+	  if (DECL_THIS_INLINE (newdecl) && ! DECL_THIS_INLINE (olddecl))
+	    {
+	      if (DECL_VINDEX (olddecl) && ! DECL_ABSTRACT_VIRTUAL_P (olddecl))
+		{
+		  cp_pedwarn ("virtual function `%#D' redeclared inline",
+			      newdecl);
+		  cp_pedwarn_at ("previous non-inline declaration here",
+				 olddecl);
+		}
+	      else if (TREE_ADDRESSABLE (olddecl))
+		{
+		  cp_pedwarn ("`%#D' was used before it was declared inline",
+			      newdecl);
+		  cp_pedwarn_at ("previous non-inline declaration here",
+				 olddecl);
+		}
+	    }
 	}
       /* These bits are logically part of the type for non-functions.  */
       else if (TREE_READONLY (newdecl) != TREE_READONLY (olddecl)
@@ -4261,7 +4329,7 @@ lookup_name_real (name, prefer_type, nonclass)
 
       if (got_scope)
 	type = got_scope;
-      else
+      else if (got_object != error_mark_node)
 	type = got_object;
       
       if (type)
@@ -4671,6 +4739,11 @@ init_decl_processing ()
   delta_identifier = get_identifier (VTABLE_DELTA_NAME);
   delta2_identifier = get_identifier (VTABLE_DELTA2_NAME);
   pfn_or_delta2_identifier = get_identifier ("__pfn_or_delta2");
+  if (flag_handle_signatures)
+    {
+      tag_identifier = get_identifier (SIGTABLE_TAG_NAME);
+      offset_identifier = get_identifier (SIGTABLE_OFFSET_NAME);
+    }
 
   /* Define `int' and `char' first so that dbx will output them first.  */
 
@@ -5217,17 +5290,27 @@ init_decl_processing ()
   if (flag_handle_signatures)
     {
       sigtable_entry_type = make_lang_type (RECORD_TYPE);
-      fields[0] = build_lang_field_decl (FIELD_DECL,
-					 get_identifier (SIGTABLE_CODE_NAME),
-					 short_integer_type_node);
-      fields[1] = build_lang_field_decl (FIELD_DECL,
-					 get_identifier (SIGTABLE_OFFSET_NAME),
-					 short_integer_type_node);
-      fields[2] = build_lang_field_decl (FIELD_DECL,
-					 get_identifier (SIGTABLE_PFN_NAME),
-					 ptr_type_node);
-      finish_builtin_type (sigtable_entry_type, SIGTABLE_PTR_TYPE, fields, 2,
+      fields[0] = build_lang_field_decl (FIELD_DECL, tag_identifier,
+					 delta_type_node);
+      fields[1] = build_lang_field_decl (FIELD_DECL, delta_identifier,
+					 delta_type_node);
+      fields[2] = build_lang_field_decl (FIELD_DECL, offset_identifier,
+					 delta_type_node);
+      fields[3] = build_lang_field_decl (FIELD_DECL, index_identifier,
+					 delta_type_node);
+      finish_builtin_type (sigtable_entry_type, SIGTABLE_PTR_TYPE, fields, 3,
 			   double_type_node);
+
+      /* Make this part of an invisible union.  */
+      fields[4] = copy_node (fields[2]);
+      TREE_TYPE (fields[4]) = ptr_type_node;
+      DECL_NAME (fields[4]) = pfn_identifier;
+      DECL_MODE (fields[4]) = TYPE_MODE (ptr_type_node);
+      DECL_SIZE (fields[4]) = TYPE_SIZE (ptr_type_node);
+      TREE_UNSIGNED (fields[4]) = 0;
+      TREE_CHAIN (fields[1]) = fields[4];
+      TREE_CHAIN (fields[4]) = fields[2];
+
       sigtable_entry_type = build_type_variant (sigtable_entry_type, 1, 0);
       record_builtin_type (RID_MAX, SIGTABLE_PTR_TYPE, sigtable_entry_type);
     }
@@ -6955,7 +7038,7 @@ complete_array_type (type, initial_value, do_default)
       tree itype;
 
       TYPE_DOMAIN (type) = build_index_type (maxindex);
-      if (!TREE_TYPE (maxindex))
+      if (! TREE_TYPE (maxindex))
 	TREE_TYPE (maxindex) = TYPE_DOMAIN (type);
       if (initial_value)
         itype = TREE_TYPE (initial_value);
@@ -6963,6 +7046,11 @@ complete_array_type (type, initial_value, do_default)
 	itype = NULL;
       if (itype && !TYPE_DOMAIN (itype))
 	TYPE_DOMAIN (itype) = TYPE_DOMAIN (type);
+      /* The type of the main variant should never be used for arrays
+	 of different sizes.  It should only ever be completed with the
+	 size of the array.  */
+      if (! TYPE_DOMAIN (TYPE_MAIN_VARIANT (type)))
+	TYPE_DOMAIN (TYPE_MAIN_VARIANT (type)) = TYPE_DOMAIN (type);
     }
 
   /* Lay out the type now that we can get the real answer.  */
@@ -8477,7 +8565,13 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 		  cp_pedwarn ("ANSI C++ forbids zero-size array `%D'", dname);
 		if (TREE_CONSTANT (size))
 		  {
+		    int old_flag_pedantic_errors = flag_pedantic_errors;
+		    int old_pedantic = pedantic;
+		    pedantic = flag_pedantic_errors = 1;
+		    /* Always give overflow errors on array subscripts.  */
 		    constant_expression_warning (size);
+		    pedantic = old_pedantic;
+		    flag_pedantic_errors = old_flag_pedantic_errors;
 		    if (INT_CST_LT (size, integer_zero_node))
 		      {
 			cp_error ("size of array `%D' is negative", dname);
@@ -11007,6 +11101,16 @@ start_function (declspecs, declarator, raises, pre_parsed_p)
 	    cp_error_at ("previous declaration here", IDENTIFIER_GLOBAL_VALUE (DECL_NAME (decl1)));
 	}
 
+      /* This can happen if a template class is instantiated as part of the
+	 specialization of a member function which is defined in the class
+	 template.  We should just use the specialization, but for now give an
+	 error.  */
+      if (DECL_INITIAL (decl1) != NULL_TREE)
+	{
+	  cp_error_at ("specialization of `%#D' not supported", decl1);
+	  cp_error ("when defined in the class template body", decl1);
+	}
+
       last_function_parms = DECL_ARGUMENTS (decl1);
       last_function_parm_tags = NULL_TREE;
       fntype = TREE_TYPE (decl1);
@@ -11206,16 +11310,24 @@ start_function (declspecs, declarator, raises, pre_parsed_p)
 	     we keep the consistency between `current_class_type'
 	     and `current_class_decl'.  */
 	  tree t = last_function_parms;
-	  int i = suspend_momentary ();
 
 	  my_friendly_assert (t != NULL_TREE
 			      && TREE_CODE (t) == PARM_DECL, 162);
 
-	  /* Fool build_indirect_ref.  */
-	  current_class_decl = NULL_TREE;
-	  C_C_D = build_indirect_ref (t, NULL_PTR);
-	  current_class_decl = t;
-	  resume_momentary (i);
+	  if (TREE_CODE (TREE_TYPE (t)) == POINTER_TYPE)
+	    {
+	      int i = suspend_momentary ();
+
+	      /* Fool build_indirect_ref.  */
+	      current_class_decl = NULL_TREE;
+	      C_C_D = build_indirect_ref (t, NULL_PTR);
+	      current_class_decl = t;
+	      resume_momentary (i);
+	    }
+	  else
+	    /* We're having a signature pointer here.  */
+	    C_C_D = current_class_decl = t;
+
 	}
     }
   else
@@ -12022,6 +12134,7 @@ finish_function (lineno, call_poplevel, nested)
     }
 
   named_label_uses = NULL_TREE;
+  current_class_decl = NULL_TREE;
 }
 
 /* Create the FUNCTION_DECL for a function definition.
