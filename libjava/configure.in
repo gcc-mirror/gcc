@@ -1190,7 +1190,7 @@ fi
 # Define here any compiler flags that you need in order to make backtrace() work.
 BACKTRACESPEC=
 case "${host}" in
- x86_64*-*-linux*)
+ x86_64*-*-linux*|i?86-*)
     BACKTRACESPEC=-fno-omit-frame-pointer
     ;;
 esac
