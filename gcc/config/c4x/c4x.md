@@ -3420,8 +3420,8 @@
 
 ; This can generate invalid stack slot displacements
 (define_split
- [(set (match_operand:QI 0 "reg_operand" "=r")
-       (unspec:QI [(match_operand:QF 1 "reg_operand" "f")] 12))]
+ [(set (match_operand:QI 0 "reg_operand" "")
+       (unspec:QI [(match_operand:QF 1 "reg_operand" "")] 12))]
   "reload_completed"
   [(set (match_dup 3) (match_dup 1))
    (set (match_dup 0) (match_dup 2))]
@@ -3438,8 +3438,8 @@
   [(set_attr "type" "multi")])
 
 (define_split
- [(parallel [(set (match_operand:QI 0 "reg_operand" "=r")
-                  (unspec:QI [(match_operand:QF 1 "reg_operand" "f")] 12))
+ [(parallel [(set (match_operand:QI 0 "reg_operand" "")
+                  (unspec:QI [(match_operand:QF 1 "reg_operand" "")] 12))
              (clobber (reg:CC 21))])]
   "reload_completed"
   [(set (mem:QF (pre_inc:QI (reg:QI 20)))
@@ -3473,8 +3473,8 @@
 
 ; This can generate invalid stack slot displacements
 (define_split
- [(set (match_operand:QF 0 "reg_operand" "=f")
-       (unspec:QF [(match_operand:QI 1 "reg_operand" "r")] 11))]
+ [(set (match_operand:QF 0 "reg_operand" "")
+       (unspec:QF [(match_operand:QI 1 "reg_operand" "")] 11))]
   "reload_completed"
   [(set (match_dup 2) (match_dup 1))
    (set (match_dup 0) (match_dup 3))]
@@ -3491,8 +3491,8 @@
   [(set_attr "type" "multi")])
 
 (define_split
- [(parallel [(set (match_operand:QF 0 "reg_operand" "=f")
-                  (unspec:QF [(match_operand:QI 1 "reg_operand" "r")] 11))
+ [(parallel [(set (match_operand:QF 0 "reg_operand" "")
+                  (unspec:QF [(match_operand:QI 1 "reg_operand" "")] 11))
              (clobber (reg:CC 21))])]
   "reload_completed"
   [(set (mem:QI (pre_inc:QI (reg:QI 20)))
@@ -6428,8 +6428,8 @@
   [(set_attr "type" "multi")])
 
 (define_split
-  [(set (match_operand:HI 0 "reg_operand" "=?dc")
-        (sign_extend:HI (match_operand:QI 1 "src_operand" "rIm")))
+  [(set (match_operand:HI 0 "reg_operand" "")
+        (sign_extend:HI (match_operand:QI 1 "src_operand" "")))
    (clobber (reg:CC 21))]
   "reload_completed && TARGET_C3X"
   [(set (match_dup 2) (match_dup 1))
@@ -6440,8 +6440,8 @@
    operands[3] = c4x_operand_subword (operands[0], 1, 0, HImode);")
 
 (define_split
-  [(set (match_operand:HI 0 "reg_operand" "=?dc")
-        (sign_extend:HI (match_operand:QI 1 "src_operand" "rIm")))
+  [(set (match_operand:HI 0 "reg_operand" "")
+        (sign_extend:HI (match_operand:QI 1 "src_operand" "")))
    (clobber (reg:CC 21))]
   "reload_completed && ! TARGET_C3X"
   [(set (match_dup 2) (match_dup 1))
@@ -6461,8 +6461,8 @@
 ; If operand0 and operand1 are the same register we don't need
 ; the first set.
 (define_split
-  [(set (match_operand:HI 0 "reg_operand" "=?dc")
-        (zero_extend:HI (match_operand:QI 1 "src_operand" "rIm")))
+  [(set (match_operand:HI 0 "reg_operand" "")
+        (zero_extend:HI (match_operand:QI 1 "src_operand" "")))
    (clobber (reg:CC 21))]
   "reload_completed"
   [(set (match_dup 2) (match_dup 1))
