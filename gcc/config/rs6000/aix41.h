@@ -44,6 +44,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef CPP_SPEC
 #define CPP_SPEC "%{posix: -D_POSIX_SOURCE}\
+   %{ansi: -D_ANSI_C_SOURCE}\
    %{mpe: -I/usr/lpp/ppe.poe/include}\
    %{mthreads: -D_THREAD_SAFE}\
    %(cpp_cpu)"

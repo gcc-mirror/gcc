@@ -43,11 +43,6 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_CPU_DEFAULT ((char *)0)
 #endif
 
-/* Define appropriate architecture macros for preprocessor depending on
-   target switches.  */
-
-#define CPP_SPEC "%{posix: -D_POSIX_SOURCE} %(cpp_cpu)"
-
 /* Common CPP definitions used by CPP_SPEC among the various targets
    for handling -mcpu=xxx switches.  */
 #define CPP_CPU_SPEC \

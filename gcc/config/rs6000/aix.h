@@ -66,6 +66,13 @@ Boston, MA 02111-1307, USA.  */
 #define CPP_PREDEFINES "-D_IBMR2 -D_POWER -D_AIX -D_AIX32 -D_LONG_LONG \
 -Asystem(unix) -Asystem(aix) -Acpu(rs6000) -Amachine(rs6000)"
 
+/* Define appropriate architecture macros for preprocessor depending on
+   target switches.  */
+
+#define CPP_SPEC "%{posix: -D_POSIX_SOURCE}\
+   %{ansi: -D_ANSI_C_SOURCE}\
+   %(cpp_cpu)"
+
 /* Tell the assembler to assume that all undefined names are external.
 
    Don't do this until the fixed IBM assembler is more generally available.
