@@ -176,6 +176,11 @@ if [ -n "${with_cross_host}" ] ; then
     mv -f Makefile.tem Makefile
 fi
 
+# enable multilib-ing by default.
+if [ -z "${enable_multilib}" ]; then
+    enable_multilib=yes
+fi
+
 . ${topsrcdir}/config-ml.in
 
 gxx_include_dir=
