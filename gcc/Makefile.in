@@ -222,6 +222,7 @@ SYSTEM_HEADER_DIR = /usr/include
 # Where to find some libiberty headers.
 HASHTAB_H   = $(srcdir)/../include/hashtab.h
 OBSTACK_H   = $(srcdir)/../include/obstack.h
+SPLAY_TREE_H= $(srcdir)/../include/splay-tree.h
 
 # Default cross SYSTEM_HEADER_DIR, to be overridden by targets.
 CROSS_SYSTEM_HEADER_DIR = $(tooldir)/sys-include
@@ -1798,10 +1799,10 @@ cppexp.o:   cppexp.c   $(CONFIG_H) $(LIBCPP_DEPS)
 cpplex.o:   cpplex.c   $(CONFIG_H) $(LIBCPP_DEPS)
 cpplib.o:   cpplib.c   $(CONFIG_H) $(LIBCPP_DEPS)
 cpphash.o:  cpphash.c  $(CONFIG_H) $(LIBCPP_DEPS) $(HASHTAB_H)
-cppfiles.o: cppfiles.c $(CONFIG_H) $(LIBCPP_DEPS) $(HASHTAB_H) mkdeps.h
+cppfiles.o: cppfiles.c $(CONFIG_H) $(LIBCPP_DEPS) $(SPLAY_TREE_H) mkdeps.h
 
-cppinit.o:  cppinit.c  $(CONFIG_H) $(LIBCPP_DEPS) $(HASHTAB_H) mkdeps.h \
-		prefix.h output.h Makefile version.h
+cppinit.o: cppinit.c $(CONFIG_H) $(LIBCPP_DEPS) $(HASHTAB_H) $(SPLAY_TREE_H) \
+		mkdeps.h prefix.h output.h Makefile version.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  $(PREPROCESSOR_DEFINES) \
 	  -c `echo $(srcdir)/cppinit.c | sed 's,^\./,,'`
