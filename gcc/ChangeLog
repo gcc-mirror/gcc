@@ -1,3 +1,15 @@
+2002-08-27  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* c-common.c (cpp_define_data_format): New function.
+	(cb_register_builtins): Call it.
+
+	* doc/cpp.texi (Common Predefined Macros): Document
+	__TARGET_BITS_ORDER__, __TARGET_BYTES_ORDER__,
+	__TARGET_INT_WORDS_ORDER__, __TARGET_FLOAT_WORDS_ORDER__,
+	__TARGET_FLOAT_FORMAT__, __TARGET_USES_VAX_F_FLOAT__,
+	__TARGET_USES_VAX_D_FLOAT__, __TARGET_USES_VAX_G_FLOAT__,
+	__TARGET_USES_VAX_H_FLOAT__.
+
 2002-08-26  Ziemowit Laski <zlaski@apple.com>
 
 	* objc/objc-act.c (get_super_receiver): If inside a class method
