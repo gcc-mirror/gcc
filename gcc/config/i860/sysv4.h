@@ -178,3 +178,19 @@ tdesc_section ()							\
       in_section = in_tdesc;						\
     }									\
 }
+
+#ifdef OUTPUT_TDESC
+#undef ASM_FILE_END
+#define ASM_FILE_END(FILE)					\
+do {				 				\
+     if (current_function_original_name != NULL) {		\
+       tdesc_section();						\
+       fprintf ((FILE), "%s __ETEXT\n", ASM_LONG);		\
+       fprintf ((FILE), "%s 0\n", ASM_LONG);			\
+       text_section();						\
+       fputs("__ETEXT:\n", (FILE));				\
+     }								\
+     fprintf ((FILE), "\t.ident\t\"GCC: (GNU) %s\"\n",		\
+	      version_string);					\
+   } while (0)
+#endif
