@@ -61,6 +61,7 @@ extern int general_src_operand PARAMS ((rtx, enum machine_mode));
 extern int nonimmediate_src_operand PARAMS ((rtx, enum machine_mode));
 extern int memory_src_operand PARAMS ((rtx, enum machine_mode));
 extern int pcrel_address PARAMS ((rtx, enum machine_mode));
+extern rtx legitimize_pic_address PARAMS ((rtx, enum machine_mode, rtx));
 #endif /* RTX_CODE */
 
 extern int flags_in_68881 PARAMS ((void));
