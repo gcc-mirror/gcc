@@ -1,3 +1,8 @@
+2002-04-17  Nathanael Nerode  <neroden@twcny.rr.com>
+
+	* configure.in: don't even try to configure or make a subdirectory
+	if there's no configure script for it.
+
 2002-04-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* MAINTAINERS: Remove chill maintainers.

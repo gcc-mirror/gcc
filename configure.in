@@ -1198,6 +1198,25 @@ if [ -z "${norecursion}" ] && [ -n "${target_configdirs}" ]; then
   done
 fi
 
+# Quietly strip out all directories which aren't configurable in this tree.
+# This relies on all configurable subdirectories being autoconfiscated, which
+# is now the case.
+configdirs_all="$configdirs"
+configdirs=
+for i in ${configdirs_all} ; do
+  if test -f ${srcdir}/$i/configure ; then
+    configdirs="${configdirs} $i"
+  fi
+done
+target_configdirs_all="$target_configdirs"
+target_configdirs=
+for i in ${target_configdirs_all} ; do
+  j=`echo $i | sed -e s/target-//g` 
+  if test -f ${srcdir}/$j/configure ; then
+    target_configdirs="${target_configdirs} $i"
+  fi
+done
+
 # Produce a warning message for the subdirs we can't configure.
 # This isn't especially interesting in the Cygnus tree, but in the individual
 # FSF releases, it's important to let people know when their machine isn't
