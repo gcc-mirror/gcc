@@ -124,7 +124,7 @@ main (int argc, char** argv)
 	{
 	  pthread_join (prod[i], NULL);
 	  pthread_join (cons[i], NULL);
-#if defined(__FreeBSD__)
+#if defined(__FreeBSD__) && __FreeBSD__ < 5
 	  // These lines are not required by POSIX since a successful
 	  // join is suppose to detach as well...
 	  pthread_detach (prod[i]);
