@@ -1,3 +1,7 @@
+2001-03-15  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* tests_flags.in (CXXFLAGS): Link libstdc++ before libsupc++.
+
 2001-03-15  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
 	* include/bits/basic_string.tcc (operator+): Fix thinko.

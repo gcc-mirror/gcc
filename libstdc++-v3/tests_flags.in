@@ -144,7 +144,7 @@ CXXFLAGS="-ggdb3 -DDEBUG_ASSERT @SECTION_FLAGS@ @SECTION_LDFLAGS@"
 # LIBS == any extra needed -l switches, etc (may need more libs, lose lose)
 case ${query} in
     --built-library)
-    LIBS="${LIB_PATH}/../libsupc++/libsupc++.la ${LIB_PATH}/libstdc++.la
+    LIBS="${LIB_PATH}/libstdc++.la ${LIB_PATH}/../libsupc++/libsupc++.la 
 	    -no-install -rpath ${GCC_LIB_PATH}"
     case @target_os@ in
         *cygwin*)  LIBS="${LIBS} -nodefaultlibs -lgcc -lcygwin -luser32
@@ -153,8 +153,8 @@ case ${query} in
     esac
     ;;
     --installed-library)
-    LIBS="-L${LIB_PATH} ${LIB_PATH}/libstdc++.la -no-install
-	    -rpath ${LIB_PATH}"
+    LIBS="-L${LIB_PATH} ${LIB_PATH}/libstdc++.la 
+           -no-install -rpath ${LIB_PATH}"
     ;;
 esac
 
