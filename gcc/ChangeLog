@@ -1,5 +1,16 @@
 2004-11-04  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* bitmap.h (bitmap_a_or_b, bitmap_a_and_b): Remove.
+	* df.c (dataflow_set_a_op_b): Use bitmap_and, bitmap_ior,
+	bitmap_and_into, bitmap_ior_into as appropriate.
+	* except.c (remove_eh_handler):	Likewise.
+	* global.c (modify_bb_reg_pav, make_accurate_live_analysis): Likewise.
+	* tree-dfa.c (mark_new_vars_to_rename): Likewise.
+	* tree-ssa-alias.c (merge_pointed_to_info): Likewise.
+	* tree-ssa-live.h (live_merge_and_clear): Likewise.
+	* tree-ssa-loop-ivopts.c (find_best_candidate, try_add_cand_for):
+	Likewise.
+
 	* bitmap.c (bitmap_print): Make bitno unsigned.
 	* bt-load.c (clear_btr_from_live_range,
 	btr_def_live_range): Likewise.

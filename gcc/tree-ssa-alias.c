@@ -1740,9 +1740,7 @@ merge_pointed_to_info (struct alias_info *ai, tree dest, tree orig)
 	      bitmap_copy (dest_pi->pt_vars, orig_pi->pt_vars);
 	    }
 	  else
-	    bitmap_a_or_b (dest_pi->pt_vars,
-		           dest_pi->pt_vars,
-		           orig_pi->pt_vars);
+	    bitmap_ior_into (dest_pi->pt_vars, orig_pi->pt_vars);
 	}
     }
   else
