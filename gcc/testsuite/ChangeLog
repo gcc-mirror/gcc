@@ -1,5 +1,9 @@
 Fri Aug 21 23:59:18 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* gcc.c-torture/unsorted/memtst.c: Reduce size of array when
+	STACK_SIZE is defined.
+	* gcc.c-torture/unsorted/stuct.c: Similarly.
+
 	* gcc.c-torture/compile/980821-1.c: New test.
 
 Fri Aug 21 03:14:04 1998  Jeffrey A Law  (law@cygnus.com)
