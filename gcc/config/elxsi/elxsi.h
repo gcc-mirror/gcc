@@ -689,27 +689,6 @@ enum reg_class { NO_REGS, GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES };
 
 /* #define UDIVSI3_LIBCALL "*udiv" */
 /* #define UMODSI3_LIBCALL "*urem" */
-
-/* Check a `double' value for validity for a particular machine mode.  */
-
-/* Note that it is very hard to accidentally create a number that fits in a
-   double but not in a float, since their ranges are almost the same.  */
-#define CHECK_FLOAT_VALUE(mode, d) \
-  if ((mode) == SFmode) \
-    { \
-      if ((d) > 1.7014117331926443e+38) \
-	{ error ("magnitude of constant too large for `float'"); \
-	  (d) = 1.7014117331926443e+38; } \
-      else if ((d) < -1.7014117331926443e+38) \
-	{ error ("magnitude of constant too large for `float'"); \
-	  (d) = -1.7014117331926443e+38; } \
-      else if (((d) > 0) && ((d) < 2.9387358770557188e-39)) \
-	{ warning ("`float' constant truncated to zero"); \
-	  (d) = 0.0; } \
-      else if (((d) < 0) && ((d) > -2.9387358770557188e-39)) \
-	{ warning ("`float' constant truncated to zero"); \
-	  (d) = 0.0; } \
-    }
 
 /* Tell final.c how to eliminate redundant test instructions.  */
 
