@@ -1,3 +1,11 @@
+2000-11-09  Jan van Male  <jan.vanmale@fenk.wau.nl>
+
+        * c-tree.texi: Fix typos.
+        * extend.texi: Likewise
+        * gcov.texi: Likewise
+        * rtl.texi: Likewise
+        * tm.texi: Likewise
+
 2000-11-09  Hans-Peter Nilsson  <hp@axis.com>
 
 	* c-lex.c [! NO_IMPLICIT_EXTERN_C] (cb_enter_file): Check

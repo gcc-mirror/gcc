@@ -6017,7 +6017,7 @@ correct for most systems.
 @findex ASM_OUTPUT_DEF_FROM_DECLS
 @item ASM_OUTPUT_DEF_FROM_DECLS (@var{stream}, @var{decl_of_name}, @var{decl_of_value})
 A C statement to output to the stdio stream @var{stream} assembler code
-which defines (equates) the symbol whoes tree node is @var{decl_of_name}
+which defines (equates) the symbol whose tree node is @var{decl_of_name}
 to have the value of the tree node @var{decl_of_value}.  This macro will
 be used in preference to @samp{ASM_OUTPUT_DEF} if it is defined and if
 the tree nodes are available.
@@ -6276,7 +6276,7 @@ This is like @code{ASM_OUTPUT_CONSTRUCTOR} but used for termination
 functions rather than initialization functions.
 
 When @code{ASM_OUTPUT_CONSTRUCTOR} and @code{ASM_OUTPUT_DESTRUCTOR} are
-defined, the initializaiton routine generated for the generated object
+defined, the initialization routine generated for the generated object
 file will have static linkage.
 @end table
 
@@ -6490,11 +6490,11 @@ files can define these macros differently.
 
 @item ASM_FPRINTF_EXTENSIONS(@var{file}, @var{argptr}, @var{format})
 @findex ASM_FPRINTF_EXTENSIONS
-If defiend this macro should expand to a series of @code{case}
+If defined this macro should expand to a series of @code{case}
 statements which will be parsed inside the @code{switch} statement of
 the @code{asm_fprintf} function.  This allows targets to define extra
 printf formats which may useful when generating their assembler
-statements.  Noet that upper case letters are reserved for future
+statements.  Note that upper case letters are reserved for future
 generic extensions to asm_fprintf, and so are not available to target
 specific code.  The output file is given by the parameter @var{file}.
 The varargs input pointer is @var{argptr} and the rest of the format
@@ -7865,7 +7865,7 @@ The primary reason to define this macro is to provide compatibility with
 other compilers for the same target.  In general, we discourage
 definition of target-specific pragmas for GCC.
 
-If the pragma can be implemented by atttributes then the macro
+If the pragma can be implemented by attributes then the macro
 @samp{INSERT_ATTRIBUTES} might be a useful one to define as well.
 
 Preprocessor macros that appear on pragma lines are not expanded.  All

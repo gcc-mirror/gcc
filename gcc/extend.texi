@@ -853,7 +853,7 @@ decimal notation, such as @code{1.55e1}, but also numbers such as
 @code{0x1.fp3} written in hexadecimal format.  In that format the
 @code{0x} hex introducer and the @code{p} or @code{P} exponent field are
 mandatory.  The exponent is a decimal number that indicates the power of
-2 by which the significand part will be multiplied.  Thus @code{0x1.f} is
+2 by which the significant part will be multiplied.  Thus @code{0x1.f} is
 1 15/16, @code{p3} multiplies it by 8, and the value of @code{0x1.fp3}
 is the same as @code{1.55e1}.
 
@@ -2702,7 +2702,7 @@ region.
 
 An @code{asm} instruction without any operands or clobbers (and ``old
 style'' @code{asm}) will not be deleted or moved significantly,
-regardless, unless it is unreachable, the same wasy as if you had
+regardless, unless it is unreachable, the same way as if you had
 written a @code{volatile} keyword.
 
 Note that even a volatile @code{asm} instruction can be moved in ways

@@ -2210,7 +2210,7 @@ expressions and so is @var{base}.  The mode @var{m} specifies how much
 space is given to each address-difference.  @var{min} and @var{max}
 are set up by branch shortening and hold a label with a minimum and a
 maximum address, respectively.  @var{flags} indicates the relative
-position of @var{base}, @var{min} and @var{max} to the cointaining insn
+position of @var{base}, @var{min} and @var{max} to the containing insn
 and of @var{min} and @var{max} to @var{base}.  See rtl.def for details.@refill
 @end table
 
@@ -2915,7 +2915,7 @@ probability that the branch will be taken.
 @findex REG_BR_PRED
 @item REG_BR_PRED
 These notes are found in JUMP insns after delayed branch scheduling
-has taken place.  They indicate both the direction and the likelyhood
+has taken place.  They indicate both the direction and the likelihood
 of the JUMP.  The format is a bitmask of ATTR_FLAG_* values.
 
 @findex REG_FRAME_RELATED_EXPR

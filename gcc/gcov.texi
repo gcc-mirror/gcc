@@ -217,7 +217,7 @@ For a call, if it was executed at least once, then a percentage
 indicating the number of times the call returned divided by the number
 of times the call was executed will be printed.  This will usually be
 100%, but may be less for functions call @code{exit} or @code{longjmp},
-and thus may not return everytime they are called.
+and thus may not return every time they are called.
 
 The execution counts are cumulative.  If the example program were
 executed again without removing the @code{.da} file, the count for the
@@ -336,7 +336,7 @@ The format of the @code{.da} file is fairly simple.  The first 8-byte
 number is the number of counts in the file, followed by the counts
 (stored as 8-byte numbers).  Each count corresponds to the number of
 times each arc in the program is executed.  The counts are cumulative;
-each time the program is executed, it attemps to combine the existing
+each time the program is executed, it attempts to combine the existing
 @code{.da} files with the new counts for this invocation of the
 program.  It ignores the contents of any @code{.da} files whose number of
 arcs doesn't correspond to the current program, and merely overwrites
