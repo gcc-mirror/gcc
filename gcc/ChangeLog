@@ -1,3 +1,8 @@
+2003-01-15  Stephane Carrez  <stcarrez@nerim.fr>
+
+	* config/m68hc11/m68hc11.md ("return"): Use emit_jump_insn to emit
+	the return code.
+
 2003-01-12  Alan Modra  <amodra@bigpond.net.au>
 
 	* expr.c (expand_expr <RDIV_EXPR>): Correct recursive call args.
