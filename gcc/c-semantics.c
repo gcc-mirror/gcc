@@ -39,7 +39,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "flags.h"
 #include "ggc.h"
 #include "rtl.h"
-#include "expr.h"
 #include "output.h"
 #include "timevar.h"
 #include "predict.h"

@@ -690,7 +690,9 @@ BASIC_BLOCK_H = basic-block.h bitmap.h sbitmap.h varray.h $(PARTITION_H) \
 COVERAGE_H = coverage.h gcov-io.h gcov-iov.h
 DEMANGLE_H = $(srcdir)/../include/demangle.h
 RECOG_H = recog.h
-EXPR_H = expr.h
+ALIAS_H = alias.h
+EMIT_RTL_H = emit-rtl.h
+EXPR_H = expr.h insn-config.h function.h $(RTL_H) flags.h $(TREE_H) $(MACHMODE_H) $(EMIT_RTL_H)
 OPTABS_H = optabs.h insn-codes.h
 REGS_H = regs.h varray.h $(MACHMODE_H)
 INTEGRATE_H = integrate.h varray.h
@@ -1833,7 +1835,7 @@ coverage.o : coverage.c gcov-io.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    toplev.h $(GGC_H) $(TARGET_H) langhooks.h $(COVERAGE_H) libfuncs.h \
    gt-coverage.h $(HASHTAB_H)
 cselib.o : cselib.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(REGS_H) \
-   hard-reg-set.h flags.h real.h insn-config.h $(RECOG_H) $(EXPR_H) toplev.h \
+   hard-reg-set.h flags.h real.h insn-config.h $(RECOG_H) $(EMIT_RTL_H) toplev.h \
    output.h function.h cselib.h $(GGC_H) $(TM_P_H) gt-cselib.h $(PARAMS_H) \
    alloc-pool.h
 cse.o : cse.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(REGS_H) \
@@ -1918,7 +1920,7 @@ cfgbuild.o : cfgbuild.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) fla
 cfgcleanup.o : cfgcleanup.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(RTL_H) $(TIMEVAR_H) $(BASIC_BLOCK_H) hard-reg-set.h output.h flags.h \
    $(RECOG_H) toplev.h $(GGC_H) insn-config.h cselib.h $(TARGET_H) $(TM_P_H) \
-   $(PARAMS_H) $(REGS_H)
+   $(PARAMS_H) $(REGS_H) $(EMIT_RTL_H)
 cfgloop.o : cfgloop.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) coretypes.h $(TM_H) \
    $(BASIC_BLOCK_H) hard-reg-set.h cfgloop.h flags.h
 cfgloopanal.o : cfgloopanal.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) \
@@ -1993,7 +1995,7 @@ reorg.o : reorg.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) condition
    hard-reg-set.h $(BASIC_BLOCK_H) $(REGS_H) insn-config.h $(INSN_ATTR_H) except.h \
    $(RECOG_H) function.h flags.h output.h $(EXPR_H) toplev.h $(PARAMS_H) $(TM_P_H)
 alias.o : alias.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) flags.h \
-   hard-reg-set.h $(BASIC_BLOCK_H) $(REGS_H) toplev.h output.h $(EXPR_H) \
+   hard-reg-set.h $(BASIC_BLOCK_H) $(REGS_H) toplev.h output.h $(ALIAS_H) $(EMIT_RTL_H) \
    $(GGC_H) function.h cselib.h $(TREE_H) $(TM_P_H) langhooks.h $(TARGET_H) \
    gt-alias.h $(TIMEVAR_H) cgraph.h
 regmove.o : regmove.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) insn-config.h \

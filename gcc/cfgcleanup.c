@@ -50,7 +50,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "target.h"
 #include "regs.h"
 #include "cfglayout.h"
-#include "expr.h"
+#include "emit-rtl.h"
 
 /* cleanup_cfg maintains following flags for each basic block.  */
 

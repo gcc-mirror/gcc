@@ -29,7 +29,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "output.h"
 #include "rtl.h"
 #include "ggc.h"
-#include "expr.h"
 #include "tm_p.h"
 #include "cpplib.h"
 #include "target.h"
