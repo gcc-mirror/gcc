@@ -1007,32 +1007,33 @@ if [ \! -z "$file_to_fix" ]; then
 fi
 
 # Conditionalize some of <netinet/in.h> on _KERNEL being defined.
-
-file=netinet/in.h
-base=`basename $file`
-if [ -r ${LIB}/$file ]; then
-  file_to_fix=${LIB}/$file
-else
-  if [ -r ${INPUT}/$file ]; then
-    file_to_fix=${INPUT}/$file
-  else
-    file_to_fix=""
-  fi
-fi
-if [ \! -z "$file_to_fix" ]; then
-  echo Checking $file_to_fix
-  if grep _KERNEL $file_to_fix > /dev/null; then
-    true
-  else
-    sed -e '/#ifdef INKERNEL/i\
-#ifdef _KERNEL' \
-    -e '/#endif[ 	]*\/\* INKERNEL \*\//a\
-#endif /* _KERNEL */' \
-    $file_to_fix > ${LIB}/${file}.sed
-    rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
-    echo Fixed $file_to_fix
-  fi
-fi
+# This has been taken out because it breaks on some versions of
+# DYNIX/ptx, and it does not seem to do much good on any system.
+# file=netinet/in.h
+# base=`basename $file`
+# if [ -r ${LIB}/$file ]; then
+#   file_to_fix=${LIB}/$file
+# else
+#   if [ -r ${INPUT}/$file ]; then
+#     file_to_fix=${INPUT}/$file
+#   else
+#     file_to_fix=""
+#   fi
+# fi
+# if [ \! -z "$file_to_fix" ]; then
+#   echo Checking $file_to_fix
+#   if grep _KERNEL $file_to_fix > /dev/null; then
+#     true
+#   else
+#     sed -e '/#ifdef INKERNEL/i\
+# #ifdef _KERNEL' \
+#     -e '/#endif[ 	]*\/\* INKERNEL \*\//a\
+# #endif /* _KERNEL */' \
+#     $file_to_fix > ${LIB}/${file}.sed
+#     rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+#     echo Fixed $file_to_fix
+#   fi
+# fi
 
 # Conditionalize some of <sys/endian.h> on __GNUC__ and __GNUG__.
 
