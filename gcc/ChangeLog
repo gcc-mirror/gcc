@@ -1,3 +1,7 @@
+Wed Feb 11 12:59:56 1998  Lee Iverson  <leei@Canada.AI.SRI.COM>
+
+	* mips/mips.h (mips_abi_string): Correct typo in comment.
+
 Wed Feb 11 08:29:56 1998  Gavin Koch  <gavin@cygnus.com>
 
 	* mips/mips.md (movdi): These PLUS's need to be Pmode.
