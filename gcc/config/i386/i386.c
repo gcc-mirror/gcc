@@ -922,6 +922,7 @@ static tree ix86_handle_cdecl_attribute (tree *, tree, tree, int, bool *);
 static tree ix86_handle_regparm_attribute (tree *, tree, tree, int, bool *);
 static int ix86_value_regno (enum machine_mode);
 static bool contains_128bit_aligned_vector_p (tree);
+static rtx ix86_struct_value_rtx (tree, int);
 static bool ix86_ms_bitfield_layout_p (tree);
 static tree ix86_handle_struct_attribute (tree *, tree, tree, int, bool *);
 static int extended_reg_mentioned_1 (rtx *, void *);
@@ -1068,7 +1069,8 @@ static void init_ext_80387_constants (void);
 
 #undef TARGET_PROMOTE_PROTOTYPES
 #define TARGET_PROMOTE_PROTOTYPES hook_bool_tree_true
-
+#undef TARGET_STRUCT_VALUE_RTX
+#define TARGET_STRUCT_VALUE_RTX ix86_struct_value_rtx
 #undef TARGET_SETUP_INCOMING_VARARGS
 #define TARGET_SETUP_INCOMING_VARARGS ix86_setup_incoming_varargs
 
@@ -2900,27 +2902,9 @@ ix86_return_in_memory (tree type)
       if (size == 8)
 	return 1;
 
-      /* SSE values are returned in XMM0.  */
-      /* ??? Except when it doesn't exist?  We have a choice of
-	 either (1) being abi incompatible with a -march switch,
-	 or (2) generating an error here.  Given no good solution,
-	 I think the safest thing is one warning.  The user won't
-	 be able to use -Werror, but....  */
+      /* SSE values are returned in XMM0, except when it doesn't exist.  */
       if (size == 16)
-	{
-	  static bool warned;
-
-	  if (TARGET_SSE)
-	    return 0;
-
-	  if (!warned)
-	    {
-	      warned = true;
-	      warning ("SSE vector return without SSE enabled "
-		       "changes the ABI");
-	    }
-	  return 1;
-	}
+	return (TARGET_SSE ? 0 : 1);
     }
 
   if (mode == XFmode)
@@ -2929,6 +2913,38 @@ ix86_return_in_memory (tree type)
   if (size > 12)
     return 1;
   return 0;
+}
+
+/* When returning SSE vector types, we have a choice of either
+     (1) being abi incompatible with a -march switch, or
+     (2) generating an error.
+   Given no good solution, I think the safest thing is one warning.
+   The user won't be able to use -Werror, but....
+
+   Choose the STRUCT_VALUE_RTX hook because that's (at present) only
+   called in response to actually generating a caller or callee that
+   uses such a type.  As opposed to RETURN_IN_MEMORY, which is called
+   via aggregate_value_p for general type probing from tree-ssa.  */
+
+static rtx
+ix86_struct_value_rtx (tree type, int incoming ATTRIBUTE_UNUSED)
+{
+  static bool warned;
+
+  if (!TARGET_SSE && type && !warned)
+    {
+      /* Look at the return type of the function, not the function type.  */
+      enum machine_mode mode = TYPE_MODE (TREE_TYPE (type));
+
+      if (mode == TImode
+	  || (VECTOR_MODE_P (mode) && GET_MODE_SIZE (mode) == 16))
+	{
+	  warned = true;
+	  warning ("SSE vector return without SSE enabled changes the ABI");
+	}
+    }
+
+  return NULL;
 }
 
 /* Define how to find the value returned by a library function
