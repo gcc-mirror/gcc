@@ -1,3 +1,8 @@
+2000-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* reload1.c (calculate_needs_all_insns): If deleting an instruction,
+	remove its insn_chain structure as well.
+
 2000-10-09  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* dbxout.c (dbxout_source_line): Remove extra tab.

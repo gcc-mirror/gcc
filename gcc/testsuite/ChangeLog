@@ -1,3 +1,7 @@
+2000-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/20001009-1.c: New test.
+
 Mon Oct  9 23:32:06 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.c-torture/compile/20001009-1.c: Move from here ....
