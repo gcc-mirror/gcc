@@ -1184,7 +1184,7 @@ unroll_loop (loop, insn_count, end_insert_before, strength_reduce_p)
   /* Search the list of bivs and givs to find ones which need to be remapped
      when split, and set their reg_map entry appropriately.  */
 
-  for (bl = ivs->loop_iv_list; bl; bl = bl->next)
+  for (bl = ivs->list; bl; bl = bl->next)
     {
       if (REGNO (bl->biv->src_reg) != bl->regno)
 	map->reg_map[bl->regno] = bl->biv->src_reg;
@@ -2447,7 +2447,7 @@ find_splittable_regs (loop, unroll_type, end_insert_before, unroll_number)
   rtx loop_start = loop->start;
   rtx loop_end = loop->end;
 
-  for (bl = ivs->loop_iv_list; bl; bl = bl->next)
+  for (bl = ivs->list; bl; bl = bl->next)
     {
       /* Biv_total_increment must return a constant value,
 	 otherwise we can not calculate the split values.  */
@@ -3545,7 +3545,7 @@ loop_iterations (loop)
      will propagate a new pseudo into the old iteration register but
      this will be marked by having the REG_USERVAR_P bit set.  */
 
-  if ((unsigned) REGNO (iteration_var) >= ivs->reg_iv_type->num_elements
+  if ((unsigned) REGNO (iteration_var) >= ivs->n_regs
       && ! REG_USERVAR_P (iteration_var))
     abort ();
 
@@ -3563,7 +3563,7 @@ loop_iterations (loop)
 
   /* If this is a new register, can't handle it since we don't have any
      reg_iv_type entry for it.  */
-  if ((unsigned) REGNO (iteration_var) >= ivs->reg_iv_type->num_elements)
+  if ((unsigned) REGNO (iteration_var) >= ivs->n_regs)
     {
       if (loop_dump_stream)
 	fprintf (loop_dump_stream,
