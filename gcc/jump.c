@@ -1,5 +1,5 @@
 /* Optimize jump instructions, for GNU compiler.
-   Copyright (C) 1987, 88, 89, 91-96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 91-96, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1160,8 +1160,11 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 		 There is no point in using the old value of TEMP1 if
 		 it is a register, since cse will alias them.  It can
 		 lose if the old value were a hard register since CSE
-		 won't replace hard registers.  */
-	      && (((temp3 = reg_set_last (temp1, insn)) != 0)
+		 won't replace hard registers.  Avoid using TEMP3 if
+		 small register classes and it is a hard register.  */
+	      && (((temp3 = reg_set_last (temp1, insn)) != 0
+		   && ! (SMALL_REGISTER_CLASSES && GET_CODE (temp3) == REG
+			 && REGNO (temp3) < FIRST_PSEUDO_REGISTER))
 		  /* Make the latter case look like  x = x; if (...) x = b;  */
 		  || (temp3 = temp1, 1))
 	      /* INSN must either branch to the insn after TEMP or the insn
