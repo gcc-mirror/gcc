@@ -1,3 +1,19 @@
+2004-11-02  Steven Bosscher  <stevenb@suse.de>
+
+	* cfgloop.h (struct loop): Update comment.
+	* cse.c (cse_main): Remove obsolete comment.
+
+	* expr.h (gen_cond_trap): Move prototype under functions provided
+	by optabs.c.
+	(canonicalize_condition, get_condition): Move to...
+	* rtl.h (canonicalize_condition, get_condition): ...here.
+	(branch_target_load_optimize): Add comment that this function is
+	in bt-load.c.
+	* loop.c (canonicalize_condition, get_condition): Move to...
+	* rtlanal.c (canonicalize_condition, get_condition): ...here.
+	* sched-deps.c (get_condition): Rename to sched_get_condition.
+	(add_dependence): Update this caller.
+ 
 2004-11-02  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/16808
