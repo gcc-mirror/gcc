@@ -1,5 +1,7 @@
 2003-10-27  Arnaud Charlet  <charlet@act-europe.fr>
 
+	* doc/install.texi: Update instructions for Ada cross builds
+
 	PR ada/5909:
 	* doc/sourcebuild.texi: Document Ada test suite.
 
