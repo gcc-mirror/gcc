@@ -1,3 +1,8 @@
+1998-02-19  Mike Stump  <mrs@wrs.com>
+
+	* Makefile.in: Use $tooldir for sys-include to match toplevel
+	configure.
+
 Thu Feb 19 01:32:37 1998  Jeffrey A Law  (law@cygnus.com)
                           Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
