@@ -2,6 +2,7 @@
 
 	* gcj.texi (Configure-time Options): Add -fcheck-references.
 	* expr.c (build_java_indirect_ref): New function.
+	(java_check_reference): New function.
 	(build_java_array_length_access): Use build_java_indirect_ref to
 	check for null references.
 	(build_java_arrayaccess): Likewise.
@@ -13,6 +14,9 @@
 	* jvspec.c (jvgenmain_spec): Add flag_check_references.
 	* java-tree.h (flag_check_references): New variable.
 	* lang.c (flag_check_references): Likewise.
+	* parse.y (patch_invoke): Use java_check_reference.	
+	(patch_assignment): Allow for extra nesting in
+	_Jv_CheckArrayStore.
 
 2001-03-23  Bryce McKinlay  <bryce@albatross.co.nz>
 
