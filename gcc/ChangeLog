@@ -1,3 +1,7 @@
+Wed Mar  3 20:19:58 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* regclass.c (record_reg_classes, case 'p'): Set WIN to 1.
+
 Wed Mar  3 17:16:52 1999  Stephen L Moshier  <moshier@mediaone.net>
 
 	* objc/sendmsg.c (gen_rtx_MEM): Add dummy definition.
