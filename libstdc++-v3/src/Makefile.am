@@ -42,7 +42,7 @@ WERROR = -Werror
 #                      -fdata-sections -ffunction-sections \
 #		       -fvtable-gc -Wl,--gc-sections
 # AC_CXXFLAGS = @OPTLEVEL@ @DEBUGFLAGS@ @NAMESPACES@
-AC_CXXFLAGS = @CPUFLAGS@ @DEBUGFLAGS@ 
+AC_CXXFLAGS = @CPUFLAGS@ @DEBUGFLAGS@ @EXTRA_CXX_FLAGS@
 AM_CXXFLAGS = -fno-implicit-templates \
 	      -Wall -Wno-format -W -Wwrite-strings -Winline $(WERROR) \
 	      $(OPTIMIZE_CXXFLAGS) $(AC_CXXFLAGS) 
