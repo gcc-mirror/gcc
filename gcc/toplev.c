@@ -647,6 +647,8 @@ char *lang_options[] =
   "-fno-next-runtime",
   "-Wselector",
   "-Wno-selector",
+  "-Wprotocol",
+  "-Wno-protocol",
   0
 };
 
