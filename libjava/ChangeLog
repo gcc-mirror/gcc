@@ -1,3 +1,9 @@
+2004-12-10  Andrew Haley  <aph@redhat.com>
+
+	PR java/15001
+	* java/lang/reflect/natMethod.cc (_Jv_CallAnyMethodA): Look up
+	abstract methods by name.
+
 2004-12-08  Ranjit Mathew  <rmathew@hotmail.com>
 
 	* java/util/IdentityHashMap.java (put): Replace mistaken use
