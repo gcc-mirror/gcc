@@ -1,3 +1,10 @@
+2003-01-24  Christopher Faylor  <cgf@redhat.com>
+
+	* configure.in: Remove special pex-cygwin consideration.
+	* configure: Regenerate.
+	* pex-cygwin.c: Remove.
+	* Makefile.in: Remove pex-cygwin.[co] lines.
+
 2003-01-24  Zack Weinberg  <zack@codesourcery.com>
 
 	* Makefile.in (CFILES): Add pex-*.c.

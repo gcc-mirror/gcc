@@ -427,7 +427,6 @@ fi
 
 # Figure out which version of pexecute to use.
 case "${host}" in
-     *-*-cygwin*)		pexecute=pex-cygwin.o ;;
      *-*-mingw* | *-*-winnt*)	pexecute=pex-win32.o  ;;
      *-*-msdosdjgpp*)		pexecute=pex-djgpp.o  ;;
      *-*-msdos*)		pexecute=pex-msdos.o  ;;
