@@ -231,7 +231,7 @@ int objc_public_flag;
 /* Tell yyparse how to print a token's value, if yydebug is set.  */
 
 #define YYPRINT(FILE,YYCHAR,YYLVAL) yyprint(FILE,YYCHAR,YYLVAL)
-extern void yyprint 			PROTO ((FILE *, int, YYSTYPE));
+extern void yyprint			PROTO ((FILE *, int, YYSTYPE));
 %}
 
 %%
@@ -635,7 +635,7 @@ primary:
 			      if (IDENTIFIER_GLOBAL_VALUE ($1) != error_mark_node
 				  || IDENTIFIER_ERROR_LOCUS ($1) != current_function_decl)
 				{
-				  error ("`%s' undeclared (first use this function)",
+				  error ("`%s' undeclared (first use in this function)",
 					 IDENTIFIER_POINTER ($1));
 
 				  if (! undeclared_variable_notice)

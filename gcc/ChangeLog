@@ -1,3 +1,11 @@
+Mon Mar 23 23:59:11 1998  H.J. Lu  (hjl@gnu.org)
+
+	* c-parse.in: Recognize protocol qualifiers in class
+	definitions for objc.
+	Include "output.h".
+	(yyerror): Remove redundant decl.
+	(yyprint): Fix prototype.
+
 Mon Mar 23 23:49:47 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* cse.c (rtx_cost): Only call CONST_COSTS if it is defined.

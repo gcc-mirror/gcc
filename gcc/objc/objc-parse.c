@@ -141,7 +141,7 @@ int objc_public_flag;
 /* Tell yyparse how to print a token's value, if yydebug is set.  */
 
 #define YYPRINT(FILE,YYCHAR,YYLVAL) yyprint(FILE,YYCHAR,YYLVAL)
-extern void yyprint 			PROTO ((FILE *, int, YYSTYPE));
+extern void yyprint			PROTO ((FILE *, int, YYSTYPE));
 #include <stdio.h>
 
 #ifndef __cplusplus
@@ -1638,7 +1638,7 @@ static const short yycheck[] = {     9,
     48,    49,    50,    51,    52
 };
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
-#line 3 "/usr/share/bison.simple"
+#line 3 "/usr/cygnus/latest-940103/share/bison.simple"
 
 /* Skeleton output parser for bison,
    Copyright (C) 1984, 1989, 1990 Free Software Foundation, Inc.
@@ -1831,7 +1831,7 @@ __yy_memcpy (char *to, char *from, int count)
 #endif
 #endif
 
-#line 196 "/usr/share/bison.simple"
+#line 196 "/usr/cygnus/latest-940103/share/bison.simple"
 
 /* The user can define YYPARSE_PARAM as the name of an argument to be passed
    into yyparse.  The argument should have type void *.
@@ -2609,7 +2609,7 @@ case 89:
 			      if (IDENTIFIER_GLOBAL_VALUE (yyvsp[0].ttype) != error_mark_node
 				  || IDENTIFIER_ERROR_LOCUS (yyvsp[0].ttype) != current_function_decl)
 				{
-				  error ("`%s' undeclared (first use this function)",
+				  error ("`%s' undeclared (first use in this function)",
 					 IDENTIFIER_POINTER (yyvsp[0].ttype));
 
 				  if (! undeclared_variable_notice)
@@ -4911,7 +4911,7 @@ case 556:
     break;}
 }
    /* the action file gets copied in in place of this dollarsign */
-#line 498 "/usr/share/bison.simple"
+#line 498 "/usr/cygnus/latest-940103/share/bison.simple"
 
   yyvsp -= yylen;
   yyssp -= yylen;
