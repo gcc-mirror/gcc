@@ -1,3 +1,8 @@
+2004-10-28  Mike Stump  <mrs@apple.com>
+
+	* inclhack.def: Avoid changing NULL on C++ friendly systems.
+	* fixincl.x: Regenerate.
+
 2004-10-27  Geoffrey Keating  <geoffk@apple.com>
 
 	* inclhack.def (darwin_gcc4_breakage): New.

@@ -3963,6 +3963,8 @@ fix = {
     files     = sys/dir.h;
     files     = sys/param.h;
     files     = sys/types.h;
+    /* avoid changing C++ friendly NULL */
+    bypass    = __cplusplus;
     select    = "^#[ \t]*define[ \t]+NULL[ \t]+\\(\\(void[ \t]*\\*\\)0\\)";
     c_fix     = format;
     c_fix_arg = "#define NULL 0";
