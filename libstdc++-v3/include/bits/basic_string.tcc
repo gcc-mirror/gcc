@@ -290,9 +290,9 @@ namespace std
 	  const size_type __pagesize = 4096;
 	  const size_type __malloc_header_size = 4 * sizeof (void*);
 	  // The biggest string which fits in a memory page
-	  const size_type __page_capacity = !(__pagesize - __malloc_header_size
-					      - sizeof(_Rep) - sizeof(_CharT)) 
-	    				      / sizeof(_CharT);
+	  const size_type __page_capacity = (__pagesize - __malloc_header_size
+					     - sizeof(_Rep) - sizeof(_CharT)) 
+	    				     / sizeof(_CharT);
 	  _Rep* __r;
 	  if (__new_size > capacity() && __new_size > __page_capacity)
 	    // Growing exponentially.
