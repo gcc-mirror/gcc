@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler for Intel 80386
    running FreeBSD.
-   Copyright (C) 1988, 1992, 1994, 1996, 1997, 1999, 2000, 2002
+   Copyright (C) 1988, 1992, 1994, 1996, 1997, 1999, 2000, 2002, 2003
    Free Software Foundation, Inc.
    Contributed by Poul-Henning Kamp <phk@login.dkuug.dk>
    Continued development by David O'Brien <obrien@NUXI.org>
@@ -175,6 +175,7 @@ Boston, MA 02111-1307, USA.  */
    size_directive_output was set
    by ASM_DECLARE_OBJECT_NAME when it was run for the same decl.  */
 
+#undef ASM_FINISH_DECLARE_OBJECT
 #define ASM_FINISH_DECLARE_OBJECT(FILE, DECL, TOP_LEVEL, AT_END)        \
 do {                                                                    \
      const char *name = XSTR (XEXP (DECL_RTL (DECL), 0), 0);            \

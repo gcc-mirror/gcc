@@ -418,6 +418,7 @@ while (0)
    size_directive_output was set
    by ASM_DECLARE_OBJECT_NAME when it was run for the same decl.  */
 
+#undef ASM_FINISH_DECLARE_OBJECT
 #define ASM_FINISH_DECLARE_OBJECT(FILE, DECL, TOP_LEVEL, AT_END)	 \
 do {									 \
      const char *name = XSTR (XEXP (DECL_RTL (DECL), 0), 0);		 \
