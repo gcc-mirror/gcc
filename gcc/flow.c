@@ -2963,4 +2963,12 @@ print_rtl_with_bb (outf, rtx_first)
 	    }
 	}
     }
+
+  if (current_function_epilogue_delay_list != 0)
+    {
+      fprintf (outf, "\n;; Insns in epilogue delay list:\n\n");
+      for (tmp_rtx = current_function_epilogue_delay_list; tmp_rtx != 0;
+	   tmp_rtx = XEXP (tmp_rtx, 1))
+	print_rtl_single (outf, XEXP (tmp_rtx, 0));
+    }
 }
