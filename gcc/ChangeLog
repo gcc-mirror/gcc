@@ -1,3 +1,8 @@
+2000-11-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/sparc/sparc.md (smulsi3_highpart_v8plus, ashldi3_v8plus+1,
+	update_return, flush, flushdi, ffssi2, ffsdi2): Fix output formatting.
+
 Sat Sep 23 19:10:20 2000  Denis Chertykov  <denisc@overta.ru> & Marek Michalkiewicz  <marekm@linux.org.pl>
 
 	* expmed.c (expand_divmod): For signed divide by 2, prefer
