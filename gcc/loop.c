@@ -2557,14 +2557,21 @@ verify_dominator (loop_number)
 	  && GET_CODE (PATTERN (insn)) != RETURN)
 	{
 	  rtx label = JUMP_LABEL (insn);
-	  int label_luid = INSN_LUID (label);
+	  int label_luid;
 
-	  if (! condjump_p (insn)
-	      && ! condjump_in_parallel_p (insn))
+	  /* If it is not a jump we can easily understand or for
+	     which we do not have jump target information in the JUMP_LABEL
+	     field (consider ADDR_VEC and ADDR_DIFF_VEC insns), then clear
+	     LOOP_NUMBER_CONT_DOMINATOR.  */
+	  if ((! condjump_p (insn)
+	       && ! condjump_in_parallel_p (insn))
+	      || label == NULL_RTX)
 	    {
 	      loop_number_cont_dominator[loop_number] = NULL_RTX;
 	      return;
 	    }
+
+	  label_luid = INSN_LUID (label);
 	  if (label_luid < INSN_LUID (loop_number_loop_cont[loop_number])
 	      && (label_luid
 		  > INSN_LUID (loop_number_cont_dominator[loop_number])))
