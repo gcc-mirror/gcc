@@ -54,10 +54,9 @@ sfile=[=
     _IF files _exist =][=
       files[0] =][=
     _ELSE =]testing.h[=
-    _ENDIF =]
-dfile=`dirname $sfile`/[=hackname "_A-Z" "-a-z" _tr=]-[=_EVAL _index=].h
-fixnum=[=_EVAL _index=][=
+    _ENDIF =][=
     _FOR test_text FROM 1 =]
+dfile=`dirname $sfile`/[=hackname "#_A-Z" "#-a-z" _tr=]-[=_EVAL _index=].h
 cat >> $sfile <<_HACK_EOF_
 
 
@@ -66,6 +65,7 @@ cat >> $sfile <<_HACK_EOF_
 #endif  /* [=hackname _up=]_CHECK_[=_EVAL _index=] */
 _HACK_EOF_
 echo $sfile | ../../fixincl
+mv -f $sfile $dfile
 [ -f ${DESTDIR}/$sfile ] && mv ${DESTDIR}/$sfile ${DESTDIR}/$dfile[=
     /test_text =][=
   _ENDIF =][=
