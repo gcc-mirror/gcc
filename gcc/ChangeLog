@@ -1,5 +1,19 @@
 2003-10-07  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.c (MIPS_MAX_FIRST_STACK_STEP): New macro.
+	(mips_save_restore_fn): New typedef.
+	(mips_add_large_offset_to_sp, mips_emit_frame_related_store): Remove.
+	(mips_set_frame_expr, mips_frame_set): Move above prologue code.
+	(save_restore_insns): Remove, replacing with...
+	(mips_save_restore_reg, mips_for_each_saved_reg): ...these new fns.
+	(mips_save_reg, mips_restore_reg): New function.
+	(mips_expand_prologue, mips_expand_epilogue): Rework.
+	* config/mips/mips.h (MIPS_TEMP1_REGNUM, MIPS_TEMP2_REGNUM): Remove.
+	(MIPS_PROLOGUE_TEMP_REGNUM, MIPS_EPILOGUE_TEMP_REGNUM): New macros.
+	(MIPS_PROLOGUE_TEMP, MIPS_EPILOGUE_TEMP): New macros.
+
+2003-10-07  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.c (mips_expand_prologue): Remove unused
 	traversal of function arguments.
 

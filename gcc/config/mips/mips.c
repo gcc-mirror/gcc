@@ -80,6 +80,19 @@ enum internal_test {
 #define INTERNAL_SYMBOL_P(SYM) \
   (XSTR (SYM, 0)[0] == '*' && XSTR (SYM, 0)[1] == LOCAL_LABEL_PREFIX[0])
 
+/* The maximum distance between the top of the stack frame and the
+   value $sp has when we save & restore registers.
+
+   Use a maximum gap of 0x100 in the mips16 case.  We can then use
+   unextended instructions to save and restore registers, and to
+   allocate and deallocate the top part of the frame.
+
+   The value in the !mips16 case must be a SMALL_OPERAND and must
+   preserve the maximum stack alignment.  It could really be 0x7ff0,
+   but SGI's assemblers implement daddiu $sp,$sp,-0x7ff0 as a
+   multi-instruction addu sequence.  Use 0x7fe0 to work around this.  */
+#define MIPS_MAX_FIRST_STACK_STEP (TARGET_MIPS16 ? 0x100 : 0x7fe0)
+
 /* Classifies a non-literal integer constant.
 
    CONSTANT_NONE
@@ -165,6 +178,9 @@ enum mips_address_type {
   ADDRESS_SYMBOLIC
 };
 
+/* A function to save or store a register.  The first argument is the
+   register and the second is the stack slot.  */
+typedef void (*mips_save_restore_fn) (rtx, rtx);
 
 struct constant;
 struct mips_arg_info;
@@ -223,14 +239,16 @@ static void mips_file_start (void);
 static void mips_file_end (void);
 static unsigned int mips_global_pointer	(void);
 static bool mips_save_reg_p (unsigned int);
-static rtx mips_add_large_offset_to_sp (HOST_WIDE_INT);
-static void mips_set_frame_expr (rtx);
-static rtx mips_frame_set (rtx, int);
-static void mips_emit_frame_related_store (rtx, rtx, HOST_WIDE_INT);
-static void save_restore_insns (int, rtx, long);
+static void mips_save_restore_reg (enum machine_mode, int, HOST_WIDE_INT,
+				   mips_save_restore_fn);
+static void mips_for_each_saved_reg (HOST_WIDE_INT, mips_save_restore_fn);
 static void mips_output_function_prologue (FILE *, HOST_WIDE_INT);
+static void mips_set_frame_expr (rtx);
+static rtx mips_frame_set (rtx, rtx);
+static void mips_save_reg (rtx, rtx);
 static void mips_gp_insn (rtx, rtx);
 static void mips_output_function_epilogue (FILE *, HOST_WIDE_INT);
+static void mips_restore_reg (rtx, rtx);
 static int symbolic_expression_p (rtx);
 static void mips_select_rtx_section (enum machine_mode, rtx,
 				     unsigned HOST_WIDE_INT);
@@ -6235,14 +6253,6 @@ mips_initial_elimination_offset (int from, int to)
   return offset;
 }
 
-/* Common code to emit the insns (or to write the instructions to a file)
-   to save/restore registers.
-
-   Other parts of the code assume that MIPS_TEMP1_REGNUM (aka large_reg)
-   is not modified within save_restore_insns.  */
-
-#define BITSET_P(VALUE,BIT) (((VALUE) & (1L << (BIT))) != 0)
-
 /* Implement RETURN_ADDR_RTX.  Note, we do not support moving
    back to a previous frame.  */
 rtx
@@ -6253,286 +6263,63 @@ mips_return_addr (int count, rtx frame ATTRIBUTE_UNUSED)
 
   return get_hard_reg_initial_val (Pmode, GP_REG_FIRST + 31);
 }
-
-
-/* Emit instructions to load the value (SP + OFFSET) into MIPS_TEMP2_REGNUM
-   and return an rtl expression for the register.
-
-   This function is a subroutine of save_restore_insns.  It is used when
-   OFFSET is too large to add in a single instruction.  */
-
-static rtx
-mips_add_large_offset_to_sp (HOST_WIDE_INT offset)
-{
-  rtx reg = gen_rtx_REG (Pmode, MIPS_TEMP2_REGNUM);
-  rtx offset_rtx = GEN_INT (offset);
-
-  emit_move_insn (reg, offset_rtx);
-  if (Pmode == DImode)
-    emit_insn (gen_adddi3 (reg, reg, stack_pointer_rtx));
-  else
-    emit_insn (gen_addsi3 (reg, reg, stack_pointer_rtx));
-  return reg;
-}
-
-/* Make the last instruction frame related and note that it performs
-   the operation described by FRAME_PATTERN.  */
+
+/* Use FN to save or restore register REGNO.  MODE is the register's
+   mode and OFFSET is the offset of its save slot from the current
+   stack pointer.  */
 
 static void
-mips_set_frame_expr (rtx frame_pattern)
+mips_save_restore_reg (enum machine_mode mode, int regno,
+		       HOST_WIDE_INT offset, mips_save_restore_fn fn)
 {
-  rtx insn;
+  rtx mem;
 
-  insn = get_last_insn ();
-  RTX_FRAME_RELATED_P (insn) = 1;
-  REG_NOTES (insn) = alloc_EXPR_LIST (REG_FRAME_RELATED_EXPR,
-				      frame_pattern,
-				      REG_NOTES (insn));
-}
+  mem = gen_rtx_MEM (mode, plus_constant (stack_pointer_rtx, offset));
+  if (!current_function_calls_eh_return)
+    RTX_UNCHANGING_P (mem) = 1;
 
-/* Return a frame-related rtx that stores REG at (SP + OFFSET).
-   REG must be a single register.  */
-
-static rtx
-mips_frame_set (rtx reg, int offset)
-{
-  rtx address = plus_constant (stack_pointer_rtx, offset);
-  rtx set = gen_rtx_SET (VOIDmode, gen_rtx_MEM (GET_MODE (reg), address), reg);
-  RTX_FRAME_RELATED_P (set) = 1;
-  return set;
+  fn (gen_rtx_REG (mode, regno), mem);
 }
 
 
-/* Emit a move instruction that stores REG in MEM.  Make the instruction
-   frame related and note that it stores REG at (SP + OFFSET).  This
-   function may be asked to store an FPR pair.  */
+/* Call FN for each register that is saved by the current function.
+   SP_OFFSET is the offset of the current stack pointer from the start
+   of the frame.  */
 
 static void
-mips_emit_frame_related_store (rtx mem, rtx reg, HOST_WIDE_INT offset)
+mips_for_each_saved_reg (HOST_WIDE_INT sp_offset, mips_save_restore_fn fn)
 {
-  if (GET_MODE (reg) == DFmode && mips_split_64bit_move_p (mem, reg))
-    mips_split_64bit_move (mem, reg);
-  else
-    emit_move_insn (mem, reg);
+#define BITSET_P(VALUE, BIT) (((VALUE) & (1L << (BIT))) != 0)
 
-  if (GET_MODE (reg) == DFmode && !TARGET_FLOAT64)
-    {
-      rtx x1, x2;
-
-      /* Two registers are being stored, so the frame-related expression
-	 must be a PARALLEL rtx with one SET for each register.  */
-      x1 = mips_frame_set (mips_subword (reg, TARGET_BIG_ENDIAN), offset);
-      x2 = mips_frame_set (mips_subword (reg, !TARGET_BIG_ENDIAN),
-			   offset + UNITS_PER_FPREG);
-      mips_set_frame_expr (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, x1, x2)));
-    }
-  else
-    mips_set_frame_expr (mips_frame_set (reg, offset));
-}
-
-
-/* Emit instructions to save or restore the registers in
-   cfun->machine->frame.mask and cfun->machine->frame.fmask.
-   STORE_P is true to save registers (meaning we are expanding
-   the prologue).  If nonnull, LARGE_REG stores the value LARGE_OFFSET,
-   which the caller thinks might be useful to us.  */
-
-static void
-save_restore_insns (int store_p, rtx large_reg, long large_offset)
-{
-  long mask = cfun->machine->frame.mask;
-  long fmask = cfun->machine->frame.fmask;
+  enum machine_mode fpr_mode;
+  HOST_WIDE_INT offset;
   int regno;
-  rtx base_reg_rtx;
-  HOST_WIDE_INT base_offset;
-  HOST_WIDE_INT gp_offset;
-  HOST_WIDE_INT fp_offset;
-  HOST_WIDE_INT end_offset;
-
-  if (frame_pointer_needed
-      && ! BITSET_P (mask, HARD_FRAME_POINTER_REGNUM - GP_REG_FIRST))
-    abort ();
-
-  if (mask == 0 && fmask == 0)
-    return;
 
   /* Save registers starting from high to low.  The debuggers prefer at least
      the return register be stored at func+4, and also it allows us not to
      need a nop in the epilog if at least one register is reloaded in
      addition to return address.  */
+  offset = cfun->machine->frame.gp_sp_offset - sp_offset;
+  for (regno = GP_REG_LAST; regno >= GP_REG_FIRST; regno--)
+    if (BITSET_P (cfun->machine->frame.mask, regno - GP_REG_FIRST))
+      {
+	mips_save_restore_reg (gpr_mode, regno, offset, fn);
+	offset -= GET_MODE_SIZE (gpr_mode);
+      }
 
-  /* Save GP registers if needed.  */
-  if (mask)
-    {
-      /* Pick which pointer to use as a base register.  For small frames, just
-	 use the stack pointer.  Otherwise, use a temporary register.  Save 2
-	 cycles if the save area is near the end of a large frame, by reusing
-	 the constant created in the prologue/epilogue to adjust the stack
-	 frame.  */
-
-      gp_offset = cfun->machine->frame.gp_sp_offset;
-      end_offset
-	= gp_offset - (cfun->machine->frame.gp_reg_size
-		       - GET_MODE_SIZE (gpr_mode));
-
-      if (gp_offset < 0 || end_offset < 0)
-	internal_error
-	  ("gp_offset (%ld) or end_offset (%ld) is less than zero",
-	   (long) gp_offset, (long) end_offset);
-
-      /* If we see a large frame in mips16 mode, we save the registers
-         before adjusting the stack pointer, and load them afterward.  */
-      else if (TARGET_MIPS16 && large_offset > 32767)
-	base_reg_rtx = stack_pointer_rtx, base_offset = large_offset;
-
-      else if (gp_offset < 32768)
-	base_reg_rtx = stack_pointer_rtx, base_offset  = 0;
-
-      else if (large_reg != 0
-	       && (unsigned HOST_WIDE_INT) (large_offset - gp_offset) < 32768
-	       && (unsigned HOST_WIDE_INT) (large_offset - end_offset) < 32768)
-	{
-	  base_reg_rtx = gen_rtx_REG (Pmode, MIPS_TEMP2_REGNUM);
-	  base_offset = large_offset;
-	  if (Pmode == DImode)
-	    emit_insn (gen_adddi3 (base_reg_rtx, large_reg, stack_pointer_rtx));
-	  else
-	    emit_insn (gen_addsi3 (base_reg_rtx, large_reg, stack_pointer_rtx));
-	}
-      else
-	{
-	  base_offset = gp_offset;
-	  base_reg_rtx = mips_add_large_offset_to_sp (base_offset);
-	}
-
-      /* When we restore the registers in MIPS16 mode, then if we are
-         using a frame pointer, and this is not a large frame, the
-         current stack pointer will be offset by
-         current_function_outgoing_args_size.  Doing it this way lets
-         us avoid offsetting the frame pointer before copying it into
-         the stack pointer; there is no instruction to set the stack
-         pointer to the sum of a register and a constant.  */
-      if (TARGET_MIPS16
-	  && ! store_p
-	  && frame_pointer_needed
-	  && large_offset <= 32767)
-	base_offset += current_function_outgoing_args_size;
-
-      for (regno = GP_REG_LAST; regno >= GP_REG_FIRST; regno--)
-	{
-	  if (BITSET_P (mask, regno - GP_REG_FIRST))
-	    {
-	      rtx reg_rtx;
-	      rtx mem_rtx
-		= gen_rtx (MEM, gpr_mode,
-			   gen_rtx (PLUS, Pmode, base_reg_rtx,
-				    GEN_INT (gp_offset - base_offset)));
-
-	      if (! current_function_calls_eh_return)
-		RTX_UNCHANGING_P (mem_rtx) = 1;
-
-	      /* The mips16 does not have an instruction to load
-		 $31, so we load $7 instead, and work things out
-		 in mips_expand_epilogue.  */
-	      if (TARGET_MIPS16 && ! store_p && regno == GP_REG_FIRST + 31)
-		reg_rtx = gen_rtx (REG, gpr_mode, GP_REG_FIRST + 7);
-	      /* The mips16 sometimes needs to save $18.  */
-	      else if (TARGET_MIPS16
-		       && regno != GP_REG_FIRST + 31
-		       && ! M16_REG_P (regno))
-		{
-		  if (! store_p)
-		    reg_rtx = gen_rtx (REG, gpr_mode, 6);
-		  else
-		    {
-		      reg_rtx = gen_rtx (REG, gpr_mode, 3);
-		      emit_move_insn (reg_rtx,
-				      gen_rtx (REG, gpr_mode, regno));
-		    }
-		}
-	      else
-		reg_rtx = gen_rtx (REG, gpr_mode, regno);
-
-	      if (store_p)
-		mips_emit_frame_related_store (mem_rtx, reg_rtx, gp_offset);
-	      else
-		{
-		  emit_move_insn (reg_rtx, mem_rtx);
-		  if (TARGET_MIPS16
-		      && regno != GP_REG_FIRST + 31
-		      && ! M16_REG_P (regno))
-		    emit_move_insn (gen_rtx (REG, gpr_mode, regno),
-				    reg_rtx);
-		}
-	      gp_offset -= GET_MODE_SIZE (gpr_mode);
-	    }
-	}
-    }
-  else
-    base_reg_rtx = 0, base_offset  = 0;
-
-  /* Save floating point registers if needed.  */
-  if (fmask)
-    {
-      /* Pick which pointer to use as a base register.  */
-      fp_offset = cfun->machine->frame.fp_sp_offset;
-      end_offset = fp_offset - (cfun->machine->frame.fp_reg_size
-				- UNITS_PER_HWFPVALUE);
-
-      if (fp_offset < 0 || end_offset < 0)
-	internal_error
-	  ("fp_offset (%ld) or end_offset (%ld) is less than zero",
-	   (long) fp_offset, (long) end_offset);
-
-      else if (fp_offset < 32768)
-	base_reg_rtx = stack_pointer_rtx, base_offset  = 0;
-
-      else if (base_reg_rtx != 0
-	       && (unsigned HOST_WIDE_INT) (base_offset - fp_offset) < 32768
-	       && (unsigned HOST_WIDE_INT) (base_offset - end_offset) < 32768)
-	;			/* already set up for gp registers above */
-
-      else if (large_reg != 0
-	       && (unsigned HOST_WIDE_INT) (large_offset - fp_offset) < 32768
-	       && (unsigned HOST_WIDE_INT) (large_offset - end_offset) < 32768)
-	{
-	  base_reg_rtx = gen_rtx_REG (Pmode, MIPS_TEMP2_REGNUM);
-	  base_offset = large_offset;
-	  if (Pmode == DImode)
-	    emit_insn (gen_adddi3 (base_reg_rtx, large_reg, stack_pointer_rtx));
-	  else
-	    emit_insn (gen_addsi3 (base_reg_rtx, large_reg, stack_pointer_rtx));
-	}
-      else
-	{
-	  base_offset = fp_offset;
-	  base_reg_rtx = mips_add_large_offset_to_sp (fp_offset);
-	}
-
-      /* This loop must iterate over the same space as its companion in
-	 compute_frame_size.  */
-      for (regno = (FP_REG_LAST - FP_INC + 1);
-	   regno >= FP_REG_FIRST;
-	   regno -= FP_INC)
-	if (BITSET_P (fmask, regno - FP_REG_FIRST))
-	  {
-	    enum machine_mode sz = TARGET_SINGLE_FLOAT ? SFmode : DFmode;
-	    rtx reg_rtx = gen_rtx (REG, sz, regno);
-	    rtx mem_rtx = gen_rtx (MEM, sz,
-				   gen_rtx (PLUS, Pmode, base_reg_rtx,
-					    GEN_INT (fp_offset
-						     - base_offset)));
-	    if (! current_function_calls_eh_return)
-	      RTX_UNCHANGING_P (mem_rtx) = 1;
-
-	    if (store_p)
-	      mips_emit_frame_related_store (mem_rtx, reg_rtx, fp_offset);
-	    else
-	      emit_move_insn (reg_rtx, mem_rtx);
-
-	    fp_offset -= UNITS_PER_HWFPVALUE;
-	  }
-    }
+  /* This loop must iterate over the same space as its companion in
+     compute_frame_size.  */
+  offset = cfun->machine->frame.fp_sp_offset - sp_offset;
+  fpr_mode = (TARGET_SINGLE_FLOAT ? SFmode : DFmode);
+  for (regno = (FP_REG_LAST - FP_INC + 1);
+       regno >= FP_REG_FIRST;
+       regno -= FP_INC)
+    if (BITSET_P (cfun->machine->frame.fmask, regno - FP_REG_FIRST))
+      {
+	mips_save_restore_reg (fpr_mode, regno, offset, fn);
+	offset -= GET_MODE_SIZE (fpr_mode);
+      }
+#undef BITSET_P
 }
 
 /* Set up the stack and frame (if desired) for the function.  */
@@ -6623,6 +6410,68 @@ mips_output_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
     output_asm_insn ("%(%<", 0);
 }
 
+/* Make the last instruction frame related and note that it performs
+   the operation described by FRAME_PATTERN.  */
+
+static void
+mips_set_frame_expr (rtx frame_pattern)
+{
+  rtx insn;
+
+  insn = get_last_insn ();
+  RTX_FRAME_RELATED_P (insn) = 1;
+  REG_NOTES (insn) = alloc_EXPR_LIST (REG_FRAME_RELATED_EXPR,
+				      frame_pattern,
+				      REG_NOTES (insn));
+}
+
+
+/* Return a frame-related rtx that stores REG at MEM.
+   REG must be a single register.  */
+
+static rtx
+mips_frame_set (rtx mem, rtx reg)
+{
+  rtx set = gen_rtx_SET (VOIDmode, mem, reg);
+  RTX_FRAME_RELATED_P (set) = 1;
+  return set;
+}
+
+
+/* Save register REG to MEM.  Make the instruction frame-related.  */
+
+static void
+mips_save_reg (rtx reg, rtx mem)
+{
+  if (GET_MODE (reg) == DFmode && mips_split_64bit_move_p (mem, reg))
+    {
+      rtx x1, x2;
+
+      mips_split_64bit_move (mem, reg);
+      x1 = mips_frame_set (mips_subword (mem, 0), mips_subword (reg, 0));
+      x2 = mips_frame_set (mips_subword (mem, 1), mips_subword (reg, 1));
+      mips_set_frame_expr (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, x1, x2)));
+    }
+  else
+    {
+      if (TARGET_MIPS16
+	  && REGNO (reg) != GP_REG_FIRST + 31
+	  && !M16_REG_P (REGNO (reg)))
+	{
+	  /* Save a non-mips16 register by moving it through a temporary.
+	     We don't need to do this for $31 since there's a special
+	     instruction for it.  */
+	  emit_move_insn (MIPS_PROLOGUE_TEMP (GET_MODE (reg)), reg);
+	  emit_move_insn (mem, MIPS_PROLOGUE_TEMP (GET_MODE (reg)));
+	}
+      else
+	emit_move_insn (mem, reg);
+
+      mips_set_frame_expr (mips_frame_set (mem, reg));
+    }
+}
+
+
 /* Emit an instruction to move SRC into DEST.  When generating
    explicit reloc code, mark the instruction as potentially dead.  */
 
@@ -6648,126 +6497,102 @@ mips_gp_insn (rtx dest, rtx src)
 void
 mips_expand_prologue (void)
 {
-  HOST_WIDE_INT tsize;
-  rtx tmp_rtx = 0;
+  HOST_WIDE_INT size;
 
   if (cfun->machine->global_pointer > 0)
     REGNO (pic_offset_table_rtx) = cfun->machine->global_pointer;
 
-  tsize = compute_frame_size (get_frame_size ());
+  size = compute_frame_size (get_frame_size ());
 
-  if (tsize > 0)
+  /* Save the registers.  Allocate up to MIPS_MAX_FIRST_STACK_STEP
+     bytes beforehand; this is enough to cover the register save area
+     without going out of range.  */
+  if ((cfun->machine->frame.mask | cfun->machine->frame.fmask) != 0)
     {
-      rtx tsize_rtx = GEN_INT (tsize);
+      HOST_WIDE_INT step1;
 
-      /* In mips16 mode with a large frame, we save the registers before
-         adjusting the stack.  */
-      if (!TARGET_MIPS16 || tsize <= 32768)
+      step1 = MIN (size, MIPS_MAX_FIRST_STACK_STEP);
+      RTX_FRAME_RELATED_P (emit_insn (gen_add3_insn (stack_pointer_rtx,
+						     stack_pointer_rtx,
+						     GEN_INT (-step1)))) = 1;
+      size -= step1;
+      mips_for_each_saved_reg (size, mips_save_reg);
+    }
+
+  /* Allocate the rest of the frame.  */
+  if (size > 0)
+    {
+      if (SMALL_OPERAND (-size))
+	RTX_FRAME_RELATED_P (emit_insn (gen_add3_insn (stack_pointer_rtx,
+						       stack_pointer_rtx,
+						       GEN_INT (-size)))) = 1;
+      else
 	{
-	  if (tsize > 32768)
+	  emit_move_insn (MIPS_PROLOGUE_TEMP (Pmode), GEN_INT (size));
+	  if (TARGET_MIPS16)
 	    {
-	      rtx adjustment_rtx;
+	      /* There are no instructions to add or subtract registers
+		 from the stack pointer, so use the frame pointer as a
+		 temporary.  We should always be using a frame pointer
+		 in this case anyway.  */
+	      if (!frame_pointer_needed)
+		abort ();
 
-	      adjustment_rtx = gen_rtx (REG, Pmode, MIPS_TEMP1_REGNUM);
-	      emit_move_insn (adjustment_rtx, tsize_rtx);
-	      emit_insn (gen_sub3_insn (stack_pointer_rtx,
-					stack_pointer_rtx,
-					adjustment_rtx));
+	      emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx);
+	      emit_insn (gen_sub3_insn (hard_frame_pointer_rtx,
+					hard_frame_pointer_rtx,
+					MIPS_PROLOGUE_TEMP (Pmode)));
+	      emit_move_insn (stack_pointer_rtx, hard_frame_pointer_rtx);
 	    }
 	  else
-	    emit_insn (gen_add3_insn (stack_pointer_rtx,
+	    emit_insn (gen_sub3_insn (stack_pointer_rtx,
 				      stack_pointer_rtx,
-				      GEN_INT (-tsize)));
+				      MIPS_PROLOGUE_TEMP (Pmode)));
 
+	  /* Describe the combined effect of the previous instructions.  */
 	  mips_set_frame_expr
 	    (gen_rtx_SET (VOIDmode, stack_pointer_rtx,
-			  plus_constant (stack_pointer_rtx, -tsize)));
-	}
-
-      save_restore_insns (1, tmp_rtx, tsize);
-
-      if (TARGET_ABICALLS && !TARGET_NEWABI && !current_function_is_leaf)
-	emit_insn (gen_cprestore
-		   (GEN_INT (current_function_outgoing_args_size)));
-
-      if (TARGET_MIPS16 && tsize > 32768)
-	{
-	  rtx reg_rtx;
-
-	  if (!frame_pointer_needed)
-	    abort ();
-
-	  reg_rtx = gen_rtx (REG, Pmode, 3);
-  	  emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx);
-  	  emit_move_insn (reg_rtx, tsize_rtx);
-	  emit_insn (gen_sub3_insn (hard_frame_pointer_rtx,
-				    hard_frame_pointer_rtx,
-				    reg_rtx));
-	  emit_move_insn (stack_pointer_rtx, hard_frame_pointer_rtx);
-	}
-
-      if (frame_pointer_needed)
-	{
-          rtx insn = 0;
-
-	  /* On the mips16, we encourage the use of unextended
-             instructions when using the frame pointer by pointing the
-             frame pointer ahead of the argument space allocated on
-             the stack.  */
-	  if (TARGET_MIPS16 && tsize > 32767)
-	    {
-	      /* In this case, we have already copied the stack
-                 pointer into the frame pointer, above.  We need only
-                 adjust for the outgoing argument size.  */
-	      if (current_function_outgoing_args_size != 0)
-		{
-		  rtx incr = GEN_INT (current_function_outgoing_args_size);
-		  if (Pmode == DImode)
-		    insn = emit_insn (gen_adddi3 (hard_frame_pointer_rtx,
-                                                  hard_frame_pointer_rtx,
-                                                  incr));
-		  else
-		    insn = emit_insn (gen_addsi3 (hard_frame_pointer_rtx,
-                                                  hard_frame_pointer_rtx,
-                                                  incr));
-		}
-	    }
-	  else if (TARGET_MIPS16 && current_function_outgoing_args_size != 0)
-	    {
-	      rtx incr = GEN_INT (current_function_outgoing_args_size);
-	      if (Pmode == DImode)
-		insn = emit_insn (gen_adddi3 (hard_frame_pointer_rtx,
-                                              stack_pointer_rtx,
-                                              incr));
-	      else
-		insn = emit_insn (gen_addsi3 (hard_frame_pointer_rtx,
-                                              stack_pointer_rtx,
-                                              incr));
-	    }
-	  else if (Pmode == DImode)
-	    insn = emit_insn (gen_movdi (hard_frame_pointer_rtx,
-					 stack_pointer_rtx));
-	  else
-	    insn = emit_insn (gen_movsi (hard_frame_pointer_rtx,
-					 stack_pointer_rtx));
-
-	  if (insn)
-	    RTX_FRAME_RELATED_P (insn) = 1;
+			  plus_constant (stack_pointer_rtx, -size)));
 	}
     }
 
+  /* Set up the frame pointer, if we're using one.  In mips16 code,
+     we point the frame pointer ahead of the outgoing argument area.
+     This should allow more variables & incoming arguments to be
+     acceesed with unextended instructions.  */
+  if (frame_pointer_needed)
+    {
+      if (TARGET_MIPS16 && current_function_outgoing_args_size != 0)
+	{
+	  rtx offset = GEN_INT (current_function_outgoing_args_size);
+	  RTX_FRAME_RELATED_P
+	    (emit_insn (gen_add3_insn (hard_frame_pointer_rtx,
+				       stack_pointer_rtx,
+				       offset))) = 1;
+	}
+      else
+	RTX_FRAME_RELATED_P (emit_move_insn (hard_frame_pointer_rtx,
+					     stack_pointer_rtx)) = 1;
+    }
+
+  /* If generating o32/o64 abicalls, save $gp on the stack.  */
+  if (TARGET_ABICALLS && !TARGET_NEWABI && !current_function_is_leaf)
+    emit_insn (gen_cprestore (GEN_INT (current_function_outgoing_args_size)));
+
+  /* If generating n32/n64 abicalls, emit the instructions to load $gp.  */
   if (TARGET_ABICALLS && TARGET_NEWABI && cfun->machine->global_pointer > 0)
     {
-      rtx temp, fnsymbol, fnaddr;
+      rtx fnsymbol, fnaddr;
 
-      temp = gen_rtx_REG (Pmode, MIPS_TEMP1_REGNUM);
       fnsymbol = XEXP (DECL_RTL (current_function_decl), 0);
       fnaddr = gen_rtx_REG (Pmode, PIC_FUNCTION_ADDR_REGNUM);
 
-      mips_gp_insn (temp, mips_lui_reloc (fnsymbol, RELOC_LOADGP_HI));
-      mips_gp_insn (temp, gen_rtx_PLUS (Pmode, temp, fnaddr));
+      mips_gp_insn (MIPS_PROLOGUE_TEMP (Pmode),
+		    mips_lui_reloc (fnsymbol, RELOC_LOADGP_HI));
+      mips_gp_insn (MIPS_PROLOGUE_TEMP (Pmode),
+		    gen_rtx_PLUS (Pmode, MIPS_PROLOGUE_TEMP (Pmode), fnaddr));
       mips_gp_insn (pic_offset_table_rtx,
-		    gen_rtx_PLUS (Pmode, temp,
+		    gen_rtx_PLUS (Pmode, MIPS_PROLOGUE_TEMP (Pmode),
 				  mips_reloc (fnsymbol, RELOC_LOADGP_LO)));
 
       if (!TARGET_EXPLICIT_RELOCS)
@@ -6840,6 +6665,27 @@ mips_output_function_epilogue (FILE *file ATTRIBUTE_UNUSED,
   REGNO (pic_offset_table_rtx) = GLOBAL_POINTER_REGNUM;
 }
 
+/* Emit instructions to restore register REG from slot MEM.  */
+
+static void
+mips_restore_reg (rtx reg, rtx mem)
+{
+  /* There's no mips16 instruction to load $31 directly.  Load into
+     $7 instead and adjust the return insn appropriately.  */
+  if (TARGET_MIPS16 && REGNO (reg) == GP_REG_FIRST + 31)
+    reg = gen_rtx_REG (GET_MODE (reg), 7);
+
+  if (TARGET_MIPS16 && !M16_REG_P (REGNO (reg)))
+    {
+      /* Can't restore directly; move through a temporary.  */
+      emit_move_insn (MIPS_EPILOGUE_TEMP (GET_MODE (reg)), mem);
+      emit_move_insn (reg, MIPS_EPILOGUE_TEMP (GET_MODE (reg)));
+    }
+  else
+    emit_move_insn (reg, mem);
+}
+
+
 /* Expand the epilogue into a bunch of separate insns.  SIBCALL_P is true
    if this epilogue precedes a sibling call, false if it is for a normal
    "epilogue" pattern.  */
@@ -6847,9 +6693,8 @@ mips_output_function_epilogue (FILE *file ATTRIBUTE_UNUSED,
 void
 mips_expand_epilogue (int sibcall_p)
 {
-  HOST_WIDE_INT tsize = cfun->machine->frame.total_size;
-  rtx tsize_rtx = GEN_INT (tsize);
-  rtx tmp_rtx = (rtx)0;
+  HOST_WIDE_INT step1, step2;
+  rtx base, target;
 
   if (!sibcall_p && mips_can_use_return_insn ())
     {
@@ -6857,122 +6702,92 @@ mips_expand_epilogue (int sibcall_p)
       return;
     }
 
-  if (tsize > 32767 && ! TARGET_MIPS16)
+  /* Split the frame into two.  STEP1 is the amount of stack we should
+     deallocate before restoring the registers.  STEP2 is the amount we
+     should deallocate afterwards.
+
+     Start off by assuming that no registers need to be restored.  */
+  step1 = cfun->machine->frame.total_size;
+  step2 = 0;
+
+  /* Work out which register holds the frame address.  Account for the
+     frame pointer offset used by mips16 code.  */
+  if (!frame_pointer_needed)
+    base = stack_pointer_rtx;
+  else
     {
-      tmp_rtx = gen_rtx_REG (Pmode, MIPS_TEMP1_REGNUM);
-      emit_move_insn (tmp_rtx, tsize_rtx);
-      tsize_rtx = tmp_rtx;
+      base = hard_frame_pointer_rtx;
+      if (TARGET_MIPS16)
+	step1 -= current_function_outgoing_args_size;
     }
 
-  if (tsize > 0)
+  /* If we need to restore registers, deallocate as much stack as
+     possible in the second step without going out of range.  */
+  if ((cfun->machine->frame.mask | cfun->machine->frame.fmask) != 0)
     {
-      long orig_tsize = tsize;
-
-      if (frame_pointer_needed)
-	{
-	  emit_insn (gen_blockage ());
-
-	  /* On the mips16, the frame pointer is offset from the stack
-             pointer by current_function_outgoing_args_size.  We
-             account for that by changing tsize.  Note that this can
-             actually make tsize negative.  */
-	  if (TARGET_MIPS16)
-	    {
-	      tsize -= current_function_outgoing_args_size;
-
-	      /* If we have a large frame, it's easier to add to $6
-                 than to $sp, since the mips16 has no instruction to
-                 add a register to $sp.  */
-	      if (orig_tsize > 32767)
-		{
-		  rtx g6_rtx = gen_rtx (REG, Pmode, GP_REG_FIRST + 6);
-
-		  emit_move_insn (g6_rtx, GEN_INT (tsize));
-		  if (Pmode == DImode)
-		    emit_insn (gen_adddi3 (hard_frame_pointer_rtx,
-					   hard_frame_pointer_rtx,
-					   g6_rtx));
-		  else
-		    emit_insn (gen_addsi3 (hard_frame_pointer_rtx,
-					   hard_frame_pointer_rtx,
-					   g6_rtx));
-		  tsize = 0;
-		}
-
-	      if (tsize && tsize != orig_tsize)
-		tsize_rtx = GEN_INT (tsize);
-	    }
-
-	  if (Pmode == DImode)
-	    emit_insn (gen_movdi (stack_pointer_rtx, hard_frame_pointer_rtx));
-	  else
-	    emit_insn (gen_movsi (stack_pointer_rtx, hard_frame_pointer_rtx));
-	}
-
-      /* The GP/PIC register is implicitly used by all SYMBOL_REFs, so if we
-	 are going to restore it, then we must emit a blockage insn to
-	 prevent the scheduler from moving the restore out of the epilogue.  */
-      else if (TARGET_ABICALLS && mips_abi != ABI_32 && mips_abi != ABI_O64
-	       && (cfun->machine->frame.mask
-		   & (1L << (PIC_OFFSET_TABLE_REGNUM - GP_REG_FIRST))))
-	emit_insn (gen_blockage ());
-
-      save_restore_insns (0, tmp_rtx, orig_tsize);
-
-      /* In mips16 mode with a large frame, we adjust the stack
-         pointer before restoring the registers.  In this case, we
-         should always be using a frame pointer, so everything should
-         have been handled above.  */
-      if (tsize > 32767 && TARGET_MIPS16)
-	abort ();
-
-      if (current_function_calls_eh_return)
-	{
-	  rtx eh_ofs = EH_RETURN_STACKADJ_RTX;
-	  if (Pmode == DImode)
-	    emit_insn (gen_adddi3 (eh_ofs, eh_ofs, tsize_rtx));
-	  else
-	    emit_insn (gen_addsi3 (eh_ofs, eh_ofs, tsize_rtx));
-	  tsize_rtx = eh_ofs;
-	}
-
-      emit_insn (gen_blockage ());
-
-      if (tsize != 0 || current_function_calls_eh_return)
-	{
-	  if (!TARGET_MIPS16 || !current_function_calls_eh_return)
-	    {
-	      if (Pmode == DImode)
-		emit_insn (gen_adddi3 (stack_pointer_rtx, stack_pointer_rtx,
-				       tsize_rtx));
-	      else
-		emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,
-				       tsize_rtx));
-	    }
-	  else
-	    {
-	      /* We need to work around not being able to add a register
-		 to the stack pointer directly. Use register $6 as an
-		 intermediate step.  */
-
-	      rtx g6_rtx = gen_rtx (REG, Pmode, GP_REG_FIRST + 6);
-
-	      if (Pmode == DImode)
-		{
-		  emit_insn (gen_movdi (g6_rtx, stack_pointer_rtx));
-		  emit_insn (gen_adddi3 (g6_rtx, g6_rtx, tsize_rtx));
-		  emit_insn (gen_movdi (stack_pointer_rtx, g6_rtx));
-		}
-	      else
-		{
-		  emit_insn (gen_movsi (g6_rtx, stack_pointer_rtx));
-		  emit_insn (gen_addsi3 (g6_rtx, g6_rtx, tsize_rtx));
-		  emit_insn (gen_movsi (stack_pointer_rtx, g6_rtx));
-		}
-	    }
-
-	}
+      step2 = MIN (step1, MIPS_MAX_FIRST_STACK_STEP);
+      step1 -= step2;
     }
+
+  /* Set TARGET to BASE + STEP1.  */
+  target = base;
+  if (step1 > 0)
+    {
+      rtx adjust;
+
+      /* Get an rtx for STEP1 that we can add to BASE.  */
+      adjust = GEN_INT (step1);
+      if (!SMALL_OPERAND (step1))
+	{
+	  emit_move_insn (MIPS_EPILOGUE_TEMP (Pmode), adjust);
+	  adjust = MIPS_EPILOGUE_TEMP (Pmode);
+	}
+
+      /* Normal mode code can copy the result straight into $sp.  */
+      if (!TARGET_MIPS16)
+	target = stack_pointer_rtx;
+
+      emit_insn (gen_add3_insn (target, base, adjust));
+    }
+
+  /* Copy TARGET into the stack pointer.  */
+  if (target != stack_pointer_rtx)
+    emit_move_insn (stack_pointer_rtx, target);
+
+  /* If we're using addressing macros for n32/n64 abicalls, $gp is
+     implicitly used by all SYMBOL_REFs.  We must emit a blockage
+     insn before restoring it.  */
+  if (TARGET_ABICALLS && TARGET_NEWABI && !TARGET_EXPLICIT_RELOCS)
+    emit_insn (gen_blockage ());
+
+  /* Restore the registers.  */
+  mips_for_each_saved_reg (cfun->machine->frame.total_size - step2,
+			   mips_restore_reg);
+
+  /* Deallocate the final bit of the frame.  */
+  if (step2 > 0)
+    emit_insn (gen_add3_insn (stack_pointer_rtx,
+			      stack_pointer_rtx,
+			      GEN_INT (step2)));
+    
+  /* Add in the __builtin_eh_return stack adjustment.   We need to
+     use a temporary in mips16 code.  */
+  if (current_function_calls_eh_return)
+    {
+      if (TARGET_MIPS16)
+	{
+	  emit_move_insn (MIPS_EPILOGUE_TEMP (Pmode), stack_pointer_rtx);
+	  emit_insn (gen_add3_insn (MIPS_EPILOGUE_TEMP (Pmode),
+				    MIPS_EPILOGUE_TEMP (Pmode),
+				    EH_RETURN_STACKADJ_RTX));
+	  emit_move_insn (stack_pointer_rtx, MIPS_EPILOGUE_TEMP (Pmode));
+	}
+      else
+	emit_insn (gen_add3_insn (stack_pointer_rtx,
+				  stack_pointer_rtx,
+				  EH_RETURN_STACKADJ_RTX));
+    }
+
   if (!sibcall_p)
     {
       /* The mips16 loads the return address into $7, not $31.  */
