@@ -280,10 +280,6 @@ o clean up the section-numbering
 	      <entry>usual</entry>
 	    </row>
 	    <row>
-	      <entry><ulink url = "http://www.mnemonic.org">mnemonic</ulink>
-	      </entry> <entry>none</entry>
-	    </row>
-	    <row>
 	      <entry><ulink url = "http://libsigc.sourceforge.net">
 		  libsigc++</ulink></entry>
 	      <entry>conservative-impl</entry>
