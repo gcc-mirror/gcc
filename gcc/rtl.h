@@ -1446,8 +1446,6 @@ extern rtx get_pool_constant (rtx);
 extern rtx get_pool_constant_mark (rtx, bool *);
 extern enum machine_mode get_pool_mode (rtx);
 extern rtx get_pool_constant_for_function (struct function *, rtx);
-extern enum machine_mode get_pool_mode_for_function (struct function *, rtx);
-extern int get_pool_offset (rtx);
 extern rtx simplify_subtraction (rtx);
 
 /* In function.c  */
