@@ -884,9 +884,11 @@ namespace std
     compare(const _CharT* __s) const
     {
       size_type __size = this->size();
-      int __r = traits_type::compare(_M_data(), __s, __size);
+      size_type __osize = traits_type::length(__s);
+      size_type __len = min(__size, __osize);
+      int __r = traits_type::compare(_M_data(), __s, __len);
       if (!__r)
-	__r = __size - traits_type::length(__s);
+	__r = __size - __osize;
       return __r;
     }
 
