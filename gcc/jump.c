@@ -1019,6 +1019,10 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 		      && simplejump_p (temp4)
 		      && JUMP_LABEL (temp4) == JUMP_LABEL (insn)))
 	      && (temp4 = get_condition (insn, &temp5)) != 0
+	      /* We must be comparing objects whose modes imply the size.
+		 We could handle BLKmode if (1) emit_store_flag could
+		 and (2) we could find the size reliably.  */
+	      && GET_MODE (XEXP (temp4, 0)) != BLKmode
 
 	      /* If B is zero, OK; if A is zero, can only do (1) if we
 		 can reverse the condition.  See if (3) applies possibly
@@ -1200,6 +1204,10 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 		      && simplejump_p (temp3)
 		      && JUMP_LABEL (temp3) == JUMP_LABEL (insn)))
 	      && (temp3 = get_condition (insn, &temp4)) != 0
+	      /* We must be comparing objects whose modes imply the size.
+		 We could handle BLKmode if (1) emit_store_flag could
+		 and (2) we could find the size reliably.  */
+	      && GET_MODE (XEXP (temp3, 0)) != BLKmode
 	      && can_reverse_comparison_p (temp3, insn))
 	    {
 	      rtx temp6, target = 0, seq, init_insn = 0, init = temp2;
