@@ -1028,23 +1028,7 @@ build_java_binop (op, type, arg1, arg2)
 	  return call;
 	}
       break;
-
-#if 0	/* not required */
-    case PLUS_EXPR:
-    case MULT_EXPR:
-    case MINUS_EXPR:
-    case TRUNC_DIV_EXPR:
-    case RDIV_EXPR:
-/*    case REM_EXPR: */
-    case BIT_AND_EXPR:
-    case BIT_IOR_EXPR:
-    case BIT_XOR_EXPR:
-      break;
-    default:
-      error ("unknown opcode");
-      return error_mark_node;
-#endif
-
+    default:  ;
     }
   return fold (build (op, type, arg1, arg2));
 }
@@ -1278,7 +1262,7 @@ void
 pop_argument_types (arg_types)
      tree arg_types;
 {
-  if (arg_types == NULL_TREE)
+  if (arg_types == end_params_node)
     return;
   if (TREE_CODE (arg_types) == TREE_LIST)
     {
@@ -1293,7 +1277,7 @@ tree
 pop_arguments (arg_types)
      tree arg_types;
 {
-  if (arg_types == NULL_TREE)
+  if (arg_types == end_params_node)
     return NULL_TREE;
   if (TREE_CODE (arg_types) == TREE_LIST)
     {
@@ -1542,7 +1526,8 @@ expand_invoke (opcode, method_ref_index, nargs)
   func = NULL_TREE;
   if (opcode == OPCODE_invokestatic || opcode == OPCODE_invokespecial
       || (opcode == OPCODE_invokevirtual
-	  && (METHOD_FINAL (method) || CLASS_FINAL (TYPE_NAME (self_type)))))
+	  && (METHOD_PRIVATE (method)
+	      || METHOD_FINAL (method) || CLASS_FINAL (TYPE_NAME (self_type)))))
     func = build_known_method_ref (method, method_type, self_type,
 				   method_signature, arg_list);
   else
