@@ -1,3 +1,8 @@
+Mon Jul 17 00:41:57 2000   Greg McGary <greg@mcgary.org>
+
+	* gcc.c-torture/execute/20000717-1.c: New test.
+	* gcc.c-torture/execute/20000717-1.x: Expected to fail.
+
 2000-07-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/execute/20000715-2.c: New test.
