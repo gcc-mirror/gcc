@@ -1,3 +1,34 @@
+Fri Sep 10 16:01:23 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* protoize.c: Remove various __STDC__ and POSIX hacks.  Don't
+	include directory headers.  Don't define strrchr.  Don't provide
+	my_* replacement functions.  Prefer PTR over `pointer_type'.
+	Don't prototype system functions.  Don't redefine getopt.
+
+	(shortpath, fancy_abort, notice, savestring, dupnstr, substr,
+	safe_read, safe_write, save_pointers, restore_pointers,
+	is_id_char, in_system_include_dir, directory_specified_p,
+	file_excluded_p, unexpand_if_needed, abspath, check_aux_info,
+	find_corresponding_lparen, referenced_file_is_newer,
+	save_def_or_dec, munge_compile_params, gen_aux_info_file,
+	process_aux_info_file, identify_lineno, check_source,
+	seek_to_line, forward_to_next_token_char, output_bytes,
+	output_string, output_up_to, other_variable_style_function,
+	find_rightmost_formals_list, do_cleaning, careful_find_l_paren,
+	do_processing, is_syscalls_file, rename_c_file, find_extern_def,
+	find_static_definition, connect_defs_and_decs, add_local_decl,
+	add_global_decls, needs_to_be_converted, visit_each_hash_node,
+	add_symbol, lookup, free_def_dec, find_file, reverse_def_dec_list,
+	edit_fn_declaration, edit_formals_lists, edit_fn_definition,
+	scan_for_missed_items, edit_file, string_list_cons): Add static
+	prototypes.
+	(standard_exec_prefix, target_machine, target_version,
+	default_syscalls_dir, string_list, string_list_cons, find_file,
+	do_cleaning): Constify a char*.
+	(safe_read, safe_write): Use PTR, not a char*.
+	(is_id_char): Take an int, not a char.
+	(main): Add prototype.  Call return, not exit.
+
 Fri Sep 10 16:48:26 1999  Andrew Haley  <aph@cygnus.com>
 
 	* tree.c (type_hash_lookup): Check for equal TYPE_ALIGN fields
