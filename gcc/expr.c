@@ -5793,18 +5793,18 @@ highest_pow2_factor (exp)
     {
     case INTEGER_CST:
       /* If the integer is expressable in a HOST_WIDE_INT, we can find the
-	 lowest bit that's a one.  If the result is zero, pessimize by
-	 returning 1.  This is overly-conservative, but such things should not
-	 happen in the offset expressions that we are called with.  If
-	 the constant overlows, we some erroneous program, so return
-	 BIGGEST_ALIGNMENT to avoid any later ICE.  */
-      if (TREE_CONSTANT_OVERFLOW (exp))
+	 lowest bit that's a one.  If the result is zero, return
+	 BIGGEST_ALIGNMENT.  We need to handle this case since we can find it
+	 in a COND_EXPR, a MIN_EXPR, or a MAX_EXPR.  If the constant overlows,
+	 we have an erroneous program, so return BIGGEST_ALIGNMENT to avoid any
+	 later ICE.  */
+      if (TREE_CONSTANT_OVERFLOW (exp)
+	  || integer_zerop (exp))
 	return BIGGEST_ALIGNMENT;
       else if (host_integerp (exp, 0))
 	{
 	  c0 = tree_low_cst (exp, 0);
-	  c0 = c0 < 0 ? - c0 : c0;
-	  return c0 != 0 ? c0 & -c0 : 1;
+	  return c0 < 0 ? - c0 : c0;
 	}
       break;
 
