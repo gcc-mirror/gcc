@@ -131,6 +131,9 @@ namespace gcj
   extern _Jv_Utf8Const *clinit_name;    /* "<clinit>" */
   extern _Jv_Utf8Const *init_name;      /* "<init>" */
   extern _Jv_Utf8Const *finit_name;     /* "finit$", */
+  
+  /* Set to true by _Jv_CreateJavaVM. */
+  extern bool runtimeInitialized;
 };
 
 /* Type of pointer used as finalizer.  */

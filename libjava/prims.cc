@@ -299,10 +299,7 @@ _Jv_Abort (const char *, const char *, int, const char *message)
 	   "libgcj failure: %s\n   in function %s, file %s, line %d\n",
 	   message, function, file, line);
 #else
-  java::io::PrintStream *err = java::lang::System::err;
-  err->print(JvNewStringLatin1 ("libgcj failure: "));
-  err->println(JvNewStringLatin1 (message));
-  err->flush();
+  fprintf (stderr, "libgcj failure: %s\n", message);
 #endif
   abort ();
 }
@@ -872,6 +869,8 @@ namespace gcj
   _Jv_Utf8Const *clinit_name;
   _Jv_Utf8Const *init_name;
   _Jv_Utf8Const *finit_name;
+  
+  bool runtimeInitialized = false;
 }
 
 jint
@@ -879,12 +878,10 @@ _Jv_CreateJavaVM (void* /*vm_args*/)
 {
   using namespace gcj;
   
-  static bool init = false;
-
-  if (init)
+  if (runtimeInitialized)
     return -1;
 
-  init = true;
+  runtimeInitialized = true;
 
   PROCESS_GCJ_PROPERTIES;
 
