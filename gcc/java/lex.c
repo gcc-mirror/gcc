@@ -438,13 +438,12 @@ java_parse_doc_section (c)
       
       if (c == UEOF)
 	java_lex_error ("Comment not terminated at end of input", 0);
-      
-      java_unget_unicode ();
       tag [tag_index] = '\0';
 
       if (!strcmp (tag, "deprecated"))
 	ctxp->deprecated = 1;
     }
+  java_unget_unicode ();
   return 0;
 }
 
@@ -619,7 +618,7 @@ java_lex (java_lval)
 		goto step1;
 	    }
 
-	  java_parse_end_comment (c);
+	  java_parse_end_comment ((c = java_get_unicode ()));
 	  goto step1;
 	  break;
 	default:

@@ -52,6 +52,12 @@ Thu Feb 17 13:20:58 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* Make-lang.in (jvspec.o): Depend on $(GCC_H), not gcc.h.
 
+2000-02-15  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* lex.c (java_parse_doc_section): Alway unget the last unicode
+	when returning 0.
+	(java_lex): Call java_parse_end_comment with fetched unicode.
+
 2000-02-15  Tom Tromey  <tromey@cygnus.com>
 
 	* gjavah.c (jni_print_char): New function.
