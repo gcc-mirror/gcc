@@ -934,7 +934,7 @@ to test whether a header is compiled by a C compiler or a C++ compiler.
 
 @item __STRICT_ANSI__
 @findex __STRICT_ANSI__
-This macro is defined if and only if the @samp{-ansi} switch was
+GNU C defines this macro if and only if the @samp{-ansi} switch was
 specified when GNU C was invoked.  Its definition is the null string.
 This macro exists primarily to direct certain GNU header files not to
 define certain traditional Unix constructs which are incompatible with
@@ -956,48 +956,46 @@ the nesting level is zero.
 
 @item __VERSION__
 @findex __VERSION__
-This macro expands to a string which describes the version number of
+This macro expands to a string constant which describes the version number of
 GNU C@.  The string is normally a sequence of decimal numbers separated
-by periods, such as @samp{"2.6.0"}.  The only reasonable use of this
-macro is to incorporate it into a string constant.
+by periods, such as @samp{"2.6.0"}.
 
 @item __OPTIMIZE__
 @findex __OPTIMIZE__
-This macro is defined in optimizing compilations.  It causes certain
-GNU header files to define alternative macro definitions for some
-system library functions.  It is unwise to refer to or test the
-definition of this macro unless you make very sure that programs will
-execute with the same effect regardless.
+GNU CC defines this macro in optimizing compilations.  It causes certain
+GNU header files to define alternative macro definitions for some system
+library functions.  You should not refer to or test the definition of
+this macro unless you make very sure that programs will execute with the
+same effect regardless.
 
 @item __CHAR_UNSIGNED__
 @findex __CHAR_UNSIGNED__
-This macro is defined if and only if the data type @code{char} is
-unsigned on the target machine.  It exists to cause the standard
-header file @file{limits.h} to work correctly.  It is bad practice
-to refer to this macro yourself; instead, refer to the standard
-macros defined in @file{limits.h}.  The preprocessor uses
-this macro to determine whether or not to sign-extend large character
-constants written in octal; see @ref{#if Directive,,The @samp{#if} Directive}.
+GNU C defines this macro if and only if the data type @code{char} is
+unsigned on the target machine.  It exists to cause the standard header
+file @file{limits.h} to work correctly.  You should not refer to this
+macro yourself; instead, refer to the standard macros defined in
+@file{limits.h}.  The preprocessor uses this macro to determine whether
+or not to sign-extend large character constants written in octal; see
+@ref{#if Directive,,The @samp{#if} Directive}.
 
 @item __REGISTER_PREFIX__
 @findex __REGISTER_PREFIX__
-This macro expands to a string describing the prefix applied to cpu
-registers in assembler code.  It can be used to write assembler code
-that is usable in multiple environments.  For example, in the
-@samp{m68k-aout} environment it expands to the string @samp{""},
-but in the @samp{m68k-coff} environment it expands to the string
-@samp{"%"}.
+This macro expands to a string (not a string constant) describing the
+prefix applied to CPU registers in assembler code.  You can use it to
+write assembler code that is usable in multiple environments.  For
+example, in the @samp{m68k-aout} environment it expands to the null
+string, but in the @samp{m68k-coff} environment it expands to the string
+@samp{%}.
 
 @item __USER_LABEL_PREFIX__
 @findex __USER_LABEL_PREFIX__
-This macro expands to a string describing the prefix applied to user
-generated labels in assembler code.  It can be used to write assembler
-code that is usable in multiple environments.  For example, in the
-@samp{m68k-aout} environment it expands to the string @samp{"_"}, but in
-the @samp{m68k-coff} environment it expands to the string @samp{""}.
-This does not work with the @samp{-mno-underscores} option that the
-i386 OSF/rose and m88k targets provide nor with the @samp{-mcall*} options
-of the rs6000 System V Release 4 target.
+Similar to @code{__REGISTER_PREFIX__}, but describes the prefix applied
+to user generated labels in assembler code.  For example, in the
+@samp{m68k-aout} environment it expands to the string @samp{_}, but in
+the @samp{m68k-coff} environment it expands to the null string.  This
+does not work with the @samp{-mno-underscores} option that the i386
+OSF/rose and m88k targets provide nor with the @samp{-mcall*} options of
+the rs6000 System V Release 4 target.
 @end table
 
 @node Nonstandard Predefined,, Standard Predefined, Predefined
@@ -2687,7 +2685,7 @@ Only the directories you have specified with @samp{-I} options
 @findex -nostdinc++
 Do not search for header files in the C++-specific standard directories,
 but do still search the other standard directories.
-(This option is used when building libg++.)
+(This option is used when building the C++ library.)
 
 @item -remap
 @findex -remap

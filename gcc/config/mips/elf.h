@@ -29,6 +29,8 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 /* Mostly like ECOFF.  */
+#include "mips/mips.h"
+#include "gofast.h"
 #include "mips/ecoff.h"
 
 /* We need to use .esize and .etype instead of .size and .type to

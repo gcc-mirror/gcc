@@ -1,5 +1,5 @@
 /* ANSI and traditional C compatibility macros.
-   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -77,6 +77,9 @@ Boston, MA 02111-1307, USA.  */
 
 #endif /* ! __STDC__ */
 
+/* We don't have autoconf for libgcc2.c since it's a target, so don't
+   define these functions, which aren't used there anyway.  */
+#ifndef IN_LIBGCC2
 #ifndef bcopy
 # ifdef HAVE_BCOPY
 #  ifdef NEED_DECLARATION_BCOPY
@@ -118,5 +121,7 @@ int bcmp ();
 #  define index strchr
 # endif
 #endif
+
+#endif /* IN_LIBGCC2 */
 
 #endif /* ANSIDECL_H */

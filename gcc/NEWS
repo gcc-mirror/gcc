@@ -1,5 +1,14 @@
 Noteworthy changes in GCC for EGCS.
 
+Noteworthy changes in GCC version 2.8.1
+---------------------------------------
+
+Numerous bugs have been fixed and some minor performance
+improvements (compilation speed) have been made.
+
+Noteworthy changes in GCC version 2.8.0
+---------------------------------------
+
 A major change in this release is the addition of a framework for
 exception handling, currently used by C++.  Many internal changes and
 optimization improvements have been made.  These increase the

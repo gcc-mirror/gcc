@@ -360,7 +360,7 @@ struct temp_slot
      slot above.  May be an EXPR_LIST if multiple addresses exist.  */
   rtx address;
   /* The size, in units, of the slot.  */
-  int size;
+  HOST_WIDE_INT size;
   /* The value of `sequence_rtl_expr' when this temporary is allocated.  */
   tree rtl_expr;
   /* Non-zero if this temporary is currently in use.  */
@@ -373,10 +373,10 @@ struct temp_slot
   int keep;
   /* The offset of the slot from the frame_pointer, including extra space
      for alignment.  This info is for combine_temp_slots.  */
-  int base_offset;
+  HOST_WIDE_INT base_offset;
   /* The size of the slot, including extra space for alignment.  This
      info is for combine_temp_slots.  */
-  int full_size;
+  HOST_WIDE_INT full_size;
 };
 
 /* List of all temporaries allocated, both available and in use.  */
@@ -386,6 +386,10 @@ struct temp_slot *temp_slots;
 /* Current nesting level for temporaries.  */
 
 int temp_slot_level;
+
+/* Current nesting level for variables in a block.  */
+
+int var_temp_slot_level;
 
 /* This structure is used to record MEMs or pseudos used to replace VAR, any
    SUBREGs of VAR, and any MEMs containing VAR as an address.  We need to
@@ -404,7 +408,7 @@ struct fixup_replacement
 static struct temp_slot *find_temp_slot_from_address  PROTO((rtx));
 static void put_reg_into_stack	PROTO((struct function *, rtx, tree,
 				       enum machine_mode, enum machine_mode,
-				       int, int));
+				       int, int, int));
 static void fixup_var_refs	PROTO((rtx, enum machine_mode, int));
 static struct fixup_replacement
   *find_fixup_replacement	PROTO((struct fixup_replacement **, rtx));
@@ -448,9 +452,11 @@ find_function_data (decl)
      tree decl;
 {
   struct function *p;
+
   for (p = outer_function_chain; p; p = p->next)
     if (p->decl == decl)
       return p;
+
   abort ();
 }
 
@@ -513,6 +519,8 @@ push_function_context_to (context)
   p->function_call_count = function_call_count;
   p->temp_slots = temp_slots;
   p->temp_slot_level = temp_slot_level;
+  p->target_temp_slot_level = target_temp_slot_level;
+  p->var_temp_slot_level = var_temp_slot_level;
   p->fixup_var_refs_queue = 0;
   p->epilogue_delay_list = current_function_epilogue_delay_list;
   p->args_info = current_function_args_info;
@@ -523,9 +531,10 @@ push_function_context_to (context)
   save_expr_status (p);
   save_stmt_status (p);
   save_varasm_status (p, context);
-
   if (save_machine_status)
     (*save_machine_status) (p);
+
+  init_emit ();
 }
 
 void
@@ -542,6 +551,7 @@ pop_function_context_from (context)
      tree context;
 {
   struct function *p = outer_function_chain;
+  struct var_refs_queue *queue;
 
   outer_function_chain = p->next;
 
@@ -592,6 +602,8 @@ pop_function_context_from (context)
   function_call_count = p->function_call_count;
   temp_slots = p->temp_slots;
   temp_slot_level = p->temp_slot_level;
+  target_temp_slot_level = p->target_temp_slot_level;
+  var_temp_slot_level = p->var_temp_slot_level;
   current_function_epilogue_delay_list = p->epilogue_delay_list;
   reg_renumber = 0;
   current_function_args_info = p->args_info;
@@ -608,11 +620,8 @@ pop_function_context_from (context)
 
   /* Finish doing put_var_into_stack for any of our variables
      which became addressable during the nested function.  */
-  {
-    struct var_refs_queue *queue = p->fixup_var_refs_queue;
-    for (; queue; queue = queue->next)
-      fixup_var_refs (queue->modified, queue->promoted_mode, queue->unsignedp);
-  }
+  for (queue = p->fixup_var_refs_queue; queue; queue = queue->next)
+    fixup_var_refs (queue->modified, queue->promoted_mode, queue->unsignedp);
 
   free (p);
 
@@ -655,7 +664,7 @@ get_frame_size ()
 rtx
 assign_stack_local (mode, size, align)
      enum machine_mode mode;
-     int size;
+     HOST_WIDE_INT size;
      int align;
 {
   register rtx x, addr;
@@ -724,7 +733,7 @@ assign_stack_local (mode, size, align)
 rtx
 assign_outer_stack_local (mode, size, align, function)
      enum machine_mode mode;
-     int size;
+     HOST_WIDE_INT size;
      int align;
      struct function *function;
 {
@@ -792,13 +801,15 @@ assign_outer_stack_local (mode, size, align, function)
 
    KEEP is 1 if this slot is to be retained after a call to
    free_temp_slots.  Automatic variables for a block are allocated
-   with this flag.  KEEP is 2, if we allocate a longer term temporary,
-   whose lifetime is controlled by CLEANUP_POINT_EXPRs.  */
+   with this flag.  KEEP is 2 if we allocate a longer term temporary,
+   whose lifetime is controlled by CLEANUP_POINT_EXPRs.  KEEP is 3
+   if we are to allocate something at an inner level to be treated as
+   a variable in the block (e.g., a SAVE_EXPR).  */
 
 rtx
 assign_stack_temp (mode, size, keep)
      enum machine_mode mode;
-     int size;
+     HOST_WIDE_INT size;
      int keep;
 {
   struct temp_slot *p, *best_p = 0;
@@ -831,7 +842,7 @@ assign_stack_temp (mode, size, keep)
       if (GET_MODE (best_p->slot) == BLKmode)
 	{
 	  int alignment = BIGGEST_ALIGNMENT / BITS_PER_UNIT;
-	  int rounded_size = CEIL_ROUND (size, alignment);
+	  HOST_WIDE_INT rounded_size = CEIL_ROUND (size, alignment);
 
 	  if (best_p->size - rounded_size >= alignment)
 	    {
@@ -862,11 +873,14 @@ assign_stack_temp (mode, size, keep)
   /* If we still didn't find one, make a new temporary.  */
   if (p == 0)
     {
-      int frame_offset_old = frame_offset;
+      HOST_WIDE_INT frame_offset_old = frame_offset;
+
       p = (struct temp_slot *) oballoc (sizeof (struct temp_slot));
+
       /* If the temp slot mode doesn't indicate the alignment,
 	 use the largest possible, so no one will be disappointed.  */
       p->slot = assign_stack_local (mode, size, mode == BLKmode ? -1 : 0);
+
       /* The following slot size computation is necessary because we don't
 	 know the actual size of the temporary slot until assign_stack_local
 	 has performed all the frame alignment and size rounding for the
@@ -879,6 +893,7 @@ assign_stack_temp (mode, size, keep)
 #else
       p->size = size;
 #endif
+
       /* Now define the fields used by combine_temp_slots.  */
 #ifdef FRAME_GROWS_DOWNWARD
       p->base_offset = frame_offset;
@@ -899,6 +914,11 @@ assign_stack_temp (mode, size, keep)
   if (keep == 2)
     {
       p->level = target_temp_slot_level;
+      p->keep = 0;
+    }
+  else if (keep == 3)
+    {
+      p->level = var_temp_slot_level;
       p->keep = 0;
     }
   else
@@ -933,7 +953,7 @@ assign_temp (type, keep, memory_required, dont_promote)
 
   if (mode == BLKmode || memory_required)
     {
-      int size = int_size_in_bytes (type);
+      HOST_WIDE_INT size = int_size_in_bytes (type);
       rtx tmp;
 
       /* Unfortunately, we don't yet know how to allocate variable-sized
@@ -969,12 +989,19 @@ combine_temp_slots ()
 {
   struct temp_slot *p, *q;
   struct temp_slot *prev_p, *prev_q;
-  /* Determine where to free back to after this function.  */
-  rtx free_pointer = rtx_alloc (CONST_INT);
+  int num_slots;
+
+  /* If there are a lot of temp slots, don't do anything unless 
+     high levels of optimizaton.  */
+  if (! flag_expensive_optimizations)
+    for (p = temp_slots, num_slots = 0; p; p = p->next, num_slots++)
+      if (num_slots > 100 || (num_slots > 10 && optimize == 0))
+	return;
 
   for (p = temp_slots, prev_p = 0; p; p = prev_p ? prev_p->next : temp_slots)
     {
       int delete_p = 0;
+
       if (! p->in_use && GET_MODE (p->slot) == BLKmode)
 	for (q = p->next, prev_q = p; q; q = prev_q->next)
 	  {
@@ -1014,9 +1041,6 @@ combine_temp_slots ()
       else
 	prev_p = p;
     }
-
-  /* Free all the RTL made by plus_constant.  */ 
-  rtx_free (free_pointer);
 }
 
 /* Find the temp slot corresponding to the object at address X.  */
@@ -1032,6 +1056,7 @@ find_temp_slot_from_address (x)
     {
       if (! p->in_use)
 	continue;
+
       else if (XEXP (p->slot, 0) == x
 	       || p->address == x
 	       || (GET_CODE (x) == PLUS
@@ -1051,7 +1076,7 @@ find_temp_slot_from_address (x)
 }
       
 /* Indicate that NEW is an alternate way of referring to the temp slot
-   that previous was known by OLD.  */
+   that previously was known by OLD.  */
 
 void
 update_temp_slot_address (old, new)
@@ -1254,6 +1279,17 @@ push_temp_slots ()
   temp_slot_level++;
 }
 
+/* Likewise, but save the new level as the place to allocate variables
+   for blocks.  */
+
+void
+push_temp_slots_for_block ()
+{
+  push_temp_slots ();
+
+  var_temp_slot_level = temp_slot_level;
+}
+
 /* Pop a temporary nesting level.  All slots in use in the current level
    are freed.  */
 
@@ -1279,6 +1315,7 @@ init_temp_slots ()
   /* We have not allocated any temporaries yet.  */
   temp_slots = 0;
   temp_slot_level = 0;
+  var_temp_slot_level = 0;
   target_temp_slot_level = 0;
 }
 
@@ -1332,6 +1369,7 @@ put_var_into_stack (decl)
 
   can_use_addressof
     = (function == 0
+       && optimize > 0
        /* FIXME make it work for promoted modes too */
        && decl_mode == promoted_mode
 #ifdef NON_SAVING_SETJMP
@@ -1357,7 +1395,9 @@ put_var_into_stack (decl)
       else
 	put_reg_into_stack (function, reg, TREE_TYPE (decl),
 			    promoted_mode, decl_mode,
-			    TREE_SIDE_EFFECTS (decl), 0);
+			    TREE_SIDE_EFFECTS (decl), 0,
+			    TREE_USED (decl)
+			    || DECL_INITIAL (decl) != 0);
     }
   else if (GET_CODE (reg) == CONCAT)
     {
@@ -1368,14 +1408,18 @@ put_var_into_stack (decl)
 #ifdef FRAME_GROWS_DOWNWARD
       /* Since part 0 should have a lower address, do it second.  */
       put_reg_into_stack (function, XEXP (reg, 1), part_type, part_mode,
-			  part_mode, TREE_SIDE_EFFECTS (decl), 0);
+			  part_mode, TREE_SIDE_EFFECTS (decl), 0,
+			  TREE_USED (decl) || DECL_INITIAL (decl) != 0);
       put_reg_into_stack (function, XEXP (reg, 0), part_type, part_mode,
-			  part_mode, TREE_SIDE_EFFECTS (decl), 0);
+			  part_mode, TREE_SIDE_EFFECTS (decl), 0,
+			  TREE_USED (decl) || DECL_INITIAL (decl) != 0);
 #else
       put_reg_into_stack (function, XEXP (reg, 0), part_type, part_mode,
-			  part_mode, TREE_SIDE_EFFECTS (decl), 0);
+			  part_mode, TREE_SIDE_EFFECTS (decl), 0,
+			  TREE_USED (decl) || DECL_INITIAL (decl) != 0);
       put_reg_into_stack (function, XEXP (reg, 1), part_type, part_mode,
-			  part_mode, TREE_SIDE_EFFECTS (decl), 0);
+			  part_mode, TREE_SIDE_EFFECTS (decl), 0,
+			  TREE_USED (decl) || DECL_INITIAL (decl) != 0);
 #endif
 
       /* Change the CONCAT into a combined MEM for both parts.  */
@@ -1405,17 +1449,19 @@ put_var_into_stack (decl)
    into the stack frame of FUNCTION (0 means the current function).
    DECL_MODE is the machine mode of the user-level data type.
    PROMOTED_MODE is the machine mode of the register.
-   VOLATILE_P is nonzero if this is for a "volatile" decl.  */
+   VOLATILE_P is nonzero if this is for a "volatile" decl.
+   USED_P is nonzero if this reg might have already been used in an insn.  */
 
 static void
 put_reg_into_stack (function, reg, type, promoted_mode, decl_mode, volatile_p,
-		    original_regno)
+		    original_regno, used_p)
      struct function *function;
      rtx reg;
      tree type;
      enum machine_mode promoted_mode, decl_mode;
      int volatile_p;
      int original_regno;
+     int used_p;
 {
   rtx new = 0;
   int regno = original_regno;
@@ -1454,7 +1500,8 @@ put_reg_into_stack (function, reg, type, promoted_mode, decl_mode, volatile_p,
 
   /* Now make sure that all refs to the variable, previously made
      when it was a register, are fixed up to be valid again.  */
-  if (function)
+
+  if (used_p && function != 0)
     {
       struct var_refs_queue *temp;
 
@@ -1473,7 +1520,7 @@ put_reg_into_stack (function, reg, type, promoted_mode, decl_mode, volatile_p,
       function->fixup_var_refs_queue = temp;
       pop_obstacks ();
     }
-  else
+  else if (used_p)
     /* Variable is local; fix it up now.  */
     fixup_var_refs (reg, promoted_mode, TREE_UNSIGNED (type));
 }
@@ -1561,7 +1608,9 @@ fixup_var_refs_insns (var, promoted_mode, unsignedp, insn, toplevel)
   while (insn)
     {
       rtx next = NEXT_INSN (insn);
+      rtx set, prev, prev_set;
       rtx note;
+
       if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
 	{
 	  /* If this is a CLOBBER of VAR, delete it.
@@ -1587,14 +1636,22 @@ fixup_var_refs_insns (var, promoted_mode, unsignedp, insn, toplevel)
 	    }
 
 	  /* The insn to load VAR from a home in the arglist
-	     is now a no-op.  When we see it, just delete it.  */
+	     is now a no-op.  When we see it, just delete it.
+	     Similarly if this is storing VAR from a register from which
+	     it was loaded in the previous insn.  This will occur
+	     when an ADDRESSOF was made for an arglist slot.  */
 	  else if (toplevel
-		   && GET_CODE (PATTERN (insn)) == SET
-		   && SET_DEST (PATTERN (insn)) == var
+		   && (set = single_set (insn)) != 0
+		   && SET_DEST (set) == var
 		   /* If this represents the result of an insn group,
 		      don't delete the insn.  */
 		   && find_reg_note (insn, REG_RETVAL, NULL_RTX) == 0
-		   && rtx_equal_p (SET_SRC (PATTERN (insn)), var))
+		   && (rtx_equal_p (SET_SRC (set), var)
+		       || (GET_CODE (SET_SRC (set)) == REG
+			   && (prev = prev_nonnote_insn (insn)) != 0
+			   && (prev_set = single_set (prev)) != 0
+			   && SET_DEST (prev_set) == SET_SRC (set)
+			   && rtx_equal_p (SET_SRC (prev_set), var))))
 	    {
 	      /* In unoptimized compilation, we shouldn't call delete_insn
 		 except in jump.c doing warnings.  */
@@ -1862,7 +1919,7 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 	    {
 	      enum machine_mode wanted_mode = VOIDmode;
 	      enum machine_mode is_mode = GET_MODE (tem);
-	      int pos = INTVAL (XEXP (x, 2));
+	      HOST_WIDE_INT pos = INTVAL (XEXP (x, 2));
 
 #ifdef HAVE_extzv
 	      if (GET_CODE (x) == ZERO_EXTRACT)
@@ -1876,7 +1933,7 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 	      if (wanted_mode != VOIDmode
 		  && GET_MODE_SIZE (wanted_mode) < GET_MODE_SIZE (is_mode))
 		{
-		  int offset = pos / BITS_PER_UNIT;
+		  HOST_WIDE_INT offset = pos / BITS_PER_UNIT;
 		  rtx old_pos = XEXP (x, 2);
 		  rtx newmem;
 
@@ -2062,12 +2119,12 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 		enum machine_mode wanted_mode
 		  = insn_operand_mode[(int) CODE_FOR_insv][0];
 		enum machine_mode is_mode = GET_MODE (tem);
-		int pos = INTVAL (XEXP (outerdest, 2));
+		HOST_WIDE_INT pos = INTVAL (XEXP (outerdest, 2));
 
 		/* If we have a narrower mode, we can do something.  */
 		if (GET_MODE_SIZE (wanted_mode) < GET_MODE_SIZE (is_mode))
 		  {
-		    int offset = pos / BITS_PER_UNIT;
+		    HOST_WIDE_INT offset = pos / BITS_PER_UNIT;
 		    rtx old_pos = XEXP (outerdest, 2);
 		    rtx newmem;
 
@@ -2472,7 +2529,7 @@ optimize_bit_field (body, insn, equiv_mem)
 	     that we are now getting rid of,
 	     and then for which byte of the word is wanted.  */
 
-	  register int offset = INTVAL (XEXP (bitfield, 2));
+	  HOST_WIDE_INT offset = INTVAL (XEXP (bitfield, 2));
 	  rtx insns;
 
 	  /* Adjust OFFSET to count bits from low-address byte.  */
@@ -2638,7 +2695,9 @@ gen_mem_addressof (reg, decl)
   MEM_VOLATILE_P (reg) = TREE_SIDE_EFFECTS (decl);
   MEM_IN_STRUCT_P (reg) = AGGREGATE_TYPE_P (type);
 
-  fixup_var_refs (reg, GET_MODE (reg), TREE_UNSIGNED (type));
+  if (TREE_USED (decl) || DECL_INITIAL (decl) != 0)
+    fixup_var_refs (reg, GET_MODE (reg), TREE_UNSIGNED (type));
+
   return reg;
 }
 
@@ -2670,7 +2729,8 @@ put_addressof_into_stack (r)
 
   put_reg_into_stack (0, reg, TREE_TYPE (decl), GET_MODE (reg),
 		      DECL_MODE (decl), TREE_SIDE_EFFECTS (decl),
-		      ADDRESSOF_REGNO (r));
+		      ADDRESSOF_REGNO (r),
+		      TREE_USED (decl) || DECL_INITIAL (decl) != 0);
 }
 
 /* Helper function for purge_addressof.  See if the rtx expression at *LOC
@@ -2721,9 +2781,16 @@ purge_addressof_1 (loc, insn, force)
   else if (code == MEM && GET_CODE (XEXP (x, 0)) == ADDRESSOF && ! force)
     {
       rtx sub = XEXP (XEXP (x, 0), 0);
+
       if (GET_CODE (sub) == MEM)
 	sub = gen_rtx_MEM (GET_MODE (x), copy_rtx (XEXP (sub, 0)));
-      if (GET_CODE (sub) == REG && GET_MODE (x) != GET_MODE (sub))
+
+      if (GET_CODE (sub) == REG && MEM_VOLATILE_P (x))
+	{
+	  put_addressof_into_stack (XEXP (x, 0));
+	  return;
+	}
+      else if (GET_CODE (sub) == REG && GET_MODE (x) != GET_MODE (sub))
 	{
 	  if (! BYTES_BIG_ENDIAN && ! WORDS_BIG_ENDIAN)
 	    {
@@ -2847,7 +2914,8 @@ instantiate_decls (fndecl, valid_only)
   /* Process all parameters of the function.  */
   for (decl = DECL_ARGUMENTS (fndecl); decl; decl = TREE_CHAIN (decl))
     {
-      int size = int_size_in_bytes (TREE_TYPE (decl));
+      HOST_WIDE_INT size = int_size_in_bytes (TREE_TYPE (decl));
+
       instantiate_decl (DECL_RTL (decl), size, valid_only);	
 
       /* If the parameter was promoted, then the incoming RTL mode may be
@@ -2977,7 +3045,7 @@ instantiate_virtual_regs_1 (loc, object, extra_insns)
   rtx x;
   RTX_CODE code;
   rtx new = 0;
-  int offset = 0;
+  HOST_WIDE_INT offset;
   rtx temp;
   rtx seq;
   int i, j;
@@ -3652,17 +3720,7 @@ assign_parms (fndecl, second_time)
       /* Set NAMED_ARG if this arg should be treated as a named arg.  For
 	 most machines, if this is a varargs/stdarg function, then we treat
 	 the last named arg as if it were anonymous too.  */
-#ifdef STRICT_ARGUMENT_NAMING
-      int named_arg = 1;
-#else
-      int named_arg = ! last_named;
-#endif
-      /* If this is a varargs function, then we want to treat the last named
-	 argument as if it was an aggregate, because it might be accessed as
-	 one by the va_arg macros.  This is necessary to make the aliasing
-	 code handle this parm correctly.  */
-      if (hide_last_arg && last_named)
-	aggregate = 1;
+      int named_arg = STRICT_ARGUMENT_NAMING ? 1 : ! last_named;
 
       if (TREE_TYPE (parm) == error_mark_node
 	  /* This can happen after weird syntax errors
@@ -4269,7 +4327,7 @@ assign_parms (fndecl, second_time)
 	    }
 
 	  /* For pointer data type, suggest pointer register.  */
-	  if (TREE_CODE (TREE_TYPE (parm)) == POINTER_TYPE)
+	  if (POINTER_TYPE_P (TREE_TYPE (parm)))
 	    mark_reg_pointer (parmreg,
 			      (TYPE_ALIGN (TREE_TYPE (TREE_TYPE (parm)))
 			       / BITS_PER_UNIT));
@@ -4324,9 +4382,7 @@ assign_parms (fndecl, second_time)
 		emit_move_insn (validize_mem (stack_parm),
 				validize_mem (entry_parm));
 	    }
-	  if (flag_check_memory_usage
-	      && entry_parm != stack_parm
-	      && promoted_mode != nominal_mode)
+	  if (flag_check_memory_usage)
 	    {
 	      push_to_sequence (conversion_insns);
 	      emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
@@ -4811,7 +4867,7 @@ fix_lexical_addr (addr, var)
      tree var;
 {
   rtx basereg;
-  int displacement;
+  HOST_WIDE_INT displacement;
   tree context = decl_function_context (var);
   struct function *fp;
   rtx base = 0;

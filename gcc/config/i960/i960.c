@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on intel 80960.
-   Copyright (C) 1992, 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
    Contributed by Steven McGeady, Intel Corp.
    Additional Work by Glenn Colon-Bonet, Jonathan Shapiro, Andy Wilson
    Converted to GCC 2.0 by Jim Wilson and Michael Tiemann, Cygnus Support.
@@ -589,8 +589,13 @@ emit_move_sequence (operands, mode)
      adding 4 to the memory address may not yield a valid insn.  */
   /* ??? We don't always need the scratch, but that would complicate things.
      Maybe later.  */
+  /* ??? We must also handle stores to pseudos here, because the pseudo may be
+     replaced with a MEM later.  This would be cleaner if we didn't have
+     a separate pattern for unaligned DImode/TImode stores.  */
   if (GET_MODE_SIZE (mode) > UNITS_PER_WORD
-      && GET_CODE (operands[0]) == MEM
+      && (GET_CODE (operands[0]) == MEM
+	  || (GET_CODE (operands[0]) == REG
+	      && REGNO (operands[0]) >= FIRST_PSEUDO_REGISTER))
       && GET_CODE (operands[1]) == REG
       && REGNO (operands[1]) < FIRST_PSEUDO_REGISTER
       && ! HARD_REGNO_MODE_OK (REGNO (operands[1]), mode))

@@ -2527,7 +2527,7 @@ process_command (argc, argv)
 	}
       else if (! strcmp (argv[i], "-dumpversion"))
 	{
-	  printf ("%s\n", version_string);
+	  printf ("%s\n", spec_version);
 	  exit (0);
 	}
       else if (! strcmp (argv[i], "-dumpmachine"))
@@ -2746,6 +2746,36 @@ process_command (argc, argv)
 		spec_version = p + 1;
 	      compiler_version = spec_version;
 	      warn_std_ptr = &warn_std;
+
+	      /* Validate the version number.  Use the same checks
+		 done when inserting it into a spec.
+
+		 The format of the version string is
+		 ([^0-9]*-)?[0-9]+[.][0-9]+([.][0-9]+)?([- ].*)?  */
+	      {
+		char *v = compiler_version;
+
+		/* Ignore leading non-digits.  i.e. "foo-" in "foo-2.7.2".  */
+		while (! isdigit (*v))
+		  v++;
+
+		if (v > compiler_version && v[-1] != '-')
+		  fatal ("invalid version number format");
+
+		/* Set V after the first period.  */
+		while (isdigit (*v))
+		  v++;
+
+		if (*v != '.')
+		  fatal ("invalid version number format");
+
+		v++;
+		while (isdigit (*v))
+		  v++;
+
+		if (*v != 0 && *v != ' ' && *v != '.' && *v != '-')
+		  fatal ("invalid version number format");
+	      }
 	      break;
 
 	    case 'c':
@@ -2901,23 +2931,23 @@ process_command (argc, argv)
 	  for (j = 4; argv[i][j]; j++)
 	    if (argv[i][j] == ',')
 	      {
-		infiles[n_infiles].language = 0;
+		infiles[n_infiles].language = "*";
 		infiles[n_infiles++].name
 		  = save_string (argv[i] + prev, j - prev);
 		prev = j + 1;
 	      }
 	  /* Record the part after the last comma.  */
-	  infiles[n_infiles].language = 0;
+	  infiles[n_infiles].language = "*";
 	  infiles[n_infiles++].name = argv[i] + prev;
 	}
       else if (strcmp (argv[i], "-Xlinker") == 0)
 	{
-	  infiles[n_infiles].language = 0;
+	  infiles[n_infiles].language = "*";
 	  infiles[n_infiles++].name = argv[++i];
 	}
       else if (strncmp (argv[i], "-l", 2) == 0)
 	{
-	  infiles[n_infiles].language = 0;
+	  infiles[n_infiles].language = "*";
 	  infiles[n_infiles++].name = argv[i];
 	}
       else if (strcmp (argv[i], "-specs") == 0)
@@ -4528,7 +4558,15 @@ main (argc, argv)
 	 as a unit.  If GCC_EXEC_PREFIX is defined, base
 	 standard_startfile_prefix on that as well.  */
       if (*standard_startfile_prefix == '/'
-	  || *standard_startfile_prefix == DIR_SEPARATOR)
+	  || *standard_startfile_prefix == DIR_SEPARATOR
+	  || *standard_startfile_prefix == '$'
+#ifdef __MSDOS__
+	  /* Check for disk name on MS-DOS-based systems.  */
+          || (standard_startfile_prefix[1] == ':'
+	      && (standard_startfile_prefix[2] == DIR_SEPARATOR
+		  || standard_startfile_prefix[2] == '/'))
+#endif
+	  )
 	add_prefix (&startfile_prefixes, standard_startfile_prefix, "BINUTILS",
 		    0, 0, NULL_PTR);
       else
@@ -4796,7 +4834,7 @@ main (argc, argv)
 
 /* Find the proper compilation spec for the file name NAME,
    whose length is LENGTH.  LANGUAGE is the specified language,
-   or 0 if none specified.  */
+   or 0 if this file is to be passed to the linker.  */
 
 static struct compiler *
 lookup_compiler (name, length, language)
@@ -4806,19 +4844,19 @@ lookup_compiler (name, length, language)
 {
   struct compiler *cp;
 
-  /* Look for the language, if one is spec'd.  */
+  /* If this was specified by the user to be a linker input, indicate that. */
+  if (language != 0 && language[0] == '*')
+    return 0;
+
+  /* Otherwise, look for the language, if one is spec'd.  */
   if (language != 0)
     {
       for (cp = compilers + n_compilers - 1; cp >= compilers; cp--)
-	{
-	  if (language != 0)
-	    {
-	      if (cp->suffix[0] == '@'
-		  && !strcmp (cp->suffix + 1, language))
-		return cp;
-	    }
-	}
+	if (cp->suffix[0] == '@' && !strcmp (cp->suffix + 1, language))
+	  return cp;
+
       error ("language %s not recognized", language);
+      return 0;
     }
 
   /* Look for a suffix.  */
@@ -4826,23 +4864,24 @@ lookup_compiler (name, length, language)
     {
       if (/* The suffix `-' matches only the file name `-'.  */
 	  (!strcmp (cp->suffix, "-") && !strcmp (name, "-"))
-	  ||
-	  (strlen (cp->suffix) < length
-	   /* See if the suffix matches the end of NAME.  */
+	  || (strlen (cp->suffix) < length
+	      /* See if the suffix matches the end of NAME.  */
 #ifdef OS2
-	   && (!strcmp (cp->suffix,
-			name + length - strlen (cp->suffix))
-	    || !strpbrk (cp->suffix, "ABCDEFGHIJKLMNOPQRSTUVWXYZ")
-	     && !strcasecmp (cp->suffix,
-			  name + length - strlen (cp->suffix)))))
+	      && ((!strcmp (cp->suffix,
+			   name + length - strlen (cp->suffix))
+		   || !strpbrk (cp->suffix, "ABCDEFGHIJKLMNOPQRSTUVWXYZ"))
+		  && !strcasecmp (cp->suffix,
+				  name + length - strlen (cp->suffix)))
 #else
-	   && !strcmp (cp->suffix,
-		       name + length - strlen (cp->suffix))))
+	      && !strcmp (cp->suffix,
+			  name + length - strlen (cp->suffix))
 #endif
+	 ))
 	{
 	  if (cp->spec[0][0] == '@')
 	    {
 	      struct compiler *new;
+
 	      /* An alias entry maps a suffix to a language.
 		 Search for the language; pass 0 for NAME and LENGTH
 		 to avoid infinite recursion if language not found.
@@ -4854,6 +4893,7 @@ lookup_compiler (name, length, language)
 		     (char *) new->spec, sizeof new->spec);
 	      return new;
 	    }
+
 	  /* A non-alias entry: return it.  */
 	  return cp;
 	}
@@ -4968,6 +5008,8 @@ pfatal_pexecute (errmsg_fmt, errmsg_arg)
      char *errmsg_fmt;
      char *errmsg_arg;
 {
+  int save_errno = errno;
+
   if (errmsg_arg)
     {
       /* Space for trailing '\0' is in %s.  */
@@ -4976,7 +5018,7 @@ pfatal_pexecute (errmsg_fmt, errmsg_arg)
       errmsg_fmt = msg;
     }
 
-  fatal ("%s: %s", errmsg_fmt, my_strerror (errno));
+  fatal ("%s: %s", errmsg_fmt, my_strerror (save_errno));
 }
 
 /* More 'friendly' abort that prints the line and file.

@@ -1,5 +1,5 @@
 /* Expands front end tree to back end RTL for GNU C-Compiler
-   Copyright (C) 1987, 88, 89, 92-7, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92-97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1162,7 +1162,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
   /* The insn we have emitted.  */
   rtx insn;
 
-  /* An ASM with no outputs needs to be treated as volatile.  */
+  /* An ASM with no outputs needs to be treated as volatile, for now.  */
   if (noutputs == 0)
     vol = 1;
 
@@ -3112,7 +3112,9 @@ expand_decl (decl)
 		&& TREE_CODE (type) == REAL_TYPE)
 	   && ! TREE_THIS_VOLATILE (decl)
 	   && ! TREE_ADDRESSABLE (decl)
-	   && (DECL_REGISTER (decl) || ! obey_regdecls))
+	   && (DECL_REGISTER (decl) || ! obey_regdecls)
+	   /* if -fcheck-memory-usage, check all variables.  */
+	   && ! flag_check_memory_usage)
     {
       /* Automatic variable that can go in a register.  */
       int unsignedp = TREE_UNSIGNED (type);
@@ -3122,7 +3124,7 @@ expand_decl (decl)
       DECL_RTL (decl) = gen_reg_rtx (reg_mode);
       mark_user_reg (DECL_RTL (decl));
 
-      if (TREE_CODE (type) == POINTER_TYPE)
+      if (POINTER_TYPE_P (type))
 	mark_reg_pointer (DECL_RTL (decl),
 			  (TYPE_ALIGN (TREE_TYPE (TREE_TYPE (decl)))
 			   / BITS_PER_UNIT));
@@ -3276,8 +3278,9 @@ expand_decl_init (decl)
   if (DECL_INITIAL (decl) == error_mark_node)
     {
       enum tree_code code = TREE_CODE (TREE_TYPE (decl));
+
       if (code == INTEGER_TYPE || code == REAL_TYPE || code == ENUMERAL_TYPE
-	  || code == POINTER_TYPE)
+	  || code == POINTER_TYPE || code == REFERENCE_TYPE)
 	expand_assignment (decl, convert (TREE_TYPE (decl), integer_zero_node),
 			   0, 0);
       emit_queue ();
@@ -3629,8 +3632,10 @@ expand_cleanups (list, dont_do, in_fixup, reachable)
 
 		/* We may need to protect fixups with rethrow regions.  */
 		int protect = (in_fixup && ! TREE_ADDRESSABLE (tail));
+
 		if (protect)
 		  expand_fixup_region_start ();
+
 		expand_expr (TREE_VALUE (tail), const0_rtx, VOIDmode, 0);
 		if (protect)
 		  expand_fixup_region_end (TREE_VALUE (tail));

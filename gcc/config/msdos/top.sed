@@ -19,9 +19,9 @@ host_xm_file=config/i386/xm-dos.h
 /^xmake_file=/ d
 /^tmake_file=/ d
 /^version=/ c\
-version=2.8.0
+version=2.8.1
 /^mainversion=/ c\
-mainversion=2.8.0
+mainversion=2.8.1
 s/CC = cc/CC = gcc/
 s/:\$/: \$/g
 s/^	\ *\.\//	/

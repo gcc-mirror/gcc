@@ -3,7 +3,7 @@
    Copyright (C) 1987, 89, 92-97, 1998 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
-   This file is part of GNU CC.
+This file is part of GNU CC.
    
 GNU CC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

@@ -1,5 +1,5 @@
 /* Configuration for GNU C-compiler for Intel 80386 running GO32.
-   Copyright (C) 1988, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1996, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -33,4 +33,3 @@ Boston, MA 02111-1307, USA.  */
 #define DIR_SEPARATOR '\\'
 
 #define NO_SYS_SIGLIST 1
-

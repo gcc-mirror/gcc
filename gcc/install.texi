@@ -67,8 +67,8 @@ to specify a configuration when building a native compiler unless
 wrong.
 
 In those cases, specify the build machine's @dfn{configuration name}
-with the @samp{--build} option; the host and target will default to be
-the same as the build machine.  (If you are building a cross-compiler,
+with the @samp{--host} option; the host and target will default to be
+the same as the host machine.  (If you are building a cross-compiler,
 see @ref{Cross-Compiler}.)
 
 Here is an example:
@@ -261,18 +261,19 @@ If you want to install its files somewhere else, specify
 is a directory name to use instead of @file{/usr/local} for all purposes
 with one exception: the directory @file{/usr/local/include} is searched
 for header files no matter where you install the compiler.  To override
-this name, use the @code{--local-prefix} option below.
+this name, use the @code{--with-local-prefix} option below.  The directory
+you specify need not exist, but its parent directory must exist.
 
 @item
-Specify @samp{--local-prefix=@var{dir}} if you want the compiler to
+Specify @samp{--with-local-prefix=@var{dir}} if you want the compiler to
 search directory @file{@var{dir}/include} for locally installed header
 files @emph{instead} of @file{/usr/local/include}.
 
-You should specify @samp{--local-prefix} @strong{only} if your site has
+You should specify @samp{--with-local-prefix} @strong{only} if your site has
 a different convention (not @file{/usr/local}) for where to put
 site-specific files.
 
-The default value for @samp{--local-prefix} is @file{/usr/local}
+The default value for @samp{--with-local-prefix} is @file{/usr/local}
 regardless of the value of @samp{--prefix}.  Specifying @samp{--prefix}
 has no effect on which directory GNU CC searches for local header files.
 This may seem counterintuitive, but actually it is logical.
@@ -283,8 +284,8 @@ any in that directory---are not part of GNU CC.  They are part of other
 programs---perhaps many others.  (GNU CC installs its own header files
 in another directory which is based on the @samp{--prefix} value.)
 
-@strong{Do not} specify @file{/usr} as the @samp{--local-prefix}!  The
-directory you use for @samp{--local-prefix} @strong{must not} contain
+@strong{Do not} specify @file{/usr} as the @samp{--with-local-prefix}!  The
+directory you use for @samp{--with-local-prefix} @strong{must not} contain
 any of the system's standard header files.  If it did contain them,
 certain programs would be miscompiled (including GNU Emacs, on certain
 targets), because this would override and nullify the header file
@@ -507,11 +508,11 @@ This copies the files @file{cc1}, @file{cpp} and @file{libgcc.a} to
 files @file{cc1}, @file{cpp} and @file{libgcc.a} in the directory
 @file{/usr/local/lib/gcc-lib/@var{target}/@var{version}}, which is where
 the compiler driver program looks for them.  Here @var{target} is the
-target machine type specified when you ran @file{configure}, and
-@var{version} is the version number of GNU CC.  This naming scheme
-permits various versions and/or cross-compilers to coexist.
-It also copies the executables for compilers for other languages
-(e.g., @file{cc1plus} for C++) to the same directory.
+canonicalized form of target machine type specified when you ran
+@file{configure}, and @var{version} is the version number of GNU CC.
+This naming scheme permits various versions and/or cross-compilers to
+coexist.  It also copies the executables for compilers for other
+languages (e.g., @file{cc1plus} for C++) to the same directory.
 
 This also copies the driver program @file{xgcc} into
 @file{/usr/local/bin/gcc}, so that it appears in typical execution
@@ -542,7 +543,13 @@ distribute a C runtime library, it also does not include a C++ runtime
 library.  All I/O functionality, special class libraries, etc., are
 provided by the C++ runtime library.
 
-Here's one way to build and install a C++ runtime library for GNU CC:
+The standard C++ runtime library for GNU CC is called @samp{libstdc++}.
+An obsolescent library @samp{libg++} may also be available, but it's
+necessary only for older software that hasn't been converted yet; if
+you don't know whether you need @samp{libg++} then you probably don't
+need it.
+
+Here's one way to build and install @samp{libstdc++} for GNU CC:
 
 @itemize @bullet
 @item
@@ -856,9 +863,10 @@ particular configuration.
 AMD Am29050 used in a system running a variant of BSD Unix.
 
 @item decstation-*
-DECstations can support three different personalities: Ultrix,
-DEC OSF/1, and OSF/rose.  To configure GCC for these platforms
-use the following configurations:
+MIPS-based DECstations can support three different personalities:
+Ultrix, DEC OSF/1, and OSF/rose.  (Alpha-based DECstation products have
+a configuration name beginning with @samp{alpha-dec}.)  To configure GCC
+for these platforms use the following configurations:
 
 @table @samp
 @item decstation-ultrix
@@ -1109,7 +1117,7 @@ that configuration with + the @samp{--with-gnu-as} and @samp{--with-gnu-ld}
 options to @code{configure}.
 
 Note the C compiler that comes
-with this system cannot compile GNU CC.  You can fine binaries of GNU CC
+with this system cannot compile GNU CC.  You can find binaries of GNU CC
 for bootstrapping on @code{jagubox.gsfc.nasa.gov}.
 You will also a patched version of @file{/bin/ld} there that
 raises some of the arbitrary limits found in the original.
@@ -1962,8 +1970,12 @@ To install the cross-compiler, use @samp{make install}, as usual.
 @cindex Sun installation
 @cindex installing GNU CC on the Sun
 
-On Solaris (version 2.1), do not use the linker or other tools in
+On Solaris, do not use the linker or other tools in
 @file{/usr/ucb} to build GNU CC.  Use @code{/usr/ccs/bin}.
+
+If the assembler reports @samp{Error: misaligned data} when bootstrapping,
+you are probably using an obsolete version of the GNU assembler.  Upgrade
+to the latest version of GNU @code{binutils}, or use the Solaris assembler.
 
 Make sure the environment variable @code{FLOAT_OPTION} is not set when
 you compile @file{libgcc.a}.  If this option were set to @code{f68881}

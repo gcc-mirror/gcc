@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Intel 860
-   Copyright (C) 1989, 1991, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1991, 1997, 1998 Free Software Foundation, Inc.
    Derived from sparc.c.
 
    Written by Richard Stallman (rms@ai.mit.edu).
@@ -1435,7 +1435,8 @@ output_delayed_branch (template, operands, insn)
       /* Now recognize the insn which we put in its delay slot.
 	 We must do this after outputting the branch insn,
 	 since operands may just be a pointer to `recog_operand'.  */
-      INSN_CODE (delay_insn) = insn_code_number = recog (pat, delay_insn);
+      INSN_CODE (delay_insn) = insn_code_number
+	= recog (pat, delay_insn, NULL_PTR);
       if (insn_code_number == -1)
 	abort ();
 
@@ -1489,7 +1490,7 @@ output_delay_insn (delay_insn)
     }
 
 #ifdef REGISTER_CONSTRAINTS
-  if (! constrain_operands (insn_code_number))
+  if (! constrain_operands (insn_code_number, 1))
     abort ();
 #endif
 

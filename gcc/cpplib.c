@@ -1,5 +1,5 @@
 /* CPP Library.
-   Copyright (C) 1986, 87, 89, 92-7, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1986, 87, 89, 92-97, 1998 Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994-95.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -369,7 +369,8 @@ struct directive {
   char command_reads_line;      /* One if rest of line is read by func.  */
 };
 
-#define IS_INCLUDE_DIRECTIVE_TYPE(t) (T_INCLUDE <= (t) && (t) <= T_IMPORT)
+#define IS_INCLUDE_DIRECTIVE_TYPE(t) \
+((int) T_INCLUDE <= (int) (t) && (int) (t) <= (int) T_IMPORT)
 
 /* Here is the actual list of #-directives, most-often-used first.
    The initialize_builtins function assumes #define is the very first.  */
@@ -7494,6 +7495,7 @@ cpp_error_from_errno (pfile, name)
      cpp_reader *pfile;
      char *name;
 {
+  int e = errno;
   cpp_buffer *ip = cpp_file_buffer (pfile);
 
   cpp_print_containing_files (pfile);
@@ -7501,7 +7503,7 @@ cpp_error_from_errno (pfile, name)
   if (ip != NULL)
     cpp_file_line_for_message (ip->nominal_fname, ip->lineno, -1);
 
-  cpp_message (pfile, 1, "%s: %s", name, my_strerror (errno));
+  cpp_message (pfile, 1, "%s: %s", name, my_strerror (e));
 }
 
 void

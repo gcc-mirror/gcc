@@ -176,7 +176,7 @@ force_fit_type (t, overflow)
   low = TREE_INT_CST_LOW (t);
   high = TREE_INT_CST_HIGH (t);
 
-  if (TREE_CODE (TREE_TYPE (t)) == POINTER_TYPE)
+  if (POINTER_TYPE_P (TREE_TYPE (t)))
     prec = POINTER_SIZE;
   else
     prec = TYPE_PRECISION (TREE_TYPE (t));
@@ -1499,7 +1499,7 @@ fold_convert (t, arg1)
   register tree type = TREE_TYPE (t);
   int overflow = 0;
 
-  if (TREE_CODE (type) == POINTER_TYPE || INTEGRAL_TYPE_P (type))
+  if (POINTER_TYPE_P (type) || INTEGRAL_TYPE_P (type))
     {
       if (TREE_CODE (arg1) == INTEGER_CST)
 	{
@@ -1519,12 +1519,12 @@ fold_convert (t, arg1)
 	     if ARG1 is a too-large unsigned value and T is signed.
 	     But don't indicate an overflow if converting a pointer.  */
 	  TREE_OVERFLOW (t)
-	    = (TREE_OVERFLOW (arg1)
-	       || (force_fit_type (t,
-				  (TREE_INT_CST_HIGH (arg1) < 0
-				   && (TREE_UNSIGNED (type)
-				     < TREE_UNSIGNED (TREE_TYPE (arg1)))))
-		   && TREE_CODE (TREE_TYPE (arg1)) != POINTER_TYPE));
+	    = ((force_fit_type (t,
+				(TREE_INT_CST_HIGH (arg1) < 0
+				 & (TREE_UNSIGNED (type)
+				    < TREE_UNSIGNED (TREE_TYPE (arg1)))))
+		&& ! POINTER_TYPE_P (TREE_TYPE (arg1)))
+	       || TREE_OVERFLOW (arg1));
 	  TREE_CONSTANT_OVERFLOW (t)
 	    = TREE_OVERFLOW (t) | TREE_CONSTANT_OVERFLOW (arg1);
 	}
@@ -5128,7 +5128,7 @@ fold (expr)
 	       if CONST+INCR overflows or if foo+incr might overflow.
 	       This optimization is invalid for floating point due to rounding.
 	       For pointer types we assume overflow doesn't happen.  */
-	    if (TREE_CODE (TREE_TYPE (varop)) == POINTER_TYPE
+	    if (POINTER_TYPE_P (TREE_TYPE (varop))
 		|| (! FLOAT_TYPE_P (TREE_TYPE (varop))
 		    && (code == EQ_EXPR || code == NE_EXPR)))
 	      {
@@ -5163,7 +5163,7 @@ fold (expr)
 	  }
 	else if (constop && TREE_CODE (varop) == POSTDECREMENT_EXPR)
 	  {
-	    if (TREE_CODE (TREE_TYPE (varop)) == POINTER_TYPE
+	    if (POINTER_TYPE_P (TREE_TYPE (varop))
 		|| (! FLOAT_TYPE_P (TREE_TYPE (varop))
 		    && (code == EQ_EXPR || code == NE_EXPR)))
 	      {
@@ -5357,7 +5357,7 @@ fold (expr)
       /* An unsigned comparison against 0 can be simplified.  */
       if (integer_zerop (arg1)
 	  && (INTEGRAL_TYPE_P (TREE_TYPE (arg1))
-	      || TREE_CODE (TREE_TYPE (arg1)) == POINTER_TYPE)
+	      || POINTER_TYPE_P (TREE_TYPE (arg1)))
 	  && TREE_UNSIGNED (TREE_TYPE (arg1)))
 	{
 	  switch (TREE_CODE (t))
@@ -5392,7 +5392,7 @@ fold (expr)
 	    && TREE_INT_CST_LOW (arg1) == ((HOST_WIDE_INT) 1 << (width - 1)) - 1
 	    && TREE_INT_CST_HIGH (arg1) == 0
 	    && (INTEGRAL_TYPE_P (TREE_TYPE (arg1))
-		|| TREE_CODE (TREE_TYPE (arg1)) == POINTER_TYPE)
+		|| POINTER_TYPE_P (TREE_TYPE (arg1)))
 	    && TREE_UNSIGNED (TREE_TYPE (arg1)))
 	  {
 	    switch (TREE_CODE (t))

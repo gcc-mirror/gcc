@@ -1,7 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Irix version 5 with gas. */
 
-#include "mips/iris5.h"
-
 /* Enable debugging.  */
 #define DBX_DEBUGGING_INFO
 #define SDB_DEBUGGING_INFO

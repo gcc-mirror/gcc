@@ -1,7 +1,7 @@
 @setfilename INSTALL
 @set INSTALLONLY
 
-@c This file itself, install1.texi, does not apear in the GCC distribution.
+@c This file itself, install1.texi, does not appear in the GCC distribution.
 @c The immediately following lines apply to the INSTALL file
 @c which is generated using this file.
 This file documents the installation of the GNU compiler.

@@ -7072,8 +7072,8 @@ make_field_assignment (x)
 
   pos = get_pos_from_mask ((~ c1) & GET_MODE_MASK (GET_MODE (dest)), &len);
   if (pos < 0 || pos + len > GET_MODE_BITSIZE (GET_MODE (dest))
-      || (GET_MODE_BITSIZE (GET_MODE (other)) <= HOST_BITS_PER_WIDE_INT
-	  && (c1 & nonzero_bits (other, GET_MODE (other))) != 0))
+      || GET_MODE_BITSIZE (GET_MODE (dest)) > HOST_BITS_PER_WIDE_INT
+      || (c1 & nonzero_bits (other, GET_MODE (dest))) != 0)
     return x;
 
   assign = make_extraction (VOIDmode, dest, pos, NULL_RTX, len, 1, 1, 0);
@@ -9324,6 +9324,13 @@ gen_binary (code, mode, op0, op1)
 	      && GET_RTX_CLASS (GET_CODE (op1)) != 'o')))
     return gen_rtx_combine (code, mode, op1, op0);
 
+  /* If we are turning off bits already known off in OP0, we need not do
+     an AND.  */
+  else if (code == AND && GET_CODE (op1) == CONST_INT
+	   && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
+	   && (nonzero_bits (op0, mode) & ~ INTVAL (op1)) == 0)
+    return op0;
+
   return gen_rtx_combine (code, mode, op0, op1);
 }
 
@@ -10127,6 +10134,32 @@ simplify_comparison (code, pop0, pop1)
 	      op0 = gen_lowpart_for_combine (tmode, XEXP (op0, 0));
 	      continue;
 	    }
+
+	  /* If this is (and:M1 (subreg:M2 X 0) (const_int C1)) where C1 fits
+	     in both M1 and M2 and the SUBREG is either paradoxical or
+	     represents the low part, permute the SUBREG and the AND and
+	     try again.  */
+	  if (GET_CODE (XEXP (op0, 0)) == SUBREG
+	      && ((mode_width
+		   >= GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (XEXP (op0, 0)))))
+		  || subreg_lowpart_p (XEXP (op0, 0)))
+	      && GET_CODE (XEXP (op0, 1)) == CONST_INT
+	      && mode_width <= HOST_BITS_PER_WIDE_INT
+	      && (GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (XEXP (op0, 0))))
+		  <= HOST_BITS_PER_WIDE_INT)
+	      && (INTVAL (XEXP (op0, 1)) & ~ mask) == 0
+	      && 0 == (~ GET_MODE_MASK (GET_MODE (SUBREG_REG (XEXP (op0, 0))))
+		       & INTVAL (XEXP (op0, 1))))
+		       
+	    {
+	      op0
+		= gen_lowpart_for_combine
+		  (mode,
+		   gen_binary (AND, GET_MODE (SUBREG_REG (XEXP (op0, 0))),
+			       SUBREG_REG (XEXP (op0, 0)), XEXP (op0, 1)));
+	      continue;
+	    }
+
 	  break;
 
 	case ASHIFT:
@@ -11459,15 +11492,21 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 		  if (reg_set_p (XEXP (note, 0), PATTERN (tem)))
 		    {
 		      rtx set = single_set (tem);
+		      rtx inner_dest = 0;
+
+		      if (set != 0)
+			for (inner_dest = SET_DEST (set);
+			     GET_CODE (inner_dest) == STRICT_LOW_PART
+			     || GET_CODE (inner_dest) == SUBREG
+			     || GET_CODE (inner_dest) == ZERO_EXTRACT;
+			     inner_dest = XEXP (inner_dest, 0))
+			  ;
 
 		      /* Verify that it was the set, and not a clobber that
 			 modified the register.  */
 
 		      if (set != 0 && ! side_effects_p (SET_SRC (set))
-			  && (rtx_equal_p (XEXP (note, 0), SET_DEST (set))
-			      || (GET_CODE (SET_DEST (set)) == SUBREG
-				  && rtx_equal_p (XEXP (note, 0),
-						  XEXP (SET_DEST (set), 0)))))
+			  && rtx_equal_p (XEXP (note, 0), inner_dest))
 			{
 			  /* Move the notes and links of TEM elsewhere.
 			     This might delete other dead insns recursively. 
@@ -11483,6 +11522,20 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 			  PUT_CODE (tem, NOTE);
 			  NOTE_LINE_NUMBER (tem) = NOTE_INSN_DELETED;
 			  NOTE_SOURCE_FILE (tem) = 0;
+			}
+		      /* If the register is both set and used here, put the
+			 REG_DEAD note here, but place a REG_UNUSED note
+			 here too unless there already is one.  */
+		      else if (reg_referenced_p (XEXP (note, 0),
+						 PATTERN (tem)))
+			{
+			  place = tem;
+
+			  if (! find_regno_note (tem, REG_UNUSED,
+						 REGNO (XEXP (note, 0))))
+			    REG_NOTES (tem)
+			      = gen_rtx (EXPR_LIST, REG_UNUSED, XEXP (note, 0),
+					 REG_NOTES (tem));
 			}
 		      else
 			{
@@ -11540,13 +11593,12 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 	    }
 
 	  /* If the register is set or already dead at PLACE, we needn't do
-	     anything with this note if it is still a REG_DEAD note.  
+	     anything with this note if it is still a REG_DEAD note.
+	     We can here if it is set at all, not if is it totally replace,
+	     which is what `dead_or_set_p' checks, so also check for it being
+	     set partially.  */
 
-	     Note that we cannot use just `dead_or_set_p' here since we can
-	     convert an assignment to a register into a bit-field assignment.
-	     Therefore, we must also omit the note if the register is the 
-	     target of a bitfield assignment.  */
-	     
+
 	  if (place && REG_NOTE_KIND (note) == REG_DEAD)
 	    {
 	      int regno = REGNO (XEXP (note, 0));

@@ -1671,7 +1671,7 @@ integer_pow2p (expr)
   if (TREE_CODE (expr) != INTEGER_CST || TREE_CONSTANT_OVERFLOW (expr))
     return 0;
 
-  prec = (TREE_CODE (TREE_TYPE (expr)) == POINTER_TYPE
+  prec = (POINTER_TYPE_P (TREE_TYPE (expr))
 	  ? POINTER_SIZE : TYPE_PRECISION (TREE_TYPE (expr)));
   high = TREE_INT_CST_HIGH (expr);
   low = TREE_INT_CST_LOW (expr);
@@ -1712,7 +1712,7 @@ tree_log2 (expr)
   if (TREE_CODE (expr) == COMPLEX_CST)
     return tree_log2 (TREE_REALPART (expr));
 
-  prec = (TREE_CODE (TREE_TYPE (expr)) == POINTER_TYPE
+  prec = (POINTER_TYPE_P (TREE_TYPE (expr))
 	  ? POINTER_SIZE : TYPE_PRECISION (TREE_TYPE (expr)));
 
   high = TREE_INT_CST_HIGH (expr);
@@ -2172,29 +2172,32 @@ size_in_bytes (type)
   return t;
 }
 
-/* Return the size of TYPE (in bytes) as an integer,
-   or return -1 if the size can vary.  */
+/* Return the size of TYPE (in bytes) as a wide integer
+   or return -1 if the size can vary or is larger than an integer.  */
 
-int
+HOST_WIDE_INT
 int_size_in_bytes (type)
      tree type;
 {
-  unsigned int size;
+  tree t;
+
   if (type == error_mark_node)
     return 0;
+
   type = TYPE_MAIN_VARIANT (type);
-  if (TYPE_SIZE (type) == 0)
+  if (TYPE_SIZE (type) == 0
+      || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
     return -1;
-  if (TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
+
+  if (TREE_INT_CST_HIGH (TYPE_SIZE (type)) == 0)
+    return ((TREE_INT_CST_LOW (TYPE_SIZE (type)) + BITS_PER_UNIT - 1)
+	  / BITS_PER_UNIT);
+
+  t = size_binop (CEIL_DIV_EXPR, TYPE_SIZE (type), size_int (BITS_PER_UNIT));
+  if (TREE_CODE (t) != INTEGER_CST || TREE_INT_CST_HIGH (t) != 0)
     return -1;
-  if (TREE_INT_CST_HIGH (TYPE_SIZE (type)) != 0)
-    {
-      tree t = size_binop (CEIL_DIV_EXPR, TYPE_SIZE (type),
-			   size_int (BITS_PER_UNIT));
-      return TREE_INT_CST_LOW (t);
-    }
-  size = TREE_INT_CST_LOW (TYPE_SIZE (type));
-  return (size + BITS_PER_UNIT - 1) / BITS_PER_UNIT;
+
+  return TREE_INT_CST_LOW (t);
 }
 
 /* Return, as a tree node, the number of elements for TYPE (which is an
@@ -3357,7 +3360,7 @@ valid_machine_attribute (attr_name, attr_args, decl, type)
 
   /* Handle putting a type attribute on pointer-to-function-type by putting
      the attribute on the function type.  */
-  else if (TREE_CODE (type) == POINTER_TYPE
+  else if (POINTER_TYPE_P (type)
 	   && TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE
 	   && VALID_MACHINE_TYPE_ATTRIBUTE (TREE_TYPE (type), type_attr_list,
 					    attr_name, attr_args))
@@ -4251,22 +4254,17 @@ build_reference_type (to_type)
      tree to_type;
 {
   register tree t = TYPE_REFERENCE_TO (to_type);
-  register struct obstack *ambient_obstack = current_obstack;
-  register struct obstack *ambient_saveable_obstack = saveable_obstack;
 
   /* First, if we already have a type for pointers to TO_TYPE, use it.  */
 
   if (t)
     return t;
 
-  /* We need a new one.  If TO_TYPE is permanent, make this permanent too.  */
-  if (TREE_PERMANENT (to_type))
-    {
-      current_obstack = &permanent_obstack;
-      saveable_obstack = &permanent_obstack;
-    }
-
+  /* We need a new one.  Put this in the same obstack as TO_TYPE.   */
+  push_obstacks (TYPE_OBSTACK (to_type), TYPE_OBSTACK (to_type));
   t = make_node (REFERENCE_TYPE);
+  pop_obstacks ();
+
   TREE_TYPE (t) = to_type;
 
   /* Record this type as the pointer to TO_TYPE.  */
@@ -4274,8 +4272,6 @@ build_reference_type (to_type)
 
   layout_type (t);
 
-  current_obstack = ambient_obstack;
-  saveable_obstack = ambient_saveable_obstack;
   return t;
 }
 

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Iris version 5.
-   Copyright (C) 1993, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995, 1996, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -23,6 +23,8 @@ Boston, MA 02111-1307, USA.  */
 #endif
 #define ABICALLS_ASM_OP ".option pic2"
 
+#include "mips/iris3.h"
+#include "mips/mips.h"
 #include "mips/iris4.h"
 
 /* Irix 5 doesn't use COFF, so disable special COFF handling in collect2.c.  */

@@ -21,7 +21,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA. */
 
-
 #define YES_UNDERSCORES
 
 #define DBX_DEBUGGING_INFO 
@@ -150,10 +149,9 @@ do									\
 while (0)
 #endif
 
-/* This macro gets just the user-specified name
-   out of the string in a SYMBOL_REF.  Discard
-   trailing @[NUM] encoded by ENCODE_SECTION_INFO. 
-   Do we need the stripping of leading '*'?  */
+/* This macro gets just the user-specified name out of the string in a
+   SYMBOL_REF.  Discard trailing @[NUM] encoded by ENCODE_SECTION_INFO.   */
+
 #undef  STRIP_NAME_ENCODING
 #define STRIP_NAME_ENCODING(VAR,SYMBOL_NAME)				\
 do {									\
@@ -172,7 +170,6 @@ do {									\
     (VAR) = _name;							\
 } while (0)
       
-
 /* Emit code to check the stack when allocating more that 4000
    bytes in one go. */
 

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for IBM RS/6000.
-   Copyright (C) 1992, 93-7, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93, 94, 95, 96, 97, 1998 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GNU CC.
@@ -2054,8 +2054,8 @@ typedef struct rs6000_args
 
 /* Define the magic numbers that we recognize as COFF.
    AIX 4.3 adds U803XTOCMAGIC (0757) for 64-bit executables, but collect2.c
-   does not include files in the correct order to conditionally define
-   the symbolic name in this macro.  */
+   does not include these files in the right order to conditionally define
+   the value in the macro.  */
 
 #define MY_ISCOFF(magic) \
   ((magic) == U802WRMAGIC || (magic) == U802ROMAGIC \

@@ -1,7 +1,7 @@
 /* Functions related to invoking methods and overloaded functions.
-   Copyright (C) 1987, 92, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 92-97, 1998 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) and
-   hacked by Brendan Kehoe (brendan@cygnus.com).
+   modified by Brendan Kehoe (brendan@cygnus.com).
 
 This file is part of GNU CC.
 

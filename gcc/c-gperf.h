@@ -1,5 +1,5 @@
 /* C code produced by gperf version 2.5 (GNU C++ version) */
-/* Command-line: gperf -p -j1 -i 1 -g -o -t -G -N is_reserved_word -k1,3,$ ./c-parse.gperf  */
+/* Command-line: gperf -p -j1 -i 1 -g -o -t -G -N is_reserved_word -k1,3,$ /puke/law/tmp/merge/egcs/gcc/c-parse.gperf  */
 /* Command-line: gperf -p -j1 -i 1 -g -o -t -N is_reserved_word -k1,3,$ c-parse.gperf  */ 
 struct resword { char *name; short token; enum rid rid; };
 

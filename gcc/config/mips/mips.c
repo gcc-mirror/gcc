@@ -5036,7 +5036,7 @@ mips_output_external (file, decl, name)
 #ifdef ASM_OUTPUT_UNDEF_FUNCTION
   if (TREE_CODE (decl) == FUNCTION_DECL
       /* ??? Don't include alloca, since gcc will always expand it
-	 inline.  If we don't do this, libg++ fails to build.  */
+	 inline.  If we don't do this, the C++ library fails to build.  */
       && strcmp (name, "alloca")
       /* ??? Don't include __builtin_next_arg, because then gcc will not
 	 bootstrap under Irix 5.1.  */
@@ -6616,7 +6616,8 @@ mips_expand_prologue ()
 	}
 
       if (TARGET_ABICALLS && mips_abi != ABI_32)
-	emit_insn (gen_loadgp (XEXP (DECL_RTL (current_function_decl), 0)));
+	emit_insn (gen_loadgp (XEXP (DECL_RTL (current_function_decl), 0),
+			       gen_rtx (REG, DImode, 25)));
     }
 
   /* If we are profiling, make sure no instructions are scheduled before

@@ -1505,6 +1505,10 @@ pic_setup_code ()
 
   start_sequence ();
 
+  /* If -O0, show the PIC register remains live before this.  */
+  if (obey_regdecls)
+    emit_insn (gen_rtx (USE, VOIDmode, pic_offset_table_rtx));
+    
   l1 = gen_label_rtx ();
 
   pic_pc_rtx = gen_rtx (CONST, Pmode,
@@ -5124,14 +5128,14 @@ sparc_type_code (type)
      register tree type;
 {
   register unsigned long qualifiers = 0;
-  register unsigned shift = 6;
+  register unsigned shift;
 
   /* Only the first 30 bits of the qualifier are valid.  We must refrain from
      setting more, since some assemblers will give an error for this.  Also,
      we must be careful to avoid shifts of 32 bits or more to avoid getting
      unpredictable results.  */
 
-  for (;;)
+  for (shift = 6; shift < 30; shift += 2, type = TREE_TYPE (type))
     {
       switch (TREE_CODE (type))
 	{
@@ -5139,27 +5143,18 @@ sparc_type_code (type)
 	  return qualifiers;
   
 	case ARRAY_TYPE:
-	  if (shift < 30)
-	    qualifiers |= (3 << shift);
-	  shift += 2;
-	  type = TREE_TYPE (type);
+	  qualifiers |= (3 << shift);
 	  break;
 
 	case FUNCTION_TYPE:
 	case METHOD_TYPE:
-	  if (shift < 30)
-	    qualifiers |= (2 << shift);
-	  shift += 2;
-	  type = TREE_TYPE (type);
+	  qualifiers |= (2 << shift);
 	  break;
 
 	case POINTER_TYPE:
 	case REFERENCE_TYPE:
 	case OFFSET_TYPE:
-	  if (shift < 30)
-	    qualifiers |= (1 << shift);
-	  shift += 2;
-	  type = TREE_TYPE (type);
+	  qualifiers |= (1 << shift);
 	  break;
 
 	case RECORD_TYPE:
@@ -5179,10 +5174,7 @@ sparc_type_code (type)
 	  /* If this is a range type, consider it to be the underlying
 	     type.  */
 	  if (TREE_TYPE (type) != 0)
-	    {
-	      type = TREE_TYPE (type);
-	      break;
-	    }
+	    break;
 
 	  /* Carefully distinguish all the standard types of C,
 	     without messing up if the language is not C.  We do this by
@@ -5208,6 +5200,11 @@ sparc_type_code (type)
 	    return (qualifiers | (TREE_UNSIGNED (type) ? 15 : 5));
   
 	case REAL_TYPE:
+	  /* If this is a range type, consider it to be the underlying
+	     type.  */
+	  if (TREE_TYPE (type) != 0)
+	    break;
+
 	  /* Carefully distinguish all the standard types of C,
 	     without messing up if the language is not C.  */
 
@@ -5234,6 +5231,8 @@ sparc_type_code (type)
 	  abort ();		/* Not a type! */
         }
     }
+
+  return qualifiers;
 }
 
 /* Nested function support.  */
