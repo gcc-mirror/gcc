@@ -2750,6 +2750,14 @@ rest_of_compilation (decl)
      collector to reclaim the memory used by the notes.  */
   remove_unncessary_notes ();
 
+  /* In function-at-a-time mode, we do not attempt to keep the BLOCK
+     tree in sensible shape.  So, we just recalculate it here.  */
+  if (current_function->x_whole_function_mode_p)
+    {
+      find_loop_tree_blocks ();
+      unroll_block_trees ();
+    }
+
   /* If we are reconsidering an inline function
      at the end of compilation, skip the stuff for making it inline.  */
 
@@ -3205,6 +3213,7 @@ rest_of_compilation (decl)
 	(flow_time,
 	 {
 	   find_basic_blocks (insns, max_reg_num (), rtl_dump_file, 1);
+	   calculate_loop_depth (rtl_dump_file);
 	   life_analysis (insns, max_reg_num (), rtl_dump_file, 1);
 	 });
 
@@ -3537,12 +3546,6 @@ rest_of_compilation (decl)
      ggc_collect ();
 #endif
 
-  /* Shorten branches.  */
-  TIMEVAR (shorten_branch_time,
-	   {
-	     shorten_branches (get_insns ());
-	   });
-
 #ifdef STACK_REGS
   if (stack_reg_dump)
     open_dump_file (".20.stack", decl_printable_name (decl, 2));
@@ -3559,6 +3562,12 @@ rest_of_compilation (decl)
    if (ggc_p)
      ggc_collect ();
 #endif
+
+  /* Shorten branches.  */
+  TIMEVAR (shorten_branch_time,
+	   {
+	     shorten_branches (get_insns ());
+	   });
 
   /* Now turn the rtl into assembler code.  */
 
