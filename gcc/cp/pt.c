@@ -1,6 +1,6 @@
 /* Handle parameterized types (templates) for GNU C++.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001  Free Software Foundation, Inc.
+   2001, 2002  Free Software Foundation, Inc.
    Written by Ken Raeburn (raeburn@cygnus.com) while at Watchmaker Computing.
    Rewritten by Jason Merrill (jason@cygnus.com).
 
@@ -3291,23 +3291,27 @@ convert_template_argument (parm, arg, args, complain, i, in_decl)
   requires_type = (TREE_CODE (parm) == TYPE_DECL
 		   || requires_tmpl_type);
 
-  /* Check if it is a class template.  If REQUIRES_TMPL_TYPE is true,
-     we also accept implicitly created TYPE_DECL as a valid argument.
-     This is necessary to handle the case where we pass a template name
-     to a template template parameter in a scope where we've derived from
-     in instantiation of that template, so the template name refers to that
-     instantiation.  We really ought to handle this better.  */
-  is_tmpl_type 
-    = ((TREE_CODE (arg) == TEMPLATE_DECL
-	&& TREE_CODE (DECL_TEMPLATE_RESULT (arg)) == TYPE_DECL)
-       || TREE_CODE (arg) == TEMPLATE_TEMPLATE_PARM
-       || TREE_CODE (arg) == UNBOUND_CLASS_TEMPLATE
-       || (TREE_CODE (arg) == RECORD_TYPE
-	   && CLASSTYPE_TEMPLATE_INFO (arg)
-	   && TREE_CODE (TYPE_NAME (arg)) == TYPE_DECL
-	   && DECL_ARTIFICIAL (TYPE_NAME (arg))
-	   && requires_tmpl_type
-	   && is_base_of_enclosing_class (arg, current_class_type)));
+  if (TREE_CODE (arg) != RECORD_TYPE)
+    is_tmpl_type = ((TREE_CODE (arg) == TEMPLATE_DECL
+		     && TREE_CODE (DECL_TEMPLATE_RESULT (arg)) == TYPE_DECL)
+		    || TREE_CODE (arg) == TEMPLATE_TEMPLATE_PARM
+		    || TREE_CODE (arg) == UNBOUND_CLASS_TEMPLATE);
+  else if (CLASSTYPE_TEMPLATE_INFO (arg) && !CLASSTYPE_USE_TEMPLATE (arg)
+	   && PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (arg)))
+    {
+      if (is_base_of_enclosing_class (arg, current_class_type))
+	/* This is a template name used within the scope of the
+	   template. It could be the template, or it could be the
+	   instantiation. Choose whichever makes sense.  */
+	is_tmpl_type = requires_tmpl_type;
+      else
+	is_tmpl_type = 1;
+    }
+  else
+    /* It is a non-template class, or a specialization of a template
+       class, or a non-template member of a template class.  */
+    is_tmpl_type = 0;
+  
   if (is_tmpl_type
       && (TREE_CODE (arg) == TEMPLATE_TEMPLATE_PARM
 	  || TREE_CODE (arg) == UNBOUND_CLASS_TEMPLATE))
