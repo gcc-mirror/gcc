@@ -370,7 +370,7 @@ CPLUS_OBJS = cp-parse.o cp-decl.o cp-decl2.o \
 # Language-independent object files.
 OBJS = toplev.o version.o tree.o print-tree.o stor-layout.o fold-const.o \
  function.o stmt.o expr.o calls.o expmed.o explow.o optabs.o varasm.o \
- rtl.o print-rtl.o rtlanal.o emit-rtl.o \
+ rtl.o print-rtl.o rtlanal.o emit-rtl.o real.o \
  dbxout.o sdbout.o dwarfout.o xcoffout.o \
  integrate.o jump.o cse.o loop.o unroll.o flow.o stupid.o combine.o \
  regclass.o local-alloc.o global.o reload.o reload1.o caller-save.o \
@@ -876,6 +876,7 @@ dwarfout.o : dwarfout.c $(CONFIG_H) $(TREE_H) $(RTL_H) dwarf.h flags.h \
 xcoffout.o : xcoffout.c $(CONFIG_H) $(TREE_H) $(RTL_H) xcoffout.h flags.h
 emit-rtl.o : emit-rtl.c $(CONFIG_H) $(RTL_H) flags.h gvarargs.h function.h  \
    regs.h insn-config.h insn-codes.h real.h expr.h
+real.o : real.c $(CONFIG_H) $(TREE_H)
 getpwd.o : getpwd.c $(CONFIG_H)
 
 integrate.o : integrate.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h integrate.h \
