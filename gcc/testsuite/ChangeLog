@@ -1,5 +1,10 @@
 2003-06-30  Giovanni Bajo  <giovannibajo@libero.it>
 
+        PR c++/4933
+        * g++.dg/template/sizeof4.C: New test.
+
+2003-06-30  Giovanni Bajo  <giovannibajo@libero.it>
+
         * g++.dg/other/error6.C: New test.
 
 2003-06-30  Giovanni Bajo  <giovannibajo@libero.it>
