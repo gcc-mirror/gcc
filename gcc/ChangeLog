@@ -1,3 +1,8 @@
+2001-06-10  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cppinit.c (print_help): Document -fpreprocessed.
+	* invoke.texi: Similarly.
+
 2001-06-09  Mark Mitchell  <mark@codesourcery.com>
 
 	* expr.c (expand_expr, case ARRAY_REF): Do not replace

@@ -1880,6 +1880,7 @@ Switches:\n\
   -dI                       Include #include directives in the output\n\
 "), stdout);
   fputs (_("\
+  -fpreprocessed            Treat the input file as already preprocessed\n\
   -ftabstop=<number>        Distance between tab stops for column reporting\n\
   -P                        Do not generate #line directives\n\
   -$                        Do not allow '$' in identifiers\n\

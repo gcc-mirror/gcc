@@ -1019,9 +1019,8 @@ freestanding and hosted environments.
 
 @item -trigraphs
 @opindex trigraphs
-Support ISO C trigraphs.  You don't want to know about this
-brain-damage.  The @option{-ansi} option (and @option{-std} options for
-strict ISO C conformance) implies @option{-trigraphs}.
+Support ISO C trigraphs.  The @option{-ansi} option (and @option{-std}
+options for strict ISO C conformance) implies @option{-trigraphs}.
 
 @cindex traditional C language
 @cindex C language, traditional
@@ -3947,6 +3946,18 @@ Only @samp{#define @var{name}} is included in the output.
 @opindex dI
 Output @samp{#include} directives in addition to the result of
 preprocessing.
+
+@item -fpreprocessed
+@opindex fpreprocessed
+Indicate to the preprocessor that the input file has already been
+preprocessed.  This suppresses things like macro expansion, trigraph
+conversion, escaped newline splicing, and processing of most directives.
+In this mode the integrated preprocessor is little more than a tokenizer
+for the front ends.
+
+@samp{-fpreprocessed} is implicit if the input file has one of the
+extensions @samp{i}, @samp{ii} or @samp{mi} indicating it has already
+been preprocessed.
 
 @item -trigraphs
 @opindex trigraphs
