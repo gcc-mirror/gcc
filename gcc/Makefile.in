@@ -182,6 +182,10 @@ assertdir = $(tooldir)/include
 infodir = $(prefix)/info
 # Extension (if any) to put in installed man-page filename.
 manext = .1
+exeext =
+objext = .o
+oldobjext = .o
+
 # Directory in which to put man pages.
 mandir = $(prefix)/man/man1
 # Directory in which to find other cross-compilation tools and headers.
@@ -459,7 +463,7 @@ FLAGS_TO_PASS = \
 
 # A list of all the language-specific executables.
 # This is overridden by configure.
-COMPILERS = cc1 cc1obj
+COMPILERS = cc1$(exeext) cc1obj$(exeext)
 
 # Language-specific object files for C.
 C_OBJS = c-parse.o c-lang.o c-lex.o c-pragma.o \
@@ -576,7 +580,8 @@ BYTECODE_H = bytecode.h bc-emit.h bc-optab.h
 Makefile: $(srcdir)/Makefile.in $(srcdir)/configure $(srcdir)/version.c \
    $(srcdir)/config/$(xmake_file) $(srcdir)/config/$(tmake_file) \
    $(LANG_MAKEFILES)
-	$(SHELL) config.status
+	cp config.status config.run
+	$(SHELL) config.run
 
 all.internal: start.encap rest.encap
 # This is what to compile if making a cross-compiler.
@@ -736,7 +741,7 @@ libgcc1.a: libgcc1.c $(CONFIG_H) $(LIB1FUNCS_EXTRA) config.status
 	  rm -f $${name}.o; \
 	  $(OLDCC) $(CCLIBFLAGS) $(INCLUDES) -c -DL$${name} $(srcdir)/libgcc1.c; \
 	  if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
-	  mv libgcc1.o $${name}.o; \
+	  mv libgcc1$(oldobjext) $${name}.o; \
 	  $(OLDAR) $(OLDAR_FLAGS) tmplibgcc1.a $${name}.o; \
 	  rm -f $${name}.o; \
 	done
@@ -1016,8 +1021,9 @@ c-iterate.o: c-iterate.c $(CONFIG_H) $(TREE_H) $(RTL_H) c-tree.h flags.h
 
 # To make a configuration always use collect2, set USE_COLLECT2 to ld.
 ld: collect2
-	rm -f ld
-	ln collect2 ld
+	rm -f ld$(exeext)
+	ln collect2$(exeext) ld$(exeext) > /dev/null 2>&1
+	 || cp collect2$(exeext) ld$(exeext)
 
 collect2 : collect2.o version.o $(LIBDEPS)
 # Don't try modifying collect2 (aka ld) in place--it might be linking this.
@@ -1534,8 +1540,9 @@ bytecode.realclean: bytecode.clean
 
 # Making the preprocessor
 cpp: cccp
-	-rm -f cpp
-	ln cccp cpp
+	-rm -f cpp$(exeext)
+	ln cccp$(exeext) cpp$(exeext) > /dev/null 2>&1 \
+	 || cp cccp$(exeext) cpp$(exeext)
 cccp: cccp.o cexp.o version.o $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o cccp cccp.o cexp.o version.o $(LIBS)
 cexp.o: $(srcdir)/cexp.c $(CONFIG_H)
@@ -1993,33 +2000,35 @@ install-common: native install-dir xgcc $(EXTRA_PARTS) lang.install-common
 	fi
 # Install the driver program as $(target)-gcc
 # and also as either gcc (if native) or $(tooldir)/bin/gcc.
-	-if [ -f gcc-cross ] ; then \
-	  rm -f $(bindir)/$(GCC_CROSS_NAME); \
-	  $(INSTALL_PROGRAM) gcc-cross $(bindir)/$(GCC_CROSS_NAME); \
+	-if [ -f gcc-cross$(exeext) ] ; then \
+	  rm -f $(bindir)/$(GCC_CROSS_NAME)$(exeext); \
+	  $(INSTALL_PROGRAM) gcc-cross$(exext) $(bindir)/$(GCC_CROSS_NAME)$(exeext); \
 	  if [ -d $(tooldir)/bin/. ] ; then \
-	    rm -f $(tooldir)/bin/gcc; \
-	    $(INSTALL_PROGRAM) gcc-cross $(tooldir)/bin/gcc; \
+	    rm -f $(tooldir)/bin/gcc$(exeext); \
+	    $(INSTALL_PROGRAM) gcc-cross$(exeext) $(tooldir)/bin/gcc$(exeext); \
 	  else true; fi; \
 	else \
-	  rm -f $(bindir)/$(GCC_INSTALL_NAME); \
-	  $(INSTALL_PROGRAM) xgcc $(bindir)/$(GCC_INSTALL_NAME); \
-	  rm -f $(bindir)/$(target)-gcc-1; \
-	  ln $(bindir)/$(GCC_INSTALL_NAME) $(bindir)/$(target)-gcc-1; \
-	  mv $(bindir)/$(target)-gcc-1 $(bindir)/$(target)-gcc; \
+	  rm -f $(bindir)/$(GCC_INSTALL_NAME)$(exeext); \
+	  $(INSTALL_PROGRAM) xgcc$(exeext) $(bindir)/$(GCC_INSTALL_NAME)$(exeext); \
+	  rm -f $(bindir)/$(target)-gcc-1$(exeext); \
+	  ln $(bindir)/$(GCC_INSTALL_NAME)$(exeext) $(bindir)/$(target)-gcc-1$(exeext) \
+	    > /dev/null 2>&1 \
+	    || cp $(bindir)/$(GCC_INSTALL_NAME)$(exeext) $(bindir)/$(target)-gcc-1$(exeext); \
+	  mv $(bindir)/$(target)-gcc-1$(exeext) $(bindir)/$(target)-gcc$(exeext); \
 	fi
 # Install protoize if it was compiled.
-	-if [ -f protoize ]; \
+	-if [ -f protoize$(exeext) ]; \
 	then \
-	    rm -f $(bindir)/protoize; \
-	    $(INSTALL_PROGRAM) protoize $(bindir)/protoize; \
-	    rm -f $(bindir)/unprotoize; \
-	    $(INSTALL_PROGRAM) unprotoize $(bindir)/unprotoize; \
+	    rm -f $(bindir)/protoize$(exeext); \
+	    $(INSTALL_PROGRAM) protoize$(exeext) $(bindir)/protoize$(exeext); \
+	    rm -f $(bindir)/unprotoize$(exeext); \
+	    $(INSTALL_PROGRAM) unprotoize$(exeext) $(bindir)/unprotoize$(exeext); \
 	    rm -f $(libsubdir)/SYSCALLS.c.X; \
 	    $(INSTALL_DATA) SYSCALLS.c.X $(libsubdir)/SYSCALLS.c.X; \
 	    chmod a-x $(libsubdir)/SYSCALLS.c.X; \
 	fi
-	-rm -f $(libsubdir)/cpp
-	$(INSTALL_PROGRAM) cpp $(libsubdir)/cpp
+	-rm -f $(libsubdir)/cpp$(exeexy)
+	$(INSTALL_PROGRAM) cpp$(exeext) $(libsubdir)/cpp$(exeext)
 
 # Install the info files.
 install-info: doc install-dir lang.install-info
@@ -2134,17 +2143,17 @@ install-assert-h: assert.h install-dir
 
 # Use this target to install the program `collect2' under the name `ld'.
 install-collect2: collect2 install-dir
-	$(INSTALL_PROGRAM) collect2 $(libsubdir)/ld
+	$(INSTALL_PROGRAM) collect2$(exeext) $(libsubdir)/ld$(exeext)
 # Install the driver program as $(libsubdir)/gcc for collect2.
-	$(INSTALL_PROGRAM) xgcc $(libsubdir)/gcc
+	$(INSTALL_PROGRAM) xgcc$(exeext) $(libsubdir)/gcc$(exeext)
 
 # Cancel installation by deleting the installed files.
 uninstall: lang.uninstall
 	-rm -rf $(libsubdir)
-	-rm -rf $(bindir)/$(GCC_INSTALL_NAME)
-	-rm -rf $(bindir)/$(GCC_CROSS_NAME)
-	-rm -rf $(bindir)/protoize
-	-rm -rf $(bindir)/unprotoize
+	-rm -rf $(bindir)/$(GCC_INSTALL_NAME)$(exeext)
+	-rm -rf $(bindir)/$(GCC_CROSS_NAME)$(exeext)
+	-rm -rf $(bindir)/protoize$(exeext)
+	-rm -rf $(bindir)/unprotoize$(exeext)
 	-rm -rf $(mandir)/$(GCC_INSTALL_NAME)$(manext)
 	-rm -rf $(mandir)/$(GCC_CROSS_NAME)$(manext)
 	-rm -rf $(mandir)/cccp$(manext)
@@ -2219,7 +2228,8 @@ distdir-start: doc $(srcdir)/INSTALL c-parse.y $(srcdir)/c-gperf.h objc-parse.y 
 	done
 	cd ginclude; \
 	for file in *[0-9a-zA-Z+]; do \
-	  ln $$file ../tmp/ginclude >/dev/null 2>&1 || cp $$file ../tmp/ginclude; \
+	  ln $$file ../tmp/ginclude >/dev/null 2>&1 \
+	   || cp $$file ../tmp/ginclude; \
 	done
 	cd objc; \
 	for file in *[0-9a-zA-Z+]; do \
