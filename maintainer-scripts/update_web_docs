@@ -91,8 +91,10 @@ cvs -Q co -r$RELEASE `cat FILES`
 mv `find . -name \*.texi -print` .
 
 # Now convert the relavent files from texi to html 
-for file in c-tree cpp chill cppinternals gcc gcj gxxint g77 objc-features porting; do 
-  /usr/local/bin/texi2html -glossary -menu -split_chapter ${file}.texi
+for file in c-tree cpp chill cppinternals gcc gcj g77 objc-features porting; do
+  if [ -e ${file}.texi ]; then
+    /usr/local/bin/texi2html -glossary -menu -split_chapter ${file}.texi
+  fi
 done
 
 # Then build a gzipped copy of each of the resulting .html files
