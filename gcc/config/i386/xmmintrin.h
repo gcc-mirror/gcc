@@ -1058,6 +1058,7 @@ do {									\
   (row3) = __builtin_ia32_shufps (__t2, __t3, 0xDD);			\
 } while (0)
 
+#ifdef __SSE2_BUILTINS__
 /* SSE2 */
 typedef int __v2df __attribute__ ((mode (V2DF)));
 typedef int __v2di __attribute__ ((mode (V2DI)));
@@ -1978,7 +1979,6 @@ _mm_mfence (void)
   __builtin_ia32_mfence ();
 }
 
-/* End of SSE2.  */
-
+#endif /* __SSE2_BUILTINS__  */
 
 #endif /* _XMMINTRIN_H_INCLUDED */
