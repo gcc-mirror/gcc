@@ -1204,10 +1204,10 @@ package body Exp_Ch9 is
    begin
       S := Scope (E);
 
-      --  Ada 0Y (AI-287): Do not set/get the has_master_entity reminder in
-      --  internal scopes. Required for nested limited aggregates.
+      --  Ada 2005 (AI-287): Do not set/get the has_master_entity reminder
+      --  in internal scopes. Required for nested limited aggregates.
 
-      if Extensions_Allowed then
+      if Ada_Version >= Ada_05 then
          while Is_Internal (S) loop
             S := Scope (S);
          end loop;
@@ -1240,13 +1240,13 @@ package body Exp_Ch9 is
       Insert_Before (P, Decl);
       Analyze (Decl);
 
-      --  Ada 0Y (AI-287): Set the has_master_entity reminder in the
+      --  Ada 2005 (AI-287): Set the has_master_entity reminder in the
       --  non-internal scope selected above.
 
-      if not Extensions_Allowed then
-         Set_Has_Master_Entity (Scope (E));
-      else
+      if Ada_Version >= Ada_05 then
          Set_Has_Master_Entity (S);
+      else
+         Set_Has_Master_Entity (Scope (E));
       end if;
 
       --  Now mark the containing scope as a task master

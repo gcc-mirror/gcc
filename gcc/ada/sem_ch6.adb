@@ -1182,7 +1182,7 @@ package body Sem_Ch6 is
          end if;
       end if;
 
-      --  Ada 0Y (AI-262): In library subprogram bodies, after the analysis
+      --  Ada 2005 (AI-262): In library subprogram bodies, after the analysis
       --  if its specification we have to install the private withed units.
 
       if Is_Compilation_Unit (Body_Id)
@@ -2163,7 +2163,7 @@ package body Sem_Ch6 is
          --  skipped if either entity is an operator in package Standard.
          --  or if either old or new instance is not from the source program.
 
-         if Ada_83
+         if Ada_Version = Ada_83
            and then Sloc (Old_Id) > Standard_Location
            and then Sloc (New_Id) > Standard_Location
            and then Comes_From_Source (Old_Id)
@@ -2406,7 +2406,7 @@ package body Sem_Ch6 is
 
          --  In Ada 83 case, grouping must match: (A,B : X) /= (A : X; B : X)
 
-         if Ada_83 then
+         if Ada_Version = Ada_83 then
             declare
                Old_Disc : constant Node_Id := Declaration_Node (Old_Discr);
 
@@ -3087,7 +3087,7 @@ package body Sem_Ch6 is
            or else Subtypes_Statically_Match (Type_1, Full_View (Type_2));
       end if;
 
-      --  Ada 0Y (AI-254): Detect anonymous access to subprogram types.
+      --  Ada 2005 (AI-254): Detect anonymous access to subprogram types
 
       Are_Anonymous_Access_To_Subprogram_Types :=
 
@@ -3118,7 +3118,7 @@ package body Sem_Ch6 is
 
       if (Ekind (Type_1) = E_Anonymous_Access_Type
             and then Ekind (Type_2) = E_Anonymous_Access_Type)
-        or else Are_Anonymous_Access_To_Subprogram_Types --  Ada 0Y (AI-254)
+        or else Are_Anonymous_Access_To_Subprogram_Types -- Ada 2005 (AI-254)
       then
          declare
             Desig_1 : Entity_Id;
@@ -4952,9 +4952,8 @@ package body Sem_Ch6 is
                         and then Ekind (Root_Type (Formal_Type)) =
                                                          E_Incomplete_Type)
             then
-               --  Ada 0Y (AI-50217): Incomplete tagged types that are made
-               --  visible through a limited with_clause are valid formal
-               --  types.
+               --  Ada 2005 (AI-50217): Incomplete tagged types that are made
+               --  visible by a limited with_clause are valid formal types.
 
                if From_With_Type (Formal_Type)
                  and then Is_Tagged_Type (Formal_Type)
@@ -4972,7 +4971,7 @@ package body Sem_Ch6 is
                  Parameter_Type (Param_Spec), Formal_Type);
             end if;
 
-            --  Ada 0Y (AI-231): Create and decorate an internal subtype
+            --  Ada 2005 (AI-231): Create and decorate an internal subtype
             --  declaration corresponding to the null-excluding type of the
             --  formal in the enclosing scope. In addition, replace the
             --  parameter type of the formal to this internal subtype.
@@ -5033,7 +5032,7 @@ package body Sem_Ch6 is
                end;
             end if;
 
-            --  Ada 0Y (AI-231): Static checks
+            --  Ada 2005 (AI-231): Static checks
 
             if Null_Exclusion_Present (Param_Spec)
               or else Can_Never_Be_Null (Entity (Ptype))
@@ -5047,7 +5046,7 @@ package body Sem_Ch6 is
             Formal_Type :=
               Access_Definition (Related_Nod, Parameter_Type (Param_Spec));
 
-            --  Ada 0Y (AI-254)
+            --  Ada 2005 (AI-254)
 
             declare
                AD : constant Node_Id :=
@@ -5332,10 +5331,10 @@ package body Sem_Ch6 is
 
       if Nkind (Parameter_Type (Spec)) = N_Access_Definition then
 
-         --  Ada 0Y (AI-231): This behaviour has been modified in Ada 0Y.
+         --  Ada 2005 (AI-231): This behaviour has been modified in Ada 2005.
          --  It is only forced if the null_exclusion appears.
 
-         if not Extensions_Allowed
+         if Ada_Version < Ada_05
            or else Null_Exclusion_Present (Spec)
          then
             Set_Is_Known_Non_Null (Formal_Id);

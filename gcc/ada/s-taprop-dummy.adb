@@ -397,8 +397,7 @@ package body System.Task_Primitives.Operations is
 
    function Suspend_Task
      (T           : ST.Task_Id;
-      Thread_Self : OSI.Thread_Id)
-      return        Boolean
+      Thread_Self : OSI.Thread_Id) return Boolean
    is
    begin
       return False;
@@ -410,8 +409,7 @@ package body System.Task_Primitives.Operations is
 
    function Resume_Task
      (T           : ST.Task_Id;
-      Thread_Self : OSI.Thread_Id)
-      return        Boolean
+      Thread_Self : OSI.Thread_Id) return Boolean
    is
    begin
       return False;

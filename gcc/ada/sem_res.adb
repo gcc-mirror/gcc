@@ -163,8 +163,7 @@ package body Sem_Res is
 
    function Operator_Kind
      (Op_Name   : Name_Id;
-      Is_Binary : Boolean)
-      return      Node_Kind;
+      Is_Binary : Boolean) return Node_Kind;
    --  Utility to map the name of an operator into the corresponding Node. Used
    --  by other node rewriting procedures.
 
@@ -198,9 +197,12 @@ package body Sem_Res is
    --  that operands are resolved properly. Recall that predefined operators
    --  do not have a full signature and special resolution rules apply.
 
-   procedure Rewrite_Renamed_Operator (N : Node_Id; Op : Entity_Id);
+   procedure Rewrite_Renamed_Operator
+     (N   : Node_Id;
+      Op  : Entity_Id;
+      Typ : Entity_Id);
    --  An operator can rename another, e.g. in  an instantiation. In that
-   --  case, the proper operator node must be constructed.
+   --  case, the proper operator node must be constructed and resolved.
 
    procedure Set_String_Literal_Subtype (N : Node_Id; Typ : Entity_Id);
    --  The String_Literal_Subtype is built for all strings that are not
@@ -219,8 +221,7 @@ package body Sem_Res is
    function Valid_Conversion
      (N       : Node_Id;
       Target  : Entity_Id;
-      Operand : Node_Id)
-      return    Boolean;
+      Operand : Node_Id) return Boolean;
    --  Verify legality rules given in 4.6 (8-23). Target is the target
    --  type of the conversion, which may be an implicit conversion of
    --  an actual parameter to an anonymous access type (in which case
@@ -1252,8 +1253,7 @@ package body Sem_Res is
 
    function Operator_Kind
      (Op_Name   : Name_Id;
-      Is_Binary : Boolean)
-      return      Node_Kind
+      Is_Binary : Boolean) return Node_Kind
    is
       Kind : Node_Kind;
 
@@ -2067,28 +2067,6 @@ package body Sem_Res is
       --  Here we have an acceptable interpretation for the context
 
       else
-         --  A user-defined operator is tranformed into a function call at
-         --  this point, so that further processing knows that operators are
-         --  really operators (i.e. are predefined operators). User-defined
-         --  operators that are intrinsic are just renamings of the predefined
-         --  ones, and need not be turned into calls either, but if they rename
-         --  a different operator, we must transform the node accordingly.
-         --  Instantiations of Unchecked_Conversion are intrinsic but are
-         --  treated as functions, even if given an operator designator.
-
-         if Nkind (N) in N_Op
-           and then Present (Entity (N))
-           and then Ekind (Entity (N)) /= E_Operator
-         then
-
-            if not Is_Predefined_Op (Entity (N)) then
-               Rewrite_Operator_As_Call (N, Entity (N));
-
-            elsif Present (Alias (Entity (N))) then
-               Rewrite_Renamed_Operator (N, Alias (Entity (N)));
-            end if;
-         end if;
-
          --  Propagate type information and normalize tree for various
          --  predefined operations. If the context only imposes a class of
          --  types, rather than a specific type, propagate the actual type
@@ -2112,6 +2090,35 @@ package body Sem_Res is
                Error_Msg_N ("Illegal context for mixed mode operation", N);
                Set_Etype (N, Universal_Real);
                Ctx_Type := Universal_Real;
+            end if;
+         end if;
+
+         --  A user-defined operator is tranformed into a function call at
+         --  this point, so that further processing knows that operators are
+         --  really operators (i.e. are predefined operators). User-defined
+         --  operators that are intrinsic are just renamings of the predefined
+         --  ones, and need not be turned into calls either, but if they rename
+         --  a different operator, we must transform the node accordingly.
+         --  Instantiations of Unchecked_Conversion are intrinsic but are
+         --  treated as functions, even if given an operator designator.
+
+         if Nkind (N) in N_Op
+           and then Present (Entity (N))
+           and then Ekind (Entity (N)) /= E_Operator
+         then
+
+            if not Is_Predefined_Op (Entity (N)) then
+               Rewrite_Operator_As_Call (N, Entity (N));
+
+            elsif Present (Alias (Entity (N))) then
+               Rewrite_Renamed_Operator (N, Alias (Entity (N)), Typ);
+
+               --  If the node is rewritten, it will be fully resolved in
+               --  Rewrite_Renamed_Operator.
+
+               if Analyzed (N) then
+                  return;
+               end if;
             end if;
          end if;
 
@@ -2629,7 +2636,7 @@ package body Sem_Res is
                --  or IN OUT actual to a nested call, since this is a
                --  case of reading an out parameter, which is not allowed.
 
-               if Ada_83
+               if Ada_Version = Ada_83
                  and then Is_Entity_Name (A)
                  and then Ekind (Entity (A)) = E_Out_Parameter
                then
@@ -2698,16 +2705,17 @@ package body Sem_Res is
                   Apply_Range_Check (A, F_Typ);
                end if;
 
-               --  Ada 0Y (AI-231)
+               --  Ada 2005 (AI-231)
 
-               if Extensions_Allowed
+               if Ada_Version >= Ada_05
                  and then Is_Access_Type (F_Typ)
                  and then (Can_Never_Be_Null (F)
                            or else Can_Never_Be_Null (F_Typ))
                then
                   if Nkind (A) = N_Null then
-                     Error_Msg_NE ("(Ada 0Y) not allowed for null-exclusion " &
-                                   "formal", A, F_Typ);
+                     Error_Msg_NE
+                       ("(Ada 2005) not allowed for " &
+                        "null-exclusion formal", A, F_Typ);
                   end if;
                end if;
             end if;
@@ -3164,14 +3172,33 @@ package body Sem_Res is
             end loop;
 
             --  Reanalyze the literal with the fixed type of the context.
+            --  If context is Universal_Fixed, we are within a conversion,
+            --  leave the literal as a universal real because there is no
+            --  usable fixed type, and the target of the conversion plays
+            --  no role in the resolution.
 
-            if N = L then
-               Set_Analyzed (R, False);
-               Resolve (R, B_Typ);
-            else
-               Set_Analyzed (L, False);
-               Resolve (L, B_Typ);
-            end if;
+            declare
+               Op2 : Node_Id;
+               T2  : Entity_Id;
+
+            begin
+               if N = L then
+                  Op2 := R;
+               else
+                  Op2 := L;
+               end if;
+
+               if B_Typ = Universal_Fixed
+                  and then Nkind (Op2) = N_Real_Literal
+               then
+                  T2 := Universal_Real;
+               else
+                  T2 := B_Typ;
+               end if;
+
+               Set_Analyzed (Op2, False);
+               Resolve (Op2, T2);
+            end;
 
          else
             Resolve (N);
@@ -3271,7 +3298,7 @@ package body Sem_Res is
                Set_Etype (R, Any_Type);
 
             else
-               if Ada_83
+               if Ada_Version = Ada_83
                   and then Etype (N) = Universal_Fixed
                   and then Nkind (Parent (N)) /= N_Type_Conversion
                   and then Nkind (Parent (N)) /= N_Unchecked_Type_Conversion
@@ -4161,7 +4188,7 @@ package body Sem_Res is
          Error_Msg_N ("illegal use of generic function", N);
 
       elsif Ekind (E) = E_Out_Parameter
-        and then Ada_83
+        and then Ada_Version = Ada_83
         and then (Nkind (Parent (N)) in N_Op
                     or else (Nkind (Parent (N)) = N_Assignment_Statement
                               and then N = Expression (Parent (N)))
@@ -5009,7 +5036,7 @@ package body Sem_Res is
          if Nkind (Arg2) = N_Type_Conversion then
             Save_Interps (Right_Opnd (N), Expression (Arg2));
          else
-            Save_Interps (Right_Opnd (N), Arg1);
+            Save_Interps (Right_Opnd (N), Arg2);
          end if;
 
          Rewrite (Left_Opnd  (N), Arg1);
@@ -5170,13 +5197,12 @@ package body Sem_Res is
 
    procedure Resolve_Null (N : Node_Id; Typ : Entity_Id) is
    begin
-      --  For now allow circumvention of the restriction against
-      --  anonymous null access values via a debug switch to allow
-      --  for easier transition.
+      --  Handle restriction against anonymous null access values
+      --  This restriction can be turned off using -gnatdh.
 
-      --  Ada 0Y (AI-231): Remove restriction
+      --  Ada 2005 (AI-231): Remove restriction
 
-      if not Extensions_Allowed
+      if Ada_Version < Ada_05
         and then not Debug_Flag_J
         and then Ekind (Typ) = E_Anonymous_Access_Type
         and then Comes_From_Source (N)
@@ -6486,17 +6512,23 @@ package body Sem_Res is
    -- Rewrite_Renamed_Operator --
    ------------------------------
 
-   procedure Rewrite_Renamed_Operator (N : Node_Id; Op : Entity_Id) is
+   procedure Rewrite_Renamed_Operator
+     (N   : Node_Id;
+      Op  : Entity_Id;
+      Typ : Entity_Id)
+   is
       Nam       : constant Name_Id := Chars (Op);
       Is_Binary : constant Boolean := Nkind (N) in N_Binary_Op;
       Op_Node   : Node_Id;
 
    begin
       --  Rewrite the operator node using the real operator, not its
-      --  renaming. Exclude user-defined intrinsic operations, which
-      --  are treated separately.
+      --  renaming. Exclude user-defined intrinsic operations of the same
+      --  name, which are treated separately and rewritten as calls.
 
-      if Ekind (Op) /= E_Function then
+      if Ekind (Op) /= E_Function
+        or else Chars (N) /= Nam
+      then
          Op_Node := New_Node (Operator_Kind (Nam, Is_Binary), Sloc (N));
          Set_Chars      (Op_Node, Nam);
          Set_Etype      (Op_Node, Etype (N));
@@ -6514,6 +6546,36 @@ package body Sem_Res is
          end if;
 
          Rewrite (N, Op_Node);
+
+         --  If the context type is private, add the appropriate conversions
+         --  so that the operator is applied to the full view. This is done
+         --  in the routines that resolve intrinsic operators,
+
+         if Is_Intrinsic_Subprogram (Op)
+           and then Is_Private_Type (Typ)
+         then
+            case Nkind (N) is
+               when N_Op_Add   | N_Op_Subtract | N_Op_Multiply | N_Op_Divide |
+                    N_Op_Expon | N_Op_Mod      | N_Op_Rem      =>
+                  Resolve_Intrinsic_Operator (N, Typ);
+
+               when N_Op_Plus | N_Op_Minus    | N_Op_Abs      =>
+                  Resolve_Intrinsic_Unary_Operator (N, Typ);
+
+               when others =>
+                  Resolve (N, Typ);
+            end case;
+         end if;
+
+      elsif Ekind (Op) = E_Function
+        and then Is_Intrinsic_Subprogram (Op)
+      then
+         --  Operator renames a user-defined operator of the same name. Use
+         --  the original operator in the node, which is the one that gigi
+         --  knows about.
+
+         Set_Entity (N, Op);
+         Set_Is_Overloaded (N, False);
       end if;
    end Rewrite_Renamed_Operator;
 
@@ -6677,7 +6739,6 @@ package body Sem_Res is
       --  Look for visible fixed type declarations in the context.
 
       Item := First (Context_Items (Cunit (Current_Sem_Unit)));
-
       while Present (Item) loop
          if Nkind (Item) = N_With_Clause then
             Scop := Entity (Name (Item));
@@ -6721,22 +6782,19 @@ package body Sem_Res is
    function Valid_Conversion
      (N       : Node_Id;
       Target  : Entity_Id;
-      Operand : Node_Id)
-      return    Boolean
+      Operand : Node_Id) return Boolean
    is
       Target_Type : constant Entity_Id := Base_Type (Target);
       Opnd_Type   : Entity_Id := Etype (Operand);
 
       function Conversion_Check
         (Valid : Boolean;
-         Msg   : String)
-         return  Boolean;
+         Msg   : String) return Boolean;
       --  Little routine to post Msg if Valid is False, returns Valid value
 
       function Valid_Tagged_Conversion
         (Target_Type : Entity_Id;
-         Opnd_Type   : Entity_Id)
-         return        Boolean;
+         Opnd_Type   : Entity_Id) return Boolean;
       --  Specifically test for validity of tagged conversions
 
       ----------------------
@@ -6745,8 +6803,7 @@ package body Sem_Res is
 
       function Conversion_Check
         (Valid : Boolean;
-         Msg   : String)
-         return  Boolean
+         Msg   : String) return Boolean
       is
       begin
          if not Valid then
@@ -6762,8 +6819,7 @@ package body Sem_Res is
 
       function Valid_Tagged_Conversion
         (Target_Type : Entity_Id;
-         Opnd_Type   : Entity_Id)
-         return        Boolean
+         Opnd_Type   : Entity_Id) return Boolean
       is
       begin
          --  Upward conversions are allowed (RM 4.6(22)).

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -195,7 +195,7 @@ package body Util is
    procedure Check_Simple_Expression_In_Ada_83 (E : Node_Id) is
    begin
       if Expr_Form = EF_Non_Simple then
-         if Ada_83 then
+         if Ada_Version = Ada_83 then
             Error_Msg_N ("(Ada 83) this expression must be parenthesized!", E);
          end if;
       end if;

@@ -617,7 +617,7 @@ package Checks is
    --  will be raised if the value is not valid.
 
    procedure Null_Exclusion_Static_Checks (N : Node_Id);
-   --  Ada 0Y (AI-231): Check bad usages of the null-exclusion issue
+   --  Ada 2005 (AI-231): Check bad usages of the null-exclusion issue
 
    procedure Remove_Checks (Expr : Node_Id);
    --  Remove all checks from Expr except those that are only executed

@@ -1162,7 +1162,7 @@ package Einfo is
 --       types, i.e. record types (Java classes) that hold pointers to each
 --       other. If such a type is an access type, it has no explicit freeze
 --       node, so that the back-end does not attempt to elaborate it.
---       Currently this flag is also used to implement Ada0Y (AI-50217).
+--       Currently this flag is also used to implement Ada 2005 (AI-50217).
 --       It will be renamed to From_Limited_With after removal of the current
 --       GNAT with_type clause???
 
@@ -2396,7 +2396,7 @@ package Einfo is
 --       fide package with the limited-view list through the first_entity and
 --       first_private attributes. The elements of this list are the shadow
 --       entities created for the types and local packages that are declared
---       in a package that appears in a limited_with clause (Ada0Y: AI-50217)
+--       in a package appearing in a limited_with clause (Ada 2005: AI-50217)
 
 --    Lit_Indexes (Node15)
 --       Present in enumeration types and subtypes. Non-empty only for the
@@ -2566,7 +2566,7 @@ package Einfo is
 
 --    Non_Limited_View (Node17)
 --       Present in incomplete types that are the shadow entities created
---       when analyzing a limited_with_clause (Ada0Y: AI-50217). Points to
+--       when analyzing a limited_with_clause (Ada 2005: AI-50217). Points to
 --       the defining entity in the original declaration.
 
 --    Nonzero_Is_True (Flag162) [base type only]

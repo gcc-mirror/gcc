@@ -220,7 +220,7 @@ package body Lib.Writ is
          Item := First (Context_Items (Cunit));
          while Present (Item) loop
 
-            --  Ada0Y (AI-50217): limited with_clauses do not create
+            --  Ada 2005 (AI-50217): limited with_clauses do not create
             --  dependencies
 
             if Nkind (Item) = N_With_Clause
@@ -673,7 +673,7 @@ package body Lib.Writ is
                --  a body or if a body is present in Ada 83 mode.
 
                if Body_Required (Cunit)
-                 or else (Ada_83
+                 or else (Ada_Version = Ada_83
                            and then Full_Source_Name (Body_Fname) /= No_File)
                then
                   Write_Info_Name (Body_Fname);

@@ -6354,9 +6354,18 @@ package body Exp_Ch4 is
    is
       Loc : constant Source_Ptr := Sloc (Nod);
 
+      Result : Node_Id;
+      C      : Entity_Id;
+
+      First_Time : Boolean := True;
+
       function Suitable_Element (C : Entity_Id) return Entity_Id;
       --  Return the first field to compare beginning with C, skipping the
-      --  inherited components
+      --  inherited components.
+
+      ----------------------
+      -- Suitable_Element --
+      ----------------------
 
       function Suitable_Element (C : Entity_Id) return Entity_Id is
       begin
@@ -6382,11 +6391,6 @@ package body Exp_Ch4 is
             return C;
          end if;
       end Suitable_Element;
-
-      Result : Node_Id;
-      C      : Entity_Id;
-
-      First_Time : Boolean := True;
 
    --  Start of processing for Expand_Record_Equality
 
@@ -6430,7 +6434,6 @@ package body Exp_Ch4 is
       C := Suitable_Element (First_Entity (Typ));
 
       while Present (C) loop
-
          declare
             New_Lhs : Node_Id;
             New_Rhs : Node_Id;
@@ -6440,7 +6443,6 @@ package body Exp_Ch4 is
                First_Time := False;
                New_Lhs := Lhs;
                New_Rhs := Rhs;
-
             else
                New_Lhs := New_Copy_Tree (Lhs);
                New_Rhs := New_Copy_Tree (Rhs);
@@ -6546,7 +6548,7 @@ package body Exp_Ch4 is
       Loc  : constant Source_Ptr := Sloc (N);
       Typ  : constant Entity_Id  := Etype (N);
       Pool : constant Entity_Id  := Associated_Storage_Pool (Typ);
-      Pnod : Node_Id             := Parent (N);
+      Pnod : constant Node_Id    := Parent (N);
 
       function Is_Checked_Storage_Pool (P : Entity_Id) return Boolean;
       --  Return true if type of P is derived from Checked_Pool;
@@ -6580,39 +6582,11 @@ package body Exp_Ch4 is
    begin
       pragma Assert (Nkind (Pnod) = N_Explicit_Dereference);
 
-      --  Do not recursively add a dereference check for the
-      --  attribute references contained within the generated check.
-
-      if not Comes_From_Source (Pnod)
-        and then Nkind (Pnod) = N_Explicit_Dereference
-        and then Nkind (Parent (Pnod)) = N_Attribute_Reference
-        and then (Attribute_Name (Parent (Pnod)) = Name_Size
-          or else Attribute_Name (Parent (Pnod)) = Name_Alignment)
+      if not (Is_Checked_Storage_Pool (Pool)
+              and then Comes_From_Source (Original_Node (Pnod)))
       then
          return;
-
-      elsif not Is_Checked_Storage_Pool (Pool) then
-         return;
       end if;
-
-      --  Do not generate a dereference check for the object passed
-      --  to an init proc: such a check is not desired (we know for
-      --  sure that a valid dereference is passed to init procs,
-      --  and the calls to 'Size and 'Alignment containent in the
-      --  dereference check would be erroneous anyway if the init proc
-      --  has not been executed yet.)
-
-      while Present (Pnod) loop
-         if Nkind (Pnod) = N_Procedure_Call_Statement
-           and then Is_Entity_Name (Name (Pnod))
-           and then Is_Init_Proc (Name (Pnod))
-         then
-            return;
-         end if;
-
-         Pnod := Parent (Pnod);
-         exit when Nkind (Pnod) not in N_Subexpr;
-      end loop;
 
       Insert_Action (N,
         Make_Procedure_Call_Statement (Loc,

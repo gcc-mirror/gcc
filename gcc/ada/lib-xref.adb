@@ -198,6 +198,63 @@ package body Lib.Xref is
       Def  : Source_Ptr;
       Ent  : Entity_Id;
 
+      function Is_On_LHS (Node : Node_Id) return Boolean;
+      --  Used to check if a node is on the left hand side of an
+      --  assignment. The following cases are handled:
+      --
+      --   Variable  Node is a direct descendant of an assignment
+      --             statement.
+      --
+      --   Prefix    Of an indexed or selected component that is
+      --             present in a subtree rooted by an assignment
+      --             statement. There is no restriction of nesting
+      --             of components, thus cases such as A.B(C).D are
+      --             handled properly.
+
+      ---------------
+      -- Is_On_LHS --
+      ---------------
+
+      --  Couldn't we use Is_Lvalue or whatever it is called ???
+
+      function Is_On_LHS (Node : Node_Id) return Boolean is
+         N : Node_Id := Node;
+
+      begin
+         --  Only identifiers are considered, is this necessary???
+
+         if Nkind (N) /= N_Identifier then
+            return False;
+         end if;
+
+         --  Reach the assignment statement subtree root. In the
+         --  case of a variable being a direct descendant of an
+         --  assignment statement, the loop is skiped.
+
+         while Nkind (Parent (N)) /= N_Assignment_Statement loop
+
+            --  Check whether the parent is a component and the
+            --  current node is its prefix.
+
+            if (Nkind (Parent (N)) = N_Selected_Component
+                  or else
+                Nkind (Parent (N)) = N_Indexed_Component)
+              and then Prefix (Parent (N)) = N
+            then
+               N := Parent (N);
+            else
+               return False;
+            end if;
+         end loop;
+
+         --  Parent (N) is an assignment statement, check whether
+         --  N is its name.
+
+         return Name (Parent (N)) = N;
+      end Is_On_LHS;
+
+   --  Start of processing for Generate_Reference
+
    begin
       pragma Assert (Nkind (E) in N_Entity);
 
@@ -243,11 +300,11 @@ package body Lib.Xref is
          --  For a variable that appears on the left side of an
          --  assignment statement, we set the Referenced_As_LHS
          --  flag since this is indeed a left hand side.
+         --  We also set the Referenced_As_LHS flag of a prefix
+         --  of selected or indexed component.
 
          if Ekind (E) = E_Variable
-           and then Nkind (Parent (N)) = N_Assignment_Statement
-           and then Name (Parent (N)) = N
-           and then No (Renamed_Object (E))
+           and then Is_On_LHS (N)
          then
             Set_Referenced_As_LHS (E);
 

@@ -76,7 +76,7 @@ package body Sem_Ch10 is
    --  in a limited_with clause. If the package was not previously analyzed
    --  then it also performs a basic decoration of the real entities; this
    --  is required to do not pass non-decorated entities to the back-end.
-   --  Implements Ada 0Y (AI-50217).
+   --  Implements Ada 2005 (AI-50217).
 
    procedure Check_Body_Needed_For_SAL (Unit_Name : Entity_Id);
    --  Check whether the source for the body of a compilation unit must
@@ -100,7 +100,7 @@ package body Sem_Ch10 is
    --  through a regular with clause. This procedure creates the implicit
    --  limited with_clauses for the parents and loads the corresponding units.
    --  The shadow entities are created when the inserted clause is analyzed.
-   --  Implements Ada 0Y (AI-50217).
+   --  Implements Ada 2005 (AI-50217).
 
    procedure Expand_With_Clause (Nam : Node_Id; N : Node_Id);
    --  When a child unit appears in a context clause, the implicit withs on
@@ -128,11 +128,11 @@ package body Sem_Ch10 is
 
    procedure Install_Limited_Context_Clauses (N : Node_Id);
    --  Subsidiary to Install_Context. Process only limited with_clauses
-   --  for current unit. Implements Ada 0Y (AI-50217).
+   --  for current unit. Implements Ada 2005 (AI-50217).
 
    procedure Install_Limited_Withed_Unit (N : Node_Id);
    --  Place shadow entities for a limited_with package in the visibility
-   --  structures for the current compilation. Implements Ada 0Y (AI-50217).
+   --  structures for the current compilation. Implements Ada 2005 (AI-50217).
 
    procedure Install_Withed_Unit
      (With_Clause     : Node_Id;
@@ -181,7 +181,7 @@ package body Sem_Ch10 is
 
    procedure Remove_Limited_With_Clause (N : Node_Id);
    --  Remove from visibility the shadow entities introduced for a package
-   --  mentioned in a limited_with clause. Implements Ada 0Y (AI-50217).
+   --  mentioned in a limited_with clause. Implements Ada 2005 (AI-50217).
 
    procedure Remove_Parents (Lib_Unit : Node_Id);
    --  Remove_Parents checks if Lib_Unit is a child spec. If so then the parent
@@ -619,7 +619,7 @@ package body Sem_Ch10 is
             Item := First (Context_Items (N));
             while Present (Item) loop
 
-               --  Ada 0Y (AI-50217): Do not consider limited-withed units
+               --  Ada 2005 (AI-50217): Do not consider limited-withed units
 
                if Nkind (Item) = N_With_Clause
                   and then not Implicit_With (Item)
@@ -798,8 +798,8 @@ package body Sem_Ch10 is
       --  Loop through context items. This is done is three passes:
       --  a) The first pass analyze non-limited with-clauses.
       --  b) The second pass add implicit limited_with clauses for
-      --     the parents of child units (Ada 0Y: AI-50217)
-      --  c) The third pass analyzes limited_with clauses (Ada 0Y: AI-50217)
+      --     the parents of child units (Ada 2005: AI-50217)
+      --  c) The third pass analyzes limited_with clauses (Ada 2005: AI-50217)
 
       Item := First (Context_Items (N));
       while Present (Item) loop
@@ -1616,7 +1616,7 @@ package body Sem_Ch10 is
 
    begin
       if Limited_Present (N) then
-         --  Ada 0Y (AI-50217): Build visibility structures but do not
+         --  Ada 2005 (AI-50217): Build visibility structures but do not
          --  analyze unit
 
          Build_Limited_Views (N);
@@ -1818,9 +1818,9 @@ package body Sem_Ch10 is
          null;
       end if;
 
-      --  Ada 0Y (AI-262): Remove from visibility the entity corresponding to
-      --  private_with units; they will be made visible later (just before the
-      --  private part is analyzed)
+      --  Ada 2005 (AI-262): Remove from visibility the entity corresponding
+      --  to private_with units; they will be made visible later (just before
+      --  the private part is analyzed)
 
       if Private_Present (N) then
          Set_Is_Immediately_Visible (E_Name, False);
@@ -2164,6 +2164,7 @@ package body Sem_Ch10 is
                    or else Nkind (Lib_Unit) = N_Subprogram_Body)
       then
          Check_Parent_Context (Library_Unit (N));
+
          if Is_Child_Spec (Unit (Library_Unit (N))) then
             Check_Parent_Context (Parent_Spec (Unit (Library_Unit (N))));
          end if;
@@ -2239,8 +2240,8 @@ package body Sem_Ch10 is
       Item := First (Context_Items (N));
       while Present (Item) loop
 
-         --  Ada 0Y (AI-262): Allow private_with of a private child package in
-         --  public siblings
+         --  Ada 2005 (AI-262): Allow private_with of a private child package
+         --  in public siblings
 
          if Nkind (Item) = N_With_Clause
             and then not Implicit_With (Item)
@@ -3216,7 +3217,7 @@ package body Sem_Ch10 is
             then
                Set_Is_Immediately_Visible (Id);
 
-               --  Ada 0Y (AI-262): Make visible the private entities of
+               --  Ada 2005 (AI-262): Make visible the private entities of
                --  private-withed siblings
 
                if Private_Present (Item) then
@@ -3366,7 +3367,7 @@ package body Sem_Ch10 is
                    or else (Is_Child_Package
                              and then Is_Visible_Child_Unit (P)))
       then
-         --  Ada 0Y (AI-262): Install the private declarations of P
+         --  Ada 2005 (AI-262): Install the private declarations of P
 
          if Private_Present (N)
            and then not In_Private_Part (P)
@@ -3508,7 +3509,7 @@ package body Sem_Ch10 is
       P     : constant Entity_Id := Scope (Uname);
 
    begin
-      --  Ada 0Y (AI-262): Do not install the private withed unit if we are
+      --  Ada 2005 (AI-262): Do not install the private withed unit if we are
       --  compiling a package declaration and the Private_With_OK flag was not
       --  set by the caller. These declarations will be installed later (before
       --  analyzing the private part of the package).
@@ -4011,7 +4012,7 @@ package body Sem_Ch10 is
 
       Last_Pub_Lim_E := Last_Lim_E;
 
-      --  Ada 0Y (AI-262): Add the limited view of the private declarations
+      --  Ada 2005 (AI-262): Add the limited view of the private declarations
       --  Required to give support to limited-private-with clauses
 
       Build_Chain (Scope      => P,
@@ -4153,7 +4154,7 @@ package body Sem_Ch10 is
       Unit_Name : Entity_Id;
 
    begin
-      --  Ada 0Y (AI-50217): We remove the context clauses in two phases:
+      --  Ada 2005 (AI-50217): We remove the context clauses in two phases:
       --  limited-views first and regular-views later (to maintain the
       --  stack model).
 

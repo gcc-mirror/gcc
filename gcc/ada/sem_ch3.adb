@@ -677,7 +677,7 @@ package body Sem_Ch3 is
          Error_Msg_N ("task entries cannot have access parameters", N);
       end if;
 
-      --  Ada 0Y (AI-254): In case of anonymous access to subprograms
+      --  Ada 2005 (AI-254): In case of anonymous access to subprograms
       --  call the corresponding semantic routine
 
       if Present (Access_To_Subprogram_Definition (N)) then
@@ -705,11 +705,12 @@ package body Sem_Ch3 is
       Init_Size_Align        (Anon_Type);
       Set_Depends_On_Private (Anon_Type, Has_Private_Component (Anon_Type));
 
-      --  Ada 0Y (AI-231): Ada 0Y semantics for anonymous access differs from
-      --  Ada 95 semantics. In Ada 0Y, anonymous access must specify if the
-      --  null value is allowed; in Ada 95 the null value is not allowed
+      --  Ada 2005 (AI-231): Ada 2005 semantics for anonymous access differs
+      --  from Ada 95 semantics. In Ada 2005, anonymous access must specify
+      --  if the null value is allowed. In Ada 95 the null value is never
+      --  allowed.
 
-      if Extensions_Allowed then
+      if Ada_Version >= Ada_05 then
          Set_Can_Never_Be_Null (Anon_Type, Null_Exclusion_Present (N));
       else
          Set_Can_Never_Be_Null (Anon_Type, True);
@@ -721,12 +722,12 @@ package body Sem_Ch3 is
 
       Set_Is_Public (Anon_Type, Is_Public (Scope (Anon_Type)));
 
-      --  Ada 0Y (AI-50217): Propagate the attribute that indicates that the
+      --  Ada 2005 (AI-50217): Propagate the attribute that indicates that the
       --  designated type comes from the limited view (for back-end purposes).
 
       Set_From_With_Type (Anon_Type, From_With_Type (Desig_Type));
 
-      --  Ada 0Y (AI-231): Propagate the access-constant attribute
+      --  Ada 2005 (AI-231): Propagate the access-constant attribute
 
       Set_Is_Access_Constant (Anon_Type, Constant_Present (N));
 
@@ -836,7 +837,7 @@ package body Sem_Ch3 is
       Init_Size_Align              (T_Name);
       Set_Directly_Designated_Type (T_Name, Desig_Type);
 
-      --  Ada 0Y (AI-231): Propagate the null-excluding attribute
+      --  Ada 2005 (AI-231): Propagate the null-excluding attribute
 
       Set_Can_Never_Be_Null (T_Name, Null_Exclusion_Present (T_Def));
 
@@ -899,9 +900,9 @@ package body Sem_Ch3 is
       --  access type is also imported, and therefore restricted in its use.
       --  The access type may already be imported, so keep setting otherwise.
 
-      --  Ada 0Y (AI-50217): If the non-limited view of the designated type is
-      --  available, use it as the designated type of the access type, so that
-      --  the back-end gets a usable entity.
+      --  Ada 2005 (AI-50217): If the non-limited view of the designated type
+      --  is available, use it as the designated type of the access type, so
+      --  that the back-end gets a usable entity.
 
       declare
          N_Desig : Entity_Id;
@@ -933,7 +934,7 @@ package body Sem_Ch3 is
       Set_Has_Task (T, False);
       Set_Has_Controlled_Component (T, False);
 
-      --  Ada 0Y (AI-231): Propagate the null-excluding and access-constant
+      --  Ada 2005 (AI-231): Propagate the null-excluding and access-constant
       --  attributes
 
       Set_Can_Never_Be_Null  (T, Null_Exclusion_Present (Def));
@@ -957,7 +958,7 @@ package body Sem_Ch3 is
          T := Find_Type_Of_Object
                 (Subtype_Indication (Component_Definition (N)), N);
 
-      --  Ada 0Y (AI-230): Access Definition case
+      --  Ada 2005 (AI-230): Access Definition case
 
       else
          pragma Assert (Present
@@ -967,13 +968,13 @@ package body Sem_Ch3 is
                 (Related_Nod => N,
                  N => Access_Definition (Component_Definition (N)));
 
-         --  Ada 0Y (AI-230): In case of components that are anonymous access
-         --  types the level of accessibility depends on the enclosing type
-         --  declaration
+         --  Ada 2005 (AI-230): In case of components that are anonymous
+         --  access types the level of accessibility depends on the enclosing
+         --  type declaration
 
-         Set_Scope (T, Current_Scope); --  Ada 0Y (AI-230)
+         Set_Scope (T, Current_Scope); -- Ada 2005 (AI-230)
 
-         --  Ada 0Y (AI-254)
+         --  Ada 2005 (AI-254)
 
          if Present (Access_To_Subprogram_Definition
                       (Access_Definition (Component_Definition (N))))
@@ -1041,10 +1042,10 @@ package body Sem_Ch3 is
       Set_Etype (Id, T);
       Set_Is_Aliased (Id, Aliased_Present (Component_Definition (N)));
 
-      --  Ada 0Y (AI-231): Propagate the null-excluding attribute and carry
+      --  Ada 2005 (AI-231): Propagate the null-excluding attribute and carry
       --  out some static checks
 
-      if Extensions_Allowed
+      if Ada_Version >= Ada_05
         and then (Null_Exclusion_Present (Component_Definition (N))
                     or else Can_Never_Be_Null (T))
       then
@@ -1600,10 +1601,10 @@ package body Sem_Ch3 is
          end if;
       end if;
 
-      --  Ada 0Y (AI-231): Propagate the null-excluding attribute and carry
+      --  Ada 2005 (AI-231): Propagate the null-excluding attribute and carry
       --  out some static checks
 
-      if Extensions_Allowed
+      if Ada_Version >= Ada_05
         and then (Null_Exclusion_Present (N)
                     or else Can_Never_Be_Null (T))
       then
@@ -1633,7 +1634,7 @@ package body Sem_Ch3 is
          --  In Ada 83, deferred constant must be of private type
 
          elsif not Is_Private_Type (T) then
-            if Ada_83 and then Comes_From_Source (N) then
+            if Ada_Version = Ada_83 and then Comes_From_Source (N) then
                Error_Msg_N
                  ("(Ada 83) deferred constant must be private type", N);
             end if;
@@ -1775,7 +1776,7 @@ package body Sem_Ch3 is
             --  Not allowed in Ada 83
 
             if not Constant_Present (N) then
-               if Ada_83
+               if Ada_Version = Ada_83
                  and then Comes_From_Source (Object_Definition (N))
                then
                   Error_Msg_N
@@ -2449,8 +2450,8 @@ package body Sem_Ch3 is
                Set_Directly_Designated_Type
                                      (Id, Designated_Type       (T));
 
-               --  Ada 0Y (AI-231): Propagate the null-excluding attribute and
-               --  carry out some static checks
+               --  Ada 2005 (AI-231): Propagate the null-excluding attribute
+               --  and carry out some static checks
 
                if Null_Exclusion_Present (N)
                  or else Can_Never_Be_Null (T)
@@ -2461,7 +2462,7 @@ package body Sem_Ch3 is
                     and then Can_Never_Be_Null (T)
                   then
                      Error_Msg_N
-                       ("(Ada 0Y) null exclusion not allowed if parent "
+                       ("(Ada 2005) null exclusion not allowed if parent "
                         & "is already non-null", Subtype_Indication (N));
                   end if;
                end if;
@@ -2651,9 +2652,9 @@ package body Sem_Ch3 is
 
       --  The full view, if present, now points to the current type
 
-      --  Ada 0Y (AI-50217): If the type was previously decorated when imported
-      --  through a LIMITED WITH clause, it appears as incomplete but has no
-      --  full view.
+      --  Ada 2005 (AI-50217): If the type was previously decorated when
+      --  imported through a LIMITED WITH clause, it appears as incomplete
+      --  but has no full view.
 
       if Ekind (Prev) = E_Incomplete_Type
         and then Present (Full_View (Prev))
@@ -2969,20 +2970,20 @@ package body Sem_Ch3 is
          Element_Type := Process_Subtype (Subtype_Indication (Component_Def),
                                           P, Related_Id, 'C');
 
-      --  Ada 0Y (AI-230): Access Definition case
+      --  Ada 2005 (AI-230): Access Definition case
 
       else pragma Assert (Present (Access_Definition (Component_Def)));
          Element_Type := Access_Definition
                            (Related_Nod => Related_Id,
                             N           => Access_Definition (Component_Def));
 
-         --  Ada 0Y (AI-230): In case of components that are anonymous access
-         --  types the level of accessibility depends on the enclosing type
-         --  declaration
+         --  Ada 2005 (AI-230): In case of components that are anonymous
+         --  access types the level of accessibility depends on the enclosing
+         --  type declaration
 
-         Set_Scope (Element_Type, Current_Scope); --  Ada 0Y (AI-230)
+         Set_Scope (Element_Type, Current_Scope); -- Ada 2005 (AI-230)
 
-         --  Ada 0Y (AI-254)
+         --  Ada 2005 (AI-254)
 
          declare
             CD : constant Node_Id :=
@@ -3065,10 +3066,10 @@ package body Sem_Ch3 is
          Set_Has_Aliased_Components (Etype (T));
       end if;
 
-      --  Ada 0Y (AI-231): Propagate the null-excluding attribute to the array
-      --  to ensure that objects of this type are initialized
+      --  Ada 2005 (AI-231): Propagate the null-excluding attribute to the
+      --  array to ensure that objects of this type are initialized.
 
-      if Extensions_Allowed
+      if Ada_Version >= Ada_05
         and then (Null_Exclusion_Present (Component_Definition (Def))
                     or else Can_Never_Be_Null (Element_Type))
       then
@@ -3078,7 +3079,7 @@ package body Sem_Ch3 is
            and then Can_Never_Be_Null (Element_Type)
          then
             Error_Msg_N
-              ("(Ada 0Y) already a null-excluding type",
+              ("(Ada 2005) already a null-excluding type",
                Subtype_Indication (Component_Definition (Def)));
          end if;
       end if;
@@ -3297,7 +3298,7 @@ package body Sem_Ch3 is
                               Has_Private_Component (Derived_Type));
       Conditional_Delay      (Derived_Type, Subt);
 
-      --  Ada 0Y (AI-231). Set the null-exclusion attribute
+      --  Ada 2005 (AI-231). Set the null-exclusion attribute
 
       if Null_Exclusion_Present (Type_Definition (N))
         or else Can_Never_Be_Null (Parent_Type)
@@ -6622,12 +6623,12 @@ package body Sem_Ch3 is
         and then not In_Instance
         and then not In_Inlined_Body
       then
-         --  Ada 0Y (AI-287): Relax the strictness of the front-end in case of
-         --  limited aggregates and extension aggregates.
+         --  Ada 2005 (AI-287): Relax the strictness of the front-end in
+         --  case of limited aggregates and extension aggregates.
 
-         if Extensions_Allowed
+         if Ada_Version >= Ada_05
            and then (Nkind (Exp) = N_Aggregate
-                     or else Nkind (Exp) = N_Extension_Aggregate)
+                      or else Nkind (Exp) = N_Extension_Aggregate)
          then
             null;
          else
@@ -6668,10 +6669,10 @@ package body Sem_Ch3 is
                Set_Is_Immediately_Visible (D);
                Set_Homonym (D, Prev);
 
-               --  Ada 0Y (AI-230): Access discriminant allowed in non-limited
-               --  record types
+               --  Ada 2005 (AI-230): Access discriminant allowed in
+               --  non-limited record types.
 
-               if not Extensions_Allowed then
+               if Ada_Version < Ada_05 then
 
                   --  This restriction gets applied to the full type here; it
                   --  has already been applied earlier to the partial view
@@ -9416,13 +9417,13 @@ package body Sem_Ch3 is
       elsif Is_Unchecked_Union (Parent_Type) then
          Error_Msg_N ("cannot derive from Unchecked_Union type", N);
 
-      --  Ada 0Y (AI-231): Static check
+      --  Ada 2005 (AI-231): Static check
 
       elsif Is_Access_Type (Parent_Type)
         and then Null_Exclusion_Present (Type_Definition (N))
         and then Can_Never_Be_Null (Parent_Type)
       then
-         Error_Msg_N ("(Ada 0Y) null exclusion not allowed if parent is "
+         Error_Msg_N ("(Ada 2005) null exclusion not allowed if parent is "
                       & "already non-null", Type_Definition (N));
       end if;
 
@@ -9444,11 +9445,11 @@ package body Sem_Ch3 is
       --  be used for further derivation until the end of its visible part.
       --  Note that derivation in the private part of the package is allowed.
 
-      if Ada_83
+      if Ada_Version = Ada_83
         and then Is_Derived_Type (Parent_Type)
         and then In_Visible_Part (Scope (Parent_Type))
       then
-         if Ada_83 and then Comes_From_Source (Indic) then
+         if Ada_Version = Ada_83 and then Comes_From_Source (Indic) then
             Error_Msg_N
               ("(Ada 83): premature use of type for derivation", Indic);
          end if;
@@ -10996,7 +10997,7 @@ package body Sem_Ch3 is
 
             elsif T = Any_Character then
 
-               if not Ada_83 then
+               if Ada_Version >= Ada_95 then
                   Error_Msg_N
                     ("ambiguous character literals (could be Wide_Character)",
                       I);
@@ -11609,7 +11610,7 @@ package body Sem_Ch3 is
          if Nkind (Discriminant_Type (Discr)) = N_Access_Definition then
             Discr_Type := Access_Definition (N, Discriminant_Type (Discr));
 
-            --  Ada 0Y (AI-254)
+            --  Ada 2005 (AI-254)
 
             if Present (Access_To_Subprogram_Definition
                          (Discriminant_Type (Discr)))
@@ -11632,15 +11633,15 @@ package body Sem_Ch3 is
 
          if Is_Access_Type (Discr_Type) then
 
-            --  Ada 0Y (AI-230): Access discriminant allowed in non-limited
+            --  Ada 2005 (AI-230): Access discriminant allowed in non-limited
             --  record types
 
-            if not Extensions_Allowed then
+            if Ada_Version < Ada_05 then
                Check_Access_Discriminant_Requires_Limited
                  (Discr, Discriminant_Type (Discr));
             end if;
 
-            if Ada_83 and then Comes_From_Source (Discr) then
+            if Ada_Version = Ada_83 and then Comes_From_Source (Discr) then
                Error_Msg_N
                  ("(Ada 83) access discriminant not allowed", Discr);
             end if;
@@ -11694,10 +11695,10 @@ package body Sem_Ch3 is
             Default_Not_Present := True;
          end if;
 
-         --  Ada 0Y (AI-231): Set the null-excluding attribute and carry out
-         --  some static checks
+         --  Ada 2005 (AI-231): Set the null-excluding attribute and carry
+         --  out some static checks.
 
-         if Extensions_Allowed
+         if Ada_Version >= Ada_05
            and then (Null_Exclusion_Present (Discr)
                        or else Can_Never_Be_Null (Discr_Type))
          then
@@ -12470,16 +12471,16 @@ package body Sem_Ch3 is
          Find_Type (S);
          Check_Incomplete (S);
 
-         --  Ada 0Y (AI-231): Static check
+         --  Ada 2005 (AI-231): Static check
 
-         if Extensions_Allowed
+         if Ada_Version >= Ada_05
            and then Present (Parent (S))
            and then Null_Exclusion_Present (Parent (S))
            and then Nkind (Parent (S)) /= N_Access_To_Object_Definition
            and then not Is_Access_Type (Entity (S))
          then
             Error_Msg_N
-              ("(Ada 0Y) null-exclusion part requires an access type", S);
+              ("(Ada 2005) null-exclusion part requires an access type", S);
          end if;
          return Entity (S);
 

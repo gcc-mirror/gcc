@@ -820,7 +820,7 @@ package body Sem_Util is
    begin
       if Ekind (T) = E_Incomplete_Type then
 
-         --  Ada0Y (AI-50217): If the type is available through a limited
+         --  Ada 2005 (AI-50217): If the type is available through a limited
          --  with_clause, verify that its full view has been analyzed.
 
          if From_With_Type (T)
@@ -1093,7 +1093,9 @@ package body Sem_Util is
          --  the body of an instance, constraint_checks are only warnings.
          --  We also make this a warning if the Warn parameter is set.
 
-         elsif Warn or else (Ada_83 and then Comes_From_Source (N)) then
+         elsif Warn
+           or else (Ada_Version = Ada_83 and then Comes_From_Source (N))
+         then
             Msgl := Msgl + 1;
             Msgc (Msgl) := '?';
             Wmsg := True;
@@ -6219,15 +6221,15 @@ package body Sem_Util is
       --  declared at the library level to ensure that names such as
       --  X.all'access don't fail static accessibility checks.
 
-      --  Ada 0Y (AI-230): In case of anonymous access types that are
+      --  Ada 2005 (AI-230): In case of anonymous access types that are
       --  component_definition or discriminants of a nonlimited type,
       --  the level is the same as that of the enclosing component type.
 
       Btyp := Base_Type (Typ);
       if Ekind (Btyp) in Access_Kind then
          if Ekind (Btyp) = E_Anonymous_Access_Type
-           and then not Is_Array_Type (Scope (Btyp))      --  Ada 0Y (AI-230)
-           and then Ekind (Scope (Btyp)) /= E_Record_Type --  Ada 0Y (AI-230)
+           and then not Is_Array_Type (Scope (Btyp))      -- Ada 2005 (AI-230)
+           and then Ekind (Scope (Btyp)) /= E_Record_Type -- Ada 2005 (AI-230)
          then
             return Scope_Depth (Standard_Standard);
          end if;

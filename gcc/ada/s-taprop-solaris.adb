@@ -321,7 +321,6 @@ package body System.Task_Primitives.Operations is
    procedure Stack_Guard (T : ST.Task_Id; On : Boolean) is
       pragma Unreferenced (T);
       pragma Unreferenced (On);
-
    begin
       null;
    end Stack_Guard;
@@ -412,8 +411,8 @@ package body System.Task_Primitives.Operations is
             null;
       end Configure_Processors;
 
-      function State (Int : System.Interrupt_Management.Interrupt_ID)
-                     return Character;
+      function State
+        (Int : System.Interrupt_Management.Interrupt_ID) return Character;
       pragma Import (C, State, "__gnat_get_interrupt_state");
       --  Get interrupt state.  Defined in a-init.c
       --  The input argument is the interrupt number,
@@ -698,7 +697,6 @@ package body System.Task_Primitives.Operations is
    function Monotonic_Clock return Duration is
       TS     : aliased timespec;
       Result : Interfaces.C.int;
-
    begin
       Result := clock_gettime (CLOCK_REALTIME, TS'Unchecked_Access);
       pragma Assert (Result = 0);

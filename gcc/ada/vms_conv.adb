@@ -308,6 +308,16 @@ package body VMS_Conv is
             Params   => new Parameter_Array'(1 => Unlimited_Files),
             Defext   => "   "),
 
+         Metric =>
+           (Cname    => new S'("METRIC"),
+            Usage    => new S'("GNAT METRIC /qualifiers source_file"),
+            VMS_Only => False,
+            Unixcmd  => new S'("gnatmetric"),
+            Unixsws  => null,
+            Switches => Metric_Switches'Access,
+            Params   => new Parameter_Array'(1 => Unlimited_Files),
+            Defext   => "   "),
+
          Name =>
            (Cname    => new S'("NAME"),
             Usage    => new S'("GNAT NAME /qualifiers naming-pattern "

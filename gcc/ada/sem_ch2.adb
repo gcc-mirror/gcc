@@ -103,7 +103,6 @@ package body Sem_Ch2 is
 
    procedure Analyze_String_Literal (N : Node_Id) is
    begin
-
       --  The type is eventually inherited from the context. If expansion
       --  has already established the proper type, do not modify it.
 
@@ -115,7 +114,7 @@ package body Sem_Ch2 is
       --  turns out to be non-static, then the Is_Static_Expression flag
       --  will be reset in Eval_String_Literal.
 
-      if Ada_95 then
+      if Ada_Version >= Ada_95 then
          Set_Is_Static_Expression (N);
       end if;
 

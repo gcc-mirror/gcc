@@ -299,19 +299,24 @@ package Errout is
    Gname4 : aliased constant String := "gnatf";
    Vname4 : aliased constant String := "REPORT_ERRORS=FULL";
 
+   Gname5 : aliased constant String := "gnat05";
+   Vname5 : aliased constant String := "05";
+
    type Cstring_Ptr is access constant String;
 
    Gnames : array (Nat range <>) of Cstring_Ptr :=
               (Gname1'Access,
                Gname2'Access,
                Gname3'Access,
-               Gname4'Access);
+               Gname4'Access,
+               Gname5'Access);
 
    Vnames : array (Nat range <>) of Cstring_Ptr :=
               (Vname1'Access,
                Vname2'Access,
                Vname3'Access,
-               Vname4'Access);
+               Vname4'Access,
+               Vname5'Access);
 
    -----------------------------------------------------
    -- Global Values Used for Error Message Insertions --

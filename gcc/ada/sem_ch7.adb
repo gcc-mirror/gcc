@@ -219,7 +219,7 @@ package body Sem_Ch7 is
                or else Is_Child_Unit (Spec_Id))
            and then not Unit_Requires_Body (Spec_Id)
          then
-            if Ada_83 then
+            if Ada_Version = Ada_83 then
                Error_Msg_N
                  ("optional package body (not allowed in Ada 95)?", N);
             else

@@ -1056,7 +1056,7 @@ package body Scng is
                         exit;
 
                      elsif C in Upper_Half_Character then
-                        if Ada_83 then
+                        if Ada_Version = Ada_83 then
                            Error_Bad_String_Char;
                         end if;
 
@@ -1604,7 +1604,7 @@ package body Scng is
 
                   if Source (Scan_Ptr) not in Graphic_Character then
                      if Source (Scan_Ptr) in Upper_Half_Character then
-                        if Ada_83 then
+                        if Ada_Version = Ada_83 then
                            Error_Illegal_Character;
                         end if;
 
@@ -2062,7 +2062,8 @@ package body Scng is
          --  Here is where we check if it was a keyword
 
          if Get_Name_Table_Byte (Token_Name) /= 0
-           and then (Ada_95 or else Token_Name not in Ada_95_Reserved_Words)
+           and then (Ada_Version >= Ada_95
+                       or else Token_Name not in Ada_95_Reserved_Words)
          then
             Token := Token_Type'Val (Get_Name_Table_Byte (Token_Name));
 

@@ -1516,10 +1516,10 @@ package body Exp_Ch6 is
          elsif Convention (Subp) = Convention_Java then
             null;
 
-         --  Ada 0Y (AI-231): do not force the check in case of Ada 0Y unless
-         --  it is a null-excluding type
+            --  Ada 2005 (AI-231): do not force the check in case of Ada 2005
+            --  unless it is a null-excluding type
 
-         elsif not Extensions_Allowed
+         elsif Ada_Version < Ada_05
            or else Can_Never_Be_Null (Etype (Prev))
          then
             Cond :=

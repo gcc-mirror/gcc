@@ -731,8 +731,8 @@ package body Sem_Type is
       then
          return True;
 
-      --  Ada 0Y (AI-254): An Anonymous_Access_To_Subprogram is compatible with
-      --  itself, or with an anonymous type created for an attribute
+      --  Ada 2005 (AI-254): An Anonymous_Access_To_Subprogram is compatible
+      --  with itself, or with an anonymous type created for an attribute
       --  reference Access.
 
       elsif (Ekind (Base_Type (T1)) = E_Anonymous_Access_Subprogram_Type
@@ -845,7 +845,7 @@ package body Sem_Type is
       then
          return True;
 
-      --  Ada 0Y (AI-50217): Additional branches to make the shadow entity
+      --  Ada 2005 (AI-50217): Additional branches to make the shadow entity
       --  compatible with its real entity.
 
       elsif From_With_Type (T1) then
@@ -1375,11 +1375,10 @@ package body Sem_Type is
             if Is_Fixed_Point_Type (Typ)
               and then (Chars (Nam1) = Name_Op_Multiply
                          or else Chars (Nam1) = Name_Op_Divide)
-              and then Ada_83
+              and then Ada_Version = Ada_83
             then
                if It2.Nam = Predef_Subp then
                   return It1;
-
                else
                   return It2;
                end if;
@@ -1491,18 +1490,18 @@ package body Sem_Type is
       elsif T = Universal_Fixed then
          return Etype (R);
 
-      --  Ada 0Y (AI-230): Support the following operators:
+      --  Ada 2005 (AI-230): Support the following operators:
 
       --    function "="  (L, R : universal_access) return Boolean;
       --    function "/=" (L, R : universal_access) return Boolean;
 
-      elsif Extensions_Allowed
+      elsif Ada_Version >= Ada_05
         and then Ekind (Etype (L)) = E_Anonymous_Access_Type
         and then Is_Access_Type (Etype (R))
       then
          return Etype (L);
 
-      elsif Extensions_Allowed
+      elsif Ada_Version >= Ada_05
         and then Ekind (Etype (R)) = E_Anonymous_Access_Type
         and then Is_Access_Type (Etype (L))
       then
@@ -2019,9 +2018,9 @@ package body Sem_Type is
               and then Base_Type (T1) = Base_Type (T)
               and then Is_Numeric_Type (T)
               and then (not Is_Fixed_Point_Type (T)
-                         or else Ada_83))
+                         or else Ada_Version = Ada_83))
 
-            --  Mixed_Mode operations on fixed-point types.
+            --  Mixed_Mode operations on fixed-point types
 
               or else (Base_Type (T1) = Base_Type (T)
                         and then Base_Type (T2) = Base_Type (Standard_Integer)
@@ -2039,9 +2038,9 @@ package body Sem_Type is
               and then Base_Type (T1) = Base_Type (T)
               and then Is_Numeric_Type (T)
               and then (not Is_Fixed_Point_Type (T)
-                         or else Ada_83))
+                         or else Ada_Version = Ada_83))
 
-            --  Mixed_Mode operations on fixed-point types.
+            --  Mixed_Mode operations on fixed-point types
 
               or else (Base_Type (T1) = Base_Type (T)
                         and then Base_Type (T2) = Base_Type (Standard_Integer)

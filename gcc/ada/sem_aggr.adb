@@ -79,7 +79,7 @@ package body Sem_Aggr is
    --  sorted order.
 
    procedure Check_Can_Never_Be_Null (N : Node_Id; Expr : Node_Id);
-   --  Ada 0Y (AI-231): Check bad usage of the null-exclusion issue
+   --  Ada 2005 (AI-231): Check bad usage of the null-exclusion issue
 
    ------------------------------------------------------
    -- Subprograms used for RECORD AGGREGATE Processing --
@@ -469,7 +469,7 @@ package body Sem_Aggr is
             Check_Unset_Reference (Exp);
          end if;
 
-      --  Ada 0Y (AI-231): Generate conversion to the null-excluding
+      --  Ada 2005 (AI-231): Generate conversion to the null-excluding
       --  type to force the corresponding run-time check
 
       elsif Is_Access_Type (Check_Typ)
@@ -881,10 +881,10 @@ package body Sem_Aggr is
          Error_Msg_N ("aggregate type cannot have limited component", N);
          Explain_Limited_Type (Typ, N);
 
-      --  Ada 0Y (AI-287): Limited aggregates allowed
+      --  Ada 2005 (AI-287): Limited aggregates allowed
 
       elsif Is_Limited_Type (Typ)
-        and not Extensions_Allowed
+        and Ada_Version < Ada_05
       then
          Error_Msg_N ("aggregate type cannot be limited", N);
          Explain_Limited_Type (Typ, N);
@@ -979,10 +979,10 @@ package body Sem_Aggr is
 
             Set_Etype (N, Aggr_Typ);  --  may be overridden later on
 
-            --  Ada 0Y (AI-231): Propagate the null_exclusion attribute to the
-            --  components of the array aggregate
+            --  Ada 2005 (AI-231): Propagate the null_exclusion attribute to
+            --  the components of the array aggregate
 
-            if Extensions_Allowed then
+            if Ada_Version >= Ada_05 then
                Set_Can_Never_Be_Null (Aggr_Typ, Can_Never_Be_Null (Typ));
             end if;
 
@@ -1399,7 +1399,7 @@ package body Sem_Aggr is
                end if;
             end if;
 
-            --  Ada 0Y (AI-231): Propagate the type to the nested aggregate.
+            --  Ada 2005 (AI-231): Propagate the type to the nested aggregate.
             --  Required to check the null-exclusion attribute (if present).
             --  This value may be overridden later on.
 
@@ -1488,7 +1488,7 @@ package body Sem_Aggr is
                      return Failure;
                   end if;
 
-                  if Ada_83
+                  if Ada_Version = Ada_83
                     and then Assoc /= First (Component_Associations (N))
                     and then (Nkind (Parent (N)) = N_Assignment_Statement
                                or else
@@ -1671,18 +1671,18 @@ package body Sem_Aggr is
                   end if;
                end loop;
 
-               --  Ada 0Y (AI-231)
+               --  Ada 2005 (AI-231)
 
                Check_Can_Never_Be_Null (N, Expression (Assoc));
 
-               --  Ada 0Y (AI-287): In case of default initialized component
+               --  Ada 2005 (AI-287): In case of default initialized component
                --  we delay the resolution to the expansion phase
 
                if Box_Present (Assoc) then
 
-                  --  Ada 0Y (AI-287): In case of default initialization of a
-                  --  component the expander will generate calls to the
-                  --  corresponding initialization subprogram.
+                  --  Ada 2005 (AI-287): In case of default initialization
+                  --  of a component the expander will generate calls to
+                  --  the corresponding initialization subprogram.
 
                   if Present (Base_Init_Proc (Etype (Component_Typ)))
                     or else Has_Task (Base_Type (Component_Typ))
@@ -1690,7 +1690,7 @@ package body Sem_Aggr is
                      null;
                   else
                      Error_Msg_N
-                       ("(Ada 0Y): no value supplied for this component",
+                       ("(Ada 2005): no value supplied for this component",
                         Assoc);
                   end if;
 
@@ -1807,7 +1807,7 @@ package body Sem_Aggr is
          while Present (Expr) loop
             Nb_Elements := Nb_Elements + 1;
 
-            Check_Can_Never_Be_Null (N, Expr); --  Ada 0Y (AI-231)
+            Check_Can_Never_Be_Null (N, Expr); -- Ada 2005 (AI-231)
 
             if not Resolve_Aggr_Expr (Expr, Single_Elmt => True) then
                return Failure;
@@ -1819,22 +1819,23 @@ package body Sem_Aggr is
          if Others_Present then
             Assoc := Last (Component_Associations (N));
 
-            Check_Can_Never_Be_Null (N, Expression (Assoc)); -- Ada 0Y (AI-231)
+            Check_Can_Never_Be_Null
+              (N, Expression (Assoc)); -- Ada 2005 (AI-231)
 
-            --  Ada 0Y (AI-287): In case of default initialized component
+            --  Ada 2005 (AI-287): In case of default initialized component
             --  we delay the resolution to the expansion phase.
 
             if Box_Present (Assoc) then
 
-               --  Ada 0Y (AI-287): In case of default initialization of a
-               --  component the expander will generate calls to the
-               --  corresponding initialization subprogram.
+               --  Ada 2005 (AI-287): In case of default initialization
+               --  of a component the expander will generate calls to
+               --  the corresponding initialization subprogram.
 
                if Present (Base_Init_Proc (Etype (Component_Typ))) then
                   null;
                else
                   Error_Msg_N
-                    ("(Ada 0Y): no value supplied for these components",
+                    ("(Ada 2005): no value supplied for these components",
                      Assoc);
                end if;
 
@@ -1993,11 +1994,9 @@ package body Sem_Aggr is
 
       elsif Is_Limited_Type (Typ) then
 
-         --  Ada 0Y (AI-287): Limited aggregates are allowed
+         --  Ada 2005 (AI-287): Limited aggregates are allowed
 
-         if Extensions_Allowed then
-            null;
-         else
+         if Ada_Version < Ada_05 then
             Error_Msg_N ("aggregate type cannot be limited", N);
             Explain_Limited_Type (Typ, N);
             return;
@@ -2104,8 +2103,8 @@ package body Sem_Aggr is
 
       Mbox_Present : Boolean := False;
       Others_Mbox  : Boolean := False;
-      --  Ada 0Y (AI-287): Variables used in case of default initialization to
-      --  provide a functionality similar to Others_Etype. Mbox_Present
+      --  Ada 2005 (AI-287): Variables used in case of default initialization
+      --  to provide a functionality similar to Others_Etype. Mbox_Present
       --  indicates that the component takes its default initialization;
       --  Others_Mbox indicates that at least one component takes its default
       --  initialization. Similar to Others_Etype, they are also updated as a
@@ -2293,9 +2292,9 @@ package body Sem_Aggr is
                and then Comes_From_Source (Compon)
                and then not In_Instance_Body
             then
-               --  Ada 0Y (AI-287): Limited aggregates are allowed
+               --  Ada 2005 (AI-287): Limited aggregates are allowed
 
-               if Extensions_Allowed
+               if Ada_Version >= Ada_05
                  and then Present (Expression (Assoc))
                  and then Nkind (Expression (Assoc)) = N_Aggregate
                then
@@ -2333,8 +2332,8 @@ package body Sem_Aggr is
                      --  indispensable otherwise, because each one must be
                      --  expanded individually to preserve side-effects.
 
-                     --  Ada 0Y (AI-287): In case of default initialization of
-                     --  components, we duplicate the corresponding default
+                     --  Ada 2005 (AI-287): In case of default initialization
+                     --  of components, we duplicate the corresponding default
                      --  expression (from the record type declaration).
 
                      if Box_Present (Assoc) then
@@ -2371,15 +2370,15 @@ package body Sem_Aggr is
                elsif Chars (Compon) = Chars (Selector_Name) then
                   if No (Expr) then
 
-                     --  Ada 0Y (AI-231)
+                     --  Ada 2005 (AI-231)
 
-                     if Extensions_Allowed
+                     if Ada_Version >= Ada_05
                        and then Present (Expression (Assoc))
                        and then Nkind (Expression (Assoc)) = N_Null
                        and then Can_Never_Be_Null (Compon)
                      then
                         Error_Msg_N
-                          ("(Ada 0Y) NULL not allowed in null-excluding " &
+                          ("(Ada 2005) NULL not allowed in null-excluding " &
                            "components", Expression (Assoc));
                      end if;
 
@@ -2387,7 +2386,7 @@ package body Sem_Aggr is
                      --  components are grouped together with a "|" choice.
                      --  For instance "filed1 | filed2 => Expr"
 
-                     --  Ada 0Y (AI-287)
+                     --  Ada 2005 (AI-287)
 
                      if Box_Present (Assoc) then
                         Mbox_Present := True;
@@ -2396,8 +2395,8 @@ package body Sem_Aggr is
                         --  from the record type declaration
 
                         if Present (Next (Selector_Name)) then
-                           Expr := New_Copy_Tree
-                                     (Expression (Parent (Compon)));
+                           Expr :=
+                             New_Copy_Tree (Expression (Parent (Compon)));
                         else
                            Expr := Expression (Parent (Compon));
                         end if;
@@ -2693,15 +2692,15 @@ package body Sem_Aggr is
             if Discr_Present (Discrim) then
                Resolve_Aggr_Expr (Positional_Expr, Discrim);
 
-               --  Ada 0Y (AI-231)
+               --  Ada 2005 (AI-231)
 
-               if Extensions_Allowed
+               if Ada_Version >= Ada_05
                  and then Nkind (Positional_Expr) = N_Null
                  and then Can_Never_Be_Null (Discrim)
                then
                   Error_Msg_N
-                    ("(Ada 0Y) NULL not allowed in null-excluding components",
-                     Positional_Expr);
+                    ("(Ada 2005) NULL not allowed in null-excluding " &
+                     "components", Positional_Expr);
                end if;
 
                Next (Positional_Expr);
@@ -2935,13 +2934,14 @@ package body Sem_Aggr is
          Component := Node (Component_Elmt);
          Resolve_Aggr_Expr (Positional_Expr, Component);
 
-         --  Ada 0Y (AI-231)
-         if Extensions_Allowed
+         --  Ada 2005 (AI-231)
+
+         if Ada_Version >= Ada_05
            and then Nkind (Positional_Expr) = N_Null
            and then Can_Never_Be_Null (Component)
          then
             Error_Msg_N
-              ("(Ada 0Y) NULL not allowed in null-excluding components",
+              ("(Ada 2005) NULL not allowed in null-excluding components",
                Positional_Expr);
          end if;
 
@@ -2967,10 +2967,10 @@ package body Sem_Aggr is
 
          if Mbox_Present and then Is_Limited_Type (Etype (Component)) then
 
-            --  Ada 0Y (AI-287): In case of default initialization of a limited
-            --  component we pass the limited component to the expander. The
-            --  expander will generate calls to the corresponding initiali-
-            --  zation subprograms.
+            --  Ada 2005 (AI-287): In case of default initialization of
+            --  a limited component we pass the limited component to
+            --  the expander. The expander will generate calls to the
+            --  corresponding initialization subprograms.
 
             Add_Association
               (Component   => Component,
@@ -3008,7 +3008,7 @@ package body Sem_Aggr is
 
             if Nkind (Selectr) = N_Others_Choice then
 
-               --  Ada 0Y (AI-287):  others choice may have expression or mbox
+               --  Ada 2005 (AI-287): others choice may have expression or mbox
 
                if No (Others_Etype)
                   and then not Others_Mbox
@@ -3092,12 +3092,12 @@ package body Sem_Aggr is
 
    procedure Check_Can_Never_Be_Null (N : Node_Id; Expr : Node_Id) is
    begin
-      if Extensions_Allowed
+      if Ada_Version >= Ada_05
         and then Nkind (Expr) = N_Null
         and then Can_Never_Be_Null (Etype (N))
       then
          Error_Msg_N
-           ("(Ada 0Y) NULL not allowed in null-excluding components", Expr);
+           ("(Ada 2005) NULL not allowed in null-excluding components", Expr);
       end if;
    end Check_Can_Never_Be_Null;
 

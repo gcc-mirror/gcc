@@ -2024,6 +2024,7 @@ package body Bindgen is
 
    procedure Gen_Output_File (Filename : String) is
       Is_Public_Version : constant Boolean := Get_Gnat_Build_Type = Public;
+      Is_GAP_Version    : constant Boolean := Get_Gnat_Build_Type = GAP;
 
    begin
       --  Acquire settings for Interrupt_State pragmas
@@ -2057,7 +2058,7 @@ package body Bindgen is
 
       --  Get the time stamp of the former bind for public version warning
 
-      if Is_Public_Version then
+      if Is_Public_Version or Is_GAP_Version then
          Record_Time_From_Last_Bind;
       end if;
 
@@ -3096,7 +3097,7 @@ package body Bindgen is
    ---------------------
 
    procedure Set_Unit_Number (U : Unit_Id) is
-      Num_Units : constant Nat := Nat (Units.Table'Last) - Nat (Unit_Id'First);
+      Num_Units : constant Nat := Nat (Units.Last) - Nat (Unit_Id'First);
       Unum      : constant Nat := Nat (U) - Nat (Unit_Id'First);
 
    begin

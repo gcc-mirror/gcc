@@ -336,12 +336,12 @@ package body Sem_Ch4 is
            and then Comes_From_Source (N)
            and then not In_Instance_Body
          then
-            --  Ada 0Y (AI-287): Do not post an error if the expression
+            --  Ada 2005 (AI-287): Do not post an error if the expression
             --  corresponds to a limited aggregate. Limited aggregates
             --  are checked in sem_aggr in a per-component manner
             --  (compare with handling of Get_Value subprogram).
 
-            if Extensions_Allowed
+            if Ada_Version >= Ada_05
               and then Nkind (Expression (E)) = N_Aggregate
             then
                null;
@@ -393,7 +393,7 @@ package body Sem_Ch4 is
                Find_Type (Subtype_Mark (E));
 
                if Is_Elementary_Type (Entity (Subtype_Mark (E))) then
-                  if not (Ada_83
+                  if not (Ada_Version = Ada_83
                            and then Is_Access_Type (Entity (Subtype_Mark (E))))
                   then
                      Error_Msg_N ("constraint not allowed here", E);
@@ -444,10 +444,10 @@ package body Sem_Ch4 is
             Set_Directly_Designated_Type (Acc_Type, Type_Id);
             Check_Fully_Declared (Type_Id, N);
 
-            --  Ada 0Y (AI-231)
+            --  Ada 2005 (AI-231)
 
             if Can_Never_Be_Null (Type_Id) then
-               Error_Msg_N ("(Ada 0Y) qualified expression required",
+               Error_Msg_N ("(Ada 2005) qualified expression required",
                             Expression (N));
             end if;
 
@@ -494,9 +494,9 @@ package body Sem_Ch4 is
          Check_Restriction (No_Local_Allocators, N);
       end if;
 
-      --  Ada 0Y (AI-231): Static checks
+      --  Ada 2005 (AI-231): Static checks
 
-      if Extensions_Allowed
+      if Ada_Version >= Ada_05
         and then (Null_Exclusion_Present (N)
                     or else Can_Never_Be_Null (Etype (N)))
       then
@@ -2435,7 +2435,7 @@ package body Sem_Ch4 is
          end if;
       end if;
 
-      if Ada_83
+      if Ada_Version = Ada_83
         and then
           (Nkind (Parent (N)) = N_Loop_Parameter_Specification
             or else Nkind (Parent (N)) = N_Constrained_Array_Definition)
@@ -3082,7 +3082,7 @@ package body Sem_Ch4 is
          Error_Msg_N ("\use qualified expression instead", N);
 
       elsif Nkind (Expr) = N_Character_Literal then
-         if Ada_83 then
+         if Ada_Version = Ada_83 then
             Resolve (Expr, T);
          else
             Error_Msg_N ("argument of conversion cannot be character literal",
@@ -3480,12 +3480,12 @@ package body Sem_Ch4 is
       Void_Interp_Seen : Boolean := False;
 
    begin
-      if Extensions_Allowed then
+      if Ada_Version >= Ada_05 then
          Actual := First_Actual (N);
-
          while Present (Actual) loop
-            --  Ada 0Y (AI-50217): Post an error in case of premature usage of
-            --  an entity from the limited view.
+
+            --  Ada 2005 (AI-50217): Post an error in case of premature
+            --  usage of an entity from the limited view.
 
             if not Analyzed (Etype (Actual))
              and then From_With_Type (Etype (Actual))
@@ -3904,10 +3904,10 @@ package body Sem_Ch4 is
             return;
          end if;
 
-         --  Ada 0Y (AI-230): Keep restriction imposed by Ada 83 and 95: Do not
-         --  allow anonymous access types in equality operators.
+         --  Ada 2005 (AI-230): Keep restriction imposed by Ada 83 and 95:
+         --  Do not allow anonymous access types in equality operators.
 
-         if not Extensions_Allowed
+         if Ada_Version < Ada_05
            and then Ekind (T1) = E_Anonymous_Access_Type
          then
             return;
@@ -4406,7 +4406,7 @@ package body Sem_Ch4 is
               and then Is_Abstract (It.Nam)
               and then not Is_Dispatching_Operation (It.Nam)
               and then
-                (Extensions_Allowed
+                (Ada_Version >= Ada_05
                    or else Is_Predefined_File_Name
                              (Unit_File_Name (Get_Source_Unit (It.Nam))))
 
@@ -4448,7 +4448,10 @@ package body Sem_Ch4 is
 
                      Get_First_Interp (N, I, It);
                      while Present (It.Nam) loop
-                        if Scope (It.Nam) = Standard_Standard then
+                        if Scope (It.Nam) = Standard_Standard
+                          and then Base_Type (It.Typ) =
+                                   Base_Type (Etype (Abstract_Op))
+                        then
                            Remove_Interp (I);
                         end if;
 

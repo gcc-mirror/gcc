@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---           Copyright (C) 1999-2003 Ada Core Technologies, Inc.            --
+--           Copyright (C) 1999-2004 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,7 +34,7 @@
 --  Run-time symbolic traceback support
 
 --  Note: this is only available on selected targets. Currently it is
---  supported on Sparc/Solaris, GNU/Linux, Windows NT, HP-UX and Tru64.
+--  supported on Sparc/Solaris, GNU/Linux, Windows NT, HP-UX, VMS and Tru64.
 
 --  The routines provided in this package assume that your application has
 --  been compiled with debugging information turned on, since this information
@@ -46,12 +46,14 @@
 --  need to be provided when launching the executable), and load then in
 --  memory, causing a significant cpu and memory overhead.
 
---  This package is not intended to be used within a shared library,
---  symbolic tracebacks are only supported for the main executable
---  and not for shared libraries.
+--  On all platforms except VMS, this package is not intended to be used
+--  within a shared library, symbolic tracebacks are only supported for the
+--  main executable and not for shared libraries.
+--  You should consider using gdb to obtain symbolic traceback in such cases.
 
---  You should consider using off-line symbolic traceback instead, using
---  addr2line or gdb.
+--  On VMS, there is no restriction on using this facility with shared
+--  libraries. However, the OS should be at least v7.3-1 and OS patch
+--  VMS731_TRACE-V0100 must be applied in order to use this package.
 
 with Ada.Exceptions; use Ada.Exceptions;
 

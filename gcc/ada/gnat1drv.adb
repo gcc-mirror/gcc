@@ -329,7 +329,7 @@ begin
                --  a junk spec as not needing a body when it really does).
 
                if Main_Kind = N_Package_Declaration
-                 and then Ada_83
+                 and then Ada_Version = Ada_83
                  and then Operating_Mode = Generate_Code
                  and then Distribution_Stub_Mode /= Generate_Caller_Stub_Body
                  and then not Compilation_Errors

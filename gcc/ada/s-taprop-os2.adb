@@ -202,7 +202,6 @@ package body System.Task_Primitives.Operations is
    procedure Stack_Guard (T : ST.Task_Id; On : Boolean) is
       pragma Unreferenced (T);
       pragma Unreferenced (On);
-
    begin
       null;
    end Stack_Guard;
@@ -222,6 +221,7 @@ package body System.Task_Primitives.Operations is
 
    function Self return Task_Id is
       Self_ID : Task_Id renames Thread_Local_Data_Ptr.Self_ID;
+
    begin
       --  Check that the thread local data has been initialized.
 
@@ -681,7 +681,6 @@ package body System.Task_Primitives.Operations is
 
    procedure Wakeup (T : Task_Id; Reason : System.Tasking.Task_States) is
       pragma Unreferenced (Reason);
-
    begin
       Sem_Must_Not_Fail (DosPostEventSem (T.Common.LL.CV));
    end Wakeup;
@@ -748,7 +747,6 @@ package body System.Task_Primitives.Operations is
       Loss_Of_Inheritance : Boolean := False)
    is
       pragma Unreferenced (Loss_Of_Inheritance);
-
    begin
       T.Common.Current_Priority := Prio;
       Set_Temporary_Priority (T, Prio);
@@ -1031,7 +1029,6 @@ package body System.Task_Primitives.Operations is
 
    function Check_No_Locks (Self_ID : ST.Task_Id) return Boolean is
       TLD : constant Access_Thread_Local_Data := Thread_Local_Data_Ptr;
-
    begin
       return Self_ID = TLD.Self_ID
         and then TLD.Lock_Prio_Level = 0;
@@ -1070,8 +1067,7 @@ package body System.Task_Primitives.Operations is
 
    function Suspend_Task
      (T           : ST.Task_Id;
-      Thread_Self : Thread_Id)
-      return        Boolean
+      Thread_Self : Thread_Id) return Boolean
    is
    begin
       if Thread_Id (T.Common.LL.Thread) /= Thread_Self then
@@ -1087,8 +1083,7 @@ package body System.Task_Primitives.Operations is
 
    function Resume_Task
      (T           : ST.Task_Id;
-      Thread_Self : Thread_Id)
-      return        Boolean
+      Thread_Self : Thread_Id) return Boolean
    is
    begin
       if Thread_Id (T.Common.LL.Thread) /= Thread_Self then

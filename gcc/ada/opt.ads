@@ -60,15 +60,17 @@ package Opt is
    --  GNATBIND, GNATLINK
    --  Set True if binder file to be generated in Ada rather than C
 
-   Ada_95 : Boolean := True;
-   --  GNAT
-   --  Set True if operating in Ada 95 mode
-   --  Set False if operating in Ada 83 mode
+   type Ada_Version_Type is (Ada_83, Ada_95, Ada_05);
+   --  Versions of Ada for Ada_Version below. Note that these are ordered,
+   --  so that tests like Ada_Version >= Ada_95 are legitimate and useful.
 
-   Ada_83 : Boolean := False;
+   Ada_Version_Default : Ada_Version_Type := Ada_95;
    --  GNAT
-   --  Set True if operating in Ada 83 mode
-   --  Set False if operating in Ada 95 mode
+   --  Default Ada version if no switch given
+
+   Ada_Version : Ada_Version_Type := Ada_Version_Default;
+   --  GNAT
+   --  Current Ada version for compiler
 
    Ada_Final_Suffix : constant String := "final";
    Ada_Final_Name : String_Ptr := new String'("ada" & Ada_Final_Suffix);
@@ -369,7 +371,7 @@ package Opt is
    Extensions_Allowed : Boolean := False;
    --  GNAT
    --  Set to True by switch -gnatX if GNAT specific language extensions
-   --  are allowed. For example, "with type" is a GNAT extension.
+   --  are allowed. For example, "limited with" is a GNAT extension.
 
    type External_Casing_Type is (
      As_Is,       -- External names cased as they appear in the Ada source
@@ -488,7 +490,7 @@ package Opt is
    --    'p'  PC (US, IBM page 437)
    --    '8'  PC (European, IBM page 850)
    --    'f'  Full upper set (all distinct)
-   --    'n'  No upper characters (Ada/83 rules)
+   --    'n'  No upper characters (Ada 83 rules)
    --    'w'  Latin-1 plus wide characters allowed in identifiers
    --
    --  The setting affects the set of letters allowed in identifiers and the
@@ -1090,15 +1092,15 @@ package Opt is
    --  command line switches, or by the use of appropriate configuration
    --  pragmas in the gnat.adc file.
 
-   Ada_83_Config : Boolean;
+   Ada_Version_Config : Ada_Version_Type;
    --  GNAT
-   --  This is the value of the configuration switch for Ada 83 mode, as set
-   --  by the command line switch -gnat83, and possibly modified by the use
-   --  of configuration pragmas Ada_95 and Ada_83 in the gnat.adc file. This
-   --  switch is used to set the initial value for Ada_83 mode at the start
+   --  This is the value of the configuration switch for the Ada 83 mode, as
+   --  set by the command line switches -gnat83/95/05, and possibly modified
+   --  by the use of configuration pragmas Ada_83/Ada95/Ada05. This switch
+   --  is used to set the initial value for Ada_Version mode at the start
    --  of analysis of a unit. Note however, that the setting of this flag
    --  is ignored for internal and predefined units (which are always compiled
-   --  in Ada 95 mode).
+   --  in the most up to date version of Ada).
 
    Dynamic_Elaboration_Checks_Config : Boolean := False;
    --  GNAT
@@ -1230,7 +1232,7 @@ package Opt is
 private
 
    type Config_Switches_Type is record
-      Ada_83                         : Boolean;
+      Ada_Version                    : Ada_Version_Type;
       Dynamic_Elaboration_Checks     : Boolean;
       Exception_Locations_Suppressed : Boolean;
       Extensions_Allowed             : Boolean;

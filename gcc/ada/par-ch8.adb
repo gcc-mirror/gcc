@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -110,7 +110,7 @@ package body Ch8 is
       Use_Node := New_Node (N_Use_Type_Clause, Prev_Token_Ptr);
       Set_Subtype_Marks (Use_Node, New_List);
 
-      if Ada_83 then
+      if Ada_Version = Ada_83 then
          Error_Msg_SC ("(Ada 83) use type not allowed!");
       end if;
 

@@ -109,7 +109,7 @@ package body Exp_Ch5 is
    --  hand side of an assignment, and this function determines if there
    --  is a record component reference where the record may be bit aligned
    --  in a manner that causes trouble for the back end (see description
-   --  of Sem_Util.Component_May_Be_Bit_Aligned for further details).
+   --  of Exp_Util.Component_May_Be_Bit_Aligned for further details).
 
    ------------------------------
    -- Change_Of_Representation --
@@ -1537,13 +1537,13 @@ package body Exp_Ch5 is
            (Expression (Rhs), Designated_Type (Etype (Lhs)));
       end if;
 
-      --  Ada 0Y (AI-231): Generate conversion to the null-excluding
+      --  Ada 2005 (AI-231): Generate conversion to the null-excluding
       --  type to force the corresponding run-time check
 
       if Is_Access_Type (Typ)
-        and then ((Is_Entity_Name (Lhs)
-                   and then Can_Never_Be_Null (Entity (Lhs)))
-                   or else Can_Never_Be_Null (Etype (Lhs)))
+        and then
+          ((Is_Entity_Name (Lhs) and then Can_Never_Be_Null (Entity (Lhs)))
+             or else Can_Never_Be_Null (Etype (Lhs)))
       then
          Rewrite (Rhs, Convert_To (Etype (Lhs),
                                    Relocate_Node (Rhs)));

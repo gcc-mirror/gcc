@@ -257,9 +257,9 @@ gnat_pushlevel ()
   current_binding_level = newlevel;
 }
 
-/* Exit a binding level.  */
+/* Exit a binding level.  Return the BLOCK node, if any.  */
 
-void
+tree
 gnat_poplevel ()
 {
   struct ada_binding_level *level = current_binding_level;
@@ -289,13 +289,14 @@ gnat_poplevel ()
      parent block. Otherwise, add it to the list of its parent.  */
   if (TREE_CODE (BLOCK_SUPERCONTEXT (block)) == FUNCTION_DECL)
     ;
-  else if (BLOCK_VARS (block) == 0)
+  else if (BLOCK_VARS (block) == NULL_TREE)
     {
       BLOCK_SUBBLOCKS (level->chain->block)
 	= chainon (BLOCK_SUBBLOCKS (block),
 		   BLOCK_SUBBLOCKS (level->chain->block));
       TREE_CHAIN (block) = free_block_chain;
       free_block_chain = block;
+      block = NULL_TREE;
     }
   else
     {
@@ -308,6 +309,7 @@ gnat_poplevel ()
   current_binding_level = level->chain;
   level->chain = free_binding_level;
   free_binding_level = level;
+  return block;
 }
 
 /* Insert BLOCK at the end of the list of subblocks of the

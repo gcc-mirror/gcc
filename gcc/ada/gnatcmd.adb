@@ -97,6 +97,7 @@ procedure GNATCmd is
    Gnatls_String    : constant String_Access := new String'("gnatls");
    Pretty_String    : constant String_Access := new String'("pretty_printer");
    Gnatstub_String  : constant String_Access := new String'("gnatstub");
+   Metric_String    : constant String_Access := new String'("metrics");
    Xref_String      : constant String_Access := new String'("cross_reference");
 
    Packages_To_Check_By_Binder   : constant String_List_Access :=
@@ -119,6 +120,9 @@ procedure GNATCmd is
 
    Packages_To_Check_By_Gnatstub  : constant String_List_Access :=
      new String_List'((Naming_String, Gnatstub_String));
+
+   Packages_To_Check_By_Metric  : constant String_List_Access :=
+     new String_List'((Naming_String, Metric_String));
 
    Packages_To_Check_By_Xref      : constant String_List_Access :=
      new String_List'((Naming_String, Xref_String));
@@ -151,8 +155,8 @@ procedure GNATCmd is
    function Configuration_Pragmas_File return Name_Id;
    --  Return an argument, if there is a configuration pragmas file to be
    --  specified for Project, otherwise return No_Name.
-   --  Used for gnatstub (GNAT STUB), gnatpp (GNAT PRETTY) and gnatelim
-   --  (GNAT ELIM).
+   --  Used for gnatstub (GNAT STUB), gnatpp (GNAT PRETTY), gnatelim
+   --  (GNAT ELIM), and gnatmetric (GNAT METRIC).
 
    procedure Delete_Temp_Config_Files;
    --  Delete all temporary config files
@@ -416,7 +420,7 @@ procedure GNATCmd is
       end loop;
 
       New_Line;
-      Put_Line ("Commands FIND, LIST, PRETTY, STUB and XREF accept " &
+      Put_Line ("Commands FIND, LIST, PRETTY, STUB, NETRIC and XREF accept " &
                 "project file switches -vPx, -Pprj and -Xnam=val");
       New_Line;
    end Non_VMS_Usage;
@@ -596,6 +600,7 @@ begin
         or else The_Command = Xref
         or else The_Command = Pretty
         or else The_Command = Stub
+        or else The_Command = Metric
       then
          case The_Command is
             when Bind =>
@@ -613,6 +618,9 @@ begin
             when List =>
                Tool_Package_Name := Name_Gnatls;
                Packages_To_Check := Packages_To_Check_By_Gnatls;
+            when Metric =>
+               Tool_Package_Name := Name_Metrics;
+               Packages_To_Check := Packages_To_Check_By_Metric;
             when Pretty =>
                Tool_Package_Name := Name_Pretty_Printer;
                Packages_To_Check := Packages_To_Check_By_Pretty;
@@ -825,9 +833,9 @@ begin
 
                --  Packages Binder (for gnatbind), Cross_Reference (for
                --  gnatxref), Linker (for gnatlink) Finder (for gnatfind),
-               --  Pretty_Printer (for gnatpp) and Eliminate (for gnatelim)
-               --  have an attributed Switches, an associative array, indexed
-               --  by the name of the file.
+               --  Pretty_Printer (for gnatpp) Eliminate (for gnatelim) and
+               --  Metric (for gnatmetric) have an attributed Switches,
+               --  an associative array, indexed by the name of the file.
 
                --  They also have an attribute Default_Switches, indexed
                --  by the name of the programming language.
@@ -901,10 +909,11 @@ begin
 
          Prj.Env.Set_Ada_Paths (Project, Including_Libraries => False);
 
-         --  For gnatstub, gnatpp and gnatelim, create a configuration pragmas
-         --  file, if necessary.
+         --  For gnatstub, gnatmetric, gnatpp and gnatelim, create
+         --  a configuration pragmas file, if necessary.
 
          if The_Command = Pretty
+           or else The_Command = Metric
            or else The_Command = Stub
            or else The_Command = Elim
          then
@@ -1328,10 +1337,11 @@ begin
             end;
          end if;
 
-         --  For gnat pretty, if no file has been put on the command line,
-         --  call gnatpp with all the sources of the main project.
+         --  For gnat pretty and gnat metric, if no file has been put on the
+         --  command line, call the tool with all the sources of the main
+         --  project.
 
-         if The_Command = Pretty then
+         if The_Command = Pretty or else The_Command = Metric then
             declare
                Add_Sources : Boolean := True;
                Unit_Data   : Prj.Com.Unit_Data;

@@ -1281,7 +1281,7 @@ package body Prj.Nmsc is
                else
                   Data.Symbol_Data.Reference := Lib_Ref_Symbol_File.Value;
 
-                  Get_Name_String (Lib_Symbol_File.Value);
+                  Get_Name_String (Lib_Ref_Symbol_File.Value);
 
                   if Name_Len = 0 then
                      Error_Msg
@@ -4717,6 +4717,7 @@ package body Prj.Nmsc is
                then
                   Name_Len := Last;
                   Name_Buffer (1 .. Name_Len) := Name_Str (1 .. Last);
+                  Canonical_Case_File_Name (Name_Buffer (1 .. Name_Len));
                   Canonical_Name := Name_Find;
                   NL := Source_Names.Get (Canonical_Name);
 

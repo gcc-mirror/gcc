@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1996-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -165,7 +165,8 @@ package body Exp_Code is
       --  are never static).
 
       if Is_OK_Static_Expression (Temp)
-        or else (Ada_83 and then Nkind (Temp) = N_String_Literal)
+        or else (Ada_Version = Ada_83
+                  and then Nkind (Temp) = N_String_Literal)
       then
          return Get_String_Node (Temp);
 
