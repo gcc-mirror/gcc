@@ -1,3 +1,14 @@
+Sat Mar  3 19:47:13 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (ix86_expand_fp_compare): Delay creating of scratch register
+	until when it is really needed.
+	(ix86_expand_compare): Update call of ix86_expand_fp_compare.
+	* i386.h (PREDICATE_CODES): Add all codes for sse_comparison_operator
+	* i386.md (float?i?f splitter): Don't force source operand to memory
+	for SSE.
+	(sse_movdfcc): Fix constraint.
+	(sse_movdfcc splitter): Handle properly the second alternative.
+
 2001-03-03  Neil Booth  <neil@daikokuya.demon.co.uk>
 
         * cpplex.c (parse_string): Unconditionally pedwarn.

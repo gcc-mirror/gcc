@@ -5196,6 +5196,8 @@ ix86_expand_fp_compare (code, op0, op1, scratch, second_test, bypass_test)
 	{
 	  tmp = gen_rtx_COMPARE (fpcmp_mode, op0, op1);
 	  tmp2 = gen_rtx_UNSPEC (HImode, gen_rtvec (1, tmp), 9);
+	  if (!scratch)
+	    scratch = gen_reg_rtx (HImode);
 	  emit_insn (gen_rtx_SET (VOIDmode, scratch, tmp2));
 	  emit_insn (gen_x86_sahf_1 (scratch));
 	}
@@ -5217,6 +5219,8 @@ ix86_expand_fp_compare (code, op0, op1, scratch, second_test, bypass_test)
       /* Sadness wrt reg-stack pops killing fpsr -- gotta get fnstsw first.  */
       tmp = gen_rtx_COMPARE (fpcmp_mode, op0, op1);
       tmp2 = gen_rtx_UNSPEC (HImode, gen_rtvec (1, tmp), 9);
+      if (!scratch)
+	scratch = gen_reg_rtx (HImode);
       emit_insn (gen_rtx_SET (VOIDmode, scratch, tmp2));
 
       /* In the unordered case, we have to check C2 for NaN's, which
@@ -5357,7 +5361,7 @@ ix86_expand_compare (code, second_test, bypass_test)
     *bypass_test = NULL_RTX;
 
   if (GET_MODE_CLASS (GET_MODE (op0)) == MODE_FLOAT)
-    ret = ix86_expand_fp_compare (code, op0, op1, gen_reg_rtx (HImode),
+    ret = ix86_expand_fp_compare (code, op0, op1, NULL_RTX,
 				  second_test, bypass_test);
   else
     ret = ix86_expand_int_compare (code, op0, op1);
