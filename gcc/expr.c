@@ -3275,7 +3275,7 @@ store_expr (exp, target, want_value)
 		{
 #ifdef TARGET_MEM_FUNCTIONS
 		  emit_library_call (memset_libfunc, 0, VOIDmode, 3,
-				     addr, Pmode,
+				     addr, ptr_mode,
 				     const0_rtx, TYPE_MODE (integer_type_node),
 				     convert_to_mode (TYPE_MODE (sizetype),
 						      size,
@@ -3283,7 +3283,7 @@ store_expr (exp, target, want_value)
 				     TYPE_MODE (sizetype));
 #else
 		  emit_library_call (bzero_libfunc, 0, VOIDmode, 2,
-				     addr, Pmode,
+				     addr, ptr_mode,
 				     convert_to_mode (TYPE_MODE (integer_type_node),
 						      size,
 						      TREE_UNSIGNED (integer_type_node)),
