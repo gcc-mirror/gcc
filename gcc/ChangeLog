@@ -1,5 +1,24 @@
 2002-05-29  Richard Henderson  <rth@redhat.com>
 
+	* config/i386/i386.c (ix86_output_function_epilogue): New.
+	(TARGET_ASM_FUNCTION_EPILOGUE): New.
+	(pic_label_name): Remove.
+	(pic_labels_used): New.
+	(ix86_asm_file_end): Emit one pc load stub for each register used.
+	(output_set_got): Generate deep pc load to any register.
+	(ix86_select_alt_pic_regnum): New.
+	(ix86_save_reg): Don't save pic register if we can find a valid
+	call-clobbered replacement.
+	(ix86_expand_prologue): If we found a valid replacement, renumber
+	pic_offset_table_rtx.
+	* config/i386/i386.h (PIC_OFFSET_TABLE_REGNUM): Look at
+	pic_offset_table_rtx after reload.
+	(REAL_PIC_OFFSET_TABLE_REGNUM): New.
+	* config/i386/i386.md (set_got): Make insn, not expander.
+	(set_got_nopic, set_got_deep, set_got_nodeep): Remove.
+
+2002-05-29  Richard Henderson  <rth@redhat.com>
+
 	* config/i386/i386.c (ix86_compute_frame_layout): Do add bottom
 	alignment for alloca.
 
