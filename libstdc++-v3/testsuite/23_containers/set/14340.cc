@@ -36,7 +36,7 @@
 // libstdc++/14340
 int main()
 {
-  typedef std::set<int, int> container;
+  typedef std::set<int> container;
   __gnu_test::conversion<container>::iterator_to_const_iterator();
   return 0;
 }
