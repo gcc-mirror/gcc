@@ -1,3 +1,7 @@
+2000-07-27  Alexandre Oliva  <aoliva@redhat.com>
+
+	* Makefile.in (bootstrap): Move -BstageN/ back to the beginning.
+
 2000-07-27  Andrew Cagney  <cagney@b1.cygnus.com>
 
 	* gcc.c (struct prefix_list): Add member priority.
