@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler for IA-64.
-   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -121,6 +121,7 @@ extern int ia64_function_arg_pass_by_reference PARAMS((CUMULATIVE_ARGS *,
 						       tree, int));
 extern int ia64_return_in_memory PARAMS((tree));
 extern void ia64_asm_output_external PARAMS((FILE *, tree, const char *));
+extern void ia64_output_mi_thunk PARAMS((FILE *, tree, int, tree));
 #endif /* TREE_CODE */
 
 extern int ia64_register_move_cost PARAMS((enum machine_mode, enum reg_class,

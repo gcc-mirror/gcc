@@ -1431,35 +1431,7 @@ do {									\
 /* A C compound statement that outputs the assembler code for a thunk function,
    used to implement C++ virtual function calls with multiple inheritance.  */
 
-#define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION) \
-do {									\
-  if (CONST_OK_FOR_I (DELTA))						\
-    {									\
-      fprintf (FILE, "\tadds r32 = ");					\
-      fprintf (FILE, HOST_WIDE_INT_PRINT_DEC, (DELTA));			\
-      fprintf (FILE, ", r32\n");					\
-    }									\
-  else									\
-    {									\
-      if (CONST_OK_FOR_J (DELTA))					\
-        {								\
-          fprintf (FILE, "\taddl r2 = ");				\
-          fprintf (FILE, HOST_WIDE_INT_PRINT_DEC, (DELTA));		\
-          fprintf (FILE, ", r0\n");					\
-        }								\
-      else								\
-        {								\
-	  fprintf (FILE, "\tmovl r2 = ");				\
-	  fprintf (FILE, HOST_WIDE_INT_PRINT_DEC, (DELTA));		\
-	  fprintf (FILE, "\n");						\
-        }								\
-      fprintf (FILE, "\t;;\n");						\
-      fprintf (FILE, "\tadd r32 = r2, r32\n");				\
-    }									\
-  fprintf (FILE, "\tbr ");						\
-  assemble_name (FILE, XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0));	\
-  fprintf (FILE, "\n");							\
-} while (0)
+#define TARGET_ASM_OUTPUT_MI_THUNK ia64_output_mi_thunk
 
 /* Output part N of a function descriptor for DECL.  For ia64, both
    words are emitted with a single relocation, so ignore N > 0.  */

@@ -667,8 +667,7 @@ extern int rs6000_pic_labelno;
     FUNCTION instead of jumping to it.  The generic approach does not support
     varargs.  */
 
-#define	ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION) \
-  output_mi_thunk (FILE, THUNK_FNDECL, DELTA, FUNCTION)
+#define	TARGET_ASM_OUTPUT_MI_THUNK output_mi_thunk
 
 /* The USER_LABEL_PREFIX stuff is affected by the -fleading-underscore
    flag.  The LOCAL_LABEL_PREFIX variable is used by dbxelf.h.  */

@@ -8159,4 +8159,39 @@ ia64_aix_select_rtx_section (mode, x, align)
   flag_pic = save_pic;
 }
 
+void
+ia64_output_mi_thunk (file, thunk, delta, function)
+     FILE *file;
+     tree thunk ATTRIBUTE_UNUSED;
+     int delta;
+     tree function;
+{
+  if (CONST_OK_FOR_I (delta))						
+    {									
+      fprintf (file, "\tadds r32 = ");					
+      fprintf (file, HOST_WIDE_INT_PRINT_DEC, (delta));			
+      fprintf (file, ", r32\n");					
+    }									
+  else									
+    {									
+      if (CONST_OK_FOR_J (delta))					
+        {								
+          fprintf (file, "\taddl r2 = ");				
+          fprintf (file, HOST_WIDE_INT_PRINT_DEC, (delta));		
+          fprintf (file, ", r0\n");					
+        }								
+      else								
+        {								
+	  fprintf (file, "\tmovl r2 = ");				
+	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, (delta));		
+	  fprintf (file, "\n");						
+        }								
+      fprintf (file, "\t;;\n");						
+      fprintf (file, "\tadd r32 = r2, r32\n");				
+    }									
+  fprintf (file, "\tbr ");						
+  assemble_name (file, XSTR (XEXP (DECL_RTL (function), 0), 0));	
+  fprintf (file, "\n");							
+}
+
 #include "gt-ia64.h"

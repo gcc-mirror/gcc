@@ -4151,9 +4151,11 @@ outputting the insns in this list, usually by calling
 You need not define this macro if you did not define
 @code{DELAY_SLOTS_FOR_EPILOGUE}.
 
-@findex ASM_OUTPUT_MI_THUNK
-@item ASM_OUTPUT_MI_THUNK (@var{file}, @var{thunk_fndecl}, @var{delta}, @var{function})
-A C compound statement that outputs the assembler code for a thunk
+@end table
+
+@findex TARGET_ASM_OUTPUT_MI_THUNK
+@deftypefn {Target Hook} void TARGET_ASM_OUTPUT_MI_THUNK (FILE *@var{file}, tree @var{thunk_fndecl}, int @var{delta}, tree @var{function})
+A function that outputs the assembler code for a thunk
 function, used to implement C++ virtual function calls with multiple
 inheritance.  The thunk acts as a wrapper around a virtual function,
 adjusting the implicit object parameter before handing control off to
@@ -4184,7 +4186,24 @@ If you do not define this macro, the target-independent code in the C++
 front end will generate a less efficient heavyweight thunk that calls
 @var{function} instead of jumping to it.  The generic approach does
 not support varargs.
-@end table
+@end deftypefn
+
+@findex TARGET_ASM_OUTPUT_MI_VCALL_THUNK
+@deftypefn {Target Hook} void TARGET_ASM_OUTPUT_MI_VCALL_THUNK (FILE *@var{file}, tree @var{thunk_fndecl}, int @var{delta}, int @var{vcall_offset}, tree @var{function})
+A function like @code{TARGET_ASM_OUTPUT_MI_THUNK}, except that if
+@var{vcall_offset} is non-zero, an additional adjustment should be made
+after adding @code{delta}.  In particular, if @var{p} is the
+adjusted pointer, the following adjustment should be made:
+
+@example
+p += (*((ptrdiff_t **)p))[vcall_offset/sizeof(ptrdiff_t)]
+@end example
+
+@noindent
+If this function is defined, it will always be used in place of
+@code{TARGET_ASM_OUTPUT_MI_THUNK}.
+
+@end deftypefn
 
 @node Profiling
 @subsection Generating Code for Profiling

@@ -2110,8 +2110,7 @@ struct machine_function GTY(())
    frontend will generate a less efficient heavyweight thunk that calls
    FUNCTION instead of jumping to it.  The generic approach does not support
    varargs.  */
-#define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION) \
-frv_asm_output_mi_thunk (FILE, THUNK_FNDECL, (long)DELTA, FUNCTION)
+#define TARGET_ASM_OUTPUT_MI_THUNK frv_asm_output_mi_thunk
 
 
 /* Generating Code for Profiling.  */

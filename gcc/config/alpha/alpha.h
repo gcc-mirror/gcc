@@ -2141,5 +2141,4 @@ do {							\
 
 /* Output code to add DELTA to the first argument, and then jump to FUNCTION.
    Used for C++ multiple inheritance.  */
-#define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION) \
-  alpha_output_mi_thunk_osf (FILE, THUNK_FNDECL, DELTA, FUNCTION)
+#define TARGET_ASM_OUTPUT_MI_THUNK alpha_output_mi_thunk_osf

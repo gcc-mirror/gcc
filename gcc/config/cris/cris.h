@@ -1013,8 +1013,7 @@ struct cum_args {int regs;};
 #define ELIGIBLE_FOR_EPILOGUE_DELAY(INSN, N) \
   cris_eligible_for_epilogue_delay (INSN)
 
-#define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION) \
- cris_asm_output_mi_thunk(FILE, THUNK_FNDECL, DELTA, FUNCTION)
+#define TARGET_ASM_OUTPUT_MI_THUNK cris_asm_output_mi_thunk
 
 
 /* Node: Profiling */

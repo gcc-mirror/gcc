@@ -1,3 +1,64 @@
+2002-10-18  Mark Mitchell  <mark@codesourcery.com>
+
+	* target-def.h (TARGET_ASM_OUTPUT_MI_THUNK): Default to NULL.
+	(TARGET_ASM_OUTPUT_MI_VCALL_THUNK): Likewise.
+	(TARGET_ASM_OUT): Add them.
+	* target.h (asm_out): Add output_mi_thunk and
+	output_mi_vcall_thunk.
+	* config/alpha/alpha.h (ASM_OUTPUT_MI_THUNK): Rename to ...
+	(TARGET_ASM_OUTPUT_MI_THUNK): ... this.
+	* config/arm/arm-protos.h (arm_output_mi_thunk): Declare.
+	* config/arm/arm.c (arm_output_mi_thunk): Define.
+	* config/arm/arm.h (ASM_OUTPUT_MI_THUNK): Rename to ...
+	(TARGET_ASM_OUTPUT_MI_THUNK): ... this.
+	* config/cris/cris.h (ASM_OUTPUT_MI_THUNK): Rename to ...
+	(TARGET_ASM_OUTPUT_MI_THUNK): ... this.
+	* config/frv/frv.h (ASM_OUTPUT_MI_THUNK): Rename to ...
+	(TARGET_ASM_OUTPUT_MI_THUNK): ... this.
+	* config/i386/i386-protos.h (x86_output_mi_thunk): Adjust
+	prototype.
+	(x86_output_mi_vcall_thunk): Declare.
+	* config/i386/i386.c (override_options): Clear
+	output_mi_vcall_thunk in 64-bit mode.
+	(ix86_fntype_regparm): New function.
+	(ix86_return_pops_args): Use it.
+	(ia32_this_parameter): New function.
+	(x86_output_mi_vcall_thunk): New function.
+	(x86_output_mi_thunk): Use it
+	* config/i386/unix.h (TARGET_ASM_OUTPUT_MI_THUNK): Adjust.
+	(TARGET_ASM_OUTPUT_MI_VCALL_THUNK): Define.
+	* config/i960/i960-protos.h (i960_output_mi_thunk): Declare.
+	* config/i960/i960.c (i960_output_mi_thunk): New function.
+	* config/i960/i960.h (ASM_OUTPUT_MI_THUNK): Adjust.
+	* config/ia64/ia64-protos.h (ia64_output_mi_thunk): Declare.
+	* config/ia64/ia64.c (ia64_output_mi_thunk): Define.
+	* config/ia64/ia64.h (ASM_OUTPUT_MI_THUNK): Rename to ...
+	(TARGET_ASM_OUTPUT_MI_THUNK): ... this.
+	* config/m68k/m68k-protos.h (m68k_output_mi_thunk): New function.
+	* config/m68k/linux.h (ASM_OUTPUT_MI_THUNK): Rename to ...
+	(TARGET_ASM_OUTPUT_MI_THUNK): ... this.
+	* config/m68k/netbsd-elf.h (ASM_OUTPUT_MI_THUNK): Rename to ...
+	(TARGET_ASM_OUTPUT_MI_THUNK): ... this.
+	* config/mmix/mmix.h (ASM_OUTPUT_MI_THUNK): Rename to ...
+	(TARGET_ASM_OUTPUT_MI_THUNK): ... this.
+	* config/pa/pa.h (ASM_OUTPUT_MI_THUNK): Rename to ...
+	(TARGET_ASM_OUTPUT_MI_THUNK): ... this.
+	* config/rs6000/sysv4.h (ASM_OUTPUT_MI_THUNK): Rename to ...
+	(TARGET_ASM_OUTPUT_MI_THUNK): ... this.
+	* config/s390/s390-protos.h (s390_output_mi_thunk): Declare.
+	* config/s390/s390.c (s390_output_mi_thunk): Define.
+	* config/s390/s390.h (ASM_OUTPUT_MI_THUNK): Rename to ...
+	(TARGET_ASM_OUTPUT_MI_THUNK): ... this.
+	* config/sparc/sparc.h (ASM_OUTPUT_MI_THUNK): Rename to ...
+	(TARGET_ASM_OUTPUT_MI_THUNK): ... this.
+	* config/stormy16/stormy16.h (ASM_OUTPUT_MI_THUNK): Rename to ...
+	(TARGET_ASM_OUTPUT_MI_THUNK): ... this.
+	* config/vax/vax-protos.h (vax_output_mi_thunk): Declare.
+	* config/vax/vax.c (vax_output_mi_thunk): Define.
+	* config/vax/vax.h (ASM_OUTPUT_MI_THUNK): Rename to ...
+	(TARGET_ASM_OUTPUT_MI_THUNK): ... this.
+	* doc/tm.texi: Adjust documentation.
+	
 2002-10-18  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config/netbsd.h (NETBSD_ENABLE_EXECUTE_STACK): Define 
