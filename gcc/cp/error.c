@@ -1034,7 +1034,7 @@ dump_decl (t, flags)
       break;
 
     case TEMPLATE_DECL:
-        dump_template_decl (t, flags);
+      dump_template_decl (t, flags);
       break;
 
     case TEMPLATE_ID_EXPR:
@@ -1115,6 +1115,11 @@ dump_template_decl (t, flags)
           int len = TREE_VEC_LENGTH (inner_parms);
 
           output_add_string (scratch_buffer, "template<");
+
+	  /* If we've shown the template prefix, we'd better show the
+	     parameters' and decl's type too.  */
+	    flags |= TFF_DECL_SPECIFIERS;
+
           for (i = 0; i < len; i++)
             {
               if (i)
@@ -1125,10 +1130,12 @@ dump_template_decl (t, flags)
           output_add_space (scratch_buffer);
         }
       nreverse(orig_parms);
-      /* If we've shown the template<args> prefix, we'd better show the
-	 decl's type too.  */
-      flags |= TFF_DECL_SPECIFIERS;
+
+      if (DECL_TEMPLATE_TEMPLATE_PARM_P (t))
+	/* Say `template<arg> class TT' not just `template<arg> TT'. */
+	output_add_string (scratch_buffer, "class ");
     }
+
   if (TREE_CODE (DECL_TEMPLATE_RESULT (t)) == TYPE_DECL)
     dump_type (TREE_TYPE (t),
                ((flags & ~TFF_CLASS_KEY_OR_ENUM) | TFF_TEMPLATE_NAME
