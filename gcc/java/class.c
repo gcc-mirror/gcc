@@ -569,6 +569,8 @@ build_utf8_ref (name)
   /* Build a unique identifier based on buf. */
   sprintf(buf, "_Utf%d", ++utf8_count);
   buf_ptr = &buf[strlen (buf)];
+  if (name_len > 0 && name_ptr[0] >= '0' && name_ptr[0] <= '9')
+    *buf_ptr++ = '_';
   while (--name_len >= 0)
     {
       unsigned char c = *name_ptr++;
@@ -1627,11 +1629,10 @@ layout_class_method (this_class, super_class, method_decl, dtable_count)
 	build_java_argument_signature (TREE_TYPE (method_decl));
       tree super_method = lookup_argument_method (super_class, method_name,
 						  method_sig);
-      if (super_method != NULL_TREE)
+      if (super_method != NULL_TREE && ! METHOD_PRIVATE (super_method))
 	{
 	  DECL_VINDEX (method_decl) = DECL_VINDEX (super_method);
-	  if (DECL_VINDEX (method_decl) == NULL_TREE &&
-	      ! TREE_PRIVATE (method_decl))
+	  if (DECL_VINDEX (method_decl) == NULL_TREE)
 	    error_with_decl (method_decl,
 			     "non-static method '%s' overrides static method");
 #if 0

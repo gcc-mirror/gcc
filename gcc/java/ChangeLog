@@ -1,3 +1,23 @@
+Fri Mar  5 15:17:29 1999  Per Bothner  <bothner@cygnus.com>
+
+	* lex.c (java_parse_end_comment):  Take extra parameter (next char).
+
+	* class.c (build_utf8_ref):  Fix possible name class/ambiguity.
+
+	* class.c (layout_class_method):  A static method in a base class
+	is never overridden, so treat it like it doesn't exist.
+	However, do complain about private non-static method overriding
+	public static method.
+
+	* parse.y:  Don't set unused INITIALIZED_P flag.
+	* java-tree.h (INITIALIZED_P):  Removed no-longer needed flag.
+
+	* parse.y (find_expr_with_wfl):  Optimize tail-calls.
+	(build_array_from_name):  Re-order &index[string] to &string[index].
+
+	* parse.y (java_complete_tree):  Don't call patch_assignment if rhs is
+	error_mark (it might catch more errors, but it is more likely to lose).
+
 Sat Mar  6 11:17:16 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (jcf-parse.o): Depend on $(PARSE_H).
