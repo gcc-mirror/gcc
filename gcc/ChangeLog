@@ -1,3 +1,7 @@
+Mon Mar 29 20:35:49 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* sh.md (mulsi3): Tag an extra REG_EQUAL note to the middle insn.
+
 Mon Mar 29 11:50:34 1999  Jerry Quinn <jquinn@nortelnetworks.com>
 
 	* pa.h (HAVE_PRE_INCREMENT): Disable when optimizing for a PA8000
