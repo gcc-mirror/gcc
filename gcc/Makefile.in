@@ -829,6 +829,8 @@ dumpvers: dumpvers.c
 version.o: version.c
 obstack.o: obstack.c
 
+convert.o: convert.c $(CONFIG_H) $(TREE_H) flags.h convert.h
+
 tree.o : tree.c $(CONFIG_H) $(TREE_H) gvarargs.h flags.h function.h
 print-tree.o : print-tree.c $(CONFIG_H) $(TREE_H)
 stor-layout.o : stor-layout.c $(CONFIG_H) $(TREE_H) function.h
