@@ -1,5 +1,9 @@
 2001-12-31  Graham Stott  <grahams@redhat.com>
 
+	* c-typeck.c:  Include rtl.h earlier.
+
+2001-12-31  Graham Stott  <grahams@redhat.com>
+
 	* tree.h (STRIP_NOPS): Remove extraneous semicolon.
 	(STRIP_SIGN_NOPS): Likewise.
 	(STRIP_TYPE_NOPS): Likewise.
