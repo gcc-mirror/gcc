@@ -1,5 +1,13 @@
 2004-02-03  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/13950
+	* g++.dg/template/lookup4.C: New test.
+
+	PR c++/13970
+	* g++.dg/parse/error14.C: New test.
+
+2004-02-03  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/13925
 	* g++.dg/template/lookup5.C: New test.
 

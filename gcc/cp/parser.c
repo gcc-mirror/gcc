@@ -11622,8 +11622,11 @@ cp_parser_class_name (cp_parser *parser,
 
   /* If this is a typename, create a TYPENAME_TYPE.  */
   if (typename_p && decl != error_mark_node)
-    decl = TYPE_NAME (make_typename_type (scope, decl,
-					  /*complain=*/1));
+    {
+      decl = make_typename_type (scope, decl, /*complain=*/1);
+      if (decl != error_mark_node)
+	decl = TYPE_NAME (decl);
+    }
 
   /* Check to see that it is really the name of a class.  */
   if (TREE_CODE (decl) == TEMPLATE_ID_EXPR 
@@ -15069,11 +15072,11 @@ cp_parser_cache_group (cp_parser *parser,
       if ((end == CPP_CLOSE_PAREN || depth == 0)
 	  && cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
 	return;
+      /* If we've reached the end of the file, stop.  */
+      if (cp_lexer_next_token_is (parser->lexer, CPP_EOF))
+	return;
       /* Consume the next token.  */
       token = cp_lexer_consume_token (parser->lexer);
-      /* If we've reached the end of the file, stop.  */
-      if (token->type == CPP_EOF)
-	return;
       /* Add this token to the tokens we are saving.  */
       cp_token_cache_push_token (cache, token);
       /* See if it starts a new group.  */

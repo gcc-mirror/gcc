@@ -1,5 +1,13 @@
 2004-02-03  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/13950
+	* parser.c (cp_parser_class_name): Robustify.
+
+	PR c++/13970
+	* parser.c (cp_parser_cache_group): Do not consume the EOF token.
+
+2004-02-03  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/13925
 	* decl.c (start_function): Do not call pushdecl for any
 	instantiation or specialization of a primary template.
