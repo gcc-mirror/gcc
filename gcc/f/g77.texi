@@ -198,8 +198,6 @@ texts being (a) (see below), and with the Back-Cover Texts being (b)
 @contents
 @page
 
-@ifinfo
-
 @node Top, Copying,, (DIR)
 @top Introduction
 @cindex Introduction
@@ -225,8 +223,6 @@ as well as its new features and incompatibilities,
 and how to report bugs.
 It corresponds to the @value{which-g77} version of @command{g77}.
 @end ifclear
-
-@end ifinfo
 
 @ifset DEVELOPMENT
 @emph{Warning:} This document is still under development,
