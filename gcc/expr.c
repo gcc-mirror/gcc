@@ -6326,7 +6326,8 @@ expand_expr (exp, target, tmode, modifier)
 	 simplified by validate_replace_rtx during virtual register
 	 instantiation, which can result in unrecognizable insns.
 	 Avoid this by forcing all overflows into registers.  */
-      if (TREE_CONSTANT_OVERFLOW (exp))
+      if (TREE_CONSTANT_OVERFLOW (exp)
+	  && modifier != EXPAND_INITIALIZER)
 	temp = force_reg (mode, temp);
 
       return temp;
