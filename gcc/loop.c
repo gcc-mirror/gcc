@@ -2531,6 +2531,27 @@ find_and_verify_loops (f)
 		     {
 		       rtx q, r;
 
+		       /* If no suitable BARRIER was found, create a suitable
+			  one before TARGET.  Since TARGET is a fall through
+			  path, we'll need to insert an jump around our block
+			  and a add a BARRIER before TARGET.
+
+			  This creates an extra unconditional jump outside
+			  the loop.  However, the benefits of removing rarely
+			  executed instructions from inside the loop usually
+			  outweighs the cost of the extra unconditional jump
+			  outside the loop.  */
+		       if (loc == 0)
+			 {
+			   rtx temp;
+
+		           temp = gen_jump (JUMP_LABEL (insn));
+			   temp = emit_jump_insn_before (temp, target);
+			   JUMP_LABEL (temp) = JUMP_LABEL (insn);
+			   LABEL_NUSES (JUMP_LABEL (insn))++;
+			   loc = emit_barrier_before (target);
+			 }
+
 		       /* Include the BARRIER after INSN and copy the
 			  block after LOC.  */
 		       new_label = squeeze_notes (new_label, NEXT_INSN (insn));
