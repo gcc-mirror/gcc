@@ -5383,12 +5383,15 @@ field_decl_cmp (x, y)
 
 /* Fill in the fields of a RECORD_TYPE or UNION_TYPE node, T.
    FIELDLIST is a chain of FIELD_DECL nodes for the fields.
+   ATTRIBUTES are attributes to be applied to the structure.
 
    We also do a pop_obstacks to match the push in start_struct.  */
 
 tree
-finish_struct (t, fieldlist)
-     register tree t, fieldlist;
+finish_struct (t, fieldlist, attributes)
+     tree t;
+     tree fieldlist;
+     tree attributes;
 {
   register tree x;
   int old_momentary;
@@ -5398,6 +5401,8 @@ finish_struct (t, fieldlist)
      make sure we lay it out again.  */
 
   TYPE_SIZE (t) = 0;
+
+  decl_attributes (t, attributes, NULL_TREE);
 
   /* Nameless union parm types are useful as GCC extension.  */
   if (! (TREE_CODE (t) == UNION_TYPE && TYPE_NAME (t) == 0) && !pedantic)
@@ -5428,6 +5433,7 @@ finish_struct (t, fieldlist)
   for (x = fieldlist; x; x = TREE_CHAIN (x))
     {
       DECL_CONTEXT (x) = t;
+      DECL_PACKED (x) = TYPE_PACKED (t);
       DECL_FIELD_SIZE (x) = 0;
 
       /* If any field is const, the structure type is pseudo-const.  */
@@ -5763,12 +5769,15 @@ start_enum (name)
 
 /* After processing and defining all the values of an enumeration type,
    install their decls in the enumeration type and finish it off.
-   ENUMTYPE is the type object and VALUES a list of decl-value pairs.
+   ENUMTYPE is the type object, VALUES a list of decl-value pairs,
+   and ATTRIBUTES are the specified attributes.
    Returns ENUMTYPE.  */
 
 tree
-finish_enum (enumtype, values)
-     register tree enumtype, values;
+finish_enum (enumtype, values, attributes)
+     tree enumtype;
+     tree values;
+     tree attributes;
 {
   register tree pair, tem;
   tree minnode = 0, maxnode = 0;
@@ -5777,6 +5786,8 @@ finish_enum (enumtype, values)
 
   if (in_parm_level_p ())
     warning ("enum defined inside parms");
+
+  decl_attributes (enumtype, attributes, NULL_TREE);
 
   /* Calculate the maximum value of any enumerator in this type.  */
 
@@ -5809,7 +5820,8 @@ finish_enum (enumtype, values)
   highprec = min_precision (maxnode, TREE_UNSIGNED (enumtype));
   precision = MAX (lowprec, highprec);
 
-  if (flag_short_enums || precision > TYPE_PRECISION (integer_type_node))
+  if (flag_short_enums || TYPE_PACKED (enumtype)
+      || precision > TYPE_PRECISION (integer_type_node))
     /* Use the width of the narrowest normal C type which is wide enough.  */
     TYPE_PRECISION (enumtype) = TYPE_PRECISION (type_for_size (precision, 1));
   else
