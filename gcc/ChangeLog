@@ -1,5 +1,10 @@
 2001-03-02  Richard Henderson  <rth@redhat.com>
 
+	* tm.texi (File Framework): Document UNALIGNED_SHORT_ASM_OP,
+	UNALIGNED_INT_ASM_OP, and UNALIGNED_DOUBLE_INT_ASM_OP.
+
+2001-03-02  Richard Henderson  <rth@redhat.com>
+
 	* Makefile.in (OBJS): Add dwarf2asm.o.
 	* dwarf2asm.c, dwarf2asm.h: New files.
 	* dwarf2out.c (*): Use them.

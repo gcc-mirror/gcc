@@ -5658,6 +5658,18 @@ A C string constant, including spacing, giving the pseudo-op to use for a
 sequence of single-byte constants.  If this macro is not defined, the
 default is @code{"\t.byte\t"}.
 
+@findex UNALIGNED_SHORT_ASM_OP
+@findex UNALIGNED_INT_ASM_OP
+@findex UNALIGNED_DOUBLE_INT_ASM_OP
+@item UNALIGNED_SHORT_ASM_OP
+@itemx UNALIGNED_INT_ASM_OP
+@itemx UNALIGNED_DOUBLE_INT_ASM_OP
+A C string constant, including spacing, giving the pseudo-op to use 
+to assemble 16, 32, and 64 bit integers respectively @emph{without}
+adding implicit padding or alignment.  These macros are required if
+DWARF 2 frame unwind is used.  On ELF systems, these will default
+to @code{.2byte}, @code{.4byte}, and @code{.8byte}.@refill
+
 @findex ASM_OUTPUT_ASCII
 @item ASM_OUTPUT_ASCII (@var{stream}, @var{ptr}, @var{len})
 A C statement to output to the stdio stream @var{stream} an assembler
