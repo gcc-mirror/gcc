@@ -2267,6 +2267,13 @@ copy_rtx_and_substitute (orig, map, for_lhs)
       PUT_MODE (copy, mode);
       XEXP (copy, 0) = copy_rtx_and_substitute (XEXP (orig, 0), map, 0);
       MEM_COPY_ATTRIBUTES (copy, orig);
+
+      /* If inlining and this is not for the LHS, turn off RTX_UNCHANGING_P
+	 since this may be an indirect reference to a parameter and the
+	 actual may not be readonly.  */
+      if (inlining && !for_lhs)
+	RTX_UNCHANGING_P (copy) = 0;
+
       return copy;
 
     default:

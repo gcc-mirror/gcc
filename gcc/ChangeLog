@@ -1,3 +1,8 @@
+Thu Dec 27 20:39:55 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* integrate.c (copy_rtx_and_substitute, case MEM): If inlining
+	and not for LHS, clear RTX_UNCHANGING_P.
+
 2001-12-28  Philipp Thomas  <pthomas@suse.de>
 
 	* cppfiles.c (stack_include_file): Don't translate <stdin>.
