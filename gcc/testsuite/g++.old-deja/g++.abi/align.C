@@ -95,7 +95,7 @@ main ()
 #endif  /* HAVE_IA64_TYPES  */
   if (sizeof  (void *)                  !=  4)
     return 33;
-  if (alignof (pointer)                 !=  4)
+  if (alignof (void *)                  !=  4)
     return 34;
   if (sizeof  (void (*) ())             !=  4)
     return 35;
