@@ -1068,9 +1068,6 @@ update-sources : ada/treeprs.ads ada/einfo.h ada/sinfo.h ada/nmake.adb \
 	ada/nmake.ads
 	$(CP) $^ $(srcdir)/ada
 
-# Note: the strings below do not make sense for Ada strings in the OS/2
-#  case.  This is ignored for now since the OS/2 version doesn't use
-#  these -- there are no default locations.
 ada/sdefault.adb: ada/stamp-sdefault ; @true
 ada/stamp-sdefault : $(srcdir)/version.c $(srcdir)/move-if-change \
  Makefile
@@ -1104,7 +1101,7 @@ ada/stamp-sdefault : $(srcdir)/version.c $(srcdir)/move-if-change \
 
 ada/sdefault.o : ada/sdefault.ads ada/sdefault.adb ada/types.ads \
    ada/unchdeal.ads ada/system.ads ada/s-exctab.ads ada/s-stalib.ads \
-   ada/unchconv.ads
+   ada/unchconv.ads ada/osint.ads
 
 ADA_TREE_H = ada/ada-tree.h ada/ada-tree.def
 
