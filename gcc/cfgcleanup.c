@@ -19,7 +19,7 @@ along with GCC; see the file COPYING.  If not, write to the Free
 Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
-/* This file contains optimizer of the control flow.  The main entrypoint is
+/* This file contains optimizer of the control flow.  The main entry point is
    cleanup_cfg.  Following optimizations are performed:
 
    - Unreachable blocks removal

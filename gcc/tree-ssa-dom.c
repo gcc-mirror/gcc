@@ -642,7 +642,7 @@ tree_ssa_dominator_optimize (void)
   /* We emptyed the hash table earlier, now delete it completely.  */
   htab_delete (avail_exprs);
 
-  /* It is not nocessary to clear CURRDEFS, REDIRECTION_EDGES, VRP_DATA,
+  /* It is not necessary to clear CURRDEFS, REDIRECTION_EDGES, VRP_DATA,
      CONST_AND_COPIES, and NONZERO_VARS as they all get cleared at the bottom
      of the do-while loop above.  */
 
@@ -1076,7 +1076,7 @@ remove_local_expressions_from_table (varray_type locals,
 }
 
 /* Use the SSA_NAMES in LOCALS to restore TABLE to its original
-   state, stopping when there are LIMIT entires left in LOCALs.  */
+   state, stopping when there are LIMIT entries left in LOCALs.  */
 
 static void
 restore_nonzero_vars_to_original_value (varray_type locals,
@@ -1095,7 +1095,7 @@ restore_nonzero_vars_to_original_value (varray_type locals,
 }
 
 /* Use the source/dest pairs in LOCALS to restore TABLE to its original
-   state, stopping when there are LIMIT entires left in LOCALs.  */
+   state, stopping when there are LIMIT entries left in LOCALs.  */
 
 static void
 restore_vars_to_original_value (varray_type locals,
@@ -1365,7 +1365,7 @@ record_equivalences_from_phis (struct dom_walk_data *walk_data, basic_block bb)
 	 breaking out of the loop, then we have a PHI which may create
 	 a useful equivalence.  We do not need to record unwind data for
 	 this, since this is a true assignment and not an equivalence
-	 infered from a comparison.  All uses of this ssa name are dominated
+	 inferred from a comparison.  All uses of this ssa name are dominated
 	 by this assignment, so unwinding just costs time and space.  */
       if (i == PHI_NUM_ARGS (phi)
 	  && may_propagate_copy (lhs, rhs))
@@ -1659,7 +1659,7 @@ record_equality (tree x, tree y, varray_type *block_const_and_copies_p)
   /* For IEEE, -0.0 == 0.0, so we don't necessarily know the sign of a
      variable compared against zero.  If we're honoring signed zeros,
      then we cannot record this value unless we know that the value is
-     non-zero.  */
+     nonzero.  */
   if (HONOR_SIGNED_ZEROS (TYPE_MODE (TREE_TYPE (x)))
       && (TREE_CODE (y) != REAL_CST
 	  || REAL_VALUES_EQUAL (dconst0, TREE_REAL_CST (y))))
@@ -2405,7 +2405,7 @@ record_equivalences_from_stmt (tree stmt,
       /* If the RHS of the assignment is a constant or another variable that
 	 may be propagated, register it in the CONST_AND_COPIES table.  We
 	 do not need to record unwind data for this, since this is a true
-	 assignment and not an equivalence infered from a comparison.  All
+	 assignment and not an equivalence inferred from a comparison.  All
 	 uses of this ssa name are dominated by this assignment, so unwinding
 	 just costs time and space.  */
       if (may_optimize_p

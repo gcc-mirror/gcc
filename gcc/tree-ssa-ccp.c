@@ -1578,7 +1578,7 @@ maybe_fold_offset_to_component_ref (tree record_type, tree base, tree offset,
 
  found:
   /* If we get here, we've got an aggregate field, and a possibly 
-     non-zero offset into them.  Recurse and hope for a valid match.  */
+     nonzero offset into them.  Recurse and hope for a valid match.  */
   if (base_is_ptr)
     base = build1 (INDIRECT_REF, record_type, base);
   base = build (COMPONENT_REF, field_type, base, f);

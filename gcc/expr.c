@@ -4387,7 +4387,7 @@ store_expr (tree exp, rtx target, int want_value)
     return target;
 }
 
-/* Examine CTOR.  Discover how many scalar fields are set to non-zero
+/* Examine CTOR.  Discover how many scalar fields are set to nonzero
    values and place it in *P_NZ_ELTS.  Discover how many scalar fields
    are set to non-constant values and place it in  *P_NC_ELTS.  */
 

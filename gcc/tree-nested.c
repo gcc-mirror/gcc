@@ -474,7 +474,7 @@ get_nl_goto_field (struct nesting_info *info)
 
       /* For __builtin_nonlocal_goto, we need N words.  The first is the
 	 frame pointer, the rest is for the target's stack pointer save
-	 area.  The number of words is controled by STACK_SAVEAREA_MODE;
+	 area.  The number of words is controlled by STACK_SAVEAREA_MODE;
 	 not the best interface, but it'll do for now.  */
       if (Pmode == ptr_mode)
 	type = ptr_type_node;
@@ -987,7 +987,7 @@ convert_nl_goto_reference (tree *tp, int *walk_subtrees, void *data)
   /* The original user label may also be use for a normal goto, therefore
      we must create a new label that will actually receive the abnormal
      control transfer.  This new label will be marked LABEL_NONLOCAL; this
-     mark will trigger proper behaviour in the cfg, as well as cause the
+     mark will trigger proper behavior in the cfg, as well as cause the
      (hairy target-specific) non-local goto receiver code to be generated
      when we expand rtl.  */
   new_label = create_artificial_label ();
@@ -1316,7 +1316,7 @@ finalize_nesting_tree_1 (struct nesting_info *root)
       sf->has_nonlocal_label = 1;
     }
 
-  /* Make sure all new local variables get insertted into the
+  /* Make sure all new local variables get inserted into the
      proper BIND_EXPR.  */
   if (root->new_local_var_chain)
     declare_tmp_vars (root->new_local_var_chain,

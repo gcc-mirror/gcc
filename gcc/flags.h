@@ -424,7 +424,7 @@ extern int flag_gen_aux_info;
 
 extern int flag_shared_data;
 
-/* Controls the activiation of SMS modulo scheduling. */
+/* Controls the activation of SMS modulo scheduling. */
 extern int flag_modulo_sched;
 
 /* flag_schedule_insns means schedule insns within basic blocks (before

@@ -1,3 +1,13 @@
+2004-05-30  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* c-common.c, calls.c, cfgcleanup.c, cgraph.c, cgraphunit.c,
+	ddg.c, ddg.h, df.c, df.h, except.c, expr.c, flags.h,
+	fold-const.c, gcc.c, gimplify.c, haifa-sched.c,
+	modulo-sched.c, tree-inline.c, tree-into-ssa.c, tree-nested.c,
+	tree-nrv.c, tree-ssa-ccp.c, tree-ssa-dom.c, tree-ssa-live.c,
+	tree-ssa-loop.c, tree-ssa-pre.c, tree-tailcall.c, tree.h: Fix
+	comment typos.  Follow spelling conventions.
+
 2004-05-29  Geoffrey Keating  <geoffk@apple.com>
 
 	* gengtype-yacc.y: Add NESTED_PTR token.

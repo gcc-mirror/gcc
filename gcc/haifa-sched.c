@@ -259,7 +259,7 @@ static rtx note_list;
    description interface, MAX_INSN_QUEUE_INDEX is a power of two minus
    one which is larger than maximal time of instruction execution
    computed by genattr.c on the base maximal time of functional unit
-   reservations and geting a result.  This is the longest time an
+   reservations and getting a result.  This is the longest time an
    insn may be queued.  */
 
 #define MAX_INSN_QUEUE_INDEX max_insn_queue_index_macro_value

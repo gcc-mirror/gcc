@@ -61,7 +61,7 @@ The callgraph:
       The function inlining information is decided in advance and maintained
       in the callgraph as so called inline plan.
       For each inlined call, the callee's node is cloned to represent the
-      new function copy produced by inlininer.
+      new function copy produced by inliner.
       Each inlined call gets a unique corresponding clone node of the callee
       and the data structure is updated while inlining is performed, so
       the clones are eliminated and their callee edges redirected to the

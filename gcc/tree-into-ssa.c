@@ -473,7 +473,7 @@ rewrite_initialize_block_local_data (struct dom_walk_data *walk_data ATTRIBUTE_U
                                                                                 
   /* We get cleared memory from the allocator, so if the memory is
      not cleared, then we are re-using a previously allocated entry.  In
-     that case, we can also re-use the underlying virtal arrays.  Just
+     that case, we can also re-use the underlying virtual arrays.  Just
      make sure we clear them before using them!  */
   if (recycled && bd->block_defs && VARRAY_ACTIVE_SIZE (bd->block_defs) > 0)
     abort ();

@@ -57,7 +57,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
        IEEE Trans. on Comps., 50(3), March 2001
    [2] J. Llosa, A. Gonzalez, E. Ayguade, and M. Valero.
        Swing Modulo Scheduling: A Lifetime Sensitive Approach.
-       PACT '96 , pages 80-87, October 1996 (Boston - Massachussets - USA).
+       PACT '96 , pages 80-87, October 1996 (Boston - Massachusetts - USA).
 
    The basic structure is:
    1. Build a data-dependence graph (DDG) for each loop.
@@ -156,7 +156,7 @@ void rotate_partial_schedule (partial_schedule_ptr, int);
 void set_row_column_for_ps (partial_schedule_ptr);
 
 
-/* This page defines constants and structures for the modulo scheduiing
+/* This page defines constants and structures for the modulo scheduling
    driver.  */
 
 /* As in haifa-sched.c:  */
@@ -202,7 +202,7 @@ typedef struct node_sched_params
      original register defined by the node.  */
   rtx first_reg_move;
 
-  /* The number of register-move instructions added, immediately preceeding
+  /* The number of register-move instructions added, immediately preceding
      first_reg_move.  */
   int nreg_moves;
 
@@ -210,7 +210,7 @@ typedef struct node_sched_params
   int stage;  /* Holds time / ii.  */
 
   /* The column of a node inside the ps.  If nodes u, v are on the same row,
-     u will preceed v if column (u) < column (v).  */
+     u will precede v if column (u) < column (v).  */
   int column;
 } *node_sched_params_ptr;
 
@@ -472,7 +472,7 @@ generate_reg_moves (partial_schedule_ptr ps)
 	  {
 	    int nreg_moves4e = (SCHED_TIME (e->dest) - SCHED_TIME (e->src)) / ii;
 
-	    /* If dest preceeds src in the schedule of the kernel, then dest
+	    /* If dest precedes src in the schedule of the kernel, then dest
 	       will read before src writes and we can save one reg_copy.  */
 	    if (SCHED_ROW (e->dest) == SCHED_ROW (e->src)
 		&& SCHED_COLUMN (e->dest) < SCHED_COLUMN (e->src))
@@ -605,7 +605,7 @@ duplicate_insns_of_cycles (partial_schedule_ptr ps, int from_stage,
 	if (for_prolog)
 	  {
 	    /* SCHED_STAGE (u_node) >= from_stage == 0.  Generate increasing
-	       number of reg_moves starting with the second occurance of
+	       number of reg_moves starting with the second occurrence of
 	       u_node, which is generated if its SCHED_STAGE <= to_stage.  */
 	    i_reg_moves = to_stage - SCHED_STAGE (u_node);
 	    i_reg_moves = MAX (i_reg_moves, 0);

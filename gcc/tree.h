@@ -1008,7 +1008,7 @@ struct tree_vec GTY(())
 
 /* Define fields and accessors for some nodes that represent expressions.  */
 
-/* Non-zero if NODE is an emtpy statement (NOP_EXPR <0>).  */
+/* Nonzero if NODE is an empty statement (NOP_EXPR <0>).  */
 #define IS_EMPTY_STMT(NODE)	(TREE_CODE (NODE) == NOP_EXPR \
 				 && VOID_TYPE_P (TREE_TYPE (NODE)) \
 				 && integer_zerop (TREE_OPERAND (NODE, 0)))

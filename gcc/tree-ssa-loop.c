@@ -268,7 +268,7 @@ copy_loop_headers (void)
 
   create_preheaders (loops, CP_SIMPLE_PREHEADERS);
 
-  /* We do not try to keep the information about irreductible regions
+  /* We do not try to keep the information about irreducible regions
      up-to-date.  */
   loops->state &= ~LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS;
 

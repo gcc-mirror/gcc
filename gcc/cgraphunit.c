@@ -1020,7 +1020,7 @@ cgraph_estimate_growth (struct cgraph_node *node)
 
 /* E is expected to be an edge being inlined.  Clone destination node of
    the edge and redirect it to the new clone.
-   DUPLICATE is used for bookeeping on whether we are actually creating new
+   DUPLICATE is used for bookkeeping on whether we are actually creating new
    clones or re-using node originally representing out-of-line function call.
    */
 void
@@ -1191,7 +1191,7 @@ cgraph_recursive_inlining_p (struct cgraph_node *to,
     recursive = what->decl == to->global.inlined_to->decl;
   else
     recursive = what->decl == to->decl;
-  /* Marking recursive function inlinine has sane semantic and thus we should
+  /* Marking recursive function inline has sane semantic and thus we should
      not warn on it.  */
   if (recursive && reason)
     *reason = (what->local.disregard_inline_limits

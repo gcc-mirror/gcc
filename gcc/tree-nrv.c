@@ -54,7 +54,7 @@ struct nrv_data
      this function's RETURN_EXPR statements.  */
   tree var;
 
-  /* This is the function's RESULT_DECL.  We will replace all occurences
+  /* This is the function's RESULT_DECL.  We will replace all occurrences
      of VAR with RESULT_DECL when we apply this optimization.  */
   tree result;
 };
@@ -84,7 +84,7 @@ finalize_nrv_r (tree *tp, int *walk_subtrees, void *data)
      to RESULT.  */
   else if (TREE_CODE (*tp) == RETURN_EXPR)
     TREE_OPERAND (*tp, 0) = dp->result;
-  /* Replace all occurences of VAR with RESULT.  */
+  /* Replace all occurrences of VAR with RESULT.  */
   else if (*tp == dp->var)
     *tp = dp->result;
 

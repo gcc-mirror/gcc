@@ -2319,7 +2319,7 @@ truth_value_p (enum tree_code code)
 
 /* Return nonzero if two operands (typically of the same tree node)
    are necessarily equal.  If either argument has side-effects this
-   function returns zero.  FLAGS modifies behaviour as follows:
+   function returns zero.  FLAGS modifies behavior as follows:
 
    If OEP_ONLY_CONST is set, only return nonzero for constants.
    This function tests whether the operands are indistinguishable;
@@ -5243,7 +5243,7 @@ fold_inf_compare (enum tree_code code, tree type, tree arg0, tree arg1)
 }
 
 /* Subroutine of fold() that optimizes comparisons of a division by
-   a non-zero integer constant against an integer constant, i.e.
+   a nonzero integer constant against an integer constant, i.e.
    X/C1 op C2.
 
    CODE is the comparison operator: EQ_EXPR, NE_EXPR, GT_EXPR, LT_EXPR,
