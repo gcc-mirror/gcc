@@ -1,5 +1,5 @@
 /* ServerSocketChannelImpl.java -- 
-   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -69,7 +69,7 @@ public final class ServerSocketChannelImpl extends ServerSocketChannel
   {
     return serverSocket.getPlainSocketImpl().getNativeFD();
   }
- 
+  
   public void finalizer()
   {
     if (connected)
@@ -107,6 +107,11 @@ public final class ServerSocketChannelImpl extends ServerSocketChannel
     
     try
       {
+        begin();
+        serverSocket.getPlainSocketImpl().setInChannelOperation(true);
+          // indicate that a channel is initiating the accept operation
+          // so that the socket ignores the fact that we might be in
+          // non-blocking mode.
         NIOSocket socket = (NIOSocket) serverSocket.accept();
         completed = true;
         return socket.getChannel();
@@ -117,6 +122,7 @@ public final class ServerSocketChannelImpl extends ServerSocketChannel
       }
     finally
       {
+        serverSocket.getPlainSocketImpl().setInChannelOperation(false);
         end (completed);
       }
   }

@@ -1,5 +1,6 @@
 /* Socket.java -- Client socket implementation
-   Copyright (C) 1998, 1999, 2000, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2002, 2003, 2004
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -420,8 +421,13 @@ public class Socket
     if (! (endpoint instanceof InetSocketAddress))
       throw new IllegalArgumentException("unsupported address type");
 
+    // The Sun spec says that if we have an associated channel and
+    // it is in non-blocking mode, we throw an IllegalBlockingModeException.
+    // However, in our implementation if the channel itself initiated this
+    // operation, then we must honor it regardless of its blocking mode.
     if (getChannel() != null
-        && !getChannel().isBlocking ())
+        && !getChannel().isBlocking ()
+        && !((PlainSocketImpl) getImpl()).isInChannelOperation())
       throw new IllegalBlockingModeException ();
   
     if (!isBound ())

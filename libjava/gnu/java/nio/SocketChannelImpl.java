@@ -1,5 +1,5 @@
 /* SocketChannelImpl.java -- 
-   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -136,23 +136,35 @@ public final class SocketChannelImpl extends SocketChannel
     if (((InetSocketAddress) remote).isUnresolved())
       throw new UnresolvedAddressException();
     
-    if (isBlocking())
-      {
-        // Do blocking connect.
-        socket.connect (remote);
-        return true;
-      }
-
-    // Do non-blocking connect.
     try
       {
-        socket.connect (remote, NIOConstants.DEFAULT_TIMEOUT);
-        return true;
+        socket.getPlainSocketImpl().setInChannelOperation(true);
+          // indicate that a channel is initiating the accept operation
+          // so that the socket ignores the fact that we might be in
+          // non-blocking mode.
+        
+        if (isBlocking())
+          {
+            // Do blocking connect.
+            socket.connect (remote);
+            return true;
+          }
+
+        // Do non-blocking connect.
+        try
+          {
+            socket.connect (remote, NIOConstants.DEFAULT_TIMEOUT);
+            return true;
+          }
+        catch (SocketTimeoutException e)
+          {
+            connectionPending = true;
+            return false;
+          }
       }
-    catch (SocketTimeoutException e)
+    finally
       {
-        connectionPending = true;
-        return false;
+        socket.getPlainSocketImpl().setInChannelOperation(false);
       }
   }
     
@@ -238,12 +250,14 @@ public final class SocketChannelImpl extends SocketChannel
     try
       {
         begin();
+        socket.getPlainSocketImpl().setInChannelOperation(true);
         readBytes = input.read (data, offset, len);
         completed = true;
       }
     finally
       {
         end (completed);
+        socket.getPlainSocketImpl().setInChannelOperation(false);
       }
 
     if (readBytes > 0)
@@ -301,7 +315,20 @@ public final class SocketChannelImpl extends SocketChannel
       }
 
     OutputStream output = socket.getOutputStream();
-    output.write (data, offset, len);
+    boolean completed = false;
+
+    try
+      {
+        begin();
+        socket.getPlainSocketImpl().setInChannelOperation(true);
+        output.write (data, offset, len);
+        completed = true;
+      }
+    finally
+      {
+        end (completed);
+        socket.getPlainSocketImpl().setInChannelOperation(false);
+      }
 
     if (src.hasArray())
       {
