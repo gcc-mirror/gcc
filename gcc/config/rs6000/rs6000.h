@@ -1974,7 +1974,8 @@ typedef struct rs6000_args
   && GET_CODE (XEXP (X, 0)) == REG				\
   && INT_REG_OK_FOR_BASE_P (XEXP (X, 0), (STRICT))		\
   && LEGITIMATE_ADDRESS_INTEGER_P (XEXP (X, 1), 0)		\
-  && (! ALTIVEC_VECTOR_MODE (MODE) || INTVAL (X) == 0)		\
+  && (! ALTIVEC_VECTOR_MODE (MODE)                            \
+      || (GET_CODE (XEXP (X,1)) == CONST_INT && INTVAL (XEXP (X,1)) == 0)) \
   && (((MODE) != DFmode && (MODE) != DImode)			\
       || (TARGET_32BIT						\
 	  ? LEGITIMATE_ADDRESS_INTEGER_P (XEXP (X, 1), 4) 	\
