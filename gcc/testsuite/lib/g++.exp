@@ -21,6 +21,7 @@
 #
 # g++ support library routines
 #
+load_lib prune.exp
 
 #
 # GXX_UNDER_TEST is the compiler under test.
@@ -287,14 +288,6 @@ if { [info procs runtest_file_p] == "" } then {
 	    }
 	}
 	return 1
-    }
-}
-
-# Provide a definition of this if missing (delete after next dejagnu release).
-
-if { [info procs prune_warnings] == "" } then {
-    proc prune_warnings { text } {
-	return $text
     }
 }
 
