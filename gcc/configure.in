@@ -1874,12 +1874,6 @@ changequote(,)dnl
 changequote([,])dnl
 	fi
 fi
-if test x"$gcc_cv_as_hidden" = xyes; then
-	AC_DEFINE(HAVE_GAS_HIDDEN, 1,
-		[Define if your assembler supports .hidden.])
-fi
-AC_MSG_RESULT($gcc_cv_as_hidden)
-libgcc_visibility=$gcc_cv_as_hidden
 case "$target" in
   mips-sgi-irix6*)
     if test x"$gnu_ld_flag" = x"no"; then
@@ -1889,10 +1883,16 @@ case "$target" in
       # -call_shared (passed by default to the linker) and -r (used to
       # link the object file generated without .hidden directives with
       # one that hides symbols), so we also lose.
-      libgcc_visibility=no
+      gcc_cv_as_hidden=no
     fi
     ;;
 esac
+if test x"$gcc_cv_as_hidden" = xyes; then
+	AC_DEFINE(HAVE_GAS_HIDDEN, 1,
+		[Define if your assembler supports .hidden.])
+fi
+AC_MSG_RESULT($gcc_cv_as_hidden)
+libgcc_visibility=$gcc_cv_as_hidden
 AC_SUBST(libgcc_visibility)
 
 AC_MSG_CHECKING(assembler leb128 support)
