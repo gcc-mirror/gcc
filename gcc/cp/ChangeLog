@@ -1,3 +1,65 @@
+1999-09-27  Nathan Sidwell  <nathan@acm.org>
+
+	Augment stringification of trees.
+	* cp-tree.h (tree_string_flags): New error stringifying enumeration.
+	(fndecl_as_string, type_as_string_real, args_as_string,
+	code_as_string, language_as_string, parm_as_string,
+	op_as_string, assop_as_string, cv_as_string): Remove.
+	(type_as_string, decl_as_string, expr_as_string): Adjust prototype.
+	(context_as_string): Declare new function.
+	* error.c (cp_printers): Move definition.
+	(OB_UNPUT): Remove.
+	(OB_END_TEMPLATE_ID): Adjust.
+	(interesting_scope_p): Remove.
+	(dump_scope): New static function.
+	(dump_qualifiers): Adjust prototype, reimplement.
+	(dump_template_value): Use tree_string_flags.
+	(dump_type_real): Move back to dump_type.
+	(dump_type): Adjust prototype. Use tree_string_flags.
+	(dump_aggr_type): Likewise. Use dump_template_parms.
+	(dump_type_prefix): Adjust prototype. Use tree_string_flags. Return pad flag.
+	(dump_type_suffix): Adjust prototype. Use tree_string_flags.
+	(dump_simple_decl): Likewise.
+	(dump_decl): Likewise. Use dump_template_decl.
+	(dump_template_decl): New static function broken out of dump_decl.
+	(dump_function_decl): Adjust prototype. Use tree_string_flags.
+	(dump_parameters): Likewise. Prefix space.
+	(dump_exception_spec): Adjust prototype. Use tree_string_flags.
+	(dump_function_name): Likewise. Use dump_template_parms.
+	(dump_template_parms): New static function broken out of
+	dump_function_name.
+	(dump_expr_list): Adjust prototype. Use tree_string_flags.
+	(dump_expr): Likewise.
+	(fndecl_as_string): Removed
+	(type_as_string_real): Removed
+	(dump_binary_op): Adjust prototype. Use tree_string_flags.
+	(dump_unary_op): Likewise.
+	(type_as_string): Likewise.
+	(expr_as_string): Likewise.
+	(decl_as_string): Likewise.
+	(context_as_string): New function.
+	(lang_decl_name): Adjust.
+	(decl_to_string): New static print callback.
+	(expr_to_string): Likewise.
+	(fndecl_to_string): Likewise.
+	(code_as_string): Renamed to ...
+	(code_to_string): ... here. Adjust.
+	(language_as_string): Renamed to ...
+	(language_to_string): ... here. Adjust.
+	(parm_as_string): Renamed to ...
+	(parm_to_string): ... here.
+	(op_as_string): Renamed to ...
+	(op_to_string): ... here.
+	(assop_as_string): Renamed to ...
+	(assop_to_string): ... here.
+	(type_to_string): New static print callback.
+	(args_as_string): Renamed to ...
+	(args_to_string): ... here. Adjust.
+	(cv_as_string): Renamed to ...
+	(cv_to_string): ... here. Adjust.
+	* pt.c (mangle_class_name_for_template): Use tree_string_flags.
+	(print_template_context): Likewise.
+
 1999-09-26  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (expand_throw): Remove prototype.

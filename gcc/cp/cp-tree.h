@@ -3122,6 +3122,30 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, OP_FLAG, TYPENAME_FLAG };
 #define TEMPLATE_TYPE_DECL(NODE) \
   (TEMPLATE_PARM_DECL (TEMPLATE_TYPE_PARM_INDEX (NODE)))
 
+/* Control stringification of trees (types, decls & exprs).
+   Bit or them together.  */
+enum tree_string_flags
+{
+    TS_PLAIN,                    /* nothing special */
+    TS_CHASE_TYPEDEFS = 1 <<  0, /* look through typedefs */
+    TS_DECORATE       = 1 <<  1, /* decorate things */
+    TS_FUNC_NORETURN  = 1 <<  2, /* inhibit function return type */
+    TS_FUNC_THROW     = 1 <<  3, /* show throw spec */
+    TS_PARM_DEFAULTS  = 1 <<  4, /* show parm defaults */
+    TS_EXPR_PARENS    = 1 <<  5, /* enclose in parens */
+    TS_AGGR_TAGS      = 1 <<  6, /* show struct tags */
+    TS_DECL_TYPE      = 1 <<  7, /* show decl's type */
+    TS_FUNC_SCOPE     = 1 <<  8, /* show function scope */
+    TS_PEDANTIC_NAME  = 1 <<  9, /* pedantically name things */
+    TS_TEMPLATE_PREFIX= 1 << 10, /* show template <parms> prefix */
+    
+    /* Internal use flags */
+    TS_TEMPLATE_PARM  = 1 << 11, /* decl is really a non-type template parm */
+    TS_TEMPLATE_PLAIN = 1 << 12, /* don't decorate primary template_name */
+    
+    TS_NEXT_BIT       = 13       /* next available bit */
+};
+
 /* in lex.c  */
 /* Indexed by TREE_CODE, these tables give C-looking names to
    operators represented by TREE_CODES.  For example,
@@ -3430,18 +3454,10 @@ extern void cp_deprecated                       PROTO((const char*));
 
 /* in error.c */
 extern void init_error				PROTO((void));
-extern const char *fndecl_as_string		PROTO((tree, int));
-extern const char *type_as_string		PROTO((tree, int));
-extern const char *type_as_string_real		PROTO((tree, int, int));
-extern const char *args_as_string		PROTO((tree, int));
-extern const char *decl_as_string		PROTO((tree, int));
-extern const char *expr_as_string		PROTO((tree, int));
-extern const char *code_as_string		PROTO((enum tree_code, int));
-extern const char *language_as_string		PROTO((enum languages, int));
-extern const char *parm_as_string		PROTO((int, int));
-extern const char *op_as_string			PROTO((enum tree_code, int));
-extern const char *assop_as_string		PROTO((enum tree_code, int));
-extern const char *cv_as_string			PROTO((tree, int));
+extern const char *type_as_string		PROTO((tree, enum tree_string_flags));
+extern const char *decl_as_string		PROTO((tree, enum tree_string_flags));
+extern const char *expr_as_string		PROTO((tree, enum tree_string_flags));
+extern const char *context_as_string            PROTO((tree, enum tree_string_flags));
 extern const char *lang_decl_name		PROTO((tree, int));
 extern const char *cp_file_of			PROTO((tree));
 extern int cp_line_of				PROTO((tree));
