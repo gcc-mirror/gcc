@@ -7171,10 +7171,7 @@ check_inner_class_access (decl, enclosing_decl, cl)
    was found, it is reported and accounted for.  */
 
 static int
-check_pkg_class_access (class_name, cl, verbose)
-     tree class_name;
-     tree cl;
-     bool verbose;
+check_pkg_class_access (tree class_name, tree cl, bool verbose)
 {
   tree type;
 
