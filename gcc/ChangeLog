@@ -3,6 +3,8 @@
 	* config.gcc (cris-*-linux*, tm_file): Rearrange order.
 	* config/cris/linux.h (LIB_SPEC, STARTFILE_SPEC): Don't redefine.
 
+	* config/cris/cris.h (EH_RETURN_DATA_REGNO): Fix formatting.
+
 2001-10-31  Zack Weinberg  <zack@codesourcery.com>
 
 	* Makefile.in (INTL_TARGETS, POSUB): Delete all references.
