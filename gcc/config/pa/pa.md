@@ -2406,7 +2406,7 @@
 }")
 
 (define_expand "reload_indi"
-  [(set (match_operand:DI 0 "register_operand" "=f")
+  [(set (match_operand:DI 0 "register_operand" "=Z")
 	(match_operand:DI 1 "non_hard_reg_operand" ""))
    (clobber (match_operand:SI 2 "register_operand" "=&r"))]
   ""
@@ -2422,7 +2422,7 @@
 
 (define_expand "reload_outdi"
   [(set (match_operand:DI 0 "general_operand" "")
-	(match_operand:DI 1 "register_operand" "f"))
+	(match_operand:DI 1 "register_operand" "Z"))
    (clobber (match_operand:SI 2 "register_operand" "=&r"))]
   ""
   "
