@@ -2572,6 +2572,7 @@ generate_bytecode_insns (tree exp, int target, struct jcf_partial *state)
 	    OP1 (OPCODE_multianewarray);
 	    OP2 (index);
 	    OP1 (ndims);
+	    NOTE_POP (ndims - 1);
 	    break;
 	  }
 	else if (f == soft_anewarray_node)
