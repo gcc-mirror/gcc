@@ -2681,6 +2681,7 @@ dbxout_parms (parms)
 	      current_sym_value
 	        = INTVAL (XEXP (XEXP (XEXP (DECL_RTL (parms), 0), 0), 1));
 	    current_sym_addr = 0;
+	    current_sym_code = N_PSYM;
 
 	    FORCE_TEXT;
 	    fprintf (asmfile, "%s\"%s:v", ASM_STABS_OP, decl_name);
