@@ -306,7 +306,7 @@ struct __rope_RopeBase {
             {
                 return InterlockedDecrement(&refcount);
             }
-#	elif defined(_PTHREADS)
+#	elif defined(__STL_PTHREADS)
 	    // This should be portable, but performance is expected
 	    // to be quite awful.  This really needs platform specific
 	    // code.
@@ -939,7 +939,7 @@ class rope {
 	    static cstrptr atomic_swap(cstrptr *p, cstrptr q) {
 		return (cstrptr) InterlockedExchange((LPLONG)p, (LONG)q);
 	    }
-#	elif defined(_PTHREADS)
+#	elif defined(__STL_PTHREADS)
 	    // This should be portable, but performance is expected
 	    // to be quite awful.  This really needs platform specific
 	    // code.

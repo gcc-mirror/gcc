@@ -1004,7 +1004,7 @@ void __final_insertion_sort(RandomAccessIterator first,
 template <class Size>
 inline Size __lg(Size n) {
   Size k;
-  for (k = 0; n != 1; n >>= 1) ++k;
+  for (k = 0; n > 1; n >>= 1) ++k;
   return k;
 }
 
