@@ -280,8 +280,8 @@ namespace std
 
     template<typename _Char, typename _Traits, typename _Alloc>
       bool  
-      operator()(const basic_string<_Char,_Traits,_Alloc>& __s1,
-		 const basic_string<_Char,_Traits,_Alloc>& __s2) const;
+      operator()(const basic_string<_Char, _Traits, _Alloc>& __s1,
+		 const basic_string<_Char, _Traits, _Alloc>& __s2) const;
 
     // Global locale objects:
     static locale 

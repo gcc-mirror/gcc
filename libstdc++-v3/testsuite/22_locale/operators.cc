@@ -18,13 +18,12 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-// 22.1.2 locale globals [lib.locale.global.templates]
+// 22.1.1.4 locale operators [lib.locale.operators]
 
 #include <locale>
 #include <debug_assert.h>
 
 typedef std::codecvt<char, char, mbstate_t> ccodecvt;
-
 class gnu_codecvt: public ccodecvt { }; 
 
 void test01()
@@ -32,33 +31,18 @@ void test01()
   using namespace std;
 
   bool test = true;
+  string str1, str2;
 
   // construct a locale object with the C facet
   const locale& 	cloc = locale::classic();
-  // sanity check the constructed locale has the normal facet
-  VERIFY( has_facet<ccodecvt>(cloc) );
-
   // construct a locale object with the specialized facet.
   locale                loc(locale::classic(), new gnu_codecvt);
-  // sanity check the constructed locale has the specialized facet.
-  VERIFY( has_facet<gnu_codecvt>(loc) );
+  VERIFY ( cloc != loc );
+  VERIFY ( !(cloc == loc) );
 
-  try 
-    { const ccodecvt& cvt01 = use_facet<ccodecvt>(cloc); }
-  catch(...)
-    { VERIFY( false ); }
-
-  try
-    { const gnu_codecvt& cvt02 = use_facet<gnu_codecvt>(loc); } 
-  catch(...)
-    { VERIFY( false ); }
-
-  try 
-    { const ccodecvt& cvt03 = use_facet<gnu_codecvt>(cloc); }
-  catch(bad_cast& obj)
-    { VERIFY( true ); }
-    catch(...)
-    { VERIFY( false ); }
+  str1 = cloc.name();
+  str2 = loc.name();  
+  VERIFY( loc(str1, str2) == false );
 }
 
 int main ()

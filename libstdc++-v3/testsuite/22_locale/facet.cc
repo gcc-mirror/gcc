@@ -25,49 +25,8 @@
 #include <debug_assert.h>
 
 // 1 a class if a facet if it is publicly derived from another facet
-class gnu_input_iterator: public std::iterator<std::input_iterator_tag, char>
-{
-  value_type it;
-public:
-  gnu_input_iterator(value_type orig): it(orig) { }
-
-  value_type 
-  operator*() const { return it; }
-
-  reference
-  operator++(){ return ++it; }
-
-  reference
-  operator++(int){ ++it; return it; }
-};
-
-bool
-operator==(const gnu_input_iterator& lhs, const gnu_input_iterator& rhs)
-{ return true; }
-
-bool
-operator!=(const gnu_input_iterator& lhs, const gnu_input_iterator& rhs)
-{ return true; }
-
-class gnu_output_iterator: public std::iterator<std::output_iterator_tag, char>
-{ 
-  value_type it;
-public:
-  gnu_output_iterator(value_type orig): it(orig) { }
-
-  value_type
-  operator*(){ return it; }
-
-  gnu_output_iterator&
-  operator=(value_type obj){ it = obj; return *this; }
-
-  reference 
-  operator++(){ return ++it; }
-
-  reference 
-  operator++(int){ ++it; return it; }
-
-};
+typedef std::istreambuf_iterator<char>		input_iterator;
+typedef std::ostreambuf_iterator<char>		output_iterator;
 
 class gnu_collate: public std::collate<char> { }; 
 class gnu_ctype: public std::ctype<char> { }; 
@@ -116,20 +75,20 @@ public:
 }; 
 
 
-class gnu_money_get_in: public std::money_get<char, gnu_input_iterator>
+class gnu_money_get_in: public std::money_get<char, input_iterator>
 {
 public:
   explicit
   gnu_money_get_in(size_t refs = 0)
-  : std::money_get<char, gnu_input_iterator>(refs) { }
+  : std::money_get<char, input_iterator>(refs) { }
 };
 
-class gnu_money_put_out: public std::money_put<char, gnu_output_iterator>
+class gnu_money_put_out: public std::money_put<char, output_iterator>
 {
 public:
   explicit
   gnu_money_put_out(size_t refs = 0)
-  : std::money_put<char, gnu_output_iterator>(refs) { }
+  : std::money_put<char, output_iterator>(refs) { }
 };
 
 class gnu_numpunct_byname: public std::numpunct_byname<char>
@@ -140,20 +99,20 @@ public:
   : std::numpunct_byname<char>(c, refs) { }
 };
 
-class gnu_num_get_in: public std::num_get<char, gnu_input_iterator> 
+class gnu_num_get_in: public std::num_get<char, input_iterator> 
 {
 public:
   explicit
   gnu_num_get_in(size_t refs = 0)
-  : std::num_get<char, gnu_input_iterator>(refs) { }
+  : std::num_get<char, input_iterator>(refs) { }
 };
 
-class gnu_num_put_out: public std::num_put<char, gnu_output_iterator> 
+class gnu_num_put_out: public std::num_put<char, output_iterator> 
 {
 public:
   explicit
   gnu_num_put_out(size_t refs = 0)
-  : std::num_put<char, gnu_output_iterator>(refs) { }
+  : std::num_put<char, output_iterator>(refs) { }
 };
 
 class gnu_time_get_byname: public std::time_get_byname<char>
@@ -164,12 +123,12 @@ public:
   : std::time_get_byname<char>(c, refs) { }
 };
 
-class gnu_time_get_in: public std::time_get<char, gnu_input_iterator>
+class gnu_time_get_in: public std::time_get<char, input_iterator>
 {
 public:
   explicit
   gnu_time_get_in(size_t refs = 0)
-  : std::time_get<char, gnu_input_iterator>(refs) { }
+  : std::time_get<char, input_iterator>(refs) { }
 };
 
 class gnu_time_put_byname: public std::time_put_byname<char> 
@@ -180,12 +139,12 @@ public:
   : std::time_put_byname<char>(c, refs) { }
 };
 
-class gnu_time_put_out: public std::time_put<char, gnu_output_iterator> 
+class gnu_time_put_out: public std::time_put<char, output_iterator> 
 {
 public:
   explicit
   gnu_time_put_out(size_t refs = 0)
-  : std::time_put<char, gnu_output_iterator>(refs) { }
+  : std::time_put<char, output_iterator>(refs) { }
 };
 
 class gnu_messages_byname: public std::messages_byname<char> 
@@ -227,8 +186,8 @@ void test01()
   gnu_time_put_byname		obj15("gnu_message_byname", 0);
   gnu_time_get_in		obj16(0);
   gnu_time_get_byname		obj17("gnu_message_byname", 0);
-  // gnu_num_put_out		obj18(0);
-  // gnu_num_get_in		obj19(0);
+  gnu_num_put_out		obj18(0);
+  gnu_num_get_in		obj19(0);
   gnu_numpunct_byname		obj20("gnu_message_byname", 0);
   gnu_money_put_out		obj21(0);
   gnu_money_get_in		obj22(0);
