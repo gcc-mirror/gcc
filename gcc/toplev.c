@@ -2779,9 +2779,8 @@ rest_of_compilation (decl)
 	{
 	  timevar_push (TV_JUMP);
 
-	  if (flag_delete_null_pointer_checks)
-	    if (delete_null_pointer_checks (insns))
-	      cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
+	  if (delete_null_pointer_checks (insns))
+	    cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
 	  timevar_pop (TV_JUMP);
 	}
 

@@ -21,6 +21,11 @@
 
 2002-06-16  Jeff Law <law@redhat.com>
 
+	* emit-rtl.c (gen_rtx_REG): Temporarily turn off automatic
+	sharing of hard registers.
+
+	* toplev.c (rest_of_compilation): Remove redundant conditional.
+
 	* toplev.c (rest_of_compilation): Perform a simpler, less costly
 	cleanup of the CFG when not optimizing.
 
