@@ -230,18 +230,18 @@ pwait (pid, status, flags)
 
 #endif /* MSDOS */
 
-#if defined (_WIN32)
+#if defined (_WIN32) && ! defined (__UWIN__)
 
 #include <process.h>
 
-#ifdef __CYGWIN32__
+#ifdef __CYGWIN__
 
 #define fix_argv(argvec) (argvec)
 
 extern int _spawnv ();
 extern int _spawnvp ();
 
-#else /* ! __CYGWIN32__ */
+#else /* ! __CYGWIN__ */
 
 /* This is a kludge to get around the Microsoft C spawn functions' propensity
    to remove the outermost set of double quotes from all arguments.  */
@@ -279,7 +279,7 @@ fix_argv (argvec)
 
   return (const char * const *) argvec;
 }
-#endif /* __CYGWIN32__ */
+#endif /* __CYGWIN__ */
 
 #include <io.h>
 #include <fcntl.h>
@@ -396,7 +396,7 @@ pwait (pid, status, flags)
      int *status;
      int flags;
 {
-#ifdef __CYGWIN32__
+#ifdef __CYGWIN__
   return wait (status);
 #else
   int termstat;
@@ -416,10 +416,10 @@ pwait (pid, status, flags)
     *status = (((termstat) & 0xff) << 8);
 
   return pid;
-#endif /* __CYGWIN32__ */
+#endif /* __CYGWIN__ */
 }
 
-#endif /* _WIN32 */
+#endif /* _WIN32 && ! __UWIN__ */
 
 #ifdef OS2
 
@@ -602,7 +602,7 @@ pfinish ()
 
 /* include for Unix-like environments but not for Dos-like environments */
 #if ! defined (__MSDOS__) && ! defined (OS2) && ! defined (MPW) \
-    && ! defined (_WIN32)
+    && ! (defined (_WIN32) && ! defined (__UWIN__))
 
 extern int execv ();
 extern int execvp ();
@@ -731,4 +731,4 @@ pwait (pid, status, flags)
   return pid;
 }
 
-#endif /* ! __MSDOS__ && ! OS2 && ! MPW && ! _WIN32 */
+#endif /* ! __MSDOS__ && ! OS2 && ! MPW && ! (_WIN32 && ! __UWIN__) */

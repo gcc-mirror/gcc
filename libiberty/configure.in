@@ -276,6 +276,13 @@ if test -z "${setobjs}"; then
     AC_DEFINE(HAVE_SYS_ERRLIST)
     ;;
 
+  *-*-uwin*)
+    # Under some versions of uwin, vfork is notoriously buggy and the test 
+    # can hang configure; on other versions, vfork exists just as a stub.
+    # FIXME: This should be removed once vfork in uwin's runtime is fixed.
+    ac_cv_func_vfork_works=no
+    ;;
+
   esac
 
   # We haven't set the list of objects yet.  Use the standard autoconf

@@ -43,22 +43,22 @@ PTR sbrk PARAMS ((ptrdiff_t));
 /* The program name if set.  */
 static const char *name = "";
 
-#if ! defined (_WIN32) || defined (__CYGWIN32__)
+#if ! defined (_WIN32) || defined (__CYGWIN__) || defined (__UWIN__)
 /* The initial sbrk, set when the program name is set. Not used for win32
    ports other than cygwin32.  */
 static char *first_break = NULL;
-#endif
+#endif /* ! _WIN32 || __CYGWIN __ || __UWIN__ */
 
 void
 xmalloc_set_program_name (s)
      const char *s;
 {
   name = s;
-#if ! defined (_WIN32) || defined (__CYGWIN32__)
+#if ! defined (_WIN32) || defined (__CYGWIN__) || defined (__UWIN__)
   /* Win32 ports other than cygwin32 don't have brk() */
   if (first_break == NULL)
     first_break = (char *) sbrk (0);
-#endif /* ! _WIN32 || __CYGWIN32 __ */
+#endif /* ! _WIN32 || __CYGWIN __ || __UWIN__ */
 }
 
 PTR
@@ -72,7 +72,7 @@ xmalloc (size)
   newmem = malloc (size);
   if (!newmem)
     {
-#if ! defined (_WIN32) || defined (__CYGWIN32__)
+#if ! defined (_WIN32) || defined (__CYGWIN__) || defined (__UWIN__)
       extern char **environ;
       size_t allocated;
 
@@ -89,7 +89,7 @@ xmalloc (size)
               "\n%s%sCan not allocate %lu bytes\n",
               name, *name ? ": " : "",
               (unsigned long) size);
-#endif /* ! _WIN32 || __CYGWIN32 __ */
+#endif /* ! _WIN32 || __CYGWIN __ || __UWIN__ */
       xexit (1);
     }
   return (newmem);
@@ -107,7 +107,7 @@ xcalloc (nelem, elsize)
   newmem = calloc (nelem, elsize);
   if (!newmem)
     {
-#if ! defined (_WIN32) || defined (__CYGWIN32__)
+#if ! defined (_WIN32) || defined (__CYGWIN__)
       extern char **environ;
       size_t allocated;
 
@@ -124,7 +124,7 @@ xcalloc (nelem, elsize)
               "\n%s%sCan not allocate %lu bytes\n",
               name, *name ? ": " : "",
               (unsigned long) (nelem * elsize));
-#endif /* ! _WIN32 || __CYGWIN32 __ */
+#endif /* ! _WIN32 || __CYGWIN __ */
       xexit (1);
     }
   return (newmem);
