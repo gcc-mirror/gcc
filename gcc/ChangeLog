@@ -1,3 +1,8 @@
+2000-03-05  Mark Mitchell  <mark@codesourcery.com>
+
+	Revert this patch:
+	2000-03-04  Mark Mitchell  <mark@codesourcery.com>
+
 2000-03-04  Thomas Schuster <Thomas.Schuster@gmx.net>
 
 	* regmove.c (copy_src_to_dest)  Do not create src->dest move

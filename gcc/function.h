@@ -46,6 +46,7 @@ struct sequence_stack
 {
   /* First and last insns in the chain of the saved sequence.  */
   rtx first, last;
+  tree sequence_rtl_expr;
   struct sequence_stack *next;
 };
 
@@ -75,6 +76,11 @@ struct emit_status
      `sequence_rtl_expr' and then starts a new, nested sequence of insns.  */
   rtx x_first_insn;
   rtx x_last_insn;
+
+  /* RTL_EXPR within which the current sequence will be placed.  Use to
+     prevent reuse of any temporaries within the sequence until after the
+     RTL_EXPR is emitted.  */
+  tree sequence_rtl_expr;
 
   /* Stack of pending (incomplete) sequences saved by `start_sequence'.
      Each element describes one pending sequence.
@@ -111,6 +117,7 @@ struct emit_status
 
 /* For backward compatibility... eventually these should all go away.  */
 #define reg_rtx_no (cfun->emit->x_reg_rtx_no)
+#define seq_rtl_expr (cfun->emit->sequence_rtl_expr)
 #define regno_reg_rtx (cfun->emit->x_regno_reg_rtx)
 #define seq_stack (cfun->emit->sequence_stack)
 
