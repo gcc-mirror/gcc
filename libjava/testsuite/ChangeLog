@@ -1,3 +1,8 @@
+2003-05-06  Tom Tromey  <tromey@redhat.com>
+
+	* libjava.lang/verify.java: New file.
+	* libjava.lang/verify.out: New file.
+
 2003-05-01  Tom Tromey  <tromey@redhat.com>
 
 	PR java/10459:
