@@ -13,7 +13,7 @@ extern "C" {
 class X {
  public:
   int xi;
-  virtual int f() {};
+  virtual int f() {return 0;};
 };
 
 class Y : public X {
@@ -33,13 +33,13 @@ Z *zp = &z;
 class A {
  public:
   int Ai;
-  virtual int a() {};
+  virtual int a() {return 0;};
 };
 
 class B {
  public:
   int Bi;
-  virtual int g() {};
+  virtual int g() {return 0;};
 };
 
 class D : public A, public B {

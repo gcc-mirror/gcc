@@ -1,3 +1,10 @@
+2000-07-06  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.old-deja/g++.mike/thunk2.C: Add return 0.
+	* g++.old-deja/g++.mike/thunk3.C: Likewise.
+	* g++.old-deja/g++.other/rtti3.C: Likewise.
+	* g++.old-deja/g++.other/rttid3.C: Likewise.
+
 2000-06-30  David Billinghurst  <David Billinghurst@riotinto.com.au>
 
 	*  g77.f-torture/compile/20000630-1.x: Fix typo

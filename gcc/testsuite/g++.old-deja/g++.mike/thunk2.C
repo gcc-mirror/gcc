@@ -14,6 +14,7 @@ public:
   virtual int foo() {
     if (++state != 2)
       fail = 1;
+    return 0;
   }
   virtual ~A() {
     if (++state != 3)
