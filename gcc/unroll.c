@@ -1381,7 +1381,14 @@ precondition_loop_p (loop, initial_value, final_value, increment, mode)
       return 1;
     }
 
-  if (loop_info->initial_value == 0)
+  if (loop_info->iteration_var == 0)
+    {
+      if (loop_dump_stream)
+	fprintf (loop_dump_stream,
+		 "Preconditioning: Could not find iteration variable.\n");
+      return 0;
+    }
+  else if (loop_info->initial_value == 0)
     {
       if (loop_dump_stream)
 	fprintf (loop_dump_stream,
