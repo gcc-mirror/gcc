@@ -480,7 +480,7 @@ builtin_define_with_value_n (macro, expansion, elen)
   /* Space for an = and a NUL.  */
   buf = alloca (mlen + elen + 2);
   memcpy (buf, macro, mlen);
-  buf[mlen]= '=';
+  buf[mlen] = '=';
   memcpy (buf + mlen + 1, expansion, elen);
   buf[mlen + elen + 1] = '\0';
 

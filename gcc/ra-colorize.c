@@ -2722,7 +2722,7 @@ ra_colorize_free_all ()
     put_web (DLIST_WEB (d), INITIAL);
   while ((d = pop_list (&WEBS(INITIAL))) != NULL)
     {
-      struct web *web =DLIST_WEB (d);
+      struct web *web = DLIST_WEB (d);
       struct web *wnext;
       web->orig_conflict_list = NULL;
       web->conflict_list = NULL;

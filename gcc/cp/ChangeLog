@@ -1,3 +1,7 @@
+2003-03-15  Roger Sayle  <roger@eyesopen.com>
+
+	* tree.c (count_functions): Fix whitespace.
+
 2003-03-15  Neil Booth  <neil@daikokuya.co.uk>
 
 	* Make-lang.in: Update.

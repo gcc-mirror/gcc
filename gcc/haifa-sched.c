@@ -1298,7 +1298,7 @@ schedule_insn (insn, ready, clock)
       char buf[2048];
 
       print_insn (buf, insn, 0);
-      buf[40]=0;
+      buf[40] = 0;
       fprintf (sched_dump, ";;\t%3i--> %-40s:", clock, buf);
 
       if (recog_memoized (insn) < 0)

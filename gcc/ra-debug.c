@@ -668,7 +668,8 @@ dump_igraph (df)
   for (def1 = 0; def1 < num_webs; def1++)
     {
       int num1 = num;
-      for (num2=0, def2 = 0; def2 < num_webs; def2++)
+      num2 = 0;
+      for (def2 = 0; def2 < num_webs; def2++)
         if (def1 != def2 && TEST_BIT (igraph, igraph_index (def1, def2)))
 	  {
 	    if (num1 == num)
@@ -1107,7 +1108,7 @@ debug_hard_reg_set (set)
      HARD_REG_SET set;
 {
   int i;
-  for (i=0; i < FIRST_PSEUDO_REGISTER; ++i)
+  for (i = 0; i < FIRST_PSEUDO_REGISTER; ++i)
     {
       if (TEST_HARD_REG_BIT (set, i))
 	{

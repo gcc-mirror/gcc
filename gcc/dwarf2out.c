@@ -12941,14 +12941,10 @@ prune_unused_types ()
 
   /* Also set the mark on nodes referenced from the
      pubname_table or arange_table.  */
-  for (i=0; i < pubname_table_in_use; i++)
-    {
-      prune_unused_types_mark (pubname_table[i].die, 1);
-    }
-  for (i=0; i < arange_table_in_use; i++)
-    {
-      prune_unused_types_mark (arange_table[i], 1);
-    }
+  for (i = 0; i < pubname_table_in_use; i++)
+    prune_unused_types_mark (pubname_table[i].die, 1);
+  for (i = 0; i < arange_table_in_use; i++)
+    prune_unused_types_mark (arange_table[i], 1);
 
   /* Get rid of nodes that aren't marked.  */
   prune_unused_types_prune (comp_unit_die);

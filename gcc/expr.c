@@ -5503,7 +5503,7 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode, unsignedp, type,
      side-effects.  */
   if (bitsize == 0)
     return expand_expr (exp, const0_rtx, VOIDmode, 0);
-  else if (bitsize >=0 && bitsize < HOST_BITS_PER_WIDE_INT)
+  else if (bitsize >= 0 && bitsize < HOST_BITS_PER_WIDE_INT)
     width_mask = ((HOST_WIDE_INT) 1 << bitsize) - 1;
 
   /* If we are storing into an unaligned field of an aligned union that is

@@ -296,7 +296,7 @@ decide_peel_once_rolling (loops, loop, flags)
   loop->has_desc = 1;
 
   /* Check number of iterations.  */
-  if (!loop->simple || !loop->desc.const_iter || loop->desc.niter !=0)
+  if (!loop->simple || !loop->desc.const_iter || loop->desc.niter != 0)
     {
       if (rtl_dump_file)
 	fprintf (rtl_dump_file, ";; Unable to prove that the loop rolls exactly once\n");

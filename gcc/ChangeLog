@@ -1,3 +1,23 @@
+2003-03-15  Roger Sayle  <roger@eyesopen.com>
+
+	* c-cppbuiltin.c (builtin_define_with_value_n): Fix whitespace.
+	* c-typeck.c (c_tree_expr_nonnegative_p): Likewise.
+	* cfgbuild.c (find_many_sub_basic_blocks): Likewise.
+	(find_sub_basic_blocks): Likewise.
+	* cgraphunit.c (cgraph_expand_functions): Likewise.
+	* dwarf2out.c (prune_unused_types): Likewise.
+	* expr.c (store_field): Likewise.
+	* genextract.c (print_path): Likewise.
+	* haifa-sched.c (schedule_insn): Likewise.
+	* lcm.c (compute_antinout_edge): Likewise.
+	* loop-unroll.c (decide_peel_once_rolling): Likewise.
+	* ra-colorize.c (ra_colorize_free_all): Likewise.
+	* ra-debug.c (dump_igraph): Likewise.
+	(debug_hard_reg_set): Likewise.
+	* reg-stack.c (reg_to_stack): Likewise.
+	* rtlanal.c (refers_to_regno_p): Likewise.
+	* tracer.c (layout_superblocks): Likewise.
+
 2003-03-15  Neil Booth  <neil@daikokuya.co.uk>
 
 	* fix-header.c (read_scan_file): Fix thinko.
