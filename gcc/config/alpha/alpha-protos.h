@@ -180,6 +180,5 @@ extern void unicosmk_output_align PARAMS ((FILE *, int));
 extern char * unicosmk_text_section PARAMS ((void));
 extern char * unicosmk_data_section PARAMS ((void));
 extern void unicosmk_asm_file_start PARAMS ((FILE *));
-extern void unicosmk_asm_file_end PARAMS ((FILE *));
 extern void unicosmk_output_common PARAMS ((FILE *, const char *, int, int));
 #endif /* TARGET_ABI_UNICOSMK */

@@ -27,7 +27,7 @@ extern int ix86_can_use_return_insn_p PARAMS ((void));
 extern int ix86_frame_pointer_required PARAMS ((void));
 extern void ix86_setup_frame_addresses PARAMS ((void));
 
-extern void ix86_asm_file_end PARAMS ((FILE *));
+extern void ix86_file_end PARAMS ((void));
 extern HOST_WIDE_INT ix86_initial_elimination_offset PARAMS((int, int));
 extern void ix86_expand_prologue PARAMS ((void));
 extern void ix86_expand_epilogue PARAMS ((int));

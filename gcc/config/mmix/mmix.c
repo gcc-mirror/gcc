@@ -135,6 +135,7 @@ static void mmix_target_asm_function_epilogue
 static void mmix_reorg PARAMS ((void));
 static void mmix_asm_output_mi_thunk
   PARAMS ((FILE *, tree, HOST_WIDE_INT, HOST_WIDE_INT, tree));
+static void mmix_file_end PARAMS ((void));
 static bool mmix_rtx_costs
   PARAMS ((rtx, int, int, int *));
 
@@ -173,6 +174,8 @@ static bool mmix_rtx_costs
 #define TARGET_ASM_OUTPUT_MI_THUNK mmix_asm_output_mi_thunk
 #undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
 #define TARGET_ASM_CAN_OUTPUT_MI_THUNK default_can_output_mi_thunk_no_vcall
+#undef TARGET_ASM_FILE_END
+#define TARGET_ASM_FILE_END mmix_file_end
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS mmix_rtx_costs
@@ -1310,11 +1313,10 @@ mmix_asm_file_start (stream)
   text_section ();
 }
 
-/* ASM_FILE_END.  */
+/* TARGET_ASM_FILE_END.  */
 
-void
-mmix_asm_file_end (stream)
-     FILE * stream ATTRIBUTE_UNUSED;
+static void
+mmix_file_end ()
 {
   /* Make sure each file ends with the data section. */
   data_section ();

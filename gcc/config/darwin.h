@@ -330,17 +330,8 @@ do { text_section ();							\
 #undef	ASM_FILE_START
 #define ASM_FILE_START(FILE)
 
-#undef	ASM_FILE_END
-#define ASM_FILE_END(FILE)					\
-  do {								\
-    machopic_finish (asm_out_file);                             \
-    if (strcmp (lang_hooks.name, "GNU C++") == 0)		\
-      {								\
-	constructor_section ();					\
-	destructor_section ();					\
-	ASM_OUTPUT_ALIGN (FILE, 1);				\
-      }								\
-  } while (0)
+#undef  TARGET_ASM_FILE_END
+#define TARGET_ASM_FILE_END darwin_file_end
 
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
   fprintf (FILE, "\t.space "HOST_WIDE_INT_PRINT_UNSIGNED"\n", SIZE)

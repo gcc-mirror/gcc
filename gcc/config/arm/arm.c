@@ -147,6 +147,9 @@ static void	 arm_encode_section_info	PARAMS ((tree, rtx, int));
 #endif
 #ifdef AOF_ASSEMBLER
 static void	 aof_globalize_label		PARAMS ((FILE *, Ccstar));
+static void	 aof_dump_imports		PARAMS ((FILE *));
+static void	 aof_dump_pic_table		PARAMS ((FILE *));
+static void	 aof_file_end			PARAMS ((void));
 #endif
 
 #undef Hint
@@ -172,6 +175,8 @@ static void	 aof_globalize_label		PARAMS ((FILE *, Ccstar));
 #define TARGET_ASM_ALIGNED_SI_OP "\tDCD\t"
 #undef TARGET_ASM_GLOBALIZE_LABEL
 #define TARGET_ASM_GLOBALIZE_LABEL aof_globalize_label
+#undef TARGET_ASM_FILE_END
+#define TARGET_ASM_FILE_END aof_file_end
 #else
 #undef  TARGET_ASM_ALIGNED_SI_OP
 #define TARGET_ASM_ALIGNED_SI_OP NULL
@@ -12080,7 +12085,7 @@ aof_delete_import (name)
 
 int arm_main_function = 0;
 
-void
+static void
 aof_dump_imports (f)
      FILE * f;
 {
@@ -12112,6 +12117,15 @@ aof_globalize_label (stream, name)
   default_globalize_label (stream, name);
   if (! strcmp (name, "main"))
     arm_main_function = 1;
+}
+
+static void
+aof_file_end ()
+{
+  if (flag_pic)
+    aof_dump_pic_table (asm_out_file);
+  aof_dump_imports (asm_out_file);
+  fputs ("\tEND\n", asm_out_file);
 }
 #endif /* AOF_ASSEMBLER */
 

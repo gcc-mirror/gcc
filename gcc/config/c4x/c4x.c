@@ -186,6 +186,7 @@ static int c4x_valid_operands PARAMS ((enum rtx_code, rtx *,
 				       enum machine_mode, int));
 static int c4x_arn_reg_operand PARAMS ((rtx, enum machine_mode, unsigned int));
 static int c4x_arn_mem_operand PARAMS ((rtx, enum machine_mode, unsigned int));
+static void c4x_file_end PARAMS ((void));
 static void c4x_check_attribute PARAMS ((const char *, tree, tree, tree *));
 static int c4x_r11_set_p PARAMS ((rtx));
 static int c4x_rptb_valid_p PARAMS ((rtx, rtx));
@@ -207,6 +208,8 @@ static int c4x_address_cost PARAMS ((rtx));
 #define TARGET_ASM_ALIGNED_HI_OP NULL
 #undef TARGET_ASM_ALIGNED_SI_OP
 #define TARGET_ASM_ALIGNED_SI_OP NULL
+#undef TARGET_ASM_FILE_END
+#define TARGET_ASM_FILE_END c4x_file_end
 
 #undef TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE c4x_attribute_table
@@ -4562,9 +4565,8 @@ c4x_external_ref (name)
 }
 
 
-void
-c4x_file_end (fp)
-     FILE *fp;
+static void
+c4x_file_end ()
 {
   struct name_list *p;
   
@@ -4572,12 +4574,12 @@ c4x_file_end (fp)
   p = extern_head;
   while (p)
     {
-      fprintf (fp, "\t.ref\t");
-      assemble_name (fp, p->name);
-      fprintf (fp, "\n");
+      fprintf (asm_out_file, "\t.ref\t");
+      assemble_name (asm_out_file, p->name);
+      fprintf (asm_out_file, "\n");
       p = p->next;
     }
-  fprintf (fp, "\t.end\n");
+  fprintf (asm_out_file, "\t.end\n");
 }
 
 

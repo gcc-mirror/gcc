@@ -170,15 +170,6 @@ do {					\
 #define NAME__MAIN "__gccmain"
 #define SYMBOL__MAIN __gccmain
 
-#define ASM_FILE_END(STREAM)		\
-do					\
-{					\
-  if (flag_pic)				\
-    aof_dump_pic_table (STREAM);	\
-  aof_dump_imports (STREAM);		\
-  fputs ("\tEND\n", (STREAM));		\
-} while (0);
-
 #define ASM_COMMENT_START ";"
 
 #define ASM_APP_ON ""

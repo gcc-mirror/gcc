@@ -1,3 +1,85 @@
+2003-06-07  Zack Weinberg  <zack@codesourcery.com>
+
+	* config.gcc (with_cpu handling): Translate sparc64 in
+	$machine to --with-cpu=v9.
+	* config/alpha/alpha.c
+	(TARGET_ASM_GLOBALIZE_LABEL [TARGET_ABI_UNICOSMK]): Correct definition.
+	(alpha_setup_incoming_varargs): #ifdef out when TARGET_ABI_UNICOSMK.
+
+	* target.h: New hook asm_out.file_end.
+	* target.h: Update to match.  New hook macro TARGET_ASM_FILE_END.
+	* toplev.c (compile_file: Use targetm.asm_out.file_end.
+	* system.h: Poison ASM_FILE_END.
+	* varasm.c (file_end_indicate_exec_stack): New.
+	* output.h: Prototype it.
+	* doc/tm.texi: Document TARGET_ASM_FILE_END and
+	file_end_indicate_exec_stack.  Delete references to attasm.h.
+
+	* config/darwin.h (TARGET_ASM_FILE_END): Reset to darwin_file_end.
+	(ASM_FILE_END): Delete; move code...
+	* config/darwin.c (darwin_file_end): Here; new function.
+	* config/darwin-protos.h: Prototype it.
+	* config/alpha/alpha.c (unicosmk_asm_file_end): Make static,
+	rename unicosmk_file_end.
+	* config/arm/aof.h (ASM_FILE_END): Delete; move code...
+	* config/arm/arm.c (aof_file_end): ... here; new static function.
+	Set TARGET_ASM_FILE_END to aof_file_end if AOF_ASSEMBLER.
+	Make aof_dump_imports and aof_dump_pic_table static.
+	* config/avr/avr.c (asm_file_end): Rename avr_file_end, make static.
+	Set TARGET_ASM_FILE_END to avr_file_end.
+	* config/c4x/c4x.c (c4x_file_end): Make static.  Take no arguments.
+	Set TARGET_ASM_FILE_END to c4x_file_end.
+	* config/h8300/h8300.c (asm_file_end): Rename h8300_file_end,
+	make static. Take no arguments.  Set TARGET_ASM_FILE_END to
+	h8300_file_end.
+	* config/i370/i370.h (ASM_FILE_END): Delete; move code...
+	* config/i370/i370.c (i370_file_end): ... here; new static function.
+	Set TARGET_ASM_FILE_END to i370_file_end.
+	 * config/i386/i386.c (ix86_asm_file_end): Rename ix86_file_end.
+	 Take no arguments.  Call file_end_indicate_exec_stack if
+	 NEED_INDICATE_EXEC_STACK; don't use SUBTARGET_FILE_END.
+	* config/i386/i386.h: Set TARGET_ASM_FILE_END, not ASM_FILE_END.
+	Define NEED_INDICATE_EXEC_STACK to 0.
+	* config/i386/linux.h, config/i386/linux64.h: Redefine
+	NEED_INDICATE_EXEC_STACK to 1 instead of setting SUBTARGET_FILE_END.
+	* config/i386/winnt.c (i386_pe_asm_file_end): Rename to
+	i386_pe_file_end.  Take no arguments.  Use ix86_file_end.
+	* config/ia64/ia64.c (ia64_hpux_asm_file_end): Rename to
+	ia64_hpux_file_end, make static.  Take no arguments.
+	* config/ip2k/ip2k.c (asm_file_start, asm_file_end,
+	commands_in_prologues, commands_in_epilogues): Delete.
+	(function_epilogue): Update to match.
+	* config/mips/mips.c (mips_asm_file_end): Rename mips_file_end,
+	make static.  Take no arguments.
+	(iris6_asm_file_end): Rename iris6_file_end, make static, use
+	mips_file_end, take no arguments.
+	Set TARGET_ASM_FILE_END to iris6_file_end or mips_file_end as
+	appropriate.
+	* config/mmix/mmix.c (mmix_asm_file_end): Rename mmix_file_end,
+	make static, take no arguments. Set TARGET_ASM_FILE_END to
+	mmix_file_end.
+	* config/pa/pa.c (output_deferred_plabels): Make static, take
+	no arguments.  Set TARGET_ASM_FILE_END to output_deferred_plabels.
+	* config/rs6000/xcoff.h (TARGET_ASM_FILE_END): Set it.
+	(ASM_FILE_END): Delete; move code...
+	* config/rs6000/rs6000.c (rs6000_xcoff_file_end): ... here;
+	new static function.
+
+	* config/avr/avr.h, config/cris/cris.h, config/h8300/h8300.h
+	* config/mmix/mmix.h, config/mips/iris6.h, config/mips/mips.h:
+	Don't set ASM_FILE_END.
+	* config/alpha/linux-elf.h, config/m68k/linux.h, config/rs6000/linux.h
+	* config/rs6000/linux64.h, config/s390/linux.h, config/sparc/linux.h
+	* config/sparc/linux64.h: Set TARGET_ASM_FILE_END to
+	file_end_indicate_exec_stack; don't set ASM_FILE_END.
+	* config/alpha/unicosmk.h, config/i386/cygming.h
+	* config/ia64/hpux.h: Set TARGET_ASM_FILE_END, not ASM_FILE_END.
+	* config/arm/arm-protos.h, config/alpha/alpha-protos.h
+	* config/avr/avr-protos.h, config/c4x/c4x-protos.h
+	* config/h8300/h8300-protos.h, config/ia64/ia64-protos.h
+	* config/ip2k/ip2k-protos.h, config/mips/mips-protos.h
+	* config/mmix/mmix-protos.h, config/pa/pa-protos.h: Update.
+
 Sat Jun  7 18:32:13 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* i386.h (OPTION_DEFAULT_SPECS): Avoid -mcpu default when -march is
@@ -312,10 +394,10 @@ Thu Jun  5 13:23:51 CEST 2003  Jan Hubicka  <jh@suse.cz>
 2003-06-05  Nick Clifton  <nickc@redhat.com>
 
 	* config.gcc (m32r-elf): Revert previous delta.
-        * config/m32r/t-m32r (crtinit.o): Fix rule to work with
-        multilibs.  Remove m32rx specific version.
-        (crtfini.o): Likewise.
-        (EXTRA_MULTILIB_PARTS): Define.
+	* config/m32r/t-m32r (crtinit.o): Fix rule to work with
+	multilibs.  Remove m32rx specific version.
+	(crtfini.o): Likewise.
+	(EXTRA_MULTILIB_PARTS): Define.
 
 2003-06-05  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
@@ -323,7 +405,7 @@ Thu Jun  5 13:23:51 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	constraints related to floating-point registers on SPARC.
 
 2003-06-05  Eric Botcazou  <ebotcazou@libertysurf.fr>
-            Paolo Bonzini  <bonzini@gnu.org>
+	    Paolo Bonzini  <bonzini@gnu.org>
 
 	PR target/10663
 	* configure.in (HAVE_LD_RO_RW_SECTION_MIXING): Redirect

@@ -6186,22 +6186,23 @@ Normally this macro is defined to output a line containing
 @samp{#NO_APP}, which is a comment that has no effect on most
 assemblers but tells the GNU assembler that it can save time by not
 checking for certain assembler constructs.
+@end table
 
-On systems that use SDB, it is necessary to output certain commands;
-see @file{attasm.h}.
+@deftypefn {Target Hook} void TARGET_ASM_FILE_END ()
+Output to @code{asm_out_file} any text which the assembler expects
+to find at the end of a file.  The default is to output nothing.
+@end deftypefn
 
-@findex ASM_FILE_END
-@item ASM_FILE_END (@var{stream})
-A C expression which outputs to the stdio stream @var{stream}
-some appropriate text to go at the end of an assembler file.
+@deftypefun void file_end_indicate_exec_stack ()
+Some systems use a common convention, the @samp{.note.GNU-stack}
+special section, to indicate whether or not an object file relies on
+the stack being executable.  If your system uses this convention, you
+should define @code{TARGET_ASM_FILE_END} to this function.  If you
+need to do other things in that hook, have your hook function call
+this function.
+@end deftypefun
 
-If this macro is not defined, the default is to output nothing
-special at the end of the file.  Most systems don't require any
-definition.
-
-On systems that use SDB, it is necessary to output certain commands;
-see @file{attasm.h}.
-
+@table @code
 @findex ASM_COMMENT_START
 @item ASM_COMMENT_START
 A C string constant describing how to begin a comment in the target

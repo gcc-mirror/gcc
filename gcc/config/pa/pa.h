@@ -1682,10 +1682,6 @@ do { 									\
 
 #define ASM_APP_OFF ""
 
-/* Output deferred plabels at the end of the file.  */
-
-#define ASM_FILE_END(FILE) output_deferred_plabels (FILE)
-
 /* This is how to output the definition of a user-level label named NAME,
    such as the label on a static function or variable NAME.  */
 

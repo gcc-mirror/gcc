@@ -95,7 +95,6 @@ extern void h8300_expand_prologue PARAMS ((void));
 extern void h8300_expand_epilogue PARAMS ((void));
 extern int h8300_current_function_interrupt_function_p PARAMS ((void));
 extern void asm_file_start PARAMS ((FILE *));
-extern void asm_file_end PARAMS ((FILE *));
 extern int h8300_initial_elimination_offset PARAMS ((int, int));
 
 struct cpp_reader;

@@ -78,6 +78,8 @@ extern void darwin_pragma_ignore PARAMS ((struct cpp_reader *));
 extern void darwin_pragma_options PARAMS ((struct cpp_reader *));
 extern void darwin_pragma_unused PARAMS ((struct cpp_reader *));
 
+extern void darwin_file_end PARAMS ((void));
+
 /* Expanded by EXTRA_SECTION_FUNCTIONS into varasm.o.  */
 extern void const_section PARAMS ((void));
 extern void const_data_section PARAMS ((void));

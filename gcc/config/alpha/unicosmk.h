@@ -342,8 +342,7 @@ ssib_section ()			\
 
 /* This outputs text to go at the end of an assembler file.  */
 
-#undef ASM_FILE_END
-#define ASM_FILE_END(FILE)	unicosmk_asm_file_end (FILE)
+#define TARGET_ASM_FILE_END	unicosmk_file_end
 
 /* We take care of that in ASM_FILE_START.  */
 

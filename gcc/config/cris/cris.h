@@ -1410,10 +1410,6 @@ call_ ## FUNC (void)						\
     }								\
   while (0)
 
-/* Override previous definitions (elfos.h).  */
-#undef ASM_FILE_END
-#define ASM_FILE_END(STREAM)
-
 /* We don't want an .ident for gcc.  To avoid that but still support
    #ident, we override ASM_OUTPUT_IDENT and, since the gcc .ident is its
    only use besides ASM_OUTPUT_IDENT, undef IDENT_ASM_OP from elfos.h.  */

@@ -142,6 +142,9 @@ struct gcc_target
 				          HOST_WIDE_INT delta,
 				          HOST_WIDE_INT vcall_offset,
 				          tree function_decl));
+
+    /* Output any boilerplate text needed at the end of a translation unit.  */
+    void (*file_end) PARAMS ((void));
   } asm_out;
 
   /* Functions relating to instruction scheduling.  */

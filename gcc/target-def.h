@@ -150,6 +150,10 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #define TARGET_ASM_EH_FRAME_SECTION default_eh_frame_section
 #endif
 
+#ifndef TARGET_ASM_FILE_END
+#define TARGET_ASM_FILE_END hook_void_void
+#endif
+
 #define TARGET_ASM_ALIGNED_INT_OP				\
 		       {TARGET_ASM_ALIGNED_HI_OP,		\
 			TARGET_ASM_ALIGNED_SI_OP,		\
@@ -184,7 +188,8 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 			TARGET_ASM_CONSTRUCTOR,			\
 			TARGET_ASM_DESTRUCTOR,                  \
                         TARGET_ASM_OUTPUT_MI_THUNK,             \
-                        TARGET_ASM_CAN_OUTPUT_MI_THUNK }
+                        TARGET_ASM_CAN_OUTPUT_MI_THUNK,         \
+                        TARGET_ASM_FILE_END}
 
 /* Scheduler hooks.  All of these default to null pointers, which
    haifa-sched.c looks for and handles.  */

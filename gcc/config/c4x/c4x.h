@@ -1602,9 +1602,6 @@ c4x_external_ref (NAME)
 #define ASM_OUTPUT_EXTERNAL_LIBCALL(FILE, FUN) \
 c4x_external_ref (XSTR (FUN, 0))
 
-#define	ASM_FILE_END(FILE) \
-c4x_file_end (FILE)
-
 /* The prefix to add to user-visible assembler symbols.  */
 
 #define USER_LABEL_PREFIX "_"

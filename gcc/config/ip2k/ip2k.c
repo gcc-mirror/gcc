@@ -111,12 +111,6 @@ const struct attribute_spec ip2k_attribute_table[];
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
-/* Commands in the functions prologues in the compiled file.  */
-static int commands_in_prologues;
-
-/* Commands in the functions epilogues in the compiled file.  */
-static int commands_in_epilogues;
-
 /* Prologue/Epilogue size in words.  */
 static int prologue_size;
 static int epilogue_size;
@@ -536,8 +530,6 @@ function_epilogue (file, size)
     }
   
   fprintf (file, "/* epilogue end (size=%d) */\n", epilogue_size);
-  commands_in_prologues += prologue_size;
-  commands_in_epilogues += epilogue_size;
 }
 
 /* Return the difference between the registers after the function
@@ -3240,32 +3232,6 @@ ip2k_handle_fndecl_attribute (node, name, args, flags, no_add_attrs)
     }
 
   return NULL_TREE;
-}
-
-/* Outputs to the stdio stream FILE some
-   appropriate text to go at the start of an assembler file.  */
-
-void
-asm_file_start (file)
-     FILE *file;
-{
-  output_file_directive (file, main_input_filename);
-  
-  commands_in_prologues = 0;
-  commands_in_epilogues = 0;
-}
-
-/* Outputs to the stdio stream FILE some
-   appropriate text to go at the end of an assembler file.  */
-
-void
-asm_file_end (file)
-     FILE *file;
-{
-  fprintf
-    (file,
-     "/* File %s: prologues %3d, epilogues %3d */\n",
-     main_input_filename, commands_in_prologues, commands_in_epilogues);
 }
 
 /* Cost functions.  */

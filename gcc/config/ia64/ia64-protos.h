@@ -153,4 +153,3 @@ extern enum direction ia64_hpux_function_arg_padding PARAMS ((enum machine_mode,
 #endif /* ARGS_SIZE_RTX */
 
 extern void ia64_hpux_handle_builtin_pragma PARAMS ((struct cpp_reader *));
-extern void ia64_hpux_asm_file_end PARAMS ((FILE *));
