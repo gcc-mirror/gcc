@@ -15,7 +15,7 @@
 #define _CPP_BACKWARD_ROPE_H 1
 
 #include "hashtable.h"   
-#include <ext/stl_rope.h>
+#include <ext/rope>
 
 using std::char_producer; 
 using std::sequence_buffer; 

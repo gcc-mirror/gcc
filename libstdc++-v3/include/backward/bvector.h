@@ -24,16 +24,15 @@
  * purpose.  It is provided "as is" without express or implied warranty.
  */
 
-#ifndef _CPP_BACKWARD_BVECTOR_H
-#define _CPP_BACKWARD_BVECTOR_H 1
+#ifndef __SGI_STL_BVECTOR_H
+#define __SGI_STL_BVECTOR_H
 
-#include "vector.h"
 
-#include <ext/stl_bvector.h>
+#include <bits/std_vector.h>
 
 using std::bit_vector;
 
-#endif /* _CPP_BACKWARD_BVECTOR_H */
+#endif /* __SGI_STL_BVECTOR_H */
 
 // Local Variables:
 // mode:C++

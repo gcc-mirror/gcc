@@ -28,9 +28,7 @@
 #define _CPP_BACKWARD_PAIR_H 1
 
 #include <bits/c++config.h>
-#ifndef _CPP_BITS_STL_PAIR_H
 #include <bits/stl_pair.h>
-#endif
 
 using std::pair;
 using std::make_pair;

@@ -26,18 +26,10 @@
 #ifndef _CPP_BACKWARD_ALGOBASE_H
 #define _CPP_BACKWARD_ALGOBASE_H 1
 
-#ifndef _CPP_BACKWARD_PAIR_H
 #include "pair.h"
-#endif
-#ifndef _CPP_BACKWARD_ITERATOR_H
 #include "iterator.h"
-#endif
-#ifndef _CPP_BITS_STL__ALGOBASE_H
 #include <bits/stl_algobase.h>
-#endif
-#ifndef _CPP_BITS_STL_UNINITIALIZED_H
 #include <bits/stl_uninitialized.h>
-#endif
 
 // Names from stl_algobase.h
 using std::iter_swap; 

@@ -29,6 +29,7 @@
 
 #include "algobase.h"
 #include "tempbuf.h"
+#include "iterator.h"
 #include <bits/stl_algo.h>
 #include <bits/stl_numeric.h>
 

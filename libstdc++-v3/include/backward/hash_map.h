@@ -27,12 +27,8 @@
 #ifndef _CPP_BACKWARD_HASH_MAP_H
 #define _CPP_BACKWARD_HASH_MAP_H 1
 
-#ifndef _CPP_BITS_STL_HASHTABLE_H
-#include <bits/stl_hashtable.h>
-#endif 
-
 #include "algobase.h"
-#include <bits/stl_hash_map.h>
+#include <ext/hash_map>
 
 using std::hash;
 using std::hashtable;

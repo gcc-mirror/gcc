@@ -27,29 +27,19 @@
 #ifndef _CPP_BACKWARD_TEMPBUF_H
 #define _CPP_BACKWARD_TEMPBUF_H 1
 
-#ifndef _CPP_BACKWARD_PAIR_H
 #include "pair.h"
-#endif
-#include <iterator.h>
+#include "iterator.h"
 #include <limits.h>
 #include <stddef.h> 
 #include <stdlib.h> 
-#ifndef _CPP_BITS_TYPE_TRAITS_H
 #include <bits/type_traits.h>  
-#endif
-#ifndef _CPP_BITS_STL_CONSTRUCT_H
 #include <bits/stl_construct.h>
-#endif
-#ifndef _CPP_BITS_STL_UNINITIALIZED_H
 #include <bits/stl_uninitialized.h>
-#endif
-#ifndef _CPP_BITS_STL_TEMPBUF_H
 #include <bits/stl_tempbuf.h>
-#endif
 
 using std::get_temporary_buffer;
 using std::return_temporary_buffer;
-using std::_Temporary_buffer;
+using std::temporary_buffer;
 
 #endif /* _CPP_BACKWARD_TEMPBUF_H */
 

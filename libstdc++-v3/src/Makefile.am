@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.78 2001/03/25 00:16:56 pme Exp $
+## $Id: Makefile.am,v 1.79 2001/03/28 01:19:42 aoliva Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -94,7 +94,7 @@ base_headers = \
 	bits/stl_relops.h bits/stl_set.h \
 	bits/stl_stack.h bits/stl_tempbuf.h \
 	bits/stl_tree.h bits/stl_uninitialized.h bits/stl_vector.h \
-	bits/type_traits.h bits/std_algorithm.h \
+	bits/stl_bvector.h bits/type_traits.h bits/std_algorithm.h \
 	bits/concept_checks.h bits/container_concepts.h \
 	bits/sequence_concepts.h bits/stl_construct.h
 
@@ -104,18 +104,18 @@ backward_headers = \
 	backward/algo.h backward/algobase.h backward/alloc.h \
 	backward/bvector.h backward/defalloc.h backward/deque.h \
 	backward/function.h backward/hash_map.h backward/hash_set.h \
-	backward/hashtable.h backward/heap.h backward/iterator.h \
-	backward/list.h backward/map.h backward/multimap.h backward/new.h \
-	backward/multiset.h backward/pair.h backward/iostream.h \
-	backward/rope.h backward/set.h backward/slist.h backward/stack.h \
-	backward/tempbuf.h backward/tree.h backward/vector.h \
-	backward/fstream.h backward/strstream.h backward/strstream
+	backward/hashtable.h backward/heap.h backward/iostream.h \
+	backward/iterator.h backward/list.h backward/map.h \
+	backward/multimap.h backward/new.h backward/multiset.h \
+	backward/pair.h backward/queue.h backward/rope.h backward/set.h \
+	backward/slist.h backward/stack.h backward/tempbuf.h backward/tree.h \
+	backward/vector.h backward/fstream.h backward/strstream.h \
+	backward/strstream
 
 ext_headers = \
-	ext/ropeimpl.h ext/stl_rope.h \
-	ext/stl_bvector.h ext/stl_hashtable.h ext/stl_hash_fun.h \
-	ext/hash_map ext/hash_set ext/rope ext/slist \
-	ext/tree ext/bvector 
+	ext/rope ext/ropeimpl.h ext/stl_rope.h \
+	ext/slist ext/hash_map ext/hash_set \
+	ext/stl_hashtable.h ext/stl_hash_fun.h 
 
 c_base_headers = \
 	bits/std_cassert.h bits/std_cctype.h bits/std_cerrno.h \

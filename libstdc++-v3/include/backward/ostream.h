@@ -28,7 +28,7 @@
 #ifndef _CPP_BACKWARD_OSTREAM_H
 #define _CPP_BACKWARD_OSTREAM_H 1
 
-#include <iostream.h>
+#include "iostream.h"
 
 #endif 
 

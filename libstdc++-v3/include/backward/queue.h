@@ -1,4 +1,4 @@
-// Copyright (C) 2000 Free Software Foundation, Inc.
+// Copyright (C) 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,44 +25,15 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#ifndef _CPP_BACKWARD_IOMANIP_H
-#define _CPP_BACKWARD_IOMANIP_H 1
+#ifndef _CPP_BACKWARD_QUEUE_H
+#define _CPP_BACKWARD_QUEUE_H 1
 
-#include "iostream.h"
-#include <bits/std_iomanip.h>
+#include <bits/std_queue.h>
 
-// These are from <ios> as per [27.4].
-using std::boolalpha;
-using std::noboolalpha;
-using std::showbase;
-using std::noshowbase;
-using std::showpoint;
-using std::noshowpoint;
-using std::showpos;
-using std::noshowpos;
-using std::skipws;
-using std::noskipws;
-using std::uppercase;
-using std::nouppercase;
-using std::internal;
-using std::left;
-using std::right;
-using std::dec;
-using std::hex;
-using std::oct;
-using std::fixed;
-using std::scientific;
+using std::queue;
+using std::priority_queue;
 
-// These are from <iomanip> as per [27.6].  Manipulators from <istream>
-// and <ostream> (e.g., endl) are made available via <iostream.h>.
-using std::resetiosflags;
-using std::setiosflags;
-using std::setbase;
-using std::setfill;
-using std::setprecision;
-using std::setw;
-
-#endif
+#endif 
 
 // Local Variables:
 // mode:C++

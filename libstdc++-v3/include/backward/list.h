@@ -27,7 +27,7 @@
 #ifndef _CPP_BACKWARD_LIST_H
 #define _CPP_BACKWARD_LIST_H 1
 
-#include <bits/stl_algobase.h>
+#include "algobase.h"
 #include "alloc.h"
 #include <bits/std_list.h>
 

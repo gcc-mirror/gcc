@@ -27,12 +27,8 @@
 #ifndef _CPP_BACKWARD_HASH_SET_H
 #define _CPP_BACKWARD_HASH_SET_H 1
 
-#ifndef _CPP_BITS_STL_HASHTABLE_H
-#include <bits/stl_hashtable.h>
-#endif 
-
 #include "algobase.h"
-#include <bits/stl_hash_set.h>
+#include <ext/hash_set>
 
 using std::hash;
 using std::hashtable;
@@ -40,3 +36,4 @@ using std::hash_set;
 using std::hash_multiset;
 
 #endif /* _CPP_BACKWARD_HASH_SET_H */
+
