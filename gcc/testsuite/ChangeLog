@@ -2,6 +2,8 @@
 
 	* gcc.c-torture/compile/20020605-1.c: New test.
 
+	* g++.dg/opt/vt1.C: New test.
+
 2002-06-07  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.dg/20020607-2.c: New test case.
