@@ -1,5 +1,5 @@
 # configure.frag for GNU CC
-# Process the Makefile fragments from language directories.
+# Process the host/target/language Makefile fragments.
 
 # Copyright (C) 1997 Free Software Foundation, Inc.
 
@@ -20,14 +20,42 @@
 #the Free Software Foundation, 59 Temple Place - Suite 330,
 #Boston, MA 02111-1307, USA.
 
-# First parameter is the source directory, second is list of subdirectories
+# First parameter is the source directory, second is list of subdirectories,
+# third is list of host makefile fragments, fourth is list of target makefile
+# fragments.
 
-savesrcdir=$1
-savesubdirs=$2
+srcdir=$1
+subdirs=$2
+xmake_files=$3
+tmake_files=$4
 
-# First ensure the language build subdirectories exist.
+# Copy all the host makefile fragments into Make-host.
 
-for subdir in . $savesubdirs
+rm -f Make-host
+touch Make-host
+for f in .. $xmake_files
+do
+	if [ -f $f ]
+	then
+		cat $f >> Make-host
+	fi
+done
+
+# Copy all the target makefile fragments into Make-target.
+
+rm -f Make-target
+touch Make-target
+for f in .. $tmake_files
+do
+	if [ -f $f ]
+	then
+		cat $f >> Make-target
+	fi
+done
+
+# Ensure the language build subdirectories exist.
+
+for subdir in . $subdirs
 do
 	if [ $subdir != . ]
 	then
@@ -40,10 +68,10 @@ done
 rm -f Make-lang
 touch Make-lang
 
-for subdir in . $savesubdirs
+for subdir in . $subdirs
 do
 	if [ $subdir != . ]
 	then
-		cat $savesrcdir/$subdir/Make-lang.in >> Make-lang
+		cat $srcdir/$subdir/Make-lang.in >> Make-lang
 	fi
 done
