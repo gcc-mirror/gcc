@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Tensilica's Xtensa architecture.
-   Copyright 2001,2002,2003 Free Software Foundation, Inc.
+   Copyright 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
    Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
 This file is part of GCC.
@@ -90,7 +90,9 @@ const char *xtensa_st_opcodes[(int) MAX_MACHINE_MODE];
 struct machine_function GTY(())
 {
   int accesses_prev_frame;
-  bool incoming_a7_copied;
+  bool need_a7_copy;
+  bool vararg_a7;
+  rtx set_frame_ptr_insn;
 };
 
 /* Vector, indexed by hard register number, which contains 1 for a
@@ -1276,8 +1278,7 @@ xtensa_emit_move_sequence (operands, mode)
       if (!xtensa_valid_move (mode, operands))
 	operands[1] = force_reg (mode, operands[1]);
 
-      if (xtensa_copy_incoming_a7 (operands, mode))
-	return 1;
+      operands[1] = xtensa_copy_incoming_a7 (operands[1]);
     }
 
   /* During reload we don't want to emit (subreg:X (mem:Y)) since that
@@ -1309,71 +1310,115 @@ fixup_subreg_mem (x)
 }
 
 
-/* Check if this move is copying an incoming argument in a7.  If so,
-   emit the move, followed by the special "set_frame_ptr"
-   unspec_volatile insn, at the very beginning of the function.  This
-   is necessary because the register allocator will ignore conflicts
-   with a7 and may assign some other pseudo to a7.  If that pseudo was
-   assigned prior to this move, it would clobber the incoming argument
-   in a7.  By copying the argument out of a7 as the very first thing,
-   and then immediately following that with an unspec_volatile to keep
-   the scheduler away, we should avoid any problems.  */
+/* Check if an incoming argument in a7 is expected to be used soon and
+   if OPND is a register or register pair that includes a7.  If so,
+   create a new pseudo and copy a7 into that pseudo at the very
+   beginning of the function, followed by the special "set_frame_ptr"
+   unspec_volatile insn.  The return value is either the original
+   operand, if it is not a7, or the new pseudo containing a copy of
+   the incoming argument.  This is necessary because the register
+   allocator will ignore conflicts with a7 and may either assign some
+   other pseudo to a7 or use a7 as the hard_frame_pointer, clobbering
+   the incoming argument in a7.  By copying the argument out of a7 as
+   the very first thing, and then immediately following that with an
+   unspec_volatile to keep the scheduler away, we should avoid any
+   problems.  Putting the set_frame_ptr insn at the beginning, with
+   only the a7 copy before it, also makes it easier for the prologue
+   expander to initialize the frame pointer after the a7 copy and to
+   fix up the a7 copy to use the stack pointer instead of the frame
+   pointer.  */
 
-bool
-xtensa_copy_incoming_a7 (operands, mode)
-     rtx *operands;
-     enum machine_mode mode;
+rtx
+xtensa_copy_incoming_a7 (opnd)
+     rtx opnd;
 {
-  if (a7_overlap_mentioned_p (operands[1])
-      && !cfun->machine->incoming_a7_copied)
+  rtx entry_insns = 0;
+  rtx reg, tmp;
+  enum machine_mode mode;
+
+  if (!cfun->machine->need_a7_copy)
+    return opnd;
+
+  /* This function should never be called again once a7 has been copied.  */
+  if (cfun->machine->set_frame_ptr_insn)
+    abort ();
+
+  mode = GET_MODE (opnd);
+
+  /* The operand using a7 may come in a later instruction, so just return
+     the original operand if it doesn't use a7.  */
+  reg = opnd;
+  if (GET_CODE (reg) == SUBREG)
     {
-      rtx mov;
-      switch (mode)
-	{
-	case DFmode:
-	  mov = gen_movdf_internal (operands[0], operands[1]);
-	  break;
-	case SFmode:
-	  mov = gen_movsf_internal (operands[0], operands[1]);
-	  break;
-	case DImode:
-	  mov = gen_movdi_internal (operands[0], operands[1]);
-	  break;
-	case SImode:
-	  mov = gen_movsi_internal (operands[0], operands[1]);
-	  break;
-	case HImode:
-	  mov = gen_movhi_internal (operands[0], operands[1]);
-	  break;
-	case QImode:
-	  mov = gen_movqi_internal (operands[0], operands[1]);
-	  break;
-	default:
-	  abort ();
-	}
+      if (SUBREG_BYTE (reg) != 0)
+	abort ();
+      reg = SUBREG_REG (reg);
+    }
+  if (GET_CODE (reg) != REG
+      || REGNO (reg) > A7_REG
+      || REGNO (reg) + HARD_REGNO_NREGS (A7_REG, mode) <= A7_REG)
+    return opnd;
 
-      /* Insert the instructions before any other argument copies.
-	 (The set_frame_ptr insn comes _after_ the move, so push it
-	 out first.)  */
-      push_topmost_sequence ();
-      emit_insn_after (gen_set_frame_ptr (), get_insns ());
-      emit_insn_after (mov, get_insns ());
-      pop_topmost_sequence ();
+  /* 1-word args will always be in a7; 2-word args in a6/a7.  */
+  if (REGNO (reg) + HARD_REGNO_NREGS (A7_REG, mode) - 1 != A7_REG)
+    abort ();
 
-      /* Ideally the incoming argument in a7 would only be copied
-	 once, since propagating a7 into the body of a function
-	 will almost certainly lead to errors.  However, there is
-	 at least one harmless case (in GCSE) where the original
-	 copy from a7 is changed to copy into a new pseudo.  Thus,
-	 we use a flag to only do this special treatment for the
-	 first copy of a7.  */
+  cfun->machine->need_a7_copy = false;
 
-      cfun->machine->incoming_a7_copied = true;
+  /* Copy a7 to a new pseudo at the function entry.  Use gen_raw_REG to
+     create the REG for a7 so that hard_frame_pointer_rtx is not used.  */
 
-      return 1;
+  push_to_sequence (entry_insns);
+  tmp = gen_reg_rtx (mode);
+
+  switch (mode)
+    {
+    case DFmode:
+    case DImode:
+      emit_insn (gen_movsi_internal (gen_rtx_SUBREG (SImode, tmp, 0),
+				     gen_rtx_REG (SImode, A7_REG - 1)));
+      emit_insn (gen_movsi_internal (gen_rtx_SUBREG (SImode, tmp, 4),
+				     gen_raw_REG (SImode, A7_REG)));
+      break;
+    case SFmode:
+      emit_insn (gen_movsf_internal (tmp, gen_raw_REG (mode, A7_REG)));
+      break;
+    case SImode:
+      emit_insn (gen_movsi_internal (tmp, gen_raw_REG (mode, A7_REG)));
+      break;
+    case HImode:
+      emit_insn (gen_movhi_internal (tmp, gen_raw_REG (mode, A7_REG)));
+      break;
+    case QImode:
+      emit_insn (gen_movqi_internal (tmp, gen_raw_REG (mode, A7_REG)));
+      break;
+    default:
+      abort ();
     }
 
-  return 0;
+  cfun->machine->set_frame_ptr_insn = emit_insn (gen_set_frame_ptr ());
+  entry_insns = get_insns ();
+  end_sequence ();
+
+  if (cfun->machine->vararg_a7)
+    {
+      /* This is called from within builtin_savereg, so we're already
+	 inside a start_sequence that will be placed at the start of
+	 the function.  */
+      emit_insn (entry_insns);
+    }
+  else
+    {
+      /* Put entry_insns after the NOTE that starts the function.  If
+	 this is inside a start_sequence, make the outer-level insn
+	 chain current, so the code is placed at the start of the
+	 function.  */
+      push_topmost_sequence ();
+      emit_insn_after (entry_insns, get_insns ());
+      pop_topmost_sequence ();
+    }
+
+  return tmp;
 }
 
 
@@ -1721,12 +1766,12 @@ xtensa_dbx_register_number (regno)
 /* Initialize CUMULATIVE_ARGS for a function.  */
 
 void
-init_cumulative_args (cum, fntype, libname)
+init_cumulative_args (cum, incoming)
      CUMULATIVE_ARGS *cum;	/* argument info to initialize */
-     tree fntype ATTRIBUTE_UNUSED;	/* tree ptr for function decl */
-     rtx libname ATTRIBUTE_UNUSED;	/* SYMBOL_REF of library name or 0 */
+     int incoming;
 {
   cum->arg_words = 0;
+  cum->incoming = incoming;
 }
 
 /* Advance the argument to the next argument position.  */
@@ -1767,7 +1812,6 @@ function_arg (cum, mode, type, incoming_p)
   int regbase, words, max;
   int *arg_words;
   int regno;
-  enum machine_mode result_mode;
 
   arg_words = &cum->arg_words;
   regbase = (incoming_p ? GP_ARG_FIRST : GP_OUTGOING_ARG_FIRST);
@@ -1784,33 +1828,11 @@ function_arg (cum, mode, type, incoming_p)
     return (rtx)0;
 
   regno = regbase + *arg_words;
-  result_mode = (mode == BLKmode ? TYPE_MODE (type) : mode);
 
-  /* We need to make sure that references to a7 are represented with
-     rtx that is not equal to hard_frame_pointer_rtx.  For BLKmode and
-     modes bigger than 2 words (because we only have patterns for
-     modes of 2 words or smaller), we can't control the expansion
-     unless we explicitly list the individual registers in a PARALLEL. */
+  if (cum->incoming && regno <= A7_REG && regno + words > A7_REG)
+    cfun->machine->need_a7_copy = true;
 
-  if ((mode == BLKmode || words > 2)
-      && regno < A7_REG
-      && regno + words > A7_REG)
-    {
-      rtx result;
-      int n;
-
-      result = gen_rtx_PARALLEL (result_mode, rtvec_alloc (words));
-      for (n = 0; n < words; n++)
-	{
-	  XVECEXP (result, 0, n) =
-	    gen_rtx_EXPR_LIST (VOIDmode,
-			       gen_raw_REG (SImode, regno + n),
-			       GEN_INT (n * UNITS_PER_WORD));
-	}
-      return result;
-    }
-
-  return gen_raw_REG (result_mode, regno);
+  return gen_rtx_REG (mode, regno);
 }
 
 
@@ -2187,8 +2209,6 @@ void
 xtensa_reorg (first)
     rtx first;
 {
-  rtx insn, set_frame_ptr_insn = 0;
-    
   unsigned long tsize = compute_frame_size (get_frame_size ());
   if (tsize < (1 << (12+3)))
     frame_size_const = 0;
@@ -2204,34 +2224,15 @@ xtensa_reorg (first)
   if (!frame_pointer_needed)
     return;
 
-  /* Search all instructions, looking for the insn that sets up the
-     frame pointer.  This search will fail if the function does not
-     have an incoming argument in $a7, but in that case, we can just
-     set up the frame pointer at the very beginning of the
-     function. */
-
-  for (insn = first; insn; insn = NEXT_INSN (insn))
+  if (cfun->machine->set_frame_ptr_insn)
     {
-      rtx pat;
+      rtx insn;
 
-      if (!INSN_P (insn))
-	continue;
-
-      pat = PATTERN (insn);
-      if (GET_CODE (pat) == SET
-	  && GET_CODE (SET_SRC (pat)) == UNSPEC_VOLATILE
-	  && (XINT (SET_SRC (pat), 1) == UNSPECV_SET_FP))
-	{
-	  set_frame_ptr_insn = insn;
-	  break;
-	}
-    }
-
-  if (set_frame_ptr_insn)
-    {
       /* for all instructions prior to set_frame_ptr_insn, replace
 	 hard_frame_pointer references with stack_pointer */
-      for (insn = first; insn != set_frame_ptr_insn; insn = NEXT_INSN (insn))
+      for (insn = first;
+	   insn != cfun->machine->set_frame_ptr_insn;
+	   insn = NEXT_INSN (insn))
 	{
 	  if (INSN_P (insn))
 	    PATTERN (insn) = replace_rtx (copy_rtx (PATTERN (insn)),
@@ -2379,9 +2380,8 @@ xtensa_builtin_saveregs ()
   rtx gp_regs, dest;
   int arg_words = current_function_arg_words;
   int gp_left = MAX_ARGS_IN_REGISTERS - arg_words;
-  int i;
 
-  if (gp_left == 0)
+  if (gp_left <= 0)
     return const0_rtx;
 
   /* allocate the general-purpose register space */
@@ -2394,15 +2394,10 @@ xtensa_builtin_saveregs ()
 			 plus_constant (XEXP (gp_regs, 0),
 					arg_words * UNITS_PER_WORD));
 
-  /* Note: Don't use move_block_from_reg() here because the incoming
-     argument in a7 cannot be represented by hard_frame_pointer_rtx.
-     Instead, call gen_raw_REG() directly so that we get a distinct
-     instance of (REG:SI 7). */
-  for (i = 0; i < gp_left; i++)
-    {
-      emit_move_insn (operand_subword (dest, i, 1, BLKmode),
-		      gen_raw_REG (SImode, GP_ARG_FIRST + arg_words + i));
-    }
+  cfun->machine->need_a7_copy = true;
+  cfun->machine->vararg_a7 = true;
+  move_block_from_reg (GP_ARG_FIRST + arg_words, dest, gp_left,
+		       gp_left * UNITS_PER_WORD);
 
   return XEXP (gp_regs, 0);
 }
@@ -2719,56 +2714,6 @@ order_regs_for_local_alloc ()
 
       reg_alloc_order[nxt++] = ACC_REG_FIRST;	/* MAC16 accumulator */
     }
-}
-
-
-/* A customized version of reg_overlap_mentioned_p that only looks for
-   references to a7 (as opposed to hard_frame_pointer_rtx). */
-
-int
-a7_overlap_mentioned_p (x)
-     rtx x;
-{
-  int i, j;
-  unsigned int x_regno;
-  const char *fmt;
-
-  if (GET_CODE (x) == REG)
-    {
-      x_regno = REGNO (x);
-      return (x != hard_frame_pointer_rtx
-	      && x_regno < A7_REG + 1
-	      && x_regno + HARD_REGNO_NREGS (A7_REG, GET_MODE (x)) > A7_REG);
-    }
-
-  if (GET_CODE (x) == SUBREG
-      && GET_CODE (SUBREG_REG (x)) == REG
-      && REGNO (SUBREG_REG (x)) < FIRST_PSEUDO_REGISTER)
-    {
-      x_regno = subreg_regno (x);
-      return (SUBREG_REG (x) != hard_frame_pointer_rtx
-	      && x_regno < A7_REG + 1
-	      && x_regno + HARD_REGNO_NREGS (A7_REG, GET_MODE (x)) > A7_REG);
-    }
-
-  /* X does not match, so try its subexpressions.  */
-  fmt = GET_RTX_FORMAT (GET_CODE (x));
-  for (i = GET_RTX_LENGTH (GET_CODE (x)) - 1; i >= 0; i--)
-    {
-      if (fmt[i] == 'e')
-	{
-	  if (a7_overlap_mentioned_p (XEXP (x, i)))
-	    return 1;
-	}
-      else if (fmt[i] == 'E')
-	{
-	  for (j = XVECLEN (x, i) - 1; j >=0; j--)
-	    if (a7_overlap_mentioned_p (XVECEXP (x, i, j)))
-	      return 1;
-	}
-    }
-
-  return 0;
 }
 
 

@@ -1,3 +1,41 @@
+2004-02-24  Bob Wilson  <bob.wilson@acm.org>
+
+	Backport from mainline (changes to xtensa_expand_prologue go into
+	xtensa_reorg instead; remove irrelevant portions of the patch)
+
+	2004-02-09  Bob Wilson  <bob.wilson@acm.org>:
+
+	* config/xtensa/xtensa-protos.h (xtensa_copy_incoming_a7): Update.
+	(init_cumulative_args): Likewise.
+	(a7_overlap_mentioned_p): Delete prototype.
+	* config/xtensa/xtensa.c (struct machine_function): Replace
+	incoming_a7_copied field with need_a7_copy and vararg_a7 flags.
+	Add set_frame_ptr_insn field.
+	(xtensa_emit_move_sequence): Update call to xtensa_copy_incoming_a7.
+	(xtensa_copy_incoming_a7): Rewrite to check need_a7_copy flag and check
+	if the operand is an argument in a7.  If so, copy a7 to a new pseudo
+	at the function entry and replace the operand with the pseudo.
+	(init_cumulative_args): Remove unused arguments.  Add new "incoming"
+	argument and record this flag in CUMULATIVE_ARGS.
+	(function_arg): Remove result_mode and special-case code to handle
+	arguments in a7.  Instead, set need_a7_copy flag when there is an
+	incoming argument in a7.
+	(xtensa_expand_prologue): Remove code to search for set_frame_ptr insn
+	and use the value recorded in cfun->machine->set_frame_ptr_insn.
+	(xtensa_builtin_saveregs): Check for negative gp_left value.  Set
+	need_a7_copy and vararg_a7 flags.  Use move_block_from_reg instead of
+	special-case code.
+	(a7_overlap_mentioned_p): Delete.
+	* config/xtensa/xtensa.h (CUMULATIVE_ARGS): Add "incoming" flag.
+	(INIT_CUMULATIVE_ARGS, INIT_CUMULATIVE_INCOMING_ARGS): Remove useless
+	arguments to init_cumulative_args and pass "incoming" flag instead.
+	(BLOCK_REG_PADDING): Delete.
+	* config/xtensa/xtensa.md (movdi, movsf, movdf): Remove unnecessary
+	checks for reload_in_progress and reload_completed.  Update calls to
+	xtensa_copy_incoming_a7.
+	(ashlsi3): Rename existing insn to ashlsi3_internal.  Add expander
+	to call xtensa_copy_incoming_a7.
+
 2004-02-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.c (override_options): Don't imply 3DNow! for -m64

@@ -1,5 +1,5 @@
 ;; GCC machine description for Tensilica's Xtensa architecture.
-;; Copyright (C) 2001 Free Software Foundation, Inc.
+;; Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 ;; Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
 ;; This file is part of GCC.
@@ -942,8 +942,7 @@
 	  && !register_operand (operands[1], DImode))
 	operands[1] = force_reg (DImode, operands[1]);
 
-      if (xtensa_copy_incoming_a7 (operands, DImode))
-	DONE;
+      operands[1] = xtensa_copy_incoming_a7 (operands[1]);
     }
 }")
 
@@ -1116,8 +1115,7 @@
 	      && constantpool_mem_p (operands[1]))))
 	operands[1] = force_reg (SFmode, operands[1]);
 
-      if (xtensa_copy_incoming_a7 (operands, SFmode))
-	DONE;
+      operands[1] = xtensa_copy_incoming_a7 (operands[1]);
     }
 }")
 
@@ -1198,8 +1196,7 @@
 	  && !register_operand (operands[1], DFmode))
 	operands[1] = force_reg (DFmode, operands[1]);
 
-      if (xtensa_copy_incoming_a7 (operands, DFmode))
-	DONE;
+      operands[1] = xtensa_copy_incoming_a7 (operands[1]);
     }
 }")
 
@@ -1302,7 +1299,16 @@
 ;;  ....................
 ;;
 
-(define_insn "ashlsi3"
+(define_expand "ashlsi3"
+  [(set (match_operand:SI 0 "register_operand" "")
+	(ashift:SI (match_operand:SI 1 "register_operand" "")
+		   (match_operand:SI 2 "arith_operand" "")))]
+  ""
+{
+  operands[1] = xtensa_copy_incoming_a7 (operands[1]);
+})
+
+(define_insn "ashlsi3_internal"
   [(set (match_operand:SI 0 "register_operand" "=a,a")
 	(ashift:SI (match_operand:SI 1 "register_operand" "r,r")
 		   (match_operand:SI 2 "arith_operand" "J,r")))]

@@ -1,5 +1,5 @@
 /* Definitions of Tensilica's Xtensa target machine for GNU compiler.
-   Copyright 2001,2002,2003 Free Software Foundation, Inc.
+   Copyright 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
    Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
 This file is part of GCC.
@@ -853,23 +853,21 @@ extern enum reg_class xtensa_char_to_class[256];
 #define FUNCTION_ARG_REGNO_P(N)						\
   ((N) >= GP_OUTGOING_ARG_FIRST && (N) <= GP_OUTGOING_ARG_LAST)
 
-/* Define a data type for recording info about an argument list
-   during the scan of that argument list.  This data type should
-   hold all necessary information about the function itself
-   and about the args processed so far, enough to enable macros
-   such as FUNCTION_ARG to determine where the next arg should go. */
-typedef struct xtensa_args {
-    int arg_words;		/* # total words the arguments take */
+/* Record the number of argument words seen so far, along with a flag to
+   indicate whether these are incoming arguments.  (FUNCTION_INCOMING_ARG
+   is used for both incoming and outgoing args, so a separate flag is
+   needed.  */
+typedef struct xtensa_args
+{
+  int arg_words;
+  int incoming;
 } CUMULATIVE_ARGS;
 
-/* Initialize a variable CUM of type CUMULATIVE_ARGS
-   for a call to a function whose data type is FNTYPE.
-   For a library call, FNTYPE is 0. */
 #define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, INDIRECT)		\
-  init_cumulative_args (&CUM, FNTYPE, LIBNAME)
+  init_cumulative_args (&CUM, 0)
 
 #define INIT_CUMULATIVE_INCOMING_ARGS(CUM, FNTYPE, LIBNAME)		\
-  init_cumulative_args (&CUM, FNTYPE, LIBNAME)
+  init_cumulative_args (&CUM, 1)
 
 /* Update the data in CUM to advance over an argument
    of mode MODE and data type TYPE.
