@@ -1,3 +1,7 @@
+Wed Aug 20 16:36:59 1997  Jim Wilson  <wilson@cygnus.com>
+
+	* intdoc.texi: Readd generated file.
+
 Mon Aug 18 09:01:54 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (F77_SRCS): Re-alphabetize.
