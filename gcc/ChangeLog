@@ -1,3 +1,16 @@
+Fri Oct 11 22:22:38 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* calls.c (expand_call): Simplify noreturn call.
+
+	PR c/7344
+	* cfgbuild.c (make_edges): Create edge cache when we do have
+	large jumptable.
+	(do_tablejump): Note size of maximal jumptable.
+	* function.c (prepare_function_start): Zero out size.
+	* function.h (function): Add max_jumptable_ents.
+
+	* cfgcleanup.c (insn_match_p): Verify sibcall flag for calls to.
+
 Fri Oct 11 12:34:33 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.md (movv8qi_i+2): For V8QI destinations, generate V4HI

@@ -6295,6 +6295,8 @@ prepare_function_start ()
 
   cfun->function_frequency = FUNCTION_FREQUENCY_NORMAL;
 
+  cfun->max_jumptable_ents = 0;
+
   (*lang_hooks.function.init) (cfun);
   if (init_machine_status)
     cfun->machine = (*init_machine_status) ();

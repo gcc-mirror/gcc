@@ -500,6 +500,10 @@ struct function GTY(())
        (set only when profile feedback is available).  */
     FUNCTION_FREQUENCY_HOT
   } function_frequency;
+
+  /* Maximal number of entities in the single jumptable.  Used to estimate
+     final flowgraph size.  */
+  int max_jumptable_ents;
 };
 
 /* The function currently being compiled.  */
