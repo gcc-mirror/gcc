@@ -955,10 +955,13 @@ dnl --disable-long-long leaves _GLIBCPP_USE_LONG_LONG undefined
 dnl  +  Usage:  GLIBCPP_ENABLE_LONG_LONG[(DEFAULT)]
 dnl       Where DEFAULT is either `yes' or `no'.  If ommitted, it
 dnl       defaults to `no'.
+dnl  +  If 'long long' stuff is not available, ignores DEFAULT and sets `no'.
 dnl
 dnl GLIBCPP_ENABLE_LONG_LONG
 AC_DEFUN(GLIBCPP_ENABLE_LONG_LONG, [dnl
   define([GLIBCPP_ENABLE_LONG_LONG_DEFAULT], ifelse($1, yes, yes, no))dnl
+  # must do check_func outside the local msg_checking/msg_result
+  AC_CHECK_FUNC(strtoll,,ac_ll=no)
   AC_MSG_CHECKING([for enabled long long])
   AC_ARG_ENABLE(long-long,
   changequote(<<, >>)dnl
@@ -970,6 +973,7 @@ AC_DEFUN(GLIBCPP_ENABLE_LONG_LONG, [dnl
    *)   AC_MSG_ERROR([Unknown argument to enable/disable long long]) ;;
    esac],
   enable_long_long=GLIBCPP_ENABLE_LONG_LONG_DEFAULT)dnl
+  if test x"$ac_ll" = xno; then enable_long_long=no; fi; unset ac_ll
   AC_MSG_RESULT($enable_long_long)
   dnl Option parsed, now set things appropriately
   case "$enable_long_long" in

@@ -29,7 +29,7 @@ if [ $WHICH != "1" ]; then
   WHICH=0
   echo "$0: testing the build directory"
 elif [ $WHICH -eq 1 ]; then
-  echo "$0: testing the install directory $1"
+  echo "$0: testing the install directory $4"
 fi
 
 BUILD_DIR=$2
@@ -153,8 +153,8 @@ echo "etime == time for executable to run" >> $RESULTS_FILE
 echo "text == size of the executable text section" >> $RESULTS_FILE
 echo "data == size of the executable data section" >> $RESULTS_FILE
 echo "total == size of the executable" >> $RESULTS_FILE
-echo "(First static, then shared.)" >> $RESULTS_FILE
 echo "" >> $RESULTS_FILE
+echo "(First static, then shared.)" >> $RESULTS_FILE
 
 echo "p" | awk '{printf("%s ", $1)}' >> $RESULTS_FILE
 echo "ctime" "etime" | awk '{printf("%s\t%s\t", $1, $2)}' >> $RESULTS_FILE
