@@ -157,7 +157,7 @@ const_8_operand (op, mode)
 int
 const_16_operand (op, mode)
      rtx op;
-     enum machine_mode;
+     enum machine_mode mode;
 {
   return shift_constant_operand (op, mode, 16);
 }
@@ -165,7 +165,7 @@ const_16_operand (op, mode)
 int
 const_24_operand (op, mode)
      rtx op;
-     enum machine_mode;
+     enum machine_mode mode;
 {
   return shift_constant_operand (op, mode, 24);
 }
@@ -287,7 +287,7 @@ srcb_operand (op, mode)
 int
 gpc_reg_or_immediate_operand (op, mode)
      rtx op;
-     enum machine_mode;
+     enum machine_mode mode;
 {
   return gpc_reg_operand (op, mode) || immediate_operand (op, mode);
 }
@@ -298,7 +298,7 @@ gpc_reg_or_immediate_operand (op, mode)
 int
 and_operand (op, mode)
      rtx op;
-     enum machine_mode;
+     enum machine_mode mode;
 {
   return (srcb_operand (op, mode)
 	  || (GET_CODE (op) == CONST_INT
@@ -312,7 +312,7 @@ and_operand (op, mode)
 int
 add_operand (op, mode)
      rtx op;
-     enum machine_mode;
+     enum machine_mode mode;
 {
   return (srcb_operand (op, mode)
 	  || (GET_CODE (op) == CONST_INT
