@@ -1,3 +1,12 @@
+2001-11-13  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* Makefile.in: Change dependencies on stamp files
+	into dependencies on the generated .la files.
+	Get rid of objlist.  Update comment.
+	* libF77/Makefile.in: Ditto.
+	* libI77/Makefile.in: Ditto.
+	* libU77/Makefile.in: Ditto.
+
 2001-10-20  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* configure.in: Fake AC_EXEEXT invocation.

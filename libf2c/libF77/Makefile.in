@@ -52,7 +52,7 @@ ALL_CFLAGS = -I. -I$(srcdir) -I$(G2C_H_DIR) -I$(F2C_H_DIR) $(CPPFLAGS) $(DEFS) $
 .c.lo:
 	@LIBTOOL@ --mode=compile $(CC) -c -DSkip_f2c_Undefs $(ALL_CFLAGS) $<
 
-LINK = @LIBTOOL@ --mode=link $(CC) $(ALL_CFLAGS) -o $@
+LINK = @LIBTOOL@ --mode=link $(CC) -o $@
 
 MISC =	F77_aloc.lo VersionF.lo s_rnge.lo abort_.lo getarg_.lo iargc_.lo\
 	getenv_.lo signal_.lo s_stop.lo s_paus.lo system_.lo cabs.lo\
@@ -80,19 +80,10 @@ F90BIT = lbitbits.lo lbitshft.lo qbitbits.lo qbitshft.lo
 OBJS = $(MISC) $(POW) $(CX) $(DCX) $(REAL) $(DBL) $(INT) \
 	 $(HALF) $(CMP) $(EFL) $(CHAR) $(F90BIT)
 
-all: ../s-libf77 ../libfrtbegin.a
-
-../s-libf77: ../libF77.la
-	echo timestamp > ../s-libf77
+all: ../libF77.la ../libfrtbegin.a
 
 ../libF77.la: $(OBJS)
 	$(LINK) $(OBJS)
-
-objlist:
-	objs="`cat ../objlist`" ; for i in $(OBJS) ; do \
-	   objs="$$objs libF77/$$i" ;\
-	done ; \
-	echo -n $$objs > ../objlist
 
 Makefile: Makefile.in config.status
 	$(SHELL) config.status
@@ -249,10 +240,10 @@ mostlyclean:
 
 clean: mostlyclean
 	rm -f config.log
-	rm -f ../s-libf77
+	rm -f ../libF77.la
 
 distclean: clean
-	rm -f config.cache config.status Makefile ../s-libf77 configure
+	rm -f config.cache config.status Makefile ../libF77.la configure
 
 maintainer-clean:
 

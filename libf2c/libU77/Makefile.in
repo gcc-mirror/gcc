@@ -55,7 +55,7 @@ G77DIR = ../../../gcc/
 .c.lo:
 	@LIBTOOL@ --mode=compile $(CC) -c -DSkip_f2c_Undefs $(ALL_CFLAGS) $<
 
-LINK = @LIBTOOL@ --mode=link $(CC) $(ALL_CFLAGS) -o $@
+LINK = @LIBTOOL@ --mode=link $(CC) -o $@
 
 OBJS =  VersionU.lo gerror_.lo perror_.lo ierrno_.lo itime_.lo time_.lo \
 	unlink_.lo fnum_.lo getpid_.lo getuid_.lo getgid_.lo kill_.lo rand_.lo \
@@ -78,19 +78,10 @@ SRCS =  Version.c gerror_.c perror_.c ierrno_.c itime_.c time_.c \
 	umask_.c sys_clock_.c date_.c second_.c flush1_.c mclock_.c \
 	alarm_.c datetime_.c
 
-all: ../s-libu77
-
-../s-libu77: ../libU77.la
-	echo timestamp > ../s-libu77
+all: ../libU77.la
 
 ../libU77.la: $(OBJS)
 	$(LINK) $(OBJS)
-
-objlist:
-	objs="`cat ../objlist`" ; for i in $(OBJS) ; do \
-	   objs="$$objs libU77/$$i" ;\
-	done ; \
-	echo -n $$objs > ../objlist
 
 Makefile: Makefile.in config.status
 	$(SHELL) config.status
@@ -187,11 +178,11 @@ mostlyclean:
 	rm -rf .libs
 
 clean: mostlyclean
-	rm -f config.log ../s-libu77
+	rm -f config.log ../libU77.la
 
 distclean: clean
 	rm -f config.cache config.status Makefile config.h stamp.h \
-	  ../s-libu77 configure
+	  ../libU77.la configure
 
 maintainer-clean:
 
