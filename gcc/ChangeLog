@@ -1,3 +1,8 @@
+Wed Nov 29 00:08:23 2000  J"orn Rennecke <amylaar@redhat.com>
+
+	* jump.c (delete_insn): Check that REG_LABEL note actually contains
+	a CODE_LABEL.
+
 2000-11-28  Neil Booth  <neilb@earthling.net>
 
         * c-common.h: Remove flag_digraphs.
