@@ -623,57 +623,61 @@
 ;; The divide and remainder operations always take their inputs from
 ;; r24 and r25, put their output in r27, and clobber r23 and r28.
 
-(define_expand "divsi3"
-  [(set (reg:SI 24) (match_operand:SI 1 "input_operand" ""))
-   (set (reg:SI 25) (match_operand:SI 2 "input_operand" ""))
-   (parallel [(set (reg:SI 27)
-		   (div:SI (reg:SI 24)
-			   (reg:SI 25)))
-	      (clobber (reg:DI 23))
-	      (clobber (reg:DI 28))])
-   (set (match_operand:SI 0 "general_operand" "")
-	(reg:SI 27))]
-  "!TARGET_OPEN_VMS"
-  "")
+;; ??? comment out the divsi routines since the library functions
+;; don't seem to do the right thing with the high 32-bits of a
+;; register nonzero.
 
-(define_expand "udivsi3"
-  [(set (reg:SI 24) (match_operand:SI 1 "input_operand" ""))
-   (set (reg:SI 25) (match_operand:SI 2 "input_operand" ""))
-   (parallel [(set (reg:SI 27)
-		   (udiv:SI (reg:SI 24)
-			    (reg:SI 25)))
-	      (clobber (reg:DI 23))
-	      (clobber (reg:DI 28))])
-   (set (match_operand:SI 0 "general_operand" "")
-	(reg:SI 27))]
-  "!TARGET_OPEN_VMS"
-  "")
+;(define_expand "divsi3"
+;  [(set (reg:SI 24) (match_operand:SI 1 "input_operand" ""))
+;   (set (reg:SI 25) (match_operand:SI 2 "input_operand" ""))
+;   (parallel [(set (reg:SI 27)
+;		   (div:SI (reg:SI 24)
+;			   (reg:SI 25)))
+;	      (clobber (reg:DI 23))
+;	      (clobber (reg:DI 28))])
+;   (set (match_operand:SI 0 "general_operand" "")
+;	(reg:SI 27))]
+;  "!TARGET_OPEN_VMS"
+;  "")
 
-(define_expand "modsi3"
-  [(set (reg:SI 24) (match_operand:SI 1 "input_operand" ""))
-   (set (reg:SI 25) (match_operand:SI 2 "input_operand" ""))
-   (parallel [(set (reg:SI 27)
-		   (mod:SI (reg:SI 24)
-			   (reg:SI 25)))
-	      (clobber (reg:DI 23))
-	      (clobber (reg:DI 28))])
-   (set (match_operand:SI 0 "general_operand" "")
-	(reg:SI 27))]
-  "!TARGET_OPEN_VMS"
-  "")
+;(define_expand "udivsi3"
+;  [(set (reg:SI 24) (match_operand:SI 1 "input_operand" ""))
+;   (set (reg:SI 25) (match_operand:SI 2 "input_operand" ""))
+;   (parallel [(set (reg:SI 27)
+;		   (udiv:SI (reg:SI 24)
+;			    (reg:SI 25)))
+;	      (clobber (reg:DI 23))
+;	      (clobber (reg:DI 28))])
+;   (set (match_operand:SI 0 "general_operand" "")
+;	(reg:SI 27))]
+;  "!TARGET_OPEN_VMS"
+;  "")
 
-(define_expand "umodsi3"
-  [(set (reg:SI 24) (match_operand:SI 1 "input_operand" ""))
-   (set (reg:SI 25) (match_operand:SI 2 "input_operand" ""))
-   (parallel [(set (reg:SI 27)
-		   (umod:SI (reg:SI 24)
-			    (reg:SI 25)))
-	      (clobber (reg:DI 23))
-	      (clobber (reg:DI 28))])
-   (set (match_operand:SI 0 "general_operand" "")
-	(reg:SI 27))]
-  "!TARGET_OPEN_VMS"
-  "")
+;(define_expand "modsi3"
+;  [(set (reg:SI 24) (match_operand:SI 1 "input_operand" ""))
+;   (set (reg:SI 25) (match_operand:SI 2 "input_operand" ""))
+;   (parallel [(set (reg:SI 27)
+;		   (mod:SI (reg:SI 24)
+;			   (reg:SI 25)))
+;	      (clobber (reg:DI 23))
+;	      (clobber (reg:DI 28))])
+;   (set (match_operand:SI 0 "general_operand" "")
+;	(reg:SI 27))]
+;  "!TARGET_OPEN_VMS"
+;  "")
+
+;(define_expand "umodsi3"
+;  [(set (reg:SI 24) (match_operand:SI 1 "input_operand" ""))
+;   (set (reg:SI 25) (match_operand:SI 2 "input_operand" ""))
+;   (parallel [(set (reg:SI 27)
+;		   (umod:SI (reg:SI 24)
+;			    (reg:SI 25)))
+;	      (clobber (reg:DI 23))
+;	      (clobber (reg:DI 28))])
+;   (set (match_operand:SI 0 "general_operand" "")
+;	(reg:SI 27))]
+;  "!TARGET_OPEN_VMS"
+;  "")
 
 (define_expand "divdi3"
   [(set (reg:DI 24) (match_operand:DI 1 "input_operand" ""))
@@ -727,15 +731,15 @@
   "!TARGET_OPEN_VMS"
   "")
 
-(define_insn ""
-  [(set (reg:SI 27)
-	(match_operator:SI 1 "divmod_operator"
-			[(reg:SI 24) (reg:SI 25)]))
-   (clobber (reg:DI 23))
-   (clobber (reg:DI 28))]
-  "!TARGET_OPEN_VMS"
-  "%E1 $24,$25,$27"
-  [(set_attr "type" "isubr")])
+;(define_insn ""
+;  [(set (reg:SI 27)
+;	(match_operator:SI 1 "divmod_operator"
+;			[(reg:SI 24) (reg:SI 25)]))
+;   (clobber (reg:DI 23))
+;   (clobber (reg:DI 28))]
+;  "!TARGET_OPEN_VMS"
+;  "%E1 $24,$25,$27"
+;  [(set_attr "type" "isubr")])
 
 (define_insn ""
   [(set (reg:DI 27)
@@ -1509,13 +1513,14 @@
    (set_attr "trap" "yes")])
 
 (define_insn "extendsfdf2_no_tp"
-  [(set (match_operand:DF 0 "register_operand" "=f,f")
-	(float_extend:DF (match_operand:SF 1 "nonimmediate_operand" "f,m")))]
+  [(set (match_operand:DF 0 "register_operand" "=f,f,m")
+	(float_extend:DF (match_operand:SF 1 "nonimmediate_operand" "f,m,f")))]
   "TARGET_FP && alpha_tp != ALPHA_TP_INSN"
   "@
-   add%-%)%& $f31,%1,%0
-   ld%, %0,%1"
-  [(set_attr "type" "fadd,ld")
+   cpys %1,%1,%0
+   ld%, %0,%1
+   st%- %1,%0"
+  [(set_attr "type" "fcpys,ld,st")
    (set_attr "trap" "yes")])
 
 (define_insn ""
