@@ -1936,6 +1936,12 @@ changequote([,])dnl
 		extra_headers=math-68881.h
 		float_format=m68k
 		;;
+	m68020-*-elf* | m68k-*-elf*)
+		tm_file="m68k/m68020-elf.h libgloss.h"
+		xm_file=m68k/xm-m68kv.h
+		tmake_file=m68k/t-m68kelf
+		header_files=math-68881.h
+		;;
 	m68k-*-lynxos*)
 		if test x$gas = xyes
 		then
