@@ -100,25 +100,26 @@ namespace std
 
   locale::locale() throw() : _M_impl(0)
   { 
-    _S_initialize(); 
-    __glibcxx_mutex_lock(__gnu_internal::locale_cons_mutex);
+    _S_initialize();
+    __gnu_cxx::lock sentry(__gnu_internal::locale_cons_mutex);
     _S_global->_M_add_reference();
     _M_impl = _S_global;
-    __glibcxx_mutex_unlock(__gnu_internal::locale_cons_mutex);
   }
 
   locale
   locale::global(const locale& __other)
   {
     _S_initialize();
-    __glibcxx_mutex_lock(__gnu_internal::locale_global_mutex);
-    _Impl* __old = _S_global;
-    __other._M_impl->_M_add_reference();
-    _S_global = __other._M_impl;
-    const string __other_name = __other.name();
-    if (__other_name != "*")
-      setlocale(LC_ALL, __other_name.c_str());
-   __glibcxx_mutex_unlock(__gnu_internal::locale_global_mutex);
+    _Impl* __old;
+    {
+      __gnu_cxx::lock sentry(__gnu_internal::locale_global_mutex);
+      __old = _S_global;
+      __other._M_impl->_M_add_reference();
+      _S_global = __other._M_impl;
+      const string __other_name = __other.name();
+      if (__other_name != "*")
+	setlocale(LC_ALL, __other_name.c_str());
+    }
 
     // Reference count sanity check: one reference removed for the
     // subsition of __other locale, one added by return-by-value. Net

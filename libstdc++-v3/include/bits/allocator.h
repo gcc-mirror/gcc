@@ -94,8 +94,8 @@ namespace std
 
       allocator() throw() { }
 
-      allocator(const allocator& a) throw()
-      : ___glibcxx_base_allocator<_Tp>(a) { }
+      allocator(const allocator& __a) throw()
+      : ___glibcxx_base_allocator<_Tp>(__a) { }
 
       template<typename _Tp1>
         allocator(const allocator<_Tp1>&) throw() { }

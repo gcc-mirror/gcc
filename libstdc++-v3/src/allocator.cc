@@ -36,19 +36,24 @@
 #include <ext/mt_allocator.h>
 #include <ext/pool_allocator.h>
 
+namespace __gnu_internal
+{
+  __glibcxx_mutex_define_initialized(palloc_init_mutex);
+}
+
 namespace __gnu_cxx
 {
-  // Instantiations for __mt_alloc.
-  template class __mt_alloc<char>;
-  template class __mt_alloc<wchar_t>;
-
-  // Definitions and instantiations for __pool_alloc and base class.
+  // Definitions for __pool_alloc_base.
   __pool_base::_Obj* volatile*
   __pool_base::_M_get_free_list(size_t __bytes)
   { 
     size_t __i = ((__bytes + (size_t)_S_align - 1) / (size_t)_S_align - 1);
-    return _S_free_list + __i - 1;
+    return _S_free_list + __i;
   }
+
+  __gthread_mutex_t&
+  __pool_base::_M_get_mutex()
+  { return __gnu_internal::palloc_init_mutex; }
 
   // Allocate memory in large chunks in order to avoid fragmenting the
   // heap too much.  Assume that __n is properly aligned.  We hold the
@@ -89,21 +94,17 @@ namespace __gnu_cxx
 	_S_start_free = static_cast<char*>(::operator new(__bytes_to_get));
 	if (_S_start_free == 0)
 	  {
-	    size_t __i;
-	    _Obj* volatile* __free_list;
-	    _Obj* __p;
-
 	    // Try to make do with what we have.  That can't hurt.  We
 	    // do not try smaller requests, since that tends to result
 	    // in disaster on multi-process machines.
-	    __i = __n;
+	    size_t __i = __n;
 	    for (; __i <= (size_t) _S_max_bytes; __i += (size_t) _S_align)
 	      {
-		__free_list = _M_get_free_list(__i);
-		__p = *__free_list;
+		_Obj* volatile* __free_list = _M_get_free_list(__i);
+		_Obj* __p = *__free_list;
 		if (__p != 0)
 		  {
-		    *__free_list = __p -> _M_free_list_link;
+		    *__free_list = __p->_M_free_list_link;
 		    _S_start_free = (char*)__p;
 		    _S_end_free = _S_start_free + __i;
 		    return _M_allocate_chunk(__n, __nobjs);
@@ -112,9 +113,10 @@ namespace __gnu_cxx
 		  }
 	      }
 	    _S_end_free = 0;        // In case of exception.
-	    _S_start_free = static_cast<char*>(::operator new(__bytes_to_get));
+
 	    // This should either throw an exception or remedy the situation.
 	    // Thus we assume it succeeded.
+	    _S_start_free = static_cast<char*>(::operator new(__bytes_to_get));
 	  }
 	_S_heap_size += __bytes_to_get;
 	_S_end_free = _S_start_free + __bytes_to_get;
@@ -134,26 +136,25 @@ namespace __gnu_cxx
     _Obj* __result;
     _Obj* __current_obj;
     _Obj* __next_obj;
-    int __i;
     
-    if (1 == __nobjs)
+    if (__nobjs == 1)
       return __chunk;
     __free_list = _M_get_free_list(__n);
     
     // Build free list in chunk.
     __result = (_Obj*)(void*)__chunk;
     *__free_list = __next_obj = (_Obj*)(void*)(__chunk + __n);
-    for (__i = 1; ; __i++)
+    for (int __i = 1; ; __i++)
       {
 	__current_obj = __next_obj;
 	__next_obj = (_Obj*)(void*)((char*)__next_obj + __n);
 	if (__nobjs - 1 == __i)
 	  {
-	    __current_obj -> _M_free_list_link = 0;
+	    __current_obj->_M_free_list_link = 0;
 	    break;
 	  }
 	else
-	  __current_obj -> _M_free_list_link = __next_obj;
+	  __current_obj->_M_free_list_link = __next_obj;
       }
     return __result;
   }
@@ -165,9 +166,4 @@ namespace __gnu_cxx
   char* __pool_base::_S_end_free = 0;
   
   size_t __pool_base::_S_heap_size = 0;
-  
-  _STL_mutex_lock __pool_base::_Lock::_S_lock __STL_MUTEX_INITIALIZER;
-  
-  template class __pool_alloc<char>;
-  template class __pool_alloc<wchar_t>;
 } // namespace __gnu_cxx
