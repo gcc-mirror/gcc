@@ -1,3 +1,8 @@
+2004-06-27  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/ext/rope: Trivial formatting fixes.
+	* include/ext/ropeimpl.h: Likewise.
+
 2004-06-26  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/16210
