@@ -4902,7 +4902,7 @@ override_options ()
       || ! strcmp (mips_tune_string, "DEFAULT"))
     {
       if (mips_arch != PROCESSOR_DEFAULT)
-	mips_tune == mips_arch;
+	mips_tune = mips_arch;
       else
       switch (mips_isa)
 	{
