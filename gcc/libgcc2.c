@@ -1483,7 +1483,7 @@ __bb_exit_func (void)
 	  /* If the file exists, and the number of counts in it is the same,
 	     then merge them in.  */
 	     
-	  if ((da_file = fopen (ptr->filename, "r")) != NULL)
+	  if ((da_file = fopen (ptr->filename, "r")) != 0)
 	    {
 	      long n_counts = 0;
 	      unsigned char tmp;
@@ -1855,7 +1855,7 @@ gclose (FILE *f)
 {
   struct stat buf;
 
-  if (f != NULL)
+  if (f != 0)
     {
       if (!fstat (fileno (f), &buf) && S_ISFIFO (buf.st_mode))
         return pclose (f);
@@ -3022,7 +3022,7 @@ int _exit_dummy_decl = 0;	/* prevent compiler & linker warnings */
 #ifdef NEED_ATEXIT
 # include <errno.h>
 
-static func_ptr *atexit_chain = NULL;
+static func_ptr *atexit_chain = 0;
 static long atexit_chain_length = 0;
 static volatile long last_atexit_chain_slot = -1;
 
@@ -3068,10 +3068,10 @@ exit (int status)
       for ( ; last_atexit_chain_slot-- >= 0; )
 	{
 	  (*atexit_chain[last_atexit_chain_slot + 1]) ();
-	  atexit_chain[last_atexit_chain_slot + 1] = NULL;
+	  atexit_chain[last_atexit_chain_slot + 1] = 0;
 	}
       free (atexit_chain);
-      atexit_chain = NULL;
+      atexit_chain = 0;
     }
 #else /* No NEED_ATEXIT */
   __do_global_dtors ();
