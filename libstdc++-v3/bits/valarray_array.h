@@ -296,7 +296,7 @@ namespace std
 
   // Compute the min/max of an array-expression
   template<typename _Ta>
-  inline typename _Ta::value_array
+  inline typename _Ta::value_type
   __valarray_min(const _Ta& __a)
   {
     size_t __s = __a.size();
@@ -312,7 +312,7 @@ namespace std
   }
   
   template<typename _Ta>
-  inline typename _Ta::value_array
+  inline typename _Ta::value_type
   __valarray_max(const _Ta& __a)
   {
     size_t __s = __a.size();

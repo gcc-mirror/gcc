@@ -1,3 +1,9 @@
+2000-08-19  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* bits/valarray_array.h (__valarray_min, __valarray_max): Fix
+	thinko. Diagnostic messages really need to be improved for
+	template argument deduction.
+
 2000-08-18  Benjamin Kosnik  <bkoz@gnu.org>
 
 	* bits/valarray_meta.h: Fix typos...
