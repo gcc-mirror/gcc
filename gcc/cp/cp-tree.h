@@ -1062,9 +1062,10 @@ struct lang_type_class GTY(())
   tree decl_list;
   tree template_info;
   tree befriending_classes;
-  /* In a RECORD_TYPE, a list of Objective-C protocols that this type
-     adopts.  This is used only in Objective-C++.  */
-  tree objc_protocols;
+  /* In a RECORD_TYPE, information specific to Objective-C++, such
+     as a list of adopted protocols or a pointer to a corresponding
+     @interface.  See objc/objc-act.h for details.  */
+  tree objc_info;
 };
 
 struct lang_type_ptrmem GTY(())
