@@ -146,7 +146,7 @@ main(argc, argv)
       cplus_demangle_set_style (style);
 
       result = cplus_demangle (input.data,
-			       DMGL_PARAMS|DMGL_ANSI|DMGL_VERBOSE|DMGL_TYPES);
+			       DMGL_PARAMS|DMGL_ANSI|DMGL_TYPES);
 
       if (result
 	  ? strcmp (result, expect.data)
