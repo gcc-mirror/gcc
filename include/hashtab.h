@@ -99,7 +99,7 @@ struct htab GTY(())
   htab_del del_f;
 
   /* Table itself.  */
-  PTR * GTY ((use_param (""), length ("%h.size"))) entries;
+  PTR * GTY ((use_param, length ("%h.size"))) entries;
 
   /* Current size (in entries) of the hash table */
   size_t size;
@@ -123,7 +123,7 @@ struct htab GTY(())
   htab_free free_f;
 
   /* Alternate allocate/free functions, which take an extra argument.  */
-  PTR GTY((skip (""))) alloc_arg;
+  PTR GTY((skip)) alloc_arg;
   htab_alloc_with_arg alloc_with_arg_f;
   htab_free_with_arg free_with_arg_f;
 };
