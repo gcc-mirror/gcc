@@ -1692,13 +1692,10 @@ expand_expr_stmt (exp)
     exp = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (exp)), exp);
 
   last_expr_type = TREE_TYPE (exp);
-  if (flag_syntax_only && ! expr_stmts_for_value)
-    last_expr_value = 0;
-  else
-    last_expr_value = expand_expr (exp,
-				   (expr_stmts_for_value
-				    ? NULL_RTX : const0_rtx),
-				   VOIDmode, 0);
+  last_expr_value = expand_expr (exp,
+				 (expr_stmts_for_value
+				  ? NULL_RTX : const0_rtx),
+				 VOIDmode, 0);
 
   /* If all we do is reference a volatile value in memory,
      copy it to a register to be sure it is actually touched.  */
