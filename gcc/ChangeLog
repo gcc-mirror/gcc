@@ -1,3 +1,11 @@
+2003-05-11  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (s390_function_arg_float): New function.
+	(s390_function_arg_pass_by_reference): Use it.
+	(s390_function_arg_advance): Likewise.
+	(s390_function_arg): Likewise.
+	(s390_va_arg): Likewise
+
 2003-05-11  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* coverage.h (coverage_counter_alloc): New function.

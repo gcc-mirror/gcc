@@ -211,6 +211,7 @@ static rtx restore_fpr PARAMS ((rtx, int, int));
 static rtx save_gprs PARAMS ((rtx, int, int, int));
 static rtx restore_gprs PARAMS ((rtx, int, int, int));
 static int s390_function_arg_size PARAMS ((enum machine_mode, tree));
+static bool s390_function_arg_float PARAMS ((enum machine_mode, tree));
 static struct machine_function * s390_init_machine_status PARAMS ((void));
  
 /* Return true if SET either doesn't set the CC register, or else
@@ -5699,6 +5700,48 @@ s390_function_arg_size (mode, type)
   abort ();
 }
 
+/* Return true if a function argument of type TYPE and mode MODE
+   is to be passed in a floating-point register, if available.  */
+
+static bool
+s390_function_arg_float (mode, type)
+     enum machine_mode mode;
+     tree type;
+{
+  /* Soft-float changes the ABI: no floating-point registers are used.  */
+  if (TARGET_SOFT_FLOAT)
+    return false;
+
+  /* No type info available for some library calls ...  */
+  if (!type)
+    return mode == SFmode || mode == DFmode;
+
+  /* The ABI says that record types with a single member are treated
+     just like that member would be.  */
+  while (TREE_CODE (type) == RECORD_TYPE)
+    {
+      tree field, single = NULL_TREE;
+
+      for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+	{
+	  if (TREE_CODE (field) != FIELD_DECL)
+	    continue;
+
+	  if (single == NULL_TREE)
+	    single = TREE_TYPE (field);
+	  else
+	    return false;
+	}
+
+      if (single == NULL_TREE)
+	return false;
+      else
+	type = single;
+    }
+
+  return TREE_CODE (type) == REAL_TYPE;
+}
+
 /* Return 1 if a function argument of type TYPE and mode MODE
    is to be passed by reference.  The ABI specifies that only
    structures of size 1, 2, 4, or 8 bytes are passed by value,
@@ -5715,14 +5758,15 @@ s390_function_arg_pass_by_reference (mode, type)
   if (type)
     {
       if (AGGREGATE_TYPE_P (type) &&
-          size != 1 && size != 2 && size != 4 && size != 8)
+          size != 1 && size != 2 && size != 4 && size != 8
+	  && !s390_function_arg_float (mode, type))
         return 1;
 
       if (TREE_CODE (type) == COMPLEX_TYPE)
         return 1;
     }
+    
   return 0;
-
 }
 
 /* Update the data in CUM to advance over an argument of mode MODE and
@@ -5738,13 +5782,13 @@ s390_function_arg_advance (cum, mode, type, named)
      tree type;
      int named ATTRIBUTE_UNUSED;
 {
-  if (! TARGET_SOFT_FLOAT && (mode == DFmode || mode == SFmode))
-    {
-      cum->fprs++;
-    }
-  else if (s390_function_arg_pass_by_reference (mode, type))
+  if (s390_function_arg_pass_by_reference (mode, type))
     {
       cum->gprs += 1;
+    }
+  else if (s390_function_arg_float (mode, type))
+    {
+      cum->fprs += 1;
     }
   else
     {
@@ -5782,7 +5826,7 @@ s390_function_arg (cum, mode, type, named)
   if (s390_function_arg_pass_by_reference (mode, type))
       return 0;
 
-  if (! TARGET_SOFT_FLOAT && (mode == DFmode || mode == SFmode))
+  if (s390_function_arg_float (mode, type))
     {
       if (cum->fprs + 1 > (TARGET_64BIT? 4 : 2))
 	return 0;
@@ -5996,7 +6040,7 @@ s390_va_arg (valist, type)
       size = UNITS_PER_WORD;
       max_reg = 4;
     }
-  else if (FLOAT_TYPE_P (type) && ! TARGET_SOFT_FLOAT)
+  else if (s390_function_arg_float (TYPE_MODE (type), type))
     {
       if (TARGET_DEBUG_ARG)
 	{
