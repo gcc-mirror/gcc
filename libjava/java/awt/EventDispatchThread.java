@@ -24,6 +24,7 @@ class EventDispatchThread extends Thread
     setName("AWT-EventQueue-" + dispatchThreadNum++);
     this.queue = queue;
     setPriority(NORM_PRIORITY + 1);
+    start();
   }
 
   public void run()

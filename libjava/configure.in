@@ -762,6 +762,10 @@ else
   multilib_arg=
 fi
 
+AC_PATH_XTRA
+
+AM_CONDITIONAL(NO_X, test "$no_x" = yes)
+
 here=`pwd`
 AC_SUBST(here)
 
