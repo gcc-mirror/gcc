@@ -1,3 +1,7 @@
+2000-01-27  Richard Henderson  <rth@cygnus.com>
+
+        * alpha.md (trunctfsf2): New.
+
 2000-01-27  Andrew Hobson  <ahobson@eng.mindspring.net>
 
 	* configure.in (alpha-dec-osf5): Enable MASK_SUPPORT_ARCH.
