@@ -1,3 +1,14 @@
+2001-01-09  Richard Henderson  <rth@redhat.com>
+
+	* sched-int.h (struct deps): Add max_reg, reg_last_in_use; merge
+	reg_last_uses, reg_last_sets, reg_last_clobbers into struct deps_reg.
+	* sched-deps.c (sched_analyze_1): Update uses of struct deps.
+	(sched_analyze_2, sched_analyze_insn): Likewise.
+	(sched_analyze, init_deps): Likewise.
+	(free_deps): Likewise.  Iterate with EXECUTE_IF_SET_IN_REG_SET.
+	* sched-rgn.c (propagate_deps): Likewise.  Remove max_reg argument.
+	(compute_block_backward_dependences): Update propagate_deps call.
+
 2001-01-09  Mark Elbrecht  <snowball3@bigfoot.com>
 
 	* gcc.c (process_command): Set switches[n_switches].ordering to 0.

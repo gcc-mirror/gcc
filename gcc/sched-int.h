@@ -78,13 +78,24 @@ struct deps
      to ensure that they won't cross a call after scheduling is done.  */
   rtx sched_before_next_call;
 
+  /* The maximum register number for the following arrays.  Before reload
+     this is max_reg_num; after reload it is FIRST_PSEUDO_REGISTER.  */
+  int max_reg;
+
   /* Element N is the next insn that sets (hard or pseudo) register
      N within the current basic block; or zero, if there is no
      such insn.  Needed for new registers which may be introduced
      by splitting insns.  */
-  rtx *reg_last_uses;
-  rtx *reg_last_sets;
-  rtx *reg_last_clobbers;
+  struct deps_reg
+    {
+      rtx uses;
+      rtx sets;
+      rtx clobbers;
+    } *reg_last;
+
+  /* Element N is set for each register that has any non-zero element
+     in reg_last[N].{uses,sets,clobbers}.  */
+  regset_head reg_last_in_use;
 };
 
 /* This structure holds some state of the current scheduling pass, and
