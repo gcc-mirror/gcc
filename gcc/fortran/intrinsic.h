@@ -257,7 +257,7 @@ void gfc_resolve_exponent (gfc_expr *, gfc_expr *);
 void gfc_resolve_floor (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_fraction (gfc_expr *, gfc_expr *);
 void gfc_resolve_g77_math1 (gfc_expr *, gfc_expr *);
-void gfc_resolve_getcwd (gfc_expr *);
+void gfc_resolve_getcwd (gfc_expr *, gfc_expr *);
 void gfc_resolve_getgid (gfc_expr *);
 void gfc_resolve_getpid (gfc_expr *);
 void gfc_resolve_getuid (gfc_expr *);

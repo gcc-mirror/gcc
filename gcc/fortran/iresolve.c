@@ -572,7 +572,7 @@ gfc_resolve_g77_math1 (gfc_expr * f, gfc_expr * x)
 
 
 void
-gfc_resolve_getcwd (gfc_expr * f)
+gfc_resolve_getcwd (gfc_expr * f, gfc_expr * n ATTRIBUTE_UNUSED)
 {
   f->ts.type = BT_INTEGER;
   f->ts.kind = 4;
