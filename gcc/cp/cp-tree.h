@@ -790,6 +790,7 @@ struct saved_scope {
   tree x_saved_tree;
   tree incomplete;
   tree lookups;
+  tree last_parms;
 
   HOST_WIDE_INT x_processing_template_decl;
   int x_processing_specialization;
