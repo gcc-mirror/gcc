@@ -204,8 +204,8 @@ rtxfun bcc_gen_fctn[NUM_RTX_CODE];
 enum insn_code setcc_gen_code[NUM_RTX_CODE];
 
 static int add_equal_note	PROTO((rtx, rtx, enum rtx_code, rtx, rtx));
-static rtx widen_operand	PROTO((rtx, enum machine_mode, enum machine_mode, int, int));
-void emit_float_lib_cmp	PROTO((rtx, rtx, enum rtx_code));
+static rtx widen_operand	PROTO((rtx, enum machine_mode,
+				       enum machine_mode, int, int));
 static enum insn_code can_fix_p	PROTO((enum machine_mode, enum machine_mode,
 				       int, int *));
 static enum insn_code can_float_p PROTO((enum machine_mode, enum machine_mode,
