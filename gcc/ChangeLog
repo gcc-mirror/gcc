@@ -1,3 +1,10 @@
+2004-07-29  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-ssa-operands.c (get_expr_operands): Revert changes
+	to ADDR_EXPR processing introduced by:
+	    2004-06-21  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+	    * tree-ssa-operands.c (get_expr_operands): Minor rearrangements.
+
 2004-07-29  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* doc/implement-c.texi: Add C90 subclause references.  Point to
