@@ -1,3 +1,15 @@
+2004-07-23  Janis Johnson  <janis187@us.ibm.com>
+
+	* config/rs6000/altivec.h (vec_vcmpgtsh): Fix C++ function name.
+	(vec_vmulesb): Add missing C++ function.
+	(vec_perm): Fix type of third argument in C++ function.
+	(vec_vsum4shs): Fix C++ function name.
+	(vec_any_ge): Remove C++ functions for unsupported arg combinations.
+	(vec_vcmpgtsw, vec_vcmpgtuw, vec_minsb, vec_vmsummbm): Fix the
+	argument passed to the error handler in C macro.
+	(vec_nmsub): Remove extra parens around argument names in C macro.
+	(vec_packpx): Add missing parens in C macro.
+
 2004-07-22  Paolo Bonzini  <bonzini@gnu.org>
 
 	* machmode.def: Remove vector modes.
