@@ -31,7 +31,7 @@ int main()
   Bar<int> bar;
 
   bar.baz ();
-  bar.foo ();
+  bar.foo (); // { dg-error "instantiated" "" }
   
   return 0;
 }
