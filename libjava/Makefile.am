@@ -148,6 +148,16 @@ libgcjx_la_LDFLAGS = @X_PRE_LIBS@ @X_LIBS@ -lX11 @X_EXTRA_LIBS@ \
         -version-info `grep -v '^\#' $(srcdir)/libtool-version`
 libgcjx_la_LINK = $(LIBLINK)
 
+## Make a symlink for each `libgcjx' file that was installed.
+install-exec-hook:
+	cd $(DESTDIR)$(libdir) && \
+	if test -f libgcjx.la; then \
+	  for f in libgcjx*; do \
+	    t=`echo $$f | sed -e 's/libgcjx/gnu-awt-xlib/'`; \
+	    ln -s $$f $$t; \
+	  done; \
+	fi
+
 ## Make the .class files depend on the .zip file.  This seems
 ## backwards, but is right.  This doesn't catch all the .class files,
 ## but that is ok, because the ones it fails to pick up are defined in
