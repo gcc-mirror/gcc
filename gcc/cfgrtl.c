@@ -665,7 +665,6 @@ try_redirect_by_replacing_jump (e, target)
   edge tmp;
   rtx set;
   int fallthru = 0;
-  rtx table;
 
   /* Verify that all targets will be TARGET.  */
   for (tmp = src->succ; tmp; tmp = tmp->succ_next)
@@ -675,11 +674,7 @@ try_redirect_by_replacing_jump (e, target)
   if (tmp || !onlyjump_p (insn))
     return false;
 
-  if (flow2_completed && JUMP_LABEL (insn)
-      && (table = NEXT_INSN (JUMP_LABEL (insn))) != NULL_RTX
-      && GET_CODE (table) == JUMP_INSN
-      && (GET_CODE (PATTERN (table)) == ADDR_VEC
-	  || GET_CODE (PATTERN (table)) == ADDR_DIFF_VEC))
+  if ((!optimize || flow2_completed) && tablejump_p (insn))
     return false;
 
   /* Avoid removing branch with side effects.  */
