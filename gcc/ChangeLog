@@ -463,7 +463,8 @@ Tue May 28 21:16:18 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 2002-05-28  Zack Weinberg  <zack@codesourcery.com>
 
-	* tree.h: Forward-declare struct realvaluetype.
+	* tree.h: Don't include real.h.
+	Forward-declare struct realvaluetype.
 	(struct tree_real_cst): Point to the REAL_VALUE_TYPE, do not
 	contain it.
 	(TREE_REAL_CST_PTR): New accessor.
