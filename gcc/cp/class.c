@@ -4136,7 +4136,22 @@ create_vtable_ptr (t, empty_p, has_virtual_p, max_has_virtual_p,
 				     empty_p);
 
       /* Add the new field to the list of fields in this class.  */
-      TYPE_FIELDS (t) = chainon (TYPE_FIELDS (t), TYPE_VFIELD (t));
+      if (!flag_new_abi)
+	/* In the old ABI, the vtable pointer goes at the end of the
+	   class.  */
+	TYPE_FIELDS (t) = chainon (TYPE_FIELDS (t), TYPE_VFIELD (t));
+      else
+	{
+	  /* But in the new ABI, the vtable pointer is the first thing
+	     in the class.  */
+	  TYPE_FIELDS (t) = chainon (TYPE_VFIELD (t), TYPE_FIELDS (t));
+	  /* If there were any baseclasses, they can't possibly be at
+	     offset zero any more, because that's where the vtable
+	     pointer is.  So, converting to a base class is going to
+	     take work.  */
+	  if (CLASSTYPE_N_BASECLASSES (t))
+	    TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (t) = 1;
+	}
 
       /* We can't yet add this new field to the list of all virtual
 	 function table pointers in this class.  The
