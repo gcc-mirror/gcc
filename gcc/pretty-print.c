@@ -422,7 +422,7 @@ void
 pp_construct (pretty_printer *pp, const char *prefix, int maximum_length)
 {
   memset (pp, 0, sizeof (pretty_printer));
-  pp->buffer = xmalloc (sizeof (output_buffer));
+  pp->buffer = xcalloc (1, sizeof (output_buffer));
   obstack_init (&pp->buffer->obstack);
   pp->buffer->stream = stderr;
   pp_line_cutoff (pp) = maximum_length;
