@@ -272,7 +272,7 @@ get_constant (jcf, index)
 	HOST_WIDE_INT lo, hi;
 	lshift_double (num, 0, 32, 64, &lo, &hi, 0);
 	num = JPOOL_INT (jcf, index+1);
-	add_double (lo, hi, num, 0, &lo, &hi);
+	add_double (lo, hi, (uint32)num, 0, &lo, &hi);
 	value = build_int_2 (lo, hi);
 	TREE_TYPE (value) = long_type_node;
 	force_fit_type (value, 0);

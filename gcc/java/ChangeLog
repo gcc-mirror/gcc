@@ -1,3 +1,18 @@
+2000-03-28  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse-scan.y (pop_class_context): Reset `inner_qualifier_length'
+	to 0 when it reaches -1.
+
+2000-03-27  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* jcf-parse.c (get_constant): Properly cast `num' during the
+	invocation of `add_double call'.
+	* jcf-write.c (push_long_const): Properly cast `lo' before
+	comparing it to short bounds.
+	* parse-scan.y (interface_declaration:): Rule re-arrange so that
+	`interface_body:' is reduced after the current interface is
+	pushed.
+
 2000-03-26  Tom Tromey  <tromey@cygnus.com>
 
 	* jvspec.c (jvgenmain_spec): Add `%{<...}' construct for each
@@ -21,15 +36,15 @@ Sat Mar 25 09:12:10 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* parse.y (check_abstract_method_definitions): New local
 	`end_type_reached'. Make sure we also consider `end_type'.
-	(java_check_abstract_method_definitions): Make sure we also
-	eventually consider `java.lang.Object'.
-	(maybe_use_access_method): Don't use access method if not a pure
-	inner class or if the method's context is right.
-	(find_applicable_accessible_methods_list): New static
+	(java_check_abstract_method_definitions): Make sure we eventually
+	consider `java.lang.Object'.
+	(maybe_use_access_method): Don't use access method if not in the
+	context of a pure inner class or if the method's context is right.
+	(find_applicable_accessible_methods_list): New static flag
 	`object_done'. Don't search abstract classes as interfaces. Fixed
-	indentation. Fixed the `java.lang.Object' only search. Search class'
-	interface(s) first, fully search enclosing contexts. 
-	(find_most_specific_methods_list): Pick closest candidates when
+	indentation. Fixed the `java.lang.Object' only search. Search
+	class interface(s) first, then fully search enclosing contexts.
+	(find_most_specific_methods_list): Pick the closest candidate when
 	they're all abstract.
 
 Mon Mar 20 08:58:51 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
@@ -129,6 +144,17 @@ Tue Mar 14 17:15:41 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (register_incomplete_type): Fixed initialization of
 	JDEP_ENCLOSING.
+
+2000-02-28  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse-scan.y (inner_qualifier, inner_qualifier_length): New
+	static globals.
+	(push_class_context, pop_class_context): New function.
+	(class_body:): Call pop_class_context.
+	(interface_body:): Likewise.
+	(INNER_QUALIFIER): New macro.
+	(report_class_declaration): Changed output format and use
+	INNER_QUALIFIER. Call push_class_context.
 
 2000-02-14  Andrew Haley  <aph@cygnus.com>
 

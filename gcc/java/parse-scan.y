@@ -66,6 +66,10 @@ static int absorber;
 static const char *current_class;
 static const char *package_name;
 
+/* Keep track of the current inner class qualifier. */
+static char *inner_qualifier;
+static int   inner_qualifier_length;
+
 /* Keep track of whether things have be listed before.  */
 static int previous_output;
 
@@ -92,6 +96,8 @@ struct method_declarator {
 /* Two actions for this grammar */
 static void report_class_declaration PARAMS ((const char *));
 static void report_main_declaration PARAMS ((struct method_declarator *));
+static void push_class_context PARAMS ((const char *));
+static void pop_class_context PARAMS ((void));
 
 #include "lex.h"
 #include "parse.h"
@@ -357,7 +363,9 @@ interface_type_list:
 
 class_body:
 	OCB_TK CCB_TK
+		{ pop_class_context (); }
 |	OCB_TK class_body_declarations CCB_TK
+		{ pop_class_context (); }
 ;
 
 class_body_declarations:
@@ -564,14 +572,18 @@ this_or_super:			/* Added, simplifies error diagnostics */
 /* 19.9 Productions from 9: Interfaces  */
 /* 19.9.1 Productions from 9.1: Interfaces Declarations  */
 interface_declaration:
-	INTERFACE_TK identifier	interface_body
+	INTERFACE_TK identifier
 		{ report_class_declaration ($2); modifier_value = 0; }
-|	modifiers INTERFACE_TK identifier interface_body
+	interface_body
+|	modifiers INTERFACE_TK identifier
 		{ report_class_declaration ($3); modifier_value = 0; }
-|	INTERFACE_TK identifier extends_interfaces interface_body
+	interface_body
+|	INTERFACE_TK identifier extends_interfaces
 		{ report_class_declaration ($2); modifier_value = 0; }
-|	modifiers INTERFACE_TK identifier extends_interfaces interface_body
+	interface_body
+|	modifiers INTERFACE_TK identifier extends_interfaces
 		{ report_class_declaration ($3); modifier_value = 0; }
+	interface_body
 ;
 
 extends_interfaces:
@@ -581,7 +593,9 @@ extends_interfaces:
 
 interface_body:
 	OCB_TK CCB_TK
+		{ pop_class_context (); }
 |	OCB_TK interface_member_declarations CCB_TK
+		{ pop_class_context (); }
 ;
 
 interface_member_declarations:
@@ -1110,7 +1124,33 @@ java_push_parser_context ()
   ctxp = new;
 }  
 
+static void
+push_class_context (name)
+    const char *name;
+{
+  size_t name_length = strlen (name);
+  inner_qualifier = xrealloc (inner_qualifier, 
+                             inner_qualifier_length + name_length+2);
+  memcpy (inner_qualifier+inner_qualifier_length, name, name_length);
+  inner_qualifier_length += name_length;
+  inner_qualifier [inner_qualifier_length] = '$';
+  inner_qualifier [++inner_qualifier_length] = '\0';
+}
+
+static void
+pop_class_context ()
+{
+  while (--inner_qualifier_length > 0
+        && inner_qualifier [inner_qualifier_length-1] != '$')
+    ;
+  inner_qualifier = xrealloc (inner_qualifier, inner_qualifier_length+1);
+  inner_qualifier [inner_qualifier_length] = '\0';
+  if (inner_qualifier_length == -1)
+    inner_qualifier_length = 0;
+}
+
 /* Actions defined here */
+#define INNER_QUALIFIER (inner_qualifier ? inner_qualifier : "")
 
 static void
 report_class_declaration (name)
@@ -1128,11 +1168,12 @@ report_class_declaration (name)
 	}
 	
       if (package_name)
-	fprintf (out, "%s.%s ", package_name, name);
+	fprintf (out, "%s.%s%s ", package_name, INNER_QUALIFIER, name);
       else
-	fprintf (out, "%s ", name);
+	fprintf (out, "%s%s ", INNER_QUALIFIER, name);
     }
-      
+
+  push_class_context (name);
   current_class = name;
 }
 
