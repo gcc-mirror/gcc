@@ -6758,7 +6758,13 @@ expand_expr (exp, target, tmode, modifier)
 	 fold.  Likewise, if we have a target we can use, it is best to
 	 store directly into the target unless the type is large enough
 	 that memcpy will be used.  If we are making an initializer and
-	 all operands are constant, put it in memory as well.  */
+	 all operands are constant, put it in memory as well.
+
+	FIXME: Avoid trying to fill vector constructors piece-meal.
+	Output them with output_constant_def below unless we're sure
+	they're zeros.  This should go away when vector initializers
+	are treated like VECTOR_CST instead of arrays.
+      */
       else if ((TREE_STATIC (exp)
 		&& ((mode == BLKmode
 		     && ! (target != 0 && safe_from_p (target, exp, 1)))
@@ -6767,7 +6773,9 @@ expand_expr (exp, target, tmode, modifier)
 			&& (! MOVE_BY_PIECES_P
 			    (tree_low_cst (TYPE_SIZE_UNIT (type), 1),
 			     TYPE_ALIGN (type)))
-			&& ! mostly_zeros_p (exp))))
+ 			&& ((TREE_CODE (type) == VECTOR_TYPE
+ 			     && !is_zeros_p (exp))
+ 			    || ! mostly_zeros_p (exp)))))
 	       || (modifier == EXPAND_INITIALIZER && TREE_CONSTANT (exp)))
 	{
 	  rtx constructor = output_constant_def (exp, 1);

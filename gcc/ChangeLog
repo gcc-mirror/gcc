@@ -1,3 +1,8 @@
+2002-05-31  Aldy Hernandez  <aldyh@redhat.com>
+
+        * expr.c (expand_expr): Output partially zeroed out vectors with
+        output_constant_def.
+
 2002-05-30  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config.gcc (sh[123456789l]*-*-*): Set cpu_type to sh.
