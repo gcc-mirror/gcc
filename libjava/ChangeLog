@@ -1,5 +1,11 @@
 2002-06-04  H.J. Lu  (hjl@gnu.org)
 
+	* Makefile.am (libgcj_convenience.la): New target.
+	(libgcj.la): Depend on libgcj_convenience.la.
+	* Makefile.in: Regenerated.
+
+2002-06-04  H.J. Lu  (hjl@gnu.org)
+
 	* configure.in (--with-newlib): New option:
 	Check ${with_newlib} instead of ${with_cross_host} for newlib.
 	(HAVE_PROC_SELF_EXE): Defined to 1 only for cross compiling to
