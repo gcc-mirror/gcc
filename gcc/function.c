@@ -4858,7 +4858,7 @@ expand_function_start (subr, parms_have_cleanups)
   if (aggregate_value_p (DECL_RESULT (subr)))
     {
       /* Returning something that won't go in a register.  */
-      register rtx value_address;
+      register rtx value_address = 0;
 
 #ifdef PCC_STATIC_STRUCT_RETURN
       if (current_function_returns_pcc_struct)
