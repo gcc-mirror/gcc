@@ -120,8 +120,7 @@ static void do_pragma_system_header	PARAMS ((cpp_reader *));
 static void do_pragma_dependency	PARAMS ((cpp_reader *));
 static const cpp_token *get_token_no_padding PARAMS ((cpp_reader *));
 static const cpp_token *get__Pragma_string PARAMS ((cpp_reader *));
-static unsigned char *destringize	PARAMS ((const cpp_string *,
-						 unsigned int *));
+static void destringize_and_run PARAMS ((cpp_reader *, const cpp_string *));
 static int parse_answer PARAMS ((cpp_reader *, struct answer **, int));
 static cpp_hashnode *parse_assertion PARAMS ((cpp_reader *, struct answer **,
 					      int));
@@ -1149,17 +1148,17 @@ get__Pragma_string (pfile)
   return string;
 }
 
-/* Returns a malloced buffer containing a destringized cpp_string by
-   removing the first \ of \" and \\ sequences.  */
-static unsigned char *
-destringize (in, len)
+/* Destringize IN into a temporary buffer, by removing the first \ of
+   \" and \\ sequences, and process the result as a #pragma directive.  */
+static void
+destringize_and_run (pfile, in)
+     cpp_reader *pfile;
      const cpp_string *in;
-     unsigned int *len;
 {
   const unsigned char *src, *limit;
-  unsigned char *dest, *result;
+  char *dest, *result;
 
-  dest = result = (unsigned char *) xmalloc (in->len);
+  dest = result = alloca (in->len);
   for (src = in->text, limit = src + in->len; src < limit;)
     {
       /* We know there is a character following the backslash.  */
@@ -1168,17 +1167,15 @@ destringize (in, len)
       *dest++ = *src++;
     }
 
-  *len = dest - result;
-  return result;
+  run_directive (pfile, T_PRAGMA, result, dest - result);
 }
 
+/* Handle the _Pragma operator.  */
 void
 _cpp_do__Pragma (pfile)
      cpp_reader *pfile;
 {
   const cpp_token *string = get__Pragma_string (pfile);
-  unsigned char *buffer;
-  unsigned int len;
 
   if (!string)
     cpp_error (pfile, "_Pragma takes a parenthesized string literal");
@@ -1195,9 +1192,7 @@ _cpp_do__Pragma (pfile)
 	 Getting these correct line markers is a little tricky.  */
 
       unsigned int orig_line = pfile->line;
-      buffer = destringize (&string->val.str, &len);
-      run_directive (pfile, T_PRAGMA, (char *) buffer, len);
-      free ((PTR) buffer);
+      destringize_and_run (pfile, &string->val.str);
       pfile->line = orig_line;
       pfile->buffer->saved_flags = BOL;
     }
