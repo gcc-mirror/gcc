@@ -1,9 +1,29 @@
+Tue Oct  7 00:48:36 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (duplicate_decls): Don't warn about template instances.
+
+	* typeck.c (mark_addressable): Lose ancient code that unsets
+	DECL_EXTERNAL.
+
+	* pt.c (do_decl_instantiation): Lose support for instantiating
+	non-templates.
+
+	* call.c (build_new_function_call): Fix handling of null explicit
+ 	template args.
+	(build_new_method_call): Likewise.
+
+Mon Oct  6 23:44:34 1997  Mark Mitchell  <mmitchell@usa.net>
+
+	* method.c (build_underscore_int): Fix typo.
+
 1997-10-06  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 	* tree.c (print_lang_statistics): #if 0 call to
 	print_inline_obstack_statistics until its definition is checked in.
 
 Mon Oct  6 09:27:29 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl2.c (finish_file): Move dump_tree_statistics to end.
 
 	* pt.c (instantiate_decl): Look for the original template.
 	(tsubst): Set DECL_IMPLICIT_INSTANTIATION on partial instantiations

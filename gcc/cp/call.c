@@ -4484,11 +4484,13 @@ build_new_function_call (fn, args, obj)
 {
   struct z_candidate *candidates = 0, *cand;
   tree explicit_targs = NULL_TREE;
+  int template_only = 0;
 
   if (TREE_CODE (fn) == TEMPLATE_ID_EXPR)
     {
       explicit_targs = TREE_OPERAND (fn, 1);
       fn = TREE_OPERAND (fn, 0);
+      template_only = 1;
     }
 
   if (obj == NULL_TREE && really_overloaded_fn (fn))
@@ -4510,7 +4512,7 @@ build_new_function_call (fn, args, obj)
 		(candidates, t, explicit_targs, args, NULL_TREE,
 		 LOOKUP_NORMAL);  
 	    }
-	  else if (explicit_targs == NULL_TREE)
+	  else if (! template_only)
 	    candidates = add_function_candidate
 	      (candidates, t, args, LOOKUP_NORMAL);
 	}
@@ -5466,11 +5468,13 @@ build_new_method_call (instance, name, args, basetype_path, flags)
   tree pretty_name;
   tree user_args = args;
   tree templates = NULL_TREE;
+  int template_only = 0;
 
   if (TREE_CODE (name) == TEMPLATE_ID_EXPR)
     {
       explicit_targs = TREE_OPERAND (name, 1);
       name = TREE_OPERAND (name, 0);
+      template_only = 1;
     }
 
   /* If there is an extra argument for controlling virtual bases,
@@ -5574,7 +5578,7 @@ build_new_method_call (instance, name, args, basetype_path, flags)
 					TREE_TYPE (name), 
 					LOOKUP_NORMAL); 
 	    }
-	  else if (explicit_targs == NULL_TREE) 
+	  else if (! template_only)
 	    candidates = add_function_candidate (candidates, t,
 						 this_arglist, flags);
 
