@@ -1,3 +1,8 @@
+2002-02-22  Philipp Thomas  <pthomas@suse.de>
+
+        * include/backward/tempbuf.h: get_temporary_buffer and
+        return_temporary_buffer are in namespace std, not in __gnu_cxx.
+
 2002-02-21  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* configure.in (target_alias): Default to yes.
