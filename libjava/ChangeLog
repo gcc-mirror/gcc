@@ -1,9 +1,9 @@
 2004-06-22  Bryce McKinlay  <mckinlay@redhat.com>
 
 	PR libgcj/16134:
-	* gnu/gcj/convert/BytesToUnicode.java: Canonicalize encoding name 
-	before cache lookup. Thanks to Hannes Wallnoefer.
-	* gnu/gcj/convert/UnicodeToBytes.java: Likewise.
+	* gnu/gcj/convert/BytesToUnicode.java (getDecoder): Canonicalize 
+	encoding name before cache lookup. Thanks to Hannes Wallnoefer.
+	* gnu/gcj/convert/UnicodeToBytes.java (getEncoder): Likewise.
 
 2004-06-21  Andrew Haley  <aph@redhat.com>
 
