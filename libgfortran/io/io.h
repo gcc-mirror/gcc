@@ -177,6 +177,8 @@ typedef struct
   int recl_in; 
   int *recl_out;
 
+  int *iolength;
+
   char *file;
   int file_len;
   char *status;
@@ -642,6 +644,8 @@ void list_formatted_write (bt, void *, int);
 #define st_open prefix(st_open)
 #define st_close prefix(st_close)
 #define st_inquire prefix(st_inquire)
+#define st_iolength prefix(st_iolength)
+#define st_iolength_done prefix(st_iolength_done)
 #define st_rewind prefix(st_rewind)
 #define st_read prefix(st_read)
 #define st_read_done prefix(st_read_done)

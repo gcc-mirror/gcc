@@ -1,3 +1,17 @@
+2004-06-22  Janne Blomqvist  <jblomqvi@cc.hut.fi>
+
+	PR fortran/15750
+	* io.c (gfc_match_inquire): Bugfix for iolength related stuff.
+	(gfc_resolve_inquire): Resolve the iolength tag.  Return
+	SUCCESS at end of function if no failure has occured.
+	* resolve.c (resolve_code): Resolve if iolength is encountered.
+	* trans-io.c: (ioparm_iolength, iocall_iolength,
+	iocall_iolength_done): New variables.
+	(last_dt): Add IOLENGTH.
+	(gfc_build_io_library_fndecls ): Set iolength related variables.
+	(gfc_trans_iolength): Implement.
+	(gfc_trans_dt_end): Treat iolength as a third form of data transfer.
+
 2004-06-21  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de
 
 	PR fortran/15511
