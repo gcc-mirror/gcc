@@ -1,3 +1,7 @@
+2003-06-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* varasm.c: Don't include c-tree.h.
+
 2003-06-08  Andreas Jaeger  <aj@suse.de>
 
 	* predict.h: Convert to ISO C90 prototypes.
