@@ -308,7 +308,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS gc_basedir build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os mkinstalldirs INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO SET_MAKE CC ac_ct_CC EXEEXT OBJEXT CXX ac_ct_CXX CFLAGS CXXFLAGS AS ac_ct_AS AR ac_ct_AR RANLIB ac_ct_RANLIB MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT GC_CFLAGS LN_S STRIP ac_ct_STRIP LIBTOOL CXXCPP CPPFLAGS THREADLIBS POWERPC_DARWIN_TRUE POWERPC_DARWIN_FALSE EXTRA_TEST_LIBS target_all target_noncanonical CPLUSPLUS_TRUE CPLUSPLUS_FALSE INCLUDES CXXINCLUDES addobjs addincludes addlibs addtests CPP EGREP MY_CFLAGS toolexecdir toolexeclibdir LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS gc_basedir build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os mkinstalldirs INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO SET_MAKE CC ac_ct_CC EXEEXT OBJEXT CXX ac_ct_CXX CFLAGS CXXFLAGS CCAS CCASFLAGS AS ac_ct_AS AR ac_ct_AR RANLIB ac_ct_RANLIB MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT GC_CFLAGS LN_S STRIP ac_ct_STRIP LIBTOOL CXXCPP CPPFLAGS THREADLIBS POWERPC_DARWIN_TRUE POWERPC_DARWIN_FALSE EXTRA_TEST_LIBS target_all target_noncanonical CPLUSPLUS_TRUE CPLUSPLUS_FALSE INCLUDES CXXINCLUDES addobjs addincludes addlibs addtests CPP EGREP MY_CFLAGS toolexecdir toolexeclibdir LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -3050,6 +3050,12 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
+# Newer automakes demand CCAS and CCASFLAGS.
+: ${CCAS='$(CC)'}
+: ${CCASFLAGS='$(CFLAGS)'}
+
+
+
 if test -n "$ac_tool_prefix"; then
   # Extract the first word of "${ac_tool_prefix}as", so it can be a program name with args.
 set dummy ${ac_tool_prefix}as; ac_word=$2
@@ -4151,7 +4157,7 @@ test x"$pic_mode" = xno && libtool_flags="$libtool_flags --prefer-non-pic"
 case $host in
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 4154 "configure"' > conftest.$ac_ext
+  echo '#line 4160 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -6655,6 +6661,8 @@ s,@CXX@,$CXX,;t t
 s,@ac_ct_CXX@,$ac_ct_CXX,;t t
 s,@CFLAGS@,$CFLAGS,;t t
 s,@CXXFLAGS@,$CXXFLAGS,;t t
+s,@CCAS@,$CCAS,;t t
+s,@CCASFLAGS@,$CCASFLAGS,;t t
 s,@AS@,$AS,;t t
 s,@ac_ct_AS@,$ac_ct_AS,;t t
 s,@AR@,$AR,;t t

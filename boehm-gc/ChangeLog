@@ -1,5 +1,8 @@
 2004-02-26  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* configure.in: Add CCAS, CCASFLAGS for future automakes.
+	* configure, Makefile.in, include/Makefile.in: Regenerate.
+
 	* Makefile.am: Remove bogus duplicate setting of AM_CFLAGS.
 	* Makefile.in: Regenerate.
 
