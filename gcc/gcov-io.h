@@ -500,7 +500,7 @@ gcov_position (void)
 /* Return nonzero if we read to end of file.  */
 
 static inline int
-gcov_is_eof ()
+gcov_is_eof (void)
 {
   return !gcov_var.overread;
 }
@@ -508,7 +508,7 @@ gcov_is_eof ()
 /* Return nonzero if the error flag is set.  */
 
 static inline int
-gcov_is_error ()
+gcov_is_error (void)
 {
   return gcov_var.file ? gcov_var.error : 1;
 }
