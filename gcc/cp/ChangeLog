@@ -1,3 +1,8 @@
+2002-2-23  David O'Brien  <obrien@FreeBSD.org>
+
+	* g++spec.c (MATH_LIBRARY_PROFILE, LIBSTDCXX_PROFILE): Add.
+	Use MATH_LIBRARY_PROFILE and LIBSTDCXX_PROFILE if profile flag given.
+
 2002-04-23  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/6256:
