@@ -471,7 +471,7 @@ verify_flow_sensitive_alias_info (void)
 	      tree ptr2 = ssa_name (j);
 	      struct ptr_info_def *pi2 = SSA_NAME_PTR_INFO (ptr2);
 
-	      if (!POINTER_TYPE_P (TREE_TYPE (ptr2)))
+	      if (!TREE_VISITED (ptr2) || !POINTER_TYPE_P (TREE_TYPE (ptr2)))
 		continue;
 
 	      if (pi2
