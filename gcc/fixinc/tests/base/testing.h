@@ -9,8 +9,17 @@
 
 
 
+#if defined( AVOID_WCHAR_T_TYPE_CHECK )
+#ifndef __cplusplus
+typedef unsigned short	wchar_t 	;
+#endif /* wchar_t
+ type */
+#endif  /* AVOID_WCHAR_T_TYPE_CHECK */
+
+
 #if defined( CTRL_QUOTES_DEF_CHECK )
-#define _CTRL(c) (c&037)
+#define BSD43_CTRL(n, x) ((n<<8)+x)
+
 #endif  /* CTRL_QUOTES_DEF_CHECK */
 
 
@@ -19,8 +28,18 @@
 #endif  /* CTRL_QUOTES_USE_CHECK */
 
 
+#if defined( DJGPP_WCHAR_H_CHECK )
+#include <stddef.h>
+#include <sys/djtypes.h>
+extern __DJ_wint_t x;
+
+#endif  /* DJGPP_WCHAR_H_CHECK */
+
+
 #if defined( IO_QUOTES_DEF_CHECK )
-#define XX_IO(x)        (x<<8|256)
+#define BSD43__IOWR(n, x) ((n<<8)+x)
+#define _IOWN(x,y,t)  (_IOC_IN|(((t)&_IOCPARM_MASK)<<16)|(x<<8)|y)
+#define _IO(x,y)      (x<<8|y)
 #endif  /* IO_QUOTES_DEF_CHECK */
 
 
@@ -38,6 +57,11 @@ extern __ptr_t memcpy __P ((__ptr_t __dest, __const __ptr_t __src,
 #endif  /* LIBC1_IFDEFD_MEMX_CHECK */
 
 
+#if defined( MACHINE_ANSI_H_VA_LIST_CHECK )
+ # define _BSD_VA_LIST_	__builtin_va_list
+#endif  /* MACHINE_ANSI_H_VA_LIST_CHECK */
+
+
 #if defined( MACHINE_NAME_CHECK )
 /* MACH_DIFF: */
 #if defined( __i386__ ) || defined( sparc ) || defined( vax )
@@ -45,11 +69,23 @@ extern __ptr_t memcpy __P ((__ptr_t __dest, __const __ptr_t __src,
 #endif  /* MACHINE_NAME_CHECK */
 
 
-#if defined( SCO_STRICT_ANSI_CHECK )
-#if !defined(__STRICT_ANSI__) /* not standard C */
+#if defined( STRICT_ANSI_NOT_CHECK )
+#if  !defined(__STRICT_ANSI__) 
+#if  !defined(__STRICT_ANSI__)
+#if  !defined(__STRICT_ANSI__)
+#if  !defined(__STRICT_ANSI__)/* not std C */
+int foo;
+
+#end-end-end-end-if :-)
+#endif  /* STRICT_ANSI_NOT_CHECK */
+
+
+#if defined( STRICT_ANSI_ONLY_CHECK )
+#if  defined(__STRICT_ANSI__) /* is std C
+ */
 int foo;
 #endif
-#endif  /* SCO_STRICT_ANSI_CHECK */
+#endif  /* STRICT_ANSI_ONLY_CHECK */
 
 
 #if defined( SYSV68_STRING_CHECK )
