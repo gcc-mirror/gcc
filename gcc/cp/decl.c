@@ -8352,8 +8352,6 @@ void grok_special_member_properties (tree decl)
 	  TYPE_HAS_ASSIGN_REF (DECL_CONTEXT (decl)) = 1;
 	  if (assop != 1)
 	    TYPE_HAS_CONST_ASSIGN_REF (DECL_CONTEXT (decl)) = 1;
-	  if (DECL_PURE_VIRTUAL_P (decl))
-	    TYPE_HAS_ABSTRACT_ASSIGN_REF (DECL_CONTEXT (decl)) = 1;
 	}
     }
 }

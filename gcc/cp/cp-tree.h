@@ -991,11 +991,9 @@ struct lang_type_class GTY(())
   unsigned ptrmemfunc_flag : 1;
   unsigned was_anonymous : 1;
 
-  unsigned has_real_assign_ref : 1;
   unsigned has_const_init_ref : 1;
   unsigned has_complex_init_ref : 1;
   unsigned has_complex_assign_ref : 1;
-  unsigned has_abstract_assign_ref : 1;
   unsigned non_aggregate : 1;
   unsigned java_interface : 1;
 
@@ -1006,7 +1004,7 @@ struct lang_type_class GTY(())
   /* There are some bits left to fill out a 32-bit word.  Keep track
      of this by updating the size of this bitfield whenever you add or
      remove a flag.  */
-  unsigned dummy : 9;
+  unsigned dummy : 11;
 
   tree primary_base;
   tree vfields;
@@ -1018,7 +1016,7 @@ struct lang_type_class GTY(())
   tree as_base;
   tree pure_virtuals;
   tree friend_classes;
-  tree GTY ((reorder ("resort_type_method_vec"))) methods;
+  VEC (tree) * GTY((reorder ("resort_type_method_vec"))) methods;
   tree key_method;
   tree decl_list;
   tree template_info;
@@ -1093,6 +1091,9 @@ struct lang_type GTY(())
 
 /* Nonzero means that this _CLASSTYPE node overloads operator=(X&).  */
 #define TYPE_HAS_ASSIGN_REF(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->has_assign_ref)
+
+/* True iff the class type NODE has an "operator =" whose parameter
+   has a parameter of type "const X&".  */
 #define TYPE_HAS_CONST_ASSIGN_REF(NODE) \
   (LANG_TYPE_CLASS_CHECK (NODE)->h.has_const_assign_ref)
 
@@ -1166,12 +1167,12 @@ struct lang_type GTY(())
 /* A FUNCTION_DECL or OVERLOAD for the constructors for NODE.  These
    are the constructors that take an in-charge parameter.  */
 #define CLASSTYPE_CONSTRUCTORS(NODE) \
-  (TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (NODE), CLASSTYPE_CONSTRUCTOR_SLOT))
+  (VEC_index (tree, CLASSTYPE_METHOD_VEC (NODE), CLASSTYPE_CONSTRUCTOR_SLOT))
 
 /* A FUNCTION_DECL for the destructor for NODE.  These are the
    destructors that take an in-charge parameter.  */
 #define CLASSTYPE_DESTRUCTORS(NODE) \
-  (TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (NODE), CLASSTYPE_DESTRUCTOR_SLOT))
+  (VEC_index (tree, CLASSTYPE_METHOD_VEC (NODE), CLASSTYPE_DESTRUCTOR_SLOT))
 
 /* Mark bits for depth-first and breath-first searches.  */
 
@@ -2367,9 +2368,7 @@ struct lang_decl GTY(())
   (IS_AGGR_TYPE (NODE) && CLASSTYPE_NON_AGGREGATE (NODE))
 
 /* Nonzero if there is a user-defined X::op=(x&) for this class.  */
-#define TYPE_HAS_REAL_ASSIGN_REF(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->has_real_assign_ref)
 #define TYPE_HAS_COMPLEX_ASSIGN_REF(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->has_complex_assign_ref)
-#define TYPE_HAS_ABSTRACT_ASSIGN_REF(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->has_abstract_assign_ref)
 #define TYPE_HAS_COMPLEX_INIT_REF(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->has_complex_init_ref)
 
 /* Nonzero if TYPE has a trivial destructor.  From [class.dtor]:
@@ -3598,7 +3597,7 @@ extern tree build_vfn_ref			(tree, tree);
 extern tree get_vtable_decl                     (tree, int);
 extern void resort_type_method_vec
   (void *, void *, gt_pointer_operator, void *);
-extern void add_method				(tree, tree, int);
+extern void add_method				(tree, tree);
 extern int currently_open_class			(tree);
 extern tree currently_open_derived_class	(tree);
 extern tree finish_struct			(tree, tree);

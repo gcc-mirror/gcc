@@ -1382,7 +1382,7 @@ emit_support_tinfos (void)
   pop_nested_namespace (abi_node);
   if (!COMPLETE_TYPE_P (bltn_type))
     return;
-  dtor = TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (bltn_type), 1);
+  dtor = CLASSTYPE_DESTRUCTORS (bltn_type);
   if (DECL_EXTERNAL (dtor))
     return;
   doing_runtime = 1;

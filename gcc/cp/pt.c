@@ -1821,11 +1821,12 @@ check_explicit_specialization (tree declarator,
 	    {
 	      idx = lookup_fnfields_1 (ctype, name);
 	      if (idx >= 0)
-		fns = TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (ctype), idx);
+		fns = VEC_index (tree, CLASSTYPE_METHOD_VEC (ctype), idx);
 	    }
 	  else
 	    {
-	      tree methods;
+	      VEC(tree) *methods;
+	      tree ovl;
 
 	      /* For a type-conversion operator, we cannot do a
 		 name-based lookup.  We might be looking for `operator
@@ -1837,11 +1838,10 @@ check_explicit_specialization (tree declarator,
 	      methods = CLASSTYPE_METHOD_VEC (ctype);
 	      if (methods)
 		for (idx = CLASSTYPE_FIRST_CONVERSION_SLOT;
-		     idx < TREE_VEC_LENGTH (methods); ++idx) 
+		     (ovl = VEC_iterate (tree, methods, idx));
+		     ++idx)
 		  {
-		    tree ovl = TREE_VEC_ELT (methods, idx);
-
-		    if (!ovl || !DECL_CONV_FN_P (OVL_CURRENT (ovl)))
+		    if (!DECL_CONV_FN_P (OVL_CURRENT (ovl)))
 		      /* There are no more conversion functions.  */
 		      break;
 
@@ -5385,7 +5385,6 @@ instantiate_class_template (tree type)
   TYPE_GETS_DELETE (type) = TYPE_GETS_DELETE (pattern);
   TYPE_HAS_ASSIGN_REF (type) = TYPE_HAS_ASSIGN_REF (pattern);
   TYPE_HAS_CONST_ASSIGN_REF (type) = TYPE_HAS_CONST_ASSIGN_REF (pattern);
-  TYPE_HAS_ABSTRACT_ASSIGN_REF (type) = TYPE_HAS_ABSTRACT_ASSIGN_REF (pattern);
   TYPE_HAS_INIT_REF (type) = TYPE_HAS_INIT_REF (pattern);
   TYPE_HAS_CONST_INIT_REF (type) = TYPE_HAS_CONST_INIT_REF (pattern);
   TYPE_HAS_DEFAULT_CONSTRUCTOR (type) = TYPE_HAS_DEFAULT_CONSTRUCTOR (pattern);

@@ -630,14 +630,14 @@ check_classfn (tree ctype, tree function, tree template_parms)
 
   if (ix >= 0)
     {
-      tree methods = CLASSTYPE_METHOD_VEC (ctype);
+      VEC(tree) *methods = CLASSTYPE_METHOD_VEC (ctype);
       tree fndecls, fndecl = 0;
       bool is_conv_op;
       bool pop_p;
       const char *format = NULL;
       
       pop_p = push_scope (ctype);
-      for (fndecls = TREE_VEC_ELT (methods, ix);
+      for (fndecls = VEC_index (tree, methods, ix);
 	   fndecls; fndecls = OVL_NEXT (fndecls))
 	{
 	  tree p1, p2;
@@ -685,7 +685,7 @@ check_classfn (tree ctype, tree function, tree template_parms)
 
       if (is_conv_op)
 	ix = CLASSTYPE_FIRST_CONVERSION_SLOT;
-      fndecls = TREE_VEC_ELT (methods, ix);
+      fndecls = VEC_index (tree, methods, ix);
       while (fndecls)
 	{
 	  fndecl = OVL_CURRENT (fndecls);
@@ -693,10 +693,10 @@ check_classfn (tree ctype, tree function, tree template_parms)
 
 	  if (!fndecls && is_conv_op)
 	    {
-	      if (TREE_VEC_LENGTH (methods) > ix)
+	      if (VEC_length (tree, methods) > (size_t) ix)
 		{
 		  ix++;
-		  fndecls = TREE_VEC_ELT (methods, ix);
+		  fndecls = VEC_index (tree, methods, ix);
 		  if (!DECL_CONV_FN_P (OVL_CURRENT (fndecls)))
 		    {
 		      fndecls = NULL_TREE;
@@ -726,7 +726,7 @@ check_classfn (tree ctype, tree function, tree template_parms)
      case we'll only confuse ourselves when the function is declared
      properly within the class.  */
   if (COMPLETE_TYPE_P (ctype))
-    add_method (ctype, function, /*error_p=*/1);
+    add_method (ctype, function);
   return NULL_TREE;
 }
 

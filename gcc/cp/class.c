@@ -795,43 +795,42 @@ modify_vtable_entry (tree t,
 }
 
 
-/* Add method METHOD to class TYPE.  If ERROR_P is true, we are adding
-   the method after the class has already been defined because a
-   declaration for it was seen.  (Even though that is erroneous, we
-   add the method for improved error recovery.)  */
+/* Add method METHOD to class TYPE.  */
 
 void
-add_method (tree type, tree method, int error_p)
+add_method (tree type, tree method)
 {
   int using;
-  int len;
-  int slot;
-  tree method_vec;
+  size_t len;
+  size_t slot;
   tree overload;
   int template_conv_p;
+  VEC(tree) *method_vec;
+  bool complete_p;
 
   if (method == error_mark_node)
     return;
-  
+
+  complete_p = COMPLETE_TYPE_P (type);
   using = (DECL_CONTEXT (method) != type);
   template_conv_p = (TREE_CODE (method) == TEMPLATE_DECL
                      && DECL_TEMPLATE_CONV_FN_P (method));
 
-  if (!CLASSTYPE_METHOD_VEC (type))
-    /* Make a new method vector.  We start with 8 entries.  We must
-       allocate at least two (for constructors and destructors), and
-       we're going to end up with an assignment operator at some point
-       as well.
-       
-       We could use a TREE_LIST for now, and convert it to a TREE_VEC
-       in finish_struct, but we would probably waste more memory
-       making the links in the list than we would by over-allocating
-       the size of the vector here.  Furthermore, we would complicate
-       all the code that expects this to be a vector.  */
-    CLASSTYPE_METHOD_VEC (type) = make_tree_vec (8);
-
   method_vec = CLASSTYPE_METHOD_VEC (type);
-  len = TREE_VEC_LENGTH (method_vec);
+  if (!method_vec)
+    {
+      /* Make a new method vector.  We start with 8 entries.  We must
+	 allocate at least two (for constructors and destructors), and
+	 we're going to end up with an assignment operator at some
+	 point as well.  */
+      method_vec = VEC_alloc (tree, 8);
+      /* Create slots for constructors and destructors.  */
+      VEC_quick_push (tree, method_vec, NULL_TREE);
+      VEC_quick_push (tree, method_vec, NULL_TREE);
+      CLASSTYPE_METHOD_VEC (type) = method_vec;
+    }
+
+  len = VEC_length (tree, method_vec);
 
   /* Constructors and destructors go in special slots.  */
   if (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (method))
@@ -849,103 +848,52 @@ add_method (tree type, tree method, int error_p)
     }
   else
     {
-      int have_template_convs_p = 0;
-      
-      /* See if we already have an entry with this name.  */
-      for (slot = CLASSTYPE_FIRST_CONVERSION_SLOT; slot < len; ++slot)
-	{
-	  tree m = TREE_VEC_ELT (method_vec, slot);
+      bool insert_p = true;
+      bool conv_p = DECL_CONV_FN_P (method);
+      tree m;
 
-	  if (!m)
-	    break;
+      /* See if we already have an entry with this name.  */
+      for (slot = CLASSTYPE_FIRST_CONVERSION_SLOT; 
+	   (m = VEC_iterate (tree, method_vec, slot));
+	   ++slot)
+	{
 	  m = OVL_CURRENT (m);
-	  
 	  if (template_conv_p)
 	    {
-	      have_template_convs_p = (TREE_CODE (m) == TEMPLATE_DECL
-				       && DECL_TEMPLATE_CONV_FN_P (m));
-	      
-	      /* If we need to move things up, see if there's
-		 space.  */
-	      if (!have_template_convs_p)
-		{
-		  slot = len - 1;
-		  if (TREE_VEC_ELT (method_vec, slot))
-		    slot++;
-		}
+	      if (TREE_CODE (m) == TEMPLATE_DECL
+		  && DECL_TEMPLATE_CONV_FN_P (m))
+		insert_p = false;
 	      break;
 	    }
+	  if (conv_p && !DECL_CONV_FN_P (m))
+	    break;
 	  if (DECL_NAME (m) == DECL_NAME (method))
+	    {
+	      insert_p = false;
+	      break;
+	    }
+	  if (complete_p
+	      && !DECL_CONV_FN_P (m)
+	      && DECL_NAME (m) > DECL_NAME (method))
 	    break;
 	}
-      
-      if (slot == len)
-	{
-	  /* We need a bigger method vector.  */
-	  int new_len;
-	  tree new_vec;
 
-	  /* In the non-error case, we are processing a class
-	     definition.  Double the size of the vector to give room
-	     for new methods.  */
-	  if (!error_p)
-	    new_len = 2 * len;
-	  /* In the error case, the vector is already complete.  We
-	     don't expect many errors, and the rest of the front-end
-	     will get confused if there are empty slots in the vector.  */
-	  else
-	    new_len = len + 1;
-
-	  new_vec = make_tree_vec (new_len);
-	  memcpy (&TREE_VEC_ELT (new_vec, 0), &TREE_VEC_ELT (method_vec, 0),
-		  len * sizeof (tree));
-	  len = new_len;
-	  method_vec = CLASSTYPE_METHOD_VEC (type) = new_vec;
-	}
-
-      if (DECL_CONV_FN_P (method) && !TREE_VEC_ELT (method_vec, slot))
-	{
-	  /* Type conversion operators have to come before ordinary
-	     methods; add_conversions depends on this to speed up
-	     looking for conversion operators.  So, if necessary, we
-	     slide some of the vector elements up.  In theory, this
-	     makes this algorithm O(N^2) but we don't expect many
-	     conversion operators.  */
-	  if (template_conv_p)
-	    slot = CLASSTYPE_FIRST_CONVERSION_SLOT;
-	  else
-	    for (slot = CLASSTYPE_FIRST_CONVERSION_SLOT; slot < len; ++slot)
-	      {
-		tree fn = TREE_VEC_ELT (method_vec, slot);
-  
-		if (!fn)
-		  /* There are no more entries in the vector, so we
-		     can insert the new conversion operator here.  */
-		  break;
-  		  
-		if (!DECL_CONV_FN_P (OVL_CURRENT (fn)))
-		  /* We can insert the new function right at the
-		     SLOTth position.  */
-		  break;
-	      }
-
-	  if (template_conv_p && have_template_convs_p)
-	    /*OK*/;
-	  else if (!TREE_VEC_ELT (method_vec, slot))
-	    /* There is nothing in the Ith slot, so we can avoid
-	       moving anything.  */
-		; 
-	  else
-	    {
-	      /* We know the last slot in the vector is empty
-		 because we know that at this point there's room
-		 for a new function.  */
-	      memmove (&TREE_VEC_ELT (method_vec, slot + 1),
-		       &TREE_VEC_ELT (method_vec, slot),
-		       (len - slot - 1) * sizeof (tree));
-	      TREE_VEC_ELT (method_vec, slot) = NULL_TREE;
-	    }
-	}
+	/* If we need a new slot, make room.  */
+	if (insert_p)
+	  {
+	    /* We expect to add few methods in the COMPLETE_P case, so
+	       just make room for one more method.  */
+	    if (complete_p)
+	      VEC_reserve (tree, method_vec, 1);
+	    if (slot == len)
+	      VEC_safe_push (tree, method_vec, NULL_TREE);
+	    else
+	      VEC_safe_insert (tree, method_vec, slot, NULL_TREE);
+	    len++;
+	    /* Inserting a new slot may have caused the vector to be
+	       reallocated.  */
+	    CLASSTYPE_METHOD_VEC (type) = method_vec;
+	  }
     }
       
   if (processing_template_decl)
@@ -957,7 +905,7 @@ add_method (tree type, tree method, int error_p)
       tree fns;
 
       /* Check to see if we've already got this method.  */
-      for (fns = TREE_VEC_ELT (method_vec, slot);
+      for (fns = VEC_index (tree, method_vec, slot);
 	   fns;
 	   fns = OVL_NEXT (fns))
 	{
@@ -1027,13 +975,14 @@ add_method (tree type, tree method, int error_p)
     }
 
   /* Add the new binding.  */ 
-  overload = build_overload (method, TREE_VEC_ELT (method_vec, slot));
+  overload = build_overload (method, VEC_index (tree, method_vec, slot));
   if (!DECL_CONSTRUCTOR_P (method)
-      && !DECL_DESTRUCTOR_P (method))
+      && !DECL_DESTRUCTOR_P (method)
+      && !complete_p)
     push_class_level_binding (DECL_NAME (method), overload);
 
   /* Actually insert the new method.  */
-  TREE_VEC_ELT (method_vec, slot) = overload;
+  VEC_replace (tree, method_vec, slot, overload);
 }
 
 /* Subroutines of finish_struct.  */
@@ -1171,7 +1120,7 @@ handle_using_decl (tree using_decl, tree t)
   if (flist)
     for (; flist; flist = OVL_NEXT (flist))
       {
-	add_method (t, OVL_CURRENT (flist), /*error_p=*/0);
+	add_method (t, OVL_CURRENT (flist));
 	alter_access (t, OVL_CURRENT (flist), access);
       }
   else
@@ -1637,9 +1586,7 @@ maybe_warn_about_overly_private_class (tree t)
       if (!TYPE_HAS_INIT_REF (t))
 	nonprivate_ctor = 1;
       else 
-	for (fn = TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (t), 0);
-	     fn;
-	     fn = OVL_NEXT (fn)) 
+	for (fn = CLASSTYPE_CONSTRUCTORS (t); fn; fn = OVL_NEXT (fn)) 
 	  {
 	    tree ctor = OVL_CURRENT (fn);
 	    /* Ideally, we wouldn't count copy constructors (or, in
@@ -1721,24 +1668,24 @@ resort_type_method_vec (void* obj,
                         gt_pointer_operator new_value,
                         void* cookie)
 {
-  tree method_vec = obj;
-  int len = TREE_VEC_LENGTH (method_vec);
-  int slot;
+  VEC(tree) *method_vec = (VEC(tree) *) obj;
+  int len = VEC_length (tree, method_vec);
+  size_t slot;
+  tree fn;
 
   /* The type conversion ops have to live at the front of the vec, so we
      can't sort them.  */
-  for (slot = 2; slot < len; ++slot)
-    {
-      tree fn = TREE_VEC_ELT (method_vec, slot);
-  
-      if (!DECL_CONV_FN_P (OVL_CURRENT (fn)))
-	break;
-    }
+  for (slot = CLASSTYPE_FIRST_CONVERSION_SLOT;
+       (fn = VEC_iterate (tree, method_vec, slot));
+       ++slot)
+    if (!DECL_CONV_FN_P (OVL_CURRENT (fn)))
+      break;
+
   if (len - slot > 1)
     {
       resort_data.new_value = new_value;
       resort_data.cookie = cookie;
-      qsort (&TREE_VEC_ELT (method_vec, slot), len - slot, sizeof (tree),
+      qsort (VEC_address (tree, method_vec) + slot, len - slot, sizeof (tree),
 	     resort_method_name_cmp);
     }
 }
@@ -1763,7 +1710,7 @@ static void
 finish_struct_methods (tree t)
 {
   tree fn_fields;
-  tree method_vec;
+  VEC(tree) *method_vec;
   int slot, len;
 
   if (!TYPE_METHODS (t))
@@ -1772,13 +1719,13 @@ finish_struct_methods (tree t)
 	 these incorrectly.  */
       TYPE_HAS_CONSTRUCTOR (t) = 0;
       TYPE_HAS_DESTRUCTOR (t) = 0;
-      CLASSTYPE_METHOD_VEC (t) = NULL_TREE;
+      CLASSTYPE_METHOD_VEC (t) = NULL;
       return;
     }
 
   method_vec = CLASSTYPE_METHOD_VEC (t);
-  my_friendly_assert (method_vec != NULL_TREE, 19991215);
-  len = TREE_VEC_LENGTH (method_vec);
+  my_friendly_assert (method_vec, 19991215);
+  len = VEC_length (tree, method_vec);
 
   /* First fill in entry 0 with the constructors, entry 1 with destructors,
      and the next few with type conversion operators (if any).  */
@@ -1796,23 +1743,16 @@ finish_struct_methods (tree t)
      no methods, then some public defaults are generated.  */
   maybe_warn_about_overly_private_class (t);
 
-  /* Now sort the methods.  */
-  while (len > 2 && TREE_VEC_ELT (method_vec, len-1) == NULL_TREE)
-    len--;
-  TREE_VEC_LENGTH (method_vec) = len;
-
   /* The type conversion ops have to live at the front of the vec, so we
      can't sort them.  */
-  for (slot = 2; slot < len; ++slot)
-    {
-      tree fn = TREE_VEC_ELT (method_vec, slot);
-  
-      if (!DECL_CONV_FN_P (OVL_CURRENT (fn)))
-	break;
-    }
+  for (slot = 2;
+       (fn_fields = VEC_iterate (tree, method_vec, slot));
+       ++slot)
+    if (!DECL_CONV_FN_P (OVL_CURRENT (fn_fields)))
+      break;
   if (len - slot > 1)
-    qsort (&TREE_VEC_ELT (method_vec, slot), len-slot, sizeof (tree),
-	   method_name_cmp);
+    qsort (VEC_address (tree, method_vec) + slot,
+	   len-slot, sizeof (tree), method_name_cmp);
 }
 
 /* Make BINFO's vtable have N entries, including RTTI entries,
@@ -2369,7 +2309,7 @@ get_basefndecls (tree name, tree t)
   /* Find virtual functions in T with the indicated NAME.  */
   i = lookup_fnfields_1 (t, name);
   if (i != -1)
-    for (methods = TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (t), i);
+    for (methods = VEC_index (tree, CLASSTYPE_METHOD_VEC (t), i);
 	 methods;
 	 methods = OVL_NEXT (methods))
       {
@@ -2430,14 +2370,16 @@ check_for_override (tree decl, tree ctype)
 void
 warn_hidden (tree t)
 {
-  tree method_vec = CLASSTYPE_METHOD_VEC (t);
-  int n_methods = method_vec ? TREE_VEC_LENGTH (method_vec) : 0;
-  int i;
+  VEC(tree) *method_vec = CLASSTYPE_METHOD_VEC (t);
+  tree fns;
+  size_t i;
 
   /* We go through each separately named virtual function.  */
-  for (i = 2; i < n_methods && TREE_VEC_ELT (method_vec, i); ++i)
+  for (i = CLASSTYPE_FIRST_CONVERSION_SLOT; 
+       (fns = VEC_iterate (tree, method_vec, i));
+       ++i)
     {
-      tree fns;
+      tree fn;
       tree name;
       tree fndecl;
       tree base_fndecls;
@@ -2445,7 +2387,7 @@ warn_hidden (tree t)
 
       /* All functions in this slot in the CLASSTYPE_METHOD_VEC will
 	 have the same name.  Figure out what name that is.  */
-      name = DECL_NAME (OVL_CURRENT (TREE_VEC_ELT (method_vec, i)));
+      name = DECL_NAME (OVL_CURRENT (fns));
       /* There are no possibly hidden functions yet.  */
       base_fndecls = NULL_TREE;
       /* Iterate through all of the base classes looking for possibly
@@ -2462,9 +2404,9 @@ warn_hidden (tree t)
 	continue;
 
       /* Remove any overridden functions.  */
-      for (fns = TREE_VEC_ELT (method_vec, i); fns; fns = OVL_NEXT (fns))
+      for (fn = fns; fn; fn = OVL_NEXT (fn))
 	{
-	  fndecl = OVL_CURRENT (fns);
+	  fndecl = OVL_CURRENT (fn);
 	  if (DECL_VINDEX (fndecl))
 	    {
 	      tree *prev = &base_fndecls;
@@ -2486,8 +2428,7 @@ warn_hidden (tree t)
 	{
 	  /* Here we know it is a hider, and no overrider exists.  */
 	  cp_warning_at ("`%D' was hidden", TREE_VALUE (base_fndecls));
-	  cp_warning_at ("  by `%D'", 
-			 OVL_CURRENT (TREE_VEC_ELT (method_vec, i)));
+	  cp_warning_at ("  by `%D'", fns);
 	  base_fndecls = TREE_CHAIN (base_fndecls);
 	}
     }
@@ -2629,21 +2570,18 @@ add_implicitly_declared_members (tree t,
       implicit_fns = default_fn;
     }
 
-  /* Assignment operator.  */
-  if (! TYPE_HAS_ASSIGN_REF (t) && ! TYPE_FOR_JAVA (t))
-    {
-      default_fn 
-	= implicitly_declare_fn (sfk_assignment_operator, t,
-				 /*const_p=*/!cant_have_const_assignment);
-      TREE_CHAIN (default_fn) = implicit_fns;
-      implicit_fns = default_fn;
-    }
-
+  /* If there is no assignment operator, one will be created if and
+     when it is needed.  For now, just record whether or not the type
+     of the parameter to the assignment operator will be a const or
+     non-const reference.  */
+  if (!TYPE_HAS_ASSIGN_REF (t) && !TYPE_FOR_JAVA (t))
+    TYPE_HAS_CONST_ASSIGN_REF (t) = !cant_have_const_assignment;
+  
   /* Now, hook all of the new functions on to TYPE_METHODS,
      and add them to the CLASSTYPE_METHOD_VEC.  */
   for (f = &implicit_fns; *f; f = &TREE_CHAIN (*f))
     {
-      add_method (t, *f, /*error_p=*/0);
+      add_method (t, *f);
       maybe_add_class_template_decl_list (current_class_type, *f, /*friend_p=*/0);
     }
   if (abi_version_at_least (2))
@@ -3923,10 +3861,10 @@ clone_function_decl (tree fn, int update_method_vec_p)
 	 and a not-in-charge version.  */
       clone = build_clone (fn, complete_ctor_identifier);
       if (update_method_vec_p)
-	add_method (DECL_CONTEXT (clone), clone, /*error_p=*/0);
+	add_method (DECL_CONTEXT (clone), clone);
       clone = build_clone (fn, base_ctor_identifier);
       if (update_method_vec_p)
-	add_method (DECL_CONTEXT (clone), clone, /*error_p=*/0);
+	add_method (DECL_CONTEXT (clone), clone);
     }
   else
     {
@@ -3945,14 +3883,14 @@ clone_function_decl (tree fn, int update_method_vec_p)
 	{
 	  clone = build_clone (fn, deleting_dtor_identifier);
 	  if (update_method_vec_p)
-	    add_method (DECL_CONTEXT (clone), clone, /*error_p=*/0);
+	    add_method (DECL_CONTEXT (clone), clone);
 	}
       clone = build_clone (fn, complete_dtor_identifier);
       if (update_method_vec_p)
-	add_method (DECL_CONTEXT (clone), clone, /*error_p=*/0);
+	add_method (DECL_CONTEXT (clone), clone);
       clone = build_clone (fn, base_dtor_identifier);
       if (update_method_vec_p)
-	add_method (DECL_CONTEXT (clone), clone, /*error_p=*/0);
+	add_method (DECL_CONTEXT (clone), clone);
     }
 
   /* Note that this is an abstract function that is never emitted.  */
@@ -4181,7 +4119,6 @@ check_bases_and_members (tree t)
   CLASSTYPE_NON_POD_P (t)
     |= (CLASSTYPE_NON_AGGREGATE (t) || TYPE_HAS_DESTRUCTOR (t) 
 	|| TYPE_HAS_ASSIGN_REF (t));
-  TYPE_HAS_REAL_ASSIGN_REF (t) |= TYPE_HAS_ASSIGN_REF (t);
   TYPE_HAS_COMPLEX_ASSIGN_REF (t)
     |= TYPE_HAS_ASSIGN_REF (t) || TYPE_CONTAINS_VPTR_P (t);
 
@@ -5164,10 +5101,10 @@ finish_struct_1 (tree t)
   build_vtt (t);
 
   if (warn_nonvdtor && TYPE_POLYMORPHIC_P (t) && TYPE_HAS_DESTRUCTOR (t)
-      && DECL_VINDEX (TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (t), 1)) == NULL_TREE)
+      && !DECL_VINDEX (CLASSTYPE_DESTRUCTORS (t)))
 
     {
-      tree dtor = TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (t), 1);
+      tree dtor = CLASSTYPE_DESTRUCTORS (t);
 
       /* Warn only if the dtor is non-private or the class has friends */
       if (!TREE_PRIVATE (dtor) ||

@@ -139,8 +139,6 @@ cxx_print_type (FILE *file, tree node, int indent)
 	fprintf (file, " interface-only");
       if (CLASSTYPE_INTERFACE_UNKNOWN (node))
 	fprintf (file, " interface-unknown");
-      print_node (file, "member-functions", CLASSTYPE_METHOD_VEC (node),
-		  indent + 4);
     }
 }
 

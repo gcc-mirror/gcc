@@ -1060,7 +1060,7 @@ lookup_field_r (tree binfo, void *data)
     {
       int idx = lookup_fnfields_1 (type, lfi->name);
       if (idx >= 0)
-	nval = TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (type), idx);
+	nval = VEC_index (tree, CLASSTYPE_METHOD_VEC (type), idx);
     }
 
   if (!nval)
@@ -1312,20 +1312,16 @@ lookup_conversion_operator (tree class_type, tree type)
 {
   int pass;
   int i;
+  tree fn;
+  VEC(tree) *methods;
 
-  tree methods = CLASSTYPE_METHOD_VEC (class_type);
+  methods = CLASSTYPE_METHOD_VEC (class_type);
 
   for (pass = 0; pass < 2; ++pass)
     for (i = CLASSTYPE_FIRST_CONVERSION_SLOT; 
-	 i < TREE_VEC_LENGTH (methods);
+	 (fn = VEC_iterate (tree, methods, i));
 	 ++i)
       {
-	tree fn = TREE_VEC_ELT (methods, i);
-	/* The size of the vector may have some unused slots at the
-	   end.  */
-	if (!fn)
-	  break;
-
 	/* All the conversion operators come near the beginning of the
 	   class.  Therefore, if FN is not a conversion operator, there
 	   is no matching conversion operator in CLASS_TYPE.  */
@@ -1364,12 +1360,11 @@ lookup_conversion_operator (tree class_type, tree type)
 int
 lookup_fnfields_1 (tree type, tree name)
 {
-  tree method_vec;
-  tree *methods;
+  VEC(tree) *method_vec;
+  tree fn;
   tree tmp;
-  int i;
-  int len;
-
+  size_t i;
+  
   if (!CLASS_TYPE_P (type))
     return -1;
 
@@ -1378,35 +1373,58 @@ lookup_fnfields_1 (tree type, tree name)
   if (!method_vec)
     return -1;
 
-  methods = &TREE_VEC_ELT (method_vec, 0);
-  len = TREE_VEC_LENGTH (method_vec);
-
 #ifdef GATHER_STATISTICS
   n_calls_lookup_fnfields_1++;
 #endif /* GATHER_STATISTICS */
 
   /* Constructors are first...  */
   if (name == ctor_identifier)
-    return (methods[CLASSTYPE_CONSTRUCTOR_SLOT] 
-	    ? CLASSTYPE_CONSTRUCTOR_SLOT : -1);
+    {
+      fn = CLASSTYPE_CONSTRUCTORS (type);
+      return fn ? CLASSTYPE_CONSTRUCTOR_SLOT : -1;
+    }
   /* and destructors are second.  */
   if (name == dtor_identifier)
-    return (methods[CLASSTYPE_DESTRUCTOR_SLOT]
-	    ? CLASSTYPE_DESTRUCTOR_SLOT : -1);
+    {
+      fn = CLASSTYPE_DESTRUCTORS (type);
+      return fn ? CLASSTYPE_DESTRUCTOR_SLOT : -1;
+    }
   if (IDENTIFIER_TYPENAME_P (name))
     return lookup_conversion_operator (type, TREE_TYPE (name));
 
   /* Skip the conversion operators.  */
-  i = CLASSTYPE_FIRST_CONVERSION_SLOT;
-  while (i < len && methods[i] && DECL_CONV_FN_P (OVL_CURRENT (methods[i])))
-    i++;
+  for (i = CLASSTYPE_FIRST_CONVERSION_SLOT;
+       (fn = VEC_iterate (tree, method_vec, i));
+       ++i)
+    if (!DECL_CONV_FN_P (OVL_CURRENT (fn)))
+      break;
 
   /* If the type is complete, use binary search.  */
   if (COMPLETE_TYPE_P (type))
     {
-      int lo = i;
-      int hi = len;
+      int lo;
+      int hi;
 
+      /* All non-Java classes have "operator=" -- but we do not
+	 actually create the declaration until it is needed.  */
+      if (name == ansi_assopname(NOP_EXPR)
+	  && !TYPE_HAS_ASSIGN_REF (type)
+	  && !TYPE_FOR_JAVA (type))
+	{
+	  tree fn;
+
+	  /* Declare the function.  */
+	  fn = implicitly_declare_fn (sfk_assignment_operator, type,
+				      TYPE_HAS_CONST_ASSIGN_REF (type));
+	  add_method (type, fn);
+	  TREE_CHAIN (fn) = TYPE_METHODS (type);
+	  TYPE_METHODS (type) = fn;
+	  maybe_add_class_template_decl_list (type, fn, /*friend_p=*/0);
+	  method_vec = CLASSTYPE_METHOD_VEC (type);
+	}
+
+      lo = i;
+      hi = VEC_length (tree, method_vec);
       while (lo < hi)
 	{
 	  i = (lo + hi) / 2;
@@ -1415,13 +1433,9 @@ lookup_fnfields_1 (tree type, tree name)
 	  n_outer_fields_searched++;
 #endif /* GATHER_STATISTICS */
 
-	  tmp = methods[i];
-	  /* This slot may be empty; we allocate more slots than we
-	     need.  In that case, the entry we're looking for is
-	     closer to the beginning of the list.  */
-	  if (tmp)
-	    tmp = DECL_NAME (OVL_CURRENT (tmp));
-	  if (!tmp || tmp > name)
+	  tmp = VEC_index (tree, method_vec, i);
+	  tmp = DECL_NAME (OVL_CURRENT (tmp));
+	  if (tmp > name)
 	    hi = i;
 	  else if (tmp < name)
 	    lo = i + 1;
@@ -1430,14 +1444,14 @@ lookup_fnfields_1 (tree type, tree name)
 	}
     }
   else
-    for (; i < len && methods[i]; ++i)
+    for (; 
+	 (fn = VEC_iterate (tree, method_vec, i));
+	 ++i)
       {
 #ifdef GATHER_STATISTICS
 	n_outer_fields_searched++;
 #endif /* GATHER_STATISTICS */
-	
-	tmp = OVL_CURRENT (methods[i]);
-	if (DECL_NAME (tmp) == name)
+	if (DECL_NAME (OVL_CURRENT (fn)) == name)
 	  return i;
       }
 
@@ -1781,7 +1795,7 @@ look_for_overrides_here (tree type, tree fndecl)
     ix = lookup_fnfields_1 (type, DECL_NAME (fndecl));
   if (ix >= 0)
     {
-      tree fns = TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (type), ix);
+      tree fns = VEC_index (tree, CLASSTYPE_METHOD_VEC (type), ix);
   
       for (; fns; fns = OVL_NEXT (fns))
         {
@@ -2050,17 +2064,19 @@ reinit_search_statistics (void)
 static tree
 add_conversions (tree binfo, void *data)
 {
-  int i;
-  tree method_vec = CLASSTYPE_METHOD_VEC (BINFO_TYPE (binfo));
+  size_t i;
+  VEC(tree) *method_vec = CLASSTYPE_METHOD_VEC (BINFO_TYPE (binfo));
   tree *conversions = (tree *) data;
+  tree tmp;
 
   /* Some builtin types have no method vector, not even an empty one.  */
   if (!method_vec)
     return NULL_TREE;
 
-  for (i = 2; i < TREE_VEC_LENGTH (method_vec); ++i)
+  for (i = CLASSTYPE_FIRST_CONVERSION_SLOT; 
+       (tmp = VEC_iterate (tree, method_vec, i));
+       ++i)
     {
-      tree tmp = TREE_VEC_ELT (method_vec, i);
       tree name;
 
       if (!tmp || ! DECL_CONV_FN_P (OVL_CURRENT (tmp)))
