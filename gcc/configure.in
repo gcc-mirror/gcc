@@ -1303,9 +1303,9 @@ fi
 AC_MSG_RESULT($gcc_cv_as_hidden)
 
 AC_MSG_CHECKING(assembler leb128 support)
-gcc_cv_as_hidden=no
+gcc_cv_as_leb128=no
 if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x; then
-  if test "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 10 -o "$gcc_cv_gas_major_version" -gt 2 && grep 'obj_format = elf' ../gas/Makefile > /dev/null; then
+  if test "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 11 -o "$gcc_cv_gas_major_version" -gt 2 && grep 'obj_format = elf' ../gas/Makefile > /dev/null; then
     gcc_cv_as_leb128="yes"
   fi
 elif test x$gcc_cv_as != x; then
@@ -1319,7 +1319,13 @@ L1:
 L2:
 EOF
 	if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
-		gcc_cv_as_leb128="yes"
+		# GAS versions numbered 2.10.90 do not support uleb128, despite
+		# appearing to.
+		if $gcc_cv_as --version | fgrep 2.10.90 > /dev/null; then
+			:
+		else
+			gcc_cv_as_leb128="yes"
+		fi
 	fi
 	rm -f conftest.s conftest.o conftest.nm1 conftest.nm2
 fi
