@@ -1,3 +1,7 @@
+2003-03-12  Andreas Jaeger  <aj@suse.de>
+
+	* Make-lang.in (tree1$(exeext)): Add c-cppbuiltin.o.
+
 2003-03-08  Neil Booth  <neil@daikokuya.co.uk>
 
 	* tree1.c (in_fname): Fix type.

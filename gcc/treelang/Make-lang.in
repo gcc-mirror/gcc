@@ -82,10 +82,12 @@ treelang.done: tree1$(exeext)
 
 # core compiler
 tree1$(exeext): treelang/tree1.o treelang/treetree.o treelang/lex.o treelang/parse.o\
-	$(TREE_BE_LIBS) c-convert.o c-typeck.o c-common.o c-decl.o attribs.o
+	$(TREE_BE_LIBS) c-convert.o c-typeck.o c-common.o c-cppbuiltin.o \
+	c-decl.o attribs.o
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
-	treelang/tree1.o treelang/treetree.o treelang/lex.o treelang/parse.o c-convert.o\
-	c-typeck.o c-common.o c-decl.o attribs.o $(TREE_BE_LIBS)
+	treelang/tree1.o treelang/treetree.o treelang/lex.o treelang/parse.o 
+	c-convert.o c-typeck.o c-common.o c-cppbuiltin.o c-decl.o attribs.o \
+	$(TREE_BE_LIBS)
 
 #
 # Compiling object files from source files.
