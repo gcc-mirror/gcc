@@ -1,3 +1,9 @@
+Wed May 13 08:52:08 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* reload1.c (merge_assigned_reloads):  Can merge
+	RELOAD_FOR_INPUT_ADDRESS and RELOAD_FOR_OTHER_ADDRESS even
+	if RELOAD_FOR_INPUT with the same reload_reg_rtx is present.
+
 Tue May 12 20:05:57 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* collect2.c (main): Ignore do_collecting when COLLECT_EXPORT_LIST.
