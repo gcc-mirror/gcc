@@ -6726,6 +6726,10 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
       flags |= CP_PARSER_FLAGS_OPTIONAL;
     }
 
+  /* Don't allow a friend specifier with a class definition.  */
+  if (friend_p && (*declares_class_or_enum & 2))
+    error ("class definition may not be declared a friend");
+
   /* We have built up the DECL_SPECS in reverse order.  Return them in
      the correct order.  */
   return nreverse (decl_specs);

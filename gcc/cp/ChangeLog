@@ -1,3 +1,9 @@
+2004-01-12  Scott Brumbaugh  <scottb.lists@verizon.net>
+
+	PR c++/4100
+	* parser.c (cp_parser_decl_specifier_seq): Add check for a friend
+	decl-specifier occurring along with a class definition.
+
 2004-01-12  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	* parser.c (cp_parser_decl_specifier_seq): Add parenthetical
