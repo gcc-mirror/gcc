@@ -1,3 +1,12 @@
+2002-02-28  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/aix43.h (THREAD_MODEL_SPEC): Delete.
+	* config/rs6000/aix51.h (THREAD_MODEL_SPEC): Delete.
+
+2002-02-28  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000.md (load_toc_aix_di): Handle TARGET_RELOCATABLE.
+
 2002-02-28  Jason Merrill  <jason@redhat.com>
 
 	* c-decl.c (finish_function): Only warn about missing return
@@ -15,7 +24,7 @@
 
 2002-02-27  Graham Stott  <grahams@redhat.com>
 
-	* config/rs6000/rs6000.h (ASM_OUTPUT_DEF_FROM_DELC):
+	* config/rs6000/rs6000.h (ASM_OUTPUT_DEF_FROM_DECL):
 	Constify NAME.
 
 	* loop.c (prescan_loop): Handle PARALLEL.
