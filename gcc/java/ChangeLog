@@ -1,3 +1,8 @@
+2001-05-18  Per Bothner  <per@bothner.com>
+
+	* jvspec.c (lang_specific_pre_link):  Re-arrange the linker
+        command line so the jvgenmain-generated main program comes first.
+
 2001-05-15  Tom Tromey  <tromey@redhat.com>
 
 	* class.c (build_utf8_ref): Don't generate identifier based on
