@@ -5646,7 +5646,6 @@ fold (tree expr)
 	{
 	  tree inside_type = TREE_TYPE (TREE_OPERAND (TREE_OPERAND (t, 0), 0));
 	  tree inter_type = TREE_TYPE (TREE_OPERAND (t, 0));
-	  tree final_type = type;
 	  int inside_int = INTEGRAL_TYPE_P (inside_type);
 	  int inside_ptr = POINTER_TYPE_P (inside_type);
 	  int inside_float = FLOAT_TYPE_P (inside_type);
@@ -5657,20 +5656,20 @@ fold (tree expr)
 	  int inter_float = FLOAT_TYPE_P (inter_type);
 	  unsigned int inter_prec = TYPE_PRECISION (inter_type);
 	  int inter_unsignedp = TREE_UNSIGNED (inter_type);
-	  int final_int = INTEGRAL_TYPE_P (final_type);
-	  int final_ptr = POINTER_TYPE_P (final_type);
-	  int final_float = FLOAT_TYPE_P (final_type);
-	  unsigned int final_prec = TYPE_PRECISION (final_type);
-	  int final_unsignedp = TREE_UNSIGNED (final_type);
+	  int final_int = INTEGRAL_TYPE_P (type);
+	  int final_ptr = POINTER_TYPE_P (type);
+	  int final_float = FLOAT_TYPE_P (type);
+	  unsigned int final_prec = TYPE_PRECISION (type);
+	  int final_unsignedp = TREE_UNSIGNED (type);
 
 	  /* In addition to the cases of two conversions in a row
 	     handled below, if we are converting something to its own
 	     type via an object of identical or wider precision, neither
 	     conversion is needed.  */
-	  if (TYPE_MAIN_VARIANT (inside_type) == TYPE_MAIN_VARIANT (final_type)
+	  if (TYPE_MAIN_VARIANT (inside_type) == TYPE_MAIN_VARIANT (type)
 	      && ((inter_int && final_int) || (inter_float && final_float))
 	      && inter_prec >= final_prec)
-	    return fold (build1 (code, final_type,
+	    return fold (build1 (code, type,
 				 TREE_OPERAND (TREE_OPERAND (t, 0), 0)));
 
 	  /* Likewise, if the intermediate and final types are either both
@@ -5683,10 +5682,10 @@ fold (tree expr)
 	       || (inter_float && inside_float))
 	      && inter_prec >= inside_prec
 	      && (inter_float || inter_unsignedp == inside_unsignedp)
-	      && ! (final_prec != GET_MODE_BITSIZE (TYPE_MODE (final_type))
-		    && TYPE_MODE (final_type) == TYPE_MODE (inter_type))
+	      && ! (final_prec != GET_MODE_BITSIZE (TYPE_MODE (type))
+		    && TYPE_MODE (type) == TYPE_MODE (inter_type))
 	      && ! final_ptr)
-	    return fold (build1 (code, final_type,
+	    return fold (build1 (code, type,
 				 TREE_OPERAND (TREE_OPERAND (t, 0), 0)));
 
 	  /* If we have a sign-extension of a zero-extended value, we can
@@ -5694,7 +5693,7 @@ fold (tree expr)
 	  if (inside_int && inter_int && final_int
 	      && inside_prec < inter_prec && inter_prec < final_prec
 	      && inside_unsignedp && !inter_unsignedp)
-	    return fold (build1 (code, final_type,
+	    return fold (build1 (code, type,
 				 TREE_OPERAND (TREE_OPERAND (t, 0), 0)));
 
 	  /* Two conversions in a row are not needed unless:
@@ -5716,10 +5715,10 @@ fold (tree expr)
 		  == (final_unsignedp && final_prec > inter_prec))
 	      && ! (inside_ptr && inter_prec != final_prec)
 	      && ! (final_ptr && inside_prec != inter_prec)
-	      && ! (final_prec != GET_MODE_BITSIZE (TYPE_MODE (final_type))
-		    && TYPE_MODE (final_type) == TYPE_MODE (inter_type))
+	      && ! (final_prec != GET_MODE_BITSIZE (TYPE_MODE (type))
+		    && TYPE_MODE (type) == TYPE_MODE (inter_type))
 	      && ! final_ptr)
-	    return fold (build1 (code, final_type,
+	    return fold (build1 (code, type,
 				 TREE_OPERAND (TREE_OPERAND (t, 0), 0)));
 	}
 
