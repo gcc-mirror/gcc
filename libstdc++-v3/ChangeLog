@@ -1,3 +1,23 @@
+2004-08-15  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/deque.tcc: Trivial formatting fixes.
+
+	* include/bits/locale_facets.tcc (num_get<>::do_get(&bool)):
+	Remove unneded typedef.
+
+	* include/bits/locale_facets.tcc: Very minor tweaks.
+
+	* testsuite/22_locale/time_put/put/wchar_t/1.cc: Use proper
+	type for the fill argument.
+	* testsuite/22_locale/time_put/put/wchar_t/10.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/3.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/4.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/5.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/6.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/7.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/8.cc: Likewise.
+
 2004-08-13  Paolo Carlini  <pcarlini@suse.de>
 	
 	* src/debug.cc (_Error_formatter::_M_print_string): Fix thinko,

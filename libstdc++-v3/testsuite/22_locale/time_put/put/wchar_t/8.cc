@@ -47,11 +47,11 @@ void test08()
   wostringstream oss;
   oss.imbue(loc_fr);
   const time_put<wchar_t>& tim_put = use_facet<time_put<wchar_t> >(oss.getloc()); 
-  iterator_type os_it11 = tim_put.put(oss.rdbuf(), oss, '*', &time1, 
+  iterator_type os_it11 = tim_put.put(oss.rdbuf(), oss, L'*', &time1, 
 				      date, date + traits::length(date));
   wstring result11 = oss.str();
   VERIFY( result11 == L"dimanche, the second of avril");
-  iterator_type os_it12 = tim_put.put(oss.rdbuf(), oss, '*', &time1, 
+  iterator_type os_it12 = tim_put.put(oss.rdbuf(), oss, L'*', &time1, 
 				      date_ex, date_ex + traits::length(date));
   wstring result12 = oss.str();
   VERIFY( result12 != result11 );

@@ -64,8 +64,8 @@
 namespace _GLIBCXX_STD
 {
   template <typename _Tp, typename _Alloc>
-    deque<_Tp,_Alloc>&
-    deque<_Tp,_Alloc>::
+    deque<_Tp, _Alloc>&
+    deque<_Tp, _Alloc>::
     operator=(const deque& __x)
     {
       const size_type __len = size();
@@ -85,7 +85,7 @@ namespace _GLIBCXX_STD
     }
 
   template <typename _Tp, typename _Alloc>
-    typename deque<_Tp,_Alloc>::iterator
+    typename deque<_Tp, _Alloc>::iterator
     deque<_Tp, _Alloc>::
     insert(iterator position, const value_type& __x)
     {
@@ -106,7 +106,7 @@ namespace _GLIBCXX_STD
     }
 
   template <typename _Tp, typename _Alloc>
-    typename deque<_Tp,_Alloc>::iterator
+    typename deque<_Tp, _Alloc>::iterator
     deque<_Tp, _Alloc>::
     erase(iterator __position)
     {
@@ -127,7 +127,7 @@ namespace _GLIBCXX_STD
     }
 
   template <typename _Tp, typename _Alloc>
-    typename deque<_Tp,_Alloc>::iterator
+    typename deque<_Tp, _Alloc>::iterator
     deque<_Tp, _Alloc>::
     erase(iterator __first, iterator __last)
     {

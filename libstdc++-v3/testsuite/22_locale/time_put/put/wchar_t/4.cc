@@ -44,21 +44,21 @@ void test04()
   wostringstream oss;
   oss.imbue(loc_fr);
   const time_put<wchar_t>& tim_put = use_facet<time_put<wchar_t> >(oss.getloc()); 
-  iterator_type os_it04 = tim_put.put(oss.rdbuf(), oss, '*', &time1, 'a');
+  iterator_type os_it04 = tim_put.put(oss.rdbuf(), oss, L'*', &time1, 'a');
   wstring result4 = oss.str();
   VERIFY( result4 == L"dim" );
 
   oss.str(empty); // "%d.%m.%Y"
-  iterator_type os_it27 = tim_put.put(oss.rdbuf(), oss, '*', &time1, 'x');
+  iterator_type os_it27 = tim_put.put(oss.rdbuf(), oss, L'*', &time1, 'x');
   wstring result27 = oss.str(); // "04.04.1971"
   oss.str(empty); // "%T"
-  iterator_type os_it28 = tim_put.put(oss.rdbuf(), oss, '*', &time1, 'X');
+  iterator_type os_it28 = tim_put.put(oss.rdbuf(), oss, L'*', &time1, 'X');
   wstring result28 = oss.str(); // "12:00:00"
   oss.str(empty);
-  iterator_type os_it37 = tim_put.put(oss.rdbuf(), oss, '*', &time1, 'x', 'E');
+  iterator_type os_it37 = tim_put.put(oss.rdbuf(), oss, L'*', &time1, 'x', 'E');
   wstring result37 = oss.str(); // "04.04.1971"
   oss.str(empty);
-  iterator_type os_it38 = tim_put.put(oss.rdbuf(), oss, '*', &time1, 'X', 'E');
+  iterator_type os_it38 = tim_put.put(oss.rdbuf(), oss, L'*', &time1, 'X', 'E');
   wstring result38 = oss.str(); // "12:00:00"
 }
 
