@@ -5238,17 +5238,18 @@ simplify_set (x)
       SUBST (SET_SRC (x), src);
     }
 
+#ifdef WORD_REGISTER_OPERATIONS
   /* If we have (set x (subreg:m1 (op:m2 ...) 0)) with OP being some operation,
      and X being a REG or (subreg (reg)), we may be able to convert this to
      (set (subreg:m2 x) (op)).
 
-     We can always do this if M1 is narrower than M2 because that means that
-     we only care about the low bits of the result.
+     On a machine where WORD_REGISTER_OPERATIONS is defined, this
+     transformation is safe as long as M1 and M2 have the same number
+     of words.
 
-     However, on machines without WORD_REGISTER_OPERATIONS defined, we cannot
-     perform a narrower operation than requested since the high-order bits will
-     be undefined.  On machine where it is defined, this transformation is safe
-     as long as M1 and M2 have the same number of words.  */
+     However, on a machine without WORD_REGISTER_OPERATIONS defined,
+     we cannot apply this transformation because it would create a
+     paradoxical subreg in SET_DEST.  */
 
   if (GET_CODE (src) == SUBREG && subreg_lowpart_p (src)
       && GET_RTX_CLASS (GET_CODE (SUBREG_REG (src))) != 'o'
@@ -5256,10 +5257,6 @@ simplify_set (x)
 	   / UNITS_PER_WORD)
 	  == ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (src)))
 	       + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD))
-#ifndef WORD_REGISTER_OPERATIONS
-      && (GET_MODE_SIZE (GET_MODE (src))
-	  < GET_MODE_SIZE (GET_MODE (SUBREG_REG (src))))
-#endif
 #ifdef CANNOT_CHANGE_MODE_CLASS
       && ! (GET_CODE (dest) == REG && REGNO (dest) < FIRST_PSEUDO_REGISTER
 	    && REG_CANNOT_CHANGE_MODE_P (REGNO (dest),
@@ -5277,6 +5274,7 @@ simplify_set (x)
 
       src = SET_SRC (x), dest = SET_DEST (x);
     }
+#endif
 
 #ifdef HAVE_cc0
   /* If we have (set (cc0) (subreg ...)), we try to remove the subreg

@@ -1,3 +1,8 @@
+2003-06-03  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* combine.c (simplify_set): Don't move a subreg in SET_SRC to
+	SET_DEST if WORD_REGISTER_OPERATIONS is not defined.
+
 2003-06-03  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* config/i386/x86-64.h: Remove two target-independent comments;
