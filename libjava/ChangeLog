@@ -1,3 +1,7 @@
+2005-03-22  Tom Tromey  <tromey@redhat.com>
+
+	* gnu/gcj/tools/gcj_dbtool/Main.java (usage): Fixed output.
+
 2005-03-21  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/VMCompiler.java (static block): Also catch
