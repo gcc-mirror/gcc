@@ -1,3 +1,10 @@
+2001-06-22  Phil Edwards  <pme@sources.redhat.com>
+
+	* include/*:  Revert comment/license change from yesterday for all
+	except libsupc++/unwind-cxx.h.
+	* src/bitset.cc:  Likewise.
+	* src/strstream.cc:  Likewise.
+
 2001-06-22  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
 	* libmath/stubs.c: New file.
