@@ -1,3 +1,7 @@
+2000-09-14  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-parse.in (reswords): Add _Complex.
+
 2000-09-14  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* gcc.1: Delete documentation for -undef preprocessor option.

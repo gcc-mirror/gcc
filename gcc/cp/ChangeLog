@@ -1,3 +1,7 @@
+2000-09-14  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* lex.c (reswords): Add _Complex.
+
 Thu Sep 14 12:10:45 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* Make-lang.in (cplib2.txt): Depend on cp/Makefile.
