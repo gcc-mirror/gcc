@@ -2786,6 +2786,7 @@ ia64_encode_section_info (decl)
   else if (! TARGET_NO_SDATA
 	   && TREE_CODE (decl) == VAR_DECL
 	   && TREE_STATIC (decl)
+	   && ! (DECL_ONE_ONLY (decl) || DECL_WEAK (decl))
 	   && ! (TREE_PUBLIC (decl)
 		 && (flag_pic
 		     || (DECL_COMMON (decl)
@@ -2813,7 +2814,8 @@ ia64_encode_section_info (decl)
 
       /* If this is an incomplete type with size 0, then we can't put it in
 	 sdata because it might be too big when completed.  */
-      else if (size > 0 && size <= ia64_section_threshold)
+      else if (size > 0 && size <= ia64_section_threshold
+	       && str[0] != SDATA_NAME_FLAG_CHAR)
 	{
 	  int len = strlen (str);
 	  char *newstr = obstack_alloc (saveable_obstack, len + 2);
@@ -2822,6 +2824,21 @@ ia64_encode_section_info (decl)
 	  *newstr = SDATA_NAME_FLAG_CHAR;
 	  XSTR (XEXP (DECL_RTL (decl), 0), 0) = newstr;
 	}
+    }	    
+  /* This decl is marked as being in small data/bss but it shouldn't
+     be; one likely explanation for this is that the decl has been
+     moved into a different section from the one it was in when
+     ENCODE_SECTION_INFO was first called.  Remove the '@'.*/
+  else if (TREE_CODE (decl) == VAR_DECL
+	   && (XSTR (XEXP (DECL_RTL (decl), 0), 0)[0] 
+	       == SDATA_NAME_FLAG_CHAR))
+    {
+      char *str = XSTR (XEXP (DECL_RTL (decl), 0), 0);
+      int len = strlen (str);
+      char *newstr = obstack_alloc (saveable_obstack, len);
+
+      strcpy (newstr, str + 1);
+      XSTR (XEXP (DECL_RTL (decl), 0), 0) = newstr;
     }
 }
 

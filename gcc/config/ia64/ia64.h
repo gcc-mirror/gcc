@@ -1978,6 +1978,15 @@ do {									\
 
 #define ENCODE_SECTION_INFO(DECL) ia64_encode_section_info (DECL)
 
+/* If a variable is weakened, made one only or moved into a different
+   section, it may be necessary to redo the section info to move the
+   variable out of sdata. */
+
+#define REDO_SECTION_INFO_P(DECL)					\
+   ((TREE_CODE (DECL) == VAR_DECL)					\
+    && (DECL_ONE_ONLY (decl) || DECL_WEAK (decl) || DECL_COMMON (decl)	\
+	|| DECL_SECTION_NAME (decl) != 0))
+
 #define SDATA_NAME_FLAG_CHAR '@'
 
 #define IA64_DEFAULT_GVALUE 8
