@@ -1030,8 +1030,8 @@ mark_target_live_regs (insns, target, res)
 
   /* If we hit an unconditional branch, we have another way of finding out
      what is live: we can see what is live at the branch target and include
-     anything used but not set before the branch.  The only things that are
-     live are those that are live using the above test and the test below.  */
+     anything used but not set before the branch.  We add the live
+     resources found using the test below to those found until now. */
 
   if (jump_insn)
     {
@@ -1055,7 +1055,7 @@ mark_target_live_regs (insns, target, res)
 	  mark_set_resources (insn, &set, 0, 1);
 	}
 
-      AND_HARD_REG_SET (res->regs, new_resources.regs);
+      IOR_HARD_REG_SET (res->regs, new_resources.regs);
     }
 
   if (tinfo != NULL)
