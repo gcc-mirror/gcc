@@ -47,8 +47,23 @@ public class ObjectStreamField implements java.lang.Comparable
   {
     this.name = name;
     this.type = type;
+    this.typename = TypeSignature.getEncodingOfClass(type);
   }
-
+ 
+  /**
+   * There're many cases you can't get java.lang.Class from typename if your context
+   * class loader can't load it, then use typename to construct the field
+   */
+  ObjectStreamField (String name, String typename){
+    this.name = name;
+    this.typename = typename;
+    try{
+      type = TypeSignature.getClassForEncoding(typename);
+    }catch(ClassNotFoundException e){
+      type = Object.class; //??
+    }
+  }
+  
   public String getName ()
   {
     return name;
@@ -61,12 +76,13 @@ public class ObjectStreamField implements java.lang.Comparable
 
   public char getTypeCode ()
   {
-    return TypeSignature.getEncodingOfClass (type).charAt (0);
+    return typename.charAt (0);
   }
 
   public String getTypeString ()
   {
-    return TypeSignature.getEncodingOfClass (type);
+    // use intern()
+    return typename.intern();
   }
 
   public int getOffset ()
@@ -106,5 +122,6 @@ public class ObjectStreamField implements java.lang.Comparable
 
   private String name;
   private Class type;
+  private String typename;
   private int offset = -1; // XXX make sure this is correct
 }

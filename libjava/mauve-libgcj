@@ -15,7 +15,6 @@ JDBC2.0
 
 # The following tests seem to hang or crash the testsuite.
 # This a problem when running Mauve "standalone".
-!java.io.ObjectInputOutput
 !java.lang.reflect.Array.newInstance
 
 # Character.unicode seems to be very broken (the test)
