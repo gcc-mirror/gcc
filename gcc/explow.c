@@ -29,6 +29,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "insn-flags.h"
 #include "insn-codes.h"
 
+static rtx break_out_memory_refs	PROTO((rtx));
+static rtx convert_memory_address	PROTO((rtx));
+
 /* Return an rtx for the sum of X and the integer C.
 
    This function should be used via the `plus_constant' macro.  */
@@ -288,6 +291,38 @@ break_out_memory_refs (x)
   return x;
 }
 
+#ifdef POINTERS_EXTEND_UNSIGNED
+
+/* Given X, a memory address in ptr_mode, convert it to an address
+   in Pmode.  We take advantage of the fact that pointers are not
+   allowed to overflow by commuting arithmetic operations over
+   conversions so that address arithmetic insns can be used.  */
+
+static rtx
+convert_memory_address (x)
+     rtx x;
+{
+  switch (GET_CODE (x))
+    {
+    case CONST_INT:
+    case CONST_DOUBLE:
+    case LABEL_REF:
+    case SYMBOL_REF:
+    case CONST:
+      return x;
+
+    case PLUS:
+    case MULT:
+      return gen_rtx (GET_CODE (x), Pmode, 
+		      convert_memory_address (XEXP (x, 0)),
+		      convert_memory_address (XEXP (x, 1)));
+
+    default:
+      return convert_modes (Pmode, ptr_mode, x, POINTERS_EXTEND_UNSIGNED);
+    }
+}
+#endif
+
 /* Given a memory address or facsimile X, construct a new address,
    currently equivalent, that is stable: future stores won't change it.
 
@@ -337,6 +372,11 @@ memory_address (mode, x)
      register rtx x;
 {
   register rtx oldx = x;
+
+#ifdef POINTERS_EXTEND_UNSIGNED
+  if (GET_MODE (x) == ptr_mode)
+    x = convert_memory_address (x);
+#endif
 
   /* By passing constant addresses thru registers
      we get a chance to cse them.  */
@@ -667,8 +707,12 @@ promote_mode (type, mode, punsignedp, for_call)
       break;
 #endif
 
+#ifdef POINTERS_EXTEND_UNSIGNED
     case POINTER_TYPE:
+      mode = Pmode;
+      unsignedp = POINTERS_EXTEND_UNSIGNED;
       break;
+#endif
     }
 
   *punsignedp = unsignedp;
@@ -1026,6 +1070,8 @@ allocate_dynamic_stack_space (size, target, known_align)
       enum machine_mode mode
 	= insn_operand_mode[(int) CODE_FOR_allocate_stack][0];
 
+      size = convert_modes (mode, ptr_mode, size, 1);
+
       if (insn_operand_predicate[(int) CODE_FOR_allocate_stack][0]
 	  && ! ((*insn_operand_predicate[(int) CODE_FOR_allocate_stack][0])
 		(size, mode)))
@@ -1035,7 +1081,10 @@ allocate_dynamic_stack_space (size, target, known_align)
     }
   else
 #endif
-    anti_adjust_stack (size);
+    {
+      size = convert_modes (Pmode, ptr_mode, size, 1);
+      anti_adjust_stack (size);
+    }
 
 #ifdef STACK_GROWS_DOWNWARD
   emit_move_insn (target, virtual_stack_dynamic_rtx);
