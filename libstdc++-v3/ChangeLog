@@ -1,5 +1,15 @@
 2002-11-05  Benjamin Kosnik  <bkoz@redhat.com>
 
+	PR libstdc++/8258
+	* include/bits/istream.tcc (istream::readsome): Don't set eofbit
+	for null buffer.
+	(istream::operator>>(_CharT*)): Use traits_type.
+	(istream::ws): Same.
+	(istream::operator>>(string)): Same.	
+	* testsuite/27_io/istream_unformatted.cc (test11): Add.
+
+2002-11-05  Benjamin Kosnik  <bkoz@redhat.com>
+
 	PR libstdc++/7219
 	* include/bits/ios_base.h (ios_base::streampos): Add.
 	(ios_base::streamoff): Add.
