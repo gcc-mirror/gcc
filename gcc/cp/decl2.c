@@ -44,6 +44,7 @@ Boston, MA 02111-1307, USA.  */
 #include "dwarf2out.h"
 #include "dwarfout.h"
 #include "ggc.h"
+#include "timevar.h"
 
 #if USE_CPPLIB
 #include "cpplib.h"
@@ -3429,7 +3430,6 @@ generate_ctor_and_dtor_functions_for_priority (n, data)
 void
 finish_file ()
 {
-  long start_time, this_time;
   tree vars;
   int reconsider;
   size_t i;
@@ -3463,7 +3463,7 @@ finish_file ()
      generating the intiailzer for an object may cause templates to be
      instantiated, etc., etc.  */
 
-  start_time = get_run_time ();
+  timevar_push (TV_VARCONST);
 
   if (new_abi_rtti_p ())
     emit_support_tinfos ();
@@ -3686,9 +3686,7 @@ finish_file ()
   if (back_end_hook)
     (*back_end_hook) (global_namespace);
 
-  this_time = get_run_time ();
-  parse_time -= this_time - start_time;
-  varconst_time += this_time - start_time;
+  timevar_pop (TV_VARCONST);
 
   if (flag_detailed_statistics)
     {

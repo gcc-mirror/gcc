@@ -26,6 +26,7 @@
 #include "flags.h"
 #include "varray.h"
 #include "ggc.h"
+#include "timevar.h"
 
 #ifndef offsetof
 #define offsetof(TYPE, MEMBER)	((size_t) &((TYPE *)0)->MEMBER)
@@ -58,7 +59,6 @@
 /* Constants for general use.  */
 
 char *empty_string;
-extern int gc_time;
 
 #ifndef HOST_BITS_PER_PTR
 #define HOST_BITS_PER_PTR  HOST_BITS_PER_LONG
@@ -339,8 +339,6 @@ sweep_objs (root)
 void
 ggc_collect ()
 {
-  int time;
-
 #ifndef GGC_ALWAYS_COLLECT
   if (G.allocated < GGC_MIN_EXPAND_FOR_GC * G.allocated_last_gc)
     return;
@@ -350,7 +348,7 @@ ggc_collect ()
   debug_ggc_balance ();
 #endif
 
-  time = get_run_time ();
+  timevar_push (TV_GC);
   if (!quiet_flag)
     fprintf (stderr, " {GC %luk -> ", (unsigned long)G.allocated / 1024);
 
@@ -365,14 +363,10 @@ ggc_collect ()
   if (G.allocated_last_gc < GGC_MIN_LAST_ALLOCATED)
     G.allocated_last_gc = GGC_MIN_LAST_ALLOCATED;
 
-  time = get_run_time () - time;
-  gc_time += time;
+  timevar_pop (TV_GC);
 
   if (!quiet_flag)
-    {
-      fprintf (stderr, "%luk in %.3f}", 
-	       (unsigned long) G.allocated / 1024, time * 1e-6);
-    }
+    fprintf (stderr, "%luk}", (unsigned long) G.allocated / 1024);
 
 #ifdef GGC_BALANCE
   debug_ggc_balance ();

@@ -1,3 +1,12 @@
+2000-04-27  Alex Samuel  <samuel@codesourcery.com>
+
+	* lex.c (my_get_run_time): Remove.
+	(init_filename_times): Use get_run_time instead of my_get_run_time.
+	(check_newline): Likewise.
+	(dump_time_statistics): Likewise.
+	* decl2.c (finish_file): Push and pop timevar TV_VARCONST instead
+	of computing elapsed time explicitly.
+
 2000-04-26  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (TREE_READONLY_DECL_P): Use DECL_P.

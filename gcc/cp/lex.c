@@ -40,6 +40,7 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "ggc.h"
 #include "tm_p.h"
+#include "timevar.h"
 
 #ifdef MULTIBYTE_CHARS
 #include "mbchar.h"
@@ -56,7 +57,6 @@ static int check_newline PARAMS ((void));
 static int whitespace_cr		PARAMS ((int));
 static int skip_white_space PARAMS ((int));
 static void finish_defarg PARAMS ((void));
-static int my_get_run_time PARAMS ((void));
 static int interface_strcmp PARAMS ((const char *));
 static int readescape PARAMS ((int *));
 static char *extend_token_buffer PARAMS ((const char *));
@@ -388,17 +388,6 @@ get_time_identifier (name)
     }
   return time_identifier;
 }
-
-static inline int
-my_get_run_time ()
-{
-  int old_quiet_flag = quiet_flag;
-  int this_time;
-  quiet_flag = 0;
-  this_time = get_run_time ();
-  quiet_flag = old_quiet_flag;
-  return this_time;
-}
 
 /* Table indexed by tree code giving a string containing a character
    classifying the tree code.  Possibilities are
@@ -488,7 +477,7 @@ init_filename_times ()
   if (flag_detailed_statistics)
     {
       header_time = 0;
-      body_time = my_get_run_time ();
+      body_time = get_run_time ();
       TREE_INT_CST_LOW (TIME_IDENTIFIER_TIME (this_filename_time)) 
 	= body_time;
     }
@@ -2390,7 +2379,7 @@ linenum:
      is charged against header time, and body time starts back at 0.  */
   if (flag_detailed_statistics)
     {
-      int this_time = my_get_run_time ();
+      int this_time = get_run_time ();
       tree time_identifier = get_time_identifier (TREE_STRING_POINTER (yylval.ttype));
       header_time += this_time - body_time;
       TREE_INT_CST_LOW (TIME_IDENTIFIER_TIME (this_filename_time))
@@ -5086,7 +5075,7 @@ void
 dump_time_statistics ()
 {
   register tree prev = 0, decl, next;
-  int this_time = my_get_run_time ();
+  int this_time = get_run_time ();
   TREE_INT_CST_LOW (TIME_IDENTIFIER_TIME (this_filename_time))
     += this_time - body_time;
 

@@ -1,3 +1,41 @@
+2000-04-27  Alex Samuel  <samuel@codesourcery.com>
+
+	* Makefile.in (OBJS): Add timevar.o.
+	(toplev.o): Depend on timevar.h.
+	(ggc-simple.o): Likewise.
+	(ggc-page.o): Likewise.
+	(timevar.o): New rule.
+	(timevar.h): New rule.
+
+	* timevar.h: New file.
+	* timevar.c: Likewise.
+	* timevar.def: Likewise.
+
+	* toplev.h (gc_time, parse_time, varconst_time): Remove.
+	* toplev.c: Use timevar_push and timevar_pop instead of TIMEVAR
+	throughout.
+	(TIMEVAR): Remove macro.
+	(gc_time, parse_time, varconst_time, integration_time, jump_time,
+	cse_time, gcse_time, loop_time, cse2_time, branch_prob_time,
+	flow_time, combine_time, regmove_time, sched_time,
+	local_alloc_time, global_alloc_time, flow2_time, peephole2_time,
+	sched2_time, dbr_sched_time, reorder_blocks_time,
+	rename_registers_time, shorten_branch_time, stack_reg_time,
+	to_ssa_time, from_ssa_time, final_time, symout_time, dump_time,
+	all_time): Remove.
+	(compile_file): Don't initialize time variables.  Call
+	init_timevar and start TV_TOTAL timer.  Call timevar_print instead
+	of many calls to print_time.
+	(rest_of_compilation): Add timing for reload_cse_regs.
+	(get_run_time): Removed to timevar.c.
+	(print_time): Likewise.
+	(get_run_time): Implement using TV_TOTAL time variable.
+	(print_time): Get total run time from get_run_time. 
+	* ggc-page.c (ggc_collect): Push and pop TV_GC instead of
+	computing elapsed time explicitly.
+	* ggc-simple.c (ggc_collect): Likewise.
+	(gc_time): Remove declaration.
+	
 2000-04-27  Mark Mitchell  <mark@codesourcery.com>
 
 	* calls.c (combine_pending_stack_adjustment_and_call): New function.
