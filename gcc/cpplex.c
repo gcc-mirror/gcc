@@ -1937,7 +1937,7 @@ cpp_interpret_charconst (pfile, token, pchars_seen, unsignedp)
       wchar_t wc;
       int char_len;
 
-      char_len = local_mbtowc (&wc, str, limit - str);
+      char_len = local_mbtowc (&wc, (const char *)str, limit - str);
       if (char_len == -1)
 	{
 	  cpp_error (pfile, DL_WARNING,
