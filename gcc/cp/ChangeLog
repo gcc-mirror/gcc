@@ -1,5 +1,11 @@
 2000-12-01  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* decl2.c (warn_format): Remove definition.
+	(lang_decode_option): Handle -Wformat-nonliteral,
+	-Wno-format-extra-args and -Wno-format-y2k.  Use set_Wformat.
+
+2000-12-01  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* decl.c (WINT_TYPE, INTMAX_TYPE, UINTMAX_TYPE): Don't define.
 	(init_decl_processing): Don't create string_type_node,
 	const_string_type_node, wint_type_node, intmax_type_node,

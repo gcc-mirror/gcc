@@ -143,7 +143,8 @@ in the following sections.
 -w  -W  -Wall  -Waggregate-return
 -Wcast-align  -Wcast-qual  -Wchar-subscripts  -Wcomment
 -Wconversion  -Wdisabled-optimization -Werror
--Wfloat-equal  -Wformat
+-Wfloat-equal  -Wformat  -Wformat=2
+-Wformat-nonliteral
 -Wid-clash-@var{len}  -Wimplicit -Wimplicit-int 
 -Wimplicit-function-declaration
 -Werror-implicit-function-declaration
@@ -151,7 +152,8 @@ in the following sections.
 -Wlarger-than-@var{len}  -Wlong-long
 -Wmain  -Wmissing-declarations
 -Wmissing-format-attribute  -Wmissing-noreturn
--Wmultichar  -Wno-import  -Wpacked  -Wpadded
+-Wmultichar  -Wno-format-extra-args -Wno-format-y2k
+-Wno-import  -Wpacked  -Wpadded
 -Wparentheses -Wpointer-arith  -Wredundant-decls
 -Wreturn-type  -Wsequence-point  -Wshadow
 -Wsign-compare  -Wswitch  -Wsystem-headers
@@ -1547,6 +1549,30 @@ comment, or whenever a Backslash-Newline appears in a @samp{//} comment.
 Check calls to @code{printf} and @code{scanf}, etc., to make sure that
 the arguments supplied have types appropriate to the format string
 specified.
+
+@samp{-Wformat} is included in @samp{-Wall}.  For more control over some
+aspects of format checking, the options @samp{-Wno-format-y2k},
+@samp{-Wno-format-extra-args}, @samp{-Wformat-nonliteral} and
+@samp{-Wformat=2} are available, but are not included in @samp{-Wall}.
+
+@item -Wno-format-y2k
+If @samp{-Wformat} is specified, do not warn about @code{strftime}
+formats which may yield only a two-digit year.
+
+@item -Wno-format-extra-args
+If @samp{-Wformat} is specified, do not warn about excess arguments to a
+@code{printf} or @code{scanf} format function.  The C standard specifies
+that such arguments are ignored.
+
+@item -Wformat-nonliteral
+If @samp{-Wformat} is specified, also warn if the format string is not a
+string literal and so cannot be checked, unless the format function
+takes its format arguments as a @code{va_list}.
+
+@item -Wformat=2
+Enable @samp{-Wformat} plus format checks not included in
+@samp{-Wformat}.  Currently equivalent to @samp{-Wformat
+-Wformat-nonliteral}.
 
 @item -Wimplicit-int
 Warn when a declaration does not specify a type.

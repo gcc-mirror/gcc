@@ -1,3 +1,8 @@
+2000-12-01  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.dg/format-no-exargs-1.c, gcc.dg/format-no-y2k-1.c,
+	gcc.dg/format-nonlit-1.c, gcc.dg/format-nonlit-2.c: New tests.
+
 2000-12-01  Neil Booth  <neilb@earthling.net>
 
         * gcc.dg/cpp/20000720-1.S: Remove duplicate testcase.
