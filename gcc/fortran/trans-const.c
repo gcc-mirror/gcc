@@ -90,7 +90,9 @@ gfc_build_string_const (int length, const char *s)
 }
 
 /* Return a string constant with the given length.  Used for static
-   initializers.  The constant will be padded to the full length.  */
+   initializers.  The constant will be padded or truncated to match 
+   length.  */
+
 tree
 gfc_conv_string_init (tree length, gfc_expr * expr)
 {
@@ -106,8 +108,8 @@ gfc_conv_string_init (tree length, gfc_expr * expr)
 
   len = TREE_INT_CST_LOW (length);
   slen = expr->value.character.length;
-  assert (len >= slen);
-  if (len != slen)
+
+  if (len > slen)
     {
       s = gfc_getmem (len);
       memcpy (s, expr->value.character.string, slen);
