@@ -447,7 +447,6 @@ public class Collections
     // Create a minimal implementation of List
     return new AbstractList()
     {
-
       public int size()
       {
 	return n;
@@ -487,22 +486,25 @@ public class Collections
       }
   }
 
+  static class ReverseComparator implements Comparator, Serializable
+  {
+    public int compare(Object a, Object b)
+    {
+      return -((Comparable) a).compareTo(b);
+    }
+  }
+  
+  static ReverseComparator rcInstance = new ReverseComparator();
+  
   /**
    * Get a comparator that implements the reverse of natural ordering. This is
    * intended to make it easy to sort into reverse order, by simply passing
    * Collections.reverseOrder() to the sort method. The return value of this
    * method is Serializable.
    */
-  // The return value isn't Serializable, because the spec is broken.
   public static Comparator reverseOrder()
   {
-    return new Comparator()
-    {
-      public int compare(Object a, Object b)
-      {
-	return -((Comparable) a).compareTo(b);
-      }
-    };
+    return rcInstance;
   }
 
   /**

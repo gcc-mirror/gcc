@@ -1,3 +1,10 @@
+2001-02-15  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/util/TreeSet.java (clone): Call TreeMap.clone(), not 
+	Object.clone().
+	* java/util/Collections.java (ReverseComparator): New static class.
+	(reverseOrder): Return static instance of ReverseComparator.
+
 2001-02-14  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/util/TreeMap.java: New file.
