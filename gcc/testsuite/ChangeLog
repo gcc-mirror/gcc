@@ -1,3 +1,8 @@
+2002-12-31  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/9112
+	* g++.dg/parse/expr1.C: New test.
+
 2002-12-30  Daniel Jacobowitz  <drow@mvista.com>
 
 	* gcc.c-torture/compile/20021230-1.c: New test.
