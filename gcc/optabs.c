@@ -4689,9 +4689,9 @@ init_one_libfunc (name)
 {
   /* Create a FUNCTION_DECL that can be passed to ENCODE_SECTION_INFO.  */
   /* ??? We don't have any type information except for this is
-     a function.  See if error_mark_node is good enough.  */
+     a function.  Pretend this is "int foo()".  */
   tree decl = build_decl (FUNCTION_DECL, get_identifier (name),
-			  error_mark_node);
+			  build_function_type (integer_type_node, NULL_TREE));
   DECL_ARTIFICIAL (decl) = 1;
   DECL_EXTERNAL (decl) = 1;
   TREE_PUBLIC (decl) = 1;
