@@ -2578,7 +2578,8 @@ gen_conditional_move (rtx *operands)
   mips_emit_compare (&code, &op0, &op1, true);
   emit_insn (gen_rtx_SET (VOIDmode, operands[0],
 			  gen_rtx_IF_THEN_ELSE (GET_MODE (operands[0]),
-						gen_rtx_fmt_ee (code, VOIDmode,
+						gen_rtx_fmt_ee (code,
+								GET_MODE (op0),
 								op0, op1),
 						operands[2], operands[3])));
 }

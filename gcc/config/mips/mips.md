@@ -7310,9 +7310,9 @@ dsrl\t%3,%3,1\n\
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=d,d")
 	(if_then_else:SI
-	 (match_operator 4 "equality_operator"
-			 [(match_operand:SI 1 "register_operand" "d,d")
-			  (const_int 0)])
+	 (match_operator:SI 4 "equality_operator"
+			    [(match_operand:SI 1 "register_operand" "d,d")
+			     (const_int 0)])
 	 (match_operand:SI 2 "reg_or_0_operand" "dJ,0")
 	 (match_operand:SI 3 "reg_or_0_operand" "0,dJ")))]
   "ISA_HAS_CONDMOVE || ISA_HAS_INT_CONDMOVE"
@@ -7325,9 +7325,9 @@ dsrl\t%3,%3,1\n\
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=d,d")
 	(if_then_else:SI
-	 (match_operator 4 "equality_operator"
-			 [(match_operand:DI 1 "register_operand" "d,d")
-			  (const_int 0)])
+	 (match_operator:DI 4 "equality_operator"
+			    [(match_operand:DI 1 "register_operand" "d,d")
+			     (const_int 0)])
 	 (match_operand:SI 2 "reg_or_0_operand" "dJ,0")
 	 (match_operand:SI 3 "reg_or_0_operand" "0,dJ")))]
   "ISA_HAS_CONDMOVE || ISA_HAS_INT_CONDMOVE"
@@ -7340,9 +7340,9 @@ dsrl\t%3,%3,1\n\
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=d,d")
 	(if_then_else:SI
-	 (match_operator 3 "equality_operator"
-			 [(match_operand:CC 4 "register_operand" "z,z")
-			  (const_int 0)])
+	 (match_operator:CC 3 "equality_operator"
+			    [(match_operand:CC 4 "register_operand" "z,z")
+			     (const_int 0)])
 	 (match_operand:SI 1 "reg_or_0_operand" "dJ,0")
 	 (match_operand:SI 2 "reg_or_0_operand" "0,dJ")))]
   "ISA_HAS_CONDMOVE && TARGET_HARD_FLOAT"
@@ -7355,9 +7355,9 @@ dsrl\t%3,%3,1\n\
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=d,d")
 	(if_then_else:DI
-	 (match_operator 4 "equality_operator"
-			 [(match_operand:SI 1 "register_operand" "d,d")
-			  (const_int 0)])
+	 (match_operator:SI 4 "equality_operator"
+			    [(match_operand:SI 1 "register_operand" "d,d")
+			     (const_int 0)])
 	 (match_operand:DI 2 "reg_or_0_operand" "dJ,0")
 	 (match_operand:DI 3 "reg_or_0_operand" "0,dJ")))]
   "(ISA_HAS_CONDMOVE || ISA_HAS_INT_CONDMOVE) && TARGET_64BIT"
@@ -7370,9 +7370,9 @@ dsrl\t%3,%3,1\n\
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=d,d")
 	(if_then_else:DI
-	 (match_operator 4 "equality_operator"
-			 [(match_operand:DI 1 "register_operand" "d,d")
-			  (const_int 0)])
+	 (match_operator:DI 4 "equality_operator"
+			    [(match_operand:DI 1 "register_operand" "d,d")
+			     (const_int 0)])
 	 (match_operand:DI 2 "reg_or_0_operand" "dJ,0")
 	 (match_operand:DI 3 "reg_or_0_operand" "0,dJ")))]
   "(ISA_HAS_CONDMOVE || ISA_HAS_INT_CONDMOVE) && TARGET_64BIT"
@@ -7385,9 +7385,9 @@ dsrl\t%3,%3,1\n\
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=d,d")
 	(if_then_else:DI
-	 (match_operator 3 "equality_operator"
-			 [(match_operand:CC 4 "register_operand" "z,z")
-			  (const_int 0)])
+	 (match_operator:CC 3 "equality_operator"
+			    [(match_operand:CC 4 "register_operand" "z,z")
+			     (const_int 0)])
 	 (match_operand:DI 1 "reg_or_0_operand" "dJ,0")
 	 (match_operand:DI 2 "reg_or_0_operand" "0,dJ")))]
   "ISA_HAS_CONDMOVE && TARGET_HARD_FLOAT && TARGET_64BIT"
@@ -7400,9 +7400,9 @@ dsrl\t%3,%3,1\n\
 (define_insn ""
   [(set (match_operand:SF 0 "register_operand" "=f,f")
 	(if_then_else:SF
-	 (match_operator 4 "equality_operator"
-			 [(match_operand:SI 1 "register_operand" "d,d")
-			  (const_int 0)])
+	 (match_operator:SI 4 "equality_operator"
+			    [(match_operand:SI 1 "register_operand" "d,d")
+			     (const_int 0)])
 	 (match_operand:SF 2 "register_operand" "f,0")
 	 (match_operand:SF 3 "register_operand" "0,f")))]
   "ISA_HAS_CONDMOVE && TARGET_HARD_FLOAT"
@@ -7415,9 +7415,9 @@ dsrl\t%3,%3,1\n\
 (define_insn ""
   [(set (match_operand:SF 0 "register_operand" "=f,f")
 	(if_then_else:SF
-	 (match_operator 4 "equality_operator"
-			 [(match_operand:DI 1 "register_operand" "d,d")
-			  (const_int 0)])
+	 (match_operator:DI 4 "equality_operator"
+			    [(match_operand:DI 1 "register_operand" "d,d")
+			     (const_int 0)])
 	 (match_operand:SF 2 "register_operand" "f,0")
 	 (match_operand:SF 3 "register_operand" "0,f")))]
   "ISA_HAS_CONDMOVE && TARGET_HARD_FLOAT"
@@ -7430,9 +7430,9 @@ dsrl\t%3,%3,1\n\
 (define_insn ""
   [(set (match_operand:SF 0 "register_operand" "=f,f")
 	(if_then_else:SF
-	 (match_operator 3 "equality_operator"
-			 [(match_operand:CC 4 "register_operand" "z,z")
-			  (const_int 0)])
+	 (match_operator:CC 3 "equality_operator"
+			    [(match_operand:CC 4 "register_operand" "z,z")
+			     (const_int 0)])
 	 (match_operand:SF 1 "register_operand" "f,0")
 	 (match_operand:SF 2 "register_operand" "0,f")))]
   "ISA_HAS_CONDMOVE && TARGET_HARD_FLOAT"
@@ -7445,9 +7445,9 @@ dsrl\t%3,%3,1\n\
 (define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=f,f")
 	(if_then_else:DF
-	 (match_operator 4 "equality_operator"
-			 [(match_operand:SI 1 "register_operand" "d,d")
-			  (const_int 0)])
+	 (match_operator:SI 4 "equality_operator"
+			    [(match_operand:SI 1 "register_operand" "d,d")
+			     (const_int 0)])
 	 (match_operand:DF 2 "register_operand" "f,0")
 	 (match_operand:DF 3 "register_operand" "0,f")))]
   "ISA_HAS_CONDMOVE && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
@@ -7460,9 +7460,9 @@ dsrl\t%3,%3,1\n\
 (define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=f,f")
 	(if_then_else:DF
-	 (match_operator 4 "equality_operator"
-			 [(match_operand:DI 1 "register_operand" "d,d")
-			  (const_int 0)])
+	 (match_operator:DI 4 "equality_operator"
+			    [(match_operand:DI 1 "register_operand" "d,d")
+			     (const_int 0)])
 	 (match_operand:DF 2 "register_operand" "f,0")
 	 (match_operand:DF 3 "register_operand" "0,f")))]
   "ISA_HAS_CONDMOVE && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
@@ -7475,9 +7475,9 @@ dsrl\t%3,%3,1\n\
 (define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=f,f")
 	(if_then_else:DF
-	 (match_operator 3 "equality_operator"
-			 [(match_operand:CC 4 "register_operand" "z,z")
-			  (const_int 0)])
+	 (match_operator:CC 3 "equality_operator"
+			    [(match_operand:CC 4 "register_operand" "z,z")
+			     (const_int 0)])
 	 (match_operand:DF 1 "register_operand" "f,0")
 	 (match_operand:DF 2 "register_operand" "0,f")))]
   "ISA_HAS_CONDMOVE && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
