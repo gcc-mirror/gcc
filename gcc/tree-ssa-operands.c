@@ -1231,16 +1231,6 @@ get_asm_expr_operands (tree stmt, voperands_t prev_vops)
       {
 	size_t i;
 
-	/* If we still have not computed aliasing information, we
-	   won't know what variables are call-clobbered and/or
-	   addressable.  Just mark the statement as having volatile
-	   operands for now.  */
-	if (!aliases_computed_p)
-	  {
-	    stmt_ann (stmt)->has_volatile_ops = true;
-	    break;
-	  }
-
 	/* Clobber all call-clobbered variables (or .GLOBAL_VAR if we
 	   decided to group them).  */
 	if (global_var)
@@ -1258,6 +1248,13 @@ get_asm_expr_operands (tree stmt, voperands_t prev_vops)
 	      tree var = referenced_var (i);
 	      add_stmt_operand (&var, stmt, opf_is_def, prev_vops);
 	    });
+
+	/* If we don't have call-clobbered nor addressable vars and we
+	   still have not computed aliasing information, just mark the
+	   statement as having volatile operands.  If the alias pass
+	   finds some, we will add them at that point.  */
+	if (!aliases_computed_p)
+	  stmt_ann (stmt)->has_volatile_ops = true;
 
 	break;
       }

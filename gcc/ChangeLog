@@ -1,5 +1,14 @@
 2004-07-13  Diego Novillo  <dnovillo@redhat.com>
 
+	PR tree-optimization/16443
+	* tree-ssa-alias.c: Add more description for
+	CALL_CLOBBERED_VARS and ADDRESSABLE_VARS.
+	* tree-ssa-operands.c (get_asm_expr_operands): Re-order the
+	clobbering of call-clobbered and addressable variables.  If
+	there are any before aliases have been computed, add them.
+
+2004-07-13  Diego Novillo  <dnovillo@redhat.com>
+
 	* tree-optimize.c (execute_todo): Flush DUMP_FILE before
 	verification.
 
