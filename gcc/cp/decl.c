@@ -3344,6 +3344,7 @@ duplicate_decls (newdecl, olddecl)
 			  && namespace_bindings_p ())
 			 ? "`%#D' previously defined here"
 			 : "`%#D' previously declared here", olddecl);
+	  return 0;
 	}
       else if (TREE_CODE (olddecl) == FUNCTION_DECL
 	       && DECL_INITIAL (olddecl) != NULL_TREE

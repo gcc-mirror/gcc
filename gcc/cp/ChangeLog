@@ -1,3 +1,8 @@
+2002-02-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* decl.c (duplicate_decls): Return 0 if issued error about
+	redeclaration.
+
 2002-02-19  Jason Merrill  <jason@redhat.com>
 
 	ABI change: Mangle `void (A::*)() const' as 

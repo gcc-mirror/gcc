@@ -1,3 +1,9 @@
+2002-02-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/5713
+	* c-decl.c (duplicate_decls): Return 0 if issued error about
+	redeclaration.
+
 2002-02-20  Roger Sayle  <roger@eyesopen.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
