@@ -1523,6 +1523,9 @@ fixed_scalar_and_varying_struct_p (mem1, mem2, mem1_addr, mem2_addr, varies_p)
      rtx mem1_addr, mem2_addr;
      int (*varies_p) PARAMS ((rtx));
 {  
+  if (! flag_strict_aliasing)
+    return NULL_RTX;
+
   if (MEM_SCALAR_P (mem1) && MEM_IN_STRUCT_P (mem2) 
       && !varies_p (mem1_addr) && varies_p (mem2_addr))
     /* MEM1 is a scalar at a fixed address; MEM2 is a struct at a

@@ -1,3 +1,7 @@
+2000-06-23  Geoffrey Keating  <geoffk@cygnus.com>
+
+	* gcc.dg/20000623-1.c: New test.
+
 2000-06-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/execute/20000622-1.c: New test.
