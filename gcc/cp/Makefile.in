@@ -36,7 +36,7 @@
 
 # It defines the c++ interface name. It should be changed when the
 # c++ interface is changed.
-INTERFACE = 1
+INTERFACE = 2
 
 # Variables that exist for you to override.
 # See below for how to change them for certain systems.
