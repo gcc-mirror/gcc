@@ -3751,20 +3751,36 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 	    koenig_p = false;
 	    if (idk == CP_ID_KIND_UNQUALIFIED)
 	      {
+		if (TREE_CODE (postfix_expression) == IDENTIFIER_NODE)
+		  {
+		    if (args)
+		      {
+			koenig_p = true;
+			postfix_expression
+			  = perform_koenig_lookup (postfix_expression, args);
+		      }
+		    else
+		      postfix_expression
+			= unqualified_fn_lookup_error (postfix_expression);
+ 		  }
 		/* We do not perform argument-dependent lookup if
 		   normal lookup finds a non-function, in accordance
 		   with the expected resolution of DR 218.  */
-		if (args
-		    && (is_overloaded_fn (postfix_expression)
-			|| TREE_CODE (postfix_expression) == IDENTIFIER_NODE))
+		else if (args && is_overloaded_fn (postfix_expression))
 		  {
-		    koenig_p = true;
-		    postfix_expression 
-		      = perform_koenig_lookup (postfix_expression, args);
+		    tree fn = get_first_fn (postfix_expression);
+		    if (TREE_CODE (fn) == TEMPLATE_ID_EXPR)
+		      fn = OVL_CURRENT (TREE_OPERAND (fn, 0));
+		    /* Only do argument dependent lookup if regular
+		       lookup does not find a set of member functions.
+		       [basic.lookup.koenig]/2a  */
+ 		    if (!DECL_FUNCTION_MEMBER_P (fn))
+ 		      {
+ 			koenig_p = true;
+ 			postfix_expression
+ 			  = perform_koenig_lookup (postfix_expression, args);
+ 		      }
 		  }
-		else if (TREE_CODE (postfix_expression) == IDENTIFIER_NODE)
-		  postfix_expression
-		    = unqualified_fn_lookup_error (postfix_expression);
 	      }
 	  
 	    if (TREE_CODE (postfix_expression) == COMPONENT_REF)

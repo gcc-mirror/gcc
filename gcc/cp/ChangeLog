@@ -1,3 +1,9 @@
+2004-10-08  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/17829
+	* parser.c (cp_parser_postfix_expression): Inhibit Koenig when
+	unqualified lookup finds a member function.
+
 2004-09-28  Roger Sayle  <roger@eyesopen.com>
 
 	PR driver/17537

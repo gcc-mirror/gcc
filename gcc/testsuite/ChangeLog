@@ -1,3 +1,8 @@
+2004-10-08  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/17829
+	* g++.dg/lookup/koenig4.C: New.
+
 2004-10-08  Christian Ehrhardt  <ehrhardt@mathematik.uni-ulm.de>
 
 	* gcc.dg/ultrasp11.c: New test.
