@@ -1,3 +1,8 @@
+1998-05-26  Mark Mitchell  <mark@markmitchell.com>
+
+	* decl.c (store_parm_decls): Remove redundant call to
+	expand_main_function.
+
 1998-05-26  Benjamin Kosnik  <bkoz@loony.cygnus.com>
 
 	* decl.c (start_decl): Check for DECL_LANG_SPECIFIC before
