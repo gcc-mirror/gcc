@@ -1,0 +1,48 @@
+#!/bin/sh
+#
+# convert_to_g2c [f2c-dir]
+#
+# Renames certain files in a netlib f2c directory so they have the `.netlib'
+# suffix, a la g77's version of f2c (libg2c).  If `f2c-dir' is not specified,
+# `f2c-YYYYMMDD' is the default, where YYYYMMDD is the current date.
+# The directory is renamed such that the first `f' becomes a `g',
+# usually `f2c-YYYYMMDD' -> `g2c-YYYYMMDD'.
+#
+# (C) 1999 Free Software Foundation
+# Originally by James Craig Burley <craig@jcb-sc.com>, September 1999.
+#
+# This script is Free Software, and it can be copied, distributed and
+# modified as defined in the GNU General Public License.  A copy of
+# its license can be downloaded from http://www.gnu.org/copyleft/gpl.html
+
+set -e
+
+if [ x$1 = x ]
+then
+  dir=f2c-`date +%Y%m%d`
+else
+  dir=$1
+fi
+
+newdir=`echo $dir | sed -e "s:f:g:"`
+
+cd $dir
+
+set +e
+
+mv -i changes changes.netlib
+mv -i disclaimer disclaimer.netlib
+mv -i f2c.h g2c.hin
+mv -i permission permission.netlib
+mv -i readme readme.netlib
+cd libF77
+mv -i README README.netlib
+mv -i makefile makefile.netlib
+cd ../libI77
+mv -i README README.netlib
+mv -i makefile makefile.netlib
+cd ..
+
+cd ..
+
+mv -iv $dir $newdir
