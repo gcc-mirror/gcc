@@ -50,7 +50,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 # define TARGET_EBCDIC 0
 #endif
 
-static const int lang_flags[] = {CL_C, CL_OBJC, CL_CXX, CL_OBJCXX};
+static const int lang_flags[] = {CL_C, CL_ObjC, CL_CXX, CL_ObjCXX};
 
 static int saved_lineno;
 
@@ -1537,7 +1537,7 @@ write_langs (buf, flags)
   *buf = '\0';
   if (flags & CL_C)
     strcat (buf, "C");
-  if (flags & CL_OBJC)
+  if (flags & CL_ObjC)
     {
       if (*buf)
 	strcat (buf, "/");

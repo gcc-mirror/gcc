@@ -294,7 +294,7 @@ gnat_init_options ()
   gnat_argv[0] = save_argv[0];     /* name of the command */ 
   gnat_argc = 1;
 
-  return CL_ADA;
+  return CL_Ada;
 }
 
 /* Here is the function to handle the compiler error processing in GCC.  */

@@ -1,3 +1,8 @@
+2003-06-15  Neil Booth  <neil@daikokuya.co.uk>
+
+	* lang.opt: Declare Ada.
+	* misc.c (gnat_init_options): Update.
+
 2003-06-14  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* utils.c (begin_subprog_body): Adjust init_function_start call.

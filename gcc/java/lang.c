@@ -695,7 +695,7 @@ java_init_options (void)
 
   jcf_path_init ();
 
-  return CL_JAVA;
+  return CL_Java;
 }
 
 static bool

@@ -1,3 +1,8 @@
+2003-06-15  Neil Booth  <neil@daikokuya.co.uk>
+
+	* lang.opt: Declare Treelang.  Update.
+	* tree1.c (treelang_init_options): Update.
+
 2003-06-14  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* treetree.c (tree_code_create_function_initial): Adjust

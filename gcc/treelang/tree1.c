@@ -92,7 +92,7 @@ static unsigned int work_nesting_level = 0;
 int
 treelang_init_options (void)
 {
-  return CL_TREELANG;
+  return CL_Treelang;
 }
 
 /* Process a switch - called by opts.c.  */
