@@ -659,8 +659,8 @@ set_nonzero_bits_and_sign_copies (x, set)
 
       if (SET_DEST (set) == x
 	  || (GET_CODE (SET_DEST (set)) == SUBREG
-	      && (GET_MODE_SIZE (GET_MODE (SET_DEST (x)))
-		  > GET_MODE_SIZE (GET_MODE (SUBREG_REG (SET_DEST (x)))))
+	      && (GET_MODE_SIZE (GET_MODE (SET_DEST (set)))
+		  > GET_MODE_SIZE (GET_MODE (SUBREG_REG (SET_DEST (set)))))
 	      && SUBREG_REG (SET_DEST (set)) == x))
 	{
 	  reg_nonzero_bits[REGNO (x)]
