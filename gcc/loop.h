@@ -26,9 +26,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* Flags passed to loop_optimize.  */
 #define LOOP_UNROLL 1
-#define LOOP_BCT 2
-#define LOOP_PREFETCH 4
-#define LOOP_AUTO_UNROLL 8
+#define LOOP_PREFETCH 2
+#define LOOP_AUTO_UNROLL 4
 
 /* Get the loop info pointer of a loop.  */
 #define LOOP_INFO(LOOP) ((struct loop_info *) (LOOP)->aux)

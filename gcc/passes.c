@@ -1456,7 +1456,7 @@ rest_of_handle_loop_optimize (tree decl, rtx insns)
       reg_scan (insns, max_reg_num (), 1);
     }
   cleanup_barriers ();
-  loop_optimize (insns, dump_file, do_unroll | LOOP_BCT | do_prefetch);
+  loop_optimize (insns, dump_file, do_unroll | do_prefetch);
 
   /* Loop can create trivially dead instructions.  */
   delete_trivially_dead_insns (insns, max_reg_num ());
@@ -1475,6 +1475,12 @@ rest_of_handle_loop2 (tree decl, rtx insns)
 {
   struct loops *loops;
   basic_block bb;
+
+  if (!flag_unswitch_loops
+      && !flag_peel_loops
+      && !flag_unroll_loops
+      && !flag_branch_on_count_reg)
+    return;
 
   timevar_push (TV_LOOP);
   open_dump_file (DFI_loop2, decl);
@@ -1497,6 +1503,11 @@ rest_of_handle_loop2 (tree decl, rtx insns)
 			       (flag_peel_loops ? UAP_PEEL : 0) |
 			       (flag_unroll_loops ? UAP_UNROLL : 0) |
 			       (flag_unroll_all_loops ? UAP_UNROLL_ALL : 0));
+
+#ifdef HAVE_doloop_end
+      if (flag_branch_on_count_reg && HAVE_doloop_end)
+	doloop_optimize_loops (loops);
+#endif /* HAVE_doloop_end */
 
       loop_optimizer_finalize (loops, dump_file);
     }
@@ -1776,10 +1787,7 @@ rest_of_compilation (tree decl)
   if (flag_tracer)
     rest_of_handle_tracer (decl, insns);
 
-  if (optimize > 0
-      && (flag_unswitch_loops
-	  || flag_peel_loops
-	  || flag_unroll_loops))
+  if (optimize > 0)
     rest_of_handle_loop2 (decl, insns);
 
   if (flag_web)

@@ -457,3 +457,20 @@ expected_loop_iterations (const struct loop *loop)
       return (freq_latch + freq_in - 1) / freq_in;
     }
 }
+
+/* Returns the maximum level of nesting of subloops of LOOP.  */
+
+unsigned
+get_loop_level (const struct loop *loop)
+{
+  const struct loop *ploop;
+  unsigned mx = 0, l;
+
+  for (ploop = loop->inner; ploop; ploop = ploop->next)
+    {
+      l = get_loop_level (ploop);
+      if (l >= mx)
+	mx = l + 1;
+    }
+  return mx;
+}

@@ -849,7 +849,7 @@ OBJS-common = \
  cfg.o cfganal.o cfgbuild.o cfgcleanup.o cfglayout.o cfgloop.o		   \
  cfgloopanal.o cfgloopmanip.o loop-init.o loop-unswitch.o loop-unroll.o	   \
  cfgrtl.o combine.o conflict.o convert.o coverage.o cse.o cselib.o 	   \
- dbxout.o debug.o df.o diagnostic.o dojump.o doloop.o dominance.o	   \
+ dbxout.o debug.o df.o diagnostic.o dojump.o dominance.o loop-doloop.o	   \
  dwarf2asm.o dwarf2out.o emit-rtl.o except.o explow.o loop-iv.o		   \
  expmed.o expr.o final.o flow.o fold-const.o function.o gcse.o		   \
  genrtl.o ggc-common.o global.o graph.o gtype-desc.o			   \
@@ -1702,9 +1702,9 @@ loop.o : loop.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) flags.h $(L
    insn-config.h $(REGS_H) hard-reg-set.h $(RECOG_H) $(EXPR_H) \
    real.h $(PREDICT_H) $(BASIC_BLOCK_H) function.h cfgloop.h \
    toplev.h varray.h except.h cselib.h $(OPTABS_H) $(TM_P_H) $(GGC_H)
-doloop.o : doloop.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) flags.h \
-   $(LOOP_H) $(EXPR_H) hard-reg-set.h $(BASIC_BLOCK_H) $(TM_P_H) toplev.h \
-   cfgloop.h
+loop-doloop.o : loop-doloop.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+   $(RTL_H) flags.h $(EXPR_H) hard-reg-set.h $(BASIC_BLOCK_H) $(TM_P_H) \
+   toplev.h cfgloop.h output.h $(PARAMS_H)
 unroll.o : unroll.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) insn-config.h \
    function.h $(INTEGRATE_H) $(REGS_H) $(RECOG_H) flags.h $(EXPR_H) $(LOOP_H) toplev.h \
    hard-reg-set.h varray.h $(BASIC_BLOCK_H) $(TM_P_H) $(PREDICT_H) $(PARAMS_H) \
