@@ -2256,6 +2256,8 @@ bc_expand_start_cond (cond, exitflag)
   struct nesting *thiscond = cond_stack;
 
   thiscond->data.case_stmt.nominal_type = cond;
+  if (! exitflag)
+    thiscond->exit_label = gen_label_rtx ();
   bc_expand_expr (cond);
   bc_emit_bytecode (xjumpifnot);
   bc_emit_bytecode_labelref (BYTECODE_BC_LABEL (thiscond->exit_label));
@@ -3327,10 +3329,10 @@ bc_expand_end_bindings (vars, mark_ends, dont_jump_in)
       if (! TREE_USED (TREE_VALUE (decl)) && TREE_CODE (TREE_VALUE (decl)) == VAR_DECL)
 	warning_with_decl (decl, "unused variable `%s'");
 
-  bc_emit_bytecode_labeldef (BYTECODE_BC_LABEL (thisbind->exit_label));
+  if (thisbind->exit_label)
+    bc_emit_bytecode_labeldef (BYTECODE_BC_LABEL (thisbind->exit_label));
 
   /* Pop block/bindings off stack */
-  POPSTACK (nesting_stack);
   POPSTACK (block_stack);
 }
 
