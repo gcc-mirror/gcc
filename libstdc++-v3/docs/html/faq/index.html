@@ -15,8 +15,12 @@
 <h1 class="centered">libstdc++ Frequently Asked Questions</h1>
 
 <p>The latest version of this document is always available at
-<a href="http://gcc.gnu.org/onlinedocs/libstdc++/faq/">
-http://gcc.gnu.org/onlinedocs/libstdc++/faq/</a>.</p>
+   <a href="http://gcc.gnu.org/onlinedocs/libstdc++/faq/">
+   http://gcc.gnu.org/onlinedocs/libstdc++/faq/</a>.  The main documentation
+   page is at
+   <a href="http://gcc.gnu.org/onlinedocs/libstdc++/documentation.html">
+   http://gcc.gnu.org/onlinedocs/libstdc++/documentation.html</a>.
+</p>
 
 <p>To the <a href="http://gcc.gnu.org/libstdc++/">libstdc++-v3 homepage</a>.
 
@@ -105,7 +109,7 @@ http://gcc.gnu.org/onlinedocs/libstdc++/faq/</a>.</p>
          library reaches stable plateaus, it is captured in a snapshot
          and released.  The current release is
          <a href="http://gcc.gnu.org/libstdc++/download.html">the
-         twelfth snapshot</a>.  For those who want to see exactly how
+         thirteenth snapshot</a>.  For those who want to see exactly how
          far the project has come, or just want the latest
          bleeding-edge code, the up-to-date source is available over
          anonymous CVS, and can even be browsed over the Web (see below). 
@@ -161,7 +165,7 @@ http://gcc.gnu.org/onlinedocs/libstdc++/faq/</a>.</p>
 
 <hr>
    <h2><a name="1_4">1.4 How do I get libstdc++?</a></h2>
-      <p>The twelfth (and latest) snapshot of libstdc++-v3 is
+      <p>The thirteenth (and latest) snapshot of libstdc++-v3 is
          <a href="http://gcc.gnu.org/libstdc++/download.html">available via
          ftp</a>.
       </p>
@@ -460,13 +464,26 @@ which is no longer available, thanks deja...-->
 
    <h2><a name="4_1">4.1 What works already?</a></h2>
       <p>This is a verbatim clip from the &quot;Status&quot; section
-          of the RELEASE-NOTES for the latest snapshot.
+         of the RELEASE-NOTES for the latest snapshot.  For a list of
+         fixed bugs, see that file.
       </p> 
 
 <!-- Yeah, I meant that "verbatim clip" thing literally... :-)  -->
 
 <pre>
-New:
+New in 3.0.96:
+---
+- more doxygen documentation.
+- extensions moved out of namespace std
+- HPUX long long support
+- more string optimizations
+- support for NetBSD cross compiles
+- concept_check merge from boost
+- header simplification
+- named locale bug shakeout
+- thread testsuite
+
+New in 3.0.95:
 ---
 - add S390, m68k, x86-64 support.
 - doxygen documentation has been extended, including man pages.
