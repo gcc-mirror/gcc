@@ -1,3 +1,10 @@
+2002-10-21  Dale Johannesen  <dalej@apple.com>
+
+        * config/rs6000/rs6000.c (rs6000_reverse_condition): Handle
+	    unsafe math reversals correctly for RTL generation.
+	  (output_cbranch):  Replace rs6000_reverse_condition call
+	    by its former definition.
+
 2002-10-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.c (x86_64_sign_extended_value): Add allow_rip
@@ -355,6 +362,7 @@ Sat Oct 19 10:46:52 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* doc/c-tree.texi: Update description of COND_EXPR tree nodes.
 
+>>>>>>> 1.15743
 2002-10-17  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/rs6000/rs6000.h (HARD_REGNO_MODE_OK): Allow arbitrary modes
