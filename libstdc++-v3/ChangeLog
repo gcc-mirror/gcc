@@ -1,3 +1,12 @@
+2002-05-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* config/os/irix/irix5.2/bits/ctype_inline.h (scan_is, scan_not):
+	Fix typo, use this->is() rather than manually (and perhaps
+	incorrectly) inlining it.
+	* config/os/irix/irix6.5/bits/ctype_inline.h (scan_is, scan_not):
+	Likewise.
+	* testsuite/22_locale/ctype_scan_char.cc: New file.
+
 2002-05-13  Paolo Carlini  <pcarlini@unitus.it>
             Jakub Jelinek  <jakub@redhat.com>
 
