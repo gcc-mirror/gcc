@@ -46,91 +46,58 @@
    (UNSPEC_VCONDU_V16QI 307)
    ])
 
+;; Vec int modes
+(define_mode_macro VI [V4SI V8HI V16QI])
+;; Vec float modes
+(define_mode_macro VF [V4SF])
+;; Vec modes, pity mode macros are not composable
+(define_mode_macro V [V4SI V8HI V16QI V4SF])
+
 ;; Generic LVX load instruction.
-(define_insn "altivec_lvx_4si"
-  [(set (match_operand:V4SI 0 "altivec_register_operand" "=v")
-	(match_operand:V4SI 1 "memory_operand" "m"))]
-  "TARGET_ALTIVEC"
-  "lvx %0,%y1"
-  [(set_attr "type" "vecload")])
-
-(define_insn "altivec_lvx_8hi"
-  [(set (match_operand:V8HI 0 "altivec_register_operand" "=v")
-	(match_operand:V8HI 1 "memory_operand" "m"))]
-  "TARGET_ALTIVEC"
-  "lvx %0,%y1"
-  [(set_attr "type" "vecload")])
-
-(define_insn "altivec_lvx_16qi"
-  [(set (match_operand:V16QI 0 "altivec_register_operand" "=v")
-	(match_operand:V16QI 1 "memory_operand" "m"))]
-  "TARGET_ALTIVEC"
-  "lvx %0,%y1"
-  [(set_attr "type" "vecload")])
-
-(define_insn "altivec_lvx_4sf"
-  [(set (match_operand:V4SF 0 "altivec_register_operand" "=v")
-	(match_operand:V4SF 1 "memory_operand" "m"))]
+(define_insn "altivec_lvx_<mode>"
+  [(set (match_operand:V 0 "altivec_register_operand" "=v")
+	(match_operand:V 1 "memory_operand" "m"))]
   "TARGET_ALTIVEC"
   "lvx %0,%y1"
   [(set_attr "type" "vecload")])
 
 ;; Generic STVX store instruction.
-(define_insn "altivec_stvx_4si"
-  [(set (match_operand:V4SI 0 "memory_operand" "=m")
-	(match_operand:V4SI 1 "altivec_register_operand" "v"))]
-  "TARGET_ALTIVEC"
-  "stvx %1,%y0"
-  [(set_attr "type" "vecstore")])
-
-(define_insn "altivec_stvx_8hi"
-  [(set (match_operand:V8HI 0 "memory_operand" "=m")
-	(match_operand:V8HI 1 "altivec_register_operand" "v"))]
-  "TARGET_ALTIVEC"
-  "stvx %1,%y0"
-  [(set_attr "type" "vecstore")])
-
-(define_insn "altivec_stvx_16qi"
-  [(set (match_operand:V16QI 0 "memory_operand" "=m")
-	(match_operand:V16QI 1 "altivec_register_operand" "v"))]
-  "TARGET_ALTIVEC"
-  "stvx %1,%y0"
-  [(set_attr "type" "vecstore")])
-
-(define_insn "altivec_stvx_4sf"
-  [(set (match_operand:V4SF 0 "memory_operand" "=m")
-	(match_operand:V4SF 1 "altivec_register_operand" "v"))]
+(define_insn "altivec_stvx_<mode>"
+  [(set (match_operand:V 0 "memory_operand" "=m")
+	(match_operand:V 1 "altivec_register_operand" "v"))]
   "TARGET_ALTIVEC"
   "stvx %1,%y0"
   [(set_attr "type" "vecstore")])
 
 ;; Vector move instructions.
-(define_expand "movv4si"
-  [(set (match_operand:V4SI 0 "nonimmediate_operand" "")
-	(match_operand:V4SI 1 "any_operand" ""))]
+(define_expand "mov<mode>"
+  [(set (match_operand:V 0 "nonimmediate_operand" "")
+	(match_operand:V 1 "any_operand" ""))]
   "TARGET_ALTIVEC"
-  "{ rs6000_emit_move (operands[0], operands[1], V4SImode); DONE; }")
+{
+  rs6000_emit_move (operands[0], operands[1], <MODE>mode);
+  DONE;
+})
 
-(define_insn "*movv4si_internal"
-  [(set (match_operand:V4SI 0 "nonimmediate_operand" "=m,v,v,o,r,r,v")
-	(match_operand:V4SI 1 "input_operand" "v,m,v,r,o,r,W"))]
+(define_insn "*mov<mode>_internal"
+  [(set (match_operand:V 0 "nonimmediate_operand" "=m,v,v,o,r,r,v")
+	(match_operand:V 1 "input_operand" "v,m,v,r,o,r,W"))]
   "TARGET_ALTIVEC 
-   && (register_operand (operands[0], V4SImode) 
-       || register_operand (operands[1], V4SImode))"
-  "*
+   && (register_operand (operands[0], <MODE>mode) 
+       || register_operand (operands[1], <MODE>mode))"
 {
   switch (which_alternative)
     {
-    case 0: return \"stvx %1,%y0\";
-    case 1: return \"lvx %0,%y1\";
-    case 2: return \"vor %0,%1,%1\";
-    case 3: return \"#\";
-    case 4: return \"#\";
-    case 5: return \"#\";
+    case 0: return "stvx %1,%y0";
+    case 1: return "lvx %0,%y1";
+    case 2: return "vor %0,%1,%1";
+    case 3: return "#";
+    case 4: return "#";
+    case 5: return "#";
     case 6: return output_vec_const_move (operands);
     default: abort();
     }
-}"
+}
   [(set_attr "type" "vecstore,vecload,vecsimple,store,load,*,*")])
 
 (define_split
@@ -139,7 +106,9 @@
   "TARGET_ALTIVEC && reload_completed
    && gpr_or_gpr_p (operands[0], operands[1])"
   [(pc)]
-{ rs6000_split_multireg_move (operands[0], operands[1]); DONE; })
+{
+  rs6000_split_multireg_move (operands[0], operands[1]); DONE;
+})
 
 (define_split
   [(set (match_operand:V4SI 0 "altivec_register_operand" "")
@@ -149,38 +118,9 @@
    (set (match_dup 0)
 	(plus:V4SI (match_dup 0)
 		   (match_dup 0)))]
-  "
 { 
   operands[3] = gen_easy_vector_constant_add_self (operands[1]);
-}")    
-
-(define_expand "movv8hi"
-  [(set (match_operand:V8HI 0 "nonimmediate_operand" "")
-	(match_operand:V8HI 1 "any_operand" ""))]
-  "TARGET_ALTIVEC"
-  "{ rs6000_emit_move (operands[0], operands[1], V8HImode); DONE; }")
-
-(define_insn "*movv8hi_internal1"
-  [(set (match_operand:V8HI 0 "nonimmediate_operand" "=m,v,v,o,r,r,v")
-	(match_operand:V8HI 1 "input_operand" "v,m,v,r,o,r,W"))]
-  "TARGET_ALTIVEC 
-   && (register_operand (operands[0], V8HImode) 
-       || register_operand (operands[1], V8HImode))"
-  "*
-{
-   switch (which_alternative)
-     {
-     case 0: return \"stvx %1,%y0\";
-     case 1: return \"lvx %0,%y1\";
-     case 2: return \"vor %0,%1,%1\";
-     case 3: return \"#\";
-     case 4: return \"#\";
-     case 5: return \"#\";
-     case 6: return output_vec_const_move (operands);
-     default: abort ();
-     }
-}"
-  [(set_attr "type" "vecstore,vecload,vecsimple,store,load,*,*")])
+})    
 
 (define_split
   [(set (match_operand:V8HI 0 "nonimmediate_operand" "")
@@ -198,38 +138,9 @@
    (set (match_dup 0)
 	(plus:V8HI (match_dup 0)
 		   (match_dup 0)))]
-  "
 {
   operands[3] = gen_easy_vector_constant_add_self (operands[1]);
-}")
-
-(define_expand "movv16qi"
-  [(set (match_operand:V16QI 0 "nonimmediate_operand" "")
-	(match_operand:V16QI 1 "any_operand" ""))]
-  "TARGET_ALTIVEC"
-  "{ rs6000_emit_move (operands[0], operands[1], V16QImode); DONE; }")
-
-(define_insn "*movv16qi_internal1"
-  [(set (match_operand:V16QI 0 "nonimmediate_operand" "=m,v,v,o,r,r,v")
-	(match_operand:V16QI 1 "input_operand" "v,m,v,r,o,r,W"))]
-  "TARGET_ALTIVEC
-   && (register_operand (operands[0], V16QImode)
-       || register_operand (operands[1], V16QImode))"
-  "*
-{
-  switch (which_alternative)
-    {
-    case 0: return \"stvx %1,%y0\";
-    case 1: return \"lvx %0,%y1\";
-    case 2: return \"vor %0,%1,%1\";
-    case 3: return \"#\";
-    case 4: return \"#\";
-    case 5: return \"#\";
-    case 6: return output_vec_const_move (operands);
-    default: abort ();
-    }
-}"
-  [(set_attr "type" "vecstore,vecload,vecsimple,store,load,*,*")])
+})
 
 (define_split
   [(set (match_operand:V16QI 0 "nonimmediate_operand" "")
@@ -247,38 +158,9 @@
    (set (match_dup 0)
 	(plus:V16QI (match_dup 0)
 		   (match_dup 0)))]
-  "
 {
   operands[3] = gen_easy_vector_constant_add_self (operands[1]);
-}")
-
-(define_expand "movv4sf"
-  [(set (match_operand:V4SF 0 "nonimmediate_operand" "")
-	(match_operand:V4SF 1 "any_operand" ""))]
-  "TARGET_ALTIVEC"
-  "{ rs6000_emit_move (operands[0], operands[1], V4SFmode); DONE; }")
-
-(define_insn "*movv4sf_internal1"
-  [(set (match_operand:V4SF 0 "nonimmediate_operand" "=m,v,v,o,r,r,v")
-	(match_operand:V4SF 1 "input_operand" "v,m,v,r,o,r,W"))]
-  "TARGET_ALTIVEC
-   && (register_operand (operands[0], V4SFmode)
-       || register_operand (operands[1], V4SFmode))"
-  "*
-{
-  switch (which_alternative)
-    {
-    case 0: return \"stvx %1,%y0\";
-    case 1: return \"lvx %0,%y1\";
-    case 2: return \"vor %0,%1,%1\";
-    case 3: return \"#\";
-    case 4: return \"#\";
-    case 5: return \"#\";
-    case 6: return output_vec_const_move (operands);
-    default: abort ();
-    }
-}"
-  [(set_attr "type" "vecstore,vecload,vecsimple,store,load,*,*")])
+})
 
 (define_split
   [(set (match_operand:V4SF 0 "nonimmediate_operand" "")
@@ -286,19 +168,20 @@
   "TARGET_ALTIVEC && reload_completed
    && gpr_or_gpr_p (operands[0], operands[1])"
   [(pc)]
-{ rs6000_split_multireg_move (operands[0], operands[1]); DONE; })
+{
+  rs6000_split_multireg_move (operands[0], operands[1]); DONE;
+})
 
 (define_insn "get_vrsave_internal"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(unspec:SI [(reg:SI 109)] 214))]
   "TARGET_ALTIVEC"
-  "*
 {
   if (TARGET_MACHO)
-     return \"mfspr %0,256\";
+     return "mfspr %0,256";
   else
-     return \"mfvrsave %0\";
-}"
+     return "mfvrsave %0";
+}
   [(set_attr "type" "*")])
 
 (define_insn "*set_vrsave_internal"
@@ -307,13 +190,12 @@
 	   (unspec_volatile:SI [(match_operand:SI 1 "register_operand" "r")
 				(reg:SI 109)] 30))])]
   "TARGET_ALTIVEC"
-  "*
 {
   if (TARGET_MACHO)
-    return \"mtspr 256,%1\";
+    return "mtspr 256,%1";
   else
-    return \"mtvrsave %1\";
-}"
+    return "mtvrsave %1";
+}
   [(set_attr "type" "*")])
 
 (define_insn "*save_world"
@@ -321,9 +203,7 @@
                   [(clobber (match_operand:SI 1 "register_operand" "=l"))
                    (use (match_operand:SI 2 "call_operand" "s"))])]
  "TARGET_MACHO && (DEFAULT_ABI == ABI_DARWIN) && TARGET_32BIT"         
- {
-    return "bl %z2";
- }
+ "bl %z2"
   [(set_attr "type" "branch")
    (set_attr "length" "4")])
 
@@ -334,9 +214,7 @@
                    (use (match_operand:SI 2 "call_operand" "s"))
                    (clobber (match_operand:SI 3 "gpc_reg_operand" "=r"))])]
  "TARGET_MACHO && (DEFAULT_ABI == ABI_DARWIN) && TARGET_32BIT"
- {
-    return "b %z2";
- })
+ "b %z2")
 
 ;; Simple binary operations.
 
