@@ -1421,7 +1421,7 @@ consume_string (this_obstack, matching_char)
       if (c == '\n')
 	{
 	  if (pedantic)
-	    pedwarn ("ANSI C++ forbids newline in string constant");
+	    pedwarn ("ISO C++ forbids newline in string constant");
 	  lineno++;
 	}
       obstack_1grow (this_obstack, c);
@@ -2912,7 +2912,7 @@ readescape (ignore_ptr)
     case 'e':
     case 'E':
       if (pedantic)
-	pedwarn ("non-ANSI-standard escape sequence, `\\%c'", c);
+	pedwarn ("non-ISO-standard escape sequence, `\\%c'", c);
       return 033;
 
     case '?':
@@ -3148,7 +3148,7 @@ do_identifier (token, parsing, args)
 	    {
 	      warning ("name lookup of `%s' changed",
 		       IDENTIFIER_POINTER (token));
-	      cp_warning_at ("  matches this `%D' under current ANSI rules",
+	      cp_warning_at ("  matches this `%D' under ISO standard rules",
 			     shadowed);
 	      cp_warning_at ("  matches this `%D' under old rules", id);
 	      DECL_ERROR_REPORTED (id) = 1;
@@ -3160,14 +3160,14 @@ do_identifier (token, parsing, args)
 	  DECL_ERROR_REPORTED (id) = 1;
 	  if (TYPE_NEEDS_DESTRUCTOR (TREE_TYPE (id)))
 	    {
-	      error ("name lookup of `%s' changed for new ANSI `for' scoping",
+	      error ("name lookup of `%s' changed for new ISO `for' scoping",
 		     IDENTIFIER_POINTER (token));
 	      cp_error_at ("  cannot use obsolete binding at `%D' because it has a destructor", id);
 	      id = error_mark_node;
 	    }
 	  else
 	    {
-	      pedwarn ("name lookup of `%s' changed for new ANSI `for' scoping",
+	      pedwarn ("name lookup of `%s' changed for new ISO `for' scoping",
 		       IDENTIFIER_POINTER (token));
 	      cp_pedwarn_at ("  using obsolete binding at `%D'", id);
 	    }
@@ -3361,7 +3361,7 @@ parse_float (data)
 	  if (args->imag)
 	    error ("more than one `i' or `j' in numeric constant");
 	  else if (pedantic)
-	    pedwarn ("ANSI C++ forbids imaginary numeric constants");
+	    pedwarn ("ISO C++ forbids imaginary numeric constants");
 	  args->imag = 1;
 	  break;
 
@@ -4043,7 +4043,7 @@ real_yylex ()
 			if (spec_long_long)
 			  error ("three `l's in integer constant");
 			else if (pedantic && ! in_system_header && warn_long_long)
-			  pedwarn ("ANSI C++ forbids long long integer constants");
+			  pedwarn ("ISO C++ forbids long long integer constants");
 			spec_long_long = 1;
 		      }
 		    spec_long = 1;
@@ -4053,7 +4053,7 @@ real_yylex ()
 		    if (spec_imag)
 		      error ("more than one `i' or `j' in numeric constant");
 		    else if (pedantic)
-		      pedwarn ("ANSI C++ forbids imaginary numeric constants");
+		      pedwarn ("ISO C++ forbids imaginary numeric constants");
 		    spec_imag = 1;
 		  }
 		else
@@ -4204,7 +4204,7 @@ real_yylex ()
 	    else if (c == '\n')
 	      {
 		if (pedantic)
-		  pedwarn ("ANSI C forbids newline in character constant");
+		  pedwarn ("ISO C++ forbids newline in character constant");
 		lineno++;
 	      }
 	    else
@@ -4366,7 +4366,7 @@ real_yylex ()
 	    else if (c == '\n')
 	      {
 		if (pedantic)
-		  pedwarn ("ANSI C++ forbids newline in string constant");
+		  pedwarn ("ISO C++ forbids newline in string constant");
 		lineno++;
 	      }
 	    else

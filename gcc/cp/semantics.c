@@ -1164,7 +1164,7 @@ finish_named_return_value (return_id, init)
     /* Give this error as many times as there are occurrences,
        so that users can use Emacs compilation buffers to find
        and fix all such places.  */
-    pedwarn ("ANSI C++ does not permit named return values");
+    pedwarn ("ISO C++ does not permit named return values");
 
   if (return_id != NULL_TREE)
     {

@@ -1054,7 +1054,7 @@ expr:
 
 paren_expr_or_null:
 	LEFT_RIGHT
-		{ error ("ANSI C++ forbids an empty condition for `%s'",
+		{ error ("ISO C++ forbids an empty condition for `%s'",
 			 cond_stmt_keyword);
 		  $$ = integer_zero_node; }
 	| '(' expr ')'
@@ -1063,7 +1063,7 @@ paren_expr_or_null:
 
 paren_cond_or_null:
 	LEFT_RIGHT
-		{ error ("ANSI C++ forbids an empty condition for `%s'",
+		{ error ("ISO C++ forbids an empty condition for `%s'",
 			 cond_stmt_keyword);
 		  $$ = integer_zero_node; }
 	| '(' condition ')'
@@ -1157,7 +1157,7 @@ unary_expr:
 	/* Refer to the address of a label as a pointer.  */
 	| ANDAND identifier
 		{ if (pedantic)
-		    pedwarn ("ANSI C++ forbids `&&'");
+		    pedwarn ("ISO C++ forbids `&&'");
   		  $$ = finish_label_address_expr ($2); }
 	| SIZEOF unary_expr  %prec UNARY
 		{ $$ = expr_sizeof ($2); }
@@ -1242,7 +1242,7 @@ new_initializer:
 	| '=' init
 		{
 		  if (pedantic)
-		    pedwarn ("ANSI C++ forbids initialization of new expression with `='");
+		    pedwarn ("ISO C++ forbids initialization of new expression with `='");
 		  if (TREE_CODE ($2) != TREE_LIST
 		      && TREE_CODE ($2) != CONSTRUCTOR)
 		    $$ = build_tree_list (NULL_TREE, $2);
@@ -1272,7 +1272,7 @@ cast_expr:
 		  tree init = build_nt (CONSTRUCTOR, NULL_TREE,
 					nreverse ($3)); 
 		  if (pedantic)
-		    pedwarn ("ANSI C++ forbids constructor-expressions");
+		    pedwarn ("ISO C++ forbids constructor-expressions");
 		  /* Indicate that this was a GNU C constructor expression.  */
 		  TREE_HAS_CONSTRUCTOR (init) = 1;
 
@@ -1467,7 +1467,7 @@ primary:
 		      YYERROR;
 		    }
 		  if (pedantic)
-		    pedwarn ("ANSI C++ forbids braced-groups within expressions");  
+		    pedwarn ("ISO C++ forbids braced-groups within expressions");  
 		  $<ttype>$ = begin_stmt_expr (); 
 		}
 	  compstmt ')'
@@ -1594,7 +1594,7 @@ primary_no_id:
 		  $<ttype>$ = expand_start_stmt_expr (); }
 	  compstmt ')'
 		{ if (pedantic)
-		    pedwarn ("ANSI C++ forbids braced-groups within expressions");
+		    pedwarn ("ISO C++ forbids braced-groups within expressions");
 		  $$ = expand_end_stmt_expr ($<ttype>2); }
 	| primary_no_id '(' nonnull_exprlist ')'
 		{ $$ = build_x_function_call ($$, $3, current_class_ref); }
@@ -1704,7 +1704,7 @@ fcast_or_absdcl:
 					     NULL_TREE); }
 	;
 
-/* ANSI type-id (8.1) */
+/* ISO type-id (8.1) */
 type_id:
 	  typed_typespecs absdcl
 		{ $$.t = build_decl_list ($1.t, $2); 
@@ -2199,7 +2199,7 @@ structsp:
 		  else
 		    {
 		      $$.t = $1.t;
-		      /* struct B: public A; is not accepted by the WP grammar.  */
+		      /* struct B: public A; is not accepted by the standard grammar.  */
 		      if (CLASS_TYPE_P ($$.t)
 			  && TYPE_BINFO_BASETYPES ($$.t) 
 			  && !TYPE_SIZE ($$.t)
@@ -2653,7 +2653,7 @@ enumerator:
 		{ build_enumerator ($1, $3, current_enum_type); }
 	;
 
-/* ANSI new-type-id (5.3.4) */
+/* ISO new-type-id (5.3.4) */
 new_type_id:
 	  type_specifier_seq new_declarator
 		{ $$.t = build_decl_list ($1.t, $2); 
@@ -2666,7 +2666,7 @@ new_type_id:
 	| '(' type_id ')' '[' expr ']'
 		{
 		  if (pedantic)
-		    pedwarn ("ANSI C++ forbids array dimensions with parenthesized type in new");
+		    pedwarn ("ISO C++ forbids array dimensions with parenthesized type in new");
 		  $$.t = build_parse_node (ARRAY_REF, TREE_VALUE ($2.t), $5);
 		  $$.t = build_decl_list (TREE_PURPOSE ($2.t), $$.t);
 		  $$.new_type_flag = $2.new_type_flag;
@@ -3051,7 +3051,7 @@ global_scope:
 		{ got_scope = void_type_node; }
 	;
 
-/* ANSI new-declarator (5.3.4) */
+/* ISO new-declarator (5.3.4) */
 new_declarator:
 	  '*' cv_qualifiers new_declarator
 		{ $$ = make_pointer_declarator ($2, $3); }
@@ -3072,7 +3072,7 @@ new_declarator:
 	| direct_new_declarator  %prec EMPTY
 	;
 
-/* ANSI direct-new-declarator (5.3.4) */
+/* ISO direct-new-declarator (5.3.4) */
 direct_new_declarator:
 	  '[' expr ']'
 		{ $$ = build_parse_node (ARRAY_REF, NULL_TREE, $2); }
@@ -3090,7 +3090,7 @@ absdcl_intern:
 		}
 	;
 	
-/* ANSI abstract-declarator (8.1) */
+/* ISO abstract-declarator (8.1) */
 absdcl:
 	  '*' nonempty_cv_qualifiers absdcl_intern
 		{ $$ = make_pointer_declarator ($2.t, $3); }
@@ -3119,7 +3119,7 @@ absdcl:
 	| direct_abstract_declarator  %prec EMPTY
 	;
 
-/* ANSI direct-abstract-declarator (8.1) */
+/* ISO direct-abstract-declarator (8.1) */
 direct_abstract_declarator:
 	  '(' absdcl_intern ')'
 		{ $$ = $2; }
@@ -3165,7 +3165,7 @@ maybe_label_decls:
 	  /* empty */
 	| label_decls
 		{ if (pedantic)
-		    pedwarn ("ANSI C++ forbids label declarations"); }
+		    pedwarn ("ISO C++ forbids label declarations"); }
 	;
 
 label_decls:
@@ -3318,7 +3318,7 @@ simple_stmt:
 	| GOTO '*' expr ';'
                 { 
 		  if (pedantic)
-		    pedwarn ("ANSI C++ forbids computed gotos");
+		    pedwarn ("ISO C++ forbids computed gotos");
 		  finish_goto_stmt ($3);
 		}
 	| GOTO identifier ';'
@@ -3418,7 +3418,7 @@ for.init.statement:
 	| decl
 	| '{' compstmtend
 		{ if (pedantic)
-		    pedwarn ("ANSI C++ forbids compound statements inside for initializations");
+		    pedwarn ("ISO C++ forbids compound statements inside for initializations");
 		}
 	;
 

@@ -1926,7 +1926,7 @@ type_decays_to (type)
    1) bool-taking candidates.  These are the same regardless of the input.
    2) pointer-pair taking candidates.  These are generated for each type
       one of the input types converts to.
-   3) arithmetic candidates.  According to the WP, we should generate
+   3) arithmetic candidates.  According to the standard, we should generate
       all of these, but I'm trying not to... */
 
 static struct z_candidate *
@@ -4883,10 +4883,10 @@ joust (cand1, cand2, warn)
   /* for some argument j, ICSj(F1) is a better conversion  sequence  than
      ICSj(F2) */
 
-  /* For comparing static and non-static member functions, we ignore the
-     implicit object parameter of the non-static function.  The WP says to
-     pretend that the static function has an object parm, but that won't
-     work with operator overloading.  */
+  /* For comparing static and non-static member functions, we ignore
+     the implicit object parameter of the non-static function.  The
+     standard says to pretend that the static function has an object
+     parm, but that won't work with operator overloading.  */
   len = TREE_VEC_LENGTH (cand1->convs);
   if (len != TREE_VEC_LENGTH (cand2->convs))
     {

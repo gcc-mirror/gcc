@@ -5421,8 +5421,7 @@ build_c_cast (type, expr)
   if (TREE_CODE (type) == ARRAY_TYPE)
     {
       /* Allow casting from T1* to T2[] because Cfront allows it.
-	 NIHCL uses it. It is not valid ANSI C however, and hence, not
-	 valid ANSI C++.  */
+	 NIHCL uses it. It is not valid ISO C++ however.  */
       if (TREE_CODE (TREE_TYPE (expr)) == POINTER_TYPE)
 	{
 	  if (pedantic)
@@ -5761,8 +5760,8 @@ build_modify_expr (lhs, modifycode, rhs)
 	tree inner_lhs = TREE_OPERAND (lhs, 0);
 	tree result;
 
-	/* WP 5.4.1:  The result is an lvalue if T is a reference type,
-	   otherwise the result is an rvalue.   */
+	/* ISO C++ 5.4/1: The result is an lvalue if T is a reference
+	   type, otherwise the result is an rvalue.  */
 	if (! lvalue_p (lhs))
 	  pedwarn ("ISO C++ forbids cast to non-reference type used as lvalue");
 
