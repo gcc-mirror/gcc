@@ -151,6 +151,9 @@
 /* Whether fputs_unlocked must be declared even if <stdio.h> is included.  */
 #undef NEED_DECLARATION_FPUTS_UNLOCKED
 
+/* Whether environ must be declared.  */
+#undef NEED_DECLARATION_ENVIRON
+
 /* Define to enable the use of a default assembler. */
 #undef DEFAULT_ASSEMBLER
 
