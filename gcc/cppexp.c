@@ -1,5 +1,5 @@
 /* Parse C expressions for cpplib.
-   Copyright (C) 1987, 1992, 1994, 1995, 1997, 1998, 1999, 2000
+   Copyright (C) 1987, 1992, 1994, 1995, 1997, 1998, 1999, 2000, 2001
    Free Software Foundation.
    Contributed by Per Bothner, 1994.
 
@@ -248,7 +248,8 @@ parse_charconst (pfile, tok)
   HOST_WIDEST_INT result = 0;
   int num_chars = 0;
   int num_bits;
-  unsigned int width = MAX_CHAR_TYPE_SIZE, mask = MAX_CHAR_TYPE_MASK;
+  unsigned int width = MAX_CHAR_TYPE_SIZE;
+  HOST_WIDEST_INT mask = MAX_CHAR_TYPE_MASK;
   int max_chars;
   const U_CHAR *ptr = tok->val.str.text;
   const U_CHAR *end = ptr + tok->val.str.len;
