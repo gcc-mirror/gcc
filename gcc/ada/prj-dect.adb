@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.5 $
+--                            $Revision$
 --                                                                          --
 --             Copyright (C) 2001 Free Software Foundation, Inc.            --
 --                                                                          --
@@ -131,6 +131,13 @@ package body Prj.Dect is
       if Token = Tok_Identifier then
          Set_Name_Of (Attribute, To => Token_Name);
          Set_Location_Of (Attribute, To => Token_Ptr);
+
+         if Attributes.Table (Current_Attribute).Kind_2 =
+                            Case_Insensitive_Associative_Array
+         then
+            Set_Case_Insensitive (Attribute, To => True);
+         end if;
+
          while Current_Attribute /= Empty_Attribute
            and then
              Attributes.Table (Current_Attribute).Name /= Token_Name

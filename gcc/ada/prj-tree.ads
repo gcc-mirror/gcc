@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.9 $
+--                            $Revision$
 --                                                                          --
 --             Copyright (C) 2001 Free Software Foundation, Inc.            --
 --                                                                          --
@@ -306,6 +306,9 @@ package Prj.Tree is
       return  Project_Node_Id;
    --  Only valid for N_Case_Item nodes
 
+   function Case_Insensitive (Node : Project_Node_Id) return Boolean;
+   --  Only valid for N_Attribute_Declaration nodes
+
    --------------------
    -- Set Procedures --
    --------------------
@@ -480,6 +483,10 @@ package Prj.Tree is
      (Node : Project_Node_Id;
       To   : Project_Node_Id);
 
+   procedure Set_Case_Insensitive
+     (Node : Project_Node_Id;
+      To   : Boolean);
+
    -------------------------------
    -- Restricted Access Section --
    -------------------------------
@@ -491,42 +498,46 @@ package Prj.Tree is
 
       type Project_Node_Record is record
 
-         Kind        : Project_Node_Kind;
+         Kind             : Project_Node_Kind;
 
-         Location    : Source_Ptr    := No_Location;
+         Location         : Source_Ptr    := No_Location;
 
-         Directory   : Name_Id       := No_Name;
+         Directory        : Name_Id       := No_Name;
          --  Only for N_Project
 
-         Expr_Kind   : Variable_Kind := Undefined;
+         Expr_Kind        : Variable_Kind := Undefined;
          --  See below for what Project_Node_Kind it is used
 
-         Variables   : Variable_Node_Id := Empty_Node;
+         Variables        : Variable_Node_Id := Empty_Node;
          --  First variable in a project or a package
 
-         Packages    : Package_Declaration_Id := Empty_Node;
+         Packages         : Package_Declaration_Id := Empty_Node;
          --  First package declaration in a project
 
-         Pkg_Id      : Package_Node_Id := Empty_Package;
+         Pkg_Id           : Package_Node_Id := Empty_Package;
          --  Only use in Package_Declaration
 
-         Name        : Name_Id         := No_Name;
+         Name             : Name_Id         := No_Name;
          --  See below for what Project_Node_Kind it is used
 
-         Path_Name   : Name_Id         := No_Name;
+         Path_Name        : Name_Id         := No_Name;
          --  See below for what Project_Node_Kind it is used
 
-         Value       : String_Id       := No_String;
+         Value            : String_Id       := No_String;
          --  See below for what Project_Node_Kind it is used
 
-         Field1      : Project_Node_Id := Empty_Node;
+         Field1           : Project_Node_Id := Empty_Node;
          --  See below the meaning for each Project_Node_Kind
 
-         Field2      : Project_Node_Id := Empty_Node;
+         Field2           : Project_Node_Id := Empty_Node;
          --  See below the meaning for each Project_Node_Kind
 
-         Field3      : Project_Node_Id := Empty_Node;
+         Field3           : Project_Node_Id := Empty_Node;
          --  See below the meaning for each Project_Node_Kind
+
+         Case_Insensitive : Boolean         := False;
+         --  Indicates, for an associative array attribute, that the
+         --  index is case insensitive.
 
       end record;
 

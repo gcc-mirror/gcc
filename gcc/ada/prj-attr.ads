@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.1 $
+--                            $Revision$
 --                                                                          --
 --             Copyright (C) 2001 Free Software Foundation, Inc.            --
 --                                                                          --
@@ -51,7 +51,10 @@ package Prj.Attr is
    Empty_Attribute : constant Attribute_Node_Id
      := Attribute_Node_Low_Bound;
 
-   type Attribute_Kind is (Single, Associative_Array, Both);
+   type Attribute_Kind is
+     (Single,
+      Associative_Array,
+      Case_Insensitive_Associative_Array);
 
    type Attribute_Record is record
       Name     : Name_Id;

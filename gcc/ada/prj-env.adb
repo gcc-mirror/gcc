@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.17 $
+--                            $Revision$
 --                                                                          --
 --             Copyright (C) 2001 Free Software Foundation, Inc.            --
 --                                                                          --
@@ -470,7 +470,7 @@ package body Prj.Env is
                  (File, "pragma Source_File_Name");
                Put_Line
                  (File, "  (Spec_File_Name  => ""*" &
-                  Namet.Get_Name_String (Data.Naming.Specification_Append) &
+                  Namet.Get_Name_String (Data.Naming.Current_Spec_Suffix) &
                   """,");
                Put_Line
                  (File, "   Casing          => " &
@@ -486,7 +486,7 @@ package body Prj.Env is
                  (File, "pragma Source_File_Name");
                Put_Line
                  (File, "  (Body_File_Name  => ""*" &
-                  Namet.Get_Name_String (Data.Naming.Body_Append) &
+                  Namet.Get_Name_String (Data.Naming.Current_Impl_Suffix) &
                   """,");
                Put_Line
                  (File, "   Casing          => " &
@@ -498,12 +498,14 @@ package body Prj.Env is
 
                --  and maybe separate
 
-               if Data.Naming.Body_Append /= Data.Naming.Separate_Append then
+               if
+                 Data.Naming.Current_Impl_Suffix /= Data.Naming.Separate_Suffix
+               then
                   Put_Line
                     (File, "pragma Source_File_Name");
                   Put_Line
                     (File, "  (Subunit_File_Name  => ""*" &
-                     Namet.Get_Name_String (Data.Naming.Separate_Append) &
+                     Namet.Get_Name_String (Data.Naming.Separate_Suffix) &
                      """,");
                   Put_Line
                     (File, "   Casing          => " &
@@ -714,7 +716,7 @@ package body Prj.Env is
          The_Packages := Projects.Table (Main_Project).Decl.Packages;
          Gnatmake :=
            Prj.Util.Value_Of
-           (Name        => Name_Gnatmake,
+           (Name        => Name_Builder,
             In_Packages => The_Packages);
 
          if Gnatmake /= No_Package then
@@ -800,10 +802,10 @@ package body Prj.Env is
 
       Extended_Spec_Name : String :=
                              Name & Namet.Get_Name_String
-                                      (Data.Naming.Specification_Append);
+                                      (Data.Naming.Current_Spec_Suffix);
       Extended_Body_Name : String :=
                              Name & Namet.Get_Name_String
-                                      (Data.Naming.Body_Append);
+                                      (Data.Naming.Current_Impl_Suffix);
 
       Unit : Unit_Data;
 
@@ -1252,10 +1254,10 @@ package body Prj.Env is
 
       Extended_Spec_Name : String :=
                              Name & Namet.Get_Name_String
-                                     (Data.Naming.Specification_Append);
+                                     (Data.Naming.Current_Spec_Suffix);
       Extended_Body_Name : String :=
                              Name & Namet.Get_Name_String
-                                     (Data.Naming.Body_Append);
+                                     (Data.Naming.Current_Impl_Suffix);
 
       First   : Unit_Id := Units.First;
       Current : Unit_Id;

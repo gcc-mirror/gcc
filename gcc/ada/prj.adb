@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.16 $
+--                            $Revision$
 --                                                                          --
 --             Copyright (C) 2001 Free Software Foundation, Inc.            --
 --                                                                          --
@@ -30,7 +30,6 @@ with Ada.Characters.Handling; use Ada.Characters.Handling;
 with Errout;      use Errout;
 with GNAT.OS_Lib; use GNAT.OS_Lib;
 with Namet;       use Namet;
-with Osint;       use Osint;
 with Prj.Attr;
 with Prj.Com;
 with Prj.Env;
@@ -42,7 +41,10 @@ with Snames;      use Snames;
 
 package body Prj is
 
-   The_Empty_String : String_Id;
+   The_Empty_String        : String_Id;
+
+   Default_Ada_Spec_Suffix : Name_Id := No_Name;
+   Default_Ada_Impl_Suffix : Name_Id := No_Name;
 
    subtype Known_Casing is Casing_Type range All_Upper_Case .. Mixed_Case;
 
@@ -55,52 +57,74 @@ package body Prj is
 
    Standard_Dot_Replacement      : constant Name_Id :=
      First_Name_Id + Character'Pos ('-');
-   Standard_Specification_Append : Name_Id;
-   Standard_Body_Append          : Name_Id;
 
    Std_Naming_Data : Naming_Data :=
-     (Dot_Replacement      => Standard_Dot_Replacement,
-      Dot_Repl_Loc         => No_Location,
-      Casing               => All_Lower_Case,
-      Specification_Append => No_Name,
-      Spec_Append_Loc      => No_Location,
-      Body_Append          => No_Name,
-      Body_Append_Loc      => No_Location,
-      Separate_Append      => No_Name,
-      Sep_Append_Loc       => No_Location,
-      Specifications       => No_Array_Element,
-      Bodies               => No_Array_Element);
+     (Current_Language          => No_Name,
+      Dot_Replacement           => Standard_Dot_Replacement,
+      Dot_Repl_Loc              => No_Location,
+      Casing                    => All_Lower_Case,
+      Specification_Suffix      => No_Array_Element,
+      Current_Spec_Suffix       => No_Name,
+      Spec_Suffix_Loc           => No_Location,
+      Implementation_Suffix     => No_Array_Element,
+      Current_Impl_Suffix       => No_Name,
+      Impl_Suffix_Loc           => No_Location,
+      Separate_Suffix           => No_Name,
+      Sep_Suffix_Loc            => No_Location,
+      Specifications            => No_Array_Element,
+      Bodies                    => No_Array_Element,
+      Specification_Exceptions  => No_Array_Element,
+      Implementation_Exceptions => No_Array_Element);
 
-   Project_Empty : Project_Data :=
-     (First_Referred_By  => No_Project,
-      Name               => No_Name,
-      Path_Name          => No_Name,
-      Location           => No_Location,
-      Directory          => No_Name,
-      File_Name          => No_Name,
-      Library            => False,
-      Library_Dir        => No_Name,
-      Library_Name       => No_Name,
-      Library_Kind       => Static,
-      Lib_Internal_Name  => No_Name,
-      Lib_Elaboration    => False,
-      Sources            => Nil_String,
-      Source_Dirs        => Nil_String,
-      Object_Directory   => No_Name,
-      Modifies           => No_Project,
-      Modified_By        => No_Project,
-      Naming             => Std_Naming_Data,
-      Decl               => No_Declarations,
-      Imported_Projects  => Empty_Project_List,
-      Include_Path       => null,
-      Objects_Path       => null,
-      Config_File_Name   => No_Name,
-      Config_File_Temp   => False,
-      Config_Checked     => False,
-      Checked            => False,
-      Seen               => False,
-      Flag1              => False,
-      Flag2              => False);
+   Project_Empty : constant Project_Data :=
+     (First_Referred_By            => No_Project,
+      Name                         => No_Name,
+      Path_Name                    => No_Name,
+      Location                     => No_Location,
+      Directory                    => No_Name,
+      Library                      => False,
+      Library_Dir                  => No_Name,
+      Library_Name                 => No_Name,
+      Library_Kind                 => Static,
+      Lib_Internal_Name            => No_Name,
+      Lib_Elaboration              => False,
+      Sources_Present              => True,
+      Sources                      => Nil_String,
+      Source_Dirs                  => Nil_String,
+      Object_Directory             => No_Name,
+      Modifies                     => No_Project,
+      Modified_By                  => No_Project,
+      Naming                       => Std_Naming_Data,
+      Decl                         => No_Declarations,
+      Imported_Projects            => Empty_Project_List,
+      Include_Path                 => null,
+      Objects_Path                 => null,
+      Config_File_Name             => No_Name,
+      Config_File_Temp             => False,
+      Config_Checked               => False,
+      Language_Independent_Checked => False,
+      Checked                      => False,
+      Seen                         => False,
+      Flag1                        => False,
+      Flag2                        => False);
+
+   -----------------------------
+   -- Ada_Default_Spec_Suffix --
+   -----------------------------
+
+   function Ada_Default_Spec_Suffix return Name_Id is
+   begin
+      return Default_Ada_Spec_Suffix;
+   end Ada_Default_Spec_Suffix;
+
+   -----------------------------
+   -- Ada_Default_Impl_Suffix --
+   -----------------------------
+
+   function Ada_Default_Impl_Suffix return Name_Id is
+   begin
+      return Default_Ada_Impl_Suffix;
+   end Ada_Default_Impl_Suffix;
 
    -------------------
    -- Empty_Project --
@@ -192,15 +216,13 @@ package body Prj is
          The_Empty_String := End_String;
          Name_Len := 4;
          Name_Buffer (1 .. 4) := ".ads";
-         Canonical_Case_File_Name (Name_Buffer (1 .. 4));
-         Standard_Specification_Append := Name_Find;
-         Name_Buffer (4) := 'b';
-         Canonical_Case_File_Name (Name_Buffer (1 .. 4));
-         Standard_Body_Append := Name_Find;
-         Std_Naming_Data.Specification_Append := Standard_Specification_Append;
-         Std_Naming_Data.Body_Append          := Standard_Body_Append;
-         Std_Naming_Data.Separate_Append      := Standard_Body_Append;
-         Project_Empty.Naming                 := Std_Naming_Data;
+         Default_Ada_Spec_Suffix := Name_Find;
+         Name_Len := 4;
+         Name_Buffer (1 .. 4) := ".adb";
+         Default_Ada_Impl_Suffix := Name_Find;
+         Std_Naming_Data.Current_Spec_Suffix := Default_Ada_Spec_Suffix;
+         Std_Naming_Data.Current_Impl_Suffix := Default_Ada_Impl_Suffix;
+         Std_Naming_Data.Separate_Suffix     := Default_Ada_Impl_Suffix;
          Prj.Env.Initialize;
          Prj.Attr.Initialize;
          Set_Name_Table_Byte (Name_Project,   Token_Type'Pos (Tok_Project));
@@ -236,9 +258,9 @@ package body Prj is
    begin
       return Left.Dot_Replacement = Right.Dot_Replacement
         and then Left.Casing = Right.Casing
-        and then Left.Specification_Append = Right.Specification_Append
-        and then Left.Body_Append = Right.Body_Append
-        and then Left.Separate_Append = Right.Separate_Append;
+        and then Left.Current_Spec_Suffix = Right.Current_Spec_Suffix
+        and then Left.Current_Impl_Suffix = Right.Current_Impl_Suffix
+        and then Left.Separate_Suffix = Right.Separate_Suffix;
    end Same_Naming_Scheme;
 
    ----------

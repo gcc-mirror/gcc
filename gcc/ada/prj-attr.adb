@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.4 $
+--                            $Revision$
 --                                                                          --
 --             Copyright (C) 2001 Free Software Foundation, Inc.            --
 --                                                                          --
@@ -36,7 +36,8 @@ package body Prj.Attr is
    --  Package names are preceded by 'P'
    --  Attribute names are preceded by two capital letters:
    --    'S' for Single or 'L' for list, then
-   --    'V' for single variable, 'A' for associative array, or 'B' for both.
+   --    'V' for single variable, 'A' for associative array or
+   --     'a' for case insensitive associative array.
    --  End is indicated by two consecutive '#'.
 
    Initialisation_Data : constant String :=
@@ -53,28 +54,33 @@ package body Prj.Attr is
      "SVlibrary_elaboration#" &
      "SVlibrary_version#" &
      "LVmain#" &
+     "LVlanguages#" &
 
    --  package Naming
 
      "Pnaming#" &
-     "SVspecification_append#" &
-     "SVbody_append#" &
-     "SVseparate_append#" &
+     "Saspecification_suffix#" &
+     "Saimplementation_suffix#" &
+     "SVseparate_suffix#" &
      "SVcasing#" &
      "SVdot_replacement#" &
      "SAspecification#" &
-     "SAbody_part#" &
+     "SAimplementation#" &
+     "LAspecification_exceptions#" &
+     "LAimplementation_exceptions#" &
 
    --  package Compiler
 
      "Pcompiler#" &
-     "LBswitches#" &
+     "Ladefault_switches#" &
+     "LAswitches#" &
      "SVlocal_configuration_pragmas#" &
 
-   --  package gnatmake
+   --  package Builder
 
-     "Pgnatmake#" &
-     "LBswitches#" &
+     "Pbuilder#" &
+     "Ladefault_switches#" &
+     "LAswitches#" &
      "SVglobal_configuration_pragmas#" &
 
    --  package gnatls
@@ -82,15 +88,29 @@ package body Prj.Attr is
      "Pgnatls#" &
      "LVswitches#" &
 
-   --  package gnatbind
+   --  package Binder
 
-     "Pgnatbind#" &
-     "LBswitches#" &
+     "Pbinder#" &
+     "Ladefault_switches#" &
+     "LAswitches#" &
 
-   --  package gnatlink
+   --  package Linker
 
-     "Pgnatlink#" &
-     "LBswitches#" &
+     "Plinker#" &
+     "Ladefault_switches#" &
+     "LAswitches#" &
+
+   --  package Cross_Reference
+
+     "Pcross_reference#" &
+     "Ladefault_switches#" &
+     "LAswitches#" &
+
+   --  package Finder
+
+     "Pfinder#" &
+     "Ladefault_switches#" &
+     "LAswitches#" &
 
      "#";
 
@@ -162,8 +182,8 @@ package body Prj.Attr is
                   Kind_2 := Single;
                when 'A' =>
                   Kind_2 := Associative_Array;
-               when 'B' =>
-                  Kind_2 := Both;
+               when 'a' =>
+                  Kind_2 := Case_Insensitive_Associative_Array;
                when others =>
                   raise Program_Error;
             end case;

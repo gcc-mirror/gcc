@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.172 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -623,15 +623,27 @@ package body Make is
       Switch_List   : String_List_Id;
       Element       : String_Element;
 
+      Switches_Array : constant Array_Element_Id :=
+        Prj.Util.Value_Of
+        (Name => Name_Switches,
+         In_Arrays => Packages.Table (The_Package).Decl.Arrays);
+      Default_Switches_Array : constant Array_Element_Id :=
+        Prj.Util.Value_Of
+        (Name => Name_Default_Switches,
+         In_Arrays => Packages.Table (The_Package).Decl.Arrays);
+
    begin
       if File_Name'Length > 0 then
          Name_Len := File_Name'Length;
          Name_Buffer (1 .. Name_Len) := File_Name;
          Switches :=
-           Prj.Util.Value_Of
-             (Name                    => Name_Find,
-              Attribute_Or_Array_Name => Name_Switches,
-              In_Package              => The_Package);
+           Prj.Util.Value_Of (Index => Name_Find, In_Array => Switches_Array);
+
+         if Switches = Nil_Variable_Value then
+            Switches := Prj.Util.Value_Of
+              (Index => Name_Ada,
+               In_Array => Default_Switches_Array);
+         end if;
 
          case Switches.Kind is
             when Undefined =>
@@ -1660,11 +1672,32 @@ package body Make is
                      --  the specific switches for the current source,
                      --  or the global switches, if any.
 
-                     Switches :=
-                       Prj.Util.Value_Of
-                       (Name                    => Source_File,
-                        Attribute_Or_Array_Name => Name_Switches,
-                        In_Package              => Compiler_Package);
+                     declare
+                        Defaults : constant Array_Element_Id :=
+                          Prj.Util.Value_Of
+                           (Name => Name_Default_Switches,
+                            In_Arrays => Packages.Table
+                                          (Compiler_Package).Decl.Arrays);
+                        Switches_Array : constant Array_Element_Id :=
+                          Prj.Util.Value_Of
+                           (Name => Name_Switches,
+                            In_Arrays => Packages.Table
+                                          (Compiler_Package).Decl.Arrays);
+
+                     begin
+                        Switches :=
+                          Prj.Util.Value_Of
+                             (Index => Source_File,
+                              In_Array => Switches_Array);
+
+                        if Switches = Nil_Variable_Value then
+                           Switches :=
+                             Prj.Util.Value_Of
+                               (Index => Name_Ada, In_Array => Defaults);
+                        end if;
+
+                     end;
+
                   end if;
 
                   case Switches.Kind is
@@ -2609,17 +2642,17 @@ package body Make is
 
             Gnatmake : constant Prj.Package_Id :=
                          Prj.Util.Value_Of
-                           (Name        => Name_Gnatmake,
+                           (Name        => Name_Builder,
                             In_Packages => The_Packages);
 
             Binder_Package : constant Prj.Package_Id :=
                          Prj.Util.Value_Of
-                           (Name        => Name_Gnatbind,
+                           (Name        => Name_Binder,
                             In_Packages => The_Packages);
 
             Linker_Package : constant Prj.Package_Id :=
                          Prj.Util.Value_Of
-                           (Name       => Name_Gnatlink,
+                           (Name       => Name_Linker,
                            In_Packages => The_Packages);
 
          begin
@@ -2924,12 +2957,13 @@ package body Make is
                      Body_Append : constant String :=
                                      Get_Name_String
                                        (Projects.Table
-                                         (Main_Project).Naming.Body_Append);
+                                        (Main_Project).
+                                         Naming.Current_Impl_Suffix);
                      Spec_Append : constant String :=
                                      Get_Name_String
                                        (Projects.Table
                                          (Main_Project).
-                                           Naming.Specification_Append);
+                                           Naming.Current_Spec_Suffix);
 
                   begin
                      Get_Name_String (Main_Source_File);
@@ -3444,7 +3478,7 @@ package body Make is
 
          --  Avoid looking in the current directory for ALI files
 
-         Opt.Look_In_Primary_Dir := False;
+         --  Opt.Look_In_Primary_Dir := False;
 
          --  Set the project parsing verbosity to whatever was specified
          --  by a possible -vP switch.

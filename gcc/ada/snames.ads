@@ -862,7 +862,7 @@ package Snames is
 
    Name_Project                        : constant Name_Id := N + 523;
    Name_Modifying                      : constant Name_Id := N + 524;
-   --  Name_External is already declared as N + 243
+   --  Name_External is already declared as N + 161
 
    --  Names used in GNAT Project Files
 
@@ -870,32 +870,34 @@ package Snames is
    Name_Object_Dir                     : constant Name_Id := N + 526;
    Name_Source_Dirs                    : constant Name_Id := N + 527;
    Name_Specification                  : constant Name_Id := N + 528;
-   Name_Body_Part                      : constant Name_Id := N + 529;
-   Name_Specification_Append           : constant Name_Id := N + 530;
-   Name_Body_Append                    : constant Name_Id := N + 531;
-   Name_Separate_Append                : constant Name_Id := N + 532;
-   Name_Source_Files                   : constant Name_Id := N + 533;
-   Name_Source_List_File               : constant Name_Id := N + 534;
-   Name_Switches                       : constant Name_Id := N + 535;
-   Name_Library_Dir                    : constant Name_Id := N + 536;
-   Name_Library_Name                   : constant Name_Id := N + 537;
-   Name_Library_Kind                   : constant Name_Id := N + 538;
-   Name_Library_Version                : constant Name_Id := N + 539;
-   Name_Library_Elaboration            : constant Name_Id := N + 540;
+   Name_Implementation                 : constant Name_Id := N + 529;
+   Name_Specification_Exceptions       : constant Name_Id := N + 530;
+   Name_Implementation_Exceptions      : constant Name_Id := N + 531;
+   Name_Specification_Suffix           : constant Name_Id := N + 532;
+   Name_Implementation_Suffix          : constant Name_Id := N + 533;
+   Name_Separate_Suffix                : constant Name_Id := N + 534;
+   Name_Source_Files                   : constant Name_Id := N + 535;
+   Name_Source_List_File               : constant Name_Id := N + 536;
+   Name_Default_Switches               : constant Name_Id := N + 537;
+   Name_Switches                       : constant Name_Id := N + 538;
+   Name_Library_Dir                    : constant Name_Id := N + 539;
+   Name_Library_Name                   : constant Name_Id := N + 540;
+   Name_Library_Kind                   : constant Name_Id := N + 541;
+   Name_Library_Version                : constant Name_Id := N + 542;
+   Name_Library_Elaboration            : constant Name_Id := N + 543;
+   Name_Languages                      : constant Name_Id := N + 544;
 
-   Name_Gnatmake                       : constant Name_Id := N + 541;
-   Name_Gnatls                         : constant Name_Id := N + 542;
-   Name_Gnatxref                       : constant Name_Id := N + 543;
-   Name_Gnatfind                       : constant Name_Id := N + 544;
-   Name_Gnatbind                       : constant Name_Id := N + 545;
-   Name_Gnatlink                       : constant Name_Id := N + 546;
-   Name_Compiler                       : constant Name_Id := N + 547;
-   Name_Binder                         : constant Name_Id := N + 548;
-   Name_Linker                         : constant Name_Id := N + 549;
+   Name_Builder                        : constant Name_Id := N + 545;
+   Name_Gnatls                         : constant Name_Id := N + 546;
+   Name_Cross_Reference                : constant Name_Id := N + 547;
+   Name_Finder                         : constant Name_Id := N + 548;
+   Name_Binder                         : constant Name_Id := N + 549;
+   Name_Linker                         : constant Name_Id := N + 550;
+   Name_Compiler                       : constant Name_Id := N + 551;
 
    --  Mark last defined name for consistency check in Snames body
 
-   Last_Predefined_Name                : constant Name_Id := N + 549;
+   Last_Predefined_Name                : constant Name_Id := N + 551;
 
    subtype Any_Operator_Name is Name_Id range
      First_Operator_Name .. Last_Operator_Name;

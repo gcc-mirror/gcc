@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.8 $                              --
+--                            $Revision$                              --
 --                                                                          --
 --             Copyright (C) 2001 Free Software Foundation, Inc.            --
 --                                                                          --
@@ -186,6 +186,22 @@ package body Prj.Util is
    --------------
    -- Value_Of --
    --------------
+
+   function Value_Of
+     (Variable : Variable_Value;
+      Default  : String)
+      return     String is
+   begin
+      if Variable.Kind /= Single
+        or else Variable.Default
+        or else Variable.Value = No_String then
+         return Default;
+
+      else
+         String_To_Name_Buffer (Variable.Value);
+         return Name_Buffer (1 .. Name_Len);
+      end if;
+   end Value_Of;
 
    function Value_Of
      (Index    : Name_Id;
