@@ -1267,6 +1267,15 @@ copy_rtx_if_shared (orig)
       /* SCRATCH must be shared because they represent distinct values. */
       return x;
 
+    case CONST:
+      /* CONST can be shared if it contains a SYMBOL_REF.  If it contains
+	 a LABEL_REF, it isn't sharable.  */
+      if (GET_CODE (XEXP (x, 0)) == PLUS
+	  && GET_CODE (XEXP (XEXP (x, 0), 0)) == SYMBOL_REF
+	  && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT)
+	return x;
+      break;
+
     case INSN:
     case JUMP_INSN:
     case CALL_INSN:
