@@ -46,8 +46,12 @@ In `egcs' 1.2:
 ==============
 
    * Fix `g77' so it no longer crashes when compiling I/O statements
-     with `IOSTAT=J', where J is other than default `INTEGER' (such as
-     `INTEGER*2').  Instead, it issues a diagnostic.
+     using keywords that define `INTEGER' values, such as `IOSTAT=J',
+     where J is other than default `INTEGER' (such as `INTEGER*2').
+     Instead, it issues a diagnostic.
+
+   * The `-ax' option is now obeyed when compiling Fortran programs.
+     (It is passed to the `f771' driver.)
 
    * Source file names with the suffixes `.FOR' and `.FPP' now are
      recognized by `g77' as if they ended in `.for' and `.fpp',
@@ -59,6 +63,17 @@ In `egcs' 1.2:
 
    * Improve documentation and indexing, including information on Year
      2000 (Y2K) compliance.
+
+In 0.5.24 and `egcs' 1.1.2 (versus 0.5.23 and 1.1.1):
+=====================================================
+
+   * Fix the `Date_and_Time' intrinsic (in `libg2c') to return the
+     milliseconds value properly in VALUES(8).
+
+   * Fix the `LStat' intrinsic (in `libg2c') to return device-ID
+     information properly in SARRAY(7).
+
+   * Improve documentation.
 
 In 0.5.24 and `egcs' 1.1.1 (versus 0.5.23 and 1.1):
 ===================================================
@@ -541,6 +556,12 @@ In `egcs' 1.0 (versus 0.5.21):
 
    * Fix `DTime' intrinsic so as not to truncate results to integer
      values (on some systems).
+
+   * Some Fortran code, miscompiled by `g77' built on `gcc' version
+     2.8.1 on m68k-next-nextstep3 configurations when using the `-O2'
+     option, is now compiled correctly.  It is believed that a C
+     function known to miscompile on that configuration when using the
+     `-O2 -funroll-loops' options also is now compiled correctly.
 
    * Remove support for non-`egcs' versions of `gcc'.
 
