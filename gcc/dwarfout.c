@@ -1,6 +1,6 @@
 /* Output Dwarf format symbol table information from the GNU C compiler.
    Copyright (C) 1992, 1993, 1995, 1996, 1997, 1998, 2002,
-   1999, 2000, 2001 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@monkeys.com) of Network Computing Devices.
 
 This file is part of GCC.
@@ -782,9 +782,9 @@ static void dwarfout_end_source_file	PARAMS ((unsigned));
 static void dwarfout_end_source_file_check PARAMS ((unsigned));
 static void dwarfout_begin_block	PARAMS ((unsigned, unsigned));
 static void dwarfout_end_block		PARAMS ((unsigned, unsigned));
-static void dwarfout_end_epilogue	PARAMS ((void));
+static void dwarfout_end_epilogue	PARAMS ((unsigned int, const char *));
 static void dwarfout_source_line	PARAMS ((unsigned int, const char *));
-static void dwarfout_end_prologue	PARAMS ((unsigned int));
+static void dwarfout_end_prologue	PARAMS ((unsigned int, const char *));
 static void dwarfout_end_function	PARAMS ((unsigned int));
 static void dwarfout_function_decl	PARAMS ((tree));
 static void dwarfout_global_decl	PARAMS ((tree));
@@ -5835,8 +5835,9 @@ dwarfout_end_block (line, blocknum)
    to their home locations).  */
 
 static void
-dwarfout_end_prologue (line)
+dwarfout_end_prologue (line, file)
      unsigned int line ATTRIBUTE_UNUSED;
+     const char *file ATTRIBUTE_UNUSED;
 {
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
 
@@ -5869,7 +5870,9 @@ dwarfout_end_function (line)
    has been generated.	*/
 
 static void
-dwarfout_end_epilogue ()
+dwarfout_end_epilogue (line, file)
+     unsigned int line ATTRIBUTE_UNUSED;
+     const char *file ATTRIBUTE_UNUSED;
 {
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
 

@@ -1,3 +1,34 @@
+2002-08-15  Douglas B Rupp  <rupp@gnat.com>
+
+	* dbxout.c (dbx_debug_hooks): Update end_prologue, end_epilogue.
+	(xcoff_debug_hooks): Update end_prologue.
+	* debug.c (do_nothing_debug_hooks): Update end_prologue, end_epilogue.
+	* debug.h (end_prologue): Add file arg.
+	(end_epilogue): Add line and file args.
+	(dwarf2out_end_epilogue): Add line and file args.
+	(vmsdbgout_after_prologue): Remove.
+	* dwarf2out.c (dwarf2out_end_epilogue): Add line and file args.
+	(dwarf2_debug_hooks): Update end_prologue.
+	* dwarfout.c (dwarfout_end_epilogue): Add line and file args.
+	(dwarfout_end_prologue): Add file arg.
+	* final.c (vmsdbgout_after_prologue): Remove
+	(final_end_function): Update end_epilogue call.
+	(final_scan_insn): Update end_prologue call.
+	* sdbout.c (sdbout_end_epilogue): Add line and file args.
+	(sdbout_end_prologue): Add file arg.
+	(sdb_debug_hooks): Update end_prologue.
+	(sdb_begin_prologue): Update sdbout_end_prologue call.
+	* vmsdbgout.c (vmsdbg_debug_hooks): Add vmsdbgout_end_prologue,
+	vmsdbgout_end_function.
+	(vmsdbgout_end_prologue): New function renamed from
+	vmsdbgout_after_prologue. Call vmsdbgout_source_line.
+	(vmsdbgout_end_function): New function.
+	(vmsdbgout_end_epilogue): Add line and file args. Call
+	vmsdbgout_source_line.
+	(write_pclines): Write only valid line numbers.
+	(write_srccorr): Don't write source correlation records if 0 lines.
+	* xcoffout.c (xcoffout_end_epilogue): Add line and file args.
+
 2002-08-15  Steve Ellcey  <sje@cup.hp.com>
 
 	* gcc/unwind.h (_Unwind_Ptr): Make 64 bits on IA64 HP-UX.

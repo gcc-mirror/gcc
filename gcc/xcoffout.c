@@ -476,7 +476,9 @@ xcoffout_end_function (last_linenum)
    Called after the epilogue is output.  */
 
 void
-xcoffout_end_epilogue ()
+xcoffout_end_epilogue (line, file)
+     unsigned int line ATTRIBUTE_UNUSED;
+     const char *file ATTRIBUTE_UNUSED;
 {
   /* We need to pass the correct function size to .function, otherwise,
      the xas assembler can't figure out the correct size for the function
