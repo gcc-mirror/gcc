@@ -1,5 +1,5 @@
 /* GNU Objective C Runtime message lookup 
-   Copyright (C) 1993, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995, 1996, 1997 Free Software Foundation, Inc.
    Contributed by Kresten Krab Thorup
 
 This file is part of GNU CC.
@@ -566,8 +566,7 @@ __objc_forward (id object, SEL sel, arglist_t args)
 
     /* The object doesn't respond to doesNotRecognize: or error:;  Therefore,
        a default action is taken. */
-    fprintf (stderr, "fatal: %s\n", msg);
-    abort ();
+    objc_error (object, OBJC_ERR_UNIMPLEMENTED, "%s\n", msg);
   }
 }
 
