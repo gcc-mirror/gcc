@@ -1,3 +1,20 @@
+2001-11-09  Zack Weinberg  <zack@codesourcery.com>
+
+	* g77spec.c (lang_specific_driver): Adjust behavior of -v and
+	--version for consistency with other front ends.  Remove large
+	#if 0 block.  Do not add libraries to argv if there are no
+	input files.
+	(add_version_magic): Delete all references and dependent code.
+	* lang-options.h: Delete -fnull-version.
+	* lang-specs.h: Delete f77-version spec.
+
+	* lex.c: Delete logic conditional on ffe_is_null_version() and
+	now-unused label.
+	* top.c: Delete ffe_is_null_version_ variable.
+	(ffe_decode_option): Delete -fnull-version case.
+	* top.h: Delete declaration of ffe_is_null_version_ and
+	ffe_is_null_version(), ffe_set_is_null_version() macros.
+
 Fri Nov  9 07:14:47 2001  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* com.c (language_string, lang_identify): Remove.

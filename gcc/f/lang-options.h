@@ -31,7 +31,6 @@ DEFINE_LANG_NAME ("Fortran")
 
   { "-fversion", 
     N_("Print g77-specific compiler version info, run internal tests") },
-  { "-fnull-version", "" },
 /*"-fident",*/
 /*"-fno-ident",*/
   { "-ff66", 

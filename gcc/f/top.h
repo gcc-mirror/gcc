@@ -95,7 +95,6 @@ extern bool ffe_is_free_form_;
 extern bool ffe_is_globals_;
 extern bool ffe_is_init_local_zero_;
 extern bool ffe_is_mainprog_;
-extern bool ffe_is_null_version_;
 extern bool ffe_is_onetrip_;
 extern bool ffe_is_silent_;
 extern bool ffe_is_typeless_boz_;
@@ -183,7 +182,6 @@ void ffe_terminate_4 (void);
 #define ffe_is_globals() ffe_is_globals_
 #define ffe_is_init_local_zero() ffe_is_init_local_zero_
 #define ffe_is_mainprog() ffe_is_mainprog_
-#define ffe_is_null_version() ffe_is_null_version_
 #define ffe_is_onetrip() ffe_is_onetrip_
 #define ffe_is_pedantic() ffe_is_pedantic_
 #define ffe_is_pedantic_not_90() (ffe_is_pedantic_ && !ffe_is_90_)
@@ -235,7 +233,6 @@ void ffe_terminate_4 (void);
 #define ffe_set_is_globals(f) (ffe_is_globals_ = (f))
 #define ffe_set_is_init_local_zero(f) (ffe_is_init_local_zero_ = (f))
 #define ffe_set_is_mainprog(f) (ffe_is_mainprog_ = (f))
-#define ffe_set_is_null_version(f) (ffe_is_null_version_ = (f))
 #define ffe_set_is_onetrip(f) (ffe_is_onetrip_ = (f))
 #define ffe_set_is_pedantic(f) (ffe_is_pedantic_ = (f))
 #define ffe_set_is_saveall(f) (ffe_is_saveall_ = (f))

@@ -41,19 +41,3 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
   {"@f77",
    "%{!M:%{!MM:%{!E:f771 %i %(cc1_options) %{I*}\
 	%{!fsyntax-only:%(invoke_as)}}}}", 0},
-  /* XXX This is perverse and should not be necessary.  */
-  {"@f77-version",
-   "tradcpp0 -lang-fortran %(cpp_options) %j \n\
-    f771 -fnull-version %1 \
-      %{!Q:-quiet} -dumpbase g77-version.f %{d*} %{m*} %{a*} \
-      %{g*} %{O*} %{W*} %{w} %{pedantic*} \
-      -version -fversion %{f*} %{I*} -o %g.s %j \n\
-     as %a %Y -o %g%O %g.s %A \n\
-     ld %l %X -o %g %g%O %{A} %{d} %{e*} %{m} %{N} %{n} \
-      %{r} %{s} %{t} %{u*} %{x} %{z} %{Z} \
-      %{!A:%{!nostdlib:%{!nostartfiles:%S}}} \
-      %{static:} %{L*} %D -lg2c -lm \
-      %{!nostdlib:%{!nodefaultlibs:%G %L %G}} \
-      %{!A:%{!nostdlib:%{!nostartfiles:%E}}} \
-      %{T*} \n\
-     %g \n", 0},
