@@ -174,11 +174,18 @@ process_rtx (desc, lineno)
       {
 	const char *split_cond;
 	rtx split;
+	int i;
 
 	/* Create a split with values from the insn_and_split. */
 	split = rtx_alloc (DEFINE_SPLIT);
-	XEXP (split, 0) = copy_rtx (XEXP (desc, 1));
-	remove_constraints (XEXP (split, 0));
+
+	i = XVECLEN (desc, 1);
+	XEXP (split, 0) = rtvec_alloc (i);
+	while (--i >= 0)
+	  {
+	    XVECEXP (split, 0, i) = copy_rtx (XVECEXP (desc, 1, i));
+	    remove_constraints (XVECEXP (split, 0, i));
+	  }
 
 	/* If the split condition starts with "&&", append it to the
 	   insn condition to create the new split condition.  */
