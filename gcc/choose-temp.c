@@ -26,7 +26,7 @@ Boston, MA 02111-1307, USA.  */
 #include "config.h"
 #endif
 
-#ifndef NO_SYS_FILE_H
+#ifdef HAVE_SYS_FILE_H
 #include <sys/types.h>
 #include <sys/file.h>   /* May get R_OK, etc. on some systems.  */
 #endif

@@ -39,7 +39,7 @@ compilation is specified by a string called a "spec".  */
 #include <sys/stat.h>
 #include <errno.h>
 
-#ifndef NO_SYS_FILE_H
+#ifdef HAVE_SYS_FILE_H
 #include <sys/file.h>   /* May get R_OK, etc. on some systems.  */
 #endif
 
