@@ -649,7 +649,7 @@ fi
 if test x"${DEFAULT_LINKER+set}" = x"set"; then
   if test ! -x "$DEFAULT_LINKER"; then
     echo "configure: warning: cannot execute: $DEFAULT_LINKER: check --with-ld or env. var. DEFAULT_LINKER" 1>&2
-  elif test "GNU" = `$DEFAULT_LINKER -v </dev/null 2>&1 | sed '1s/^GNU.*/GNU/;q'`; then
+  elif $DEFAULT_LINKER -v < /dev/null 2>&1 | grep GNU > /dev/null; then
     gnu_ld_flag=yes
   fi
   cat >> confdefs.h <<EOF
@@ -677,7 +677,7 @@ fi
 if test x"${DEFAULT_ASSEMBLER+set}" = x"set"; then
   if test ! -x "$DEFAULT_ASSEMBLER"; then
     echo "configure: warning: cannot execute: $DEFAULT_ASSEMBLER: check --with-as or env. var. DEFAULT_ASSEMBLER" 1>&2
-  elif test "GNU" = `$DEFAULT_ASSEMBLER -v </dev/null 2>&1 | sed '1s/^GNU.*/GNU/;q'`; then
+  elif $DEFAULT_ASSEMBLER -v < /dev/null 2>&1 | grep GNU > /dev/null; then
     gas_flag=yes
   fi
   cat >> confdefs.h <<EOF
@@ -1248,7 +1248,7 @@ fi
 echo $ac_n "checking whether a default assembler was specified""... $ac_c" 1>&6
 echo "configure:1250: checking whether a default assembler was specified" >&5
 if test x"${DEFAULT_ASSEMBLER+set}" = x"set"; then
-    if test x"$with_gas" = x"no"; then
+    if test x"$gas_flag" = x"no"; then
     	echo "$ac_t""yes ($DEFAULT_ASSEMBLER)" 1>&6
     else
 	echo "$ac_t""yes ($DEFAULT_ASSEMBLER - GNU as)" 1>&6
@@ -1260,7 +1260,7 @@ fi
 echo $ac_n "checking whether a default linker was specified""... $ac_c" 1>&6
 echo "configure:1262: checking whether a default linker was specified" >&5
 if test x"${DEFAULT_LINKER+set}" = x"set"; then
-    if test x"$with_gnu_ld" = x"no"; then
+    if test x"$gnu_ld_flag" = x"no"; then
 	echo "$ac_t""yes ($DEFAULT_LINKER)" 1>&6
     else
 	echo "$ac_t""yes ($DEFAULT_LINKER - GNU ld)" 1>&6
