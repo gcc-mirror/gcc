@@ -272,6 +272,29 @@ test02()
 #endif
   VERIFY(os && os.str() == largebuf);
 
+  // Make sure we can output a long float in fixed format
+  // without seg-faulting (libstdc++/4402)
+  double val2 = 3.5e230;
+
+  ostringstream os2;
+  os2.precision(3);
+  os2.setf(ios::fixed);
+  os2 << val2;
+
+  sprintf(largebuf, "%.*f", 3, val2);
+#ifdef TEST_NUMPUT_VERBOSE
+  cout << "expect: " << largebuf << endl;
+  cout << "result: " << os2.str() << endl;
+#endif
+  VERIFY(os2 && os2.str() == largebuf);
+
+  // Check it can be done in a locale with grouping on.
+  locale loc2("de_DE");
+  os2.imbue(loc2);
+  os2 << fixed << setprecision(3) << val2 << endl;
+  os2 << endl;
+  os2 << fixed << setprecision(1) << val2 << endl;
+
   return 0;
 }
 

@@ -711,15 +711,23 @@ namespace std
       _M_convert_float(_OutIter __s, ios_base& __io, _CharT __fill, char __mod,
 		       _ValueT __v) const
       {
-	const streamsize __max_prec = numeric_limits<_ValueT>::digits10;
+	const int __max_digits = numeric_limits<_ValueT>::digits10;
 	streamsize __prec = __io.precision();
 	// Protect against sprintf() buffer overflows.
-	if (__prec > __max_prec)
-	  __prec = __max_prec;
+	if (__prec > static_cast<streamsize>(__max_digits))
+	  __prec = static_cast<streamsize>(__max_digits);
 
 	// Long enough for the max format spec.
 	char __fbuf[16];
-	char __cs[64];
+
+	// Consider the possibility of long ios_base::fixed outputs
+	const bool __fixed = __io.flags() & ios_base::fixed;
+	const int __max_exp = numeric_limits<_ValueT>::max_exponent10;
+	// XXX Why + 4? Why * 4? What's going on? Who's on first?
+	const int __cs_size = __fixed ? __max_exp + __max_digits + 4 
+	                              : __max_digits * 4;
+	char* __cs = static_cast<char*>(__builtin_alloca(__cs_size));
+
 	int __len;
 	// [22.2.2.2.2] Stage 1, numeric conversion to character.
 	if (_S_format_float(__io, __fbuf, __mod, __prec))
@@ -757,14 +765,47 @@ namespace std
       // numpunct.decimal_point() values for '.' and adding grouping.
       const locale __loc = __io.getloc();
       const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc);
-      _CharT* __ws = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) * 64));
+      _CharT* __ws = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) 
+							   * __len));
+      // Grouping can add (almost) as many separators as the number of
+      // digits, but no more.
+      _CharT* __ws2 = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) 
+			 				    * __len * 2));
       __ctype.widen(__cs, __cs + __len, __ws);
       
-      const numpunct<_CharT>& __np = use_facet<numpunct<_CharT> >(__loc);
       // Replace decimal point.
       const _CharT* __p;
+      const numpunct<_CharT>& __np = use_facet<numpunct<_CharT> >(__loc);
       if (__p = char_traits<_CharT>::find(__ws, __len, __ctype.widen('.')))
 	__ws[__p - __ws] = __np.decimal_point();
+
+#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
+//282. What types does numpunct grouping refer to?
+      // Add grouping, if necessary. 
+      const string __grouping = __np.grouping();
+      ios_base::fmtflags __basefield = __io.flags() & ios_base::basefield;
+      if (__grouping.size())
+	{
+	  _CharT* __p2;
+	  int __declen = __p ? __p - __ws : __len;
+	  __p2 = __add_grouping(__ws2, __np.thousands_sep(), 
+				__grouping.c_str(),
+				__grouping.c_str() + __grouping.size(),
+				__ws, __ws + __declen);
+	  int __newlen = __p2 - __ws2;
+	
+	  // Tack on decimal part.
+	  if (__p)
+	    {
+	      char_traits<_CharT>::copy(__p2, __p, __len - __declen);
+	      __newlen += __len - __declen;
+	    }    
+
+	  // Switch strings, establish correct new length.
+	  __ws = __ws2;
+	  __len = __newlen;
+	}
+#endif
       return _M_insert(__s, __io, __fill, __ws, __len);
     }
 
@@ -778,13 +819,17 @@ namespace std
       // numpunct.decimal_point() values for '.' and adding grouping.
       const locale __loc = __io.getloc();
       const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc);
-      _CharT* __ws = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) * 64));
-      _CharT* __ws2 = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) * 64));
+      _CharT* __ws = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) 
+							   * __len));
+      // Grouping can add (almost) as many separators as the number of
+      // digits, but no more.
+      _CharT* __ws2 = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) 
+							    * __len * 2));
       __ctype.widen(__cs, __cs + __len, __ws);
 
       // Add grouping, if necessary.
       const numpunct<_CharT>& __np = use_facet<numpunct<_CharT> >(__loc);
-      string __grouping = __np.grouping();
+      const string __grouping = __np.grouping();
       ios_base::fmtflags __basefield = __io.flags() & ios_base::basefield;
       bool __dec = __basefield != ios_base::oct 
 	           && __basefield != ios_base::hex;
@@ -810,8 +855,9 @@ namespace std
 	      int __len) const
     {
       // [22.2.2.2.2] Stage 3.
-      _CharT* __ws2 = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) * 64));
       streamsize __w = __io.width();
+      _CharT* __ws2 = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) 
+							    * __w));
       if (__w > static_cast<streamsize>(__len))
 	{
 	  __pad(__io, __fill, __ws2, __ws, __w, __len, true);
