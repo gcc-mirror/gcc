@@ -1,3 +1,7 @@
+2003-01-05  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.md: Disable the movstrsi define_split.
+
 2003-01-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* alloc-pool.c: Don't include "libiberty.h".
