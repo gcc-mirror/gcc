@@ -1,6 +1,6 @@
 2004-07-15  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
- 	PR fortran/15234
+ 	PR fortran/15324
 	* trans-array.c gfc_trans_g77_array,
 	gfc_trans_dummy_array_bias): Don't call gfc_trans_string_init
 	for assumed length characters.
