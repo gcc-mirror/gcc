@@ -1,3 +1,12 @@
+2001-01-17  Tom Tromey  <tromey@redhat.com>
+
+	* gcj.texi: New file.
+	* Make-lang.in ($(srcdir)/java/gcj.info): New target.
+	(java.info): Depend on gcj.info.
+	(java/gcj.dvi): New target.
+	(java.dvi): Depend on gcj.dvi.
+	(java.install-info): Wrote.
+
 2001-01-16  Jeff Sturm  <jeff.sturm@appnet.com>
 
 	* expr.c (java_lang_expand_expr): Use TREE_SYMBOL_REFERENCED after
