@@ -1,3 +1,9 @@
+Thu Sep  5 00:34:33 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* loop.c (scan_loop): Don't mark separate insns out of a libcall
+	for moving.
+	(move_movables): Abort if we see the first insn of a libcall.
+
 2002-10-01  David S. Miller  <davem@redhat.com>
 
 	PR middle-end/7151
