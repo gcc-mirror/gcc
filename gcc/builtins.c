@@ -1582,33 +1582,31 @@ expand_builtin_bzero (exp)
      tree exp;
 {
   tree arglist = TREE_OPERAND (exp, 1);
+  tree dest, size, newarglist;
+  rtx result;
 
   if (arglist == 0
       /* Arg could be non-pointer if user redeclared this fcn wrong.  */
-      || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE
+      || TREE_CODE (TREE_TYPE (dest = TREE_VALUE (arglist))) != POINTER_TYPE
       || TREE_CHAIN (arglist) == 0
-      || (TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist))))
+      || (TREE_CODE (TREE_TYPE (size = TREE_VALUE (TREE_CHAIN (arglist))))
 	  != INTEGER_TYPE))
-    return 0;
-  else
-    {
-      tree newarglist;
-      rtx result;
+    return NULL_RTX;
 
-      /* New argument list transforming bzero(x, y) -> memset(x, 0, y).  */
-      newarglist = build_tree_list (NULL_TREE, TREE_VALUE (arglist));
-      chainon (newarglist, build_tree_list (NULL_TREE, integer_zero_node));
-      chainon (newarglist,
-	       build_tree_list (NULL_TREE, TREE_VALUE (TREE_CHAIN (arglist))));
-      TREE_OPERAND (exp, 1) = newarglist;
+  /* New argument list transforming bzero(ptr x, int y) to
+     memset(ptr x, int 0, size_t y).  */
+  
+  newarglist = build_tree_list (NULL_TREE, convert (sizetype, size));
+  newarglist = tree_cons (NULL_TREE, integer_zero_node, newarglist);
+  newarglist = tree_cons (NULL_TREE, dest, newarglist);
 
-      result = expand_builtin_memset(exp);
+  TREE_OPERAND (exp, 1) = newarglist;
+  result = expand_builtin_memset(exp);
       
-      /* Always restore the original arguments.  */
-      TREE_OPERAND (exp, 1) = arglist;
+  /* Always restore the original arguments.  */
+  TREE_OPERAND (exp, 1) = arglist;
 
-      return result;
-    }
+  return result;
 }
 
 #ifdef HAVE_cmpstrsi
