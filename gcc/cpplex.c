@@ -44,7 +44,7 @@ static const unsigned char *const digraph_spellings[] =
 { U"%:", U"%:%:", U"<:", U":>", U"<%", U"%>" };
 
 #define OP(e, s) { SPELL_OPERATOR, U s           },
-#define TK(e, s) { s,              U STRINGX (e) },
+#define TK(e, s) { s,              U #e },
 static const struct token_spelling token_spellings[N_TTYPES] = { TTYPE_TABLE };
 #undef OP
 #undef TK

@@ -174,8 +174,7 @@ D(sccs,		T_SCCS,		EXTENSION, 0)		   /* 0 SVR4? */
 /* Use the table to generate a series of prototypes, an enum for the
    directive names, and an array of directive handlers.  */
 
-/* Don't invoke CONCAT2 with any whitespace or K&R cc will fail.  */
-#define D(name, t, o, f) static void CONCAT2(do_,name) PARAMS ((cpp_reader *));
+#define D(name, t, o, f) static void do_##name PARAMS ((cpp_reader *));
 DIRECTIVE_TABLE
 #undef D
 
@@ -187,10 +186,9 @@ enum
 };
 #undef D
 
-/* Don't invoke CONCAT2 with any whitespace or K&R cc will fail.  */
 #define D(name, t, origin, flags) \
-{ CONCAT2(do_,name), (const uchar *) STRINGX(name), \
-  sizeof STRINGX(name) - 1, origin, flags },
+{ do_##name, (const uchar *) #name, \
+  sizeof #name - 1, origin, flags },
 static const directive dtable[] =
 {
 DIRECTIVE_TABLE

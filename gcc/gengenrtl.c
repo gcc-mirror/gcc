@@ -36,7 +36,7 @@ struct rtx_definition
   const char *const enumname, *const name, *const format;
 };
 
-#define DEF_RTL_EXPR(ENUM, NAME, FORMAT, CLASS) { STRINGX(ENUM), NAME, FORMAT },
+#define DEF_RTL_EXPR(ENUM, NAME, FORMAT, CLASS) { #ENUM, NAME, FORMAT },
 
 static const struct rtx_definition defs[] =
 {

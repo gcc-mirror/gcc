@@ -491,7 +491,6 @@ extern void abort (void);
 
 /* Get libiberty declarations.  */
 #include "libiberty.h"
-#include "symcat.h"
 
 /* Provide a default for the HOST_BIT_BUCKET.
    This suffices for POSIX-like hosts.  */

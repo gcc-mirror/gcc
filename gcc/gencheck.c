@@ -24,7 +24,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "coretypes.h"
 #include "tm.h"
 
-#define DEFTREECODE(SYM, NAME, TYPE, LEN)   STRINGX(SYM),
+#define DEFTREECODE(SYM, NAME, TYPE, LEN) #SYM,
 
 static const char *const tree_codes[] = {
 #include "tree.def"
