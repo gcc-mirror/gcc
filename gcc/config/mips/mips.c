@@ -6416,6 +6416,7 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 {
   long mask = current_frame_info.mask;
   long fmask = current_frame_info.fmask;
+  long real_mask = mask;
   int regno;
   rtx base_reg_rtx;
   HOST_WIDE_INT base_offset;
@@ -6427,6 +6428,12 @@ save_restore_insns (store_p, large_reg, large_offset, file)
   if (frame_pointer_needed
       && ! BITSET_P (mask, HARD_FRAME_POINTER_REGNUM - GP_REG_FIRST))
     abort ();
+
+  /* Do not restore GP under certain conditions.  */
+  if (! store_p
+      && TARGET_ABICALLS
+      && (mips_abi == ABI_32 || mips_abi == ABI_O64))
+    mask &= ~(1 << (PIC_OFFSET_TABLE_REGNUM - GP_REG_FIRST));
 
   if (mask == 0 && fmask == 0)
     return;
@@ -6597,9 +6604,7 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 		    insn = emit_move_insn (mem_rtx, reg_rtx);
 		    RTX_FRAME_RELATED_P (insn) = 1;
 		  }
-		else if (!TARGET_ABICALLS 
-			 || (mips_abi != ABI_32 && mips_abi != ABI_O64)
-			 || regno != (PIC_OFFSET_TABLE_REGNUM - GP_REG_FIRST))
+		else 
 		  {
 		    emit_move_insn (reg_rtx, mem_rtx);
 		    if (TARGET_MIPS16
@@ -6611,48 +6616,49 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 	      }
 	    else
 	      {
-		if (store_p || !TARGET_ABICALLS 
-		    || (mips_abi != ABI_32 && mips_abi != ABI_O64)
-		    || regno != (PIC_OFFSET_TABLE_REGNUM - GP_REG_FIRST))
+		int r = regno;
+
+		/* The mips16 does not have an instruction to
+                   load $31, so we load $7 instead, and work
+                   things out in the caller.  */
+		if (TARGET_MIPS16 && ! store_p && r == GP_REG_FIRST + 31)
+		  r = GP_REG_FIRST + 7;
+
+		/* The mips16 sometimes needs to save $18.  */
+		if (TARGET_MIPS16
+		    && regno != GP_REG_FIRST + 31
+		    && ! M16_REG_P (regno))
 		  {
-		    int r = regno;
-
-		    /* The mips16 does not have an instruction to
-                       load $31, so we load $7 instead, and work
-                       things out in the caller.  */
-		    if (TARGET_MIPS16 && ! store_p && r == GP_REG_FIRST + 31)
-		      r = GP_REG_FIRST + 7;
-		      /* The mips16 sometimes needs to save $18.  */
-		    if (TARGET_MIPS16
-			&& regno != GP_REG_FIRST + 31
-			&& ! M16_REG_P (regno))
+		    if (! store_p)
+		      r = GP_REG_FIRST + 6;
+		    else
 		      {
-			if (! store_p)
-			  r = GP_REG_FIRST + 6;
-			else
-			  {
-			    r = GP_REG_FIRST + 3;
-			    fprintf (file, "\tmove\t%s,%s\n",
-				     reg_names[r], reg_names[regno]);
-			  }
+			r = GP_REG_FIRST + 3;
+			fprintf (file, "\tmove\t%s,%s\n",
+				 reg_names[r], reg_names[regno]);
 		      }
-		    fprintf (file, "\t%s\t%s,",
-			     (TARGET_64BIT
-			      ? (store_p) ? "sd" : "ld"
-			      : (store_p) ? "sw" : "lw"),
-			     reg_names[r]);
-		    fprintf (file, HOST_WIDE_INT_PRINT_DEC, 
-			     gp_offset - base_offset);
-		    fprintf (file, "(%s)\n", reg_names[REGNO(base_reg_rtx)]);
-		    if (! store_p
-			&& TARGET_MIPS16
-			&& regno != GP_REG_FIRST + 31
-			&& ! M16_REG_P (regno))
-		      fprintf (file, "\tmove\t%s,%s\n",
-			       reg_names[regno], reg_names[r]);
 		  }
-
+		fprintf (file, "\t%s\t%s,",
+			 (TARGET_64BIT
+			  ? (store_p) ? "sd" : "ld"
+			  : (store_p) ? "sw" : "lw"),
+			 reg_names[r]);
+		fprintf (file, HOST_WIDE_INT_PRINT_DEC, 
+			 gp_offset - base_offset);
+		fprintf (file, "(%s)\n", reg_names[REGNO(base_reg_rtx)]);
+		if (! store_p
+		    && TARGET_MIPS16
+		    && regno != GP_REG_FIRST + 31
+		    && ! M16_REG_P (regno))
+		  fprintf (file, "\tmove\t%s,%s\n",
+			   reg_names[regno], reg_names[r]);
 	      }
+	    gp_offset -= GET_MODE_SIZE (gpr_mode);
+	  }
+	/* If the restore is being supressed, still take into account
+	   the offset at which it is stored.  */
+	else if (BITSET_P (real_mask, regno - GP_REG_FIRST))
+	  {
 	    gp_offset -= GET_MODE_SIZE (gpr_mode);
 	  }
     }
