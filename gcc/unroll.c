@@ -2179,6 +2179,7 @@ find_splittable_regs (unroll_type, loop_start, loop_end, end_insert_before,
      int unroll_number;
 {
   struct iv_class *bl;
+  struct induction *v;
   rtx increment, tem;
   rtx biv_final_value;
   int biv_splittable;
@@ -2215,6 +2216,15 @@ find_splittable_regs (unroll_type, loop_start, loop_end, end_insert_before,
 	      || reg_mentioned_p (bl->biv->dest_reg, SET_SRC (bl->init_set)))
 	  && ! (biv_final_value = final_biv_value (bl, loop_start, loop_end)))
 	biv_splittable = 0;
+
+      /* If any of the insns setting the BIV don't do so with a simple
+	 PLUS, we don't know how to split it.  */
+      for (v = bl->biv; biv_splittable && v; v = v->next_iv)
+	if ((tem = single_set (v->insn)) == 0
+	    || GET_CODE (SET_DEST (tem)) != REG
+	    || REGNO (SET_DEST (tem)) != bl->regno
+	    || GET_CODE (SET_SRC (tem)) != PLUS)
+	  biv_splittable = 0;
 
       /* If final value is non-zero, then must emit an instruction which sets
 	 the value of the biv to the proper value.  This is done after
@@ -2415,11 +2425,31 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 	 giv's initial value.  Otherwise, save the constant zero for it.  */
 
       if (unroll_type == UNROLL_COMPLETELY)
-	/* It is not safe to use bl->initial_value here, because it may not
-	   be invariant.  It is safe to use the initial value stored in
-	   the splittable_regs array.  */
-	value = fold_rtx_mult_add (v->mult_val, splittable_regs[bl->regno],
-				   v->add_val, v->mode);
+	{
+	  /* It is not safe to use bl->initial_value here, because it may not
+	     be invariant.  It is safe to use the initial value stored in
+	     the splittable_regs array if it is set.  In rare cases, it won't
+	     be set, so then we do exactly the same thing as
+	     find_splittable_regs does to get a safe value.  */
+	  rtx biv_initial_value;
+
+	  if (splittable_regs[bl->regno])
+	    biv_initial_value = splittable_regs[bl->regno];
+	  else if (GET_CODE (bl->initial_value) != REG
+		   || (REGNO (bl->initial_value) != bl->regno
+		       && REGNO (bl->initial_value) >= FIRST_PSEUDO_REGISTER))
+	    biv_initial_value = bl->initial_value;
+	  else
+	    {
+	      rtx tem = gen_reg_rtx (bl->biv->mode);
+
+	      emit_insn_before (gen_move_insn (tem, bl->biv->src_reg),
+				loop_start);
+	      biv_initial_value = tem;
+	    }
+	  value = fold_rtx_mult_add (v->mult_val, biv_initial_value,
+				     v->add_val, v->mode);
+	}
       else
 	value = const0_rtx;
 
@@ -2804,7 +2834,7 @@ final_giv_value (v, loop_start, loop_end)
      rtx loop_start, loop_end;
 {
   struct iv_class *bl;
-  rtx reg, insn, pattern;
+  rtx insn;
   rtx increment, tem;
   enum rtx_code code;
   rtx insert_before, seq;
@@ -2868,31 +2898,19 @@ final_giv_value (v, loop_start, loop_end)
 	  for (insn = NEXT_INSN (v->insn); insn != loop_end;
 	       insn = NEXT_INSN (insn))
 	    {
-	      if (GET_CODE (insn) == INSN
-		  && GET_CODE (PATTERN (insn)) == SET
-		  && SET_DEST (PATTERN (insn)) == v->src_reg)
-		{
-		  pattern = PATTERN (insn);
-		  if (GET_CODE (SET_SRC (pattern)) != PLUS)
-		    {
-		      /* Sometimes a biv is computed in a temp reg,
-			 and then copied into the biv reg.  */
-		      pattern = PATTERN (PREV_INSN (insn));
-		      if (GET_CODE (SET_SRC (pattern)) != PLUS)
-			abort ();
-		    }
-		  if (GET_CODE (XEXP (SET_SRC (pattern), 0)) != REG
-		      || REGNO (XEXP (SET_SRC (pattern), 0)) != bl->regno)
-		    abort ();
-		  
-		  start_sequence ();
-		  tem = expand_binop (GET_MODE (tem), sub_optab, tem,
-				      XEXP (SET_SRC (pattern), 1), NULL_RTX, 0,
-				      OPTAB_LIB_WIDEN);
-		  seq = gen_sequence ();
-		  end_sequence ();
-		  emit_insn_before (seq, insert_before);
-		}
+	      struct induction *biv;
+
+	      for (biv = bl->biv; biv; biv = biv->next_iv)
+		if (biv->insn == insn)
+		  {
+		    start_sequence ();
+		    tem = expand_binop (GET_MODE (tem), sub_optab, tem,
+					biv->add_val, NULL_RTX, 0,
+					OPTAB_LIB_WIDEN);
+		    seq = gen_sequence ();
+		    end_sequence ();
+		    emit_insn_before (seq, insert_before);
+		  }
 	    }
 	  
 	  /* Now calculate the giv's final value.  */
