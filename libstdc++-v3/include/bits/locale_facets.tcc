@@ -1338,15 +1338,15 @@ namespace std
 	    // Strip leading zeros.
 	    if (__res.size() > 1)
 	      {
-		size_type __first = __res.find_first_not_of(__lit[_S_zero]);
+		const size_type __first = __res.find_first_not_of('0');
 		const bool __only_zeros = __first == string_type::npos;
 		if (__first)
 		  __res.erase(0, __only_zeros ? __res.size() - 1 : __first);
 	      }
 
 	    // 22.2.6.1.2, p4
-	    if (__negative && __res[0] != __lit[_S_zero])
-	      __res.insert(__res.begin(), __lit[_S_minus]);
+	    if (__negative && __res[0] != '0')
+	      __res.insert(__res.begin(), '-');
 	    
 	    // Test for grouping fidelity.
 	    if (__grouping_tmp.size())
