@@ -1,4 +1,9 @@
 2001-05-22  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+	
+	* doc/install.texi (Specific): Remove a bogus and duplicate part
+	copied from the end of the document.
+
+2001-05-22  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* install.texi: Remove obsolete information on SunOS as well as
 	i386-sun-sunos4, i860-intel-osf1, and powerpcle-*-solaris2*.
