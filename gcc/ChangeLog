@@ -1,3 +1,8 @@
+2004-07-16  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-ssa-pre.c (init_pre): Connect infinite loops to exit.
+	(fini_pre): Remove fake edges.
+
 2004-07-15  Richard Henderson  <rth@redhat.com>
 
 	* tree-ssa-operands.c (get_expr_operands): Use a switch.  Split out...

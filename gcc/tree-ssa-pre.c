@@ -1897,6 +1897,7 @@ init_pre (void)
   size_t tsize;
   basic_block bb;
 
+  connect_infinite_loops_to_exit ();
   vn_init ();
   memset (&pre_stats, 0, sizeof (pre_stats));
   FOR_ALL_BB (bb)
@@ -1942,7 +1943,8 @@ fini_pre (void)
   free_alloc_pool (reference_node_pool);
   free_alloc_pool (unary_node_pool);
   htab_delete (phi_translate_table);
-  
+  remove_fake_edges ();
+
   FOR_ALL_BB (bb)
     {
       free (bb->aux);
