@@ -736,7 +736,7 @@ main ()
   (ISALNUM (ch) || (ch) == '_' || (ch) == '.' || (ch) == '$')
 
 
-/* Redefinition of of storage classes as an enumeration for better
+/* Redefinition of storage classes as an enumeration for better
    debugging.  */
 
 typedef enum sc {

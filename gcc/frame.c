@@ -547,7 +547,7 @@ extract_cie_info (fde *f, struct cie_info *c)
   return p;
 }
 
-/* Decode one instruction's worth of of DWARF 2 call frame information.
+/* Decode one instruction's worth of DWARF 2 call frame information.
    Used by __frame_state_for.  Takes pointers P to the instruction to
    decode, STATE to the current register unwind information, INFO to the
    current CIE information, and PC to the current PC value.  Returns a

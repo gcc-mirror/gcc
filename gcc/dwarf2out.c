@@ -4700,7 +4700,7 @@ size_of_line_prolog ()
   size += DWARF_LINE_OPCODE_BASE - 1;
 
   /* Include directory table is empty (at present).  Count only the
-     the null byte used to terminate the table.  */
+     null byte used to terminate the table.  */
   size += 1;
 
   for (ft_index = 1; ft_index < file_table_in_use; ++ft_index)
@@ -8920,7 +8920,7 @@ gen_type_die (type, context_die)
   if (type == NULL_TREE || type == error_mark_node)
     return;
 
-  /* We are going to output a DIE to represent the unqualified version of of
+  /* We are going to output a DIE to represent the unqualified version of
      this type (i.e. without any const or volatile qualifiers) so get the
      main variant (i.e. the unqualified version) of this type now.  */
   type = type_main_variant (type);
@@ -9065,7 +9065,7 @@ gen_tagged_type_instantiation_die (type, context_die)
   if (type == NULL_TREE || type == error_mark_node)
     return;
 
-  /* We are going to output a DIE to represent the unqualified version of of
+  /* We are going to output a DIE to represent the unqualified version of
      this type (i.e. without any const or volatile qualifiers) so make sure
      that we have the main variant (i.e. the unqualified version) of this
      type now.  */
@@ -9267,7 +9267,7 @@ gen_decl_die (decl, context_die)
 
   /* If this ..._DECL node is marked to be ignored, then ignore it. But don't 
      ignore a function definition, since that would screw up our count of
-     blocks, and that it turn will completely screw up the the labels we will 
+     blocks, and that in turn will completely screw up the labels we will 
      reference in subsequent DW_AT_low_pc and DW_AT_high_pc attributes (for
      subsequent blocks).  */
   if (DECL_IGNORED_P (decl) && TREE_CODE (decl) != FUNCTION_DECL)
@@ -9399,7 +9399,7 @@ dwarf2out_decl (decl)
   /* If this ..._DECL node is marked to be ignored, then ignore it.  We gotta 
      hope that the node in question doesn't represent a function definition.
      If it does, then totally ignoring it is bound to screw up our count of
-     blocks, and that it turn will completely screw up the the labels we will 
+     blocks, and that in turn will completely screw up the labels we will 
      reference in subsequent DW_AT_low_pc and DW_AT_high_pc attributes (for
      subsequent blocks).  (It's too bad that BLOCK nodes don't carry their
      own sequence numbers with them!) */

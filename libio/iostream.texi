@@ -1595,7 +1595,7 @@ convenient, but it does cost some extra overhead.
 
 If you set things up to use the implementation of @code{stdio} provided
 with this library, then @code{cin}, @code{cout}, and @code{cerr} will be
-set up to to use @code{stdiobuf} objects, since you get their benefits
+set up to use @code{stdiobuf} objects, since you get their benefits
 for free.  @xref{Stdio,,C Input and Output}.
 
 @ignore
@@ -1624,7 +1624,7 @@ If @var{mode} is @samp{ios::in}, standard output from the program is sent
 to a pipe; you can read from the pipe by reading from the
 @code{procbuf}.  (This is similar to @w{@samp{popen(@var{command}, "r")}}.)
 
-If @var{mode} is @samp{ios::out}, output written written to the
+If @var{mode} is @samp{ios::out}, output written to the
 @code{procbuf} is written to a pipe; the program is set up to read its
 standard input from (the other end of) the pipe.  (This is similar to
 @w{@samp{popen(@var{command}, "w")}}.)

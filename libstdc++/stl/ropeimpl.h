@@ -838,7 +838,7 @@ inline bool __rope_insert_char_consumer<char>::operator()
 }
 
 #if !defined(_MSC_VER) && !defined(__BORLANDC__)
-// I couldn't get this to work work with the VC++ version of basic_ostream.
+// I couldn't get this to work with the VC++ version of basic_ostream.
 inline bool __rope_insert_char_consumer<wchar_t>::operator()
 					(const wchar_t * leaf, size_t n)
 {

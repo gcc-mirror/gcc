@@ -830,7 +830,7 @@ get_binfo (VF_BASETYPE_VALUE (vfield), t, 0)
 @end example
 
 @noindent
-will return the binfo for the the given vfield.
+will return the binfo for the given vfield.
 
 May or may not be set at @code{modify_vtable_entries} time.  Set at
 @code{finish_base_struct} time.
@@ -842,7 +842,7 @@ What things can this be used on:
 
 @item VF_DERIVED_VALUE
 Identifies the type of the most derived class of the vfield, excluding
-the the class this vfield is for.
+the class this vfield is for.
 
 Set at @code{finish_base_struct} time.
 
@@ -1476,7 +1476,7 @@ required to call them in pairs.  When marking the end of a region, an
 argument can be passed to indicate the handler for the marked region.
 This can be passed in many ways, currently a tree is used.  Another
 possibility would be insns for the handler, or a label that denotes a
-handler.  I have a feeling insns might be the the best way to pass it.
+handler.  I have a feeling insns might be the best way to pass it.
 Semantics are, if an exception is thrown inside the region, control is
 transferred unconditionally to the handler.  If control passes through
 the handler, then the backend is to rethrow the exception, in the

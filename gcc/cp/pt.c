@@ -1098,7 +1098,7 @@ check_explicit_specialization (declarator, decl, template_count, flags)
       
       /* Figure out what exactly is being specialized at this point.
 	 Note that for an explicit instantiation, even one for a
-	 member function, we cannot tell apriori whether the the
+	 member function, we cannot tell apriori whether the
 	 instantiation is for a member template, or just a member
 	 function of a template class.  In particular, even in if the
 	 instantiation is for a member template, the template

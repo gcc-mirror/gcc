@@ -693,7 +693,7 @@ store_init_value (decl, init)
 		  run time inited when doing pic.  (mrs) */
 	       /* Since ctors and dtors are the only things that can
 		  reference vtables, and they are always written down
-		  the the vtable definition, we can leave the
+		  the vtable definition, we can leave the
 		  vtables in initialized data space.
 		  However, other initialized data cannot be initialized
 		  this way.  Instead a global file-level initializer
@@ -1206,7 +1206,7 @@ process_init_constructor (type, init, elts)
    then the expression
 
    x.A::ii refers to the ii member of the L part of
-   of A part of the C object named by X.  In this case,
+   the A part of the C object named by X.  In this case,
    DATUM would be x, and BASETYPE would be A.  */
 
 tree

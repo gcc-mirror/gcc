@@ -18,7 +18,7 @@ Runtime API functions
 The runtime is modeled after the NeXT Objective C runtime.  That is,
 most functions have semantics as it is known from the NeXT.  The
 names, however, have changed.  All runtime API functions have names
-of lowercase letters and and underscores as opposed to the
+of lowercase letters and underscores as opposed to the
 `traditional' mixed case names.  
 	The runtime api functions are not documented as of now.
 Someone offered to write it, and did it, but we were not allowed to

@@ -82,7 +82,7 @@ SYNOPSIS
 DESCRIPTION
 
 	Duplicate an argument vector.  Simply scans through the
-	vector, duplicating each argument argument until the
+	vector, duplicating each argument until the
 	terminating NULL is found.
 
 RETURNS

@@ -2685,7 +2685,7 @@ override_one_vtable (binfo, old, t)
 	    vfn = build1 (ADDR_EXPR, vfunc_ptr_type_node, fndecl);
 	    TREE_CONSTANT (vfn) = 1;
 	    
-	    /* We can use integer_zero_node, as we will will core dump
+	    /* We can use integer_zero_node, as we will core dump
 	       if this is used anyway.  */
 	    TREE_VALUE (virtuals) = build_vtable_entry (integer_zero_node, vfn);
 	  }

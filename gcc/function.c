@@ -3113,7 +3113,7 @@ instantiate_virtual_regs_1 (loc, object, extra_insns)
 
     case SET:
       /* We are allowed to set the virtual registers.  This means that
-	 that the actual register should receive the source minus the
+	 the actual register should receive the source minus the
 	 appropriate offset.  This is used, for example, in the handling
 	 of non-local gotos.  */
       if (SET_DEST (x) == virtual_incoming_args_rtx)

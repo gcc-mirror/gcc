@@ -2375,7 +2375,7 @@ Thu Nov  2 03:58:17 1995  Craig Burley  (burley@gnu.ai.mit.edu)
 	wrap every new eval of lhs in save_expr() so it is clear to
 	back end that MULT_EXPR(lhs,lhs) has identical operands,
 	otherwise for an rhs like 32767 it generates around 65K pseudo
-	registers, which which stupid_life_analysis cannot cope
+	registers, with which stupid_life_analysis cannot cope
 	(due to reg_renumber in regs.h being `short *' instead of
 	`int *').
 

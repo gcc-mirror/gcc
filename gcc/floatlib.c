@@ -649,7 +649,7 @@ __muldf3 (double a1, double a2)
 
 
 /*
- * Compare the the mantissas of two doubles.
+ * Compare the mantissas of two doubles.
  * Each mantissa is in two longs.
  * 
  *   return      1   if x1's mantissa is greater than x2's

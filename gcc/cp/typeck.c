@@ -729,7 +729,7 @@ comptypes (type1, type2, strict)
 
   /* Allow for two different type nodes which have essentially the same
      definition.  Note that we already checked for equality of the type
-     type qualifiers (just above).  */
+     qualifiers (just above).  */
 
   if (TYPE_MAIN_VARIANT (t1) == TYPE_MAIN_VARIANT (t2))
     return 1;

@@ -308,7 +308,7 @@ overflow:
 	goto out;
 }
 
-/* Control profiling
+/* Control profiling;
   	profiling is what mcount checks to see if
   	all the data structures are ready.  */
 

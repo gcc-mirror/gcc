@@ -182,13 +182,13 @@ FUNC_START(__eabi)
 	lwz	4,.Lexcepte(11)			/* exception table pointers end */
 	bl	FUNC_NAME(__eabi_convert)	/* convert exceptions */
 
-/* Fixup the the addresses in the GOT below _GLOBAL_OFFSET_TABLE_-4 */
+/* Fixup the addresses in the GOT below _GLOBAL_OFFSET_TABLE_-4 */
 
 	lwz	3,.Lgots(11)			/* GOT table pointers start */
 	lwz	4,.Lgotm1(11)			/* GOT table pointers below _GLOBAL_OFFSET_TABLE-4 */
 	bl	FUNC_NAME(__eabi_convert)	/* convert lower GOT */
 
-/* Fixup the the addresses in the GOT above _GLOBAL_OFFSET_TABLE_+12 */
+/* Fixup the addresses in the GOT above _GLOBAL_OFFSET_TABLE_+12 */
 
 	lwz	3,.Lgotm2(11)			/* GOT table pointers above _GLOBAL_OFFSET_TABLE+12 */
 	lwz	4,.Lgote(11)			/* GOT table pointers end */

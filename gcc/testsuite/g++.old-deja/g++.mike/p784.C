@@ -2760,7 +2760,7 @@ public:
     //
     // Error messages
     //     - an unacceptable, but expected and recoverable condition
-    //       was was detected (but the test fails)
+    //       was detected (but the test fails)
     //     - errors are for ``the expected environment was not found''
     //       rather than for ``file couldn't be opened''
     //     - these messages cannot be shut off
@@ -3088,7 +3088,7 @@ public:
     //
     // Error messages
     //     - an unacceptable, but expected and recoverable
-    //       condition was was detected
+    //       condition was detected
     //     - errors are for ``the expected environment was not found''
     //       rather than for ``file couldn't be opened''
     //     - these messages cannot be shut off

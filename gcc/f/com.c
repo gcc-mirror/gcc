@@ -15217,7 +15217,7 @@ pushdecl (x)
 	 typedef struct S MY_TYPE; MY_TYPE object;
 
 	 Later parts of the compiler might only know that `object' was of type
-	 `struct S' if if were not for code just below.  With this code
+	 `struct S' if it were not for code just below.  With this code
 	 however, later parts of the compiler see something like:
 
 	 struct S' == struct S typedef struct S' MY_TYPE; struct S' object;

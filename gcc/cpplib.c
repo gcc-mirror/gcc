@@ -1278,7 +1278,7 @@ collect_expansion (pfile, buf, limit, nargs, arglist)
       }
     } else {
       /* In -traditional mode, recognize arguments inside strings and
-	 and character constants, and ignore special properties of #.
+	 character constants, and ignore special properties of #.
 	 Arguments inside strings are considered "stringified", but no
 	 extra quote marks are supplied.  */
       switch (c) {
@@ -2711,7 +2711,7 @@ macroexpand (pfile, hp)
 	  if (ap->stringify)
 	    {
 	      register struct argdata *arg = &args[ap->argno];
-	      /* Stringify it it hasn't already been */
+	      /* Stringify if it hasn't already been */
 	      if (arg->stringified_length < 0)
 		{
 		  int arglen = arg->raw_length;
@@ -3564,7 +3564,7 @@ assertion_install (pfile, name, len, hash)
   return hp;
 }
 /*
- * find the most recent hash node for name name (ending with first
+ * find the most recent hash node for name "name" (ending with first
  * non-identifier char) installed by install
  *
  * If LEN is >= 0, it is the length of the name.

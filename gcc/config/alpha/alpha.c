@@ -2834,7 +2834,7 @@ alpha_sa_size ()
   is_stack_procedure = sa_size != 0 || alpha_ra_ever_killed ();
 
   /* Decide whether to refer to objects off our PV via FP or PV.
-     If we need need FP for something else or if we receive a nonlocal
+     If we need FP for something else or if we receive a nonlocal
      goto (which expects PV to contain the value), we must use PV.
      Otherwise, start by assuming we can use FP.  */
   base_regno = (frame_pointer_needed || current_function_has_nonlocal_label
@@ -3642,7 +3642,7 @@ output_epilog (file, size)
 	  reg_offset += 8;
 	}
 
-      /* Now restore any other used integer registers that that we saved,
+      /* Now restore any other used integer registers that we saved,
 	 except for FP if it is being used as FP, since it must be
 	 restored last.  */
 

@@ -118,7 +118,7 @@ asm (TEXT_SECTION_ASM_OP);
      (if any). If it was a destructor, then its parse tree is stored
      in the finalization variable in the eh_entry structure.  Otherwise
      the finalization variable is set to NULL to reflect the fact that
-     is the the end of a try block.  Next, this modified eh_entry node
+     it is the end of a try block.  Next, this modified eh_entry node
      is enqueued in the finalizations queue by calling
      enqueue_eh_entry (&queue,entry).
 

@@ -13,7 +13,7 @@ dnl PARTICULAR PURPOSE.
 # Macro to add for using GNU gettext.
 # Ulrich Drepper <drepper@cygnus.com>, 1995.
 #
-# This file file be copied and used freely without restrictions.  It can
+# This file can be copied and used freely without restrictions.  It can
 # be used in projects which are not available under the GNU Public License
 # but which still want to provide support for the GNU gettext functionality.
 # Please note that the actual code is *not* freely available.
@@ -322,7 +322,7 @@ __argz_count __argz_stringify __argz_next])
 # Search path for a program which passes the given test.
 # Ulrich Drepper <drepper@cygnus.com>, 1996.
 #
-# This file file be copied and used freely without restrictions.  It can
+# This file can be copied and used freely without restrictions.  It can
 # be used in projects which are not available under the GNU Public License
 # but which still want to provide support for the GNU gettext functionality.
 # Please note that the actual code is *not* freely available.
@@ -370,7 +370,7 @@ AC_SUBST($1)dnl
 # Check whether LC_MESSAGES is available in <locale.h>.
 # Ulrich Drepper <drepper@cygnus.com>, 1995.
 #
-# This file file be copied and used freely without restrictions.  It can
+# This file can be copied and used freely without restrictions.  It can
 # be used in projects which are not available under the GNU Public License
 # but which still want to provide support for the GNU gettext functionality.
 # Please note that the actual code is *not* freely available.

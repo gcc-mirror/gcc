@@ -2910,8 +2910,8 @@ end_of_sentence_p ()
 }
 
 
-/* Remove upto COUNT characters of whitespace from the
-   the current output line.  If COUNT is less than zero,
+/* Remove up to COUNT characters of whitespace from the
+   current output line.  If COUNT is less than zero,
    then remove until none left. */
 void
 kill_self_indent (count)
@@ -3211,7 +3211,7 @@ indent (amount)
 }
 
 /* Search forward for STRING in input_text.
-   FROM says where where to start. */
+   FROM says where to start. */
 int
 search_forward (string, from)
      char *string;
@@ -6432,7 +6432,7 @@ handle_variable_internal (action, name)
         case IFSET:
         case IFCLEAR:
           /* If IFSET and NAME is not set, or if IFCLEAR and NAME is set,
-             read lines from the the file until we reach a matching
+             read lines from the file until we reach a matching
              "@end CONDITION".  This means that we only take note of
              "@ifset/clear" and "@end" commands. */
           {

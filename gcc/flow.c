@@ -2138,7 +2138,7 @@ mark_set_1 (needed, dead, x, insn, significant)
       if (significant)
 	SET_REGNO_REG_SET (significant, regno);
 
-      /* Mark it as as dead before this insn.  */
+      /* Mark it as dead before this insn.  */
       SET_REGNO_REG_SET (dead, regno);
 
       /* A hard reg in a wide mode may really be multiple registers.

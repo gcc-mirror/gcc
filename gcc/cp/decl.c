@@ -374,7 +374,7 @@ struct named_label_list
 
 /* A list (chain of TREE_LIST nodes) of named label uses.
    The TREE_PURPOSE field is the list of variables defined
-   the the label's scope defined at the point of use.
+   in the label's scope defined at the point of use.
    The TREE_VALUE field is the LABEL_DECL used.
    The TREE_TYPE field holds `current_binding_level' at the
    point of the label's use.
@@ -1496,7 +1496,7 @@ poplevel_class (force)
   if (class_binding_level->parm_flag != 2)
     class_binding_level = (struct binding_level *)0;
 
-  /* Now, pop out of the the binding level which we created up in the
+  /* Now, pop out of the binding level which we created up in the
      `pushlevel_class' routine.  */
 #if defined(DEBUG_CP_BINDING_LEVELS)
   is_class_level = 1;
@@ -6240,7 +6240,7 @@ start_decl_1 (decl)
 }
 
 /* Handle initialization of references.
-   These three arguments from from `cp_finish_decl', and have the
+   These three arguments are from `cp_finish_decl', and have the
    same meaning here that they do there.
 
    Quotes on semantics can be found in ARM 8.4.3.  */
@@ -7003,7 +7003,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 		 destructor, so we don't complain about the 'resource
 		 allocation is initialization' idiom.  */
 	      /* Now set attribute((unused)) on types so decls of
-		 of that type will be marked used. (see TREE_USED, above.) 
+		 that type will be marked used. (see TREE_USED, above.) 
 		 This avoids the warning problems this particular code
 		 tried to work around. */
 

@@ -1897,7 +1897,7 @@ commands that are defined in texinfo.tex for printed output.
                   (cons (- end-of-template start-of-template)
                         texinfo-multitable-width-list))
             ;; Remove carriage return from within a template, if any.
-            ;; This helps those those who want to use more than
+            ;; This helps those who want to use more than
             ;; one line's worth of words in @multitable line.
             (narrow-to-region start-of-template end-of-template)
             (goto-char (point-min))
@@ -3644,11 +3644,11 @@ Default is to leave paragraph indentation as is."
 ;;; @set, @clear, @ifset, @ifclear
 
 ;; If a flag is set with @set FLAG, then text between @ifset and @end
-;; ifset is formatted normally, but if the flag is is cleared with
+;; ifset is formatted normally, but if the flag is cleared with
 ;; @clear FLAG, then the text is not formatted; it is ignored.
 
 ;; If a flag is cleared with @clear FLAG, then text between @ifclear
-;; and @end ifclear is formatted normally, but if the flag is is set with
+;; and @end ifclear is formatted normally, but if the flag is set with
 ;; @set FLAG, then the text is not formatted; it is ignored.  @ifclear
 ;; is the opposite of @ifset.
 

@@ -91,7 +91,7 @@ rm -f move?I*[xn].s move?I*[xn].asm
 #	least N bytes will be copied.  r2 is the destination pointer
 #	offset by 4, r3 is the source pointer offset by 4, r6 is the
 #	loop count.  Thus, the total bytes moved is 64 * r6 + N.  The
-#	first value is is preloaded into r4 or r5 (r4 if N/4 is odd;
+#	first value is preloaded into r4 or r5 (r4 if N/4 is odd;
 #	r5 if N/4 is even).  Upon returning, r2 and r3 have been
 #	updated and may be used for the remainder bytes to move.
 #

@@ -732,7 +732,7 @@ to declare complex data types.  See the manual for details.
 
 * GCC now supports `long double' meaningfully on the Sparc (128-bit
 floating point) and on the 386 (96-bit floating point).  The Sparc
-support is enabled on on Solaris 2.x because earlier system versions
+support is enabled on Solaris 2.x because earlier system versions
 (SunOS 4) have bugs in the emulation.
 
 * All targets now have assertions for cpu, machine and system.  So you

@@ -4580,7 +4580,7 @@ registers and memory is more expensive than between two registers, you
 should define this macro to express the relative cost.
 
 If you do not define this macro, GNU CC uses a default cost of 4 plus
-the cost of copying copying via a secondary reload register, if one is
+the cost of copying via a secondary reload register, if one is
 needed.  If your machine requires a secondary reload register to copy
 between memory and a register of @var{class} but the reload mechanism is
 more complex than copying via an intermediate, define this macro to

@@ -11,7 +11,7 @@ For general information about the DWARF debugging information language,
 you should obtain the DWARF version 1 specification document (and perhaps
 also the DWARF version 2 draft specification document) developed by the
 UNIX International Programming Languages Special Interest Group.  A copy
-of the the DWARF version 1 specification (in PostScript form) may be
+of the DWARF version 1 specification (in PostScript form) may be
 obtained either from me <rfg@netcom.com> or from the main Data General
 FTP server.  (See below.)  The file you are looking at now only describes
 known deviations from the DWARF version 1 specification, together with
@@ -117,7 +117,7 @@ more of the formal parameter values, they may not have been "homed" yet,
 so you may get inaccurate answers (or perhaps even addressing errors).
 
 Some people may consider this simply a non-feature, but I consider it a
-bug, and I hope to provide some some GNU-specific attributes (on function
+bug, and I hope to provide some GNU-specific attributes (on function
 DIEs) which will specify the address of the end of the prologue and the
 address of the beginning of the epilogue in a future release.
 
@@ -159,7 +159,7 @@ is required by the current DWARF draft specification.
 Specifically, the current DWARF draft specification seems to require that
 the type of an non-unsigned integral bit-field member of a struct or union
 type be represented as either a "signed" type or as a "plain" type,
-depending upon the the exact set of keywords that were used in the
+depending upon the exact set of keywords that were used in the
 type specification for the given bit-field member.  It was felt (by the
 UI/PLSIG) that this distinction between "plain" and "signed" integral types
 could have some significance (in the case of bit-fields) because ANSI C

@@ -6,7 +6,7 @@
 // Subject:  Re: unexpected difference between gcc and g++ (both 2.3.3)
 // Message-ID: <1oaacnINNt20@gap.caltech.edu>
 
-/* Notice that that this case parses fine */
+/* Notice that this case parses fine */
 int (* volatile y)[10];
 
 void foo2() {

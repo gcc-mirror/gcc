@@ -1817,7 +1817,7 @@ do {									\
    missing exception handling info.  If we emit a gcc_compiled. label into
    text, and the file has no code, then the DEC assembler gives us a zero
    sized text section with no associated exception handling info.  The
-   DEC linker sees this text section, and gives a warning saying saying that
+   DEC linker sees this text section, and gives a warning saying that
    the exception handling info is missing.  */
 #define ASM_IDENTIFY_GCC
 #define ASM_IDENTIFY_LANGUAGE

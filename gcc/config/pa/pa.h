@@ -1392,7 +1392,7 @@ extern struct rtx_def *hppa_builtin_saveregs ();
 /* Now macros that check whether X is a register and also,
    strictly, whether it is in a specified class.
 
-   These macros are specific to the the HP-PA, and may be used only
+   These macros are specific to the HP-PA, and may be used only
    in code for printing assembler insns and in conditions for
    define_optimization.  */
 

@@ -1993,7 +1993,7 @@ find_barrier (num_mova, mova, from)
 	    num_mova--;
 	  if (barrier_align (next_real_insn (from)) == CACHE_LOG)
 	    {
-	      /* We have just passed the barrier in front front of the
+	      /* We have just passed the barrier in front of the
 		 ADDR_DIFF_VEC, which is stored in found_barrier.  Since
 		 the ADDR_DIFF_VEC is accessed as data, just like our pool
 		 constants, this is a good opportunity to accommodate what
@@ -3268,7 +3268,7 @@ final_prescan_insn (insn, opvec, noperands)
 }
 
 /* Dump out any constants accumulated in the final pass.  These will
-   will only be labels.  */
+   only be labels.  */
 
 char *
 output_jump_label_table ()

@@ -1445,7 +1445,7 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 
 /* Go to LABEL if ADDR (a legitimate address expression)
    has an effect that depends on the machine mode it is used for.
-   On the the m88000 this is never true.  */
+   On the m88000 this is never true.  */
 
 #define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR,LABEL)
 

@@ -94,7 +94,7 @@ Source files for standalone C programs (./lib, ./makeinfo, ./info):
 
 Installation files:
 
-    configure                   This file creates creates a Makefile 
+    configure                   This file creates a Makefile 
                                 which in turn creates an `info' or
                                 `makeinfo' executable, or a C sources
                                 distribution.

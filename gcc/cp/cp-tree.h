@@ -319,7 +319,7 @@ extern int flag_signed_bitfields;
 
 extern int write_virtuals;
 
-/* True for more efficient but incompatible (not not fully tested)
+/* True for more efficient but incompatible (not fully tested)
    vtable implementation (using thunks).
    0 is old behavior; 1 is new behavior.  */
 extern int flag_vtable_thunks;
@@ -1320,7 +1320,7 @@ extern int flag_new_for_scope;
    pointer to member function.  TYPE_PTRMEMFUNC_P _must_ be true,
    before using this macro.  */
 #define TYPE_PTRMEMFUNC_FN_TYPE(NODE) (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (TREE_CHAIN (TREE_CHAIN (TYPE_FIELDS (NODE)))))))
-/* These are use to manipulate the the canonical RECORD_TYPE from the
+/* These are use to manipulate the canonical RECORD_TYPE from the
    hashed POINTER_TYPE, and can only be used on the POINTER_TYPE.  */
 #define TYPE_GET_PTRMEMFUNC_TYPE(NODE) ((tree)TYPE_LANG_SPECIFIC(NODE))
 #define TYPE_SET_PTRMEMFUNC_TYPE(NODE, VALUE) (TYPE_LANG_SPECIFIC(NODE) = ((struct lang_type *)(void*)(VALUE)))

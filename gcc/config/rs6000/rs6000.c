@@ -4857,12 +4857,12 @@ rs6000_valid_type_attribute_p (type, attributes, identifier, args)
       if (is_attribute_p ("cdecl", identifier))
 	return (args == NULL_TREE);
 
-      /* Dllimport attribute says says the caller is to call the function
+      /* Dllimport attribute says the caller is to call the function
 	 indirectly through a __imp_<name> pointer.  */
       if (is_attribute_p ("dllimport", identifier))
 	return (args == NULL_TREE);
 
-      /* Dllexport attribute says says the callee is to create a __imp_<name>
+      /* Dllexport attribute says the callee is to create a __imp_<name>
 	 pointer.  */
       if (is_attribute_p ("dllexport", identifier))
 	return (args == NULL_TREE);
@@ -4916,7 +4916,7 @@ rs6000_set_default_type_attributes (type)
 {
 }
 
-/* Return a dll import reference corresponding to to a call's SYMBOL_REF */
+/* Return a dll import reference corresponding to a call's SYMBOL_REF */
 struct rtx_def *
 rs6000_dll_import_ref (call_ref)
      rtx call_ref;

@@ -1892,7 +1892,7 @@ static char pic_label_name [256];
 static int pic_label_no = 0;
 
 /* This function generates code for -fpic that loads %ebx with
-   with the return address of the caller and then returns.  */
+   the return address of the caller and then returns.  */
 
 void
 asm_output_function_prefix (file, name)

@@ -2287,7 +2287,7 @@ biv_total_increment (bl, loop_start, loop_end)
 
   /* For increment, must check every instruction that sets it.  Each
      instruction must be executed only once each time through the loop.
-     To verify this, we check that the the insn is always executed, and that
+     To verify this, we check that the insn is always executed, and that
      there are no backward branches after the insn that branch to before it.
      Also, the insn must have a mult_val of one (to make sure it really is
      an increment).  */

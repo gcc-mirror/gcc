@@ -382,7 +382,7 @@ validate_replace_rtx_1 (loc, from, to, object)
   switch (code)
     {
     case PLUS:
-      /* If we have have a PLUS whose second operand is now a CONST_INT, use
+      /* If we have a PLUS whose second operand is now a CONST_INT, use
 	 plus_constant to try to simplify it.  */
       if (GET_CODE (XEXP (x, 1)) == CONST_INT && XEXP (x, 1) == to)
 	validate_change (object, loc, plus_constant (XEXP (x, 0), INTVAL (to)),

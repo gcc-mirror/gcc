@@ -1191,7 +1191,7 @@ lookup_field (xbasetype, name, protect, want_type)
 
   /* rval_binfo_h and binfo_h are binfo values used when we perform the
      hiding checks, as virtual base classes may not be shared.  The strategy
-     is we always go into the the binfo hierarchy owned by TYPE_BINFO of
+     is we always go into the binfo hierarchy owned by TYPE_BINFO of
      virtual base classes, as we cross virtual base class lines.  This way
      we know that binfo of a virtual base class will always == itself when
      found along any line.  (mrs)  */
@@ -1727,7 +1727,7 @@ lookup_fnfields (basetype_path, name, complain)
 
   /* rval_binfo_h and binfo_h are binfo values used when we perform the
      hiding checks, as virtual base classes may not be shared.  The strategy
-     is we always go into the the binfo hierarchy owned by TYPE_BINFO of
+     is we always go into the binfo hierarchy owned by TYPE_BINFO of
      virtual base classes, as we cross virtual base class lines.  This way
      we know that binfo of a virtual base class will always == itself when
      found along any line.  (mrs)  */

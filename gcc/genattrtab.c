@@ -4055,7 +4055,7 @@ clear_struct_flag (x)
 }
 
 /* Return the number of RTX objects making up the expression X.
-   But if we count more more than MAX objects, stop counting.  */
+   But if we count more than MAX objects, stop counting.  */
 
 static int
 count_sub_rtxs (x, max)

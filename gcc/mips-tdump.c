@@ -81,7 +81,7 @@ typedef char *CPTR_T;
 #define ptrdiff_t	int
 
 
-/* Redefinition of of storage classes as an enumeration for better
+/* Redefinition of storage classes as an enumeration for better
    debugging.  */
 
 #ifndef stStaParam

@@ -1360,7 +1360,7 @@ check_member_template (tmpl)
 	/* 14.5.2.2 [temp.mem]
 	   
 	   A local class shall not have member templates. */
-	cp_error ("declaration of of member template `%#D' in local class",
+	cp_error ("declaration of member template `%#D' in local class",
 		  decl);
       
       if (TREE_CODE (decl) == FUNCTION_DECL && DECL_VIRTUAL_P (decl))

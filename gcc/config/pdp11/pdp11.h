@@ -863,7 +863,7 @@ extern int current_function_pretend_args_size;
 
 /* Go to LABEL if ADDR (a legitimate address expression)
    has an effect that depends on the machine mode it is used for.
-   On the the pdp this is for predec/postinc */
+   On the pdp this is for predec/postinc */
 
 #define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR,LABEL)	\
  { if (GET_CODE (ADDR) == POST_INC || GET_CODE (ADDR) == PRE_DEC)	\

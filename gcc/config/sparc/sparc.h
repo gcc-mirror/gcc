@@ -139,7 +139,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
    ??? It would be nice to not include any subtarget specific values here,
    however there's no way to portably provide subtarget values to
    CPP_PREFINES.  Also, -D values in CPP_SUBTARGET_SPEC don't get turned into
-   into foo, __foo and __foo__.  */
+   foo, __foo and __foo__.  */
 
 #define CPP_PREDEFINES "-Dsparc -Dsun -Dunix -Asystem(unix) -Asystem(bsd)"
 

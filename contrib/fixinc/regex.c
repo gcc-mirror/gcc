@@ -24,7 +24,7 @@
   #pragma alloca
 #endif
 
-/* $Id: regex.c,v 1.1 1998/03/20 16:19:41 korbb Exp $ */
+/* $Id: regex.c,v 1.3 1999/01/11 13:25:47 law Exp $ */
 
 #define _GNU_SOURCE
 
@@ -2026,7 +2026,7 @@ regex_compile (pattern, size, syntax, bufp)
             default:
             normal_backslash:
               /* You might think it would be useful for \ to mean
-                 not to translate; but if we don't translate it
+                 not to translate; but if we don't translate it,
                  it will never match anything.  */
               c = TRANSLATE (c);
               goto normal_char;
@@ -3203,7 +3203,7 @@ re_match (bufp, string, size, pos, regs)
 
 
 /* re_match_2 matches the compiled pattern in BUFP against the
-   the (virtual) concatenation of STRING1 and STRING2 (of length SIZE1
+   (virtual) concatenation of STRING1 and STRING2 (of length SIZE1
    and SIZE2, respectively).  We start matching at POS, and stop
    matching at STOP.
    
@@ -3253,7 +3253,7 @@ re_match_2 (bufp, string1, size1, string2, size2, pos, regs, stop)
      to resume scanning the pattern; the second one is where to resume
      scanning the strings.  If the latter is zero, the failure point is
      a ``dummy''; if a failure happens and the failure point is a dummy,
-     it gets discarded and the next next one is tried.  */
+     it gets discarded and the next one is tried.  */
   fail_stack_type fail_stack;
 #ifdef DEBUG
   static unsigned failure_id = 0;

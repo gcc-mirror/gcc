@@ -135,7 +135,7 @@ int *loop_number_exit_count;
 /* Holds the number of loop iterations.  It is zero if the number could not be
    calculated.  Must be unsigned since the number of iterations can
    be as high as 2^wordsize-1.  For loops with a wider iterator, this number
-   will will be zero if the number of loop iterations is too large for an
+   will be zero if the number of loop iterations is too large for an
    unsigned integer to hold.  */
 
 unsigned HOST_WIDE_INT loop_n_iterations;
@@ -3036,7 +3036,7 @@ consec_sets_invariant_p (reg, n_sets, insn)
       p = NEXT_INSN (p);
       code = GET_CODE (p);
 
-      /* If library call, skip to end of of it.  */
+      /* If library call, skip to end of it.  */
       if (code == INSN && (temp = find_reg_note (p, REG_LIBCALL, NULL_RTX)))
 	p = XEXP (temp, 0);
 
@@ -3502,7 +3502,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 
       /* Past CODE_LABEL, we get to insns that may be executed multiple
 	 times.  The only way we can be sure that they can't is if every
-	 every jump insn between here and the end of the loop either
+	 jump insn between here and the end of the loop either
 	 returns, exits the loop, is a forward jump, or is a jump
 	 to the loop start.  */
 
@@ -4127,7 +4127,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 		     We simplify this by looking for the common case where
 		     there is one DEST_REG giv, and this giv's insn is the
 		     last use of the dest_reg of that DEST_REG giv.  If the
-		     the increment occurs after the address giv, then we can
+		     increment occurs after the address giv, then we can
 		     perform the optimization.  (Otherwise, the increment
 		     would have to go before other_giv, and we would not be
 		     able to combine it with the address giv to get an
@@ -4151,7 +4151,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 			  && INSN_LUID (v->insn) < INSN_LUID (bl->biv->insn))
 			auto_inc_opt = 1;
 		    }
-		  /* Check for case where increment is before the the address
+		  /* Check for case where increment is before the address
 		     giv.  Do this test in "loop order".  */
 		  else if ((INSN_LUID (v->insn) > INSN_LUID (bl->biv->insn)
 			    && (INSN_LUID (v->insn) < INSN_LUID (scan_start)
@@ -6222,7 +6222,7 @@ check_dbra_loop (loop_end, insn_count, loop_start)
 	  rtx bivreg = regno_reg_rtx[bl->regno];
 
 	  /* If there are no givs for this biv, and the only exit is the
-	     fall through at the end of the the loop, then
+	     fall through at the end of the loop, then
 	     see if perhaps there are no uses except to count.  */
 	  no_use_except_counting = 1;
 	  for (p = loop_start; p != loop_end; p = NEXT_INSN (p))

@@ -1315,7 +1315,7 @@ The GNU Standard C++ Library (also called the ``GNU ANSI C++ Library''
 in places in the code) is not libg++, though it is included in the
 libg++ distribution.  Rather, it contains classes and functions
 required by the ANSI/ISO standard.  The copyright conditions are the
-same as those for for the iostreams classes; the LGPL is not used
+same as those for the iostreams classes; the LGPL is not used
 (@pxref{legalities}).
 
 This library, libstdc++, is in the libg++ distribution in versions 2.6.2
