@@ -1,5 +1,12 @@
 2000-09-12  Tom Tromey  <tromey@cygnus.com>
 
+	* expr.c (pop_type_0): Return `Object' if trying to merge two
+	interface types.
+	* verify.c (merge_types): Don't return `TYPE_UNKNOWN' for
+	interface types; `Object' is always a valid supertype.
+
+2000-09-12  Tom Tromey  <tromey@cygnus.com>
+
 	Fix for PR gcj/33:
 	* jv-scan.c (help): Document --encoding.
 	(options): Added `encoding' entry.
