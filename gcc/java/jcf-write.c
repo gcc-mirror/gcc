@@ -1936,8 +1936,11 @@ generate_bytecode_insns (exp, target, state)
     case LSHIFT_EXPR:   jopcode = OPCODE_ishl;   goto binop;
     case RSHIFT_EXPR:   jopcode = OPCODE_ishr;   goto binop;
     case URSHIFT_EXPR:  jopcode = OPCODE_iushr;  goto binop;
+    case TRUTH_AND_EXPR:
     case BIT_AND_EXPR:  jopcode = OPCODE_iand;   goto binop;
+    case TRUTH_OR_EXPR:
     case BIT_IOR_EXPR:  jopcode = OPCODE_ior;    goto binop;
+    case TRUTH_XOR_EXPR:
     case BIT_XOR_EXPR:  jopcode = OPCODE_ixor;   goto binop;
     binop:
     {
