@@ -310,21 +310,21 @@ make_decl_rtl (decl, asmspec, top_level)
       DECL_RTL (decl) = 0;
 
       /* First detect errors in declaring global registers.  */
-      if (TREE_REGDECL (decl) && reg_number == -1)
+      if (DECL_REGISTER (decl) && reg_number == -1)
 	error_with_decl (decl,
 			 "register name not specified for `%s'");
-      else if (TREE_REGDECL (decl) && reg_number < 0)
+      else if (DECL_REGISTER (decl) && reg_number < 0)
 	error_with_decl (decl,
 			 "invalid register name for `%s'");
-      else if ((reg_number >= 0 || reg_number == -3) && ! TREE_REGDECL (decl))
+      else if ((reg_number >= 0 || reg_number == -3) && ! DECL_REGISTER (decl))
 	error_with_decl (decl,
 			 "register name given for non-register variable `%s'");
-      else if (TREE_REGDECL (decl) && TREE_CODE (decl) == FUNCTION_DECL)
+      else if (DECL_REGISTER (decl) && TREE_CODE (decl) == FUNCTION_DECL)
 	error ("function declared `register'");
-      else if (TREE_REGDECL (decl) && TYPE_MODE (TREE_TYPE (decl)) == BLKmode)
+      else if (DECL_REGISTER (decl) && TYPE_MODE (TREE_TYPE (decl)) == BLKmode)
 	error_with_decl (decl, "data type of `%s' isn't suitable for a register");
       /* Now handle properly declared static register variables.  */
-      else if (TREE_REGDECL (decl))
+      else if (DECL_REGISTER (decl))
 	{
 	  int nregs;
 #if 0 /* yylex should print the warning for this */
@@ -361,7 +361,7 @@ make_decl_rtl (decl, asmspec, top_level)
 	  /* Can't use just the variable's own name for a variable
 	     whose scope is less than the whole file.
 	     Concatenate a distinguishing number.  */
-	  if (!top_level && !TREE_EXTERNAL (decl) && asmspec == 0)
+	  if (!top_level && !DECL_EXTERNAL (decl) && asmspec == 0)
 	    {
 	      char *label;
 
@@ -696,7 +696,7 @@ assemble_variable (decl, top_level, at_end)
   /* Normally no need to say anything for external references,
      since assembler considers all undefined symbols external.  */
 
-  if (TREE_EXTERNAL (decl))
+  if (DECL_EXTERNAL (decl))
     return;
 
   /* Output no assembler code for a function declaration.
@@ -947,7 +947,7 @@ assemble_external (decl)
 {
 #ifdef ASM_OUTPUT_EXTERNAL
   if (TREE_CODE_CLASS (TREE_CODE (decl)) == 'd'
-      && TREE_EXTERNAL (decl) && TREE_PUBLIC (decl))
+      && DECL_EXTERNAL (decl) && TREE_PUBLIC (decl))
     {
       rtx rtl = DECL_RTL (decl);
 

@@ -895,12 +895,12 @@ fixup_gotos (thisblock, stack_level, cleanup_list, first_insn, dont_jump_in)
 	      && (after_label == 0
 		  || INSN_UID (first_insn) < INSN_UID (after_label))
 	      && INSN_UID (first_insn) > INSN_UID (f->before_jump)
-	      && ! TREE_REGDECL (f->target))
+	      && ! DECL_REGISTER (f->target))
 	    {
 	      error_with_decl (f->target,
 			       "label `%s' used before containing binding contour");
 	      /* Prevent multiple errors for one label.  */
-	      TREE_REGDECL (f->target) = 1;
+	      DECL_REGISTER (f->target) = 1;
 	    }
 
 	  /* Execute cleanups for blocks this jump exits.  */
@@ -2720,7 +2720,7 @@ expand_decl (decl)
 
   if (TREE_CODE (decl) != VAR_DECL)
     return;
-  if (TREE_STATIC (decl) || TREE_EXTERNAL (decl))
+  if (TREE_STATIC (decl) || DECL_EXTERNAL (decl))
     return;
 
   /* Create the RTL representation for the variable.  */
@@ -2745,7 +2745,7 @@ expand_decl (decl)
 		&& TREE_CODE (type) == REAL_TYPE)
 	   && ! TREE_THIS_VOLATILE (decl)
 	   && ! TREE_ADDRESSABLE (decl)
-	   && (TREE_REGDECL (decl) || ! obey_regdecls))
+	   && (DECL_REGISTER (decl) || ! obey_regdecls))
     {
       /* Automatic variable that can go in a register.  */
       DECL_RTL (decl) = gen_reg_rtx (DECL_MODE (decl));
