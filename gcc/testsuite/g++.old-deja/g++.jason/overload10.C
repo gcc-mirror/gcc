@@ -2,6 +2,7 @@
 // Bug: g++ fails to recognize multiple previous instantiations of a function
 // template.
 // Build don't link:
+// Special g++ Options: -fguiding-decls
 
 template <class T>
 class A {

@@ -7,8 +7,9 @@
 // Message-ID: <m0n2Vec-0000GrC@rwave.roguewave.com>
 
 #include <stddef.h>
+#include <new>
 struct Foo {
-  friend void* operator new(size_t);
+  friend void* operator new(size_t) throw (std::bad_alloc);
   friend void operator delete(void*) throw ();
   Foo();
   ~Foo();

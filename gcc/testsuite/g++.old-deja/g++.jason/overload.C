@@ -11,7 +11,7 @@ void operator+ (int, bar&);
 template <class T> class foo
 {
 public:
-  friend void operator+ (int, T&);
+  friend void operator+ <> (int, T&);
 };
 
 class baz;

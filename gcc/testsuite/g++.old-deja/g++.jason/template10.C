@@ -5,7 +5,7 @@ class ostream;
 
 template <class TP> class smanip {
 public:
-  friend ostream& operator<<(ostream &o, const smanip<TP>&m);
+  friend ostream& operator<< <>(ostream &o, const smanip<TP>&m);
 };
 
 template<class TP>
