@@ -1,3 +1,7 @@
+Wed Mar  4 18:47:48 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* final.c (final_scan_insn, case CODE_LABEL: Cleanup.
+
 Wed Mar  4 15:51:19 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* final.c (shorten_branches): Tag the loop alignment onto the

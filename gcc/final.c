@@ -2020,14 +2020,13 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
       break;
 
     case CODE_LABEL:
+      /* The target port might emit labels in the output function for
+	 some insn, e.g. sh.c output_branchy_insn.  */
       if (CODE_LABEL_NUMBER (insn) <= max_labelno)
 	{
 	  int align = LABEL_TO_ALIGNMENT (insn);
 
-	  /* The target port might emit labels in the output function for
-	     some insn, e.g. sh.c output_branchy_insn.  */
-	  if (align && NEXT_INSN (insn)
-	      && CODE_LABEL_NUMBER (insn) <= max_labelno)
+	  if (align && NEXT_INSN (insn))
 	    ASM_OUTPUT_ALIGN (file, align);
 	}
       CC_STATUS_INIT;
