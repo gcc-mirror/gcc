@@ -3778,6 +3778,7 @@ qualified_lookup_using_namespace (tree name, tree scope, cxx_binding *result,
   tree seen = NULL_TREE;
   /* ... and a list of namespace yet to see.  */
   tree todo = NULL_TREE;
+  tree todo_maybe = NULL_TREE;
   tree usings;
   timevar_push (TV_NAME_LOOKUP);
   /* Look through namespace aliases.  */
@@ -3785,7 +3786,7 @@ qualified_lookup_using_namespace (tree name, tree scope, cxx_binding *result,
   while (scope && result->value != error_mark_node)
     {
       cxx_binding *binding =
-        cxx_scope_find_binding_for_name (NAMESPACE_LEVEL (scope), name);
+	cxx_scope_find_binding_for_name (NAMESPACE_LEVEL (scope), name);
       seen = tree_cons (scope, NULL_TREE, seen);
       if (binding)
         result = ambiguous_decl (name, result, binding, flags);
@@ -3797,15 +3798,35 @@ qualified_lookup_using_namespace (tree name, tree scope, cxx_binding *result,
       for (usings = DECL_NAMESPACE_USING (scope); usings;
 	   usings = TREE_CHAIN (usings))
 	/* If this was a real directive, and we have not seen it.  */
-	if (!TREE_INDIRECT_USING (usings)
-	    && ((!result->value && !result->type)
-		|| is_associated_namespace (scope, TREE_PURPOSE (usings)))
-	    && !purpose_member (TREE_PURPOSE (usings), seen))
-	  todo = tree_cons (TREE_PURPOSE (usings), NULL_TREE, todo);
+	if (!TREE_INDIRECT_USING (usings))
+	  {
+	    /* Try to avoid queuing the same namespace more than once,
+	       the exception being when a namespace was already
+	       enqueued for todo_maybe and then a strong using is
+	       found for it.  We could try to remove it from
+	       todo_maybe, but it's probably not worth the effort.  */
+	    if (is_associated_namespace (scope, TREE_PURPOSE (usings))
+		&& !purpose_member (TREE_PURPOSE (usings), seen)
+		&& !purpose_member (TREE_PURPOSE (usings), todo))
+	      todo = tree_cons (TREE_PURPOSE (usings), NULL_TREE, todo);
+	    else if ((!result->value && !result->type)
+		     && !purpose_member (TREE_PURPOSE (usings), seen)
+		     && !purpose_member (TREE_PURPOSE (usings), todo)
+		     && !purpose_member (TREE_PURPOSE (usings), todo_maybe))
+	      todo_maybe = tree_cons (TREE_PURPOSE (usings), NULL_TREE,
+				      todo_maybe);
+	  }
       if (todo)
 	{
 	  scope = TREE_PURPOSE (todo);
 	  todo = TREE_CHAIN (todo);
+	}
+      else if (todo_maybe
+	       && (!result->value && !result->type))
+	{
+	  scope = TREE_PURPOSE (todo_maybe);
+	  todo = TREE_CHAIN (todo_maybe);
+	  todo_maybe = NULL_TREE;
 	}
       else
 	scope = NULL_TREE; /* If there never was a todo list.  */
