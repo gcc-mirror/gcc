@@ -238,11 +238,9 @@ public class PrintStream extends FilterOutputStream
 
   public PrintStream (OutputStream out, boolean af)
   {
-    BufferedOutputStream buf = (out instanceof BufferedOutputStream
-				? (BufferedOutputStream) out
-				: new BufferedOutputStream(out, 250));
-    super (buf);
-    this.out = buf;
+    super ((this.out = (out instanceof BufferedOutputStream
+			 ? (BufferedOutputStream) out
+			 : new BufferedOutputStream(out, 250))));
     converter = UnicodeToBytes.getDefaultEncoder();
     error = false;
     auto_flush = af;
