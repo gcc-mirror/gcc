@@ -6,6 +6,9 @@ Thu Jul  8 14:18:46 1999  Richard Henderson  <rth@cygnus.com>
 
 Thu Jul  8 12:55:12 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* dbxelf.h (ASM_OUTPUT_SOURCE_LINE): Do not put assembler
+	directives in column zero.
+
 	* pa/elf.h (ASM_FILE_START): Define.
 	* pa/som.h (ASM_FILE_START): Include .level directives.
 	* pa/hpux10.h (ASM_FILE_START): Delete.
