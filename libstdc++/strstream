@@ -1,0 +1,7 @@
+// -*- C++ -*- forwarding header.
+// This file is part of the GNU ANSI C++ Library.
+
+#ifndef __STRSTREAM__
+#define __STRSTREAM__
+#include <strstream.h>
+#endif

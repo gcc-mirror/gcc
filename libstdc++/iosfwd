@@ -1,0 +1,15 @@
+// -*- C++ -*- I/O forward declaration header.
+// This file is part of the GNU ANSI C++ Library.
+
+#ifndef __IOSFWD__
+#define __IOSFWD__
+class ios;
+class streambuf;
+class istream;
+class ostream;
+class iostream;
+class filebuf;
+class ifstream;
+class ofstream;
+class fstream;
+#endif
