@@ -3140,6 +3140,49 @@ fold (expr)
 	return non_lvalue (convert (type, arg0));
       if (integer_zerop (arg1))
 	return t;
+
+      /* If we have ((a * C1) / C2) and C1 % C2 == 0, we can replace this with
+	 (a * (C1/C2).  Also look for when we have a SAVE_EXPR in
+	 between.  */
+      if (TREE_CODE (arg1) == INTEGER_CST
+	  && TREE_INT_CST_LOW (arg1) > 0 && TREE_INT_CST_HIGH (arg1) == 0
+	  && TREE_CODE (arg0) == MULT_EXPR
+	  && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST
+	  && TREE_INT_CST_LOW (TREE_OPERAND (arg0, 1)) > 0
+	  && TREE_INT_CST_HIGH (TREE_OPERAND (arg0, 1)) == 0
+	  && 0 == (TREE_INT_CST_LOW (TREE_OPERAND (arg0, 1))
+		   % TREE_INT_CST_LOW (arg1)))
+	{
+	  tree new_op
+	    = build_int_2 (TREE_INT_CST_LOW (TREE_OPERAND (arg0, 1))
+			   / TREE_INT_CST_LOW (arg1));
+
+	  TREE_TYPE (new_op) = type;
+	  return build (MULT_EXPR, type, TREE_OPERAND (arg0, 0), new_op);
+	}
+
+      else if (TREE_CODE (arg1) == INTEGER_CST
+	       && TREE_INT_CST_LOW (arg1) > 0 && TREE_INT_CST_HIGH (arg1) == 0
+	       && TREE_CODE (arg0) == SAVE_EXPR
+	       && TREE_CODE (TREE_OPERAND (arg0, 0)) == MULT_EXPR
+	       && (TREE_CODE (TREE_OPERAND (TREE_OPERAND (arg0, 0), 1))
+		   == INTEGER_CST)
+	       && (TREE_INT_CST_LOW (TREE_OPERAND (TREE_OPERAND (arg0, 0), 1))
+		   > 0)
+	       && (TREE_INT_CST_HIGH (TREE_OPERAND (TREE_OPERAND (arg0, 0), 1))
+		   == 0)
+	       && (TREE_INT_CST_LOW (TREE_OPERAND (TREE_OPERAND (arg0, 0), 1))
+		   % TREE_INT_CST_LOW (arg1)) == 0)
+	{
+	  tree new_op
+	    = build_int_2 (TREE_INT_CST_LOW (TREE_OPERAND (TREE_OPERAND (arg0, 0), 1))
+			   / TREE_INT_CST_LOW (arg1));
+	  
+	  TREE_TYPE (new_op) = type;
+	  return build (MULT_EXPR, type,
+			TREE_OPERAND (TREE_OPERAND (arg0, 0), 0), new_op);
+	}
+
 #if !defined (REAL_IS_NOT_DOUBLE) || defined (REAL_ARITHMETIC)
 #ifndef REAL_INFINITY
       if (TREE_CODE (arg1) == REAL_CST
