@@ -75,5 +75,9 @@ typedef __loff_t __off64_t;
 #define __glibcpp_long_double_bits 64
 #endif
 
+#if defined (__mc68000__)
+#define __glibcpp_long_double_bits 96
+#endif
+
 #endif
 
