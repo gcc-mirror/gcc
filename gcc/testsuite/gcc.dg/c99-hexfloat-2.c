@@ -20,5 +20,5 @@ main (void)
   if (strcmp (s, "0x1p+f 0x1p+l"))
     abort ();
   else
-    return 0; /* Correct C99 behaviour.  */
+    return 0; /* Correct C99 behavior.  */
 }

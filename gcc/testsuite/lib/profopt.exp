@@ -27,7 +27,7 @@
 # addition to the profiling and feedback options.
 
 # If perf_ext is defined and the performance value for the
-# profile-directed test run is non-zero then the performance check will
+# profile-directed test run is nonzero then the performance check will
 # be done.
 
 global PROFOPT_OPTIONS perf_delta

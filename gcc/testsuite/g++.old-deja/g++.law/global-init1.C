@@ -2,7 +2,7 @@
 // global-init file
 // Message-Id: <9212021756.AA12639@grumpy.pocs.com>
 // From: wp@pocs.com (Wolfgang Polak)
-// Subject: Initializers - gcc 2.2.2 (g++), Sparc, SunOS 4.1.1
+// Subject: Initializers - gcc 2.2.2 (g++), SPARC, SunOS 4.1.1
 // Date: Wed, 2 Dec 92 09:56:01 PST
 
 #include <stdio.h>

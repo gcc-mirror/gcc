@@ -3,7 +3,7 @@
 // Copyright (C) 1999 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 15 Apr 1999 <nathan@acm.org>
 
-// delete (void *)e and delete[] (void *)e result in undefined behaviour
+// delete (void *)e and delete[] (void *)e result in undefined behavior
 // [expr.delete/3]. Check we warn about them
 // operator new functions can only return NULL, if their exceptions
 // specification is `throw()'. All other cases must return a non-null pointer

@@ -15,7 +15,7 @@ C     See: L.Mouawad and D.Perahia, Biopolymers (1993), 33, 599,
 C     and: D.Perahia and L.Mouawad, Comput. Chem. (1995), 19, 241.
 C     The method iteratively solves the diagonalization of the
 C     Hessian matrix. To save memory space, it uses a compressed
-C     form of the Hessian, which only contains the non-zero elements.
+C     form of the Hessian, which only contains the nonzero elements.
 C     In the diagonalization process, approximate eigenvectors are
 C     mixed with Cartesian coordinates to form a reduced basis. The
 C     Hessian is then diagonalized in the reduced basis. By iterating

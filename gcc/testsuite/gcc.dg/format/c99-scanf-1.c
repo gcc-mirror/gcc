@@ -1,6 +1,6 @@
 /* Test for scanf formats.  Formats using C99 features, including cases
    where C99 specifies some aspect of the format to be ignored or where
-   the behaviour is undefined.
+   the behavior is undefined.
 */
 /* Origin: Joseph Myers <jsm28@cam.ac.uk> */
 /* { dg-do compile } */

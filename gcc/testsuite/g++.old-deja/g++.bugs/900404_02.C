@@ -3,7 +3,7 @@
 // g++ fails to treat multicharacter literals as type "int" as required by
 // section 2.5.2 of the C++ Reference Manual.
 
-// The result is that the following program will exit with a non-zero
+// The result is that the following program will exit with a nonzero
 // exit status.
 
 // keywords: character literals, multi-character literals, int type

@@ -7,7 +7,7 @@
 
    o Full range of macro definition semantics.
    o No. of arguments supplied to function-like macros.
-   o Odd GNU rest args behaviour.
+   o Odd GNU rest args behavior.
    o Macro arguments do not flow into the rest of the file.  */
 
 

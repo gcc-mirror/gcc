@@ -1,4 +1,4 @@
-/* Check that gcov correctly rounds nearly zero to non-zero and nearly
+/* Check that gcov correctly rounds nearly zero to nonzero and nearly
    100 to not-100.
 
    Copyright (C) 2002 Free Software Foundation, Inc.

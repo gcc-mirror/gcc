@@ -1,5 +1,5 @@
 /* These dllimport and dllexport appearing for a symbol.
-   The desired behaviour is that if both dllimport
+   The desired behavior is that if both dllimport
    and dllexport appear (in either order) the result is dllexport.
 
    Microsoft's MSVC 2.0 allows dllimport followed by dllexport for variables,

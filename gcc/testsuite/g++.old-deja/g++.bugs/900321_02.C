@@ -1,6 +1,6 @@
 // g++ 1.37.1 bug 900321_02
 
-// The following program exits with a non-zero status because the constructor
+// The following program exits with a nonzero status because the constructor
 // is not called 3 times as it should be.  This program exits with a zero
 // status when compiled with cfront 2.0.
 

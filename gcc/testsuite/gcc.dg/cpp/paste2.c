@@ -3,7 +3,7 @@
 /* { dg-do run } */
 /* { dg-options "-std=c99 -pedantic-errors" } */
 
-/* Test ## behaviour and corner cases thoroughly.  The macro expander
+/* Test ## behavior and corner cases thoroughly.  The macro expander
    failed many of these during development.  */
 
 #ifndef __WCHAR_TYPE__
