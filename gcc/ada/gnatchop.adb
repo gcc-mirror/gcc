@@ -342,10 +342,10 @@ procedure Gnatchop is
 
       if not Warning then
          Set_Exit_Status (Failure);
-      end if;
 
-      if Exit_On_Error then
-         raise Terminate_Program;
+         if Exit_On_Error then
+            raise Terminate_Program;
+         end if;
       end if;
    end Error_Msg;
 
@@ -1738,7 +1738,7 @@ begin
       declare
          Warnings_Msg : String := Warning_Count'Img & " warning(s)";
       begin
-         Error_Msg (Warnings_Msg (2 .. Warnings_Msg'Last));
+         Error_Msg (Warnings_Msg (2 .. Warnings_Msg'Last), Warning => True);
       end;
    end if;
 

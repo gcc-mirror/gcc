@@ -1,3 +1,38 @@
+2003-12-15  Robert Dewar  <dewar@gnat.com>
+
+	* exp_ch6.adb (Expand_Thread_Body): Fix error in picking up default
+	sec stack size.
+
+2003-12-15  Vincent Celier  <celier@gnat.com>
+
+	* gnatchop.adb: (Error_Msg): Do not exit on error for a warning
+	(Gnatchop): Do not set failure status when reporting the number of
+	warnings.
+
+2003-12-15  Doug Rupp  <rupp@gnat.com>
+
+	* s-ctrl.ads: New file.
+
+	* Makefile.rtl (GNAT_RTL_NONTASKING_OBJS): Add s-crtl$(objext).
+
+	* Make-lang.in: (GNAT_ADA_OBJS): Add ada/s-crtl.o.
+	(GNATBIND_OBJS): Add ada/s-crtl.o.
+
+	* Makefile.in [VMS]: Clean up ifeq rules.
+
+	* gnatlink.adb, 6vcstrea.adb, a-direio.adb, a-sequio.adb,
+	a-ststio.adb, a-textio.adb, g-os_lib.adb, a-witeio.adb,
+	g-os_lib.ads, i-cstrea.adb, i-cstrea.ads, s-direio.adb,
+	s-fileio.adb, s-memcop.ads, s-memory.adb, s-stache.adb,
+	s-tasdeb.adb: Update copyright.
+	Import System.CRTL.
+	Make minor modifications to use System.CRTL declared functions instead
+	of importing locally.
+
+2003-12-15  GNAT Script  <nobody@gnat.com>
+
+	* Make-lang.in: Makefile automatically updated
+
 2003-12-11  Ed Falis  <falis@gnat.com>
 
 	* 5zinit.adb: Clean up.

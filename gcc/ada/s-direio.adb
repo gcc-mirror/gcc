@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,6 +34,7 @@
 with Ada.IO_Exceptions;         use Ada.IO_Exceptions;
 with Interfaces.C_Streams;      use Interfaces.C_Streams;
 with System;                    use System;
+with System.CRTL;
 with System.File_IO;
 with System.Soft_Links;
 with Unchecked_Deallocation;
@@ -45,6 +46,9 @@ package body System.Direct_IO is
 
    subtype AP is FCB.AFCB_Ptr;
    use type FCB.Shared_Status_Type;
+
+   use type System.CRTL.long;
+   use type System.CRTL.size_t;
 
    -----------------------
    -- Local Subprograms --

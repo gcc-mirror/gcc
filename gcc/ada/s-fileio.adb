@@ -34,6 +34,7 @@
 with Ada.Finalization;            use Ada.Finalization;
 with Ada.IO_Exceptions;           use Ada.IO_Exceptions;
 with Interfaces.C_Streams;        use Interfaces.C_Streams;
+with System.CRTL;
 with System.Soft_Links;
 with Unchecked_Deallocation;
 
@@ -42,6 +43,8 @@ package body System.File_IO is
    use System.File_Control_Block;
 
    package SSL renames System.Soft_Links;
+
+   use type System.CRTL.size_t;
 
    ----------------------
    -- Global Variables --

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1996-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,6 +35,8 @@
 
 with Unchecked_Conversion;
 package body Interfaces.C_Streams is
+
+   use type System.CRTL.size_t;
 
    ------------
    -- fread --
@@ -154,14 +156,6 @@ package body Interfaces.C_Streams is
       size   : size_t)
       return   int
    is
-      function C_setvbuf
-        (stream : FILEs;
-         buffer : chars;
-         mode   : int;
-         size   : size_t)
-         return   int;
-      pragma Import (C, C_setvbuf, "setvbuf");
-
       use type System.Address;
    begin
 
@@ -173,9 +167,11 @@ package body Interfaces.C_Streams is
       if mode = IONBF
         and then (stream = stdout or else stream = stderr)
       then
-         return C_setvbuf (stream, buffer, IOLBF, size);
+         return System.CRTL.setvbuf
+           (stream, buffer, IOLBF, System.CRTL.size_t (size));
       else
-         return C_setvbuf (stream, buffer, mode, size);
+         return System.CRTL.setvbuf
+           (stream, buffer, mode, System.CRTL.size_t (size));
       end if;
    end setvbuf;
 

@@ -35,6 +35,7 @@ with Interfaces.C_Streams;      use Interfaces.C_Streams;
 with System;                    use System;
 with System.File_IO;
 with System.Soft_Links;
+with System.CRTL;
 with Unchecked_Conversion;
 with Unchecked_Deallocation;
 
@@ -382,8 +383,11 @@ package body Ada.Streams.Stream_IO is
    ------------------
 
    procedure Set_Position (File : in File_Type) is
+      use type System.CRTL.long;
    begin
-      if fseek (File.Stream, long (File.Index) - 1, SEEK_SET) /= 0 then
+      if fseek (File.Stream,
+                System.CRTL.long (File.Index) - 1, SEEK_SET) /= 0
+      then
          raise Use_Error;
       end if;
    end Set_Position;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1997-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1997-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,13 +39,11 @@
 --  Do not add any dependency to GNARL packages since this package is used
 --  in both normal and restricted (ravenscar) environments.
 
-with Interfaces.C;
+with System.CRTL;
 with System.Task_Primitives.Operations;
 with Unchecked_Conversion;
 
 package body System.Tasking.Debug is
-
-   use Interfaces.C;
 
    package STPO renames System.Task_Primitives.Operations;
 
@@ -60,8 +58,7 @@ package body System.Tasking.Debug is
    -- Local Subprograms --
    -----------------------
 
-   procedure write (Fd : Integer; S : String; Count : size_t);
-   pragma Import (C, write);
+   procedure Write (Fd : Integer; S : String; Count : Integer);
 
    procedure Put (S : String);
    --  Display S on standard output.
@@ -177,7 +174,7 @@ package body System.Tasking.Debug is
 
    procedure Put (S : String) is
    begin
-      write (2, S, S'Length);
+      Write (2, S, S'Length);
    end Put;
 
    --------------
@@ -186,7 +183,7 @@ package body System.Tasking.Debug is
 
    procedure Put_Line (S : String := "") is
    begin
-      write (2, S & ASCII.LF, S'Length + 1);
+      Write (2, S & ASCII.LF, S'Length + 1);
    end Put_Line;
 
    ----------------------
@@ -296,5 +293,12 @@ package body System.Tasking.Debug is
          Put_Line (Msg);
       end if;
    end Trace;
+
+   procedure Write (Fd : Integer; S : String; Count : Integer) is
+
+      Num : Integer;
+   begin
+      Num := System.CRTL.write (Fd, S (S'First)'Address, Count);
+   end Write;
 
 end System.Tasking.Debug;

@@ -38,6 +38,7 @@
 
 with Interfaces.C_Streams; use Interfaces.C_Streams;
 with System;               use System;
+with System.CRTL;
 with System.File_Control_Block;
 with System.File_IO;
 with System.Direct_IO;
@@ -64,6 +65,8 @@ package body Ada.Direct_IO is
 
    function To_FCB is new Unchecked_Conversion (File_Mode, FCB.File_Mode);
    function To_DIO is new Unchecked_Conversion (FCB.File_Mode, File_Mode);
+
+   use type System.CRTL.size_t;
 
    -----------
    -- Close --

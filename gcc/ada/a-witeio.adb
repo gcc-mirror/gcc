@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,6 +36,7 @@ with Ada.Streams;          use Ada.Streams;
 with Interfaces.C_Streams; use Interfaces.C_Streams;
 
 with System;
+with System.CRTL;
 with System.File_IO;
 with System.WCh_Cnv;       use System.WCh_Cnv;
 with System.WCh_Con;       use System.WCh_Con;
@@ -54,6 +55,8 @@ package body Ada.Wide_Text_IO is
    function To_FCB is new Unchecked_Conversion (File_Mode, FCB.File_Mode);
    function To_TIO is new Unchecked_Conversion (FCB.File_Mode, File_Mode);
    use type FCB.File_Mode;
+
+   use type System.CRTL.size_t;
 
    WC_Encoding : Character;
    pragma Import (C, WC_Encoding, "__gl_wc_encoding");
