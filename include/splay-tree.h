@@ -106,6 +106,8 @@ extern int splay_tree_foreach           PARAMS((splay_tree,
 					        void*));
 extern int splay_tree_compare_ints      PARAMS((splay_tree_key,
 						splay_tree_key));
+extern int splay_tree_compare_pointers  PARAMS((splay_tree_key,
+						splay_tree_key));
 					       
 #ifdef __cplusplus
 }
