@@ -1389,6 +1389,9 @@ next_record (int done)
 static void
 finalize_transfer (void)
 {
+  if (ioparm.library_return != LIBRARY_OK)
+    return;
+
   if ((ionml != NULL) && (ioparm.namelist_name != NULL))
     {
        if (ioparm.namelist_read_mode)
