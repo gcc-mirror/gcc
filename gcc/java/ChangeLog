@@ -1,3 +1,8 @@
+1999-04-06  Per Bothner  <bothner@cygnus.com>
+
+	* parse.y (patch_binop):  Don't fold if non-constant and emiting
+	class files.
+
 Mon Apr  5 16:06:09 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (gjavah.o): Depend on $(JAVA_TREE_H).
