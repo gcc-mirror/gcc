@@ -1,4 +1,4 @@
-/* Copyright (C) 2000  Free Software Foundation
+/* Copyright (C) 2000, 2003  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -176,10 +176,10 @@ public class XGraphics implements Cloneable, DirectRasterGraphics
     throw new UnsupportedOperationException("not implemented");
   }
     
-  public void fillPolygon(int[] xPoints, int[] yPoints, int
-			  nPoints)
+  public void fillPolygon(int[] xPoints, int[] yPoints, int nPoints,
+			  int translateX, int translateY)
   {
-    throw new UnsupportedOperationException("not implemented");
+    context.fillPolygon(xPoints, yPoints, nPoints, translateX, translateY);
   }
 
   public void drawString(String str, int x, int y)
