@@ -1,3 +1,10 @@
+2004-02-25  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* config.gcc (hppa*-*-*, parisc*-*-*): Add MASK_BIG_SWITCH to all
+	target_cpu_default defines.
+	* pa-hpux.h (TARGET_DEFAULT): Add MASK_BIG_SWITCH to define.
+	* pa.h (TARGET_DEFAULT): Likewise.
+
 2004-02-25  Eric Botcazou  <ebotcazou@act-europe.fr>
 
 	* fold-const.c (fold): Treat MAX_EXPR and MIN_EXPR like
