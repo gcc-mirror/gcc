@@ -1,5 +1,5 @@
 /* { dg-do preprocess } */
-/* { dg-options "" } */ /* shut off -pedantic */
+/* { dg-options "" } */
 
 /* Based on PR 16999 */
 

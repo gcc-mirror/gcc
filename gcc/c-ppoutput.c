@@ -292,7 +292,7 @@ cb_ident (cpp_reader *pfile ATTRIBUTE_UNUSED, fileline line,
 	  const cpp_string *str)
 {
   maybe_print_line (print.map, line);
-  fprintf (print.outf, "#ident \"%s\"\n", str->text);
+  fprintf (print.outf, "#ident %s\n", str->text);
   print.line++;
 }
 

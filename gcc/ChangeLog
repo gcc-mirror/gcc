@@ -1,3 +1,9 @@
+2004-10-08  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c/16999
+	* c-ppoutput.c (cb_ident): Don't quote string as it is already
+	quoted.
+
 2004-10-08  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR target/17245
