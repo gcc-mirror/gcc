@@ -1,5 +1,13 @@
 2000-08-11  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* cp-tree.h (resolve_scope_to_name): Remove unused prototype.
+	(lookup_nested_tag): Likewise.
+	
+	* decl2.c (grokfield): Fix comment to reflect many types of _DECLs
+	can be produced.
+
+2000-08-11  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* parse.y (named_complex_class_head_sans_basetype): Remove
 	always true if.
 

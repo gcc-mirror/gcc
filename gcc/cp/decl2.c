@@ -1615,15 +1615,13 @@ finish_static_data_member_decl (decl, init, asmspec_tree, flags)
 }
 
 /* Process the specs, declarator (NULL if omitted) and width (NULL if omitted)
-   of a structure component, returning a FIELD_DECL node.
+   of a structure component, returning a _DECL node.
    QUALS is a list of type qualifiers for this decl (such as for declaring
    const member functions).
 
    This is done during the parsing of the struct declaration.
-   The FIELD_DECL nodes are chained together and the lot of them
+   The _DECL nodes are chained together and the lot of them
    are ultimately passed to `build_struct' to make the RECORD_TYPE node.
-
-   C++:
 
    If class A defines that certain functions in class B are friends, then
    the way I have set things up, it is B who is interested in permission
