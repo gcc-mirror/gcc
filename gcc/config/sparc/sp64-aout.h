@@ -1,5 +1,4 @@
-/* Definitions of target machine for GNU compiler,
-   for Sun SPARC-V9 on a hypothetical a.out format machine.
+/* Definitions of target machine for GNU compiler, for SPARC64, a.out.
    Copyright (C) 1994, 1996 Free Software Foundation, Inc.
    Contributed by Doug Evans, dje@cygnus.com.
 
@@ -29,26 +28,12 @@ Boston, MA 02111-1307, USA.  */
 #define SPARC_ARCH64 1
 
 #include "sparc/sparc.h"
+#include "aoutos.h"
 
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (sparc64-aout)")
 
-/* A v9 compiler with 32 bit integers and 64 bit pointers,
-   in a Medium/Low code model with only 32 bit assembler support.  */
-
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT \
   (MASK_V9 + MASK_ARCH64 + MASK_PTR64 + MASK_HARD_QUAD \
-   + MASK_MEDLOW + MASK_EPILOGUE + MASK_FPU)
-
-/* The medium/anywhere code model practically requires us to put jump tables
-   in the text section as gcc is unable to distinguish LABEL_REF's of jump
-   tables from other label refs (when we need to).  While we don't support
-   the medium/anywhere code model, let's not make it difficult.  */
-#undef JUMP_TABLES_IN_TEXT_SECTION
-#define JUMP_TABLES_IN_TEXT_SECTION
-
-/* Put all data in the text segment (necessary for the current implementation
-   of the Medium/Anywhere code model - see if still true).  */
-
-#define READONLY_DATA_SECTION text_section
+   + MASK_MEDLOW + MASK_APP_REGS + MASK_EPILOGUE + MASK_FPU)
