@@ -627,15 +627,35 @@
   [(set (reg:SI 18) (eq:SI (match_operand:DI 0 "arith_reg_operand" "r,r")
 			   (match_operand:DI 1 "arith_reg_or_0_operand" "N,r")))]
   ""
-  "*
-  return output_branchy_insn
-   (EQ,
-    (which_alternative
-     ? \"cmp/eq\\t%S1,%S0\;bf\\t%l9\;cmp/eq\\t%R1,%R0\"
-     : \"tst\\t%S0,%S0\;bf\\t%l9\;tst\\t%R0,%R0\"),
-    insn, operands);"
+  "#"
   [(set_attr "length" "6")
    (set_attr "type" "arith3b")])
+
+(define_split
+  [(set (reg:SI 18) (eq:SI (match_operand:DI 0 "arith_reg_operand" "r,r")
+			   (match_operand:DI 1 "arith_reg_or_0_operand" "N,r")))]
+  "reload_completed"
+  [(set (reg:SI 18) (eq:SI (match_dup 2) (match_dup 3)))
+   (set (pc) (if_then_else (ne (reg:SI 18) (const_int 0))
+			   (label_ref (match_dup 6))
+			   (pc)))
+   (set (reg:SI 18) (eq:SI (match_dup 4) (match_dup 5)))
+   (match_dup 6)]
+  "
+{
+  operands[2]
+    = gen_rtx_REG (SImode,
+		   true_regnum (operands[0]) + (TARGET_LITTLE_ENDIAN ? 1 : 0));
+  operands[3]
+    = (operands[1] == const0_rtx
+       ? const0_rtx
+       : gen_rtx_REG (SImode,
+		      true_regnum (operands[1])
+		      + (TARGET_LITTLE_ENDIAN ? 1 : 0)));
+  operands[4] = gen_lowpart (SImode, operands[0]);
+  operands[5] = gen_lowpart (SImode, operands[1]);
+  operands[6] = gen_label_rtx ();
+}")
 
 (define_insn "cmpgtdi_t"
   [(set (reg:SI 18) (gt:SI (match_operand:DI 0 "arith_reg_operand" "r,r")
