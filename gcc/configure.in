@@ -2741,18 +2741,19 @@ changequote([,])dnl
 		# On NetBSD, the headers are already okay, except for math.h.
 		tmake_file=t-netbsd
 		;;
-       mips*-*-linux*)                         # Linux MIPS, either endian.
+	mips*-*-linux*)				# Linux MIPS, either endian.
 		xmake_file=x-linux
-               case $machine in
-                       mipsel-*)  tm_file="mips/elfl.h mips/linux.h" ;;
-                       *)         tm_file="mips/elf.h mips/linux.h" ;;
-               esac
+		case $machine in
+		       mips*el-*)  tm_file="mips/elfl.h mips/linux.h" ;;
+		       *)	  tm_file="mips/elf.h mips/linux.h" ;;
+		esac
+		tmake_file=t-linux
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 		gnu_ld=yes
 		gas=yes
- 		if test x$enable_threads = xyes; then
- 			thread_file='posix'
- 		fi
+		if test x$enable_threads = xyes; then
+			thread_file='posix'
+		fi
 		;;
 	mips*el-*-openbsd*)	# mips little endian
 		target_cpu_default="MASK_GAS|MASK_ABICALLS"
