@@ -1,3 +1,25 @@
+2001-09-29  Juergen Pfeifer  <juergen.pfeifer@gmx.net>
+            Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	Make libf2c a shared library.
+
+	* aclocal.m4: Get definition of libtool.
+	* Makefile.in: Use libtool.
+	* configure.in: Use libtool.
+	* configure: Regenerated.
+	* libF77/Makefile.in: Use libtool; treat main program contained in
+	libF77/main.c specially.
+	* libF77/configure.in: Use libtool.
+	* libF77/configure: Regenerated.
+	* libI77/Makefile.in: Use libtool.
+	* libI77/configure.in: Use libtool.
+	* libI77/configure: Regenerated.
+	* libU77/Makefile.in: Use libtool.
+	* libU77/configure.in: Use libtool.
+	* libU77/configure: Regenerated.
+	* libU77/date_.c: Adapt for -fPIC compiling.
+	* libU77/vxtidate_.c: Ditto.
+
 2001-09-22  Richard Earnshaw  <rearnsha@arm.com>
 
 	* libI77/configure.in (__EXTENSIONS__): Define.
