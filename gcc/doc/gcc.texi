@@ -103,7 +103,7 @@ Boston, MA 02111-1307 USA
 @sp 2
 @center Richard M. Stallman
 @sp 3
-@center Last updated 20 April 2002
+@center Last updated 30 December 2002
 @sp 1
 
 @center for GCC @value{version-GCC}
