@@ -32,6 +32,7 @@ $ CFLAGS =	"/Debug/noVerbos/CC1=""-mpcc-alignment"""
 $! CFLAGS =	"/noOpt"		!uncomment for VAXC
 $ CINCL1 =	"/Incl=[]"			!stage 1 -I flags
 $ CINCL2 =	"/Incl=([],[.ginclude])"	!stage 2,3,... flags
+$ CINCL_SUB =	"/Incl=([],[-],[-.ginclude])"	![.cp] flags
 $!
 $!	Link options
 $!
@@ -89,6 +90,7 @@ $DO_ALL = 0
 $DO_LINK = 0
 $DO_DEBUG = 0
 $DO_CC1PLUS = 0
+$if f$trnlnm("cfile$").nes."" then  close/noLog cfile$
 $open cfile$ compilers.list
 $cinit:read cfile$ compilername/end=cinit_done
 $DO_'compilername'=0
@@ -151,11 +153,11 @@ $if size.eq.0 then goto no_message
 $gas_message:
 $type sys$input
 
-	Note: GCC 2.0 treats external variables differently than GCC 1.40 does.
-Before you use GCC 2.0, you should obtain a version of the assembler which 
-contains the patches to work with GCC 2.0 (GCC-AS 1.38 does not contain 
+	Note: GCC 2.x treats external variables differently than GCC 1.x does.
+Before you use GCC 2.x, you should obtain a version of the assembler which
+contains the patches to work with GCC 2.x (GCC-AS 1.38 does not contain
 these patches - whatever comes after this probably will).  The assembler
-in gcc-vms-1.40.tar.Z from prep does contain the proper patches.
+in gcc-vms-1.42.tar.gz from prep does contain the proper patches.
 
 	If you do not update the assembler, the compiler will still work,
 but `extern const' variables will be treated as `extern'.  This will result
@@ -166,7 +168,7 @@ $!
 $no_message:
 $!
 $!
-$ if DO_DEBUG.eq.1 then LDFLAGS :='LDFLAGS'/debug
+$ if DO_DEBUG.eq.1 then LDFLAGS = LDFLAGS + "/Debug"
 $!
 $if DO_LINK.eq.1 then goto compile_cc1
 $!
@@ -206,8 +208,8 @@ $! First build a couple of header files from the machine description
 $! These are used by many of the source modules, so we build them now.
 $!
 $set verify
-$ 'CC''CFLAGS' rtl.C
-$ 'CC''CFLAGS' obstack.C
+$ 'CC''CFLAGS' rtl.c
+$ 'CC''CFLAGS' obstack.c
 $!'f$verify(0)
 $! Generate insn-attr.h
 $	call generate insn-attr.h
@@ -220,6 +222,8 @@ $!
 $	call generate insn-attrtab.c "rtlanal.obj,"
 $set verify
 $ 'CC''CFLAGS' insn-attrtab.c
+$ 'CC''CFLAGS' bc-emit.c
+$ 'CC''CFLAGS' bc-optab.c
 $!'f$verify(0)
 $	endif
 $!
@@ -289,7 +293,8 @@ $cloop:read cfile$ compilername/end=cdone
 $! language specific modules
 $!
 $if (DO_ALL + DO_'compilername').eq.0 then goto cloop
-$if DO_LINK.eq.0 then call compile 'compilername'-objs.opt "obstack"
+$if DO_LINK.eq.0 then -
+ call compile 'compilername'-objs.opt "obstack,bc-emit,bc-optab"
 $!
 $! CAUTION: If you want to link gcc-cc1* to the sharable image library
 $! VAXCRTL, see the notes in gcc.texinfo (or INSTALL) first.
@@ -332,9 +337,20 @@ $flnm=f$element(i,",",line)
 $i=i+1
 $if flnm.eqs."" then goto loop
 $if flnm.eqs."," then goto loop
-$if f$locate(flnm,"''p2'").nes.f$length("''p2'") then goto loop1
+$if f$locate(flnm,p2).lt.f$length(p2) then goto loop1
+$! check for front-end subdirectory: "[.prfx]flnm"
+$prfx = ""
+$k = f$locate("]",flnm)
+$if k.eq.1 then  goto loop1	![]c-common for [.cp]
+$if k.lt.f$length(flnm) then  prfx = f$extract(2,k-2,flnm)
+$if k.lt.f$length(flnm) then  flnm = f$extract(k+1,99,flnm)
+$ if prfx.nes.""
+$ then	set default [.'prfx']	!push
+$	save_cflags = CFLAGS
+$	CFLAGS = CFLAGS - CINCL1 - CINCL2 + CINCL_SUB
+$ endif
 $!
-$if f$locate("-parse",flnm).nes.f$length(flnm)
+$if f$locate("parse",flnm).nes.f$length(flnm)
 $	then
 $	if (f$search("''flnm'.C") .eqs. "") then goto yes_bison
 $	if (f$cvtime(f$file_attributes("''flnm'.Y","RDT")).les. -
@@ -346,10 +362,10 @@ $	 'BISON''BISON_FLAGS' 'flnm'.y
 $	 'RENAME' 'flnm'_tab.c 'flnm'.c
 $	 'RENAME' 'flnm'_tab.h 'flnm'.h
 $!'f$verify(0)
-$	if flnm.eqs."cp-parse"
+$	if flnm.eqs."cp-parse" .or. (prfx.eqs."cp" .and. flnm.eqs."parse")
 $	then		! fgrep '#define YYEMPTY' cp-parse.c >>cp-parse.h
-$		open/Append jfile$ cp-parse.h
-$		'SEARCH'/Exact/Output=jfile$ cp-parse.c "#define YYEMPTY"
+$		open/Append jfile$ 'flnm'.h
+$		'SEARCH'/Exact/Output=jfile$ 'flnm'.c "#define YYEMPTY"
 $		close jfile$
 $	endif
 $no_bison:
@@ -361,9 +377,13 @@ $!
 $set verify
 $ 'CC''CFLAGS' 'flnm'.c
 $!'f$verify(0)
+$ if prfx.nes.""
+$ then	set default [-]		!pop
+$	CFLAGS = save_CFLAGS
+$ endif
+$
 $goto loop1
 $!
-$goto loop
 $!
 $! In case of error or abort, go here (In order to close file).
 $!
