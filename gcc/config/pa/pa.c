@@ -2016,7 +2016,8 @@ output_function_prologue (file, size)
   /* Horrid hack.  emit_function_prologue will modify this RTL in
      place to get the expected results.  */
   if (profile_flag)
-    sprintf(hp_profile_label_name, "LP$%04d", hp_profile_labelno);
+    ASM_GENERATE_INTERNAL_LABEL (hp_profile_label_name, "LP",
+				 hp_profile_labelno);
 }
 
 void
