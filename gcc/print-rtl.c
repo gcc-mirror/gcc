@@ -453,9 +453,12 @@ print_rtx (in_rtx)
     case MEM:
       fputs (" [", outfile);
       fprintf (outfile, HOST_WIDE_INT_PRINT_DEC, MEM_ALIAS_SET (in_rtx));
-      if (MEM_DECL (in_rtx) && DECL_NAME (MEM_DECL (in_rtx)))
+      if (MEM_DECL (in_rtx))
 	fprintf (outfile, " %s",
-		 IDENTIFIER_POINTER (DECL_NAME (MEM_DECL (in_rtx))));
+		 DECL_NAME (MEM_DECL (in_rtx))
+		 ? IDENTIFIER_POINTER (DECL_NAME (MEM_DECL (in_rtx)))
+		 : TREE_CODE (MEM_DECL (in_rtx)) == RESULT_DECL ? "<result>"
+		 : "<anonymous>");
 
       if (MEM_OFFSET (in_rtx))
 	{

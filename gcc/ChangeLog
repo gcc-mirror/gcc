@@ -1,3 +1,8 @@
+Wed Oct 24 12:41:19 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* emit-rtl.c (set_mem_attributes): Fix typo in last change.
+	* print-rtl.c (print_rtx, case MEM): Improve display of MEM_DECL.
+
 2001-10-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* s390/linux.h (ASM_OUTPUT_BYTE): Fix format specifier warnings.
