@@ -1,5 +1,9 @@
 2001-03-15  Gabriel Dos Reis  <gdr@codesourcery.com>
 
+	* except.c: Revert previous patch.
+
+2001-03-15  Gabriel Dos Reis  <gdr@codesourcery.com>
+
 	Correct semantics restrictions checking in throw-expression.
 	* except.c (is_admissible_throw_operand): New function.
 	(build_throw): Use it.
