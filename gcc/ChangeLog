@@ -1,3 +1,7 @@
+Thu Jun 13 18:18:17 CEST 2002  Jan Hubicka   <jh@suse.cz>
+
+	* reload.c (find_valid_class):  Fix thinko in my previous patch.
+
 2002-06-13  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.h (TARGET_CPU_CPP_BUILTINS): New macro.
