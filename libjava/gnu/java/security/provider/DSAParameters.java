@@ -154,7 +154,6 @@ public byte[] engineGetEncoded(String format)
 
 public String engineToString()
 {
-	String lineSeparator = System.getProperty("line.seperator");
 	return ("q: " + q + " p: " + p + " g: " + g);
 }
 
