@@ -2024,7 +2024,9 @@ This instruction pattern moves data with that machine mode from operand
 If operand 0 is a @code{subreg} with mode @var{m} of a register whose
 own mode is wider than @var{m}, the effect of this instruction is
 to store the specified value in the part of the register that corresponds
-to mode @var{m}.  The effect on the rest of the register is undefined.
+to mode @var{m}.  Bits outside of @var{m}, but which are within the
+same target word as the @code{subreg} are undefined.  Bits which are
+outside the target word are left unchanged.
 
 This class of patterns is special in several ways.  First of all, each
 of these names up to and including full word size @emph{must} be defined,
