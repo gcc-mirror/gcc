@@ -10,6 +10,7 @@
 	* fixinc/inclhack.sh:  deleted
 	* fixinc/hackshell.tpl:  deleted
 	* fixinc/inclhack.tpl:  deleted
+	* fixinc/Makefile.in:  Remove dependencies on above
 	* fixinc/fixincl.sh:  "DO NOT EDIT" text modified
 
 2000-05-08  Andreas Jaeger  <aj@suse.de>

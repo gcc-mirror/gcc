@@ -65,14 +65,12 @@ FIOBJ   = fixincl.o server.o procopen.o $(LIBOBJ)
 
 HDR = server.h gnu-regex.h fixlib.h machname.h
 
-SH_TARGET  = inclhack.sh fixincl.sh
 BIN_TARGET = fixincl fixfixes fixtests
 
-TARGETS    = $(SH_TARGET) $(BIN_TARGET)
+TARGETS    = $(BIN_TARGET)
 
 all : $(TARGETS)
-sh  : $(SH_TARGET)
-gen : $(SH_TARGET) fixincl.x
+gen : fixincl.x
 
 $(FIOBJ): $(HDR)
 
@@ -98,12 +96,12 @@ fixlib.o: machname.h
 fixincl.x: fixincl.tpl inclhack.def
 	cd $(srcdir) ; $(SHELL) ./genfixes $@
 
-inclhack.sh: inclhack.def inclhack.tpl hackshell.tpl
-	cd $(srcdir) ; $(SHELL) ./genfixes $@
-
-# fixinc.sh, unlike the other two, has _no_ dependency on the .def file.
-fixincl.sh: inclhack.tpl
-	cd $(srcdir) ; $(SHELL) ./genfixes $@
+## inclhack.sh: inclhack.def inclhack.tpl hackshell.tpl
+## 	cd $(srcdir) ; $(SHELL) ./genfixes $@
+## 
+## # fixinc.sh, unlike the other two, has _no_ dependency on the .def file.
+## fixincl.sh: inclhack.tpl
+## 	cd $(srcdir) ; $(SHELL) ./genfixes $@
 
 #  This invocation of genfixes is done from the build dir,
 #  not the source dir (as above)
@@ -126,11 +124,7 @@ install-bin: fixincl fixincl.sh
 	    mv -f ../fixinc.sh ../fixinc.sh.$$ || exit 1 ; fi
 	./fixincl -v
 	cp fixincl ..
-	@if [ -f ./fixincl.sh ] ; \
-	then echo cp ./fixincl.sh ../fixinc.sh ; \
-		cp ./fixincl.sh ../fixinc.sh ; \
-	else echo cp $(srcdir)/fixincl.sh ../fixinc.sh ; \
-		cp $(srcdir)/fixincl.sh ../fixinc.sh ; fi
+	cp $(srcdir)/fixincl.sh ../fixinc.sh
 	chmod 755 ../fixinc.sh ../fixincl
 
 install-sh: fixfixes fixtests inclhack.sh
@@ -138,7 +132,7 @@ install-sh: fixfixes fixtests inclhack.sh
 	    mv -f ../fixinc.sh ../fixinc.sh.$$ || exit 1 ; fi
 	echo Could not install binary fixincludes.  ; \
 	echo Installing shell script instead.
-	@if [ -f ./fixincl.sh ] ; \
+	@if [ -f ./inclhack.sh ] ; \
 	then echo cp ./inclhack.sh ../fixinc.sh ; \
 		cp ./inclhack.sh ../fixinc.sh ; \
 	else echo cp $(srcdir)/inclhack.sh ../fixinc.sh ; \
