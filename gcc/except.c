@@ -412,10 +412,8 @@ init_eh (void)
       tmp = build_int_2 (FIRST_PSEUDO_REGISTER + 2 - 1, 0);
 #endif
 #else
-      /* This is 2 for builtin_setjmp, plus whatever the target requires
-	 via STACK_SAVEAREA_MODE (SAVE_NONLOCAL).  */
-      tmp = build_int_2 ((GET_MODE_SIZE (STACK_SAVEAREA_MODE (SAVE_NONLOCAL))
-			  / GET_MODE_SIZE (Pmode)) + 2 - 1, 0);
+      /* builtin_setjmp takes a pointer to 5 words.  */
+      tmp = build_int_2 (5 * BITS_PER_WORD / POINTER_SIZE - 1, 0);
 #endif
       tmp = build_index_type (tmp);
       tmp = build_array_type (ptr_type_node, tmp);
