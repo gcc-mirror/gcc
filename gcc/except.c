@@ -631,7 +631,8 @@ add_eh_table_entry (n)
 	  if (eh_table_max_size < 0)
 	    abort ();
 
-	  if ((eh_table = (int *) realloc (eh_table, eh_table_max_size))
+	  if ((eh_table = (int *) realloc (eh_table,
+					   eh_table_max_size * sizeof (int)))
 	      == 0)
 	    fatal ("virtual memory exhausted");
 	}
