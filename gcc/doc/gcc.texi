@@ -486,7 +486,7 @@ for details of the CHILL standard.
 
 @include invoke.texi
 
-@include install.texi
+@include install-old.texi
 
 @include extend.texi
 
