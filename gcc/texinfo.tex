@@ -1,5 +1,5 @@
 %% TeX macros to handle Texinfo files.
-%% $Id: texinfo.tex,v 2.193 1996/11/19 21:11:43 karl Exp eggert $
+%% $Id: texinfo.tex,v 2.194 1996/12/17 06:25:17 eggert Exp $
 
 %  Copyright (C) 1985, 86, 88, 90, 91, 92, 93,
 %                94, 95, 1996 Free Software Foundation, Inc.
@@ -36,7 +36,7 @@
 
 % This automatically updates the version number based on RCS.
 \def\deftexinfoversion$#1: #2 ${\def\texinfoversion{#2}}
-\deftexinfoversion$Revision: 2.193 $
+\deftexinfoversion$Revision: 2.194 $
 \message{Loading texinfo package [Version \texinfoversion]:}
 
 % If in a .fmt file, print the version number
@@ -105,8 +105,8 @@
 \hyphenation{eshell}
 
 % Margin to add to right of even pages, to left of odd pages.
-\newdimen \bindingoffset  
-\newdimen \normaloffset   
+\newdimen \bindingoffset
+\newdimen \normaloffset
 \newdimen\pagewidth \newdimen\pageheight
 
 % Sometimes it is convenient to have everything in the transcript file
@@ -1349,7 +1349,7 @@ where each line of input produces a line of output.}
 % Computer Modern typewriter fonts have zero interword stretch (and
 % shrink), and it is reasonable to expect all typewriter fonts to have
 % this property, we can check that font parameter.
-% 
+%
 \def\ifmonospace{\ifdim\fontdimen3\font=0pt }
 
 % Typeset a dimension, e.g., `in' or `pt'.  The only reason for the
@@ -1910,7 +1910,7 @@ July\or August\or September\or October\or November\or December\fi
 
 % To make preamble:
 %
-% Either define widths of columns in terms of percent of \hsize: 
+% Either define widths of columns in terms of percent of \hsize:
 %   @multitable @columnfractions .25 .3 .45
 %   @item ...
 %
@@ -1928,13 +1928,13 @@ July\or August\or September\or October\or November\or December\fi
 % the preamble, break the line within one argument and it
 % will parse correctly, i.e.,
 %
-%     @multitable {Column 1 template} {Column 2 template} {Column 3 
+%     @multitable {Column 1 template} {Column 2 template} {Column 3
 %      template}
 % Not:
-%     @multitable {Column 1 template} {Column 2 template} 
+%     @multitable {Column 1 template} {Column 2 template}
 %      {Column 3 template}
 
-% Each new table line starts with @item, each subsequent new column 
+% Each new table line starts with @item, each subsequent new column
 % starts with @tab. Empty columns may be produced by supplying @tab's
 % with nothing between them for as many times as empty columns are needed,
 % ie, @tab@tab@tab will produce two empty columns.
@@ -1946,15 +1946,15 @@ July\or August\or September\or October\or November\or December\fi
 
 %   @multitable {Column 1 template} {Column 2 template} {Column 3 template}
 %   @item first col stuff @tab second col stuff @tab third col
-%   @item 
-%   first col stuff 
-%   @tab 
-%   second col stuff 
-%   @tab 
-%   third col 
-%   @item first col stuff @tab second col stuff 
+%   @item
+%   first col stuff
+%   @tab
+%   second col stuff
+%   @tab
+%   third col
+%   @item first col stuff @tab second col stuff
 %   @tab Many paragraphs of text may be used in any column.
-%     
+%
 %         They will wrap at the width determined by the template.
 %   @item@tab@tab This will be in third column.
 %   @end multitable
@@ -1968,7 +1968,7 @@ July\or August\or September\or October\or November\or December\fi
 %   0pt means it depends on current normal line spacing.
 
 %%%%
-% Dimensions 
+% Dimensions
 
 \newskip\multitableparskip
 \newskip\multitableparindent
@@ -2038,18 +2038,18 @@ July\or August\or September\or October\or November\or December\fi
  % To parse everything between @multitable and @item :
 \setuptable#1 \endsetuptable
  % Need to reset this to 0 after \setuptable.
-\global\colcount=0\relax% 
+\global\colcount=0\relax%
  %
  % This preamble sets up a generic column definition, which will
  % be used as many times as user calls for columns.
- % \vtop will set a single line and will also let text wrap and 
+ % \vtop will set a single line and will also let text wrap and
  % continue for many paragraphs if desired.
 \halign\bgroup&\global\advance\colcount by 1\relax%
 \multistrut\vtop{\hsize=\expandafter\csname col\the\colcount\endcsname
  % In order to keep entries from bumping into each other
  % we will add a \leftskip of \multitablecolspace to all columns after
  % the first one.
- %  If a template has been used, we will add \multitablecolspace 
+ %  If a template has been used, we will add \multitablecolspace
  % to the width of each template entry.
  %  If user has set preamble in terms of percent of \hsize
  % we will use that dimension as the width of the column, and
@@ -2061,7 +2061,7 @@ July\or August\or September\or October\or November\or December\fi
   \ifsetpercent
   \else
    % If user has <not> set preamble in terms of percent of \hsize
-   % we will advance \hsize by \multitablecolspace 
+   % we will advance \hsize by \multitablecolspace
   \advance\hsize by \multitablecolspace
   \fi
  % In either case we will make \leftskip=\multitablecolspace:
@@ -2097,7 +2097,7 @@ July\or August\or September\or October\or November\or December\fi
 %% to keep lines equally spaced
 \let\multistrut = \strut
 %% Test to see if parskip is larger than space between lines of
-%% table. If not, do nothing. 
+%% table. If not, do nothing.
 %%        If so, set to same dimension as multitablelinespace.
 \else
 \gdef\multistrut{\vrule height\multitablelinespace depth\dp0
@@ -2613,7 +2613,7 @@ width0pt\relax} \fi
   \endgroup
   % Back to normal single-column typesetting, but take account of the
   % fact that we just accumulated some stuff on the output page.
-  \pagegoal=\vsize 
+  \pagegoal=\vsize
 }
 \def\balancecolumns{%
   % Called on the last page of the double column material.
@@ -3139,7 +3139,7 @@ width0pt\relax} \fi
 
 
 % Print any size section title.
-% 
+%
 % #1 is the section type (sec/subsec/subsubsec), #2 is the section
 % number (maybe empty), #3 the text.
 \def\sectionheading#1#2#3{%
@@ -3772,7 +3772,7 @@ width0pt\relax} \fi
 
 % This is used for \def{tp,vr}parsebody.  It could probably be used for
 % some of the others, too, with some judicious conditionals.
-% 
+%
 \def\parsebodycommon#1#2#3{%
   \begingroup\inENV %
   \medbreak %
@@ -3807,13 +3807,13 @@ width0pt\relax} \fi
 
 % Fine, but then we have to eventually remove the \empty *and* the
 % braces (if any).  That's what this does.
-% 
+%
 \def\removeemptybraces\empty#1\relax{#1}
 
 % After \spacesplit has done its work, this is called -- #1 is the final
 % thing to call, #2 the type name (which starts with \empty), and #3
 % (which might be empty) the arguments.
-% 
+%
 \def\parsetpheaderline#1#2#3{%
   #1{\removeemptybraces#2\relax}{#3}%
 }%
@@ -4186,7 +4186,7 @@ width0pt\relax} \fi
 
 % Use \turnoffactive so that punctuation chars such as underscore
 % work in node names.
-\def\dosetq #1#2{{\let\folio=0 \turnoffactive 
+\def\dosetq #1#2{{\let\folio=0 \turnoffactive
 \edef\next{\write\auxfile{\internalsetq {#1}{#2}}}%
 \next}}
 
@@ -4302,11 +4302,11 @@ width0pt\relax} \fi
   % b-title}{'hat b} and \xrdef does a \csname...\endcsname on the first
   % argument, and \hat is not an expandable control sequence.  It could
   % all be worked out, but why?  Either we support ^^ or we don't.
-  % 
+  %
   % The other change necessary for this was to define \auxhat:
   % \def\auxhat{\def^{'hat }}% extra space so ok if followed by letter
   % and then to call \auxhat in \setq.
-  % 
+  %
   \catcode`\~=\other
   \catcode`\[=\other
   \catcode`\]=\other
@@ -4389,7 +4389,7 @@ width0pt\relax} \fi
 
 % Don't bother with the trickery in plain.tex to not require the
 % footnote text as a parameter.  Our footnotes don't need to be so general.
-% 
+%
 % Oh yes, they do; otherwise, @ifset and anything else that uses
 % \parseargline fail inside footnotes because the tokens are fixed when
 % the footnote is read.  --karl, 16nov96.
