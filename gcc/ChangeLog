@@ -1,3 +1,8 @@
+2001-04-04  Bernd Schmidt  <bernds@redhat.com>
+
+	* sched-deps.c (sched_analyze_insn): Partially revert March 27
+	change.
+
 2001-04-04 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
 
 	* emit-rtl.c (mark_label_nuses) Increment the label uses for
