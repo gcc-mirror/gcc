@@ -1047,14 +1047,14 @@ move\\t%0,%z4\\n\\
    (set_attr "mode"	"SI")
    (set_attr "length"	"1")])
 
-(define_expand "negdi3"
+(define_expand "negdi2"
   [(parallel [(set (match_operand:DI 0 "register_operand" "=d")
 		   (neg:DI (match_operand:DI 1 "register_operand" "d")))
 	      (clobber (match_dup 2))])]
   "!TARGET_DEBUG_G_MODE"
   "operands[2] = gen_reg_rtx (SImode);")
 
-(define_insn "negdi3_internal"
+(define_insn "negdi2_internal"
   [(set (match_operand:DI 0 "register_operand" "=d")
 	(neg:DI (match_operand:DI 1 "register_operand" "d")))
    (clobber (match_operand:SI 2 "register_operand" "=d"))]
