@@ -916,7 +916,9 @@ gfc_build_pointer_type (gfc_symbol * sym, tree type)
 /* Return the type for a symbol.  Special handling is required for character
    types to get the correct level of indirection.
    For functions return the return type.
-   For subroutines return void_type_node.  */
+   For subroutines return void_type_node.
+   Calling this multiple times for the same symbol should be avoided,
+   especially for character and array types.  */
 
 tree
 gfc_sym_type (gfc_symbol * sym)

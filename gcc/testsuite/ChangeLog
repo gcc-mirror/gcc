@@ -1,3 +1,9 @@
+2004-07-10 Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+	Paul Brook  <paul@codesourcery.com>
+
+	PR fortran/13415
+	* gfortran.dg/common_pointer_1.f90: New test.
+
 2004-07-10  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	* g++.dg/lookup/new1.C: Fix dg-excess-error syntax.

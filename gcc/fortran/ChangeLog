@@ -1,3 +1,14 @@
+2004-07-10 Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+	Paul Brook  <paul@codesourcery.com>
+
+	PR fortran/13415
+	* trans-common.c (calculate_length): Remove ...
+	(get_segment_info): Merge into here.  Save field type.
+	(build_field): Use saved type.
+	(create_common, new_condition, new_segment, finish_equivalences):
+	Use new get_segment_info.
+	* trans-types.c: Update comment.
+
 2004-07-09  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 	
 	PR fortran/14077
