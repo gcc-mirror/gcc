@@ -1918,6 +1918,7 @@ extern tree long_long_integer_type_node, long_long_unsigned_type_node;
 extern tree integer_two_node, integer_three_node;
 extern tree boolean_type_node, boolean_true_node, boolean_false_node;
 
+extern tree ansi_null_node;
 extern tree null_node;
 
 /* in pt.c  */

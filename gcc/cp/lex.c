@@ -777,7 +777,15 @@ init_parse (filename)
   TREE_TYPE (signature_type_node) = signature_type_node;
   ridpointers[(int) RID_SIGNATURE] = signature_type_node;
 
-  null_node = build_int_2 (0, 0);
+  /* Create the built-in __null node.  Note that we can't yet call for
+     type_for_size here because integer_type_node and so forth are not
+     set up.  Therefore, we don't set the type of these nodes until
+     init_decl_processing.  */
+  ansi_null_node = build_int_2 (0, 0);
+  if (flag_ansi)
+    null_node = ansi_null_node;
+  else
+    null_node = build_int_2 (0, 0);
   ridpointers[RID_NULL] = null_node;
 
   opname_tab[(int) COMPONENT_REF] = "->";

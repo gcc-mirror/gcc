@@ -3244,6 +3244,15 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
   /* Nonzero means set RESULT_TYPE to the common type of the args.  */
   int common = 0;
 
+  /* Unless -ansi is specified, __null has pointer type.  But, then,
+     things like `7 != NULL' result in errors about comparisons
+     between pointers and integers.  So, here, we replace __null with
+     an appropriate null pointer constant.  */
+  if (orig_op0 == null_node)
+    orig_op0 = ansi_null_node;
+  if (orig_op1 == null_node)
+    orig_op1 = ansi_null_node;
+
   /* Apply default conversions.  */
   if (code == TRUTH_AND_EXPR || code == TRUTH_ANDIF_EXPR
       || code == TRUTH_OR_EXPR || code == TRUTH_ORIF_EXPR
