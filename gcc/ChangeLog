@@ -1,3 +1,8 @@
+Thu Sep 30 18:31:36 1999  Jan Hubicka  <hubicka@freesoft.cz>
+
+	* alias.c: Include insn-flags.h.
+	* Makefile.in (alias.o): Update.
+
 Thu Sep 30 18:21:30 1999  Jan Hubicka  <hubicka@freesoft.cz>
 
 	* i386.c (ix86_expand_int_movcc): Convert LEU and GTU comparisons
