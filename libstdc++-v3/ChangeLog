@@ -1,5 +1,11 @@
 2004-11-27  Paolo Carlini  <pcarlini@suse.de>
 
+	PR libstdc++/18690
+	* include/tr1/utility (get(pair), get(const pair)): Change
+	occurrences of _I to _Int.
+
+2004-11-27  Paolo Carlini  <pcarlini@suse.de>
+
 	* testsuite/27_io/basic_istream/getline/wchar_t/2.cc: Fix typo.
 	* testsuite/27_io/basic_istream/getline/wchar_t/4.cc: Likewise.
 
