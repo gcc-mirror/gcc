@@ -1,3 +1,8 @@
+2003-10-28  Andreas Jaeger  <aj@suse.de>
+
+	* ggc-zone.c (check_cookies): Add missing variable.
+	Add void to prototypes.
+
 2003-10-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* config/mips/irix6-libc-compat.c (inet_makeaddr): Prototype.
