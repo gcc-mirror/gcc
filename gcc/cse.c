@@ -7653,15 +7653,13 @@ invalidate_from_clobbers (w, x)
   if (GET_CODE (x) == CLOBBER)
     {
       rtx ref = XEXP (x, 0);
-      if (ref)
-	{
-	  if (GET_CODE (ref) == REG || GET_CODE (ref) == SUBREG
-	      || (GET_CODE (ref) == MEM && ! w->all))
-	    invalidate (ref, VOIDmode);
-	  else if (GET_CODE (ref) == STRICT_LOW_PART
-		   || GET_CODE (ref) == ZERO_EXTRACT)
-	    invalidate (XEXP (ref, 0), GET_MODE (ref));
-	}
+
+      if (GET_CODE (ref) == REG || GET_CODE (ref) == SUBREG
+	  || (GET_CODE (ref) == MEM && ! w->all))
+	invalidate (ref, VOIDmode);
+      else if (GET_CODE (ref) == STRICT_LOW_PART
+	       || GET_CODE (ref) == ZERO_EXTRACT)
+	invalidate (XEXP (ref, 0), GET_MODE (ref));
     }
   else if (GET_CODE (x) == PARALLEL)
     {
