@@ -2691,29 +2691,59 @@ ix86_function_value (tree valtype)
 int
 ix86_return_in_memory (tree type)
 {
-  int needed_intregs, needed_sseregs;
+  int needed_intregs, needed_sseregs, size;
+  enum machine_mode mode = TYPE_MODE (type);
+
   if (TARGET_64BIT)
+    return !examine_argument (mode, type, 1, &needed_intregs, &needed_sseregs);
+
+  if (mode == BLKmode)
+    return 1;
+
+  size = int_size_in_bytes (type);
+
+  if (MS_AGGREGATE_RETURN && AGGREGATE_TYPE_P (type) && size <= 8)
+    return 0;
+
+  if (VECTOR_MODE_P (mode) || mode == TImode)
     {
-      return !examine_argument (TYPE_MODE (type), type, 1,
-				&needed_intregs, &needed_sseregs);
-    }
-  else
-    {
-      if (TYPE_MODE (type) == BLKmode)
-	return 1;
-      else if (MS_AGGREGATE_RETURN
-	       && AGGREGATE_TYPE_P (type)
-	       && int_size_in_bytes(type) <= 8)
+      /* User-created vectors small enough to fit in EAX.  */
+      if (size < 8)
 	return 0;
-      else if ((VECTOR_MODE_P (TYPE_MODE (type))
-	        && int_size_in_bytes (type) == 8)
-	       || (int_size_in_bytes (type) > 12
-		   && TYPE_MODE (type) != TImode
-		   && TYPE_MODE (type) != TFmode
-		   && !VECTOR_MODE_P (TYPE_MODE (type))))
+
+      /* MMX/3dNow values are returned on the stack, since we've
+	 got to EMMS/FEMMS before returning.  */
+      if (size == 8)
 	return 1;
-      return 0;
+
+      /* SSE values are returned in XMM0.  */
+      /* ??? Except when it doesn't exist?  We have a choice of
+	 either (1) being abi incompatible with a -march switch,
+	 or (2) generating an error here.  Given no good solution,
+	 I think the safest thing is one warning.  The user won't
+	 be able to use -Werror, but...  */
+      if (size == 16)
+	{
+	  static bool warned;
+
+	  if (TARGET_SSE)
+	    return 0;
+
+	  if (!warned)
+	    {
+	      warned = true;
+	      warning ("SSE vector return without SSE enabled "
+		       "changes the ABI");
+	    }
+	  return 1;
+	}
     }
+
+  if (mode == TFmode)
+    return 0;
+  if (size > 12)
+    return 1;
+  return 0;
 }
 
 /* Define how to find the value returned by a library function
@@ -2746,10 +2776,14 @@ ix86_libcall_value (enum machine_mode mode)
 static int
 ix86_value_regno (enum machine_mode mode)
 {
+  /* Floating point return values in %st(0).  */
   if (GET_MODE_CLASS (mode) == MODE_FLOAT && TARGET_FLOAT_RETURNS_IN_80387)
     return FIRST_FLOAT_REG;
-  if (mode == TImode || VECTOR_MODE_P (mode))
+  /* 16-byte vector modes in %xmm0.  See ix86_return_in_memory for where
+     we prevent this case when sse is not available.  */
+  if (mode == TImode || (VECTOR_MODE_P (mode) && GET_MODE_SIZE (mode) == 16))
     return FIRST_SSE_REG;
+  /* Everything else in %eax.  */
   return 0;
 }
 

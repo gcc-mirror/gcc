@@ -1,3 +1,9 @@
+2003-08-24  Richard Henderson  <rth@redhat.com>
+
+	* config/i386.i386.c (ix86_return_in_memory): Reformat.  Return true
+	for 16-byte vector modes if sse not enabled; warn for abi change.
+	(ix86_value_regno): Only return xmm0 for 16-byte vector types.
+
 2003-08-24  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* rtlanal.c (may_trap_p): Simplify an integer comparison.
