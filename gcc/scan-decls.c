@@ -17,11 +17,9 @@ Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 
    Written by Per Bothner <bothner@cygnus.com>, July 1993.  */
 
-#ifdef OLD
-#endif
-
 #include <stdio.h>
 #include <ctype.h>
+#include "hconfig.h"
 #include "scan.h"
 
 sstring buf;
