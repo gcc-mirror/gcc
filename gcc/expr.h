@@ -340,7 +340,6 @@ extern rtx get_condition PARAMS ((rtx, rtx *));
 extern rtx gen_cond_trap PARAMS ((enum rtx_code, rtx, rtx, rtx));
 
 /* Functions from builtins.c:  */
-#ifdef TREE_CODE
 extern rtx expand_builtin PARAMS ((tree, rtx, rtx, enum machine_mode, int));
 extern void std_expand_builtin_va_start PARAMS ((int, tree, rtx));
 extern rtx std_expand_builtin_va_arg PARAMS ((tree, tree));
@@ -348,12 +347,11 @@ extern rtx expand_builtin_va_arg PARAMS ((tree, tree));
 extern void default_init_builtins PARAMS ((void));
 extern rtx default_expand_builtin PARAMS ((tree, rtx, rtx,
 					   enum machine_mode, int));
-#endif
-
 extern void expand_builtin_setjmp_setup PARAMS ((rtx, rtx));
 extern void expand_builtin_setjmp_receiver PARAMS ((rtx));
 extern void expand_builtin_longjmp PARAMS ((rtx, rtx));
 extern rtx expand_builtin_saveregs PARAMS ((void));
+extern void expand_builtin_trap PARAMS ((void));
 extern HOST_WIDE_INT get_varargs_alias_set PARAMS ((void));
 extern HOST_WIDE_INT get_frame_alias_set PARAMS ((void));
 extern void record_base_value		PARAMS ((unsigned int, rtx, int));
