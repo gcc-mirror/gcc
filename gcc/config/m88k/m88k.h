@@ -95,6 +95,8 @@ extern struct rtx_def *m88k_compare_reg;
 extern struct rtx_def *m88k_compare_op0;
 extern struct rtx_def *m88k_compare_op1;
 
+extern enum attr_cpu m88k_cpu;
+
 extern int null_epilogue ();
 extern int integer_ok_for_set ();
 extern int m88k_debugger_offset ();
@@ -202,9 +204,9 @@ extern char * reg_names[];
 /* Print subsidiary information on the compiler version in use.
    Redefined in m88kv4.h, and m88kluna.h.  */
 #define VERSION_INFO1	"88open OCS/BCS, "
-#define VERSION_INFO2	"12 Feb 1992"
+#define VERSION_INFO2	"28 Feb 1992"
 #define VERSION_STRING	version_string
-#define	TM_SCCS_ID	"@(#)m88k.h	1.96.5.5 12 Feb 1992 12:59:25"
+#define	TM_SCCS_ID	"@(#)m88k.h	2.0.2.1 28 Feb 1992 12:37:41"
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
@@ -301,6 +303,9 @@ extern char * reg_names[];
 									     \
     if ((target_flags & MASK_88000) == 0)				     \
       target_flags |= CPU_DEFAULT;					     \
+									     \
+    m88k_cpu = (TARGET_88000 ? CPU_M88000				     \
+		: (TARGET_88100 ? CPU_M88100 : CPU_M88110));		     \
 									     \
     if (TARGET_BIG_PIC)							     \
       flag_pic = 2;							     \

@@ -152,6 +152,11 @@ print_operand_address (file, addr)
 	  reg1 = XEXP (addr, 1);
 	  addr = XEXP (addr, 0);
 	}
+      else if (GET_CODE (XEXP (addr, 0)) == REG)
+	{
+	  reg1 = XEXP (addr, 0);
+	  addr = XEXP (addr, 1);
+	}
       else
 	abort ();
 
