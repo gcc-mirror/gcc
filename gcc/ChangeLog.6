@@ -16990,7 +16990,7 @@ Fri Jul 20 13:24:16 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* Makefile.in (toplev.o, dwarfout.o, final.o): Don't depend on
 	dwarfout.h.
-	* dbxout.c (dbxout_function): Rename dbxout_funciton_decl, move
+	* dbxout.c (dbxout_function): Rename dbxout_function_decl, move
 	to conditionally compiled block.
 	(dbx_debug_hooks, xcoff_debug_hooks): Update.
 	* dbxout.h (dbxout_function): Remove.
@@ -18418,7 +18418,7 @@ Mon Jul  9 06:41:07 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* config/ia64/ia64.c (ia64_output_end_prologue): Rename to
 	ia64_output_function_end_prologue.  Use in target struct
 	and make static.
-	(ia64_function_prologue, ia64_funciton_epilogue): Rename
+	(ia64_function_prologue, ia64_function_epilogue): Rename
 	mistyped prototypes.
 	* config/ia64/ia64.h (FUNCTION_END_PROLOGUE): Delete.
 	* config/m88k/m88k-protos.h (m88k_end_prologue, m88k_begin_epilogue):

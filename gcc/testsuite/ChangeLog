@@ -6659,7 +6659,7 @@ Mon Oct  9 23:32:06 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.c-torture/execute/divmod-1.c (mod5): New function - perform
 	a signed long modulo operation.
-	(mod6): New funciton - perform an unsigned long modulo operation.
+	(mod6): New function - perform an unsigned long modulo operation.
 	(main): Add tests for modulos of very large numbers by very small
 	dividends.
 
