@@ -485,8 +485,12 @@ find_basic_blocks (f, nonlocal_label_list)
 	prev_code = code;
     }
 
-  if (i + 1 != n_basic_blocks)
+  /* During the second pass, `n_basic_blocks' is only an upper bound.
+     Only perform the sanity check for the first pass, and on the second
+     pass ensure `n_basic_blocks' is set to the correct value.  */
+  if (pass == 1 && i + 1 != n_basic_blocks)
     abort ();
+  n_basic_blocks = i + 1;
 
   /* Don't delete the labels (in this function)
      that are referenced by non-jump instructions.  */
@@ -743,6 +747,10 @@ find_basic_blocks (f, nonlocal_label_list)
 	{
 	  pass++;
 	  n_basic_blocks -= deleted;
+	  /* `n_basic_blocks' may not be correct at this point: two previously
+	     separate blocks may now be merged.  That's ok though as we
+	     recalculate it during the second pass.  It certainly can't be
+	     any larger than the current value.  */
 	  goto restart;
 	}
     }
