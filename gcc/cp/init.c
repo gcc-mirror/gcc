@@ -1762,7 +1762,7 @@ build_new_1 (tree exp)
      from ELT_TYPE for a multi-dimensional array; ELT_TYPE is never an
      ARRAY_TYPE, but TYPE may be an ARRAY_TYPE.  */
   tree type;
-  /* A pointer type pointing to to the FULL_TYPE.  */
+  /* A pointer type pointing to the FULL_TYPE.  */
   tree full_pointer_type;
   tree outer_nelts = NULL_TREE;
   tree nelts = NULL_TREE;

@@ -538,8 +538,7 @@ build_conv (conversion_kind code, tree type, conversion *from)
 }
 
 /* Build a representation of the identity conversion from EXPR to
-   itself.  The TYPE should match the the type of EXPR, if EXPR is
-   non-NULL.  */
+   itself.  The TYPE should match the type of EXPR, if EXPR is non-NULL.  */
 
 static conversion *
 build_identity_conv (tree type, tree expr)
@@ -2450,7 +2449,7 @@ print_z_candidates (struct z_candidate *candidates)
 /* USER_SEQ is a user-defined conversion sequence, beginning with a
    USER_CONV.  STD_SEQ is the standard conversion sequence applied to
    the result of the conversion function to convert it to the final
-   desired type.  Merge the the two sequences into a single sequence,
+   desired type.  Merge the two sequences into a single sequence,
    and return the merged sequence.  */
 
 static conversion *
