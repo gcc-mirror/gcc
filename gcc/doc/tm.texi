@@ -2419,10 +2419,17 @@ for a @samp{moveq} instruction, the value of this macro is always
 @code{DATA_REGS} as long as @var{class} includes the data registers.
 Requiring a data register guarantees that a @samp{moveq} will be used.
 
-If @var{x} is a @code{const_double}, by returning @code{NO_REGS}
-you can force @var{x} into a memory constant.  This is useful on
-certain machines where immediate floating values cannot be loaded into
-certain kinds of registers.
+One case where @code{PREFERRED_RELOAD_CLASS} must not return
+@var{class} is if @var{x} is a legitimate constant which cannot be
+loaded into some register class.  By returning @code{NO_REGS} you can
+force @var{x} into a memory location.  For example, rs6000 can load
+immediate values into general-purpose registers, but does not have an
+instruction for loading an immediate value into a floating-point
+register, so @code{PREFERRED_RELOAD_CLASS} returns @code{NO_REGS} when
+@var{x} is a floating-point constant.  If the constant can't be loaded
+into any kind of register, code generation will be better if
+@code{LEGITIMATE_CONSTANT_P} makes the constant illegitimate instead
+of using @code{PREFERRED_RELOAD_CLASS}.
 @end defmac
 
 @defmac PREFERRED_OUTPUT_RELOAD_CLASS (@var{x}, @var{class})
