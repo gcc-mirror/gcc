@@ -1,3 +1,8 @@
+2001-05-06  Andreas Jaeger  <aj@suse.de>
+
+	* invoke.texi (Option Summary): Add -momit-leaf-frame-pointer
+	(i386 Options): Document -momit-leaf-frame-pointer.
+
 Sun May  6 10:54:20 2001  Jim Wilson  <wilson@redhat.com>
 
 	* dwarf2out.c (output_line_info): Fix typo.
@@ -49,7 +54,7 @@ Sun May  6 10:54:20 2001  Jim Wilson  <wilson@redhat.com>
 	(L_regs_d3_4): New for _.d3 and _.d4.
 	(L_regs_d5_6): Likewise.
 	(L_regs_d1_2): Likewise.
-	* config/m68hc11/t-m68hc11-gas (T_CPPFLAGS): Compile new parts.	
+	* config/m68hc11/t-m68hc11-gas (T_CPPFLAGS): Compile new parts.
 
 2001-05-04  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
@@ -62,7 +67,7 @@ Sun May  6 10:54:20 2001  Jim Wilson  <wilson@redhat.com>
 	* config/m68hc11/larith.asm (divmodhi4): Empty for 68HC12.
 	(__mulsi3): Rewrite for 68HC12.
 	* config/m68hc11/m68hc11.md (divmodhi4): Use idivs for 68HC12.
-	Mark 'x' constraint with earlyclobber to prevent a 
+	Mark 'x' constraint with earlyclobber to prevent a
 	RELOAD_FOR_OTHER_ADDRESS to go in it.
 	(mulhi3_m68hc12): New pattern.
 	(mulhi3_m68hc11): Rename of mulhi3.
@@ -97,7 +102,7 @@ Sun May  6 10:54:20 2001  Jim Wilson  <wilson@redhat.com>
 2001-05-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* hash.c (hash_lookup): Likewise.
-	
+
 	* hash.h (hash_lookup): Likewise.
 
 	* tlink.c (symbol_hash_lookup, demangled_hash_lookup): Likewise.
@@ -224,9 +229,9 @@ Wed May  2 13:09:36 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-04-30  Mark Mitchell  <mark@codesourcery.com>
             Richard Henderson  <rth@redhat.com>
-	
+
 	* extend.texi: Improve documentation of volatile asms.
-	
+
 2001-04-30  Mark Mitchell  <mark@codesourcery.com>
 
 	* c-tree.texi: Fix thinko.
