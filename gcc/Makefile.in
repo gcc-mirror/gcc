@@ -1361,8 +1361,8 @@ errors.o : errors.c $(GCONFIG_H) $(SYSTEM_H) errors.h
 	$(CC) -c $(ALL_CFLAGS) -DGENERATOR_FILE $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
 varasm.o : varasm.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(RTL_H) flags.h \
-   function.h $(EXPR_H) hard-reg-set.h $(REGS_H) \
-   xcoffout.h output.h c-pragma.h toplev.h dbxout.h sdbout.h $(GGC_H) $(TM_P_H)
+   function.h $(EXPR_H) hard-reg-set.h $(REGS_H) $(OBSTACK_H) \
+   output.h c-pragma.h toplev.h debug.h $(GGC_H) $(TM_P_H) $(HASHTAB_H)
 function.o : function.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TREE_H) flags.h \
    function.h $(EXPR_H) $(REGS_H) hard-reg-set.h \
    insn-config.h $(RECOG_H) output.h toplev.h except.h hash.h $(GGC_H) $(TM_P_H)

@@ -1,3 +1,13 @@
+2001-07-22  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* varasm.c: Don't inlcude dbxout.h, sdbout.h or xcoffout.h.
+	(asm_out_file): Remove redundant declaration.
+	(assemble_asm): Remove old #if 0 block.
+	(assemble_variable): Remove end of function; debug output is
+	now handled with global_decl.  Remove old #if 0 block.  Update.
+	Remove saved_in_section and associated no-op code.
+	* Makefile.in (varasm.o): Correct dependencies.
+
 Sun Jul 22 17:55:11 2001  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/i386/freebsd-aout.h (ASM_PREFERRED_EH_DATA_FORMAT): Use
