@@ -144,7 +144,7 @@ extern rtx rs6000_machopic_legitimize_pic_address (rtx orig,
 #endif /* RTX_CODE */
 
 #ifdef TREE_CODE
-extern int rs6000_special_round_type_align (tree, int, int);
+extern unsigned int rs6000_special_round_type_align (tree, int, int);
 extern void function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
 					  tree, int);
 extern int function_arg_boundary (enum machine_mode, tree);
