@@ -3663,10 +3663,8 @@ fold (expr)
 		    return t;
 
 		  /* Otherwise return (CON +- ARG1) - VAR.  */
-		  TREE_SET_CODE (t, MINUS_EXPR);
-		  TREE_OPERAND (t, 1) = var;
-		  TREE_OPERAND (t, 0)
-		    = fold (build (code, TREE_TYPE (t), con, arg1));
+		  t = build (MINUS_EXPR, type,
+			     fold (build (code, type, con, arg1)), var);
 		}
 	      else
 		{
@@ -3682,9 +3680,9 @@ fold (expr)
 		    return t;
 
 		  /* Otherwise return VAR +- (ARG1 +- CON).  */
-		  TREE_OPERAND (t, 1) = tem
-		    = fold (build (code, TREE_TYPE (t), arg1, con));
-		  TREE_OPERAND (t, 0) = var;
+		  tem = fold (build (code, type, arg1, con));
+		  t = build (code, type, var, tem);
+
 		  if (integer_zerop (tem)
 		      && (code == PLUS_EXPR || code == MINUS_EXPR))
 		    return convert (type, var);
@@ -3725,9 +3723,9 @@ fold (expr)
 				       convert (TREE_TYPE (t), con)));
 		}
 
-	      TREE_OPERAND (t, 0)
-		= fold (build (code, TREE_TYPE (t), arg0, con));
-	      TREE_OPERAND (t, 1) = var;
+	      t = build (TREE_CODE (t), type,
+			 fold (build (code, TREE_TYPE (t), arg0, con)), var);
+
 	      if (integer_zerop (TREE_OPERAND (t, 0))
 		  && TREE_CODE (t) == PLUS_EXPR)
 		return convert (TREE_TYPE (t), var);
@@ -4270,12 +4268,12 @@ fold (expr)
 	 and the other one.  */
       {
 	tree constop = 0, varop;
-	tree *constoploc;
+	int constopnum = -1;
 
 	if (TREE_CONSTANT (arg1))
-	  constoploc = &TREE_OPERAND (t, 1), constop = arg1, varop = arg0;
+	  constopnum = 1, constop = arg1, varop = arg0;
 	if (TREE_CONSTANT (arg0))
-	  constoploc = &TREE_OPERAND (t, 0), constop = arg0, varop = arg1;
+	  constopnum = 0, constop = arg0, varop = arg1;
 
 	if (constop && TREE_CODE (varop) == POSTINCREMENT_EXPR)
 	  {
@@ -4291,7 +4289,10 @@ fold (expr)
 		  = fold (build (PLUS_EXPR, TREE_TYPE (varop),
 				 constop, TREE_OPERAND (varop, 1)));
 		TREE_SET_CODE (varop, PREINCREMENT_EXPR);
-		*constoploc = newconst;
+
+		t = build (code, type, TREE_OPERAND (t, 0),
+			   TREE_OPERAND (t, 1));
+		TREE_OPERAND (t, constopnum) = newconst;
 		return t;
 	      }
 	  }
@@ -4305,7 +4306,9 @@ fold (expr)
 		  = fold (build (MINUS_EXPR, TREE_TYPE (varop),
 				 constop, TREE_OPERAND (varop, 1)));
 		TREE_SET_CODE (varop, PREDECREMENT_EXPR);
-		*constoploc = newconst;
+		t = build (code, type, TREE_OPERAND (t, 0),
+			   TREE_OPERAND (t, 1));
+		TREE_OPERAND (t, constopnum) = newconst;
 		return t;
 	      }
 	  }
@@ -4320,16 +4323,15 @@ fold (expr)
 	    {
 	    case GE_EXPR:
 	      code = GT_EXPR;
-	      TREE_SET_CODE (t, code);
 	      arg1 = const_binop (MINUS_EXPR, arg1, integer_one_node, 0);
-	      TREE_OPERAND (t, 1) = arg1;
+	      t = build (code, type, TREE_OPERAND (t, 0), arg1);
 	      break;
 
 	    case LT_EXPR:
 	      code = LE_EXPR;
-	      TREE_SET_CODE (t, code);
 	      arg1 = const_binop (MINUS_EXPR, arg1, integer_one_node, 0);
-	      TREE_OPERAND (t, 1) = arg1;
+	      t = build (code, type, TREE_OPERAND (t, 0), arg1);
+	      break;
 	    }
 	}
 
@@ -4734,10 +4736,10 @@ fold (expr)
 
 	  if (TREE_CODE (tem) != TRUTH_NOT_EXPR)
 	    {
-	      arg0 = TREE_OPERAND (t, 0) = tem;
+	      t = build (code, type, tem,
+			 TREE_OPERAND (t, 2), TREE_OPERAND (t, 1));
+	      arg0 = tem;
 	      arg1 = TREE_OPERAND (t, 2);
-	      TREE_OPERAND (t, 2) = TREE_OPERAND (t, 1);
-	      TREE_OPERAND (t, 1) = arg1;
 	      STRIP_NOPS (arg1);
 	    }
 	}
@@ -4837,8 +4839,9 @@ fold (expr)
 	      {
 	      case EQ_EXPR:
 		/* We can replace A with C1 in this case.  */
-		arg1 = TREE_OPERAND (t, 1)
-		  = convert (type, TREE_OPERAND (arg0, 1));
+		arg1 = convert (type, TREE_OPERAND (arg0, 1));
+		t = build (code, type, TREE_OPERAND (t, 0), arg1,
+			   TREE_OPERAND (t, 2));
 		break;
 
 	      case LT_EXPR:
@@ -4898,10 +4901,10 @@ fold (expr)
 
 	  if (TREE_CODE (tem) != TRUTH_NOT_EXPR)
 	    {
-	      arg0 = TREE_OPERAND (t, 0) = tem;
+	      t = build (code, type, tem,
+			 TREE_OPERAND (t, 2), TREE_OPERAND (t, 1));
+	      arg0 = tem;
 	      arg1 = TREE_OPERAND (t, 2);
-	      TREE_OPERAND (t, 2) = TREE_OPERAND (t, 1);
-	      TREE_OPERAND (t, 1) = arg1;
 	      STRIP_NOPS (arg1);
 	    }
 	}
