@@ -1,3 +1,15 @@
+2003-03-04  Andreas Jaeger  <aj@suse.de>
+
+	* configure.in: Check for <memcheck.h>.
+        * configure: Regenerated.
+
+	* config.in: Define HAVE_MEMCHECK_H.
+
+	* ggc-common.c: Use <memcheck.h> if available instead of
+	<valgrind.h>.
+	* ggc-page.c: Likewise.
+	* cppfiles.c: Likewise.
+
 2003-03-04  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (*extzv_8_8): Fix cc and lengths.
@@ -187,7 +199,7 @@ Mon Mar  3 19:07:21 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* configure.in (HAVE_AS_LTOFFX_LDXMOV_RELOCS): New ia64 test.
 	* config.in, configure: Rebuild.
 	* config/ia64/ia64.c (ia64_ld_address_bypass_p): Accept lo_sum.
-	* config/ia64/ia64.md (load_symptr): Use high/lo_sum for the 
+	* config/ia64/ia64.md (load_symptr): Use high/lo_sum for the
 	paired ldtoffx and ldxmov annotations.
 	(load_symptr_internal1): Remove.
 	(load_symptr_high, load_symptr_low): New.
@@ -202,7 +214,7 @@ Mon Mar  3 19:07:21 CET 2003  Jan Hubicka  <jh@suse.cz>
 	a separate limit for the RTL inliner.
 	* params.h: Likewise.
 	* integrate.c (function_cannot_inline_p): Use it.
-	* toplev.c (decode_f_option): Set multiple parameters 
+	* toplev.c (decode_f_option): Set multiple parameters
 	controlling inlining with -finline-limit.
 	* params.def: Fix orthographic and typographic errors.
 	* doc/invoke.texi: Document parameters controlling inlining
@@ -244,7 +256,7 @@ Mon Mar  3 19:07:21 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* config/m68hc11/m68hc11.c (m68hc11_shift_operator): New function.
 	* config/m68hc11/m68hc11-protos.h (m68hc11_shift_operator): Declare.
 	* config/m68hc11/m68hc11.h (PREDICATE_CODES): Register.
-	* config/m68hc11/m68hc11.md ("rotrhi3", "rotlhi3"): New patterns for 
+	* config/m68hc11/m68hc11.md ("rotrhi3", "rotlhi3"): New patterns for
 	rotatert and rotate.
 	("rotrhi3_const", "rotlhi3_const"): Rename of old 'rotrhi3' insns.
 	("*rotrhi3", "*rotlhi3"): New insn pattern for non-const rotatert.
@@ -476,7 +488,7 @@ Mon Mar  3 19:07:21 CET 2003  Jan Hubicka  <jh@suse.cz>
 2003-02-28  Joel Sherrill <joel@OARcorp.com>
 
 	PR 9638/other
-	* config/i386/i386.c (DEFAULT_PCC_STRUCT_RETURN): Ensure the 
+	* config/i386/i386.c (DEFAULT_PCC_STRUCT_RETURN): Ensure the
 	this constant defaults to 1.
 
 2003-02-28  Bob Wilson  <bob.wilson@acm.org>
@@ -485,7 +497,7 @@ Mon Mar  3 19:07:21 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-02-28  Richard Earnshaw  <rearnsha@arm.com>
 
-	* arm.md (mulhisi3, mulhisi3addsi, mulhidi3adddi): Enable for any 
+	* arm.md (mulhisi3, mulhisi3addsi, mulhidi3adddi): Enable for any
 	ARMv5e processor, not just for XScale.  Instructions are predicable.
 	(mulhisi3tb, mulhisi3bt, mulhisi3tt): New patterns for ARMv5e.
 
@@ -658,7 +670,7 @@ Wed Feb 26 19:46:25 CET 2003  Jan Hubicka  <jh@suse.cz>
         * config/arm/cirrus.md ("cirrus_fpu" attribute): Delete.
         ("cirrus_type" attribute): Delete - use "type" instead.
         ("cirrus" attribute): Replace 'no' with 'not' and 'yes' with
-        'normal'.        
+        'normal'.
 
 Tue Feb 25 22:46:27 CET 2003  Jan Hubicka  <jh@suse.cz>
 
@@ -804,7 +816,7 @@ Tue Feb 25 22:46:27 CET 2003  Jan Hubicka  <jh@suse.cz>
 	entry.
 	(add_forward_dependence): New function.
 	(compute_forward_dependences): Use the function.
-	
+
 	* sched-ebb.c (earliest_block_with_similiar_load): New function.
 	(add_deps_for_risky_insns): New function.
 	(schedule_ebb): Call the function.
@@ -878,12 +890,12 @@ Mon Feb 24 22:08:22 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* doc/extend.texi (Tru64 Pragmas): Reflect this.
 
 	* fixinc/inclhack.def (alpha___extern_prefix): Indicate #pragma
-	extern_prefix support for Tru64 UNIX V5 <sys/stat.h>. 
+	extern_prefix support for Tru64 UNIX V5 <sys/stat.h>.
 	* fixinc/fixincl.x: Regenerate.
 	* fixinc/tests/base/sys/stat.h [ALPHA___EXTERN_PREFIX_CHECK]: New
 	testcase.
 	Fixes PR c/5059, c/6126, other/9671.
-	
+
 2003-02-24  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.c (do_spec_1) ['{']:  Handle pending argument upon return
