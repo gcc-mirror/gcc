@@ -2509,8 +2509,7 @@ build_array_ref (array, idx)
 	return error_mark_node;
       }
 
-    return build_indirect_ref (build_binary_op_nodefault (PLUS_EXPR, ar,
-							  ind, PLUS_EXPR),
+    return build_indirect_ref (build_binary_op (PLUS_EXPR, ar, ind),
 			       "array indexing");
   }
 }
@@ -2836,9 +2835,11 @@ get_member_function_from_ptrfunc (instance_ptrptr, function)
       fntype = TYPE_PTRMEMFUNC_FN_TYPE (TREE_TYPE (function));
       basetype = TYPE_METHOD_BASETYPE (TREE_TYPE (fntype));
 
-      delta = cp_convert (ptrdiff_type_node,
-			  build_component_ref (function, delta_identifier,
-					       NULL_TREE, 0));
+      /* Convert down to the right base, before using the instance.  */
+      instance = convert_pointer_to_real (basetype, instance_ptr);
+      if (instance == error_mark_node && instance_ptr != error_mark_node)
+	return instance;
+
       e3 = PFN_FROM_PTRMEMFUNC (function);
 
       /* This used to avoid checking for virtual functions if basetype
@@ -2853,27 +2854,42 @@ get_member_function_from_ptrfunc (instance_ptrptr, function)
 	 load-with-sign-extend, while the second used normal load then
 	 shift to sign-extend.  An optimizer flaw, perhaps, but it's
 	 easier to make this change.  */
-      idx = save_expr (default_conversion
+      if (flag_new_abi)
+	{
+	  idx = build_binary_op (TRUNC_DIV_EXPR, 
+				 build1 (NOP_EXPR, vtable_index_type, e3),
+				 integer_two_node);
+	  e1 = build_binary_op (BIT_AND_EXPR,
+				build1 (NOP_EXPR, vtable_index_type, e3),
+				integer_one_node);
+	}
+      else
+	{
+	  idx = save_expr (default_conversion
 		       (build_component_ref (function,
 					     index_identifier,
 					     NULL_TREE, 0)));
-      e1 = build_binary_op (GE_EXPR, idx, integer_zero_node);
-
-      /* Convert down to the right base, before using the instance.  */
-      instance = convert_pointer_to_real (basetype, instance_ptr);
-      if (instance == error_mark_node && instance_ptr != error_mark_node)
-	return instance;
+	  e1 = build_binary_op (GE_EXPR, idx, integer_zero_node);
+	  idx = build_binary_op (MINUS_EXPR, idx, integer_one_node);
+	}
 
       vtbl = convert_pointer_to (ptr_type_node, instance);
-      delta2 = DELTA2_FROM_PTRMEMFUNC (function);
+      delta = cp_convert (ptrdiff_type_node,
+			  build_component_ref (function, delta_identifier,
+					       NULL_TREE, 0));
+      if (flag_new_abi)
+	/* DELTA2 is the amount by which to adjust the `this' pointer
+	   to find the vtbl.  */
+	delta2 = delta;
+      else
+	delta2 = DELTA2_FROM_PTRMEMFUNC (function);
       vtbl = build
 	(PLUS_EXPR,
 	 build_pointer_type (build_pointer_type (vtable_entry_type)),
 	 vtbl, cp_convert (ptrdiff_type_node, delta2));
       vtbl = build_indirect_ref (vtbl, NULL_PTR);
-      aref = build_array_ref (vtbl, build_binary_op (MINUS_EXPR,
-						     idx,
-						     integer_one_node));
+      aref = build_array_ref (vtbl, idx);
+
       if (! flag_vtable_thunks)
 	{
 	  aref = save_expr (aref);
@@ -3237,14 +3253,6 @@ build_x_binary_op (code, arg1, arg2)
   return build_new_op (code, LOOKUP_NORMAL, arg1, arg2, NULL_TREE);
 }
 
-tree
-build_binary_op (code, arg1, arg2)
-     enum tree_code code;
-     tree arg1, arg2;
-{
-  return build_binary_op_nodefault (code, arg1, arg2, code);
-}
-
 /* Build a binary-operation expression without default conversions.
    CODE is the kind of expression to build.
    This function differs from `build' in several ways:
@@ -3255,9 +3263,6 @@ build_binary_op (code, arg1, arg2)
    are done in the narrower type when that gives the same result).
    Constant folding is also done before the result is returned.
 
-   ERROR_CODE is the code that determines what to say in error messages.
-   It is usually, but not always, the same as CODE.
-
    Note that the operands will never have enumeral types
    because either they have just had the default conversions performed
    or they have both just been converted to some other type in which
@@ -3267,10 +3272,9 @@ build_binary_op (code, arg1, arg2)
    multiple inheritance, and deal with pointer to member functions.  */
 
 tree
-build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
+build_binary_op (code, orig_op0, orig_op1)
      enum tree_code code;
      tree orig_op0, orig_op1;
-     enum tree_code error_code;
 {
   tree op0, op1;
   register enum tree_code code0, code1;
@@ -3626,102 +3630,98 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 	}
       else if (TYPE_PTRMEMFUNC_P (type0) && null_ptr_cst_p (op1))
 	{
-	  op0 = build_component_ref (op0, index_identifier, NULL_TREE, 0);
-	  op1 = integer_zero_node;
+	  if (flag_new_abi)
+	    {
+	      op0 = build_component_ref (op0, pfn_identifier, NULL_TREE, 0);
+	      op1 = cp_convert (TREE_TYPE (op0), integer_zero_node);
+	    }
+	  else
+	    {
+	      op0 = build_component_ref (op0, index_identifier, NULL_TREE, 0);
+	      op1 = integer_zero_node;
+	    }
 	  result_type = TREE_TYPE (op0);
 	}
       else if (TYPE_PTRMEMFUNC_P (type1) && null_ptr_cst_p (op0))
-	{
-	  op0 = build_component_ref (op1, index_identifier, NULL_TREE, 0);
-	  op1 = integer_zero_node;
-	  result_type = TREE_TYPE (op0);
-	}
+	return build_binary_op (code, op1, op0);
       else if (TYPE_PTRMEMFUNC_P (type0) && TYPE_PTRMEMFUNC_P (type1)
 	       && same_type_p (type0, type1))
 	{
-	  /* The code we generate for the test is:
+	  /* E will be the final comparison.  */
+	  tree e;
+	  /* E1 and E2 are for scratch.  */
+	  tree e1;
+	  tree e2;
 
-	  (op0.index == op1.index
-	   && ((op1.index != -1 && op0.delta2 == op1.delta2)
-	       || op0.pfn == op1.pfn)) */
-
-	  tree index0 = build_component_ref (op0, index_identifier,
-					     NULL_TREE, 0);
-	  tree index1 = save_expr (build_component_ref (op1, index_identifier,
-							NULL_TREE, 0));
-	  tree pfn0 = PFN_FROM_PTRMEMFUNC (op0);
-	  tree pfn1 = PFN_FROM_PTRMEMFUNC (op1);
-	  tree delta20 = DELTA2_FROM_PTRMEMFUNC (op0);
-	  tree delta21 = DELTA2_FROM_PTRMEMFUNC (op1);
-	  tree e1, e2, e3;
-	  tree integer_neg_one_node
-	    = build_binary_op (MINUS_EXPR, integer_zero_node,
-			       integer_one_node);
-	  e1 = build_binary_op (EQ_EXPR, index0, index1);
-	  e2 = build_binary_op (NE_EXPR, index1, integer_neg_one_node);
-	  e2 = build_binary_op (TRUTH_ANDIF_EXPR, e2,
-				build_binary_op (EQ_EXPR, delta20, delta21));
-	  /* We can't use build_binary_op for this cmp because it would get
-	     confused by the ptr to method types and think we want pmfs.  */
-	  e3 = build (EQ_EXPR, boolean_type_node, pfn0, pfn1);
-	  e2 = build_binary_op (TRUTH_ORIF_EXPR, e2, e3);
-	  e2 = build_binary_op (TRUTH_ANDIF_EXPR, e1, e2);
-	  if (code == EQ_EXPR)
-	    return e2;
-	  return build_binary_op (EQ_EXPR, e2, integer_zero_node);
-	}
-      else if (TYPE_PTRMEMFUNC_P (type0)
-	       && same_type_p (TYPE_PTRMEMFUNC_FN_TYPE (type0), type1))
-	{
-	  tree index0 = build_component_ref (op0, index_identifier,
-					     NULL_TREE, 0);
-	  tree index1;
-	  tree pfn0 = PFN_FROM_PTRMEMFUNC (op0);
-	  tree delta20 = DELTA2_FROM_PTRMEMFUNC (op0);
-	  tree delta21 = integer_zero_node;
-	  tree e1, e2, e3;
-	  tree integer_neg_one_node
-	    = build_binary_op (MINUS_EXPR, integer_zero_node, integer_one_node);
-	  if (TREE_CODE (TREE_OPERAND (op1, 0)) == FUNCTION_DECL
-	      && DECL_VINDEX (TREE_OPERAND (op1, 0)))
+	  if (flag_new_abi)
 	    {
-	      /* Map everything down one to make room for
-		 the null pointer to member.  */
-	      index1 = size_binop (PLUS_EXPR,
-				   DECL_VINDEX (TREE_OPERAND (op1, 0)),
-				   integer_one_node);
-	      op1 = integer_zero_node;
-	      delta21 = TYPE_VFIELD (TYPE_METHOD_BASETYPE
-				     (TREE_TYPE (type1)));
-	      delta21 = DECL_FIELD_BITPOS (delta21);
-	      delta21 = size_binop (FLOOR_DIV_EXPR, delta21,
-				    size_int (BITS_PER_UNIT));
-	      delta21 = convert (sizetype, delta21);
+	      /* We generate:
+
+		   (op0.pfn == op1.pfn 
+                    && (!op0.pfn || op0.delta == op1.delta))
+		    
+		 The reason for the `!op0.pfn' bit is that a NULL
+		 pointer-to-member is any member with a zero PFN; the
+		 DELTA field is unspecified.  */
+	      tree pfn0;
+	      tree pfn1;
+	      tree delta0;
+	      tree delta1;
+
+	      pfn0 = pfn_from_ptrmemfunc (op0);
+	      pfn1 = pfn_from_ptrmemfunc (op1);
+	      delta0 = build_component_ref (op0, delta_identifier,
+					    NULL_TREE, 0);
+	      delta1 = build_component_ref (op1, delta_identifier,
+					    NULL_TREE, 0);
+	      e1 = build_binary_op (EQ_EXPR, delta0, delta1);
+	      e2 = build_binary_op (NE_EXPR, 
+				    pfn0,
+				    cp_convert (TREE_TYPE (pfn0),
+						integer_zero_node));
+	      e1 = build_binary_op (TRUTH_ORIF_EXPR, e1, e2);
+	      e2 = build (EQ_EXPR, boolean_type_node, pfn0, pfn1);
+	      e = build_binary_op (TRUTH_ANDIF_EXPR, e2, e1);
 	    }
 	  else
-	    index1 = integer_neg_one_node;
-	  {
-	    tree nop1 = build1 (NOP_EXPR, TYPE_PTRMEMFUNC_FN_TYPE (type0),
-				op1);
-	    TREE_CONSTANT (nop1) = TREE_CONSTANT (op1);
-	    op1 = nop1;
-	  }
-	  e1 = build_binary_op (EQ_EXPR, index0, index1);
-	  e2 = build_binary_op (NE_EXPR, index1, integer_neg_one_node);
-	  e2 = build_binary_op (TRUTH_ANDIF_EXPR, e2,
-				build_binary_op (EQ_EXPR, delta20, delta21));
-	  /* We can't use build_binary_op for this cmp because it would get
+	    {
+	      /* The code we generate for the test is:
+
+		 (op0.index == op1.index
+		  && ((op1.index != -1 && op0.delta2 == op1.delta2)
+		      || op0.pfn == op1.pfn)) */
+
+	      tree index0 = build_component_ref (op0, index_identifier,
+						 NULL_TREE, 0);
+	      tree index1 = save_expr (build_component_ref (op1, index_identifier,
+							    NULL_TREE, 0));
+	      tree pfn0 = PFN_FROM_PTRMEMFUNC (op0);
+	      tree pfn1 = PFN_FROM_PTRMEMFUNC (op1);
+	      tree delta20 = DELTA2_FROM_PTRMEMFUNC (op0);
+	      tree delta21 = DELTA2_FROM_PTRMEMFUNC (op1);
+	      tree e3;
+	      tree integer_neg_one_node
+		= build_binary_op (MINUS_EXPR, integer_zero_node,
+				   integer_one_node);
+	      e1 = build_binary_op (EQ_EXPR, index0, index1);
+	      e2 = build_binary_op (NE_EXPR, index1, integer_neg_one_node);
+	      e2 = build_binary_op (TRUTH_ANDIF_EXPR, e2,
+				    build_binary_op (EQ_EXPR, delta20, delta21));
+	      /* We can't use build_binary_op for this cmp because it would get
 	     confused by the ptr to method types and think we want pmfs.  */
-	  e3 = build (EQ_EXPR, boolean_type_node, pfn0, op1);
-	  e2 = build_binary_op (TRUTH_ORIF_EXPR, e2, e3);
-	  e2 = build_binary_op (TRUTH_ANDIF_EXPR, e1, e2);
+	      e3 = build (EQ_EXPR, boolean_type_node, pfn0, pfn1);
+	      e2 = build_binary_op (TRUTH_ORIF_EXPR, e2, e3);
+	      e = build_binary_op (TRUTH_ANDIF_EXPR, e1, e2);
+	    }
 	  if (code == EQ_EXPR)
-	    return e2;
-	  return build_binary_op (EQ_EXPR, e2, integer_zero_node);
+	    return e;
+	  return build_binary_op (EQ_EXPR, e, integer_zero_node);
 	}
-      else if (TYPE_PTRMEMFUNC_P (type1)
-	       && same_type_p (TYPE_PTRMEMFUNC_FN_TYPE (type1), type0))
-	return build_binary_op (code, op1, op0);
+      else if ((TYPE_PTRMEMFUNC_P (type0)
+		&& same_type_p (TYPE_PTRMEMFUNC_FN_TYPE (type0), type1))
+	       || (TYPE_PTRMEMFUNC_P (type1)
+		   && same_type_p (TYPE_PTRMEMFUNC_FN_TYPE (type1), type0)))
+	my_friendly_abort (20000221);
       break;
 
     case MAX_EXPR:
@@ -4059,7 +4059,7 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
   if (!result_type)
     {
       cp_error ("invalid operands of types `%T' and `%T' to binary `%O'",
-		TREE_TYPE (orig_op0), TREE_TYPE (orig_op1), error_code);
+		TREE_TYPE (orig_op0), TREE_TYPE (orig_op1), code);
       return error_mark_node;
     }
 
@@ -6071,77 +6071,101 @@ get_delta_difference (from, to, force)
   return BINFO_OFFSET (binfo);
 }
 
+/* Return a constructor for the pointer-to-member-function TYPE using
+   the other components as specified.  */
+
 tree
 build_ptrmemfunc1 (type, delta, idx, pfn, delta2)
      tree type, delta, idx, pfn, delta2;
 {
   tree u;
-
-#if 0
-  /* This is the old way we did it.  We want to avoid calling
-     digest_init, so that it can give an error if we use { } when
-     initializing a pointer to member function.  */
-
-  if (pfn)
-    {
-      u = build_nt (CONSTRUCTOR, NULL_TREE,
-		    tree_cons (pfn_identifier, pfn, NULL_TREE));
-    }
-  else
-    {
-      u = build_nt (CONSTRUCTOR, NULL_TREE,
-		    tree_cons (delta2_identifier, delta2, NULL_TREE));
-    }
-
-  u = build_nt (CONSTRUCTOR, NULL_TREE,
-		tree_cons (NULL_TREE, delta,
-			   tree_cons (NULL_TREE, idx,
-				      tree_cons (NULL_TREE, u, NULL_TREE))));
-
-  return digest_init (type, u, (tree*)0);
-#else
-  tree delta_field, idx_field, pfn_or_delta2_field, pfn_field, delta2_field;
+  tree delta_field;
+  tree idx_field;
+  tree pfn_or_delta2_field;
+  tree pfn_field;
+  tree delta2_field;
   tree subtype;
   int allconstant, allsimple;
 
-  delta_field = TYPE_FIELDS (type);
-  idx_field = TREE_CHAIN (delta_field);
-  pfn_or_delta2_field = TREE_CHAIN (idx_field);
-  subtype = TREE_TYPE (pfn_or_delta2_field);
-  pfn_field = TYPE_FIELDS (subtype);
-  delta2_field = TREE_CHAIN (pfn_field);
-
-  if (pfn)
+  /* Pull the FIELD_DECLs out of the type.  */
+  if (flag_new_abi)
     {
-      allconstant = TREE_CONSTANT (pfn);
-      allsimple = !! initializer_constant_valid_p (pfn, TREE_TYPE (pfn));
-      u = tree_cons (pfn_field, pfn, NULL_TREE);
+      pfn_field = TYPE_FIELDS (type);
+      delta_field = TREE_CHAIN (pfn_field);
+      idx_field = NULL_TREE;
+      pfn_or_delta2_field = NULL_TREE;
+      delta2_field = NULL_TREE;
+      subtype = NULL_TREE;
     }
   else
     {
-      delta2 = convert_and_check (delta_type_node, delta2);
-      allconstant = TREE_CONSTANT (delta2);
-      allsimple = !! initializer_constant_valid_p (delta2, TREE_TYPE (delta2));
-      u = tree_cons (delta2_field, delta2, NULL_TREE);
+      delta_field = TYPE_FIELDS (type);
+      idx_field = TREE_CHAIN (delta_field);
+      pfn_or_delta2_field = TREE_CHAIN (idx_field);
+      subtype = TREE_TYPE (pfn_or_delta2_field);
+      pfn_field = TYPE_FIELDS (subtype);
+      delta2_field = TREE_CHAIN (pfn_field);
     }
 
+  /* Make sure DELTA has the type we want.  */
   delta = convert_and_check (delta_type_node, delta);
-  idx = convert_and_check (delta_type_node, idx);
 
-  allconstant = allconstant && TREE_CONSTANT (delta) && TREE_CONSTANT (idx);
-  allsimple = allsimple
-    && initializer_constant_valid_p (delta, TREE_TYPE (delta))
-      && initializer_constant_valid_p (idx, TREE_TYPE (idx));
+  /* Keep track of whether the initializer is a) constant, and b) can
+     be done statically.  */
+  allconstant = TREE_CONSTANT (delta);
+  allsimple = (initializer_constant_valid_p (delta, TREE_TYPE (delta)) 
+	       != NULL_TREE);
 
-  u = build (CONSTRUCTOR, subtype, NULL_TREE, u);
-  u = tree_cons (delta_field, delta,
-		 tree_cons (idx_field, idx,
-			    tree_cons (pfn_or_delta2_field, u, NULL_TREE)));
+  if (pfn)
+    {
+      /* A non-virtual function.  */
+      if (!flag_new_abi)
+	u = build_tree_list (pfn_field, pfn);
+
+      allconstant &= TREE_CONSTANT (pfn);
+      allsimple &= (initializer_constant_valid_p (pfn, TREE_TYPE (pfn)) 
+		    != NULL_TREE);
+    }
+  else
+    {
+      /* A virtual function.  */
+      if (flag_new_abi)
+	{
+	  allconstant &= TREE_CONSTANT (pfn);
+	  allsimple &= (initializer_constant_valid_p (pfn, TREE_TYPE (pfn)) 
+			!= NULL_TREE);
+	}
+      else
+	{
+	  idx = convert_and_check (delta_type_node, idx);
+	  u = build_tree_list (delta2_field, delta2);
+
+	  allconstant &= TREE_CONSTANT (idx) && TREE_CONSTANT (delta2);
+	  allsimple &= ((initializer_constant_valid_p (idx, TREE_TYPE (idx)) 
+			 != NULL_TREE)
+			&& (initializer_constant_valid_p (delta2,
+							  TREE_TYPE (delta2))
+			    != NULL_TREE));
+	}
+    }
+
+  /* Finish creating the initializer.  */
+  if (flag_new_abi)
+    u = tree_cons (pfn_field, pfn,
+		   build_tree_list (delta_field, delta));
+  else
+    {
+      u = build (CONSTRUCTOR, subtype, NULL_TREE, u);
+      u = tree_cons (delta_field, delta,
+		     tree_cons (idx_field, 
+				idx,
+				build_tree_list (pfn_or_delta2_field,
+						 u)));
+    }
   u = build (CONSTRUCTOR, type, NULL_TREE, u);
   TREE_CONSTANT (u) = allconstant;
   TREE_STATIC (u) = allconstant && allsimple;
   return u;
-#endif
 }
 
 /* Build a constructor for a pointer to member function.  It can be
@@ -6179,15 +6203,33 @@ build_ptrmemfunc (type, pfn, force)
 	cp_error ("invalid conversion to type `%T' from type `%T'", 
 		  to_type, pfn_type);
 
+      /* We don't have to do any conversion to convert a
+	 pointer-to-member to its own type.  But, we don't want to
+	 just return a PTRMEM_CST if there's an explicit cast; that
+	 cast should make the expression an invalid template argument.  */
+      if (TREE_CODE (pfn) != PTRMEM_CST && same_type_p (to_type, pfn_type))
+	return pfn;
+
+      if (flag_new_abi)
+	{
+	  /* Under the new ABI, the conversion is easy.  Just adjust
+	     the DELTA field.  */
+	  npfn = build_component_ref (pfn, pfn_identifier, NULL_TREE, 0);
+	  delta = build_component_ref (pfn, delta_identifier, NULL_TREE, 0);
+	  delta = cp_convert (ptrdiff_type_node, delta);
+	  n = get_delta_difference (TYPE_PTRMEMFUNC_OBJECT_TYPE (pfn_type),
+				    TYPE_PTRMEMFUNC_OBJECT_TYPE (to_type),
+				    force);
+	  delta = build_binary_op (PLUS_EXPR, delta, n);
+	  return build_ptrmemfunc1 (to_type, delta, NULL_TREE, npfn,
+				    NULL_TREE);
+	}
+
       if (TREE_CODE (pfn) == PTRMEM_CST)
 	{
 	  /* We could just build the resulting CONSTRUCTOR now, but we
 	     don't, relying on the general machinery below, together
-	     with constant-folding, to do the right thing.  We don't
-	     want to return a PTRMEM_CST here, since a
-	     pointer-to-member constant is no longer a valid template
-	     argument once it is cast to any type, including its
-	     original type.  */
+	     with constant-folding, to do the right thing.  */
 	  expand_ptrmemfunc_cst (pfn, &ndelta, &idx, &npfn, &ndelta2);
 	  if (npfn)
 	    /* This constant points to a non-virtual function.
@@ -6195,12 +6237,6 @@ build_ptrmemfunc (type, pfn, force)
 	       matter since we won't use it anyhow.  */
 	    ndelta2 = integer_zero_node;
 	}
-      else if (same_type_p (to_type, pfn_type))
-	/* We don't have to do any conversion.  Note that we do this
-	   after checking for a PTRMEM_CST so that a PTRMEM_CST, cast
-	   to its own type, will not be considered a legal non-type
-	   template argument.  */
-	return pfn;
       else
 	{
 	  ndelta = cp_convert (ptrdiff_type_node, 
@@ -6220,8 +6256,7 @@ build_ptrmemfunc (type, pfn, force)
       e1 = fold (build (GT_EXPR, boolean_type_node, idx, integer_zero_node));
 	  
       /* If it's a virtual function, this is what we want.  */
-      e2 = build_ptrmemfunc1 (to_type, delta, idx,
-			      NULL_TREE, delta2);
+      e2 = build_ptrmemfunc1 (to_type, delta, idx, NULL_TREE, delta2);
 
       pfn = PFN_FROM_PTRMEMFUNC (pfn);
       npfn = build1 (NOP_EXPR, type, pfn);
@@ -6229,8 +6264,7 @@ build_ptrmemfunc (type, pfn, force)
 
       /* But if it's a non-virtual function, or NULL, we use this
 	 instead.  */
-      e3 = build_ptrmemfunc1 (to_type, delta,
-			      idx, npfn, NULL_TREE);
+      e3 = build_ptrmemfunc1 (to_type, delta, idx, npfn, NULL_TREE);
       return build_conditional_expr (e1, e2, e3);
     }
 
@@ -6279,7 +6313,10 @@ expand_ptrmemfunc_cst (cst, delta, idx, pfn, delta2)
 
   if (!DECL_VIRTUAL_P (fn))
     {
-      *idx = size_binop (MINUS_EXPR, integer_zero_node, integer_one_node);
+      if (!flag_new_abi)
+	*idx = size_binop (MINUS_EXPR, integer_zero_node, integer_one_node);
+      else
+	*idx = NULL_TREE;
       *pfn = convert (TYPE_PTRMEMFUNC_FN_TYPE (type), build_addr_func (fn));
       *delta2 = NULL_TREE;
     }
@@ -6292,9 +6329,21 @@ expand_ptrmemfunc_cst (cst, delta, idx, pfn, delta2)
       tree binfo = binfo_or_else (orig_class, fn_class);
       *delta = size_binop (PLUS_EXPR, *delta, BINFO_OFFSET (binfo));
 
-      /* Map everything down one to make room for the null PMF.  */
-      *idx = size_binop (PLUS_EXPR, DECL_VINDEX (fn), integer_one_node);
-      *pfn = NULL_TREE;
+      if (!flag_new_abi)
+	{
+	  /* Map everything down one to make room for the null PMF.  */
+	  *idx = size_binop (PLUS_EXPR, DECL_VINDEX (fn), integer_one_node);
+	  *pfn = NULL_TREE;
+	}
+      else
+	{
+	  /* Under the new ABI, we set PFN to twice the index, plus
+	     one.  */
+	  *idx = NULL_TREE;
+	  *pfn = size_binop (MULT_EXPR, DECL_VINDEX (fn), integer_two_node);
+	  *pfn = size_binop (PLUS_EXPR, *pfn, integer_one_node);
+	  *pfn = build1 (NOP_EXPR, TYPE_PTRMEMFUNC_FN_TYPE (type), *pfn);
+	}
 
       /* Offset from an object of PTR_CLASS to the vptr for ORIG_CLASS.  */
       *delta2 = size_binop (PLUS_EXPR, *delta,
@@ -6309,6 +6358,8 @@ tree
 delta2_from_ptrmemfunc (t)
      tree t;
 {
+  my_friendly_assert (!flag_new_abi, 20000221);
+
   if (TREE_CODE (t) == PTRMEM_CST)
     {
       tree delta;
@@ -6347,11 +6398,14 @@ pfn_from_ptrmemfunc (t)
 	return pfn;
     }
 
-  return (build_component_ref 
-	  (build_component_ref (t,
-				pfn_or_delta2_identifier, NULL_TREE,
-				0), 
-	   pfn_identifier, NULL_TREE, 0)); 
+  if (flag_new_abi)
+    return build_component_ref (t, pfn_identifier, NULL_TREE, 0);
+  else
+    return (build_component_ref 
+	    (build_component_ref (t,
+				  pfn_or_delta2_identifier, NULL_TREE,
+				  0), 
+	     pfn_identifier, NULL_TREE, 0)); 
 }
 
 /* Convert value RHS to type TYPE as preparation for an assignment to

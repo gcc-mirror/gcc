@@ -851,6 +851,7 @@ build_overload_value (type, value, flags)
 	tree idx;
 	tree pfn;
 	tree delta2;
+	tree fn;
 
 	my_friendly_assert (TYPE_PTRMEMFUNC_P (type), 0);
 
@@ -872,17 +873,26 @@ build_overload_value (type, value, flags)
 	my_friendly_assert (TREE_CODE (value) == PTRMEM_CST, 0);
 
 	expand_ptrmemfunc_cst (value, &delta, &idx, &pfn, &delta2);
+	fn = PTRMEM_CST_MEMBER (value);
 	build_overload_int (delta, flags);
 	OB_PUTC ('_');
-	build_overload_int (idx, flags);
-	OB_PUTC ('_');
-	if (pfn)
+	if (!flag_new_abi)
+	  {
+	    build_overload_int (idx, flags);
+	    OB_PUTC ('_');
+	  }
+	else if (DECL_VIRTUAL_P (fn))
+	  {
+	    build_overload_int (DECL_VINDEX (fn), flags);
+	    OB_PUTC ('_');
+	  }
+
+	if (!DECL_VIRTUAL_P (fn))
 	  {
 	    numeric_output_need_bar = 0;
-	    build_overload_identifier (DECL_ASSEMBLER_NAME
-				       (PTRMEM_CST_MEMBER (value)));
+	    build_overload_identifier (DECL_ASSEMBLER_NAME (fn));
 	  }
-	else
+	else if (!flag_new_abi)
 	  {
 	    OB_PUTC ('i');
 	    build_overload_int (delta2, flags);
