@@ -996,6 +996,8 @@ static void kill_clobbered_value PARAMS ((rtx, rtx, void *));
 static void kill_set_value PARAMS ((rtx, rtx, void *));
 static int kill_autoinc_value PARAMS ((rtx *, void *));
 static void copy_value PARAMS ((rtx, rtx, struct value_data *));
+static bool mode_change_ok PARAMS ((enum machine_mode, enum machine_mode,
+				    unsigned int));
 static rtx find_oldest_value_reg PARAMS ((enum reg_class, unsigned int,
 					    enum machine_mode,
 					    struct value_data *));
@@ -1212,6 +1214,25 @@ copy_value (dest, src, vd)
 #endif
 }
 
+/* Return true if a mode change from ORIG to NEW is allowed for REGNO.  */
+
+static bool
+mode_change_ok (orig_mode, new_mode, regno)
+     enum machine_mode orig_mode, new_mode;
+     unsigned int regno;
+{
+  if (GET_MODE_SIZE (orig_mode) < GET_MODE_SIZE (new_mode))
+    return false;
+
+#ifdef CLASS_CANNOT_CHANGE_MODE
+  if (TEST_HARD_REG_BIT (reg_class_contents[CLASS_CANNOT_CHANGE_MODE], regno)
+      && CLASS_CANNOT_CHANGE_MODE_P (orig_mode, new_mode))
+    return false;
+#endif
+
+  return true;
+}
+
 /* Find the oldest copy of the value contained in REGNO that is in
    register class CLASS and has mode MODE.  If found, return an rtx
    of that oldest register, otherwise return NULL.  */
@@ -1226,8 +1247,9 @@ find_oldest_value_reg (class, regno, mode, vd)
   unsigned int i;
 
   for (i = vd->e[regno].oldest_regno; i != regno; i = vd->e[i].next_regno)
-    if (vd->e[i].mode == mode
-	&& TEST_HARD_REG_BIT (reg_class_contents[class], i))
+    if (TEST_HARD_REG_BIT (reg_class_contents[class], i)
+	&& (vd->e[i].mode == mode
+	    || mode_change_ok (vd->e[i].mode, mode, regno)))
       return gen_rtx_REG (mode, i);
 
   return NULL_RTX;
