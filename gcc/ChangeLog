@@ -1,3 +1,8 @@
+2004-06-29  Roman Zippel <zippel@linux-m68k.org>
+
+	* web.c (union_defs): use all defs of an instruction to create a
+	union with a read/write use
+
 2004-06-29  Richard Henderson  <rth@redhat.com>
 
 	PR middle-end/16216

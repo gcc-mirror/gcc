@@ -160,11 +160,13 @@ union_defs (struct df *df, struct ref *use, struct web_entry *def_entry,
     {
       struct df_link *link = DF_INSN_DEFS (df, DF_REF_INSN (use));
 
-      while (DF_REF_REAL_REG (link->ref) != DF_REF_REAL_REG (use))
-	link = link->next;
-
-      unionfind_union (use_entry + DF_REF_ID (use),
-		       def_entry + DF_REF_ID (link->ref));
+      while (link)
+	{
+	  if (DF_REF_REAL_REG (link->ref) == DF_REF_REAL_REG (use))
+	    unionfind_union (use_entry + DF_REF_ID (use),
+			     def_entry + DF_REF_ID (link->ref));
+	  link = link->next;
+	}
     }
 }
 
