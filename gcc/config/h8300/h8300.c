@@ -232,7 +232,21 @@ function_prologue (file, size)
       fprintf (file, ";monitor prologue\n");
       interrupt_handler = 1;
       monitor = 1;
-      fprintf (file, "\torc\t#128,ccr\n");
+      if (TARGET_H8300)
+	{
+	  fprintf (file, "\tsubs\t#2,sp\n");
+	  fprintf (file, "\tpush\tr0\n");
+	  fprintf (file, "\tstc\tccr,r0l\n");
+	  fprintf (file, "\torc\t#128,ccr\n");
+	  fprintf (file, "\tmov.b\tr0l,@(4,sp)\n");
+	}
+      else if (TARGET_H8300H)
+	{
+	  fprintf (file, "\tpush\ter0\n");
+	  fprintf (file, "\tstc\tccr,r0l\n");
+	  fprintf (file, "\torc\t#128,ccr\n");
+	  fprintf (file, "\tmov.b\tr0l,@(4,sp)\n");
+	}
     }
 
   if (frame_pointer_needed)
@@ -332,6 +346,11 @@ function_epilogue (file, size)
       /* deallocate locals */
       dosize (file, "add", fsize);
     }
+
+  /* If this is a monitor function, there is one register still left on
+     the stack.  */
+  if (monitor)
+    fprintf (file, "\t%s\t%s\n", h8_pop_op, h8_reg_names[0]);
 
   if (interrupt_handler)
     fprintf (file, "\trte\n");
