@@ -8722,6 +8722,7 @@ tree_expr_nonnegative_p (tree t)
       return tree_expr_nonnegative_p (TREE_OPERAND (t, 1))
 	     || tree_expr_nonnegative_p (TREE_OPERAND (t, 0));
     case BIT_IOR_EXPR:
+    case BIT_XOR_EXPR:
       return tree_expr_nonnegative_p (TREE_OPERAND (t, 0))
 	     && tree_expr_nonnegative_p (TREE_OPERAND (t, 1));
 
