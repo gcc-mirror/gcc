@@ -410,6 +410,7 @@ save_call_clobbered_regs (void)
 	    {
 	      int regno;
 	      HARD_REG_SET hard_regs_to_save;
+	      reg_set_iterator rsi;
 
 	      /* Use the register life information in CHAIN to compute which
 		 regs are live during the call.  */
@@ -425,22 +426,22 @@ save_call_clobbered_regs (void)
 	      /* Look through all live pseudos, mark their hard registers
 		 and choose proper mode for saving.  */
 	      EXECUTE_IF_SET_IN_REG_SET
-		(&chain->live_throughout, FIRST_PSEUDO_REGISTER, regno,
-		 {
-		   int r = reg_renumber[regno];
-		   int nregs;
-		   enum machine_mode mode;
+		(&chain->live_throughout, FIRST_PSEUDO_REGISTER, regno, rsi)
+		{
+		  int r = reg_renumber[regno];
+		  int nregs;
+		  enum machine_mode mode;
 
-		   gcc_assert (r >= 0);
-		   nregs = hard_regno_nregs[r][PSEUDO_REGNO_MODE (regno)];
-		   mode = HARD_REGNO_CALLER_SAVE_MODE
-		     (r, nregs, PSEUDO_REGNO_MODE (regno));
-		   if (GET_MODE_BITSIZE (mode)
-		       > GET_MODE_BITSIZE (save_mode[r]))
-		     save_mode[r] = mode;
-		   while (nregs-- > 0)
-		     SET_HARD_REG_BIT (hard_regs_to_save, r + nregs);
-		 });
+		  gcc_assert (r >= 0);
+		  nregs = hard_regno_nregs[r][PSEUDO_REGNO_MODE (regno)];
+		  mode = HARD_REGNO_CALLER_SAVE_MODE
+		    (r, nregs, PSEUDO_REGNO_MODE (regno));
+		  if (GET_MODE_BITSIZE (mode)
+		      > GET_MODE_BITSIZE (save_mode[r]))
+		    save_mode[r] = mode;
+		  while (nregs-- > 0)
+		    SET_HARD_REG_BIT (hard_regs_to_save, r + nregs);
+		}
 
 	      /* Record all registers set in this call insn.  These don't need
 		 to be saved.  N.B. the call insn might set a subreg of a

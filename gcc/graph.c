@@ -66,6 +66,10 @@ graph: { title: \"%s\"\nfolding: 1\nhidden: 2\nnode: { title: \"%s.0\" }\n",
 static void
 start_bb (FILE *fp, int bb)
 {
+#if 0
+  reg_set_iterator rsi;
+#endif
+
   switch (graph_dump_format)
     {
     case vcg:
@@ -83,13 +87,12 @@ label: \"basic block %d",
 
   /* Print the live-at-start register list.  */
   fputc ('\n', fp);
-  EXECUTE_IF_SET_IN_REG_SET (basic_block_live_at_start[bb], 0, i,
-			     {
-			       fprintf (fp, " %d", i);
-			       if (i < FIRST_PSEUDO_REGISTER)
-				 fprintf (fp, " [%s]",
-					  reg_names[i]);
-			     });
+  EXECUTE_IF_SET_IN_REG_SET (basic_block_live_at_start[bb], 0, i, rsi)
+    {
+      fprintf (fp, " %d", i);
+      if (i < FIRST_PSEUDO_REGISTER)
+	fprintf (fp, " [%s]", reg_names[i]);
+    }
 #endif
 
   switch (graph_dump_format)

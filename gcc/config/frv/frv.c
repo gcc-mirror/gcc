@@ -6679,6 +6679,7 @@ frv_ifcvt_modify_tests (ce_if_block_t *ce_info, rtx *p_true, rtx *p_false)
   enum reg_class cr_class;
   int cc_first;
   int cc_last;
+  reg_set_iterator rsi;
 
   /* Make sure we are only dealing with hard registers.  Also honor the
      -mno-cond-exec switch, and -mno-nested-cond-exec switches if
@@ -6735,11 +6736,11 @@ frv_ifcvt_modify_tests (ce_if_block_t *ce_info, rtx *p_true, rtx *p_false)
 
       /* Remove anything live at the beginning of the join block from being
          available for allocation.  */
-      EXECUTE_IF_SET_IN_REG_SET (join_bb->global_live_at_start, 0, regno,
-				 {
-				   if (regno < FIRST_PSEUDO_REGISTER)
-				     CLEAR_HARD_REG_BIT (tmp_reg->regs, regno);
-				 });
+      EXECUTE_IF_SET_IN_REG_SET (join_bb->global_live_at_start, 0, regno, rsi)
+	{
+	  if (regno < FIRST_PSEUDO_REGISTER)
+	    CLEAR_HARD_REG_BIT (tmp_reg->regs, regno);
+	}
     }
 
   /* Add in all of the blocks in multiple &&/|| blocks to be scanned.  */
@@ -6779,11 +6780,11 @@ frv_ifcvt_modify_tests (ce_if_block_t *ce_info, rtx *p_true, rtx *p_false)
 
       /* Anything live at the beginning of the block is obviously unavailable
          for allocation.  */
-      EXECUTE_IF_SET_IN_REG_SET (bb[j]->global_live_at_start, 0, regno,
-				 {
-				   if (regno < FIRST_PSEUDO_REGISTER)
-				     CLEAR_HARD_REG_BIT (tmp_reg->regs, regno);
-				 });
+      EXECUTE_IF_SET_IN_REG_SET (bb[j]->global_live_at_start, 0, regno, rsi)
+	{
+	  if (regno < FIRST_PSEUDO_REGISTER)
+	    CLEAR_HARD_REG_BIT (tmp_reg->regs, regno);
+	}
 
       /* Loop through the insns in the block.  */
       for (;;)

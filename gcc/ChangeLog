@@ -1,3 +1,29 @@
+2004-10-18  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* basic-block.h (reg_set_iterator): New.
+	(EXECUTE_IF_SET_IN_REG_SET): Make it iterator style.
+	(EXECUTE_IF_AND_COMPL_IN_REG_SET): Likewise.
+	(EXECUTE_IF_AND_IN_REG_SET): Likewise.
+	* caller-save.c (save_call_clobbered_regs): Adjust to the new
+	style.
+	* cfgcleanup.c (thread_jump): Likewise.
+	* cfgrtl.c (safe_insert_insn_on_edge): Likewise.
+	* conflict.c (conflict_graph_compute): Likewise.
+	* flow.c (verify_local_live_at_start, update_life_info,
+	initialize_uninitialized_subregs, propagate_one_insn,
+	init_propagate_block_info, free_propagate_block_info,
+	propagate_block, dump_regset): Likewise.
+	* global.c (global_conflicts): Likewise.
+	* graph.c (start_bb): Likewise.
+	* local-alloc.c (update_equiv_regs): Likewise.
+	* loop.c (load_mems): Likewise.
+	* reload1.c (compute_use_by_pseudos, order_regs_for_reload,
+	find_reg, finish_spills): Likewise.
+	* resource.c (mark_target_live_regs): Likewise.
+	* sched-deps.c (sched_analyze_insn): Likewise.
+	* sched-rgn.c (sched-rgn.c): Likewise.
+	* config/frv/frv.c (frv_ifcvt_modify_tests): Likewise.
+
 2004-10-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.md (addqi_1_slp): Test for incdec_operand

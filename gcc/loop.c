@@ -11242,6 +11242,7 @@ load_mems (const struct loop *loop)
 	  rtx best = mem;
 	  int j;
 	  struct elt_loc_list *const_equiv = 0;
+	  reg_set_iterator rsi;
 
 	  if (e)
 	    {
@@ -11320,17 +11321,17 @@ load_mems (const struct loop *loop)
 	     data flow, and enables {basic,general}_induction_var to find
 	     more bivs/givs.  */
 	  EXECUTE_IF_SET_IN_REG_SET
-	    (&load_copies, FIRST_PSEUDO_REGISTER, j,
-	     {
-	       try_copy_prop (loop, reg, j);
-	     });
+	    (&load_copies, FIRST_PSEUDO_REGISTER, j, rsi)
+	    {
+	      try_copy_prop (loop, reg, j);
+	    }
 	  CLEAR_REG_SET (&load_copies);
 
 	  EXECUTE_IF_SET_IN_REG_SET
-	    (&store_copies, FIRST_PSEUDO_REGISTER, j,
-	     {
-	       try_swap_copy_prop (loop, reg, j);
-	     });
+	    (&store_copies, FIRST_PSEUDO_REGISTER, j, rsi)
+	    {
+	      try_swap_copy_prop (loop, reg, j);
+	    }
 	  CLEAR_REG_SET (&store_copies);
 	}
     }

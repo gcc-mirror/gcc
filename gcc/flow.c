@@ -521,11 +521,12 @@ verify_local_live_at_start (regset new_live_at_start, basic_block bb)
   else
     {
       int i;
+      reg_set_iterator rsi;
 
       /* Find the set of changed registers.  */
       XOR_REG_SET (new_live_at_start, bb->global_live_at_start);
 
-      EXECUTE_IF_SET_IN_REG_SET (new_live_at_start, 0, i,
+      EXECUTE_IF_SET_IN_REG_SET (new_live_at_start, 0, i, rsi)
 	{
 	  /* No registers should die.  */
 	  if (REGNO_REG_SET_P (bb->global_live_at_start, i))
@@ -540,7 +541,7 @@ verify_local_live_at_start (regset new_live_at_start, basic_block bb)
 	    }
 	  /* Verify that the now-live register is wider than word_mode.  */
 	  verify_wide_reg (i, bb);
-	});
+	}
     }
 }
 
@@ -680,13 +681,15 @@ update_life_info (sbitmap blocks, enum update_life_extent extent, int prop_flags
 
   if (prop_flags & PROP_REG_INFO)
     {
+      reg_set_iterator rsi;
+
       /* The only pseudos that are live at the beginning of the function
 	 are those that were not set anywhere in the function.  local-alloc
 	 doesn't know how to handle these correctly, so mark them as not
 	 local to any one basic block.  */
       EXECUTE_IF_SET_IN_REG_SET (ENTRY_BLOCK_PTR->global_live_at_end,
-				 FIRST_PSEUDO_REGISTER, i,
-				 { REG_BASIC_BLOCK (i) = REG_BLOCK_GLOBAL; });
+				 FIRST_PSEUDO_REGISTER, i, rsi)
+	REG_BASIC_BLOCK (i) = REG_BLOCK_GLOBAL;
 
       /* We have a problem with any pseudoreg that lives across the setjmp.
 	 ANSI says that if a user variable does not change in value between
@@ -697,14 +700,14 @@ update_life_info (sbitmap blocks, enum update_life_extent extent, int prop_flags
 	 that hard reg where this pseudo is dead, thus clobbering the pseudo.
 	 Conclusion: such a pseudo must not go in a hard reg.  */
       EXECUTE_IF_SET_IN_REG_SET (regs_live_at_setjmp,
-				 FIRST_PSEUDO_REGISTER, i,
-				 {
-				   if (regno_reg_rtx[i] != 0)
-				     {
-				       REG_LIVE_LENGTH (i) = -1;
-				       REG_BASIC_BLOCK (i) = REG_BLOCK_UNKNOWN;
-				     }
-				 });
+				 FIRST_PSEUDO_REGISTER, i, rsi)
+	{
+	  if (regno_reg_rtx[i] != 0)
+	    {
+	      REG_LIVE_LENGTH (i) = -1;
+	      REG_BASIC_BLOCK (i) = REG_BLOCK_UNKNOWN;
+	    }
+	}
     }
   if (reg_deaths)
     {
@@ -1369,8 +1372,9 @@ initialize_uninitialized_subregs (void)
     {
       basic_block bb = e->dest;
       regset map = bb->global_live_at_start;
-      EXECUTE_IF_SET_IN_REG_SET (map,
-				 FIRST_PSEUDO_REGISTER, reg,
+      reg_set_iterator rsi;
+
+      EXECUTE_IF_SET_IN_REG_SET (map, FIRST_PSEUDO_REGISTER, reg, rsi)
 	{
 	  int uid = REGNO_FIRST_UID (reg);
 	  rtx i;
@@ -1398,7 +1402,7 @@ initialize_uninitialized_subregs (void)
 		  did_something = 1;
 		}
 	    }
-	});
+	}
     }
 
   if (did_something)
@@ -1671,8 +1675,11 @@ propagate_one_insn (struct propagate_block_info *pbi, rtx insn)
 	 record this for them.  */
 
       if (CALL_P (insn) && (flags & PROP_REG_INFO))
-	EXECUTE_IF_SET_IN_REG_SET (pbi->reg_live, 0, i,
-				   { REG_N_CALLS_CROSSED (i)++; });
+	{
+	  reg_set_iterator rsi;
+	  EXECUTE_IF_SET_IN_REG_SET (pbi->reg_live, 0, i, rsi)
+	    REG_N_CALLS_CROSSED (i)++;
+	}
 
       /* Record sets.  Do this even for dead instructions, since they
 	 would have killed the values if they hadn't been deleted.  */
@@ -1878,6 +1885,8 @@ init_propagate_block_info (basic_block bb, regset live, regset local_set,
 		= gen_rtx_fmt_ee (inv_cond,
 				  GET_MODE (cond_true), XEXP (cond_true, 0),
 				  XEXP (cond_true, 1));
+	      reg_set_iterator rsi;
+
 	      if (GET_CODE (XEXP (set_src, 1)) == PC)
 		{
 		  rtx t = cond_false;
@@ -1888,25 +1897,24 @@ init_propagate_block_info (basic_block bb, regset live, regset local_set,
 	      SET_REGNO_REG_SET (pbi->reg_cond_reg, REGNO (reg));
 
 	      /* For each such register, mark it conditionally dead.  */
-	      EXECUTE_IF_SET_IN_REG_SET
-		(diff, 0, i,
-		 {
-		   struct reg_cond_life_info *rcli;
-		   rtx cond;
+	      EXECUTE_IF_SET_IN_REG_SET (diff, 0, i, rsi)
+		{
+		  struct reg_cond_life_info *rcli;
+		  rtx cond;
 
-		   rcli = xmalloc (sizeof (*rcli));
+		  rcli = xmalloc (sizeof (*rcli));
 
-		   if (REGNO_REG_SET_P (bb_true->global_live_at_start, i))
-		     cond = cond_false;
-		   else
-		     cond = cond_true;
-		   rcli->condition = cond;
-		   rcli->stores = const0_rtx;
-		   rcli->orig_condition = cond;
+		  if (REGNO_REG_SET_P (bb_true->global_live_at_start, i))
+		    cond = cond_false;
+		  else
+		    cond = cond_true;
+		  rcli->condition = cond;
+		  rcli->stores = const0_rtx;
+		  rcli->orig_condition = cond;
 
-		   splay_tree_insert (pbi->reg_cond_dead, i,
-				      (splay_tree_value) rcli);
-		 });
+		  splay_tree_insert (pbi->reg_cond_dead, i,
+				     (splay_tree_value) rcli);
+		}
 	    }
 	}
 
@@ -1966,11 +1974,13 @@ free_propagate_block_info (struct propagate_block_info *pbi)
     {
       int num = pbi->insn_num;
       int i;
+      reg_set_iterator rsi;
 
-      EXECUTE_IF_SET_IN_REG_SET (pbi->reg_live, 0, i,
-	 { REG_LIVE_LENGTH (i) += num - reg_deaths[i];
-	   reg_deaths[i] = 0;
-         });
+      EXECUTE_IF_SET_IN_REG_SET (pbi->reg_live, 0, i, rsi)
+	{
+	  REG_LIVE_LENGTH (i) += num - reg_deaths[i];
+	  reg_deaths[i] = 0;
+	}
     }
   if (pbi->reg_next_use)
     free (pbi->reg_next_use);
@@ -2009,11 +2019,12 @@ propagate_block (basic_block bb, regset live, regset local_set,
   if (flags & PROP_REG_INFO)
     {
       int i;
+      reg_set_iterator rsi;
 
       /* Process the regs live at the end of the block.
 	 Mark them as not local to any one basic block.  */
-      EXECUTE_IF_SET_IN_REG_SET (live, 0, i,
-				 { REG_BASIC_BLOCK (i) = REG_BLOCK_GLOBAL; });
+      EXECUTE_IF_SET_IN_REG_SET (live, 0, i, rsi)
+	REG_BASIC_BLOCK (i) = REG_BLOCK_GLOBAL;
     }
 
   /* Scan the block an insn at a time from end to beginning.  */
@@ -4135,19 +4146,21 @@ void
 dump_regset (regset r, FILE *outf)
 {
   int i;
+  reg_set_iterator rsi;
+
   if (r == NULL)
     {
       fputs (" (nil)", outf);
       return;
     }
 
-  EXECUTE_IF_SET_IN_REG_SET (r, 0, i,
+  EXECUTE_IF_SET_IN_REG_SET (r, 0, i, rsi)
     {
       fprintf (outf, " %d", i);
       if (i < FIRST_PSEUDO_REGISTER)
 	fprintf (outf, " [%s]",
 		 reg_names[i]);
-    });
+    }
 }
 
 /* Print a human-readable representation of R on the standard error

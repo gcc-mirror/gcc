@@ -971,6 +971,7 @@ mark_target_live_regs (rtx insns, rtx target, struct resources *res)
       unsigned int j;
       unsigned int regno;
       rtx start_insn, stop_insn;
+      reg_set_iterator rsi;
 
       /* Compute hard regs live at start of block -- this is the real hard regs
 	 marked live, plus live pseudo regs that have been renumbered to
@@ -978,19 +979,17 @@ mark_target_live_regs (rtx insns, rtx target, struct resources *res)
 
       REG_SET_TO_HARD_REG_SET (current_live_regs, regs_live);
 
-      EXECUTE_IF_SET_IN_REG_SET
-	(regs_live, FIRST_PSEUDO_REGISTER, i,
-	 {
-	   if (reg_renumber[i] >= 0)
-	     {
-	       regno = reg_renumber[i];
-	       for (j = regno;
-		    j < regno + hard_regno_nregs[regno]
-						[PSEUDO_REGNO_MODE (i)];
-		    j++)
-		 SET_HARD_REG_BIT (current_live_regs, j);
-	     }
-	 });
+      EXECUTE_IF_SET_IN_REG_SET (regs_live, FIRST_PSEUDO_REGISTER, i, rsi)
+	{
+	  if (reg_renumber[i] >= 0)
+	    {
+	      regno = reg_renumber[i];
+	      for (j = regno;
+		   j < regno + hard_regno_nregs[regno][PSEUDO_REGNO_MODE (i)];
+		   j++)
+		SET_HARD_REG_BIT (current_live_regs, j);
+	    }
+	}
 
       /* Get starting and ending insn, handling the case where each might
 	 be a SEQUENCE.  */

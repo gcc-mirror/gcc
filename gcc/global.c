@@ -700,20 +700,20 @@ global_conflicts (void)
       {
 	regset old = b->global_live_at_start;
 	int ax = 0;
+	reg_set_iterator rsi;
 
 	REG_SET_TO_HARD_REG_SET (hard_regs_live, old);
-	EXECUTE_IF_SET_IN_REG_SET (old, FIRST_PSEUDO_REGISTER, i,
-				   {
-				     int a = reg_allocno[i];
-				     if (a >= 0)
-				       {
-					 SET_ALLOCNO_LIVE (a);
-					 block_start_allocnos[ax++] = a;
-				       }
-				     else if ((a = reg_renumber[i]) >= 0)
-				       mark_reg_live_nc
-					 (a, PSEUDO_REGNO_MODE (i));
-				   });
+	EXECUTE_IF_SET_IN_REG_SET (old, FIRST_PSEUDO_REGISTER, i, rsi)
+	  {
+	    int a = reg_allocno[i];
+	    if (a >= 0)
+	      {
+		SET_ALLOCNO_LIVE (a);
+		block_start_allocnos[ax++] = a;
+	      }
+	    else if ((a = reg_renumber[i]) >= 0)
+	      mark_reg_live_nc (a, PSEUDO_REGNO_MODE (i));
+	  }
 
 	/* Record that each allocno now live conflicts with each hard reg
 	   now live.
