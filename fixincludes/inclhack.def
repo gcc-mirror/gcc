@@ -1177,6 +1177,9 @@ fix = {
     bypass    = '_GCC_(PTRDIFF|SIZE|WCHAR)_T';
     select    = "^[ \t]*typedef[ \t]+.*[ \t](ptrdiff|size|wchar)_t;";
     c_fix     = gnu_type;
+    /* The Solaris 10 headers already define these types correctly.  */
+    mach   = '*-*-solaris2.1[0-9]*';
+    not_machine = true;
 
     test_text = "typedef long int ptrdiff_t; /* long int */\n"
                 "typedef uint_t size_t; /* uint_t */\n"
@@ -2599,6 +2602,9 @@ fix = {
     files    = stdio_tag.h;
 
     select   = '__cplusplus < 54321L';
+    /* In Solaris 10, the code in stdio_tag.h is conditionalized on 
+       "!defined(__GNUC__)" so we no longer need to fix it.  */
+    bypass   = '__GNUC__';
     sed      = 's/defined(__cplusplus) && (__cplusplus < 54321L)/0/';
 
     test_text = "#if\tdefined(__cplusplus) && (__cplusplus < 54321L)";
@@ -2664,6 +2670,12 @@ fix = {
     hackname = stdio_stdarg_h;
     files    = stdio.h;
     bypass   = "include.*(stdarg\.h|machine/ansi\.h)";
+    /*
+     * On Solaris 10, this fix is unncessary; <stdio.h> includes
+     * <iso/stdio_iso.h>, which includes <sys/va_list.h>.
+      */
+    mach     = '*-*-solaris2.1[0-9]';
+    not_machine = true;
 
     c_fix     = wrap;
 
@@ -2689,6 +2701,13 @@ fix = {
     files    = internal/stdio_core.h;
     files    = internal/wchar_core.h;
     bypass   = '__gnuc_va_list|_BSD_VA_LIST_|__DJ_va_list|_G_va_list';
+    /* 
+     * On Solaris 10, the definition in 
+     * <stdio.h> is guarded appropriately by the _XPG4 feature macro; 
+     * there is therefore no need for this fix there.
+     */
+    mach = '*-*-solaris2.1[0-9]';
+    not_machine = true;
 
     /*
      * Use __gnuc_va_list in arg types in place of va_list.
