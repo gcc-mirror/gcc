@@ -169,17 +169,6 @@ add(String item)
       ChoicePeer cp = (ChoicePeer) peer;
       cp.add (item, i);
     }
-
-  if (i == 0)
-  {
-    selectedIndex = 0;
-    // We must generate an ItemEvent here
-    Toolkit.getDefaultToolkit().getSystemEventQueue().postEvent (
-      new ItemEvent ((ItemSelectable)this, 
-                     ItemEvent.ITEM_STATE_CHANGED,
-                     getItem(0),
-                     ItemEvent.SELECTED));
-  }
 }
 
 /*************************************************************************/
@@ -229,17 +218,6 @@ insert(String item, int index)
       ChoicePeer cp = (ChoicePeer) peer;
       cp.add (item, index);
     }
-
-  if (getItemCount () == 1 || selectedIndex >= index)
-  {
-    select (0);
-    // We must generate an ItemEvent here
-    Toolkit.getDefaultToolkit().getSystemEventQueue().postEvent (
-      new ItemEvent ((ItemSelectable)this, 
-                     ItemEvent.ITEM_STATE_CHANGED,
-                     getItem(0),
-                     ItemEvent.SELECTED));
-  }
 }
 
 /*************************************************************************/
@@ -273,6 +251,9 @@ remove(String item)
 public synchronized void
 remove(int index)
 {
+  if ((index < 0) || (index > getItemCount()))
+    throw new IllegalArgumentException("Bad index: " + index);
+
   pItems.removeElementAt(index);
 
   if (peer != null)
@@ -281,17 +262,7 @@ remove(int index)
       cp.remove (index);
     }
 
-  if ((index == selectedIndex) && (getItemCount() > 0))
-  {
-    select (0);
-    // We must generate an ItemEvent here
-    Toolkit.getDefaultToolkit().getSystemEventQueue().postEvent (
-      new ItemEvent ((ItemSelectable)this, 
-                     ItemEvent.ITEM_STATE_CHANGED,
-                     getItem(0),
-                     ItemEvent.SELECTED));
-  }
-  else if (selectedIndex > index)
+  if (selectedIndex > index)
     --selectedIndex;
 }
 
@@ -303,26 +274,15 @@ remove(int index)
 public synchronized void
 removeAll()
 {
-  int count = getItemCount();
-
-  if (count <= 0)
+  if (getItemCount() <= 0)
     return;
   
-  ChoicePeer cp = (ChoicePeer) peer;
+  pItems.removeAllElements ();
 
-  // Select the first item to prevent an spurious ItemEvent to be generated
-  if (cp != null)
+  if (peer != null)
     {
-      cp.select (0);
-      selectedIndex = 0; // Just to keep consistent
-    }
-
-  for (int i = (count - 1); i >= 0; i--)
-    {
-      // Always remove the last to avoid generation of ItemEvents.
-      pItems.removeElementAt(i);
-      if (cp != null)
-        cp.remove (i);
+      ChoicePeer cp = (ChoicePeer) peer;
+      cp.removeAll ();
     }
 
   selectedIndex = -1;

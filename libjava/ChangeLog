@@ -1,3 +1,30 @@
+2004-01-05  Fernando Nasser  <fnasser@redhat.com>
+
+	* java/awt/Choice.java (add): Leave posting of ItemEvents to peer.
+	(insert): Ditto.
+	(remove): Ditto.  Also, Check for valid argument.
+	(removeAll): Use peer interface method.
+	* gnu/java/awt/peer/gtk/GtkChoicePeer.java (nativeAdd): New name for
+	native add function.
+	(nativeRemove): New name for native remove function.
+	(getHistory): New native function.
+	(constructor): Generate ItemEvent.
+	(add): Ditto, if selection is changed.
+	(remove): Ditto, ditto.
+	(removeAll): Add implementation.
+	(handleEvent): Remove.  Dead code.
+	(choicePostItemEvent): Add comment.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkChoicePeer.c
+	(Java_gnu_java_awt_peer_gtk_GtkChoicePeer_append): Add comments.
+	(Java_gnu_java_awt_peer_gtk_GtkChoicePeer_add): Rename to...
+	(Java_gnu_java_awt_peer_gtk_GtkChoicePeer_nativeAdd): New name.  Add
+	comments and fix condition to change selection.
+	(Java_gnu_java_awt_peer_gtk_GtkChoicePeer_remove): Rename to...
+	(Java_gnu_java_awt_peer_gtk_GtkChoicePeer_nativeRemove): New name.  Add
+	remove all capability.
+	(Java_gnu_java_awt_peer_gtk_GtkChoicePeer_getHistory): New function.
+	(item_activate): Add cast to remove compiler warning.
+
 2004-01-05  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* gnu/java/awt/peer/gtk/GtkComponentPeer.java,

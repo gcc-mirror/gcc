@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package gnu.java.awt.peer.gtk;
 
+import java.awt.AWTEvent;
 import java.awt.Choice;
 import java.awt.event.ItemEvent;
 import java.awt.peer.ChoicePeer;
@@ -45,8 +46,6 @@ import java.awt.peer.ChoicePeer;
 public class GtkChoicePeer extends GtkComponentPeer
   implements ChoicePeer
 {
-  native void create ();
-
   public GtkChoicePeer (Choice c)
   {
     super (c);
@@ -59,35 +58,71 @@ public class GtkChoicePeer extends GtkComponentPeer
 	  items[i] = c.getItem (i);
 	  
 	append (items);
+
+        // Must set our state before notifying listeners
+	((Choice) awtComponent).select (c.getItem (0));
+	postItemEvent (c.getItem (0), ItemEvent.SELECTED);
       }
   }
 
-  native void append (String items[]);
+  native void create ();
 
-  native public void add (String item, int index);
-  native public void remove (int index);
+  native void append (String items[]);
+  native int getHistory ();
+  native void nativeAdd (String item, int index);
+  native void nativeRemove (int index);
+
   native public void select (int position);
  
-  public void removeAll () { }
+  public void add (String item, int index)
+  {
+    int before = getHistory();
+    
+    nativeAdd (item, index);
+    
+    /* Generate an ItemEvent if we added the first one or
+       if we inserted at or before the currently selected item. */
+    if ((before < 0) || (before >= index))
+      {
+        // Must set our state before notifying listeners
+	((Choice) awtComponent).select (((Choice) awtComponent).getItem (0));
+        postItemEvent (((Choice) awtComponent).getItem (0), ItemEvent.SELECTED);
+      }
+  }
+
+  public void remove (int index)
+  {
+    int before = getHistory();
+    int after;
+    
+    nativeRemove (index);
+    after = getHistory();
+    
+    /* Generate an ItemEvent if we are removing the currently selected item
+       and there are at least one item left. */
+    if ((before == index) && (after >= 0))
+      {
+        // Must set our state before notifying listeners
+	((Choice) awtComponent).select (((Choice) awtComponent).getItem (0));
+        postItemEvent (((Choice) awtComponent).getItem (0), ItemEvent.SELECTED);
+      }
+  }
+
+  public void removeAll ()
+  {
+    nativeRemove (-1);
+  }
   
   public void addItem (String item, int position)
   {
     add (item, position);
   }
-  
-  /*
-  public void handleEvent (AWTEvent event)
-  {
-    if (event instanceof ItemEvent)
-      ((Choice) awtComponent).select ((String) ((ItemEvent)event).getItem ());
-    super.handleEvent (event);
-  }
-  */
 
   protected void choicePostItemEvent (String label, int stateChange)
   {
+    // Must set our state before notifying listeners
     if (stateChange == ItemEvent.SELECTED)
       ((Choice) awtComponent).select (label);
-    super.postItemEvent (label, stateChange);
+    postItemEvent (label, stateChange);
   }
 }
