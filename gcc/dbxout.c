@@ -1322,7 +1322,7 @@ dbxout_symbol (decl, local)
     case FUNCTION_DECL:
       if (DECL_RTL (decl) == 0)
 	return;
-      if (TREE_EXTERNAL (decl))
+      if (DECL_EXTERNAL (decl))
 	break;
       /* Don't mention a nested function under its parent.  */
       context = decl_function_context (decl);
@@ -1478,7 +1478,7 @@ dbxout_symbol (decl, local)
 	return;
       /* Don't mention a variable that is external.
 	 Let the file that defines it describe it.  */
-      if (TREE_EXTERNAL (decl))
+      if (DECL_EXTERNAL (decl))
 	break;
 
       /* If the variable is really a constant

@@ -1697,7 +1697,7 @@ staticp (arg)
     case VAR_DECL:
     case FUNCTION_DECL:
     case CONSTRUCTOR:
-      return TREE_STATIC (arg) || TREE_EXTERNAL (arg);
+      return TREE_STATIC (arg) || DECL_EXTERNAL (arg);
 
     case STRING_CST:
       return 1;

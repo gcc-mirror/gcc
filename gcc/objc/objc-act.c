@@ -496,7 +496,7 @@ create_builtin_decl (code, type, name)
   tree decl = build_decl (code, get_identifier (name), type);
   if (code == VAR_DECL)
     {
-      TREE_EXTERNAL (decl) = 1;
+      DECL_EXTERNAL (decl) = 1;
       TREE_PUBLIC (decl) = 1;
       make_decl_rtl (decl, 0, 1);
       pushdecl (decl);
@@ -903,7 +903,7 @@ build_module_descriptor ()
 
     /* Find the name of some global object defined in this file.  */
     for (t = getdecls (); t; t = TREE_CHAIN (t))
-      if (TREE_PUBLIC (t) && !TREE_EXTERNAL (t) && DECL_INITIAL (t) != 0)
+      if (TREE_PUBLIC (t) && !DECL_EXTERNAL (t) && DECL_INITIAL (t) != 0)
 	{
 	  global_object_name = IDENTIFIER_POINTER (DECL_NAME (t));
 	  break;
@@ -945,7 +945,7 @@ build_module_descriptor ()
     function_decl = build_decl (FUNCTION_DECL,  
 				get_identifier ("__objc_execClass"),  
 				function_type);
-    TREE_EXTERNAL (function_decl) = 1;
+    DECL_EXTERNAL (function_decl) = 1;
     TREE_PUBLIC (function_decl) = 1;
     pushdecl (function_decl);
     rest_of_decl_compilation (function_decl, 0, 0, 0);
@@ -1083,7 +1083,7 @@ build_selector_reference (idx)
   else 
     {
       decl = build_decl (VAR_DECL, ident, selector_type);
-      TREE_EXTERNAL (decl) = 1;
+      DECL_EXTERNAL (decl) = 1;
       TREE_PUBLIC (decl) = 1;
       TREE_USED (decl) = 1;
   
@@ -5052,7 +5052,7 @@ handle_class_ref (chain)
 
   /* Make a decl for this name, so we can use its address in a tree.  */
   decl = build_decl (VAR_DECL, get_identifier (string), char_type_node);
-  TREE_EXTERNAL (decl) = 1;
+  DECL_EXTERNAL (decl) = 1;
   TREE_PUBLIC (decl) = 1;
 
   pushdecl (decl);

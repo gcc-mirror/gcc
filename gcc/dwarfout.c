@@ -2551,7 +2551,7 @@ inline void
 inline_attribute (decl)
      register tree decl;
 {
-  if (TREE_INLINE (decl))
+  if (DECL_INLINE (decl))
     {
       ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_inline);
       ASM_OUTPUT_DWARF_STRING (asm_out_file, "");
@@ -3001,7 +3001,7 @@ output_global_subroutine_die (arg)
     equate_decl_number_to_die_number (decl);
   else
     {
-      if (! TREE_EXTERNAL (decl))
+      if (! DECL_EXTERNAL (decl))
 	{
 	  char func_end_label[MAX_ARTIFICIAL_LABEL_BYTES];
 
@@ -3037,7 +3037,7 @@ output_global_variable_die (arg)
     equate_decl_number_to_die_number (decl);
   else
     {
-      if (!TREE_EXTERNAL (decl))
+      if (!DECL_EXTERNAL (decl))
 	location_or_const_value_attribute (decl);
     }
 }
@@ -4106,7 +4106,7 @@ output_decl (decl, containing_scope)
 	 to the DWARF version 1 specification, don't output DIEs for
 	 mere external function declarations.  */
 
-      if (TREE_EXTERNAL (decl))
+      if (DECL_EXTERNAL (decl))
 #if (DWARF_VERSION > 1)
 	if (debug_info_level <= DINFO_LEVEL_TERSE)
 #endif
@@ -4133,7 +4133,7 @@ output_decl (decl, containing_scope)
 
       /* Now output a DIE to represent the function itself.  */
 
-      output_die (TREE_PUBLIC (decl) || TREE_EXTERNAL (decl)
+      output_die (TREE_PUBLIC (decl) || DECL_EXTERNAL (decl)
 				? output_global_subroutine_die
 				: output_local_subroutine_die,
 		  decl);
@@ -4153,7 +4153,7 @@ output_decl (decl, containing_scope)
 	 we need to do here (and all we *can* do here) is to describe
 	 the *types* of its formal parameters.  */
 
-      if (TREE_EXTERNAL (decl))
+      if (DECL_EXTERNAL (decl))
 	output_formal_types (TREE_TYPE (decl));
       else
 	{
@@ -4385,7 +4385,7 @@ output_decl (decl, containing_scope)
 	 generated any DIEs to represent mere external object declarations.  */
 
 #if (DWARF_VERSION <= 1)
-      if (TREE_EXTERNAL (decl) && ! TREE_PUBLIC (decl))
+      if (DECL_EXTERNAL (decl) && ! TREE_PUBLIC (decl))
 	break;
 #endif
 
@@ -4427,7 +4427,7 @@ output_decl (decl, containing_scope)
 	  func = output_formal_parameter_die;
 	else
 	  {
-	    if (TREE_PUBLIC (decl) || TREE_EXTERNAL (decl))
+	    if (TREE_PUBLIC (decl) || DECL_EXTERNAL (decl))
 	      func = output_global_variable_die;
 	    else
 	      func = output_local_variable_die;
@@ -4491,7 +4491,7 @@ dwarfout_file_scope_decl (decl, set_finalizing)
 	 a builtin function.  Explicit programmer-supplied declarations of
 	 these same functions should NOT be ignored however.  */
 
-      if (TREE_EXTERNAL (decl) && DECL_FUNCTION_CODE (decl))
+      if (DECL_EXTERNAL (decl) && DECL_FUNCTION_CODE (decl))
         return;
 
       /* Ignore this FUNCTION_DECL if it refers to a file-scope extern
@@ -4504,11 +4504,11 @@ dwarfout_file_scope_decl (decl, set_finalizing)
 	 lookup mechanism and cause it to miss things which really ought
 	 to be in scope at a given point.  */
 
-      if (TREE_EXTERNAL (decl) && !TREE_USED (decl))
+      if (DECL_EXTERNAL (decl) && !TREE_USED (decl))
 	return;
 
       if (TREE_PUBLIC (decl)
-	  && ! TREE_EXTERNAL (decl)
+	  && ! DECL_EXTERNAL (decl)
 	  && ! DECL_ABSTRACT (decl))
 	{
 	  char label[MAX_ARTIFICIAL_LABEL_BYTES];
@@ -4539,11 +4539,11 @@ dwarfout_file_scope_decl (decl, set_finalizing)
 	 lookup mechanism and cause it to miss things which really ought
 	 to be in scope at a given point.  */
 
-      if (TREE_EXTERNAL (decl) && !TREE_USED (decl))
+      if (DECL_EXTERNAL (decl) && !TREE_USED (decl))
 	return;
 
       if (TREE_PUBLIC (decl)
-	  && ! TREE_EXTERNAL (decl)
+	  && ! DECL_EXTERNAL (decl)
 	  && GET_CODE (DECL_RTL (decl)) == MEM
 	  && ! DECL_ABSTRACT (decl))
 	{
