@@ -1,3 +1,8 @@
+2003-09-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.def: Break out _Complex math functions into their
+	own category.
+
 2003-09-02  Andreas Jaeger  <aj@suse.de>
 
 	* langhooks-def.h (LANG_HOOKS_RTL_EXPAND_STMT): Cast properly.
