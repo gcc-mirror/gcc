@@ -6,10 +6,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 3.4.2\n"
+"Project-Id-Version: gcc 3.4.3\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2004-11-04 19:12-0800\n"
-"PO-Revision-Date: 2004-11-02 18:52+0100\n"
+"PO-Revision-Date: 2004-11-06 12:52+0100\n"
 "Last-Translator: Roland Stigge <stigge@antcom.de>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -380,9 +380,9 @@ msgid "unable to emulate '%s'"
 msgstr "»%s« kann nicht emuliert werden"
 
 #: c-common.c:4686
-#, fuzzy, c-format
+#, c-format
 msgid "mode `%s' applied to inappropriate type"
-msgstr "Parameter »%s« zeigt auf unvollständigen Typen"
+msgstr "Modus »%s« auf unpassenden Typen angewendet"
 
 #: c-common.c:4718
 msgid "%Jsection attribute cannot be specified for local variables"
@@ -4241,9 +4241,8 @@ msgid "token \"%s\" is not valid in preprocessor expressions"
 msgstr "Token »%s« ist nicht gültig in Präprozessorausdrücken"
 
 #: cppexp.c:751
-#, fuzzy
 msgid "missing expression between '(' and ')'"
-msgstr "ungültiger Ausdruck zwischen '(' und ')'"
+msgstr "fehlender Ausdruck zwischen '(' und ')'"
 
 #: cppexp.c:754
 msgid "#if with no expression"
@@ -4255,9 +4254,9 @@ msgid "operator '%s' has no right operand"
 msgstr "Operator »%s« hat keinen rechten Operanden"
 
 #: cppexp.c:762
-#, fuzzy, c-format
+#, c-format
 msgid "operator '%s' has no left operand"
-msgstr "Operator »%s« hat keinen rechten Operanden"
+msgstr "Operator »%s« hat keinen linken Operanden"
 
 #: cppexp.c:788
 msgid " ':' without preceding '?'"
@@ -13624,14 +13623,12 @@ msgstr "»%D« hat eine vorherige Deklaration als »%#D«"
 #. declared as the name of any other entity in any glogal scope
 #. of the program.
 #: cp/decl.c:1436
-#, fuzzy
 msgid "declaration of `namespace %D' conflicts with"
-msgstr "Deklaration der C-Funktion »%#D« steht in Konflikt mit"
+msgstr "Deklaration von »namespace %D« steht in Konflikt mit"
 
 #: cp/decl.c:1437
-#, fuzzy
 msgid "previous declaration of `namespace %D' here"
-msgstr "vorherige Deklaration »%#D« hier"
+msgstr "vorherige Deklaration von »namespace %D« hier"
 
 #: cp/decl.c:1449
 msgid "`%#D' previously defined here"
@@ -14169,9 +14166,9 @@ msgid "unnamed variable or field declared void"
 msgstr "unbenannte Variable oder Feld als »void« deklariert"
 
 #: cp/decl.c:6405
-#, fuzzy, c-format
+#, c-format
 msgid "variable or field `%E' declared void"
-msgstr "Variable oder Feld »%s« als »void« deklariert"
+msgstr "Variable oder Feld »%E« als »void« deklariert"
 
 #: cp/decl.c:6408
 msgid "variable or field declared void"
@@ -15921,9 +15918,8 @@ msgid "enclosing class templates are not explicitly specialized"
 msgstr ""
 
 #: cp/pt.c:733
-#, fuzzy
 msgid "specialization of `%D' in different namespace"
-msgstr "Deklaration von »%F« wirft andere Ausnahmen"
+msgstr "Spezialisierung von »%D« in anderem Namespace"
 
 #: cp/pt.c:734 cp/pt.c:803
 msgid "  from definition of `%#D'"
@@ -16055,11 +16051,11 @@ msgstr ""
 
 #: cp/pt.c:2842
 msgid "template with C linkage"
-msgstr ""
+msgstr "Template mit C-Bindung"
 
 #: cp/pt.c:2845
 msgid "template class without a name"
-msgstr ""
+msgstr "Templateklasse ohne Namen"
 
 #. [temp.mem]
 #.
@@ -16074,55 +16070,54 @@ msgstr "Destruktor »%D« als Element-Template deklariert"
 #. template. ... Template allocation functions shall
 #. have two or more parameters.
 #: cp/pt.c:2868
-#, fuzzy
 msgid "invalid template declaration of `%D'"
-msgstr "Templatedeklaration von »%#D«"
+msgstr "ungültige Templatedeklaration von »%D«"
 
 #: cp/pt.c:2948
 msgid "`%D' does not declare a template type"
-msgstr ""
+msgstr "»%D« deklariert keinen Template-Typen"
 
 #: cp/pt.c:2954
 msgid "template definition of non-template `%#D'"
-msgstr ""
+msgstr "Template-Definition eines Nicht-Templates »%#D«"
 
 #: cp/pt.c:2995
 msgid "expected %d levels of template parms for `%#D', got %d"
-msgstr ""
+msgstr "%d Ebenen von Template-Parametern für »%#D« erwartet, %d erhalten"
 
 #: cp/pt.c:3007
 msgid "got %d template parameters for `%#D'"
-msgstr ""
+msgstr "%d Template-Parameter für »%#D« erhalten"
 
 #: cp/pt.c:3010
 msgid "got %d template parameters for `%#T'"
-msgstr ""
+msgstr "%d Template-Parameter für »%#T« erhalten"
 
 #: cp/pt.c:3012
 #, c-format
 msgid "  but %d required"
-msgstr ""
+msgstr "  aber %d benötigt"
 
 #: cp/pt.c:3097
 msgid "`%T' is not a template type"
-msgstr ""
+msgstr "»%T« ist kein Template-Typ"
 
 #: cp/pt.c:3113
 msgid "previous declaration `%D'"
-msgstr ""
+msgstr "vorherige Deklaration »%D«"
 
 #: cp/pt.c:3114
 #, c-format
 msgid "used %d template parameter%s instead of %d"
-msgstr ""
+msgstr "%d Template-Parameter%.0s statt %d verwendet"
 
 #: cp/pt.c:3130
 msgid "template parameter `%#D'"
-msgstr ""
+msgstr "Template-Parameter »%#D«"
 
 #: cp/pt.c:3131
 msgid "redeclared here as `%#D'"
-msgstr ""
+msgstr "hier als »%#D« redeklariert"
 
 #. We have in [temp.param]:
 #.
@@ -16130,7 +16125,7 @@ msgstr ""
 #. by two different declarations in the same scope.
 #: cp/pt.c:3141
 msgid "redefinition of default argument for `%#D'"
-msgstr ""
+msgstr "Redefinition des Standardarguments für »%#D«"
 
 #: cp/pt.c:3142
 msgid "%J  original definition appeared here"
@@ -16139,202 +16134,200 @@ msgstr "%J  ursprüngliche Definition trat hier auf"
 #: cp/pt.c:3288
 #, c-format
 msgid "`%E' is not a valid template argument"
-msgstr ""
+msgstr "»%E« ist kein gültiges Templateargument"
 
 #: cp/pt.c:3292
 msgid "it must be the address of a function with external linkage"
-msgstr ""
+msgstr "es muss die Adresse einer Funktion mit externer Bindung sein"
 
 #: cp/pt.c:3294
 msgid "it must be the address of an object with external linkage"
-msgstr ""
+msgstr "es muss die Adresse eines Objektes mit externer Bindung sein"
 
 #: cp/pt.c:3297
 msgid "it must be a pointer-to-member of the form `&X::Y'"
-msgstr ""
+msgstr "es muss ein Zeiger auf ein Element der Form »&X::Y« sein"
 
 #: cp/pt.c:3308
 #, c-format
 msgid "string literal %E is not a valid template argument because it is the address of an object with static linkage"
-msgstr ""
+msgstr "Zeichenkettensymbol %E ist kein gültiges Templateargument, weil es die Adresse eines Objektes mit statischer Bindung ist"
 
 #: cp/pt.c:3323
 #, c-format
 msgid "address of non-extern `%E' cannot be used as template argument"
-msgstr ""
+msgstr "Adresse des nicht externen »%E« kann nicht als Template-Argument verwendet werden"
 
 #: cp/pt.c:3332
 #, c-format
 msgid "non-constant `%E' cannot be used as template argument"
-msgstr ""
+msgstr "Nicht-Konstante »%E« kann nicht als Template-Argument verwendet werden"
 
 #: cp/pt.c:3340
 msgid "type '%T' cannot be used as a value for a non-type template-parameter"
-msgstr ""
+msgstr "Typ »%T« kann nicht als Wert für Nicht-Typ-Templateparameter verwendet werden"
 
 #: cp/pt.c:3343
 msgid "invalid use of '%D' as a non-type template-argument"
-msgstr ""
+msgstr "ungültige Verwendung von »%D« als ein Nicht-Typ-Templateargument"
 
 #: cp/pt.c:3345
 #, c-format
 msgid "invalid use of '%E' as a non-type template-argument"
-msgstr ""
+msgstr "ungültige Verwendung von »%E« als ein Nicht-Typ-Templateargument"
 
 #: cp/pt.c:3710
 #, c-format
 msgid "to refer to a type member of a template parameter, use `typename %E'"
-msgstr ""
+msgstr "um auf ein Typelement eines Templateparameters zu verweisen, »typename %E« verwenden"
 
 #: cp/pt.c:3723 cp/pt.c:3741 cp/pt.c:3780
 msgid "type/value mismatch at argument %d in template parameter list for `%D'"
-msgstr ""
+msgstr "Typ/Wert des Arguments %d passt nicht in Template-Parameterliste für »%D«"
 
 #: cp/pt.c:3726
 msgid "  expected a constant of type `%T', got `%T'"
-msgstr ""
+msgstr "  Konstante des Typs »%T« erwartet, »%T« erhalten"
 
 #: cp/pt.c:3730
 #, c-format
 msgid "  expected a class template, got `%E'"
-msgstr ""
+msgstr "  Klassentemplate erwartet, »%E« erhalten"
 
 #: cp/pt.c:3732
 #, c-format
 msgid "  expected a type, got `%E'"
-msgstr ""
+msgstr "  einen Typ erwartet, »%E« erhalten"
 
 #: cp/pt.c:3744
 msgid "  expected a type, got `%T'"
-msgstr ""
+msgstr "  einen Typ erwartet, »%T« erhalten"
 
 #: cp/pt.c:3746
 msgid "  expected a class template, got `%T'"
-msgstr ""
+msgstr "  Klassentemplate erwartet, »%T« erhalten"
 
 #: cp/pt.c:3782
 msgid "  expected a template of type `%D', got `%D'"
-msgstr ""
+msgstr "  ein Template des Typs »%D« erwartet, »%D« erhalten"
 
 #: cp/pt.c:3817
 msgid "could not convert template argument `%E' to `%T'"
-msgstr ""
+msgstr "Templateargument »%E« konnte nicht in »%T« umgewandelt werden"
 
 #: cp/pt.c:3857
 #, c-format
 msgid "wrong number of template arguments (%d, should be %d)"
-msgstr ""
+msgstr "falsche Anzahl der Templateargumente (%d, sollte %d sein)"
 
 #: cp/pt.c:3861
 msgid "provided for `%D'"
-msgstr ""
+msgstr "für »%D« bereitgestellt"
 
 #: cp/pt.c:3889
 #, c-format
 msgid "template argument %d is invalid"
-msgstr ""
+msgstr "Templateargument %d ist ungültig"
 
 #: cp/pt.c:4110
 msgid "non-template used as template"
-msgstr ""
+msgstr "Nicht-Template als Template verwendet"
 
 #: cp/pt.c:4250
 msgid "non-template type `%T' used as a template"
-msgstr ""
+msgstr "Nicht-Template-Typ »%T« als Template verwendet"
 
 #: cp/pt.c:4252
 msgid "for template declaration `%D'"
-msgstr ""
+msgstr "Für Template-Deklaration »%D«"
 
 #: cp/pt.c:4899
 msgid "template instantiation depth exceeds maximum of %d (use -ftemplate-depth-NN to increase the maximum) instantiating `%D'"
-msgstr ""
+msgstr "Instanziierungstiefe für Templates überschreitet Höchstwert %d (-ftemplate-depth-NN verwenden, um dies zu erhöhen) bei Instanziierung von »%D«"
 
 #: cp/pt.c:5338
 msgid "ambiguous class template instantiation for `%#T'"
-msgstr ""
+msgstr "mehrdeutige Klassentemplate-Instanziierung für »%#T«"
 
 #: cp/pt.c:5344
 msgid "%s %+#T"
-msgstr ""
+msgstr "%s %+#T"
 
 #: cp/pt.c:6382
 msgid "instantiation of `%D' as type `%T'"
-msgstr ""
+msgstr "Instanziierung von »%D« als Typ »%T«"
 
 #: cp/pt.c:6542
 msgid "invalid parameter type `%T'"
-msgstr ""
+msgstr "ungültiger Parametertyp »%T«"
 
 #: cp/pt.c:6544
 msgid "in declaration `%D'"
-msgstr ""
+msgstr "in Deklaration »%D«"
 
 #: cp/pt.c:6618
 msgid "creating pointer to member function of non-class type `%T'"
-msgstr ""
+msgstr "Erzeugung eines Zeigers auf Elementfunktion des Nicht-Klassentyps »%T«"
 
 #: cp/pt.c:6758
 msgid "creating array with size zero"
-msgstr ""
+msgstr "Feld der Größe null wird erzeugt"
 
 #: cp/pt.c:6772
 #, c-format
 msgid "creating array with size zero (`%E')"
-msgstr ""
+msgstr "Feld der Größe null (»%E«) wird erzeugt"
 
 #: cp/pt.c:7011
 msgid "forming reference to void"
-msgstr ""
+msgstr "Referenz auf »void« wird gebildet"
 
 #: cp/pt.c:7013
 msgid "forming %s to reference type `%T'"
-msgstr ""
+msgstr "%s wird in Referenztyp »%T« umgeformt"
 
 #: cp/pt.c:7050
 msgid "creating pointer to member of non-class type `%T'"
-msgstr ""
+msgstr "Zeiger auf Element des Nicht-Klassentypen »%T« wird erzeugt"
 
 #: cp/pt.c:7056
 msgid "creating pointer to member reference type `%T'"
-msgstr ""
+msgstr "Zeiger auf Elementreferenztyp »%T« wird erzeugt"
 
 #: cp/pt.c:7142
 msgid "creating array of `%T'"
-msgstr ""
+msgstr "Feld von »%T« wird erzeugt"
 
 #: cp/pt.c:7148
 msgid "creating array of `%T', which is an abstract class type"
-msgstr ""
+msgstr "Feld von »%T« wird erzeugt, was ein abstrakter Klassentyp ist"
 
 #: cp/pt.c:7192
 msgid "`%T' is not a class, struct, or union type"
-msgstr ""
+msgstr "»%T« ist kein Klassen-, Struktur- oder Union-Typ"
 
 #: cp/pt.c:7305
 #, c-format
 msgid "use of `%s' in template"
-msgstr ""
+msgstr "Verwendung von »%s« in Template"
 
 #: cp/pt.c:7418
 #, c-format
 msgid "dependent-name `%E' is parsed as a non-type, but instantiation yields a type"
-msgstr ""
+msgstr "Abhängigenname »%E« wird als Nicht-Typ erkannt, aber die Instanziierung liefert Typ"
 
 #: cp/pt.c:7420
 #, c-format
 msgid "say `typename %E' if a type is meant"
-msgstr ""
+msgstr "»typename %E« sagen, wenn ein Typ gemeint ist"
 
 #: cp/pt.c:8589
-#, fuzzy
 msgid "`%T' is not a class or namespace"
-msgstr "»%s« ist kein gültiger Klassenname"
+msgstr "»%T« ist keine Klasse oder Namensbereich"
 
 #: cp/pt.c:8592
-#, fuzzy
 msgid "`%D' is not a class or namespace"
-msgstr "»%s« ist kein gültiger Klassenname"
+msgstr "»%D« ist keine Klasse oder Namensbereich"
 
 #: cp/pt.c:8709
 msgid "`%T' uses anonymous type"
@@ -16346,7 +16339,7 @@ msgstr "»%T« verwendet lokalen Typen »%T«"
 
 #: cp/pt.c:8719
 msgid "`%T' is a variably modified type"
-msgstr ""
+msgstr "»%T« ist ein variabel modifizierter Typ"
 
 #: cp/pt.c:8730
 #, c-format
@@ -16355,156 +16348,156 @@ msgstr "Integralausdruck »%E« ist nicht konstant"
 
 #: cp/pt.c:8735
 msgid "  trying to instantiate `%D'"
-msgstr ""
+msgstr "  Versuch, »%D« zu instanziieren"
 
 #: cp/pt.c:9252
 msgid "incomplete type unification"
-msgstr ""
+msgstr "unvollständige Typvereinigung"
 
 #: cp/pt.c:10211
 #, c-format
 msgid "use of `%s' in template type unification"
-msgstr ""
+msgstr "Verwendung von »%s« in Templatetyp-Vereinigung"
 
 #: cp/pt.c:10644 cp/pt.c:10716
 msgid "explicit instantiation of non-template `%#D'"
-msgstr ""
+msgstr "explizite Instanziierung des Nicht-Templates »%#D«"
 
 #: cp/pt.c:10660 cp/pt.c:10711
 msgid "no matching template for `%D' found"
-msgstr ""
+msgstr "kein passendes Template für »%D« gefunden"
 
 #: cp/pt.c:10666
 msgid "explicit instantiation of `%#D'"
-msgstr ""
+msgstr "explizite Instanziierung von »%#D«"
 
 #: cp/pt.c:10703
 msgid "duplicate explicit instantiation of `%#D'"
-msgstr ""
+msgstr "doppelte explizite Instanziierung von »%#D«"
 
 #: cp/pt.c:10725
 msgid "ISO C++ forbids the use of `extern' on explicit instantiations"
-msgstr ""
+msgstr "ISO-C++ verbietet die Verwendung von »extern« bei expliziten Instanziierungen"
 
 #: cp/pt.c:10729 cp/pt.c:10810
 msgid "storage class `%D' applied to template instantiation"
-msgstr ""
+msgstr "Speicherklasse »%D« auf Templateinstanziierung angewendet"
 
 #: cp/pt.c:10782
 msgid "explicit instantiation of non-template type `%T'"
-msgstr ""
+msgstr "explizite Instanziierung des Nicht-Templatetyps »%T«"
 
 #: cp/pt.c:10791
 msgid "explicit instantiation of `%#T' before definition of template"
-msgstr ""
+msgstr "explizite Instanziierung von »%#T« vor Definition des Templates"
 
 #: cp/pt.c:10799
 #, c-format
 msgid "ISO C++ forbids the use of `%s' on explicit instantiations"
-msgstr ""
+msgstr "ISO-C++ verbietet die Verwendung von »%s« bei expliziten Instanziierungen"
 
 #: cp/pt.c:10843
 msgid "duplicate explicit instantiation of `%#T'"
-msgstr ""
+msgstr "doppelte explizite Instanziierung von »%#T«"
 
 #: cp/pt.c:11224
 msgid "explicit instantiation of `%D' but no definition available"
-msgstr ""
+msgstr "explizite Instanziierung von »%D«, aber keine Definition verfügbar"
 
 #: cp/pt.c:11660
 msgid "`%#T' is not a valid type for a template constant parameter"
-msgstr ""
+msgstr "»%#T« ist kein gültiger Typ für einen Templatekonstanten-Parameter"
 
 #: cp/repo.c:259
 msgid "-frepo must be used with -c"
-msgstr ""
+msgstr "-frepo muss mit -c verwendet werden"
 
 #: cp/repo.c:346
 #, c-format
 msgid "mysterious repository information in %s"
-msgstr ""
+msgstr "rätselhafte Repository-Information in %s"
 
 #: cp/repo.c:361
 #, c-format
 msgid "can't create repository information file `%s'"
-msgstr ""
+msgstr "Repository-Informationsdatei »%s« kann nicht erzeugt werden"
 
 #: cp/rtti.c:248
 msgid "cannot use typeid with -fno-rtti"
-msgstr ""
+msgstr "typeid kann nicht mit -fno-rtti verwendet werden"
 
 #: cp/rtti.c:254
 msgid "must #include <typeinfo> before using typeid"
-msgstr ""
+msgstr "vor Verwendung von typeid muss #include <typeinfo> angegeben werden"
 
 #: cp/rtti.c:326
 msgid "cannot create type information for type `%T' because its size is variable"
-msgstr ""
+msgstr "für Typ »%T« kann keine Typinformation erzeugt werden, weil seine Größe variabel ist"
 
 #: cp/rtti.c:580 cp/rtti.c:594
 msgid "dynamic_cast of `%#D' to `%#T' can never succeed"
-msgstr ""
+msgstr "dynamic_cast von »%#D« nach »%#T« kann nie erfolgreich sein"
 
 #: cp/rtti.c:674
 msgid "cannot dynamic_cast `%E' (of type `%#T') to type `%#T' (%s)"
-msgstr ""
+msgstr "dynamic_cast »%E« (des Typs »%#T«) in Typ »%#T« (%s) kann nicht vorgenommen werden"
 
 #: cp/search.c:311
 msgid "`%T' is an ambiguous base of `%T'"
-msgstr ""
+msgstr "»%T« ist mehrdeutige Basis von »%T«"
 
 #: cp/search.c:329
 msgid "`%T' is an inaccessible base of `%T'"
-msgstr ""
+msgstr "»%T« ist eine nicht erreichbare Basis von »%T«"
 
 #: cp/search.c:1805
 msgid "invalid covariant return type for `%#D'"
-msgstr ""
+msgstr "ungültiger kovarianter Rückgabetyp für »%#D«"
 
 #: cp/search.c:1806 cp/search.c:1812
 msgid "  overriding `%#D'"
-msgstr ""
+msgstr "  »%#D« wird überschrieben"
 
 #: cp/search.c:1810
 msgid "conflicting return type specified for `%#D'"
-msgstr ""
+msgstr "in Konflikt stehende Rückgabetypen für »%#D« angegeben"
 
 #: cp/search.c:1824
 #, c-format
 msgid "looser throw specifier for `%#F'"
-msgstr ""
+msgstr "loser »throw«-Spezifizierer für »%#F«"
 
 #: cp/search.c:1825
 #, c-format
 msgid "  overriding `%#F'"
-msgstr ""
+msgstr "  »%#F« wird überschrieben"
 
 #. A static member function cannot match an inherited
 #. virtual member function.
 #: cp/search.c:1915
 msgid "`%#D' cannot be declared"
-msgstr ""
+msgstr "»%#D« kann nicht deklariert werden"
 
 #: cp/search.c:1916
 msgid "  since `%#D' declared in base class"
-msgstr ""
+msgstr "  denn »%#D« ist in Basisklasse deklariert"
 
 #: cp/search.c:1993
 msgid "`%#D' needs a final overrider"
-msgstr ""
+msgstr "»%#D« muss ein endgültiger Überschreiber sein"
 
 #: cp/semantics.c:1092
 #, c-format
 msgid "type of asm operand `%E' could not be determined"
-msgstr ""
+msgstr "Typ des asm-Operanden »%E« konnte nicht ermittelt werden"
 
 #: cp/semantics.c:1233
 msgid "invalid use of member `%D' in static member function"
-msgstr ""
+msgstr "ungültige Verwendung des Elementes »%D« in statischer Elementfunktion"
 
 #: cp/semantics.c:1237 cp/semantics.c:1276
 msgid "from this location"
-msgstr ""
+msgstr "von dieser Stelle"
 
 #: cp/semantics.c:1275
 msgid "object missing in reference to `%D'"
@@ -16512,75 +16505,75 @@ msgstr "Objekt fehlt in Referenz auf »%D«"
 
 #: cp/semantics.c:1718
 msgid "arguments to destructor are not allowed"
-msgstr ""
+msgstr "Argumente für Destruktor sind nicht erlaubt"
 
 #: cp/semantics.c:1767
 msgid "`this' is unavailable for static member functions"
-msgstr ""
+msgstr "»this« ist für statische Elementfunktionen nicht verfügbar"
 
 #: cp/semantics.c:1773
 msgid "invalid use of `this' in non-member function"
-msgstr ""
+msgstr "ungültige Verwendung von »this« in Nicht-Element-Funktion"
 
 #: cp/semantics.c:1775
 msgid "invalid use of `this' at top level"
-msgstr ""
+msgstr "ungültige Verwendung von »this« auf höchster Ebene"
 
 #: cp/semantics.c:1799
 msgid "invalid qualifying scope in pseudo-destructor name"
-msgstr ""
+msgstr "ungültiger angegebener Gültigkeitsbereich in Pseudodestruktor-Name"
 
 #: cp/semantics.c:1819
 msgid "`%E' is not of type `%T'"
-msgstr ""
+msgstr "»%E« ist nicht vom Typ »%T«"
 
 #: cp/semantics.c:1930
 msgid "template type parameters must use the keyword `class' or `typename'"
-msgstr ""
+msgstr "Templatetypparameter müssen das Schlüsselwort »class« oder »typename« verwenden"
 
 #: cp/semantics.c:1974
 msgid "invalid use of type `%T' as a default value for a template template-parameter"
-msgstr ""
+msgstr "ungültige Verwendung des Typs »%T« als Standardwert für einen Template-Templateparameter"
 
 #: cp/semantics.c:1977
 msgid "invalid use of `%D' as a default value for a template template-parameter"
-msgstr ""
+msgstr "ungültige Verwendung von »%D« als Standardwert für einen Template-Templateparameter"
 
 #: cp/semantics.c:1981
 msgid "invalid default argument for a template template parameter"
-msgstr ""
+msgstr "ungültiges Standardargument für einen Template-Templateparameter"
 
 #: cp/semantics.c:2016
 msgid "definition of `%#T' inside template parameter list"
-msgstr ""
+msgstr "Definition von »%#T« in Templateparameterliste"
 
 #: cp/semantics.c:2027
 msgid "invalid definition of qualified type `%T'"
-msgstr ""
+msgstr "ungültige Definition des qualifizierten Typen »%T«"
 
 #: cp/semantics.c:2042
 msgid "previous definition of `%#T'"
-msgstr ""
+msgstr "vorherige Definition von »%#T«"
 
 #: cp/semantics.c:2246
 msgid "invalid base-class specification"
-msgstr ""
+msgstr "ungültige Spezifizierung der Basisklasse"
 
 #: cp/semantics.c:2255
 msgid "base class `%T' has cv qualifiers"
-msgstr ""
+msgstr "Basisklasse »%T« hat CV-Kennzeichner"
 
 #: cp/semantics.c:2287
 msgid "multiple declarators in template declaration"
-msgstr ""
+msgstr "mehrere Deklarationen in Templatedeklaration"
 
 #: cp/semantics.c:2298
 msgid "incomplete type `%T' used in nested name specifier"
-msgstr ""
+msgstr "unvollständiger Typ »%T« in geschachtelter Namensangabe verwendet"
 
 #: cp/semantics.c:2300 cp/typeck.c:1635
 msgid "`%D' is not a member of `%T'"
-msgstr ""
+msgstr "»%D« ist kein Element von »%T«"
 
 #: cp/semantics.c:2303
 msgid "`%D' is not a member of `%D'"
@@ -16588,7 +16581,7 @@ msgstr "»%D« ist kein Element von »%D«"
 
 #: cp/semantics.c:2428
 msgid "template parameter `%D' of type `%T' is not allowed in an integral constant expression because it is not of integral or enumeration type"
-msgstr ""
+msgstr "Templateparameter »%D« vom Typ »%T« ist in ganzzahligem Konstantenausdruck nicht erlaubt, da er nicht Ganzzahl- oder Aufzählungstyp hat"
 
 #: cp/semantics.c:2572
 msgid "`%D' cannot appear in a constant-expression"
@@ -16596,90 +16589,90 @@ msgstr "»%D« kann nicht in Konstanten-Ausdruck auftreten"
 
 #: cp/semantics.c:2580
 msgid "use of namespace `%D' as expression"
-msgstr ""
+msgstr "Verwendung des Namespace »%D« als Ausdruck"
 
 #: cp/semantics.c:2585
 msgid "use of class template `%T' as expression"
-msgstr ""
+msgstr "Verwendung des Klassentemplates »%T« als Ausdruck"
 
 #. Ambiguous reference to base members.
 #: cp/semantics.c:2591
 msgid "request for member `%D' is ambiguous in multiple inheritance lattice"
-msgstr ""
+msgstr "Abfrage des Elementes »%D« ist im Gitter der Mehrfachvererbung mehrdeutig"
 
 #: cp/semantics.c:2652
 #, c-format
 msgid "use of %s from containing function"
-msgstr ""
+msgstr "Verwendung von %s von enthaltener Funktion aus"
 
 #: cp/semantics.c:2655
 msgid "  `%#D' declared here"
-msgstr ""
+msgstr "  »%#D« hier deklariert"
 
 #: cp/semantics.c:2706
 #, c-format
 msgid "type of `%E' is unknown"
-msgstr ""
+msgstr "Typ von »%E« ist unbekannt"
 
 #: cp/tree.c:226
 #, c-format
 msgid "non-lvalue in %s"
-msgstr ""
+msgstr "Nicht-L-Wert in %s"
 
 #: cp/tree.c:532
 msgid "`%V' qualifiers cannot be applied to `%T'"
-msgstr ""
+msgstr "»%V«-Qualifizierer können nicht auf »%T« angewendet werden"
 
 #: cp/tree.c:1829
 #, c-format
 msgid "`%s' attribute can only be applied to Java class definitions"
-msgstr ""
+msgstr "Attribut »%s« kann nur auf Java-Klassendefinitionen angewendet werden"
 
 #: cp/tree.c:1858
 #, c-format
 msgid "`%s' attribute can only be applied to class definitions"
-msgstr ""
+msgstr "Attribut »%s« kann nur auf Klassendefinitionen angewendet werden"
 
 #: cp/tree.c:1864
 #, c-format
 msgid "`%s' is obsolete; g++ vtables are now COM-compatible by default"
-msgstr ""
+msgstr "»%s« ist veraltet; g++-vtables sind jetzt standardmäßig COM-verträglich"
 
 #: cp/tree.c:1888
 msgid "requested init_priority is not an integer constant"
-msgstr ""
+msgstr "angefordertes init_priority ist keine Ganzzahlkonstante"
 
 #: cp/tree.c:1909
 #, c-format
 msgid "can only use `%s' attribute on file-scope definitions of objects of class type"
-msgstr ""
+msgstr "nur Attribut »%s« kann für Definitionen von Objekten eines Klassentyps im Datei-Gültigkeitsbereich verwendet werden"
 
 #: cp/tree.c:1917
 msgid "requested init_priority is out of range"
-msgstr ""
+msgstr "angefordertes init_priority ist außerhalb des Wertebereiches"
 
 #: cp/tree.c:1927
 msgid "requested init_priority is reserved for internal use"
-msgstr ""
+msgstr "angefordertes init_priority ist für interne Verwendung reserviert"
 
 #: cp/tree.c:1937
 #, c-format
 msgid "`%s' attribute is not supported on this platform"
-msgstr ""
+msgstr "Attribut »%s« wird auf dieser Plattform nicht unterstützt"
 
 #: cp/tree.c:2534
 #, c-format
 msgid "lang_* check: failed in %s, at %s:%d"
-msgstr ""
+msgstr "Überprüfung von lang_*: in %s, bei %s:%d gescheitert"
 
 #: cp/typeck.c:436 cp/typeck.c:450 cp/typeck.c:542
 msgid "%s between distinct pointer types `%T' and `%T' lacks a cast"
-msgstr ""
+msgstr "%s zwischen den verschiedenen Zeigertypen »%T« und »%T« benötigt Umwandlung"
 
 #: cp/typeck.c:512
 #, c-format
 msgid "ISO C++ forbids %s between pointer of type `void *' and pointer-to-function"
-msgstr ""
+msgstr "ISO-C++ verbietet %s zwischen Zeiger des Typs »void *« und Zeiger auf Funktion"
 
 #: cp/typeck.c:562
 msgid "%s between distinct pointer-to-member types `%T' and `%T' lacks a cast"
@@ -16688,7 +16681,7 @@ msgstr "%s zwischen verschiedenen Zeiger-auf-Element-Typen »%T« und »%T« feh
 #: cp/typeck.c:1234
 #, c-format
 msgid "invalid application of `%s' to a member function"
-msgstr ""
+msgstr "ungültige Anwendung von »%s« auf Elementfunktion"
 
 #: cp/typeck.c:1267
 #, c-format
@@ -16706,11 +16699,11 @@ msgstr "falsche Benutzung einer nicht-statischen Elementfunktion"
 
 #: cp/typeck.c:1494
 msgid "deprecated conversion from string constant to `%T'"
-msgstr ""
+msgstr "veraltete Konvertierung von Zeichenkettenkonstante in »%T«"
 
 #: cp/typeck.c:1606 cp/typeck.c:1897
 msgid "request for member `%D' in `%E', which is of non-class type `%T'"
-msgstr ""
+msgstr "Abfrage des Elementes »%D« in »%E«, das vom Nicht-Klassentyp »%T« ist"
 
 #: cp/typeck.c:1633
 #, c-format
@@ -16719,81 +16712,81 @@ msgstr "ungültige Benutzung des nicht-statischen Datenelements »%E«"
 
 #: cp/typeck.c:1685 cp/typeck.c:1707
 msgid "invalid access to non-static data member `%D' of NULL object"
-msgstr ""
+msgstr "ungültiger Zugriff auf nicht-statisches Datenelement »%D« des NULL-Objektes"
 
 #: cp/typeck.c:1687 cp/typeck.c:1709
 msgid "(perhaps the `offsetof' macro was used incorrectly)"
-msgstr ""
+msgstr "(vielleicht wurde das Makro »offsetof« falsch verwendet)"
 
 #: cp/typeck.c:1824
 msgid "the type being destroyed is `%T', but the destructor refers to `%T'"
-msgstr ""
+msgstr "der zerstörte Typ ist »%T«, aber der Destruktor verweist auf »%T«"
 
 #: cp/typeck.c:1947
 msgid "`%D::%D' is not a member of `%T'"
-msgstr ""
+msgstr "»%D::%D« ist kein Element von »%T«"
 
 #: cp/typeck.c:1958
 msgid "`%T' is not a base of `%T'"
-msgstr ""
+msgstr "»%T« ist keine Basis von »%T«"
 
 #: cp/typeck.c:1977
 msgid "'%D' has no member named '%E'"
-msgstr ""
+msgstr "»%D« hat kein Element namens »%E«"
 
 #: cp/typeck.c:1992
 msgid "`%D' is not a member template function"
-msgstr ""
+msgstr "»%D« ist keine Elementtemplatefunktion"
 
 #. A pointer to incomplete type (other than cv void) can be
 #. dereferenced [expr.unary.op]/1
 #: cp/typeck.c:2098
 msgid "`%T' is not a pointer-to-object type"
-msgstr ""
+msgstr "»%T« ist kein Zeiger auf Objekt"
 
 #: cp/typeck.c:2123
 #, c-format
 msgid "invalid use of `%s' on pointer to member"
-msgstr ""
+msgstr "ungültige Verwendung von »%s« bei Zeiger auf Element"
 
 #: cp/typeck.c:2129
 msgid "invalid type argument"
-msgstr ""
+msgstr "ungültiges Typargument"
 
 #: cp/typeck.c:2235
 msgid "ISO C++ forbids subscripting non-lvalue array"
-msgstr ""
+msgstr "ISO-C++ verbietet Indizierung eines Nicht-L-Wert-Feldes"
 
 #: cp/typeck.c:2246
 msgid "subscripting array declared `register'"
-msgstr ""
+msgstr "Indizierung eines als »register« deklarierten Feldes"
 
 #: cp/typeck.c:2329
 #, c-format
 msgid "object missing in use of `%E'"
-msgstr ""
+msgstr "bei Verwendung von »%E« fehlt Objekt"
 
 #: cp/typeck.c:2431
 msgid "ISO C++ forbids calling `::main' from within program"
-msgstr ""
+msgstr "ISO-C++ verbietet den Aufruf von »::main« vom Programm aus"
 
 #: cp/typeck.c:2456
 #, c-format
 msgid "must use .* or ->* to call pointer-to-member function in `%E (...)'"
-msgstr ""
+msgstr ".* oder ->* muss verwendet werden, um Zeiger auf Element in »%E (...)« aufzurufen"
 
 #: cp/typeck.c:2469
 #, c-format
 msgid "`%E' cannot be used as a function"
-msgstr ""
+msgstr "»%E« kann nicht als Funktion verwendet werden"
 
 #: cp/typeck.c:2562
 msgid "too many arguments to %s `%+#D'"
-msgstr ""
+msgstr "zu viele Argumente für %s »%+#D«"
 
 #: cp/typeck.c:2564 cp/typeck.c:2670
 msgid "at this point in file"
-msgstr ""
+msgstr "an dieser Stelle in der Datei"
 
 #: cp/typeck.c:2601
 msgid "parameter %P of `%D' has incomplete type `%T'"
@@ -16805,57 +16798,57 @@ msgstr "Parameter %P hat unvollständigen Typen »%T«"
 
 #: cp/typeck.c:2668
 msgid "too few arguments to %s `%+#D'"
-msgstr ""
+msgstr "zu wenige Argumente für %s »%+#D«"
 
 #: cp/typeck.c:2815 cp/typeck.c:2825
 msgid "assuming cast to type `%T' from overloaded function"
-msgstr ""
+msgstr "Umwandlung in Typ »%T« von überladener Funktion wird angenommen"
 
 #: cp/typeck.c:2886
 #, c-format
 msgid "division by zero in `%E / 0'"
-msgstr ""
+msgstr "Division durch Null in »%E / 0«"
 
 #: cp/typeck.c:2888
 #, c-format
 msgid "division by zero in `%E / 0.'"
-msgstr ""
+msgstr "Division durch Null in »%E / 0.«"
 
 #: cp/typeck.c:2917
 #, c-format
 msgid "division by zero in `%E %% 0'"
-msgstr ""
+msgstr "Division durch Null in »%E %% 0«"
 
 #: cp/typeck.c:2919
 #, c-format
 msgid "division by zero in `%E %% 0.'"
-msgstr ""
+msgstr "Division durch Null in »%E %% 0.«"
 
 #: cp/typeck.c:2999
 #, c-format
 msgid "%s rotate count is negative"
-msgstr ""
+msgstr "Rotationszähler %s ist negativ"
 
 #: cp/typeck.c:3002
 #, c-format
 msgid "%s rotate count >= width of type"
-msgstr ""
+msgstr "Rotationszähler %s >= Breite des Typs"
 
 #: cp/typeck.c:3036 cp/typeck.c:3041 cp/typeck.c:3132 cp/typeck.c:3137
 msgid "ISO C++ forbids comparison between pointer and integer"
-msgstr ""
+msgstr "ISO-C++ verbietet Vergleich zwischen Zeiger und Ganzzahl"
 
 #: cp/typeck.c:3318
 msgid "comparison between types `%#T' and `%#T'"
-msgstr ""
+msgstr "Vergleich zwischen den Typen »%#T« und »%#T«"
 
 #: cp/typeck.c:3354
 msgid "comparison between signed and unsigned integer expressions"
-msgstr ""
+msgstr "Vergleich zwischen vorzeichenbehafteten und vorzeichenlosen Ganzzahlausdrücken"
 
 #: cp/typeck.c:3419
 msgid "invalid operands of types `%T' and `%T' to binary `%O'"
-msgstr ""
+msgstr "ungültige Operanden der Typen »%T« und »%T« für binäres »%O«"
 
 #. Some sort of arithmetic operation involving NULL was
 #. performed.  Note that pointer-difference and pointer-addition
@@ -16863,104 +16856,104 @@ msgstr ""
 #. that case.
 #: cp/typeck.c:3441
 msgid "NULL used in arithmetic"
-msgstr ""
+msgstr "NULL in Arithmetik verwendet"
 
 #: cp/typeck.c:3504
 msgid "ISO C++ forbids using pointer of type `void *' in subtraction"
-msgstr ""
+msgstr "ISO-C++ verbietet die Verwendung eines Zeigers des Typs »void *« in Subtraktion"
 
 #: cp/typeck.c:3506
 msgid "ISO C++ forbids using pointer to a function in subtraction"
-msgstr ""
+msgstr "ISO-C++ verbietet die Verwendung eines Zeigers auf eine Funktion in Subtraktion"
 
 #: cp/typeck.c:3508
 msgid "ISO C++ forbids using pointer to a method in subtraction"
-msgstr ""
+msgstr "ISO-C++ verbietet die Verwendung eines Zeigers auf Methode in Subtraktion"
 
 #: cp/typeck.c:3520
 msgid "invalid use of a pointer to an incomplete type in pointer arithmetic"
-msgstr ""
+msgstr "ungültige Verwendung eines Zeigers auf einen unvollständigen Typen in Zeigerarithmetik"
 
 #: cp/typeck.c:3600
 #, c-format
 msgid "invalid use of '%E' to form a pointer-to-member-function.  Use a qualified-id."
-msgstr ""
+msgstr "ungültige Verwendung von »%E« um Zeiger auf Elementfunktion zu erzeugen. Qualifizierer-ID sollte verwendet werden"
 
 #: cp/typeck.c:3606
 #, c-format
 msgid "parenthesis around '%E' cannot be used to form a pointer-to-member-function"
-msgstr ""
+msgstr "Klammern um »%E« können nicht verwendet werden, einen Zeiger auf Elementfunktion zu erzeugen"
 
 #: cp/typeck.c:3628
 msgid "taking address of temporary"
-msgstr ""
+msgstr "Adresse eines temporären Wertes wird ermittelt"
 
 #: cp/typeck.c:3863
 #, c-format
 msgid "ISO C++ forbids %sing an enum"
-msgstr ""
+msgstr "ISO-C++ verbietet %s einer Aufzählung"
 
 #: cp/typeck.c:3874
 msgid "cannot %s a pointer to incomplete type `%T'"
-msgstr ""
+msgstr "Fehler bei %s eines Zeigers auf unvollständigen Typen »%T«"
 
 #: cp/typeck.c:3880
 msgid "ISO C++ forbids %sing a pointer of type `%T'"
-msgstr ""
+msgstr "ISO-C++ verbietet %s eines Zeigers vom Typ »%T«"
 
 #: cp/typeck.c:3905
 msgid "cast to non-reference type used as lvalue"
-msgstr ""
+msgstr "Umwandlung in als L-Wert verwendeten Nicht-Referenz-Typ"
 
 #: cp/typeck.c:3939
 msgid "invalid use of `--' on bool variable `%D'"
-msgstr ""
+msgstr "ungültige Verwendung der boolschen Variable »%D«"
 
 #. ARM $3.4
 #: cp/typeck.c:3970
 msgid "ISO C++ forbids taking address of function `::main'"
-msgstr ""
+msgstr "ISO-C++ verbietet das Ermitteln der Adresse der Funktion »::main«"
 
 #. An expression like &memfn.
 #: cp/typeck.c:4045
 msgid "ISO C++ forbids taking the address of an unqualified or parenthesized non-static member function to form a pointer to member function.  Say `&%T::%D'"
-msgstr ""
+msgstr "ISO-C++ verbietet das Ermitteln der Adresse einer nicht qualifizierten oder geklammerten nicht-statischen Elementfunktion, um einen Zeiger auf Elementfunktion zu erzeugen. Stattdessen »&%T::%D« verwenden"
 
 #: cp/typeck.c:4050
 msgid "ISO C++ forbids taking the address of a bound member function to form a pointer to member function.  Say `&%T::%D'"
-msgstr ""
+msgstr "ISO-C++ verbietet das Ermitteln der Adresse einer gebundenen Elementfunktion, um einen Zeiger auf Elementfunktion zu erzeugen. Stattdessen »&%T::%D« verwenden"
 
 #: cp/typeck.c:4078
 msgid "ISO C++ forbids taking the address of a cast to a non-lvalue expression"
-msgstr ""
+msgstr "ISO-C++ verbietet das Ermitteln der Adresse einer Umwandlung in einen Nicht-L-Wert-Ausdruck"
 
 #: cp/typeck.c:4098
 msgid "unary `&'"
-msgstr ""
+msgstr "einstelliges »&«"
 
 #: cp/typeck.c:4131
 msgid "attempt to take address of bit-field structure member `%D'"
-msgstr ""
+msgstr "Versuch, die Adresse des Bitfeldstrukturelements »%D« zu ermitteln"
 
 #: cp/typeck.c:4245
 msgid "taking address of destructor"
-msgstr ""
+msgstr "Adresse des Destruktors wird ermittelt"
 
 #: cp/typeck.c:4258
 msgid "taking address of bound pointer-to-member expression"
-msgstr ""
+msgstr "Adresse des gebundenen Zeiger-auf-Element-Ausdrucks wird ermittelt"
 
 #: cp/typeck.c:4266
 msgid "cannot create pointer to reference member `%D'"
-msgstr ""
+msgstr "Zeiger auf Referenzelement »%D« kann nicht erzeugt werden"
 
 #: cp/typeck.c:4329
 msgid "cannot take the address of `this', which is an rvalue expression"
-msgstr ""
+msgstr "Adresse von »this« kann nicht ermittelt werden, das ein R-Wert-Ausdruck ist"
 
 #: cp/typeck.c:4348
 msgid "address requested for `%D', which is declared `register'"
-msgstr ""
+msgstr "Adresse für »%D« angefordert, was als »register« deklariert ist"
 
 #: cp/typeck.c:4416
 #, c-format
@@ -16969,83 +16962,83 @@ msgstr "%s Ausdrucksliste als zusammengesetzten Ausdruck behandelt"
 
 #: cp/typeck.c:4490
 msgid "%s from type `%T' to type `%T' casts away constness"
-msgstr ""
+msgstr "%s vom Typ »%T« in Typ »%T« entfernt Konstantheit"
 
 #: cp/typeck.c:4692
 msgid "invalid static_cast from type `%T' to type `%T'"
-msgstr ""
+msgstr "ungültiges static_cast vom Typ »%T« in den Typ »%T«"
 
 #: cp/typeck.c:4732
 msgid "invalid reinterpret_cast of an rvalue expression of type `%T' to type `%T'"
-msgstr ""
+msgstr "ungültiges reinterpret_cast eines R-Wert-Ausdrucks des Typs »%T« in Typ »%T«"
 
 #: cp/typeck.c:4752
 msgid "reinterpret_cast from `%T' to `%T' loses precision"
-msgstr ""
+msgstr "reinterpret_cast von »%T« nach »%T« verliert Genauigkeit"
 
 #: cp/typeck.c:4771
 msgid "ISO C++ forbids casting between pointer-to-function and pointer-to-object"
-msgstr ""
+msgstr "ISO-C++ verbietet Umwandlung zwischen Zeiger auf Funktion und Zeiger auf Objekt"
 
 #: cp/typeck.c:4777
 msgid "invalid reinterpret_cast from type `%T' to type `%T'"
-msgstr ""
+msgstr "ungültiges reinterpret_cast vom Typ »%T« in Typ »%T«"
 
 #: cp/typeck.c:4805
 msgid "invalid use of const_cast with type `%T', which is not a pointer, reference, nor a pointer-to-data-member type"
-msgstr ""
+msgstr "ungültige Verwendung von const_cast mit Typ »%T«, das weder Zeiger, Referenz, noch vom Typ eines Zeigers auf Datenelement ist"
 
 #: cp/typeck.c:4808
 msgid "invalid use of const_cast with type `%T', which is a pointer or reference to a function type"
-msgstr ""
+msgstr "ungültige Verwendung von const_cast mit Typ »%T«, das ein Zeiger oder Referenz auf Funktionstyp ist"
 
 #: cp/typeck.c:4831
 msgid "invalid const_cast of an rvalue of type `%T' to type `%T'"
-msgstr ""
+msgstr "ungültiges const_cast eines R-Wertes des Typs »%T« in Typ »%T«"
 
 #: cp/typeck.c:4848
 msgid "invalid const_cast from type `%T' to type `%T'"
-msgstr ""
+msgstr "ungültiges const_cast von Typ »%T« in Typ »%T«"
 
 #: cp/typeck.c:4888 cp/typeck.c:4893
 msgid "ISO C++ forbids casting to an array type `%T'"
-msgstr ""
+msgstr "ISO-C++ verbietet Umwandlung in Feldtyp »%T«"
 
 #: cp/typeck.c:4901
 msgid "invalid cast to function type `%T'"
-msgstr ""
+msgstr "ungültige Umwandlung in Funktionstyp »%T«"
 
 #: cp/typeck.c:4957
 msgid "cast from `%T' to `%T' discards qualifiers from pointer target type"
-msgstr ""
+msgstr "Umwandlung von »%T« in »%T« entfernt Kennzeichner von Zeiger-Ziel-Typ"
 
 #: cp/typeck.c:5003
 msgid "cast from `%T' to `%T' increases required alignment of target type"
-msgstr ""
+msgstr "Umwandlung von »%T« in »%T« erhöht erforderliche Ausrichtung des Zieltyps"
 
 #: cp/typeck.c:5170
 msgid "  in evaluation of `%Q(%#T, %#T)'"
-msgstr ""
+msgstr "  in Auswertung von »%Q(%#T, %#T)«"
 
 #: cp/typeck.c:5212
 msgid "ISO C++ forbids cast to non-reference type used as lvalue"
-msgstr ""
+msgstr "ISO-C++ verbietet Umwandlung in als L-Wert verwendeten Nicht-Referenz-Typ"
 
 #: cp/typeck.c:5285
 msgid "incompatible types in assignment of `%T' to `%T'"
-msgstr ""
+msgstr "unverträgliche Typen in Zuweisung von »%T« an »%T«"
 
 #: cp/typeck.c:5292
 msgid "ISO C++ forbids assignment of arrays"
-msgstr ""
+msgstr "ISO-C++ verbietet Zuweisung von Feldern"
 
 #: cp/typeck.c:5392
 msgid "   in pointer to member function conversion"
-msgstr ""
+msgstr "   in Umwandlung in Zeiger auf Elementfunktion"
 
 #: cp/typeck.c:5400
 msgid "   in pointer to member conversion"
-msgstr ""
+msgstr "   in Umwandlung in Zeiger auf Element"
 
 #. This is a reinterpret cast, we choose to do nothing.
 #: cp/typeck.c:5410 cp/typeck.c:5425
@@ -17054,78 +17047,78 @@ msgstr "Typumwandlung von Zeiger in Element über virtuelle Basis »%T«"
 
 #: cp/typeck.c:5428
 msgid "pointer to member conversion via virtual base `%T'"
-msgstr "Konvertierung von Zeiger in Element über virtuelle Basis »%T«"
+msgstr "Umwandlung von Zeiger in Element über virtuelle Basis »%T«"
 
 #: cp/typeck.c:5498
 msgid "invalid conversion to type `%T' from type `%T'"
-msgstr ""
+msgstr "ungültige Umwandlung in Typ »%T« von Typ »%T«"
 
 #: cp/typeck.c:5657
 msgid "passing NULL used for non-pointer %s %P of `%D'"
-msgstr ""
+msgstr "Übergabe von NULL für Nicht-Zeiger %s %P von `%D' verwendet"
 
 #: cp/typeck.c:5660
 msgid "%s to non-pointer type `%T' from NULL"
-msgstr ""
+msgstr "%s in Nicht-Zeiger-Typ »%T« von NULL"
 
 #: cp/typeck.c:5668
 msgid "passing `%T' for %s %P of `%D'"
-msgstr ""
+msgstr "Übergabe von »%T« für %s %P von »%D«"
 
 #: cp/typeck.c:5671
 msgid "%s to `%T' from `%T'"
-msgstr ""
+msgstr "%s nach »%T« von »%T«"
 
 #: cp/typeck.c:5681
 msgid "passing negative value `%E' for %s %P of `%D'"
-msgstr ""
+msgstr "Übergabe des negativen Werts »%E« für %s %P von »%D«"
 
 #: cp/typeck.c:5684
 msgid "%s of negative value `%E' to `%T'"
-msgstr ""
+msgstr "%s vom negativen Wert »%E« nach »%T«"
 
 #: cp/typeck.c:5772
 msgid "cannot convert `%T' to `%T' for argument `%P' to `%D'"
-msgstr ""
+msgstr "»%T« kann nicht nach »%T« für Argument »%P« nach »%D« umgewandelt werden"
 
 #: cp/typeck.c:5775
 msgid "cannot convert `%T' to `%T' in %s"
-msgstr ""
+msgstr "»%T« kann nicht nach »%T« in %s umgewandelt werden"
 
 #: cp/typeck.c:5852 cp/typeck.c:5854
 msgid "in passing argument %P of `%+D'"
-msgstr ""
+msgstr "bei Übergabe des Arguments %P von »%+D«"
 
 #: cp/typeck.c:5961
 msgid "returning reference to temporary"
-msgstr ""
+msgstr "Referenz auf temporären Wert wird zurückgegeben"
 
 #: cp/typeck.c:5968
 msgid "reference to non-lvalue returned"
-msgstr ""
+msgstr "Referenz auf Nicht-L-Wert zurückgegeben"
 
 #: cp/typeck.c:5980
 msgid "reference to local variable `%D' returned"
-msgstr ""
+msgstr "Referenz auf lokale Variable »%D« zurückgegeben"
 
 #: cp/typeck.c:5983
 msgid "address of local variable `%D' returned"
-msgstr ""
+msgstr "Adresse der lokalen Variable »%D« zurückgegeben"
 
 #: cp/typeck.c:6013
 msgid "returning a value from a destructor"
-msgstr ""
+msgstr "Wert von Destruktor zurückgegeben"
 
 #. If a return statement appears in a handler of the
 #. function-try-block of a constructor, the program is ill-formed.
 #: cp/typeck.c:6021
 msgid "cannot return from a handler of a function-try-block of a constructor"
-msgstr ""
+msgstr "vom Behandler eines Funktions-try-Blocks eines Konstruktors kann nicht zurückgekehrt werden"
 
 #. You can't return a value from a constructor.
 #: cp/typeck.c:6024
 msgid "returning a value from a constructor"
-msgstr ""
+msgstr "Rückgabe eines Wertes von einem Konstruktor"
 
 #: cp/typeck.c:6047
 msgid "return-statement with no value, in function returning '%T'"
@@ -17137,224 +17130,224 @@ msgstr "Return-Anweisung mit Wert in »void« zurückgebender Funktion"
 
 #: cp/typeck.c:6086
 msgid "`operator new' must not return NULL unless it is declared `throw()' (or -fcheck-new is in effect)"
-msgstr ""
+msgstr "»operator new« darf nicht NULL zurückgeben, außer es ist mit »throw()« deklariert (oder -fcheck-new ist eingeschaltet)"
 
 #: cp/typeck2.c:55
 msgid "type `%T' is not a base type for type `%T'"
-msgstr ""
+msgstr "Typ »%T« ist kein Basistyp für Typ »%T«"
 
 #: cp/typeck2.c:151
 msgid "cannot declare variable `%D' to be of type `%T'"
-msgstr ""
+msgstr "Variable »%D« kann nicht als vom Typ »%T« deklariert werden"
 
 #: cp/typeck2.c:154
 msgid "cannot declare parameter `%D' to be of type `%T'"
-msgstr ""
+msgstr "Parameter »%D« kann nicht als vom Typ »%T« deklariert werden"
 
 #: cp/typeck2.c:157
 msgid "cannot declare field `%D' to be of type `%T'"
-msgstr ""
+msgstr "Feld »%D« kann nicht als vom Typ »%T« deklariert werden"
 
 #: cp/typeck2.c:161
 msgid "invalid return type for member function `%#D'"
-msgstr ""
+msgstr "ungültiger Rückgabetyp für Elementfunktion »%#D«"
 
 #: cp/typeck2.c:163
 msgid "invalid return type for function `%#D'"
-msgstr ""
+msgstr "ungültiger Rückgabetyp für Funktion »%#D«"
 
 #: cp/typeck2.c:166
 msgid "cannot allocate an object of type `%T'"
-msgstr ""
+msgstr "es kann kein Objekt des Typs »%T« belegt werden"
 
 #: cp/typeck2.c:173
 msgid "  because the following virtual functions are abstract:"
-msgstr ""
+msgstr "  denn die folgenden virtuellen Funktionen sind abstrakt:"
 
 #: cp/typeck2.c:175
 msgid "\t%#D"
-msgstr ""
+msgstr "\t%#D"
 
 #: cp/typeck2.c:178
 msgid "  since type `%T' has abstract virtual functions"
-msgstr ""
+msgstr "  denn der Typ »%T« hat abstrakte virtuelle Funktionen"
 
 #: cp/typeck2.c:427
 msgid "constructor syntax used, but no constructor declared for type `%T'"
-msgstr ""
+msgstr "Konstruktorsyntax verwendet, aber kein Konstruktor für Typ »%T« deklariert"
 
 #: cp/typeck2.c:440
 msgid "cannot initialize arrays using this syntax"
-msgstr ""
+msgstr "mit dieser Syntax können keine Felder initialisiert werden"
 
 #: cp/typeck2.c:535
 msgid "initializing array with parameter list"
-msgstr ""
+msgstr "Feld wird mit Parameterliste initialisiert"
 
 #: cp/typeck2.c:590
 msgid "initializer for scalar variable requires one element"
-msgstr ""
+msgstr "Initialisierung für skalare Variable benötigt ein Element"
 
 #: cp/typeck2.c:597
 msgid "braces around scalar initializer for `%T'"
-msgstr ""
+msgstr "geschweifte Klammern um skalare Initialisierung für »%T«"
 
 #: cp/typeck2.c:600
 msgid "ignoring extra initializers for `%T'"
-msgstr ""
+msgstr "zusätzliche Initialisierung für »%T« wird ignoriert"
 
 #: cp/typeck2.c:612
 msgid "variable-sized object of type `%T' may not be initialized"
-msgstr ""
+msgstr "Objekt variabler Größe vom Typ »%T« könnte nicht initialisiert sein"
 
 #: cp/typeck2.c:622
 msgid "subobject of type `%T' must be initialized by constructor, not by `%E'"
-msgstr ""
+msgstr "Unterobjekt vom Typ »%T« muss vom Konstruktor initialisiert werden, nicht von »%E«"
 
 #: cp/typeck2.c:687
 msgid "aggregate has a partly bracketed initializer"
-msgstr ""
+msgstr "Aggregat hat teilweise eckig geklammerte Initialisierung"
 
 #: cp/typeck2.c:725 cp/typeck2.c:830
 msgid "non-trivial labeled initializers"
-msgstr ""
+msgstr "nicht-trivial markierte Initialisierungen"
 
 #: cp/typeck2.c:742
 msgid "non-empty initializer for array of empty elements"
-msgstr ""
+msgstr "nicht-leere Initialisierung für Feld leerer Elemente"
 
 #: cp/typeck2.c:796
 msgid "initializer list for object of class with virtual base classes"
-msgstr ""
+msgstr "Initialisierungliste für Objekt einer Klasse mit virtuellen Basisklassen"
 
 #: cp/typeck2.c:802
 msgid "initializer list for object of class with base classes"
-msgstr ""
+msgstr "Initialisierungliste für Objekt einer Klasse mit Basisklassen"
 
 #: cp/typeck2.c:808
 msgid "initializer list for object using virtual functions"
-msgstr ""
+msgstr "Initialisierungliste für virtuelle Funktionen verwendendes Objekt"
 
 #: cp/typeck2.c:870 cp/typeck2.c:886
 msgid "missing initializer for member `%D'"
-msgstr ""
+msgstr "Initialisierung für Element »%D« fehlt"
 
 #: cp/typeck2.c:875
 msgid "uninitialized const member `%D'"
-msgstr ""
+msgstr "nicht initialisiertes konstantes Element »%D«"
 
 #: cp/typeck2.c:877
 msgid "member `%D' with uninitialized const fields"
-msgstr ""
+msgstr "Element »%D« mit nicht initialisierten konstanten Feldern"
 
 #: cp/typeck2.c:880
 msgid "member `%D' is uninitialized reference"
-msgstr ""
+msgstr "Feld »%D« ist nicht initialisierte Referenz"
 
 #: cp/typeck2.c:927
 msgid "index value instead of field name in union initializer"
-msgstr ""
+msgstr "Indexwert statt Feldname in Union-Initialisierung"
 
 #: cp/typeck2.c:939
 msgid "no field `%D' in union being initialized"
-msgstr ""
+msgstr "kein Feld »%D« in initialisierter Union"
 
 #: cp/typeck2.c:947
 msgid "union `%T' with no named members cannot be initialized"
-msgstr ""
+msgstr "Union »%T« ohne benannte Elemente kann nicht initialisiert werden"
 
 #: cp/typeck2.c:983
 msgid "excess elements in aggregate initializer"
-msgstr ""
+msgstr "überschüssige Elemente in Aggregatinitialisierung"
 
 #: cp/typeck2.c:1092
 msgid "circular pointer delegation detected"
-msgstr ""
+msgstr "ringförmige Zeigerdelegation erkannt"
 
 #: cp/typeck2.c:1105
 msgid "base operand of `->' has non-pointer type `%T'"
-msgstr ""
+msgstr "Basisoperand von »->« hat Nicht-Zeiger-Typ »%T«"
 
 #: cp/typeck2.c:1129
 msgid "result of `operator->()' yields non-pointer result"
-msgstr ""
+msgstr "Ergebnis von »operator->()« ergibt Nicht-Zeiger-Ergebnis"
 
 #: cp/typeck2.c:1131
 msgid "base operand of `->' is not a pointer"
-msgstr ""
+msgstr "Basisoperand von »->« ist kein Zeiger"
 
 #: cp/typeck2.c:1154
 msgid "`%E' cannot be used as a member pointer, since it is of type `%T'"
-msgstr ""
+msgstr "»%E« kannt nicht als Elementzeiger verwendet werden, da es vom Typ »%T« ist"
 
 #: cp/typeck2.c:1162
 msgid "cannot apply member pointer `%E' to `%E', which is of non-aggregate type `%T'"
-msgstr ""
+msgstr "Elementzeiger »%E« kann nicht auf »%E« angewandt werden, da letzteres vom Nicht-Aggregat-Typ »%T« ist"
 
 #: cp/typeck2.c:1172
 msgid "member type `%T::' incompatible with object type `%T'"
-msgstr ""
+msgstr "Elementtyp »%T::« mit Objekttyp »%T« inkompatibel"
 
 #: cp/typeck2.c:1388
 msgid "call to function `%D' which throws incomplete type `%#T'"
-msgstr ""
+msgstr "Aufruf der Funktion »%D«, die unvollständigen Typen »%#T« wirft"
 
 #: cp/typeck2.c:1391
 msgid "call to function which throws incomplete type `%#T'"
-msgstr ""
+msgstr "Aufruf einer Funktion, die unvollständigen Typen »%#T« wirft"
 
 #. XXX Not i18n clean.
 #: cp/cp-tree.h:3775
 #, c-format
 msgid "%s is deprecated, please see the documentation for details"
-msgstr ""
+msgstr "%s ist veraltet, siehe Dokumentation für Details"
 
 #: f/bad.c:388
 msgid "note:"
-msgstr ""
+msgstr "beachte:"
 
 #: f/bad.c:392
 msgid "warning:"
-msgstr ""
+msgstr "Warnung:"
 
 #: f/bad.c:396
 msgid "fatal:"
-msgstr ""
+msgstr "schwerwiegend:"
 
 #: f/bad.c:438
 msgid "(continued):"
-msgstr ""
+msgstr "(Fortsetzung:)"
 
 #: f/bad.c:488 f/bad.c:506
 msgid "[REPORT BUG!!] %"
-msgstr ""
+msgstr "[Fehler zurückmelden!!] %"
 
 #: f/bad.c:495 f/bad.c:527
 msgid "[REPORT BUG!!]"
-msgstr ""
+msgstr "[Fehler zurückmelden!!]"
 
 #: f/com.c:3125
 #, no-c-format
 msgid "ASSIGN'ed label cannot fit into `%A' at %0 -- using wider sibling"
-msgstr ""
+msgstr "ASSIGN-Marke passt nicht in »%A« bei %0 -- breiteren Geschwistertypen verwenden"
 
 #: f/com.c:11565
 msgid "no INTEGER type can hold a pointer on this configuration"
-msgstr ""
+msgstr "kein INTEGER-Typ kann in dieser Konfiguration einen Zeiger aufnehmen"
 
 #: f/com.c:11839
 #, c-format
 msgid "configuration: REAL, INTEGER, and LOGICAL are %d bits wide,"
-msgstr ""
+msgstr "Konfiguration: REAL, INTEGER, und LOGICAL sind %d Bit breit,"
 
 #: f/com.c:11841
 #, c-format
 msgid "and pointers are %d bits wide, but g77 doesn't yet work"
-msgstr ""
+msgstr "und Zeiger sind %d Bit breit, aber g77 funktioniert noch nicht"
 
 #: f/com.c:11843
 msgid "properly unless they all are 32 bits wide"
-msgstr ""
+msgstr "geeignet, außer sie sind alle 32 Bit breit"
 
 #: f/com.c:11844
 msgid "Please keep this in mind before you report bugs."
@@ -17364,7 +17357,7 @@ msgstr "Bitte bedenken Sie dies, wenn Sie einen Fehlerbericht einsenden."
 #: f/com.c:11852
 #, c-format
 msgid "configuration: char * holds %d bits, but ftnlen only %d"
-msgstr ""
+msgstr "Konfiguration: char * nimmt %d Bits auf, aber ftnlen nur %d"
 
 #. ASSIGN 10 TO I will crash.
 #: f/com.c:11861
@@ -17373,54 +17366,56 @@ msgid ""
 "configuration: char * holds %d bits, but INTEGER only %d --\n"
 " ASSIGN statement might fail"
 msgstr ""
+"Konfiguration: char * nimmt %d Bit auf, aber INTEGER nur %d -- \n"
+" ASSIGN-Anweisung kann scheitern"
 
 #: f/com.c:13677
 msgid "In statement function"
-msgstr ""
+msgstr "In Anweisungsfunktion"
 
 #: f/com.c:13687
 msgid "Outside of any program unit:\n"
-msgstr ""
+msgstr "Außerhalb jeder Programmeinheit:\n"
 
 #: f/com.c:15283
 #, no-c-format
 msgid "%A from %B at %0%C"
-msgstr ""
+msgstr "%A von %B bei %0%C"
 
 #: f/com.c:15593
 #, no-c-format
 msgid "At %0, INCLUDE file %A exists, but is not readable"
-msgstr ""
+msgstr "Bei %0, INCLUDE-Datei %A existiert, aber nicht lesbar"
 
 #: f/com.c:15628
 #, no-c-format
 msgid "At %0, INCLUDE nesting too deep"
-msgstr ""
+msgstr "bei %0, zu tiefe INCLUDE-Schachtelung"
 
 #: f/expr.c:8706
 #, no-c-format
 msgid "Two arithmetic operators in a row at %0 and %1 -- use parentheses"
-msgstr ""
+msgstr "Zwei arithmetische Operatoren in einer Zeile bei %0 und %1 -- Klammern verwenden"
 
 #: f/expr.c:8756
 #, no-c-format
 msgid "Operator at %0 has lower precedence than that at %1 -- use parentheses"
-msgstr ""
+msgstr "Operator bei %0 hat geringeren Vorrang als der bei %1 -- Klammern verwenden"
 
 #: f/expr.c:9639
 #, no-c-format
 msgid "Use .EQV./.NEQV. instead of .EQ./.NE. at %0 for LOGICAL operands at %1 and %2"
-msgstr ""
+msgstr ".EQV./.NEQV. statt .EQ./.NE. bei %0 für LOGICAL-Operanden bei %1 und %2 verwenden"
 
 #: f/expr.c:10010
 #, no-c-format
 msgid "Unsupported operand for ** at %1 -- converting to default INTEGER"
-msgstr ""
+msgstr "Nicht unterstützter Operand für ** bei %1 -- Umwandlung in Standard-INTEGER"
 
 #: f/g77spec.c:231
 #, c-format
 msgid "overflowed output arg list for `%s'"
-msgstr ""
+msgstr "übergelaufene Ausgabeargumentliste für »%s«"
 
 #: f/g77spec.c:353
 msgid ""
@@ -17430,363 +17425,368 @@ msgid ""
 "For more information about these matters, see the file named COPYING\n"
 "or type the command `info -f g77 Copying'.\n"
 msgstr ""
+"GNU Fortran kommt OHNE GARANTIE, im vom Gesetz zulässigen Ausmaß.\n"
+"Sie dürfen Kopien von GNU Fortran unter\n"
+"den Bedingungen der GNU General Public License weitergeben.\n"
+"Für weitere Informationen hierüber, siehe die Datei COPYING\n"
+"oder geben Sie »info -f g77 Copying« ein.\n"
 
 #: f/g77spec.c:369
 msgid "--driver no longer supported"
-msgstr ""
+msgstr "--driver wird nicht mehr unterstützt"
 
 #: f/g77spec.c:382
 #, c-format
 msgid "argument to `%s' missing"
-msgstr ""
+msgstr "Argument für »%s« fehlt"
 
 #: f/g77spec.c:386
 msgid "no input files; unwilling to write output files"
-msgstr ""
+msgstr "keine Eingabedateien; es werden keine Ausgabedateien geschrieben"
 
 #: f/implic.c:203
 #, no-c-format
 msgid "Implicit declaration of `%A' at %0"
-msgstr ""
+msgstr "Implizite Deklaration von »%A« bei %0"
 
 #: f/lex.c:321
 #, no-c-format
 msgid "Non-ISO-C-standard escape sequence `\\%A' at %0"
-msgstr ""
+msgstr "Nicht-ISO-C-standardkonforme Fluchtsequenz »\\%A« bei %0"
 
 #: f/lex.c:340
 #, no-c-format
 msgid "Unknown escape sequence `\\%A' at %0"
-msgstr ""
+msgstr "Unbekannte Fluchtsequenz »\\%A« bei %0"
 
 #: f/lex.c:349
 #, no-c-format
 msgid "Unterminated escape sequence `\\' at %0"
-msgstr ""
+msgstr "Nicht beendete Fluchtsequenz »\\« bei %0"
 
 #: f/lex.c:360
 #, no-c-format
 msgid "Unknown escape sequence `\\' followed by char code 0x%A at %0"
-msgstr ""
+msgstr "Unbekannte Fluchtsequenz »\\« gefolgt von Zeichencode 0x%A bei %0"
 
 #: f/lex.c:388
 #, no-c-format
 msgid "\\x used at %0 with no following hex digits"
-msgstr ""
+msgstr "\\x bei %0 ohne folgende Hexadezimalziffern verwendet"
 
 #: f/lex.c:402
 #, no-c-format
 msgid "Hex escape at %0 out of range"
-msgstr ""
+msgstr "Hexadezimal-Escape bei %0 außerhalb des Wertebereiches"
 
 #: f/lex.c:436
 #, no-c-format
 msgid "Escape sequence at %0 out of range for character"
-msgstr ""
+msgstr "Fluchtsequenz bei %0 außerhalb des Wertebereiches für Zeichen"
 
 #: f/lex.c:590
 msgid "hex escape out of range"
-msgstr ""
+msgstr "Hexadezimalescape außerhalb des Wertebereiches"
 
 #: f/lex.c:643
 #, c-format
 msgid "non-ANSI-standard escape sequence, `\\%c'"
-msgstr ""
+msgstr "Nicht-ANSI-Standard-Fluchtsequenz, »\\%c«"
 
 #: f/lex.c:656
 #, c-format
 msgid "non-ISO escape sequence `\\%c'"
-msgstr ""
+msgstr "Nicht-ISO-Fluchtsequenz »\\%c«"
 
 #: f/lex.c:660
 #, c-format
 msgid "unknown escape sequence `\\%c'"
-msgstr ""
+msgstr "unbekannte Fluchtsequenz »\\%c«"
 
 #: f/lex.c:662
 #, c-format
 msgid "unknown escape sequence: `\\' followed by char code 0x%x"
-msgstr ""
+msgstr "unbekannte Fluchtsequenz: »\\« gefolgt von Zeichencode 0x%x"
 
 #: f/lex.c:745
 msgid "badly formed directive -- no closing quote"
-msgstr ""
+msgstr "falsch geformte Anweisung -- kein schließendes Anführungszeichen"
 
 #: f/lex.c:809
 msgid "#-lines for entering and leaving files don't match"
-msgstr ""
+msgstr "#-Zeichen zum Betreten und Verlassen von Dateien passen nicht"
 
 #: f/lex.c:969
 msgid "bad directive -- missing close-quote"
-msgstr ""
+msgstr "Falsche Direktive -- schließendes Anführungszeichen fehlt"
 
 #: f/lex.c:1108
 msgid "invalid #ident"
-msgstr ""
+msgstr "ungültiges #ident"
 
 #: f/lex.c:1125
 msgid "undefined or invalid # directive"
-msgstr ""
+msgstr "nicht definierte oder ungültige #-Anweisung"
 
 #: f/lex.c:1180
 msgid "invalid #line"
-msgstr ""
+msgstr "ungültiges #line"
 
 #: f/lex.c:1236 f/lex.c:1280
 msgid "use `#line ...' instead of `# ...' in first line"
-msgstr ""
+msgstr "»#line ...« statt »# ...« in erster Zeile verwenden"
 
 #: f/lex.c:1290
 msgid "invalid #-line"
-msgstr ""
+msgstr "ungültige #-Zeile"
 
 #: f/lex.c:1383
 #, no-c-format
 msgid "Null character at %0 -- line ignored"
-msgstr ""
+msgstr "Nullzeichen bei %0 -- Zeile ignoriert"
 
 #: f/stb.c:9177
 #, no-c-format
 msgid "INCLUDE at %0 not the only statement on the source line"
-msgstr ""
+msgstr "INCLUDE bei %0 ist nicht die einzige Anweisung in der Quelltextzeile"
 
 #: f/ste.c:1397 f/ste.c:1744
 msgid "ASSIGNed FORMAT specifier is too small"
-msgstr ""
+msgstr "ASSIGN-Symbol von FORMAT ist zu klein"
 
 #. ~~~Someday handle CHARACTER*1, CHARACTER*N
 #: f/ste.c:2621
 #, no-c-format
 msgid "SELECT CASE on CHARACTER type (at %0) not supported -- sorry"
-msgstr ""
+msgstr "SELECT CASE on CHARACTER type (bei %0) nicht unterstützt"
 
 #: f/ste.c:2725
 msgid "SELECT (at %0) has duplicate cases -- check integer overflow of CASE(s)"
-msgstr ""
+msgstr "SELECT (bei %0) hat mehrere Fälle -- Ganzzahlüberlauf der CASE(s) prüfen"
 
 #: f/ste.c:2957
 msgid "ASSIGN to variable that is too small"
-msgstr ""
+msgstr "ASSIGN an Variable, die zu klein ist"
 
 #: f/ste.c:2989
 msgid "ASSIGNed GOTO target variable is too small"
-msgstr ""
+msgstr "ASSIGN GOTO-Ziel-Variable ist zu klein"
 
 #: f/stu.c:305
 #, no-c-format
 msgid "Local adjustable symbol `%A' at %0"
-msgstr ""
+msgstr "Lokales einstallbares Symbol »%A« bei %0"
 
 #: f/target.c:2545
 msgid "data initializer on host with different endianness"
-msgstr ""
+msgstr "Dateninitialisierung auf Rechner mit anderer Byte-Reihenfolge"
 
 #: f/top.c:244
 msgid "-fvxt-not-f90 no longer supported -- try -fvxt"
-msgstr ""
+msgstr "-fvxt-not-f90 wird nicht mehr unterstützt -- -fvxt probieren"
 
 #: f/top.c:248
 msgid "-ff90-not-vxt no longer supported -- try -fno-vxt -ff90"
-msgstr ""
+msgstr "-ff90-not-vxt wird nicht mehr unterstützt -- -fno-vxt -ff90 probieren"
 
 #: f/top.c:318
 msgid "-fdebug-kludge is disabled, use normal debugging flags"
-msgstr ""
+msgstr "-fdebug-kludge ist ausgeschaltet, normale Fehlersuchoptionen verwenden"
 
 #: f/bad.def:39
 #, no-c-format
 msgid "Missing first operand for binary operator at %0"
-msgstr ""
+msgstr "Erster Operand für binären Operator bei %0 fehlt"
 
 #: f/bad.def:42
 #, no-c-format
 msgid "Zero-length character constant at %0"
-msgstr ""
+msgstr "Zeichenkonstante bei %0 hat Länge Null"
 
 #: f/bad.def:45
 #, no-c-format
 msgid "Invalid token at %0 in expression or subexpression at %1"
-msgstr ""
+msgstr "Ungültiges Zeichen bei %0 in Ausdruck oder Teilausdruck bei %1"
 
 #: f/bad.def:48
 #, no-c-format
 msgid "Missing operand for operator at %1 at end of expression at %0"
-msgstr ""
+msgstr "Operand für Operator bei %1 am Ende des Ausdrucks bei %0 fehlt"
 
 #: f/bad.def:51
 #, no-c-format
 msgid "Label %A already defined at %1 when redefined at %0"
-msgstr ""
+msgstr "Marke %A ist bereits bei %1 bei Redefinition bei %0 definiert"
 
 #: f/bad.def:54
 #, no-c-format
 msgid "Unrecognized character at %0 [info -f g77 M LEX]"
-msgstr ""
+msgstr "Nicht erkanntes Zeichen bei %0 [info -f g77 M LEX]"
 
 #: f/bad.def:57
 #, no-c-format
 msgid "Label definition %A at %0 on empty statement (as of %1)"
-msgstr ""
+msgstr "Markendefinition %A bei %0 an leerer Anweisung (von %1)"
 
 #: f/bad.def:65
 #, no-c-format
 msgid "Invalid first character at %0 [info -f g77 M LEX]"
-msgstr ""
+msgstr "Ungültiges erstes Zeichen bei %0 [info -f g77 M LEX]"
 
 #: f/bad.def:68
 #, no-c-format
 msgid "Line too long as of %0 [info -f g77 M LEX]"
-msgstr ""
+msgstr "Zeile zu lang bei %0 [info -f g77 M LEX]"
 
 #: f/bad.def:71
 #, no-c-format
 msgid "Non-numeric character at %0 in label field [info -f g77 M LEX]"
-msgstr ""
+msgstr "Nicht-numerisches Zeichen bei %0 in Markenfeld [info -f g77 M LEX]"
 
 #: f/bad.def:74
 #, no-c-format
 msgid "Label number at %0 not in range 1-99999"
-msgstr ""
+msgstr "Markenzahl bei %0 nicht im Wertebereich 1-99999"
 
 #: f/bad.def:77
 #, no-c-format
 msgid "At %0, '!' and '/*' are not valid comment delimiters"
-msgstr ""
+msgstr "Bei %0 sind '!' und  '/*' keine gültigen Kommentarbegrenzungen"
 
 #: f/bad.def:80
 #, no-c-format
 msgid "Continuation indicator at %0 must appear in column 6 [info -f g77 M LEX]"
-msgstr ""
+msgstr "Fortsetzungsanzeiger bei %0 muss in Spalte 6 auftreten [info -f g77 M LEX]"
 
 #: f/bad.def:83
 #, no-c-format
 msgid "Label at %0 invalid with continuation line indicator at %1 [info -f g77 M LEX]"
-msgstr ""
+msgstr "Marke bei %0 ist ohne Fortsetzungszeilenanzeiger bei %1 ungültig [info -f g77 M LEX]"
 
 #: f/bad.def:91
 #, no-c-format
 msgid "Character constant at %0 has no closing apostrophe at %1"
-msgstr ""
+msgstr "Zeichenkonstante bei %0 hat kein schließendes Hochkomma bei %1"
 
 #: f/bad.def:94
 #, no-c-format
 msgid "Hollerith constant at %0 specified %A more characters than are present as of %1"
-msgstr ""
+msgstr "Hollerithkonstante bei %0 gab %A mehr Zeichen an als bei %1 vorhanden"
 
 #: f/bad.def:97
 #, no-c-format
 msgid "Missing close parenthese at %0 needed to match open parenthese at %1"
-msgstr ""
+msgstr "Schließende Klammer bei %0 benötigt, um öffnende Klammer bei %1 zu schließen"
 
 #: f/bad.def:100
 #, no-c-format
 msgid "Integer at %0 too large"
-msgstr ""
+msgstr "Ganzzahl bei %0 zu groß"
 
 #: f/bad.def:123
 #, no-c-format
 msgid "Period at %0 not followed by digits for floating-point number or by `NOT.', `TRUE.', or `FALSE.'"
-msgstr ""
+msgstr "Punkt bei %0 wird nicht von Ziffern für Fließkommazahlen oder von »NOT.«, »TRUE.« oder »FALSE.« gefolgt"
 
 #: f/bad.def:126
 #, no-c-format
 msgid "Missing close-period between `.%A' at %0 and %1"
-msgstr ""
+msgstr "Schließ-Punkt zwischen ».%A« bei %0 und %1 fehlt"
 
 #: f/bad.def:129
 #, no-c-format
 msgid "Invalid exponent at %0 for real constant at %1; nondigit `%A' in exponent field"
-msgstr ""
+msgstr "Ungültiger Exponent bei %0 für Real-Konstante bei %1; Nichtziffer »%A« in Exponentenfeld"
 
 #: f/bad.def:132
 #, no-c-format
 msgid "Missing value at %1 for real-number exponent at %0"
-msgstr ""
+msgstr "Wert bei %1 für Real-Zahl-Exponent bei %0 fehlt"
 
 #: f/bad.def:135
 #, no-c-format
 msgid "Expected binary operator between expressions at %0 and at %1"
-msgstr ""
+msgstr "Erwarteter Binäroperator zwischen Ausdrücken bei %0 und %1"
 
 #: f/bad.def:253
 #, no-c-format
 msgid "Semicolon at %0 is an invalid token"
-msgstr ""
+msgstr "Semikolon bei %0 ist ungültiges Symbol"
 
 #: f/bad.def:271
 #, no-c-format
 msgid "Extraneous comma in FORMAT statement at %0"
-msgstr ""
+msgstr "Zusätzliches Komma in FORTRAN-Anweisung bei %0"
 
 #: f/bad.def:274
 #, no-c-format
 msgid "Missing comma in FORMAT statement at %0"
-msgstr ""
+msgstr "Komma in FORTRAN-Anweisung bei %0 fehlt"
 
 #: f/bad.def:277
 #, no-c-format
 msgid "Spurious sign in FORMAT statement at %0"
-msgstr ""
+msgstr "Falsches Vorzeichen in FORMAT-Anweisung bei %0"
 
 #: f/bad.def:280
 #, no-c-format
 msgid "Spurious number in FORMAT statement at %0"
-msgstr ""
+msgstr "Falsche Zahl in FORMAT-Anweisung bei %0"
 
 #: f/bad.def:283
 #, no-c-format
 msgid "Spurious text trailing number in FORMAT statement at %0"
-msgstr ""
+msgstr "Falscher Text hinter Zahl in FORMAT-Anweisung bei %0"
 
 #: f/bad.def:291
 #, no-c-format
 msgid "Unrecognized FORMAT specifier at %0"
-msgstr ""
+msgstr "Nicht erkannte FORMAT-Angabe bei %0"
 
 #: f/bad.def:419
 #, no-c-format
 msgid "Missing close-parenthese(s) in FORMAT statement at %0"
-msgstr ""
+msgstr "Schließende Klammer(n) in FORMAT-Anweisung bei %0 fehlt"
 
 #: f/bad.def:422
 #, no-c-format
 msgid "Missing number following period in FORMAT statement at %0"
-msgstr ""
+msgstr "Zahl hinter Punkt in FORMAT-Anweisung bei %0 fehlt"
 
 #: f/bad.def:425
 #, no-c-format
 msgid "Missing number following `E' in FORMAT statement at %0"
-msgstr ""
+msgstr "Zahl hinter »E« in FORMAT-Anweisung bei %0 fehlt"
 
 #: f/bad.def:433
 #, no-c-format
 msgid "Spurious trailing comma preceding terminator at %0"
-msgstr ""
+msgstr "Falsche folgende Kommas vor Endezeichen bei %0"
 
 #: f/bad.def:436
 #, no-c-format
 msgid "At %0, specify OPERATOR instead of ASSIGNMENT for INTERFACE statement not specifying the assignment operator (=)"
-msgstr ""
+msgstr "Bei %0, OPERATOR statt ASSIGNMENT für nicht den Zuweisungsoperator (=) angebende INTERFACE-Anweisung angeben"
 
 #: f/bad.def:439
 #, no-c-format
 msgid "At %0, specify ASSIGNMENT instead of OPERATOR for INTERFACE statement specifying the assignment operator (=)"
-msgstr ""
+msgstr "Bei %0, OPERATOR statt ASSIGNMENT für den Zuweisungsoperator (=) angebende INTERFACE-Anweisung angeben"
 
 #: f/bad.def:452
 #, no-c-format
 msgid "Cannot specify =initialization-expr at %0 unless `::' appears before list of objects"
-msgstr ""
+msgstr "=initialization-expr bei %0 kann nicht angegeben werden, außer »::« tritt vor der Liste der Objekte auf"
 
 #: f/bad.def:455
 #, no-c-format
 msgid "Reference to label at %1 inconsistent with its definition at %0"
-msgstr ""
+msgstr "Referenz auf Marke bei %1 mit seiner Definition bei %0 inkonsistent"
 
 #: f/bad.def:458
 #, no-c-format
 msgid "Reference to label at %1 inconsistent with earlier reference at %0"
-msgstr ""
+msgstr "Referenz zur Marke bei %1 widerspricht früherer Referenz bei %0"
 
 #: f/bad.def:461
 #, no-c-format
@@ -19486,9 +19486,8 @@ msgid "-I <dir>\tAdd <dir> to the end of the main include path.  -I- gives more 
 msgstr ""
 
 #: /home/mitchell/obj/gcc-3.4/gcc/options.c:60
-#, fuzzy
 msgid "Generate make dependencies"
-msgstr "dynamische Abhängigkeiten.\n"
+msgstr "Make-Abhängigkeiten werden erstellt"
 
 #: /home/mitchell/obj/gcc-3.4/gcc/options.c:63
 msgid "Generate make dependencies and compile"
@@ -19511,9 +19510,8 @@ msgid "Like -MD but ignore system header files"
 msgstr ""
 
 #: /home/mitchell/obj/gcc-3.4/gcc/options.c:78
-#, fuzzy
 msgid "Generate phony targets for all headers"
-msgstr "Code für Intel as erzeugen"
+msgstr "Unechte Ziele für alle Headers erzeugen"
 
 #: /home/mitchell/obj/gcc-3.4/gcc/options.c:81
 msgid "-MQ <target>\tAdd a MAKE-quoted target"
@@ -20177,9 +20175,8 @@ msgid "Pay attention to the \"inline\" keyword"
 msgstr ""
 
 #: /home/mitchell/obj/gcc-3.4/gcc/options.c:660
-#, fuzzy
 msgid "Integrate simple functions into their callers"
-msgstr "Alternative Blattfunktionseinträge verwenden"
+msgstr ""
 
 #: /home/mitchell/obj/gcc-3.4/gcc/options.c:666
 msgid "-finline-limit=<number>\tLimit the size of inlined functions to <number>"
@@ -20794,9 +20791,8 @@ msgid "Enable verbose output"
 msgstr ""
 
 #: /home/mitchell/obj/gcc-3.4/gcc/options.c:1179
-#, fuzzy
 msgid "Display the compiler's version"
-msgstr "Diese Informationen anzeigen"
+msgstr "Compiler-Version anzeigen"
 
 #: /home/mitchell/obj/gcc-3.4/gcc/options.c:1182
 msgid "Suppress warnings"
