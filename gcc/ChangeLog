@@ -1,3 +1,7 @@
+Sun Mar  1 05:50:25 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* objc/Make-lang.in (objc-distdir): Properly rebuild objc-parse.c.
+
 Sat Feb 28 16:58:08 1998  Tristan Gingold  <gingold@rossini.enst.fr>
 
 	* stmt.c (expand_decl): If -fcheck-memory-usage, put vars in memory.
