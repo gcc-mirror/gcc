@@ -1,3 +1,8 @@
+Thu Mar 18 01:24:25 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* configure.in: Use "exit 1", not "exit (1)".
+	* configure: Rebuilt.
+
 Wed Mar 17 23:17:42 1999  Mark Kettenis  <kettenis@gnu.org>
 
 	* config/t-gnu (SYSTEM_HEADER_DIR): New variable.  Set to
