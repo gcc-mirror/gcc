@@ -459,14 +459,6 @@ build_cplus_array_type_1 (elt_type, index_type)
   if (elt_type == error_mark_node || index_type == error_mark_node)
     return error_mark_node;
 
-  push_obstacks_nochange ();
-
-  /* If both ELT_TYPE and INDEX_TYPE are permanent,
-     make this permanent too.  */
-  if (TREE_PERMANENT (elt_type)
-      && (index_type == 0 || TREE_PERMANENT (index_type)))
-    end_temporary_allocation ();
-
   if (processing_template_decl 
       || uses_template_parms (elt_type) 
       || uses_template_parms (index_type))
@@ -484,7 +476,6 @@ build_cplus_array_type_1 (elt_type, index_type)
     = TYPE_NEEDS_CONSTRUCTING (TYPE_MAIN_VARIANT (elt_type));
   TYPE_NEEDS_DESTRUCTOR (t) 
     = TYPE_NEEDS_DESTRUCTOR (TYPE_MAIN_VARIANT (elt_type));
-  pop_obstacks ();
   return t;
 }
 

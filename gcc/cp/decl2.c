@@ -1685,7 +1685,6 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
 	    init = decl_constant_value (init);
 	  else if (TREE_CODE (init) == CONSTRUCTOR)
 	    init = digest_init (TREE_TYPE (value), init, (tree *)0);
-	  my_friendly_assert (TREE_PERMANENT (init), 192);
 	  if (init == error_mark_node)
 	    /* We must make this look different than `error_mark_node'
 	       because `decl_const_value' would mis-interpret it
@@ -2006,7 +2005,6 @@ mark_inline_for_output (decl)
   decl = DECL_MAIN_VARIANT (decl);
   if (DECL_SAVED_INLINE (decl))
     return;
-  my_friendly_assert (TREE_PERMANENT (decl), 363);
   DECL_SAVED_INLINE (decl) = 1;
   if (!saved_inlines)
     VARRAY_TREE_INIT (saved_inlines, 32, "saved_inlines");

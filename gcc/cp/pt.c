@@ -1840,11 +1840,6 @@ process_template_parm (list, next)
 		   || TREE_CODE (TREE_TYPE (parm)) == COMPLEX_TYPE))
 	cp_pedwarn ("`%T' is not a valid type for a template constant parameter",
 		    TREE_TYPE (parm));
-      if (TREE_PERMANENT (parm) == 0)
-        {
-	  parm = copy_node (parm);
-	  TREE_PERMANENT (parm) = 1;
-        }
       decl = build_decl (CONST_DECL, DECL_NAME (parm), TREE_TYPE (parm));
       DECL_INITIAL (parm) = DECL_INITIAL (decl) 
 	= build_template_parm_index (idx, processing_template_decl,

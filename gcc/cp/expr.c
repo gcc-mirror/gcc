@@ -157,14 +157,10 @@ cplus_expand_expr (exp, target, tmode, modifier)
 	if (AGGR_INIT_VIA_CTOR_P (exp))
 	  {
 	    type = build_pointer_type (type);
-	    /* Don't clobber a value that might be part of a default
-	       parameter value.  */
 	    mark_addressable (slot);
-	    if (TREE_PERMANENT (args))
-	      args = tree_cons (0, build1 (ADDR_EXPR, type, slot),
-				TREE_CHAIN (args));
-	    else
-	      TREE_VALUE (args) = build1 (ADDR_EXPR, type, slot);
+	    args = tree_cons (NULL_TREE, 
+			      build1 (ADDR_EXPR, type, slot),
+			      TREE_CHAIN (args));
 	    call_target = 0;
 	  }
 	else

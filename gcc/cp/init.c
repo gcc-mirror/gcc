@@ -1652,17 +1652,6 @@ build_offset_ref (type, name)
 	  return build (OFFSET_REF, TREE_TYPE (t), decl, t);
 	}
 
-      /* FNFIELDS is most likely allocated on the search_obstack,
-	 which will go away after this class scope.  If we need
-	 to save this value for later (i.e. for use as an initializer
-	 for a static variable), then do so here.
-
-	 ??? The smart thing to do for the case of saving initializers
-	 is to resolve them before we're done with this scope.  */
-      if (!TREE_PERMANENT (fnfields)
-	  && ! allocation_temporary_p ())
-	fnfields = copy_list (fnfields);
-
       TREE_TYPE (fnfields) = unknown_type_node;
       return build (OFFSET_REF, unknown_type_node, decl, fnfields);
     }
