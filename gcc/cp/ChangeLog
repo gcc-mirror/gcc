@@ -1,3 +1,7 @@
+2001-01-03  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* lex.c (lang_init): Call c_common_lang_init.
+
 2001-01-03  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* search.c (lookup_fnfields_here): Remove.

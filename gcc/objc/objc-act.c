@@ -1,6 +1,6 @@
 /* Implement classes and message passing for Objective C.
    Copyright (C) 1992, 1993, 1994, 1995, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Steve Naroff.
 
 This file is part of GNU CC.
@@ -703,6 +703,8 @@ lang_init ()
      raised it to 1, which will make the builtin functions appear
      not to be built in.  */
   lineno = 0;
+
+  c_common_lang_init ();
 
   /* If gen_declaration desired, open the output file.  */
   if (flag_gen_declaration)

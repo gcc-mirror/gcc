@@ -6555,3 +6555,26 @@ boolean_increment (code, arg)
   TREE_SIDE_EFFECTS (val) = 1;
   return val;
 }
+
+
+/* Do the parts of lang_init common to C and C++.  */
+void
+c_common_lang_init ()
+{
+  /* If still "unspecified", make it match -fbounded-pointers.  */
+  if (flag_bounds_check < 0)
+    flag_bounds_check = flag_bounded_pointers;
+
+  /* Special format checking options don't work without -Wformat; warn if
+     they are used.  */
+  if (warn_format_y2k && !warn_format)
+    warning ("-Wformat-y2k ignored without -Wformat");
+  if (warn_format_extra_args && !warn_format)
+    warning ("-Wformat-extra-args ignored without -Wformat");
+  if (warn_format_nonliteral && !warn_format)
+    warning ("-Wformat-nonliteral ignored without -Wformat");
+  if (warn_format_security && !warn_format)
+    warning ("-Wformat-security ignored without -Wformat");
+  if (warn_missing_format_attribute && !warn_format)
+    warning ("-Wmissing-format-attribute ignored without -Wformat");
+}
