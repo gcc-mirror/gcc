@@ -156,6 +156,28 @@ port doesn't use thunks (although it is unclear that this is still
 useful since libio support isn't currently working and the g++ v3 ABI
 invalidates the assumption that some ports don't use thunks).
 
+@code{_GLIBCPP_USE_C99_CHECK} may be defined to 1 to check C99
+function declarations (which are not covered by specialization below)
+found in system headers against versions found in the library headers
+derived from the standard.
+
+@code{_GLIBCPP_USE_C99_DYNAMIC} may be defined to an expression that
+yields 0 if and only if the system headers are exposing proper support
+for C99 functions (which are not covered by specialization below).  If
+defined, it must be 0 while bootstrapping the compiler/rebuilding the
+library.
+
+@code{_GLIBCPP_USE_C99_LONG_LONG_CHECK} may be defined to 1 to check
+the set of C99 long long function declarations found in system headers
+against versions found in the library headers derived from the
+standard.
+
+@code{_GLIBCPP_USE_C99_LONG_LONG_DYNAMIC} may be defined to an
+expression that yields 0 if and only if the system headers are
+exposing proper support for the set of C99 long long functions.  If
+defined, it must be 0 while bootstrapping the compiler/rebuilding the
+library.
+
 @code{_GLIBCPP_USE_C99_FP_MACROS_DYNAMIC} may be defined to an
 expression that yields 0 if and only if the system headers
 are exposing proper support for the related set of macros.  If defined,

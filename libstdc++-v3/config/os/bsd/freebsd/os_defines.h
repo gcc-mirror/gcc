@@ -34,6 +34,10 @@
 // System-specific #define, typedefs, corrections, etc, go here.  This
 // file will come before all others.
 
+#define _GLIBCPP_USE_C99_CHECK 1
+#define _GLIBCPP_USE_C99_DYNAMIC (!(__ISO_C_VISIBLE >= 1999))
+#define _GLIBCPP_USE_C99_LONG_LONG_CHECK 1
+#define _GLIBCPP_USE_C99_LONG_LONG_DYNAMIC (_GLIBCPP_USE_C99_DYNAMIC || !defined __LONG_LONG_SUPPORTED)
 #define _GLIBCPP_USE_C99_FLOAT_TRANSCENDENTALS_CHECK 1
 #define _GLIBCPP_USE_C99_FLOAT_TRANSCENDENTALS_DYNAMIC defined _XOPEN_SOURCE
 
