@@ -1,3 +1,11 @@
+Wed Jun  9 03:55:34 1999  Jim Wilson <wilson@cygnus.com>
+
+	* configure.in (rs6000-ibm-aix4.[12]*): Change rx6000 to rs6000.
+	* configure: Regenerate.
+
+        * configure.in (rs6000-ibm-aix4.[12]*): Delete use of aix41-gld.h.
+        Add use of x-aix41-gld.
+
 1999-06-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* fixinc/inclhack.def (sun_catmacro): Escape parens in the select

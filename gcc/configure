@@ -5229,19 +5229,19 @@ for machine in $build $host $target; do
 		use_collect2=yes
 		;;
 	rs6000-ibm-aix4.[12]* | powerpc-ibm-aix4.[12]*)
-		if test "$gnu_ld" = yes
-		then
-			tm_file=rs6000/aix41-gld.h
-		else
-			tm_file=rs6000/aix41.h
-		fi
+		tm_file=rs6000/aix41.h
 		if test x$host != x$target
 		then
 			tmake_file=rs6000/t-xnewas
 		else
 			tmake_file=rs6000/t-newas
 		fi
-		xmake_file=rs6000/x-aix41
+		if test "$gnu_ld" = yes
+		then
+			xmake_file=rs6000/x-aix41-gld
+		else
+			xmake_file=rs6000/x-aix41
+		fi
 		float_format=none
 		use_collect2=yes
 		;;
