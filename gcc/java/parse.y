@@ -7212,6 +7212,7 @@ java_complete_tree (node)
       TREE_OPERAND (node, 0) = cn;
       TREE_TYPE (node) = void_type_node;
       CAN_COMPLETE_NORMALLY (node) = 1;
+      TREE_SIDE_EFFECTS (node) = 1;
       break;
 
     case DEFAULT_EXPR:
@@ -7227,6 +7228,7 @@ java_complete_tree (node)
       else
 	SWITCH_HAS_DEFAULT (nn) = 1;
       TREE_TYPE (node) = void_type_node;
+      TREE_SIDE_EFFECTS (node) = 1;
       CAN_COMPLETE_NORMALLY (node) = 1;
       break;
 
