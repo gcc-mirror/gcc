@@ -1,3 +1,8 @@
+2001-04-02  Richard Henderson  <rth@redhat.com>
+
+	* except.h (lang_eh_type_covers): Mark extern.
+	(lang_eh_runtime_type): Likewise.
+
 2001-04-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* lex.c (ffelex_hash_): Avoid eating one whole line after

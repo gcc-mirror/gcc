@@ -149,10 +149,10 @@ extern void sjlj_emit_function_exit_after	PARAMS ((rtx));
 extern tree protect_cleanup_actions;
 
 /* Return true if type A catches type B.  */
-int (*lang_eh_type_covers) PARAMS ((tree a, tree b));
+extern int (*lang_eh_type_covers) PARAMS ((tree a, tree b));
 
 /* Map a type to a runtime object to match type.  */
-tree (*lang_eh_runtime_type) PARAMS ((tree));
+extern tree (*lang_eh_runtime_type) PARAMS ((tree));
 
 #ifndef TREE_CODE
 #undef tree
