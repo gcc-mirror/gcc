@@ -1206,7 +1206,7 @@ push_operand (op, mode)
   if (GET_CODE (op) != MEM)
     return 0;
 
-  if (GET_MODE (op) != mode)
+  if (mode != VOIDmode && GET_MODE (op) != mode)
     return 0;
 
   op = XEXP (op, 0);
@@ -1231,7 +1231,7 @@ pop_operand (op, mode)
   if (GET_CODE (op) != MEM)
     return 0;
 
-  if (GET_MODE (op) != mode)
+  if (mode != VOIDmode && GET_MODE (op) != mode)
     return 0;
 
   op = XEXP (op, 0);
