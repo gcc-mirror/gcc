@@ -74,7 +74,7 @@ proc f-torture-compile { src option } {
     set comp_output [g77_target_compile "$src" "$output" object $options];
     
     # Set a few common compiler messages.
-    set fatal_signal "*cc: Internal compiler error: program*got fatal signal"
+    set fatal_signal "*77*: Internal compiler error: program*got fatal signal"
  
     if [string match "$fatal_signal 6" $comp_output] then {
 	g77_fail $testcase "Got Signal 6, $option"
@@ -89,7 +89,7 @@ proc f-torture-compile { src option } {
     }
 
     # We shouldn't get these because of -w, but just in case.
-    if [string match "*cc:*warning:*" $comp_output] then {
+    if [string match "*77*:*warning:*" $comp_output] then {
 	warning "$testcase: (with warnings) $option"
 	send_log "$comp_output\n"
 	unresolved "$testcase, $option"
@@ -146,7 +146,7 @@ proc f-torture-execute { src } {
     # Look for a loop within the source code - if we don't find one,
     # don't pass -funroll[-all]-loops.
     global torture_with_loops torture_without_loops
-    if [expr [search_for $src "do*("]+[search_for $src "while*("]] then {
+    if [expr [search_for $src "do *\[0-9\]"]+[search_for $src "end *do"]] then {
 	set option_list $torture_with_loops
     } else {
 	set option_list $torture_without_loops
@@ -177,7 +177,7 @@ proc f-torture-execute { src } {
 	set comp_output [g77_target_compile "$src" "$executable" executable $options];
 
 	# Set a few common compiler messages.
-	set fatal_signal "*cc: Internal compiler error: program*got fatal signal"
+	set fatal_signal "*77*: Internal compiler error: program*got fatal signal"
 	
 	if [string match "$fatal_signal 6" $comp_output] then {
 	    g77_fail $testcase "Got Signal 6, $option"
@@ -192,7 +192,7 @@ proc f-torture-execute { src } {
 	}
 	
 	# We shouldn't get these because of -w, but just in case.
-	if [string match "*cc:*warning:*" $comp_output] then {
+	if [string match "*77*:*warning:*" $comp_output] then {
 	    warning "$testcase: (with warnings) $option"
 	    send_log "$comp_output\n"
 	    unresolved "$testcase, $option"
@@ -225,7 +225,7 @@ proc f-torture-execute { src } {
 	# See if this source file uses "long long" types, if it does, and
 	# no_long_long is set, skip execution of the test.
 	if [target_info exists no_long_long] then {
-	    if [expr [search_for $src "long long"]] then {
+	    if [expr [search_for $src "integer\*8"]] then {
 		untested "$testcase execution, $option"
 		continue
 	    }
@@ -252,7 +252,7 @@ proc search_for { file pattern } {
     set fd [open $file r]
     while { [gets $fd cur_line]>=0 } {
 	set lower [string tolower $cur_line]
-	if [string match "*$pattern*" $lower] then {
+	if [regexp "$pattern" $lower] then {
 	    close $fd
 	    return 1
 	}
@@ -302,7 +302,7 @@ proc f-torture { args } {
     # Look for a loop within the source code - if we don't find one,
     # don't pass -funroll[-all]-loops.
     global torture_with_loops torture_without_loops
-    if [expr [search_for $src "do*("]+[search_for $src "while*("]] then {
+    if [expr [search_for $src "do *\[0-9\]"]+[search_for $src "end *do"]] then {
 	set option_list $torture_with_loops
     } else {
 	set option_list $torture_without_loops
