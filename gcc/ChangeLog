@@ -157,7 +157,7 @@
 	Handle new rounding modes.
 
 	* config/i386/i386.h (enum fp_cw_mode): Delete.
-	(MODE_NEEDED): Handle new rounding modes. 
+	(MODE_NEEDED): Handle new rounding modes.
 	(EMIT_MODE_SET): Change condition to handle new rounding modes.
 
 	* config/i386/i386.md (UNSPEC_FRNDINT_FLOOR, UNSPEC_FRNDINT_CEIL,
@@ -222,7 +222,7 @@
 	* tree-ssa-operands.c (get_expr_operands): Handle COND_EXPR.
 	* tree-if-conv.c: New file.
 	* doc/passes.texi: Document tree if-conversion pass.
-	* doc/tree-ssa.texi: Same.	
+	* doc/tree-ssa.texi: Same.
 
 2004-09-03  H.J. Lu  <hongjiu.lu@intel.com>
 
@@ -444,7 +444,7 @@
 2004-09-03  Devang Patel  <dpatel@apple.com>
 
 	* dwarf2out.c (gen_field_die). Equate decl number to die.
-	
+
 2004-09-03  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/15832
@@ -472,7 +472,7 @@
 	* tsystem.h: Declare memcpy and memset when inhibit_libc.
 
 2004-09-02  Roman Zippel  <zippel@linux-m68k.org>
- 
+
 	* combine.c (try_combine): Delay modifying of insns which cannot
 	be easily undone.
 
@@ -504,7 +504,7 @@
 	TARGET_BPABI_CPP_BUILTINS.
 
 2004-09-02  Roman Zippel  <zippel@linux-m68k.org>
- 
+
 	* combine.c (distribute_notes): Don't add REG_LABEL to jump insn.
 
 2004-09-02  Eric Christopher  <echristo@redhat.com>
@@ -7146,7 +7146,7 @@
 	(mover2side, moverside, movemside, movei, op3, andu): Replace
 	live define_peephole:s with define_peephole2 near-equivalents.
 	Delete the rest.
- 	("*mov_sidesisf_biap"): Rename from "*mov_sidesi_biap".  Match all
+	("*mov_sidesisf_biap"): Rename from "*mov_sidesi_biap".  Match all
 	word-size modes.
 	("*mov_sidesisf", "*mov_sidesisf_biap_mem", "*mov_sidesisf_mem"):
 	Similar for "*mov_sidesi", "*mov_sidesi_biap_mem" and
