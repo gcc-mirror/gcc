@@ -136,8 +136,10 @@ static bool tree_swap_operands_p (tree, tree, bool);
 
 static tree fold_negate_const (tree, tree);
 static tree fold_abs_const (tree, tree);
+static tree fold_not_const (tree, tree);
 static tree fold_relational_const (enum tree_code, tree, tree, tree);
-static tree fold_relational_hi_lo (enum tree_code *, const tree, tree *, tree *);
+static tree fold_relational_hi_lo (enum tree_code *, const tree,
+                                   tree *, tree *);
 
 /* We know that A1 + B1 = SUM1, using 2's complement arithmetic and ignoring
    overflow.  Suppose A, B and SUM have the same respective signs as A1, B1,
@@ -6018,8 +6020,7 @@ fold (tree expr)
       return t;
 
     case ABS_EXPR:
-      if (wins
-	  && (TREE_CODE (arg0) == INTEGER_CST || TREE_CODE (arg0) == REAL_CST))
+      if (TREE_CODE (arg0) == INTEGER_CST || TREE_CODE (arg0) == REAL_CST)
 	return fold_abs_const (arg0, type);
       else if (TREE_CODE (arg0) == NEGATE_EXPR)
 	return fold (build1 (ABS_EXPR, type, TREE_OPERAND (arg0, 0)));
@@ -6058,16 +6059,8 @@ fold (tree expr)
       return t;
 
     case BIT_NOT_EXPR:
-      if (wins)
-	{
-	  tem = build_int_2 (~ TREE_INT_CST_LOW (arg0),
-			     ~ TREE_INT_CST_HIGH (arg0));
-	  TREE_TYPE (tem) = type;
-	  force_fit_type (tem, 0);
-	  TREE_OVERFLOW (tem) = TREE_OVERFLOW (arg0);
-	  TREE_CONSTANT_OVERFLOW (tem) = TREE_CONSTANT_OVERFLOW (arg0);
-	  return tem;
-	}
+      if (TREE_CODE (arg0) == INTEGER_CST)
+        return fold_not_const (arg0, type);
       else if (TREE_CODE (arg0) == BIT_NOT_EXPR)
 	return TREE_OPERAND (arg0, 0);
       return t;
@@ -9697,8 +9690,6 @@ tree
 nondestructive_fold_unary_to_constant (enum tree_code code, tree type,
 				       tree op0)
 {
-  tree t;
-
   /* Make sure we have a suitable constant argument.  */
   if (code == NOP_EXPR || code == FLOAT_EXPR || code == CONVERT_EXPR)
     {
@@ -9736,15 +9727,8 @@ nondestructive_fold_unary_to_constant (enum tree_code code, tree type,
 	return NULL_TREE;
 
     case BIT_NOT_EXPR:
-      if (TREE_CODE (op0) == INTEGER_CST || TREE_CODE (op0) == REAL_CST)
-	{
-	  t = build_int_2 (~ TREE_INT_CST_LOW (op0), ~ TREE_INT_CST_HIGH (op0));
-	  TREE_TYPE (t) = type;
-	  force_fit_type (t, 0);
-	  TREE_OVERFLOW (t) = TREE_OVERFLOW (op0);
-	  TREE_CONSTANT_OVERFLOW (t) = TREE_CONSTANT_OVERFLOW (op0);
-	  return t;
-	}
+      if (TREE_CODE (op0) == INTEGER_CST)
+	return fold_not_const (op0, type);
       else
 	return NULL_TREE;
 
@@ -9901,6 +9885,31 @@ fold_abs_const (tree arg0, tree type)
 	return build_real (type, REAL_VALUE_NEGATE (TREE_REAL_CST (arg0)));
       else
 	return arg0;
+    }
+#ifdef ENABLE_CHECKING
+  else
+    abort ();
+#endif
+    
+  return t;
+}
+
+/* Return the tree for not (ARG0) when ARG0 is known to be an integer
+   constant.  TYPE is the type of the result.  */
+
+static tree
+fold_not_const (tree arg0, tree type)
+{
+  tree t = NULL_TREE;
+
+  if (TREE_CODE (arg0) == INTEGER_CST)
+    {
+      t = build_int_2 (~ TREE_INT_CST_LOW (arg0),
+		       ~ TREE_INT_CST_HIGH (arg0));
+      TREE_TYPE (t) = type;
+      force_fit_type (t, 0);
+      TREE_OVERFLOW (t) = TREE_OVERFLOW (arg0);
+      TREE_CONSTANT_OVERFLOW (t) = TREE_CONSTANT_OVERFLOW (arg0);
     }
 #ifdef ENABLE_CHECKING
   else
