@@ -7,6 +7,7 @@
 // execution test
 
 #include <new>
+#include <stdlib.h>
 
 struct A {
   A() { throw 0; }

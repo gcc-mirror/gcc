@@ -3,6 +3,8 @@
 
 // dynamic cast can only cast to public unambiguous bases
 
+extern "C" void abort ();
+
 struct A {virtual ~A(){} int m; };
 struct B {virtual ~B(){} int m; };
 

@@ -2,6 +2,8 @@
 // statics are destroyed at the right time.  See PR 2736 for details.
 // prms-id: 2736
 
+#include <stdlib.h>
+
 int count;
 
 struct A {

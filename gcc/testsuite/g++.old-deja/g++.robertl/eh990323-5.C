@@ -1,4 +1,6 @@
 // check cleanup of partial array objects
+extern "C" void abort (void);
+extern "C" void exit (int);
 
 int ctor = 0;
 int dtor = 0;

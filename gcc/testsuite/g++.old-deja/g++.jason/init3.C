@@ -1,8 +1,7 @@
 // PRMS Id: 5652
 // Bug: strings does not get initialized.
 
-extern "C" void * memcpy (void *, const void *, __SIZE_TYPE__);
-extern "C" int strcmp (const char *, const char *);
+#include <string.h>
 
 class My_string {
    char *str;

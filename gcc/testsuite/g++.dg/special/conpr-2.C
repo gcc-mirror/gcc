@@ -1,5 +1,7 @@
 /* { dg-do run } */
 
+#include <stdlib.h>
+
 class foo_t {
     int x;
     static int count;

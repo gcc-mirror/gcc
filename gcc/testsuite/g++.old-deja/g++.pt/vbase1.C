@@ -1,6 +1,8 @@
 // Check that template classes handle inherited virtual bases
 // properly, initializing them before direct non-virtual bases.
 
+extern "C" void exit (int);
+
 int aflag;
 
 struct A

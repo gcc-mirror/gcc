@@ -4,6 +4,8 @@
 // The initialization of a static local variable must be retried if a
 // previous try finished by throwing an exception [stmt.dcl]/4
 
+extern "C" void abort ();
+
 struct foo {
   foo() { throw true; }
 };

@@ -1,3 +1,6 @@
+
+extern "C" void abort ();
+
 template<int N>
 struct I {
 };

@@ -1,3 +1,6 @@
+
+extern "C" void abort ();
+
 typedef struct st {
         unsigned char   a;
         unsigned char   b;
