@@ -2304,6 +2304,11 @@ extern tree merge_attributes (tree, tree);
 extern tree merge_dllimport_decl_attributes (tree, tree);
 #endif
 
+/* Check whether CAND is suitable to be returned from get_qualified_type
+   (BASE, TYPE_QUALS).  */
+
+extern bool check_qualified_type (tree, tree, int);
+
 /* Return a version of the TYPE, qualified as indicated by the
    TYPE_QUALS, if one exists.  If no qualified version exists yet,
    return NULL_TREE.  */
