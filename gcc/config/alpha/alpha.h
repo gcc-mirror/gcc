@@ -2080,6 +2080,3 @@ do {							\
 #define HAS_INIT_SECTION
 #define LD_INIT_SWITCH "-init"
 #define LD_FINI_SWITCH "-fini"
-
-/* We do want to link in libgcc when building shared libraries under OSF/1.  */
-#define LIBGCC_SPEC "-lgcc"

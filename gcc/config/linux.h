@@ -61,11 +61,6 @@ Boston, MA 02111-1307, USA.  */
 	fprintf (FILE, "\t.version\t\"01.01\"\n");			\
   } while (0)
 
-#undef	LIBGCC_SPEC
-#define LIBGCC_SPEC \
-  "%{!shared:-lgcc}"
-
-
 /* Provide a STARTFILE_SPEC appropriate for Linux.  Here we add
    the Linux magical crtbegin.o file (see crtstuff.c) which
    provides part of the support for getting C++ file-scope static
