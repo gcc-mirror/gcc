@@ -8401,14 +8401,14 @@ eliminate_partially_redundant_loads (basic_block bb, rtx insn,
 
   if (npred_ok == 0    /* No load can be replaced by copy.  */
       || (optimize_size && npred_ok > 1)) /* Prevent exploding the code.  */
-    return;
+    goto cleanup;
 
   /* Check if it's worth applying the partial redundancy elimination.  */
   if (ok_count < GCSE_AFTER_RELOAD_PARTIAL_FRACTION * not_ok_count)
-    return;
+    goto cleanup;
 
   if (ok_count < GCSE_AFTER_RELOAD_CRITICAL_FRACTION * critical_count)
-    return;
+    goto cleanup;
 
   /* Generate moves to the loaded register from where
      the memory is available.  */
@@ -8461,6 +8461,22 @@ eliminate_partially_redundant_loads (basic_block bb, rtx insn,
     delete_insn (insn);
   else
     a_occr->deleted_p = 1;
+  
+cleanup:
+
+  while (unavail_occrs)
+    {
+      struct unoccr *temp = unavail_occrs->next;
+      free (unavail_occrs);
+      unavail_occrs = temp;
+    }
+
+  while (avail_occrs)
+    {
+      struct unoccr *temp = avail_occrs->next;
+      free (avail_occrs);
+      avail_occrs = temp;
+    }
 }
 
 /* Performing the redundancy elimination as described before.  */
