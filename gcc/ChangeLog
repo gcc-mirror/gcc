@@ -6,6 +6,9 @@ Sun Oct  4 08:37:36 1998  Paul Edwards  <avon@matra.com.au>
 
 Sun Oct  4 07:11:34 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.eu>
 
+	* calls.c (expand_call): Don't call emit_group_store if target
+	is the same as VALREG.
+
 	* loop.c (strength_reduce): Track maybe_multiple on giv scan.
 	(find_mem_givs, record_giv): New argument maybe_multiple.
 
