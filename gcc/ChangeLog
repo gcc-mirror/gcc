@@ -1,5 +1,7 @@
 2003-04-11  Geoffrey Keating  <geoffk@apple.com>
 
+	* profile.c (read_counts_file): Initialise 'checksum'.
+
 	* emit-rtl.c (gen_rtx): Really correct typo.
 
 	PR c++/9393
