@@ -1462,8 +1462,8 @@ generate_bytecode_insns (exp, target, state)
 	}
       break;
       case COMPOUND_EXPR:	
-	generate_bytecode_insns (TREE_OPERAND (exp, 0), IGNORE_TARGET, state);
-	generate_bytecode_insns (TREE_OPERAND (exp, 1), target, state);
+      generate_bytecode_insns (TREE_OPERAND (exp, 0), IGNORE_TARGET, state);
+      generate_bytecode_insns (TREE_OPERAND (exp, 1), target, state);
       break;
     case EXPR_WITH_FILE_LOCATION:
       {
@@ -2140,7 +2140,8 @@ generate_bytecode_insns (exp, target, state)
 	  {
 	    if (TREE_CODE (exp) == CONVERT_EXPR)
 	      {
-		int index = find_class_constant (&state->cpool, TREE_TYPE (dst_type));
+		int index = find_class_constant (&state->cpool, 
+						 TREE_TYPE (dst_type));
 		RESERVE (3);
 		OP1 (OPCODE_checkcast);
 		OP2 (index);

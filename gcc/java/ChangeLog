@@ -1,3 +1,13 @@
+Tue Nov 30 12:28:34 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+        * jcf-write.c (generate_byecode_insns): Fixed indentation for
+        COMPOUND_EXPR and FIX_TRUNC_EXPR cases.
+
+        * parse.y (patch_assignment): Removed bogus final class test on
+        lhs when checking on whether to emit an ArraySoreException runtime
+        check.
+        * expr.c (expand_java_arraystore): Likewise. 
+
 1999-11-24  Mark Mitchell  <mark@codesourcery.com>
 
 	* except.c (emit_handlers): Zero catch_clauses after emitting them.
