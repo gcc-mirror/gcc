@@ -10600,6 +10600,9 @@ ffecom_arg_ptr_to_expr (ffebld expr, tree *length)
   assert (ffeinfo_kindtype (ffebld_info (expr))
 	  == FFEINFO_kindtypeCHARACTER1);
 
+  while (ffebld_op (expr) == FFEBLD_opPAREN)
+    expr = ffebld_left (expr);
+
   catlist = ffecom_concat_list_new_ (expr, FFETARGET_charactersizeNONE);
   switch (ffecom_concat_list_count_ (catlist))
     {
@@ -13041,6 +13044,12 @@ ffecom_prepare_expr_ (ffebld expr, ffebld dest UNUSED)
 
   /* Generate whatever temporaries are needed to represent the result
      of the expression.  */
+
+  if (bt == FFEINFO_basictypeCHARACTER)
+    {
+      while (ffebld_op (expr) == FFEBLD_opPAREN)
+	expr = ffebld_left (expr);
+    }
 
   switch (ffebld_op (expr))
     {

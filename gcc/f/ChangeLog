@@ -1,3 +1,10 @@
+Tue May 25 17:48:34 1999  Craig Burley  <craig@jcb-sc.com>
+
+	Fix 19990525-0.f:
+	* com.c (ffecom_arg_ptr_to_expr): Strip off parens around
+	CHARACTER expression.
+	(ffecom_prepare_expr_): Ditto.
+
 Tue May 18 03:52:04 1999  Craig Burley  <craig@jcb-sc.com>
 
 	Support use of back end's improved open-coding of complex divide:
