@@ -70,15 +70,15 @@ namespace __gnu_cxx
 #else /* __arch32__ */
 
   template<int __inst>
-    struct __Atomicity_lock
+    struct _Atomicity_lock
     {
       static unsigned char _S_atomicity_lock;
     };
 
   template<int __inst>
-  unsigned char __Atomicity_lock<__inst>::_S_atomicity_lock = 0;
+  unsigned char _Atomicity_lock<__inst>::_S_atomicity_lock = 0;
   
-  template unsigned char __Atomicity_lock<0>::_S_atomicity_lock;
+  template unsigned char _Atomicity_lock<0>::_S_atomicity_lock;
   
   _Atomic_word
   __attribute__ ((__unused__))
@@ -91,13 +91,13 @@ namespace __gnu_cxx
 			 "	bne	1b\n\t"
 			 "	 nop"
 			 : "=&r" (__tmp)
-			 : "r" (&__Atomicity_lock<0>::_S_atomicity_lock)
+			 : "r" (&_Atomicity_lock<0>::_S_atomicity_lock)
 			 : "memory");
     __result = *__mem;
     *__mem += __val;
     __asm__ __volatile__("stb	%%g0, [%0]"
 			 : /* no outputs */
-			 : "r" (&__Atomicity_lock<0>::_S_atomicity_lock)
+			 : "r" (&_Atomicity_lock<0>::_S_atomicity_lock)
 			 : "memory");
     return __result;
   }
@@ -113,12 +113,12 @@ namespace __gnu_cxx
 			 "	bne	1b\n\t"
 			 "	 nop"
 			 : "=&r" (__tmp)
-			 : "r" (&__Atomicity_lock<0>::_S_atomicity_lock)
+			 : "r" (&_Atomicity_lock<0>::_S_atomicity_lock)
 			 : "memory");
     *__mem += __val;
     __asm__ __volatile__("stb	%%g0, [%0]"
 			 : /* no outputs */
-			 : "r" (&__Atomicity_lock<0>::_S_atomicity_lock)
+			 : "r" (&_Atomicity_lock<0>::_S_atomicity_lock)
 			 : "memory");
   }  
 #endif /* __arch32__ */

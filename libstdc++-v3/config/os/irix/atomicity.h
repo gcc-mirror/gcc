@@ -1,6 +1,6 @@
 // Low-level functions for atomic operations: IRIX version  -*- C++ -*-
 
-// Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,24 +27,16 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#ifndef _BITS_ATOMICITY_H
-#define _BITS_ATOMICITY_H	1
-
 #include <mutex.h>
+#include <bits/atomicity.h>
 
-typedef long _Atomic_word;
-
-static inline _Atomic_word
-__exchange_and_add (_Atomic_word* __mem, int __val)
+namespace __gnu_cxx
 {
-  return (_Atomic_word) test_then_add ((unsigned long*) __mem, __val);
-}
+  _Atomic_word
+  __exchange_and_add(volatile _Atomic_word* __mem, int __val)
+  { return (_Atomic_word) test_then_add((unsigned long*) const_cast<_Atomic_word*>(__mem), __val); }
 
-
-static inline void
-__atomic_add (_Atomic_word* __mem, int __val)
-{
-  __exchange_and_add (__mem, __val);
-}
-
-#endif /* atomicity.h */
+  void
+  __atomic_add(volatile _Atomic_word* __mem, int __val)
+  { __exchange_and_add(__mem, __val); }
+} // namespace __gnu_cxx

@@ -32,15 +32,15 @@
 namespace __gnu_cxx
 {
   template<int __inst>
-    struct __Atomicity_lock
+    struct _Atomicity_lock
     {
       static volatile _Atomic_word _S_atomicity_lock;
     };
 
   template<int __inst>
-  volatile _Atomic_word __Atomicity_lock<__inst>::_S_atomicity_lock = 0;
+  volatile _Atomic_word _Atomicity_lock<__inst>::_S_atomicity_lock = 0;
 
-  template volatile _Atomic_word __Atomicity_lock<0>::_S_atomicity_lock;
+  template volatile _Atomic_word _Atomicity_lock<0>::_S_atomicity_lock;
   
   _Atomic_word 
   __attribute__ ((__unused__))
@@ -52,9 +52,9 @@ namespace __gnu_cxx
     do 
       {
 	__asm__ __volatile__ ("xchg{l} {%0,%1|%1,%0}"
-			      : "=m" (__Atomicity_lock<0>::_S_atomicity_lock),
+			      : "=m" (_Atomicity_lock<0>::_S_atomicity_lock),
 			      "+r" (__tmp)
-			      : "m" (__Atomicity_lock<0>::_S_atomicity_lock));
+			      : "m" (_Atomicity_lock<0>::_S_atomicity_lock));
       } 
     while (__tmp);
     
@@ -62,7 +62,7 @@ namespace __gnu_cxx
     *__mem += __val;
     
     // Release spin lock.
-    __Atomicity_lock<0>::_S_atomicity_lock = 0;
+    _Atomicity_lock<0>::_S_atomicity_lock = 0;
     
     return __result;
   }

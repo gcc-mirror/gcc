@@ -170,11 +170,13 @@ case "${host_os}" in
   irix[1-6] | irix[1-5].* | irix6.[0-4]*)
     # This is known to work on at least IRIX 5.2 and 6.3.
     os_include_dir="os/irix/irix5.2"
-    atomicity_dir=$os_include_dir
+    atomicity_dir=os/irix
+    atomic_word_dir=os/irix
     ;;
   irix6.5*)
     os_include_dir="os/irix/irix6.5"
-    atomicity_dir=$os_include_dir
+    atomicity_dir=os/irix
+    atomic_word_dir=os/irix
     ;;
   mingw32*)
     os_include_dir="os/mingw32"

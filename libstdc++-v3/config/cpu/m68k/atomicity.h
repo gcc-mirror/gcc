@@ -72,15 +72,15 @@ namespace __gnu_cxx
 #else
   
   template<int __inst>
-    struct __Atomicity_lock
+    struct _Atomicity_lock
     {
       static volatile unsigned char _S_atomicity_lock;
     };
 
   template<int __inst>
-  volatile unsigned char __Atomicity_lock<__inst>::_S_atomicity_lock = 0;
+  volatile unsigned char _Atomicity_lock<__inst>::_S_atomicity_lock = 0;
   
-  template volatile unsigned char __Atomicity_lock<0>::_S_atomicity_lock;
+  template volatile unsigned char _Atomicity_lock<0>::_S_atomicity_lock;
   
   _Atomic_word 
   __attribute__ ((__unused__))
@@ -92,13 +92,13 @@ namespace __gnu_cxx
 #if defined(__mcf5200__) || defined(__mcf5300__)
     __asm__ __volatile__("1: bset.b #7,%0@\n\tjbne 1b"
 			 : /* no outputs */
-			 : "a"(&__Atomicity_lock<0>::_S_atomicity_lock)
+			 : "a"(&_Atomicity_lock<0>::_S_atomicity_lock)
 			 : "cc", "memory");
     
     // CPU32 and MCF5400 support test-and-set (SMP-safe).
 #elif defined(__mcpu32__) || defined(__mcf5400__)
     __asm__ __volatile__("1: tas %0\n\tjbne 1b"
-			 : "+m"(__Atomicity_lock<0>::_S_atomicity_lock)
+			 : "+m"(_Atomicity_lock<0>::_S_atomicity_lock)
 			 : /* none */
 			 : "cc");
     
@@ -107,7 +107,7 @@ namespace __gnu_cxx
     // memory controllers.
 #else
     __asm__ __volatile__("1: bset.b #7,%0\n\tjbne 1b"
-			 : "+m"(__Atomicity_lock<0>::_S_atomicity_lock)
+			 : "+m"(_Atomicity_lock<0>::_S_atomicity_lock)
 			 : /* none */
 			 : "cc");
 #endif
@@ -115,7 +115,7 @@ namespace __gnu_cxx
     __result = *__mem;
     *__mem = __result + __val;
     
-    __Atomicity_lock<0>::_S_atomicity_lock = 0;
+    _Atomicity_lock<0>::_S_atomicity_lock = 0;
     
     return __result;
   }
