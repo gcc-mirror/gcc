@@ -171,14 +171,7 @@ public class PrintWriter extends Writer
    */
   public void print(String str)
   {
-    try
-      {
-	write(str == null ? "null" : str);
-      }
-    catch (IOException ex)
-      {
-	error = true;
-      }
+    write(str == null ? "null" : str);
   }
 
   /**
