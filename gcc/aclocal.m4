@@ -753,7 +753,7 @@ AC_DEFUN([gcc_GAS_CHECK_FEATURE],
   if test $in_tree_gas = yes; then
     gcc_GAS_VERSION_GTE_IFELSE($3, [[$2]=yes])
   el])if test x$gcc_cv_as != x; then
-    echo ifelse(substr([$5],0,1),[$], "[$5]", '[$5]') > conftest.s
+    echo ifelse(m4_substr([$5],0,1),[$], "[$5]", '[$5]') > conftest.s
     if AC_TRY_COMMAND([$gcc_cv_as $4 -o conftest.o conftest.s >&AC_FD_CC])
     then
 	ifelse([$6],, [$2]=yes, [$6])
