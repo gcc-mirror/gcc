@@ -101,8 +101,6 @@ struct induction
 				   initialized in unrolled loop.  */
   unsigned shared : 1;
   unsigned no_const_addval : 1; /* 1 if add_val does not contain a const. */
-  unsigned derived : 1;         /* For a giv, 1 if we decided to derive this
-				   giv from another one.  */
   int lifetime;			/* Length of life of this giv */
   rtx derive_adjustment;	/* If nonzero, is an adjustment to be
 				   subtracted from add_val when this giv
@@ -115,6 +113,8 @@ struct induction
   struct induction *same;	/* If this giv has been combined with another
 				   giv, this points to the base giv.  The base
 				   giv will have COMBINED_WITH non-zero.  */
+  struct induction *derived_from;/* For a giv, if we decided to derive this
+				   giv from another one.  */
   HOST_WIDE_INT const_adjust;	/* Used by loop unrolling, when an address giv
 				   is split, and a constant is eliminated from
 				   the address, the -constant is stored here
@@ -226,6 +226,7 @@ extern int first_increment_giv, last_increment_giv;
 int invariant_p PROTO((rtx));
 rtx get_condition_for_loop PROTO((rtx));
 void emit_iv_add_mult PROTO((rtx, rtx, rtx, rtx, rtx));
+rtx express_from PROTO((struct induction *, struct induction *));
 
 /* Forward declarations for non-static functions declared in stmt.c.  */
 void find_loop_tree_blocks PROTO((void));
