@@ -1,3 +1,8 @@
+2004-02-26  Alan Modra  <amodra@bigpond.net.au>
+
+	* gcse.c (delete_null_pointer_checks_1): Set stop_insn to end, not
+	beginning of block.  Do not delete CC setter unless HAVE_cc0.
+
 2004-02-25  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* doc/contrib.texi: Add an entry for myself.
