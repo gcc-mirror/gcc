@@ -1,3 +1,7 @@
+2004-01-07  Alan Modra  <amodra@bigpond.net.au>
+
+	* gcc.dg/winline-7.c: Don't cast void * to int.
+
 2004-01-06  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/i386-sse-5.c: New test
