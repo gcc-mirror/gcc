@@ -320,8 +320,11 @@ java::lang::System::init_properties (void)
   SET ("java.specification.name", "Java(tm) Language Specification");
   SET ("java.specification.vendor", "Sun Microsystems Inc.");
 
-  // FIXME: how to set this given location-independence?
-  // SET ("java.home", "FIXME");
+  // This definition is rather arbitrary: we choose $(prefix).  In
+  // part we do this because most people specify only --prefix and
+  // nothing else when installing gcj.  Plus, people are free to
+  // redefine `java.home' with `-D' if necessary.
+  SET ("java.home", PREFIX);
   
   SET ("file.encoding", default_file_encoding);
 
