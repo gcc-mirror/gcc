@@ -3676,13 +3676,14 @@ in the compiler.
 @cindex instruction splitting
 @cindex splitting instructions
 
-There are two cases where you should specify how to split a pattern into
-multiple insns.  On machines that have instructions requiring delay
-slots (@pxref{Delay Slots}) or that have instructions whose output is
-not available for multiple cycles (@pxref{Function Units}), the compiler
-phases that optimize these cases need to be able to move insns into
-one-instruction delay slots.  However, some insns may generate more than one
-machine instruction.  These insns cannot be placed into a delay slot.
+There are two cases where you should specify how to split a pattern
+into multiple insns.  On machines that have instructions requiring
+delay slots (@pxref{Delay Slots}) or that have instructions whose
+output is not available for multiple cycles (@pxref{Processor pipeline
+description}), the compiler phases that optimize these cases need to
+be able to move insns into one-instruction delay slots.  However, some
+insns may generate more than one machine instruction.  These insns
+cannot be placed into a delay slot.
 
 Often you can rewrite the single insn as a list of individual insns,
 each corresponding to one machine instruction.  The disadvantage of
@@ -4227,7 +4228,7 @@ to track the condition codes.
 * Insn Lengths::        Computing the length of insns.
 * Constant Attributes:: Defining attributes that are constant.
 * Delay Slots::         Defining delay slots required for a machine.
-* Function Units::      Specifying information for insn scheduling.
+* Processor pipeline description:: Specifying information for insn scheduling.
 @end menu
 
 @node Defining Attributes
@@ -4857,14 +4858,101 @@ branch is true, we might represent this as follows:
 @end smallexample
 @c the above is *still* too long.  --mew 4feb93
 
-@node Function Units
-@subsection Specifying Function Units
+@node Processor pipeline description
+@subsection Specifying processor pipeline description
+@cindex processor pipeline description
+@cindex processor functional units
+@cindex instruction latency time
+@cindex interlock delays
+@cindex data dependence delays
+@cindex reservation delays
+@cindex pipeline hazard recognizer
+@cindex automaton based pipeline description
+@cindex regular expressions
+@cindex deterministic finite state automaton
+@cindex automaton based scheduler
+@cindex RISC
+@cindex VLIW
+
+To achieve better productivity most modern processors
+(super-pipelined, superscalar @acronym{RISC}, and @acronym{VLIW}
+processors) have many @dfn{functional units} on which several
+instructions can be executed simultaneously.  An instruction starts
+execution if its issue conditions are satisfied.  If not, the
+instruction is interlocked until its conditions are satisfied.  Such
+@dfn{interlock (pipeline) delay} causes interruption of the fetching
+of successor instructions (or demands nop instructions, e.g. for some
+MIPS processors).
+
+There are two major kinds of interlock delays in modern processors.
+The first one is a data dependence delay determining @dfn{instruction
+latency time}.  The instruction execution is not started until all
+source data have been evaluated by prior instructions (there are more
+complex cases when the instruction execution starts even when the data
+are not availaible but will be ready in given time after the
+instruction execution start).  Taking the data dependence delays into
+account is simple.  The data dependence (true, output, and
+anti-dependence) delay between two instructions is given by a
+constant.  In most cases this approach is adequate.  The second kind
+of interlock delays is a reservation delay.  The reservation delay
+means that two instructions under execution will be in need of shared
+processors resources, i.e. buses, internal registers, and/or
+functional units, which are reserved for some time.  Taking this kind
+of delay into account is complex especially for modern @acronym{RISC}
+processors.
+
+The task of exploiting more processor parallelism is solved by an
+instruction scheduler.  For better solution of this problem, the
+instruction scheduler has to have an adequate description of the
+processor parallelism (or @dfn{pipeline description}).  Currently GCC
+has two ways to describe processor parallelism.  The first one is old
+and originated from instruction scheduler written by Michael Tiemann
+and described in the first subsequent section.  The second one was
+created later.  It is based on description of functional unit
+reservations by processor instructions with the aid of @dfn{regular
+expressions}.  This is so called @dfn{automaton based description}.
+
+Gcc instruction scheduler uses a @dfn{pipeline hazard recognizer} to
+figure out the possibility of the instruction issue by the processor
+on given simulated processor cycle.  The pipeline hazard recognizer is
+a code generated from the processor pipeline description.  The
+pipeline hazard recognizer generated from the automaton based
+description is more sophisticated and based on deterministic finite
+state automaton (@acronym{DFA}) and therefore faster than one
+generated from the old description.  Also its speed is not depended on
+processor complexity.  The instruction issue is possible if there is
+a transition from one automaton state to another one.
+
+You can use any model to describe processor pipeline characteristics
+or even a mix of them.  You could use the old description for some
+processor submodels and the @acronym{DFA}-based one for the rest
+processor submodels.
+
+In general, the usage of the automaton based description is more
+preferable.  Its model is more rich.  It permits to describe more
+accurately pipeline characteristics of processors which results in
+improving code quality (although sometimes only on several percent
+fractions).  It will be also used as an infrastructure to implement
+sophisticated and practical insn scheduling which will try many
+instruction sequences to choose the best one.
+
+
+@menu
+* Old pipeline description:: Specifying information for insn scheduling.
+* Automaton pipeline description:: Describing insn pipeline characteristics.
+* Comparison of the two descriptions:: Drawbacks of the old pipeline description
+@end menu
+
+@node Old pipeline description
+@subsubsection Specifying Function Units
+@cindex old pipeline description
 @cindex function units, for scheduling
 
-On most RISC machines, there are instructions whose results are not
-available for a specific number of cycles.  Common cases are instructions
-that load data from memory.  On many machines, a pipeline stall will result
-if the data is referenced too soon after the load instruction.
+On most @acronym{RISC} machines, there are instructions whose results
+are not available for a specific number of cycles.  Common cases are
+instructions that load data from memory.  On many machines, a pipeline
+stall will result if the data is referenced too soon after the load
+instruction.
 
 In addition, many newer microprocessors have multiple function units, usually
 one for integer and one for floating point, and often will incur pipeline
@@ -4878,13 +4966,14 @@ due to function unit conflicts.
 
 For the purposes of the specifications in this section, a machine is
 divided into @dfn{function units}, each of which execute a specific
-class of instructions in first-in-first-out order.  Function units that
-accept one instruction each cycle and allow a result to be used in the
-succeeding instruction (usually via forwarding) need not be specified.
-Classic RISC microprocessors will normally have a single function unit,
-which we can call @samp{memory}.  The newer ``superscalar'' processors
-will often have function units for floating point operations, usually at
-least a floating point adder and multiplier.
+class of instructions in first-in-first-out order.  Function units
+that accept one instruction each cycle and allow a result to be used
+in the succeeding instruction (usually via forwarding) need not be
+specified.  Classic @acronym{RISC} microprocessors will normally have
+a single function unit, which we can call @samp{memory}.  The newer
+``superscalar'' processors will often have function units for floating
+point operations, usually at least a floating point adder and
+multiplier.
 
 @findex define_function_unit
 Each usage of a function units by a class of insns is specified with a
@@ -4947,10 +5036,10 @@ Typical uses of this vector are where a floating point function unit can
 pipeline either single- or double-precision operations, but not both, or
 where a memory unit can pipeline loads, but not stores, etc.
 
-As an example, consider a classic RISC machine where the result of a
-load instruction is not available for two cycles (a single ``delay''
-instruction is required) and where only one load instruction can be executed
-simultaneously.  This would be specified as:
+As an example, consider a classic @acronym{RISC} machine where the
+result of a load instruction is not available for two cycles (a single
+``delay'' instruction is required) and where only one load instruction
+can be executed simultaneously.  This would be specified as:
 
 @smallexample
 (define_function_unit "memory" 1 1 (eq_attr "type" "load") 2 0)
@@ -4975,6 +5064,374 @@ units.  These insns will cause a potential conflict for the second unit
 used during their execution and there is no way of representing that
 conflict.  We welcome any examples of how function unit conflicts work
 in such processors and suggestions for their representation.
+
+@node Automaton pipeline description
+@subsubsection Describing instruction pipeline characteristics
+@cindex automaton based pipeline description
+
+This section describes constructions of the automaton based processor
+pipeline description.  The order of all mentioned below constructions
+in the machine description file is not important.
+
+@findex define_automaton
+@cindex pipeline hazard recognizer
+The following optional construction describes names of automata
+generated and used for the pipeline hazards recognition.  Sometimes
+the generated finite state automaton used by the pipeline hazard
+recognizer is large.  If we use more one automaton and bind functional
+units to the automata, the summary size of the automata usually is
+less than the size of the single automaton.  If there is no one such
+construction, only one finite state automaton is generated.
+
+@smallexample
+(define_automaton @var{automata-names})
+@end smallexample
+
+@var{automata-names} is a string giving names of the automata.  The
+names are separated by commas.  All the automata should have unique names.
+The automaton name is used in construction @code{define_cpu_unit} and
+@code{define_query_cpu_unit}.
+
+@findex define_cpu_unit
+@cindex processor functional units
+Each processor functional unit used in description of instruction
+reservations should be described by the following construction.
+
+@smallexample
+(define_cpu_unit @var{unit-names} [@var{automaton-name}])
+@end smallexample
+
+@var{unit-names} is a string giving the names of the functional units
+separated by commas.  Don't use name @samp{nothing}, it is reserved
+for other goals.
+
+@var{automaton-name} is a string giving the name of automaton with
+which the unit is bound.  The automaton should be described in
+construction @code{define_automaton}.  You should give
+@dfn{automaton-name}, if there is a defined automaton.
+
+@findex define_query_cpu_unit
+@cindex querying function unit reservations
+The following construction describes CPU functional units analogously
+to @code{define_cpu_unit}.  If we use automata without their
+minimization, the reservation of such units can be queried for an
+automaton state.  The instruction scheduler never queries reservation
+of functional units for given automaton state.  So as a rule, you
+don't need this construction.  This construction could be used for
+future code generation goals (e.g. to generate @acronym{VLIW} insn
+templates).
+
+@smallexample
+(define_query_cpu_unit @var{unit-names} [@var{automaton-name}])
+@end smallexample
+
+@var{unit-names} is a string giving names of the functional units
+separated by commas.
+
+@var{automaton-name} is a string giving name of the automaton with
+which the unit is bound.
+
+@findex define_insn_reservation
+@cindex instruction latency time
+@cindex regular expressions
+@cindex data bypass
+The following construction is major one to describe pipeline
+characteristics of an instruction.
+
+@smallexample
+(define_insn_reservation @var{insn-name} @var{default_latency}
+                         @var{condition} @var{regexp})
+@end smallexample
+
+@var{default_latency} is a number giving latency time of the
+instruction.
+
+@var{insn-names} is a string giving internal name of the insn.  The
+internal names are used in constructions @code{define_bypass} and in
+the automaton description file generated for debugging.  The internal
+name has nothing common with the names in @code{define_insn}.  It is a
+good practice to use insn classes described in the processor manual.
+
+@var{condition} defines what RTL insns are described by this
+construction.
+
+@var{regexp} is a string describing reservation of the cpu functional
+units by the instruction.  The reservations are described by a regular
+expression according to the following syntax:
+
+@smallexample
+       regexp = regexp "," oneof
+              | oneof
+
+       oneof = oneof "|" allof
+             | allof
+
+       allof = allof "+" repeat
+             | repeat
+ 
+       repeat = element "*" number
+              | element
+
+       element = cpu_function_unit_name
+               | reservation_name
+               | result_name
+               | "nothing"
+               | "(" regexp ")"
+@end smallexample
+
+@itemize @bullet
+@item
+@samp{,} is used for describing the start of the next cycle in
+the reservation.
+
+@item
+@samp{|} is used for describing a reservation described by the first
+regular expression @strong{or} a reservation described by the second
+regular expression @strong{or} etc.
+
+@item
+@samp{+} is used for describing a reservation described by the first
+regular expression @strong{and} a reservation described by the
+second regular expression @strong{and} etc.
+
+@item
+@samp{*} is used for convenience and simply means a sequence in which
+the regular expression are repeated @var{number} times with cycle
+advancing (see @samp{,}).
+
+@item
+@samp{cpu_function_unit_name} denotes reservation of the named
+functional unit.
+
+@item
+@samp{reservation_name} --- see description of construction
+@samp{define_reservation}.
+
+@item
+@samp{nothing} denotes no unit reservations.
+@end itemize
+
+@findex define_reservation
+Sometimes unit reservations for different insns contain common parts.
+In such case, you can simplify the pipeline description by describing
+the common part by the following construction
+
+@smallexample
+(define_reservation @var{reservation-name} @var{regexp})
+@end smallexample
+
+@var{reservation-name} is a string giving name of @var{regexp}.
+Functional unit names and reservation names are in the same name
+space.  So the reservation names should be different from the
+functional unit names and can not be reserved name @samp{nothing}.
+
+@findex define_bypass
+@cindex instruction latency time
+@cindex data bypass
+The following construction is used to describe exceptions in the
+latency time for given instruction pair.  This is so called bypasses.
+
+@smallexample
+(define_bypass @var{number} @var{out_insn_names} @var{in_insn_names}
+               [@var{guard}])
+@end smallexample
+
+@var{number} defines when the result generated by the instructions
+given in string @var{out_insn_names} will be ready for the
+instructions given in string @var{in_insn_names}.  The instructions in
+the string are separated by commas.
+
+@var{guard} is an optional string giving name of a C function which
+defines an additional guard for the bypass.  The function will get the
+two insns as parameters.  If the function returns zero the bypass will
+be ignored for this case.  The additional guard is necessary to
+recognize complicated bypasses, e.g. when consumer is only an address
+of insn @samp{store} (not a stored value).
+
+@findex exclusion_set
+@findex presence_set
+@findex absence_set
+@cindex VLIW
+@cindex RISC
+Usually the following three constructions are used to describe
+@acronym{VLIW} processors (more correctly to describe a placement of
+small insns into @acronym{VLIW} insn slots).  Although they can be
+used for @acronym{RISC} processors too.
+
+@smallexample
+(exclusion_set @var{unit-names} @var{unit-names})
+(presence_set @var{unit-names} @var{unit-names})
+(absence_set @var{unit-names} @var{unit-names})
+@end smallexample
+
+@var{unit-names} is a string giving names of functional units
+separated by commas.
+
+The first construction (@samp{exclusion_set}) means that each
+functional unit in the first string can not be reserved simultaneously
+with a unit whose name is in the second string and vice versa.  For
+example, the construction is useful for describing processors
+(e.g. some SPARC processors) with a fully pipelined floating point
+functional unit which can execute simultaneously only single floating
+point insns or only double floating point insns.
+
+The second construction (@samp{presence_set}) means that each
+functional unit in the first string can not be reserved unless at
+least one of units whose names are in the second string is reserved.
+This is an asymmetric relation.  For example, it is useful for
+description that @acronym{VLIW} @samp{slot1} is reserved after
+@samp{slot0} reservation.
+
+The third construction (@samp{absence_set}) means that each functional
+unit in the first string can be reserved only if each unit whose name
+is in the second string is not reserved.  This is an asymmetric
+relation (actually @samp{exclusion_set} is analogous to this one but
+it is symmetric).  For example, it is useful for description that
+@acronym{VLIW} @samp{slot0} can not be reserved after @samp{slot1} or
+@samp{slot2} reservation.
+
+@findex automata_option
+@cindex deterministic finite state automaton
+@cindex nondeterministic finite state automaton
+@cindex finite state automaton minimization
+You can control the generator of the pipeline hazard recognizer with
+the following construction.
+
+@smallexample
+(automata_option @var{options})
+@end smallexample
+
+@var{options} is a string giving options which affect the generated
+code.  Currently there are the following options:
+
+@itemize @bullet
+@item
+@dfn{no-minimization} makes no minimization of the automaton.  This is
+only worth to do when we are going to query CPU functional unit
+reservations in an automaton state.
+
+@item
+@dfn{w} means a generation of the file describing the result
+automaton.  The file can be used to verify the description.
+
+@item
+@dfn{ndfa} makes nondeterministic finite state automata.  This affects
+the treatment of operator @samp{|} in the regular expressions.  The
+usual treatment of the operator is to try the first alternative and,
+if the reservation is not possible, the second alternative.  The
+nondeterministic treatment means trying all alternatives, some of them
+may be rejected by reservations in the subsequent insns.  You can not
+query functional unit reservations in nondeterministic automaton
+states.
+@end itemize
+
+As an example, consider a superscalar @acronym{RISC} machine which can
+issue three insns (two integer insns and one floating point insn) on
+the cycle but can finish only two insns.  To describe this, we define
+the following functional units.
+
+@smallexample
+(define_cpu_unit "i0_pipeline, i1_pipeline, f_pipeline")
+(define_cpu_unit "port_0, port1")
+@end smallexample
+
+All simple integer insns can be executed in any integer pipeline and
+their result is ready in two cycles.  The simple integer insns are
+issued into the first pipeline unless it is reserved, otherwise they
+are issued into the second pipeline.  Integer division and
+multiplication insns can be executed only in the second integer
+pipeline and their results are ready correspondingly in 8 and 4
+cycles.  The integer division is not pipelined, i.e. the subsequent
+integer division insn can not be issued until the current division
+insn finished.  Floating point insns are fully pipelined and their
+results are ready in 3 cycles.  There is also additional one cycle
+delay in the usage by integer insns of result produced by floating
+point insns.  To describe all of this we could specify
+
+@smallexample
+(define_cpu_unit "div")
+
+(define_insn_reservation "simple" 2 (eq_attr "cpu" "int")
+                         "(i0_pipeline | i1_pipeline), (port_0 | port1)")
+
+(define_insn_reservation "mult" 4 (eq_attr "cpu" "mult")
+                         "i1_pipeline, nothing*3, (port_0 | port1)")
+
+(define_insn_reservation "div" 8 (eq_attr "cpu" "div")
+                         "i1_pipeline, div*7, (port_0 | port1)")
+
+(define_insn_reservation "float" 3 (eq_attr "cpu" "float")
+                         "f_pipeline, nothing, (port_0 | port1))
+
+(define_bypass 4 "float" "simple,mut,div")
+@end smallexample
+
+To simplify the description we could describe the following reservation
+
+@smallexample
+(define_reservation "finish" "port0|port1")
+@end smallexample
+
+and use it in all @code{define_insn_reservation} as in the following
+construction
+
+@smallexample
+(define_insn_reservation "simple" 2 (eq_attr "cpu" "int")
+                         "(i0_pipeline | i1_pipeline), finish")
+@end smallexample
+
+
+@node Comparison of the two descriptions
+@subsubsection Drawbacks of the old pipeline description
+@cindex old pipeline description
+@cindex automaton based pipeline description
+@cindex processor functional units
+@cindex interlock delays
+@cindex instruction latency time
+@cindex pipeline hazard recognizer
+@cindex data bypass
+
+The old instruction level parallelism description and the pipeline
+hazards recognizer based on it have the following drawbacks in
+comparison with the @acronym{DFA}-based ones:
+  
+@itemize @bullet
+@item
+Each functional unit is believed to be reserved at the instruction
+execution start.  This is a very inaccurate model for modern
+processors.
+
+@item
+An inadequate description of instruction latency times.  The latency
+time is bound with a functional unit reserved by an instruction not
+with the instruction itself.  In other words, the description is
+oriented to describe at most one unit reservation by each instruction.
+It also does not permit to describe special bypasses between
+instruction pairs.
+
+@item
+The implementation of the pipeline hazard recognizer interface has
+constraints on number of functional units.  This is a number of bits
+in integer on the host machine.
+
+@item
+The interface to the pipeline hazard recognizer is more complex than
+one to the automaton based pipeline recognizer.
+
+@item
+An unnatural description when you write an unit and a condition which
+selects instructions using the unit.  Writing all unit reservations
+for an instruction (an instruction class) is more natural.
+
+@item
+The recognition of the interlock delays has slow implementation.  GCC
+scheduler supports structures which describe the unit reservations.
+The more processor has functional units, the slower pipeline hazard
+recognizer.  Such implementation would become slower when we enable to
+reserve functional units not only at the instruction execution start.
+The automaton based pipeline hazard recognizer speed is not depended
+on processor complexity.
+@end itemize
 @end ifset
 
 @node Conditional Execution
