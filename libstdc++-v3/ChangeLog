@@ -1,3 +1,11 @@
+2002-04-23  Jason Merrill  <jason@redhat.com>
+
+	PR libstdc++/6414
+	* include/bits/fstream.tcc (basic_filebuf::seekoff): Adjust return
+	value properly in the trivial case.
+	* testsuite/27_io/istream_seeks.cc (test04): Make sure that
+	tellg() returns the right value after a read.
+
 2002-04-23  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config/cpu/mmix/bits/cpu_limits.h: New file.
