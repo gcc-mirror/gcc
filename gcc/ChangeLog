@@ -1,5 +1,12 @@
 2005-03-11  James A. Morrison  <phython@gcc.gnu.org>
 
+        PR tree-optimization/15784
+        * fold-const.c (fold): Fold ~A + 1 to -A.  Fold -A - 1
+        and -1 - A to ~A.
+
+        * stmt.c (expand_case): Don't change index_type.  Convert minval
+        to the proper type.
+
 	PR tree-optimization/20130
 	* fold-const.c (fold): Fold x * -1 into -x.
 
@@ -722,7 +729,7 @@
 	Revert for now:
 	2005-03-03  James A. Morrison  <phython@gcc.gnu.org>
 	PR tree-optimization/15784
-	* fold-const.c (fold): Fold ~A + 1 to -1.  Fold -A - 1
+	* fold-const.c (fold): Fold ~A + 1 to -A.  Fold -A - 1
 	and -1 - A to ~A.
 
 2005-03-04  Ben Elliston  <bje@au.ibm.com>
@@ -756,7 +763,7 @@
 2005-03-03  James A. Morrison  <phython@gcc.gnu.org>
 
 	PR tree-optimization/15784
-	* fold-const.c (fold): Fold ~A + 1 to -1.  Fold -A - 1
+	* fold-const.c (fold): Fold ~A + 1 to -A.  Fold -A - 1
 	and -1 - A to ~A.
 
 2005-03-03  David Edelsohn  <edelsohn@gnu.org>
