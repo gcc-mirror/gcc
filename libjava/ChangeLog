@@ -1,3 +1,9 @@
+2004-09-24  Guilhem Lavaux <guilhem@kaffe.org>
+
+	* java/net/URL.java
+	(set): This method now matches the behaviour of the JDK.
+	(DEFAULT_SEARCH_PATH): Added "gnu.inet".
+
 2004-09-24  Guilhem Lavaux  <guilhem@kaffe.org>
 
 	* java/net/URL.java (URL): Delete whitespaces in the protocol string.
