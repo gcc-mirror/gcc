@@ -7255,13 +7255,33 @@ This option sets flags for both the preprocessor and linker.
 @cindex Darwin options
 @table @gcctabopt
 @item -all_load    
-@item -allowable_client  
-@item -arch    
+@opindex all_load   
+Loads all members of static archive libraries.
+See man ld(1) for more information.
+
 @item -arch_errors_fatal
-@item -arch_only
+@opindex arch_errors_fatal
+Cause the errors having to do with files that have the wron architecture
+to be fatal.
+
 @item -bind_at_load
+@opindex bind_at_load
+Causes the output file to be marked such that the dynamic linker will
+bind all undefined references when the file is loaded or launched.
+
 @item -bundle     
-@item -bundle_loader
+@opindex bundle
+Produce a Mach-o bundle format file.
+See man ld(1) for more information.
+
+@item -bundle_loader @var{executable}
+@opindex bundle_loader
+This specifies the @var{executable} that will be loading the build
+outout file being linked. See man ld(1) for more information.
+
+@item -allowable_client  @var{client_name}
+@item -arch_only
+
 @item -client_name       
 @item -compatibility_version
 @item -current_version    
@@ -7315,14 +7335,9 @@ This option sets flags for both the preprocessor and linker.
 @item -unexported_symbols_list
 @item -weak_reference_mismatches
 @item -whatsloaded  
-@opindex all_load   
+
 @opindex allowable_client
-@opindex arch
-@opindex arch_errors_fatal
 @opindex arch_only    
-@opindex bind_at_load
-@opindex bundle
-@opindex bundle_loader
 @opindex client_name
 @opindex compatibility_version
 @opindex current_version
