@@ -66,7 +66,7 @@
 #undef DBL_MAX_10_EXP
 #define DBL_MAX_10_EXP 308
 
-#if defined(__sparcv9) || defined(__arch64__)
+#if defined(__sparcv9) || defined(__arch64__) || defined(__LONG_DOUBLE_128__)
 
    /* Number of base-FLT_RADIX digits in the significand of a long double */
 #undef LDBL_MANT_DIG

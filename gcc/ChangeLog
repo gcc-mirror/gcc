@@ -1,5 +1,10 @@
 2002-05-02  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/6540
+	* config.gcc (sparc*-*-solaris2*): Set float_format to i128.
+	* config/float-sparc.h: Assume 128-bit long double if
+	__LONG_DOUBLE_128__ is defined.
+
 	PR target/6512, PR target/5628
 	* config/sparc/sparc.md (movdf_insn_v9only_novis): Don't allow >= %f32
 	when memory is not aligned.

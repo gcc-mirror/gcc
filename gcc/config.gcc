@@ -3173,7 +3173,7 @@ sparc64-*-solaris2* | sparcv9-*-solaris2*)
 		tmake_file="$tmake_file t-slibgcc-sld"
 	fi
 	extra_parts="crt1.o crti.o crtn.o gcrt1.o crtbegin.o crtend.o"
-	float_format=sparc
+	float_format=i128
 	if test x${enable_threads} = x ; then
 	    enable_threads=$have_pthread_h
 	    if test x${enable_threads} = x ; then
@@ -3199,14 +3199,7 @@ sparc-hal-solaris2*)
 		tmake_file="$tmake_file t-slibgcc-sld"
 	fi
         extra_parts="crt1.o crti.o crtn.o gmon.o crtbegin.o crtend.o"
-        case $machine in
-        *-*-solaris2.[0-4])
-                float_format=i128
-        ;;
-        *)
-                float_format=sparc
-                ;;
-        esac
+	float_format=i128
 	thread_file='solaris'
         ;;
 sparc-*-solaris2*)
@@ -3241,14 +3234,7 @@ sparc-*-solaris2*)
 	esac
 	xm_defines=POSIX
 	extra_parts="crt1.o crti.o crtn.o gcrt1.o gmon.o crtbegin.o crtend.o"
-	case $machine in
-	*-*-solaris2.[0-4])
-		float_format=i128
-		;;
-	*)
-		float_format=sparc
-		;;
-	esac
+	float_format=i128
 	if test x${enable_threads} = x; then
 	    enable_threads=$have_pthread_h
 	    if test x${enable_threads} = x; then
