@@ -1,6 +1,6 @@
 /* scan-decls.c - Extracts declarations from cpp output.
    Copyright (C) 1993, 1995, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2003 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -25,8 +25,8 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #include "cpplib.h"
 #include "scan.h"
 
-static void skip_to_closing_brace PARAMS ((cpp_reader *));
-static const cpp_token *get_a_token PARAMS ((cpp_reader *));
+static void skip_to_closing_brace (cpp_reader *);
+static const cpp_token *get_a_token (cpp_reader *);
 
 int brace_nesting = 0;
 
@@ -43,8 +43,7 @@ int current_extern_C = 0;
 
 /* Get a token but skip padding.  */
 static const cpp_token *
-get_a_token (pfile)
-     cpp_reader *pfile;
+get_a_token (cpp_reader *pfile)
 {
   for (;;)
     {
@@ -55,8 +54,7 @@ get_a_token (pfile)
 }
 
 static void
-skip_to_closing_brace (pfile)
-     cpp_reader *pfile;
+skip_to_closing_brace (cpp_reader *pfile)
 {
   int nesting = 1;
   for (;;)
@@ -95,10 +93,8 @@ Here dname is the actual name being declared.
 */
 
 int
-scan_decls (pfile, argc, argv)
-     cpp_reader *pfile;
-     int argc ATTRIBUTE_UNUSED;
-     char **argv ATTRIBUTE_UNUSED;
+scan_decls (cpp_reader *pfile, int argc ATTRIBUTE_UNUSED,
+	    char **argv ATTRIBUTE_UNUSED)
 {
   int saw_extern, saw_inline;
   cpp_token prev_id;

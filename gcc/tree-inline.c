@@ -110,26 +110,26 @@ typedef struct inline_data
 
 /* Prototypes.  */
 
-static tree declare_return_variable PARAMS ((inline_data *, tree, tree *));
-static tree copy_body_r PARAMS ((tree *, int *, void *));
-static tree copy_body PARAMS ((inline_data *));
-static tree expand_call_inline PARAMS ((tree *, int *, void *));
-static void expand_calls_inline PARAMS ((tree *, inline_data *));
-static int inlinable_function_p PARAMS ((tree, inline_data *, int));
-static tree remap_decl PARAMS ((tree, inline_data *));
+static tree declare_return_variable (inline_data *, tree, tree *);
+static tree copy_body_r (tree *, int *, void *);
+static tree copy_body (inline_data *);
+static tree expand_call_inline (tree *, int *, void *);
+static void expand_calls_inline (tree *, inline_data *);
+static int inlinable_function_p (tree, inline_data *, int);
+static tree remap_decl (tree, inline_data *);
 #ifndef INLINER_FOR_JAVA
-static tree initialize_inlined_parameters PARAMS ((inline_data *, tree, tree));
-static void remap_block PARAMS ((tree, tree, inline_data *));
-static void copy_scope_stmt PARAMS ((tree *, int *, inline_data *));
+static tree initialize_inlined_parameters (inline_data *, tree, tree);
+static void remap_block (tree, tree, inline_data *);
+static void copy_scope_stmt (tree *, int *, inline_data *);
 #else /* INLINER_FOR_JAVA */
-static tree initialize_inlined_parameters PARAMS ((inline_data *, tree, tree, tree));
-static void remap_block PARAMS ((tree *, tree, inline_data *));
-static tree add_stmt_to_compound PARAMS ((tree, tree, tree));
+static tree initialize_inlined_parameters (inline_data *, tree, tree, tree);
+static void remap_block (tree *, tree, inline_data *);
+static tree add_stmt_to_compound (tree, tree, tree);
 #endif /* INLINER_FOR_JAVA */
-static tree find_alloca_call_1 PARAMS ((tree *, int *, void *));
-static tree find_alloca_call PARAMS ((tree));
-static tree find_builtin_longjmp_call_1 PARAMS ((tree *, int *, void *));
-static tree find_builtin_longjmp_call PARAMS ((tree));
+static tree find_alloca_call_1 (tree *, int *, void *);
+static tree find_alloca_call (tree);
+static tree find_builtin_longjmp_call_1 (tree *, int *, void *);
+static tree find_builtin_longjmp_call (tree);
 
 /* The approximate number of instructions per statement.  This number
    need not be particularly accurate; it is used only to make
@@ -139,9 +139,7 @@ static tree find_builtin_longjmp_call PARAMS ((tree));
 /* Remap DECL during the copying of the BLOCK tree for the function.  */
 
 static tree
-remap_decl (decl, id)
-     tree decl;
-     inline_data *id;
+remap_decl (tree decl, inline_data *id)
 {
   splay_tree_node n;
   tree fn;
@@ -221,14 +219,10 @@ remap_decl (decl, id)
 
 static void
 #ifndef INLINER_FOR_JAVA
-remap_block (scope_stmt, decls, id)
-     tree scope_stmt;
+remap_block (tree scope_stmt, tree decls, inline_data *id)
 #else /* INLINER_FOR_JAVA */
-remap_block (block, decls, id)
-     tree *block;
+remap_block (tree *block, tree decls, inline_data *id)
 #endif /* INLINER_FOR_JAVA */
-     tree decls;
-     inline_data *id;
 {
 #ifndef INLINER_FOR_JAVA
   /* We cannot do this in the cleanup for a TARGET_EXPR since we do
@@ -389,10 +383,7 @@ remap_block (block, decls, id)
 /* Copy the SCOPE_STMT pointed to by TP.  */
 
 static void
-copy_scope_stmt (tp, walk_subtrees, id)
-     tree *tp;
-     int *walk_subtrees;
-     inline_data *id;
+copy_scope_stmt (tree *tp, int *walk_subtrees, inline_data *id)
 {
   tree block;
 
@@ -414,10 +405,7 @@ copy_scope_stmt (tp, walk_subtrees, id)
 /* Called from copy_body via walk_tree.  DATA is really an
    `inline_data *'.  */
 static tree
-copy_body_r (tp, walk_subtrees, data)
-     tree *tp;
-     int *walk_subtrees;
-     void *data;
+copy_body_r (tree *tp, int *walk_subtrees, void *data)
 {
   inline_data* id;
   tree fn;
@@ -610,8 +598,7 @@ copy_body_r (tp, walk_subtrees, data)
    another function.  */
 
 static tree
-copy_body (id)
-     inline_data *id;
+copy_body (inline_data *id)
 {
   tree body;
 
@@ -626,15 +613,9 @@ copy_body (id)
 
 static tree
 #ifndef INLINER_FOR_JAVA
-initialize_inlined_parameters (id, args, fn)
+initialize_inlined_parameters (inline_data *id, tree args, tree fn)
 #else /* INLINER_FOR_JAVA */
-initialize_inlined_parameters (id, args, fn, block)
-#endif /* INLINER_FOR_JAVA */
-     inline_data *id;
-     tree args;
-     tree fn;
-#ifdef INLINER_FOR_JAVA
-     tree block;
+initialize_inlined_parameters (inline_data *id, tree args, tree fn, tree block)
 #endif /* INLINER_FOR_JAVA */
 {
   tree init_stmts;
@@ -823,16 +804,12 @@ initialize_inlined_parameters (id, args, fn, block)
 
 #ifndef INLINER_FOR_JAVA
 static tree
-declare_return_variable (id, return_slot_addr, use_stmt)
-     struct inline_data *id;
-     tree return_slot_addr;
-     tree *use_stmt;
+declare_return_variable (struct inline_data *id, tree return_slot_addr,
+			 tree *use_stmt)
 #else /* INLINER_FOR_JAVA */
 static tree
-declare_return_variable (id, return_slot_addr, var)
-     struct inline_data *id;
-     tree return_slot_addr;
-     tree *var;
+declare_return_variable (struct inline_data *id, tree return_slot_addr,
+			 tree *var)
 #endif /* INLINER_FOR_JAVA */
 {
   tree fn = VARRAY_TOP_TREE (id->fns);
@@ -901,19 +878,15 @@ declare_return_variable (id, return_slot_addr, var)
 /* Returns nonzero if a function can be inlined as a tree.  */
 
 int
-tree_inlinable_function_p (fn, nolimit)
-     tree fn;
-     int nolimit;
+tree_inlinable_function_p (tree fn, int nolimit)
 {
   return inlinable_function_p (fn, NULL, nolimit);
 }
 
 /* If *TP is possibly call to alloca, return nonzero.  */
 static tree
-find_alloca_call_1 (tp, walk_subtrees, data)
-     tree *tp;
-     int *walk_subtrees ATTRIBUTE_UNUSED;
-     void *data ATTRIBUTE_UNUSED;
+find_alloca_call_1 (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
+		    void *data ATTRIBUTE_UNUSED)
 {
   if (alloca_call_p (*tp))
     return *tp;
@@ -922,8 +895,7 @@ find_alloca_call_1 (tp, walk_subtrees, data)
 
 /* Return subexpression representing possible alloca call, if any.  */
 static tree
-find_alloca_call (exp)
-     tree exp;
+find_alloca_call (tree exp)
 {
   location_t saved_loc = input_location;
   tree ret = walk_tree (&exp, find_alloca_call_1, NULL, NULL);
@@ -932,10 +904,8 @@ find_alloca_call (exp)
 }
 
 static tree
-find_builtin_longjmp_call_1 (tp, walk_subtrees, data)
-     tree *tp;
-     int *walk_subtrees ATTRIBUTE_UNUSED;
-     void *data ATTRIBUTE_UNUSED;
+find_builtin_longjmp_call_1 (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
+			     void *data ATTRIBUTE_UNUSED)
 {
   tree exp = *tp, decl;
 
@@ -951,8 +921,7 @@ find_builtin_longjmp_call_1 (tp, walk_subtrees, data)
 }
 
 static tree
-find_builtin_longjmp_call (exp)
-     tree exp;
+find_builtin_longjmp_call (tree exp)
 {
   location_t saved_loc = input_location;
   tree ret = walk_tree (&exp, find_builtin_longjmp_call_1, NULL, NULL);
@@ -965,10 +934,7 @@ find_builtin_longjmp_call (exp)
    can be inlined at all.  */
 
 static int
-inlinable_function_p (fn, id, nolimit)
-     tree fn;
-     inline_data *id;
-     int nolimit;
+inlinable_function_p (tree fn, inline_data *id, int nolimit)
 {
   int inlinable;
   int currfn_insns;
@@ -983,13 +949,13 @@ inlinable_function_p (fn, id, nolimit)
      inlined.  (It is important that this hook be called early because
      in C++ it may result in template instantiation.)  */
   inlinable = !(*lang_hooks.tree_inlining.cannot_inline_tree_fn) (&fn);
-       
+
   /* We may be here either because fn is declared inline or because
      we use -finline-functions.  For the second case, we are more
      restrictive.  */
   if (DID_INLINE_FUNC (fn))
     max_inline_insns_single = MAX_INLINE_INSNS_AUTO;
-	
+
   /* The number of instructions (estimated) of current function.  */
   currfn_insns = DECL_NUM_STMTS (fn) * INSNS_PER_STMT;
 
@@ -1098,10 +1064,7 @@ inlinable_function_p (fn, id, nolimit)
 /* If *TP is a CALL_EXPR, replace it with its inline expansion.  */
 
 static tree
-expand_call_inline (tp, walk_subtrees, data)
-     tree *tp;
-     int *walk_subtrees;
-     void *data;
+expand_call_inline (tree *tp, int *walk_subtrees, void *data)
 {
   inline_data *id;
   tree t;
@@ -1159,7 +1122,7 @@ expand_call_inline (tp, walk_subtrees, data)
       *walk_subtrees = 0;
       /* Update the source position.  */
       push_srcloc (EXPR_WFL_FILENAME (t), EXPR_WFL_LINENO (t));
-      walk_tree (&EXPR_WFL_NODE (t), expand_call_inline, data, 
+      walk_tree (&EXPR_WFL_NODE (t), expand_call_inline, data,
 		 id->tree_pruner);
       /* Restore the original source position.  */
       pop_srcloc ();
@@ -1461,9 +1424,7 @@ expand_call_inline (tp, walk_subtrees, data)
    expansions as appropriate.  */
 
 static void
-expand_calls_inline (tp, id)
-     tree *tp;
-     inline_data *id;
+expand_calls_inline (tree *tp, inline_data *id)
 {
   /* Search through *TP, replacing all calls to inline functions by
      appropriate equivalents.  Use walk_tree in no-duplicates mode
@@ -1477,8 +1438,7 @@ expand_calls_inline (tp, id)
 /* Expand calls to inline functions in the body of FN.  */
 
 void
-optimize_inline_calls (fn)
-     tree fn;
+optimize_inline_calls (tree fn)
 {
   inline_data id;
   tree prev_fn;
@@ -1532,9 +1492,7 @@ optimize_inline_calls (fn)
    declarations according to the ARG_MAP splay_tree.  */
 
 void
-clone_body (clone, fn, arg_map)
-     tree clone, fn;
-     void *arg_map;
+clone_body (tree clone, tree fn, void *arg_map)
 {
   inline_data id;
 
@@ -1564,11 +1522,7 @@ clone_body (clone, fn, arg_map)
    once.  */
 
 tree
-walk_tree (tp, func, data, htab_)
-     tree *tp;
-     walk_tree_fn func;
-     void *data;
-     void *htab_;
+walk_tree (tree *tp, walk_tree_fn func, void *data, void *htab_)
 {
   htab_t htab = (htab_t) htab_;
   enum tree_code code;
@@ -1814,10 +1768,7 @@ walk_tree (tp, func, data, htab_)
    once.  */
 
 tree
-walk_tree_without_duplicates (tp, func, data)
-     tree *tp;
-     walk_tree_fn func;
-     void *data;
+walk_tree_without_duplicates (tree *tp, walk_tree_fn func, void *data)
 {
   tree result;
   htab_t htab;
@@ -1831,10 +1782,7 @@ walk_tree_without_duplicates (tp, func, data)
 /* Passed to walk_tree.  Copies the node pointed to, if appropriate.  */
 
 tree
-copy_tree_r (tp, walk_subtrees, data)
-     tree *tp;
-     int *walk_subtrees;
-     void *data ATTRIBUTE_UNUSED;
+copy_tree_r (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 {
   enum tree_code code = TREE_CODE (*tp);
 
@@ -1884,11 +1832,7 @@ copy_tree_r (tp, walk_subtrees, data)
    ST.  FN is the function into which the copy will be placed.  */
 
 void
-remap_save_expr (tp, st_, fn, walk_subtrees)
-     tree *tp;
-     void *st_;
-     tree fn;
-     int *walk_subtrees;
+remap_save_expr (tree *tp, void *st_, tree fn, int *walk_subtrees)
 {
   splay_tree st = (splay_tree) st_;
   splay_tree_node n;
@@ -1928,8 +1872,7 @@ remap_save_expr (tp, st_, fn, walk_subtrees)
    COMPOUND_EXPR and add STMT to it.  */
 
 static tree
-add_stmt_to_compound (existing, type, stmt)
-     tree existing, type, stmt;
+add_stmt_to_compound (tree existing, tree type, tree stmt)
 {
   if (!stmt)
     return existing;

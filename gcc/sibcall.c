@@ -1,5 +1,6 @@
 /* Generic sibling call optimization support
-   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2003
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -40,18 +41,18 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    return in the sibcall sequence.  */
 static rtx return_value_pseudo;
 
-static int identify_call_return_value	PARAMS ((rtx, rtx *, rtx *));
-static rtx skip_copy_to_return_value	PARAMS ((rtx));
-static rtx skip_use_of_return_value	PARAMS ((rtx, enum rtx_code));
-static rtx skip_stack_adjustment	PARAMS ((rtx));
-static rtx skip_pic_restore		PARAMS ((rtx));
-static rtx skip_jump_insn		PARAMS ((rtx));
-static int call_ends_block_p		PARAMS ((rtx, rtx));
-static int uses_addressof		PARAMS ((rtx));
-static int sequence_uses_addressof	PARAMS ((rtx));
-static void purge_reg_equiv_notes	PARAMS ((void));
-static void purge_mem_unchanging_flag	PARAMS ((rtx));
-static rtx skip_unreturned_value 	PARAMS ((rtx));
+static int identify_call_return_value (rtx, rtx *, rtx *);
+static rtx skip_copy_to_return_value (rtx);
+static rtx skip_use_of_return_value (rtx, enum rtx_code);
+static rtx skip_stack_adjustment (rtx);
+static rtx skip_pic_restore (rtx);
+static rtx skip_jump_insn (rtx);
+static int call_ends_block_p (rtx, rtx);
+static int uses_addressof (rtx);
+static int sequence_uses_addressof (rtx);
+static void purge_reg_equiv_notes (void);
+static void purge_mem_unchanging_flag (rtx);
+static rtx skip_unreturned_value (rtx);
 
 /* Examine a CALL_PLACEHOLDER pattern and determine where the call's
    return value is located.  P_HARD_RETURN receives the hard register
@@ -59,9 +60,7 @@ static rtx skip_unreturned_value 	PARAMS ((rtx));
    that the sequence used.  Return nonzero if the values were located.  */
 
 static int
-identify_call_return_value (cp, p_hard_return, p_soft_return)
-     rtx cp;
-     rtx *p_hard_return, *p_soft_return;
+identify_call_return_value (rtx cp, rtx *p_hard_return, rtx *p_soft_return)
 {
   rtx insn, set, hard, soft;
 
@@ -142,8 +141,7 @@ identify_call_return_value (cp, p_hard_return, p_soft_return)
    copy.  Otherwise return ORIG_INSN.  */
 
 static rtx
-skip_copy_to_return_value (orig_insn)
-     rtx orig_insn;
+skip_copy_to_return_value (rtx orig_insn)
 {
   rtx insn, set = NULL_RTX;
   rtx hardret, softret;
@@ -219,9 +217,7 @@ skip_copy_to_return_value (orig_insn)
    value, return insn.  Otherwise return ORIG_INSN.  */
 
 static rtx
-skip_use_of_return_value (orig_insn, code)
-     rtx orig_insn;
-     enum rtx_code code;
+skip_use_of_return_value (rtx orig_insn, enum rtx_code code)
 {
   rtx insn;
 
@@ -240,8 +236,7 @@ skip_use_of_return_value (orig_insn, code)
 /* In case function does not return value,  we get clobber of pseudo followed
    by set to hard return value.  */
 static rtx
-skip_unreturned_value (orig_insn)
-     rtx orig_insn;
+skip_unreturned_value (rtx orig_insn)
 {
   rtx insn = next_nonnote_insn (orig_insn);
 
@@ -271,8 +266,7 @@ skip_unreturned_value (orig_insn)
    Otherwise return ORIG_INSN.  */
 
 static rtx
-skip_stack_adjustment (orig_insn)
-     rtx orig_insn;
+skip_stack_adjustment (rtx orig_insn)
 {
   rtx insn, set = NULL_RTX;
 
@@ -296,8 +290,7 @@ skip_stack_adjustment (orig_insn)
    return it.  Otherwise return ORIG_INSN.  */
 
 static rtx
-skip_pic_restore (orig_insn)
-     rtx orig_insn;
+skip_pic_restore (rtx orig_insn)
 {
   rtx insn, set = NULL_RTX;
 
@@ -316,8 +309,7 @@ skip_pic_restore (orig_insn)
    Otherwise return ORIG_INSN.  */
 
 static rtx
-skip_jump_insn (orig_insn)
-     rtx orig_insn;
+skip_jump_insn (rtx orig_insn)
 {
   rtx insn;
 
@@ -335,9 +327,7 @@ skip_jump_insn (orig_insn)
    goes all the way to END, the end of a basic block.  Return 1 if so.  */
 
 static int
-call_ends_block_p (insn, end)
-     rtx insn;
-     rtx end;
+call_ends_block_p (rtx insn, rtx end)
 {
   rtx new_insn;
   /* END might be a note, so get the last nonnote insn of the block.  */
@@ -394,8 +384,7 @@ call_ends_block_p (insn, end)
    is found outside of some MEM expression, else return zero.  */
 
 static int
-uses_addressof (x)
-     rtx x;
+uses_addressof (rtx x)
 {
   RTX_CODE code;
   int i, j;
@@ -441,8 +430,7 @@ uses_addressof (x)
    of insns.  */
 
 static int
-sequence_uses_addressof (seq)
-     rtx seq;
+sequence_uses_addressof (rtx seq)
 {
   rtx insn;
 
@@ -474,7 +462,7 @@ sequence_uses_addressof (seq)
 /* Remove all REG_EQUIV notes found in the insn chain.  */
 
 static void
-purge_reg_equiv_notes ()
+purge_reg_equiv_notes (void)
 {
   rtx insn;
 
@@ -498,8 +486,7 @@ purge_reg_equiv_notes ()
 /* Clear RTX_UNCHANGING_P flag of incoming argument MEMs.  */
 
 static void
-purge_mem_unchanging_flag (x)
-     rtx x;
+purge_mem_unchanging_flag (rtx x)
 {
   RTX_CODE code;
   int i, j;
@@ -538,9 +525,7 @@ purge_mem_unchanging_flag (x)
    the CALL_PLACEHOLDER insn; USE tells which child to use.  */
 
 void
-replace_call_placeholder (insn, use)
-     rtx insn;
-     sibcall_use_t use;
+replace_call_placeholder (rtx insn, sibcall_use_t use)
 {
   if (use == sibcall_use_tail_recursion)
     emit_insn_before (XEXP (PATTERN (insn), 2), insn);
@@ -571,7 +556,7 @@ replace_call_placeholder (insn, use)
    Replace the CALL_PLACEHOLDER with an appropriate insn chain.  */
 
 void
-optimize_sibling_and_tail_recursive_calls ()
+optimize_sibling_and_tail_recursive_calls (void)
 {
   rtx insn, insns;
   basic_block alternate_exit = EXIT_BLOCK_PTR;

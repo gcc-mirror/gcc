@@ -1,5 +1,5 @@
 /* String pool for GCC.
-   Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -49,13 +49,13 @@ const char digit_vector[] = {
 struct ht *ident_hash;
 static struct obstack string_stack;
 
-static hashnode alloc_node PARAMS ((hash_table *));
-static int mark_ident PARAMS ((struct cpp_reader *, hashnode, const void *));
-static int ht_copy_and_clear PARAMS ((struct cpp_reader *, hashnode, const void *));
+static hashnode alloc_node (hash_table *);
+static int mark_ident (struct cpp_reader *, hashnode, const void *);
+static int ht_copy_and_clear (struct cpp_reader *, hashnode, const void *);
 
 /* Initialize the string pool.  */
 void
-init_stringpool ()
+init_stringpool (void)
 {
   /* Create with 16K (2^14) entries.  */
   ident_hash = ht_create (14);
@@ -65,8 +65,7 @@ init_stringpool ()
 
 /* Allocate a hash node.  */
 static hashnode
-alloc_node (table)
-     hash_table *table ATTRIBUTE_UNUSED;
+alloc_node (hash_table *table ATTRIBUTE_UNUSED)
 {
   return GCC_IDENT_TO_HT_IDENT (make_node (IDENTIFIER_NODE));
 }
@@ -78,9 +77,7 @@ alloc_node (table)
    returned this time too.  */
 
 const char *
-ggc_alloc_string (contents, length)
-     const char *contents;
-     int length;
+ggc_alloc_string (const char *contents, int length)
 {
   if (length == -1)
     length = strlen (contents);
@@ -99,8 +96,7 @@ ggc_alloc_string (contents, length)
    the same node is returned this time.  */
 
 tree
-get_identifier (text)
-     const char *text;
+get_identifier (const char *text)
 {
   hashnode ht_node = ht_lookup (ident_hash,
 				(const unsigned char *) text,
@@ -114,9 +110,7 @@ get_identifier (text)
    known.  */
 
 tree
-get_identifier_with_length (text, length)
-     const char *text;
-     unsigned int length;
+get_identifier_with_length (const char *text, unsigned int length)
 {
   hashnode ht_node = ht_lookup (ident_hash,
 				(const unsigned char *) text,
@@ -131,8 +125,7 @@ get_identifier_with_length (text, length)
    NULL_TREE.  */
 
 tree
-maybe_get_identifier (text)
-     const char *text;
+maybe_get_identifier (const char *text)
 {
   hashnode ht_node;
 
@@ -147,7 +140,7 @@ maybe_get_identifier (text)
 /* Report some basic statistics about the string pool.  */
 
 void
-stringpool_statistics ()
+stringpool_statistics (void)
 {
   ht_dump_statistics (ident_hash);
 }
@@ -155,10 +148,8 @@ stringpool_statistics ()
 /* Mark an identifier for GC.  */
 
 static int
-mark_ident (pfile, h, v)
-     struct cpp_reader *pfile ATTRIBUTE_UNUSED;
-     hashnode h;
-     const void *v ATTRIBUTE_UNUSED;
+mark_ident (struct cpp_reader *pfile ATTRIBUTE_UNUSED, hashnode h,
+	    const void *v ATTRIBUTE_UNUSED)
 {
   gt_ggc_m_9tree_node (HT_IDENT_TO_GCC_IDENT (h));
   return 1;
@@ -169,7 +160,7 @@ mark_ident (pfile, h, v)
    treatment for strings.  */
 
 void
-ggc_mark_stringpool ()
+ggc_mark_stringpool (void)
 {
   ht_forall (ident_hash, mark_ident, NULL);
 }
@@ -179,8 +170,7 @@ ggc_mark_stringpool ()
    to strings.  */
 
 void
-gt_ggc_m_S (x)
-     void *x ATTRIBUTE_UNUSED;
+gt_ggc_m_S (void *x ATTRIBUTE_UNUSED)
 {
 }
 
@@ -188,19 +178,16 @@ gt_ggc_m_S (x)
    strings don't contain pointers).  */
 
 void
-gt_pch_p_S (obj, x, op, cookie)
-     void *obj ATTRIBUTE_UNUSED;
-     void *x ATTRIBUTE_UNUSED;
-     gt_pointer_operator op ATTRIBUTE_UNUSED;
-     void *cookie ATTRIBUTE_UNUSED;
+gt_pch_p_S (void *obj ATTRIBUTE_UNUSED, void *x ATTRIBUTE_UNUSED,
+	    gt_pointer_operator op ATTRIBUTE_UNUSED,
+	    void *cookie ATTRIBUTE_UNUSED)
 {
 }
 
 /* PCH pointer-walking routine for strings.  */
 
 void
-gt_pch_n_S (x)
-     const void *x;
+gt_pch_n_S (const void *x)
 {
   gt_pch_note_object ((void *)x, (void *)x, &gt_pch_p_S);
 }
@@ -216,11 +203,8 @@ struct string_pool_data GTY(())
 
 static GTY(()) struct string_pool_data * spd;
 
-static int 
-ht_copy_and_clear (r, hp, ht2_p)
-     cpp_reader *r ATTRIBUTE_UNUSED;
-     hashnode hp;
-     const void *ht2_p;
+static int
+ht_copy_and_clear (cpp_reader *r ATTRIBUTE_UNUSED, hashnode hp, const void *ht2_p)
 {
   cpp_hashnode *h = CPP_HASHNODE (hp);
   struct ht *ht2 = (struct ht *) ht2_p;
@@ -244,10 +228,10 @@ ht_copy_and_clear (r, hp, ht2_p)
 static struct ht *saved_ident_hash;
 
 void
-gt_pch_save_stringpool ()
+gt_pch_save_stringpool (void)
 {
   unsigned int i;
-  
+
   spd = ggc_alloc (sizeof (*spd));
   spd->nslots = ident_hash->nslots;
   spd->nelements = ident_hash->nelements;
@@ -264,7 +248,7 @@ gt_pch_save_stringpool ()
 }
 
 void
-gt_pch_fixup_stringpool ()
+gt_pch_fixup_stringpool (void)
 {
   ht_forall (saved_ident_hash, ht_copy_and_clear, ident_hash);
   ht_destroy (saved_ident_hash);
@@ -272,10 +256,10 @@ gt_pch_fixup_stringpool ()
 }
 
 void
-gt_pch_restore_stringpool ()
+gt_pch_restore_stringpool (void)
 {
   unsigned int i;
-  
+
   ident_hash->nslots = spd->nslots;
   ident_hash->nelements = spd->nelements;
   ident_hash->entries = xrealloc (ident_hash->entries,

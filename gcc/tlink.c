@@ -1,7 +1,8 @@
 /* Scan linker error messages for missing template instantiations and provide
    them.
 
-   Copyright (C) 1995, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1998, 1999, 2000, 2001, 2003
+   Free Software Foundation, Inc.
    Contributed by Jason Merrill (jason@cygnus.com).
 
 This file is part of GCC.
@@ -67,13 +68,11 @@ typedef struct demangled_hash_entry
 
 /* Hash and comparison functions for these hash tables.  */
 
-static int hash_string_eq PARAMS ((const void *, const void *));
-static hashval_t hash_string_hash PARAMS ((const void *));
+static int hash_string_eq (const void *, const void *);
+static hashval_t hash_string_hash (const void *);
 
 static int
-hash_string_eq (s1_p, s2_p)
-     const void *s1_p;
-     const void *s2_p;
+hash_string_eq (const void *s1_p, const void *s2_p)
 {
   const char *const *s1 = (const char *const *) s1_p;
   const char *s2 = (const char *) s2_p;
@@ -81,8 +80,7 @@ hash_string_eq (s1_p, s2_p)
 }
 
 static hashval_t
-hash_string_hash (s_p)
-     const void *s_p;
+hash_string_hash (const void *s_p)
 {
   const char *const *s = (const char *const *) s_p;
   return (*htab_hash_string) (*s);
@@ -90,35 +88,31 @@ hash_string_hash (s_p)
 
 static htab_t symbol_table;
 
-static struct symbol_hash_entry * symbol_hash_lookup PARAMS ((const char *,
-							      int));
-static struct file_hash_entry * file_hash_lookup PARAMS ((const char *));
-static struct demangled_hash_entry *
-  demangled_hash_lookup PARAMS ((const char *, int));
-static void symbol_push PARAMS ((symbol *));
-static symbol * symbol_pop PARAMS ((void));
-static void file_push PARAMS ((file *));
-static file * file_pop PARAMS ((void));
-static void tlink_init PARAMS ((void));
-static int tlink_execute PARAMS ((const char *, char **, const char *));
-static char * frob_extension PARAMS ((const char *, const char *));
-static char * obstack_fgets PARAMS ((FILE *, struct obstack *));
-static char * tfgets PARAMS ((FILE *));
-static char * pfgets PARAMS ((FILE *));
-static void freadsym PARAMS ((FILE *, file *, int));
-static void read_repo_file PARAMS ((file *));
-static void maybe_tweak PARAMS ((char *, file *));
-static int recompile_files PARAMS ((void));
-static int read_repo_files PARAMS ((char **));
-static void demangle_new_symbols PARAMS ((void));
-static int scan_linker_output PARAMS ((const char *));
+static struct symbol_hash_entry * symbol_hash_lookup (const char *, int);
+static struct file_hash_entry * file_hash_lookup (const char *);
+static struct demangled_hash_entry *demangled_hash_lookup (const char *, int);
+static void symbol_push (symbol *);
+static symbol * symbol_pop (void);
+static void file_push (file *);
+static file * file_pop (void);
+static void tlink_init (void);
+static int tlink_execute (const char *, char **, const char *);
+static char * frob_extension (const char *, const char *);
+static char * obstack_fgets (FILE *, struct obstack *);
+static char * tfgets (FILE *);
+static char * pfgets (FILE *);
+static void freadsym (FILE *, file *, int);
+static void read_repo_file (file *);
+static void maybe_tweak (char *, file *);
+static int recompile_files (void);
+static int read_repo_files (char **);
+static void demangle_new_symbols (void);
+static int scan_linker_output (const char *);
 
 /* Look up an entry in the symbol hash table.  */
 
 static struct symbol_hash_entry *
-symbol_hash_lookup (string, create)
-     const char *string;
-     int create;
+symbol_hash_lookup (const char *string, int create)
 {
   void **e;
   e = htab_find_slot_with_hash (symbol_table, string,
@@ -140,8 +134,7 @@ static htab_t file_table;
 /* Look up an entry in the file hash table.  */
 
 static struct file_hash_entry *
-file_hash_lookup (string)
-     const char *string;
+file_hash_lookup (const char *string)
 {
   void **e;
   e = htab_find_slot_with_hash (file_table, string,
@@ -161,9 +154,7 @@ static htab_t demangled_table;
 /* Look up an entry in the demangled name hash table.  */
 
 static struct demangled_hash_entry *
-demangled_hash_lookup (string, create)
-     const char *string;
-     int create;
+demangled_hash_lookup (const char *string, int create)
 {
   void **e;
   e = htab_find_slot_with_hash (demangled_table, string,
@@ -199,8 +190,7 @@ struct obstack file_stack_obstack;
 struct file_stack_entry *file_stack;
 
 static void
-symbol_push (p)
-     symbol *p;
+symbol_push (symbol *p)
 {
   struct symbol_stack_entry *ep = (struct symbol_stack_entry *) obstack_alloc
     (&symbol_stack_obstack, sizeof (struct symbol_stack_entry));
@@ -210,7 +200,7 @@ symbol_push (p)
 }
 
 static symbol *
-symbol_pop ()
+symbol_pop (void)
 {
   struct symbol_stack_entry *ep = symbol_stack;
   symbol *p;
@@ -223,8 +213,7 @@ symbol_pop ()
 }
 
 static void
-file_push (p)
-     file *p;
+file_push (file *p)
 {
   struct file_stack_entry *ep;
 
@@ -240,7 +229,7 @@ file_push (p)
 }
 
 static file *
-file_pop ()
+file_pop (void)
 {
   struct file_stack_entry *ep = file_stack;
   file *p;
@@ -258,7 +247,7 @@ file_pop ()
 /* Initialize the tlink machinery.  Called from do_tlink.  */
 
 static void
-tlink_init ()
+tlink_init (void)
 {
   const char *p;
 
@@ -268,7 +257,7 @@ tlink_init ()
 			    NULL);
   demangled_table = htab_create (500, hash_string_hash, hash_string_eq,
 				 NULL);
-  
+
   obstack_begin (&symbol_stack_obstack, 0);
   obstack_begin (&file_stack_obstack, 0);
 
@@ -286,19 +275,14 @@ tlink_init ()
 }
 
 static int
-tlink_execute (prog, argv, redir)
-     const char *prog;
-     char **argv;
-     const char *redir;
+tlink_execute (const char *prog, char **argv, const char *redir)
 {
   collect_execute (prog, argv, redir);
   return collect_wait (prog);
 }
 
 static char *
-frob_extension (s, ext)
-     const char *s;
-     const char *ext;
+frob_extension (const char *s, const char *ext)
 {
   const char *p = strrchr (s, '/');
   if (! p)
@@ -312,9 +296,7 @@ frob_extension (s, ext)
 }
 
 static char *
-obstack_fgets (stream, ob)
-     FILE *stream;
-     struct obstack *ob;
+obstack_fgets (FILE *stream, struct obstack *ob)
 {
   int c;
   while ((c = getc (stream)) != EOF && c != '\n')
@@ -326,15 +308,13 @@ obstack_fgets (stream, ob)
 }
 
 static char *
-tfgets (stream)
-     FILE *stream;
+tfgets (FILE *stream)
 {
   return obstack_fgets (stream, &temporary_obstack);
 }
 
 static char *
-pfgets (stream)
-     FILE *stream;
+pfgets (FILE *stream)
 {
   return xstrdup (tfgets (stream));
 }
@@ -348,10 +328,7 @@ pfgets (stream)
    XXX "provided" is unimplemented, both here and in the compiler.  */
 
 static void
-freadsym (stream, f, chosen)
-     FILE *stream;
-     file *f;
-     int chosen;
+freadsym (FILE *stream, file *f, int chosen)
 {
   symbol *sym;
 
@@ -391,8 +368,7 @@ freadsym (stream, f, chosen)
 /* Read in the repo file denoted by F, and record all its information.  */
 
 static void
-read_repo_file (f)
-     file *f;
+read_repo_file (file *f)
 {
   char c;
   FILE *stream = fopen (f->key, "r");
@@ -438,9 +414,7 @@ read_repo_file (f)
    this one wants to emit it as well.  */
 
 static void
-maybe_tweak (line, f)
-     char *line;
-     file *f;
+maybe_tweak (char *line, file *f)
 {
   symbol *sym = symbol_hash_lookup (line + 2, false);
 
@@ -463,7 +437,7 @@ maybe_tweak (line, f)
    XXX Should this use collect_execute instead of system?  */
 
 static int
-recompile_files ()
+recompile_files (void)
 {
   file *f;
 
@@ -519,8 +493,7 @@ recompile_files ()
    .rpo files associated with them, and read in the information.  */
 
 static int
-read_repo_files (object_lst)
-     char **object_lst;
+read_repo_files (char **object_lst)
 {
   char **object = object_lst;
 
@@ -552,7 +525,7 @@ read_repo_files (object_lst)
 /* Add the demangled forms of any new symbols to the hash table.  */
 
 static void
-demangle_new_symbols ()
+demangle_new_symbols (void)
 {
   symbol *sym;
 
@@ -573,8 +546,7 @@ demangle_new_symbols ()
    adjust the settings for each symbol encountered.  */
 
 static int
-scan_linker_output (fname)
-     const char *fname;
+scan_linker_output (const char *fname)
 {
   FILE *stream = fopen (fname, "r");
   char *line;
@@ -702,8 +674,7 @@ scan_linker_output (fname)
      to provide missing definitions.  Currently ignored.  */
 
 void
-do_tlink (ld_argv, object_lst)
-     char **ld_argv, **object_lst ATTRIBUTE_UNUSED;
+do_tlink (char **ld_argv, char **object_lst ATTRIBUTE_UNUSED)
 {
   int exit = tlink_execute ("ld", ld_argv, ldout);
 

@@ -59,18 +59,16 @@ unsigned int set_alignment = 0;
    called only by a front end.  */
 static int reference_types_internal = 0;
 
-static void finalize_record_size	PARAMS ((record_layout_info));
-static void finalize_type_size		PARAMS ((tree));
-static void place_union_field		PARAMS ((record_layout_info, tree));
+static void finalize_record_size (record_layout_info);
+static void finalize_type_size (tree);
+static void place_union_field (record_layout_info, tree);
 #if defined (PCC_BITFIELD_TYPE_MATTERS) || defined (BITFIELD_NBYTES_LIMITED)
-static int excess_unit_span		PARAMS ((HOST_WIDE_INT, HOST_WIDE_INT,
-						HOST_WIDE_INT, HOST_WIDE_INT,
-						tree));
+static int excess_unit_span (HOST_WIDE_INT, HOST_WIDE_INT, HOST_WIDE_INT,
+			     HOST_WIDE_INT, tree);
 #endif
-static unsigned int update_alignment_for_field
-                                        PARAMS ((record_layout_info, tree, 
-						 unsigned int));
-extern void debug_rli			PARAMS ((record_layout_info));
+static unsigned int update_alignment_for_field (record_layout_info, tree,
+						unsigned int);
+extern void debug_rli (record_layout_info);
 
 /* SAVE_EXPRs for sizes of types and decls, waiting to be expanded.  */
 
@@ -85,7 +83,7 @@ int immediate_size_expand;
    by front end.  */
 
 void
-internal_reference_types ()
+internal_reference_types (void)
 {
   reference_types_internal = 1;
 }
@@ -93,7 +91,7 @@ internal_reference_types ()
 /* Get a list of all the objects put on the pending sizes list.  */
 
 tree
-get_pending_sizes ()
+get_pending_sizes (void)
 {
   tree chain = pending_sizes;
   tree t;
@@ -109,8 +107,7 @@ get_pending_sizes ()
 /* Return nonzero if EXPR is present on the pending sizes list.  */
 
 int
-is_pending_size (expr)
-     tree expr;
+is_pending_size (tree expr)
 {
   tree t;
 
@@ -123,8 +120,7 @@ is_pending_size (expr)
 /* Add EXPR to the pending sizes list.  */
 
 void
-put_pending_size (expr)
-     tree expr;
+put_pending_size (tree expr)
 {
   /* Strip any simple arithmetic from EXPR to see if it has an underlying
      SAVE_EXPR.  */
@@ -138,8 +134,7 @@ put_pending_size (expr)
    empty.  */
 
 void
-put_pending_sizes (chain)
-     tree chain;
+put_pending_sizes (tree chain)
 {
   if (pending_sizes)
     abort ();
@@ -151,8 +146,7 @@ put_pending_sizes (chain)
    to serve as the actual size-expression for a type or decl.  */
 
 tree
-variable_size (size)
-     tree size;
+variable_size (tree size)
 {
   tree save;
 
@@ -215,10 +209,7 @@ variable_size (size)
    be used.  */
 
 enum machine_mode
-mode_for_size (size, class, limit)
-     unsigned int size;
-     enum mode_class class;
-     int limit;
+mode_for_size (unsigned int size, enum mode_class class, int limit)
 {
   enum machine_mode mode;
 
@@ -237,10 +228,7 @@ mode_for_size (size, class, limit)
 /* Similar, except passed a tree node.  */
 
 enum machine_mode
-mode_for_size_tree (size, class, limit)
-     tree size;
-     enum mode_class class;
-     int limit;
+mode_for_size_tree (tree size, enum mode_class class, int limit)
 {
   if (TREE_CODE (size) != INTEGER_CST
       || TREE_OVERFLOW (size)
@@ -257,9 +245,7 @@ mode_for_size_tree (size, class, limit)
    contains at least the requested number of bits.  */
 
 enum machine_mode
-smallest_mode_for_size (size, class)
-     unsigned int size;
-     enum mode_class class;
+smallest_mode_for_size (unsigned int size, enum mode_class class)
 {
   enum machine_mode mode;
 
@@ -276,8 +262,7 @@ smallest_mode_for_size (size, class)
 /* Find an integer mode of the exact same size, or BLKmode on failure.  */
 
 enum machine_mode
-int_mode_for_mode (mode)
-     enum machine_mode mode;
+int_mode_for_mode (enum machine_mode mode)
 {
   switch (GET_MODE_CLASS (mode))
     {
@@ -311,8 +296,7 @@ int_mode_for_mode (mode)
    BIGGEST_ALIGNMENT.  */
 
 unsigned int
-get_mode_alignment (mode)
-     enum machine_mode mode;
+get_mode_alignment (enum machine_mode mode)
 {
   unsigned int alignment;
 
@@ -334,9 +318,7 @@ get_mode_alignment (mode)
    This can only be applied to objects of a sizetype.  */
 
 tree
-round_up (value, divisor)
-     tree value;
-     int divisor;
+round_up (tree value, int divisor)
 {
   tree arg = size_int_type (divisor, TREE_TYPE (value));
 
@@ -346,9 +328,7 @@ round_up (value, divisor)
 /* Likewise, but round down.  */
 
 tree
-round_down (value, divisor)
-     tree value;
-     int divisor;
+round_down (tree value, int divisor)
 {
   tree arg = size_int_type (divisor, TREE_TYPE (value));
 
@@ -382,9 +362,7 @@ do_type_align (tree type, tree decl)
    the record will be aligned to suit.  */
 
 void
-layout_decl (decl, known_align)
-     tree decl;
-     unsigned int known_align;
+layout_decl (tree decl, unsigned int known_align)
 {
   tree type = TREE_TYPE (decl);
   enum tree_code code = TREE_CODE (decl);
@@ -557,11 +535,10 @@ layout_decl (decl, known_align)
 /* Hook for a front-end function that can modify the record layout as needed
    immediately before it is finalized.  */
 
-void (*lang_adjust_rli) PARAMS ((record_layout_info)) = 0;
+void (*lang_adjust_rli) (record_layout_info) = 0;
 
 void
-set_lang_adjust_rli (f)
-     void (*f) PARAMS ((record_layout_info));
+set_lang_adjust_rli (void (*f) (record_layout_info))
 {
   lang_adjust_rli = f;
 }
@@ -574,8 +551,7 @@ set_lang_adjust_rli (f)
    out the record.  */
 
 record_layout_info
-start_record_layout (t)
-     tree t;
+start_record_layout (tree t)
 {
   record_layout_info rli
     = (record_layout_info) xmalloc (sizeof (struct record_layout_info_s));
@@ -608,8 +584,7 @@ start_record_layout (t)
    the offset/bitpos forms and byte and bit offsets.  */
 
 tree
-bit_from_pos (offset, bitpos)
-     tree offset, bitpos;
+bit_from_pos (tree offset, tree bitpos)
 {
   return size_binop (PLUS_EXPR, bitpos,
 		     size_binop (MULT_EXPR, convert (bitsizetype, offset),
@@ -617,8 +592,7 @@ bit_from_pos (offset, bitpos)
 }
 
 tree
-byte_from_pos (offset, bitpos)
-     tree offset, bitpos;
+byte_from_pos (tree offset, tree bitpos)
 {
   return size_binop (PLUS_EXPR, offset,
 		     convert (sizetype,
@@ -627,10 +601,8 @@ byte_from_pos (offset, bitpos)
 }
 
 void
-pos_from_bit (poffset, pbitpos, off_align, pos)
-     tree *poffset, *pbitpos;
-     unsigned int off_align;
-     tree pos;
+pos_from_bit (tree *poffset, tree *pbitpos, unsigned int off_align,
+	      tree pos)
 {
   *poffset = size_binop (MULT_EXPR,
 			 convert (sizetype,
@@ -644,9 +616,7 @@ pos_from_bit (poffset, pbitpos, off_align, pos)
    normalize the offsets so they are within the alignment.  */
 
 void
-normalize_offset (poffset, pbitpos, off_align)
-     tree *poffset, *pbitpos;
-     unsigned int off_align;
+normalize_offset (tree *poffset, tree *pbitpos, unsigned int off_align)
 {
   /* If the bit position is now larger than it should be, adjust it
      downwards.  */
@@ -668,8 +638,7 @@ normalize_offset (poffset, pbitpos, off_align)
 /* Print debugging information about the information in RLI.  */
 
 void
-debug_rli (rli)
-     record_layout_info rli;
+debug_rli (record_layout_info rli)
 {
   print_node_brief (stderr, "type", rli->t, 0);
   print_node_brief (stderr, "\noffset", rli->offset, 0);
@@ -692,8 +661,7 @@ debug_rli (rli)
    BITPOS if necessary to keep BITPOS below OFFSET_ALIGN.  */
 
 void
-normalize_rli (rli)
-     record_layout_info rli;
+normalize_rli (record_layout_info rli)
 {
   normalize_offset (&rli->offset, &rli->bitpos, rli->offset_align);
 }
@@ -701,8 +669,7 @@ normalize_rli (rli)
 /* Returns the size in bytes allocated so far.  */
 
 tree
-rli_size_unit_so_far (rli)
-     record_layout_info rli;
+rli_size_unit_so_far (record_layout_info rli)
 {
   return byte_from_pos (rli->offset, rli->bitpos);
 }
@@ -710,8 +677,7 @@ rli_size_unit_so_far (rli)
 /* Returns the size in bits allocated so far.  */
 
 tree
-rli_size_so_far (rli)
-     record_layout_info rli;
+rli_size_so_far (record_layout_info rli)
 {
   return bit_from_pos (rli->offset, rli->bitpos);
 }
@@ -722,10 +688,8 @@ rli_size_so_far (rli)
    the FIELD.  */
 
 static unsigned int
-update_alignment_for_field (rli, field, known_align)
-     record_layout_info rli;
-     tree field;
-     unsigned int known_align;
+update_alignment_for_field (record_layout_info rli, tree field,
+			    unsigned int known_align)
 {
   /* The alignment required for FIELD.  */
   unsigned int desired_align;
@@ -756,10 +720,10 @@ update_alignment_for_field (rli, field, known_align)
 	 applies if there was an immediately prior, nonzero-size
 	 bitfield.  (That's the way it is, experimentally.) */
       if (! integer_zerop (DECL_SIZE (field))
- 	  ? ! DECL_PACKED (field)
- 	  : (rli->prev_field
- 	     && DECL_BIT_FIELD_TYPE (rli->prev_field)
- 	     && ! integer_zerop (DECL_SIZE (rli->prev_field))))
+	  ? ! DECL_PACKED (field)
+	  : (rli->prev_field
+	     && DECL_BIT_FIELD_TYPE (rli->prev_field)
+	     && ! integer_zerop (DECL_SIZE (rli->prev_field))))
 	{
 	  unsigned int type_align = TYPE_ALIGN (type);
 	  type_align = MAX (type_align, desired_align);
@@ -816,9 +780,7 @@ update_alignment_for_field (rli, field, known_align)
 /* Called from place_field to handle unions.  */
 
 static void
-place_union_field (rli, field)
-     record_layout_info rli;
-     tree field;
+place_union_field (record_layout_info rli, tree field)
 {
   update_alignment_for_field (rli, field, /*known_align=*/0);
 
@@ -841,9 +803,8 @@ place_union_field (rli, field)
    at BYTE_OFFSET / BIT_OFFSET.  Return nonzero if the field would span more
    units of alignment than the underlying TYPE.  */
 static int
-excess_unit_span (byte_offset, bit_offset, size, align, type)
-     HOST_WIDE_INT byte_offset, bit_offset, size, align;
-     tree type;
+excess_unit_span (HOST_WIDE_INT byte_offset, HOST_WIDE_INT bit_offset,
+		  HOST_WIDE_INT size, HOST_WIDE_INT align, tree type)
 {
   /* Note that the calculation of OFFSET might overflow; we calculate it so
      that we still get the right result as long as ALIGN is a power of two.  */
@@ -862,9 +823,7 @@ excess_unit_span (byte_offset, bit_offset, size, align, type)
    callers that desire that behavior must manually perform that step.)  */
 
 void
-place_field (rli, field)
-     record_layout_info rli;
-     tree field;
+place_field (record_layout_info rli, tree field)
 {
   /* The alignment required for FIELD.  */
   unsigned int desired_align;
@@ -915,7 +874,7 @@ place_field (rli, field)
 		      & - tree_low_cst (rli->offset, 1)));
   else
     known_align = rli->offset_align;
-  
+
   desired_align = update_alignment_for_field (rli, field, known_align);
 
   if (warn_packed && DECL_PACKED (field))
@@ -1056,7 +1015,7 @@ place_field (rli, field)
 
   if ((* targetm.ms_bitfield_layout_p) (rli->t)
        && ((DECL_BIT_FIELD_TYPE (field) && ! DECL_PACKED (field))
- 	  || (rli->prev_field && ! DECL_PACKED (rli->prev_field))))
+	  || (rli->prev_field && ! DECL_PACKED (rli->prev_field))))
     {
       /* At this point, either the prior or current are bitfields,
 	 (possibly both), and we're dealing with MS packing.  */
@@ -1251,8 +1210,7 @@ place_field (rli, field)
    indicated by RLI.  */
 
 static void
-finalize_record_size (rli)
-     record_layout_info rli;
+finalize_record_size (record_layout_info rli)
 {
   tree unpadded_size, unpadded_size_unit;
 
@@ -1333,8 +1291,7 @@ finalize_record_size (rli)
 /* Compute the TYPE_MODE for the TYPE (which is a RECORD_TYPE).  */
 
 void
-compute_record_mode (type)
-     tree type;
+compute_record_mode (tree type)
 {
   tree field;
   enum machine_mode mode = VOIDmode;
@@ -1419,8 +1376,7 @@ compute_record_mode (type)
    out.  */
 
 static void
-finalize_type_size (type)
-     tree type;
+finalize_type_size (tree type)
 {
   /* Normally, use the alignment corresponding to the mode chosen.
      However, where strict alignment is not required, avoid
@@ -1501,9 +1457,7 @@ finalize_type_size (type)
    G++ 3.2 ABI.  */
 
 void
-finish_record_layout (rli, free_p)
-     record_layout_info rli;
-     int free_p;
+finish_record_layout (record_layout_info rli, int free_p)
 {
   /* Compute the final size.  */
   finalize_record_size (rli);
@@ -1535,11 +1489,8 @@ finish_record_layout (rli, free_p)
    ALIGN_TYPE.  */
 
 void
-finish_builtin_struct (type, name, fields, align_type)
-     tree type;
-     const char *name;
-     tree fields;
-     tree align_type;
+finish_builtin_struct (tree type, const char *name, tree fields,
+		       tree align_type)
 {
   tree tail, next;
 
@@ -1578,8 +1529,7 @@ finish_builtin_struct (type, name, fields, align_type)
    If the type is incomplete, its TYPE_SIZE remains zero.  */
 
 void
-layout_type (type)
-     tree type;
+layout_type (tree type)
 {
   if (type == 0)
     abort ();
@@ -1885,8 +1835,7 @@ layout_type (type)
 /* Create and return a type for signed integers of PRECISION bits.  */
 
 tree
-make_signed_type (precision)
-     int precision;
+make_signed_type (int precision)
 {
   tree type = make_node (INTEGER_TYPE);
 
@@ -1899,8 +1848,7 @@ make_signed_type (precision)
 /* Create and return a type for unsigned integers of PRECISION bits.  */
 
 tree
-make_unsigned_type (precision)
-     int precision;
+make_unsigned_type (int precision)
 {
   tree type = make_node (INTEGER_TYPE);
 
@@ -1914,7 +1862,7 @@ make_unsigned_type (precision)
    value to enable integer types to be created.  */
 
 void
-initialize_sizetypes ()
+initialize_sizetypes (void)
 {
   tree t = make_node (INTEGER_TYPE);
 
@@ -1947,8 +1895,7 @@ initialize_sizetypes ()
    Also update the type of any standard type's sizes made so far.  */
 
 void
-set_sizetype (type)
-     tree type;
+set_sizetype (tree type)
 {
   int oprecision = TYPE_PRECISION (type);
   /* The *bitsizetype types use a precision that avoids overflows when
@@ -2027,8 +1974,7 @@ set_sizetype (type)
    E.g. for Pascal, when the -fsigned-char option is given.  */
 
 void
-fixup_signed_type (type)
-     tree type;
+fixup_signed_type (tree type)
 {
   int precision = TYPE_PRECISION (type);
 
@@ -2065,8 +2011,7 @@ fixup_signed_type (type)
    and for enumeral types.  */
 
 void
-fixup_unsigned_type (type)
-     tree type;
+fixup_unsigned_type (tree type)
 {
   int precision = TYPE_PRECISION (type);
 
@@ -2108,11 +2053,8 @@ fixup_unsigned_type (type)
    all the conditions.  */
 
 enum machine_mode
-get_best_mode (bitsize, bitpos, align, largest_mode, volatilep)
-     int bitsize, bitpos;
-     unsigned int align;
-     enum machine_mode largest_mode;
-     int volatilep;
+get_best_mode (int bitsize, int bitpos, unsigned int align,
+	       enum machine_mode largest_mode, int volatilep)
 {
   enum machine_mode mode;
   unsigned int unit = 0;

@@ -1,5 +1,5 @@
 /* Dead-code elimination pass for the GNU compiler.
-   Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Written by Jeffrey D. Oldham <oldham@codesourcery.com>.
 
 This file is part of GCC.
@@ -93,30 +93,23 @@ typedef struct {
 
 /* Local function prototypes.  */
 static control_dependent_block_to_edge_map control_dependent_block_to_edge_map_create
-  PARAMS((size_t num_basic_blocks));
+  (size_t num_basic_blocks);
 static void set_control_dependent_block_to_edge_map_bit
-  PARAMS ((control_dependent_block_to_edge_map c, basic_block bb,
-	   int edge_index));
+  (control_dependent_block_to_edge_map c, basic_block bb, int edge_index);
 static void control_dependent_block_to_edge_map_free
-  PARAMS ((control_dependent_block_to_edge_map c));
+  (control_dependent_block_to_edge_map c);
 static void find_all_control_dependences
-  PARAMS ((struct edge_list *el, dominance_info pdom,
-	   control_dependent_block_to_edge_map cdbte));
+  (struct edge_list *el, dominance_info pdom,
+   control_dependent_block_to_edge_map cdbte);
 static void find_control_dependence
-  PARAMS ((struct edge_list *el, int edge_index, dominance_info pdom,
-	   control_dependent_block_to_edge_map cdbte));
-static basic_block find_pdom
-  PARAMS ((dominance_info pdom, basic_block block));
-static int inherently_necessary_register_1
-  PARAMS ((rtx *current_rtx, void *data));
-static int inherently_necessary_register
-  PARAMS ((rtx current_rtx));
-static int find_inherently_necessary
-  PARAMS ((rtx current_rtx));
-static int propagate_necessity_through_operand
-  PARAMS ((rtx *current_rtx, void *data));
-static void note_inherently_necessary_set
-  PARAMS ((rtx, rtx, void *));
+  (struct edge_list *el, int edge_index, dominance_info pdom,
+   control_dependent_block_to_edge_map cdbte);
+static basic_block find_pdom (dominance_info pdom, basic_block block);
+static int inherently_necessary_register_1 (rtx *current_rtx, void *data);
+static int inherently_necessary_register (rtx current_rtx);
+static int find_inherently_necessary (rtx current_rtx);
+static int propagate_necessity_through_operand (rtx *current_rtx, void *data);
+static void note_inherently_necessary_set (rtx, rtx, void *);
 
 /* Unnecessary insns are indicated using insns' in_struct bit.  */
 
@@ -126,8 +119,7 @@ static void note_inherently_necessary_set
 #define RESURRECT_INSN(INSN)	INSN_DEAD_CODE_P(INSN) = 0
 /* Return nonzero if INSN is unnecessary.  */
 #define UNNECESSARY_P(INSN)	INSN_DEAD_CODE_P(INSN)
-static void mark_all_insn_unnecessary
-  PARAMS ((void));
+static void mark_all_insn_unnecessary (void);
 /* Execute CODE with free variable INSN for all unnecessary insns in
    an unspecified order, producing no output.  */
 #define EXECUTE_IF_UNNECESSARY(INSN, CODE)	\
@@ -142,11 +134,9 @@ static void mark_all_insn_unnecessary
 }
 
 /* Find the label beginning block BB.  */
-static rtx find_block_label
-  PARAMS ((basic_block bb));
+static rtx find_block_label (basic_block bb);
 /* Remove INSN, updating its basic block structure.  */
-static void delete_insn_bb
-  PARAMS ((rtx insn));
+static void delete_insn_bb (rtx insn);
 
 /* Recording which blocks are control dependent on which edges.  We
    expect each block to be control dependent on very few edges so we
@@ -161,8 +151,7 @@ static void delete_insn_bb
    control_dependent_block_to_edge_map_free ().  */
 
 static control_dependent_block_to_edge_map
-control_dependent_block_to_edge_map_create (num_basic_blocks)
-     size_t num_basic_blocks;
+control_dependent_block_to_edge_map_create (size_t num_basic_blocks)
 {
   int i;
   control_dependent_block_to_edge_map c
@@ -180,10 +169,8 @@ control_dependent_block_to_edge_map_create (num_basic_blocks)
    control-dependent.  */
 
 static void
-set_control_dependent_block_to_edge_map_bit (c, bb, edge_index)
-     control_dependent_block_to_edge_map c;
-     basic_block bb;
-     int edge_index;
+set_control_dependent_block_to_edge_map_bit (control_dependent_block_to_edge_map c,
+					     basic_block bb, int edge_index)
 {
   if (bb->index - (INVALID_BLOCK+1) >= c->length)
     abort ();
@@ -205,8 +192,7 @@ set_control_dependent_block_to_edge_map_bit (c, bb, edge_index)
 /* Destroy a control_dependent_block_to_edge_map C.  */
 
 static void
-control_dependent_block_to_edge_map_free (c)
-     control_dependent_block_to_edge_map c;
+control_dependent_block_to_edge_map_free (control_dependent_block_to_edge_map c)
 {
   int i;
   for (i = 0; i < c->length; ++i)
@@ -220,10 +206,8 @@ control_dependent_block_to_edge_map_free (c)
    which should be empty.  */
 
 static void
-find_all_control_dependences (el, pdom, cdbte)
-   struct edge_list *el;
-   dominance_info pdom;
-   control_dependent_block_to_edge_map cdbte;
+find_all_control_dependences (struct edge_list *el, dominance_info pdom,
+			      control_dependent_block_to_edge_map cdbte)
 {
   int i;
 
@@ -238,11 +222,9 @@ find_all_control_dependences (el, pdom, cdbte)
    with zeros in each (block b', edge) position.  */
 
 static void
-find_control_dependence (el, edge_index, pdom, cdbte)
-   struct edge_list *el;
-   int edge_index;
-   dominance_info pdom;
-   control_dependent_block_to_edge_map cdbte;
+find_control_dependence (struct edge_list *el, int edge_index,
+			 dominance_info pdom,
+			 control_dependent_block_to_edge_map cdbte)
 {
   basic_block current_block;
   basic_block ending_block;
@@ -269,9 +251,7 @@ find_control_dependence (el, edge_index, pdom, cdbte)
    negative numbers.  */
 
 static basic_block
-find_pdom (pdom, block)
-     dominance_info pdom;
-     basic_block block;
+find_pdom (dominance_info pdom, basic_block block)
 {
   if (!block)
     abort ();
@@ -300,9 +280,8 @@ find_pdom (pdom, block)
    particular PC values.  */
 
 static int
-inherently_necessary_register_1 (current_rtx, data)
-     rtx *current_rtx;
-     void *data ATTRIBUTE_UNUSED;
+inherently_necessary_register_1 (rtx *current_rtx,
+				 void *data ATTRIBUTE_UNUSED)
 {
   rtx x = *current_rtx;
 
@@ -332,8 +311,7 @@ inherently_necessary_register_1 (current_rtx, data)
 /* Return nonzero if the insn CURRENT_RTX is inherently necessary.  */
 
 static int
-inherently_necessary_register (current_rtx)
-     rtx current_rtx;
+inherently_necessary_register (rtx current_rtx)
 {
   return for_each_rtx (&current_rtx,
 		       &inherently_necessary_register_1, NULL);
@@ -345,10 +323,7 @@ inherently_necessary_register (current_rtx)
    nonzero value in inherently_necessary_p if such a store is found.  */
 
 static void
-note_inherently_necessary_set (dest, set, data)
-     rtx set ATTRIBUTE_UNUSED;
-     rtx dest;
-     void *data;
+note_inherently_necessary_set (rtx dest, rtx set ATTRIBUTE_UNUSED, void *data)
 {
   int *inherently_necessary_set_p = (int *) data;
 
@@ -370,8 +345,7 @@ note_inherently_necessary_set (dest, set, data)
    Return nonzero iff inherently necessary.  */
 
 static int
-find_inherently_necessary (x)
-     rtx x;
+find_inherently_necessary (rtx x)
 {
   if (x == NULL_RTX)
     return 0;
@@ -416,9 +390,7 @@ find_inherently_necessary (x)
    instructions.  */
 
 static int
-propagate_necessity_through_operand (current_rtx, data)
-     rtx *current_rtx;
-     void *data;
+propagate_necessity_through_operand (rtx *current_rtx, void *data)
 {
   rtx x = *current_rtx;
   varray_type *unprocessed_instructions = (varray_type *) data;
@@ -447,21 +419,20 @@ propagate_necessity_through_operand (current_rtx, data)
 /* Indicate all insns initially assumed to be unnecessary.  */
 
 static void
-mark_all_insn_unnecessary ()
+mark_all_insn_unnecessary (void)
 {
   rtx insn;
   for (insn = get_insns (); insn != NULL_RTX; insn = NEXT_INSN (insn)) {
     if (INSN_P (insn))
       KILL_INSN (insn);
   }
-  
+
 }
 
 /* Find the label beginning block BB, adding one if necessary.  */
 
 static rtx
-find_block_label (bb)
-     basic_block bb;
+find_block_label (basic_block bb)
 {
   rtx insn = bb->head;
   if (LABEL_P (insn))
@@ -478,8 +449,7 @@ find_block_label (bb)
 /* Remove INSN, updating its basic block structure.  */
 
 static void
-delete_insn_bb (insn)
-     rtx insn;
+delete_insn_bb (rtx insn)
 {
   if (!insn)
     abort ();
@@ -498,7 +468,7 @@ delete_insn_bb (insn)
 /* Perform the dead-code elimination.  */
 
 void
-ssa_eliminate_dead_code ()
+ssa_eliminate_dead_code (void)
 {
   rtx insn;
   basic_block bb;
@@ -734,7 +704,7 @@ ssa_eliminate_dead_code ()
     if (INSN_P (insn))
       RESURRECT_INSN (insn);
   }
-  
+
   if (VARRAY_ACTIVE_SIZE (unprocessed_instructions) != 0)
     abort ();
   control_dependent_block_to_edge_map_free (cdbte);

@@ -1,6 +1,6 @@
 /* Instruction scheduling pass.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) Enhanced by,
    and currently maintained by, Jim Wilson (wilson@cygnus.com)
 
@@ -48,25 +48,25 @@ static int target_n_insns;
 static int sched_n_insns;
 
 /* Implementations of the sched_info functions for region scheduling.  */
-static void init_ready_list PARAMS ((struct ready_list *));
-static int can_schedule_ready_p PARAMS ((rtx));
-static int new_ready PARAMS ((rtx));
-static int schedule_more_p PARAMS ((void));
-static const char *ebb_print_insn PARAMS ((rtx, int));
-static int rank PARAMS ((rtx, rtx));
-static int contributes_to_priority PARAMS ((rtx, rtx));
-static void compute_jump_reg_dependencies PARAMS ((rtx, regset));
-static basic_block earliest_block_with_similiar_load PARAMS ((basic_block,
-							      rtx));
-static void add_deps_for_risky_insns PARAMS ((rtx, rtx));
-static basic_block schedule_ebb PARAMS ((rtx, rtx));
-static basic_block fix_basic_block_boundaries PARAMS ((basic_block, basic_block, rtx, rtx));
-static void add_missing_bbs PARAMS ((rtx, basic_block, basic_block));
+static void init_ready_list (struct ready_list *);
+static int can_schedule_ready_p (rtx);
+static int new_ready (rtx);
+static int schedule_more_p (void);
+static const char *ebb_print_insn (rtx, int);
+static int rank (rtx, rtx);
+static int contributes_to_priority (rtx, rtx);
+static void compute_jump_reg_dependencies (rtx, regset);
+static basic_block earliest_block_with_similiar_load (basic_block, rtx);
+static void add_deps_for_risky_insns (rtx, rtx);
+static basic_block schedule_ebb (rtx, rtx);
+static basic_block fix_basic_block_boundaries (basic_block, basic_block, rtx,
+					       rtx);
+static void add_missing_bbs (rtx, basic_block, basic_block);
 
 /* Return nonzero if there are more insns that should be scheduled.  */
 
 static int
-schedule_more_p ()
+schedule_more_p (void)
 {
   return sched_n_insns < target_n_insns;
 }
@@ -75,8 +75,7 @@ schedule_more_p ()
    once before scheduling a set of insns.  */
 
 static void
-init_ready_list (ready)
-     struct ready_list *ready;
+init_ready_list (struct ready_list *ready)
 {
   rtx prev_head = current_sched_info->prev_head;
   rtx next_tail = current_sched_info->next_tail;
@@ -105,8 +104,7 @@ init_ready_list (ready)
    insn can be scheduled, nonzero if we should silently discard it.  */
 
 static int
-can_schedule_ready_p (insn)
-     rtx insn ATTRIBUTE_UNUSED;
+can_schedule_ready_p (rtx insn ATTRIBUTE_UNUSED)
 {
   sched_n_insns++;
   return 1;
@@ -116,8 +114,7 @@ can_schedule_ready_p (insn)
    if it should be moved to the ready list or the queue, or zero if we
    should silently discard it.  */
 static int
-new_ready (next)
-     rtx next ATTRIBUTE_UNUSED;
+new_ready (rtx next ATTRIBUTE_UNUSED)
 {
   return 1;
 }
@@ -128,9 +125,7 @@ new_ready (next)
    to be formatted so that multiple output lines will line up nicely.  */
 
 static const char *
-ebb_print_insn (insn, aligned)
-     rtx insn;
-     int aligned ATTRIBUTE_UNUSED;
+ebb_print_insn (rtx insn, int aligned ATTRIBUTE_UNUSED)
 {
   static char tmp[80];
 
@@ -143,8 +138,7 @@ ebb_print_insn (insn, aligned)
    is to be preferred.  Zero if they are equally good.  */
 
 static int
-rank (insn1, insn2)
-     rtx insn1, insn2;
+rank (rtx insn1, rtx insn2)
 {
   basic_block bb1 = BLOCK_FOR_INSN (insn1);
   basic_block bb2 = BLOCK_FOR_INSN (insn2);
@@ -163,8 +157,8 @@ rank (insn1, insn2)
    calculations.  */
 
 static int
-contributes_to_priority (next, insn)
-     rtx next ATTRIBUTE_UNUSED, insn ATTRIBUTE_UNUSED;
+contributes_to_priority (rtx next ATTRIBUTE_UNUSED,
+			 rtx insn ATTRIBUTE_UNUSED)
 {
   return 1;
 }
@@ -173,9 +167,7 @@ contributes_to_priority (next, insn)
    to be set by this jump in SET.  */
 
 static void
-compute_jump_reg_dependencies (insn, set)
-     rtx insn;
-     regset set;
+compute_jump_reg_dependencies (rtx insn, regset set)
 {
   basic_block b = BLOCK_FOR_INSN (insn);
   edge e;
@@ -210,9 +202,7 @@ static struct sched_info ebb_sched_info =
    Place blocks from FIRST to LAST before BEFORE.  */
 
 static void
-add_missing_bbs (before, first, last)
-     rtx before;
-     basic_block first, last;
+add_missing_bbs (rtx before, basic_block first, basic_block last)
 {
   for (; last != first->prev_bb; last = last->prev_bb)
     {
@@ -229,9 +219,8 @@ add_missing_bbs (before, first, last)
    structures between BB and LAST.  */
 
 static basic_block
-fix_basic_block_boundaries (bb, last, head, tail)
-     basic_block bb, last;
-     rtx head, tail;
+fix_basic_block_boundaries (basic_block bb, basic_block last, rtx head,
+			    rtx tail)
 {
   rtx insn = head;
   rtx last_inside = bb->head;
@@ -288,7 +277,7 @@ fix_basic_block_boundaries (bb, last, head, tail)
 	         In this case we can create new basic block.  It is
 	         always exactly one basic block last in the sequence.  Handle
 	         it by splitting the edge and repositioning the block.
-	         This is somewhat hackish, but at least avoid cut&paste 
+	         This is somewhat hackish, but at least avoid cut&paste
 
 	         A safer solution can be to bring the code into sequence,
 	         do the split and re-emit it back in case this will ever
@@ -359,9 +348,7 @@ fix_basic_block_boundaries (bb, last, head, tail)
    blocks in EBB.  The list is formed in `add_deps_for_risky_insns'.  */
 
 static basic_block
-earliest_block_with_similiar_load (last_block, load_insn)
-     basic_block last_block;
-     rtx load_insn;
+earliest_block_with_similiar_load (basic_block last_block, rtx load_insn)
 {
   rtx back_link;
   basic_block bb, earliest_block = NULL;
@@ -394,7 +381,7 @@ earliest_block_with_similiar_load (last_block, load_insn)
 		  if (haifa_classify_insn (insn2) != PFREE_CANDIDATE)
 		    /* insn2 not guaranteed to be a 1 base reg load.  */
 		    continue;
-		  
+
 		  for (bb = last_block; bb; bb = bb->aux)
 		    if (insn2_block == bb)
 		      break;
@@ -414,15 +401,14 @@ earliest_block_with_similiar_load (last_block, load_insn)
    insns in given ebb.  */
 
 static void
-add_deps_for_risky_insns (head, tail)
-     rtx head, tail;
+add_deps_for_risky_insns (rtx head, rtx tail)
 {
   rtx insn, prev;
   int class;
   rtx last_jump = NULL_RTX;
   rtx next_tail = NEXT_INSN (tail);
   basic_block last_block = NULL, bb;
-  
+
   for (insn = head; insn != next_tail; insn = NEXT_INSN (insn))
     if (GET_CODE (insn) == JUMP_INSN)
       {
@@ -461,7 +447,7 @@ add_deps_for_risky_insns (head, tail)
 	    if (add_dependence (insn, prev, REG_DEP_ANTI))
 	      add_forward_dependence (prev, insn, REG_DEP_ANTI);
             break;
-	    
+
           default:
             break;
 	  }
@@ -479,8 +465,7 @@ add_deps_for_risky_insns (head, tail)
    and TAIL.  */
 
 static basic_block
-schedule_ebb (head, tail)
-     rtx head, tail;
+schedule_ebb (rtx head, rtx tail)
 {
   int n_insns;
   basic_block b;
@@ -564,8 +549,7 @@ schedule_ebb (head, tail)
    this pass.  */
 
 void
-schedule_ebbs (dump_file)
-     FILE *dump_file;
+schedule_ebbs (FILE *dump_file)
 {
   basic_block bb;
 

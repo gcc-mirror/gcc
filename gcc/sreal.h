@@ -1,5 +1,5 @@
 /* Definitions for simple data type for positive real numbers.
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -53,15 +53,13 @@ typedef struct sreal
   signed int exp;			/* Exponent.  */
 } sreal;
 
-extern void dump_sreal			PARAMS ((FILE *, sreal *));
-extern sreal *sreal_init		PARAMS ((sreal *,
-						 unsigned HOST_WIDE_INT,
-						 signed int));
-extern HOST_WIDE_INT sreal_to_int	PARAMS ((sreal *));
-extern int sreal_compare		PARAMS ((sreal *, sreal *));
-extern sreal *sreal_add			PARAMS ((sreal *, sreal *, sreal *));
-extern sreal *sreal_sub			PARAMS ((sreal *, sreal *, sreal *));
-extern sreal *sreal_mul			PARAMS ((sreal *, sreal *, sreal *));
-extern sreal *sreal_div			PARAMS ((sreal *, sreal *, sreal *));
+extern void dump_sreal (FILE *, sreal *);
+extern sreal *sreal_init (sreal *, unsigned HOST_WIDE_INT, signed int);
+extern HOST_WIDE_INT sreal_to_int (sreal *);
+extern int sreal_compare (sreal *, sreal *);
+extern sreal *sreal_add (sreal *, sreal *, sreal *);
+extern sreal *sreal_sub (sreal *, sreal *, sreal *);
+extern sreal *sreal_mul (sreal *, sreal *, sreal *);
+extern sreal *sreal_div (sreal *, sreal *, sreal *);
 
 #endif

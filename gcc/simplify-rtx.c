@@ -49,19 +49,15 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define HWI_SIGN_EXTEND(low) \
  ((((HOST_WIDE_INT) low) < 0) ? ((HOST_WIDE_INT) -1) : ((HOST_WIDE_INT) 0))
 
-static rtx neg_const_int PARAMS ((enum machine_mode, rtx));
-static int simplify_plus_minus_op_data_cmp PARAMS ((const void *,
-						    const void *));
-static rtx simplify_plus_minus		PARAMS ((enum rtx_code,
-						 enum machine_mode, rtx,
-						 rtx, int));
+static rtx neg_const_int (enum machine_mode, rtx);
+static int simplify_plus_minus_op_data_cmp (const void *, const void *);
+static rtx simplify_plus_minus (enum rtx_code, enum machine_mode, rtx,
+				rtx, int);
 
 /* Negate a CONST_INT rtx, truncating (because a conversion from a
    maximally negative number can overflow).  */
 static rtx
-neg_const_int (mode, i)
-     enum machine_mode mode;
-     rtx i;
+neg_const_int (enum machine_mode mode, rtx i)
 {
   return gen_int_mode (- INTVAL (i), mode);
 }
@@ -71,10 +67,8 @@ neg_const_int (mode, i)
    seeing if the expression folds.  */
 
 rtx
-simplify_gen_binary (code, mode, op0, op1)
-     enum rtx_code code;
-     enum machine_mode mode;
-     rtx op0, op1;
+simplify_gen_binary (enum rtx_code code, enum machine_mode mode, rtx op0,
+		     rtx op1)
 {
   rtx tem;
 
@@ -104,8 +98,7 @@ simplify_gen_binary (code, mode, op0, op1)
 /* If X is a MEM referencing the constant pool, return the real value.
    Otherwise return X.  */
 rtx
-avoid_constant_pool_reference (x)
-     rtx x;
+avoid_constant_pool_reference (rtx x)
 {
   rtx c, tmp, addr;
   enum machine_mode cmode;
@@ -163,11 +156,8 @@ avoid_constant_pool_reference (x)
    the specified operation.  */
 
 rtx
-simplify_gen_unary (code, mode, op, op_mode)
-     enum rtx_code code;
-     enum machine_mode mode;
-     rtx op;
-     enum machine_mode op_mode;
+simplify_gen_unary (enum rtx_code code, enum machine_mode mode, rtx op,
+		    enum machine_mode op_mode)
 {
   rtx tem;
 
@@ -181,10 +171,8 @@ simplify_gen_unary (code, mode, op, op_mode)
 /* Likewise for ternary operations.  */
 
 rtx
-simplify_gen_ternary (code, mode, op0_mode, op0, op1, op2)
-     enum rtx_code code;
-     enum machine_mode mode, op0_mode;
-     rtx op0, op1, op2;
+simplify_gen_ternary (enum rtx_code code, enum machine_mode mode,
+		      enum machine_mode op0_mode, rtx op0, rtx op1, rtx op2)
 {
   rtx tem;
 
@@ -201,11 +189,8 @@ simplify_gen_ternary (code, mode, op0_mode, op0, op1, op2)
   */
 
 rtx
-simplify_gen_relational (code, mode, cmp_mode, op0, op1)
-     enum rtx_code code;
-     enum machine_mode mode;
-     enum machine_mode cmp_mode;
-     rtx op0, op1;
+simplify_gen_relational (enum rtx_code code, enum machine_mode mode,
+			 enum machine_mode cmp_mode, rtx op0, rtx op1)
 {
   rtx tem;
 
@@ -248,10 +233,7 @@ simplify_gen_relational (code, mode, cmp_mode, op0, op1)
    resulting RTX.  Return a new RTX which is as simplified as possible.  */
 
 rtx
-simplify_replace_rtx (x, old, new)
-     rtx x;
-     rtx old;
-     rtx new;
+simplify_replace_rtx (rtx x, rtx old, rtx new)
 {
   enum rtx_code code = GET_CODE (x);
   enum machine_mode mode = GET_MODE (x);
@@ -321,7 +303,7 @@ simplify_replace_rtx (x, old, new)
 	  rtx exp;
 	  exp = simplify_gen_subreg (GET_MODE (x),
 				     simplify_replace_rtx (SUBREG_REG (x),
-				     			   old, new),
+							   old, new),
 				     GET_MODE (SUBREG_REG (x)),
 				     SUBREG_BYTE (x));
 	  if (exp)
@@ -363,11 +345,8 @@ simplify_replace_rtx (x, old, new)
    MODE with input operand OP whose mode was originally OP_MODE.
    Return zero if no simplification can be made.  */
 rtx
-simplify_unary_operation (code, mode, op, op_mode)
-     enum rtx_code code;
-     enum machine_mode mode;
-     rtx op;
-     enum machine_mode op_mode;
+simplify_unary_operation (enum rtx_code code, enum machine_mode mode,
+			  rtx op, enum machine_mode op_mode)
 {
   unsigned int width = GET_MODE_BITSIZE (mode);
   rtx trueop = avoid_constant_pool_reference (op);
@@ -872,10 +851,8 @@ simplify_unary_operation (code, mode, op, op_mode)
    Don't use this for relational operations such as EQ or LT.
    Use simplify_relational_operation instead.  */
 rtx
-simplify_binary_operation (code, mode, op0, op1)
-     enum rtx_code code;
-     enum machine_mode mode;
-     rtx op0, op1;
+simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
+			   rtx op0, rtx op1)
 {
   HOST_WIDE_INT arg0, arg1, arg0s, arg1s;
   HOST_WIDE_INT val;
@@ -1898,9 +1875,7 @@ struct simplify_plus_minus_op_data
 };
 
 static int
-simplify_plus_minus_op_data_cmp (p1, p2)
-     const void *p1;
-     const void *p2;
+simplify_plus_minus_op_data_cmp (const void *p1, const void *p2)
 {
   const struct simplify_plus_minus_op_data *d1 = p1;
   const struct simplify_plus_minus_op_data *d2 = p2;
@@ -1910,11 +1885,8 @@ simplify_plus_minus_op_data_cmp (p1, p2)
 }
 
 static rtx
-simplify_plus_minus (code, mode, op0, op1, force)
-     enum rtx_code code;
-     enum machine_mode mode;
-     rtx op0, op1;
-     int force;
+simplify_plus_minus (enum rtx_code code, enum machine_mode mode, rtx op0,
+		     rtx op1, int force)
 {
   struct simplify_plus_minus_op_data ops[8];
   rtx result, tem;
@@ -2160,10 +2132,8 @@ simplify_plus_minus (code, mode, op0, op1, force)
    it returns either const_true_rtx or const0_rtx.  */
 
 rtx
-simplify_relational_operation (code, mode, op0, op1)
-     enum rtx_code code;
-     enum machine_mode mode;
-     rtx op0, op1;
+simplify_relational_operation (enum rtx_code code, enum machine_mode mode,
+			       rtx op0, rtx op1)
 {
   int equal, op0lt, op0ltu, op1lt, op1ltu;
   rtx tem;
@@ -2397,7 +2367,7 @@ simplify_relational_operation (code, mode, op0, op1)
 		return const_true_rtx;
 	    }
 	  break;
-	  
+
 	default:
 	  break;
 	}
@@ -2449,10 +2419,9 @@ simplify_relational_operation (code, mode, op0, op1)
    a constant.  Return 0 if no simplifications is possible.  */
 
 rtx
-simplify_ternary_operation (code, mode, op0_mode, op0, op1, op2)
-     enum rtx_code code;
-     enum machine_mode mode, op0_mode;
-     rtx op0, op1, op2;
+simplify_ternary_operation (enum rtx_code code, enum machine_mode mode,
+			    enum machine_mode op0_mode, rtx op0, rtx op1,
+			    rtx op2)
 {
   unsigned int width = GET_MODE_BITSIZE (mode);
 
@@ -2603,10 +2572,8 @@ simplify_ternary_operation (code, mode, op0_mode, op0, op1, op2)
 /* Simplify SUBREG:OUTERMODE(OP:INNERMODE, BYTE)
    Return 0 if no simplifications is possible.  */
 rtx
-simplify_subreg (outermode, op, innermode, byte)
-     rtx op;
-     unsigned int byte;
-     enum machine_mode outermode, innermode;
+simplify_subreg (enum machine_mode outermode, rtx op,
+		 enum machine_mode innermode, unsigned int byte)
 {
   /* Little bit of sanity checking.  */
   if (innermode == VOIDmode || outermode == VOIDmode
@@ -2989,10 +2956,8 @@ simplify_subreg (outermode, op, innermode, byte)
 /* Make a SUBREG operation or equivalent if it folds.  */
 
 rtx
-simplify_gen_subreg (outermode, op, innermode, byte)
-     rtx op;
-     unsigned int byte;
-     enum machine_mode outermode, innermode;
+simplify_gen_subreg (enum machine_mode outermode, rtx op,
+		     enum machine_mode innermode, unsigned int byte)
 {
   rtx new;
   /* Little bit of sanity checking.  */
@@ -3061,8 +3026,7 @@ simplify_gen_subreg (outermode, op, innermode, byte)
     simplification and 1 for tree simplification.  */
 
 rtx
-simplify_rtx (x)
-     rtx x;
+simplify_rtx (rtx x)
 {
   enum rtx_code code = GET_CODE (x);
   enum machine_mode mode = GET_MODE (x);

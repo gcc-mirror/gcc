@@ -1,6 +1,6 @@
 /* Instruction scheduling pass.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) Enhanced by,
    and currently maintained by, Jim Wilson (wilson@cygnus.com)
 
@@ -116,9 +116,9 @@ static int *out_edges;
 #define IN_EDGES(block) (in_edges[block])
 #define OUT_EDGES(block) (out_edges[block])
 
-static int is_cfg_nonregular PARAMS ((void));
-static int build_control_flow PARAMS ((struct edge_list *));
-static void new_edge PARAMS ((int, int));
+static int is_cfg_nonregular (void);
+static int build_control_flow (struct edge_list *);
+static void new_edge (int, int);
 
 /* A region is the main entity for interblock scheduling: insns
    are allowed to move between blocks in the same region, along
@@ -153,12 +153,12 @@ static int *containing_rgn;
 #define BLOCK_TO_BB(block) (block_to_bb[block])
 #define CONTAINING_RGN(block) (containing_rgn[block])
 
-void debug_regions PARAMS ((void));
-static void find_single_block_region PARAMS ((void));
-static void find_rgns PARAMS ((struct edge_list *, dominance_info));
-static int too_large PARAMS ((int, int *, int *));
+void debug_regions (void);
+static void find_single_block_region (void);
+static void find_rgns (struct edge_list *, dominance_info);
+static int too_large (int, int *, int *);
 
-extern void debug_live PARAMS ((int, int));
+extern void debug_live (int, int);
 
 /* Blocks of the current region being scheduled.  */
 static int current_nr_blocks;
@@ -177,7 +177,7 @@ bitlst;
 static int bitlst_table_last;
 static int *bitlst_table;
 
-static void extract_bitlst PARAMS ((sbitmap, bitlst *));
+static void extract_bitlst (sbitmap, bitlst *);
 
 /* Target info declarations.
 
@@ -218,10 +218,10 @@ static int target_bb;
 typedef bitlst edgelst;
 
 /* Target info functions.  */
-static void split_edges PARAMS ((int, int, edgelst *));
-static void compute_trg_info PARAMS ((int));
-void debug_candidate PARAMS ((int));
-void debug_candidates PARAMS ((int));
+static void split_edges (int, int, edgelst *);
+static void compute_trg_info (int);
+void debug_candidate (int);
+void debug_candidates (int);
 
 /* Dominators array: dom[i] contains the sbitmap of dominators of
    bb i in the region.  */
@@ -269,7 +269,7 @@ static edgeset *pot_split;
 /* For every bb, a set of its ancestor edges.  */
 static edgeset *ancestor_edges;
 
-static void compute_dom_prob_ps PARAMS ((int));
+static void compute_dom_prob_ps (int);
 
 #define INSN_PROBABILITY(INSN) (SRC_PROB (BLOCK_TO_BB (BLOCK_NUM (INSN))))
 #define IS_SPECULATIVE_INSN(INSN) (IS_SPECULATIVE (BLOCK_TO_BB (BLOCK_NUM (INSN))))
@@ -280,29 +280,29 @@ static void compute_dom_prob_ps PARAMS ((int));
 #define MIN_PROBABILITY 40
 
 /* Speculative scheduling functions.  */
-static int check_live_1 PARAMS ((int, rtx));
-static void update_live_1 PARAMS ((int, rtx));
-static int check_live PARAMS ((rtx, int));
-static void update_live PARAMS ((rtx, int));
-static void set_spec_fed PARAMS ((rtx));
-static int is_pfree PARAMS ((rtx, int, int));
-static int find_conditional_protection PARAMS ((rtx, int));
-static int is_conditionally_protected PARAMS ((rtx, int, int));
-static int is_prisky PARAMS ((rtx, int, int));
-static int is_exception_free PARAMS ((rtx, int, int));
+static int check_live_1 (int, rtx);
+static void update_live_1 (int, rtx);
+static int check_live (rtx, int);
+static void update_live (rtx, int);
+static void set_spec_fed (rtx);
+static int is_pfree (rtx, int, int);
+static int find_conditional_protection (rtx, int);
+static int is_conditionally_protected (rtx, int, int);
+static int is_prisky (rtx, int, int);
+static int is_exception_free (rtx, int, int);
 
-static bool sets_likely_spilled PARAMS ((rtx));
-static void sets_likely_spilled_1 PARAMS ((rtx, rtx, void *));
-static void add_branch_dependences PARAMS ((rtx, rtx));
-static void compute_block_backward_dependences PARAMS ((int));
-void debug_dependencies PARAMS ((void));
+static bool sets_likely_spilled (rtx);
+static void sets_likely_spilled_1 (rtx, rtx, void *);
+static void add_branch_dependences (rtx, rtx);
+static void compute_block_backward_dependences (int);
+void debug_dependencies (void);
 
-static void init_regions PARAMS ((void));
-static void schedule_region PARAMS ((int));
-static rtx concat_INSN_LIST PARAMS ((rtx, rtx));
-static void concat_insn_mem_list PARAMS ((rtx, rtx, rtx *, rtx *));
-static void propagate_deps PARAMS ((int, struct deps *));
-static void free_pending_lists PARAMS ((void));
+static void init_regions (void);
+static void schedule_region (int);
+static rtx concat_INSN_LIST (rtx, rtx);
+static void concat_insn_mem_list (rtx, rtx, rtx *, rtx *);
+static void propagate_deps (int, struct deps *);
+static void free_pending_lists (void);
 
 /* Functions for construction of the control flow graph.  */
 
@@ -313,7 +313,7 @@ static void free_pending_lists PARAMS ((void));
    have nonlocal gotos.  */
 
 static int
-is_cfg_nonregular ()
+is_cfg_nonregular (void)
 {
   basic_block b;
   rtx insn;
@@ -374,8 +374,7 @@ is_cfg_nonregular ()
    prevent cross block scheduling.  */
 
 static int
-build_control_flow (edge_list)
-     struct edge_list *edge_list;
+build_control_flow (struct edge_list *edge_list)
 {
   int i, unreachable, num_edges;
   basic_block b;
@@ -426,8 +425,7 @@ build_control_flow (edge_list)
    integer lists.  */
 
 static void
-new_edge (source, target)
-     int source, target;
+new_edge (int source, int target)
 {
   int e, next_edge;
   int curr_edge, fst_edge;
@@ -481,9 +479,7 @@ new_edge (source, target)
 /* Translate a bit-set SET to a list BL of the bit-set members.  */
 
 static void
-extract_bitlst (set, bl)
-     sbitmap set;
-     bitlst *bl;
+extract_bitlst (sbitmap set, bitlst *bl)
 {
   int i;
 
@@ -507,7 +503,7 @@ extract_bitlst (set, bl)
 /* Print the regions, for debugging purposes.  Callable from debugger.  */
 
 void
-debug_regions ()
+debug_regions (void)
 {
   int rgn, bb;
 
@@ -537,7 +533,7 @@ debug_regions ()
    scheduling.  */
 
 static void
-find_single_block_region ()
+find_single_block_region (void)
 {
   basic_block bb;
 
@@ -559,8 +555,7 @@ find_single_block_region ()
    scheduling (compile time considerations), otherwise return 0.  */
 
 static int
-too_large (block, num_bbs, num_insns)
-     int block, *num_bbs, *num_insns;
+too_large (int block, int *num_bbs, int *num_insns)
 {
   (*num_bbs)++;
   (*num_insns) += (INSN_LUID (BLOCK_END (block)) -
@@ -618,9 +613,7 @@ too_large (block, num_bbs, num_insns)
    of edge tables.  That would simplify it somewhat.  */
 
 static void
-find_rgns (edge_list, dom)
-     struct edge_list *edge_list;
-     dominance_info dom;
+find_rgns (struct edge_list *edge_list, dominance_info dom)
 {
   int *max_hdr, *dfs_nr, *stack, *degree;
   char no_loops = 1;
@@ -1044,8 +1037,7 @@ find_rgns (edge_list, dom)
    Assume that these values were already computed for bb's predecessors.  */
 
 static void
-compute_dom_prob_ps (bb)
-     int bb;
+compute_dom_prob_ps (int bb)
 {
   int nxt_in_edge, fst_in_edge, pred;
   int fst_out_edge, nxt_out_edge, nr_out_edges, nr_rgn_out_edges;
@@ -1123,10 +1115,7 @@ compute_dom_prob_ps (bb)
    Note that bb_trg dominates bb_src.  */
 
 static void
-split_edges (bb_src, bb_trg, bl)
-     int bb_src;
-     int bb_trg;
-     edgelst *bl;
+split_edges (int bb_src, int bb_trg, edgelst *bl)
 {
   sbitmap src = (edgeset) sbitmap_alloc (pot_split[bb_src]->n_bits);
   sbitmap_copy (src, pot_split[bb_src]);
@@ -1141,8 +1130,7 @@ split_edges (bb_src, bb_trg, bl)
    For speculative sources, compute their update-blocks and split-blocks.  */
 
 static void
-compute_trg_info (trg)
-     int trg;
+compute_trg_info (int trg)
 {
   candidate *sp;
   edgelst el;
@@ -1240,8 +1228,7 @@ compute_trg_info (trg)
 /* Print candidates info, for debugging purposes.  Callable from debugger.  */
 
 void
-debug_candidate (i)
-     int i;
+debug_candidate (int i)
 {
   if (!candidate_table[i].is_valid)
     return;
@@ -1278,8 +1265,7 @@ debug_candidate (i)
 /* Print candidates info, for debugging purposes.  Callable from debugger.  */
 
 void
-debug_candidates (trg)
-     int trg;
+debug_candidates (int trg)
 {
   int i;
 
@@ -1295,9 +1281,7 @@ debug_candidates (trg)
    of the split-blocks of src, otherwise return 1.  */
 
 static int
-check_live_1 (src, x)
-     int src;
-     rtx x;
+check_live_1 (int src, rtx x)
 {
   int i;
   int regno;
@@ -1375,9 +1359,7 @@ check_live_1 (src, x)
    of every update-block of src.  */
 
 static void
-update_live_1 (src, x)
-     int src;
-     rtx x;
+update_live_1 (int src, rtx x)
 {
   int i;
   int regno;
@@ -1443,9 +1425,7 @@ update_live_1 (src, x)
    ready-list or before the scheduling.  */
 
 static int
-check_live (insn, src)
-     rtx insn;
-     int src;
+check_live (rtx insn, int src)
 {
   /* Find the registers set by instruction.  */
   if (GET_CODE (PATTERN (insn)) == SET
@@ -1470,9 +1450,7 @@ check_live (insn, src)
    block src to trg.  */
 
 static void
-update_live (insn, src)
-     rtx insn;
-     int src;
+update_live (rtx insn, int src)
 {
   /* Find the registers set by instruction.  */
   if (GET_CODE (PATTERN (insn)) == SET
@@ -1498,8 +1476,7 @@ update_live (insn, src)
 /* Turns on the fed_by_spec_load flag for insns fed by load_insn.  */
 
 static void
-set_spec_fed (load_insn)
-     rtx load_insn;
+set_spec_fed (rtx load_insn)
 {
   rtx link;
 
@@ -1512,9 +1489,7 @@ set_spec_fed (load_insn)
 branch depending on insn, that guards the speculative load.  */
 
 static int
-find_conditional_protection (insn, load_insn_bb)
-     rtx insn;
-     int load_insn_bb;
+find_conditional_protection (rtx insn, int load_insn_bb)
 {
   rtx link;
 
@@ -1549,9 +1524,7 @@ find_conditional_protection (insn, load_insn_bb)
    Locate the branch by following INSN_DEPEND from insn1.  */
 
 static int
-is_conditionally_protected (load_insn, bb_src, bb_trg)
-     rtx load_insn;
-     int bb_src, bb_trg;
+is_conditionally_protected (rtx load_insn, int bb_src, int bb_trg)
 {
   rtx link;
 
@@ -1601,9 +1574,7 @@ is_conditionally_protected (load_insn, bb_src, bb_trg)
    load2 anyhow.  */
 
 static int
-is_pfree (load_insn, bb_src, bb_trg)
-     rtx load_insn;
-     int bb_src, bb_trg;
+is_pfree (rtx load_insn, int bb_src, int bb_trg)
 {
   rtx back_link;
   candidate *candp = candidate_table + bb_src;
@@ -1654,9 +1625,7 @@ is_pfree (load_insn, bb_src, bb_trg)
    a compare on load_insn's address).  */
 
 static int
-is_prisky (load_insn, bb_src, bb_trg)
-     rtx load_insn;
-     int bb_src, bb_trg;
+is_prisky (rtx load_insn, int bb_src, int bb_trg)
 {
   if (FED_BY_SPEC_LOAD (load_insn))
     return 1;
@@ -1676,9 +1645,7 @@ is_prisky (load_insn, bb_src, bb_trg)
    and 0 otherwise.  */
 
 static int
-is_exception_free (insn, bb_src, bb_trg)
-     rtx insn;
-     int bb_src, bb_trg;
+is_exception_free (rtx insn, int bb_src, int bb_trg)
 {
   int insn_class = haifa_classify_insn (insn);
 
@@ -1727,19 +1694,19 @@ static int sched_n_insns;
 static int last_was_jump;
 
 /* Implementations of the sched_info functions for region scheduling.  */
-static void init_ready_list PARAMS ((struct ready_list *));
-static int can_schedule_ready_p PARAMS ((rtx));
-static int new_ready PARAMS ((rtx));
-static int schedule_more_p PARAMS ((void));
-static const char *rgn_print_insn PARAMS ((rtx, int));
-static int rgn_rank PARAMS ((rtx, rtx));
-static int contributes_to_priority PARAMS ((rtx, rtx));
-static void compute_jump_reg_dependencies PARAMS ((rtx, regset));
+static void init_ready_list (struct ready_list *);
+static int can_schedule_ready_p (rtx);
+static int new_ready (rtx);
+static int schedule_more_p (void);
+static const char *rgn_print_insn (rtx, int);
+static int rgn_rank (rtx, rtx);
+static int contributes_to_priority (rtx, rtx);
+static void compute_jump_reg_dependencies (rtx, regset);
 
 /* Return nonzero if there are more insns that should be scheduled.  */
 
 static int
-schedule_more_p ()
+schedule_more_p (void)
 {
   return ! last_was_jump && sched_target_n_insns < target_n_insns;
 }
@@ -1748,8 +1715,7 @@ schedule_more_p ()
    once before scheduling a set of insns.  */
 
 static void
-init_ready_list (ready)
-     struct ready_list *ready;
+init_ready_list (struct ready_list *ready)
 {
   rtx prev_head = current_sched_info->prev_head;
   rtx next_tail = current_sched_info->next_tail;
@@ -1835,8 +1801,7 @@ init_ready_list (ready)
    insn can be scheduled, nonzero if we should silently discard it.  */
 
 static int
-can_schedule_ready_p (insn)
-     rtx insn;
+can_schedule_ready_p (rtx insn)
 {
   if (GET_CODE (insn) == JUMP_INSN)
     last_was_jump = 1;
@@ -1900,8 +1865,7 @@ can_schedule_ready_p (insn)
    if it should be moved to the ready list or the queue, or zero if we
    should silently discard it.  */
 static int
-new_ready (next)
-     rtx next;
+new_ready (rtx next)
 {
   /* For speculative insns, before inserting to ready/queue,
      check live, exception-free, and issue-delay.  */
@@ -1930,9 +1894,7 @@ new_ready (next)
    to be formatted so that multiple output lines will line up nicely.  */
 
 static const char *
-rgn_print_insn (insn, aligned)
-     rtx insn;
-     int aligned;
+rgn_print_insn (rtx insn, int aligned)
 {
   static char tmp[80];
 
@@ -1953,8 +1915,7 @@ rgn_print_insn (insn, aligned)
    is to be preferred.  Zero if they are equally good.  */
 
 static int
-rgn_rank (insn1, insn2)
-     rtx insn1, insn2;
+rgn_rank (rtx insn1, rtx insn2)
 {
   /* Some comparison make sense in interblock scheduling only.  */
   if (INSN_BB (insn1) != INSN_BB (insn2))
@@ -1985,8 +1946,7 @@ rgn_rank (insn1, insn2)
    calculations.  */
 
 static int
-contributes_to_priority (next, insn)
-     rtx next, insn;
+contributes_to_priority (rtx next, rtx insn)
 {
   return BLOCK_NUM (next) == BLOCK_NUM (insn);
 }
@@ -1995,9 +1955,8 @@ contributes_to_priority (next, insn)
    to be set by this jump in SET.  */
 
 static void
-compute_jump_reg_dependencies (insn, set)
-     rtx insn ATTRIBUTE_UNUSED;
-     regset set ATTRIBUTE_UNUSED;
+compute_jump_reg_dependencies (rtx insn ATTRIBUTE_UNUSED,
+			       regset set ATTRIBUTE_UNUSED)
 {
   /* Nothing to do here, since we postprocess jumps in
      add_branch_dependences.  */
@@ -2025,8 +1984,7 @@ static struct sched_info region_sched_info =
 /* Determine if PAT sets a CLASS_LIKELY_SPILLED_P register.  */
 
 static bool
-sets_likely_spilled (pat)
-     rtx pat;
+sets_likely_spilled (rtx pat)
 {
   bool ret = false;
   note_stores (pat, sets_likely_spilled_1, &ret);
@@ -2034,9 +1992,7 @@ sets_likely_spilled (pat)
 }
 
 static void
-sets_likely_spilled_1 (x, pat, data)
-     rtx x, pat;
-     void *data;
+sets_likely_spilled_1 (rtx x, rtx pat, void *data)
 {
   bool *ret = (bool *) data;
 
@@ -2051,8 +2007,7 @@ sets_likely_spilled_1 (x, pat, data)
    block.  */
 
 static void
-add_branch_dependences (head, tail)
-     rtx head, tail;
+add_branch_dependences (rtx head, rtx tail)
 {
   rtx insn, last;
 
@@ -2133,8 +2088,7 @@ static struct deps *bb_deps;
 /* Duplicate the INSN_LIST elements of COPY and prepend them to OLD.  */
 
 static rtx
-concat_INSN_LIST (copy, old)
-     rtx copy, old;
+concat_INSN_LIST (rtx copy, rtx old)
 {
   rtx new = old;
   for (; copy ; copy = XEXP (copy, 1))
@@ -2143,9 +2097,8 @@ concat_INSN_LIST (copy, old)
 }
 
 static void
-concat_insn_mem_list (copy_insns, copy_mems, old_insns_p, old_mems_p)
-     rtx copy_insns, copy_mems;
-     rtx *old_insns_p, *old_mems_p;
+concat_insn_mem_list (rtx copy_insns, rtx copy_mems, rtx *old_insns_p,
+		      rtx *old_mems_p)
 {
   rtx new_insns = *old_insns_p;
   rtx new_mems = *old_mems_p;
@@ -2165,9 +2118,7 @@ concat_insn_mem_list (copy_insns, copy_mems, old_insns_p, old_mems_p)
 /* After computing the dependencies for block BB, propagate the dependencies
    found in TMP_DEPS to the successors of the block.  */
 static void
-propagate_deps (bb, pred_deps)
-     int bb;
-     struct deps *pred_deps;
+propagate_deps (int bb, struct deps *pred_deps)
 {
   int b = BB_TO_BLOCK (bb);
   int e, first_edge;
@@ -2268,8 +2219,7 @@ propagate_deps (bb, pred_deps)
    similar, and the result is interblock dependences in the region.  */
 
 static void
-compute_block_backward_dependences (bb)
-     int bb;
+compute_block_backward_dependences (int bb)
 {
   rtx head, tail;
   struct deps tmp_deps;
@@ -2292,7 +2242,7 @@ compute_block_backward_dependences (bb)
    them to the unused_*_list variables, so that they can be reused.  */
 
 static void
-free_pending_lists ()
+free_pending_lists (void)
 {
   int bb;
 
@@ -2308,7 +2258,7 @@ free_pending_lists ()
 /* Print dependences for debugging, callable from debugger.  */
 
 void
-debug_dependencies ()
+debug_dependencies (void)
 {
   int bb;
 
@@ -2421,8 +2371,7 @@ debug_dependencies ()
    scheduled after its flow predecessors.  */
 
 static void
-schedule_region (rgn)
-     int rgn;
+schedule_region (int rgn)
 {
   int bb;
   int rgn_n_insns = 0;
@@ -2520,7 +2469,7 @@ schedule_region (rgn)
 
       /* rm_other_notes only removes notes which are _inside_ the
 	 block---that is, it won't remove notes before the first real insn
- 	 or after the last real insn of the block.  So if the first insn
+	 or after the last real insn of the block.  So if the first insn
 	 has a REG_SAVE_NOTE which would otherwise be emitted before the
 	 insn, it is redundant with the note before the start of the
 	 block, and so we have to take it out.  */
@@ -2605,7 +2554,7 @@ static int *deaths_in_region;
 /* Initialize data structures for region scheduling.  */
 
 static void
-init_regions ()
+init_regions (void)
 {
   sbitmap blocks;
   int rgn;
@@ -2690,8 +2639,7 @@ init_regions ()
    this pass.  */
 
 void
-schedule_insns (dump_file)
-     FILE *dump_file;
+schedule_insns (FILE *dump_file)
 {
   sbitmap large_region_blocks, blocks;
   int rgn;

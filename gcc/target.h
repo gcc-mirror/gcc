@@ -67,70 +67,69 @@ struct gcc_target
        ALIGNED_P indicates whether it is aligned.  Return true if
        successful.  Only handles cases for which BYTE_OP, ALIGNED_OP
        and UNALIGNED_OP are NULL.  */
-    bool (* integer) PARAMS ((rtx x, unsigned int size, int aligned_p));
+    bool (* integer) (rtx x, unsigned int size, int aligned_p);
 
     /* Output code that will globalize a label.  */
-    void (* globalize_label) PARAMS ((FILE *, const char *));
+    void (* globalize_label) (FILE *, const char *);
 
     /* Output an internal label.  */
-    void (* internal_label) PARAMS ((FILE *, const char *, unsigned long));
+    void (* internal_label) (FILE *, const char *, unsigned long);
 
     /* Emit an assembler directive to set visibility for the symbol
        associated with the tree decl.  */
-    void (* visibility) PARAMS ((tree, int));
+    void (* visibility) (tree, int);
 
     /* Output the assembler code for entry to a function.  */
-    void (* function_prologue) PARAMS ((FILE *, HOST_WIDE_INT));
+    void (* function_prologue) (FILE *, HOST_WIDE_INT);
 
     /* Output the assembler code for end of prologue.  */
-    void (* function_end_prologue) PARAMS ((FILE *));
+    void (* function_end_prologue) (FILE *);
 
     /* Output the assembler code for start of epilogue.  */
-    void (* function_begin_epilogue) PARAMS ((FILE *));
+    void (* function_begin_epilogue) (FILE *);
 
     /* Output the assembler code for function exit.  */
-    void (* function_epilogue) PARAMS ((FILE *, HOST_WIDE_INT));
+    void (* function_epilogue) (FILE *, HOST_WIDE_INT);
 
     /* Switch to an arbitrary section NAME with attributes as
        specified by FLAGS.  */
-    void (* named_section) PARAMS ((const char *, unsigned int));
+    void (* named_section) (const char *, unsigned int);
 
     /* Switch to the section that holds the exception table.  */
-    void (* exception_section) PARAMS ((void));
+    void (* exception_section) (void);
 
     /* Switch to the section that holds the exception frames.  */
-    void (* eh_frame_section) PARAMS ((void));
+    void (* eh_frame_section) (void);
 
     /* Select and switch to a section for EXP.  It may be a DECL or a
        constant.  RELOC is nonzero if runtime relocations must be applied;
        bit 1 will be set if the runtime relocations require non-local
        name resolution.  ALIGN is the required alignment of the data.  */
-    void (* select_section) PARAMS ((tree, int, unsigned HOST_WIDE_INT));
+    void (* select_section) (tree, int, unsigned HOST_WIDE_INT);
 
     /* Select and switch to a section for X with MODE.  ALIGN is
        the desired alignment of the data.  */
-    void (* select_rtx_section) PARAMS ((enum machine_mode, rtx,
-					 unsigned HOST_WIDE_INT));
+    void (* select_rtx_section) (enum machine_mode, rtx,
+				 unsigned HOST_WIDE_INT);
 
     /* Select a unique section name for DECL.  RELOC is the same as
        for SELECT_SECTION.  */
-    void (* unique_section) PARAMS ((tree, int));
+    void (* unique_section) (tree, int);
 
     /* Output a constructor for a symbol with a given priority.  */
-    void (* constructor) PARAMS ((rtx, int));
+    void (* constructor) (rtx, int);
 
     /* Output a destructor for a symbol with a given priority.  */
-    void (* destructor) PARAMS ((rtx, int));
+    void (* destructor) (rtx, int);
 
     /* Output the assembler code for a thunk function.  THUNK_DECL is the
        declaration for the thunk function itself, FUNCTION is the decl for
        the target function.  DELTA is an immediate constant offset to be
        added to THIS.  If VCALL_OFFSET is nonzero, the word at
        *(*this + vcall_offset) should be added to THIS.  */
-    void (* output_mi_thunk) PARAMS ((FILE *file, tree thunk_decl,
-				      HOST_WIDE_INT delta,
-				      HOST_WIDE_INT vcall_offset,
-				      tree function_decl));
+    void (* output_mi_thunk) (FILE *file, tree thunk_decl,
+			      HOST_WIDE_INT delta, HOST_WIDE_INT vcall_offset,
+			      tree function_decl);
 
     /* Determine whether output_mi_thunk would succeed.  */
     /* ??? Ideally, this hook would not exist, and success or failure
@@ -138,18 +137,17 @@ struct gcc_target
        too much undo-able setup involved in invoking output_mi_thunk.
        Could be fixed by making output_mi_thunk emit rtl instead of
        text to the output file.  */
-    bool (* can_output_mi_thunk) PARAMS ((tree thunk_decl,
-				          HOST_WIDE_INT delta,
-				          HOST_WIDE_INT vcall_offset,
-				          tree function_decl));
+    bool (* can_output_mi_thunk) (tree thunk_decl, HOST_WIDE_INT delta,
+				  HOST_WIDE_INT vcall_offset,
+				  tree function_decl);
 
     /* Output any boilerplate text needed at the beginning of a
        translation unit.  */
-    void (*file_start) PARAMS ((void));
+    void (*file_start) (void);
 
     /* Output any boilerplate text needed at the end of a
        translation unit.  */
-    void (*file_end) PARAMS ((void));
+    void (*file_end) (void);
   } asm_out;
 
   /* Functions relating to instruction scheduling.  */
@@ -158,41 +156,41 @@ struct gcc_target
     /* Given the current cost, COST, of an insn, INSN, calculate and
        return a new cost based on its relationship to DEP_INSN through
        the dependence LINK.  The default is to make no adjustment.  */
-    int (* adjust_cost) PARAMS ((rtx insn, rtx link, rtx def_insn, int cost));
+    int (* adjust_cost) (rtx insn, rtx link, rtx def_insn, int cost);
 
     /* Adjust the priority of an insn as you see fit.  Returns the new
        priority.  */
-    int (* adjust_priority) PARAMS ((rtx, int));
+    int (* adjust_priority) (rtx, int);
 
     /* Function which returns the maximum number of insns that can be
        scheduled in the same machine cycle.  This must be constant
        over an entire compilation.  The default is 1.  */
-    int (* issue_rate) PARAMS ((void));
+    int (* issue_rate) (void);
 
     /* Calculate how much this insn affects how many more insns we
        can emit this cycle.  Default is they all cost the same.  */
-    int (* variable_issue) PARAMS ((FILE *, int, rtx, int));
+    int (* variable_issue) (FILE *, int, rtx, int);
 
     /* Initialize machine-dependent scheduling code.  */
-    void (* md_init) PARAMS ((FILE *, int, int));
+    void (* md_init) (FILE *, int, int);
 
     /* Finalize machine-dependent scheduling code.  */
-    void (* md_finish) PARAMS ((FILE *, int));
+    void (* md_finish) (FILE *, int);
 
     /* Reorder insns in a machine-dependent fashion, in two different
        places.  Default does nothing.  */
-    int (* reorder)  PARAMS ((FILE *, int, rtx *, int *, int));
-    int (* reorder2) PARAMS ((FILE *, int, rtx *, int *, int));
+    int (* reorder) (FILE *, int, rtx *, int *, int);
+    int (* reorder2) (FILE *, int, rtx *, int *, int);
 
     /* The following member value is a pointer to a function called
        after evaluation forward dependencies of insns in chain given
        by two parameter values (head and tail correspondingly).  */
-    void (* dependencies_evaluation_hook) PARAMS ((rtx, rtx));
+    void (* dependencies_evaluation_hook) (rtx, rtx);
 
     /* The following member value is a pointer to a function returning
        nonzero if we should use DFA based scheduling.  The default is
        to use the old pipeline scheduler.  */
-    int (* use_dfa_pipeline_interface) PARAMS ((void));
+    int (* use_dfa_pipeline_interface) (void);
     /* The values of all the following members are used only for the
        DFA based scheduler: */
     /* The values of the following four members are pointers to
@@ -206,10 +204,10 @@ struct gcc_target
        the memebers result in not changing the automaton state when
        the new simulated processor cycle correspondingly starts and
        finishes.  */
-    void (* init_dfa_pre_cycle_insn) PARAMS ((void));
-    rtx (* dfa_pre_cycle_insn) PARAMS ((void));
-    void (* init_dfa_post_cycle_insn) PARAMS ((void));
-    rtx (* dfa_post_cycle_insn) PARAMS ((void));
+    void (* init_dfa_pre_cycle_insn) (void);
+    rtx (* dfa_pre_cycle_insn) (void);
+    void (* init_dfa_post_cycle_insn) (void);
+    rtx (* dfa_post_cycle_insn) (void);
     /* The following member value is a pointer to a function returning value
        which defines how many insns in queue `ready' will we try for
        multi-pass scheduling.  if the member value is nonzero and the
@@ -217,13 +215,13 @@ struct gcc_target
        multi-pass scheduling for the first cycle.  In other words, we will
        try to choose ready insn which permits to start maximum number of
        insns on the same cycle.  */
-    int (* first_cycle_multipass_dfa_lookahead) PARAMS ((void));
+    int (* first_cycle_multipass_dfa_lookahead) (void);
     /* The following member value is pointer to a function controlling
        what insns from the ready insn queue will be considered for the
        multipass insn scheduling.  If the hook returns zero for insn
        passed as the parameter, the insn will be not chosen to be
        issued.  */
-    int (* first_cycle_multipass_dfa_lookahead_guard) PARAMS ((rtx));
+    int (* first_cycle_multipass_dfa_lookahead_guard) (rtx);
     /* The following member value is pointer to a function called by
        the insn scheduler before issuing insn passed as the third
        parameter on given cycle.  If the hook returns nonzero, the
@@ -236,7 +234,7 @@ struct gcc_target
        parameter values are correspondingly processor cycle on which
        the previous insn has been issued and the current processor
        cycle.  */
-    int (* dfa_new_cycle) PARAMS ((FILE *, int, rtx, int, int, int *));
+    int (* dfa_new_cycle) (FILE *, int, rtx, int, int, int *);
     /* The values of the following members are pointers to functions
        used to improve the first cycle multipass scheduling by
        inserting nop insns.  dfa_scheduler_bubble gives a function
@@ -247,15 +245,15 @@ struct gcc_target
        init_dfa_scheduler_bubbles is used.  The default values of the
        members result in not inserting nop insns during the multipass
        scheduling.  */
-    void (* init_dfa_bubbles) PARAMS ((void));
-    rtx (* dfa_bubble) PARAMS ((int));
+    void (* init_dfa_bubbles) (void);
+    rtx (* dfa_bubble) (int);
   } sched;
 
   /* Given two decls, merge their attributes and return the result.  */
-  tree (* merge_decl_attributes) PARAMS ((tree, tree));
+  tree (* merge_decl_attributes) (tree, tree);
 
   /* Given two types, merge their attributes and return the result.  */
-  tree (* merge_type_attributes) PARAMS ((tree, tree));
+  tree (* merge_type_attributes) (tree, tree);
 
   /* Table of machine attributes and functions to handle them.
      Ignored if NULL.  */
@@ -264,92 +262,92 @@ struct gcc_target
   /* Return zero if the attributes on TYPE1 and TYPE2 are incompatible,
      one if they are compatible and two if they are nearly compatible
      (which causes a warning to be generated).  */
-  int (* comp_type_attributes) PARAMS ((tree type1, tree type2));
+  int (* comp_type_attributes) (tree type1, tree type2);
 
   /* Assign default attributes to the newly defined TYPE.  */
-  void (* set_default_type_attributes) PARAMS ((tree type));
+  void (* set_default_type_attributes) (tree type);
 
   /* Insert attributes on the newly created DECL.  */
-  void (* insert_attributes) PARAMS ((tree decl, tree *attributes));
+  void (* insert_attributes) (tree decl, tree *attributes);
 
   /* Return true if FNDECL (which has at least one machine attribute)
      can be inlined despite its machine attributes, false otherwise.  */
-  bool (* function_attribute_inlinable_p) PARAMS ((tree fndecl));
+  bool (* function_attribute_inlinable_p) (tree fndecl);
 
   /* Return true if bitfields in RECORD_TYPE should follow the
      Microsoft Visual C++ bitfield layout rules.  */
-  bool (* ms_bitfield_layout_p) PARAMS ((tree record_type));
+  bool (* ms_bitfield_layout_p) (tree record_type);
 
   /* Set up target-specific built-in functions.  */
-  void (* init_builtins) PARAMS ((void));
+  void (* init_builtins) (void);
 
   /* Expand a target-specific builtin.  */
-  rtx (* expand_builtin) PARAMS ((tree exp, rtx target, rtx subtarget,
-				  enum machine_mode mode, int ignore));
+  rtx (* expand_builtin) (tree exp, rtx target, rtx subtarget,
+			  enum machine_mode mode, int ignore);
 
   /* Given a decl, a section name, and whether the decl initializer
      has relocs, choose attributes for the section.  */
   /* ??? Should be merged with SELECT_SECTION and UNIQUE_SECTION.  */
-  unsigned int (* section_type_flags) PARAMS ((tree, const char *, int));
+  unsigned int (* section_type_flags) (tree, const char *, int);
 
   /* True if new jumps cannot be created, to replace existing ones or
      not, at the current point in the compilation.  */
-  bool (* cannot_modify_jumps_p) PARAMS ((void));
+  bool (* cannot_modify_jumps_p) (void);
 
   /* Return a register class for which branch target register
      optimizations should be applied.  */
-  int (* branch_target_register_class) PARAMS ((void));
+  int (* branch_target_register_class) (void);
 
   /* Return true if branch target register optimizations should include
      callee-saved registers that are not already live during the current
      function.  AFTER_PE_GEN is true if prologues and epilogues have
      already been generated.  */
-  bool (* branch_target_register_callee_saved) PARAMS ((bool after_pe_gen));
+  bool (* branch_target_register_callee_saved) (bool after_pe_gen);
 
   /* True if the constant X cannot be placed in the constant pool.  */
-  bool (* cannot_force_const_mem) PARAMS ((rtx));
+  bool (* cannot_force_const_mem) (rtx);
 
   /* True if the insn X cannot be duplicated.  */
-  bool (* cannot_copy_insn_p) PARAMS ((rtx));
+  bool (* cannot_copy_insn_p) (rtx);
 
   /* Given an address RTX, undo the effects of LEGITIMIZE_ADDRESS.  */
-  rtx (* delegitimize_address) PARAMS ((rtx));
+  rtx (* delegitimize_address) (rtx);
 
   /* True if it is OK to do sibling call optimization for the specified
      call expression EXP.  DECL will be the called function, or NULL if
      this is an indirect call.  */
-  bool (*function_ok_for_sibcall) PARAMS ((tree decl, tree exp));
-  
+  bool (*function_ok_for_sibcall) (tree decl, tree exp);
+
   /* True if EXP should be placed in a "small data" section.  */
-  bool (* in_small_data_p) PARAMS ((tree));
+  bool (* in_small_data_p) (tree);
 
   /* True if EXP names an object for which name resolution must resolve
      to the current module.  */
-  bool (* binds_local_p) PARAMS ((tree));
+  bool (* binds_local_p) (tree);
 
   /* Do something target-specific to record properties of the DECL into
      the associated SYMBOL_REF.  */
-  void (* encode_section_info) PARAMS ((tree, rtx, int));
+  void (* encode_section_info) (tree, rtx, int);
 
   /* Undo the effects of encode_section_info on the symbol string.  */
-  const char * (* strip_name_encoding) PARAMS ((const char *));
+  const char * (* strip_name_encoding) (const char *);
 
   /* True if MODE is valid for a pointer in __attribute__((mode("MODE"))).  */
-  bool (* valid_pointer_mode) PARAMS ((enum machine_mode mode));
+  bool (* valid_pointer_mode) (enum machine_mode mode);
 
   /* True if a vector is opaque.  */
-  bool (* vector_opaque_p) PARAMS ((tree));
+  bool (* vector_opaque_p) (tree);
 
   /* Compute a (partial) cost for rtx X.  Return true if the complete
      cost has been computed, and false if subexpressions should be
      scanned.  In either case, *TOTAL contains the cost result.  */
   /* Note that CODE and OUTER_CODE ought to be RTX_CODE, but that's
      not necessarily defined at this point.  */
-  bool (* rtx_costs) PARAMS ((rtx x, int code, int outer_code, int *total));
+  bool (* rtx_costs) (rtx x, int code, int outer_code, int *total);
 
   /* Compute the cost of X, used as an address.  Never called with
      invalid addresses.  */
-  int (* address_cost) PARAMS ((rtx x));
+  int (* address_cost) (rtx x);
 
   /* Given a register, this hook should return a parallel of registers
      to represent where to find the register pieces.  Define this hook
@@ -357,11 +355,11 @@ struct gcc_target
      non-contiguous locations, or if the register should be
      represented in more than one register in Dwarf.  Otherwise, this
      hook should return NULL_RTX.  */
-  rtx (* dwarf_register_span) PARAMS ((rtx));
+  rtx (* dwarf_register_span) (rtx);
 
   /* Do machine-dependent code transformations.  Called just before
      delayed-branch scheduling.  */
-  void (* machine_dependent_reorg) PARAMS ((void));
+  void (* machine_dependent_reorg) (void);
 
   /* Leave the boolean fields at the end.  */
 
