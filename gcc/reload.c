@@ -322,7 +322,6 @@ static int find_reusable_reload	PROTO((rtx *, rtx, enum reg_class,
 static rtx find_dummy_reload	PROTO((rtx, rtx, rtx *, rtx *,
 				       enum machine_mode, enum machine_mode,
 				       enum reg_class, int, int));
-static int earlyclobber_operand_p PROTO((rtx));
 static int hard_reg_set_here_p	PROTO((int, int, rtx));
 static struct decomposition decompose PROTO((rtx));
 static int immune_p		PROTO((rtx, rtx, struct decomposition));
@@ -2006,7 +2005,7 @@ find_dummy_reload (real_in, real_out, inloc, outloc,
 
 /* Return 1 if X is an operand of an insn that is being earlyclobbered.  */
 
-static int
+int
 earlyclobber_operand_p (x)
      rtx x;
 {

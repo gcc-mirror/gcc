@@ -342,3 +342,5 @@ extern void save_call_clobbered_regs PROTO((void));
 
 /* Replace (subreg (reg)) with the appropriate (reg) for any operands.  */
 extern void cleanup_subreg_operands PROTO ((rtx));
+
+extern int earlyclobber_operand_p PROTO((rtx));

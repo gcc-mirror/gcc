@@ -1,5 +1,13 @@
 2000-11-30  Bernd Schmidt  <bernds@redhat.co.uk>
 
+	Wed Oct 27 03:09:23 1999  J"orn Rennecke  <amylaar@redhat.co.uk>
+	* reload.h (earlyclobber_operand_p): Declare.
+	* reload.c (earlyclobber_operand_p): Don't declare.  No longer static.
+	* reload1.c (reload_reg_free_for_value_p):  RELOAD_OTHER reloads with
+	an earlyclobbered output conflict with RELOAD_INPUT reloads - handle
+	case where the RELOAD_OTHER reload is new.  Use
+	earlyclobber_operand_p.
+
 	2000-01-12  Bernd Schmidt  <bernds@redhat.co.uk>
 	* reload1.c (reload_reg_unavailable): New static variable.
 	(reload_reg_free_p): Test it.

@@ -5206,6 +5206,10 @@ reload_reg_free_for_value_p (regno, opnum, type, value, out, reloadnum,
      int ignore_address_reloads;
 {
   int time1;
+  /* Set if we see an input reload that must not share its reload register
+     with any new earlyclobber, but might otherwise share the reload
+     register with an output or input-output reload.  */
+  int check_earlyclobber = 0;
   int i;
   int copy = 0;
 
@@ -5333,6 +5337,7 @@ reload_reg_free_for_value_p (regno, opnum, type, value, out, reloadnum,
 		  break;
 		case RELOAD_FOR_INPUT:
 		  time2 = reload_opnum[i] * 4 + 4;
+		  check_earlyclobber = 1;
 		  break;
 		/* reload_opnum[i] * 4 + 4 <= (MAX_RECOG_OPERAND - 1) * 4 + 4
 		   == MAX_RECOG_OPERAND * 4  */
@@ -5345,6 +5350,7 @@ reload_reg_free_for_value_p (regno, opnum, type, value, out, reloadnum,
 		  break;
 		case RELOAD_FOR_OPERAND_ADDRESS:
 		  time2 = MAX_RECOG_OPERANDS * 4 + 2;
+		  check_earlyclobber = 1;
 		  break;
 		case RELOAD_FOR_INSN:
 		  time2 = MAX_RECOG_OPERANDS * 4 + 3;
@@ -5373,6 +5379,9 @@ reload_reg_free_for_value_p (regno, opnum, type, value, out, reloadnum,
 		  if (! reload_in[i] || rtx_equal_p (reload_in[i], value))
 		    {
 		      time2 = MAX_RECOG_OPERANDS * 4 + 4;
+		      /* Earlyclobbered outputs must conflict with inputs.  */
+		      if (earlyclobber_operand_p (reload_out[i]))
+			time2 = MAX_RECOG_OPERANDS * 4 + 3;
 		      break;
 		    }
 		  time2 = 1;
@@ -5395,6 +5404,11 @@ reload_reg_free_for_value_p (regno, opnum, type, value, out, reloadnum,
 	    }
 	}
     }
+
+  /* Earlyclobbered outputs must conflict with inputs.  */
+  if (check_earlyclobber && out && earlyclobber_operand_p (out))
+    return 0;
+
   return 1;
 }
 
