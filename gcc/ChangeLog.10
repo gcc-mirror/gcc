@@ -8872,7 +8872,7 @@ Sat Oct 11 12:24:23 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	(m68k_initial_elimination_offset): New function.
 	(m68k_output_function_prologue): ColdFire-specific movem handling.
 	(m68k_output_function_epilogue): Likewise.
-	* config/m68k/m68k.h (FIRST_PSEOUDO_REGISTER): Make room for argptr reg.
+	* config/m68k/m68k.h (FIRST_PSEUDO_REGISTER): Make room for argptr reg.
 	(ARG_POINTER_REGNUM): Add new definition.
 	(INITIAL_FRAME_POINTER_OFFSET): Remove macro.
 	(ELIMINABLE_REGS): Define new macro, like in ix86 back-end.
