@@ -1,3 +1,9 @@
+2004-01-23  Hartmut Penner <hpenner@de.ibm.com>
+
+	PR target/13674
+	* config/rs6000/rs6000.md (movdf_hardfloat64): Do not disparage
+	loading into GPR.
+
 2004-01-23  Jan Hubicka  <jh@suse.cz>
 
 	* emit-rtl.c (change_address_1):  Do not re-generate the RTX if nothing
