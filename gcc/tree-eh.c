@@ -443,6 +443,8 @@ replace_goto_queue_stmt_list (tree t, struct leh_tf_state *tf)
 static void
 replace_goto_queue (struct leh_tf_state *tf)
 {
+  if (tf->goto_queue_active == 0)
+    return;
   replace_goto_queue_stmt_list (*tf->top_p, tf);
 }
 
