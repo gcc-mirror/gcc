@@ -1757,6 +1757,42 @@ inline_conversion (exp)
     }
   return exp;
 }
+
+/* Returns nonzero iff exp is a STRING_CST or the result of applying
+   decay_conversion to one.  */
+
+int
+string_conv_p (totype, exp, warn)
+     tree totype, exp;
+     int warn;
+{
+  tree t;
+
+  if (! flag_const_strings || TREE_CODE (totype) != POINTER_TYPE)
+    return 0;
+
+  t = TREE_TYPE (totype);
+  if (! comptypes (t, char_type_node, 1)
+      && ! comptypes (t, wchar_type_node, 1))
+    return 0;
+
+  if (TREE_CODE (exp) != STRING_CST)
+    {
+      t = build_pointer_type (build_type_variant (t, 1, 0));
+      if (! comptypes (TREE_TYPE (exp), t, 1))
+	return 0;
+      STRIP_NOPS (exp);
+      if (TREE_CODE (exp) != ADDR_EXPR
+	  || TREE_CODE (TREE_OPERAND (exp, 0)) != STRING_CST)
+	return 0;
+    }
+
+  /* This warning is not very useful, as it complains about printf.  */
+  if (warn && warn_write_strings)
+    cp_warning ("deprecated conversion from string constant to `char *'");
+
+  return 1;
+}
 
 tree
 build_object_ref (datum, basetype, field)
@@ -6799,7 +6835,9 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
 		}
 	      else if (! TYPE_READONLY (ttl) && TYPE_READONLY (ttr))
 		{
-		  if (fndecl)
+		  if (string_conv_p (type, rhs, 1))
+		    /* converting from string constant to char *, OK.  */;
+		  else if (fndecl)
 		    cp_pedwarn ("passing `%T' as argument %P of `%D' discards const",
 				rhstype, parmnum, fndecl);
 		  else

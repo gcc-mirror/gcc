@@ -430,7 +430,7 @@ extern int warn_implicit;
    to get extra warnings from them.  These warnings will be too numerous
    to be useful, except in thoroughly ANSIfied programs.  */
 
-extern int warn_write_strings;
+extern int flag_const_strings;
 
 /* Nonzero means warn about sizeof (function) or addition/subtraction
    of function pointers.  */

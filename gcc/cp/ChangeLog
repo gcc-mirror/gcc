@@ -1,3 +1,22 @@
+1998-08-24  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* tree.c (lvalue_type): Fix for arrays.
+	* typeck.c (string_conv_p): New fn.
+	(convert_for_assignment): Use it.
+	(build_unary_op): Use lvalue_type.
+	* call.c (standard_conversion, convert_like): Use string_conv_p.
+	(add_function_candidate): Use lvalue_type.
+	* cvt.c (convert_to_reference): Likewise.
+	* decl2.c (lang_decode_option): Ignore -traditional.
+	* decl.c (init_decl_processing): flag_writable_strings inhibits
+	flag_const_strings.
+
+1998-08-24  Andrew MacLeod  <amacleod@cygnus.com>
+
+	* lang-options.h (lang_options): Add fconst-strings to the list
+	of valid options.
+	* decl2.c (lang_f_options, lang_decode_option): Likewise.
+
 1998-08-24  Nathan Sidwell  <nathan@acm.org>
 
         * lex.c (real_yylex): Don't warn about long long constants if
