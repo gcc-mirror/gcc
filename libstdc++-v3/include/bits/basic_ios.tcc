@@ -67,12 +67,6 @@ namespace std
       _Words* __words = (__rhs._M_word_size <= _S_local_word_size) ?
 	_M_local_word : new _Words[__rhs._M_word_size];
 
-      // XXX This is the only reason _Callback_list was defined
-      // inline. The suspicion is that this increased compilation
-      // times dramatically for functions that use this member
-      // function (inserters_extractors, ios_manip_fmtflags). FIX ME,
-      // clean this stuff up. Callbacks are broken right now, anyway.
-
       // Bump refs before doing callbacks, for safety.
       _Callback_list* __cb = __rhs._M_callbacks;
       if (__cb) 
@@ -113,8 +107,8 @@ namespace std
     basic_ios<_CharT, _Traits>::narrow(char_type __c, char __dfault) const
     { 
       char __ret = __dfault;
-      if (_M_check_facet(_M_ios_fctype))
-	__ret = _M_ios_fctype->narrow(__c, __dfault); 
+      if (_M_check_facet(_M_fctype))
+	__ret = _M_fctype->narrow(__c, __dfault); 
       return __ret;
     }
 
@@ -123,8 +117,8 @@ namespace std
     basic_ios<_CharT, _Traits>::widen(char __c) const
     {
       char_type __ret = char_type();
-      if (_M_check_facet(_M_ios_fctype))
-	__ret = _M_ios_fctype->widen(__c); 
+      if (_M_check_facet(_M_fctype))
+	__ret = _M_fctype->widen(__c); 
       return __ret;
     }
 
@@ -175,9 +169,9 @@ namespace std
     basic_ios<_CharT, _Traits>::_M_cache_facets(const locale& __loc)
     {
       if (has_facet<__ctype_type>(__loc))
-	_M_ios_fctype = &use_facet<__ctype_type>(__loc);
+	_M_fctype = &use_facet<__ctype_type>(__loc);
       else
-	_M_ios_fctype = 0;
+	_M_fctype = 0;
       // Should be filled in by ostream and istream, respectively.
       if (has_facet<__numput_type>(__loc))
 	_M_fnumput = &use_facet<__numput_type>(__loc); 

@@ -50,12 +50,13 @@ namespace std
 	  if (!__noskipws && (__in.flags() & ios_base::skipws))
 	    {	  
 	      const __int_type __eof = traits_type::eof();
-	      const __ctype_type* __ctype = __in._M_get_fctype_ios();
 	      __streambuf_type* __sb = __in.rdbuf();
 	      __int_type __c = __sb->sgetc();
-	      
-	      while (__c != __eof && __ctype->is(ctype_base::space, __c))
-		__c = __sb->snextc();
+
+	      if (__in._M_check_facet(__in._M_fctype))
+		while (__c != __eof
+		       && __in._M_fctype->is(ctype_base::space, __c))
+		  __c = __sb->snextc();
 
 #ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
 //195.  Should basic_istream::sentry's constructor ever set eofbit? 
@@ -1098,12 +1099,12 @@ namespace std
 	      if (__num == 0)
 		__num = numeric_limits<streamsize>::max();
 	      
-	      __streambuf_type* __sb = __in.rdbuf();
-	      const __ctype_type* __ctype = __in._M_get_fctype_ios();
-	      int_type __c = __sb->sbumpc();
+	      const __ctype_type& __ctype = use_facet<__ctype_type>(__in.getloc());
 	      const int_type __eof = _Traits::eof();
-	      bool __testsp = __ctype->is(ctype_base::space, __c);
+	      __streambuf_type* __sb = __in.rdbuf();
+	      int_type __c = __sb->sbumpc();
 	      bool __testeof =  __c == __eof;
+	      bool __testsp = __ctype.is(ctype_base::space, __c);
 	      
 	      while (__extracted < __num - 1 && !__testeof && !__testsp)
 		{
@@ -1111,7 +1112,7 @@ namespace std
 		  ++__extracted;
 		  __c = __sb->sbumpc();
 		  __testeof = __c == __eof;
-		  __testsp = __ctype->is(ctype_base::space, __c);
+		  __testsp = __ctype.is(ctype_base::space, __c);
 		}
 	      
 	      if (!__testeof)
@@ -1150,8 +1151,8 @@ namespace std
       typedef typename __istream_type::int_type 	__int_type;
       typedef typename __istream_type::char_type 	__char_type;
 
+      const __ctype_type& __ctype = use_facet<__ctype_type>(__in.getloc());
       __streambuf_type* __sb = __in.rdbuf();
-      const __ctype_type* __ctype = __in._M_get_fctype_ios();
       const __int_type __eof = _Traits::eof();	      
       __int_type __c;
       bool __testeof;
@@ -1160,8 +1161,8 @@ namespace std
       do 
 	{
 	  __c = __sb->sbumpc();
-	  __testeof = __c == __eof;
-	  __testsp = __ctype->is(ctype_base::space, __c);
+	  __testeof = __c == __eof;	  
+	  __testsp = __ctype.is(ctype_base::space, __c);
 	}
       while (!__testeof && __testsp);
 
@@ -1195,12 +1196,12 @@ namespace std
 	  __size_type __n;
 	  __n = __w > 0 ? static_cast<__size_type>(__w) : __str.max_size();
 
-	  __streambuf_type* __sb = __in.rdbuf();
-	  const __ctype_type* __ctype = __in._M_get_fctype_ios();
-	  __int_type __c = __sb->sbumpc();
+	  const __ctype_type& __ctype = use_facet<__ctype_type>(__in.getloc());
 	  const __int_type __eof = _Traits::eof();
-	  bool __testsp = __ctype->is(ctype_base::space, __c);
+	  __streambuf_type* __sb = __in.rdbuf();
+	  __int_type __c = __sb->sbumpc();
 	  bool __testeof =  __c == __eof;
+	  bool __testsp = __ctype.is(ctype_base::space, __c);
 
 	  while (__extracted < __n && !__testeof && !__testsp)
 	    {
@@ -1208,7 +1209,7 @@ namespace std
 	      ++__extracted;
 	      __c = __sb->sbumpc();
 	      __testeof = __c == __eof;
-	      __testsp = __ctype->is(ctype_base::space, __c);
+	      __testsp = __ctype.is(ctype_base::space, __c);
 	    }
 	  if (!__testeof)
 	    __sb->sputbackc(__c);
