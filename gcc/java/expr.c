@@ -811,7 +811,7 @@ build_java_arraystore_check (array, object)
    tree array; 
    tree object;
 {
-  tree check, element_type;
+  tree check, element_type, source;
   tree array_type_p = TREE_TYPE (array);
   tree object_type = TYPE_NAME (TREE_TYPE (TREE_TYPE (object)));
 
@@ -837,11 +837,17 @@ build_java_arraystore_check (array, object)
 	  || CLASS_FINAL (element_type)))
     return build1 (NOP_EXPR, array_type_p, array);
   
+  /* OBJECT might be wrapped by a SAVE_EXPR. */
+  if (TREE_CODE (object) == SAVE_EXPR)
+    source = TREE_OPERAND (object, 0);
+  else
+    source = object;
+  
   /* Avoid the check if OBJECT was just loaded from the same array. */
-  if (TREE_CODE (object) == ARRAY_REF)
+  if (TREE_CODE (source) == ARRAY_REF)
     {
       tree target;
-      tree source = TREE_OPERAND (object, 0); /* COMPONENT_REF. */
+      source = TREE_OPERAND (source, 0); /* COMPONENT_REF. */
       source = TREE_OPERAND (source, 0); /* INDIRECT_REF. */
       source = TREE_OPERAND (source, 0); /* Source array's DECL or SAVE_EXPR. */
       if (TREE_CODE (source) == SAVE_EXPR)
