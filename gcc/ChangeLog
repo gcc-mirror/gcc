@@ -1,3 +1,18 @@
+2003-12-08  Jason Merrill <jason@redhat.com>
+	    Daniel Berlin  <dberlin@dberlin.org>
+
+	Support namespaces in DWARF 2 output.
+	* dwarf2out.c (gen_namespace_die): New function.
+	(force_namespace_die, setup_namespace_context): New fns.
+	(declare_in_namespace): New fn.
+	(gen_decl_die): Call declare_in_namespace.  Handle namespaces.
+	(dwarf2out_decl): Handle namespaces.
+	(scope_die_for): Pass through a namespace scope.
+	(class_scope_p): Rename to class_or_namespace_scope_p.
+	(gen_subprogram_die, gen_variable_die): Adjust.
+	(gen_struct_or_union_die): Always emit a declaration
+	if context_die is a namespace.
+
 2003-12-08  Jan Hubicka  <jh@suse.cz>
 
 	* unwind-pe.h (read_uleb128): Fix handling of large values
