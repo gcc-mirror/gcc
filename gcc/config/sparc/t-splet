@@ -16,8 +16,7 @@ fp-bit.c: $(srcdir)/config/fp-bit.c
 	echo '#define FLOAT' > fp-bit.c
 	cat $(srcdir)/config/fp-bit.c >> fp-bit.c
 
-MULTILIB_OPTIONS = mlittle-endian mlive-g0 mbroken-saverestore
-MULTILIB_DIRNAMES = little live-g0 brknsave
-
+MULTILIB_OPTIONS = mlittle-endian mflat
+MULTILIB_DIRNAMES = little flat
 LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib
