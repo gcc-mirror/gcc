@@ -3101,10 +3101,10 @@ extern int flag_new_for_scope;
    `this' pointer when this function is called.  */
 #define THUNK_DELTA(DECL) (DECL_CHECK (DECL)->decl.u1.i)
 
-/* An integer indicating how many bytes should be subtracted from the
+/* A tree indicating how many bytes should be subtracted from the
    vtable for the `this' pointer to find the vcall offset.  (The vptr
    is always located at offset zero from the f `this' pointer.)  If
-   zero, then there is no vcall offset.  */
+   NULL, then there is no vcall offset.  */
 #define THUNK_VCALL_OFFSET(DECL) \
   (DECL_LANG_SPECIFIC (DECL)->decl_flags.u2.vcall_offset)
 
