@@ -3605,7 +3605,9 @@ push_overloaded_decl (decl, forgettable)
       if (TREE_CODE (old) == TYPE_DECL && DECL_ARTIFICIAL (old))
 	{
 	  tree t = TREE_TYPE (old);
-	  if (IS_AGGR_TYPE (t) && warn_shadow)
+	  if (IS_AGGR_TYPE (t) && warn_shadow
+	      && (! DECL_IN_SYSTEM_HEADER (decl)
+		  || ! DECL_IN_SYSTEM_HEADER (old)))
 	    cp_warning ("`%#D' hides constructor for `%#T'", decl, t);
 	  old = NULL_TREE;
 	}
