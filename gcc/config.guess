@@ -320,8 +320,9 @@ EOF
     CRAY*Y-MP:*:*:*)
 	echo ymp-cray-unicos${UNAME_RELEASE}
 	exit 0 ;;
-    CRAY*C90:*:*:*)
-	echo c90-cray-unicos${UNAME_RELEASE}
+    CRAY*[A-Z]90:*:*:*)
+	echo ${UNAME_MACHINE}-cray-unicos${UNAME_RELEASE} \
+	| sed -e 's/CRAY.*\([A-Z]90\)/\1/' | tr A-Z a-z
 	exit 0 ;;
     CRAY-2:*:*:*)
 	echo cray2-cray-unicos
