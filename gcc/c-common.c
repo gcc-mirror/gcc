@@ -33,6 +33,7 @@ Boston, MA 02111-1307, USA.  */
 #include "tm_p.h"
 #include "intl.h"
 #include "diagnostic.h"
+#include "obstack.h"
 
 #if USE_CPPLIB
 #include "cpplib.h"
@@ -3414,193 +3415,388 @@ convert_and_check (type, expr)
   return t;
 }
 
-/* Describe a reversed version of a normal tree, so that we can get to the
-   parent of each node.  */
-struct reverse_tree
+/* A node in a list that describes references to variables (EXPR), which are
+   either read accesses if WRITER is zero, or write accesses, in which case
+   WRITER is the parent of EXPR.  */
+struct tlist
 {
-  /* All reverse_tree structures for a given tree are chained through this
-     field.  */
-  struct reverse_tree *next;
-  /* The parent of this node.  */
-  struct reverse_tree *parent;
-  /* The actual tree node.  */
-  tree x;
-  /* The operand number this node corresponds to in the parent.  */
-  int operandno;
-  /* Describe whether this expression is written to or read.  */
-  char read, write;
+  struct tlist *next;
+  tree expr, writer;
 };
 
-/* A list of all reverse_tree structures for a given expression, built by
-   build_reverse_tree.  */
-static struct reverse_tree *reverse_list;
-/* The maximum depth of a tree, computed by build_reverse_tree.  */
-static int reverse_max_depth;
+/* Used to implement a cache the results of a call to verify_tree.  We only
+   use this for SAVE_EXPRs.  */
+struct tlist_cache
+{
+  struct tlist_cache *next;
+  struct tlist *cache_before_sp;
+  struct tlist *cache_after_sp;
+  tree expr;
+};
 
-static void build_reverse_tree PARAMS ((tree, struct reverse_tree *, int, int,
-					int, int));
-static struct reverse_tree *common_ancestor PARAMS ((struct reverse_tree *,
-						     struct reverse_tree *,
-						     struct reverse_tree **,
-						     struct reverse_tree **));
-static int modify_ok PARAMS ((struct reverse_tree *, struct reverse_tree *));
+/* Obstack to use when allocating tlist structures, and corresponding
+   firstobj.  */
+static struct obstack tlist_obstack;
+static char *tlist_firstobj = 0;
+
+/* Keep track of the identifiers we've warned about, so we can avoid duplicate
+   warnings.  */
+static struct tlist *warned_ids;
+/* SAVE_EXPRs need special treatment.  We process them only once and then
+   cache the results.  */
+static struct tlist_cache *save_expr_cache;
+
+static void add_tlist PARAMS ((struct tlist **, struct tlist *, tree, int));
+static void merge_tlist PARAMS ((struct tlist **, struct tlist *, int));
+static void verify_tree PARAMS ((tree, struct tlist **, struct tlist **, tree));
+static int warning_candidate_p PARAMS ((tree));
+static void warn_for_collisions PARAMS ((struct tlist *));
+static void warn_for_collisions_1 PARAMS ((tree, tree, struct tlist *, int));
+static struct tlist *new_tlist PARAMS ((struct tlist *, tree, tree));
 static void verify_sequence_points PARAMS ((tree));
 
-/* Recursively process an expression, X, building a reverse tree while
-   descending and recording OPERANDNO, READ, and WRITE in the created
-   structures.  DEPTH is used to compute reverse_max_depth.
-   FIXME: if walk_tree gets moved out of the C++ front end, this should
-   probably use walk_tree.  */
+/* Create a new struct tlist and fill in its fields.  */
+static struct tlist *
+new_tlist (next, t, writer)
+     struct tlist *next;
+     tree t;
+     tree writer;
+{
+  struct tlist *l;
+  l = (struct tlist *) obstack_alloc (&tlist_obstack, sizeof *l);
+  l->next = next;
+  l->expr = t;
+  l->writer = writer;
+  return l;
+}
+
+/* Add duplicates of the nodes found in ADD to the list *TO.  If EXCLUDE_WRITER
+   is nonnull, we ignore any node we find which has a writer equal to it.  */
 
 static void
-build_reverse_tree (x, parent, operandno, read, write, depth)
-     tree x;
-     struct reverse_tree *parent;
-     int operandno, read, write, depth;
+add_tlist (to, add, exclude_writer, copy)
+     struct tlist **to;
+     struct tlist *add;
+     tree exclude_writer;
+     int copy;
 {
-  struct reverse_tree *node;
-
-  if (x == 0 || x == error_mark_node)
-    return;
-
-  node = (struct reverse_tree *) xmalloc (sizeof (struct reverse_tree));
-
-  node->parent = parent;
-  node->x = x;
-  node->read = read;
-  node->write = write;
-  node->operandno = operandno;
-  node->next = reverse_list;
-  reverse_list = node;
-  if (depth > reverse_max_depth)
-    reverse_max_depth = depth;
-
-  switch (TREE_CODE (x))
+  while (add)
     {
+      struct tlist *next = add->next;
+      if (! copy)
+	add->next = *to;
+      if (! exclude_writer || add->writer != exclude_writer)
+	*to = copy ? new_tlist (*to, add->expr, add->writer) : add;
+      add = next;
+    }
+}
+
+/* Merge the nodes of ADD into TO.  This merging process is done so that for
+   each variable that already exists in TO, no new node is added; however if
+   there is a write access recorded in ADD, and an occurrence on TO is only
+   a read access, then the occurrence in TO will be modified to record the
+   write.  */
+
+static void
+merge_tlist (to, add, copy)
+     struct tlist **to;
+     struct tlist *add;
+     int copy;
+{
+  struct tlist **end = to;
+
+  while (*end)
+    end = &(*end)->next;
+
+  while (add)
+    {
+      int found = 0;
+      struct tlist *tmp2;
+      struct tlist *next = add->next;
+
+      for (tmp2 = *to; tmp2; tmp2 = tmp2->next)
+	if (tmp2->expr == add->expr)
+	  {
+	    found = 1;
+	    if (! tmp2->writer)
+	      tmp2->writer = add->writer;
+	  }
+      if (! found)
+	{
+	  *end = copy ? add : new_tlist (NULL, add->expr, add->writer);
+	  end = &(*end)->next;
+	  *end = 0;
+	}
+      add = next;
+    }
+}
+
+/* WRITTEN is a variable, WRITER is its parent.  Warn if any of the variable
+   references in list LIST conflict with it, excluding reads if ONLY writers
+   is nonzero.  */
+
+static void
+warn_for_collisions_1 (written, writer, list, only_writes)
+     tree written, writer;
+     struct tlist *list;
+     int only_writes;
+{
+  struct tlist *tmp;
+
+  /* Avoid duplicate warnings.  */
+  for (tmp = warned_ids; tmp; tmp = tmp->next)
+    if (tmp->expr == written)
+      return;
+
+  while (list)
+    {
+      if (list->expr == written
+	  && list->writer != writer
+	  && (! only_writes || list->writer))
+	{
+	  warned_ids = new_tlist (warned_ids, written, NULL_TREE);
+	  warning ("operation on `%s' may be undefined",
+		   IDENTIFIER_POINTER (DECL_NAME (list->expr)));
+	}
+      list = list->next;
+    }
+}
+
+/* Given a list LIST of references to variables, find whether any of these
+   can cause conflicts due to missing sequence points.  */
+
+static void
+warn_for_collisions (list)
+     struct tlist *list;
+{
+  struct tlist *tmp;
+  
+  for (tmp = list; tmp; tmp = tmp->next)
+    {
+      if (tmp->writer)
+	warn_for_collisions_1 (tmp->expr, tmp->writer, list, 0);
+    }
+}
+
+/* Return nonzero if X is a tree that can be verified by the sequence poitn
+   warnings.  */
+static int
+warning_candidate_p (x)
+     tree x;
+{
+  return TREE_CODE (x) == VAR_DECL || TREE_CODE (x) == PARM_DECL;
+}
+
+/* Walk the tree X, and record accesses to variables.  If X is written by the
+   parent tree, WRITER is the parent.
+   We store accesses in one of the two lists: PBEFORE_SP, and PNO_SP.  If this
+   expression or its only operand forces a sequence point, then everything up
+   to the sequence point is stored in PBEFORE_SP.  Everything else gets stored
+   in PNO_SP.
+   Once we return, we will have emitted warnings if any subexpression before
+   such a sequence point could be undefined.  On a higher level, however, the
+   sequence point may not be relevant, and we'll merge the two lists.
+
+   Example: (b++, a) + b;
+   The call that processes the COMPOUND_EXPR will store the increment of B
+   in PBEFORE_SP, and the use of A in PNO_SP.  The higher-level call that
+   processes the PLUS_EXPR will need to merge the two lists so that
+   eventually, all accesses end up on the same list (and we'll warn about the
+   unordered subexpressions b++ and b.
+
+   A note on merging.  If we modify the former example so that our expression
+   becomes
+     (b++, b) + a
+   care must be taken not simply to add all three expressions into the final
+   PNO_SP list.  The function merge_tlist takes care of that by merging the
+   before-SP list of the COMPOUND_EXPR into its after-SP list in a special
+   way, so that no more than one access to B is recorded.  */
+
+static void
+verify_tree (x, pbefore_sp, pno_sp, writer)
+     tree x;
+     struct tlist **pbefore_sp, **pno_sp;
+     tree writer;
+{
+  struct tlist *tmp_before, *tmp_nosp, *tmp_list2, *tmp_list3;
+  enum tree_code code;
+  char class;
+
+ restart:
+  code = TREE_CODE (x);
+  class = TREE_CODE_CLASS (code);
+
+  if (warning_candidate_p (x))
+    {
+      *pno_sp = new_tlist (*pno_sp, x, writer);
+      return;
+    }
+
+  switch (code)
+    {
+    case COMPOUND_EXPR:
+    case TRUTH_ANDIF_EXPR:
+    case TRUTH_ORIF_EXPR:
+      tmp_before = tmp_nosp = tmp_list3 = 0;
+      verify_tree (TREE_OPERAND (x, 0), &tmp_before, &tmp_nosp, NULL_TREE);
+      warn_for_collisions (tmp_nosp);
+      merge_tlist (pbefore_sp, tmp_before, 0);
+      merge_tlist (pbefore_sp, tmp_nosp, 0);
+      verify_tree (TREE_OPERAND (x, 1), &tmp_list3, pno_sp, NULL_TREE);
+      merge_tlist (pbefore_sp, tmp_list3, 0);
+      return;
+
+    case COND_EXPR:
+      tmp_before = tmp_list2 = 0;
+      verify_tree (TREE_OPERAND (x, 0), &tmp_before, &tmp_list2, NULL_TREE);
+      warn_for_collisions (tmp_list2);
+      merge_tlist (pbefore_sp, tmp_before, 0);
+      merge_tlist (pbefore_sp, tmp_list2, 1);
+
+      tmp_list3 = tmp_nosp = 0;
+      verify_tree (TREE_OPERAND (x, 1), &tmp_list3, &tmp_nosp, NULL_TREE);
+      warn_for_collisions (tmp_nosp);
+      merge_tlist (pbefore_sp, tmp_list3, 0);
+
+      tmp_list3 = tmp_list2 = 0;
+      verify_tree (TREE_OPERAND (x, 2), &tmp_list3, &tmp_list2, NULL_TREE);
+      warn_for_collisions (tmp_list2);
+      merge_tlist (pbefore_sp, tmp_list3, 0);
+      /* Rather than add both tmp_nosp and tmp_list2, we have to merge the
+	 two first, to avoid warning for (a ? b++ : b++).  */
+      merge_tlist (&tmp_nosp, tmp_list2, 0);
+      add_tlist (pno_sp, tmp_nosp, NULL_TREE, 0);
+      return;
+
     case PREDECREMENT_EXPR:
     case PREINCREMENT_EXPR:
     case POSTDECREMENT_EXPR:
     case POSTINCREMENT_EXPR:
-      build_reverse_tree (TREE_OPERAND (x, 0), node, 0, 1, 1, depth + 1);
-      break;
+      verify_tree (TREE_OPERAND (x, 0), pno_sp, pno_sp, x);
+      return;
+
+    case MODIFY_EXPR:
+      tmp_before = tmp_nosp = tmp_list3 = 0;
+      verify_tree (TREE_OPERAND (x, 1), &tmp_before, &tmp_nosp, NULL_TREE);
+      verify_tree (TREE_OPERAND (x, 0), &tmp_list3, &tmp_list3, x);
+      /* Expressions inside the LHS are not ordered wrt. the sequence points
+	 in the RHS.  Example:
+	   *a = (a++, 2)
+	 Despite the fact that the modification of "a" is in the before_sp
+	 list (tmp_before), it conflicts with the use of "a" in the LHS.
+	 We can handle this by adding the contents of tmp_list3
+	 to those of tmp_before, and redoing the collision warnings for that
+	 list.  */
+      add_tlist (&tmp_before, tmp_list3, x, 1);
+      warn_for_collisions (tmp_before);
+      /* Exclude the LHS itself here; we first have to merge it into the
+	 tmp_nosp list.  This is done to avoid warning for "a = a"; if we
+	 didn't exclude the LHS, we'd get it twice, once as a read and once
+	 as a write.  */
+      add_tlist (pno_sp, tmp_list3, x, 0);
+      warn_for_collisions_1 (TREE_OPERAND (x, 0), x, tmp_nosp, 1);
+
+      merge_tlist (pbefore_sp, tmp_before, 0);
+      if (warning_candidate_p (TREE_OPERAND (x, 0)))
+	merge_tlist (&tmp_nosp, new_tlist (NULL, TREE_OPERAND (x, 0), x), 0);
+      add_tlist (pno_sp, tmp_nosp, NULL_TREE, 1);
+      return;
 
     case CALL_EXPR:
-      build_reverse_tree (TREE_OPERAND (x, 0), node, 0, 1, 0, depth + 1);
-      x = TREE_OPERAND (x, 1);
-      while (x)
-	{
-	  build_reverse_tree (TREE_VALUE (x), node, 1, 1, 0, depth + 1);
-	  x = TREE_CHAIN (x);
-	}
-      break;
+      /* We need to warn about conflicts among arguments and conflicts between
+	 args and the function address.  Side effects of the function address,
+	 however, are not ordered by the sequence point of the call.  */
+      tmp_before = tmp_nosp = tmp_list2 = tmp_list3 = 0;
+      verify_tree (TREE_OPERAND (x, 0), &tmp_before, &tmp_nosp, NULL_TREE);
+      if (TREE_OPERAND (x, 1))
+	verify_tree (TREE_OPERAND (x, 1), &tmp_list2, &tmp_list3, NULL_TREE);
+      merge_tlist (&tmp_list3, tmp_list2, 0);
+      add_tlist (&tmp_before, tmp_list3, NULL_TREE, 0);
+      add_tlist (&tmp_before, tmp_nosp, NULL_TREE, 0);
+      warn_for_collisions (tmp_before);
+      add_tlist (pbefore_sp, tmp_before, NULL_TREE, 0);
+      return;
 
     case TREE_LIST:
       /* Scan all the list, e.g. indices of multi dimensional array.  */
       while (x)
 	{
-	  build_reverse_tree (TREE_VALUE (x), node, 0, 1, 0, depth + 1);
+	  tmp_before = tmp_nosp = 0;
+	  verify_tree (TREE_VALUE (x), &tmp_before, &tmp_nosp, NULL_TREE);
+	  merge_tlist (&tmp_nosp, tmp_before, 0);
+	  add_tlist (pno_sp, tmp_nosp, NULL_TREE, 0);
 	  x = TREE_CHAIN (x);
 	}
-      break;
+      return;
 
-    case MODIFY_EXPR:
-      build_reverse_tree (TREE_OPERAND (x, 0), node, 0, 0, 1, depth + 1);
-      build_reverse_tree (TREE_OPERAND (x, 1), node, 1, 1, 0, depth + 1);
-      break;
-
-    default:
-      switch (TREE_CODE_CLASS (TREE_CODE (x)))
-	{
-	case 'r':
-	case '<':
-	case '2':
-	case 'b':
-	case '1':
-	case 'e':
-	case 's':
-	case 'x':
-	  {
-	    int lp;
-	    int max = first_rtl_op (TREE_CODE (x));
-	    for (lp = 0; lp < max; lp++)
-	      build_reverse_tree (TREE_OPERAND (x, lp), node, lp, 1, 0,
-				  depth + 1);
+    case SAVE_EXPR:
+      {
+	struct tlist_cache *t;
+	for (t = save_expr_cache; t; t = t->next)
+	  if (t->expr == x)
 	    break;
+
+	if (! t)
+	  {
+	    t = (struct tlist_cache *) obstack_alloc (&tlist_obstack,
+						      sizeof *t);
+	    t->next = save_expr_cache;
+	    t->expr = x;
+	    save_expr_cache = t;
+
+	    tmp_before = tmp_nosp = 0;
+	    verify_tree (TREE_OPERAND (x, 0), &tmp_before, &tmp_nosp, NULL_TREE);
+	    warn_for_collisions (tmp_nosp);
+
+	    tmp_list3 = 0;
+	    while (tmp_nosp)
+	      {
+		struct tlist *t = tmp_nosp;
+		tmp_nosp = t->next;
+		merge_tlist (&tmp_list3, t, 0);
+	      }
+	    t->cache_before_sp = tmp_before;
+	    t->cache_after_sp = tmp_list3;
 	  }
-	default:
-	  break;
-	}
+	merge_tlist (pbefore_sp, t->cache_before_sp, 1);
+	add_tlist (pno_sp, t->cache_after_sp, NULL_TREE, 1);
+	return;
+      }
+    default:
       break;
     }
-}
 
-/* Given nodes P1 and P2 as well as enough scratch space pointed to by TMP1
-   and TMP2, find the common ancestor of P1 and P2.  */
-
-static struct reverse_tree *
-common_ancestor (p1, p2, tmp1, tmp2)
-     struct reverse_tree *p1, *p2;
-     struct reverse_tree **tmp1, **tmp2;
-{
-  struct reverse_tree *t1 = p1;
-  struct reverse_tree *t2 = p2;
-  int i, j;
-
-  /* First, check if we're actually looking at the same expression twice,
-     which can happen if it's wrapped in a SAVE_EXPR - in this case there's
-     no chance of conflict.  */
-  while (t1 && t2 && t1->x == t2->x)
+  if (class == '1')
     {
-      if (TREE_CODE (t1->x) == SAVE_EXPR)
-	return 0;
-      t1 = t1->parent;
-      t2 = t2->parent;
+      if (first_rtl_op (code) == 0)
+	return;
+      x = TREE_OPERAND (x, 0);
+      writer = 0;
+      goto restart;
     }
 
-  for (i = 0; p1; i++, p1 = p1->parent)
-    tmp1[i] = p1;
-  for (j = 0; p2; j++, p2 = p2->parent)
-    tmp2[j] = p2;
-  while (tmp1[i - 1] == tmp2[j - 1])
-    i--, j--;
-
-  return tmp1[i];
-}
-
-/* Subroutine of verify_sequence_points to check whether a node T corresponding
-   to a MODIFY_EXPR invokes undefined behaviour.  OTHER occurs somewhere in the
-   RHS, and an identical expression is the LHS of T.
-   For MODIFY_EXPRs, some special cases apply when testing for undefined
-   behaviour if one of the expressions we found is the LHS of the MODIFY_EXPR.
-   If the other expression is just a use, then there's no undefined behaviour.
-   Likewise, if the other expression is wrapped inside another expression that
-   will force a sequence point, then there's no undefined behaviour either.  */
-
-static int
-modify_ok (t, other)
-     struct reverse_tree *t, *other;
-{
-  struct reverse_tree *p;
-
-  if (! other->write)
-    return 1;
-
-  /* See if there's an intervening sequence point.  */
-  for (p = other; p->parent != t; p = p->parent)
+  switch (class)
     {
-      if ((TREE_CODE (p->parent->x) == COMPOUND_EXPR
-	   || TREE_CODE (p->parent->x) == TRUTH_ANDIF_EXPR
-	   || TREE_CODE (p->parent->x) == TRUTH_ORIF_EXPR
-	   || TREE_CODE (p->parent->x) == COND_EXPR)
-	  && p->operandno == 0)
-	return 1;
-      if (TREE_CODE (p->parent->x) == SAVE_EXPR)
-	return 1;
-      if (TREE_CODE (p->parent->x) == CALL_EXPR
-	  && p->operandno != 0)
-	return 1;
+    case 'r':
+    case '<':
+    case '2':
+    case 'b':
+    case 'e':
+    case 's':
+    case 'x':
+      {
+	int lp;
+	int max = first_rtl_op (TREE_CODE (x));
+	for (lp = 0; lp < max; lp++)
+	  {
+	    tmp_before = tmp_nosp = 0;
+	    verify_tree (TREE_OPERAND (x, lp), &tmp_before, &tmp_nosp, NULL_TREE);
+	    merge_tlist (&tmp_nosp, tmp_before, 0);
+	    add_tlist (pno_sp, tmp_nosp, NULL_TREE, 0);
+	  }
+	break;
+      }
     }
-  return 0;
 }
 
 /* Try to warn for undefined behaviour in EXPR due to missing sequence
@@ -3610,65 +3806,19 @@ static void
 verify_sequence_points (expr)
      tree expr;
 {
-  struct reverse_tree **tmp1, **tmp2;
-  struct reverse_tree *p;
+  struct tlist *before_sp = 0, *after_sp = 0;
 
-  reverse_list = 0;
-  reverse_max_depth = 0;
-  build_reverse_tree (expr, NULL, 0, 1, 0, 1);
-
-  tmp1 = (struct reverse_tree **) xmalloc (sizeof (struct reverse_tree *)
-					   * reverse_max_depth);
-  tmp2 = (struct reverse_tree **) xmalloc (sizeof (struct reverse_tree *)
-					   * reverse_max_depth);
-
-  /* Search for multiple occurrences of the same variable, where either both
-     occurrences are writes, or one is a read and a write.  If we can't prove
-     that these are ordered by a sequence point, warn that the expression is
-     undefined.  */
-  for (p = reverse_list; p; p = p->next)
+  warned_ids = 0;
+  save_expr_cache = 0;
+  if (tlist_firstobj == 0)
     {
-      struct reverse_tree *p2;
-      if (TREE_CODE (p->x) != VAR_DECL && TREE_CODE (p->x) != PARM_DECL)
-	continue;
-      for (p2 = p->next; p2; p2 = p2->next)
-	{
-	  if ((TREE_CODE (p2->x) == VAR_DECL || TREE_CODE (p2->x) == PARM_DECL)
-	      && DECL_NAME (p->x) == DECL_NAME (p2->x)
-	      && (p->write || p2->write))
-	    {
-	      struct reverse_tree *t = common_ancestor (p, p2, tmp1, tmp2);
-
-	      if (t == 0
-		  || TREE_CODE (t->x) == COMPOUND_EXPR
-		  || TREE_CODE (t->x) == TRUTH_ANDIF_EXPR
-		  || TREE_CODE (t->x) == TRUTH_ORIF_EXPR
-		  || TREE_CODE (t->x) == COND_EXPR)
-		continue;
-	      if (TREE_CODE (t->x) == MODIFY_EXPR
-		  && p->parent == t
-		  && modify_ok (t, p2))
-		continue;
-	      if (TREE_CODE (t->x) == MODIFY_EXPR
-		  && p2->parent == t
-		  && modify_ok (t, p))
-		continue;
-
-	      warning ("operation on `%s' may be undefined",
-		       IDENTIFIER_POINTER (DECL_NAME (p->x)));
-	      break;
-	    }
-	}
+      gcc_obstack_init (&tlist_obstack);
+      tlist_firstobj = obstack_alloc (&tlist_obstack, 0);
     }
 
-  while (reverse_list)
-    {
-      struct reverse_tree *p = reverse_list;
-      reverse_list = p->next;
-      free (p);
-    }
-  free (tmp1);
-  free (tmp2);
+  verify_tree (expr, &before_sp, &after_sp, 0);
+  warn_for_collisions (after_sp);
+  obstack_free (&tlist_obstack, tlist_firstobj);
 }
 
 void
