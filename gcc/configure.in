@@ -2817,7 +2817,6 @@ do
 	touch Make-hooks
 	# Conditionalize the makefile for this host machine.
 	dep_host_xmake_file=
-	merged_frags=
 	for f in .. ${host_xmake_file}
 	do
 		if [[ -f ${mainsrcdir}/config/$f ]]
@@ -2826,19 +2825,6 @@ do
 			dep_host_xmake_file="${dep_host_xmake_file} \$(srcdir)/config/$f"
 		fi
 	done
-
-	# Set EXTRA_HEADERS according to extra_headers.
-	# This substitutes for lots of t-* files.
-	extra_headers_list=
-	if [[ "x$extra_headers" = x ]]
-	then true
-	else
-		# Prepend ${srcdir}/ginclude/ to every entry in extra_headers.
-		for file in $extra_headers;
-		do
-			extra_headers_list="${extra_headers_list} \$(srcdir)/ginclude/${file}"
-		done
-	fi
 
 	# Add a definition of USE_COLLECT2 if system wants one.
 	# Also tell toplev.c what to do.
@@ -2882,7 +2868,6 @@ do
 
 	# Conditionalize the makefile for this target machine.
 	dep_tmake_file=
-	merged_frags=
 	for f in .. ${tmake_file}
 	do
 		if [[ -f ${mainsrcdir}/config/$f ]]
@@ -3044,6 +3029,19 @@ done   # end of current-dir SUBDIRS loop
 
 srcdir=$savesrcdir
 
+# Expand extra_headers to include complete path.
+# This substitutes for lots of t-* files.
+extra_headers_list=
+if [[ "x$extra_headers" = x ]]
+then true
+else
+	# Prepend ${srcdir}/ginclude/ to every entry in extra_headers.
+	for file in $extra_headers;
+	do
+		extra_headers_list="${extra_headers_list} \$(srcdir)/ginclude/${file}"
+	done
+fi
+
 # Process the language fragments
 ${CONFIG_SHELL-/bin/sh} $srcdir/configure.frag $srcdir "$subdirs"
 
@@ -3144,13 +3142,6 @@ all_stagestuff='${all_stagestuff}'
 all_diff_excludes='${all_diff_excludes}'
 all_lib2funcs='${all_lib2funcs}'
 all_headers='${all_headers}'
-extra_headers='${extra_headers}'
-extra_passes='${extra_passes}'
-extra_programs='${extra_programs}'
-extra_parts='${extra_parts}'
-extra_objs='${extra_objs}'
-host_extra_gcc_objs='${host_extra_gcc_objs}'
-extra_headers_list='${extra_headers_list}'
 dep_host_xmake_file='${dep_host_xmake_file}'
 host_xmake_file='${host_xmake_file}'
 dep_tmake_file='${dep_tmake_file}'
@@ -3170,7 +3161,6 @@ lang_options_files='${lang_options_files}'
 thread_file='${thread_file}'
 version='${version}'
 local_prefix='${local_prefix}'
-gxx_include_dir='${gxx_include_dir}'
 fixincludes='${fixincludes}'
 build_install_headers_dir='${build_install_headers_dir}'
 build_exeext='${build_exeext}'
@@ -3181,7 +3171,6 @@ maybe_use_collect2='${maybe_use_collect2}'
 gdb_needs_out_file_path='${gdb_needs_out_file_path}'
 SET_MAKE='${SET_MAKE}'
 build_broken_install='${build_broken_install}'
-md_cppflags='${md_cppflags}'
 target_list='${target_list}'
 
 target_overrides='${target_overrides}'
