@@ -1837,7 +1837,7 @@ while (0)
 #define ASM_APP_OFF  		""
 #define FILE_ASM_OP 		"\t.file\n"
 #define IDENT_ASM_OP 		"\t.ident\n"
-#define SET_ASM_OP		".set"
+#define SET_ASM_OP		"\t.set\t"
 
 /* How to change between sections.  */
 
@@ -1874,7 +1874,7 @@ dtors_section()							\
    `-fno-common' is passed, otherwise `ASM_OUTPUT_COMMON' will be
    used.  */
 #ifndef BSS_SECTION_ASM_OP
-#define BSS_SECTION_ASM_OP	".section\t.bss"
+#define BSS_SECTION_ASM_OP	"\t.section\t.bss"
 #endif
 
 /* Like `ASM_OUTPUT_BSS' except takes the required alignment as a
@@ -2086,8 +2086,8 @@ do { char dstr[30];					\
   fprintf ((STREAM), "\t.byte\t%d\n", (VALUE)) 	\
 
 /* The next two are used for debug info when compiling with -gdwarf.  */
-#define UNALIGNED_SHORT_ASM_OP	".uaword"
-#define UNALIGNED_INT_ASM_OP	".ualong"
+#define UNALIGNED_SHORT_ASM_OP	"\t.uaword\t"
+#define UNALIGNED_INT_ASM_OP	"\t.ualong\t"
 
 /* Loop alignment is now done in machine_dependent_reorg, so that
    branch shortening can know about it.  */

@@ -1,5 +1,5 @@
 /* Target definitions for GNU compiler for Sparc running System V.4
-   Copyright (C) 1991, 92, 95, 96, 97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1991, 92, 95, 96, 97, 1998, 2000 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@monkeys.com).
 
 This file is part of GNU CC.
@@ -92,14 +92,14 @@ Boston, MA 02111-1307, USA.  */
    to keep the Sparc/svr4 assembler somewhat compatible with the Sparc/SunOS
    assembler.  */
 
-#define STRING_ASM_OP		".asciz"
-#define COMMON_ASM_OP		".common"
-#define SKIP_ASM_OP		".skip"
-#define UNALIGNED_DOUBLE_INT_ASM_OP ".uaxword"
-#define UNALIGNED_INT_ASM_OP	".uaword"
-#define UNALIGNED_SHORT_ASM_OP	".uahalf"
-#define PUSHSECTION_ASM_OP	".pushsection"
-#define POPSECTION_ASM_OP	".popsection"
+#define STRING_ASM_OP		"\t.asciz\t"
+#define COMMON_ASM_OP		"\t.common\t"
+#define SKIP_ASM_OP		"\t.skip\t"
+#define UNALIGNED_DOUBLE_INT_ASM_OP "\t.uaxword\t"
+#define UNALIGNED_INT_ASM_OP	"\t.uaword\t"
+#define UNALIGNED_SHORT_ASM_OP	"\t.uahalf\t"
+#define PUSHSECTION_ASM_OP	"\t.pushsection\t"
+#define POPSECTION_ASM_OP	"\t.popsection"
 
 /* This is defined in sparc.h but is not used by svr4.h.  */
 #undef ASM_LONG
@@ -155,12 +155,12 @@ do { ASM_OUTPUT_ALIGN ((FILE), Pmode == SImode ? 2 : 3);		\
    *not* to push the previous section name onto the assembler's
    section names stack (as we do often in dwarfout.c).  */
 
-#define TEXT_SECTION_ASM_OP	".section\t\".text\""
-#define DATA_SECTION_ASM_OP	".section\t\".data\""
-#define BSS_SECTION_ASM_OP	".section\t\".bss\""
-#define CONST_SECTION_ASM_OP	".section\t\".rodata\""
-#define INIT_SECTION_ASM_OP	".section\t\".init\""
-#define FINI_SECTION_ASM_OP	".section\t\".fini\""
+#define TEXT_SECTION_ASM_OP	"\t.section\t\".text\""
+#define DATA_SECTION_ASM_OP	"\t.section\t\".data\""
+#define BSS_SECTION_ASM_OP	"\t.section\t\".bss\""
+#define CONST_SECTION_ASM_OP	"\t.section\t\".rodata\""
+#define INIT_SECTION_ASM_OP	"\t.section\t\".init\""
+#define FINI_SECTION_ASM_OP	"\t.section\t\".fini\""
 
 /* Define the pseudo-ops used to switch to the .ctors and .dtors sections.
  
@@ -178,11 +178,11 @@ do { ASM_OUTPUT_ALIGN ((FILE), Pmode == SImode ? 2 : 3);		\
    via the SHF_WRITE attribute.)  */
  
 #undef CTORS_SECTION_ASM_OP
-#define CTORS_SECTION_ASM_OP    ".section\t\".ctors\",#alloc,#write"
+#define CTORS_SECTION_ASM_OP    "\t.section\t\".ctors\",#alloc,#write"
 #undef DTORS_SECTION_ASM_OP
-#define DTORS_SECTION_ASM_OP    ".section\t\".dtors\",#alloc,#write"
+#define DTORS_SECTION_ASM_OP    "\t.section\t\".dtors\",#alloc,#write"
 #undef EH_FRAME_SECTION_ASM_OP
-#define EH_FRAME_SECTION_ASM_OP ".section\t\".eh_frame\",#alloc,#write"
+#define EH_FRAME_SECTION_ASM_OP "\t.section\t\".eh_frame\",#alloc,#write"
 
 /* A C statement to output something to the assembler file to switch to section
    NAME for object DECL which is either a FUNCTION_DECL, a VAR_DECL or

@@ -728,11 +728,11 @@ enum reg_class { NO_REGS, GENERAL_REGS,
 
 /* Output before code.  */
 
-#define TEXT_SECTION_ASM_OP ".text"
+#define TEXT_SECTION_ASM_OP "\t.text"
 
 /* Output before writable data.  */
 
-#define DATA_SECTION_ASM_OP ".data"
+#define DATA_SECTION_ASM_OP "\t.data"
 
 /* Read-only data goes in the data section because
    AT&T's assembler doesn't guarantee the proper alignment
@@ -801,7 +801,7 @@ enum reg_class { NO_REGS, GENERAL_REGS,
 
 /* Assembler pseudo to introduce byte constants.  */
 
-#define ASM_BYTE_OP "\t.byte"
+#define ASM_BYTE_OP "\t.byte\t"
 
 /* This is how to output an assembler line defining a `double' constant.  */
 

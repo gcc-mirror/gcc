@@ -1162,9 +1162,9 @@ zbss_section ()								\
 #define ROSDATA_SECTION_ASM_OP "\t.section .rosdata,\"a\""
 #define ROZDATA_SECTION_ASM_OP "\t.section .rozdata,\"a\""
 
-#define SCOMMON_ASM_OP 	       ".scomm"
-#define ZCOMMON_ASM_OP 	       ".zcomm"
-#define TCOMMON_ASM_OP 	       ".tcomm"
+#define SCOMMON_ASM_OP 	       "\t.scomm\t"
+#define ZCOMMON_ASM_OP 	       "\t.zcomm\t"
+#define TCOMMON_ASM_OP 	       "\t.tcomm\t"
 
 /* A C statement or statements to switch to the appropriate section
    for output of EXP.  You can assume that EXP is either a `VAR_DECL'

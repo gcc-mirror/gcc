@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, Citicorp/TTI Unicom PBD
    version (using GAS and COFF (encapsulated is unacceptable) )
-   Copyright (C) 1990, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1990, 1996, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -153,4 +153,4 @@ Boston, MA 02111-1307, USA.  */
 	     line, sym_lineno, sym_lineno);		\
     sym_lineno += 1; }
 
-#define ASM_INT_OP ".long "
+#define ASM_INT_OP "\t.long "
