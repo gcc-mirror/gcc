@@ -1,3 +1,11 @@
+2001-10-25  Ed Schonberg <schonber@gnat.com>
+
+	* sem_res.adb (Resolve): special-case resolution of Null in an 
+         instance or an inlined body to avoid view conflicts.
+	
+	* sem_ch12.adb (Copy_Generic_Node): for allocators, check for view 
+         compatibility by retrieving the access type of the generic copy.
+
 2001-10-25  Robert Dewar <dewar@gnat.com>
 
 	* sem_ch3.adb:
