@@ -5235,6 +5235,16 @@ s390_emit_prologue ()
 	  set_mem_alias_set (addr, s390_sr_alias_set);
 	  insn = emit_insn (gen_move_insn (addr, temp_reg));
 	}
+
+      /* If we support asynchronous exceptions (e.g. for Java),
+	 we need to make sure the backchain pointer is set up
+	 before any possibly trapping memory access.  */
+
+      if (TARGET_BACKCHAIN && flag_non_call_exceptions)
+	{
+	  addr = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (VOIDmode));
+	  emit_insn (gen_rtx_CLOBBER (VOIDmode, addr));
+	}
     }
 
   /* Save fprs 8 - 15 (64 bit ABI).  */

@@ -1,3 +1,8 @@
+2003-03-29  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* configure.in (HAVE_BACKTRACE) [s390*-*-linux*]: Define.
+	* configure: Regenerate.
+
 2003-03-14  Jeroen Frijters  <jeroen@sumatra.nl>
 
 	* java/io/ObjectInputStream.java (readObject): Cleaned up the class
