@@ -5483,6 +5483,13 @@ A C expression whose value is a string, including spacing, containing the
 assembler operation that should precede instructions and read-only data.
 Normally @code{"\t.text"} is right.
 
+@findex TEXT_SECTION
+@item TEXT_SECTION
+A C statement that switches to the default section containing instructions.
+Normally this is not needed, as simply defining @code{TEXT_SECTION_ASM_OP}
+is enough.  The MIPS port uses this to sort all functions after all data
+declarations.
+
 @findex DATA_SECTION_ASM_OP
 @item DATA_SECTION_ASM_OP
 A C expression whose value is a string, including spacing, containing the
