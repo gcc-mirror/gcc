@@ -1,5 +1,8 @@
 2002-02-28  Jason Merrill  <jason@redhat.com>
 
+	* search.c (lookup_base_r): Don't clear is_non_public just because
+	we found a friendly scope.
+
 	* decl.c (finish_function): Only warn about missing return
 	statement with -Wreturn-type.
 
