@@ -1,5 +1,9 @@
 2000-06-20  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* rtti.c (get_base_offset): Cope when vbase field is in a base.
+
+2000-06-20  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* call.c (build_conditional_expr): Use VOID_TYPE_P.
 	* cvt.c (cp_convert_to_pointer): Likewise.
 	(convert_to_void): Likewise.
