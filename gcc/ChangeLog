@@ -1,3 +1,22 @@
+Mon Jul 13 17:18:47 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* cccp.c (main): Add support for parsing --help.
+	(display_help): New function: display command line switches.
+
+	* cpplib.c (cpp_handle_option): Add support for parsing --help.
+	(display_help): New function: display command line switches.
+
+	* gcc.c (main): Add support for parsing --help, and passing it on
+	to the sub-processes invoked by gcc.
+	(display_help): New function: display comman line switches.	
+
+	* tm.texi (TARGET_SWITCHES and TARGET_OPTIONS): Document
+	'description' field added to structure.  
+
+	* toplev.c: Add support for parsing --help.
+	Add documentation strings to command line option tables.
+	(display_help): New function: display comman line switches.
+
 Mon Jul 13 16:15:10 1998  John Carr  <jfc@mit.edu>
 
 	* sparc.c, sparc.h, sparc.md: New trampoline code.

@@ -156,6 +156,11 @@ static int print_multi_directory;
 
 static int print_multi_lib;
 
+/* Flag saying to print the command line options understood by gcc and its
+   sub-processes.  */
+
+static int print_help_list;
+
 /* Flag indicating whether we should print the command and arguments */
 
 static int verbose_flag;
@@ -241,6 +246,7 @@ static void perror_with_name	PROTO((char *));
 static void pfatal_pexecute	PROTO((char *, char *));
 static void fatal		PVPROTO((char *, ...));
 static void error		PVPROTO((char *, ...));
+static void display_help 	PROTO((void));
 
 void fancy_abort ();
 char *xmalloc ();
@@ -619,6 +625,7 @@ static struct compiler default_compilers[] =
                   %{traditional-cpp:-traditional}\
 		  %{traditional} %{v:-version} %{pg:-p} %{p} %{f*}\
 		  %{aux-info*}\
+		  %{--help:--help} \
 		  %{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi} \
 		  %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
 		  %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
@@ -643,6 +650,7 @@ static struct compiler default_compilers[] =
 		   %{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi} \
 		   %{traditional} %{v:-version} %{pg:-p} %{p} %{f*}\
 		   %{aux-info*}\
+		   %{--help:--help} \
 		   %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
 		   %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
               %{!S:as %a %Y\
@@ -2217,6 +2225,10 @@ execute ()
 
   if (verbose_flag)
     {
+      /* For help listings, put a blank line between sub-processes.  */
+      if (print_help_list)
+	fputc ('\n', stderr);
+      
       /* Print each piped command as a separate line.  */
       for (i = 0; i < n_commands ; i++)
 	{
@@ -2414,6 +2426,79 @@ convert_filename (name, do_exe)
 }
 #endif
 
+/* Display the command line switches accepted by gcc.  */
+static void
+display_help ()
+{
+  printf ("Usage: %s [options] file...\n", programname);
+  printf ("Options:\n");
+
+  printf ("  --help                   Display this information\n");
+  if (! verbose_flag)
+    printf ("  (Use '-v --help' to display command line options of sub-processes)\n");
+  printf ("  -dumpspecs               Display all of the built in spec strings\n");
+  printf ("  -dumpversion             Display the version of the compiler\n");
+  printf ("  -dumpmachine             Display the compiler's target processor\n");
+  printf ("  -print-search-dirs       Display the directories in the compiler's search path\n");
+  printf ("  -print-libgcc-file-name  Display the name of the compiler's companion library\n");
+  printf ("  -print-file-name=<lib>   Display the full path to library <lib>\n");
+  printf ("  -print-prog-name=<prog>  Display the full path to compiler component <prog>\n");
+  printf ("  -print-multi-directory   Display the root directory for versions of libgcc\n");
+  printf ("  -print-multi-lib         Display the mapping between command line options and\n");
+  printf ("                            multiple library search directories\n");
+  printf ("  -Wa,<text>               Pass <text> on to the assembler\n");
+  printf ("  -Wp,<text>               Pass <text> on to the preprocessor\n");
+  printf ("  -Wl,<text>               Pass <text> on to the linker\n");
+  printf ("  -Xlinker <arg>           Pass <arg> on to the linker\n");
+  printf ("  -save-temps              Do not delete intermediate files\n");
+  printf ("  -pipe                    Use pipes rather than intermediate files\n");
+  printf ("  -specs=<file>            Override builtin specs with the contents of <file>\n");
+  printf ("  -B <directory>           Add <directory> to the compiler's search paths\n");
+  printf ("  -b <machine>             Run gcc for target <machine>, if installed\n");
+  printf ("  -V <version>             Run gcc version number <version>, if installed\n");
+  printf ("  -v                       Display the programs invoked by the compiler\n");
+  printf ("  -E                       Preprocess only; do not compile, assemble or link\n");
+  printf ("  -S                       Compile only; do not assemble or link\n");
+  printf ("  -c                       Compile and assemble, but do not link\n");
+  printf ("  -o <file>                Place the output into <file>\n");
+  printf ("  -x <language>            Specifiy the language of the following input files\n");
+  printf ("                            Permissable languages include: c c++ assembler none\n");
+  printf ("                            'none' means revert to the default behaviour of\n");
+  printf ("                            guessing the language based on the file's extension\n");
+
+  printf ("\nOptions starting with -g, -f, -m, -O or -W are automatically passed on to\n");
+  printf ("the various sub-processes invoked by %s.  In order to pass other options\n",
+	  programname);
+  printf ("on to these processes the -W<letter> options must be used.\n");
+
+  /* The rest of the options are displayed by invocations of the various
+     sub-processes.  */
+}
+
+#define ADD_XXX_OPTION(name) 						\
+static void 								\
+add_##name##_option (option, len)					\
+     char * option;							\
+     int    len;							\
+{									\
+  n_##name##_options++;							\
+									\
+  if (! ##name##_options)						\
+    name##_options							\
+      = (char **) xmalloc (n_##name##_options * sizeof (char **));	\
+  else									\
+    name##_options							\
+      = (char **) xrealloc (##name##_options,				\
+			    n_##name##_options * sizeof (char **));	\
+  									\
+  name##_options [n_##name##_options - 1] = save_string (option, len);  \
+}
+
+ADD_XXX_OPTION (preprocessor)
+ADD_XXX_OPTION (assembler)
+ADD_XXX_OPTION (linker)
+     
+
 /* Create the vector `switches' and its contents.
    Store its length in `n_switches'.  */
 
@@ -2604,6 +2689,19 @@ process_command (argc, argv)
 	  printf ("%s\n", spec_machine);
 	  exit  (0);
 	}
+      else if (strcmp (argv[i], "-fhelp") == 0)
+	{
+	  /* translate_options () has turned --help into -fhelp.  */
+	  print_help_list = 1;
+
+	  /* We will be passing a dummy file on to the sub-processes.  */
+	  n_infiles++;
+	  n_switches++;
+	  
+	  add_preprocessor_option ("--help", 6);
+	  add_assembler_option ("--help", 6);
+	  add_linker_option ("--help", 6);
+	}
       else if (! strcmp (argv[i], "-print-search-dirs"))
 	print_search_dirs = 1;
       else if (! strcmp (argv[i], "-print-libgcc-file-name"))
@@ -2621,60 +2719,34 @@ process_command (argc, argv)
 	  int prev, j;
 	  /* Pass the rest of this option to the assembler.  */
 
-	  n_assembler_options++;
-	  if (!assembler_options)
-	    assembler_options
-	      = (char **) xmalloc (n_assembler_options * sizeof (char **));
-	  else
-	    assembler_options
-	      = (char **) xrealloc (assembler_options,
-				    n_assembler_options * sizeof (char **));
-
 	  /* Split the argument at commas.  */
 	  prev = 4;
 	  for (j = 4; argv[i][j]; j++)
 	    if (argv[i][j] == ',')
 	      {
-		assembler_options[n_assembler_options - 1]
-		  = save_string (argv[i] + prev, j - prev);
-		n_assembler_options++;
-		assembler_options
-		  = (char **) xrealloc (assembler_options,
-					n_assembler_options * sizeof (char **));
+		add_assembler_option (argv[i] + prev, j - prev);
 		prev = j + 1;
 	      }
+	  
 	  /* Record the part after the last comma.  */
-	  assembler_options[n_assembler_options - 1] = argv[i] + prev;
+	  add_assembler_option (argv[i] + prev, j - prev);
 	}
       else if (! strncmp (argv[i], "-Wp,", 4))
 	{
 	  int prev, j;
 	  /* Pass the rest of this option to the preprocessor.  */
 
-	  n_preprocessor_options++;
-	  if (!preprocessor_options)
-	    preprocessor_options
-	      = (char **) xmalloc (n_preprocessor_options * sizeof (char **));
-	  else
-	    preprocessor_options
-	      = (char **) xrealloc (preprocessor_options,
-				    n_preprocessor_options * sizeof (char **));
-
 	  /* Split the argument at commas.  */
 	  prev = 4;
 	  for (j = 4; argv[i][j]; j++)
 	    if (argv[i][j] == ',')
 	      {
-		preprocessor_options[n_preprocessor_options - 1]
-		  = save_string (argv[i] + prev, j - prev);
-		n_preprocessor_options++;
-		preprocessor_options
-		  = (char **) xrealloc (preprocessor_options,
-					n_preprocessor_options * sizeof (char **));
+		add_preprocessor_option (argv[i] + prev, j - prev);
 		prev = j + 1;
 	      }
+	  
 	  /* Record the part after the last comma.  */
-	  preprocessor_options[n_preprocessor_options - 1] = argv[i] + prev;
+	  add_preprocessor_option (argv[i] + prev, j - prev);
 	}
       else if (argv[i][0] == '+' && argv[i][1] == 'e')
 	/* The +e options to the C++ front-end.  */
@@ -3010,6 +3082,25 @@ process_command (argc, argv)
 	;
       else if (! strcmp (argv[i], "-print-multi-directory"))
 	;
+      else if (strcmp (argv[i], "-fhelp") == 0)
+	{
+	  if (verbose_flag)
+	    {
+	      /* Create a dummy input file, so that we can pass --help on to
+		 the various sub-processes.  */
+	      infiles[n_infiles].language = "c";
+	      infiles[n_infiles++].name   = "help-dummy";
+	      
+	      /* Preserve the --help switch so that it can bet caught by the
+		 cc1 spec string.  */
+	      switches[n_switches].part1     = "--help";
+	      switches[n_switches].args      = 0;
+	      switches[n_switches].live_cond = 0;
+	      switches[n_switches].valid     = 0;
+	      
+	      n_switches++;
+	    }
+	}
       else if (argv[i][0] == '+' && argv[i][1] == 'e')
 	{
 	  /* Compensate for the +e options to the C++ front-end;
@@ -3634,16 +3725,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		  }
 
 	      /* This option is new; add it.  */
-	      n_linker_options++;
-	      if (!linker_options)
-		linker_options
-		  = (char **) xmalloc (n_linker_options * sizeof (char **));
-	      else
-		linker_options
-		  = (char **) xrealloc (linker_options,
-					n_linker_options * sizeof (char **));
-
-	      linker_options[n_linker_options - 1] = string;
+	      add_linker_option (string, strlen (string));
 	    }
 	    break;
 
@@ -4789,6 +4871,23 @@ main (argc, argv)
       exit (0);
     }
 
+  if (print_help_list)
+    {
+      display_help ();
+
+      if (! verbose_flag)
+	{
+	  printf ("\nReport bugs to egcs-bugs@cygnus.com.\n");
+	  printf ("Please see the file BUGS (included with the sources) first.\n");
+	  
+	  exit (0);
+	}
+
+      /* We do not exit here.  Instead we have created a fake input file
+	 called 'help-dummy' which needs to be compiled, and we pass this
+	 on the the various sub-processes, along with the --help switch.  */
+    }
+  
   if (verbose_flag)
     {
       int n;
@@ -4966,6 +5065,12 @@ main (argc, argv)
     delete_failure_queue ();
   delete_temp_files ();
 
+  if (print_help_list)
+    {
+      printf ("\nReport bugs to egcs-bugs@cygnus.com.\n");
+      printf ("Please see the file BUGS (included with the sources) first.\n");
+    }
+  
   exit (error_count > 0 ? (signal_count ? 2 : 1) : 0);
   /* NOTREACHED */
   return 0;
