@@ -45,6 +45,6 @@ package javax.transaction;
 
 public interface Synchronization
 {
-  public void beforeCompletion();
-  public void afterCompletion(int status);
+  void beforeCompletion();
+  void afterCompletion(int status);
 }

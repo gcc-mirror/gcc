@@ -47,24 +47,24 @@ import javax.transaction.xa.XAResource;
 
 public interface Transaction
 {
-  public void commit()
+  void commit()
     throws RollbackException, HeuristicMixedException,
       HeuristicRollbackException, SecurityException, SystemException;
 
-  public boolean delistResource(XAResource xaRes, int flag)
+  boolean delistResource(XAResource xaRes, int flag)
     throws IllegalStateException, SystemException;
 
-  public boolean enlistResource(XAResource xaRes)
+  boolean enlistResource(XAResource xaRes)
     throws RollbackException, IllegalStateException, SystemException;
 
-  public int getStatus() throws SystemException;
+  int getStatus() throws SystemException;
 
-  public void registerSynchronization(Synchronization sync)
+  void registerSynchronization(Synchronization sync)
     throws RollbackException, IllegalStateException, SystemException;
 
-  public void rollback()
+  void rollback()
     throws IllegalStateException, SystemException;
 
-  public void setRollbackOnly()
+  void setRollbackOnly()
     throws IllegalStateException, SystemException;
 }

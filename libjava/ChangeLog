@@ -1,5 +1,16 @@
 2003-10-11  Michael Koch  <konqueror@gmx.de>
 
+	* javax/transaction/Status.java,
+	javax/transaction/Synchronization.java,
+	javax/transaction/Transaction.java,
+	javax/transaction/TransactionManager.java,
+	javax/transaction/UserTransaction.java,
+	javax/transaction/xa/XAResource.java,
+	javax/transaction/xa/Xid.java:
+	Removing redundant modifiers.
+
+2003-10-11  Michael Koch  <konqueror@gmx.de>
+
 	* javax/print/attribute/Attribute.java,
 	javax/print/attribute/AttributeSet.java,
 	javax/print/attribute/PrintRequestAttributeSet.java:
