@@ -1,3 +1,12 @@
+Wed Apr 19 12:02:37 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+
+	* loop.c (check_insn_for_bivs, for_every_insn_in_loop,
+	check_insn_for_givs): Break out from ...
+	(strength_reduce) ... here; use for_every_insn_in_loop to call
+	check_insn_for_givs.
+	* loop.h (for_every_insn_in_loop): Declare.
+	(loop_insn_callback): New type.
+
 2000-04-18  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpplib.c (do_pragma_poison):  Strings in the token buffer are
