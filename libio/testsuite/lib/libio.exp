@@ -48,13 +48,15 @@ proc test_libio { srcfile compile_args inpfile resultfile exec_args } {
     global LIBIO
     global srcdir subdir objdir
     global TOOL_OPTIONS
-    global wrapper_file wrap_compile_flags;
+    global wrapper_file wrap_compile_flags
+    global ld_library_path
 
     if { $inpfile != "" } {
 	set inpfile "$srcdir/../tests/$inpfile"
     }
 
     set args ""
+    set ld_library_path ""
     lappend args "additional_flags=-O3";
     lappend args "additional_flags=-I.. -I$srcdir/.."
     lappend args "additional_flags=$wrap_compile_flags";
