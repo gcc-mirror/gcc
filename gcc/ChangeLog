@@ -1,3 +1,8 @@
+2002-06-30  Devang Patel  <dpatel@apple.com>
+
+	* objc/objc-act.c (finish_file): Avoid finish_objc() if
+	-fsyntax-only.
+
 Fri Jun 28 17:22:37 2002  Denis Chertykov  <denisc@overta.ru>
 			  Frank Ch. Eigler  <fche@redhat.com>
 	                  Matthew Green  <mrg@redhat.com>

@@ -522,7 +522,10 @@ finish_file ()
 {
   c_objc_common_finish_file ();
 
-  finish_objc ();		/* Objective-C finalization */
+  /* Finalize Objective-C runtime data.  No need to generate tables
+     and code if only checking syntax.  */
+  if (!flag_syntax_only)
+    finish_objc ();
 
   if (gen_declaration_file)
     fclose (gen_declaration_file);

@@ -1,3 +1,7 @@
+2002-06-30  Devang Patel  <dpatel@apple.com>
+
+	* objc.dg/fsyntax-only.m: New test.
+
 2002-06-27  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/6695
