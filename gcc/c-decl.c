@@ -4104,7 +4104,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
      even if it occurs where parms are expected.
      Then store_parm_decls will reject it and not use it as a parm.  */
   if (decl_context == NORMAL && !funcdef_flag
-      && current_binding_level->level_chain == global_binding_level)
+      && current_binding_level->parm_flag)
     decl_context = PARM;
 
   /* Look through the decl specs and record which ones appear.
