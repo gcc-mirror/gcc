@@ -432,6 +432,16 @@ proc dg-require-named-sections { args } {
     }
 }
 
+# If the target does not match the required effective target, skip this test.
+
+proc dg-require-effective-target { args } {
+    set args [lreplace $args 0 0]
+    if { ![is-effective-target [lindex $args 0]] } {
+	upvar dg-do-what dg-do-what
+	skip_test_and_clear_xfail
+    }
+}
+
 # Prune any messages matching ARGS[1] (a regexp) from test output.
 proc dg-prune-output { args } {
     global additional_prunes
