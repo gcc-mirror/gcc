@@ -20,7 +20,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 /* Run-time Target Specification.  */
-#define TARGET_VERSION	fputs (" (ARM non-Linux)", stderr);
+#define TARGET_VERSION	fputs (" (ARM/ELF non-Linux)", stderr);
 
 /* If you don't define HAVE_ATEXIT, and the object file format/OS/whatever 
    does not support constructors/destructors, then gcc implements destructors
@@ -96,7 +96,7 @@ func_ptr __DTOR_END__[1] = { (func_ptr) 0 };
 #define ASM_OUTPUT_SECTION_NAME(STREAM, DECL, NAME, RELOC) \
 do {								\
   if ((DECL) && TREE_CODE (DECL) == FUNCTION_DECL)		\
-    fprintf (STREAM, "\t.section %s,\"ax\",@progbits\n", (NAME));		\
+    fprintf (STREAM, "\t.section %s,\"ax\",@progbits\n", (NAME)); \
   else if ((DECL) && DECL_READONLY_SECTION (DECL, RELOC))	\
     fprintf (STREAM, "\t.section %s,\"a\"\n", (NAME));		\
   else								\
@@ -108,11 +108,7 @@ do {								\
 #define UNALIGNED_WORD_ASM_OP ".4byte"
 
 #define ASM_OUTPUT_DWARF2_ADDR_CONST(FILE,ADDR)                  \
-     if (((ADDR)[0] == '.') && ((ADDR)[1] == 'L'))              \
-       fprintf ((FILE), "\t%s\t%s", UNALIGNED_WORD_ASM_OP, (ADDR));	\
-     else                  					\
-       fprintf ((FILE), "\t%s\t%s%s", 				\
-             UNALIGNED_WORD_ASM_OP, USER_LABEL_PREFIX, (ADDR))
+     fprintf ((FILE), "\t%s\t%s", UNALIGNED_WORD_ASM_OP, ADDR)
 
 #define ASM_OUTPUT_DWARF_ADDR_CONST(FILE,RTX)                   \
 do {								\
@@ -131,7 +127,7 @@ do {								\
 #define UNIQUE_SECTION(DECL,RELOC)				\
 do {								\
   int len;							\
-  char *name, *string, *prefix;					\
+  char * name, * string, * prefix;				\
 								\
   name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (DECL));	\
 								\
@@ -161,6 +157,6 @@ do {								\
 
 #define CPP_APCS_PC_DEFAULT_SPEC	"-D__APCS_32__"
 #define SUBTARGET_CPU_DEFAULT 		TARGET_CPU_arm7tdmi
-     
+
 /* Now get the routine arm-elf definitions.  */
 #include "arm/elf.h"

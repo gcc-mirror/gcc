@@ -1,3 +1,12 @@
+Tue Dec  1 10:23:16 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/t-arm-elf (LIBGCC2_CFLAGS): Define inhibit_libc.
+
+Tue Dec  1 10:22:18 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/unknown-elf.h (ASM_OUTPUT_DWARF2_ADDR_CONST): Remove
+	use of user-label_prefix.
+
 Tue Dec  1 17:58:26 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* local-alloc.c (function_invariant_p): New function.
