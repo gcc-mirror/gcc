@@ -5,8 +5,6 @@
 #include <cstdlib>
 #include <new>
 
-extern "C" int printf (const char*, ...);
-
 void* p;
 
 void* operator new[](size_t s) throw (bad_alloc)
@@ -57,7 +55,6 @@ void check_placement_cookie (int i)
   p = malloc (sizeof (T) * 11 + 100);
   void* a = new (p) T[11];
   
-  printf ("%x %x\n", a, p);
   // Compute the cookie location manually.
   size_t x = __alignof__ (T);
   if (x < sizeof (size_t))
