@@ -1229,7 +1229,7 @@ sparc_emit_set_symbolic_const64 (op0, op1, temp1)
 	{
 	  /* Getting this right wrt. reloading is really tricky.
 	     We _MUST_ have a seperate temporary at this point,
-	     if we don't barf immediately instead of generating
+	     so we barf immediately instead of generating
 	     incorrect code.  */
 	  if (temp1 == op0)
 	    abort ();
@@ -1369,7 +1369,7 @@ sparc_emit_set_const64_quick2 (op0, temp, high_bits, low_immediate, shift_count)
     }
   else
     {
-      emit_insn (gen_rtx_SET (VOIDmode, temp, GEN_INT (high_bits)));
+      emit_insn (gen_safe_SET64 (temp, high_bits));
       temp2 = temp;
     }
 
@@ -1416,7 +1416,7 @@ sparc_emit_set_const64_longway (op0, temp, high_bits, low_bits)
     }
   else
     {
-      emit_insn (gen_rtx_SET (VOIDmode, temp, GEN_INT (high_bits)));
+      emit_insn (gen_safe_SET64 (temp, high_bits));
       sub_temp = temp;
     }
 
@@ -1432,10 +1432,17 @@ sparc_emit_set_const64_longway (op0, temp, high_bits, low_bits)
 
       sparc_emit_set_safe_HIGH64 (temp2, low_bits);
       if ((low_bits & ~0xfffffc00) != 0)
-	emit_insn (gen_rtx_SET (VOIDmode, temp3,
-				gen_safe_OR64 (temp2, (low_bits & 0x3ff))));
-      emit_insn (gen_rtx_SET (VOIDmode, op0,
-			      gen_rtx_PLUS (DImode, temp4, temp3)));
+	{
+	  emit_insn (gen_rtx_SET (VOIDmode, temp3,
+				  gen_safe_OR64 (temp2, (low_bits & 0x3ff))));
+	  emit_insn (gen_rtx_SET (VOIDmode, op0,
+				  gen_rtx_PLUS (DImode, temp4, temp3)));
+	}
+      else
+	{
+	  emit_insn (gen_rtx_SET (VOIDmode, op0,
+				  gen_rtx_PLUS (DImode, temp4, temp2)));
+	}
     }
   else
     {
@@ -1572,15 +1579,12 @@ const64_is_2insns (high_bits, low_bits)
 			  &highest_bit_set, &lowest_bit_set,
 			  &all_bits_between_are_set);
 
-  if (highest_bit_set == 63
+  if ((highest_bit_set == 63
+       || lowest_bit_set == 0)
       && all_bits_between_are_set != 0)
     return 1;
 
   if ((highest_bit_set - lowest_bit_set) < 21)
-    return 1;
-
-  if (high_bits == 0
-      || high_bits == 0xffffffff)
     return 1;
 
   return 0;
@@ -1595,7 +1599,7 @@ create_simple_focus_bits (high_bits, low_bits, highest_bit_set, lowest_bit_set, 
      unsigned HOST_WIDE_INT high_bits, low_bits;
      int highest_bit_set, lowest_bit_set, shift;
 {
-  int hi, lo;
+  HOST_WIDE_INT hi, lo;
 
   if (lowest_bit_set < 32)
     {
@@ -1634,13 +1638,14 @@ sparc_emit_set_const64 (op0, op1)
 	  && REGNO (op0) <= SPARC_LAST_V9_FP_REG))
     abort ();
 
+  if (reload_in_progress || reload_completed)
+    temp = op0;
+  else
+    temp = gen_reg_rtx (DImode);
+
   if (GET_CODE (op1) != CONST_DOUBLE
       && GET_CODE (op1) != CONST_INT)
     {
-      if (reload_in_progress || reload_completed)
-	temp = op0;
-      else
-	temp = gen_reg_rtx (DImode);
       sparc_emit_set_symbolic_const64 (op0, op1, temp);
       return;
     }
@@ -1671,11 +1676,6 @@ sparc_emit_set_const64 (op0, op1)
   /* low_bits	bits 0  --> 31
      high_bits	bits 32 --> 63  */
 
-  if (reload_in_progress || reload_completed)
-    temp = op0;
-  else
-    temp = gen_reg_rtx (DImode);
-
   analyze_64bit_constant (high_bits, low_bits,
 			  &highest_bit_set, &lowest_bit_set,
 			  &all_bits_between_are_set);
@@ -1699,15 +1699,9 @@ sparc_emit_set_const64 (op0, op1)
       HOST_WIDE_INT the_const = -1;
       int shift = lowest_bit_set;
 
-      if (highest_bit_set == lowest_bit_set)
-	{
-	  /* There is no way to get here like this, because this case
-	     can be done in one instruction.  */
-	  if (lowest_bit_set < 32)
-	    abort ();
-	  the_const = 1;
-	}
-      else if (all_bits_between_are_set == 0)
+      if ((highest_bit_set != 63
+	   && lowest_bit_set != 0)
+	  || all_bits_between_are_set == 0)
 	{
 	  the_const =
 	    create_simple_focus_bits (high_bits, low_bits,
@@ -1716,6 +1710,9 @@ sparc_emit_set_const64 (op0, op1)
 	}
       else if (lowest_bit_set == 0)
 	shift = -(63 - highest_bit_set);
+
+      if (! SPARC_SIMM13_P (the_const))
+	abort ();
 
       emit_insn (gen_safe_SET64 (temp, the_const));
       if (shift > 0)
@@ -1746,6 +1743,10 @@ sparc_emit_set_const64 (op0, op1)
       unsigned HOST_WIDE_INT focus_bits =
 	create_simple_focus_bits (high_bits, low_bits,
 				  highest_bit_set, lowest_bit_set, 10);
+
+      if (! SPARC_SETHI_P (focus_bits))
+	 abort ();
+
       sparc_emit_set_safe_HIGH64 (temp, focus_bits);
 
       /* If lowest_bit_set == 10 then a sethi alone could have done it.  */
@@ -1777,20 +1778,20 @@ sparc_emit_set_const64 (op0, op1)
       return;
     }
 
+  /* Now, try 3-insn sequences.  */
+
   /* 1) sethi	%hi(high_bits), %reg
    *    or	%reg, %lo(high_bits), %reg
    *    sllx	%reg, 32, %reg
    */
-  if (low_bits == 0
-      || (SPARC_SIMM13_P(low_bits)
-	  && ((HOST_WIDE_INT)low_bits > 0)))
+  if (low_bits == 0)
     {
-      sparc_emit_set_const64_quick2 (op0, temp, high_bits, low_bits, 32);
+      sparc_emit_set_const64_quick2 (op0, temp, high_bits, 0, 32);
       return;
     }
 
-  /* Now, try 3-insn sequences.  But first we may be able to do something
-     quick when the constant is negated, so try that.  */
+  /* We may be able to do something quick
+     when the constant is negated, so try that.  */
   if (const64_is_2insns ((~high_bits) & 0xffffffff,
 			 (~low_bits) & 0xfffffc00))
     {
@@ -1832,10 +1833,15 @@ sparc_emit_set_const64 (op0, op1)
   /* 1) sethi	%hi(xxx), %reg
    *    or	%reg, %lo(xxx), %reg
    *	sllx	%reg, yyy, %reg
+   *
+   * ??? This is just a generalized version of the low_bits==0
+   * thing above, FIXME...
    */
   if ((highest_bit_set - lowest_bit_set) < 32)
     {
-      unsigned HOST_WIDE_INT hi, lo, focus_bits;
+      unsigned HOST_WIDE_INT focus_bits =
+	create_simple_focus_bits (high_bits, low_bits,
+				  highest_bit_set, lowest_bit_set, 0);
 
       /* We can't get here in this state.  */
       if (highest_bit_set < 32
@@ -1844,14 +1850,21 @@ sparc_emit_set_const64 (op0, op1)
 
       /* So what we know is that the set bits straddle the
 	 middle of the 64-bit word.  */
-      hi = (low_bits >> lowest_bit_set);
-      lo = (high_bits << (32 - lowest_bit_set));
-      if (hi & lo)
-	abort ();
-      focus_bits = (hi | lo);
       sparc_emit_set_const64_quick2 (op0, temp,
 				     focus_bits, 0,
 				     lowest_bit_set);
+      return;
+    }
+
+  /* 1) sethi	%hi(high_bits), %reg
+   *    or	%reg, %lo(high_bits), %reg
+   *    sllx	%reg, 32, %reg
+   *	or	%reg, low_bits, %reg
+   */
+  if (SPARC_SIMM13_P(low_bits)
+      && ((int)low_bits > 0))
+    {
+      sparc_emit_set_const64_quick2 (op0, temp, high_bits, low_bits, 32);
       return;
     }
 

@@ -1,3 +1,24 @@
+Fri Aug 14 12:58:21 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
+
+	* config/sparc/sparc.c (sparc_emit_set_const64_quick2,
+	sparc_emit_set_const64_longway, const64_is_2insns,
+	create_simple_focus_bits, sparc_emit_set_const64): Fix more bugs
+	in 64-bit constant formation.
+	* config/sparc/sparc.md (snesi_zero_extend split): Generate
+	rtl for addx not subx.
+	(define_insn movdi_const64_special): Make available even when
+	HOST_BITS_PER_WIDE_INT is not 64.
+	(movdi_lo_sum_sp64_cint, movdi_high_sp64_cint): Remove.
+	(losum_di_medlow, sethm, setlo): Make op2 symbolic_operand.
+	(cmp_siqi_trunc_set, cmp_diqi_trunc_set): Encapsulate both
+	instances of operand 1 inside a QI subreg.
+	(xordi3_sp64_dbl): Remove '%' constraint for op1.
+	(one_cmpldi2_sp64): Fix output string.
+	(one_cmplsi2_not_liveg0): Rewrite to remove unneeded extra
+	alternative case.
+	(unnamed arch64 ashift DI): Truncate shift count if greater than
+	63, not 31.
+
 Fri Aug 14 21:52:53 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* expr.c (store_expr): Don't optimize away load-store pair
