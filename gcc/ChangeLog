@@ -1,3 +1,8 @@
+2000-09-05  Alexandre Oliva  <aoliva@redhat.com>
+
+	* gcse.c (hash_string_1): Add prototype.
+	* cse.c (canon_hash_string): Likewise.
+
 2000-09-04  Craig Newell  <CraigN@ieee.org>
 
 	* gcc.c: Undefine "__WCHAR_TYPE__" before redefining it.

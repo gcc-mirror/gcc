@@ -668,6 +668,7 @@ static void invalidate_memory	PARAMS ((void));
 static void invalidate_for_call	PARAMS ((void));
 static rtx use_related_value	PARAMS ((rtx, struct table_elt *));
 static unsigned canon_hash	PARAMS ((rtx, enum machine_mode));
+static unsigned canon_hash_string PARAMS ((const char *));
 static unsigned safe_hash	PARAMS ((rtx, enum machine_mode));
 static int exp_equiv_p		PARAMS ((rtx, rtx, int, int));
 static rtx canon_reg		PARAMS ((rtx, rtx));
