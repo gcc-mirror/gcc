@@ -1,5 +1,9 @@
 2004-10-15  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* dump.c, g++spec.c, repo.c: Update copyright.
+
+2004-10-15  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* decl.c: Fix a comment typo.
 
 2004-10-13  Andrew Pinski  <pinskia@physics.uc.edu>
