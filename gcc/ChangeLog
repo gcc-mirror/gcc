@@ -1,3 +1,10 @@
+Mon Feb 10 00:29:17 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (vector_move_operand): New predicate.
+	(ix86_expand_vector_move): Be happy about 0.
+	* i386.h (PREDICATE_CODES): Add sse-move_operand.
+	* i386.md (mov*_internal): Add 'C' alternative.
+
 Sun Feb  9 23:58:33 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (floathi*): Deal with SSE.
