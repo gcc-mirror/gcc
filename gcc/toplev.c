@@ -2963,7 +2963,7 @@ rest_of_compilation (decl)
       open_dump_file (DFI_ssa, decl);
 
       find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
-      cleanup_cfg ();
+      cleanup_cfg (CLEANUP_EXPENSIVE);
       convert_to_ssa ();
 
       close_dump_file (DFI_ssa, print_rtl_with_bb, insns);
@@ -3028,7 +3028,7 @@ rest_of_compilation (decl)
   if (optimize > 0)
     {
       find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
-      cleanup_cfg ();
+      cleanup_cfg (CLEANUP_EXPENSIVE);
 
       /* ??? Run if-conversion before delete_null_pointer_checks,
          since the later does not preserve the CFG.  This should
@@ -3098,7 +3098,7 @@ rest_of_compilation (decl)
 	  timevar_push (TV_JUMP);
 	  find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
 
-	  cleanup_cfg ();
+	  cleanup_cfg (CLEANUP_EXPENSIVE);
 
 	  delete_null_pointer_checks (insns);
 	  timevar_pop (TV_JUMP);
@@ -3132,7 +3132,7 @@ rest_of_compilation (decl)
       open_dump_file (DFI_gcse, decl);
 
       find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
-      cleanup_cfg ();
+      cleanup_cfg (CLEANUP_EXPENSIVE);
       tem = gcse_main (insns, rtl_dump_file);
 
       save_csb = flag_cse_skip_blocks;
@@ -3236,7 +3236,7 @@ rest_of_compilation (decl)
 	  timevar_push (TV_IFCVT);
 
 	  find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
-	  cleanup_cfg ();
+	  cleanup_cfg (CLEANUP_EXPENSIVE);
 	  if_convert (0);
 
 	  timevar_pop(TV_IFCVT);
@@ -3282,7 +3282,7 @@ rest_of_compilation (decl)
   open_dump_file (DFI_cfg, decl);
 
   find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
-  cleanup_cfg ();
+  cleanup_cfg (optimize ? CLEANUP_EXPENSIVE : 0);
   check_function_return_warnings ();
 
   /* It may make more sense to mark constant functions after dead code is
@@ -3365,7 +3365,7 @@ rest_of_compilation (decl)
 
 	  timevar_push (TV_FLOW);
 	  find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
-	  cleanup_cfg ();
+	  cleanup_cfg (CLEANUP_EXPENSIVE);
 
 	  /* Blimey.  We've got to have the CFG up to date for the call to
 	     if_convert below.  However, the random deletion of blocks
@@ -3576,7 +3576,7 @@ rest_of_compilation (decl)
 
   if (optimize)
     {
-      cleanup_cfg ();
+      cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_CROSSJUMP);
       life_analysis (insns, rtl_dump_file, PROP_FINAL);
 
       /* This is kind of a heuristic.  We need to run combine_stack_adjustments

@@ -476,10 +476,7 @@ reg_to_stack (first, file)
 		    "stack_regs_mentioned cache");
 
   if (convert_regs (file) && optimize)
-    {
-      jump_optimize (first, JUMP_CROSS_JUMP_DEATH_MATTERS,
-		     !JUMP_NOOP_MOVES, !JUMP_AFTER_REGSCAN);
-    }
+    cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_CROSSJUMP | CLEANUP_POST_REGSTACK);
 
   /* Clean up.  */
   VARRAY_FREE (stack_regs_mentioned_data);

@@ -2349,7 +2349,7 @@ finish_eh_generation ()
 
   jump_optimize_minimal (get_insns ());
   find_basic_blocks (get_insns (), max_reg_num (), 0);
-  cleanup_cfg ();
+  cleanup_cfg (0);
 
   /* These registers are used by the landing pads.  Make sure they
      have been generated.  */
@@ -2372,7 +2372,7 @@ finish_eh_generation ()
   find_exception_handler_labels ();
   jump_optimize_minimal (get_insns ());
   find_basic_blocks (get_insns (), max_reg_num (), 0);
-  cleanup_cfg ();
+  cleanup_cfg (0);
 }
 
 /* This section handles removing dead code for flow.  */

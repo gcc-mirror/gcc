@@ -3669,6 +3669,11 @@ rtx_renumbered_equal_p (x, y)
 	    return 0;
 	  break;
 
+	case 't':
+	  if (XTREE (x, i) != XTREE (y, i))
+	    return 0;
+	  break;
+
 	case 's':
 	  if (strcmp (XSTR (x, i), XSTR (y, i)))
 	    return 0;
