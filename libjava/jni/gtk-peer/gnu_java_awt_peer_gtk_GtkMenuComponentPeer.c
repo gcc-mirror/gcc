@@ -1,5 +1,5 @@
-/* GtkMenuComponentPeer.java -- Implements MenuComponentPeer with GTK+
-   Copyright (C) 1999 Free Software Foundation, Inc.
+/* gtkmenucomponentpeer.c -- Native implementation of GtkMenuComponentPeer
+   Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -36,17 +36,21 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 
-package gnu.java.awt.peer.gtk;
+#include "gtkpeer.h"
+#include "gnu_java_awt_peer_gtk_GtkMenuComponentPeer.h"
 
-import java.awt.peer.MenuComponentPeer;
-
-public class GtkMenuComponentPeer extends GtkGenericPeer
-  implements MenuComponentPeer
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkMenuComponentPeer_dispose
+  (JNIEnv *env, jobject obj)
 {
-  public GtkMenuComponentPeer (Object awtWidget)
-  {
-    super (awtWidget);
-  }
-  
-  public native void dispose();
+  /* For MenuComponents and its subclasses, the widgets are
+     automatically destroyed by Gtk when the parent MenuBar
+     is removed from the Frame. So we avoid the widget
+     destruction in GtkGenericPeer dispose() by overriding
+     it here. */
+     
+  /* However, references to the Java objects still exist in the
+     state tables, so we still have to remove those. */
+     
+  NSA_DEL_GLOBAL_REF (env, obj);
+  NSA_DEL_PTR (env, obj);  
 }

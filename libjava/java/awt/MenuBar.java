@@ -279,6 +279,12 @@ addNotify()
 public void
 removeNotify()
 {
+  Enumeration e = menus.elements();
+  while (e.hasMoreElements())
+  {
+    Menu mi = (Menu) e.nextElement();
+    mi.removeNotify();
+  }
   super.removeNotify();
 }
 

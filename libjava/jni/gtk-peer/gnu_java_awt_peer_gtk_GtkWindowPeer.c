@@ -376,18 +376,37 @@ Java_gnu_java_awt_peer_gtk_GtkWindowPeer_nativeSetBounds
 
 JNIEXPORT void JNICALL
 Java_gnu_java_awt_peer_gtk_GtkFramePeer_removeMenuBarPeer
-  (JNIEnv *env, jobject obj, jobject menubar)
+  (JNIEnv *env, jobject obj)
 {
   void *wptr;
   GtkWidget *box;
   GtkWidget *mptr;
+  GList* children;
 
   wptr = NSA_GET_PTR (env, obj);
-  mptr = NSA_GET_PTR (env, menubar);
   
   gdk_threads_enter ();
 
   box = GTK_BIN (wptr)->child;
+  
+  children = gtk_container_get_children (GTK_CONTAINER (box));
+  
+  while (children != NULL && !GTK_IS_MENU_SHELL (children->data)) 
+  {
+    children = children->next;
+  }
+  
+  /* If there isn't a MenuBar in this Frame's list of children
+     then we can just return. */
+  if (!GTK_IS_MENU_SHELL (children->data))
+    return;
+  else
+    mptr = children->data;
+    
+  /* This will actually destroy the MenuBar. By removing it from
+     its parent, the reference count for the MenuBar widget will
+     decrement to 0. The widget will be automatically destroyed 
+     by Gtk. */
   gtk_container_remove (GTK_CONTAINER (box), GTK_WIDGET (mptr));  
   
   gdk_threads_leave();
