@@ -1,5 +1,5 @@
 /* Common subexpression elimination for GNU compiler.
-   Copyright (C) 1987, 1988, 1989, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1989, 1992. 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -3599,7 +3599,7 @@ simplify_binary_operation (code, mode, op0, op1)
 	  if (((GET_CODE (op0) == NOT && rtx_equal_p (XEXP (op0, 0), op1))
 	       || (GET_CODE (op1) == NOT && rtx_equal_p (XEXP (op1, 0), op0)))
 	      && ! side_effects_p (op0)
-	      && mode != CCmode)
+	      && GET_MODE_CLASS (mode) != MODE_CC)
 	    return constm1_rtx;
 	  break;
 
@@ -3610,7 +3610,7 @@ simplify_binary_operation (code, mode, op0, op1)
 	      && (INTVAL (op1) & GET_MODE_MASK (mode)) == GET_MODE_MASK (mode))
 	    return gen_rtx (NOT, mode, op0);
 	  if (op0 == op1 && ! side_effects_p (op0)
-	      && mode != CCmode)
+	      && GET_MODE_CLASS (mode) != MODE_CC)
 	    return const0_rtx;
 	  break;
 
@@ -3621,13 +3621,13 @@ simplify_binary_operation (code, mode, op0, op1)
 	      && (INTVAL (op1) & GET_MODE_MASK (mode)) == GET_MODE_MASK (mode))
 	    return op0;
 	  if (op0 == op1 && ! side_effects_p (op0)
-	      && mode != CCmode)
+	      && GET_MODE_CLASS (mode) != MODE_CC)
 	    return op0;
 	  /* A & (~A) -> 0 */
 	  if (((GET_CODE (op0) == NOT && rtx_equal_p (XEXP (op0, 0), op1))
 	       || (GET_CODE (op1) == NOT && rtx_equal_p (XEXP (op1, 0), op0)))
 	      && ! side_effects_p (op0)
-	      && mode != CCmode)
+	      && GET_MODE_CLASS (mode) != MODE_CC)
 	    return const0_rtx;
 	  break;
 
@@ -4163,9 +4163,9 @@ simplify_relational_operation (code, mode, op0, op1)
   if (GET_CODE (op0) == COMPARE && op1 == const0_rtx)
     op1 = XEXP (op0, 1), op0 = XEXP (op0, 0);
 
-  /* What to do with CCmode isn't clear yet.
+  /* What to do with MODE_CC isn't clear yet.
      Let's make sure nothing erroneous is done.  */
-  if (GET_MODE (op0) == CCmode)
+  if (GET_MODE_CLASS (GET_MODE (op0)) == MODE_CC)
     return 0;
 
   /* Unlike the arithmetic operations, we can do the comparison whether
