@@ -1,5 +1,5 @@
 /* Output variables, constants and external declarations, for GNU compiler.
-   Copyright (C) 1987, 1988, 1989, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1989, 1992, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1818,11 +1818,14 @@ static struct constant_descriptor *
 record_constant (exp)
      tree exp;
 {
-  struct constant_descriptor *ptr = 0;
-  int buf;
+  struct constant_descriptor *next = 0;
+  char *label = 0;
 
-  obstack_grow (&permanent_obstack, &ptr, sizeof ptr);
-  obstack_grow (&permanent_obstack, &buf, sizeof buf);
+  /* Make a struct constant_descriptor.  The first two pointers will
+     be filled in later.  Here we just leave space for them.  */
+
+  obstack_grow (&permanent_obstack, (char *) &next, sizeof next);
+  obstack_grow (&permanent_obstack, (char *) &label, sizeof label);
   record_constant_1 (exp);
   return (struct constant_descriptor *) obstack_finish (&permanent_obstack);
 }
