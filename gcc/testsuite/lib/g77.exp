@@ -50,7 +50,7 @@ proc g77_version { } {
 	set tmp [remote_exec host "$compiler -v"]
 	set status [lindex $tmp 0];
 	set output [lindex $tmp 1];
-	regexp "version.*$" $output version
+	regexp "version\[^\n\r\]*" $output version
 	if { $status == 0 && [info exists version] } then {
 	    if [is_remote host] {
 		clone_output "$compiler $version\n"
