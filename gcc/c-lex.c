@@ -425,7 +425,7 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags)
       {
 	unsigned char name[4];
 	
-	*cpp_spell_token (parse_in, tok, name) = 0;
+	*cpp_spell_token (parse_in, tok, name, true) = 0;
 	
 	error ("stray %qs in program", name);
       }

@@ -380,12 +380,12 @@ stringify_arg (cpp_reader *pfile, macro_arg *arg)
 	{
 	  _cpp_buff *buff = _cpp_get_buff (pfile, len);
 	  unsigned char *buf = BUFF_FRONT (buff);
-	  len = cpp_spell_token (pfile, token, buf) - buf;
+	  len = cpp_spell_token (pfile, token, buf, true) - buf;
 	  dest = cpp_quote_string (dest, buf, len);
 	  _cpp_release_buff (pfile, buff);
 	}
       else
-	dest = cpp_spell_token (pfile, token, dest);
+	dest = cpp_spell_token (pfile, token, dest, true);
 
       if (token->type == CPP_OTHER && token->val.str.text[0] == '\\')
 	backslash_count++;
@@ -422,7 +422,7 @@ paste_tokens (cpp_reader *pfile, const cpp_token **plhs, const cpp_token *rhs)
   lhs = *plhs;
   len = cpp_token_len (lhs) + cpp_token_len (rhs) + 1;
   buf = alloca (len);
-  end = cpp_spell_token (pfile, lhs, buf);
+  end = cpp_spell_token (pfile, lhs, buf, false);
 
   /* Avoid comment headers, since they are still processed in stage 3.
      It is simpler to insert a space here, rather than modifying the
@@ -430,7 +430,7 @@ paste_tokens (cpp_reader *pfile, const cpp_token **plhs, const cpp_token *rhs)
      false doesn't work, since we want to clear the PASTE_LEFT flag.  */
   if (lhs->type == CPP_DIV && rhs->type != CPP_EQ)
     *end++ = ' ';
-  end = cpp_spell_token (pfile, rhs, end);
+  end = cpp_spell_token (pfile, rhs, end, false);
   *end = '\n';
 
   cpp_push_buffer (pfile, buf, end - buf, /* from_stage3 */ true);
@@ -1751,7 +1751,7 @@ cpp_macro_definition (cpp_reader *pfile, const cpp_hashnode *node)
 	      buffer += NODE_LEN (macro->params[token->val.arg_no - 1]);
 	    }
 	  else
-	    buffer = cpp_spell_token (pfile, token, buffer);
+	    buffer = cpp_spell_token (pfile, token, buffer, false);
 
 	  if (token->flags & PASTE_LEFT)
 	    {

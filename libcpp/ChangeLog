@@ -1,3 +1,25 @@
+2005-03-11  Geoffrey Keating  <geoffk@apple.com>
+
+	* directives.c (glue_header_name): Update call to cpp_spell_token.
+	* internal.h (_cpp_interpret_identifier): New.
+	* charset.c (_cpp_interpret_identifier): New.
+	(_cpp_valid_ucn): Allow UCN version of '$'.
+	* lex.c (lex_identifier): Add extra parameter to indicate if initial
+	character was '$' or '\'.  Support identifiers with UCNs.
+	(forms_identifier_p): Allow UCNs.
+	(_cpp_lex_direct): Pass extra parameter to lex_identifier.
+	(utf8_to_ucn): New.
+	(cpp_spell_token): Add FORSTRING parameter.  Use it.
+	(cpp_token_as_text): Update call to cpp_spell_token.
+	(cpp_output_token): Write UCNs back out.
+	(stringify_arg): Update call to cpp_spell_token.
+	(paste_tokens): Likewise.
+	(cpp_macro_definition): Likewise.
+	* macro.c (stringify_arg): Likewise.
+	(paste_tokens): Likewise.
+	(cpp_macro_definition): Likewise.
+	* include/cpplib.h: Add parameter to cpp_spell_token.
+
 2005-03-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/20282
