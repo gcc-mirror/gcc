@@ -1,3 +1,14 @@
+2001-07-22  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.c (get_trap_mode_suffix): New.
+	(get_round_mode_suffix): New.
+	(print_operand): Use them for [/].  Remove support for [&'`()+].
+	* config/alpha/alpha.h (PRINT_OPERAND_PUNCT_VALID_P): Update.
+	* config/alpha/alpha.md (attr round_suffix): New.
+	(attr trap_suffix): New.
+	(all insns): Set them appropriately.  Use %/ instead of the
+	myriad punctuators.
+
 2001-07-22  Neil Booth  <neil@cat.daikokuya.demon.co.uk>
 
 	* dbxout.c, sdbout.c, varasm.c: Revert most recent debug patch.
