@@ -1,3 +1,8 @@
+Thu Nov 13 11:51:32 1997  David Edelsohn  <edelsohn@mhpcc.edu>
+
+	* rs6000.md (lshrdi3_power): Delete '&' from first alternative and
+	swap instruction order.
+
 Thu Nov 13 11:47:55 1997  Michael Meissner  <meissner@cygnus.com>
 
 	* rs6000.c (num_insns_constant): Use REAL_VALUE_FROM_CONST_DOUBLE to
