@@ -1,6 +1,6 @@
 /* More subroutines needed by GCC output code on some machines.  */
 /* Compile this one with gcc.  */
-/* Copyright (C) 1989, 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
+/* Copyright (C) 1989, 92, 93, 94, 95, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1466,19 +1466,7 @@ BLOCK_PROFILER_CODE
 #include <stdio.h>
 char *ctime ();
 
-#ifdef HAVE_ATEXIT
-#ifdef WINNT
-extern int atexit (void (*) (void));
-#else
-extern void atexit (void (*) (void));
-#endif
-#define ON_EXIT(FUNC,ARG) atexit ((FUNC))
-#else
-#ifdef sun
-extern void on_exit (void*, void*);
-#define ON_EXIT(FUNC,ARG) on_exit ((FUNC), (ARG))
-#endif
-#endif
+#include "gbl-ctors.h"
 
 static struct bb *bb_head;
 
@@ -2911,7 +2899,47 @@ func_ptr __DTOR_LIST__[2];
 
 #include "gbl-ctors.h"
 
+#ifdef NEED_ATEXIT
+# ifdef ON_EXIT
+#  undef ON_EXIT
+# endif
+int _exit_dummy_decl = 0;	/* prevent compiler & linker warnings */
+#endif
+
 #ifndef ON_EXIT
+
+#ifdef NEED_ATEXIT
+# include <errno.h>
+
+extern void *malloc ();
+extern void *realloc ();
+
+static func_ptr *atexit_chain = NULL;
+static long atexit_chain_length = 0;
+static volatile long last_atexit_chain_slot = -1;
+
+int atexit (func_ptr func)
+{
+  if (++last_atexit_chain_slot == atexit_chain_length)
+    {
+      atexit_chain_length += 32;
+      if (atexit_chain)
+	atexit_chain = realloc (atexit_chain,
+				atexit_chain_length * sizeof (func_ptr));
+      else
+	atexit_chain = malloc (atexit_chain_length * sizeof (func_ptr));
+      if (! atexit_chain)
+	{
+	  atexit_chain_length = 0;
+	  last_atexit_chain_slot = -1;
+	  errno = ENOMEM;
+	  return (-1);
+	}
+    }
+  atexit_chain[last_atexit_chain_slot] = func;
+  return (0);
+}
+#endif /* NEED_ATEXIT */
 
 /* If we have no known way of registering our own __do_global_dtors
    routine so that it will be invoked at program exit time, then we
@@ -2926,7 +2954,20 @@ exit (status)
      int status;
 {
 #if !defined (INIT_SECTION_ASM_OP) || !defined (OBJECT_FORMAT_ELF)
+#ifdef NEED_ATEXIT
+  if (atexit_chain)
+    {
+      for ( ; last_atexit_chain_slot-- >= 0; )
+	{
+	  (*atexit_chain[last_atexit_chain_slot + 1]) ();
+	  atexit_chain[last_atexit_chain_slot + 1] = NULL;
+	}
+      free (atexit_chain);
+      atexit_chain = NULL;
+    }
+#else /* No NEED_ATEXIT */
   __do_global_dtors ();
+#endif /* No NEED_ATEXIT */
 #endif
 #ifdef EXIT_BODY
   EXIT_BODY;
