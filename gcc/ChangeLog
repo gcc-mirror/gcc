@@ -1,5 +1,10 @@
 Mon Jan 19 11:15:38 1998  Jim Wilson  <wilson@cygnus.com>
 
+	* configure.in (thread_file): Rename uses before main loop to
+	target_thread_file.  Initialize to empty in main loop.  Set thread_file
+	to target_thread_file after main loop if not set.
+	* configure: Rebuild.
+
 	* genattrtab.c (find_and_mark_used_attributes): Handle CONST_INT.
 	(add_values_to_cover): Revert last change (which had no ChangeLog
 	entry).
