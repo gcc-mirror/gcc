@@ -1884,6 +1884,10 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
       if (DECL_SECTION_NAME (newdecl) == NULL_TREE)
 	DECL_SECTION_NAME (newdecl) = DECL_SECTION_NAME (olddecl);
 
+      /* Copy the assembler name.
+	 Currently, it can only be defined in the prototype.  */
+      DECL_ASSEMBLER_NAME (newdecl) = DECL_ASSEMBLER_NAME (olddecl);
+
       if (TREE_CODE (newdecl) == FUNCTION_DECL)
 	{
 	  DECL_STATIC_CONSTRUCTOR(newdecl) |= DECL_STATIC_CONSTRUCTOR(olddecl);
@@ -3936,6 +3940,7 @@ finish_decl (decl, init, asmspec_tree)
       {
 	DECL_BUILT_IN (decl) = 0;
 	DECL_RTL (decl) = 0;
+	DECL_ASSEMBLER_NAME (decl) = get_identifier (asmspec);
       }
 
   /* Output the assembler code and/or RTL code for variables and functions,
@@ -7183,7 +7188,8 @@ finish_function (nested)
 	static_ctors = perm_tree_cons (NULL_TREE, fndecl, static_ctors);
       else
 #endif
-      assemble_constructor (IDENTIFIER_POINTER (DECL_NAME (fndecl)));
+	assemble_constructor (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (fndecl))); 
+
     }
   if (DECL_STATIC_DESTRUCTOR (fndecl))
     {
@@ -7192,7 +7198,7 @@ finish_function (nested)
 	static_dtors = perm_tree_cons (NULL_TREE, fndecl, static_dtors);
       else
 #endif
-      assemble_destructor (IDENTIFIER_POINTER (DECL_NAME (fndecl)));
+	assemble_destructor (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (fndecl)));
     }
 
   if (! nested)
