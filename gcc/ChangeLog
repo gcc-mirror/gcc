@@ -5,6 +5,9 @@ Tue Oct 21 18:34:01 1997  Geoffrey KEATING  <geoffk@ozemail.com.au>
 
 Tue Oct 21 10:06:40 1997  Jeffrey A Law  (law@cygnus.com)
 
+	* mn10300.md (movqi, movhi): Avoid using address registers as
+	destinations unless absolutely necessary.
+
 	* mn10200.c (expand_prologue): Fix typo.
 
 	* mn10200.h (GO_IF_LEGITIMATE_ADDRESS): Do not allow indexed
