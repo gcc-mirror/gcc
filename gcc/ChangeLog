@@ -1,5 +1,16 @@
 2004-09-10  Geoffrey Keating  <geoffk@apple.com>
 
+	* config/darwin.c: Include target.h.
+	(struct machopic_indirection): Make ptr_name a string.
+	(machopic_indirection_hash): Update for ptr_name a string.
+	(machopic_indirection_eq): Likewise.
+	(machopic_indirection_name): Likewise.
+	(machopic_output_indirection): Likewise.
+	(machopic_validate_stub_or_non_lazy_ptr): Update for ptr_name a
+	string.  Don't expect stub names to be in the identifier hash table.
+	Do call strip_name_encoding before looking up entry in ID hash table.
+	* config/t-darwin (darwin.o): Add target.h to dependencies.
+	
 	* gcc/config/rs6000/rs6000.c (print_operand): Use fputs instead
 	of fprintf for register names.
 	
