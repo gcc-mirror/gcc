@@ -2028,7 +2028,7 @@ set_exception_lang_code (code)
 /* This routine will set the language version code for exceptions. */
 void
 set_exception_version_code (code)
-     short code;
+     int code;
 {
   version_code = code;
 }

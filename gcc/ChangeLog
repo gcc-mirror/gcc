@@ -1,3 +1,7 @@
+Fri Dec  4 02:23:24 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* except.c (set_exception_version_code): Argument is an "int".
+
 Fri Dec  4 01:29:28 1998  Robert Lipe  <robertl@dgii.com>
 
 	* configure.in (mipsel-*-linux*): New target.
