@@ -288,16 +288,28 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
 
 #define REG_CLASS_FROM_LETTER(C) NO_REGS
 
-/* The letters I, J, K, L and M in a register constraint string
+/* The letters I, J, K, L, M, N, and O in a register constraint string
    can be used to stand for particular ranges of immediate operands.
    This macro defines what the ranges are.
    C is the letter, and VALUE is a constant value.
    Return 1 if VALUE is in the range specified by C.
 
-   `I' is the constant zero.  */
+   `I' is the constant zero.
+   `J' is a value between 0 .. 63 (inclusive)
+   `K' is a value between -128 and 127 (inclusive)
+   'L' is a value between -32768 and 32767 (inclusive)
+   `M' is a value between 0 and 255 (inclusive)
+   'N' is a value between 0 and 65535 (inclusive)
+   `O' is a value between -63 and -1 (inclusive)  */
 
 #define CONST_OK_FOR_LETTER_P(VALUE, C) \
-  ((C) == 'I' ? (VALUE) == 0		\
+  (  (C) == 'I' ?	(VALUE) == 0				\
+   : (C) == 'J' ?	0 <= (VALUE) && (VALUE) < 64		\
+   : (C) == 'O' ?	-63 <= (VALUE) && (VALUE) < 0		\
+   : (C) == 'K' ?	-128 <= (VALUE) && (VALUE) < 128	\
+   : (C) == 'M' ?	0 <= (VALUE) && (VALUE) < 256		\
+   : (C) == 'L' ?	-32768 <= (VALUE) && (VALUE) < 32768	\
+   : (C) == 'N' ?	0 <= (VALUE) && (VALUE) < 65536		\
    : 0)
 
 /* Similar, but for floating constants, and defining letters G and H.
@@ -505,9 +517,6 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
    FNADDR is an RTX for the address of the function's pure code.
    CXT is an RTX for the static chain value for the function.  */
 
-/* Allow this be overriden with the correct register prefixes.  */
-#define VAX_ISTREAM_SYNC "movpsl -(sp)\n\tpushal 1(pc)\n\trei"
-
 /* We copy the register-mask from the function's pure code
    to the start of the trampoline.  */
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
@@ -517,7 +526,7 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
   emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 4)), CXT);	\
   emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 11)),	\
 		  plus_constant (FNADDR, 2));				\
-  emit_insn (gen_rtx_ASM_INPUT (VOIDmode, VAX_ISTREAM_SYNC));		\
+  emit_insn (gen_sync_istream ());					\
 }
 
 /* Byte offset of return address in a stack frame.  The "saved PC" field
@@ -786,6 +795,10 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
    when the index is out of range.  Don't define it if the case insn
    jumps to the default label instead.  */
 #define CASE_DROPS_THROUGH
+
+/* Indicate that jump tables go in the text section.  This is
+   necessary when compiling PIC code.  */
+#define JUMP_TABLES_IN_TEXT_SECTION 1
 
 /* Define this as 1 if `char' should by default be signed; else as 0.  */
 #define DEFAULT_SIGNED_CHAR 1
@@ -1062,19 +1075,39 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
    It need not be very fast code.  */
 
 #define ASM_OUTPUT_REG_POP(FILE,REGNO)  \
-  fprintf (FILE, "\tmovl (sp)+,%s\n", reg_names[REGNO])
+  fprintf (FILE, "\tmovl (%s)+,%s\n", reg_names[STACK_POINTER_REGNUM], \
+	   reg_names[REGNO])
 
 /* This is how to output an element of a case-vector that is absolute.
    (The VAX does not use such vectors,
    but we must define this macro anyway.)  */
 
-#define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)  \
-  fprintf (FILE, "\t.long L%d\n", VALUE)
+#define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)		\
+  do							\
+    {							\
+      char label[256];					\
+      ASM_GENERATE_INTERNAL_LABEL (label, "L", (VALUE));\
+      fprintf (FILE, "\t.long ");			\
+      assemble_name (FILE, label);			\
+      fprintf (FILE, "\n");				\
+    }							\
+  while (0)
 
 /* This is how to output an element of a case-vector that is relative.  */
 
-#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL)  \
-  fprintf (FILE, "\t.word L%d-L%d\n", VALUE, REL)
+#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL)	\
+  do								\
+    {								\
+      char label[256];						\
+      ASM_GENERATE_INTERNAL_LABEL (label, "L", (VALUE));	\
+      fprintf (FILE, "\t.word ");				\
+      assemble_name (FILE, label);				\
+      ASM_GENERATE_INTERNAL_LABEL (label, "L", (REL));		\
+      fprintf (FILE, "-");					\
+      assemble_name (FILE, label);				\
+      fprintf (FILE, "\n");					\
+    }								\
+  while (0)
 
 /* This is how to output an assembler line
    that says to advance the location counter
@@ -1152,10 +1185,12 @@ VAX operand formatting codes:
    which is not a 64-bit minus one.  */
 
 #define PRINT_OPERAND_PUNCT_VALID_P(CODE)				\
-  ((CODE) == '#')
+  ((CODE) == '#' || (CODE) == '|')
 
 #define PRINT_OPERAND(FILE, X, CODE)  \
 { if (CODE == '#') fputc (ASM_DOUBLE_CHAR, FILE);			\
+  else if (CODE == '|')							\
+    fputs (REGISTER_PREFIX, FILE);					\
   else if (CODE == 'C')							\
     fputs (rev_cond_name (X), FILE);					\
   else if (CODE == 'D' && GET_CODE (X) == CONST_INT && INTVAL (X) < 0)	\
@@ -1198,3 +1233,8 @@ VAX operand formatting codes:
 
 #define PRINT_OPERAND_ADDRESS(FILE, ADDR)  \
  print_operand_address (FILE, ADDR)
+
+/* This is a blatent lie.  However, it's good enough, since we don't
+   actually have any code whatsoever for which this isn't overridden
+   by the proper FDE definition.  */
+#define INCOMING_RETURN_ADDR_RTX gen_rtx_REG (Pmode, PC_REGNUM)
