@@ -244,6 +244,38 @@ extern basic_block split_edge		PROTO ((edge));
 extern void insert_insn_on_edge		PROTO ((rtx, edge));
 extern void commit_edge_insertions	PROTO ((void));
 
+/* This structure maintains an edge list vector.  */
+struct edge_list 
+{
+  int num_blocks;
+  int num_edges;
+  edge *index_to_edge;
+};
+
+/* This is the value which indicates no edge is present.  */
+#define EDGE_INDEX_NO_EDGE	-1
+
+/* EDGE_INDEX returns an integer index for an edge, or EDGE_INDEX_NO_EDGE
+   if there is no edge between the 2 basic blocks.  */
+#define EDGE_INDEX(el, pred, succ) (find_edge_index ((el), (pred), (succ)))
+
+/* INDEX_EDGE_PRED_BB and INDEX_EDGE_SUCC_BB return a pointer to the basic
+   block which is either the pred or succ end of the indexed edge.  */
+#define INDEX_EDGE_PRED_BB(el, index)	((el)->index_to_edge[(index)]->src)
+#define INDEX_EDGE_SUCC_BB(el, index)	((el)->index_to_edge[(index)]->dest)
+
+/* INDEX_EDGE returns a pointer to the edge.  */
+#define INDEX_EDGE(el, index)           ((el)->index_to_edge[(index)])
+
+/* Number of edges in the compressed edge list.  */
+#define NUM_EDGES(el)			((el)->num_edges)
+
+struct edge_list * create_edge_list	PROTO ((void));
+void free_edge_list			PROTO ((struct edge_list *));
+void print_edge_list			PROTO ((FILE *, struct edge_list *));
+void verify_edge_list			PROTO ((FILE *, struct edge_list *));
+int find_edge_index			PROTO ((struct edge_list *, int, int));
+
 extern void compute_preds_succs		PROTO ((int_list_ptr *, int_list_ptr *,
 						int *, int *));
 extern void compute_dominators		PROTO ((sbitmap *, sbitmap *,

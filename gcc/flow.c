@@ -5243,3 +5243,268 @@ verify_flow_info ()
       x = NEXT_INSN (x);
     }
 }
+
+/* Functions to access an edge list with a vector representation.
+   Enough data is kept such that given an index number, the 
+   pred and succ that edge reprsents can be determined, or
+   given a pred and a succ, it's index number can be returned.
+   This allows algorithms which comsume a lot of memory to 
+   represent the normally full matrix of edge (pred,succ) with a
+   single indexed vector,  edge (EDGE_INDEX (pred, succ)), with no
+   wasted space in the client code due to sparse flow graphs.  */
+
+/* This functions initializes the edge list. Basically the entire 
+   flowgraph is processed, and all edges are assigned a number,
+   and the data structure is filed in.  */
+struct edge_list *
+create_edge_list ()
+{
+  struct edge_list *elist;
+  edge e;
+  int num_edges;
+  int x,y;
+  int_list_ptr ptr;
+  int block_count;
+
+  block_count = n_basic_blocks + 2;   /* Include the entry and exit blocks.  */
+
+  num_edges = 0;
+
+  /* Determine the number of edges in the flow graph by counting successor
+     edges on each basic block.  */
+  for (x = 0; x < n_basic_blocks; x++)
+    {
+      basic_block bb = BASIC_BLOCK (x);
+
+      for (e = bb->succ; e; e = e->succ_next)
+	num_edges++;
+    }
+  /* Don't forget successors of the entry block.  */
+  for (e = ENTRY_BLOCK_PTR->succ; e; e = e->succ_next)
+    num_edges++;
+
+  elist = malloc (sizeof (struct edge_list));
+  elist->num_blocks = block_count;
+  elist->num_edges = num_edges;
+  elist->index_to_edge = malloc (sizeof (edge) * num_edges);
+
+  num_edges = 0;
+
+  /* Follow successors of the entry block, and register these edges.  */
+  for (e = ENTRY_BLOCK_PTR->succ; e; e = e->succ_next)
+    {
+      elist->index_to_edge[num_edges] = e;
+      num_edges++;
+    }
+  
+  for (x = 0; x < n_basic_blocks; x++)
+    {
+      basic_block bb = BASIC_BLOCK (x);
+
+      /* Follow all successors of blocks, and register these edges.  */
+      for (e = bb->succ; e; e = e->succ_next)
+	{
+	  elist->index_to_edge[num_edges] = e;
+	  num_edges++;
+	}
+    }
+  return elist;
+}
+
+/* This function free's memory associated with an edge list.  */
+void
+free_edge_list (elist)
+     struct edge_list *elist;
+{
+  if (elist)
+    {
+      free (elist->index_to_edge);
+      free (elist);
+    }
+}
+
+/* This function provides debug output showing an edge list.  */
+void 
+print_edge_list (f, elist)
+     FILE *f;
+     struct edge_list *elist;
+{
+  int x;
+  fprintf(f, "Compressed edge list, %d BBs + entry & exit, and %d edges\n",
+	  elist->num_blocks - 2, elist->num_edges);
+
+  for (x = 0; x < elist->num_edges; x++)
+    {
+      fprintf (f, " %-4d - edge(", x);
+      if (INDEX_EDGE_PRED_BB (elist, x) == ENTRY_BLOCK_PTR)
+        fprintf (f,"entry,");
+      else
+        fprintf (f,"%d,", INDEX_EDGE_PRED_BB (elist, x)->index);
+
+      if (INDEX_EDGE_SUCC_BB (elist, x) == EXIT_BLOCK_PTR)
+        fprintf (f,"exit)\n");
+      else
+        fprintf (f,"%d)\n", INDEX_EDGE_SUCC_BB (elist, x)->index);
+    }
+}
+
+/* This function provides an internal consistancy check of an edge list,
+   verifying that all edges are present, and that there are no 
+   extra edges.  */
+void
+verify_edge_list (f, elist)
+     FILE *f;
+     struct edge_list *elist;
+{
+  int x, pred, succ, index;
+  int_list_ptr ptr;
+  int flawed = 0;
+  edge e;
+
+  for (x = 0; x < n_basic_blocks; x++)
+    {
+      basic_block bb = BASIC_BLOCK (x);
+
+      for (e = bb->succ; e; e = e->succ_next)
+	{
+	  pred = e->src->index;
+	  succ = e->dest->index;
+	  index = EDGE_INDEX (elist, pred, succ);
+	  if (index == EDGE_INDEX_NO_EDGE)
+	    {
+	      fprintf (f, "*p* No index for edge from %d to %d\n",pred, succ);
+	      continue;
+	    }
+	  if (INDEX_EDGE_PRED_BB (elist, index)->index != pred)
+	    fprintf (f, "*p* Pred for index %d should be %d not %d\n",
+		     index, pred, INDEX_EDGE_PRED_BB (elist, index)->index);
+	  if (INDEX_EDGE_SUCC_BB (elist, index)->index != succ)
+	    fprintf (f, "*p* Succ for index %d should be %d not %d\n",
+		     index, succ, INDEX_EDGE_SUCC_BB (elist, index)->index);
+	}
+    }
+  for (e = ENTRY_BLOCK_PTR->succ; e; e = e->succ_next)
+    {
+      pred = e->src->index;
+      succ = e->dest->index;
+      index = EDGE_INDEX (elist, pred, succ);
+      if (index == EDGE_INDEX_NO_EDGE)
+	{
+	  fprintf (f, "*p* No index for edge from %d to %d\n",pred, succ);
+	  continue;
+	}
+      if (INDEX_EDGE_PRED_BB (elist, index)->index != pred)
+	fprintf (f, "*p* Pred for index %d should be %d not %d\n",
+		 index, pred, INDEX_EDGE_PRED_BB (elist, index)->index);
+      if (INDEX_EDGE_SUCC_BB (elist, index)->index != succ)
+	fprintf (f, "*p* Succ for index %d should be %d not %d\n",
+		 index, succ, INDEX_EDGE_SUCC_BB (elist, index)->index);
+    }
+  /* We've verified that all the edges are in the list, no lets make sure
+     there are no spurious edges in the list.  */
+  
+  for (pred = 0 ; pred < n_basic_blocks; pred++)
+    for (succ = 0 ; succ < n_basic_blocks; succ++)
+      {
+        basic_block p = BASIC_BLOCK (pred);
+        basic_block s = BASIC_BLOCK (succ);
+
+        int found_edge = 0;
+
+        for (e = p->succ; e; e = e->succ_next)
+          if (e->dest == s)
+	    {
+	      found_edge = 1;
+	      break;
+	    }
+        for (e = s->pred; e; e = e->pred_next)
+          if (e->src == p)
+	    {
+	      found_edge = 1;
+	      break;
+	    }
+        if (EDGE_INDEX (elist, pred, succ) == EDGE_INDEX_NO_EDGE 
+	    && found_edge != 0)
+	  fprintf (f, "*** Edge (%d, %d) appears to not have an index\n",
+	  	   pred, succ);
+        if (EDGE_INDEX (elist, pred, succ) != EDGE_INDEX_NO_EDGE
+	    && found_edge == 0)
+	  fprintf (f, "*** Edge (%d, %d) has index %d, but there is no edge\n",
+	  	   pred, succ, EDGE_INDEX (elist, pred, succ));
+      }
+    for (succ = 0 ; succ < n_basic_blocks; succ++)
+      {
+        basic_block p = ENTRY_BLOCK_PTR;
+        basic_block s = BASIC_BLOCK (succ);
+
+        int found_edge = 0;
+
+        for (e = p->succ; e; e = e->succ_next)
+          if (e->dest == s)
+	    {
+	      found_edge = 1;
+	      break;
+	    }
+        for (e = s->pred; e; e = e->pred_next)
+          if (e->src == p)
+	    {
+	      found_edge = 1;
+	      break;
+	    }
+        if (EDGE_INDEX (elist, ENTRY_BLOCK, succ) == EDGE_INDEX_NO_EDGE 
+	    && found_edge != 0)
+	  fprintf (f, "*** Edge (entry, %d) appears to not have an index\n",
+	  	   succ);
+        if (EDGE_INDEX (elist, ENTRY_BLOCK, succ) != EDGE_INDEX_NO_EDGE
+	    && found_edge == 0)
+	  fprintf (f, "*** Edge (entry, %d) has index %d, but no edge exists\n",
+	  	   succ, EDGE_INDEX (elist, ENTRY_BLOCK, succ));
+      }
+    for (pred = 0 ; pred < n_basic_blocks; pred++)
+      {
+        basic_block p = BASIC_BLOCK (pred);
+        basic_block s = EXIT_BLOCK_PTR;
+
+        int found_edge = 0;
+
+        for (e = p->succ; e; e = e->succ_next)
+          if (e->dest == s)
+	    {
+	      found_edge = 1;
+	      break;
+	    }
+        for (e = s->pred; e; e = e->pred_next)
+          if (e->src == p)
+	    {
+	      found_edge = 1;
+	      break;
+	    }
+        if (EDGE_INDEX (elist, pred, EXIT_BLOCK) == EDGE_INDEX_NO_EDGE
+	    && found_edge != 0)
+	  fprintf (f, "*** Edge (%d, exit) appears to not have an index\n",
+	  	   pred);
+        if (EDGE_INDEX (elist, pred, EXIT_BLOCK) != EDGE_INDEX_NO_EDGE
+	    && found_edge == 0)
+	  fprintf (f, "*** Edge (%d, exit) has index %d, but no edge exists\n",
+	  	   pred, EDGE_INDEX (elist, pred, EXIT_BLOCK));
+      }
+}
+
+/* This routine will determine what, if any, edge there is between
+   a specified predecessor and successor.  */
+
+int
+find_edge_index (edge_list, pred, succ)
+     struct edge_list *edge_list;
+     int pred, succ;
+{
+  int x;
+  for (x = 0; x < NUM_EDGES (edge_list); x++)
+    {
+      if (INDEX_EDGE_PRED_BB (edge_list, x)->index == pred
+	  && INDEX_EDGE_SUCC_BB (edge_list, x)->index == succ)
+	return x;
+    }
+  return (EDGE_INDEX_NO_EDGE);
+}
+
