@@ -1,3 +1,10 @@
+2005-03-18  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* gfortran.h (arith): Remove ARITH_0TO0.
+	* arith.c (gfc_arith_error): Remove handling of ARITH_0TO0.
+	(gfc_arith_power): Remove special casing of zero to integral
+	power zero.
+
 2005-03-17  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* invoke.texi: Fix typos.
