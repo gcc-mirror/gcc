@@ -1,5 +1,5 @@
 /* GNU Objective C Runtime archiving
-   Copyright (C) 1993, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995, 1996 Free Software Foundation, Inc.
    Contributed by Kresten Krab Thorup
 
 This file is part of GNU CC.
@@ -1025,7 +1025,8 @@ objc_write_type(TypedStream* stream, const char* type, const void* data)
   case _C_ARY_B:
     {
       int len = atoi(type+1);
-      while (isdigit(*++type));
+      while (isdigit(*++type))
+	;
       return objc_write_array (stream, type, len, data);
     }
     break; 
@@ -1034,8 +1035,9 @@ objc_write_type(TypedStream* stream, const char* type, const void* data)
     {
       int acc_size = 0;
       int align;
-      while (*type != _C_STRUCT_E && *type++ != '='); /* skip "<name>=" */
-      while (*type != _C_STRUCT_E);
+      while (*type != _C_STRUCT_E && *type++ != '=')
+	; /* skip "<name>=" */
+      while (*type != _C_STRUCT_E)
 	{
 	  align = objc_alignof_type (type);       /* padd to alignment */
 	  acc_size += ROUND (acc_size, align);
@@ -1116,7 +1118,8 @@ objc_read_type(TypedStream* stream, const char* type, void* data)
   case _C_ARY_B:
     {
       int len = atoi(type+1);
-      while (isdigit(*++type));
+      while (isdigit(*++type))
+	;
       return objc_read_array (stream, type, len, data);
     }
     break; 
@@ -1125,8 +1128,9 @@ objc_read_type(TypedStream* stream, const char* type, void* data)
     {
       int acc_size = 0;
       int align;
-      while (*type != _C_STRUCT_E && *type++ != '='); /* skip "<name>=" */
-      while (*type != _C_STRUCT_E);
+      while (*type != _C_STRUCT_E && *type++ != '=')
+	; /* skip "<name>=" */
+      while (*type != _C_STRUCT_E)
 	{
 	  align = objc_alignof_type (type);       /* padd to alignment */
 	  acc_size += ROUND (acc_size, align);
@@ -1229,7 +1233,8 @@ objc_write_types (TypedStream* stream, const char* type, ...)
 	{
 	  int len = atoi(c+1);
 	  const char* t = c;
-	  while (isdigit(*++t));
+	  while (isdigit(*++t))
+	    ;
 	  res = objc_write_array (stream, t, len, va_arg(args, void*));
 	  t = objc_skip_typespec (t);
 	  if (*t != _C_ARY_E)
@@ -1320,7 +1325,8 @@ objc_read_types(TypedStream* stream, const char* type, ...)
 	{
 	  int len = atoi(c+1);
 	  const char* t = c;
-	  while (isdigit(*++t));
+	  while (isdigit(*++t))
+	    ;
 	  res = objc_read_array (stream, t, len, va_arg(args, void*));
 	  t = objc_skip_typespec (t);
 	  if (*t != _C_ARY_E)
@@ -1422,7 +1428,8 @@ __objc_read_typed_stream_signature (TypedStream* stream)
   int pos = 0;
   do
     (*stream->read)(stream->physical, buffer+pos, 1);
-  while (buffer[pos++] != '\0');
+  while (buffer[pos++] != '\0')
+    ;
   sscanf (buffer, "GNU TypedStream %d", &stream->version);
   if (stream->version != OBJC_TYPED_STREAM_VERSION)
     __objc_fatal ("cannot handle TypedStream version %d", stream->version);
