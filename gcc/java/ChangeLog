@@ -2,6 +2,10 @@
 
 	* lang-specs.h: Also recognize `-femit-class-files'.
 
+2000-09-05  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* verify.c (merge_types): Load the types to merge if necessary.
+
 2000-09-02  Anthony Green  <green@redhat.com>
 
 	* jcf-io.c: Include zlib.h.
