@@ -1,5 +1,5 @@
 /* It is not clear whether this test is conforming.  See DR#236
-   http://wwwold.dkuug.dk/JTC1/SC22/WG14/www/docs/dr_236.htm.  However,
+   http://www.open-std.org/jtc1/sc22/wg14/www/docs/dr_236.htm.  However,
    there seems to be consensus that the presence of a union to aggregate
    struct s1 and struct s2 should make it conforming.  */
 struct s1 { double d; };
