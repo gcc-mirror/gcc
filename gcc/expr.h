@@ -831,8 +831,7 @@ extern rtx store_expr PROTO((tree, rtx, int));
    Useful after calling expand_expr with 1 as sum_ok.  */
 extern rtx force_operand PROTO((rtx, rtx));
 
-extern void expand_builtin_setjmp_setup PARAMS ((rtx, rtx));
-extern void expand_builtin_setjmp_receiver PARAMS ((rtx));
+extern rtx expand_builtin_setjmp PROTO((rtx, rtx, rtx, rtx));
 
 #ifdef TREE_CODE
 /* Generate code for computing expression EXP.

@@ -3494,18 +3494,6 @@ force_const_mem (mode, x)
 
 	  pop_obstacks ();
 	}
-      if (GET_CODE (x) == LABEL_REF)
-	{
-	  extern rtx forced_labels;
-
-	  push_obstacks_nochange ();
-	  rtl_in_saveable_obstack ();
-
-	  forced_labels = gen_rtx_EXPR_LIST (VOIDmode,
-					     XEXP (x, 0),
-					     forced_labels);
-	  pop_obstacks ();
-	}
 
       /* Allocate a pool constant descriptor, fill it in, and chain it in.  */
 
