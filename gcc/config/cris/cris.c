@@ -116,8 +116,6 @@ static void cris_init_libfuncs (void);
 static bool cris_rtx_costs (rtx, int, int, int *);
 static int cris_address_cost (rtx);
 
-static tree cris_gimplify_va_arg_expr (tree, tree, tree *, tree *);
-
 /* The function cris_target_asm_function_epilogue puts the last insn to
    output here.  It always fits; there won't be a symbol operand.  Used in
    delay_slots_for_epilogue and function_epilogue.  */
@@ -191,8 +189,6 @@ int cris_cpu_version = CRIS_DEFAULT_CPU_VERSION;
 
 #undef TARGET_SETUP_INCOMING_VARARGS
 #define TARGET_SETUP_INCOMING_VARARGS cris_setup_incoming_varargs
-#undef TARGET_GIMPLIFY_VA_ARG_EXPR
-#define TARGET_GIMPLIFY_VA_ARG_EXPR cris_gimplify_va_arg_expr
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2787,18 +2783,6 @@ cris_init_libfuncs (void)
   set_optab_libfunc (udiv_optab, SImode, "__Udiv");
   set_optab_libfunc (smod_optab, SImode, "__Mod");
   set_optab_libfunc (umod_optab, SImode, "__Umod");
-}
-
-/* The va_arg gimplifier.  All we need to do here special is notice
-   when we we've got a pass-by-reference.  */
-
-static tree
-cris_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
-{
-  if (FUNCTION_ARG_PASS_BY_REFERENCE (dummy, TYPE_MODE (type), type, dummy))
-    return ind_gimplify_va_arg_expr (valist, type, pre_p, post_p);
-  else
-    return std_gimplify_va_arg_expr (valist, type, pre_p, post_p);
 }
 
 /* The INIT_EXPANDERS worker sets the per-function-data initializer and

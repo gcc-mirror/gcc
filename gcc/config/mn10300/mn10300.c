@@ -71,7 +71,6 @@ static bool mn10300_rtx_costs (rtx, int, int, int *);
 static void mn10300_file_start (void);
 static bool mn10300_return_in_memory (tree, tree);
 static rtx mn10300_builtin_saveregs (void);
-static tree mn10300_gimplify_va_arg_expr (tree, tree, tree *, tree *);
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -98,8 +97,6 @@ static tree mn10300_gimplify_va_arg_expr (tree, tree, tree *, tree *);
 
 #undef TARGET_EXPAND_BUILTIN_SAVEREGS
 #define TARGET_EXPAND_BUILTIN_SAVEREGS mn10300_builtin_saveregs
-#undef TARGET_GIMPLIFY_VA_ARG_EXPR
-#define TARGET_GIMPLIFY_VA_ARG_EXPR mn10300_gimplify_va_arg_expr
 
 static void mn10300_encode_section_info (tree, rtx, int);
 struct gcc_target targetm = TARGET_INITIALIZER;
@@ -1457,15 +1454,6 @@ mn10300_va_start (tree valist, rtx nextarg)
 {
   nextarg = expand_builtin_saveregs ();
   std_expand_builtin_va_start (valist, nextarg);
-}
-
-static tree
-mn10300_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
-{
-  if (FUNCTION_ARG_PASS_BY_REFERENCE (dummy, TYPE_MODE (type), type, dummy))
-    return ind_gimplify_va_arg_expr (valist, type, pre_p, post_p);
-  else
-    return std_gimplify_va_arg_expr (valist, type, pre_p, post_p);
 }
 
 /* Return an RTX to represent where a value with mode MODE will be returned
