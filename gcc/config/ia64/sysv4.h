@@ -62,25 +62,23 @@ do {									\
 #define ASM_OUTPUT_LABELREF(STREAM, NAME) 				\
   do									\
     {									\
-      const char * real_name;						\
-      const char * name_end;						\
+      const char *real_name;						\
+      const char *name_end;						\
 									\
       STRIP_NAME_ENCODING (real_name, NAME);				\
       name_end = strchr (real_name, '+');				\
 									\
+      fputs (user_label_prefix, STREAM);				\
       if (name_end)							\
-	* name_end = 0;							\
-									\
-      asm_fprintf (STREAM, "%U%s", real_name);				\
+	fwrite (real_name, name_end - real_name, 1, STREAM);		\
+      else								\
+	fputs (real_name, STREAM);					\
 									\
       if (ia64_asm_output_label)					\
-	asm_fprintf (STREAM, "#");					\
+	fputc ('#', STREAM);						\
 									\
       if (name_end)							\
-	{								\
-	  * name_end = '+';						\
-	  asm_fprintf (STREAM, name_end);				\
-	}								\
+	fputs (name_end, STREAM);					\
     }									\
   while (0)
 
