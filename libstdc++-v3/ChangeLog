@@ -1,3 +1,9 @@
+2001-03-08  Andreas Schwab  <schwab@suse.de>
+
+	* acinclude.m4 (GLIBCPP_EXPORT_INSTALL_INFO): Fix syntax in test
+	command.
+        * aclocal.m4, configure: Regenerated.
+
 2001-02-21  Phil Edwards  <pme@sources.redhat.com>
 
 	* tests_flags.in:  Remove -n flag from call to echo.

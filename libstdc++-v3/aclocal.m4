@@ -1577,7 +1577,7 @@ AC_MSG_RESULT($version_specific_libs)
 
 # Default case for install directory for include files.
 if test x"$version_specific_libs" = x"no" \
-   && test x"$gxx_include_dir"=x"no"; then
+   && test x"$gxx_include_dir" = x"no"; then
   gxx_include_dir='$(prefix)'/include/g++-${libstdcxx_interface}
 fi
 
