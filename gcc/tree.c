@@ -3026,6 +3026,7 @@ build_type_attribute_variant (tree ttype, tree attribute)
   return ttype;
 }
 
+
 /* Return nonzero if IDENT is a valid name for attribute ATTR,
    or zero if not.
 
@@ -3034,21 +3035,21 @@ build_type_attribute_variant (tree ttype, tree attribute)
    `text'.  One might then also require attribute lists to be stored in
    their canonicalized form.  */
 
-int
-is_attribute_p (const char *attr, tree ident)
+static int
+is_attribute_with_length_p (const char *attr, int attr_len, tree ident)
 {
-  int ident_len, attr_len;
+  int ident_len;
   const char *p;
 
   if (TREE_CODE (ident) != IDENTIFIER_NODE)
     return 0;
-
-  if (strcmp (attr, IDENTIFIER_POINTER (ident)) == 0)
-    return 1;
-
+  
   p = IDENTIFIER_POINTER (ident);
-  ident_len = strlen (p);
-  attr_len = strlen (attr);
+  ident_len = IDENTIFIER_LENGTH (ident);
+  
+  if (ident_len == attr_len
+      && strcmp (attr, p) == 0)
+    return 1;
 
   /* If ATTR is `__text__', IDENT must be `text'; and vice versa.  */
   if (attr[0] == '_')
@@ -3073,6 +3074,17 @@ is_attribute_p (const char *attr, tree ident)
   return 0;
 }
 
+/* Return nonzero if IDENT is a valid name for attribute ATTR,
+   or zero if not.
+
+   We try both `text' and `__text__', ATTR may be either one.  */
+
+int
+is_attribute_p (const char *attr, tree ident)
+{
+  return is_attribute_with_length_p (attr, strlen (attr), ident);
+}
+
 /* Given an attribute name and a list of attributes, return a pointer to the
    attribute's list element if the attribute is part of the list, or NULL_TREE
    if not found.  If the attribute appears more than once, this only
@@ -3083,11 +3095,12 @@ tree
 lookup_attribute (const char *attr_name, tree list)
 {
   tree l;
+  size_t attr_len = strlen (attr_name);
 
   for (l = list; l; l = TREE_CHAIN (l))
     {
       gcc_assert (TREE_CODE (TREE_PURPOSE (l)) == IDENTIFIER_NODE);
-      if (is_attribute_p (attr_name, TREE_PURPOSE (l)))
+      if (is_attribute_with_length_p (attr_name, attr_len, TREE_PURPOSE (l)))
 	return l;
     }
 
