@@ -1007,7 +1007,8 @@ extern int making_const_table;
 	       && REGNO (XEXP (X, 0)) == STACK_POINTER_REGNUM		\
 	       && GET_MODE_SIZE (MODE) >= 4				\
 	       && GET_CODE (XEXP (X, 1)) == CONST_INT			\
-	       && (unsigned HOST_WIDE_INT) INTVAL (XEXP (X, 1)) < 1024	\
+	       && ((unsigned HOST_WIDE_INT) INTVAL (XEXP (X, 1))	\
+		   + GET_MODE_SIZE (MODE)) <= 1024			\
 	       && (INTVAL (XEXP (X, 1)) & 3) == 0)			\
 	goto WIN;							\
     }									\
