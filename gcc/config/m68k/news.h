@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  SONY NEWS-OS 4 version.
-   Copyright (C) 1987, 1989, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1989, 1993, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -319,7 +319,15 @@ do { char dstr[30];					\
       if (CODE == 'f')							\
         { char dstr[30];						\
           REAL_VALUE_TO_DECIMAL (r, "%.9e", dstr);			\
-          fprintf (FILE, "#0f%s", dstr);				\
+          if (REAL_VALUE_ISINF (r) || REAL_VALUE_ISNAN (r)) {		\
+            if (REAL_VALUE_NEGATIVE (r))				\
+              fprintf (FILE, "#0f-99e999");				\
+            else							\
+              fprintf (FILE, "#0f99e999"); }				\
+          else if (REAL_VALUE_MINUS_ZERO (r))				\
+            fprintf (FILE, "#0f-0.0");					\
+          else								\
+            fprintf (FILE, "#0f%s", dstr); 				\
         }								\
       else								\
         { long l;							\
@@ -334,7 +342,15 @@ do { char dstr[30];					\
     { REAL_VALUE_TYPE r; char dstr[30];					\
       REAL_VALUE_FROM_CONST_DOUBLE (r, X);				\
       REAL_VALUE_TO_DECIMAL (r, "%.20e", dstr );			\
-      fprintf (FILE, "#0d%s", dstr); }					\
+      if (REAL_VALUE_ISINF (r) || REAL_VALUE_ISNAN (r)) {		\
+        if (REAL_VALUE_NEGATIVE (r))					\
+          fprintf (FILE, "#0d-99e999");					\
+        else								\
+          fprintf (FILE, "#0d99e999"); }				\
+      else if (REAL_VALUE_MINUS_ZERO (r))				\
+          fprintf (FILE, "#0d-0.0");					\
+      else								\
+          fprintf (FILE, "#0d%s", dstr); }				\
   else if (CODE == 'b') output_addr_const (FILE, X);			\
   else { putc ('#', FILE); output_addr_const (FILE, X); }}
 
