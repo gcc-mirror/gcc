@@ -233,7 +233,7 @@ __cp_pop_exception (cp_eh_info *p)
     p->cleanup (p->value, 2);
 
   if (! __is_pointer (p->type))
-    __eh_free (p->value);
+    __eh_free (p->original_value);  // value may have been co-erced.
 
   __eh_free (p);
 }

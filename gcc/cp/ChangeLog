@@ -1,3 +1,8 @@
+1998-10-23  Andrew MacLeod  <amacleod@cygnus.com>
+
+	* exception.cc (__cp_pop_exception): Free the original exception
+	value, not the potentially coerced one.
+
 1998-10-23  Mark Mitchell  <mark@markmitchell.com>
 
 	* Makefile.in (hash.h): Run gperf when necessary.
