@@ -1385,7 +1385,7 @@ namespace std
       _CharT* __ws = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) 
 							   * __cs_size));
       __ctype.widen(__cs, __cs + __len, __ws);
-      string_type __digits(__ws);
+      const string_type __digits(__ws, __len);
       return this->do_put(__s, __intl, __io, __fill, __digits); 
     }
 

@@ -1,5 +1,13 @@
 2004-01-22  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/locale_facets.tcc
+	(money_put::do_put(..., long double)): Use the basic_string
+	constructor for char arrays, not that for C-strings, to pass
+	__digits to do_put(..., const string_type&): __ws isn't
+	null-terminated.
+
+2004-01-22  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/basic_string.h (_M_replace_safe): Change
 	signatures to take size_types and const _CharT*.
 	(_M_replace_aux): Likewise, takes size_types instead of
