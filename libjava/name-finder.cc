@@ -134,7 +134,7 @@ _Jv_name_finder::lookup (void *p)
 {
   toHex (p);
       
-#ifdef HAVE_DLFCN_H
+#if defined (HAVE_DLFCN_H) && defined (HAVE_DLADDR)
   {
     Dl_info dl_info;
     
