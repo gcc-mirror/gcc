@@ -20,16 +20,3 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #define HOST_EXECUTABLE_SUFFIX ".exe"
-
-/* Even though Cygwin tries to hide the DOS based filesystem, it
-   still shows though at times.  */
-#define HAVE_DOS_BASED_FILE_SYSTEM
-
-/* We support both "/" and "\" since everybody tests both but we
-   default to "/".  This is important because if gcc produces Win32
-   paths containing backslashes, make and configure may treat the
-   backslashes as escape characters.  Many Win32 programs use forward
-   slashes so using a forward slash shouldn't be problematic from the
-   perspective of wanting gcc to produce native Win32 paths.  */
-#undef DIR_SEPARATOR_2
-#define DIR_SEPARATOR_2 '\\'

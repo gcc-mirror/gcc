@@ -19,14 +19,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* Even though we support "/", allow "\" since everybody tests both.  */
-#define DIR_SEPARATOR '\\'
-#define DIR_SEPARATOR_2 '/'
-
-/* Mingw32 does not try to hide the underlying DOS-based file system
-   like Cygwin does.  */
-#define HAVE_DOS_BASED_FILE_SYSTEM
-
 #define HOST_EXECUTABLE_SUFFIX ".exe"
 
 #undef PATH_SEPARATOR

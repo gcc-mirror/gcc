@@ -547,7 +547,7 @@ cpp_included (cpp_reader *pfile, const char *fname)
   char *name, *n;
   splay_tree_node nd;
 
-  if (IS_ABSOLUTE_PATHNAME (fname))
+  if (IS_ABSOLUTE_PATH (fname))
     {
       /* Just look it up.  */
       nd = splay_tree_lookup (pfile->all_include_files, (splay_tree_key) fname);
@@ -592,7 +592,7 @@ find_include_file (cpp_reader *pfile, const char *fname, int angle_brackets,
       return NO_INCLUDE_PATH;
     }
 
-  if (IS_ABSOLUTE_PATHNAME (fname))
+  if (IS_ABSOLUTE_PATH (fname))
     return open_file_pch (pfile, fname);
 
   /* For #include_next, skip in the search path past the dir in which
@@ -962,7 +962,7 @@ read_name_map (cpp_reader *pfile, const char *dirname)
 	  ptr->map_from = from;
 
 	  /* Make the real filename absolute.  */
-	  if (IS_ABSOLUTE_PATHNAME (to))
+	  if (IS_ABSOLUTE_PATH (to))
 	    ptr->map_to = to;
 	  else
 	    {

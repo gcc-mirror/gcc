@@ -195,7 +195,7 @@ process_include (rtx desc, int lineno)
   FILE *input_file;
 
   /* If specified file name is absolute, skip the include stack.  */
-  if (! IS_ABSOLUTE_PATHNAME (filename))
+  if (! IS_ABSOLUTE_PATH (filename))
     {
       struct file_name_list *stackp;
 

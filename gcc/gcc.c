@@ -111,14 +111,6 @@ extern int getrusage PARAMS ((int, struct rusage *));
 #define TARGET_OBJECT_SUFFIX ".o"
 #endif
 
-#ifndef VMS
-/* FIXME: the location independence code for VMS is hairier than this,
-   and hasn't been written.  */
-#ifndef DIR_UP
-#define DIR_UP ".."
-#endif /* DIR_UP */
-#endif /* VMS */
-
 static const char dir_separator_str[] = { DIR_SEPARATOR, 0 };
 
 /* Most every one is fine with LIBRARY_PATH.  For some, it conflicts.  */
@@ -2442,7 +2434,7 @@ find_a_file (pprefix, name, mode, multilib)
 
   /* Determine the filename to execute (special case for absolute paths).  */
 
-  if (IS_ABSOLUTE_PATHNAME (name))
+  if (IS_ABSOLUTE_PATH (name))
     {
       if (access (name, mode) == 0)
 	{
@@ -2626,7 +2618,7 @@ add_sysrooted_prefix (pprefix, prefix, component, priority,
      int *warn;
      int os_multilib;
 {
-  if (!IS_ABSOLUTE_PATHNAME (prefix))
+  if (!IS_ABSOLUTE_PATH (prefix))
     abort ();
 
   if (target_system_root)
@@ -3823,7 +3815,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
      directories, so that we can search both the user specified directory
      and the standard place.  */
 
-  if (!IS_ABSOLUTE_PATHNAME (tooldir_prefix))
+  if (!IS_ABSOLUTE_PATH (tooldir_prefix))
     {
       if (gcc_exec_prefix)
 	{
@@ -4530,7 +4522,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		  /* Relative directories always come from -B,
 		     and it is better not to use them for searching
 		     at run time.  In particular, stage1 loses.  */
-		  if (!IS_ABSOLUTE_PATHNAME (pl->prefix))
+		  if (!IS_ABSOLUTE_PATH (pl->prefix))
 		    continue;
 #endif
 		  /* Try subdirectory if there is one.  */
@@ -6205,7 +6197,7 @@ main (argc, argv)
 	 standard_exec_prefix.  This lets us move the installed tree
 	 as a unit.  If GCC_EXEC_PREFIX is defined, base
 	 standard_startfile_prefix on that as well.  */
-      if (IS_ABSOLUTE_PATHNAME (standard_startfile_prefix))
+      if (IS_ABSOLUTE_PATH (standard_startfile_prefix))
 	add_sysrooted_prefix (&startfile_prefixes,
 			      standard_startfile_prefix, "BINUTILS",
 			      PREFIX_PRIORITY_LAST, 0, NULL, 1);
@@ -7453,7 +7445,7 @@ if_exists_spec_function (argc, argv)
      const char **argv;
 {
   /* Must have only one argument.  */
-  if (argc == 1 && IS_ABSOLUTE_PATHNAME (argv[0]) && ! access (argv[0], R_OK))
+  if (argc == 1 && IS_ABSOLUTE_PATH (argv[0]) && ! access (argv[0], R_OK))
     return argv[0];
 
   return NULL;
@@ -7473,7 +7465,7 @@ if_exists_else_spec_function (argc, argv)
   if (argc != 2)
     return NULL;
 
-  if (IS_ABSOLUTE_PATHNAME (argv[0]) && ! access (argv[0], R_OK))
+  if (IS_ABSOLUTE_PATH (argv[0]) && ! access (argv[0], R_OK))
     return argv[0];
 
   return argv[1];
