@@ -42,6 +42,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "params.h"
 #include "alloc-pool.h"
 
+static bool cselib_record_memory;
 static int entry_and_rtx_equal_p (const void *, const void *);
 static hashval_t get_value_hash (const void *);
 static struct elt_list *new_elt_list (struct elt_list *, cselib_val *);
@@ -748,6 +749,7 @@ cselib_lookup_mem (rtx x, int create)
   struct elt_list *l;
 
   if (MEM_VOLATILE_P (x) || mode == BLKmode
+      || !cselib_record_memory
       || (FLOAT_MODE_P (mode) && flag_float_store))
     return 0;
 
@@ -1201,7 +1203,8 @@ cselib_record_set (rtx dest, cselib_val *src_elt, cselib_val *dest_addr_elt)
 	n_useless_values--;
       src_elt->locs = new_elt_loc_list (src_elt->locs, dest);
     }
-  else if (GET_CODE (dest) == MEM && dest_addr_elt != 0)
+  else if (GET_CODE (dest) == MEM && dest_addr_elt != 0
+	   && cselib_record_memory)
     {
       if (src_elt->locs == 0)
 	n_useless_values--;
@@ -1275,7 +1278,8 @@ cselib_record_sets (rtx insn)
 	sets[i].dest = dest = XEXP (dest, 0);
 
       /* We don't know how to record anything but REG or MEM.  */
-      if (GET_CODE (dest) == REG || GET_CODE (dest) == MEM)
+      if (GET_CODE (dest) == REG
+	  || (GET_CODE (dest) == MEM && cselib_record_memory))
         {
 	  rtx src = sets[i].src;
 	  if (cond)
@@ -1320,7 +1324,8 @@ cselib_record_sets (rtx insn)
   for (i = 0; i < n_sets; i++)
     {
       rtx dest = sets[i].dest;
-      if (GET_CODE (dest) == REG || GET_CODE (dest) == MEM)
+      if (GET_CODE (dest) == REG
+	  || (GET_CODE (dest) == MEM && cselib_record_memory))
 	cselib_record_set (dest, sets[i].src_elt, sets[i].dest_addr_elt);
     }
 }
@@ -1394,12 +1399,16 @@ cselib_process_insn (rtx insn)
     remove_useless_values ();
 }
 
+static int initialized;
 /* Initialize cselib for one pass.  The caller must also call
    init_alias_analysis.  */
 
 void
-cselib_init (void)
+cselib_init (bool record_memory)
 {
+  if (initialized)
+    abort ();
+  initialized = 1;
   elt_list_pool = create_alloc_pool ("elt_list", 
 				     sizeof (struct elt_list), 10);
   elt_loc_list_pool = create_alloc_pool ("elt_loc_list", 
@@ -1408,6 +1417,7 @@ cselib_init (void)
 				       sizeof (cselib_val), 10);
   value_pool = create_alloc_pool ("value", 
 				  RTX_SIZE (VALUE), 100);
+  cselib_record_memory = record_memory;
   /* This is only created once.  */
   if (! callmem)
     callmem = gen_rtx_MEM (BLKmode, const0_rtx);
@@ -1437,13 +1447,15 @@ cselib_init (void)
 void
 cselib_finish (void)
 {
+  if (!initialized)
+    abort ();
+  initialized = 0;
   free_alloc_pool (elt_list_pool);
   free_alloc_pool (elt_loc_list_pool);
   free_alloc_pool (cselib_val_pool);
   free_alloc_pool (value_pool);
   clear_table ();
   htab_delete (hash_table);
-  reg_values = 0;
   free (used_regs);
   used_regs = 0;
   hash_table = 0;
