@@ -73,7 +73,7 @@ proc libffi-init { args } {
     global blddirffi
     global blddircxx
     global TOOL_OPTIONS
-    global ld_library_path
+    global tool
     global libffi_include
     global libffi_link_flags
     global tool_root_dir
@@ -133,13 +133,21 @@ proc libffi-init { args } {
     # The same applies to darwin (DYLD_LIBRARY_PATH), solaris 32 bit
     # (LD_LIBRARY_PATH_32), solaris 64 bit (LD_LIBRARY_PATH_64), and HP-UX
     # (SHLIB_PATH).
-    setenv  LD_LIBRARY_PATH     $ld_library_path
-    setenv  SHLIB_PATH          $ld_library_path
-    setenv  LD_LIBRARYN32_PATH  $ld_library_path
-    setenv  LD_LIBRARY64_PATH   $ld_library_path
-    setenv  LD_LIBRARY_PATH_32  $ld_library_path
-    setenv  LD_LIBRARY_PATH_64  $ld_library_path
-    setenv  DYLD_LIBRARY_PATH   $ld_library_path
+    if {![is_remote target]} {
+	set ld_path "LD_LIBRARY_PATH SHLIB_PATH LD_LIBRARYN32_PATH LD_LIBRARY64_PATH LD_LIBRARY_PATH_32 LD_LIBRARY_PATH_64 DYLD_LIBRARY_PATH"
+	foreach path $ld_path {
+	    if [info exists env($path)] {
+		# If we've already added these directories once, keep
+		# the existing path.
+		if {$ld_library_path != $env($path)
+		    && [string first $ld_library_path: $env($path)] != 0} {
+		    setenv $path "$ld_library_path:$env($path)"
+		}
+	    } else {
+		setenv $path "$ld_library_path"
+	    }
+	}
+    }
 }
 
 proc libffi_target_compile { source dest type options } {
@@ -147,7 +155,6 @@ proc libffi_target_compile { source dest type options } {
     global srcdir
     global blddirffi
     global TOOL_OPTIONS
-    global ld_library_path
     global libffi_link_flags
     global libffi_include
     global target_triplet
