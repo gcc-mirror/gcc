@@ -1,3 +1,8 @@
+2001-05-12  Richard Henderson  <rth@redhat.com>
+
+	* except.c: Use USING_SJLJ_EXCEPTIONS instead of
+	exceptions_via_longjmp.
+
 2001-05-12  Alexandre Oliva  <aoliva@redhat.com>
 
 	* cp-tree.h (ptrmemfunc_vbit_where_t): Declare type.
