@@ -162,6 +162,6 @@ In the 'Overflow' column, 'none' means that any overflow of the
 computation perfomed in the 'Calculation' column is ignored.
 'signed' means that the overflow is only reported if it happens when
 the values are treated as signed quantities.  'unsigned' is the same,
-except that the values are treated as unsigned qunatities.  'either'
+except that the values are treated as unsigned quantities.  'either'
 means that overflow is reported for either signed or unsigned
 overflow.

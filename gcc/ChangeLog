@@ -1,3 +1,19 @@
+2003-07-03  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/s390/2064.md: Fix comment typos.
+	* config/s390/2084.md: Likewise.
+	* config/s390/s390.c: Likewise.
+	* config/s390/s390.md: Likewise.
+	* config/sh/sh.c: Likewise.
+	* config/sh/sh.h: Likewise.
+	* config/sh/sh.md: Likewise.
+	* config/sparc/sparc.c: Likewise.
+	* config/sparc/sparc.h: Likewise.
+	* config/sparc/sparc.md: Likewise.
+	* config/stormy16/stormy16.c: Likewise.
+	* config/stormy16/stormy16.h: Likewise.
+	* config/stormy16/stormy-abi: Fix a typo.
+
 2003-07-03  Kelley Cook  <kelleycook@wideopenwest.org>
 
 	* Makefile.in (ifcvt.o): Depend on OPTABS_H.

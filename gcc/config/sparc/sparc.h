@@ -26,7 +26,7 @@ Boston, MA 02111-1307, USA.  */
    whatever definitions are necessary.  */
 
 /* Target CPU builtins.  FIXME: Defining sparc is for the benefit of
-   Solaris only; otheriwse just define __sparc__.  Sadly the headers
+   Solaris only; otherwise just define __sparc__.  Sadly the headers
    are such a mess there is no Solaris-specific header.  */
 #define TARGET_CPU_CPP_BUILTINS()		\
   do						\
@@ -1043,7 +1043,7 @@ while (0)
       : (GET_MODE_SIZE (MODE) + 3) / 4)					\
    : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
 
-/* Due to the ARCH64 descrepancy above we must override this next
+/* Due to the ARCH64 discrepancy above we must override this next
    macro too.  */
 #define REGMODE_NATURAL_SIZE(MODE) \
   ((TARGET_ARCH64 && FLOAT_MODE_P (MODE)) ? 4 : UNITS_PER_WORD)
@@ -1278,7 +1278,7 @@ extern enum reg_class sparc_regno_reg_class[FIRST_PSEUDO_REGISTER];
 
    We know in this case that we will not end up with a leaf function.
 
-   The register allocater is given the global and out registers first
+   The register allocator is given the global and out registers first
    because these registers are call clobbered and thus less useful to
    global register allocation.
 

@@ -3201,7 +3201,7 @@
                                                    operands[1]));
     }
 
-  /* Handle MEM cases first, note that only v9 guarentees
+  /* Handle MEM cases first, note that only v9 guarantees
      full 16-byte alignment for quads.  */
   if (GET_CODE (operands[0]) == MEM)
     {
@@ -7771,7 +7771,7 @@
 
 ;; For __builtin_setjmp we need to flush register windows iff the function
 ;; calls alloca as well, because otherwise the register window might be
-;; saved after %sp adjustement and thus setjmp would crash
+;; saved after %sp adjustment and thus setjmp would crash
 (define_expand "builtin_setjmp_setup"
   [(match_operand 0 "register_operand" "r")]
   ""
