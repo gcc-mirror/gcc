@@ -6943,6 +6943,12 @@ label to mark the beginning of the text section.  If it is better simply
 to use the name of the text section itself, rather than an explicit label,
 to indicate the beginning of the text section, define this macro to zero.
 
+@findex DWARF2_ASM_LINE_DEBUG_INFO
+@item DWARF2_ASM_LINE_DEBUG_INFO
+Define this macro to be a nonzero value if the assembler can generate Dwarf 2
+line debug info sections.  This will result in much more compact line number
+tables, and hence is desirable if it works.
+
 @findex PUT_SDB_@dots{}
 @item PUT_SDB_@dots{}
 Define these macros to override the assembler syntax for the special
