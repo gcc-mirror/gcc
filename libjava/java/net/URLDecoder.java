@@ -28,56 +28,131 @@ package java.net;
 
 import java.io.UnsupportedEncodingException;
 
-/**
-  * This utility class contains one static method that converts a 
+ /**
+  * This utility class contains static methods that converts a 
   * string encoded in the x-www-form-urlencoded format to the original
-  * text.  The x-www-form-urlencoded format 
-  * replaces certain disallowed characters with
-  * encoded equivalents.  All upper case and lower case letters in the
-  * US alphabet remain as is, the space character (' ') is replaced with
-  * '+' sign, and all other characters are converted to a "%XX" format
-  * where XX is the hexadecimal representation of that character.  Note
-  * that since unicode characters are 16 bits, and this method encodes only
-  * 8 bits of information, the lower 8 bits of the character are used.
+  * text.  The x-www-form-urlencoded format replaces certain disallowed
+  * characters with encoded equivalents.  All upper case and lower case
+  * letters in the US alphabet remain as is, the space character (' ')
+  * is replaced with '+' sign, and all other characters are converted to a
+  * "%XX" format where XX is the hexadecimal representation of that character
+  * in a given character encoding (default is "UTF-8").
   * <p>
   * This method is very useful for decoding strings sent to CGI scripts
   *
-  * Written using on-line Java Platform 1.2 API Specification.
+  * Written using on-line Java Platform 1.2/1.4 API Specification.
   * Status:  Believed complete and correct.
   *
   * @since 1.2
   *
   * @author Warren Levy <warrenl@cygnus.com>
   * @author Aaron M. Renn (arenn@urbanophile.com) (documentation comments)
-  * @date April 22, 1999.
+  * @author Mark Wielaard (mark@klomp.org)
   */
 public class URLDecoder
 {
-/**
+ /**
   * This method translates the passed in string from x-www-form-urlencoded
-  * format and returns it.
+  * format using the default encoding "UTF-8" to decode the hex encoded
+  * unsafe characters.
   *
-  * @param source The String to convert
+  * @param s the String to convert
   *
-  * @return The converted String
+  * @return the converted String
   */
   public static String decode(String s)
   {
+    try
+      {
+	return decode(s, "UTF-8");
+      }
+    catch (UnsupportedEncodingException uee)
+      {
+	// Should never happen since UTF-8 encoding should always be supported
+	return s;
+      }
+  }
+
+ /**
+  * This method translates the passed in string from x-www-form-urlencoded
+  * format using the given character encoding to decode the hex encoded
+  * unsafe characters.
+  * <p>
+  * This implementation will decode the string even if it contains
+  * unsafe characters (characters that should have been encoded) or if the
+  * two characters following a % do not represent a hex encoded byte.
+  * In those cases the unsafe character or the % character will be added
+  * verbatim to the decoded result.
+  *
+  * @param s the String to convert
+  * @param encoding the character encoding to use the decode the hex encoded
+  *        unsafe characters
+  *
+  * @return the converted String
+  *
+  * @since 1.4
+  */
+  public static String decode(String s, String encoding)
+    throws UnsupportedEncodingException
+  {
+    StringBuffer result = new StringBuffer();
+
+    // First convert all '+' characters to spaces.
     String str = s.replace('+', ' ');
-    String result = "";
+    
+    // Then go through the whole string looking for byte encoded characters
     int i;
     int start = 0;
+    byte[] bytes = null;
+    int length = str.length();
     while ((i = str.indexOf('%', start)) >= 0)
       {
-	result = result + str.substring(start, i) +
-		 (char) Integer.parseInt(str.substring(i + 1, i + 3), 16);
-	start = i + 3;
+	// Add all non-encoded characters to the result buffer
+	result.append(str.substring(start, i));
+	start = i;
+
+	// Get all consecutive encoded bytes
+	while ((i+2 < length) && (str.charAt(i) == '%'))
+	  i += 3;
+
+	// Decode all these bytes
+	if ((bytes == null) || (bytes.length < ((i-start)/3)))
+	  bytes = new byte[((i-start)/3)];
+
+	int index = 0;
+	try
+	  {
+	    while (start < i)
+	      {
+		String sub = str.substring(start + 1, start + 3);
+		bytes[index] = (byte)Integer.parseInt(sub, 16);
+		index++;
+		start += 3;
+	      }
+	  }
+	catch (NumberFormatException nfe)
+	  {
+	    // One of the hex encoded strings was bad
+	  }
+
+	// Add the bytes as characters according to the given encoding
+	result.append(new String(bytes, 0, index, encoding));
+
+	// Make sure we skip to just after a % sign
+	// There might not have been enough encoded characters after the %
+	// or the hex chars were not actually hex chars (NumberFormatException)
+	if (start < length && s.charAt(start) == '%')
+	  {
+	    result.append('%');
+	    start++;
+	  }
       }
 
+    // Add any characters left
     if (start < str.length())
-      result = result + str.substring(start);
+      result.append(str.substring(start));
 
-    return result;
+    return result.toString();
   }
-} // class URLDecoder
 
+} // class URLDecoder
