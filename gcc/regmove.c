@@ -2361,6 +2361,7 @@ combine_stack_adjustments_for_block (bb)
 	      && GET_CODE (XEXP (dest, 0)) == PRE_DEC
 	      && XEXP (XEXP (dest, 0), 0) == stack_pointer_rtx
 	      && ! reg_mentioned_p (stack_pointer_rtx, src)
+	      && memory_address_p (GET_MODE (dest), stack_pointer_rtx)
 	      && validate_change (insn, &SET_DEST (set),
 				  change_address (dest, VOIDmode,
 						  stack_pointer_rtx), 0))
