@@ -1,0 +1,14 @@
+// { dg-do compile }
+static int foo ();
+static int bar (int a);
+
+foo
+{
+	return 1;
+}
+
+bar
+{
+	a = a + foo ();
+	return a;
+}

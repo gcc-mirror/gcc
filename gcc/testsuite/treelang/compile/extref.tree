@@ -1,0 +1,9 @@
+// { dg-do compile }
+external_reference void abort ();
+
+static int foo (int a);
+
+foo
+{
+  return a;
+}

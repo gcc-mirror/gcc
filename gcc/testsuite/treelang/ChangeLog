@@ -1,3 +1,9 @@
+2005-02-24  James A. Morrison  <phython@gcc.gnu.org>
+
+	PR other/19897
+	* compile/exit.tree, compile/extref.tree, compile/function-1.tree,
+	compile/syntax-1.tree: New tests.
+
 2004-10-02  James A. Morrison  <phython@gcc.gnu.org>
 
 	* compile/autofunc.tree: New File.
