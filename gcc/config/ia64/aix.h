@@ -86,10 +86,9 @@ Boston, MA 02111-1307, USA.  */
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "\
--D__ia64 -D__ia64__ -D_AIX -D_AIX64 -D_LONGLONG -Dunix \
--D_LP64 -D__LP64__ -D__ELF__ \
--Asystem=unix -Asystem=aix -Acpu=ia64 -Amachine=ia64 \
--D__64BIT__ -D_LONG_LONG -D_IA64 -D__int128=__size128_t"
+  -D_AIX -D_AIX64 -D_LONGLONG -Dunix \
+  -Asystem=unix -Asystem=aix \
+  -D__64BIT__ -D_LONG_LONG -D_IA64 -D__int128=__size128_t"
 
 /* The GNU C++ standard library requires that these macros be defined.  */
 #undef CPLUSPLUS_CPP_SPEC
@@ -100,10 +99,6 @@ Boston, MA 02111-1307, USA.  */
    -D_ALL_SOURCE                                \
    -D__LONG_MAX__=9223372036854775807L          \
    %{cpp_cpu}"
-
-/* ia64-specific options for gas */
-#undef ASM_SPEC
-#define ASM_SPEC "-x %{mconstant-gp} %{mauto-pic}"
 
 /* Define this for shared library support.  */
 
@@ -116,13 +111,7 @@ Boston, MA 02111-1307, USA.  */
     %{!dynamic-linker:-dynamic-linker /usr/lib/ia64l64/libc.so.1}} \
     %{static:-static}}"
 
-#define DONT_USE_BUILTIN_SETJMP
 #define JMP_BUF_SIZE  85
-
-/* Output any profiling code before the prologue.  */
-
-#undef PROFILE_BEFORE_PROLOGUE
-#define PROFILE_BEFORE_PROLOGUE 1
 
 /* A C statement or compound statement to output to FILE some assembler code to
    call the profiling subroutine `mcount'.  
