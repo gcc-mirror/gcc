@@ -254,6 +254,9 @@ public final class URL implements Serializable
     hashCode = hashCode();			// Used for serialization.
   }
 
+  /**
+   * Checks if two URLs are equal
+   */
   public boolean equals(Object obj)
   {
     if (obj == null || ! (obj instanceof URL))
@@ -287,6 +290,9 @@ public final class URL implements Serializable
     return getContent();
   }
 
+  /**
+   * Returns the file of the URL
+   */
   public String getFile()
   {
     return file;
@@ -367,6 +373,9 @@ public final class URL implements Serializable
     return query;
   }
 
+  /**
+   * Returns a hashcode computed by the URLStreamHandler of this URL
+   */
   public int hashCode()
   {
     // JCL book says this is computed using (only) the hashcodes of the 
