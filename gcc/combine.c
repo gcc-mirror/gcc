@@ -8636,6 +8636,7 @@ simplify_comparison (code, pop0, pop1)
 		{
 		  op0 = gen_lowpart_for_combine (tmode, inner_op0);
 		  op1 = gen_lowpart_for_combine (tmode, inner_op1);
+		  code = unsigned_condition (code);
 		  changed = 1;
 		  break;
 		}
