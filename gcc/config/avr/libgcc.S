@@ -33,22 +33,21 @@ Boston, MA 02111-1307, USA.  */
 #define __SP_L__ 0x3d
 
 	.section .text.libgcc, "ax", @progbits
-	
+
+/* Note: mulqi3, mulhi3 are open-coded on the enhanced core.  */
+#if !defined (__AVR_ENHANCED__)
 /*******************************************************
                Multiplication  8 x 8
 *******************************************************/
-#if defined (Lmulqi3)
+#if defined (L_mulqi3)
 
 #define	r_arg2	r22		/* multiplicand */
 #define	r_arg1 	r24		/* multiplier */
 #define r_res	__tmp_reg__	/* result */
 
-	.global	_mulqi3
-	.func	_mulqi3
-_mulqi3:
-
-	.global	_umulqi3
-_umulqi3:
+	.global	__mulqi3
+	.func	__mulqi3
+__mulqi3:
 	clr	r_res		; clear result
 __mulqi3_loop:
 	sbrc	r_arg1,0
@@ -66,13 +65,13 @@ __mulqi3_exit:
 #undef r_res   
 	
 .endfunc
-#endif 	/* defined (Lmulqi3) */
+#endif 	/* defined (L_mulqi3) */
 
 
 /*******************************************************
                Multiplication  16 x 16
 *******************************************************/
-#if defined (Lmulhi3)
+#if defined (L_mulhi3)
 #define	r_arg1L	r24		/* multiplier Low */
 #define	r_arg1H	r25		/* multiplier High */
 #define	r_arg2L	r22		/* multiplicand Low */
@@ -80,13 +79,9 @@ __mulqi3_exit:
 #define r_resL	r20		/* result Low */
 #define r_resH  r21		/* result High */
 
-	.global	_mulhi3
-	.func	_mulhi3
-_mulhi3:
-
-	.global	_umulhi3
-_umulhi3:
-	
+	.global	__mulhi3
+	.func	__mulhi3
+__mulhi3:
 	clr	r_resH		; clear result
 	clr	r_resL		; clear result
 __mulhi3_loop:
@@ -118,9 +113,10 @@ __mulhi3_exit:
 #undef r_resH 
 
 .endfunc
-#endif /* defined (Lmulhi3) */
+#endif /* defined (L_mulhi3) */
+#endif /* !defined (__AVR_ENHANCED__) */
 
-#if defined (Lmulsi3)
+#if defined (L_mulsi3)
 /*******************************************************
                Multiplication  32 x 32
 *******************************************************/
@@ -141,12 +137,42 @@ __mulhi3_exit:
 #define r_resHH  r31		/* result High */
 
 	
-	.global	_mulsi3
-	.func	_mulsi3
-_mulsi3:
-
-	.global	_umulsi3
-_umulsi3:
+	.global	__mulsi3
+	.func	__mulsi3
+__mulsi3:
+#if defined (__AVR_ENHANCED__)
+	mul	r_arg1L, r_arg2L
+	movw	r_resL, r0
+	mul	r_arg1H, r_arg2H
+	movw	r_resHL, r0
+	mul	r_arg1HL, r_arg2L
+	add	r_resHL, r0
+	adc	r_resHH, r1
+	mul	r_arg1L, r_arg2HL
+	add	r_resHL, r0
+	adc	r_resHH, r1
+	mul	r_arg1HH, r_arg2L
+	add	r_resHH, r0
+	mul	r_arg1HL, r_arg2H
+	add	r_resHH, r0
+	mul	r_arg1H, r_arg2HL
+	add	r_resHH, r0
+	mul	r_arg1L, r_arg2HH
+	add	r_resHH, r0
+	clr	r_arg1HH	; use instead of __zero_reg__ to add carry
+	mul	r_arg1H, r_arg2L
+	add	r_resH, r0
+	adc	r_resHL, r1
+	adc	r_resHH, r_arg1HH ; add carry
+	mul	r_arg1L, r_arg2H
+	add	r_resH, r0
+	adc	r_resHL, r1
+	adc	r_resHH, r_arg1HH ; add carry
+	movw	r_arg1L, r_resL
+	movw	r_arg1HL, r_resHL
+	clr	r1		; __zero_reg__ clobbered by "mul"
+	ret
+#else
 	clr	r_resHH		; clear result
 	clr	r_resHL		; clear result
 	clr	r_resH		; clear result
@@ -178,6 +204,7 @@ __mulsi3_exit:
 	mov	r_arg1H,r_resH
 	mov	r_arg1L,r_resL
 	ret
+#endif /* !defined (__AVR_ENHANCED__) */
 #undef r_arg1L 
 #undef r_arg1H 
 #undef r_arg1HL
@@ -195,7 +222,7 @@ __mulsi3_exit:
 #undef r_resHH 
 
 .endfunc
-#endif /* defined (Lmulsi3) */
+#endif /* defined (L_mulsi3) */
 	
 /*******************************************************
        Division 8 / 8 => (result + remainder)
@@ -205,44 +232,44 @@ __mulsi3_exit:
 #define	r_arg2	r22	/* divisor */
 #define	r_cnt	r27	/* loop count */
 
-#if defined (Lumodqi3)
+#if defined (L_umodqi3)
 
-	.global	_umodqi3
-	.func	_umodqi3
-_umodqi3:
+	.global	__umodqi3
+	.func	__umodqi3
+__umodqi3:
 	clt
-	rcall	_udivqi3
+	rcall	__udivqi3
 	mov	r24,r_rem
 	ret
 .endfunc
-#endif /* defined (Lumodqi3) */
+#endif /* defined (L_umodqi3) */
 	
-#if defined (Ludivqi3)
+#if defined (L_udivqi3)
 
-	.global	_udivqi3
-	.func	_udivqi3
-_udivqi3:
+	.global	__udivqi3
+	.func	__udivqi3
+__udivqi3:
 	clr	__tmp_reg__
-	rjmp	_divqi_raw
+	rjmp	__divqi_raw
 .endfunc
-#endif /* defined (Ludivqi3) */
+#endif /* defined (L_udivqi3) */
 
-#if defined (Lmodqi3)
+#if defined (L_modqi3)
 	
-	.global	_moqhi3
-	.func	_moqhi3
-_modqi3:
-	rcall	_divqi3
+	.global	__modqi3
+	.func	__modqi3
+__modqi3:
+	rcall	__divqi3
 	mov	r24,r_rem
 	ret
 .endfunc
-#endif /* defined (Lmodqi3) */
+#endif /* defined (L_modqi3) */
 
-#if defined (Ldivqi3)
+#if defined (L_divqi3)
 
-	.global	_divqi3
-	.func	_divqi3
-_divqi3:
+	.global	__divqi3
+	.func	__divqi3
+__divqi3:
         bst     r_arg1,7	; store sign of divident
         mov     __tmp_reg__,r_arg1
         eor     __tmp_reg__,r_arg2; r0.7 is sign of result
@@ -250,8 +277,8 @@ _divqi3:
         neg     r_arg1		; divident negative : negate
         sbrc	r_arg2,7
         neg     r_arg2		; divisor negative : negate
-	.global	_divqi_raw
-_divqi_raw:	
+	.global	__divqi_raw
+__divqi_raw:	
 	sub	r_rem,r_rem	; clear remainder and carry
 	ldi	r_cnt,9		; init loop counter
 	rjmp	__divqi3_ep	; jump to entry point
@@ -274,7 +301,7 @@ __divqi3_1:
 __divqi3_exit:
 	ret			; result already in r24 (r_arg1)
 .endfunc
-#endif /* defined (Ldivqi3) */
+#endif /* defined (L_divqi3) */
 
 #undef r_rem
 #undef r_arg1
@@ -295,51 +322,56 @@ __divqi3_exit:
 #define	r_arg2H	r23	/* divisor High */
 	
 #define	r_cnt	r21	/* loop count */
-#if defined (Lumodhi3)
-	
-	.global	_umodhi3
-	.func	_umodhi3
-_umodhi3:
+#if defined (L_umodhi3)
+	.global	__umodhi3
+	.func	__umodhi3
+__umodhi3:
 	clt
-	rcall	_udivhi3
-	.global	_umodhi3_ret
-_umodhi3_ret:
+	rcall	__udivhi3
+	.global	__umodhi3_ret
+__umodhi3_ret:
+#if defined (__AVR_ENHANCED__)
+	movw	r24, r_remL
+#else
 	mov	r24,r_remL
 	mov	r25,r_remH
+#endif
 	ret
 .endfunc
-#endif /* defined (Lumodhi3) */
+#endif /* defined (L_umodhi3) */
 	
-#if defined (Ludivhi3)
+#if defined (L_udivhi3)
 	
-	.global	_udivhi3
-	.func	_udivhi3
-_udivhi3:
+	.global	__udivhi3
+	.func	__udivhi3
+__udivhi3:
 	clr	__tmp_reg__
-	rjmp	_divhi_raw
+	rjmp	__divhi_raw
 .endfunc
-#endif /* defined (Ludivhi3) */
+#endif /* defined (L_udivhi3) */
 
-#if defined (Lmodhi3)
-	
-	.global	_modhi3
-	.func	_modhi3
-_modhi3:
+#if defined (L_modhi3)
+	.global	__modhi3
+	.func	__modhi3
+__modhi3:
 	.global	_div
 _div:
-	rcall	_divhi3
+	rcall	__divhi3
+#if defined (__AVR_ENHANCED__)
+	movw	r22, r24
+#else
 	mov	r22,r24		; needed for div () function
 	mov	r23,r25
-	rjmp	_umodhi3_ret
+#endif
+	rjmp	__umodhi3_ret
 .endfunc
-#endif /* defined (Lmodhi3) */
+#endif /* defined (L_modhi3) */
 	
 	
-#if defined (Ldivhi3)
-	
-	.global	_divhi3
-	.func	_divhi3
-_divhi3:
+#if defined (L_divhi3)
+	.global	__divhi3
+	.func	__divhi3
+__divhi3:
         bst     r_arg1H,7	; store sign of divident
         mov     __tmp_reg__,r_arg1H
         eor     __tmp_reg__,r_arg2H   ; r0.7 is sign of result
@@ -354,8 +386,8 @@ __divhi3_skip1:
         neg     r_arg2L		; divisor negative : negate
 	sbci	r_arg2H,0xff
 __divhi3_skip2:
-	.global	_divhi_raw
-_divhi_raw:
+	.global	__divhi_raw
+__divhi_raw:
 	sub	r_remL,r_remL
 	sub	r_remH,r_remH		; clear remainder and carry
 	ldi	r_cnt,17	; init loop counter
@@ -387,7 +419,7 @@ __divhi3_exit:
 	com	r_arg1H
 	ret
 .endfunc
-#endif /* defined (Ldivhi3) */
+#endif /* defined (L_divhi3) */
 	
 #undef r_remH  
 #undef r_remL  
@@ -418,56 +450,66 @@ __divhi3_exit:
 #define	r_arg2H  r19
 #define	r_arg2L  r18	/* divisor Low */
 	
-#define	r_cnt	r17	/* loop count */
+#define	r_cnt __zero_reg__  /* loop count (0 after the loop!) */
 
-#if defined (Lumodsi3)
+#if defined (L_umodsi3)
 
-	.global	_umodsi3
-	.func	_umodsi3
-_umodsi3:
+	.global	__umodsi3
+	.func	__umodsi3
+__umodsi3:
 	clt
-	rcall	_udivsi3
-	.global	_umodsi3_ret
-_umodsi3_ret:
+	rcall	__udivsi3
+	.global	__umodsi3_ret
+__umodsi3_ret:
+#if defined (__AVR_ENHANCED__)
+	movw	r24, r_remHL
+	movw	r22, r_remL
+#else
 	mov	r25,r_remHH
 	mov	r24,r_remHL
 	mov	r23,r_remH
 	mov	r22,r_remL
+#endif
 	ret
 .endfunc
-#endif /* defined (Lumodsi3) */
+#endif /* defined (L_umodsi3) */
 	
-#if defined (Ludivsi3)
+#if defined (L_udivsi3)
 
-	.global	_udivsi3
-	.func	_udivsi3
-_udivsi3:
+	.global	__udivsi3
+	.func	__udivsi3
+__udivsi3:
 	clr	__tmp_reg__
-	rjmp	_divsi_raw
+	rjmp	__divsi_raw
 .endfunc
-#endif /* defined (Ludivsi3) */
+#endif /* defined (L_udivsi3) */
 
-#if defined (Lmodsi3)
+#if defined (L_modsi3)
 	
-	.global	_modsi3
-	.func	_modsi3
-_modsi3:
+	.global	__modsi3
+	.func	__modsi3
+__modsi3:
 	.global	_ldiv
 _ldiv:
-	rcall	_divsi3
+	rcall	__divsi3
+#if defined (__AVR_ENHANCED__)
+	movw	r18, r22
+	movw	r20, r24
+#else
 	mov	r18,r22		/* Needed for ldiv */
 	mov	r19,r23
 	mov	r20,r24
 	mov	r21,r25
-	rjmp	_umodsi3_ret
+#endif
+	rjmp	__umodsi3_ret
 .endfunc
-#endif /* defined (Lmodsi3) */
+#endif /* defined (L_modsi3) */
 
-#if defined (Ldivsi3)
+#if defined (L_divsi3)
 
-	.global	_divsi3
-	.func	_divsi3
-_divsi3:
+	.global	__divsi3
+	.func	__divsi3
+__divsi3:
         bst     r_arg1HH,7	; store sign of divident
         mov     __tmp_reg__,r_arg1HH
         eor     __tmp_reg__,r_arg2HH   ; r0.7 is sign of result
@@ -490,14 +532,18 @@ __divsi3_skip1:
 	sbci	r_arg2HL,0xff
 	sbci	r_arg2HH,0xff
 __divsi3_skip2:
-	.global	_divsi_raw
-_divsi_raw:
-	push	r_cnt
+	.global	__divsi_raw
+__divsi_raw:
+	ldi	r_remL, 33	; init loop counter
+	mov	r_cnt, r_remL
 	sub	r_remL,r_remL
 	sub	r_remH,r_remH
+#if defined (__AVR_ENHANCED__)
+	movw	r_remHL, r_remL
+#else
 	sub	r_remHL,r_remHL
 	sub	r_remHH,r_remHH	; clear remainder and carry
-	ldi	r_cnt,33	; init loop counter
+#endif
 	rjmp	__divsi3_ep	; jump to entry point
 __divsi3_loop:
         rol	r_remL		; shift dividend into remainder
@@ -520,7 +566,7 @@ __divsi3_ep:
         rol	r_arg1HH
         dec	r_cnt		; decrement loop counter
         brne	__divsi3_loop	; loop
-	pop	r_cnt
+				; __zero_reg__ now restored (r_cnt == 0)
 	brtc	__divsi3_1
 	com	r_remHH
 	com	r_remHL
@@ -544,12 +590,12 @@ __divsi3_exit:
 	com	r_arg1HH
 	ret
 .endfunc
-#endif /* defined (Ldivsi3) */
+#endif /* defined (L_divsi3) */
 
 /**********************************
  * This is a prologue subroutine
  **********************************/
-#if defined (Lprologue)
+#if defined (L_prologue)
 
 	.global	__prologue_saves__
 	.func	__prologue_saves__
@@ -574,8 +620,6 @@ __prologue_saves__:
 	push r29
 	in	r28,__SP_L__
 	in	r29,__SP_H__
-	sbiw r26,0
-	breq _prologue_end
 	sub	r28,r26
 	sbc	r29,r27
 	in	__tmp_reg__,__SREG__
@@ -583,15 +627,14 @@ __prologue_saves__:
 	out	__SP_H__,r29
 	out	__SREG__,__tmp_reg__
 	out	__SP_L__,r28
-_prologue_end:
 	ijmp
 .endfunc
-#endif /* defined (Lprologue) */
+#endif /* defined (L_prologue) */
 
 /*
  * This is a epilogue subroutine
  */
-#if defined (Lepilogue)
+#if defined (L_epilogue)
 
 	.global	__epilogue_restores__
 	.func	__epilogue_restores__
@@ -666,3 +709,4 @@ __tablejump__:
 .endfunc
 #endif
 #endif /* defined (L_tablejump) */
+

@@ -1,3 +1,8 @@
+Sat Sep  2 13:58:23 2000  Marek Michalkiewicz <marekm@linux.org.pl>
+
+	* config/avr/avr.md ("*negsi2"): substitute %@ to __zero_reg__
+	* config/avr/libgcc.S: Lost part of the previous patch.
+
 2000-08-31  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* gthr-dce.h (__gthread_objc_mutex_allocate): Create a pthread_mutex_t
