@@ -3173,10 +3173,7 @@ function_arg (cum, mode, type, named)
 		  && SPE_VECTOR_MODE (mode) && !named)
 		{
 		  rtx r1, r2;
-		  enum machine_mode m = GET_MODE_INNER (mode);
-
-		  if (mode == V1DImode)
-		    m = SImode;
+		  enum machine_mode m = SImode;
 
 		  r1 = gen_rtx_REG (m, gregno);
 		  r1 = gen_rtx_EXPR_LIST (m, r1, const0_rtx);

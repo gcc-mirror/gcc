@@ -1,3 +1,8 @@
+2002-11-21  Jim Wilson  <wilson@redhat.com>
+
+	* config/rs6000/rs6000.c (function_arg): Set inner mode of SPE
+	vectors to SI.
+
 2002-11-21  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa-protos.h (xtensa_copy_incoming_a7): Declare.
