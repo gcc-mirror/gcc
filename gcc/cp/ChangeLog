@@ -1,3 +1,9 @@
+2000-04-06  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* rtti.c (dfs_class_hint_mark): New static function.
+	(dfs_class_hint_unmark): New static function.
+	(class_hint_flags): Use them.
+
 2000-04-05  Benjamin Kosnik  <bkoz@cygnus.com>
 
         * decl2.c: Make flag_honor_std dependant on ENABLE_STD_NAMESPACE.

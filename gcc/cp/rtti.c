@@ -66,6 +66,8 @@ static tree tinfo_base_init PARAMS((tree, tree));
 static tree generic_initializer PARAMS((tree, tree));
 static tree ptr_initializer PARAMS((tree, tree));
 static tree ptmd_initializer PARAMS((tree, tree));
+static tree dfs_class_hint_mark PARAMS ((tree, void *));
+static tree dfs_class_hint_unmark PARAMS ((tree, void *));
 static int class_hint_flags PARAMS((tree));
 static tree class_initializer PARAMS((tree, tree, tree));
 static tree synthesize_tinfo_var PARAMS((tree, tree));
@@ -1381,23 +1383,71 @@ ptmd_initializer (desc, target)
   return init;  
 }
 
-/* Determine the hint flags describing the features of a class's heirarchy.
-   FIXME: better set the hint_flags here!  For now set them
-   to safe 'don't know' values.  The specification is under
-   review.  Don't forget to check the runtime dynamic_cast and
-   catch machinery if these change.  */
+/* Check base BINFO to set hint flags in *DATA, which is really an int.
+   We use CLASSTYPE_MARKED to tag types we've found as non-virtual bases and
+   CLASSTYPE_MARKED2 to tag those which are virtual bases. Remember it is
+   possible for a type to be both a virtual and non-virtual base.  */
+
+static tree
+dfs_class_hint_mark (binfo, data)
+     tree binfo;
+     void *data;
+{
+  tree basetype = BINFO_TYPE (binfo);
+  int *hint = (int *) data;
+  
+  if (TREE_VIA_VIRTUAL (binfo))
+    {
+      if (CLASSTYPE_MARKED (basetype))
+        *hint |= 1;
+      if (CLASSTYPE_MARKED2 (basetype))
+        *hint |= 2;
+      SET_CLASSTYPE_MARKED2 (basetype);
+    }
+  else
+    {
+      if (CLASSTYPE_MARKED (basetype) || CLASSTYPE_MARKED2 (basetype))
+        *hint |= 1;
+      SET_CLASSTYPE_MARKED (basetype);
+    }
+  if (!TREE_VIA_PUBLIC (binfo) && TYPE_BINFO (basetype) != binfo)
+    *hint |= 4;
+  return NULL_TREE;
+};
+
+/* Clear the base's dfs marks, after searching for duplicate bases. */
+
+static tree
+dfs_class_hint_unmark (binfo, data)
+     tree binfo;
+     void *data ATTRIBUTE_UNUSED;
+{
+  tree basetype = BINFO_TYPE (binfo);
+  
+  CLEAR_CLASSTYPE_MARKED (basetype);
+  CLEAR_CLASSTYPE_MARKED2 (basetype);
+  return NULL_TREE;
+}
+
+/* Determine the hint flags describing the features of a class's heirarchy.  */
 
 static int
 class_hint_flags (type)
      tree type;
 {
   int hint_flags = 0;
+  int i;
   
-  hint_flags |= 0x1;  /* non-diamond shaped repeated base */
-  hint_flags |= 0x2;  /* diamond shaped */
-  hint_flags |= 0x4;  /* non-public base */
-  hint_flags |= 0x8;  /* public base */
-  type = 0; /* FIXME: Use it! */
+  dfs_walk (TYPE_BINFO (type), dfs_class_hint_mark, NULL, &hint_flags);
+  dfs_walk (TYPE_BINFO (type), dfs_class_hint_unmark, NULL, NULL);
+  
+  for (i = 0; i < CLASSTYPE_N_BASECLASSES (type); ++i)
+    {
+      tree base_binfo = BINFO_BASETYPE (TYPE_BINFO (type), i);
+      
+      if (TREE_VIA_PUBLIC (base_binfo))
+        hint_flags |= 0x8;
+    }
   return hint_flags;
 }
         
