@@ -2170,12 +2170,13 @@ parser_build_binary_op (enum tree_code code, tree arg1, tree arg2)
 	  if (TREE_CODE_CLASS (code1) == '<' || TREE_CODE_CLASS (code2) == '<')
 	    warning ("suggest parentheses around comparison in operand of &");
 	}
-    }
+      /* Similarly, check for cases like 1<=i<=10 that are probably errors.  */
+      if (TREE_CODE_CLASS (code) == '<'
+	  && (TREE_CODE_CLASS (code1) == '<'
+	      || TREE_CODE_CLASS (code2) == '<'))
+	warning ("comparisons like X<=Y<=Z do not have their mathematical meaning");
 
-  /* Similarly, check for cases like 1<=i<=10 that are probably errors.  */
-  if (TREE_CODE_CLASS (code) == '<' && extra_warnings
-      && (TREE_CODE_CLASS (code1) == '<' || TREE_CODE_CLASS (code2) == '<'))
-    warning ("comparisons like X<=Y<=Z do not have their mathematical meaning");
+    }
 
   unsigned_conversion_warning (result, arg1);
   unsigned_conversion_warning (result, arg2);
