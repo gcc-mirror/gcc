@@ -205,6 +205,12 @@ public class ObjectStreamField implements Comparable
     offset = off;
   }
 
+  /**
+   * This method returns whether the field represented by this object is
+   * unshared or not.
+   *
+   * @return Tells if this field is unshared or not.
+   */
   public boolean isUnshared ()
   {
     return unshared;
