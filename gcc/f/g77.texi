@@ -11,7 +11,7 @@
 }
 @end tex
 
-@c %**start of header 
+@c %**start of header
 @setfilename g77.info
 
 @set last-up-date 1999-02-14
@@ -49,7 +49,7 @@
 @end ifclear
 @ifclear USING
 @settitle Porting GNU Fortran
-@end ifclear 
+@end ifclear
 @c then again, have some fun
 @ifclear INTERNALS
 @ifclear USING
@@ -99,7 +99,7 @@ translations approved by the Free Software Foundation instead of in the
 original English.
 @end ifinfo
 
-Contributed by James Craig Burley (@email{craig@jcb-sc.com}).
+Contributed by James Craig Burley (@email{craig@@jcb-sc.com}).
 Inspired by a first pass at translating @file{g77-0.5.16/f/DOC} that
 was contributed to Craig by David Ronis (@email{ronis@@onsager.chem.mcgill.ca}).
 
@@ -558,9 +558,9 @@ the ``copyright'' line and a pointer to where the full notice is found.
 @var{one line to give the program's name and a brief idea of what it does.}
 Copyright (C) 19@var{yy}  @var{name of author}
 
-This program is free software; you can redistribute it and/or modify 
-it under the terms of the GNU General Public License as published by 
-the Free Software Foundation; either version 2 of the License, or 
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
 (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -581,8 +581,8 @@ when it starts in an interactive mode:
 @smallexample
 Gnomovision version 69, Copyright (C) 19@var{yy} @var{name of author}
 Gnomovision comes with ABSOLUTELY NO WARRANTY; for details
-type `show w'.  
-This is free software, and you are welcome to redistribute it 
+type `show w'.
+This is free software, and you are welcome to redistribute it
 under certain conditions; type `show c' for details.
 @end smallexample
 
@@ -775,7 +775,7 @@ without royalty; alteration is not permitted.
 @cindex improvements, funding
 
 Work on GNU Fortran is still being done mostly by its author,
-James Craig Burley (@email{craig@jcb-sc.com}), who is a volunteer
+James Craig Burley (@email{craig@@jcb-sc.com}), who is a volunteer
 for, not an employee of, the Free Software Foundation (FSF).
 As with other GNU software, funding is important because it can pay for
 needed equipment, personnel, and so on.
@@ -829,7 +829,7 @@ Email @email{@value{email-general}} to volunteer for this work.
 
 @node Look and Feel
 @chapter Protect Your Freedom---Fight ``Look And Feel''
-@c the above chapter heading overflows onto the next line. --mew 1/26/93 
+@c the above chapter heading overflows onto the next line. --mew 1/26/93
 
 To preserve the ability to write free software, including replacements
 for proprietary software, authors must be free to replicate the
@@ -2412,12 +2412,12 @@ use, on occasion, in clean programs.
 @table @code
 @c @item -W
 @c Print extra warning messages for these events:
-@c 
+@c
 @c @itemize @bullet
 @c @item
 @c If @samp{-Wall} or @samp{-Wunused} is also specified, warn about unused
 @c arguments.
-@c 
+@c
 @c @end itemize
 @c
 @cindex -Wsurprising option
@@ -2759,9 +2759,9 @@ Might improve performance on some code.
 @c (though `precomputed-trip' would be a more precise adjective)
 Typically improves performance on code using iterative @code{DO} loops by
 unrolling them and is probably generally appropriate for Fortran, though
-it is not turned on at any optimization level.  
+it is not turned on at any optimization level.
 Note that outer loop unrolling isn't done specifically; decisions about
-whether to unroll a loop are made on the basis of its instruction count.  
+whether to unroll a loop are made on the basis of its instruction count.
 
 @c DL: Fixme: This should obviously go somewhere else...
 Also, no `loop discovery'@footnote{@dfn{loop discovery} refers to the
@@ -2911,7 +2911,7 @@ gcc,Using and Porting GNU CC}, for information on the @samp{-I} option.
 @node Code Gen Options
 @section Options for Code Generation Conventions
 @cindex code generation, conventions
-@cindex options, code generation 
+@cindex options, code generation
 @cindex run-time, options
 
 These machine-independent options control the interface conventions
@@ -3189,7 +3189,7 @@ $6 = "At (EQUIVALENCE) `__g77_equiv_xx' plus 20 bytes"
 (gdb) p xx
 $7 = "At (EQUIVALENCE) `__g77_equiv_xx' plus 1 bytes"
 (gdb) set language fortran
-(gdb) 
+(gdb)
 @end smallexample
 
 @noindent
@@ -6697,7 +6697,7 @@ Edit descriptors in @code{FORMAT} statements may contain compile-time
 
 The @code{OPEN} specifier @code{NAME=} is equivalent to @code{FILE=}.
 
-These Fortran 90 features are supported: 
+These Fortran 90 features are supported:
 @itemize @bullet
 @item
 @cindex FORMAT descriptors
@@ -8540,7 +8540,7 @@ command.
 of work!}
 
 @menu
-* Interoperating with C and C++::  
+* Interoperating with C and C++::
 @end menu
 
 @node Interoperating with C and C++
@@ -10760,7 +10760,7 @@ Configurations,gcc,Using and Porting GNU CC}.
 @cindex x86 FPU stack
 Code containing inconsistent calling sequences in the same file is
 normally rejected @xref{GLOBALS}.  (Use, say, @code{ftnchek} to ensure
-consistency across source files 
+consistency across source files
 @c makeinfo 1.68 objects to the nested parens
 @ifinfo
 @xref{f2c Skeletons and Prototypes}.)
@@ -10950,7 +10950,7 @@ avoid having to carefully count the number of bytes
 occupied by each entity to determine whether the
 actual alignment of each subsequent entity meets the
 alignment guidelines for the type of that entity.
- 
+
 If you don't ensure correct alignment of @code{COMMON} elements, the
 compiler may be forced by some systems to violate the Fortran semantics by
 adding padding to get @code{DOUBLE PRECISION} data properly aligned.
@@ -13141,7 +13141,7 @@ warnings.
 Each kind has a different purpose:
 
 @itemize @w{}
-@item 
+@item
 @emph{Errors} report problems that make it impossible to compile your
 program.
 GNU Fortran reports errors with the source file name, line
@@ -13226,7 +13226,7 @@ Bug reports are your contribution to the maintenance of GNU Fortran.
 Since the maintainers are very overloaded, we cannot respond to every
 bug report.
 However, if the bug has not been fixed, we are likely to
-send you a patch and ask you to tell us whether it works. 
+send you a patch and ask you to tell us whether it works.
 
 In order for a bug report to serve its purpose, you must include the
 information that makes for fixing the bug.
