@@ -1097,7 +1097,7 @@ extern char leaf_reg_remap[];
    if the frame size is zero.  */
 #define SECONDARY_MEMORY_NEEDED_RTX(MODE) \
   (get_frame_size () == 0						\
-   ? assign_stack_local (mode, GET_MODE_SIZE (mode), 0)			\
+   ? assign_stack_local (MODE, GET_MODE_SIZE (MODE), 0)			\
    : gen_rtx (MEM, MODE, gen_rtx (PLUS, Pmode, frame_pointer_rtx,	\
 				  GEN_INT (STARTING_FRAME_OFFSET))))
 
@@ -1106,11 +1106,11 @@ extern char leaf_reg_remap[];
    For v8 we copy the default definition.  */
 #define SECONDARY_MEMORY_NEEDED_MODE(MODE) \
   (TARGET_V9							\
-   ? (GET_MODE_BITSIZE (mode) < 32				\
-      ? mode_for_size (32, GET_MODE_CLASS (mode), 0)		\
+   ? (GET_MODE_BITSIZE (MODE) < 32				\
+      ? mode_for_size (32, GET_MODE_CLASS (MODE), 0)		\
       : MODE)							\
-   : (GET_MODE_BITSIZE (mode) < BITS_PER_WORD			\
-      ? mode_for_size (BITS_PER_WORD, GET_MODE_CLASS (mode), 0)	\
+   : (GET_MODE_BITSIZE (MODE) < BITS_PER_WORD			\
+      ? mode_for_size (BITS_PER_WORD, GET_MODE_CLASS (MODE), 0)	\
       : MODE))
 
 /* Return the maximum number of consecutive registers
