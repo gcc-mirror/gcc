@@ -5884,7 +5884,7 @@ maybe_warn_about_returning_address_of_local (tree retval)
 	}
     }
 
-  if (TREE_CODE (whats_returned) == VAR_DECL
+  if (DECL_P (whats_returned)
       && DECL_NAME (whats_returned)
       && DECL_FUNCTION_SCOPE_P (whats_returned)
       && !(TREE_STATIC (whats_returned)
