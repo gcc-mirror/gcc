@@ -2,7 +2,7 @@
    the floating point routines in libgcc1.c for targets without hardware
    floating point.  */
 
-/* Copyright (C) 1994 Free Software Foundation, Inc.
+/* Copyright (C) 1994, 1995 Free Software Foundation, Inc.
 
 This file is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -99,6 +99,8 @@ typedef unsigned int UDItype __attribute__ ((mode (DI)));
 #	define FRAC_NBITS 32
 #	define FRACHIGH  0x80000000L
 #	define FRACHIGH2 0xc0000000L
+#	define pack_d pack_f
+#	define unpack_d unpack_f
 	typedef USItype fractype;
 	typedef UHItype halffractype;
 	typedef SFtype FLO_type;
@@ -239,22 +241,27 @@ typedef struct
 typedef union
 {
   FLO_type value;
+  fractype value_raw;
+
 #ifdef _DEBUG_BITFLOAT
-  int l[2];
-#endif
+  halffractype l[2];
+
   struct
     {
-#ifndef FLOAT_BIT_ORDER_MISMATCH
       unsigned int sign:1 __attribute__ ((packed));
       unsigned int exp:EXPBITS __attribute__ ((packed));
       fractype fraction:FRACBITS __attribute__ ((packed));
-#else
-      fractype fraction:FRACBITS __attribute__ ((packed));
-      unsigned int exp:EXPBITS __attribute__ ((packed));
-      unsigned int sign:1 __attribute__ ((packed));
-#endif
     }
-  bits;
+  bits_big_endian;
+
+  struct
+    {
+      fractype fraction:FRACBITS __attribute__ ((packed));
+      unsigned int exp:EXPBITS __attribute__ ((packed));
+      unsigned int sign:1 __attribute__ ((packed));
+    }
+  bits_little_endian;
+#endif
 }
 FLO_union_type;
 
@@ -314,31 +321,31 @@ pack_d ( fp_number_type *  src)
 {
   FLO_union_type dst;
   fractype fraction = src->fraction.ll;	/* wasn't unsigned before? */
-
-  dst.bits.sign = src->sign;
+  int sign = src->sign;
+  int exp = 0;
 
   if (isnan (src))
     {
-      dst.bits.exp = EXPMAX;
-      dst.bits.fraction = src->fraction.ll;
+      exp = EXPMAX;
       if (src->class == CLASS_QNAN || 1)
 	{
-	  dst.bits.fraction |= QUIET_NAN;
+	  fraction |= QUIET_NAN;
 	}
     }
   else if (isinf (src))
     {
-      dst.bits.exp = EXPMAX;
-      dst.bits.fraction = 0;
+      exp = EXPMAX;
+      fraction = 0;
     }
   else if (iszero (src))
     {
-      dst.bits.exp = 0;
-      dst.bits.fraction = 0;
+      exp = 0;
+      fraction = 0;
     }
   else if (fraction == 0)
     {
-      dst.value = 0;
+      exp = 0;
+      sign = 0;
     }
   else
     {
@@ -350,7 +357,7 @@ pack_d ( fp_number_type *  src)
 
 	  int shift = NORMAL_EXPMIN - src->normal_exp;
 
-	  dst.bits.exp = 0;
+	  exp = 0;
 
 	  if (shift > FRAC_NBITS - NGARDS)
 	    {
@@ -363,16 +370,15 @@ pack_d ( fp_number_type *  src)
 	      fraction >>= shift;
 	    }
 	  fraction >>= NGARDS;
-	  dst.bits.fraction = fraction;
 	}
       else if (src->normal_exp > EXPBIAS)
 	{
-	  dst.bits.exp = EXPMAX;
-	  dst.bits.fraction = 0;
+	  exp = EXPMAX;
+	  fraction = 0;
 	}
       else
 	{
-	  dst.bits.exp = src->normal_exp + EXPBIAS;
+	  exp = src->normal_exp + EXPBIAS;
 	  /* IF the gard bits are the all zero, but the first, then we're
 	     half way between two numbers, choose the one which makes the
 	     lsb of the answer 0.  */
@@ -389,22 +395,33 @@ pack_d ( fp_number_type *  src)
 	  if (fraction >= IMPLICIT_2)
 	    {
 	      fraction >>= 1;
-	      dst.bits.exp += 1;
+	      exp += 1;
 	    }
 	  fraction >>= NGARDS;
-	  dst.bits.fraction = fraction;
 	}
     }
+
+  /* We previously used bitfields to store the number, but this doesn't
+     handle little/big endian systems conviently, so use shifts and
+     masks */
+  dst.value_raw = fraction & ((((fractype)1) << FRACBITS) - (fractype)1);
+  dst.value_raw |= ((fractype) (exp & ((1 << EXPBITS) - 1))) << FRACBITS;
+  dst.value_raw |= ((fractype) (sign & 1)) << (FRACBITS | EXPBITS);
   return dst.value;
 }
 
 static void
 unpack_d (FLO_union_type * src, fp_number_type * dst)
 {
-  fractype fraction = src->bits.fraction;
+  /* We previously used bitfields to store the number, but this doesn't
+     handle little/big endian systems conviently, so use shifts and
+     masks */
+  fractype fraction = src->value_raw & ((((fractype)1) << FRACBITS) - (fractype)1);
+  int exp = ((int)(src->value_raw >> FRACBITS)) & ((1 << EXPBITS) - 1);
+  int sign = ((int)(src->value_raw >> (FRACBITS + EXPBITS))) & 1;
 
-  dst->sign = src->bits.sign;
-  if (src->bits.exp == 0)
+  dst->sign = sign;
+  if (exp == 0)
     {
       /* Hmm.  Looks like 0 */
       if (fraction == 0)
@@ -417,7 +434,7 @@ unpack_d (FLO_union_type * src, fp_number_type * dst)
 	  /* Zero exponent with non zero fraction - it's denormalized,
 	     so there isn't a leading implicit one - we'll shift it so
 	     it gets one.  */
-	  dst->normal_exp = src->bits.exp - EXPBIAS + 1;
+	  dst->normal_exp = exp - EXPBIAS + 1;
 	  fraction <<= NGARDS;
 
 	  dst->class = CLASS_NUMBER;
@@ -431,7 +448,7 @@ unpack_d (FLO_union_type * src, fp_number_type * dst)
 	  dst->fraction.ll = fraction;
 	}
     }
-  else if (src->bits.exp == EXPMAX)
+  else if (exp == EXPMAX)
     {
       /* Huge exponent*/
       if (fraction == 0)
@@ -442,7 +459,7 @@ unpack_d (FLO_union_type * src, fp_number_type * dst)
       else
 	{
 	  /* Non zero fraction, means nan */
-	  if (dst->sign)
+	  if (sign)
 	    {
 	      dst->class = CLASS_SNAN;
 	    }
@@ -457,7 +474,7 @@ unpack_d (FLO_union_type * src, fp_number_type * dst)
   else
     {
       /* Nothing strange about this number */
-      dst->normal_exp = src->bits.exp - EXPBIAS;
+      dst->normal_exp = exp - EXPBIAS;
       dst->class = CLASS_NUMBER;
       dst->fraction.ll = (fraction << NGARDS) | IMPLICIT_1;
     }
