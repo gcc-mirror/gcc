@@ -126,17 +126,20 @@ __cp_push_exception (void *value, void *type, void (*cleanup)(void *, int))
 
 /* Compiler hook to pop an exception that has been finalized.  Used by
    push_eh_cleanup().  P is the info for the exception caught by the
-   current catch block, and HANDLER determines if we've been called from
-   an exception handler; if so, we avoid destroying the object on rethrow.  */
+   current catch block.  */
 
 extern "C" void
-__cp_pop_exception (cp_eh_info *p, bool handler)
+__cp_pop_exception (cp_eh_info *p)
 {
   cp_eh_info **q = &__eh_info;
 
   --p->handlers;
 
-  if (p->handlers > 0 || (handler && p == *q))
+  /* Don't really pop if there are still active handlers for our exception,
+     or if our exception is being rethrown (i.e. if the active exception is
+     our exception and it is uncaught).  */
+  if (p->handlers != 0
+      || (p == *q && !p->caught))
     return;
 
   for (; *q; q = &((*q)->next))
@@ -198,11 +201,14 @@ __check_eh_spec (int n, const void **spec)
   catch (...)
     {
       // __exception_info is an artificial var pushed into each catch block.
-      p = __exception_info;
-      for (int i = 0; i < n; ++i)
+      if (p != __exception_info)
 	{
-	  if (__throw_type_match_rtti (spec[i], p->type, p->value))
-	    throw;
+	  p = __exception_info;
+	  for (int i = 0; i < n; ++i)
+	    {
+	      if (__throw_type_match_rtti (spec[i], p->type, p->value))
+		throw;
+	    }
 	}
 
       const type_info &bad_exc = typeid (bad_exception);

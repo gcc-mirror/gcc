@@ -784,7 +784,8 @@ prepare_fresh_vtable (binfo, for_type)
 
   while (1)
     {
-      char *buf1 = (char *) alloca (TYPE_ASSEMBLER_NAME_LENGTH (for_type) + 1 + i);
+      char *buf1 = (char *) alloca (TYPE_ASSEMBLER_NAME_LENGTH (for_type)
+				    + 1 + i);
       char *new_buf2;
 
       sprintf (buf1, "%s%c%s", TYPE_ASSEMBLER_NAME_STRING (for_type), joiner,
@@ -808,8 +809,34 @@ prepare_fresh_vtable (binfo, for_type)
 
       basetype = TYPE_MAIN_VARIANT (BINFO_TYPE (path));
 
-      /* We better not run out of stuff to make it unique.  */
-      my_friendly_assert (for_type != basetype, 369);
+      if (for_type == basetype)
+	{
+	  /* If we run out of basetypes in the path, we have already
+	     found created a vtable with that name before, we now
+	     resort to tacking on _%d to distinguish them.  */
+	  int j = 2;
+	  i = TYPE_ASSEMBLER_NAME_LENGTH (basetype) + 1 + i + 1 + 3;
+	  buf1 = (char *) alloca (i);
+	  do {
+	    sprintf (buf1, "%s%c%s%c%d",
+		     TYPE_ASSEMBLER_NAME_STRING (basetype), joiner,
+		     buf2, joiner, j);
+	    buf = (char *) alloca (strlen (VTABLE_NAME_FORMAT)
+				   + strlen (buf1) + 1);
+	    sprintf (buf, VTABLE_NAME_FORMAT, buf1);
+	    name = get_identifier (buf);
+
+	    /* If this name doesn't clash, then we can use it,
+	       otherwise we add something different to the name until
+	       it is unique.  */
+	  } while (++j <= 999 && IDENTIFIER_GLOBAL_VALUE (name));
+
+	  /* Hey, they really like MI don't they?  Increase the 3
+             above to 6, and the 999 to 999999.  :-)  */
+	  my_friendly_assert (j <= 999, 369);
+
+	  break;
+	}
 
       i = TYPE_ASSEMBLER_NAME_LENGTH (basetype) + 1 + i;
       new_buf2 = (char *) alloca (i);
