@@ -205,7 +205,7 @@ enum insn_code setcc_gen_code[NUM_RTX_CODE];
 
 static int add_equal_note	PROTO((rtx, rtx, enum rtx_code, rtx, rtx));
 static rtx widen_operand	PROTO((rtx, enum machine_mode, enum machine_mode, int, int));
-static void emit_float_lib_cmp	PROTO((rtx, rtx, enum rtx_code));
+void emit_float_lib_cmp	PROTO((rtx, rtx, enum rtx_code));
 static enum insn_code can_fix_p	PROTO((enum machine_mode, enum machine_mode,
 				       int, int *));
 static enum insn_code can_float_p PROTO((enum machine_mode, enum machine_mode,
@@ -2641,7 +2641,7 @@ can_compare_p (mode)
 /* Emit a library call comparison between floating point X and Y.
    COMPARISON is the rtl operator to compare with (EQ, NE, GT, etc.).  */
 
-static void
+void
 emit_float_lib_cmp (x, y, comparison)
      rtx x, y;
      enum rtx_code comparison;
@@ -3741,6 +3741,28 @@ init_optabs ()
     = gen_rtx (SYMBOL_REF, Pmode, UMODTI3_LIBCALL);
 #endif
 
+/* Define library calls for quad FP instructions */
+#ifdef ADDTF3_LIBCALL
+  add_optab->handlers[(int) TFmode].libfunc
+    = gen_rtx (SYMBOL_REF, Pmode, ADDTF3_LIBCALL);
+#endif
+#ifdef SUBTF3_LIBCALL
+  sub_optab->handlers[(int) TFmode].libfunc
+    = gen_rtx (SYMBOL_REF, Pmode, SUBTF3_LIBCALL);
+#endif
+#ifdef MULTF3_LIBCALL
+  smul_optab->handlers[(int) TFmode].libfunc
+    = gen_rtx (SYMBOL_REF, Pmode, MULTF3_LIBCALL);
+#endif
+#ifdef DIVTF3_LIBCALL
+  flodiv_optab->handlers[(int) TFmode].libfunc
+    = gen_rtx (SYMBOL_REF, Pmode, DIVTF3_LIBCALL);
+#endif
+#ifdef SQRTTF2_LIBCALL
+  sqrt_optab->handlers[(int) TFmode].libfunc
+    = gen_rtx (SYMBOL_REF, Pmode, SQRTTF2_LIBCALL);
+#endif
+
   /* Use cabs for DC complex abs, since systems generally have cabs.
      Don't define any libcall for SCmode, so that cabs will be used.  */
   abs_optab->handlers[(int) DCmode].libfunc
@@ -3800,6 +3822,26 @@ init_optabs ()
   lttf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__lttf2");
   letf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__letf2");
 
+/* Define library calls for quad FP instructions */
+#ifdef EQTF2_LIBCALL
+  eqtf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, EQTF2_LIBCALL);
+#endif
+#ifdef NETF2_LIBCALL
+  netf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, NETF2_LIBCALL);
+#endif
+#ifdef GTTF2_LIBCALL
+  gttf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, GTTF2_LIBCALL);
+#endif
+#ifdef GETF2_LIBCALL
+  getf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, GETF2_LIBCALL);
+#endif
+#ifdef LTTF2_LIBCALL
+  lttf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, LTTF2_LIBCALL);
+#endif
+#ifdef LETF2_LIBCALL
+  letf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, LETF2_LIBCALL);
+#endif
+
   floatsisf_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__floatsisf");
   floatdisf_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__floatdisf");
   floattisf_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__floattisf");
@@ -3847,6 +3889,27 @@ init_optabs ()
   fixunstfsi_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__fixunstfsi");
   fixunstfdi_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__fixunstfdi");
   fixunstfti_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__fixunstfti");
+
+/* Define library calls for quad FP instructions */
+#ifdef TRUNCTFSF2_LIBCALL
+  trunctfsf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, TRUNCTFSF2_LIBCALL);
+#endif
+#ifdef TRUNCTFDF2_LIBCALL
+  trunctfdf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, TRUNCTFDF2_LIBCALL);
+#endif
+#ifdef EXTENDSFTF2_LIBCALL
+  extendsftf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, EXTENDSFTF2_LIBCALL);
+#endif
+#ifdef EXTENDDFTF2_LIBCALL
+  extenddftf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, EXTENDDFTF2_LIBCALL);
+#endif
+#ifdef FLOATSITF2_LIBCALL
+  floatsitf_libfunc = gen_rtx (SYMBOL_REF, Pmode, FLOATSITF2_LIBCALL);
+#endif
+#ifdef FIX_TRUNCTFSI2_LIBCALL
+  fixtfsi_libfunc = gen_rtx (SYMBOL_REF, Pmode, FIX_TRUNCTFSI2_LIBCALL);
+#endif
+
 }
 
 #ifdef BROKEN_LDEXP
