@@ -1,3 +1,8 @@
+2003-10-09  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.c (xtensa_dbx_register_number): Change first
+	FP register number to 48 and MAC16 accumulator to 0x210.
+
 2003-10-09  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* config.gcc: Remove redundant thread_file setting clauses for
