@@ -1,5 +1,10 @@
 2004-09-14  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
+	* tree-cfg.c (thread_jumps): Update dominators correctly in
+	case destination of threaded edge dominates its source.
+
+2004-09-14  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
 	* unroll.c: Removed.
 	* loop.h: Removed.
 	* Makefile.in (LOOP_H, unroll.o): Removed.

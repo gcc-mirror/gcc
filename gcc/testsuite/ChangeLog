@@ -1,3 +1,7 @@
+2004-09-14  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* gcc.c-torture/compile/20040914-1.c: New test.
+
 2004-09-13  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/16162
