@@ -1,3 +1,19 @@
+2003-03-28  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/std/std_sstream.h (basic_istringstream): Adjust
+	initialization.
+	(basic_ostringstream): Same.
+	(basic_stringstream): Same.	
+	* include/std/std_fstream.h (basic_ifstream): Adjust initialization.
+	(basic_ofstream): Same.
+	(basic_fstream): Same.
+	* include/std/std_ostream.h (basic_ostrem): Add protected ctor
+	that does not call init.
+	* include/std/std_istream.h (basic_istream): Same.		
+	(basic_iostream): Construct istream, ostream uninitialized, use
+	init to initialize just once. Add protected ctor that does not
+	call init.
+
 2003-03-28  Paolo Carlini  <pcarlini@unitus.it>
             Nathan Myers  <ncm@cantrip.org>
 

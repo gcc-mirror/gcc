@@ -525,8 +525,7 @@ namespace std
        *  @c &sb to the base class initializer.  Does not open any files
        *  (you haven't given it a filename to open).
       */
-      basic_ifstream()
-      : __istream_type(NULL), _M_filebuf()
+      basic_ifstream() : __istream_type(), _M_filebuf()
       { this->init(&_M_filebuf); }
 
       /**
@@ -541,7 +540,7 @@ namespace std
       */
       explicit
       basic_ifstream(const char* __s, ios_base::openmode __mode = ios_base::in)
-      : __istream_type(NULL), _M_filebuf()
+      : __istream_type(), _M_filebuf()
       {
 	this->init(&_M_filebuf);
 	this->open(__s, __mode);
@@ -648,8 +647,7 @@ namespace std
        *  @c &sb to the base class initializer.  Does not open any files
        *  (you haven't given it a filename to open).
       */
-      basic_ofstream()
-      : __ostream_type(NULL), _M_filebuf()
+      basic_ofstream(): __ostream_type(), _M_filebuf()
       { this->init(&_M_filebuf); }
 
       /**
@@ -666,7 +664,7 @@ namespace std
       explicit
       basic_ofstream(const char* __s,
 		     ios_base::openmode __mode = ios_base::out|ios_base::trunc)
-      : __ostream_type(NULL), _M_filebuf()
+      : __ostream_type(), _M_filebuf()
       {
 	this->init(&_M_filebuf);
 	this->open(__s, __mode);
@@ -776,7 +774,7 @@ namespace std
        *  (you haven't given it a filename to open).
       */
       basic_fstream()
-      : __iostream_type(NULL), _M_filebuf()
+      : __iostream_type(), _M_filebuf()
       { this->init(&_M_filebuf); }
 
       /**

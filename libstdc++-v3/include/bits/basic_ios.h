@@ -419,7 +419,7 @@ namespace std
        *  The default constructor does nothing and is not normally
        *  accessible to users.
       */
-      basic_ios() : ios_base() 
+      basic_ios() : ios_base(), _M_fctype(0), _M_fnumput(0), _M_fnumget(0)
       { }
 
       /**

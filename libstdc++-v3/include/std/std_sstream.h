@@ -326,7 +326,7 @@ namespace std
       */
       explicit
       basic_istringstream(ios_base::openmode __mode = ios_base::in)
-      : __istream_type(NULL), _M_stringbuf(__mode | ios_base::in)
+      : __istream_type(), _M_stringbuf(__mode | ios_base::in)
       { this->init(&_M_stringbuf); }
 
       /**
@@ -347,7 +347,7 @@ namespace std
       explicit
       basic_istringstream(const __string_type& __str,
 			  ios_base::openmode __mode = ios_base::in)
-      : __istream_type(NULL), _M_stringbuf(__str, __mode | ios_base::in)
+      : __istream_type(), _M_stringbuf(__str, __mode | ios_base::in)
       { this->init(&_M_stringbuf); }
 
       /**
@@ -445,7 +445,7 @@ namespace std
       */
       explicit
       basic_ostringstream(ios_base::openmode __mode = ios_base::out)
-      : __ostream_type(NULL), _M_stringbuf(__mode | ios_base::out)
+      : __ostream_type(), _M_stringbuf(__mode | ios_base::out)
       { this->init(&_M_stringbuf); }
 
       /**
@@ -466,7 +466,7 @@ namespace std
       explicit
       basic_ostringstream(const __string_type& __str,
 			  ios_base::openmode __mode = ios_base::out)
-      : __ostream_type(NULL), _M_stringbuf(__str, __mode | ios_base::out)
+      : __ostream_type(), _M_stringbuf(__str, __mode | ios_base::out)
       { this->init(&_M_stringbuf); }
 
       /**
@@ -562,7 +562,7 @@ namespace std
       */
       explicit
       basic_stringstream(ios_base::openmode __m = ios_base::out | ios_base::in)
-      : __iostream_type(NULL), _M_stringbuf(__m)
+      : __iostream_type(), _M_stringbuf(__m)
       { this->init(&_M_stringbuf); }
 
       /**
@@ -581,7 +581,7 @@ namespace std
       explicit
       basic_stringstream(const __string_type& __str,
 			 ios_base::openmode __m = ios_base::out | ios_base::in)
-      : __iostream_type(NULL), _M_stringbuf(__str, __m)
+      : __iostream_type(), _M_stringbuf(__str, __m)
       { this->init(&_M_stringbuf); }
 
       /**
