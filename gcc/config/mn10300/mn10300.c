@@ -555,9 +555,15 @@ secondary_reload_class (class, mode, in)
   /* Memory loads less than a full word wide can't have an
      address or stack pointer destination.  They must use
      a data register as an intermediate register.  */
-  if (GET_CODE (in) == MEM
+  if ((GET_CODE (in) == MEM
+       || (GET_CODE (in) == REG
+	   && REGNO (in) >= FIRST_PSEUDO_REGISTER)
+       || (GET_CODE (in) == SUBREG
+	   && GET_CODE (SUBREG_REG (in)) == REG
+	   && REGNO (SUBREG_REG (in)) >= FIRST_PSEUDO_REGISTER))
       && (mode == QImode || mode == HImode)
-      && (class == ADDRESS_REGS || class == SP_REGS))
+      && (class == ADDRESS_REGS || class == SP_REGS
+	  || class == DATA_OR_ADDRESS_REGS))
     {
       if (TARGET_AM33)
 	return DATA_OR_EXTENDED_REGS;

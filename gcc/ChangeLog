@@ -1,3 +1,8 @@
+2000-10-24  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/mn10300/mn10300.c (secondary_reload_class): Treat pseudos
+	like memory.
+	
 2000-10-24  Jim Wilson  <wilson@cygnus.com>
 
 	* expmed.c (store_bit_field): Move integer pun code down after
@@ -30,7 +35,6 @@
 	* expr.c (do_store_flag): Don't crash if either side of a
 	comparison is error_mark_node.
 
->>>>>>> 1.8059
 2000-10-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* sibcall.c (purge_mem_unchanging_flag): New function.
