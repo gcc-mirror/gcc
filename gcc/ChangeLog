@@ -1,3 +1,18 @@
+2002-07-29  Geoffrey Keating  <geoffk@redhat.com>
+
+	* doc/gty.texi (GGC Roots): Clarify that the list of syntaxes
+	is exhaustive.
+	(Files): Improve documentation on generated source files.
+
+	* doc/extend.texi (Translation implementation): Document what
+	diagnostics look like.
+	(Identifiers implementation): Document that there's normally no
+	limit on identifier names.
+	(Integers implementation): Document two's complement.
+	(Hints implementation): Document that GCC honours 'inline', mostly.
+	(Preprocessing directives implementation): Document that GCC
+	requires the current time.
+
 2002-07-30  Gabriel Dos Reis  <gdr@nerim.net>
 
 	* c-pretty-print.h (struct c_pretty_print_info): Add new member.
