@@ -94,18 +94,8 @@ public class Runtime
       s.checkLink(lib);
   }
 
-  public synchronized void load (String pathname)
-  {
-    checkLink (pathname);
-    // FIXME.
-    throw new UnsatisfiedLinkError ("Runtime.load not implemented");
-  }
-  public synchronized void loadLibrary (String libname)
-  {
-    checkLink (libname);
-    // FIXME.
-    throw new UnsatisfiedLinkError ("Runtime.loadLibrary not implemented");
-  }
+  public native void load (String pathname);
+  public native void loadLibrary (String libname);
 
   public native void runFinalization ();
 
@@ -122,10 +112,13 @@ public class Runtime
   public native void traceInstructions (boolean on);
   public native void traceMethodCalls (boolean on);
 
+  // A helper for the constructor.
+  private final native void init ();
+
   // The sole constructor.
   private Runtime ()
   {
-    finalize_on_exit = false;
+    init ();
   }
 
   // Private data.

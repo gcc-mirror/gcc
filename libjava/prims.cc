@@ -39,6 +39,9 @@ details.  */
 #include <java/lang/reflect/Modifier.h>
 #include <java/io/PrintStream.h>
 
+#ifdef USE_LTDL
+#include <ltdl.h>
+#endif
 
 #define ObjectClass _CL_Q34java4lang6Object
 extern java::lang::Class ObjectClass;
@@ -570,6 +573,10 @@ JvRunMain (jclass klass, int argc, const char **argv)
   INIT_FPE;
 
   no_memory = new java::lang::OutOfMemoryError;
+
+#ifdef USE_LTDL
+  LTDL_SET_PRELOADED_SYMBOLS ();
+#endif
 
   arg_vec = JvConvertArgv (argc - 1, argv + 1);
   main_group = new java::lang::ThreadGroup (23);

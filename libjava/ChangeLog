@@ -1,3 +1,18 @@
+1999-05-05  Tom Tromey  <tromey@cygnus.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (CLEANFILES): Don't mention $(class_files).
+	(clean-local): New target
+
+	* java/lang/natRuntime.cc: Include <ltdl.h> if required.
+	(load, loadLibrary): Now native.
+	(init): New method.
+	* java/lang/Runtime.java (load, loadLibrary): Now native.
+	(init): New native method.
+	(Runtime): Use init.
+	* prims.cc: Include <ltdl.h> if required.
+	(JvRunMain): Call LTDL_SET_PRELOADED_SYMBOLS.
+
 1999-05-05  Gilles Zunino  <Gilles.Zunino@hei.fr>
 
 	* configure.in: Switch from irix threads to posix threads
