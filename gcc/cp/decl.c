@@ -4787,15 +4787,6 @@ make_typename_type (context, name)
 
   fullname = name;
 
-  if (TREE_CODE (context) == NAMESPACE_DECL)
-    {
-      /* We can get here from typename_sub0 in the explicit_template_type
-	 expansion.  Just fail.  */
-      cp_error ("no class template named `%#T' in `%#T'",
-		name, context);
-      return error_mark_node;
-    }
-
   if (TREE_CODE (name) == TEMPLATE_ID_EXPR)
     {
       name = TREE_OPERAND (name, 0);
@@ -4804,6 +4795,15 @@ make_typename_type (context, name)
     }
   if (TREE_CODE (name) != IDENTIFIER_NODE)
     my_friendly_abort (2000);
+
+  if (TREE_CODE (context) == NAMESPACE_DECL)
+    {
+      /* We can get here from typename_sub0 in the explicit_template_type
+	 expansion.  Just fail.  */
+      cp_error ("no class template named `%#T' in `%#T'",
+		name, context);
+      return error_mark_node;
+    }
 
   if (! uses_template_parms (context)
       || currently_open_class (context))
