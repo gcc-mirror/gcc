@@ -2879,7 +2879,9 @@ assign_parms (fndecl, second_time)
 		    || (flag_float_store
 			&& TREE_CODE (TREE_TYPE (parm)) == REAL_TYPE)))
 	    {
-	      parmreg = gen_reg_rtx (nominal_mode);
+	      /* We can't use nominal_mode, because it will have been set to
+		 Pmode above.  We must use the actual mode of the parm.  */
+	      parmreg = gen_reg_rtx (TYPE_MODE (TREE_TYPE (parm)));
 	      emit_move_insn (parmreg, DECL_RTL (parm));
 	      DECL_RTL (parm) = parmreg;
 	    }
