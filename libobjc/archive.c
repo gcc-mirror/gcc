@@ -91,7 +91,7 @@ objc_write_unsigned_char (struct objc_typed_stream* stream,
 }
 
 static __inline__ int
-__objc_code_char (unsigned char* buf, char val)
+__objc_code_char (unsigned char* buf, signed char val)
 {
   if (val >= 0)
     return __objc_code_unsigned_char (buf, val);
@@ -104,7 +104,7 @@ __objc_code_char (unsigned char* buf, char val)
 }
 
 int
-objc_write_char (struct objc_typed_stream* stream, char value)
+objc_write_char (struct objc_typed_stream* stream, signed char value)
 {
   unsigned char buf[sizeof (char)+1];
   int len = __objc_code_char (buf, value);
@@ -1000,7 +1000,7 @@ objc_write_type(TypedStream* stream, const char* type, const void* data)
     break;
 
   case _C_CHR:
-    return objc_write_char(stream, *(char*)data);
+    return objc_write_char(stream, *(signed char*)data);
     break;
     
   case _C_UCHR:
