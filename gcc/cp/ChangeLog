@@ -1,5 +1,9 @@
 2001-01-10  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* class.c (duplicate_tag_error): Clear more flags.
+
+2001-01-10  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* call.c (build_new_method_call): Use binfo_for_vbase.
 
 2001-01-10  Joseph S. Myers  <jsm28@cam.ac.uk>

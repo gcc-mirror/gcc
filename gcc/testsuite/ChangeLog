@@ -1,5 +1,9 @@
 2001-01-10  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* g++.old_deja/g++.other/crash39.C: New test.
+
+2001-01-10  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* g++.old_deja/g++.other/vbase4.C: New test.
 
 2001-01-08  Jonathan Larmour  <jlarmour@redhat.com>
