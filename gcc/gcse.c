@@ -700,9 +700,7 @@ gcse_main (f, file)
   compute_preds_succs (s_preds, s_succs, num_preds, num_succs);
 
   if (file)
-    {
-      dump_bb_data (file, s_preds, s_succs);
-    }
+    dump_bb_data (file, s_preds, s_succs, 0);
 
   /* Record where pseudo-registers are set.
      This data is kept accurate during each pass.

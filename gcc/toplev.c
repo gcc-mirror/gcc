@@ -3951,6 +3951,8 @@ rest_of_compilation (decl)
 
  exit_rest_of_compilation:
 
+  free_bb_memory ();
+
   /* In case the function was not output,
      don't leave any temporary anonymous types
      queued up for sdb output.  */
