@@ -1,3 +1,10 @@
+2004-07-05  Richard Sandiford  <rsandifo@redhat.com>
+
+	PR target/16357
+	* config/mips/mips.c (mips_block_move_straight): Pass BLKmode memrefs
+	to mips_expand_unaligned_load, mips_expand_unaligned_store, and
+	move_by_pieces.
+
 2004-07-05  Josef Zlomek  <zlomekj@suse.cz>
 
 	* var-tracking.c: Fix some comments.
