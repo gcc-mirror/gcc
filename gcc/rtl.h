@@ -1013,7 +1013,7 @@ extern int modified_in_p		PROTO((rtx, rtx));
 extern int reg_set_p			PROTO((rtx, rtx));
 extern rtx single_set			PROTO((rtx));
 extern int multiple_sets		PROTO((rtx));
-extern rtx find_last_value		PROTO((rtx, rtx *, rtx));
+extern rtx find_last_value		PROTO((rtx, rtx *, rtx, int));
 extern int refers_to_regno_p		PROTO((int, int, rtx, rtx *));
 extern int reg_overlap_mentioned_p	PROTO((rtx, rtx));
 extern void note_stores			PROTO((rtx, void (*)()));
@@ -1390,6 +1390,7 @@ extern void print_inline_rtx		PROTO ((FILE *, rtx, int));
 
 /* In loop.c */
 extern void init_loop			PROTO ((void));
+extern rtx libcall_other_reg		PROTO ((rtx, rtx));
 #ifdef BUFSIZ
 extern void loop_optimize		PROTO ((rtx, FILE *, int, int));
 #endif
