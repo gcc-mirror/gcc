@@ -1,3 +1,9 @@
+2003-01-28  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/sh/sh.h (CLASS_MAX_NREGS): If TARGET_SHMEDIA, and the given
+	class contains a floating-point register, return the size of the
+	mode in half words.
+
 Tue Jan 28 12:15:13 CET 2003  Jan Hubicka  <jh@suse.cz>
 
  	* i386.c (ix86_carry_flag_operator):  New predicate.
