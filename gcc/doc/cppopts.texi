@@ -223,9 +223,9 @@ This implies that the choice of angle brackets or double quotes in an
 header will appear in @option{-MM} dependency output.  This is a
 slight change in semantics from GCC versions 3.0 and earlier.
 
+@anchor{dashMF}
 @item -MF @var{file}
 @opindex MF
-@anchor{-MF}
 When used with @option{-M} or @option{-MM}, specifies a
 file to write the dependencies to.  If no @option{-MF} switch is given
 the preprocessor sends the rules to the same place it would have sent
@@ -302,7 +302,7 @@ basename of the input file and applies a @file{.d} suffix.
 
 If @option{-MD} is used in conjunction with @option{-E}, any
 @option{-o} switch is understood to specify the dependency output file
-(but @pxref{-MF}), but if used without @option{-E}, each @option{-o}
+(but @pxref{dashMF,,-MF}), but if used without @option{-E}, each @option{-o}
 is understood to specify a target object file.
 
 Since @option{-E} is not implied, @option{-MD} can be used to generate
