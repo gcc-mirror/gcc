@@ -1410,19 +1410,6 @@ precondition_loop_p (initial_value, final_value, increment, loop_start)
       return 0;
     }
 
-  /* Now set initial_value to be the iteration_var, since that may be a
-     simpler expression, and is guaranteed to be correct if all of the
-     above tests succeed.
-
-     We can not use the initial_value as calculated, because it will be
-     one too small for loops of the form "while (i-- > 0)".  We can not
-     emit code before the loop_skip_over insns to fix this problem as this
-     will then give a number one too large for loops of the form
-     "while (--i > 0)".
-
-     Note that all loops that reach here are entered at the top, because
-     this function is not called if the loop starts with a jump.  */
-
   /* Fail if loop_iteration_var is not live before loop_start, since we need
      to test its value in the preconditioning code.  */
 
@@ -1435,7 +1422,15 @@ precondition_loop_p (initial_value, final_value, increment, loop_start)
       return 0;
     }
 
-  *initial_value = loop_iteration_var;
+  /* ??? Note that if iteration_info is modifed to allow GIV iterators
+     such as "while (i-- > 0)", the initial value will be one too small.
+     In this case, loop_iteration_var could be used to determine
+     the correct initial value, provided the loop has not been reversed.
+     
+     Also note that the absolute values of initial_value and
+     final_value are unimportant as only their difference is used for
+     calculating the number of loop iterations.  */
+  *initial_value = loop_initial_value;
   *increment = loop_increment;
   *final_value = loop_final_value;
 
