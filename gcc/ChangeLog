@@ -1,3 +1,8 @@
+2003-01-15  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (rs6000_gen_section_name): Do not include
+	file extension in section name.
+
 2003-01-15  Richard Earnshaw  <rearnsha@arm.com>
 
 	* flow.c (find_auto_inc): Also try to generate a PRE_MODIFY with

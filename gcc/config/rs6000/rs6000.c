@@ -1681,6 +1681,8 @@ mask64_operand (op, mode)
 
       /* Find the transition, and check that all bits above are 1's.  */
       lsb = c & -c;
+
+      /* Match if all the bits above are 1's (or c is zero).  */
       return c == -lsb;
     }
   return 0;
@@ -12008,6 +12010,7 @@ rs6000_gen_section_name (buf, filename, section_desc)
         {
 	  strcpy (p, section_desc);
 	  p += strlen (section_desc);
+	  break;
         }
 
       else if (ISALNUM (*q))
