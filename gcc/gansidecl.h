@@ -27,13 +27,6 @@ Boston, MA 02111-1307, USA.  */
 
 #include "ansidecl.h"
 
-/* Undef ansidecl.h's "obsolete" version. */
-#undef PROTO
-/* These macros are deprecated, use ansidecl.h's PARAMS style instead. */
-#define PROTO(ARGS) PARAMS(ARGS)
-#define VPROTO(ARGS) VPARAMS(ARGS)
-#define PVPROTO(ARGS) PARAMS(ARGS)
-
 /* Autoconf will possibly define the `inline' or `const' keywords as
    macros, however this is only valid for the stage1 compiler.  If we
    detect a modern version of gcc, unconditionally reset the values.
