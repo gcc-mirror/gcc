@@ -1,6 +1,6 @@
 // Native code for VMClassLoader
 
-/* Copyright (C) 2002, 2003  Free Software Foundation
+/* Copyright (C) 2002, 2003, 2005  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -24,7 +24,7 @@ jclass
 gnu::gcj::runtime::VMClassLoader::findClass (jstring name)
 {
   _Jv_Utf8Const *name_u = _Jv_makeUtf8Const (name);
-  jclass klass = _Jv_FindClassInCache (name_u, 0);
+  jclass klass = _Jv_FindClassInCache (name_u);
 
   if (! klass && lib_control != LIB_NEVER)
     {
@@ -65,12 +65,14 @@ gnu::gcj::runtime::VMClassLoader::findClass (jstring name)
 	    so_base_name = so_base_name->substring (0, nd);
 
 	  if (loaded)
-	    klass = _Jv_FindClassInCache (name_u, 0);
+	    klass = _Jv_FindClassInCache (name_u);
 	}
     }
 
-  // Now try loading using the interpreter.
-  if (! klass)
+  // Either define the package, or try loading using the interpreter.
+  if (klass)
+    definePackageForNative(name);
+  else
     klass = java::net::URLClassLoader::findClass (name);
 
   return klass;

@@ -1,6 +1,6 @@
 // natVMClassLoader.cc - VMClassLoader native methods
 
-/* Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004  Free Software Foundation
+/* Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -130,7 +130,7 @@ jclass
 java::lang::VMClassLoader::loadClass(jstring name, jboolean resolve)
 {
   _Jv_Utf8Const *utf = _Jv_makeUtf8Const (name);
-  jclass klass = _Jv_FindClassInCache (utf, NULL);
+  jclass klass = _Jv_FindClassInCache (utf);
   if (klass)
     {
       // We never want to return a class without its supers linked.
@@ -140,6 +140,9 @@ java::lang::VMClassLoader::loadClass(jstring name, jboolean resolve)
 	_Jv_InitClass (klass);
       else
 	_Jv_Linker::wait_for_state (klass, JV_STATE_LOADING);
+
+      definePackageForNative(name);
     }
+
   return klass;
 }
