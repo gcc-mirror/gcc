@@ -26,7 +26,6 @@ struct pointer_set_t;
 struct pointer_set_t *pointer_set_create (void);
 void pointer_set_destroy (struct pointer_set_t *pset);
 
-int pointer_set_contains (struct pointer_set_t *pset, void *p);
 int pointer_set_insert (struct pointer_set_t *pset, void *p);
 
 #endif  /* POINTER_SET_H  */

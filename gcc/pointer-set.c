@@ -90,31 +90,6 @@ void pointer_set_destroy (struct pointer_set_t *pset)
   XDELETE (pset);
 }
 
-/* Returns nonzero if PSET contains P.  P must be nonnull.
-
-   Collisions are resolved by linear probing.  More complicated
-   collision management schemes are only useful when the load factor
-   significantly exceeds 0.5, and we never let that happen.  */
-int
-pointer_set_contains (struct pointer_set_t *pset, void *p)
-{
-  size_t n = hash1 (p, pset->n_slots, pset->log_slots);
-
-  while (true)
-    {
-      if (pset->slots[n] == p)
-	return 1;
-      else if (pset->slots[n] == 0)
-	return 0;
-      else
-	{
-	  ++n;
-	  if (n == pset->n_slots)
-	    n = 0;
-	}
-    }
-}
-
 /* Subroutine of pointer_set_insert.  Inserts P into an empty
    element of SLOTS, an array of length N_SLOTS.  Returns nonzero
    if P was already present in N_SLOTS.  */
