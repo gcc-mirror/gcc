@@ -1,3 +1,7 @@
+2004-06-15  Mark G. Adams  <mark.g.adams@sympatico.ca>
+
+	* convert.h: Add include guards
+
 2004-06-15  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-flow-inline.h: Document all functions.
