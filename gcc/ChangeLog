@@ -1,5 +1,7 @@
 2003-01-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* calls.c (fix_unsafe_tree): Prototype.
+
 	* Makefile.in (GCC_WARN_CFLAGS): Add $(WERROR) $($@-warn)
 	(gtype-desc.o-warn, c-decl.o-warn, varasm.o-warn, gcc.o-warn,
 	insn-conditions.o-warn, out_object_file, gengtype-yacc.o-warn,
