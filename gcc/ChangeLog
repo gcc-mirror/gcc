@@ -1,3 +1,7 @@
+Wed May 31 13:17:20 2000  Philippe De Muyter  <phdm@macqel.be>
+
+	* except.c (clear_function_eh_region): Do not free NULL.
+
 Wed May 31 08:07:52 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* flow.c (propagate_block): If block has no successors, stores to

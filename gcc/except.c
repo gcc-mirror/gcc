@@ -931,7 +931,8 @@ clear_function_eh_region ()
         next = ptr->next;
         free (ptr);
       }
-  free (function_eh_regions);
+  if (function_eh_regions)
+    free (function_eh_regions);
   num_func_eh_entries  = 0;
   current_func_eh_entry = 0;
 }
