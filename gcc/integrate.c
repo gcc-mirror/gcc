@@ -557,6 +557,7 @@ save_for_inline_copying (fndecl)
 	      NOTE_SOURCE_FILE (insn) = (char *) copy;
 	      NOTE_SOURCE_FILE (copy) = 0;
 	    }
+	  RTX_INTEGRATED_P (copy) = RTX_INTEGRATED_P (insn);
 	  break;
 
 	case INSN:
