@@ -113,6 +113,12 @@ override_options ()
     {
       warning ("PIC code generation is not compatable with profiling\n");
     }
+
+  if (TARGET_SPACE && (flag_pic || profile_flag))
+    {
+      warning ("Out of line entry/exit sequences are not compatable\n");
+      warning ("with PIC or profiling\n");
+    }
 }
 
 
@@ -2039,8 +2045,24 @@ compute_frame_size (size, fregs_live)
   for (i = 18; i >= 4; i--)
     {
       if (regs_ever_live[i])
-	fsize += 4;
+	{
+	  /* For out of line prologues/epilogues we only need to
+	     compute the highest register number to save and
+	     allocate space for all the callee saved registers
+	     with a lower number.  */
+	  if (TARGET_SPACE)
+	    {
+	      fsize += 4 * (i - 3);
+	      break;
+	    }
+	  fsize += 4;
+	}
     }
+
+  /* We always save %r3, make room for it.  */
+  if (TARGET_SPACE)
+    fsize += 8;
+
   /* If we don't have a frame pointer, the register normally used for that
      purpose is saved just like other registers, not in the "frame marker".  */
   if (! frame_pointer_needed)
@@ -2053,9 +2075,19 @@ compute_frame_size (size, fregs_live)
   for (i = 66; i >= 48; i -= 2)
     if (regs_ever_live[i] || regs_ever_live[i + 1])
       {
-	fsize += 8;
 	if (fregs_live)
 	  *fregs_live = 1;
+
+	/* For out of line prologues/epilogues we only need to
+	   compute the highest register number to save and
+	   allocate space for all the callee saved registers
+	   with a lower number.  */
+        if (TARGET_SPACE)
+	  {
+	    fsize += 4 * (i - 46);
+	    break;
+	  }
+	fsize += 8;
       }
 
   fsize += current_function_outgoing_args_size;
@@ -2147,6 +2179,47 @@ hppa_expand_prologue()
   /* Compute a few things we will use often.  */
   tmpreg = gen_rtx (REG, SImode, 1);
   size_rtx = GEN_INT (actual_fsize);
+
+  /* Handle out of line prologues and epilogues.  */
+  if (TARGET_SPACE)
+    {
+      rtx operands[2];
+      int saves = 0;
+
+      /* Put the local_fisze into %r19.  */
+      operands[0] = gen_rtx (REG, SImode, 19);
+      operands[1] = GEN_INT (local_fsize);
+      emit_move_insn (operands[0], operands[1]);
+
+      /* Put the stack size into %r21.  */
+      operands[0] = gen_rtx (REG, SImode, 21);
+      operands[1] = size_rtx;
+      emit_move_insn (operands[0], operands[1]);
+
+      /* Put the register save info into %r22.  */
+      for (i = 18; i >= 3; i--)
+	if (regs_ever_live[i] && ! call_used_regs[i])
+	  {
+	    saves = i;
+            break;
+	  }
+	  
+      for (i = 66; i >= 48; i -= 2)
+	if (regs_ever_live[i] || regs_ever_live[i + 1])
+	  {
+	    saves |= ((i/2 - 12 ) << 16);
+	    break;
+	  }
+
+      operands[0] = gen_rtx (REG, SImode, 22);
+      operands[1] = GEN_INT (saves);
+      emit_move_insn (operands[0], operands[1]);
+
+      /* Now call the out-of-line prologue.  */
+      emit_insn (gen_outline_prologue_call ());
+      emit_insn (gen_blockage ());
+      return;     
+    }
 
   /* Save RP first.  The calling conventions manual states RP will
      always be stored into the caller's frame at sp-20.  */
@@ -2415,6 +2488,43 @@ hppa_expand_epilogue ()
   rtx tmpreg;
   int offset,i;
   int merge_sp_adjust_with_load  = 0;
+
+  /* Handle out of line prologues and epilogues.  */
+  if (TARGET_SPACE)
+    {
+      int saves = 0;
+      rtx operands[2];
+
+      /* Put the register save info into %r22.  */
+      for (i = 18; i >= 3; i--)
+	if (regs_ever_live[i] && ! call_used_regs[i])
+	  {
+	    saves = i;
+            break;
+	  }
+	  
+      for (i = 66; i >= 48; i -= 2)
+	if (regs_ever_live[i] || regs_ever_live[i + 1])
+	  {
+	    saves |= ((i/2 - 12 ) << 16);
+	    break;
+	  }
+
+      emit_insn (gen_blockage ());
+
+      /* Put the local_fisze into %r19.  */
+      operands[0] = gen_rtx (REG, SImode, 19);
+      operands[1] = GEN_INT (local_fsize);
+      emit_move_insn (operands[0], operands[1]);
+
+      operands[0] = gen_rtx (REG, SImode, 22);
+      operands[1] = GEN_INT (saves);
+      emit_move_insn (operands[0], operands[1]);
+
+      /* Now call the out-of-line epilogue.  */
+      emit_insn (gen_outline_epilogue_call ());
+      return;
+    }
 
   /* We will use this often.  */
   tmpreg = gen_rtx (REG, SImode, 1);

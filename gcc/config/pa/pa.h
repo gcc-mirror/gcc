@@ -78,6 +78,10 @@ extern int target_flags;
 /* Allow unconditional jumps in the delay slots of call instructions.  */
 #define TARGET_JUMP_IN_DELAY (target_flags & 8)
 
+/* Optimize for space.  Currently this only turns on out of line
+   prologues and epilogues.  */
+#define TARGET_SPACE (target_flags & 16)
+
 /* Disable indexed addressing modes.  */
 
 #define TARGET_DISABLE_INDEXING (target_flags & 32)
@@ -119,9 +123,11 @@ extern int target_flags;
    {"disable-fpregs", 2},	\
    {"no-disable-fpregs", -2},	\
    {"no-space-regs", 4},	\
-   {"space-regs", -4},\
+   {"space-regs", -4},		\
    {"jump-in-delay", 8},	\
    {"no-jump-in-delay", -8},	\
+   {"space", 16},		\
+   {"no-space", -16},		\
    {"disable-indexing", 32},	\
    {"no-disable-indexing", -32},\
    {"portable-runtime", 64},	\
@@ -554,9 +560,11 @@ do {								\
 /* Base register for access to local variables of the function.  */
 #define FRAME_POINTER_REGNUM 3
 
-/* Value should be nonzero if functions must have frame pointers. */
-#define FRAME_POINTER_REQUIRED (current_function_calls_alloca)
-
+/* Value should be nonzero if functions must have frame pointers.
+   All functions have frame pointers when optimizing for space
+   (for now).
+#define FRAME_POINTER_REQUIRED \
+  (current_function_calls_alloca || TARGET_SPACE)
 
 /* C statement to store the difference between the frame pointer
    and the stack pointer values immediately after the function prologue.
