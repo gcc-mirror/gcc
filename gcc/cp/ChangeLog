@@ -1,3 +1,8 @@
+1998-06-11  Mark Mitchell  <mark@markmitchell.com>
+
+	* pt.c (is_member_template_class): New function.
+	(push_template_decl_real): Use it.
+
 1998-06-11  Benjamin Kosnik  <bkoz@elmo.cygnus.com>
 
 	* friend.c (do_friend): Add support for nested classes using
