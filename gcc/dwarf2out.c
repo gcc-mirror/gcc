@@ -11578,41 +11578,49 @@ gen_label_die (tree decl, dw_die_ref context_die)
     }
 }
 
+/* A helper function for gen_lexical_block_die and gen_inlined_subroutine_die.
+   Add low_pc and high_pc attributes to the DIE for a block STMT.  */
+
+static inline void
+add_high_low_attributes (tree stmt, dw_die_ref die)
+{
+  char label[MAX_ARTIFICIAL_LABEL_BYTES];
+
+  if (BLOCK_FRAGMENT_CHAIN (stmt))
+    {
+      tree chain;
+
+      add_AT_range_list (die, DW_AT_ranges, add_ranges (stmt));
+
+      chain = BLOCK_FRAGMENT_CHAIN (stmt);
+      do
+	{
+	  add_ranges (chain);
+	  chain = BLOCK_FRAGMENT_CHAIN (chain);
+	}
+      while (chain);
+      add_ranges (NULL);
+    }
+  else
+    {
+      ASM_GENERATE_INTERNAL_LABEL (label, BLOCK_BEGIN_LABEL,
+				   BLOCK_NUMBER (stmt));
+      add_AT_lbl_id (die, DW_AT_low_pc, label);
+      ASM_GENERATE_INTERNAL_LABEL (label, BLOCK_END_LABEL,
+				   BLOCK_NUMBER (stmt));
+      add_AT_lbl_id (die, DW_AT_high_pc, label);
+    }
+}
+
 /* Generate a DIE for a lexical block.  */
 
 static void
 gen_lexical_block_die (tree stmt, dw_die_ref context_die, int depth)
 {
   dw_die_ref stmt_die = new_die (DW_TAG_lexical_block, context_die, stmt);
-  char label[MAX_ARTIFICIAL_LABEL_BYTES];
 
   if (! BLOCK_ABSTRACT (stmt))
-    {
-      if (BLOCK_FRAGMENT_CHAIN (stmt))
-	{
-	  tree chain;
-
-	  add_AT_range_list (stmt_die, DW_AT_ranges, add_ranges (stmt));
-
-	  chain = BLOCK_FRAGMENT_CHAIN (stmt);
-	  do
-	    {
-	      add_ranges (chain);
-	      chain = BLOCK_FRAGMENT_CHAIN (chain);
-	    }
-	  while (chain);
-	  add_ranges (NULL);
-	}
-      else
-	{
-	  ASM_GENERATE_INTERNAL_LABEL (label, BLOCK_BEGIN_LABEL,
-				       BLOCK_NUMBER (stmt));
-	  add_AT_lbl_id (stmt_die, DW_AT_low_pc, label);
-	  ASM_GENERATE_INTERNAL_LABEL (label, BLOCK_END_LABEL,
-				       BLOCK_NUMBER (stmt));
-	  add_AT_lbl_id (stmt_die, DW_AT_high_pc, label);
-	}
-    }
+    add_high_low_attributes (stmt, stmt_die);
 
   decls_for_scope (stmt, stmt_die, depth);
 }
@@ -11634,15 +11642,10 @@ gen_inlined_subroutine_die (tree stmt, dw_die_ref context_die, int depth)
     {
       dw_die_ref subr_die
 	= new_die (DW_TAG_inlined_subroutine, context_die, stmt);
-      char label[MAX_ARTIFICIAL_LABEL_BYTES];
 
       add_abstract_origin_attribute (subr_die, decl);
-      ASM_GENERATE_INTERNAL_LABEL (label, BLOCK_BEGIN_LABEL,
-				   BLOCK_NUMBER (stmt));
-      add_AT_lbl_id (subr_die, DW_AT_low_pc, label);
-      ASM_GENERATE_INTERNAL_LABEL (label, BLOCK_END_LABEL,
-				   BLOCK_NUMBER (stmt));
-      add_AT_lbl_id (subr_die, DW_AT_high_pc, label);
+      add_high_low_attributes (stmt, subr_die);
+
       decls_for_scope (stmt, subr_die, depth);
       current_function_has_inlines = 1;
     }
