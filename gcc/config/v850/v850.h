@@ -32,6 +32,7 @@
 
 #define TARGET_CPU_generic 	1
 #define TARGET_CPU_v850e   	2
+#define TARGET_CPU_v850e1  	3
 
 #ifndef TARGET_CPU_DEFAULT
 #define TARGET_CPU_DEFAULT	TARGET_CPU_generic
@@ -54,6 +55,17 @@
 #define SUBTARGET_CPP_SPEC 	"%{!mv*:-D__v850e__}"
 #undef  TARGET_VERSION
 #define TARGET_VERSION 		fprintf (stderr, " (NEC V850E)");
+#endif
+
+#if TARGET_CPU_DEFAULT == TARGET_CPU_v850e1
+#undef  MASK_DEFAULT
+#define MASK_DEFAULT            MASK_V850E	/* No practical difference.  */
+#undef  SUBTARGET_ASM_SPEC
+#define SUBTARGET_ASM_SPEC 	"%{!mv*:-mv850e1}"
+#undef  SUBTARGET_CPP_SPEC
+#define SUBTARGET_CPP_SPEC 	"%{!mv*:-D__v850e1__} %{mv850e1:-D__v850e1__}"
+#undef  TARGET_VERSION
+#define TARGET_VERSION 		fprintf (stderr, " (NEC V850E1)");
 #endif
 
 #define ASM_SPEC "%{mv*:-mv%*}"
@@ -176,6 +188,8 @@ extern int target_flags;
    { "v850",		 	 MASK_V850,				\
                                 N_("Compile for the v850 processor") },	\
    { "v850",		 	 -(MASK_V850 ^ MASK_CPU), "" },		\
+   { "v850e1",			 MASK_V850E, N_("Compile for v850e1 processor") }, \
+   { "v850e1",		        -(MASK_V850E ^ MASK_CPU), "" }, /* Make sure that the other bits are cleared.  */ \
    { "v850e",			 MASK_V850E, N_("Compile for v850e processor") }, \
    { "v850e",		        -(MASK_V850E ^ MASK_CPU), "" }, /* Make sure that the other bits are cleared.  */ \
    { "small-sld",		 MASK_SMALL_SLD, N_("Enable the use of the short load instructions") },	\
