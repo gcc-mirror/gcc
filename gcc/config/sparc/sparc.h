@@ -115,6 +115,7 @@ extern enum cmodel sparc_cmodel;
 #define TARGET_CPU_v8		3	/* generic v8 implementation */
 #define TARGET_CPU_supersparc	4
 #define TARGET_CPU_hypersparc   5
+#define TARGET_CPU_sparc86x	6
 #define TARGET_CPU_sparclite86x	6
 #define TARGET_CPU_v9		7	/* generic v9 implementation */
 #define TARGET_CPU_sparcv9	7	/* alias */

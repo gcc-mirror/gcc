@@ -1,3 +1,7 @@
+Tue Feb  2 18:21:23 1999  Stan Cox  <scox@cygnus.com>
+
+	* sparc.h (TARGET_CPU_sparc86x): Added. TARGET_CPU_sparclite86x synonym.
+
 Tue Feb  2 20:24:11 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* loop.c (loop_optimize): Fix value max_uid_for_loop is reset
