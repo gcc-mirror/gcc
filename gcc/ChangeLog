@@ -1,3 +1,11 @@
+2002-03-05  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa.h (ASM_FILE_END): Define.
+	* som.h (ASM_FILE_END): Delete.
+
+	* pa.c (function_arg): Don't pass floats in general registers in
+	indirect calls if TARGET_ELF32.
+
 2002-03-05  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.md (floatsidf2): Conditionalize on hard-float.

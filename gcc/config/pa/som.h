@@ -349,8 +349,6 @@ readonly_data ()							\
 	 }								\
      } while (0)
 
-#define ASM_FILE_END(FILE) output_deferred_plabels (FILE)
-
 /* We want __gcc_plt_call to appear in every program built by
    gcc, so we make a reference to it out of __main.
    We use the asm statement to fool the optimizer into not
