@@ -1,3 +1,13 @@
+Mon Mar 20 19:53:53 2000  Jim Wilson  <wilson@cygnus.com>
+
+	* config/ia64/ia64.c (ia64_expand_prologue): Don't abort if leaf
+	function uses output registers.  Don't save RP for leaf functions.
+	Do save RP even if no epilogue.
+	* config/ia64/ia64.h (FIXED_REGISTERS): Unmark in/out registers.
+	(CALL_USED_REGISTERS): Unmark in registers.
+	(REG_ALLOC_ORDER): Move out regs up, to near the top.  Move in regs up,
+	to near the middle.
+
 2000-03-20  Geoff Keating  <geoffk@cygnus.com>
 
 	* config/rs6000/rs6000.md (bunordered): New expander.

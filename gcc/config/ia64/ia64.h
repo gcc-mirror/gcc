@@ -577,15 +577,13 @@ while (0)
    p0: constant true
    fp: eliminable frame pointer */   
 
-/* The last 16 stacked regs are fixed, because they are reserved for the 8
-   input and 8 output registers.  */
+/* The last 16 stacked regs are reserved for the 8 input and 8 output
+   registers.  */
 
 /* ??? Must mark the next 3 stacked regs as fixed, because ia64_expand_prologue
    assumes that three locals are available for fp, b0, and ar.pfs.  */
 
 /* ??? Should mark b0 as fixed?  */
-
-/* ??? input and output registers do not have to be marked as fixed.  */
 
 #define FIXED_REGISTERS \
 { /* General registers.  */				\
@@ -596,7 +594,7 @@ while (0)
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	\
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	\
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1,	\
-  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,	\
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	\
   /* Floating-point registers.  */			\
   1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	\
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	\
@@ -622,8 +620,6 @@ while (0)
    therefore identifies the registers that are not available for general
    allocation of values that must live across function calls.  */
 
-/* ??? If inputs are not marked as fixed, then they are not call clobbered.  */
-
 #define CALL_USED_REGISTERS \
 { /* General registers.  */				\
   1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1,	\
@@ -633,7 +629,7 @@ while (0)
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	\
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	\
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1,	\
-  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,	\
+  0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1,	\
   /* Floating-point registers.  */			\
   1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,	\
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	\
@@ -689,11 +685,6 @@ while (0)
 /* ??? Should the GR return value registers come before or after the rest
    of the caller-save GRs?  */
 
-/* ??? Output registers are cheap, because they will be not be saved
-   by the register engine.  They probably should be early in the list.
-   We need to make them not fixed first though.  Similarly, input registers
-   are callee-saved (RSE) like the stacked locals.  */
-
 #define REG_ALLOC_ORDER \
 {									   \
   /* Caller-saved general registers.  */				   \
@@ -701,6 +692,9 @@ while (0)
   R_GR (18), R_GR (19), R_GR (20), R_GR (21), R_GR (22), R_GR (23), 	   \
   R_GR (24), R_GR (25), R_GR (26), R_GR (27), R_GR (28), R_GR (29), 	   \
   R_GR (30), R_GR (31),							   \
+  /* Output registers.  */						   \
+  R_GR (120), R_GR (121), R_GR (122), R_GR (123), R_GR (124), R_GR (125),  \
+  R_GR (126), R_GR (127), 						   \
   /* Caller-saved general registers, also used for return values.  */	   \
   R_GR (8), R_GR (9), R_GR (10), R_GR (11), 				   \
   /* addl caller-saved general registers.  */				   \
@@ -759,6 +753,9 @@ while (0)
   R_GR (96), R_GR (97), R_GR (98), R_GR (99), R_GR (100), R_GR (101), 	   \
   R_GR (102), R_GR (103), R_GR (104), R_GR (105), R_GR (106), R_GR (107),  \
   R_GR (108),								   \
+  /* Input registers.  */						   \
+  R_GR (112), R_GR (113), R_GR (114), R_GR (115), R_GR (116), R_GR (117),  \
+  R_GR (118), R_GR (119),						   \
   /* Callee-saved general registers.  */				   \
   R_GR (4), R_GR (5), R_GR (6), R_GR (7),				   \
   /* Callee-saved FP registers.  */					   \
@@ -773,12 +770,6 @@ while (0)
 									   \
   /* ??? Stacked registers reserved for fp, rp, and ar.pfs.  */		   \
   R_GR (109), R_GR (110), R_GR (111),					   \
-  /* Input registers.  */						   \
-  R_GR (112), R_GR (113), R_GR (114), R_GR (115), R_GR (116), R_GR (117),  \
-  R_GR (118), R_GR (119),						   \
-  /* Output registers.  */						   \
-  R_GR (120), R_GR (121), R_GR (122), R_GR (123), R_GR (124), R_GR (125),  \
-  R_GR (126), R_GR (127), 						   \
 									   \
   /* Special general registers.  */					   \
   R_GR (0), R_GR (1), R_GR (12), R_GR (13), 				   \

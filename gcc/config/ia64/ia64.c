@@ -775,12 +775,6 @@ save_restore_insns (save_p)
 /* ??? Get inefficient code when the frame size is larger than can fit in an
    adds instruction.  */
 
-/* ??? Add support for allocating temporaries from the output registers if
-   they do not need to live past call instructions.  */
-
-/* ??? If the function does not return, then we don't need to save the rp
-   and ar.pfs registers.  */
-
 /* ??? If this is a leaf function, then fp/rp/ar.pfs should be put in the
    low 32 regs.  */
 
@@ -807,7 +801,7 @@ ia64_expand_prologue ()
   leaf_function = leaf_function_p ();
   pop_topmost_sequence ();
 
-  /* ??? If there is no epilogue, then we don't need some prologue insns.  We
+  /* If there is no epilogue, then we don't need some prologue insns.  We
      need to avoid emitting the dead prologue insns, because flow will complain
      about them.  */
   if (optimize)
@@ -863,10 +857,6 @@ ia64_expand_prologue ()
   else if (profile_block_flag == 2)
     outputs = MAX (outputs, 2);
 
-  /* Leaf functions should not use any output registers.  */
-  if (leaf_function && outputs != 0)
-    abort ();
-
   /* No rotating register support as yet.  */
 
   rotates = 0;
@@ -874,6 +864,8 @@ ia64_expand_prologue ()
   /* Allocate two extra locals for saving/restoring rp and ar.pfs.  Also
      allocate one local for use as the frame pointer if frame_pointer_needed
      is true.  */
+  /* ??? If this is a leaf function, then we aren't using one of these local
+     registers for the RP anymore.  */
   locals += 2 + frame_pointer_needed;
 
   /* Save these values in global registers for debugging info.  */
@@ -925,6 +917,7 @@ ia64_expand_prologue ()
   /* We don't need an alloc instruction if this is a leaf function, and the
      locals and outputs are both zero sized.  Since we have already allocated
      two locals for rp and ar.pfs, we check for two locals.  */
+  /* Leaf functions can use output registers as call-clobbered temporaries.  */
   if (locals == 2 && outputs == 0 && leaf_function)
     {
       /* If there is no alloc, but there are input registers used, then we
@@ -940,21 +933,36 @@ ia64_expand_prologue ()
   else
     {
       ia64_need_regstk = 0;
-
       ia64_arpfs_regno = LOC_REG (locals - 1);
-      ia64_rp_regno = LOC_REG (locals - 2);
-      reg_names[RETURN_ADDRESS_REGNUM] = reg_names[ia64_rp_regno];
 
       emit_insn (gen_alloc (gen_rtx_REG (DImode, ia64_arpfs_regno),
 			    GEN_INT (inputs), GEN_INT (locals),
 			    GEN_INT (outputs), GEN_INT (rotates)));
 
-      /* ??? FIXME ??? We don't need to save BR_REG (0) if this is a leaf
-	 function.  We also don't need to allocate a local reg for it then.  */
-      /* ??? Likewise if there is no epilogue.  */
-      if (epilogue_p)
-	emit_move_insn (gen_rtx_REG (DImode, ia64_rp_regno),
-			gen_rtx_REG (DImode, BR_REG (0)));
+      /* Emit a save of BR_REG (0) if we call other functions.
+	 Do this even if this function doesn't return, as EH
+         depends on this to be able to unwind the stack.  */
+      if (! leaf_function)
+	{
+	  rtx ia64_rp_reg;
+
+	  ia64_rp_regno = LOC_REG (locals - 2);
+	  reg_names[RETURN_ADDRESS_REGNUM] = reg_names[ia64_rp_regno];
+
+	  ia64_rp_reg = gen_rtx_REG (DImode, ia64_rp_regno);
+	  insn = emit_move_insn (ia64_rp_reg, gen_rtx_REG (DImode,
+							   BR_REG (0)));
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	  if (! epilogue_p)
+	    {
+	      /* If we don't have an epilogue, then the return value
+		 doesn't appear to be needed and the above store will
+		 appear dead and will elicit a warning from flow.  */
+	      emit_insn (gen_rtx_USE (VOIDmode, ia64_rp_reg));
+	    }
+	}
+      else
+	ia64_rp_regno = 0;
     }
 
   /* Set up frame pointer and stack pointer.  */
