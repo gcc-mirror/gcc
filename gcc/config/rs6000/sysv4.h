@@ -435,7 +435,9 @@ extern int rs6000_pic_labelno;
   %{!mno-powerpc: %{mpower: -m601}} \
   %{!mno-powerpc: %{!mpower: -mppc}}} \
 %{mcpu=common: -mcom} \
+%{mcpu=rs6000: -mpwr} \
 %{mcpu=power: -mpwr} \
+%{mcpu=power2: -mpwrx} \
 %{mcpu=powerpc: -mppc} \
 %{mcpu=rios: -mpwr} \
 %{mcpu=rios1: -mpwr} \
@@ -444,9 +446,11 @@ extern int rs6000_pic_labelno;
 %{mcpu=rsc1: -mpwr} \
 %{mcpu=403: -mppc} \
 %{mcpu=601: -m601} \
+%{mcpu=602: -mppc} \
 %{mcpu=603: -mppc} \
 %{mcpu=603e: -mppc} \
 %{mcpu=604: -mppc} \
+%{mcpu=620: -mppc} \
 %{V} %{v:%{!V:-V}} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Yd,*} %{Wa,*:%*} \
 %{mrelocatable} %{mrelocatable-lib} %{memb} \
 %{mlittle} %{mlittle-endian} %{mbig} %{mbig-endian}"
@@ -620,7 +624,9 @@ do {									\
   %{mno-powerpc: %{!mpower: %{!mpower2: -D_ARCH_COM}}} \
   %{!mno-powerpc: -D_ARCH_PPC}} \
 %{mcpu=common: -D_ARCH_COM} \
+%{mcpu=rs6000: -D_ARCH_PWR} \
 %{mcpu=power: -D_ARCH_PWR} \
+%{mcpu=power2: -D_ARCH_PWR2} \
 %{mcpu=powerpc: -D_ARCH_PPC} \
 %{mcpu=rios: -D_ARCH_PWR} \
 %{mcpu=rios1: -D_ARCH_PWR} \

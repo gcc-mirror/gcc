@@ -1,3 +1,9 @@
+# Same as t-newas, except don't build libgcc1-test.  This is because
+# the compiler emits code to call external functions to save the
+# arguments that are in libc, but since libgcc1-test is linked without
+# libc, they will show up as errors.
+LIBGCC1_TEST =
+
 # Do not build libgcc1.
 LIBGCC1 =
 CROSS_LIBGCC1 =
