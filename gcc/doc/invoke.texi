@@ -499,7 +499,7 @@ Objective-C and Objective-C++ Dialects}.
 
 @emph{IA-64 Options}
 @gccoptlist{-mbig-endian  -mlittle-endian  -mgnu-as  -mgnu-ld  -mno-pic @gol
--mvolatile-asm-stop  -mb-step  -mregister-names  -mno-sdata @gol
+-mvolatile-asm-stop  -mregister-names  -mno-sdata @gol
 -mconstant-gp  -mauto-pic  -minline-float-divide-min-latency @gol
 -minline-float-divide-max-throughput @gol
 -minline-int-divide-min-latency @gol
@@ -8865,10 +8865,6 @@ is not position independent code, and violates the IA-64 ABI@.
 @opindex mno-volatile-asm-stop
 Generate (or don't) a stop bit immediately before and after volatile asm
 statements.
-
-@item -mb-step
-@opindex mb-step
-Generate code that works around Itanium B step errata.
 
 @item -mregister-names
 @itemx -mno-register-names
