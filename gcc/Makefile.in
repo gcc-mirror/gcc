@@ -495,10 +495,6 @@ GCC_PARTS=$(GCC_PASSES) $(LIBGCC) $(EXTRA_PROGRAMS) $(USE_COLLECT2) $(EXTRA_PART
 # Directory to link to, when using the target `maketest'.
 DIR = ../gcc
 
-# Guaranteed to not exist when not passing md through cpp.
-# This value is overridden directly by configure.
-MD_FILE = md-cpp-not-used
-
 # Flags to use when cross-building GCC.
 # Prefix to apply to names of object files when using them
 # to run on the machine we are compiling on.
@@ -1647,12 +1643,6 @@ s-genrtl: gengenrtl $(srcdir)/move-if-change $(RTL_BASE_H)
 # about the target machine.  They do depend on config.h itself,
 # since that describes the host machine.
 
-# Pass the md file through cpp if the target requests it.
-$(MD_FILE): $(MD_DEPS)
-	rm -f $@
-	$(MD_CPP) $(MD_CPPFLAGS) $(md_file) | sed 's/^# /; /g' > tmp-$@
-	mv tmp-$@ $@
-
 gensupport.o: gensupport.c $(RTL_H) $(OBSTACK_H) system.h errors.h gensupport.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/gensupport.c
 
@@ -2237,9 +2227,6 @@ clean: mostlyclean $(INTL_CLEAN) lang.clean
 	-rm -rf libgcc
 	-rm -f *.dvi
 	-rm -f */*.dvi
-	-if [ -f md.pre-cpp ]; then \
-	  rm -f md ; \
-	fi
 # Delete the include directory.
 	-rm -rf include
 # Delete files used by the "multilib" facility (including libgcc subdirs).
@@ -2259,7 +2246,7 @@ clean: mostlyclean $(INTL_CLEAN) lang.clean
 INTL_DISTCLEAN = intl.distclean
 distclean: clean $(INTL_DISTCLEAN) lang.distclean
 	-rm -f tm.h tm_p.h config.h auto-host.h auto-build.h tconfig.h hconfig.h
-	-rm -f md cstamp-h
+	-rm -f cstamp-h
 	-rm -f config.status config.run config.cache config.bak
 	-rm -f Make-lang Make-hooks Make-host Make-target
 	-rm -f Makefile specs.h options.h gencheck.h *.oaux

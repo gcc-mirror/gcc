@@ -1077,20 +1077,6 @@ else
 	maybe_use_collect2="-DUSE_COLLECT2"
 fi
 
-# NEED TO CONVERT
-# Set MD_DEPS if the real md file is in md.pre-cpp.
-# Set MD_CPP to the cpp to pass the md file through.  Md files use ';'
-# for line oriented comments, so we must always use a GNU cpp.  If
-# building gcc with a cross compiler, use the cross compiler just
-# built.  Otherwise, we can use the cpp just built.
-md_file_sub=
-if test "x$md_cppflags" = x
-then
-	md_file_sub=$srcdir/config/$md_file
-else
-	md_file=md
-fi
-
 # If we have gas in the build tree, make a link to it.
 if test -f ../gas/Makefile; then
 	rm -f as; $symbolic_link ../gas/as-new$host_exeext as$host_exeext 2>/dev/null

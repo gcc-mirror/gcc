@@ -1,3 +1,7 @@
+2000-11-22  Zack Weinberg  <zack@wolery.stanford.edu>
+
+	* libiberty.h: Move #includes to top.  Prototype xmalloc_failed.
+
 2000-11-15  Kenneth Block  <kenneth.block@compaq.com>
 
 	* demangle.h: Add gnat and java demangle styles.

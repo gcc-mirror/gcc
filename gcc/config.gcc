@@ -119,9 +119,6 @@
 #  build_install_headers_dir
 #			Target to use when installing header files.
 #
-#  md_cppflags		Non-empty list of args to pass to cpp if the target
-#  			wants its .md file passed through cpp.
-#
 #  host_truncate_target
 #			Non-empty if the target name should be truncated
 #			on this host, due to filename length issues.
@@ -182,9 +179,6 @@ use_collect2=
 target_cpu_default=
 # Set this to control how the header file directory is installed.
 install_headers_dir=install-headers-tar
-# Set this to a non-empty list of args to pass to cpp if the target
-# wants its .md file passed through cpp.
-md_cppflags=
 # Set this if directory names should be truncated to 14 characters.
 truncate_target=
 # Set this if gdb needs a dir command with `dirname $out_file`

@@ -1,3 +1,18 @@
+2000-11-22  Zack Weinberg  <zack@wolery.stanford.edu>
+
+	* aclocal.m4 (LIB_AC_PROG_CC): Moved here from configure.in.
+	(AC_DEFINE_NOAUTOHEADER): New - work around bug in autoheader.
+	* configure.in: Call AC_C_INLINE and AC_C_CONST.  Use three
+	argument form of AC_DEFINE in dummy definitions block.  Use
+	AC_DEFINE_NOAUTOHEADER for real definitions of things defined
+	in dummy block.  Preload cache variables instead of bypassing
+	tests, where possible.
+	* acconfig.h: Removed.
+
+	* xmalloc.c (xmalloc_failed): New function, does error
+	reporting on failed allocation.
+	(xmalloc, xcalloc, xrealloc): Use it.
+
 2000-11-21  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* cplus-dem.c (cplus_demangle): Fix formatting.
@@ -52,13 +67,13 @@
 	(result_caret_pos): New macro.
 	(result_append_string): Rename to...
 	(result_add_string): ... this, and insert at caret position.
-	Rename throughout. 
+	Rename throughout.
 	(result_append): Rename to...
 	(result_add): ... this, and insert at caret position.  Rename
-	throughout. 
+	throughout.
 	(result_append_char): Rename to...
 	(result_add_char): ... this, and insert at caret position.  Rename
-	throughout. 
+	throughout.
 	(result_append_space): Remove.
 	(string_list_new): Initialize caret position.
 	(result_add_separated_char): Use caret position.
@@ -70,13 +85,13 @@
 	(substitution_add): Likewise.
 	(demangling_new): Initialize caret position.
 	(demangle_encoding): Use caret position.
-	(demanglin_nested_name): Put CV qualifiers after name. 
+	(demanglin_nested_name): Put CV qualifiers after name.
 	(demangle_type_ptr): Use switch statement.  Handle pointers to
 	arrays.  Don't use result_append_space.  Use caret position.
 	(demangle_type): Emit CV qualifiers after underlying type.  Adjust
-	call to demangle_array_type. 
-	(demangle_array_type): Add parameter to handle pointers to arrays. 
-	
+	call to demangle_array_type.
+	(demangle_array_type): Add parameter to handle pointers to arrays.
+
 2000-10-01  Mark Mitchell  <mark@codesourcery.com>
 
 	* splay-tree.c (splay_tree_insert): Fix formatting.
@@ -133,7 +148,7 @@
 	(demangle_special_name): Fix comment.
 	(demangle_type): Rename variable.
 	(demangle_bare_function_type): Check for missing return type and
-	parameter. 
+	parameter.
 	(demangle_class_enum_type): Rename parameter.
 	(demangle_discriminator): Fix misspelling in comment.
 
@@ -145,8 +160,8 @@
 2000-09-04  Alex Samuel  <samuel@codesourcery.com>
 
 	* cp-demangle.c (demangle_template_arg): Eat an `E' after an
-	<expression>. 
-	
+	<expression>.
+
 2000-09-04  Alex Samuel  <samuel@codesourcery.com>
 
 	* cp-demangle.c (demangle_type_ptr): Increment position past
@@ -159,7 +174,7 @@
 	(demangle_call_offset): Likewise.
 	(demangle_special_name): Update thunk demangling to comply with
 	ABI changes.
-	
+
 2000-09-03  Alex Samuel  <samuel@codesourcery.com>
 
 	* cp-demangle.c (ANONYMOUS_NAMESPACE_PREFIX): New macro.
@@ -169,17 +184,17 @@
 	(result_insert): Likewise.
 	(result_insert_char): Likewise.
 	(substitution_add): Remove last parameter.  Don't store template
-	parm number. 
+	parm number.
 	(BFT_NO_RETURN_TYPE): Define as NULL.
 	(demangle_encoding): Adjust call to demangle_bare_function_type.
 	(demangle_name): Adjust substitution.  Adjust call to
-	substitution_add. 
+	substitution_add.
 	(demangle_prefix): Adjust call to substitution_add.
 	(demangle_identifier): Handle anonymous namespaces.
 	(demangle_operator_name): Change demangling of vendor-extended
 	operator to match ABI changes.
 	(demangle_type_ptr): Change parameters.  Make recursive.  Handle
-	substitutions here.  
+	substitutions here.
 	(demangle_type): Adjust calls to demangle_template_param,
 	substitution_add, and demangle_type_ptr.  Fix substitution of
 	templated types.
@@ -187,7 +202,7 @@
 	(demangle_bare_function_type): Likewise.  Adjust insertion point.
 	(demangle_template_param): Remove last parameter.
 	(demangle_expr_primary): Remove unused variable.  Adjust call to
-	demangle_template_param. 
+	demangle_template_param.
 	(is_mangled_char): Accept `$' and `.'.
 	* cplus-dem.c (gnu_new_abi_symbol_characters): Add '$' and '.'.
 	* dyn-string.c (dyn_string_insert_char): New function.
@@ -232,7 +247,7 @@
 	(demangle_type): Don't treat r as built-in type.  Remove argument
 	to demangle_substitution.  Fix substitution candidate mechanics.
 	Handle <template-template-parm>s.  Improve comments.
-	(demangle_template_param): Don't handle template arg lists here. 
+	(demangle_template_param): Don't handle template arg lists here.
 	(demangle_substitution): Remove parameter.
 	(print_usage): Remove extra fprintf option.
 
@@ -257,12 +272,12 @@
 	(demangle_type_ptr): Remove duplicate RETURN_IF_ERROR.
 	(demangle_type): Check for template args after substitution.
 	(demangle_template_args): Use result_open_template_list.
-	
+
 2000-08-02  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* pexecute.c:  Don't use vfork.  Initialize 'pid' before retry loop.
 
-2000-07-26  Dave Pitts  <dpitts@cozx.com>	
+2000-07-26  Dave Pitts  <dpitts@cozx.com>
 
 	* config/mh-openedition.h: Added -DLE370 definition.
 
@@ -300,7 +315,7 @@
 
 2000-07-24  Daniel Berlin <dberlin@redhat.com>
 
-	* cplus-dem.c (demangle_signature): Change if (GNU_DEMANGLING) to 
+	* cplus-dem.c (demangle_signature): Change if (GNU_DEMANGLING) to
 	if (AUTO_DEMANGLING || GNU_DEMANGLING)
 
 2000-07-21  Alex Samuel  <samuel@codesourcery.com>
@@ -379,7 +394,7 @@
 	<class-enum-type>
 	(demangle_subtitution): Set template_p for special substitutions.
 	(main): Fix typos.
-	
+
 2000-06-27  Alex Samuel  <samuel@codesourcery.com>
 
 	* cp-demangle.c (demangle_special_name): Swap base and derived
@@ -437,7 +452,7 @@
 	(dyn_string_append_cstr): Likewise.
 	(dyn_string_append_char): Likewise.
 	(dyn_string_substring): Likewise.
-	
+
 2000-06-09  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cp-demangle.c (demangle_operator_name): Add spaces before
@@ -460,7 +475,7 @@ Thu Jun  8 09:25:54 2000  Philippe De Muyter  <phdm@macqel.be>
 2000-06-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.in (ac_libiberty_warn_cflags): Add -pedantic.
-	
+
 	* choose-temp.c (try, choose_temp_base, make_temp_file): Constify.
 
 	* cp-demangle.c (demangle_char): Change parameter from char to int.
@@ -479,7 +494,7 @@ Thu Jun  8 09:25:54 2000  Philippe De Muyter  <phdm@macqel.be>
 	const-ness.
 
 	* setenv.c (setenv): Use braces to avoid ambiguous `else'.
-	
+
 2000-06-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (cp-demangle.o): Depend on $(INCDIR)/demangle.h.
@@ -517,7 +532,7 @@ Thu Jun  8 09:25:54 2000  Philippe De Muyter  <phdm@macqel.be>
 	(main): Use gnu_new_abi_symbol_characters.  * cp-demangle.c: New
 	file.
 	* cp-demangle.c: New file.
-	
+
 Tue May 30 16:45:25 2000  Andrew Cagney  <cagney@b1.cygnus.com>
 
 	* floatformat.c: Add name to each floatformat field.
@@ -549,7 +564,7 @@ Tue May 30 15:07:52 2000  Jeffrey A Law  (law@cygnus.com)
 
 2000-05-16  Horst von Brand <vonbrand@sleipnir.valparaiso.cl>
 
-        * hashtab.c (hash_pointer): Delete low-order bits which are
+	* hashtab.c (hash_pointer): Delete low-order bits which are
 	probably zero, also eliminate a warning on alpha.
 
 2000-05-15  David Edelsohn  <edelsohn@gnu.org>
@@ -584,9 +599,9 @@ Thu May  4 17:14:41 2000  Philippe De Muyter  <phdm@macqel.be>
 2000-04-28  Kenneth Block  <block@zk3.dec.com>
 	    Jason Merrill  <jason@casey.cygnus.com>
 
-        * cplus-dem.c (libiberty_demanglers): New table for demangle styles.
-        (cplus_demangle_set_style): New function for setting style.
-        (cplus_demangle_name_to_style): New function to translate name.
+	* cplus-dem.c (libiberty_demanglers): New table for demangle styles.
+	(cplus_demangle_set_style): New function for setting style.
+	(cplus_demangle_name_to_style): New function to translate name.
 
 2000-04-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
@@ -638,7 +653,7 @@ Tue Apr 18 16:23:31 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 2000-04-16  Dave Pitts  <dpitts@cozx.com>
 
 	* cplus-dem.c (cplus_demangle_opname): Changed to use islower.
- 
+
 2000-04-05  Richard Henderson  <rth@cygnus.com>
 
 	* splay-tree.c (splay_tree_remove): New.
@@ -649,7 +664,7 @@ Tue Apr 18 16:23:31 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	codes.
 	(htab_find_with_hash): Likewise.
 	(htab_find_slot_with_hash): Likewise.
-	
+
 2000-03-29  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* hashtab.c (htab_find_with_hash): Avoid calculating hash2
@@ -678,7 +693,7 @@ Thu Mar 16 01:33:58 2000  Jeffrey A Law  (law@cygnus.com)
 	(REQUIRED_OFILES): Add partition.o.
 	(partition.o): New rule.
 	* partition.c: New file.
-	
+
 2000-03-09  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* hashtab.c (htab_create): Set del_f.

@@ -36,51 +36,11 @@ dnl to call AC_CHECK_PROG.
 AC_CHECK_TOOL(AR, ar)
 AC_CHECK_TOOL(RANLIB, ranlib, :)
 
-# FIXME: We temporarily define our own version of AC_PROG_CC.  This is
-# copied from autoconf 2.12, but does not call AC_PROG_CC_WORKS.  We
-# are probably using a cross compiler, which will not be able to fully
-# link an executable.  This should really be fixed in autoconf
-# itself.
-
-AC_DEFUN(LIB_AC_PROG_CC,
-[AC_BEFORE([$0], [AC_PROG_CPP])dnl
-AC_PROVIDE([AC_PROG_CC])
-AC_CHECK_PROG(CC, gcc, gcc)
-if test -z "$CC"; then
-  AC_CHECK_PROG(CC, cc, cc, , , /usr/ucb/cc)
-  test -z "$CC" && AC_MSG_ERROR([no acceptable cc found in \$PATH])
-fi
-
-AC_PROG_CC_GNU
-
-if test $ac_cv_prog_gcc = yes; then
-  GCC=yes
-  ac_libiberty_warn_cflags='-W -Wall -Wtraditional -pedantic'
-dnl Check whether -g works, even if CFLAGS is set, in case the package
-dnl plays around with CFLAGS (such as to build both debugging and
-dnl normal versions of a library), tasteless as that idea is.
-  ac_test_CFLAGS="${CFLAGS+set}"
-  ac_save_CFLAGS="$CFLAGS"
-  CFLAGS=
-  AC_PROG_CC_G
-  if test "$ac_test_CFLAGS" = set; then
-    CFLAGS="$ac_save_CFLAGS"
-  elif test $ac_cv_prog_cc_g = yes; then
-    CFLAGS="-g -O2"
-  else
-    CFLAGS="-O2"
-  fi
-else
-  GCC=
-  ac_libiberty_warn_cflags=
-  test "${CFLAGS+set}" = set || CFLAGS="-g"
-fi
-])
-AC_SUBST(ac_libiberty_warn_cflags)
-
 LIB_AC_PROG_CC
 
 AC_ISC_POSIX
+AC_C_CONST
+AC_C_INLINE
 
 dnl When we start using libtool:
 dnl Default to a non shared library.  This may be overridden by the
@@ -172,11 +132,11 @@ if test "x" = "y"; then
   AC_CHECK_FUNCS(memset putenv random rename rindex sigsetmask strcasecmp)
   AC_CHECK_FUNCS(setenv strchr strdup strncasecmp strrchr strstr strtod strtol)
   AC_CHECK_FUNCS(strtoul tmpnam vasprintf vfprintf vprintf vsprintf waitpid)
-  AC_DEFINE(HAVE_SYS_ERRLIST)
-  AC_DEFINE(HAVE_SYS_NERR)
-  AC_DEFINE(HAVE_SYS_SIGLIST)
   AC_CHECK_FUNCS(getrusage on_exit psignal strerror strsignal sysconf times)
   AC_CHECK_FUNCS(sbrk gettimeofday)
+  AC_DEFINE(HAVE_SYS_ERRLIST, 1, [Define if you have the sys_errlist variable.])
+  AC_DEFINE(HAVE_SYS_NERR,    1, [Define if you have the sys_nerr variable.])
+  AC_DEFINE(HAVE_SYS_SIGLIST, 1, [Define if you have the sys_siglist variable.])
 fi
 
 # For each of these functions, if the host does not provide the
@@ -215,7 +175,7 @@ if test -n "${with_target_subdir}"; then
     # dont have to check them here.
 
     # Of the functions in $checkfuncs, newlib only has strerror.
-    AC_DEFINE(HAVE_STRERROR)
+    AC_DEFINE_NOAUTOHEADER(HAVE_STRERROR)
 
     setobjs=yes
 
@@ -256,7 +216,7 @@ if test -z "${setobjs}"; then
     # don't have to check them here.
 
     # Of the functions in $checkfuncs, VxWorks only has strerror.
-    AC_DEFINE(HAVE_STRERROR)
+    AC_DEFINE_NOAUTOHEADER(HAVE_STRERROR)
 
     setobjs=yes
     ;;
@@ -294,9 +254,8 @@ if test -z "${setobjs}"; then
   *-*-mingw32*)
     # Under mingw32, sys_nerr and sys_errlist exist, but they are
     # macros, so the test below won't find them.
-    vars="`echo $vars | sed -e 's/sys_nerr//' -e 's/sys_errlist//'`"
-    AC_DEFINE(HAVE_SYS_NERR)
-    AC_DEFINE(HAVE_SYS_ERRLIST)
+    libiberty_cv_var_sys_nerr=yes
+    libiberty_cv_var_sys_errlist=yes
     ;;
 
   *-*-uwin*)
@@ -307,8 +266,8 @@ if test -z "${setobjs}"; then
     # Under uwin 2.0+, sys_nerr and sys_errlist exist, but they are
     # macros (actually, these are imported from a DLL, but the end effect 
     # is the same), so the test below won't find them.
-    AC_DEFINE(HAVE_SYS_NERR)
-    AC_DEFINE(HAVE_SYS_ERRLIST)
+    libiberty_cv_var_sys_nerr=yes
+    libiberty_cv_var_sys_errlist=yes
     ;;
 
   esac
