@@ -1,5 +1,6 @@
 2004-03-05  Hans-Peter Nilsson  <hp@axis.com>
 
+	PR other/14354
 	* config/fp-bit.c (_fpdiv_parts): Do not round when pack_d would
 	round the same.  When rounding, clear bits that would cause a
 	second rounding in pack_d.
