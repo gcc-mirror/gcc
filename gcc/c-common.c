@@ -516,7 +516,7 @@ decl_attributes (node, attributes, prefix_attributes)
 	    if (exact_log2 (align) == -1)
 	      error ("requested alignment is not a power of 2");
 	    else if (is_type)
-	      TYPE_ALIGN (TREE_TYPE (decl)) = align;
+	      TYPE_ALIGN (type) = align;
 	    else if (TREE_CODE (decl) != VAR_DECL
 		     && TREE_CODE (decl) != FIELD_DECL)
 	      error_with_decl (decl,
