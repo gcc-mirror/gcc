@@ -300,7 +300,7 @@ static void do_clobber_return_reg PARAMS ((rtx, void *));
 static void do_use_return_reg PARAMS ((rtx, void *));
 static void instantiate_virtual_regs_lossage PARAMS ((rtx));
 static tree split_complex_args (tree);
-static void set_insn_locators (rtx, int);
+static void set_insn_locators (rtx, int) ATTRIBUTE_UNUSED;
 
 /* Pointer to chain of `struct function' for containing functions.  */
 static GTY(()) struct function *outer_function_chain;
