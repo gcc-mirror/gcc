@@ -1380,7 +1380,7 @@ namespace __gnu_cxx
     // <Q>[K|V|r]+	==> [ const| volatile| restrict]+Q	"KVr..."
     // <Q>U<S>		==>  SQ				"U<S>..."
     // <Q>M<C>		==> C::*Q			"M<C>..." (<C> recurs.)
-    // A<I>		==> [I]				"A<I>..." (<I> recurs.)
+    // A<I>		==>  [I]			"A<I>..." (<I> recurs.)
     // <Q>A<I>		==>  (Q) [I]			"A<I>..." (<I> recurs.)
     //   Note that when <Q> ends on an A<I2> then the brackets are omitted:
     //   A<I2>A<I>	  ==> [I2][I]
@@ -1454,14 +1454,15 @@ namespace __gnu_cxx
 	      case 'A':
 	      {
 		string_type index = (*iter).get_optional_type();
-		if (++iter != M_qualifier_starts.rend()
-		    && (*iter).first_qualifier() != 'A')
+		if (++iter == M_qualifier_starts.rend())
+		  postfix = " [" + index + "]" + postfix;
+		else if ((*iter).first_qualifier() == 'A')
+		  postfix = "[" + index + "]" + postfix;
+		else
 		{
 		  prefix += " (";
 		  postfix = ") [" + index + "]" + postfix;
 		}
-		else
-		  postfix = "[" + index + "]" + postfix;
 		break;
 	      }
 	      case 'M':

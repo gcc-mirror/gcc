@@ -28,7 +28,7 @@ int main()
   using namespace __gnu_test;
 
  // cplus-dem FAIL
-  verify_demangle("_Z3fooA30_A_i", "foo(int[30][])");
+  verify_demangle("_Z3fooA30_A_i", "foo(int [30][])");
 
 
   return 0;

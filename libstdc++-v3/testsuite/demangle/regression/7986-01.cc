@@ -27,7 +27,7 @@ int main()
 {
   using namespace __gnu_test;
   // cplus-dem FAIL
-  verify_demangle("_Z1fA37_iPS_", "f(int[37], int (*) [37])");
+  verify_demangle("_Z1fA37_iPS_", "f(int [37], int (*) [37])");
 
   return 0;
 }
