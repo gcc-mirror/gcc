@@ -1,5 +1,12 @@
 2004-01-30  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
+	DR206
+	PR c++/13813
+	* decl.c (grokdeclarator): Check immediatly type completeness for
+	non-dependent types.
+
+2004-01-30  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
 	PR c++/13683
 	* call.c (convert_arg_to_ellipsis): Don't emit a warning if within
 	a sizeof expression.block
