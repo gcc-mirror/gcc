@@ -1,3 +1,7 @@
+Wed Mar 18 17:21:41 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* i960.md (tablejump): Handle flag_pic.
+
 Wed Mar 18 17:11:18 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
 	* m68k.md (movsf+1): Optimize moving a CONST_DOUBLE zero.
