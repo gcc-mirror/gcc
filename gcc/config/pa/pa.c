@@ -299,8 +299,9 @@ cint_ok_for_move (intval)
      HOST_WIDE_INT intval;
 {
   /* OK if ldo, ldil, or zdepi, can be used.  */
-  return (VAL_14_BITS_P (intval) || (intval & 0x7ff) == 0
-	  || zdepi_cint_p (intval));
+  return (CONST_OK_FOR_LETTER_P (intval, 'J')
+	  || CONST_OK_FOR_LETTER_P (intval, 'N')
+	  || CONST_OK_FOR_LETTER_P (intval, 'K'));
 }
 
 /* Accept anything that can be moved in one instruction into a general
