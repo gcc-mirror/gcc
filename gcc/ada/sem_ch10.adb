@@ -948,14 +948,20 @@ package body Sem_Ch10 is
          --  Errout to ignore all errors. Note that Fatal_Error will still
          --  be set, so we will be able to check for this case below.
 
-         Ignore_Errors_Enable := Ignore_Errors_Enable + 1;
+         if not ASIS_Mode then
+            Ignore_Errors_Enable := Ignore_Errors_Enable + 1;
+         end if;
+
          Unum :=
            Load_Unit
              (Load_Name  => Subunit_Name,
               Required   => False,
               Subunit    => True,
               Error_Node => N);
-         Ignore_Errors_Enable := Ignore_Errors_Enable - 1;
+
+         if not ASIS_Mode then
+            Ignore_Errors_Enable := Ignore_Errors_Enable - 1;
+         end if;
 
          --  All done if we successfully loaded the subunit
 

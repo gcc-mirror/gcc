@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1996-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1996-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -99,23 +99,19 @@ package Exp_Dbug is
       --  subprograms, since overloading can legitimately result in a
       --  case of two entities with exactly the same fully qualified names.
       --  To distinguish between entries in a set of overloaded subprograms,
-      --  the encoded names are serialized by adding one of the suffixes:
+      --  the encoded names are serialized by adding the suffix:
 
-      --    $n    (dollar sign)
       --    __nn  (two underscores)
 
       --  where nn is a serial number (2 for the second overloaded function,
-      --  2 for the third, etc.). We use $ if this symbol is allowed, and
-      --  double underscore if it is not. In the remaining examples in this
-      --  section, we use a $ sign, but the $ is replaced by __ throughout
-      --  these examples if $ sign is not available. A suffix of $1 is
-      --  always omitted (i.e. no suffix implies the first instance).
+      --  2 for the third, etc.). A suffix of __1 is always omitted (i.e. no
+      --  suffix implies the first instance).
 
       --  These names are prefixed by the normal full qualification. So
       --  for example, the third instance of the subprogram qrs in package
       --  yz would have the name:
 
-      --    yz__qrs$3
+      --    yz__qrs__3
 
       --  A more subtle case arises with entities declared within overloaded
       --  subprograms. If we have two overloaded subprograms, and both declare
@@ -128,7 +124,7 @@ package Exp_Dbug is
       --  we are talking about. For this purpose, we use a more complex suffix
       --  which has the form:
 
-      --    $nn_nn_nn ...
+      --    __nn_nn_nn ...
 
       --  where the nn values are the homonym numbers as needed for any of
       --  the qualifying entities, separated by a single underscore. If all
@@ -141,13 +137,13 @@ package Exp_Dbug is
       --        procedure Tuv is ... end;    -- Name is yz__qrs__tuv
       --      begin ... end Qrs;
 
-      --      procedure Qrs (X: Int) is      -- Name is yz__qrs$2
-      --        procedure Tuv is ... end;    -- Name is yz__qrs__tuv$2_1
-      --        procedure Tuv (X: Int) is    -- Name is yz__qrs__tuv$2_2
+      --      procedure Qrs (X: Int) is      -- Name is yz__qrs__2
+      --        procedure Tuv is ... end;    -- Name is yz__qrs__tuv__2_1
+      --        procedure Tuv (X: Int) is    -- Name is yz__qrs__tuv__2_2
       --        begin ... end Tuv;
 
-      --        procedure Tuv (X: Float) is  -- Name is yz__qrs__tuv$2_3
-      --          type m is new float;       -- Name is yz__qrs__tuv__m$2_3
+      --        procedure Tuv (X: Float) is  -- Name is yz__qrs__tuv__2_3
+      --          type m is new float;       -- Name is yz__qrs__tuv__m__2_3
       --        begin ... end Tuv;
       --      begin ... end Qrs;
       --    end Yz;
