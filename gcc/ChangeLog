@@ -1,3 +1,7 @@
+Fri Sep 25 19:30:19 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* sh.c (gen_shl_sext): Fix case 5.
+
 Fri Sep 25 17:35:23 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* reload1.c (reload_combine): Re-add line that got accidentally lost.
