@@ -1,7 +1,5 @@
 /*
  * dpx2.h - Bull DPX/2 200 and 300 systems (m68k, SysVr3)
- *
- * $Id: dpx2.h,v 1.3 1992/05/21 08:04:22 rms Exp $
  */
 
 #include "m68k.h"
