@@ -1,5 +1,10 @@
 2003-07-26  Ranjit Mathew  <rmathew@hotmail.com>
 
+	* configure.host: Use -fcheck-references and 
+	-fuse-divide-subroutine for MinGW until we fix
+	win32_exception_handler( ) in win32.cc w.r.t. Win32 
+	Structured Exception Handling (SEH).
+
 	* win32.cc (_Jv_platform_initProperties): Use generic names
 	like "x86" for the "os.arch" property to be consistent with
 	what Sun's JDK produces. Use the wProcessorArchitecture
