@@ -1,3 +1,10 @@
+1999-06-08  Nathan Sidwell  <nathan@acm.org>
+
+	* except.c (complete_ptr_ref_or_void_ptr_p): New function, broken out
+	of ...
+	(build_throw): ... here. Call it.
+	(process_start_catch_block): Call it.
+
 1999-06-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* search.c (convert_pointer_to_single_level): Reimplement without

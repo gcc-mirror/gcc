@@ -62,6 +62,7 @@ static void process_start_catch_block PROTO((tree, tree));
 static tree build_eh_type_type_ref PROTO((tree));
 static tree build_terminate_handler PROTO((void));
 static tree alloc_eh_object PROTO((tree));
+static int complete_ptr_ref_or_void_ptr_p PROTO((tree, tree));
 
 #if 0
 /* This is the startup, and finish stuff per exception table.  */
@@ -625,6 +626,8 @@ process_start_catch_block (declspecs, declarator)
 
       if (decl == NULL_TREE)
 	error ("invalid catch parameter");
+      else if (!complete_ptr_ref_or_void_ptr_p (TREE_TYPE (decl), NULL_TREE))
+        decl = NULL_TREE;
     }
 
   if (decl)
@@ -1155,26 +1158,8 @@ build_throw (e)
   
   if (e != NULL_TREE)
     {
-      tree core;
-      int is_ptr;
-      
-      /* Cannot throw an incomplete type. */
-      e = require_complete_type (e);
-      if (e == error_mark_node)
-        return e;
-      
-      /* Or a pointer or ref to one, other than cv void *.  */
-      core = TREE_TYPE (e);
-      is_ptr = TREE_CODE (core) == POINTER_TYPE;
-      if (is_ptr || TREE_CODE (core) == REFERENCE_TYPE)
-        {
-          core = TREE_TYPE (core);
-      
-          if (is_ptr && same_type_p (TYPE_MAIN_VARIANT (core), void_type_node))
-            /* OK */;
-          else if (!complete_type_or_else (core, NULL_TREE))
-            return error_mark_node;
-        }
+      if (!complete_ptr_ref_or_void_ptr_p (TREE_TYPE (e), e))
+        return error_mark_node;
     }
 
   e = build1 (THROW_EXPR, void_type_node, e);
@@ -1183,3 +1168,35 @@ build_throw (e)
 
   return e;
 }
+
+/* Make sure TYPE is complete, pointer to complete, reference to
+   complete, or pointer to cv void. Issue diagnostic on failure.
+   Return the zero on failure and non-zero on success. FROM can be
+   the expr or decl from whence TYPE came, if available.  */
+
+static int
+complete_ptr_ref_or_void_ptr_p (type, from)
+     tree type;
+     tree from;
+{
+  int is_ptr;
+  
+  /* Check complete.  */
+  type = complete_type_or_else (type, from);
+  if (!type)
+    return 0;
+  
+  /* Or a pointer or ref to one, or cv void *.  */
+  is_ptr = TREE_CODE (type) == POINTER_TYPE;
+  if (is_ptr || TREE_CODE (type) == REFERENCE_TYPE)
+    {
+      tree core = TREE_TYPE (type);
+  
+      if (is_ptr && same_type_p (TYPE_MAIN_VARIANT (core), void_type_node))
+        /* OK */;
+      else if (!complete_type_or_else (core, from))
+        return 0;
+    }
+  return 1;
+}
+
