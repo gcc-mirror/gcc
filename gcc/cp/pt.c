@@ -4226,24 +4226,14 @@ do_decl_instantiation (declspecs, declarator, storage)
 	    fn = TREE_VALUE (fn);
 
 	  for (; fn; fn = DECL_CHAIN (fn))
-	    if (decls_match (fn, decl) && DECL_DEFER_OUTPUT (fn))
-	      {
-		result = fn;
-		break;
-	      }
-	    else if (TREE_CODE (fn) == TEMPLATE_DECL)
+	    if (TREE_CODE (fn) == TEMPLATE_DECL)
 	      templates = decl_tree_cons (NULL_TREE, fn, templates);
 	}
     }
   else if (name = DECL_NAME (decl), fn = IDENTIFIER_GLOBAL_VALUE (name), fn)
     {
       for (fn = get_first_fn (fn); fn; fn = DECL_CHAIN (fn))
-	if (decls_match (fn, decl) && DECL_DEFER_OUTPUT (fn))
-	  {
-	    result = fn;
-	    break;
-	  }
-	else if (TREE_CODE (fn) == TEMPLATE_DECL)
+	if (TREE_CODE (fn) == TEMPLATE_DECL)
 	  templates = decl_tree_cons (NULL_TREE, fn, templates);
     }
 

@@ -424,7 +424,7 @@ build_underscore_int (int i)
     OB_PUTC ('_');
   icat (i);
   if (i > 9)
-    OB_PUTS ('_');
+    OB_PUTC ('_');
 }
 
 /* Encoding for an INTEGER_CST value.  */

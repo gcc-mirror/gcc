@@ -2623,8 +2623,9 @@ duplicate_decls (newdecl, olddecl)
 	    }
 	}
 
-      if (TREE_CODE (olddecl) == FUNCTION_DECL
-	  && ! DECL_USE_TEMPLATE (olddecl))
+      if (DECL_USE_TEMPLATE (olddecl))
+	;
+      else if (TREE_CODE (olddecl) == FUNCTION_DECL)
 	{
 	  tree t1 = TYPE_ARG_TYPES (TREE_TYPE (olddecl));
 	  tree t2 = TYPE_ARG_TYPES (TREE_TYPE (newdecl));

@@ -4772,15 +4772,6 @@ mark_addressable (exp)
 	   be non-zero in the case of processing a default function.
 	   The second may be non-zero in the case of a template function.  */
 	x = DECL_MAIN_VARIANT (x);
-	if ((DECL_THIS_INLINE (x) || DECL_PENDING_INLINE_INFO (x))
-	    && (DECL_CONTEXT (x) == NULL_TREE
-		|| TREE_CODE_CLASS (TREE_CODE (DECL_CONTEXT (x))) != 't'
-		|| ! CLASSTYPE_INTERFACE_ONLY (DECL_CONTEXT (x))))
-	  {
-	    mark_inline_for_output (x);
-	    if (x == current_function_decl)
-	      DECL_EXTERNAL (x) = 0;
-	  }
 	if (DECL_TEMPLATE_INFO (x) && !DECL_TEMPLATE_SPECIALIZATION (x))
 	  mark_used (x);
 	TREE_ADDRESSABLE (x) = 1;
