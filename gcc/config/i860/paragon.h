@@ -3,7 +3,7 @@
 
    Based upon original work of Ron Guilmette (rfg@ncd.com).
    Whacked into submission by Andy Pfiffer (andyp@ssd.intel.com).
-   Additional support from:
+   Partially inspired by
 	Pete Beckman @ Indiana University (beckman@cs.indiana.edu)
 	Harry Dolan of Intel Corporation (dolan@ssd.intel.com)
 
