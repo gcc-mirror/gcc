@@ -1,3 +1,8 @@
+2005-04-05  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/sparc.c (TARGET_ASM_FILE_END): Undefine before
+	overriding.
+
 2005-04-05  Olivier Hainque  <hainque@adacore.com>
 	
 	* config/mips/iris6.h (DWARF_FRAME_RETURN_COLUMN): Redefine to
