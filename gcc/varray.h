@@ -66,7 +66,7 @@ typedef union varray_data_tag {
   unsigned long		 ul[1];
   HOST_WIDE_INT		 hint[1];
   unsigned HOST_WIDE_INT uhint[1];
-  GENERIC_PTR		 generic[1];
+  PTR			 generic[1];
   char			 *cptr[1];
   struct rtx_def	 *rtx[1];
   struct rtvec_def	 *rtvec[1];
@@ -121,7 +121,7 @@ extern varray_type varray_init	PROTO ((size_t, size_t, const char *));
   va = varray_init (num, sizeof (unsigned HOST_WIDE_INT), name)
 
 #define VARRAY_GENERIC_PTR_INIT(va, num, name) \
-  va = varray_init (num, sizeof (GENERIC_PTR), name)
+  va = varray_init (num, sizeof (PTR), name)
 
 #define VARRAY_CHAR_PTR_INIT(va, num, name) \
   va = varray_init (num, sizeof (char *), name)

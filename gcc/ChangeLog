@@ -1,3 +1,28 @@
+Wed Sep  8 11:40:47 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gansidecl.h (__attribute__, ATTRIBUTE_UNUSED_LABEL,
+	ATTRIBUTE_UNUSED, ATTRIBUTE_NORETURN, ATTRIBUTE_PRINTF,
+	ATTRIBUTE_PRINTF_1, ATTRIBUTE_PRINTF_2, ATTRIBUTE_PRINTF_3,
+	ATTRIBUTE_PRINTF_4, ATTRIBUTE_PRINTF_5, GENERIC_PTR): Delete.
+
+	* c-decl.c (field_decl_cmp): Use PTR instead of GENERIC_PTR.
+
+	* cccp.c (pcfinclude): Likewise.
+
+	* global.c (allocno_compare): Likewise.
+	
+	* haifa-sched.c (rank_for_schedule): Likewise.
+
+	* local-alloc.c (qty_sugg_compare_1, qty_compare_1): Likewise.
+
+	* reload1.c (hard_reg_use_compare, reload_reg_class_lower): Likewise.
+
+	* stupid.c (stupid_reg_compare): Likewise.
+
+	* tree.c (_obstack_allocated_p): Likewise.
+
+	* varray.h (varray_data_tag, VARRAY_GENERIC_PTR_INIT): Likewise.
+
 1999-09-08  Bruce Korb  autogen@linuxbox.com
 
 	* gcc/ch/Makefile.in: Give the hapless gperf user a hint about

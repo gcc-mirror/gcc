@@ -358,7 +358,7 @@ static tree lookup_tag_reverse		PROTO((tree));
 static tree grokdeclarator		PROTO((tree, tree, enum decl_context,
 					       int));
 static tree grokparms			PROTO((tree, int));
-static int field_decl_cmp		PROTO((const GENERIC_PTR, const GENERIC_PTR));
+static int field_decl_cmp		PROTO((const PTR, const PTR));
 static void layout_array_type		PROTO((tree));
 
 /* C-specific option variables.  */
@@ -5453,8 +5453,8 @@ grokfield (filename, line, declarator, declspecs, width)
 
 static int
 field_decl_cmp (xp, yp)
-     const GENERIC_PTR xp;
-     const GENERIC_PTR yp;
+     const PTR xp;
+     const PTR yp;
 {
   tree *x = (tree *)xp, *y = (tree *)yp;
 

@@ -45,7 +45,7 @@ Boston, MA 02111-1307, USA.  */
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 /* obstack.[ch] explicitly declined to prototype this. */
-extern int _obstack_allocated_p PROTO ((struct obstack *h, GENERIC_PTR obj));
+extern int _obstack_allocated_p PROTO ((struct obstack *h, PTR obj));
 
 /* Tree nodes of permanent duration are allocated in this obstack.
    They are the identifier nodes, and everything outside of

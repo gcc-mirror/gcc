@@ -406,12 +406,12 @@ static void spill_hard_reg		PROTO((int, FILE *, int));
 static int finish_spills		PROTO((int, FILE *));
 static void ior_hard_reg_set		PROTO((HARD_REG_SET *, HARD_REG_SET *));
 static void scan_paradoxical_subregs	PROTO((rtx));
-static int hard_reg_use_compare		PROTO((const GENERIC_PTR, const GENERIC_PTR));
+static int hard_reg_use_compare		PROTO((const PTR, const PTR));
 static void count_pseudo		PROTO((struct hard_reg_n_uses *, int));
 static void order_regs_for_reload	PROTO((struct insn_chain *));
 static void reload_as_needed		PROTO((int));
 static void forget_old_reloads_1	PROTO((rtx, rtx));
-static int reload_reg_class_lower	PROTO((const GENERIC_PTR, const GENERIC_PTR));
+static int reload_reg_class_lower	PROTO((const PTR, const PTR));
 static void mark_reload_reg_in_use	PROTO((int, int, enum reload_type,
 					       enum machine_mode));
 static void clear_reload_reg_in_use	PROTO((int, int, enum reload_type,
@@ -4047,8 +4047,8 @@ scan_paradoxical_subregs (x)
 
 static int
 hard_reg_use_compare (p1p, p2p)
-     const GENERIC_PTR p1p;
-     const GENERIC_PTR p2p;
+     const PTR p1p;
+     const PTR p2p;
 {
   struct hard_reg_n_uses *p1 = (struct hard_reg_n_uses *)p1p;
   struct hard_reg_n_uses *p2 = (struct hard_reg_n_uses *)p2p;
@@ -4549,8 +4549,8 @@ static int reload_nregs[MAX_RELOADS];
 
 static int
 reload_reg_class_lower (r1p, r2p)
-     const GENERIC_PTR r1p;
-     const GENERIC_PTR r2p;
+     const PTR r1p;
+     const PTR r2p;
 {
   register int r1 = *(short *)r1p, r2 = *(short *)r2p;
   register int t;
