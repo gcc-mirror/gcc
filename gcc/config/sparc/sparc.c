@@ -441,6 +441,20 @@ symbolic_memory_operand (op, mode)
 	  || GET_CODE (op) == HIGH || GET_CODE (op) == LABEL_REF);
 }
 
+/* Return truth value of statement that OP is a LABEL_REF of mode MODE.  */
+
+int
+label_ref_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (GET_CODE (op) != LABEL_REF)
+    return 0;
+  if (GET_MODE (op) != mode)
+    return 0;
+  return 1;
+}
+
 /* Return 1 if the operand is an argument used in generating pic references
    in either the medium/low or medium/anywhere code models of sparc64.  */
 
@@ -1502,6 +1516,8 @@ emit_move_sequence (operands, mode)
     {
       if (TARGET_ARCH64)
 	abort ();
+      /* ??? This might suffer from the same problem the DImode case did:
+	 flags in operand1 not being propagated.  */
       emit_insn (gen_move_pic_label_si (operand0, XEXP (operand1, 0)));
       return 1;
     }
@@ -1512,7 +1528,7 @@ emit_move_sequence (operands, mode)
     {
       if (! TARGET_ARCH64)
 	abort ();
-      emit_insn (gen_move_label_di (operands[0], XEXP (operands[1], 0)));
+      emit_insn (gen_move_label_di (operand0, operand1));
       return 1;
     }
   /* DImode HIGH values in sparc64 need a clobber added.  */
