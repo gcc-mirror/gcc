@@ -1,3 +1,8 @@
+2001-04-06  Phil Edwards  <pme@sources.redhat.com>
+
+	* docs/html/faq/index.html:  Update for 2.92, grab from RELEASE-NOTES.
+	* docs/html/faq/index.txt:  Regenerated.
+
 2001-04-06  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/backward/backward_warning.h: Temporarily disable until
