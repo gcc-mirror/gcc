@@ -48,7 +48,7 @@ Two zoo[ 3 ] __attribute__((init_priority(1100))) = {
 
 int Two::count;
 
-int x = 0;
+long x = 0;
 
 #define X( n ) \
   do { if ( x & (1 << (n)) ) return 1; else x |= (1 << (n)); } while (0)
