@@ -5795,13 +5795,26 @@ force_to_mode (x, mode, mask, reg, just_select)
 	 low-order bits (as in an alignment operation) and FOO is already
 	 aligned to that boundary, mask C1 to that boundary as well.
 	 This may eliminate that PLUS and, later, the AND.  */
-      if (GET_CODE (XEXP (x, 1)) == CONST_INT
-	  && exact_log2 (- mask) >= 0
-	  && (nonzero_bits (XEXP (x, 0), mode) & ~ mask) == 0
-	  && (INTVAL (XEXP (x, 1)) & ~ mask) != 0)
-	return force_to_mode (plus_constant (XEXP (x, 0),
-					     INTVAL (XEXP (x, 1)) & mask),
-			      mode, mask, reg, next_select);
+
+      {
+	int width = GET_MODE_BITSIZE (mode);
+	unsigned HOST_WIDE_INT smask = mask;
+
+	/* If MODE is narrower than HOST_WIDE_INT and mask is a negative
+	   number, sign extend it.  */
+
+	if (width < HOST_BITS_PER_WIDE_INT
+	    && (smask & ((HOST_WIDE_INT) 1 << (width - 1))) != 0)
+	  smask |= (HOST_WIDE_INT) -1 << width;
+
+	if (GET_CODE (XEXP (x, 1)) == CONST_INT
+	    && exact_log2 (- smask) >= 0
+	    && (nonzero_bits (XEXP (x, 0), mode) & ~ mask) == 0
+	    && (INTVAL (XEXP (x, 1)) & ~ mask) != 0)
+	  return force_to_mode (plus_constant (XEXP (x, 0),
+					       INTVAL (XEXP (x, 1)) & mask),
+				mode, mask, reg, next_select);
+      }
 
       /* ... fall through ... */
 
@@ -6598,6 +6611,7 @@ simplify_and_const_int (x, mode, varop, constop)
      unsigned HOST_WIDE_INT constop;
 {
   unsigned HOST_WIDE_INT nonzero;
+  int width = GET_MODE_BITSIZE (mode);
   int i;
 
   /* Simplify VAROP knowing that we will be only looking at some of the
@@ -6614,6 +6628,19 @@ simplify_and_const_int (x, mode, varop, constop)
      MODE.  */
 
   nonzero = nonzero_bits (varop, mode) & GET_MODE_MASK (mode);
+
+  /* If this would be an entire word for the target, but is not for
+     the host, then sign-extend on the host so that the number will look
+     the same way on the host that it would on the target.
+
+     For example, when building a 64 bit alpha hosted 32 bit sparc
+     targeted compiler, then we want the 32 bit unsigned value -1 to be
+     represented as a 64 bit value -1, and not as 0x00000000ffffffff.
+     The later confuses the sparc backend.  */
+
+  if (BITS_PER_WORD < HOST_BITS_PER_WIDE_INT && BITS_PER_WORD == width
+      && (nonzero & ((HOST_WIDE_INT) 1 << (width - 1))))
+    nonzero |= ((HOST_WIDE_INT) (-1) << width);
 
   /* Turn off all bits in the constant that are known to already be zero.
      Thus, if the AND isn't needed at all, we will have CONSTOP == NONZERO_BITS
@@ -7408,6 +7435,7 @@ merge_outer_ops (pop0, pconst0, op1, const1, mode, pcomp_p)
 {
   enum rtx_code op0 = *pop0;
   HOST_WIDE_INT const0 = *pconst0;
+  int width = GET_MODE_BITSIZE (mode);
 
   const0 &= GET_MODE_MASK (mode);
   const1 &= GET_MODE_MASK (mode);
@@ -7496,6 +7524,19 @@ merge_outer_ops (pop0, pconst0, op1, const1, mode, pcomp_p)
     op0 = SET;
   else if (const0 == GET_MODE_MASK (mode) && op0 == AND)
     op0 = NIL;
+
+  /* If this would be an entire word for the target, but is not for
+     the host, then sign-extend on the host so that the number will look
+     the same way on the host that it would on the target.
+
+     For example, when building a 64 bit alpha hosted 32 bit sparc
+     targeted compiler, then we want the 32 bit unsigned value -1 to be
+     represented as a 64 bit value -1, and not as 0x00000000ffffffff.
+     The later confuses the sparc backend.  */
+
+  if (BITS_PER_WORD < HOST_BITS_PER_WIDE_INT && BITS_PER_WORD == width
+      && (const0 & ((HOST_WIDE_INT) 1 << (width - 1))))
+    const0 |= ((HOST_WIDE_INT) (-1) << width);
 
   *pop0 = op0;
   *pconst0 = const0;
@@ -8179,7 +8220,24 @@ simplify_shift_const (x, code, result_mode, varop, count)
   if (outer_op != NIL)
     {
       if (GET_MODE_BITSIZE (result_mode) < HOST_BITS_PER_WIDE_INT)
-	outer_const &= GET_MODE_MASK (result_mode);
+	{
+	  int width = GET_MODE_BITSIZE (result_mode);
+
+	  outer_const &= GET_MODE_MASK (result_mode);
+
+	  /* If this would be an entire word for the target, but is not for
+	     the host, then sign-extend on the host so that the number will
+	     look the same way on the host that it would on the target.
+
+	     For example, when building a 64 bit alpha hosted 32 bit sparc
+	     targeted compiler, then we want the 32 bit unsigned value -1 to be
+	     represented as a 64 bit value -1, and not as 0x00000000ffffffff.
+	     The later confuses the sparc backend.  */
+
+	  if (BITS_PER_WORD < HOST_BITS_PER_WIDE_INT && BITS_PER_WORD == width
+	      && (outer_const & ((HOST_WIDE_INT) 1 << (width - 1))))
+	    outer_const |= ((HOST_WIDE_INT) (-1) << width);
+	}
 
       if (outer_op == AND)
 	x = simplify_and_const_int (NULL_RTX, result_mode, x, outer_const);
