@@ -3006,6 +3006,12 @@ DEFSPEC (NONE,
 
    CONTROL    -- A control string, described below.
 
+   The DEFIMPY macro specifies the above, plus:
+
+   Y2KBAD     -- TRUE if the intrinsic is known to be non-Y2K-compliant,
+                 FALSE if it is known to be Y2K-compliant.  (In terms of
+                 interface and libg2c implementation.)
+
 */
 
 /* The control string has the following format:
@@ -3232,7 +3238,7 @@ DEFIMP	(COMPLEX,	"COMPLEX",	,,,		"C=:*:Real=S*,Imag=S*")
 DEFIMP	(CPU_TIME,	"CPU_TIME",	SECOND,,,	"--:-:Seconds=R*w")
 DEFIMP	(CTIME_func,	"CTIME_func",	CTIME,,,	"A1*:-:STime=I*")
 DEFIMP	(CTIME_subr,	"CTIME_subr",	CTIME,,,	"--:-:Result=A1w,STime=I*")
-DEFIMP	(DATE,		"DATE",		DATE,,,		"--:-:Date=A1w")
+DEFIMPY	(DATE,		"DATE",		DATE,,,		"--:-:Date=A1w",	TRUE)
 DEFIMP	(DATE_AND_TIME,	"DATE_AND_TIME", DATE_AND_TIME,,, "--:-:Date=A1w,Time=?A1w,Zone=?A1w,Values=?I1(8)w")
 DEFIMP	(DBESJ0,	"DBESJ0",	L_BESJ0,,,	"R2:-:X=R2")
 DEFIMP	(DBESJ1,	"DBESJ1",	L_BESJ1,,,	"R2:-:X=R2")
@@ -3289,7 +3295,7 @@ DEFIMP	(IBCLR,		"IBCLR",	,,,		"I=:0:I=I*,Pos=I*")
 DEFIMP	(IBITS,		"IBITS",	,,,		"I=:0:I=I*,Pos=I*,Len=I*")
 DEFIMP	(IBSET,		"IBSET",	,,,		"I=:0:I=I*,Pos=I*")
 DEFIMP	(IDATE_unix,	"IDATE_unix",	IDATE,,,	"--:-:TArray=I1(3)w")
-DEFIMP	(IDATE_vxt,	"IDATE_vxt",	VXTIDATE,,,	"--:-:M=I1w,D=I1w,Y=I1w")
+DEFIMPY	(IDATE_vxt,	"IDATE_vxt",	VXTIDATE,,,	"--:-:M=I1w,D=I1w,Y=I1w",	TRUE)
 DEFIMP	(IEOR,		"IEOR",		,,,		"I=:*:I=I*,J=I*")
 DEFIMP	(IOR,		"IOR",		,,,		"I=:*:I=I*,J=I*")
 DEFIMP	(IERRNO,	"IERRNO",	IERRNO,,,	"I1:-:")

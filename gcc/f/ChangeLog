@@ -1,3 +1,22 @@
+Sat Mar  6 02:28:35 1999  Craig Burley  <craig@jcb-sc.com>
+
+	Warn about non-Y2K-compliant intrinsics:
+	* bad.def (FFEBAD_INTRINSIC_Y2KBAD): New diagnostic.
+	* intrin.def (FFEINTRIN_impDATE, FFEINTRIN_impIDATE_vxt):
+	Use new DEFIMPY macro to flag these as non-Y2K-compliant.
+	* intdoc.c (DEFIMPY): Support new Y2K macro.
+	* intrin.h (DEFIMPY): Ditto.
+	* intrin.c (DEFIMPY): Ditto.
+	(ffeintrin_fulfill_generic, ffeintrin_fulfill_specific):
+	Warn about invocation of non-Y2K-compliant intrinsic.
+	* com-rt.def (FFECOM_gfrtDATE, FFECOM_gfrtVXTIDATE):
+	Rename external procedure names, to keep previously-
+	compiled (sans-new-warnings) code from linking to
+	new library.
+	* g77.texi: Document all this stuff.
+	* news.texi: Spread the joy.
+	* version.c: Bump version.
+
 Fri Mar  5 13:22:44 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* news.texi: Relocate IDATE (VXT) fix: we put it in 1.1.2

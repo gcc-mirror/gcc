@@ -64,6 +64,7 @@ struct _ffeintrin_imp_
     ffecomGfrt gfrt_gnu;	/* library routine, gnu-callable form. */
 #endif	/* FFECOM_targetCURRENT == FFECOM_targetGCC */
     char *control;
+    char y2kbad;
   };
 
 static ffebad ffeintrin_check_ (ffeintrinImp imp, ffebldOp op,
@@ -84,11 +85,13 @@ static struct _ffeintrin_name_ ffeintrin_names_[]
 #define DEFGEN(CODE,NAME,SPEC1,SPEC2)
 #define DEFSPEC(CODE,NAME,CALLABLE,FAMILY,IMP)
 #define DEFIMP(CODE,NAME,GFRTDIRECT,GFRTF2C,GFRTGNU,CONTROL)
+#define DEFIMPY(CODE,NAME,GFRTDIRECT,GFRTF2C,GFRTGNU,CONTROL,Y2KBAD)
 #include "intrin.def"
 #undef DEFNAME
 #undef DEFGEN
 #undef DEFSPEC
 #undef DEFIMP
+#undef DEFIMPY
 };
 
 static struct _ffeintrin_gen_ ffeintrin_gens_[]
@@ -99,11 +102,13 @@ static struct _ffeintrin_gen_ ffeintrin_gens_[]
   { NAME, { SPEC1, SPEC2, }, },
 #define DEFSPEC(CODE,NAME,CALLABLE,FAMILY,IMP)
 #define DEFIMP(CODE,NAME,GFRTDIRECT,GFRTF2C,GFRTGNU,CONTROL)
+#define DEFIMPY(CODE,NAME,GFRTDIRECT,GFRTF2C,GFRTGNU,CONTROL,Y2KBAD)
 #include "intrin.def"
 #undef DEFNAME
 #undef DEFGEN
 #undef DEFSPEC
 #undef DEFIMP
+#undef DEFIMPY
 };
 
 static struct _ffeintrin_imp_ ffeintrin_imps_[]
@@ -115,10 +120,15 @@ static struct _ffeintrin_imp_ ffeintrin_imps_[]
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
 #define DEFIMP(CODE,NAME,GFRTDIRECT,GFRTF2C,GFRTGNU,CONTROL) \
       { NAME, FFECOM_gfrt ## GFRTDIRECT, FFECOM_gfrt ## GFRTF2C, \
-	FFECOM_gfrt ## GFRTGNU, CONTROL },
+	FFECOM_gfrt ## GFRTGNU, CONTROL, FALSE },
+#define DEFIMPY(CODE,NAME,GFRTDIRECT,GFRTF2C,GFRTGNU,CONTROL,Y2KBAD) \
+      { NAME, FFECOM_gfrt ## GFRTDIRECT, FFECOM_gfrt ## GFRTF2C, \
+	FFECOM_gfrt ## GFRTGNU, CONTROL, Y2KBAD },
 #elif FFECOM_targetCURRENT == FFECOM_targetFFE
 #define DEFIMP(CODE,NAME,GFRTDIRECT,GFRTF2C,GFRTGNU,CONTROL) \
-      { NAME, CONTROL },
+      { NAME, CONTROL, FALSE },
+#define DEFIMPY(CODE,NAME,GFRTDIRECT,GFRTF2C,GFRTGNU,CONTROL,Y2KBAD) \
+      { NAME, CONTROL, Y2KBAD },
 #else
 #error
 #endif
@@ -127,6 +137,7 @@ static struct _ffeintrin_imp_ ffeintrin_imps_[]
 #undef DEFGEN
 #undef DEFSPEC
 #undef DEFIMP
+#undef DEFIMPY
 };
 
 static struct _ffeintrin_spec_ ffeintrin_specs_[]
@@ -137,10 +148,12 @@ static struct _ffeintrin_spec_ ffeintrin_specs_[]
 #define DEFSPEC(CODE,NAME,CALLABLE,FAMILY,IMP) \
   { NAME, CALLABLE, FAMILY, IMP, },
 #define DEFIMP(CODE,NAME,GFRTDIRECT,GFRTF2C,GFRTGNU,CONTROL)
+#define DEFIMPY(CODE,NAME,GFRTDIRECT,GFRTF2C,GFRTGNU,CONTROL,Y2KBAD)
 #include "intrin.def"
 #undef DEFGEN
 #undef DEFSPEC
 #undef DEFIMP
+#undef DEFIMPY
 };
 
 
@@ -1374,6 +1387,14 @@ ffeintrin_fulfill_generic (ffebld *expr, ffeinfo *info, ffelexToken t)
 	  ffebad_string (ffeintrin_gens_[gen].name);
 	  ffebad_finish ();
 	}
+      if (ffeintrin_imps_[imp].y2kbad)
+	{
+	  ffebad_start (FFEBAD_INTRINSIC_Y2KBAD);
+	  ffebad_here (0, ffelex_token_where_line (t),
+		       ffelex_token_where_column (t));
+	  ffebad_string (ffeintrin_gens_[gen].name);
+	  ffebad_finish ();
+	}
     }
 }
 
@@ -1484,6 +1505,14 @@ ffeintrin_fulfill_specific (ffebld *expr, ffeinfo *info,
 	       || (sz != ffesymbol_size (ffebld_symter (symter))))))
 	{
 	  ffebad_start (FFEBAD_INTRINSIC_TYPE);
+	  ffebad_here (0, ffelex_token_where_line (t),
+		       ffelex_token_where_column (t));
+	  ffebad_string (name);
+	  ffebad_finish ();
+	}
+      if (ffeintrin_imps_[imp].y2kbad)
+	{
+	  ffebad_start (FFEBAD_INTRINSIC_Y2KBAD);
 	  ffebad_here (0, ffelex_token_where_line (t),
 		       ffelex_token_where_column (t));
 	  ffebad_string (name);

@@ -9,7 +9,7 @@
 
 static integer c__5 = 5;
 
-/* Subroutine */ int G77_date_0 (char *buf, ftnlen buf_len)
+/* Subroutine */ int G77_date_y2kbug_0 (char *buf, ftnlen buf_len)
 {
     /* System generated locals */
     address a__1[5];

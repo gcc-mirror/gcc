@@ -1,3 +1,17 @@
+1999-03-06  Craig Burley  <craig@jcb-sc.com>
+
+	Rename non-Y2K-compliant intrinsics:
+	* Makefile.in (F2CEXT): Now two versions each of
+	`date' and `vxtidt'.
+	* f2cext.c (date_, vxtidate_): Split into two versions,
+	the existing one calling a new "y2kbuggy" routine that
+	does not exist, and a new one named with "y2kbug" that
+	calls the newly renamed underlying routine.
+	* libU77/date_.c (G77_date_y2kbug_0): Rename from G77_date_0.
+	* libU77/vxtidate_.c (G77_vxtidate_y2kbug_0): Rename from
+	G77_vxtidate_0.
+	* libU77/Version.c: Bump version.
+
 1999-03-03  Craig Burley  <craig@jcb-sc.com>
 
 	* libU77/vxtidate_.c (G77_vxtidate_0): Truncate
