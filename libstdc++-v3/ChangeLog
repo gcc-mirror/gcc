@@ -1,4 +1,24 @@
 2003-04-25  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/10132
+	* include/std/std_fstream.h (basic_filebuf::is_open): Add throw()
+	exception specifications.
+	(basic_filebuf::close): Same.
+	(basic_filebuf::_M_pback_destroy): Same.
+	(basic_filebuf::_M_destroy_internal_buffer): Same.
+	(basic_filebuf): Remove __res_type typedef.	
+	* src/fstream.cc: Same.
+	* include/bits/fstream.tcc
+	(basic_filebuf::_M_convert_to_external): Simplify.
+	(basic_filebuf::seekoff): Use has_facet	before use_facet.
+	(basic_filebuf::close): Add exception specification of throw().
+	* testsuite/27_io/basic_filebuf/cons: New.
+	* testsuite/27_io/basic_filebuf/cons/wchar_t: New.	
+	* testsuite/27_io/basic_filebuf/cons/wchar_t/10132-1.cc: New.	
+	* testsuite/27_io/basic_filebuf/seekoff/10132-2.cc: New.
+	* testsuite/27_io/basic_filebuf/seekpos/10132-3.cc: New.
+
+2003-04-25  Benjamin Kosnik  <bkoz@redhat.com>
 	
 	* include/bits/locale_classes.h
 	(locale::_S_extra_categories_size): Remove.

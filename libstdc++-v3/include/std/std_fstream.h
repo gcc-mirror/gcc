@@ -81,7 +81,6 @@ namespace std
       typedef __basic_file<char>		        __file_type;
       typedef typename traits_type::state_type          __state_type;
       typedef codecvt<char_type, char, __state_type>    __codecvt_type;
-      typedef typename __codecvt_type::result 	        __res_type;
       typedef ctype<char_type>                          __ctype_type;
       //@}
 
@@ -171,7 +170,7 @@ namespace std
       // Assumptions:
       // The pback buffer has only moved forward.
       void
-      _M_pback_destroy()
+      _M_pback_destroy() throw()
       {
 	if (_M_pback_init)
 	  {
@@ -218,7 +217,7 @@ namespace std
        *  @brief  Returns true if the external file is open.
       */
       bool
-      is_open() const { return _M_file.is_open(); }
+      is_open() const throw() { return _M_file.is_open(); }
 
       /**
        *  @brief  Opens an external file.
@@ -248,7 +247,7 @@ namespace std
        *  If any operations fail, this function also fails.
       */
       __filebuf_type*
-      close();
+      close() throw();
 
     protected:
       /**
@@ -265,7 +264,7 @@ namespace std
        *  @endif
       */
       void
-      _M_destroy_internal_buffer();
+      _M_destroy_internal_buffer() throw();
 
       // [27.8.1.4] overridden virtual functions
       // [documentation is inherited]
