@@ -1,3 +1,8 @@
+2004-12-25  Richard Henderson  <rth@redhat.com>
+
+	* lib/target-supports.exp (check_effective_target_vect_no_bitwise):
+	Remove Alpha.
+
 2004-12-25  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* gcc.dg/pr17055-1.c (dg-options): Add -fno-common to options on

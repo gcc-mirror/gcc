@@ -562,8 +562,7 @@ proc check_effective_target_vect_no_bitwise { } {
     } else {
 	set et_vect_no_bitwise_saved 0
 	if { [istarget i?86-*-*]
-	     || [istarget x86_64-*-*]
-	     || [istarget alpha-*-*] } {
+	     || [istarget x86_64-*-*] } {
 	    set et_vect_no_bitwise_saved 1
 	}
     }
