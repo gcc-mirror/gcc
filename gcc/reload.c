@@ -2670,7 +2670,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
      or got the wrong kind of hard reg.  For this, we must consider
      all the operands together against the register constraints.  */
 
-  best = MAX_RECOG_OPERANDS + 300;
+  best = MAX_RECOG_OPERANDS * 2 + 600;
 
   swapped = 0;
   goal_alternative_swapped = 0;
@@ -2836,11 +2836,11 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		break;
 
 	      case '?':
-		reject += 3;
+		reject += 6;
 		break;
 
 	      case '!':
-		reject = 300;
+		reject = 600;
 		break;
 
 	      case '#':
@@ -3227,6 +3227,11 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		     && REGNO (operand) >= FIRST_PSEUDO_REGISTER)
 		  && GET_CODE (operand) != SCRATCH
 		  && ! (const_to_mem && constmemok))
+		reject += 2;
+
+	      /* Input reloads can be inherited more often than output
+		 reloads can be removed, so penalize output reloads.  */
+	      if (operand_type[i] != RELOAD_FOR_INPUT)
 		reject++;
 	    }
 
@@ -3267,7 +3272,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 					  this_alternative[i]))
 		    this_alternative[i] = (int) preferred_class[i];
 		  else
-		    reject += (1 + pref_or_nothing[i]);
+		    reject += (2 + 2 * pref_or_nothing[i]);
 		}
 	    }
 	}
@@ -3374,9 +3379,9 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 
       /* REJECT, set by the ! and ? constraint characters and when a register
 	 would be reloaded into a non-preferred class, discourages the use of
-	 this alternative for a reload goal.  REJECT is incremented by three
-	 for each ? and one for each non-preferred class.  */
-      losers = losers * 3 + reject;
+	 this alternative for a reload goal.  REJECT is incremented by six
+	 for each ? and two for each non-preferred class.  */
+      losers = losers * 6 + reject;
 
       /* If this alternative can be made to work by reloading,
 	 and it needs less reloading than the others checked so far,
@@ -5705,6 +5710,10 @@ find_equiv_reg (goal, insn, class, other, reload_reg_p, goalreg, mode)
 	   && XEXP (goal, 0) == stack_pointer_rtx
 	   && CONSTANT_P (XEXP (goal, 1)))
     goal_const = need_stable_sp = 1;
+  else if (GET_CODE (goal) == PLUS
+	   && XEXP (goal, 0) == frame_pointer_rtx
+	   && CONSTANT_P (XEXP (goal, 1)))
+    goal_const = 1;
   else
     return 0;
 
