@@ -332,6 +332,13 @@ case "$THREADS" in
     # But for now we don't check for it.  We just assume you aren't
     # using MIT pthreads.
     AC_DEFINE(HAVE_PTHREAD_MUTEXATTR_INIT)
+
+    # If we're using the Boehm GC, then we happen to know that it
+    # defines _REENTRANT, so we don't bother.  Eww.
+    if test "$GC" != boehm; then
+       AC_DEFINE(_REENTRANT, 1, [Required define if using POSIX threads])
+    fi
+    AC_DEFINE(_POSIX_PTHREAD_SEMANTICS, 1, [Required define if using POSIX threads])
     ;;
 
  none)
@@ -440,7 +447,7 @@ else
 	  AC_LANG_RESTORE
 	])
 	if test "x$libjava_cv_gethostbyname_r_needs_reentrant" = xyes; then
-	  AC_DEFINE(GETHOSTBYNAME_R_NEEDS_REENTRANT, 1, [Define if gethostbyname_r is only declared if _REENTRANT is defined])
+	  AC_DEFINE(_REENTRANT, 1, [Required define if using POSIX threads])
 	fi
      ;;
      esac
