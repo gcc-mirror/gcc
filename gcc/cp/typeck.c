@@ -4042,6 +4042,29 @@ build_unary_op (enum tree_code code, tree xarg, int noconvert)
 	  arg = OVL_CURRENT (arg);
 	  break;
 
+	case OFFSET_REF:
+	  /* Turn a reference to a non-static data member into a
+	     pointer-to-member.  */
+	  {
+	    tree type;
+	    tree t;
+
+	    if (!PTRMEM_OK_P (arg))
+	      return build_unary_op (code, arg, 0);
+	    
+	    t = TREE_OPERAND (arg, 1);
+	    if (TREE_CODE (TREE_TYPE (t)) == REFERENCE_TYPE)
+	      {
+		error ("cannot create pointer to reference member %qD", t);
+		return error_mark_node;
+	      }
+	    
+	    type = build_ptrmem_type (context_for_name_lookup (t), 
+				      TREE_TYPE (t));
+	    t = make_ptrmem_cst (type, TREE_OPERAND (arg, 1));
+	    return t;
+	  }
+
 	default:
 	  break;
 	}
@@ -4198,52 +4221,7 @@ unary_complex_lvalue (enum tree_code code, tree arg)
   if (TREE_CODE (TREE_TYPE (arg)) == FUNCTION_TYPE
       || TREE_CODE (TREE_TYPE (arg)) == METHOD_TYPE
       || TREE_CODE (arg) == OFFSET_REF)
-    {
-      tree t;
-
-      gcc_assert (TREE_CODE (arg) != SCOPE_REF);
-
-      if (TREE_CODE (arg) != OFFSET_REF)
-	return 0;
-
-      t = TREE_OPERAND (arg, 1);
-
-      /* Check all this code for right semantics.  */	
-      if (TREE_CODE (t) == FUNCTION_DECL)
-	{
-	  if (DECL_DESTRUCTOR_P (t))
-	    error ("taking address of destructor");
-	  return build_unary_op (ADDR_EXPR, t, 0);
-	}
-      if (TREE_CODE (t) == VAR_DECL)
-	return build_unary_op (ADDR_EXPR, t, 0);
-      else
-	{
-	  tree type;
-
-	  if (TREE_OPERAND (arg, 0)
-	      && ! is_dummy_object (TREE_OPERAND (arg, 0))
-	      && TREE_CODE (t) != FIELD_DECL)
-	    {
-	      error ("taking address of bound pointer-to-member expression");
-	      return error_mark_node;
-	    }
-	  if (!PTRMEM_OK_P (arg))
-	    return build_unary_op (code, arg, 0);
-	  
-	  if (TREE_CODE (TREE_TYPE (t)) == REFERENCE_TYPE)
-	    {
-	      error ("cannot create pointer to reference member %qD", t);
-	      return error_mark_node;
-	    }
-
-	  type = build_ptrmem_type (context_for_name_lookup (t), 
-				    TREE_TYPE (t));
-	  t = make_ptrmem_cst (type, TREE_OPERAND (arg, 1));
-	  return t;
-	}
-    }
-
+    return NULL_TREE;
   
   /* We permit compiler to make function calls returning
      objects of aggregate type look like lvalues.  */
