@@ -1,3 +1,9 @@
+Mon Oct  5 01:16:10 1998  H.J. Lu  (hjl@gnu.org)
+
+	* Makefile.in (s-libi77): Depend on i77.
+	(s-libf77): Depend on i77.
+	(s-libu77): Depend on u77.
+
 1998-09-30  Dave Love  <d.love@dl.ac.uk>
 
 	* Makefile.in (f2cext.c): Depend on g2c.h.
