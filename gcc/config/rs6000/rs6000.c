@@ -4035,6 +4035,7 @@ rs6000_trampoline_template (file)
 {
   char *sc = reg_names[STATIC_CHAIN_REGNUM];
   char *r0 = reg_names[0];
+  char *r2 = reg_names[2];
 
   switch (DEFAULT_ABI)
     {
@@ -4087,23 +4088,26 @@ rs6000_trampoline_template (file)
 
   /* NT function pointers point to a two word area (real address, TOC)
      which unfortunately does not include a static chain field.  So we
-     need to have a 2 word area followed by the code to load up the
-     static chain.  */
+     use the function field to point to ..LTRAMP1 and the toc field
+     to point to the whole table.  */
     case ABI_NT:
-      if (STATIC_CHAIN_REGNUM == 0 || !TARGET_NEW_MNEMONICS || TARGET_64BIT)
+      if (STATIC_CHAIN_REGNUM == 0
+	  || STATIC_CHAIN_REGNUM == 2
+	  || TARGET_64BIT
+	  || !TARGET_NEW_MNEMONICS)
 	abort ();
 
-      fprintf (file, "\t.ualong 0,0\n");		/* offset  0 */
-      fprintf (file, "\tmflr %s\n", r0);		/* offset  8 */
-      fprintf (file, "\tbl .LTRAMP1\n");		/* offset 12 */
-      fprintf (file, "\t.ualong 0,0\n");		/* offset 16 */
-      fprintf (file, ".LTRAMP1:\n");
-      fprintf (file, "\tmflr %s\n", sc);		/* offset 28 */
-      fprintf (file, "\tmtlr %s\n", r0);		/* offset 32 */
-      fprintf (file, "\tlwz %s,0(%s)\n", r0, sc);	/* offset 36 */
-      fprintf (file, "\tlwz %s,4(%s)\n", sc, sc);	/* offset 40 */
-      fprintf (file, "\tmtctr %s\n", r0);		/* offset 44 */
-      fprintf (file, "\tbctr\n");			/* offset 48 */
+      fprintf (file, "\t.ualong 0\n");			/* offset  0 */
+      fprintf (file, "\t.ualong 0\n");			/* offset  4 */
+      fprintf (file, "\t.ualong 0\n");			/* offset  8 */
+      fprintf (file, "\t.ualong 0\n");			/* offset 12 */
+      fprintf (file, "\t.ualong 0\n");			/* offset 16 */
+      fprintf (file, "..LTRAMP1:\n");			/* offset 20 */
+      fprintf (file, "\tlwz %s,8(%s)\n", r0, r2);	/* offset 24 */
+      fprintf (file, "\tlwz %s,12(%s)\n", sc, r2);	/* offset 28 */
+      fprintf (file, "\tmtctr %s\n", r0);		/* offset 32 */
+      fprintf (file, "\tlwz %s,16(%s)\n", r2, r2);	/* offset 36 */
+      fprintf (file, "\tbctr\n");			/* offset 40 */
       break;
     }
 
@@ -4132,7 +4136,7 @@ rs6000_trampoline_size ()
       break;
 
     case ABI_NT:
-      ret = 52;
+      ret = 20;
       break;
     }
 
@@ -4157,22 +4161,15 @@ rs6000_initialize_trampoline (addr, fnaddr, cxt)
     default:
       abort ();
 
+#define MEM_PLUS(addr,offset) gen_rtx (MEM, pmode, memory_address (pmode, plus_constant (addr, offset)))
+
     /* Under AIX, just build the 3 word function descriptor */
     case ABI_AIX:
-      emit_move_insn (gen_rtx (MEM, pmode,
-			       memory_address (pmode, (addr))),
-		      gen_rtx (MEM, pmode,
-			       memory_address (pmode, (fnaddr))));
-      emit_move_insn (gen_rtx (MEM, pmode,
-			       memory_address (pmode,
-					       plus_constant ((addr), 4))),
-		      gen_rtx (MEM, pmode,
-			       memory_address (pmode,
-					       plus_constant ((fnaddr), 4))));
-      emit_move_insn (gen_rtx (MEM, pmode,
-			       memory_address (pmode,
-					       plus_constant ((addr), 8))),
-		      force_reg (pmode, (cxt)));
+      emit_move_insn (gen_rtx (MEM, pmode, memory_address (pmode, addr)),
+		      gen_rtx (MEM, pmode, memory_address (pmode, fnaddr)));
+
+      emit_move_insn (MEM_PLUS (addr, 4), MEM_PLUS (fnaddr, 4));
+      emit_move_insn (MEM_PLUS (addr, 8), force_reg (pmode, cxt));
       break;
 
     /* Under V.4/eabi, update the two words after the bl to have the real
@@ -4182,31 +4179,27 @@ rs6000_initialize_trampoline (addr, fnaddr, cxt)
       reg = gen_reg_rtx (pmode);
 
       emit_move_insn (reg, fnaddr);
-      emit_move_insn (gen_rtx (MEM, pmode, plus_constant (addr, 8)), reg);
-      emit_move_insn (gen_rtx (MEM, pmode,
-			       plus_constant (addr, (TARGET_64BIT ? 16 : 12))),
-		      cxt);
+      emit_move_insn (MEM_PLUS (addr, 8), reg);
+      emit_move_insn (MEM_PLUS (addr, (TARGET_64BIT ? 16 : 12)), cxt);
 
       rs6000_sync_trampoline (addr);
       break;
 
-    /* Under NT, update the first 2 words to look like a normal descriptor, and
-       then fill in the fields with the function address and static chain after
-       the bl instruction.  */
+    /* Under NT, update the first word to point to the ..LTRAMP1 header,
+       second word will point to the whole trampoline, third-fifth words
+       will then have the real address, static chain, and toc value.  */
     case ABI_NT:
-      reg  = gen_reg_rtx (pmode);
+      addr = force_reg (pmode, addr);
+      reg = gen_reg_rtx (pmode);
       reg2 = gen_reg_rtx (pmode);
-      reg3 = gen_reg_rtx (pmode);
-
-      emit_move_insn (gen_rtx (MEM, pmode, plus_constant (addr, 4)),
-		      gen_rtx (REG, pmode, 2));
-      emit_move_insn (reg, fnaddr);
-      emit_move_insn (reg2, gen_rtx (MEM, pmode, reg));
-      emit_move_insn (reg3, plus_constant (addr, 8));
-      emit_move_insn (gen_rtx (MEM, pmode, plus_constant (addr, 16)), reg);
-      emit_move_insn (gen_rtx (MEM, pmode, addr), reg3);
-      emit_move_insn (gen_rtx (MEM, pmode, plus_constant (addr, 20)), cxt);
-      rs6000_sync_trampoline (addr);
+      emit_move_insn (reg, gen_rtx (SYMBOL_REF, pmode, "..LTRAMP1"));
+      emit_move_insn (reg2, fnaddr);
+      reg3 = force_reg (pmode, cxt);
+      emit_move_insn (MEM_PLUS (addr, 4), addr);
+      emit_move_insn (gen_rtx (MEM, pmode, addr), reg);
+      emit_move_insn (MEM_PLUS (addr, 8), reg2);
+      emit_move_insn (MEM_PLUS (addr, 12), reg3);
+      emit_move_insn (MEM_PLUS (addr, 16), gen_rtx (REG, pmode, 2));
       break;
     }
 
