@@ -1,3 +1,7 @@
+2003-10-12  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* gcc.dg/weak/weak-3.c: Fix for new warning.
+
 2003-10-12  Kelley Cook  <kcook@gcc.gnu.org>
 
 	PR optimization/8750
