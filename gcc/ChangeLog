@@ -1,3 +1,7 @@
+2003-02-20  Roger Sayle  <roger@eyesopen.com>
+
+	* explow.c (force_reg): Avoid useless REG_EQUAL notes.
+
 2003-02-20  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	PR fortran/9038
@@ -7,11 +11,14 @@
 
 Thu Feb 20 21:41:19 CET 2003  Jan Hubicka  <jh@suse.cz>
 
-	* toplev.c (flag_sched2_use_superblocks, flag_sched2_use_traces):  New global variables.
-	(lang_independent_options):  Add -fsched2-use-superblocks -fsced2-use-traces.
+	* toplev.c (flag_sched2_use_superblocks, flag_sched2_use_traces): New
+	global variables.
+	(lang_independent_options):  Add -fsched2-use-superblocks
+	-fsced2-use-traces.
 	(rest_of_compilation): Deal with it.
 	* invoke.texi (-fsched2-use-traces, fsched2-use-superblocks):  Declare.
-	* flags.h (flag_sched2_use_superblocks, flag_sched2_use_traces): Declare.
+	* flags.h (flag_sched2_use_superblocks, flag_sched2_use_traces):
+	Declare.
 	* rtl.h (reg_to_stack):  Update prototype.
 	* reg-stack.c (reg_to_stack): Return when something has changed;
 	update liveness when executing after superblock scheduling.
