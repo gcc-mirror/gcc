@@ -2267,7 +2267,7 @@ use_thunk (thunk_fndecl, emit_p)
     t = fold (build (PLUS_EXPR, TREE_TYPE (a), a, t));
     /* If there's a vcall offset, look up that value in the vtable and
        adjust the `this' pointer again.  */
-    if (!integer_zerop (vcall_offset))
+    if (vcall_offset && !integer_zerop (vcall_offset))
       {
 	tree orig_this;
 
