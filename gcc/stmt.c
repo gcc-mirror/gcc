@@ -529,9 +529,9 @@ expand_computed_goto (tree exp)
     {
       cfun->computed_goto_common_reg = copy_to_mode_reg (Pmode, x);
       cfun->computed_goto_common_label = gen_label_rtx ();
-      emit_label (cfun->computed_goto_common_label);
 
       do_pending_stack_adjust ();
+      emit_label (cfun->computed_goto_common_label);
       emit_indirect_jump (cfun->computed_goto_common_reg);
 
       current_function_has_computed_jump = 1;
