@@ -9,7 +9,7 @@
 @c in the standalone derivations of this file (e.g. NEWS).
 @set copyrights-news 1995-1999
 
-@set last-update-news 1999-04-02
+@set last-update-news 1999-04-03
 
 @include root.texi
 
@@ -203,6 +203,11 @@ using the @samp{EXTERNAL} mechanism
 when the corresponding @emph{subsequent} function program unit
 disagrees with the reference concerning the type of the function.
 @end ifclear
+
+@item
+@code{-fno-emulate-complex} is now the default option.
+This should result in improved performance
+of code that uses the @code{COMPLEX} data type.
 
 @cindex alignment
 @cindex double-precision performance

@@ -9,7 +9,7 @@
 @c in the standalone derivations of this file (e.g. BUGS).
 @set copyrights-bugs 1995-1999
 
-@set last-update-bugs 1999-03-15
+@set last-update-bugs 1999-04-03
 
 @include root.texi
 
@@ -246,23 +246,6 @@ such as the Digital Semiconductor (``DEC'') Alpha.
 This problem is largely resolved as of version 0.5.23.
 Version 0.6 should solve most or all remaining problems
 (such as cross-compiling involving 64-bit machines).
-
-@cindex COMPLEX support
-@cindex support, COMPLEX
-@item
-Maintainers of @code{gcc} report that the back end definitely has ``broken''
-support for @code{COMPLEX} types.
-Based on their input, it seems many of
-the problems affect only the more-general facilities for gcc's
-@code{__complex__} type, such as @code{__complex__ int}
-(where the real and imaginary parts are integers) that GNU
-Fortran does not use.
-
-Version 0.5.20 of @code{g77} works around this
-problem by not using the back end's support for @code{COMPLEX}.
-The new option @samp{-fno-emulate-complex} avoids the work-around,
-reverting to using the same ``broken'' mechanism as that used
-by versions of @code{g77} prior to 0.5.20.
 
 @cindex padding
 @cindex structures
