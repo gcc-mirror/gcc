@@ -216,7 +216,8 @@ find_base_value (src)
    register N has been set in this function.  */
 static char *reg_seen;
 
-/* */
+/* Addresses which are known not to alias anything else are identified
+   by a unique integer.  */
 static int unique_id;
 
 static void
