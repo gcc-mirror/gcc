@@ -1819,9 +1819,14 @@ compile_file (name)
   ASM_IDENTIFY_LANGUAGE (asm_out_file);
 #endif
 
+  /* dbx on Suns needs to separate gcc_compiled. from first function.
+     We do not test write_symbols because -g should not alter
+     the actual code generated.  */
+#ifdef DBX_DEBUGGING_INFO
   /* Don't let the first function fall at the same address
      as gcc_compiled., if profiling.  */
   if (profile_flag || profile_block_flag)
+#endif
     assemble_zeros (UNITS_PER_WORD);
 
   /* If dbx symbol table desired, initialize writing it
