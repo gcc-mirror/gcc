@@ -1,3 +1,8 @@
+2000-10-28  Richard Henderson  <rth@redhat.com>
+
+	* regrename.c (scan_rtx_address): Frob action, not class,
+	when trying to disable optimization.
+
 2000-10-28  Mark Mitchell  <mark@codesourcery.com>
 
 	* c-semantics.c (make_rtl_for_local_static): Don't clobber
