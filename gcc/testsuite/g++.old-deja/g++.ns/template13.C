@@ -2,8 +2,9 @@
 // Templates defined outside must be declared inside
 namespace bar
 {
+  // trick it to provide some prior declaration
   template<class T>
-  void foo(); // trick it to provide some prior declaration
+  void foo(); // { dg-error "definition" }
   template<class T>class X; // { dg-error "" } previous declaration
 }
 
@@ -15,7 +16,7 @@ bar::foo(T const &a)
 }
 
 template<> void bar::foo<int>()
-{                        // { dg-error "" "" { xfail *-*-* } } not declared in bar - 
+{                        // { dg-error "" }
 }
 
 template<class T,class U>

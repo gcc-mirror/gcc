@@ -708,6 +708,36 @@ end_explicit_instantiation (void)
   processing_explicit_instantiation = false;
 }
 
+/* A explicit specialization or partial specialization TMPL is being
+   declared.  Check that the namespace in which the specialization is
+   occurring is permissible.  Returns false iff it is invalid to
+   specialize TMPL in the current namespace.  */
+   
+static bool
+check_specialization_namespace (tree tmpl)
+{
+  tree tpl_ns = decl_namespace_context (tmpl);
+
+  /* [tmpl.expl.spec]
+     
+     An explicit specialization shall be declared in the namespace of
+     which the template is a member, or, for member templates, in the
+     namespace of which the enclosing class or enclosing class
+     template is a member.  An explicit specialization of a member
+     function, member class or static data member of a class template
+     shall be declared in the namespace of which the class template is
+     a member.  */
+  if (is_associated_namespace (current_namespace, tpl_ns))
+    /* Same or super-using namespace.  */
+    return true;
+  else
+    {
+      pedwarn ("specialization of `%D' in different namespace", tmpl);
+      cp_pedwarn_at ("  from definition of `%#D'", tmpl);
+      return false;
+    }
+}
+
 /* The TYPE is being declared.  If it is a template type, that means it
    is a partial specialization.  Do appropriate error-checking.  */
 
@@ -733,15 +763,7 @@ maybe_process_partial_specialization (tree type)
       if (CLASSTYPE_IMPLICIT_INSTANTIATION (type)
 	  && !COMPLETE_TYPE_P (type))
 	{
-	  tree tpl_ns = decl_namespace_context (CLASSTYPE_TI_TEMPLATE (type));
-	  if (is_associated_namespace (current_namespace, tpl_ns))
-	    /* Same or super-using namespace.  */;
-	  else
-	    {
-	      pedwarn ("specializing `%#T' in different namespace", type);
-	      cp_pedwarn_at ("  from definition of `%#D'",
-			     CLASSTYPE_TI_TEMPLATE (type));
-	    }
+	  check_specialization_namespace (CLASSTYPE_TI_TEMPLATE (type));
 	  SET_CLASSTYPE_TEMPLATE_SPECIALIZATION (type);
 	  if (processing_template_decl)
 	    push_template_decl (TYPE_MAIN_DECL (type));
@@ -1057,64 +1079,68 @@ register_specialization (tree spec, tree tmpl, tree args)
 	 more convenient to simply allow this than to try to prevent it.  */
       if (fn == spec)
 	return spec;
-      else if (comp_template_args (TREE_PURPOSE (s), args))
+      else if (comp_template_args (TREE_PURPOSE (s), args)
+	       && DECL_TEMPLATE_SPECIALIZATION (spec))
 	{
-	  if (DECL_TEMPLATE_SPECIALIZATION (spec))
+	  if (DECL_TEMPLATE_INSTANTIATION (fn))
 	    {
-	      if (DECL_TEMPLATE_INSTANTIATION (fn))
+	      if (TREE_USED (fn) 
+		  || DECL_EXPLICIT_INSTANTIATION (fn))
 		{
-		  if (TREE_USED (fn) 
-		      || DECL_EXPLICIT_INSTANTIATION (fn))
-		    {
-		      error ("specialization of %D after instantiation",
-				fn);
-		      return spec;
-		    }
-		  else
-		    {
-		      /* This situation should occur only if the first
-			 specialization is an implicit instantiation,
-			 the second is an explicit specialization, and
-			 the implicit instantiation has not yet been
-			 used.  That situation can occur if we have
-			 implicitly instantiated a member function and
-			 then specialized it later.
-
-			 We can also wind up here if a friend
-			 declaration that looked like an instantiation
-			 turns out to be a specialization:
-
-			   template <class T> void foo(T);
-			   class S { friend void foo<>(int) };
-			   template <> void foo(int);  
-
-			 We transform the existing DECL in place so that
-			 any pointers to it become pointers to the
-			 updated declaration.  
-
-			 If there was a definition for the template, but
-			 not for the specialization, we want this to
-			 look as if there were no definition, and vice
-			 versa.  */
-		      DECL_INITIAL (fn) = NULL_TREE;
-		      duplicate_decls (spec, fn);
-
-		      return fn;
-		    }
+		  error ("specialization of %D after instantiation",
+			 fn);
+		  return spec;
 		}
-	      else if (DECL_TEMPLATE_SPECIALIZATION (fn))
+	      else
 		{
-		  if (!duplicate_decls (spec, fn) && DECL_INITIAL (spec))
-		    /* Dup decl failed, but this is a new
-		       definition. Set the line number so any errors
-		       match this new definition.  */
-		    DECL_SOURCE_LOCATION (fn) = DECL_SOURCE_LOCATION (spec);
+		  /* This situation should occur only if the first
+		     specialization is an implicit instantiation, the
+		     second is an explicit specialization, and the
+		     implicit instantiation has not yet been used.
+		     That situation can occur if we have implicitly
+		     instantiated a member function and then
+		     specialized it later.
+
+		     We can also wind up here if a friend declaration
+		     that looked like an instantiation turns out to be
+		     a specialization:
+
+		       template <class T> void foo(T);
+		       class S { friend void foo<>(int) };
+		       template <> void foo(int);  
+
+		     We transform the existing DECL in place so that
+		     any pointers to it become pointers to the updated
+		     declaration.
+
+		     If there was a definition for the template, but
+		     not for the specialization, we want this to look
+		     as if there were no definition, and vice
+		     versa.  */
+		  DECL_INITIAL (fn) = NULL_TREE;
+		  duplicate_decls (spec, fn);
 		  
 		  return fn;
 		}
 	    }
+	  else if (DECL_TEMPLATE_SPECIALIZATION (fn))
+	    {
+	      if (!duplicate_decls (spec, fn) && DECL_INITIAL (spec))
+		/* Dup decl failed, but this is a new definition. Set
+		   the line number so any errors match this new
+		   definition.  */
+		DECL_SOURCE_LOCATION (fn) = DECL_SOURCE_LOCATION (spec);
+	      
+	      return fn;
+	    }
 	}
-      }
+    }
+
+  /* A specialization must be declared in the same namespace as the
+     template it is specializing.  */
+  if (DECL_TEMPLATE_SPECIALIZATION (spec)
+      && !check_specialization_namespace (tmpl))
+    DECL_CONTEXT (spec) = decl_namespace_context (tmpl);
 
   DECL_TEMPLATE_SPECIALIZATIONS (tmpl)
      = tree_cons (args, spec, DECL_TEMPLATE_SPECIALIZATIONS (tmpl));
