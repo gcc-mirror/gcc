@@ -1,3 +1,8 @@
+2005-03-05  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* expr.c (build_expr_wfl, expr_add_location): Use TYPE_P
+	instead of IS_NON_TYPE_CODE_CLASS.
+
 2005-03-04  Andrew Haley  <aph@redhat.com>
 
         PR java/18362

@@ -134,10 +134,6 @@ extern const enum tree_code_class tree_code_type[];
 #define EXPRESSION_CLASS_P(CODE)\
 	(TREE_CODE_CLASS (TREE_CODE (CODE)) == tcc_expression)
 
-/* Returns nonzero iff CLASS is not the tree code of a type.  */
-
-#define IS_NON_TYPE_CODE_CLASS(CLASS) ((CLASS) != tcc_type)
-
 /* Returns nonzero iff CODE represents a type or declaration.  */
 
 #define IS_TYPE_OR_DECL_P(CODE)\
@@ -557,8 +553,7 @@ struct tree_common GTY(())
 /* These checks have to be special cased.  */
 #define NON_TYPE_CHECK(T) __extension__					\
 ({  const tree __t = (T);						\
-    char const __c = TREE_CODE_CLASS (TREE_CODE (__t));			\
-    if (!IS_NON_TYPE_CODE_CLASS (__c))					\
+    if (TYPE_P (__t))							\
       tree_class_check_failed (__t, tcc_type, __FILE__, __LINE__,	\
 			       __FUNCTION__);				\
     __t; })

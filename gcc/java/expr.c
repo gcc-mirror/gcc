@@ -3591,7 +3591,7 @@ build_expr_wfl (tree node,
   EXPR_WFL_NODE (wfl) = node;
   if (node)
     {
-      if (IS_NON_TYPE_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (node))))
+      if (!TYPE_P (node))
 	TREE_SIDE_EFFECTS (wfl) = TREE_SIDE_EFFECTS (node);
       TREE_TYPE (wfl) = TREE_TYPE (node);
     }
@@ -3627,7 +3627,7 @@ expr_add_location (tree node, source_location location, bool statement)
     EXPR_WFL_EMIT_LINE_NOTE (wfl) = 1;
   if (node)
     {
-      if (IS_NON_TYPE_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (node))))
+      if (!TYPE_P (node))
 	TREE_SIDE_EFFECTS (wfl) = TREE_SIDE_EFFECTS (node);
       TREE_TYPE (wfl) = TREE_TYPE (node);
     }

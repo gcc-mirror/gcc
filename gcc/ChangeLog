@@ -1,3 +1,11 @@
+2005-03-05  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* c-semantics.c (build_stmt): Use TYPE_P instead of
+	IS_NON_TYPE_CODE_CLASS.
+	* tree.h (IS_NON_TYPE_CODE_CLASS): Remove.
+	(NON_TYPE_CHECK): Use TYPE_P instead of
+	IS_NON_TYPE_CODE_CLASS.
+
 2005-03-05  James A. Morrison  <phython@gcc.gnu.org>
 
 	* doc/c-tree.texi: Wrap comments in @r{}.
