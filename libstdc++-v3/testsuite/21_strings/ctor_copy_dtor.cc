@@ -201,11 +201,25 @@ void test03()
     }
 }
 
+// http://gcc.gnu.org/ml/libstdc++/2002-06/msg00025.html
+void test04()
+{
+  bool test = true;
+
+  std::string str01("portofino");
+
+  std::string::reverse_iterator i1 = str01.rbegin();
+  std::string::reverse_iterator i2 = str01.rend();
+  std::string str02(i1, i2);
+  VERIFY( str02 == "onifotrop" );
+}
+
 int main()
 { 
   __set_testsuite_memlimit();
   test01();
   test02();
   test03();
+  test04();
   return 0;
 }
