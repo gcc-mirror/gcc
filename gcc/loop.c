@@ -3708,7 +3708,14 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 	  /* If an insn is not to be strength reduced, then set its ignore
 	     flag, and clear all_reduced.  */
 
-	  if (v->lifetime * threshold * benefit < insn_count)
+	  /* A giv that depends on a reversed biv must be reduced if it is
+	     used after the loop exit, otherwise, it would have the wrong
+	     value after the loop exit.  To make it simple, just reduce all
+	     of such giv's whether or not we know they are used after the loop
+	     exit.  */
+
+	  if (v->lifetime * threshold * benefit < insn_count
+	      && ! bl->reversed)
 	    {
 	      if (loop_dump_stream)
 		fprintf (loop_dump_stream,
