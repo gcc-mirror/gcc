@@ -50,7 +50,16 @@ struct df_link
 
 enum df_ref_flags
   {
-    DF_REF_READ_WRITE = 1
+    DF_REF_READ_WRITE = 1,
+
+    /* This flag is set on register references itself representing a or
+       being inside a subreg on machines which have CLASS_CANNOT_CHANGE_MODE
+       and where the mode change of that subreg expression is invalid for
+       this class.  Note, that this flag can also be set on df_refs
+       representing the REG itself (i.e. one might not see the subreg
+       anyore).  Also note, that this flag is set also for hardreg refs.
+       I.e. you must check yourself if it's a pseudo.  */
+    DF_REF_MODE_CHANGE = 2
   };
 
 /* Define a register reference structure.  */
@@ -61,7 +70,7 @@ struct ref
   rtx *loc;			/* Loc is the location of the reg.  */
   struct df_link *chain;	/* Head of def-use or use-def chain.  */
   enum df_ref_type type;	/* Type of ref.  */
-  int id;			/* Ref index.  */
+  unsigned int id;		/* Ref index.  */
   enum df_ref_flags flags;	/* Various flags.  */
 };
 

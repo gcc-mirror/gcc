@@ -1939,6 +1939,10 @@ main(argc, argv)
 							 strlen ("void"))),
 	      &pos);
 
+  do_typedef ("HARD_REG_SET", create_array (
+	      create_scalar_type ("unsigned long", strlen ("unsigned long")),
+	      "2"), &pos);
+
   for (i = 0; i < NUM_GT_FILES; i++)
     {
       int dupflag = 0;

@@ -6258,6 +6258,11 @@ print_operand (file, x, code)
 	    output_operand_lossage ("invalid %%K value");
 	  print_operand_address (file, XEXP (XEXP (x, 0), 0));
 	  fputs ("@l", file);
+	  /* For GNU as, there must be a non-alphanumeric character
+	     between 'l' and the number.  The '-' is added by
+	     print_operand() already.  */
+	  if (INTVAL (XEXP (XEXP (x, 0), 1)) >= 0)
+	    fputs ("+", file);
 	  print_operand (file, XEXP (XEXP (x, 0), 1), 0);
 	}
       return;

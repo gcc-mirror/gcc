@@ -1,3 +1,96 @@
+2002-07-15  Michael Matz  <matz@suse.de>,
+            Daniel Berlin  <dberlin@dberlin.org>,
+	    Denis Chertykov  <denisc@overta.ru>
+
+	Add a new register allocator.
+
+	* ra.c: New file.
+	* ra.h: New file.
+	* ra-build.c: New file.
+	* ra-colorize.c: New file.
+	* ra-debug.c: New file.
+	* ra-rewrite.c: New file.
+
+	* Makefile.in (ra.o, ra-build.o, ra-colorize.o, ra-debug.o,
+	(ra-rewrite.o): New .o files for libbackend.a.
+	(GTFILES): Add basic-block.h.
+
+	* toplev.c (flag_new_regalloc): New.
+	(f_options): New option "new-ra".
+	(rest_of_compilation): Call initialize_uninitialized_subregs()
+	only for the old allocator.  If flag_new_regalloc is set, call
+	new allocator, instead of local_alloc(), global_alloc() and
+	friends.
+
+	* doc/invoke.texi: Document -fnew-ra.
+	* basic-block.h (FOR_ALL_BB): New.
+	* config/rs6000/rs6000.c (print_operand): Write small constants
+	as @l+80.
+
+	* df.c (read_modify_subreg_p): Narrow down cases for a rmw subreg.
+	(df_reg_table_realloc): Make size at least as large as max_reg_num().
+	(df_insn_table_realloc): Size argument now is absolute, not relative.
+	Changed all callers.
+
+	* gengtype.c (main): Add the pseudo-type "HARD_REG_SET".
+	* regclass.c (reg_scan_mark_refs): Ignore NULL rtx's.
+
+	2002-06-20  Michael Matz  <matz@suse.de>
+
+	* df.h (struct ref.id): Make unsigned.
+	* df.c (df_bb_reg_def_chain_create): Remove unsigned cast.
+
+	2002-06-13  Michael Matz  <matz@suse.de>
+
+	* df.h (DF_REF_MODE_CHANGE): New flag.
+	* df.c (df_def_record_1, df_uses_record): Set this flag for refs
+	involving subregs with invalid mode changes, when
+	CLASS_CANNOT_CHANGE_MODE is defined.
+
+	2002-05-07  Michael Matz  <matz@suse.de>
+
+	* reload1.c (fixup_abnormal_edges): Don't insert on NULL edge.
+
+	2002-05-03  Michael Matz  <matz@suse.de>
+
+	* sbitmap.c (sbitmap_difference): Accept sbitmaps of different size.
+
+	Sat Feb  2 18:58:07 2002  Denis Chertykov  <denisc@overta.ru>
+
+	* regclass.c (regclass): Work with all regs which have sets or
+	refs.
+	(reg_scan_mark_refs): Count regs inside (clobber ...).
+
+	2002-01-04  Michael Matz  <matzmich@cs.tu-berlin.de>
+
+	* df.c (df_ref_record): Correctly calculate SUBREGs of hardregs.
+	(df_bb_reg_def_chain_create, df_bb_reg_use_chain_create): Only
+	add new refs.
+	(df_bb_refs_update): Don't clear insns_modified here, ...
+	(df_analyse): ... but here.
+
+	* sbitmap.c (dump_sbitmap_file): New.
+	(debug_sbitmap): Use it.
+
+	* sbitmap.h (dump_sbitmap_file): Add prototype.
+
+	2001-08-07  Daniel Berlin  <dan@cgsoftware.com>
+
+	* df.c (df_insn_modify): Grow the UID table if necessary, rather
+	than assume all emits go through df_insns_modify.
+
+	2001-07-26  Daniel Berlin  <dan@cgsoftware.com>
+
+	* regclass.c (reg_scan_mark_refs): When we increase REG_N_SETS,
+	increase REG_N_REFS (like flow does), so that regclass doesn't
+	think a reg is useless, and thus, not calculate a class, when it
+	really should have.
+
+	2001-01-28  Daniel Berlin  <dberlin@redhat.com>
+
+	* sbitmap.h (EXECUTE_IF_SET_IN_SBITMAP_REV): New macro, needed for
+	dataflow analysis.
+
 2002-07-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/7245
