@@ -1,3 +1,7 @@
+2000-10-02  David O'Brien  <obrien@dragon.nuxi.com>
+
+	* config/i386/freebsd.h (NO_PROFILE_COUNTERS): Define.
+
 2000-10-01  Mark Mitchell  <mark@codesourcery.com>
 
 	* config/ns32k/genix.h: Remove.
