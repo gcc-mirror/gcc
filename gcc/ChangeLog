@@ -1,3 +1,10 @@
+2004-08-13  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.md (call_1, sibcall_1, call_1_rex64): Use Pmode
+	for constant_call_address_operand.
+	(call_value_pop_1, call_value_1): Likewise.
+	(sibcall_value_1, call_value_1_rex64): Likewise.
+
 2004-08-13  James E Wilson  <wilson@specifixinc.com>
 
 	* config/mips/sb1.md (ir_sb1_divdf_2pipes, ir_sb1_divdf_1pipe):
