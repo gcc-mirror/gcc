@@ -31,6 +31,7 @@ Boston, MA 02111-1307, USA.  */
 #include "function.h"
 #include "expr.h"
 #include "toplev.h"
+#include "tm_p.h"
 
 #ifndef MAX_MOVE_MAX
 #define MAX_MOVE_MAX MOVE_MAX
