@@ -938,10 +938,33 @@ singlemove_string (operands)
       else
 	abort ();
     }
-  if (GET_CODE (operands[1]) == MEM)
+  else if (GET_CODE (operands[1]) == MEM)
     return "ld %1,%0";
-  if (GET_CODE (operands[1]) == CONST_INT
-      && ! CONST_OK_FOR_LETTER_P (INTVAL (operands[1]), 'I'))
+  else if (GET_CODE (operands[1]) == CONST_DOUBLE)
+    {
+      int i;
+      union real_extract u;
+      union float_extract { float f; int i; } v;
+
+      /* Must be SFmode, otherwise this doesn't make sense.  */
+      if (GET_MODE (operands[1]) != SFmode)
+	abort ();
+
+      bcopy (&CONST_DOUBLE_LOW (operands[1]), &u, sizeof u);
+      v.f = REAL_VALUE_TRUNCATE (SFmode, u.d);
+      i = v.i;
+
+      operands[1] = gen_rtx (CONST_INT, VOIDmode, i);
+
+      if (CONST_OK_FOR_LETTER_P (i, 'I'))
+	return "mov %1,%0";
+      else if ((i & 0x000003FF) != 0)
+	return "sethi %%hi(%a1),%0\n\tor %0,%%lo(%a1),%0";
+      else
+	return "sethi %%hi(%a1),%0";
+    }
+  else if (GET_CODE (operands[1]) == CONST_INT
+	   && ! CONST_OK_FOR_LETTER_P (INTVAL (operands[1]), 'I'))
     {
       int i = INTVAL (operands[1]);
 
@@ -952,7 +975,7 @@ singlemove_string (operands)
       else
 	return "sethi %%hi(%a1),%0";
     }
-  /* ??? Wrong if target is DImode?  */
+  /* Operand 1 must be a register, or a 'I' type CONST_INT.  */
   return "mov %1,%0";
 }
 

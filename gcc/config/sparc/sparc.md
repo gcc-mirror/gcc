@@ -1115,8 +1115,6 @@
 ;; This pattern forces (set (reg:DF ...) (const_double ...))
 ;; to be reloaded by putting the constant into memory.
 ;; It must come before the more general movdf pattern.
-;; ??? A similar pattern for SF mode values would also be useful, but it
-;; is not as easy to write.
 (define_insn ""
   [(set (match_operand:DF 0 "general_operand" "=?r,f,o")
 	(match_operand:DF 1 "" "?E,m,G"))]
@@ -1205,6 +1203,28 @@
    (set_attr "length" "2,3,3,3,3,2,3,3,3")])
 
 ;; Floating-point move insns.
+
+;; This pattern forces (set (reg:SF ...) (const_double ...))
+;; to be reloaded by putting the constant into memory.
+;; It must come before the more general movsf pattern.
+(define_insn ""
+  [(set (match_operand:SF 0 "general_operand" "=?r,f,m")
+	(match_operand:SF 1 "" "?E,m,G"))]
+  "GET_CODE (operands[1]) == CONST_DOUBLE"
+  "*
+{
+  switch (which_alternative)
+    {
+    case 0:
+      return singlemove_string (operands);
+    case 1:
+      return \"ld %1,%0\";
+    case 2:
+      return \"st %%g0,%0\";
+    }
+}"
+  [(set_attr "type" "load,fpload,store")
+   (set_attr "length" "2,1,1")])
 
 (define_expand "movsf"
   [(set (match_operand:SF 0 "general_operand" "")
