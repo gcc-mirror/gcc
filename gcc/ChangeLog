@@ -1,3 +1,8 @@
+2000-09-11  DJ Delorie  <dj@redhat.com>
+
+	* gcc.c (main): Don't warn about unused -B prefixes
+	(unused_prefix_warnings): remove
+
 2000-09-11  Kazu Hirata  <kazu@hxi.com>
 
 	* integrate.c: Fix formatting.

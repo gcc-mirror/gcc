@@ -243,7 +243,6 @@ static void add_assembler_option	PARAMS ((const char *, int));
 static void add_linker_option		PARAMS ((const char *, int));
 static void process_command		PARAMS ((int, const char *const *));
 static int execute			PARAMS ((void));
-static void unused_prefix_warnings	PARAMS ((struct path_prefix *));
 static void clear_args			PARAMS ((void));
 static void fatal_error			PARAMS ((int));
 static void set_input			PARAMS ((const char *));
@@ -2387,32 +2386,6 @@ add_prefix (pprefix, prefix, component, priority, require_machine_suffix, warn)
   /* Insert after PREV */
   pl->next = (*prev);
   (*prev) = pl;
-}
-
-/* Print warnings for any prefixes in the list PPREFIX that were not used.  */
-
-static void
-unused_prefix_warnings (pprefix)
-     struct path_prefix *pprefix;
-{
-  struct prefix_list *pl = pprefix->plist;
-
-  while (pl)
-    {
-      if (pl->used_flag_ptr != 0 && !*pl->used_flag_ptr)
-	{
-	  if (pl->require_machine_suffix && machine_suffix)
-	    error ("file path prefix `%s%s' never used", pl->prefix,
-		   machine_suffix);
-	  else
-	    error ("file path prefix `%s' never used", pl->prefix);
-
-	  /* Prevent duplicate warnings.  */
-	  *pl->used_flag_ptr = 1;
-	}
-
-      pl = pl->next;
-    }
 }
 
 /* Execute the command specified by the arguments on the current line of spec.
@@ -5552,10 +5525,6 @@ main (argc, argv)
 	error_count = 1;
       linker_was_run = (tmp != execution_count);
     }
-
-  /* Warn if a -B option was specified but the prefix was never used.  */
-  unused_prefix_warnings (&exec_prefixes);
-  unused_prefix_warnings (&startfile_prefixes);
 
   /* If options said don't run linker,
      complain about input files to be given to the linker.  */
