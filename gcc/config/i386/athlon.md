@@ -17,7 +17,7 @@
 ;; The load/store queue unit is not attached to the schedulers but
 ;; communicates with all the execution units separately instead.
 
-(define_attr "athlon_decode" "direct,vector"
+(define_attr "athlon_decode" "direct,vector,double"
   (cond [(eq_attr "type" "call,imul,idiv,other,multi,fcmov,fpspc,str,pop,cld,leave")
 	   (const_string "vector")
          (and (eq_attr "type" "push")
@@ -496,32 +496,32 @@
 			 "athlon-double,athlon-fmul")
 (define_insn_reservation "athlon_ssecmp_load" 5
 			 (and (eq_attr "cpu" "athlon,k8")
-			      (and (eq_attr "type" "ssecmp")
+			      (and (eq_attr "type" "ssecmp,ssecomi")
 				   (and (eq_attr "mode" "SF,DF")
 					(eq_attr "memory" "load"))))
 			 "athlon-vector,athlon-load,athlon-fadd")
 (define_insn_reservation "athlon_ssecmp" 2
 			 (and (eq_attr "cpu" "athlon,k8")
-			      (and (eq_attr "type" "ssecmp")
+			      (and (eq_attr "type" "ssecmp,ssecomi")
 				   (eq_attr "mode" "SF,DF")))
 			 "athlon-direct,athlon-fadd")
 (define_insn_reservation "athlon_ssecmpvector_load" 6
 			 (and (eq_attr "cpu" "athlon")
-			      (and (eq_attr "type" "ssecmp")
+			      (and (eq_attr "type" "ssecmp,ssecomi")
 				   (eq_attr "memory" "load")))
 			 "athlon-vector,athlon-fadd")
 (define_insn_reservation "athlon_ssecmpvector_load_k8" 5
 			 (and (eq_attr "cpu" "k8")
-			      (and (eq_attr "type" "ssecmp")
+			      (and (eq_attr "type" "ssecmp,ssecomi")
 				   (eq_attr "memory" "load")))
 			 "athlon-double,athlon-fadd")
 (define_insn_reservation "athlon_ssecmpvector" 3
 			 (and (eq_attr "cpu" "athlon")
-			      (eq_attr "type" "ssecmp"))
+			      (eq_attr "type" "ssecmp,ssecomi"))
 			 "athlon-vector,athlon-fadd")
 (define_insn_reservation "athlon_ssecmpvector_k8" 3
 			 (and (eq_attr "cpu" "k8")
-			      (eq_attr "type" "ssecmp"))
+			      (eq_attr "type" "ssecmp,ssecomi"))
 			 "athlon-double,athlon-fadd")
 (define_insn_reservation "athlon_sseadd_load" 7
 			 (and (eq_attr "cpu" "athlon")
