@@ -3181,7 +3181,7 @@ check_field_decls (tree t, tree *access_decls,
 	      element_type = strip_array_types (type);
 	      if (CLASS_TYPE_P (element_type) 
 		  && CLASSTYPE_CONTAINS_EMPTY_CLASS_P (element_type))
-		CLASSTYPE_CONTAINS_EMPTY_CLASS_P (element_type) = 1;
+		CLASSTYPE_CONTAINS_EMPTY_CLASS_P (t) = 1;
 	    }
 	}
 
