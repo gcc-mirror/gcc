@@ -36,7 +36,7 @@
 * AJMin0 Intrinsic::    (Reserved for future use.)
 @end ifset
 @ifset familyF2U
-* Alarm Intrinsic::
+* Alarm Intrinsic::     Execute a routine after a given delay.
 @end ifset
 @ifset familyF90
 * All Intrinsic::       (Reserved for future use.)
@@ -1169,6 +1169,18 @@ or dummy/global @code{INTEGER(KIND=1)} scalar.
 @noindent
 Intrinsic groups: @code{unix}.
 
+@noindent
+Description:
+
+Causes external subroutine @var{Handler} to be executed after a delay of
+@var{Seconds} seconds by using @code{alarm(1)} to set up a signal and
+@code{signal(2)} to catch it.
+If @var{Status} is supplied, it will be
+returned with the the number of seconds remaining until any previously
+scheduled alarm was due to be delivered, or zero if there was no
+previously scheduled alarm.
+@xref{Signal Intrinsic (subroutine)}.
+
 @end ifset
 @ifset familyF90
 @node All Intrinsic
@@ -1870,7 +1882,7 @@ or 4; and so on.)
 
 @xref{Bit_Size Intrinsic}, for how to obtain the number of bits
 in a type.
-The leftmost bit of @var{I} is @samp{BIT_SIZE(@var{I}-1}.
+The leftmost bit of @var{I} is @samp{BIT_SIZE(@var{I}-1)}.
 
 @end ifset
 @ifset familyF77
@@ -3259,7 +3271,7 @@ Description:
 
 Archaic form of @code{CONJG()} that is specific
 to one type for @var{Z}.
-@xref{ATan2 Intrinsic}.
+@xref{Conjg Intrinsic}.
 
 @end ifset
 @ifset familyF77
@@ -3830,6 +3842,9 @@ a @code{DOUBLE COMPLEX} value.
 
 @xref{RealPart Intrinsic}, for information on a GNU Fortran
 intrinsic that avoids these areas of confusion.
+
+@xref{Dble Intrinsic}, for information on the standard FORTRAN 77
+replacement for @code{DREAL()}.
 
 @xref{REAL() and AIMAG() of Complex}, for more information on
 this issue.
@@ -5382,8 +5397,6 @@ If the @var{Status} argument is supplied, it contains
 0 on success or a non-zero error code upon return
 (@code{ENOSYS} if the system does not provide @code{gethostname(2)}).
 
-This intrinsic is not available on all systems.
-
 Some non-GNU implementations of Fortran provide this intrinsic as
 only a function, not as a subroutine, or do not support the
 (optional) @var{Status} argument.
@@ -5416,8 +5429,6 @@ Description:
 Fills @var{Name} with the system's host name returned by
 @code{gethostname(2)}, returning 0 on success or a non-zero error code
 (@code{ENOSYS} if the system does not provide @code{gethostname(2)}).
-
-This intrinsic is not available on all systems.
 
 For information on other intrinsics with the same name:
 @xref{HostNm Intrinsic (subroutine)}.
@@ -5801,9 +5812,9 @@ Intrinsic groups: (standard FORTRAN 77).
 @noindent
 Description:
 
-Archaic form of @code{IDIM()} that is specific
+Archaic form of @code{DIM()} that is specific
 to one type for @var{X} and @var{Y}.
-@xref{IDiM Intrinsic}.
+@xref{DiM Intrinsic}.
 
 @node IDInt Intrinsic
 @subsubsection IDInt Intrinsic
@@ -6601,9 +6612,9 @@ Intrinsic groups: (standard FORTRAN 77).
 @noindent
 Description:
 
-Archaic form of @code{ISIGN()} that is specific
+Archaic form of @code{SIGN()} that is specific
 to one type for @var{A} and @var{B}.
-@xref{ISign Intrinsic}.
+@xref{Sign Intrinsic}.
 
 @end ifset
 @ifset familyF2U
