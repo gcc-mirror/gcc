@@ -302,15 +302,20 @@ void FN ()					\
 #define DO_SELECT_SECTION(SECNUM, DECL, RELOC)			\
   do								\
      {								\
+       HOST_WIDE_INT size;					\
        SECNUM = 1;						\
        if (TREE_CODE (DECL) == FUNCTION_DECL)			\
-	 SECNUM = 0;						\
+	 {							\
+	   SECNUM = 0;						\
+	   break;						\
+	 }							\
        else if (TREE_CODE (DECL) == STRING_CST)			\
 	 {							\
 	   if (flag_writable_strings)				\
 	     SECNUM = 2;					\
 	   else							\
 	     SECNUM = 0x101;					\
+	   break;						\
 	 }							\
        else if (TREE_CODE (DECL) == VAR_DECL)			\
 	 {							\
@@ -344,11 +349,16 @@ void FN ()					\
 	 }							\
 								\
        /* Select small data sections based on size.  */		\
-       if ((SECNUM & 0xff) >= 2)				\
+       size = int_size_in_bytes (TREE_TYPE (DECL));		\
+       if (size >= 0 && size <= g_switch_value)			\
 	 {							\
-	   int size = int_size_in_bytes (TREE_TYPE (DECL));	\
-	   if (size >= 0 && size <= g_switch_value)		\
+	   if ((SECNUM & 0xff) >= 2)				\
 	     SECNUM += 1;					\
+	   /* Move readonly data to .sdata only if -msmall-data.  */ \
+	   /* ??? Consider .sdata.{lit4,lit8} as		\
+	      SHF_MERGE|SHF_ALPHA_GPREL.  */			\
+	   else if (TARGET_SMALL_DATA)				\
+	     SECNUM = 3;					\
 	 }							\
      }								\
    while (0)
@@ -437,8 +447,14 @@ void FN ()					\
    go into the const section.  */
 
 #undef  SELECT_RTX_SECTION
-#define SELECT_RTX_SECTION(MODE, RTX, ALIGN) \
-   mergeable_constant_section((MODE), (ALIGN), 0)
+#define SELECT_RTX_SECTION(MODE, RTX, ALIGN)				\
+do {									\
+  if (TARGET_SMALL_DATA && GET_MODE_SIZE (MODE) <= g_switch_value)	\
+     /* ??? Consider .sdata.{lit4,lit8} as SHF_MERGE|SHF_ALPHA_GPREL.  */ \
+    sdata_section ();							\
+  else									\
+    mergeable_constant_section((MODE), (ALIGN), 0);			\
+} while (0)
 
 /* Define the strings used for the special svr4 .type and .size directives.
    These strings generally do not vary from one system running svr4 to

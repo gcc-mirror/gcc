@@ -448,6 +448,12 @@ override_options ()
   if (!g_switch_set)
     g_switch_value = 8;
 
+  /* Infer TARGET_SMALL_DATA from -fpic/-fPIC.  */
+  if (flag_pic == 1)
+    target_flags |= MASK_SMALL_DATA;
+  else if (flag_pic == 2)
+    target_flags &= ~MASK_SMALL_DATA;
+
   /* Align labels and loops for optimal branching.  */
   /* ??? Kludge these by not doing anything if we don't optimize and also if
      we are writing ECOFF symbols to work around a bug in DEC's assembler. */
@@ -742,7 +748,7 @@ some_operand (op, mode)
   switch (GET_CODE (op))
     {
     case REG:  case MEM:  case CONST_DOUBLE:  case CONST_INT:  case LABEL_REF:
-    case SYMBOL_REF:  case CONST:  case HIGH:
+    case SYMBOL_REF:  case CONST:
       return 1;
 
     case SUBREG:
@@ -813,10 +819,6 @@ input_operand (op, mode)
     case CONSTANT_P_RTX:
       return 1;
 
-    case HIGH:
-      return (TARGET_EXPLICIT_RELOCS
-	      && local_symbolic_operand (XEXP (op, 0), mode));
-
     default:
       break;
     }
@@ -874,6 +876,36 @@ local_symbolic_operand (op, mode)
 	  || str[0] == '@'
 	  /* If *$, then ASM_GENERATE_INTERNAL_LABEL sez it's local.  */
 	  || (str[0] == '*' && str[1] == '$'));
+}
+
+/* Return true if OP is a SYMBOL_REF or CONST referencing a variable
+   known to be defined in this file in the small data area.  */
+
+int
+small_symbolic_operand (op, mode)
+     rtx op;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  const char *str;
+
+  if (! TARGET_SMALL_DATA)
+    return 0;
+
+  if (GET_CODE (op) == CONST
+      && GET_CODE (XEXP (op, 0)) == PLUS
+      && GET_CODE (XEXP (XEXP (op, 0), 1)) == CONST_INT)
+    op = XEXP (XEXP (op, 0), 0);
+
+  if (GET_CODE (op) != SYMBOL_REF)
+    return 0;
+
+  if (CONSTANT_POOL_ADDRESS_P (op))
+    return GET_MODE_SIZE (get_pool_mode (op)) <= g_switch_value;
+  else
+    {
+      str = XSTR (op, 0);
+      return str[0] == '@' && str[1] == 's';
+    }
 }
 
 /* Return 1 if OP is a valid operand for the MEM of a CALL insn.  */
@@ -1563,9 +1595,24 @@ alpha_legitimize_address (x, oldx, mode)
   /* If this is a local symbol, split the address into HIGH/LO_SUM parts.  */
   if (TARGET_EXPLICIT_RELOCS && local_symbolic_operand (x, Pmode))
     {
-      rtx temp = gen_reg_rtx (Pmode);
-      emit_insn (gen_rtx_SET (VOIDmode, temp, gen_rtx_HIGH (Pmode, x)));
-      return gen_rtx_LO_SUM (Pmode, temp, x);
+      rtx scratch;
+
+      if (small_symbolic_operand (x, Pmode))
+	scratch = pic_offset_table_rtx;
+      else
+	{
+	  rtx insn, tmp;
+
+	  scratch = gen_reg_rtx (Pmode);
+
+	  tmp = gen_rtx_HIGH (Pmode, x);
+	  tmp = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, tmp);
+          insn = emit_insn (gen_rtx_SET (VOIDmode, scratch, tmp));
+	  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL, tmp,
+						REG_NOTES (insn));
+	}
+
+      return gen_rtx_LO_SUM (Pmode, scratch, x);
     }
 
   return NULL;
@@ -2127,9 +2174,23 @@ alpha_expand_mov (mode, operands)
 
   if (TARGET_EXPLICIT_RELOCS && local_symbolic_operand (operands[1], mode))
     {
-      rtx scratch = no_new_pseudos ? operands[0] : gen_reg_rtx (Pmode);
-      emit_insn (gen_rtx_SET (VOIDmode, scratch,
-			      gen_rtx_HIGH (Pmode, operands[1])));
+      rtx scratch;
+
+      if (small_symbolic_operand (operands[1], Pmode))
+	scratch = pic_offset_table_rtx;
+      else
+	{
+	  rtx insn, tmp;
+
+	  scratch = no_new_pseudos ? operands[0] : gen_reg_rtx (Pmode);
+
+	  tmp = gen_rtx_HIGH (Pmode, operands[1]);
+	  tmp = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, tmp);
+          insn = emit_insn (gen_rtx_SET (VOIDmode, scratch, tmp));
+	  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL, tmp,
+						REG_NOTES (insn));
+	}
+
       operands[1] = gen_rtx_LO_SUM (Pmode, scratch, operands[1]);
       return false;
     }
@@ -4773,10 +4834,7 @@ print_operand (file, x, code)
 
     case 'H':
       if (GET_CODE (x) == HIGH)
-	{
-	  output_addr_const (file, XEXP (x, 0));
-	  fputs ("($29)\t\t!gprelhigh", file);
-	}
+	output_addr_const (file, XEXP (x, 0));
       else
 	output_operand_lossage ("invalid %%H value");
       break;
@@ -5056,7 +5114,9 @@ print_operand_address (file, addr)
 	basereg = subreg_regno (addr);
       else
 	abort ();
-      fprintf (file, "($%d)\t\t!gprellow", basereg);
+
+      fprintf (file, "($%d)\t\t!%s", basereg,
+	       (basereg == 29 ? "gprel" : "gprellow"));
       return;
     }
 

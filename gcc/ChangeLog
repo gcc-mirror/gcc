@@ -1,3 +1,23 @@
+2001-09-13  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.c (small_symbolic_operand): New.
+	(override_options): Set MASK_SMALL_DATA based on pic/PIC.
+	(some_operand, input_operand): Don't handle HIGH.
+	(alpha_legitimize_address): Use it.  Emit HIGH with PLUS gp.
+	(alpha_expand_mov): Likewise.
+	(print_operand) [H]: Just print HIGH symbol.
+	(print_operand_address): Handle small data.
+	* config/alpha/alpha.h (MASK_SMALL_DATA, TARGET_SMALL_DATA): New.
+	(TARGET_SWITCHES): Add -msmall-data/large-data.
+	(PIC_OFFSET_TABLE_REGNUM): New.
+	(PREFERRED_RELOAD_CLASS): Don't handle HIGH.
+	(PREDICATE_COES): Update.
+	* config/alpha/alpha.md (adddi_er_high): New.
+	(adddi_er_low): Handle small data.
+	* config/alpha/elf.h (DO_SELECT_SECTION): If SMALL_DATA,
+	prefer .sdata to .rodata.
+	(SELECT_RTX_SECTION): Likewise.
+
 2001-09-12  Josh Martin  <josh.martin@abq.sc.philips.com>
 
 	* fixinc/inclhack.def(hpux11_size_t): Keep HP-UX headers from

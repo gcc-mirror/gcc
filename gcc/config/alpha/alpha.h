@@ -162,6 +162,10 @@ extern enum alpha_fp_trap_mode alpha_fptm;
 #define MASK_EXPLICIT_RELOCS (1 << 12)
 #define TARGET_EXPLICIT_RELOCS (target_flags & MASK_EXPLICIT_RELOCS)
 
+/* This means use 16-bit relocations to .sdata/.sbss.  */
+#define MASK_SMALL_DATA (1 << 13)
+#define TARGET_SMALL_DATA (target_flags & MASK_SMALL_DATA)
+
 /* This means that the processor is an EV5, EV56, or PCA56.
    Unlike alpha_cpu this is not affected by -mtune= setting.  */
 #define MASK_CPU_EV5	(1 << 28)
@@ -240,6 +244,10 @@ extern enum alpha_fp_trap_mode alpha_fptm;
     {"explicit-relocs", MASK_EXPLICIT_RELOCS,				\
      N_("Emit code using explicit relocation directives")},		\
     {"no-explicit-relocs", -MASK_EXPLICIT_RELOCS, ""},			\
+    {"small-data", MASK_SMALL_DATA,					\
+     N_("Emit 16-bit relocations to the small data areas")},		\
+    {"large-data", -MASK_SMALL_DATA,					\
+     N_("Emit 32-bit relocations to the small data areas")},		\
     {"", TARGET_DEFAULT | TARGET_CPU_DEFAULT, ""} }
 
 #define TARGET_DEFAULT MASK_FP|MASK_FPREGS
@@ -684,6 +692,18 @@ extern const char *alpha_mlat_string;	/* For -mmemory-latency= */
    doesn't seem to specify this.  */
 #define STATIC_CHAIN_REGNUM 1
 
+/* The register number of the register used to address a table of
+   static data addresses in memory.  */
+#define PIC_OFFSET_TABLE_REGNUM 29
+
+/* Define this macro if the register defined by `PIC_OFFSET_TABLE_REGNUM'
+   is clobbered by calls.  */
+/* ??? It is and it isn't.  It's required to be valid for a given
+   function when the function returns.  It isn't clobbered by
+   current_file functions.  Moreover, we do not expose the ldgp
+   until after reload, so we're probably safe.  */
+/* #define PIC_OFFSET_TABLE_REG_CALL_CLOBBERED */
+
 /* Register in which address to store a structure value
    arrives in the function.  On the Alpha, the address is passed
    as a hidden argument.  */
@@ -821,8 +841,7 @@ enum reg_class { NO_REGS, PV_REG, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
    register via memory.  */
 
 #define PREFERRED_RELOAD_CLASS(X, CLASS)		\
-  (GET_CODE (X) == HIGH ? GENERAL_REGS			\
-   : CONSTANT_P (X) && (X) != const0_rtx && (X) != CONST0_RTX (GET_MODE (X)) \
+   (CONSTANT_P (X) && (X) != const0_rtx && (X) != CONST0_RTX (GET_MODE (X)) \
    ? ((CLASS) == FLOAT_REGS || (CLASS) == NO_REGS ? NO_REGS : GENERAL_REGS) \
    : (CLASS))
 
@@ -2172,9 +2191,9 @@ do {									\
   {"local_symbolic_operand", {SYMBOL_REF, CONST, LABEL_REF}},		\
   {"call_operand", {REG, SYMBOL_REF}},					\
   {"input_operand", {SUBREG, REG, MEM, CONST_INT, CONST_DOUBLE,		\
-		     SYMBOL_REF, CONST, LABEL_REF, HIGH, LO_SUM}},	\
+		     SYMBOL_REF, CONST, LABEL_REF}},			\
   {"some_operand", {SUBREG, REG, MEM, CONST_INT, CONST_DOUBLE,		\
-		    SYMBOL_REF, CONST, LABEL_REF, HIGH, LO_SUM}},	\
+		    SYMBOL_REF, CONST, LABEL_REF}},			\
   {"some_ni_operand", {SUBREG, REG, MEM}},				\
   {"aligned_memory_operand", {MEM}},					\
   {"unaligned_memory_operand", {MEM}},					\
