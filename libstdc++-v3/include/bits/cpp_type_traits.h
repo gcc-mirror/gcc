@@ -317,12 +317,27 @@ namespace std
   //
   // For the immediate use, the following is a good approximation
   //
+
+  // NB: g++ can not compile these if declared within the class
+  // __is_pod itself.
+  namespace __gnu_internal
+  {
+    typedef char __one;
+    typedef char __two[2];
+
+    template <typename _Tp>
+    __one __test_type (int _Tp::*);
+    template <typename _Tp>
+    __two& __test_type (...);
+  }
+
+  
   template<typename _Tp>
   struct __is_pod
   {
     enum
     {
-      _M_type = __is_fundamental<_Tp>::_M_type
+      _M_type = (sizeof(__gnu_internal::__test_type<_Tp>(0)) != sizeof(__gnu_internal::__one))
     };
   };
 

@@ -1,3 +1,36 @@
+2004-03-25  Gawain Bolton  <gp.bolton@computer.org>
+
+	* include/bits/stl_tree.h (_Rb_tree_impl): Add _Node_allocator
+	default argument in constructors.
+	(_Rb_tree::_M_empty_initialize): Remove.
+	
+2004-03-25  Benjamin Kosnik  <bkoz@redhat.com>
+	
+	* testsuite/23_containers/map/operators/1_neg.cc: Adjust line numbers.
+	* testsuite/23_containers/set/operators/1_neg.cc: Same.
+
+2004-03-25  Dhruv Matani  <dhruvbird@gmx.net>
+
+	* include/bits/cpp_type_traits.h: Changed __is_pod
+	completely. Now, it does not use any of the previous type_traits
+	to detect the pod types, and it also detects function pointers as
+	POD types.
+
+	* include/bits/stl_tree.h: Introduced a new class _Rb_tree_impl,
+	which encapsulates the internal implementation of an rb_tree. Made
+	the allocator a base class of this class instead of the rb_tree,
+	which was not conforming. This _Rb_tree_impl class is also
+	specialized on whether the _Compare parameter is a POD type or
+	not. If so, then it maintains the comparison function as a data
+	member, otherwise it makes the _Compare parameter a base class of
+	itself. Also, _M_key_compare is now a function instead of a data
+	member, so that the above trick can work properly. Delegated the
+	initialization of the other data members to this newly created
+	class. Also, now other member functions of rb_tree must refer to
+	_M_key_compare as _M_impl._M_key_compare(). The other data members
+	(*) can be referenced to as _M_impl.(*), where
+	(*) includes _M_header, and _M_node_count.
+
 2004-03-25  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/ext/mt_allocator.h (__mt_alloc<>::tune):
