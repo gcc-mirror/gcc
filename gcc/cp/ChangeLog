@@ -1,5 +1,9 @@
 2002-04-03  Jason Merrill  <jason@redhat.com>
 
+	PR c++/525
+	* init.c (build_member_call): Convert to intermediate base even
+	with -pedantic.
+
 	PR c++/5636
 	* semantics.c (nullify_returns_r): Just set CLEANUP_EH_ONLY on
 	cleanup for nrv.
