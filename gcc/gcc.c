@@ -614,7 +614,7 @@ static struct compiler default_compilers[] =
 		   %{v:-version -fversion} %{f*}\
 		   %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
 		   %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
-              %{!S:as %{R} %{j} %{J} %{h} %{d2} %a %{keep-local-as-symbols:-L} \
+              %{!S:as %a \
 		      %{c:%W{o*}%{!o*:-o %w%b.o}}%{!c:-o %d%w%u.o}\
                       %{!pipe:%g.s} %A\n }"},
   {".f", "@f77"},
@@ -625,7 +625,7 @@ static struct compiler default_compilers[] =
 		   %{v:-version -fversion} %{f*}\
 		   %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
 		   %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
-              %{!S:as %{R} %{j} %{J} %{h} %{d2} %a %{keep-local-as-symbols:-L} \
+              %{!S:as %a \
 		      %{c:%W{o*}%{!o*:-o %w%b.o}}%{!c:-o %d%w%u.o}\
                       %{!pipe:%g.s} %A\n }"},
   {".c", "@c"},
@@ -647,7 +647,7 @@ static struct compiler default_compilers[] =
 		   %{aux-info*}\
 		   %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
 		   %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
-              %{!S:as %{R} %{j} %{J} %{h} %{d2} %a %Y\
+              %{!S:as %a %Y\
 		      %{c:%W{o*}%{!o*:-o %w%b.%O}}%{!c:-o %d%w%u.%O}\
                       %{!pipe:%g.s} %A\n }}}}"},
   {"-",
@@ -682,7 +682,7 @@ static struct compiler default_compilers[] =
 		   %{aux-info*}\
 		   %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
 		   %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
-              %{!S:as %{R} %{j} %{J} %{h} %{d2} %a %Y\
+              %{!S:as %a %Y\
 		      %{c:%W{o*}%{!o*:-o %w%b.%O}}%{!c:-o %d%w%u.%O}\
                       %{!pipe:%g.s} %A\n }}}}"},
   {".h", "@c-header"},
@@ -715,7 +715,7 @@ static struct compiler default_compilers[] =
 		   %{aux-info*} %X \
 		   %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
 		   %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
-              %{!S:as %{R} %{j} %{J} %{h} %{d2} %a %Y %{keep-local-as-symbols:-L} \
+              %{!S:as %a %Y \
 		      %{c:%W{o*}%{!o*:-o %w%b.o}}%{!c:-o %d%w%u.o}\
                       %{!pipe:%g.s} %A\n }}"},
   {".cc", "@c++"},
@@ -740,7 +740,7 @@ static struct compiler default_compilers[] =
 			    %{f*} %{+e*} %{aux-info*}\
 			    %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
 			    %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}}|\n\
-              %{!S:as %{R} %{j} %{J} %{h} %{d2} %a %Y\
+              %{!S:as %a %Y\
 		      %{c:%W{o*}%{!o*:-o %w%b.%O}}%{!c:-o %d%w%u.%O}\
                       %{!pipe:%g.s} %A\n }}}}"},
   {".i", "@cpp-output"},
@@ -751,7 +751,7 @@ static struct compiler default_compilers[] =
 			%{aux-info*}\
 			%{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
 			%{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
-		     %{!S:as %{R} %{j} %{J} %{h} %{d2} %a %Y\
+		     %{!S:as %a %Y\
 			     %{c:%W{o*}%{!o*:-o %w%b.%O}}%{!c:-o %d%w%u.%O}\
 			     %{!pipe:%g.s} %A\n }}}}"},
   {".ii", "@c++-cpp-output"},
@@ -762,12 +762,12 @@ static struct compiler default_compilers[] =
 			    %{f*} %{+e*} %{aux-info*}\
 			    %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
 			    %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
-	            %{!S:as %{R} %{j} %{J} %{h} %{d2} %a %Y\
+	            %{!S:as %a %Y\
 			    %{c:%W{o*}%{!o*:-o %w%b.%O}}%{!c:-o %d%w%u.%O}\
 			    %{!pipe:%g.s} %A\n }}}}"},
   {".s", "@assembler"},
   {"@assembler",
-   "%{!M:%{!MM:%{!E:%{!S:as %{R} %{j} %{J} %{h} %{d2} %a %Y\
+   "%{!M:%{!MM:%{!E:%{!S:as %a %Y\
 		            %{c:%W{o*}%{!o*:-o %w%b.%O}}%{!c:-o %d%w%u.%O}\
 			    %i %A\n }}}}"},
   {".S", "@assembler-with-cpp"},
@@ -780,7 +780,7 @@ static struct compiler default_compilers[] =
         %{traditional-cpp:-traditional}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
         %i %{!M:%{!MM:%{!E:%{!pipe:%g.s}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n",
-   "%{!M:%{!MM:%{!E:%{!S:as %{R} %{j} %{J} %{h} %{d2} %a %Y\
+   "%{!M:%{!MM:%{!E:%{!S:as %a %Y\
                     %{c:%W{o*}%{!o*:-o %w%b.%O}}%{!c:-o %d%w%u.%O}\
 		    %{!pipe:%g.s} %A\n }}}}"},
   {".ads", "@ada"},
@@ -792,7 +792,7 @@ static struct compiler default_compilers[] =
 			  %{d*}\
 			  %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
 			  %i %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
-		    %{!S:%{!gnatc:%{!gnats:as %{R} %{j} %{J} %{h} %{d2} %a %Y\
+		    %{!S:%{!gnatc:%{!gnats:as %a %Y\
 					      %{c:%W{o*}%{!o*:-o %w%b.%O}}\
 					      %{!c:-o %d%w%u.%O} %{!pipe:%g.s} %A\n}}}}}} "},
   /* Mark end of table */
