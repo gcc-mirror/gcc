@@ -6,7 +6,7 @@
 %rename lib liborig
 *lib: -lgcj -lm @GCSPEC@ @THREADSPEC@ @ZLIBSPEC@ @SYSTEMSPEC@ %(libgcc) %(liborig)
 
-*jc1:  @DIVIDESPEC@ @EXCEPTIONSPEC@ @JC1GCSPEC@ -fasynchronous-exceptions
+*jc1:  @DIVIDESPEC@ @JC1GCSPEC@
 
 #
 # On some systems we force in a data_start symbol so that the GC will work

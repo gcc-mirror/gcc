@@ -31,7 +31,7 @@
 #include <stdlib.h>
 #include <link.h>
 #include <bits/libc-lock.h>
-#include "frame-ia64.h"
+#include "unwind-ia64.h"
 
 
 /* Initialized by crtbegin from the main application.  */
@@ -41,20 +41,17 @@ extern Elf64_Ehdr *__ia64_app_header;
    appear in <link.h> in a new glibc version.  */
 __libc_lock_define (extern, _dl_load_lock)
 
-/* ??? _dl_load_lock is not exported from glibc 2.1, but it is 
-   from glibc 2.2.  Remove this when folks have migrated.  */
-#pragma weak _dl_load_lock
-
 /* This always exists, even in a static application.  */
 extern struct link_map *_dl_loaded;
 
-static fde *
-find_fde_for_dso (Elf64_Addr pc, Elf64_Ehdr *ehdr)
+static struct unw_table_entry *
+find_fde_for_dso (Elf64_Addr pc, Elf64_Ehdr *ehdr,
+		  unsigned long *pseg_base, unsigned long *pgp)
 {
-  Elf64_Phdr *phdr, *p_unwind;
+  Elf64_Phdr *phdr, *p_unwind, *p_dynamic;
   long n, match;
   Elf64_Addr load_base, seg_base;
-  fde *f_base;
+  struct unw_table_entry *f_base, *f;
   size_t lo, hi;
 
   /* Verify that we are looking at an ELF header.  */
@@ -71,6 +68,7 @@ find_fde_for_dso (Elf64_Addr pc, Elf64_Ehdr *ehdr)
   phdr = (Elf64_Phdr *)((char *)ehdr + ehdr->e_phoff);
   load_base = (ehdr->e_type == ET_DYN ? (Elf64_Addr)ehdr : 0);
   p_unwind = NULL;
+  p_dynamic = NULL;
 
   /* See if PC falls into one of the loaded segments.  Find the unwind
      segment at the same time.  */
@@ -84,69 +82,96 @@ find_fde_for_dso (Elf64_Addr pc, Elf64_Ehdr *ehdr)
 	}
       else if (phdr->p_type == PT_IA_64_UNWIND)
 	p_unwind = phdr;
+      else if (phdr->p_type == PT_DYNAMIC)
+	p_dynamic = phdr;
     }
   if (!match || !p_unwind)
     return NULL;
 
   /* Search for the FDE within the unwind segment.  */
 
-  f_base = (fde *) (p_unwind->p_vaddr + load_base);
+  f_base = (struct unw_table_entry *) (p_unwind->p_vaddr + load_base);
   seg_base = (Elf64_Addr) ehdr;
   lo = 0;
-  hi = p_unwind->p_memsz / sizeof (fde);
+  hi = p_unwind->p_memsz / sizeof (struct unw_table_entry);
 
   while (lo < hi)
     {
       size_t mid = (lo + hi) / 2;
-      fde *f = f_base + mid;
 
+      f = f_base + mid;
       if (pc < f->start_offset + seg_base)
 	hi = mid;
       else if (pc >= f->end_offset + seg_base)
 	lo = mid + 1;
       else
-        return f;
+        goto found;
+    }
+  return NULL;
+
+ found:
+  *pseg_base = seg_base;
+  *pgp = 0;
+
+  if (p_dynamic)
+    {
+      /* For dynamicly linked executables and shared libraries,
+	 DT_PLTGOT is the gp value for that object.  */
+      Elf64_Dyn *dyn = (Elf64_Dyn *)(p_dynamic->p_vaddr + load_base);
+      for (; dyn->d_tag != DT_NULL ; dyn++)
+	if (dyn->d_tag == DT_PLTGOT)
+	  {
+	    /* ??? Glibc seems to have relocated this already.  */
+	    *pgp = dyn->d_un.d_ptr;
+	    break;
+	  }
+    }
+  else
+    {
+      /* Otherwise this is a static executable with no _DYNAMIC.
+	 The gp is constant program-wide.  */
+      register unsigned long gp __asm__("gp");
+      *pgp = gp;
     }
 
-  return NULL;
+  return f;
 }
 
-/* Return a pointer to the FDE for the function containing PC.  */
-fde *
-__ia64_find_fde (void *pc, void **pc_base)
+/* Return a pointer to the unwind table entry for the function
+   containing PC.  */
+
+struct unw_table_entry *
+_Unwind_FindTableEntry (void *pc, unsigned long *segment_base,
+                        unsigned long *gp)
 {
-  fde *ret;
+  struct unw_table_entry *ret;
   struct link_map *map;
 
   /* Check the main application first, hoping that most of the user's
      code is there instead of in some library.  */
-  ret = find_fde_for_dso ((Elf64_Addr)pc, __ia64_app_header);
+  ret = find_fde_for_dso ((Elf64_Addr)pc, __ia64_app_header,
+			  segment_base, gp);
   if (ret)
-    {
-      *pc_base = __ia64_app_header;
-      return ret;
-    }
+    return ret;
 
   /* Glibc is probably unique in that we can (with certain restrictions)
      dynamicly load libraries into staticly linked applications.  Thus
      we _always_ check _dl_loaded.  */
 
-  if (&_dl_load_lock)
-    __libc_lock_lock (_dl_load_lock);
+  __libc_lock_lock (_dl_load_lock);
 
   for (map = _dl_loaded; map ; map = map->l_next)
     {
       /* Skip the main application's entry.  */
       if (map->l_name[0] == 0)
 	continue;
-      ret = find_fde_for_dso ((Elf64_Addr)pc, (Elf64_Ehdr *)map->l_addr);
+      ret = find_fde_for_dso ((Elf64_Addr)pc, (Elf64_Ehdr *)map->l_addr,
+			      segment_base, gp);
       if (ret)
 	break;
     }
 
-  if (&_dl_load_lock)
-    __libc_lock_unlock (_dl_load_lock);
+  __libc_lock_unlock (_dl_load_lock);
 
-  *pc_base = (void *)(map ? map->l_addr : 0);
   return ret;
 }

@@ -3084,12 +3084,11 @@ init_decl_processing ()
   builtin_function
     ("__builtin_eh_return",
      build_function_type (void_type_node,
-			  tree_cons (NULL_TREE, ptr_type_node,
+			  tree_cons (NULL_TREE,
+				     type_for_mode (ptr_mode, 0),
 				     tree_cons (NULL_TREE,
-						type_for_mode (ptr_mode, 0),
-						tree_cons (NULL_TREE,
-							   ptr_type_node,
-							   endlink)))),
+						ptr_type_node,
+						endlink))),
      BUILT_IN_EH_RETURN, BUILT_IN_NORMAL, NULL_PTR);
 
   pedantic_lvalues = pedantic;

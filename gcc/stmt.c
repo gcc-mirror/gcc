@@ -3380,28 +3380,6 @@ is_body_block (stmt)
   return 0;
 }
 
-/* Mark top block of block_stack as an implicit binding for an
-   exception region.  This is used to prevent infinite recursion when
-   ending a binding with expand_end_bindings.  It is only ever called
-   by expand_eh_region_start, as that it the only way to create a
-   block stack for a exception region.  */
-
-void
-mark_block_as_eh_region ()
-{
-  block_stack->data.block.exception_region = 1;
-  if (block_stack->next
-      && block_stack->next->data.block.conditional_code)
-    {
-      block_stack->data.block.conditional_code
-	= block_stack->next->data.block.conditional_code;
-      block_stack->data.block.last_unconditional_cleanup
-	= block_stack->next->data.block.last_unconditional_cleanup;
-      block_stack->data.block.cleanup_ptr
-	= block_stack->next->data.block.cleanup_ptr;
-    }
-}
-
 /* True if we are currently emitting insns in an area of output code
    that is controlled by a conditional expression.  This is used by
    the cleanup handling code to generate conditional cleanup actions.  */
@@ -3410,29 +3388,6 @@ int
 conditional_context ()
 {
   return block_stack && block_stack->data.block.conditional_code;
-}
-
-/* Mark top block of block_stack as not for an implicit binding for an
-   exception region.  This is only ever done by expand_eh_region_end
-   to let expand_end_bindings know that it is being called explicitly
-   to end the binding layer for just the binding layer associated with
-   the exception region, otherwise expand_end_bindings would try and
-   end all implicit binding layers for exceptions regions, and then
-   one normal binding layer.  */
-
-void
-mark_block_as_not_eh_region ()
-{
-  block_stack->data.block.exception_region = 0;
-}
-
-/* True if the top block of block_stack was marked as for an exception
-   region by mark_block_as_eh_region.  */
-
-int
-is_eh_region ()
-{
-  return cfun && block_stack && block_stack->data.block.exception_region;
 }
 
 /* Emit a handler label for a nonlocal goto handler.
@@ -3637,26 +3592,7 @@ expand_end_bindings (vars, mark_ends, dont_jump_in)
      int mark_ends;
      int dont_jump_in;
 {
-  register struct nesting *thisblock;
-
-  while (block_stack->data.block.exception_region)
-    {
-      /* Because we don't need or want a new temporary level and
-	 because we didn't create one in expand_eh_region_start,
-	 create a fake one now to avoid removing one in
-	 expand_end_bindings.  */
-      push_temp_slots ();
-
-      block_stack->data.block.exception_region = 0;
-
-      expand_end_bindings (NULL_TREE, 0, 0);
-    }
-
-  /* Since expand_eh_region_start does an expand_start_bindings, we
-     have to first end all the bindings that were created by
-     expand_eh_region_start.  */
-
-  thisblock = block_stack;
+  register struct nesting *thisblock = block_stack;
 
   /* If any of the variables in this scope were not used, warn the
      user.  */
@@ -4072,14 +4008,10 @@ expand_decl_cleanup (decl, cleanup)
 	  start_sequence ();
 	}
 
-      /* If this was optimized so that there is no exception region for the
-	 cleanup, then mark the TREE_LIST node, so that we can later tell
-	 if we need to call expand_eh_region_end.  */
-      if (! using_eh_for_cleanups_p
-	  || expand_eh_region_start_tree (decl, cleanup))
+      if (! using_eh_for_cleanups_p)
 	TREE_ADDRESSABLE (t) = 1;
-      /* If that started a new EH region, we're in a new block.  */
-      thisblock = block_stack;
+      else
+	expand_eh_region_start ();
 
       if (cond_context)
 	{
@@ -4104,82 +4036,6 @@ expand_decl_cleanup (decl, cleanup)
 	  thisblock->data.block.cleanup_ptr = &thisblock->data.block.cleanups;
 	}
     }
-  return 1;
-}
-
-/* Arrange for the top element of the dynamic cleanup chain to be
-   popped if we exit the current binding contour.  DECL is the
-   associated declaration, if any, otherwise NULL_TREE.  If the
-   current contour is left via an exception, then __sjthrow will pop
-   the top element off the dynamic cleanup chain.  The code that
-   avoids doing the action we push into the cleanup chain in the
-   exceptional case is contained in expand_cleanups.
-
-   This routine is only used by expand_eh_region_start, and that is
-   the only way in which an exception region should be started.  This
-   routine is only used when using the setjmp/longjmp codegen method
-   for exception handling.  */
-
-int
-expand_dcc_cleanup (decl)
-     tree decl;
-{
-  struct nesting *thisblock;
-  tree cleanup;
-
-  /* Error if we are not in any block.  */
-  if (cfun == 0 || block_stack == 0)
-    return 0;
-  thisblock = block_stack;
-
-  /* Record the cleanup for the dynamic handler chain.  */
-
-  cleanup = make_node (POPDCC_EXPR);
-
-  /* Add the cleanup in a manner similar to expand_decl_cleanup.  */
-  thisblock->data.block.cleanups
-    = tree_cons (decl, cleanup, thisblock->data.block.cleanups);
-
-  /* If this block has a cleanup, it belongs in stack_block_stack.  */
-  stack_block_stack = thisblock;
-  return 1;
-}
-
-/* Arrange for the top element of the dynamic handler chain to be
-   popped if we exit the current binding contour.  DECL is the
-   associated declaration, if any, otherwise NULL_TREE.  If the current
-   contour is left via an exception, then __sjthrow will pop the top
-   element off the dynamic handler chain.  The code that avoids doing
-   the action we push into the handler chain in the exceptional case
-   is contained in expand_cleanups.
-
-   This routine is only used by expand_eh_region_start, and that is
-   the only way in which an exception region should be started.  This
-   routine is only used when using the setjmp/longjmp codegen method
-   for exception handling.  */
-
-int
-expand_dhc_cleanup (decl)
-     tree decl;
-{
-  struct nesting *thisblock;
-  tree cleanup;
-
-  /* Error if we are not in any block.  */
-  if (cfun == 0 || block_stack == 0)
-    return 0;
-  thisblock = block_stack;
-
-  /* Record the cleanup for the dynamic handler chain.  */
-
-  cleanup = make_node (POPDHC_EXPR);
-
-  /* Add the cleanup in a manner similar to expand_decl_cleanup.  */
-  thisblock->data.block.cleanups
-    = tree_cons (decl, cleanup, thisblock->data.block.cleanups);
-
-  /* If this block has a cleanup, it belongs in stack_block_stack.  */
-  stack_block_stack = thisblock;
   return 1;
 }
 
@@ -4286,20 +4142,8 @@ expand_cleanups (list, dont_do, in_fixup, reachable)
 	  expand_cleanups (TREE_VALUE (tail), dont_do, in_fixup, reachable);
 	else
 	  {
-	    if (! in_fixup)
-	      {
-		tree cleanup = TREE_VALUE (tail);
-
-		/* See expand_d{h,c}c_cleanup for why we avoid this.  */
-		if (TREE_CODE (cleanup) != POPDHC_EXPR
-		    && TREE_CODE (cleanup) != POPDCC_EXPR
-		    /* See expand_eh_region_start_tree for this case.  */
-		    && ! TREE_ADDRESSABLE (tail))
-		  {
-		    cleanup = protect_with_terminate (cleanup);
-		    expand_eh_region_end (cleanup);
-		  }
-	      }
+	    if (! in_fixup && using_eh_for_cleanups_p)
+	      expand_eh_region_end_cleanup (TREE_VALUE (tail));
 
 	    if (reachable)
 	      {
@@ -4312,19 +4156,18 @@ expand_cleanups (list, dont_do, in_fixup, reachable)
 		   times, the control paths are non-overlapping so the
 		   cleanups will not be executed twice.  */
 
-		/* We may need to protect fixups with rethrow regions.  */
-		int protect = (in_fixup && ! TREE_ADDRESSABLE (tail));
+		/* We may need to protect from outer cleanups.  */
+		if (in_fixup && using_eh_for_cleanups_p)
+		  {
+		    expand_eh_region_start ();
 
-		if (protect)
-		  expand_fixup_region_start ();
+		    expand_expr (TREE_VALUE (tail), const0_rtx, VOIDmode, 0);
 
-		/* The cleanup might contain try-blocks, so we have to
-		   preserve our current queue.  */
-		push_ehqueue ();
-		expand_expr (TREE_VALUE (tail), const0_rtx, VOIDmode, 0);
-		pop_ehqueue ();
-		if (protect)
-		  expand_fixup_region_end (TREE_VALUE (tail));
+		    expand_eh_region_end_fixup (TREE_VALUE (tail));
+		  }
+		else
+		  expand_expr (TREE_VALUE (tail), const0_rtx, VOIDmode, 0);
+
 		free_temp_slots ();
 	      }
 	  }

@@ -856,36 +856,6 @@ do {									\
     }									\
 } while (0)
 
-/* This is how to output an assembler line defining an address 
-   constant for the dwarf call unwinding information.
-   For -mrelocatable, we mark all addresses that need to be fixed up
-   in the .fixup section.  */
-
-#define	ASM_OUTPUT_DWARF_ADDR(FILE,LABEL)				\
-do {									\
-  if (TARGET_RELOCATABLE)						\
-    {									\
-      char buf[256];							\
-									\
-      ASM_GENERATE_INTERNAL_LABEL (buf, "LCP", fixuplabelno);		\
-      fixuplabelno++;							\
-      ASM_OUTPUT_LABEL (FILE, buf);					\
-      fprintf (FILE, "\t.%dbyte\t", POINTER_SIZE / BITS_PER_UNIT);	\
-      assemble_name (FILE, LABEL);					\
-      fprintf (FILE, "\n");						\
-      fprintf (FILE, "\t.section \".fixup\",\"aw\"\n");			\
-      ASM_OUTPUT_ALIGN (FILE, 2);					\
-      fprintf (FILE, "\t.long\t");					\
-      assemble_name (FILE, buf);					\
-      fprintf (FILE, "\n\t.previous\n");				\
-    }									\
-  else									\
-    {									\
-      fprintf (FILE, "\t.%dbyte\t", POINTER_SIZE / BITS_PER_UNIT);	\
-      assemble_name (FILE, LABEL);					\
-    }									\
-} while (0)
-
 /* This is the end of what might become sysv4.h.  */
 
 /* Allow stabs and dwarf, for now, make stabs the default debugging type,

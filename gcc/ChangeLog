@@ -1,3 +1,360 @@
+2001-05-12  Richard Henderson  <rth@redhat.com> 
+
+	EH merge from mainline, continued.
+
+	2001-05-12  Richard Henderson  <rth@redhat.com>
+        * dwarf2asm.c (size_of_encoded_value): New function.
+        * dwarf2asm.h: Declare it.
+        * except.c (output_function_exception_table): Align the TType
+        array only as wide as the encoding.
+
+	2001-05-11  Richard Henderson  <rth@redhat.com>
+	* defaults.h (ASM_PREFERRED_EH_DATA_FORMAT): New.
+	* dwarf2asm.c (dw2_force_const_mem, dw2_output_indirect_constant_1,
+	dw2_output_indirect_constants, dw2_asm_output_encoded_addr_rtx): New.
+	* dwarf2asm.h (dw2_asm_output_encoded_addr_rtx): Prototype.
+	(dw2_output_indirect_constants): Prototype.
+	* dwarf2out.c (dwarf2out_begin_prologue): Generate
+	current_function_func_begin_label if we'll need it for EH.  Exit
+	early for IA64_UNWIND_INFO.
+	* except.c: Get DW_EH_PE_* defines from dwarf2.h.
+	(eh_data_format_name): Update for indirect references.
+	(output_function_exception_table): Care for IA64_UNWIND_INFO.
+	Handle ASM_PREFERRED_EH_DATA_FORMAT.
+	* except.h (MUST_USE_SJLJ_EXCEPTIONS): IA64_UNWIND_INFO needn't
+	define HAVE_eh_return etc.
+	* final.c (final_start_function): Always call dwarf2out_begin_prologue.
+	(final_end_function): Don't call output_function_exception_table.
+	* toplev.c (compile_file): Call dw2_output_indirect_constants.
+	(rest_of_compilation): Invoke output_function_exception_table 
+	for ia64 before assemble_end_function.
+	* tm.texi (ASM_PREFERRED_EH_DATA_FORMAT): Document.
+	(ASM_MAYBE_OUTPUT_ENCODED_ADDR_RTX): Document.
+
+	* unwind-dw2.c (_Unwind_GetTextRelBase, _Unwind_GetDataRelBase): New.
+	* unwind.h: Declare them.
+	* libgcc-std.ver: Export them.
+	* unwind-pe.h: New file.
+
+	* config/alpha/elf.h (ASM_PREFERRED_EH_DATA_FORMAT): New.
+
+	* config/ia64/fde-glibc.c: Use "struct unw_table_entry"
+	instead of "fde".
+	(find_fde_for_dso): Extract DT_PLTGOT.
+	(_Unwind_FindTableEntry): Rename from __ia64_find_fde; return
+	the segment and gp as well.
+	* config/ia64/frame-ia64.c: Remove file.
+	* config/ia64/frame-ia64.h: Remove file.
+	* config/ia64/unwind-ia64.c: New file.
+	* config/ia64/unwind-ia64.h: New file.
+	* config/ia64/ia64.h (ASM_OUTPUT_EH_CHAR): Remove.
+	(ASM_OUTPUT_EH_SHORT, ASM_OUTPUT_EH_INT): Remove.
+	(ASM_OUTPUT_EH_DOUBLE_INT): Remove.
+	(ASM_PREFERRED_EH_DATA_FORMAT): New.
+	(ASM_MAYBE_OUTPUT_ENCODED_ADDR_RTX): New.
+	(IA64_UNWIND_INFO): Re-enable.
+	(HANDLER_SECTION): Remove.
+	(EH_RETURN_DATA_REGNO): New.
+	* config/ia64/ia64.md (exception_receiver): Remove.
+	* config/ia64/t-glibc (LIB2ADDEH): Re-enable.
+	* config/ia64/t-ia64 (LIB2ADDEH): Re-enable.
+
+	Mon May  7 09:30:14 2001  Jeffrey A Law  (law@cygnus.com)
+	* except.c (sjlj_mark_call_sites): Do not search for assignments to
+	non-argumment registers that are mentioned in CALL_INSN_FUNCTION_USAGE.
+
+	2001-05-05  Richard Henderson  <rth@redhat.com>
+	* except.c (remove_fixup_regions): Adjust REG_EH_REGION notes
+	to the parent of the fixup region.
+
+	2001-04-28  Jason Merrill  <jason_merrill@redhat.com>
+	* except.c (expand_eh_region_start): Don't start a new block.
+	(expand_eh_region_end): Don't end a block.
+	* stmt.c (expand_end_bindings): Don't end EH blocks.
+	(expand_decl_cleanup): Starting an EH region won't change the block.
+	(mark_block_as_eh_region, mark_block_as_not_eh_region): Lose.
+	(is_eh_region): Lose.
+	* tree.h: Adjust.
+
+	2001-04-27  Jeffrey Oldham  <oldham@codesourcery.com>
+	* except.c (expand_eh_region_end_cleanup): word_mode, not Pmode.
+
+	2001-04-27  Jason Merrill  <jason_merrill@redhat.com>
+	* except.c (get_exception_filter): word_mode, not Pmode.
+
+	2001-04-26  Andrew Haley  <aph@cambridge.redhat.com>
+	* except.c (expand_eh_region_end_cleanup): Force pending stack
+	adjust before emitting label that branches around cleanup code.
+
+	2001-04-25  Richard Henderson  <rth@redhat.com>
+	* config/i386/i386.c (ix86_expand_epilogue): Properly compute size
+	of registers to restore along non eh_return path.
+
+	2001-04-24  Jason Merrill  <jason_merrill@redhat.com>
+	* except.c (reachable_handlers): Step out one level from a RESX.
+
+	* except.c (struct eh_region): Rename 'last' to 'resume'.
+	(mark_eh_region, duplicate_eh_region_1): Adjust.
+	(expand_eh_region_end_cleanup): Remember the jump, not the barrier.
+	(build_post_landing_pads): Likewise.
+	(expand_end_catch, expand_eh_region_end_allowed): Don't set it.
+	(expand_eh_region_end_must_not_throw): Likewise.
+	(connect_post_landing_pads): Thread (only) regions with non-deleted
+	resume insns.
+
+	* except.c (expand_eh_region_end_cleanup): Save the EH return data
+	registers around the cleanup.
+	(get_exception_filter): New fn.
+	(finish_eh_generation): Use it.
+
+	2001-04-03  Richard Henderson  <rth@redhat.com>
+	* rtl.h (LCT_THROW): New.
+	* calls.c (emit_library_call_value_1): Handle it.
+	* except.c (connect_post_landing_pads): Use it.
+
+	2001-03-28  Richard Henderson  <rth@redhat.com>
+	* except.c: Rewrite entirely for IA-64 ABI exception handling.
+	* except.h: Likewise.
+
+	* Makefile.in (LIB2ADDEH): Mention unwind-dw2*.c
+	(LIB2ADDEHDEP): New.
+	(LIB2FUNCS_EH): Remove.
+	(LIB2ADD): Remove LIB2ADDEH.
+	(libgcc.mk): Pass LIB2ADDEHDEP, don't pass LIB2FUNCS_EH.
+	(LIBGCC_DEPS): Use LIB2ADDEHDEP.
+	(crt{begin,end}[S].o): Likewise.
+	(except.o): Update includes.
+	* mklibgcc.in: Remove LIB2FUNCS_EH, add LIB2ADDEH, LIB2ADDEHDEP.
+	(libgcc2_c_dep): Use LIB2ADDEHDEP.
+
+	* basic-block.h (struct basic_block_def): Remove eh_beg, eh_end.
+	* bb-reorder.c (reorder_basic_blocks): Don't disable for EH.
+	* builtins.def (BUILT_IN_EH_RETURN_DATA_REGNO): New.
+	* builtins.c (expand_builtin): Implement it.
+	[BUILT_IN_EH_RETURN]: Update for nr arguments change.
+	* c-common.c (c_common_nodes_and_builtins): Declare it.
+	* c-decl.c (init_decl_processing): Update __builtin_eh_return.
+	* calls.c (libfunc_nothrow): Remove.
+	(emit_library_call_value_1): Don't call it.
+	* crtstuff.c: Include unwind-dw2-fde.h instead of frame.h.
+	* dwarf2.h (dwarf_call_frame_info): Add dwarf2.1 elements.
+	(DW_EH_PE_*): New defines for pointer encoding in .eh_frame.
+	* dwarf2out.c (struct dw_fde_struct): Add uses_eh_lsda, funcdef_number.
+	(current_funcdef_number): Globalize.
+	(output_call_frame_info): Emit frame data if an lsda is needed.
+	Generate augmentation for personality routine.  Don't play with
+	difference symbols.
+	(dwarf2out_begin_prologue): Record funcdef_number.
+	* dwarf2out.h (current_funcdef_number): Declare.
+	* expr.c (expand_expr): Update for except.h name changes.
+	Remove POPDCC_EXPR, POPDHC_EXPR.  Add EXC_PTR_EXPR.
+	* expr.h (LTI_throw, LTI_rethrow): Remove.
+	(LTI_sjthrow, LTI_sjpopnthrow, LTI_terminate): Remove.
+	(LTI_eh_rtime_match): Remove.
+	(LTI_unwind_resume, LTI_eh_personality): Add.
+	(LTI_unwind_sjlj_register, LTI_unwind_sjlj_unregister): Add.
+	* final.c (final): Don't call check_exception_handler_labels,
+	init_insn_eh_region, or free_insn_eh_region.
+	(final_scan_insn): Always emit debug labels for 
+	NOTE_INSN_EH_REGION notes.
+	* flow.c (entry_exit_blocks): Remove eh_beg, eh_end.
+	(record_active_eh_regions): Remove.
+	(count_basic_blocks): Check all instructions for REG_EH_REGION.
+	Use can_throw_internal.
+	(find_basic_blocks_1): Likewise.
+	(move_stray_eh_region_notes): Remove.
+	(find_label_refs): No eh_return_stub_label.
+	(make_edges): Likewise.  No init/free_eh_nesting_info.  Handle RESX.
+	(make_eh_edge): No eh_nest_info.  Update for reachable_handlers
+	changes.
+	(delete_unreachable_blocks): Don't track deleted handlers.
+	(flow_delete_block): Use maybe_remove_eh_handler.
+	(delete_eh_regions): Remove.
+	(merge_blocks): Don't check for eh region match.
+	(mark_regs_live_at_end): Handle EH_RETURN_DATA_REGNO, 
+	EH_RETURN_STACKADJ_RTX, EH_RETURN_HANDLER_RTX.
+	(init_propagate_block_info): Disable dead frame store optimization
+	when current_function_calls_eh_return.
+	(dump_bb): Don't print eh_beg, eh_end.
+	* function.c (fixup_var_refs): No catch_clauses.
+	(expand_function_end): Likewise.  Call expand_eh_return before
+	the return register use.  Call sjlj_emit_function_exit_after.
+	(expand_function_start): Force pseudo DECL_RESULT if sjlj exceptions.
+	* function.h (struct function): Add calls_eh_return, uses_eh_lsda.
+	* ifcvt.c (dead_or_predicable): Remove eh region check.
+	* integrate.c (function_cannot_inline_p): Disallow __builtin_eh_return.
+	Don't check for EH vs parameters.
+	(expand_inline_function_eh_labelmap, eif_eh_map): Remove.
+	(expand_inline_function): Call duplicate_eh_regions.
+	(copy_insn_list): Don't handle NOTE_INSN_EH_REGION_BEG/END.
+	(copy_insn_notes): Remap REG_EH_REGION notes.
+	(copy_rtx_and_substitute): Remove SYMBOL_REF_NEED_ADJUST check.
+	* jump.c (jump_optimize_1): Don't init/free_insn_eh_region, nor
+	check_exception_handler_labels, nor exception_optimize.
+	(find_cross_jump): No EH region check.
+	* optabs.c (init_optabs): Update for changed eh libfuncs.
+	* rtl.def (RESX): New.
+	* rtl.h (SYMBOL_REF_NEED_ADJUST): Remove.
+	* stmt.c (expand_decl_cleanup): Simplify using_eh_for_cleanups_p
+	checks.  Update for except.h name changes.
+	(expand_cleanups): Likewise.
+	(expand_dcc_cleanup, expand_dhc_cleanup): Remove.
+	* toplev.c (dump_file_index, dump_file): Add .02.eh dump.
+	(compile_file): Call init_eh before init_optabs.  Don't
+	output_exception_table here.
+	(rest_of_compilation): Call convert_from_eh_region_ranges,
+	convert_to_eh_region_ranges, output_function_exception_table.
+	Don't emit_eh_context.
+	* tree.def (POPDHC_EXPR, POPDCC_EXPR): Remove.
+	(EXC_PTR_EXPR): New.
+
+	* md.texi (eh_epilogue): Remove.
+	(eh_return): Document.
+	* tm.texi (EH_RETURN_DATA_REGNO): Document.
+	(EH_RETURN_STACKADJ_RTX, EH_RETURN_HANDLER_RTX): Document.
+
+	* eh-common.h: Remove file.
+	* frame-dwarf2.c, frame.c, frame.h: Remove files.
+	* libgcc2.c (L_eh): Remove.
+
+	* unwind-dw2-fde.c: New file, largely copied from frame.c.
+	* unwind-dw2-fde.h: New file.
+	* unwind-dw2.c: New file, largely cribbed from frame-dwarf2.c.
+	* unwind-sjlj.c, unwind.h, unwind.inc: New files.
+	* libgcc-std.ver: Update for eh symbols.
+
+	* config/alpha/alpha.c (alpha_sa_mask): Add EH_RETURN_DATA_REGNOs.
+	(alpha_mark_machine_status): No eh_epilogue_sp_ofs ...
+	(alpha_expand_epilogue): ... use EH_RETURN_STACKADJ_RTX instead.
+	* config/alpha/alpha.h (machine_function): Remove eh_epilogue_sp_ofs.
+	(EH_RETURN_DATA_REGNO): New.
+	(EH_RETURN_STACKADJ_RTX, EH_RETURN_HANDLER_RTX): New.
+	* config/alpha/alpha.md (eh_epilogue): Remove.
+	(exception_receiver): Use $26 for ldgp input.
+	* config/alpha/linux.h (MD_FALLBACK_FRAME_STATE_FOR): New.
+
+	* config/i386/i386.c (general_no_elim_operand): Disallow virtual regs.
+	(ix86_save_reg): If maybe_eh_return, true for EH_RETURN_DATA_REGNOs.
+	True for pic register if current_function_calls_eh_return.
+	(ix86_expand_epilogue): Change "emit_return" argument into "style".
+	Handle eh_return requirements.
+	* config/i386/i386.h (EH_RETURN_DATA_REGNO): New.
+	(EH_RETURN_STACKADJ_RTX): New.
+	* config/i386/i386.md (exception_receiver): Remove.
+	(eh_return, eh_return_1): New.
+	* config/i386/linux.h (MD_FALLBACK_FRAME_STATE_FOR): New.
+
+	* config/rs6000/rs6000.c (rs6000_stack_info): Allocate space
+	for eh_return data registers.
+	(rs6000_emit_prologue): Save eh_return data registers.
+	(rs6000_emit_epilogue): Force inline restores if eh_return.
+	Restore eh_return data registers.  Mind EH_RETURN_STACKADJ_RTX.
+	* config/rs6000/rs6000.h (rs6000_stack_t): Add ehrd_offset.
+	(EH_RETURN_DATA_REGNO, EH_RETURN_STACKADJ_RTX): New.
+	(EPILOGUE_USES): True for TOC_REGISTER if calls_eh_return and
+	the target uses one.
+	* config/rs6000/rs6000.md (eh_epilogue, eh_reg_restore): Remove.
+	(return_eh_si, return_eh_di): Remove.
+	(eh_return): New, from corpse of eh_epilogue.
+	(eh_set_lr_si, eh_set_lr_di): New.
+
+	* config/sparc/sparc.c (eligible_for_epilogue_delay): False if
+	current_function_calls_eh_return.
+	(output_function_epilogue): Handle eh_return.
+	* config/sparc/sparc.h (DOESNT_NEED_UNWINDER): Remove.
+	(EH_RETURN_DATA_REGNO): New.
+	(EH_RETURN_STACKADJ_RTX): New.
+	(EH_RETURN_HANDLER_RTX): New.
+	* config/sparc/sparc.md (call/short branch peepholes): Check    
+	can_throw_internal instead of in_same_eh_region.
+
+	2001-03-17  Richard Henderson  <rth@redhat.com>
+	* dwarf2out.c (queue_reg_save): New.
+	(flush_queued_reg_saves, clobbers_queued_reg_save): New.
+	(dwarf2out_frame_debug_expr): Call queue_reg_save instead of
+	dwarf2out_reg_save.
+	(dwarf2out_frame_debug): Call flush_queued_reg_saves when needed.
+	(cfa, cfa_store, cfa_temp): Make static.
+	* final.c (final_scan_insn): Always call dwarf2out_frame_debug.
+
+	2001-03-16  Richard Henderson  <rth@redhat.com>
+	* dwarf2asm.c (dw2_asm_output_data): Mask data to the output size.
+	(dw2_asm_output_data_uleb128): Use space not tab after .uleb128.
+	(dw2_asm_output_delta_uleb128): Likewise.
+	(dw2_asm_output_delta_sleb128): Similarly.
+	(dw2_asm_output_data_sleb128): Similarly.  Print number in decimal.
+
+	2001-03-15  Richard Henderson  <rth@redhat.com>
+	* dwarf2asm.c (dw2_asm_output_offset): Use ASM_OUTPUT_DWARF_OFFSET
+	if provided by the target.
+	(dw2_asm_output_pcrel): Likewise with ASM_OUTPUT_DWARF_PCREL.
+	(dw2_asm_output_addr): New.
+	* dwarf2asm.h (dw2_asm_output_addr): Declare.
+	* dwarf2out.c (output_cfi): Use it for program addresses.
+	(output_call_frame_info, output_die): Likewise.
+	(output_aranges, output_line_info): Likewise.
+
+	2001-03-06  Krister Walfridsson  <cato@df.lth.se>
+	* dwarf2asm.c (dw2_asm_output_delta): Fix smallest_mode_for_size call.
+
+	2001-03-02  Richard Henderson  <rth@redhat.com>
+	* Makefile.in (OBJS): Add dwarf2asm.o.
+	* dwarf2asm.c, dwarf2asm.h: New files.
+	* dwarf2out.c (*): Use them.
+	(size_of_uleb128, size_of_sleb128): Remove.
+	(output_uleb128, output_sleb128): Remove.
+	(UNALIGNED_SHORT_ASM_OP, UNALIGNED_INT_ASM_OP): Remove.
+	(UNALIGNED_DOUBLE_INT_ASM_OP, ASM_BYTE_OP): Remove.
+	(UNALIGNED_OFFSET_ASM_OP, UNALIGNED_WORD_ASM_OP): Remove.
+	(FDE_LABEL, LINE_NUMBER_BEGIN_LABEL, LINE_NUMBER_END_LABEL): New.
+	(ASM_OUTPUT_DWARF_DATA1, ASM_OUTPUT_DWARF_DELTA1): Remove.
+	(ASM_OUTPUT_DWARF_DATA2, ASM_OUTPUT_DWARF_DELTA2): Remove.
+	(ASM_OUTPUT_DWARF_DATA4, ASM_OUTPUT_DWARF_DELTA4): Remove.
+	(ASM_OUTPUT_DWARF_DATA, ASM_OUTPUT_DWARF_DELTA): Remove.
+	(ASM_OUTPUT_DWARF_ADDR, ASM_OUTPUT_DWARF_ADDR_DATA): Remove.
+	(ASM_OUTPUT_DWARF_ADDR_DELTA, ASM_OUTPUT_DWARF_ADDR_CONST): Remove.
+	(ASM_OUTPUT_DWARF_OFFSET4, ASM_OUTPUT_DWARF_OFFSET): Remove.
+	(ASM_OUTPUT_DWARF_CONST_DOUBLE): Remove.
+	(ASM_OUTPUT_DWARF_NSTRING, ASM_OUTPUT_DWARF_STRING): Remove.
+	(dwarf2out_frame_debug): Remove unused variables.
+	(output_loc_operands): Don't abort on 8 byte constants if
+	host integers are wide enough.
+	(output_symbolic_ref): Remove.
+	(size_of_die): Don't assume 4 byte host integers.
+	(output_line_info): Use ASM_GENERATE_INTERNAL_LABEL for begin
+	and end labels.
+	(add_const_value_attribute) [CONST_INT]: Verify we're not doing
+	something stupid with HOST_WIDE_INT to long truncation.
+	[CONST_DOUBLE]: Likewise.
+
+	* config/arm/conix-elf.h (UNALIGNED_WORD_ASM_OP): Remove.
+	(ASM_OUTPUT_DWARF2_ADDR_CONST, ASM_OUTPUT_DWARF_ADDR_CONST): Remove.
+	* config/arm/unknown-elf.h: Likewise.
+	* config/rs6000/aix.h (UNALIGNED_SHORT_ASM_OP): New.
+	(UNALIGNED_INT_ASM_OP, UNALIGNED_DOUBLE_INT_ASM_OP): New.
+	(ASM_OUTPUT_DWARF_ADDR_VAR, ASM_OUTPUT_DWARF_DELTA_VAR): Remove.
+	(ASM_OUTPUT_DWARF_DELTA2, ASM_OUTPUT_DWARF_DELTA4): Remove.
+	(ASM_OUTPUT_DWARF_DELTA, ASM_OUTPUT_DWARF_ADDR_DELTA): Remove.
+	(ASM_OUTPUT_DWARF_ADDR, ASM_OUTPUT_DWARF_DATA4): Remove.
+	(ASM_OUTPUT_DWARF_DATA2, ASM_OUTPUT_DWARF_OFFSET4): Remove.
+	(ASM_OUTPUT_DWARF_OFFSET): Remove.
+	* config/rs6000/sysv4.h (ASM_OUTPUT_DWARF_ADDR): Remove.
+	* config/sparc/sp64-elf.h (UNALIGNED_DOUBLE_INT_ASM_OP): New.
+	(UNALIGNED_LONGLONG_ASM_OP, ASM_OUTPUT_DWARF_ADDR): Remove.
+	(ASM_OUTPUT_DWARF_ADDR_CONST, ASM_OUTPUT_DWARF_REF): Remove.
+
+	Sat Feb 24 03:32:50 CET 2001  Jan Hubicka  <jh@suse.cz>
+	* i386.c (ix86_frame): New structure.
+	(ix86_compute_frame_size): Kill.
+	(ix86_compute_frame_layout): New.
+	(ix86_save_reg): New.
+	(ix86_can_use_return_insn_p): Use frame layout stuff.
+	(ix86_expand_prologue): Likewise.
+	(ix86_expand_epilogue): Likewise.
+	(ix86_initial_elimination_offset): Likewise.
+	(ix86_nsaved_regs): Use ix86_save_reg.
+	(ix86_emit_save_regs): Likewise.
+
 2001-05-12  Richard Henderson  <rth@redhat.com>
 
 	EH merge from mainline, parts 5 - 16.

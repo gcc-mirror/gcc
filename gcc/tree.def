@@ -770,17 +770,6 @@ DEFTREECODE (TRY_FINALLY_EXPR, "try_finally", 'e', 2)
    Operand 1 is the rtx for a variable in which to store the address
    of where the subroutine should return to.  */
 DEFTREECODE (GOTO_SUBROUTINE_EXPR, "goto_subroutine", 'e', 2)
-
-/* Pop the top element off the dynamic handler chain.  Used in
-   conjunction with setjmp/longjmp based exception handling, see
-   except.c for more details.  This is meant to be used only by the
-   exception handling backend, expand_dhc_cleanup specifically.  */
-DEFTREECODE (POPDHC_EXPR, "popdhc_expr", 's', 0)
-
-/* Pop the top element off the dynamic cleanup chain.  Used in
-   conjunction with the exception handling.  This is meant to be used
-   only by the exception handling backend.  */
-DEFTREECODE (POPDCC_EXPR, "popdcc_expr", 's', 0)
 
 /* These types of expressions have no useful value,
    and always have side effects.  */
@@ -834,6 +823,10 @@ DEFTREECODE (EXPR_WITH_FILE_LOCATION, "expr_with_file_location", 'e', 3)
    Operand 1 contains the case values. The way they're organized is
    front-end implementation defined. */
 DEFTREECODE (SWITCH_EXPR, "switch_expr", 'e', 2)
+
+/* The exception object from the runtime.  */
+DEFTREECODE (EXC_PTR_EXPR, "exc_ptr_expr", 'e', 0)
+
 /*
 Local variables:
 mode:c

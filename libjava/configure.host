@@ -23,7 +23,6 @@ libgcj_flags=
 libgcj_cflags=
 libgcj_cxxflags=
 libgcj_javaflags=
-libgcj_sjlj=
 libgcj_interpreter=
 
 case "${target_optspace}:${host}" in
@@ -71,17 +70,12 @@ case "${host}" in
 	;;
   powerpc*-*)
 	libgcj_interpreter=yes
-	libgcj_sjlj=yes
 	;;
   sparc-*)
         ;;
   ia64-*)
         libgcj_flags="${libgcj_flags} -funwind-tables"
-	libgcj_sjlj=yes
 	libgcj_interpreter=yes
-	;;
-  *)
-        libgcj_sjlj=yes
 	;;
 esac
 

@@ -501,9 +501,14 @@ enum dwarf_call_frame_info
     DW_CFA_def_cfa_offset = 0x0e,
     DW_CFA_def_cfa_expression = 0x0f,
     DW_CFA_expression = 0x10,
+    /* Dwarf 2.1 */
+    DW_CFA_offset_extended_sf = 0x11,
+    DW_CFA_def_cfa_sf = 0x12,
+    DW_CFA_def_cfa_offset_sf = 0x13,
+
     /* SGI/MIPS specific */
     DW_CFA_MIPS_advance_loc8 = 0x1d,
-
+    
     /* GNU extensions */
     DW_CFA_GNU_window_save = 0x2d,
     DW_CFA_GNU_args_size = 0x2e,
@@ -554,3 +559,26 @@ enum dwarf_macinfo_record_type
     DW_MACINFO_end_file = 4,
     DW_MACINFO_vendor_ext = 255
   };
+
+
+/* @@@ For use with GNU frame unwind information.  */
+
+#define DW_EH_PE_absptr		0x00
+#define DW_EH_PE_omit		0xff
+
+#define DW_EH_PE_uleb128	0x01
+#define DW_EH_PE_udata2		0x02
+#define DW_EH_PE_udata4		0x03
+#define DW_EH_PE_udata8		0x04
+#define DW_EH_PE_sleb128	0x09
+#define DW_EH_PE_sdata2		0x0A
+#define DW_EH_PE_sdata4		0x0B
+#define DW_EH_PE_sdata8		0x0C
+#define DW_EH_PE_signed		0x08
+
+#define DW_EH_PE_pcrel		0x10
+#define DW_EH_PE_textrel	0x20
+#define DW_EH_PE_datarel	0x30
+#define DW_EH_PE_funcrel	0x40
+
+#define DW_EH_PE_indirect	0x80

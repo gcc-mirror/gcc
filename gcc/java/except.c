@@ -34,7 +34,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "function.h"
 #include "except.h"
 #include "java-except.h"
-#include "eh-common.h"
 #include "toplev.h"
 
 static void expand_start_java_handler PARAMS ((struct eh_range *));
@@ -250,14 +249,6 @@ method_init_exceptions ()
   whole_range.first_child = NULL;
   whole_range.next_sibling = NULL;
   cache_range_start = 0xFFFFFF;
-  java_set_exception_lang_code ();
-}
-
-void
-java_set_exception_lang_code ()
-{
-  set_exception_lang_code (EH_LANG_Java);
-  set_exception_version_code (1);
 }
 
 /* Add an exception range.  If we already have an exception range
@@ -339,7 +330,7 @@ prepare_eh_table_type (type)
    * (which yields a value with low-order bit 1). */
 
   if (type == NULL_TREE)
-    exp = CATCH_ALL_TYPE;
+    exp = NULL_TREE;
   else if (is_compiled_class (type))
     exp = build_class_ref (type);
   else
@@ -350,7 +341,27 @@ prepare_eh_table_type (type)
   return exp;
 }
 
-/* if there are any handlers for this range, isssue end of range,
+
+/* Build a reference to the jthrowable object being carried in the
+   exception header.  */
+
+tree
+build_exception_object_ref (type)
+     tree type;
+{
+  tree obj;
+
+  /* Java only passes object via pointer and doesn't require adjusting.
+     The java object is immediately before the generic exception header.  */
+  obj = build (EXC_PTR_EXPR, build_pointer_type (type));
+  obj = build (MINUS_EXPR, TREE_TYPE (obj), obj,
+	       TYPE_SIZE_UNIT (TREE_TYPE (obj)));
+  obj = build1 (INDIRECT_REF, type, obj);
+
+  return obj;
+}
+
+/* If there are any handlers for this range, isssue end of range,
    and then all handler blocks */
 static void
 expand_end_java_handler (range)
@@ -361,11 +372,9 @@ expand_end_java_handler (range)
   expand_start_all_catch ();
   for ( ; handler != NULL_TREE; handler = TREE_CHAIN (handler))
     {
-      start_catch_handler (prepare_eh_table_type (TREE_PURPOSE (handler)));
-      /* Push the thrown object on the top of the stack */
+      expand_start_catch (TREE_PURPOSE (handler));
       expand_goto (TREE_VALUE (handler));
-      expand_resume_after_catch ();
-      end_catch_handler ();
+      expand_end_catch ();
     }
   expand_end_all_catch ();
 #if defined(DEBUG_JAVA_BINDING_LEVELS)
@@ -431,31 +440,4 @@ maybe_end_try (start_pc, end_pc)
       expand_end_java_handler (current_range);
       current_range = current_range->outer;
     }
-}
-
-/* Emit the handler labels and their code */
-
-void
-emit_handlers ()
-{
-  if (catch_clauses)
-    {
-      rtx funcend = gen_label_rtx ();
-      emit_jump (funcend);
-
-      emit_insns (catch_clauses);
-      catch_clauses = catch_clauses_last = NULL_RTX;
-      expand_leftover_cleanups ();
-
-      emit_label (funcend);
-    }
-}
-
-/* Resume executing at the statement immediately after the end of an
-   exception region. */
-
-void
-expand_resume_after_catch ()
-{
-  expand_goto (top_label_entry (&caught_return_label_stack));
 }

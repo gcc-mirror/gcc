@@ -103,23 +103,6 @@ rdata_section ()						\
     }									\
   while (0)
 
-/* Don't know how to order these.  UNALIGNED_WORD_ASM_OP is in
-   dwarf2.out. */ 
-#define UNALIGNED_WORD_ASM_OP "\t.4byte\t"
-
-#define ASM_OUTPUT_DWARF2_ADDR_CONST(FILE,ADDR)                  \
- fprintf ((FILE), "%s%s", UNALIGNED_WORD_ASM_OP, ADDR)
-
-#define ASM_OUTPUT_DWARF_ADDR_CONST(FILE,RTX)			\
-  do								\
-    {								\
-      fprintf ((FILE), "%s", UNALIGNED_WORD_ASM_OP);		\
-      output_addr_const ((FILE), (RTX));			\
-      fputc ('\n', (FILE));					\
-    }								\
-  while (0)
-
-
 /* The ARM development system defines __main.  */
 #define NAME__MAIN "__gccmain"
 #define SYMBOL__MAIN __gccmain

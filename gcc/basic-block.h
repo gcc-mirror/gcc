@@ -174,14 +174,12 @@ typedef struct basic_block_def {
 
   /* The index of this block.  */
   int index;
-  /* The loop depth of this block plus one.  */
+
+  /* The loop depth of this block.  */
   int loop_depth;
 
-  /* The active eh region before head and after end.  */
-  int eh_beg, eh_end;
-
-  int count;		/* Expected number of executions: calculated in
-                           profile.c */
+  /* Expected number of executions: calculated in profile.c.  */
+  int count;
 } *basic_block;
 
 /* Number of basic blocks in the current function.  */

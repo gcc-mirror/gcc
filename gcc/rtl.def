@@ -547,6 +547,11 @@ DEF_RTL_EXPR(RETURN, "return", "", 'x')
    For an unconditional trap, make the condition (const_int 1).  */
 DEF_RTL_EXPR(TRAP_IF, "trap_if", "ee", 'x')
 
+/* Placeholder for _Unwind_Resume before we know if a function call
+   or a branch is needed.  Operand 1 is the exception region from
+   which control is flowing.  */
+DEF_RTL_EXPR(RESX, "resx", "i", 'x')
+
 /* ----------------------------------------------------------------------
    Primitive values for use in expressions.
    ---------------------------------------------------------------------- */

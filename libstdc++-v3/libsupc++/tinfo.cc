@@ -27,8 +27,6 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#pragma implementation "typeinfo"
-
 #include <cstddef>
 #include "tinfo.h"
 #include "new"			// for placement new
@@ -40,6 +38,9 @@
 std::type_info::
 ~type_info ()
 { }
+
+std::bad_cast::~bad_cast() throw() { }
+std::bad_typeid::~bad_typeid() throw() { }
 
 #if !__GXX_MERGED_TYPEINFO_NAMES
 

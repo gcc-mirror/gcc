@@ -337,7 +337,7 @@ void _Jv_InterpMethod::run_normal (ffi_cif* cif,
 		      + storage_size * sizeof (_Jv_word));
 
   jobject ex = _this->run (cif, ret, args, inv);
-  if (ex != 0) _Jv_Throw (ex);
+  if (ex != 0) _Jv_Throw ((jthrowable) ex);
 }
 
 void _Jv_InterpMethod::run_synch_object (ffi_cif* cif,
@@ -357,7 +357,7 @@ void _Jv_InterpMethod::run_synch_object (ffi_cif* cif,
   jobject ex = _this->run (cif, ret, args, inv);
   _Jv_MonitorExit (rcv);
 
-  if (ex != 0) _Jv_Throw (ex);
+  if (ex != 0) _Jv_Throw ((jthrowable) ex);
 }
 
 void _Jv_InterpMethod::run_synch_class (ffi_cif* cif,
@@ -377,7 +377,7 @@ void _Jv_InterpMethod::run_synch_class (ffi_cif* cif,
   jobject ex = _this->run (cif, ret, args, inv);
   _Jv_MonitorExit (sync);
 
-  if (ex != 0) _Jv_Throw (ex);
+  if (ex != 0) _Jv_Throw ((jthrowable) ex);
 }
 
 /*

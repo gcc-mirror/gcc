@@ -252,6 +252,7 @@ enum dump_file_index
 {
   DFI_rtl,
   DFI_sibling,
+  DFI_eh,
   DFI_jump,
   DFI_cse,
   DFI_addressof,
@@ -289,7 +290,7 @@ enum dump_file_index
 
    Remaining -d letters:
 
-	"       h      o q   u     "
+	"              o q   u     "
 	"       H  K   OPQ  TUVW YZ"
 */
 
@@ -297,6 +298,7 @@ struct dump_file_info dump_file[DFI_MAX] =
 {
   { "rtl",	'r', 0, 0, 0 },
   { "sibling",  'i', 0, 0, 0 },
+  { "eh",	'h', 0, 0, 0 },
   { "jump",	'j', 0, 0, 0 },
   { "cse",	's', 0, 0, 0 },
   { "addressof", 'F', 0, 0, 0 },
@@ -2166,9 +2168,9 @@ compile_file (name)
   init_regs ();
   init_alias_once ();
   init_decl_processing ();
+  init_eh ();
   init_optabs ();
   init_stmt ();
-  init_eh ();
   init_loop ();
   init_reload ();
   init_function_once ();
@@ -2374,14 +2376,6 @@ compile_file (name)
        loop above.  */
     output_func_start_profiler ();
 
-    /* Now that all possible functions have been output, we can dump
-       the exception table.  */
-
-#ifndef IA64_UNWIND_INFO
-    output_exception_table ();
-#endif
-    free_exception_table ();
-
     check_global_declarations (vec, len);
 
     /* Clean up.  */
@@ -2416,6 +2410,8 @@ compile_file (name)
   timevar_pop (TV_SYMOUT);
 
   /* Output some stuff at end of file if nec.  */
+
+  dw2_output_indirect_constants ();
 
   end_final (dump_base_name);
 
@@ -2795,6 +2791,11 @@ rest_of_compilation (decl)
 	  close_dump_file (DFI_rtl, print_rtl, insns);
 	}
 
+      /* Convert from NOTE_INSN_EH_REGION style notes, and do other
+	 sorts of eh initialization.  Delay this until after the
+         initial rtl dump so that we can see the original nesting.  */
+      convert_from_eh_region_ranges ();
+
       /* If function is inline, and we don't yet know whether to
 	 compile it by itself, defer decision till end of compilation.
 	 finish_compilation will call rest_of_compilation again
@@ -2876,9 +2877,6 @@ rest_of_compilation (decl)
   if ((rtl_dump_and_exit || flag_syntax_only) && !warn_return_type)
     goto exit_rest_of_compilation;
 
-  /* Emit code to get eh context, if needed. */
-  emit_eh_context ();
-
   /* We may have potential sibling or tail recursion sites.  Select one
      (of possibly multiple) methods of performing the call.  */
   if (flag_optimize_sibling_calls)
@@ -2889,6 +2887,19 @@ rest_of_compilation (decl)
       optimize_sibling_and_tail_recursive_calls ();
 
       close_dump_file (DFI_sibling, print_rtl, get_insns ());
+      timevar_pop (TV_JUMP);
+    }
+
+  /* Complete generation of exception handling code.  */
+  find_exception_handler_labels ();
+  if (doing_eh (0))
+    {
+      timevar_push (TV_JUMP);
+      open_dump_file (DFI_eh, decl);
+
+      finish_eh_generation ();
+
+      close_dump_file (DFI_eh, print_rtl, get_insns ());
       timevar_pop (TV_JUMP);
     }
 
@@ -2914,9 +2925,6 @@ rest_of_compilation (decl)
 
   /* Instantiate all virtual registers.  */
   instantiate_virtual_regs (current_function_decl, insns);
-
-  /* Find all the EH handlers.  */
-  find_exception_handler_labels ();
 
   open_dump_file (DFI_jump, decl);
 
@@ -3636,6 +3644,12 @@ rest_of_compilation (decl)
     }
 #endif
 
+#ifndef STACK_REGS
+  /* ??? Do this before shorten branches so that we aren't creating
+     insns too late and fail sanity checks in final. */
+  convert_to_eh_region_ranges ();
+#endif
+
   /* Shorten branches.
 
      Note this must run before reg-stack because of death note (ab)use
@@ -3654,6 +3668,8 @@ rest_of_compilation (decl)
   timevar_pop (TV_REG_STACK);
 
   ggc_collect ();
+
+  convert_to_eh_region_ranges ();
 #endif
 
   current_function_nothrow = nothrow_function_p ();
@@ -3684,7 +3700,20 @@ rest_of_compilation (decl)
     final_start_function (insns, asm_out_file, optimize);
     final (insns, asm_out_file, optimize, 0);
     final_end_function (insns, asm_out_file, optimize);
+
+#ifdef IA64_UNWIND_INFO
+    /* ??? The IA-64 ".handlerdata" directive must be issued before
+       the ".endp" directive that closes the procedure descriptor.  */
+    output_function_exception_table ();
+#endif
+
     assemble_end_function (decl, fnname);
+
+#ifndef IA64_UNWIND_INFO
+    /* Otherwise, it feels unclean to switch sections in the middle.  */
+    output_function_exception_table ();
+#endif
+
     if (! quiet_flag)
       fflush (asm_out_file);
 

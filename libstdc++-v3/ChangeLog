@@ -1,3 +1,52 @@
+2001-05-12  Richard Henderson  <rth@redhat.com>
+
+	EH merge from mainline:
+
+	2001-05-11  Richard Henderson  <rth@redhat.com>
+        * libsupc++/eh_personality.cc: Include unwind-pe.h.  Remove
+        all pointer encoding logic.
+        (struct lsda_header_info): Add ttype_base.
+        (get_ttype_entry): Use it instead of a context.
+        (check_exception_spec): Likewise.
+        (PERSONALITY_FUNCTION): Initialize ttype_base.  Store it in
+        the c++ exception header for __cxa_call_unexpected.
+        (__cxa_call_unexpected): Use it.
+
+	2001-04-12  Nathan Sidwell  <nathan@codesourcery.com>
+	* libsupc++/eh_alloc.cc (__cxa_allocate_exception): Don't
+	terminate holding the mutex. Make sure size fits in EMERGENCY_OBJ_SIZE.
+
+	2001-03-28  Richard Henderson  <rth@redhat.com>
+	* acinclude.m4 (GLIBCPP_ENABLE_SJLJ_EXCEPTIONS): New.
+	* configure.in: Use it.
+	* Makefile.in, aclocal.m4, config.h.in, configure: Regenerate.
+	* libsupc++/Makefile.am (sources): Update files list.
+	* libsupc++/Makefile.in: Regenerate.
+	* libsupc++/eh_alloc.cc, libsupc++/eh_aux_runtime.cc: New files.
+	* libsupc++/eh_catch.cc, libsupc++/eh_exception.cc: New files.
+	* libsupc++/eh_globals.cc, libsupc++/eh_personality.cc: New files.
+	* libsupc++/eh_terminate.cc, libsupc++/eh_throw.cc: New files.
+	* libsupc++/exception_support.cc: Remove.
+	* libsupc++/exception_support.h: Remove.
+	* libsupc++/pure.cc: Use std::terminate.
+	* libsupc++/tinfo2.cc (__throw_type_match_rtti_2): Remove.
+	(__is_pointer): Remove.
+	* libsupc++/unwind-cxx.h: New file.
+	* libsupc++/vec.cc (uncatch_exception): Update for new abi.
+
+	2001-03-13  Benjamin Kosnik  <bkoz@redhat.com>
+	* libsupc++/new: Remove pragma interface.
+	* libsupc++/typeinfo: Same.
+	* libsupc++/exception: Same.
+	* libsupc++/new_handler.cc: Remove pragma implementation.
+	(bad_alloc::~bad_alloc()): Add.
+	* libsupc++/exception_support.cc: Same.
+	(exception::~exception): Add.
+	(bad_exception::~bad_exception): Add.
+	* libsupc++/tinfo.cc: Same.
+	(bad_cast::~bad_cast): Add.
+	(bad_typeid::~bad_typeid): Add.
+
 2001-05-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* config/os/solaris/solaris2.7/bits/os_defines.h
@@ -71,7 +120,7 @@
 2001-04-06  Joe Buck  <jbuck@welsh-buck.org>
 
 	* stl_algobase.h (std::equal): Avoid use of possibly-undefined
-        operator != (one line patch).
+	operator != (one line patch).
 
 2001-04-06  Gabriel Dos Reis  <gdr@codesourcery.com>
 
@@ -144,7 +193,7 @@
 
 	* acinclude.m4 (GLIBCPP_EXPORT_INSTALL_INFO): Fix syntax in test
 	command.
-        * aclocal.m4, configure: Regenerated.
+	* aclocal.m4, configure: Regenerated.
 
 2001-02-21  Phil Edwards  <pme@sources.redhat.com>
 
@@ -232,7 +281,7 @@
 
 2001-02-23  Alexandre Oliva <aoliva@redhat.com>
 
-        * mknumeric_limits (CC): Use VAR=${VAR=...} form.
+	* mknumeric_limits (CC): Use VAR=${VAR=...} form.
 
 2001-02-23  David Edelsohn <dje@watson.ibm.com>
 
@@ -240,13 +289,13 @@
 
 2001-02-23  Phil Edwards  <pme@sources.redhat.com>
 
-        c++/2052
-        * include/backward/iostream.h:  Expose std::flush in old headers.
+	c++/2052
+	* include/backward/iostream.h:  Expose std::flush in old headers.
 
 2001-02-23  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
-        * mknumeric_limits: Remove special-casing on target.  Use
-        gcc instead of g++ to build gen-num-limits.cc
+	* mknumeric_limits: Remove special-casing on target.  Use
+	gcc instead of g++ to build gen-num-limits.cc
 	
 2001-02-22  Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -314,26 +363,26 @@
 2001-02-16  Greg Bumgardner <bumgard@roguewave.com>
 
 	libstdc++/1734
-        * include/bits/std_ostream.h: Replaced usage of
-        _Traits::_S_eos() with _CharT() as per section 17.2.2.1.3.  
-        * include/bits/char_traits.h: Removed non-standard
-        methods that cannot be used elsewhere.  
+	* include/bits/std_ostream.h: Replaced usage of
+	_Traits::_S_eos() with _CharT() as per section 17.2.2.1.3.  
+	* include/bits/char_traits.h: Removed non-standard
+	methods that cannot be used elsewhere.  
 	
 	libstdc++/1885
-        * include/bits/basic_ios.h: Uncommented #include of
-        bits/basic_ios.tcc 
+	* include/bits/basic_ios.h: Uncommented #include of
+	bits/basic_ios.tcc 
 	
 	libstdc++/1897
-        * include/bits/codecvt.h: See next...
-        * include/bits/fstream.tcc: See next...
-        * include/bits/ostream.tcc: Add __extension__ 
-        to variable-length arrays.  
+	* include/bits/codecvt.h: See next...
+	* include/bits/fstream.tcc: See next...
+	* include/bits/ostream.tcc: Add __extension__ 
+	to variable-length arrays.  
 	
 	libstdc++/1967
-        * include/bits/localefwd.h: Changed int counter type to size_t.
+	* include/bits/localefwd.h: Changed int counter type to size_t.
 
 	libstdc++/1968
-        * include/bits/std_fstream.h: Added typedef for __ctype_type.
+	* include/bits/std_fstream.h: Added typedef for __ctype_type.
 
 2001-02-16  Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -360,24 +409,24 @@
 	
 2001-02-15  Jeffrey Oldham  <oldham@codesourcery.com>
 
-        * include/bits/c++config (_GLIBCPP_FULLY_COMPLIANT_HEADERS):
-        Define so library is compliant.
+	* include/bits/c++config (_GLIBCPP_FULLY_COMPLIANT_HEADERS):
+	Define so library is compliant.
 
 2001-02-15  Anthony Green  <green@redhat.com>
 
-        * acinclude.m4 (glibcpp_toolexeclibdir): Fix test for cross
-        compilation.
-        * aclocal.m4: Regenerate.
-        * configure: Regenerate.
+	* acinclude.m4 (glibcpp_toolexeclibdir): Fix test for cross
+	compilation.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
 
 2001-02-15  Rodney Brown  <RodneyBrown@mynd.com>
 
-        * acinclude.m4 (GLIBCPP_CHECK_MATH_DECL_1):
-        Include ieeefp.h for fpclass on UnixWare{2,7}.
+	* acinclude.m4 (GLIBCPP_CHECK_MATH_DECL_1):
+	Include ieeefp.h for fpclass on UnixWare{2,7}.
 	* aclocal.m4: Regenerate.
 	* configure: Regenerate.
-        * mkcheck.in (size_command): Do without GNU-grep when using
-        size from binutils.
+	* mkcheck.in (size_command): Do without GNU-grep when using
+	size from binutils.
 
 2001-02-15  Mark Mitchell  <mark@codesourcery.com>
 
@@ -487,7 +536,7 @@
 2001-02-15  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* testsuite/lib/libstdc++.exp: Lift, temporarily, out of
-        dejagnu/dg.exp.  Adapt to log options used to run testcases.
+	dejagnu/dg.exp.  Adapt to log options used to run testcases.
 
 2001-02-13  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
@@ -495,7 +544,7 @@
 	dejagnu/dg.exp.
 
 2001-02-13  Dirk Mueller <dmuell@gmx.net>
-            Phil Edwards  <pme@sources.redhat.com>
+	    Phil Edwards  <pme@sources.redhat.com>
 
 	* include/backward/function.h:  Do not use rel_ops for older
 	  headers either.
@@ -549,7 +598,7 @@
 
 2001-02-08  Loren J. Rittle  <ljrittle@acm.org>
 
-        * src/locale-inst.cc (fill_n): Instantiate with size_t arguments.
+	* src/locale-inst.cc (fill_n): Instantiate with size_t arguments.
 
 2001-02-08  David Edelsohn  <edelsohn@gnu.org>
 
@@ -629,7 +678,7 @@
 	(_S_copy_streambufs): Likewise.
 
 2001-02-06  Hyman Rosen  <Hyman.Rosen@kbcfp.com>
-            Phil Edwards  <pme@sources.redhat.com>
+	    Phil Edwards  <pme@sources.redhat.com>
 
 	* include/bits/std_istream.h (op>> signed,unsigned char):  Must
 	  use reinterpret_cast, not static_cast.
@@ -724,13 +773,13 @@
 	* libsupc++/tinfo2.cc (std::typeinfo::before): Likewise.
 
 2001-02-03  Alexandre Oliva  <aoliva@redhat.com>
-            Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+	    Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
-        * Makefile.am (mkinstalldirs): Set.
-        * src/Makefile.am (mkinstalldirs): Set.
-        * libmath/Makefile.am (mkinstalldirs): Set.
-        * libsup++/Makefile.am (mkinstalldirs): Set.
-        * libio/Makefile.am (mkinstalldirs): Set.	
+	* Makefile.am (mkinstalldirs): Set.
+	* src/Makefile.am (mkinstalldirs): Set.
+	* libmath/Makefile.am (mkinstalldirs): Set.
+	* libsup++/Makefile.am (mkinstalldirs): Set.
+	* libio/Makefile.am (mkinstalldirs): Set.	
 	* */Makefile.in: Regenerate.
 
 2001-02-03  Benjamin Kosnik  <bkoz@redhat.com>
@@ -883,8 +932,8 @@
 
 2001-01-25  Loren J. Rittle  <ljrittle@acm.org>
 
-        * testsuite/21_strings/inserters_extractors.cc: Remove
-        explicit reference to 'testsuite/'.
+	* testsuite/21_strings/inserters_extractors.cc: Remove
+	explicit reference to 'testsuite/'.
 
 2001-01-25  Richard Henderson  <rth@redhat.com>
 
@@ -979,15 +1028,15 @@
 
 2001-01-23  Mark Mitchell  <mark@codesourcery.com>
 
-        * ainclude.m4 (GLIBCPP_CHEC_MATH_DECLS_AND_LINKAGE_1): New macro.
-        (GLIBCPP_CHECK_MATH_SUPPORT): Use it.
-        (GLIBCPP_CHECK_TYPE_SUPPORT): Don't autoconf ctype information if
-        its already provided in config.target.
-        * aclocal.m4: Regenerated.
-        * configure: Likewise.
-        * configure.target: Set ctype_include_dir for lots of systems.
-        * libsupc++/Makefile.am: Explicitly include --tag disable-shared.
-        * libsupc++/Makefile.in: Regenerated.
+	* ainclude.m4 (GLIBCPP_CHEC_MATH_DECLS_AND_LINKAGE_1): New macro.
+	(GLIBCPP_CHECK_MATH_SUPPORT): Use it.
+	(GLIBCPP_CHECK_TYPE_SUPPORT): Don't autoconf ctype information if
+	its already provided in config.target.
+	* aclocal.m4: Regenerated.
+	* configure: Likewise.
+	* configure.target: Set ctype_include_dir for lots of systems.
+	* libsupc++/Makefile.am: Explicitly include --tag disable-shared.
+	* libsupc++/Makefile.in: Regenerated.
 
 2001-01-23  Gabriel Dos Reis  <gdr@codesourcery.com>
 
@@ -1026,10 +1075,10 @@
 
 2001-01-17  Loren J. Rittle  <ljrittle@acm.org>
 
-        * mkcheck.in: Construct file names that match $objdir structure.
-        * testsuite/27_io/filebuf_members-1.txt: New file.
-        * testsuite/27_io/ifstream_members-1.txt: New file.
-        * testsuite/27_io/ostream_inserter_char-1.txt: New file.
+	* mkcheck.in: Construct file names that match $objdir structure.
+	* testsuite/27_io/filebuf_members-1.txt: New file.
+	* testsuite/27_io/ifstream_members-1.txt: New file.
+	* testsuite/27_io/ostream_inserter_char-1.txt: New file.
 
 	* testsuite/27_io/ios_base_members_static.cc (test02): Add test.
 	* testsuite/27_io/ios_base_members_static-1.tst: Add expected output.
@@ -1043,13 +1092,13 @@
 	libstdc++/1605
 	* include/bits/ios_base.h (ios_base::failure): Tighten up throw specs.
 	* src/ios.cc (ios_base::failure): Make definitions match.
-        * libsupc++/typeinfo (class bad_typeid): Add throw specs.
-        (class bad_cast): Same.
-        * libsupc++/exception (class exception): Add throw specs.
-        * libsupc++/exception_support.cc (set_terminate): Add throw specs.
-        (set_unexpected): Same.
-        (uncaught_exception): Same.
-        (what): Same.
+	* libsupc++/typeinfo (class bad_typeid): Add throw specs.
+	(class bad_cast): Same.
+	* libsupc++/exception (class exception): Add throw specs.
+	* libsupc++/exception_support.cc (set_terminate): Add throw specs.
+	(set_unexpected): Same.
+	(uncaught_exception): Same.
+	(what): Same.
 
 	* docs/html/17_intro/C++STYLE (classname): Fix.
 	
@@ -1135,7 +1184,7 @@
 
 2001-01-10  Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
 
-         * include/bits/std_complex.h: Fix a typo.
+	 * include/bits/std_complex.h: Fix a typo.
 
 2001-01-09  Benjamin Kosnik  <bkoz@redhat.com>
 	                     <kainz@ilm.com>
@@ -1156,7 +1205,7 @@
 
 2001-01-09  Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
 
-         * include/bits/std_complex.h: Fix a typo.
+	 * include/bits/std_complex.h: Fix a typo.
 
 2001-01-09  Loren J. Rittle  <ljrittle@acm.org>
 
@@ -1207,8 +1256,8 @@
 
 2001-01-04  Loren J. Rittle  <ljrittle@acm.org>
 
-        * config/c_io_stdio.cc (__basic_file<_CharT>::sys_open()): On
-        systems that support it, call dup() before fdopen().
+	* config/c_io_stdio.cc (__basic_file<_CharT>::sys_open()): On
+	systems that support it, call dup() before fdopen().
 
 2001-01-03  Benjamin Kosnik  <bkoz@redhat.com>
 

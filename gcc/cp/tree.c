@@ -1038,6 +1038,7 @@ cp_statement_code_p (code)
     case TRY_BLOCK:
     case HANDLER:
     case USING_STMT:
+    case EH_SPEC_BLOCK:
       return 1;
 
     default:

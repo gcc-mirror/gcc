@@ -188,6 +188,13 @@ cp_dump_tree (di, t)
       dump_next_stmt (di, t);
       break;
 
+    case EH_SPEC_BLOCK:
+      dump_stmt (di, t);
+      dump_child ("body", EH_SPEC_STMTS (t));
+      dump_child ("raises", EH_SPEC_RAISES (t));
+      dump_next_stmt (di, t);
+      break;
+
     case PTRMEM_CST:
       dump_child ("clas", PTRMEM_CST_CLASS (t));
       dump_child ("mbr", PTRMEM_CST_MEMBER (t));
@@ -224,6 +231,12 @@ cp_dump_tree (di, t)
     case HANDLER:
       dump_stmt (di, t);
       dump_child ("body", HANDLER_BODY (t));
+      dump_next_stmt (di, t);
+      break;
+
+    case MUST_NOT_THROW_EXPR:
+      dump_stmt (di, t);
+      dump_child ("body", TREE_OPERAND (t, 0));
       dump_next_stmt (di, t);
       break;
 

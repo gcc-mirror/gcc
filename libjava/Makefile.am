@@ -87,18 +87,15 @@ LTCXXCOMPILE = $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(INCLUDES) $(
 
 JAVAC = $(GCJ_WITH_FLAGS) -C
 
-EH_COMMON_INCLUDE = @EH_COMMON_INCLUDE@
+GCC_UNWIND_INCLUDE = @GCC_UNWIND_INCLUDE@
 
 WARNINGS = -W -Wall
 ## We need _GNU_SOURCE defined for some Linux builds.  It doesn't hurt
 ## to always define it.
-## Note that we need -fasynchronous-exceptions because gcc is
-## currently broken with respect to exception handling in leaf
-## functions.
-AM_CXXFLAGS = -fno-rtti -fvtable-thunks -fasynchronous-exceptions \
+AM_CXXFLAGS = -fno-rtti -fvtable-thunks -fnon-call-exceptions \
 ## Some systems don't allow `$' in identifiers by default, so we force it.
 	-fdollars-in-identifiers \
-	@LIBGCJ_CXXFLAGS@ @EXCEPTIONSPEC@ @X_CFLAGS@ $(WARNINGS) -D_GNU_SOURCE
+	@LIBGCJ_CXXFLAGS@ @X_CFLAGS@ $(WARNINGS) -D_GNU_SOURCE
 if USING_GCC
 AM_CFLAGS = @LIBGCJ_CFLAGS@ $(WARNINGS)
 else
@@ -112,7 +109,7 @@ LIBFFIINCS = -I$(top_srcdir)/../libffi/include -I$(MULTIBUILDTOP)../libffi/inclu
 
 INCLUDES = -I$(top_srcdir) -Iinclude -I$(top_srcdir)/include \
 	$(GCINCS) $(THREADINCS) $(INCLTDL) \
-	$(EH_COMMON_INCLUDE) $(ZINCS) $(LIBFFIINCS)
+	$(GCC_UNWIND_INCLUDE) $(ZINCS) $(LIBFFIINCS)
 
 
 ## ################################################################

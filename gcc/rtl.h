@@ -924,10 +924,6 @@ extern const char * const note_insn_name[NOTE_INSN_MAX - NOTE_INSN_BIAS];
 /* Flag in a SYMBOL_REF for machine-specific purposes.  */
 #define SYMBOL_REF_FLAG(RTX) ((RTX)->volatil)
 
-/* 1 in a SYMBOL_REF if it represents a symbol which might have to change
-   if its inlined or unrolled. */
-#define SYMBOL_REF_NEED_ADJUST(RTX)  ((RTX)->in_struct)
-
 /* 1 means a SYMBOL_REF has been the library function in emit_library_call.  */
 #define SYMBOL_REF_USED(RTX) ((RTX)->used)
 
@@ -1606,6 +1602,9 @@ extern rtx gen_rtx_MEM PARAMS ((enum machine_mode, rtx));
 
 #define LAST_VIRTUAL_REGISTER		((FIRST_VIRTUAL_REGISTER) + 4)
 
+/* REGNUM never really appearing in the INSN stream.  */
+#define INVALID_REGNUM                  (~(unsigned int)0)
+
 extern rtx find_next_ref		PARAMS ((rtx, rtx));
 extern rtx *find_single_use		PARAMS ((rtx, rtx, rtx *));
 
@@ -1948,7 +1947,8 @@ enum libcall_type
   LCT_PURE = 2,
   LCT_CONST_MAKE_BLOCK = 3,
   LCT_PURE_MAKE_BLOCK = 4,
-  LCT_NORETURN = 5
+  LCT_NORETURN = 5,
+  LCT_THROW = 6
 };
 
 extern void emit_library_call		PARAMS ((rtx, enum libcall_type,

@@ -165,31 +165,3 @@ __pointer_catch (const __pbase_type_info *thr_type,
 }
 
 } // namespace std
-
-// Entry points for the compiler.
-
-/* Low level match routine used by compiler to match types of catch
-   variables and thrown objects.  */
-
-extern "C" int
-__throw_type_match_rtti_2 (const void *catch_type_r, const void *throw_type_r,
-			 void *objptr, void **valp)
-{
-  const type_info &catch_type = *(const type_info *)catch_type_r;
-  const type_info &throw_type = *(const type_info *)throw_type_r;
-
-  *valp = objptr;
-
-  return catch_type.__do_catch (&throw_type, valp, 1);
-}
-
-/* Called from __cp_pop_exception.  Is P the type_info node for a pointer
-   of some kind?  */
-
-bool
-__is_pointer (void *p)
-{
-  const type_info *t = reinterpret_cast <const type_info *>(p);
-  return t->__is_pointer_p ();
-}
-

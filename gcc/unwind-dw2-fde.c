@@ -469,7 +469,7 @@ frame_init (struct object* ob)
 }
 
 fde *
-_Unwind_Find_FDE (void *pc, struct dwarf_eh_bases *bases ATTRIBUTE_UNUSED)
+_Unwind_Find_FDE (void *pc, struct dwarf_eh_bases *bases)
 {
   struct object *ob;
   size_t lo, hi;

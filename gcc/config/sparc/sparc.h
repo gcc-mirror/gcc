@@ -2235,7 +2235,10 @@ LFLGRET"ID":\n\
    bias if present.  */
 #define INCOMING_FRAME_SP_OFFSET SPARC_STACK_BIAS
 
-#define DOESNT_NEED_UNWINDER (! TARGET_FLAT)
+/* Describe how we implement __builtin_eh_return.  */
+#define EH_RETURN_DATA_REGNO(N) ((N) < 4 ? (N) + 24 : INVALID_REGNUM)
+#define EH_RETURN_STACKADJ_RTX	gen_rtx_REG (Pmode, 1)	/* %g1 */
+#define EH_RETURN_HANDLER_RTX	gen_rtx_REG (Pmode, 31)	/* %i7 */
 
 /* Addressing modes, and classification of registers for them.  */
 

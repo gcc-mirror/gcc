@@ -1,3 +1,46 @@
+2001-05-12  Richard Henderson  <rth@redhat.com>
+
+	EH merge from mainline:
+
+	2001-05-11  Richard Henderson  <rth@redhat.com>
+	* configure.in (ia64-*): Don't set SYSDEP_SOURCES.
+	* java/lang/natThrowable.cc: Don't use __ia64_backtrace.
+
+	2001-05-11  Richard Henderson  <rth@redhat.com>
+	* exception.cc: Include unwind-pe.h.  Remove all pointer
+	encoding logic.
+
+	2001-04-02  Richard Henderson  <rth@redhat.com>
+	* configure.in (GCC_UNWIND_INCLUDE): Assume we're built within
+	the same tree as gcc.
+	* configure: Rebuilt.
+
+	* exception.cc (_Jv_Throw): Clarify commentary.
+
+	2001-03-28  Richard Henderson  <rth@redhat.com>
+	* Makefile.am (GCC_UNWIND_INCLUDE): Rename from EH_COMMON_INCLUDE.
+	(AM_CXXFLAGS): -fnon-call-exceptions not -fasynchronous-exceptions.
+	Remove EXCEPTIONSPEC.
+	* configure.host (libgcj_sjlj): Remove.
+	* configure.in (EXCEPTIONSPEC): Remove.
+	(enable-sjlj-exceptions): Detect if not specified.
+	(GCC_UNWIND_INCLUDE): Rename from EH_COMMON_INCLUDE; change
+	what header we're looking for.
+	* libgcj.spec.in (jc1): Remove EXCEPTIONSPEC.
+	* Makefile.in, configure: Regenerate.
+	* exception.cc: Don't declare libgcc2 stuff.
+	(java_eh_info, _Jv_type_matcher, _Jv_exception_info): Remove.
+	(_Jv_eh_alloc, _Jv_eh_free, _Jv_setup_eh_info): Remove.
+	(win32_get_restart_frame): Remove.
+	(struct java_exception_header): New.
+	(__gcj_exception_class): New.
+	(get_exception_header_from_ue): New.
+	(_Jv_Throw): Rewrite for IA-64 ABI unwind routines.
+	(size_of_encoded_value, read_encoded_value): New.
+	(read_uleb128, read_sleb128, parse_lsda_header): New.
+	(get_ttype_entry, __gcj_personality_sj0): New.
+	* gcj/javaprims.h (_Jv_Sjlj_Throw): Remove.
+
 2001-05-06  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* gcj/javaprims.h: Rebuild CNI namespace.
@@ -603,7 +646,7 @@
 	* Makefile.in: Rebuild.
 
 2001-02-12  Jeff Sturm  <jeff.sturm@commerceone.com>
-            Tom Tromey  <tromey@redhat.com>
+	    Tom Tromey  <tromey@redhat.com>
 
 	* interpret.cc (continue1): [insn_invokevirtual] Do an explicit
 	null pointer check.
@@ -2400,7 +2443,7 @@ Sun Nov 26 21:30:25 2000  Anthony Green  <green@redhat.com>
 	* java/security/interfaces/DSAPrivateKey.java (serialVersionUID):
 	New field.
 	* java/security/interfaces/DSAPublicKey.java (serialVersionUID):
-        New field.
+	New field.
 	* java/sql/DataTruncation.java (serialVersionUID): New field.
 	* java/sql/SQLException.java (serialVersionUID): New field.
 	* java/sql/SQLWarning.java (serialVersionUID): New field.
@@ -2689,10 +2732,10 @@ Sun Nov 26 21:30:25 2000  Anthony Green  <green@redhat.com>
 
 2000-09-04  Anthony Green  <green@redhat.com>
 
-        Fix for PR java.io/203:
-        * java/io/File.java (createTempFile): Obey directory argument.
+	Fix for PR java.io/203:
+	* java/io/File.java (createTempFile): Obey directory argument.
 	Use java.io.tmpdir if needed.  Don't leave FileDescripators open.
-        * java/lang/natSystem.cc (init_properties): Use TMPDIR environment
+	* java/lang/natSystem.cc (init_properties): Use TMPDIR environment
 	variable to set java.io.tmpdir on non-WIN32 systems.
 
 2000-09-04  Anthony Green  <green@redhat.com>
@@ -2712,10 +2755,10 @@ Sun Nov 26 21:30:25 2000  Anthony Green  <green@redhat.com>
 
 2000-09-01  Andrew Haley  <aph@redhat.com>
 
-        * java/io/StreamTokenizer.java: Don't throw a
-        NumberFormatException if a field is numeric as far as the
-        StreamTokenizer is concerned but not as far as Double.valueOf() is
-        concerned: return a zero instead.	
+	* java/io/StreamTokenizer.java: Don't throw a
+	NumberFormatException if a field is numeric as far as the
+	StreamTokenizer is concerned but not as far as Double.valueOf() is
+	concerned: return a zero instead.	
 
 2000-08-30  Tom Tromey  <tromey@cygnus.com>
 
@@ -3198,22 +3241,22 @@ Sun Aug 13 19:53:01 2000  Anthony Green  <green@redhat.com>
 
 2000-08-03  Bryce McKinlay  <bryce@albatross.co.nz>
 
-        * Makefile.am: Add new AWT stubs.
-        * java/awt/Canvas.java: New placeholder class.
-        * java/awt/Checkbox.java: Ditto.
-        * java/awt/CheckboxMenuItem.java: Ditto.
-        * java/awt/Choice.java: Ditto.
-        * java/awt/Dialog.java: Ditto.
-        * java/awt/FileDialog.java: Ditto.
-        * java/awt/List.java: Ditto.
-        * java/awt/ScrollPane.java: Ditto.
-        * java/awt/TextField.java: Ditto.
-        * java/awt/datatransfer/Clipboard.java: Ditto.
-        * java/awt/Component.java (treeLock): Now a static String. Add comment.
-        * java/awt/MenuItem.java (MenuItem): Add default constructor.
-        * java/awt/Toolkit.java: Added all methods from J2SE 1.3 API docs. 
-        Some commented out. Partially implemented.
-        * java/awt/natToolkit.cc: Removed file.
+	* Makefile.am: Add new AWT stubs.
+	* java/awt/Canvas.java: New placeholder class.
+	* java/awt/Checkbox.java: Ditto.
+	* java/awt/CheckboxMenuItem.java: Ditto.
+	* java/awt/Choice.java: Ditto.
+	* java/awt/Dialog.java: Ditto.
+	* java/awt/FileDialog.java: Ditto.
+	* java/awt/List.java: Ditto.
+	* java/awt/ScrollPane.java: Ditto.
+	* java/awt/TextField.java: Ditto.
+	* java/awt/datatransfer/Clipboard.java: Ditto.
+	* java/awt/Component.java (treeLock): Now a static String. Add comment.
+	* java/awt/MenuItem.java (MenuItem): Add default constructor.
+	* java/awt/Toolkit.java: Added all methods from J2SE 1.3 API docs. 
+	Some commented out. Partially implemented.
+	* java/awt/natToolkit.cc: Removed file.
 
 2000-08-03  Bryce McKinlay  <bryce@albatross.co.nz>
 
@@ -3251,21 +3294,21 @@ Sun Aug 13 19:53:01 2000  Anthony Green  <green@redhat.com>
 
 2000-08-02  Bryce McKinlay  <bryce@albatross.co.nz>
 
-        * interpret.cc (_Jv_InterpMethod::continue1): Type of `fun' changed
+	* interpret.cc (_Jv_InterpMethod::continue1): Type of `fun' changed
 	to match C declaration in ffi.h.
 	* Makefile.am: Add java/awt/Button.java.
 	* Makefile.in: Rebuilt.
 
 2000-07-29  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
-        * java/lang/reflect/natMethod.cc (_Jv_CallAnyMethodA): Type of the
-        cast of the second argument to `ffi_raw_call' changed to match
-        prototype.
+	* java/lang/reflect/natMethod.cc (_Jv_CallAnyMethodA): Type of the
+	cast of the second argument to `ffi_raw_call' changed to match
+	prototype.
 
 2000-07-26  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
-        * jni.cc (_Jv_JNIMethod::call): Type of the cast of the second
-        argument to `ffi_raw_call' changed to match prototype.
+	* jni.cc (_Jv_JNIMethod::call): Type of the cast of the second
+	argument to `ffi_raw_call' changed to match prototype.
 
 2000-07-31  Bryce McKinlay  <bryce@albatross.co.nz>
 
