@@ -1,3 +1,14 @@
+2001-07-11  Richard Sandiford  <rsandifo@redhat.com>
+	    H.J. Lu  <hjl@gnu.org>
+
+	* mips.md (call_internal1): Use CONSTANT_ADDRESS_P to check for
+	constant addresses.
+	(call_internal2): Likewise.
+	(call_value_internal1): Likewise.
+	(call_value_internal2): Likewise.
+	(call_value_multiple_internal1): Likewise.
+	(call_value_multiple_internal2): Likewise.
+
 2001-07-10  Kazu Hirata  <kazu@hxi.com>
 
 	* calls.c (emit_library_call_value_1): Fix a comment typo.
