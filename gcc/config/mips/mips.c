@@ -2764,11 +2764,7 @@ override_options ()
   register int regno;
   register enum machine_mode mode;
 
-  if (g_switch_set)
-    mips_section_threshold = g_switch_value;
-
-  else
-    mips_section_threshold = (TARGET_MIPS_AS) ? 8 : 0;
+  mips_section_threshold = (g_switch_set) ? g_switch_value : MIPS_DEFAULT_GVALUE;
 
   /* Identify the processor type */
   if (mips_cpu_string == (char *)0
