@@ -83,11 +83,6 @@ package body Lib is
       return Units.Table (U).Dependency_Num;
    end Dependency_Num;
 
-   function Dependent_Unit (U : Unit_Number_Type) return Boolean is
-   begin
-      return Units.Table (U).Dependent_Unit;
-   end Dependent_Unit;
-
    function Dynamic_Elab (U : Unit_Number_Type) return Boolean is
    begin
       return Units.Table (U).Dynamic_Elab;

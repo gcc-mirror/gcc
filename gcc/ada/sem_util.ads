@@ -424,6 +424,11 @@ package Sem_Util is
    --  Determine if Obj is an aliased view, i.e. the name of an
    --  object to which 'Access or 'Unchecked_Access can apply.
 
+   function Is_Ancestor_Package
+     (E1 : Entity_Id;
+      E2 : Entity_Id) return Boolean;
+   --  Determine whether package E1 is an ancestor of E2
+
    function Is_Atomic_Object (N : Node_Id) return Boolean;
    --  Determines if the given node denotes an atomic object in the sense
    --  of the legality checks described in RM C.6(12).

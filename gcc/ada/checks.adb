@@ -2596,8 +2596,7 @@ package body Checks is
             Check_Null_Not_Allowed (N);
 
          when others =>
-            pragma Assert (False);
-            null;
+            raise Program_Error;
       end case;
    end Null_Exclusion_Static_Checks;
 

@@ -840,37 +840,6 @@ package body Sem_Ch3 is
 
       Set_Can_Never_Be_Null (T_Name, Null_Exclusion_Present (T_Def));
 
-      --  -------------------------------------------------------------------
-      --  I assume that the following statements should also be here.
-      --  Need some tests to check it. Detected by comparison with the
-      --  access_definition subprogram???
-      --  -------------------------------------------------------------------
-
-      --  The anonymous access type is as public as the discriminated type or
-      --  subprogram that defines it. It is imported (for back-end purposes)
-      --  if the designated type is.
-
---      Set_Is_Public (T_Name, Is_Public (Scope (T_Name)));
-
-      --  Ada 0Y (AI-50217): Propagate the attribute that indicates that the
-      --  designated type comes from the limited view (for back-end purposes).
-
---      Set_From_With_Type (T_Name, From_With_Type (Desig_Type));
-
-      --  The context is either a subprogram declaration or an access
-      --  discriminant, in a private or a full type declaration. In
-      --  the case of a subprogram, If the designated type is incomplete,
-      --  the operation will be a primitive operation of the full type, to
-      --  be updated subsequently.
-
---        if Ekind (Desig_Type) = E_Incomplete_Type
---          and then Is_Overloadable (Current_Scope)
---        then
---           Append_Elmt (Current_Scope, Private_Dependents (Desig_Type));
---           Set_Has_Delayed_Freeze (Current_Scope);
---        end if;
-      --  ---------------------------------------------------------------
-
       Check_Restriction (No_Access_Subprograms, T_Def);
    end Access_Subprogram_Declaration;
 
@@ -884,9 +853,6 @@ package body Sem_Ch3 is
 
       Desig : Entity_Id;
       --  Designated type
-
-      N_Desig : Entity_Id;
-      --  Non-limited view, when needed
 
    begin
       --  Check for permissible use of incomplete type
@@ -937,26 +903,28 @@ package body Sem_Ch3 is
       --  available, use it as the designated type of the access type, so that
       --  the back-end gets a usable entity.
 
-      if From_With_Type (Desig) then
-         Set_From_With_Type (T);
+      declare
+         N_Desig : Entity_Id;
 
-         if Ekind (Desig) = E_Incomplete_Type then
-            N_Desig := Non_Limited_View (Desig);
+      begin
+         if From_With_Type (Desig) then
+            Set_From_With_Type (T);
 
-         elsif Ekind (Desig) = E_Class_Wide_Type then
-            if From_With_Type (Etype (Desig)) then
-               N_Desig := Non_Limited_View (Etype (Desig));
-            else
-               N_Desig := Etype (Desig);
+            if Ekind (Desig) = E_Incomplete_Type then
+               N_Desig := Non_Limited_View (Desig);
+
+            else pragma Assert (Ekind (Desig) = E_Class_Wide_Type);
+               if From_With_Type (Etype (Desig)) then
+                  N_Desig := Non_Limited_View (Etype (Desig));
+               else
+                  N_Desig := Etype (Desig);
+               end if;
             end if;
-         else
-            null;
-            pragma Assert (False);
-         end if;
 
-         pragma Assert (Present (N_Desig));
-         Set_Directly_Designated_Type (T, N_Desig);
-      end if;
+            pragma Assert (Present (N_Desig));
+            Set_Directly_Designated_Type (T, N_Desig);
+         end if;
+      end;
 
       --  Note that Has_Task is always false, since the access type itself
       --  is not a task type. See Einfo for more description on this point.
@@ -991,7 +959,10 @@ package body Sem_Ch3 is
 
       --  Ada 0Y (AI-230): Access Definition case
 
-      elsif Present (Access_Definition (Component_Definition (N))) then
+      else
+         pragma Assert (Present
+                          (Access_Definition (Component_Definition (N))));
+
          T := Access_Definition
                 (Related_Nod => N,
                  N => Access_Definition (Component_Definition (N)));
@@ -1012,10 +983,6 @@ package body Sem_Ch3 is
          then
             T := Replace_Anonymous_Access_To_Protected_Subprogram (N, T);
          end if;
-
-      else
-         pragma Assert (False);
-         null;
       end if;
 
       --  If the subtype is a constrained subtype of the enclosing record,
@@ -1714,6 +1681,13 @@ package body Sem_Ch3 is
 
       if Present (E) and then E /= Error then
          Analyze (E);
+
+         --  In case of errors detected in the analysis of the expression,
+         --  decorate it with the expected type to avoid cascade errors
+
+         if not Present (Etype (E)) then
+            Set_Etype (E, T);
+         end if;
 
          --  If an initialization expression is present, then we set the
          --  Is_True_Constant flag. It will be reset if this is a variable
@@ -2997,7 +2971,7 @@ package body Sem_Ch3 is
 
       --  Ada 0Y (AI-230): Access Definition case
 
-      elsif Present (Access_Definition (Component_Def)) then
+      else pragma Assert (Present (Access_Definition (Component_Def)));
          Element_Type := Access_Definition
                            (Related_Nod => Related_Id,
                             N           => Access_Definition (Component_Def));
@@ -3021,10 +2995,6 @@ package body Sem_Ch3 is
                    (Def, Element_Type);
             end if;
          end;
-
-      else
-         pragma Assert (False);
-         null;
       end if;
 
       --  Constrained array case
@@ -3205,8 +3175,7 @@ package body Sem_Ch3 is
             Acc  := Parameter_Type (N);
 
          when others =>
-            null;
-            pragma Assert (False);
+            raise Program_Error;
       end case;
 
       Decl := Make_Full_Type_Declaration (Loc,

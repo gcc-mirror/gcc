@@ -48,6 +48,7 @@ with Sem_Ch3;  use Sem_Ch3;
 with Sem_Ch4;  use Sem_Ch4;
 with Sem_Ch5;  use Sem_Ch5;
 with Sem_Ch8;  use Sem_Ch8;
+with Sem_Ch10; use Sem_Ch10;
 with Sem_Ch12; use Sem_Ch12;
 with Sem_Disp; use Sem_Disp;
 with Sem_Dist; use Sem_Dist;
@@ -1147,6 +1148,15 @@ package body Sem_Ch6 is
                                   or else Configurable_Run_Time_Mode)))
       then
          Build_Body_To_Inline (N, Spec_Id);
+      end if;
+
+      --  Ada 0Y (AI-262): In library subprogram bodies, after the analysis
+      --  if its specification we have to install the private withed units.
+
+      if Is_Compilation_Unit (Body_Id)
+        and then Scope (Body_Id) = Standard_Standard
+      then
+         Install_Private_With_Clauses (Body_Id);
       end if;
 
       --  Now we can go on to analyze the body

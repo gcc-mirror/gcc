@@ -3152,6 +3152,31 @@ package body Sem_Util is
       end if;
    end Is_Aliased_View;
 
+   -------------------------
+   -- Is_Ancestor_Package --
+   -------------------------
+
+   function Is_Ancestor_Package
+     (E1  : Entity_Id;
+      E2  : Entity_Id) return Boolean
+   is
+      Par : Entity_Id;
+
+   begin
+      Par := E2;
+      while Present (Par)
+        and then Par /= Standard_Standard
+      loop
+         if Par = E1 then
+            return True;
+         end if;
+
+         Par := Scope (Par);
+      end loop;
+
+      return False;
+   end Is_Ancestor_Package;
+
    ----------------------
    -- Is_Atomic_Object --
    ----------------------
