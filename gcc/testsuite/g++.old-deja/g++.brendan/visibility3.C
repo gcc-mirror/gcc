@@ -13,7 +13,7 @@ class B
   TP _a;
 public:
   B (A &(*f) (A &, TP), TP a) : _f (f), _a (a) {}
-  friend A &operator<< (A &o, const B<TP> &m);
+  friend A &operator<< <>(A &o, const B<TP> &m);
 };
 
 template <class TP>

@@ -1,11 +1,11 @@
 // Bug: new doesn't make sure that the count is an integral value.
 
-typedef __SIZE_TYPE__ size_t;
+#include <new>
 extern "C" int printf (const char *, ...);
 extern "C" void *malloc (size_t);
 size_t s;
 
-void * operator new (size_t siz) {
+void * operator new (size_t siz) throw (std::bad_alloc) {
   if (s == 0)
     s = siz;
   else
