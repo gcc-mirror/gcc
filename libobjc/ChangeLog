@@ -1,4 +1,15 @@
-Wed Sep 30 18:17:17 1998  Robert Lipe  <robertl@dgii.com
+Thu Oct  1 22:33:03 1998 Robert Lipe  <robertl@dgii.com>
+			 Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (INCLUDES): Reference gcc via $MULTIBUILDTOP.
+	(FLAGS_TO_PASS): Added.
+	(runtime-info.h): Reference cc1ibj via $MULTIBUILDTOP.
+
+	* archive.c: Change config.h to tconfig.h.
+
+	* configure.in: Find gcc's object directory even for multilibs.
+
+Wed Sep 30 18:17:17 1998  Robert Lipe  <robertl@dgii.com>
 
 	* configure.in: Escape ^ in grep string.
 	* configure: Rebuilt.
