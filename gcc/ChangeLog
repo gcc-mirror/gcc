@@ -1,3 +1,8 @@
+2000-03-29  Jason Merrill  <jason@casey.cygnus.com>
+
+	* tree.c (unsave_expr_1): Don't mess with a TARGET_EXPR that hasn't
+	been expanded.
+
 Wed Mar 29 15:39:10 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* stor-layout.c (bit_from_pos, byte_from_pos): New functions.
