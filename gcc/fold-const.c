@@ -5720,6 +5720,9 @@ fold_div_compare (enum tree_code code, tree type, tree arg0, tree arg1)
     }
   else
     {
+      /* A negative divisor reverses the relational operators.  */
+      code = swap_tree_comparison (code);
+
       tmp = int_const_binop (PLUS_EXPR, arg01, integer_one_node, 0);
       switch (tree_int_cst_sgn (arg1))
 	{

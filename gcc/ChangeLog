@@ -1,3 +1,10 @@
+2004-10-09  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/17894
+	* fold-const.c (fold_div_compare): When optimizing X/C1 op C2, the
+	relational comparison operator op needs to be swapped/reversed when
+	C1 is negative.  i.e. X/-10 < 1 becomes X >= -9, not X < -9.
+
 2004-10-08  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/17902
