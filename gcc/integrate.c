@@ -293,6 +293,7 @@ initialize_for_inline (fndecl, min_labelno, max_labelno, max_reg, copy)
        parms = TREE_CHAIN (parms), i++)
     {
       rtx p = DECL_RTL (parms);
+      int copied_incoming = 0;
 
       /* If we have (mem (addressof (mem ...))), use the inner MEM since
 	 otherwise the copy_rtx call below will not unshare the MEM since
@@ -315,7 +316,8 @@ initialize_for_inline (fndecl, min_labelno, max_labelno, max_reg, copy)
 		  && GET_CODE (DECL_INCOMING_RTL (parms)) == MEM
 		  && (XEXP (DECL_RTL (parms), 0)
 		      == XEXP (DECL_INCOMING_RTL (parms), 0))))
-	    DECL_INCOMING_RTL (parms) = new;
+	    DECL_INCOMING_RTL (parms) = new, copied_incoming = 1;
+
 	  DECL_RTL (parms) = new;
 	}
 
@@ -337,6 +339,23 @@ initialize_for_inline (fndecl, min_labelno, max_labelno, max_reg, copy)
       /* This flag is cleared later
 	 if the function ever modifies the value of the parm.  */
       TREE_READONLY (parms) = 1;
+
+      /* Copy DECL_INCOMING_RTL if not done already.  This can
+	 happen if DECL_RTL is a reg.  */
+      if (copy && ! copied_incoming)
+	{
+	  p = DECL_INCOMING_RTL (parms);
+
+	  /* If we have (mem (addressof (mem ...))), use the inner MEM since
+	     otherwise the copy_rtx call below will not unshare the MEM since
+	     it shares ADDRESSOF.  */
+	  if (GET_CODE (p) == MEM && GET_CODE (XEXP (p, 0)) == ADDRESSOF
+	      && GET_CODE (XEXP (XEXP (p, 0), 0)) == MEM)
+	    p = XEXP (XEXP (p, 0), 0);
+
+	  if (GET_CODE (p) == MEM)
+	    DECL_INCOMING_RTL (parms) = copy_rtx (p);
+	}
     }
 
   /* Assume we start out in the insns that set up the parameters.  */
