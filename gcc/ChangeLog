@@ -1,3 +1,8 @@
+Wed Jan 20 12:51:42 1999  Mark Mitchell  <mark@markmitchell.com>
+
+	* arm.md: Use MEM_COPY_ATTRIBUTES where appropriate throughout.
+	Pass MEM_SCALAR_P to arm_gen_store_multiple where appropriate.
+
 Tue Jan 19 21:20:52 1999  Richard Henderson  <rth@cygnus.com>
 
 	* recog.c (pop_operand): New function.
