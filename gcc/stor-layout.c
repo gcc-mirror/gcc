@@ -81,7 +81,11 @@ variable_size (size)
 
   if (global_bindings_p ())
     {
-      error ("variable-size type declared outside of any function");
+      if (TREE_CONSTANT (size))
+	error ("type size can't be explicitly evaluated");
+      else
+	error ("variable-size type declared outside of any function");
+
       return size_int (1);
     }
 
