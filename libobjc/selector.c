@@ -1,5 +1,5 @@
 /* GNU Objective C Runtime selector related functions
-   Copyright (C) 1993, 1995, 1996, 1997, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995, 1996, 1997, 2002, 2004 Free Software Foundation, Inc.
    Contributed by Kresten Krab Thorup
 
 This file is part of GCC.
@@ -35,8 +35,6 @@ static struct sarray *__objc_selector_array = 0; /* uid -> sel  !T:MUTEX */
 static struct sarray *__objc_selector_names = 0; /* uid -> name !T:MUTEX */
 static cache_ptr      __objc_selector_hash  = 0; /* name -> uid !T:MUTEX */
 
-static void register_selectors_from_list (MethodList_t);
-
 /* Number of selectors stored in each of the above tables */
 unsigned int __objc_selector_max_index = 0;     /* !T:MUTEX */
 
@@ -60,7 +58,7 @@ __objc_register_selectors_from_class (Class class)
   method_list = class->methods;
   while (method_list)
     {
-      register_selectors_from_list (method_list);
+      __objc_register_selectors_from_list (method_list);
       method_list = method_list->method_next;
     }
 }
@@ -70,21 +68,27 @@ __objc_register_selectors_from_class (Class class)
    the record table.  This is the routine that does the actual recording
    work.
 
-   This one is only called for Class objects.  For categories,
-   class_add_method_list is called.
+   The name and type pointers in the method list must be permanent and
+   immutable.
    */
-static void
-register_selectors_from_list (MethodList_t method_list)
+void
+__objc_register_selectors_from_list (MethodList_t method_list)
 {
   int i = 0;
+
+  objc_mutex_lock (__objc_runtime_mutex);
   while (i < method_list->method_count)
     {
       Method_t method = &method_list->method_list[i];
-      method->method_name 
-	= sel_register_typed_name ((const char *) method->method_name, 
-				   method->method_types);
+      if (method->method_name)
+	{
+	  method->method_name
+	    = __sel_register_typed_name ((const char *) method->method_name,
+					 method->method_types, 0, YES);
+	}
       i += 1;
     }
+  objc_mutex_unlock (__objc_runtime_mutex);
 }
 
 
@@ -320,6 +324,35 @@ const char *sel_get_type (SEL selector)
 /* The uninstalled dispatch table */
 extern struct sarray *__objc_uninstalled_dtable;
 
+/* __sel_register_typed_name allocates lots of struct objc_selector:s
+   of 8 (16, if pointers are 64 bits) bytes at startup. To reduce the number
+   of malloc calls and memory lost to malloc overhead, we allocate
+   objc_selector:s in blocks here. This is only called from
+   __sel_register_typed_name, and __sel_register_typed_name may only be
+   called when __objc_runtime_mutex is locked.
+
+   Note that the objc_selector:s allocated from __sel_register_typed_name
+   are never freed.
+
+   62 because 62 * sizeof (struct objc_selector) = 496 (992). This should
+   let malloc add some overhead and use a nice, round 512 (1024) byte chunk.
+   */
+#define SELECTOR_POOL_SIZE 62
+static struct objc_selector *selector_pool;
+static int selector_pool_left;
+
+static struct objc_selector *
+pool_alloc_selector(void)
+{
+  if (!selector_pool_left)
+    {
+      selector_pool = objc_malloc (sizeof (struct objc_selector)
+				   * SELECTOR_POOL_SIZE);
+      selector_pool_left = SELECTOR_POOL_SIZE;
+    }
+  return &selector_pool[--selector_pool_left];
+}
+
 /* Store the passed selector name in the selector record and return its
    selector value (value returned by sel_get_uid).
    Assumes that the calling function has locked down __objc_runtime_mutex. */
@@ -369,7 +402,7 @@ __sel_register_typed_name (const char *name, const char *types,
       if (orig)
 	j = orig;
       else
-	j = objc_malloc (sizeof (struct objc_selector));
+	j = pool_alloc_selector ();
 
       j->sel_id = (void *) i;
       /* Can we use the pointer or must copy types?  Don't copy if NULL */
@@ -388,7 +421,7 @@ __sel_register_typed_name (const char *name, const char *types,
       if (orig)
 	j = orig;
       else
-	j = objc_malloc (sizeof (struct objc_selector));
+	j = pool_alloc_selector ();
 	
       j->sel_id = (void *) i;
       /* Can we use the pointer or must copy types?  Don't copy if NULL */
@@ -402,7 +435,7 @@ __sel_register_typed_name (const char *name, const char *types,
     }
 
   DEBUG_PRINTF ("Record selector %s[%s] as: %ld\n", name, types, 
-		soffset_decode (i));
+		(long) soffset_decode (i));
   
   {
     int is_new = (l == 0);
@@ -446,7 +479,7 @@ SEL
 sel_register_typed_name (const char *name, const char *type)
 {
   SEL ret;
-    
+
   objc_mutex_lock (__objc_runtime_mutex);
   /* Assume that name and type are not constant static memory and need to
      be copied before put into a runtime structure.  is_const == NO */

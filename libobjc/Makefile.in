@@ -79,8 +79,7 @@ ALL_CFLAGS = -I. -I$(srcdir) $(CPPFLAGS) $(DEFS) $(CFLAGS) $(WARN_CFLAGS) \
 # numbers.
 LIBOBJC_VERSION = @VERSION@
 LIBOBJC_GC_VERSION = @VERSION@
-# @LIBTOOL@ does not get it right, so we hack it in - FIXME
-LIBTOOL = ./libtool
+LIBTOOL = @LIBTOOL@
 LIBTOOL_COMPILE = $(LIBTOOL) --mode=compile
 LIBTOOL_LINK    = $(LIBTOOL) --mode=link 
 LIBTOOL_INSTALL = $(LIBTOOL) --mode=install
@@ -136,7 +135,7 @@ all: libobjc.la $(OBJC_BOEHM_GC)
 
 OBJC_H = hash.h objc-list.h sarray.h objc.h objc-api.h \
 	 NXConstStr.h Object.h Protocol.h encoding.h typedstream.h \
-	 thr.h
+	 thr.h objc-decls.h
 
 # Modules that comprise the runtime library.
 
