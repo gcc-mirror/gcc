@@ -18,3 +18,11 @@ LIBGCC1 = libgcc1.null
 gmon.o:	gmon-sol2.c $(GCC_PASSES) $(CONFIG_H)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
 		-c $(srcdir)/gmon-sol2.c -o gmon.o
+
+# Assemble startup files.
+crt1.o: crt1.s
+	$(CC) -c $(srcdir)/crt1.s 
+crti.o: crti.s
+	$(CC) -c $(srcdir)/crti.s
+crtn.o: crtn.s
+	$(CC) -c $(srcdir)/crtn.s
