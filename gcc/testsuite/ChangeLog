@@ -1,5 +1,13 @@
 2001-01-18  David Billinghurst <David.Billinghurst@riotinto.com>
 
+	* g++.dg/other/deprecated.C: Fix FAIL from 
+	"At global scope" message
+	* g++.dg/ext/align1.C: Fix fail on cygwin from maximum 
+	alignment warnings
+
+
+2001-01-18  David Billinghurst <David.Billinghurst@riotinto.com>
+
 	* gcc.misc-tests/i386-prefetch.exp: Save and restore
 	torture_with_loops and torture_without_loops
 
