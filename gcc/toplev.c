@@ -36,6 +36,10 @@ Boston, MA 02111-1307, USA.  */
 #include <ctype.h>
 #include <sys/stat.h>
 
+#ifdef HAVE_UNISTD_H
+# include <unistd.h>
+#endif
+
 #undef FLOAT
 #ifdef HAVE_SYS_PARAM_H
 #include <sys/param.h>
@@ -951,8 +955,17 @@ get_run_time ()
     return (clock() * 1000);
 #else /* not _WIN32 */
 #ifdef USG
+# if HAVE_SYSCONF && defined _SC_CLK_TCK
+#  define CLOCKS_PER_SECOND sysconf (_SC_CLK_TCK) /* POSIX 1003.1-1996 */
+# else
+#  ifdef CLK_TCK
+#   define CLOCKS_PER_SECOND CLK_TCK /* POSIX 1003.1-1988; obsolescent */
+#  else
+#   define CLOCKS_PER_SECOND HZ /* traditional UNIX */
+#  endif
+# endif
   times (&tms);
-  return (tms.tms_utime + tms.tms_stime) * (1000000 / HZ);
+  return (tms.tms_utime + tms.tms_stime) * (1000000 / CLOCKS_PER_SECOND);
 #else
 #ifndef VMS
   getrusage (0, &rusage);
