@@ -1460,8 +1460,15 @@ track_expr_p (tree expr)
      don't need to track this expression if the ultimate declaration is
      ignored.  */
   realdecl = expr;
-  if (DECL_DEBUG_ALIAS_OF (realdecl))
-    realdecl = DECL_DEBUG_ALIAS_OF  (realdecl);
+  if (DECL_DEBUG_EXPR (realdecl)
+      && DECL_DEBUG_EXPR_IS_FROM (realdecl))
+    {
+      realdecl = DECL_DEBUG_EXPR (realdecl);
+      /* ??? We don't yet know how to emit DW_OP_piece for variable
+	 that has been SRA'ed.  */
+      if (!DECL_P (realdecl))
+	return 0;
+    }
 
   /* Do not track EXPR if REALDECL it should be ignored for debugging
      purposes.  */ 

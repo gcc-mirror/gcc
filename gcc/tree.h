@@ -2018,9 +2018,13 @@ struct tree_binfo GTY (())
    writing debugging information about vfield and vbase decls for C++.  */
 #define DECL_FCONTEXT(NODE) (FIELD_DECL_CHECK (NODE)->decl.vindex)
 
-/* For VAR_DECL, this is set to the variable we were split from, due to
-   optimization. */
-#define DECL_DEBUG_ALIAS_OF(NODE) (DECL_CHECK (NODE)->decl.vindex)
+/* For VAR_DECL, this is set to either an expression that it was split
+   from (if DECL_DEBUG_EXPR_IS_FROM is true), otherwise a tree_list of
+   subexpressions that it was split into.  */
+#define DECL_DEBUG_EXPR(NODE) (DECL_CHECK (NODE)->decl.vindex)
+
+#define DECL_DEBUG_EXPR_IS_FROM(NODE) \
+  (DECL_CHECK (NODE)->decl.debug_expr_is_from)
 
 /* Every ..._DECL node gets a unique number.  */
 #define DECL_UID(NODE) (DECL_CHECK (NODE)->decl.uid)
@@ -2361,7 +2365,8 @@ struct tree_decl GTY(())
   unsigned possibly_inlined : 1;
   unsigned preserve_flag: 1;
   unsigned gimple_formal_temp : 1;
-  /* 13 unused bits.  */
+  unsigned debug_expr_is_from : 1;
+  /* 12 unused bits.  */
 
   union tree_decl_u1 {
     /* In a FUNCTION_DECL for which DECL_BUILT_IN holds, this is

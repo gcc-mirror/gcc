@@ -1,3 +1,16 @@
+2005-01-27  Richard Henderson  <rth@redhat.com>
+
+	PR tree-opt/14329
+	* tree.h (struct tree_decl): Add debug_expr_is_from.
+	(DECL_DEBUG_EXPR_IS_FROM): New.
+	(DECL_DEBUG_EXPR): Rename from DECL_DEBUG_ALIAS_OF.
+	* dwarf2out.c (dwarf2out_var_location): Update to match.
+	* tree-outof-ssa.c (create_temp): Likewise.
+	* var-tracking.c (track_expr_p): Likewise.
+	* tree-sra.c (instantiate_element): Set DECL_DEBUG_EXPR.
+	* c-objc-common.c (c_tree_printer) <'D'>: Handle DECL_DEBUG_EXPR.
+	* toplev.c (default_tree_printer): Likewise.
+
 2005-01-27  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/frv/frv.c (frv_class_likely_spilled_p): Add GR8_REGS,

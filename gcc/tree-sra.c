@@ -144,6 +144,8 @@ static struct obstack sra_obstack;
 static void dump_sra_elt_name (FILE *, struct sra_elt *);
 extern void debug_sra_elt_name (struct sra_elt *);
 
+/* Forward declarations.  */
+static tree generate_element_ref (struct sra_elt *);
 
 /* Return true if DECL is an SRA candidate.  */
 
@@ -1112,15 +1114,25 @@ instantiate_element (struct sra_elt *elt)
 
   elt->replacement = var = make_rename_temp (elt->type, "SR");
   DECL_SOURCE_LOCATION (var) = DECL_SOURCE_LOCATION (base);
-  TREE_NO_WARNING (var) = TREE_NO_WARNING (base);
-  DECL_ARTIFICIAL (var) = DECL_ARTIFICIAL (base);
-  DECL_IGNORED_P (var) = DECL_IGNORED_P (base);
+  DECL_ARTIFICIAL (var) = 1;
 
   if (DECL_NAME (base) && !DECL_IGNORED_P (base))
     {
       char *pretty_name = build_element_name (elt);
       DECL_NAME (var) = get_identifier (pretty_name);
       obstack_free (&sra_obstack, pretty_name);
+
+      DECL_DEBUG_EXPR (var) = generate_element_ref (elt);
+      DECL_DEBUG_EXPR_IS_FROM (var) = 1;
+
+      DECL_IGNORED_P (var) = 0;
+      TREE_NO_WARNING (var) = TREE_NO_WARNING (base);
+    }
+  else
+    {
+      DECL_IGNORED_P (var) = 1;
+      /* ??? We can't generate any warning that would be meaningful.  */
+      TREE_NO_WARNING (var) = 1;
     }
 
   if (dump_file)
