@@ -1,5 +1,7 @@
 Fri Jun 15 18:05:22 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* function.c (gen_mem_addressof): Handle case where DECL is SAVE_EXPR.
+
 	* explow.c (expr_size): If DECL and size specified, use it.
 
 2001-06-15  Zack Weinberg  <zackw@stanford.edu>
