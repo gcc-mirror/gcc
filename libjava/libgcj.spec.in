@@ -4,7 +4,7 @@
 # to link with libgcj.
 #
 %rename lib liborig
-*lib: -lgcj -lm @GCSPEC@ @THREADSPEC@ @ZLIBSPEC@ @SYSTEMSPEC@ %(liborig)
+*lib: -lgcj -lm @GCSPEC@ @THREADSPEC@ @ZLIBSPEC@ @SYSTEMSPEC@ %(libgcc) %(liborig)
 
 *jc1:  @DIVIDESPEC@ @EXCEPTIONSPEC@ @JC1GCSPEC@ -fasynchronous-exceptions
 
