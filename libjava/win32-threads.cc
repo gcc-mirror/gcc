@@ -126,7 +126,18 @@ _Jv_CondWait(_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu, jlong millis, jint na
   else if (millis == 0) time = INFINITE;
   else time = millis;
 
-  _Jv_MutexUnlock (mu);
+  // Record the current lock depth, so it can be restored
+  // when we reacquire it.
+  int count = mu->refcount;
+  int curcount = count;
+
+  // Call _Jv_MutexUnlock repeatedly until this thread
+  // has completely released the monitor.
+  while (curcount > 0)
+    {  
+      _Jv_MutexUnlock (mu);
+      --curcount;
+    }
 
   // Set up our array of three events:
   // - the auto-reset event (for notify())
@@ -164,7 +175,13 @@ _Jv_CondWait(_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu, jlong millis, jint na
   if (last_waiter)
     ResetEvent (cv->ev[1]);
 
-  _Jv_MutexLock (mu);
+  // Call _Jv_MutexLock repeatedly until the mutex's refcount is the
+  // same as before we originally released it.
+  while (curcount < count)
+    {  
+      _Jv_MutexLock (mu);
+      ++curcount;
+    }
   
   return interrupted ? _JV_INTERRUPTED : 0;
 }
