@@ -487,7 +487,10 @@ extern int target_flags;
                                \
   /* Floating point registers  \
      (if available).  */       \
-  0, 0, 0, 0, 0, 0, 0, 0 }
+  0, 0, 0, 0, 0, 0, 0, 0,      \
+                               \
+  /* Arg pointer.  */          \
+  1 }
 
 /* 1 for registers not available across function calls.
    These must include the FIXED_REGISTERS and also any
@@ -498,7 +501,18 @@ extern int target_flags;
 #define CALL_USED_REGISTERS \
  {1, 1, 0, 0, 0, 0, 0, 0,   \
   1, 1, 0, 0, 0, 0, 0, 1,   \
-  1, 1, 0, 0, 0, 0, 0, 0 }
+  1, 1, 0, 0, 0, 0, 0, 0, 1 }
+
+#define REG_ALLOC_ORDER		\
+{ /* d0/d1/a0/a1 */		\
+  0, 1, 8, 9,			\
+  /* d2-d7 */			\
+  2, 3, 4, 5, 6, 7,		\
+  /* a2-a7/arg */		\
+  10, 11, 12, 13, 14, 15, 24,	\
+  /* fp0-fp7 */			\
+  16, 17, 18, 19, 20, 21, 22, 23\
+}
 
 
 /* Make sure everything's fine if we *don't* have a given processor.
@@ -637,12 +651,12 @@ enum reg_class {
 {					\
   {0x00000000},  /* NO_REGS */		\
   {0x000000ff},  /* DATA_REGS */	\
-  {0x0000ff00},  /* ADDR_REGS */	\
+  {0x0100ff00},  /* ADDR_REGS */	\
   {0x00ff0000},  /* FP_REGS */		\
-  {0x0000ffff},  /* GENERAL_REGS */	\
+  {0x0100ffff},  /* GENERAL_REGS */	\
   {0x00ff00ff},  /* DATA_OR_FP_REGS */	\
-  {0x00ffff00},  /* ADDR_OR_FP_REGS */	\
-  {0x00ffffff},  /* ALL_REGS */		\
+  {0x01ffff00},  /* ADDR_OR_FP_REGS */	\
+  {0x01ffffff},  /* ALL_REGS */		\
 }
 
 /* The same information, inverted:
@@ -650,7 +664,8 @@ enum reg_class {
    reg number REGNO.  This could be a conditional expression
    or could index an array.  */
 
-#define REGNO_REG_CLASS(REGNO) (((REGNO)>>3)+1)
+extern enum reg_class regno_reg_class[];
+#define REGNO_REG_CLASS(REGNO) (regno_reg_class[(REGNO)])
 
 /* The class value for index registers, and the one for base regs.  */
 

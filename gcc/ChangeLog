@@ -1,3 +1,13 @@
+2004-03-10  Roman Zippel  <zippel@linux-m68k.org>
+
+	PR bootstrap/12371
+	* config/m68k/m68k.h (FIXED_REGISTERS): Add arg pointer.
+	(CALL_USED_REGISTERS): Likewise.
+	(REG_CLASS_CONTENTS): Likewise.
+	(REG_ALLOC_ORDER): New.
+	(REGNO_REG_CLASS): Use regno_reg_class.
+	* config/m68k/m68k.c: Add regno_reg_class array.
+
 2004-03-10  Alan Modra  <amodra@bigpond.net.au>
 	    Hartmut Penner  <hpenner@de.ibm.com>
 
