@@ -163,9 +163,7 @@ static void output_after_function_constants PARAMS ((void));
 static unsigned HOST_WIDE_INT array_size_for_constructor PARAMS ((tree));
 static unsigned min_align		PARAMS ((unsigned, unsigned));
 static void output_constructor		PARAMS ((tree, int, unsigned));
-#ifdef ASM_WEAKEN_LABEL
 static void remove_from_pending_weak_list	PARAMS ((const char *));
-#endif
 static int in_named_entry_eq		PARAMS ((const PTR, const PTR));
 static hashval_t in_named_entry_hash	PARAMS ((const PTR));
 #ifdef ASM_OUTPUT_BSS
@@ -4801,7 +4799,18 @@ output_constructor (exp, size, align)
     assemble_zeros (size - total_bytes);
 }
 
-#ifdef HANDLE_PRAGMA_WEAK
+/* This structure contains any weak symbol declarations waiting to be
+   emitted.  */
+
+struct weak_syms
+{
+  struct weak_syms * next;
+  const char * name;
+  const char * value;
+};
+
+static struct weak_syms * weak_decls;
+
 /* Add function NAME to the weak symbols list.  VALUE is a weak alias
    associatd with NAME.  */
    
@@ -4812,7 +4821,7 @@ add_weak (name, value)
 {
   struct weak_syms *weak;
 
-  weak = (struct weak_syms *) permalloc (sizeof (struct weak_syms));
+  weak = (struct weak_syms *) xmalloc (sizeof (struct weak_syms));
 
   if (weak == NULL)
     return 0;
@@ -4824,7 +4833,6 @@ add_weak (name, value)
 
   return 1;
 }
-#endif /* HANDLE_PRAGMA_WEAK */
 
 /* Declare DECL to be a weak symbol.  */
 
@@ -4837,55 +4845,62 @@ declare_weak (decl)
   else if (TREE_ASM_WRITTEN (decl))
     error_with_decl (decl, "weak declaration of `%s' must precede definition");
   else if (SUPPORTS_WEAK)
-    DECL_WEAK (decl) = 1;
-#ifdef HANDLE_PRAGMA_WEAK
-   add_weak (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)), NULL);
-#endif
+    add_weak (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)), NULL);
+  else
+    warning_with_decl (decl, "weak declaration of `%s' not supported");
+
+  DECL_WEAK (decl) = 1;
 }
 
 /* Emit any pending weak declarations.  */
 
-#ifdef HANDLE_PRAGMA_WEAK
-struct weak_syms * weak_decls;
-#endif
-
 void
 weak_finish ()
 {
-#ifdef HANDLE_PRAGMA_WEAK
-  if (HANDLE_PRAGMA_WEAK)
+  if (SUPPORTS_WEAK)
     {
       struct weak_syms *t;
       for (t = weak_decls; t; t = t->next)
 	{
-	  if (t->name)
-	    ASM_OUTPUT_WEAK_ALIAS (asm_out_file, t->name, t->value);
+#ifdef ASM_OUTPUT_WEAK_ALIAS
+	  ASM_OUTPUT_WEAK_ALIAS (asm_out_file, t->name, t->value);
+#else
+#ifdef ASM_WEAKEN_LABEL
+	  if (t->value)
+	    abort ();
+	  ASM_WEAKEN_LABEL (asm_out_file, t->name);
+#endif
+#endif
 	}
     }
-#endif
 }
 
 /* Remove NAME from the pending list of weak symbols.  This prevents
    the compiler from emitting multiple .weak directives which confuses
    some assemblers.  */
-#ifdef ASM_WEAKEN_LABEL
+
 static void
 remove_from_pending_weak_list (name)
-     const char *name ATTRIBUTE_UNUSED;
+     const char *name;
 {
-#ifdef HANDLE_PRAGMA_WEAK
-  if (HANDLE_PRAGMA_WEAK)
+  struct weak_syms *t;
+  struct weak_syms **p;
+
+  for (p = &weak_decls; *p; )
     {
-      struct weak_syms *t;
-      for (t = weak_decls; t; t = t->next)
+      t = *p;
+      if (strcmp (name, t->name) == 0)
 	{
-	  if (t->name && strcmp (name, t->name) == 0)
-	    t->name = NULL;
+	  *p = t->next;
+	  free (t);
 	}
+      else
+	p = &(t->next);
     }
-#endif
 }
-#endif
+
+/* Emit an assembler directive to make the symbol for DECL an alias to
+   the symbol for TARGET.  */
 
 void
 assemble_alias (decl, target)
