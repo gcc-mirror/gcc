@@ -257,7 +257,7 @@ decl_attributes (decl, attributes)
       {
 	int i;
 	char *specified_name
-	  = IDENTIFIER_POINTER (TREE_VALUE (TREE_VALUE (a)));
+	  = TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (a)));
 
 	/* Give this decl a type with the specified mode.  */
 	for (i = 0; i < NUM_MACHINE_MODES; i++)
