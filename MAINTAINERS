@@ -84,6 +84,7 @@ xtensa port		Bob Wilson		bob.wilson@acm.org
 			OS Port Maintainers	(OS alphabetical order)
 
 darwin port		Stan Shebs		shebs@apple.com
+freebsd			Loren J. Rittle		ljrittle@acm.org
 netbsd			Jason Thorpe		thorpej@wasabisystems.com
 sco5, unixware, sco udk	Kean Johnston		jkj@sco.com
 sh-linux-gnu		Kaz Kojima		kkojima@gcc.gnu.org
