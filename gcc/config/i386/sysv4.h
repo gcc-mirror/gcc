@@ -154,7 +154,7 @@ do { long value[2];							\
  : (n) == 6 ? 5 \
  : (n) == 7 ? 4 \
  : ((n) >= FIRST_STACK_REG && (n) <= LAST_STACK_REG) ? (n)+3 \
- : (abort (), 0))
+ : (-1))
 
 /* The routine used to output sequences of byte values.  We use a special
    version of this for most svr4 targets because doing so makes the
