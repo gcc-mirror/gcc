@@ -1,3 +1,8 @@
+2001-04-02  Torsten Rueger  <torsten.rueger@firsthop.com>
+
+	* java/text/MessageFormat.java (setLocale): Added missing `else'.
+	For PR libgcj/2429.
+
 2001-03-30  Tom Tromey  <tromey@redhat.com>
 
 	* jni.cc (add_char): Correctly encode non-ascii characters.
