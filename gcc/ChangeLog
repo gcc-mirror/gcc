@@ -1,3 +1,8 @@
+2000-03-13  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpphash.c (dump_hash_helper): Only dump nodes of type
+	T_MACRO.  Emit a newline after each definition.
+
 2000-03-14  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
 
 	* gccbug.in: New file.
