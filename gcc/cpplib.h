@@ -387,20 +387,10 @@ struct cpp_options
   unsigned char help_only;
 };
 
-typedef struct cpp_file_change cpp_file_change;
-struct cpp_file_change
-{
-  struct line_map *map;		/* Line map, valid until next callback.  */
-  unsigned int line;		/* Logical line number of next line.  */
-  enum lc_reason reason;	/* Reason for change.  */
-  unsigned char sysp;		/* Nonzero if system header.  */
-  unsigned char externc;	/* Nonzero if wrapper needed.  */
-};
-
 /* Call backs.  */
 struct cpp_callbacks
 {
-    void (*file_change) PARAMS ((cpp_reader *, const cpp_file_change *));
+    void (*file_change) PARAMS ((cpp_reader *, const struct line_map *));
     void (*include) PARAMS ((cpp_reader *, unsigned int,
 			     const unsigned char *, const cpp_token *));
     void (*define) PARAMS ((cpp_reader *, unsigned int, cpp_hashnode *));
@@ -501,7 +491,7 @@ extern int cpp_destroy PARAMS ((cpp_reader *));
    through the pointer returned from cpp_get_callbacks, or set them
    with cpp_set_callbacks.  */
 extern cpp_options *cpp_get_options PARAMS ((cpp_reader *));
-extern struct line_maps *cpp_get_line_maps PARAMS ((cpp_reader *));
+extern const struct line_maps *cpp_get_line_maps PARAMS ((cpp_reader *));
 extern cpp_callbacks *cpp_get_callbacks PARAMS ((cpp_reader *));
 extern void cpp_set_callbacks PARAMS ((cpp_reader *, cpp_callbacks *));
 

@@ -1466,7 +1466,7 @@ _cpp_create_definition (pfile, node)
 		     && macro->expansion[0].val.node == node);
 
   /* To suppress some diagnostics.  */
-  macro->syshdr = pfile->buffer->sysp != 0;
+  macro->syshdr = pfile->map->sysp != 0;
 
   /* Commit the memory.  */
   POOL_COMMIT (&pfile->macro_pool, macro->count * sizeof (cpp_token));
