@@ -267,7 +267,7 @@ cond_exec_get_condition (jump)
   rtx test_if, cond;
 
   if (any_condjump_p (jump))
-    test_if = pc_set (jump);
+    test_if = SET_SRC (pc_set (jump));
   else
     return NULL_RTX;
   cond = XEXP (test_if, 0);
