@@ -72,8 +72,9 @@ fi
 # This program is used to test if the compiler prepends '_' before identifiers.
 # It is also used to check the g++ uses '$' or '.' various places.
 
-if test -z "${NAMES_HAVE_UNDERSCORE}" -o -z "${DOLLAR_IN_LABEL}" \
-    -o -z "${VTABLE_LABEL_PREFIX}"; then
+if test -z "${NAMES_HAVE_UNDERSCORE}" \
+   || test -z "${DOLLAR_IN_LABEL}" \
+   || test -z "${VTABLE_LABEL_PREFIX}"; then
   cat >dummy.h <<!EOF!
 #ifdef __GNUG__
 #pragma interface

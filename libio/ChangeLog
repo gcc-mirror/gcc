@@ -1,3 +1,7 @@
+1999-03-24  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* gen-params (CONFIG_NM): test ... -o ... is not portable
+
 Thu Mar 11 01:07:55 1999  Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
 
 	* configure.in: Cleanup and add mh-*pic handling for arm, powerpc
