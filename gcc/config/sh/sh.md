@@ -2501,24 +2501,26 @@
   "
 {
   rtx reg = gen_reg_rtx (SImode);
+  rtx reg2 = gen_reg_rtx (SImode);
+  operands[1] = copy_to_mode_reg (SImode, operands[1]);
+  operands[2] = copy_to_mode_reg (SImode, operands[2]);
   /* If optimizing, casesi_worker depends on the mode of the instruction
      before label it 'uses' - operands[3].  */
-  emit_insn (gen_casesi_0 (operands[0], operands[1], operands[2], operands[3],
-			   operands[4], reg));
+  emit_insn (gen_casesi_0 (operands[0], operands[1], operands[2], operands[4],
+			   reg));
+  emit_insn (gen_casesi_worker_0 (reg2, reg, operands[3]));
   if (TARGET_SH2)
     {
       rtx lab = gen_label_rtx ();
-      emit_jump_insn (gen_casesi_jump_2 (reg,
+      emit_jump_insn (gen_casesi_jump_2 (reg2,
 					 gen_rtx (LABEL_REF, VOIDmode, lab),
-				         operands[3]));
+					 operands[3]));
       emit_label (lab);
     }
   else
     {
-      emit_insn (gen_addsi3 (reg, reg, gen_rtx (REG, Pmode, 0)));
-      emit_jump_insn (gen_casesi_jump_1 (reg, operands[3]));
+      emit_jump_insn (gen_casesi_jump_1 (reg2, operands[3]));
     }
-
   /* For SH2 and newer, the ADDR_DIFF_VEC is not actually relative to
      operands[3], but to lab.  We will fix this up in
      machine_dependent_reorg.  */
@@ -2527,31 +2529,61 @@
 }")
 
 (define_expand "casesi_0"
-  [(set (match_dup 6) (match_operand:SI 0 "arith_reg_operand" ""))
-   (set (match_dup 6) (minus:SI (match_dup 6)
+  [(set (match_operand:SI 4 "" "") (match_operand:SI 0 "arith_reg_operand" ""))
+   (set (match_dup 4) (minus:SI (match_dup 4)
 				(match_operand:SI 1 "arith_operand" "")))
    (set (reg:SI 18)
-	(gtu:SI (match_dup 6)
+	(gtu:SI (match_dup 4)
 		(match_operand:SI 2 "arith_reg_operand" "")))
    (set (pc)
 	(if_then_else (ne (reg:SI 18)
 			  (const_int 0))
-		      (label_ref (match_operand 4 "" ""))
-		      (pc)))
-   (set (reg:SI 0) (unspec [(label_ref (match_operand 3 "" ""))] 1))
-   (parallel [(set (match_operand 5 "" "")
-		   (unspec [(reg:SI 0) (match_dup 6)
-			    (label_ref (match_dup 3))] 2))
-	      (clobber (scratch:SI))])]
+		      (label_ref (match_operand 3 "" ""))
+		      (pc)))]
   ""
-  "
-{
-  operands[1] = copy_to_mode_reg (SImode, operands[1]);
-  operands[2] = copy_to_mode_reg (SImode, operands[2]);
-  operands[6] = gen_reg_rtx (SImode);
-}")
+  "")
 
-(define_insn "casesi_worker"
+;; ??? reload might clobber r0 if we use it explicitly in the RTL before
+;; reload; using a R0_REGS pseudo reg is likely to give poor code.
+;; So we keep the use of r0 hidden in a R0_REGS clobber until after reload.
+
+(define_insn "casesi_worker_0"
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+	(unspec [(match_operand 1 "register_operand" "0,r")
+		 (label_ref (match_operand 2 "" ""))] 2))
+   (clobber (match_scratch:SI 3 "=X,1"))
+   (clobber (match_scratch:SI 4 "=&z,z"))]
+  ""
+  "#")
+
+(define_split
+  [(set (match_operand:SI 0 "register_operand" "")
+	(unspec [(match_operand 1 "register_operand" "")
+		 (label_ref (match_operand 2 "" ""))] 2))
+   (clobber (match_scratch:SI 3 ""))
+   (clobber (match_scratch:SI 4 ""))]
+  "! TARGET_SH2 && reload_completed"
+  [(set (reg:SI 0) (unspec [(label_ref (match_dup 2))] 1))
+   (parallel [(set (match_dup 0)
+	      (unspec [(reg:SI 0) (match_dup 1) (label_ref (match_dup 2))] 2))
+	      (clobber (match_dup 3))])
+   (set (match_dup 0) (plus:SI (match_dup 0) (reg:SI 0)))]
+  "LABEL_NUSES (operands[2])++;")
+
+(define_split
+  [(set (match_operand:SI 0 "register_operand" "")
+	(unspec [(match_operand 1 "register_operand" "")
+		 (label_ref (match_operand 2 "" ""))] 2))
+   (clobber (match_scratch:SI 3 ""))
+   (clobber (match_scratch:SI 4 ""))]
+  "TARGET_SH2 && reload_completed"
+  [(set (reg:SI 0) (unspec [(label_ref (match_dup 2))] 1))
+   (parallel [(set (match_dup 0)
+	      (unspec [(reg:SI 0) (match_dup 1) (label_ref (match_dup 2))] 2))
+	      (clobber (match_dup 3))])]
+  "LABEL_NUSES (operands[2])++;")
+
+(define_insn "*casesi_worker"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
 	(unspec [(reg:SI 0) (match_operand 1 "register_operand" "0,r")
 		 (label_ref (match_operand 2 "" ""))] 2))
