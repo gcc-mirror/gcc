@@ -129,15 +129,148 @@ case $basic_machine in
 	      | pn-* | np1-* | xps100-* | clipper-* | orion-* | sparclite-* \
 	      | sh-* | powerpc-*)
 		;;
-	# Recognize the various machine names and aliases which stand
-	# for a CPU type and a company and sometimes even an OS.
-	vaxv)
-		basic_machine=vax-dec
+	3b1 | 7300 | 7300-att | att-7300 | pc7300 | safari | unixpc)
+		basic_machine=m68000-att
+		;;
+	3b*)
+		basic_machine=we32k-att
+		;;
+	alliant | fx80)
+		basic_machine=fx80-alliant
+		;;
+	altos | altos3068)
+		basic_machine=m68k-altos
+		;;
+	am29k)
+		basic_machine=a29k-none
+		os=-bsd
+		;;
+	amdahl)
+		basic_machine=580-amdahl
 		os=-sysv
 		;;
-	vms)
-		basic_machine=vax-dec
-		os=-vms
+	amiga)
+		basic_machine=m68k-cbm
+		;;
+	amigados)
+		basic_machine=m68k-cbm
+		os=-amigados
+		;;
+	amigaunix | amix)
+		basic_machine=m68k-cbm
+		os=-sysv4
+		;;
+	apollo68)
+		basic_machine=m68k-apollo
+		os=-sysv
+		;;
+	balance)
+		basic_machine=ns32k-sequent
+		os=-dynix
+		;;
+	convex-c1)
+		basic_machine=c1-convex
+		os=-bsd
+		;;
+	convex-c2)
+		basic_machine=c2-convex
+		os=-bsd
+		;;
+	convex-c32)
+		basic_machine=c32-convex
+		os=-bsd
+		;;
+	convex-c34)
+		basic_machine=c34-convex
+		os=-bsd
+		;;
+	convex-c38)
+		basic_machine=c38-convex
+		os=-bsd
+		;;
+	cray | ymp)
+		basic_machine=ymp-cray
+		os=-unicos
+		;;
+	cray2)
+		basic_machine=cray2-cray
+		os=-unicos
+		;;
+	crds | unos)
+		basic_machine=m68k-crds
+		;;
+	decstation | decstation-3100 | pmax | pmin | dec3100 | decstatn)
+		basic_machine=mips-dec
+		;;
+	delta | 3300 | motorola-3300 | motorola-delta \
+	      | 3300-motorola | delta-motorola)
+		basic_machine=m68k-motorola
+		;;
+	delta88)
+		basic_machine=m88k-motorola
+		os=-sysv3
+		;;
+	dpx2* | dpx2*-bull)
+		basic_machine=m68k-bull
+		os=-sysv3
+		;;
+	ebmon29k)
+		basic_machine=a29k-amd
+		os=-ebmon
+		;;
+	elxsi)
+		basic_machine=elxsi-elxsi
+		os=-bsd
+		;;
+	encore | umax | mmax)
+		basic_machine=ns32k-encore
+		;;
+	fx2800)
+		basic_machine=i860-alliant
+		;;
+	genix)
+		basic_machine=ns32k-ns
+		;;
+	gmicro)
+		basic_machine=tron-gmicro
+		os=-sysv
+		;;
+	h3050r* | hiux*)
+		basic_machine=hppa1.1-hitachi
+		os=-hiuxwe2
+		;;
+	h8300hms)
+		basic_machine=h8300-hitachi
+		os=-hms
+		;;
+	harris)
+		basic_machine=m88k-harris
+		os=-sysv3
+		;;
+	hp300bsd)
+		basic_machine=m68k-hp
+		os=-bsd
+		;;
+	hp300hpux)
+		basic_machine=m68k-hp
+		os=-hpux
+		;;
+	hp9k2[0-9][0-9] | hp9k31[0-9])
+		basic_machine=m68000-hp
+		os=-hpux
+		;;
+	hp9k3[2-9][0-9])
+		basic_machine=m68k-hp
+		os=-hpux
+		;;
+	hp9k31[0-9] | hp9k2[0-9][0-9])
+		basic_machine=m68000-hp
+		;;
+	hp9k7[0-9][0-9] | hp7[0-9][0-9] | hp9k8[0-9]7 | hp8[0-9]7)
+		basic_machine=hppa1.1-hp
+		;;
+	hp9k8[0-9][0-9] | hp8[0-9][0-9])
+		basic_machine=hppa1.0-hp
 		;;
 	i370-ibm* | ibm*)
 		basic_machine=i370-ibm
@@ -160,56 +293,6 @@ case $basic_machine in
 		basic_machine=`echo $1 | sed -e 's/86.*/86-unknown/'`
 		os=-solaris2
 		;;
-	spur)
-		basic_machine=spur-unknown
-		;;
-	paragon)
-		basic_machine=i860-intel
-		os=-osf
-		;;
-	alliant | fx80)
-		basic_machine=fx80-alliant
-		;;
-	convex-c1)
-		basic_machine=c1-convex
-		os=-bsd
-		;;
-	convex-c2)
-		basic_machine=c2-convex
-		os=-bsd
-		;;
-	convex-c32)
-		basic_machine=c32-convex
-		os=-bsd
-		;;
-	convex-c34)
-		basic_machine=c34-convex
-		os=-bsd
-		;;
-	convex-c38)
-		basic_machine=c38-convex
-		os=-bsd
-		;;
-	m88k-omron*)
-		basic_machine=m88k-omron
-		;;
-	merlin)
-		basic_machine=ns32k-utek
-		os=-sysv
-		;;
-	crds | unos)
-		basic_machine=m68k-crds
-		;;
-	elxsi)
-		basic_machine=elxsi-elxsi
-		os=-bsd
-		;;
-	encore | umax | mmax)
-		basic_machine=ns32k-encore
-		;;
-	genix)
-		basic_machine=ns32k-ns
-		;;
 	iris | iris4d)
 		basic_machine=mips-sgi
 		case $os in
@@ -220,30 +303,95 @@ case $basic_machine in
 			;;
 		esac
 		;;
+	isi68 | isi)
+		basic_machine=m68k-isi
+		os=-sysv
+		;;
+	m88k-omron*)
+		basic_machine=m88k-omron
+		;;
+	magnum | m3230)
+		basic_machine=mips-mips
+		os=-sysv
+		;;
+	merlin)
+		basic_machine=ns32k-utek
+		os=-sysv
+		;;
+	miniframe)
+		basic_machine=m68000-convergent
+		;;
+	ncr3000)
+		basic_machine=i486-ncr
+		os=-sysv4
+		;;
 	news | news700 | news800 | news900)
 		basic_machine=m68k-sony
 		os=-newsos
 		;;
-	3b1 | 7300 | 7300-att | att-7300 | pc7300 | safari | unixpc)
-		basic_machine=m68000-att
+	news1000)
+		basic_machine=m68030-sony
+		os=-newsos
 		;;
-	3b*)
-		basic_machine=we32k-att
+	news-3600 | risc-news)
+		basic_machine=mips-sony
+		os=-newsos
 		;;
-	delta | 3300 | motorola-3300 | motorola-delta \
-	      | 3300-motorola | delta-motorola)
-		basic_machine=m68k-motorola
+	next)
+		basic_machine=m68k-next
+		os=-bsd
 		;;
-	balance)
-		basic_machine=ns32k-sequent
-		os=-dynix
+	nh3000)
+		basic_machine=m68k-harris
+		os=-cxux
+		;;
+	nh[45]000)
+		basic_machine=m88k-harris
+		os=-cxux
+		;;
+	nindy960)
+		basic_machine=i960-intel
+		os=-nindy
+		;;
+	np1)
+		basic_machine=np1-gould
+		;;
+	pa-hitachi)
+		basic_machine=hppa1.1-hitachi
+		os=-hiuxwe2
+		;;
+	paragon)
+		basic_machine=i860-intel
+		os=-osf
+		;;
+	pbd)
+		basic_machine=sparc-tti
+		;;
+	pbb)
+		basic_machine=m68k-tti
 		;;
         pc532)
 		basic_machine=ns32k-pc532
 		;;
-	symmetry)
-		basic_machine=i386-sequent
-		os=-dynix
+	pn)
+		basic_machine=pn-gould
+		;;
+	ps2)
+		basic_machine=i386-ibm
+		;;
+	rtpc | rtpc-*)
+		basic_machine=romp-ibm
+		;;
+	sh)
+		basic_machine=sh-hitachi
+		os=-hms
+		;;
+	sps7)
+		basic_machine=m68k-bull
+		os=-sysv2
+		;;
+	spur)
+		basic_machine=spur-unknown
 		;;
 	sun2)
 		basic_machine=m68000-sun
@@ -278,176 +426,29 @@ case $basic_machine in
 	sun4)
 		basic_machine=sparc-sun
 		;;
-	pbd)
-		basic_machine=sparc-tti
-		;;
-	pbb)
-		basic_machine=m68k-tti
-		;;
 	sun386 | sun386i | roadrunner)
 		basic_machine=i386-sun
 		;;
-	ps2)
-		basic_machine=i386-ibm
-		;;
-	fx2800)
-		basic_machine=i860-alliant
-		;;
-	next)
-		basic_machine=m68k-next
-		os=-bsd
-		;;
-	amiga)
-		basic_machine=m68k-cbm
-		;;
-	amigados)
-		basic_machine=m68k-cbm
-		os=-amigados
-		;;
-	amigaunix | amix)
-		basic_machine=m68k-cbm
-		os=-sysv4
-		;;
-	hp9k3[2-9][0-9])
-		basic_machine=m68k-hp
-		;;
-	hp9k31[0-9] | hp9k2[0-9][0-9])
-		basic_machine=m68000-hp
-		;;
-	hp9k7[0-9][0-9] | hp7[0-9][0-9] | hp9k8[0-9]7 | hp8[0-9]7)
-		basic_machine=hppa1.1-hp
-		;;
-	hp9k8[0-9][0-9] | hp8[0-9][0-9])
-		basic_machine=hppa1.0-hp
-		;;
-	h3050r* | hiux*)
-		basic_machine=hppa1.1-hitachi
-		os=-hiuxwe2
-		;;
-	pa-hitachi)
-		basic_machine=hppa1.1-hitachi
-		os=-hiuxwe2
-		;;
-	isi68 | isi)
-		basic_machine=m68k-isi
-		os=-sysv
-		;;
-	apollo68)
-		basic_machine=m68k-apollo
-		os=-sysv
-		;;
-	altos | altos3068)
-		basic_machine=m68k-altos
-		;;
-	miniframe)
-		basic_machine=m68000-convergent
+	symmetry)
+		basic_machine=i386-sequent
+		os=-dynix
 		;;
 	tower | tower-32)
 		basic_machine=m68k-ncr
 		;;
-	news-3600 | risc-news)
-		basic_machine=mips-sony
-		os=-newsos
-		;;
-	decstation | decstation-3100 | pmax | pmin | dec3100 | decstatn)
-		basic_machine=mips-dec
-		;;
-	magnum | m3230)
-		basic_machine=mips-mips
-		os=-sysv
-		;;
-	gmicro)
-		basic_machine=tron-gmicro
-		os=-sysv
-		;;
-	rtpc | rtpc-*)
-		basic_machine=romp-ibm
-		;;
-	am29k)
-		basic_machine=a29k-none
-		os=-bsd
-		;;
-	amdahl)
-		basic_machine=580-amdahl
-		os=-sysv
-		;;
-	cray | ymp)
-		basic_machine=ymp-cray
-		os=-unicos
-		;;
-	cray2)
-		basic_machine=cray2-cray
-		os=-unicos
-		;;
-	xmp)
-		basic_machine=xmp-cray
-		os=-unicos
-		;;
-	delta88)
-		basic_machine=m88k-motorola
-		os=-sysv3
-		;;
-	dpx2* | dpx2*-bull)
-		basic_machine=m68k-bull
-		os=-sysv3
-		;;
-	sps7)
-		basic_machine=m68k-bull
-		os=-sysv2
-		;;
-	ebmon29k)
-		basic_machine=a29k-amd
-		os=-ebmon
-		;;
-	h8300hms)
-		basic_machine=h8300-hitachi
-		os=-hms
-		;;
-	sh)
-		basic_machine=sh-hitachi
-		os=-hms
-		;;
-	harris)
-		basic_machine=m88k-harris
-		os=-sysv3
-		;;
-	hp300bsd)
-		basic_machine=m68k-hp
-		os=-bsd
-		;;
-	hp300hpux)
-		basic_machine=m68k-hp
-		os=-hpux
-		;;
-	hp9k2[0-9][0-9] | hp9k31[0-9])
-		basic_machine=m68000-hp
-		os=-hpux
-		;;
-	hp9k3[2-9][0-9])
-		basic_machine=m68k-hp
-		os=-hpux
-		;;
-	ncr3000)
-		basic_machine=i486-ncr
-		os=-sysv4
-		;;
-	news1000)
-		basic_machine=m68030-sony
-		os=-newsos
-		;;
-	nindy960)
-		basic_machine=i960-intel
-		os=-nindy
-		;;
-	pn)
-		basic_machine=pn-gould
-		;;
-	np1)
-		basic_machine=np1-gould
-		;;
 	ultra3)
 		basic_machine=a29k-nyu
 		os=-sym1
+		;;
+	# Recognize the various machine names and aliases which stand
+	# for a CPU type and a company and sometimes even an OS.
+	vaxv)
+		basic_machine=vax-dec
+		os=-sysv
+		;;
+	vms)
+		basic_machine=vax-dec
+		os=-vms
 		;;
 	vxworks960)
 		basic_machine=i960-wrs
@@ -456,6 +457,10 @@ case $basic_machine in
 	vxworks68)
 		basic_machine=m68k-wrs
 		os=-vxworks
+		;;
+	xmp)
+		basic_machine=xmp-cray
+		os=-unicos
 		;;
         xps | xps100)
 		basic_machine=xps100-honeywell
