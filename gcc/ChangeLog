@@ -1,3 +1,8 @@
+2003-04-11  Mark Mitchell  <mark@codesourcery.com>
+
+	* doc/c-tree.texi (Functions): Remove DECL_REAL_CONTEXT
+	documentation; add DECL_FRIEND_CONTEXT.
+
 2003-04-11  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* doc/install.texi (hppa): Update links for HP-UX patches.  Revise
