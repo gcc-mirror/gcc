@@ -1,3 +1,8 @@
+2004-08-07  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/16790
+	* gcc.c-torture/execute/pr16790-1.c: New test case.
+
 2004-08-02  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/init/null1.C: Fix PR number.

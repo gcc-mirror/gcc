@@ -1,3 +1,9 @@
+2004-08-07  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/16790
+	* fold-const.c (expand_muldiv_1) <NOP_EXPR>: Disallow local
+	truncations, not just global truncations.
+
 2004-08-07  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.c (function_arg_padding): Revert 2004-07-28.
