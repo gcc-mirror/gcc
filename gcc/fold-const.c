@@ -6144,7 +6144,8 @@ fold_sign_changed_comparison (enum tree_code code, tree type,
   tree arg0_inner, tmp;
   tree inner_type, outer_type;
 
-  if (TREE_CODE (arg0) != NOP_EXPR)
+  if (TREE_CODE (arg0) != NOP_EXPR
+      && TREE_CODE (arg0) != CONVERT_EXPR)
     return NULL_TREE;
 
   outer_type = TREE_TYPE (arg0);
@@ -6155,7 +6156,8 @@ fold_sign_changed_comparison (enum tree_code code, tree type,
     return NULL_TREE;
 
   if (TREE_CODE (arg1) != INTEGER_CST
-      && !(TREE_CODE (arg1) == NOP_EXPR
+      && !((TREE_CODE (arg1) == NOP_EXPR
+	    || TREE_CODE (arg1) == CONVERT_EXPR)
 	   && TREE_TYPE (TREE_OPERAND (arg1, 0)) == inner_type))
     return NULL_TREE;
 
@@ -6176,7 +6178,7 @@ fold_sign_changed_comparison (enum tree_code code, tree type,
   else
     arg1 = fold_convert (inner_type, arg1);
 
-  return fold (build (code, type, arg0_inner, arg1));
+  return fold (build2 (code, type, arg0_inner, arg1));
 }
 
 /* Tries to replace &a[idx] CODE s * delta with &a[idx CODE delta], if s is
@@ -9094,7 +9096,8 @@ fold (tree expr)
 			     TREE_OPERAND (arg0, 0), TREE_OPERAND (arg0, 1)));
 
       else if (TREE_CODE (TREE_TYPE (arg0)) == INTEGER_TYPE
-	       && TREE_CODE (arg0) == NOP_EXPR)
+	       && (TREE_CODE (arg0) == NOP_EXPR
+		   || TREE_CODE (arg0) == CONVERT_EXPR))
 	{
 	  /* If we are widening one operand of an integer comparison,
 	     see if the other operand is similarly being widened.  Perhaps we

@@ -1,3 +1,11 @@
+2005-03-13  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/19331
+	* tree.c (get_unwidened): Treat CONVERT_EXPR and NOP_EXPR identically.
+	* fold-const.c (fold_sign_changed_comparison): Likewise.
+	(fold_binary): Optimize comparisons against widened operands if
+	the extension is represented by a CONVERT_EXPR, same as a NOP_EXPR.
+
 2005-03-14  Alan Modra  <amodra@bigpond.net.au>
 
 	* config.gcc: Remove excess indentation.
