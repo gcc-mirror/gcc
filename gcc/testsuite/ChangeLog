@@ -1,3 +1,9 @@
+2000-10-03  Geoff Keating  <geoffk@cygnus.com>
+
+	* g++.old-deja/g++.pt/memtemp77.C (main): Update demangled
+	function name for current C++ compiler.
+	Patch from Kriang Lerdsuwanakij <lerdsuwa@scf.usc.edu>.
+
 2000-09-29  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* g++.old-deja/g++.ext/pretty3.C: Fix comparison with
