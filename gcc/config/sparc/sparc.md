@@ -2076,7 +2076,6 @@
   if (! CONSTANT_P (operands[1]) || input_operand (operands[1], DImode))
     ;
   else if (TARGET_ARCH64
-	   && CONSTANT_P (operands[1])
            && GET_CODE (operands[1]) != HIGH
            && GET_CODE (operands[1]) != LO_SUM)
     {

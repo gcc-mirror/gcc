@@ -187,6 +187,8 @@ static bool sparc_function_ok_for_sibcall (tree, tree);
 static void sparc_init_libfuncs (void);
 static void sparc_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
 				   HOST_WIDE_INT, tree);
+static bool sparc_can_output_mi_thunk (tree, HOST_WIDE_INT,
+				       HOST_WIDE_INT, tree);
 static struct machine_function * sparc_init_machine_status (void);
 static bool sparc_cannot_force_const_mem (rtx);
 static rtx sparc_tls_get_addr (void);
@@ -270,7 +272,7 @@ enum processor_type sparc_cpu;
 #undef TARGET_ASM_OUTPUT_MI_THUNK
 #define TARGET_ASM_OUTPUT_MI_THUNK sparc_output_mi_thunk
 #undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
-#define TARGET_ASM_CAN_OUTPUT_MI_THUNK default_can_output_mi_thunk_no_vcall
+#define TARGET_ASM_CAN_OUTPUT_MI_THUNK sparc_can_output_mi_thunk
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS sparc_rtx_costs
@@ -9286,16 +9288,18 @@ sparc_rtx_costs (rtx x, int code, int outer_code, int *total)
     }
 }
 
-/* Output code to add DELTA to the first argument, and then jump to FUNCTION.
-   Used for C++ multiple inheritance.  */
+/* Output the assembler code for a thunk function.  THUNK_DECL is the
+   declaration for the thunk function itself, FUNCTION is the decl for
+   the target function.  DELTA is an immediate constant offset to be
+   added to THIS.  If VCALL_OFFSET is nonzero, the word at address
+   (*THIS + VCALL_OFFSET) should be additionally added to THIS.  */
 
 static void
 sparc_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
-		       HOST_WIDE_INT delta,
-		       HOST_WIDE_INT vcall_offset ATTRIBUTE_UNUSED,
+		       HOST_WIDE_INT delta, HOST_WIDE_INT vcall_offset,
 		       tree function)
 {
-  rtx this, insn, funexp, delta_rtx, tmp;
+  rtx this, insn, funexp;
 
   reload_completed = 1;
   epilogue_completed = 1;
@@ -9313,26 +9317,73 @@ sparc_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 
   /* Add DELTA.  When possible use a plain add, otherwise load it into
      a register first.  */
-  delta_rtx = GEN_INT (delta);
-  if (!SPARC_SIMM13_P (delta))
+  if (delta)
     {
-      rtx scratch = gen_rtx_REG (Pmode, 1);
+      rtx delta_rtx = GEN_INT (delta);
 
-      if (input_operand (delta_rtx, GET_MODE (scratch)))
-	emit_insn (gen_rtx_SET (VOIDmode, scratch, delta_rtx));
-      else
+      if (! SPARC_SIMM13_P (delta))
 	{
-	  if (TARGET_ARCH64)
-	    sparc_emit_set_const64 (scratch, delta_rtx);
-	  else
-	    sparc_emit_set_const32 (scratch, delta_rtx);
+	  rtx scratch = gen_rtx_REG (Pmode, 1);
+	  emit_move_insn (scratch, delta_rtx);
+	  delta_rtx = scratch;
 	}
 
-      delta_rtx = scratch;
+      /* THIS += DELTA.  */
+      emit_insn (gen_add2_insn (this, delta_rtx));
     }
 
-  tmp = gen_rtx_PLUS (Pmode, this, delta_rtx);
-  emit_insn (gen_rtx_SET (VOIDmode, this, tmp));
+  /* Add the word at address (*THIS + VCALL_OFFSET).  */
+  if (vcall_offset)
+    {
+      rtx vcall_offset_rtx = GEN_INT (vcall_offset);
+      rtx scratch = gen_rtx_REG (Pmode, 1);
+
+      if (vcall_offset >= 0)
+	abort ();
+
+      /* SCRATCH = *THIS.  */
+      emit_move_insn (scratch, gen_rtx_MEM (Pmode, this));
+
+      /* Prepare for adding VCALL_OFFSET.  The difficulty is that we
+	 may not have any available scratch register at this point.  */
+      if (SPARC_SIMM13_P (vcall_offset))
+	;
+      /* This is the case if ARCH64 (unless -ffixed-g5 is passed).  */
+      else if (! fixed_regs[5]
+	       /* The below sequence is made up of at least 2 insns,
+		  while the default method may need only one.  */
+	       && vcall_offset < -8192)
+	{
+	  rtx scratch2 = gen_rtx_REG (Pmode, 5);
+	  emit_move_insn (scratch2, vcall_offset_rtx);
+	  vcall_offset_rtx = scratch2;
+	}
+      else
+	{
+	  rtx increment = GEN_INT (-4096);
+
+	  /* VCALL_OFFSET is a negative number whose typical range can be
+	     estimated as -32768..0 in 32-bit mode.  In almost all cases
+	     it is therefore cheaper to emit multiple add insns than
+	     spilling and loading the constant into a register (at least
+	     6 insns).  */
+	  while (! SPARC_SIMM13_P (vcall_offset))
+	    {
+	      emit_insn (gen_add2_insn (scratch, increment));
+	      vcall_offset += 4096;
+	    }
+	  vcall_offset_rtx = GEN_INT (vcall_offset); /* cannot be 0 */
+	}
+
+      /* SCRATCH = *(*THIS + VCALL_OFFSET).  */
+      emit_move_insn (scratch, gen_rtx_MEM (Pmode,
+					    gen_rtx_PLUS (Pmode,
+							  scratch,
+							  vcall_offset_rtx)));
+
+      /* THIS += *(*THIS + VCALL_OFFSET).  */
+      emit_insn (gen_add2_insn (this, scratch));
+    }
 
   /* Generate a tail call to the target function.  */
   if (! TREE_USED (function))
@@ -9360,6 +9411,19 @@ sparc_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   reload_completed = 0;
   epilogue_completed = 0;
   no_new_pseudos = 0;
+}
+
+/* Return true if sparc_output_mi_thunk would be able to output the
+   assembler code for the thunk function specified by the arguments
+   it is passed, and false otherwise.  */
+static bool
+sparc_can_output_mi_thunk (tree thunk_fndecl ATTRIBUTE_UNUSED,
+			   HOST_WIDE_INT delta ATTRIBUTE_UNUSED,
+			   HOST_WIDE_INT vcall_offset,
+			   tree function ATTRIBUTE_UNUSED)
+{
+  /* Bound the loop used in the default method above.  */
+  return (vcall_offset >= -32768 || ! fixed_regs[5]);
 }
 
 /* How to allocate a 'struct machine_function'.  */

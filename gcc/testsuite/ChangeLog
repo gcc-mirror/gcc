@@ -1,3 +1,7 @@
+2004-10-13  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* g++.dg/inherit/thunk1.C: Run on the SPARC.
+
 2004-10-11  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/15876
