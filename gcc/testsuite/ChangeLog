@@ -1,3 +1,7 @@
+2004-10-26  Ben Elliston  <bje@au.ibm.com>
+
+	* gcc.dg/tree-ssa/20030922-2.c: Now passing, so remove xfail.
+
 2004-10-26  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* gcc.dg/decl-nospec-1.c, gcc.dg/decl-nospec-2.c,
