@@ -1,5 +1,16 @@
 2002-09-05  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/locale/gnu/ctype_members.cc (ctype<wchar_t>::do_widen(char)):
+	Switch to _M_c_locale_ctype around btowc call.
+	(ctype<wchar_t>::do_widen(const char*, const char *, wchar_t*)):
+	Switch to _M_c_locale_ctype around mbsrtowcs call.
+	(ctype<wchar_t>::do_narrow(char)): Switch to _M_c_locale_ctype around
+	wctob call.
+	(ctype<wchar_t>::do_narrow(const char*, const char *, wchar_t*)):
+	Switch to _M_c_locale_ctype around wcsrtombs call.
+
+2002-09-05  Jakub Jelinek  <jakub@redhat.com>
+
 	* config/locale/gnu/monetary_members.cc
 	(moneypunct<wchar_t, true>::_M_initialize_moneypunct,
 	moneypunct<wchar_t, false>::_M_initialize_moneypunct): Use
