@@ -2458,8 +2458,7 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	  converted = 1;
 	  resultcode = xresultcode;
 
-	  if ((warn_sign_compare < 0 ? extra_warnings : warn_sign_compare != 0)
-	      && skip_evaluation == 0)
+	  if (warn_sign_compare && skip_evaluation == 0)
 	    {
 	      int op0_signed = ! TREE_UNSIGNED (TREE_TYPE (orig_op0));
 	      int op1_signed = ! TREE_UNSIGNED (TREE_TYPE (orig_op1));
@@ -3448,8 +3447,7 @@ build_conditional_expr (ifexp, op1, op2)
 	 and later code won't know it used to be different.
 	 Do this check on the original types, so that explicit casts
 	 will be considered, but default promotions won't.  */
-      if ((warn_sign_compare < 0 ? extra_warnings : warn_sign_compare)
-	  && !skip_evaluation)
+      if (warn_sign_compare && !skip_evaluation)
 	{
 	  int unsigned_op1 = TREE_UNSIGNED (TREE_TYPE (orig_op1));
 	  int unsigned_op2 = TREE_UNSIGNED (TREE_TYPE (orig_op2));
@@ -3603,7 +3601,7 @@ internal_build_compound_expr (list, first_p)
       /* The left-hand operand of a comma expression is like an expression
          statement: with -Wextra or -Wunused, we should warn if it doesn't have
 	 any side-effects, unless it was explicitly cast to (void).  */
-      if ((extra_warnings || warn_unused_value)
+      if (warn_unused_value
            && ! (TREE_CODE (TREE_VALUE (list)) == CONVERT_EXPR
                 && VOID_TYPE_P (TREE_TYPE (TREE_VALUE (list)))))
         warning ("left-hand operand of comma expression has no effect");

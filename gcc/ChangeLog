@@ -1,10 +1,43 @@
+2003-05-03  Zack Weinberg  <zack@codesourcery.com>
+
+	PR c/10604
+	* c-common.c (warn_sign_compare): Initialize to -1.
+	* c-opts.c (c_common_init_options): Don't set warn_sign_compare here.
+	(c_common_decode_option <OPT_Wall>): Set warn_sign_compare
+	for C++ only.
+	(c_common_post_options): Set warn_sign_compare from extra_warnings
+	if it's still -1 at this point.
+
+	* toplev.c (maybe_warn_unused_parameter): New static variable.
+	(set_Wextra): New static function.
+	(W_options): Remove "extra".
+	(decode_W_option): Call set_Wextra.
+	(independent_decode_option): Likewise.
+	(set_Wunused): Cooperate with set_Wextra in setting
+	warn_unused_parameter.
+	(rest_of_compilation): No need to check extra_warnings as
+	well as warn_uninitialized.
+
+	* c-typeck.c (build_binary_op, build_conditional_expr):
+	No need to check extra_warnings as well as warn_sign_compare.
+	(internal_build_compound_expr): No need to check extra_warnings
+	as well as warn_unused_value.
+	* function.c (expand_function_end): No need to check extra_warnings
+	as well as warn_unused_parameter.
+	* stmt.c (expand_expr_stmt_value): No need to check extra_warnings
+	as well as warn_unused_value.
+
+	* doc/invoke.texi: Clarify documentation of -Wsign-compare.
+
+	* Makefile.in: Disable -Werror for gengtype-lex.o.
+
 2003-05-03  Olivier Hainque  <hainque@act-europe.fr>
 
 	* emit-rtl.c (last_call_insn, add_function_usage_to): New functions.
 	* rtl.h (last_call_insn, add_function_usage_to): New prototypes.
 	* builtins.c (expand_builtin_apply): Use the new emit-rtl functions.
 	* calls.c (emit_call_1): Likewise.
-	(expand_call): For calls initializing constant memory, replace 
+	(expand_call): For calls initializing constant memory, replace
 	emission of standalone mem /u clobber with function usage entry.
 	* expr.c (emit_block_move_via_libcall): Likewise.
 	* cse.c (count_reg_usage, case EXPR_LIST): New case.
@@ -42,7 +75,7 @@
 	* tree-inline.c (find_alloca_call): Likewise.
 	(find_builtin_longjmp_call): Likewise.
 	* gcc.c (input_filename): Make static.
-	
+
 2003-05-03  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.md: Fix comment typo.
@@ -77,7 +110,7 @@
 
 	* config/rs6000/rs6000.c (rs6000_attribute_table): Add 'extern'
 	to tentative declaration.
-	
+
 	* config/rs6000/sysv4.h (SYMBOL_FLAG_SMALL_V4): Delete.
 	(SYMBOL_FLAG_SMALL_V4): Delete.
 	* config/rs6000/rs6000.c (small_data_operand): Use SYMBOL_REF_SMALL_P.
@@ -154,12 +187,12 @@
 	* configure: Regenerate.
 
 2003-05-01  Falk Hueffner  <falk.hueffner@student.uni-tuebingen.de>
- 
-        PR target/8257
-        * config/alpha/alpha.c (alpha_sa_mask, alpha_expand_prologue,
-        alpha_start_function, alpha_expand_epilogue, unicosmk_gen_dsib):
-        Avoid undefined shifts by making the shift operand unsigned.
- 
+
+	PR target/8257
+	* config/alpha/alpha.c (alpha_sa_mask, alpha_expand_prologue,
+	alpha_start_function, alpha_expand_epilogue, unicosmk_gen_dsib):
+	Avoid undefined shifts by making the shift operand unsigned.
+
 2003-05-01  DJ Delorie  <dj@redhat.com>
 
 	* reload.c (find_reloads): Also check that all of a multi-reg
@@ -254,549 +287,549 @@
 
 	2003-04-07  Richard Sandiford  <rsandifo@redhat.com>
 
-	        * config/mips/mips.c (mips_classify_symbol): Add catch-all case for
-	        handling local labels when TARGET_ABICALLS.
+		* config/mips/mips.c (mips_classify_symbol): Add catch-all case for
+		handling local labels when TARGET_ABICALLS.
 
 	2003-04-04  Richard Sandiford  <rsandifo@redhat.com>
 
-	        * config/mips/mips-protos.h (mips_expand_epilogue): Add an
-	        integer argument.
-	        (mips_expand_call): Likewise.
-	        * config/mips/mips.h (TARGET_SIBCALLS): New macro.
-	        (FIXED_REGISTERS): Clear $31 entry.
-	        (CALL_USED_REGISTERS, CALL_REALLY_USED_REGISTER): Likewise.
-	        (EPILOGUE_USES): Define.
-	        * config/mips/mips.c (mips_function_ok_for_sibcall): New function.
-	        (TARGET_FUNCTION_OK_FOR_SIBCALL): Use it.
-	        (override_options): Add a 'j' register class.
-	        (mips_expand_call): Handle sibcalls
-	        (mips_expand_epilogue): Handle epilogues for sibcalls.
-	        * config/mips/mips.md (epilogue): Adjust call to mips_expand_epilogue.
-	        (sibcall_epilogue): New pattern.
-	        (call, call_value): Adjust calls to mips_expand_call.
-	        (sibcall, sibcall_value): New expanders.
-	        (sibcall_internal, sibcall_value_internal): New patterns.
-	        (sibcall_value_multiple_internal): New pattern.
+		* config/mips/mips-protos.h (mips_expand_epilogue): Add an
+		integer argument.
+		(mips_expand_call): Likewise.
+		* config/mips/mips.h (TARGET_SIBCALLS): New macro.
+		(FIXED_REGISTERS): Clear $31 entry.
+		(CALL_USED_REGISTERS, CALL_REALLY_USED_REGISTER): Likewise.
+		(EPILOGUE_USES): Define.
+		* config/mips/mips.c (mips_function_ok_for_sibcall): New function.
+		(TARGET_FUNCTION_OK_FOR_SIBCALL): Use it.
+		(override_options): Add a 'j' register class.
+		(mips_expand_call): Handle sibcalls
+		(mips_expand_epilogue): Handle epilogues for sibcalls.
+		* config/mips/mips.md (epilogue): Adjust call to mips_expand_epilogue.
+		(sibcall_epilogue): New pattern.
+		(call, call_value): Adjust calls to mips_expand_call.
+		(sibcall, sibcall_value): New expanders.
+		(sibcall_internal, sibcall_value_internal): New patterns.
+		(sibcall_value_multiple_internal): New pattern.
 
 	2003-03-25  Richard Sandiford  <rsandifo@redhat.com>
 
-	        * config/mips/mips.md (extended_mips16): New attribute.
-	        (define_attr length): Default to 8 if extended_mips16 == yes.
-	        (truncdisi2): Set extended_mips16 to yes for the sll alternative.
-	        (truncdihi2, truncdiqi2, *extendsidi2): Likewise.
-	        (call_internal): Set extended_mips16 to yes for direct jumps.
-	        Remove redundant mode attribute.
-	        (call_value_internal, call_value_multiple_internal): Likewise.
-	        (call_split): Remove redundant mode attribute.
-	        (call_value_split, call_value_multiple_split): Likewise.
+		* config/mips/mips.md (extended_mips16): New attribute.
+		(define_attr length): Default to 8 if extended_mips16 == yes.
+		(truncdisi2): Set extended_mips16 to yes for the sll alternative.
+		(truncdihi2, truncdiqi2, *extendsidi2): Likewise.
+		(call_internal): Set extended_mips16 to yes for direct jumps.
+		Remove redundant mode attribute.
+		(call_value_internal, call_value_multiple_internal): Likewise.
+		(call_split): Remove redundant mode attribute.
+		(call_value_split, call_value_multiple_split): Likewise.
 
-	        * config/mips/mips.c (mips_symbol_insns): Rework.  Fix handling
-	        of unaligned offsets.
+		* config/mips/mips.c (mips_symbol_insns): Rework.  Fix handling
+		of unaligned offsets.
 
 	       	* config/mips/mips.c (mips_splittable_symbol_p): Fix handling
-	        of SYMBOL_GENERAL.
+		of SYMBOL_GENERAL.
 
 	2003-03-22  Richard Sandiford  <rsandifo@redhat.com>
 
-	        * config/mips/mips.h (TARGET_EXPLICIT_RELOCS): Add commentary.
-	        * config/mips/mips.c (override_options): Disable -mexplicit-relocs
-	        for mips16 code.
+		* config/mips/mips.h (TARGET_EXPLICIT_RELOCS): Add commentary.
+		* config/mips/mips.c (override_options): Disable -mexplicit-relocs
+		for mips16 code.
 
 	2003-03-22  Richard Sandiford  <rsandifo@redhat.com>
 
-	        * config/mips/mips.h (ADDRESS_COST): Define.
+		* config/mips/mips.h (ADDRESS_COST): Define.
 
 	2003-03-20  Richard Sandiford  <rsandifo@redhat.com>
 
-	        * config/mips/mips.h (EXTRA_CONSTRAINT): Give existing meaning of
-	        'R' to 'U'.  Make 'R' mean a single-instruction memory reference.
-	        * config/mips/mips.md: Replace 'R' constraints with 'U'.
+		* config/mips/mips.h (EXTRA_CONSTRAINT): Give existing meaning of
+		'R' to 'U'.  Make 'R' mean a single-instruction memory reference.
+		* config/mips/mips.md: Replace 'R' constraints with 'U'.
 
 	2003-03-18  Richard Sandiford  <rsandifo@redhat.com>
 
-	        * config/mips/mips.md (truncdisi2): Add commentary.  Use sll instead
-	        of a two-instruction sequence.  Add register->memory alternative.
-	        (truncdihi2, truncdiqi2): Likewise.
-	        Rework shift/truncate instructions so that they only handle right
-	        shifts of 32 (or more, in the case of arithmetic shifts).
-	        Add patterns for truncate/sign-extend.
+		* config/mips/mips.md (truncdisi2): Add commentary.  Use sll instead
+		of a two-instruction sequence.  Add register->memory alternative.
+		(truncdihi2, truncdiqi2): Likewise.
+		Rework shift/truncate instructions so that they only handle right
+		shifts of 32 (or more, in the case of arithmetic shifts).
+		Add patterns for truncate/sign-extend.
 
 	2003-03-13  Richard Sandiford  <rsandifo@redhat.com>
 
-	        * configure.in (mips*-*-*): Check for explicit relocation support.
-	        * configure: Regenerate.
+		* configure.in (mips*-*-*): Check for explicit relocation support.
+		* configure: Regenerate.
 
 	2003-03-13  Richard Sandiford  <rsandifo@redhat.com>
 
-	        * config/mips/mips.h (TARGET_SWITCHES): Add -mexplicit-relocs
-	        and -mno-explicit-relocs.
-	        (MASK_EXPLICIT_RELOCS): Define.
-	        (TARGET_EXPLICIT_RELOCS): Use it.
-	        (mips_split_addresses): Remove declaration.
-	        * config/mips/mips.c (override_options): Update comment for
-	        mips_split_addresses.  Clear MASK_EXPLICIT_RELOCS for non-PIC n64.
+		* config/mips/mips.h (TARGET_SWITCHES): Add -mexplicit-relocs
+		and -mno-explicit-relocs.
+		(MASK_EXPLICIT_RELOCS): Define.
+		(TARGET_EXPLICIT_RELOCS): Use it.
+		(mips_split_addresses): Remove declaration.
+		* config/mips/mips.c (override_options): Update comment for
+		mips_split_addresses.  Clear MASK_EXPLICIT_RELOCS for non-PIC n64.
 
 	2003-03-13  Richard Sandiford  <rsandifo@redhat.com>
 
-	        * combine.c (gen_lowpart_for_combine): Treat the lowpart Pmode of
-	        a CONST as identity.  Check the return value of gen_lowpart_common.
+		* combine.c (gen_lowpart_for_combine): Treat the lowpart Pmode of
+		a CONST as identity.  Check the return value of gen_lowpart_common.
 
 	2003-03-13  Richard Sandiford  <rsandifo@redhat.com>
 
-	        * config/mips/mips.c (mips_legitimize_symbol): Handle small data
-	        references for TARGET_EXPLICIT_RELOCS.
-	        (mips_reloc_string): Return "%gp_rel(" for RELOC_GPREL16 if
-	        !TARGET_MIPS16.
+		* config/mips/mips.c (mips_legitimize_symbol): Handle small data
+		references for TARGET_EXPLICIT_RELOCS.
+		(mips_reloc_string): Return "%gp_rel(" for RELOC_GPREL16 if
+		!TARGET_MIPS16.
 
 	2003-03-13  Richard Sandiford  <rsandifo@redhat.com>
 
-	        * config/mips/mips.md: Replace 'IQ' mips16 constraints with just 'Q'.
-	        (addsi3): Remove redundant constraints.
-	        (addsi3_internal): Use separate register & constant alternatives.
-	        Use a 'Q' constraint and "addiu" insn for the latter.
-	        (adddi3_internal_3, addsi3_internal_2): Likewise.
+		* config/mips/mips.md: Replace 'IQ' mips16 constraints with just 'Q'.
+		(addsi3): Remove redundant constraints.
+		(addsi3_internal): Use separate register & constant alternatives.
+		Use a 'Q' constraint and "addiu" insn for the latter.
+		(adddi3_internal_3, addsi3_internal_2): Likewise.
 
 	2003-03-13  Richard Sandiford  <rsandifo@redhat.com>
 
-	        * config/mips/mips-protos.h (mips_expand_unaligned_load): Declare.
-	        (mips_expand_unaligned_store): Declare.
-	        * config/mips/mips.c (mips_get_unaligned_mem): New fn.
-	        (mips_expand_unaligned_load, mips_expand_unaligned_store): New fns.
-	        * config/mips/mips.md (UNSPEC_ULW, UNSPEC_USW): Remove.
-	        (UNSPEC_ULD, UNSPEC_USD): Remove.
-	        (UNSPEC_LWL, UNSPEC_LWR, UNSPEC_SWL, UNSPEC_SWR): New.
-	        (UNSPEC_LDL, UNSPEC_LDR, UNSPEC_SDL, UNSPEC_SDR): New.
-	        (extv, extzv): Use mips_expand_unaligned_load.
-	        (insv): Use mips_expand_unaligned_store.  Use a reg_or_0_operand
-	        predicate for operand 3.
-	        (movsi_ulw, movsi_usw): Replace with...
-	        (mov_lwl, mov_lwr, mov_swl, move_swr): ...these new insns.
-	        (movdi_uld, movdi_usd): Likewise replace with...
-	        (mov_ldl, mov_ldr, mov_sdl, move_sdr): ...these insns.
+		* config/mips/mips-protos.h (mips_expand_unaligned_load): Declare.
+		(mips_expand_unaligned_store): Declare.
+		* config/mips/mips.c (mips_get_unaligned_mem): New fn.
+		(mips_expand_unaligned_load, mips_expand_unaligned_store): New fns.
+		* config/mips/mips.md (UNSPEC_ULW, UNSPEC_USW): Remove.
+		(UNSPEC_ULD, UNSPEC_USD): Remove.
+		(UNSPEC_LWL, UNSPEC_LWR, UNSPEC_SWL, UNSPEC_SWR): New.
+		(UNSPEC_LDL, UNSPEC_LDR, UNSPEC_SDL, UNSPEC_SDR): New.
+		(extv, extzv): Use mips_expand_unaligned_load.
+		(insv): Use mips_expand_unaligned_store.  Use a reg_or_0_operand
+		predicate for operand 3.
+		(movsi_ulw, movsi_usw): Replace with...
+		(mov_lwl, mov_lwr, mov_swl, move_swr): ...these new insns.
+		(movdi_uld, movdi_usd): Likewise replace with...
+		(mov_ldl, mov_ldr, mov_sdl, move_sdr): ...these insns.
 
 	2003-02-26  Richard Sandiford  <rsandifo@redhat.com>
 
-	        * config/mips/mips-protos.h (mips_global_pic_constant_p): Declare.
-	        * config/mips/mips.h (LEA_REGS): New register class.
-	        (REG_CLASS_NAMES, REG_CLASS_CONTENTS): Add entries for it.
-	        (GR_REG_CLASS_P): Include LEA_REGS.
-	        (DANGEROUS_FOR_LA25_P): New macro.
-	        (EXTRA_CONSTRAINT): Add !DANGEROUS_FOR_LA25_P to R's condition.
-	        Add a T constraint for the DANGEROUS_FOR_LA25_P case.
-	        * config/mips/mips.c (mips_regno_to_class): Change GR_REGS
-	        entries to LEA_REGS.
-	        (mips_global_pic_constant_p): New function.
-	        (override_options): Add 'e' register constraint.
-	        (mips_secondary_reload_class): Return LEA_REGS when reloading
-	        a dangerous constant into a class containing $25.
-	        * config/mips/mips.md (movdi_internal2): Add an e <- T alternative.
-	        (movsi_internal): Likewise.
+		* config/mips/mips-protos.h (mips_global_pic_constant_p): Declare.
+		* config/mips/mips.h (LEA_REGS): New register class.
+		(REG_CLASS_NAMES, REG_CLASS_CONTENTS): Add entries for it.
+		(GR_REG_CLASS_P): Include LEA_REGS.
+		(DANGEROUS_FOR_LA25_P): New macro.
+		(EXTRA_CONSTRAINT): Add !DANGEROUS_FOR_LA25_P to R's condition.
+		Add a T constraint for the DANGEROUS_FOR_LA25_P case.
+		* config/mips/mips.c (mips_regno_to_class): Change GR_REGS
+		entries to LEA_REGS.
+		(mips_global_pic_constant_p): New function.
+		(override_options): Add 'e' register constraint.
+		(mips_secondary_reload_class): Return LEA_REGS when reloading
+		a dangerous constant into a class containing $25.
+		* config/mips/mips.md (movdi_internal2): Add an e <- T alternative.
+		(movsi_internal): Likewise.
 
 	2003-02-23  Richard Sandiford  <rsandifo@redhat.com>
 
-	        * config/mips/mips.h (TARGET_SPLIT_CALLS): New macro.
-	        * config/mips/mips.md (call_split): New insn.
-	        (call_value_split, call_value_multiple_split): New insns.
-	        (call_internal): Turn into a define_insn_and_split.  Split the
-	        instruction into a call and $gp load if TARGET_SPLIT_CALLS.
-	        (call_value_internal, call_value_multiple_internal): Likewise.
+		* config/mips/mips.h (TARGET_SPLIT_CALLS): New macro.
+		* config/mips/mips.md (call_split): New insn.
+		(call_value_split, call_value_multiple_split): New insns.
+		(call_internal): Turn into a define_insn_and_split.  Split the
+		instruction into a call and $gp load if TARGET_SPLIT_CALLS.
+		(call_value_internal, call_value_multiple_internal): Likewise.
 
 	2003-02-23  Richard Sandiford  <rsandifo@redhat.com>
 
-	        * config/mips/mips.c (mips_reloc_string): Return "%got(" for
-	        RELOC_GOT_PAGE and RELOC_GOT_DISP if !TARGET_NEWABI.
-	        (mips_encode_section_info): Don't take symbol visibility into
-	        account if TARGET_ABICALLS.  Add more commentary.
-	        * config/mips/mips.md: Add commentary above reloc constants.
+		* config/mips/mips.c (mips_reloc_string): Return "%got(" for
+		RELOC_GOT_PAGE and RELOC_GOT_DISP if !TARGET_NEWABI.
+		(mips_encode_section_info): Don't take symbol visibility into
+		account if TARGET_ABICALLS.  Add more commentary.
+		* config/mips/mips.md: Add commentary above reloc constants.
 
 	2003-02-12  Richard Sandiford  <rsandifo@redhat.com>
 
-	        * config/mips/mips.c (mips_legitimize_const_move): New, extracted
-	        from mips_legitimize_move.  Legitimize constant pool references.
-	        (mips_legitimize_move): Call mips_legitimize_const_move.  Attach
-	        a REG_EQUAL note to the last instruction.
+		* config/mips/mips.c (mips_legitimize_const_move): New, extracted
+		from mips_legitimize_move.  Legitimize constant pool references.
+		(mips_legitimize_move): Call mips_legitimize_const_move.  Attach
+		a REG_EQUAL note to the last instruction.
 
 	2003-02-11  Richard Sandiford  <rsandifo@redhat.com>
 
-	        * config/mips/mips-protos.h (mips_simplify_dwarf_addr): Declare.
-	        * config/mips/mips.h (TARGET_EXPLICIT_RELOCS, TARGET_NEWABI): New.
-	        (ASM_SIMPLIFY_DWARF_ADDR): Define to mips_simplify_dwarf_addr.
-	        (EXTRA_CONSTRAINT): Allow symbolic call addresses for TARGET_ABICALLS.
-	        * config/mips/mips.md (UNSPEC_HIGH): New constant.
-	        (UNSPEC_RELOC_GPREL16): Rename to...
-	        (RELOC_GPREL16): ...this.
-	        (RELOC_GOT_HI, RELOC_GOT_LO, RELOC_GOT_PAGE, RELOC_GOT_DISP): New.
-	        (RELOC_CALL16, RELOC_CALL_HI, RELOC_CALL_LO): New.
-	        (macro_calls): New attribute.
-	        (length): Use it to set the default length of calls.  Don't allow
-	        calls to have delay slots if macro_calls is "yes".
-	        (luisi, luidi): New patterns.
-	        (lowsi, lowdi): Use '%R' to print the relocation.
-	        (lowdi_extend): Remove.
-	        (loadgp): Remove mode from operand 0.  Use '%0' instead of '%a0'.
-	        (call_internal): Merge alternatives.  Always use "jal".
-	        (call_value_internal, call_value_multiple_internal): Likewise.
-	        (reloc_gprel16): Remove.
-	        * config/mips/mips.c (mips_got_alias_set): New variable.
-	        (mips_classify_constant): Handle the new relocation constants.
-	        (mips_classify_symbol): Reverse the sense of SYMBOL_REF_FLAG for PIC.
-	        (mips_symbolic_address_p): Return false if generating explicit relocs.
-	        Otherwise allow local PIC symbols to have an offset.
-	        (mips_splittable_symbol_p): New function.
-	        (mips_classify_address): Use it to check whether a LO_SUM is valid.
-	        (mips_const_insns): Always accept HIGH.
-	        (call_insn_operand): Don't accept global symbols if using explicit
-	        relocs.
-	        (move_operand): Don't accept HIGH when generating PIC.
-	        (mips_reloc, mips_lui_reloc): New functions.
-	        (mips_force_temporary): Remove MODE argument.  Expect VALUE to
-	        be a valid right-hand-side for a SET pattern.
-	        (mips_load_got, mips_load_got16, mips_load_got32): New functions.
-	        (mips_emit_high): New function.
-	        (mips_legitimize_symbol): Use mips_reloc for the mips16 gp-relative
-	        case.  Use mips_splittable_symbol_p to check whether a LO_SUM
-	        address should be used.  Use mips_emit_high to generate the
-	        high part of such an address.  Adjust the global symbol + offset
-	        case to match the change to mips_force_temprorary.
-	        (mips_legitimize_move): Shuffle call to mips_legitimize_symbol.
-	        If generating explicit-reloc PIC, load the address of global
-	        symbols from the GOT.  Use mips_emit_high to emit the high part
-	        of an address.
-	        (mips_simplify_dwarf_addr): New function.
-	        (mips_move_1word): Use lwc1 instead of l.s and swc1 instead of s.s.
-	        (mips_move_2words): Likewise ldc1/l.d and sdc1/s.d if TARGET_64BIT.
-	        (mips_expand_call): Load the addresses of global functions using
-	        %call* relocs if generating explicit-reloc PIC.  Don't generate
-	        an exception_receiver pattern.
-	        (override_options): Initialize mips_got_alias_set.
-	        (print_relocation): Remove in favour of...
-	        (mips_reloc_string): ...this new function.
-	        (print_operand): Handle '%R'.  Use mips_reloc_string.
-	        (print_operand_address): Use print_operand to print the symbolic
-	        part of a LO_SUM address.
-	        (mips_output_function_prologue): Use .cprestore, reverting last patch.
-	        (mips_encode_section_info): Factor out DECL_RTL accesses.  Reverse
-	        sense of SYMBOL_REF_FLAG for PIC, using binds_local_p to check
-	        for local symbols.
+		* config/mips/mips-protos.h (mips_simplify_dwarf_addr): Declare.
+		* config/mips/mips.h (TARGET_EXPLICIT_RELOCS, TARGET_NEWABI): New.
+		(ASM_SIMPLIFY_DWARF_ADDR): Define to mips_simplify_dwarf_addr.
+		(EXTRA_CONSTRAINT): Allow symbolic call addresses for TARGET_ABICALLS.
+		* config/mips/mips.md (UNSPEC_HIGH): New constant.
+		(UNSPEC_RELOC_GPREL16): Rename to...
+		(RELOC_GPREL16): ...this.
+		(RELOC_GOT_HI, RELOC_GOT_LO, RELOC_GOT_PAGE, RELOC_GOT_DISP): New.
+		(RELOC_CALL16, RELOC_CALL_HI, RELOC_CALL_LO): New.
+		(macro_calls): New attribute.
+		(length): Use it to set the default length of calls.  Don't allow
+		calls to have delay slots if macro_calls is "yes".
+		(luisi, luidi): New patterns.
+		(lowsi, lowdi): Use '%R' to print the relocation.
+		(lowdi_extend): Remove.
+		(loadgp): Remove mode from operand 0.  Use '%0' instead of '%a0'.
+		(call_internal): Merge alternatives.  Always use "jal".
+		(call_value_internal, call_value_multiple_internal): Likewise.
+		(reloc_gprel16): Remove.
+		* config/mips/mips.c (mips_got_alias_set): New variable.
+		(mips_classify_constant): Handle the new relocation constants.
+		(mips_classify_symbol): Reverse the sense of SYMBOL_REF_FLAG for PIC.
+		(mips_symbolic_address_p): Return false if generating explicit relocs.
+		Otherwise allow local PIC symbols to have an offset.
+		(mips_splittable_symbol_p): New function.
+		(mips_classify_address): Use it to check whether a LO_SUM is valid.
+		(mips_const_insns): Always accept HIGH.
+		(call_insn_operand): Don't accept global symbols if using explicit
+		relocs.
+		(move_operand): Don't accept HIGH when generating PIC.
+		(mips_reloc, mips_lui_reloc): New functions.
+		(mips_force_temporary): Remove MODE argument.  Expect VALUE to
+		be a valid right-hand-side for a SET pattern.
+		(mips_load_got, mips_load_got16, mips_load_got32): New functions.
+		(mips_emit_high): New function.
+		(mips_legitimize_symbol): Use mips_reloc for the mips16 gp-relative
+		case.  Use mips_splittable_symbol_p to check whether a LO_SUM
+		address should be used.  Use mips_emit_high to generate the
+		high part of such an address.  Adjust the global symbol + offset
+		case to match the change to mips_force_temprorary.
+		(mips_legitimize_move): Shuffle call to mips_legitimize_symbol.
+		If generating explicit-reloc PIC, load the address of global
+		symbols from the GOT.  Use mips_emit_high to emit the high part
+		of an address.
+		(mips_simplify_dwarf_addr): New function.
+		(mips_move_1word): Use lwc1 instead of l.s and swc1 instead of s.s.
+		(mips_move_2words): Likewise ldc1/l.d and sdc1/s.d if TARGET_64BIT.
+		(mips_expand_call): Load the addresses of global functions using
+		%call* relocs if generating explicit-reloc PIC.  Don't generate
+		an exception_receiver pattern.
+		(override_options): Initialize mips_got_alias_set.
+		(print_relocation): Remove in favour of...
+		(mips_reloc_string): ...this new function.
+		(print_operand): Handle '%R'.  Use mips_reloc_string.
+		(print_operand_address): Use print_operand to print the symbolic
+		part of a LO_SUM address.
+		(mips_output_function_prologue): Use .cprestore, reverting last patch.
+		(mips_encode_section_info): Factor out DECL_RTL accesses.  Reverse
+		sense of SYMBOL_REF_FLAG for PIC, using binds_local_p to check
+		for local symbols.
 
 	2003-02-02  Eric Christopher  <echristo@redhat.com>
 
 	       	* config/mips/mips.c (mips_sign_extend): Remove.
-	        * config/mips/mips-protos.h: Ditto.
-	        * config/mips/mips.md (movdi_internal2_extend): Remove.
-	        (extendsidi2): Fix mode of convert_memory_address.
+		* config/mips/mips-protos.h: Ditto.
+		* config/mips/mips.md (movdi_internal2_extend): Remove.
+		(extendsidi2): Fix mode of convert_memory_address.
 
 	2003-01-24  Eric Christopher  <echristo@redhat.com>
 
-	        * config/mips/mips.md: Rewrite zero_extend* and extend*
-	        patterns. Use explicit instructions and split after reload
-	        for register extensions.
-	        (ashlsi3_internal1_extend): New combiner pattern for
-	        shift and extend combinations.
-	        * config/mips/mips.h: Change Pmode back to ptr_mode
-	        for performance enhancement.
-	        * combine.c (expand_compound_operation): Make sure
-	        that zero_extend operation is profitable.
+		* config/mips/mips.md: Rewrite zero_extend* and extend*
+		patterns. Use explicit instructions and split after reload
+		for register extensions.
+		(ashlsi3_internal1_extend): New combiner pattern for
+		shift and extend combinations.
+		* config/mips/mips.h: Change Pmode back to ptr_mode
+		for performance enhancement.
+		* combine.c (expand_compound_operation): Make sure
+		that zero_extend operation is profitable.
 
 	2003-01-14  Richard Sandiford  <rsandifo@redhat.com>
 
-	        * config/mips/mips.h (TRAMPOLINE_TEMPLATE): Make size of stored
-	        addresses depend on ptr_mode rather than Pmode.
-	        (TRAMPOLINE_SIZE, TRAMPOLINE_ALIGNMENT): Update acoordingly.
-	        (INITIALIZE_TRAMPOLINE): Rework to handle Pmode != ptr_mode.
-	        (CASE_VECTOR_MODE): Use ptr_mode for !TARGET_MIPS16.
-	        (ASM_OUTPUT_ADDR_VEC_ELT): Update accordingly.
-	        * config/mips/mips.md (tablejump): Likewise.  Remove Pmode
-	        condition for selecting cpaddsi or cpadddi: use cpadd instead.
-	        (tablejump_internal1): Remove condition.
-	        (tablejump_internal2): Change condition to TARGET_64BIT.
-	        (cpaddsi): Rename to...
-	        (cpadd): ...this.
-	        (cpadddi): Remove.
+		* config/mips/mips.h (TRAMPOLINE_TEMPLATE): Make size of stored
+		addresses depend on ptr_mode rather than Pmode.
+		(TRAMPOLINE_SIZE, TRAMPOLINE_ALIGNMENT): Update acoordingly.
+		(INITIALIZE_TRAMPOLINE): Rework to handle Pmode != ptr_mode.
+		(CASE_VECTOR_MODE): Use ptr_mode for !TARGET_MIPS16.
+		(ASM_OUTPUT_ADDR_VEC_ELT): Update accordingly.
+		* config/mips/mips.md (tablejump): Likewise.  Remove Pmode
+		condition for selecting cpaddsi or cpadddi: use cpadd instead.
+		(tablejump_internal1): Remove condition.
+		(tablejump_internal2): Change condition to TARGET_64BIT.
+		(cpaddsi): Rename to...
+		(cpadd): ...this.
+		(cpadddi): Remove.
 
 	2003-01-09  Richard Sandiford  <rsandifo@redhat.com>
 
-	        * config/mips/mips-protos.h (mips16_constant_after_function_p,
-	        mips_address_cost, mips_check_split, double_memory_operand,
-	        mips16_gp_offset, mips16_gp_offset_p, mips16_constant,
-	        pic_address_needs_scratch, symbolic_operand): Remove declarations.
-	        (mips_legitimate_address_p): Return bool.
-	        (mips_address_insns, mips_fetch_insns, mips_const_insns,
-	        mips_legitimize_address, mips_legitimize_move,
-	        mips_expand_call): Declare.
-	        (mips_return_addr): Move outside #ifdef RTX_CODE.
+		* config/mips/mips-protos.h (mips16_constant_after_function_p,
+		mips_address_cost, mips_check_split, double_memory_operand,
+		mips16_gp_offset, mips16_gp_offset_p, mips16_constant,
+		pic_address_needs_scratch, symbolic_operand): Remove declarations.
+		(mips_legitimate_address_p): Return bool.
+		(mips_address_insns, mips_fetch_insns, mips_const_insns,
+		mips_legitimize_address, mips_legitimize_move,
+		mips_expand_call): Declare.
+		(mips_return_addr): Move outside #ifdef RTX_CODE.
 
-	        * config/mips/mips.h (ABI_HAS_64BIT_SYMBOLS): New macro.
-	        (PIC_FN_ADDR_REG): New reg_class.
-	        (REG_CLASS_NAMES, REG_CLASS_CONTENTS): Add corresponding entries.
-	        (GR_REG_CLASS_P): True for PIC_FN_ADDR_REG.
-	        (SMALL_OPERAND, SMALL_OPERAND_UNSIGNED, LUI_OPERAND,
-	        CONST_HIGH_PART, CONST_LOW_PART, LUI_INT): New macros.
-	        (SMALL_INT, SMALL_INT_UNSIGNED, CONST_OK_FOR_LETTER_P): Use new macros.
-	        (EXTRA_CONSTRAINTS): Give new meanings to Q, R and S.
-	        (CONSTANT_ADDRESS_P): Use mips_legitimate_address_p.
-	        (LEGITIMATE_PIC_OPERAND): Undefine.
-	        (LEGITIMATE_CONSTANT_P): Use mips_const_insns.
-	        (LEGITIMIZE_ADDRESS): Use mips_legitimize_address.
-	        (CONSTANT_AFTER_FUNCTION_P): Remove definition in #if 0 block.
-	        (FUNCTION_MODE): Change to SImode.
-	        (CONST_COSTS): Use mips_const_insns to calculate the cost of
-	        most constants.  Treat const_artih_operands specially if they
-	        occur in a PLUS or MINUS.
-	        (CONSTANT_POOL_COST): New macro.
-	        (RTX_COSTS): Use mips_address_insns for MEMs, with a base cost of 2.
-	        Add LO_SUM handling.
-	        (ADDRESS_COST): Undefine.
-	        (PREDICATE_CODES): Add symbolic_operand and const_arith_operand.
-	        Add CONST to the list of codes for arith_operand.  Add LABEL_REF
-	        to call_insn_operand and remove CONST_INT.
+		* config/mips/mips.h (ABI_HAS_64BIT_SYMBOLS): New macro.
+		(PIC_FN_ADDR_REG): New reg_class.
+		(REG_CLASS_NAMES, REG_CLASS_CONTENTS): Add corresponding entries.
+		(GR_REG_CLASS_P): True for PIC_FN_ADDR_REG.
+		(SMALL_OPERAND, SMALL_OPERAND_UNSIGNED, LUI_OPERAND,
+		CONST_HIGH_PART, CONST_LOW_PART, LUI_INT): New macros.
+		(SMALL_INT, SMALL_INT_UNSIGNED, CONST_OK_FOR_LETTER_P): Use new macros.
+		(EXTRA_CONSTRAINTS): Give new meanings to Q, R and S.
+		(CONSTANT_ADDRESS_P): Use mips_legitimate_address_p.
+		(LEGITIMATE_PIC_OPERAND): Undefine.
+		(LEGITIMATE_CONSTANT_P): Use mips_const_insns.
+		(LEGITIMIZE_ADDRESS): Use mips_legitimize_address.
+		(CONSTANT_AFTER_FUNCTION_P): Remove definition in #if 0 block.
+		(FUNCTION_MODE): Change to SImode.
+		(CONST_COSTS): Use mips_const_insns to calculate the cost of
+		most constants.  Treat const_artih_operands specially if they
+		occur in a PLUS or MINUS.
+		(CONSTANT_POOL_COST): New macro.
+		(RTX_COSTS): Use mips_address_insns for MEMs, with a base cost of 2.
+		Add LO_SUM handling.
+		(ADDRESS_COST): Undefine.
+		(PREDICATE_CODES): Add symbolic_operand and const_arith_operand.
+		Add CONST to the list of codes for arith_operand.  Add LABEL_REF
+		to call_insn_operand and remove CONST_INT.
 
-	        * config/mips/mips.c: Include integrate.h.
-	        (SINGLE_WORD_MODE_P): New macro.
-	        (mips_constant_type, mips_symbol_type, mips_address_type): New enums.
-	        (mips_constant_info, mips_address_info): New structs.
-	        (mips_regno_to_class): Map $25 to PIC_FN_ADDR_REG.
-	        (mips_classify_constant, mips_classify_symbol,
-	        mips_valid_base_register_p, mips_symbolic_address_p,
-	        mips_classify_address, mips_symbol_insns,
-	        mips16_unextended_reference_p, mips_address_insns, mips_const_insns,
-	        mips_fetch_insns, mips_force_temporary, mips_add_offset,
-	        mips_legitimize_symbol, mips_legitimize_address, mips_legitimize_move,
-	        mips_print_relocation): New functions.
-	        (const_arith_operand): New operand predicate.
-	        (arith_operand): Use it.
-	        (mips_const_double_ok, mips16_simple_memory_operand,
-	        simple_memory_operand, double_memory_operand, mips_check_split,
-	        mips_address_cost, pic_address_needs_scratch, mips16_gp_offset,
-	        mips16_gp_offset_p, mips16_output_gp_offset,
+		* config/mips/mips.c: Include integrate.h.
+		(SINGLE_WORD_MODE_P): New macro.
+		(mips_constant_type, mips_symbol_type, mips_address_type): New enums.
+		(mips_constant_info, mips_address_info): New structs.
+		(mips_regno_to_class): Map $25 to PIC_FN_ADDR_REG.
+		(mips_classify_constant, mips_classify_symbol,
+		mips_valid_base_register_p, mips_symbolic_address_p,
+		mips_classify_address, mips_symbol_insns,
+		mips16_unextended_reference_p, mips_address_insns, mips_const_insns,
+		mips_fetch_insns, mips_force_temporary, mips_add_offset,
+		mips_legitimize_symbol, mips_legitimize_address, mips_legitimize_move,
+		mips_print_relocation): New functions.
+		(const_arith_operand): New operand predicate.
+		(arith_operand): Use it.
+		(mips_const_double_ok, mips16_simple_memory_operand,
+		simple_memory_operand, double_memory_operand, mips_check_split,
+		mips_address_cost, pic_address_needs_scratch, mips16_gp_offset,
+		mips16_gp_offset_p, mips16_output_gp_offset,
 	       	mips16_constant_after_function_p, mips16_constant): Remove.
-	        (call_insn_operand): Be more fussy about symbolic constants.
-	        Use register_operand.
-	        (move_operand): Use mips_symbolic_address_p to check symbolic
-	        operands and general_operand to check the rest.
-	        (symbolic_operand): Use mips_classify_constant.
-	        (mips_legitimate_address_p): Use mips_classify_address.
-	        (mips_move_1word): Combine handling of symbolic addresses.
-	        Remove special treatment of gp-relative loads for TARGET_MIPS16.
-	        (move_move_2words): Likewise.  Assume addresses are offsettable
-	        if they need to refer to more than one word.  Add HIGH handling.
-	        (mips_restore_gp): Use ptr_mode for the GP save slot.
-	        (mips_expand_call): New function, combining the old mips.md
-	        call and call_internal define_expands.  If the address isn't
-	        a call_insn_operand, force it into a register.  For SVR4 PIC,
-	        emit an exception_receiver instruction after the call.
-	        (override_options): Only override flag_pic for TARGET_ABICALLS
-	        if it is currently zero.  Allow mips_split_addresses when
-	        Pmode == DImode too, except when ABI_HAS_64BIT_SYMBOLS.
-	        Add new register class letter, 'c'.
-	        (print_operand): Use mips_classify_constant for constant operands.
-	        (print_operand_address): Use mips_classify_address.
-	        (mips_output_function_prologue): Don't use .cprestore.
-	        (mips_expand_epilogue): For TARGET_MIPS16, only adjust the stack
-	        via the frame pointer if current_function_calls_eh_return.
-	        (mips_encode_section_info): For TARGET_ABICALLS, use SYMBOL_REF_FLAG
-	        to mark whether a symbol is local or global.
-	        (build_mips16_call_stub): Expect the address of the function rather
-	        than a MEM reference to it.  Update call generation sequences.
-	        (mips16_optimize_gp): Remove Pmode checks.  Temporarily disable
-	        small-data adjustments.
+		(call_insn_operand): Be more fussy about symbolic constants.
+		Use register_operand.
+		(move_operand): Use mips_symbolic_address_p to check symbolic
+		operands and general_operand to check the rest.
+		(symbolic_operand): Use mips_classify_constant.
+		(mips_legitimate_address_p): Use mips_classify_address.
+		(mips_move_1word): Combine handling of symbolic addresses.
+		Remove special treatment of gp-relative loads for TARGET_MIPS16.
+		(move_move_2words): Likewise.  Assume addresses are offsettable
+		if they need to refer to more than one word.  Add HIGH handling.
+		(mips_restore_gp): Use ptr_mode for the GP save slot.
+		(mips_expand_call): New function, combining the old mips.md
+		call and call_internal define_expands.  If the address isn't
+		a call_insn_operand, force it into a register.  For SVR4 PIC,
+		emit an exception_receiver instruction after the call.
+		(override_options): Only override flag_pic for TARGET_ABICALLS
+		if it is currently zero.  Allow mips_split_addresses when
+		Pmode == DImode too, except when ABI_HAS_64BIT_SYMBOLS.
+		Add new register class letter, 'c'.
+		(print_operand): Use mips_classify_constant for constant operands.
+		(print_operand_address): Use mips_classify_address.
+		(mips_output_function_prologue): Don't use .cprestore.
+		(mips_expand_epilogue): For TARGET_MIPS16, only adjust the stack
+		via the frame pointer if current_function_calls_eh_return.
+		(mips_encode_section_info): For TARGET_ABICALLS, use SYMBOL_REF_FLAG
+		to mark whether a symbol is local or global.
+		(build_mips16_call_stub): Expect the address of the function rather
+		than a MEM reference to it.  Update call generation sequences.
+		(mips16_optimize_gp): Remove Pmode checks.  Temporarily disable
+		small-data adjustments.
 
-	        * config/mips/mips.md: Remove 'R'/'m' memory distinction.  Use default
-	        length for loads and stores.
-	        (UNSPEC_CPADD, UNSPEC_RELOC_GPREL16): New constants.
-	        (define_attr type): Add const and prefetch.
-	        (define_attr length): Use mips_const_insns for const instructions.
-	        Use mips_fetch_insns for load and store instructions.
-	        (define_attr single_insn): New.
-	        (define_attr can_delay): Use it.
-	        (define_attr abicalls): Remove.
-	        (define_delay): Use can_delay.  Always allow calls to have delay slots.
-	        (addsi3_internal_2): Add 'Q' constraint.
-	        (movsi_ulw, movsi_usw, movdi_uld, movdi_usd): Set length to 8.
-	        (high): Remove.
-	        (lowsi): Renamed from low.
-	        (lowdi): New pattern.
-	        (movdi, movsi): Use mips_legitimize_move.  Remove define_split.
-	        (lwxc1, ldxc1, swxc1, sdxc1): Set length to 4.
-	        (loadgp): Change operand 0 to an immediate_operand.
-	        (tablejump): Use the same patterns for SVR4 PIC but emit a cpadd
-	        beforehand.
-	        (cpaddsi, cpadddi): New patterns.
-	        (tablejump_internal3, tablejump_internal4): Remove define_expands
-	        and associated define_splits.
-	        (call, call_value): Use mips_expand_call.
-	        (call_internal): New, replacing all existing call_internal* insns.
-	        (call_value_internal): Likewise call_value_internal*.
-	        (call_value_multiple_internal): Likewise call_value_multiple_internal*.
-	        (untyped_call): Remove if (operands[0]) magic.
-	        (prefetch_si_address, prefetch_si): Change type to "prefetch".
-	        (prefetch_di_address, prefetch_di): Likewise.
-	        (leasi, leadi): Remove.
-	        (reloc_gprel16): New.
+		* config/mips/mips.md: Remove 'R'/'m' memory distinction.  Use default
+		length for loads and stores.
+		(UNSPEC_CPADD, UNSPEC_RELOC_GPREL16): New constants.
+		(define_attr type): Add const and prefetch.
+		(define_attr length): Use mips_const_insns for const instructions.
+		Use mips_fetch_insns for load and store instructions.
+		(define_attr single_insn): New.
+		(define_attr can_delay): Use it.
+		(define_attr abicalls): Remove.
+		(define_delay): Use can_delay.  Always allow calls to have delay slots.
+		(addsi3_internal_2): Add 'Q' constraint.
+		(movsi_ulw, movsi_usw, movdi_uld, movdi_usd): Set length to 8.
+		(high): Remove.
+		(lowsi): Renamed from low.
+		(lowdi): New pattern.
+		(movdi, movsi): Use mips_legitimize_move.  Remove define_split.
+		(lwxc1, ldxc1, swxc1, sdxc1): Set length to 4.
+		(loadgp): Change operand 0 to an immediate_operand.
+		(tablejump): Use the same patterns for SVR4 PIC but emit a cpadd
+		beforehand.
+		(cpaddsi, cpadddi): New patterns.
+		(tablejump_internal3, tablejump_internal4): Remove define_expands
+		and associated define_splits.
+		(call, call_value): Use mips_expand_call.
+		(call_internal): New, replacing all existing call_internal* insns.
+		(call_value_internal): Likewise call_value_internal*.
+		(call_value_multiple_internal): Likewise call_value_multiple_internal*.
+		(untyped_call): Remove if (operands[0]) magic.
+		(prefetch_si_address, prefetch_si): Change type to "prefetch".
+		(prefetch_di_address, prefetch_di): Likewise.
+		(leasi, leadi): Remove.
+		(reloc_gprel16): New.
 
-	        * config/mips/5400.md (ir_vr54_hilo): Include const type.
-	        * config/mips/5500.md (ir_vr55_hilo): Likewise.
-	        * config/mips/sr71k.md (ir_sr70_hilo): Likewise.
+		* config/mips/5400.md (ir_vr54_hilo): Include const type.
+		* config/mips/5500.md (ir_vr55_hilo): Likewise.
+		* config/mips/sr71k.md (ir_sr70_hilo): Likewise.
 
 	2003-01-08  Eric Christopher  <echristo@redhat.com>
 
-	        * config.gcc (mipsisa32*): Change ABI_MEABI to ABI_EABI.
-	        * config/mips/elf.h (STARTFILE_SPEC): Remove ABI_MEABI references and
-	        configure check for libgloss.
-	        * config/mips/elf64.h: Ditto.
-	        * config/mips/mips.c: Remove ABI_MEABI.
-	        * config/mips/mips.h: Ditto.
+		* config.gcc (mipsisa32*): Change ABI_MEABI to ABI_EABI.
+		* config/mips/elf.h (STARTFILE_SPEC): Remove ABI_MEABI references and
+		configure check for libgloss.
+		* config/mips/elf64.h: Ditto.
+		* config/mips/mips.c: Remove ABI_MEABI.
+		* config/mips/mips.h: Ditto.
 
 	2002-11-05  Richard Sandiford  <rsandifo@redhat.com>
 
-	        Fix merge fallout.
-	        * config/mips/mips.md (mul_acc_si): Reapply 2002-10-16 change.
-	        (muldi3_internal): Remove outdated comment.
-	        (*muls_di, *umuls_di): Fix comment and 64-bitness.
-	        (*smsac_di, *umsac_di): Likewise.  Reformat.
-	        (umulsi3_highpart): Minor formatting tweaks.
-	        (umulsi3_highpart_internal): Use only if !ISA_HAS_MULHI.  Remove
-	        redundant scratch operand.  Minor formatting tweak.
-	        (umulsi3_highpart_mulhi_internal): Use for !TARGET_64BIT as well.
-	        (umulsi3_highpart_neg_mulhi_internal): Likewise.  Fix asm template.
-	        (smulsi3_highpart): As for the unsigned version.
-	        (smulsi3_highpart_internal): Likewise.
-	        (smulsi3_highpart_mulhi_internal): Likewise.
-	        (smulsi3_highpart_neg_mulhi_internal): Likewise.
-	        (smuldi3_highpart, umuldi3_highpart): Minor formatting tweaks.
-	        (*smul_acc_di): Remove duplicated pattern.
-	        (*umul_acc_di, *smul_acc_di): Reapply 2002-10-16 change.
-	        (anddi3) [unnamed mips16 pattern]: Remove reintroduced length.
-	        (zero_extendsidi2_internal2): Remove new, but commented-out pattern.
+		Fix merge fallout.
+		* config/mips/mips.md (mul_acc_si): Reapply 2002-10-16 change.
+		(muldi3_internal): Remove outdated comment.
+		(*muls_di, *umuls_di): Fix comment and 64-bitness.
+		(*smsac_di, *umsac_di): Likewise.  Reformat.
+		(umulsi3_highpart): Minor formatting tweaks.
+		(umulsi3_highpart_internal): Use only if !ISA_HAS_MULHI.  Remove
+		redundant scratch operand.  Minor formatting tweak.
+		(umulsi3_highpart_mulhi_internal): Use for !TARGET_64BIT as well.
+		(umulsi3_highpart_neg_mulhi_internal): Likewise.  Fix asm template.
+		(smulsi3_highpart): As for the unsigned version.
+		(smulsi3_highpart_internal): Likewise.
+		(smulsi3_highpart_mulhi_internal): Likewise.
+		(smulsi3_highpart_neg_mulhi_internal): Likewise.
+		(smuldi3_highpart, umuldi3_highpart): Minor formatting tweaks.
+		(*smul_acc_di): Remove duplicated pattern.
+		(*umul_acc_di, *smul_acc_di): Reapply 2002-10-16 change.
+		(anddi3) [unnamed mips16 pattern]: Remove reintroduced length.
+		(zero_extendsidi2_internal2): Remove new, but commented-out pattern.
 
 	2002-10-22  Eric Christopher  <echristo@redhat.com>
 
-	        * config/mips/mips-protos.h (mips_return_addr): New.
-	        * config/mips/mips.c (mips_return_addr): New.
-	        (movdi_operand): Remove.
-	        (se_register_operand): Ditto.
-	        (se_reg_or_0_operand): Ditto.
-	        (se_uns_arith_operand): Ditto.
-	        (se_arith_operand): Ditto.
-	        (se_nonmemory_operand): Ditto.
-	        (extend_operator): Ditto.
-	        (highpart_shift_operator): Ditto.
-	        (mips_initial_elimination_offset): Remove return address pointer
-	        elimination.
-	        (mips_reg_names): Remove $ra.
-	        (mips_regno_to_class): Ditto.
-	        * config/mips/mips.h (POINTER_SIZE): Define based on TARGET_LONG64
-	        and TARGET_64BIT.
-	        (POINTER_BOUNDARY): Remove.
-	        (POINTERS_EXTEND_UNSIGNED): Define to 0.
-	        (PROMOTE_MODE): Promote to Pmode.
-	        (SHORT_IMMEDIATES_SIGN_EXTEND): Define.
-	        (Pmode): Define to TARGET_64BIT.
-	        (FUNCTION_MODE): Define as Pmode.
-	        (mips_args): Remove deleted functions.
-	        (SIZE_TYPE): Depend on POINTER_SIZE.
-	        (PTRDIFF_TYPE): Ditto.
-	        (FIXED_REGISTERS): Fix extra registers.
-	        (CALL_USED_REGISTERS): Ditto.
-	        (CALL_REALLY_USED_REGISTERS): Ditto.
-	        (RAP_REG_NUM): Remove.
-	        (RETURN_ADDRESS_POINTER_REGNUM): Ditto.
-	        (RETURN_ADDR_RTX): Define to mips_return_addr.
-	        (ELIMINABLE_REGS): Remove RETURN_ADDRESS_POINTER_REGNUM.
-	        (CAN_ELIMINATE): Ditto.
-	        * config/mips/mips.md: For DImode patterns, take into account
-	        deletions above. Split mulsidi patterns into sign_extend and
-	        zero_extend.
+		* config/mips/mips-protos.h (mips_return_addr): New.
+		* config/mips/mips.c (mips_return_addr): New.
+		(movdi_operand): Remove.
+		(se_register_operand): Ditto.
+		(se_reg_or_0_operand): Ditto.
+		(se_uns_arith_operand): Ditto.
+		(se_arith_operand): Ditto.
+		(se_nonmemory_operand): Ditto.
+		(extend_operator): Ditto.
+		(highpart_shift_operator): Ditto.
+		(mips_initial_elimination_offset): Remove return address pointer
+		elimination.
+		(mips_reg_names): Remove $ra.
+		(mips_regno_to_class): Ditto.
+		* config/mips/mips.h (POINTER_SIZE): Define based on TARGET_LONG64
+		and TARGET_64BIT.
+		(POINTER_BOUNDARY): Remove.
+		(POINTERS_EXTEND_UNSIGNED): Define to 0.
+		(PROMOTE_MODE): Promote to Pmode.
+		(SHORT_IMMEDIATES_SIGN_EXTEND): Define.
+		(Pmode): Define to TARGET_64BIT.
+		(FUNCTION_MODE): Define as Pmode.
+		(mips_args): Remove deleted functions.
+		(SIZE_TYPE): Depend on POINTER_SIZE.
+		(PTRDIFF_TYPE): Ditto.
+		(FIXED_REGISTERS): Fix extra registers.
+		(CALL_USED_REGISTERS): Ditto.
+		(CALL_REALLY_USED_REGISTERS): Ditto.
+		(RAP_REG_NUM): Remove.
+		(RETURN_ADDRESS_POINTER_REGNUM): Ditto.
+		(RETURN_ADDR_RTX): Define to mips_return_addr.
+		(ELIMINABLE_REGS): Remove RETURN_ADDRESS_POINTER_REGNUM.
+		(CAN_ELIMINATE): Ditto.
+		* config/mips/mips.md: For DImode patterns, take into account
+		deletions above. Split mulsidi patterns into sign_extend and
+		zero_extend.
 
 	2002-10-16  Richard Sandiford  <rsandifo@redhat.com>
-	            Michael Meissner  <meissner@redhat.com>
+		    Michael Meissner  <meissner@redhat.com>
 
-	        * config/mips/mips.h (ISA_HAS_MACC): True for normal-mode vr4120 code.
-	        * config/mips/mips.md (mulsi3_mult3): Add a define_peephole2 to
-	        mop up unnecessarly moves through LO.
-	        (*mul_acc_si): Remove vr5400 and vr5500 handling from here.
-	        (*macc): New pattern for ISA_HAS_MACC.  Add define_peephole2s to
-	        change mtlo/macc sequences into mul/add sequences when a three-
-	        address mul is available.
-	        (*macc2): New pattern.  Add a define_peephole2 to generate it.
-	        (*mul_sub_si): Fix contraint for operand 5.
-	        (*muls): Use in 32-bit code as well.
-	        (*msac): Likewise.  Use msub instead of msac in vr5500 code
-	        if the destination is LO.  Remove duplicate define_split.
-	        (*muls_di): Use only in 32-bit code.  Adjust rtl accordingly.
-	        (*msac_di): Likewise.  Fix formatting.
-	        (smulsi3_highpart, umulsi3_highpart): Use mulhi in 32-bit code too.
-	        (*xmulsi3_highpart_internal): Use only if !ISA_HAS_MULHI.
-	        (*xmulsi3_highpart_mulhi): Use even if !TARGET_64BIT.
-	        (*xmulsi3_neg_highpart_mulhi): Likewise.
-	        (*mul_acc_64bit_di): Remove.
-	        (*mul_acc_di): Use only in 32-bit code.  Handle ISA_HAS_MACC as well.
-
-	2002-10-14  Richard Sandiford  <rsandifo@redhat.com>
-
-	        * config/mips/vr.h (DRIVER_SELF_SPECS): Define.
-	        * config/mips/t-vr (MULTILIB_OPTIONS): Remove mlong32.
-	        (MULTILIB_DIRNAMES): Remove long32.
-	        (MULTILIB_EXCEPTIONS): Don't build -mabi=32 -mgp32 multilibs.
-	        (MULTILIB_REDUNDANT_DIRS): Remove.
+		* config/mips/mips.h (ISA_HAS_MACC): True for normal-mode vr4120 code.
+		* config/mips/mips.md (mulsi3_mult3): Add a define_peephole2 to
+		mop up unnecessarly moves through LO.
+		(*mul_acc_si): Remove vr5400 and vr5500 handling from here.
+		(*macc): New pattern for ISA_HAS_MACC.  Add define_peephole2s to
+		change mtlo/macc sequences into mul/add sequences when a three-
+		address mul is available.
+		(*macc2): New pattern.  Add a define_peephole2 to generate it.
+		(*mul_sub_si): Fix contraint for operand 5.
+		(*muls): Use in 32-bit code as well.
+		(*msac): Likewise.  Use msub instead of msac in vr5500 code
+		if the destination is LO.  Remove duplicate define_split.
+		(*muls_di): Use only in 32-bit code.  Adjust rtl accordingly.
+		(*msac_di): Likewise.  Fix formatting.
+		(smulsi3_highpart, umulsi3_highpart): Use mulhi in 32-bit code too.
+		(*xmulsi3_highpart_internal): Use only if !ISA_HAS_MULHI.
+		(*xmulsi3_highpart_mulhi): Use even if !TARGET_64BIT.
+		(*xmulsi3_neg_highpart_mulhi): Likewise.
+		(*mul_acc_64bit_di): Remove.
+		(*mul_acc_di): Use only in 32-bit code.  Handle ISA_HAS_MACC as well.
 
 	2002-10-14  Richard Sandiford  <rsandifo@redhat.com>
 
-	        * doc/tm.texi (DRIVER_SELF_SPECS): Document.
-	        * gcc.c (driver_self_specs): New variable.
-	        (do_self_spec): New function.
-	        (main): Use it to process driver_self_specs.
+		* config/mips/vr.h (DRIVER_SELF_SPECS): Define.
+		* config/mips/t-vr (MULTILIB_OPTIONS): Remove mlong32.
+		(MULTILIB_DIRNAMES): Remove long32.
+		(MULTILIB_EXCEPTIONS): Don't build -mabi=32 -mgp32 multilibs.
+		(MULTILIB_REDUNDANT_DIRS): Remove.
+
+	2002-10-14  Richard Sandiford  <rsandifo@redhat.com>
+
+		* doc/tm.texi (DRIVER_SELF_SPECS): Document.
+		* gcc.c (driver_self_specs): New variable.
+		(do_self_spec): New function.
+		(main): Use it to process driver_self_specs.
 
 	2002-10-09  Richard Sandiford  <rsandifo@redhat.com>
 
-	        * config/mips/mips.md (one_cmpldi2): Use only if TARGET_64BIT.
-	        Remove DImode define_split for !TARGET_64BIT.
-	        (anddi3): Remove !TARGET_64BIT support from here as well.
-	        Change operand 2's predicate to se_uns_arith_operand.
-	        Add constant alternatives to define_insn.
-	        (iordi3, xordi3, *nordi3): Likewise.
-	        (anddi3_internal1, xordi3_immed): Remove.
+		* config/mips/mips.md (one_cmpldi2): Use only if TARGET_64BIT.
+		Remove DImode define_split for !TARGET_64BIT.
+		(anddi3): Remove !TARGET_64BIT support from here as well.
+		Change operand 2's predicate to se_uns_arith_operand.
+		Add constant alternatives to define_insn.
+		(iordi3, xordi3, *nordi3): Likewise.
+		(anddi3_internal1, xordi3_immed): Remove.
 
 	2002-10-01  Richard Sandiford  <rsandifo@redhat.com>
 
-	        * config/mips/mips.h (PROCESSOR_R4121): Rename to PROCESSOR_R4120.
-	        (TARGET_MIPS4121): Rename to TARGET_MIPS4120.
-	        * config/mips/mips.c (mips_cpu_info): Rename vr4121 to vr4120.
-	        * config/mips/mips.md: Apply same renaming here.
+		* config/mips/mips.h (PROCESSOR_R4121): Rename to PROCESSOR_R4120.
+		(TARGET_MIPS4121): Rename to TARGET_MIPS4120.
+		* config/mips/mips.c (mips_cpu_info): Rename vr4121 to vr4120.
+		* config/mips/mips.md: Apply same renaming here.
 
 	2002-10-01  Richard Sandiford  <rsandifo@redhat.com>
 
-	        * config/mips/mips.c (PROCESSOR_R4320, TARGET_MIPS4320): Remove.
-	        (GENERATE_MULT3_SI): Remove use of TARGET_MIPS4320.
-	        * config/mips/mips.c (mips_cpu_info): Remove vr4320 entry.
-	        * config/mips/mips.md (define_attr cpu): Remove r4320.
-	        Remove vr4320 scheduler and uses of TARGET_MIPS4320.
+		* config/mips/mips.c (PROCESSOR_R4320, TARGET_MIPS4320): Remove.
+		(GENERATE_MULT3_SI): Remove use of TARGET_MIPS4320.
+		* config/mips/mips.c (mips_cpu_info): Remove vr4320 entry.
+		* config/mips/mips.md (define_attr cpu): Remove r4320.
+		Remove vr4320 scheduler and uses of TARGET_MIPS4320.
 
 	2002-10-01  Richard Sandiford  <rsandifo@redhat.com>
 
-	        * config/mips/mips.c (mips16_strings): New variable.
-	        (mips_output_function_epilogue): Clear the SYMBOL_REF_FLAG of every
-	        symbol in mips16_strings.  Free the list.
-	        (mips_encode_section_info): Keep track of local strings.
+		* config/mips/mips.c (mips16_strings): New variable.
+		(mips_output_function_epilogue): Clear the SYMBOL_REF_FLAG of every
+		symbol in mips16_strings.  Free the list.
+		(mips_encode_section_info): Keep track of local strings.
 
 	2002-10-01  Richard Sandiford  <rsandifo@redhat.com>
 
-	        * config/mips/mips.md (bunge, bltgt, bungt): New define_expands.
-	        (sordered_df, sordered_sf): Remove.
-	        * config/mips/mips.c (get_float_compare_codes): New fn.
-	        (gen_int_relational, gen_conditional_move): Use it.
+		* config/mips/mips.md (bunge, bltgt, bungt): New define_expands.
+		(sordered_df, sordered_sf): Remove.
+		* config/mips/mips.c (get_float_compare_codes): New fn.
+		(gen_int_relational, gen_conditional_move): Use it.
 
 	2002-10-01  Richard Sandiford  <rsandifo@redhat.com>
 
-        	* config/mips/mips-protos.h (mips_emit_fcc_reload): Declare.
-        	* config/mips/mips.h (PREDICATE_CODES): Add fcc_register_operand.
-        	* config/mips/mips.c (fcc_register_operand): New function.
-        	(mips_emit_fcc_reload): New function, extracted from reload_incc.
-        	(override_options): Allow TFmode values in float registers
-        	if ISA_HAS_8CC.
-        	* cnfig/mips/mips.md (reload_incc): Change destination prediate
-        	to fcc_register_operand.  Remove misleading source constraint.
-        	Use mips_emit_fcc_reload.
+		* config/mips/mips-protos.h (mips_emit_fcc_reload): Declare.
+		* config/mips/mips.h (PREDICATE_CODES): Add fcc_register_operand.
+		* config/mips/mips.c (fcc_register_operand): New function.
+		(mips_emit_fcc_reload): New function, extracted from reload_incc.
+		(override_options): Allow TFmode values in float registers
+		if ISA_HAS_8CC.
+		* cnfig/mips/mips.md (reload_incc): Change destination prediate
+		to fcc_register_operand.  Remove misleading source constraint.
+		Use mips_emit_fcc_reload.
        		(reload_outcc): Duplicate reload_incc.
 
 
@@ -885,8 +918,8 @@
 
 2003-04-29  Aldy Hernandez  <aldyh@redhat.com>
 
-        * expr.c (emit_group_load): Dump parallels of simd types to
-        memory.
+	* expr.c (emit_group_load): Dump parallels of simd types to
+	memory.
 
 2003-04-29  Vladimir Makarov  <vmakarov@redhat.com>
 

@@ -6956,13 +6956,8 @@ expand_function_end (filename, line, end_bindings)
 	  }
     }
 
-  /* Warn about unused parms if extra warnings were specified.  */
-  /* Either ``-Wextra -Wunused'' or ``-Wunused-parameter'' enables this
-     warning.  WARN_UNUSED_PARAMETER is negative when set by
-     -Wunused.  Note that -Wall implies -Wunused, so ``-Wall -Wextra'' will
-     also give these warnings.  */
-  if (warn_unused_parameter > 0
-      || (warn_unused_parameter < 0 && extra_warnings))
+  /* Possibly warn about unused parameters.  */
+  if (warn_unused_parameter)
     {
       tree decl;
 

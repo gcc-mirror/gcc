@@ -165,6 +165,8 @@ insn-conditions.o-warn = -Wno-error
 # Bison-1.75 output often yields (harmless) -Wtraditional warnings
 gengtype-yacc.o-warn = -Wno-error
 c-parse.o-warn = -Wno-error
+# flex output may yield harmless "no previous prototype" warnings
+gengtype-lex.o-warn = -Wno-error
 
 # All warnings have to be shut off in stage1 if the compiler used then
 # isn't gcc; configure determines that.  WARN_CFLAGS will be either

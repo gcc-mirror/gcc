@@ -1,3 +1,9 @@
+2003-05-03  Zack Weinberg  <zack@codesourcery.com>
+
+	PR c/10604
+	* cp/typeck.c (build_x_compound_expr): No need to check
+	extra_warnings as well as warn_unused_value.
+
 2003-05-03  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/9364, c++/10553, c++/10586
@@ -49,7 +55,7 @@
 	tsubst, tsubst_expr, instantiate_decl): Likewise.
 	* semantics.c (genrtl_try_block, finish_label_stmt,
 	begin_class_definition, expand_body,
-	genrtl_finish_function): Likewise. 
+	genrtl_finish_function): Likewise.
 	* tree.c (build_min_nt, build_min): Likewise.
 
 2003-05-01  Mark Mitchell  <mark@codesourcery.com>
@@ -156,7 +162,7 @@
 
 2003-04-24  Sylvain Pion  <Sylvain.Pion@mpi-sb.mpg.de>
 
-        * call.c (print_z_candidates): Fix off by one error.
+	* call.c (print_z_candidates): Fix off by one error.
 
 2003-04-24  Nathan Sidwell  <nathan@codesourcery.com>
 
@@ -192,7 +198,7 @@
 	PR c++/10446
 	* search.c (lookup_fnfields_1): Handle empty slots in the method
 	vector.
-	
+
 	PR c++/10428
 	* decl.c (check_elaborated_type_specifier): New function, split
 	out from ...
@@ -223,7 +229,7 @@
 	PR c++/9881
 	* typeck.c (build_unary_op): Fold all COMPONENT_REF addr
 	expressions. Reverts my 2002-08-08 patch.
-	
+
 	* typeck.c (comp_ptr_ttypes_real): Swap final && operands for
 	cheaper early exit.
 

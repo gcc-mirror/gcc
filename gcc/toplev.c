@@ -124,6 +124,7 @@ static int decode_f_option PARAMS ((const char *));
 static int decode_W_option PARAMS ((const char *));
 static int decode_g_option PARAMS ((const char *));
 static unsigned int independent_decode_option PARAMS ((int, char **));
+static void set_Wextra PARAMS ((int));
 
 static void print_version PARAMS ((FILE *, const char *));
 static int print_single_switch PARAMS ((FILE *, int, int, const char *,
@@ -1463,6 +1464,9 @@ int warn_unused_parameter;
 int warn_unused_variable;
 int warn_unused_value;
 
+/* Used for cooperation between set_Wunused and set_Wextra.  */
+static int maybe_warn_unused_parameter;
+
 /* Nonzero to warn about code which is never reached.  */
 
 int warn_notreached;
@@ -1586,8 +1590,6 @@ static const lang_independent_options W_options[] =
    N_("Warn when an optimization pass is disabled") },
   {"deprecated-declarations", &warn_deprecated_decl, 1,
    N_("Warn about uses of __attribute__((deprecated)) declarations") },
-  {"extra", &extra_warnings, 1,
-   N_("Print extra (possibly unwanted) warnings") },
   {"missing-noreturn", &warn_missing_noreturn, 1,
    N_("Warn about functions which might be candidates for attribute noreturn") },
   {"strict-aliasing", &warn_strict_aliasing, 1,
@@ -1600,15 +1602,32 @@ set_Wunused (setting)
 {
   warn_unused_function = setting;
   warn_unused_label = setting;
-  /* Unused function parameter warnings are reported when either ``-W
-     -Wunused'' or ``-Wunused-parameter'' is specified.  Differentiate
-     -Wunused by setting WARN_UNUSED_PARAMETER to -1.  */
-  if (!setting)
-    warn_unused_parameter = 0;
-  else if (!warn_unused_parameter)
-    warn_unused_parameter = -1;
+  /* Unused function parameter warnings are reported when either
+     ``-Wextra -Wunused'' or ``-Wunused-parameter'' is specified.
+     Thus, if -Wextra has already been seen, set warn_unused_parameter;
+     otherwise set maybe_warn_extra_parameter, which will be picked up
+     by set_Wextra.  */
+  maybe_warn_unused_parameter = setting;
+  warn_unused_parameter = (setting && extra_warnings);
   warn_unused_variable = setting;
   warn_unused_value = setting;
+}
+
+static void
+set_Wextra (setting)
+     int setting;
+{
+  extra_warnings = setting;
+  warn_unused_value = setting;
+  warn_unused_parameter = (setting && maybe_warn_unused_parameter);
+
+  /* We save the value of warn_uninitialized, since if they put
+     -Wuninitialized on the command line, we need to generate a
+     warning about not using it without also specifying -O.  */
+  if (setting == 0)
+    warn_uninitialized = 0;
+  else if (warn_uninitialized != 1)
+    warn_uninitialized = 2;
 }
 
 /* The following routines are useful in setting all the flags that
@@ -3206,7 +3225,7 @@ rest_of_compilation (decl)
 		 | (flag_thread_jumps ? CLEANUP_THREADING : 0));
   timevar_pop (TV_FLOW);
 
-  if (warn_uninitialized || extra_warnings)
+  if (warn_uninitialized)
     {
       uninitialized_vars_warning (DECL_INITIAL (decl));
       if (extra_warnings)
@@ -3874,6 +3893,7 @@ display_help ()
 		W_options[i].string, _(description));
     }
 
+  printf (_("  -Wextra                 Print extra (possibly unwanted) warnings\n"));
   printf (_("  -Wunused                Enable unused warnings\n"));
   printf (_("  -Wlarger-than-<number>  Warn if an object is larger than <number> bytes\n"));
   printf (_("  -p                      Enable function profiling\n"));
@@ -4256,11 +4276,11 @@ decode_W_option (arg)
     }
   else if (!strcmp (arg, "extra"))
     {
-      /* We save the value of warn_uninitialized, since if they put
-	 -Wuninitialized on the command line, we need to generate a
-	 warning about not using it without also specifying -O.  */
-      if (warn_uninitialized != 1)
-	warn_uninitialized = 2;
+      set_Wextra (1);
+    }
+  else if (!strcmp (arg, "no-extra"))
+    {
+      set_Wextra (0);
     }
   else
     return 0;
@@ -4539,15 +4559,9 @@ independent_decode_option (argc, argv)
       break;
 
     case 'W':
+      /* For backward compatibility, -W is the same as -Wextra.  */
       if (arg[1] == 0)
-	{
-	  extra_warnings = 1;
-	  /* We save the value of warn_uninitialized, since if they put
-	     -Wuninitialized on the command line, we need to generate a
-	     warning about not using it without also specifying -O.  */
-	  if (warn_uninitialized != 1)
-	    warn_uninitialized = 2;
-	}
+	set_Wextra (1);
       else
 	return decode_W_option (arg + 1);
       break;

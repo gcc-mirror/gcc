@@ -595,8 +595,6 @@ c_common_init_options (lang)
 
   flag_const_strings = (lang == clk_cplusplus);
   warn_pointer_arith = (lang == clk_cplusplus);
-  if (lang == clk_c)
-    warn_sign_compare = -1;
 }
 
 /* Handle one command-line option in (argc, argv).
@@ -805,7 +803,8 @@ c_common_decode_option (argc, argv)
       warn_parentheses = on;
       warn_return_type = on;
       warn_sequence_point = on;	/* Was C only.  */
-      warn_sign_compare = on;	/* Was C++ only.  */
+      if (c_language == clk_cplusplus)
+	warn_sign_compare = on;
       warn_switch = on;
       warn_strict_aliasing = on;
       
@@ -1525,6 +1524,11 @@ c_common_post_options (pfilename)
 	  flag_inline_functions = 0;
 	}
     }
+
+  /* -Wextra implies -Wsign-compare, but not if explicitly
+      overridden.  */
+  if (warn_sign_compare == -1)
+    warn_sign_compare = extra_warnings;
 
   /* Special format checking options don't work without -Wformat; warn if
      they are used.  */
