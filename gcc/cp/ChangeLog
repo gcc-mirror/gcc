@@ -1,3 +1,9 @@
+1998-09-22  Mark Mitchell  <mark@markmitchell.com>
+
+	* decl.c (grokfndecl): Improve error-recovery.
+	* decl2.c (grokfield): Likewise.
+	* pt.c (finish_member_template_decl): Likewise.
+
 1998-09-20  Martin von Löwis  <loewis@informatik.hu-berlin.de>
 
 	* method.c (hack_identifier): Finding multiple members is always

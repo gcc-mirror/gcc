@@ -11,11 +11,11 @@
 template <class A, class B> void foo();
 template <class C> class bar {
   int i;
-  template <class B> friend void foo<C,B>();
+  template <class B> friend void foo<C,B>(); // ERROR - bogus declaration
 };
 template <class A, class B> void foo() {
-  bar<A> baz; baz.i = 1;
-  bar<int> buz; buz.i = 1; // ERROR - foo<void,void> cannot access bar<int>::i - XFAIL *-*-*
+  bar<A> baz; baz.i = 1;   // ERROR - foo cannot access bar<int>::i
+  bar<int> buz; buz.i = 1; // ERROR - foo cannot access bar<int>::i
 }
 int main() {
   foo<void,void>();

@@ -204,6 +204,10 @@ finish_member_template_decl (template_parameters, decl)
 
   if (decl == NULL_TREE || decl == void_type_node)
     return NULL_TREE;
+  else if (decl == error_mark_node)
+    /* By returning NULL_TREE, the parser will just ignore this
+       declaration.  We have already issued the error.  */
+    return NULL_TREE;
   else if (TREE_CODE (decl) == TREE_LIST)
     {
       /* Assume that the class is the only declspec.  */
@@ -229,7 +233,6 @@ finish_member_template_decl (template_parameters, decl)
     } 
   else
     cp_error ("invalid member template declaration `%D'", decl);
-	
 
   return error_mark_node;
 }
@@ -584,6 +587,7 @@ void
 check_specialization_scope ()
 {
   tree scope = current_scope ();
+
   /* [temp.expl.spec] 
      
      An explicit specialization shall be declared in the namespace of
@@ -596,6 +600,7 @@ check_specialization_scope ()
   if (scope && TREE_CODE (scope) != NAMESPACE_DECL)
     cp_error ("explicit specialization in non-namespace scope `%D'",
 	      scope);
+
   /* [temp.expl.spec] 
 
      In an explicit specialization declaration for a member of a class
