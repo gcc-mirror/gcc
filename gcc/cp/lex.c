@@ -2811,7 +2811,8 @@ do_identifier (token, parsing)
 	   But we still want to return this value.  */
 	id = lookup_field (current_class_type, token, 0, 0);
       else if (TREE_CODE (field) == VAR_DECL
-	       || TREE_CODE (field) == CONST_DECL)
+	       || TREE_CODE (field) == CONST_DECL
+	       || TREE_CODE (field) == TEMPLATE_DECL)
 	id = field;
       else if (TREE_CODE (field) != FIELD_DECL)
 	my_friendly_abort (61);

@@ -86,7 +86,6 @@ static int  type_unification_real PROTO((tree, tree *, tree, tree,
 static void note_template_header PROTO((int));
 static tree maybe_fold_nontype_arg PROTO((tree));
 static tree convert_nontype_argument PROTO((tree, tree));
-static int is_member_or_friend_template PROTO((tree, int));
 
 /* Do any processing required when DECL (a member template declaration
    using TEMPLATE_PARAMETERS as its innermost parameter list) is
@@ -164,31 +163,60 @@ template_class_depth (type)
   return depth;
 }
 
-/* Restore the template parameter context for a member template or
-   a friend template defined in a class definition.  */
+/* Return the original template for this decl, disregarding any
+   specializations.  */
 
-void 
-maybe_begin_member_template_processing (decl)
+static tree
+original_template (decl)
      tree decl;
 {
-  tree parms;
+  while (DECL_TEMPLATE_INFO (decl))
+    decl = DECL_TI_TEMPLATE (decl);
+  return decl;
+}
+
+/* Returns 1 if processing DECL as part of do_pending_inlines
+   needs us to push template parms.  */
+
+static int
+inline_needs_template_parms (decl)
+     tree decl;
+{
+  if (! DECL_TEMPLATE_INFO (decl))
+    return 0;
+
+  return (list_length (DECL_TEMPLATE_PARMS (original_template (decl)))
+	  > (processing_template_decl + DECL_TEMPLATE_SPECIALIZATION (decl)));
+}
+
+/* Subroutine of maybe_begin_member_template_processing.
+   Push the template parms in PARMS, starting from LEVELS steps into the
+   chain, and ending at the beginning, since template parms are listed
+   innermost first.  */
+
+static void
+push_inline_template_parms_recursive (parmlist, levels)
+     tree parmlist;
+     int levels;
+{
+  tree parms = TREE_VALUE (parmlist);
   int i;
 
-  if (!is_member_or_friend_template (decl, 1))
-    return;
-
-  parms = DECL_INNERMOST_TEMPLATE_PARMS (DECL_TI_TEMPLATE (decl));
+  if (levels > 1)
+    push_inline_template_parms_recursive (TREE_CHAIN (parmlist), levels - 1);
 
   ++processing_template_decl;
-  current_template_parms 
+  current_template_parms
     = tree_cons (build_int_2 (0, processing_template_decl),
 		 parms, current_template_parms);
+  TEMPLATE_PARMS_FOR_INLINE (current_template_parms) = 1;
+
   pushlevel (0);
   for (i = 0; i < TREE_VEC_LENGTH (parms); ++i) 
     {
       tree parm = TREE_VALUE (TREE_VEC_ELT (parms, i));
       my_friendly_assert (TREE_CODE_CLASS (TREE_CODE (parm)) == 'd', 0);
-      
+
       switch (TREE_CODE (parm))
 	{
 	case TYPE_DECL:
@@ -204,12 +232,38 @@ maybe_begin_member_template_processing (decl)
 	    DECL_INITIAL (decl) = DECL_INITIAL (parm);
 	    pushdecl (decl);
 	  }
-	break;
+	  break;
 
 	default:
 	  my_friendly_abort (0);
 	}
     }
+}
+
+/* Restore the template parameter context for a member template or
+   a friend template defined in a class definition.  */
+
+void
+maybe_begin_member_template_processing (decl)
+     tree decl;
+{
+  tree parms;
+  int levels;
+
+  if (! inline_needs_template_parms (decl))
+    return;
+
+  parms = DECL_TEMPLATE_PARMS (original_template (decl));
+
+  levels = list_length (parms) - processing_template_decl;
+
+  if (DECL_TEMPLATE_SPECIALIZATION (decl))
+    {
+      --levels;
+      parms = TREE_CHAIN (parms);
+    }
+
+  push_inline_template_parms_recursive (parms, levels);
 }
 
 /* Undo the effects of begin_member_template_processing. */
@@ -218,19 +272,19 @@ void
 maybe_end_member_template_processing (decl)
      tree decl;
 {
-  if (!is_member_or_friend_template (decl, 1))
-    return;
-
   if (! processing_template_decl)
     return;
 
-  --processing_template_decl;
-  current_template_parms = TREE_CHAIN (current_template_parms);
-  poplevel (0, 0, 0);
+  while (current_template_parms
+	 && TEMPLATE_PARMS_FOR_INLINE (current_template_parms))
+    {
+      --processing_template_decl;
+      current_template_parms = TREE_CHAIN (current_template_parms);
+      poplevel (0, 0, 0);
+    }
 }
 
-/* Returns non-zero iff T is a member template function, or, if
-   ALLOW_FRIEND is non-zero, a friend template function.  We must be
+/* Returns non-zero iff T is a member template function.  We must be
    careful as in
 
      template <class T> class C { void f(); }
@@ -244,10 +298,9 @@ maybe_end_member_template_processing (decl)
    then neither C<int>::f<char> nor C<T>::f<double> is considered
    to be a member template.  */
 
-static int
-is_member_or_friend_template (t, allow_friend)
+int
+is_member_template (t)
      tree t;
-     int allow_friend;
 {
   if (TREE_CODE (t) != FUNCTION_DECL
       && !DECL_FUNCTION_TEMPLATE_P (t))
@@ -255,15 +308,14 @@ is_member_or_friend_template (t, allow_friend)
        certainly not a member template.  */
     return 0;
 
-  if (((DECL_FUNCTION_MEMBER_P (t) 
-	|| (allow_friend && DECL_FRIEND_P (t)))
+  /* A local class can't have member templates.  */
+  if (hack_decl_function_context (t))
+    return 0;
+
+  if ((DECL_FUNCTION_MEMBER_P (t) 
        && !DECL_TEMPLATE_SPECIALIZATION (t))
       || (TREE_CODE (t) == TEMPLATE_DECL 
-	  && (DECL_FUNCTION_MEMBER_P (DECL_TEMPLATE_RESULT (t))
-	      || (allow_friend
-		  && DECL_FUNCTION_TEMPLATE_P (t) 
-		  && DECL_FRIEND_P (DECL_TEMPLATE_RESULT (t))
-		  && DECL_CLASS_CONTEXT (t)))))
+	  && DECL_FUNCTION_MEMBER_P (DECL_TEMPLATE_RESULT (t))))
     {
       tree tmpl;
 
@@ -275,25 +327,16 @@ is_member_or_friend_template (t, allow_friend)
       else
 	tmpl = NULL_TREE;
 
-      if (tmpl && 
+      if (tmpl
 	  /* If there are more levels of template parameters than
 	     there are template classes surrounding the declaration,
 	     then we have a member template.  */
-	  list_length (DECL_TEMPLATE_PARMS (tmpl)) > 
-	  template_class_depth (DECL_CLASS_CONTEXT (t)))
+	  && (list_length (DECL_TEMPLATE_PARMS (tmpl)) > 
+	      template_class_depth (DECL_CLASS_CONTEXT (t))))
 	return 1;
     }
 
   return 0;
-}
-
-/* Returns non-zero iff T is a member template.  */
-
-int
-is_member_template (t)
-     tree t;
-{
-  return is_member_or_friend_template (t, 0);
 }
 
 /* Return a new template argument vector which contains all of ARGS,
@@ -1092,6 +1135,10 @@ reduce_template_parm_level (index, type, levels)
 				     TEMPLATE_PARM_ORIG_LEVEL (index),
 				     decl, type);
       TEMPLATE_PARM_DESCENDANTS (index) = t;
+
+      /* Template template parameters need this.  */
+      DECL_TEMPLATE_PARMS (decl)
+	= DECL_TEMPLATE_PARMS (TEMPLATE_PARM_DECL (index));
     }
 
   return TEMPLATE_PARM_DESCENDANTS (index);
