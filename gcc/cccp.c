@@ -1234,6 +1234,8 @@ main (argc, argv)
 	  cplusplus = 0, cplusplus_comments = 0, objc = 0;
 	if (! strcmp (argv[i], "-lang-c++"))
 	  cplusplus = 1, cplusplus_comments = 1, objc = 0;
+	if (! strcmp (argv[i], "-lang-c-c++-comments"))
+	  cplusplus = 0, cplusplus_comments = 1, objc = 0;
 	if (! strcmp (argv[i], "-lang-objc"))
 	  objc = 1, cplusplus = 0, cplusplus_comments = 1;
 	if (! strcmp (argv[i], "-lang-objc++"))
