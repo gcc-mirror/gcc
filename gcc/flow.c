@@ -404,6 +404,7 @@ find_basic_blocks_1 (f, nonlocal_label_list, live_reachable_p)
   enum rtx_code prev_code, code;
   int depth, pass;
   int in_libcall_block = 0;
+  int deleted_handler = 0;
 
   pass = 1;
   active_eh_region = (int *) alloca ((max_uid_for_flow + 1) * sizeof (int));
@@ -770,28 +771,9 @@ find_basic_blocks_1 (f, nonlocal_label_list, live_reachable_p)
 			    XEXP (x, 1) = NULL_RTX;
 			    XEXP (x, 0) = NULL_RTX;
 
-			    /* Now we have to find the EH_BEG and EH_END notes
-			       associated with this label and remove them.  */
-
-#if 0
-/* Handlers and labels no longer needs to have the same values.
-   If there are no references, scan_region will remove any region
-   labels which are of no use. */
-			    for (x = get_insns (); x; x = NEXT_INSN (x))
-			      {
-				if (GET_CODE (x) == NOTE
-				    && ((NOTE_LINE_NUMBER (x)
-					 == NOTE_INSN_EH_REGION_BEG)
-					|| (NOTE_LINE_NUMBER (x)
-					    == NOTE_INSN_EH_REGION_END))
-				    && (NOTE_BLOCK_NUMBER (x)
-					== CODE_LABEL_NUMBER (insn)))
-				  {
-				    NOTE_LINE_NUMBER (x) = NOTE_INSN_DELETED;
-				    NOTE_SOURCE_FILE (x) = 0;
-				  }
-			      }
-#endif
+                            /* Remove the handler from all regions */
+                            remove_handler (insn);
+                            deleted_handler = 1;
 			    break;
 			  }
 			prev = &XEXP (x, 1);
@@ -861,6 +843,24 @@ find_basic_blocks_1 (f, nonlocal_label_list, live_reachable_p)
 		    }
 	      }
 	  }
+      /* If we deleted an exception handler, we may have EH region
+         begin/end blocks to remove as well. */
+      if (deleted_handler)
+        for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+          if (GET_CODE (insn) == NOTE)
+            {
+              if ((NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG) ||
+                  (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_END)) 
+                {
+                  int num = CODE_LABEL_NUMBER (insn);
+                  /* A NULL handler indicates a region is no longer needed */
+                  if (get_first_handler (num) == NULL)
+                    {
+                      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
+                      NOTE_SOURCE_FILE (insn) = 0;
+                    }
+                }
+            }
 
       /* There are pathological cases where one function calling hundreds of
 	 nested inline functions can generate lots and lots of unreachable
