@@ -376,6 +376,11 @@ in the following sections.
 @emph{System V Options}
 -Qy  -Qn  -YP,@var{paths}  -Ym,@var{dir}
 
+@emph{ARC Options}
+-EB  -EL
+-mmangle-cpu  -mcpu=@var{cpu}  -mtext=@var{text section}
+-mdata=@var{data section}  -mrodata=@var{readonly data section}
+
 @emph{V850 Options}
 -mlong-calls -mno-long-calls -mep -mno-ep
 -mprolog-function -mno-prolog-function -mspace
@@ -2925,6 +2930,7 @@ that macro, which enables you to change the defaults.
 * SH Options::
 * System V Options::
 * V850 Options::
+* ARC Options::
 @end menu
 
 @node M680x0 Options
@@ -5448,6 +5454,43 @@ Generate code suitable for big switch tables.  Use this option only if
 the assembler/linker complain about out of range branches within a switch
 table.
 @end table
+
+@node ARC Options
+@subsection ARC Options
+@cindex ARC Options
+
+These options are defined for ARC implementations:
+
+@table @code
+@item -EL
+Compile code for little endian mode.  This is the default.
+
+@item -EB
+Compile code for big endian mode.
+
+@item -mmangle-cpu
+Prepend the name of the cpu to all public symbol names.
+In multiple-processor systems, there are many ARC variants with different
+instruction and register set characteristics.  This flag prevents code
+compiled for one cpu to be linked with code compiled for another.
+No facility exists for handling variants that are "almost identical".
+This is an all or nothing option.
+
+@item -mcpu=@var{cpu}
+Compile code for ARC variant @var{cpu}.
+Which variants are supported depend on the configuration.
+All variants support @samp{-mcpu=base}, this is the default.
+
+@item -mtext=@var{text section}
+@item -mdata=@var{data section}
+@item -mrodata=@var{readonly data section}
+Put functions, data, and readonly data in @var{text section},
+@var{data section}, and @var{readonly data section} respectively
+by default.  This can be overridden with the @code{section} attribute.
+@xref{Variable Attributes}
+
+@end table
+
 
 @node Code Gen Options
 @section Options for Code Generation Conventions

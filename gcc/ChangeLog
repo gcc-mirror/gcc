@@ -23,6 +23,8 @@ Fri Apr  3 17:02:13 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 Wed Apr  8 12:51:19 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* invoke.texi: Add ARC options.
+
 	* gcc.c (proces_command): Improve error message for -o with
 	either -c or -S.
 
