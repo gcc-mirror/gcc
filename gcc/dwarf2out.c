@@ -623,6 +623,11 @@ dwarf2out_def_cfa (label, reg, offset)
   unsigned long old_reg;
   long old_offset;
 
+  cfa_reg = reg;
+  cfa_offset = offset;
+  if (cfa_store_reg == reg)
+    cfa_store_offset = offset;
+
   reg = DWARF_FRAME_REGNUM (reg);
   lookup_cfa (&old_reg, &old_offset);
 
@@ -653,11 +658,6 @@ dwarf2out_def_cfa (label, reg, offset)
     }
 
   add_fde_cfi (label, cfi);
-
-  cfa_reg = reg;
-  cfa_offset = offset;
-  if (cfa_store_reg == reg)
-    cfa_store_offset = offset;
 }
 
 /* Add the CFI for saving a register.  REG is the CFA column number.
