@@ -183,7 +183,7 @@ public interface BeanContext
 	 * </UL>
 	 * @fixme fill in the rest of the methods which use the global lock.
 	 */
-	public static final Object globalHierarchyLock = new Object();
+	Object globalHierarchyLock = new Object();
 
 	/** 
 	 * Instantiate a Bean using this Bean's <code>ClassLoader</code>
@@ -204,7 +204,7 @@ public interface BeanContext
 	 * @exception ClassNotFoundException if a serialized Bean's class
 	 *            is not found.
 	 */
-	public Object instantiateChild(String beanName)
+	Object instantiateChild(String beanName)
                         throws IOException,
                                ClassNotFoundException;
 
@@ -230,7 +230,7 @@ public interface BeanContext
 	 * @param requestor a reference to the child requesting the resource.
 	 * @see java.lang.ClassLoader#getResource(java.lang.String)
 	 */
-	public URL getResource(String resourceName, BeanContextChild requestor);
+	URL getResource(String resourceName, BeanContextChild requestor);
 
 	/**
 	 * Get a resource as a stream.  The <code>BeanContext</code> will
@@ -254,19 +254,19 @@ public interface BeanContext
 	 * @param requestor a reference to the child requesting the resource.
 	 * @see java.lang.ClassLoader#getResourceAsStream(java.lang.String)
 	 */
-	public InputStream getResourceAsStream(String resourceName, BeanContextChild requestor);
+	InputStream getResourceAsStream(String resourceName, BeanContextChild requestor);
 
 	/**
 	 * Add a listener on changes to the membership of this
 	 * <code>BeanContext</code> object.
 	 * @param listener the listener to add.
 	 */
-	public void addBeanContextMembershipListener(BeanContextMembershipListener listener);
+	void addBeanContextMembershipListener(BeanContextMembershipListener listener);
 
 	/**
 	 * Remove a listener on changes to the membership of this
 	 * <code>BeanContext</code> object.
 	 * @param listener the listener to remove.
 	 */
-	public void removeBeanContextMembershipListener(BeanContextMembershipListener listener);
+	void removeBeanContextMembershipListener(BeanContextMembershipListener listener);
 }

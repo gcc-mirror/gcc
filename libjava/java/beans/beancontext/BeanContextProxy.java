@@ -61,5 +61,5 @@ public interface BeanContextProxy {
 	 * @return the <code>BeanContextChild</code> associated with this
 	 * <code>Object</code>.
 	 */
-	public BeanContextChild getBeanContextProxy();
+	BeanContextChild getBeanContextProxy();
 }

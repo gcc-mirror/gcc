@@ -59,5 +59,5 @@ public interface BeanContextContainerProxy {
 	 * @return the <code>Container</code> associated with this
 	 * <code>BeanContext</code>.
 	 */
-	public Container getContainer();
+	Container getContainer();
 }

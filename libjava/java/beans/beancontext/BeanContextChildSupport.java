@@ -105,7 +105,7 @@ public class BeanContextChildSupport
 	public BeanContextChildSupport()
   {
 		this (null);
-	};
+	}
 
 	/**
 	 * Create a new <code>BeanContextChildSupport</code> with the specified peer.

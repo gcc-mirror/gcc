@@ -56,5 +56,5 @@ public interface BeanContextChildComponentProxy {
 	 * @return the <code>Component</code> associated with this
 	 * <code>BeanContextChild</code>.
 	 */
-	public Component getComponent();
+	Component getComponent();
 }

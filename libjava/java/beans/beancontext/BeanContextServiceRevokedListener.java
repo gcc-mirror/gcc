@@ -58,5 +58,5 @@ public interface BeanContextServiceRevokedListener extends EventListener {
 	 * @param event the service revoked event.
 	 * @see java.beans.beancontext.BeanContextServices#revokeService(java.lang.Class,java.beans.beancontext.BeanContextServiceProvider,boolean)
 	 */
-	public void serviceRevoked(BeanContextServiceRevokedEvent event);
+	void serviceRevoked(BeanContextServiceRevokedEvent event);
 }

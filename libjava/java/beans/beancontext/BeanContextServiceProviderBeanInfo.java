@@ -56,5 +56,5 @@ public interface BeanContextServiceProviderBeanInfo extends BeanInfo {
 	 * Get <code>BeanInfo</code>s for all of the service classes of this <code>BeanInfoServiceProvider</code>.
 	 * @return <code>BeanInfo</code>s for all provided service classes.
 	 */
-	public BeanInfo[] getServicesBeanInfo();
+	BeanInfo[] getServicesBeanInfo();
 }

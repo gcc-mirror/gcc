@@ -63,7 +63,7 @@ public interface BeanContextServices
    * @param provider the factory that will actually provide the service.
    * @return whether the service was added or not.
    */
-  public boolean addService (Class serviceClass,
+  boolean addService (Class serviceClass,
                              BeanContextServiceProvider provider);
 
   /**
@@ -83,7 +83,7 @@ public interface BeanContextServices
    * @param revokeNow whether to release all current references to
    *        the service.
    */
-  public void revokeService (Class serviceClass,
+  void revokeService (Class serviceClass,
                              BeanContextServiceProvider provider,
                              boolean revokeNow);
 
@@ -102,7 +102,7 @@ public interface BeanContextServices
    * @param service the service to relinquish
    * @see #getService(java.beans.beancontext.BeanContextChild,java.lang.Object,java.lang.Class,java.lang.Object,java.beans.beancontext.BeanContextServiceRevokedListener)
    */
-  public void releaseService (BeanContextChild requestorChild, Object requestor,
+  void releaseService (BeanContextChild requestorChild, Object requestor,
                               Object service);
 
   /**
@@ -152,7 +152,7 @@ public interface BeanContextServices
    *        <code>instanceof</code> serviceClass is true), or
    *        <code>null</code>.
    */
-  public Object getService (BeanContextChild requestorChild, Object requestor,
+  Object getService (BeanContextChild requestorChild, Object requestor,
                             Class serviceClass, Object serviceSelector,
                             BeanContextServiceRevokedListener listener)
     throws TooManyListenersException;
@@ -167,7 +167,7 @@ public interface BeanContextServices
    * @return a list of all service classes supported.
    * @see java.beans.beancontext.BeanContext#globalHierarchyLock
    */
-  public Iterator getCurrentServiceClasses ();
+  Iterator getCurrentServiceClasses ();
 
   /**
    * Get a list of valid service selectors for the specified service class.
@@ -187,7 +187,7 @@ public interface BeanContextServices
    * @return a list of valid service selectors for the service
    *         class, or <code>null</code>.
    */
-  public Iterator getCurrentServiceSelectors (Class serviceClass);
+  Iterator getCurrentServiceSelectors (Class serviceClass);
 
   /**
    * Tell whether the specified service class is available.
@@ -197,14 +197,13 @@ public interface BeanContextServices
    * @param serviceClass the service class to check on.
    * @return whether the specified service class is available.
    */
-  public boolean hasService (Class serviceClass);
+  boolean hasService (Class serviceClass);
 
   /**
    * Add a listener on all adds and removes of services.
    * @param listener the listener to add.
    */
-  public void
-  addBeanContextServicesListener (BeanContextServicesListener listener);
+  void addBeanContextServicesListener (BeanContextServicesListener listener);
 
   /**
    * Remove a listener on all adds and removes of services.
@@ -213,6 +212,5 @@ public interface BeanContextServices
    *           <code>getService()</code>.
    * @param listener the listener to add.
    */
-  public void
-  removeBeanContextServicesListener (BeanContextServicesListener listener);
+  void removeBeanContextServicesListener (BeanContextServicesListener listener);
 }
