@@ -11,12 +11,12 @@
 
 #include <string>
 
-string foo();
+std::string foo();
 struct a {
 	void bar();
 	enum b { c, d };
 	b theb;
-	string baz;
+	std::string baz;
 };
 
 void

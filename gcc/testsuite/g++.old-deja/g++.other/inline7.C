@@ -3,7 +3,7 @@
 
 #include <list>
 
-list<int*> li;
+std::list<int*> li;
 
 void f ()
 {

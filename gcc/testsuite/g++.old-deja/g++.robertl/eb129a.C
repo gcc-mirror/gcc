@@ -6,18 +6,17 @@
 #include <functional>
 #include <algorithm>
 #include <cassert>
-using namespace std;
 int main()
 {
-      list<int> l;
+      std::list<int> l;
       l.push_back(1);
       l.push_back(2);
 
-      list<int>::iterator it =
-              find_if( l.begin(), l.end(),
+      std::list<int>::iterator it =
+              std::find_if( l.begin(), l.end(),
                        // This is a typo, it should be bind2nd, but an
                        // ICE is not a very helpful diagnostic!
-                       binder2nd( equal_to<int>(), 2 ) ); // ERROR - 
+                       std::binder2nd( std::equal_to<int>(), 2 ) ); // ERROR - 
       assert( *(it) == 2 );
 }
 

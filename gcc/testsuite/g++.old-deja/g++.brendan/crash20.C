@@ -1,7 +1,7 @@
 // Build don't link: 
 // GROUPS passed old-abort
 #include <complex>
-typedef complex<double> Complex;
+typedef std::complex<double> Complex;
 
 Complex ComputeVVself()
 {

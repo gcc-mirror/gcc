@@ -4,6 +4,8 @@
 #include <map>
 #include <cstdlib>
 
+using namespace std;
+
 class NAMES_ITEM
     {
 public:

@@ -3,7 +3,7 @@
 
 int main()
 {
-  bitset<sizeof(int) * 8> bufWord;
+  std::bitset<sizeof(int) * 8> bufWord;
 
   bufWord[3] = 0;
 }

@@ -3,7 +3,7 @@
 // Special g++ Options: -W -Wall
 
 struct A {
-  unsigned int b : 28;
+  unsigned int b : 14;
 };
 
 int f (int i, unsigned char u, A a, unsigned long ul)

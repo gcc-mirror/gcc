@@ -19,7 +19,7 @@ struct Foo {
   }
 
   ~Foo() {
-    std::exit(0);
+    exit(0);
   }
 };
 
@@ -30,7 +30,7 @@ struct Bar : virtual Foo {
 
 int main() {
   delete [] new Bar[2];
-  std::abort();
+  abort();
 }
 
 

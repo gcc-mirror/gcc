@@ -8,7 +8,7 @@ class T
 
 };
 
-vector <T> tp;
+std::vector <T> tp;
 
 void f()
 {

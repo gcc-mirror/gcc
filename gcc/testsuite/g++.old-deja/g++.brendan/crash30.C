@@ -5,6 +5,6 @@
 int
 main(void) {
 
-  string a[] = {"Hello"};
+  std::string a[] = {"Hello"};
 
 }

@@ -3,5 +3,5 @@
 
 void f(void)
 {
-  vector<int> l(5, 0);
+  std::vector<int> l(5, 0);
 }

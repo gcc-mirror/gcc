@@ -1,5 +1,7 @@
 #include <iterator>
 
+using namespace std;
+
 template<size_t n, size_t i> struct PartialDotProduct {
     template<class T>
     static T Expand(T* a, T* b) { return T(); }

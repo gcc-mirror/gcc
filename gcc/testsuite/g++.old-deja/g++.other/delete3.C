@@ -15,12 +15,12 @@ map<T, U>::~map ()
 
 struct SomeClass { };
 
-void* operator new(size_t numBytes, SomeClass&, const nothrow_t&) throw()
+void* operator new(size_t numBytes, SomeClass&, const std::nothrow_t&) throw()
 {
-  return operator new(numBytes, nothrow);
+  return operator new(numBytes, std::nothrow);
 }
 
-void operator delete(void* pMemory, SomeClass&, const nothrow_t&) throw()
+void operator delete(void* pMemory, SomeClass&, const std::nothrow_t&) throw()
 {
   i = 7;
   return operator delete(pMemory);
