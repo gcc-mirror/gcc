@@ -348,9 +348,6 @@ fi
 # per-target:
 
 case "${target}" in
-  *-*-chorusos)
-    noconfigdirs="$noconfigdirs target-newlib target-libgloss"
-    ;;
   v810*)
     target_makefile_frag="${target_makefile_frag} config/mt-v810"
     ;;
@@ -589,6 +586,9 @@ case "${host}" in
 esac
 
 case "${target}" in
+  *-*-chorusos)
+    noconfigdirs="$noconfigdirs target-newlib target-libgloss ${libgcj}"
+    ;;
   *-*-netware)
     noconfigdirs="$noconfigdirs ${libstdcxx_version} target-librx target-newlib target-libiberty target-libgloss ${libgcj}"
     ;;
