@@ -1813,25 +1813,49 @@ combine_regs (usedreg, setreg, may_save_copy, insn_number, insn, already_dead)
     {
       if (GET_MODE_SIZE (GET_MODE (SUBREG_REG (usedreg))) > UNITS_PER_WORD)
 	may_save_copy = 0;
-      offset += SUBREG_WORD (usedreg);
+      if (REGNO (SUBREG_REG (usedreg)) < FIRST_PSEUDO_REGISTER)
+	offset += subreg_regno_offset (REGNO (SUBREG_REG (usedreg)),
+				       GET_MODE (SUBREG_REG (usedreg)),
+				       SUBREG_BYTE (usedreg),
+				       GET_MODE (usedreg));
+      else
+	offset += (SUBREG_BYTE (usedreg)
+		   / REGMODE_NATURAL_SIZE (GET_MODE (usedreg)));
       usedreg = SUBREG_REG (usedreg);
     }
   if (GET_CODE (usedreg) != REG)
     return 0;
   ureg = REGNO (usedreg);
-  usize = REG_SIZE (usedreg);
+  if (ureg < FIRST_PSEUDO_REGISTER)
+    usize = HARD_REGNO_NREGS (ureg, GET_MODE (usedreg));
+  else
+    usize = ((GET_MODE_SIZE (GET_MODE (usedreg))
+	      + (REGMODE_NATURAL_SIZE (GET_MODE (usedreg)) - 1))
+	     / REGMODE_NATURAL_SIZE (GET_MODE (usedreg)));
 
   while (GET_CODE (setreg) == SUBREG)
     {
       if (GET_MODE_SIZE (GET_MODE (SUBREG_REG (setreg))) > UNITS_PER_WORD)
 	may_save_copy = 0;
-      offset -= SUBREG_WORD (setreg);
+      if (REGNO (SUBREG_REG (setreg)) < FIRST_PSEUDO_REGISTER)
+	offset -= subreg_regno_offset (REGNO (SUBREG_REG (setreg)),
+				       GET_MODE (SUBREG_REG (setreg)),
+				       SUBREG_BYTE (setreg),
+				       GET_MODE (setreg));
+      else
+	offset -= (SUBREG_BYTE (setreg)
+		   / REGMODE_NATURAL_SIZE (GET_MODE (setreg)));
       setreg = SUBREG_REG (setreg);
     }
   if (GET_CODE (setreg) != REG)
     return 0;
   sreg = REGNO (setreg);
-  ssize = REG_SIZE (setreg);
+  if (sreg < FIRST_PSEUDO_REGISTER)
+    ssize = HARD_REGNO_NREGS (sreg, GET_MODE (setreg));
+  else
+    ssize = ((GET_MODE_SIZE (GET_MODE (setreg))
+	      + (REGMODE_NATURAL_SIZE (GET_MODE (setreg)) - 1))
+	     / REGMODE_NATURAL_SIZE (GET_MODE (setreg)));
 
   /* If UREG is a pseudo-register that hasn't already been assigned a
      quantity number, it means that it is not local to this block or dies
@@ -2032,7 +2056,11 @@ reg_is_born (reg, birth)
   register int regno;
 
   if (GET_CODE (reg) == SUBREG)
-    regno = REGNO (SUBREG_REG (reg)) + SUBREG_WORD (reg);
+    {
+      regno = REGNO (SUBREG_REG (reg));
+      if (regno < FIRST_PSEUDO_REGISTER)
+	regno = subreg_hard_regno (reg, 1);
+    }
   else
     regno = REGNO (reg);
 

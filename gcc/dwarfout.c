@@ -817,7 +817,7 @@ is_pseudo_reg (rtl)
 {
   return (((GET_CODE (rtl) == REG) && (REGNO (rtl) >= FIRST_PSEUDO_REGISTER))
           || ((GET_CODE (rtl) == SUBREG)
-	      && (REGNO (XEXP (rtl, 0)) >= FIRST_PSEUDO_REGISTER)));
+	      && (REGNO (SUBREG_REG (rtl)) >= FIRST_PSEUDO_REGISTER)));
 }
 
 inline static tree
@@ -1630,7 +1630,7 @@ output_mem_loc_descriptor (rtl)
 	   legitimate to make the Dwarf info refer to the whole register
 	   which contains the given subreg.  */
 
-	rtl = XEXP (rtl, 0);
+	rtl = SUBREG_REG (rtl);
 	/* Drop thru.  */
 
       case REG:
@@ -1714,7 +1714,7 @@ output_loc_descriptor (rtl)
 	   legitimate to make the Dwarf info refer to the whole register
 	   which contains the given subreg.  */
 
-	rtl = XEXP (rtl, 0);
+	rtl = SUBREG_REG (rtl);
 	/* Drop thru.  */
 
     case REG:

@@ -1697,17 +1697,6 @@ definition of this macro is
     / UNITS_PER_WORD)
 @end smallexample
 
-@findex ALTER_HARD_SUBREG
-@item ALTER_HARD_SUBREG (@var{tgt_mode}, @var{word}, @var{src_mode}, @var{regno})
-A C expression that returns an adjusted hard register number for 
-
-@smallexample
-(subreg:@var{tgt_mode} (reg:@var{src_mode} @var{regno}) @var{word})
-@end smallexample
-
-This may be needed if the target machine has mixed sized big-endian
-registers, like Sparc v9.
-
 @findex HARD_REGNO_MODE_OK
 @item HARD_REGNO_MODE_OK (@var{regno}, @var{mode})
 A C expression that is nonzero if it is permissible to store a value
@@ -1790,6 +1779,19 @@ allocation.
 Define this macro if the compiler should avoid copies to/from @code{CCmode}
 registers.  You should only define this macro if support for copying to/from
 @code{CCmode} is incomplete.
+
+@findex SUBREG_REGNO_OFFSET
+@item SUBREG_REGNO_OFFSET
+Define this macro if the compiler needs to handle subregs in a non-standard
+way.  The macro returns the correct regno offset for mode @code{YMODE} given
+a subreg of type @code{XMODE}.
+This macro takes 4 parameters:
+@code{XREGNO} - A regno of an inner hard subreg_reg (or what will become one).
+@code{XMODE}  - The mode of xregno.
+@code{OFFSET} - The byte offset.
+@code{YMODE} - The mode of a top level SUBREG (or what may become one).
+The default function can be found in rtlanal.c, function 
+@code{subreg_regno_offset}. Normally this does not need to be defined.
 @end table
 
 @node Leaf Functions

@@ -776,19 +776,15 @@ sdbout_symbol (decl, local)
       else if (GET_CODE (value) == SUBREG)
 	{
 	  int offset = 0;
+
 	  while (GET_CODE (value) == SUBREG)
-	    {
-	      offset += SUBREG_WORD (value);
-	      value = SUBREG_REG (value);
-	    }
+	    value = SUBREG_REG (value);
 	  if (GET_CODE (value) == REG)
 	    {
-	      regno = REGNO (value);
-	      if (regno >= FIRST_PSEUDO_REGISTER)
+	      if (REGNO (value) >= FIRST_PSEUDO_REGISTER)
 		return;
-	      regno += offset;
 	    }
-	  alter_subreg (DECL_RTL (decl));
+	  regno = REGNO (alter_subreg (DECL_RTL (decl)));
 	  value = DECL_RTL (decl);
 	}
       /* Don't output anything if an auto variable

@@ -4134,7 +4134,7 @@ store_expr (exp, target, want_value)
       if (want_value && GET_MODE (temp) != GET_MODE (target)
 	  && GET_MODE (temp) != VOIDmode)
 	{
-	  temp = gen_rtx_SUBREG (GET_MODE (target), temp, 0);
+	  temp = gen_lowpart_SUBREG (GET_MODE (target), temp);
 	  SUBREG_PROMOTED_VAR_P (temp) = 1;
 	  SUBREG_PROMOTED_UNSIGNED_P (temp)
 	    = SUBREG_PROMOTED_UNSIGNED_P (target);
@@ -6346,7 +6346,7 @@ expand_expr (exp, target, tmode, modifier)
 	      != promote_mode (type, DECL_MODE (exp), &unsignedp, 0))
 	    abort ();
 
-	  temp = gen_rtx_SUBREG (mode, DECL_RTL (exp), 0);
+	  temp = gen_lowpart_SUBREG (mode, DECL_RTL (exp));
 	  SUBREG_PROMOTED_VAR_P (temp) = 1;
 	  SUBREG_PROMOTED_UNSIGNED_P (temp) = unsignedp;
 	  return temp;
@@ -6466,7 +6466,7 @@ expand_expr (exp, target, tmode, modifier)
 
 	  if (GET_CODE (temp) == REG && GET_MODE (temp) != mode)
 	    {
-	      temp = gen_rtx_SUBREG (mode, SAVE_EXPR_RTL (exp), 0);
+	      temp = gen_lowpart_SUBREG (mode, SAVE_EXPR_RTL (exp));
 	      SUBREG_PROMOTED_VAR_P (temp) = 1;
 	      SUBREG_PROMOTED_UNSIGNED_P (temp) = unsignedp;
 	    }
@@ -6489,7 +6489,7 @@ expand_expr (exp, target, tmode, modifier)
 	{
 	  /* Compute the signedness and make the proper SUBREG.  */
 	  promote_mode (type, mode, &unsignedp, 0);
-	  temp = gen_rtx_SUBREG (mode, SAVE_EXPR_RTL (exp), 0);
+	  temp = gen_lowpart_SUBREG (mode, SAVE_EXPR_RTL (exp));
 	  SUBREG_PROMOTED_VAR_P (temp) = 1;
 	  SUBREG_PROMOTED_UNSIGNED_P (temp) = unsignedp;
 	  return temp;

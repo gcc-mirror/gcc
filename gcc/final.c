@@ -3119,20 +3119,8 @@ alter_subreg (x)
 
   if (GET_CODE (y) == REG)
     {
-      int regno;
-      /* If the word size is larger than the size of this register,
-	 adjust the register number to compensate.  */
-      /* ??? Note that this just catches stragglers created by/for
-	 integrate.  It would be better if we either caught these
-	 earlier, or kept _all_ subregs until now and eliminate
-	 gen_lowpart and friends.  */
+      int regno = subreg_hard_regno (x, 1);
 
-#ifdef ALTER_HARD_SUBREG
-      regno = ALTER_HARD_SUBREG (GET_MODE (x), SUBREG_WORD (x),
-				 GET_MODE (y), REGNO (y));
-#else
-      regno = REGNO (y) + SUBREG_WORD (x);
-#endif
       PUT_CODE (x, REG);
       REGNO (x) = regno;
       ORIGINAL_REGNO (x) = ORIGINAL_REGNO (y);
@@ -3142,11 +3130,12 @@ alter_subreg (x)
     }
   else if (GET_CODE (y) == MEM)
     {
-      register int offset = SUBREG_WORD (x) * UNITS_PER_WORD;
+      register int offset = SUBREG_BYTE (x);
 
-      if (BYTES_BIG_ENDIAN)
-	offset -= (MIN (UNITS_PER_WORD, GET_MODE_SIZE (GET_MODE (x)))
-		   - MIN (UNITS_PER_WORD, GET_MODE_SIZE (GET_MODE (y))));
+      /* Catch these instead of generating incorrect code.  */
+      if ((offset % GET_MODE_SIZE (GET_MODE (x))) != 0)
+	abort ();
+
       PUT_CODE (x, MEM);
       MEM_COPY_ATTRIBUTES (x, y);
       XEXP (x, 0) = plus_constant (XEXP (y, 0), offset);

@@ -1,3 +1,215 @@
+2001-04-03  Jakub Jelinek  <jakub@redhat.com>
+	    David S. Miller  <davem@pierdol.cobaltmicro.com>
+            Andrew MacLeod  <amacleod@redhat.com>
+
+	Use byte offsets in SUBREGs instead of words.
+
+	* alias.c (nonlocal_mentioned_p): Use subreg_regno function.
+	* caller-save.c (mark_set_regs): Change callers of subreg_hard_regno
+	to pass new argument.
+	(add_stored_regs): Use subreg_regno_offset function.
+	* calls.c (expand_call): For non-paradoxical SUBREG take endianess
+	into account.
+	(precompute_arguments): Use gen_lowpart_SUBREG.
+	* combine.c (try_combine): Replace explicit XEXP with SUBREG_REG.
+	(combine_simplify_rtx): Rework to use SUBREG_BYTE.
+	(simplify_set): Rework to use SUBREG_BYTE.
+	(expand_field_assignment): Use SUBREG_BYTE.
+	(make_extraction): Use SUBREG_BYTE.
+	(if_then_else_cond): Use SUBREG_BYTE.
+	(apply_distributive_law): Use SUBREG_BYTE and fixup subreg comments.
+	(gen_lowpart_for_combine): Compute full byte offset.
+	* cse.c (mention_regs): Use SUBREG_BYTE.
+	(remove_invalid_subreg_refs): Rework to use SUBREG_BYTE.
+	(canon_hash): Use SUBREG_BYTE.
+	(fold_rtx): Pass SUBREG_BYTE div UNITS_PER_WORD to operand_subword.
+	(gen_lowpart_if_possible): Formatting.
+	* dbxout.c (dbxout_symbol_location): Compute SUBREG hard regnos
+	correctly.
+	* dwarf2out.c (is_pseudo_reg): Fixup explicit XEXP into SUBREG_REG
+	(mem_loc_descriptor): Fixup explicit XEXP into SUBREG_REG
+	(loc_descriptor): Fixup explicit XEXP into SUBREG_REG
+	* dwarfout.c (is_pseudo_reg): Fixup explicit XEXP into SUBREG_REG
+	(output_mem_loc_descriptor): Fixup explicit XEXP into SUBREG_REG
+	(output_loc_descriptor): Fixup explicit XEXP into SUBREG_REG
+	* emit-rtl.c (gen_rtx_SUBREG): New function, used to verify
+	certain invariants about SUBREGs the compiler creates.
+	(gen_lowpart_SUBREG): New function.
+	(subreg_hard_regno): New function to get the final register number.
+	(gen_lowpart_common): Use SUBREG_BYTE.
+	(gen_imagpart): Spacing nits.
+	(subreg_realpart_p): Use SUBREG_BYTE.
+	(gen_highpart): Use SUBREG_BYTE.
+	(subreg_lowpart_p): Always compute endian corrected goal offset,
+	even at the byte level, then compare against that.
+	(constant_subword): New function, pulled out all constant cases
+	from operand_subword and changed second argument name to offset.
+	(operand_subword): Detect non REG/SUBREG/CONCAT/MEM cases early
+	and call constant_subword to do the work.  Return const0_rtx if 
+	looking for a word outside of OP.
+	(operand_subword_force): Change second arg name to offset.
+	* expmed.c (store_bit_field): Use SUBREG_BYTE.
+	(store_split_bit_field): Use SUBREG_BYTE.
+	(extract_bit_field): Use SUBREG_BYTE.
+	(extract_split_bit_field): Use SUBREG_BYTE.
+	(expand_shift): Use SUBREG_BYTE.
+	* expr.c (store_expr, expand_expr): Use gen_lowpart_SUBREG. 
+	* final.c (alter_subreg) Use subreg_hard_regno and SUBREG_BYTE.
+	* flow.c (set_noop_p): Use SUBREG_BYTE.
+	(mark_set_1): Remove ALTER_HARD_SUBREG. Use subreg_regno_offset instead.
+	* function.c (fixup_var_refs_1): Fixup explicit XEXP into a SUBREG_REG.
+	(fixup_memory_subreg): Use SUBREG_BYTE and remove byte endian
+	correction code.
+	(optimize_bit_field): Use SUBREG_BYTE.
+	(purge_addressof_1): Use SUBREG_BYTE.
+	(purge_single_hard_subreg_set): Use subreg_regno_offset function.
+	(assign_params): Mark arguments SUBREG_PROMOTED_VAR_P if they are 
+	actually promoted by the caller and PROMOTE_FOR_CALLS_ONLY is true.
+	* gengenrtl.c (special_rtx): Add SUBREG.
+	* global.c (mark_reg_store): Use SUBREG_BYTE.
+	(set_preference): Rework to use subreg_regno_offset and SUBREG_BYTE.
+	* ifcvt (noce_emit_move_insn): Use SUBREG_BYTE.
+	* integrate.c (copy_rtx_and_substitute): Use SUBREG_BYTE and make sure
+	final byte offset is congruent to subreg's mode size.
+	(subst_constants): Use SUBREG_BYTE.
+	(mark_stores): Use subreg_regno_offset function.
+	* jump.c (rtx_renumbered_equal_p, true_regnum): Use subreg_regno_offset
+	function and SUBREG_BYTE.
+	* local-alloc.c (combine_regs): Use subreg_regno_offset function.
+	(reg_is_born): Use subreg_hard_regno.
+	* recog.c (valid_replace_rtx_1): Use SUBREG_BYTE and remove byte
+	endian correction code.  Don't combine subregs unless resulting 
+	offset aligns with type.  Fix subreg constant extraction for DImode.
+	Simplify SUBREG of VOIDmode CONST_DOUBLE.
+	(general_operand): Remove dead mode_altering_drug code.
+	(indirect_operand): Use SUBREG_BYTE.
+	(constrain_operands): Use subreg_regno_offset function.
+	* reg-stack.c (get_true_reg): Use subreg_regno_offset function.
+	* regmove.c (regmove_optimize): Use SUBREG_BYTE.
+	(optimize_reg_copy_3): Use gen_lowpart_SUBREG.
+	* regs.h (REG_SIZE): Allow target to override.
+	(REGMODE_NATURAL_SIZE): New macro which target can override.
+	* reload.c (reload_inner_reg_of_subreg): subreg_regno should be used 
+	on the entire subreg rtx.
+	(push_reload): Use SUBREG_BYTE in comments and code.
+	(find_dummy_reload): Use subreg_regno_offset.  Only adjust offsets
+	for hard registers inside subregs.
+	(operands_match_p): Use subreg_regno_offset.
+	(find_reloads): Use SUBREG_BYTE and only advance offset for subregs 
+	containing hard regs.
+	(find_reload_toplev): Use SUBREG_BYTE.  Remove byte endian
+	corrections when fixing up MEM subregs.
+	(find_reloads_address_1): Use SUBREG_BYTE, subreg_regno, and
+	subreg_regno_offset where appropriate.
+	(find_reloads_subreg_address): Use SUBREG_BYTE.  Remove
+	byte endian corrections when fixing up MEM subregs.
+	(subst_reloads): When combining two subregs, make sure final
+	offset is congruent to subreg's mode size.
+	(find_replacement): Use SUBREG_BYTE and subreg_regno_offset.
+	(refers_to_regno_for_reload_p): Use subreg_regno.
+	(reg_overlap_mentioned_for_reload_p): Use subreg_regno_offset.
+	* reload1.c (eliminate_regs) Use SUBREG_BYTE. Remove byte endian
+	correction code for memory subreg fixups.
+	(forget_old_reload_1): Use subreg_regno_offset.
+	(choose_reload_regs): Use subreg_regno.
+	(emit_input_reload_insns): Use SUBREG_BYTE.
+	(reload_combine_note_store): Use subreg_regno_offset.
+	(move2add_note_store): Use subreg_regno_offset.
+	* resource.c (update_live_status, mark_referenced_resources): Use 
+	subreg_regno function.
+	(mark_set_resources): Use subreg_regno function.
+	* rtl.h (SUBREG_WORD): Rename to SUBREG_BYTE.
+	(subreg_regno_offset, subreg_regno): Define prototypes.
+	(subreg_hard_regno, constant_subword, gen_rtx_SUBREG): Newi functions.
+	(gen_lowpart_SUBREG): Add prototype.
+	* rtl.texi (subreg): Update to reflect new byte offset representation.
+	Add mentioning of the effect that BYTES_BIG_ENDIAN has on subregs now.
+	* rtlanal.c (refers_to_regno_p): Use subreg_regno.
+	(reg_overlap_mentioned_p): Use subreg_regno.
+	(replace_regs); Make sure final offset of combined subreg is
+	congruent to size of subreg's mode.
+	(subreg_regno_offset): New function.
+	(subreg_regno): New function.
+	* sched-vis.c (print_value): Change SUBREG_WORD to SUBREG_BYTE.
+	* sdbout.c (sdbout_symbol): Compute offset using alter_subreg.
+	* stmt.c (expand_anon_union_decl): Use gen_lowpart_SUBREG.
+	* tm.texi (ALTER_HARD_SUBREG): Remove, it is now dead.
+	(SUBREG_REGNO_OFFSET): Describe SUBREG_REGNO_OFFSET overrides.
+	* config/a29k/a29k.c (gpc_reg_operand): Use subreg_regno.
+	(a29k_get_reloaded_address): Use SUBREG_BYTE.
+	(print_operand): Use SUBREG_BYTE.
+	* config/alpha/alpha.c (print_operand_address): Use SUBREG_BYTE.
+	* config/arm/arm.c (arm_reload_in_hi): Use SUBREG_BYTE.
+	(arm_reload_out_hi): Use SUBREG_BYTE.
+	* config/d30v/d30v.c (d30v_split_double): Use subreg_regno_offset
+	instead of SUBREG_WORD.
+	(d30v_print_operand_memory_reference): Use subreg_regno_offset.
+	* config/dsp16xx/dsp16xx.md (extendqihi2, zero_extendqihi2): Fix
+	SUBREG creation to use byte offset.
+	* config/h8300/h8300.md (Unnamed HImode zero extraction and 16bit
+	inverted load insns): Fix explicit rtl subregs to use byte
+	offsets.
+	* config/i370/i370.md (cmpstrsi, movstrsi, mulsi3, divsi3,
+	udivsi3, umodsi3): Generate SUBREGs with byte offsets.
+	* config/i860/i860.c (single_insn_src_p): Use SUBREG_BYTE.
+	* config/i860/i860.md (mulsi3_big): Fixup explicit SUBREGs in rtl
+	to use byte offsets.
+	(unnamed fmlow.dd insn): Fixup SUBREGS to use byte offsets.
+	* config/i960/i960.md (extendhisi2): Generate SUBREGs with byte
+	offsets, also make sure it is congruent to SUBREG's mode size.
+	(extendqisi2, extendqihi2, zero_extendhisi2, zero_extendqisi2,
+	unnamed ldob insn): Generate SUBREGs with byte offset.
+	(zero_extendqihi2): SUBREG's are byte offsets.
+	* config/m68hc11/m68hc11.c (m68hc11_gen_lowpart): Use SUBREG_BYTE.
+	(m68hc11_gen_highpart): Use SUBREG_BYTE.
+	* config/m68k/m68k.md (zero_extendhisi2, zero_extendqihi2,
+	zero-extendqisi2): Generate SUBREGs with byte offset.
+	(umulsidi3, mulsidi3, subreghi1ashrdi_const32,
+	subregsi1ashrdi_const32, subreg1lshrdi_const32): Fixup explicit
+	subregs in rtl to use byte offsets.
+	* config/m88k/m88k.md (extendsidi2): fixup subregs to use byte offset.
+	* config/mips/mips.c (mips_move_1word): Use subreg_regno_offset.
+	(mips_move_2words): Use subreg_regno_offset.
+	(mips_secondary_reload_class): Use subreg_regno_offset.
+	* config/mips/mips.md (DImode plus, minus, move, and logical op
+	splits): Fixup explicit subregs in rtl to use byte offsets.
+	* config/mn10200/mn10200.c (print_operand): Use subreg_regno function.
+	* config/mn10300/mn10300.c (print_operand): Use subreg_regno function.
+	* config/ns32k/ns32k.md (udivmoddisi4): Fix explicit subregs in
+	rtl to use byte offsets.
+	* config/pa/pa.c (emit_move_sequence): Use SUBREG_BYTE.
+	* config/pa/pa.md (floatunssisf2, floatunssidf2, mulsi3): fix explicit
+	subregs to use byte offsets.
+	* config/pdp11/pdp11.md (zero_extendhisi2, modhi3, modhi3+1):
+	Fixup explicit subregs in rtl to use byte offsets.
+	* config/romp/romp.c (memory_offset_in_range_p): Use SUBREG_BYTE
+	and remove byte endian correction code.
+	* config/sh/sh.c (output_movedouble): Use subreg_regno.
+	(gen_ashift_hi): Use SUBREG_BYTE.
+	(regs_used): Use subreg_regno_offset.
+	(machine_dependent_reorg): Use subreg_regno_offset.
+	* config/sh/sh.h (INDEX_REGISTER_RTX_P): Use SUBREG_BYTE.
+	* config/sh/sh.md (DImode and DFmode move splits): Use subreg_regno.
+	(movdf_i4): Subregs are byte offsets now.
+	* config/sparc/sparc.c (ultra_find_type): Use SUBREG_BYTE.
+	* config/sparc/sparc.h (ALTER_HARD_SUBREG): Removed.
+	(REGMODE_NATURAL_SIZE): Override.
+	(REG_SIZE): For SUBREG check float mode on SUBREG_REG's mode.
+	* config/sparc/sparc.md (TFmode move splits): Generate SUBREGs
+	with byte offsets.
+	(zero_extendhisi2, zero_extendqidi2_insn, extendhisi2,
+	extendqihi2, sign_extendqihi2_insn, sign_extendqisi2_insn,
+	extendqidi2): Generate SUBREGs with byte offsets, also make sure
+	it is congruent to SUBREG's mode size.
+	(smulsi3_highpart_v8plus): Fix explicit subregs in rtl to use byte
+	offsets.
+	(cmp_siqi_trunc, cmp_siqi_trunc_set, cmp_diqi_trunc, 
+	cmp_diqi_trunc_set, lshrdi3_v8plus+1, lshrdi3_v8plus+2, 
+	lshrdi3_v8plus+3, lshrdi3_v8plus+4): Use proper
+	SUBREG_BYTE offset for non-paradoxical subregs in patterns.
+	* config/v850/v850.c (print_operand, output_move_double): Use 
+	subreg_regno function.
+
 2001-04-03  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.in (target_subdir): Use target_alias, not target.

@@ -3505,9 +3505,9 @@
    (set_attr "length" "4")])
 
 (define_expand "floatunssisf2"
-  [(set (subreg:SI (match_dup 2) 1)
+  [(set (subreg:SI (match_dup 2) 4)
 	(match_operand:SI 1 "register_operand" ""))
-   (set (subreg:SI (match_dup 2) 0)
+   (set (subreg:SI (match_dup 2) 4)
 	(const_int 0))
    (set (match_operand:SF 0 "register_operand" "")
 	(float:SF (match_dup 2)))]
@@ -3523,7 +3523,7 @@
 }")
 
 (define_expand "floatunssidf2"
-  [(set (subreg:SI (match_dup 2) 1)
+  [(set (subreg:SI (match_dup 2) 4)
 	(match_operand:SI 1 "register_operand" ""))
    (set (subreg:SI (match_dup 2) 0)
 	(const_int 0))
@@ -3891,7 +3891,7 @@
 	  
 	}
       emit_insn (gen_rtx_SET (VOIDmode, operands[0],
-			      gen_rtx_SUBREG (SImode, scratch, 1)));
+			      gen_rtx_SUBREG (SImode, scratch, GET_MODE_SIZE (SImode))));
       DONE;
     }
   operands[3] = gen_reg_rtx (SImode);

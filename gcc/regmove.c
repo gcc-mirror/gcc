@@ -717,7 +717,7 @@ optimize_reg_copy_3 (insn, dest, src)
 
   /* Now walk forward making additional replacements.  We want to be able
      to undo all the changes if a later substitution fails.  */
-  subreg = gen_rtx_SUBREG (old_mode, src_reg, 0);
+  subreg = gen_lowpart_SUBREG (old_mode, src_reg);
   while (p = NEXT_INSN (p), p != insn)
     {
       if (! INSN_P (p))
@@ -1168,7 +1168,7 @@ regmove_optimize (f, nregs, regmove_dump_file)
 		{
 		  src_subreg
 		    = gen_rtx_SUBREG (GET_MODE (SUBREG_REG (dst)),
-				      src, SUBREG_WORD (dst));
+				      src, SUBREG_BYTE (dst));
 		  dst = SUBREG_REG (dst);
 		}
 	      if (GET_CODE (dst) != REG

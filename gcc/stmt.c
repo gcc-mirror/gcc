@@ -4166,7 +4166,7 @@ expand_anon_union_decl (decl, cleanup, decl_elts)
 	  if (mode == GET_MODE (x))
 	    SET_DECL_RTL (decl_elt, x);
 	  else
-	    SET_DECL_RTL (decl_elt, gen_rtx_SUBREG (mode, x, 0));
+	    SET_DECL_RTL (decl_elt, gen_lowpart_SUBREG (mode, x));
 	}
       else
 	abort ();

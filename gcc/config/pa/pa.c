@@ -1192,11 +1192,11 @@ emit_move_sequence (operands, mode, scratch_reg)
 	   && GET_CODE (SUBREG_REG (operand0)) == REG
 	   && REGNO (SUBREG_REG (operand0)) >= FIRST_PSEUDO_REGISTER)
     {
-     /* We must not alter SUBREG_WORD (operand0) since that would confuse
+     /* We must not alter SUBREG_BYTE (operand0) since that would confuse
 	the code which tracks sets/uses for delete_output_reload.  */
       rtx temp = gen_rtx_SUBREG (GET_MODE (operand0),
 				 reg_equiv_mem [REGNO (SUBREG_REG (operand0))],
-				 SUBREG_WORD (operand0));
+				 SUBREG_BYTE (operand0));
       operand0 = alter_subreg (temp);
     }
 
@@ -1209,11 +1209,11 @@ emit_move_sequence (operands, mode, scratch_reg)
 	   && GET_CODE (SUBREG_REG (operand1)) == REG
 	   && REGNO (SUBREG_REG (operand1)) >= FIRST_PSEUDO_REGISTER)
     {
-     /* We must not alter SUBREG_WORD (operand0) since that would confuse
+     /* We must not alter SUBREG_BYTE (operand0) since that would confuse
 	the code which tracks sets/uses for delete_output_reload.  */
       rtx temp = gen_rtx_SUBREG (GET_MODE (operand1),
 				 reg_equiv_mem [REGNO (SUBREG_REG (operand1))],
-				 SUBREG_WORD (operand1));
+				 SUBREG_BYTE (operand1));
       operand1 = alter_subreg (temp);
     }
 

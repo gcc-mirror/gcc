@@ -1220,11 +1220,11 @@ mention_regs (x)
 	  /* If reg_tick has been incremented more than once since
 	     reg_in_table was last set, that means that the entire
 	     register has been set before, so discard anything memorized
-	     for the entrire register, including all SUBREG expressions.  */
+	     for the entire register, including all SUBREG expressions.  */
 	  if (REG_IN_TABLE (i) != REG_TICK (i) - 1)
 	    remove_invalid_refs (i);
 	  else
-	    remove_invalid_subreg_refs (i, SUBREG_WORD (x), GET_MODE (x));
+	    remove_invalid_subreg_refs (i, SUBREG_BYTE (x), GET_MODE (x));
 	}
 
       REG_IN_TABLE (i) = REG_TICK (i);
@@ -2004,32 +2004,31 @@ remove_invalid_refs (regno)
       }
 }
 
-/* Likewise for a subreg with subreg_reg WORD and mode MODE.  */
+/* Likewise for a subreg with subreg_reg REGNO, subreg_byte OFFSET,
+   and mode MODE.  */
 static void
-remove_invalid_subreg_refs (regno, word, mode)
+remove_invalid_subreg_refs (regno, offset, mode)
      unsigned int regno;
-     unsigned int word;
+     unsigned int offset;
      enum machine_mode mode;
 {
   unsigned int i;
   struct table_elt *p, *next;
-  unsigned int end = word + (GET_MODE_SIZE (mode) - 1) / UNITS_PER_WORD;
+  unsigned int end = offset + (GET_MODE_SIZE (mode) - 1);
 
   for (i = 0; i < HASH_SIZE; i++)
     for (p = table[i]; p; p = next)
       {
-	rtx exp;
+	rtx exp = p->exp;
 	next = p->next_same_hash;
 
-	exp = p->exp;
-	if (GET_CODE (p->exp) != REG
+	if (GET_CODE (exp) != REG
 	    && (GET_CODE (exp) != SUBREG
 		|| GET_CODE (SUBREG_REG (exp)) != REG
 		|| REGNO (SUBREG_REG (exp)) != regno
-		|| (((SUBREG_WORD (exp)
-		      + (GET_MODE_SIZE (GET_MODE (exp)) - 1) / UNITS_PER_WORD)
-		     >= word)
-		    && SUBREG_WORD (exp) <= end))
+		|| (((SUBREG_BYTE (exp)
+		      + (GET_MODE_SIZE (GET_MODE (exp)) - 1)) >= offset)
+		    && SUBREG_BYTE (exp) <= end))
 	    && refers_to_regno_p (regno, regno + 1, p->exp, NULL_PTR))
 	  remove_from_table (p, i);
       }
@@ -2302,7 +2301,8 @@ canon_hash (x, mode)
 	if (GET_CODE (SUBREG_REG (x)) == REG)
 	  {
 	    hash += (((unsigned) SUBREG << 7)
-		     + REGNO (SUBREG_REG (x)) + SUBREG_WORD (x));
+		     + REGNO (SUBREG_REG (x))
+		     + (SUBREG_BYTE (x) / UNITS_PER_WORD));
 	    return hash;
 	  }
 	break;
@@ -3413,7 +3413,8 @@ fold_rtx (x, insn)
 	  if (GET_MODE_CLASS (mode) == MODE_INT
 	      && GET_MODE_SIZE (mode) == UNITS_PER_WORD
 	      && GET_MODE (SUBREG_REG (x)) != VOIDmode)
-	    new = operand_subword (folded_arg0, SUBREG_WORD (x), 0,
+	    new = operand_subword (folded_arg0,
+				   (SUBREG_BYTE (x) / UNITS_PER_WORD), 0,
 				   GET_MODE (SUBREG_REG (x)));
 	  if (new == 0 && subreg_lowpart_p (x))
 	    new = gen_lowpart_if_possible (mode, folded_arg0);
@@ -4393,10 +4394,12 @@ gen_lowpart_if_possible (mode, x)
 	offset = (MAX (GET_MODE_SIZE (GET_MODE (x)), UNITS_PER_WORD)
 		  - MAX (GET_MODE_SIZE (mode), UNITS_PER_WORD));
       if (BYTES_BIG_ENDIAN)
-	/* Adjust the address so that the address-after-the-data is
-	   unchanged.  */
-	offset -= (MIN (UNITS_PER_WORD, GET_MODE_SIZE (mode))
-		   - MIN (UNITS_PER_WORD, GET_MODE_SIZE (GET_MODE (x))));
+	{
+	  /* Adjust the address so that the address-after-the-data is
+	     unchanged.  */
+	  offset -= (MIN (UNITS_PER_WORD, GET_MODE_SIZE (mode))
+		     - MIN (UNITS_PER_WORD, GET_MODE_SIZE (GET_MODE (x))));
+	}
       new = gen_rtx_MEM (mode, plus_constant (XEXP (x, 0), offset));
       if (! memory_address_p (mode, XEXP (new, 0)))
 	return 0;

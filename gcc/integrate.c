@@ -1895,23 +1895,33 @@ copy_rtx_and_substitute (orig, map, for_lhs)
       copy = copy_rtx_and_substitute (SUBREG_REG (orig), map, for_lhs);
       /* SUBREG is ordinary, but don't make nested SUBREGs.  */
       if (GET_CODE (copy) == SUBREG)
-	return gen_rtx_SUBREG (GET_MODE (orig), SUBREG_REG (copy),
-			       SUBREG_WORD (orig) + SUBREG_WORD (copy));
+	{
+	  int final_offset = SUBREG_BYTE (orig) + SUBREG_BYTE (copy);
+
+	  /* When working with SUBREGs the rule is that the byte
+	     offset must be a multiple of the SUBREG's mode.  */
+	  final_offset = (final_offset / GET_MODE_SIZE (GET_MODE (orig)));
+	  final_offset = (final_offset * GET_MODE_SIZE (GET_MODE (orig)));
+	  return gen_rtx_SUBREG (GET_MODE (orig), SUBREG_REG (copy),
+				 final_offset);
+	}
       else if (GET_CODE (copy) == CONCAT)
 	{
 	  rtx retval = subreg_realpart_p (orig) ? XEXP (copy, 0) : XEXP (copy, 1);
+	  int final_offset;
 
 	  if (GET_MODE (retval) == GET_MODE (orig))
 	    return retval;
-	  else
-	    return gen_rtx_SUBREG (GET_MODE (orig), retval,
-				   (SUBREG_WORD (orig) %
-				    (GET_MODE_UNIT_SIZE (GET_MODE (SUBREG_REG (orig)))
-				     / (unsigned) UNITS_PER_WORD)));
+	  
+	  final_offset = SUBREG_BYTE (orig) %
+	  		 GET_MODE_UNIT_SIZE (GET_MODE (SUBREG_REG (orig)));
+	  final_offset = (final_offset / GET_MODE_SIZE (GET_MODE (orig)));
+	  final_offset = (final_offset * GET_MODE_SIZE (GET_MODE (orig)));
+	  return gen_rtx_SUBREG (GET_MODE (orig), retval, final_offset);
 	}
       else
 	return gen_rtx_SUBREG (GET_MODE (orig), copy,
-			       SUBREG_WORD (orig));
+			       SUBREG_BYTE (orig));
 
     case ADDRESSOF:
       copy = gen_rtx_ADDRESSOF (mode,
@@ -2397,8 +2407,8 @@ subst_constants (loc, insn, map, memonly)
 	  if (GET_MODE_CLASS (GET_MODE (x)) == MODE_INT
 	      && GET_MODE_SIZE (GET_MODE (x)) == UNITS_PER_WORD
 	      && GET_MODE (SUBREG_REG (x)) != VOIDmode)
-	    new = operand_subword (inner, SUBREG_WORD (x), 0,
-				   GET_MODE (SUBREG_REG (x)));
+	    new = operand_subword (inner, SUBREG_BYTE (x) / UNITS_PER_WORD,
+				   0, GET_MODE (SUBREG_REG (x)));
 
 	  cancel_changes (num_changes);
 	  if (new == 0 && subreg_lowpart_p (x))
@@ -2675,7 +2685,12 @@ mark_stores (dest, x, data)
     regno = REGNO (dest), mode = GET_MODE (dest);
   else if (GET_CODE (dest) == SUBREG && GET_CODE (SUBREG_REG (dest)) == REG)
     {
-      regno = REGNO (SUBREG_REG (dest)) + SUBREG_WORD (dest);
+      regno = REGNO (SUBREG_REG (dest));
+      if (regno < FIRST_PSEUDO_REGISTER)
+	regno += subreg_regno_offset (REGNO (SUBREG_REG (dest)),
+				      GET_MODE (SUBREG_REG (dest)),
+				      SUBREG_BYTE (dest),
+				      GET_MODE (dest));
       mode = GET_MODE (SUBREG_REG (dest));
     }
 

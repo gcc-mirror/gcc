@@ -487,18 +487,21 @@ mark_set_regs (reg, setter, data)
 {
   register int regno, endregno, i;
   enum machine_mode mode = GET_MODE (reg);
-  int word = 0;
 
   if (GET_CODE (reg) == SUBREG)
     {
-      word = SUBREG_WORD (reg);
-      reg = SUBREG_REG (reg);
-    }
+      rtx inner = SUBREG_REG (reg);
+      if (GET_CODE (inner) != REG || REGNO (inner) >= FIRST_PSEUDO_REGISTER)
+	return;
 
-  if (GET_CODE (reg) != REG || REGNO (reg) >= FIRST_PSEUDO_REGISTER)
+      regno = subreg_hard_regno (reg, 1);
+    }
+  else if (GET_CODE (reg) == REG
+	   && REGNO (reg) < FIRST_PSEUDO_REGISTER)
+    regno = REGNO (reg);
+  else
     return;
 
-  regno = REGNO (reg) + word;
   endregno = regno + HARD_REGNO_NREGS (regno, mode);
 
   for (i = regno; i < endregno; i++)
@@ -517,21 +520,24 @@ add_stored_regs (reg, setter, data)
 {
   register int regno, endregno, i;
   enum machine_mode mode = GET_MODE (reg);
-  int word = 0;
+  int offset = 0;
 
   if (GET_CODE (setter) == CLOBBER)
     return;
 
-  while (GET_CODE (reg) == SUBREG)
+  if (GET_CODE (reg) == SUBREG && GET_CODE (SUBREG_REG (reg)) == REG)
     {
-      word += SUBREG_WORD (reg);
+      offset = subreg_regno_offset (REGNO (SUBREG_REG (reg)),
+				    GET_MODE (SUBREG_REG (reg)),
+				    SUBREG_BYTE (reg),
+				    GET_MODE (reg));
       reg = SUBREG_REG (reg);
     }
 
   if (GET_CODE (reg) != REG || REGNO (reg) >= FIRST_PSEUDO_REGISTER)
     return;
 
-  regno = REGNO (reg) + word;
+  regno = REGNO (reg) + offset;
   endregno = regno + HARD_REGNO_NREGS (regno, mode);
 
   for (i = regno; i < endregno; i++)

@@ -340,7 +340,7 @@ single_insn_src_p (op, mode)
       return 1;
 
     case SUBREG:
-      if (SUBREG_WORD (op) != 0)
+      if (SUBREG_BYTE (op) != 0)
 	return 0;
       return single_insn_src_p (SUBREG_REG (op), mode);
 

@@ -1739,12 +1739,12 @@ m68hc11_gen_lowpart (mode, x)
     return gen_rtx (REG, mode, HARD_B_REGNUM);
 
   /* gen_lowpart crashes when it is called with a SUBREG.  */
-  if (GET_CODE (x) == SUBREG && SUBREG_WORD (x) != 0)
+  if (GET_CODE (x) == SUBREG && SUBREG_BYTE (x) != 0)
     {
       if (mode == SImode)
-	return gen_rtx_SUBREG (mode, SUBREG_REG (x), SUBREG_WORD (x) + 2);
+	return gen_rtx_SUBREG (mode, SUBREG_REG (x), SUBREG_BYTE (x) + 2);
       else if (mode == HImode)
-	return gen_rtx_SUBREG (mode, SUBREG_REG (x), SUBREG_WORD (x) + 1);
+	return gen_rtx_SUBREG (mode, SUBREG_REG (x), SUBREG_BYTE (x) + 1);
       else
 	abort ();
     }
@@ -1844,7 +1844,7 @@ m68hc11_gen_highpart (mode, x)
     }
 
   /* gen_highpart crashes when it is called with a SUBREG.  */
-  if (GET_CODE (x) == SUBREG && SUBREG_WORD (x) != 0)
+  if (GET_CODE (x) == SUBREG && SUBREG_BYTE (x) != 0)
     {
       return gen_rtx (SUBREG, mode, XEXP (x, 0), XEXP (x, 1));
     }

@@ -24,12 +24,28 @@ Boston, MA 02111-1307, USA.  */
 
 #define REG_BYTES(R) mode_size[(int) GET_MODE (R)]
 
-/* Get the number of consecutive hard regs required to hold the REG rtx R.
+/* Get the number of consecutive hard regs required to hold the REG or
+   SUBREG rtx R.
    When something may be an explicit hard reg, REG_SIZE is the only
-   valid way to get this value.  You cannot get it from the regno.  */
+   valid way to get this value.  You cannot get it from the regno.
 
+   A target may override this definition, the case where you would do
+   this is where there are registers which are smaller than WORD_SIZE
+   such as the SFmode registers on sparc64.  */
+
+#ifndef REG_SIZE
 #define REG_SIZE(R) \
   ((mode_size[(int) GET_MODE (R)] + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
+#endif
+
+/* When you only have the mode of a pseudo register before it has a hard
+   register chosen for it, this reports the size of each hard register
+   a pseudo in such a mode would get allocated to.  Like REG_SIZE, a
+   target may override this.  */
+
+#ifndef REGMODE_NATURAL_SIZE
+#define REGMODE_NATURAL_SIZE(MODE)	UNITS_PER_WORD
+#endif
 
 #ifndef SMALL_REGISTER_CLASSES
 #define SMALL_REGISTER_CLASSES 0

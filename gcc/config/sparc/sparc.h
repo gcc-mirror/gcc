@@ -1146,25 +1146,34 @@ while (0)
        : (GET_MODE_SIZE (MODE) + 3) / 4)				\
    : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
 
-/* A subreg in 64 bit mode will have the wrong offset for a floating point
-   register.  The least significant part is at offset 1, compared to 0 for
-   integer registers.  This only applies when FMODE is a larger mode.
-   We also need to handle a special case of TF-->DF conversions.  */
-#define ALTER_HARD_SUBREG(TMODE, WORD, FMODE, REGNO)			\
-     (TARGET_ARCH64							\
-      && (REGNO) >= SPARC_FIRST_FP_REG					\
-      && (REGNO) <= SPARC_LAST_V9_FP_REG				\
-      && (TMODE) == SImode						\
-      && !((FMODE) == QImode || (FMODE) == HImode)			\
-      ? ((REGNO) + 1)							\
-      : ((TMODE) == DFmode && (FMODE) == TFmode)			\
-        ? ((REGNO) + ((WORD) * 2))					\
-        : ((REGNO) + (WORD)))
+/* Due to the ARCH64 descrepancy above we must override these
+   next two macros too.  */
+#define REG_SIZE(R) \
+  (TARGET_ARCH64							\
+   && ((GET_CODE (R) == REG						\
+        && ((REGNO (R) >= FIRST_PSEUDO_REGISTER				\
+	     && FLOAT_MODE_P (GET_MODE (R)))				\
+	    || (REGNO (R) < FIRST_PSEUDO_REGISTER			\
+		&& REGNO (R) >= 32)))					\
+       || (GET_CODE (R) == SUBREG					\
+	   && ((REGNO (SUBREG_REG (R)) >= FIRST_PSEUDO_REGISTER		\
+	     && FLOAT_MODE_P (GET_MODE (SUBREG_REG (R))))		\
+	    || (REGNO (SUBREG_REG (R)) < FIRST_PSEUDO_REGISTER		\
+		&& REGNO (SUBREG_REG (R)) >= 32))))			\
+   ? (GET_MODE_SIZE (GET_MODE (R)) + 3) / 4				\
+   : (GET_MODE_SIZE (GET_MODE (R)) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
+
+#define REGMODE_NATURAL_SIZE(MODE) \
+  ((TARGET_ARCH64 && FLOAT_MODE_P (MODE)) ? 4 : UNITS_PER_WORD)
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
    See sparc.c for how we initialize this.  */
 extern int *hard_regno_mode_classes;
 extern int sparc_mode_class[];
+
+/* ??? Because of the funny way we pass parameters we should allow certain
+   ??? types of float/complex values to be in integer registers during
+   ??? RTL generation.  This only matters on arch32.  */
 #define HARD_REGNO_MODE_OK(REGNO, MODE) \
   ((hard_regno_mode_classes[REGNO] & sparc_mode_class[MODE]) != 0)
 

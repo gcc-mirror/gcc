@@ -4546,15 +4546,17 @@
 {
   rtx temp = gen_reg_rtx (SImode);
   rtx shift_16 = GEN_INT (16);
-  int op1_subword = 0;
+  int op1_subbyte = 0;
 
   if (GET_CODE (operand1) == SUBREG)
     {
-      op1_subword = SUBREG_WORD (operand1);
+      op1_subbyte = SUBREG_BYTE (operand1);
+      op1_subbyte /= GET_MODE_SIZE (SImode);
+      op1_subbyte *= GET_MODE_SIZE (SImode);
       operand1 = XEXP (operand1, 0);
     }
 
-  emit_insn (gen_ashlsi3 (temp, gen_rtx_SUBREG (SImode, operand1, op1_subword),
+  emit_insn (gen_ashlsi3 (temp, gen_rtx_SUBREG (SImode, operand1, op1_subbyte),
 			  shift_16));
   emit_insn (gen_lshrsi3 (operand0, temp, shift_16));
   DONE;
@@ -4624,15 +4626,17 @@
 {
   rtx temp = gen_reg_rtx (DImode);
   rtx shift_48 = GEN_INT (48);
-  int op1_subword = 0;
+  int op1_subbyte = 0;
 
   if (GET_CODE (operand1) == SUBREG)
     {
-      op1_subword = SUBREG_WORD (operand1);
+      op1_subbyte = SUBREG_BYTE (operand1);
+      op1_subbyte /= GET_MODE_SIZE (DImode);
+      op1_subbyte *= GET_MODE_SIZE (DImode);
       operand1 = XEXP (operand1, 0);
     }
 
-  emit_insn (gen_ashldi3 (temp, gen_rtx_SUBREG (DImode, operand1, op1_subword),
+  emit_insn (gen_ashldi3 (temp, gen_rtx_SUBREG (DImode, operand1, op1_subbyte),
 			  shift_48));
   emit_insn (gen_lshrdi3 (operand0, temp, shift_48));
   DONE;
@@ -4794,7 +4798,7 @@
 
 (define_insn "*cmp_siqi_trunc"
   [(set (reg:CC 100)
-	(compare:CC (subreg:QI (match_operand:SI 0 "register_operand" "r") 0)
+	(compare:CC (subreg:QI (match_operand:SI 0 "register_operand" "r") 3)
 		    (const_int 0)))]
   ""
   "andcc\\t%0, 0xff, %%g0"
@@ -4803,10 +4807,10 @@
 
 (define_insn "*cmp_siqi_trunc_set"
   [(set (reg:CC 100)
-	(compare:CC (subreg:QI (match_operand:SI 1 "register_operand" "r") 0)
+	(compare:CC (subreg:QI (match_operand:SI 1 "register_operand" "r") 3)
 		    (const_int 0)))
    (set (match_operand:QI 0 "register_operand" "=r")
-	(subreg:QI (match_dup 1) 0))]
+	(subreg:QI (match_dup 1) 3))]
   ""
   "andcc\\t%1, 0xff, %0"
   [(set_attr "type" "compare")
@@ -4814,7 +4818,7 @@
 
 (define_insn "*cmp_diqi_trunc"
   [(set (reg:CC 100)
-	(compare:CC (subreg:QI (match_operand:DI 0 "register_operand" "r") 0)
+	(compare:CC (subreg:QI (match_operand:DI 0 "register_operand" "r") 7)
 		    (const_int 0)))]
   "TARGET_ARCH64"
   "andcc\\t%0, 0xff, %%g0"
@@ -4823,10 +4827,10 @@
 
 (define_insn "*cmp_diqi_trunc_set"
   [(set (reg:CC 100)
-	(compare:CC (subreg:QI (match_operand:DI 1 "register_operand" "r") 0)
+	(compare:CC (subreg:QI (match_operand:DI 1 "register_operand" "r") 7)
 		    (const_int 0)))
    (set (match_operand:QI 0 "register_operand" "=r")
-	(subreg:QI (match_dup 1) 0))]
+	(subreg:QI (match_dup 1) 7))]
   "TARGET_ARCH64"
   "andcc\\t%1, 0xff, %0"
   [(set_attr "type" "compare")
@@ -4846,15 +4850,17 @@
 {
   rtx temp = gen_reg_rtx (SImode);
   rtx shift_16 = GEN_INT (16);
-  int op1_subword = 0;
+  int op1_subbyte = 0;
 
   if (GET_CODE (operand1) == SUBREG)
     {
-      op1_subword = SUBREG_WORD (operand1);
+      op1_subbyte = SUBREG_BYTE (operand1);
+      op1_subbyte /= GET_MODE_SIZE (SImode);
+      op1_subbyte *= GET_MODE_SIZE (SImode);
       operand1 = XEXP (operand1, 0);
     }
 
-  emit_insn (gen_ashlsi3 (temp, gen_rtx_SUBREG (SImode, operand1, op1_subword),
+  emit_insn (gen_ashlsi3 (temp, gen_rtx_SUBREG (SImode, operand1, op1_subbyte),
 			  shift_16));
   emit_insn (gen_ashrsi3 (operand0, temp, shift_16));
   DONE;
@@ -4876,23 +4882,27 @@
 {
   rtx temp = gen_reg_rtx (SImode);
   rtx shift_24 = GEN_INT (24);
-  int op1_subword = 0;
-  int op0_subword = 0;
+  int op1_subbyte = 0;
+  int op0_subbyte = 0;
 
   if (GET_CODE (operand1) == SUBREG)
     {
-      op1_subword = SUBREG_WORD (operand1);
+      op1_subbyte = SUBREG_BYTE (operand1);
+      op1_subbyte /= GET_MODE_SIZE (SImode);
+      op1_subbyte *= GET_MODE_SIZE (SImode);
       operand1 = XEXP (operand1, 0);
     }
   if (GET_CODE (operand0) == SUBREG)
     {
-      op0_subword = SUBREG_WORD (operand0);
+      op0_subbyte = SUBREG_BYTE (operand0);
+      op0_subbyte /= GET_MODE_SIZE (SImode);
+      op0_subbyte *= GET_MODE_SIZE (SImode);
       operand0 = XEXP (operand0, 0);
     }
-  emit_insn (gen_ashlsi3 (temp, gen_rtx_SUBREG (SImode, operand1, op1_subword),
+  emit_insn (gen_ashlsi3 (temp, gen_rtx_SUBREG (SImode, operand1, op1_subbyte),
 			  shift_24));
   if (GET_MODE (operand0) != SImode)
-    operand0 = gen_rtx_SUBREG (SImode, operand0, op0_subword);
+    operand0 = gen_rtx_SUBREG (SImode, operand0, op0_subbyte);
   emit_insn (gen_ashrsi3 (operand0, temp, shift_24));
   DONE;
 }")
@@ -4913,15 +4923,17 @@
 {
   rtx temp = gen_reg_rtx (SImode);
   rtx shift_24 = GEN_INT (24);
-  int op1_subword = 0;
+  int op1_subbyte = 0;
 
   if (GET_CODE (operand1) == SUBREG)
     {
-      op1_subword = SUBREG_WORD (operand1);
+      op1_subbyte = SUBREG_BYTE (operand1);
+      op1_subbyte /= GET_MODE_SIZE (SImode);
+      op1_subbyte *= GET_MODE_SIZE (SImode);
       operand1 = XEXP (operand1, 0);
     }
 
-  emit_insn (gen_ashlsi3 (temp, gen_rtx_SUBREG (SImode, operand1, op1_subword),
+  emit_insn (gen_ashlsi3 (temp, gen_rtx_SUBREG (SImode, operand1, op1_subbyte),
 			  shift_24));
   emit_insn (gen_ashrsi3 (operand0, temp, shift_24));
   DONE;
@@ -4943,15 +4955,17 @@
 {
   rtx temp = gen_reg_rtx (DImode);
   rtx shift_56 = GEN_INT (56);
-  int op1_subword = 0;
+  int op1_subbyte = 0;
 
   if (GET_CODE (operand1) == SUBREG)
     {
-      op1_subword = SUBREG_WORD (operand1);
+      op1_subbyte = SUBREG_BYTE (operand1);
+      op1_subbyte /= GET_MODE_SIZE (DImode);
+      op1_subbyte *= GET_MODE_SIZE (DImode);
       operand1 = XEXP (operand1, 0);
     }
 
-  emit_insn (gen_ashldi3 (temp, gen_rtx_SUBREG (DImode, operand1, op1_subword),
+  emit_insn (gen_ashldi3 (temp, gen_rtx_SUBREG (DImode, operand1, op1_subbyte),
 			  shift_56));
   emit_insn (gen_ashrdi3 (operand0, temp, shift_56));
   DONE;
@@ -4973,15 +4987,17 @@
 {
   rtx temp = gen_reg_rtx (DImode);
   rtx shift_48 = GEN_INT (48);
-  int op1_subword = 0;
+  int op1_subbyte = 0;
 
   if (GET_CODE (operand1) == SUBREG)
     {
-      op1_subword = SUBREG_WORD (operand1);
+      op1_subbyte = SUBREG_BYTE (operand1);
+      op1_subbyte /= GET_MODE_SIZE (DImode);
+      op1_subbyte *= GET_MODE_SIZE (DImode);
       operand1 = XEXP (operand1, 0);
     }
 
-  emit_insn (gen_ashldi3 (temp, gen_rtx_SUBREG (DImode, operand1, op1_subword),
+  emit_insn (gen_ashldi3 (temp, gen_rtx_SUBREG (DImode, operand1, op1_subbyte),
 			  shift_48));
   emit_insn (gen_ashrdi3 (operand0, temp, shift_48));
   DONE;
@@ -6275,7 +6291,7 @@
 	  (mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand" "r,r"))
 		   (sign_extend:DI (match_operand:SI 2 "register_operand" "r,r")))
 	  (match_operand:SI 3 "const_int_operand" "i,i"))
-	 1))
+	 4))
    (clobber (match_scratch:SI 4 "=X,&h"))]
   "TARGET_V8PLUS"
   "@
@@ -8346,7 +8362,7 @@
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(ashiftrt:SI (subreg:SI (lshiftrt:DI (match_operand:DI 1 "register_operand" "r")
-					     (const_int 32)) 0)
+					     (const_int 32)) 4)
 		     (match_operand:SI 2 "small_int_or_double" "n")))]
   "TARGET_ARCH64
    && ((GET_CODE (operands[2]) == CONST_INT
@@ -8366,7 +8382,7 @@
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(lshiftrt:SI (subreg:SI (ashiftrt:DI (match_operand:DI 1 "register_operand" "r")
-					     (const_int 32)) 0)
+					     (const_int 32)) 4)
 		     (match_operand:SI 2 "small_int_or_double" "n")))]
   "TARGET_ARCH64
    && ((GET_CODE (operands[2]) == CONST_INT
@@ -8386,7 +8402,7 @@
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(ashiftrt:SI (subreg:SI (ashiftrt:DI (match_operand:DI 1 "register_operand" "r")
-					     (match_operand:SI 2 "small_int_or_double" "n")) 0)
+					     (match_operand:SI 2 "small_int_or_double" "n")) 4)
 		     (match_operand:SI 3 "small_int_or_double" "n")))]
   "TARGET_ARCH64
    && GET_CODE (operands[2]) == CONST_INT && GET_CODE (operands[3]) == CONST_INT
@@ -8405,7 +8421,7 @@
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(lshiftrt:SI (subreg:SI (lshiftrt:DI (match_operand:DI 1 "register_operand" "r")
-					     (match_operand:SI 2 "small_int_or_double" "n")) 0)
+					     (match_operand:SI 2 "small_int_or_double" "n")) 4)
 		     (match_operand:SI 3 "small_int_or_double" "n")))]
   "TARGET_ARCH64
    && GET_CODE (operands[2]) == CONST_INT && GET_CODE (operands[3]) == CONST_INT

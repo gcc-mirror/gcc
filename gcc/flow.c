@@ -3088,7 +3088,7 @@ set_noop_p (set)
 
   if (GET_CODE (src) == SUBREG && GET_CODE (dst) == SUBREG)
     {
-      if (SUBREG_WORD (src) != SUBREG_WORD (dst))
+      if (SUBREG_BYTE (src) != SUBREG_BYTE (dst))
 	return 0;
       src = SUBREG_REG (src);
       dst = SUBREG_REG (dst);
@@ -4669,12 +4669,9 @@ mark_set_1 (pbi, code, reg, cond, insn, flags)
 	  regno_last = regno_first = REGNO (SUBREG_REG (reg));
 	  if (regno_first < FIRST_PSEUDO_REGISTER)
 	    {
-#ifdef ALTER_HARD_SUBREG
-	      regno_first = ALTER_HARD_SUBREG (outer_mode, SUBREG_WORD (reg),
-					       inner_mode, regno_first);
-#else
-	      regno_first += SUBREG_WORD (reg);
-#endif
+	      regno_first += subreg_regno_offset (regno_first, inner_mode,
+	      					  SUBREG_BYTE (reg),
+	      					  outer_mode);
 	      regno_last = (regno_first
 			    + HARD_REGNO_NREGS (regno_first, outer_mode) - 1);
 

@@ -7494,8 +7494,8 @@ ultra_find_type (type_mask, list, start)
 				  && GET_CODE (SET_SRC (pat)) == SUBREG
 				  && REGNO (SUBREG_REG (SET_DEST (slot_pat))) ==
 				       REGNO (SUBREG_REG (SET_SRC (pat)))
-				  && SUBREG_WORD (SET_DEST (slot_pat)) ==
-				       SUBREG_WORD (SET_SRC (pat)))))
+				  && SUBREG_BYTE (SET_DEST (slot_pat)) ==
+				       SUBREG_BYTE (SET_SRC (pat)))))
 		      || (check_fpmode_conflict == 1
 			  && GET_CODE (slot_insn) == INSN
 			  && GET_CODE (slot_pat) == SET
