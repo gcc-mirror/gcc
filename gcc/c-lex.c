@@ -1,5 +1,5 @@
 /* Lexical analyzer for C and Objective C.
-   Copyright (C) 1987, 88, 89, 92, 94-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92, 94-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
