@@ -275,6 +275,22 @@ toc_section ()						\
 /* Function name to call to do profiling.  */
 #define RS6000_MCOUNT ".__mcount"
 
+/* Function names to call to do floating point truncation.  */
+
+#define RS6000_ITRUNC "__itrunc"
+#define RS6000_UITRUNC "__uitrunc"
+
+/* Optabs entries for the int->float routines, using the standard
+   AIX names.  */
+#define INIT_TARGET_OPTABS						\
+  do {									\
+    if (! TARGET_POWER2 && ! TARGET_POWERPC && TARGET_HARD_FLOAT)	\
+      {									\
+	fixdfsi_libfunc = init_one_libfunc (RS6000_ITRUNC);		\
+	fixunsdfsi_libfunc = init_one_libfunc (RS6000_UITRUNC);		\
+      }									\
+  } while (0)
+
 /* AIX always has a TOC.  */
 #define TARGET_NO_TOC		0
 #define	TARGET_TOC		1

@@ -2302,17 +2302,6 @@ do {									     \
 
 extern struct rtx_def *rs6000_compare_op0, *rs6000_compare_op1;
 extern int rs6000_compare_fp_p;
-
-/* Set to non-zero by "fix" operation to indicate that itrunc and
-   uitrunc must be defined.  */
-
-extern int rs6000_trunc_used;
-
-/* Function names to call to do floating point truncation.  */
-
-#define RS6000_ITRUNC "__itrunc"
-#define RS6000_UITRUNC "__uitrunc"
-
 
 /* Control the assembler format that we output.  */
 

@@ -1,3 +1,22 @@
+2000-09-10  Geoff Keating  <geoffk@cygnus.com>
+
+	* config/rs6000/aix.h (RS6000_ITRUNC): Moved from rs6000.h.
+	(RS6000_UITRUNC): Likewise.
+	(INIT_TARGET_OPTABS): New macro.
+	* config/rs6000/rs6000.c (rs6000_trunc_used): Delete.
+	(trunc_defined): Delete.
+	(output_prolog): Don't output .extern definitions for fp->int
+	conversion routines, ASM_OUTPUT_EXTERNAL_LIBCALL will do it.
+	* config/rs6000/rs6000.h (rs6000_trunc_used): Delete.
+	(trunc_defined): Delete.
+	(RS6000_ITRUNC): Moved to aix.h.
+	(RS6000_UITRUNC): Likewise.
+	* config/rs6000/rs6000.md (fix_truncdfsi2): Fail if it would
+	only emit a libcall.
+	(fixuns_truncdfsi2): Delete.
+	(trunc_call): Delete.
+	(trunc_call_rtl): Delete.
+
 2000-09-10  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* varasm.c (make_decl_rtl): Restore leading star on
