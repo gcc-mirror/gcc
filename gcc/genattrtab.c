@@ -3711,6 +3711,7 @@ find_and_mark_used_attributes (exp, terms, nterms)
 	  MEM_VOLATILE_P (exp) = 1;
 	}
     case CONST_STRING:
+    case CONST_INT:
       return 1;
 
     case IF_THEN_ELSE:
@@ -3780,7 +3781,7 @@ add_values_to_cover (dim)
     abort ();
   else if (nalt == dim->num_values)
     ; /* Ok.  */
-  else if (nalt * 2 >= dim->num_values)
+  else if (nalt * 2 < dim->num_values * 3)
     {
       /* Most all the values of the attribute are used, so add all the unused
 	 values.  */
@@ -3916,6 +3917,7 @@ simplify_with_current_value_aux (exp)
       else
 	return true_rtx;
     case CONST_STRING:
+    case CONST_INT:
       return exp;
 
     case IF_THEN_ELSE:
