@@ -48,7 +48,8 @@ check-script-install: $(top_builddir)/mkcheck
 doxygen:
 	-(srcdir=`cd ${top_srcdir}; pwd`; \
 	  outdir=`pwd`; \
-	  ${srcdir}/docs/doxygen/run_doxygen --mode=user $${srcdir} $${outdir})
+	  /bin/sh ${srcdir}/docs/doxygen/run_doxygen \
+	            --mode=user $${srcdir} $${outdir})
 
 doxygen-maint:
 	-(srcdir=`cd ${top_srcdir}; pwd`; \
