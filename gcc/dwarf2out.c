@@ -11291,7 +11291,7 @@ gen_label_die (decl, context_die)
       insn = DECL_RTL (decl);
 
       /* Deleted labels are programmer specified labels which have been
-	 eliminated because of various optimisations.  We still emit them
+	 eliminated because of various optimizations.  We still emit them
 	 here so that it is possible to put breakpoints on them.  */
       if (GET_CODE (insn) == CODE_LABEL
 	  || ((GET_CODE (insn) == NOTE

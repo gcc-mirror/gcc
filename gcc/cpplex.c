@@ -192,7 +192,7 @@ warn_in_comment (pfile, note)
 
   /* Within comments we don't warn about trigraphs, unless the
      trigraph forms an escaped newline, as that may change
-     behaviour.  */
+     behavior.  */
   if (note->type != '/')
     return false;
 
@@ -710,7 +710,7 @@ _cpp_lex_token (pfile)
 
       /* Outside a directive, invalidate controlling macros.  At file
 	 EOF, _cpp_lex_direct takes care of popping the buffer, so we never
-	 get here and MI optimisation works.  */
+	 get here and MI optimization works.  */
       pfile->mi_valid = false;
 
       if (!pfile->state.skipping || result->type == CPP_EOF)

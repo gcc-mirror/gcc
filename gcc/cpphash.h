@@ -343,7 +343,7 @@ struct cpp_reader
   struct cpp_path *quote_include;	/* "" */
   struct cpp_path *bracket_include;	/* <> */
 
-  /* Multiple include optimisation.  */
+  /* Multiple include optimization.  */
   const cpp_hashnode *mi_cmacro;
   const cpp_hashnode *mi_ind_cmacro;
   bool mi_valid;

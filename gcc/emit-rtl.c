@@ -351,7 +351,7 @@ reg_attrs_htab_hash (x)
   return ((p->offset * 1000) ^ (long) p->decl);
 }
 
-/* Returns non-zero if the value represented by X (which is really a
+/* Returns nonzero if the value represented by X (which is really a
    reg_attrs *) is the same as that given by Y (which is also really a
    reg_attrs *).  */
 

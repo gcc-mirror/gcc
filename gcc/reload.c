@@ -4887,7 +4887,7 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels, insn)
      of it.
 
      Handle all base registers here, not just fp/ap/sp, because on some
-     targets (namely Sparc) we can also get invalid addresses from preventive
+     targets (namely SPARC) we can also get invalid addresses from preventive
      subreg big-endian corrections made by find_reloads_toplev.
 
      If we decide to do something, it must be that `double_reg_address_ok'

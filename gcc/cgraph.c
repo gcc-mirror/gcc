@@ -71,7 +71,7 @@ hash_node (p)
 		       (((struct cgraph_node *) p)->decl));
 }
 
-/* Returns non-zero if P1 and P2 are equal.  */
+/* Returns nonzero if P1 and P2 are equal.  */
 
 static int
 eq_node (p1, p2)

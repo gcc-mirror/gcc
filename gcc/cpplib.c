@@ -1490,7 +1490,7 @@ do_ifndef (pfile)
 
 /* _cpp_parse_expr puts a macro in a "#if !defined ()" expression in
    pfile->mi_ind_cmacro so we can handle multiple-include
-   optimisations.  If macro expansion occurs in the expression, we
+   optimizations.  If macro expansion occurs in the expression, we
    cannot treat it as a controlling conditional, since the expansion
    could change in the future.  That is handled by cpp_get_token.  */
 static void

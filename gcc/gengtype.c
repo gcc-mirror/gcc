@@ -1654,7 +1654,7 @@ walk_type (type_p t, struct walk_type_data *d)
 	const char *oldval = d->val;
 	char *newval;
 
-	/* If it's an array of scalars, we optimise by not generating
+	/* If it's an array of scalars, we optimize by not generating
 	   any code.  */
 	if (t->u.a.p->kind == TYPE_SCALAR)
 	  break;

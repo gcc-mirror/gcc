@@ -147,8 +147,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
    This file is included by both the compiler, gcov tools and the
    runtime support library libgcov. IN_LIBGCOV and IN_GCOV are used to
-   distinguish which case is which.  If IN_LIBGCOV is non-zero,
-   libgcov is being built. If IN_GCOV is non-zero, the gcov tools are
+   distinguish which case is which.  If IN_LIBGCOV is nonzero,
+   libgcov is being built. If IN_GCOV is nonzero, the gcov tools are
    being built. Otherwise the compiler is being built. IN_GCOV may be
    positive or negative. If positive, we are compiling a tool that
    requires additional functions (see the code for knowledge of what
@@ -480,7 +480,7 @@ gcov_position (void)
   return gcov_var.start + gcov_var.offset;
 }
 
-/* Return non-zero if we read to end of file.  */
+/* Return nonzero if we read to end of file.  */
 
 static inline int
 gcov_is_eof ()
@@ -488,7 +488,7 @@ gcov_is_eof ()
   return !gcov_var.overread;
 }
 
-/* Return non-zero if the error flag is set.  */
+/* Return nonzero if the error flag is set.  */
 
 static inline int
 gcov_is_error ()

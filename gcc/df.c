@@ -149,7 +149,7 @@ Similarly, should the first entry in the use list be the last use
 4) Working with a sub-CFG.
 
 Often the whole CFG does not need to be analyzed, for example,
-when optimising a loop, only certain registers are of interest.
+when optimizing a loop, only certain registers are of interest.
 Perhaps there should be a bitmap argument to df_analyse to specify
 which registers should be analyzed?
 
@@ -885,7 +885,7 @@ df_ref_record (df, reg, loc, insn, ref_type, ref_flags)
 }
 
 
-/* Return non-zero if writes to paradoxical SUBREGs, or SUBREGs which
+/* Return nonzero if writes to paradoxical SUBREGs, or SUBREGs which
    are too narrow, are read-modify-write.  */
 bool
 read_modify_subreg_p (x)

@@ -1,3 +1,31 @@
+2003-06-12  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* ChangeLog: Follow spelling conventions.
+	* ChangeLog.2: Likewise.
+	* c-decl.c: Likewise.
+	* cfgloop.h: Likewise.
+	* cgraph.c: Likewise.
+	* coverage.c: Likewise.
+	* cppcharset.c: Likewise.
+	* cpphash.h: Likewise.
+	* cpplex.c: Likewise.
+	* cpplib.c: Likewise.
+	* dbxout.c: Likewise.
+	* df.c: Likewise.
+	* dwarf2out.c: Likewise.
+	* dwarfout.c: Likewise.
+	* emit-rtl.c: Likewise.
+	* explow.c: Likewise.
+	* gcov-io.c: Likewise.
+	* gcov-io.h: Likewise.
+	* gcov.c: Likewise.
+	* gengtype.c: Likewise.
+	* ggc.h: Likewise.
+	* opts.c: Likewise.
+	* real.c: Likewise.
+	* reload.c: Likewise.
+	* stmt.c: Likewise.
+
 2003-06-12  Janis Johnson  <janis187@us.ibm.com>
 
 	* doc/install.texi (m32r-*-elf): Change company to Renesas.
@@ -2420,7 +2448,7 @@ Fri May 23 21:19:31 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-05-21  Danny Smith  <dannysmith@users.sourceforge.net>
 
-	* gthr-win32.h (__GTHREAD_HIDE_WIN32API): Test for non-zero
+	* gthr-win32.h (__GTHREAD_HIDE_WIN32API): Test for nonzero
 	value, not just if defined.
 	Update copyright year.
 
@@ -5060,7 +5088,7 @@ Mon May 12 11:32:53 CEST 2003  Jan Hubicka  <jh@suse.cz>
 		%call* relocs if generating explicit-reloc PIC.  Don't generate
 		an exception_receiver pattern.
 		(override_options): Initialize mips_got_alias_set.
-		(print_relocation): Remove in favour of...
+		(print_relocation): Remove in favor of...
 		(mips_reloc_string): ...this new function.
 		(print_operand): Handle '%R'.  Use mips_reloc_string.
 		(print_operand_address): Use print_operand to print the symbolic
@@ -6459,7 +6487,7 @@ Sat Apr 19 14:56:17 CEST 2003  Jan Hubicka  <jh@suse.cz>
 2003-04-19  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* doc/invoke.texi (-fprofile-arcs): Mention -lgcov, locking and
-	fork behaviour.
+	fork behavior.
 
 2003-04-19  Neil Booth  <neil@daikokuya.co.uk>
 
@@ -7921,7 +7949,7 @@ Tue Apr  8 11:12:07 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	PR c/9516
 	* expr.c (safe_from_p): Rearrange to avoid deep recursion in
-	favour of looping and tail recursion for TREE_LIST and binops.
+	favor of looping and tail recursion for TREE_LIST and binops.
 
 2003-04-08  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
@@ -11463,7 +11491,7 @@ Mon Mar 24 20:03:03 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* function.c (STACK_ALIGNMENT_NEEDED): New macro.  Default to 1.
 	(assign_stack_local_1): Perform overall stack alignment only when
-	STACK_ALIGNMENT_NEEDED is non-zero.
+	STACK_ALIGNMENT_NEEDED is nonzero.
 	* doc/tm.texi (STACK_ALIGNMENT_NEEDED): Document.
 
 	* pa.c (compute_frame_size): Rename fsize to size.  Account for

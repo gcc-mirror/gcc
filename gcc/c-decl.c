@@ -1793,7 +1793,7 @@ pushdecl (x)
 }
 
 /* Record X as belonging to the global scope (C99 "file scope").
-   This is used only internally by the Objective C front end,
+   This is used only internally by the Objective-C front end,
    and is limited to its needs.  It will hork if there is _any_
    visible binding for X (not just a global one).  */
 tree

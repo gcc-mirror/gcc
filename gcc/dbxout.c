@@ -1804,7 +1804,7 @@ dbxout_type (type, full)
     }
 }
 
-/* Return non-zero if the given type represents an integer whose bounds
+/* Return nonzero if the given type represents an integer whose bounds
    should be printed in octal format.  */
 
 static bool

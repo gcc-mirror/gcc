@@ -3948,7 +3948,7 @@ output_label_die (arg)
       rtx insn = DECL_RTL (decl);
 
       /* Deleted labels are programmer specified labels which have been
-	 eliminated because of various optimisations.  We still emit them
+	 eliminated because of various optimizations.  We still emit them
 	 here so that it is possible to put breakpoints on them.  */
       if (GET_CODE (insn) == CODE_LABEL
 	  || ((GET_CODE (insn) == NOTE
@@ -5741,7 +5741,7 @@ dwarfout_file_scope_decl (decl, set_finalizing)
 	 normal built-in types for the language we are compiling, except
 	 in cases where the types in question are *not* DWARF fundamental
 	 types.  We make an exception in the case of non-fundamental types
-	 for the sake of objective C (and perhaps C++) because the GNU
+	 for the sake of Objective-C (and perhaps C++) because the GNU
 	 front-ends for these languages may in fact create certain "built-in"
 	 types which are (for example) RECORD_TYPEs.  In such cases, we
 	 really need to output these (non-fundamental) types because other

@@ -663,7 +663,7 @@ maybe_set_unchanging (ref, t)
      contents of the initializer.  Yes, this does eliminate a good fraction
      of the number of uses of RTX_UNCHANGING_P for a language like Ada.
      It also eliminates a good quantity of bugs.  Let this be incentive to
-     eliminate RTX_UNCHANGING_P entirely in favour of a more reliable
+     eliminate RTX_UNCHANGING_P entirely in favor of a more reliable
      solution, perhaps based on alias sets.  */
 
   if ((TREE_READONLY (t) && DECL_P (t)
