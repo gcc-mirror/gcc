@@ -916,6 +916,11 @@ dtors_section ()							\
 
 #define NO_DOLLAR_IN_LABEL
 
+/* Implicit library calls should use memcpy, not bcopy, etc.  They are 
+   faster on OpenServer libraries. */
+
+#define TARGET_MEM_FUNCTIONS
+
 /*
 Here comes some major hackery to get the crt stuff to compile properly.
 Since we can (and do) compile for both COFF and ELF environments, we
