@@ -644,7 +644,7 @@ struct lang_identifier
 };
 
 /* Macros for access to language-specific slots in an identifier.  */
-/* UNless specifide, each of these slots contains a DECL node or null.  */
+/* Unless specified, each of these slots contains a DECL node or null.  */
 
 /* This represents the value which the identifier has in the
    file-scope namespace.  */
