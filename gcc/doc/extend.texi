@@ -782,7 +782,7 @@ GCC implements taking the address of a nested function using a technique
 called @dfn{trampolines}.  A paper describing them is available as
 
 @noindent
-@uref{http://people.debian.org/~karlheg/Usenix88-lexic.pdf}.
+@uref{http://people.debian.org/~aaronl/Usenix88-lexic.pdf}.
 
 A nested function can jump to a label inherited from a containing
 function, provided the label was explicitly declared in the containing
