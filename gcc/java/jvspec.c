@@ -315,6 +315,13 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
 	      quote = argv[i];
 	      added -= 1;
 	    }
+	  else if (strcmp (argv[i], "-fsyntax-only") == 0
+		   || strcmp (argv[i], "--syntax-only") == 0)
+	    {
+	      library = 0;
+	      will_link = 0;
+	      continue;
+	    }
 	  else
 	    /* Pass other options through.  */
 	    continue;

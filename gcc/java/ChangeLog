@@ -1,3 +1,8 @@
+1999-02-23  Tom Tromey  <tromey@cygnus.com>
+
+	* jvspec.c (lang_specific_driver): Recognize -fsyntax-only and
+	disable linking in that case.
+
 1999-02-20  Tom Tromey  <tromey@cygnus.com>
 
 	* jcf.h (UTF8_GET): Mask first byte of 3-byte encoding with 0x0f,
