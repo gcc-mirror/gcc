@@ -14,7 +14,7 @@ This document is meant to describe some of the GNU Objective-C runtime
 features. It is not intended to teach you Objective-C, there are several
 resources on the Internet that present the language.  Questions and
 comments about this document to Ovidiu Predescu
-@code{<ovidiu@@cup.hp.com>}.
+@email{ovidiu@@cup.hp.com}.
 
 @menu
 * Executing code before main::  
