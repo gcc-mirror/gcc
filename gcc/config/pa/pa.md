@@ -44,7 +44,7 @@
 ;;
 ;; FIXME: Add 800 scheduling for completeness?
 
-(define_attr "cpu" "700,7100,7100LC" (const (symbol_ref "pa_cpu_attr")))
+(define_attr "cpu" "700,7100,7100LC,7200" (const (symbol_ref "pa_cpu_attr")))
 
 ;; Length (in # of insns).
 (define_attr "length" ""
@@ -213,9 +213,6 @@
 ;; floating point computations with non-floating point computations (fp loads
 ;; and stores are not fp computations).
 ;;
-;; As with the alpha we multiply the ready delay by two to encourage
-;; schedules which will allow the 7100/7150 to dual issue as many instructions
-;; as possible.
 
 ;; Memory. Disregarding Cache misses, memory loads take two cycles; stores also
 ;; take two cycles, during which no Dcache operations should be scheduled.
@@ -223,10 +220,10 @@
 ;; all have the same memory characteristics if one disregards cache misses.
 (define_function_unit "pa7100memory" 1 0
   (and (eq_attr "type" "load,fpload")
-       (eq_attr "cpu" "7100,7100LC")) 4 0)
+       (eq_attr "cpu" "7100,7100LC")) 2 0)
 (define_function_unit "pa7100memory" 1 0 
   (and (eq_attr "type" "store,fpstore")
-       (eq_attr "cpu" "7100,7100LC")) 4 4)
+       (eq_attr "cpu" "7100,7100LC")) 2 2)
 
 ;; The 7100/7150 has three floating-point units: ALU, MUL, and DIV.
 ;; Timings:
@@ -249,16 +246,16 @@
 
 (define_function_unit "pa7100fp_alu" 1 0
   (and (eq_attr "type" "fpcc,fpalu")
-       (eq_attr "cpu" "7100")) 4 2)
+       (eq_attr "cpu" "7100")) 2 1)
 (define_function_unit "pa7100fp_mpy" 1 0
   (and (eq_attr "type" "fpmulsgl,fpmuldbl")
-       (eq_attr "cpu" "7100")) 4 2)
+       (eq_attr "cpu" "7100")) 2 1)
 (define_function_unit "pa7100fp_div" 1 0
   (and (eq_attr "type" "fpdivsgl,fpsqrtsgl")
-       (eq_attr "cpu" "7100")) 16 16)
+       (eq_attr "cpu" "7100")) 8 8)
 (define_function_unit "pa7100fp_div" 1 0
   (and (eq_attr "type" "fpdivdbl,fpsqrtdbl")
-       (eq_attr "cpu" "7100")) 30 30)
+       (eq_attr "cpu" "7100")) 15 15)
 
 ;; To encourage dual issue we define function units corresponding to
 ;; the instructions which can be dual issued.    This is a rather crude
@@ -266,12 +263,12 @@
 (define_function_unit "pa7100flop" 1 1
   (and
     (eq_attr "type" "fpcc,fpalu,fpmulsgl,fpmuldbl,fpdivsgl,fpsqrtsgl,fpdivdbl,fpsqrtdbl")
-    (eq_attr "cpu" "7100,7100LC")) 2 2)
+    (eq_attr "cpu" "7100")) 1 1)
 
 (define_function_unit "pa7100nonflop" 1 1
   (and
     (eq_attr "type" "!fpcc,fpalu,fpmulsgl,fpmuldbl,fpdivsgl,fpsqrtsgl,fpdivdbl,fpsqrtdbl")
-    (eq_attr "cpu" "7100")) 2 2)
+    (eq_attr "cpu" "7100")) 1 1)
 
 
 ;; Memory subsystem works just like 7100/7150 (except for cache miss times which
@@ -305,41 +302,54 @@
 
 (define_function_unit "pa7100LCfp_alu" 1 0
   (and (eq_attr "type" "fpcc,fpalu")
-       (eq_attr "cpu" "7100LC")) 4 2)
+       (eq_attr "cpu" "7100LC,7200")) 2 1)
 (define_function_unit "pa7100LCfp_mpy" 1 0
   (and (eq_attr "type" "fpmulsgl")
-       (eq_attr "cpu" "7100LC")) 4 2)
+       (eq_attr "cpu" "7100LC,7200")) 2 1)
 (define_function_unit "pa7100LCfp_mpy" 1 0
   (and (eq_attr "type" "fpmuldbl")
-       (eq_attr "cpu" "7100LC")) 6 4)
+       (eq_attr "cpu" "7100LC,7200")) 3 2)
 (define_function_unit "pa7100LCfp_div" 1 0
   (and (eq_attr "type" "fpdivsgl,fpsqrtsgl")
-       (eq_attr "cpu" "7100LC")) 16 16)
+       (eq_attr "cpu" "7100LC,7200")) 8 8)
 (define_function_unit "pa7100LCfp_div" 1 0
   (and (eq_attr "type" "fpdivdbl,fpsqrtdbl")
-       (eq_attr "cpu" "7100LC")) 30 30)
+       (eq_attr "cpu" "7100LC,7200")) 15 15)
 
 ;; Define the various functional units for dual-issue.
-;; The 7100LC shares the generic "flop" unit specification with the 7100/7150.
 
-;; The 7100LC has two basic integer which allow dual issue of most integer
-;; instructions.  This needs further refinement to deal with the nullify,
-;; carry/borrow possible the ldw/ldw stw/stw special dual issue cases, and
-;; of course it needs to know about hte 2nd alu.
-(define_function_unit "pa7100LCnonflop" 1 1
+;; There's only one floating point unit.
+(define_function_unit "pa7100LCflop" 1 1
+  (and
+    (eq_attr "type" "fpcc,fpalu,fpmulsgl,fpmuldbl,fpdivsgl,fpsqrtsgl,fpdivdbl,fpsqrtdbl")
+    (eq_attr "cpu" "7100LC,7200")) 1 1)
+
+;; Shifts and memory ops actually execute in one of the integer
+;; ALUs, but we can't really model that.
+(define_function_unit "pa7100LCshiftmem" 1 1
+  (and
+    (eq_attr "type" "shift,nullshift,load,fpload,store,fpstore")
+    (eq_attr "cpu" "7100LC,7200")) 1 1)
+
+;; We have two basic ALUs.
+(define_function_unit "pa7100LCalu" 2 2
   (and
     (eq_attr "type" "!fpcc,fpalu,fpmulsgl,fpmuldbl,fpdivsgl,fpsqrtsgl,fpdivdbl,fpsqrtdbl,load,fpload,store,fpstore,shift,nullshift")
-    (eq_attr "cpu" "7100LC")) 2 2)
+   (eq_attr "cpu" "7100LC,7200")) 1 1)
 
-(define_function_unit "pa7100LCshifter" 1 1
-  (and
-    (eq_attr "type" "shift,nullshift")
-    (eq_attr "cpu" "7100LC")) 2 2)
+;; I don't have complete information on the PA7200; however, most of
+;; what I've heard makes it look like a 7100LC without the store-store
+;; penalty.  So that's how we'll model it.
 
-(define_function_unit "pa7100LCmem" 1 1
-  (and
-    (eq_attr "type" "load,fpload,store,fpstore")
-    (eq_attr "cpu" "7100LC")) 2 2)
+;; Memory. Disregarding Cache misses, memory loads and stores take
+;; two cycles.  Any special cases are handled in pa_adjust_cost.
+(define_function_unit "pa7200memory" 1 0
+  (and (eq_attr "type" "load,fpload,store,fpstore")
+       (eq_attr "cpu" "7200")) 2 0)
+
+;; I don't have detailed information on the PA7200 FP pipeline, so I
+;; treat it just like the 7100LC pipeline.
+;; Similarly for the multi-issue fake units.
 
 
 ;; Compare instructions.
