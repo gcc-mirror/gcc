@@ -1,3 +1,7 @@
+2004-10-03  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.md (<u>mulsidi3_32bit_r4000): Fix unsigned case.
+
 2004-10-03  Kazu Hirata  <kazu@cs.umass.edu>
 
 	PR tree-optimization/16632

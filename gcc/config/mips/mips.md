@@ -1418,7 +1418,7 @@
 		 (any_extend:DI (match_operand:SI 2 "register_operand" "d"))))
    (clobber (match_scratch:DI 3 "=x"))]
   "!TARGET_64BIT && TARGET_FIX_R4000"
-  "mult\t%1,%2\;mflo\t%L0;mfhi\t%M0"
+  "mult<u>\t%1,%2\;mflo\t%L0;mfhi\t%M0"
   [(set_attr "type" "imul")
    (set_attr "mode" "SI")
    (set_attr "length" "12")])
