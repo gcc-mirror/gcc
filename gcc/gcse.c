@@ -4935,7 +4935,7 @@ delete_null_pointer_checks (f)
     {
       /* Free storage allocated by find_basic_blocks.  */
       free_basic_block_vars (0);
-      return 0;
+      return;
     }
 
   /* We need predecessor/successor lists as well as pred/succ counts for

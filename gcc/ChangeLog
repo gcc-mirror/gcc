@@ -1,3 +1,7 @@
+Mon Oct 11 16:07:49 1999  Richard Henderson  <rth@cygnus.com>
+
+	* gcse.c (delete_null_pointer_checks): Returns void.
+
 Mon Oct 11 20:31:51 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* rtl.c (copy_rtx): Don't use accessor macros to copy fields.
