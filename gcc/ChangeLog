@@ -1,3 +1,19 @@
+2001-11-28  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.c: Tweak spacing for prototypes.
+	(LOSE_AND_RETURN): New macro.
+	(cris_operand_lossage): New function.
+	(cris_print_index, cris_print_base): Use cris_operand_lossage
+	rather than fatal_insn.
+	(cris_print_operand, cris_print_operand_address): Use
+	LOSE_AND_RETURN rather than fatal_insn and internal_error.
+	(cris_output_addr_const): Use LOSE_AND_RETURN and
+	output_operand_lossage rather than fatal_insn and internal_error
+	for valid but unexpected rtx expressions.
+
+	* config/cris/cris.c (cris_split_movdx): Don't call alter_subreg
+	for a SUBREG in src or dest, abort instead.
+
 2001-11-28  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* doc/passes.texi: Remove reference to c-dump.c. Update tree inlining
