@@ -1,3 +1,8 @@
+2000-01-18  Bryce McKinlay <bryce@albatross.co.nz>
+
+	* configure: Rebuilt.
+	* configure.in: Recognize --disable-interpreter.
+
 2000-01-18  Andrew Haley  <aph@cygnus.com>
 
 	* name-finder.cc (lookup): Check for dladdr function.

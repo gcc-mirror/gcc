@@ -76,6 +76,8 @@ AC_ARG_ENABLE(interpreter,
   if test "$enable_interpreter" = yes; then
     # This can also be set in configure.host.
     libgcj_interpreter=yes
+  elif test "$enable_interpreter" = no; then
+    libgcj_interpreter=no
   fi)
 
 if test "$libgcj_interpreter" = yes; then
