@@ -287,7 +287,7 @@ splay-tree.o: config.h $(INCDIR)/libiberty.h $(INCDIR)/splay-tree.h $(INCDIR)/an
 strerror.o: config.h $(INCDIR)/libiberty.h
 strsignal.o: config.h $(INCDIR)/libiberty.h
 xatexit.o: $(INCDIR)/libiberty.h
-xexit.o: $(INCDIR)/libiberty.h
+xexit.o: config.h $(INCDIR)/libiberty.h
 xmalloc.o: config.h $(INCDIR)/libiberty.h
 xmemdup.o: config.h $(INCDIR)/libiberty.h
 xstrdup.o: config.h $(INCDIR)/libiberty.h
