@@ -11,6 +11,7 @@ Please see the README before adding or changing entries in this file.
 Now, first:  DO NOT DO BROKEN FIXES (empty replacement fixes) */
 
 
+
 /*
  *  Purge some HP-UX 11 files that are only borken after they are "fixed".
  */
@@ -150,6 +151,169 @@ typedef char * va_list;
 \#endif /* __LINT__ */
 \#endif /*  !(defined(_VA_LIST) || defined(_VA_LIST_)) */
 \#endif /*  #ifndef __INT_VARARGS_H  */\n";
+};
+
+
+/*
+ *  Completely replace <sys/byteorder.h>; with a file that implements gcc's
+ *  optimized byteswapping.  Restricted to "SVR4" machines until either
+ *  it is shown to be safe to replace this file always, or we get bolder ;-)
+ */
+fix = {
+    hackname = AAB_svr4_replace_byteorder;
+#ifndef SVR5
+    mach = "*-*-sysv4*";
+    mach = "i[34567]86-*-sysv5*";
+    mach = "i[34567]86-*-udk*";
+    mach = "i[34567]86-*-solaris2.[0-4]";
+    mach = "powerpcle-*-solaris2.[0-4]";
+    mach = "sparc-*-solaris2.[0-4]";
+#endif /* SVR5 */
+    files    = sys/byteorder.h;
+    replace  = '#ifndef _SYS_BYTEORDER_H
+\#define _SYS_BYTEORDER_H
+
+/* Functions to convert `short\' and `long\' quantities from host byte order
+   to (internet) network byte order (i.e. big-endian).
+
+   Written by Ron Guilmette (rfg@ncd.com).
+
+   This isn\'t actually used by GCC.  It is installed by fixinc.svr4.
+
+   For big-endian machines these functions are essentially no-ops.
+
+   For little-endian machines, we define the functions using specialized
+   asm sequences in cases where doing so yields better code (e.g. i386).  */
+
+\#if !defined (__GNUC__) && !defined (__GNUG__)
+\#error You lose!  This file is only useful with GNU compilers.
+\#endif
+
+\#ifndef __BYTE_ORDER__
+/* Byte order defines.  These are as defined on UnixWare 1.1, but with
+   double underscores added at the front and back.  */
+\#define __LITTLE_ENDIAN__   1234
+\#define __BIG_ENDIAN__      4321
+\#define __PDP_ENDIAN__      3412
+\#endif
+
+\#ifdef __STDC__
+static __inline__ unsigned long htonl (unsigned long);
+static __inline__ unsigned short htons (unsigned int);
+static __inline__ unsigned long ntohl (unsigned long);
+static __inline__ unsigned short ntohs (unsigned int);
+\#endif /* defined (__STDC__) */
+
+\#if defined (__i386__)
+
+\#ifndef __BYTE_ORDER__
+\#define __BYTE_ORDER__ __LITTLE_ENDIAN__
+\#endif
+
+/* Convert a host long to a network long.  */
+
+/* We must use a new-style function definition, so that this will also
+   be valid for C++.  */
+static __inline__ unsigned long
+htonl (unsigned long __arg)
+{
+  register unsigned long __result;
+
+  __asm__ ("xchg%B0 %b0,%h0
+	ror%L0 $16,%0
+	xchg%B0 %b0,%h0" : "=q" (__result) : "0" (__arg));
+  return __result;
+}
+
+/* Convert a host short to a network short.  */
+
+static __inline__ unsigned short
+htons (unsigned int __arg)
+{
+  register unsigned short __result;
+
+  __asm__ ("xchg%B0 %b0,%h0" : "=q" (__result) : "0" (__arg));
+  return __result;
+}
+
+\#elif ((defined (__i860__) && !defined (__i860_big_endian__))	\
+       || defined (__ns32k__) || defined (__vax__)		\
+       || defined (__spur__) || defined (__arm__))
+
+\#ifndef __BYTE_ORDER__
+\#define __BYTE_ORDER__ __LITTLE_ENDIAN__
+\#endif
+
+/* For other little-endian machines, using C code is just as efficient as
+   using assembly code.  */
+
+/* Convert a host long to a network long.  */
+
+static __inline__ unsigned long
+htonl (unsigned long __arg)
+{
+  register unsigned long __result;
+
+  __result = (__arg >> 24) & 0x000000ff;
+  __result |= (__arg >> 8) & 0x0000ff00;
+  __result |= (__arg << 8) & 0x00ff0000;
+  __result |= (__arg << 24) & 0xff000000;
+  return __result;
+}
+
+/* Convert a host short to a network short.  */
+
+static __inline__ unsigned short
+htons (unsigned int __arg)
+{
+  register unsigned short __result;
+
+  __result = (__arg << 8) & 0xff00;
+  __result |= (__arg >> 8) & 0x00ff;
+  return __result;
+}
+
+\#else /* must be a big-endian machine */
+
+\#ifndef __BYTE_ORDER__
+\#define __BYTE_ORDER__ __BIG_ENDIAN__
+\#endif
+
+/* Convert a host long to a network long.  */
+
+static __inline__ unsigned long
+htonl (unsigned long __arg)
+{
+  return __arg;
+}
+
+/* Convert a host short to a network short.  */
+
+static __inline__ unsigned short
+htons (unsigned int __arg)
+{
+  return __arg;
+}
+
+\#endif /* big-endian */
+
+/* Convert a network long to a host long.  */
+
+static __inline__ unsigned long
+ntohl (unsigned long __arg)
+{
+  return htonl (__arg);
+}
+
+/* Convert a network short to a host short.  */
+
+static __inline__ unsigned short
+ntohs (unsigned int __arg)
+{
+  return htons (__arg);
+}
+\#endif
+';
 };
 
 
@@ -1709,13 +1873,25 @@ fix = {
 };
 #endif
 
+
 /*
  *  Conditionalize some of <sys/endian.h> on __GNUC__ and __GNUG__.
+ *  On some systems (UnixWare 2, UnixWare 7), the file is byteorder.h
+ *  but we still "hijack" it and redirect it to the GNU byteorder.h..
+ *
+ *
  */
-#ifdef SVR4
+#ifdef SVR5
 fix = {
     hackname = svr4_endian;
     files    = sys/endian.h;
+#ifdef LATER
+    /*
+     * since we emit our own sys/byteorder.h,
+     * this fix can never be applied to that file.
+     */
+    files    = sys/byteorder.h;
+#endif
     bypass   = '__GNUC__';
 
     sed      = "/#\tifdef\t__STDC__/i\\\n"
@@ -1726,7 +1902,8 @@ fix = {
     sed      = "/#   include\t<sys\\/byteorder.h>/i\\\n"
                "#   endif /* !defined (__GNUC__) && !defined (__GNUG__) */\n";
 };
-#endif
+#endif /* SVR5 */
+
 
 /*
  *  Remove useless extern keyword from struct forward declarations
@@ -1841,33 +2018,23 @@ fix = {
 };
 #endif
 
+
 /*
  *  Fix declarations of `makedev', `major', and `minor' in <sys/mkdev.h>.
+ *  They are declared as non-static then immediately redeclared as static.
  */
-#ifdef SVR4
+#ifdef SVR5
 fix = {
     hackname = svr4_mkdev;
     files    = sys/mkdev.h;
+    select   = '^static';
 
-    sed      = "/^dev_t makedev(const/c\\\n"
-               "static dev_t makedev(const major_t, const minor_t);";
-
-    sed      = "/^dev_t makedev()/c\\\n"
-               "static dev_t makedev();";
-
-    sed      = "/^major_t major(const/c\\\n"
-               "static major_t major(const dev_t);";
-
-    sed      = "/^major_t major()/c\\\n"
-               "static major_t major();";
-
-    sed      = "/^minor_t minor(const/c\\\n"
-               "static minor_t minor(const dev_t);";
-
-    sed      = "/^minor_t minor()/c\\\n"
-               "static minor_t minor();";
+    sed	     = "/^dev_t makedev(/s/^/static /";
+    sed	     = "/^major_t major(/s/^/static /";
+    sed	     = "/^minor_t minor(/s/^/static /";
 };
-#endif
+#endif /* SVR5 */
+
 
 /*
  *  Fix reference to NC_NPI_RAW in <sys/netcspace.h>.
@@ -1989,6 +2156,21 @@ fix = {
     sed      = 's/const extern/extern const/g';
 };
 #endif
+
+
+/* 
+ *  Like svr4_mach_defines, but with newfangled syntax.
+ *  Source lines are of #define __i386 #machine(i386).   Delete them.
+ */
+#ifdef SVR5
+fix = {
+    hackname = svr5_mach_defines;
+    files    = ieeefp.h;
+    select   = "#define[ \t]*__i386.*\(i386\)";
+    sed      = "/#define[ \t]*__i386.*/d";
+};
+#endif /*  SVR5 */
+
 
 /*
  *  Fix return value of mem{ccpy,chr,cpy,set} and str{len,spn,cspn}
@@ -2263,6 +2445,29 @@ fix = {
     bypass = "#[ \t]*(ifn|un)def[ \t]*[ \t]NULL($|[ \t])";
     sed    = "/^#[ \t]*define[ \t][ \t]*NULL[ \t]/i\\\n"
                 "#undef NULL\n";
+};
+
+
+/*
+ * If arpa/inet.h prototypes are incompatible with the ones we just
+ * installed in <sys/byteorder.h>, just remove the protos.
+ * Because of this close association, this patch must be applied only
+ * on those systems where the replacement byteorder header is installed.
+ */
+fix = {
+    hackname = unixware7_byteorder_fix;
+    files    = arpa/inet.h;
+    select   = "in_port_t";
+#ifndef SVR5
+	mach = "*-*-sysv4*";
+	mach = "i[34567]86-*-sysv5*";
+	mach = "i[34567]86-*-udk*";
+	mach = "i[34567]86-*-solaris2.[0-4]";
+	mach = "powerpcle-*-solaris2.[0-4]";
+	mach = "sparc-*-solaris2.[0-4]";
+#endif /* SVR5 */
+    sed      =  '/^extern.*htons.*(in_port_t)/d';
+    sed      =  '/^extern.*ntohs.*(in_port_t)/d';
 };
 
 
