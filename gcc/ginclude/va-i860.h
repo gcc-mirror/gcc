@@ -104,6 +104,11 @@ enum {
 #define __reg_base reg_base
 #endif
 
+/* Avoid errors if compiling GCC v2 with GCC v1.  */
+#if __GNUC__ == 1
+#define __extension__
+#endif
+
 #define va_arg(__va, __type)						\
 __extension__								\
 (* (__type *)								\
