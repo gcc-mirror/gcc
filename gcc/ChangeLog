@@ -1,5 +1,8 @@
 2001-08-21  Richard Henderson  <rth@redhat.com>
 
+	* flow.c (flow_find_cross_jump): Don't consider unconditional
+	return insns for commoning.
+
 	* final.c (compute_alignments): Fix typo.
 
 	* expmed.c (CODE_FOR_insv, gen_insv): Provide defaults.
