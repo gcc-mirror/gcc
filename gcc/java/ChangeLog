@@ -1,5 +1,13 @@
 2005-03-01  Per Bothner  <per@bothner.com>
 
+	PR java/8608
+	* check-init.c (wfl): Remove static.
+	(final_assign_error, check_init): Replace calls to parse_error_context
+	by plain error.
+	(check_init): Save, set, and restore input_location for each exp.
+
+2005-03-01  Per Bothner  <per@bothner.com>
+
 	* jcf-reader.c (get_attribute): Handle SourceDebugExtension (JSR 45)
 	if HANDLE_SOURCEDEBUGEXTENSION_ATTRIBUTE is defined.
 	* jcf-dump.c (HANDLE_SOURCEDEBUGEXTENSION_ATTRIBUTE): Print contents.

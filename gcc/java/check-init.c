@@ -77,8 +77,6 @@ static int start_current_locals = 0;
 
 static int num_current_words;
 
-static tree wfl;
-
 #define COPYN(DST, SRC, NWORDS) memcpy (DST, SRC, NWORDS * sizeof(word))
 #define COPY(DST, SRC) COPYN (DST, SRC, num_current_words)
 
@@ -247,9 +245,8 @@ get_variable_decl (tree exp)
 static void
 final_assign_error (tree name)
 {
-  parse_error_context (wfl,
-                       "Can't reassign a value to the final variable %qs",
-                       IDENTIFIER_POINTER (name));
+  error ("Can't reassign a value to the final variable %qs",
+	 IDENTIFIER_POINTER (name));
 }
 
 static void
@@ -501,7 +498,10 @@ static void
 check_init (tree exp, words before)
 {
   tree tmp;
+  location_t save_location = input_location;
  again:
+  if (EXPR_HAS_LOCATION (exp))
+    input_location = EXPR_LOCATION (exp);
   switch (TREE_CODE (exp))
     {
     case VAR_DECL:
@@ -515,10 +515,7 @@ check_init (tree exp, words before)
 	  if (! LOCAL_CLASS_INITIALIZATION_FLAG_P (exp)
 	      && index >= 0 && ! ASSIGNED_P (before, index))
 	    {
-	      parse_error_context 
-		(wfl, "Variable %qs may not have been initialized",
-		 IDENTIFIER_POINTER (DECL_NAME (exp)));
-	      /* Suppress further errors. */
+	      error ("variable %qD may not have been initialized", exp);
 	      DECL_BIT_INDEX (exp) = -2;
 	    }
 	}
@@ -531,9 +528,7 @@ check_init (tree exp, words before)
 	  int index = DECL_BIT_INDEX (tmp);
 	  if (index >= 0 && ! ASSIGNED_P (before, index))
 	    {
-	      parse_error_context 
-		(wfl, "variable %qs may not have been initialized",
-		 IDENTIFIER_POINTER (DECL_NAME (tmp)));
+	      error ("variable %qD may not have been initialized", tmp);
 	      /* Suppress further errors. */
 	      DECL_BIT_INDEX (tmp) = -2;
 	    }
@@ -669,7 +664,7 @@ check_init (tree exp, words before)
 	END_ALTERNATIVES (before, alt);
 	loop_current_locals = save_loop_current_locals;
 	start_current_locals = save_start_current_locals;
-	return;
+	break;
       }
     case EXIT_EXPR:
       {
@@ -684,7 +679,7 @@ check_init (tree exp, words before)
 	done_alternative (when_true, alt);
 	COPY (before, when_false);
 	RELEASE_BUFFERS(when_true);
-	return;
+	break;
       }
     case LABELED_BLOCK_EXPR:
       {
@@ -695,7 +690,7 @@ check_init (tree exp, words before)
 	  check_init (LABELED_BLOCK_BODY (exp), before);
 	done_alternative (before, &alt);
 	END_ALTERNATIVES (before, alt);
-	return;
+	break;
       }
     case EXIT_BLOCK_EXPR:
       {
@@ -705,7 +700,7 @@ check_init (tree exp, words before)
 	  alt = alt->outer;
 	done_alternative (before, alt);
 	SET_ALL (before);
-	return;
+	break;
       }
     case SWITCH_EXPR:
       {
@@ -722,7 +717,7 @@ check_init (tree exp, words before)
 	  done_alternative (alt.saved, &alt);
 	FREE_BUFFER(alt.saved, buf);
 	END_ALTERNATIVES (before, alt);
-	return;
+	break;
       }
     case CASE_EXPR:
     case DEFAULT_EXPR:
@@ -764,7 +759,7 @@ check_init (tree exp, words before)
 	  }
 	END_ALTERNATIVES (before, alt);
       }
-    return;
+    break;
 
     case TRY_FINALLY_EXPR:
       {
@@ -775,7 +770,7 @@ check_init (tree exp, words before)
 	UNION (before, before, tmp);
 	RELEASE_BUFFERS(tmp);
       }
-      return;
+      break;
 
     case RETURN_EXPR:
     case THROW_EXPR:
@@ -786,7 +781,7 @@ check_init (tree exp, words before)
     case ERROR_MARK:
     never_continues:
       SET_ALL (before);
-      return;
+      break;
       
     case COND_EXPR:
     case TRUTH_ANDIF_EXPR:
@@ -848,7 +843,7 @@ check_init (tree exp, words before)
 
     case SAVE_EXPR:
       if (IS_INIT_CHECKED (exp))
-	return;
+	break;
       IS_INIT_CHECKED (exp) = 1;
       exp = TREE_OPERAND (exp, 0);
       goto again;
@@ -932,11 +927,9 @@ check_init (tree exp, words before)
     case EXPR_WITH_FILE_LOCATION:
       {
 	location_t saved_location = input_location;
-	tree saved_wfl = wfl;
 	tree body = EXPR_WFL_NODE (exp);
 	if (IS_EMPTY_STMT (body))
 	  break;
-	wfl = exp;
 #ifdef USE_MAPPED_LOCATION
 	input_location = EXPR_LOCATION (exp);
 #else
@@ -945,7 +938,6 @@ check_init (tree exp, words before)
 #endif
 	check_init (body, before);
 	input_location = saved_location;
-	wfl = saved_wfl;
       }
       break;
       
@@ -954,6 +946,7 @@ check_init (tree exp, words before)
 	("internal error in check-init: tree code not implemented: %s",
 	 tree_code_name [(int) TREE_CODE (exp)]);
     }
+  input_location = save_location;
 }
 
 void
