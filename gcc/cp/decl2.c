@@ -4583,11 +4583,71 @@ arg_assoc (k, n)
   while (TREE_CODE (n) == TREE_LIST)
     n = TREE_VALUE (n);
 
-  my_friendly_assert (TREE_CODE (n) == OVERLOAD, 980715);
+  if (TREE_CODE (n) == TEMPLATE_ID_EXPR)
+    {
+      /* [basic.lookup.koenig]
 
-  for (; n; n = TREE_CHAIN (n))
-    if (arg_assoc (k, OVL_FUNCTION (n)))
-      return 1;
+	 If T is a template-id, its associated namespaces and classes
+	 are the namespace in which the template is defined; for
+	 member templates, the member template's class; the namespaces
+	 and classes associated with the types of the template
+	 arguments provided for template type parameters (excluding
+	 template template parameters); the namespaces in which any
+	 template template arguments are defined; and the classes in
+	 which any member templates used as template template
+	 arguments are defined.  [Note: non-type template arguments do
+	 not contribute to the set of associated namespaces.  ]   */
+      tree template = TREE_OPERAND (n, 0);
+      tree args = TREE_OPERAND (n, 1);
+      tree ctx;
+      tree arg;
+
+      /* First, the template.  There may actually be more than one if
+	 this is an overloaded function template.  But, in that case,
+	 we only need the first; all the functions will be in the same
+	 namespace.  */
+      template = OVL_CURRENT (template);
+
+      ctx = CP_DECL_CONTEXT (template);
+       
+      if (TREE_CODE (ctx) == NAMESPACE_DECL)
+	{
+	  if (arg_assoc_namespace (k, ctx) == 1)
+	    return 1;
+	}
+      /* It must be a member template.  */
+      else if (arg_assoc_class (k, ctx) == 1)
+	return 1;
+
+      /* Now the arguments.  */
+      for (arg = args; arg != NULL_TREE; arg = TREE_CHAIN (arg))
+	{
+	  tree t = TREE_VALUE (arg);
+
+	  if (TREE_CODE (t) == TEMPLATE_DECL)
+	    {
+	      ctx = CP_DECL_CONTEXT (t);
+	      if (TREE_CODE (ctx) == NAMESPACE_DECL)
+		{
+		  if (arg_assoc_namespace (k, ctx) == 1)
+		    return 1;
+		}
+	      else if (arg_assoc_class (k, ctx) == 1)
+		return 1;
+	    }
+	  else if (TREE_CODE_CLASS (TREE_CODE (t)) == 't'
+		   && arg_assoc_type (t) == 1)
+	    return 1;
+	}
+    }
+  else
+    {
+      my_friendly_assert (TREE_CODE (n) == OVERLOAD, 980715);
+      
+      for (; n; n = OVL_CHAIN (n))
+	if (arg_assoc (k, OVL_FUNCTION (n)))
+	  return 1;
+    }
 
   return 0;
 }
