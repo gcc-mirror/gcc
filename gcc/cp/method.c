@@ -392,6 +392,12 @@ use_thunk (thunk_fndecl, emit_p)
 
   push_to_top_level ();
 
+  /* The back-end expects DECL_INITIAL to contain a BLOCK, so we
+     create one.  */
+  DECL_INITIAL (thunk_fndecl) = make_node (BLOCK);
+  BLOCK_VARS (DECL_INITIAL (thunk_fndecl)) 
+    = DECL_ARGUMENTS (thunk_fndecl);
+
 #ifdef ASM_OUTPUT_MI_THUNK
   if (!vcall_offset)
     {
@@ -411,88 +417,83 @@ use_thunk (thunk_fndecl, emit_p)
     }
   else
 #endif /* ASM_OUTPUT_MI_THUNK */
-  {
-  /* If we don't have the necessary macro for efficient thunks, generate a
-     thunk function that just makes a call to the real function.
-     Unfortunately, this doesn't work for varargs.  */
+    {
+      /* If we don't have the necessary macro for efficient thunks, generate
+	 a thunk function that just makes a call to the real function.
+	 Unfortunately, this doesn't work for varargs.  */
 
-    tree a, t;
+      tree a, t;
 
-    if (varargs_function_p (function))
-      error ("generic thunk code fails for method `%#D' which uses `...'",
-		function);
+      if (varargs_function_p (function))
+	error ("generic thunk code fails for method `%#D' which uses `...'",
+	       function);
 
-    /* Set up clone argument trees for the thunk.  */
-    t = NULL_TREE;
-    for (a = DECL_ARGUMENTS (function); a; a = TREE_CHAIN (a))
-      {
-	tree x = copy_node (a);
-	TREE_CHAIN (x) = t;
-	DECL_CONTEXT (x) = thunk_fndecl;
-	t = x;
-      }
-    a = nreverse (t);
-    DECL_ARGUMENTS (thunk_fndecl) = a;
-    DECL_RESULT (thunk_fndecl) = NULL_TREE;
+      /* Set up clone argument trees for the thunk.  */
+      t = NULL_TREE;
+      for (a = DECL_ARGUMENTS (function); a; a = TREE_CHAIN (a))
+	{
+	  tree x = copy_node (a);
+	  TREE_CHAIN (x) = t;
+	  DECL_CONTEXT (x) = thunk_fndecl;
+	  t = x;
+	}
+      a = nreverse (t);
+      DECL_ARGUMENTS (thunk_fndecl) = a;
+      DECL_RESULT (thunk_fndecl) = NULL_TREE;
 
-    start_function (NULL_TREE, thunk_fndecl, NULL_TREE, SF_PRE_PARSED);
-    /* We don't bother with a body block for thunks.  */
+      start_function (NULL_TREE, thunk_fndecl, NULL_TREE, SF_PRE_PARSED);
+      /* We don't bother with a body block for thunks.  */
 
-    /* Adjust the this pointer by the constant.  */
-    t = ssize_int (delta);
-    t = fold (build (PLUS_EXPR, TREE_TYPE (a), a, t));
-    /* If there's a vcall offset, look up that value in the vtable and
-       adjust the `this' pointer again.  */
-    if (vcall_offset && !integer_zerop (vcall_offset))
-      {
-	tree orig_this;
+      /* Adjust the this pointer by the constant.  */
+      t = ssize_int (delta);
+      t = fold (build (PLUS_EXPR, TREE_TYPE (a), a, t));
 
-	t = save_expr (t);
-	orig_this = t;
-	/* The vptr is always at offset zero in the object.  */
-	t = build1 (NOP_EXPR,
-		    build_pointer_type (build_pointer_type 
-					(vtable_entry_type)),
-		    t);
-	/* Form the vtable address.  */
-	t = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (t)), t);
-	/* Find the entry with the vcall offset.  */
-	t = build (PLUS_EXPR, TREE_TYPE (t), t, vcall_offset);
-	/* Calculate the offset itself.  */
-	t = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (t)), t);
-	/* Adjust the `this' pointer.  */
-	t = fold (build (PLUS_EXPR,
-			 TREE_TYPE (orig_this),
-			 orig_this,
-			 t));
-      }
+      /* If there's a vcall offset, look up that value in the vtable and
+	 adjust the `this' pointer again.  */
+      if (vcall_offset && !integer_zerop (vcall_offset))
+	{
+	  tree orig_this;
 
-    /* Build up the call to the real function.  */
-    t = tree_cons (NULL_TREE, t, NULL_TREE);
-    for (a = TREE_CHAIN (a); a; a = TREE_CHAIN (a))
-      t = tree_cons (NULL_TREE, a, t);
-    t = nreverse (t);
-    t = build_call (function, t);
-    if (VOID_TYPE_P (TREE_TYPE (t)))
-      finish_expr_stmt (t);
-    else
-      finish_return_stmt (t);
+	  t = save_expr (t);
+	  orig_this = t;
+	  /* The vptr is always at offset zero in the object.  */
+	  t = build1 (NOP_EXPR,
+		      build_pointer_type (build_pointer_type 
+					  (vtable_entry_type)),
+		      t);
+	  /* Form the vtable address.  */
+	  t = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (t)), t);
+	  /* Find the entry with the vcall offset.  */
+	  t = build (PLUS_EXPR, TREE_TYPE (t), t, vcall_offset);
+	  /* Calculate the offset itself.  */
+	  t = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (t)), t);
+	  /* Adjust the `this' pointer.  */
+	  t = fold (build (PLUS_EXPR,
+			   TREE_TYPE (orig_this),
+			   orig_this,
+			   t));
+	}
 
-    /* The back-end expects DECL_INITIAL to contain a BLOCK, so we
-       create one.  */
-    DECL_INITIAL (thunk_fndecl) = make_node (BLOCK);
-    BLOCK_VARS (DECL_INITIAL (thunk_fndecl)) 
-      = DECL_ARGUMENTS (thunk_fndecl);
+      /* Build up the call to the real function.  */
+      t = tree_cons (NULL_TREE, t, NULL_TREE);
+      for (a = TREE_CHAIN (a); a; a = TREE_CHAIN (a))
+	t = tree_cons (NULL_TREE, a, t);
+      t = nreverse (t);
+      t = build_call (function, t);
+      if (VOID_TYPE_P (TREE_TYPE (t)))
+	finish_expr_stmt (t);
+      else
+	finish_return_stmt (t);
 
-    /* Since we want to emit the thunk, we explicitly mark its name as
-       referenced.  */
-    TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (thunk_fndecl)) = 1;
+      /* Since we want to emit the thunk, we explicitly mark its name as
+	 referenced.  */
+      TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (thunk_fndecl)) = 1;
 
-    /* But we don't want debugging information about it.  */
-    DECL_IGNORED_P (thunk_fndecl) = 1;
+      /* But we don't want debugging information about it.  */
+      DECL_IGNORED_P (thunk_fndecl) = 1;
 
-    expand_body (finish_function (0));
-  }
+      expand_body (finish_function (0));
+    }
 
   pop_from_top_level ();
 }
