@@ -1246,17 +1246,21 @@ typedef struct rs6000_args
    taken care of one additional fetch will be necessary in RETURN_ADDR_RTX.
    (mrs) */
 /* #define RETURN_ADDR_IN_PREVIOUS_FRAME */
+
+/* Number of bytes into the frame return addresses can be found.  */
+#define RETURN_ADDRESS_OFFSET (v4_call_p ? (TARGET_64BIT ? 8 : 4) : 8)
+
 /* The current return address is in link register (65).  The return address
    of anything farther back is accessed normally at an offset of 8 from the
    frame pointer.  */
 #define RETURN_ADDR_RTX(count, frame)			\
   ((count == -1)					\
    ? gen_rtx (REG, Pmode, 65)				\
-   : copy_to_reg (gen_rtx (MEM, Pmode,			\
-			   memory_address (Pmode, 	\
-					   plus_constant (copy_to_reg (gen_rtx (MEM, Pmode, \
-										memory_address (Pmode, frame))), \
-							  8)))))
+   : gen_rtx (MEM, Pmode,				\
+	      memory_address (Pmode, 			\
+			      plus_constant (copy_to_reg (gen_rtx (MEM, Pmode, \
+								   memory_address (Pmode, frame))), \
+					     RETURN_ADDRESS_OFFSET))))
 
 /* Definitions for register eliminations.
 
