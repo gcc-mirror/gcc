@@ -24,6 +24,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "flags.h"
 #include <stdio.h>
 
+extern struct obstack permanent_obstack;
+
 /* Make bindings for __FUNCTION__ and __PRETTY_FUNCTION__.  */
 
 void
@@ -1022,4 +1024,29 @@ get_directive_line (finput)
       /* Handle backslash.  */
       char_escaped = (c == '\\' && ! char_escaped);
     }
+}
+
+/* Make a variant type in the proper way for C/C++, propagating qualifiers
+   down to the element type of an array.  */
+
+tree
+c_build_type_variant (type, constp, volatilep)
+     tree type;
+     int constp, volatilep;
+{
+  if (TREE_CODE (type) == ARRAY_TYPE)
+    {
+      tree real_main_variant = TYPE_MAIN_VARIANT (type);
+      int permanent = TREE_PERMANENT (type);
+
+      if (permanent)
+	push_obstacks (&permanent_obstack, &permanent_obstack);
+      type = build_array_type (c_build_type_variant (TREE_TYPE (type),
+						     constp, volatilep),
+			       TYPE_DOMAIN (type));
+      TYPE_MAIN_VARIANT (type) = real_main_variant;
+      if (permanent)
+	pop_obstacks ();
+    }
+  return build_type_variant (type, constp, volatilep);
 }
