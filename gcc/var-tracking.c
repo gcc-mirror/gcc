@@ -2705,6 +2705,7 @@ vt_initialize (void)
       DECL_NAME (frame_base_decl) = get_identifier ("___frame_base_decl");
       TREE_TYPE (frame_base_decl) = char_type_node;
       DECL_ARTIFICIAL (frame_base_decl) = 1;
+      DECL_IGNORED_P (frame_base_decl) = 1;
 
       /* Set its initial "location".  */
       frame_stack_adjust = -prologue_stack_adjust ();

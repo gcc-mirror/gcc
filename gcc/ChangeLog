@@ -1,3 +1,16 @@
+2004-12-31  Richard Henderson  <rth@redhat.com>
+
+	PR middle-end/17799
+	* function.c (use_register_for_decl): Check DECL_IGNORED_P instead
+	of DECL_ARTIFICIAL.
+	(assign_parms_augmented_arg_list): Set DECL_IGNORED_P.
+	* c-decl.c (build_compound_literal): Likewise.
+	* dwarf2asm.c (dw2_force_const_mem): Likewise.
+	* gimplify.c (create_artificial_label): Likewise.
+	* tree-inline.c (expand_call_inline): Likewise.
+	* var-tracking.c (vt_initialize): Likewise.
+	* tree-outof-ssa.c (create_temp): Copy DECL_IGNORED_P.
+
 2004-12-31  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR target/19211

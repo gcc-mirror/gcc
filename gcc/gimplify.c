@@ -293,6 +293,7 @@ create_artificial_label (void)
   tree lab = build_decl (LABEL_DECL, NULL_TREE, void_type_node);
 
   DECL_ARTIFICIAL (lab) = 1;
+  DECL_IGNORED_P (lab) = 1;
   DECL_CONTEXT (lab) = current_function_decl;
   return lab;
 }

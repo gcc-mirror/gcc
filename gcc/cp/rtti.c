@@ -350,6 +350,7 @@ get_tinfo_decl (tree type)
       TREE_TYPE (name) = type;
       DECL_TINFO_P (d) = 1;
       DECL_ARTIFICIAL (d) = 1;
+      DECL_IGNORED_P (d) = 1;
       TREE_READONLY (d) = 1;
       TREE_STATIC (d) = 1;
       /* Mark the variable as undefined -- but remember that we can
@@ -778,6 +779,7 @@ tinfo_base_init (tree desc, tree target)
     name_decl = build_lang_decl (VAR_DECL, name_name, name_type);
     SET_DECL_ASSEMBLER_NAME (name_decl, name_name);
     DECL_ARTIFICIAL (name_decl) = 1;
+    DECL_IGNORED_P (name_decl) = 1;
     TREE_READONLY (name_decl) = 1;
     TREE_STATIC (name_decl) = 1;
     DECL_EXTERNAL (name_decl) = 0;

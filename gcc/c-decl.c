@@ -3479,6 +3479,7 @@ build_compound_literal (tree type, tree init)
       DECL_DEFER_OUTPUT (decl) = 1;
       DECL_COMDAT (decl) = 1;
       DECL_ARTIFICIAL (decl) = 1;
+      DECL_IGNORED_P (decl) = 1;
       pushdecl (decl);
       rest_of_decl_compilation (decl, 1, 0);
     }

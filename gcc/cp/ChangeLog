@@ -1,3 +1,14 @@
+2004-12-31  Richard Henderson  <rth@redhat.com>
+
+	PR middle-end/17799
+	* call.c (make_temporary_var_for_ref_to_temp): Set DECL_IGNORED_P.
+	* class.c (build_vtable): Don't conditionallize setting it
+	based on DWARF2_DEBUG.
+	(layout_class_type): Set DECL_IGNORED_P.
+	* decl2.c (get_guard): Likewise.
+	* rtti.c (get_tinfo_decl, build_lang_decl): Likewise.
+	* tree.c (build_local_temp): Likewise.
+
 2004-12-30  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (cp_declarator): Split "name" field into

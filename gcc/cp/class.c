@@ -659,28 +659,27 @@ build_vtable (tree class_type, tree name, tree vtable_type)
   DECL_EXTERNAL (decl) = 1;
   DECL_NOT_REALLY_EXTERN (decl) = 1;
 
-  if (write_symbols == DWARF2_DEBUG)
-    /* Mark the VAR_DECL node representing the vtable itself as a
-       "gratuitous" one, thereby forcing dwarfout.c to ignore it.  It
-       is rather important that such things be ignored because any
-       effort to actually generate DWARF for them will run into
-       trouble when/if we encounter code like:
+  /* Mark the VAR_DECL node representing the vtable itself as a
+     "gratuitous" one, thereby forcing dwarfout.c to ignore it.  It
+     is rather important that such things be ignored because any
+     effort to actually generate DWARF for them will run into
+     trouble when/if we encounter code like:
        
-         #pragma interface
-	 struct S { virtual void member (); };
+     #pragma interface
+     struct S { virtual void member (); };
 	   
-       because the artificial declaration of the vtable itself (as
-       manufactured by the g++ front end) will say that the vtable is
-       a static member of `S' but only *after* the debug output for
-       the definition of `S' has already been output.  This causes
-       grief because the DWARF entry for the definition of the vtable
-       will try to refer back to an earlier *declaration* of the
-       vtable as a static member of `S' and there won't be one.  We
-       might be able to arrange to have the "vtable static member"
-       attached to the member list for `S' before the debug info for
-       `S' get written (which would solve the problem) but that would
-       require more intrusive changes to the g++ front end.  */
-    DECL_IGNORED_P (decl) = 1;
+     because the artificial declaration of the vtable itself (as
+     manufactured by the g++ front end) will say that the vtable is
+     a static member of `S' but only *after* the debug output for
+     the definition of `S' has already been output.  This causes
+     grief because the DWARF entry for the definition of the vtable
+     will try to refer back to an earlier *declaration* of the
+     vtable as a static member of `S' and there won't be one.  We
+     might be able to arrange to have the "vtable static member"
+     attached to the member list for `S' before the debug info for
+     `S' get written (which would solve the problem) but that would
+     require more intrusive changes to the g++ front end.  */
+  DECL_IGNORED_P (decl) = 1;
 
   return decl;
 }
@@ -3529,13 +3528,13 @@ build_base_field (record_layout_info rli, tree binfo,
       /* Create the FIELD_DECL.  */
       decl = build_decl (FIELD_DECL, NULL_TREE, CLASSTYPE_AS_BASE (basetype));
       DECL_ARTIFICIAL (decl) = 1;
+      DECL_IGNORED_P (decl) = 1;
       DECL_FIELD_CONTEXT (decl) = t;
       DECL_SIZE (decl) = CLASSTYPE_SIZE (basetype);
       DECL_SIZE_UNIT (decl) = CLASSTYPE_SIZE_UNIT (basetype);
       DECL_ALIGN (decl) = CLASSTYPE_ALIGN (basetype);
       DECL_USER_ALIGN (decl) = CLASSTYPE_USER_ALIGN (basetype);
       DECL_MODE (decl) = TYPE_MODE (basetype);
-      DECL_IGNORED_P (decl) = 1;
       DECL_FIELD_IS_BASE (decl) = 1;
 
       /* Try to place the field.  It may take more than one try if we
@@ -4697,6 +4696,7 @@ layout_class_type (tree t, tree *virtuals_p)
 	  DECL_SIZE (padding_field) = padding;
 	  DECL_CONTEXT (padding_field) = t;
 	  DECL_ARTIFICIAL (padding_field) = 1;
+	  DECL_IGNORED_P (padding_field) = 1;
 	  layout_nonempty_base_or_field (rli, padding_field,
 					 NULL_TREE, 
 					 empty_base_offsets);

@@ -162,6 +162,7 @@ create_temp (tree t)
   else if (!DECL_IGNORED_P (t))
     DECL_DEBUG_ALIAS_OF (tmp) = t;
   DECL_ARTIFICIAL (tmp) = DECL_ARTIFICIAL (t);
+  DECL_IGNORED_P (tmp) = DECL_IGNORED_P (t);
   add_referenced_tmp_var (tmp);
 
   /* add_referenced_tmp_var will create the annotation and set up some

@@ -6373,6 +6373,7 @@ make_temporary_var_for_ref_to_temp (tree decl, tree type)
   /* Create the variable.  */
   var = build_decl (VAR_DECL, NULL_TREE, type);
   DECL_ARTIFICIAL (var) = 1;
+  DECL_IGNORED_P (var) = 1;
   TREE_USED (var) = 1;
 
   /* Register the variable.  */
