@@ -257,6 +257,7 @@ extern void declare_parm_level                  PROTO((int));
 extern tree define_label                        PROTO((char *, int, tree));
 extern void delete_block                        PROTO((tree));
 extern void finish_decl                         PROTO((tree, tree, tree));
+extern void finish_decl_top_level               PROTO((tree, tree, tree));
 extern tree finish_enum                         PROTO((tree, tree, tree));
 extern void finish_function                     PROTO((int));
 extern tree finish_struct                       PROTO((tree, tree, tree));
