@@ -3572,11 +3572,27 @@ expand_float (to, from, unsignedp)
       if (flag_force_mem)
 	from = force_not_mem (from);
 
+      /* Look for a usable floating mode FMODE wider than the source and at
+	 least as wide as the target.  Using FMODE will avoid rounding woes
+	 with unsigned values greater than the signed maximum value.  */
+      for (fmode = GET_MODE (to);  fmode != VOIDmode;
+	   fmode = GET_MODE_WIDER_MODE (fmode))
+	if (GET_MODE_BITSIZE (GET_MODE (from)) < GET_MODE_BITSIZE (fmode)
+	    && can_float_p (fmode, GET_MODE (from), 0) != CODE_FOR_nothing)
+	  break;
+      if (fmode == VOIDmode)
+	{
+	  /* There is no such mode.  Pretend the target is wide enough.
+	     This may cause rounding problems, unfortunately.  */
+	  fmode = GET_MODE (to);
+	}
+
       /* If we are about to do some arithmetic to correct for an
 	 unsigned operand, do it in a pseudo-register.  */
 
-      if (GET_CODE (to) != REG || REGNO (to) <= LAST_VIRTUAL_REGISTER)
-	target = gen_reg_rtx (GET_MODE (to));
+      if (GET_MODE (to) != fmode
+	  || GET_CODE (to) != REG || REGNO (to) <= LAST_VIRTUAL_REGISTER)
+	target = gen_reg_rtx (fmode);
 
       /* Convert as signed integer to floating.  */
       expand_float (target, from, 0);
@@ -3591,8 +3607,8 @@ expand_float (to, from, unsignedp)
 	 Rather than setting up a dconst_dot_5, let's hope SCO
 	 fixes the bug.  */
       offset = REAL_VALUE_LDEXP (dconst1, GET_MODE_BITSIZE (GET_MODE (from)));
-      temp = expand_binop (GET_MODE (to), add_optab, target,
-			   immed_real_const_1 (offset, GET_MODE (to)),
+      temp = expand_binop (fmode, add_optab, target,
+			   immed_real_const_1 (offset, fmode),
 			   target, 0, OPTAB_LIB_WIDEN);
       if (temp != target)
 	emit_move_insn (target, temp);
