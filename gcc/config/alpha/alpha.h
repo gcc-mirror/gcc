@@ -1076,6 +1076,7 @@ extern int alpha_memory_latency;
    insns and emitted.  */
 extern struct rtx_def *alpha_emit_set_const ();
 extern struct rtx_def *alpha_emit_set_long_const ();
+extern struct rtx_def *alpha_emit_conditional_branch ();
 extern struct rtx_def *alpha_emit_conditional_move ();
 
 /* Generate necessary RTL for __builtin_saveregs().
@@ -2184,6 +2185,9 @@ do {									\
    '	Generates trap-mode suffix for instructions that accept the
         su suffix only (cmpt et al).
 
+   `    Generates trap-mode suffix for instructions that accept the
+	v and sv suffix.  The only instruction that needs this is cvtql.
+
    (	Generates trap-mode suffix for instructions that accept the
 	v, sv, and svi suffix.  The only instruction that needs this
 	is cvttq.
@@ -2203,8 +2207,8 @@ do {									\
    */
 
 #define PRINT_OPERAND_PUNCT_VALID_P(CODE)				\
-  ((CODE) == '&' || (CODE) == '\'' || (CODE) == '(' || (CODE) == ')'	\
-   || (CODE) == '+' || (CODE) == ',' || (CODE) == '-')
+  ((CODE) == '&' || (CODE) == '`' || (CODE) == '\'' || (CODE) == '('	\
+   || (CODE) == ')' || (CODE) == '+' || (CODE) == ',' || (CODE) == '-')
 
 /* Print a memory address as an operand to reference that memory location.  */
 
@@ -2419,4 +2423,3 @@ do {							\
 
 /* Prototypes for alpha.c functions used in the md file.  */
 extern struct rtx_def *get_unaligned_address ();
- 
