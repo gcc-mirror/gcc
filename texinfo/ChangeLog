@@ -1,3 +1,7 @@
+Fri Sep  5 09:07:33 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* install-sh: Delete duplicate install script.
+
 Tue Sep  2 22:25:34 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (install, install-info, installdirs, uninstall): Make
