@@ -706,6 +706,11 @@ libgcc.a: $(LIBGCC1) $(LIBGCC2)
 	then (cd tmpcopy; $(AR) x ../$(LIBGCC1));	\
 	else true;					\
 	fi
+# Some versions of ar (specifically the one in RISC/os 5.x), create an
+# unwritable table of contents file, and then print an error message when
+# the second ar command tries to overwrite this file.  To avoid the error
+# message from ar, we make sure all files are writable.
+	(cd tmpcopy; chmod +w * > /dev/null 2>&1)
 	(cd tmpcopy; $(AR) x ../$(LIBGCC2))
 	(cd tmpcopy; $(AR) $(AR_FLAGS) ../tmplibgcc.a *.o)
 	rm -rf tmpcopy
