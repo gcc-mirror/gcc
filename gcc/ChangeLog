@@ -1,3 +1,7 @@
+2002-04-04  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* doc/contrib.texi (Contributors): Add David O'Brien.
+
 2002-04-03  David S. Miller  <davem@redhat.com>
 
 	* gcc.c (LINK_GCC_C_SEQUENCE_SPEC): No need for a new

@@ -396,6 +396,10 @@ engine setup, various documentation fixes and other small fixes.
 Geoff Noer for this work on getting cygwin native builds working.
 
 @item
+David O'Brien for the FreeBSD/alpha, FreeBSD/ARM, FreeBSD/PowerPC,
+and FreeBSD/SPARC64 ports and related infrastructure improvements.
+
+@item
 Alexandre Oliva for various build infrastructure improvements, scripts and
 amazing testing work.
 
