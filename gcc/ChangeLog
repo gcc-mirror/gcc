@@ -1,3 +1,29 @@
+2004-12-22  Richard Henderson  <rth@redhat.com>
+	    Uros Bizjak  <uros@kss-loka.si>
+
+	* config/i386/i386.md (truncdfsf2): Don't create stack temp when
+	using sse math only.  Use truncdfsf2_with_temp.
+	(truncdfsf2_with_temp): New.
+	(truncdfsf_fast_i387): Rename from truncdfsf2_noop.  Add memory
+	output alternative.
+	(truncdfsf_mixed): Rename from truncdfsf2_1_sse.  Compress duplicate
+	alternatives.
+	(truncdfsf_fast_sse): Rename from truncdfsf2_2.  Remove f alternative.
+	(truncdfsf2_3, truncdfsf2_sse_only): Remove.
+	(truncdfsf_i387): Rename from truncdfsf2_1.  Compress duplicates.
+	(truncdfsf_fast_mixed): New.
+	(truncdfsf splitters): Remove all except the 387 load/store split.
+	(truncxfsf2_1, truncxfdf2_1): Unify enable constraint with
+	respect to TARGET_SSE2, TARGET_80387, TARGET_SSE_MATH and
+	TARGET_MIX_SSE_I387.
+	(*truncxf{s,d}f2_1): Rename to *truncxf{s,d}f2_mixed.
+	(truncxf{s,d}f2_noop) Rename to truncxf{d,s}f2_i387_noop.
+	(*truncxf{s,d}f2_i387): New patterns.
+	(*truncxf{s,d}f2_2): Rename to *truncxf{s,d}f2_i387_1.
+	(truncxf{s,d}f2, fmod{s,d}f3, drem{s,d}f3, log1p{s,d}f2,
+	rint{s,d}f2, floor{s,d}f2, ceil{s,d}f2, btrunc{s,d}f2,
+	nearbyint{s,d}f2): Use renamed patterns.
+
 2004-12-22  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* tree.h (TYPE_SIZES_GIMPLIFIED): New.
