@@ -1,3 +1,8 @@
+2004-02-05  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/13714
+	* typeck.c (lookup_destructor): Tweak error message.
+
 2004-02-05  Paul Brook  <paul@codesourcery.com>
 
 	Backport from mainline.
