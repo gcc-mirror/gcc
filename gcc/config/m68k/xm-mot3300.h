@@ -40,3 +40,7 @@ extern char *alloca ();
 
 #define __PTR_TO_INT(P) ((int)(P))
 #define __INT_TO_PTR(P) ((char *)(P))
+
+/* We need POSIX/XOPEN symbols; otherwise make check will fail.  */
+#define ADD_MISSING_POSIX 1
+#define ADD_MISSING_XOPEN 1
