@@ -52,6 +52,7 @@ package body Ada.Directories.Validity is
    function Is_Valid_Path_Name (Name : String) return Boolean is
       Start : Positive := Name'First;
       Last  : Natural;
+
    begin
       --  A path name cannot be empty, cannot contain more than 256 characters,
       --  cannot contain invalid characters and each directory/file name need
@@ -114,7 +115,8 @@ package body Ada.Directories.Validity is
    --------------------------
 
    function Is_Valid_Simple_Name (Name : String) return Boolean is
-      Only_Spaces : Boolean := True;
+      Only_Spaces : Boolean;
+
    begin
       --  A file name cannot be empty, cannot contain more than 256 characters,
       --  and cannot contain invalid characters, including '\'
@@ -122,20 +124,22 @@ package body Ada.Directories.Validity is
       if Name'Length = 0 or else Name'Length > 256 then
          return False;
 
+      --  Name length is OK
+
       else
+         Only_Spaces := True;
          for J in Name'Range loop
             if Invalid_Character (Name (J)) or else Name (J) = '\' then
                return False;
-
             elsif Name (J) /= ' ' then
                Only_Spaces := False;
             end if;
          end loop;
+
+         --  If no invalid chars, and not all spaces, file name is valid.
+
+         return not Only_Spaces;
       end if;
-
-      --  If Name follows the rules, it is valid
-
-      return not Only_Spaces;
    end Is_Valid_Simple_Name;
 
 end Ada.Directories.Validity;

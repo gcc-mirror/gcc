@@ -62,7 +62,7 @@ GNAT Reference Manual
 
 @noindent
 GNAT, The GNU Ada 95 Compiler@*
-Version for GCC @value{version-GCC}@*
+GCC version @value{version-GCC}@*
 
 @noindent
 Ada Core Technologies, Inc.
@@ -12688,15 +12688,17 @@ including machine instructions in a subprogram.
 @end itemize
 
 @noindent
-The two features are similar, and both closely related to the mechanism
+The two features are similar, and both are closely related to the mechanism
 provided by the asm instruction in the GNU C compiler.  Full understanding
 and use of the facilities in this package requires understanding the asm
-instruction as described in
-@cite{Using and Porting the GNU Compiler Collection (GCC)} by Richard
-Stallman.  Calls to the function @code{Asm} and the procedure @code{Asm}
-have identical semantic restrictions and effects as described below.
-Both are provided so that the procedure call can be used as a statement,
-and the function call can be used to form a code_statement.
+instruction as described in @cite{Using the GNU Compiler Collection (GCC)} 
+by Richard Stallman. The relevant section is titled ``Extensions to the C
+Language Family'' -> ``Assembler Instructions with C Expression Operands''.
+
+Calls to the function @code{Asm} and the procedure @code{Asm} have identical
+semantic restrictions and effects as described below.  Both are provided so
+that the procedure call can be used as a statement, and the function call
+can be used to form a code_statement.
 
 The first example given in the GCC documentation is the C @code{asm}
 instruction:

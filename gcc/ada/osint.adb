@@ -1794,7 +1794,17 @@ package body Osint is
       --  "alpha-dec-vxworks-"
 
       while Name_Len > 0  loop
+
+         --  All done if we find the last hyphen
+
          if Name_Buffer (Name_Len) = '-' then
+            exit;
+
+         --  If directory separator found, we don't want to look further
+         --  since in this case, no prefix has been found.
+
+         elsif Is_Directory_Separator (Name_Buffer (Name_Len)) then
+            Name_Len := 0;
             exit;
          end if;
 

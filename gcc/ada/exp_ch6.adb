@@ -2466,6 +2466,9 @@ package body Exp_Ch6 is
                --  complete assignment subtree consistent enough for
                --  Analyze_Assignment to proceed. We do not use the
                --  saved value, the point was just to do the relocation.
+               --  We cannot rely on Original_Node to go back from the
+               --  block node to the assignment node, because the
+               --  assignment might already be a rewrite substitution.
 
             begin
                Rewrite (Original_Assignment, Blk);

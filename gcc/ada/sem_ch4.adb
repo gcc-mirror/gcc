@@ -4359,20 +4359,18 @@ package body Sem_Ch4 is
          --  always added to the overload set, unless it is a universal
          --  operation.
 
-         if Nkind (N) in N_Op
-           and then Has_Abstract_Op
-         then
+         if not Has_Abstract_Op then
+            return;
+
+         elsif Nkind (N) in N_Op then
             if Nkind (N) in N_Unary_Op
-              and then
-                Present (Universal_Interpretation (Etype (Right_Opnd (N))))
+              and then Present (Universal_Interpretation (Right_Opnd (N)))
             then
                return;
 
             elsif Nkind (N) in N_Binary_Op
-              and then
-                Present (Universal_Interpretation (Etype (Right_Opnd (N))))
-              and then
-                Present (Universal_Interpretation (Etype (Left_Opnd (N))))
+              and then Present (Universal_Interpretation (Right_Opnd (N)))
+              and then Present (Universal_Interpretation (Left_Opnd  (N)))
             then
                return;
 
@@ -4386,6 +4384,38 @@ package body Sem_Ch4 is
                   Get_Next_Interp (I, It);
                end loop;
             end if;
+
+         elsif Nkind (N) = N_Function_Call
+           and then
+             (Nkind (Name (N)) = N_Operator_Symbol
+                or else
+                  (Nkind (Name (N)) = N_Expanded_Name
+                     and then
+                       Nkind (Selector_Name (Name (N))) = N_Operator_Symbol))
+         then
+            declare
+               Arg1 : constant Node_Id := First (Parameter_Associations (N));
+
+            begin
+               if Present (Universal_Interpretation (Arg1))
+                 or else
+                   (Present (Next (Arg1))
+                     and then
+                       Present (Universal_Interpretation (Next (Arg1))))
+               then
+                  return;
+
+               else
+                  Get_First_Interp (N, I, It);
+                  while Present (It.Nam) loop
+                     if Scope (It.Nam) = Standard_Standard then
+                        Remove_Interp (I);
+                     end if;
+
+                     Get_Next_Interp (I, It);
+                  end loop;
+               end if;
+            end;
          end if;
       end if;
    end Remove_Abstract_Operations;
