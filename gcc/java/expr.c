@@ -910,6 +910,7 @@ expand_java_NEW (type)
 {
   if (! CLASS_LOADED_P (type))
     load_class (type, 1);
+  layout_class_methods (type);
   push_value (build (CALL_EXPR, promote_type (type),
 		     build_address_of (alloc_object_node),
 		     tree_cons (NULL_TREE, build_class_ref (type),
@@ -1485,6 +1486,7 @@ expand_invoke (opcode, method_ref_index, nargs)
       if (TREE_CODE (TYPE_SIZE (self_type)) == ERROR_MARK)
 	fatal ("failed to find class '%s'", self_name);
     }
+  layout_class_methods (self_type);
 
   if (method_name == init_identifier_node)
     method = lookup_java_constructor (CLASS_TO_HANDLE_TYPE (self_type),

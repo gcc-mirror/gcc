@@ -147,10 +147,10 @@ extern tree stabilize_reference PROTO ((tree));
     TYPE_NAME (ptr) = name;			\
   }
 
-#define INCOMPLETE_TYPE_P(NODE)					\
-  ((TREE_CODE (NODE) == TREE_LIST) 				\
-   && (TREE_CODE (TREE_PURPOSE (NODE)) == POINTER_TYPE) 	\
-   && (TREE_TYPE (TREE_PURPOSE (NODE)) == NULL_TREE))
+#define INCOMPLETE_TYPE_P(NODE)				\
+  ((TREE_CODE (NODE) == POINTER_TYPE)			\
+   && !TREE_TYPE (NODE) 				\
+   && TREE_CODE (TYPE_NAME (NODE)) == IDENTIFIER_NODE)
 
 /* Set the EMIT_LINE_NOTE flag of a EXPR_WLF to 1 if debug information
    are requested. Works in the context of a parser rule. */
@@ -589,13 +589,13 @@ struct parser_ctxt {
   int parser_ccb_indent;	     /* Keep track of {} indent, parser */
   int osb_number;		     /* Keep track of ['s */
   int minus_seen;		     /* Integral literal overflow */
-  int lineno;			    /* Current lineno */
-  int java_error_flag;		    /* Report error when true */
+  int lineno;			     /* Current lineno */
+  int java_error_flag;		     /* Report error when true */
   int deprecated;		     /* @deprecated tag seen */
 
   /* This section is defined only if we compile jc1 */
 #ifndef JC1_LITE
-  tree modifier_ctx [11];	     /* WFL of modifiers */
+  tree modifier_ctx [11];	    /* WFL of modifiers */
   tree current_class;		    /* Current class */
   tree current_function_decl;	    /* Current function decl, save/restore */
 
@@ -609,30 +609,34 @@ struct parser_ctxt {
 
   tree package;			    /* Defined package ID */
 
+  /* Those tow list are saved accross file traversal */
   tree  incomplete_class;	    /* List of non-complete classes */
-  tree  current_parsed_class;	    /* Class currently parsed */
-  tree  current_parsed_class_un;    /* Curr. parsed class unqualified name */
+  tree  gclass_list;		    /* All classes seen from source code */
+
+  /* These two lists won't survive file traversal */
   tree  class_list;		    /* List of classes in a CU */
-  tree  gclass_list;		    /* All classes seen so far. */
   jdeplist *classd_list;	    /* Classe dependencies in a CU */
   
+  tree  current_parsed_class;	    /* Class currently parsed */
+  tree  current_parsed_class_un;    /* Curr. parsed class unqualified name */
+
   tree non_static_initialized;	    /* List of non static initialized fields */
   tree static_initialized;	    /* List of static non final initialized */
 
   tree import_list;		    /* List of import */
   tree import_demand_list;	    /* List of import on demand */
 
-  tree current_loop;		     /* List of the currently nested loops/switches */
-  tree current_labeled_block;	     /* List of currently nested
-					labeled blocks. */
+  tree current_loop;		    /* List of the currently nested 
+				       loops/switches */
+  tree current_labeled_block;	    /* List of currently nested
+				       labeled blocks. */
 
-  int pending_block;		     /* Pending block to close */
+  int pending_block;		    /* Pending block to close */
 
-  int explicit_constructor_p;	     /* True when processing an
-					explicit constructor. This flag is 
-					used to trap illegal argument usage 
-					during an explicit constructor
-					invocation. */
+  int explicit_constructor_p;	    /* True when processing an explicit
+				       constructor. This flag is used to trap
+				       illegal argument usage during an
+				       explicit constructor invocation. */
 #endif /* JC1_LITE */
 };
 
@@ -803,7 +807,6 @@ void safe_layout_class PROTO ((tree));
 void java_complete_class PROTO ((void));
 void java_check_circular_reference PROTO ((void));
 void java_check_final PROTO ((void));
-void java_check_methods PROTO ((void));
 void java_layout_classes PROTO ((void));
 tree java_method_add_stmt PROTO ((tree, tree));
 char *java_get_line_col PROTO ((char *, int, int));

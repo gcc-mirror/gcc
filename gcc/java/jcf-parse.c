@@ -61,7 +61,10 @@ tree current_class = NULL_TREE;
 /* The class we started with. */
 tree main_class = NULL_TREE;
 
-/* The FIELD_DECL for the current field. */
+/* List of all class DECL seen so far.  */
+tree all_class_list = NULL_TREE;
+
+/* The FIELD_DECL for the current field.  */
 static tree current_field = NULL_TREE;
 
 /* The METHOD_DECL for the current method.  */
@@ -450,14 +453,24 @@ load_class (class_or_name, verbose)
      int verbose;
 {
   JCF this_jcf, *jcf;
-  tree name = (TREE_CODE (class_or_name) == IDENTIFIER_NODE ?
-	       class_or_name : DECL_NAME (TYPE_NAME (class_or_name)));
+  tree name;
   tree save_current_class = current_class;
   char *save_input_filename = input_filename;
   JCF *save_current_jcf = current_jcf;
   long saved_pos;
   if (current_jcf->read_state)
     saved_pos = ftell (current_jcf->read_state);
+
+  /* class_or_name can be the name of the class we want to load */
+  if (TREE_CODE (class_or_name) == IDENTIFIER_NODE)
+    name = class_or_name;
+  /* In some cases, it's a dependency that we process earlier that
+     we though */
+  else if (TREE_CODE (class_or_name) == TREE_LIST)
+    name = TYPE_NAME (TREE_PURPOSE (class_or_name));
+  /* Or it's a type in the making */
+  else
+    name = DECL_NAME (TYPE_NAME (class_or_name));
 
   push_obstacks (&permanent_obstack, &permanent_obstack);
 
@@ -494,10 +507,12 @@ load_class (class_or_name, verbose)
   if (current_jcf->java_source)
     jcf_parse_source (current_jcf);
   else {
-    int saved_lineno = lineno;
+    java_parser_context_save_global ();
+    java_push_parser_context ();
     input_filename = current_jcf->filename;
     jcf_parse (current_jcf);
-    lineno = saved_lineno;
+    java_pop_parser_context (0);
+    java_parser_context_restore_global ();
   }
 
   if (!current_jcf->seen_in_zip)
@@ -524,13 +539,16 @@ jcf_parse_source (jcf)
   java_push_parser_context ();
   input_filename = current_jcf->filename;
   file = get_identifier (input_filename);
-  if (!(finput = fopen (input_filename, "r")))
-    fatal ("input file `%s' just disappeared - jcf_parse_source",
-	   input_filename);
-  parse_source_file (file);
-  if (fclose (finput))
-    fatal ("can't close input file `%s' stream - jcf_parse_source",
-	   input_filename);
+  if (!HAS_BEEN_ALREADY_PARSED_P (file))
+    {
+      if (!(finput = fopen (input_filename, "r")))
+	fatal ("input file `%s' just disappeared - jcf_parse_source",
+	       input_filename);
+      parse_source_file (file);
+      if (fclose (finput))
+	fatal ("can't close input file `%s' stream - jcf_parse_source",
+	       input_filename);
+    }
   java_pop_parser_context (IS_A_COMMAND_LINE_FILENAME_P (file));
   java_parser_context_restore_global ();
 }
@@ -586,6 +604,11 @@ jcf_parse (jcf)
 
   push_obstacks (&permanent_obstack, &permanent_obstack);
   layout_class (current_class);
+  if (current_class == object_type_node)
+    layout_class_methods (object_type_node);
+  else
+    all_class_list = tree_cons (NULL_TREE, 
+				TYPE_NAME (current_class), all_class_list );
   pop_obstacks ();
 }
 
@@ -611,6 +634,8 @@ parse_class_file ()
   tree method;
   char *save_input_filename = input_filename;
   int save_lineno = lineno;
+
+  LAYOUT_SEEN_CLASS_METHODS ();
 
   input_filename = DECL_SOURCE_FILE (TYPE_NAME (current_class));
   lineno = 0;

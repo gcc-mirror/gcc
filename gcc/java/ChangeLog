@@ -1,3 +1,72 @@
+Tue Nov 24 17:06:38 1998  Per Bothner  <bothner@cygnus.com>
+
+	* (generate_classfile): Always write class access flag with
+ 	ACC_SUPER set.
+
+Tue Nov 24 16:34:33 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* class.c (maybe_layout_super_class): New function.
+	(layout_class): Reorganized. Loop on class methods dispatched into
+ 	a new function. Call maybe_layout_super_class.
+	(layout_class_methods, layout_class_method): New functions.
+	* expr.c (expand_java_NEW): Call layout_class_methods on loaded
+ 	class.
+	(expand_invoke): Likewise.
+	* java-tree.h (all_class_list): New global variable declared.
+	(layout_class_methods, layout_class_method): New function
+ 	prototypes.
+	(LAYOUT_SEEN_CLASS_METHODS): New macro.
+	* jcf-parse.c (all_class_list): New global variable.
+	(load_class): Extended what class_or_name can be. Use parser
+ 	context mechanism to save globals before calling jcf_parse.
+	(jcf_parse_source): Don't parse twice if HAS_BEEN_ALREADY_PARSED_P
+ 	is set on the file name.
+	(jcf_parse): Layout class methods when Object is loaded, otherwise
+ 	record class in all_class_list for delayed method layout.
+	(parse_class_file): Use LAYOUT_SEEN_CLASS_METHODS.
+	* lang.c (put_decl_node): Decode <init> into the decl context
+ 	class name.
+	* lex.c (java_allocate_new_line): Use xmalloc.
+	* parse.h (INCOMPLETE_TYPE_P): Redefined to work with incomplete
+ 	pointers, not TREE_LIST elements.
+	(struct parser_ctxt): Fixed comment indentations, added comments
+ 	and reordered some fields.
+	(java_check_methods): Function prototype removed.
+	* parse.y (java_push_parser_context): Use xmalloc.
+	(java_parser_context_restore_global): Pop extra pushed ctxp only
+ 	when there's nothing next.
+	(maybe_create_class_interface_decl): Fixed comment, add new
+ 	created class decl to all_class_list.
+	(method_header): Use GET_REAL_TYPE on argument's types.
+	(method_declarator): Use GET_REAL_TYPE, change type to the real
+ 	type in TREE_LIST dependency node. Build argument list with the
+ 	real type.
+	(create_jdep_list): Use xmalloc. Removed allocation error message.
+	(obtain_incomplete_type): Fixed leading comment. Broadened
+ 	incoming argument meaning.
+	(register_incomplete_type): Use xmalloc. Removed allocation error
+ 	message.
+	(safe_layout_class): Fixed leading comment.
+	(jdep_resolve_class): Reversed if statement condition and switch
+ 	if and else bodies.
+	(resolve_and_layout): Fixed leading comment. Broadened incoming
+ 	argument meaning.
+	(complete_class_report_errors): New local variable name, for
+ 	clarity. purify_type_name used for all error cases.
+	(java_get_real_method_name): Stricter check on constructors.
+	(java_check_regular_methods): Reverse methods list only if not
+ 	already laid out. Layout artificial constructor.
+	(java_check_methods): Deleted.
+	(source_start_java_method): Obtain incomplete type for patchable
+ 	method arguments.
+	(java_layout_classes): Fixed leading comment. Use
+ 	LAYOUT_SEEN_CLASS_METHODS, use a loop to check methods. Added else
+ 	statement to layout operation, reuse LAYOUT_SEEN_CLASS_METHODS
+ 	before returning. Fixed comments.
+	(java_expand_classes): Check for errors up front.
+	(patch_method_invocation): Class to search is resolved and laid
+ 	out.
+	
 Tue Nov 24 12:57:13 1998  Per Bothner  <bothner@cygnus.com>
 
 	* expr.c (java_lang_expand_expr):  Add missing emit_queue.
