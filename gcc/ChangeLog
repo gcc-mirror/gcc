@@ -1,3 +1,8 @@
+2004-06-28  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* builtins.def (execl, execlp, execle, execv, execvp, execve,
+	fork): Change to DEF_EXT_LIB_BUILTIN.
+
 2004-06-28  Roger Sayle  <roger@eyesopen.com>
 
 	* expmed.c (expand_smod_pow2): New function to expand signed
