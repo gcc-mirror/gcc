@@ -1,5 +1,8 @@
 2001-04-05  Bernd Schmidt  <bernds@redhat.com>
 
+	* config/ia64/ia64.c (rtx_needs_barrier): A PARALLEL can contain
+	ASM_OPERAND.
+
 	* sched-deps.c (sched_analyze_insn): Revert more of the March 27
 	change.
 
