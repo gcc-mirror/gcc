@@ -7681,7 +7681,7 @@ cse_change_cc_mode (rtx *loc, void *data)
 
 /* Change the mode of any reference to the register REGNO (NEWREG) to
    GET_MODE (NEWREG), starting at START.  Stop before END.  Stop at
-   any instruction after START which modifies NEWREG.  */
+   any instruction which modifies NEWREG.  */
 
 static void
 cse_change_cc_mode_insns (rtx start, rtx end, rtx newreg)
@@ -7693,7 +7693,7 @@ cse_change_cc_mode_insns (rtx start, rtx end, rtx newreg)
       if (! INSN_P (insn))
 	continue;
 
-      if (insn != start && reg_set_p (newreg, insn))
+      if (reg_set_p (newreg, insn))
 	return;
 
       for_each_rtx (&PATTERN (insn), cse_change_cc_mode, newreg);
@@ -7985,8 +7985,22 @@ cse_condition_code_reg (void)
 	  if (mode != GET_MODE (cc_src))
 	    abort ();
 	  if (mode != orig_mode)
-	    cse_change_cc_mode_insns (cc_src_insn, NEXT_INSN (last_insn),
-				      gen_rtx_REG (mode, REGNO (cc_reg)));
+	    {
+	      rtx newreg = gen_rtx_REG (mode, REGNO (cc_reg));
+
+	      /* Change the mode of CC_REG in CC_SRC_INSN to
+		 GET_MODE (NEWREG).  */
+	      for_each_rtx (&PATTERN (cc_src_insn), cse_change_cc_mode,
+			    newreg);
+	      for_each_rtx (&REG_NOTES (cc_src_insn), cse_change_cc_mode,
+			    newreg);
+
+	      /* Do the same in the following insns that use the
+		 current value of CC_REG within BB.  */
+	      cse_change_cc_mode_insns (NEXT_INSN (cc_src_insn),
+					NEXT_INSN (last_insn),
+					newreg);
+	    }
 	}
     }
 }
