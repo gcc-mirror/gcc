@@ -171,10 +171,14 @@ extern int errno;
 #endif
 
 extern int sys_nerr;
-#if defined(bsd4_4) || defined(__NetBSD__)
+#ifndef HAVE_STRERROR
+#if defined(bsd4_4)
 extern const char *const sys_errlist[];
 #else
 extern char *sys_errlist[];
+#endif
+#else
+extern char *strerror();
 #endif
 
 extern int execv (), execvp ();
@@ -1100,6 +1104,28 @@ translate_options (argcp, argvp)
 
   *argvp = newv;
   *argcp = newindex;
+}
+
+char *
+my_strerror(e)
+     int e;
+{
+
+#ifdef HAVE_STRERROR
+  return strerror(e);
+
+#else
+
+  static char buffer[30];
+  if (!e)
+    return "";
+
+  if (e > 0 && e < sys_nerr)
+    return sys_errlist[e];
+
+  sprintf (buffer, "Unknown error %d", e);
+  return buffer;
+#endif
 }
 
 /* Read compilation specs from a file named FILENAME,
@@ -4800,7 +4826,7 @@ pfatal_with_name (name)
   char *s;
 
   if (errno < sys_nerr)
-    s = concat ("%s: ", sys_errlist[errno]);
+    s = concat ("%s: ", my_strerror( errno ));
   else
     s = "cannot open %s";
   fatal (s, name);
@@ -4813,7 +4839,7 @@ perror_with_name (name)
   char *s;
 
   if (errno < sys_nerr)
-    s = concat ("%s: ", sys_errlist[errno]);
+    s = concat ("%s: ", my_strerror( errno ));
   else
     s = "cannot open %s";
   error (s, name);
@@ -4826,7 +4852,7 @@ perror_exec (name)
   char *s;
 
   if (errno < sys_nerr)
-    s = concat ("installation problem, cannot exec %s: ", sys_errlist[errno]);
+    s = concat ("installation problem, cannot exec %s: ", my_strerror( errno ));
   else
     s = "installation problem, cannot exec %s";
   error (s, name);
