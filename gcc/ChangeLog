@@ -1,3 +1,12 @@
+2003-09-25  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* config/i386/att.h, config/i386/beos-elf.h, config/i386/biarch64.h,
+	config/i386/bsd.h, config/i386/crtdll.h, config/i386/cygming.h,
+	config/i386/cygwin.h, config/i386/cygwin1.c, config/i386/cygwin2.c,
+	config/i386/darwin.h, config/i386/djgpp.h, config/i386/emmintrin.h,
+	config/i386/freebsd-aout.h, config/i386/freebsd.h,
+	config/i386/freebsd64.h, config/i386/gas.h: GNU CC -> GCC.
+
 2003-09-25  Kelley Cook  <kelleycook@wideopenwest.com>
 
 	* cgraph.c (dump_cgraph):  Don't output newline before dump.  Add in
