@@ -116,6 +116,9 @@ public class BasicDefaults extends UIDefaults
 	put("JToggleButton.border", "javax.swing.plaf.basic.PanelBorder");
 	put("JCheckBox.border", "javax.swing.plaf.basic.PanelBorder");
 	put("JRadioButton.border", "javax.swing.plaf.basic.PanelBorder");
+
+	put("AbstractUndoableEdit.undoText", "Undo");
+	put("AbstractUndoableEdit.redoText", "Redo");
     }
     
 }
