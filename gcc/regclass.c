@@ -1827,6 +1827,9 @@ auto_inc_dec_reg_p (reg, mode)
 
 #endif /* REGISTER_CONSTRAINTS */
 
+static short *renumber = (short *)0;
+static size_t regno_allocated = 0;
+
 /* Allocate enough space to hold NUM_REGS registers for the tables used for
    reg_scan and flow_analysis that are indexed by the register number.  If
    NEW_P is non zero, initialize all of the registers, otherwise only
@@ -1840,37 +1843,11 @@ allocate_reg_info (num_regs, new_p, renumber_p)
      int new_p;
      int renumber_p;
 {
-  static size_t regno_allocated = 0;
-  static short *renumber = (short *)0;
   size_t size_info;
   size_t size_renumber;
   size_t min = (new_p) ? 0 : reg_n_max;
   struct reg_info_data *reg_data;
   struct reg_info_data *reg_next;
-
-  /* Free up all storage allocated */
-  if (num_regs < 0)
-    {
-      if (reg_n_info)
-	{
-	  VARRAY_FREE (reg_n_info);
-	  for (reg_data = reg_info_head; reg_data; reg_data = reg_next)
-	    {
-	      reg_next = reg_data->next;
-	      free ((char *)reg_data);
-	    }
-
-	  free (prefclass_buffer);
-	  free (altclass_buffer);
-	  prefclass_buffer = (char *)0;
-	  altclass_buffer = (char *)0;
-	  reg_info_head = (struct reg_info_data *)0;
-	  renumber = (short *)0;
-	}
-      regno_allocated = 0;
-      reg_n_max = 0;
-      return;
-    }
 
   if (num_regs > regno_allocated)
     {
@@ -1973,6 +1950,32 @@ allocate_reg_info (num_regs, new_p, renumber_p)
   MAX_REGNO_REG_SET (num_regs, new_p, renumber_p);
 }
 
+/* Free up the space allocated by allocate_reg_info.  */
+void
+free_reg_info ()
+{
+  if (reg_n_info)
+    {
+      struct reg_info_data *reg_data;
+      struct reg_info_data *reg_next;
+
+      VARRAY_FREE (reg_n_info);
+      for (reg_data = reg_info_head; reg_data; reg_data = reg_next)
+	{
+	  reg_next = reg_data->next;
+	  free ((char *)reg_data);
+	}
+
+      free (prefclass_buffer);
+      free (altclass_buffer);
+      prefclass_buffer = (char *)0;
+      altclass_buffer = (char *)0;
+      reg_info_head = (struct reg_info_data *)0;
+      renumber = (short *)0;
+    }
+  regno_allocated = 0;
+  reg_n_max = 0;
+}
 
 /* This is the `regscan' pass of the compiler, run just before cse
    and again just before loop.

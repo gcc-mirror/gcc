@@ -1010,7 +1010,7 @@ extern rtx find_use_as_address		PROTO((rtx, rtx, HOST_WIDE_INT));
 extern int max_parallel;
 
 /* Free up register info memory.  */
-extern void allocate_reg_info		PROTO((size_t, int, int));
+extern void free_reg_info		PROTO((void));
 
 /* recog.c */
 extern int asm_noperands		PROTO((rtx));

@@ -3067,6 +3067,7 @@ compile_file (name)
   ASM_FILE_END (asm_out_file);
 #endif
 
+
   /* Language-specific end of compilation actions.  */
  finish_syntax:
   lang_finish ();
@@ -3096,6 +3097,9 @@ compile_file (name)
   if (! flag_syntax_only
       && (ferror (asm_out_file) != 0 || fclose (asm_out_file) != 0))
     fatal_io_error (asm_file_name);
+
+  /* Free up memory for the benefit of leak detectors.  */
+  free_reg_info ();
 
   /* Print the times.  */
 
