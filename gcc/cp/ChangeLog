@@ -1,3 +1,7 @@
+2004-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* decl.c (reshape_init): Convert array designator to sizetype.
+
 2004-02-22  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	Backport from mainline

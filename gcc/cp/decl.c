@@ -8395,7 +8395,7 @@ reshape_init (tree type, tree *initp)
 	      TREE_CHAIN (element_init) = CONSTRUCTOR_ELTS (new_init);
 	      CONSTRUCTOR_ELTS (new_init) = element_init;
 	      if (TREE_PURPOSE (element_init))
-		index = TREE_PURPOSE (element_init);
+		index = convert (sizetype, TREE_PURPOSE (element_init));
 	    }
 	}
       else
