@@ -1,3 +1,8 @@
+Wed Oct 27 00:56:59 1999  Richard Henderson  <rth@cygnus.com>
+
+	* resource.c (mark_target_live_regs): Check that the target
+	insn wasn't created after compute_bb_for_insn.
+
 Tue Oct 26 23:15:03 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* ggc-page.c (poison_pages): Don't be overzealous.

@@ -831,7 +831,8 @@ mark_target_live_regs (insns, target, res)
 	b = tinfo->block;
     }
 
-  if (b == -1)
+  if (b == -1
+      && INSN_UID (target) < (int) VARRAY_SIZE (basic_block_for_insn))
     b = BLOCK_NUM (target);
 
   if (target_hash_table != NULL)
