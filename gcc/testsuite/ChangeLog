@@ -1,5 +1,11 @@
 2004-06-10  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/15569
+	PR rtl-optimization/15681
+	* gcc.dg/20040609-1.c: New test.
+
+2004-06-10  Jakub Jelinek  <jakub@redhat.com>
+
 	PR c++/14791
 	* g++.dg/opt/builtins1.C: New test.
 
