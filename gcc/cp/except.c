@@ -561,7 +561,7 @@ wrap_cleanups_r (tp, walk_subtrees, data)
   cleanup = TARGET_EXPR_CLEANUP (exp);
   if (cleanup)
     {
-      cleanup = build1 (MUST_NOT_THROW_EXPR, TREE_TYPE (cleanup), cleanup);
+      cleanup = build1 (MUST_NOT_THROW_EXPR, void_type_node, cleanup);
       TARGET_EXPR_CLEANUP (exp) = cleanup;
     }
 
@@ -733,7 +733,7 @@ build_throw (exp)
 	  return error_mark_node;
 	}
 
-      exp = build1 (MUST_NOT_THROW_EXPR, TREE_TYPE (exp), exp);
+      exp = build1 (MUST_NOT_THROW_EXPR, void_type_node, exp);
       /* Prepend the allocation.  */
       exp = build (COMPOUND_EXPR, TREE_TYPE (exp), allocate_expr, exp);
       if (temp_expr != void_zero_node)

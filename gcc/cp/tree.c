@@ -93,13 +93,7 @@ lvalue_p_1 (ref, treat_class_rvalues_as_lvalues, allow_cast_as_lvalue)
 			 allow_cast_as_lvalue);
 
     case NOP_EXPR:
-      /* If expression doesn't change the type, we consider it as an
-	 lvalue even when cast_as_lvalue extension isn't selected.
-	 That's because parts of the compiler are alleged to be sloppy
-	 about sticking in NOP_EXPR node for no good reason.  */
-      if (allow_cast_as_lvalue ||
-	  same_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (ref)),
-		       TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (ref, 0)))))
+      if (allow_cast_as_lvalue)
 	return lvalue_p_1 (TREE_OPERAND (ref, 0),
 			   treat_class_rvalues_as_lvalues,
 			   allow_cast_as_lvalue);
@@ -179,9 +173,8 @@ lvalue_p_1 (ref, treat_class_rvalues_as_lvalues, allow_cast_as_lvalue)
 
     case CALL_EXPR:
     case VA_ARG_EXPR:
-      return ((treat_class_rvalues_as_lvalues
-	       && IS_AGGR_TYPE (TREE_TYPE (ref)))
-	      ? clk_class : clk_none);
+      /* Any class-valued call would be wrapped in a TARGET_EXPR.  */
+      return clk_none;
 
     case FUNCTION_DECL:
       /* All functions (except non-static-member functions) are
@@ -2353,13 +2346,16 @@ cp_copy_res_decl_for_inlining (result, fn, caller, decl_map_,
 	  /* We have a named return value; copy the name and source
 	     position so we can get reasonable debugging information, and
 	     register the return variable as its equivalent.  */
-	  DECL_NAME (var) = DECL_NAME (nrv);
-	  DECL_SOURCE_LOCATION (var) = DECL_SOURCE_LOCATION (nrv);
-	  DECL_ABSTRACT_ORIGIN (var) = DECL_ORIGIN (nrv);
-	  /* Don't lose initialization info.  */
-	  DECL_INITIAL (var) = DECL_INITIAL (nrv);
-	  /* Don't forget that it needs to go in the stack.  */
-	  TREE_ADDRESSABLE (var) = TREE_ADDRESSABLE (nrv);
+	  if (TREE_CODE (var) == VAR_DECL)
+	    {
+	      DECL_NAME (var) = DECL_NAME (nrv);
+	      DECL_SOURCE_LOCATION (var) = DECL_SOURCE_LOCATION (nrv);
+	      DECL_ABSTRACT_ORIGIN (var) = DECL_ORIGIN (nrv);
+	      /* Don't lose initialization info.  */
+	      DECL_INITIAL (var) = DECL_INITIAL (nrv);
+	      /* Don't forget that it needs to go in the stack.  */
+	      TREE_ADDRESSABLE (var) = TREE_ADDRESSABLE (nrv);
+	    }
 
 	  splay_tree_insert (decl_map,
 			     (splay_tree_key) nrv,

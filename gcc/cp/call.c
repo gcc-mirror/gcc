@@ -2977,7 +2977,12 @@ build_conditional_expr (tree arg1, tree arg2, tree arg3)
     {
       if (pedantic)
 	pedwarn ("ISO C++ forbids omitting the middle term of a ?: expression");
-      arg1 = arg2 = save_expr (arg1);
+
+      /* Make sure that lvalues remain lvalues.  See g++.oliva/ext1.C.  */
+      if (real_lvalue_p (arg1))
+	arg2 = arg1 = stabilize_reference (arg1);
+      else
+	arg2 = arg1 = save_expr (arg1);
     }
 
   /* [expr.cond]
@@ -3964,6 +3969,12 @@ convert_like_real (tree convs, tree expr, tree fn, int argnum, int inner)
     case IDENTITY_CONV:
       if (type_unknown_p (expr))
 	expr = instantiate_type (totype, expr, tf_error | tf_warning);
+      /* Convert a non-array constant variable to its underlying value, unless we
+	 are about to bind it to a reference, in which case we need to
+	 leave it as an lvalue.  */
+      if (inner >= 0
+	  && TREE_CODE (TREE_TYPE (expr)) != ARRAY_TYPE)
+	expr = decl_constant_value (expr);
       return expr;
     case AMBIG_CONV:
       /* Call build_user_type_conversion again for the error.  */
@@ -3978,13 +3989,6 @@ convert_like_real (tree convs, tree expr, tree fn, int argnum, int inner)
                             TREE_CODE (convs) == REF_BIND ? -1 : 1);
   if (expr == error_mark_node)
     return error_mark_node;
-
-  /* Convert a non-array constant variable to its underlying value, unless we
-     are about to bind it to a reference, in which case we need to
-     leave it as an lvalue.  */
-  if (TREE_CODE (convs) != REF_BIND
-      && TREE_CODE (TREE_TYPE (expr)) != ARRAY_TYPE)
-    expr = decl_constant_value (expr);
 
   switch (TREE_CODE (convs))
     {

@@ -273,6 +273,9 @@ cp_dump_tree (dump_info, t)
 	  return 1;
 	}
       
+      if (! IS_AGGR_TYPE (t))
+	break;
+
       dump_child ("vfld", TYPE_VFIELD (t));
       if (CLASSTYPE_TEMPLATE_SPECIALIZATION(t))
         dump_string(di, "spec");
