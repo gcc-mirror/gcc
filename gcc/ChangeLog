@@ -1,3 +1,8 @@
+2002-10-08  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.c (c4x_print_operand): Enlarge buffer
+	for REAL_VALUE_TO_DECIMAL output.
+
 2002-10-07  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (rs6000_override_options): Set
