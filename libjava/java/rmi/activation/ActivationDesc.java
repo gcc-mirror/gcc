@@ -40,8 +40,9 @@ package java.rmi.activation;
 import java.io.Serializable;
 import java.rmi.MarshalledObject;
 
-public final class ActivationDesc
-	implements Serializable {
+public final class ActivationDesc implements Serializable
+{
+  static final long serialVersionUID = 7455834104417690957L;
 
 private ActivationGroupID groupid;
 private String classname;
