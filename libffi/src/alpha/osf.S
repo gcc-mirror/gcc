@@ -251,7 +251,11 @@ $LFE2:
 
 	.end	ffi_closure_osf
 
+#ifdef __ELF__
 .section .rodata
+#else
+.rdata
+#endif
 $load_table:
 	.gprel32 $load_none	# FFI_TYPE_VOID
 	.gprel32 $load_32	# FFI_TYPE_INT
