@@ -67,7 +67,7 @@
 #undef ULONG_MAX
 #define ULONG_MAX 4294967295UL
 
-#if !defined (__STRICT_ANSI__) || defined (_GNU_SOURCE)
+#if defined (__GNU_LIBRARY__) ? defined (__USE_GNU) : !defined (__STRICT_ANSI__)
 /* Minimum and maximum values a `signed long long int' can hold.  */
 #undef LONG_LONG_MIN
 #define LONG_LONG_MIN (-LONG_LONG_MAX-1)
