@@ -3790,7 +3790,7 @@ convert_like_real (convs, expr, fn, argnum, inner)
 
 	   If the target is a class, that means call a ctor.  */
 	if (IS_AGGR_TYPE (totype)
-	    && (inner >= 0 || !real_lvalue_p (expr)))
+	    && (inner >= 0 || !lvalue_p (expr)))
 	  {
 	    savew = warningcount, savee = errorcount;
 	    expr = build_new_method_call
