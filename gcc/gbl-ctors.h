@@ -31,13 +31,13 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 	Note that this file should only be compiled with GCC.
 */
 
-#ifdef sun
-extern void on_exit (void*, void*);
-#define ON_EXIT(FUNC,ARG) on_exit ((FUNC), (ARG))
-#else
 #ifdef HAVE_ATEXIT
 extern void atexit (void (*) (void));
 #define ON_EXIT(FUNC,ARG) atexit ((FUNC))
+#else
+#ifdef sun
+extern void on_exit (void*, void*);
+#define ON_EXIT(FUNC,ARG) on_exit ((FUNC), (ARG))
 #endif
 #endif
 
