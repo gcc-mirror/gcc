@@ -1609,7 +1609,9 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 	      pattern = copy_rtx_and_substitute (pattern, map);
 	      copy = emit_insn (pattern);
 	    }
-	  /* REG_NOTES will be copied later.  */
+	  /* We must copy the REG_NOTES now, because the register mapping
+	     might change later.  */
+	  REG_NOTES (copy) = copy_rtx_and_substitute (REG_NOTES (insn), map);
 	  
 #ifdef HAVE_cc0
 	  /* If this insn is setting CC0, it may need to look at
@@ -1653,6 +1655,9 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 	case JUMP_INSN:
 	  pattern = copy_rtx_and_substitute (PATTERN (insn), map);
 	  copy = emit_jump_insn (pattern);
+	  /* We must copy the REG_NOTES now, because the register mapping
+	     might change later.  */
+	  REG_NOTES (copy) = copy_rtx_and_substitute (REG_NOTES (insn), map);
 
 	  if (JUMP_LABEL (insn) == start_label && insn == copy_end
 	      && ! last_iteration)
@@ -1754,6 +1759,9 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 	case CALL_INSN:
 	  pattern = copy_rtx_and_substitute (PATTERN (insn), map);
 	  copy = emit_call_insn (pattern);
+	  /* We must copy the REG_NOTES now, because the register mapping
+	     might change later.  */
+	  REG_NOTES (copy) = copy_rtx_and_substitute (REG_NOTES (insn), map);
 
 #ifdef HAVE_cc0
 	  if (cc0_insn)
@@ -1804,19 +1812,6 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
     }
   while (insn != copy_end);
   
-  /* Now copy the REG_NOTES.  */
-  insn = copy_start;
-  do
-    {
-      insn = NEXT_INSN (insn);
-      if ((GET_CODE (insn) == INSN || GET_CODE (insn) == JUMP_INSN
-	   || GET_CODE (insn) == CALL_INSN)
-	  && map->insn_map[INSN_UID (insn)])
-	REG_NOTES (map->insn_map[INSN_UID (insn)])
-	  = copy_rtx_and_substitute (REG_NOTES (insn), map);
-    }
-  while (insn != copy_end);
-
   /* There may be notes between copy_notes_from and loop_end.  Emit a copy of
      each of these notes here, since there may be some important ones, such as
      NOTE_INSN_BLOCK_END notes, in this group.  We don't do this on the last
