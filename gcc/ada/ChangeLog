@@ -1,3 +1,7 @@
+2001-10-05  Geert Bosch  (bosch@gnat.com)
+
+	* adaint.h: Small formatting fix.
+
 2001-10-04  Geert Bosch  <bosch@gnat.com>
 
 	* sysdep.c (__gnat_set_binary_mode, __gnat_set_text_mode):
