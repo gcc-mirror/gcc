@@ -231,6 +231,9 @@
 /* Define if you have the <fcntl.h> header file.  */
 #undef HAVE_FCNTL_H
 
+/* Define if you have the <iconv.h> header file.  */
+#undef HAVE_ICONV_H
+
 /* Define if you have the <langinfo.h> header file.  */
 #undef HAVE_LANGINFO_H
 
@@ -330,6 +333,9 @@
 
 /* Define if you can safely include both <string.h> and <strings.h>. */
 #undef STRING_WITH_STRINGS
+
+/* Always define this */
+#undef _XOPEN_SOURCE
 
 /* Define if you have a working <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H

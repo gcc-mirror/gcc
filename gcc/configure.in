@@ -414,11 +414,15 @@ AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS(limits.h stddef.h string.h strings.h stdlib.h time.h \
 		 fcntl.h unistd.h stab.h sys/file.h sys/time.h \
 		 sys/resource.h sys/param.h sys/times.h sys/stat.h \
-		 direct.h malloc.h langinfo.h)
+		 direct.h malloc.h langinfo.h iconv.h)
 
 # Check for thread headers.
 AC_CHECK_HEADER(thread.h, [have_thread_h=yes], [have_thread_h=])
 AC_CHECK_HEADER(pthread.h, [have_pthread_h=yes], [have_pthread_h=])
+
+# Always define _XOPEN_SOURCE.  It doesn't hurt, and it lets us
+# pick up CODESET from langinfo.h, among other things.
+AC_DEFINE(_XOPEN_SOURCE, 1, [Always define this])
 
 # See if GNAT has been installed
 AC_CHECK_PROG(gnat, gnatbind, yes, no)
