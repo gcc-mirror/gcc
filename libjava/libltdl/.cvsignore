@@ -1,0 +1,13 @@
+.deps
+.libs
+Makefile
+Makefile.in
+acinclude.m4
+aclocal.m4
+configure
+config.*
+conftest*
+libtool
+*.lo
+*.la
+stamp-h*
