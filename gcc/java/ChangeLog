@@ -1,3 +1,26 @@
+2002-07-30  Andrew Haley  <aph@cambridge.redhat.com>
+
+	* Make-lang.in (java-tree-inline.o): New.
+	(JAVA_OBJS): Add java-tree-inline.o.
+	* parse.y (source_end_java_method): Call java_optimize_inline.
+	(java_expand_method_bodies): Save method's tree in
+	DECL_SAVED_TREE.
+	(add_stmt_to_compound): Keep track of the number of statments.
+	* lang.c (java_init): Enable flag_inline_trees.
+	(java_post_options): If flag_inline_functions is on, enable
+	flag_inline_trees instread.
+	(decl_constant_value): New.
+	(java_tree_inlining_walk_subtrees): New.
+	* java-tree.h (DECL_NUM_STMTS): New macro.
+	(java_optimize_inline): Declare.
+	* expr.c (java_expand_expr): Allow a BLOCK to return a value.
+	Handle a LABEL_EXPR.
+	* decl.c (build_result_decl): If we already have a DECL_RESULT
+	don't make another.
+	(dump_function): New.
+	(java_optimize_inline): New.
+	(dump_function): New.
+
 2002-08-13  Jesse Rosenstock  <jmr@fulcrummicro.com>
 
 	For PR java/7483:

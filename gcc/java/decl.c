@@ -41,9 +41,11 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "except.h"
 #include "java-except.h"
 #include "ggc.h"
+#include "timevar.h"
+#include "tree-inline.h"
 
 #if defined (DEBUG_JAVA_BINDING_LEVELS)
-extern void indent PROTO((void));
+extern void indent PARAMS ((void));
 #endif
 
 static tree push_jvm_slot PARAMS ((int, tree));
@@ -53,6 +55,7 @@ static struct binding_level *make_binding_level PARAMS ((void));
 static tree create_primitive_vtable PARAMS ((const char *));
 static tree check_local_named_variable PARAMS ((tree, tree, int, int *));
 static tree check_local_unnamed_variable PARAMS ((tree, tree, tree));
+static void dump_function PARAMS ((enum tree_dump_index, tree));
 
 /* Set to non-zero value in order to emit class initilization code
    before static field references.  */
@@ -1662,11 +1665,18 @@ build_result_decl (fndecl)
   tree fndecl;
 {
   tree restype = TREE_TYPE (TREE_TYPE (fndecl));
-  /* To be compatible with C_PROMOTING_INTEGER_TYPE_P in cc1/cc1plus. */
-  if (INTEGRAL_TYPE_P (restype)
-      && TYPE_PRECISION (restype) < TYPE_PRECISION (integer_type_node))
-    restype = integer_type_node;
-  return (DECL_RESULT (fndecl) = build_decl (RESULT_DECL, NULL_TREE, restype));
+  tree result = DECL_RESULT (fndecl);
+  if (! result)
+    {
+      /* To be compatible with C_PROMOTING_INTEGER_TYPE_P in cc1/cc1plus. */
+      if (INTEGRAL_TYPE_P (restype)
+	  && TYPE_PRECISION (restype) < TYPE_PRECISION (integer_type_node))
+	restype = integer_type_node;
+      result = build_decl (RESULT_DECL, NULL_TREE, restype);
+      DECL_CONTEXT (result) = fndecl;
+      DECL_RESULT (fndecl) = result;
+    }
+  return result;
 }
 
 void
@@ -1823,6 +1833,36 @@ end_java_method ()
   rest_of_compilation (fndecl);
 
   current_function_decl = NULL_TREE;
+}
+
+/* Dump FUNCTION_DECL FN as tree dump PHASE. */
+
+static void
+dump_function (phase, fn)
+     enum tree_dump_index phase;
+     tree fn;
+{
+  FILE *stream;
+  int flags;
+
+  stream = dump_begin (phase, &flags);
+  if (stream)
+    {
+      dump_node (fn, TDF_SLIM | flags, stream);
+      dump_end (phase, stream);
+    }
+}
+ 
+void java_optimize_inline (fndecl)
+     tree fndecl;
+{
+  if (flag_inline_trees)
+    {
+      timevar_push (TV_INTEGRATION);
+      optimize_inline_calls (fndecl);
+      timevar_pop (TV_INTEGRATION);
+      dump_function (TDI_inlined, fndecl);
+    }
 }
 
 #include "gt-java-decl.h"
