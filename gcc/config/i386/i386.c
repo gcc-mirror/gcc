@@ -1469,8 +1469,7 @@ override_options (void)
 
   /* If the architecture always has an FPU, turn off NO_FANCY_MATH_387,
      since the insns won't need emulation.  */
-  if (!(target_flags_explicit & MASK_NO_FANCY_MATH_387)
-      && (x86_arch_always_fancy_math_387 & (1 << ix86_arch)))
+  if (x86_arch_always_fancy_math_387 & (1 << ix86_arch))
     target_flags &= ~MASK_NO_FANCY_MATH_387;
 
   /* Likewise, if the target doesn't have a 387, or we've specified
