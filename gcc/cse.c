@@ -3325,8 +3325,8 @@ simplify_binary_operation (code, mode, op0, op1)
 	}
 #endif
 
-      set_float_handler (NULL_PTR);
       value = real_value_truncate (mode, value);
+      set_float_handler (NULL_PTR);
       return immed_real_const_1 (value, mode);
     }
 #endif  /* not REAL_IS_NOT_DOUBLE, or REAL_ARITHMETIC */
