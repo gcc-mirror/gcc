@@ -1,3 +1,8 @@
+Sun Jun 20 16:57:29 1999  David Edelsohn  <edelsohn@gnu.org>
+
+	* rs6000.md (movdf_hardfloat32): Use worst case insn length
+	attributes for cases 1 and 2.
+
 Sat Jun 19 22:52:55 1999  Richard Henderson  <rth@cygnus.com>
 
 	* haifa-sched.c (sched_analyze): Mark call-user regs as clobbered
