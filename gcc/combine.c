@@ -11431,6 +11431,17 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 	  place = i3;
 	  break;
 
+	case REG_EH_REGION:
+	  /* This note must remain with the call.  It should not be possible
+	     for both I2 and I3 to be a call.  */
+	  if (GET_CODE (i3) == CALL_INSN) 
+	    place = i3;
+	  else if (i2 && GET_CODE (i2) == CALL_INSN)
+	    place = i2;
+	  else
+	    abort ();
+	  break;
+
 	case REG_UNUSED:
 	  /* Any clobbers for i3 may still exist, and so we must process
 	     REG_UNUSED notes from that insn.
