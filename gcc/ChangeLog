@@ -2,7 +2,7 @@
 
 	PR optimization/12180
 	* tree-inline.c (inline_forbidden_p_1): Do not permit inlining of
-	functions containing calls to 
+	functions containing calls to __builtin_next_arg.
 
 2003-10-02  Chris Demetriou  <cgd@broadcom.com>
 
