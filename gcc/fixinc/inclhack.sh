@@ -638,8 +638,6 @@ struct rusage;
 	./stropts.h | \
 	./time.h | \
 	./unistd.h )
-    if ( test -n "`egrep '^[ 	]*#[ 	]*pragma[ 	]extern_prefix' ${file}`"
-       ) > /dev/null 2>&1 ; then
     fixlist="${fixlist}
       bad_lval"
     if [ ! -r ${DESTFILE} ]
@@ -650,7 +648,6 @@ struct rusage;
           < $infile > ${DESTDIR}/fixinc.tmp
     rm -f ${DESTFILE}
     mv -f ${DESTDIR}/fixinc.tmp ${DESTFILE}
-    fi # end of selection 'if'
     ;; # case end for file name test
     esac
 

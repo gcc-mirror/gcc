@@ -185,7 +185,6 @@ fix = {
  */
 fix = {
     hackname = bad_lval;
-    select   = "^[ \t]*#[ \t]*pragma[ \t]extern_prefix";
     files    = libgen.h;
     files    = dirent.h;
     files    = ftw.h;

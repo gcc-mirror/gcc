@@ -421,17 +421,9 @@ tSCC zBad_LvalList[] =
  *  Machine/OS name selection pattern
  */
 #define apzBad_LvalMachs (const char**)NULL
-
-/*
- *  content selection pattern - do fix if pattern found
- */
-tSCC zBad_LvalSelect0[] =
-       "^[ \t]*#[ \t]*pragma[ \t]extern_prefix";
-
-#define    BAD_LVAL_TEST_CT  1
-#define    BAD_LVAL_RE_CT    1
-tTestDesc aBad_LvalTests[] = {
-  { TT_EGREP,  zBad_LvalSelect0,   (regex_t*)NULL }, };
+#define BAD_LVAL_TEST_CT  0
+#define BAD_LVAL_RE_CT    0
+#define aBad_LvalTests   (tTestDesc*)NULL
 
 /*
  *  Fix Command Arguments for Bad_Lval
@@ -3823,7 +3815,7 @@ cat > /dev/null",
  *
  *  List of all fixes
  */
-#define  REGEX_COUNT  76
+#define  REGEX_COUNT  75
 #define  FIX_COUNT    104
 tFixDesc fixDescList[ FIX_COUNT ] = {
   {  zAix_SyswaitName,    zAix_SyswaitList,
