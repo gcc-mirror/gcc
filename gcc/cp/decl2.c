@@ -4703,6 +4703,16 @@ validate_nonmember_using_decl (decl, scope, name)
   if (TREE_CODE (decl) == SCOPE_REF
       && TREE_OPERAND (decl, 0) == std_node)
     {
+      if (namespace_bindings_p ()
+	  && current_namespace == global_namespace)
+	/* There's no need for a using declaration at all, here,
+	   since `std' is the same as `::'.  We can't just pass this
+	   on because we'll complain later about declaring something
+	   in the same scope as a using declaration with the same
+	   name.  We return NULL_TREE which indicates to the caller
+	   that there's no need to do any further processing.  */
+	return NULL_TREE;
+
       *scope = global_namespace;
       *name = TREE_OPERAND (decl, 1);
     }
@@ -4773,17 +4783,37 @@ do_nonmember_using_decl (scope, name, oldval, oldtype, newval, newtype)
       *newval = oldval;
       for (tmp = BINDING_VALUE (decls); tmp; tmp = OVL_NEXT (tmp))
 	{
-	  /* Compare each new function with each old one.
-	     If the old function was also used, there is no conflict. */
-	  for (tmp1 = oldval; tmp1; tmp1 = OVL_NEXT (tmp1))
-	    if (OVL_CURRENT (tmp) == OVL_CURRENT (tmp1))
-	      break;
-	    else if (OVL_USED (tmp1))
-	      continue;
-	    else if (duplicate_decls (OVL_CURRENT (tmp), OVL_CURRENT (tmp1)))
-	      return;
+	  tree new_fn = OVL_CURRENT (tmp);
 
-	  /* Duplicate use, ignore */
+	  /* [namespace.udecl]
+
+	     If a function declaration in namespace scope or block
+	     scope has the same name and the same parameter types as a
+	     function introduced by a using declaration the program is
+	     ill-formed.  */
+	  for (tmp1 = oldval; tmp1; tmp1 = OVL_NEXT (tmp1))
+	    {
+	      tree old_fn = OVL_CURRENT (tmp1);
+
+	      if (!OVL_USED (tmp1)
+		  && compparms (TYPE_ARG_TYPES (TREE_TYPE (new_fn)),
+				TYPE_ARG_TYPES (TREE_TYPE (old_fn))))
+		{
+		  /* There was already a non-using declaration in
+		     this scope with the same parameter types.  */
+		  cp_error ("`%D' is already declared in this scope",
+			    name);
+		  break;
+		}
+	      else if (duplicate_decls (new_fn, old_fn))
+		/* We're re-using something we already used 
+		   before.  We don't need to add it again.  */ 
+		break;
+	    }
+
+	  /* If we broke out of the loop, there's no reason to add
+	     this function to the using declarations for this
+	     scope.  */
 	  if (tmp1)
 	    continue;
 	    
@@ -4856,7 +4886,20 @@ do_local_using_decl (decl)
   do_nonmember_using_decl (scope, name, oldval, oldtype, &newval, &newtype);
 
   if (newval)
-    push_local_binding (name, newval);
+    {
+      if (is_overloaded_fn (newval))
+	{
+	  tree fn;
+
+	  /* We only need to push declarations for those functions
+	     that were not already bound in the current level.  */
+	  for (fn = newval; fn != oldval; fn = OVL_NEXT (fn))
+	    push_overloaded_decl (OVL_CURRENT (fn), 
+				  PUSH_LOCAL | PUSH_USING);
+	}
+      else
+	push_local_binding (name, newval);
+    }
   if (newtype)
     set_identifier_type_value (name, newtype);
 }

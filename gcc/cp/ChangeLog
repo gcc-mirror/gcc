@@ -1,9 +1,32 @@
+1999-01-21  Mark Mitchell  <mark@markmitchell.com>
+
+	* cp-tree.h (PUSH_GLOBAL): New macro.
+	(PUSH_LOCAL): Likewise.
+	(PUSH_USING): Likewise.
+	(namespace_bindings_p): Declare.
+	(push_overloaded_decl): Likewise.
+	* decl.c (push_overloaded_decl): Don't make it static.  Check for
+	illegal declarations after using declarations here.
+	(namespace_bindings_p): Likewise.
+	(duplicate_decls): Don't consider declarations from different
+	namespaces to be the same.
+	(pushdecl): Use symbolic PUSH_ constants in calls to
+	push_overloaded_decl.
+	(push_overloaded_decl_1): Likewise.
+	* decl2.c (validate_nonmember_using_decl): Tweak `std' handling. 
+	(do_nonmember_using_decl): Check for illegal using declarations
+	after ordinary declarations here.
+	(do_local_using_decl): Call pushdecl to insert declarations.
+
 1999-01-21  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (grokdeclarator): Fix lang_c -> lang_name_c typo.
 
 1999-01-21  Mark Mitchell  <mark@markmitchell.com>
 
+	* tree.c (build_cplus_array_type_1): Don't call build_array_type
+	for types involving template parameters.
+	
 	* cp-tree.h (PARM_DECL_EXPR): Delete.
 	(convert_default_arg): Change prototype.
 	(check_default_argument): Declare.

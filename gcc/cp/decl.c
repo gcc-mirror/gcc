@@ -135,7 +135,6 @@ static struct stack_level *decl_stack;
 static tree grokparms				PROTO((tree, int));
 static tree lookup_nested_type			PROTO((tree, tree));
 static char *redeclaration_error_message	PROTO((tree, tree));
-static tree push_overloaded_decl		PROTO((tree, int));
 
 static struct stack_level *push_decl_level PROTO((struct stack_level *,
 						  struct obstack *));
@@ -145,7 +144,6 @@ static void pop_binding_level PROTO((void));
 static void suspend_binding_level PROTO((void));
 static void resume_binding_level PROTO((struct binding_level *));
 static struct binding_level *make_binding_level PROTO((void));
-static int namespace_bindings_p PROTO((void));
 static void declare_namespace_level PROTO((void));
 static void signal_catch PROTO((int)) ATTRIBUTE_NORETURN;
 static void storedecls PROTO((tree));
@@ -922,7 +920,7 @@ toplevel_bindings_p ()
 
 /* Nonzero if this is a namespace scope.  */
 
-static int
+int
 namespace_bindings_p ()
 {
   return current_binding_level->namespace_p;
@@ -2942,6 +2940,11 @@ duplicate_decls (newdecl, olddecl)
     }
   else if (!types_match)
     {
+      if (DECL_REAL_CONTEXT (newdecl) != DECL_REAL_CONTEXT (olddecl))
+	/* These are certainly not duplicate declarations; they're
+	   from different scopes.  */
+	return 0;
+
       if (TREE_CODE (newdecl) == TEMPLATE_DECL)
 	{
 	  /* The name of a class template may not be declared to refer to
@@ -3655,7 +3658,7 @@ pushdecl (x)
 
       if (TREE_CODE (x) == FUNCTION_DECL && ! DECL_FUNCTION_MEMBER_P (x))
 	{
-	  t = push_overloaded_decl (x, 1);
+	  t = push_overloaded_decl (x, PUSH_LOCAL);
 	  if (t != x || DECL_LANGUAGE (x) == lang_c)
 	    return t;
 	  if (!namespace_bindings_p ())
@@ -3665,7 +3668,7 @@ pushdecl (x)
 	    need_new_binding = 0;
 	}
       else if (DECL_FUNCTION_TEMPLATE_P (x) && DECL_NAMESPACE_SCOPE_P (x))
-	return push_overloaded_decl (x, 0);
+	return push_overloaded_decl (x, PUSH_GLOBAL);
 
       /* If declaring a type as a typedef, copy the type (unless we're
 	 at line 0), and install this TYPE_DECL as the new type's typedef
@@ -4157,19 +4160,25 @@ push_using_directive (used)
    DECL may also be a TEMPLATE_DECL, with a FUNCTION_DECL in its DECL_RESULT
    slot.  It is dealt with the same way.
 
+   FLAGS is a bitwise-or of the following values:
+     PUSH_LOCAL: Bind DECL in the current scope, rather than at
+                 namespace scope.
+     PUSH_USING: DECL is being pushed as the result of a using
+                 declaration. 
+
    The value returned may be a previous declaration if we guessed wrong
    about what language DECL should belong to (C or C++).  Otherwise,
    it's always DECL (and never something that's not a _DECL).  */
 
-static tree
-push_overloaded_decl (decl, forgettable)
+tree
+push_overloaded_decl (decl, flags)
      tree decl;
-     int forgettable;
+     int flags;
 {
   tree name = DECL_NAME (decl);
   tree old;
   tree new_binding;
-  int doing_global = (namespace_bindings_p () || ! forgettable);
+  int doing_global = (namespace_bindings_p () || !(flags & PUSH_LOCAL));
 
   if (doing_global)
     {
@@ -4202,9 +4211,19 @@ push_overloaded_decl (decl, forgettable)
           tree tmp;
 	  
 	  for (tmp = old; tmp; tmp = OVL_NEXT (tmp))
-	    if (decl == OVL_CURRENT (tmp) 
-		|| duplicate_decls (decl, OVL_CURRENT (tmp)))
-	      return OVL_CURRENT (tmp);
+	    {
+	      tree fn = OVL_CURRENT (tmp);
+
+	      if (TREE_CODE (tmp) == OVERLOAD && OVL_USED (tmp)
+		  && !(flags & PUSH_USING)
+		  && compparms (TYPE_ARG_TYPES (TREE_TYPE (fn)),
+				TYPE_ARG_TYPES (TREE_TYPE (decl))))
+		cp_error ("`%#D' conflicts with previous using declaration `%#D'",
+			  decl, fn);
+	      
+	      if (duplicate_decls (decl, fn))
+		return fn;
+	    }
 	}
       else
 	{
@@ -5776,7 +5795,7 @@ static void
 push_overloaded_decl_1 (x)
      tree x;
 {
-  push_overloaded_decl (x, 0);
+  push_overloaded_decl (x, PUSH_GLOBAL);
 }
 
 #ifdef __GNUC__
