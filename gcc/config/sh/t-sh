@@ -1,7 +1,7 @@
 CROSS_LIBGCC1 = libgcc1-asm.a
 LIB1ASMSRC = sh/lib1funcs.asm
 LIB1ASMFUNCS = _ashiftrt _ashiftrt_n _ashiftlt _lshiftrt _movstr \
-  _mulsi3 _sdivsi3 _udivsi3
+  _mulsi3 _sdivsi3 _udivsi3 _set_fpscr
 
 # These are really part of libgcc1, but this will cause them to be
 # built correctly, so...
