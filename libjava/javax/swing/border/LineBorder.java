@@ -68,16 +68,6 @@ public class LineBorder extends AbstractBorder
     this.roundedCorners = roundedCorners;
   }
     
-    public LineBorder(int top,
-		int left,
-		int bottom, 
-		int right,
-		Color color)
-    {
-        super(top, left, bottom, right);
-        this.c = color;
-    }
-
     public boolean isBorderOpaque()
     {
 	return false;

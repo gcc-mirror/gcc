@@ -73,16 +73,6 @@ public class BevelBorder extends AbstractBorder
     this.shadowInner = shadowInner;
   }
 
-    public BevelBorder(int top,
-		int left,
-		int bottom, 
-		int right,
-		Color color)
-    {
-        super(top, left, bottom, right);
-        this.c = color;
-    }
-
     public boolean isBorderOpaque()
     {
 	return false;
