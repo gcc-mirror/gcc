@@ -30,14 +30,9 @@ extern const char *output_store (rtx *);
 extern const char *output_move_double (rtx *);
 extern const char *output_fp_move_double (rtx *);
 extern const char *output_block_move (rtx *);
-extern const char *output_delay_insn (rtx);
-#if 0
-extern const char *output_delayed_branch (const char *, rtx *, rtx);
-#endif
 extern void output_load_address (rtx *);
 extern int safe_insn_src_p (rtx, enum machine_mode);
 extern int operand_clobbered_before_used_after (rtx, rtx);
-extern int single_insn_src_p (rtx, enum machine_mode);
 extern int reg_or_0_operand (rtx, enum machine_mode);
 extern int arith_operand (rtx, enum machine_mode);
 extern int logic_operand (rtx, enum machine_mode);

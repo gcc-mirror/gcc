@@ -1,5 +1,20 @@
 2003-08-22  Jason Eckhardt  <jle@rice.edu>
 
+	* config/i860/i860-protos.h (output_delay_insn): Remove prototype.
+	(output_delayed_branch): Remove prototype.
+	(single_insn_src_p): Remove prototype.
+	* config/i860/i860.c (single_insn_src_p): Remove function.
+	(output_delayed_branch): Remove function.
+	(output_delay_insn): Remove function.
+	(va_start): Remove unconditional test and dead code, re-format.
+	Fix coding style and spelling problems in various comments.
+	* config/i860/i860.md (UNSPECV_BLOCKAGE): Define constant...
+	(blockage pattern): ...and use it here.
+	(all define_peephole patterns related to delayed branches): Remove.
+	Fix coding style and spelling problems in various comments.
+
+2003-08-22  Jason Eckhardt  <jle@rice.edu>
+
 	* config/i860/i860.c: Replace all occurrences of 'GNU CC' with 'GCC'.
 	Remove all uses of the PARAMS macro.  Remove superflous prototypes.
 	Convert all function definitions from traditional to ISO C90 syntax.
