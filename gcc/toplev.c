@@ -4130,7 +4130,7 @@ check_lang_option (option, lang_option)
   /* Ignore null entries.  */
   if (option == NULL || option == START_LANG || option == END_LANG
       || lang_option == START_LANG || lang_option == END_LANG
-      || lang_option == NULL  || *lang_option == 0)
+      || lang_option == NULL || *lang_option == 0)
     return 0;
 
   len = strlen (lang_option);
@@ -4329,9 +4329,9 @@ main (argc, argv, envp)
       
       if (j != -1)
 	{
-	/* If the option is valid for *some* language,
-	   treat it as valid even if this language doesn't understand it.  */
-	lang_decode_option (argv[i]);
+	  /* If the option is valid for *some* language,
+	     treat it as valid even if this language doesn't understand it.  */
+	  lang_decode_option (argv[i]);
 	  
 	  if (!strcmp (argv[i], "--help"))
 	    {
