@@ -2429,6 +2429,9 @@ dbxout_symbol (tree decl, int local ATTRIBUTE_UNUSED)
       context = decl_function_context (decl);
       if (context == current_function_decl)
 	break;
+      /* Don't mention an inline instance of a nested function.  */
+      if (context && DECL_FROM_INLINE (decl))
+	break;
       if (!MEM_P (DECL_RTL (decl))
 	  || GET_CODE (XEXP (DECL_RTL (decl), 0)) != SYMBOL_REF)
 	break;
