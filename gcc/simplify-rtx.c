@@ -3052,15 +3052,9 @@ simplify_rtx (rtx x)
 				       XEXP (x, 0), GET_MODE (XEXP (x, 0)));
     case 'c':
       if (swap_commutative_operands_p (XEXP (x, 0), XEXP (x, 1)))
-	{
-	  rtx tem;
+	return simplify_gen_binary (code, mode, XEXP (x, 1), XEXP (x, 0));
 
-	  tem = XEXP (x, 0);
-	  XEXP (x, 0) = XEXP (x, 1);
-	  XEXP (x, 1) = tem;
-	  return simplify_binary_operation (code, mode,
-					    XEXP (x, 0), XEXP (x, 1));
-	}
+      /* ... fall through ... */
 
     case '2':
       return simplify_binary_operation (code, mode, XEXP (x, 0), XEXP (x, 1));
