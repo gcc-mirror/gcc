@@ -232,12 +232,7 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FPUPPER_REGS, FP_REGS,
   {0x00000000, 0x10000000},	/* SHIFT_REGS */		\
   {0xfffffffe, 0x1fffffff}}	/* ALL_REGS */
 
-/* If defined, gives a class of registers that cannot be used as the
-   operand of a SUBREG that changes the mode of the object illegally.  */
-
-#define CLASS_CANNOT_CHANGE_MODE	(FP_REGS)
-
-/* Defines illegal mode changes for CLASS_CANNOT_CHANGE_MODE.
+/* Defines invalid mode changes.
 
    SImode loads to floating-point registers are not zero-extended.
    The definition for LOAD_EXTEND_OP specifies that integer loads
@@ -245,8 +240,9 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FPUPPER_REGS, FP_REGS,
    we inhibit changes from SImode unless they are to a mode that is
    identical in size.  */
 
-#define CLASS_CANNOT_CHANGE_MODE_P(FROM,TO)				\
-  ((FROM) == SImode && GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO))
+#define CANNOT_CHANGE_MODE_CLASS(FROM, TO)			\
+  ((FROM) == SImode && GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO)       \
+   ? FP_REGS : NO_REGS)
 
 /* Return the class number of the smallest class containing
    reg number REGNO.  This could be a conditional expression

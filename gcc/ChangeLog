@@ -1,3 +1,85 @@
+2002-11-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	* hard-reg-set.h (REG_CANNOT_CHANGE_MODE_P): New.
+
+	* config/rs6000/rs6000.h (CLASS_CANNOT_CHANGE_MODE_P): Remove.
+	(CLASS_CANNOT_CHANGE_MODE): Remove.
+	(CANNOT_CHANGE_MODE_CLASS): New.
+
+	* config/alpha/alpha.h: Same.
+
+	* config/ia64/ia64.h: Same.
+
+	* config/mips/mips.h: Same.
+
+	* config/s390/s390.h: Same.
+
+	* config/sh/sh.h: Same.
+
+	* config/pa/pa64-regs.h: Same.
+
+	* config/sh/sh-protos.h (sh_cannot_change_mode_class): Add prototype.
+	
+	* config/sh/sh.c (sh_cannot_change_mode_class): New.
+
+	* config/mips/mips-protos.h (mips_cannot_change_mode_class): Add
+	prototype.
+
+	* config/mips/mips.c (mips_cannot_change_mode_class): New.
+
+	* doc/tm.texi (Register Classes): Remove
+	CLASS_CANNOT_CHANGE_MODE and CLASS_CANNOT_CHANGE_MODE_P.
+	Document CANNOT_CHANGE_MODE_CLASS.
+
+	* reload.c (push_reload): Use CANNOT_CHANGE_MODE_CLASS.
+	(push_reload): Same.
+
+	* simplify-rtx.c (simplify_subreg): Same.
+
+	* reload1.c (choose_reload_regs): Same.
+
+	* recog.c (register_operand): Same.
+
+	* regrename.c (mode_change_ok): Change to use new
+	CANNOT_CHANGE_MODE_CLASS infrastructure.
+
+	* regclass.c (cannot_change_mode_set_regs): New.
+	Declare subregs_of_mode.
+	(regclass): Use subregs_of_mode.
+	Remove references to reg_changes_mode.
+	(init_reg_sets_1): Remove class_can_change_mode and
+	reg_changes_mode code.
+	(invalid_mode_change_p): New.
+	(dump_regclass): Use invalid_mode_change_p instead of
+	class_can_change_mode.
+	(regclass): Same.
+	(record_operand_costs): Do not set reg_changes_mode.
+
+	* local-alloc.c (struct qty): Remove changes_mode field.
+	(alloc_qty): Remove changes_mode initialization.
+	(update_qty_class): Remove set of changes_mode.
+	(find_free_reg): Use subregs_of_mode.
+
+	* global.c (find_reg): Use subregs_of_mode info.
+
+	* rtl.h (cannot_change_mode_set_regs): New prototype.
+	(invalid_mode_change_p): Same.
+	(REG_CANNOT_CHANGE_MODE_P): New macro.
+
+	* flow.c (mark_used_regs): Calculate subregs_of_mode.  Remove
+	REG_CHANGES_MODE.
+	(life_analysis): Clear subregs_of_mode.
+
+	* combine.c (subst): Pass class to CLASS_CANNOT_CHANGE_MODE_P.
+	Remove use of CLASS_CANNOT_CHANGE_MODE.
+	(simplify_set): Same.
+	(gen_lowpart_for_combine): Calculate subregs_of_mode.  Remove
+	REG_CHANGES_MODE.
+	
+	* regs.h: Add extern for subregs_of_mode;
+	Include hard-reg-set and basic-block.
+	(REG_CHANGES_MODE): Delete.
+
 2002-11-03  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* jump.c (never_reached_warning): Don't set contains_insn until the

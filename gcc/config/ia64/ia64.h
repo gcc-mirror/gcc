@@ -1008,17 +1008,11 @@ enum reg_class
    : ((CLASS) == FR_REGS && (MODE) == TFmode) ? 1		\
    : (GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
-/* If defined, gives a class of registers that cannot be used as the
-   operand of a SUBREG that changes the mode of the object illegally.  */
-
-#define CLASS_CANNOT_CHANGE_MODE        FR_REGS
-
-/* Defines illegal mode changes for CLASS_CANNOT_CHANGE_MODE.
-   In FP regs, we can't change FP values to integer values and vice
+/* In FP regs, we can't change FP values to integer values and vice
    versa, but we can change e.g. DImode to SImode.  */
 
-#define CLASS_CANNOT_CHANGE_MODE_P(FROM,TO) \
-  (GET_MODE_CLASS (FROM) != GET_MODE_CLASS (TO))
+#define CANNOT_CHANGE_MODE_CLASS(FROM, TO) 	\
+  (GET_MODE_CLASS (FROM) != GET_MODE_CLASS (TO) ? FR_REGS : NO_REGS)
 
 /* A C expression that defines the machine-dependent operand constraint
    letters (`I', `J', `K', .. 'P') that specify particular ranges of

@@ -1313,10 +1313,8 @@ mode_change_ok (orig_mode, new_mode, regno)
   if (GET_MODE_SIZE (orig_mode) < GET_MODE_SIZE (new_mode))
     return false;
 
-#ifdef CLASS_CANNOT_CHANGE_MODE
-  if (TEST_HARD_REG_BIT (reg_class_contents[CLASS_CANNOT_CHANGE_MODE], regno)
-      && CLASS_CANNOT_CHANGE_MODE_P (orig_mode, new_mode))
-    return false;
+#ifdef CANNOT_CHANGE_MODE_CLASS
+  return !REG_CANNOT_CHANGE_MODE_P (regno, orig_mode, new_mode);
 #endif
 
   return true;

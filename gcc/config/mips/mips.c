@@ -8399,6 +8399,23 @@ function_arg_pass_by_reference (cum, mode, type, named)
   return size == -1 || size > UNITS_PER_WORD;
 }
 
+/* Return the class of registers for which a mode change from FROM to TO
+   is invalid.  */
+enum reg_class
+mips_cannot_change_mode_class (from, to)
+     enum machine_mode from, to;
+{
+  if (GET_MODE_SIZE (from) != GET_MODE_SIZE (to))
+    {
+      if (TARGET_BIG_ENDIAN)
+        return FP_REGS;
+      if (TARGET_FLOAT64)
+        return HI_AND_FP_REGS;
+      return HI_REG;
+    }
+  return NO_REGS;
+}
+
 /* This function returns the register class required for a secondary
    register when copying between one of the registers in CLASS, and X,
    using MODE.  If IN_P is nonzero, the copy is going from X to the

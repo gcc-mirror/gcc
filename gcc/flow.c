@@ -414,8 +414,8 @@ life_analysis (f, file, flags)
      FILE *file;
      int flags;
 {
-#ifdef ELIMINABLE_REGS
   int i;
+#ifdef ELIMINABLE_REGS
   static const struct {const int from, to; } eliminables[] = ELIMINABLE_REGS;
 #endif
 
@@ -429,6 +429,13 @@ life_analysis (f, file, flags)
     SET_HARD_REG_BIT (elim_reg_set, eliminables[i].from);
 #else
   SET_HARD_REG_BIT (elim_reg_set, FRAME_POINTER_REGNUM);
+#endif
+
+
+#ifdef CANNOT_CHANGE_MODE_CLASS
+  if (flags & PROP_REG_INFO)
+    for (i=0; i < NUM_MACHINE_MODES; ++i)
+      INIT_REG_SET (&subregs_of_mode[i]);
 #endif
 
   if (! optimize)
@@ -3813,12 +3820,11 @@ mark_used_regs (pbi, x, cond, insn)
       break;
 
     case SUBREG:
-#ifdef CLASS_CANNOT_CHANGE_MODE
+#ifdef CANNOT_CHANGE_MODE_CLASS
       if (GET_CODE (SUBREG_REG (x)) == REG
-	  && REGNO (SUBREG_REG (x)) >= FIRST_PSEUDO_REGISTER
-	  && CLASS_CANNOT_CHANGE_MODE_P (GET_MODE (x),
-					 GET_MODE (SUBREG_REG (x))))
-	REG_CHANGES_MODE (REGNO (SUBREG_REG (x))) = 1;
+	  && REGNO (SUBREG_REG (x)) >= FIRST_PSEUDO_REGISTER)
+	SET_REGNO_REG_SET (&subregs_of_mode[GET_MODE (x)],
+			   REGNO (SUBREG_REG (x)));
 #endif
 
       /* While we're here, optimize this case.  */
@@ -3862,13 +3868,12 @@ mark_used_regs (pbi, x, cond, insn)
 	       || GET_CODE (testreg) == SIGN_EXTRACT
 	       || GET_CODE (testreg) == SUBREG)
 	  {
-#ifdef CLASS_CANNOT_CHANGE_MODE
+#ifdef CANNOT_CHANGE_MODE_CLASS
 	    if (GET_CODE (testreg) == SUBREG
 		&& GET_CODE (SUBREG_REG (testreg)) == REG
-		&& REGNO (SUBREG_REG (testreg)) >= FIRST_PSEUDO_REGISTER
-		&& CLASS_CANNOT_CHANGE_MODE_P (GET_MODE (SUBREG_REG (testreg)),
-					       GET_MODE (testreg)))
-	      REG_CHANGES_MODE (REGNO (SUBREG_REG (testreg))) = 1;
+		&& REGNO (SUBREG_REG (testreg)) >= FIRST_PSEUDO_REGISTER)
+	      SET_REGNO_REG_SET (&subregs_of_mode[GET_MODE (testreg)],
+				 REGNO (SUBREG_REG (testreg)));
 #endif
 
 	    /* Modifying a single register in an alternate mode

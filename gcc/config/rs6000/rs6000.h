@@ -1314,16 +1314,14 @@ enum reg_class
   ? ((GET_MODE_SIZE (MODE) + UNITS_PER_FP_WORD - 1) / UNITS_PER_FP_WORD) \
   : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
 
-/* If defined, gives a class of registers that cannot be used as the
-   operand of a SUBREG that changes the mode of the object illegally.  */
 
-#define CLASS_CANNOT_CHANGE_MODE        FLOAT_REGS
+/* Return a class of registers that cannot change FROM mode to TO mode.  */
 
-/* Defines illegal mode changes for CLASS_CANNOT_CHANGE_MODE.  */
+#define CANNOT_CHANGE_MODE_CLASS(FROM, TO)				 \
+  (GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO) ? FLOAT_REGS		 \
+   : (SPE_VECTOR_MODE (FROM) + SPE_VECTOR_MODE (TO)) == 1 ? GENERAL_REGS \
+   : NO_REGS)
 
-#define CLASS_CANNOT_CHANGE_MODE_P(FROM,TO) \
-  (GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO))
-
 /* Stack layout; function entry, exit and calling.  */
 
 /* Enumeration to give which calling sequence to use.  */
