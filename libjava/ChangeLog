@@ -1,3 +1,7 @@
+Thu Dec  2 17:26:47 1999  Anthony Green  <green@cygnus.com>
+
+	* THANKS: Giving credit where credit is due.
+
 1999-12-02  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/net/ServerSocket.java (ServerSocket): Bind to any interface 
