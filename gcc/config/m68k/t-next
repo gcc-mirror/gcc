@@ -2,7 +2,4 @@
 LIBGCC1=
 
 # Specify other dirs of system header files to be fixed.
-OTHER_FIXINCLUDES_DIRS= /NextDeveloper/Headers \
-  /NextDeveloper/Headers/ansi /NextDeveloper/Headers/bsd \
-  /LocalDeveloper/Headers /LocalDeveloper/Headers/ansi \
-  /LocalDeveloper/Headers/bsd
+OTHER_FIXINCLUDES_DIRS= /LocalDeveloper/Headers
