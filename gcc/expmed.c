@@ -2960,7 +2960,7 @@ emit_store_flag (target, code, op0, op1, mode, unsignedp, normalizep)
      comparison with zero.  Don't do any of these cases if branches are
      very cheap.  */
 
-  if (BRANCH_COST >= 0
+  if (BRANCH_COST > 0
       && GET_MODE_CLASS (mode) == MODE_INT && (code == EQ || code == NE)
       && op1 != const0_rtx)
     {
