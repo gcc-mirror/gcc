@@ -1789,6 +1789,8 @@ operand_equal_p (arg0, arg1, only_const)
       case ADDR_EXPR:
 	return operand_equal_p (TREE_OPERAND (arg0, 0), TREE_OPERAND (arg1, 0),
 				0);
+      default:
+	break;
       }
 
   if (only_const)
@@ -1846,11 +1848,13 @@ operand_equal_p (arg0, arg1, only_const)
 				      TREE_OPERAND (arg1, 1), 0)
 		  && operand_equal_p (TREE_OPERAND (arg0, 2),
 				      TREE_OPERAND (arg1, 2), 0));
+	default:
+	  return 0;
 	}
-      break;
+      
+    default:
+      return 0;
     }
-
-  return 0;
 }
 
 /* Similar to operand_equal_p, but see if ARG0 might have been made by
@@ -2001,9 +2005,10 @@ twoval_comparison_p (arg, cval1, cval2, save_p)
 	return 0;
 
       return 1;
-    }
 
-  return 0;
+    default:
+      return 0;
+    }
 }
 
 /* ARG is a tree that is known to contain just arithmetic operations and
@@ -2058,7 +2063,10 @@ eval_subst (arg, old0, new0, old1, new1)
 					  old0, new0, old1, new1),
 			      eval_subst (TREE_OPERAND (arg, 2),
 					  old0, new0, old1, new1)));
+	default:
+	  break;
 	}
+      /* fall through (???) */
 
     case '<':
       {
@@ -2081,9 +2089,10 @@ eval_subst (arg, old0, new0, old1, new1)
 
 	return fold (build (code, type, arg0, arg1));
       }
-    }
 
-  return arg;
+    default:
+      return arg;
+    }
 }
 
 /* Return a tree for the case when the result of an expression is RESULT
@@ -2221,6 +2230,9 @@ invert_truthvalue (arg)
     case CLEANUP_POINT_EXPR:
       return build1 (CLEANUP_POINT_EXPR, type,
 		     invert_truthvalue (TREE_OPERAND (arg, 0)));
+
+    default:
+      break;
     }
   if (TREE_CODE (TREE_TYPE (arg)) != BOOLEAN_TYPE)
     abort ();
@@ -2703,6 +2715,8 @@ range_binop (code, type, arg0, upper0_p, arg1, upper1_p)
     case GT_EXPR:  case GE_EXPR:
       result = sgn0 > sgn1;
       break;
+    default:
+      abort ();
     }
 
   return convert (type, result ? integer_one_node : integer_zero_node);
@@ -2779,6 +2793,8 @@ make_range (exp, pin_p, plow, phigh)
 	    case LE_EXPR:  /* + [-, c] */
 	      in_p = ! in_p, low = 0, high = arg1;
 	      break;
+	    default:
+	      abort ();
 	    }
 
 	  exp = arg0;
@@ -2870,6 +2886,9 @@ make_range (exp, pin_p, plow, phigh)
 
 	  exp = arg0;
 	  continue;
+
+	default:
+	  break;
 	}
 
       break;
@@ -5024,6 +5043,9 @@ fold (expr)
 	      arg1 = const_binop (MINUS_EXPR, arg1, integer_one_node, 0);
 	      t = build (code, type, TREE_OPERAND (t, 0), arg1);
 	      break;
+
+	    default:
+	      break;
 	    }
 	}
 
@@ -5156,6 +5178,8 @@ fold (expr)
 	      t = build_int_2 (0, 0);
 	      TREE_TYPE (t) = type;
 	      return t;
+	    default:
+	      abort ();
 	    }
 	}
 
@@ -5183,6 +5207,8 @@ fold (expr)
 	      return omit_one_operand (type,
 				       convert (type, integer_zero_node),
 				       arg0);
+	    default:
+	      break;
 	    }
 	}
 
@@ -5487,6 +5513,8 @@ fold (expr)
 					  fold (build1 (ABS_EXPR,
 							TREE_TYPE (arg1),
 							arg1))))));
+	      default:
+		abort ();
 	      }
 
 	  /* If this is A != 0 ? A : 0, this is simply A.  For ==, it is
@@ -5533,6 +5561,8 @@ fold (expr)
 		      (convert (type, fold (build (MAX_EXPR, comp_type,
 						   comp_op0, comp_op1))));
 		  break;
+		default:
+		  abort ();
 		}
 	    }
 
@@ -5593,6 +5623,10 @@ fold (expr)
 		  return pedantic_non_lvalue
 		    (fold (build (MAX_EXPR, type, arg1, arg2)));
 		break;
+	      case NE_EXPR:
+		break;
+	      default:
+		abort ();
 	      }
 	}
 
