@@ -1,3 +1,7 @@
+2001-03-28  Philip Blundell  <philb@gnu.org>
+
+	* gcc.c-torture/compile/20010328-1.c: New test.
+
 2001-03-27  Richard Henderson  <rth@redhat.com>
 
 	* g++.old-deja/g++.eh/crash3.C: Don't use -fsjlj-exceptions.
