@@ -2832,13 +2832,21 @@ coerce_template_parms (parms, arglist, in_decl,
 	      val = groktypename (arg);
 	      if (! processing_template_decl)
 		{
-		  tree t = target_type (val);
-		  if (((IS_AGGR_TYPE (t) && TREE_CODE (t) != TYPENAME_TYPE)
-		       || TREE_CODE (t) == ENUMERAL_TYPE)
-		      && decl_function_context (TYPE_MAIN_DECL (t)))
+		  /* [basic.link]: A name with no linkage (notably, the
+                     name of a class or enumeration declared in a local
+                     scope) shall not be used to declare an entity with
+                     linkage.  This implies that names with no linkage
+                     cannot be used as template arguments.  */
+		  tree t = no_linkage_check (val);
+		  if (t)
 		    {
-		      cp_error ("type `%T' composed from a local type is not a valid template-argument",
-				val);
+		      if (ANON_AGGRNAME_P (TYPE_IDENTIFIER (t)))
+			cp_pedwarn
+			  ("template-argument `%T' uses anonymous type", val);
+		      else
+			cp_error
+			  ("template-argument `%T' uses local type `%T'",
+			   val, t);
 		      return error_mark_node;
 		    }
 		}
@@ -3435,7 +3443,11 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
 	{
 	  DECL_ASSEMBLER_NAME (type_decl)
 	    = get_identifier (build_overload_name (t, 1, 1));
-	  
+
+	  /* For backwards compatibility; code that uses
+	     -fexternal-templates expects looking up a template to
+	     instantiate it.  I think DDD still relies on this.
+	     (jason 8/20/1998) */
 	  if (TREE_CODE (t) != ENUMERAL_TYPE
 	      && flag_external_templates
 	      && CLASSTYPE_INTERFACE_KNOWN (TREE_TYPE (template))

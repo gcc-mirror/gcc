@@ -6636,6 +6636,26 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
   /* Corresponding pop_obstacks is done in `cp_finish_decl'.  */
   push_obstacks_nochange ();
 
+  /* [basic.link]: A name with no linkage (notably, the name of a class or
+     enumeration declared in a local scope) shall not be used to declare an
+     entity with linkage.
+
+     Only check this for public decls for now.  */
+  if (TREE_PUBLIC (tem))
+    {
+      tree t = no_linkage_check (TREE_TYPE (tem));
+      if (t)
+	{
+	  if (ANON_AGGRNAME_P (TYPE_IDENTIFIER (t)))
+	    {
+	      if (TREE_CODE (tem) == FUNCTION_DECL)
+		cp_pedwarn ("public decl `%#D' uses anonymous type", tem);
+	    }
+	  else
+	    cp_pedwarn ("non-local decl `%#D' uses local type `%T'", tem, t);
+	}
+    }
+
 #if 0
   /* We have no way of knowing whether the initializer will need to be
      evaluated at run-time or not until we've parsed it, so let's just put
@@ -7897,7 +7917,28 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
       inlinep = 0;
       publicp = 1;
     }
-	  
+
+  /* Members of anonymous types have no linkage; make them internal.  */
+  if (ctype && ANON_AGGRNAME_P (TYPE_IDENTIFIER (ctype)))
+    publicp = 0;
+
+  if (publicp)
+    {
+      /* [basic.link]: A name with no linkage (notably, the name of a class
+	 or enumeration declared in a local scope) shall not be used to
+	 declare an entity with linkage.
+
+	 Only check this for public decls for now.  */
+      t = no_linkage_check (TREE_TYPE (decl));
+      if (t)
+	{
+	  if (ANON_AGGRNAME_P (TYPE_IDENTIFIER (t)))
+	    cp_pedwarn ("function `%#D' uses anonymous type", decl);
+	  else
+	    cp_pedwarn ("function `%#D' uses local type `%T'", decl, t);
+	}
+    }
+
   TREE_PUBLIC (decl) = publicp;
   if (! publicp)
     {
@@ -8157,6 +8198,25 @@ grokvardecl (type, declarator, specbits_in, initialized, constp, in_namespace)
       TREE_STATIC (decl) = !! RIDBIT_SETP (RID_STATIC, specbits);
       TREE_PUBLIC (decl) = DECL_EXTERNAL (decl);
     }
+
+  if (TREE_PUBLIC (decl))
+    {
+      /* [basic.link]: A name with no linkage (notably, the name of a class
+	 or enumeration declared in a local scope) shall not be used to
+	 declare an entity with linkage.
+
+	 Only check this for public decls for now.  */
+      tree t = no_linkage_check (TREE_TYPE (decl));
+      if (t)
+	{
+	  if (ANON_AGGRNAME_P (TYPE_IDENTIFIER (t)))
+	    /* Ignore for now; `enum { foo } e' is pretty common.  */;
+	  else
+	    cp_pedwarn ("non-local variable `%#D' uses local type `%T'",
+			decl, t);
+	}
+    }
+
   return decl;
 }
 
@@ -9991,6 +10051,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	  DECL_ASSEMBLER_NAME (decl)
 	    = get_identifier (build_overload_name (type, 1, 1));
 	  DECL_CONTEXT (decl) = NULL_TREE;
+
+	  /* FIXME remangle member functions; member functions of a
+	     type with external linkage have external linkage.  */
 	}
 
       if (TREE_CODE (type) == OFFSET_TYPE || TREE_CODE (type) == METHOD_TYPE)

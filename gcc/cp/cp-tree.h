@@ -3042,6 +3042,7 @@ extern int really_overloaded_fn			PROTO((tree));
 extern int cp_tree_equal			PROTO((tree, tree));
 extern int can_free				PROTO((struct obstack *, tree));
 extern tree mapcar				PROTO((tree, tree (*) (tree)));
+extern tree no_linkage_check			PROTO((tree));
 extern void debug_binfo				PROTO((tree));
 extern void push_expression_obstack		PROTO((void));
 #define scratchalloc expralloc
