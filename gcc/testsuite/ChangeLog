@@ -1,3 +1,8 @@
+Sat 16-Sep-2000 08:14:58 BST  Neil Booth  <NeilB@earthling.net>
+
+	* gcc.dg/cpp/macro2.c: Testcase for multi-context arguments
+	in nested macro bug.
+
 Fri 15-Sep-2000 06:50:11 BST  Neil Booth  <NeilB@earthling.net>
 
 	* gcc.dg/cpp/paste10.c: Testcase for PASTE_LEFT buglet.

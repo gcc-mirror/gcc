@@ -1,3 +1,8 @@
+Sat 16-Sep-2000 08:13:45 BST  Neil Booth  <NeilB@earthling.net>
+
+	* cpplex.c (push_macro_context): Set an argument's level after
+	calling parse_args.  We could loop infinitely otherwise.
+
 2000-09-15  Tom Tromey  <tromey@cygnus.com>
 
 	* configure, config.in: Rebuilt.
