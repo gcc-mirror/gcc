@@ -1,4 +1,8 @@
-Fri Oct 10 18:54:39 CEST 2003  Herman A.J. ten Brugge <hermantenbrugge@home.nl>
+2003-10-10  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* config.gcc (mips*-*-netbsd*): Remove content-free line.
+
+2003-10-10  Herman A.J. ten Brugge <hermantenbrugge@home.nl>
 
 	* gcov-io.h: Check BITS_PER_UNIT when defining gcov_unsigned_t,
 	gcov_position_t and gcov_type.

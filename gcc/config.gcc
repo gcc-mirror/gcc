@@ -1422,7 +1422,6 @@ mips-sgi-irix5*)		# SGI System V.4., IRIX 5
 mips*-*-netbsd*)			# NetBSD/mips, either endian.
 	target_cpu_default="MASK_GAS|MASK_ABICALLS"
 	tm_file="elfos.h ${tm_file} mips/elf.h netbsd.h netbsd-elf.h mips/netbsd.h"
-	tmake_file="${tmake_file}"
 	;;
 mips64*-*-linux*)
 	tm_file="dbxelf.h elfos.h svr4.h linux.h ${tm_file} mips/linux.h mips/linux64.h"
