@@ -194,13 +194,21 @@ perform_member_init (member, name, init, explicit)
 	    {
 	      /* default-initialization.  */
 	      if (AGGREGATE_TYPE_P (type))
-		init = build (CONSTRUCTOR, type, NULL_TREE, NULL_TREE);
- 	      else if (TREE_CODE (type) == REFERENCE_TYPE)
 		{
-		  cp_error ("default-initialization of `%#D', which has reference type",
-			    member);
-		  init = error_mark_node;
+		  /* This is a default initialization of an aggregate,
+		     but not one of non-POD class type.  We cleverly
+		     notice that the initialization rules in such a
+		     case are the same as for initialization with an
+		     empty brace-initialization list.  We don't want
+		     to call build_modify_expr as that will go looking
+		     for constructors and such.  */
+		  tree e = build (CONSTRUCTOR, type, NULL_TREE, NULL_TREE);
+		  TREE_SIDE_EFFECTS (e) = 1;
+		  expand_expr_stmt (build (INIT_EXPR, type, decl, e));
 		}
+ 	      else if (TREE_CODE (type) == REFERENCE_TYPE)
+		cp_error ("default-initialization of `%#D', which has reference type",
+			  member);
 	      else
 		init = integer_zero_node;
 	    }
@@ -221,12 +229,8 @@ perform_member_init (member, name, init, explicit)
 	    init = TREE_VALUE (init);
 	}
 
-      /* We only build this with a null init if we got it from the
-	 current_member_init_list.  */
-      if (init || explicit)
-	{
-	  expand_expr_stmt (build_modify_expr (decl, INIT_EXPR, init));
-	}
+      if (init)
+	expand_expr_stmt (build_modify_expr (decl, INIT_EXPR, init));
     }
 
   expand_end_target_temps ();
