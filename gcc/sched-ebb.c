@@ -1,6 +1,6 @@
 /* Instruction scheduling pass.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) Enhanced by,
    and currently maintained by, Jim Wilson (wilson@cygnus.com)
 
@@ -274,7 +274,7 @@ schedule_ebb (head, tail)
   tail = current_sched_info->tail;
 
   if (write_symbols != NO_DEBUG)
-    restore_line_notes (0, head, tail);
+    restore_line_notes (head, tail);
 
   finish_deps_global ();
 }
