@@ -1,3 +1,8 @@
+2003-10-30  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextAreaPeer.c (create): Turn on
+	word wrapping.
+
 2003-10-29  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkListPeer.c (getSize): Return

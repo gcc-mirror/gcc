@@ -64,6 +64,8 @@ Java_gnu_java_awt_peer_gtk_GtkTextAreaPeer_create
       || scroll == AWT_TEXTAREA_SCROLLBARS_VERTICAL_ONLY) ? 
        GTK_POLICY_ALWAYS : GTK_POLICY_NEVER);
 
+  gtk_text_view_set_wrap_mode (GTK_TEXT_VIEW(text), GTK_WRAP_WORD);
+
   gdk_threads_leave ();
 
   NSA_SET_PTR (env, obj, sw);
