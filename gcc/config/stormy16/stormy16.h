@@ -3996,6 +3996,16 @@ do {									\
       assemble_name (STREAM, XSTR (SYMBOL, 0));				\
   } while (0)
 
+/* A C statement to output to the stdio stream STREAM the assembler
+   definition of a label, the textual form is in 'BUF'.  Not used
+   for %l.  */
+#define ASM_OUTPUT_LABEL_REF(STREAM, NAME)	\
+do  {						\
+  fputs ("@fptr(", STREAM);			\
+  assemble_name (STREAM, NAME);			\
+  fputc (')', STREAM);				\
+} while (0)
+
 /* A C statement (sans semicolon) to output to the stdio stream STREAM any text
    necessary for declaring the name NAME of a function which is being defined.
    This macro is responsible for outputting the label definition (perhaps using

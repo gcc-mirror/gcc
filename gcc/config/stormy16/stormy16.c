@@ -1539,6 +1539,8 @@ xstormy16_print_operand (file, x, code)
       /* Print the symbol without a surrounding @fptr().  */
       if (GET_CODE (x) == SYMBOL_REF)
 	assemble_name (file, XSTR (x, 0));
+      else if (GET_CODE (x) == LABEL_REF)
+	output_asm_label (x);
       else
 	xstormy16_print_operand_address (file, x);
       return;
@@ -1652,8 +1654,7 @@ xstormy16_output_addr_vec (file, label, table)
   for (idx = 0; idx < vlen; idx++)
     {
       fputs ("\tjmpf ", file);
-      xstormy16_print_operand_address (file, 
-				      XEXP (XVECEXP (table, 0, idx), 0));
+      output_asm_label (XEXP (XVECEXP (table, 0, idx), 0));
       fputc ('\n', file);
     }
 }

@@ -6428,10 +6428,20 @@ a reference to the label @var{label}.
 @findex ASM_OUTPUT_SYMBOL_REF
 @item ASM_OUTPUT_SYMBOL_REF (@var{stream}, @var{sym})
 A C statement (sans semicolon) to output a reference to
-@code{SYMBOL_REF} @var{sym}.  If not defined, @code{assemble_output}
+@code{SYMBOL_REF} @var{sym}.  If not defined, @code{assemble_name}
 will be used to output the name of the symbol.  This macro may be used
 to modify the way a symbol is referenced depending on information
 encoded by @code{ENCODE_SECTION_INFO}.
+
+@findex ASM_OUTPUT_LABEL_REF
+@item ASM_OUTPUT_LABEL_REF (@var{stream}, @var{buf})
+A C statement (sans semicolon) to output a reference to @var{buf}, the
+result of ASM_GENERATE_INTERNAL_LABEL.  If not defined,
+@code{assemble_name} will be used to output the name of the symbol.
+This macro is not used by @code{output_asm_label}, or the @code{%l}
+specifier that calls it; the intention is that this macro should be set
+when it is necessary to output a label differently when its address
+is being taken.
 
 @findex ASM_OUTPUT_INTERNAL_LABEL
 @item ASM_OUTPUT_INTERNAL_LABEL (@var{stream}, @var{prefix}, @var{num})
