@@ -1,3 +1,8 @@
+2004-10-05  Richard Henderson  <rth@redhat.com>
+
+	PR 17756
+	* tree-ssa-operands.c (get_expr_operands): Handle CONST_DECL.
+
 2004-10-05  Kelley Cook  <kcook@gcc.gnu.org>
 
 	PR bootstrap/17817
