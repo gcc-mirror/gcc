@@ -32,32 +32,7 @@ load_lib gcc-dg.exp
 ###############################
 # proc check_weak_available { }
 ###############################
-
-# weak symbols are only supported in some configs/object formats
-# this proc returns 1 if they're support, 0 if they're not, or -1 if unsure
-
-proc check_weak_available { } {
-    global target_cpu
-
-    # All mips targets should support it
-    
-    if { [ string first "mips" $target_cpu ] >= 0 } {
-        return 1
-    }
-
-    # ELF and ECOFF support it. a.out does with gas/gld but may also with
-    # other linkers, so we should try it
-
-    set objformat [gcc_target_object_format]
-
-    switch $objformat {
-        elf      { return 1 }
-        ecoff    { return 1 }
-        a.out    { return 1 }
-        unknown  { return -1 }
-        default  { return 0 }
-    }
-}
+# has been moved to:  gcc/testsuite/lib/target-supports.exp
 
 ##########
 # weak-1.c
@@ -111,7 +86,11 @@ if { [ check_weak_available ] == 1 } {
 ###########
 
 dg-init
-dg-runtest "$srcdir/$subdir/alias-1.c" "" ""
+switch [check_alias_available "$srcdir/$subdir/alias-1.c"] {
+    yes     { dg-runtest "$srcdir/$subdir/alias-1.c" "" "" }
+    no      { unsupported "alias-1.c" }
+    default { fail "alias-1.c" }
+}
 dg-finish
 
 ###########
@@ -119,7 +98,11 @@ dg-finish
 ###########
 
 dg-init
-dg-runtest "$srcdir/$subdir/wkali-1.c" "" ""
+switch [check_alias_available "$srcdir/$subdir/wkali-1.c"] {
+    yes     { dg-runtest "$srcdir/$subdir/wkali-1.c" "" "" }
+    no      { unsupported "wkali-1.c" }
+    default { fail "wkali-1.c" }
+}
 dg-finish
 
 ###########

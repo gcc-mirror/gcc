@@ -1,5 +1,18 @@
 1999-11-05  Nick Clifton  <nickc@cygnus.com>
 
+	* lib/target-supports.exp: New file: Provide procs to test for 
+	features supported by the target.
+	(check_weak_available): Moved here from ecos.exp.
+	(check_alias_available): New proc: Determine of the target
+	toolchain supports the alias attribute.
+	
+	* gcc.dg/special/ecos.exp: Move check_weak_available to
+	target-supports.exp. 
+	(alias-1.c): Only perform the test if the target supports
+	aliases. 
+	(wkali-1.c): Only perform the test if the target supports
+	aliases. 
+
 	* gcc.dg/990506-0.c: Expect error messages from cross
 	targets as well as native targets.
 
