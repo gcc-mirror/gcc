@@ -8665,6 +8665,7 @@ preexpand_calls (exp)
     case BLOCK:
     case RTL_EXPR:
     case WITH_CLEANUP_EXPR:
+    case CLEANUP_POINT_EXPR:
       return;
 
     case SAVE_EXPR:
