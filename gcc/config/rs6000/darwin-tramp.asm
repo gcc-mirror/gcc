@@ -64,7 +64,7 @@ ___trampoline_setup:
         bcl 20,31,LCF0		/* load up __trampoline_initial into r7 */
 LCF0:
         mflr	r11
-        addi	r7,r11,ha16(LTRAMP-LCF0)
+        addis	r7,r11,ha16(LTRAMP-LCF0)
 	lwz	r7,lo16(LTRAMP-LCF0)(r7)
 	subi	r7,r7,4
 	li	r8,trampoline_size	/* verify trampoline big enough */
