@@ -582,6 +582,114 @@ shallow_copy_rtx (orig)
   return copy;
 }
 
+/* This is 1 until after the rtl generation pass.  */
+int rtx_equal_function_value_matters;
+
+/* Return 1 if X and Y are identical-looking rtx's.
+   This is the Lisp function EQUAL for rtx arguments.  */
+
+int
+rtx_equal_p (x, y)
+     rtx x, y;
+{
+  register int i;
+  register int j;
+  register enum rtx_code code;
+  register const char *fmt;
+
+  if (x == y)
+    return 1;
+  if (x == 0 || y == 0)
+    return 0;
+
+  code = GET_CODE (x);
+  /* Rtx's of different codes cannot be equal.  */
+  if (code != GET_CODE (y))
+    return 0;
+
+  /* (MULT:SI x y) and (MULT:HI x y) are NOT equivalent.
+     (REG:SI x) and (REG:HI x) are NOT equivalent.  */
+
+  if (GET_MODE (x) != GET_MODE (y))
+    return 0;
+
+  /* REG, LABEL_REF, and SYMBOL_REF can be compared nonrecursively.  */
+
+  if (code == REG)
+    /* Until rtl generation is complete, don't consider a reference to the
+       return register of the current function the same as the return from a
+       called function.  This eases the job of function integration.  Once the
+       distinction is no longer needed, they can be considered equivalent.  */
+    return (REGNO (x) == REGNO (y)
+	    && (! rtx_equal_function_value_matters
+		|| REG_FUNCTION_VALUE_P (x) == REG_FUNCTION_VALUE_P (y)));
+  else if (code == LABEL_REF)
+    return XEXP (x, 0) == XEXP (y, 0);
+  else if (code == SYMBOL_REF)
+    return XSTR (x, 0) == XSTR (y, 0);
+  else if (code == SCRATCH || code == CONST_DOUBLE)
+    return 0;
+
+  /* Compare the elements.  If any pair of corresponding elements
+     fail to match, return 0 for the whole things.  */
+
+  fmt = GET_RTX_FORMAT (code);
+  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+    {
+      switch (fmt[i])
+	{
+	case 'w':
+	  if (XWINT (x, i) != XWINT (y, i))
+	    return 0;
+	  break;
+
+	case 'n':
+	case 'i':
+	  if (XINT (x, i) != XINT (y, i))
+	    return 0;
+	  break;
+
+	case 'V':
+	case 'E':
+	  /* Two vectors must have the same length.  */
+	  if (XVECLEN (x, i) != XVECLEN (y, i))
+	    return 0;
+
+	  /* And the corresponding elements must match.  */
+	  for (j = 0; j < XVECLEN (x, i); j++)
+	    if (rtx_equal_p (XVECEXP (x, i, j), XVECEXP (y, i, j)) == 0)
+	      return 0;
+	  break;
+
+	case 'e':
+	  if (rtx_equal_p (XEXP (x, i), XEXP (y, i)) == 0)
+	    return 0;
+	  break;
+
+	case 'S':
+	case 's':
+	  if (strcmp (XSTR (x, i), XSTR (y, i)))
+	    return 0;
+	  break;
+
+	case 'u':
+	  /* These are just backpointers, so they don't matter.  */
+	  break;
+
+	case '0':
+	case 't':
+	  break;
+
+	  /* It is believed that rtx's at this level will never
+	     contain anything but integers and other rtx's,
+	     except for within LABEL_REFs and SYMBOL_REFs.  */
+	default:
+	  abort ();
+	}
+    }
+  return 1;
+}
+
 /* Subroutines of read_rtx.  */
 
 /* The current line number for the file.  */

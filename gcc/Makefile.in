@@ -571,7 +571,6 @@ HOST_LIBS = $(USE_HOST_OBSTACK) $(USE_HOST_ALLOCA) $(USE_HOST_MALLOC)  \
 	    $(HOST_CLIB)
 
 HOST_RTL = $(HOST_PREFIX)rtl.o $(HOST_PREFIX)bitmap.o $(HOST_PREFIX)ggc-none.o
-HOST_RTLANAL = $(HOST_PREFIX)rtlanal.o
 HOST_PRINT = $(HOST_PREFIX)print-rtl.o
 HOST_ERRORS = $(HOST_PREFIX)errors.o
 
@@ -1844,9 +1843,9 @@ genattr : genattr.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBDEPS)
 genattr.o : genattr.c $(RTL_H) $(build_xm_file) system.h errors.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genattr.c
 
-genattrtab : genattrtab.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_RTLANAL) $(HOST_LIBDEPS)
+genattrtab : genattrtab.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
-	 genattrtab.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_RTLANAL) $(HOST_LIBS)
+	 genattrtab.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBS)
 
 genattrtab.o : genattrtab.c $(RTL_H)  $(build_xm_file) system.h errors.h ggc.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genattrtab.c
