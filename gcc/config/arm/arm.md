@@ -6534,25 +6534,39 @@
   ""
   "*
 {
-  char pattern[100];
-  int i;
   extern int lr_save_eliminated;
-
-  if (lr_save_eliminated)
+  int num_saves = XVECLEN (operands[2], 0);
+     
+   if (lr_save_eliminated)
     {
-      if (XVECLEN (operands[2], 0) > 1)
+      if (num_saves > 1)
 	abort ();
-      return \"\";
     }
-  strcpy (pattern, \"stmfd\\t%m0!, {%1\");
-  for (i = 1; i < XVECLEN (operands[2], 0); i++)
+ /* For the StrongARM at least it is faster to
+     use STR to store only a single register.  */
+  else if (num_saves == 1)
+    output_asm_insn (\"str\\t%1, [%m0, #-4]!\", operands);
+  else
     {
-      strcat (pattern, \", %|\");
-      strcat (pattern, reg_names[REGNO (XEXP (XVECEXP (operands[2], 0, i),
+      int i;
+      char pattern[100];
+
+      if (lr_save_eliminated)
+	abort ();
+
+      strcpy (pattern, \"stmfd\\t%m0!, {%1\");
+		       
+      for (i = 1; i < num_saves; i++)
+        {
+          strcat (pattern, \", %|\");
+          strcat (pattern, reg_names[REGNO (XEXP (XVECEXP (operands[2], 0, i),
 					      0))]);
+        }
+	
+      strcat (pattern, \"}\");
+      output_asm_insn (pattern, operands);
     }
-  strcat (pattern, \"}\");
-  output_asm_insn (pattern, operands);
+    
   return \"\";
 }"
 [(set_attr "type" "store4")])

@@ -1,5 +1,5 @@
 /* Output routines for GCC for ARM.
-   Copyright (C) 1991, 93-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1991, 93-99, 2000 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
    More major hacks by Richard Earnshaw (rearnsha@arm.com).
@@ -5477,18 +5477,20 @@ output_return_instruction (operand, really_return, reverse)
 
   if (TARGET_ABORT_NORETURN && volatile_func)
     {
-      rtx ops[2];
       /* If this function was declared non-returning, and we have found a tail 
-	 call, then we have to trust that the called function won't return. */
-      if (! really_return)
-	return "";
-
-      /* Otherwise, trap an attempted return by aborting. */
-      ops[0] = operand;
-      ops[1] = gen_rtx_SYMBOL_REF (Pmode, NEED_PLT_RELOC ? "abort(PLT)" 
-				   : "abort");
-      assemble_external_libcall (ops[1]);
-      output_asm_insn (reverse ? "bl%D0\t%a1" : "bl%d0\t%a1", ops);
+	 call, then we have to trust that the called function won't return.  */
+      if (really_return)
+	{
+	  rtx ops[2];
+      
+	  /* Otherwise, trap an attempted return by aborting.  */
+	  ops[0] = operand;
+	  ops[1] = gen_rtx_SYMBOL_REF (Pmode, NEED_PLT_RELOC ? "abort(PLT)" 
+				       : "abort");
+	  assemble_external_libcall (ops[1]);
+	  output_asm_insn (reverse ? "bl%D0\t%a1" : "bl%d0\t%a1", ops);
+	}
+      
       return "";
     }
       
@@ -5509,7 +5511,19 @@ output_return_instruction (operand, really_return, reverse)
   if (frame_pointer_needed)
     live_regs += 4;
 
-  if (live_regs)
+  /* On some ARM architectures it is faster to use LDR rather than LDM to
+     load a single register.  On other architectures, the cost is the same.  */
+  if (live_regs == 1
+      && regs_ever_live[LR_REGNUM]
+      && ! lr_save_eliminated
+      /* FIXME: We ought to handle the case TARGET_APCS_32 is true,
+	 really_return is true, and only the PC needs restoring.  */
+      && ! really_return)
+    {
+      output_asm_insn (reverse ? "ldr%?%D0\t%|lr, [%|sp], #4" 
+		       : "ldr%?%d0\t%|lr, [%|sp], #4", &operand);
+    }
+  else if (live_regs)
     {
       if (lr_save_eliminated || ! regs_ever_live[LR_REGNUM])
         live_regs++;
