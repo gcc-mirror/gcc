@@ -644,11 +644,15 @@ c4x-*-rtems*)
 	if test x$enable_threads = xyes; then
 	  thread_file='rtems'
 	fi
+	c_target_objs="c4x-c.o"
+	cxx_target_objs="c4x-c.o"
 	;;
 c4x-*)
 	cpu_type=c4x
 	float_format=c4x
 	tmake_file=c4x/t-c4x
+	c_target_objs="c4x-c.o"
+	cxx_target_objs="c4x-c.o"
 	;;
 clipper-intergraph-clix*)
 	tm_file="${tm_file} svr3.h clipper/clix.h"
@@ -941,11 +945,17 @@ hppa*-*-mpeix*)
 i370-*-opened*)			 # IBM 360/370/390 Architecture
 	xm_defines='POSIX FATAL_EXIT_CODE=12'
 	tm_file=i370/oe.h
+	tmake_file="i370/t-i370"
 	xmake_file=i370/x-oe
+	c_target_objs="i370-c.o"
+	cxx_target_objs="i370-c.o"
 	;;
 i370-*-mvs*)
 	xm_defines='POSIX FATAL_EXIT_CODE=12'
 	tm_file=i370/mvs.h
+	tmake_file="i370/t-i370"
+	c_target_objs="i370-c.o"
+	cxx_target_objs="i370-c.o"
 	;;
 i370-*-linux*)
 	xmake_file=x-linux

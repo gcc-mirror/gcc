@@ -39,8 +39,6 @@ Boston, MA 02111-1307, USA.  */
 #include "recog.h"
 #include "toplev.h"
 #include "cpplib.h"
-#include "c-pragma.h"
-#include "c-lex.h"
 #include "tm_p.h"
 #include "target.h"
 #include "target-def.h"
@@ -1029,33 +1027,6 @@ mvs_check_alias (realname, aliasname)
     }
 #endif
   return 0;
-}
-
-/* #pragma map (name, alias) -
-   In this implementation both name and alias are required to be
-   identifiers.  The older code seemed to be more permissive.  Can
-   anyone clarify?  */
-
-void
-i370_pr_map (pfile)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
-{
-  tree name, alias, x;
-
-  if (c_lex (&x)        == CPP_OPEN_PAREN
-      && c_lex (&name)  == CPP_NAME
-      && c_lex (&x)     == CPP_COMMA
-      && c_lex (&alias) == CPP_NAME
-      && c_lex (&x)     == CPP_CLOSE_PAREN)
-    {
-      if (c_lex (&x) != CPP_EOF)
-	warning ("junk at end of #pragma map");
-
-      mvs_add_alias (IDENTIFIER_POINTER (name), IDENTIFIER_POINTER (alias), 1);
-      return;
-    }
-
-  warning ("malformed #pragma map, ignored");
 }
 
 /* defines and functions specific to the HLASM assembler */

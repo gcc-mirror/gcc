@@ -1,3 +1,27 @@
+2001-10-17  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* config.gcc: Update c4x and i370 for C front end-specific
+	dependencies.
+	* config/c4x/c4x-c.c: New.
+	* config/c4x/c4x-protos.h (c4x_handle_pragma): Remove.
+	(code_tree, data_tree, pure_tree, noreturn_tree, interrupt_tree):
+	New declarations.
+	* config/c4x/c4x.c: Don't include c-lex.h or c-pragma.h.
+	(code_tree, data_tree, pure_tree, noreturn_tree, interrupt_tree):
+	Make extern.
+	(c4x_init_pragma): Remove.
+	(c4x_parse_pragma, c4x_pr_CODE_SECTION, c4x_pr_DATA_SECTION,
+	c4x_pr_FUNC_IS_PURE, c4x_pr_FUNC_NEVER_RETURNS, c4x_pr_INTERRUPT,
+	c4x_pr_ignored): Move to c4x-c.c.
+	* config/c4x/c4x.h (REGISTER_TARGET_PRAGMAS): Update.
+	* config/c4x/t-c4x: Update.
+	* config/i370/i370-c.c: New.
+	* config/i370/i370.c: Don't include c-lex.h or c-pragma.h.
+	(i370_pr_map): Move to i370-c.c.
+	* config/i370/t-i370: New.	
+
+	* doc/tm.texi: Update.
+
 2001-10-17  Stan Shebs  <shebs@apple.com>
 
 	* config/rs6000/rs6000.c: Make assorted mechanical formatting and
