@@ -23,16 +23,10 @@ Boston, MA 02111-1307, USA.  */
 #include "hconfig.h"
 #include "system.h"
 #include "rtl.h"
-#include "obstack.h"
 #include "errors.h"
 #include "insn-config.h"
 #include "gensupport.h"
 
-static struct obstack obstack;
-struct obstack *rtl_obstack = &obstack;
-
-#define obstack_chunk_alloc xmalloc
-#define obstack_chunk_free free
 
 /* This structure contains all the information needed to describe one
    set of extractions methods.  Each method may be used by more than 
@@ -396,7 +390,6 @@ main (argc, argv)
   const char *name;
 
   progname = "genextract";
-  obstack_init (rtl_obstack);
 
   if (argc <= 1)
     fatal ("No input file name.");

@@ -29,8 +29,6 @@ Boston, MA 02111-1307, USA.  */
 #include "errors.h"
 #include "gensupport.h"
 
-static struct obstack obstack;
-struct obstack *rtl_obstack = &obstack;
 
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
@@ -230,7 +228,6 @@ main (argc, argv)
   rtx *insn_ptr;
 
   progname = "genflags";
-  obstack_init (rtl_obstack);
   obstack_init (&call_obstack);
   obstack_init (&normal_obstack);
 

@@ -1,6 +1,4 @@
-/* Read machine descriptions, return top level rtx for use by the
-   various generation passes. 
-
+/* Support routines for the various generation passes.
    Copyright (C) 2000 Free Software Foundation, Inc.
 
    This file is part of GNU CC.
@@ -23,8 +21,16 @@
 #include "hconfig.h"
 #include "system.h"
 #include "rtl.h"
+#include "obstack.h"
 #include "errors.h"
 #include "gensupport.h"
+
+
+static struct obstack obstack;
+struct obstack *rtl_obstack = &obstack;
+
+#define obstack_chunk_alloc xmalloc
+#define obstack_chunk_free free
 
 static FILE *input_file;
 
@@ -39,7 +45,30 @@ static struct queue_elem *rtx_ready_queue;
 
 static void remove_constraints PARAMS ((rtx));
 static void process_rtx PARAMS ((rtx *));
+
+void
+message_with_line VPARAMS ((int lineno, const char *msg, ...))
+{
+#ifndef ANSI_PROTOTYPES
+  int lineno;
+  const char *msg;
+#endif
+  va_list ap;
 
+  VA_START (ap, msg);
+
+#ifndef ANSI_PROTOTYPES
+  lineno = va_arg (ap, int);
+  msg = va_arg (ap, const char *);
+#endif
+
+  fprintf (stderr, "%s:%d: ", read_rtx_filename, lineno);
+  vfprintf (stderr, msg, ap);
+  fputc ('\n', stderr);
+
+  va_end (ap);
+}
+
 /* Recursively remove constraints from an rtx.  */
 
 static void
@@ -125,23 +154,22 @@ process_rtx (desc)
       rtx_ready_queue = elem;  
     }
 }
-
+
 /* The entry point for initializing the reader.  */
 
 int 
 init_md_reader (filename)
     const char *filename;
 {
-
+  read_rtx_filename = filename;
   input_file = fopen (filename, "r");
-
   if (input_file == 0)
     {
       perror (filename);
       return FATAL_EXIT_CODE;
     }
 
-  read_rtx_filename = filename;
+  obstack_init (rtl_obstack);
   sequence_num = 0;
   rtx_ready_queue = NULL; 
 

@@ -18,7 +18,11 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+struct obstack;
+extern struct obstack *rtl_obstack;
+
 extern int init_md_reader	PARAMS ((const char *));
 extern rtx read_md_rtx		PARAMS ((int *, int *));
 
-
+extern void message_with_line	PARAMS ((int, const char *, ...))
+     ATTRIBUTE_PRINTF_2;

@@ -88,7 +88,6 @@ Boston, MA 02111-1307, USA.  */
 #include "hconfig.h"
 #include "system.h"
 #include "rtl.h"
-#include "obstack.h"
 #include "errors.h"
 #include "gensupport.h"
 
@@ -97,12 +96,6 @@ Boston, MA 02111-1307, USA.  */
    this many operands?  */
 
 #define MAX_MAX_OPERANDS 40
-
-static struct obstack obstack;
-struct obstack *rtl_obstack = &obstack;
-
-#define obstack_chunk_alloc xmalloc
-#define obstack_chunk_free free
 
 static int n_occurrences		PARAMS ((int, const char *));
 static const char *strip_whitespace	PARAMS ((const char *));
@@ -906,7 +899,6 @@ main (argc, argv)
   rtx desc;
 
   progname = "genoutput";
-  obstack_init (rtl_obstack);
 
   if (argc <= 1)
     fatal ("No input file name.");
