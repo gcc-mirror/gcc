@@ -30,6 +30,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 #include "jcf.h"
 #include "tree.h"
+#include "javaop.h"
 #include "java-tree.h"
 #include "java-opcodes.h"
 
@@ -204,17 +205,18 @@ static int decompiled = 0;
 
 /* Some useful constants.  */
 #define F_NAN_MASK 0x7f800000
+#if (1 == HOST_FLOAT_WORDS_BIG_ENDIAN)
+#define D_NAN_MASK 0x000000007ff00000LL
+#else
 #define D_NAN_MASK 0x7ff0000000000000LL
+#endif
 
 /* Return 1 if F is not Inf or NaN.  */
 static int
 java_float_finite (f)
      jfloat f;
 {
-  union {
-    jfloat f;
-    int32 i;
-  } u;
+  union Word u;
   u.f = f;
 
   /* We happen to know that F_NAN_MASK will match all NaN values, and
@@ -228,14 +230,11 @@ static int
 java_double_finite (d)
      jdouble d;
 {
-  union {
-    jdouble d;
-    int64 i;
-  } u;
+  union DWord u;
   u.d = d;
 
   /* Now check for all NaNs.  */
-  return (u.i & D_NAN_MASK) != D_NAN_MASK;
+  return (u.l & D_NAN_MASK) != D_NAN_MASK;
 }
 
 static void
