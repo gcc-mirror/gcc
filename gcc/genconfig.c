@@ -39,7 +39,7 @@ static int max_dup_operands;    /* Largest number of match_dup in any insn.  */
 static int max_clobbers_per_insn;
 static int have_cc0_flag;
 static int have_cmove_flag;
-static int have_cond_arith_flag;
+static int have_cond_exec_flag;
 static int have_lo_sum_flag;
 static int have_peephole_flag;
 static int have_peephole2_flag;
@@ -131,21 +131,17 @@ walk_insn_part (part, recog_p, non_pc_set_src)
 	 two arms of the IF_THEN_ELSE are both MATCH_OPERAND.  Otherwise,
 	 we have some specific IF_THEN_ELSE construct (like the doz
 	 instruction on the RS/6000) that can't be used in the general
-	 context we want it for.  If the first operand is an arithmetic
-	 operation and the second is a MATCH_OPERNAND, show we have
-	 conditional arithmetic.  */
+	 context we want it for.  */
 
       if (recog_p && non_pc_set_src
 	  && GET_CODE (XEXP (part, 1)) == MATCH_OPERAND
 	  && GET_CODE (XEXP (part, 2)) == MATCH_OPERAND)
 	have_cmove_flag = 1;
-      else if (recog_p && non_pc_set_src
-	       && (GET_RTX_CLASS (GET_CODE (XEXP (part, 1))) == '1'
-		   || GET_RTX_CLASS (GET_CODE (XEXP (part, 1))) == '2'
-		   || GET_RTX_CLASS (GET_CODE (XEXP (part, 1))) == 'c')
-	       && GET_CODE (XEXP (XEXP (part, 1), 0)) == MATCH_OPERAND
-	       && GET_CODE (XEXP (part, 2)) == MATCH_OPERAND)
-	have_cond_arith_flag = 1;
+      break;
+
+    case COND_EXEC:
+      if (recog_p)
+	have_cond_exec_flag = 1;
       break;
 
     case REG: case CONST_INT: case SYMBOL_REF:
@@ -341,8 +337,9 @@ from the machine description file `md'.  */\n\n");
 
   /* This is conditionally defined, in case the user writes code which emits
      more splits than we can readily see (and knows s/he does it).  */
-  printf ("#ifndef MAX_INSNS_PER_SPLIT\n#define MAX_INSNS_PER_SPLIT %d\n#endif\n",
-	  max_insns_per_split);
+  printf ("#ifndef MAX_INSNS_PER_SPLIT\n");
+  printf ("#define MAX_INSNS_PER_SPLIT %d\n", max_insns_per_split);
+  printf ("#endif\n");
 
   if (have_cc0_flag)
     printf ("#define HAVE_cc0\n");
@@ -350,11 +347,8 @@ from the machine description file `md'.  */\n\n");
   if (have_cmove_flag)
     printf ("#define HAVE_conditional_move\n");
 
-#if 0
-  /* Disabled.  See the discussion in jump.c.  */
-  if (have_cond_arith_flag)
-    printf ("#define HAVE_conditional_arithmetic\n");
-#endif
+  if (have_cond_exec_flag)
+    printf ("#define HAVE_conditional_execution\n");
 
   if (have_lo_sum_flag)
     printf ("#define HAVE_lo_sum\n");

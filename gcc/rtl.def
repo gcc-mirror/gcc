@@ -900,6 +900,13 @@ DEF_RTL_EXPR(CALL_PLACEHOLDER, "call_placeholder", "uuuu", 'x')
    of canonical RTL.  It is, however, easier to manipulate this way.  */
 DEF_RTL_EXPR(PHI, "phi", "E", 'x')
 
+/* Conditionally execute code.
+   Operand 0 is the condition that if true, the code is executed.
+   Operand 1 is the code to be executed (typically a SET). 
+
+   Semantics are that there are no side effects if the condition
+   is false.  */
+DEF_RTL_EXPR(COND_EXEC, "cond_exec", "ee", 'x')
 
 /*
 Local variables:

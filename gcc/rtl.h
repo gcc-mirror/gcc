@@ -807,6 +807,12 @@ extern const char * const note_insn_name[];
 #define TRAP_CONDITION(RTX) XCEXP(RTX, 0, TRAP_IF)
 #define TRAP_CODE(RTX) XCEXP(RTX, 1, TRAP_IF)
 
+/* For a COND_EXEC rtx, COND_EXEC_TEST is the condition to base
+   conditionally executing the code on, COND_EXEC_CODE is the code
+   to execute if the condition is true.  */
+#define COND_EXEC_TEST(RTX) XCEXP(RTX, 0, COND_EXEC)
+#define COND_EXEC_CODE(RTX) XCEXP(RTX, 1, COND_EXEC)
+
 /* 1 in a SYMBOL_REF if it addresses this function's constants pool.  */
 #define CONSTANT_POOL_ADDRESS_P(RTX) ((RTX)->unchanging)
 

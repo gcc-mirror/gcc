@@ -429,6 +429,11 @@ reg_referenced_p (x, body)
 	  return 1;
       return 0;
 
+    case COND_EXEC:
+      if (reg_overlap_mentioned_p (x, COND_EXEC_TEST (body)))
+	return 1;
+      return reg_referenced_p (x, COND_EXEC_CODE (body));
+
     default:
       return 0;
     }
@@ -949,52 +954,61 @@ reg_overlap_mentioned_p (x, in)
   /* If either argument is a constant, then modifying X can not affect IN.  */
   if (CONSTANT_P (x) || CONSTANT_P (in))
     return 0;
-  else if (GET_CODE (x) == SUBREG)
+
+  switch (GET_CODE (x))
     {
+    case SUBREG:
       regno = REGNO (SUBREG_REG (x));
       if (regno < FIRST_PSEUDO_REGISTER)
 	regno += SUBREG_WORD (x);
-    }
-  else if (GET_CODE (x) == REG)
-    regno = REGNO (x);
-  else if (GET_CODE (x) == MEM)
-    {
-      const char *fmt;
-      int i;
+      goto do_reg;
 
-      if (GET_CODE (in) == MEM)
-	return 1;
+    case REG:
+      regno = REGNO (x);
+    do_reg:
+      endregno = regno + (regno < FIRST_PSEUDO_REGISTER
+			  ? HARD_REGNO_NREGS (regno, GET_MODE (x)) : 1);
+      return refers_to_regno_p (regno, endregno, in, NULL_PTR);
 
-      fmt = GET_RTX_FORMAT (GET_CODE (in));
+    case MEM:
+      {
+	const char *fmt;
+	int i;
 
-      for (i = GET_RTX_LENGTH (GET_CODE (in)) - 1; i >= 0; i--)
-	if (fmt[i] == 'e' && reg_overlap_mentioned_p (x, XEXP (in, i)))
+	if (GET_CODE (in) == MEM)
 	  return 1;
 
-      return 0;
+	fmt = GET_RTX_FORMAT (GET_CODE (in));
+	for (i = GET_RTX_LENGTH (GET_CODE (in)) - 1; i >= 0; i--)
+	  if (fmt[i] == 'e' && reg_overlap_mentioned_p (x, XEXP (in, i)))
+	    return 1;
+
+	return 0;
+      }
+
+    case SCRATCH:
+    case PC:
+    case CC0:
+      return reg_mentioned_p (x, in);
+
+    case PARALLEL:
+      if (GET_MODE (x) == BLKmode)
+	{
+	  register int i;
+
+	  /* If any register in here refers to it we return true.  */
+	  for (i = XVECLEN (x, 0) - 1; i >= 0; i--)
+	    if (reg_overlap_mentioned_p (SET_DEST (XVECEXP (x, 0, i)), in))
+	      return 1;
+	  return 0;
+	}
+      break;
+
+    default:
+      break;
     }
-  else if (GET_CODE (x) == SCRATCH || GET_CODE (x) == PC
-	   || GET_CODE (x) == CC0)
-    return reg_mentioned_p (x, in);
-  else if (GET_CODE (x) == PARALLEL
-	   && GET_MODE (x) == BLKmode)
-    {
-      register int i;
 
-      /* If any register in here refers to it
-	 we return true.  */
-      for (i = XVECLEN (x, 0) - 1; i >= 0; i--)
-	if (reg_overlap_mentioned_p (SET_DEST (XVECEXP (x, 0, i)), in))
-	  return 1;
-      return 0;
-    }
-  else
-    abort ();
-
-  endregno = regno + (regno < FIRST_PSEUDO_REGISTER
-		      ? HARD_REGNO_NREGS (regno, GET_MODE (x)) : 1);
-
-  return refers_to_regno_p (regno, endregno, in, NULL_PTR);
+  abort ();
 }
 
 /* Used for communications between the next few functions.  */
@@ -1108,7 +1122,9 @@ note_stores (x, fun, data)
      void (*fun) PARAMS ((rtx, rtx, void *));
      void *data;
 {
-  if ((GET_CODE (x) == SET || GET_CODE (x) == CLOBBER))
+  if (GET_CODE (x) == COND_EXEC)
+    x = COND_EXEC_CODE (x);
+  if (GET_CODE (x) == SET || GET_CODE (x) == CLOBBER)
     {
       register rtx dest = SET_DEST (x);
       while ((GET_CODE (dest) == SUBREG
@@ -1135,6 +1151,8 @@ note_stores (x, fun, data)
       for (i = XVECLEN (x, 0) - 1; i >= 0; i--)
 	{
 	  register rtx y = XVECEXP (x, 0, i);
+	  if (GET_CODE (y) == COND_EXEC)
+	    y = COND_EXEC_CODE (y);
 	  if (GET_CODE (y) == SET || GET_CODE (y) == CLOBBER)
 	    {
 	      register rtx dest = SET_DEST (y);
@@ -1213,7 +1231,7 @@ dead_or_set_regno_p (insn, test_regno)
      unsigned int test_regno;
 {
   unsigned int regno, endregno;
-  rtx link;
+  rtx link, pattern;
 
   /* See if there is a death note for something that includes
      TEST_REGNO.  */
@@ -1236,7 +1254,12 @@ dead_or_set_regno_p (insn, test_regno)
       && find_regno_fusage (insn, CLOBBER, test_regno))
     return 1;
 
-  if (GET_CODE (PATTERN (insn)) == SET)
+  pattern = PATTERN (insn);
+
+  if (GET_CODE (pattern) == COND_EXEC)
+    pattern = COND_EXEC_CODE (pattern);
+
+  if (GET_CODE (pattern) == SET)
     {
       rtx dest = SET_DEST (PATTERN (insn));
  
@@ -1259,13 +1282,16 @@ dead_or_set_regno_p (insn, test_regno)
 
       return (test_regno >= regno && test_regno < endregno);
     }
-  else if (GET_CODE (PATTERN (insn)) == PARALLEL)
+  else if (GET_CODE (pattern) == PARALLEL)
     {
       register int i;
 
-      for (i = XVECLEN (PATTERN (insn), 0) - 1; i >= 0; i--)
+      for (i = XVECLEN (pattern, 0) - 1; i >= 0; i--)
 	{
-	  rtx body = XVECEXP (PATTERN (insn), 0, i);
+	  rtx body = XVECEXP (pattern, 0, i);
+
+	  if (GET_CODE (body) == COND_EXEC)
+	    body = COND_EXEC_CODE (body);
 
 	  if (GET_CODE (body) == SET || GET_CODE (body) == CLOBBER)
 	    {
