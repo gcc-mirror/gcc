@@ -1,3 +1,16 @@
+2004-02-28  Guilhem Lavaux <guilhem@kaffe.org>
+
+	* java/io/ObjectInputStream.java
+	(readClassDescriptor): Keep elements of the mapping non null.
+	(checkTypeConsistency): New method.
+	(readFields): Fixed main loop and base logic. Small reindentation.
+	* java/io/ObjectStreamField.java
+	(lookupField): New method to update the field reference.
+	(checkFieldType): New method.
+	* java/io/ObjectStreamClass.java
+	(setClass, setFields): Call lookupField when building the field
+	database. Check the real field type.
+
 2004-02-28  Michael Koch  <konqueror@gmx.de>
 
 	* java/nio/ByteOrder.java
