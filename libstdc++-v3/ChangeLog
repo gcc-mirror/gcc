@@ -1,5 +1,31 @@
 2001-10-04  Phil Edwards  <pme@gcc.gnu.org>
 
+	* docs/html/17_intro/COPYING.DOC:  New file, GFDL v1.1 from the FSF.
+	* docs/html/17_intro/license.html:  New file.  Explain the licenses
+	in use.
+
+	* docs/html/configopts.html:  Link to license.html.
+	* docs/html/documentation.html:  Likewise.
+	* docs/html/explanations.html:  Likewise.
+	* docs/html/install.html:  Likewise.
+	* docs/html/17_intro/howto.html:  Likewise.
+	* docs/html/18_support/howto.html:  Likewise.
+	* docs/html/19_diagnostics/howto.html:  Likewise.
+	* docs/html/20_util/howto.html:  Likewise.
+	* docs/html/21_strings/howto.html:  Likewise.
+	* docs/html/22_locale/howto.html:  Likewise.
+	* docs/html/23_containers/howto.html:  Likewise.
+	* docs/html/24_iterators/howto.html:  Likewise.
+	* docs/html/25_algorithms/howto.html:  Likewise.
+	* docs/html/26_numerics/howto.html:  Likewise.
+	* docs/html/27_io/howto.html:  Likewise.
+	* docs/html/ext/howto.html:  Likewise.
+	* docs/html/ext/sgiexts.html:  Likewise.
+	* docs/html/faq/index.html:  Likewise.  New question, linking to
+	the new license.html.
+
+2001-10-04  Phil Edwards  <pme@gcc.gnu.org>
+
 	* docs/html/17_intro/howto.html:  Fix mis-sed in header from 20010917.
 	* docs/html/18_support/howto.html:  Likewise.
 	* docs/html/19_diagnostics/howto.html:  Likewise.
