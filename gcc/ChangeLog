@@ -1,3 +1,7 @@
+2000-06-09  H.J. Lu  (hjl@gnu.org)
+
+	* Makefile.in (c-parse.o): Also depend on output.h.
+
 2000-06-09  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* ggc-none.c, ggc-simple.c, ggc-page.c (ggc_alloc_obj): Rename
