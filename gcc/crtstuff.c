@@ -387,7 +387,8 @@ __do_global_ctors ()
 {
   func_ptr *p;
 #ifdef EH_FRAME_SECTION_ASM_OP
-  __register_frame (__EH_FRAME_BEGIN__);
+  static struct oobject object;
+  __register_frame (__EH_FRAME_BEGIN__, &object);
 #endif
   for (p = __CTOR_END__ - 1; *p != (func_ptr) -1; p--)
     (*p) ();
