@@ -1,3 +1,8 @@
+2004-01-11  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/undo/StateEditable.java
+	(RCSID): Removed redundant modifiers.
+
 2004-01-10  Michael Koch  <konqueror@gmx.de>
 
 	* javax/print/attribute/EnumSyntax.java
