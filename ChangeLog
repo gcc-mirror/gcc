@@ -1,3 +1,7 @@
+2004-02-12  Paolo Bonzini  <bonzini@gnu.org>
+
+	* MAINTAINERS: Remove myself.
+	
 2004-02-11  David Edelsohn  <edelsohn@gnu.org>
 
 	* configure.in (powerpc-*-aix*): Add target-libada to noconfigdirs.
