@@ -2226,6 +2226,13 @@ lookup_label (id)
 {
   register tree decl = IDENTIFIER_LABEL_VALUE (id);
 
+  if (current_function_decl == 0)
+    {
+      error ("label %s referenced outside of any function",
+	     IDENTIFIER_POINTER (id));
+      return 0;
+    }
+
   /* Use a label already defined or ref'd with this name.  */
   if (decl != 0)
     {
