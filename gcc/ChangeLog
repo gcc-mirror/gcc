@@ -1,3 +1,7 @@
+2005-02-23  James E Wilson  <wilson@specifixinc.com>
+
+	* gengtype.c (note_insn_name): Make 1 element larger.
+
 2005-02-23  Roger Sayle  <roger@eyesopen.com>
 
 	PR target/20018

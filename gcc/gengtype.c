@@ -367,7 +367,9 @@ enum insn_note {
   NOTE_INSN_MAX
 };
 
-static const char *const note_insn_name[NOTE_INSN_MAX] = {
+/* We must allocate one more entry here, as we use NOTE_INSN_MAX as the
+   default field for line number notes.  */
+static const char *const note_insn_name[NOTE_INSN_MAX+1] = {
 #define DEF_INSN_NOTE(NAME) #NAME,
 #include "insn-notes.def"
 #undef DEF_INSN_NOTE
