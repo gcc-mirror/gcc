@@ -1,3 +1,22 @@
+2002-03-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* attribs.c (init_attributes, decl_attributes): Use ARRAY_SIZE in
+	lieu of explicit sizeof/sizeof.
+	* i386.c (override_options, ix86_init_mmx_sse_builtins,
+	ix86_expand_builtin): Likewise.
+	* mips.c (mips_add_gc_roots): Likewise.
+	* mmix.c (mmix_output_condition): Likewise.
+	* rs6000.c (rs6000_override_options, altivec_expand_builtin,
+	altivec_init_builtins): Likewise.
+	* sparc.c (mark_ultrasparc_pipeline_state): Likewise.
+	* cppexp.c (Nsuff, parse_number): Likewise.
+	* cppinit.c (builtin_array_end): Likewise.
+	* gcc.c (n_default_compilers, process_command): Likewise.
+	* genpreds.c (output_predicate_decls): Likewise.
+	* ggc-page.c (NUM_EXTRA_ORDERS): Likewise.
+	* lcm.c (N_ENTITIES): Likewise.
+	* stor-layout.c (set_sizetype): Likewise.
+	
 2002-03-03  Richard Henderson  <rth@redhat.com>
 
 	* toplev.c (rest_of_decl_compilation): Do not invoke make_decl_rtl

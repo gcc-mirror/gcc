@@ -514,8 +514,7 @@ cxx_decode_option (argc, argv)
 	 caller that the option was processed successfully.  */
       if (bsearch (&positive_option, 
 		   unsupported_options, 
-		   (sizeof (unsupported_options) 
-		    / sizeof (unsupported_options[0])),
+		   ARRAY_SIZE (unsupported_options),
 		   sizeof (unsupported_options[0]),
 		   compare_options))
 	{
@@ -560,10 +559,7 @@ cxx_decode_option (argc, argv)
 	{
 	  int found = 0;
 
-	  for (j = 0;
-	       !found && j < (sizeof (lang_f_options) 
-			      / sizeof (lang_f_options[0]));
-	       j++)
+	  for (j = 0; !found && j < ARRAY_SIZE (lang_f_options); j++)
 	    {
 	      if (!strcmp (p, lang_f_options[j].string))
 		{

@@ -858,8 +858,7 @@ static const struct compiler default_compilers[] =
 
 /* Number of elements in default_compilers, not counting the terminator.  */
 
-static int n_default_compilers
-  = (sizeof default_compilers / sizeof (struct compiler)) - 1;
+static const int n_default_compilers = ARRAY_SIZE (default_compilers) - 1;
 
 /* A vector of options to give to the linker.
    These options are accumulated by %x,
@@ -3686,8 +3685,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 #ifdef MODIFY_TARGET_NAME
 	      is_modify_target_name = 0;
 
-	      for (j = 0;
-		   j < sizeof modify_target / sizeof modify_target[0]; j++)
+	      for (j = 0; j < ARRAY_SIZE (modify_target); j++)
 		if (! strcmp (argv[i], modify_target[j].sw))
 		  {
 		    char *new_name
@@ -3822,7 +3820,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 #ifdef MODIFY_TARGET_NAME
       is_modify_target_name = 0;
 
-      for (j = 0; j < sizeof modify_target / sizeof modify_target[0]; j++)
+      for (j = 0; j < ARRAY_SIZE (modify_target); j++)
 	if (! strcmp (argv[i], modify_target[j].sw))
 	  is_modify_target_name = 1;
 

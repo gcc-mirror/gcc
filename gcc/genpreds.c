@@ -43,7 +43,7 @@ output_predicate_decls ()
   size_t i;
 
   puts ("#ifdef RTX_CODE\n");
-  for (i = 0; i < sizeof predicate / sizeof *predicate; i++)
+  for (i = 0; i < ARRAY_SIZE (predicate); i++)
     printf ("extern int %s PARAMS ((rtx, enum machine_mode));\n",
 	    predicate[i].name);
   puts ("\n#endif /* RTX_CODE */\n");

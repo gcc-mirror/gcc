@@ -161,8 +161,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* The number of extra orders, not corresponding to power-of-two sized
    objects.  */
 
-#define NUM_EXTRA_ORDERS \
-  (sizeof (extra_order_size_table) / sizeof (extra_order_size_table[0]))
+#define NUM_EXTRA_ORDERS ARRAY_SIZE (extra_order_size_table)
 
 /* The Ith entry is the maximum size of an object to be stored in the
    Ith extra order.  Adding a new entry to this array is the *only*

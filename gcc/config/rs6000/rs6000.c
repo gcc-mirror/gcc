@@ -410,7 +410,7 @@ rs6000_override_options (default_cpu)
 	    MASK_POWERPC | MASK_SOFT_FLOAT | MASK_NEW_MNEMONICS,
 	    POWER_MASKS | POWERPC_OPT_MASKS | MASK_POWERPC64}};
 
-  size_t ptt_size = sizeof (processor_target_table) / sizeof (struct ptt);
+  const size_t ptt_size = ARRAY_SIZE (processor_target_table);
 
   /* Save current -mmultiple/-mno-multiple status.  */
   int multiple = TARGET_MULTIPLE;
@@ -4018,7 +4018,7 @@ altivec_expand_builtin (exp, target)
 
   /* Handle DST variants.  */
   d = (struct builtin_description *) bdesc_dst;
-  for (i = 0; i < sizeof (bdesc_dst) / sizeof *d; i++, d++)
+  for (i = 0; i < ARRAY_SIZE (bdesc_dst); i++, d++)
     if (d->code == fcode)
       {
 	arg0 = TREE_VALUE (arglist);
@@ -4057,25 +4057,25 @@ altivec_expand_builtin (exp, target)
 
   /* Expand abs* operations.  */
   d = (struct builtin_description *) bdesc_abs;
-  for (i = 0; i < sizeof (bdesc_abs) / sizeof *d; i++, d++)
+  for (i = 0; i < ARRAY_SIZE (bdesc_abs); i++, d++)
     if (d->code == fcode)
       return altivec_expand_abs_builtin (d->icode, arglist, target);
 
   /* Handle simple unary operations.  */
   d = (struct builtin_description *) bdesc_1arg;
-  for (i = 0; i < sizeof (bdesc_1arg) / sizeof *d; i++, d++)
+  for (i = 0; i < ARRAY_SIZE (bdesc_1arg); i++, d++)
     if (d->code == fcode)
       return altivec_expand_unop_builtin (d->icode, arglist, target);
 
   /* Handle simple binary operations.  */
   d = (struct builtin_description *) bdesc_2arg;
-  for (i = 0; i < sizeof (bdesc_2arg) / sizeof *d; i++, d++)
+  for (i = 0; i < ARRAY_SIZE (bdesc_2arg); i++, d++)
     if (d->code == fcode)
       return altivec_expand_binop_builtin (d->icode, arglist, target);
 
   /* Expand the AltiVec predicates.  */
   dp = (struct builtin_description_predicates *) bdesc_altivec_preds;
-  for (i = 0; i < sizeof (bdesc_altivec_preds) / sizeof *dp; i++, dp++)
+  for (i = 0; i < ARRAY_SIZE (bdesc_altivec_preds); i++, dp++)
     if (dp->code == fcode)
       return altivec_expand_predicate_builtin (dp->icode, dp->opcode, arglist, target);
 
@@ -4110,7 +4110,7 @@ altivec_expand_builtin (exp, target)
 
   /* Handle simple ternary operations.  */
   d = (struct builtin_description *) bdesc_3arg;
-  for (i = 0; i < sizeof  (bdesc_3arg) / sizeof *d; i++, d++)
+  for (i = 0; i < ARRAY_SIZE  (bdesc_3arg); i++, d++)
     if (d->code == fcode)
       return altivec_expand_ternop_builtin (d->icode, arglist, target);
 
@@ -4606,7 +4606,7 @@ altivec_init_builtins (void)
 
   /* Add the simple ternary operators.  */
   d = (struct builtin_description *) bdesc_3arg;
-  for (i = 0; i < sizeof (bdesc_3arg) / sizeof *d; i++, d++)
+  for (i = 0; i < ARRAY_SIZE (bdesc_3arg); i++, d++)
     {
       
       enum machine_mode mode0, mode1, mode2, mode3;
@@ -4699,12 +4699,12 @@ altivec_init_builtins (void)
 
   /* Add the DST variants.  */
   d = (struct builtin_description *) bdesc_dst;
-  for (i = 0; i < sizeof (bdesc_dst) / sizeof *d; i++, d++)
+  for (i = 0; i < ARRAY_SIZE (bdesc_dst); i++, d++)
     def_builtin (d->mask, d->name, void_ftype_pvoid_int_char, d->code);
 
   /* Initialize the predicates.  */
   dp = (struct builtin_description_predicates *) bdesc_altivec_preds;
-  for (i = 0; i < sizeof (bdesc_altivec_preds) / sizeof *dp; i++, dp++)
+  for (i = 0; i < ARRAY_SIZE (bdesc_altivec_preds); i++, dp++)
     {
       enum machine_mode mode1;
       tree type;
@@ -4734,7 +4734,7 @@ altivec_init_builtins (void)
 
   /* Add the simple binary operators.  */
   d = (struct builtin_description *) bdesc_2arg;
-  for (i = 0; i < sizeof (bdesc_2arg) / sizeof *d; i++, d++)
+  for (i = 0; i < ARRAY_SIZE (bdesc_2arg); i++, d++)
     {
       enum machine_mode mode0, mode1, mode2;
       tree type;
@@ -4852,7 +4852,7 @@ altivec_init_builtins (void)
 
   /* Initialize the abs* operators.  */
   d = (struct builtin_description *) bdesc_abs;
-  for (i = 0; i < sizeof (bdesc_abs) / sizeof *d; i++, d++)
+  for (i = 0; i < ARRAY_SIZE (bdesc_abs); i++, d++)
     {
       enum machine_mode mode0;
       tree type;
@@ -4882,7 +4882,7 @@ altivec_init_builtins (void)
 
   /* Add the simple unary operators.  */
   d = (struct builtin_description *) bdesc_1arg;
-  for (i = 0; i < sizeof (bdesc_1arg) / sizeof *d; i++, d++)
+  for (i = 0; i < ARRAY_SIZE (bdesc_1arg); i++, d++)
     {
       enum machine_mode mode0, mode1;
       tree type;

@@ -1,3 +1,8 @@
+2002-03-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* utils.c (init_gnat_to_gnu, init_gigi_decls): Use ARRAY_SIZE in
+	lieu of explicit sizeof/sizeof.
+
 2002-02-28  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* misc.c (copy_lang_decl): Remove.

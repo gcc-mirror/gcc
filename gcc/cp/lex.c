@@ -484,7 +484,6 @@ static const struct resword reswords[] =
   { "xor_eq",		RID_XOR_EQ,	D_OPNAME },
 
 };
-#define N_reswords (sizeof reswords / sizeof (struct resword))
 
 /* Table mapping from RID_* constants to yacc token numbers.
    Unfortunately we have to have entries for all the keywords in all
@@ -639,7 +638,7 @@ init_reswords ()
      all the trees it points to are permanently interned in the
      get_identifier hash anyway.  */
   ridpointers = (tree *) xcalloc ((int) RID_MAX, sizeof (tree));
-  for (i = 0; i < N_reswords; i++)
+  for (i = 0; i < ARRAY_SIZE (reswords); i++)
     {
       id = get_identifier (reswords[i].word);
       C_RID_CODE (id) = reswords[i].rid;
@@ -812,8 +811,8 @@ static int *reduce_count;
 int *token_count;
 
 #if 0
-#define REDUCE_LENGTH (sizeof (yyr2) / sizeof (yyr2[0]))
-#define TOKEN_LENGTH (256 + sizeof (yytname) / sizeof (yytname[0]))
+#define REDUCE_LENGTH ARRAY_SIZE (yyr2)
+#define TOKEN_LENGTH (256 + ARRAY_SIZE (yytname))
 #endif
 
 #ifdef GATHER_STATISTICS

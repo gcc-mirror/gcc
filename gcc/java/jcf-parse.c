@@ -1326,7 +1326,7 @@ void
 init_jcf_parse ()
 {
   /* Register roots with the garbage collector.  */
-  ggc_add_tree_root (parse_roots, sizeof (parse_roots) / sizeof(tree));
+  ggc_add_tree_root (parse_roots, ARRAY_SIZE (parse_roots));
 
   ggc_add_root (&current_jcf, 1, sizeof (JCF), (void (*)(void *))ggc_mark_jcf);
 

@@ -907,8 +907,7 @@ java_init_decl_processing ()
   init_jcf_parse ();
 
   /* Register nodes with the garbage collector.  */
-  ggc_add_tree_root (java_global_trees, 
-		     sizeof (java_global_trees) / sizeof (tree));
+  ggc_add_tree_root (java_global_trees, ARRAY_SIZE (java_global_trees));
   ggc_add_tree_root (&decl_map, 1);
   ggc_add_tree_root (&pending_local_decls, 1);
 

@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                            $Revision: 1.7 $
+ *                            $Revision: 1.8 $
  *                                                                          *
  *          Copyright (C) 1992-2001, Free Software Foundation, Inc.         *
  *                                                                          *
@@ -165,7 +165,7 @@ init_gnat_to_gnu ()
   ggc_add_tree_root (&signed_and_unsigned_types[0][0],
 		     (sizeof signed_and_unsigned_types
 		      / sizeof signed_and_unsigned_types[0][0]));
-  ggc_add_tree_root (float_types, sizeof float_types / sizeof float_types[0]);
+  ggc_add_tree_root (float_types, ARRAY_SIZE (float_types));
 
   ggc_add_root (&current_binding_level, 1, sizeof current_binding_level,
 		mark_binding_level);
@@ -692,8 +692,7 @@ init_gigi_decls (long_long_float_type, exception_type)
   DECL_BUILT_IN_CLASS (setjmp_decl) = BUILT_IN_NORMAL;
   DECL_FUNCTION_CODE (setjmp_decl) = BUILT_IN_SETJMP;
 
-  ggc_add_tree_root (gnat_std_decls,
-		     sizeof gnat_std_decls / sizeof gnat_std_decls[0]);
+  ggc_add_tree_root (gnat_std_decls, ARRAY_SIZE (gnat_std_decls));
 }
 
 /* This routine is called in tree.c to print an error message for invalid use

@@ -1816,8 +1816,7 @@ set_sizetype (type)
       TYPE_REFERENCE_TO (sizetype_tab[i]) = 0;
     }
 
-  ggc_add_tree_root ((tree *) &sizetype_tab,
-		     sizeof sizetype_tab / sizeof (tree));
+  ggc_add_tree_root ((tree *) &sizetype_tab, ARRAY_SIZE (sizetype_tab));
 
   /* Go down each of the types we already made and set the proper type
      for the sizes in them.  */

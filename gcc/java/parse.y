@@ -15997,7 +15997,7 @@ void
 init_src_parse ()
 {
   /* Register roots with the garbage collector.  */
-  ggc_add_tree_root (src_parse_roots, sizeof (src_parse_roots) / sizeof(tree));
+  ggc_add_tree_root (src_parse_roots, ARRAY_SIZE (src_parse_roots));
 }
 
 

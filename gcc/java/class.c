@@ -2325,7 +2325,7 @@ init_class_processing ()
   registerClass_libfunc = gen_rtx (SYMBOL_REF, Pmode, "_Jv_RegisterClass");
   registerResource_libfunc = 
     gen_rtx (SYMBOL_REF, Pmode, "_Jv_RegisterResource");
-  ggc_add_tree_root (class_roots, sizeof (class_roots) / sizeof (tree));
+  ggc_add_tree_root (class_roots, ARRAY_SIZE (class_roots));
   fields_ident = get_identifier ("fields");
   info_ident = get_identifier ("info");
   ggc_add_rtx_root (&registerClass_libfunc, 1);

@@ -1023,7 +1023,7 @@ optimize_mode_switching (file)
   sbitmap *kill;
   struct edge_list *edge_list;
   static const int num_modes[] = NUM_MODES_FOR_MODE_SWITCHING;
-#define N_ENTITIES (sizeof num_modes / sizeof (int))
+#define N_ENTITIES ARRAY_SIZE (num_modes)
   int entity_map[N_ENTITIES];
   struct bb_info *bb_info[N_ENTITIES];
   int i, j;
