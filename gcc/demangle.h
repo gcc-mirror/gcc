@@ -32,6 +32,7 @@
 #define DMGL_NO_OPTS	0		/* For readability... */
 #define DMGL_PARAMS	(1 << 0)	/* Include function args */
 #define DMGL_ANSI	(1 << 1)	/* Include const, volatile, etc */
+#define DMGL_JAVA	(1 << 2)	/* Demangle as Java rather than C++. */
 
 #define DMGL_AUTO	(1 << 8)
 #define DMGL_GNU	(1 << 9)
