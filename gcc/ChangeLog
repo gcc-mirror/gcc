@@ -1,3 +1,11 @@
+2000-11-20  Stan Shebs  <shebs@apple.com>
+
+	* config/rs6000/xm-darwin.h: New file, Darwin host definitions.
+	* config/rs6000/x-darwin: New file, Darwin host fragment.
+	* config.gcc (powerpc-*-darwin*): New host.
+	* system.h (HAVE_DESIGNATED_INITIALIZERS):  Allow this to be
+	overridden by a config file.
+
 2000-11-20  Neil Booth  <neilb@earthling.net>
 
 	* cppmacro.c (paste_tokens): Rename from paste_payloads.

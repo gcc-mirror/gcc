@@ -2641,6 +2641,10 @@ powerpc-*-beos*)
 	tmake_file=rs6000/t-beos
 	xmake_file=rs6000/x-beos
 	;;
+powerpc-*-darwin*)
+	xm_file="rs6000/xm-rs6000.h rs6000/xm-darwin.h"
+	xmake_file=rs6000/x-darwin
+	;;
 powerpc-*-sysv*)
 	tm_file=rs6000/sysv4.h
 	xm_file="rs6000/xm-sysv4.h"

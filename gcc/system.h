@@ -429,8 +429,10 @@ extern void abort PARAMS ((void));
 #endif
 
 /* 1 if we have C99 designated initializers.  */
+#if !defined(HAVE_DESIGNATED_INITIALIZERS)
 #define HAVE_DESIGNATED_INITIALIZERS \
   ((GCC_VERSION >= 2007) || (__STDC_VERSION__ >= 199901L))
+#endif
 
 /* Define a STRINGIFY macro that's right for ANSI or traditional C.
    Note: if the argument passed to STRINGIFY is itself a macro, eg
