@@ -26,9 +26,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #if !IN_GCOV
 static void gcov_write_block (unsigned);
-static gcov_unsigned_t *gcov_write_bytes (unsigned);
+static gcov_unsigned_t *gcov_write_words (unsigned);
 #endif
-static const gcov_unsigned_t *gcov_read_bytes (unsigned);
+static const gcov_unsigned_t *gcov_read_words (unsigned);
 #if !IN_LIBGCOV
 static void gcov_allocate (unsigned);
 #endif
@@ -77,7 +77,7 @@ gcov_open (const char *name, int mode)
     abort ();
   gcov_var.start = 0;
   gcov_var.offset = gcov_var.length = 0;
-  gcov_var.overread = -4u;
+  gcov_var.overread = -1u;
   gcov_var.error = 0;
 #if !IN_LIBGCOV
   gcov_var.endian = 0;
@@ -164,7 +164,7 @@ gcov_allocate (unsigned length)
   new_size *= 2;
   
   gcov_var.alloc = new_size;
-  gcov_var.buffer = xrealloc (gcov_var.buffer, new_size);
+  gcov_var.buffer = xrealloc (gcov_var.buffer, new_size << 2);
 }
 #endif
 
@@ -174,7 +174,7 @@ gcov_allocate (unsigned length)
 static void
 gcov_write_block (unsigned size)
 {
-  if (fwrite (gcov_var.buffer, size, 1, gcov_var.file) != 1)
+  if (fwrite (gcov_var.buffer, size << 2, 1, gcov_var.file) != 1)
     gcov_var.error = 1;
   gcov_var.start += size;
   gcov_var.offset -= size;
@@ -184,28 +184,27 @@ gcov_write_block (unsigned size)
    pointer to those bytes, or NULL on failure.  */
 
 static gcov_unsigned_t *
-gcov_write_bytes (unsigned bytes)
+gcov_write_words (unsigned words)
 {
   gcov_unsigned_t *result;
 
   GCOV_CHECK_WRITING ();
-  GCOV_CHECK (!(bytes & 3));
 #if IN_LIBGCOV
   if (gcov_var.offset >= GCOV_BLOCK_SIZE)
     {
       gcov_write_block (GCOV_BLOCK_SIZE);
       if (gcov_var.offset)
 	{
-	  GCOV_CHECK (gcov_var.offset == 4);
+	  GCOV_CHECK (gcov_var.offset == 1);
 	  memcpy (gcov_var.buffer, gcov_var.buffer + GCOV_BLOCK_SIZE, 4);
 	}
     }
 #else
-  if (gcov_var.offset + bytes > gcov_var.alloc)
-    gcov_allocate (gcov_var.offset + bytes);
+  if (gcov_var.offset + words > gcov_var.alloc)
+    gcov_allocate (gcov_var.offset + words);
 #endif
-  result = (gcov_unsigned_t *)&gcov_var.buffer[gcov_var.offset];
-  gcov_var.offset += bytes;
+  result = &gcov_var.buffer[gcov_var.offset];
+  gcov_var.offset += words;
   
   return result;
 }
@@ -216,7 +215,7 @@ gcov_write_bytes (unsigned bytes)
 GCOV_LINKAGE void
 gcov_write_unsigned (gcov_unsigned_t value)
 {
-  gcov_unsigned_t *buffer = gcov_write_bytes (4);
+  gcov_unsigned_t *buffer = gcov_write_words (1);
 
   buffer[0] = value;
 }
@@ -228,7 +227,7 @@ gcov_write_unsigned (gcov_unsigned_t value)
 GCOV_LINKAGE void
 gcov_write_counter (gcov_type value)
 {
-  gcov_unsigned_t *buffer = gcov_write_bytes (8);
+  gcov_unsigned_t *buffer = gcov_write_words (2);
 
   buffer[0] = (gcov_unsigned_t) value;
   if (sizeof (value) > sizeof (gcov_unsigned_t))
@@ -258,7 +257,7 @@ gcov_write_string (const char *string)
       alloc = (length + 4) >> 2;
     }
   
-  buffer = gcov_write_bytes (4 + alloc * 4);
+  buffer = gcov_write_words (1 + alloc);
 
   buffer[0] = alloc;
   buffer[alloc] = 0;
@@ -274,7 +273,7 @@ GCOV_LINKAGE gcov_position_t
 gcov_write_tag (gcov_unsigned_t tag)
 {
   gcov_position_t result = gcov_var.start + gcov_var.offset;
-  gcov_unsigned_t *buffer = gcov_write_bytes (8);
+  gcov_unsigned_t *buffer = gcov_write_words (2);
 
   buffer[0] = tag;
   buffer[1] = 0;
@@ -295,10 +294,10 @@ gcov_write_length (gcov_position_t position)
   gcov_unsigned_t *buffer;
 
   GCOV_CHECK_WRITING ();
-  GCOV_CHECK (position + 8 <= gcov_var.start + gcov_var.offset);
+  GCOV_CHECK (position + 2 <= gcov_var.start + gcov_var.offset);
   GCOV_CHECK (position >= gcov_var.start);
   offset = position - gcov_var.start;
-  length = gcov_var.offset - offset - 8;
+  length = gcov_var.offset - offset - 2;
   buffer = (gcov_unsigned_t *) &gcov_var.buffer[offset];
   buffer[1] = length;
   if (gcov_var.offset >= GCOV_BLOCK_SIZE)
@@ -312,7 +311,7 @@ gcov_write_length (gcov_position_t position)
 GCOV_LINKAGE void
 gcov_write_tag_length (gcov_unsigned_t tag, gcov_unsigned_t length)
 {
-  gcov_unsigned_t *buffer = gcov_write_bytes (8);
+  gcov_unsigned_t *buffer = gcov_write_words (2);
 
   buffer[0] = tag;
   buffer[1] = length;
@@ -346,20 +345,19 @@ gcov_write_summary (gcov_unsigned_t tag, const struct gcov_summary *summary)
    NULL on failure (read past EOF).  */
 
 static const gcov_unsigned_t *
-gcov_read_bytes (unsigned bytes)
+gcov_read_words (unsigned words)
 {
   const gcov_unsigned_t *result;
   unsigned excess = gcov_var.length - gcov_var.offset;
   
   GCOV_CHECK_READING ();
-  GCOV_CHECK (!(bytes & 3));
-  if (excess < bytes)
+  if (excess < words)
     {
       gcov_var.start += gcov_var.offset;
 #if IN_LIBGCOV
       if (excess)
 	{
-	  GCOV_CHECK (excess == 4);
+	  GCOV_CHECK (excess == 1);
 	  memcpy (gcov_var.buffer, gcov_var.buffer + gcov_var.offset, 4);
 	}
 #else
@@ -368,25 +366,25 @@ gcov_read_bytes (unsigned bytes)
       gcov_var.offset = 0;
       gcov_var.length = excess;
 #if IN_LIBGCOV
-      GCOV_CHECK (!gcov_var.length || gcov_var.length == 4);
+      GCOV_CHECK (!gcov_var.length || gcov_var.length == 1);
       excess = GCOV_BLOCK_SIZE;
 #else
-      if (gcov_var.length + bytes > gcov_var.alloc)
-	gcov_allocate (gcov_var.length + bytes);
+      if (gcov_var.length + words > gcov_var.alloc)
+	gcov_allocate (gcov_var.length + words);
       excess = gcov_var.alloc - gcov_var.length;
 #endif
       excess = fread (gcov_var.buffer + gcov_var.length,
-		      1, excess, gcov_var.file);
+		      1, excess << 2, gcov_var.file) >> 2;
       gcov_var.length += excess;
-      if (gcov_var.length < bytes)
+      if (gcov_var.length < words)
 	{
-	  gcov_var.overread += bytes - gcov_var.length;
+	  gcov_var.overread += words - gcov_var.length;
 	  gcov_var.length = 0;
 	  return 0;
 	}
     }
-  result = (gcov_unsigned_t *)&gcov_var.buffer[gcov_var.offset];
-  gcov_var.offset += bytes;
+  result = &gcov_var.buffer[gcov_var.offset];
+  gcov_var.offset += words;
   return result;
 }
 
@@ -397,7 +395,7 @@ GCOV_LINKAGE gcov_unsigned_t
 gcov_read_unsigned (void)
 {
   gcov_unsigned_t value;
-  const gcov_unsigned_t *buffer = gcov_read_bytes (4);
+  const gcov_unsigned_t *buffer = gcov_read_words (1);
 
   if (!buffer)
     return 0;
@@ -412,7 +410,7 @@ GCOV_LINKAGE gcov_type
 gcov_read_counter (void)
 {
   gcov_type value;
-  const gcov_unsigned_t *buffer = gcov_read_bytes (8);
+  const gcov_unsigned_t *buffer = gcov_read_words (2);
 
   if (!buffer)
     return 0;
@@ -440,7 +438,7 @@ gcov_read_string (void)
   if (!length)
     return 0;
 
-  return (const char *) gcov_read_bytes (length);
+  return (const char *) gcov_read_words (length);
 }
 #endif
 
@@ -475,8 +473,8 @@ gcov_sync (gcov_position_t base, gcov_unsigned_t length)
   else
     {
       gcov_var.offset = gcov_var.length = 0;
-      fseek (gcov_var.file, base, SEEK_SET);
-      gcov_var.start = ftell (gcov_var.file);
+      fseek (gcov_var.file, base << 2, SEEK_SET);
+      gcov_var.start = ftell (gcov_var.file) >> 2;
     }
 }
 #endif
@@ -491,8 +489,8 @@ gcov_seek (gcov_position_t base)
   GCOV_CHECK_WRITING ();
   if (gcov_var.offset)
     gcov_write_block (gcov_var.offset);
-  fseek (gcov_var.file, base, base ? SEEK_SET : SEEK_END);
-  gcov_var.start = ftell (gcov_var.file);
+  fseek (gcov_var.file, base << 2, base ? SEEK_SET : SEEK_END);
+  gcov_var.start = ftell (gcov_var.file) >> 2;
 }
 #endif
 
