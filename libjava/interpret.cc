@@ -54,6 +54,21 @@ static void throw_null_pointer_exception ()
   __attribute__ ((__noreturn__));
 #endif
 
+#ifdef DIRECT_THREADED
+// Lock to ensure that methods are not compiled concurrently.
+// We could use a finer-grained lock here, however it is not safe to use
+// the Class monitor as user code in another thread could hold it.
+static _Jv_Mutex_t compile_mutex;
+
+void
+_Jv_InitInterpreter()
+{
+  _Jv_MutexInit (&compile_mutex);
+}
+#else
+void _Jv_InitInterpreter() {}
+#endif
+
 extern "C" double __ieee754_fmod (double,double);
 
 // This represents a single slot in the "compiled" form of the
@@ -1032,9 +1047,14 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args)
 #define PCVAL(unionval) unionval.p
 #define AMPAMP(label) &&label
 
-  // Compile if we must.
+  // Compile if we must. NOTE: Double-check locking.
   if (prepared == NULL)
-    compile (insn_target);
+    {
+      _Jv_MutexLock (&compile_mutex);
+      if (prepared == NULL)
+	compile (insn_target);
+      _Jv_MutexUnlock (&compile_mutex);
+    }
   pc = (insn_slot *) prepared;
 
 #else

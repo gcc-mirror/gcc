@@ -1,3 +1,13 @@
+2004-07-13  Bryce McKinlay  <mckinlay@redhat.com>
+
+	PR libgcj/7587
+	* interpret.cc (compile_mutex): New.
+	(_Jv_InitInterpreter): New. Initialize compile_mutex.
+	(run): Lock compile_mutex before calling compile() if compilation is
+	required.
+	* prims.cc (_Jv_CreateJavaVM): Call _Jv_InitInterpreter().
+	* include/java-interp.h (_Jv_InitInterpreter): Declare.	
+
 2004-07-11  Mohan Embar  <gnustuff@thisiscool.com>
 
 	* gnu/java/net/natPlainDatagramSocketImplWin32.cc (several):

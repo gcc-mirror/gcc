@@ -36,6 +36,7 @@ _Jv_IsInterpretedClass (jclass c)
 
 struct _Jv_ResolvedMethod;
 
+void _Jv_InitInterpreter ();
 void _Jv_DefineClass (jclass, jbyteArray, jint, jint);
 
 void _Jv_InitField (jobject, jclass, int);

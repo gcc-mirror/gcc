@@ -419,7 +419,8 @@ extern jboolean _Jv_CheckAccess (jclass self_klass, jclass other_klass,
 extern jobject _Jv_CallAnyMethodA (jobject obj, jclass return_type,
 				   jmethodID meth, jboolean is_constructor,
 				   JArray<jclass> *parameter_types,
-				   jobjectArray args);
+				   jobjectArray args,
+				   jclass iface = NULL);
 
 union jvalue;
 extern void _Jv_CallAnyMethodA (jobject obj,
@@ -430,7 +431,8 @@ extern void _Jv_CallAnyMethodA (jobject obj,
 				JArray<jclass> *parameter_types,
 				jvalue *args,
 				jvalue *result,
-				jboolean is_jni_call = true);
+				jboolean is_jni_call = true,
+				jclass iface = NULL);
 
 extern jobject _Jv_NewMultiArray (jclass, jint ndims, jint* dims)
   __attribute__((__malloc__));
