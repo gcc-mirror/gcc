@@ -14,6 +14,10 @@ extern void abort (void);
 #define xstr(x) str(x)
 #define strvar(...) #__VA_ARGS__
 
+#define glibc_str(x) glibc_str2 (w, x)
+#define glibc_str2(w, x) #x
+#define ver GLIBC_2.2
+
 int main (int argc, char *argv[])
 {
   str (\);		/* { dg-warning "valid string" "str(\\)" } */
@@ -44,6 +48,9 @@ int main (int argc, char *argv[])
 
   if (strcmp (strvar (foo, bar), "foo, bar"))
     err ("variable arguments");
+
+  if (strcmp (glibc_str (ver), "GLIBC_2.2"))
+    err ("whitespace");
 
   return 0;
 }
