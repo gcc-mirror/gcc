@@ -132,12 +132,10 @@
 
 ;; Multiplication insns
 
-;; Note the '&' in the following insn which tells GCC that the second operand
-;; must be corruptable and hence not equal to the first. (Too strict in fact.)
-
+;; The `&' is too strict, but at least generates correct code.
 (define_insn "mulsi3"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-        (mult:SI (match_operand:SI 1 "register_operand" "&r")
+  [(set (match_operand:SI 0 "register_operand" "=&r")
+        (mult:SI (match_operand:SI 1 "register_operand" "%r")
                  (match_operand:SI 2 "register_operand" "r")))]
   ""
   "*
@@ -150,9 +148,9 @@
 ;; Unnamed templates to match MLA instruction.
 
 (define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=r")
+  [(set (match_operand:SI 0 "register_operand" "=&r")
         (plus:SI
-          (mult:SI (match_operand:SI 1 "register_operand" "&r")
+          (mult:SI (match_operand:SI 1 "register_operand" "%r")
                    (match_operand:SI 2 "register_operand" "r"))
           (match_operand:SI 3 "register_operand" "r")))]
   ""
@@ -164,10 +162,10 @@
 ")
 
 (define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=r")
+  [(set (match_operand:SI 0 "register_operand" "=&r")
         (plus:SI
           (match_operand:SI 3 "register_operand" "r")
-          (mult:SI (match_operand:SI 1 "register_operand" "&r")
+          (mult:SI (match_operand:SI 1 "register_operand" "%r")
                    (match_operand:SI 2 "register_operand" "r"))))]
   ""
   "*
@@ -522,7 +520,7 @@
   return (arm_output_asm_insn (\"mvfs\\t%0, %1\", operands));
 ")
 
-;; Zero extention instructions.
+;; Zero extension instructions.
 
 (define_expand "zero_extendhisi2"
   [(set (match_operand:SI 0 "register_operand" "")
