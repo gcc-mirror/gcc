@@ -899,8 +899,6 @@ finish_fname_decls (void)
     {
       tree *bodyp = &DECL_SAVED_TREE (current_function_decl);
 
-      if (TREE_CODE (*bodyp) == COMPOUND_STMT)
-	bodyp = &COMPOUND_BODY (*bodyp);
       if (TREE_CODE (*bodyp) == BIND_EXPR)
 	bodyp = &BIND_EXPR_BODY (*bodyp);
 

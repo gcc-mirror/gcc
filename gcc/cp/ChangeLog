@@ -1,3 +1,17 @@
+2004-06-16  Richard Henderson  <rth@redhat.com>
+
+	* cp-tree.h (COMPOUND_STMT_TRY_BLOCK, COMPOUND_STMT_BODY_BLOCK): Kill.
+	(BIND_EXPR_TRY_BLOCK, BIND_EXPR_BODY_BLOCK): New.
+	* cxx-pretty-print.c (pp_cxx_function_definition): Move handling
+	of CTOR_INITIALIZER ...
+	(pp_cxx_statement): ... here.
+	* decl.c (begin_function_body): Don't set COMPOUND_STMT_BODY_BLOCK.
+	(finish_function): Use alloc_stmt_list to zap entire function.
+	* parser.c (cp_parser_compound_statement): Update commentary.
+	* pt.c (tsubst_expr): Use BIND_EXPR instead of COMPOUND_STMT.
+	* semantics.c (begin_compound_stmt, finish_compound_stmt): Likewise.
+	(finish_stmt_expr): Don't look through COMPOUND_STMT.
+
 2004-06-16  Geoffrey Keating  <geoffk@apple.com>
 
 	* pt.c (mark_decl_instantiated): Don't call defer_fn.

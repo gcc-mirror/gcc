@@ -3144,8 +3144,9 @@ objc_build_try_catch_finally_stmt (int has_catch, int has_finally)
   /* NB: The operative assumption here is that TRY_FINALLY_EXPR will
      deal with all exits from 'try_catch_blk' and route them through
      'finally_blk'.  */
+  /* ??? This is all crock.  What the hell is this trying to do?  */
   tree outer_blk = objc_build_finally_epilogue ();
-  tree prec_stmt = TREE_CHAIN (TREE_CHAIN (COMPOUND_BODY (outer_blk)));
+  tree prec_stmt = TREE_CHAIN (TREE_CHAIN (outer_blk));
   tree try_catch_blk = TREE_CHAIN (prec_stmt), try_catch_expr;
   tree finally_blk = TREE_CHAIN (try_catch_blk), finally_expr;
   tree succ_stmt = TREE_CHAIN (finally_blk);

@@ -10618,7 +10618,6 @@ begin_function_body (void)
     keep_next_level (true);
 
   stmt = begin_compound_stmt (BCS_FN_BODY);
-  COMPOUND_STMT_BODY_BLOCK (stmt) = 1;
 
   if (processing_template_decl)
     /* Do nothing now.  */;
@@ -10743,7 +10742,7 @@ finish_function (int flags)
 
       /* Throw away the broken statement tree and extra binding
          levels.  */
-      DECL_SAVED_TREE (fndecl) = build_stmt (COMPOUND_STMT, NULL_TREE);
+      DECL_SAVED_TREE (fndecl) = alloc_stmt_list ();
 
       while (current_binding_level->kind != sk_function_parms)
 	{

@@ -227,11 +227,6 @@ c_gimplify_stmt (tree *stmt_p)
 
   switch (TREE_CODE (stmt))
     {
-    case COMPOUND_STMT:
-      stmt = COMPOUND_BODY (stmt);
-      ret = GS_OK;
-      break;
-
     case FOR_STMT:
       ret = gimplify_for_stmt (&stmt, &pre);
       break;

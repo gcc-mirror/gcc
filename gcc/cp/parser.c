@@ -5841,7 +5841,7 @@ cp_parser_expression_statement (cp_parser* parser, tree in_statement_expr)
    compound-statement:
      { statement-seq [opt] }
 
-   Returns a COMPOUND_STMT representing the statement.  */
+   Returns a tree representing the statement.  */
 
 static tree
 cp_parser_compound_statement (cp_parser *parser, tree in_statement_expr,

@@ -7931,18 +7931,18 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       }
       break;
 
-    case COMPOUND_STMT:
+    case BIND_EXPR:
       {
 	prep_stmt (t);
-	if (COMPOUND_STMT_BODY_BLOCK (t))
+	if (BIND_EXPR_BODY_BLOCK (t))
 	  stmt = begin_function_body ();
 	else
-	  stmt = begin_compound_stmt (COMPOUND_STMT_TRY_BLOCK (t)
+	  stmt = begin_compound_stmt (BIND_EXPR_TRY_BLOCK (t)
 				      ? BCS_TRY_BLOCK : 0);
 
-	tsubst_expr (COMPOUND_BODY (t), args, complain, in_decl);
+	tsubst_expr (BIND_EXPR_BODY (t), args, complain, in_decl);
 
-	if (COMPOUND_STMT_BODY_BLOCK (t))
+	if (BIND_EXPR_BODY_BLOCK (t))
 	  finish_function_body (stmt);
 	else
 	  finish_compound_stmt (stmt);

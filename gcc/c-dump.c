@@ -76,12 +76,6 @@ c_dump_tree (void *dump_info, tree t)
       dump_next_stmt (di, t);
       break;
 
-    case COMPOUND_STMT:
-      dump_stmt (di, t);
-      dump_child ("body", COMPOUND_BODY (t));
-      dump_next_stmt (di, t);
-      break;
-
     case DECL_STMT:
       dump_stmt (di, t);
       dump_child ("decl", DECL_STMT_DECL (t));
