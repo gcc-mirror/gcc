@@ -1,3 +1,18 @@
+2004-08-12  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/16273
+	* class.c (count_depth_data): New type.
+	(dfs_depth_post): New function.
+	(dfs_depth_q): Likewise.
+	(find_final_overrider_data_s): Change type of vpath.
+	Add vpath_list.
+	(dfs_find_final_overrider_1): New function.
+	(dfs_find_final_overrider): Use it.
+	(dfs_find_final_overrider_q): Adjust use of vpath.
+	(dfs_find_final_overrider_post): Likewise.
+	(find_final_overrider): Use dfs_depth.  Allocate and deallocate
+	vpath_list.
+
 2004-08-12 Jan Beulich <jbeulich@novell.com>
 
 	* parser.c (cp_parser_asm_definition): Properly consume scope operator
