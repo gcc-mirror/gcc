@@ -35,6 +35,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "expr.h"
 #include "hard-reg-set.h"
 #include "regs.h"
+#include "defaults.h"
 
 #include "obstack.h"
 
@@ -615,33 +616,7 @@ assemble_string (p, size)
       if (thissize > maximum)
 	thissize = maximum;
 
-#ifdef ASM_OUTPUT_ASCII
       ASM_OUTPUT_ASCII (asm_out_file, p, thissize);
-#else
-      fprintf (asm_out_file, "\t.ascii \"");
-
-      for (i = 0; i < thissize; i++)
-	{
-	  register int c = p[i];
-	  if (c == '\"' || c == '\\')
-	    putc ('\\', asm_out_file);
-	  if (c >= ' ' && c < 0177)
-	    putc (c, asm_out_file);
-	  else
-	    {
-	      fprintf (asm_out_file, "\\%o", c);
-	      /* After an octal-escape, if a digit follows,
-		 terminate one string constant and start another.
-		 The Vax assembler fails to stop reading the escape
-		 after three digits, so this is the only way we
-		 can get it to parse the data properly.  */
-	      if (i < thissize - 1
-		  && p[i + 1] >= '0' && p[i + 1] <= '9')
-		fprintf (asm_out_file, "\"\n\t.ascii \"");
-	    }
-	}
-      fprintf (asm_out_file, "\"\n");
-#endif /* no ASM_OUTPUT_ASCII */
 
       pos += thissize;
       p += thissize;

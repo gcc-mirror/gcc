@@ -433,6 +433,13 @@ int flag_schedule_insns_after_reload = 0;
    needed for crtstuff.c on other systems.  */
 int flag_inhibit_size_directive = 0;
 
+/* -fverbose-asm causes extra commentary information to be produced in
+   the generated assembly code (to make it more readable).  This option
+   is generally only of use to those who actually need to read the
+   generated assembly code (perhaps while debugging the compiler itself).  */
+
+int flag_verbose_asm = 0;
+
 /* -fgnu-linker specifies use of the GNU linker for initializations.
    (Or, more generally, a linker that handles initializations.)
    -fno-gnu-linker says that collect2 will be used.  */
@@ -483,6 +490,7 @@ struct { char *string; int *variable; int on_value;} f_options[] =
   {"fast-math", &flag_fast_math, 1},
   {"common", &flag_no_common, 0},
   {"inhibit-size-directive", &flag_inhibit_size_directive, 1},
+  {"verbose-asm", &flag_verbose_asm, 1},
   {"gnu-linker", &flag_gnu_linker, 1}
 };
 
