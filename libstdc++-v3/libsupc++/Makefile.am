@@ -41,9 +41,12 @@ toolexeclib_LTLIBRARIES = libsupc++.la
 # 2) integrated libsupc++convenience.la that is to be a part of libstdc++.a
 noinst_LTLIBRARIES = libsupc++convenience.la
 
+# Root level of the include sources.
+glibcpp_includedir = $(top_srcdir)/include
 
 INCLUDES = \
-	-I$(top_srcdir)/../gcc -I$(top_srcdir)/libsupc++/include \
+	-I$(top_srcdir)/../gcc -I$(top_srcdir)/../include \
+	-I$(top_srcdir)/libsupc++/include -I$(glibcpp_includedir) \
 	$(CONFIG_INCLUDES)
 
 headers = \

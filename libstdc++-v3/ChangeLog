@@ -1,3 +1,13 @@
+2000-10-08   Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+
+	* libsupc++/Makefile.am (INCLUDES): Add toplevel include directory.
+	(INCLUDES): Add glibcpp_includedir.
+	* libsupc++/Makefile.in: Regenerate.
+
+	* acinclude.m4 (GLIBCPP_CHECK_OS): Link to os_defines.h.
+	* aclocal.m4: Regenerate.
+	* config/os/*/bits/os_defintes: Adjust copyright dates.
+	
 2000-10-08  Phil Edwards  <pme@sources.redhat.com>
 
 	* include/bits/c++config:  Include <bits/os_defines.h>

@@ -760,6 +760,7 @@ AC_DEFUN(GLIBCPP_CHECK_OS, [
         ;;
     esac
     AC_MSG_RESULT($os_include_dir)
+    AC_LINK_FILES($os_include_dir/bits/os_defines.h, bits/os_defines.h)
 ])
 
 
