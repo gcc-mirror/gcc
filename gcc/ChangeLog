@@ -1,3 +1,10 @@
+2003-12-19  James E Wilson  <wilson@specifixinc.com>
+
+	* flow.c (mark_set_regs, case PARALLEL): Scan loop forwards.
+	Add case for ASM_OPERANDS.
+	* global.c (global_alloc): Set regs_ever_live for regs_asm_clobbered
+	registers.
+
 2003-12-19  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* expr.c (check_max_integer_computation_mode): Remove.
