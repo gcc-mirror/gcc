@@ -57,6 +57,9 @@ case "${target_cpu}" in
   sparc*)
     cpu_include_dir="config/cpu/sparc/sparc32"
     ;;
+  x86_64*)
+    cpu_include_dir="config/cpu/x86-64"
+    ;;
   *)
     cpu_include_dir="config/cpu/generic"
     ;;
@@ -137,14 +140,17 @@ esac
 # THIS TABLE IS SORTED.  KEEP IT THAT WAY.
 
 case "${target}" in
+   cris-*-*)
+     LIMITSH=config/cpu/cris
+     ;;
    i?86-*-*)
      LIMITSH=config/cpu/i386
      ;;
    powerpc-*-*)
      LIMITSH=config/cpu/powerpc
      ;;
-   cris-*-*)
-     LIMITSH=config/cpu/cris
+   x86_64-*-*)
+     LIMITSH=config/cpu/x86-64
      ;;
    *)
      LIMITSH=config/cpu/generic
