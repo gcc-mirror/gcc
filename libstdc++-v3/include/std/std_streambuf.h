@@ -287,7 +287,8 @@ namespace std
       snextc()
       {
 	int_type __ret = traits_type::eof();
-	if (!traits_type::eq_int_type(this->sbumpc(), __ret))
+	if (__builtin_expect(!traits_type::eq_int_type(this->sbumpc(), 
+						       __ret), true))
 	  __ret = this->sgetc();
 	return __ret;
       }
@@ -301,7 +302,18 @@ namespace std
        *  @c uflow().
       */
       int_type 
-      sbumpc();
+      sbumpc()
+      {
+	int_type __ret;
+	if (__builtin_expect(this->gptr() < this->egptr(), true))
+	  {
+	    __ret = traits_type::to_int_type(*this->gptr());
+	    this->gbump(1);
+	  }
+	else 
+	  __ret = this->uflow();
+	return __ret;
+      }
 
       /**
        *  @brief  Getting the next character.
@@ -315,7 +327,7 @@ namespace std
       sgetc()
       {
 	int_type __ret;
-	if (this->gptr() < this->egptr())
+	if (__builtin_expect(this->gptr() < this->egptr(), true))
 	  __ret = traits_type::to_int_type(*this->gptr());
 	else 
 	  __ret = this->underflow();
@@ -345,7 +357,20 @@ namespace std
        *  fetched from the input stream will be @a c.
       */
       int_type 
-      sputbackc(char_type __c);
+      sputbackc(char_type __c)
+      {
+	int_type __ret;
+	const bool __testpos = this->eback() < this->gptr();
+	if (__builtin_expect(!__testpos || 
+			     !traits_type::eq(__c, this->gptr()[-1]), false))
+	  __ret = this->pbackfail(traits_type::to_int_type(__c));
+	else 
+	  {
+	    this->gbump(-1);
+	    __ret = traits_type::to_int_type(*this->gptr());
+	  }
+	return __ret;
+      }
 
       /**
        *  @brief  Moving backwards in the input stream.
@@ -357,7 +382,18 @@ namespace std
        *  "gotten".
       */
       int_type 
-      sungetc();
+      sungetc()
+      {
+	int_type __ret;
+	if (__builtin_expect(this->eback() < this->gptr(), true))
+	  {
+	    this->gbump(-1);
+	    __ret = traits_type::to_int_type(*this->gptr());
+	  }
+	else 
+	  __ret = this->pbackfail();
+	return __ret;
+      }
 
       // [27.5.2.2.5] put area
       /**
@@ -373,7 +409,19 @@ namespace std
        *  position is not available, returns @c overflow(c).
       */
       int_type 
-      sputc(char_type __c);
+      sputc(char_type __c)
+      {
+	int_type __ret;
+	if (__builtin_expect(this->pptr() < this->epptr(), true))
+	  {
+	    *this->pptr() = __c;
+	    this->pbump(1);
+	    __ret = traits_type::to_int_type(__c);
+	  }
+	else
+	  __ret = this->overflow(traits_type::to_int_type(__c));
+	return __ret;
+      }
 
       /**
        *  @brief  Entry point for all single-character output functions.
