@@ -1,3 +1,9 @@
+2001-06-24  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* doc/extend.texi, doc/gcc.texi, doc/install-old.texi,
+	doc/invoke.texi, doc/md.texi, doc/rtl.texi, doc/tm.texi: Remove
+	uses of @refill.
+
 Sun Jun 24 21:21:49 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* (movsi_insv_1, movsi_insv_1_rex64): Allow immediate operand.

@@ -503,7 +503,7 @@ file for GNU CC as follows:
 Define the VMS logical names @samp{GNU_CC} and @samp{GNU_CC_INCLUDE}
 to point to the directories where the GNU CC executables
 (@file{gcc-cpp.exe}, @file{gcc-cc1.exe}, etc.) and the C include files are
-kept respectively.  This should be done with the commands:@refill
+kept respectively.  This should be done with the commands:
 
 @smallexample
 $ assign /system /translation=concealed -
@@ -547,7 +547,7 @@ perform the following steps:
 @item
 Define the VMS logical name @samp{GNU_GXX_INCLUDE} to point to the
 directory where the preprocessor will search for the C++ header files.
-This can be done with the command:@refill
+This can be done with the command:
 
 @smallexample
 $ assign /system /translation=concealed -
@@ -582,7 +582,7 @@ Execute the command procedure @file{vmsconfig.com} to set up the files
 @file{tm.h}, @file{config.h}, @file{aux-output.c}, and @file{md.}, and
 to create files @file{tconfig.h} and @file{hconfig.h}.  This procedure
 also creates several linker option files used by @file{make-cc1.com} and
-a data file used by @file{make-l2.com}.@refill
+a data file used by @file{make-l2.com}.
 
 @smallexample
 $ @@vmsconfig.com
@@ -592,7 +592,7 @@ $ @@vmsconfig.com
 Setup the logical names and command tables as defined above.  In
 addition, define the VMS logical name @samp{GNU_BISON} to point at the
 to the directories where the Bison executable is kept.  This should be
-done with the command:@refill
+done with the command:
 
 @smallexample
 $ assign /system /translation=concealed -
@@ -603,7 +603,7 @@ You may, if you choose, use the @file{INSTALL_BISON.COM} script in the
 @file{[BISON]} directory.
 
 @item
-Install the @samp{BISON} command with the command line:@refill
+Install the @samp{BISON} command with the command line:
 
 @smallexample
 $ set command /table=sys$common:[syslib]dcltables -
@@ -617,7 +617,7 @@ Type @samp{@@make-gcc} to recompile everything (alternatively, submit
 the file @file{make-gcc.com} to a batch queue).  If you wish to build
 the GNU C++ compiler as well as the GNU CC compiler, you must first edit
 @file{make-gcc.com} and follow the instructions that appear in the
-comments.@refill
+comments.
 
 @item
 In order to use GCC, you need a library of functions which GCC compiled code
@@ -628,7 +628,7 @@ file @file{libgcc2.c}.  To compile this you should use the command procedure
 the same distribution that @file{libgcc2.c} came from, and
 @file{make-gcc.com} will automatically do all of this for you.
 
-To install the library, use the following commands:@refill
+To install the library, use the following commands:
 
 @smallexample
 $ library gnu_cc:[000000]gcclib/delete=(new,eprintf)
