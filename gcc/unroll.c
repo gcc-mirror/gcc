@@ -1671,6 +1671,12 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 
   start_sequence ();
 
+  /* Emit a NOTE_INSN_DELETED to force at least two insns onto the sequence.
+     Else gen_sequence could return a raw pattern for a jump which we pass
+     off to emit_insn_before (instead of emit_jump_insn_before) which causes
+     a variety of losing behaviors later.  */
+  emit_note (0, NOTE_INSN_DELETED);
+
   insn = copy_start;
   do
     {

@@ -1,3 +1,8 @@
+Wed Apr  7 14:07:34 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* unroll.c (copy_loop_body): Always ensure at least two insns
+	are in the copied loop.
+
 Wed Apr  7 14:52:18 1999  Catherine Moore  <clm@cygnus.com>
 
         * config/mips/elf.h (MAKE_DECL_ONE_ONLY): Define.
