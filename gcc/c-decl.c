@@ -385,6 +385,7 @@ static struct binding_level *label_level_chain;
 static tree grokparms (), grokdeclarator ();
 tree pushdecl ();
 tree builtin_function ();
+void shadow_tag_warned ();
 
 static tree lookup_tag ();
 static tree lookup_tag_reverse ();
@@ -2790,8 +2791,15 @@ void
 shadow_tag (declspecs)
      tree declspecs;
 {
+  shadow_tag_warned (declspecs, 0);
+}
+
+void
+shadow_tag_warned (declspecs, warned)
+     tree declspecs;
+     int warned;
+{
   int found_tag = 0;
-  int warned = 0;
   register tree link;
 
   pending_invalid_xref = 0;
@@ -2812,7 +2820,7 @@ shadow_tag (declspecs)
 
 	  if (name == 0)
 	    {
-	      if (code != ENUMERAL_TYPE)	/* Empty unnamed enum OK */
+	      if (!warned && code != ENUMERAL_TYPE) /* Empty unnamed enum OK */
 		{
 		  pedwarn ("unnamed struct/union that defines no instances");
 		  warned = 1;
