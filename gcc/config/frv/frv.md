@@ -318,7 +318,7 @@
 ;; Processor type -- this attribute must exactly match the processor_type
 ;; enumeration in frv-protos.h.
 
-(define_attr "cpu" "generic,fr500,fr400,fr300,simple,tomcat"
+(define_attr "cpu" "generic,fr550,fr500,fr450,fr405,fr400,fr300,simple,tomcat"
   (const (symbol_ref "frv_cpu_type")))
 
 ;; Attribute is "yes" for branches and jumps that span too great a distance
@@ -328,272 +328,206 @@
 (define_attr "far_jump" "yes,no" (const_string "no"))
 
 ;; Instruction type
-
-;; The table below summarizes the types of media instruction and their
-;; scheduling classification.  Headings are:
-
-;; Type:	the name of the define_attr type
-;; Conditions:	"yes" if conditional variants are available
-;; FR500:	Fujitsu's categorization for the FR500
-;; FR400:	Fujitsu's categorization for the FR400 (but see below).
-
-;; On the FR400, media instructions are divided into 2 broad categories.
-;; Category 1 instructions can execute in either the M0 or M1 unit and can
-;; execute in parallel with other category 1 instructions.  Category 2
-;; instructions must use the M0 unit, and therefore cannot run in parallel
-;; with other media instructions.
-
-;; The FR400 documentation also divides media instructions into one of seven
-;; categories (m1 to m7).  m1 to m4 contain both Category 1 and Category 2
-;; instructions, so we use a combination of the categories here.
-
-;; Type		Conditional	FR500	FR400
-;; ----		----------	-----	-----
-;; mlogic	yes		m1	m1:1
-;; mrdacc	no		m2	m4:1
-;; mwtacc	no		m3	m5:1
-;; maveh	no		m1	m1:1
-;; msath	no		m1	m1:1
-;; maddh	yes		m1	m1:1
-;; mqaddh	yes		m1	m1:2
-;; mpackh	no		m2	m3:1
-;; munpackh	no		m2	m3:2
-;; mdpackh	no		m5	m3:2
-;; mbhconv	yes		m2	m3:2
-;; mrot		no		m2	m3:1
-;; mshift	no		m2	m3:1
-;; mexpdhw	yes		m2	m3:1
-;; mexpdhd	yes		m2	m3:2
-;; mwcut	no		m2	m3:2
-;; mmulh	yes		m4	m2:1
-;; mmulxh	no		m4	m2:1
-;; mmach	yes		m4	m2:1
-;; mmrdh	no		m4	m2:1
-;; mqmulh	yes		m4	m2:2
-;; mqmulxh	no		m4	m2:2
-;; mqmach	yes		m4	m2:2
-;; mcpx		yes		m4	m2:1
-;; mqcpx	yes		m4	m2:2
-;; mcut		no		m2	m4:1
-;; mclracc	no		m3	m4:1
-;; mclracca	no		m6	m4:2
-;; mdunpackh	no		m2	n/a
-;; mbhconve	no		m2	n/a
-;; maddacc	no		n/a	m2:1
-;; mdaddacc	no		n/a	m2:2
-;; mabsh	no		n/a	m1:1
-;; mdrot	no		n/a	m3:2
-;; mcpl		no		n/a	m3:2
-;; mdcut	no		n/a	m4:2
-;; mqsath	no		n/a	m1:2
-;; mset		no		n/a	m1:1
-
+;; "unknown" must come last.
 (define_attr "type"
-  "int,sethi,setlo,mul,div,gload,gstore,fload,fstore,movfg,movgf,branch,jump,jumpl,call,spr,trap,fsconv,fsadd,fsmul,fmas,fsdiv,sqrt_single,fdconv,fdadd,fdmul,fddiv,sqrt_double,mlogic,maveh,msath,maddh,mqaddh,mpackh,munpackh,mdpackh,mbhconv,mrot,mshift,mexpdhw,mexpdhd,mwcut,mmulh,mmulxh,mmach,mmrdh,mqmulh,mqmulxh,mqmach,mcpx,mqcpx,mcut,mclracc,mclracca,mdunpackh,mbhconve,mrdacc,mwtacc,maddacc,mdaddacc,mabsh,mdrot,mcpl,mdcut,mqsath,mset,m7,ccr,multi,unknown"
+  "int,sethi,setlo,mul,div,gload,gstore,fload,fstore,movfg,movgf,macc,scan,cut,branch,jump,jumpl,call,spr,trap,fnop,fsconv,fsadd,fscmp,fsmul,fsmadd,fsdiv,sqrt_single,fdconv,fdadd,fdcmp,fdmul,fdmadd,fddiv,sqrt_double,mnop,mlogic,maveh,msath,maddh,mqaddh,mpackh,munpackh,mdpackh,mbhconv,mrot,mshift,mexpdhw,mexpdhd,mwcut,mmulh,mmulxh,mmach,mmrdh,mqmulh,mqmulxh,mqmach,mcpx,mqcpx,mcut,mclracc,mclracca,mdunpackh,mbhconve,mrdacc,mwtacc,maddacc,mdaddacc,mabsh,mdrot,mcpl,mdcut,mqsath,mqlimh,mqshift,mset,ccr,multi,unknown"
   (const_string "unknown"))
 
+(define_attr "acc_group" "none,even,odd"
+  (symbol_ref "frv_acc_group (insn)"))
 
+;; Scheduling and Packing Overview
+;; -------------------------------
+;;
+;; FR-V instructions are divided into five groups: integer, floating-point,
+;; media, branch and control.  Each group is associated with a separate set
+;; of processing units, the number and behavior of which depend on the target
+;; target processor.  Integer units have names like I0 and I1, floating-point
+;; units have names like F0 and F1, and so on.
+;;
+;; Each member of the FR-V family has its own restrictions on which
+;; instructions can issue to which units.  For example, some processors
+;; allow loads to issue to I0 or I1 while others only allow them to issue
+;; to I0.  As well as these processor-specific restrictions, there is a
+;; general rule that an instruction can only issue to unit X + 1 if an
+;; instruction in the same packet issued to unit X.
+;;
+;; Sometimes the only way to honor these restrictions is by adding nops
+;; to a packet.  For example, on the fr550, media instructions that access
+;; ACC4-7 can only issue to M1 or M3.  It is therefore only possible to
+;; execute these instructions by packing them with something that issues
+;; to M0.  When no useful M0 instruction exists, an "mnop" can be used
+;; instead.
+;;
+;; Having decided which instructions should issue to which units, the packet
+;; should be ordered according to the following template:
+;;
+;;     I0 F0/M0 I1 F1/M1 .... B0 B1 ...
+;;
+;; Note that VLIW packets execute strictly in parallel.  Every instruction
+;; in the packet will stall until all input operands are ready.  These
+;; operands are then read simultaneously before any registers are modified.
+;; This means that it's OK to have write-after-read hazards between
+;; instructions in the same packet, even if the write is listed earlier
+;; than the read.
+;;
+;; Three gcc passes are involved in generating VLIW packets:
+;;
+;;    (1) The scheduler.  This pass uses the standard scheduling code and
+;;	  behaves in much the same way as it would for a superscalar RISC
+;;	  architecture.
+;;
+;;    (2) frv_reorg.  This pass inserts nops into packets in order to meet
+;;	  the processor's issue requirements.  It also has code to optimize
+;;	  the type of padding used to align labels.
+;;
+;;    (3) frv_pack_insns.  The final packing phase, which puts the
+;;	  instructions into assembly language order according to the
+;;	  "I0 F0/M0 ..." template above.
+;;
+;; In the ideal case, these three passes will agree on which instructions
+;; should be packed together, but this won't always happen.  In particular:
+;;
+;;    (a) (2) might not pack predicated instructions in the same way as (1).
+;;	  The scheduler tries to schedule predicated instructions for the
+;;	  worst case, assuming the predicate is true.  However, if we have
+;;	  something like a predicated load, it isn't always possible to
+;;	  fill the load delay with useful instructions.  (2) should then
+;;	  pack the user of the loaded value as aggressively as possible,
+;;	  in order to optimize the case when the predicate is false.
+;;	  See frv_pack_insn_p for more details.
+;;
+;;    (b) The final shorten_branches pass runs between (2) and (3).
+;;	  Since (2) inserts nops, it is possible that some branches
+;;	  that were thought to be in range during (2) turned out to
+;;	  out-of-range in (3).
+;;
+;; All three passes use DFAs to model issue restrictions.  The main
+;; question that the DFAs are supposed to answer is simply: can these
+;; instructions be packed together?  The DFAs are not responsible for
+;; assigning instructions to execution units; that's the job of
+;; frv_sort_insn_group, see below for details.
+;;
+;; To get the best results, the DFAs should try to allow packets to
+;; be built in every possible order.  This gives the scheduler more
+;; flexibility, removing the need for things like multipass lookahead.
+;; It also means we can take more advantage of inter-packet dependencies.
+;;
+;; For example, suppose we're compiling for the fr400 and we have:
+;;
+;;	addi	gr4,#1,gr5
+;;	ldi	@(gr6,gr0),gr4
+;;
+;; We can pack these instructions together by assigning the load to I0 and
+;; the addition to I1.  However, because of the anti dependence between the
+;; two instructions, the scheduler must schedule the addition first.
+;; We should generally get better schedules if the DFA allows both
+;; (ldi, addi) and (addi, ldi), leaving the final packing pass to
+;; reorder the packet where appropriate.
+;;
+;; Almost all integer instructions can issue to any unit in the range I0
+;; to Ix, where the value of "x" depends on the type of instruction and
+;; on the target processor.  The rules for other instruction groups are
+;; usually similar.
+;;
+;; When the restrictions are as regular as this, we can get the desired
+;; behavior by claiming the DFA unit associated with the highest unused
+;; execution unit.  For example, if an instruction can issue to I0 or I1,
+;; the DFA first tries to take the DFA unit associated with I1, and will
+;; only take I0's unit if I1 isn't free.  (Note that, as mentioned above,
+;; the DFA does not assign instructions to units.  An instruction that
+;; claims DFA unit I1 will not necessarily issue to I1 in the final packet.)
+;;
+;; There are some cases, such as the fr550 media restriction mentioned
+;; above, where the rule is not as simple as "any unit between 0 and X".
+;; Even so, allocating higher units first brings us close to the ideal.
+;;
+;; Having divided instructions into packets, passes (2) and (3) must
+;; assign instructions to specific execution units.  They do this using
+;; the following algorithm:
+;;
+;;    1. Partition the instructions into groups (integer, float/media, etc.)
+;;
+;;    2. For each group of instructions:
+;;
+;;	 (a) Issue each instruction in the reset DFA state and use the
+;;	     DFA cpu_unit_query interface to find out which unit it picks
+;;	     first.
+;;
+;;	 (b) Sort the instructions into ascending order of picked units.
+;;	     Instructions that pick I1 first come after those that pick
+;;	     I0 first, and so on.  Let S be the sorted sequence and S[i]
+;;	     be the ith element of it (counting from zero).
+;;
+;;	 (c) If this is the control or branch group, goto (i)
+;;
+;;	 (d) Find the largest L such that S[0]...S[L-1] can be issued
+;;	     consecutively from the reset state and such that the DFA
+;;	     claims unit X when S[X] is added.  Let D be the DFA state
+;;	     after instructions S[0]...S[L-1] have been issued.
+;;
+;;	 (e) If L is the length of S, goto (i)
+;;
+;;	 (f) Let U be the number of units belonging to this group and #S be
+;;	     the length of S.  Create a new sequence S' by concatenating
+;;	     S[L]...S[#S-1] and (U - #S) nops.
+;;
+;;	 (g) For each permutation S'' of S', try issuing S'' from last to
+;;	     first, starting with state D.  See if the DFA claims unit
+;;	     X + L when each S''[X] is added.  If so, set S to the
+;;	     concatenation of S[0]...S[L-1] and S'', then goto (i).
+;;
+;;	 (h) If (g) found no permuation, abort.
+;;
+;;	 (i) S is now the sorted sequence for this group, meaning that S[X]
+;;	     issues to unit X.  Trim any unwanted nops from the end of S.
+;;
+;; The sequence calculated by (b) is trivially correct for control
+;; instructions since they can't be packed.  It is also correct for branch
+;; instructions due to their simple issue requirements.  For integer and
+;; floating-point/media instructions, the sequence calculated by (b) is
+;; often the correct answer; the rest of the algorithm is optimized for
+;; the case in which it is correct.
+;;
+;; If there were no irregularities in the issue restrictions then step
+;; (d) would not be needed.  It is mainly there to cope with the fr550
+;; integer restrictions, where a store can issue to I1, but only if a store
+;; also issues to I0.  (Note that if a packet has two stores, they will be
+;; at the beginning of the sequence calculated by (b).)  It also copes
+;; with fr400 M-2 instructions, which must issue to M0, and which cannot
+;; be issued together with an mnop in M1.
+;;
+;; Step (g) is the main one for integer and float/media instructions.
+;; The first permutation it tries is S' itself (because, as noted above,
+;; the sequence calculated by (b) is often correct).  If S' doesn't work,
+;; the implementation tries varying the beginning of the sequence first.
+;; Thus the nops towards the end of the sequence will only move to lower
+;; positions if absolutely necessary.
+;;
+;; The algorithm is theoretically exponential in the number of instructions
+;; in a group, although it's only O(n log(n)) if the sequence calculated by
+;; (b) is acceptable.  In practice, the algorithm completes quickly even
+;; in the rare cases where (g) needs to try other permutations.
+(define_automaton "integer, float_media, branch, control, idiv, div")
 
-/* This is description of pipeline hazards based on DFA.  The
-   following constructions can be used for this:
+;; The main issue units.  Note that not all units are available on
+;; all processors.
+(define_query_cpu_unit "i0,i1,i2,i3" "integer")
+(define_query_cpu_unit "f0,f1,f2,f3" "float_media")
+(define_query_cpu_unit "b0,b1" "branch")
+(define_query_cpu_unit "c" "control")
 
-   o define_cpu_unit string [string]) describes a cpu functional unit
-     (separated by comma).
+;; Division units.
+(define_cpu_unit "idiv1,idiv2" "idiv")
+(define_cpu_unit "div1,div2,root" "div")
 
-     1st operand: Names of cpu function units.
-     2nd operand: Name of automaton (see comments for
-     DEFINE_AUTOMATON).
+;; Control instructions cannot be packed with others.
+(define_reservation "control" "i0+i1+i2+i3+f0+f1+f2+f3+b0+b1")
 
-     All define_reservations and define_cpu_units should have unique
-     names which cannot be "nothing".
-
-   o (exclusion_set string string) means that each CPU function unit
-     in the first string cannot be reserved simultaneously with each
-     unit whose name is in the second string and vise versa.  CPU
-     units in the string are separated by commas. For example, it is
-     useful for description CPU with fully pipelined floating point
-     functional unit which can execute simultaneously only single
-     floating point insns or only double floating point insns.
-
-   o (presence_set string string) means that each CPU function unit in
-     the first string cannot be reserved unless at least one of units
-     whose names are in the second string is reserved.  This is an
-     asymmetric relation.  CPU units in the string are separated by
-     commas.  For example, it is useful for description that slot1 is
-     reserved after slot0 reservation for a VLIW processor.
-
-   o (absence_set string string) means that each CPU function unit in
-     the first string cannot be reserved only if each unit whose name
-     is in the second string is not reserved.  This is an asymmetric
-     relation (actually exclusion set is analogous to this one but it
-     is symmetric).  CPU units in the string are separated by commas.
-     For example, it is useful for description that slot0 cannot be
-     reserved after slot1 or slot2 reservation for a VLIW processor.
-
-   o (define_bypass number out_insn_names in_insn_names) names bypass with
-     given latency (the first number) from insns given by the first
-     string (see define_insn_reservation) into insns given by the
-     second string.  Insn names in the strings are separated by
-     commas.
-
-   o (define_automaton string) describes names of an automaton
-     generated and used for pipeline hazards recognition.  The names
-     are separated by comma.  Actually it is possibly to generate the
-     single automaton but unfortunately it can be very large.  If we
-     use more one automata, the summary size of the automata usually
-     is less than the single one.  The automaton name is used in
-     define_cpu_unit.  All automata should have unique names.
-
-   o (define_reservation string string) names reservation (the first
-     string) of cpu functional units (the 2nd string).  Sometimes unit
-     reservations for different insns contain common parts.  In such
-     case, you describe common part and use one its name (the 1st
-     parameter) in regular expression in define_insn_reservation.  All
-     define_reservations, define results and define_cpu_units should
-     have unique names which cannot be "nothing".
-
-   o (define_insn_reservation name default_latency condition regexpr)
-     describes reservation of cpu functional units (the 3nd operand)
-     for instruction which is selected by the condition (the 2nd
-     parameter).  The first parameter is used for output of debugging
-     information.  The reservations are described by a regular
-     expression according the following syntax:
-
-       regexp = regexp "," oneof
-              | oneof
-
-       oneof = oneof "|" allof
-             | allof
-
-       allof = allof "+" repeat
-             | repeat
-
-       repeat = element "*" number
-              | element
-
-       element = cpu_function_name
-               | reservation_name
-               | result_name
-               | "nothing"
-               | "(" regexp ")"
-
-       1. "," is used for describing start of the next cycle in
-          reservation.
-
-       2. "|" is used for describing the reservation described by the
-          first regular expression *or* the reservation described by
-          the second regular expression *or* etc.
-
-       3. "+" is used for describing the reservation described by the
-          first regular expression *and* the reservation described by
-          the second regular expression *and* etc.
-
-       4. "*" is used for convenience and simply means sequence in
-          which the regular expression are repeated NUMBER times with
-          cycle advancing (see ",").
-
-       5. cpu function unit name which means reservation.
-
-       6. reservation name -- see define_reservation.
-
-       7. string "nothing" means no units reservation.
-
-*/
-
-(define_automaton "nodiv, idiv, div")
-
-;; An FR500 packet can contain a single control instruction or a sequence
-;; of up to four operations matching the regular expression:
-
-;;	(I FM? I? FM? | FM? FM?) B? B?
-
-;; where I denotes an integer operation, FM a floating-point or media
-;; operation, and B a branch operation.  There are two units for each type
-;; of instruction: I0 and I1, FM0 and FM1, and B0 and B1.  Units are
-;; allocated left-to-right: the first integer instruction uses I0, the
-;; second uses I1, and so on.
-
-;; The FR400 is similar to the FR500 except that it allows only 2 operations
-;; per packet and has only one branch unit.  We can use the FR500 conflict
-;; description for the FR400, but need to define different cpu_units
-;; later.
-
-;; Slot/unit combinations available on the FR400 and above:
-(define_cpu_unit "sl0_i0, sl0_fm0, sl0_b0, sl0_c" "nodiv")
-(define_cpu_unit "sl1_fm0, sl1_i1, sl1_fm1, sl1_b0" "nodiv")
-
-;; These are available on the FR500 and above:
-(define_cpu_unit "sl1_b1" "nodiv")
-(define_cpu_unit "sl2_i1, sl2_fm1, sl2_b0, sl2_b1" "nodiv")
-(define_cpu_unit "sl3_fm1, sl3_b0, sl3_b1"  "nodiv")
-
-;; The following describes conflicts by slots
-;; slot0
-(exclusion_set "sl0_i0"  "sl0_fm0,sl0_b0,sl0_c")
-(exclusion_set "sl0_fm0" "sl0_b0,sl0_c")
-(exclusion_set "sl0_b0"  "sl0_c")
-
-;; slot1
-(exclusion_set "sl1_fm0" "sl1_i1,sl1_fm1,sl1_b0,sl1_b1")
-(exclusion_set "sl1_i1"  "sl1_fm1,sl1_b0,sl1_b1")
-(exclusion_set "sl1_fm1" "sl1_b0,sl1_b1")
-(exclusion_set "sl1_b0"  "sl1_b1")
-
-;; slot2
-(exclusion_set "sl2_i1"  "sl2_fm1,sl2_b0,sl2_b1")
-(exclusion_set "sl2_fm1" "sl2_b0,sl2_b1")
-(exclusion_set "sl2_b0"  "sl2_b1")
-
-;; slot3
-(exclusion_set "sl3_fm1" "sl3_b0,sl3_b1")
-(exclusion_set "sl3_b0"  "sl3_b1")
-
-;; The following describes conflicts by units
-;; fm0
-(exclusion_set "sl0_fm0" "sl1_fm0")
-
-;; b0
-(exclusion_set "sl0_b0"  "sl1_b0,sl2_b0,sl3_b0")
-(exclusion_set "sl1_b0"  "sl2_b0,sl3_b0")
-(exclusion_set "sl2_b0"  "sl3_b0")
-
-;; i1
-(exclusion_set "sl1_i1"  "sl2_i1")
-
-;; fm1
-(exclusion_set "sl1_fm1" "sl2_fm1,sl3_fm1")
-(exclusion_set "sl2_fm1" "sl3_fm1")
-
-;; b1
-(exclusion_set "sl1_b1"  "sl2_b1,sl3_b1")
-(exclusion_set "sl2_b1"  "sl3_b1")
-
-;; The following describes remaining combinations of conflicts
-;; slot0
-(exclusion_set "sl0_i0"  "sl1_fm1,sl1_b1")
-(exclusion_set "sl0_fm0" "sl1_i1,sl1_b1,sl2_i1,sl2_fm1,sl3_fm1,sl3_b0")
-(exclusion_set "sl0_b0"  "sl1_fm0,sl1_i1,sl1_fm1,sl2_i1,sl2_fm1,sl2_b1,\
-                          sl3_fm1,sl3_b1")
-(exclusion_set "sl0_c"   "sl1_fm0,sl1_i1,sl1_fm1,sl1_b0,sl1_b1,sl2_i1,sl2_fm1,\
-                          sl2_b0,sl2_b1,sl3_fm1,sl3_b0,sl3_b1")
-
-
-;; slot1
-(exclusion_set "sl1_fm0" "sl2_b1")
-(exclusion_set "sl1_i1"  "sl2_fm1,sl2_b1,sl3_fm1,sl3_b0")
-(exclusion_set "sl1_fm1" "sl2_i1,sl2_b1,sl3_b0")
-(exclusion_set "sl1_b0"  "sl2_i1,sl2_fm1,sl3_fm1,sl3_b1")
-(exclusion_set "sl1_b1"  "sl2_i1,sl2_fm1,sl2_b0,sl3_fm1,sl3_b0")
-
-;; slot2
-(exclusion_set "sl2_i1"  "sl3_b1")
-(exclusion_set "sl2_fm1" "sl3_b1")
-(exclusion_set "sl2_b0"  "sl3_fm1")
-(exclusion_set "sl2_b1"  "sl3_fm1,sl3_b0")
-
-;; slot3
-(exclusion_set "sl1_fm0" "sl2_i1,sl2_fm1,sl2_b0,sl2_b1,sl3_fm1,sl3_b0,sl3_b1")
-(exclusion_set "sl3_fm1" "sl2_i1,sl2_fm1,sl2_b0,sl2_b1,sl3_b0,sl3_b1")
+;; Generic reservation for control insns
+(define_insn_reservation "control" 1
+  (eq_attr "type" "trap,spr,unknown,multi")
+  "c + control")
 
 ;; ::::::::::::::::::::
 ;; ::
@@ -601,247 +535,176 @@
 ;; ::
 ;; ::::::::::::::::::::
 
-;; Define reservation in order to describe only in terms of units.
-
-(define_reservation "i0" "sl0_i0")
-(define_reservation "f0" "sl0_fm0|sl1_fm0")
-(define_reservation "m0" "f0")
-(define_reservation "b0" "sl0_b0|sl1_b0|sl2_b0|sl3_b0")
-(define_reservation "c"  "sl0_c")
-(define_reservation "i1" "sl1_i1|sl2_i1")
-(define_reservation "f1" "sl1_fm1|sl2_fm1|sl3_fm1")
-(define_reservation "m1" "f1")
-(define_reservation "b1" "sl1_b1|sl2_b1|sl3_b1")
-
 ;; Integer insns
-;; It is not possibly to issue load & store in one VLIW insn.
-(define_cpu_unit "idiv1" "idiv")
-(define_cpu_unit "idiv2" "idiv")
-(define_cpu_unit "l0"    "nodiv")
-(define_cpu_unit "l1"    "nodiv")
-(define_cpu_unit "s0"    "nodiv")
+;; Synthetic units used to describe issue restrictions.
+(define_automaton "fr500_integer")
+(define_cpu_unit "fr500_load0,fr500_load1,fr500_store0" "fr500_integer")
+(exclusion_set "fr500_load0,fr500_load1" "fr500_store0")
 
-(exclusion_set "l1,l0" "s0")
-
-;; We set the default_latency of sethi to be 0 to allow sethi and setlo to be
-;; combined in the same VLIW instruction as allowed by the architecture.  This
-;; assumes the only use of sethi is always followed by a setlo of the same
-;; register.
-(define_insn_reservation "i1_sethi" 0
+(define_bypass 0 "fr500_i1_sethi" "fr500_i1_setlo")
+(define_insn_reservation "fr500_i1_sethi" 1
   (and (eq_attr "cpu" "generic,fr500,tomcat")
        (eq_attr "type" "sethi"))
-  "i0|i1")
+  "i1|i0")
 
-(define_insn_reservation "i1_setlo" 1
+(define_insn_reservation "fr500_i1_setlo" 1
   (and (eq_attr "cpu" "generic,fr500,tomcat")
        (eq_attr "type" "setlo"))
-  "i0|i1")
+  "i1|i0")
 
-(define_insn_reservation "i1_int" 1
+(define_insn_reservation "fr500_i1_int" 1
   (and (eq_attr "cpu" "generic,fr500,tomcat")
        (eq_attr "type" "int"))
-  "i0|i1")
+  "i1|i0")
 
-(define_insn_reservation "i1_mul" 3
+(define_insn_reservation "fr500_i1_mul" 3
   (and (eq_attr "cpu" "generic,fr500,tomcat")
        (eq_attr "type" "mul"))
-  "i0|i1")
+  "i1|i0")
 
-(define_insn_reservation "i1_div" 19
+(define_insn_reservation "fr500_i1_div" 19
   (and (eq_attr "cpu" "generic,fr500,tomcat")
        (eq_attr "type" "div"))
-  "(i0|i1),(idiv1*18|idiv2*18)")
+  "(i1|i0),(idiv1*18|idiv2*18)")
 
-(define_insn_reservation "i2_gload" 4
+(define_insn_reservation "fr500_i2" 4
   (and (eq_attr "cpu" "generic,fr500,tomcat")
-       (eq_attr "type" "gload"))
-  "(i0|i1)+(l0|l1)")
+       (eq_attr "type" "gload,fload"))
+  "(i1|i0) + (fr500_load0|fr500_load1)")
 
-(define_insn_reservation "i2_fload" 4
+(define_insn_reservation "fr500_i3" 0
   (and (eq_attr "cpu" "generic,fr500,tomcat")
-       (eq_attr "type" "fload"))
-  "(i0|i1)+(l0|l1)")
+       (eq_attr "type" "gstore,fstore"))
+  "i0 + fr500_store0")
 
-(define_insn_reservation "i3_gstore" 0
+(define_insn_reservation "fr500_i4" 3
   (and (eq_attr "cpu" "generic,fr500,tomcat")
-       (eq_attr "type" "gstore"))
-  "i0+s0")
-
-(define_insn_reservation "i3_fstore" 0
-  (and (eq_attr "cpu" "generic,fr500,tomcat")
-       (eq_attr "type" "fstore"))
-  "i0+s0")
-
-(define_insn_reservation "i4_move_gf" 3
-  (and (eq_attr "cpu" "generic,fr500,tomcat")
-       (eq_attr "type" "movgf"))
+       (eq_attr "type" "movgf,movfg"))
   "i0")
 
-(define_insn_reservation "i4_move_fg" 3 
-  (and (eq_attr "cpu" "generic,fr500,tomcat")
-       (eq_attr "type" "movfg"))
-  "i0")
-
-(define_insn_reservation "i5" 0
+(define_insn_reservation "fr500_i5" 0
   (and (eq_attr "cpu" "generic,fr500,tomcat")
        (eq_attr "type" "jumpl"))
   "i0")
 
-;; Clear/commit is not generated now:
-(define_insn_reservation "i6" 0 (const_int 0) "i0|i1")
-
 ;;
 ;; Branch-instructions
 ;;
-(define_insn_reservation "b1/b3" 0
+(define_insn_reservation "fr500_branch" 0
   (and (eq_attr "cpu" "generic,fr500,tomcat")
        (eq_attr "type" "jump,branch,ccr"))
-  "b0|b1")
+  "b1|b0")
 
-;; The following insn is not generated now.
-
-(define_insn_reservation "b2" 0 (const_int 0) "b0")
-
-(define_insn_reservation "b4" 0
+(define_insn_reservation "fr500_call" 0
   (and (eq_attr "cpu" "generic,fr500,tomcat")
        (eq_attr "type" "call"))
   "b0")
 
-;; The following insns are not generated now.
-(define_insn_reservation "b5" 0 (const_int 0) "b0|b1")
-(define_insn_reservation "b6" 0 (const_int 0) "b0|b1")
+;; Floating point insns.  The default latencies are for non-media
+;; instructions; media instructions incur an extra cycle.
 
-;; Control insns
-(define_insn_reservation "trap" 0
+(define_bypass 4 "fr500_farith" "fr500_m1,fr500_m2,fr500_m3,
+			         fr500_m4,fr500_m5,fr500_m6")
+(define_insn_reservation "fr500_farith" 3
   (and (eq_attr "cpu" "generic,fr500,tomcat")
-       (eq_attr "type" "trap"))
-  "c")
+       (eq_attr "type" "fnop,fsconv,fsadd,fsmul,fsmadd,fdconv,fdadd,fdmul,fdmadd"))
+  "(f1|f0)")
 
-(define_insn_reservation "control" 0
+(define_insn_reservation "fr500_fcmp" 4
   (and (eq_attr "cpu" "generic,fr500,tomcat")
-       (eq_attr "type" "spr"))
-  "c")
+       (eq_attr "type" "fscmp,fdcmp"))
+  "(f1|f0)")
 
-;; Floating point insns
-(define_cpu_unit "add0" "nodiv")
-(define_cpu_unit "add1" "nodiv")
-(define_cpu_unit "mul0" "nodiv")
-(define_cpu_unit "mul1" "nodiv")
-(define_cpu_unit "div1" "div")
-(define_cpu_unit "div2" "div")
-(define_cpu_unit "root" "div")
-
-(define_bypass 4 "f1" "m1,m2,m3,m4,m5,m6,m7")
-(define_insn_reservation "f1" 3
-  (and (eq_attr "cpu" "generic,fr500,tomcat")
-       (eq_attr "type" "fsconv,fdconv"))
-  "(f0|f1)")
-
-(define_bypass 4 "f2" "m1,m2,m3,m4,m5,m6,m7")
-(define_insn_reservation "f2" 3
-  (and (eq_attr "cpu" "generic,fr500,tomcat")
-       (eq_attr "type" "fsadd,fdadd"))
-  "(f0|f1)+(add0|add1)")
-
-(define_bypass 4 "f3" "m1,m2,m3,m4,m5,m6,m7")
-(define_insn_reservation "f3" 3
-  (and (eq_attr "cpu" "generic,fr500,tomcat")
-       (eq_attr "type" "fsmul,fdmul"))
-  "(f0|f1)+(mul0|mul1)")
-
-(define_bypass 11 "f4_div" "m1,m2,m3,m4,m5,m6,m7")
-(define_insn_reservation "f4_div" 10
+(define_bypass 11 "fr500_fdiv" "fr500_m1,fr500_m2,fr500_m3,
+			        fr500_m4,fr500_m5,fr500_m6")
+(define_insn_reservation "fr500_fdiv" 10
   (and (eq_attr "cpu" "generic,fr500,tomcat")
        (eq_attr "type" "fsdiv,fddiv"))
-  "(f0|f1),(div1*9|div2*9)")
+  "(f1|f0),(div1*9 | div2*9)")
 
-(define_bypass 16 "f4_root" "m1,m2,m3,m4,m5,m6,m7")
-(define_insn_reservation "f4_root" 15
+(define_bypass 16 "fr500_froot" "fr500_m1,fr500_m2,fr500_m3,
+				 fr500_m4,fr500_m5,fr500_m6")
+(define_insn_reservation "fr500_froot" 15
   (and (eq_attr "cpu" "generic,fr500,tomcat")
        (eq_attr "type" "sqrt_single,sqrt_double"))
-  "(f0|f1)+root*15")
+  "(f1|f0) + root*15")
 
-(define_bypass 4 "f5" "m1,m2,m3,m4,m5,m6,m7")
-(define_insn_reservation "f5" 3
+;; Media insns.  Conflict table is as follows:
+;;
+;;           M1  M2  M3  M4  M5  M6
+;;        M1  -   -   -   -   -   -
+;;        M2  -   -   -   -   X   X
+;;        M3  -   -   -   -   X   X
+;;        M4  -   -   -   -   -   X
+;;        M5  -   X   X   -   X   X
+;;        M6  -   X   X   X   X   X
+;;
+;; where X indicates an invalid combination.
+;;
+;; Target registers are as follows:
+;;
+;;	  M1 : FPRs
+;;	  M2 : FPRs
+;;	  M3 : ACCs
+;;	  M4 : ACCs
+;;	  M5 : FPRs
+;;	  M6 : ACCs
+;;
+;; The default FPR latencies are for integer instructions.
+;; Floating-point instructions need one cycle more and media
+;; instructions need one cycle less.
+(define_automaton "fr500_media")
+(define_cpu_unit "fr500_m2_0,fr500_m2_1" "fr500_media")
+(define_cpu_unit "fr500_m3_0,fr500_m3_1" "fr500_media")
+(define_cpu_unit "fr500_m4_0,fr500_m4_1" "fr500_media")
+(define_cpu_unit "fr500_m5" "fr500_media")
+(define_cpu_unit "fr500_m6" "fr500_media")
+
+(exclusion_set "fr500_m5,fr500_m6" "fr500_m2_0,fr500_m2_1,
+				    fr500_m3_0,fr500_m3_1")
+(exclusion_set "fr500_m6" "fr500_m4_0,fr500_m4_1,fr500_m5")
+
+(define_bypass 2 "fr500_m1" "fr500_m1,fr500_m2,fr500_m3,
+			     fr500_m4,fr500_m5,fr500_m6")
+(define_bypass 4 "fr500_m1" "fr500_farith,fr500_fcmp,fr500_fdiv,fr500_froot")
+(define_insn_reservation "fr500_m1" 3
   (and (eq_attr "cpu" "generic,fr500,tomcat")
-       (eq_attr "type" "fmas"))
-  "(f0|f1)+(add0|add1)+(mul0|mul1)")
+       (eq_attr "type" "mnop,mlogic,maveh,msath,maddh,mqaddh"))
+  "(f1|f0)")
 
-;; The following insns are not generated by gcc now:
-(define_insn_reservation "f6" 0 (const_int 0) "(f0|f1)+add0+add1")
-(define_insn_reservation "f7" 0 (const_int 0) "(f0|f1)+mul0+mul1")
-
-;; Media insns.  Now they are all not generated now.
-(define_cpu_unit "m1_0" "nodiv")
-(define_cpu_unit "m1_1" "nodiv")
-(define_cpu_unit "m2_0" "nodiv")
-(define_cpu_unit "m2_1" "nodiv")
-(define_cpu_unit "m3_0" "nodiv")
-(define_cpu_unit "m3_1" "nodiv")
-(define_cpu_unit "m4_0" "nodiv")
-(define_cpu_unit "m4_1" "nodiv")
-(define_cpu_unit "m5"   "nodiv")
-(define_cpu_unit "m6"   "nodiv")
-(define_cpu_unit "m7"   "nodiv")
-
-(exclusion_set "m5,m6,m7" "m2_0,m2_1,m3_0,m3_1")
-(exclusion_set "m5"       "m6,m7")
-(exclusion_set "m6"       "m4_0,m4_1,m7")
-(exclusion_set "m7"       "m1_0,m1_1,add0,add1,mul0,mul1")
-
-(define_bypass 2 "m1" "m1,m2,m3,m4,m5,m6,m7")
-(define_bypass 4 "m1" "f1,f2,f3,f4_div,f4_root,f5,f6,f7")
-(define_insn_reservation "m1" 3
-  (and (eq_attr "cpu" "generic,fr500,tomcat")
-       (eq_attr "type" "mlogic,maveh,msath,maddh,mqaddh"))
-  "(m0|m1)+(m1_0|m1_1)")
-
-(define_bypass 2 "m2" "m1,m2,m3,m4,m5,m6,m7")
-(define_bypass 4 "m2" "f1,f2,f3,f4_div,f4_root,f5,f6,f7")
-(define_insn_reservation "m2" 3
+(define_bypass 2 "fr500_m2" "fr500_m1,fr500_m2,fr500_m3,
+			     fr500_m4,fr500_m5,fr500_m6")
+(define_bypass 4 "fr500_m2" "fr500_farith,fr500_fcmp,fr500_fdiv,fr500_froot")
+(define_insn_reservation "fr500_m2" 3
   (and (eq_attr "cpu" "generic,fr500,tomcat")
        (eq_attr "type" "mrdacc,mpackh,munpackh,mbhconv,mrot,mshift,mexpdhw,mexpdhd,mwcut,mcut,mdunpackh,mbhconve"))
-  "(m0|m1)+(m2_0|m2_1)")
+  "(f1|f0) + (fr500_m2_0|fr500_m2_1)")
 
-(define_bypass 1 "m3" "m4")
-(define_insn_reservation "m3" 2
+(define_bypass 1 "fr500_m3" "fr500_m4")
+(define_insn_reservation "fr500_m3" 2
   (and (eq_attr "cpu" "generic,fr500,tomcat")
        (eq_attr "type" "mclracc,mwtacc"))
-  "(m0|m1)+(m3_0|m3_1)")
+  "(f1|f0) + (fr500_m3_0|fr500_m3_1)")
 
-(define_bypass 1 "m4" "m4")
-(define_insn_reservation "m4" 2
+(define_bypass 1 "fr500_m4" "fr500_m4")
+(define_insn_reservation "fr500_m4" 2
   (and (eq_attr "cpu" "generic,fr500,tomcat")
        (eq_attr "type" "mmulh,mmulxh,mmach,mmrdh,mqmulh,mqmulxh,mqmach,mcpx,mqcpx"))
-  "(m0|m1)+(m4_0|m4_1)")
+  "(f1|f0) + (fr500_m4_0|fr500_m4_1)")
 
-(define_bypass 2 "m5" "m1,m2,m3,m4,m5,m6,m7")
-(define_bypass 4 "m5" "f1,f2,f3,f4_div,f4_root,f5,f6,f7")
-(define_insn_reservation "m5" 3
+(define_bypass 2 "fr500_m5" "fr500_m1,fr500_m2,fr500_m3,
+			     fr500_m4,fr500_m5,fr500_m6")
+(define_bypass 4 "fr500_m5" "fr500_farith,fr500_fcmp,fr500_fdiv,fr500_froot")
+(define_insn_reservation "fr500_m5" 3
   (and (eq_attr "cpu" "generic,fr500,tomcat")
        (eq_attr "type" "mdpackh"))
-  "(m0|m1)+m5")
+  "(f1|f0) + fr500_m5")
 
-(define_bypass 1 "m6" "m4")
-(define_insn_reservation "m6" 2
+(define_bypass 1 "fr500_m6" "fr500_m4")
+(define_insn_reservation "fr500_m6" 2
   (and (eq_attr "cpu" "generic,fr500,tomcat")
        (eq_attr "type" "mclracca"))
-  "(m0|m1)+m6")
-
-(define_bypass 2 "m7" "m1,m2,m3,m4,m5,m6,m7")
-(define_bypass 4 "m7" "f1,f2,f3,f4_div,f4_root,f5,f6,f7")
-
-(define_insn_reservation "m7" 3
-  (and (eq_attr "cpu" "generic,fr500,tomcat")
-       (eq_attr "type" "m7"))
-  "(m0|m1)+m7")
-
-;; Unknown & multi insns starts on new cycle and the next insn starts
-;; on new cycle.  To describe this we consider as a control insn.
-(define_insn_reservation "unknown" 1
-  (and (eq_attr "cpu" "generic,fr500,tomcat")
-       (eq_attr "type" "unknown,multi"))
-  "c")
+  "(f1|f0) + fr500_m6")
 
 ;; ::::::::::::::::::::
 ;; ::
@@ -852,17 +715,6 @@
 ;; Category 2 media instructions use both media units, but can be packed
 ;; with non-media instructions.  Use fr400_m1unit to claim the M1 unit
 ;; without claiming a slot.
-
-(define_cpu_unit "fr400_m1unit" "nodiv")
-
-(define_reservation "fr400_i0"      "sl0_i0")
-(define_reservation "fr400_i1"      "sl1_i1")
-(define_reservation "fr400_m0"      "sl0_fm0|sl1_fm0")
-(define_reservation "fr400_m1"      "sl1_fm1")
-(define_reservation "fr400_meither" "fr400_m0|(fr400_m1+fr400_m1unit)")
-(define_reservation "fr400_mboth"   "fr400_m0+fr400_m1unit")
-(define_reservation "fr400_b"       "sl0_b0|sl1_b0")
-(define_reservation "fr400_c"       "sl0_c")
 
 ;; Name		Class	Units	Latency
 ;; ====	        =====	=====	=======
@@ -888,69 +740,107 @@
 ;; unit too.
 
 (define_insn_reservation "fr400_i1_int" 1
-  (and (eq_attr "cpu" "fr400")
+  (and (eq_attr "cpu" "fr400,fr405,fr450")
        (eq_attr "type" "int"))
-  "fr400_i0|fr400_i1")
+  "i1|i0")
 
-(define_insn_reservation "fr400_i1_sethi" 0
-  (and (eq_attr "cpu" "fr400")
+(define_bypass 0 "fr400_i1_sethi" "fr400_i1_setlo")
+(define_insn_reservation "fr400_i1_sethi" 1
+  (and (eq_attr "cpu" "fr400,fr405,fr450")
        (eq_attr "type" "sethi"))
-  "fr400_i0|fr400_i1")
+  "i1|i0")
 
 (define_insn_reservation "fr400_i1_setlo" 1
-  (and (eq_attr "cpu" "fr400")
+  (and (eq_attr "cpu" "fr400,fr405,fr450")
        (eq_attr "type" "setlo"))
-  "fr400_i0|fr400_i1")
+  "i1|i0")
 
+;; 3 is the worst case (write-after-write hazard).
 (define_insn_reservation "fr400_i1_mul" 3
-  (and (eq_attr "cpu" "fr400")
+  (and (eq_attr "cpu" "fr400,fr405")
        (eq_attr "type" "mul"))
-  "fr400_i0")
+  "i0")
 
+(define_insn_reservation "fr450_i1_mul" 2
+  (and (eq_attr "cpu" "fr450")
+       (eq_attr "type" "mul"))
+  "i0")
+
+(define_bypass 1 "fr400_i1_macc" "fr400_i1_macc")
+(define_insn_reservation "fr400_i1_macc" 2
+  (and (eq_attr "cpu" "fr405,fr450")
+       (eq_attr "type" "macc"))
+  "i0|i1")
+
+(define_insn_reservation "fr400_i1_scan" 1
+  (and (eq_attr "cpu" "fr400,fr405,fr450")
+       (eq_attr "type" "scan"))
+  "i0")
+
+(define_insn_reservation "fr400_i1_cut" 2
+  (and (eq_attr "cpu" "fr405,fr450")
+       (eq_attr "type" "cut"))
+  "i0")
+
+;; 20 is for a write-after-write hazard.
 (define_insn_reservation "fr400_i1_div" 20
-  (and (eq_attr "cpu" "fr400")
+  (and (eq_attr "cpu" "fr400,fr405")
        (eq_attr "type" "div"))
-  "fr400_i0+idiv1*19")
+  "i0 + idiv1*19")
 
-(define_insn_reservation "fr400_i2_gload" 4
-  (and (eq_attr "cpu" "fr400")
+(define_insn_reservation "fr450_i1_div" 19
+  (and (eq_attr "cpu" "fr450")
+       (eq_attr "type" "div"))
+  "i0 + idiv1*19")
+
+;; 4 is for a write-after-write hazard.
+(define_insn_reservation "fr400_i2" 4
+  (and (eq_attr "cpu" "fr400,fr405")
+       (eq_attr "type" "gload,fload"))
+  "i0")
+
+(define_insn_reservation "fr450_i2_gload" 3
+  (and (eq_attr "cpu" "fr450")
        (eq_attr "type" "gload"))
-  "fr400_i0")
+  "i0")
 
-(define_insn_reservation "fr400_i2_fload" 4
-  (and (eq_attr "cpu" "fr400")
+;; 4 is for a write-after-write hazard.
+(define_insn_reservation "fr450_i2_fload" 4
+  (and (eq_attr "cpu" "fr450")
        (eq_attr "type" "fload"))
-  "fr400_i0")
+  "i0")
 
-(define_insn_reservation "fr400_i3_gstore" 0
-  (and (eq_attr "cpu" "fr400")
-       (eq_attr "type" "gstore"))
-  "fr400_i0")
+(define_insn_reservation "fr400_i3" 0
+  (and (eq_attr "cpu" "fr400,fr405,fr450")
+       (eq_attr "type" "gstore,fstore"))
+  "i0")
 
-(define_insn_reservation "fr400_i3_fstore" 0
-  (and (eq_attr "cpu" "fr400")
-       (eq_attr "type" "fstore"))
-  "fr400_i0")
+;; 3 is for a write-after-write hazard.
+(define_insn_reservation "fr400_i4" 3
+  (and (eq_attr "cpu" "fr400,fr405")
+       (eq_attr "type" "movfg,movgf"))
+  "i0")
 
-(define_insn_reservation "fr400_i4_movfg" 3
-  (and (eq_attr "cpu" "fr400")
+(define_insn_reservation "fr450_i4_movfg" 2
+  (and (eq_attr "cpu" "fr450")
        (eq_attr "type" "movfg"))
-  "fr400_i0")
+  "i0")
 
-(define_insn_reservation "fr400_i4_movgf" 3
-  (and (eq_attr "cpu" "fr400")
+;; 3 is for a write-after-write hazard.
+(define_insn_reservation "fr450_i4_movgf" 3
+  (and (eq_attr "cpu" "fr450")
        (eq_attr "type" "movgf"))
-  "fr400_i0")
+  "i0")
 
-(define_insn_reservation "fr400_i5_jumpl" 0
-  (and (eq_attr "cpu" "fr400")
+(define_insn_reservation "fr400_i5" 0
+  (and (eq_attr "cpu" "fr400,fr405,fr450")
        (eq_attr "type" "jumpl"))
-  "fr400_i0")
+  "i0")
 
 ;; The bypass between FPR loads and media instructions, described above.
 
 (define_bypass 3
-  "fr400_i2_fload"
+  "fr400_i2"
   "fr400_m1_1,fr400_m1_2,\
    fr400_m2_1,fr400_m2_2,\
    fr400_m3_1,fr400_m3_2,\
@@ -960,24 +850,9 @@
 ;; The branch instructions all use the B unit and produce no result.
 
 (define_insn_reservation "fr400_b" 0
-  (and (eq_attr "cpu" "fr400")
+  (and (eq_attr "cpu" "fr400,fr405,fr450")
        (eq_attr "type" "jump,branch,ccr,call"))
-  "fr400_b")
-
-;; Control instructions use the C unit, which excludes all the others.
-
-(define_insn_reservation "fr400_c" 0
-  (and (eq_attr "cpu" "fr400")
-       (eq_attr "type" "spr,trap"))
-  "fr400_c")
-
-;; Unknown instructions use the C unit, since it requires single-operation
-;; packets.
-
-(define_insn_reservation "fr400_unknown" 1
-  (and (eq_attr "cpu" "fr400")
-       (eq_attr "type" "unknown,multi"))
-  "fr400_c")
+  "b0")
 
 ;; FP->FP moves are marked as "fsconv" instructions in the define_insns
 ;; below, but are implemented on the FR400 using "mlogic" instructions.
@@ -987,15 +862,22 @@
 ;; M1 instructions store their results in FPRs.  Any instruction can read
 ;; the result in the following cycle, so no penalty occurs.
 
+(define_automaton "fr400_media")
+(define_cpu_unit "fr400_m1a,fr400_m1b,fr400_m2a" "fr400_media")
+(exclusion_set "fr400_m1a,fr400_m1b" "fr400_m2a")
+
+(define_reservation "fr400_m1" "(f1|f0) + (fr400_m1a|fr400_m1b)")
+(define_reservation "fr400_m2" "f0 + fr400_m2a")
+
 (define_insn_reservation "fr400_m1_1" 1
-  (and (eq_attr "cpu" "fr400")
-       (eq_attr "type" "fsconv,mlogic,maveh,msath,maddh,mabsh,mset"))
-  "fr400_meither")
+  (and (eq_attr "cpu" "fr400,fr405")
+       (eq_attr "type" "fsconv,mnop,mlogic,maveh,msath,maddh,mabsh,mset"))
+  "fr400_m1")
 
 (define_insn_reservation "fr400_m1_2" 1
-  (and (eq_attr "cpu" "fr400")
-       (eq_attr "type" "mqaddh,mqsath"))
-  "fr400_mboth")
+  (and (eq_attr "cpu" "fr400,fr405")
+       (eq_attr "type" "mqaddh,mqsath,mqlimh,mqshift"))
+  "fr400_m2")
 
 ;; M2 instructions store their results in accumulators, which are read
 ;; by M2 or M4 media commands.  M2 instructions can read the results in
@@ -1006,53 +888,435 @@
   "fr400_m2_1,fr400_m2_2")
 
 (define_insn_reservation "fr400_m2_1" 2
-  (and (eq_attr "cpu" "fr400")
+  (and (eq_attr "cpu" "fr400,fr405")
        (eq_attr "type" "mmulh,mmulxh,mmach,mmrdh,mcpx,maddacc"))
-  "fr400_meither")
+  "fr400_m1")
 
 (define_insn_reservation "fr400_m2_2" 2
-  (and (eq_attr "cpu" "fr400")
+  (and (eq_attr "cpu" "fr400,fr405")
        (eq_attr "type" "mqmulh,mqmulxh,mqmach,mqcpx,mdaddacc"))
-  "fr400_mboth")
+  "fr400_m2")
 
 ;; For our purposes, there seems to be little real difference between
 ;; M1 and M3 instructions.  Keep them separate anyway in case the distinction
 ;; is needed later.
 
 (define_insn_reservation "fr400_m3_1" 1
-  (and (eq_attr "cpu" "fr400")
+  (and (eq_attr "cpu" "fr400,fr405")
        (eq_attr "type" "mpackh,mrot,mshift,mexpdhw"))
-  "fr400_meither")
+  "fr400_m1")
 
 (define_insn_reservation "fr400_m3_2" 1
-  (and (eq_attr "cpu" "fr400")
+  (and (eq_attr "cpu" "fr400,fr405")
        (eq_attr "type" "munpackh,mdpackh,mbhconv,mexpdhd,mwcut,mdrot,mcpl"))
-  "fr400_mboth")
+  "fr400_m2")
 
 ;; M4 instructions write to accumulators or FPRs.  MOVFG and STF
 ;; instructions can read an FPR result in the following cycle, but
 ;; M-unit instructions must wait a cycle more for either kind of result.
 
-(define_bypass 1
-  "fr400_m4_1,fr400_m4_2"
-  "fr400_i3_fstore,fr400_i4_movfg")
+(define_bypass 1 "fr400_m4_1,fr400_m4_2" "fr400_i3,fr400_i4")
 
 (define_insn_reservation "fr400_m4_1" 2
-  (and (eq_attr "cpu" "fr400")
+  (and (eq_attr "cpu" "fr400,fr405")
        (eq_attr "type" "mrdacc,mcut,mclracc"))
-  "fr400_meither")
+  "fr400_m1")
 
 (define_insn_reservation "fr400_m4_2" 2
-  (and (eq_attr "cpu" "fr400")
+  (and (eq_attr "cpu" "fr400,fr405")
        (eq_attr "type" "mclracca,mdcut"))
-  "fr400_mboth")
+  "fr400_m2")
 
 ;; M5 instructions always incur a 1-cycle penalty.
 
 (define_insn_reservation "fr400_m5" 2
-  (and (eq_attr "cpu" "fr400")
+  (and (eq_attr "cpu" "fr400,fr405")
        (eq_attr "type" "mwtacc"))
-  "fr400_mboth")
+  "fr400_m2")
+
+;; ::::::::::::::::::::
+;; ::
+;; :: FR450 media scheduler description
+;; ::
+;; ::::::::::::::::::::
+
+;; The FR451 media restrictions are similar to the FR400's, but not as
+;; strict and not as regular.  There are 6 categories with the following
+;; restrictions:
+;;
+;;		          M1
+;;	      M-1  M-2  M-3  M-4  M-5  M-6
+;;	M-1:         x         x         x
+;;	M-2:    x    x    x    x    x    x
+;;  M0	M-3:         x         x         x
+;;	M-4:    x    x    x    x
+;;	M-5:         x         x         x
+;;	M-6:    x    x    x    x    x    x
+;;
+;; where "x" indicates a conflict.
+;;
+;; There is no difference between M-1 and M-3 as far as issue
+;; restrictions are concerned, so they are combined as "m13".
+
+;; Units for odd-numbered categories.  There can be two of these
+;; in a packet.
+(define_cpu_unit "fr450_m13a,fr450_m13b" "float_media")
+(define_cpu_unit "fr450_m5a,fr450_m5b" "float_media")
+
+;; Units for even-numbered categories.  There can only be one per packet.
+(define_cpu_unit "fr450_m2a,fr450_m4a,fr450_m6a" "float_media")
+
+;; Enforce the restriction matrix above.
+(exclusion_set "fr450_m2a,fr450_m4a,fr450_m6a" "fr450_m13a,fr450_m13b")
+(exclusion_set "fr450_m2a,fr450_m6a" "fr450_m5a,fr450_m5b")
+(exclusion_set "fr450_m4a,fr450_m6a" "fr450_m2a")
+
+(define_reservation "fr450_m13" "(f1|f0) + (fr450_m13a|fr450_m13b)")
+(define_reservation "fr450_m2" "f0 + fr450_m2a")
+(define_reservation "fr450_m4" "f0 + fr450_m4a")
+(define_reservation "fr450_m5" "(f1|f0) + (fr450_m5a|fr450_m5b)")
+(define_reservation "fr450_m6" "(f0|f1) + fr450_m6a")
+
+;; MD-1, MD-3 and MD-8 instructions, which are the same as far
+;; as scheduling is concerned.  The inputs and outputs are FPRs.
+;; Instructions that have 32-bit inputs and outputs belong to M-1 while
+;; the rest belong to M-2.
+;;
+;; ??? Arithmetic shifts (MD-6) have an extra cycle latency, but we don't
+;; make the distinction between them and logical shifts.
+(define_insn_reservation "fr450_md138_1" 1
+  (and (eq_attr "cpu" "fr450")
+       (eq_attr "type" "fsconv,mnop,mlogic,maveh,msath,maddh,mabsh,mset,
+			mrot,mshift,mexpdhw,mpackh"))
+  "fr450_m13")
+
+(define_insn_reservation "fr450_md138_2" 1
+  (and (eq_attr "cpu" "fr450")
+       (eq_attr "type" "mqaddh,mqsath,mqlimh,
+			mdrot,mwcut,mqshift,mexpdhd,
+			munpackh,mdpackh,mbhconv,mcpl"))
+  "fr450_m2")
+
+;; MD-2 instructions.  These take FPR or ACC inputs and produce an ACC output.
+;; Instructions that write to double ACCs belong to M-3 while those that write
+;; to quad ACCs belong to M-4.
+(define_insn_reservation "fr450_md2_3" 2
+  (and (eq_attr "cpu" "fr450")
+       (eq_attr "type" "mmulh,mmach,mcpx,mmulxh,mmrdh,maddacc"))
+  "fr450_m13")
+
+(define_insn_reservation "fr450_md2_4" 2
+  (and (eq_attr "cpu" "fr450")
+       (eq_attr "type" "mqmulh,mqmach,mqcpx,mqmulxh,mdaddacc"))
+  "fr450_m4")
+
+;; Another MD-2 instruction can use the result on the following cycle.
+(define_bypass 1 "fr450_md2_3,fr450_md2_4" "fr450_md2_3,fr450_md2_4")
+
+;; MD-4 instructions that write to ACCs.
+(define_insn_reservation "fr450_md4_3" 2
+  (and (eq_attr "cpu" "fr450")
+       (eq_attr "type" "mclracc"))
+  "fr450_m13")
+
+(define_insn_reservation "fr450_md4_4" 3
+  (and (eq_attr "cpu" "fr450")
+       (eq_attr "type" "mclracca"))
+  "fr450_m4")
+
+;; MD-4 instructions that write to FPRs.
+(define_insn_reservation "fr450_md4_1" 2
+  (and (eq_attr "cpu" "fr450")
+       (eq_attr "type" "mcut"))
+  "fr450_m13")
+
+(define_insn_reservation "fr450_md4_5" 2
+  (and (eq_attr "cpu" "fr450")
+       (eq_attr "type" "mrdacc"))
+  "fr450_m5")
+
+(define_insn_reservation "fr450_md4_6" 2
+  (and (eq_attr "cpu" "fr450")
+       (eq_attr "type" "mdcut"))
+  "fr450_m6")
+
+;; Integer instructions can read the FPR result of an MD-4 instruction on
+;; the following cycle.
+(define_bypass 1 "fr450_md4_1,fr450_md4_5,fr450_md4_6"
+		 "fr400_i3,fr450_i4_movfg")
+
+;; MD-5 instructions, which belong to M-3.  They take FPR inputs and
+;; write to ACCs.
+(define_insn_reservation "fr450_md5_3" 2
+  (and (eq_attr "cpu" "fr450")
+       (eq_attr "type" "mwtacc"))
+  "fr450_m13")
+
+;; ::::::::::::::::::::
+;; ::
+;; :: FR550 scheduler description
+;; ::
+;; ::::::::::::::::::::
+
+;; Prevent loads and stores from being issued in the same packet.
+;; These units must go into the generic "integer" reservation because
+;; of the constraints on fr550_store0 and fr550_store1.
+(define_cpu_unit "fr550_load0,fr550_load1" "integer")
+(define_cpu_unit "fr550_store0,fr550_store1" "integer")
+(exclusion_set "fr550_load0,fr550_load1" "fr550_store0,fr550_store1")
+
+;; A store can only issue to I1 if one has also been issued to I0.
+(presence_set "fr550_store1" "fr550_store0")
+
+(define_bypass 0 "fr550_sethi" "fr550_setlo")
+(define_insn_reservation "fr550_sethi" 1
+  (and (eq_attr "cpu" "fr550")
+       (eq_attr "type" "sethi"))
+  "i3|i2|i1|i0")
+
+(define_insn_reservation "fr550_setlo" 1
+  (and (eq_attr "cpu" "fr550")
+       (eq_attr "type" "setlo"))
+  "i3|i2|i1|i0")
+
+(define_insn_reservation "fr550_int" 1
+  (and (eq_attr "cpu" "fr550")
+       (eq_attr "type" "int"))
+  "i3|i2|i1|i0")
+
+(define_insn_reservation "fr550_mul" 2
+  (and (eq_attr "cpu" "fr550")
+       (eq_attr "type" "mul"))
+  "i1|i0")
+
+(define_insn_reservation "fr550_div" 19
+  (and (eq_attr "cpu" "fr550")
+       (eq_attr "type" "div"))
+  "(i1|i0),(idiv1*18 | idiv2*18)")
+
+(define_insn_reservation "fr550_load" 3
+  (and (eq_attr "cpu" "fr550")
+       (eq_attr "type" "gload,fload"))
+  "(i1|i0)+(fr550_load0|fr550_load1)")
+
+;; We can only issue a store to I1 if one was also issued to I0.
+;; This means that, as far as frv_reorder_packet is concerned,
+;; the instruction has the same priority as an I0-only instruction.
+(define_insn_reservation "fr550_store" 1
+  (and (eq_attr "cpu" "fr550")
+       (eq_attr "type" "gstore,fstore"))
+  "(i0+fr550_store0)|(i1+fr550_store1)")
+
+(define_insn_reservation "fr550_transfer" 2
+  (and (eq_attr "cpu" "fr550")
+       (eq_attr "type" "movgf,movfg"))
+  "i0")
+
+(define_insn_reservation "fr550_jumpl" 0
+  (and (eq_attr "cpu" "fr550")
+       (eq_attr "type" "jumpl"))
+  "i0")
+
+(define_cpu_unit "fr550_ccr0,fr550_ccr1" "float_media")
+
+(define_insn_reservation "fr550_branch" 0
+  (and (eq_attr "cpu" "fr550")
+       (eq_attr "type" "jump,branch"))
+  "b1|b0")
+
+(define_insn_reservation "fr550_ccr" 0
+  (and (eq_attr "cpu" "fr550")
+       (eq_attr "type" "ccr"))
+  "(b1|b0) + (fr550_ccr1|fr550_ccr0)")
+
+(define_insn_reservation "fr550_call" 0
+  (and (eq_attr "cpu" "fr550")
+       (eq_attr "type" "call"))
+  "b0")
+
+(define_automaton "fr550_float_media")
+(define_cpu_unit "fr550_add0,fr550_add1" "fr550_float_media")
+
+;; There are three possible combinations of floating-point/media instructions:
+;;
+;;    - one media and one float
+;;    - up to four float, no media
+;;    - up to four media, no float
+(define_cpu_unit "fr550_f0,fr550_f1,fr550_f2,fr550_f3" "fr550_float_media")
+(define_cpu_unit "fr550_m0,fr550_m1,fr550_m2,fr550_m3" "fr550_float_media")
+(exclusion_set "fr550_f1,fr550_f2,fr550_f3" "fr550_m1,fr550_m2,fr550_m3")
+
+(define_reservation "fr550_float" "fr550_f0|fr550_f1|fr550_f2|fr550_f3")
+(define_reservation "fr550_media" "fr550_m0|fr550_m1|fr550_m2|fr550_m3")
+
+(define_insn_reservation "fr550_f1" 0
+  (and (eq_attr "cpu" "fr550")
+       (eq_attr "type" "fnop"))
+  "(f3|f2|f1|f0) + fr550_float")
+
+(define_insn_reservation "fr550_f2" 3
+  (and (eq_attr "cpu" "fr550")
+       (eq_attr "type" "fsconv,fsadd,fscmp"))
+  "(f3|f2|f1|f0) + (fr550_add0|fr550_add1) + fr550_float")
+
+(define_insn_reservation "fr550_f3_mul" 3
+  (and (eq_attr "cpu" "fr550")
+       (eq_attr "type" "fsmul"))
+  "(f1|f0) + fr550_float")
+
+(define_insn_reservation "fr550_f3_div" 10
+  (and (eq_attr "cpu" "fr550")
+       (eq_attr "type" "fsdiv"))
+  "(f1|f0) + fr550_float")
+
+(define_insn_reservation "fr550_f3_sqrt" 15
+  (and (eq_attr "cpu" "fr550")
+       (eq_attr "type" "sqrt_single"))
+  "(f1|f0) + fr550_float")
+
+;; Synthetic units for enforcing media issue restructions.  Certain types
+;; of insn in M2 conflict with certain types in M0:
+;;
+;;			     M2
+;;               MNOP   MALU   MSFT   MMAC   MSET
+;;         MNOP     -      -      x      -      -
+;;         MALU     -      x      x      -      -
+;;   M0    MSFT     -      -      x      -      x
+;;         MMAC     -      -      x      x      -
+;;         MSET     -      -      x      -      -
+;;
+;; where "x" indicates a conflict.  The same restrictions apply to
+;; M3 and M1.
+;;
+;; In addition -- and this is the awkward bit! -- instructions that
+;; access ACC0-3 can only issue to M0 or M2.  Those that access ACC4-7
+;; can only issue to M1 or M3.  We refer to such instructions as "even"
+;; and "odd" respectively.
+(define_cpu_unit "fr550_malu0,fr550_malu1" "float_media")
+(define_cpu_unit "fr550_malu2,fr550_malu3" "float_media")
+(define_cpu_unit "fr550_msft0,fr550_msft1" "float_media")
+(define_cpu_unit "fr550_mmac0,fr550_mmac1" "float_media")
+(define_cpu_unit "fr550_mmac2,fr550_mmac3" "float_media")
+(define_cpu_unit "fr550_mset0,fr550_mset1" "float_media")
+(define_cpu_unit "fr550_mset2,fr550_mset3" "float_media")
+
+(exclusion_set "fr550_malu0" "fr550_malu2")
+(exclusion_set "fr550_malu1" "fr550_malu3")
+
+(exclusion_set "fr550_msft0" "fr550_mset2")
+(exclusion_set "fr550_msft1" "fr550_mset3")
+
+(exclusion_set "fr550_mmac0" "fr550_mmac2")
+(exclusion_set "fr550_mmac1" "fr550_mmac3")
+
+;; If an MSFT or MMAC instruction issues to a unit other than M0, we may
+;; need to insert some nops.  In the worst case, the packet will end up
+;; having 4 integer instructions and 4 media instructions, leaving no
+;; room for any branch instructions that the DFA might have accepted.
+;;
+;; This doesn't matter for JUMP_INSNs and CALL_INSNs because they are
+;; always the last instructions to be passed to the DFA, and could be
+;; pushed out to a separate packet once the nops have been added.
+;; However, it does cause problems for ccr instructions since they
+;; can occur anywhere in the unordered packet.
+(exclusion_set "fr550_msft1,fr550_mmac1,fr550_mmac2,fr550_mmac3"
+	       "fr550_ccr0,fr550_ccr1")
+
+(define_reservation "fr550_malu"
+  "(f3 + fr550_malu3) | (f2 + fr550_malu2)
+   | (f1 + fr550_malu1) | (f0 + fr550_malu0)")
+
+(define_reservation "fr550_msft_even"
+  "f0 + fr550_msft0")
+
+(define_reservation "fr550_msft_odd"
+  "f1 + fr550_msft1")
+
+(define_reservation "fr550_msft_either"
+  "(f1 + fr550_msft1) | (f0 + fr550_msft0)")
+
+(define_reservation "fr550_mmac_even"
+  "(f2 + fr550_mmac2) | (f0 + fr550_mmac0)")
+
+(define_reservation "fr550_mmac_odd"
+  "(f3 + fr550_mmac3) | (f1 + fr550_mmac1)")
+
+(define_reservation "fr550_mset"
+  "(f3 + fr550_mset3) | (f2 + fr550_mset2)
+    | (f1 + fr550_mset1) | (f0 + fr550_mset0)")
+
+(define_insn_reservation "fr550_mnop" 0
+  (and (eq_attr "cpu" "fr550")
+       (eq_attr "type" "mnop"))
+  "fr550_media + (f3|f2|f1|f0)")
+
+(define_insn_reservation "fr550_malu" 2
+  (and (eq_attr "cpu" "fr550")
+       (eq_attr "type" "mlogic,maveh,msath,mabsh,maddh,mqaddh,mqsath"))
+  "fr550_media + fr550_malu")
+
+;; These insns only operate on FPRs and so don't need to be classified
+;; as even/odd.
+(define_insn_reservation "fr550_msft_1_either" 2
+  (and (eq_attr "cpu" "fr550")
+       (eq_attr "type" "mrot,mwcut,mshift,mexpdhw,mexpdhd,mpackh,
+			munpackh,mdpackh,mbhconv,mdrot,mcpl"))
+  "fr550_media + fr550_msft_either")
+
+;; These insns read from ACC0-3.
+(define_insn_reservation "fr550_msft_1_even" 2
+  (and (eq_attr "cpu" "fr550")
+       (and (eq_attr "type" "mcut,mrdacc,mdcut")
+	    (eq_attr "acc_group" "even")))
+  "fr550_media + fr550_msft_even")
+
+;; These insns read from ACC4-7.
+(define_insn_reservation "fr550_msft_1_odd" 2
+  (and (eq_attr "cpu" "fr550")
+       (and (eq_attr "type" "mcut,mrdacc,mdcut")
+	    (eq_attr "acc_group" "odd")))
+  "fr550_media + fr550_msft_odd")
+
+;; MCLRACC with A=1 can issue to either M0 or M1.
+(define_insn_reservation "fr550_msft_2_either" 2
+  (and (eq_attr "cpu" "fr550")
+       (eq_attr "type" "mclracca"))
+  "fr550_media + fr550_msft_either")
+
+;; These insns write to ACC0-3.
+(define_insn_reservation "fr550_msft_2_even" 2
+  (and (eq_attr "cpu" "fr550")
+       (and (eq_attr "type" "mclracc,mwtacc")
+	    (eq_attr "acc_group" "even")))
+  "fr550_media + fr550_msft_even")
+
+;; These insns write to ACC4-7.
+(define_insn_reservation "fr550_msft_2_odd" 2
+  (and (eq_attr "cpu" "fr550")
+       (and (eq_attr "type" "mclracc,mwtacc")
+	    (eq_attr "acc_group" "odd")))
+  "fr550_media + fr550_msft_odd")
+
+;; These insns read from and write to ACC0-3.
+(define_insn_reservation "fr550_mmac_even" 2
+  (and (eq_attr "cpu" "fr550")
+       (and (eq_attr "type" "mmulh,mmulxh,mmach,mmrdh,mqmulh,mqmulxh,mqmach,
+			     maddacc,mdaddacc,mcpx,mqcpx")
+	    (eq_attr "acc_group" "even")))
+  "fr550_media + fr550_mmac_even")
+
+;; These insns read from and write to ACC4-7.
+(define_insn_reservation "fr550_mmac_odd" 2
+  (and (eq_attr "cpu" "fr550")
+       (and (eq_attr "type" "mmulh,mmulxh,mmach,mmrdh,mqmulh,mqmulxh,mqmach,
+			     maddacc,mdaddacc,mcpx,mqcpx")
+	    (eq_attr "acc_group" "odd")))
+  "fr550_media + fr550_mmac_odd")
+
+(define_insn_reservation "fr550_mset" 1
+  (and (eq_attr "cpu" "fr550")
+       (eq_attr "type" "mset"))
+  "fr550_media + fr550_mset")
 
 ;; ::::::::::::::::::::
 ;; ::
@@ -1066,12 +1330,12 @@
 (define_insn_reservation "fr300_lat1" 1
   (and (eq_attr "cpu" "fr300,simple")
        (eq_attr "type" "!gload,fload,movfg,movgf"))
-  "c")
+  "c + control")
 
 (define_insn_reservation "fr300_lat2" 2
   (and (eq_attr "cpu" "fr300,simple")
        (eq_attr "type" "gload,fload,movfg,movgf"))
-  "c")
+  "c + control")
 
 
 ;; ::::::::::::::::::::
@@ -2961,7 +3225,7 @@
   "TARGET_HARD_FLOAT && TARGET_MULADD"
   "fmadds %1,%2,%0"
   [(set_attr "length" "4")
-   (set_attr "type" "fmas")])
+   (set_attr "type" "fsmadd")])
 
 (define_insn "*mulsubsf4"
   [(set (match_operand:SF 0 "fpr_operand" "=f")
@@ -2971,7 +3235,7 @@
   "TARGET_HARD_FLOAT && TARGET_MULADD"
   "fmsubs %1,%2,%0"
   [(set_attr "length" "4")
-   (set_attr "type" "fmas")])
+   (set_attr "type" "fsmadd")])
 
 ;; Division
 (define_insn "divsf3"
@@ -3056,7 +3320,7 @@
   "TARGET_HARD_FLOAT && TARGET_DOUBLE && TARGET_MULADD"
   "fmaddd %1,%2,%0"
   [(set_attr "length" "4")
-   (set_attr "type" "fmas")])
+   (set_attr "type" "fdmadd")])
 
 (define_insn "*mulsubdf4"
   [(set (match_operand:DF 0 "fpr_operand" "=f")
@@ -3066,7 +3330,7 @@
   "TARGET_HARD_FLOAT && TARGET_DOUBLE && TARGET_MULADD"
   "fmsubd %1,%2,%0"
   [(set_attr "length" "4")
-   (set_attr "type" "fmas")])
+   (set_attr "type" "fdmadd")])
 
 ;; Division
 (define_insn "divdf3"
@@ -3515,7 +3779,7 @@
   "TARGET_HARD_FLOAT"
   "fcmps %1,%2,%0"
   [(set_attr "length" "4")
-   (set_attr "type" "fsadd")])
+   (set_attr "type" "fscmp")])
 
 (define_insn "*cmpdf_cc_fp"
   [(set (match_operand:CC_FP 0 "fcc_operand" "=u")
@@ -3524,7 +3788,7 @@
   "TARGET_HARD_FLOAT && TARGET_DOUBLE"
   "fcmpd %1,%2,%0"
   [(set_attr "length" "4")
-   (set_attr "type" "fdadd")])
+   (set_attr "type" "fdcmp")])
 
 
 ;; ::::::::::::::::::::
@@ -5850,6 +6114,20 @@
   [(set_attr "length" "4")
    (set_attr "type" "int")])
 
+(define_insn "fnop"
+  [(const_int 1)]
+  ""
+  "fnop"
+  [(set_attr "length" "4")
+   (set_attr "type" "fnop")])
+
+(define_insn "mnop"
+  [(const_int 2)]
+  ""
+  "mnop"
+  [(set_attr "length" "4")
+   (set_attr "type" "mnop")])
+
 ;; Pseudo instruction that prevents the scheduler from moving code above this
 ;; point.  Note, type unknown is used to make sure the VLIW instructions are
 ;; not continued past this point.
@@ -5926,6 +6204,10 @@
    (UNSPEC_MHSETHIH		151)
    (UNSPEC_MHDSETS		152)
    (UNSPEC_MHDSETH		153)
+   (UNSPEC_MQLCLRHS		154)
+   (UNSPEC_MQLMTHS		155)
+   (UNSPEC_MQSLLHI		156)
+   (UNSPEC_MQSRAHI		157)
 ])
 
 ;; Logic operations: type "mlogic"
@@ -6432,7 +6714,7 @@
 ;; Expand halfword to word: type "mexpdhw"
 
 (define_insn "mexpdhw"
-  [(set (match_operand:SI 0 "even_fpr_operand" "=h")
+  [(set (match_operand:SI 0 "fpr_operand" "=f")
         (unspec:SI [(match_operand:SI 1 "fpr_operand" "f")
                     (match_operand:SI 2 "uint1_operand" "I")]
 		   UNSPEC_MEXPDHW))]
@@ -6446,7 +6728,7 @@
     (match_operator 0 "ccr_eqne_operator"
 		    [(match_operand 1 "cr_operand" "C")
 		     (const_int 0)])
-    (set (match_operand:SI 2 "even_fpr_operand" "=h")
+    (set (match_operand:SI 2 "fpr_operand" "=f")
 	 (unspec:SI [(match_operand:SI 3 "fpr_operand" "f")
 		     (match_operand:SI 4 "uint1_operand" "I")]
 		    UNSPEC_MEXPDHW)))]
@@ -7272,9 +7554,9 @@
   "
 {
   operands[0] = gen_rtx_REG (V4SImode, ACC_FIRST);
-  operands[1] = gen_rtx_REG (V4SImode, ACC_FIRST + 4);
+  operands[1] = gen_rtx_REG (V4SImode, ACC_FIRST + (~3 & ACC_MASK));
   operands[2] = gen_rtx_REG (V4QImode, ACCG_FIRST);
-  operands[3] = gen_rtx_REG (V4QImode, ACCG_FIRST + 4);
+  operands[3] = gen_rtx_REG (V4QImode, ACCG_FIRST + (~3 & ACC_MASK));
 }")
 
 (define_expand "mclracca4"
@@ -7644,6 +7926,48 @@
   [(set_attr "length" "4")
    (set_attr "type" "mqsath")])
 
+;; Quad limit instructions: type "mqlimh"
+
+(define_insn "mqlclrhs"
+  [(set (match_operand:DI 0 "even_fpr_operand" "=h")
+        (unspec:DI [(match_operand:DI 1 "even_fpr_operand" "h")
+		    (match_operand:DI 2 "even_fpr_operand" "h")]
+		   UNSPEC_MQLCLRHS))]
+  "TARGET_MEDIA_FR450"
+  "mqlclrhs %1, %2, %0"
+  [(set_attr "length" "4")
+   (set_attr "type" "mqlimh")])
+
+(define_insn "mqlmths"
+  [(set (match_operand:DI 0 "even_fpr_operand" "=h")
+        (unspec:DI [(match_operand:DI 1 "even_fpr_operand" "h")
+		    (match_operand:DI 2 "even_fpr_operand" "h")]
+		   UNSPEC_MQLMTHS))]
+  "TARGET_MEDIA_FR450"
+  "mqlmths %1, %2, %0"
+  [(set_attr "length" "4")
+   (set_attr "type" "mqlimh")])
+
+(define_insn "mqsllhi"
+  [(set (match_operand:DI 0 "even_fpr_operand" "=h")
+        (unspec:DI [(match_operand:DI 1 "even_fpr_operand" "h")
+		    (match_operand:SI 2 "int6_operand" "I")]
+		   UNSPEC_MQSLLHI))]
+  "TARGET_MEDIA_FR450"
+  "mqsllhi %1, %2, %0"
+  [(set_attr "length" "4")
+   (set_attr "type" "mqshift")])
+
+(define_insn "mqsrahi"
+  [(set (match_operand:DI 0 "even_fpr_operand" "=h")
+        (unspec:DI [(match_operand:DI 1 "even_fpr_operand" "h")
+		    (match_operand:SI 2 "int6_operand" "I")]
+		   UNSPEC_MQSRAHI))]
+  "TARGET_MEDIA_FR450"
+  "mqsrahi %1, %2, %0"
+  [(set_attr "length" "4")
+   (set_attr "type" "mqshift")])
+
 ;; Set hi/lo instructions: type "mset"
 
 (define_insn "mhsetlos"
@@ -7875,3 +8199,147 @@
 
   DONE;
 }")
+
+(define_constants
+  [
+   (UNSPEC_SMUL			154)
+   (UNSPEC_UMUL			155)
+   (UNSPEC_SMU			156)
+   (UNSPEC_ADDSS		157)
+   (UNSPEC_SUBSS		158)
+   (UNSPEC_SLASS		159)
+   (UNSPEC_SCAN			160)
+   (UNSPEC_INTSS                161)
+   (UNSPEC_SCUTSS		162)
+   (UNSPEC_PREFETCH0		163)
+   (UNSPEC_PREFETCH		164)
+   (UNSPEC_IACCreadll		165)
+   (UNSPEC_IACCreadl		166)
+   (UNSPEC_IACCsetll		167)
+   (UNSPEC_IACCsetl		168)
+   (UNSPEC_SMASS		169)
+   (UNSPEC_SMSSS		170)
+   (UNSPEC_IMUL			171)
+
+   (IACC0_REG			171)
+])
+
+(define_insn "smul"
+  [(set (match_operand:DI 0 "integer_register_operand" "=d")
+        (unspec:DI [(match_operand:SI 1 "integer_register_operand" "d")
+		    (match_operand:SI 2 "integer_register_operand" "d")]
+		   UNSPEC_SMUL))]
+  ""
+  "smul %1, %2, %0"
+  [(set_attr "length" "4")
+   (set_attr "type" "mul")])
+
+(define_insn "umul"
+  [(set (match_operand:DI 0 "integer_register_operand" "=d")
+        (unspec:DI [(match_operand:SI 1 "integer_register_operand" "d")
+		    (match_operand:SI 2 "integer_register_operand" "d")]
+		   UNSPEC_UMUL))]
+  ""
+  "umul %1, %2, %0"
+  [(set_attr "length" "4")
+   (set_attr "type" "mul")])
+
+(define_insn "smass"
+  [(set (reg:DI IACC0_REG)
+	(unspec:DI [(match_operand:SI 0 "integer_register_operand" "d")
+		    (match_operand:SI 1 "integer_register_operand" "d")
+		    (reg:DI IACC0_REG)]
+		   UNSPEC_SMASS))]
+  "TARGET_FR405_BUILTINS"
+  "smass %1, %0"
+  [(set_attr "length" "4")
+   (set_attr "type" "macc")])
+
+(define_insn "smsss"
+  [(set (reg:DI IACC0_REG)
+	(unspec:DI [(match_operand:SI 0 "integer_register_operand" "d")
+		    (match_operand:SI 1 "integer_register_operand" "d")
+		    (reg:DI IACC0_REG)]
+		   UNSPEC_SMSSS))]
+  "TARGET_FR405_BUILTINS"
+  "smsss %1, %0"
+  [(set_attr "length" "4")
+   (set_attr "type" "macc")])
+
+(define_insn "smu"
+  [(set (reg:DI IACC0_REG)
+	(unspec:DI [(match_operand:SI 0 "integer_register_operand" "d")
+		    (match_operand:SI 1 "integer_register_operand" "d")]
+		   UNSPEC_SMU))]
+  "TARGET_FR405_BUILTINS"
+  "smu %1, %0"
+  [(set_attr "length" "4")
+   (set_attr "type" "macc")])
+
+(define_insn "addss"
+  [(set (match_operand:SI 0 "integer_register_operand" "=d")
+        (unspec:SI [(match_operand:SI 1 "integer_register_operand" "d")
+		    (match_operand:SI 2 "integer_register_operand" "d")]
+		   UNSPEC_ADDSS))]
+  "TARGET_FR405_BUILTINS"
+  "addss %1, %2, %0"
+  [(set_attr "length" "4")
+   (set_attr "type" "int")])
+
+(define_insn "subss"
+  [(set (match_operand:SI 0 "integer_register_operand" "=d")
+        (unspec:SI [(match_operand:SI 1 "integer_register_operand" "d")
+		    (match_operand:SI 2 "integer_register_operand" "d")]
+		   UNSPEC_SUBSS))]
+  "TARGET_FR405_BUILTINS"
+  "subss %1, %2, %0"
+  [(set_attr "length" "4")
+   (set_attr "type" "int")])
+
+(define_insn "slass"
+  [(set (match_operand:SI 0 "integer_register_operand" "=d")
+        (unspec:SI [(match_operand:SI 1 "integer_register_operand" "d")
+		    (match_operand:SI 2 "integer_register_operand" "d")]
+		   UNSPEC_SLASS))]
+  "TARGET_FR405_BUILTINS"
+  "slass %1, %2, %0"
+  [(set_attr "length" "4")
+   (set_attr "type" "int")])
+
+(define_insn "scan"
+  [(set (match_operand:SI 0 "integer_register_operand" "=d")
+        (unspec:SI [(match_operand:SI 1 "integer_register_operand" "d")
+		    (match_operand:SI 2 "integer_register_operand" "d")]
+		   UNSPEC_SCAN))]
+  ""
+  "scan %1, %2, %0"
+  [(set_attr "length" "4")
+   (set_attr "type" "scan")])
+
+(define_insn "scutss"
+  [(set (match_operand:SI 0 "integer_register_operand" "=d")
+	(unspec:SI [(match_operand:SI 1 "integer_register_operand" "d")
+		    (reg:DI IACC0_REG)]
+		   UNSPEC_SCUTSS))]
+  "TARGET_FR405_BUILTINS"
+  "scutss %1,%0"
+  [(set_attr "length" "4")
+   (set_attr "type" "cut")])
+
+(define_insn "frv_prefetch0"
+  [(prefetch (unspec:SI [(match_operand:SI 0 "register_operand" "r")]
+			UNSPEC_PREFETCH0)
+	     (const_int 0)
+	     (const_int 0))]
+  ""
+  "dcpl %0, gr0, #0"
+  [(set_attr "length" "4")])
+
+(define_insn "frv_prefetch"
+  [(prefetch (unspec:SI [(match_operand:SI 0 "register_operand" "r")]
+			UNSPEC_PREFETCH)
+	     (const_int 0)
+	     (const_int 0))]
+  "TARGET_FR500_FR550_BUILTINS"
+  "nop.p\\n\\tnldub @(%0, gr0), gr0"
+  [(set_attr "length" "8")])
