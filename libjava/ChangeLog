@@ -1,5 +1,11 @@
 2003-10-11  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/rmi/server/ProtocolConstants.java,
+	gnu/java/security/der/DER.java:
+	Removing redundant modifiers.
+
+2003-10-11  Michael Koch  <konqueror@gmx.de>
+
 	* java/util/Map.java,
 	java/util/Observer.java,
 	java/util/zip/Checksum.java,
