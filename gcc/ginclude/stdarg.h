@@ -35,7 +35,7 @@
 #ifdef __alpha__
 #include <va-alpha.h>
 #else
-#if defined (__H8300__) || defined (__H8300H__)
+#if defined (__H8300__) || defined (__H8300H__) || defined (__H8300S__)
 #include <va-h8300.h>
 #else
 #if defined (__PPC__) && defined (_CALL_SYSV)
