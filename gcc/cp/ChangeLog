@@ -1,3 +1,17 @@
+1998-11-24  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* class.c (add_method): Build up OVERLOADs properly for conversion ops.
+	* search.c (lookup_conversions): Handle getting real OVERLOADs.
+	(add_conversions): Likewise.  Revert last change.
+	* call.c (add_conv_candidate): Pass totype to add_candidate instead
+	of fn.  Don't add a new candidate if the last one was for the same 
+	type.
+	(print_z_candidates): Handle getting a type as a function.
+	(joust): If we got two conversion candidates to the same type, 
+	just pick one.
+	(build_object_call): Lose 'templates'.
+	(build_user_type_conversion_1): Handle getting real OVERLOADs.
+
 1998-11-23  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* typeck2.c (process_init_constructor): If there are elements
