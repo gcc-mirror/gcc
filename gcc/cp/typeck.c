@@ -2532,8 +2532,12 @@ convert_arguments (tree typelist, tree values, tree fndecl, int flags)
 
 	  if (!COMPLETE_TYPE_P (complete_type (type)))
 	    {
-	      error ("parameter type of called function is incomplete");
-	      parmval = val;
+	      if (fndecl)
+		error ("parameter %P of `%D' has incomplete type `%T'",
+		       i, fndecl, type);
+	      else
+		error ("parameter %P has incomplete type `%T'", i, type);
+	      parmval = error_mark_node;
 	    }
 	  else
 	    {
