@@ -2028,7 +2028,7 @@ regmove_profitable_p ()
 	       we find a machine where this occurs and regmove should
 	       be enabled.  */
 	    break;
-	  if (find_matches (pat, &match) >= 0)
+	  if (find_matches (pat, &match))
 	    return 1;
 	  break;
 	}
