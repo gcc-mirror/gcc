@@ -1,3 +1,8 @@
+Wed Nov 19 14:27:04 1997  Michael Meissner  <meissner@cygnus.com>
+
+	* execute/950221-1.c (filler): If STACK_SIZE is defined, use that
+	to size the filler array.
+
 Wed Sep  3 17:29:35 1997  Bob Manson  <manson@charmed.cygnus.com>
 
 	* execute/ieee/ieee.exp: Check for ieee_multilib_flags target
