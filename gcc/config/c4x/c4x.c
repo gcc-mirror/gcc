@@ -1074,20 +1074,6 @@ c4x_emit_move_sequence (operands, mode)
 	 constants...  */
       op1 = force_const_mem (mode, op1);
     }
-  else if (mode == QImode && CONSTANT_P (op1) && ! LEGITIMATE_CONSTANT_P (op1))
-    {
-      /* We shouldn't need this test if only emit_move_insn was called.
-	 However, some routines call gen_move_insn which doesn't check that
-	 the constants are legitimate.  */
-      op1 = force_const_mem (mode, op1);
-    }
-  else if (mode == HImode && CONSTANT_P (op1) && ! LEGITIMATE_CONSTANT_P (op1))
-    {
-      /* We could load all sorts of constants in two goes by pulling all
-	 sorts of tricks... The tricky thing is that we cannot clobber CC
-	 so that stifles most of the obvious methods.  */
-      op1 = force_const_mem (mode, op1);
-    }
 
   /* Convert (MEM (SYMREF)) to a (MEM (LO_SUM (REG) (SYMREF)))
      and emit associated (HIGH (SYMREF)) if large memory model.  
@@ -2259,6 +2245,27 @@ c4x_immed_float_constant (op)
 
 
 int
+c4x_shiftable_constant (op)
+     rtx op;
+{
+  int i;
+  int mask;
+  int val = INTVAL (op);
+
+  for (i = 0; i < 16; i++)
+    {
+      if (val & (1 << i))
+	break;
+    }
+  mask = ((0xffff >> i) << 16) | 0xffff;
+  if (IS_INT16_CONST (val & 0x80000000 ? (val >> i) | ~mask
+				       : (val >> i) & mask))
+    return i;
+  return -1;
+} 
+
+
+int
 c4x_H_constant (op)
      rtx op;
 {
@@ -2760,7 +2767,7 @@ reg_operand (op, mode)
 int
 mixed_subreg_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   /* Allow (subreg:HF (reg:HI)) that be generated for a union of an
      int and a long double.  */

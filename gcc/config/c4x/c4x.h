@@ -1675,7 +1675,7 @@ extern struct rtx_def *c4x_legitimize_reload_address ();
 
 #define LEGITIMATE_CONSTANT_P(X)				\
   ((GET_CODE (X) == CONST_DOUBLE && c4x_H_constant (X))		\
-  || (GET_CODE (X) == CONST_INT && c4x_I_constant (X))		\
+  || (GET_CODE (X) == CONST_INT)				\
   || (GET_CODE (X) == SYMBOL_REF)				\
   || (GET_CODE (X) == LABEL_REF)				\
   || (GET_CODE (X) == CONST)					\
@@ -2749,6 +2749,8 @@ extern int par_ind_operand ();
 extern int not_rc_reg ();
 
 extern int not_modify_reg ();
+
+extern int c4x_shiftable_constant ();
 
 extern int c4x_H_constant ();
 

@@ -1130,17 +1130,117 @@
   "")
 
 (define_split
-  [(set (match_operand:QI 0 "std_reg_operand" "")
+  [(set (match_operand:QI 0 "reg_operand" "")
 	(match_operand:QI 1 "const_int_operand" ""))]
   "! TARGET_C3X
-   && (INTVAL (operands[1]) & ~0xffff) != 0
-   && (INTVAL (operands[1]) & 0xffff) != 0"
+   && ! IS_INT16_CONST (INTVAL (operands[1]))
+   && ! IS_HIGH_CONST (INTVAL (operands[1]))
+   && reload_completed
+   && std_reg_operand (operands[0], QImode)"
   [(set (match_dup 0) (match_dup 2))
    (set (match_dup 0) (ior:QI (match_dup 0) (match_dup 3)))]
   "
 {
    operands[2] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[1]) & ~0xffff);
    operands[3] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[1]) & 0xffff);
+}")
+
+(define_split
+  [(set (match_operand:QI 0 "reg_operand" "")
+	(match_operand:QI 1 "const_int_operand" ""))]
+  "TARGET_C3X && ! TARGET_SMALL
+   && ! IS_INT16_CONST (INTVAL (operands[1]))
+   && reload_completed
+   && std_reg_operand (operands[0], QImode)
+   && c4x_shiftable_constant (operands[1]) < 0"
+  [(set (match_dup 0) (match_dup 2))
+   (set (match_dup 0) (ashift:QI (match_dup 0) (match_dup 4)))
+   (set (match_dup 0) (ior:QI (match_dup 0) (match_dup 3)))]
+  "
+{
+   /* Generate two's complement value of 16 MSBs.  */
+   operands[2] = gen_rtx (CONST_INT, VOIDmode,
+			  (((INTVAL (operands[1]) >> 16) & 0xffff)
+			   - 0x8000) ^ ~0x7fff);
+   operands[3] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[1]) & 0xffff);
+   operands[4] = gen_rtx (CONST_INT, VOIDmode, 16);
+}")
+
+(define_split
+  [(set (match_operand:QI 0 "reg_operand" "")
+	(match_operand:QI 1 "const_int_operand" ""))]
+  "TARGET_C3X
+   && ! IS_INT16_CONST (INTVAL (operands[1]))
+   && reload_completed
+   && std_reg_operand (operands[0], QImode)
+   && c4x_shiftable_constant (operands[1]) >= 0"
+  [(set (match_dup 0) (match_dup 2))
+   (set (match_dup 0) (ashift:QI (match_dup 0) (match_dup 3)))]
+  "
+{
+   /* Generate two's complement value of MSBs.  */
+   int shift = c4x_shiftable_constant (operands[1]);
+
+   operands[2] = gen_rtx (CONST_INT, VOIDmode,
+			  (((INTVAL (operands[1]) >> shift) & 0xffff)
+			   - 0x8000) ^ ~0x7fff);
+   operands[3] = gen_rtx (CONST_INT, VOIDmode, shift);
+}")
+
+(define_split
+  [(set (match_operand:QI 0 "reg_operand" "")
+	(match_operand:QI 1 "const_int_operand" ""))]
+  "! TARGET_SMALL
+   && ! IS_INT16_CONST (INTVAL (operands[1]))
+   && ! IS_HIGH_CONST (INTVAL (operands[1]))
+   && reload_completed
+   && ! std_reg_operand (operands[0], QImode)"
+  [(set (match_dup 2) (high:QI (match_dup 3)))
+   (set (match_dup 0) (match_dup 4))
+   (use (match_dup 1))]
+  "
+{
+   rtx dp_reg = gen_rtx_REG (Pmode, DP_REGNO);
+   operands[2] = dp_reg;
+   operands[3] = force_const_mem (Pmode, operands[1]);
+   operands[4] = change_address (operands[3], QImode,
+			         gen_rtx_LO_SUM (Pmode, dp_reg,
+                                                 XEXP (operands[3], 0)));
+   operands[3] = XEXP (operands[3], 0);
+}")
+
+(define_split
+  [(set (match_operand:QI 0 "reg_operand" "")
+	(match_operand:QI 1 "const_int_operand" ""))]
+  "TARGET_SMALL
+   && ! IS_INT16_CONST (INTVAL (operands[1]))
+   && ! IS_HIGH_CONST (INTVAL (operands[1]))
+   && reload_completed
+   && (TARGET_C3X && c4x_shiftable_constant (operands[1]) < 0
+       || ! std_reg_operand (operands[0], QImode))"
+  [(set (match_dup 0) (match_dup 2))
+   (use (match_dup 1))]
+  "
+{
+   rtx dp_reg = gen_rtx_REG (Pmode, DP_REGNO);
+   operands[2] = force_const_mem (Pmode, operands[1]);
+   operands[2] = change_address (operands[2], QImode,
+			         gen_rtx_LO_SUM (Pmode, dp_reg,
+                                                 XEXP (operands[2], 0)));
+}")
+
+(define_split
+  [(set (match_operand:HI 0 "reg_operand" "")
+	(match_operand:HI 1 "const_int_operand" ""))]
+  "reload_completed"
+  [(set (match_dup 2) (match_dup 4))
+   (set (match_dup 3) (match_dup 5))]
+  "
+{
+   operands[2] = c4x_operand_subword (operands[0], 0, 1, HImode);
+   operands[3] = c4x_operand_subword (operands[0], 1, 1, HImode);
+   operands[4] = c4x_operand_subword (operands[1], 0, 1, HImode);
+   operands[5] = c4x_operand_subword (operands[1], 1, 1, HImode);
 }")
 
 ; CC has been selected to load a symbolic address.  We force the address
@@ -1189,7 +1289,14 @@
 (define_insn "load_immed_address"
   [(set (match_operand:QI 0 "reg_operand" "=a?x?c*r")
         (match_operand:QI 1 "symbolic_address_operand" ""))]
-   "TARGET_LOAD_ADDRESS"
+  "TARGET_LOAD_ADDRESS"
+  "#"
+  [(set_attr "type" "multi")])
+
+(define_insn "loadhi_big_constant"
+  [(set (match_operand:HI 0 "reg_operand" "=c*d")
+        (match_operand:HI 1 "const_int_operand" ""))]
+  ""
   "#"
   [(set_attr "type" "multi")])
 
@@ -1206,6 +1313,14 @@
   "! TARGET_C3X"
   "stik\\t%1,%0"
   [(set_attr "type" "store")])
+
+(define_insn "loadqi_big_constant"
+  [(set (match_operand:QI 0 "reg_operand" "=c*d")
+        (match_operand:QI 1 "const_int_operand" ""))]
+  "! IS_INT16_CONST (INTVAL (operands[1]))
+   && ! IS_HIGH_CONST (INTVAL (operands[1]))"
+  "#"
+  [(set_attr "type" "multi")])
 
 ; We must provide an alternative to store to memory in case we have to
 ; spill a register.
@@ -2515,6 +2630,19 @@
    ash3\\t%2,%1,%0"
   [(set_attr "type" "binarycc,binarycc,binarycc")])
 ; Default to int16 data attr.
+
+(define_insn "ashlqi3_noclobber"
+  [(set (match_operand:QI 0 "std_reg_operand" "=c,c,?c")
+        (ashift:QI (match_operand:QI 1 "src_operand" "0,rR,rS<>")
+                   (match_operand:QI 2 "src_operand" "rIm,JR,rS<>")))]
+  "valid_operands (ASHIFT, operands, QImode)"
+  "@
+   ash\\t%2,%0
+   ash3\\t%2,%1,%0
+   ash3\\t%2,%1,%0"
+  [(set_attr "type" "binary,binary,binary")])
+; Default to int16 data attr.
+
 
 ; This is only used by lshrhi3_reg where we need a LSH insn that will
 ; shift both ways.
