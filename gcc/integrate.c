@@ -1301,8 +1301,7 @@ copy_for_inline (orig)
    with a function called from note_stores.  Be *very* careful that this
    is used properly in the presence of recursion.  */
 
-rtx *global_const_equiv_map;
-int global_const_equiv_map_size;
+varray_type global_const_equiv_varray;
 
 #define FIXED_BASE_PLUS_P(X) \
   (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 1)) == CONST_INT	\
@@ -1332,12 +1331,8 @@ process_reg_param (map, loc, copy)
     {
       rtx temp = copy_to_mode_reg (GET_MODE (loc), copy);
       REG_USERVAR_P (temp) = REG_USERVAR_P (loc);
-      if ((CONSTANT_P (copy) || FIXED_BASE_PLUS_P (copy))
-	  && REGNO (temp) < map->const_equiv_map_size)
-	{
-	  map->const_equiv_map[REGNO (temp)] = copy;
-	  map->const_age_map[REGNO (temp)] = CONST_AGE_PARM;
-	}
+      if (CONSTANT_P (copy) || FIXED_BASE_PLUS_P (copy))
+	SET_CONST_EQUIV_DATA (map, temp, copy, CONST_AGE_PARM);
       copy = temp;
     }
   map->reg_map[REGNO (loc)] = copy;
@@ -1392,7 +1387,7 @@ expand_inline_function (fndecl, parms, target, ignore, type,
   rtx loc;
   rtx stack_save = 0;
   rtx temp;
-  struct inline_remap *map;
+  struct inline_remap *map = 0;
 #ifdef HAVE_cc0
   rtx cc0_insn = 0;
 #endif
@@ -1554,30 +1549,25 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 
   map->integrating = 1;
 
-  /* const_equiv_map maps pseudos in our routine to constants, so it needs to
-     be large enough for all our pseudos.  This is the number we are currently
-     using plus the number in the called routine, plus 15 for each arg,
-     five to compute the virtual frame pointer, and five for the return value.
-     This should be enough for most cases.  We do not reference entries
-     outside the range of the map.
+  /* const_equiv_varray maps pseudos in our routine to constants, so
+     it needs to be large enough for all our pseudos.  This is the
+     number we are currently using plus the number in the called
+     routine, plus 15 for each arg, five to compute the virtual frame
+     pointer, and five for the return value.  This should be enough
+     for most cases.  We do not reference entries outside the range of
+     the map.
 
      ??? These numbers are quite arbitrary and were obtained by
      experimentation.  At some point, we should try to allocate the
      table after all the parameters are set up so we an more accurately
      estimate the number of pseudos we will need.  */
 
-  map->const_equiv_map_size
-    = max_reg_num () + (max_regno - FIRST_PSEUDO_REGISTER) + 15 * nargs + 10;
-
-  map->const_equiv_map
-    = (rtx *)alloca (map->const_equiv_map_size * sizeof (rtx));
-  bzero ((char *) map->const_equiv_map,
-	 map->const_equiv_map_size * sizeof (rtx));
-
-  map->const_age_map
-    = (unsigned *)alloca (map->const_equiv_map_size * sizeof (unsigned));
-  bzero ((char *) map->const_age_map,
-	 map->const_equiv_map_size * sizeof (unsigned));
+  VARRAY_CONST_EQUIV_INIT (map->const_equiv_varray,
+			   (max_reg_num ()
+			    + (max_regno - FIRST_PSEUDO_REGISTER)
+			    + 15 * nargs
+			    + 10),
+			   "expand_inline_function");
   map->const_age = 0;
 
   /* Record the current insn in case we have to set up pointers to frame
@@ -1646,12 +1636,8 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 	  if (GET_CODE (copy) != REG)
 	    {
 	      temp = copy_addr_to_reg (copy);
-	      if ((CONSTANT_P (copy) || FIXED_BASE_PLUS_P (copy))
-		  && REGNO (temp) < map->const_equiv_map_size)
-		{
-		  map->const_equiv_map[REGNO (temp)] = copy;
-		  map->const_age_map[REGNO (temp)] = CONST_AGE_PARM;
-		}
+	      if (CONSTANT_P (copy) || FIXED_BASE_PLUS_P (copy))
+		SET_CONST_EQUIV_DATA (map, temp, copy, CONST_AGE_PARM);
 	      copy = temp;
 	    }
 	  map->reg_map[REGNO (XEXP (loc, 0))] = copy;
@@ -1751,17 +1737,16 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 	      temp = force_reg (Pmode, temp);
 	      map->reg_map[REGNO (XEXP (loc, 0))] = temp;
 
-	      if ((CONSTANT_P (structure_value_addr)
-		   || GET_CODE (structure_value_addr) == ADDRESSOF
-		   || (GET_CODE (structure_value_addr) == PLUS
-		       && (XEXP (structure_value_addr, 0)
-			   == virtual_stack_vars_rtx)
-		       && (GET_CODE (XEXP (structure_value_addr, 1))
-			   == CONST_INT)))
-		  && REGNO (temp) < map->const_equiv_map_size)
+	      if (CONSTANT_P (structure_value_addr)
+		  || GET_CODE (structure_value_addr) == ADDRESSOF
+		  || (GET_CODE (structure_value_addr) == PLUS
+		      && (XEXP (structure_value_addr, 0)
+			  == virtual_stack_vars_rtx)
+		      && (GET_CODE (XEXP (structure_value_addr, 1))
+			  == CONST_INT)))
 		{
-		  map->const_equiv_map[REGNO (temp)] = structure_value_addr;
-		  map->const_age_map[REGNO (temp)] = CONST_AGE_PARM;
+		  SET_CONST_EQUIV_DATA (map, temp, structure_value_addr,
+					CONST_AGE_PARM);
 		}
 	    }
 	  else
@@ -1864,10 +1849,9 @@ expand_inline_function (fndecl, parms, target, ignore, type,
   /* Clean up stack so that variables might have smaller offsets.  */
   do_pending_stack_adjust ();
 
-  /* Save a copy of the location of const_equiv_map for mark_stores, called
-     via note_stores.  */
-  global_const_equiv_map = map->const_equiv_map;
-  global_const_equiv_map_size = map->const_equiv_map_size;
+  /* Save a copy of the location of const_equiv_varray for
+     mark_stores, called via note_stores.  */
+  global_const_equiv_varray = map->const_equiv_varray;
 
   /* If the called function does an alloca, save and restore the
      stack pointer around the call.  This saves stack space, but
@@ -2051,7 +2035,7 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 
 	  /* Be lazy and assume CALL_INSNs clobber all hard registers.  */
 	  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	    map->const_equiv_map[i] = 0;
+	    VARRAY_CONST_EQUIV (map->const_equiv_varray, i).rtx = 0;
 	  break;
 
 	case CODE_LABEL:
@@ -2186,6 +2170,8 @@ expand_inline_function (fndecl, parms, target, ignore, type,
   /* Make sure we free the things we explicitly allocated with xmalloc.  */
   if (real_label_map)
     free (real_label_map);
+  if (map)
+    VARRAY_FREE (map->const_equiv_varray);
 
   return target;
 }
@@ -2389,11 +2375,7 @@ copy_rtx_and_substitute (orig, map)
 				STACK_BOUNDARY / BITS_PER_UNIT);
 #endif
 
-	      if (REGNO (temp) < map->const_equiv_map_size)
-		{
-		  map->const_equiv_map[REGNO (temp)] = loc;
-		  map->const_age_map[REGNO (temp)] = CONST_AGE_PARM;
-		}
+	      SET_CONST_EQUIV_DATA (map, temp, loc, CONST_AGE_PARM);
 
 	      seq = gen_sequence ();
 	      end_sequence ();
@@ -2424,11 +2406,7 @@ copy_rtx_and_substitute (orig, map)
 				STACK_BOUNDARY / BITS_PER_UNIT);
 #endif
 
-	      if (REGNO (temp) < map->const_equiv_map_size)
-		{
-		  map->const_equiv_map[REGNO (temp)] = loc;
-		  map->const_age_map[REGNO (temp)] = CONST_AGE_PARM;
-		}
+	      SET_CONST_EQUIV_DATA (map, temp, loc, CONST_AGE_PARM);
 
 	      seq = gen_sequence ();
 	      end_sequence ();
@@ -2710,7 +2688,7 @@ copy_rtx_and_substitute (orig, map)
 
 	  copy_rtx_and_substitute (SET_DEST (orig), map);
 	  equiv_reg = map->reg_map[REGNO (SET_DEST (orig))];
-	  equiv_loc = map->const_equiv_map[REGNO (equiv_reg)];
+	  equiv_loc = VARRAY_CONST_EQUIV (map->const_equiv_varray, REGNO (equiv_reg)).rtx;
 	  loc_offset
 	    = GET_CODE (equiv_loc) == REG ? 0 : INTVAL (XEXP (equiv_loc, 1));
 	  return gen_rtx_SET (VOIDmode, SET_DEST (orig),
@@ -2836,16 +2814,15 @@ try_constants (insn, map)
 	{
 	  int regno = REGNO (map->equiv_sets[i].dest);
 
-	  if (regno < map->const_equiv_map_size
-	      && (map->const_equiv_map[regno] == 0
-		  /* Following clause is a hack to make case work where GNU C++
-		     reassigns a variable to make cse work right.  */
-		  || ! rtx_equal_p (map->const_equiv_map[regno],
-				    map->equiv_sets[i].equiv)))
-	    {
-	      map->const_equiv_map[regno] = map->equiv_sets[i].equiv;
-	      map->const_age_map[regno] = map->const_age;
-	    }
+	  MAYBE_EXTEND_CONST_EQUIV_VARRAY (map, regno);
+	  if (VARRAY_CONST_EQUIV (map->const_equiv_varray, regno).rtx == 0
+	      /* Following clause is a hack to make case work where GNU C++
+		 reassigns a variable to make cse work right.  */
+	      || ! rtx_equal_p (VARRAY_CONST_EQUIV (map->const_equiv_varray,
+						    regno).rtx,
+				map->equiv_sets[i].equiv))
+	    SET_CONST_EQUIV_DATA (map, map->equiv_sets[i].dest,
+				  map->equiv_sets[i].equiv, map->const_age);
 	}
       else if (map->equiv_sets[i].dest == pc_rtx)
 	map->last_pc_value = map->equiv_sets[i].equiv;
@@ -2915,12 +2892,14 @@ subst_constants (loc, insn, map)
 	 hard regs used as user variables with constants.  */
       {
 	int regno = REGNO (x);
+	struct const_equiv_data *p;
 
 	if (! (regno < FIRST_PSEUDO_REGISTER && REG_USERVAR_P (x))
-	    && regno < map->const_equiv_map_size
-	    && map->const_equiv_map[regno] != 0
-	    && map->const_age_map[regno] >= map->const_age)
-	  validate_change (insn, loc, map->const_equiv_map[regno], 1);
+	    && regno < VARRAY_SIZE (map->const_equiv_varray)
+	    && (p = &VARRAY_CONST_EQUIV (map->const_equiv_varray, regno),
+		p->rtx != 0)
+	    && p->age >= map->const_age)
+	  validate_change (insn, loc, p->rtx, 1);
 	return;
       }
 
@@ -3163,8 +3142,8 @@ mark_stores (dest, x)
       if (regno != VIRTUAL_INCOMING_ARGS_REGNUM
 	  && regno != VIRTUAL_STACK_VARS_REGNUM)
 	for (i = regno; i <= last_reg; i++)
-	  if (i < global_const_equiv_map_size)
-	    global_const_equiv_map[i] = 0;
+	  if (i < VARRAY_SIZE (global_const_equiv_varray))
+	    VARRAY_CONST_EQUIV (global_const_equiv_varray, i).rtx = 0;
     }
 }
 

@@ -1,3 +1,39 @@
+Mon Feb  1 15:00:02 1999  Ken Raeburn  <raeburn@cygnus.com>
+
+	Use varrays for constant-equivalence data:
+
+	* varray.h (struct const_equiv_data): New type.
+	(union varray_data_tag): New element const_equiv.
+	(VARRAY_CONST_EQUIV_INIT, VARRAY_CONST_EQUIV): New macros.
+	(VARRAY_SIZE): New macro, returns number of elements.
+	* integrate.h: Include varray.h.
+	(struct inline_remap): Replace const_equiv_map, const_age_map and
+	const_equiv_map_size with a const_equiv_varray element.
+	(MAYBE_EXTEND_CONST_EQUIV_VARRAY): New macro; grows varray if
+	needed.
+	(SET_CONST_EQUIV_DATA): New macro; sets rtx and age fields
+	simultaneously, growing the varray if needed.
+
+	* integrate.c (global_const_equiv_map,
+	global_const_equiv_map_size): Deleted, replaced by....
+	(global_const_equiv_varray): New variable.
+	(expand_inline_function): References changed.
+	* integrate.h: Update declarations.
+
+	* integrate.c (process_reg_parm, expand_inline_function,
+	copy_rtx_and_substitute, try_constants, subst_constants,
+	mark_stores): Use varray allocation and accessor macros, new
+	integrate.h macros, and global_const_equiv_varray.  Don't
+	conditionalize non-NULL stores on array size; instead, expand the
+	array as needed.
+	* unroll.c (unroll_loop): Likewise.
+
+	* unroll.c (unroll_loop): Initialize const_equiv_varray element to
+	zero.  After allocating varray, always exit through bottom of
+	function, where it can be deallocated if needed.  Don't explicitly
+	reallocate const_equiv_map storage; instead, just ensure the
+	varray has been initialized, and update the global reference.
+
 Mon Feb  1 09:40:25 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* system.h (inline, const): Handle these for stage2 (and later) gcc.
