@@ -1337,7 +1337,10 @@ alpha_expand_unaligned_load (tgt, mem, size, ofs, sign)
       emit_insn (gen_extxl (extl, meml, GEN_INT (64), addr));
       emit_insn (gen_extqh (exth, memh, addr));
 
-      addr = expand_binop (DImode, ior_optab, extl, exth, addr, 1, OPTAB_WIDEN);
+      /* We must use tgt here for the target.  Alpha-vms port fails if we use
+	 addr for the target, because addr is marked as a pointer and combine
+	 knows that pointers are always sign-extended 32 bit values.  */
+      addr = expand_binop (DImode, ior_optab, extl, exth, tgt, 1, OPTAB_WIDEN);
       addr = expand_binop (DImode, ashr_optab, addr, GEN_INT (48), 
 			   addr, 1, OPTAB_WIDEN);
     }

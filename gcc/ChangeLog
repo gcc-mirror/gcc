@@ -1,5 +1,8 @@
 Tue Mar 31 16:57:33 1998  Jim Wilson  <wilson@cygnus.com>
 
+	* alpha.c (alpha_expand_unaligned_load): Use tgt instead of addr
+	as dest of expand_binop call.
+
 	* alpha.md (extzv): Correct check for valid operand[2] values.
 
 	* profile.c (branch_prob): Add code to recognize HPPA tablejump entry
