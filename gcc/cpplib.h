@@ -110,8 +110,8 @@ typedef struct cpp_name cpp_name;
   C(CPP_OTHER,		0)	/* stray punctuation */ \
 \
   I(CPP_NAME,		0)	/* word */	\
-  N(CPP_INT,		0)	/* 23 */	\
-  N(CPP_FLOAT,		0)	/* 3.14159 */	\
+  I(CPP_INT,		0)	/* 23 */	\
+  I(CPP_FLOAT,		0)	/* 3.14159 */	\
   I(CPP_NUMBER,		0)	/* 34_be+ta  */	\
   S(CPP_CHAR,		0)	/* 'char' */	\
   S(CPP_WCHAR,		0)	/* L'char' */	\
@@ -151,7 +151,7 @@ enum cpp_ttype
 struct cpp_name
 {
   unsigned int len;
-  unsigned int offset;		/* from list->namebuf */
+  const unsigned char *text;
 };
 
 /* Accessor macros for token lists - all expect you have a
@@ -162,8 +162,7 @@ struct cpp_name
 #define TOK_AUX(l_, i_)    ((l_)->tokens[i_].aux)
 #define TOK_COL(l_, i_)    ((l_)->tokens[i_].col)
 #define TOK_INT(l_, i_)    ((l_)->tokens[i_].val.integer)
-#define TOK_OFFSET(l_, i_) ((l_)->tokens[i_].val.name.offset)
-#define TOK_NAME(l_, i_)   ((l_)->tokens[i_].val.name.offset + (l_)->namebuf)
+#define TOK_NAME(l_, i_)   ((l_)->tokens[i_].val.name.text)
 #define TOK_LEN(l_, i_)    ((l_)->tokens[i_].val.name.len)
 
 #define TOK_PREV_WHITE(l_, i_) (TOK_FLAGS(l_, i_) & PREV_WHITESPACE)

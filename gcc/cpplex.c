@@ -60,7 +60,7 @@ static void pedantic_whitespace	PARAMS ((cpp_reader *, U_CHAR *,
 					 unsigned int));
 
 #define auto_expand_name_space(list) \
-    expand_name_space ((list), (list)->name_cap / 2)
+    expand_name_space ((list), 1 + (list)->name_cap / 2)
 
 #ifdef NEW_LEXER
 
@@ -85,15 +85,15 @@ void _cpp_lex_line PARAMS ((cpp_reader *, cpp_toklist *));
 static void _cpp_output_list PARAMS ((cpp_reader *, cpp_toklist *));
 
 static unsigned char * spell_token PARAMS ((cpp_reader *, cpp_token *,
-					    cpp_toklist *, unsigned char *,
-					    int));
+					    unsigned char *, int));
 
 typedef unsigned int (* speller) PARAMS ((unsigned char *, cpp_toklist *,
 					  cpp_token *));
 
 /* Macros on a cpp_name.  */
 #define INIT_NAME(list, name) \
-  do {(name).len = 0; (name).offset = (list)->name_used;} while (0)
+  do {(name).len = 0; \
+      (name).text = (list)->namebuf + (list)->name_used;} while (0)
 
 #define IS_DIRECTIVE(list) (TOK_TYPE (list, 0) == CPP_HASH)
 #define COLUMN(cur) ((cur) - buffer->line_base)
@@ -114,32 +114,6 @@ typedef unsigned int (* speller) PARAMS ((unsigned char *, cpp_toklist *,
 #define IMMED_TOKEN() (!(cur_token->flags & PREV_WHITESPACE))
 #define PREV_TOKEN_TYPE (cur_token[-1].type)
 
-/* Order here matters.  Those beyond SPELL_NONE store their spelling
-   in the token list, and it's length in the token->val.name.len.  */
-#define SPELL_OPERATOR 0
-#define SPELL_CHAR     1
-#define SPELL_NONE     2
-#define SPELL_IDENT    3
-#define SPELL_STRING   4
-
-#define T(e, s) {SPELL_OPERATOR, s},
-#define I(e, s) {SPELL_IDENT, s},
-#define S(e, s) {SPELL_STRING, s},
-#define C(e, s) {SPELL_CHAR, s},
-#define N(e, s) {SPELL_NONE, s},
-
-static const struct token_spelling
-{
-  unsigned char type;
-  PTR  speller;
-} token_spellings [N_TTYPES + 1] = {TTYPE_TABLE {0, 0} };
-
-#undef T
-#undef I
-#undef S
-#undef C
-#undef N
-
 #define PUSH_TOKEN(ttype) cur_token++->type = ttype
 #define REVISE_TOKEN(ttype) cur_token[-1].type = ttype
 #define BACKUP_TOKEN(ttype) (--cur_token)->type = ttype
@@ -152,6 +126,32 @@ static const struct token_spelling
 		               SPELL_NONE ? token->val.name.len: 0))
 
 #endif
+
+/* Order here matters.  Those beyond SPELL_NONE store their spelling
+   in the token list, and it's length in the token->val.name.len.  */
+#define SPELL_OPERATOR 0
+#define SPELL_CHAR     2	/* FIXME: revert order after transition. */
+#define SPELL_NONE     1
+#define SPELL_IDENT    3
+#define SPELL_STRING   4
+
+#define T(e, s) {SPELL_OPERATOR, (const U_CHAR *) s},
+#define I(e, s) {SPELL_IDENT, s},
+#define S(e, s) {SPELL_STRING, s},
+#define C(e, s) {SPELL_CHAR, s},
+#define N(e, s) {SPELL_NONE, s},
+
+static const struct token_spelling
+{
+  U_CHAR type;
+  const U_CHAR *spelling;
+} token_spellings [N_TTYPES + 1] = {TTYPE_TABLE {0, 0} };
+
+#undef T
+#undef I
+#undef S
+#undef C
+#undef N
 
 /* Re-allocates PFILE->token_buffer so it will hold at least N more chars.  */
 
@@ -525,8 +525,23 @@ expand_name_space (list, len)
      cpp_toklist *list;
      unsigned int len;
 {
+  const U_CHAR *old_namebuf;
+  ptrdiff_t delta;
+
+  old_namebuf = list->namebuf;
   list->name_cap += len;
   list->namebuf = (unsigned char *) xrealloc (list->namebuf, list->name_cap);
+
+  /* Fix up token text pointers.  */
+  delta = list->namebuf - old_namebuf;
+  if (delta)
+    {
+      unsigned int i;
+
+      for (i = 0; i < list->tokens_used; i++)
+	if (token_spellings[list->tokens[i].type].type > SPELL_NONE)
+	  list->tokens[i].val.name.text += delta;
+    }
 }
 
 /* Expand the number of tokens in a list.  */
@@ -632,9 +647,14 @@ _cpp_scan_line (pfile, list)
 	break;
 
       TOK_LEN (list, i) = len;
-      TOK_OFFSET (list, i) = list->name_used;
-      memcpy (TOK_NAME (list, i), CPP_PWRITTEN (pfile), len);
-      list->name_used += len;
+      if (token_spellings[type].type > SPELL_NONE)
+	{
+	  memcpy (list->namebuf + list->name_used, CPP_PWRITTEN (pfile), len);
+	  TOK_NAME (list, i) = list->namebuf + list->name_used;
+	  list->name_used += len;
+	}
+      else
+	TOK_NAME (list, i) = token_spellings[type].spelling;
       i++;
       space_before = 0;
     }
@@ -2563,7 +2583,7 @@ parse_name (pfile, list, name)
 
  out:
   buffer->cur = cur;
-  name->len = namebuf - (list->namebuf + name->offset);
+  name->len = namebuf - name->text;
   list->name_used = namebuf - list->namebuf;
 }
 
@@ -2613,7 +2633,7 @@ parse_number (pfile, list, name)
   
  out:
   buffer->cur = cur;
-  name->len = namebuf - (list->namebuf + name->offset);
+  name->len = namebuf - name->text;
   list->name_used = namebuf - list->namebuf;
 }
 
@@ -2651,8 +2671,6 @@ parse_string2 (pfile, list, name, terminator)
 	null_count++;
       else if (c == terminator || IS_NEWLINE (c))
 	{
-	  unsigned char* name_start = list->namebuf + name->offset;
-
 	  /* Needed for trigraph_replace and multiline string warning.  */
 	  buffer->cur = cur;
 
@@ -2660,9 +2678,9 @@ parse_string2 (pfile, list, name, terminator)
 	  if (CPP_OPTION (pfile, trigraphs)
 	      || CPP_OPTION (pfile, warn_trigraphs))
 	    {
-	      namebuf = trigraph_replace (pfile, name_start + trigraphed_len,
+	      namebuf = trigraph_replace (pfile, name->text + trigraphed_len,
 					    namebuf);
-	      trigraphed_len = namebuf - 2 - (name_start + trigraphed_len);
+	      trigraphed_len = namebuf - 2 - (name->text + trigraphed_len);
 	      if (trigraphed_len < 0)
 		trigraphed_len = 0;
 	    }
@@ -2714,7 +2732,7 @@ parse_string2 (pfile, list, name, terminator)
 	      /* An odd number of consecutive backslashes represents
 		 an escaped terminator.  */
 	      temp = namebuf - 1;
-	      while (temp >= name_start && *temp == '\\')
+	      while (temp >= name->text && *temp == '\\')
 		temp--;
 
 	      if ((namebuf - temp) & 1)
@@ -2751,7 +2769,7 @@ parse_string2 (pfile, list, name, terminator)
   
  out:
   buffer->cur = cur;
-  name->len = namebuf - (list->namebuf + name->offset);
+  name->len = namebuf - name->text;
   list->name_used = namebuf - list->namebuf;
 
   if (null_count > 0)
@@ -2783,13 +2801,14 @@ save_comment (list, from, len, tok_no, type)
   if (list->name_used + len > list->name_cap)
     expand_name_space (list, len);
 
+  buffer = list->namebuf + list->name_used;
+
   comment = &list->comments[list->comments_used++];
   comment->type = CPP_COMMENT;
   comment->aux = tok_no;
   comment->val.name.len = len;
-  comment->val.name.offset = list->name_used;
+  comment->val.name.text = buffer;
 
-  buffer = list->namebuf + list->name_used;
   if (type == '*')
     {
       *buffer++ = '/';
@@ -2863,20 +2882,20 @@ _cpp_lex_line (pfile, list)
 	{
 	case '0': case '1': case '2': case '3': case '4':
 	case '5': case '6': case '7': case '8': case '9':
-	  /* Prepend an immediately previous CPP_DOT token.  */
+	  cur--;		/* Backup character.  */
 	  if (PREV_TOKEN_TYPE == CPP_DOT && IMMED_TOKEN ())
 	    {
+	      /* Prepend an immediately previous CPP_DOT token.  */
 	      cur_token--;
 	      if (list->name_cap == list->name_used)
 		auto_expand_name_space (list);
 
 	      cur_token->val.name.len = 1;
-	      cur_token->val.name.offset = list->name_used;
+	      cur_token->val.name.text = list->namebuf + list->name_used;
 	      list->namebuf[list->name_used++] = '.';
 	    }
 	  else
 	    INIT_NAME (list, cur_token->val.name);
-	  cur--;		/* Backup character.  */
 
 	continue_number:
 	  buffer->cur = cur;
@@ -2898,8 +2917,8 @@ _cpp_lex_line (pfile, list)
 	case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R':
 	case 'S': case 'T': case 'U': case 'V': case 'W': case 'X':
 	case 'Y': case 'Z':
-	  INIT_NAME (list, cur_token->val.name);
 	  cur--;		     /* Backup character.  */
+	  INIT_NAME (list, cur_token->val.name);
 	  cur_token->type = CPP_NAME; /* Identifier, macro etc.  */
 
 	continue_name:
@@ -2920,7 +2939,7 @@ _cpp_lex_line (pfile, list)
 	  /* Do we have a wide string?  */
 	  if (cur_token[-1].type == CPP_NAME && IMMED_TOKEN ()
 	      && cur_token[-1].val.name.len == 1
-	      && *(list->namebuf + cur_token[-1].val.name.offset) == 'L'
+	      && cur_token[-1].val.name.text[0] == 'L'
 	      && !CPP_TRADITIONAL (pfile))
 	    {
 	      /* No need for 'L' any more.  */
@@ -3006,9 +3025,10 @@ _cpp_lex_line (pfile, list)
 				 cur_token - 1 - list->tokens, c);
 		  cur = buffer->cur;
 
-		  cur_token -= 2;
+		  cur_token--;
 		  if (!CPP_OPTION (pfile, traditional))
 		    flags = PREV_WHITESPACE;
+		  break;
 		}
 	      else if (CPP_OPTION (pfile, cplusplus))
 		{
@@ -3249,6 +3269,7 @@ _cpp_lex_line (pfile, list)
 	  /* Fall through */
 	default:
 	  cur_token->aux = c;
+	  cur_token->val.name.len = 0; /* FIXME: needed for transition only */
 	  PUSH_TOKEN (CPP_OTHER);
 	  break;
 	}
@@ -3300,10 +3321,9 @@ _cpp_lex_line (pfile, list)
    to the character after the last character written.  */
 
 static unsigned char *
-spell_token (pfile, token, list, buffer, whitespace)
+spell_token (pfile, token, buffer, whitespace)
      cpp_reader *pfile;		/* Would be nice to be rid of this...  */
      cpp_token *token;
-     cpp_toklist *list;		/* FIXME: get rid of this...  */
      unsigned char *buffer;
      int whitespace;
 {
@@ -3323,7 +3343,7 @@ spell_token (pfile, token, list, buffer, whitespace)
 	if (token->flags & DIGRAPH)
 	  spelling = digraph_spellings[token->type - CPP_FIRST_DIGRAPH];
 	else
-	  spelling = token_spellings[token->type].speller;
+	  spelling = token_spellings[token->type].spelling;
 	
 	while ((c = *spelling++) != '\0')
 	  *buffer++ = c;
@@ -3331,8 +3351,7 @@ spell_token (pfile, token, list, buffer, whitespace)
       break;
 
     case SPELL_IDENT:
-      memcpy (buffer, list->namebuf + token->val.name.offset,
-	      token->val.name.len);
+      memcpy (buffer, token->val.name.text, token->val.name.len);
       buffer += token->val.name.len;
       break;
 
@@ -3346,8 +3365,7 @@ spell_token (pfile, token, list, buffer, whitespace)
 	if (token->type == CPP_STRING || token->type == CPP_WSTRING)
 	  c = '"';
 	*buffer++ = c;
-	memcpy (buffer, list->namebuf + token->val.name.offset,
-		token->val.name.len);
+	memcpy (buffer, token->val.name.text, token->val.name.len);
 	buffer += token->val.name.len;
 	*buffer++ = c;
       }
@@ -3420,7 +3438,7 @@ _cpp_output_list (pfile, list)
 	{
 	  /* Make space for the comment, and copy it out.  */
 	  CPP_RESERVE (pfile, TOKEN_LEN (comment));
-	  pfile->limit = spell_token (pfile, comment, list, pfile->limit, 0);
+	  pfile->limit = spell_token (pfile, comment, pfile->limit, 0);
 
 	  /* Stop if no comments left, or no more comments appear
              before the current token.  */
@@ -3431,7 +3449,7 @@ _cpp_output_list (pfile, list)
 	}
 
       CPP_RESERVE (pfile, TOKEN_LEN (token));
-      pfile->limit = spell_token (pfile, token, list, pfile->limit, 1);
+      pfile->limit = spell_token (pfile, token, pfile->limit, 1);
     }
   while (token++->type != CPP_VSPACE);
 }
