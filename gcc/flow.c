@@ -1197,6 +1197,8 @@ record_active_eh_regions (f)
 	{
 	  bb->eh_end = (eh_list ? NOTE_EH_HANDLER (XEXP (eh_list, 0)) : -1);
 	  i += 1;
+	  if (i == n_basic_blocks)
+	    break;
 	  bb = BASIC_BLOCK (i);
 	}
     }
