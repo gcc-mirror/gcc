@@ -895,7 +895,6 @@ case "${target}" in
   powerpc-*-aix*)
     # copied from rs6000-*-* entry
     noconfigdirs="$noconfigdirs gprof cvssrc target-libgloss ${libgcj}"
-    use_gnu_ld=yes
     ;;
   powerpc*-*-winnt* | powerpc*-*-pe* | ppc*-*-pe)
     target_configdirs="$target_configdirs target-winsup"
@@ -922,7 +921,6 @@ case "${target}" in
     ;;
   rs6000-*-aix*)
     noconfigdirs="$noconfigdirs gprof ${libgcj}"
-    use_gnu_ld=yes
     ;;
   rs6000-*-*)
     noconfigdirs="$noconfigdirs gprof ${libgcj}"
