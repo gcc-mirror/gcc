@@ -583,7 +583,7 @@ cp_build_qualified_type_real (type, type_quals, complain)
 
       t = TYPE_PTRMEMFUNC_FN_TYPE (type);
       t = cp_build_qualified_type_real (t, type_quals, complain);
-      return build_qualified_type (build_ptrmemfunc_type (t), type_quals);
+      return build_ptrmemfunc_type (t);
     }
 
   /* Retrieve (or create) the appropriately qualified variant.  */

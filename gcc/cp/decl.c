@@ -8810,6 +8810,7 @@ build_ptrmemfunc_type (type)
   tree fields[4];
   tree t;
   tree u;
+  tree unqualified_variant = NULL_TREE;
 
   /* If a canonical type already exists for this type, use it.  We use
      this method instead of type_hash_canon, because it only does a
@@ -8817,6 +8818,12 @@ build_ptrmemfunc_type (type)
 
   if ((t = TYPE_GET_PTRMEMFUNC_TYPE (type)))
     return t;
+
+  /* Make sure that we always have the unqualified pointer-to-member
+     type first.  */
+  if (CP_TYPE_QUALS (type) != TYPE_UNQUALIFIED)
+    unqualified_variant 
+      = build_ptrmemfunc_type (TYPE_MAIN_VARIANT (type));
 
   push_obstacks (TYPE_OBSTACK (type), TYPE_OBSTACK (type));
 
@@ -8848,10 +8855,25 @@ build_ptrmemfunc_type (type)
      information for this anonymous RECORD_TYPE.  */
   TYPE_NAME (t) = NULL_TREE;
 
+  /* If this is not the unqualified form of this pointer-to-member
+     type, set the TYPE_MAIN_VARIANT for this type to be the
+     unqualified type.  Since they are actually RECORD_TYPEs that are
+     not variants of each other, we must do this manually.  */
+  if (CP_TYPE_QUALS (type) != TYPE_UNQUALIFIED)
+    {
+      t = build_qualified_type (t, CP_TYPE_QUALS (type));
+      TYPE_MAIN_VARIANT (t) = unqualified_variant;
+      TYPE_NEXT_VARIANT (t) = TYPE_NEXT_VARIANT (unqualified_variant);
+      TYPE_NEXT_VARIANT (unqualified_variant) = t;
+    }
+
+  /* Cache this pointer-to-member type so that we can find it again
+     later.  */
   TYPE_SET_PTRMEMFUNC_TYPE (type, t);
 
   /* Seems to be wanted.  */
   CLASSTYPE_GOT_SEMICOLON (t) = 1;
+
   return t;
 }
 

@@ -1,3 +1,9 @@
+1999-08-09  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (build_ptrmemfunc_type): Handle qualified
+	pointer-to-member types here.
+	* tree.c (cp_build_qualified_type_real): Simplify handling here.
+
 1999-08-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
         * decl.c: Remove redundant prototype for `print_error_function'.
