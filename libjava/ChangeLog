@@ -1,5 +1,17 @@
 2003-03-02  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/HttpURLConnection.java
+	(HTTP_SERVER_ERROR): Deprecated.
+	* java/net/MulticastSocket.java
+	(send): Replaced checkMulticast with appropriate checkPermission call,
+	deprecated.
+	* java/net/URLDecoder.java
+	(decode): Deprecated.
+	* java/net/URLEncoder.java
+	(encode): Deprecated.
+
+2003-03-02  Michael Koch  <konqueror@gmx.de>
+
 	* javax/swing/text/Caret.java
 	(getMagicCaretPosition): Fixed typo in method name.
 	* javax/swing/text/DefaultCaret.java

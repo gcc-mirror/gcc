@@ -71,6 +71,8 @@ public class URLEncoder
    * @param s The String to convert
    *
    * @return The converted String
+   *
+   * @deprecated
    */
   public static String encode(String s)
   {
