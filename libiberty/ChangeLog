@@ -1,3 +1,9 @@
+2000-08-24  Greg McGary  <greg@mcgary.org>
+
+	* libiberty/cplus-dem.c (cplus_demangle_opname, cplus_mangle_opname,
+	demangle_expression, demangle_function_name): Use ARRAY_SIZE.
+	* libiberty/random.c (end_ptr): Likewise.
+
 2000-08-23  Alex Samuel  <samuel@codesourcery.com>
 
 	* cp-demangle.c (result_close_template_list): Remove function.
