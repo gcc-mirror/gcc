@@ -3561,6 +3561,7 @@ extern tree build_cxx_call (tree, tree, tree);
 /* in class.c */
 extern tree build_base_path			(enum tree_code, tree, tree, int);
 extern tree convert_to_base                     (tree, tree, bool);
+extern tree convert_to_base_statically (tree, tree);
 extern tree build_vtbl_ref			(tree, tree);
 extern tree build_vfn_ref			(tree, tree);
 extern tree get_vtable_decl                     (tree, int);
