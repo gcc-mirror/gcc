@@ -290,7 +290,7 @@ estimate_probability (loops_info)
      For each conditional jump, we try each heuristic in a fixed order.
      If more than one heuristic applies to a particular branch, the first
      is used as the prediction for the branch.  */
-  for (i = 0; i < n_basic_blocks - 1; i++)
+  for (i = 0; i < n_basic_blocks; i++)
     {
       basic_block bb = BASIC_BLOCK (i);
       rtx last_insn = bb->end;
@@ -429,7 +429,7 @@ estimate_probability (loops_info)
     }
 
   /* Attach the combined probability to each conditional jump.  */
-  for (i = 0; i < n_basic_blocks - 1; i++)
+  for (i = 0; i < n_basic_blocks; i++)
     {
       rtx last_insn = BLOCK_END (i);
 

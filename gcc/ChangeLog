@@ -1,3 +1,7 @@
+Wed Jun 20 21:53:35 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* predict.c (estimate_probability): Fix loop bounds.
+
 Wed Jun 20 19:10:48 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* toplev.c (rest_of_compilation): Run mark_constant_function
