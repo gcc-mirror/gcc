@@ -1499,6 +1499,7 @@ output_function_prologue (file, size)
   extern int frame_pointer_needed;
   extern int current_function_returns_struct;
   int i, offset;
+  int merge_sp_adjust_with_store = 0;
 
   save_fregs = 0;
   local_fsize =  size + (size || frame_pointer_needed ? 8 : 0);
@@ -1536,7 +1537,13 @@ output_function_prologue (file, size)
     else
       /* Used to be abort ();  */
       {
-	if (VAL_14_BITS_P (actual_fsize))
+	if (VAL_14_BITS_P (-actual_fsize) 
+	    && local_fsize == 0
+	    && ! frame_pointer_needed
+	    && ! flag_pic
+	    && ! profile_flag)
+	  merge_sp_adjust_with_store = 1;
+	else if (VAL_14_BITS_P (actual_fsize))
 	  fprintf (file, "\tldo %d(30),30\n", actual_fsize);
 	else
 	  fprintf (file, "\taddil L'%d,30\n\tldo R'%d(1),30\n",
@@ -1613,12 +1620,32 @@ output_function_prologue (file, size)
       for (i = 18, offset = local_fsize - actual_fsize; i >= 5; i--)
       	if (regs_ever_live[i] && ! call_used_regs[i])
 	  {
-	    print_stw (file, i, offset, 30);  offset += 4;
+	    /* If merge_sp_adjust_with_store is nonzero, then we can 
+	       optimize the first GR save.  */
+	    if (merge_sp_adjust_with_store == 1)
+	      {
+		merge_sp_adjust_with_store = 0;
+    		fprintf (file, "\tstwm %d,%d(0,%d)\n", i, -offset, 30);
+	      }
+	    else
+	      print_stw (file, i, offset, 30);  offset += 4;
 	  }
       if (regs_ever_live[3] && ! call_used_regs[3])
 	{
-	  print_stw (file, 3, offset, 30);  offset += 4;
+	    /* If merge_sp_adjust_with_store is nonzero, then we can 
+	       optimize the first GR save.  */
+	  if (merge_sp_adjust_with_store == 1)
+	    {
+	      merge_sp_adjust_with_store = 0;
+    	      fprintf (file, "\tstwm %d,%d(0,%d)\n", 3, -offset, 30);
+	    }
+	  else
+	    print_stw (file, 3, offset, 30);  offset += 4;
 	}
+      /* If we wanted to merge the SP adjustment with a GR save, but we never
+	 did any GR saves, then just output the adjustment here.  */
+      if (merge_sp_adjust_with_store == 1)
+	fprintf (file, "\tldo %d(30),30\n", actual_fsize);
     }
       
   /* Align pointer properly (doubleword boundary).  */
@@ -1670,6 +1697,17 @@ output_function_epilogue (file, size)
   extern char call_used_regs[];
   extern int frame_pointer_needed;
   int  i, offset;
+  int merge_sp_adjust_with_load = 0;
+
+  /* In the common cases restore RP early to avoid load/use interlock when
+     RP gets used in the bv instruction.  */
+  if (frame_pointer_needed
+      && (regs_ever_live [2] || profile_flag))
+    fprintf (file, "\tldw -20(%%r4),%%r2\n");
+  else if (actual_fsize
+	   && VAL_14_BITS_P (actual_fsize + 20)
+	   && (regs_ever_live [2] || profile_flag))
+    fprintf(file,"\tldw %d(30),2\n", - (actual_fsize + 20));
 
   if (frame_pointer_needed)
     {
@@ -1688,11 +1726,29 @@ output_function_epilogue (file, size)
       for (i = 18, offset = local_fsize - actual_fsize; i >= 5; i--)
       	if (regs_ever_live[i] && ! call_used_regs[i])
 	  {
-	    print_ldw (file, i, offset, 30);  offset += 4;
+	    /* Only for first load.  And not if profiling.  
+	       merge_sp_adjust_with_load holds the register load with
+	       which we will merge the sp adjustment with.*/
+	    if (VAL_14_BITS_P (actual_fsize + 20)
+		&& local_fsize == 0
+		&& ! profile_flag 
+		&& ! merge_sp_adjust_with_load)
+	      merge_sp_adjust_with_load = i;
+	    else 
+	      print_ldw (file, i, offset, 30);  offset += 4;
 	  }
       if (regs_ever_live[3] && ! call_used_regs[3])
 	{
-	  print_ldw (file, 3, offset, 30);  offset += 4;
+	  /* Only for first load.  And not if profiling.  
+	     merge_sp_adjust_with_load holds the register load with
+	     which we will merge the sp adjustment with.*/
+	  if (VAL_14_BITS_P (actual_fsize + 20)
+	      && local_fsize == 0
+	      && ! profile_flag
+	      && ! merge_sp_adjust_with_load)
+	    merge_sp_adjust_with_load = 3;
+	  else
+	    print_ldw (file, 3, offset, 30);  offset += 4;
 	}
     }
       
@@ -1736,12 +1792,12 @@ output_function_epilogue (file, size)
 	}
     }
   /* Reset stack pointer (and possibly frame pointer).  The stack */
-  /* pointer is initially set to fp + 64 to avoid a race condition. */
+  /* pointer is initially set to fp + 64 to avoid a race condition. 
+     ??? What race condition?!?  */
   if (frame_pointer_needed)
     {
+      /* RP has already been restored in this case.  */
       fprintf (file, "\tldo 64(%%r4),%%r30\n");
-      if (regs_ever_live[2] || profile_flag)
-	fprintf (file, "\tldw -84(%%r30),%%r2\n");
       fprintf (file, "\tbv 0(%%r2)\n\tldwm -64(%%r30),4\n");
     }
   else if (actual_fsize)
@@ -1749,9 +1805,18 @@ output_function_epilogue (file, size)
       if (regs_ever_live[2] || profile_flag)
           
 	{
+	  /* In this case RP has already been restored! */
 	  if (VAL_14_BITS_P (actual_fsize + 20))
-	    fprintf (file, "\tldw %d(30),2\n\tbv 0(2)\n\tldo %d(30),30\n",
-		     -(actual_fsize + 20), -actual_fsize);
+	    {
+	      /* Optimize load and sp adjustment.  */
+	      if (merge_sp_adjust_with_load)
+		fprintf (file, "\tbv 0(2)\n\tldwm %d(30),%d\n",
+			 -actual_fsize, merge_sp_adjust_with_load);
+	      else
+		fprintf (file, "\tbv 0(2)\n\tldo %d(30),30\n", -actual_fsize);
+	    }
+	  /* Large frame.  Uncommon and not worth extra hair to avoid
+	     load/use delay for RP.  */
 	  else
 	    fprintf (file,
 		     "\taddil L'%d,30\n\tldw %d(1),2\n\tbv 0(2)\n\
@@ -1760,6 +1825,10 @@ output_function_epilogue (file, size)
 		     - (actual_fsize + 20 + ((-actual_fsize) & ~0x7ff)),
 		     - actual_fsize);
 	}
+      /* Merge load with SP adjustment.  */
+      else if (merge_sp_adjust_with_load)
+	fprintf (file, "\tbv 0(2)\n\tldwm %d(0,30),%d\n", 
+		 - actual_fsize, merge_sp_adjust_with_load);
       else if (VAL_14_BITS_P (actual_fsize))
 	fprintf (file, "\tbv 0(2)\n\tldo %d(30),30\n", - actual_fsize);
       else
