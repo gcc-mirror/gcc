@@ -1,5 +1,5 @@
 /* Handle parameterized types (templates) for GNU C++.
-   Copyright (C) 1992, 93, 94, 95, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
    Written by Ken Raeburn (raeburn@cygnus.com) while at Watchmaker Computing.
    Rewritten by Jason Merrill (jason@cygnus.com).
 
@@ -2839,7 +2839,7 @@ do_poplevel ()
       saved_warn_unused = warn_unused;
       warn_unused = 0;
     }
-  expand_end_bindings (getdecls (), kept_level_p (), 1);
+  expand_end_bindings (getdecls (), kept_level_p (), 0);
   if (processing_template_decl)
     warn_unused = saved_warn_unused;
   t = poplevel (kept_level_p (), 1, 0);
