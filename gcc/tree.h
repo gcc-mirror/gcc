@@ -2148,9 +2148,6 @@ struct tree_binfo GTY (())
 #define DECL_VALUE_EXPR(NODE) \
   (TREE_CHECK2 (NODE, VAR_DECL, PARM_DECL)->decl.saved_tree)
 
-/* List of FUNCTION_DECLs inlined into this function's body.  */
-#define DECL_INLINED_FNS(NODE) (FUNCTION_DECL_CHECK (NODE)->decl.inlined_fns)
-
 /* Nonzero in a FUNCTION_DECL means this function should be treated
    as if it were a malloc, meaning it returns a pointer that is
    not an alias.  */
@@ -2400,11 +2397,6 @@ struct tree_decl GTY(())
   /* In a FUNCTION_DECL, this is DECL_SAVED_TREE.
      In a VAR_DECL or PARM_DECL, this is DECL_VALUE_EXPR.  */
   tree saved_tree;
-
-  /* In a FUNCTION_DECL, these are function data which is to be kept
-     as long as FUNCTION_DECL is kept.  */
-  tree inlined_fns;
-
   tree vindex;
   HOST_WIDE_INT pointer_alias_set;
   /* Points to a structure whose details depend on the language in use.  */

@@ -1,3 +1,11 @@
+2004-12-22  Daniel Berlin  <dberlin@dberlin.org>
+	
+	* tree-inline.c (struct inline_data): Remove inlined_fns.
+	(expand_call_inline): Remove dead code setting
+	inlined_fns.
+	(optimize_inline_calls): Remove dead code setting DECL_INLINED_FNS.
+	* tree.h (struct tree_decl): Remove inlined_fns.
+
 2004-12-22  Roger Sayle  <roger@eyesopen.com>
 
 	* tree-browser.c: Remove obsolete #ifdef HOST_EBCDIC code.

@@ -94,8 +94,6 @@ typedef struct inline_data
   /* Nonzero if we are currently within the cleanup for a
      TARGET_EXPR.  */
   int in_target_cleanup_p;
-  /* A list of the functions current function has inlined.  */
-  varray_type inlined_fns;
   /* We use the same mechanism to build clones that we do to perform
      inlining.  However, there are a few places where we need to
      distinguish between those two situations.  This flag is true if
@@ -1567,19 +1565,6 @@ expand_call_inline (tree *tp, int *walk_subtrees, void *data)
      recursing into it.  */
   VARRAY_PUSH_TREE (id->fns, fn);
 
-  /* Record the function we are about to inline if optimize_function
-     has not been called on it yet and we don't have it in the list.  */
-  if (! DECL_INLINED_FNS (fn))
-    {
-      int i;
-
-      for (i = VARRAY_ACTIVE_SIZE (id->inlined_fns) - 1; i >= 0; i--)
-	if (VARRAY_TREE (id->inlined_fns, i) == fn)
-	  break;
-      if (i < 0)
-	VARRAY_PUSH_TREE (id->inlined_fns, fn);
-    }
-
   /* Return statements in the function body will be replaced by jumps
      to the RET_LABEL.  */
   id->ret_label = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
@@ -1768,7 +1753,6 @@ optimize_inline_calls (tree fn)
 {
   inline_data id;
   tree prev_fn;
-  tree ifn;
 
   /* There is no point in performing inlining if errors have already
      occurred -- and we might crash if we try to inline invalid
@@ -1793,9 +1777,6 @@ optimize_inline_calls (tree fn)
 
   prev_fn = lang_hooks.tree_inlining.add_pending_fn_decls (&id.fns, prev_fn);
 
-  /* Create the list of functions this call will inline.  */
-  VARRAY_TREE_INIT (id.inlined_fns, 32, "inlined_fns");
-
   /* Keep track of the low-water mark, i.e., the point where the first
      real inlining is represented in ID.FNS.  */
   id.first_inlined_fn = VARRAY_ACTIVE_SIZE (id.fns);
@@ -1807,11 +1788,6 @@ optimize_inline_calls (tree fn)
 
   /* Clean up.  */
   htab_delete (id.tree_pruner);
-  ifn = make_tree_vec (VARRAY_ACTIVE_SIZE (id.inlined_fns));
-  if (VARRAY_ACTIVE_SIZE (id.inlined_fns))
-    memcpy (&TREE_VEC_ELT (ifn, 0), &VARRAY_TREE (id.inlined_fns, 0),
-	    VARRAY_ACTIVE_SIZE (id.inlined_fns) * sizeof (tree));
-  DECL_INLINED_FNS (fn) = ifn;
 
 #ifdef ENABLE_CHECKING
     {
