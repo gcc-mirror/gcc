@@ -1,3 +1,9 @@
+2003-04-09  Tom Tromey  <tromey@redhat.com>
+
+	* include/private/gcconfig.h (LINUX_STACKBOTTOM): Define for
+	POWERPC.
+	(STACK_GRAN, HEURISTIC1): Don't define for POWERPC.
+
 2003-03-22  Richard Henderson  <rth@redhat.com>
 
 	* include/private/gc_locks.h [IA64]: Include ia64intrin.h.
