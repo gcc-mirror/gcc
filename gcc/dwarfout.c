@@ -1016,9 +1016,9 @@ is_body_block (stmt)
    information about the precise way in which the type was originally
    specified, as in:
 
-	typedef signed int field_type;
+	typedef signed int my_type;
 
-	struct s { field_type f; };
+	struct s { my_type f; };
 
    Since we may be stuck here without enought information to do exactly
    what is called for in the Dwarf draft specification, we do the best
