@@ -1,3 +1,9 @@
+2003-06-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* libgcc2.c: Delete sysV68 L_trampoline section.
+	* config/m68k/mot3300-crt0.S: Delete file.
+	* config/m68k/mot3300Mcrt0.S: Likewise.
+
 2003-06-15  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* config/aoutos.h: Remove.
