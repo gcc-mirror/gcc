@@ -2391,6 +2391,10 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	    unsigned_arg = TREE_UNSIGNED (TREE_TYPE (op0));
 
 	  if (TYPE_PRECISION (TREE_TYPE (arg0)) < TYPE_PRECISION (result_type)
+	      /* We can shorten only if the shift count is less than the
+		 number of bits in the smaller type size.  */
+	      && TREE_INT_CST_HIGH (op1) == 0
+	      && TYPE_PRECISION (TREE_TYPE (arg0)) > TREE_INT_CST_LOW (op1)
 	      /* If arg is sign-extended and then unsigned-shifted,
 		 we can simulate this with a signed shift in arg's type
 		 only if the extended result is at least twice as wide
