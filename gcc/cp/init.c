@@ -751,9 +751,9 @@ construct_virtual_bases (type, this_ref, this_ptr, init_list, flag)
   for (vbases = CLASSTYPE_VBASECLASSES (type); vbases;
        vbases = TREE_CHAIN (vbases))
     {
-      tree tmp = purpose_member (vbases, result);
       tree inner_if_stmt;
       tree compound_stmt;
+      tree exp;
 
       /* If there are virtual base classes with destructors, we need to
 	 emit cleanups to destroy them if an exception is thrown during
@@ -772,9 +772,20 @@ construct_virtual_bases (type, this_ref, this_ptr, init_list, flag)
       inner_if_stmt = begin_if_stmt ();
       finish_if_stmt_cond (flag, inner_if_stmt);
       compound_stmt = begin_compound_stmt (/*has_no_scope=*/1);
-      expand_aggr_vbase_init_1 (vbases, this_ref,
-				TREE_OPERAND (TREE_VALUE (tmp), 0),
-				init_list);
+
+      /* Compute the location of the virtual base.  If we're
+	 constructing virtual bases, then we must be the most derived
+	 class.  Therefore, we don't have to look up the virtual base;
+	 we already know where it is.  */
+      exp = build (PLUS_EXPR,
+		   TREE_TYPE (this_ptr),
+		   this_ptr,
+		   BINFO_OFFSET (vbases));
+      exp = build1 (NOP_EXPR, 
+		    build_pointer_type (BINFO_TYPE (vbases)), 
+		    exp);
+
+      expand_aggr_vbase_init_1 (vbases, this_ref, exp, init_list);
       finish_compound_stmt (/*has_no_scope=*/1, compound_stmt);
       finish_then_clause (inner_if_stmt);
       finish_if_stmt ();
