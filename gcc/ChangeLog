@@ -1,3 +1,12 @@
+Tue May  2 18:20:31 2000  Donald Lindsay  <dlindsay@hound.cygnus.com>
+
+	* config/mips/mips.c (mips_build_va_list,mips_va_start,mips_va_arg): new 
+	ABI for varargs, across all MIPS. This is incompatible because the
+	va_list (__builtin_va_list) structure is different, so a compilation
+	unit passing a va_list and a compilation unit being passed one, should
+	both be compiled with the same ABI. (The old structure had two 
+	pointers, now it has three.)
+
 Tue May  2 19:18:43 2000  Jason Eckhardt  <jle@cygnus.com>
 
         * bb-reorder.c (struct reorder_block_def): Remove members end,

@@ -4138,41 +4138,71 @@ function_arg_partial_nregs (cum, mode, type, named)
   return 0;
 }
 
-/* Create the va_list data type.  */
+/* Create the va_list data type.
+   We keep 3 pointers, and two offsets.
+   Two pointers are to the overflow area, which starts at the CFA. 
+     One of these is constant, for addressing into the GPR save area below it.
+     The other is advanced up the stack through the overflow region.
+   The third pointer is to the GPR save area.  Since the FPR save area
+     is just below it, we can address FPR slots off this pointer.
+   We also keep two one-byte offsets, which are to be subtracted from the
+     constant pointers to yield addresses in the GPR and FPR save areas.
+     These are downcounted as float or non-float arguments are used, 
+     and when they get to zero, the argument must be obtained from the 
+     overflow region.
+   If TARGET_SOFT_FLOAT or TARGET_SINGLE_FLOAT, then no FPR save area exists,
+     and a single pointer is enough.  It's started at the GPR save area,
+     and is advanced, period.
+   Note that the GPR save area is not constant size, due to optimization
+     in the prologue.  Hence, we can't use a design with two pointers
+     and two offsets, although we could have designed this with two pointers
+     and three offsets. */
+
 
 tree
 mips_build_va_list ()
 {
   if (mips_abi == ABI_EABI && !TARGET_SOFT_FLOAT && !TARGET_SINGLE_FLOAT)
     {
-      tree f_fpr, f_rem, f_gpr, record;
+      tree f_ovfl, f_gtop, f_ftop, f_goff, f_foff, record;
 
       record = make_node (RECORD_TYPE);
 
-      f_fpr = build_decl (FIELD_DECL, get_identifier ("__fp_regs"),
+      f_ovfl = build_decl (FIELD_DECL, get_identifier ("__overflow_argptr"),
 			  ptr_type_node);
-      f_rem = build_decl (FIELD_DECL, get_identifier ("__fp_left"),
-			  integer_type_node);
-      f_gpr = build_decl (FIELD_DECL, get_identifier ("__gp_regs"),
+      f_gtop = build_decl (FIELD_DECL, get_identifier ("__gpr_top"),
 			  ptr_type_node);
+      f_ftop = build_decl (FIELD_DECL, get_identifier ("__fpr_top"),
+			  ptr_type_node);
+      f_goff = build_decl (FIELD_DECL, get_identifier ("__gpr_offset"),
+			  unsigned_char_type_node);
+      f_foff = build_decl (FIELD_DECL, get_identifier ("__fpr_offset"),
+			  unsigned_char_type_node);
 
-      DECL_FIELD_CONTEXT (f_fpr) = record;
-      DECL_FIELD_CONTEXT (f_rem) = record;
-      DECL_FIELD_CONTEXT (f_gpr) = record;
 
-      TYPE_FIELDS (record) = f_fpr;
-      TREE_CHAIN (f_fpr) = f_rem;
-      TREE_CHAIN (f_rem) = f_gpr;
+      DECL_FIELD_CONTEXT (f_ovfl) = record;
+      DECL_FIELD_CONTEXT (f_gtop) = record;
+      DECL_FIELD_CONTEXT (f_ftop) = record;
+      DECL_FIELD_CONTEXT (f_goff) = record;
+      DECL_FIELD_CONTEXT (f_foff) = record;
+
+      TYPE_FIELDS (record) = f_ovfl;
+      TREE_CHAIN (f_ovfl) = f_gtop;
+      TREE_CHAIN (f_gtop) = f_ftop;
+      TREE_CHAIN (f_ftop) = f_goff;
+      TREE_CHAIN (f_goff) = f_foff;
 
       layout_type (record);
-
       return record;
     }
   else
     return ptr_type_node;
 }
 
-/* Implement va_start.  */
+/* Implement va_start.   stdarg_p is 0 if implementing
+   __builtin_varargs_va_start, 1 if implementing __builtin_stdarg_va_start.
+   Note that this routine isn't called when compiling e.g. "_vfprintf_r".
+     (It doesn't have "...", so it inherits the pointers of its caller.) */
 
 void
 mips_va_start (stdarg_p, valist, nextarg)
@@ -4180,82 +4210,139 @@ mips_va_start (stdarg_p, valist, nextarg)
      tree valist;
      rtx nextarg;
 {
-  int arg_words;
+  int int_arg_words;
   tree t;
 
-  arg_words = current_function_args_info.arg_words;
+  /* Find out how many non-float named formals */
+  int_arg_words = current_function_args_info.arg_words;
 
   if (mips_abi == ABI_EABI)
     {
+      int gpr_save_area_size;
+      /* Note UNITS_PER_WORD is 4 bytes or 8, depending on TARGET_64BIT. */
+      if (int_arg_words < 8 )
+	/* Adjust for the prologue's economy measure */
+	gpr_save_area_size = (8 - int_arg_words) * UNITS_PER_WORD;
+      else
+	gpr_save_area_size = 0;
+
       if (!TARGET_SOFT_FLOAT && !TARGET_SINGLE_FLOAT)
 	{
-	  tree f_fpr, f_rem, f_gpr, fpr, rem, gpr;
-	  tree gprv, fprv;
-	  int gpro, fpro;
+	  tree f_ovfl, f_gtop, f_ftop, f_goff, f_foff; 
+	  tree ovfl, gtop, ftop, goff, foff; 
+	  tree gprv;
+	  int float_formals, fpr_offset, size_excess, floats_passed_in_regs;
+	  int fpr_save_offset;
 
-  	  fpro = (8 - current_function_args_info.fp_arg_words);
-
+	  float_formals = current_function_args_info.fp_arg_words;
+	  /* If mips2, the number of formals is half the reported # of words */
 	  if (!TARGET_64BIT)
-		fpro /= 2;
+	    float_formals /= 2;
+	  floats_passed_in_regs = (TARGET_64BIT ? 8 : 4);
 
-	  f_fpr = TYPE_FIELDS (va_list_type_node);
-	  f_rem = TREE_CHAIN (f_fpr);
-	  f_gpr = TREE_CHAIN (f_rem);
+	  f_ovfl  = TYPE_FIELDS (va_list_type_node);
+	  f_gtop = TREE_CHAIN (f_ovfl);
+	  f_ftop = TREE_CHAIN (f_gtop);
+	  f_goff = TREE_CHAIN (f_ftop);
+	  f_foff = TREE_CHAIN (f_goff);
 
-	  fpr = build (COMPONENT_REF, TREE_TYPE (f_fpr), valist, f_fpr);
-	  rem = build (COMPONENT_REF, TREE_TYPE (f_rem), valist, f_rem);
-	  gpr = build (COMPONENT_REF, TREE_TYPE (f_gpr), valist, f_gpr);
+	  ovfl = build (COMPONENT_REF, TREE_TYPE (f_ovfl), valist, f_ovfl);
+	  gtop = build (COMPONENT_REF, TREE_TYPE (f_gtop), valist, f_gtop);
+	  ftop = build (COMPONENT_REF, TREE_TYPE (f_ftop), valist, f_ftop);
+	  goff = build (COMPONENT_REF, TREE_TYPE (f_goff), valist, f_goff);
+	  foff = build (COMPONENT_REF, TREE_TYPE (f_foff), valist, f_foff);
 
-	  if (arg_words < 8)
-	    gpro = (8 - arg_words) * UNITS_PER_WORD;
-	  else
-	    gpro = (stdarg_p ? 0 : UNITS_PER_WORD);
+	  /* Emit code setting a pointer into the overflow (shared-stack) area.
+	     If there were more than 8 non-float formals, or more than 8
+	     float formals, then this pointer isn't to the base of the area.
+	     In that case, it must point to where the first vararg is. */
+	  size_excess = 0;
+	  if (float_formals > floats_passed_in_regs)
+	    size_excess += (float_formals-floats_passed_in_regs) * 8;
+	  if (int_arg_words > 8)
+	    size_excess += (int_arg_words-8) * UNITS_PER_WORD;
 
-	  gprv = make_tree (ptr_type_node, nextarg);
-	  if (gpro != 0)
+	  /* FIXME: for mips2, the above size_excess can be wrong.  Because the
+	     overflow stack holds mixed size items, there can be alignments,
+	     so that an 8 byte double following a 4 byte int will be on an
+	     8 byte boundary.  This means that the above calculation should
+	     take into account the exact sequence of floats and non-floats
+	     which make up the excess.  That calculation should be rolled
+	     into the code which sets the current_function_args_info struct.  
+	     The above then reduces to a fetch from that struct. */
+
+
+	  t = make_tree (TREE_TYPE (ovfl), virtual_incoming_args_rtx);
+	  if (size_excess)
+	    t = build (PLUS_EXPR, TREE_TYPE (ovfl), t,
+		build_int_2 (size_excess, 0));
+	  t = build (MODIFY_EXPR, TREE_TYPE (ovfl), ovfl, t);
+ 	  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+
+	  /* Emit code setting a ptr to the base of the overflow area. */
+	  t = make_tree (TREE_TYPE (gtop), virtual_incoming_args_rtx);
+	  t = build (MODIFY_EXPR, TREE_TYPE (gtop), gtop, t);
+ 	  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+
+	  /* Emit code setting a pointer to the GPR save area.
+	     More precisely, a pointer to off-the-end of the FPR save area.
+	     If mips4, this is gpr_save_area_size below the overflow area.
+	     If mips2, also round down to an 8-byte boundary, since the FPR
+	     save area is 8-byte aligned, and GPR is 4-byte-aligned.
+	     Therefore there can be a 4-byte gap between the save areas. */
+	  gprv = make_tree (TREE_TYPE (ftop), virtual_incoming_args_rtx);
+	  fpr_save_offset = gpr_save_area_size;
+	  if (!TARGET_64BIT)
 	    {
-	      gprv = build (PLUS_EXPR, ptr_type_node, gprv,
-			    build_int_2 (-gpro, -1));
+	      if (fpr_save_offset & 7)
+	        fpr_save_offset += 4;
 	    }
-
-	  t = build (MODIFY_EXPR, ptr_type_node, gpr, gprv);
-	  TREE_SIDE_EFFECTS (t) = 1;
+	  if (fpr_save_offset)
+	    gprv = build (PLUS_EXPR, TREE_TYPE (ftop), gprv, 
+	      	build_int_2 (-fpr_save_offset,-1));
+	  t = build (MODIFY_EXPR, TREE_TYPE (ftop), ftop, gprv);
 	  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
-	  t = build (MODIFY_EXPR, integer_type_node, rem,
-		     build_int_2 (fpro, 0));
-	  TREE_SIDE_EFFECTS (t) = 1;
+	  /* Emit code initting an offset to the size of the GPR save area */
+	  t = build (MODIFY_EXPR, TREE_TYPE (goff), goff,
+	      	build_int_2 (gpr_save_area_size,0));
 	  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
-	  if (fpro == 0)
-	    fprv = gprv;
+	  /* Emit code initting an offset from ftop to the first float
+	     vararg.  This varies in size, since any float
+	     varargs are put in the FPR save area after the formals.
+	     Note it's 8 bytes/formal regardless of TARGET_64BIT.
+	     However, mips2 stores 4 GPRs, mips4 stores 8 GPRs.
+	     If there are 8 or more float formals, init to zero.
+	     (In fact, the formals aren't stored in the bottom of the
+	     FPR save area: they are elsewhere, and the size of the FPR
+	     save area is economized by the prologue.  But this code doesn't
+	     care.  This design is unaffected by that fact.) */
+	  if (float_formals >= floats_passed_in_regs)
+	    fpr_offset = 0;
 	  else
-	    fprv = fold (build (PLUS_EXPR, ptr_type_node, gprv,
-				build_int_2 (-(fpro*8), -1)));
-
-	  if (! TARGET_64BIT)
-	    fprv = fold (build (BIT_AND_EXPR, ptr_type_node, fprv,
-				build_int_2 (-8, -1)));
-
-	  t = build (MODIFY_EXPR, ptr_type_node, fpr, fprv);
-	  TREE_SIDE_EFFECTS (t) = 1;
+	    fpr_offset = (floats_passed_in_regs - float_formals) * 8;
+	  t = build (MODIFY_EXPR, TREE_TYPE (foff), foff,
+		     build_int_2 (fpr_offset,0));
 	  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 	}
       else
 	{
-	  int ofs;
+	  /* TARGET_SOFT_FLOAT or TARGET_SINGLE_FLOAT */
 
-	  if (arg_words >= 8)
-	    ofs = (stdarg_p ? 0 : UNITS_PER_WORD);
-	  else
-	    ofs = (8 - arg_words) * UNITS_PER_WORD;
+	  /* Everything is in the GPR save area, or in the overflow
+	     area which is contiguous with it. */
 
-	  nextarg = plus_constant (nextarg, -ofs);
+	  int offset = -gpr_save_area_size;
+	  if (gpr_save_area_size == 0)
+	    offset = (stdarg_p ? 0 : -UNITS_PER_WORD);
+	  nextarg = plus_constant (nextarg, offset);
 	  std_expand_builtin_va_start (1, valist, nextarg);
 	}
     }
   else
     {
+      /* not EABI */
       int ofs;
 
       if (stdarg_p)
@@ -4266,7 +4353,7 @@ mips_va_start (stdarg_p, valist, nextarg)
 	       _MIPS_SIM == _MIPS_SIM_ABI64 || _MIPS_SIM == _MIPS_SIM_NABI32
 	     and both iris5.h and iris6.h define _MIPS_SIM.  */
 	  if (mips_abi == ABI_N32 || mips_abi == ABI_64)
-	    ofs = (arg_words >= 8 ? -UNITS_PER_WORD : 0);
+ 	    ofs = (int_arg_words >= 8 ? -UNITS_PER_WORD : 0);
 	  else
 	    ofs = -UNITS_PER_WORD;
 	}
@@ -4291,9 +4378,10 @@ mips_va_arg (valist, type)
 
   if (mips_abi == ABI_EABI)
     {
-      tree gpr;
       int indirect;
-      rtx lab_over = NULL_RTX, lab_false, r;
+      rtx r, lab_over = NULL_RTX, lab_false;
+      tree f_ovfl, f_gtop, f_ftop, f_goff, f_foff; 
+      tree ovfl, gtop, ftop, goff, foff; 
 
       indirect
 	= function_arg_pass_by_reference (NULL, TYPE_MODE (type), type, 0);
@@ -4302,93 +4390,191 @@ mips_va_arg (valist, type)
 
       addr_rtx = gen_reg_rtx (Pmode);
 
-      if (!TARGET_SOFT_FLOAT && !TARGET_SINGLE_FLOAT)
+      if (TARGET_SOFT_FLOAT || TARGET_SINGLE_FLOAT)
 	{
-	  tree f_fpr, f_rem, f_gpr, fpr, rem;
+	  /* Case of all args in a merged stack. No need to check bounds,
+	     just advance valist along the stack. */
 
-	  f_fpr = TYPE_FIELDS (va_list_type_node);
-	  f_rem = TREE_CHAIN (f_fpr);
-	  f_gpr = TREE_CHAIN (f_rem);
-
-	  fpr = build (COMPONENT_REF, TREE_TYPE (f_fpr), valist, f_fpr);
-	  rem = build (COMPONENT_REF, TREE_TYPE (f_rem), valist, f_rem);
-	  gpr = build (COMPONENT_REF, TREE_TYPE (f_gpr), valist, f_gpr);
-
-	  if (TREE_CODE (type) == REAL_TYPE)
+	  tree gpr = valist;
+      	  if (! indirect
+	      && ! TARGET_64BIT
+	      && TYPE_ALIGN (type) > (unsigned) BITS_PER_WORD)
 	    {
-	      lab_false = gen_label_rtx ();
-	      lab_over = gen_label_rtx ();
-
-	      r = expand_expr (rem, NULL_RTX, TYPE_MODE (TREE_TYPE (rem)),
-			       EXPAND_NORMAL);
-	      emit_cmp_and_jump_insns (r, const0_rtx, LE, const1_rtx,
-				       GET_MODE (r), 1, 1, lab_false);
-
-	      t = build (PLUS_EXPR, TREE_TYPE (rem), rem,
-			 build_int_2 (-1, -1));
-	      t = build (MODIFY_EXPR, TREE_TYPE (rem), rem, t);
-	      TREE_SIDE_EFFECTS (t) = 1;
-	      expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
-
-	      t = build (POSTINCREMENT_EXPR, TREE_TYPE (fpr), fpr,
-			 build_int_2 (8, 0));
-	      TREE_SIDE_EFFECTS (t) = 1;
-	      r = expand_expr (t, addr_rtx, Pmode, EXPAND_NORMAL);
-	      if (r != addr_rtx)
-		emit_move_insn (addr_rtx, r);
-
-	      /* Ensure that the POSTINCREMENT is emitted before lab_over */
-	      emit_queue();
-
-	      emit_jump (lab_over);
-	      emit_barrier ();
-	      emit_label (lab_false);
-	    }
-	}
-      else
-	gpr = valist;
-
-      if (! indirect
-	  && ! TARGET_64BIT
-	  && TYPE_ALIGN (type) > (unsigned) BITS_PER_WORD)
-	{
-	  t = build (PLUS_EXPR, TREE_TYPE (gpr), gpr,
+	      t = build (PLUS_EXPR, TREE_TYPE (gpr), gpr,
 		     build_int_2 (2*UNITS_PER_WORD - 1, 0));
-	  t = build (BIT_AND_EXPR, TREE_TYPE (t), t, 
+	      t = build (BIT_AND_EXPR, TREE_TYPE (t), t, 
 		     build_int_2 (-2*UNITS_PER_WORD, -1));
-	  t = build (MODIFY_EXPR, TREE_TYPE (gpr), gpr, t);
-	  TREE_SIDE_EFFECTS (t) = 1;
-	  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+	      t = build (MODIFY_EXPR, TREE_TYPE (gpr), gpr, t);
+	      expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+	    }
+
+      	  t = build (POSTINCREMENT_EXPR, TREE_TYPE (gpr), gpr, 
+		size_int (rsize));
+      	  r = expand_expr (t, addr_rtx, Pmode, EXPAND_NORMAL);
+     	  if (r != addr_rtx)
+	    emit_move_insn (addr_rtx, r);
+
+      	  /* flush the POSTINCREMENT */
+      	  emit_queue();
+
+      	  if (indirect)
+	    {
+	      r = gen_rtx_MEM (Pmode, addr_rtx);
+	      MEM_ALIAS_SET (r) = get_varargs_alias_set ();
+	      emit_move_insn (addr_rtx, r);
+	    }
+      	  else
+	    {
+	      if (BYTES_BIG_ENDIAN && rsize != size)
+	      addr_rtx = plus_constant (addr_rtx, rsize - size);
+	    }
+      	  return addr_rtx;
 	}
 
-      t = build (POSTINCREMENT_EXPR, TREE_TYPE (gpr), gpr, size_int (rsize));
-      TREE_SIDE_EFFECTS (t) = 1;
-      r = expand_expr (t, addr_rtx, Pmode, EXPAND_NORMAL);
-      if (r != addr_rtx)
-	emit_move_insn (addr_rtx, r);
+      /* Not a simple merged stack.  Need ptrs and indexes left by va_start. */
 
-      /* Ensure that the above POSTINCREMENT is emitted before lab_over */
-      emit_queue();
+      f_ovfl  = TYPE_FIELDS (va_list_type_node);
+      f_gtop = TREE_CHAIN (f_ovfl);
+      f_ftop = TREE_CHAIN (f_gtop);
+      f_goff = TREE_CHAIN (f_ftop);
+      f_foff = TREE_CHAIN (f_goff);
 
-      if (lab_over)
-	emit_label (lab_over);
+      ovfl = build (COMPONENT_REF, TREE_TYPE (f_ovfl), valist, f_ovfl);
+      gtop = build (COMPONENT_REF, TREE_TYPE (f_gtop), valist, f_gtop);
+      ftop = build (COMPONENT_REF, TREE_TYPE (f_ftop), valist, f_ftop);
+      goff = build (COMPONENT_REF, TREE_TYPE (f_goff), valist, f_goff);
+      foff = build (COMPONENT_REF, TREE_TYPE (f_foff), valist, f_foff);
 
-      if (indirect)
-	{
-	  r = gen_rtx_MEM (Pmode, addr_rtx);
-	  MEM_ALIAS_SET (r) = get_varargs_alias_set ();
-	  emit_move_insn (addr_rtx, r);
-	}
+      lab_false = gen_label_rtx ();
+      lab_over = gen_label_rtx ();
+
+      if (TREE_CODE (type) == REAL_TYPE)
+        {
+
+	  /* Emit code to branch if foff == 0. */
+          r = expand_expr (foff, NULL_RTX, TYPE_MODE (TREE_TYPE (foff)),
+	     	EXPAND_NORMAL);
+          emit_cmp_and_jump_insns (r, const0_rtx, EQ,
+		const1_rtx, GET_MODE (r), 1, 1, lab_false);
+
+          /* Emit code for addr_rtx = ftop - foff */
+          t = build (MINUS_EXPR, TREE_TYPE (ftop), ftop, foff );
+          r = expand_expr (t, addr_rtx, Pmode, EXPAND_NORMAL);
+          if (r != addr_rtx)
+      	    emit_move_insn (addr_rtx, r);
+
+          /* Emit code for foff-=8. 
+      	     Advances the offset up FPR save area by one double */
+          t = build (MINUS_EXPR, TREE_TYPE (foff), foff, build_int_2 (8, 0));
+          t = build (MODIFY_EXPR, TREE_TYPE (foff), foff, t);
+          expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+
+          emit_queue();
+          emit_jump (lab_over);
+          emit_barrier ();
+          emit_label (lab_false);
+	      
+	  if (!TARGET_64BIT) 
+	    {
+	      /* For mips2, the overflow area contains mixed size items.
+		 If a 4-byte int is followed by an 8-byte float, then
+		 natural alignment causes a 4 byte gap.
+		 So, dynamically adjust ovfl up to a multiple of 8. */
+	      t = build (BIT_AND_EXPR, TREE_TYPE (ovfl), ovfl,
+			build_int_2 (7, 0));
+	      t = build (PLUS_EXPR, TREE_TYPE (ovfl), ovfl, t);
+	      t = build (MODIFY_EXPR, TREE_TYPE (ovfl), ovfl, t);
+	      expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+	    }
+
+          /* Emit code for addr_rtx = the ovfl pointer into overflow area.
+	     Regardless of mips2, postincrement the ovfl pointer by 8. */
+          t = build (POSTINCREMENT_EXPR, TREE_TYPE(ovfl), ovfl, 
+		size_int (8));
+          r = expand_expr (t, addr_rtx, Pmode, EXPAND_NORMAL);
+          if (r != addr_rtx)
+      	    emit_move_insn (addr_rtx, r);
+
+          emit_queue();
+          emit_label (lab_over);
+       	  return addr_rtx;
+        }
       else
-	{
-	  if (BYTES_BIG_ENDIAN && rsize != size)
-	    addr_rtx = plus_constant (addr_rtx, rsize - size);
-	}
+        {
+          /* not REAL_TYPE */
+	  int step_size;
 
-      return addr_rtx;
+	  if (! TARGET_64BIT
+	      && TREE_CODE (type) == INTEGER_TYPE
+	      && TYPE_PRECISION (type) == 64)
+	    {
+	      /* In mips2, int takes 32 bits of the GPR save area, but 
+		 longlong takes an aligned 64 bits.  So, emit code
+		 to zero the low order bits of goff, thus aligning
+		 the later calculation of (gtop-goff) upwards. */
+	       t = build (BIT_AND_EXPR, TREE_TYPE (goff), goff,
+			build_int_2 (-8, -1));
+	       t = build (MODIFY_EXPR, TREE_TYPE (goff), goff, t);
+	       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+	    }
+
+	  /* Emit code to branch if goff == 0. */
+          r = expand_expr (goff, NULL_RTX, TYPE_MODE (TREE_TYPE (goff)),
+	     	EXPAND_NORMAL);
+          emit_cmp_and_jump_insns (r, const0_rtx, EQ,
+		const1_rtx, GET_MODE (r), 1, 1, lab_false);
+
+          /* Emit code for addr_rtx = gtop - goff. */
+          t = build (MINUS_EXPR, TREE_TYPE (gtop), gtop, goff);
+          r = expand_expr (t, addr_rtx, Pmode, EXPAND_NORMAL);
+          if (r != addr_rtx)
+      	    emit_move_insn (addr_rtx, r);
+
+	  /* Note that mips2 int is 32 bit, but mips2 longlong is 64. */
+	  if (! TARGET_64BIT && TYPE_PRECISION (type) == 64)
+	    step_size = 8;
+	  else
+	    step_size = UNITS_PER_WORD;
+
+          /* Emit code for goff = goff - step_size.
+      	     Advances the offset up GPR save area over the item. */
+          t = build (MINUS_EXPR, TREE_TYPE (goff), goff, 
+		build_int_2 (step_size, 0));
+          t = build (MODIFY_EXPR, TREE_TYPE (goff), goff, t);
+          expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+
+          emit_queue();
+          emit_jump (lab_over);
+          emit_barrier ();
+          emit_label (lab_false);
+	      
+          /* Emit code for addr_rtx -> overflow area, postinc by step_size */
+          t = build (POSTINCREMENT_EXPR, TREE_TYPE(ovfl), ovfl, 
+	    	size_int (step_size));
+          r = expand_expr (t, addr_rtx, Pmode, EXPAND_NORMAL);
+          if (r != addr_rtx)
+    	    emit_move_insn (addr_rtx, r);
+
+          emit_queue();
+          emit_label (lab_over);
+
+          if (indirect)
+   	    {
+       	      r = gen_rtx_MEM (Pmode, addr_rtx);
+	      MEM_ALIAS_SET (r) = get_varargs_alias_set ();
+	      emit_move_insn (addr_rtx, r);
+	    }
+      	  else
+	    {
+	      if (BYTES_BIG_ENDIAN && rsize != size)
+	      addr_rtx = plus_constant (addr_rtx, rsize - size);
+	    }
+      	  return addr_rtx;
+	}
     }
   else
     {
+      /* Not EABI. */
       int align;
 
       /* ??? The original va-mips.h did always align, despite the fact 
@@ -4406,7 +4592,6 @@ mips_va_arg (valist, type)
 		 build_int_2 (align - 1, 0));
       t = build (BIT_AND_EXPR, TREE_TYPE (t), t, build_int_2 (-align, -1));
       t = build (MODIFY_EXPR, TREE_TYPE (valist), valist, t);
-      TREE_SIDE_EFFECTS (t) = 1;
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
       /* Everything past the alignment is standard.  */
