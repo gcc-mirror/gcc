@@ -764,7 +764,7 @@ update_life_info_in_dirty_blocks (extent, prop_flags)
   sbitmap update_life_blocks = sbitmap_alloc (n_basic_blocks);
   int block_num;
   int n = 0;
-  int ndead;
+  int retval = 0;
 
   sbitmap_zero (update_life_blocks);
   for (block_num = 0; block_num < n_basic_blocks; block_num++)
@@ -775,10 +775,10 @@ update_life_info_in_dirty_blocks (extent, prop_flags)
       }
 
   if (n)
-    ndead = update_life_info (update_life_blocks, extent, prop_flags);
+    retval = update_life_info (update_life_blocks, extent, prop_flags);
 
   sbitmap_free (update_life_blocks);
-  return ndead;
+  return retval;
 }
 
 /* Free the variables allocated by find_basic_blocks.

@@ -56,6 +56,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "toplev.h"
 #include "tm_p.h"
 #include "obstack.h"
+#include "insn-config.h"
 
 /* Stubs in case we don't have a return insn.  */
 #ifndef HAVE_return
@@ -546,6 +547,15 @@ split_block (bb, insn)
       propagate_block (new_bb, new_bb->global_live_at_start, NULL, NULL, 0);
       COPY_REG_SET (bb->global_live_at_end,
 		    new_bb->global_live_at_start);
+#ifdef HAVE_conditional_execution
+      /* In the presence of conditional execution we are not able to update
+	 liveness precisely.  */
+      if (reload_completed)
+	{
+	  bb->flags |= BB_DIRTY;
+	  new_bb->flags |= BB_DIRTY;
+	}
+#endif
     }
 
   return new_edge;
