@@ -1,3 +1,9 @@
+2004-11-23  Ralf Corsepius <ralf.corsepius@rtems.org>
+
+	* config.gcc: Add avr-*-rtems*.
+	* config/avr/t-rtems: New.
+	* config/avr/rtems.h: New.
+
 2004-11-22  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR rtl-optimization/14838

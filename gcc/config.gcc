@@ -700,6 +700,10 @@ arm*-*-kaos*)
 	tm_file="dbxelf.h elfos.h arm/unknown-elf.h arm/elf.h arm/aout.h arm/arm.h kaos.h arm/kaos-arm.h"
 	tmake_file=arm/t-arm-elf
 	;;
+avr-*-rtems*)
+	tm_file="avr/avr.h dbxelf.h avr/rtems.h rtems.h"
+	tmake_files="avr/t-avr t-rtems avr/t-rtems"
+	;;
 avr-*-*)
 	tm_file="avr/avr.h dbxelf.h"
 	use_fixproto=yes
