@@ -1,5 +1,5 @@
 /* NetBSD/arm (RiscBSD) version.
-   Copyright (C) 1993, 1994, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1997, 1998 Free Software Foundation, Inc.
    Contributed by Mark Brinicombe (amb@physig.ph.kcl.ac.uk)
 
 This file is part of GNU CC.
