@@ -355,11 +355,6 @@ c_cpp_builtins (pfile)
   if (optimize)
     cpp_define (pfile, "__OPTIMIZE__");
 
-  if (flag_hosted)
-    cpp_define (pfile, "__STDC_HOSTED__=1");
-  else
-    cpp_define (pfile, "__STDC_HOSTED__=0");
-
   if (fast_math_flags_set_p ())
     cpp_define (pfile, "__FAST_MATH__");
   if (flag_really_no_inline)

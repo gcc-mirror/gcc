@@ -327,10 +327,12 @@ mark_named_operators (pfile)
 }
 
 /* Read the builtins table above and enter them, and language-specific
-   macros, into the hash table.  */
+   macros, into the hash table.  HOSTED is true if this is a hosted
+   environment.  */
 void
-cpp_init_builtins (pfile)
+cpp_init_builtins (pfile, hosted)
      cpp_reader *pfile;
+     int hosted;
 {
   const struct builtin *b;
   size_t n = ARRAY_SIZE (builtin_array);
@@ -354,6 +356,11 @@ cpp_init_builtins (pfile)
     _cpp_define_builtin (pfile, "__STDC_VERSION__ 199409L");
   else if (CPP_OPTION (pfile, c99))
     _cpp_define_builtin (pfile, "__STDC_VERSION__ 199901L");
+
+  if (hosted)
+    cpp_define (pfile, "__STDC_HOSTED__=1");
+  else
+    cpp_define (pfile, "__STDC_HOSTED__=0");
 
   if (CPP_OPTION (pfile, objc))
     _cpp_define_builtin (pfile, "__OBJC__ 1");

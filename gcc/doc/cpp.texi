@@ -264,15 +264,14 @@ complete support for international character sets in a future release.
 
 Different systems use different conventions to indicate the end of a
 line.  GCC accepts the ASCII control sequences @kbd{LF}, @kbd{@w{CR
-LF}}, @kbd{CR}, and @kbd{@w{LF CR}} as end-of-line markers.  The first
-three are the canonical sequences used by Unix, DOS and VMS, and the
+LF}}, @kbd{CR} as end-of-line markers.  These
+are the canonical sequences used by Unix, DOS and VMS, and the
 classic Mac OS (before OSX) respectively.  You may therefore safely copy
 source code written on any of those systems to a different one and use
 it without conversion.  (GCC may lose track of the current line number
 if a file doesn't consistently use one convention, as sometimes happens
 when it is edited on computers with different conventions that share a
-network file system.)  @kbd{@w{LF CR}} is included because it has been
-reported as an end-of-line marker under exotic conditions.
+network file system.)
 
 If the last line of any input file lacks an end-of-line marker, the end
 of the file is considered to implicitly supply one.  The C standard says
@@ -1733,7 +1732,7 @@ predefined macros, but you cannot undefine them.
 @subsection Standard Predefined Macros
 @cindex standard predefined macros.
 
-The standard predefined macros are specified by the C and/or C++
+The standard predefined macros are specified by the relevant
 language standards, so they are available with all compilers that
 implement those standards.  Older compilers may not provide all of
 them.  Their names all start with double underscores.
@@ -1852,6 +1851,14 @@ of the 1998 C++ standard will define this macro to @code{199711L}.  The
 GNU C++ compiler is not yet fully conforming, so it uses @code{1}
 instead.  We hope to complete our implementation in the near future.
 
+@item __OBJC__
+This macro is defined, with value 1, when the Objective-C compiler is in
+use.  You can use @code{__OBJC__} to test whether a header is compiled
+by a C compiler or a Objective-C compiler.
+
+@item __ASSEMBLER__
+This macro is defined with value 1 when preprocessing assembler.
+
 @end table
 
 @node Common Predefined Macros
@@ -1912,11 +1919,6 @@ calculate a single number, then compare that against a threshold:
 
 @noindent
 Many people find this form easier to understand.
-
-@item __OBJC__
-This macro is defined, with value 1, when the Objective-C compiler is in
-use.  You can use @code{__OBJC__} to test whether a header is compiled
-by a C compiler or a Objective-C compiler.
 
 @item __GNUG__
 The GNU C++ compiler defines this.  Testing it is equivalent to
