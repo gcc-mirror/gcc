@@ -45,7 +45,7 @@ import java.io.Serializable;
  * @date October 23, 1998.
  * @status API complete to JDK 1.3.
  */
-public final class BitSet implements Cloneable, Serializable
+public class BitSet implements Cloneable, Serializable
 {
   /**
    * Create a new empty bit set.

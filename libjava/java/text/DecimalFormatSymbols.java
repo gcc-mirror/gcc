@@ -72,8 +72,8 @@ public final class DecimalFormatSymbols implements Cloneable, Serializable
       return def;
     }
 
-  public final char safeGetChar (ResourceBundle bundle,
-				 String name, char def)
+  private final char safeGetChar (ResourceBundle bundle,
+				  String name, char def)
     {
       String r = null;
       if (bundle != null)

@@ -132,9 +132,9 @@ public abstract class Collator implements Comparator, Cloneable
   }
 
   // Decompose a single character and append results to the buffer.
-  protected native final void decomposeCharacter (char c, StringBuffer buf);
+  native final void decomposeCharacter (char c, StringBuffer buf);
 
   // These names are fixed by the serialization spec.
-  protected int decmp;
-  protected int strength;
+  int decmp;
+  int strength;
 }
