@@ -169,6 +169,39 @@
 extern UDItype __udiv_qrnnd PARAMS ((UDItype *, UDItype, UDItype, UDItype));
 #define UDIV_TIME 220
 #endif /* LONGLONG_STANDALONE */
+#ifdef __alpha_cix__
+#define count_leading_zeros(COUNT,X) \
+  __asm__("ctlz %1,%0" : "=r"(COUNT) : "r"(X))
+#define count_trailing_zeros(COUNT,X) \
+  __asm__("cttz %1,%0" : "=r"(COUNT) : "r"(X))
+#define COUNT_LEADING_ZEROS_0 64
+#else
+extern const UQItype __clz_tab[];
+#define count_leading_zeros(COUNT,X) \
+  do {									\
+    UDItype __xr = (X), __t, __a;					\
+    __asm__("cmpbge %1,%2,%0" : "=r"(__t) : "r"(~__xr), "r"(-1));	\
+    __a = __clz_tab[__t ^ 0xff] - 1;					\
+    __asm__("extbl %1,%2,%0" : "=r"(__t) : "r"(__xr), "r"(__a));	\
+    (COUNT) = 64 - (__clz_tab[__t] + __a*8);				\
+  } while (0)
+#define count_trailing_zeros(COUNT,X) \
+  do {									\
+    UDItype __xr = (X), __t, __a;					\
+    __asm__("cmpbge %1,%2,%0" : "=r"(__t) : "r"(~__xr), "r"(-1));	\
+    __t = ~__t & -~__t;							\
+    __a = ((__t & 0xCC) != 0) * 2;					\
+    __a += ((__t & 0xF0) != 0) * 4;					\
+    __a += ((__t & 0xAA) != 0);						\
+    __asm__("extbl %1,%2,%0" : "=r"(__t) : "r"(__xr), "r"(__a));	\
+    __a <<= 3;								\
+    __t &= -__t;							\
+    __a += ((__t & 0xCC) != 0) * 2;					\
+    __a += ((__t & 0xF0) != 0) * 4;					\
+    __a += ((__t & 0xAA) != 0);						\
+    (COUNT) = __a;							\
+  } while (0)
+#endif /* __alpha_cix__ */
 #endif /* __alpha */
 
 #if defined (__arc__) && W_TYPE_SIZE == 32

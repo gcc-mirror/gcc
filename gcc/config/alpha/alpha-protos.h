@@ -57,6 +57,7 @@ extern int input_operand PARAMS ((rtx, enum machine_mode));
 extern int current_file_function_operand PARAMS ((rtx, enum machine_mode));
 extern int call_operand PARAMS ((rtx, enum machine_mode));
 extern int alpha_comparison_operator PARAMS ((rtx, enum machine_mode));
+extern int alpha_zero_comparison_operator PARAMS ((rtx, enum machine_mode));
 extern int alpha_swapped_comparison_operator PARAMS ((rtx, enum machine_mode));
 extern int signed_comparison_operator PARAMS ((rtx, enum machine_mode));
 extern int alpha_fp_comparison_operator PARAMS ((rtx, enum machine_mode));
@@ -83,6 +84,8 @@ extern rtx alpha_emit_set_long_const PARAMS ((rtx, HOST_WIDE_INT,
 extern void alpha_emit_floatuns PARAMS ((rtx[]));
 extern rtx alpha_emit_conditional_branch PARAMS ((enum rtx_code));
 extern rtx alpha_emit_conditional_move PARAMS ((rtx, enum machine_mode));
+extern int alpha_split_conditional_move PARAMS ((enum rtx_code, rtx, rtx,
+						 rtx, rtx));
 extern void alpha_emit_xfloating_arith PARAMS ((enum rtx_code, rtx[]));
 extern void alpha_emit_xfloating_cvt PARAMS ((enum rtx_code, rtx[]));
 extern void alpha_split_tfmode_pair PARAMS ((rtx[]));

@@ -735,6 +735,23 @@ alpha_comparison_operator (op, mode)
 	  || code == LEU || code == LTU);
 }
 
+/* Return 1 if OP is a valid Alpha comparison operator against zero. 
+   Here we know which comparisons are valid in which insn.  */
+
+int
+alpha_zero_comparison_operator (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  enum rtx_code code = GET_CODE (op);
+
+  if (mode != GET_MODE (op) && mode != VOIDmode)
+    return 0;
+
+  return (code == EQ || code == NE || code == LE || code == LT
+	  || code == LEU || code == LTU);
+}
+
 /* Return 1 if OP is a valid Alpha swapped comparison operator.  */
 
 int
@@ -1833,6 +1850,90 @@ alpha_emit_conditional_move (cmp, mode)
   tem = gen_reg_rtx (cmp_op_mode);
   emit_move_insn (tem, gen_rtx_fmt_ee (code, cmp_op_mode, op0, op1));
   return gen_rtx_fmt_ee (cmov_code, cmov_mode, tem, CONST0_RTX (cmp_op_mode));
+}
+
+/* Simplify a conditional move of two constants into a setcc with
+   arithmetic.  This is done with a splitter since combine would
+   just undo the work if done during code generation.  It also catches
+   cases we wouldn't have before cse.  */
+
+int
+alpha_split_conditional_move (code, dest, cond, t_rtx, f_rtx)
+     enum rtx_code code;
+     rtx dest, cond, t_rtx, f_rtx;
+{
+  HOST_WIDE_INT t, f, diff;
+  enum machine_mode mode;
+  rtx target, subtarget, tmp;
+
+  mode = GET_MODE (dest);
+  t = INTVAL (t_rtx);
+  f = INTVAL (f_rtx);
+  diff = t - f;
+
+  if (((code == NE || code == EQ) && diff < 0)
+      || (code == GE || code == GT))
+    {
+      code = reverse_condition (code);
+      diff = t, t = f, f = diff;
+      diff = t - f;
+    }
+
+  subtarget = target = dest;
+  if (mode != DImode)
+    {
+      target = gen_lowpart (DImode, dest);
+      if (! no_new_pseudos)
+        subtarget = gen_reg_rtx (DImode);
+      else
+	subtarget = target;
+    }
+
+  if (f == 0 && exact_log2 (diff) > 0
+      /* On EV6, we've got enough shifters to make non-arithmatic shifts
+	 viable over a longer latency cmove.  On EV5, the E0 slot is a
+	 scarce resource, and on EV4 shift has the same latency as a cmove. */
+      && (diff <= 8 || alpha_cpu == PROCESSOR_EV6))
+    {
+      tmp = gen_rtx_fmt_ee (code, DImode, cond, const0_rtx);
+      emit_insn (gen_rtx_SET (VOIDmode, subtarget, tmp));
+
+      tmp = gen_rtx_ASHIFT (DImode, subtarget, GEN_INT (exact_log2 (t)));
+      emit_insn (gen_rtx_SET (VOIDmode, target, tmp));
+    }
+  else if (f == 0 && t == -1)
+    {
+      tmp = gen_rtx_fmt_ee (code, DImode, cond, const0_rtx);
+      emit_insn (gen_rtx_SET (VOIDmode, subtarget, tmp));
+
+      emit_insn (gen_negdi2 (target, subtarget));
+    }
+  else if (diff == 1 || diff == 4 || diff == 8)
+    {
+      rtx add_op;
+
+      tmp = gen_rtx_fmt_ee (code, DImode, cond, const0_rtx);
+      emit_insn (gen_rtx_SET (VOIDmode, subtarget, tmp));
+
+      if (diff == 1)
+	emit_insn (gen_adddi3 (target, subtarget, GEN_INT (f)));
+      else
+	{
+	  add_op = GEN_INT (f);
+	  if (sext_add_operand (add_op, mode))
+	    {
+	      tmp = gen_rtx_MULT (DImode, subtarget, GEN_INT (diff));
+	      tmp = gen_rtx_PLUS (DImode, tmp, add_op);
+	      emit_insn (gen_rtx_SET (VOIDmode, target, tmp));
+	    }
+	  else
+	    return 0;
+	}
+    }
+  else
+    return 0;
+
+  return 1;
 }
 
 /* Look up the function X_floating library function name for the

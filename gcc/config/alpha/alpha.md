@@ -1177,14 +1177,6 @@
   [(set_attr "type" "ilog")])
 
 ;; Handle the FFS insn iff we support CIX. 
-;;
-;; These didn't make it into EV6 pass 2 as planned.  Instead they
-;; cropped cttz/ctlz/ctpop from the old CIX and renamed it FIX for
-;; "Square Root and Floating Point Convert Extension".
-;;
-;; I'm assured that these insns will make it into EV67 (first pass
-;; due Summer 1999), presumably with a new AMASK bit, and presumably
-;; will still be named CIX.
 
 (define_expand "ffsdi2"
   [(set (match_dup 2)
@@ -1756,6 +1748,22 @@
   ""
   "msk%M2h %1,%3,%0"
   [(set_attr "type" "shift")])
+
+;; Prefer AND + NE over LSHIFTRT + AND.
+
+(define_insn_and_split "*ze_and_ne"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(zero_extract:DI (match_operand:DI 1 "reg_or_0_operand" "rJ")
+			 (const_int 1)
+			 (match_operand 2 "const_int_operand" "I")))]
+  "(unsigned HOST_WIDE_INT) INTVAL (operands[2]) < 8"
+  "#"
+  ""
+  [(set (match_dup 0)
+	(and:DI (match_dup 1) (match_dup 3)))
+   (set (match_dup 0)
+	(ne:DI (match_dup 0) (const_int 0)))]
+  "operands[3] = GEN_INT (1 << INTVAL (operands[2]));")
 
 ;; Floating-point operations.  All the double-precision insns can extend
 ;; from single, so indicate that.  The exception are the ones that simply
@@ -1768,12 +1776,26 @@
   "cpys $f31,%R1,%0"
   [(set_attr "type" "fcpys")])
 
+(define_insn "*nabssf2"
+  [(set (match_operand:SF 0 "register_operand" "=f")
+	(neg:SF (abs:SF (match_operand:SF 1 "reg_or_fp0_operand" "fG"))))]
+  "TARGET_FP"
+  "cpysn $f31,%R1,%0"
+  [(set_attr "type" "fadd")])
+
 (define_insn "absdf2"
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(abs:DF (match_operand:DF 1 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
   "cpys $f31,%R1,%0"
   [(set_attr "type" "fcpys")])
+
+(define_insn "*nabsdf2"
+  [(set (match_operand:DF 0 "register_operand" "=f")
+	(neg:DF (abs:DF (match_operand:DF 1 "reg_or_fp0_operand" "fG"))))]
+  "TARGET_FP"
+  "cpysn $f31,%R1,%0"
+  [(set_attr "type" "fadd")])
 
 (define_expand "abstf2"
   [(parallel [(set (match_operand:TF 0 "register_operand" "")
@@ -2532,6 +2554,10 @@
 
 ;; The mode folding trick can't be used with const_int operands, since
 ;; reload needs to know the proper mode.
+;;
+;; Use add_operand instead of the more seemingly natural reg_or_8bit_operand
+;; in order to create more pairs of constants.  As long as we're allowing
+;; two constants at the same time, and will have to reload one of them...
 
 (define_insn "*movqicc_internal"
   [(set (match_operand:QI 0 "register_operand" "=r,r,r,r")
@@ -2539,8 +2565,8 @@
 	 (match_operator 2 "signed_comparison_operator"
 			 [(match_operand:DI 3 "reg_or_0_operand" "rJ,rJ,J,J")
 			  (match_operand:DI 4 "reg_or_0_operand" "J,J,rJ,rJ")])
-	 (match_operand:QI 1 "reg_or_8bit_operand" "rI,0,rI,0")
-	 (match_operand:QI 5 "reg_or_8bit_operand" "0,rI,0,rI")))]
+	 (match_operand:QI 1 "add_operand" "rI,0,rI,0")
+	 (match_operand:QI 5 "add_operand" "0,rI,0,rI")))]
   "(operands[3] == const0_rtx || operands[4] == const0_rtx)"
   "@
    cmov%C2 %r3,%1,%0
@@ -2555,8 +2581,8 @@
 	 (match_operator 2 "signed_comparison_operator"
 			 [(match_operand:DI 3 "reg_or_0_operand" "rJ,rJ,J,J")
 			  (match_operand:DI 4 "reg_or_0_operand" "J,J,rJ,rJ")])
-	 (match_operand:HI 1 "reg_or_8bit_operand" "rI,0,rI,0")
-	 (match_operand:HI 5 "reg_or_8bit_operand" "0,rI,0,rI")))]
+	 (match_operand:HI 1 "add_operand" "rI,0,rI,0")
+	 (match_operand:HI 5 "add_operand" "0,rI,0,rI")))]
   "(operands[3] == const0_rtx || operands[4] == const0_rtx)"
   "@
    cmov%C2 %r3,%1,%0
@@ -2571,8 +2597,8 @@
 	 (match_operator 2 "signed_comparison_operator"
 			 [(match_operand:DI 3 "reg_or_0_operand" "rJ,rJ,J,J")
 			  (match_operand:DI 4 "reg_or_0_operand" "J,J,rJ,rJ")])
-	 (match_operand:SI 1 "reg_or_8bit_operand" "rI,0,rI,0")
-	 (match_operand:SI 5 "reg_or_8bit_operand" "0,rI,0,rI")))]
+	 (match_operand:SI 1 "add_operand" "rI,0,rI,0")
+	 (match_operand:SI 5 "add_operand" "0,rI,0,rI")))]
   "(operands[3] == const0_rtx || operands[4] == const0_rtx)"
   "@
    cmov%C2 %r3,%1,%0
@@ -2587,8 +2613,8 @@
 	 (match_operator 2 "signed_comparison_operator"
 			 [(match_operand:DI 3 "reg_or_0_operand" "rJ,rJ,J,J")
 			  (match_operand:DI 4 "reg_or_0_operand" "J,J,rJ,rJ")])
-	 (match_operand:DI 1 "reg_or_8bit_operand" "rI,0,rI,0")
-	 (match_operand:DI 5 "reg_or_8bit_operand" "0,rI,0,rI")))]
+	 (match_operand:DI 1 "add_operand" "rI,0,rI,0")
+	 (match_operand:DI 5 "add_operand" "0,rI,0,rI")))]
   "(operands[3] == const0_rtx || operands[4] == const0_rtx)"
   "@
    cmov%C2 %r3,%1,%0
@@ -3823,6 +3849,205 @@
 				  || GET_CODE (operands[1]) == GT)
 				 ? NE : EQ),
 				DImode, operands[4], const0_rtx);
+}")
+
+;; Prefer to use cmp and arithmetic when possible instead of a cmove.
+
+(define_split
+  [(set (match_operand 0 "register_operand" "")
+	(if_then_else (match_operator 1 "signed_comparison_operator"
+			   [(match_operand:DI 2 "reg_or_0_operand" "")
+			    (const_int 0)])
+	  (match_operand 3 "const_int_operand" "")
+	  (match_operand 4 "const_int_operand" "")))]
+  ""
+  [(const_int 0)]
+  "
+{
+  if (alpha_split_conditional_move (GET_CODE (operands[1]), operands[0],
+				    operands[2], operands[3], operands[4]))
+    DONE;
+  else
+    FAIL;
+}")
+
+;; ??? Why combine is allowed to create such non-canonical rtl, I don't know.
+;; Oh well, we match it in movcc, so it must be partially our fault.
+(define_split
+  [(set (match_operand 0 "register_operand" "")
+	(if_then_else (match_operator 1 "signed_comparison_operator"
+			   [(const_int 0)
+			    (match_operand:DI 2 "reg_or_0_operand" "")])
+	  (match_operand 3 "const_int_operand" "")
+	  (match_operand 4 "const_int_operand" "")))]
+  ""
+  [(const_int 0)]
+  "
+{
+  if (alpha_split_conditional_move (swap_condition (GET_CODE (operands[1])),
+				    operands[0], operands[2], operands[3],
+				    operands[4]))
+    DONE;
+  else
+    FAIL;
+}")
+
+(define_insn_and_split "*cmp_sadd_di"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(plus:DI (if_then_else:DI
+		   (match_operator 1 "alpha_zero_comparison_operator"
+		     [(match_operand:DI 2 "reg_or_0_operand" "rJ")
+		      (const_int 0)])
+		   (match_operand:DI 3 "const48_operand" "I")
+		   (const_int 0))
+	         (match_operand:DI 4 "sext_add_operand" "rIO")))
+   (clobber (match_scratch:DI 5 "=r"))]
+  ""
+  "#"
+  "! no_new_pseudos || reload_completed"
+  [(set (match_dup 5)
+	(match_op_dup:DI 1 [(match_dup 2) (const_int 0)]))
+   (set (match_dup 0)
+	(plus:DI (mult:DI (match_dup 5) (match_dup 3))
+		 (match_dup 4)))]
+  "
+{
+  if (! no_new_pseudos)
+    operands[5] = gen_reg_rtx (DImode);
+  else if (reg_overlap_mentioned_p (operands[5], operands[4]))
+    operands[5] = operands[0];
+}")
+
+(define_insn_and_split "*cmp_sadd_si"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(plus:SI (if_then_else:SI
+		   (match_operator 1 "alpha_zero_comparison_operator"
+		     [(match_operand:DI 2 "reg_or_0_operand" "rJ")
+		      (const_int 0)])
+		   (match_operand:SI 3 "const48_operand" "I")
+		   (const_int 0))
+	         (match_operand:SI 4 "sext_add_operand" "rIO")))
+   (clobber (match_scratch:SI 5 "=r"))]
+  ""
+  "#"
+  "! no_new_pseudos || reload_completed"
+  [(set (match_dup 5)
+	(match_op_dup:SI 1 [(match_dup 2) (const_int 0)]))
+   (set (match_dup 0)
+	(plus:SI (mult:SI (match_dup 5) (match_dup 3))
+		 (match_dup 4)))]
+  "
+{
+  if (! no_new_pseudos)
+    operands[5] = gen_reg_rtx (DImode);
+  else if (reg_overlap_mentioned_p (operands[5], operands[4]))
+    operands[5] = operands[0];
+}")
+
+(define_insn_and_split "*cmp_sadd_sidi"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(sign_extend:DI
+	  (plus:SI (if_then_else:SI
+		     (match_operator 1 "alpha_zero_comparison_operator"
+		       [(match_operand:DI 2 "reg_or_0_operand" "rJ")
+		        (const_int 0)])
+		     (match_operand:SI 3 "const48_operand" "I")
+		     (const_int 0))
+	           (match_operand:SI 4 "sext_add_operand" "rIO"))))
+   (clobber (match_scratch:SI 5 "=r"))]
+  ""
+  "#"
+  "! no_new_pseudos || reload_completed"
+  [(set (match_dup 5)
+	(match_op_dup:SI 1 [(match_dup 2) (const_int 0)]))
+   (set (match_dup 0)
+	(sign_extend:DI (plus:SI (mult:SI (match_dup 5) (match_dup 3))
+				 (match_dup 4))))]
+  "
+{
+  if (! no_new_pseudos)
+    operands[5] = gen_reg_rtx (DImode);
+  else if (reg_overlap_mentioned_p (operands[5], operands[4]))
+    operands[5] = operands[0];
+}")
+
+(define_insn_and_split "*cmp_ssub_di"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(minus:DI (if_then_else:DI
+		    (match_operator 1 "alpha_zero_comparison_operator"
+		      [(match_operand:DI 2 "reg_or_0_operand" "rJ")
+		       (const_int 0)])
+		    (match_operand:DI 3 "const48_operand" "I")
+		    (const_int 0))
+	          (match_operand:DI 4 "reg_or_8bit_operand" "rI")))
+   (clobber (match_scratch:DI 5 "=r"))]
+  ""
+  "#"
+  "! no_new_pseudos || reload_completed"
+  [(set (match_dup 5)
+	(match_op_dup:DI 1 [(match_dup 2) (const_int 0)]))
+   (set (match_dup 0)
+	(minus:DI (mult:DI (match_dup 5) (match_dup 3))
+		  (match_dup 4)))]
+  "
+{
+  if (! no_new_pseudos)
+    operands[5] = gen_reg_rtx (DImode);
+  else if (reg_overlap_mentioned_p (operands[5], operands[4]))
+    operands[5] = operands[0];
+}")
+
+(define_insn_and_split "*cmp_ssub_si"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(minus:SI (if_then_else:SI
+		    (match_operator 1 "alpha_zero_comparison_operator"
+		      [(match_operand:DI 2 "reg_or_0_operand" "rJ")
+		       (const_int 0)])
+		    (match_operand:SI 3 "const48_operand" "I")
+		    (const_int 0))
+	          (match_operand:SI 4 "reg_or_8bit_operand" "rI")))
+   (clobber (match_scratch:SI 5 "=r"))]
+  ""
+  "#"
+  "! no_new_pseudos || reload_completed"
+  [(set (match_dup 5)
+	(match_op_dup:SI 1 [(match_dup 2) (const_int 0)]))
+   (set (match_dup 0)
+	(minus:SI (mult:SI (match_dup 5) (match_dup 3))
+		 (match_dup 4)))]
+  "
+{
+  if (! no_new_pseudos)
+    operands[5] = gen_reg_rtx (DImode);
+  else if (reg_overlap_mentioned_p (operands[5], operands[4]))
+    operands[5] = operands[0];
+}")
+
+(define_insn_and_split "*cmp_ssub_sidi"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(sign_extend:DI
+	  (minus:SI (if_then_else:SI
+		      (match_operator 1 "alpha_zero_comparison_operator"
+		        [(match_operand:DI 2 "reg_or_0_operand" "rJ")
+		         (const_int 0)])
+		      (match_operand:SI 3 "const48_operand" "I")
+		      (const_int 0))
+	            (match_operand:SI 4 "reg_or_8bit_operand" "rI"))))
+   (clobber (match_scratch:SI 5 "=r"))]
+  ""
+  "#"
+  "! no_new_pseudos || reload_completed"
+  [(set (match_dup 5)
+	(match_op_dup:SI 1 [(match_dup 2) (const_int 0)]))
+   (set (match_dup 0)
+	(sign_extend:DI (minus:SI (mult:SI (match_dup 5) (match_dup 3))
+				  (match_dup 4))))]
+  "
+{
+  if (! no_new_pseudos)
+    operands[5] = gen_reg_rtx (DImode);
+  else if (reg_overlap_mentioned_p (operands[5], operands[4]))
+    operands[5] = operands[0];
 }")
 
 ;; Here are the CALL and unconditional branch insns.  Calls on NT and OSF
