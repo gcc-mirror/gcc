@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.4 $
+--                            $Revision$
 --                                                                          --
 --            Copyright (C) 2001 Free Software Foundation, Inc.             --
 --                                                                          --
@@ -227,17 +227,18 @@ package body Exp_Imgv is
    --  is 32/16/8 depending on the element type of Lit_Indexes.
 
    procedure Expand_Image_Attribute (N : Node_Id) is
-      Loc     : constant Source_Ptr := Sloc (N);
-      Exprs   : constant List_Id    := Expressions (N);
-      Pref    : constant Node_Id    := Prefix (N);
-      Ptyp    : constant Entity_Id  := Entity (Pref);
-      Rtyp    : constant Entity_Id  := Root_Type (Ptyp);
-      Expr    : constant Node_Id    := Relocate_Node (First (Exprs));
-      Imid    : RE_Id;
-      Tent    : Entity_Id;
-      Arglist : List_Id;
-      Func    : RE_Id;
-      Ttyp    : Entity_Id;
+      Loc      : constant Source_Ptr := Sloc (N);
+      Exprs    : constant List_Id    := Expressions (N);
+      Pref     : constant Node_Id    := Prefix (N);
+      Ptyp     : constant Entity_Id  := Entity (Pref);
+      Rtyp     : constant Entity_Id  := Root_Type (Ptyp);
+      Expr     : constant Node_Id    := Relocate_Node (First (Exprs));
+      Imid     : RE_Id;
+      Tent     : Entity_Id;
+      Arglist  : List_Id;
+      Func     : RE_Id;
+      Ttyp     : Entity_Id;
+      Func_Ent : Entity_Id;
 
    begin
       if Rtyp = Standard_Boolean then
@@ -347,7 +348,20 @@ package body Exp_Imgv is
       end if;
 
       --  If we fall through, we have one of the cases that is handled by
-      --  calling one of the System.Img_xx routines.
+      --  calling one of the System.Img_xx routines and Imid is set to the
+      --  RE_Id for the function to be called.
+
+      Func_Ent := RTE (Imid);
+
+      --  If the function entity is empty, that means we have a case in
+      --  no run time mode where the operation is not allowed, and an
+      --  appropriate diagnostic has already been issued.
+
+      if No (Func_Ent) then
+         return;
+      end if;
+
+      --  Otherwise prepare arguments for run-time call
 
       Arglist := New_List (Convert_To (Tent, Relocate_Node (Expr)));
 
@@ -388,7 +402,7 @@ package body Exp_Imgv is
 
       Rewrite (N,
         Make_Function_Call (Loc,
-          Name => New_Reference_To (RTE (Imid), Loc),
+          Name => New_Reference_To (Func_Ent, Loc),
           Parameter_Associations => Arglist));
 
       Analyze_And_Resolve (N, Standard_String);
