@@ -1,5 +1,5 @@
 /* Subroutines for assembler code output on the NS32000.
-   Copyright (C) 1988 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -396,6 +396,38 @@ check_reg (oper, reg)
     }
   return 0;
 }
+
+/* Returns 1 if OP contains a global symbol reference */
+
+int
+global_symbolic_reference_mentioned_p (op)
+     rtx op;
+{
+  register char *fmt;
+  register int i;
+
+  if (GET_CODE (op) == SYMBOL_REF && ! SYMBOL_REF_FLAG (op))
+    return 1;
+
+  fmt = GET_RTX_FORMAT (GET_CODE (op));
+  for (i = GET_RTX_LENGTH (GET_CODE (op)) - 1; i >= 0; i--)
+    {
+      if (fmt[i] == 'E')
+	{
+	  register int j;
+
+	  for (j = XVECLEN (op, i) - 1; j >= 0; j--)
+	    if (global_symbolic_reference_mentioned_p (XVECEXP (op, i, j)))
+	      return 1;
+	}
+      else if (fmt[i] == 'e' 
+	       && global_symbolic_reference_mentioned_p (XEXP (op, i)))
+	return 1;
+    }
+
+  return 0;
+}
+
 
 /* PRINT_OPERAND is defined to call this function,
    which is easier to debug than putting all the code in
@@ -497,6 +529,7 @@ print_operand_address (file, addr)
   static char scales[] = { 'b', 'w', 'd', 0, 'q', };
   rtx offset, base, indexexp, tmp;
   int scale;
+  extern int flag_pic;
 
   if (GET_CODE (addr) == PRE_DEC || GET_CODE (addr) == POST_DEC)
     {
@@ -560,9 +593,65 @@ print_operand_address (file, addr)
 	case MULT:
 	  indexexp = tmp;
 	  break;
-	case CONST:
-	case CONST_INT:
 	case SYMBOL_REF:
+	  if (flag_pic && ! CONSTANT_POOL_ADDRESS_P (tmp)
+	      && ! SYMBOL_REF_FLAG (tmp))
+	    {
+	      if (base)
+		{
+		  if (indexexp)
+		    abort ();
+		  indexexp = base;
+		}
+	      base = tmp;
+	      break;
+	    }
+	case CONST:
+	  if (flag_pic && GET_CODE (tmp) == CONST)
+	    {
+	      rtx sym, off, tmp1;
+	      tmp1 = XEXP (tmp,0);
+	      if (GET_CODE (tmp1)  != PLUS)
+	abort ();
+
+	      sym = XEXP (tmp1,0);
+	      if (GET_CODE (sym) != SYMBOL_REF)
+	        {
+	          off = sym;
+		  sym = XEXP (tmp1,1);
+		}
+	      else
+	        off = XEXP (tmp1,1);
+	      if (GET_CODE (sym) == SYMBOL_REF)
+		{
+	  if (GET_CODE (off) != CONST_INT)
+		    abort ();
+
+		  if (CONSTANT_POOL_ADDRESS_P (sym)
+		      || SYMBOL_REF_FLAG (sym))
+		    {
+		      SYMBOL_REF_FLAG (tmp) = 1;
+		    }
+		  else
+		    {
+		      if (base)
+			{
+			  if (indexexp)
+			    abort ();
+
+			  indexexp = base;
+			}
+
+		      if (offset != 0)
+			abort ();
+
+		      base = sym;
+		      offset = off;
+		      break;
+		    }
+		}
+	    }
+	case CONST_INT:
 	case LABEL_REF:
 	  if (offset)
 	    offset = gen_rtx (PLUS, SImode, tmp, offset);
@@ -613,6 +702,14 @@ print_operand_address (file, addr)
       case REG:
 	fprintf (file, "(%s)", reg_names[REGNO (base)]);
 	break;
+      case SYMBOL_REF:
+	  if (! flag_pic)
+	    abort ();
+
+        fprintf (file, "(");
+	output_addr_const (file, base);
+	fprintf (file, "(sb))");
+        break;
       case MEM:
 	addr = XEXP(base,0);
 	base = NULL;
@@ -673,10 +770,15 @@ print_operand_address (file, addr)
       default:
 	abort ();
       }
+#if 0
+  else if (flag_pic && SYMBOL_REF_FLAG (offset))
+    fprintf (file, "(sb)");
+#endif
 #ifdef PC_RELATIVE
-  else				/* no base */
-    if (GET_CODE (offset) == LABEL_REF || GET_CODE (offset) == SYMBOL_REF)
-      fprintf (file, "(pc)");
+  else if (GET_CODE (offset) == LABEL_REF
+	   || GET_CODE (offset) == SYMBOL_REF
+	   || GET_CODE (offset) == CONST)
+    fprintf (file, "(pc)");
 #endif
 #ifdef BASE_REG_NEEDED		/* this is defined if the assembler always
 			   	   needs a base register */
@@ -759,4 +861,27 @@ output_shift_insn (operands)
       }
     else return "ashd %2,%0";
   return "ashd %2,%0";
+}
+
+char *
+output_move_dconst (n, s)
+	int n;
+	char *s;
+{
+  static char r[32];
+
+  if (n > -9 && n < 8)
+    strcpy (r, "movqd ");
+  else if (n > 0 && n < 256)
+    strcpy (r, "movzbd ");
+  else if (n > 0 && n < 65536)
+    strcpy (r, "movzwd ");
+  else if (n < 0 && n > -257)
+    strcpy (r, "movxbd ");
+  else if (n < 0 && n > -65537)
+    strcpy (r, "movxwd ");
+  else
+    strcpy (r, "movd ");
+  strcat (r, s);
+  return r;
 }
