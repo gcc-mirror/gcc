@@ -1,3 +1,14 @@
+2004-12-21  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/18378
+	* g++.dg/ext/packed8.C: New test.
+
+	PR c++/13268
+	* g++.dg/template/crash31.C: New test.
+	
+	PR c++/19034
+	* g++.dg/template/crash30.C: New test.
+
 2004-12-21  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR C++/18984
