@@ -502,6 +502,46 @@ extern int ix86_arch;
 	: (ALIGN))							\
     : (ALIGN))
 
+/* If defined, a C expression to compute the alignment for a local
+   variable.  TYPE is the data type, and ALIGN is the alignment that
+   the object would ordinarily have.  The value of this macro is used
+   instead of that alignment to align the object.
+
+   If this macro is not defined, then ALIGN is used.
+
+   One use of this macro is to increase alignment of medium-size
+   data to make it all fit in fewer cache lines.  */
+
+#define LOCAL_ALIGNMENT(TYPE, ALIGN)					\
+  (TREE_CODE (TYPE) == ARRAY_TYPE					\
+    ? ((TYPE_MODE (TREE_TYPE (TYPE)) == DFmode && (ALIGN) < 64)		\
+	? 64								\
+   	: (TYPE_MODE (TREE_TYPE (TYPE)) == XFmode && (ALIGN) < 128)	\
+	? 128								\
+	: (ALIGN))							\
+    : TREE_CODE (TYPE) == COMPLEX_TYPE					\
+    ? ((TYPE_MODE (TYPE) == DCmode && (ALIGN) < 64)			\
+	? 64								\
+   	: (TYPE_MODE (TYPE) == XCmode && (ALIGN) < 128)			\
+	? 128								\
+	: (ALIGN))							\
+    : ((TREE_CODE (TYPE) == RECORD_TYPE					\
+	|| TREE_CODE (TYPE) == UNION_TYPE				\
+	|| TREE_CODE (TYPE) == QUAL_UNION_TYPE)				\
+	&& TYPE_FIELDS (TYPE))						\
+    ? ((DECL_MODE (TYPE_FIELDS (TYPE)) == DFmode && (ALIGN) < 64)	\
+	? 64								\
+	: (DECL_MODE (TYPE_FIELDS (TYPE)) == XFmode && (ALIGN) < 128)	\
+	? 128								\
+	: (ALIGN))							\
+    : TREE_CODE (TYPE) == REAL_TYPE					\
+    ? ((TYPE_MODE (TYPE) == DFmode && (ALIGN) < 64)			\
+	? 64								\
+   	: (TYPE_MODE (TYPE) == XFmode && (ALIGN) < 128)			\
+	? 128								\
+	: (ALIGN))							\
+    : (ALIGN))
+
 /* Set this non-zero if move instructions will actually fail to work
    when given unaligned data.  */
 #define STRICT_ALIGNMENT 0

@@ -3495,12 +3495,7 @@ expand_decl (decl)
 	  oldaddr = XEXP (DECL_RTL (decl), 0);
 	}
 
-      DECL_RTL (decl)
-	= assign_stack_temp (DECL_MODE (decl),
-			     ((TREE_INT_CST_LOW (DECL_SIZE (decl))
-			       + BITS_PER_UNIT - 1)
-			      / BITS_PER_UNIT),
-			     1);
+      DECL_RTL (decl) = assign_temp (TREE_TYPE (decl), 1, 1, 1);
       MEM_SET_IN_STRUCT_P (DECL_RTL (decl),
 			   AGGREGATE_TYPE_P (TREE_TYPE (decl)));
 
