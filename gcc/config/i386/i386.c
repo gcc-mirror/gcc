@@ -8465,7 +8465,7 @@ ix86_cc_mode (code, op0, op1)
 	return CCGCmode;
       /* Codes doable only with sign flag when comparing
          against zero, but we miss jump instruction for it
-         so we need to use relational tests agains overflow
+         so we need to use relational tests against overflow
          that thus needs to be zero.  */
     case GT:			/* ZF=0 & SF=OF */
     case LE:			/* ZF=1 | SF<>OF */
@@ -10765,7 +10765,7 @@ ix86_expand_movstr (dst, src, count_exp, align_exp)
          handle small counts using the loops.  Many CPUs (such as Athlon)
          have large REP prefix setup costs.
 
-         This is quite costy.  Maybe we can revisit this decision later or
+         This is quite costly.  Maybe we can revisit this decision later or
          add some customizability to this code.  */
 
       if (count == 0 && align < desired_alignment)
