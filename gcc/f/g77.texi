@@ -14,13 +14,15 @@
 @c %**start of header 
 @setfilename g77.info
 
-@set last-up-date 1999-02-26
+@set last-up-date 1999-03-11
 @set version-g77 0.5.24
+@set version-egcs 1.1.2
 @set email-general egcs@@egcs.cygnus.com
 @set email-bugs egcs-bugs@@egcs.cygnus.com
 @set email-burley craig@@jcb-sc.com
 @set path-g77 egcs/gcc/f
 @set path-libf2c egcs/libf2c
+@set which-g77 @code{egcs}-@value{version-egcs}
 
 @c @setfilename useg77.info
 @c @setfilename portg77.info
@@ -179,6 +181,12 @@ This manual documents how to port the GNU Fortran compiler,
 as well as its new features and incompatibilities, and how to report
 bugs.  It corresponds to GNU Fortran version @value{version-g77}.
 @end ifclear
+
+An online, ``live'' version of this document
+(derived directly from the up-to-date mainline version
+of @code{g77} within @code{egcs})
+is available at
+@uref{http://egcs.cygnus.com/onlinedocs/g77_toc.html}.
 
 @end ifinfo
 @menu

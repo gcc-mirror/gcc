@@ -5,7 +5,7 @@
 @c The text of this file appears in the file BUGS
 @c in the G77 distribution, as well as in the G77 manual.
 
-@c 1999-03-05
+@c 1999-03-11
 
 @ifclear NEWSONLY
 @node News
@@ -57,6 +57,12 @@ to help clarify how they differ from other versions,
 though this can make getting a complete picture
 of what a particular @code{egcs} version contains
 somewhat more difficult.
+
+An online, ``live'' version of this document
+(derived directly from the up-to-date mainline version
+of @code{g77} within @code{egcs})
+is available at
+@uref{http://egcs.cygnus.com/onlinedocs/g77_news.html}.
 
 @heading In 0.5.24 and @code{egcs} 1.1.2 (versus 0.5.23 and 1.1.1):
 @itemize @bullet
@@ -380,10 +386,17 @@ version 0.5.22 of @code{g77}, due to using the
 it to fix a few bugs and improve performance in a
 few cases.
 
+@ifset last-up-date
 @xref{Actual Bugs,,Actual Bugs We Haven't Fixed Yet},
-available in plain-text format in @code{gcc/f/BUGS},
 for information on the known bugs in this version,
 including the regressions.
+@end ifset
+
+@ifset NEWSONLY
+See @file{egcs/gcc/f/BUGS},
+for information on the known bugs in this version,
+including the regressions.
+@end ifset
 
 Features that have been dropped from this version
 of @code{g77} due to their being implemented
@@ -762,10 +775,17 @@ due to using the
 it to fix a few bugs and improve performance in a
 few cases.
 
+@ifset last-up-date
 @xref{Actual Bugs,,Actual Bugs We Haven't Fixed Yet},
-available in plain-text format in @code{gcc/f/BUGS},
 for information on the known bugs in this version,
 including the regressions.
+@end ifset
+
+@ifset NEWSONLY
+See @file{egcs/gcc/f/BUGS},
+for information on the known bugs in this version,
+including the regressions.
+@end ifset
 
 Features that have been dropped from this version
 of @code{g77} due to their being implemented

@@ -1,3 +1,10 @@
+1999-03-11  Craig Burley  <craig@jcb-sc.com>
+
+	* bugs.texi, g77.texi, news.texi: Point to URLs for live
+	versions of docs.
+	Clarify which versions to which these docs apply.
+	Other minor fix-ups.
+
 1999-03-05  Craig Burley  <craig@jcb-sc.com>
 
 	* news.texi: IDATE (VXT) fixed to return year as 0..99.

@@ -5,7 +5,11 @@
 @c The text of this file appears in the file BUGS
 @c in the G77 distribution, as well as in the G77 manual.
 
-@c 1999-03-03
+@c 1999-03-11
+
+@ifset BUGSONLY
+@set which-g77 @code{egcs}-1.1.2
+@end ifset
 
 @ifclear BUGSONLY
 @node Actual Bugs
@@ -13,19 +17,41 @@
 @end ifclear
 
 This section identifies bugs that @code{g77} @emph{users}
-might run into in this version of @code{g77}.
+might run into in the @value{which-g77} version
+of @code{g77}.
 This includes bugs that are actually in the @code{gcc}
 back end (GBE) or in @code{libf2c}, because those
 sets of code are at least somewhat under the control
 of (and necessarily intertwined with) @code{g77},
 so it isn't worth separating them out.
 
+@ifset last-up-date
 For information on bugs in @emph{other} versions of @code{g77},
 @ref{News,,News About GNU Fortran}.
+@end ifset
 
+@ifset BUGSONLY
+For information on bugs in @emph{other} versions of @code{g77},
+see @file{egcs/gcc/f/NEWS}.
+@end ifset
+
+An online, ``live'' version of this document
+(derived directly from the up-to-date mainline version
+of @code{g77} within @code{egcs})
+is available at
+@uref{http://egcs.cygnus.com/onlinedocs/g77_bugs.html}.
+
+@ifset last-up-date
 For information on bugs that might afflict people who
 configure, port, build, and install @code{g77},
 @ref{Problems Installing}.
+@end ifset
+
+@ifset NEWSONLY
+For information on bugs that might afflict people who
+configure, port, build, and install @code{g77},
+see "Problems Installing" in @file{egcs/gcc/f/INSTALL}.
+@end ifset
 
 @itemize @bullet
 @item
@@ -34,13 +60,13 @@ fails to return the year in the documented, non-Y2K-compliant range
 of 0--99,
 instead returning 100 for the year 2000.
 
-Fixed in @code{egcs} 1.2.
+@c Fixed in @code{egcs} 1.2.
 
 @item
 Year 2000 (Y2K) compliance information
 is missing from the documentation.
 
-Fixed in @code{egcs} 1.2.
+@c Fixed in @code{egcs} 1.2.
 
 @item
 @code{g77} crashes when compiling
@@ -49,20 +75,20 @@ such as @samp{IOSTAT=@var{j}},
 where @var{j} is other than default @code{INTEGER}
 (such as @code{INTEGER*2}).
 
-Fixed in @code{egcs} 1.2.
+@c Fixed in @code{egcs} 1.2.
 
 @item
 The @samp{-ax} option is not obeyed when compiling Fortran programs.
 (It is not passed to the @file{f771} driver.)
 
-Fixed in @code{egcs} 1.2.
+@c Fixed in @code{egcs} 1.2.
 
 @item
 @code{g77} fails to warn about a reference to a function
 when the corresponding @emph{subsequent} function program unit
 disagrees with the reference concerning the type of the function.
 
-Fixed in @code{egcs} 1.2.
+@c Fixed in @code{egcs} 1.2.
 
 @item
 @c Tim Prince discovered this.
@@ -143,9 +169,11 @@ improvements to the compiler.)
 
 Note that @code{g77} does display a warning message to
 notify the user before the compiler appears to hang.
+@ifset last-up-date
 @xref{Large Initialization,,Initialization of Large Aggregate Areas},
 for information on how to change the point at which
 @code{g77} decides to issue this warning.
+@end ifset
 
 @cindex debugging
 @cindex common blocks
@@ -163,8 +191,10 @@ As of Version 0.5.19, a temporary kludge solution is provided whereby
 some rudimentary information on a member is written as a string that
 is the member's value as a character string.
 
+@ifset last-up-date
 @xref{Code Gen Options,,Options for Code Generation Conventions},
 for information on the @samp{-fdebug-kludge} option.
+@end ifset
 
 @cindex code, displaying main source
 @cindex displaying main source code
