@@ -26,7 +26,7 @@ Boston, MA 02111-1307, USA.  */
 #include "i386/sysv4.h"
 
 #ifndef VERSION_INFO2
-#define VERSION_INFO2   "$Revision: 1.6 $"
+#define VERSION_INFO2   "$Revision: 1.7 $"
 #endif
 
 #ifndef VERSION_STRING
@@ -228,7 +228,7 @@ Boston, MA 02111-1307, USA.  */
 #undef SELECT_RTX_SECTION
 #define SELECT_RTX_SECTION(MODE,RTX)            \
 {                                               \
-  if (flag_pic && symbolic_operand (RTX))       \
+  if (flag_pic && symbolic_operand (RTX, VOIDmode)) \
     data_section ();                            \
   else                                          \
     const_section ();                           \

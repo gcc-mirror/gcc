@@ -1,3 +1,9 @@
+Sun Sep 26 16:36:52 1999  Robert Lipe  (robertlipe@usa.net)
+
+	* config/i386/dgux.h (SELECT_RTX_SECTION): Provide dummy argument
+	for symbolic_operand().
+	* config/i386/sco5.h (SELECT_RTX_SECTION): Likewise.
+
 Sun Sep 26 07:37:11 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* combine.c (gen_rtx_combine): Add missing call to va_end().
