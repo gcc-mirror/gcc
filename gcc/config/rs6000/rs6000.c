@@ -241,6 +241,7 @@ static bool rs6000_rtx_costs PARAMS ((rtx, int, int, int *));
 static int rs6000_adjust_cost PARAMS ((rtx, rtx, rtx, int));
 static int rs6000_adjust_priority PARAMS ((rtx, int));
 static int rs6000_issue_rate PARAMS ((void));
+static int rs6000_use_sched_lookahead PARAMS ((void));
 
 static void rs6000_init_builtins PARAMS ((void));
 static rtx rs6000_expand_unop_builtin PARAMS ((enum insn_code, tree, rtx));
@@ -406,6 +407,9 @@ static const char alt_reg_names[][8] =
 #define TARGET_SCHED_ADJUST_COST rs6000_adjust_cost
 #undef TARGET_SCHED_ADJUST_PRIORITY
 #define TARGET_SCHED_ADJUST_PRIORITY rs6000_adjust_priority
+
+#undef TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD
+#define TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD rs6000_use_sched_lookahead
 
 #undef TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS rs6000_init_builtins
@@ -12661,6 +12665,7 @@ rs6000_issue_rate ()
   case CPU_PPC603:
   case CPU_PPC750:
   case CPU_PPC7400:
+  case CPU_PPC8540:
     return 2; 
   case CPU_RIOS2:
   case CPU_PPC604:
@@ -12672,6 +12677,17 @@ rs6000_issue_rate ()
   default:
     return 1;
   }
+}
+
+/* Return how many instructions to look ahead for better insn
+   scheduling.  */
+
+static int
+rs6000_use_sched_lookahead ()
+{
+  if (rs6000_cpu_attr == CPU_PPC8540)
+    return 4;
+  return 0;
 }
 
 
