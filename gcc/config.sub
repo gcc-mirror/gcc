@@ -94,7 +94,7 @@ case $basic_machine in
 	# Some are omitted here because they have special meanings below.
 	tahoe | i[34]86 | i860 | m68k | m68000 | m88k | ns32k | arm | pyramid \
 		| tron | a29k | 580 | i960 | h8300 | hppa1.0 | hppa1.1 \
-		| alpha | we32k | ns16k | clipper )
+		| alpha | we32k | ns16k | clipper | sparclite )
 		basic_machine=$basic_machine-unknown
 		;;
 	# Object if more than one company name word.
@@ -108,7 +108,7 @@ case $basic_machine in
 	      | mips-* | pyramid-* | tron-* | a29k-* | romp-* | rs6000-* \
 	      | none-* | 580-* | cray2-* | h8300-* | i960-* | xmp-* | ymp-* \
 	      | hppa1.0-* | hppa1.1-* | alpha-* | we32k-* | cydra-* | ns16k-* \
-	      | pn-* | np1-* | xps100-* | clipper-* | orion-* )
+	      | pn-* | np1-* | xps100-* | clipper-* | orion-* | sparclite-* )
 		;;
 	# Recognize the various machine names and aliases which stand
 	# for a CPU type and a company and sometimes even an OS.
