@@ -1,3 +1,14 @@
+Thu Mar 22 22:15:59 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (zero_extendsidi2_32): Break out from ...
+	(zero_extendsidi2): ... here ; turn to expander.
+	(zero_extendsidi2_rex64): New.
+	(extendsidi2_32): Break out from ...
+	(extendsidi2): ... here ; turn to expander.
+	(extendsidi2_rex64): New.
+	(zero_extendhidi2, zero_extendqidi2, extendhidi2, extendqidi2): New.
+	(trunc?f?f splitters): Add 64bit versions.
+
 Thu Mar 22 21:41:16 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (pushsi, pushsi2_prologue): Disable.
