@@ -1,3 +1,14 @@
+2001-12-06  Aldy Hernandez  <aldyh@redhat.com>
+            Richard Henderson  <rth@redhat.com>
+
+	* doc/tm.texi (DWARF_FRAME_REGISTERS): Add documentation.
+        (PRE_GCC3_DWARF_FRAME_REGISTERS): Same.
+
+        * unwind-dw2.c (__frame_state_for): Change DWARF_FRAME_REGISTERS
+        to PRE_GCC3_DWARF_FRAME_REGISTERS.
+        (frame_state): Same.
+	(PRE_GCC3_DWARF_FRAME_REGISTERS): Define if not already defined.
+
 2001-12-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* langhooks.c (lhd_staticp): Mark parameter with

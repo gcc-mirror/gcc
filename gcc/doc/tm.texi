@@ -3011,6 +3011,33 @@ macros and should be used to refer to those items.
 
 If the static chain is passed in a register, the two previous macros should
 be defined instead.
+
+@findex DWARF_FRAME_REGISTERS
+@item DWARF_FRAME_REGISTERS
+This macro specifies the maximum number of hard registers that can be
+saved in a call frame.  This is used to size data structures used in
+DWARF2 exception handling.
+
+Prior to GCC 3.0, this macro was needed in order to establish a stable
+exception handling ABI in the face of adding new hard registers for ISA
+extensions.  In GCC 3.0 and later, the EH ABI is insulated from changes
+in the number of hard registers.  Nevertheless, this macro can still be
+used to reduce the runtime memory requirements of the exception handling
+routines, which can be substantial if the ISA contains a lot of
+registers that are not call-saved.
+
+If this macro is not defined, it defaults to
+@code{FIRST_PSEUDO_REGISTER}.
+
+@findex PRE_GCC3_DWARF_FRAME_REGISTERS
+@item PRE_GCC3_DWARF_FRAME_REGISTERS
+
+This macro is similar to @code{DWARF_FRAME_REGISTERS}, but is provided
+for backward compatibility in pre GCC 3.0 compiled code.
+
+If this macro is not defined, it defaults to
+@code{DWARF_FRAME_REGISTERS}.
+
 @end table
 
 @node Elimination
