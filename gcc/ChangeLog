@@ -1,3 +1,11 @@
+2004-07-05  Roger Sayle  <roger@eyesopen.com>
+
+	* calls.c (load_register_parameters): Call expand_shift instead
+	of expand_binop with ashl_optab (or other shift optab) directly.
+	* expr.c (emit_group_load, emit_group_store): Likewise.
+	* function.c (assign_parm_setup_block): Likewise.
+	* stmt.c (shift_return_value): Likewise.
+
 2004-07-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* expr.c (expand_assignment): Disable the bitfield += optimizations.
