@@ -1,3 +1,13 @@
+Tue Feb 17 14:07:52 1998  Mark Mitchell  <mmitchell@usa.net>
+
+	* parse.y (initdcl0_innards): New grammar symbol.
+	(nomods_initdecls, nomods_initdcl0): Change type from itype to
+	none, since the resulting value is never used.
+	(parse_decl): New function.
+	(datadef): Remove redundant actions.
+	(initdcl0, notype_initdcl0, nomods_initdcl0): Use initdcl0_innards.
+	* parse.c: Regenerated.
+	
 Tue Feb 17 11:54:16 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* parse.y (simple_stmt): Use getdecls() to check for decl.
@@ -48,11 +58,21 @@ Thu Feb 12 12:46:51 1998  Benjamin Kosnik  <bkoz@rhino.cygnus.com>
 
 	* decl.c (shadow_tag): Give error for typedef-ing built-in types.
 
+Wed Feb 11 23:28:05 1998  Mark Mitchell  <mmitchell@usa.net>
+
+	* call.c (reference_binding): Use comptypes when comparing
+	TYPE_MAIN_VARIANTS to handle non-canonical array/index types.
+
 Wed Feb 11 16:42:04 1998  Mark Mitchell  <mmitchell@usa.net>
 
 	* tree.c (is_overloaded_fn): Use really_overloaded_fn.
 	(really_overloaded_fn): Move check here from is_overloaded_fn. 
 	(get_first_fn): Use really_overloaded_fn and is_overloaded_fn.
+
+Wed Feb 11 15:54:18 1998  Mark Mitchell  <mmitchell@usa.net>
+
+	* typeck.c (build_ptrmemfunc): Type-check pointer-to-member
+	conversions.
 
 Mon Feb  9 22:23:31 1998  Mark Mitchell  <mmitchell@usa.net>
 

@@ -256,7 +256,7 @@ empty_parms ()
 %type <itype> new delete
 /* %type <ttype> primary_no_id */
 %type <ttype> nonmomentary_expr maybe_parmlist
-%type <itype> initdcl0 notype_initdcl0 member_init_list
+%type <itype> initdcl0 notype_initdcl0 member_init_list initdcl0_innards
 %type <ttype> template_header template_parm_list template_parm
 %type <ttype> template_type_parm template_template_parm
 %type <code>  template_close_bracket
@@ -266,7 +266,6 @@ empty_parms ()
 %type <ttype> type_name nested_name_specifier nested_type ptr_to_mem
 %type <ttype> complete_type_name notype_identifier nonnested_type
 %type <ttype> complex_type_name nested_name_specifier_1
-%type <itype> nomods_initdecls nomods_initdcl0
 %type <ttype> new_initializer new_placement
 %type <ttype> using_decl .poplevel
 %type <ttype> typename_sub typename_sub0 typename_sub1 typename_sub2
@@ -305,6 +304,33 @@ static tree current_aggr;
 #define YYPRINT(FILE,YYCHAR,YYLVAL) yyprint(FILE,YYCHAR,YYLVAL)
 extern void yyprint			PROTO((FILE *, int, YYSTYPE));
 extern tree combine_strings		PROTO((tree));
+
+static int
+parse_decl(declarator, specs_attrs, attributes, initialized, decl)
+  tree declarator;
+  tree specs_attrs;
+  tree attributes;
+  int initialized;
+  tree* decl;
+{
+  int  sm;
+
+  split_specs_attrs (specs_attrs, &current_declspecs, &prefix_attributes);
+  if (current_declspecs
+      && TREE_CODE (current_declspecs) != TREE_LIST)
+    current_declspecs = get_decl_list (current_declspecs);
+  if (have_extern_spec && !used_extern_spec)
+    {
+      current_declspecs = decl_tree_cons (NULL_TREE, 
+					  get_identifier ("extern"), 
+					  current_declspecs);
+      used_extern_spec = 1;
+    }
+  sm = suspend_momentary ();
+  *decl = start_decl (declarator, current_declspecs, initialized);
+  cplus_decl_attributes (*decl, attributes, prefix_attributes);
+  return sm;
+}
 %}
 
 %%
@@ -540,7 +566,6 @@ template_def:
 
 datadef:
 	  nomods_initdecls ';'
-		{}
 	| declmods notype_initdecls ';'
 		{}
 	| typed_declspecs initdecls ';'
@@ -2014,47 +2039,6 @@ maybeasm:
 		{ if (TREE_CHAIN ($3)) $3 = combine_strings ($3); $$ = $3; }
 	;
 
-initdcl0:
-	  declarator maybeasm maybe_attribute '='
-		{ split_specs_attrs ($<ttype>0, &current_declspecs,
-				     &prefix_attributes);
-		  if (current_declspecs
-		      && TREE_CODE (current_declspecs) != TREE_LIST)
-		    current_declspecs = get_decl_list (current_declspecs);
-		  if (have_extern_spec && !used_extern_spec)
-		    {
-		      current_declspecs = decl_tree_cons
-			(NULL_TREE, get_identifier ("extern"), 
-			 current_declspecs);
-		      used_extern_spec = 1;
-		    }
-		  $<itype>4 = suspend_momentary ();
-		  $<ttype>$ = start_decl ($<ttype>1, current_declspecs, 1);
-		  cplus_decl_attributes ($<ttype>$, $3, prefix_attributes); }
-	  init
-/* Note how the declaration of the variable is in effect while its init is parsed! */
-		{ cp_finish_decl ($<ttype>5, $6, $2, 1, LOOKUP_ONLYCONVERTING);
-		  $$ = $<itype>4; }
-	| declarator maybeasm maybe_attribute
-		{ tree d;
-		  split_specs_attrs ($<ttype>0, &current_declspecs,
-				     &prefix_attributes);
-		  if (current_declspecs
-		      && TREE_CODE (current_declspecs) != TREE_LIST)
-		    current_declspecs = get_decl_list (current_declspecs);
-		  if (have_extern_spec && !used_extern_spec)
-		    {
-		      current_declspecs = decl_tree_cons
-			(NULL_TREE, get_identifier ("extern"), 
-			 current_declspecs);
-		      used_extern_spec = 1;
-		    }
-		  $$ = suspend_momentary ();
-		  d = start_decl ($<ttype>1, current_declspecs, 0);
-		  cplus_decl_attributes (d, $3, prefix_attributes);
-		  cp_finish_decl (d, NULL_TREE, $2, 1, 0); }
-	;
-
 initdcl:
 	  declarator maybeasm maybe_attribute '='
 		{ $<ttype>$ = start_decl ($<ttype>1, current_declspecs, 1);
@@ -2068,54 +2052,45 @@ initdcl:
 		  cp_finish_decl ($<ttype>$, NULL_TREE, $2, 1, 0); }
 	;
 
+        /* This rule assumes a certain configuration of the parser
+	   stack.  In particular, $0, the element directly before the
+	   beginning of this rule on the stack, must be a declarator,
+	   or notype_declarator.  And, $-1 must be some declmods, or
+	   declspecs.  */
+initdcl0_innards:
+	  maybeasm maybe_attribute '='
+		{ $<itype>3 = parse_decl ($<ttype>0, $<ttype>-1, 
+					   $2, 1, &$<ttype>$); }
+          /* Note how the declaration of the variable is in effect
+	     while its init is parsed! */ 
+	  init
+		{ cp_finish_decl ($<ttype>4, $5, $1, 1, LOOKUP_ONLYCONVERTING);
+		  $$ = $<itype>3; }
+	| maybeasm maybe_attribute
+		{ tree d;
+		  $$ = parse_decl ($<ttype>0, $<ttype>-1, $2, 0, &d);
+		  cp_finish_decl (d, NULL_TREE, $1, 1, 0); }
+  	;
+  
+initdcl0:
+	  declarator initdcl0_innards
+            { $$ = $2; }
+  
 notype_initdcl0:
-	  notype_declarator maybeasm maybe_attribute '='
-		{ split_specs_attrs ($<ttype>0, &current_declspecs,
-				     &prefix_attributes);
-		  $<itype>4 = suspend_momentary ();
-		  $<ttype>$ = start_decl ($<ttype>1, current_declspecs, 1);
-		  cplus_decl_attributes ($<ttype>$, $3, prefix_attributes); }
-	  init
-/* Note how the declaration of the variable is in effect while its init is parsed! */
-		{ cp_finish_decl ($<ttype>5, $6, $2, 1, LOOKUP_ONLYCONVERTING);
-		  $$ = $<itype>4; }
-	| notype_declarator maybeasm maybe_attribute
-		{ tree d;
-		  split_specs_attrs ($<ttype>0, &current_declspecs,
-				     &prefix_attributes);
-		  $$ = suspend_momentary ();
-		  d = start_decl ($<ttype>1, current_declspecs, 0);
-		  cplus_decl_attributes (d, $3, prefix_attributes);
-		  cp_finish_decl (d, NULL_TREE, $2, 1, 0); }
-	;
-
+          notype_declarator initdcl0_innards
+            { $$ = $2; }
+        ;
+  
 nomods_initdcl0:
-	  notype_declarator maybeasm maybe_attribute '='
-		{ current_declspecs = NULL_TREE;
-		  prefix_attributes = NULL_TREE;
-		  $<itype>4 = suspend_momentary ();
-		  $<ttype>$ = start_decl ($1, current_declspecs, 1);
-		  cplus_decl_attributes ($<ttype>$, $3, prefix_attributes); }
-	  init
-/* Note how the declaration of the variable is in effect while its init is parsed! */
-		{ cp_finish_decl ($<ttype>5, $6, $2, 1, LOOKUP_ONLYCONVERTING);
-		  $$ = $<itype>4; }
-	| notype_declarator maybeasm maybe_attribute
-		{ tree d;
-		  current_declspecs = NULL_TREE;
-		  prefix_attributes = NULL_TREE;
-		  $$ = suspend_momentary ();
-		  d = start_decl ($1, current_declspecs, 0);
-		  cplus_decl_attributes (d, $3, prefix_attributes);
-		  cp_finish_decl (d, NULL_TREE, $2, 1, 0); }
+          notype_declarator 
+            { /* Set things up as initdcl0_innards expects.  */
+	      $<ttype>$ = $1; 
+              $1 = NULL_TREE; }
+          initdcl0_innards 
+            {}
 	| constructor_declarator maybeasm maybe_attribute
 		{ tree d;
-		  current_declspecs = NULL_TREE;
-		  prefix_attributes = NULL_TREE;
-		  $$ = suspend_momentary ();
-		  d = start_decl ($1, current_declspecs, 0);
-		  cplus_decl_attributes (d, $3, prefix_attributes);
-		  cp_finish_decl (d, NULL_TREE, $2, 1, 0); }
+		  parse_decl($1, NULL_TREE, $3, 0, &d); }
 	;
 
 /* the * rules are dummies to accept the Apollo extended syntax
