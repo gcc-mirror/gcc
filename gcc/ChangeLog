@@ -1,3 +1,10 @@
+Sat Jun 27 23:32:25 1998  Richard Henderson  <rth@cygnus.com>
+
+	* jump.c (jump_optimize): Use side_effects_p & may_trap_p instead
+	of rtx_unsafe_p.  Use modified_between_p instead of reg_set_between_p.
+	Allow FP moves to be optimized.
+	(rtx_unsafe_p): Delete.
+
 Sat Jun 27 23:02:04 1998  Richard Henderson  <rth@cygnus.com>
 
 	* objc/archive.c: Remove <string.h> prototypes.

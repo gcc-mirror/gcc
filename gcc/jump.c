@@ -122,7 +122,6 @@ static void redirect_tablejump		PROTO((rtx, rtx));
 #ifndef HAVE_cc0
 static rtx find_insert_position         PROTO((rtx, rtx));
 #endif
-static int rtx_unsafe_p			PROTO((rtx));
 
 /* Delete no-op jumps and optimize jumps to jumps
    and jumps around jumps.
@@ -773,7 +772,8 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	      && GET_CODE (temp2) == INSN
 	      && (temp4 = single_set (temp2)) != 0
 	      && rtx_equal_p (SET_DEST (temp4), temp1)
-	      && ! rtx_unsafe_p (SET_SRC (temp4))
+	      && ! side_effects_p (SET_SRC (temp4))
+	      && ! may_trap_p (SET_SRC (temp4))
 	      && (REG_NOTES (temp2) == 0
 		  || ((REG_NOTE_KIND (REG_NOTES (temp2)) == REG_EQUAL
 		       || REG_NOTE_KIND (REG_NOTES (temp2)) == REG_EQUIV)
@@ -910,11 +910,8 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	      && GET_CODE (temp3) == INSN
 	      && (temp4 = single_set (temp3)) != 0
 	      && rtx_equal_p (SET_DEST (temp4), temp1)
-	      && (GET_CODE (SET_SRC (temp4)) == REG
-		  || GET_CODE (SET_SRC (temp4)) == SUBREG
-		  || (GET_CODE (SET_SRC (temp4)) == MEM
-		      && RTX_UNCHANGING_P (SET_SRC (temp4)))
-		  || CONSTANT_P (SET_SRC (temp4)))
+	      && ! side_effects_p (SET_SRC (temp4))
+	      && ! may_trap_p (SET_SRC (temp4))
 	      && (REG_NOTES (temp3) == 0
 		  || ((REG_NOTE_KIND (REG_NOTES (temp3)) == REG_EQUAL
 		       || REG_NOTE_KIND (REG_NOTES (temp3)) == REG_EQUIV)
@@ -944,9 +941,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 		  && ! reg_referenced_between_p (temp1, temp3,
 						 NEXT_INSN (temp2))
 		  && ! reg_set_between_p (temp1, insert_after, temp)
-		  && (GET_CODE (SET_SRC (temp4)) == CONST_INT
-		      || ! reg_set_between_p (SET_SRC (temp4),
-					      insert_after, temp))
+		  && ! modified_between_p (SET_SRC (temp4), insert_after, temp)
 		  && invert_jump (temp, JUMP_LABEL (insn)))
 		{
 		  emit_insn_after_with_line_notes (PATTERN (temp3),
@@ -992,7 +987,6 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 		      && JUMP_LABEL (temp2) == JUMP_LABEL (insn)))
 	      && (temp1 = single_set (temp)) != 0
 	      && (temp2 = SET_DEST (temp1), GET_CODE (temp2) == REG)
-	      && GET_MODE_CLASS (GET_MODE (temp2)) == MODE_INT
 	      && (! SMALL_REGISTER_CLASSES
 		  || REGNO (temp2) >= FIRST_PSEUDO_REGISTER)
 	      && GET_CODE (SET_SRC (temp1)) != REG
@@ -1159,7 +1153,8 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	      && GET_CODE (temp1 = SET_DEST (PATTERN (temp))) == REG
 	      && (! SMALL_REGISTER_CLASSES
 		  || REGNO (temp1) >= FIRST_PSEUDO_REGISTER)
-	      && ! rtx_unsafe_p (temp2 = SET_SRC (PATTERN (temp)))
+	      && ! side_effects_p (temp2 = SET_SRC (PATTERN (temp)))
+	      && ! may_trap_p (temp2)
 	      /* Allow either form, but prefer the former if both apply. 
 		 There is no point in using the old value of TEMP1 if
 		 it is a register, since cse will alias them.  It can
@@ -4852,72 +4847,3 @@ find_insert_position (insn, new)
   return reg_mentioned_p (SET_DEST (single_set (new)), prev) ? 0 : prev;
 }
 #endif /* !HAVE_cc0 */
-
-/* Return 1 if the value of X is unsafe to arbitrarily evaluate, i.e.
-   might fault on some arguments.  This is used in connection with
-   conditional move optimization.  */
-
-static int
-rtx_unsafe_p (x)
-     rtx x;
-{
-  register RTX_CODE code = GET_CODE (x);
-  register int i;
-  register char *fmt;
-
-  switch (code)
-    {
-    case MEM:
-      return ! RTX_UNCHANGING_P (x);
-
-    case QUEUED:
-      return 1;
-
-    case CONST_INT:
-    case CONST_DOUBLE:
-    case CONST_STRING:
-    case CONST:
-    case PC:
-    case LABEL_REF:
-    case SYMBOL_REF:
-    case ADDRESSOF:
-    case REG:
-      return 0;
-
-    case DIV:
-    case MOD:
-    case UDIV:
-    case UMOD:
-    case SQRT:
-      return 1;
-
-    default:
-      if (TARGET_FLOAT_FORMAT == IEEE_FLOAT_FORMAT
-	  && !flag_fast_math
-	  && FLOAT_MODE_P (GET_MODE (x)))
-	return 1;
-
-      switch (GET_RTX_CLASS (code))
-	{
-	case '<':
-	case '1':
-	case '2':
-	case '3':
-	case 'c':
-	case 'b':
-	  break;
-
-	default:
-	  return 1;
-	}
-      break;
-    }
-
-  fmt = GET_RTX_FORMAT (code);
-  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
-    if (fmt[i] == 'e')
-      if (rtx_unsafe_p (XEXP (x, i)))
-	return 1;
-
-  return 0;
-}
