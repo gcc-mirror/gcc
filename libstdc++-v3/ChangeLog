@@ -1,3 +1,49 @@
+2003-06-26  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/ios_base.h (ios_base::_M_getloc): Return reference
+	to the imbued locale.
+	* include/bits/locale_facets.tcc (num_put::_M_convert_int): Use
+	_M_getloc.
+	(num_put::_M_convert_float): Use.
+
+2003-06-26  Benjamin Kosnik  <bkoz@redhat.com>
+	    Jerry Quinn  <jlquinn@optonline.net>
+
+	* config/linker-map.gnu: Add __numpunct_cache.
+	* config/locale/gnu/numeric_members.cc
+	(numpunct::_M_initialize_numpunct): Account for _M_data, fill in
+	all elements for "C" locale.
+	(numpunct::~numpunct): Delete _M_data.
+	* config/locale/generic/numeric_members.cc: Same.	
+	* include/bits/basic_ios.tcc
+	(basic_ios::init): Remove __locale_cache bits.
+	(basic_ios::_M_cache_locale): Same.
+	* include/bits/ios_base.h: Same. Tweaks. 
+	* include/bits/locale_classes.h: Tweaks. Reorder classes.
+	(__use_cache): Make friends with _Impl, locale.
+	(_Impl::_M_caches): Add.
+	(_Impl::_M_install_cache): Add.
+	* include/bits/locale_facets.h (__numpunct_cache): New.
+	(numpunct): Encapsulate data members in __numpunct_cache member,
+	_M_data. Adjust virtuals.
+	(numpunct::numpunct): New ctor for the same. 
+	(__locale_cache_base): Remove.
+	(__locale_cache): Remove.	
+	* include/bits/locale_facets.tcc (__use_cache): New function,
+	specializations.
+	(num_put::_M_convert_int, _M_convert_float, do_put): Use it.
+	* src/globals.cc: Add cache_vec, numpunct_cache_c, numpunct_cache_w.
+	* src/ios.cc (ios_base::ios_base): Remove __locale_cache.
+	* src/locale-inst.cc: Same. Add __numpunct_cache.
+	* src/locale.cc: Tweak inlines.
+	(__use_cache): Define specializations.
+	* src/localename.cc: Use global bits.
+	(_Impl::~Impl): Deal with __numpunct_cache destruction.
+	(_Impl::_Impl): Same. Pre-cache standard numpunct facets.
+	(_Impl::_M_init_facet): Take into account __numpunct_cache.
+	* testsuite/27_io/ios_base/cons/assign_neg.cc: Update line numbers.
+	* testsuite/27_io/ios_base/cons/copy_neg.cc: Same.
+
 2003-06-26  Nathan C. Myers  <ncm-nospam@cantrip.org>
             Paolo Carlini  <pcarlini@unitus.it>
 

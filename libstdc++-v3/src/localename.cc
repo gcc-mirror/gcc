@@ -69,6 +69,12 @@ namespace __gnu_cxx
   extern time_put<wchar_t> 			time_put_w;
   extern std::messages<wchar_t> 		messages_w;
 #endif
+
+  extern locale::facet* cache_vec[_GLIBCPP_NUM_FACETS];
+  extern std::__numpunct_cache<char>		numpunct_cache_c;
+#ifdef  _GLIBCPP_USE_WCHAR_T
+  extern std::__numpunct_cache<wchar_t>		numpunct_cache_w;
+#endif
 } // namespace __gnu_cxx
 
 namespace std
@@ -83,6 +89,11 @@ namespace std
 	_M_facets[__i]->_M_remove_reference();
     delete [] _M_facets;
 
+    for (size_t __i = 0; __i < _M_facets_size; ++__i)
+      if (_M_caches[__i])
+	_M_caches[__i]->_M_remove_reference(); 
+    delete [] _M_caches;
+
     for (size_t __i = 0; __i < _S_categories_size; ++__i)
       delete [] _M_names[__i];  
     delete [] _M_names;
@@ -91,7 +102,7 @@ namespace std
   // Clone existing _Impl object.
   locale::_Impl::
   _Impl(const _Impl& __imp, size_t __refs)
-  : _M_references(__refs), _M_facets_size(__imp._M_facets_size) // XXX
+  : _M_references(__refs), _M_facets_size(__imp._M_facets_size)
   {
     try
       { 
@@ -109,6 +120,22 @@ namespace std
 	_M_facets[__i] = __imp._M_facets[__i];
 	if (_M_facets[__i])
 	  _M_facets[__i]->_M_add_reference();
+      }
+
+    try 
+      {
+      	_M_caches = new const facet*[_M_facets_size];
+      }
+    catch(...)
+      {
+	delete [] _M_caches;
+	__throw_exception_again;
+      }
+    for (size_t __i = 0; __i < _M_facets_size; ++__i)
+      {
+	_M_caches[__i] = __imp._M_caches[__i];
+	if (_M_caches[__i])
+	  _M_caches[__i]->_M_add_reference(); 
       }
 
     try 
@@ -131,10 +158,10 @@ namespace std
   // Construct named _Impl.
   locale::_Impl::
   _Impl(const char* __s, size_t __refs) 
-  : _M_references(__refs), _M_facets_size(_GLIBCPP_NUM_FACETS) 
+  : _M_references(__refs), _M_facets_size(_GLIBCPP_NUM_FACETS)
   {
-    // Initialize the underlying locale model, which also checks
-    // to see if the given name is valid.
+    // Initialize the underlying locale model, which also checks to
+    // see if the given name is valid.
     __c_locale __cloc;
     locale::facet::_S_create_c_locale(__cloc, __s);
 
@@ -147,6 +174,18 @@ namespace std
     catch(...) 
       {
 	delete [] _M_facets;
+	__throw_exception_again;
+      }
+
+    try 
+      {
+      	_M_caches = new const facet*[_M_facets_size];
+	for (size_t __i = 0; __i < _M_facets_size; ++__i)
+	  _M_caches[__i] = 0;
+      }
+    catch(...)
+      {
+	delete [] _M_caches;
 	__throw_exception_again;
       }
 
@@ -235,6 +274,10 @@ namespace std
     for (size_t __i = 0; __i < _M_facets_size; ++__i)
       _M_facets[__i] = 0;
 
+    _M_caches = new (&cache_vec) const facet*[_M_facets_size];
+    for (size_t __i = 0; __i < _M_facets_size; ++__i)
+      _M_caches[__i] = 0;
+
     // Name all the categories.
     _M_names = new (&name_vec) char*[_S_categories_size];
     for (size_t __i = 0; __i < _S_categories_size; ++__i)
@@ -252,7 +295,12 @@ namespace std
     // destroyed.
     _M_init_facet(new (&ctype_c) std::ctype<char>(0, false, 1));
     _M_init_facet(new (&codecvt_c) codecvt<char, char, mbstate_t>(1));
-    _M_init_facet(new (&numpunct_c) numpunct<char>(1));
+
+    // Safe to cache this.
+    typedef __numpunct_cache<char> num_cache_c;
+    num_cache_c* __npc = new (&numpunct_cache_c) num_cache_c(2);
+    _M_init_facet(new (&numpunct_c) numpunct<char>(__npc, 1));
+
     _M_init_facet(new (&num_get_c) num_get<char>(1));
     _M_init_facet(new (&num_put_c) num_put<char>(1));
     _M_init_facet(new (&collate_c) std::collate<char>(1));
@@ -264,10 +312,15 @@ namespace std
     _M_init_facet(new (&time_get_c) time_get<char>(1));
     _M_init_facet(new (&time_put_c) time_put<char>(1));
     _M_init_facet(new (&messages_c) std::messages<char>(1));	
+
 #ifdef  _GLIBCPP_USE_WCHAR_T
     _M_init_facet(new (&ctype_w) std::ctype<wchar_t>(1));
     _M_init_facet(new (&codecvt_w) codecvt<wchar_t, char, mbstate_t>(1));
-    _M_init_facet(new (&numpunct_w) numpunct<wchar_t>(1));
+
+    typedef __numpunct_cache<wchar_t> num_cache_w;
+    num_cache_w* __npw = new (&numpunct_cache_w) num_cache_w(2);
+    _M_init_facet(new (&numpunct_w) numpunct<wchar_t>(__npw, 1));
+
     _M_init_facet(new (&num_get_w) num_get<wchar_t>(1));
     _M_init_facet(new (&num_put_w) num_put<wchar_t>(1));
     _M_init_facet(new (&collate_w) std::collate<wchar_t>(1));
@@ -280,6 +333,13 @@ namespace std
     _M_init_facet(new (&time_put_w) time_put<wchar_t>(1));
     _M_init_facet(new (&messages_w) std::messages<wchar_t>(1));
 #endif 
+
+    // This locale is safe to pre-cache, after all the facets have
+    // been installed.
+    _M_caches[numpunct<char>::id._M_id()] = __npc;
+#ifdef  _GLIBCPP_USE_WCHAR_T
+    _M_caches[numpunct<wchar_t>::id._M_id()] = __npw;
+#endif
   }
   
   void
@@ -336,18 +396,31 @@ namespace std
 	// Check size of facet vector to ensure adequate room.
 	if (__index > _M_facets_size - 1)
 	  {
-	    const facet** __old = _M_facets;
-	    const facet** __new;
 	    const size_t __new_size = __index + 4;
-	    __new = new const facet*[__new_size]; 
+
+	    // New facet array.
+	    const facet** __oldf = _M_facets;
+	    const facet** __newf;
+	    __newf = new const facet*[__new_size]; 
 	    for (size_t __i = 0; __i < _M_facets_size; ++__i)
-	      __new[__i] = _M_facets[__i];
+	      __newf[__i] = _M_facets[__i];
 	    for (size_t __i2 = _M_facets_size; __i2 < __new_size; ++__i2)
-	      __new[__i2] = 0;
+	      __newf[__i2] = 0;
+
+	    // New cache array.
+	    const facet** __oldc = _M_caches;
+	    const facet** __newc;
+	    __newc = new const facet*[__new_size]; 
+	    for (size_t __i = 0; __i < _M_facets_size; ++__i)
+	      __newc[__i] = _M_caches[__i];
+	    for (size_t __i2 = _M_facets_size; __i2 < __new_size; ++__i2)
+	      __newc[__i2] = 0;
 
 	    _M_facets_size = __new_size;
-	    _M_facets = __new;
-	    delete [] __old;
+	    _M_facets = __newf;
+	    _M_caches = __newc;
+	    delete [] __oldf;
+	    delete [] __oldc;
 	  }
 
 	__fp->_M_add_reference();
@@ -364,6 +437,21 @@ namespace std
 	    // _M_facets container, say a newly-constructed,
 	    // swanky-fresh _Impl.
 	    _M_facets[__index] = __fp;
+	  }
+
+	// Ideally, it would be nice to only remove the caches that
+	// are now incorrect. However, some of the caches depend on
+	// multiple facets, and we only know about one facet
+	// here. It's no great loss: the first use of the new facet
+	// will create a new, correctly cached facet anyway.
+	for (size_t __i = 0; __i < _M_facets_size; ++__i)
+	  {
+	    const facet* __cpr = _M_caches[__i];
+	    if (__cpr)
+	      {
+		__cpr->_M_remove_reference();
+		_M_caches[__i] = 0;
+	      }
 	  }
       }
   }

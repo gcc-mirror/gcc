@@ -127,6 +127,10 @@ namespace __gnu_cxx
   __attribute__ ((aligned(__alignof__(locale::facet*))));
   fake_facet_vec facet_vec[_GLIBCPP_NUM_FACETS];
 
+  typedef char fake_cache_vec[sizeof(locale::facet*)]
+  __attribute__ ((aligned(__alignof__(locale::facet*))));
+  fake_cache_vec cache_vec[_GLIBCPP_NUM_FACETS];
+
   typedef char fake_ctype_c[sizeof(std::ctype<char>)]
   __attribute__ ((aligned(__alignof__(std::ctype<char>))));
   fake_ctype_c ctype_c;
@@ -233,6 +237,17 @@ namespace __gnu_cxx
   typedef char fake_messages_w[sizeof(messages<wchar_t>)]
   __attribute__ ((aligned(__alignof__(messages<wchar_t>))));
   fake_messages_w messages_w;
+#endif
+
+  // Storage for C locale caches
+  typedef char fake_locale_cache_c[sizeof(std::__numpunct_cache<char>)]
+  __attribute__ ((aligned(__alignof__(std::__numpunct_cache<char>))));
+  fake_locale_cache_c numpunct_cache_c;
+
+#ifdef _GLIBCPP_USE_WCHAR_T
+  typedef char fake_locale_cache_w[sizeof(std::__numpunct_cache<wchar_t>)]
+  __attribute__ ((aligned(__alignof__(std::__numpunct_cache<wchar_t>))));
+  fake_locale_cache_w numpunct_cache_w;
 #endif
 
   // Globals for once-only runtime initialization of mutex objects.  This

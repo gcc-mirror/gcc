@@ -138,12 +138,7 @@ namespace std
       ios_base::_M_init();
 
       // Cache locale data and specific facets used by iostreams.
-      if (!_M_locale_cache.get())
-	{
-	  typedef __locale_cache<_CharT> __cache_t;
-	  this->_M_locale_cache = auto_ptr<__locale_cache_base>(static_cast<__locale_cache_base*>(new __cache_t));
-	  _M_cache_locale(_M_ios_locale);
-	}
+      _M_cache_locale(_M_ios_locale);
 
       // NB: The 27.4.4.1 Postconditions Table specifies requirements
       // after basic_ios::init() has been called. As part of this,
@@ -176,7 +171,6 @@ namespace std
 	_M_num_put = &use_facet<__numput_type>(__loc); 
       if (__builtin_expect(has_facet<__numget_type>(__loc), true))
 	_M_num_get = &use_facet<__numget_type>(__loc); 
-      static_cast<__locale_cache<_CharT>&>(_M_cache())._M_init(__loc); 
     }
 
   // Inhibit implicit instantiations for required instantiations,

@@ -449,30 +449,37 @@ namespace std
   locale::facet::
   ~facet() { }
 
-  locale::facet::
-  facet(size_t __refs) throw() : _M_references(__refs ? 1 : 0) 
-  { }
+  template<>
+    const __numpunct_cache<char>&
+    __use_cache(const locale& __loc)
+    {
+      size_t __i = numpunct<char>::id._M_id();
+      const locale::facet** __caches = __loc._M_impl->_M_caches;
+      if (!__caches[__i])
+	{
+	  __numpunct_cache<char>* __tmp = new __numpunct_cache<char>;
+	  __tmp->_M_cache(__loc);
+	  __loc._M_impl->_M_install_cache(__tmp, __i);
+	}
+      return static_cast<const __numpunct_cache<char>&>(*__caches[__i]);
+    }
 
-  void  
-  locale::facet::
-  _M_add_reference() const throw()
-  { __atomic_add(&_M_references, 1); }
-
-  void  
-  locale::facet::
-  _M_remove_reference() const throw()
-  {
-    if (__exchange_and_add(&_M_references, -1) == 1)
-      {
-        try 
-	  { delete this; }  
-	catch (...) 
-	  { }
-      }
-  }
-  
-  locale::id::id() 
-  { }
+#ifdef _GLIBCPP_USE_WCHAR_T
+  template<>
+    const __numpunct_cache<wchar_t>&
+    __use_cache(const locale& __loc)
+    {
+      size_t __i = numpunct<wchar_t>::id._M_id();
+      const locale::facet** __caches = __loc._M_impl->_M_caches;
+      if (!__caches[__i])
+	{
+	  __numpunct_cache<wchar_t>* __tmp = new __numpunct_cache<wchar_t>;
+	  __tmp->_M_cache(__loc);
+	  __loc._M_impl->_M_install_cache(__tmp, __i);
+	}
+      return static_cast<const __numpunct_cache<wchar_t>&>(*__caches[__i]);
+    }
+#endif
 
   // Definitions for static const data members of time_base
   template<> 

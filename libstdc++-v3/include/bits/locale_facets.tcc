@@ -86,6 +86,21 @@ namespace std
       return static_cast<const _Facet&>(*__facets[__i]);
     }
 
+  // Routine to access a cache for the facet.  If the cache didn't
+  // exist before, it gets constructed on the fly.
+  template<typename _Facet>
+    const _Facet&
+    __use_cache(const locale& __loc);
+
+  template<>
+    const __numpunct_cache<char>&
+    __use_cache(const locale& __loc);
+
+#ifdef _GLIBCPP_USE_WCHAR_T
+  template<>
+    const __numpunct_cache<wchar_t>&
+    __use_cache(const locale& __loc);
+#endif
 
   // Stage 1: Determine a conversion specifier.
   template<typename _CharT, typename _InIter>
@@ -768,11 +783,12 @@ namespace std
       _M_convert_int(_OutIter __s, ios_base& __io, _CharT __fill, 
 		     _ValueT __v) const
       {
-	typedef __locale_cache<_CharT> __cache_type;
-	__cache_type& __lc = static_cast<__cache_type&>(__io._M_cache());
-	_CharT* __lit = __lc._M_literals;
+	typedef typename numpunct<_CharT>::__cache_type  __cache_type;
+	const locale& __loc = __io._M_getloc();
+	const __cache_type& __lc = __use_cache<__cache_type>(__loc);
+	const _CharT* __lit = __lc._M_atoms_out;
 
-	// Long enough to hold hex, dec, and octal representations.
+ 	// Long enough to hold hex, dec, and octal representations.
 	int __ilen = 4 * sizeof(_ValueT);
 	_CharT* __cs = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) 
 							     * __ilen));
@@ -872,8 +888,9 @@ namespace std
 	else if (__prec < static_cast<streamsize>(0))
 	  __prec = static_cast<streamsize>(6);
 
-	typedef __locale_cache<_CharT> __cache_type;
-	__cache_type& __lc = static_cast<__cache_type&>(__io._M_cache());
+	typedef typename numpunct<_CharT>::__cache_type  __cache_type;
+	const locale& __loc = __io._M_getloc();
+	const __cache_type& __lc = __use_cache<__cache_type>(__loc);
 
 	// [22.2.2.2.2] Stage 1, numeric conversion to character.
 	int __len;
@@ -918,7 +935,6 @@ namespace std
 
       // [22.2.2.2.2] Stage 2, convert to char_type, using correct
       // numpunct.decimal_point() values for '.' and adding grouping.
-      const locale __loc = __io.getloc();
       const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc);
 
       _CharT* __ws = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) 
@@ -974,8 +990,10 @@ namespace std
         }
       else
         {
-	  typedef __locale_cache<_CharT> __cache_type;
-	  __cache_type& __lc = static_cast<__cache_type&>(__io._M_cache());
+	  typedef typename numpunct<_CharT>::__cache_type  __cache_type;
+	  const locale& __loc = __io._M_getloc();
+	  const __cache_type& __lc = __use_cache<__cache_type>(__loc);
+
 	  typedef basic_string<_CharT> 	__string_type;
 	  __string_type __name;
           if (__v)
@@ -2271,31 +2289,6 @@ namespace std
 	*__s++ = *__first++;
       while (__first != __last);
       return __s;
-    }
-
-  // Generic definition, locale cache initialization.
-  template<typename _CharT>
-    void
-    __locale_cache<_CharT>::_M_init(const locale& __loc)
-    {
-      if (__builtin_expect(has_facet<numpunct<_CharT> >(__loc), true))
-	{
-	  const numpunct<_CharT>& __np = use_facet<numpunct<_CharT> >(__loc);
-	  _M_falsename = __np.falsename();
-	  _M_truename = __np.truename();
-	  _M_thousands_sep = __np.thousands_sep();
-	  _M_decimal_point = __np.decimal_point();
-	  _M_grouping = __np.grouping();
-	  _M_use_grouping = _M_grouping.size() != 0 
-	    		    && _M_grouping.data()[0] != 0;
-	}
-      if (__builtin_expect(has_facet<ctype<_CharT> >(__loc), true))
-	{
-	  const ctype<_CharT>& __ct = use_facet<ctype<_CharT> >(__loc);
-	  __ct.widen(__num_base::_S_atoms_out,
-		     __num_base::_S_atoms_out + __num_base::_S_oend, 
-		     _M_literals);
-	}
     }
 
   // Inhibit implicit instantiations for required instantiations,

@@ -45,7 +45,6 @@ namespace std
   template class moneypunct_byname<char, true>;
   template class money_get<char, istreambuf_iterator<char> >;
   template class money_put<char, ostreambuf_iterator<char> >;
-  template class __locale_cache<char>;
 
 #ifdef _GLIBCPP_USE_WCHAR_T
   template class moneypunct<wchar_t, false>;
@@ -54,11 +53,11 @@ namespace std
   template class moneypunct_byname<wchar_t, true>;
   template class money_get<wchar_t, istreambuf_iterator<wchar_t> >;
   template class money_put<wchar_t, ostreambuf_iterator<wchar_t> >;
-  template class __locale_cache<wchar_t>;
 #endif
 
   // numpunct, numpunct_byname, num_get, and num_put
   template class numpunct<char>;
+  template struct __numpunct_cache<char>;
   template class numpunct_byname<char>;
   template class num_get<char, istreambuf_iterator<char> >;
   template class num_put<char, ostreambuf_iterator<char> >; 
@@ -102,6 +101,7 @@ namespace std
   
 #ifdef _GLIBCPP_USE_WCHAR_T
   template class numpunct<wchar_t>;
+  template struct __numpunct_cache<wchar_t>;
   template class numpunct_byname<wchar_t>;
   template class num_get<wchar_t, istreambuf_iterator<wchar_t> >;
   template class num_put<wchar_t, ostreambuf_iterator<wchar_t> >;

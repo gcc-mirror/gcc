@@ -574,6 +574,96 @@ namespace std
     _S_format_float(const ios_base& __io, char* __fptr, char __mod);
   };
 
+  template<typename _CharT>
+    struct __numpunct_cache : public locale::facet
+    {
+      // Types:
+      typedef _CharT          		char_type;
+
+      const char* 			_M_grouping;
+      bool				_M_use_grouping;
+      const char_type* 			_M_truename;
+      const char_type*			_M_falsename;
+      char_type 			_M_decimal_point;
+      char_type 			_M_thousands_sep;
+      
+      // A list of valid numeric literals for output: in the standard
+      // "C" locale, this is "-+xX0123456789abcdef0123456789ABCDEF".
+      // This array contains the chars after having been passed
+      // through the current locale's ctype<_CharT>.widen().
+      _CharT                    	_M_atoms_out[__num_base::_S_oend + 1];
+
+      // A list of valid numeric literals for output: in the standard
+      // "C" locale, this is "0123456789eEabcdfABCDF"
+      // This array contains the chars after having been passed
+      // through the current locale's ctype<_CharT>.widen().
+      _CharT                    	_M_atoms_in[__num_base::_S_iend + 1];
+
+      bool				_M_allocated;
+
+      __numpunct_cache(size_t __refs = 0) : locale::facet(__refs), 
+      _M_grouping(NULL), _M_use_grouping(false), _M_truename(NULL), 
+      _M_falsename(NULL), _M_decimal_point(char_type()), 
+      _M_thousands_sep(char_type()), _M_allocated(false)
+      { } 
+
+      ~__numpunct_cache();
+
+      void
+      _M_cache(const locale& __loc);
+    };
+
+  template<typename _CharT>
+    void
+    __numpunct_cache<_CharT>::_M_cache(const locale& __loc)
+    {
+      const numpunct<_CharT>& __np = use_facet<numpunct<_CharT> >(__loc);
+      string __grouping = __np.grouping();
+      char* __group = new char[__grouping.length() + 1];
+      __grouping.copy(__group, __grouping.length());
+      __group[__grouping.length()] = _CharT();
+      _M_grouping = __group;
+      
+      _M_use_grouping = __grouping.length() != 0 && __grouping.data()[0] != 0;
+
+      typedef basic_string<_CharT> __string_type;
+
+      __string_type __true = __np.truename();
+      _CharT* __truename = new _CharT[__true.length() + 1];
+      __true.copy(__truename, __true.length());
+      __truename[__true.length()] = _CharT(); 
+      _M_truename = __truename;
+
+      __string_type __false = __np.falsename();
+      _CharT* __falsename = new _CharT[__false.length() + 1];
+      __false.copy(__falsename, __false.length());
+      __falsename[__false.length()] = _CharT(); 
+      _M_falsename = __falsename;
+            
+      _M_decimal_point = __np.decimal_point();
+      _M_thousands_sep = __np.thousands_sep();
+
+      const ctype<_CharT>& __ct = use_facet<ctype<_CharT> >(__loc);
+      __ct.widen(__num_base::_S_atoms_out, 
+		 __num_base::_S_atoms_out + __num_base::_S_oend, _M_atoms_out);
+      _M_atoms_out[__num_base::_S_oend] = _CharT();
+      __ct.widen(__num_base::_S_atoms_in, 
+		 __num_base::_S_atoms_in + __num_base::_S_iend, _M_atoms_in);
+      _M_atoms_in[__num_base::_S_iend] = _CharT();
+
+      _M_allocated = true;
+    }
+
+  template<typename _CharT>
+    __numpunct_cache<_CharT>::~__numpunct_cache()
+    {
+      if (_M_allocated)
+	{
+	  delete [] _M_grouping;
+	  delete [] _M_truename;
+	  delete [] _M_falsename;
+	}
+    }
 
   template<typename _CharT>
     class numpunct : public locale::facet
@@ -582,23 +672,26 @@ namespace std
       // Types:
       typedef _CharT          		char_type;
       typedef basic_string<_CharT> 	string_type;
+      typedef __numpunct_cache<_CharT>  __cache_type;
 
-      static locale::id 		id;
-
-    private:
-      char_type 			_M_decimal_point;
-      char_type 			_M_thousands_sep;
-      const char* 			_M_grouping;
-      const char_type* 			_M_truename;
-      const char_type*			_M_falsename;
+    protected:
+      __cache_type*			_M_data;
 
     public:
+      static locale::id 		id;
+
       explicit 
-      numpunct(size_t __refs = 0) : locale::facet(__refs) 
+      numpunct(size_t __refs = 0) : facet(__refs), _M_data(NULL)
       { _M_initialize_numpunct(); }
 
       explicit 
-      numpunct(__c_locale __cloc, size_t __refs = 0) : locale::facet(__refs) 
+      numpunct(__cache_type* __cache, size_t __refs = 0) 
+      : facet(__refs), _M_data(__cache)
+      { _M_initialize_numpunct(); }
+
+      explicit 
+      numpunct(__c_locale __cloc, size_t __refs = 0) 
+      : locale::facet(__refs), _M_data(NULL)
       { _M_initialize_numpunct(__cloc); }
 
       char_type    
@@ -627,23 +720,23 @@ namespace std
 
       virtual char_type    
       do_decimal_point() const
-      { return _M_decimal_point; }
+      { return _M_data->_M_decimal_point; }
 
       virtual char_type    
       do_thousands_sep() const
-      { return _M_thousands_sep; }
+      { return _M_data->_M_thousands_sep; }
 
       virtual string
       do_grouping() const
-      { return _M_grouping; }
+      { return _M_data->_M_grouping; }
 
       virtual string_type  
       do_truename() const
-      { return _M_truename; }
+      { return _M_data->_M_truename; }
 
       virtual string_type  
       do_falsename() const
-      { return _M_falsename; }
+      { return _M_data->_M_falsename; }
 
       // For use at construction time only.
       void 
@@ -1928,75 +2021,6 @@ namespace std
     inline _CharT 
     tolower(_CharT __c, const locale& __loc)
     { return use_facet<ctype<_CharT> >(__loc).tolower(__c); }
-
-
-  // __locale_cache holds the information extracted from the
-  // numpunct<> and moneypunct<> facets in a form optimized for
-  // parsing and formatting.  It is stored as an
-  // auto_ptr<__locale_cache_base> member of ios_base and directly
-  // accessed via a casting to the derived __locale_cache<_CharT> in
-  // parameterized facets.
-  // The intent twofold: to avoid the costs of creating a locale
-  // object and to avoid calling the virtual functions in a locale's
-  // facet to look up data.
-  class __locale_cache_base
-  {
-  public:
-    virtual
-    ~__locale_cache_base() { }
-  };
-
-  template<typename _CharT>
-    class __locale_cache : public __locale_cache_base
-    {
-      // Types:
-      typedef _CharT               	char_type;
-      typedef char_traits<_CharT>       traits_type;
-      typedef basic_string<_CharT>	string_type;
-
-    public: 
-      // Data Members:
-
-      // A list of valid numeric literals: for the standard "C"
-      // locale, this is "-+xX0123456789abcdef0123456789ABCDEF".  This
-      // array contains the chars after having been passed through the
-      // current locale's ctype<_CharT>.widen().
-      _CharT                    _M_literals[__num_base::_S_oend];
-
-      // The sign used to separate decimal values: for standard US
-      // locales, this would usually be: "."  Abstracted from
-      // numpunct::decimal_point().
-      _CharT                    _M_decimal_point;
-
-      // The sign used to separate groups of digits into smaller
-      // strings that the eye can parse with less difficulty: for
-      // standard US locales, this would usually be: "," Abstracted
-      // from numpunct::thousands_sep().
-      _CharT                    _M_thousands_sep;
-      
-      // However the US's "false" and "true" are translated.  From
-      // numpunct::truename() and numpunct::falsename(), respectively.
-      string_type 		_M_truename;
-      string_type 		_M_falsename;
-
-      // If we are checking groupings. This should be equivalent to
-      // numpunct::groupings().size() != 0
-      bool                      _M_use_grouping;
-
-      // If we are using numpunct's groupings, this is the current
-      // grouping string in effect (from numpunct::grouping()).
-      string                    _M_grouping;
-
-      __locale_cache() : _M_use_grouping(false) 
-      { };
-
-      __locale_cache& 
-      operator=(const __locale_cache& __lc);
-
-      // Make sure the cache is built before the first use.
-      void 
-      _M_init(const locale&);
-    };
 } // namespace std
 
 #endif
