@@ -1,3 +1,9 @@
+Wed Oct 15 10:06:29 1997  Richard Henderson  <rth@cygnus.com>
+
+	* libF77/signal_.c (G77_signal_0): Make return type sig_pf as well.
+	* libI77/fio.h: Include <string.h> if STDC_HEADERS.
+	* libU77/chmod_.c: Likewise.
+
 Tue Oct  7 18:22:10 1997  Richard Henderson  <rth@cygnus.com>
 
 	* Makefile.in (CGFLAGS): Don't force -g0.
