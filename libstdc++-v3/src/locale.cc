@@ -41,7 +41,8 @@
 namespace std {
 
   // locale::_Impl
-  locale::_Impl::~_Impl() throw ()
+  locale::_Impl::
+  ~_Impl() throw()
   {
     std::vector<facet*>::iterator it = _M_facets->begin();
     for (; it != _M_facets->end(); ++it)
@@ -50,7 +51,8 @@ namespace std {
     delete _M_category_names;
   }
 
-  locale::_Impl::_Impl(size_t __numfacets, size_t __refs)
+  locale::_Impl::
+  _Impl(size_t __numfacets, size_t __refs)
   : _M_num_references(__refs - 1)
   , _M_facets(0)
   , _M_category_names(0)
@@ -68,7 +70,8 @@ namespace std {
     _M_category_names = __pcn.release();
   }
   
-  locale::_Impl::_Impl(const _Impl& __other, size_t __refs)
+  locale::_Impl::
+  _Impl(const _Impl& __other, size_t __refs)
   : _M_num_references(__refs)
   , _M_facets(0)
   , _M_category_names(0)
@@ -95,7 +98,8 @@ namespace std {
   }
   
   void
-  locale::_Impl::_M_replace_categories(const _Impl* __other, category __cats)
+  locale::_Impl::
+  _M_replace_categories(const _Impl* __other, category __cats)
   {
     assert((__cats & locale::all) && !(__cats & ~locale::all));
     
@@ -111,16 +115,16 @@ namespace std {
   }
 
   void
-  locale::_Impl::_M_replace_category(const _Impl* __other,
-				     const locale::id* const* __idpp)
+  locale::_Impl::
+  _M_replace_category(const _Impl* __other, const locale::id* const* __idpp)
   {
     for (; *__idpp; ++__idpp)
       _M_replace_facet(__other, *__idpp);
   }
   
   void
-  locale::_Impl::_M_replace_facet(const _Impl* __other, 
-				  const locale::id* __idp)
+  locale::_Impl::
+  _M_replace_facet(const _Impl* __other, const locale::id* __idp)
   {
     size_t __index = __idp->_M_index;
     if (__index == 0 
@@ -132,7 +136,8 @@ namespace std {
   }
 
   void
-  locale::_Impl::_M_install_facet(const locale::id* __idp, facet* __fp)
+  locale::_Impl::
+  _M_install_facet(const locale::id* __idp, facet* __fp)
   {
     if (__fp == 0)
       return;
@@ -260,11 +265,13 @@ namespace std {
   locale::_Impl* locale::_S_global;  // init'd to 0 before static ctors run
   locale::_Impl* locale::_S_classic; // init'd to 0 before static ctors run
 
-  locale::locale(_Impl* __ip) throw ()
+  locale::
+  locale(_Impl* __ip) throw()
   : _M_impl(__ip)
   { __ip->_M_add_reference(); }
 
-  locale::locale(const locale& __other, const locale& __one, category __cats)
+  locale::
+  locale(const locale& __other, const locale& __one, category __cats)
   {
     __cats = _S_normalize_category(__cats);    // might throw
     _M_impl = new _Impl(*__other._M_impl, 1);  // might throw
@@ -283,7 +290,8 @@ namespace std {
   }
 
   const locale&
-  locale::operator=(const locale& __other) throw ()
+  locale::
+  operator=(const locale& __other) throw()
   {
     __other._M_impl->_M_add_reference();
     _M_impl->_M_remove_reference();
@@ -292,7 +300,8 @@ namespace std {
   }
 
   locale
-  locale::global(const locale& __other)
+  locale::
+  global(const locale& __other)
   {
     // XXX MT
     _S_initialize();
@@ -306,14 +315,16 @@ namespace std {
   }
 
   string
-  locale::name() const
+  locale::
+  name() const
   {
     // XXX not done
     return "*";
   }
 
   locale const&
-  locale::classic()
+  locale::
+  classic()
   {
     static locale* __classic_locale;
     // XXX MT
@@ -321,7 +332,7 @@ namespace std {
       {
 	try {
 	  _S_classic = _S_global = new _Impl(26u, 2u);
-	  // one reference for _M_classic, one for _M_global
+	  // One reference for _M_classic, one for _M_global
 	  // (constructor for (*the_classic_locale) adds a third)
 	    
 	  // collate category
@@ -329,22 +340,22 @@ namespace std {
 	  
 	  // ctype category
 	  _S_classic->_M_init_facet(new std::ctype<char>);
-	  _S_classic->_M_init_facet(new std::codecvt<char, char, mbstate_t>);
+	  _S_classic->_M_init_facet(new codecvt<char, char, mbstate_t>);
 
 	  // monetary category
-	  _S_classic->_M_init_facet(new std::moneypunct<char, false>);
-	  _S_classic->_M_init_facet(new std::moneypunct<char,true >);
-	  _S_classic->_M_init_facet(new std::money_get<char>);
-	  _S_classic->_M_init_facet(new std::money_put<char>);
+	  _S_classic->_M_init_facet(new moneypunct<char, false>);
+	  _S_classic->_M_init_facet(new moneypunct<char,true >);
+	  _S_classic->_M_init_facet(new money_get<char>);
+	  _S_classic->_M_init_facet(new money_put<char>);
 	  
 	  // numeric category
-	  _S_classic->_M_init_facet(new std::numpunct<char>);
-	  _S_classic->_M_init_facet(new std::num_get<char>);
-	  _S_classic->_M_init_facet(new std::num_put<char>);
+	  _S_classic->_M_init_facet(new numpunct<char>);
+	  _S_classic->_M_init_facet(new num_get<char>);
+	  _S_classic->_M_init_facet(new num_put<char>);
 	  
 	  // time category
-	  _S_classic->_M_init_facet(new std::time_get<char>);
-	  _S_classic->_M_init_facet(new std::time_put<char>);
+	  _S_classic->_M_init_facet(new time_get<char>);
+	  _S_classic->_M_init_facet(new time_put<char>);
 	  
 	  // messages category
 	  _S_classic->_M_init_facet(new std::messages<char>);
@@ -352,16 +363,16 @@ namespace std {
 #ifdef  _GLIBCPP_USE_WCHAR_T
 	  _S_classic->_M_init_facet(new std::collate<wchar_t>);
 	  _S_classic->_M_init_facet(new std::ctype<wchar_t>);
-	  _S_classic->_M_init_facet(new std::codecvt<wchar_t, char, mbstate_t>);
-	  _S_classic->_M_init_facet(new std::moneypunct<wchar_t, false>);
-	  _S_classic->_M_init_facet(new std::moneypunct<wchar_t,true >);
-	  _S_classic->_M_init_facet(new std::money_get<wchar_t>);
-	  _S_classic->_M_init_facet(new std::money_put<wchar_t>);
-	  _S_classic->_M_init_facet(new std::numpunct<wchar_t>);
-	  _S_classic->_M_init_facet(new std::num_get<wchar_t>);
-	  _S_classic->_M_init_facet(new std::num_put<wchar_t>);
-	  _S_classic->_M_init_facet(new std::time_get<wchar_t>);
-	  _S_classic->_M_init_facet(new std::time_put<wchar_t>);
+	  _S_classic->_M_init_facet(new codecvt<wchar_t, char, mbstate_t>);
+	  _S_classic->_M_init_facet(new moneypunct<wchar_t, false>);
+	  _S_classic->_M_init_facet(new moneypunct<wchar_t,true >);
+	  _S_classic->_M_init_facet(new money_get<wchar_t>);
+	  _S_classic->_M_init_facet(new money_put<wchar_t>);
+	  _S_classic->_M_init_facet(new numpunct<wchar_t>);
+	  _S_classic->_M_init_facet(new num_get<wchar_t>);
+	  _S_classic->_M_init_facet(new num_put<wchar_t>);
+	  _S_classic->_M_init_facet(new time_get<wchar_t>);
+	  _S_classic->_M_init_facet(new time_put<wchar_t>);
 	  _S_classic->_M_init_facet(new std::messages<wchar_t>);
 #endif	  
 
@@ -384,7 +395,8 @@ namespace std {
   }
 
   int
-  locale::_S_normalize_category(int __cats) 
+  locale::
+  _S_normalize_category(int __cats) 
   {
     if ((__cats & all) && !(__cats & ~all))
       return __cats;
@@ -408,19 +420,22 @@ namespace std {
     /* NOTREACHED */
   }
 
-  locale::facet::facet(size_t __refs) throw ()
+  locale::facet::
+  facet(size_t __refs) throw()
   : _M_num_references(__refs - 1) 
   { }
 
   void  
-  locale::facet::_M_add_reference() throw ()
+  locale::facet::
+  _M_add_reference() throw()
   { 
     if (this) 
       ++_M_num_references; 
   }                     // XXX MT
 
   void  
-  locale::facet::_M_remove_reference() throw ()
+  locale::facet::
+  _M_remove_reference() throw()
   {
     if (this && _M_num_references-- == 0)
       {
@@ -433,10 +448,12 @@ namespace std {
   }
 
   char const* 
-  _Bad_use_facet::what() const throw()
+  _Bad_use_facet::
+  what() const throw()
   { return "bad_cast thrown from use_facet"; }
 
-  _Bad_use_facet::~_Bad_use_facet() throw() {}
+  _Bad_use_facet::
+  ~_Bad_use_facet() throw() { }
   
   size_t locale::id::_S_highwater;  // init'd to 0 by linker
 
@@ -446,11 +463,13 @@ namespace std {
 
   locale::id ctype<char>::id;
 
-  ctype<char>::~ctype()
+  ctype<char>::
+  ~ctype()
   { if (_M_del) delete[] table(); }
 
   char
-  ctype<char>::do_widen(char __c) const
+  ctype<char>::
+  do_widen(char __c) const
   { return __c; }
   
   const char* 
@@ -462,7 +481,8 @@ namespace std {
   }
   
   char
-  ctype<char>::do_narrow(char __c, char /*__dfault*/) const
+  ctype<char>::
+  do_narrow(char __c, char /*__dfault*/) const
   { return __c; }
   
   const char* 
@@ -474,17 +494,20 @@ namespace std {
     return __high;
   }
 
-  ctype_byname<char>::ctype_byname(const char* /*__s*/, size_t __refs)
-  : ctype<char> (new mask[table_size], true, __refs)
+  ctype_byname<char>::
+  ctype_byname(const char* /*__s*/, size_t __refs)
+  : ctype<char>(new mask[table_size], true, __refs)
   { }
 
   locale::id codecvt<char, char, mbstate_t>::id;
 
-  codecvt<char, char, mbstate_t>::codecvt(size_t __refs)
-  : _Codecvt<char, char, mbstate_t> (__refs)
+  codecvt<char, char, mbstate_t>::
+  codecvt(size_t __refs)
+  : _Codecvt<char, char, mbstate_t>(__refs)
   { }
 
-  codecvt<char, char, mbstate_t>::~codecvt() { }
+  codecvt<char, char, mbstate_t>::
+  ~codecvt() { }
   
   codecvt_base::result
   codecvt<char, char, mbstate_t>::
@@ -505,8 +528,7 @@ namespace std {
   codecvt_base::result
   codecvt<char, char, mbstate_t>::
   do_unshift(state_type& /*__state*/, extern_type* __to,
-             extern_type* /*__to_limit*/,
-	     extern_type*& __to_next) const
+             extern_type* /*__to_limit*/, extern_type*& __to_next) const
   { 
     __to_next = __to; 
     return noconv; 
@@ -530,12 +552,12 @@ namespace std {
   
 
   int 
-  codecvt<char, char, mbstate_t>::do_encoding() const throw ()
-  { return 1; }
+  codecvt<char, char, mbstate_t>::
+  do_encoding() const throw() { return 1; }
   
   bool 
-  codecvt<char, char, mbstate_t>::do_always_noconv() const throw ()
-  { return true; }
+  codecvt<char, char, mbstate_t>::
+  do_always_noconv() const throw() { return true; }
   
   int 
   codecvt<char, char, mbstate_t>::
@@ -544,27 +566,27 @@ namespace std {
   { return (__max < size_t(__end - __from)) ? __max : __end - __from; }
   
   int 
-  codecvt<char, char, mbstate_t>::do_max_length() const throw ()
-  { return 1; }
+  codecvt<char, char, mbstate_t>::
+  do_max_length() const throw() { return 1; }
   
   codecvt_byname<char, char, mbstate_t>::
   codecvt_byname(const char* /*__s*/, size_t __refs)
-  : codecvt<char, char, mbstate_t>(__refs)
-  { }
+  : codecvt<char, char, mbstate_t>(__refs) { }
 
-  codecvt_byname<char, char, mbstate_t>::~codecvt_byname() { }
+  codecvt_byname<char, char, mbstate_t>::
+  ~codecvt_byname() { }
 
   locale::id collate<char>::id;
 
   collate<char>::collate(size_t __refs)
-  : _Collate<char> (__refs)
-  { }
+  : _Collate<char>(__refs) { }
   
   collate<char>::~collate() { }
   
   int 
-  collate<char>::do_compare(const char* __lo1, const char* __hi1,
-			    const char* __lo2, const char* __hi2) const
+  collate<char>::
+  do_compare(const char* __lo1, const char* __hi1, 
+	     const char* __lo2, const char* __hi2) const
   {
     for (; __lo1 < __hi1 && __lo2 < __hi2; ++__lo1, ++__lo2) 
       if (*__lo1 != *__lo2) 
@@ -578,11 +600,13 @@ namespace std {
   }
   
   string
-  collate<char>::do_transform(const char* __lo, const char* __hi) const
+  collate<char>::
+  do_transform(const char* __lo, const char* __hi) const
   { return string(__lo, __hi - __lo); }
   
   long
-  collate<char>::do_hash(const char* __lo, const char* __hi) const
+  collate<char>::
+  do_hash(const char* __lo, const char* __hi) const
   {
     unsigned long __val = 0xdeadbeef;
     for (; __lo < __hi; ++__lo)
@@ -591,43 +615,43 @@ namespace std {
     return __val;
   }
   
-  collate_byname<char>::collate_byname(const char* /*__s*/, size_t __refs)
-  : collate<char> (__refs)
-  { }
+  collate_byname<char>::
+  collate_byname(const char* /*__s*/, size_t __refs)
+  : collate<char>(__refs) { }
 
-  numpunct_byname<char>::numpunct_byname(const char* /*__s*/, size_t __refs)
-  : numpunct<char> (__refs)
-  { }
+  numpunct_byname<char>::
+  numpunct_byname(const char* /*__s*/, size_t __refs)
+  : numpunct<char>(__refs) { }
 
   moneypunct_byname<char, false>::
   moneypunct_byname(const char* /*__s*/, size_t __refs)
-  : moneypunct<char, false> (__refs)
-  { }
+  : moneypunct<char, false>(__refs) { }
   
   moneypunct_byname<char, true>::
   moneypunct_byname(const char* /*__s*/, size_t __refs)
-  : moneypunct<char, true> (__refs)
-  { }
+  : moneypunct<char, true>(__refs) { }
   
-  messages_byname<char>::messages_byname(const char* /*__s*/, size_t __refs)
-  : messages<char> (__refs)
-  { }
+  messages_byname<char>::
+  messages_byname(const char* /*__s*/, size_t __refs)
+  : messages<char>(__refs) { }
 
 #ifdef _GLIBCPP_USE_WCHAR_T  
   locale::id ctype<wchar_t>::id;
 
-  ctype<wchar_t>::~ctype() { }
+  ctype<wchar_t>::
+  ~ctype() { }
 
   bool
-  ctype<wchar_t>::do_is(mask __m, char_type __c) const
+  ctype<wchar_t>::
+  do_is(mask __m, char_type __c) const
   { 
     return ((static_cast<__table_type>(__c) < _S_table_size) 
 	    && (_M_ctable[__c] & __m)); 
   }
   
   const wchar_t* 
-  ctype<wchar_t>::do_is(const wchar_t* __low, const wchar_t* __high,
-			mask* __vec) const
+  ctype<wchar_t>::
+  do_is(const wchar_t* __low, const wchar_t* __high, mask* __vec) const
   {
     for (; __low < __high; ++__low, ++__vec)
       *__vec = ((static_cast<__table_type>(*__low) < _S_table_size) 
@@ -636,8 +660,8 @@ namespace std {
   }
   
   const wchar_t* 
-  ctype<wchar_t>::do_scan_is(mask __m, const wchar_t* __low,
-			     const wchar_t* __high) const
+  ctype<wchar_t>::
+  do_scan_is(mask __m, const wchar_t* __low, const wchar_t* __high) const
   {
     while (__low < __high 
 	   && (_S_table_size < static_cast<__table_type>(*__low) 
@@ -647,8 +671,8 @@ namespace std {
   }
 
   const wchar_t*
-  ctype<wchar_t>::do_scan_not(mask __m, const char_type* __low,
-			      const char_type* __high) const
+  ctype<wchar_t>::
+  do_scan_not(mask __m, const char_type* __low, const char_type* __high) const
   {
     while (__low < __high 
 	   && static_cast<__table_type>(*__low) < _S_table_size 
@@ -658,12 +682,13 @@ namespace std {
   }
 
   wchar_t
-  ctype<wchar_t>::do_widen(char __c) const
+  ctype<wchar_t>::
+  do_widen(char __c) const
   { return static_cast<wchar_t>((unsigned char)__c); }
   
   const char* 
-  ctype<wchar_t>::do_widen(const char* __low, const char* __high,
-			      wchar_t* __dest) const
+  ctype<wchar_t>::
+  do_widen(const char* __low, const char* __high, wchar_t* __dest) const
   {
     while (__low < __high)
       *__dest++ = static_cast<wchar_t>((unsigned char)*__low++);
@@ -671,15 +696,17 @@ namespace std {
   }
 
   char
-  ctype<wchar_t>::do_narrow(wchar_t __c, char __dfault) const
+  ctype<wchar_t>::
+  do_narrow(wchar_t __c, char __dfault) const
   { 
     return ((static_cast<__table_type>(__c) < _S_table_size) 
 	    ? static_cast<char>(__c) : __dfault); 
   }
 
   const wchar_t*
-  ctype<wchar_t>::do_narrow(const wchar_t* __low, const wchar_t* __high,
-			    char __dfault, char* __dest) const
+  ctype<wchar_t>::
+  do_narrow(const wchar_t* __low, const wchar_t* __high, 
+	    char __dfault, char* __dest) const
   {
     for (; __low < __high; ++__dest, ++__low)
       *__dest = (static_cast<__table_type>(*__low) < _S_table_size) 
@@ -687,17 +714,18 @@ namespace std {
     return __high;
   }
 
-  ctype_byname<wchar_t>::ctype_byname(const char* /*__s*/, size_t __refs)
-  : ctype<wchar_t> (__refs)
-  { }
+  ctype_byname<wchar_t>::
+  ctype_byname(const char* /*__s*/, size_t __refs)
+  : ctype<wchar_t>(__refs) { }
 
   locale::id codecvt<wchar_t, char, mbstate_t>::id;
 
-  codecvt<wchar_t, char, mbstate_t>::codecvt (size_t __refs)
-  : _Codecvt<wchar_t, char, mbstate_t> (__refs)
-  { }
+  codecvt<wchar_t, char, mbstate_t>::
+  codecvt(size_t __refs)
+  : _Codecvt<wchar_t, char, mbstate_t>(__refs) { }
 
-  codecvt<wchar_t, char, mbstate_t>::~codecvt() { }
+  codecvt<wchar_t, char, mbstate_t>::
+  ~codecvt() { }
   
   codecvt_base::result
   codecvt<wchar_t, char, mbstate_t>::
@@ -715,8 +743,7 @@ namespace std {
   codecvt_base::result
   codecvt<wchar_t, char, mbstate_t>::
   do_unshift (state_type& /*__state*/, extern_type* __to,
-              extern_type* /*__to_limit*/,
-	      extern_type*& __to_next) const
+              extern_type* /*__to_limit*/, extern_type*& __to_next) const
   {
     __to_next = __to;
     return noconv;
@@ -736,11 +763,14 @@ namespace std {
     return __from == __from_end ? ok : partial;
   }
   
-  int codecvt<wchar_t, char, mbstate_t>::do_encoding() const throw ()
+  int 
+  codecvt<wchar_t, char, mbstate_t>::
+  do_encoding() const throw()
   { return 1; }
   
   bool 
-  codecvt<wchar_t, char, mbstate_t>::do_always_noconv() const throw ()
+  codecvt<wchar_t, char, mbstate_t>::
+  do_always_noconv() const throw()
   { return false; }
   
   int 
@@ -750,33 +780,35 @@ namespace std {
   { return (__max < size_t(__end - __from)) ? __max : __end - __from; }
   
   int 
-  codecvt<wchar_t, char, mbstate_t>::do_max_length() const throw ()
+  codecvt<wchar_t, char, mbstate_t>::do_max_length() const throw()
   { return 1; }
 
   codecvt_byname<wchar_t, char, mbstate_t>::
   codecvt_byname(const char* /*__s*/, size_t __refs)
-  : codecvt<wchar_t, char, mbstate_t> (__refs)
-  { }
+  : codecvt<wchar_t, char, mbstate_t> (__refs) { }
   
-  codecvt_byname<wchar_t, char, mbstate_t>::~codecvt_byname() {}
+  codecvt_byname<wchar_t, char, mbstate_t>::
+  ~codecvt_byname() { }
 
   locale::id collate<wchar_t>::id;
 
-  collate<wchar_t>::collate(size_t __refs)
-  : _Collate<wchar_t> (__refs)
-  { }
+  collate<wchar_t>::
+  collate(size_t __refs)
+  : _Collate<wchar_t> (__refs) { }
   
-  collate<wchar_t>::~collate() { }
+  collate<wchar_t>::
+  ~collate() { }
 
-  int collate<wchar_t>::
+  int 
+  collate<wchar_t>::
   do_compare(const wchar_t* /*__lo1*/, const wchar_t* /*__hi1*/,
 	     const wchar_t* /*__lo2*/, const wchar_t* /*__hi2*/) const
   {
     return 0; // XXX not done
   }
   
-  wstring collate<wchar_t>::do_transform(const wchar_t* /*__lo*/, 
-					 const wchar_t* /*__hi*/) const
+  wstring collate<wchar_t>::
+  do_transform(const wchar_t* /*__lo*/, const wchar_t* /*__hi*/) const
   {
     return wstring(); // XXX not done
   }
@@ -787,27 +819,25 @@ namespace std {
     return 0; // XXX not done
   }
 
-  numpunct_byname<wchar_t>::numpunct_byname(const char* /*__s*/, size_t __refs)
-  : numpunct<wchar_t> (__refs)
-  { }
+  numpunct_byname<wchar_t>::
+  numpunct_byname(const char* /*__s*/, size_t __refs)
+  : numpunct<wchar_t> (__refs) { }
 
-  collate_byname<wchar_t>::collate_byname(const char* /*__s*/, size_t __refs)
-  : collate<wchar_t> (__refs)
-  { }
+  collate_byname<wchar_t>::
+  collate_byname(const char* /*__s*/, size_t __refs)
+  : collate<wchar_t> (__refs) { }
   
   moneypunct_byname<wchar_t, false>::
   moneypunct_byname(const char* /*__s*/, size_t __refs)
-  : moneypunct<wchar_t, false> (__refs)
-  { }
+  : moneypunct<wchar_t, false> (__refs) { }
   
   moneypunct_byname<wchar_t, true>::
   moneypunct_byname(const char* /*__s*/, size_t __refs)
-  : moneypunct<wchar_t, true> (__refs)
-  { }
+  : moneypunct<wchar_t, true> (__refs) { }
     
-  messages_byname<wchar_t>::messages_byname(const char* /*__s*/, size_t __refs)
-  : messages<wchar_t> (__refs)
-  { }
+  messages_byname<wchar_t>::
+  messages_byname(const char* /*__s*/, size_t __refs)
+  : messages<wchar_t> (__refs) { }
 #endif //  _GLIBCPP_USE_WCHAR_T
 
 } // namespace std

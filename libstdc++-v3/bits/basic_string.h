@@ -97,11 +97,6 @@ namespace std {
       typedef reverse_iterator<const_iterator> 	const_reverse_iterator;
       typedef reverse_iterator<iterator> 		    reverse_iterator;
     
-      //  Data Members:
-      // NB: This is an unsigned type, and thus represents the maximum
-      // size that the allocator can hold.
-      static const size_type npos = static_cast<size_type>(-1);
-
     private:
       // _Rep: string representation
       //   Invariants:
@@ -222,7 +217,19 @@ namespace std {
 	_CharT* _M_p; // The actual data.
       };
 
+    public:
+      // Data Members (public):
+      // NB: This is an unsigned type, and thus represents the maximum
+      // size that the allocator can hold.
+      static const size_type npos = static_cast<size_type>(-1);
+
+    private:
+      // Data Members (private):
       mutable _Alloc_hider _M_dataplus;
+
+      // The following storage is init'd to 0 by the linker, resulting
+      // (carefully) in an empty string with one reference.
+      static size_type _S_empty_rep_storage[(sizeof(_Rep) + sizeof(_CharT) + sizeof(size_type) - 1)/sizeof(size_type)];
 
       _CharT* 
       _M_data() const 
@@ -299,14 +306,9 @@ namespace std {
       void 
       _M_leak_hard();
 
-      // The following storage is init'd to 0 by the linker, resulting
-      // (carefully) in an empty string with one reference.
-      static size_type _S_empty_rep_storage[
-      (sizeof(_Rep) + sizeof(_CharT) + sizeof(size_type)-1)/sizeof(size_type)];
-
       static _Rep& 
       _S_empty_rep()
-      { return *reinterpret_cast<_Rep*> (&_S_empty_rep_storage); }
+      { return *reinterpret_cast<_Rep*>(&_S_empty_rep_storage); }
 
     public:
       // Construct/copy/destroy:
@@ -840,7 +842,7 @@ namespace std {
  
     private:
       static const _CharT* 
-      _S_find (const _CharT* __beg, const _CharT* __end, _CharT __c);
+      _S_find(const _CharT* __beg, const _CharT* __end, _CharT __c);
   };
 
 

@@ -1,8 +1,15 @@
 2000-06-02  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
+	* bits/locale_facets.h: Tweak.
+	* src/locale.cc (codecvt<wchar_t>): Tweak. 
+	
 	* bits/locale_facets.h (_Format_cache): _S_ecks -> _S_x. 
 	* bits/locale_facets.tcc (num_get<char>::_M_extract): Fix for hex.
 
+	* bits/basic_string.h: Move data member up.
+	* src/string-inst.cc: Fix instantiations.
+	* bits/string.tcc: Fix types.
+	
 2000-06-02  Anthony Williams  <anthony@anthonyw.cjb.net>
 
 	* testsuite/21_strings/replace.cc (test01): Qualify find with std::.
