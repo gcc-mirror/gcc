@@ -66,8 +66,8 @@
 #include "alloc.h"
 #include "vector.h"
 
-using std::hash;
-using std::hashtable;
+using __gnu_cxx::hash;
+using __gnu_cxx::hashtable;
 
 #endif /* _CPP_BACKWARD_HASHTABLE_H */
 
