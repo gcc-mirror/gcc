@@ -138,15 +138,16 @@ Boston, MA 02111-1307, USA.  */
    between the two is that `LIB_SPEC' is used at the end of the command given
    to the linker.
 
-   If this macro is not defined, a default is provided that loads the standard
-   C library from the usual place.  See `gcc.c'.
+   For stormy16:
+   - If -msim is specified, everything is built and linked as for the sim.
+   - If -T is specified, that linker script is used, and it should provide
+     appropriate libraries.
+   - If neither is specified, everything is built as for the sim, but no
+     I/O support is assumed.
 
-   Defined in svr4.h.  */
+*/
 #undef LIB_SPEC
-#if 0
-#define LIB_SPEC "-( -lc %{msim:-lsim}%{!msim:-leva_app -lnosys} -)"
-#endif
-#define LIB_SPEC "-( -lc %{msim:-lsim} -)"
+#define LIB_SPEC "-( -lc %{msim:-lsim}%{!msim:%{!T*:-lnosys}} -)"
 
 /* Another C string constant that tells the GNU CC driver program how and when
    to place a reference to `libgcc.a' into the linker command line.  This
