@@ -45,6 +45,7 @@ extern void		mips_output_lineno PARAMS ((FILE *, int));
 extern void		mips_output_ascii PARAMS ((FILE *, const char *,
 						   size_t));
 extern void		mips_order_regs_for_local_alloc PARAMS ((void));
+extern struct rtx_def * embedded_pic_fnaddr_reg PARAMS ((void));
 extern struct rtx_def *	mips16_gp_pseudo_reg PARAMS ((void));
 #ifdef ASM_OUTPUT_UNDEF_FUNCTION
 extern int		mips_output_external_libcall PARAMS ((FILE *, const char *));

@@ -135,6 +135,22 @@ static int iris6_section_align_1		PARAMS ((void **, void *));
 #endif
 static int mips_adjust_cost			PARAMS ((rtx, rtx, rtx, int));
 
+static void mips_init_machine_status		PARAMS ((struct function *));
+static void mips_free_machine_status		PARAMS ((struct function *));
+static void mips_mark_machine_status		PARAMS ((struct function *));
+
+struct machine_function {
+  /* Pseudo-reg holding the address of the current function when
+     generating embedded PIC code.  Created by LEGITIMIZE_ADDRESS,
+     used by mips_finalize_pic if it was created.  */
+  rtx embedded_pic_fnaddr_rtx;
+
+  /* Pseudo-reg holding the value of $28 in a mips16 function which
+     refers to GP relative global variables.  */
+  rtx mips16_gp_pseudo_rtx;
+};
+
+
 /* Global variables for machine-dependent things.  */
 
 /* Threshold for data being put into the small data/bss area, instead
@@ -293,20 +309,11 @@ struct mips_frame_info current_frame_info;
 /* Zero structure to initialize current_frame_info.  */
 struct mips_frame_info zero_frame_info;
 
-/* Pseudo-reg holding the address of the current function when
-   generating embedded PIC code.  Created by LEGITIMIZE_ADDRESS, used
-   by mips_finalize_pic if it was created.  */
-rtx embedded_pic_fnaddr_rtx;
-
 /* The length of all strings seen when compiling for the mips16.  This
    is used to tell how many strings are in the constant pool, so that
    we can see if we may have an overflow.  This is reset each time the
    constant pool is output.  */
 int mips_string_length;
-
-/* Pseudo-reg holding the value of $28 in a mips16 function which
-   refers to GP relative global variables.  */
-rtx mips16_gp_pseudo_rtx;
 
 /* In mips16 mode, we build a list of all the string constants we see
    in a particular function.  */
@@ -1828,19 +1835,18 @@ mips_count_memory_refs (op, num)
 }
 
 
-/* Return RTL for the offset from the current function to the argument.
-
-   ??? Which argument is this?  */
+/* Return a pseudo that points to the address of the current function.
+   The first time it is called for a function, an initializer for the
+   pseudo is emitted in the beginning of the function.  */
 
 rtx
-embedded_pic_offset (x)
-     rtx x;
+embedded_pic_fnaddr_reg ()
 {
-  if (embedded_pic_fnaddr_rtx == NULL)
+  if (cfun->machine->embedded_pic_fnaddr_rtx == NULL)
     {
       rtx seq;
 
-      embedded_pic_fnaddr_rtx = gen_reg_rtx (Pmode);
+      cfun->machine->embedded_pic_fnaddr_rtx = gen_reg_rtx (Pmode);
 
       /* Output code at function start to initialize the pseudo-reg.  */
       /* ??? We used to do this in FINALIZE_PIC, but that does not work for
@@ -1851,7 +1857,7 @@ embedded_pic_offset (x)
 	 initialize this value every time a function is inlined into another
 	 function.  */
       start_sequence ();
-      emit_insn (gen_get_fnaddr (embedded_pic_fnaddr_rtx,
+      emit_insn (gen_get_fnaddr (cfun->machine->embedded_pic_fnaddr_rtx,
 				 XEXP (DECL_RTL (current_function_decl), 0)));
       seq = gen_sequence ();
       end_sequence ();
@@ -1859,6 +1865,19 @@ embedded_pic_offset (x)
       emit_insn_after (seq, get_insns ());
       pop_topmost_sequence ();
     }
+
+  return cfun->machine->embedded_pic_fnaddr_rtx;
+}  
+
+/* Return RTL for the offset from the current function to the argument.
+   X is the symbol whose offset from the current function we want.  */
+
+rtx
+embedded_pic_offset (x)
+     rtx x;
+{
+  /* Make sure it is emitted.  */
+  embedded_pic_fnaddr_reg ();
 
   return
     gen_rtx_CONST (Pmode,
@@ -5281,6 +5300,42 @@ override_options ()
 
   /* Register global variables with the garbage collector.  */
   mips_add_gc_roots ();
+
+  /* Functions to allocate, mark and deallocate machine-dependent
+     function status.  */
+  init_machine_status = &mips_init_machine_status;
+  free_machine_status = &mips_free_machine_status;
+  mark_machine_status = &mips_mark_machine_status;
+}
+
+/* Allocate a chunk of memory for per-function machine-dependent data.  */
+static void
+mips_init_machine_status (fn)
+     struct function *fn;
+{
+  fn->machine = ((struct machine_function *)
+		 xcalloc (1, sizeof (struct machine_function)));
+}
+
+/* Release the chunk of memory for per-function machine-dependent data.  */
+static void
+mips_free_machine_status (fn)
+     struct function *fn;
+{
+  free (fn->machine);
+  fn->machine = NULL;
+}
+
+/* Mark per-function machine-dependent data.  */
+static void
+mips_mark_machine_status (fn)
+     struct function *fn;
+{
+  if (fn->machine)
+    {
+      ggc_mark_rtx (fn->machine->embedded_pic_fnaddr_rtx);
+      ggc_mark_rtx (fn->machine->mips16_gp_pseudo_rtx);
+    }
 }
 
 /* On the mips16, we want to allocate $24 (T_REG) before other
@@ -8226,13 +8281,13 @@ mips_secondary_reload_class (class, mode, x, in_p)
 rtx
 mips16_gp_pseudo_reg ()
 {
-  if (mips16_gp_pseudo_rtx == NULL_RTX)
+  if (cfun->machine->mips16_gp_pseudo_rtx == NULL_RTX)
     {
       rtx const_gp;
       rtx insn, scan;
 
-      mips16_gp_pseudo_rtx = gen_reg_rtx (Pmode);
-      RTX_UNCHANGING_P (mips16_gp_pseudo_rtx) = 1;
+      cfun->machine->mips16_gp_pseudo_rtx = gen_reg_rtx (Pmode);
+      RTX_UNCHANGING_P (cfun->machine->mips16_gp_pseudo_rtx) = 1;
 
       /* We want to initialize this to a value which gcc will believe
          is constant.  */
@@ -8240,7 +8295,8 @@ mips16_gp_pseudo_reg ()
 			  gen_rtx (REG, Pmode, GP_REG_FIRST + 28));
 
       start_sequence ();
-      emit_move_insn (mips16_gp_pseudo_rtx, const_gp);
+      emit_move_insn (cfun->machine->mips16_gp_pseudo_rtx,
+		      const_gp);
       insn = gen_sequence ();
       end_sequence ();
 
@@ -8257,7 +8313,7 @@ mips16_gp_pseudo_reg ()
       pop_topmost_sequence ();
     }
 
-  return mips16_gp_pseudo_rtx;
+  return cfun->machine->mips16_gp_pseudo_rtx;
 }
 
 /* Return an RTX which represents the signed 16 bit offset from the
@@ -9834,8 +9890,6 @@ mips_add_gc_roots ()
   ggc_add_rtx_root (&mips_load_reg3, 1);
   ggc_add_rtx_root (&mips_load_reg4, 1);
   ggc_add_rtx_root (branch_cmp, ARRAY_SIZE (branch_cmp));
-  ggc_add_rtx_root (&embedded_pic_fnaddr_rtx, 1);
-  ggc_add_rtx_root (&mips16_gp_pseudo_rtx, 1);
 }
 
 static enum processor_type

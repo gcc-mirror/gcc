@@ -166,9 +166,7 @@ extern struct rtx_def *mips_load_reg;	/* register to check for load delay */
 extern struct rtx_def *mips_load_reg2;	/* 2nd reg to check for load delay */
 extern struct rtx_def *mips_load_reg3;	/* 3rd reg to check for load delay */
 extern struct rtx_def *mips_load_reg4;	/* 4th reg to check for load delay */
-extern struct rtx_def *embedded_pic_fnaddr_rtx;	/* function address */
 extern int mips_string_length;		/* length of strings for mips16 */
-extern struct rtx_def *mips16_gp_pseudo_rtx; /* psuedo reg holding $gp */
 
 /* Functions to change what output section we are using.  */
 extern void		rdata_section PARAMS ((void));
@@ -2017,15 +2015,6 @@ extern char mips_hard_regno_mode_ok[][FIRST_PSEUDO_REGISTER];
 #define PIC_OFFSET_TABLE_REGNUM (GP_REG_FIRST + 28)
 
 #define PIC_FUNCTION_ADDR_REGNUM (GP_REG_FIRST + 25)
-
-/* Initialize embedded_pic_fnaddr_rtx before RTL generation for
-   each function.  We used to do this in FINALIZE_PIC, but FINALIZE_PIC
-   isn't always called for static inline functions.  */
-#define INIT_EXPANDERS			\
-do {					\
-  embedded_pic_fnaddr_rtx = NULL;	\
-  mips16_gp_pseudo_rtx = NULL;		\
-} while (0)
 
 /* Define the classes of registers for register constraints in the
    machine description.  Also define ranges of constants.

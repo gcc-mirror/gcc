@@ -4945,7 +4945,7 @@ move\\t%0,%z4\\n\\
       rtx temp;
 
       temp = embedded_pic_offset (operands[1]);
-      temp = gen_rtx_PLUS (Pmode, embedded_pic_fnaddr_rtx,
+      temp = gen_rtx_PLUS (Pmode, embedded_pic_fnaddr_reg (),
 			   force_reg (DImode, temp));
       emit_move_insn (operands[0], force_reg (DImode, temp));
       DONE;
@@ -5371,7 +5371,7 @@ move\\t%0,%z4\\n\\
       rtx temp;
 
       temp = embedded_pic_offset (operands[1]);
-      temp = gen_rtx_PLUS (Pmode, embedded_pic_fnaddr_rtx,
+      temp = gen_rtx_PLUS (Pmode, embedded_pic_fnaddr_reg (),
 			   force_reg (SImode, temp));
       emit_move_insn (operands[0], force_reg (SImode, temp));
       DONE;
