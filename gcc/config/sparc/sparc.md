@@ -2273,8 +2273,16 @@
 {
   current_function_uses_pic_offset_table = 1;
   operands[2] = gen_rtx_SYMBOL_REF (Pmode, \"_GLOBAL_OFFSET_TABLE_\");
-  operands[3] = gen_reg_rtx (SImode);
-  operands[4] = gen_reg_rtx (SImode);
+  if (no_new_pseudos)
+    {
+      operands[3] = operands[0];
+      operands[4] = operands[0];
+    }
+  else
+    {
+      operands[3] = gen_reg_rtx (SImode);
+      operands[4] = gen_reg_rtx (SImode);
+    }
   operands[5] = pic_offset_table_rtx;
 }")
 
@@ -2467,8 +2475,16 @@
 {
   current_function_uses_pic_offset_table = 1;
   operands[2] = gen_rtx_SYMBOL_REF (Pmode, \"_GLOBAL_OFFSET_TABLE_\");
-  operands[3] = gen_reg_rtx (DImode);
-  operands[4] = gen_reg_rtx (DImode);
+  if (no_new_pseudos)
+    {
+      operands[3] = operands[0];
+      operands[4] = operands[0];
+    }
+  else
+    {
+      operands[3] = gen_reg_rtx (DImode);
+      operands[4] = gen_reg_rtx (DImode);
+    }
   operands[5] = pic_offset_table_rtx;
 }")
 
