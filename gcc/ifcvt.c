@@ -73,6 +73,7 @@ static sbitmap *post_dominators;
 static int count_bb_insns		PARAMS ((basic_block));
 static rtx first_active_insn		PARAMS ((basic_block));
 static int last_active_insn_p		PARAMS ((basic_block, rtx));
+static int seq_contains_jump		PARAMS ((rtx));
 
 static int cond_exec_process_insns	PARAMS ((rtx, rtx, rtx, rtx, int));
 static rtx cond_exec_get_condition	PARAMS ((rtx));
@@ -172,6 +173,24 @@ last_active_insn_p (bb, insn)
   while (GET_CODE (insn) == NOTE);
 
   return GET_CODE (insn) == JUMP_INSN;
+}
+
+/* It is possible, especially when having dealt with multi-word 
+   arithmetic, for the expanders to have emitted jumps.  Search
+   through the sequence and return TRUE if a jump exists so that
+   we can abort the conversion.  */
+
+static int
+seq_contains_jump (insn)
+     rtx insn;
+{
+  while (insn)
+    {
+      if (GET_CODE (insn) == JUMP_INSN)
+	return 1;
+      insn = NEXT_INSN (insn);
+    }
+  return 0;
 }
 
 /* Go through a bunch of insns, converting them to conditional
@@ -637,6 +656,10 @@ noce_try_store_flag_constants (if_info)
 
       seq = get_insns ();
       end_sequence ();
+
+      if (seq_contains_jump (seq))
+	return FALSE;
+
       emit_insns_before (seq, if_info->cond_earliest);
 
       return TRUE;
@@ -691,6 +714,10 @@ noce_try_store_flag_inc (if_info)
 
 	  seq = get_insns ();
 	  end_sequence ();
+
+	  if (seq_contains_jump (seq))
+	    return FALSE;
+
 	  emit_insns_before (seq, if_info->cond_earliest);
 
 	  return TRUE;
@@ -738,6 +765,10 @@ noce_try_store_flag_mask (if_info)
 
 	  seq = get_insns ();
 	  end_sequence ();
+
+	  if (seq_contains_jump (seq))
+	    return FALSE;
+
 	  emit_insns_before (seq, if_info->cond_earliest);
 
 	  return TRUE;
