@@ -6005,6 +6005,7 @@ process_init_element (value)
      char x[] = {"foo"}; */
   if (string_flag
       && TREE_CODE (constructor_type) == ARRAY_TYPE
+      && TREE_CODE (TREE_TYPE (constructor_type)) == INTEGER_TYPE
       && integer_zerop (constructor_unfilled_index))
     {
       constructor_stack->replacement_value = value;
