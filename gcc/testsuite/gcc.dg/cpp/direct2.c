@@ -12,7 +12,7 @@
 
 HASH include "somerandomfile" /*{ dg-error "stray" "non-include" }*/
 /*{ dg-bogus "No such" "don't execute non-include" { target *-*-* } 13 }*/
-int resync_parser_1; /*{ dg-error "parse|syntax|expected" "" }*/
+int resync_parser_1; /*{ dg-error "parse|syntax|expected" "" { target *-*-* } 13 }*/
 
 HASHINCLUDE <somerandomfile> /*{ dg-error "stray|expected" "non-include 2" }*/
 /*{ dg-bogus "No such" "don't execute non-include 2" { target *-*-* } 17 }*/

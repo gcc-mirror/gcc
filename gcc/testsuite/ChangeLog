@@ -1,3 +1,9 @@
+2005-03-11  Per Bothner  <per@bothner.com>
+
+	* gcc.dg/cpp/direct2.c: With new lexer changes, error "before string
+	constant" is now actually on same line as string constant.
+	* gcc.dg/cpp/direct2s.c: Likewise.
+
 2005-03-11  Richard Sandiford  <rsandifo@redhat.com>
 
 	* gcc.target/mips/fix-vr4130-[1-4].c: New tests.
