@@ -1,6 +1,7 @@
 2000-03-27  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* Makefile.in: New #defines and friends for Thread.h.
+	* Makefile.am: Ditto.
 	* posix-threads.cc: (struct starter): Remove `object'.
 	(_Jv_CondWait): Use interruptable condition variables and new
 	recursive mutexes. New return codes on interrupt or non-ownership
