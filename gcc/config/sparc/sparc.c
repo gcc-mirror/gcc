@@ -2814,7 +2814,9 @@ print_operand (file, x, code)
       output_addr_const (file, XEXP (x, 1));
       fputc (')', file);
     }
-  else if (GET_CODE (x) == CONST_DOUBLE)
+  else if (GET_CODE (x) == CONST_DOUBLE
+	   && (GET_MODE (x) == VOIDmode
+	       || GET_MODE_CLASS (GET_MODE (x)) == MODE_INT))
     {
       if (CONST_DOUBLE_HIGH (x) == 0)
 	fprintf (file, "%u", CONST_DOUBLE_LOW (x));
@@ -2822,8 +2824,10 @@ print_operand (file, x, code)
 	       && CONST_DOUBLE_LOW (x) < 0)
 	fprintf (file, "%d", CONST_DOUBLE_LOW (x));
       else
-	abort ();
+	output_operand_lossage ("long long constant not a valid immediate operand");
     }
+  else if (GET_CODE (x) == CONST_DOUBLE)
+    output_operand_lossage ("floating point constant not a valid immediate operand");
   else { output_addr_const (file, x); }
 }
 
