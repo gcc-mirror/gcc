@@ -70,6 +70,7 @@ extern void init_recog			PROTO((void));
 extern void init_recog_no_volatile	PROTO((void));
 extern int recog_memoized		PROTO((rtx));
 extern int check_asm_operands		PROTO((rtx));
+extern int asm_operand_ok		PROTO((rtx, const char *));
 extern int validate_change		PROTO((rtx, rtx *, rtx, int));
 extern int apply_change_group		PROTO((void));
 extern int num_validated_changes	PROTO((void));

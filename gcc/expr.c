@@ -149,7 +149,6 @@ extern rtx arg_pointer_save_area;
 static rtx get_push_address	PROTO ((int));
 
 static rtx enqueue_insn		PROTO((rtx, rtx));
-static int queued_subexp_p	PROTO((rtx));
 static void init_queue		PROTO((void));
 static int move_by_pieces_ninsns PROTO((unsigned int, int));
 static void move_by_pieces_1	PROTO((rtx (*) (rtx, ...), enum machine_mode,
@@ -478,7 +477,7 @@ protect_from_queue (x, modify)
    We handle only combinations of MEM, PLUS, MINUS and MULT operators
    since memory addresses generally contain only those.  */
 
-static int
+int
 queued_subexp_p (x)
      rtx x;
 {
