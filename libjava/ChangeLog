@@ -1,5 +1,8 @@
 2001-10-18  Tom Tromey  <tromey@redhat.com>
 
+	* java/io/BufferedWriter.java (write(String,int,int)): Correctly
+	check bounds.
+
 	* java/security/Security.java (loadProviders): Removed unused
 	`pname' variable.  Don't create `File' object.  Don't update
 	`providerCount'.
