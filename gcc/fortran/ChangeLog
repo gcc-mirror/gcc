@@ -1,5 +1,11 @@
 2004-08-19  Paul Brook  <paul@codesourcery.com>
 
+	PR fortran/17091
+	* gfortran.h (gfc_access): Give ACCESS_UNKNOWN value 0.
+	* symbol.c (gfc_clear_attr): Use memset.
+
+2004-08-19  Paul Brook  <paul@codesourcery.com>
+
 	PR fortran/14976
 	PR fortran/16228 
 	* data.c (assign_substring_data_value): Remove.
