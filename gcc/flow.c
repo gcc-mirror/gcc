@@ -3734,10 +3734,7 @@ propagate_one_insn (pbi, insn)
       pbi->cc0_live = 0;
 
       if (libcall_is_dead)
-	{
-	  prev = propagate_block_delete_libcall (pbi->bb, insn, note);
-	  insn = NEXT_INSN (prev);
-	}
+	prev = propagate_block_delete_libcall (pbi->bb, insn, note);
       else
 	propagate_block_delete_insn (pbi->bb, insn);
 

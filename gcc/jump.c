@@ -2823,16 +2823,15 @@ delete_insn (insn)
      to special NOTEs instead.  When not optimizing, leave them alone.  */
   if (was_code_label && LABEL_NAME (insn) != 0)
     {
-      if (! optimize)
-	dont_really_delete = 1;
-      else if (! dont_really_delete)
+      if (optimize)
 	{
 	  const char *name = LABEL_NAME (insn);
 	  PUT_CODE (insn, NOTE);
 	  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED_LABEL;
 	  NOTE_SOURCE_FILE (insn) = name;
-	  dont_really_delete = 1;
 	}
+
+      dont_really_delete = 1;
     }
   else
     /* Mark this insn as deleted.  */

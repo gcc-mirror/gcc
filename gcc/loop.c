@@ -9240,14 +9240,49 @@ try_copy_prop (loop, replacement, regno)
 	fprintf (loop_dump_stream, "  Replaced reg %d", regno);
       if (store_is_first && replaced_last)
 	{
-	  PUT_CODE (init_insn, NOTE);
-	  NOTE_LINE_NUMBER (init_insn) = NOTE_INSN_DELETED;
-	  if (loop_dump_stream)
-	    fprintf (loop_dump_stream, ", deleting init_insn (%d)",
-		     INSN_UID (init_insn));
+	  rtx first;
+	  rtx retval_note;
+
+	  /* Assume we're just deleting INIT_INSN.  */
+	  first = init_insn;
+	  /* Look for REG_RETVAL note.  If we're deleting the end of
+	     the libcall sequence, the whole sequence can go.  */
+	  retval_note = find_reg_note (init_insn, REG_RETVAL, NULL_RTX);
+	  /* If we found a REG_RETVAL note, find the first instruction
+	     in the sequence.  */
+	  if (retval_note)
+	    first = XEXP (retval_note, 0);
+
+	  /* Delete the instructions.  */
+	  loop_delete_insns (first, init_insn);
 	}
       if (loop_dump_stream)
 	fprintf (loop_dump_stream, ".\n");
+    }
+}
+
+/* Replace all the instructions from FIRST up to and including LAST
+   with NOTE_INSN_DELETED notes.  */
+
+static void
+loop_delete_insns (first, last)
+     rtx first;
+     rtx last;
+{
+  while (1)
+    {
+      PUT_CODE (first, NOTE);
+      NOTE_LINE_NUMBER (first) = NOTE_INSN_DELETED;
+      if (loop_dump_stream)
+	fprintf (loop_dump_stream, ", deleting init_insn (%d)",
+		 INSN_UID (first));
+
+      /* If this was the LAST instructions we're supposed to delete,
+	 we're done.  */
+      if (first == last)
+	break;
+
+      first = NEXT_INSN (first);
     }
 }
 
