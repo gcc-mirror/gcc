@@ -1,6 +1,6 @@
 /* PR 19031 */
 /* { dg-do link } */
-/* { dg-require-alias } */
+/* { dg-require-alias "" } */
 /* { dg-options "-funit-at-a-time" } */
 
 static int f1 (void) { return 0; }
