@@ -151,6 +151,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 {
   register rtx insn, next, note;
   int changed;
+  int old_max_reg;
   int first = 1;
   int max_uid = 0;
   rtx last_insn;
@@ -591,6 +592,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 
   /* Now iterate optimizing jumps until nothing changes over one pass.  */
   changed = 1;
+  old_max_reg = max_reg_num ();
   while (changed)
     {
       changed = 0;
@@ -602,6 +604,16 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	  rtx nlabel;
 	  int this_is_simplejump, this_is_condjump, reversep = 0;
 	  int this_is_condjump_in_parallel;
+
+	  /* If one of our transformations has created more REGs we
+	     must rerun reg_scan or else we risk missed optimizations,
+	     erroneous optimizations, or even worse a crash.  */
+	  if (after_regscan &&
+	      old_max_reg < max_reg_num ())
+	    {
+	      reg_scan (f, max_reg_num (), 0);
+	      old_max_reg = max_reg_num ();
+	    }
 #if 0
 	  /* If NOT the first iteration, if this is the last jump pass
 	     (just before final), do the special peephole optimizations.
