@@ -1971,10 +1971,17 @@
   "or %1,%2,%0\;or %R1,%R2,%R0"
   [(set_attr "length" "2")])
 
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(ior:SI (match_operand:SI 1 "register_operand" "0")
+		(match_operand:SI 2 "ior_operand" "")))]
+  ""
+  "* return output_ior (operands); ")
+
 (define_insn "iorsi3"
-  [(set (match_operand:SI 0 "register_operand" "=r,r")
-	(ior:SI (match_operand:SI 1 "register_operand" "%r,0")
-		(match_operand:SI 2 "ior_operand" "r,n")))]
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(ior:SI (match_operand:SI 1 "register_operand" "%r")
+		(match_operand:SI 2 "register_operand" "r")))]
   ""
   "* return output_ior (operands); ")
 
