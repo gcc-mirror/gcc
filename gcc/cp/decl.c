@@ -7337,11 +7337,14 @@ maybe_commonize_var (tree decl)
   if (TREE_STATIC (decl)
       /* Don't mess with __FUNCTION__.  */
       && ! DECL_ARTIFICIAL (decl)
-      && current_function_decl
-      && DECL_CONTEXT (decl) == current_function_decl
-      && (DECL_DECLARED_INLINE_P (current_function_decl)
-	  || DECL_TEMPLATE_INSTANTIATION (current_function_decl))
-      && TREE_PUBLIC (current_function_decl))
+      && DECL_FUNCTION_SCOPE_P (decl)
+      /* Unfortunately, import_export_decl has not always been called
+	 before the function is processed, so we cannot simply check
+	 DECL_COMDAT.  */ 
+      && (DECL_COMDAT (decl)
+	  || ((DECL_DECLARED_INLINE_P (DECL_CONTEXT (decl))
+	       || DECL_TEMPLATE_INSTANTIATION (DECL_CONTEXT (decl)))
+	      && TREE_PUBLIC (DECL_CONTEXT (decl)))))
     {
       /* If flag_weak, we don't need to mess with this, as we can just
 	 make the function weak, and let it refer to its unique local

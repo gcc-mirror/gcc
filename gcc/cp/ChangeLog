@@ -1,3 +1,8 @@
+2003-04-27  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (maybe_commonize_var): Make the code match the comments.
+	* pt.c (instantiate_decl): Move call to import_export_decl.
+
 2003-04-26  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl2.c (finish_file): Fix merge botch.
