@@ -1012,7 +1012,8 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
   for (tail = clobbers; tail; tail = TREE_CHAIN (tail))
     {
       char *regname = TREE_STRING_POINTER (TREE_VALUE (tail));
-      if (decode_reg_name (regname) >= 0)
+      i = decode_reg_name (regname);
+      if (i >= 0 || i == -4)
 	++nclobbers;
     }
 
@@ -1183,8 +1184,14 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 
 	  if (j < 0)
 	    {
-	      if (j == -3)
+	      if (j == -3)	/* `cc', which is not a register */
 		continue;
+
+	      if (j == -4)	/* `memory', don't cache memory across asm */
+		{
+		  XVECEXP (body, 0, i++) = gen_rtx (CLOBBER, VOIDmode, const0_rtx);
+		  continue;
+		}
 
 	      error ("unknown register name `%s' in `asm'", regname);
 	      return;

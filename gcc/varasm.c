@@ -212,8 +212,9 @@ strip_reg_name (name)
 
 /* Decode an `asm' spec for a declaration as a register name.
    Return the register number, or -1 if nothing specified,
-   or -2 if the ASMSPEC is not `cc' and is not recognized,
-   or -3 if ASMSPEC is `cc' and is not recognized.
+   or -2 if the ASMSPEC is not `cc' or `memory' and is not recognized,
+   or -3 if ASMSPEC is `cc' and is not recognized,
+   or -4 if ASMSPEC is `memory' and is not recognized.
    Accept an exact spelling or a decimal number.
    Prefixes such as % are optional.  */
 
@@ -256,6 +257,9 @@ decode_reg_name (asmspec)
 	    return table[i].number;
       }
 #endif /* ADDITIONAL_REGISTER_NAMES */
+
+      if (!strcmp (asmspec, "memory"))
+	return -4;
 
       if (!strcmp (asmspec, "cc"))
 	return -3;
