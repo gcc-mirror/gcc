@@ -1,3 +1,7 @@
+1999-09-18  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
+
+	* inline1.C: New test.
+
 1999-08-25  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* thunk1.C: New test.
