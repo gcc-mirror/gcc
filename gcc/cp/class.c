@@ -4613,8 +4613,7 @@ layout_virtual_bases (t, offsets)
      tree t;
      splay_tree offsets;
 {
-  tree vbases;
-  unsigned HOST_WIDE_INT dsize;
+  tree vbases, dsize;
   unsigned HOST_WIDE_INT eoc;
 
   if (CLASSTYPE_N_BASECLASSES (t) == 0)
@@ -4627,7 +4626,7 @@ layout_virtual_bases (t, offsets)
 #endif
 
   /* DSIZE is the size of the class without the virtual bases.  */
-  dsize = tree_low_cst (TYPE_SIZE (t), 1);
+  dsize = TYPE_SIZE (t);
 
   /* Make every class have alignment of at least one.  */
   TYPE_ALIGN (t) = MAX (TYPE_ALIGN (t), BITS_PER_UNIT);
@@ -4649,7 +4648,7 @@ layout_virtual_bases (t, offsets)
 	{
 	  /* This virtual base is not a primary base of any class in the
 	     hierarchy, so we have to add space for it.  */
-	  tree basetype;
+	  tree basetype, usize;
 	  unsigned int desired_align;
 
 	  basetype = BINFO_TYPE (vbase);
@@ -4659,19 +4658,21 @@ layout_virtual_bases (t, offsets)
 
 	  /* Add padding so that we can put the virtual base class at an
 	     appropriately aligned offset.  */
-	  dsize = CEIL (dsize, desired_align) * desired_align;
+	  dsize = round_up (dsize, desired_align);
+
+	  usize = size_binop (CEIL_DIV_EXPR, dsize, bitsize_unit_node);
 
 	  /* We try to squish empty virtual bases in just like
 	     ordinary empty bases.  */
 	  if (is_empty_class (basetype))
 	    layout_empty_base (vbase,
-			       size_int (CEIL (dsize, BITS_PER_UNIT)),
+			       convert (sizetype, usize),
 			       offsets, t);
 	  else
 	    {
 	      tree offset;
 
-	      offset = ssize_int (CEIL (dsize, BITS_PER_UNIT));
+	      offset = convert (ssizetype, usize);
 	      offset = size_diffop (offset, 
 				    convert (ssizetype, 
 					     BINFO_OFFSET (vbase)));
@@ -4681,8 +4682,9 @@ layout_virtual_bases (t, offsets)
 	      /* Every virtual baseclass takes a least a UNIT, so that
 		 we can take it's address and get something different
 		 for each base.  */
-	      dsize += MAX (BITS_PER_UNIT,
-			    tree_low_cst (CLASSTYPE_SIZE (basetype), 0));
+	      dsize = size_binop (PLUS_EXPR, dsize,
+				  size_binop (MAX_EXPR, bitsize_unit_node,
+					      CLASSTYPE_SIZE (basetype)));
 	    }
 
 	  /* Keep track of the offsets assigned to this virtual base.  */
@@ -4704,13 +4706,12 @@ layout_virtual_bases (t, offsets)
      class, we didn't update DSIZE above; we were hoping to overlay
      multiple such bases at the same location.  */
   eoc = end_of_class (t, /*include_virtuals_p=*/1);
-  if (eoc * BITS_PER_UNIT > dsize)
-    dsize = eoc * BITS_PER_UNIT;
+  dsize = size_binop (MAX_EXPR, dsize, bitsize_int (eoc * BITS_PER_UNIT));
 
   /* Now, make sure that the total size of the type is a multiple of
      its alignment.  */
-  dsize = CEIL (dsize, TYPE_ALIGN (t)) * TYPE_ALIGN (t);
-  TYPE_SIZE (t) = bitsize_int (dsize);
+  dsize = round_up (dsize, TYPE_ALIGN (t));
+  TYPE_SIZE (t) = dsize;
   TYPE_SIZE_UNIT (t) = convert (sizetype,
 				size_binop (CEIL_DIV_EXPR, TYPE_SIZE (t),
 					    bitsize_unit_node));
