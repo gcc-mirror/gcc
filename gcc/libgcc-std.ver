@@ -53,8 +53,10 @@ GCC_3.0 {
   __ffsdi2
   __fixdfdi
   __fixsfdi
+  __fixunssfsi
   __fixunsdfdi
   __fixunssfdi
+  __fixunsdfsi
   __floatdidf
   __floatdisf
   __lshrdi3
