@@ -44,15 +44,6 @@ is_friend (type, supplicant)
 
   declp = (TREE_CODE_CLASS (TREE_CODE (supplicant)) == 'd');
 
-  /* Local classes have the same access as the enclosing function.  */
-  context = declp ? supplicant : TYPE_MAIN_DECL (supplicant);
-  context = hack_decl_function_context (context);
-  if (context)
-    {
-      supplicant = context;
-      declp = 1;
-    }
-
   if (declp)
     /* It's a function decl.  */
     {
@@ -121,8 +112,10 @@ is_friend (type, supplicant)
 
   if (declp && DECL_FUNCTION_MEMBER_P (supplicant))
     context = DECL_CLASS_CONTEXT (supplicant);
+  else if (! declp)
+    /* Local classes have the same access as the enclosing function.  */
+    context = hack_decl_function_context (TYPE_MAIN_DECL (supplicant));
   else
-    /* Nested classes don't inherit the access of their enclosing class.  */
     context = NULL_TREE;
 
   if (context)

@@ -1,3 +1,10 @@
+Wed Apr  1 15:38:36 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* friend.c (is_friend): Fix access control for local classes.
+
+	* class.c (is_empty_class): New fn.
+	* call.c (build_call): Don't pass empty class objects to a function.
+
 Wed Apr  1 14:58:35 1998  Mark Mitchell  <mmitchell@usa.net>
 
 	* call.c (build_over_call): Do name resolution for default
