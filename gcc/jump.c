@@ -182,6 +182,12 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 
   max_uid++;
 
+  /* If we are performing cross jump optimizations, then initialize
+     tables mapping UIDs to EH regions to avoid incorrect movement
+     of insns from one EH region to another.  */
+  if (flag_exceptions && cross_jump)
+    init_insn_eh_region (f, max_uid);
+
   /* Delete insns following barriers, up to next label.  */
 
   for (insn = f; insn;)
@@ -2706,6 +2712,13 @@ find_cross_jump (e1, e2, minimum, f1, f2)
 	}
 
       if (i2 == 0 || GET_CODE (i1) != GET_CODE (i2))
+	break;
+
+      /* Avoid moving insns across EH regions. 
+
+	 ??? This is only necessary if i1 or i2 can throw an exception.  */
+      if (flag_exceptions
+	  && !in_same_eh_region (i1, i2))
 	break;
 
       p1 = PATTERN (i1);

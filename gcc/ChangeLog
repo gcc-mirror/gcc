@@ -1,3 +1,10 @@
+Sat Oct 31 00:40:05 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* jump.c (jump_optimize): Initialize mappings from INSN_UID to
+	EH region if exceptions are enabled and we're performing cross
+	jump optimizations.
+	(find_cross_jump): Exit loop if the insns are in different EH regions.
+
 Fri Oct 30 00:54:25 1998  Peter Jakubek <pjak@snafu.de>
 
 	* m68k.h (INDIRECTABLE_1_ADDRESS_P): Fix thinko.
