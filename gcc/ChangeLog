@@ -1,3 +1,10 @@
+2002-01-28  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* emit-rtl.c (gen_rtx_REG): Check that the PIC_OFFSET_TABLE_REGNUM
+	is a fixed register before returning pic_offset_table_rtx.
+	* loop.c (scan_loop): Don't hoist insns that set pic_offset_table_rtx
+	when PIC_OFFSET_TABLE_REG_CALL_CLOBBERED is defined.
+
 2002-01-28  Jason Merrill  <jason@redhat.com>
 
 	* dwarf2.h (enum dwarf_call_frame_info): Add other DWARF 3 codes.
