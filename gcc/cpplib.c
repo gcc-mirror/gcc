@@ -685,7 +685,7 @@ do_define (pfile, keyword)
 		       mdef.symlen, mdef.symnam);
 	  else
 	    cpp_pedwarn (pfile, "`%.*s' redefined", mdef.symlen, mdef.symnam);
-	  if (hp->type == T_MACRO)
+	  if (hp->type == T_MACRO && CPP_OPTIONS (pfile)->done_initializing)
 	    cpp_pedwarn_with_file_and_line (pfile, hp->value.defn->file,
 					    hp->value.defn->line,
 			"this is the location of the previous definition");
@@ -3474,8 +3474,7 @@ cpp_pedwarn_with_file_and_line VPARAMS ((cpp_reader *pfile, const char *file,
   if (!CPP_OPTIONS (pfile)->pedantic_errors
       && CPP_OPTIONS (pfile)->inhibit_warnings)
     return;
-  if (file != NULL)
-    cpp_file_line_for_message (pfile, file, line, -1);
+  cpp_file_line_for_message (pfile, file, line, -1);
   v_cpp_message (pfile, CPP_OPTIONS (pfile)->pedantic_errors, msgid, ap);
   va_end(ap);
 }
