@@ -2318,7 +2318,7 @@ block_move_call (dest_reg, src_reg, bytes_rtx)
 		     VOIDmode, 3,
 		     src_reg, Pmode,
 		     dest_reg, Pmode,
-		     convert_to_modfe (TYPE_MODE (integer_type_node),
+		     convert_to_mode (TYPE_MODE (integer_type_node),
 				       bytes_rtx,
 				       TREE_UNSIGNED (integer_type_node)),
 		     TYPE_MODE (integer_type_node));
