@@ -20,9 +20,7 @@
 
 // 27.6.1.2.2 arithmetic extractors
 
-#include <cstdio> // for printf
 #include <istream>
-#include <ostream>
 #include <sstream>
 #include <locale>
 #include <testsuite_hooks.h>

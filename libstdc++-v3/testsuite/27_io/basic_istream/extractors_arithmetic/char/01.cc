@@ -22,7 +22,6 @@
 
 #include <cstdio> // for printf
 #include <istream>
-#include <ostream>
 #include <sstream>
 #include <locale>
 #include <testsuite_hooks.h>

@@ -20,9 +20,7 @@
 
 // 27.6.1.2.2 arithmetic extractors
 
-#include <cstdio> // for printf
 #include <istream>
-#include <ostream>
 #include <sstream>
 #include <locale>
 #include <testsuite_hooks.h>
@@ -45,19 +43,19 @@ std::stringstream ss_01(str_01);
  
 bool test09()
 {
-   bool test __attribute__((unused)) = true;
+  bool test __attribute__((unused)) = true;
 
-   std::string st("2.456e3-+0.567e-2");
-   std::stringbuf sb(st);
-   std::istream is(&sb);
-   double f1 = 0, f2 = 0;
-   char c;
-   (is>>std::ws) >> f1;
-   (is>>std::ws) >> c;
-   (is>>std::ws) >> f2;
-   test = f1 == 2456;
-   VERIFY( f2 == 0.00567 );
-   VERIFY( c == '-' );
+  std::string st("2.456e3-+0.567e-2");
+  std::stringbuf sb(st);
+  std::istream is(&sb);
+  double f1 = 0, f2 = 0;
+  char c;
+  (is>>std::ws) >> f1;
+  (is>>std::ws) >> c;
+  (is>>std::ws) >> f2;
+  test = f1 == 2456;
+  VERIFY( f2 == 0.00567 );
+  VERIFY( c == '-' );
   return test;
 }
 
