@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-extern int	sprintf(char *, const char *, ...);
 char buf[50];
 int
 va (int a, double b, int c, ...)
