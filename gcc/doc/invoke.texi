@@ -6349,6 +6349,8 @@ cross-compilation.  The embedded targets @samp{m68k-*-aout} and
 @item -mshort
 @opindex mshort
 Consider type @code{int} to be 16 bits wide, like @code{short int}.
+Additionally, parameters passed on the stack are also aligned to a
+16-bit boundary even on targets whose API mandates promotion to 32-bit.
 
 @item -mnobitfield
 @opindex mnobitfield
