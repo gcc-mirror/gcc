@@ -1,3 +1,8 @@
+2003-10-18  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config/mmix/t-mmix (CRTSTUFF_T_CFLAGS): Define.
+	($(T)crti.o, $(T)crtn.o): Pass CRTSTUFF_T_CFLAGS here too.
+
 2003-10-18  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/i386/k6.md (k6_alux): Use the 'mode' attribute instead of
