@@ -1,3 +1,8 @@
+2003-02-23  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/7982
+	* decl.c (warn_about_implicit_typename_lookup): Handle TYPEOF_TYPE.
+
 2003-02-21  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/9749
