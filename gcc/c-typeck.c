@@ -5048,6 +5048,7 @@ digest_init (type, init, tail, require_constant, constructor_constant)
 
 /* Handle initializers that use braces.  */
 
+static void output_init_element ();
 static void output_pending_init_elements ();
 static void check_init_type_bitfields ();
 
@@ -5659,7 +5660,7 @@ set_init_label (fieldname)
    right after this element.  (PENDING is normally 1;
    it is 0 while outputting pending elements, to avoid recursion.)  */
 
-void
+static void
 output_init_element (value, type, field, pending)
      tree value, type, field;
      int pending;
