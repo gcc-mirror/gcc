@@ -24,9 +24,9 @@ if test -n "$ncn_target_tool_prefix"; then
                 [${ncn_target_tool_prefix}$2], , [$4])
 fi
 if test -z "$ac_cv_prog_$1" ; then
-  ncn_ct_$1=$$1
-  AC_CHECK_PROG([ncn_ct_$1], [$2], [$2], [$3], [$4])
-  $1=$ncn_ct_$1
+  ncn_cv_$1=$$1
+  AC_CHECK_PROG([ncn_cv_$1], [$2], [$2], [$3], [$4])
+  $1=$ncn_cv_$1
 else
   $1="$ac_cv_prog_$1"
 fi
@@ -45,11 +45,11 @@ if test -n "$ncn_tool_prefix"; then
 fi
 if test -z "$ac_cv_prog_$1" ; then
   if test $build = $host ; then
-    ncn_ct_$1=$$1
-    AC_CHECK_PROG([ncn_ct_$1], [$2], [$2], [$3], [$4]) 
-    $1=$ncn_ct_$1
+    ncn_cv_$1=$$1
+    AC_CHECK_PROG([ncn_cv_$1], [$2], [$2], [ifelse([$3],[],[$2],[$3])], [$4]) 
+    $1=$ncn_cv_$1
   else
-    $1="$3"
+    $1="ifelse([$3],[],[${ncn_tool_prefix}$2],[$3])"
   fi
 else
   $1="$ac_cv_prog_$1"
@@ -69,15 +69,13 @@ if test -n "$ncn_target_tool_prefix"; then
 fi
 if test -z "$ac_cv_prog_$1" ; then
   if test $build = $target ; then
-    ncn_ct_$1=$$1
-    AC_CHECK_PROG([ncn_ct_$1], [$2], [$2], [$3], [$4]) 
-    $1=$ncn_ct_$1
+    ncn_cv_$1=$$1
+    AC_CHECK_PROG([ncn_cv_$1], [$2], [$2], [ifelse([$3],[],[$2],[$3])], [$4]) 
+    $1=$ncn_cv_$1
   else
-    $1="$3"
+    $1="ifelse([$3],[],[${ncn_target_tool_prefix}$2],[$3])"
   fi
 else
   $1="$ac_cv_prog_$1"
 fi
 ]) []dnl # NCN_STRICT_CHECK_TARGET_TOOL
-
-

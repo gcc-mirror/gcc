@@ -1,3 +1,11 @@
+2002-12-28  Alexandre Oliva  <aoliva@redhat.com>
+
+	* acx.m4: Name cache variables properly.
+	(NCN_STRICT_CHECK_TOOL): If program is not found and 
+	value-if-not-found is empty, use ${ncn_tool_prefix}$2 or $2,
+	depending on whether build != host or not.
+	(NCN_STRICT_CHECK_TARGET_TOOL): Ditto, with the target prefix.
+
 2002-12-28  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* acx.m4: New.
