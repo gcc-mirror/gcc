@@ -1,5 +1,5 @@
 /* gen-protos.c - massages a list of prototypes, for use by fixproto.
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -135,7 +135,7 @@ main (argc, argv)
       hash_tab[i] = next_index;
 
       fprintf (outf, "  {\"%s\", \"%s\", \"%s\" },\n",
-	       name_start, decl_start, param_start, i, i0);
+	       name_start, decl_start, param_start);
 
       next_index++;
 
