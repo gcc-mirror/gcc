@@ -144,23 +144,21 @@ namespace std
 	  __from_chunk_end = __from_end;
 
 	__from = __from_next;
-	const size_t __conv = mbsnrtowcs(__to_next, &__from_next,
-					 __from_chunk_end - __from_next,
-					 __to_end - __to_next, &__state);
+	size_t __conv = mbsnrtowcs(__to_next, &__from_next,
+				   __from_chunk_end - __from_next,
+				   __to_end - __to_next, &__state);
 	if (__conv == static_cast<size_t>(-1))
 	  {
 	    // In case of error, in order to stop at the exact place we
 	    // have to start again from the beginning with a series of
 	    // mbrtowc.
-	    for (;; ++__to_next)
+	    for (;; ++__to_next, __from += __conv)
 	      {
-		const size_t __conv_err = mbrtowc(__to_next, __from,
-						  __from_end - __from,
-						  &__tmp_state);
-		if (__conv_err == static_cast<size_t>(-1)
-		    || __conv_err == static_cast<size_t>(-2))
+		__conv = mbrtowc(__to_next, __from, __from_end - __from,
+				 &__tmp_state);
+		if (__conv == static_cast<size_t>(-1)
+		    || __conv == static_cast<size_t>(-2))
 		  break;
-		__from += __conv_err;
 	      }
 	    __from_next = __from;
 	    __state = __tmp_state;	    
@@ -262,22 +260,21 @@ namespace std
 	  __from_chunk_end = __end;
 
 	const extern_type* __tmp_from = __from;
-	const size_t __conv = mbsnrtowcs(__to, &__from,
-					 __from_chunk_end - __from,
-					 __max, &__state);
+	size_t __conv = mbsnrtowcs(__to, &__from,
+				   __from_chunk_end - __from,
+				   __max, &__state);
 	if (__conv == static_cast<size_t>(-1))
 	  {
 	    // In case of error, in order to stop at the exact place we
 	    // have to start again from the beginning with a series of
 	    // mbrtowc.
-	    for (__from = __tmp_from;;)
+	    for (__from = __tmp_from;; __from += __conv)
 	      {
-		const size_t __conv_err = mbrtowc(NULL, __from, __end - __from,
-						  &__tmp_state);
-		if (__conv_err == static_cast<size_t>(-1)
-		    || __conv_err == static_cast<size_t>(-2))
+		__conv = mbrtowc(NULL, __from, __end - __from,
+				 &__tmp_state);
+		if (__conv == static_cast<size_t>(-1)
+		    || __conv == static_cast<size_t>(-2))
 		  break;
-		__from += __conv_err;
 	      }
 	    __state = __tmp_state;
 	    __ret += __from - __tmp_from;
