@@ -135,10 +135,13 @@ static int total_attempts, total_merges, total_extras, total_successes;
    the dumps produced by earlier passes with those from later passes.  */
 
 static int *uid_cuid;
+static int max_uid_cuid;
 
 /* Get the cuid of an insn.  */
 
-#define INSN_CUID(INSN) (uid_cuid[INSN_UID (INSN)])
+#define INSN_CUID(INSN) (INSN_UID (INSN) > max_uid_cuid		\
+			 ? (abort(), 0)				\
+			 : uid_cuid[INSN_UID (INSN)])
 
 /* Maximum register number, which is the size of the tables below.  */
 
@@ -488,6 +491,7 @@ combine_instructions (f, nregs)
       i = INSN_UID (insn);
 
   uid_cuid = (int *) alloca ((i + 1) * sizeof (int));
+  max_uid_cuid = i;
 
   nonzero_bits_mode = mode_for_size (HOST_BITS_PER_WIDE_INT, MODE_INT, 0);
 
@@ -513,7 +517,7 @@ combine_instructions (f, nregs)
 
   for (insn = f, i = 0; insn; insn = NEXT_INSN (insn))
     {
-      INSN_CUID (insn) = ++i;
+      uid_cuid[INSN_UID (insn)] = ++i;
       subst_low_cuid = i;
       subst_insn = insn;
 
@@ -9846,7 +9850,7 @@ get_last_value (x)
 	  && reg_last_set_label[regno] != label_tick))
     return 0;
 
-  /* If the value was set in a later insn that the ones we are processing,
+  /* If the value was set in a later insn than the ones we are processing,
      we can't use it even if the register was only set once, but make a quick
      check to see if the previous insn set it to something.  This is commonly
      the case when the same pseudo is used by repeated insns.  */
@@ -9855,9 +9859,13 @@ get_last_value (x)
     {
       rtx insn, set;
 
-      for (insn = prev_nonnote_insn (subst_insn);
-	   insn && INSN_CUID (insn) >= subst_low_cuid;
-	   insn = prev_nonnote_insn (insn))
+      /* Skip over USE insns.  They are not useful here, and they may have
+	 been made by combine, in which case they do not have a INSN_CUID
+	 value.  */
+      for (insn = prev_real_insn (subst_insn);
+	   insn && (GET_CODE (PATTERN (insn)) == USE
+		    || INSN_CUID (insn) >= subst_low_cuid);
+	   insn = prev_real_insn (insn))
 	;
 
       if (insn
