@@ -1,3 +1,10 @@
+2001-08-11  H.J. Lu <hjl@gnu.org>
+
+	* config/mips/linux.h (EXTRA_SECTIONS): Remove in_ctors and
+	in_dtors.
+	(EXTRA_SECTION_FUNCTIONS): Remove DTORS_SECTION_ASM_OP and
+	RDATA_SECTION_ASM_OP.
+
 2001-08-11  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/install.texi (Specific, c4x): Fix cross-reference to the
