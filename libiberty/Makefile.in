@@ -130,7 +130,7 @@ CFILES = asprintf.c alloca.c argv.c atexit.c basename.c bcmp.c bcopy.c	      \
 	memcmp.c memcpy.c memmove.c memset.c mkstemps.c objalloc.c obstack.c  \
 	partition.c pexecute.c putenv.c random.c rename.c rindex.c	      \
 	setenv.c sigsetmask.c sort.c spaces.c splay-tree.c strcasecmp.c	      \
-	strncasecmp.c strchr.c strdup.c strerror.c strrchr.c		      \
+	strncasecmp.c strchr.c strdup.c strerror.c strncmp.c strrchr.c	      \
 	strsignal.c strstr.c strtod.c strtol.c strtoul.c tmpnam.c	      \
 	vasprintf.c vfork.c vfprintf.c vprintf.c vsprintf.c waitpid.c	      \
 	xatexit.c xexit.c xmalloc.c xmemdup.c xstrdup.c xstrerror.c
@@ -167,7 +167,7 @@ install_to_tooldir: all
 # to include there.  Do not add anything LGPL to this list; libstdc++
 # can't use anything encumbering.
 NEEDED = atexit calloc memchr memcmp memcpy memmove memset rename strchr \
-	 strerror strrchr strstr strtol strtoul tmpnam vfprintf vprintf \
+	 strerror strncmp strrchr strstr strtol strtoul tmpnam vfprintf vprintf \
 	 vfork waitpid bcmp bcopy bzero
 needed-list: Makefile
 	rm -f needed-list; touch needed-list; \
