@@ -1293,7 +1293,7 @@ __transfer_from_trampoline ()					\
     if (INTVAL (RTX) >= -128 && INTVAL (RTX) <= 127) return 1;	\
     /* Constants between -136 and 254 are easily generated */	\
     /* by intelligent uses of moveq, add[q], and subq 	   */   \
-    if (OUTER_CODE == SET && INTVAL (RTX) >= -136		\
+    if ((OUTER_CODE) == SET && INTVAL (RTX) >= -136		\
 	&& INTVAL (RTX) <= 254) return 2;			\
   case CONST:							\
   case LABEL_REF:						\
