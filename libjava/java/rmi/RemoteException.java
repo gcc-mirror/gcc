@@ -1,5 +1,5 @@
-/*
-  Copyright (c) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+/* RemoteException.java -- common superclass for exceptions in java.rmi
+   Copyright (c) 1996, 1997, 1998, 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -37,59 +37,91 @@ exception statement from your version. */
 
 package java.rmi;
 
-import java.lang.Throwable;
 import java.io.IOException;
-import java.io.PrintStream;
-import java.io.PrintWriter;
 
+/**
+ * The superclass of exceptions related to RMI (remote method invocation).
+ * Classes that implement <code>java.rmi.Remote</code> should list this
+ * exception in their throws clause.
+ *
+ * @author unknown
+ * @since 1.1
+ * @status updated to 1.4
+ */
+public class RemoteException extends IOException
+{
+  /**
+   * Compatible with JDK 1.2+.
+   */
+  private static final long serialVersionUID = -5148567311918794206l;
 
-public class RemoteException 
-	extends IOException {
+  /**
+   * The cause of this exception. This pre-dates the exception chaining
+   * of Throwable; and although you can change this field, you are wiser
+   * to leave it alone.
+   *
+   * @serial the exception cause
+   */
+  public Throwable detail;
 
-public static final long serialVersionUID = -5148567311918794206l;
+  /**
+   * Create an exception with no message, and cause initialized to null.
+   */
+  public RemoteException()
+  {
+    this(null, null);
+  }
 
-public Throwable detail;
+  /**
+   * Create an exception with the given message, and cause initialized to null.
+   *
+   * @param s the message
+   */
+  public RemoteException(String s)
+  {
+    this(s, null);
+  }
 
-public RemoteException() {
-	super();
-	detail = null;
-}
+  /**
+   * Create an exception with the given message and cause.
+   *
+   * @param s the message
+   * @param ex the cause
+   */
+  public RemoteException(String s, Throwable e)
+  {
+    super(s);
+    initCause(e);
+    detail = e;
+  }
 
-public RemoteException(String s) {
-	super(s);
-	detail = null;
-}
+  /**
+   * This method returns a message indicating what went wrong, in this
+   * format:
+   * <code>super.getMessage() + (detail == null ? ""
+   *    : "; nested exception is:\n\t" + detail)<code>.
+   *
+   * @return the chained message
+   */
+  public String getMessage()
+  {
+    if (detail == this || detail == null)
+      return super.getMessage();
+    return super.getMessage() + "; nested exception is:\n\t" + detail;
+  }
 
-public RemoteException(String s, Throwable e) {
-	super(s);
-	detail = e;
-}
-
-public String getMessage() {
-	if (detail == null) {
-		return (super.getMessage());
-	}
-	else {
-		return (super.getMessage() + "; nested exception is: " + detail.getMessage());
-	}
-}
-
-public void printStackTrace(PrintStream s) {
-	if (detail != null) {
-		detail.printStackTrace(s);
-	}
-	super.printStackTrace(s);
-}
-
-public void printStackTrace(PrintWriter s) {
-	if (detail != null) {
-		detail.printStackTrace(s);
-	}
-	super.printStackTrace(s);
-}
-
-public void printStackTrace() {
-	printStackTrace(System.err);
-}
-
+  /**
+   * Returns the cause of this exception. Note that this may not be the
+   * original cause, thanks to the <code>detail</code> field being public
+   * and non-final (yuck). However, to avoid violating the contract of
+   * Throwable.getCause(), this returns null if <code>detail == this</code>,
+   * as no exception can be its own cause.
+   *
+   * @return the cause
+   * @since 1.4
+   */
+  public Throwable getCause()
+  {
+    return detail == this ? null : detail;
+  }
 }

@@ -1,5 +1,5 @@
-/*
-  Copyright (c) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+/* RMISecurityException.java -- deprecated version of SecurityException
+   Copyright (c) 1996, 1997, 1998, 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -37,17 +37,41 @@ exception statement from your version. */
 
 package java.rmi;
 
-import java.lang.SecurityException;
+/**
+ * Never thrown, but originally intended to wrap a java.lang.SecurityException.
+ *
+ * @author unknown
+ * @since 1.1
+ * @deprecated use {@link SecurityException} instead
+ * @status updated to 1.4
+ */
+public class RMISecurityException extends SecurityException
+{
+  /**
+   * Compatible with JDK 1.1.
+   */
+  private static final long serialVersionUID = -8433406075740433514L;
 
-public class RMISecurityException
-	extends SecurityException {
+  /**
+   * Create an exception with a message.
+   *
+   * @param s the message
+   * @deprecated no longer needed
+   */
+  public RMISecurityException(String n)
+  {
+    super(n);
+  }
 
-public RMISecurityException(String n) {
-	super(n);
-}
-
-public RMISecurityException(String n, String a) {
-	super(n);
-}
-
+  /**
+   * Create an exception with a message and a cause.
+   *
+   * @param s the message
+   * @param e the cause
+   * @deprecated no longer needed
+   */
+  public RMISecurityException(String n, String a)
+  {
+    super(n);
+  }
 }
