@@ -3521,6 +3521,13 @@ subst (x, from, to, in_dest, unique_copy)
 	}
       break;
 
+    case FFS:
+      /* (ffs (*_extend <X>)) = (ffs <X>) */
+      if (GET_CODE (XEXP (x, 0)) == SIGN_EXTEND
+	  || GET_CODE (XEXP (x, 0)) == ZERO_EXTEND)
+	SUBST (XEXP (x, 0), XEXP (XEXP (x, 0), 0));
+      break;
+
     case FLOAT:
       /* (float (sign_extend <X>)) = (float <X>).  */
       if (GET_CODE (XEXP (x, 0)) == SIGN_EXTEND)
@@ -4145,7 +4152,20 @@ make_compound_operation (x, in_code)
 			       XEXP (SUBREG_REG (XEXP (x, 0)), 1), i, 1,
 			       0, in_code == COMPARE);
 
-      /* One machines without logical shifts, if the operand of the AND is
+
+      /* If we are have (and (rotate X C) M) and C is larger than the number
+	 of bits in M, this is an extraction.  */
+
+      else if (GET_CODE (XEXP (x, 0)) == ROTATE
+	       && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
+	       && (i = exact_log2 (INTVAL (XEXP (x, 1)) + 1)) >= 0
+	       && i <= INTVAL (XEXP (XEXP (x, 0), 1)))
+	new = make_extraction (mode, XEXP (XEXP (x, 0), 0),
+			       (GET_MODE_BITSIZE (mode)
+				- INTVAL (XEXP (XEXP (x, 0), 1))),
+			       0, i, 1, 0, in_code == COMPARE);
+
+      /* On machines without logical shifts, if the operand of the AND is
 	 a logical shift and our mask turns off all the propagated sign
 	 bits, we can replace the logical shift with an arithmetic shift.  */
       else if (
@@ -6191,7 +6211,7 @@ gen_lowpart_for_combine (mode, x)
 
   /* If we couldn't simplify X any other way, just enclose it in a
      SUBREG.  Normally, this SUBREG won't match, but some patterns may
-     include and explicit SUBREG or we may simplify it further in combine.  */
+     include an explicit SUBREG or we may simplify it further in combine.  */
   else
     {
       int word = 0;
@@ -7609,15 +7629,31 @@ move_deaths (x, from_cuid, to_insn, pnotes)
 
       move_deaths (SET_SRC (x), from_cuid, to_insn, pnotes);
 
-      if (GET_CODE (dest) == ZERO_EXTRACT)
+      /* In the case of a ZERO_EXTRACT, a STRICT_LOW_PART, or a SUBREG
+	 that accesses one word of a multi-word item, some
+	 piece of everything register in the expression is used by
+	 this insn, so remove any old death.  */
+
+      if (GET_CODE (dest) == ZERO_EXTRACT
+	  || GET_CODE (dest) == STRICT_LOW_PART
+	  || (GET_CODE (dest) == SUBREG
+	      && (((GET_MODE_SIZE (GET_MODE (dest))
+		    + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
+		  == ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (dest)))
+		       + UNITS_PER_WORD - 1) / UNITS_PER_WORD))))
 	{
-	  move_deaths (XEXP (dest, 1), from_cuid, to_insn, pnotes);
-	  move_deaths (XEXP (dest, 2), from_cuid, to_insn, pnotes);
+	  move_deaths (dest, from_cuid, to_insn, pnotes);
+	  return;
 	}
 
-      while (GET_CODE (dest) == ZERO_EXTRACT || GET_CODE (dest) == SUBREG
-	     || GET_CODE (dest) == STRICT_LOW_PART)
-	dest = XEXP (dest, 0);
+      /* If this is some other SUBREG, we know it replaces the entire
+	 value, so use that as the destination.  */
+      if (GET_CODE (dest) == SUBREG)
+	dest = SUBREG_REG (dest);
+
+      /* If this is a MEM, adjust deaths of anything used in the address.
+	 For a REG (the only other possibility), the entire value is
+	 being replaced so the old value is not used in this insn.  */
 
       if (GET_CODE (dest) == MEM)
 	move_deaths (XEXP (dest, 0), from_cuid, to_insn, pnotes);
@@ -7643,25 +7679,48 @@ move_deaths (x, from_cuid, to_insn, pnotes)
     }
 }
 
-/* Return 1 if REG is the target of a bit-field assignment in BODY, the
-   pattern of an insn.  */
+/* Return 1 if X is the target of a bit-field assignment in BODY, the
+   pattern of an insn.  X must be a REG.  */
 
 static int
-reg_bitfield_target_p (reg, body)
-     rtx reg;
+reg_bitfield_target_p (x, body)
+     rtx x;
      rtx body;
 {
   int i;
 
   if (GET_CODE (body) == SET)
-    return ((GET_CODE (SET_DEST (body)) == ZERO_EXTRACT
-	     && rtx_equal_p (reg, XEXP (SET_DEST (body), 0)))
-	    || (GET_CODE (SET_DEST (body)) == STRICT_LOW_PART
-		&& rtx_equal_p (reg, SUBREG_REG (XEXP (SET_DEST (body), 0)))));
+    {
+      rtx dest = SET_DEST (body);
+      rtx target;
+      int regno, tregno, endregno, endtregno;
+
+      if (GET_CODE (dest) == ZERO_EXTRACT)
+	target = XEXP (dest, 0);
+      else if (GET_CODE (dest) == STRICT_LOW_PART)
+	target = SUBREG_REG (XEXP (dest, 0));
+      else
+	return 0;
+
+      if (GET_CODE (target) == SUBREG)
+	target = SUBREG_REG (target);
+
+      if (GET_CODE (target) != REG)
+	return 0;
+
+      tregno = REGNO (target), regno = REGNO (x);
+      if (tregno >= FIRST_PSEUDO_REGISTER || regno >= FIRST_PSEUDO_REGISTER)
+	return target == x;
+
+      endtregno = tregno + HARD_REGNO_NREGS (tregno, GET_MODE (target));
+      endregno = regno + HARD_REGNO_NREGS (regno, GET_MODE (x));
+
+      return endregno > tregno && regno < endtregno;
+    }
 
   else if (GET_CODE (body) == PARALLEL)
     for (i = XVECLEN (body, 0) - 1; i >= 0; i--)
-      if (reg_bitfield_target_p (reg, XVECEXP (body, 0, i)))
+      if (reg_bitfield_target_p (x, XVECEXP (body, 0, i)))
 	return 1;
 
   return 0;
