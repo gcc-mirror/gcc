@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for Intel 860.
-   Copyright (C) 1989, 91, 93, 95-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1989, 91, 93, 95-99, 2000 Free Software Foundation, Inc.
    Hacked substantially by Ron Guilmette (rfg@monkeys.com) to cater to
    the whims of the System V Release 4 assembler.
 
@@ -1274,8 +1274,7 @@ do { ASM_OUTPUT_ALIGN ((FILE), 2);					\
 		"%" in i860.c.
 */
 
-extern char *i860_reg_prefix;
-extern unsigned long sfmode_constant_to_ulong ();
+extern const char *i860_reg_prefix;
 
 #define PRINT_OPERAND_PUNCT_VALID_P(CODE) ((CODE) == '?')
 
@@ -1332,16 +1331,14 @@ extern unsigned long sfmode_constant_to_ulong ();
   else if ((CODE) == 'r' && (X) == CONST0_RTX (GET_MODE (X)))		\
     fprintf (FILE, "%sf0", i860_reg_prefix);				\
   else if (GET_CODE (X) == CONST_DOUBLE)				\
-    fprintf (FILE, "0x%x", sfmode_constant_to_ulong (X));		\
+    fprintf (FILE, "0x%lx", sfmode_constant_to_ulong (X));		\
   else									\
     output_addr_const (FILE, X); }
 
 /* Print a memory address as an operand to reference that memory location.  */
 
 #define PRINT_OPERAND_ADDRESS(FILE, ADDR)  \
-{ register rtx base, index = 0;					\
-  int offset = 0;						\
-  register rtx addr = ADDR;					\
+{ register rtx addr = ADDR;					\
   if (GET_CODE (addr) == REG)					\
     {								\
       fprintf (FILE, "0(%s%s)",					\
@@ -1349,7 +1346,7 @@ extern unsigned long sfmode_constant_to_ulong ();
     }								\
   else if (GET_CODE (addr) == CONST_DOUBLE			\
             && GET_MODE (addr) == SFmode)			\
-    fprintf (FILE, "0x%x", sfmode_constant_to_ulong (addr));	\
+    fprintf (FILE, "0x%lx", sfmode_constant_to_ulong (addr));	\
   else if (GET_CODE (addr) == PLUS)				\
     {								\
       if ((GET_CODE (XEXP (addr, 0)) == CONST_INT)		\
@@ -1433,18 +1430,3 @@ extern unsigned long sfmode_constant_to_ulong ();
    hasn't been defined!  */
 
 extern struct rtx_def *i860_compare_op0, *i860_compare_op1;
-
-/* Declare things which are defined in i860.c but called from
-   insn-output.c.  */
-
-extern unsigned long sfmode_constant_to_ulong ();
-extern char *output_load ();
-extern char *output_store ();
-extern char *output_move_double ();
-extern char *output_fp_move_double ();
-extern char *output_block_move ();
-extern char *output_delay_insn ();
-#if 0
-extern char *output_delayed_branch ();
-#endif
-extern void output_load_address ();

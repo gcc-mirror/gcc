@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Intel 860
-   Copyright (C) 1989, 91, 97, 98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1989, 91, 97-99, 2000 Free Software Foundation, Inc.
    Derived from sparc.c.
 
    Written by Richard Stallman (rms@ai.mit.edu).
@@ -41,14 +41,20 @@ Boston, MA 02111-1307, USA.  */
 #include "insn-attr.h"
 #include "function.h"
 #include "expr.h"
+#include "tm_p.h"
 
-static rtx find_addr_reg ();
+static rtx find_addr_reg PARAMS ((rtx));
+static int reg_clobbered_p PARAMS ((rtx, rtx));
+static const char *singlemove_string PARAMS ((rtx *));
+static const char *load_opcode PARAMS ((enum machine_mode, const char *, rtx));
+static const char *store_opcode PARAMS ((enum machine_mode, const char *, rtx));
+static void output_size_for_block_move PARAMS ((rtx, rtx, rtx));
 
 #ifndef I860_REG_PREFIX
 #define I860_REG_PREFIX ""
 #endif
 
-char *i860_reg_prefix = I860_REG_PREFIX;
+const char *i860_reg_prefix = I860_REG_PREFIX;
 
 /* Save information from a "cmpxx" operation until the branch is emitted.  */
 
@@ -454,7 +460,7 @@ load_operand (op, mode)
 int
 small_int (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == CONST_INT && SMALL_INT (op));
 }
@@ -465,7 +471,7 @@ small_int (op, mode)
 int
 logic_int (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == CONST_INT && LOGIC_INT (op));
 }
@@ -478,7 +484,7 @@ logic_int (op, mode)
 int
 call_insn_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   if (GET_CODE (op) == MEM
       && (CONSTANT_ADDRESS_P (XEXP (op, 0))
@@ -493,7 +499,7 @@ call_insn_operand (op, mode)
 /* Return the best assembler insn template
    for moving operands[1] into operands[0] as a fullword.  */
 
-static char *
+static const char *
 singlemove_string (operands)
      rtx *operands;
 {
@@ -566,7 +572,7 @@ singlemove_string (operands)
 /* Output assembler code to perform a doubleword move insn
    with operands OPERANDS.  */
 
-char *
+const char *
 output_move_double (operands)
      rtx *operands;
 {
@@ -740,7 +746,7 @@ output_move_double (operands)
   return "";
 }
 
-char *
+const char *
 output_fp_move_double (operands)
      rtx *operands;
 {
@@ -839,14 +845,14 @@ find_addr_reg (addr)
 
    This string is in static storage.   */
 
-static char *
+static const char *
 load_opcode (mode, args, reg)
      enum machine_mode mode;
-     char *args;
+     const char *args;
      rtx reg;
 {
   static char buf[30];
-  char *opcode;
+  const char *opcode;
 
   switch (mode)
     {
@@ -886,14 +892,14 @@ load_opcode (mode, args, reg)
 
    This string is in static storage.   */
 
-static char *
+static const char *
 store_opcode (mode, args, reg)
      enum machine_mode mode;
-     char *args;
+     const char *args;
      rtx reg;
 {
   static char buf[30];
-  char *opcode;
+  const char *opcode;
 
   switch (mode)
     {
@@ -937,13 +943,12 @@ store_opcode (mode, args, reg)
    It may also output some insns directly.
    It may alter the values of operands[0] and operands[1].  */
 
-char *
+const char *
 output_store (operands)
      rtx *operands;
 {
   enum machine_mode mode = GET_MODE (operands[0]);
   rtx address = XEXP (operands[0], 0);
-  char *string;
 
   cc_status.flags |= CC_KNOW_HI_R31 | CC_HI_R31_ADJ;
   cc_status.mdep = address;
@@ -979,7 +984,7 @@ output_store (operands)
    It may also output some insns directly.
    It may alter the values of operands[0] and operands[1].  */
 
-char *
+const char *
 output_load (operands)
      rtx *operands;
 {
@@ -1131,16 +1136,18 @@ output_size_for_block_move (size, reg, align)
    OPERANDS[3] is the known safe alignment.
    OPERANDS[4..6] are pseudos we can safely clobber as temps.  */
 
-char *
+const char *
 output_block_move (operands)
      rtx *operands;
 {
   /* A vector for our computed operands.  Note that load_output_address
      makes use of (and can clobber) up to the 8th element of this vector.  */
   rtx xoperands[10];
+#if 0
   rtx zoperands[10];
+#endif
   static int movstrsi_label = 0;
-  int i, j;
+  int i;
   rtx temp1 = operands[4];
   rtx alignrtx = operands[3];
   int align = INTVAL (alignrtx);
@@ -1350,9 +1357,9 @@ output_block_move (operands)
    constrain_operands to segfault.  Anyone who cares should fix up
    the code to use the DBR pass.  */
 
-char *
+const char *
 output_delayed_branch (template, operands, insn)
-     char *template;
+     const char *template;
      rtx *operands;
      rtx insn;
 {
@@ -1391,7 +1398,7 @@ output_delayed_branch (template, operands, insn)
 	       && CONSTANT_ADDRESS_P (XEXP (dest, 0))))
     {
       rtx xoperands[2];
-      char *split_template;
+      const char *split_template;
       xoperands[0] = dest;
       xoperands[1] = src;
 
@@ -1464,11 +1471,11 @@ output_delayed_branch (template, operands, insn)
 }
 
 /* Output a newly constructed insn DELAY_INSN.  */
-char *
+const char *
 output_delay_insn (delay_insn)
      rtx delay_insn;
 {
-  char *template;
+  const char *template;
   int insn_code_number;
   int i;
 
@@ -1642,7 +1649,6 @@ sfmode_constant_to_ulong (x)
 #endif
 
 extern char call_used_regs[];
-extern int leaf_function_p ();
 
 char *current_function_original_name;
 
@@ -2035,7 +2041,7 @@ function_epilogue (asm_file, local_bytes)
       fprintf (asm_file, "\tfld.l %d(%sfp),%s%s\n",
 	must_preserve_bytes + (4 * restored_so_far++),
 	i860_reg_prefix, i860_reg_prefix, reg_names[i]);
-      if (i > 33 & i < 40)
+      if (i > 33 && i < 40)
 	flags->fregs |= mask;
     }
     if (i > 33 && i < 40)
