@@ -9022,6 +9022,26 @@ simplify_shift_const (rtx x, enum rtx_code code,
 	      varop = XEXP (varop, 0);
 	      continue;
 	    }
+
+	  /* Check for 'PLUS signbit', which is the canonical form of 'XOR
+	     signbit', and attempt to change the PLUS to an XOR and move it to
+	     the outer operation as is done above in the AND/IOR/XOR case
+	     leg for shift(logical). See details in logical handling above
+	     for reasoning in doing so. */
+	  if (code == LSHIFTRT
+	      && GET_CODE (XEXP (varop, 1)) == CONST_INT
+	      && mode_signbit_p (result_mode, XEXP (varop, 1))
+	      && (new = simplify_binary_operation (code, result_mode,
+						   XEXP (varop, 1),
+						   GEN_INT (count))) != 0
+	      && GET_CODE (new) == CONST_INT
+	      && merge_outer_ops (&outer_op, &outer_const, XOR,
+				  INTVAL (new), result_mode, &complement_p))
+	    {
+	      varop = XEXP (varop, 0);
+	      continue;
+	    }
+
 	  break;
 
 	case MINUS:
