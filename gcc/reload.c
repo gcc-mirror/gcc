@@ -657,11 +657,13 @@ push_reload (in, out, inloc, outloc, class,
       in_subreg_loc = inloc;
       inloc = &SUBREG_REG (in);
       in = *inloc;
+#if ! defined(BYTE_LOADS_ZERO_EXTEND) && ! defined(BYTE_LOADS_SIGN_EXTEND)
       if (GET_CODE (in) == MEM)
 	/* This is supposed to happen only for paradoxical subregs made by
 	   combine.c.  (SUBREG (MEM)) isn't supposed to occur other ways.  */
 	if (GET_MODE_SIZE (GET_MODE (in)) > GET_MODE_SIZE (inmode))
 	  abort ();
+#endif
       inmode = GET_MODE (in);
     }
 
@@ -699,10 +701,12 @@ push_reload (in, out, inloc, outloc, class,
     {
       out_subreg_loc = outloc;
       outloc = &SUBREG_REG (out);
-      out = *outloc;
-      if (GET_CODE (out) == MEM
+      out = *outloc; 
+#if ! defined(BYTE_LOADS_ZERO_EXTEND) && ! defined(BYTE_LOADS_SIGN_EXTEND)
+     if (GET_CODE (out) == MEM
 	  && GET_MODE_SIZE (GET_MODE (out)) > GET_MODE_SIZE (outmode))
 	abort ();
+#endif
       outmode = GET_MODE (out);
     }
 
