@@ -1,3 +1,11 @@
+2002-04-08  Paolo Carlini  <pcarlini@unitus.it>
+
+	* parse.y (namespace_qualifier, maybe_identifier,
+	begin_explicit_instantiation, end_explicit_instantiation,
+	apparent_template_type, .finish_template_type,
+	do_id, maybe_init, defarg_again, component_decl_1):
+	Add ending ';', in accordance with POSIX.
+
 2002-04-06  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/5571
