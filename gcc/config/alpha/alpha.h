@@ -162,6 +162,17 @@ extern enum alpha_fp_trap_mode alpha_fptm;
 #define MASK_BYTE_OPS 256
 #define TARGET_BYTE_OPS	(target_flags & MASK_BYTE_OPS)
 
+/* This means we are compiling for openVMS.  */
+
+#define MASK_OPEN_VMS	256
+#define TARGET_OPEN_VMS (target_flags & MASK_OPEN_VMS)
+
+/* This means we handle floating points in VAX F- (float)
+   or G- (double) Format.  */
+
+#define MASK_FLOAT_VAX 512
+#define TARGET_FLOAT_VAX (target_flags & MASK_FLOAT_VAX)
+
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
    each pair being { "NAME", VALUE }
@@ -179,6 +190,8 @@ extern enum alpha_fp_trap_mode alpha_fptm;
     {"ieee", MASK_IEEE|MASK_IEEE_CONFORMANT},	\
     {"ieee-with-inexact", MASK_IEEE_WITH_INEXACT|MASK_IEEE_CONFORMANT}, \
     {"build-constants", MASK_BUILD_CONSTANTS},  \
+    {"float-vax", MASK_FLOAT_VAX},		\
+    {"float-ieee", -MASK_FLOAT_VAX},		\
     {"byte", MASK_BYTE_OPS},			\
     {"", TARGET_DEFAULT | TARGET_CPU_DEFAULT} }
 
@@ -846,18 +859,24 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
    $f0 for floating-point functions.  */
 
 #define FUNCTION_VALUE(VALTYPE, FUNC)	\
-  gen_rtx (REG,						\
-	   (INTEGRAL_MODE_P (TYPE_MODE (VALTYPE))	\
-	    && TYPE_PRECISION (VALTYPE) < BITS_PER_WORD) \
-	   ? word_mode : TYPE_MODE (VALTYPE),		\
-	   TARGET_FPREGS && TREE_CODE (VALTYPE) == REAL_TYPE ? 32 : 0)
+  gen_rtx (REG,							\
+	   (INTEGRAL_MODE_P (TYPE_MODE (VALTYPE))		\
+	    && TYPE_PRECISION (VALTYPE) < BITS_PER_WORD) 	\
+	   ? word_mode : TYPE_MODE (VALTYPE),			\
+	   ((TARGET_FPREGS					\
+	     && (TREE_CODE (VALTYPE) == REAL_TYPE		\
+		 || TREE_CODE (VALTYPE) == COMPLEX_TYPE))	\
+	    ? 32 : 0))
 
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
 
 #define LIBCALL_VALUE(MODE)	\
-   gen_rtx (REG, MODE,		\
-	    TARGET_FPREGS && GET_MODE_CLASS (MODE) == MODE_FLOAT ? 32 : 0)
+   gen_rtx (REG, MODE,						\
+	    (TARGET_FPREGS					\
+	     && (GET_MODE_CLASS (MODE) == MODE_FLOAT		\
+		 || GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT) \
+	     ? 32 : 0))
 
 /* The definition of this macro implies that there are cases where
    a scalar value cannot be returned in registers.
@@ -872,7 +891,8 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
 /* 1 if N is a possible register number for a function value
    as seen by the caller.  */
 
-#define FUNCTION_VALUE_REGNO_P(N) ((N) == 0 || (N) == 32)
+#define FUNCTION_VALUE_REGNO_P(N)  \
+  ((N) == 0 || (N) == 1 || (N) == 32 || (N) == 33)
 
 /* 1 if N is a possible register number for function argument passing.
    On Alpha, these are $16-$21 and $f16-$f21.  */
@@ -1027,6 +1047,11 @@ extern struct rtx_def *alpha_builtin_saveregs ();
 
 extern struct rtx_def *alpha_compare_op0, *alpha_compare_op1;
 extern int alpha_compare_fp_p;
+
+/* Make (or fake) .linkage entry for function call.
+
+   IS_LOCAL is 0 if name is used in call, 1 if name is used in definition.  */
+extern void alpha_need_linkage ();
 
 /* This macro produces the initial definition of a function name.  On the
    Alpha, we need to save the function name for the prologue and epilogue.  */
@@ -1812,7 +1837,7 @@ literal_section ()						\
       {									\
 	char str[30];							\
 	REAL_VALUE_TO_DECIMAL (VALUE, "%.20e", str);			\
-	fprintf (FILE, "\t.t_floating %s\n", str);			\
+	fprintf (FILE, "\t.%c_floating %s\n", (TARGET_FLOAT_VAX)?'g':'t', str);			\
       }									\
   }
 
@@ -2004,10 +2029,17 @@ literal_section ()						\
 
    +    Generates trap-mode suffix for instructions that accept the
 	sui suffix (cvtqt and cvtqs).
+
+   ,    Generates single precision suffix for floating point
+	instructions (s for IEEE, f for VAX)
+
+   -	Generates double precision suffix for floating point
+	instructions (t for IEEE, g for VAX)
    */
 
 #define PRINT_OPERAND_PUNCT_VALID_P(CODE)				\
-  ((CODE) == '&' || (CODE) == '\'' || (CODE) == ')' || (CODE) == '+')
+  ((CODE) == '&' || (CODE) == '\'' || (CODE) == ')' || (CODE) == '+'	\
+   || (CODE) == ',' || (CODE) == '-')
 
 /* Print a memory address as an operand to reference that memory location.  */
 
