@@ -136,7 +136,11 @@ pthread_mutex_t __mf_biglock =
    the libmudflap.la (no threading support) can diagnose whether
    the application is linked with -lpthread.  See __mf_usage() below.  */
 #if HAVE_PTHREAD_H
+#ifdef _POSIX_THREADS
 #pragma weak pthread_join
+#else
+#define pthread_join NULL
+#endif
 const void *threads_active_p = (void *) pthread_join;
 #endif
 
