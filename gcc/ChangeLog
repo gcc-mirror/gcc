@@ -1,3 +1,11 @@
+Fri Nov 21 12:18:51 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* except.h: Add outer_context_label_stack.
+	* except.c: Likewise.
+	(expand_start_all_catch): Push the outer_context for the try block
+ 	onto outer_context_label_stack.
+	(expand_end_all_catch): Use it and pop it.
+
 Fri Nov 21 10:13:11 1997  Robert Lipe (robertl@dgii.com)
 
 	* i386/sco5.h (HAVE_ATEXIT): Revert last change.
