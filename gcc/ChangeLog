@@ -1,3 +1,7 @@
+2002-01-23  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.md (call_value_osf_1_er peepholes): Fix typo.
+
 2002-01-23  Aldy Hernandez  <aldyh@redhat.com>
 
         * c-parse.in (parmlist_or_identifiers): Add maybe_attribute.

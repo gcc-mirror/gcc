@@ -1,3 +1,12 @@
+2002-01-23  Richard Henderson  <rth@redhat.com>
+
+	* gcc.dg/inline-2.c: New.
+
+	* lib/scanasm.exp (scan-assembler): Remove optional vmessage arg.
+	Add optional target arg.  Check number of arguments.
+	(scan-assembler-not, scan-assembler-dem): Likewise.
+	(scan-assembler-dem-not): Likewise.
+
 2002-01-23  Zack Weinberg  <zack@codesourcery.com>
 
 	* g++.old-deja/g++.brendan/crash8.C: Don't expect an error on
