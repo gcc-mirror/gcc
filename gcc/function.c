@@ -253,6 +253,9 @@ static void put_reg_into_stack	PARAMS ((struct function *, rtx, tree,
 					 enum machine_mode, enum machine_mode,
 					 int, unsigned int, int,
 					 struct hash_table *));
+static void schedule_fixup_var_refs PARAMS ((struct function *, rtx, tree,
+					     enum machine_mode,
+					     struct hash_table *));
 static void fixup_var_refs	PARAMS ((rtx, enum machine_mode, int, 
 					 struct hash_table *));
 static struct fixup_replacement
@@ -1405,20 +1408,25 @@ put_var_into_stack (decl)
   else if (GET_CODE (reg) == CONCAT)
     {
       /* A CONCAT contains two pseudos; put them both in the stack.
-	 We do it so they end up consecutive.  */
+	 We do it so they end up consecutive.
+	 We fixup references to the parts only after we fixup references
+	 to the whole CONCAT, lest we do double fixups for the latter
+	 references.  */
       enum machine_mode part_mode = GET_MODE (XEXP (reg, 0));
       tree part_type = type_for_mode (part_mode, 0);
+      rtx lopart = XEXP (reg, 0);
+      rtx hipart = XEXP (reg, 1);
 #ifdef FRAME_GROWS_DOWNWARD
       /* Since part 0 should have a lower address, do it second.  */
-      put_reg_into_stack (function, XEXP (reg, 1), part_type, part_mode,
-			  part_mode, volatilep, 0, usedp, 0);
-      put_reg_into_stack (function, XEXP (reg, 0), part_type, part_mode,
-			  part_mode, volatilep, 0, usedp, 0);
+      put_reg_into_stack (function, hipart, part_type, part_mode,
+			  part_mode, volatilep, 0, 0, 0);
+      put_reg_into_stack (function, lopart, part_type, part_mode,
+			  part_mode, volatilep, 0, 0, 0);
 #else
-      put_reg_into_stack (function, XEXP (reg, 0), part_type, part_mode,
-			  part_mode, volatilep, 0, usedp, 0);
-      put_reg_into_stack (function, XEXP (reg, 1), part_type, part_mode,
-			  part_mode, volatilep, 0, usedp, 0);
+      put_reg_into_stack (function, lopart, part_type, part_mode,
+			  part_mode, volatilep, 0, 0, 0);
+      put_reg_into_stack (function, hipart, part_type, part_mode,
+			  part_mode, volatilep, 0, 0, 0);
 #endif
 
       /* Change the CONCAT into a combined MEM for both parts.  */
@@ -1431,6 +1439,13 @@ put_var_into_stack (decl)
       /* Prevent sharing of rtl that might lose.  */
       if (GET_CODE (XEXP (reg, 0)) == PLUS)
 	XEXP (reg, 0) = copy_rtx (XEXP (reg, 0));
+      if (usedp)
+	{
+	  schedule_fixup_var_refs (function, reg, TREE_TYPE (decl),
+				   promoted_mode, 0);
+	  schedule_fixup_var_refs (function, lopart, part_type, part_mode, 0);
+	  schedule_fixup_var_refs (function, hipart, part_type, part_mode, 0);
+	}
     }
   else
     return;
@@ -1490,11 +1505,22 @@ put_reg_into_stack (function, reg, type, promoted_mode, decl_mode, volatile_p,
   MEM_SET_IN_STRUCT_P (reg,
 		       AGGREGATE_TYPE_P (type) || MEM_IN_STRUCT_P (new));
   MEM_ALIAS_SET (reg) = get_alias_set (type);
+  if (used_p)
+    schedule_fixup_var_refs (function, reg, type, promoted_mode, ht);
+}
 
-  /* Now make sure that all refs to the variable, previously made
-     when it was a register, are fixed up to be valid again.  */
-
-  if (used_p && function != 0)
+/* Make sure that all refs to the variable, previously made
+   when it was a register, are fixed up to be valid again.
+   See function above for meaning of arguments.  */
+static void
+schedule_fixup_var_refs (function, reg, type, promoted_mode, ht)
+     struct function *function;
+     rtx reg;
+     tree type;
+     enum machine_mode promoted_mode;
+     struct hash_table *ht;
+{
+  if (function != 0)
     {
       struct var_refs_queue *temp;
 
@@ -1506,7 +1532,7 @@ put_reg_into_stack (function, reg, type, promoted_mode, decl_mode, volatile_p,
       temp->next = function->fixup_var_refs_queue;
       function->fixup_var_refs_queue = temp;
     }
-  else if (used_p)
+  else
     /* Variable is local; fix it up now.  */
     fixup_var_refs (reg, promoted_mode, TREE_UNSIGNED (type), ht);
 }
