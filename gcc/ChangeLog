@@ -1,3 +1,13 @@
+Thu Sep  9 14:36:31 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* ggc.h (lang_cleanup_tree): Remove.
+	* gcc-simple.c (ggc_free_tree): Don't call lang_cleanup_tree.
+	* ggc-callbacks.c (lang_cleanup_tree): Remove.
+	
+	* c-decl.c (finish_struct): Use ggc_alloc to allocate
+	TYPE_LANG_SPECIFIC when garbage collecting.
+	(lang_cleanup_tree): Remove.
+
 Thu Sep  9 14:23:02 1999  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* defaults.h (EH_FRAME_SECTION, EH_FRAME_SECTION_ASM_OP): Define here.

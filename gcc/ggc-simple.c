@@ -385,14 +385,6 @@ static inline void
 ggc_free_tree (t)
      struct ggc_tree *t;
 {
-  switch (TREE_CODE_CLASS (TREE_CODE (&t->tree)))
-    {
-    case 'd': /* A decl node.  */
-    case 't': /* A type node.  */
-      lang_cleanup_tree (&t->tree);
-      break;
-    }
-
 #ifdef GGC_DUMP
   fprintf (dump, "collect tree %p\n", &t->tree);
 #endif
