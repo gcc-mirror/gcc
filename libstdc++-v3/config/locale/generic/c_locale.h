@@ -52,7 +52,9 @@ namespace std
   // be avoided.
   template<typename _Tv>
     int
-    __convert_from_v(char* __out, const int __size, const char* __fmt,
+    __convert_from_v(char* __out, 
+		     const int __size __attribute__ ((__unused__)),
+		     const char* __fmt,
 		     _Tv __v, const __c_locale&, int __prec = -1)
     {
       char* __old = setlocale(LC_ALL, NULL);

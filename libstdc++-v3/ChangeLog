@@ -1,3 +1,8 @@
+2003-04-23  Benjamin Kosnik  <bkoz@belmont.constant.com>
+
+	* config/locale/generic/c_locale.h (__convert_from_v): Use
+	attribute unused.
+
 2003-04-23  Phil Edwards  <pme@gcc.gnu.org>
 
 	* docs/html/ext/howto.html ('LWG Issues'):  Add issue 60, partial
