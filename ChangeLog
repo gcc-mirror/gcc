@@ -1,5 +1,9 @@
 2005-01-17  Kelley Cook  <kcook@gcc.gnu.org>
 
+	* install-sh, config.sub: Import from upstream.
+
+2005-01-17  Kelley Cook  <kcook@gcc.gnu.org>
+
 	PR bootstrap/18222
 	* Makefile.def: Pass CPPFLAGS_FOR_TARGET.
 	* Makefile.tpl: Define target CPPFLAGS on CPPFLAGS_FOR_TARGET.
