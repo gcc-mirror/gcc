@@ -711,6 +711,11 @@ int flag_branch_target_load_optimize = 0;
 
 int flag_branch_target_load_optimize2 = 0;
 
+/* For the bt-load pass, nonzero means don't re-use branch target registers
+   in any basic block.  */
+
+int flag_btr_bb_exclusive;
+
 /* Nonzero means to rerun cse after loop optimization.  This increases
    compilation time about 20% and picks up a few more common expressions.  */
 
@@ -1064,6 +1069,7 @@ static const lang_independent_options f_options[] =
   {"gcse-las", &flag_gcse_las, 1 },
   {"branch-target-load-optimize", &flag_branch_target_load_optimize, 1 },
   {"branch-target-load-optimize2", &flag_branch_target_load_optimize2, 1 },
+  {"btr-bb-exclusive", &flag_btr_bb_exclusive, 1 },
   {"loop-optimize", &flag_loop_optimize, 1 },
   {"crossjumping", &flag_crossjumping, 1 },
   {"if-conversion", &flag_if_conversion, 1 },

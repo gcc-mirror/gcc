@@ -1,3 +1,35 @@
+2004-01-27  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* Makefile.in (bt-load.o): Depend on except.h.
+	* bt-load.c (except.h): #include.
+	(compute_defs_uses_and_gen): If insn at end of BB can throw
+	within this function, consider registers used by it unavailable for
+	btr migration.
+	(move_btr_def): If insn at end of BB can throw, insert before rather
+	than after.
+
+	* flags.h (flag_btr_bb_exclusive): Declare.
+	* toplev.c (flag_btr_bb_exclusive): New variable.
+	(f_options): Add btr-bb-exclusive.
+	* bt-load.c (augment_live_range): Restore old behaviour if
+	flag_btr_bb_exclusive is set.
+	* common.opt: Add entry for -fbtr-bb-exclusive.
+	* opts.c (common_handle_options): Same.
+	* doc/invoke.texi: Document -fbtr-bb-exclusive.
+   
+	* bt-load.c (btrs_live_at_end): New variable.
+	(compute_defs_uses_and_gen): Compute its pointed-to array.
+	(clear_btr_from_live_range, add_btr_to_live_range): Update it.
+	(augment_live_range): When augmenting with a new dominator,
+	use only its btrs_live_at_end set, but also add in the full set
+	of the old dominator.
+	(btr_def_live_range): Use btrs_live_at_end.
+	(move_btr_def): Set other_btr_uses_before_def, and move new set
+	to the end of the basic block, if appropriate.
+	(migrate_btr_defs): Allocate and free btrs_live_at_end.
+   
+	* bt-load.c (basic_block_freq): Remove outdated comment.
+
 2004-01-27  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.h: Correct target_flags free bits comment.

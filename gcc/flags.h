@@ -1,6 +1,6 @@
 /* Compilation switch flag definitions for GCC.
    Copyright (C) 1987, 1988, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2002,
-   2003
+   2003, 2004
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -688,6 +688,10 @@ extern int flag_branch_target_load_optimize;
    threading and jump2.  */
 
 extern int flag_branch_target_load_optimize2;
+
+/* For the bt-load pass, nonzero means don't re-use branch target registers 
+   in any basic block.  */
+extern int flag_btr_bb_exclusive;
 
 
 /* Nonzero means we should do dwarf2 duplicate elimination.  */

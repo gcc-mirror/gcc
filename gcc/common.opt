@@ -1,5 +1,5 @@
 ; Options for the language- and target-independent parts of the compiler.
-; Copyright (C) 2003 Free Software Foundation, Inc.
+; Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -242,6 +242,10 @@ Perform branch target load optimization before prologue / epilogue threading
 fbranch-target-load-optimize2
 Common
 Perform branch target load optimization after prologue / epilogue threading
+
+fbtr-bb-exclusive
+Common
+Restrict target load migration not to re-use registers in any basic block
 
 fcall-saved-
 Common Joined RejectNegative
