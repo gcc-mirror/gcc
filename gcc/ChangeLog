@@ -1,3 +1,9 @@
+Sun Jan 25 12:13:47 1998  Michael Tiemann  <michael@tiemann.org>
+
+	* cse.c (simplify_ternary_operation): Don't try to simplify
+	IF_THEN_ELSE expressions (created by combine) that don't use
+	relational operators.
+
 Fri Jan 23 22:48:24 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* cse.c (simplify_ternary_operation): Handle more IF_THEN_ELSE
