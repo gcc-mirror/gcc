@@ -74,7 +74,7 @@ Boston, MA 02111-1307, USA.  */
 #undef LOCAL_LABEL_PREFIX
 #define LOCAL_LABEL_PREFIX	"L%"
 
-#define ADDITIONAL_REGISTER_NAMES { "%a6", 14, "%a7", 15 }
+#define ADDITIONAL_REGISTER_NAMES { {"%a6", 14}, {"%a7", 15} }
 
 #undef ASM_OUTPUT_INT
 #define ASM_OUTPUT_INT(FILE,VALUE)                      \

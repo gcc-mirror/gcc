@@ -53,7 +53,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef ASM_FILE_START
 #define ASM_FILE_START(FILE)					\
-{ char *p, *after_dir = main_input_filename;			\
+{ const char *p, *after_dir = main_input_filename;		\
   if (TARGET_29050)						\
     fprintf (FILE, "\t.cputype 29050\n");			\
   for (p = main_input_filename; *p; p++)			\

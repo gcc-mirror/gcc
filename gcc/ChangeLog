@@ -1,3 +1,15 @@
+2001-11-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* a29k/unix.h (ASM_FILE_START): Const-ify.
+	* i386/beos-elf.h (INCLUDE_DEFAULTS): Remove semi-colon.
+	* i386/isc.h (ASM_FILE_START): Const-ify.
+	* i386/sun386.h (ASM_FILE_START): Likewise.
+	* m32r.md: Likewise.
+	* m68k/auxas.h (ADDITIONAL_REGISTER_NAMES): Add missing brackets.
+	* m68k/auxgas.h ADDITIONAL_REGISTER_NAMES): Likewise.
+	* m68k/tower.h (REGISTER_NAMES): Remove semi-colon.
+	* mn10200.md: Initialize variable.
+
 Mon Nov 19 18:06:21 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* gcse.c (try_replace_reg): Copy RTX before creating note.
