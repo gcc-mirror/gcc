@@ -1,3 +1,8 @@
+2003-06-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (bt-load.o): Depend on $(TM_P_H).
+	* bt-load.c: Include "tm_p.h".
+
 2003-06-25  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.c (compute_mov_length): Adjust for the
