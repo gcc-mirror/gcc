@@ -1913,90 +1913,39 @@ you may use @code{__noreturn__} instead of @code{noreturn}.
 attributes.
 
 @table @code
-@cindex @code{noreturn} function attribute
-@item noreturn
-A few standard library functions, such as @code{abort} and @code{exit},
-cannot return.  GCC knows this automatically.  Some programs define
-their own functions that never return.  You can declare them
-@code{noreturn} to tell the compiler this fact.  For example,
+@c Keep this table alphabetized by attribute name. Treat _ as space.
+
+@item alias ("@var{target}")
+@cindex @code{alias} attribute
+The @code{alias} attribute causes the declaration to be emitted as an
+alias for another symbol, which must be specified.  For instance,
 
 @smallexample
-@group
-void fatal () __attribute__ ((noreturn));
-
-void
-fatal (/* @r{@dots{}} */)
-@{
-  /* @r{@dots{}} */ /* @r{Print error message.} */ /* @r{@dots{}} */
-  exit (1);
-@}
-@end group
+void __f () @{ /* @r{Do something.} */; @}
+void f () __attribute__ ((weak, alias ("__f")));
 @end smallexample
 
-The @code{noreturn} keyword tells the compiler to assume that
-@code{fatal} cannot return.  It can then optimize without regard to what
-would happen if @code{fatal} ever did return.  This makes slightly
-better code.  More importantly, it helps avoid spurious warnings of
-uninitialized variables.
+declares @samp{f} to be a weak alias for @samp{__f}.  In C++, the
+mangled name for the target must be used.
 
-The @code{noreturn} keyword does not affect the exceptional path when that
-applies: a @code{noreturn}-marked function may still return to the caller
-by throwing an exception.
+Not all target machines support this attribute.
 
-Do not assume that registers saved by the calling function are
-restored before calling the @code{noreturn} function.
-
-It does not make sense for a @code{noreturn} function to have a return
-type other than @code{void}.
-
-The attribute @code{noreturn} is not implemented in GCC versions
-earlier than 2.5.  An alternative way to declare that a function does
-not return, which works in the current version and in some older
-versions, is as follows:
-
-@smallexample
-typedef void voidfn ();
-
-volatile voidfn fatal;
-@end smallexample
-
-@cindex @code{noinline} function attribute
-@item noinline
-This function attribute prevents a function from being considered for
-inlining.
-
-@cindex @code{always_inline} function attribute
 @item always_inline
+@cindex @code{always_inline} function attribute
 Generally, functions are not inlined unless optimization is specified.
 For functions declared inline, this attribute inlines the function even
 if no optimization level was specified.
 
-@cindex @code{pure} function attribute
-@item pure
-Many functions have no effects except the return value and their
-return value depends only on the parameters and/or global variables.
-Such a function can be subject
-to common subexpression elimination and loop optimization just as an
-arithmetic operator would be.  These functions should be declared
-with the attribute @code{pure}.  For example,
+@item cdecl
+@cindex functions that do pop the argument stack on the 386
+@opindex mrtd
+On the Intel 386, the @code{cdecl} attribute causes the compiler to
+assume that the calling function will pop off the stack space used to
+pass arguments.  This is
+useful to override the effects of the @option{-mrtd} switch.
 
-@smallexample
-int square (int) __attribute__ ((pure));
-@end smallexample
-
-@noindent
-says that the hypothetical function @code{square} is safe to call
-fewer times than the program says.
-
-Some of common examples of pure functions are @code{strlen} or @code{memcmp}.
-Interesting non-pure functions are functions with infinite loops or those
-depending on volatile memory or other system resource, that may change between
-two consecutive calls (such as @code{feof} in a multithreading environment).
-
-The attribute @code{pure} is not implemented in GCC versions earlier
-than 2.96.
-@cindex @code{const} function attribute
 @item const
+@cindex @code{const} function attribute
 Many functions do not examine any values except their arguments, and
 have no effects except the return value.  Basically this is just slightly
 more strict class than the @code{pure} attribute above, since function is not
@@ -2023,14 +1972,137 @@ extern const intfn square;
 This approach does not work in GNU C++ from 2.6.0 on, since the language
 specifies that the @samp{const} must be attached to the return value.
 
-@cindex @code{nothrow} function attribute
-@item nothrow
-The @code{nothrow} attribute is used to inform the compiler that a
-function cannot throw an exception.  For example, most functions in
-the standard C library can be guaranteed not to throw an exception
-with the notable exceptions of @code{qsort} and @code{bsearch} that
-take function pointer arguments.  The @code{nothrow} attribute is not
-implemented in GCC versions earlier than 3.2.
+@item constructor
+@itemx destructor
+@cindex @code{constructor} function attribute
+@cindex @code{destructor} function attribute
+The @code{constructor} attribute causes the function to be called
+automatically before execution enters @code{main ()}.  Similarly, the
+@code{destructor} attribute causes the function to be called
+automatically after @code{main ()} has completed or @code{exit ()} has
+been called.  Functions with these attributes are useful for
+initializing data that will be used implicitly during the execution of
+the program.
+
+These attributes are not currently implemented for Objective-C@.
+
+@item deprecated
+@cindex @code{deprecated} attribute.
+The @code{deprecated} attribute results in a warning if the function
+is used anywhere in the source file.  This is useful when identifying
+functions that are expected to be removed in a future version of a
+program.  The warning also includes the location of the declaration
+of the deprecated function, to enable users to easily find further
+information about why the function is deprecated, or what they should
+do instead.  Note that the warnings only occurs for uses:
+
+@smallexample
+int old_fn () __attribute__ ((deprecated));
+int old_fn ();
+int (*fn_ptr)() = old_fn;
+@end smallexample
+
+results in a warning on line 3 but not line 2.
+
+The @code{deprecated} attribute can also be used for variables and
+types (@pxref{Variable Attributes}, @pxref{Type Attributes}.)
+
+@item dllexport
+@cindex @code{__declspec(dllexport)}
+On Microsoft Windows targets the @code{dllexport} attribute causes the
+compiler to provide a global pointer to a pointer in a dll, so that it
+can be referenced with the @code{dllimport} attribute. The pointer name
+is formed by combining @code{_imp__} and the function or variable name.
+
+Currently, the @code{dllexport}attribute is ignored for inlined
+functions, but export can be forced by using the
+@option{-fkeep-inline-functions} flag. The attribute is also ignored for
+undefined symbols.
+
+When applied to C++ classes. the attribute marks defined non-inlined
+member functions and static data members as exports. Static consts
+initialized in-class are not marked unless they are also defined
+out-of-class.
+
+On cygwin, mingw and arm-pe targets, @code{__declspec(dllexport)} is
+recognized as a synonym for @code{__attribute__ ((dllexport))} for
+compatibility with other Microsoft Windows compilers.
+
+Alternative methods for including the symbol in the dll's export table
+are to use a .def file with an @code{EXPORTS} section or, with GNU ld,
+using the @option{--export-all} linker flag.
+
+@item dllimport
+@cindex @code{__declspec(dllimport)}
+On Microsoft Windows targets, the @code{dllimport} attribute causes the
+compiler to reference a function or variable via a global pointer to a
+pointer that is set up by the Microsoft Windows dll library. The pointer
+name is formed by combining @code{_imp__} and the function or variable
+name. The attribute implies @code{extern} storage.
+
+Currently, the attribute is ignored for inlined functions. If the
+attribute is applied to a symbol @emph{definition}, an error is reported.
+If a symbol previously declared @code{dllimport} is later defined, the
+attribute is ignored in subsequent references, and a warning is emitted.
+The attribute is also overridden by a subsequent declaration as
+@code{dllexport}.
+
+When applied to C++ classes, the attribute marks non-inlined
+member functions and static data members as imports.  However, the
+attribute is ignored for virtual methods to allow creation of vtables
+using thunks.
+
+On cygwin, mingw and arm-pe targets, @code{__declspec(dllimport)} is
+recognized as a synonym for @code{__attribute__ ((dllimport))} for
+compatibility with other Microsoft Windows compilers.
+
+The use of the @code{dllimport} attribute on functions is not necessary,
+but provides a small performance benefit by eliminating a thunk in the
+dll. The use of the @code{dllimport} attribute on imported variables was
+required on older versions of GNU ld, but can now be avoided by passing
+the @option{--enable-auto-import} switch to ld. As with functions, using
+the attribute for a variable eliminates a thunk in the dll.
+
+One drawback to using this attribute is that a pointer to a function or
+variable marked as dllimport cannot be used as a constant address. The
+attribute can be disabled for functions by setting the
+@option{-mnop-fun-dllimport} flag.
+
+@item eightbit_data
+@cindex eight bit data on the H8/300, H8/300H, and H8S
+Use this attribute on the H8/300, H8/300H, and H8S to indicate that the specified
+variable should be placed into the eight bit data section.
+The compiler will generate more efficient code for certain operations
+on data in the eight bit data area.  Note the eight bit data area is limited to
+256 bytes of data.
+
+You must use GAS and GLD from GNU binutils version 2.7 or later for
+this attribute to work correctly.
+
+@item far
+@cindex functions which handle memory bank switching
+On 68HC11 and 68HC12 the @code{far} attribute causes the compiler to
+use a calling convention that takes care of switching memory banks when
+entering and leaving a function.  This calling convention is also the
+default when using the @option{-mlong-calls} option.
+
+On 68HC12 the compiler will use the @code{call} and @code{rtc} instructions
+to call and return from a function.
+
+On 68HC11 the compiler will generate a sequence of instructions
+to invoke a board-specific routine to switch the memory bank and call the
+real function. The board-specific routine simulates a @code{call}.
+At the end of a function, it will jump to a board-specific routine
+instead of using @code{rts}. The board-specific return routine simulates
+the @code{rtc}.
+
+@item fastcall
+@cindex functions that pop the argument stack on the 386
+On the Intel 386, the @code{fastcall} attribute causes the compiler to
+pass the first two arguments in the registers ECX and EDX. Subsequent
+arguments are passed on the stack. The called function will pop the
+arguments off the stack. If the number of arguments is variable all
+arguments are pushed on the stack.
 
 @item format (@var{archetype}, @var{string-index}, @var{first-to-check})
 @cindex @code{format} function attribute
@@ -2131,273 +2203,6 @@ requested by @option{-ansi} or an appropriate @option{-std} option, or
 @option{-ffreestanding} is used.  @xref{C Dialect Options,,Options
 Controlling C Dialect}.
 
-@item nonnull (@var{arg-index}, @dots{})
-@cindex @code{nonnull} function attribute
-The @code{nonnull} attribute specifies that some function parameters should
-be non-null pointers.  For instance, the declaration:
-
-@smallexample
-extern void *
-my_memcpy (void *dest, const void *src, size_t len)
-	__attribute__((nonnull (1, 2)));
-@end smallexample
-
-@noindent
-causes the compiler to check that, in calls to @code{my_memcpy},
-arguments @var{dest} and @var{src} are non-null.  If the compiler
-determines that a null pointer is passed in an argument slot marked
-as non-null, and the @option{-Wnonnull} option is enabled, a warning
-is issued.  The compiler may also choose to make optimizations based
-on the knowledge that certain function arguments will not be null.
-
-If no argument index list is given to the @code{nonnull} attribute,
-all pointer arguments are marked as non-null.  To illustrate, the
-following declaration is equivalent to the previous example:
-
-@smallexample
-extern void *
-my_memcpy (void *dest, const void *src, size_t len)
-	__attribute__((nonnull));
-@end smallexample
-
-@item no_instrument_function
-@cindex @code{no_instrument_function} function attribute
-@opindex finstrument-functions
-If @option{-finstrument-functions} is given, profiling function calls will
-be generated at entry and exit of most user-compiled functions.
-Functions with this attribute will not be so instrumented.
-
-@item section ("@var{section-name}")
-@cindex @code{section} function attribute
-Normally, the compiler places the code it generates in the @code{text} section.
-Sometimes, however, you need additional sections, or you need certain
-particular functions to appear in special sections.  The @code{section}
-attribute specifies that a function lives in a particular section.
-For example, the declaration:
-
-@smallexample
-extern void foobar (void) __attribute__ ((section ("bar")));
-@end smallexample
-
-@noindent
-puts the function @code{foobar} in the @code{bar} section.
-
-Some file formats do not support arbitrary sections so the @code{section}
-attribute is not available on all platforms.
-If you need to map the entire contents of a module to a particular
-section, consider using the facilities of the linker instead.
-
-@item constructor
-@itemx destructor
-@cindex @code{constructor} function attribute
-@cindex @code{destructor} function attribute
-The @code{constructor} attribute causes the function to be called
-automatically before execution enters @code{main ()}.  Similarly, the
-@code{destructor} attribute causes the function to be called
-automatically after @code{main ()} has completed or @code{exit ()} has
-been called.  Functions with these attributes are useful for
-initializing data that will be used implicitly during the execution of
-the program.
-
-These attributes are not currently implemented for Objective-C@.
-
-@cindex @code{unused} attribute.
-@item unused
-This attribute, attached to a function, means that the function is meant
-to be possibly unused.  GCC will not produce a warning for this
-function.
-
-@cindex @code{used} attribute.
-@item used
-This attribute, attached to a function, means that code must be emitted
-for the function even if it appears that the function is not referenced.
-This is useful, for example, when the function is referenced only in
-inline assembly.
-
-@cindex @code{deprecated} attribute.
-@item deprecated
-The @code{deprecated} attribute results in a warning if the function
-is used anywhere in the source file.  This is useful when identifying
-functions that are expected to be removed in a future version of a
-program.  The warning also includes the location of the declaration
-of the deprecated function, to enable users to easily find further
-information about why the function is deprecated, or what they should
-do instead.  Note that the warnings only occurs for uses:
-
-@smallexample
-int old_fn () __attribute__ ((deprecated));
-int old_fn ();
-int (*fn_ptr)() = old_fn;
-@end smallexample
-
-results in a warning on line 3 but not line 2.
-
-The @code{deprecated} attribute can also be used for variables and
-types (@pxref{Variable Attributes}, @pxref{Type Attributes}.)
-
-@item warn_unused_result
-@cindex @code{warn_unused_result} attribute
-The @code{warn_unused_result} attribute causes a warning to be emitted
-if a caller of the function with this attribute does not use its
-return value.  This is useful for functions where not checking
-the result is either a security problem or always a bug, such as
-@code{realloc}.
-
-@smallexample
-int fn () __attribute__ ((warn_unused_result));
-int foo ()
-@{
-  if (fn () < 0) return -1;
-  fn ();
-  return 0;
-@}
-@end smallexample
-
-results in warning on line 5.
-
-@item weak
-@cindex @code{weak} attribute
-The @code{weak} attribute causes the declaration to be emitted as a weak
-symbol rather than a global.  This is primarily useful in defining
-library functions which can be overridden in user code, though it can
-also be used with non-function declarations.  Weak symbols are supported
-for ELF targets, and also for a.out targets when using the GNU assembler
-and linker.
-
-@item malloc
-@cindex @code{malloc} attribute
-The @code{malloc} attribute is used to tell the compiler that a function
-may be treated as if any non-@code{NULL} pointer it returns cannot
-alias any other pointer valid when the function returns.
-This will often improve optimization.
-Standard functions with this property include @code{malloc} and
-@code{calloc}.  @code{realloc}-like functions have this property as
-long as the old pointer is never referred to (including comparing it
-to the new pointer) after the function returns a non-@code{NULL}
-value.
-
-@item alias ("@var{target}")
-@cindex @code{alias} attribute
-The @code{alias} attribute causes the declaration to be emitted as an
-alias for another symbol, which must be specified.  For instance,
-
-@smallexample
-void __f () @{ /* @r{Do something.} */; @}
-void f () __attribute__ ((weak, alias ("__f")));
-@end smallexample
-
-declares @samp{f} to be a weak alias for @samp{__f}.  In C++, the
-mangled name for the target must be used.
-
-Not all target machines support this attribute.
-
-@item visibility ("@var{visibility_type}")
-@cindex @code{visibility} attribute
-The @code{visibility} attribute on ELF targets causes the declaration
-to be emitted with default, hidden, protected or internal visibility.
-
-@smallexample
-void __attribute__ ((visibility ("protected")))
-f () @{ /* @r{Do something.} */; @}
-int i __attribute__ ((visibility ("hidden")));
-@end smallexample
-
-See the ELF gABI for complete details, but the short story is:
-
-@table @dfn
-@item default
-Default visibility is the normal case for ELF.  This value is
-available for the visibility attribute to override other options
-that may change the assumed visibility of symbols.
-
-@item hidden
-Hidden visibility indicates that the symbol will not be placed into
-the dynamic symbol table, so no other @dfn{module} (executable or
-shared library) can reference it directly.
-
-@item protected
-Protected visibility indicates that the symbol will be placed in the
-dynamic symbol table, but that references within the defining module
-will bind to the local symbol.  That is, the symbol cannot be overridden
-by another module.
-
-@item internal
-Internal visibility is like hidden visibility, but with additional
-processor specific semantics.  Unless otherwise specified by the psABI,
-GCC defines internal visibility to mean that the function is @emph{never}
-called from another module.  Note that hidden symbols, while they cannot
-be referenced directly by other modules, can be referenced indirectly via
-function pointers.  By indicating that a symbol cannot be called from
-outside the module, GCC may for instance omit the load of a PIC register
-since it is known that the calling function loaded the correct value.
-@end table
-
-Not all ELF targets support this attribute.
-
-@item regparm (@var{number})
-@cindex @code{regparm} attribute
-@cindex functions that are passed arguments in registers on the 386
-On the Intel 386, the @code{regparm} attribute causes the compiler to
-pass up to @var{number} integer arguments in registers EAX,
-EDX, and ECX instead of on the stack.  Functions that take a
-variable number of arguments will continue to be passed all of their
-arguments on the stack.
-
-Beware that on some ELF systems this attribute is unsuitable for
-global functions in shared libraries with lazy binding (which is the
-default).  Lazy binding will send the first call via resolving code in
-the loader, which might assume EAX, EDX and ECX can be clobbered, as
-per the standard calling conventions.  Solaris 8 is affected by this.
-GNU systems with GLIBC 2.1 or higher, and FreeBSD, are believed to be
-safe since the loaders there save all registers.  (Lazy binding can be
-disabled with the linker or the loader if desired, to avoid the
-problem.)
-
-@item stdcall
-@cindex functions that pop the argument stack on the 386
-On the Intel 386, the @code{stdcall} attribute causes the compiler to
-assume that the called function will pop off the stack space used to
-pass arguments, unless it takes a variable number of arguments.
-
-@item fastcall
-@cindex functions that pop the argument stack on the 386
-On the Intel 386, the @code{fastcall} attribute causes the compiler to
-pass the first two arguments in the registers ECX and EDX. Subsequent
-arguments are passed on the stack. The called function will pop the
-arguments off the stack. If the number of arguments is variable all
-arguments are pushed on the stack.
-
-@item cdecl
-@cindex functions that do pop the argument stack on the 386
-@opindex mrtd
-On the Intel 386, the @code{cdecl} attribute causes the compiler to
-assume that the calling function will pop off the stack space used to
-pass arguments.  This is
-useful to override the effects of the @option{-mrtd} switch.
-
-@item longcall/shortcall
-@cindex functions called via pointer on the RS/6000 and PowerPC
-On the RS/6000 and PowerPC, the @code{longcall} attribute causes the
-compiler to always call this function via a pointer, just as it would if
-the @option{-mlongcall} option had been specified.  The @code{shortcall}
-attribute causes the compiler not to do this.  These attributes override
-both the @option{-mlongcall} switch and the @code{#pragma longcall}
-setting.
-
-@xref{RS/6000 and PowerPC Options}, for more information on whether long
-calls are necessary.
-
-@item long_call/short_call
-@cindex indirect calls on ARM
-This attribute specifies how a particular function is called on
-ARM@.  Both attributes override the @option{-mlong-calls} (@pxref{ARM Options})
-command line switch and @code{#pragma long_calls} settings.  The
-@code{long_call} attribute causes the compiler to always call the
-function by first loading its address into a register and then using the
-contents of that register.   The @code{short_call} attribute always places
-the offset to the function from the call site into the @samp{BL}
-instruction directly.
-
 @item function_vector
 @cindex calling functions through the function vector on the H8/300 processors
 Use this attribute on the H8/300, H8/300H, and H8S to indicate that the specified
@@ -2437,60 +2242,40 @@ the specified function is an interrupt handler.  The compiler will generate
 function entry and exit sequences suitable for use in an interrupt
 handler when this attribute is present.
 
-@item sp_switch
-Use this attribute on the SH to indicate an @code{interrupt_handler}
-function should switch to an alternate stack.  It expects a string
-argument that names a global variable holding the address of the
-alternate stack.
+@item long_call/short_call
+@cindex indirect calls on ARM
+This attribute specifies how a particular function is called on
+ARM@.  Both attributes override the @option{-mlong-calls} (@pxref{ARM Options})
+command line switch and @code{#pragma long_calls} settings.  The
+@code{long_call} attribute causes the compiler to always call the
+function by first loading its address into a register and then using the
+contents of that register.   The @code{short_call} attribute always places
+the offset to the function from the call site into the @samp{BL}
+instruction directly.
 
-@smallexample
-void *alt_stack;
-void f () __attribute__ ((interrupt_handler,
-                          sp_switch ("alt_stack")));
-@end smallexample
+@item longcall/shortcall
+@cindex functions called via pointer on the RS/6000 and PowerPC
+On the RS/6000 and PowerPC, the @code{longcall} attribute causes the
+compiler to always call this function via a pointer, just as it would if
+the @option{-mlongcall} option had been specified.  The @code{shortcall}
+attribute causes the compiler not to do this.  These attributes override
+both the @option{-mlongcall} switch and the @code{#pragma longcall}
+setting.
 
-@item trap_exit
-Use this attribute on the SH for an @code{interrupt_handler} to return using
-@code{trapa} instead of @code{rte}.  This attribute expects an integer
-argument specifying the trap number to be used.
+@xref{RS/6000 and PowerPC Options}, for more information on whether long
+calls are necessary.
 
-@item eightbit_data
-@cindex eight bit data on the H8/300, H8/300H, and H8S
-Use this attribute on the H8/300, H8/300H, and H8S to indicate that the specified
-variable should be placed into the eight bit data section.
-The compiler will generate more efficient code for certain operations
-on data in the eight bit data area.  Note the eight bit data area is limited to
-256 bytes of data.
-
-You must use GAS and GLD from GNU binutils version 2.7 or later for
-this attribute to work correctly.
-
-@item tiny_data
-@cindex tiny data section on the H8/300H and H8S
-Use this attribute on the H8/300H and H8S to indicate that the specified
-variable should be placed into the tiny data section.
-The compiler will generate more efficient code for loads and stores
-on data in the tiny data section.  Note the tiny data area is limited to
-slightly under 32kbytes of data.
-
-@item saveall
-@cindex save all registers on the H8/300, H8/300H, and H8S
-Use this attribute on the H8/300, H8/300H, and H8S to indicate that
-all registers except the stack pointer should be saved in the prologue
-regardless of whether they are used or not.
-
-@item signal
-@cindex signal handler functions on the AVR processors
-Use this attribute on the AVR to indicate that the specified
-function is a signal handler.  The compiler will generate function
-entry and exit sequences suitable for use in a signal handler when this
-attribute is present.  Interrupts will be disabled inside the function.
-
-@item naked
-@cindex function without a prologue/epilogue code
-Use this attribute on the ARM, AVR, C4x and IP2K ports to indicate that the
-specified function does not need prologue/epilogue sequences generated by
-the compiler.  It is up to the programmer to provide these sequences.
+@item malloc
+@cindex @code{malloc} attribute
+The @code{malloc} attribute is used to tell the compiler that a function
+may be treated as if any non-@code{NULL} pointer it returns cannot
+alias any other pointer valid when the function returns.
+This will often improve optimization.
+Standard functions with this property include @code{malloc} and
+@code{calloc}.  @code{realloc}-like functions have this property as
+long as the old pointer is never referred to (including comparing it
+to the new pointer) after the function returns a non-@code{NULL}
+value.
 
 @item model (@var{model-name})
 @cindex function addressability on the M32R/D
@@ -2522,22 +2307,11 @@ instruction).  Caveat: such addressing is by definition not position
 independent and hence this attribute must not be used for objects
 defined by shared libraries.
 
-@item far
-@cindex functions which handle memory bank switching
-On 68HC11 and 68HC12 the @code{far} attribute causes the compiler to
-use a calling convention that takes care of switching memory banks when
-entering and leaving a function.  This calling convention is also the
-default when using the @option{-mlong-calls} option.
-
-On 68HC12 the compiler will use the @code{call} and @code{rtc} instructions
-to call and return from a function.
-
-On 68HC11 the compiler will generate a sequence of instructions
-to invoke a board-specific routine to switch the memory bank and call the
-real function. The board-specific routine simulates a @code{call}.
-At the end of a function, it will jump to a board-specific routine
-instead of using @code{rts}. The board-specific return routine simulates
-the @code{rtc}.
+@item naked
+@cindex function without a prologue/epilogue code
+Use this attribute on the ARM, AVR, C4x and IP2K ports to indicate that the
+specified function does not need prologue/epilogue sequences generated by
+the compiler.  It is up to the programmer to provide these sequences.
 
 @item near
 @cindex functions which do not handle memory bank switching on 68HC11/68HC12
@@ -2546,66 +2320,304 @@ use the normal calling convention based on @code{jsr} and @code{rts}.
 This attribute can be used to cancel the effect of the @option{-mlong-calls}
 option.
 
-@item dllimport
-@cindex @code{__declspec(dllimport)}
-On Microsoft Windows targets, the @code{dllimport} attribute causes the compiler
-to reference a function or variable via a global pointer to a pointer
-that is set up by the Microsoft Windows dll library. The pointer name is formed by
-combining @code{_imp__} and the function or variable name. The attribute
-implies @code{extern} storage.
+@item no_instrument_function
+@cindex @code{no_instrument_function} function attribute
+@opindex finstrument-functions
+If @option{-finstrument-functions} is given, profiling function calls will
+be generated at entry and exit of most user-compiled functions.
+Functions with this attribute will not be so instrumented.
 
-Currently, the attribute is ignored for inlined functions. If the
-attribute is applied to a symbol @emph{definition}, an error is reported.
-If a symbol previously declared @code{dllimport} is later defined, the
-attribute is ignored in subsequent references, and a warning is emitted.
-The attribute is also overridden by a subsequent declaration as
-@code{dllexport}.
+@item noinline
+@cindex @code{noinline} function attribute
+This function attribute prevents a function from being considered for
+inlining.
 
-When applied to C++ classes, the attribute marks non-inlined
-member functions and static data members as imports.  However, the
-attribute is ignored for virtual methods to allow creation of vtables
-using thunks.
+@item nonnull (@var{arg-index}, @dots{})
+@cindex @code{nonnull} function attribute
+The @code{nonnull} attribute specifies that some function parameters should
+be non-null pointers.  For instance, the declaration:
 
-On cygwin, mingw and arm-pe targets, @code{__declspec(dllimport)} is
-recognized as a synonym for @code{__attribute__ ((dllimport))} for
-compatibility with other Microsoft Windows compilers.
+@smallexample
+extern void *
+my_memcpy (void *dest, const void *src, size_t len)
+	__attribute__((nonnull (1, 2)));
+@end smallexample
 
-The use of the @code{dllimport} attribute on functions is not necessary,
-but provides a small performance benefit by eliminating a thunk in the
-dll. The use of the @code{dllimport} attribute on imported variables was
-required on older versions of GNU ld, but can now be avoided by passing
-the @option{--enable-auto-import} switch to ld. As with functions, using
-the attribute for a variable eliminates a thunk in the dll.
+@noindent
+causes the compiler to check that, in calls to @code{my_memcpy},
+arguments @var{dest} and @var{src} are non-null.  If the compiler
+determines that a null pointer is passed in an argument slot marked
+as non-null, and the @option{-Wnonnull} option is enabled, a warning
+is issued.  The compiler may also choose to make optimizations based
+on the knowledge that certain function arguments will not be null.
 
-One drawback to using this attribute is that a pointer to a function or
-variable marked as dllimport cannot be used as a constant address. The
-attribute can be disabled for functions by setting the
-@option{-mnop-fun-dllimport} flag.
+If no argument index list is given to the @code{nonnull} attribute,
+all pointer arguments are marked as non-null.  To illustrate, the
+following declaration is equivalent to the previous example:
 
-@item dllexport
-@cindex @code{__declspec(dllexport)}
-On Microsoft Windows targets the @code{dllexport} attribute causes the compiler to
-provide a global pointer to a pointer in a dll, so that it can be
-referenced with the @code{dllimport} attribute. The pointer name is
-formed by combining @code{_imp__} and the function or variable name.
+@smallexample
+extern void *
+my_memcpy (void *dest, const void *src, size_t len)
+	__attribute__((nonnull));
+@end smallexample
 
-Currently, the @code{dllexport}attribute is ignored for inlined
-functions, but export can be forced by using the
-@option{-fkeep-inline-functions} flag. The attribute is also ignored for
-undefined symbols.
+@item noreturn
+@cindex @code{noreturn} function attribute
+A few standard library functions, such as @code{abort} and @code{exit},
+cannot return.  GCC knows this automatically.  Some programs define
+their own functions that never return.  You can declare them
+@code{noreturn} to tell the compiler this fact.  For example,
 
-When applied to C++ classes. the attribute marks defined non-inlined
-member functions and static data members as exports. Static consts
-initialized in-class are not marked unless they are also defined
-out-of-class.
+@smallexample
+@group
+void fatal () __attribute__ ((noreturn));
 
-On cygwin, mingw and arm-pe targets, @code{__declspec(dllexport)} is
-recognized as a synonym for @code{__attribute__ ((dllexport))} for
-compatibility with other Microsoft Windows compilers.
+void
+fatal (/* @r{@dots{}} */)
+@{
+  /* @r{@dots{}} */ /* @r{Print error message.} */ /* @r{@dots{}} */
+  exit (1);
+@}
+@end group
+@end smallexample
 
-Alternative methods for including the symbol in the dll's export table
-are to use a .def file with an @code{EXPORTS} section or, with GNU ld,
-using the @option{--export-all} linker flag.
+The @code{noreturn} keyword tells the compiler to assume that
+@code{fatal} cannot return.  It can then optimize without regard to what
+would happen if @code{fatal} ever did return.  This makes slightly
+better code.  More importantly, it helps avoid spurious warnings of
+uninitialized variables.
+
+The @code{noreturn} keyword does not affect the exceptional path when that
+applies: a @code{noreturn}-marked function may still return to the caller
+by throwing an exception.
+
+Do not assume that registers saved by the calling function are
+restored before calling the @code{noreturn} function.
+
+It does not make sense for a @code{noreturn} function to have a return
+type other than @code{void}.
+
+The attribute @code{noreturn} is not implemented in GCC versions
+earlier than 2.5.  An alternative way to declare that a function does
+not return, which works in the current version and in some older
+versions, is as follows:
+
+@smallexample
+typedef void voidfn ();
+
+volatile voidfn fatal;
+@end smallexample
+
+@item nothrow
+@cindex @code{nothrow} function attribute
+The @code{nothrow} attribute is used to inform the compiler that a
+function cannot throw an exception.  For example, most functions in
+the standard C library can be guaranteed not to throw an exception
+with the notable exceptions of @code{qsort} and @code{bsearch} that
+take function pointer arguments.  The @code{nothrow} attribute is not
+implemented in GCC versions earlier than 3.2.
+
+@item pure
+@cindex @code{pure} function attribute
+Many functions have no effects except the return value and their
+return value depends only on the parameters and/or global variables.
+Such a function can be subject
+to common subexpression elimination and loop optimization just as an
+arithmetic operator would be.  These functions should be declared
+with the attribute @code{pure}.  For example,
+
+@smallexample
+int square (int) __attribute__ ((pure));
+@end smallexample
+
+@noindent
+says that the hypothetical function @code{square} is safe to call
+fewer times than the program says.
+
+Some of common examples of pure functions are @code{strlen} or @code{memcmp}.
+Interesting non-pure functions are functions with infinite loops or those
+depending on volatile memory or other system resource, that may change between
+two consecutive calls (such as @code{feof} in a multithreading environment).
+
+The attribute @code{pure} is not implemented in GCC versions earlier
+than 2.96.
+
+@item regparm (@var{number})
+@cindex @code{regparm} attribute
+@cindex functions that are passed arguments in registers on the 386
+On the Intel 386, the @code{regparm} attribute causes the compiler to
+pass up to @var{number} integer arguments in registers EAX,
+EDX, and ECX instead of on the stack.  Functions that take a
+variable number of arguments will continue to be passed all of their
+arguments on the stack.
+
+Beware that on some ELF systems this attribute is unsuitable for
+global functions in shared libraries with lazy binding (which is the
+default).  Lazy binding will send the first call via resolving code in
+the loader, which might assume EAX, EDX and ECX can be clobbered, as
+per the standard calling conventions.  Solaris 8 is affected by this.
+GNU systems with GLIBC 2.1 or higher, and FreeBSD, are believed to be
+safe since the loaders there save all registers.  (Lazy binding can be
+disabled with the linker or the loader if desired, to avoid the
+problem.)
+
+@item saveall
+@cindex save all registers on the H8/300, H8/300H, and H8S
+Use this attribute on the H8/300, H8/300H, and H8S to indicate that
+all registers except the stack pointer should be saved in the prologue
+regardless of whether they are used or not.
+
+@item section ("@var{section-name}")
+@cindex @code{section} function attribute
+Normally, the compiler places the code it generates in the @code{text} section.
+Sometimes, however, you need additional sections, or you need certain
+particular functions to appear in special sections.  The @code{section}
+attribute specifies that a function lives in a particular section.
+For example, the declaration:
+
+@smallexample
+extern void foobar (void) __attribute__ ((section ("bar")));
+@end smallexample
+
+@noindent
+puts the function @code{foobar} in the @code{bar} section.
+
+Some file formats do not support arbitrary sections so the @code{section}
+attribute is not available on all platforms.
+If you need to map the entire contents of a module to a particular
+section, consider using the facilities of the linker instead.
+
+@item short_call
+See long_call/short_call.
+
+@item shortcall
+See longcall/shortcall.
+
+@item signal
+@cindex signal handler functions on the AVR processors
+Use this attribute on the AVR to indicate that the specified
+function is a signal handler.  The compiler will generate function
+entry and exit sequences suitable for use in a signal handler when this
+attribute is present.  Interrupts will be disabled inside the function.
+
+@item sp_switch
+Use this attribute on the SH to indicate an @code{interrupt_handler}
+function should switch to an alternate stack.  It expects a string
+argument that names a global variable holding the address of the
+alternate stack.
+
+@smallexample
+void *alt_stack;
+void f () __attribute__ ((interrupt_handler,
+                          sp_switch ("alt_stack")));
+@end smallexample
+
+@item stdcall
+@cindex functions that pop the argument stack on the 386
+On the Intel 386, the @code{stdcall} attribute causes the compiler to
+assume that the called function will pop off the stack space used to
+pass arguments, unless it takes a variable number of arguments.
+
+@item tiny_data
+@cindex tiny data section on the H8/300H and H8S
+Use this attribute on the H8/300H and H8S to indicate that the specified
+variable should be placed into the tiny data section.
+The compiler will generate more efficient code for loads and stores
+on data in the tiny data section.  Note the tiny data area is limited to
+slightly under 32kbytes of data.
+
+@item trap_exit
+Use this attribute on the SH for an @code{interrupt_handler} to return using
+@code{trapa} instead of @code{rte}.  This attribute expects an integer
+argument specifying the trap number to be used.
+
+@item unused
+@cindex @code{unused} attribute.
+This attribute, attached to a function, means that the function is meant
+to be possibly unused.  GCC will not produce a warning for this
+function.
+
+@item used
+@cindex @code{used} attribute.
+This attribute, attached to a function, means that code must be emitted
+for the function even if it appears that the function is not referenced.
+This is useful, for example, when the function is referenced only in
+inline assembly.
+
+@item visibility ("@var{visibility_type}")
+@cindex @code{visibility} attribute
+The @code{visibility} attribute on ELF targets causes the declaration
+to be emitted with default, hidden, protected or internal visibility.
+
+@smallexample
+void __attribute__ ((visibility ("protected")))
+f () @{ /* @r{Do something.} */; @}
+int i __attribute__ ((visibility ("hidden")));
+@end smallexample
+
+See the ELF gABI for complete details, but the short story is:
+
+@table @dfn
+@c keep this list of visibilies in alphabetical order.
+
+@item default
+Default visibility is the normal case for ELF.  This value is
+available for the visibility attribute to override other options
+that may change the assumed visibility of symbols.
+
+@item hidden
+Hidden visibility indicates that the symbol will not be placed into
+the dynamic symbol table, so no other @dfn{module} (executable or
+shared library) can reference it directly.
+
+@item internal
+Internal visibility is like hidden visibility, but with additional
+processor specific semantics.  Unless otherwise specified by the psABI,
+GCC defines internal visibility to mean that the function is @emph{never}
+called from another module.  Note that hidden symbols, while they cannot
+be referenced directly by other modules, can be referenced indirectly via
+function pointers.  By indicating that a symbol cannot be called from
+outside the module, GCC may for instance omit the load of a PIC register
+since it is known that the calling function loaded the correct value.
+
+@item protected
+Protected visibility indicates that the symbol will be placed in the
+dynamic symbol table, but that references within the defining module
+will bind to the local symbol.  That is, the symbol cannot be overridden
+by another module.
+
+@end table
+
+Not all ELF targets support this attribute.
+
+@item warn_unused_result
+@cindex @code{warn_unused_result} attribute
+The @code{warn_unused_result} attribute causes a warning to be emitted
+if a caller of the function with this attribute does not use its
+return value.  This is useful for functions where not checking
+the result is either a security problem or always a bug, such as
+@code{realloc}.
+
+@smallexample
+int fn () __attribute__ ((warn_unused_result));
+int foo ()
+@{
+  if (fn () < 0) return -1;
+  fn ();
+  return 0;
+@}
+@end smallexample
+
+results in warning on line 5.
+
+@item weak
+@cindex @code{weak} attribute
+The @code{weak} attribute causes the declaration to be emitted as a weak
+symbol rather than a global.  This is primarily useful in defining
+library functions which can be overridden in user code, though it can
+also be used with non-function declarations.  Weak symbols are supported
+for ELF targets, and also for a.out targets when using the GNU assembler
+and linker.
 
 @end table
 
