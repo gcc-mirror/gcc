@@ -23,7 +23,7 @@ NAME
 	lbasename -- return pointer to last component of a pathname
 
 SYNOPSIS
-	char *lbasename (const char *name)
+	const char *lbasename (const char *name)
 
 DESCRIPTION
 	Given a pointer to a string containing a typical pathname
@@ -69,7 +69,7 @@ DESCRIPTION
 #  endif
 #endif
 
-char *
+const char *
 lbasename (name)
      const char *name;
 {
@@ -85,5 +85,5 @@ lbasename (name)
     if (IS_DIR_SEPARATOR (*name))
       base = name + 1;
 
-  return (char *) base;
+  return base;
 }

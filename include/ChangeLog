@@ -1,3 +1,8 @@
+2001-06-13  Andrew Cagney  <ac131313@redhat.com>
+
+	* libiberty.h (lbasename): Change function declaration to return a
+	const char pointer.
+
 2001-08-02  Mark Kettenis  <kettenis@gnu.org>
 
 	* xregex.h (_REGEX_RE_COMP): Define.
