@@ -296,9 +296,9 @@ static unsigned int *insn_blockage;
 #define UNIT_BITS 5
 #define BLOCKAGE_MASK ((1 << BLOCKAGE_BITS) - 1)
 #define ENCODE_BLOCKAGE(U, R)				\
-((((U) << UNIT_BITS) << BLOCKAGE_BITS			\
+(((U) << BLOCKAGE_BITS					\
   | MIN_BLOCKAGE_COST (R)) << BLOCKAGE_BITS		\
-  | MAX_BLOCKAGE_COST (R))
+ | MAX_BLOCKAGE_COST (R))
 #define UNIT_BLOCKED(B) ((B) >> (2 * BLOCKAGE_BITS))
 #define BLOCKAGE_RANGE(B)                                                \
   (((((B) >> BLOCKAGE_BITS) & BLOCKAGE_MASK) << (HOST_BITS_PER_INT / 2)) \
@@ -5832,8 +5832,17 @@ print_exp (buf, x, verbose)
     {
     case PLUS:
       op[0] = XEXP (x, 0);
-      st[1] = "+";
-      op[1] = XEXP (x, 1);
+      if (GET_CODE (XEXP (x, 1)) == CONST_INT
+	  && INTVAL (XEXP (x, 1)) < 0)
+	{
+	  st[1] = "-";
+	  op[1] = GEN_INT (-INTVAL (XEXP (x, 1)));
+	}
+      else
+	{
+	  st[1] = "+";
+	  op[1] = XEXP (x, 1);
+	}
       break;
     case LO_SUM:
       op[0] = XEXP (x, 0);
@@ -6159,7 +6168,7 @@ print_value (buf, x, verbose)
   switch (GET_CODE (x))
     {
     case CONST_INT:
-      sprintf (t, "0x%lx", (long)INTVAL (x));
+      sprintf (t, HOST_WIDE_INT_PRINT_HEX, INTVAL (x));
       cur = safe_concat (buf, cur, t);
       break;
     case CONST_DOUBLE:
