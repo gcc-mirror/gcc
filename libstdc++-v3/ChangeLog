@@ -1,3 +1,8 @@
+2002-06-12  Daniel Jacobowitz  <drow@mvista.com>
+
+	* Makefile.am: Add FLAGS_TO_PASS.
+	* Makefile.in: Regenerated.
+
 2002-06-11  J.T. Conklin  <jtc@acorntoolworks.com>
             Benjamin Kosnik  <bkoz@redhat.com>
 	
