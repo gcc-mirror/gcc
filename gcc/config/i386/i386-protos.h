@@ -132,6 +132,13 @@ extern rtx ix86_force_to_memory PARAMS ((enum machine_mode, rtx));
 extern void ix86_free_from_memory PARAMS ((enum machine_mode));
 extern void ix86_split_fp_branch PARAMS ((rtx, rtx, rtx, rtx, rtx, rtx));
 extern int ix86_hard_regno_mode_ok PARAMS ((int, enum machine_mode));
+extern int ix86_register_move_cost PARAMS ((int, enum reg_class,
+					    enum reg_class));
+extern int ix86_secondary_memory_needed PARAMS ((enum reg_class,
+						 enum reg_class,
+						 enum machine_mode, int));
+extern enum reg_class ix86_preferred_reload_class PARAMS ((rtx,
+							   enum reg_class));
 
 #ifdef TREE_CODE
 extern void init_cumulative_args PARAMS ((CUMULATIVE_ARGS *, tree, rtx));
