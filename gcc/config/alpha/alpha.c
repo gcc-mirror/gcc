@@ -5760,9 +5760,8 @@ rtx
 alpha_va_arg (valist, type)
      tree valist, type;
 {
-  HOST_WIDE_INT tsize;
   rtx addr;
-  tree t;
+  tree t, type_size, rounded_size;
   tree offset_field, base_field, addr_tree, addend;
   tree wide_type, wide_ofs;
   int indirect = 0;
@@ -5770,7 +5769,18 @@ alpha_va_arg (valist, type)
   if (TARGET_ABI_OPEN_VMS || TARGET_ABI_UNICOSMK)
     return std_expand_builtin_va_arg (valist, type);
 
-  tsize = ((TREE_INT_CST_LOW (TYPE_SIZE (type)) / BITS_PER_UNIT + 7) / 8) * 8;
+  if (type == error_mark_node
+      || (type_size = TYPE_SIZE_UNIT (TYPE_MAIN_VARIANT (type))) == NULL
+      || TREE_OVERFLOW (type_size))
+    rounded_size = size_zero_node;
+  else
+    rounded_size = fold (build (MULT_EXPR, sizetype,
+				fold (build (TRUNC_DIV_EXPR, sizetype,
+					     fold (build (PLUS_EXPR, sizetype,
+							  type_size,
+							  size_int (7))),
+					     size_int (8))),
+				size_int (8)));
 
   base_field = TYPE_FIELDS (TREE_TYPE (valist));
   offset_field = TREE_CHAIN (base_field);
@@ -5788,7 +5798,7 @@ alpha_va_arg (valist, type)
   if (TYPE_MODE (type) == TFmode || TYPE_MODE (type) == TCmode)
     {
       indirect = 1;
-      tsize = UNITS_PER_WORD;
+      rounded_size = size_int (UNITS_PER_WORD);
     }
   else if (FLOAT_TYPE_P (type))
     {
@@ -5812,7 +5822,7 @@ alpha_va_arg (valist, type)
 
   t = build (MODIFY_EXPR, TREE_TYPE (offset_field), offset_field,
 	     build (PLUS_EXPR, TREE_TYPE (offset_field), 
-		    offset_field, build_int_2 (tsize, 0)));
+		    offset_field, rounded_size));
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
