@@ -1,5 +1,18 @@
 2000-11-13  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* c-parse.in (ends_in_label): Remove from %union and %type.
+	(decls, stmts, lineno_stmt_or_labels, xstmts,
+	lineno_stmt_or_label, stmt_or_label): Remove.
+	(stmts_and_decls, lineno_stmt_decl_or_labels_ending_stmt,
+	lineno_stmt_decl_or_labels_ending_decl,
+	lineno_stmt_decl_or_labels_ending_label,
+	lineno_stmt_decl_or_labels_ending_error,
+	lineno_stmt_decl_or_labels, compstmt_contents_nonempty,
+	lineno_stmt, lineno_label): New.
+	(compstmt_nostart): Use compstmt_contents_nonempty.
+
+2000-11-13  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* c-common.c (boolean_increment): New function.
 	* c-common.h (enum c_tree_index): Add CTI_C_BOOL_TYPE,
 	CTI_C_BOOL_TRUE and CTI_C_BOOL_FALSE.
