@@ -1,3 +1,8 @@
+2001-08-10   Gunter Winkler gunter.winkler@mathematik.tu-chemnitz.de
+
+	* include/bits/std_complex.h (complex<long double>::operator*=,
+ 	complex<long double>::operator/=): Fix thinko.
+
 2001-08-10  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
 	* include/bits/std_limits.h: New file.

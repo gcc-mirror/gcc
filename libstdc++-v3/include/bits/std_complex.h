@@ -930,14 +930,14 @@ namespace std
   inline complex<long double>&
   complex<long double>::operator*=(long double __r)
   {
-    __real__ _M_value *= __r;
+    _M_value *= __r;
     return *this;
   }
 
   inline complex<long double>&
   complex<long double>::operator/=(long double __r)
   {
-    __real__ _M_value /= __r;
+    _M_value /= __r;
     return *this;
   }
 
