@@ -1,3 +1,19 @@
+Sun Aug 20 09:51:48 2000  Anthony Green  <green@redhat.com>
+
+	* java/net/URLClassLoader.java: Find the JarEntry via the JarFile.
+
+	* java/net/JarURLConnection.java: getEntry doesn't take any
+	arguments.  Return null if element is null.
+
+	* java/util/zip/ZipFile.java (getInputStream): Read the compressed
+	size from the archive, not the inflated size.
+
+	* java/util/jar/JarFile.java (getEntry): Don't recurse.  Call
+	java.util.zip.ZipFile.getEntry.
+
+	* gij.cc (help): Change sourceware reference to
+	sources.redhat.com.
+
 2000-08-19  Tom Tromey  <tromey@cygnus.com>
 
 	* java/util/zip/ZipInputStream.java (createZipEntry):

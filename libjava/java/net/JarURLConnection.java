@@ -1,4 +1,4 @@
-/* Copyright (C) 1999  Free Software Foundation
+/* Copyright (C) 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -148,10 +148,12 @@ public abstract class JarURLConnection extends URLConnection
     return null;
   }
 
-  public JarEntry getJarEntry (String name)
-    throws java.io.IOException
+  public JarEntry getJarEntry () throws java.io.IOException
   {
     JarFile jarfile = null;
+
+    if (element == null)
+      return null;
 
     if (! doInput)
       throw new ProtocolException("Can't open JarEntry if doInput is false");
@@ -286,7 +288,7 @@ public abstract class JarURLConnection extends URLConnection
     if (element == null)
       len = jarFileURLConnection.getContentLength ();
     else
-      len = getJarEntry (element).getSize ();
+      len = getJarEntry ().getSize ();
 
     String line = "Content-length: " + len;
     hdrVec.addElement(line);

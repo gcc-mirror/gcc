@@ -1,4 +1,4 @@
-/* Copyright (C) 1999  Free Software Foundation
+/* Copyright (C) 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -20,8 +20,8 @@ public class URLClassLoader extends ClassLoader
   // `path' contains simply the URL's we're using for the searching.
   private Vector path; 
 
-  // If path[n] is a zip/jar, then this holds a JarURLConnection for that thing,
-  // otherwise, path[n] is null.
+  // If path[n] is a zip/jar, then this holds a JarURLConnection for
+  // that thing, otherwise, path[n] is null.
   private Vector info; 
 
   private URLStreamHandler getHandler0 (String protocol)
@@ -115,10 +115,10 @@ public class URLClassLoader extends ClassLoader
 	
 	try {
 	  JarURLConnection conn = (JarURLConnection) info.elementAt (i);
-	  
+ 	  
 	  if (conn != null)
 	    {
-	      if (conn.getJarEntry (name) != null)
+	      if (conn.getJarFile().getJarEntry (name) != null)
 		return new URL(u, name, getHandler0 (u.getProtocol()));
 	    }
 	  else
@@ -187,15 +187,15 @@ public class URLClassLoader extends ClassLoader
 
     try 
       {
-	InputStream is = getResourceAsStream (name.replace ('.', '/') + ".class");
-	
-	if (is == null)
+	URL u = getResource (name.replace ('.', '/') + ".class");
+
+	if (u == null)
 	  throw new ClassNotFoundException (name);
-	
-	// Here we have to rely on available() to provide the length of
-	// the class; which might not be exactly right in some cases...
-	
-	int len = is.available ();
+
+	URLConnection connection = u.openConnection ();
+	InputStream is = connection.getInputStream ();
+
+	int len = connection.getContentLength ();
 	byte[] data = new byte[len];
 
 	int left = len;
@@ -216,6 +216,5 @@ public class URLClassLoader extends ClassLoader
 	throw new ClassNotFoundException(name);
       }
   }
-
 }
 
