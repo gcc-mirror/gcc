@@ -1,3 +1,8 @@
+2002-02-21  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc_release: Correct handling of diff-generation.  Add
+	"diffs" major mode.
+
 2002-02-20  Release Manager
 
 	* GCC 3.0.4 Released.
