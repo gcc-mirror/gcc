@@ -3994,7 +3994,7 @@ output_type (type, containing_scope)
 	break;
 
       case SET_TYPE:
-	output_type (TREE_TYPE (type), containing_scope);
+	output_type (TYPE_DOMAIN (type), containing_scope);
 	output_die (output_set_type_die, type);
 	break;
 
