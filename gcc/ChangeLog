@@ -1,3 +1,8 @@
+2001-06-10  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
+	* config/m68hc11/m68hc11.h (RETURN_ADDR_RTX): Define the return 
+	address as relative to the argument pointer.
+
 Sun Jun 10 10:58:53 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* predict.def (PRED_OPCODE): Place before call and error_return.
