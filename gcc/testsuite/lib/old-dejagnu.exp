@@ -409,6 +409,7 @@ proc old-dejagnu { compiler prog cflagsx default_cflags libs } {
     #send_user "\nold_dejagnu.exp: message = :$message:\n\n"
     #send_user "\nold_dejagnu.exp: message length = [llength $message]\n\n"
 
+    set last_line 0
     foreach i $message {
 
 	#send_user "\nold_dejagnu.exp: i = :$i:\n\n"
@@ -417,7 +418,21 @@ proc old-dejagnu { compiler prog cflagsx default_cflags libs } {
 	# in the source file.  If we find any, success!
 	set line [lindex $i 0]
 	set pattern [lindex $i 2]
-	if [regsub -all "(^|\n)\[^\n\]+:$line:\[^\n\]*" $comp_output "" comp_output] then {
+
+	# Multiple tests one one line don't work, because we remove all 
+	# messages on the line for the first test.  So skip later ones.
+	if { $line == $last_line } {
+	    continue
+	}
+	set last_line $line
+
+	# If we crashed on this line, all tests fail.
+	if [regexp "(^|\n)\[^\n\]+:$line: Internal compiler error\[^\n\]*" $comp_output ] {
+	    regsub -all "(^|\n)\[^\n\]+:$line:\[^\n\]*" $comp_output "" comp_output
+            set comp_output [string trimleft $comp_output]
+	    set ok fail
+	    set uhoh fail
+	} elseif [regsub -all "(^|\n)\[^\n\]+:$line:\[^\n\]*" $comp_output "" comp_output] {
             set comp_output [string trimleft $comp_output]
 	    set ok pass
 	    set uhoh fail

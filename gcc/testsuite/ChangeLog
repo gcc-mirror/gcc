@@ -1,3 +1,8 @@
+1998-05-24  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* lib/old-dejagnu.exp: All tests fail if we got an internal compiler
+	error for the line.  Don't run multiple tests for the same line.
+
 Sat May 23 23:27:10 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.dg/980523-1.c: New test.
