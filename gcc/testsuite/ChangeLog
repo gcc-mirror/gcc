@@ -1,3 +1,8 @@
+2004-12-13  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/18925
+	* g++.dg/ext/visibility/staticdatamem.C: New test.
+
 2004-12-13  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* gcc.target/xstormy16/below100.S: Remove DOS line endings.
