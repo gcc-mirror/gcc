@@ -1169,15 +1169,6 @@ Note that this is equivalent to @samp{-fno-unsigned-char}, which is
 the negative form of @samp{-funsigned-char}.  Likewise, the option
 @samp{-fno-signed-char} is equivalent to @samp{-funsigned-char}.
 
-You may wish to use @samp{-fno-builtin} as well as @samp{-traditional}
-if your program uses names that are normally GNU C builtin functions for
-other purposes of its own.
-
-You cannot use @samp{-traditional} if you include any header files that
-rely on ISO C features.  Some vendors are starting to ship systems with
-ISO C header files and you cannot use @samp{-traditional} on such
-systems to compile files that include any system headers.
-
 @item -fsigned-bitfields
 @itemx -funsigned-bitfields
 @itemx -fno-signed-bitfields
