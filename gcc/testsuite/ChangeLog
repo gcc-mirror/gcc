@@ -1,3 +1,13 @@
+2004-02-17  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	* g++.dg/tc1/dr176.C: Add missing semicolon (typo).
+	* g++.dg/tc1/dr101.C, g++.dg/tc1/dr135.C, g++.dg/tc1/dr142.C,
+	g++.dg/tc1/dr152.C, g++.dg/tc1/dr159.C,	g++.dg/tc1/dr161.C,
+	g++.dg/tc1/dr166.C, g++.dg/tc1/dr176.C,	g++.dg/tc1/dr193.C,
+	g++.dg/tc1/dr194.C, g++.dg/tc1/dr217.C,	g++.dg/tc1/dr56.C,
+	g++.dg/tc1/dr68.C, g++.dg/tc1/dr76.C, g++.dg/tc1/dr80.C,
+	g++.dg/tc1/dr94.C: Fix line terminator.
+
 2004-02-16  Geoffrey Keating  <geoffk@apple.com>
 
 	* gcc.c-torture/compile/20040216-1.c: New.
