@@ -1,4 +1,4 @@
-// 2003-02-26 Benjamin Kosnik <bkoz@redhat.com>
+// 2003-10-14  Carlo Wood  <carlo@alinoe.com>
 
 // Copyright (C) 2003 Free Software Foundation, Inc.
 //
@@ -22,21 +22,13 @@
 
 #include <testsuite_hooks.h>
 
-// Examples given in the IA64 C++ ABI 
-// http://www.codesourcery.com/cxx-abi/abi-examples.html#mangling
+// libcwd tests
 int main()
 {
   using namespace __gnu_test;
 
-  //  5.1.5 Type encodings.
-  // int* volatile const restrict _far p;
-  // cplus-dem FAIL
-  // icc CORE
-  // Equivalent as considered order-insensitive.
-  // standard text
-  // verify_demangle("U4_farrVKPi", "int* volatile const restrict _far");
-  // new __cxa_demangle
-  verify_demangle("U4_farrVKPi", "int* const volatile restrict _far");
+verify_demangle("_Z3fooIA6_KiEvA9_KT_rVPrS4_",
+		"void foo<int const [6]>(int const [9][6], int const restrict (* volatile restrict) [9][6])");
 
   return 0;
 }
