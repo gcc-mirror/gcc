@@ -63,22 +63,23 @@ C++ c++: cc1plus
 
 # Create the compiler driver for g++.
 g++: $(srcdir)/cp/g++.c $(CONFIG_H) $(LIBDEPS)
-	$(CC) $(ALL_CFLAGS) $(INCLUDES) $(LDFLAGS) -o g++ $(srcdir)/cp/g++.c $(LIBS)
+	$(CC) $(ALL_CFLAGS) $(INCLUDES) $(LDFLAGS) -o $@ $(srcdir)/cp/g++.c $(LIBS)
 
 # Create a version of the g++ driver which calls the cross-compiler.
 g++-cross: $(srcdir)/cp/g++.c version.o $(LIBDEPS)
-	$(CC) $(ALL_CFLAGS) $(INCLUDES) $(LDFLAGS) -o g++-cross \
+	$(CC) $(ALL_CFLAGS) $(INCLUDES) $(LDFLAGS) -o $@ \
 	   -DGCC_NAME=\"$(GCC_CROSS_NAME)\" $(srcdir)/cp/g++.c version.o $(LIBS)
 
 cxxmain.o: cplus-dem.c demangle.h
 	rm -f cxxmain.c
-	ln -s $(srcdir)/cplus-dem.c cxxmain.c
+	ln -s $(srcdir)/cplus-dem.c cxxmain.c > /dev/null 2>&1 \
+	 || cp $(srcdir)/cplus-dem.c cxxmain.c
 	$(CC) -c -DMAIN $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  -DVERSION='"$(version)"' cxxmain.c
 	rm -f cxxmain.c
 
 $(DEMANGLER_PROG): cxxmain.o underscore.o getopt.o getopt1.o
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $(DEMANGLER_PROG) \
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
 	  cxxmain.o underscore.o getopt.o getopt1.o
 
 CXX_SRCS = $(srcdir)/cp/call.c $(srcdir)/cp/decl2.c \
@@ -92,7 +93,7 @@ CXX_SRCS = $(srcdir)/cp/call.c $(srcdir)/cp/decl2.c \
  $(srcdir)/cp/sig.c $(srcdir)/cp/typeck2.c $(srcdir)/cp/repo.c
 
 cc1plus: $(P) $(CXX_SRCS) $(LIBDEPS) stamp-objlist c-common.o c-pragma.o
-	cd cp; $(MAKE) $(FLAGS_TO_PASS) $(CXX_FLAGS_TO_PASS) ../cc1plus
+	cd cp; $(MAKE) $(FLAGS_TO_PASS) $(CXX_FLAGS_TO_PASS) ../cc1plus$(exeext)
 
 # Build hooks:
 
@@ -137,7 +138,7 @@ c++.install-info:
 
 c++.install-man: $(srcdir)/cp/g++.1
 	-if [ -f cc1plus$(exeext) ] ; then \
-	  if [ -f g++-cross ] ; then \
+	  if [ -f g++-cross$(exeext) ] ; then \
 	    rm -f $(mandir)/$(GXX_CROSS_NAME)$(manext); \
 	    $(INSTALL_DATA) $(srcdir)/cp/g++.1 $(mandir)/$(GXX_CROSS_NAME)$(manext); \
 	    chmod a-x $(mandir)/$(GXX_CROSS_NAME)$(manext); \
@@ -161,7 +162,7 @@ c++.uninstall:
 # We just have to delete files specific to us.
 
 c++.mostlyclean:
-	-rm -f cp/*.o
+	-rm -f cp/*$(objext)
 c++.clean:
 c++.distclean:
 	-rm -f cp/config.status cp/Makefile
@@ -174,13 +175,13 @@ c++.maintainer-clean:
 # The main makefile has already created stage?/cp.
 
 c++.stage1:
-	-mv cp/*.o stage1/cp
+	-mv cp/*$(objext) stage1/cp
 c++.stage2:
-	-mv cp/*.o stage2/cp
+	-mv cp/*$(objext) stage2/cp
 c++.stage3:
-	-mv cp/*.o stage3/cp
+	-mv cp/*$(objext) stage3/cp
 c++.stage4:
-	-mv cp/*.o stage4/cp
+	-mv cp/*$(objext) stage4/cp
 
 # Maintenance hooks:
 
