@@ -37,7 +37,7 @@ extern "C" void __throw () __attribute__ ((__noreturn__));
 extern "C" void __sjthrow () __attribute__ ((__noreturn__));
 extern "C" short __get_eh_table_version (void *table);
 extern "C" short __get_eh_table_language (void *table);
-
+extern "C" void *__get_eh_context ();
 
 extern "C" void *
 _Jv_type_matcher (java_eh_info *info, void* match_info, 
@@ -161,3 +161,36 @@ _Jv_Throw (void *value)
   __throw ();
 #endif
 }
+
+#ifdef USE_WIN32_SIGNALLING
+
+// This is a mangled version of _Jv_Throw and __sjthrow except
+// rather than calling longjmp, it returns a pointer to the jmp buffer
+
+extern "C" int *
+win32_get_restart_frame (void *value)
+{
+  struct eh_context *eh = (struct eh_context *)__get_eh_context ();
+  void ***dhc = &eh->dynamic_handler_chain;
+ 
+  java_eh_info *ehinfo = *(__get_eh_info ());
+  if (ehinfo == NULL)
+    {
+      _Jv_eh_alloc ();
+      ehinfo = *(__get_eh_info ());
+    }
+  ehinfo->eh_info.match_function = (__eh_matcher) _Jv_type_matcher;
+  ehinfo->eh_info.language = EH_LANG_Java;
+  ehinfo->eh_info.version = 1;
+  ehinfo->value = value;
+
+  // FIXME: Run clean ups?
+
+  int *jmpbuf = (int*)&(*dhc)[2];
+
+  *dhc = (void**)(*dhc)[0];
+
+  return  jmpbuf;
+}
+
+#endif /* USE_WIN32_SIGNALLING */

@@ -8,7 +8,17 @@ details.  */
 
 #include <config.h>
 
+
 #ifndef DISABLE_JAVA_NET
+#ifdef USE_WINSOCK
+#include <windows.h>
+#include <winsock.h>
+#include <errno.h>
+#include <string.h>
+#ifndef ENOPROTOOPT
+#define ENOPROTOOPT 109
+#endif
+#else /* USE_WINSOCK */
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/time.h>
@@ -19,6 +29,7 @@ details.  */
 #include <netinet/tcp.h>
 #include <errno.h>
 #include <string.h>
+#endif /* USE_WINSOCK */
 #endif /* DISABLE_JAVA_NET */
 
 #if HAVE_BSTRING_H

@@ -8,6 +8,15 @@ details.  */
 
 #include <config.h>
 
+#ifdef USE_WINSOCK
+#include <windows.h>
+#include <winsock.h>
+#include <errno.h>
+#include <string.h>
+#ifndef ENOPROTOOPT
+#define ENOPROTOOPT 109
+#endif
+#else /* USE_WINSOCK */
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
@@ -26,6 +35,7 @@ details.  */
 #endif
 #include <errno.h>
 #include <string.h>
+#endif /* USE_WINSOCK */
 
 #if HAVE_BSTRING_H
 // Needed for bzero, implicitly used by FD_ZERO on IRIX 5.2 

@@ -1,3 +1,30 @@
+2000-03-15  Tom Tromey  <tromey@cygnus.com>
+
+	* java/io/natFileDescriptorWin32.cc (winerr): Now static.
+
+	* prims.cc (win32_exception_handler): Reformatted.
+
+	* include/win32-threads.h (_Jv_HaveCondDestroy): New define.
+	(_Jv_HaveMutexDestroy): Likewise.
+
+2000-03-15 Jon Beniston <jb7216@bristol.ac.uk>
+
+	* java/io/natFileDescriptorWin32.cc: New file.
+	* java/io/natFileWin32.cc: New file.
+	* java/net/natInetAddress.cc: Added conditional inclusion of
+	Windows / Winsock headers.
+	* java/net/natPlainDatagramSocketImpl.cc: Added conditional
+	inclusion of Windows / Winsock headers.
+	* java/net/natPlainSocketImpl.cc: Added conditional inclusion of
+	Windows / Winsock headers.
+	* include/win32-signal.h: New file.
+	* include/win32-threads.h: New file.
+	* win32-threads.cc: New file.
+	* exception.cc (win32_get_restart_frame): New function.
+	* prims.cc (win32_exception_handler): New function.
+	(main_init) Performs Winsock initialisation.
+	(main_init) Installs exeception handler.
+
 2000-03-14  Tom Tromey  <tromey@cygnus.com>
 
 	* jni.cc (mangled_name): Fixed assertion.
