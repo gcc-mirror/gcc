@@ -91,7 +91,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 #undef CPP_FPU_SPEC
 #if TARGET_DEFAULT & MASK_68881
 #define CPP_FPU_SPEC "\
-%{!mc68000:%{!m68000:%{!m68302:%{!mcpu32:%{!m68332:%{!m5200:%{!msoft-float:%{!mno-68881:-D__HAVE_68881__ }}}}}}}} \
+%{!mc68000:%{!m68000:%{!m68302:%{!mcpu32:%{!m68332:%{!m5200:%{!m5206e:%{!m528x:%{!m5307:%{!m5407:%{!msoft-float:%{!mno-68881:-D__HAVE_68881__ }}}}}}}}}}}} \
 %{m68881:-D__HAVE_68881__ }"
 #else
 #define CPP_FPU_SPEC "\
@@ -113,7 +113,12 @@ Unrecognized value in TARGET_CPU_DEFAULT.
    -m68302: define mc68302 
    -m68332: define mc68332 mcpu32
    -mcpu32: define mcpu32
-   -m5200: define mcf5200
+   -m5200: define mcoldfire mcf5200
+   -m5206e: define mcoldfire mcf5200 mcf5206e
+   -m528x: define mcoldfire mc5200 mc528x
+   -m5307: define mcoldfire mc5300 mc5307
+   -m5407: define mcoldfire mc5400 mc5407
+
    default: define as above appropriately
 
    GCC won't automatically add __'d versions, we have to mention them
@@ -121,9 +126,13 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 
 #undef CPP_SPEC
 #define CPP_SPEC "\
-%(cpp_fpu)%{!ansi:%{m68302:-Dmc68302 }%{m68010:-Dmc68010 }%{m68020:-Dmc68020 }%{mc68020:-Dmc68020 }%{m68030:-Dmc68030 }%{m68040:-Dmc68040 }%{m68020-40:-Dmc68020 -Dmc68030 -Dmc68040 }%{m68020-60:-Dmc68020 -Dmc68030 -Dmc68040 -Dmc68060 }%{m68060:-Dmc68060 }%{mcpu32:-Dmcpu32 } %{m68332:-Dmc68332 -Dmcpu32 }%{m5200:-Dmcf5200 }} \
-%{m68302:-D__mc68302__ -D__mc68302 }%{m68010:-D__mc68010__ -D__mc68010 }%{m68020:-D__mc68020__ -D__mc68020 }%{mc68020:-D__mc68020__ -D__mc68020 }%{m68030:-D__mc68030__ -D__mc68030 }%{m68040:-D__mc68040__ -D__mc68040 }%{m68020-40:-D__mc68020__ -D__mc68030__ -D__mc68040__ -D__mc68020 -D__mc68030 -D__mc68040 }%{m68020-60:-D__mc68020__ -D__mc68030__ -D__mc68040__ -D__mc68020 -D__mc68030 -D__mc68040 -D__mc68060__ -D__mc68060 }%{m68060:-D__mc68060__ -D__mc68060 }%{mcpu32:-D__mcpu32__ -D__mcpu32 }%{m68332:-D__mc68332__ -D__mc68332 -D__mcpu32__ -D__mcpu32 }%{m5200:-D__mcf5200__ -D__mcf5200 } \
-%{!mc68000:%{!m68000:%{!m68302:%{!m68010:%{!mc68020:%{!m68020:%{!m68030:%{!m68040:%{!m68020-40:%{!m68020-60:%{!m68060:%{!mcpu32: %{!m68332:%{!m5200:%(cpp_cpu_default)}}}}}}}}}}}}}} \
+%(cpp_fpu)%{!ansi:%{m68302:-Dmc68302 }%{m68010:-Dmc68010 }%{m68020:-Dmc68020 }%{mc68020:-Dmc68020 }%{m68030:-Dmc68030 }%{m68040:-Dmc68040 }%{m68020-40:-Dmc68020 -Dmc68030 -Dmc68040 }%{m68020-60:-Dmc68020 -Dmc68030 -Dmc68040 -Dmc68060 }%{m68060:-Dmc68060 }%{mcpu32:-Dmcpu32 } %{m68332:-Dmc68332 -Dmcpu32 }%{m5200:-Dmcoldfire -Dmcf5200 }%{m5206e:-Dmcoldfire -Dmcf5200 -Dmcf5206e }%{m528x:-Dmcoldfire -Dmcf5200 -Dmcf528x }%{m5307:-Dmcoldfire -Dmcf5300 -Dmcf5307 }%{m5407: -Dmcoldfire -Dmcf5400 -Dmcf5407 }} \
+%{m68302:-D__mc68302__ -D__mc68302 }%{m68010:-D__mc68010__ -D__mc68010 }%{m68020:-D__mc68020__ -D__mc68020 }%{mc68020:-D__mc68020__ -D__mc68020 }%{m68030:-D__mc68030__ -D__mc68030 }%{m68040:-D__mc68040__ -D__mc68040 }%{m68020-40:-D__mc68020__ -D__mc68030__ -D__mc68040__ -D__mc68020 -D__mc68030 -D__mc68040 }%{m68020-60:-D__mc68020__ -D__mc68030__ -D__mc68040__ -D__mc68020 -D__mc68030 -D__mc68040 -D__mc68060__ -D__mc68060 }%{m68060:-D__mc68060__ -D__mc68060 }%{mcpu32:-D__mcpu32__ -D__mcpu32 }%{m68332:-D__mc68332__ -D__mc68332 -D__mcpu32__ -D__mcpu32 }%{m5200:-D__mcf5200__ -D__mcf5200 -D__mcoldfire__ } \
+%{m5206e:-D__mcoldfire__ -D__mcf5200__ -D__mcf5200 -D__mcf5206e__ -D__mcf5206e } \
+%{m528x:-D__mcoldfire__ -D__mcf5200__ -D__mcf5200 -D__mcf528x__ -D__mcf528x } \
+%{m5307:-D__mcoldfire__ -D__mcf5300__ -D__mcf5300 -D__mcf5307__ -D__mcf5307 } \
+%{m5407:-D__mcoldfire__ -D__mcf5400__ -D__mcf5400 -D__mcf5407__ -D__mcf5407 } \
+%{!mc68000:%{!m68000:%{!m68302:%{!m68010:%{!mc68020:%{!m68020:%{!m68030:%{!m68040:%{!m68020-40:%{!m68020-60:%{!m68060:%{!mcpu32: %{!m68332:%{!m5200:%{!m5206e:%{!m528x:%{!m5307:%{!m5407:%(cpp_cpu_default)}}}}}}}}}}}}}}}}}} \
 %(cpp_subtarget) \
 "
 
@@ -131,7 +140,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 
 #undef ASM_SPEC
 #define ASM_SPEC "\
-%{m68851}%{mno-68851}%{m68881}%{mno-68881}%{msoft-float:-mno-68881} %{m68000}%{m68302}%{mc68000}%{m68010}%{m68020}%{mc68020}%{m68030}%{m68040}%{m68020-40:-mc68040} %{m68020-60:-mc68040} %{m68060}%{mcpu32}%{m68332}%{m5200}%{!mc68000:%{!m68000:%{!m68302:%{!m68010:%{!mc68020:%{!m68020:%{!m68030:%{!m68040:%{!m68020-40:%{!m68020-60:%{!m68060:%{!mcpu32:%{!m68332:%{!m5200:%(asm_cpu_default)}}}}}}}}}}}}}} \
+%{m68851}%{mno-68851}%{m68881}%{mno-68881}%{msoft-float:-mno-68881} %{m68000}%{m68302}%{mc68000}%{m68010}%{m68020}%{mc68020}%{m68030}%{m68040}%{m68020-40:-mc68040} %{m68020-60:-mc68040} %{m68060}%{mcpu32}%{m68332}%{m5200}%{m5206e}%{m528x}%{m5307}%{m5407}%{!mc68000:%{!m68000:%{!m68302:%{!m68010:%{!mc68020:%{!m68020:%{!m68030:%{!m68040:%{!m68020-40:%{!m68020-60:%{!m68060:%{!mcpu32:%{!m68332:%{!m5200:%{!m5206e:%{!m528x:%{!m5307:%{!m5407:%(asm_cpu_default)}}}}}}}}}}}}}}}}}} \
 "
 
 /* cc1/cc1plus always receives all the -m flags. If the specs strings above 

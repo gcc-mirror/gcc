@@ -1,3 +1,17 @@
+2003-08-06  Peter Barada <peter@baradas.org>
+            Bernardo Innocenti  <bernie@develer.com>
+
+	* config/m68k/m68k-none.h: Introduce new ColdFire archs.
+	* config/m68k/m68k.h: Likewise.
+	* config/m68k/lb1sf68.asm: Rename __mcf5200__ to __mcoldfire__.
+	* config/m68k/coff.h: Rename TARGET_5200 to TARGET_COLDFIRE.
+	* config/m68k/linux.h: Likewise.
+	* config/m68k/m68k.c: Likewise.
+	* config/m68k/m68k.md: Likewise.
+	* config/m68k/m68kelf.h: Likewise.
+	* config/m68k/netbsd-elf.h: Likewise.
+	* config/m68k/t-m68kelf: Add multilib targets for new ColdFire archs.
+
 2003-08-20  Bernardo Innocenti  <bernie@develer.com>
 
 	* config/m68k/m68k.c: Strip away code depending on NO_ADDSUB_Q definition.

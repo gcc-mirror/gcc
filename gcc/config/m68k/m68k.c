@@ -347,7 +347,7 @@ m68k_output_function_prologue (stream, size)
 	{
 	  if (fsize + 4 <= 8)
 	    {
-	      if (!TARGET_5200)
+	      if (!TARGET_COLDFIRE)
 		{
 		  /* asm_fprintf() cannot handle %.  */
 #ifdef MOTOROLA
@@ -511,7 +511,7 @@ m68k_output_function_prologue (stream, size)
     }
   else if (mask)
     {
-      if (TARGET_5200)
+      if (TARGET_COLDFIRE)
 	{
 	  /* The coldfire does not support the predecrement form of the 
 	     movml instruction, so we must adjust the stack pointer and
@@ -666,7 +666,7 @@ m68k_output_function_epilogue (stream, size)
 #endif
       fsize = 0, big = 1;
     }
-  if (TARGET_5200 || nregs <= 2)
+  if (TARGET_COLDFIRE || nregs <= 2)
     {
       /* Restore each separately in the same order moveml does.
          Using two movel instructions instead of a single moveml
@@ -799,7 +799,7 @@ m68k_output_function_epilogue (stream, size)
     {
       if (fsize + 4 <= 8) 
 	{
-	  if (!TARGET_5200)
+	  if (!TARGET_COLDFIRE)
 	    {
 #ifdef MOTOROLA
 	      asm_fprintf (stream, "\taddq.w %I%wd,%Rsp\n", fsize + 4);
@@ -1091,7 +1091,7 @@ output_scc_di(op, operand1, operand2, dest)
     }
   else
     {
-      if (TARGET_68020 || TARGET_5200 || ! ADDRESS_REG_P (loperands[0]))
+      if (TARGET_68020 || TARGET_COLDFIRE || ! ADDRESS_REG_P (loperands[0]))
 	output_asm_insn ("tst%.l %0", loperands);
       else
 	{
@@ -1108,7 +1108,7 @@ output_scc_di(op, operand1, operand2, dest)
       output_asm_insn ("jne %l4", loperands);
 #endif
 
-      if (TARGET_68020 || TARGET_5200 || ! ADDRESS_REG_P (loperands[1]))
+      if (TARGET_68020 || TARGET_COLDFIRE || ! ADDRESS_REG_P (loperands[1]))
 	output_asm_insn ("tst%.l %1", loperands);
       else
 	{
@@ -1426,7 +1426,7 @@ const_method (constant)
 
   /* The Coldfire doesn't have byte or word operations.  */
   /* FIXME: This may not be useful for the m68060 either */
-  if (!TARGET_5200) 
+  if (!TARGET_COLDFIRE) 
     {
       /* if -256 < N < 256 but N is not in range for a moveq
 	 N^ff will be, so use moveq #N^ff, dreg; not.b dreg.  */
@@ -1630,7 +1630,7 @@ output_move_simode_const (operands)
 	  || GET_CODE (operands[0]) == MEM)
       /* clr insns on 68000 read before writing.
 	 This isn't so on the 68010, but we have no TARGET_68010.  */
-      && ((TARGET_68020 || TARGET_5200)
+      && ((TARGET_68020 || TARGET_COLDFIRE)
 	  || !(GET_CODE (operands[0]) == MEM
 	       && MEM_VOLATILE_P (operands[0]))))
     return "clr%.l %0";
@@ -1680,7 +1680,7 @@ output_move_himode (operands)
 	      || GET_CODE (operands[0]) == MEM)
 	  /* clr insns on 68000 read before writing.
 	     This isn't so on the 68010, but we have no TARGET_68010.  */
-	  && ((TARGET_68020 || TARGET_5200)
+	  && ((TARGET_68020 || TARGET_COLDFIRE)
 	      || !(GET_CODE (operands[0]) == MEM
 		   && MEM_VOLATILE_P (operands[0]))))
 	return "clr%.w %0";
@@ -1746,7 +1746,7 @@ output_move_qimode (operands)
       && GET_CODE (XEXP (operands[0], 0)) == PRE_DEC
       && XEXP (XEXP (operands[0], 0), 0) == stack_pointer_rtx
       && ! ADDRESS_REG_P (operands[1])
-      && ! TARGET_5200)
+      && ! TARGET_COLDFIRE)
     {
       xoperands[1] = operands[1];
       xoperands[2]
@@ -1767,12 +1767,12 @@ output_move_qimode (operands)
   /* clr and st insns on 68000 read before writing.
      This isn't so on the 68010, but we have no TARGET_68010.  */
   if (!ADDRESS_REG_P (operands[0])
-      && ((TARGET_68020 || TARGET_5200)
+      && ((TARGET_68020 || TARGET_COLDFIRE)
 	  || !(GET_CODE (operands[0]) == MEM && MEM_VOLATILE_P (operands[0]))))
     {
       if (operands[1] == const0_rtx)
 	return "clr%.b %0";
-      if ((!TARGET_5200 || DATA_REG_P (operands[0]))
+      if ((!TARGET_COLDFIRE || DATA_REG_P (operands[0]))
 	  && GET_CODE (operands[1]) == CONST_INT
 	  && (INTVAL (operands[1]) & 255) == 255)
 	{
@@ -1805,7 +1805,7 @@ output_move_stricthi (operands)
   if (operands[1] == const0_rtx
       /* clr insns on 68000 read before writing.
 	 This isn't so on the 68010, but we have no TARGET_68010.  */
-      && ((TARGET_68020 || TARGET_5200)
+      && ((TARGET_68020 || TARGET_COLDFIRE)
 	  || !(GET_CODE (operands[0]) == MEM && MEM_VOLATILE_P (operands[0]))))
     return "clr%.w %0";
   return "move%.w %1,%0";
@@ -1818,7 +1818,7 @@ output_move_strictqi (operands)
   if (operands[1] == const0_rtx
       /* clr insns on 68000 read before writing.
          This isn't so on the 68010, but we have no TARGET_68010.  */
-      && ((TARGET_68020 || TARGET_5200)
+      && ((TARGET_68020 || TARGET_COLDFIRE)
           || !(GET_CODE (operands[0]) == MEM && MEM_VOLATILE_P (operands[0]))))
     return "clr%.b %0";
   return "move%.b %1,%0";
@@ -3303,7 +3303,7 @@ output_andsi3 (operands)
       && (INTVAL (operands[2]) | 0xffff) == 0xffffffff
       && (DATA_REG_P (operands[0])
 	  || offsettable_memref_p (operands[0]))
-      && !TARGET_5200)
+      && !TARGET_COLDFIRE)
     {
       if (GET_CODE (operands[0]) != REG)
         operands[0] = adjust_address (operands[0], HImode, 2);
@@ -3344,7 +3344,7 @@ output_iorsi3 (operands)
       && INTVAL (operands[2]) >> 16 == 0
       && (DATA_REG_P (operands[0])
 	  || offsettable_memref_p (operands[0]))
-      && !TARGET_5200)
+      && !TARGET_COLDFIRE)
     {
       if (GET_CODE (operands[0]) != REG)
         operands[0] = adjust_address (operands[0], HImode, 2);
@@ -3380,7 +3380,7 @@ output_xorsi3 (operands)
   if (GET_CODE (operands[2]) == CONST_INT
       && INTVAL (operands[2]) >> 16 == 0
       && (offsettable_memref_p (operands[0]) || DATA_REG_P (operands[0]))
-      && !TARGET_5200)
+      && !TARGET_COLDFIRE)
     {
       if (! DATA_REG_P (operands[0]))
 	operands[0] = adjust_address (operands[0], HImode, 2);
