@@ -1,3 +1,8 @@
+2003-05-13  Richard Sandiford  <rsandifo@redhat.com>
+
+	* final.c (final_scan_insn): Apply the effects of frame-related
+	delay slot insns before emitting a delayed branch.
+
 2003-05-13  Nick Clifton  <nickc@redhat.com>
 
 	* config/mcore/mcore.md (jump): Use emit_jump_insn.
