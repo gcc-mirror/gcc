@@ -111,11 +111,18 @@ package specific installation instructions.
 @ifnothtml
 @ref{Specific, host/target specific installation notes}.
 @end ifnothtml
-@ifnotinfo
+@ifhtml
 @uref{specific.html,,host/target specific installation notes}.
-@end ifnotinfo
+@end ifhtml
 We recommend you browse the entire generic installation instructions before
 you proceed.
+
+Lists of successful builds for released versions of GCC are
+available at our web pages for
+@uref{http://gcc.gnu.org/gcc-3.0/buildstat.html,,3.0}
+and
+@uref{http://gcc.gnu.org/gcc-2.95/buildstat.html,,2.95}.
+These lists are updated as new information becomes available.
 
 The installation procedure itself is broken into five steps.
 
@@ -128,7 +135,7 @@ The installation procedure itself is broken into five steps.
 * Final install::
 @end menu
 @end ifinfo
-@ifnotinfo
+@ifhtml
 @enumerate
 @item
 @uref{download.html,,Downloading the source}
@@ -141,7 +148,7 @@ The installation procedure itself is broken into five steps.
 @item
 @uref{finalinstall.html,,Final install}
 @end enumerate
-@end ifnotinfo
+@end ifhtml
 
 Please note that GCC does not support @samp{make uninstall} and probably
 won't do so in the near future as this would open a can of worms.  Instead,
@@ -268,9 +275,9 @@ affected by this requirement, see
 @ifnothtml
 @ref{Specific, host/target specific installation notes}.
 @end ifnothtml
-@ifnotinfo
+@ifhtml
 @uref{specific.html,,host/target specific installation notes}.
-@end ifnotinfo
+@end ifhtml
 
 To configure GCC:
 
@@ -1093,15 +1100,28 @@ in @file{@var{libdir}} (normally @file{@var{prefix}/lib}); internal
 parts of the compiler in @file{@var{libdir}/gcc-lib}; documentation in
 info format in @file{@var{infodir}} (normally @file{@var{prefix}/info}).
 
-If you don't mind, please quickly review the
-@uref{http://gcc.gnu.org/gcc-3.0/buildstat.html,,build status page}.
+If you built a released version of GCC then if you don't mind, please
+quickly review the build status page for
+@uref{http://gcc.gnu.org/gcc-3.0/buildstat.html,,3.0} or
+@uref{http://gcc.gnu.org/gcc-2.95/buildstat.html,,2.95}.
 If your system is not listed, send a note to
 @email{gcc@@gcc.gnu.org} indicating
 that you successfully built and installed GCC.
 
 Include the output from running @file{@var{srcdir}/config.guess}.  (Do
 not send us the @file{config.guess} file itself, just the one-line output from
-running it!)
+running it!)  Also specify which version you built.
+
+We'd also like to know if the
+@ifnothtml
+@ref{Specific, host/target specific installation notes}
+@end ifnothtml
+@ifhtml
+@uref{specific.html,,host/target specific installation notes}
+@end ifhtml
+didn't include your host/target information or if that information is
+incomplete or out of date.  Send a note to
+@email{gcc@@gcc.gnu.org} telling us how the information should be changed.
 
 If you find a bug, please report it following our
 @uref{../bugs.html,,bug reporting guidelines}.
@@ -1234,6 +1254,13 @@ works.
 
 Please read this document carefully @emph{before} installing the
 GNU Compiler Collection on your machine.
+
+Lists of successful builds for released versions of GCC are
+available at our web pages for
+@uref{http://gcc.gnu.org/gcc-3.0/buildstat.html,,3.0}
+and
+@uref{http://gcc.gnu.org/gcc-2.95/buildstat.html,,2.95}.
+These lists are updated as new information becomes available.
 
 @ifhtml
 @itemize
