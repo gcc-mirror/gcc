@@ -1559,6 +1559,8 @@ c_common_type_for_mode (mode, unsignedp)
 	  return unsignedp ? unsigned_V8HI_type_node : V8HI_type_node;
 	case V4SImode:
 	  return unsignedp ? unsigned_V4SI_type_node : V4SI_type_node;
+	case V2DImode:
+	  return unsignedp ? unsigned_V2DI_type_node : V2DI_type_node;
 	case V2SImode:
 	  return unsignedp ? unsigned_V2SI_type_node : V2SI_type_node;
 	case V4HImode:
@@ -1571,6 +1573,8 @@ c_common_type_for_mode (mode, unsignedp)
 	  return V4SF_type_node;
 	case V2SFmode:
 	  return V2SF_type_node;
+	case V2DFmode:
+	  return V2DF_type_node;
 	default:
 	  break;
 	}

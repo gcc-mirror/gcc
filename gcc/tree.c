@@ -4764,6 +4764,8 @@ build_common_tree_nodes_2 (short_double)
     = make_vector (V4SImode, unsigned_intSI_type_node, 1);
   unsigned_V2SI_type_node
     = make_vector (V2SImode, unsigned_intSI_type_node, 1);
+  unsigned_V2DI_type_node
+    = make_vector (V2DImode, unsigned_intDI_type_node, 1);
   unsigned_V4HI_type_node
     = make_vector (V4HImode, unsigned_intHI_type_node, 1);
   unsigned_V8QI_type_node
@@ -4777,10 +4779,12 @@ build_common_tree_nodes_2 (short_double)
   V4SF_type_node = make_vector (V4SFmode, float_type_node, 0);
   V4SI_type_node = make_vector (V4SImode, intSI_type_node, 0);
   V2SI_type_node = make_vector (V2SImode, intSI_type_node, 0);
+  V2DI_type_node = make_vector (V2DImode, intDI_type_node, 0);
   V4HI_type_node = make_vector (V4HImode, intHI_type_node, 0);
   V8QI_type_node = make_vector (V8QImode, intQI_type_node, 0);
   V8HI_type_node = make_vector (V8HImode, intHI_type_node, 0);
   V2SF_type_node = make_vector (V2SFmode, float_type_node, 0);
+  V2DF_type_node = make_vector (V2DFmode, double_type_node, 0);
   V16QI_type_node = make_vector (V16QImode, intQI_type_node, 0);
 }
 

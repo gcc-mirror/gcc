@@ -1,3 +1,49 @@
+2002-04-29  Bernd Schmidt  <bernds@redhat.com>
+
+	* c-common.c (type_for_mode): Add support for V2DFmode, V2DImode,
+	UV2DImode.
+	* tree.c (build_common_tree_nodes_2): Likewise.
+	* tree.h (enum tree_index): Likewise.
+	(V2DF_type_node, V2DI_type_node, unsigned_V2DI_type_node): Define.
+
+	* config/i386/i386.c (bdesc_comi, bdesc_2arg, bdesc_1arg): Add SSE2
+	entries.
+	(init_mmx_sse_builtins): Initialize SSE2 builtins.
+	(ix86_expand_builtin): Add support for SSE2 builtins.
+	* config/i386/i386.h (VALID_SSE2_REG_MODE): New macro.
+	(VALID_SSE_REG_MODE): Use it.
+	(VECTOR_MODE_SUPPORTED_P): Allow SSE2 modes here as well.
+	(enum ix86_builtins): Add SSE2 builtins.
+	* config/i386/i386.md (movv2df_internal, movv2df, movv8hi_internal,
+	movv8hi, movv16qi_internal, movv16qi, pushv2df, pushv8hi, pushv16qi,
+	addv2df3, vmaddv2df3, subv2df3, vmsubv2df3, mulv2df3, vmmulv2df3,
+	divv2df3, vmdivv2df3, smaxv2df3, vmsmaxv2df3, sminv2df3, vmsminv2df3,
+	sse2_anddf3, sse2_nanddf3, sse2_iordf3, sse2_xordf3, sqrtv2df2,
+	vmsqrtv2df2, maskcmpv2df3, maskncmpv2df3, vmmaskcmpv2df3,
+	vmmaskncmpv2df3, sse2_comi, sse2_ucomi, sse2_movmskpd, sse2_pmovmskb,
+	sse2_maskmovdqu, sse2_movntv2df, sse2_movntti, sse2_movntsi, cvtdq2ps,
+	cvtps2dq, cvttps2dq, cvtdq2pd, cvtpd2dq, cvttpd2dq, cvtpd2pi,
+	cvttpd2pi, cvtpi2pd, cvtsd2si, cvttsd2si, cvtsi2sd, cvtsd2ss,
+	cvtss2sd, cvtpd2ps, cvtps2pd, addv16qi3, addv8hi3, addv4si3, addv2di3,
+	ssaddv16qi3, ssaddv8hi3, usaddv16qi3, usaddv8hi3, subv16qi3, subv8hi3,
+	subv4si3, subv2di3, sssubv16qi3, sssubv8hi3, ussubv16qi3, ussubv8hi3,
+	mulv8hi3, smulv8hi3_highpart, umulv8hi3_highpart, sse2_umulsidi3,
+	sse2_umulv2siv2di3, sse2_pmaddwd, sse2_clrti, sse2_uavgv16qi3,
+	sse2_uavgv8hi3, sse2_psadbw, sse2_pinsrw, sse2_pextrw, sse2_pshufd,
+	sse2_pshuflw, sse2_pshufhw, eqv16qi3, eqv8hi3, eqv4si3, gtv16qi3,
+	gtv8hi3, gtv4si3, umaxv16qi3, smaxv8hi3, uminv16qi3, sminv8hi3,
+	ashrv8hi3, ashrv4si3, lshrv8hi3, lshrv4si3, sse2_lshrv2di3,
+	ashlv8hi3, ashlv4si3, sse2_ashlv2di3, sse2_ashlti3, sse2_lshrti3,
+	sse2_unpckhpd, sse2_unpcklpd, sse2_packsswb, sse2_packssdw,
+	sse2_packuswb, sse2_punpckhbw, sse2_punpckhwd, sse2_punpckhdq,
+	sse2_punpcklbw, sse2_punpcklwd, sse2_punpckldq, sse2_movapd,
+	sse2_movupd, sse2_movdqa, sse2_movdqu, sse2_movdq2q, sse2_movq2dq,
+	sse2_movhpd, sse2_movlpd, sse2_loadsd, sse2_movsd, sse2_storesd,
+	sse2_shufpd, sse2_clflush, sse2_mfence, mfence_insn, sse2_lfence,
+	lfence_insn): New patterns.
+	(sse2_andti3, sse2_nandti3, sse2_iorti3, sse2_xorti3): Renamed from
+	sse_andti3_sse2, sse_nandti3_sse2, sse_iorti3_sse2, sse_xorti3_sse2.
+
 Mon Apr 29 17:03:24 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (sse_mov?fcc*): Revert patch of Mar 14th.
