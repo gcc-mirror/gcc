@@ -1,5 +1,5 @@
 /* libgcc1 routines for 68000 w/o floating-point hardware.
-   Copyright (C) 1994, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1996, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -214,7 +214,11 @@ TRUNCDFSF    = 7
 | void __clear_sticky_bits(void);
 SYM (__clear_sticky_bit):		
 	lea	SYM (_fpCCR),a0
+#ifndef __mcf5200__
 	movew	IMM (0),a0@(STICK)
+#else
+	clr.w	a0@(STICK)
+#endif
 	rts
 
 |=============================================================================
@@ -280,7 +284,13 @@ $_exception_handler:
 	beq	1f		| no, exit
 	pea	SYM (_fpCCR)	| yes, push address of _fpCCR
 	trap	IMM (FPTRAP)	| and trap
+#ifndef __mcf5200__
 1:	moveml	sp@+,d2-d7	| restore data registers
+#else
+1:	moveml	sp@,d2-d7
+	| XXX if frame pointer is ever removed, stack pointer must
+	| be adjusted here.
+#endif
 	unlk	a6		| and return
 	rts
 #endif /* L_floatex */
@@ -362,8 +372,8 @@ L6:	movel	sp@+, d2
 
 /* Coldfire implementation of non-restoring division algorithm from
    Hennessy & Patterson, Appendix A. */
-	link	a6,IMM (0)
-	moveml	d2-d4,sp@-
+	link	a6,IMM (-12)
+	moveml	d2-d4,sp@
 	movel	a6@(8),d0
 	movel	a6@(12),d1
 	clrl	d2		| clear p
@@ -593,8 +603,13 @@ SYM (__subdf3):
 
 | double __adddf3(double, double);
 SYM (__adddf3):
+#ifndef __mcf5200__
 	link	a6,IMM (0)	| everything will be done in registers
 	moveml	d2-d7,sp@-	| save all data registers and a2 (but d0-d1)
+#else
+	link	a6,IMM (-24)
+	moveml	d2-d7,sp@
+#endif
 	movel	a6@(8),d0	| get first operand
 	movel	a6@(12),d1	| 
 	movel	a6@(16),d2	| get second operand
@@ -673,7 +688,9 @@ Ladddf$2:
 #ifndef __mcf5200__
 	moveml	a2-a3,sp@-	| save the address registers
 #else
-	moveml	a2-a4,sp@-	| save the address registers
+	movel	a2,sp@-	
+	movel	a3,sp@-	
+	movel	a4,sp@-	
 #endif
 
 	movel	d4,a2		| save the exponents
@@ -956,7 +973,9 @@ Ladddf$4:
 #ifndef __mcf5200__
 	moveml	sp@+,a2-a3	
 #else
-	moveml	sp@+,a2-a4	
+	movel	sp@+,a4	
+	movel	sp@+,a3	
+	movel	sp@+,a2	
 #endif
 
 | Before rounding normalize so bit #DBL_MANT_DIG is set (we will consider
@@ -1062,7 +1081,9 @@ Lsubdf$0:
 #ifndef __mcf5200__
 	moveml	sp@+,a2-a3	|
 #else
-	moveml	sp@+,a2-a4	|
+	movel	sp@+,a4
+	movel	sp@+,a3
+	movel	sp@+,a2
 #endif
 
 | Before rounding normalize so bit #DBL_MANT_DIG is set (we will consider
@@ -1133,13 +1154,21 @@ Ladddf$a$small:
 #ifndef __mcf5200__
 	moveml	sp@+,a2-a3	
 #else
-	moveml	sp@+,a2-a4	
+	movel	sp@+,a4
+	movel	sp@+,a3
+	movel	sp@+,a2
 #endif
 	movel	a6@(16),d0
 	movel	a6@(20),d1
 	lea	SYM (_fpCCR),a0
 	movew	IMM (0),a0@
+#ifndef __mcf5200__
 	moveml	sp@+,d2-d7	| restore data registers
+#else
+	moveml	sp@,d2-d7
+	| XXX if frame pointer is ever removed, stack pointer must
+	| be adjusted here.
+#endif
 	unlk	a6		| and return
 	rts
 
@@ -1147,13 +1176,21 @@ Ladddf$b$small:
 #ifndef __mcf5200__
 	moveml	sp@+,a2-a3	
 #else
-	moveml	sp@+,a2-a4	
+	movel	sp@+,a4	
+	movel	sp@+,a3	
+	movel	sp@+,a2	
 #endif
 	movel	a6@(8),d0
 	movel	a6@(12),d1
 	lea	SYM (_fpCCR),a0
 	movew	IMM (0),a0@
+#ifndef __mcf5200__
 	moveml	sp@+,d2-d7	| restore data registers
+#else
+	moveml	sp@,d2-d7
+	| XXX if frame pointer is ever removed, stack pointer must
+	| be adjusted here.
+#endif
 	unlk	a6		| and return
 	rts
 
@@ -1193,14 +1230,26 @@ Ladddf$a:
 	bra	Ld$infty		|
 	
 Ladddf$ret$1:
+#ifndef __mcf5200__
 	moveml	sp@+,a2-a3	| restore regs and exit
+#else
+	movel	sp@+,a4
+	movel	sp@+,a3
+	movel	sp@+,a2
+#endif
 
 Ladddf$ret:
 | Normal exit.
 	lea	SYM (_fpCCR),a0
 	movew	IMM (0),a0@
 	orl	d7,d0		| put sign bit back
+#ifndef __mcf5200__
 	moveml	sp@+,d2-d7
+#else
+	moveml	sp@,d2-d7
+	| XXX if frame pointer is ever removed, stack pointer must
+	| be adjusted here.
+#endif
 	unlk	a6
 	rts
 
@@ -1272,8 +1321,13 @@ Ladddf$nf:
 
 | double __muldf3(double, double);
 SYM (__muldf3):
+#ifndef __mcf5200__
 	link	a6,IMM (0)
 	moveml	d2-d7,sp@-
+#else
+	link	a6,IMM (-24)
+	moveml	d2-d7,sp@
+#endif
 	movel	a6@(8),d0		| get a into d0-d1
 	movel	a6@(12),d1		| 
 	movel	a6@(16),d2		| and b into d2-d3
@@ -1346,7 +1400,9 @@ Lmuldf$2:				|
 #ifndef __mcf5200__
 	moveml	a2-a3,sp@-	| save a2 and a3 for temporary use
 #else
-	moveml	a2-a4,sp@-
+	movel	a2,sp@-
+	movel	a3,sp@-
+	movel	a4,sp@-
 #endif
 	movel	IMM (0),a2	| a2 is a null register
 	movel	d4,a3		| and a3 will preserve the exponent
@@ -1440,7 +1496,9 @@ Lmuldf$2:				|
 #ifndef __mcf5200__
 	moveml	sp@+,a2-a3
 #else
-	moveml	sp@+,a2-a4
+	movel	sp@+,a4
+	movel	sp@+,a3
+	movel	sp@+,a2
 #endif
 
 | Now we have the product in d0-d1-d2-d3, with bit 8 of d0 set. The 
@@ -1546,7 +1604,13 @@ Lmuldf$a$0:
 	bge	Ld$inop		| in case NaN or +/-INFINITY return NaN
 	lea	SYM (_fpCCR),a0
 	movew	IMM (0),a0@
+#ifndef __mcf5200__
 	moveml	sp@+,d2-d7
+#else
+	moveml	sp@,d2-d7
+	| XXX if frame pointer is ever removed, stack pointer must
+	| be adjusted here.
+#endif
 	unlk	a6
 	rts
 
@@ -1589,8 +1653,13 @@ Lmuldf$b$den:
 
 | double __divdf3(double, double);
 SYM (__divdf3):
+#ifndef __mcf5200__
 	link	a6,IMM (0)
 	moveml	d2-d7,sp@-
+#else
+	link	a6,IMM (-24)
+	moveml	d2-d7,sp@
+#endif
 	movel	a6@(8),d0	| get a into d0-d1
 	movel	a6@(12),d1	| 
 	movel	a6@(16),d2	| and b into d2-d3
@@ -1820,7 +1889,13 @@ Ldivdf$a$0:
 	movel	d0,d1		| 
 	lea	SYM (_fpCCR),a0	| clear exception flags
 	movew	IMM (0),a0@	|
+#ifndef __mcf5200__
 	moveml	sp@+,d2-d7	| 
+#else
+	moveml	sp@,d2-d7	| 
+	| XXX if frame pointer is ever removed, stack pointer must
+	| be adjusted here.
+#endif
 	unlk	a6		| 
 	rts			| 	
 
@@ -2003,7 +2078,13 @@ Lround$0:
 
 	lea	SYM (_fpCCR),a0
 	movew	IMM (0),a0@
+#ifndef __mcf5200__
 	moveml	sp@+,d2-d7
+#else
+	moveml	sp@,d2-d7
+	| XXX if frame pointer is ever removed, stack pointer must
+	| be adjusted here.
+#endif
 	unlk	a6
 	rts
 
@@ -2013,8 +2094,13 @@ Lround$0:
 
 | double __negdf2(double, double);
 SYM (__negdf2):
+#ifndef __mcf5200__
 	link	a6,IMM (0)
 	moveml	d2-d7,sp@-
+#else
+	link	a6,IMM (-24)
+	moveml	d2-d7,sp@
+#endif
 	movew	IMM (NEGATE),d5
 	movel	a6@(8),d0	| get number to negate in d0-d1
 	movel	a6@(12),d1	|
@@ -2034,7 +2120,13 @@ SYM (__negdf2):
 	bra	Ld$infty		
 1:	lea	SYM (_fpCCR),a0
 	movew	IMM (0),a0@
+#ifndef __mcf5200__
 	moveml	sp@+,d2-d7
+#else
+	moveml	sp@,d2-d7
+	| XXX if frame pointer is ever removed, stack pointer must
+	| be adjusted here.
+#endif
 	unlk	a6
 	rts
 2:	bclr	IMM (31),d0
@@ -2050,8 +2142,13 @@ EQUAL   =  0
 
 | int __cmpdf2(double, double);
 SYM (__cmpdf2):
+#ifndef __mcf5200__
 	link	a6,IMM (0)
 	moveml	d2-d7,sp@- 	| save registers
+#else
+	link	a6,IMM (-24)
+	moveml	d2-d7,sp@
+#endif
 	movew	IMM (COMPARE),d5
 	movel	a6@(8),d0	| get first operand
 	movel	a6@(12),d1	|
@@ -2112,17 +2209,35 @@ Lcmpdf$1:
 	bne	Lcmpdf$a$gt$b	| |b| < |a|
 | If we got here a == b.
 	movel	IMM (EQUAL),d0
+#ifndef __mcf5200__
 	moveml	sp@+,d2-d7 	| put back the registers
+#else
+	moveml	sp@,d2-d7
+	| XXX if frame pointer is ever removed, stack pointer must
+	| be adjusted here.
+#endif
 	unlk	a6
 	rts
 Lcmpdf$a$gt$b:
 	movel	IMM (GREATER),d0
+#ifndef __mcf5200__
 	moveml	sp@+,d2-d7 	| put back the registers
+#else
+	moveml	sp@,d2-d7
+	| XXX if frame pointer is ever removed, stack pointer must
+	| be adjusted here.
+#endif
 	unlk	a6
 	rts
 Lcmpdf$b$gt$a:
 	movel	IMM (LESS),d0
+#ifndef __mcf5200__
 	moveml	sp@+,d2-d7 	| put back the registers
+#else
+	moveml	sp@,d2-d7
+	| XXX if frame pointer is ever removed, stack pointer must
+	| be adjusted here.
+#endif
 	unlk	a6
 	rts
 
@@ -2368,8 +2483,13 @@ SYM (__subsf3):
 
 | float __addsf3(float, float);
 SYM (__addsf3):
+#ifndef __mcf5200__
 	link	a6,IMM (0)	| everything will be done in registers
 	moveml	d2-d7,sp@-	| save all data registers but d0-d1
+#else
+	link	a6,IMM (-24)
+	moveml	d2-d7,sp@
+#endif
 	movel	a6@(8),d0	| get first operand
 	movel	a6@(12),d1	| get second operand
 	movel	d0,d6		| get d0's sign bit '
@@ -2708,7 +2828,13 @@ Laddsf$a$small:
 	movel	a6@(12),d0
 	lea	SYM (_fpCCR),a0
 	movew	IMM (0),a0@
+#ifndef __mcf5200__
 	moveml	sp@+,d2-d7	| restore data registers
+#else
+	moveml	sp@,d2-d7
+	| XXX if frame pointer is ever removed, stack pointer must
+	| be adjusted here.
+#endif
 	unlk	a6		| and return
 	rts
 
@@ -2716,7 +2842,13 @@ Laddsf$b$small:
 	movel	a6@(8),d0
 	lea	SYM (_fpCCR),a0
 	movew	IMM (0),a0@
+#ifndef __mcf5200__
 	moveml	sp@+,d2-d7	| restore data registers
+#else
+	moveml	sp@,d2-d7
+	| XXX if frame pointer is ever removed, stack pointer must
+	| be adjusted here.
+#endif
 	unlk	a6		| and return
 	rts
 
@@ -2768,7 +2900,13 @@ Laddsf$ret:
 	lea	SYM (_fpCCR),a0
 	movew	IMM (0),a0@
 	orl	d7,d0		| put sign bit
+#ifndef __mcf5200__
 	moveml	sp@+,d2-d7	| restore data registers
+#else
+	moveml	sp@,d2-d7
+	| XXX if frame pointer is ever removed, stack pointer must
+	| be adjusted here.
+#endif
 	unlk	a6		| and return
 	rts
 
@@ -2829,8 +2967,13 @@ Laddsf$nf:
 
 | float __mulsf3(float, float);
 SYM (__mulsf3):
+#ifndef __mcf5200__
 	link	a6,IMM (0)
 	moveml	d2-d7,sp@-
+#else
+	link	a6,IMM (-24)
+	moveml	d2-d7,sp@
+#endif
 	movel	a6@(8),d0	| get a into d0
 	movel	a6@(12),d1	| and b into d1
 	movel	d0,d7		| d7 will hold the sign of the product
@@ -2992,7 +3135,13 @@ Lmulsf$a$0:
 	bge	Lf$inop		| if b is +/-INFINITY or NaN return NaN
 	lea	SYM (_fpCCR),a0	| else return zero
 	movew	IMM (0),a0@	| 
+#ifndef __mcf5200__
 	moveml	sp@+,d2-d7	| 
+#else
+	moveml	sp@,d2-d7
+	| XXX if frame pointer is ever removed, stack pointer must
+	| be adjusted here.
+#endif
 	unlk	a6		| 
 	rts			| 
 
@@ -3032,8 +3181,13 @@ Lmulsf$b$den:
 
 | float __divsf3(float, float);
 SYM (__divsf3):
+#ifndef __mcf5200__
 	link	a6,IMM (0)
 	moveml	d2-d7,sp@-
+#else
+	link	a6,IMM (-24)
+	moveml	d2-d7,sp@
+#endif
 	movel	a6@(8),d0		| get a into d0
 	movel	a6@(12),d1		| and b into d1
 	movel	d0,d7			| d7 will hold the sign of the result
@@ -3181,7 +3335,13 @@ Ldivsf$a$0:
 	movel	IMM (0),d0		| else return zero
 	lea	SYM (_fpCCR),a0		|
 	movew	IMM (0),a0@		|
+#ifndef __mcf5200__
 	moveml	sp@+,d2-d7		| 
+#else
+	moveml	sp@,d2-d7		| 
+	| XXX if frame pointer is ever removed, stack pointer must
+	| be adjusted here.
+#endif
 	unlk	a6			| 
 	rts				| 
 	
@@ -3327,7 +3487,13 @@ Lround$0:
 
 	lea	SYM (_fpCCR),a0
 	movew	IMM (0),a0@
+#ifndef __mcf5200__
 	moveml	sp@+,d2-d7
+#else
+	moveml	sp@,d2-d7
+	| XXX if frame pointer is ever removed, stack pointer must
+	| be adjusted here.
+#endif
 	unlk	a6
 	rts
 
@@ -3340,8 +3506,13 @@ Lround$0:
 
 | float __negsf2(float);
 SYM (__negsf2):
+#ifndef __mcf5200__
 	link	a6,IMM (0)
 	moveml	d2-d7,sp@-
+#else
+	link	a6,IMM (-24)
+	moveml	d2-d7,sp@
+#endif
 	movew	IMM (NEGATE),d5
 	movel	a6@(8),d0	| get number to negate in d0
 	bchg	IMM (31),d0	| negate
@@ -3357,7 +3528,13 @@ SYM (__negsf2):
 	bra	Lf$infty		
 1:	lea	SYM (_fpCCR),a0
 	movew	IMM (0),a0@
+#ifndef __mcf5200__
 	moveml	sp@+,d2-d7
+#else
+	moveml	sp@,d2-d7
+	| XXX if frame pointer is ever removed, stack pointer must
+	| be adjusted here.
+#endif
 	unlk	a6
 	rts
 2:	bclr	IMM (31),d0
@@ -3373,8 +3550,13 @@ EQUAL   =  0
 
 | int __cmpsf2(float, float);
 SYM (__cmpsf2):
+#ifndef __mcf5200__
 	link	a6,IMM (0)
 	moveml	d2-d7,sp@- 	| save registers
+#else
+	link	a6,IMM (-24)
+	moveml	d2-d7,sp@
+#endif
 	movew	IMM (COMPARE),d5
 	movel	a6@(8),d0	| get first operand
 	movel	a6@(12),d1	| get second operand
@@ -3420,17 +3602,33 @@ Lcmpsf$2:
 	bne	Lcmpsf$a$gt$b	| |b| < |a|
 | If we got here a == b.
 	movel	IMM (EQUAL),d0
+#ifndef __mcf5200__
 	moveml	sp@+,d2-d7 	| put back the registers
+#else
+	moveml	sp@,d2-d7
+#endif
 	unlk	a6
 	rts
 Lcmpsf$a$gt$b:
 	movel	IMM (GREATER),d0
+#ifndef __mcf5200__
 	moveml	sp@+,d2-d7 	| put back the registers
+#else
+	moveml	sp@,d2-d7
+	| XXX if frame pointer is ever removed, stack pointer must
+	| be adjusted here.
+#endif
 	unlk	a6
 	rts
 Lcmpsf$b$gt$a:
 	movel	IMM (LESS),d0
+#ifndef __mcf5200__
 	moveml	sp@+,d2-d7 	| put back the registers
+#else
+	moveml	sp@,d2-d7
+	| XXX if frame pointer is ever removed, stack pointer must
+	| be adjusted here.
+#endif
 	unlk	a6
 	rts
 
