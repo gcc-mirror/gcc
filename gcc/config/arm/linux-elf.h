@@ -30,6 +30,9 @@
 /* Do not assume anything about header files.  */
 #define NO_IMPLICIT_EXTERN_C
 
+#undef  TARGET_DEFAULT_FLOAT_ABI
+#define TARGET_DEFAULT_FLOAT_ABI ARM_FLOAT_ABI_HARD
+
 #undef  TARGET_DEFAULT
 #define TARGET_DEFAULT (0)
 

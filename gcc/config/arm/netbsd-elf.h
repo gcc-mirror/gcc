@@ -35,8 +35,7 @@
 /* Default it to use ATPCS with soft-VFP.  */
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT			\
-  (ARM_FLAG_SOFT_FLOAT			\
-   | ARM_FLAG_APCS_FRAME		\
+  (ARM_FLAG_APCS_FRAME			\
    | TARGET_ENDIAN_DEFAULT)
 
 #undef ARM_DEFAULT_ABI

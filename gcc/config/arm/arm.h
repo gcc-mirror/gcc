@@ -125,6 +125,8 @@ extern const char *target_fpu_name;
 extern const char *target_fpe_name;
 /* Whether to use floating point hardware.  */
 extern const char *target_float_abi_name;
+/* For -m{soft,hard}-float.  */
+extern const char *target_float_switch;
 /* Which ABI to use.  */
 extern const char *target_abi_name;
 /* Define the information needed to generate branch insns.  This is
@@ -212,9 +214,7 @@ extern GTY(()) rtx aof_pic_label;
 #define ARM_FLAG_APCS_REENT	(1 << 6)
 
   /* FLAG 0x0080 now spare (used to be alignment traps).  */
-/* Nonzero if all floating point instructions are missing (and there is no
-   emulator either).  Generate function calls for all ops in this case.  */
-#define ARM_FLAG_SOFT_FLOAT	(1 << 8)
+  /* FLAG (1 << 8) is now spare (used to be soft-float).  */
 
 /* Nonzero if we should compile with BYTES_BIG_ENDIAN set to 1.  */
 #define ARM_FLAG_BIG_END	(1 << 9)
@@ -329,10 +329,6 @@ extern GTY(()) rtx aof_pic_label;
   {"apcs-reentrant",		ARM_FLAG_APCS_REENT,			\
    N_("Generate re-entrant, PIC code") },				\
   {"no-apcs-reentrant",	       -ARM_FLAG_APCS_REENT, "" },		\
-  {"soft-float",		ARM_FLAG_SOFT_FLOAT,			\
-   N_("Use library calls to perform FP operations") },			\
-  {"hard-float",	       -ARM_FLAG_SOFT_FLOAT,			\
-   N_("Use hardware floating point instructions") },			\
   {"big-endian",		ARM_FLAG_BIG_END,			\
    N_("Assume target CPU is configured as big endian") },		\
   {"little-endian",	       -ARM_FLAG_BIG_END,			\
@@ -397,7 +393,11 @@ extern GTY(()) rtx aof_pic_label;
    N_("Specify the minimum bit alignment of structures"), 0},		\
   {"pic-register=", & arm_pic_register_string,				\
    N_("Specify the register to be used for PIC addressing"), 0},	\
-  {"abi=", &target_abi_name, N_("Specify an ABI"), 0}			\
+  {"abi=", &target_abi_name, N_("Specify an ABI"), 0},			\
+  {"soft-float", &target_float_switch,					\
+   N_("Alias for -mfloat-abi=soft"), 0},				\
+  {"hard-float", &target_float_switch,					\
+   N_("Alias for -mfloat-abi=hard"), 0}					\
 }
 
 /* Support for a compile-time default CPU, et cetera.  The rules are:
@@ -480,6 +480,10 @@ enum float_abi_type
 };
 
 extern enum float_abi_type arm_float_abi;
+
+#ifndef TARGET_DEFAULT_FLOAT_ABI
+#define TARGET_DEFAULT_FLOAT_ABI ARM_FLOAT_ABI_SOFT
+#endif
 
 /* Which ABI to use.  */
 enum arm_abi_type
