@@ -2705,7 +2705,7 @@ xtensa-*-elf*)
 	;;
 xtensa-*-linux*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h linux.h xtensa/linux.h"
-	tmake_file="t-linux xtensa/t-xtensa"
+	tmake_file="t-slibgcc-elf-ver t-linux xtensa/t-xtensa"
 	;;
 *)
 	echo "*** Configuration $machine not supported" 1>&2
