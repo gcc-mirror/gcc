@@ -1177,7 +1177,7 @@ if test -d ${srcdir}/gcc; then
     esac
   done
 
-  missing_languages=`echo "$missing_languages" | sed -e s/^,// -e s/,\$//`
+  missing_languages=`echo "$missing_languages" | sed -e "s/^,//" -e "s/,$//"`
   if test "x$missing_languages" != x; then
     AC_MSG_ERROR([
 The following requested languages were not found: ${missing_languages}])
