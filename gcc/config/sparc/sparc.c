@@ -67,8 +67,8 @@ Boston, MA 02111-1307, USA.  */
    scheduling (to see what can go in a delay slot).
    APPARENT_FSIZE is the size of the stack less the register save area and less
    the outgoing argument area.  It is used when saving call preserved regs.  */
-static int apparent_fsize;
-static int actual_fsize;
+static HOST_WIDE_INT apparent_fsize;
+static HOST_WIDE_INT actual_fsize;
 
 /* Number of live general or floating point registers needed to be
    saved (as 4-byte quantities).  */
@@ -131,12 +131,12 @@ struct machine_function GTY(())
    too big for reg+constant addressing.  */
 
 static const char *frame_base_name;
-static int frame_base_offset;
+static HOST_WIDE_INT frame_base_offset;
 
 static void sparc_init_modes (void);
-static int save_regs (FILE *, int, int, const char *, int, int, int);
+static int save_regs (FILE *, int, int, const char *, int, int, HOST_WIDE_INT);
 static int restore_regs (FILE *, int, int, const char *, int, int);
-static void build_big_number (FILE *, int, const char *);
+static void build_big_number (FILE *, HOST_WIDE_INT, const char *);
 static int function_arg_slotno (const CUMULATIVE_ARGS *, enum machine_mode,
 				tree, int, int, int *, int *);
 
@@ -155,6 +155,10 @@ static void sparc_output_function_prologue (FILE *, HOST_WIDE_INT);
 static void sparc_output_function_epilogue (FILE *, HOST_WIDE_INT);
 static void sparc_flat_function_epilogue (FILE *, HOST_WIDE_INT);
 static void sparc_flat_function_prologue (FILE *, HOST_WIDE_INT);
+static void sparc_flat_save_restore (FILE *, const char *, int,
+				     unsigned long, unsigned long,
+				     const char *, const char *,
+				     HOST_WIDE_INT);
 static void sparc_nonflat_function_epilogue (FILE *, HOST_WIDE_INT, int);
 static void sparc_nonflat_function_prologue (FILE *, HOST_WIDE_INT, int);
 #ifdef OBJECT_FORMAT_ELF
@@ -3994,7 +3998,7 @@ sparc_init_modes (void)
 
 static int
 save_regs (FILE *file, int low, int high, const char *base,
-	   int offset, int n_regs, int real_offset)
+	   int offset, int n_regs, HOST_WIDE_INT real_offset)
 {
   int i;
 
@@ -4101,8 +4105,8 @@ restore_regs (FILE *file, int low, int high, const char *base,
 /* Compute the frame size required by the function.  This function is called
    during the reload pass and also by output_function_prologue().  */
 
-int
-compute_frame_size (int size, int leaf_function)
+HOST_WIDE_INT
+compute_frame_size (HOST_WIDE_INT size, int leaf_function)
 {
   int n_regs = 0, i;
   int outgoing_args_size = (current_function_outgoing_args_size
@@ -4156,32 +4160,97 @@ compute_frame_size (int size, int leaf_function)
   return SPARC_STACK_ALIGN (actual_fsize);
 }
 
-/* Build a (32 bit) big number in a register.  */
-/* ??? We may be able to use the set macro here too.  */
+/* Build big number NUM in register REG and output the result to FILE.
+   REG is guaranteed to be the only clobbered register.  The function
+   will very likely emit several instructions, so it must not be called
+   from within a delay slot.  */
 
 static void
-build_big_number (FILE *file, int num, const char *reg)
+build_big_number (FILE *file, HOST_WIDE_INT num, const char *reg)
 {
-  if (num >= 0 || ! TARGET_ARCH64)
+#if HOST_BITS_PER_WIDE_INT == 64
+  HOST_WIDE_INT high_bits = (num >> 32) & 0xffffffff;
+
+  if (high_bits == 0
+#else
+  if (num >= 0
+#endif
+      || ! TARGET_ARCH64)
     {
-      fprintf (file, "\tsethi\t%%hi(%d), %s\n", num, reg);
+      /* We don't use the 'set' macro because it appears to be broken
+	 in the Solaris 7 assembler.  */
+      fprintf (file, "\tsethi\t%%hi("HOST_WIDE_INT_PRINT_DEC"), %s\n",
+	       num, reg);
       if ((num & 0x3ff) != 0)
-	fprintf (file, "\tor\t%s, %%lo(%d), %s\n", reg, num, reg);
+	fprintf (file, "\tor\t%s, %%lo("HOST_WIDE_INT_PRINT_DEC"), %s\n",
+		 reg, num, reg);
     }
+#if HOST_BITS_PER_WIDE_INT == 64
+  else if (high_bits == 0xffffffff) /* && TARGET_ARCH64 */
+#else
   else /* num < 0 && TARGET_ARCH64 */
+#endif
     {
       /* Sethi does not sign extend, so we must use a little trickery
 	 to use it for negative numbers.  Invert the constant before
 	 loading it in, then use xor immediate to invert the loaded bits
 	 (along with the upper 32 bits) to the desired constant.  This
 	 works because the sethi and immediate fields overlap.  */
-      int asize = num;
-      int inv = ~asize;
-      int low = -0x400 + (asize & 0x3FF);
+      HOST_WIDE_INT inv = ~num;
+      HOST_WIDE_INT low = -0x400 + (num & 0x3ff);
 	  
-      fprintf (file, "\tsethi\t%%hi(%d), %s\n\txor\t%s, %d, %s\n",
-	       inv, reg, reg, low, reg);
+      fprintf (file, "\tsethi\t%%hi("HOST_WIDE_INT_PRINT_DEC"), %s\n",
+	       inv, reg);
+      fprintf (file, "\txor\t%s, "HOST_WIDE_INT_PRINT_DEC", %s\n",
+	       reg, low, reg);
     }
+#if HOST_BITS_PER_WIDE_INT == 64
+  else /* TARGET_ARCH64 */
+    {
+      /* We don't use the 'setx' macro because if requires a scratch register.
+         This is the translation of sparc_emit_set_const64_longway into asm.
+         Hopefully we will soon have prologue/epilogue emitted as RTL.  */
+      HOST_WIDE_INT low1 = (num >> (32 - 12))          & 0xfff;
+      HOST_WIDE_INT low2 = (num >> (32 - 12 - 12))     & 0xfff;
+      HOST_WIDE_INT low3 = (num >> (32 - 12 - 12 - 8)) & 0x0ff;
+      int to_shift = 12;
+
+      /* We don't use the 'set' macro because it appears to be broken
+	 in the Solaris 7 assembler.  */
+      fprintf (file, "\tsethi\t%%hi("HOST_WIDE_INT_PRINT_DEC"), %s\n",
+	       high_bits, reg);
+      if ((high_bits & 0x3ff) != 0)
+	fprintf (file, "\tor\t%s, %%lo("HOST_WIDE_INT_PRINT_DEC"), %s\n",
+		 reg, high_bits, reg);
+
+      if (low1 != 0)
+	{
+	  fprintf (file, "\tsllx\t%s, %d, %s\n", reg, to_shift, reg);
+	  fprintf (file, "\tor\t%s, "HOST_WIDE_INT_PRINT_DEC", %s\n",
+		   reg, low1, reg);
+	  to_shift = 12;
+	}
+      else
+	{
+	  to_shift += 12;
+	}
+      if (low2 != 0)
+	{
+	  fprintf (file, "\tsllx\t%s, %d, %s\n", reg, to_shift, reg);
+	  fprintf (file, "\tor\t%s, "HOST_WIDE_INT_PRINT_DEC", %s\n",
+		   reg, low2, reg);
+	  to_shift = 8;
+	}
+      else
+	{
+	  to_shift += 8;
+	}
+      fprintf (file, "\tsllx\t%s, %d, %s\n", reg, to_shift, reg);
+      if (low3 != 0)
+	fprintf (file, "\tor\t%s, "HOST_WIDE_INT_PRINT_DEC", %s\n",
+		 reg, low3, reg);
+    }
+#endif
 }
 
 /* Output any necessary .register pseudo-ops.  */
@@ -4266,11 +4335,13 @@ sparc_nonflat_function_prologue (FILE *file, HOST_WIDE_INT size,
   else if (! leaf_function)
     {
       if (actual_fsize <= 4096)
-	fprintf (file, "\tsave\t%%sp, -%d, %%sp\n", actual_fsize);
+	fprintf (file, "\tsave\t%%sp, -"HOST_WIDE_INT_PRINT_DEC", %%sp\n",
+		 actual_fsize);
       else if (actual_fsize <= 8192)
 	{
 	  fprintf (file, "\tsave\t%%sp, -4096, %%sp\n");
-	  fprintf (file, "\tadd\t%%sp, -%d, %%sp\n", actual_fsize - 4096);
+	  fprintf (file, "\tadd\t%%sp, -"HOST_WIDE_INT_PRINT_DEC", %%sp\n",
+		   actual_fsize - 4096);
 	}
       else
 	{
@@ -4281,11 +4352,13 @@ sparc_nonflat_function_prologue (FILE *file, HOST_WIDE_INT size,
   else /* leaf function */
     {
       if (actual_fsize <= 4096)
-	fprintf (file, "\tadd\t%%sp, -%d, %%sp\n", actual_fsize);
+	fprintf (file, "\tadd\t%%sp, -"HOST_WIDE_INT_PRINT_DEC", %%sp\n",
+		 actual_fsize);
       else if (actual_fsize <= 8192)
 	{
 	  fprintf (file, "\tadd\t%%sp, -4096, %%sp\n");
-	  fprintf (file, "\tadd\t%%sp, -%d, %%sp\n", actual_fsize - 4096);
+	  fprintf (file, "\tadd\t%%sp, -"HOST_WIDE_INT_PRINT_DEC", %%sp\n",
+		   actual_fsize - 4096);
 	}
       else
 	{
@@ -4322,7 +4395,8 @@ sparc_nonflat_function_prologue (FILE *file, HOST_WIDE_INT size,
   /* Call saved registers are saved just above the outgoing argument area.  */
   if (num_gfregs)
     {
-      int offset, real_offset, n_regs;
+      HOST_WIDE_INT offset, real_offset;
+      int n_regs;
       const char *base;
 
       real_offset = -apparent_fsize;
@@ -4356,7 +4430,8 @@ sparc_nonflat_function_prologue (FILE *file, HOST_WIDE_INT size,
 static void
 output_restore_regs (FILE *file, int leaf_function ATTRIBUTE_UNUSED)
 {
-  int offset, n_regs;
+  HOST_WIDE_INT offset;
+  int n_regs;
   const char *base;
 
   offset = -apparent_fsize + frame_base_offset;
@@ -4518,16 +4593,16 @@ sparc_nonflat_function_epilogue (FILE *file,
   else if (actual_fsize == 0)
     fprintf (file, "\t%s\n\tnop\n", ret);
   else if (actual_fsize <= 4096)
-    fprintf (file, "\t%s\n\tsub\t%%sp, -%d, %%sp\n", ret, actual_fsize);
+    fprintf (file, "\t%s\n\tsub\t%%sp, -"HOST_WIDE_INT_PRINT_DEC", %%sp\n",
+	     ret, actual_fsize);
   else if (actual_fsize <= 8192)
-    fprintf (file, "\tsub\t%%sp, -4096, %%sp\n\t%s\n\tsub\t%%sp, -%d, %%sp\n",
+    fprintf (file, "\tsub\t%%sp, -4096, %%sp\n\t%s\n\tsub\t%%sp, -"HOST_WIDE_INT_PRINT_DEC", %%sp\n",
 	     ret, actual_fsize - 4096);
-  else if ((actual_fsize & 0x3ff) == 0)
-    fprintf (file, "\tsethi\t%%hi(%d), %%g1\n\t%s\n\tadd\t%%sp, %%g1, %%sp\n",
-	     actual_fsize, ret);
-  else		 
-    fprintf (file, "\tsethi\t%%hi(%d), %%g1\n\tor\t%%g1, %%lo(%d), %%g1\n\t%s\n\tadd\t%%sp, %%g1, %%sp\n",
-	     actual_fsize, actual_fsize, ret);
+  else
+    {
+      build_big_number (file, actual_fsize, "%g1");
+      fprintf (file, "\t%s\n\tadd\t%%sp, %%g1, %%sp\n", ret);
+    }
 
  output_vectors:
   sparc_output_deferred_case_vectors ();
@@ -4575,7 +4650,7 @@ output_sibcall (rtx insn, rtx call_operand)
 #else
       int spare_slot = ((TARGET_ARCH32 || TARGET_CM_MEDLOW) && ! flag_pic);
 #endif
-      int size = 0;
+      HOST_WIDE_INT size = 0;
 
       if ((actual_fsize || ! spare_slot) && delay_slot)
 	{
@@ -4598,15 +4673,9 @@ output_sibcall (rtx insn, rtx call_operand)
 	      fputs ("\tsub\t%sp, -4096, %sp\n", asm_out_file);
 	      size = actual_fsize - 4096;
 	    }
-	  else if ((actual_fsize & 0x3ff) == 0)
-	    fprintf (asm_out_file,
-		     "\tsethi\t%%hi(%d), %%g1\n\tadd\t%%sp, %%g1, %%sp\n",
-		     actual_fsize);
 	  else
 	    {
-	      fprintf (asm_out_file,
-		       "\tsethi\t%%hi(%d), %%g1\n\tor\t%%g1, %%lo(%d), %%g1\n",
-		       actual_fsize, actual_fsize);
+	      build_big_number (asm_out_file, actual_fsize, "%g1");
 	      fputs ("\tadd\t%%sp, %%g1, %%sp\n", asm_out_file);
 	    }
 	}
@@ -4615,14 +4684,14 @@ output_sibcall (rtx insn, rtx call_operand)
 	  output_asm_insn ("sethi\t%%hi(%a0), %%g1", operands);
 	  output_asm_insn ("jmpl\t%%g1 + %%lo(%a0), %%g0", operands);
 	  if (size)
-	    fprintf (asm_out_file, "\t sub\t%%sp, -%d, %%sp\n", size);
+	    fprintf (asm_out_file, "\t sub\t%%sp, -"HOST_WIDE_INT_PRINT_DEC", %%sp\n", size);
 	  else if (! delay_slot)
 	    fputs ("\t nop\n", asm_out_file);
 	}
       else
 	{
 	  if (size)
-	    fprintf (asm_out_file, "\tsub\t%%sp, -%d, %%sp\n", size);
+	    fprintf (asm_out_file, "\tsub\t%%sp, -"HOST_WIDE_INT_PRINT_DEC", %%sp\n", size);
 	  /* Use or with rs2 %%g0 instead of mov, so that as/ld can optimize
 	     it into branch if possible.  */
 	  output_asm_insn ("or\t%%o7, %%g0, %%g1", operands);
@@ -6530,7 +6599,7 @@ mems_ok_for_ldd_peep (rtx mem1, rtx mem2, rtx dependent_reg_rtx)
 {
   rtx addr1, addr2;
   unsigned int reg1;
-  int offset1;
+  HOST_WIDE_INT offset1;
 
   /* The mems cannot be volatile.  */
   if (MEM_VOLATILE_P (mem1) || MEM_VOLATILE_P (mem2))
@@ -6652,7 +6721,7 @@ print_operand (FILE *file, rtx x, int code)
       /* Print out what we are using as the frame pointer.  This might
 	 be %fp, or might be %sp+offset.  */
       /* ??? What if offset is too big? Perhaps the caller knows it isn't? */
-      fprintf (file, "%s+%d", frame_base_name, frame_base_offset);
+      fprintf (file, "%s+"HOST_WIDE_INT_PRINT_DEC, frame_base_name, frame_base_offset);
       return;
     case '&':
       /* Print some local dynamic TLS name.  */
@@ -7251,16 +7320,16 @@ sparc64_initialize_trampoline (rtx tramp, rtx fnaddr, rtx cxt)
 
 struct sparc_frame_info
 {
-  unsigned long total_size;	/* # bytes that the entire frame takes up.  */
-  unsigned long var_size;	/* # bytes that variables take up.  */
-  unsigned long args_size;	/* # bytes that outgoing arguments take up.  */
-  unsigned long extra_size;	/* # bytes of extra gunk.  */
-  unsigned int  gp_reg_size;	/* # bytes needed to store gp regs.  */
-  unsigned int  fp_reg_size;	/* # bytes needed to store fp regs.  */
+  HOST_WIDE_INT total_size;	/* # bytes that the entire frame takes up.  */
+  HOST_WIDE_INT var_size;	/* # bytes that variables take up.  */
+  int           args_size;	/* # bytes that outgoing arguments take up.  */
+  int           extra_size;	/* # bytes of extra gunk.  */
+  int           gp_reg_size;	/* # bytes needed to store gp regs.  */
+  int           fp_reg_size;	/* # bytes needed to store fp regs.  */
   unsigned long gmask;		/* Mask of saved gp registers.  */
   unsigned long fmask;		/* Mask of saved fp registers.  */
-  unsigned long reg_offset;	/* Offset from new sp to store regs.  */
-  int		initialized;	/* Nonzero if frame size already calculated.  */
+  int           reg_offset;	/* Offset from new sp to store regs.  */
+  int           initialized;	/* Nonzero if frame size already calculated.  */
 };
 
 /* Current frame information calculated by sparc_flat_compute_frame_size.  */
@@ -7305,20 +7374,20 @@ sparc_flat_must_save_register_p (int regno)
 /* Return the bytes needed to compute the frame pointer from the current
    stack pointer.  */
 
-unsigned long
-sparc_flat_compute_frame_size (int size)
+HOST_WIDE_INT
+sparc_flat_compute_frame_size (HOST_WIDE_INT size)
               			/* # of var. bytes allocated.  */
 {
   int regno;
-  unsigned long total_size;	/* # bytes that the entire frame takes up.  */
-  unsigned long var_size;	/* # bytes that variables take up.  */
-  unsigned long args_size;	/* # bytes that outgoing arguments take up.  */
-  unsigned long extra_size;	/* # extra bytes.  */
-  unsigned int  gp_reg_size;	/* # bytes needed to store gp regs.  */
-  unsigned int  fp_reg_size;	/* # bytes needed to store fp regs.  */
+  HOST_WIDE_INT total_size;	/* # bytes that the entire frame takes up.  */
+  HOST_WIDE_INT var_size;	/* # bytes that variables take up.  */
+  int           args_size;	/* # bytes that outgoing arguments take up.  */
+  int           extra_size;	/* # extra bytes.  */
+  int           gp_reg_size;	/* # bytes needed to store gp regs.  */
+  int           fp_reg_size;	/* # bytes needed to store fp regs.  */
   unsigned long gmask;		/* Mask of saved gp registers.  */
   unsigned long fmask;		/* Mask of saved fp registers.  */
-  unsigned long reg_offset;	/* Offset to register save area.  */
+  int           reg_offset;	/* Offset to register save area.  */
   int           need_aligned_p;	/* 1 if need the save area 8 byte aligned.  */
 
   /* This is the size of the 16 word reg save area, 1 word struct addr
@@ -7424,12 +7493,11 @@ sparc_flat_compute_frame_size (int size)
    WORD_OP is either "st" for save, "ld" for restore.
    DOUBLEWORD_OP is either "std" for save, "ldd" for restore.  */
 
-void
-sparc_flat_save_restore (FILE *file, const char *base_reg,
-			 unsigned int offset, long unsigned int gmask,
-			 long unsigned int fmask, const char *word_op,
-			 const char *doubleword_op,
-			 long unsigned int base_offset)
+static void
+sparc_flat_save_restore (FILE *file, const char *base_reg, int offset,
+			 unsigned long gmask, unsigned long fmask,
+			 const char *word_op, const char *doubleword_op,
+			 HOST_WIDE_INT base_offset)
 {
   int regno;
 
@@ -7533,7 +7601,8 @@ sparc_flat_function_prologue (FILE *file, HOST_WIDE_INT size)
 
   /* This is only for the human reader.  */
   fprintf (file, "\t%s#PROLOGUE# 0\n", ASM_COMMENT_START);
-  fprintf (file, "\t%s# vars= %ld, regs= %d/%d, args= %d, extra= %ld\n",
+  fprintf (file, "\t%s# vars= "HOST_WIDE_INT_PRINT_DEC", "
+		 "regs= %d/%d, args= %d, extra= %d\n",
 	   ASM_COMMENT_START,
 	   current_frame_info.var_size,
 	   current_frame_info.gp_reg_size / 4,
@@ -7564,7 +7633,7 @@ sparc_flat_function_prologue (FILE *file, HOST_WIDE_INT size)
      after %i7 so gdb won't have to look too far to find it.  */
   if (size > 0)
     {
-      unsigned int reg_offset = current_frame_info.reg_offset;
+      int reg_offset = current_frame_info.reg_offset;
       const char *const fp_str = reg_names[HARD_FRAME_POINTER_REGNUM];
       static const char *const t1_str = "%g1";
 
@@ -7580,26 +7649,26 @@ sparc_flat_function_prologue (FILE *file, HOST_WIDE_INT size)
 	 the gdb folk first.  */
 
       /* Is the entire register save area offsettable from %sp?  */
-      if (reg_offset < 4096 - 64 * (unsigned) UNITS_PER_WORD)
+      if (reg_offset < 4096 - 64 * UNITS_PER_WORD)
 	{
 	  if (size <= 4096)
 	    {
-	      fprintf (file, "\tadd\t%s, %d, %s\n",
-		       sp_str, (int) -size, sp_str);
+	      fprintf (file, "\tadd\t%s, -"HOST_WIDE_INT_PRINT_DEC", %s\n",
+		       sp_str, size, sp_str);
 	      if (gmask & HARD_FRAME_POINTER_MASK)
 		{
 		  fprintf (file, "\tst\t%s, [%s+%d]\n",
 			   fp_str, sp_str, reg_offset);
-		  fprintf (file, "\tsub\t%s, %d, %s\t%s# set up frame pointer\n",
-			   sp_str, (int) -size, fp_str, ASM_COMMENT_START);
+		  fprintf (file, "\tsub\t%s, -"HOST_WIDE_INT_PRINT_DEC", %s"
+		  		 "\t%s# set up frame pointer\n",
+			   sp_str, size, fp_str, ASM_COMMENT_START);
 		  reg_offset += 4;
 		}
 	    }
 	  else
 	    {
-	      fprintf (file, "\tset\t" HOST_WIDE_INT_PRINT_DEC
-		       ", %s\n\tsub\t%s, %s, %s\n",
-		       size, t1_str, sp_str, t1_str, sp_str);
+	      build_big_number (file, size, t1_str);
+	      fprintf (file, "\tsub\t%s, %s, %s\n", sp_str, t1_str, sp_str);
 	      if (gmask & HARD_FRAME_POINTER_MASK)
 		{
 		  fprintf (file, "\tst\t%s, [%s+%d]\n",
@@ -7637,33 +7706,40 @@ sparc_flat_function_prologue (FILE *file, HOST_WIDE_INT size)
       else
 	{
 	  /* Subtract %sp in two steps, but make sure there is always a
-	     64 byte register save area, and %sp is properly aligned.  */
+	     64-byte register save area, and %sp is properly aligned.  */
+
 	  /* Amount to decrement %sp by, the first time.  */
-	  unsigned HOST_WIDE_INT size1 = ((size - reg_offset + 64) + 15) & -16;
-	  /* Offset to register save area from %sp.  */
-	  unsigned HOST_WIDE_INT offset = size1 - (size - reg_offset);
+	  HOST_WIDE_INT size1 = ((size - reg_offset + 64) + 15) & -16;
+
+	  /* Amount to decrement %sp by, the second time.  */
+	  HOST_WIDE_INT size2 = size - size1;
+
+	  /* Offset to register save area from %sp after first decrement.  */
+	  int offset = (int)(size1 - (size - reg_offset));
 	  
 	  if (size1 <= 4096)
 	    {
-	      fprintf (file, "\tadd\t%s, %d, %s\n",
-		       sp_str, (int) -size1, sp_str);
+	      fprintf (file, "\tadd\t%s, -"HOST_WIDE_INT_PRINT_DEC", %s\n",
+		       sp_str, size1, sp_str);
 	      if (gmask & HARD_FRAME_POINTER_MASK)
 		{
-		  fprintf (file, "\tst\t%s, [%s+%d]\n\tsub\t%s, %d, %s\t%s# set up frame pointer\n",
-			   fp_str, sp_str, (int) offset, sp_str, (int) -size1,
+		  fprintf (file, "\tst\t%s, [%s+%d]\n"
+				 "\tsub\t%s, -"HOST_WIDE_INT_PRINT_DEC", %s"
+				 "\t%s# set up frame pointer\n",
+			   fp_str, sp_str, offset, sp_str, size1,
 			   fp_str, ASM_COMMENT_START);
 		  offset += 4;
 		}
 	    }
 	  else
 	    {
-	      fprintf (file, "\tset\t" HOST_WIDE_INT_PRINT_DEC
-		       ", %s\n\tsub\t%s, %s, %s\n",
-		       size1, t1_str, sp_str, t1_str, sp_str);
+	      build_big_number (file, size1, t1_str);
+	      fprintf (file, "\tsub\t%s, %s, %s\n", sp_str, t1_str, sp_str);
 	      if (gmask & HARD_FRAME_POINTER_MASK)
 		{
-		  fprintf (file, "\tst\t%s, [%s+%d]\n\tadd\t%s, %s, %s\t%s# set up frame pointer\n",
-			   fp_str, sp_str, (int) offset, sp_str, t1_str,
+		  fprintf (file, "\tst\t%s, [%s+%d]\n"
+				 "\tadd\t%s, %s, %s\t%s# set up frame pointer\n",
+			   fp_str, sp_str, offset, sp_str, t1_str,
 			   fp_str, ASM_COMMENT_START);
 		  offset += 4;
 		}
@@ -7683,7 +7759,7 @@ sparc_flat_function_prologue (FILE *file, HOST_WIDE_INT size)
 	  if (gmask & RETURN_ADDR_MASK)
 	    {
 	      fprintf (file, "\tst\t%s, [%s+%d]\n",
-		       reg_names[RETURN_ADDR_REGNUM], sp_str, (int) offset);
+		       reg_names[RETURN_ADDR_REGNUM], sp_str, offset);
 	      if (dwarf2out_do_frame ())
 		/* offset - size1 == reg_offset - size
 		   if reg_offset were updated above like offset.  */
@@ -7694,9 +7770,14 @@ sparc_flat_function_prologue (FILE *file, HOST_WIDE_INT size)
 				   gmask & ~(HARD_FRAME_POINTER_MASK | RETURN_ADDR_MASK),
 				   current_frame_info.fmask,
 				   "st", "std", -size1);
-	  fprintf (file, "\tset\t" HOST_WIDE_INT_PRINT_DEC
-		   ", %s\n\tsub\t%s, %s, %s\n",
-		   size - size1, t1_str, sp_str, t1_str, sp_str);
+	  if (size2 <= 4096)
+	    fprintf (file, "\tadd\t%s, -"HOST_WIDE_INT_PRINT_DEC", %s\n",
+		     sp_str, size2, sp_str);
+	  else
+	    {
+	      build_big_number (file, size2, t1_str);
+	      fprintf (file, "\tsub\t%s, %s, %s\n", sp_str, t1_str, sp_str);
+	    }
 	  if (dwarf2out_do_frame ())
 	    if (! (gmask & HARD_FRAME_POINTER_MASK))
 	      dwarf2out_def_cfa ("", STACK_POINTER_REGNUM, size);
@@ -7742,8 +7823,8 @@ sparc_flat_function_epilogue (FILE *file, HOST_WIDE_INT size)
 
   if (!noepilogue)
     {
-      unsigned HOST_WIDE_INT reg_offset = current_frame_info.reg_offset;
-      unsigned HOST_WIDE_INT size1;
+      int reg_offset = current_frame_info.reg_offset;
+      int reg_offset1;
       const char *const sp_str = reg_names[STACK_POINTER_REGNUM];
       const char *const fp_str = reg_names[HARD_FRAME_POINTER_REGNUM];
       static const char *const t1_str = "%g1";
@@ -7752,37 +7833,43 @@ sparc_flat_function_epilogue (FILE *file, HOST_WIDE_INT size)
 	 slots for most of the loads, also see if we can fill the final
 	 delay slot if not otherwise filled by the reload sequence.  */
 
-      if (size > 4095)
-	fprintf (file, "\tset\t" HOST_WIDE_INT_PRINT_DEC ", %s\n",
-		 size, t1_str);
+      if (size > 4096)
+	build_big_number (file, size, t1_str);
 
       if (frame_pointer_needed)
 	{
-	  if (size > 4095)
+	  if (size > 4096)
 	    fprintf (file,"\tsub\t%s, %s, %s\t\t%s# sp not trusted here\n",
 		     fp_str, t1_str, sp_str, ASM_COMMENT_START);
 	  else
-	    fprintf (file,"\tsub\t%s, %d, %s\t\t%s# sp not trusted here\n",
-		     fp_str, (int) size, sp_str, ASM_COMMENT_START);
+	    fprintf (file,"\tadd\t%s, -"HOST_WIDE_INT_PRINT_DEC", %s"
+			  "\t\t%s# sp not trusted here\n",
+		     fp_str, size, sp_str, ASM_COMMENT_START);
 	}
 
       /* Is the entire register save area offsettable from %sp?  */
-      if (reg_offset < 4096 - 64 * (unsigned) UNITS_PER_WORD)
+      if (reg_offset < 4096 - 64 * UNITS_PER_WORD)
 	{
-	  size1 = 0;
+	  reg_offset1 = 0;
 	}
       else
 	{
 	  /* Restore %sp in two steps, but make sure there is always a
-	     64 byte register save area, and %sp is properly aligned.  */
-	  /* Amount to increment %sp by, the first time.  */
-	  size1 = ((reg_offset - 64 - 16) + 15) & -16;
-	  /* Offset to register save area from %sp.  */
-	  reg_offset = size1 - reg_offset;
+	     64-byte register save area, and %sp is properly aligned.  */
 
-	  fprintf (file, "\tset\t" HOST_WIDE_INT_PRINT_DEC
-		   ", %s\n\tadd\t%s, %s, %s\n",
-		   size1, t1_str, sp_str, t1_str, sp_str);
+	  /* Amount to increment %sp by, the first time.  */
+	  reg_offset1 = ((reg_offset - 64 - 16) + 15) & -16;
+
+	  /* Offset to register save area from %sp.  */
+	  reg_offset = reg_offset1 - reg_offset;
+
+	  if (reg_offset1 > 4096)
+	    {
+	      build_big_number (file, reg_offset1, t1_str);
+	      fprintf (file, "\tadd\t%s, %s, %s\n", sp_str, t1_str, sp_str);
+	    }
+	  else
+	    fprintf (file, "\tsub\t%s, -%d, %s\n", sp_str, reg_offset1, sp_str);
 	}
 
       /* We must restore the frame pointer and return address reg first
@@ -7790,13 +7877,13 @@ sparc_flat_function_epilogue (FILE *file, HOST_WIDE_INT size)
       if (current_frame_info.gmask & HARD_FRAME_POINTER_MASK)
 	{
 	  fprintf (file, "\tld\t[%s+%d], %s\n",
-		   sp_str, (int) reg_offset, fp_str);
+		   sp_str, reg_offset, fp_str);
 	  reg_offset += 4;
 	}
       if (current_frame_info.gmask & RETURN_ADDR_MASK)
 	{
 	  fprintf (file, "\tld\t[%s+%d], %s\n",
-		   sp_str, (int) reg_offset, reg_names[RETURN_ADDR_REGNUM]);
+		   sp_str, reg_offset, reg_names[RETURN_ADDR_REGNUM]);
 	  reg_offset += 4;
 	}
 
@@ -7808,12 +7895,11 @@ sparc_flat_function_epilogue (FILE *file, HOST_WIDE_INT size)
 
       /* If we had to increment %sp in two steps, record it so the second
 	 restoration in the epilogue finishes up.  */
-      if (size1 > 0)
+      if (reg_offset1 > 0)
 	{
-	  size -= size1;
-	  if (size > 4095)
-	    fprintf (file, "\tset\t" HOST_WIDE_INT_PRINT_DEC ", %s\n",
-		     size, t1_str);
+	  size -= reg_offset1;
+	  if (size > 4096)
+	    build_big_number (file, size, t1_str);
 	}
 
       if (current_function_returns_struct)
@@ -7833,11 +7919,12 @@ sparc_flat_function_epilogue (FILE *file, HOST_WIDE_INT size)
 	  final_scan_insn (XEXP (epilogue_delay, 0), file, 1, -2, 1);
 	}
 
-      else if (size > 4095)
+      else if (size > 4096)
 	fprintf (file, "\tadd\t%s, %s, %s\n", sp_str, t1_str, sp_str);
 
       else if (size > 0)
-	fprintf (file, "\tadd\t%s, %d, %s\n", sp_str, (int) size, sp_str);
+	fprintf (file, "\tsub\t%s, -"HOST_WIDE_INT_PRINT_DEC", %s\n",
+		 sp_str, size, sp_str);
 
       else
 	fprintf (file, "\tnop\n");

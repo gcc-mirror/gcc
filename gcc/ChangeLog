@@ -1,3 +1,41 @@
+2003-11-26  Eric Botcazou  <ebotcazou@libertysurf.fr>
+            Olivier Hainque  <hainque@act-europe.fr>
+
+	PR target/6466
+	* config/sparc/sparc-protos.h (compute_frame_size): New prototype.
+	(sparc_flat_compute_frame_size): Likewise.
+	(sparc_flat_save_restore): Move prototype...
+	* config/sparc/sparc.c (sparc_flat_save_restore): ...here.
+	(save_regs): New prototype.
+	(build_big_number): Likewise.
+	(apparent_fsize): Change type to HOST_WIDE_INT.
+	(actual_fsize): Likewise.
+	(frame_base_offset): Likewise.
+	(build_big_number): Add support for HOST_BITS_PER_WIDE_INT == 64.
+	Change string descriptor to HOST_WIDE_INT_PRINT_DEC.
+	[TARGET_ARCH64]: Use the sequence of sparc_emit_set_const64_longway
+	to load a 64-bit constant.
+	(sparc_nonflat_function_prologue): Change string descriptor to
+	HOST_WIDE_INT_PRINT_DEC.  Change offset type to HOST_WIDE_INT.
+	(output_restore_regs): Change offset type to HOST_WIDE_INT.
+	(sparc_nonflat_function_epilogue): Change string descriptor to
+	HOST_WIDE_INT_PRINT_DEC.  Use build_big_number.
+	(output_sibcall): Change size type to HOST_WIDE_INT.  Use
+	build_big_number.  Change string descriptor to HOST_WIDE_INT_PRINT_DEC.
+	(sparc_frame_info): Change types for several components.
+	(sparc_flat_compute_frame_size): Update types according to previous
+	change.
+	(sparc_flat_function_prologue): Change string descriptor to
+	HOST_WIDE_INT_PRINT_DEC.  Change offset type to int.  Use
+	build_big_number.
+	(sparc_flat_function_epilogue): Change offset type to int.
+	Rename 'size1' into 'reg_offset1'.  Change string descriptor to
+	HOST_WIDE_INT_PRINT_DEC.  Use build_big_number.  Change big number
+	limit to 4096 instead of 4095.
+
+	* config/sparc/sparc.c (mems_ok_for_ldd_peep): Change offset type to
+	HOST_WIDE_INT.
+
 2003-11-24  Waldek Hebisch <hebisch@math.uni.wroc.pl>
 
 	* function.c: Make outer_function-chain external.
