@@ -64,7 +64,7 @@ public class MulticastSocket extends DatagramSocket
   */
   public MulticastSocket() throws IOException
   {
-    super(0, ServerSocket.ANY_IF);
+    super(0, null);
   }
 
 /**
@@ -76,7 +76,7 @@ public class MulticastSocket extends DatagramSocket
   */
   public MulticastSocket(int port) throws IOException
   {
-    super(port, ServerSocket.ANY_IF);
+    super(port, null);
   }
 
 /**

@@ -28,12 +28,12 @@ public class DatagramSocket
 
   public DatagramSocket() throws SocketException
   {
-    this(0, ServerSocket.ANY_IF);
+    this(0, null);
   }
 
   public DatagramSocket(int port) throws SocketException
   {
-    this(port, ServerSocket.ANY_IF);
+    this(port, null);
   }
 
   public DatagramSocket(int port, InetAddress laddr) throws SocketException
@@ -66,7 +66,7 @@ public class DatagramSocket
     if (this instanceof MulticastSocket)
       impl.setOption(SocketOptions.SO_REUSEADDR, new Boolean(true));
 
-    impl.bind(port, laddr == null ? ServerSocket.ANY_IF : laddr);
+    impl.bind(port, laddr == null ? InetAddress.ANY_IF : laddr);
   }
 
   public void close()
