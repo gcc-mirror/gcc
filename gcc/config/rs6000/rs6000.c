@@ -8406,6 +8406,9 @@ machopic_output_stub (file, symb, stub)
   char *local_label_0, *local_label_1, *local_label_2;
   static int label = 0;
 
+  /* Lose our funky encoding stuff so it doesn't contaminate the stub.  */
+  STRIP_NAME_ENCODING (symb, symb);
+
   label += 1;
 
   length = strlen (stub);

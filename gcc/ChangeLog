@@ -1,3 +1,25 @@
+2001-06-07  Stan Shebs  <shebs@apple.com>
+
+	* config/darwin.h (ENCODE_SECTION_INFO): Define.
+	(REDO_SECTION_INFO_P): Ditto.
+	(STRIP_NAME_ENCODING): Ditto.
+	(ASM_DECLARE_OBJECT_NAME): Use ENCODE_SECTION_INFO.
+	(ASM_OUTPUT_ALIGNED_DECL_LOCAL): Ditto.
+	(ASM_OUTPUT_LABELREF): Use STRIP_NAME_ENCODING.
+	(GEN_LAZY_PTR_NAME_FOR_SYMBOL): Ditto.
+	* config/darwin.c: No longer include c-tree.h.
+	(machopic_classify_ident): Rewrite to use symbol encoding.
+	(lookup_name_darwin): Remove.
+	(machopic_non_lazy_ptr_name): Handle encoded symbols.
+	(machopic_stub_name): Use STRIP_NAME_ENCODING.
+	(machopic_validate_stub_or_non_lazy_ptr): Ditto.
+	(machopic_finish): Ditto, remove test of decl.
+	(update_non_lazy_ptrs): New function.
+	(darwin_encode_section_info): New function.
+	* config/darwin-protos.h: Declare it.
+	* config/rs6000/rs6000.c (machopic_output_stub): Use
+	STRIP_NAME_ENCODING.
+	
 2001-06-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* tree.h (DECL_SOURCE_FILE): Improve documentation.
