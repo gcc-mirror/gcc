@@ -623,7 +623,6 @@ validate_pattern (pattern, insn, set, set_code)
 
     case STRICT_LOW_PART:
       validate_pattern (XEXP (pattern, 0), insn, set, set ? '+' : 0);
-      validate_pattern (XEXP (pattern, 1), insn, NULL, 0);
       return;
 
     case LABEL_REF:
