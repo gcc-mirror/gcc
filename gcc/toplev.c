@@ -3656,11 +3656,6 @@ rest_of_compilation (decl)
 	  close_dump_file (print_rtl, insns);
 	}
 
-      /* If we can, defer compiling inlines until EOF.
-	 save_for_inline_copying can be extremely expensive.  */
-      if (inlinable && ! decl_function_context (decl))
-	DECL_DEFER_OUTPUT (decl) = 1;
-
       /* If function is inline, and we don't yet know whether to
 	 compile it by itself, defer decision till end of compilation.
 	 finish_compilation will call rest_of_compilation again
@@ -3673,7 +3668,8 @@ rest_of_compilation (decl)
       /* If this is a nested inline, remove ADDRESSOF now so we can
 	 finish compiling ourselves.  Otherwise, wait until EOF.
 	 We have to do this because the purge_addressof transformation
-	 changes the DECL_RTL for many variables, which confuses integrate.  */
+	 changes the DECL_RTL for many variables, which confuses integrate.
+	 Also, save_for_inline_copying can be very expensive.  */
       if (inlinable)
 	{
 	  if (decl_function_context (decl))
@@ -5247,7 +5243,7 @@ main (argc, argv)
 		      else
 			level = 2;
 
-		      if (da_len > 1 && !strncmp (str, "gdwarf", da_len))
+		      if (da_len > 1 && *p && !strncmp (str, "gdwarf", da_len))
 			{
 			  error ("use -gdwarf -g%d for DWARF v1, level %d",
 				 level, level);
