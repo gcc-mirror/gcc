@@ -1,3 +1,29 @@
+2002-04-01  Benjamin Kosnik  <bkoz@redhat.com>
+	
+	libstdc++/3129
+	* include/bits/basic_ios.h (basic_ios::_M_exception): Move.
+	(basic_ios::_M_streambuf_state): Move.	
+	* include/bits/ios_base (ios_base): To here.
+	* include/bits/ios_base.h (ios_base::_S_local_words): To
+	_S_local_word_size.
+	(ios_base::_M_word_array): To _M_local_word.
+	(ios_base::_M_words_limit): To _M_word_size.	
+	(ios_base::_M_words): To _M_word.		
+	Comment.
+	* include/bits/basic_ios.tcc: Adjust.	
+	* src/ios.cc (ios_base::_M_grow_words): Tweak.
+	* testsuite/27_io/ios_base_storage.cc: Add tests.
+
+	libstdc++/5207
+	Kenny Simpson <theonetruekenny@yahoo.com>
+	* include/bits/ios_base.h: Fix.
+	
+	Richard Henderson  <rth@redhat.com>
+	* include/bits/ostream.tcc (ostream::operator<<(_CharT)): Correct
+	last change.
+
+	* include/bits/basic_string.h: Tweak formatting.
+	
 2002-04-01  Paolo Carlini  <pcarlini@unitus.it>
 
 	* config/locale/ieee_1003.1-2001/codecvt_specializations.h
@@ -14,7 +40,7 @@
 	* libsupc++/eh_personality.cc (__cxa_call_unexpected): Copy handler
 	data out of the exception struct before calling unexpectedHandler.
 
-2002-03-27  Roger Sayle  <roger@eyesopen.com>
+2002-03-28  Roger Sayle  <roger@eyesopen.com>
 
 	* include/c_std/std_cmath.h:  To prevent problems overloading
 	g++ builtins, use the double variants from the global namespace

@@ -127,7 +127,7 @@ namespace std
   const ios_base::seekdir ios_base::cur;
   const ios_base::seekdir ios_base::end;
 
-  const int ios_base::_S_local_words;
+  const int ios_base::_S_local_word_size;
   int ios_base::Init::_S_ios_base_init = 0;
   bool ios_base::Init::_S_synced_with_stdio = true;
 
@@ -227,44 +227,50 @@ namespace std
   int 
   ios_base::xalloc() throw()
   {
-    // XXX should be a symbol. (Reserve 0..3 for builtins.)
-    static _Atomic_word top = 0; 
-    return __exchange_and_add(&top, 1) + 4;
     // Implementation note: Initialize top to zero to ensure that
     // initialization occurs before main() is started.
+    static _Atomic_word _S_top = 0; 
+    return __exchange_and_add(&_S_top, 1) + 4;
   }
 
   // 27.4.2.5  iword/pword storage
   ios_base::_Words&
   ios_base::_M_grow_words(int ix)
   {
-    // Precondition: _M_word_limit <= ix
-    _Words zero = { 0, 0 };
-    int newlimit = _S_local_words;
-    _Words* words = _M_word_array;
+    // Precondition: _M_word_size <= ix
+    int newsize = _S_local_word_size;
+    _Words* words = _M_local_word;
     int i = 0;
-    if (_S_local_words <= ix)
+    if (ix > _S_local_word_size - 1)
       {
-	newlimit = ix+1;
+	const int max = numeric_limits<int>::max();
+	if (ix < max)
+	  newsize = ix + 1;
+	else
+	  newsize = max;
+
 	try
-	  { words = new _Words[ix+1]; }
+	  { words = new _Words[newsize]; }
 	catch (...)
 	  {
-	    _M_dummy = zero;  // XXX MT? Not on "normal" machines.
-	    // XXX now in basic_ios
-	    // _M_clear(_M_rdstate() | badbit);  // may throw
-	    return _M_dummy;
+	    delete [] _M_word;
+	    _M_word = 0;
+	    _M_streambuf_state |= badbit;
+	    if (_M_streambuf_state & _M_exception)
+	      __throw_ios_failure("ios_base::_M_grow_words caused exception");
+	    return _M_word_zero;
 	  }
-	for (; i < _M_word_limit; i++) 
-	  words[i] = _M_words[i];
-	if (_M_words && _M_words != _M_word_array) 
-	  delete [] _M_words;
+	for (; i < _M_word_size; i++) 
+	  words[i] = _M_word[i];
+	if (_M_word && _M_word != _M_local_word) 
+	  {
+	    delete [] _M_word;
+	    _M_word = 0;
+	  }
       }
-    
-    do { words[i] = zero; } while (++i < newlimit);
-    _M_words = words;
-    _M_word_limit = newlimit;
-    return words[ix];
+    _M_word = words;
+    _M_word_size = newsize;
+    return _M_word[ix];
   }
   
   // Called only by basic_ios<>::init.
@@ -276,10 +282,8 @@ namespace std
     _M_width = 0;
     _M_flags = skipws | dec;
     _M_callbacks = 0;
-    _M_words = 0;
-    _M_word_limit = 0;
+    _M_word_size = 0;
     _M_ios_locale = locale();
-    // No init needed for _M_word_array or _M_dummy.
   }  
   
   // 27.4.2.3  ios_base locale functions
@@ -292,13 +296,11 @@ namespace std
     return __old;
   }
 
-  ios_base::ios_base()
+  ios_base::ios_base() : _M_callbacks(0), _M_word(0)
   {
     // Do nothing: basic_ios::init() does it.  
-    // NB: _M_callbacks and _M_words must be zero for non-initialized
+    // NB: _M_callbacks and _M_word must be zero for non-initialized
     // ios_base to go through ~ios_base gracefully.
-    _M_callbacks = 0;
-    _M_words = 0;
   }
   
   // 27.4.2.7  ios_base constructors/destructors
@@ -306,8 +308,11 @@ namespace std
   {
     _M_call_callbacks(erase_event);
     _M_dispose_callbacks();
-    if (_M_words && _M_words != _M_word_array) 
-      delete [] _M_words;
+    if (_M_word && _M_word != _M_local_word) 
+      {
+	delete [] _M_word;
+	_M_word = 0;
+      }
   }
 
   void 
