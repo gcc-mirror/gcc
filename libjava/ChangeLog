@@ -1,5 +1,9 @@
 1999-09-08  Tom Tromey  <tromey@cygnus.com>
 
+	* include/posix-threads.h (_Jv_PthreadCheckMonitor): Reverted
+	previous change and implemented a correct test in the __m_count
+	case.
+
 	* include/posix-threads.h (_Jv_PthreadCheckMonitor): Changed test
 	in __m_count case.
 
