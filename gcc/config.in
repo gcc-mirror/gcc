@@ -437,6 +437,9 @@
 /* Define if your assembler supports .hidden. */
 #undef HAVE_GAS_HIDDEN
 
+/* Define if your assembler mis-optimizes .eh_frame data. */
+#undef USE_AS_TRADITIONAL_FORMAT
+
 /* Define if your assembler supports .register. */
 #undef HAVE_AS_REGISTER_PSEUDO_OP
 
