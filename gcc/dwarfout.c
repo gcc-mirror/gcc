@@ -608,7 +608,7 @@ static unsigned lookup_filename ();
   do {									\
     fprintf ((FILE), "\t%s\t0x%x",					\
 		     UNALIGNED_SHORT_ASM_OP, (unsigned) TAG);		\
-    if (flag_verbose_asm)						\
+    if (flag_debug_asm)							\
       fprintf ((FILE), "\t%s %s",					\
 		       ASM_COMMENT_START, dwarf_tag_name (TAG));	\
     fputc ('\n', (FILE));						\
@@ -620,7 +620,7 @@ static unsigned lookup_filename ();
   do {									\
     fprintf ((FILE), "\t%s\t0x%x",					\
 		     UNALIGNED_SHORT_ASM_OP, (unsigned) ATTR);		\
-    if (flag_verbose_asm)						\
+    if (flag_debug_asm)							\
       fprintf ((FILE), "\t%s %s",					\
 		       ASM_COMMENT_START, dwarf_attr_name (ATTR));	\
     fputc ('\n', (FILE));						\
@@ -631,7 +631,7 @@ static unsigned lookup_filename ();
 #define ASM_OUTPUT_DWARF_STACK_OP(FILE,OP)				\
   do {									\
     fprintf ((FILE), "\t%s\t0x%x", ASM_BYTE_OP, (unsigned) OP);		\
-    if (flag_verbose_asm)						\
+    if (flag_debug_asm)							\
       fprintf ((FILE), "\t%s %s",					\
 		       ASM_COMMENT_START, dwarf_stack_op_name (OP));	\
     fputc ('\n', (FILE));						\
@@ -643,7 +643,7 @@ static unsigned lookup_filename ();
   do {									\
     fprintf ((FILE), "\t%s\t0x%x",					\
 		     UNALIGNED_SHORT_ASM_OP, (unsigned) FT);		\
-    if (flag_verbose_asm)						\
+    if (flag_debug_asm)							\
       fprintf ((FILE), "\t%s %s",					\
 		       ASM_COMMENT_START, dwarf_fund_type_name (FT));	\
     fputc ('\n', (FILE));						\
@@ -654,7 +654,7 @@ static unsigned lookup_filename ();
 #define ASM_OUTPUT_DWARF_FMT_BYTE(FILE,FMT)				\
   do {									\
     fprintf ((FILE), "\t%s\t0x%x", ASM_BYTE_OP, (unsigned) FMT);	\
-    if (flag_verbose_asm)						\
+    if (flag_debug_asm)							\
       fprintf ((FILE), "\t%s %s",					\
 		       ASM_COMMENT_START, dwarf_fmt_byte_name (FMT));	\
     fputc ('\n', (FILE));						\
@@ -665,7 +665,7 @@ static unsigned lookup_filename ();
 #define ASM_OUTPUT_DWARF_TYPE_MODIFIER(FILE,MOD)			\
   do {									\
     fprintf ((FILE), "\t%s\t0x%x", ASM_BYTE_OP, (unsigned) MOD);	\
-    if (flag_verbose_asm)						\
+    if (flag_debug_asm)							\
       fprintf ((FILE), "\t%s %s",					\
 		       ASM_COMMENT_START, dwarf_typemod_name (MOD));	\
     fputc ('\n', (FILE));						\
@@ -1084,7 +1084,7 @@ output_unsigned_leb128 (value)
       if (value != 0)	/* more bytes to follow */
 	byte |= 0x80;
       fprintf (asm_out_file, "\t%s\t0x%x", ASM_BYTE_OP, (unsigned) byte);
-      if (flag_verbose_asm && value == 0)
+      if (flag_debug_asm && value == 0)
 	fprintf (asm_out_file, "\t%s ULEB128 number - value = %u",
 		 ASM_COMMENT_START, orig_value);
       fputc ('\n', asm_out_file);
@@ -1116,7 +1116,7 @@ output_signed_leb128 (value)
 	  more = 1;
 	}
       fprintf (asm_out_file, "\t%s\t0x%x", ASM_BYTE_OP, (unsigned) byte);
-      if (flag_verbose_asm && more == 0)
+      if (flag_debug_asm && more == 0)
 	fprintf (asm_out_file, "\t%s SLEB128 number - value = %d",
 		 ASM_COMMENT_START, orig_value);
       fputc ('\n', asm_out_file);
@@ -1477,7 +1477,7 @@ output_reg_number (rtl)
     }
   fprintf (asm_out_file, "\t%s\t0x%x",
 	   UNALIGNED_INT_ASM_OP, DBX_REGISTER_NUMBER (regno));
-  if (flag_verbose_asm)
+  if (flag_debug_asm)
     {
       fprintf (asm_out_file, "\t%s ", ASM_COMMENT_START);
       PRINT_REG (rtl, 0, asm_out_file);
