@@ -649,7 +649,7 @@ case $os in
 	      | -hiux* | -386bsd* | -netbsd* | -freebsd* | -riscix* \
 	      | -lynxos* | -bosx* | -nextstep* | -cxux* | -aout* | -elf* \
 	      | -ptx* | -coff* | -ecoff* | -winnt* | -domain* | -vsta* \
-	      | -udi* | -eabi* | -lites* | -ieee*)
+	      | -udi* | -eabi* | -lites* | -ieee* | -go32*)
 	# Remember, each alternative MUST END IN *, to match a version number.
 		;;
 	-sunos5*)
