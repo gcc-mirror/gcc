@@ -4713,28 +4713,9 @@ reload_reg_free_before_p (regno, opnum, type)
 	      && ! TEST_HARD_REG_BIT (reload_reg_used_in_op_addr, regno));
 				   
     case RELOAD_FOR_OUTPUT:
-      /* This can't be used in the output address for this operand and
-	 anything that can't be used for it, except that we've already
-	 tested for RELOAD_FOR_INSN objects.  */
-
-      if (TEST_HARD_REG_BIT (reload_reg_used_in_output_addr[opnum], regno)
-	  || TEST_HARD_REG_BIT (reload_reg_used_in_outaddr_addr[opnum], regno))
-	return 0;
-
-      for (i = 0; i < opnum; i++)
-	if (TEST_HARD_REG_BIT (reload_reg_used_in_output_addr[i], regno)
-	    || TEST_HARD_REG_BIT (reload_reg_used_in_outaddr_addr[i], regno)
-	    || TEST_HARD_REG_BIT (reload_reg_used_in_output[i], regno))
-	  return 0;
-
-      for (i = 0; i < reload_n_operands; i++)
-	if (TEST_HARD_REG_BIT (reload_reg_used_in_input_addr[i], regno)
-	    || TEST_HARD_REG_BIT (reload_reg_used_in_inpaddr_addr[i], regno)
-	    || TEST_HARD_REG_BIT (reload_reg_used_in_input[i], regno)
-	    || TEST_HARD_REG_BIT (reload_reg_used_in_op_addr, regno))
-	  return 0;
-
-      return ! TEST_HARD_REG_BIT (reload_reg_used_in_other_addr, regno);
+      /* There is no reason to call this function for output reloads, thus
+	 anything we'd put here wouldn't be tested.  So just abort.  */
+       abort ();
 
     case RELOAD_FOR_OPERAND_ADDRESS:
       /* Earlier reloads include RELOAD_FOR_OPADDR_ADDR reloads.  */

@@ -1,3 +1,7 @@
+Mon Jul 13 19:01:52 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* reload1.c (reload_reg_free_before_p): Abort for RELOAD_FOR_OUTPUT.
+
 Mon Jul 13 10:50:17 1998  Mark Mitchell  <mark@markmitchell.com>
 
 	* cplus-dem.c (SCOPE_STRING): Remove DMGL_JAVA stuff.
