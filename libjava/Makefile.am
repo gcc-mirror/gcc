@@ -896,6 +896,7 @@ java/security/KeyPair.java \
 java/security/KeyPairGenerator.java \
 java/security/KeyPairGeneratorSpi.java \
 java/security/NoSuchProviderException.java \
+java/security/Principal.java \
 java/security/PrivateKey.java \
 java/security/Provider.java \
 java/security/PublicKey.java \
