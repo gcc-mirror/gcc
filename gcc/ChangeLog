@@ -1,3 +1,8 @@
+2003-10-05  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/linux.h (MD_FALLBACK_FRAME_STATE_FOR): Handle new
+	signal trampoline codes.
+
 2003-10-05  Chris Demetriou  <cgd@broadcom.com>
 
 	* config/mips/mips.md (*divsf3): Move description of

@@ -220,13 +220,24 @@ do { \
 									\
     /* mov.w 1f,r3; trapa #0x10; 1: .short 0x77  (sigreturn)  */	\
     /* mov.w 1f,r3; trapa #0x10; 1: .short 0xad  (rt_sigreturn)  */	\
-    if ((*(unsigned short *) (pc_+0)  == 0x9300)			\
-	&& (*(unsigned short *) (pc_+2)  == 0xc310)			\
-	&& (*(unsigned short *) (pc_+4)  == 0x0077))			\
+    /* Newer kernel uses pad instructions to avoid an SH-4 core bug.  */\
+    /* mov.w 1f,r3; trapa #0x10; or r0,r0; or r0,r0; or r0,r0; or r0,r0;\
+       or r0,r0; 1: .short 0x77  (sigreturn)  */			\
+    /* mov.w 1f,r3; trapa #0x10; or r0,r0; or r0,r0; or r0,r0; or r0,r0;\
+       or r0,r0; 1: .short 0xad  (rt_sigreturn)  */			\
+    if (((*(unsigned short *) (pc_+0)  == 0x9300)			\
+	 && (*(unsigned short *) (pc_+2)  == 0xc310)			\
+	 && (*(unsigned short *) (pc_+4)  == 0x0077))			\
+	|| (((*(unsigned short *) (pc_+0)  == 0x9305)			\
+	    && (*(unsigned short *) (pc_+2)  == 0xc310)			\
+	    && (*(unsigned short *) (pc_+14)  == 0x0077))))		\
       sc_ = (CONTEXT)->cfa;						\
-    else if ((*(unsigned short *) (pc_+0) == 0x9300)			\
-	&& (*(unsigned short *) (pc_+2)  == 0xc310)			\
-	&& (*(unsigned short *) (pc_+4)  == 0x00ad))			\
+    else if (((*(unsigned short *) (pc_+0) == 0x9300)			\
+	      && (*(unsigned short *) (pc_+2)  == 0xc310)		\
+	      && (*(unsigned short *) (pc_+4)  == 0x00ad))		\
+	     || (((*(unsigned short *) (pc_+0) == 0x9305)		\
+		 && (*(unsigned short *) (pc_+2)  == 0xc310)		\
+		 && (*(unsigned short *) (pc_+14)  == 0x00ad))))	\
       {									\
 	struct rt_sigframe {						\
 	  struct siginfo info;						\
