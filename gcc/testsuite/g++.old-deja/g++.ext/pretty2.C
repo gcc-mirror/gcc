@@ -27,7 +27,7 @@ X::X ()
   
   if (strcmp (function, "X"))
     bad = true;
-  if (strcmp (pretty, "X::X ()"))
+  if (strcmp (pretty, "X::X()"))
     bad = true;
 }
 X::~X ()
@@ -41,7 +41,7 @@ X::~X ()
   
   if (strcmp (function, "X"))
     bad = true;
-  if (strcmp (pretty, "X::~X ()"))
+  if (strcmp (pretty, "X::~X()"))
     bad = true;
 }
 void X::fn ()
@@ -55,7 +55,7 @@ void X::fn ()
   
   if (strcmp (function, "fn"))
     bad = true;
-  if (strcmp (pretty, "void X::fn ()"))
+  if (strcmp (pretty, "void X::fn()"))
     bad = true;
 }
 X::operator int ()
@@ -69,7 +69,7 @@ X::operator int ()
   
   if (strcmp (function, "__opi"))
     bad = true;
-  if (strcmp (pretty, "X::operator int ()"))
+  if (strcmp (pretty, "X::operator int()"))
     bad = true;
   return 0;
 }

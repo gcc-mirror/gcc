@@ -1,3 +1,9 @@
+2000-09-29  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* g++.old-deja/g++.ext/pretty3.C: Fix comparison with
+	__PRETTY_FUNCTION__.	 
+	* g++.old-deja/g++.ext/pretty2.C: Likewise.
+
 2000-09-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/wtr-int-type-1.c: Don't expect a warning from system headers.

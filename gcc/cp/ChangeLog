@@ -1,3 +1,11 @@
+2000-09-29  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* error.c: Remove direct obstack manipulation.  Replace with
+	output_buffer-based formatting.  Adjust calls to removed macros.
+	(obstack_chunk_alloc, obstack_chunk_free): Remove.
+	(OB_INIT, OB_PUTC, OB_PUTC2, OB_PUTS, OB_PUTID, OB_PUTCP,
+	OB_FINISH, OB_PUTI, OB_END_TEMPLATE): Likewise.
+
 2000-09-24  Mark Mitchell  <mark@codesourcery.com>
 
 	* ir.texi: Move to ../c-tree.texi.

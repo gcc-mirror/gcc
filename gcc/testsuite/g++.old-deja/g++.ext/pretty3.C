@@ -19,7 +19,7 @@ template<class T> void f1 (T)
   
   if (strcmp (function, "f1"))
     bad = true;
-  if (strcmp (pretty, "void f1 (T) [with T = float]")) // only for float instantiation
+  if (strcmp (pretty, "void f1(T) [with T = float]")) // only for float instantiation
     bad = true;
 }
 
@@ -34,7 +34,7 @@ template<> void f1<int> (int)
   
   if (strcmp (function, "f1"))
     bad = true;
-  if (strcmp (pretty, "void f1 (T) [with T = int]"))
+  if (strcmp (pretty, "void f1(T) [with T = int]"))
     bad = true;
 }
 
