@@ -4599,12 +4599,6 @@ the template was stored, the different address should be assigned to
 @var{addr}.  If this macro is not defined, @var{addr} will be used for
 function calls.
 
-@findex ALLOCATE_TRAMPOLINE
-@item ALLOCATE_TRAMPOLINE (@var{fp})
-A C expression to allocate run-time space for a trampoline.  The
-expression value should be an RTX representing a memory reference to the
-space for the trampoline.
-
 @cindex @code{TARGET_ASM_FUNCTION_EPILOGUE} and trampolines
 @cindex @code{TARGET_ASM_FUNCTION_PROLOGUE} and trampolines
 If this macro is not defined, by default the trampoline is allocated as
@@ -4616,8 +4610,7 @@ and @code{TARGET_ASM_FUNCTION_EPILOGUE}.
 
 @var{fp} points to a data structure, a @code{struct function}, which
 describes the compilation status of the immediate containing function of
-the function which the trampoline is for.  Normally (when
-@code{ALLOCATE_TRAMPOLINE} is not defined), the stack slot for the
+the function which the trampoline is for.  The stack slot for the
 trampoline is in the stack frame of this containing function.  Other
 allocation strategies probably must do something analogous with this
 information.
@@ -8928,11 +8921,6 @@ Define this macro if the system header files support C++ as well as C@.
 This macro inhibits the usual method of using system header files in
 C++, which is to pretend that the file's contents are enclosed in
 @samp{extern "C" @{@dots{}@}}.
-
-@findex HANDLE_PRAGMA
-@item HANDLE_PRAGMA (@var{getc}, @var{ungetc}, @var{name})
-This macro is no longer supported.  You must use
-@code{REGISTER_TARGET_PRAGMAS} instead.
 
 @findex REGISTER_TARGET_PRAGMAS
 @findex #pragma

@@ -57,7 +57,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    HAVE_DECL_PUTC_UNLOCKED actually indicates whether or not the stdio
    code is multi-thread safe by default.  If it is set to 0, then do
    not worry about using the _unlocked functions.
-   
+
    fputs_unlocked, fwrite_unlocked, and fprintf_unlocked are
    extensions and need to be prototyped by hand (since we do not
    define _GNU_SOURCE).  */
@@ -99,7 +99,7 @@ extern int fprintf_unlocked PARAMS ((FILE *, const char *, ...));
 
 #endif
 
-/* ??? Glibc's fwrite/fread_unlocked macros cause 
+/* ??? Glibc's fwrite/fread_unlocked macros cause
    "warning: signed and unsigned type in conditional expression".  */
 #undef fread_unlocked
 #undef fwrite_unlocked
@@ -641,7 +641,7 @@ typedef char _Bool;
 	FUNCTION_BLOCK_PROFILER_EXIT MACHINE_STATE_SAVE			   \
 	MACHINE_STATE_RESTORE SCCS_DIRECTIVE SECTION_ASM_OP		   \
 	ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL ASM_OUTPUT_INTERNAL_LABEL \
-	OBJC_PROLOGUE
+	OBJC_PROLOGUE ALLOCATE_TRAMPOLINE HANDLE_PRAGMA
 
 /* Hooks that are no longer used.  */
  #pragma GCC poison LANG_HOOKS_FUNCTION_MARK LANG_HOOKS_FUNCTION_FREE	\
