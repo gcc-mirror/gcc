@@ -5383,7 +5383,15 @@ static int
 field_decl_cmp (x, y)
      tree *x, *y;
 {
-  return (long)DECL_NAME (*x) - (long)DECL_NAME (*y);
+  if (DECL_NAME (*x) == DECL_NAME (*y))
+    return 0;
+  if (DECL_NAME (*x) == NULL)
+    return -1;
+  if (DECL_NAME (*y) == NULL)
+    return 1;
+  if (DECL_NAME (*x) < DECL_NAME (*y))
+    return -1;
+  return 1;
 }
 
 /* Fill in the fields of a RECORD_TYPE or UNION_TYPE node, T.
