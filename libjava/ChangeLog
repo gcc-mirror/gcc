@@ -1,3 +1,10 @@
+2002-11-04  R. A. Rivas Diaz  <rivasdiaz@yahoo.com>
+
+	* gnu/java/security/provider/SHA.java (engineGetDigestLength):
+	Return 20.
+	* gnu/java/security/provider/MD5.java (engineGetDigestLength):
+	Return 16.
+
 2002-11-03  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/ClassLoader.java (loadClass): Call loadClass on
