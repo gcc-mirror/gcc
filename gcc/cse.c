@@ -28,6 +28,7 @@ Boston, MA 02111-1307, USA.  */
 #include "tm_p.h"
 #include "regs.h"
 #include "hard-reg-set.h"
+#include "basic-block.h"
 #include "flags.h"
 #include "real.h"
 #include "insn-config.h"
@@ -434,6 +435,8 @@ static int hash_arg_in_memory;
    chain is not useful.
 
    The `cost' field stores the cost of this element's expression.
+   The `regcost' field stores the value returned by approx_reg_cost for
+   this element's expression.
 
    The `is_const' flag is set if the element is a constant (including
    a fixed address).
@@ -456,6 +459,7 @@ struct table_elt
   struct table_elt *first_same_value;
   struct table_elt *related_value;
   int cost;
+  int regcost;
   enum machine_mode mode;
   char in_memory;
   char is_const;
@@ -477,7 +481,8 @@ struct table_elt
   ? (((unsigned) REG << 7) + (unsigned) REG_QTY (REGNO (X)))	\
   : canon_hash (X, M)) & HASH_MASK)
 
-/* Determine whether register number N is considered a fixed register for CSE.
+/* Determine whether register number N is considered a fixed register for the
+   purpose of approximating register costs.
    It is desirable to replace other regs with fixed regs, to reduce need for
    non-fixed hard regs.
    A reg wins if it is either the frame pointer or designated as fixed.  */
@@ -497,19 +502,7 @@ struct table_elt
    || ((N) < FIRST_PSEUDO_REGISTER					\
        && FIXED_REGNO_P (N) && REGNO_REG_CLASS (N) != NO_REGS))
 
-/* A register is cheap if it is a user variable assigned to the register
-   or if its register number always corresponds to a cheap register.  */
-
-#define CHEAP_REG(N) \
-  ((REG_USERVAR_P (N) && REGNO (N) < FIRST_PSEUDO_REGISTER)	\
-   || CHEAP_REGNO (REGNO (N)))
-
-#define COST(X)								\
-  (GET_CODE (X) == REG							\
-   ? (CHEAP_REG (X) ? 0							\
-      : REGNO (X) >= FIRST_PSEUDO_REGISTER ? 1				\
-      : 2)								\
-   : notreg_cost(X))
+#define COST(X) (GET_CODE (X) == REG ? 0 : notreg_cost (X))
 
 /* Get the info associated with register N.  */
 
@@ -644,6 +637,9 @@ struct cse_basic_block_data
    || GET_CODE (X) == ADDRESSOF)
 
 static int notreg_cost		PARAMS ((rtx));
+static int approx_reg_cost_1	PARAMS ((rtx *, void *));
+static int approx_reg_cost	PARAMS ((rtx));
+static int preferrable		PARAMS ((int, int, int, int));
 static void new_basic_block	PARAMS ((void));
 static void make_new_qty	PARAMS ((unsigned int, enum machine_mode));
 static void make_regs_eqv	PARAMS ((unsigned int, unsigned int));
@@ -717,6 +713,62 @@ dump_class (classp)
     }
 }
 
+/* Subroutine of approx_reg_cost; called through for_each_rtx.  */
+static int
+approx_reg_cost_1 (xp, data)
+     rtx *xp;
+     void *data;
+{
+  rtx x = *xp;
+  regset set = (regset) data;
+
+  if (x && GET_CODE (x) == REG)
+    SET_REGNO_REG_SET (set, REGNO (x));
+  return 0;
+}
+
+/* Return an estimate of the cost of the registers used in an rtx.
+   This is mostly the number of different REG expressions in the rtx;
+   however for some excecptions like fixed registers we use a cost of
+   0.  */
+
+static int
+approx_reg_cost (x)
+     rtx x;
+{
+  regset_head set;
+  int i;
+  int cost = 0;
+
+  INIT_REG_SET (&set);
+  for_each_rtx (&x, approx_reg_cost_1, (void *)&set);
+
+  EXECUTE_IF_SET_IN_REG_SET
+    (&set, 0, i,
+     {
+       if (! CHEAP_REGNO (i))
+	 cost++;
+     });
+
+  CLEAR_REG_SET (&set);
+  return cost;
+}
+
+/* Return a negative value if an rtx A, whose costs are given by COST_A
+   and REGCOST_A, is more desirable than an rtx B.
+   Return a positive value if A is less desirable, or 0 if the two are
+   equally good.  */
+static int
+preferrable (cost_a, regcost_a, cost_b, regcost_b)
+     int cost_a, regcost_a, cost_b, regcost_b;
+{
+  if (cost_a != cost_b)
+    return cost_a - cost_b;
+  if (regcost_a != regcost_b)
+    return regcost_a - regcost_b;
+  return 0;
+}
+
 /* Internal function, to compute cost when X is not a register; called
    from COST macro to keep it simple.  */
 
@@ -733,9 +785,7 @@ notreg_cost (x)
 	   && subreg_lowpart_p (x)
 	   && TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (GET_MODE (x)),
 				     GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (x)))))
-	  ? (CHEAP_REG (SUBREG_REG (x)) ? 0
-	     : (REGNO (SUBREG_REG (x)) >= FIRST_PSEUDO_REGISTER ? 1
-		: 2))
+	  ? 0
 	  : rtx_cost (x, SET) * 2);
 }
 
@@ -743,7 +793,7 @@ notreg_cost (x)
    to make the cost of the corresponding register-to-register instruction
    N times that of a fast register-to-register instruction.  */
 
-#define COSTS_N_INSNS(N) ((N) * 4 - 2)
+#define COSTS_N_INSNS(N) ((N) * 2)
 
 /* Return an estimate of the cost of computing rtx X.
    One use is in cse, to decide which expression to keep in the hash table.
@@ -795,7 +845,7 @@ rtx_cost (x, outer_code)
   switch (code)
     {
     case REG:
-      return ! CHEAP_REG (x);
+      return 0;
 
     case SUBREG:
       /* If we can't tie these modes, make this expensive.  The larger
@@ -803,7 +853,8 @@ rtx_cost (x, outer_code)
       if (! MODES_TIEABLE_P (GET_MODE (x), GET_MODE (SUBREG_REG (x))))
 	return COSTS_N_INSNS (2
 			      + GET_MODE_SIZE (GET_MODE (x)) / UNITS_PER_WORD);
-      return 2;
+      break;
+
 #ifdef RTX_COSTS
       RTX_COSTS (x, code, outer_code);
 #endif
@@ -860,6 +911,7 @@ address_cost (x, mode)
   return rtx_cost (x, MEM);
 #endif
 }
+
 
 static struct cse_reg_info *
 get_cse_reg_info (regno)
@@ -1474,7 +1526,8 @@ lookup_as_function (x, code)
 
    If necessary, update table showing constant values of quantities.  */
 
-#define CHEAPER(X,Y)   ((X)->cost < (Y)->cost)
+#define CHEAPER(X, Y) \
+ (preferrable ((X)->cost, (X)->regcost, (Y)->cost, (Y)->regcost) < 0)
 
 static struct table_elt *
 insert (x, classp, hash, mode)
@@ -1521,6 +1574,7 @@ insert (x, classp, hash, mode)
   elt->exp = x;
   elt->canon_exp = NULL_RTX;
   elt->cost = COST (x);
+  elt->regcost = approx_reg_cost (x);
   elt->next_same_value = 0;
   elt->prev_same_value = 0;
   elt->next_same_hash = table[hash];
@@ -2775,7 +2829,6 @@ find_best_addr (insn, loc, mode)
   int save_hash_arg_in_memory = hash_arg_in_memory;
   int addr_volatile;
   int regno;
-  int folded_cost, addr_cost;
   unsigned hash;
 
   /* Do not try to replace constant addresses or addresses of local and
@@ -2808,14 +2861,15 @@ find_best_addr (insn, loc, mode)
   if (GET_CODE (addr) != REG)
     {
       rtx folded = fold_rtx (copy_rtx (addr), NULL_RTX);
+      int addr_folded_cost = address_cost (folded, mode);
+      int addr_cost = address_cost (addr, mode);
 
-      folded_cost = address_cost (folded, mode);
-      addr_cost = address_cost (addr, mode);
-
-      if ((folded_cost < addr_cost
-	   || (folded_cost == addr_cost
-	       && rtx_cost (folded, MEM) > rtx_cost (addr, MEM)))
-	  && rtx_cost (folded, MEM) < rtx_cost (addr, MEM)
+      if ((addr_folded_cost < addr_cost
+	   || (addr_folded_cost == addr_cost
+	       /* ??? The rtx_cost comparison is left over from an older
+		  version of this code.  It is probably no longer helpful.  */
+	       && (rtx_cost (folded, MEM) > rtx_cost (addr, MEM)
+		   || approx_reg_cost (folded) < approx_reg_cost (addr))))
 	  && validate_change (insn, loc, folded, 0))
 	addr = folded;
     }
@@ -4822,6 +4876,8 @@ cse_insn (insn, libcall_insn)
       struct table_elt *src_const_elt = 0;
       int src_cost = 10000, src_eqv_cost = 10000, src_folded_cost = 10000;
       int src_related_cost = 10000, src_elt_cost = 10000;
+      int src_regcost, src_eqv_regcost, src_folded_regcost;
+      int src_related_regcost, src_elt_regcost;
       /* Set non-zero if we need to call force_const_mem on with the
 	 contents of src_folded before using it.  */
       int src_folded_force_flag = 0;
@@ -5230,7 +5286,10 @@ cse_insn (insn, libcall_insn)
 	  if (rtx_equal_p (src, dest))
 	    src_cost = -1;
 	  else
-	    src_cost = COST (src);
+	    {
+	      src_cost = COST (src);
+	      src_regcost = approx_reg_cost (src);
+	    }
 	}
 
       if (src_eqv_here)
@@ -5238,7 +5297,10 @@ cse_insn (insn, libcall_insn)
 	  if (rtx_equal_p (src_eqv_here, dest))
 	    src_eqv_cost = -1;
 	  else
-	    src_eqv_cost = COST (src_eqv_here);
+	    {
+	      src_eqv_cost = COST (src_eqv_here);
+	      src_eqv_regcost = approx_reg_cost (src_eqv_here);
+	    }
 	}
 
       if (src_folded)
@@ -5246,7 +5308,10 @@ cse_insn (insn, libcall_insn)
 	  if (rtx_equal_p (src_folded, dest))
 	    src_folded_cost = -1;
 	  else
-	    src_folded_cost = COST (src_folded);
+	    {
+	      src_folded_cost = COST (src_folded);
+	      src_folded_regcost = approx_reg_cost (src_folded);
+	    }
 	}
 
       if (src_related)
@@ -5254,7 +5319,10 @@ cse_insn (insn, libcall_insn)
 	  if (rtx_equal_p (src_related, dest))
 	    src_related_cost = -1;
 	  else
-	    src_related_cost = COST (src_related);
+	    {
+	      src_related_cost = COST (src_related);
+	      src_related_regcost = approx_reg_cost (src_related);
+	    }
 	}
 
       /* If this was an indirect jump insn, a known label will really be
@@ -5292,30 +5360,43 @@ cse_insn (insn, libcall_insn)
 	      continue;
 	    }
 
-	  if (elt)
-	    src_elt_cost = elt->cost;
+          if (elt)
+	    {
+	      src_elt_cost = elt->cost;
+	      src_elt_regcost = elt->regcost;
+	    }
 
-	  /* Find cheapest and skip it for the next time.   For items
+          /* Find cheapest and skip it for the next time.   For items
 	     of equal cost, use this order:
 	     src_folded, src, src_eqv, src_related and hash table entry.  */
-	  if (src_folded_cost <= src_cost
-	      && src_folded_cost <= src_eqv_cost
-	      && src_folded_cost <= src_related_cost
-	      && src_folded_cost <= src_elt_cost)
+	  if (preferrable (src_folded_cost, src_folded_regcost,
+			   src_cost, src_regcost) <= 0
+	      && preferrable (src_folded_cost, src_folded_regcost,
+			      src_eqv_cost, src_eqv_regcost) <= 0
+	      && preferrable (src_folded_cost, src_folded_regcost,
+			      src_related_cost, src_related_regcost) <= 0
+	      && preferrable (src_folded_cost, src_folded_regcost,
+			      src_elt_cost, src_elt_regcost) <= 0)
 	    {
 	      trial = src_folded, src_folded_cost = 10000;
 	      if (src_folded_force_flag)
 		trial = force_const_mem (mode, trial);
 	    }
-	  else if (src_cost <= src_eqv_cost
-		   && src_cost <= src_related_cost
-		   && src_cost <= src_elt_cost)
+	  else if (preferrable (src_cost, src_regcost,
+				src_eqv_cost, src_eqv_regcost) <= 0
+		   && preferrable (src_cost, src_regcost,
+				   src_related_cost, src_related_regcost) <= 0
+		   && preferrable (src_cost, src_regcost,
+				   src_elt_cost, src_elt_regcost) <= 0)
 	    trial = src, src_cost = 10000;
-	  else if (src_eqv_cost <= src_related_cost
-		   && src_eqv_cost <= src_elt_cost)
+	  else if (preferrable (src_eqv_cost, src_eqv_regcost,
+				src_related_cost, src_related_regcost) <= 0
+		   && preferrable (src_eqv_cost, src_eqv_regcost,
+				   src_elt_cost, src_elt_regcost) <= 0)
 	    trial = copy_rtx (src_eqv_here), src_eqv_cost = 10000;
-	  else if (src_related_cost <= src_elt_cost)
-	    trial = copy_rtx (src_related), src_related_cost = 10000;
+	  else if (preferrable (src_related_cost, src_related_regcost,
+				src_elt_cost, src_elt_regcost) <= 0)
+  	    trial = copy_rtx (src_related), src_related_cost = 10000;
 	  else
 	    {
 	      trial = copy_rtx (elt->exp);

@@ -1012,6 +1012,25 @@ andcosts (x)
   return 3;
 }
 
+/* Return the cost of an addition or a subtraction.  */
+
+int
+addsubcosts (x)
+     rtx x;
+{
+  /* Adding a register is a single cycle insn.  */
+  if (GET_CODE (XEXP (x, 1)) != CONST_INT)
+    return 1;
+
+  /* Likewise for small constants.  */
+  if (CONST_OK_FOR_I (INTVAL (XEXP (x, 1))))
+    return 1;
+
+  /* Any other constant requires a 2 cycle pc-relative load plus an
+     addition.  */
+  return 3;
+}
+
 /* Return the cost of a multiply.  */
 int
 multcosts (x)

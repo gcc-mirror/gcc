@@ -54,6 +54,7 @@ extern int prepare_move_operands PARAMS ((rtx[], enum machine_mode mode));
 extern void from_compare PARAMS ((rtx *, int));
 extern int shift_insns_rtx PARAMS ((rtx));
 extern int shiftcosts PARAMS ((rtx));
+extern int addsubcosts PARAMS ((rtx));
 extern int andcosts PARAMS ((rtx));
 extern int multcosts PARAMS ((rtx));
 extern void gen_ashift PARAMS ((int, int, rtx));

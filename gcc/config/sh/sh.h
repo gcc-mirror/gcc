@@ -1651,15 +1651,12 @@ extern int current_function_anonymous_args;
 #define Pmode  SImode
 #define FUNCTION_MODE  Pmode
 
-/* The relative costs of various types of constants.  Note that cse.c defines
-   REG = 1, SUBREG = 2, any node = (2 + sum of subnodes).  */
+/* The relative costs of various types of constants.  */
 
 #define CONST_COSTS(RTX, CODE, OUTER_CODE)	\
   case CONST_INT:				\
-    if (INTVAL (RTX) == 0)			\
+    if (CONST_OK_FOR_I (INTVAL (RTX)))		\
       return 0;					\
-    else if (CONST_OK_FOR_I (INTVAL (RTX)))	\
-      return 1;					\
     else if (((OUTER_CODE) == AND || (OUTER_CODE) == IOR || (OUTER_CODE) == XOR) \
 	     && CONST_OK_FOR_L (INTVAL (RTX)))	\
       return 1;					\
@@ -1674,10 +1671,7 @@ extern int current_function_anonymous_args;
 
 #define RTX_COSTS(X, CODE, OUTER_CODE)			\
   case PLUS:						\
-    return (COSTS_N_INSNS (1)				\
-	    + rtx_cost (XEXP ((X), 0), PLUS)		\
-	    + (rtx_equal_p (XEXP ((X), 0), XEXP ((X), 1))\
-	       ? 0 : rtx_cost (XEXP ((X), 1), PLUS)));\
+    return COSTS_N_INSNS (addsubcosts (X));		\
   case AND:						\
     return COSTS_N_INSNS (andcosts (X));		\
   case MULT:						\
@@ -1685,13 +1679,7 @@ extern int current_function_anonymous_args;
   case ASHIFT:						\
   case ASHIFTRT:					\
   case LSHIFTRT:					\
-    /* Add one extra unit for the matching constraint.	\
-       Otherwise loop strength reduction would think that\
-       a shift with different sourc and destination is	\
-       as cheap as adding a constant to a register.  */	\
-    return (COSTS_N_INSNS (shiftcosts (X))		\
-	    + rtx_cost (XEXP ((X), 0), (CODE))		\
-	    + 1);					\
+    return COSTS_N_INSNS (shiftcosts (X));		\
   case DIV:						\
   case UDIV:						\
   case MOD:						\
@@ -1768,11 +1756,11 @@ while (0)
   && nonpic_symbol_mentioned_p (X))
 
 /* Compute the cost of an address.  For the SH, all valid addresses are
-   the same cost.  */
-/* ??? Perhaps we should make reg+reg addresses have higher cost because
-   they add to register pressure on r0.  */
+   the same cost.  Use a slightly higher cost for reg + reg addressing,
+   since it increases pressure on r0.  */
 
-#define ADDRESS_COST(RTX) 1
+#define ADDRESS_COST(X) (GET_CODE (X) == PLUS && ! CONSTANT_P (XEXP (X, 1)) \
+			 ? 1 : 0)
 
 /* Compute extra cost of moving data between one register class
    and another.  */
