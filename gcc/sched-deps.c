@@ -551,19 +551,16 @@ sched_analyze_1 (deps, x, insn)
   if (dest == 0)
     return;
 
-  if (GET_CODE (dest) == PARALLEL && GET_MODE (dest) == BLKmode)
+  if (GET_CODE (dest) == PARALLEL)
     {
       register int i;
 
       for (i = XVECLEN (dest, 0) - 1; i >= 0; i--)
-	{
-	  rtx reg = XVECEXP (dest, 0, i);
-
-	  if (GET_CODE (reg) == EXPR_LIST)
-	    reg = XEXP (reg, 0);
-
-	  sched_analyze_1 (deps, reg, insn);
-	}
+	if (XEXP (XVECEXP (dest, 0, i), 0) != 0)
+	  sched_analyze_1 (deps,
+			   gen_rtx_CLOBBER (VOIDmode,
+					    XEXP (XVECEXP (dest, 0, i), 0)),
+			   insn);
 
       if (GET_CODE (x) == SET)
 	sched_analyze_2 (deps, SET_SRC (x), insn);

@@ -1,5 +1,12 @@
 Fri Jan 19 13:02:56 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* rtl.texi (SET, CLOBBER): Document PARALLEL as SET_DEST possibility.
+	* flow.c (mark_set_1, case PARALLEL): Don't require BLKmode, allow
+	element to be null, and always expect an EXPR_LIST.
+	* rtlanal.c (reg_overlap_mentioned_p, note_stores): Likewise.
+	* sched-deps.c (sched_analyze_1): Likewise.
+	* sched-rgn.c (check_live_1, update_live_1): Likewise.
+
 	* regclass.c (max_set_parallel): New variable.
 	(reg_scan): Take it into account in computation of max_parallel.
 	(reg_scan_mark_refs, case SET): Compute it.

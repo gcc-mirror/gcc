@@ -4660,19 +4660,11 @@ mark_set_1 (pbi, code, reg, cond, insn, flags)
     case PARALLEL:
       /* Some targets place small structures in registers for return values of
 	 functions.  We have to detect this case specially here to get correct
-	 flow information.  Note that each element might be either a REG
-	 or an EXPR_LIST whose first operand is a REG.  */
-      if (GET_MODE (reg) != BLKmode)
-	abort ();
-
+	 flow information.  */
       for (i = XVECLEN (reg, 0) - 1; i >= 0; i--)
-	{
-	  rtx elmt = XVECEXP (reg, 0, i);
-
-	  mark_set_1 (pbi, code,
-		      GET_CODE (elmt) == EXPR_LIST ? XEXP (elmt, 0) : elmt,
-		      cond, insn, flags);
-	}
+	if (XEXP (XVECEXP (reg, 0, i), 0) != 0)
+	  mark_set_1 (pbi, code, XEXP (XVECEXP (reg, 0, i), 0), cond, insn,
+		      flags);
       return;
 
     case ZERO_EXTRACT:
