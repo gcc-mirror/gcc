@@ -29,10 +29,8 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 /* The libgcc2.c implementation gets confused by our type setup and creates
-   a directly recursive call, so we do our own implementation.  For
-   the H8/300, that's in lib1funcs.asm, for H8/300H and H8S, it's here.  */
+   a directly recursive call, so we do our own implementation.  */
 
-#ifndef __H8300__
 long __fixunssfsi (float a);
 
 long
@@ -42,4 +40,3 @@ __fixunssfsi (float a)
     return (long) (a - 32768L) + 32768L;
   return (long) a;
 }
-#endif
