@@ -368,6 +368,8 @@ read_string (ob, infile, star_if_braced)
 /* Provide a version of a function to read a long long if the system does
    not provide one.  */
 #if HOST_BITS_PER_WIDE_INT > HOST_BITS_PER_LONG && !defined(HAVE_ATOLL) && !defined(HAVE_ATOQ)
+HOST_WIDE_INT atoll PARAMS ((const char *));
+
 HOST_WIDE_INT
 atoll (p)
     const char *p;
