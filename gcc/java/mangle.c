@@ -327,7 +327,19 @@ find_compression_record_match (type, next_current)
 	  {
 	    match = i = j;
 	    saved_current = current;
+	    i++;
 	    break;
+	  }
+	else
+	  {
+	    /* We don't want to match an element that appears in the middle
+	    of a package name, so skip forward to the next complete type name.
+	    IDENTIFIER_NODEs are partial package names while RECORD_TYPEs
+	    represent complete type names. */
+	    while (j < compression_next 
+		   && TREE_CODE (TREE_VEC_ELT (compression_table, j)) == 
+		      IDENTIFIER_NODE)
+	      j++;
 	  }
     }
 
