@@ -1268,6 +1268,45 @@ get_identifier (text)
   return idp;			/* <-- return if created */
 }
 
+/* If an identifier with the name TEXT (a null-terminated string) has
+   previously been referred to, return that node; otherwise return
+   NULL_TREE.  */
+
+tree
+maybe_get_identifier (text)
+     register char *text;
+{
+  register int hi;
+  register int i;
+  register tree idp;
+  register int len, hash_len;
+
+  /* Compute length of text in len.  */
+  for (len = 0; text[len]; len++);
+
+  /* Decide how much of that length to hash on */
+  hash_len = len;
+  if (warn_id_clash && len > id_clash_len)
+    hash_len = id_clash_len;
+
+  /* Compute hash code */
+  hi = hash_len * 613 + (unsigned) text[0];
+  for (i = 1; i < hash_len; i += 2)
+    hi = ((hi * 613) + (unsigned) (text[i]));
+
+  hi &= (1 << HASHBITS) - 1;
+  hi %= MAX_HASH_TABLE;
+  
+  /* Search table for identifier */
+  for (idp = hash_table[hi]; idp; idp = TREE_CHAIN (idp))
+    if (IDENTIFIER_LENGTH (idp) == len
+	&& IDENTIFIER_POINTER (idp)[0] == text[0]
+	&& !bcmp (IDENTIFIER_POINTER (idp), text, len))
+      return idp;		/* <-- return if found */
+
+  return NULL_TREE;
+}
+
 /* Enable warnings on similar identifiers (if requested).
    Done after the built-in identifiers are created.  */
 

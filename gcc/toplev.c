@@ -2776,15 +2776,6 @@ rest_of_type_compilation (type, toplev)
   if (write_symbols == SDB_DEBUG)
     TIMEVAR (symout_time, sdbout_symbol (TYPE_STUB_DECL (type), !toplev));
 #endif
-#ifdef DWARF_DEBUGGING_INFO
-  /* Don't write out function-scope types here.  */
-  if (write_symbols == DWARF_DEBUG && toplev)
-    TIMEVAR (symout_time, dwarfout_file_scope_decl (TYPE_STUB_DECL (type), 0));
-#endif
-#ifdef DWARF2_DEBUGGING_INFO
-  if (write_symbols == DWARF2_DEBUG)
-    TIMEVAR (symout_time, dwarf2out_decl (TYPE_STUB_DECL (type)));
-#endif
 }
 
 /* This is called from finish_function (within yyparse)
@@ -3904,19 +3895,11 @@ main (argc, argv, envp)
 		{ "gstabs+", DBX_DEBUG, 1 },
 #endif
 #ifdef DWARF_DEBUGGING_INFO
-		{ "gdwarf-1", DWARF_DEBUG, 0 },
-		{ "gdwarf-1+", DWARF_DEBUG, 1 },
+		{ "gdwarf", DWARF_DEBUG, 0 },
+		{ "gdwarf+", DWARF_DEBUG, 1 },
 #endif
 #ifdef DWARF2_DEBUGGING_INFO
 		{ "gdwarf-2", DWARF2_DEBUG, 0 },
-#endif
-#if defined (DWARF_DEBUGGING_INFO) || defined (DWARF2_DEBUGGING_INFO)
-#if PREFERRED_DEBUGGING_TYPE == DWARF_DEBUG || !defined (DWARF2_DEBUGGING_INFO)
-		{ "gdwarf", DWARF_DEBUG, 0 },
-		{ "gdwarf+", DWARF_DEBUG, 1 },
-#else
-		{ "gdwarf", DWARF2_DEBUG, 0 },
-#endif
 #endif
 #ifdef XCOFF_DEBUGGING_INFO
 		{ "gxcoff", XCOFF_DEBUG, 0 },
@@ -4397,4 +4380,59 @@ debug_undef (lineno, buffer)
       && write_symbols == DWARF2_DEBUG)
     dwarf2out_undef (lineno, buffer);
 #endif /* DWARF2_DEBUGGING_INFO */
+}
+
+/* Record the relative location of the current stack frame at the PC value
+   indicated by LABEL if specified, or at the beginning of the function
+   if LABEL is NULL.  RTL is either:
+
+   a REG:  The frame is at 0(REG).
+   a PLUS of a REG and a CONST_INT:  The frame is at CONST(REG).  */
+
+void
+debug_frame (label, rtl)
+     char *label;
+     rtx rtl;
+{
+#ifdef DWARF2_DEBUGGING_INFO
+  if (write_symbols == DWARF2_DEBUG)
+    dwarf2out_def_cfa (label, rtl);
+#endif
+}
+
+/* Record that REGNO, a callee-saved register, has been saved somewhere.
+   LABEL is as for debug_frame.  RTL is either:
+
+   a REG:  The register is saved in REG.
+   a CONST_INT:  The register is saved at an offset of CONST
+     from the frame.  */
+
+void
+debug_reg_save (label, regno, rtl)
+     char *label;
+     unsigned regno;
+     rtx rtl;
+{
+#ifdef DWARF2_DEBUGGING_INFO
+  if (write_symbols == DWARF2_DEBUG)
+    dwarf2out_reg_save (label, regno, rtl);
+#endif
+}
+
+/* Record the location of the return address for the current frame.
+   LABEL is as for debug_frame.  RTL is either:
+
+   a REG:  The return address is saved in REG.
+   a CONST_INT:  The return address is saved at an offset of CONST
+     from the frame.  */
+
+void
+debug_return_save (label, rtl)
+     char *label;
+     rtx rtl;
+{
+#ifdef DWARF2_DEBUGGING_INFO
+  if (write_symbols == DWARF2_DEBUG)
+    dwarf2out_return_save (label, rtl);
+#endif
 }

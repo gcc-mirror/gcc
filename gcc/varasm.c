@@ -1175,25 +1175,15 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 	      && (TREE_PUBLIC (decl) == 0 || DECL_INITIAL (decl) == 0))
 	    sdbout_symbol (decl, 0);
 #endif
-#ifdef DWARF_DEBUGGING_INFO
-	  if (write_symbols == DWARF_DEBUG && top_level
-	      && DECL_CONTEXT (decl))
-	    dwarfout_file_scope_decl (decl, 0);
-#endif
-#ifdef DWARF2_DEBUGGING_INFO
-	  if (write_symbols == DWARF2_DEBUG && top_level
-	      && DECL_CONTEXT (decl))
-	    dwarf2out_decl (decl);
-#endif
 	}
 
-      /* Only output DWARF debugging information for record-scope variables
-	 here.  In the case of function-scope variables, the information
-	 for them is output when we do our recursive traversal of the tree
-	 representation for the entire containing function.  In the case of
-	 file-scope variables, we output information for all of them at the
-	 very end of compilation while we are doing our final traversal of
-	 the chain of file-scope declarations.  */
+      /* Don't output any DWARF debugging information for variables here.
+	 In the case of local variables, the information for them is output
+	 when we do our recursive traversal of the tree representation for
+	 the entire containing function.  In the case of file-scope variables,
+	 we output information for all of them at the very end of compilation
+	 while we are doing our final traversal of the chain of file-scope
+	 declarations.  */
 
       return;
     }
@@ -1308,24 +1298,14 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 	  && (TREE_PUBLIC (decl) == 0 || DECL_INITIAL (decl) == 0))
 	sdbout_symbol (decl, 0);
 #endif
-#ifdef DWARF_DEBUGGING_INFO
-      if (write_symbols == DWARF_DEBUG && top_level
-	  && DECL_CONTEXT (decl))
-	dwarfout_file_scope_decl (decl, 0);
-#endif
-#ifdef DWARF2_DEBUGGING_INFO
-      if (write_symbols == DWARF2_DEBUG && top_level
-	  && DECL_CONTEXT (decl))
-	dwarf2out_decl (decl);
-#endif
 
-      /* Only output DWARF debugging information for record-scope variables
-	 here.  In the case of function-scope variables, the information
-	 for them is output when we do our recursive traversal of the tree
-	 representation for the entire containing function.  In the case of
-	 file-scope variables, we output information for all of them at the
-	 very end of compilation while we are doing our final traversal of
-	 the chain of file-scope declarations.  */
+      /* Don't output any DWARF debugging information for variables here.
+	 In the case of local variables, the information for them is output
+	 when we do our recursive traversal of the tree representation for
+	 the entire containing function.  In the case of file-scope variables,
+	 we output information for all of them at the very end of compilation
+	 while we are doing our final traversal of the chain of file-scope
+	 declarations.  */
 
 #if 0 /* ??? We should either delete this or add a comment describing what
 	 it was intended to do and why we shouldn't delete it.  */
@@ -1729,15 +1709,13 @@ assemble_name (file, name)
      char *name;
 {
   char *real_name;
-  int save_warn_id_clash = warn_id_clash;
+  tree id;
 
   STRIP_NAME_ENCODING (real_name, name);
 
-  /* Don't warn about an identifier name length clash on this name, since
-     it can be a user symbol suffixed by a number.  */
-  warn_id_clash = 0;
-  TREE_SYMBOL_REFERENCED (get_identifier (real_name)) = 1;
-  warn_id_clash = save_warn_id_clash;
+  id = maybe_get_identifier (real_name);
+  if (id)
+    TREE_SYMBOL_REFERENCED (id) = 1;
 
   if (name[0] == '*')
     {

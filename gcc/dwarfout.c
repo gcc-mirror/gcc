@@ -97,6 +97,21 @@ extern char *rindex ();
 
 #define TYPE_USED_FOR_FUNCTION(tagged_type) (TYPE_SIZE (tagged_type) == 0)
 
+/* Define a macro which returns non-zero for a TYPE_DECL which was
+   implicitly generated for a tagged type.
+
+   Note that unlike the gcc front end (which generates a NULL named
+   TYPE_DECL node for each complete tagged type, each array type, and
+   each function type node created) the g++ front end generates a
+   _named_ TYPE_DECL node for each tagged type node created.
+   These TYPE_DECLs have DECL_ARTIFICIAL set, so we know not to
+   generate a DW_TAG_typedef DIE for them.  */
+#define TYPE_DECL_IS_STUB(decl)				\
+  (DECL_NAME (decl) == NULL				\
+   || (DECL_ARTIFICIAL (decl)				\
+       && is_tagged_type (TREE_TYPE (decl))		\
+       && decl == TYPE_STUB_DECL (TREE_TYPE (decl))))
+
 extern int flag_traditional;
 extern char *version_string;
 extern char *language_string;
@@ -283,6 +298,12 @@ static unsigned current_funcdef_number = 1;
    declaration are.  */
 
 static tree dwarf_last_decl;
+
+/* A flag indicating that we are emitting the member declarations of a
+   class, so member functions and variables should not be entirely emitted.
+   This is a kludge to avoid passing a second argument to output_*_die.  */
+
+static int in_class;
 
 /* Forward declarations for functions defined in this file.  */
 
@@ -1167,6 +1188,27 @@ block_ultimate_origin (block)
       while (lookahead != NULL && lookahead != ret_val);
       return ret_val;
     }
+}
+
+/* Get the class to which DECL belongs, if any.  In g++, the DECL_CONTEXT
+   of a virtual function may refer to a base class, so we check the 'this'
+   parameter.  */
+
+static tree
+decl_class_context (decl)
+     tree decl;
+{
+  tree context = NULL_TREE;
+  if (TREE_CODE (decl) != FUNCTION_DECL || ! DECL_VINDEX (decl))
+    context = DECL_CONTEXT (decl);
+  else
+    context = TYPE_MAIN_VARIANT
+      (TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (decl)))));
+
+  if (context && TREE_CODE_CLASS (TREE_CODE (context)) != 't')
+    context = NULL_TREE;
+
+  return context;
 }
 
 static void
@@ -3007,8 +3049,8 @@ type_tag (type)
       /* The g++ front end makes the TYPE_NAME of *each* tagged type point to 
          a TYPE_DECL node, regardless of whether or not a `typedef' was
          involved.  */
-      else
-	if (TREE_CODE (TYPE_NAME (type)) == TYPE_DECL)
+      else if (TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
+	       && ! DECL_IGNORED_P (TYPE_NAME (type)))
 	  t = DECL_NAME (TYPE_NAME (type));
 
       /* Now get the name as a string, or invent one.  */
@@ -3302,17 +3344,21 @@ output_global_subroutine_die (arg)
     equate_decl_number_to_die_number (decl);
   else
     {
-      if (! DECL_EXTERNAL (decl))
+      if (! DECL_EXTERNAL (decl) && ! in_class
+	  && decl == current_function_decl)
 	{
 	  char label[MAX_ARTIFICIAL_LABEL_BYTES];
 
 	  low_pc_attribute (function_start_label (decl));
 	  sprintf (label, FUNC_END_LABEL_FMT, current_funcdef_number);
 	  high_pc_attribute (label);
-	  sprintf (label, BODY_BEGIN_LABEL_FMT, current_funcdef_number);
-	  body_begin_attribute (label);
-	  sprintf (label, BODY_END_LABEL_FMT, current_funcdef_number);
-	  body_end_attribute (label);
+	  if (use_gnu_debug_info_extensions)
+	    {
+	      sprintf (label, BODY_BEGIN_LABEL_FMT, current_funcdef_number);
+	      body_begin_attribute (label);
+	      sprintf (label, BODY_END_LABEL_FMT, current_funcdef_number);
+	      body_end_attribute (label);
+	    }
 	}
     }
 }
@@ -3342,7 +3388,8 @@ output_global_variable_die (arg)
     equate_decl_number_to_die_number (decl);
   else
     {
-      if (!DECL_EXTERNAL (decl))
+      if (! DECL_EXTERNAL (decl) && ! in_class
+	  && current_function_decl == decl_function_context (decl))
 	location_or_const_value_attribute (decl);
     }
 }
@@ -3566,7 +3613,7 @@ output_compile_unit_die (arg)
       comp_dir_attribute (wd);
   }
 
-  if (debug_info_level >= DINFO_LEVEL_NORMAL)
+  if (debug_info_level >= DINFO_LEVEL_NORMAL && use_gnu_debug_info_extensions)
     {
       sf_names_attribute (SFNAMES_BEGIN_LABEL);
       src_info_attribute (SRCINFO_BEGIN_LABEL);
@@ -3681,10 +3728,13 @@ output_local_subroutine_die (arg)
 	  low_pc_attribute (function_start_label (decl));
 	  sprintf (label, FUNC_END_LABEL_FMT, current_funcdef_number);
 	  high_pc_attribute (label);
-	  sprintf (label, BODY_BEGIN_LABEL_FMT, current_funcdef_number);
-	  body_begin_attribute (label);
-	  sprintf (label, BODY_END_LABEL_FMT, current_funcdef_number);
-	  body_end_attribute (label);
+	  if (use_gnu_debug_info_extensions)
+	    {
+	      sprintf (label, BODY_BEGIN_LABEL_FMT, current_funcdef_number);
+	      body_begin_attribute (label);
+	      sprintf (label, BODY_END_LABEL_FMT, current_funcdef_number);
+	      body_end_attribute (label);
+	    }
 	}
     }
 }
@@ -3990,7 +4040,9 @@ type_ok_for_scope (type, scope)
      (for C and C++ anyway) will be array types and function types.  */
 
   return is_tagged_type (type)
-	 ? (TYPE_CONTEXT (type) == scope)
+	 ? (TYPE_CONTEXT (type) == scope
+	    || (scope == NULL_TREE && is_tagged_type (TYPE_CONTEXT (type))
+		&& TREE_ASM_WRITTEN (TYPE_CONTEXT (type))))
 	 : (scope == NULL_TREE || ! is_tagged_type (scope));
 }
 
@@ -4057,6 +4109,17 @@ output_type (type, containing_scope)
 
   if (TREE_ASM_WRITTEN (type))
     return;
+
+  /* If this is a nested type whose containing class hasn't been
+     written out yet, writing it out will cover this one, too.  */
+
+  if (TYPE_CONTEXT (type)
+      && TREE_CODE_CLASS (TREE_CODE (TYPE_CONTEXT (type))) == 't'
+      && ! TREE_ASM_WRITTEN (TYPE_CONTEXT (type)))
+    {
+      output_type (TYPE_CONTEXT (type), containing_scope);
+      return;
+    }
 
   /* Don't generate any DIEs for this type now unless it is OK to do so
      (based upon what `type_ok_for_scope' tells us).  */
@@ -4168,13 +4231,9 @@ output_type (type, containing_scope)
 	   time, we will certainly know as much about each file-scope tagged
 	   type as we are ever going to know, so at that point in time, we
 	   can safely generate correct Dwarf descriptions for these file-
-	   scope tagged types.
+	   scope tagged types.  */
 
-	   This loses for C++ nested types that are defined after their
-	   containing class, but I don't see a good way to fix it.  I doubt
-	   many people will be using DWARF 1 for C++ in any case.  */
-
-	if (TYPE_SIZE (type) == 0 && TYPE_CONTEXT (type) == NULL && !finalizing)
+	if (TYPE_SIZE (type) == 0 && !finalizing)
 	  return;	/* EARLY EXIT!  Avoid setting TREE_ASM_WRITTEN.  */
 
 	/* Prevent infinite recursion in cases where the type of some
@@ -4233,6 +4292,8 @@ output_type (type, containing_scope)
 		  output_die (output_inheritance_die, TREE_VEC_ELT (bases, i));
 	      }
 
+	    ++in_class;
+
 	    {
 	      register tree normal_member;
 
@@ -4254,6 +4315,8 @@ output_type (type, containing_scope)
 		   func_member = TREE_CHAIN (func_member))
 		output_decl (func_member, type);
 	    }
+
+	    --in_class;
 
 	    /* RECORD_TYPEs, UNION_TYPEs, and QUAL_UNION_TYPEs are themselves
 	       scopes (at least in C++) so we must now output any nested
@@ -4458,6 +4521,24 @@ output_decls_for_scope (stmt, depth)
   }
 }
 
+/* Is this a typedef we can avoid emitting?  */
+
+inline int
+is_redundant_typedef (decl)
+     register tree decl;
+{
+  if (TYPE_DECL_IS_STUB (decl))
+    return 1;
+  if (DECL_ARTIFICIAL (decl)
+      && DECL_CONTEXT (decl)
+      && is_tagged_type (DECL_CONTEXT (decl))
+      && TREE_CODE (TYPE_NAME (DECL_CONTEXT (decl))) == TYPE_DECL
+      && DECL_NAME (decl) == DECL_NAME (TYPE_NAME (DECL_CONTEXT (decl))))
+    /* Also ignore the artificial member typedef for the class name.  */
+    return 1;
+  return 0;
+}
+
 /* Output Dwarf .debug information for a decl described by DECL.  */
 
 static void
@@ -4518,6 +4599,13 @@ output_decl (decl, containing_scope)
 
       output_type (TREE_TYPE (TREE_TYPE (decl)), containing_scope);
 
+      {
+	/* And its containing type.  */
+	register tree origin = decl_class_context (decl);
+	if (origin)
+	  output_type (origin, containing_scope);
+      }
+
       /* If the following DIE will represent a function definition for a
 	 function with "extern" linkage, output a special "pubnames" DIE
 	 label just ahead of the actual DIE.  A reference to this label
@@ -4554,7 +4642,7 @@ output_decl (decl, containing_scope)
 	 we need to do here (and all we *can* do here) is to describe
 	 the *types* of its formal parameters.  */
 
-      if (DECL_INITIAL (decl) == NULL_TREE)
+      if (decl != current_function_decl || in_class)
 	output_formal_types (TREE_TYPE (decl));
       else
 	{
@@ -4644,45 +4732,45 @@ output_decl (decl, containing_scope)
                 output_die (output_unspecified_parameters_die, decl);
               }
 	  }
-	}
 
-      /* Output Dwarf info for all of the stuff within the body of the
-	 function (if it has one - it may be just a declaration).  */
+	  /* Output Dwarf info for all of the stuff within the body of the
+	     function (if it has one - it may be just a declaration).  */
 
-      {
-	register tree outer_scope = DECL_INITIAL (decl);
-
-	if (outer_scope && TREE_CODE (outer_scope) != ERROR_MARK)
 	  {
-	    /* Note that here, `outer_scope' is a pointer to the outermost
-	       BLOCK node created to represent a function.
-	       This outermost BLOCK actually represents the outermost
-	       binding contour for the function, i.e. the contour in which
-	       the function's formal parameters and labels get declared.
+	    register tree outer_scope = DECL_INITIAL (decl);
 
-	       Curiously, it appears that the front end doesn't actually
-	       put the PARM_DECL nodes for the current function onto the
-	       BLOCK_VARS list for this outer scope.  (They are strung
-	       off of the DECL_ARGUMENTS list for the function instead.)
-	       The BLOCK_VARS list for the `outer_scope' does provide us
-	       with a list of the LABEL_DECL nodes for the function however,
-	       and we output DWARF info for those here.
+	    if (outer_scope && TREE_CODE (outer_scope) != ERROR_MARK)
+	      {
+		/* Note that here, `outer_scope' is a pointer to the outermost
+		   BLOCK node created to represent a function.
+		   This outermost BLOCK actually represents the outermost
+		   binding contour for the function, i.e. the contour in which
+		   the function's formal parameters and labels get declared.
 
-	       Just within the `outer_scope' there will be a BLOCK node
-	       representing the function's outermost pair of curly braces,
-	       and any blocks used for the base and member initializers of
-	       a C++ constructor function.  */
+		   Curiously, it appears that the front end doesn't actually
+		   put the PARM_DECL nodes for the current function onto the
+		   BLOCK_VARS list for this outer scope.  (They are strung
+		   off of the DECL_ARGUMENTS list for the function instead.)
+		   The BLOCK_VARS list for the `outer_scope' does provide us
+		   with a list of the LABEL_DECL nodes for the function however,
+		   and we output DWARF info for those here.
 
-	    output_decls_for_scope (outer_scope, 0);
+		   Just within the `outer_scope' there will be a BLOCK node
+		   representing the function's outermost pair of curly braces,
+		   and any blocks used for the base and member initializers of
+		   a C++ constructor function.  */
 
-	    /* Finally, force out any pending types which are local to the
-	       outermost block of this function definition.  These will
-	       all have a TYPE_CONTEXT which points to the FUNCTION_DECL
-	       node itself.  */
+		output_decls_for_scope (outer_scope, 0);
 
-	    output_pending_types_for_scope (decl);
+		/* Finally, force out any pending types which are local to the
+		   outermost block of this function definition.  These will
+		   all have a TYPE_CONTEXT which points to the FUNCTION_DECL
+		   node itself.  */
+
+		output_pending_types_for_scope (decl);
+	      }
 	  }
-      }
+	}
 
       /* Generate a terminator for the list of stuff `owned' by this
 	 function.  */
@@ -4699,19 +4787,19 @@ output_decl (decl, containing_scope)
 	 a return type or a formal parameter type of some function.  */
 
       if (debug_info_level <= DINFO_LEVEL_TERSE)
-	if (DECL_NAME (decl) != NULL
-	    || ! TYPE_USED_FOR_FUNCTION (TREE_TYPE (decl)))
+	if (! TYPE_DECL_IS_STUB (decl)
+	    || (! TYPE_USED_FOR_FUNCTION (TREE_TYPE (decl)) && ! in_class))
           return;
 
-      /* In the special case of a null-named TYPE_DECL node (representing
-	 the declaration of some type tag), if the given TYPE_DECL is
+      /* In the special case of a TYPE_DECL node representing
+	 the declaration of some type tag, if the given TYPE_DECL is
 	 marked as having been instantiated from some other (original)
 	 TYPE_DECL node (e.g. one which was generated within the original
 	 definition of an inline function) we have to generate a special
 	 (abbreviated) TAG_structure_type, TAG_union_type, or
 	 TAG_enumeration-type DIE here.  */
 
-      if (! DECL_NAME (decl) && DECL_ABSTRACT_ORIGIN (decl))
+      if (TYPE_DECL_IS_STUB (decl) && DECL_ABSTRACT_ORIGIN (decl))
 	{
 	  output_tagged_type_instantiation (TREE_TYPE (decl));
 	  return;
@@ -4719,13 +4807,7 @@ output_decl (decl, containing_scope)
 
       output_type (TREE_TYPE (decl), containing_scope);
 
-      /* Note that unlike the gcc front end (which generates a NULL named
-	 TYPE_DECL node for each complete tagged type, each array type,
-	 and each function type node created) the g++ front end generates
-	 a *named* TYPE_DECL node for each tagged type node created.
-	 These TYPE_DECLs have DECL_ARTIFICIAL set, so we know not to
-	 generate a DW_TAG_typedef DIE for them.  */
-      if (DECL_NAME (decl) && ! DECL_ARTIFICIAL (decl))
+      if (! is_redundant_typedef (decl))
 	/* Output a DIE to represent the typedef itself.  */
 	output_die (output_typedef_die, decl);
       break;
@@ -4754,6 +4836,13 @@ output_decl (decl, containing_scope)
 	 object.  */
 
       output_type (TREE_TYPE (decl), containing_scope);
+
+      {
+	/* And its containing type.  */
+	register tree origin = decl_class_context (decl);
+	if (origin)
+	  output_type (origin, containing_scope);
+      }
 
       /* If the following DIE will represent a data object definition for a
 	 data object with "extern" linkage, output a special "pubnames" DIE
@@ -5076,6 +5165,8 @@ dwarfout_begin_function ()
 {
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
 
+  if (! use_gnu_debug_info_extensions)
+    return;
   function_section (current_function_decl);
   sprintf (label, BODY_BEGIN_LABEL_FMT, current_funcdef_number);
   ASM_OUTPUT_LABEL (asm_out_file, label);
@@ -5089,6 +5180,8 @@ dwarfout_end_function ()
 {
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
 
+  if (! use_gnu_debug_info_extensions)
+    return;
   function_section (current_function_decl);
   sprintf (label, BODY_END_LABEL_FMT, current_funcdef_number);
   ASM_OUTPUT_LABEL (asm_out_file, label);
@@ -5263,7 +5356,7 @@ dwarfout_line (filename, line)
       char label[MAX_ARTIFICIAL_LABEL_BYTES];
       static unsigned last_line_entry_num = 0;
       static unsigned prev_file_entry_num = (unsigned) -1;
-      register unsigned this_file_entry_num = lookup_filename (filename);
+      register unsigned this_file_entry_num;
 
       function_section (current_function_decl);
       sprintf (label, LINE_CODE_LABEL_FMT, ++last_line_entry_num);
@@ -5271,6 +5364,11 @@ dwarfout_line (filename, line)
 
       fputc ('\n', asm_out_file);
       ASM_OUTPUT_PUSH_SECTION (asm_out_file, LINE_SECTION);
+
+      if (use_gnu_debug_info_extensions)
+	this_file_entry_num = lookup_filename (filename);
+      else
+	this_file_entry_num = (unsigned) -1;
 
       if (this_file_entry_num != prev_file_entry_num)
         {
@@ -5307,6 +5405,9 @@ generate_macinfo_entry (type_and_offset, string)
      register char *type_and_offset;
      register char *string;
 {
+  if (! use_gnu_debug_info_extensions)
+    return;
+
   fputc ('\n', asm_out_file);
   ASM_OUTPUT_PUSH_SECTION (asm_out_file, MACINFO_SECTION);
   fprintf (asm_out_file, "\t%s\t%s\n", UNALIGNED_INT_ASM_OP, type_and_offset);
@@ -5466,32 +5567,36 @@ dwarfout_init (asm_out_file, main_input_filename)
 
   if (debug_info_level >= DINFO_LEVEL_NORMAL)
     {
-      /* Output a starting label and an initial (compilation directory)
-	 entry for the .debug_sfnames section.  The starting label will be
-	 referenced by the initial entry in the .debug_srcinfo section.  */
+      if (use_gnu_debug_info_extensions)
+	{
+	  /* Output a starting label and an initial (compilation directory)
+	     entry for the .debug_sfnames section.  The starting label will be
+	     referenced by the initial entry in the .debug_srcinfo section.  */
     
-      fputc ('\n', asm_out_file);
-      ASM_OUTPUT_PUSH_SECTION (asm_out_file, SFNAMES_SECTION);
-      ASM_OUTPUT_LABEL (asm_out_file, SFNAMES_BEGIN_LABEL);
-      {
-	register char *pwd;
-	register unsigned len;
-	register char *dirname;
+	  fputc ('\n', asm_out_file);
+	  ASM_OUTPUT_PUSH_SECTION (asm_out_file, SFNAMES_SECTION);
+	  ASM_OUTPUT_LABEL (asm_out_file, SFNAMES_BEGIN_LABEL);
+	  {
+	    register char *pwd;
+	    register unsigned len;
+	    register char *dirname;
 
-	pwd = getpwd ();
-	if (!pwd)
-	  pfatal_with_name ("getpwd");
-	len = strlen (pwd);
-	dirname = (char *) xmalloc (len + 2);
+	    pwd = getpwd ();
+	    if (!pwd)
+	      pfatal_with_name ("getpwd");
+	    len = strlen (pwd);
+	    dirname = (char *) xmalloc (len + 2);
     
-	strcpy (dirname, pwd);
-	strcpy (dirname + len, "/");
-        ASM_OUTPUT_DWARF_STRING (asm_out_file, dirname);
-        free (dirname);
-      }
-      ASM_OUTPUT_POP_SECTION (asm_out_file);
+	    strcpy (dirname, pwd);
+	    strcpy (dirname + len, "/");
+	    ASM_OUTPUT_DWARF_STRING (asm_out_file, dirname);
+	    free (dirname);
+	  }
+	  ASM_OUTPUT_POP_SECTION (asm_out_file);
+	}
     
-      if (debug_info_level >= DINFO_LEVEL_VERBOSE)
+      if (debug_info_level >= DINFO_LEVEL_VERBOSE
+	  && use_gnu_debug_info_extensions)
 	{
           /* Output a starting label for the .debug_macinfo section.  This
 	     label will be referenced by the AT_mac_info attribute in the
@@ -5512,21 +5617,24 @@ dwarfout_init (asm_out_file, main_input_filename)
       ASM_OUTPUT_DWARF_ADDR (asm_out_file, TEXT_BEGIN_LABEL);
       ASM_OUTPUT_POP_SECTION (asm_out_file);
     
-      /* Generate the initial entry for the .debug_srcinfo section.  */
-    
-      fputc ('\n', asm_out_file);
-      ASM_OUTPUT_PUSH_SECTION (asm_out_file, SRCINFO_SECTION);
-      ASM_OUTPUT_LABEL (asm_out_file, SRCINFO_BEGIN_LABEL);
-      ASM_OUTPUT_DWARF_ADDR (asm_out_file, LINE_BEGIN_LABEL);
-      ASM_OUTPUT_DWARF_ADDR (asm_out_file, SFNAMES_BEGIN_LABEL);
-      ASM_OUTPUT_DWARF_ADDR (asm_out_file, TEXT_BEGIN_LABEL);
-      ASM_OUTPUT_DWARF_ADDR (asm_out_file, TEXT_END_LABEL);
+      if (use_gnu_debug_info_extensions)
+	{
+	  /* Generate the initial entry for the .debug_srcinfo section.  */
+
+	  fputc ('\n', asm_out_file);
+	  ASM_OUTPUT_PUSH_SECTION (asm_out_file, SRCINFO_SECTION);
+	  ASM_OUTPUT_LABEL (asm_out_file, SRCINFO_BEGIN_LABEL);
+	  ASM_OUTPUT_DWARF_ADDR (asm_out_file, LINE_BEGIN_LABEL);
+	  ASM_OUTPUT_DWARF_ADDR (asm_out_file, SFNAMES_BEGIN_LABEL);
+	  ASM_OUTPUT_DWARF_ADDR (asm_out_file, TEXT_BEGIN_LABEL);
+	  ASM_OUTPUT_DWARF_ADDR (asm_out_file, TEXT_END_LABEL);
 #ifdef DWARF_TIMESTAMPS
-      ASM_OUTPUT_DWARF_DATA4 (asm_out_file, time (NULL));
+	  ASM_OUTPUT_DWARF_DATA4 (asm_out_file, time (NULL));
 #else
-      ASM_OUTPUT_DWARF_DATA4 (asm_out_file, -1);
+	  ASM_OUTPUT_DWARF_DATA4 (asm_out_file, -1);
 #endif
-      ASM_OUTPUT_POP_SECTION (asm_out_file);
+	  ASM_OUTPUT_POP_SECTION (asm_out_file);
+	}
     
       /* Generate the initial entry for the .debug_pubnames section.  */
     
@@ -5664,14 +5772,17 @@ dwarfout_finish ()
       ASM_OUTPUT_LABEL (asm_out_file, LINE_END_LABEL);
       ASM_OUTPUT_POP_SECTION (asm_out_file);
     
-      /* Output a terminating entry for the .debug_srcinfo section.  */
-    
-      fputc ('\n', asm_out_file);
-      ASM_OUTPUT_PUSH_SECTION (asm_out_file, SRCINFO_SECTION);
-      ASM_OUTPUT_DWARF_DELTA4 (asm_out_file,
-			       LINE_LAST_ENTRY_LABEL, LINE_BEGIN_LABEL);
-      ASM_OUTPUT_DWARF_DATA4 (asm_out_file, -1);
-      ASM_OUTPUT_POP_SECTION (asm_out_file);
+      if (use_gnu_debug_info_extensions)
+	{
+	  /* Output a terminating entry for the .debug_srcinfo section.  */
+
+	  fputc ('\n', asm_out_file);
+	  ASM_OUTPUT_PUSH_SECTION (asm_out_file, SRCINFO_SECTION);
+	  ASM_OUTPUT_DWARF_DELTA4 (asm_out_file,
+				   LINE_LAST_ENTRY_LABEL, LINE_BEGIN_LABEL);
+	  ASM_OUTPUT_DWARF_DATA4 (asm_out_file, -1);
+	  ASM_OUTPUT_POP_SECTION (asm_out_file);
+	}
 
       if (debug_info_level >= DINFO_LEVEL_VERBOSE)
 	{
