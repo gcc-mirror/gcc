@@ -1,3 +1,11 @@
+2004-06-21  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de
+
+	PR fortran/15511
+	* scanner.c (load_line): Don't truncate preprocessor lines.
+	Reformat error message.
+	(preprocessor_line): Issue warning in case of malformed
+	preprocessor line. 
+
 2004-06-21  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* resolve.c (resolve_symbol): Add comment in function body.
