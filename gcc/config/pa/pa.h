@@ -54,6 +54,9 @@ extern int target_flags;
 
 #define TARGET_KERNEL (target_flags & 4)
 
+/* Allow unconditional jumps in the delay slots of call instructions.  */
+#define TARGET_JUMP_IN_DELAY (target_flags & 8)
+
 /* Force all function calls to indirect addressing via a register.  This
    avoids lossage when the function is very far away from the current PC.
 
@@ -78,15 +81,22 @@ extern int target_flags;
    An empty string NAME is used to identify the default VALUE.  */
 
 #define TARGET_SWITCHES \
-  {{"snake", 1},	\
-   {"nosnake", -1},	\
-   {"pa-risc-1-0", -1},	\
-   {"pa-risc-1-1", 1},	\
-   {"disable-fpregs", 2},\
-   {"kernel", 4},	\
-   {"long-calls", 16},	\
-   {"disable-indexing", 32},\
-   {"trailing-colon", 64},\
+  {{"snake", 1},		\
+   {"nosnake", -1},		\
+   {"pa-risc-1-0", -1},		\
+   {"pa-risc-1-1", 1},		\
+   {"disable-fpregs", 2},	\
+   {"no-disable-fpregs", 2},	\
+   {"kernel", 4},		\
+   {"no-kernel", -4},		\
+   {"jump-in-delay", 8},	\
+   {"no-jump-in-delay", -8},	\
+   {"long-calls", 16},		\
+   {"no-long-calls", -16},	\
+   {"disable-indexing", 32},	\
+   {"no-disable-indexing", -32},\
+   {"trailing-colon", 64},	\
+   {"no-trailing-colon", -64},	\
    { "", TARGET_DEFAULT}}
 
 #ifndef TARGET_DEFAULT
@@ -1871,6 +1881,7 @@ extern char *output_bb ();
 extern char *output_dbra ();
 extern char *output_movb ();
 extern char *output_return ();
+extern char *output_call ();
 extern char *output_floatsisf2 ();
 extern char *output_floatsidf2 ();
 extern char *output_mul_insn ();
