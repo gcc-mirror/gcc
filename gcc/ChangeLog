@@ -1,3 +1,15 @@
+2003-04-27  Zack Weinberg  <zack@codesourcery.com>
+
+	* expr.c (expand_expr <COMPLEX_CST, STRING_CST>): Always call
+	output_constant_def, use its result instead of TREE_CST_RTL (exp).
+	Can assume it has the form (mem (symbol_ref ".LCxxx")).
+	(expand_expr <COMPONENT_REF>): Can always just extract the
+	relevant field of a CONSTRUCTOR.
+	(expand_expr <ARRAY_REF, COMPONENT_REF, BIT_FIELD_REF,
+	ARRAY_RANGE_REF>): Make control flow explicit.
+	* varasm.c (output_constant_def): Can look at TREE_CST_RTL of
+	an INTEGER_CST.
+
 2003-04-27  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* reload1.c (reg_set_luid): Fix a comment typo.
