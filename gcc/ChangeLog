@@ -29,6 +29,14 @@ Mon Jul  6 22:17:19 1998  Alasdair Baird	<alasdair@wildcat.demon.co.uk>
 
 Mon Jul  6 22:14:31 1998  Richard Henderson  (rth@cygnus.com)
 
+	* print-rtl.c (print_rtx): Display the real-value equivalent of
+	a const_double when easy.
+
+	* real.h (REAL_VALUE_TO_TARGET_SINGLE): Use a union to pun types.
+	Zero memory first for predictability.
+	(REAL_VALUE_TO_TARGET_DOUBLE): Likewise.
+	* varasm.c (immed_real_const_1): Notice width of H_W_I == double.
+
 	* regclass.c (allocate_reg_info): Initialize the entire reg_data
 	virtual array.
 

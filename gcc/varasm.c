@@ -2070,6 +2070,8 @@ immed_real_const_1 (d, mode)
   else if (! REAL_VALUE_ISNAN (d) && REAL_VALUES_EQUAL (dconst1, d))
     return CONST1_RTX (mode);
 
+  if (sizeof u == sizeof (HOST_WIDE_INT))
+    return immed_double_const (u.i[0], 0, mode);
   if (sizeof u == 2 * sizeof (HOST_WIDE_INT))
     return immed_double_const (u.i[0], u.i[1], mode);
 
