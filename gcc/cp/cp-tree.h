@@ -114,9 +114,6 @@ Boston, MA 02111-1307, USA.  */
 
    TYPE_BINFO
      For an ENUMERAL_TYPE, this is ENUM_TEMPLATE_INFO.
-     For a TYPENAME_TYPE, this is TYPENAME_TYPE_FULLNAME.
-     For a TEMPLATE_TEMPLATE_PARM or BOUND_TEMPLATE_TEMPLATE_PARM,
-     this is TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO.
      For a FUNCTION_TYPE or METHOD_TYPE, this is TYPE_RAISES_EXCEPTIONS
 
   BINFO_VIRTUALS
@@ -191,6 +188,14 @@ Boston, MA 02111-1307, USA.  */
     if (__c != RECORD_TYPE && __c != UNION_TYPE)		\
       tree_check_failed (__t, RECORD_TYPE, __FILE__, __LINE__,	\
 			 __FUNCTION__);				\
+    __t; })
+
+#define BOUND_TEMPLATE_TEMPLATE_PARM_TYPE_CHECK(NODE)		\
+({  const tree __t = NODE;					\
+    enum tree_code __c = TREE_CODE(__t);			\
+    if (__c != BOUND_TEMPLATE_TEMPLATE_PARM)			\
+      tree_check_failed (__t, BOUND_TEMPLATE_TEMPLATE_PARM,	\
+			 __FILE__, __LINE__, __FUNCTION__);	\
     __t; })
 
 #else /* not ENABLE_TREE_CHECKING, or not gcc */
@@ -2147,8 +2152,10 @@ struct lang_decl
    non-type template parameters.  */
 #define ENUM_TEMPLATE_INFO(NODE) (TYPE_BINFO (ENUMERAL_TYPE_CHECK (NODE)))
 
-/* Template information for a bound template template parameter.  */
-#define TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO(NODE) (TYPE_BINFO (NODE))
+/* Template information for a template template parameter.  */
+#define TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO(NODE) \
+  (TYPE_LANG_SPECIFIC(BOUND_TEMPLATE_TEMPLATE_PARM_TYPE_CHECK (NODE)) \
+   ->template_info)
 
 /* Template information for an ENUMERAL_, RECORD_, or UNION_TYPE.  */
 #define TYPE_TEMPLATE_INFO(NODE)			\
@@ -2311,7 +2318,7 @@ struct lang_decl
    this is an IDENTIFIER_NODE, and the same as the DECL_NAME on the
    corresponding TYPE_DECL.  However, this may also be a
    TEMPLATE_ID_EXPR if we had something like `typename X::Y<T>'.  */
-#define TYPENAME_TYPE_FULLNAME(NODE) TYPE_BINFO (NODE)
+#define TYPENAME_TYPE_FULLNAME(NODE) (TYPE_FIELDS (NODE))
 
 /* Nonzero if NODE is an implicit typename.  */
 #define IMPLICIT_TYPENAME_P(NODE) \
@@ -3859,6 +3866,7 @@ extern tree identifier_typedecl_value		PARAMS ((tree));
 extern tree build_lang_decl			PARAMS ((enum tree_code, tree, tree));
 extern void retrofit_lang_decl			PARAMS ((tree));
 extern tree copy_decl                           PARAMS ((tree));
+extern tree copy_type                           PARAMS ((tree));
 extern tree cp_make_lang_type			PARAMS ((enum tree_code));
 extern tree make_aggr_type			PARAMS ((enum tree_code));
 extern void compiler_error			PARAMS ((const char *, ...))
