@@ -600,7 +600,8 @@ tidy_fallthru_edges (void)
       if ((s = b->succ) != NULL
 	  && ! (s->flags & EDGE_COMPLEX)
 	  && s->succ_next == NULL
-	  && s->dest == c)
+	  && s->dest == c
+	  && !find_reg_note (BB_END (b), REG_CROSSING_JUMP, NULL_RTX))
 	tidy_fallthru_edge (s);
     }
 }

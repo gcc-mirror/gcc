@@ -291,6 +291,14 @@ print_rtx (rtx in_rtx)
 		  fprintf (outfile, " [ ERROR ]");
 		break;
 
+	      case NOTE_INSN_UNLIKELY_EXECUTED_CODE:
+		{
+		  basic_block bb = NOTE_BASIC_BLOCK (in_rtx);
+		  if (bb != 0)
+		    fprintf (outfile, " [bb %d]", bb->index);
+		  break;
+		}
+		
 	      case NOTE_INSN_VAR_LOCATION:
 		fprintf (outfile, " (");
 		print_mem_expr (outfile, NOTE_VAR_LOCATION_DECL (in_rtx));

@@ -115,6 +115,7 @@ struct basic_block_def entry_exit_blocks[2]
     0,				/* count */
     0,				/* frequency */
     0,				/* flags */
+    0,                          /* partition */
     NULL			/* rbi */
   },
   {
@@ -138,6 +139,7 @@ struct basic_block_def entry_exit_blocks[2]
     0,				/* count */
     0,				/* frequency */
     0,				/* flags */
+    0,                          /* partition */
     NULL			/* rbi */
   }
 };

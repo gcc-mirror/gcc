@@ -2851,6 +2851,18 @@ find_if_case_1 (basic_block test_bb, edge then_edge, edge else_edge)
   edge then_succ = then_bb->succ;
   int then_bb_index;
 
+  /* If we are partitioning hot/cold basic blocks, we don't want to
+     mess up unconditional or indirect jumps that cross between hot
+     and cold sections.  */
+  
+  if (flag_reorder_blocks_and_partition
+      && ((BB_END (then_bb) 
+	   && find_reg_note (BB_END (then_bb), REG_CROSSING_JUMP, NULL_RTX))
+	  || (BB_END (else_bb)
+	      && find_reg_note (BB_END (else_bb), REG_CROSSING_JUMP, 
+				NULL_RTX))))
+    return FALSE;
+
   /* THEN has one successor.  */
   if (!then_succ || then_succ->succ_next != NULL)
     return FALSE;
@@ -2918,6 +2930,18 @@ find_if_case_2 (basic_block test_bb, edge then_edge, edge else_edge)
   basic_block else_bb = else_edge->dest;
   edge else_succ = else_bb->succ;
   rtx note;
+
+  /* If we are partitioning hot/cold basic blocks, we don't want to
+     mess up unconditional or indirect jumps that cross between hot
+     and cold sections.  */
+  
+  if (flag_reorder_blocks_and_partition
+      && ((BB_END (then_bb)
+	   && find_reg_note (BB_END (then_bb), REG_CROSSING_JUMP, NULL_RTX))
+	  || (BB_END (else_bb) 
+	      && find_reg_note (BB_END (else_bb), REG_CROSSING_JUMP, 
+				NULL_RTX))))
+    return FALSE;
 
   /* ELSE has one successor.  */
   if (!else_succ || else_succ->succ_next != NULL)
@@ -3263,7 +3287,8 @@ if_convert (int x_life_data_ok)
   num_true_changes = 0;
   life_data_ok = (x_life_data_ok != 0);
 
-  if (! targetm.cannot_modify_jumps_p ())
+  if ((! targetm.cannot_modify_jumps_p ())
+      && (!flag_reorder_blocks_and_partition || !no_new_pseudos))
     mark_loop_exit_edges ();
 
   /* Free up basic_block_for_insn so that we don't have to keep it

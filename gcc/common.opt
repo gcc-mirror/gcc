@@ -569,6 +569,10 @@ freorder-blocks
 Common
 Reorder basic blocks to improve code placement
 
+freorder-blocks-and-partition
+Common
+Reorder basic blocks and partition into hot and cold sections
+
 freorder-functions
 Common
 Reorder functions to improve code placement

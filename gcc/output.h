@@ -162,6 +162,9 @@ extern void check_function_return_warnings (void);
 /* Tell assembler to switch to text section.  */
 extern void text_section (void);
 
+/* Tell assembler to switch to unlikely-to-be-executed text section.  */
+extern void unlikely_text_section (void);
+
 /* Tell assembler to switch to data section.  */
 extern void data_section (void);
 
@@ -171,6 +174,9 @@ extern void readonly_data_section (void);
 
 /* Determine if we're in the text section.  */
 extern int in_text_section (void);
+
+/* Determine if we're in the unlikely-to-be-executed text section.  */
+extern int in_unlikely_text_section (void);
 
 #ifdef CTORS_SECTION_ASM_OP
 extern void ctors_section (void);

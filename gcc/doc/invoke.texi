@@ -284,7 +284,7 @@ in the following sections.
 -foptimize-sibling-calls  -fprefetch-loop-arrays @gol
 -fprofile-generate -fprofile-use @gol
 -freduce-all-givs  -fregmove  -frename-registers @gol
--freorder-blocks  -freorder-functions @gol
+-freorder-blocks  -freorder-blocks-and-partition -freorder-functions @gol
 -frerun-cse-after-loop  -frerun-loop-opt @gol
 -frounding-math -fschedule-insns  -fschedule-insns2 @gol
 -fno-sched-interblock  -fno-sched-spec  -fsched-spec-load @gol
@@ -3680,7 +3680,7 @@ optimizations designed to reduce code size.
 
 @option{-Os} disables the following optimization flags:
 @gccoptlist{-falign-functions  -falign-jumps  -falign-loops @gol
--falign-labels  -freorder-blocks  -fprefetch-loop-arrays}
+-falign-labels  -freorder-blocks  -freorder-blocks-and-partition -fprefetch-loop-arrays}
 
 If you use multiple @option{-O} options, with or without level numbers,
 the last such option is the one that is effective.
@@ -4205,6 +4205,13 @@ Reorder basic blocks in the compiled function in order to reduce number of
 taken branches and improve code locality.
 
 Enabled at levels @option{-O2}, @option{-O3}.
+
+@item -freorder-blocks-and-partition
+@opindex freorder-blocks-and-partition
+In addition to reordering basic blocks in the compiled function, in order
+to reduce number of taken branches, partitions hot and cold basic blocks
+into separate sections of the assembly and .o files, to improve
+paging and cache locality performance.
 
 @item -freorder-functions
 @opindex freorder-functions

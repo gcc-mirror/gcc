@@ -434,6 +434,11 @@ do {									\
 
 #define	BSS_SECTION_ASM_OP	"\t.section\t\".bss\""
 
+#define HOT_TEXT_SECTION_NAME ".text"
+#define NORMAL_TEXT_SECTION_NAME ".text"
+#define UNLIKELY_EXECUTED_TEXT_SECTION_NAME ".text.unlikely"
+#define SECTION_FORMAT_STRING ".section\t\"%s\"\n\t.align 2\n"
+
 /* Override elfos.h definition.  */
 #undef	INIT_SECTION_ASM_OP
 #define	INIT_SECTION_ASM_OP "\t.section\t\".init\",\"ax\""

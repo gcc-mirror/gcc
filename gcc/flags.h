@@ -210,6 +210,11 @@ extern int flag_branch_probabilities;
 
 extern int flag_reorder_blocks;
 
+/* Nonzero if basic blocks should be partitioned into hot and cold
+   sections of the .o file, in addition to being reordered.  */
+
+extern int flag_reorder_blocks_and_partition;
+
 /* Nonzero if functions should be reordered.  */
 
 extern int flag_reorder_functions;

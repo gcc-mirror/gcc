@@ -271,6 +271,12 @@ make_edges (rtx label_value_list, basic_block min, basic_block max, int update_p
   /* Assume no computed jump; revise as we create edges.  */
   current_function_has_computed_jump = 0;
 
+  /* If we are partitioning hot and cold basic blocks into separate
+     sections, we cannot assume there is no computed jump.  */
+
+  if (flag_reorder_blocks_and_partition)
+    current_function_has_computed_jump = 1;
+
   /* Heavy use of computed goto in machine-generated code can lead to
      nearly fully-connected CFGs.  In that case we spend a significant
      amount of time searching the edge lists for duplicates.  */

@@ -138,6 +138,8 @@ typedef struct edge_def {
   int probability;		/* biased by REG_BR_PROB_BASE */
   gcov_type count;		/* Expected number of executions calculated
 				   in profile.c  */
+  bool crossing_edge;           /* Crosses between hot and cold sections, when
+				   we do partitioning.  */
 } *edge;
 
 #define EDGE_FALLTHRU		1	/* 'Straight line' flow */
@@ -246,6 +248,9 @@ typedef struct basic_block_def {
   /* Various flags.  See BB_* below.  */
   int flags;
 
+  /* Which section block belongs in, when partitioning basic blocks.  */
+  int partition;
+
   /* Additional data maintained by cfg_layout routines.  */
   struct reorder_block_def *rbi;
 } *basic_block;
@@ -259,6 +264,12 @@ typedef struct basic_block_def {
 #define BB_VISITED		8
 #define BB_IRREDUCIBLE_LOOP	16
 #define BB_SUPERBLOCK		32
+
+/* Partitions, to be used when partitioning hot and cold basic blocks into
+   separate sections.  */
+#define UNPARTITIONED   0
+#define HOT_PARTITION   1
+#define COLD_PARTITION  2
 
 /* Number of basic blocks in the current function.  */
 
@@ -611,6 +622,7 @@ extern bool control_flow_insn_p (rtx);
 
 /* In bb-reorder.c */
 extern void reorder_basic_blocks (void);
+extern void partition_hot_cold_basic_blocks (void);
 
 /* In dominance.c */
 

@@ -1,3 +1,175 @@
+2004-04-09  Caroline Tice  <ctice@apple.com>
+
+        * basic-block.h (struct edge_def):  Add new field, crossing_edge.
+	(struct basic_block_def):  Add new field, partition.
+	(UNPARTITIONED, HOT_PARTITION, COLD_PARTITION):  New constant macro
+	definitions.
+	(partition_hot_cold_basic_blocks): Add extern function 
+	declaration.
+        * bb-reorder.c (function.h, obstack.h, expr.h, regs.h):  Add four new 
+	include	statements.
+	(N_ROUNDS): Increase the maximum number of rounds by 1.
+	(branch_threshold): Add array value for new round.
+	(exec_threshold): Add array value for new round.
+	(push_to_next_round_p): New function.
+	(add_unlikely_executed_notes): New function.
+	(find_rarely_executed_basic_blocks_and_crossing_edges): New function.
+	(mark_bb_for_unlikely_executed_section): New function.
+	(add_labels_and_missing_jumps): New function.
+	(add_reg_crossing_jump_notes): New function.
+	(fix_up_fall_thru_edges): New function.
+	(find_jump_block): New function.
+	(fix_crossing_conditional_branches): New function.
+	(fix_crossing_unconditional_branches): New function.
+	(fix_edges_for_rarely_executed_code): New function.
+	(partition_hot_cold_basic_blocks): New function.
+	(find_traces):  Add an extra round for partitioning hot/cold
+	basic blocks.
+	(find_traces_1_round): Add a parameter.  Modify to push all cold blocks,
+	and only cold blocks, into the last (extra) round of collecting traces.
+	(better_edge_p): Add a parameter.  Modify to favor non-crossing edges 
+	over crossing edges.
+	(bb_to_key):  Add code to correctly identify cold blocks when 
+	doing partitioning.
+	(connect_traces): Modify to connect all the non-cold traces first, then
+	go back and connect up all the cold traces.
+	(reorder_basic_blocks):  Add call to add_unlikely_executed_notes.
+	* cfg.c (entry_exit_blocks): Add initialization for partition field in
+	entry and exit blocks.
+	* cfgbuild.c (make_edges): Update current_function_has_computed_jump  
+	if we are doing hot/cold partitioning.
+	* cfgcleanup.c (cfglayout.h): Add new include statement.
+	(try_simplify_condjump): Modify to not attempt on blocks with jumps 
+	that cross section boundaries.
+	(try_forward_edges): Likewise.
+	(merge_blocks_move_predecessor_nojumps): Likewise.
+	(merge_blocks_move_successor_nojumps): Likewise.
+	(merge_blocks_move): Likewise.
+	(try_crossjump_to_edge): Modify to not attempt after we have done
+	the block partitioning.
+	(try_crossjump_bb): Modify to not attempt on blocks with jumps that
+	cross section boundaries.
+	(try_optimize_cfg): Likewise.
+	* cfghooks.c (tidy_fallthru_edges): Modify to not remove indirect
+	jumps that cross section boundaries.
+        * cfglayout.c (flags.h): Add new include statement.
+	(update_unlikely_executed_notes):  New function.
+	(fixup_reorder_chain):  Add code so when a new jumping basic block is 
+        added, it's UNLIKELY_EXECUTED_CODE and REG_CROSSING_JUMP notes are 
+	updated appropriately.
+	(duplicate_insn_chain):  Add code to duplicate the new NOTE insn
+	introduced by this optimization.
+        * cfglayout.h (scan_ahead_for_unlikely_executed_note):  Add new 
+        extern function declaration.
+	* cfgrtl.c (can_delete_note_p):  Add NOTE_INSN_UNLIKELY_EXECUTED_CODE to
+	list of notes that can be deleted.
+	(create_basic_block_structure):  Add initialization for partition field.
+	(rtl_can_merge_blocks):  Modify to test blocks for jumps that cross
+	section boundaries.
+	(try_redirect_by_replacing_jump):  Modify to not attempt on jumps that
+	cross section boundaries.
+	(commit_one_edge_insertion): Add code so newly created basic block
+	ends up in correct (hot or cold) section.  Modify to disallow 
+	insertions before NOTE_INSN_UNLIKELY_EXECUTED_CODE notes.
+	(rtl_verify_flow_info_1):  Add code to verify that no fall_thru edge
+	crosses section boundaries.
+	(cfg_layout_can_merge_blocks_p): Modify to test blocks for jumps that
+	cross section boundaries.
+	(force_nonfallthru_and_redirect): Modify to make sure new basic block
+	ends up in correct section, with correct notes attached.
+        * common.opt (freorder-blocks-and-partition):  Add new flag for this 
+        optimization.
+        * dbxout.c (dbx_function_end):  Add code to make sure scope labels at
+        the end of functions are written into the correct (hot or cold) 
+        section.
+	(dbx_source_file): Add code so writing debug file information
+	doesn't incorrectly change sections.
+        * defaults.h (NORMAL_TEXT_SECTION_NAME): New constant macro, for use
+	in partitioning hot/cold basic blocks into separate sections.
+	(SECTION_FORMAT_STRING): New constant macro, for linux/i386 hot/cold 
+	section partitioning.
+	(HAS_LONG_COND_BRANCH): New constant macro, indicating whether or not
+	conditional branches can span all of memory.
+	(HAS_LONG_UNCOND_BRANCH): New constant macro, indicationg whether or not
+	unconditional branches can span all of memory.
+        * final.c (scan_ahead_for_unlikely_executed_note):  New function.
+	(final_scan_insn):  Add code to check for NOTE instruction indicating 
+        whether basic block belongs in hot or cold section, and to make sure 
+        the current basic block is being written to the appropriate section.  
+        Also added code to ensure that jump table basic blocks end up in the 
+        correct section.
+        * flags.h (flag_reorder_blocks_and_partition):  New flag.
+	* ifcvt.c (find_if_case_1):  Modify to not attempt if conversion if
+	one of the branches has a jump that crosses between sections.
+	(find_if_case_2): Likewise.
+	(ifcvt): Modify to not attempt to mark loop exit edges after 
+	hot/cold partitioning has occurred.
+        * opts.c (decode_options): Code to handle new flag, 
+        flag_reorder_blocks_and_partition; also to turn it off if
+	flag_exceptions is on.
+	(common_handle_option): Code to handle new flag, 
+        flag_reorder_blocks_and_partition.
+        * output.h (unlikely_text_section): New extern function declaration.
+	(in_unlikely_text_section): New extern function declaration.
+	* passes.c (rest_of_handle_stack_regs):  Add 
+	flag_reorder_blocks_and_partition as an 'or' condition for calling 
+	reorder_basic_blocks.
+	(rest_of_handle_reorder_blocks):  Add flag_reorder_blocks_and_partition 
+	as an 'or' condition for calling reorder_basic_blocks.
+	(rest_of_compilation):  Add call to partition_hot_cold_basic_blocks.
+        * print-rtl.c (print_rtx): Add code for handling new note,
+        NOTE_INSN_UNLIKELY_EXECUTED_CODE
+        * rtl.c  (NOTE_INSN_UNLIKELY_EXECUTED_CODE): New note insn (see below).
+	(REG_CROSSING_JUMP): New kind of reg_note, to mark jumps that
+	cross between section boundaries.
+        * rtl.h (NOTE_INSN_UNLIKELY_EXECUTED_CODE):  New note instruction, 
+        indicating the basic block containing it belongs in the cold section.
+	(REG_CROSSING_JUMP): New type of reg_note, to mark jumps that cross
+	between hot and cold sections.
+        * toplev.c (flag_reorder_blocks_and_partition):  Add code to 
+        initialize this flag, and to tie it to the command-line option 
+        freorder-blocks-and-partition.
+        * varasm.c (cfglayout.h):  Add new include statement.
+	(unlikely_section_label_printed):  New global variable, used for 
+        determining when to output section name labels for cold sections.
+	(in_section):  Add in_unlikely_executed_text to enum data structure.
+	(text_section):  Modify code to use SECTION_FORMAT_STRING and
+	NORMAL_TEXT_SECTION_NAME macros.
+	(unlikely_text_section):  New function.
+	(in_unlikely_text_section):  New function.
+	(function_section):  Add code to make sure beginning of function is 
+        written into correct section (hot or cold).
+	(assemble_start_function):  Add code to make sure stuff is written to 
+        the correct section.
+	(assemble_zeros):  Add in_unlikely_text_section as an 'or' condition 
+        to an if statement that was checking 'in_text_section'.
+	(assemble_variable):  Add 'in_unlikely_text_section' as an 'or' 
+        condition to an if statement that was checking 'in_text_section'.
+        (default_section_type_flags_1):  Add check: if in cold section 
+        flags = SECTION_CODE.
+	* config/darwin.c (darwin_asm_named_section):  Modify to use
+	SECTION_FORMAT_STRING if we are partitioning hot/cold blocks.
+	* config/i386/i386.h (HAS_LONG_COND_BRANCH): Defined this macro 
+	specifically for the i386.
+	(HAS_LONG_UNCOND_BRANCH):  Defined this macro specifically for the i386.
+        * config/rs6000/darwin.h (UNLIKELY_EXECUTED_TEXT_SECTION_NAME): Change
+	text string to something more informative.
+	(NORMAL_TEXT_SECTION_NAME): Add new definition.
+	(SECTION_FORMAT_STRING):  Add new definition.
+        * config/rs6000/rs6000.c (rs6000_assemble_integer):  Add 
+        '!in_unlikely_text_section' as an 'and' condition to an if statement 
+        that was already checking '!in_text_section'.
+        * config/rs6000/sysv4.h (HOT_TEXT_SECTION_NAME,NORMAL_TEXT_SECTION_NAME,
+        UNLIKELY_EXECUTED_TEXT_SECTION_NAME,SECTION_FORMAT_STRING): Make
+        sure these are properly defined for linux on ppc.
+        * doc/invoke.texi  (freorder-blocks-and-partition): Add documentation 
+        for this new flag.
+	* doc/rtl.texi (REG_CROSSING_JUMP):  Add documentation for new
+	reg_note.
+        * doc/tm.texi (NORMAL_TEXT_SECTION_NAME, SECTION_FORMAT_STRING, 
+	HAS_LONG_COND_BRANCH, HAS_LONG_UNCOND_BRANCH): Add documentation for 
+	these new macros.
+
 2004-04-08  Roger Sayle  <roger@eyesopen.com>
 
 	* function.c (gen_mem_addressof): When changing the RTX from a REG
