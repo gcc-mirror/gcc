@@ -616,9 +616,11 @@ ffeglobal_proc_def_arg (ffesymbol s, int argno, char *name, ffeglobalArgSummary 
 	      defwhy = "an alternate-return label";
 	      break;
 
+#if 0
 	    case FFEGLOBAL_argsummaryPTR:
 	      defwhy = "a pointer";
 	      break;
+#endif
 
 	    default:
 	      defwhy = "???";
@@ -868,6 +870,7 @@ ffeglobal_proc_ref_arg (ffesymbol s, int argno, ffeglobalArgSummary as,
 	    }
 	  break;
 
+#if 0
 	case FFEGLOBAL_argsummaryPTR:
 	  if ((ai->as != FFEGLOBAL_argsummaryPTR)
 	      && (ai->as != FFEGLOBAL_argsummaryNONE))
@@ -876,6 +879,7 @@ ffeglobal_proc_ref_arg (ffesymbol s, int argno, ffeglobalArgSummary as,
 	      refwhy = "a pointer";
 	    }
 	  break;
+#endif
 
 	default:
 	  break;
@@ -919,9 +923,11 @@ ffeglobal_proc_ref_arg (ffesymbol s, int argno, ffeglobalArgSummary as,
 	      defwhy = "an alternate-return label";
 	      break;
 
+#if 0
 	    case FFEGLOBAL_argsummaryPTR:
 	      defwhy = "a pointer";
 	      break;
+#endif
 
 	    default:
 	      defwhy = "???";

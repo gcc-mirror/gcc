@@ -55,7 +55,6 @@ typedef enum
     FFEGLOBAL_argsummarySUBR,	/* Subroutine (intrinsic, external). */
     FFEGLOBAL_argsummaryFUNC,	/* Function (intrinsic, external). */
     FFEGLOBAL_argsummaryALTRTN,	/* Alternate-return (label). */
-    FFEGLOBAL_argsummaryPTR,	/* Pointer (%LOC, LOC()). */
     FFEGLOBAL_argsummaryANY,
     FFEGLOBAL_argsummary
   } ffeglobalArgSummary;

@@ -1,3 +1,13 @@
+Mon Jun  1 19:37:42 1998  Craig Burley  <burley@gnu.org>
+
+	* com.c (ffecom_init_0): Fix setup of INTEGER(KIND=7)
+	pointer type.
+	* info.c (ffeinfo_type): Don't crash on null type.
+	* expr.c (ffeexpr_fulfill_call_): Don't special-case
+	%LOC(expr) or LOC(expr).
+	Delete FFEGLOBAL_argsummaryPTR.
+	* global.c, global.h: Delete FFEGLOBAL_argsummaryPTR.
+
 Mon May 25 03:34:42 1998  Craig Burley  <burley@gnu.org>
 
 	* com.c (ffecom_expr_): Fix D**I and Z**I cases to
@@ -9,7 +19,8 @@ Sat May 23 06:32:52 1998  Craig Burley  <burley@gnu.org>
 	* com.c (ffecom_finish_symbol_transform_): Don't transform
 	statement (nested) functions, to avoid gcc compiling them
 	and thus producing linker errors if they refer to undefined
-	exteral functions.  But warn if they're unused and -Wunused.
+	external functions.  But warn if they're unused and -Wunused.
+	* bad.def (FFEBAD_SFUNC_UNUSED): New diagnostic.
 
 Tue May 19 14:52:41 1998  Craig Burley  <burley@gnu.org>
 

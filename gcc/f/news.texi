@@ -46,6 +46,30 @@ Miscellany
 This order is not strict---for example, some items
 involve a combination of these elements.
 
+@heading In 0.5.24:
+@itemize @bullet
+@item
+@code{g77} no longer crashes when compiling code
+containing specification statements such as
+@samp{INTEGER(KIND=7) PTR}.
+
+@item
+@code{g77} now treats @samp{%LOC(@var{expr})} and
+@samp{LOC(@var{expr})} as ``ordinary'' expressions
+when they are used as arguments in procedure calls.
+This change applies only to global (filewide) analysis,
+making it consistent with
+how @code{g77} actually generates code
+for these cases.
+
+Previously, @code{g77} treated these expressions
+as denoting special ``pointer'' arguments
+for the purposes of filewide analysis.
+
+@item
+Improve documentation and indexing.
+@end itemize
+
 @heading In 0.5.23:
 @itemize @bullet
 @item
