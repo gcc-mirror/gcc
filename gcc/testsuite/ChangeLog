@@ -1,3 +1,7 @@
+2004-11-10  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* objc.dg/desig-init-2.m: New test.
+
 2004-11-10  Adam Nemet  <anemet@lnxw.com>
 
 	PR middle-end/18160  
