@@ -52843,10 +52843,16 @@ echo "${ECHO_T}$enable_wchar_t" >&6
 #define HAVE_INT64_T 1
 _ACEOF
 
-    cat >>confdefs.h <<\_ACEOF
+    case "$target" in
+      *-uclinux*)
+        # Don't enable LFS with uClibc
+        ;;
+      *)
+        cat >>confdefs.h <<\_ACEOF
 #define _GLIBCXX_USE_LFS 1
 _ACEOF
 
+    esac
 
     # For showmanyc_helper().
 

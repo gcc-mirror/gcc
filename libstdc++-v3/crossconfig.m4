@@ -134,7 +134,13 @@ case "${host}" in
 
     # For LFS.
     AC_DEFINE(HAVE_INT64_T)
-    AC_DEFINE(_GLIBCXX_USE_LFS)
+    case "$target" in
+      *-uclinux*)
+        # Don't enable LFS with uClibc
+        ;;
+      *)
+        AC_DEFINE(_GLIBCXX_USE_LFS)
+    esac
 
     # For showmanyc_helper().
     AC_CHECK_HEADERS(sys/ioctl.h sys/filio.h)
