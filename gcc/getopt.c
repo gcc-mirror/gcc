@@ -27,19 +27,19 @@
 /* This tells Alpha OSF/1 not to define a getopt prototype in <stdio.h>.
    Ditto for AIX 3.2 and <stdlib.h>.  */
 #ifndef _NO_PROTO
-#define _NO_PROTO
+# define _NO_PROTO
 #endif
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+# include <config.h>
 #endif
 
 #if !defined __STDC__ || !__STDC__
 /* This is a separate conditional since some stdc systems
    reject `defined (const)'.  */
-#ifndef const
-#define const
-#endif
+# ifndef const
+#  define const
+# endif
 #endif
 
 #include <stdio.h>
@@ -54,10 +54,10 @@
 
 #define GETOPT_INTERFACE_VERSION 2
 #if !defined _LIBC && defined __GLIBC__ && __GLIBC__ >= 2
-#include <gnu-versions.h>
-#if _GNU_GETOPT_INTERFACE_VERSION == GETOPT_INTERFACE_VERSION
-#define ELIDE_CODE
-#endif
+# include <gnu-versions.h>
+# if _GNU_GETOPT_INTERFACE_VERSION == GETOPT_INTERFACE_VERSION
+#  define ELIDE_CODE
+# endif
 #endif
 
 #ifndef ELIDE_CODE
@@ -68,26 +68,26 @@
 #ifdef	__GNU_LIBRARY__
 /* Don't include stdlib.h for non-GNU C libraries because some of them
    contain conflicting prototypes for getopt.  */
-#include <stdlib.h>
-#include <unistd.h>
+# include <stdlib.h>
+# include <unistd.h>
 #endif	/* GNU C library.  */
 
 #ifdef VMS
-#include <unixlib.h>
-#if HAVE_STRING_H - 0
-#include <string.h>
-#endif
+# include <unixlib.h>
+# if HAVE_STRING_H - 0
+#  include <string.h>
+# endif
 #endif
 
 #ifndef _
 /* This is for other GNU distributions with internationalized messages.
    When compiling libc, the _ macro is predefined.  */
-#ifdef HAVE_LIBINTL_H
-# include <libintl.h>
-# define _(msgid)	gettext (msgid)
-#else
-# define _(msgid)	(msgid)
-#endif
+# ifdef HAVE_LIBINTL_H
+#  include <libintl.h>
+#  define _(msgid)	gettext (msgid)
+# else
+#  define _(msgid)	(msgid)
+# endif
 #endif
 
 /* This version of `getopt' appears to the caller like standard Unix `getopt'
@@ -197,14 +197,19 @@ static char *posixly_correct;
    because there are many ways it can cause trouble.
    On some systems, it contains special magic macros that don't work
    in GCC.  */
-#include <string.h>
-#define	my_index	strchr
+# include <string.h>
+# define my_index	strchr
 #else
 
 /* Avoid depending on library functions or files
    whose names are inconsistent.  */
 
-char *getenv ();
+#ifndef getenv
+extern char *getenv ();
+#endif
+#ifndef strncmp
+extern int strncmp ();
+#endif
 
 static char *
 my_index (str, chr)
@@ -225,11 +230,11 @@ my_index (str, chr)
 #ifdef __GNUC__
 /* Note that Motorola Delta 68k R3V7 comes with GCC but not stddef.h.
    That was relevant to code that was here before.  */
-#if !defined __STDC__ || !__STDC__
+# if (!defined __STDC__ || !__STDC__) && !defined strlen
 /* gcc with -traditional declares the built-in strlen to return int,
    and has done so at least since version 2.4.5. -- rms.  */
 extern int strlen (const char *);
-#endif /* not __STDC__ */
+# endif /* not __STDC__ */
 #endif /* __GNUC__ */
 
 #endif /* not __GNU_LIBRARY__ */
@@ -527,11 +532,11 @@ _getopt_internal (argc, argv, optstring, longopts, longind, long_only)
      from the shell indicating it is not an option.  The later information
      is only used when the used in the GNU libc.  */
 #ifdef _LIBC
-#define NONOPTION_P (argv[optind][0] != '-' || argv[optind][1] == '\0'	      \
-		     || (optind < nonoption_flags_len			      \
-			 && __getopt_nonoption_flags[optind] == '1'))
+# define NONOPTION_P (argv[optind][0] != '-' || argv[optind][1] == '\0'	      \
+		      || (optind < nonoption_flags_len			      \
+			  && __getopt_nonoption_flags[optind] == '1'))
 #else
-#define NONOPTION_P (argv[optind][0] != '-' || argv[optind][1] == '\0')
+# define NONOPTION_P (argv[optind][0] != '-' || argv[optind][1] == '\0')
 #endif
 
   if (nextchar == NULL || *nextchar == '\0')
