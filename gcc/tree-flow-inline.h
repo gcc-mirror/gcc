@@ -621,6 +621,8 @@ mark_call_clobbered (tree var)
   if (ann->mem_tag_kind != NOT_A_TAG)
     DECL_EXTERNAL (var) = 1;
   bitmap_set_bit (call_clobbered_vars, ann->uid);
+  ssa_call_clobbered_cache_valid = false;
+  ssa_ro_call_cache_valid = false;
 }
 
 /* Mark variable VAR as being non-addressable.  */
@@ -629,6 +631,8 @@ mark_non_addressable (tree var)
 {
   bitmap_clear_bit (call_clobbered_vars, var_ann (var)->uid);
   TREE_ADDRESSABLE (var) = 0;
+  ssa_call_clobbered_cache_valid = false;
+  ssa_ro_call_cache_valid = false;
 }
 
 /* Return the common annotation for T.  Return NULL if the annotation

@@ -166,6 +166,14 @@ struct var_ann_d GTY(())
      states.  */
   ENUM_BITFIELD (need_phi_state) need_phi_state : 2;
 
+  /* Used during operand processing to determine if this variable is already 
+     in the vuse list.  */
+  unsigned in_vuse_list : 1;
+
+  /* Used during operand processing to determine if this variable is already 
+     in the v_may_def list.  */
+  unsigned in_v_may_def_list : 1;
+
   /* An artificial variable representing the memory location pointed-to by
      all the pointers that TBAA (type-based alias analysis) considers
      to be aliased.  If the variable is not a pointer or if it is never

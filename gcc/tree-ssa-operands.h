@@ -188,6 +188,8 @@ extern void get_stmt_operands (tree);
 extern void copy_virtual_operands (tree, tree);
 extern void create_ssa_artficial_load_stmt (stmt_operands_p, tree);
 
+extern bool ssa_call_clobbered_cache_valid;
+extern bool ssa_ro_call_cache_valid;
 
 /* This structure is used in the operand iterator loops.  It contains the 
    items required to determine which operand is retrieved next.  During
