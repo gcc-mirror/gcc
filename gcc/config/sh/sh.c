@@ -3031,7 +3031,7 @@ split_branches (first)
 		struct far_branch *bp = uid_branch[dest_uid];
     
 		/* redirect_jump needs a valid JUMP_LABEL, and it might delete
-		   the label if th lABEL_BUSES count drops to zero.  There is
+		   the label if the LABEL_NUSES count drops to zero.  There is
 		   always a jump_optimize pass that sets these values, but it
 		   proceeds to delete unreferenced code, and then if not
 		   optimizing, to un-delete the deleted instructions, thus
