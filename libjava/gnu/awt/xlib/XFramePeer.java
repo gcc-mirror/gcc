@@ -1,4 +1,4 @@
-/* Copyright (C) 2000  Free Software Foundation
+/* Copyright (C) 2000, 2002  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -91,6 +91,11 @@ public class XFramePeer extends XCanvasPeer implements FramePeer
   public Insets getInsets()
   {
     return (Insets) INSETS_0_PROTOTYPE.clone();
+  }
+
+  public Insets insets ()
+  {
+    return getInsets ();
   }
 
   public void beginValidate()

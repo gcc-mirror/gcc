@@ -1,276 +1,436 @@
-/* Copyright (C) 2000, 2001  Free Software Foundation
+/* Choice.java -- Java choice button widget.
+   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
-   This file is part of libgcj.
+This file is part of GNU Classpath.
 
-This software is copyrighted work licensed under the terms of the
-Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
-details.  */
+GNU Classpath is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+
+GNU Classpath is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Classpath; see the file COPYING.  If not, write to the
+Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+02111-1307 USA.
+
+As a special exception, if you link this library with other files to
+produce an executable, this library does not by itself cause the
+resulting executable to be covered by the GNU General Public License.
+This exception does not however invalidate any other reasons why the
+executable file might be covered by the GNU General Public License. */
+
 
 package java.awt;
-import java.awt.event.*;
+
 import java.awt.peer.ChoicePeer;
-import java.util.ArrayList;
+import java.awt.peer.ComponentPeer;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.io.Serializable;
+import java.util.Vector;
 
-/** This component lets the user choose an item from a list of
- * Strings.
- * @author Tom Tromey <tromey@redhat.com>
- * @date December 25, 2000
- */
-public class Choice extends Component implements ItemSelectable
+/**
+  * This class implements a drop down choice list.
+  *
+  * @author Aaron M. Renn (arenn@urbanophile.com)
+  */
+public class Choice extends Component implements ItemSelectable, Serializable
 {
-  /** Create a new Choice object.  */
-  public Choice ()
-  {
-    items = new ArrayList ();
-    selected = -1;
-  }
 
-  /** Add a new item to this Choice object.  If the item is the first
-   * item on the list, then it is selected.
-   * @param item The new item; must be non-null.
-   */
-  public synchronized void add (String item)
-  {
-    if (item == null)
-      throw new IllegalArgumentException ("item must be non-null");
-    items.add (item);
+/*
+ * Static Variables
+ */
 
-    int i = items.size () - 1;
-    if (peer != null)
-      {
-	ChoicePeer cp = (ChoicePeer) peer;
-	cp.add (item, i);
-      }
+// Serialization constant
+private static final long serialVersionUID = -4075310674757313071L;
 
-    if (i == 0)
-      select (0);
-  }
+/*************************************************************************/
 
-  /** Add a new item to this Choice object.  This is the same as the
-   * add method.  */
-  public void addItem (String item)
-  {
-    add (item);
-  }
+/*
+ * Instance Variables
+ */
 
-  /** Add a listener for item events.
-   * @param listener The listener to add.
-   */
-  public synchronized void addItemListener (ItemListener listener)
-  {
-    listeners = AWTEventMulticaster.add (listeners, listener);
-  }
+/**
+  * @serial A list of items for the choice box, which can be <code>null</code>.
+  */
+private Vector pItems = new Vector();
 
-  /** This creates the component's peer.  */
-  public void addNotify ()
-  {
-    if (peer == null)
-      peer = getToolkit ().createChoice (this);
-    super.addNotify ();
-  }
+/**
+  * @serial The index of the selected item in the choice box.
+  */
+private int selectedIndex = -1;
 
-  /** Returns number of items.
-   * @deprecated
-   */
-  public int countItems ()
-  {
-    return getItemCount ();
-  }
+// Listener chain
+private ItemListener item_listeners;
 
-  /** Returns an item from this choice.
-   * @param index Index of the item.  Indices start at zero.
-   */
-  public String getItem (int index)
-  {
-    return (String) items.get (index);
-  }
+/*************************************************************************/
 
-  /** Returns number of items in Choice.  */
-  public int getItemCount ()
-  {
-    return items.size ();
-  }
+/*
+ * Constructors
+ */
 
-  /** Returns index of selected item; -1 if no item is selected.  */
-  public int getSelectedIndex ()
-  {
-    return selected;
-  }
-
-  /** Returns currently selected item; null if no item is selected.  */
-  public synchronized String getSelectedItem ()
-  {
-    return selected == -1 ? null : (String) items.get (selected);
-  }
-
-  /** Returns the currently selected item.  */
-  public synchronized Object[] getSelectedObjects ()
-  {
-    // The JCL says this can return null but that breaks the contract
-    // for ItemSelectable.
-    Object[] r;
-    if (selected != -1)
-      {
-	r = new Object[1];
-	r[0] = items.get (selected);
-      }
-    else
-      r = new Object[0];
-    return r;
-  }
-
-  /** Inserts an item into this Choice.  Existing items are shifted
-   * upwards.  If the new item is the only item, then it is selected.
-   * If the currently selected item is shifted, then the first item is
-   * selected.  If the currently selected item is not shifted, then it
-   * remains selected.
-   * @param item The new item
-   * @param index The position at which to insert it.
-   */
-  public synchronized void insert (String item, int index)
-  {
-    if (index > items.size ())
-      index = items.size ();
-    items.add (index, item);
-
-    if (peer != null)
-      {
-	ChoicePeer cp = (ChoicePeer) peer;
-	cp.add (item, index);
-      }
-
-    if (items.size () == 1 || selected >= index)
-      select (0);
-  }
-
-  /** Generates a String representation of this Choice's state.  */
-  protected String paramString ()
-  {
-    return ("Choice["
-	    + "selected=" + selected
-	    + "]");
-  }
-
-  /** Process an event for this Choice
-   * @param event The event the process.
-   */
-  protected void processEvent (AWTEvent event)
-  {
-    if (event instanceof ItemEvent)
-      processItemEvent ((ItemEvent) event);
-    else
-      super.processEvent (event);
-  }
-
-  /** Process an item event for this Choice.
-   * @param event The ItemEvent to process
-   */
-  protected void processItemEvent (ItemEvent event)
-  {
-    if (listeners != null)
-      listeners.itemStateChanged (event);
-  }
-
-  /** Remove an item from this Choice.  If several matches exist, the
-   * first one is removed.  If the removed item is selected, the the
-   * first item is selected.
-   * @param item The item string.
-   */
-  public synchronized void remove (String item)
-  {
-    int size = items.size ();
-    for (int i = 0; i < size; ++i)
-      {
-	if (item.equals (items.get (i)))
-	  {
-	    remove (i);
-	    break;
-	  }
-      }
-    throw new IllegalArgumentException ("item \"" + item + "\" not in Choice");
-  }
-
-  /** Remove an item from this Choice.  If the removed item is
-   * selected, the the first item is selected.
-   * @param index Index of the item to remove
-   */
-  public synchronized void remove (int index)
-  {
-    items.remove (index);
-
-    if (peer != null)
-      {
-	ChoicePeer cp = (ChoicePeer) peer;
-	cp.remove (index);
-      }
-
-    if (index == selected)
-      select (0);
-    else if (selected > index)
-      --selected;
-  }
-
-  /** Remove all items from this choice.  */
-  public synchronized void removeAll ()
-  {
-    int oldsize = items.size ();
-    items.clear ();
-    selected = -1;
-
-    if (peer != null)
-      {
-	ChoicePeer cp = (ChoicePeer) peer;
-	for (int i = 0; i < oldsize; ++i)
-	  {
-	    // Always remove item 0.
-	    cp.remove (0);
-	  }
-      }
-  }
-
-  /** Remove an item listener.
-   * @param listener Item listener to remove.
-   */
-  public synchronized void removeItemListener (ItemListener listener)
-  {
-    listeners = AWTEventMulticaster.remove (listeners, listener);
-  }
-
-  /** Select an item in this Choice.
-   * @param item Name of the item to select.
-   */
-  public synchronized void select (String item)
-  {
-    int size = items.size ();
-    for (int i = 0; i < size; ++i)
-      {
-	if (item.equals (items.get (i)))
-	  {
-	    select (i);
-	    break;
-	  }
-      }
-  }
-
-  /** Select an item in this choice.
-   * @param index Index of item to select.
-   */
-  public synchronized void select (int index)
-  {
-    if (index < 0 || index > items.size ())
-      throw new IllegalArgumentException ("index out of range");
-    selected = index;
-    if (peer != null)
-      {
-	ChoicePeer cp = (ChoicePeer) peer;
-	cp.select (index);
-      }
-  }
-
-  private ItemListener listeners;
-
-  // List of items.
-  ArrayList items;
-  // Index of selected item.
-  int selected;
+/**
+  * Initializes a new instance of <code>Choice</code>.
+  */
+public
+Choice()
+{
 }
+
+/*************************************************************************/
+
+/*
+ * Instance Methods
+ */
+
+/**
+  * Returns the number of items in the list.
+  *
+  * @return The number of items in the list.
+  */
+public int
+getItemCount()
+{
+  return(pItems.size());
+}
+
+/*************************************************************************/
+
+/**
+  * Returns the number of items in the list.
+  *
+  * @return The number of items in the list.
+  *
+  * @deprecated This method is deprecated in favor of <code>getItemCount</code>.
+  */
+public int
+countItems()
+{
+  return(pItems.size());
+}
+
+/*************************************************************************/
+
+/**
+  * Returns the item at the specified index in the list.
+  *
+  * @param index The index into the list to return the item from.
+  *
+  * @exception ArrayIndexOutOfBoundsException If the index is invalid.
+  */
+public String
+getItem(int index)
+{
+  return((String)pItems.elementAt(index));
+}
+
+/*************************************************************************/
+
+/**
+  * Adds the specified item to this choice box.
+  *
+  * @param item The item to add.
+  */
+public synchronized void
+add(String item)
+{
+  if (item == null)
+    throw new IllegalArgumentException ("item must be non-null");
+
+  pItems.addElement(item);
+
+  int i = pItems.size () - 1;
+  if (peer != null)
+    {
+      ChoicePeer cp = (ChoicePeer) peer;
+      cp.add (item, i);
+    }
+
+  if (i == 0)
+    select (0);
+}
+
+/*************************************************************************/
+
+/**
+  * Adds the specified item to this choice box.
+  *
+  * @param item The item to add.
+  */
+public synchronized void
+addItem(String item)
+{
+  add(item);
+}
+
+/*************************************************************************/
+
+/** Inserts an item into this Choice.  Existing items are shifted
+ * upwards.  If the new item is the only item, then it is selected.
+ * If the currently selected item is shifted, then the first item is
+ * selected.  If the currently selected item is not shifted, then it
+ * remains selected.
+ *
+ * @param item The item to add.
+ * @param index The index at which the item should be inserted.
+ */
+public synchronized void
+insert(String item, int index)
+{
+  if (index > getItemCount ())
+    index = getItemCount ();
+
+  pItems.insertElementAt(item, index);
+
+  if (peer != null)
+    {
+      ChoicePeer cp = (ChoicePeer) peer;
+      cp.add (item, index);
+    }
+
+  if (getItemCount () == 1 || selectedIndex >= index)
+    select (0);
+}
+
+/*************************************************************************/
+
+/**
+  * Removes the specified item from the choice box.
+  *
+  * @param item The item to remove.
+  *
+  * @param IllegalArgumentException If the specified item doesn't exist.
+  */
+public synchronized void
+remove(String item)
+{
+  int index = pItems.indexOf(item);
+  if (index == -1)
+    throw new IllegalArgumentException ("item \""
+					+ item + "\" not found in Choice");
+  remove(index);
+}
+
+/*************************************************************************/
+
+/**
+  * Removes the item at the specified index from the choice box.
+  *
+  * @param index The index of the item to remove.
+  *
+  * @exception ArrayIndexOutOfBoundException If the index is not valid.
+  */
+public synchronized void
+remove(int index)
+{
+  pItems.removeElementAt(index);
+
+  if (peer != null)
+    {
+      ChoicePeer cp = (ChoicePeer) peer;
+      cp.remove (index);
+    }
+
+  if (index == selectedIndex)
+    select (0);
+  else if (selectedIndex > index)
+    --selectedIndex;
+}
+
+/*************************************************************************/
+
+/**
+  * Removes all of the objects from this choice box.
+  */
+public synchronized void
+removeAll()
+{
+  int count = getItemCount();
+
+  for (int i = 0; i < count; i++)
+    {
+      // Always remove 0.
+      remove(0);
+    }
+}
+
+/*************************************************************************/
+
+/**
+  * Returns the currently selected item, or null if no item is
+  * selected.
+  *
+  * @return The currently selected item.
+  */
+public synchronized String
+getSelectedItem()
+{
+  return (selectedIndex == -1
+	  ? null
+	  : ((String)pItems.elementAt(selectedIndex)));
+}
+
+/*************************************************************************/
+
+/**
+  * Returns an array with one row containing the selected item.
+  *
+  * @return An array containing the selected item.
+  */
+public synchronized Object[]
+getSelectedObjects()
+{
+  if (selectedIndex == -1)
+    return null;
+
+  Object[] objs = new Object[1];
+  objs[0] = pItems.elementAt(selectedIndex);
+
+  return(objs);
+}
+
+/*************************************************************************/
+
+/**
+  * Returns the index of the selected item.
+  *
+  * @return The index of the selected item.
+  */
+public int
+getSelectedIndex()
+{
+  return(selectedIndex);
+}
+
+/*************************************************************************/
+
+/**
+  * Forces the item at the specified index to be selected.
+  *
+  * @param index The index of the row to make selected.
+  *
+  * @param IllegalArgumentException If the specified index is invalid.
+  */
+public synchronized void
+select(int index)
+{
+  if ((index < 0) || (index > getItemCount()))
+    throw new IllegalArgumentException("Bad index: " + index);
+
+  this.selectedIndex = index;
+  if (peer != null)
+    {
+      ChoicePeer cp = (ChoicePeer) peer;
+      cp.select (index);
+    }
+}
+
+/*************************************************************************/
+
+/**
+  * Forces the named item to be selected.
+  *
+  * @param item The item to be selected.
+  *
+  * @exception IllegalArgumentException If the specified item does not exist.
+  */
+public synchronized void
+select(String item)
+{
+  int index = pItems.indexOf(item);
+  if (index >= 0)
+    select(index);
+}
+
+/*************************************************************************/
+
+/**
+  * Creates the native peer for this object.
+  */
+public void
+addNotify()
+{
+  if (peer == null)
+    peer = getToolkit ().createChoice (this);
+  super.addNotify ();
+}
+
+/*************************************************************************/
+
+/**
+  * Adds the specified listener to the list of registered listeners for
+  * this object.
+  *
+  * @param listener The listener to add.
+  */
+public synchronized void
+addItemListener(ItemListener listener)
+{
+  item_listeners = AWTEventMulticaster.add(item_listeners, listener);
+}
+
+/*************************************************************************/
+
+/**
+  * Removes the specified listener from the list of registered listeners for
+  * this object.
+  *
+  * @param listener The listener to remove.
+  */
+public synchronized void
+removeItemListener(ItemListener listener)
+{
+  item_listeners = AWTEventMulticaster.remove(item_listeners, listener);
+}
+
+/*************************************************************************/
+
+/**
+  * Processes this event by invoking <code>processItemEvent()</code> if the
+  * event is an instance of <code>ItemEvent</code>, otherwise the event
+  * is passed to the superclass.
+  *
+  * @param event The event to process.
+  */
+protected void
+processEvent(AWTEvent event)
+{
+  if (event instanceof ItemEvent)
+    processItemEvent((ItemEvent)event);
+  else
+    super.processEvent(event);
+}
+
+/*************************************************************************/
+
+/**
+  * Processes item event by dispatching to any registered listeners.
+  *
+  * @param event The event to process.
+  */
+protected void
+processItemEvent(ItemEvent event)
+{
+  if (item_listeners != null)
+    item_listeners.itemStateChanged(event);
+}
+
+/*************************************************************************/
+
+/**
+  * Returns a debugging string for this object.
+  *
+  * @return A debugging string for this object.
+  */
+protected String
+paramString()
+{
+  return ("selectedIndex=" + selectedIndex + "," + super.paramString());
+}
+
+} // class Choice 

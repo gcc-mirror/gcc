@@ -221,7 +221,7 @@ getToolkit()
   *
   * @return The synchronization lock for this component.
   */
-public final Object
+protected final Object
 getTreeLock()
 {
   return(tree_lock);
@@ -292,7 +292,7 @@ processEvent(AWTEvent event)
 public String
 toString()
 {
-  return(getClass().getName() + "(" + getName() + ")");
+  return this.getClass().getName() + "[" + paramString() + "]";
 }
 
 /*************************************************************************/
@@ -303,7 +303,7 @@ toString()
 protected String
 paramString()
 {
-  return(toString());
+  return "name=" + getName();
 }
 
 // Accessibility API not yet implemented.

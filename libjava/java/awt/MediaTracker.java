@@ -1,4 +1,4 @@
-/* TextComponentPeer.java -- Superclass interface for text components
+/* MediaTracker.java -- Class used for keeping track of images
    Copyright (C) 1999 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -25,19 +25,16 @@ This exception does not however invalidate any other reasons why the
 executable file might be covered by the GNU General Public License. */
 
 
-package java.awt.peer;
+package java.awt;
 
-public interface TextComponentPeer extends ComponentPeer
+/**
+  * This class is used for keeping track of the status of various media
+  * objects.
+  *
+  * @author Aaron M. Renn (arenn@urbanophile.com)
+  */
+public class MediaTracker implements java.io.Serializable
 {
 
-public abstract int getSelectionEnd();
-public abstract int getSelectionStart();
-public abstract String getText();
-public abstract void setText(String text);
-public abstract void select(int start_pos, int end_pos);
-public abstract void setEditable(boolean editable);
-public abstract int getCaretPosition();
-public abstract void setCaretPosition(int pos);
-
-} // interface TextComponentPeer 
+} // class MediaTracker 
 

@@ -269,8 +269,8 @@ dispatchEventImpl(AWTEvent e)
 protected String
 paramString()
 {
-  return(getClass().getName() + "(label=" + getLabel() + ",actionCommand=" +
-         getActionCommand() + ")");
+  return ("label=" + getLabel() + ",actionCommand=" + getActionCommand()
+	  + "," + super.paramString());
 }
 
 } // class Button 
