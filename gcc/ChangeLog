@@ -1,3 +1,28 @@
+2000-08-08  David Edelsohn  <edelsohn@gnu.org>
+
+	* rs6000.c (optimization_options): Decorate 'level' as
+	ATTRIBUTE_UNUSED. 
+	(mask64_operand): Remove sign-extend thinko.
+	(rldic_operand): New function.
+	(load_multiple_operation): regno's are unsigned ints.
+	(store_multiple_operation): Likewise.
+	(lmw_operation): Likewise.
+	(stmw_operation): Likewise.
+	(includes_lshift_p): shift_mask is unsigned int.
+	(includes_lshift64_p): New function.
+	(addrs_ok_for_quad_peep): unsigned int reg1.
+	(print_operand): Consistently add "else" after
+	output_operand_lossage().
+	(print_operand, case 'b'): Fold in case 'W'.
+	(print_operand, case 'W'): Print rldic MB value.
+	(output_epilogue): Update Objective-C language string.
+	(output_toc): unsigned HOST_WIDE_INT low, compare unsigned.
+	* rs6000.h (PREDICATE_CODES): Add rldic_operand.
+	* rs6000.md (ashldi3): Add rldic instruction.
+	(iordi3, xordi3): Remove redundant "else if CONST_DOUBLE".
+	(cmpsi_internal2, cmpdi_interal2): Use 'b' output template
+	modifier.
+
 2000-08-08  Richard Henderson  <rth@cygnus.com>
 
 	* config/ia64/ia64-protos.h: Remove duplicates.  Update
@@ -827,7 +852,7 @@ Wed Aug  2 15:59:34 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 	(f_options): Added dce entry.
 	* invoke.texi: Document -fdce.  Emphasize experimental status of
 	-fssa.
-	* dce: New file.
+	* dce.c: New file.
 
 2000-08-01  Zack Weinberg  <zack@wolery.cumb.org>
 

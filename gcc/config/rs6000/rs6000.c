@@ -398,7 +398,7 @@ rs6000_override_options (default_cpu)
 
 void
 optimization_options (level, size)
-     int level;
+     int level ATTRIBUTE_UNUSED;
      int size ATTRIBUTE_UNUSED;
 {
 }
@@ -1077,11 +1077,6 @@ mask64_operand (op, mode)
 	if (((c >>= 1) & 1) != last_bit_value)
 	  last_bit_value ^= 1, transitions++;
 
-#if HOST_BITS_PER_WIDE_INT == 32
-      /* Consider CONST_INT sign-extended.  */
-      transitions += (last_bit_value != 1);
-#endif
-
       return transitions <= 1;
     }
   else if (GET_CODE (op) == CONST_DOUBLE
@@ -1123,6 +1118,78 @@ mask64_operand (op, mode)
 #endif
 
       return transitions <= 1;
+    }
+  else
+    return 0;
+}
+
+/* Return 1 if the operand is a constant that is a PowerPC64 mask.
+   It is if there are no more than two 1->0 or 0->1 transitions.
+   Reject all ones and all zeros, since these should have been optimized
+   away and confuse the making of MB and ME.  */
+
+int
+rldic_operand (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  if (GET_CODE (op) == CONST_INT)
+    {
+      HOST_WIDE_INT c = INTVAL (op);
+      int i;
+      int last_bit_value;
+      int transitions = 0;
+
+      if (c == 0 || c == ~0)
+	return 0;
+
+      last_bit_value = c & 1;
+
+      for (i = 1; i < HOST_BITS_PER_WIDE_INT; i++)
+	if (((c >>= 1) & 1) != last_bit_value)
+	  last_bit_value ^= 1, transitions++;
+
+      return transitions <= 2;
+    }
+  else if (GET_CODE (op) == CONST_DOUBLE
+	   && (mode == VOIDmode || mode == DImode))
+    {
+      HOST_WIDE_INT low = CONST_DOUBLE_LOW (op);
+#if HOST_BITS_PER_WIDE_INT == 32
+      HOST_WIDE_INT high = CONST_DOUBLE_HIGH (op);
+#endif
+      int i;
+      int last_bit_value;
+      int transitions = 0;
+
+      if ((low == 0
+#if HOST_BITS_PER_WIDE_INT == 32
+	  && high == 0
+#endif
+	   )
+	  || (low == ~0
+#if HOST_BITS_PER_WIDE_INT == 32
+	      && high == ~0
+#endif
+	      ))
+	return 0;
+
+      last_bit_value = low & 1;
+
+      for (i = 1; i < HOST_BITS_PER_WIDE_INT; i++)
+	if (((low >>= 1) & 1) != last_bit_value)
+	  last_bit_value ^= 1, transitions++;
+
+#if HOST_BITS_PER_WIDE_INT == 32
+      if ((high & 1) != last_bit_value)
+	last_bit_value ^= 1, transitions++;
+
+      for (i = 1; i < HOST_BITS_PER_WIDE_INT; i++)
+	if (((high >>= 1) & 1) != last_bit_value)
+	  last_bit_value ^= 1, transitions++;
+#endif
+
+      return transitions <= 2;
     }
   else
     return 0;
@@ -2846,7 +2913,7 @@ load_multiple_operation (op, mode)
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   int count = XVECLEN (op, 0);
-  int dest_regno;
+  unsigned int dest_regno;
   rtx src_addr;
   int i;
 
@@ -2889,7 +2956,7 @@ store_multiple_operation (op, mode)
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   int count = XVECLEN (op, 0) - 1;
-  int src_regno;
+  unsigned int src_regno;
   rtx dest_addr;
   int i;
 
@@ -2984,9 +3051,9 @@ lmw_operation (op, mode)
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   int count = XVECLEN (op, 0);
-  int dest_regno;
+  unsigned int dest_regno;
   rtx src_addr;
-  int base_regno;
+  unsigned int base_regno;
   HOST_WIDE_INT offset;
   int i;
 
@@ -3001,7 +3068,7 @@ lmw_operation (op, mode)
   src_addr = XEXP (SET_SRC (XVECEXP (op, 0, 0)), 0);
 
   if (dest_regno > 31
-      || count != 32 - dest_regno)
+      || count != 32 - (int) dest_regno)
     return 0;
 
   if (LEGITIMATE_INDIRECT_ADDRESS_P (src_addr))
@@ -3062,9 +3129,9 @@ stmw_operation (op, mode)
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   int count = XVECLEN (op, 0);
-  int src_regno;
+  unsigned int src_regno;
   rtx dest_addr;
-  int base_regno;
+  unsigned int base_regno;
   HOST_WIDE_INT offset;
   int i;
 
@@ -3079,7 +3146,7 @@ stmw_operation (op, mode)
   dest_addr = XEXP (SET_DEST (XVECEXP (op, 0, 0)), 0);
 
   if (src_regno > 31
-      || count != 32 - src_regno)
+      || count != 32 - (int) src_regno)
     return 0;
 
   if (LEGITIMATE_INDIRECT_ADDRESS_P (dest_addr))
@@ -3238,7 +3305,9 @@ includes_lshift_p (shiftop, andop)
      register rtx shiftop;
      register rtx andop;
 {
-  int shift_mask = (~0 << INTVAL (shiftop));
+  unsigned HOST_WIDE_INT shift_mask = ~(unsigned HOST_WIDE_INT) 0;
+
+  shift_mask <<= INTVAL (shiftop);
 
   return (INTVAL (andop) & ~shift_mask) == 0;
 }
@@ -3254,7 +3323,39 @@ includes_rshift_p (shiftop, andop)
 
   shift_mask >>= INTVAL (shiftop);
 
-  return (INTVAL (andop) & ~ shift_mask) == 0;
+  return (INTVAL (andop) & ~shift_mask) == 0;
+}
+
+/* Return 1 if ANDOP is a mask that has no bits on that are not in the
+   mask required to convert the result of a rotate insn into a shift
+   left insn of SHIFTOP bits.  */
+
+int
+includes_lshift64_p (shiftop, andop)
+     register rtx shiftop;
+     register rtx andop;
+{
+#if HOST_BITS_PER_WIDE_INT == 64
+  unsigned HOST_WIDE_INT shift_mask = ~(unsigned HOST_WIDE_INT) 0;
+
+  shift_mask <<= INTVAL (shiftop);
+
+  return (INTVAL (andop) & ~shift_mask) == 0;
+#else
+  unsigned HOST_WIDE_INT shift_mask_low = ~(unsigned HOST_WIDE_INT) 0;
+  unsigned HOST_WIDE_INT shift_mask_high = ~(unsigned HOST_WIDE_INT) 0;
+
+  shift_mask_low <<= INTVAL (shiftop);
+
+  if (INTVAL (shiftop) > 32)
+    shift_mask_high <<= (INTVAL (shiftop) - 32);
+
+  if (GET_CODE (andop) == CONST_INT)
+    return (INTVAL (andop) & ~shift_mask_low) == 0;
+  else
+    return ((CONST_DOUBLE_HIGH (andop) & ~shift_mask_high) == 0
+	    && (CONST_DOUBLE_LOW (andop) & ~shift_mask_low) == 0);
+#endif
 }
 
 /* Return 1 if REGNO (reg1) == REGNO (reg2) - 1 making them candidates
@@ -3282,7 +3383,7 @@ addrs_ok_for_quad_peep (addr1, addr2)
      register rtx addr1;
      register rtx addr2;
 {
-  int reg1;
+  unsigned int reg1;
   int offset1;
 
   /* Extract an offset (if used) from the first addr.  */
@@ -3579,11 +3680,12 @@ print_operand (file, x, code)
       return;
 
     case 'b':
-      /* Low-order 16 bits of constant, unsigned.  */
-      if (! INT_P (x))
-	output_operand_lossage ("invalid %%b value");
-
-      fprintf (file, HOST_WIDE_INT_PRINT_DEC, INT_LOWPART (x) & 0xffff);
+      /* If constant, low-order 16 bits of constant, unsigned.
+	 Otherwise, write normally.  */
+      if (INT_P (x))
+	fprintf (file, HOST_WIDE_INT_PRINT_DEC, INT_LOWPART (x) & 0xffff);
+      else
+	print_operand (file, x, 0);
       return;
 
     case 'B':
@@ -3687,7 +3789,7 @@ print_operand (file, x, code)
       else
 	putc ('m', file);
       return;
-	
+
     case 'h':
       /* If constant, output low-order five bits.  Otherwise,
 	 write normally. */
@@ -3737,8 +3839,8 @@ print_operand (file, x, code)
 	 constant.  */
       if (! INT_P (x))
 	output_operand_lossage ("invalid %%k value");
-
-      fprintf (file, HOST_WIDE_INT_PRINT_DEC, ~ INT_LOWPART (x));
+      else
+	fprintf (file, HOST_WIDE_INT_PRINT_DEC, ~ INT_LOWPART (x));
       return;
 
     case 'K':
@@ -3864,16 +3966,16 @@ print_operand (file, x, code)
       /* Write the number of elements in the vector times 4.  */
       if (GET_CODE (x) != PARALLEL)
 	output_operand_lossage ("invalid %%N value");
-
-      fprintf (file, "%d", XVECLEN (x, 0) * 4);
+      else
+	fprintf (file, "%d", XVECLEN (x, 0) * 4);
       return;
 
     case 'O':
       /* Similar, but subtract 1 first.  */
       if (GET_CODE (x) != PARALLEL)
 	output_operand_lossage ("invalid %%O value");
-
-      fprintf (file, "%d", (XVECLEN (x, 0) - 1) * 4);
+      else
+	fprintf (file, "%d", (XVECLEN (x, 0) - 1) * 4);
       return;
 
     case 'p':
@@ -3881,8 +3983,8 @@ print_operand (file, x, code)
       if (! INT_P (x)
 	  || (i = exact_log2 (INT_LOWPART (x))) < 0)
 	output_operand_lossage ("invalid %%p value");
-
-      fprintf (file, "%d", i);
+      else
+	fprintf (file, "%d", i);
       return;
 
     case 'P':
@@ -3891,8 +3993,8 @@ print_operand (file, x, code)
       if (GET_CODE (x) != MEM || GET_CODE (XEXP (x, 0)) != REG
 	  || REGNO (XEXP (x, 0)) >= 32)
 	output_operand_lossage ("invalid %%P value");
-
-      fprintf (file, "%d", REGNO (XEXP (x, 0)));
+      else
+	fprintf (file, "%d", REGNO (XEXP (x, 0)));
       return;
 
     case 'q':
@@ -3943,8 +4045,8 @@ print_operand (file, x, code)
       /* Low 5 bits of 32 - value */
       if (! INT_P (x))
 	output_operand_lossage ("invalid %%s value");
-
-      fprintf (file, HOST_WIDE_INT_PRINT_DEC, (32 - INT_LOWPART (x)) & 31);
+      else
+	fprintf (file, HOST_WIDE_INT_PRINT_DEC, (32 - INT_LOWPART (x)) & 31);
       return;
 
     case 'S':
@@ -4016,8 +4118,7 @@ print_operand (file, x, code)
       if (GET_CODE (x) != REG || (REGNO (x) != LINK_REGISTER_REGNUM
 				  && REGNO (x) != COUNT_REGISTER_REGNUM))
 	output_operand_lossage ("invalid %%T value");
-
-      if (REGNO (x) == LINK_REGISTER_REGNUM)
+      else if (REGNO (x) == LINK_REGISTER_REGNUM)
 	fputs (TARGET_NEW_MNEMONICS ? "lr" : "r", file);
       else
 	fputs ("ctr", file);
@@ -4027,26 +4128,26 @@ print_operand (file, x, code)
       /* High-order 16 bits of constant for use in unsigned operand.  */
       if (! INT_P (x))
 	output_operand_lossage ("invalid %%u value");
-
-      fprintf (file, HOST_WIDE_INT_PRINT_HEX, 
-	       (INT_LOWPART (x) >> 16) & 0xffff);
+      else
+	fprintf (file, HOST_WIDE_INT_PRINT_HEX, 
+		 (INT_LOWPART (x) >> 16) & 0xffff);
       return;
 
     case 'v':
       /* High-order 16 bits of constant for use in signed operand.  */
       if (! INT_P (x))
 	output_operand_lossage ("invalid %%v value");
+      else
+	{
+	  int value = (INT_LOWPART (x) >> 16) & 0xffff;
 
-      {
-	int value = (INT_LOWPART (x) >> 16) & 0xffff;
-
-	/* Solaris assembler doesn't like lis 0,0x8000 */
-	if (DEFAULT_ABI == ABI_SOLARIS && (value & 0x8000) != 0)
-	  fprintf (file, "%d", value | (~0 << 16));
-	else
-	  fprintf (file, "0x%x", value);
-	return;
-      }
+	  /* Solaris assembler doesn't like lis 0,0x8000 */
+	  if (DEFAULT_ABI == ABI_SOLARIS && (value & 0x8000) != 0)
+	    fprintf (file, "%d", value | (~0 << 16));
+	  else
+	    fprintf (file, "0x%x", value);
+	  return;
+	}
 
     case 'U':
       /* Print `u' if this has an auto-increment or auto-decrement.  */
@@ -4106,12 +4207,39 @@ print_operand (file, x, code)
       return;
 
     case 'W':
-      /* If constant, low-order 16 bits of constant, unsigned.
-	 Otherwise, write normally.  */
-      if (INT_P (x))
-	fprintf (file, HOST_WIDE_INT_PRINT_DEC, INT_LOWPART (x) & 0xffff);
+      /* MB value for a PowerPC64 rldic operand.  */
+      if (! rldic_operand (x, VOIDmode))
+	output_operand_lossage ("invalid %%W value");
+
+      val = (GET_CODE (x) == CONST_INT
+	     ? INTVAL (x) : CONST_DOUBLE_HIGH (x));
+
+      if (val < 0)
+	i = -1;
       else
-	print_operand (file, x, 0);
+	for (i = 0; i < HOST_BITS_PER_WIDE_INT; i++)
+	  if ((val <<= 1) < 0)
+	    break;
+
+#if HOST_BITS_PER_WIDE_INT == 32
+      if (GET_CODE (x) == CONST_INT && i >= 0)
+	i += 32;  /* zero-extend high-part was all 0's */
+      else if (GET_CODE (x) == CONST_DOUBLE && i == 32)
+	{
+	  val = CONST_DOUBLE_LOW (x);
+
+	  if (val == 0)
+	    abort();
+	  else if (val < 0)
+	    --i;
+	  else
+	    for ( ; i < 64; i++)
+	      if ((val <<= 1) < 0)
+		break;
+	}
+#endif
+
+      fprintf (file, "%d", i + 1);
       return;
 
     case 'X':
@@ -5944,7 +6072,7 @@ output_epilog (file, size)
          although IBM appears to be using 13.  There is no official value
 	 for Chill, so we've choosen 44 pseudo-randomly.  */
       if (! strcmp (language_string, "GNU C")
-	  || ! strcmp (language_string, "GNU Obj-C"))
+	  || ! strcmp (language_string, "GNU Objective-C"))
 	i = 0;
       else if (! strcmp (language_string, "GNU F77"))
 	i = 1;
@@ -6573,7 +6701,7 @@ output_toc (file, x, labelno, mode)
   else if (GET_MODE (x) == VOIDmode
 	   && (GET_CODE (x) == CONST_INT || GET_CODE (x) == CONST_DOUBLE))
     {
-      HOST_WIDE_INT low;
+      unsigned HOST_WIDE_INT low;
       HOST_WIDE_INT high;
 
       if (GET_CODE (x) == CONST_DOUBLE)
@@ -6585,11 +6713,11 @@ output_toc (file, x, labelno, mode)
 #if HOST_BITS_PER_WIDE_INT == 32
 	{
 	  low = INTVAL (x);
-	  high = (low < 0) ? ~0 : 0;
+	  high = (low & 0x80000000u) ? ~0 : 0;
 	}
 #else
 	{
-          low = INTVAL (x) & 0xffffffff;
+          low = INTVAL (x) & 0xffffffffu;
           high = (HOST_WIDE_INT) INTVAL (x) >> 32;
 	}
 #endif
