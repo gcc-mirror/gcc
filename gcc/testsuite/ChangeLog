@@ -1,3 +1,7 @@
+2003-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/20030204-1.c: New test.
+
 2003-02-04  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/38
