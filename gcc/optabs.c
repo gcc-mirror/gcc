@@ -5076,6 +5076,7 @@ init_optabs ()
   truncxfdf2_libfunc = init_one_libfunc ("__truncxfdf2");
   trunctfdf2_libfunc = init_one_libfunc ("__trunctfdf2");
 
+  abort_libfunc = init_one_libfunc ("abort");
   memcpy_libfunc = init_one_libfunc ("memcpy");
   memmove_libfunc = init_one_libfunc ("memmove");
   bcopy_libfunc = init_one_libfunc ("bcopy");
