@@ -70,7 +70,8 @@ extern enum arch_type sparc_arch_type;
 
 /* Special flags to the Sun-4 assembler when using pipe for input.  */
 
-#define ASM_SPEC " %| %{!pg:%{!p:%{fpic:-k} %{fPIC:-k}}}"
+#define ASM_SPEC \
+  " %| %{R} %{!pg:%{!p:%{fpic:-k} %{fPIC:-k}}} %{keep-local-as-symbols:-L}"
 
 /* Define macros to distinguish architectures.  */
 

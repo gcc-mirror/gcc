@@ -1,5 +1,5 @@
 /* Definitions for Intel 386 running SunOS 4.0.
-   Copyright (C) 1988 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -39,7 +39,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Extra switches to give the assembler.  */
 
-#define ASM_SPEC "-i386"
+#define ASM_SPEC "%{R} -i386 %{keep-local-as-symbols:-L}"
 
 /* Specify predefined symbols in preprocessor.  */
 

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Sun 68000/68020 version.
-   Copyright (C) 1987, 1988, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1993, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -78,7 +78,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define ASM_SPEC \
  "%{m68000:-mc68010}%{mc68000:-mc68010}%{!mc68000:%{!m68000:-mc68020}} \
-  %{fpic:-k} %{fPIC:-k}"
+  %{fpic:-k} %{fPIC:-k} %{R} %{j} %{J} %{h} %{d2} %{keep-local-as-symbols:-L}"
 
 /* Names to predefine in the preprocessor for this target machine.  */
 /* For a while,  -D_CROSS_TARGET_ARCH=SUN3 was included here,

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Sun 68010 version.
-   Copyright (C) 1987, 1988 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -39,7 +39,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define ASM_SPEC \
  "%{m68020:-mc68020}%{mc68020:-mc68020}%{!mc68020:%{!m68020:-mc68010}} \
-  %{fpic:-k} %{fPIC:-k}"
+  %{fpic:-k} %{fPIC:-k} %{R} %{j} %{J} %{h} %{d2} %{keep-local-as-symbols:-L}"
   
 /* Names to predefine in the preprocessor for this target machine.  */
 
