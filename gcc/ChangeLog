@@ -77,6 +77,9 @@ Tue Dec 14 12:07:29 MET 1999  Jan Hubicka  <hubicka@freesoft.cz>
 	* glimits.h: Likewise.
 	* longlong.h: Likewise.
 
+	* config/sparc/linux64.h (DEFAULT_VTABLE_THUNKS): Define to 1.
+	(ASM_IDENTIFY_GCC): Remove.
+
 1999-12-14  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* combine.c (combine_simplify_rtx): Don't make shared rtl.
