@@ -1,3 +1,7 @@
+2001-12-04  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/elfos.h (ASM_OUTPUT_INTERNAL_LABEL): Display count unsigned.
+
 2001-12-04  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/cris.h (OPTIMIZATION_OPTIONS): Don't unset

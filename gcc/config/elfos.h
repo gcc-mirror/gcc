@@ -134,11 +134,11 @@ Boston, MA 02111-1307, USA.  */
    with a period is not put into the linker symbol table by the assembler.  */
 
 #undef  ASM_OUTPUT_INTERNAL_LABEL
-#define ASM_OUTPUT_INTERNAL_LABEL(FILE, PREFIX, NUM)	\
-  do							\
-    {							\
-      fprintf (FILE, ".%s%d:\n", PREFIX, NUM);		\
-    }							\
+#define ASM_OUTPUT_INTERNAL_LABEL(FILE, PREFIX, NUM)		\
+  do								\
+    {								\
+      fprintf (FILE, ".%s%u:\n", PREFIX, (unsigned) (NUM));	\
+    }								\
   while (0)
 
 /* This is how to store into the string LABEL
