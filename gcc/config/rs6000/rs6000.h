@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for IBM RS/6000.
-   Copyright (C) 1992, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GNU CC.
@@ -541,9 +541,11 @@ extern char *rs6000_cpu_string;
    : (CLASS1) == FLOAT_REGS && (CLASS2) != FLOAT_REGS ? 10	\
    : (CLASS1) != FLOAT_REGS && (CLASS2) == FLOAT_REGS ? 10	\
    : (((CLASS1) == SPECIAL_REGS || (CLASS1) == MQ_REGS		\
-       || (CLASS1) == LINK_REGS || (CLASS1) == CTR_REGS)	\
+       || (CLASS1) == LINK_REGS || (CLASS1) == CTR_REGS		\
+       || (CLASS1) == LINK_OR_CTR_REGS)				\
       && ((CLASS2) == SPECIAL_REGS || (CLASS2) == MQ_REGS	\
-	  || (CLASS2) == LINK_REGS || (CLASS2) == CTR_REGS)) ? 10 \
+	  || (CLASS2) == LINK_REGS || (CLASS2) == CTR_REGS	\
+	  || (CLASS2) == LINK_OR_CTR_REGS)) ? 10 \
    : 2)
 
 /* A C expressions returning the cost of moving data of MODE from a register to
