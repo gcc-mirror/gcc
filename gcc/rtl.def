@@ -376,8 +376,9 @@ DEF_RTL_EXPR(BARRIER, "barrier", "iuu", 'x')
    3: is a number that is unique in the entire compilation.
    4: is the user-given name of the label, if any.
    5: is used in jump.c for the use-count of the label.
-   6: is used in flow.c to point to the chain of label_ref's to this label.  */
-DEF_RTL_EXPR(CODE_LABEL, "code_label", "iuuis00", 'x')
+   6: is used in flow.c to point to the chain of label_ref's to this label.
+   7: is the alternate label name.  */
+DEF_RTL_EXPR(CODE_LABEL, "code_label", "iuuis00s", 'x')
      
 /* Say where in the code a source line starts, for symbol table's sake.
    Contains a filename and a line number.  Line numbers <= 0 are special:

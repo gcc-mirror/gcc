@@ -5736,6 +5736,17 @@ The usual definition of this macro is as follows:
 fprintf (@var{stream}, "L%s%d:\n", @var{prefix}, @var{num})
 @end example
 
+@findex ASM_OUTPUT_ALTERNATE_LABEL_NAME
+@item ASM_OUTPUT_ALTERNATE_LABEL_NAME (@var{stream}, @var{string})
+A C statement to output to the stdio stream @var{stream} the string
+@var{string}.
+
+The default definition of this macro is as follows:
+
+@example
+fprintf (@var{stream}, "%s:\n", LABEL_ALTERNATE_NAME (INSN))
+@end example
+
 @findex ASM_GENERATE_INTERNAL_LABEL
 @item ASM_GENERATE_INTERNAL_LABEL (@var{string}, @var{prefix}, @var{num})
 A C statement to store into the string @var{string} a label whose name

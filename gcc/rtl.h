@@ -597,6 +597,9 @@ extern const char * const note_insn_name[];
    of LABEL_REFs that point at it, so unused labels can be deleted.  */
 #define LABEL_NUSES(RTX) XCINT(RTX, 5, CODE_LABEL)
 
+/* Associate a name with a CODE_LABEL.  */
+#define LABEL_ALTERNATE_NAME(RTX) XCSTR(RTX, 7, CODE_LABEL)
+
 /* The original regno this ADDRESSOF was built for.  */
 #define ADDRESSOF_REGNO(RTX) XCINT(RTX, 1, ADDRESSOF)
 

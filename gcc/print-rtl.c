@@ -354,7 +354,11 @@ print_rtx (in_rtx)
 #endif
 
   if (GET_CODE (in_rtx) == CODE_LABEL)
-    fprintf (outfile, " [num uses: %d]", LABEL_NUSES (in_rtx));
+    {
+      fprintf (outfile, " [num uses: %d]", LABEL_NUSES (in_rtx));
+      if (LABEL_ALTERNATE_NAME (in_rtx))
+        fprintf (outfile, " [alternate name: %s]", LABEL_ALTERNATE_NAME (in_rtx));
+    }
   
   if (dump_for_graph
       && (is_insn || GET_CODE (in_rtx) == NOTE

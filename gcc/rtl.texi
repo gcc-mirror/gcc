@@ -2384,6 +2384,11 @@ The field @code{LABEL_NUSES} is only defined once the jump optimization
 phase is completed and contains the number of times this label is
 referenced in the current function.
 
+@findex LABEL_ALTERNATE_NAME
+The field @code{LABEL_ALTERNATE_NAME} is used to associate a name with
+a @code{code_label}.  If this field is defined, the alternate name will
+be emitted instead of an internally generated label name.
+
 @findex barrier
 @item barrier
 Barriers are placed in the instruction stream when control cannot flow

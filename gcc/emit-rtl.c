@@ -1523,9 +1523,10 @@ gen_label_rtx ()
   register rtx label;
 
   label = gen_rtx_CODE_LABEL (VOIDmode, 0, NULL_RTX,
-			      NULL_RTX, label_num++, NULL_PTR);
+			      NULL_RTX, label_num++, NULL_PTR, NULL_PTR);
 
   LABEL_NUSES (label) = 0;
+  LABEL_ALTERNATE_NAME (label) = NULL;
   return label;
 }
 
