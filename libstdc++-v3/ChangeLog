@@ -1,3 +1,11 @@
+2002-05-24  Phil Edwards  <pme@gcc.gnu.org>
+
+	libstdc++/6282
+	* include/std/std_bitset.h (_Base_biteset<0>):  New specialization.
+	(operator>>):  If nothing was extracted, don't fail in the
+	zero-length case.
+	* testsuite/23_containers/bitset_ctor.cc (test02):  New test.
+
 2002-05-24  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/6701

@@ -61,7 +61,7 @@
 
 #define _GLIBCPP_BITSET_BITS_PER_WORD (CHAR_BIT*sizeof(unsigned long))
 #define _GLIBCPP_BITSET_WORDS(__n) \
- ((__n) < 1 ? 1 : ((__n) + _GLIBCPP_BITSET_BITS_PER_WORD - 1)/_GLIBCPP_BITSET_BITS_PER_WORD)
+ ((__n) < 1 ? 0 : ((__n) + _GLIBCPP_BITSET_BITS_PER_WORD - 1)/_GLIBCPP_BITSET_BITS_PER_WORD)
 
 namespace std
 {
@@ -462,6 +462,101 @@ namespace std
       size_t
       _M_do_find_next(size_t __prev, size_t __not_found) const;
     };
+
+
+  /**
+   *  @if maint
+   *  Base class, specialization for no storage (zero-length %bitset).
+   *
+   *  See documentation for bitset.
+   *  @endif
+  */
+  template<>
+    struct _Base_bitset<0>
+    {
+      typedef unsigned long _WordT;
+
+      _Base_bitset() {}
+      _Base_bitset(unsigned long) {}
+
+      static size_t
+      _S_whichword(size_t __pos )
+      { return __pos / _GLIBCPP_BITSET_BITS_PER_WORD; }
+
+      static size_t
+      _S_whichbyte(size_t __pos )
+      { return (__pos % _GLIBCPP_BITSET_BITS_PER_WORD) / CHAR_BIT; }
+
+      static size_t
+      _S_whichbit(size_t __pos )
+      {  return __pos % _GLIBCPP_BITSET_BITS_PER_WORD; }
+
+      static _WordT
+      _S_maskbit(size_t __pos )
+      { return (static_cast<_WordT>(1)) << _S_whichbit(__pos); }
+
+      // This would normally give access to the data.  The bounds-checking
+      // in the bitset class will prevent the user from getting this far,
+      // but (1) it must still return an lvalue to compile, and (2) the
+      // user might call _Unchecked_set directly, in which case this /needs/
+      // to fail.  Let's not penalize zero-length users unless they actually
+      // make an unchecked call; all the memory ugliness is therefore
+      // localized to this single should-never-get-this-far function.
+      _WordT&
+      _M_getword(size_t) const
+      { __throw_out_of_range("bitset -- zero-length"); return *new _WordT; }
+
+      _WordT
+      _M_hiword() const { return 0; }
+
+      void
+      _M_do_and(const _Base_bitset<0>&) { }
+
+      void
+      _M_do_or(const _Base_bitset<0>&)  { }
+
+      void
+      _M_do_xor(const _Base_bitset<0>&) { }
+
+      void
+      _M_do_left_shift(size_t) { }
+
+      void
+      _M_do_right_shift(size_t) { }
+
+      void
+      _M_do_flip() { }
+
+      void
+      _M_do_set() { }
+
+      void
+      _M_do_reset() { }
+
+      // Are all empty bitsets equal to each other?  Are they equal to
+      // themselves?  How to compare a thing which has no state?  What is
+      // the sound of one zero-length bitset clapping?
+      bool
+      _M_is_equal(const _Base_bitset<0>&) const { return true; }
+
+      bool
+      _M_is_any() const { return false; }
+
+      size_t
+      _M_do_count() const { return 0; }
+
+      unsigned long
+      _M_do_to_ulong() const { return 0; }
+
+      // Normally "not found" is the size, but that could also be
+      // misinterpreted as an index in this corner case.  Oh well.
+      size_t
+      _M_do_find_first(size_t) const { return 0; }
+
+      size_t
+      _M_do_find_next(size_t, size_t) const { return 0; }
+    };
+
 
   // Helper class to zero out the unused high-order bits in the highest word.
   template<size_t _Extrabits>
@@ -1115,7 +1210,7 @@ namespace std
 		}
 	    }
 
-	  if (__tmp.empty())
+	  if (__tmp.empty() && !_Nb)
 	    __is.setstate(ios_base::failbit);
 	  else
 	    __x._M_copy_from_string(__tmp, static_cast<size_t>(0), _Nb);
