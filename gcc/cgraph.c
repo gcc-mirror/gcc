@@ -531,5 +531,15 @@ cgraph_varpool_assemble_pending_decls (void)
   return changed;
 }
 
+/* Return true when the DECL can possibly be inlined.  */
+bool
+cgraph_function_possibly_inlined_p (tree decl)
+{
+  if (!flag_unit_at_a_time)
+    return (DECL_INLINE (decl) && !flag_no_inline);
+  if (!cgraph_global_info_ready)
+    abort ();
+  return cgraph_node (decl)->global.inlined;
+}
 
 #include "gt-cgraph.h"

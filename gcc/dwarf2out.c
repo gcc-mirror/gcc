@@ -64,6 +64,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "target.h"
 #include "langhooks.h"
 #include "hashtab.h"
+#include "cgraph.h"
 
 #ifdef DWARF2_DEBUGGING_INFO
 static void dwarf2out_source_line (unsigned int, const char *);
@@ -10685,20 +10686,20 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
     }
   else if (DECL_ABSTRACT (decl))
     {
-      if (DECL_INLINE (decl) && !flag_no_inline)
+      if (DECL_DECLARED_INLINE_P (decl))
 	{
-	  /* ??? Checking DECL_DEFER_OUTPUT is correct for static
-	     inline functions, but not for extern inline functions.
-	     We can't get this completely correct because information
-	     about whether the function was declared inline is not
-	     saved anywhere.  */
-	  if (DECL_DEFER_OUTPUT (decl))
+          if (cgraph_function_possibly_inlined_p (decl))
 	    add_AT_unsigned (subr_die, DW_AT_inline, DW_INL_declared_inlined);
 	  else
-	    add_AT_unsigned (subr_die, DW_AT_inline, DW_INL_inlined);
+	    add_AT_unsigned (subr_die, DW_AT_inline, DW_INL_declared_not_inlined);
 	}
       else
-	add_AT_unsigned (subr_die, DW_AT_inline, DW_INL_declared_not_inlined);
+	{
+	  if (cgraph_function_possibly_inlined_p (decl))
+            add_AT_unsigned (subr_die, DW_AT_inline, DW_INL_inlined);
+	  else
+	    abort ();
+	}
 
       equate_decl_number_to_die (decl, subr_die);
     }
@@ -11800,7 +11801,8 @@ gen_decl_die (tree decl, dw_die_ref context_die)
 
       /* If we're emitting an out-of-line copy of an inline function,
 	 emit info for the abstract instance and set up to refer to it.  */
-      else if (DECL_INLINE (decl) && ! DECL_ABSTRACT (decl)
+      else if (cgraph_function_possibly_inlined_p (decl)
+	       && ! DECL_ABSTRACT (decl)
 	       && ! class_scope_p (context_die)
 	       /* dwarf2out_abstract_function won't emit a die if this is just
 		  a declaration.  We must avoid setting DECL_ABSTRACT_ORIGIN in

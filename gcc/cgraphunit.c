@@ -833,6 +833,7 @@ cgraph_mark_inline (struct cgraph_node *to, struct cgraph_node *what,
   bool called = false;
   int new_insns;
 
+  what->global.inlined = 1;
   for (e = what->callers; e; e = e->next_caller)
     {
       if (e->caller == to)

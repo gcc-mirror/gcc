@@ -59,6 +59,9 @@ struct cgraph_global_info GTY(())
      Once we inline all calls to the function and the function is local,
      it is set to false.  */
   bool will_be_output;
+
+  /* Set iff at least one of the caller edges has inline_call flag set.  */
+  bool inlined;
 };
 
 /* Information about the function that is propagated by the RTL backend.
@@ -167,6 +170,8 @@ struct cgraph_varpool_node *cgraph_varpool_node_for_identifier (tree id);
 void cgraph_varpool_mark_needed_node (struct cgraph_varpool_node *);
 void cgraph_varpool_finalize_decl (tree);
 bool cgraph_varpool_assemble_pending_decls (void);
+
+bool cgraph_function_possibly_inlined_p (tree);
 
 /* In cgraphunit.c  */
 bool cgraph_assemble_pending_functions (void);

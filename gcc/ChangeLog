@@ -1,3 +1,18 @@
+2003-10-22  Jan Hubicka  <jh@suse.cz>
+
+	PR debug/12389
+	* Makefile.in (dwarf2out.o): Depend on cgraph.h.
+	* cgraph.c (cgraph_function_possibly_inlined_p): New function.
+	* cgraph.h (cgraph_function_possibly_inlined_p): Declare.
+	(cgraph_global_info): Add flag inlined
+	* dwarf2out.c (gen_subprogram_die, gen_decl_die): Use
+	cgraph_function_possibly_inded_p
+	* cgraphunit.c (mark_inline): Set inlined flag.
+	* toplev.c (rest_of_decl_compilation): Call outlining_inline_function
+	only for possibly inlined functions.
+	* c-decl.c (duplicate_decls): Never output abstract DIE representing old
+	body of function.
+
 2003-10-22  Andrew Haley  <aph@redhat.com>
 
 	* varasm.c (output_constructor): Make constructor annotation
