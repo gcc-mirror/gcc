@@ -6521,6 +6521,7 @@ get_condition (jump, earliest)
      EQ or NE, return zero.  */
   if (TARGET_FLOAT_FORMAT == IEEE_FLOAT_FORMAT
       && did_reverse_condition && code != NE && code != EQ
+      && ! flag_fast_math
       && GET_MODE_CLASS (GET_MODE (op0)) == MODE_FLOAT)
     return 0;
 
