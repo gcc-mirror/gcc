@@ -449,7 +449,8 @@ static void emit_jump_if_reachable	PROTO((rtx));
 static void emit_case_nodes		PROTO((rtx, case_node_ptr, rtx, tree));
 static int add_case_node		PROTO((tree, tree, tree, tree *));
 static struct case_node *case_tree2list	PROTO((case_node *, case_node *));
-
+static void mark_seen_cases		PROTO((tree, unsigned char *,
+					       long, int));
 
 void
 using_eh_for_cleanups ()
@@ -4322,7 +4323,7 @@ all_cases_count (type, spareness)
    The time needed is proportional to COUNT, unless
    SPARSENESS is 2, in which case quadratic time is needed.  */
 
-void
+static void
 mark_seen_cases (type, cases_seen, count, sparseness)
      tree type;
      unsigned char *cases_seen;
