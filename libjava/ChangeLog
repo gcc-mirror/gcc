@@ -1,5 +1,8 @@
 2000-12-03  Tom Tromey  <tromey@redhat.com>
 
+	* java/awt/AWTError.java: Extend Error, not
+	IllegalStateException.
+
 	* Makefile.in: Rebuilt.
 	* Makefile.am (awt_java_source_files): Added new file.
 	* java/awt/geom/RoundRectangle2D.java: New file.
