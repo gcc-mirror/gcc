@@ -1,5 +1,31 @@
+2004-03-02  Benjamin Kosnik  <bkoz@redhat.com>
+
+	Support automake 1.8.2
+	* configure.ac (AM_INIT_AUTOMAKE): Add -Wno-override.
+	* po/Makefile.am (EXTRA_DIST): New.
+	* po/Makefile.in: Regenerate.
+	* Makefile.in: Same.
+	* include/Makefile.in: Same.
+	* libmath/Makefile.in: Same.
+	* libsupc++/Makefile.in: Same.
+	* src/Makefile.in: Same.
+	* testsuite/Makefile.in: Same.
+
+	* include/Makefile.am (${host_builddir}/gthr-posix.h): Use
+	__GXX_WEAK__ instead of SUPPORTS_WEAK.
+	(${host_builddir}/gthr-default.h): Same.
+	(${host_builddir}/gthr.h): Same.
+	* acinclude.m4 (GLIBCXX_ENABLE_THREAD): Remove
+	_GLIBCXX_SUPPORTS_WEAK, as this behavior can be modified via
+	-fno-weak.
+	* aclocal.m4: Regenerate.
+	* acconfig.h: Remove _GLIBCXX_SUPPORTS_WEAK.
+	* config.h.in: Regenerate.
+	* configure: Same.
+	
 2004-03-01  Benjamin Kosnik  <bkoz@redhat.com>
 
+	Support autoconf 2.59
 	* acinclude.m4: Quote correctly.
 	* aclocal.m4: Regenerate.
 	* linkage.m4: Same.

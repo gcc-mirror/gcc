@@ -1,6 +1,6 @@
 ## Makefile for the po subdirectory of the GNU C++ Standard library.
 ##
-## Copyright (C) 2001, 2003 Free Software Foundation, Inc.
+## Copyright (C) 2001, 2003, 2004 Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
 ## Process this file with automake to produce Makefile.in.
@@ -36,9 +36,7 @@ LOCALE_OUT = $(glibcxx_MOFILES)
 MSGFMT = msgfmt
 
 # Necessary files.
-DISTFILES = \
-	Makefile.am Makefile.in string_literals.cc POTFILES.in $(PACKAGE).pot \
-	$(LOCALE_IN)
+EXTRA_DIST = string_literals.cc POTFILES.in $(PACKAGE).pot $(LOCALE_IN)
 
 .po.mo:
 	$(MSGFMT) -o $@ $<

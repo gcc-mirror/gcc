@@ -505,6 +505,7 @@ uppercase = [ABCDEFGHIJKLMNOPQRSTUVWXYZ_]
 
 ${host_builddir}/gthr.h: ${toplevel_srcdir}/gcc/gthr.h stamp-${host_alias}
 	sed -e '/^#/s/\(${uppercase}${uppercase}*\)/_GLIBCXX_\1/g' \
+	    -e 's/_GLIBCXX_SUPPORTS_WEAK/__GXX_WEAK__/g' \
 	    -e 's,^#include "\(.*\)",#include <bits/\1>,g' \
 	    < ${toplevel_srcdir}/gcc/gthr.h > $@
 
@@ -518,14 +519,16 @@ ${host_builddir}/gthr-posix.h: ${toplevel_srcdir}/gcc/gthr-posix.h \
 				   stamp-${host_alias}
 	sed -e 's/\(UNUSED\)/_GLIBCXX_\1/g' \
 	    -e 's/\(GCC${uppercase}*_H\)/_GLIBCXX_\1/g' \
-	    -e 's/\(${uppercase}*WEAK\)/_GLIBCXX_\1/g' \
+	    -e 's/SUPPORTS_WEAK/__GXX_WEAK__/g' \
+	    -e 's/\(${uppercase}*USE_WEAK\)/_GLIBCXX_\1/g' \
 	    < ${toplevel_srcdir}/gcc/gthr-posix.h > $@
 
 ${host_builddir}/gthr-default.h: ${toplevel_srcdir}/gcc/${glibcxx_thread_h} \
 				   stamp-${host_alias}
 	sed -e 's/\(UNUSED\)/_GLIBCXX_\1/g' \
 	    -e 's/\(GCC${uppercase}*_H\)/_GLIBCXX_\1/g' \
-	    -e 's/\(${uppercase}*WEAK\)/_GLIBCXX_\1/g' \
+	    -e 's/SUPPORTS_WEAK/__GXX_WEAK__/g' \
+	    -e 's/\(${uppercase}*USE_WEAK\)/_GLIBCXX_\1/g' \
 	    -e 's,^#include "\(.*\)",#include <bits/\1>,g' \
 	    < ${toplevel_srcdir}/gcc/${glibcxx_thread_h} > $@
 
