@@ -850,8 +850,10 @@ _cpp_lex_token (pfile, result)
   cppchar_t c;
   cpp_buffer *buffer;
   const unsigned char *comment_start;
-  unsigned char bol = pfile->state.next_bol;
+  unsigned char bol;
 
+ skip:
+  bol = pfile->state.next_bol;
  done_directive:
   buffer = pfile->buffer;
   pfile->state.next_bol = 0;
@@ -894,13 +896,10 @@ _cpp_lex_token (pfile, result)
 	  handle_newline (buffer, c);
 	  bol = 1;
 	  pfile->lexer_pos.output_line = buffer->lineno;
-
-	  /* Newlines in arguments are white space (6.10.3.10).
-             Otherwise, clear any white space flag.  */
-	  if (pfile->state.parsing_args)
-	    result->flags |= PREV_WHITE;
-	  else
-	    result->flags &= ~PREV_WHITE;
+	  /* This is a new line, so clear any white space flag.
+	     Newlines in arguments are white space (6.10.3.10);
+	     parse_arg takes care of that.  */
+	  result->flags &= ~PREV_WHITE;
 	  goto next_char;
 	}
 
@@ -1275,6 +1274,9 @@ _cpp_lex_token (pfile, result)
       result->val.c = c;
       break;
     }
+
+  if (pfile->skipping)
+    goto skip;
 
   /* If not in a directive, this token invalidates controlling macros.  */
   if (!pfile->state.in_directive)

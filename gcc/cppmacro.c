@@ -236,10 +236,6 @@ const cpp_lexer_pos *
 cpp_get_line (pfile)
      cpp_reader *pfile;
 {
-  /* Within a macro expansion, return the position of the outermost
-     invocation.  */
-  if (pfile->context->prev)
-    return &pfile->macro_pos;
   return &pfile->lexer_pos;
 }
 
@@ -489,6 +485,7 @@ parse_arg (pfile, arg, var_args)
 {
   enum cpp_ttype result;
   unsigned int paren = 0;
+  unsigned int line;
 
   arg->first = (cpp_token *) POOL_FRONT (&pfile->argument_pool);
   for (;; arg->count++)
@@ -501,9 +498,13 @@ parse_arg (pfile, arg, var_args)
 	  token = &arg->first[arg->count];
 	}
 
+      /* Newlines in arguments are white space (6.10.3.10).  */
+      line = pfile->lexer_pos.output_line;
       cpp_get_token (pfile, token);
-      result = token->type;
+      if (line != pfile->lexer_pos.output_line)
+	token->flags |= PREV_WHITE;
 
+      result = token->type;
       if (result == CPP_OPEN_PAREN)
 	paren++;
       else if (result == CPP_CLOSE_PAREN && paren-- == 0)
@@ -608,7 +609,9 @@ funlike_invocation_p (pfile, node, list)
   cpp_context *orig_context;
   cpp_token maybe_paren;
   macro_arg *args = 0;
+  cpp_lexer_pos macro_pos;
 
+  macro_pos = pfile->lexer_pos;
   pfile->state.parsing_args = 1;
   pfile->state.prevent_expansion++;
   orig_context = pfile->context;
@@ -631,6 +634,9 @@ funlike_invocation_p (pfile, node, list)
 
   if (args)
     {
+      /* The macro's expansion appears where the name would have.  */
+      pfile->lexer_pos = macro_pos;
+
       if (node->value.macro->paramc > 0)
 	{
 	  /* Don't save tokens during pre-expansion.  */
@@ -660,10 +666,7 @@ enter_macro_context (pfile, node)
 
   /* Save the position of the outermost macro invocation.  */
   if (!pfile->context->prev)
-    {
-      pfile->macro_pos = pfile->lexer_pos;
-      lock_pools (pfile);
-    }
+    lock_pools (pfile);
 
   if (macro->fun_like && !funlike_invocation_p (pfile, node, &list))
     {
@@ -924,7 +927,7 @@ cpp_get_token (pfile, token)
 	  token->flags |= flags;
 	  flags = 0;
 	  /* PASTE_LEFT tokens can only appear in macro expansions.  */
-	  if (token->flags & PASTE_LEFT && !pfile->skipping)
+	  if (token->flags & PASTE_LEFT)
 	    paste_all_tokens (pfile, token);
 	}
       else
@@ -939,10 +942,6 @@ cpp_get_token (pfile, token)
 	  token->flags = 0;
 	  return;
 	}
-
-      /* Loop until we're not skipping.  */
-      if (pfile->skipping)
-	continue;
 
       if (token->type != CPP_NAME)
 	break;

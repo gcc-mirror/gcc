@@ -94,6 +94,7 @@ struct cpp_pending
 static void print_help                  PARAMS ((void));
 static void path_include		PARAMS ((cpp_reader *,
 						 char *, int));
+static void initialize			PARAMS ((void));
 static void initialize_builtins		PARAMS ((cpp_reader *));
 static void append_include_chain	PARAMS ((cpp_reader *,
 						 char *, int, int));

@@ -1,3 +1,19 @@
+2000-12-01  Neil Booth  <neilb@earthling.net>
+
+        * cppinit.c (initialize): Forgotten prototype.
+        * cpplex.c (_cpp_lex_token): Loop until not skipping.
+        Always clear PREV_WHITE upon meeting a new line.
+        * cpplib.c (end_directive): Set pfile->skipping after
+        skip_rest_of_line.
+        * cpplib.h (cpp_reader): Remove macro_pos.
+        * cppmacro.c (cpp_get_line): Don't do anything special inside
+        macros.  
+        (parse_arg): Add PREV_WHITE if a token appears after new lines.
+        (funlike_invocation_p): Save and restore the output position
+        over a successful check for a '('.
+        (enter_macro_context): Delete uses of macro_pos.
+        (cpp_get_token): Don't use pfile->skipping.
+
 2000-12-01  Phil Edwards  <pme@sources.redhat.com>
 
 	* diagnostic.c:  Fix typos in comments.
