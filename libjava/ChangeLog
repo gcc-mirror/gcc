@@ -1,3 +1,8 @@
+2003-03-01  Mohan Embar  <gnustuff@thisiscool.com>
+
+	* java/lang/natWin32Process.cc (startProcess): Double-quote each
+	program array element passed to CreateProcess.
+
 2003-03-01  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/nio/natSocketChannelImpl.cc:
