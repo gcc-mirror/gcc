@@ -1549,12 +1549,12 @@ namespace std
    *  @brief  Deque ordering relation.
    *  @param  x  A %deque.
    *  @param  y  A %deque of the same type as @a x.
-   *  @return  True iff @a x is lexographically less than @a y.
+   *  @return  True iff @a x is lexicographically less than @a y.
    *
    *  This is a total ordering relation.  It is linear in the size of the
    *  deques.  The elements must be comparable with @c <.
    *
-   *  See std::lexographical_compare() for how the determination is made.
+   *  See std::lexicographical_compare() for how the determination is made.
   */
   template <typename _Tp, typename _Alloc>
   inline bool operator<(const deque<_Tp, _Alloc>& __x,

@@ -1,3 +1,13 @@
+2002-12-20  Sylvain Pion   <Sylvain.Pion@mpi-sb.mpg.de>
+
+	* include/bits/stl_deque.h: Fix typo.
+	* include/bits/stl_list.h: Same.
+	* include/bits/stl_map.h: Same.
+	* include/bits/stl_multimap.h: Same.
+	* include/bits/stl_queue.h: Same.
+	* include/bits/stl_stack.h: Same.
+	* include/bits/stl_vector.h: Same.
+
 2002-12-18  Benjamin Kosnik  <bkoz@redhat.com>
 
  	* docs/html/documentation.html: Add link for debug.html.

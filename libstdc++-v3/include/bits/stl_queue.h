@@ -228,12 +228,12 @@ namespace std
    *  @brief  Queue ordering relation.
    *  @param  x  A %queue.
    *  @param  y  A %queue of the same type as @a x.
-   *  @return  True iff @a x is lexographically less than @a y.
+   *  @return  True iff @a x is lexicographically less than @a y.
    *
    *  This is an total ordering relation.  Complexity and semantics depend on
    *  the underlying sequence type, but the expected rules are:  this relation
    *  is linear in the size of the sequences, the elements must be comparable
-   *  with @c <, and std::lexographical_compare() is usually used to make the
+   *  with @c <, and std::lexicographical_compare() is usually used to make the
    *  determination.
   */
   template <typename _Tp, typename _Sequence>

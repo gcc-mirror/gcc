@@ -584,12 +584,12 @@ namespace std
    *  @brief  Multimap ordering relation.
    *  @param  x  A %multimap.
    *  @param  y  A %multimap of the same type as @a x.
-   *  @return  True iff @a x is lexographically less than @a y.
+   *  @return  True iff @a x is lexicographically less than @a y.
    *
    *  This is a total ordering relation.  It is linear in the size of the
    *  multimaps.  The elements must be comparable with @c <.
    *
-   *  See std::lexographical_compare() for how the determination is made.
+   *  See std::lexicographical_compare() for how the determination is made.
   */
   template <typename _Key, typename _Tp, typename _Compare, typename _Alloc>
     inline bool
