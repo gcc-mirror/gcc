@@ -1775,7 +1775,7 @@ expand_inline_function (fndecl, parms, target, ignore, type,
   /* Initialize label_map.  get_label_from_map will actually make
      the labels.  */
   bzero ((char *) &map->label_map [min_labelno],
-	 max_labelno - min_labelno * sizeof (rtx));
+	 (max_labelno - min_labelno) * sizeof (rtx));
 
   /* Perform postincrements before actually calling the function.  */
   emit_queue ();
