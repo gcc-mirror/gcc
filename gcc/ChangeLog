@@ -1,3 +1,29 @@
+2005-01-30  Daniel Berlin  <dberlin@dberlin.org>
+
+	Fix PR tree-optimization/19624
+	
+	* Makefile.in (tree-ssa-pre.o): Add CFGLOOP_H.
+	* tree-ssa-pre.c: Add cfgloop.h.
+	Update comment.
+	(pre_stats): New member, constified.
+	(inserted_exprs): New static variable.
+	(NECESSARY): New macro.
+	(create_expression_by_pieces): Fold the expression, and
+	mark it as defaulting to not necessary. Also put in
+	inserted_exprs.
+	(fully_constant_expression): New function.
+	(insert_into_preds_of_block): Modify to not insert phis when we
+	are playing with induction variables.
+	Push phis onto the inserted_exprs vector, and mark them as not
+	necessary by default.
+	(insert_aux): Call fully_constant_expression on eprime.
+	If all edges produce the same value, mark it constant.
+	(mark_operand_necessary): New function.
+	(remove_dead_inserted_code): New function.
+	(init_pre): Init loop optimizer to get loop info.
+	(fini_pre): Free loop_optimizer, and inserted_exprs vec.
+	(execute_pre): Commit edge inserts, then remove dead code.
+
 2005-01-30  Richard Henderson  <rth@redhat.com>
 
 	* rtl.c (rtx_equal_p): No early exit for CONST_VECTOR.
