@@ -1,3 +1,8 @@
+2001-05-22  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* parse.y: Refer to compound literals as such, not as
+	constructor-expressions.
+
 2001-05-21  Mark Mitchell  <mark@codesourcery.com>
 
 	* call.c (build_op_delete_call): Ignore exception-specifications
