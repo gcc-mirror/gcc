@@ -1597,20 +1597,21 @@ notice_update_cc (body, insn)
 	cc_status.value1 = 0;
       break;
 
-    case CC_SET:
-      /* Insn sets the Z,N,V flags of CC to recog_operand[0].
-	 C may or may not be set to 0 but that's ok
-	 because alter_cond will change tests to use EQ/NE.  */
-      CC_STATUS_INIT;
-      cc_status.value1 = recog_operand[0];
-      break;
-
-    case CC_SET_ZN_C0:
+    case CC_SET_ZN:
       /* Insn sets the Z,N flags of CC to recog_operand[0].
 	 The V flag is unusable.  The C flag may or may not be known but
 	 that's ok because alter_cond will change tests to use EQ/NE.  */
       CC_STATUS_INIT;
       cc_status.flags |= CC_OVERFLOW_UNUSABLE | CC_NO_CARRY;
+      cc_status.value1 = recog_operand[0];
+      break;
+
+    case CC_SET_ZNV:
+      /* Insn sets the Z,N,V flags of CC to recog_operand[0].
+	 The C flag may or may not be known but that's ok because
+	 alter_cond will change tests to use EQ/NE.  */
+      CC_STATUS_INIT;
+      cc_status.flags |= CC_NO_CARRY;
       cc_status.value1 = recog_operand[0];
       break;
 
@@ -1907,13 +1908,13 @@ static const struct shift_insn shift_one[2][3][3] =
   {
 /* SHIFT_ASHIFT */
     {
-      { "shll\t%X0", CC_OVERFLOW_0 | CC_NO_CARRY },
+      { "shll\t%X0", CC_NO_CARRY },
       { "add.w\t%T0,%T0", CC_OVERFLOW_UNUSABLE | CC_NO_CARRY },
       { "add.w\t%f0,%f0\n\taddx\t%y0,%y0\n\taddx\t%z0,%z0", 0 }
     },
 /* SHIFT_LSHIFTRT */
     {
-      { "shlr\t%X0", CC_OVERFLOW_0 | CC_NO_CARRY },
+      { "shlr\t%X0", CC_NO_CARRY },
       { "shlr\t%t0\n\trotxr\t%s0", 0 },
       { "shlr\t%z0\n\trotxr\t%y0\n\trotxr\t%x0\n\trotxr\t%w0", 0 }
     },
@@ -1928,15 +1929,15 @@ static const struct shift_insn shift_one[2][3][3] =
   {
 /* SHIFT_ASHIFT */
     {
-      { "shll.b\t%X0", CC_OVERFLOW_0 | CC_NO_CARRY },
-      { "shll.w\t%T0", CC_OVERFLOW_0 | CC_NO_CARRY },
-      { "shll.l\t%S0", CC_OVERFLOW_0 | CC_NO_CARRY }
+      { "shll.b\t%X0", CC_NO_CARRY },
+      { "shll.w\t%T0", CC_NO_CARRY },
+      { "shll.l\t%S0", CC_NO_CARRY }
     },
 /* SHIFT_LSHIFTRT */
     {
-      { "shlr.b\t%X0", CC_OVERFLOW_0 | CC_NO_CARRY },
-      { "shlr.w\t%T0", CC_OVERFLOW_0 | CC_NO_CARRY },
-      { "shlr.l\t%S0", CC_OVERFLOW_0 | CC_NO_CARRY }
+      { "shlr.b\t%X0", CC_NO_CARRY },
+      { "shlr.w\t%T0", CC_NO_CARRY },
+      { "shlr.l\t%S0", CC_NO_CARRY }
     },
 /* SHIFT_ASHIFTRT */
     {
@@ -1951,15 +1952,15 @@ static const struct shift_insn shift_two[3][3] =
 {
 /* SHIFT_ASHIFT */
     {
-      { "shll.b\t#2,%X0", CC_OVERFLOW_0 | CC_NO_CARRY },
-      { "shll.w\t#2,%T0", CC_OVERFLOW_0 | CC_NO_CARRY },
-      { "shll.l\t#2,%S0", CC_OVERFLOW_0 | CC_NO_CARRY }
+      { "shll.b\t#2,%X0", CC_NO_CARRY },
+      { "shll.w\t#2,%T0", CC_NO_CARRY },
+      { "shll.l\t#2,%S0", CC_NO_CARRY }
     },
 /* SHIFT_LSHIFTRT */
     {
-      { "shlr.b\t#2,%X0", CC_OVERFLOW_0 | CC_NO_CARRY },
-      { "shlr.w\t#2,%T0", CC_OVERFLOW_0 | CC_NO_CARRY },
-      { "shlr.l\t#2,%S0", CC_OVERFLOW_0 | CC_NO_CARRY }
+      { "shlr.b\t#2,%X0", CC_NO_CARRY },
+      { "shlr.w\t#2,%T0", CC_NO_CARRY },
+      { "shlr.l\t#2,%S0", CC_NO_CARRY }
     },
 /* SHIFT_ASHIFTRT */
     {
@@ -2658,7 +2659,7 @@ emit_a_shift (insn, operands)
 		    sprintf (insn_buf, "and #%d,%%X0",
 			     mask, n);
 		    cc_status.value1 = operands[0];
-		    cc_status.flags |= CC_OVERFLOW_0 | CC_NO_CARRY;
+		    cc_status.flags |= CC_NO_CARRY;
 		    break;
 		  case HImode:
 		    sprintf (insn_buf, "and #%d,%%s0\n\tand #%d,%%t0",
@@ -2674,7 +2675,7 @@ emit_a_shift (insn, operands)
 			 "bwl"[shift_mode], mask,
 			 mode == QImode ? 'X' : mode == HImode ? 'T' : 'S');
 		cc_status.value1 = operands[0];
-		cc_status.flags |= CC_OVERFLOW_0 | CC_NO_CARRY;
+		cc_status.flags |= CC_NO_CARRY;
 	      }
 	    output_asm_insn (insn_buf, operands);
 	    return "";
