@@ -342,6 +342,7 @@ The elements are indexed from zero.
 @findex TYPE_NAME
 @findex TYPENAME_TYPE_FULLNAME
 @findex TYPE_FIELDS
+@findex TYPE_PTROBV_P
 
 All C++ types have corresponding tree nodes.  However, you should not
 assume that there is exactly one tree node corresponding to each C++
@@ -383,6 +384,11 @@ This macro holds if the type is @code{volatile}-qualified.
 @item CP_TYPE_RESTRICT_P
 This macro holds if the type is @code{restrict}-qualified.
 
+@item CP_TYPE_CONST_NON_VOLATILE_P
+This predicate holds for a type that is @code{const}-qualified, but
+@emph{not} @code{volatile}-qualified; other cv-qualifiers are ignored as
+well: only the @code{const}-ness is tested. 
+
 @item TYPE_MAIN_VARIANT
 This macro returns the unqualified version of a type.  It may be applied
 to an unqualified type, but it is not always the identity function in
@@ -407,6 +413,36 @@ look at the @code{DECL_NAME} of the @code{TYPE_DECL} to obtain the
 actual name of the type.  The @code{TYPE_NAME} will be @code{NULL_TREE}
 for a type that is not a builtin type, the result of a typedef, or a
 named class type.
+
+@item CP_INTEGRAL_TYPE
+This predicate holds if the type is an integral type.  Notice that in
+C++, enumerations are @emph{not} integral types. 
+
+@item ARITHMETIC_TYPE_P
+This predicate holds if the type is an integral type (in the C++ sense)
+or a floating point type.
+
+@item CLASS_TYPE_P
+This predicate holds for a class-type.
+
+@item TYPE_BUILT_IN
+This predicate holds for a builtin type.
+
+@item TYPE_PTRMEM_P
+This predicate holds if the type is a pointer to data member.
+
+@item TYPE_PTR_P
+This predicate holds if the type is a pointer type, and the pointee is
+not a data member. 
+
+@item TYPE_PTRFN_P
+This predicate holds for a pointer to function type.
+
+@item TYPE_PTROB_P
+This predicate holds for a pointer to object type.  Note however that it
+does not hold for the generic pointer to object type @code{void *}. You
+may use @code{TYPE_PTROBV_P} to test for a pointer to object type as
+well as @code{void *}.
 
 @item same_type_p
 This predicate takes two types as input, and holds if they are the same
@@ -656,7 +692,6 @@ This macro returns the enclosing namespace.  The @code{DECL_CONTEXT} for
 the @code{global_namespace} is @code{NULL_TREE}.
 
 @item DECL_NAMESPACE_ALIAS
-
 If this declaration is for a namespace alias, then
 @code{DECL_NAMESPACE_ALIAS} is the namespace for which this one is an
 alias.  
@@ -665,6 +700,10 @@ Do not attempt to use @code{cp_namespace_decls} for a namespace which is
 an alias.  Instead, follow @code{DECL_NAMESPACE_ALIAS} links until you
 reach an ordinary, non-alias, namespace, and call
 @code{cp_namespace_decls} there.
+
+@item DECL_NAMESPACE_STD_P
+This predicate holds if the namespace is the special @code{::std}
+namespace. 
 
 @item cp_namespace_decls
 This function will return the declarations contained in the namespace,
@@ -774,6 +813,50 @@ virtually.
 
 FIXME: Talk about @code{TYPE_NONCOPIED_PARTS}.
 
+The following macros can be used on a tree node representing a class-type. 
+
+@ftable @code
+@item LOCAL_CLASS_P
+This predicate holds if the class is local class @emph{i.e.} declared
+inside a function body.
+
+@item TYPE_POLYMORPHIC_P
+This predicate holds if the class has at least one virtual function
+(declared or inherited).
+
+@item TYPE_HAS_DEFAULT_CONSTRUCTOR
+This predicate holds whenever its argument represents a class-type with
+default constructor.
+
+@item CLASSTYPE_HAS_MUTABLE
+@item TYPE_HAS_MUTABLE_P
+These predicates hold for a class-type having a mutable data member. 
+
+@item CLASSTYPE_NON_POD_P
+This predicate holds only for class-types that are not PODs.
+
+@item TYPE_HAS_NEW_OPERATOR
+This predicate holds for a class-type that defines 
+@code{operator new}.
+
+@item TYPE_HAS_ARRAY_NEW_OPERATOR
+This predicate holds for a class-type for which 
+@code{operator new[]} is defined.
+
+@item TYPE_OVERLOADS_CALL_EXPR
+This predicate holds for class-type for which the function call 
+@code{operator()} is overloaded.
+
+@item TYPE_OVERLOADS_ARRAY_REF
+This predicate holds for a class-type that overloads 
+@code{operator[]}
+
+@item TYPE_OVERLOADS_ARROW
+This predicate holds for a class-type for which @code{operator->} is
+overloaded. 
+
+@end ftable
+
 @c ---------------------------------------------------------------------
 @c Declarations
 @c ---------------------------------------------------------------------
@@ -793,8 +876,8 @@ FIXME: Talk about @code{TYPE_NONCOPIED_PARTS}.
 @tindex RESULT_DECL
 @tindex TEMPLATE_DECL
 @tindex THUNK_DECL
-@findex THUNK_DELTA
 @tindex USING_DECL
+@findex THUNK_DELTA
 @findex DECL_INITIAL
 @findex DECL_SIZE
 @findex DECL_ALIGN
@@ -840,6 +923,17 @@ typedef struct S S;
 @end example
 The implicitly generated @code{typedef} declaration is represented by a
 @code{TYPE_DECL} for which @code{DECL_ARTIFICIAL} holds.
+
+@item DECL_NAMESPACE_SCOPE_P
+This predicate holds if the entity was declared at a namespace scope.
+
+@item DECL_CLASS_SCOPE_P
+This predicate holds if the entity was declared at a class scope.
+
+@item DECL_FUNCTION_SCOPE_P
+This predicate holds if the entity was declared inside a function
+body. 
+
 @end ftable
 
 The various kinds of declarations include:
@@ -874,7 +968,10 @@ analogous to @code{TYPE_SIZE} and @code{TYPE_ALIGN}.  For a declaration,
 you should always use the @code{DECL_SIZE} and @code{DECL_ALIGN} rather
 than the @code{TYPE_SIZE} and @code{TYPE_ALIGN} given by the
 @code{TREE_TYPE}, since special attributes may have been applied to the
-variable to give it a particular size and alignment.
+variable to give it a particular size and alignment. You may use the
+predicates @code{DECL_THIS_STATIC} or @code{DECL_THIS_EXTERN} to test
+whether the storage class specifiers @code{static} or @code{extern} were
+used to declare a variable. 
 
 If this variable is initialized (but does not require a constructor),
 the @code{DECL_INITIAL} will be an expression for the initializer.  The
@@ -1003,6 +1100,10 @@ the @code{DECL_REAL_CONTEXT} for @code{f} will be the
 
 The following macros and functions can be used on a @code{FUNCTION_DECL}:
 @ftable @code
+@item DECL_MAIN_P
+This predicate holds for a function that is the program entry point
+@code{::code}. 
+
 @item DECL_NAME
 This macro returns the unqualified name of the function, as an
 @code{IDENTIFIER_NODE}.  For an instantiation of a function template,
@@ -1029,6 +1130,18 @@ This predicate holds if the function is undefined.
 @item TREE_PUBLIC
 This predicate holds if the function has external linkage.
 
+@item DECL_LOCAL_FUNCTION_P
+This predicate holds if the function was declared at block scope, even
+though it has a global scope.
+
+@item DECL_ANTICIPATED
+This predicate holds if the function is a built-in function but its
+prototype is not yet explicitly declared. 
+
+@item DECL_EXTERN_C_FUNCTION_P
+This predicate holds if the function is declared as an
+`@code{extern "C"}' function.
+
 @item DECL_LINKONCE_P
 This macro holds if multiple copies of this function may be emitted in
 various translation units.  It is the responsibility of the linker to
@@ -1043,14 +1156,41 @@ FIXME: This macro is not yet implemented.
 This macro holds if the function is a member of a class, rather than a
 member of a namespace.
 
+@item DECL_STATIC_FUNCTION_P
+This predicate holds if the function a static member function.
+
 @item DECL_NONSTATIC_MEMBER_FUNCTION_P
 This macro holds for a non-static member function.
+
+@item DECL_CONST_MEMFUNC_P
+This predicate holds for a @code{const}-member function.
+
+@item DECL_VOLATILE_MEMFUNC_P
+This predicate holds for a @code{volatile}-member function.
 
 @item DECL_CONSTRUCTOR_P
 This macro holds if the function is a constructor.
 
+@item DECL_NONCONVERTING_P
+This predicate holds if the constructor is a non-converting constructor.
+
+@item DECL_COMPLETE_CONSTRUCTOR_P
+This predicate holds for a function which is a constructor for an object
+of a complete type.
+
+@item DECL_BASE_CONSTRUCTOR_P
+This predicate holds for a function which is a constructor for a base
+class sub-object.
+
+@item DECL_COPY_CONSTRUCTOR_P
+This predicate holds for a function which is a copy-constructor.
+
 @item DECL_DESTRUCTOR_P
 This macro holds if the function is a destructor.
+
+@item DECL_COMPLETE_DESTRUCTOR_P
+This predicate holds if the function is the destructor for an object a
+complet type.
 
 @item DECL_OVERLOADED_OPERATOR_P
 This macro holds if the function is an overloaded operator.
@@ -1091,6 +1231,9 @@ Finally, the thunk should jump to the location given
 by @code{DECL_INITIAL}; this will always be an expression for the
 address of a function.
 
+@item DECL_NON_THUNK_FUNCTION_P
+This predicate holds if the function is @emph{not} a thunk function.
+
 @item GLOBAL_INIT_PRIORITY
 If either @code{DECL_GLOBAL_CTOR_P} or @code{DECL_GLOBAL_DTOR_P} holds,
 then this gives the initialization priority for the function.  The
@@ -1117,6 +1260,19 @@ This macro returns the @code{RESULT_DECL} for the function.
 @item TREE_TYPE
 This macro returns the @code{FUNCTION_TYPE} or @code{METHOD_TYPE} for
 the function.
+
+@item TYPE_RAISES_EXCEPTIONS
+This macro returns the list of exceptions that a (member-)function can
+raise.  The returned list, if non @code{NULL}, is comprised of nodes
+whose @code{TREE_VALUE} represents a type.
+
+@item TYPE_NOTHROW_P
+This predicate holds when the exception-specification of its arguments
+if of the form `@code{()}'.
+
+@item DECL_ARRAY_DELETE_OPERATOR_P
+This predicate holds if the function an overloaded
+@code{operator delete[]}.
 
 @end ftable
 
