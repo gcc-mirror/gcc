@@ -1,3 +1,21 @@
+2004-03-13  Alan Modra  <amodra@bigpond.net.au>
+
+	PR debug/11983
+	* dwarf2out.c (enum dw_val_class): Rename dw_val_class_float to
+	dw_val_class_vec.  Replace use throughout file.
+	(dw_float_const): Delete.
+	(dw_vec_const): New.
+	(dw_val_struct_union): Rename val_float to val_vec.  Replace use
+	throughout file.
+	(add_AT_vec): Rename from add_AT_float.  Add elt_size param.
+	(same_dw_val_p): Adjust vec comparison.  Use memcmp.
+	(size_of_die): Adjust dw_val_class_vec sizing.
+	(output_die): Output dw_val_class_vec.
+	(insert_int, extract_int, insert_float): New functions.
+	(add_const_value_attribute): Use insert_float for CONST_DOUBLE.
+	Handle CONST_VECTOR.
+	(add_location_or_const_value_attribute): Handle CONST_VECTOR.
+
 2004-03-12  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	Backport:

@@ -1,6 +1,6 @@
 /* Output Dwarf2 format symbol table information from the GNU C compiler.
-   Copyright (C) 1992, 1993, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002
-   Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
+   2003, 2004 Free Software Foundation, Inc.
    Contributed by Gary Funck (gary@intrepid.com).
    Derived from DWARF 1 implementation of Ron Guilmette (rfg@monkeys.com).
    Extensively modified by Jason Merrill (jason@cygnus.com).
@@ -2233,7 +2233,7 @@ typedef enum
   dw_val_class_const,
   dw_val_class_unsigned_const,
   dw_val_class_long_long,
-  dw_val_class_float,
+  dw_val_class_vec,
   dw_val_class_flag,
   dw_val_class_die_ref,
   dw_val_class_fde_ref,
@@ -2253,14 +2253,15 @@ typedef struct dw_long_long_struct
 }
 dw_long_long_const;
 
-/* Describe a floating point constant value.  */
+/* Describe a floating point constant value, or a vector constant value.  */
 
-typedef struct dw_fp_struct
+typedef struct dw_vec_struct
 {
-  long *array;
+  unsigned char *array;
   unsigned length;
+  unsigned elt_size;
 }
-dw_float_const;
+dw_vec_const;
 
 /* The dw_val_node describes an attribute's value, as it is
    represented internally.  */
@@ -2277,7 +2278,7 @@ typedef struct dw_val_struct
       long int val_int;
       long unsigned val_unsigned;
       dw_long_long_const val_long_long;
-      dw_float_const val_float;
+      dw_vec_const val_vec;
       struct
 	{
 	  dw_die_ref die;
@@ -3523,9 +3524,10 @@ static void add_AT_long_long		PARAMS ((dw_die_ref,
 						 enum dwarf_attribute,
 						 unsigned long,
 						 unsigned long));
-static void add_AT_float		PARAMS ((dw_die_ref,
+static void add_AT_vec			PARAMS ((dw_die_ref,
 						 enum dwarf_attribute,
-						 unsigned, long *));
+						 unsigned int, unsigned int,
+						 unsigned char *));
 static void add_AT_string		PARAMS ((dw_die_ref,
 						 enum dwarf_attribute,
 						 const char *));
@@ -3680,6 +3682,11 @@ static void add_const_value_attribute	PARAMS ((dw_die_ref, rtx));
 static rtx rtl_for_decl_location	PARAMS ((tree));
 static void add_location_or_const_value_attribute PARAMS ((dw_die_ref, tree));
 static void tree_add_const_value_attribute PARAMS ((dw_die_ref, tree));
+static void insert_int			PARAMS ((HOST_WIDE_INT,
+						 unsigned, unsigned char *));
+static HOST_WIDE_INT extract_int	PARAMS ((const unsigned char *,
+						 unsigned));
+static void insert_float		PARAMS ((rtx, unsigned char *));
 static void add_name_attribute		PARAMS ((dw_die_ref, const char *));
 static void add_bound_info		PARAMS ((dw_die_ref,
 						 enum dwarf_attribute, tree));
@@ -4527,19 +4534,21 @@ add_AT_long_long (die, attr_kind, val_hi, val_low)
 /* Add a floating point attribute value to a DIE and return it.  */
 
 static inline void
-add_AT_float (die, attr_kind, length, array)
+add_AT_vec (die, attr_kind, length, elt_size, array)
      dw_die_ref die;
      enum dwarf_attribute attr_kind;
-     unsigned length;
-     long *array;
+     unsigned int length;
+     unsigned int elt_size;
+     unsigned char *array;
 {
   dw_attr_ref attr = (dw_attr_ref) xmalloc (sizeof (dw_attr_node));
 
   attr->dw_attr_next = NULL;
   attr->dw_attr = attr_kind;
-  attr->dw_attr_val.val_class = dw_val_class_float;
-  attr->dw_attr_val.v.val_float.length = length;
-  attr->dw_attr_val.v.val_float.array = array;
+  attr->dw_attr_val.val_class = dw_val_class_vec;
+  attr->dw_attr_val.v.val_vec.length = length;
+  attr->dw_attr_val.v.val_vec.elt_size = elt_size;
+  attr->dw_attr_val.v.val_vec.array = array;
   add_dwarf_attr (die, attr);
 }
 
@@ -5001,8 +5010,8 @@ free_AT (a)
       free (a->dw_attr_val.v.val_lbl_id);
       break;
 
-    case dw_val_class_float:
-      free (a->dw_attr_val.v.val_float.array);
+    case dw_val_class_vec:
+      free (a->dw_attr_val.v.val_vec.array);
       break;
 
     default:
@@ -5285,8 +5294,8 @@ print_die (die, outfile)
 		   a->dw_attr_val.v.val_long_long.hi,
 		   a->dw_attr_val.v.val_long_long.low);
 	  break;
-	case dw_val_class_float:
-	  fprintf (outfile, "floating-point constant");
+	case dw_val_class_vec:
+	  fprintf (outfile, "floating-point or vector constant");
 	  break;
 	case dw_val_class_flag:
 	  fprintf (outfile, "%u", AT_flag (a));
@@ -5496,8 +5505,8 @@ attr_checksum (at, ctx, mark)
     case dw_val_class_long_long:
       CHECKSUM (at->dw_attr_val.v.val_long_long);
       break;
-    case dw_val_class_float:
-      CHECKSUM (at->dw_attr_val.v.val_float);
+    case dw_val_class_vec:
+      CHECKSUM (at->dw_attr_val.v.val_vec);
       break;
     case dw_val_class_flag:
       CHECKSUM (at->dw_attr_val.v.val_flag);
@@ -5594,7 +5603,6 @@ same_dw_val_p (v1, v2, mark)
 {
   dw_loc_descr_ref loc1, loc2;
   rtx r1, r2;
-  unsigned i;
 
   if (v1->val_class != v2->val_class)
     return 0;
@@ -5608,12 +5616,13 @@ same_dw_val_p (v1, v2, mark)
     case dw_val_class_long_long:
       return v1->v.val_long_long.hi == v2->v.val_long_long.hi
              && v1->v.val_long_long.low == v2->v.val_long_long.low;
-    case dw_val_class_float:
-      if (v1->v.val_float.length != v2->v.val_float.length)
+    case dw_val_class_vec:
+      if (v1->v.val_vec.length != v2->v.val_vec.length
+	  || v1->v.val_vec.elt_size != v2->v.val_vec.elt_size)
 	return 0;
-      for (i = 0; i < v1->v.val_float.length; i++)
-        if (v1->v.val_float.array[i] != v2->v.val_float.array[i])
-	  return 0;
+      if (memcmp (v1->v.val_vec.array, v2->v.val_vec.array,
+		  v1->v.val_vec.length * v1->v.val_vec.elt_size))
+	return 0;
       return 1;
     case dw_val_class_flag:
       return v1->v.val_flag == v2->v.val_flag;
@@ -6240,8 +6249,9 @@ size_of_die (die)
 	case dw_val_class_long_long:
 	  size += 1 + 2*HOST_BITS_PER_LONG/HOST_BITS_PER_CHAR; /* block */
 	  break;
-	case dw_val_class_float:
-	  size += 1 + a->dw_attr_val.v.val_float.length * 4; /* block */
+	case dw_val_class_vec:
+	  size += 1 + (a->dw_attr_val.v.val_vec.length
+		       * a->dw_attr_val.v.val_vec.elt_size); /* block */
 	  break;
 	case dw_val_class_flag:
 	  size += 1;
@@ -6437,7 +6447,7 @@ value_format (a)
 	}
     case dw_val_class_long_long:
       return DW_FORM_block1;
-    case dw_val_class_float:
+    case dw_val_class_vec:
       return DW_FORM_block1;
     case dw_val_class_flag:
       return DW_FORM_flag;
@@ -6717,16 +6727,24 @@ output_die (die)
 	  }
 	  break;
 
-	case dw_val_class_float:
+	case dw_val_class_vec:
 	  {
+	    unsigned int elt_size = a->dw_attr_val.v.val_vec.elt_size;
+	    unsigned int len = a->dw_attr_val.v.val_vec.length;
 	    unsigned int i;
+	    unsigned char *p;
 
-	    dw2_asm_output_data (1, a->dw_attr_val.v.val_float.length * 4,
-				 "%s", name);
-
-	    for (i = 0; i < a->dw_attr_val.v.val_float.length; i++)
-	      dw2_asm_output_data (4, a->dw_attr_val.v.val_float.array[i],
-				   "fp constant word %u", i);
+	    dw2_asm_output_data (1, len * elt_size, "%s", name);
+	    if (elt_size > sizeof (HOST_WIDE_INT))
+	      {
+		elt_size /= 2;
+		len *= 2;
+	      }
+	    for (i = 0, p = a->dw_attr_val.v.val_vec.array;
+		 i < len;
+		 i++, p += elt_size)
+	      dw2_asm_output_data (elt_size, extract_int (p, elt_size),
+				   "fp or vector constant word %u", i);
 	    break;
 	  }
 
@@ -9056,6 +9074,81 @@ add_data_member_location_attribute (die, decl)
   add_AT_loc (die, DW_AT_data_member_location, loc_descr);
 }
 
+/* Writes integer values to dw_vec_const array.  */
+
+static void
+insert_int (val, size, dest)
+     HOST_WIDE_INT val;
+     unsigned int size;
+     unsigned char *dest;
+{
+  while (size != 0)
+    {
+      *dest++ = val & 0xff;
+      val >>= 8;
+      --size;
+    }
+}
+
+/* Reads integers from dw_vec_const array.  Inverse of insert_int.  */
+
+static HOST_WIDE_INT
+extract_int (src, size)
+     const unsigned char *src;
+     unsigned int size;
+{
+  HOST_WIDE_INT val = 0;
+
+  src += size;
+  while (size != 0)
+    {
+      val <<= 8;
+      val |= *--src & 0xff;
+      --size;
+    }
+  return val;
+}
+
+/* Writes floating point values to dw_vec_const array.  */
+
+static void
+insert_float (rtl, array)
+     rtx rtl;
+     unsigned char *array;
+{
+  REAL_VALUE_TYPE rv;
+  long val[4];
+  int i;
+
+  REAL_VALUE_FROM_CONST_DOUBLE (rv, rtl);
+  switch (GET_MODE (rtl))
+    {
+    case SFmode:
+      REAL_VALUE_TO_TARGET_SINGLE (rv, val[0]);
+      break;
+
+    case DFmode:
+      REAL_VALUE_TO_TARGET_DOUBLE (rv, val);
+      break;
+
+    case XFmode:
+    case TFmode:
+      REAL_VALUE_TO_TARGET_LONG_DOUBLE (rv, val);
+      break;
+
+    default:
+      abort ();
+    }
+
+  /* REAL_VALUE_TO_TARGET_* puts 32-bit pieces in each long.
+     Pack them.  */
+  for (i = 0; i < GET_MODE_SIZE (GET_MODE (rtl)) / 4; i++)
+    {
+      insert_int (val[i], 4, array);
+      array += 4;
+    }
+}
+
 /* Attach an DW_AT_const_value attribute for a variable or a parameter which
    does not have a "location" either in memory or in a register.  These
    things can arise in GNU C when a constant is passed as an actual parameter
@@ -9105,31 +9198,11 @@ add_const_value_attribute (die, rtl)
 
 	if (GET_MODE_CLASS (mode) == MODE_FLOAT)
 	  {
-	    unsigned length = GET_MODE_SIZE (mode) / 4;
-	    long *array = (long *) xmalloc (sizeof (long) * length);
-	    REAL_VALUE_TYPE rv;
+	    unsigned int length = GET_MODE_SIZE (mode);
+	    unsigned char *array = xmalloc (length);
 
-	    REAL_VALUE_FROM_CONST_DOUBLE (rv, rtl);
-	    switch (mode)
-	      {
-	      case SFmode:
-		REAL_VALUE_TO_TARGET_SINGLE (rv, array[0]);
-		break;
-
-	      case DFmode:
-		REAL_VALUE_TO_TARGET_DOUBLE (rv, array);
-		break;
-
-	      case XFmode:
-	      case TFmode:
-		REAL_VALUE_TO_TARGET_LONG_DOUBLE (rv, array);
-		break;
-
-	      default:
-		abort ();
-	      }
-
-	    add_AT_float (die, DW_AT_const_value, length, array);
+	    insert_float (rtl, array);
+	    add_AT_vec (die, DW_AT_const_value, length / 4, 4, array);
 	  }
 	else
 	  {
@@ -9140,6 +9213,68 @@ add_const_value_attribute (die, rtl)
 	    add_AT_long_long (die, DW_AT_const_value,
 			      CONST_DOUBLE_HIGH (rtl), CONST_DOUBLE_LOW (rtl));
 	  }
+      }
+      break;
+
+    case CONST_VECTOR:
+      {
+	enum machine_mode mode = GET_MODE (rtl);
+	unsigned int elt_size = GET_MODE_UNIT_SIZE (mode);
+	unsigned int length = CONST_VECTOR_NUNITS (rtl);
+	unsigned char *array = xmalloc (length * elt_size);
+	unsigned int i;
+	unsigned char *p;
+
+	if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
+	  {
+	    for (i = 0, p = array; i < length; i++, p += elt_size)
+	      {
+		rtx elt = CONST_VECTOR_ELT (rtl, i);
+		HOST_WIDE_INT lo, hi;
+		if (GET_CODE (elt) == CONST_INT)
+		  {
+		    lo = INTVAL (elt);
+		    hi = -(lo < 0);
+		  }
+		else if (GET_CODE (elt) == CONST_DOUBLE)
+		  {
+		    lo = CONST_DOUBLE_LOW (elt);
+		    hi = CONST_DOUBLE_HIGH (elt);
+		  }
+		else
+		  abort ();
+
+		if (elt_size <= sizeof (HOST_WIDE_INT))
+		  insert_int (lo, elt_size, p);
+		else if (elt_size == 2 * sizeof (HOST_WIDE_INT))
+		  {
+		    unsigned char *p0 = p;
+		    unsigned char *p1 = p + sizeof (HOST_WIDE_INT);
+
+		    if (WORDS_BIG_ENDIAN)
+		      {
+			p0 = p1;
+			p1 = p;
+		      }
+		    insert_int (lo, sizeof (HOST_WIDE_INT), p0);
+		    insert_int (hi, sizeof (HOST_WIDE_INT), p1);
+		  }
+		else
+		  abort ();
+	      }
+	  }
+	else if (GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT)
+	  {
+	    for (i = 0, p = array; i < length; i++, p += elt_size)
+	      {
+		rtx elt = CONST_VECTOR_ELT (rtl, i);
+		insert_float (elt, p);
+	      }
+	  }
+	else
+	  abort ();
+
+	add_AT_vec (die, DW_AT_const_value, length, elt_size, array);
       }
       break;
 
@@ -9429,6 +9564,7 @@ add_location_or_const_value_attribute (die, decl)
 
     case CONST_INT:
     case CONST_DOUBLE:
+    case CONST_VECTOR:
     case CONST_STRING:
     case SYMBOL_REF:
     case LABEL_REF:
