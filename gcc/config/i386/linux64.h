@@ -30,6 +30,12 @@ Boston, MA 02111-1307, USA.  */
 #undef CPP_SPEC
 #define CPP_SPEC "%(cpp_cpu) %{fPIC:-D__PIC__ -D__pic__} %{fpic:-D__PIC__ -D__pic__} %{posix:-D_POSIX_SOURCE} %{pthread:-D_REENTRANT} %{!m32:-D__LONG_MAX__=9223372036854775807L}"
 
+/* The svr4 ABI for the i386 says that records and unions are returned
+   in memory.  In the 64bit compilation we will turn this flag off in
+   override_options, as we never do pcc_struct_return scheme on this target.  */
+#undef DEFAULT_PCC_STRUCT_RETURN
+#define DEFAULT_PCC_STRUCT_RETURN 1
+
 /* Provide a LINK_SPEC.  Here we provide support for the special GCC
    options -static and -shared, which allow us to link things in one
    of these three modes by applying the appropriate combinations of
