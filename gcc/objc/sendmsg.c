@@ -35,7 +35,7 @@ const char* __objc_hash_lookup_id = "Method lookup uses hash caching";
 #endif
 
 #ifdef OBJC_HASH_LOOKUP
-#include <objc/cache.h>
+#include "objc/cache.h"
 #endif
 
 #ifdef OBJC_SPARSE_LOOKUP

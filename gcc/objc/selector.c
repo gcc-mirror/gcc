@@ -25,7 +25,7 @@ You should have received a copy of the GNU General Public License along with
    covered by the GNU General Public License.  */
 
 #include "runtime.h"
-#include <objc/sarray.h>
+#include "objc/sarray.h"
 
 /* Initial selector hash table size. Value doesnt matter much */
 #define SELECTOR_HASH_SIZE 128

@@ -25,8 +25,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include "assert.h"
 
-#include <objc/hash.h>
-#include <objc/objc.h>
+#include "objc/hash.h"
+#include "objc/objc.h"
 
 #include "runtime.h"		/* for DEBUG_PRINTF */
 

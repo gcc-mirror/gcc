@@ -26,7 +26,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #ifndef __Protocol_INCLUDE_GNU
 #define __Protocol_INCLUDE_GNU
 
-#include <objc/Object.h>	
+#include "objc/Object.h"
 
 @interface Protocol : Object
 {

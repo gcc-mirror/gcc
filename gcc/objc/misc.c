@@ -26,9 +26,6 @@ You should have received a copy of the GNU General Public License along with
 
 #include "runtime.h"
 
-void* malloc(size_t);
-void* realloc(void*, size_t);
-
 void objc_error(id object, const char* fmt, va_list);
 
 void (*_objc_error)(id, const char*, va_list) = objc_error;
@@ -53,7 +50,7 @@ objc_fatal(const char* msg)
 void*
 __objc_xmalloc(size_t size)
 {
-  void* res = malloc(size);
+  void* res = (void*) malloc(size);
   if(!res)
     objc_fatal("Virtual memory exhausted\n");
   return res;
@@ -62,7 +59,7 @@ __objc_xmalloc(size_t size)
 void*
 __objc_xrealloc(void* mem, size_t size)
 {
-  void* res = realloc(mem, size);
+  void* res = (void*) realloc(mem, size);
   if(!res)
     objc_fatal("Virtual memory exhausted\n");
   return res;
