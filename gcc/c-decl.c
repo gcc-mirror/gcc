@@ -2754,8 +2754,8 @@ init_decl_processing ()
   wchar_type_node
     = TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (get_identifier (WCHAR_TYPE)));
   wchar_type_size = TYPE_PRECISION (wchar_type_node);
-  signed_wchar_type_node = type_for_size (wchar_type_size, 0);
-  unsigned_wchar_type_node = type_for_size (wchar_type_size, 1);
+  signed_wchar_type_node = signed_type (wchar_type_node);
+  unsigned_wchar_type_node = unsigned_type (wchar_type_node);
 
   integer_zero_node = build_int_2 (0, 0);
   TREE_TYPE (integer_zero_node) = integer_type_node;
