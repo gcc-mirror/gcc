@@ -1,3 +1,11 @@
+2004-12-06  Tom Tromey  <tromey@redhat.com>
+
+	PR java/14853:
+	* java-tree.h (extract_field_decl): Declare.
+	* parse.y (extract_field_decl): Renamed from
+	strip_out_static_field_access_decl.  No longer static.
+	* check-init.c (get_variable_decl): Unwrap COMPOUND_EXPRs.
+
 2004-12-03  Tom Tromey  <tromey@redhat.com>
 
 	* lang.c (flag_new_verifier): Define.
