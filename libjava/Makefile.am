@@ -2692,6 +2692,7 @@ gnu/regexp/RETokenBackRef.java \
 gnu/regexp/RETokenChar.java \
 gnu/regexp/RETokenEnd.java \
 gnu/regexp/RETokenEndSub.java \
+gnu/regexp/RETokenLookAhead.java \
 gnu/regexp/RETokenOneOf.java \
 gnu/regexp/RETokenPOSIX.java \
 gnu/regexp/RETokenRange.java \
