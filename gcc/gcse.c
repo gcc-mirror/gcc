@@ -510,6 +510,18 @@ static sbitmap *rd_kill, *rd_gen, *reaching_defs, *rd_out;
 /* for available exprs */
 static sbitmap *ae_kill, *ae_gen, *ae_in, *ae_out;
 
+/* Objects of this type are passed around by the null-pointer check
+   removal routines.  */
+struct null_pointer_info {
+  /* The basic block being processed.  */
+  int current_block;
+  /* The first register to be handled in this pass.  */
+  int min_reg;
+  /* One greater than the last register to be handled in this pass.  */
+  int max_reg;
+  sbitmap *nonnull_local;
+  sbitmap *nonnull_killed;
+};
 
 static void compute_can_copy	  PROTO ((void));
 
@@ -520,6 +532,7 @@ static void alloc_gcse_mem	    PROTO ((rtx));
 static void free_gcse_mem	     PROTO ((void));
 static void alloc_reg_set_mem	 PROTO ((int));
 static void free_reg_set_mem	  PROTO ((void));
+static int get_bitmap_width           PROTO ((int, int, int));
 static void record_one_set	    PROTO ((int, rtx));
 static void record_set_info	   PROTO ((rtx, rtx, void *));
 static void compute_sets	      PROTO ((rtx));
@@ -622,6 +635,9 @@ static int handle_avail_expr	  PROTO ((rtx, struct expr *));
 static int classic_gcse	       PROTO ((void));
 static int one_classic_gcse_pass      PROTO ((int));
 static void invalidate_nonnull_info	PROTO ((rtx, rtx, void *));
+static void delete_null_pointer_checks_1 PROTO ((int_list_ptr *, int *, 
+						 sbitmap *, sbitmap *,
+						 struct null_pointer_info *));
 static rtx process_insert_insn	PROTO ((struct expr *));
 static int pre_edge_insert	PROTO ((struct edge_list *, struct expr **));
 static int expr_reaches_here_p_work	PROTO ((struct occr *, struct expr *, int, int, char *));
@@ -948,6 +964,50 @@ free_gcse_mem ()
   free (mem_set_in_block);
 }
 
+/* Many of the global optimization algorithms work by solving dataflow
+   equations for various expressions.  Initially, some local value is
+   computed for each expression in each block.  Then, the values
+   across the various blocks are combined (by following flow graph
+   edges) to arrive at global values.  Conceptually, each set of
+   equations is independent.  We may therefore solve all the equations
+   in parallel, solve them one at a time, or pick any intermediate
+   approach.  
+
+   When you're going to need N two-dimensional bitmaps, each X (say,
+   the number of blocks) by Y (say, the number of expressions), call
+   this function.  It's not important what X and Y represent; only
+   that Y correspond to the things that can be done in parallel.  This
+   function will return an appropriate chunking factor C; you should
+   solve C sets of equations in parallel.  By going through this
+   function, we can easily trade space against time; by solving fewer
+   equations in parallel we use less space.  */
+
+static int
+get_bitmap_width (n, x, y)
+     int n;
+     int x;
+     int y;
+{
+  /* It's not really worth figuring out *exactly* how much memory will
+     be used by a particular choice.  The important thing is to get
+     something approximately right.  */
+  size_t max_bitmap_memory = 10 * 1024 * 1024;
+
+  /* The number of bytes we'd use for a single column of minimum
+     width.  */
+  size_t column_size = n * x * sizeof (SBITMAP_ELT_TYPE);
+
+  /* Often, it's reasonable just to solve all the equations in
+     parallel.  */
+  if (column_size * SBITMAP_SET_SIZE (y) <= max_bitmap_memory)
+    return y;
+
+  /* Otherwise, pick the largest width we can, without going over the
+     limit.  */
+  return SBITMAP_ELT_BITS * ((max_bitmap_memory + column_size - 1)
+			     / column_size);
+}
+ 
 
 /* Compute the local properties of each recorded expression.
    Local properties are those that are defined by the block, irrespective
@@ -4923,23 +4983,19 @@ compute_transpout ()
 
 /* Removal of useless null pointer checks */
 
-/* These need to be file static for communication between 
-   invalidate_nonnull_info and delete_null_pointer_checks.  */
-static int current_block;
-static sbitmap *nonnull_local;
-static sbitmap *nonnull_killed;
-
 /* Called via note_stores.  X is set by SETTER.  If X is a register we must
-   invalidate nonnull_local and set nonnull_killed.
+   invalidate nonnull_local and set nonnull_killed.  DATA is really a
+   `null_pointer_info *'.
 
    We ignore hard registers.  */
 static void
 invalidate_nonnull_info (x, setter, data)
      rtx x;
      rtx setter ATTRIBUTE_UNUSED;
-     void *data ATTRIBUTE_UNUSED;
+     void *data;
 {
   int offset, regno;
+  struct null_pointer_info* npi = (struct null_pointer_info *) data;
 
   offset = 0;
   while (GET_CODE (x) == SUBREG)
@@ -4947,14 +5003,174 @@ invalidate_nonnull_info (x, setter, data)
 
   /* Ignore anything that is not a register or is a hard register.  */
   if (GET_CODE (x) != REG
-      || REGNO (x) < FIRST_PSEUDO_REGISTER)
+      || REGNO (x) < npi->min_reg
+      || REGNO (x) >= npi->max_reg)
     return;
 
-  regno = REGNO (x);
+  regno = REGNO (x) - npi->min_reg;
 
-  RESET_BIT (nonnull_local[current_block], regno);
-  SET_BIT (nonnull_killed[current_block], regno);
+  RESET_BIT (npi->nonnull_local[npi->current_block], regno);
+  SET_BIT (npi->nonnull_killed[npi->current_block], regno);
+}
+
+/* Do null-pointer check elimination for the registers indicated in
+   NPI.  NONNULL_AVIN and NONNULL_AVOUT are pre-allocated sbitmaps;
+   they are not our responsibility to free.  */
+
+static void
+delete_null_pointer_checks_1 (s_preds, block_reg, nonnull_avin, 
+			      nonnull_avout, npi)
+     int_list_ptr *s_preds;
+     int *block_reg;
+     sbitmap *nonnull_avin;
+     sbitmap *nonnull_avout;
+     struct null_pointer_info *npi;
+{
+  int changed, bb;
+  int current_block;
+  sbitmap *nonnull_local = npi->nonnull_local;
+  sbitmap *nonnull_killed = npi->nonnull_killed;
   
+  /* Compute local properties, nonnull and killed.  A register will have
+     the nonnull property if at the end of the current block its value is
+     known to be nonnull.  The killed property indicates that somewhere in
+     the block any information we had about the register is killed.
+
+     Note that a register can have both properties in a single block.  That
+     indicates that it's killed, then later in the block a new value is
+     computed.  */
+  sbitmap_vector_zero (nonnull_local, n_basic_blocks);
+  sbitmap_vector_zero (nonnull_killed, n_basic_blocks);
+  for (current_block = 0; current_block < n_basic_blocks; current_block++)
+    {
+      rtx insn, stop_insn;
+
+      /* Set the current block for invalidate_nonnull_info.  */
+      npi->current_block = current_block;
+
+      /* Scan each insn in the basic block looking for memory references and
+	 register sets.  */
+      stop_insn = NEXT_INSN (BLOCK_END (current_block));
+      for (insn = BLOCK_HEAD (current_block);
+	   insn != stop_insn;
+	   insn = NEXT_INSN (insn))
+	{
+	  rtx set;
+	  rtx reg;
+
+	  /* Ignore anything that is not a normal insn.  */
+	  if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+	    continue;
+
+	  /* Basically ignore anything that is not a simple SET.  We do have
+	     to make sure to invalidate nonnull_local and set nonnull_killed
+	     for such insns though.  */
+	  set = single_set (insn);
+	  if (!set)
+	    {
+	      note_stores (PATTERN (insn), invalidate_nonnull_info, npi);
+	      continue;
+	    }
+
+	  /* See if we've got a useable memory load.  We handle it first
+	     in case it uses its address register as a dest (which kills
+	     the nonnull property).  */
+	  if (GET_CODE (SET_SRC (set)) == MEM
+	      && GET_CODE ((reg = XEXP (SET_SRC (set), 0))) == REG
+	      && REGNO (reg) >= npi->min_reg
+	      && REGNO (reg) < npi->max_reg)
+	    SET_BIT (nonnull_local[current_block],
+		     REGNO (reg) - npi->min_reg);
+
+	  /* Now invalidate stuff clobbered by this insn.  */
+	  note_stores (PATTERN (insn), invalidate_nonnull_info, npi);
+
+	  /* And handle stores, we do these last since any sets in INSN can
+	     not kill the nonnull property if it is derived from a MEM
+	     appearing in a SET_DEST.  */
+	  if (GET_CODE (SET_DEST (set)) == MEM
+	      && GET_CODE ((reg = XEXP (SET_DEST (set), 0))) == REG
+	      && REGNO (reg) >= npi->min_reg
+	      && REGNO (reg) < npi->max_reg)
+	    SET_BIT (nonnull_local[current_block],
+		     REGNO (reg) - npi->min_reg);
+	}
+    }
+
+  /* Now compute global properties based on the local properties.   This
+     is a classic global availablity algorithm.  */
+  sbitmap_zero (nonnull_avin[0]);
+  sbitmap_vector_ones (nonnull_avout, n_basic_blocks);
+  changed = 1;
+  while (changed)
+    {
+      changed = 0;
+
+      for (bb = 0; bb < n_basic_blocks; bb++)
+	{
+	  if (bb != 0)
+	    sbitmap_intersect_of_predecessors (nonnull_avin[bb],
+					       nonnull_avout, bb, s_preds);
+
+	  changed |= sbitmap_union_of_diff (nonnull_avout[bb],
+					    nonnull_local[bb],
+					    nonnull_avin[bb],
+					    nonnull_killed[bb]);
+	}
+    }
+
+  /* Now look at each bb and see if it ends with a compare of a value
+     against zero.  */
+  for (bb = 0; bb < n_basic_blocks; bb++)
+    {
+      rtx last_insn = BLOCK_END (bb);
+      rtx condition, earliest;
+      int compare_and_branch;
+
+      /* Since MIN_REG is always at least FIRST_PSEUDO_REGISTER, and
+	 since BLOCK_REG[BB] is zero if this block did not end with a
+	 comparison against zero, this condition works.  */
+      if (block_reg[bb] < npi->min_reg
+	  || block_reg[bb] >= npi->max_reg)
+	continue;
+
+      /* LAST_INSN is a conditional jump.  Get its condition.  */
+      condition = get_condition (last_insn, &earliest);
+
+      /* Is the register known to have a nonzero value?  */
+      if (!TEST_BIT (nonnull_avout[bb], block_reg[bb] - npi->min_reg))
+	continue;
+
+      /* Try to compute whether the compare/branch at the loop end is one or
+	 two instructions.  */
+      if (earliest == last_insn)
+	compare_and_branch = 1;
+      else if (earliest == prev_nonnote_insn (last_insn))
+	compare_and_branch = 2;
+      else
+	continue;
+
+      /* We know the register in this comparison is nonnull at exit from
+	 this block.  We can optimize this comparison.  */
+      if (GET_CODE (condition) == NE)
+	{
+	  rtx new_jump;
+
+	  new_jump = emit_jump_insn_before (gen_jump (JUMP_LABEL (last_insn)),
+					    last_insn);
+	  JUMP_LABEL (new_jump) = JUMP_LABEL (last_insn);
+	  LABEL_NUSES (JUMP_LABEL (new_jump))++;
+	  emit_barrier_after (new_jump);
+	}
+      delete_insn (last_insn);
+      if (compare_and_branch == 2)
+	delete_insn (earliest);
+
+      /* Don't check this block again.  (Note that BLOCK_END is
+	 invalid here; we deleted the last instruction in the 
+	 block.)  */
+      block_reg[bb] = 0;
+    }
 }
 
 /* Find EQ/NE comparisons against zero which can be (indirectly) evaluated
@@ -4987,9 +5203,14 @@ delete_null_pointer_checks (f)
 {
   int_list_ptr *s_preds, *s_succs;
   int *num_preds, *num_succs;
-  int changed, bb;
   sbitmap *nonnull_avin, *nonnull_avout;
-  
+  int *block_reg;
+  int bb;
+  int reg;
+  int regs_per_pass;
+  int max_reg;
+  struct null_pointer_info npi;
+
   /* First break the program into basic blocks.  */
   find_basic_blocks (f, max_reg_num (), NULL, 1);
 
@@ -5024,101 +5245,25 @@ delete_null_pointer_checks (f)
   num_succs = (int *) gmalloc (n_basic_blocks * sizeof (int));
   compute_preds_succs (s_preds, s_succs, num_preds, num_succs);
 
+  /* We need four bitmaps, each with a bit for each register in each
+     basic block.  */
+  max_reg = max_reg_num ();
+  regs_per_pass = get_bitmap_width (4, n_basic_blocks, max_reg);
+
   /* Allocate bitmaps to hold local and global properties.  */
-  nonnull_local = sbitmap_vector_alloc (n_basic_blocks, max_reg_num ());
-  nonnull_killed = sbitmap_vector_alloc (n_basic_blocks, max_reg_num ());
-  nonnull_avin = sbitmap_vector_alloc (n_basic_blocks, max_reg_num ());
-  nonnull_avout = sbitmap_vector_alloc (n_basic_blocks, max_reg_num ());
+  npi.nonnull_local = sbitmap_vector_alloc (n_basic_blocks, regs_per_pass);
+  npi.nonnull_killed = sbitmap_vector_alloc (n_basic_blocks, regs_per_pass);
+  nonnull_avin = sbitmap_vector_alloc (n_basic_blocks, regs_per_pass);
+  nonnull_avout = sbitmap_vector_alloc (n_basic_blocks, regs_per_pass);
 
-  /* Compute local properties, nonnull and killed.  A register will have
-     the nonnull property if at the end of the current block its value is
-     known to be nonnull.  The killed property indicates that somewhere in
-     the block any information we had about the register is killed.
-
-     Note that a register can have both properties in a single block.  That
-     indicates that it's killed, then later in the block a new value is
-     computed.  */
-  sbitmap_vector_zero (nonnull_local, n_basic_blocks);
-  sbitmap_vector_zero (nonnull_killed, n_basic_blocks);
-  for (current_block = 0; current_block < n_basic_blocks; current_block++)
-    {
-      rtx insn, stop_insn;
-
-      /* Scan each insn in the basic block looking for memory references and
-	 register sets.  */
-      stop_insn = NEXT_INSN (BLOCK_END (current_block));
-      for (insn = BLOCK_HEAD (current_block);
-	   insn != stop_insn;
-	   insn = NEXT_INSN (insn))
-	{
-	  rtx set;
-
-	  /* Ignore anything that is not a normal insn.  */
-	  if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
-	    continue;
-
-	  /* Basically ignore anything that is not a simple SET.  We do have
-	     to make sure to invalidate nonnull_local and set nonnull_killed
-	     for such insns though.  */
-	  set = single_set (insn);
-	  if (!set)
-	    {
-	      note_stores (PATTERN (insn), invalidate_nonnull_info, NULL);
-	      continue;
-	    }
-
-	  /* See if we've got a useable memory load.  We handle it first
-	     in case it uses its address register as a dest (which kills
-	     the nonnull property).  */
-	  if (GET_CODE (SET_SRC (set)) == MEM
-	      && GET_CODE (XEXP (SET_SRC (set), 0)) == REG
-	      && REGNO (XEXP (SET_SRC (set), 0)) >= FIRST_PSEUDO_REGISTER)
-	    SET_BIT (nonnull_local[current_block],
-		     REGNO (XEXP (SET_SRC (set), 0)));
-
-	  /* Now invalidate stuff clobbered by this insn.  */
-	  note_stores (PATTERN (insn), invalidate_nonnull_info, NULL);
-
-	  /* And handle stores, we do these last since any sets in INSN can
-	     not kill the nonnull property if it is derived from a MEM
-	     appearing in a SET_DEST.  */
-	  if (GET_CODE (SET_DEST (set)) == MEM
-	      && GET_CODE (XEXP (SET_DEST (set), 0)) == REG
-	      && REGNO (XEXP (SET_DEST (set), 0)) >= FIRST_PSEUDO_REGISTER)
-	    SET_BIT (nonnull_local[current_block],
-		     REGNO (XEXP (SET_DEST (set), 0)));
-	}
-    }
-
-  /* Now compute global properties based on the local properties.   This
-     is a classic global availablity algorithm.  */
-  sbitmap_zero (nonnull_avin[0]);
-  sbitmap_vector_ones (nonnull_avout, n_basic_blocks);
-  changed = 1;
-  while (changed)
-    {
-      changed = 0;
-
-      for (bb = 0; bb < n_basic_blocks; bb++)
-	{
-	  if (bb != 0)
-	    sbitmap_intersect_of_predecessors (nonnull_avin[bb],
-					       nonnull_avout, bb, s_preds);
-
-	  changed |= sbitmap_union_of_diff (nonnull_avout[bb],
-					    nonnull_local[bb],
-					    nonnull_avin[bb],
-					    nonnull_killed[bb]);
-	}
-    }
-
-  /* Now look at each bb and see if it ends with a compare of a value
-     against zero.  */
+  /* Go through the basic blocks, seeing whether or not each block
+     ends with a conditional branch whose condition is a comparison
+     against zero.  Record the register compared in BLOCK_REG.  */
+  block_reg = (int *) xcalloc (n_basic_blocks, sizeof (int));
   for (bb = 0; bb < n_basic_blocks; bb++)
     {
       rtx last_insn = BLOCK_END (bb);
       rtx condition, earliest, reg;
-      int compare_and_branch;
 
       /* We only want conditional branches.  */
       if (GET_CODE (last_insn) != JUMP_INSN
@@ -5134,7 +5279,8 @@ delete_null_pointer_checks (f)
       if (!condition
 	  || (GET_CODE (condition) != NE && GET_CODE (condition) != EQ)
 	  || GET_CODE (XEXP (condition, 1)) != CONST_INT
-	  || XEXP (condition, 1) != CONST0_RTX (GET_MODE (XEXP (condition, 0))))
+	  || (XEXP (condition, 1) 
+	      != CONST0_RTX (GET_MODE (XEXP (condition, 0)))))
 	continue;
 
       /* We must be checking a register against zero.  */
@@ -5142,34 +5288,16 @@ delete_null_pointer_checks (f)
       if (GET_CODE (reg) != REG)
 	continue;
 
-      /* Is the register known to have a nonzero value?  */
-      if (!TEST_BIT (nonnull_avout[bb], REGNO (reg)))
-	continue;
+      block_reg[bb] = REGNO (reg);
+    }
 
-      /* Try to compute whether the compare/branch at the loop end is one or
-	 two instructions.  */
-      if (earliest == last_insn)
-	compare_and_branch = 1;
-      else if (earliest == prev_nonnote_insn (last_insn))
-	compare_and_branch = 2;
-      else
-	continue;
-
-      /* We know the register in this comparison is nonnull at exit from
-	 this block.  We can optimize this comparison.  */
-      if (GET_CODE (condition) == NE)
-	{
-	  rtx new_jump;
-
-	  new_jump = emit_jump_insn_before (gen_jump (JUMP_LABEL (last_insn)),
-					    last_insn);
-	  JUMP_LABEL (new_jump) = JUMP_LABEL (last_insn);
-	  LABEL_NUSES (JUMP_LABEL (new_jump))++;
-	  emit_barrier_after (new_jump);
-	}
-      delete_insn (last_insn);
-      if (compare_and_branch == 2)
-	delete_insn (earliest);
+  /* Go through the algorithm for each block of registers.  */
+  for (reg = FIRST_PSEUDO_REGISTER; reg < max_reg; reg += regs_per_pass)
+    {
+      npi.min_reg = reg;
+      npi.max_reg = MIN (reg + regs_per_pass, max_reg);
+      delete_null_pointer_checks_1 (s_preds, block_reg, nonnull_avin,
+				    nonnull_avout, &npi);
     }
 
   /* Free storage allocated by find_basic_blocks.  */
@@ -5181,9 +5309,12 @@ delete_null_pointer_checks (f)
   free (num_preds);
   free (num_succs);
 
+  /* Free the table of registers compared at the end of every block.  */
+  free (block_reg);
+
   /* Free bitmaps.  */
-  free (nonnull_local);
-  free (nonnull_killed);
+  free (npi.nonnull_local);
+  free (npi.nonnull_killed);
   free (nonnull_avin);
   free (nonnull_avout);
 }
