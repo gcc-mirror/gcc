@@ -24,7 +24,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 extern void optimization_options (int, int);
 extern void override_options (void);
 extern HOST_WIDE_INT s390_arg_frame_offset (void);
-extern void s390_load_got (int);
 extern void s390_emit_prologue (void);
 extern void s390_emit_epilogue (bool);
 extern void s390_function_profiler (FILE *, int);
@@ -92,6 +91,7 @@ extern void s390_initialize_trampoline (rtx, rtx, rtx);
 extern rtx s390_gen_rtx_const_DI (int, int);
 extern void s390_output_dwarf_dtprel (FILE*, int, rtx);
 extern int s390_agen_dep_p (rtx, rtx);
+extern rtx s390_load_got (void);
 
 #endif /* RTX_CODE */
 
