@@ -1,5 +1,7 @@
 2001-12-17  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* doc/install.texi2html: Use -I $SOURCEDIR.
+
 	Separate user and internals manuals.
 	* Makefile.in (info, $(docdir)/gcc.info, dvi, gcc.dvi): Update
 	dependencies.
