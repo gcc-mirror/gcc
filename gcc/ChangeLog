@@ -1,3 +1,8 @@
+2001-12-06  Nick Clifton  <nickc@cambridge.redhat.com>
+
+	* config/arm/arm.h (STRUCT_VALUE): Suppress definition.
+	(STRUCT_VALUE_REGNUM): Restore definition.
+
 2001-12-06  Richard Henderson  <rth@redhat.com>
 
 	* stmt.c (parse_input_constraint): Break out from ...

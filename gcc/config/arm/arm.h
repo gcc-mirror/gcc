@@ -896,8 +896,19 @@ extern const char * structure_size_string;
 /* Return the regiser number of the N'th (integer) argument.  */
 #define ARG_REGISTER(N) 	(N - 1)
 
+#if 0 /* FIXME: The ARM backend has special code to handle structure
+	 returns, and will reserve its own hidden first argument.  So
+	 if this macro is enabled a *second* hidden argument will be
+	 reserved, which will break binary compatability with old
+	 toolchains and also thunk handling.  One day this should be
+	 fixed.  */
 /* RTX for structure returns.  NULL means use a hidden first argument.  */
 #define STRUCT_VALUE		0
+#else
+/* Register in which address to store a structure value
+   is passed to a function.  */
+#define STRUCT_VALUE_REGNUM	ARG_REGISTER (1)
+#endif
 
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
