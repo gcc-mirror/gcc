@@ -2087,6 +2087,12 @@ int
 comparison_dominates_p (code1, code2)
      enum rtx_code code1, code2;
 {
+  /* UNKNOWN comparison codes can happen as a result of trying to revert
+     comparison codes.
+     They can't match anything, so we have to reject them here.  */
+  if (code1 == UNKNOWN || code2 == UNKNOWN)
+    return 0;
+
   if (code1 == code2)
     return 1;
 
