@@ -828,8 +828,7 @@ aligned_memory_operand (op, mode)
       base = (GET_CODE (op) == PLUS ? XEXP (op, 0) : op);
     }
 
-  return (GET_CODE (base) == REG
-	  && REGNO_POINTER_ALIGN (REGNO (base)) >= 4);
+  return (GET_CODE (base) == REG && REGNO_POINTER_ALIGN (REGNO (base)) >= 32);
 }
 
 /* Similar, but return 1 if OP is a MEM which is not alignable.  */
@@ -873,8 +872,7 @@ unaligned_memory_operand (op, mode)
       base = (GET_CODE (op) == PLUS ? XEXP (op, 0) : op);
     }
 
-  return (GET_CODE (base) == REG
-	  && REGNO_POINTER_ALIGN (REGNO (base)) < 4);
+  return (GET_CODE (base) == REG && REGNO_POINTER_ALIGN (REGNO (base)) < 32);
 }
 
 /* Return 1 if OP is either a register or an unaligned memory location.  */
@@ -2501,77 +2499,69 @@ alpha_expand_block_move (operands)
   rtx bytes_rtx	= operands[2];
   rtx align_rtx = operands[3];
   HOST_WIDE_INT orig_bytes = INTVAL (bytes_rtx);
-  HOST_WIDE_INT bytes = orig_bytes;
-  HOST_WIDE_INT src_align = INTVAL (align_rtx);
-  HOST_WIDE_INT dst_align = src_align;
-  rtx orig_src	= operands[1];
-  rtx orig_dst	= operands[0];
-  rtx data_regs[2*MAX_MOVE_WORDS+16];
+  unsigned HOST_WIDE_INT bytes = orig_bytes;
+  unsigned HOST_WIDE_INT src_align = INTVAL (align_rtx) * BITS_PER_UNIT;
+  unsigned HOST_WIDE_INT dst_align = src_align;
+  rtx orig_src = operands[1];
+  rtx orig_dst = operands[0];
+  rtx data_regs[2 * MAX_MOVE_WORDS + 16];
   rtx tmp;
-  int i, words, ofs, nregs = 0;
+  unsigned int i, words, ofs, nregs = 0;
   
-  if (bytes <= 0)
+  if (orig_bytes <= 0)
     return 1;
-  if (bytes > MAX_MOVE_WORDS*8)
+  else if (bytes > MAX_MOVE_WORDS * BITS_PER_UNIT)
     return 0;
 
   /* Look for additional alignment information from recorded register info.  */
 
   tmp = XEXP (orig_src, 0);
   if (GET_CODE (tmp) == REG)
-    {
-      if (REGNO_POINTER_ALIGN (REGNO (tmp)) > src_align)
-	src_align = REGNO_POINTER_ALIGN (REGNO (tmp));
-    }
+    src_align = MAX (src_align, REGNO_POINTER_ALIGN (REGNO (tmp)));
   else if (GET_CODE (tmp) == PLUS
 	   && GET_CODE (XEXP (tmp, 0)) == REG
 	   && GET_CODE (XEXP (tmp, 1)) == CONST_INT)
     {
-      HOST_WIDE_INT c = INTVAL (XEXP (tmp, 1));
-      int a = REGNO_POINTER_ALIGN (REGNO (XEXP (tmp, 0)));
+      unsigned HOST_WIDE_INT c = INTVAL (XEXP (tmp, 1));
+      unsigned int a = REGNO_POINTER_ALIGN (REGNO (XEXP (tmp, 0)));
 
       if (a > src_align)
 	{
-          if (a >= 8 && c % 8 == 0)
-	    src_align = 8;
-          else if (a >= 4 && c % 4 == 0)
-	    src_align = 4;
-          else if (a >= 2 && c % 2 == 0)
-	    src_align = 2;
+          if (a >= 64 && c % 8 == 0)
+	    src_align = 64;
+          else if (a >= 32 && c % 4 == 0)
+	    src_align = 32;
+          else if (a >= 16 && c % 2 == 0)
+	    src_align = 16;
 	}
     }
 	
   tmp = XEXP (orig_dst, 0);
   if (GET_CODE (tmp) == REG)
-    {
-      if (REGNO_POINTER_ALIGN (REGNO (tmp)) > dst_align)
-	dst_align = REGNO_POINTER_ALIGN (REGNO (tmp));
-    }
+    dst_align = MAX (dst_align, REGNO_POINTER_ALIGN (REGNO (tmp)));
   else if (GET_CODE (tmp) == PLUS
 	   && GET_CODE (XEXP (tmp, 0)) == REG
 	   && GET_CODE (XEXP (tmp, 1)) == CONST_INT)
     {
-      HOST_WIDE_INT c = INTVAL (XEXP (tmp, 1));
-      int a = REGNO_POINTER_ALIGN (REGNO (XEXP (tmp, 0)));
+      unsigned HOST_WIDE_INT c = INTVAL (XEXP (tmp, 1));
+      unsigned int a = REGNO_POINTER_ALIGN (REGNO (XEXP (tmp, 0)));
 
       if (a > dst_align)
 	{
-          if (a >= 8 && c % 8 == 0)
-	    dst_align = 8;
-          else if (a >= 4 && c % 4 == 0)
-	    dst_align = 4;
-          else if (a >= 2 && c % 2 == 0)
-	    dst_align = 2;
+          if (a >= 64 && c % 8 == 0)
+	    dst_align = 64;
+          else if (a >= 32 && c % 4 == 0)
+	    dst_align = 32;
+          else if (a >= 16 && c % 2 == 0)
+	    dst_align = 16;
 	}
     }
 
-  /*
-   * Load the entire block into registers.
-   */
-
+  /* Load the entire block into registers.  */
   if (GET_CODE (XEXP (orig_src, 0)) == ADDRESSOF)
     {
       enum machine_mode mode;
+
       tmp = XEXP (XEXP (orig_src, 0), 0);
 
       /* Don't use the existing register if we're reading more than
@@ -2589,6 +2579,7 @@ alpha_expand_block_move (operands)
 	    }
 	  else
 	    data_regs[nregs++] = gen_lowpart (mode, tmp);
+
 	  goto src_done;
 	}
 
@@ -2598,50 +2589,48 @@ alpha_expand_block_move (operands)
     }
 
   ofs = 0;
-  if (src_align >= 8 && bytes >= 8)
+  if (src_align >= 64 && bytes >= 8)
     {
       words = bytes / 8;
 
       for (i = 0; i < words; ++i)
-	data_regs[nregs+i] = gen_reg_rtx(DImode);
+	data_regs[nregs + i] = gen_reg_rtx(DImode);
 
       for (i = 0; i < words; ++i)
-	{
-	  emit_move_insn (data_regs[nregs+i],
-			  change_address (orig_src, DImode,
-					  plus_constant (XEXP (orig_src, 0),
-							 ofs + i*8)));
-	}
+	emit_move_insn (data_regs[nregs + i],
+			change_address (orig_src, DImode,
+					plus_constant (XEXP (orig_src, 0), 
+						       ofs + i * 8)));
 
       nregs += words;
       bytes -= words * 8;
       ofs += words * 8;
     }
-  if (src_align >= 4 && bytes >= 4)
+
+  if (src_align >= 32 && bytes >= 4)
     {
       words = bytes / 4;
 
       for (i = 0; i < words; ++i)
-	data_regs[nregs+i] = gen_reg_rtx(SImode);
+	data_regs[nregs + i] = gen_reg_rtx(SImode);
 
       for (i = 0; i < words; ++i)
-	{
-	  emit_move_insn (data_regs[nregs+i],
-			  change_address (orig_src, SImode,
-					  plus_constant (XEXP (orig_src, 0),
-							 ofs + i*4)));
-	}
+	emit_move_insn (data_regs[nregs + i],
+			change_address (orig_src, SImode,
+					plus_constant (XEXP (orig_src, 0),
+						       ofs + i * 4)));
 
       nregs += words;
       bytes -= words * 4;
       ofs += words * 4;
     }
+
   if (bytes >= 16)
     {
       words = bytes / 8;
 
       for (i = 0; i < words+1; ++i)
-	data_regs[nregs+i] = gen_reg_rtx(DImode);
+	data_regs[nregs + i] = gen_reg_rtx(DImode);
 
       alpha_expand_unaligned_load_words (data_regs + nregs, orig_src,
 					 words, ofs);
@@ -2650,23 +2639,26 @@ alpha_expand_block_move (operands)
       bytes -= words * 8;
       ofs += words * 8;
     }
-  if (!TARGET_BWX && bytes >= 8)
+
+  if (! TARGET_BWX && bytes >= 8)
     {
       data_regs[nregs++] = tmp = gen_reg_rtx (DImode);
       alpha_expand_unaligned_load (tmp, orig_src, 8, ofs, 0);
       bytes -= 8;
       ofs += 8;
     }
-  if (!TARGET_BWX && bytes >= 4)
+
+  if (! TARGET_BWX && bytes >= 4)
     {
       data_regs[nregs++] = tmp = gen_reg_rtx (SImode);
       alpha_expand_unaligned_load (tmp, orig_src, 4, ofs, 0);
       bytes -= 4;
       ofs += 4;
     }
+
   if (bytes >= 2)
     {
-      if (src_align >= 2)
+      if (src_align >= 16)
 	{
 	  do {
 	    data_regs[nregs++] = tmp = gen_reg_rtx (HImode);
@@ -2678,7 +2670,8 @@ alpha_expand_block_move (operands)
 	    ofs += 2;
 	  } while (bytes >= 2);
 	}
-      else if (!TARGET_BWX)
+
+      else if (! TARGET_BWX)
 	{
 	  data_regs[nregs++] = tmp = gen_reg_rtx (HImode);
 	  alpha_expand_unaligned_load (tmp, orig_src, 2, ofs, 0);
@@ -2686,6 +2679,7 @@ alpha_expand_block_move (operands)
 	  ofs += 2;
 	}
     }
+
   while (bytes > 0)
     {
       data_regs[nregs++] = tmp = gen_reg_rtx (QImode);
@@ -2696,14 +2690,13 @@ alpha_expand_block_move (operands)
       bytes -= 1;
       ofs += 1;
     }
+
  src_done:
 
-  if (nregs > (int)(sizeof(data_regs)/sizeof(*data_regs)))
-    abort();
+  if (nregs > sizeof data_regs / sizeof *data_regs)
+    abort ();
 
-  /*
-   * Now save it back out again.
-   */
+  /* Now save it back out again.  */
 
   i = 0, ofs = 0;
 
@@ -2721,15 +2714,14 @@ alpha_expand_block_move (operands)
 	      i = 1;
 	      goto dst_done;
 	    }
+
 	  else if (nregs == 2 && mode == TImode)
 	    {
 	      /* Undo the subregging done above when copying between
 		 two TImode registers.  */
 	      if (GET_CODE (data_regs[0]) == SUBREG
 		  && GET_MODE (SUBREG_REG (data_regs[0])) == TImode)
-		{
-		  emit_move_insn (tmp, SUBREG_REG (data_regs[0]));
-		}
+		emit_move_insn (tmp, SUBREG_REG (data_regs[0]));
 	      else
 		{
 		  rtx seq;
@@ -2760,7 +2752,7 @@ alpha_expand_block_move (operands)
     }
 
   /* Write out the data in whatever chunks reading the source allowed.  */
-  if (dst_align >= 8)
+  if (dst_align >= 64)
     {
       while (i < nregs && GET_MODE (data_regs[i]) == DImode)
 	{
@@ -2772,7 +2764,8 @@ alpha_expand_block_move (operands)
 	  i++;
 	}
     }
-  if (dst_align >= 4)
+
+  if (dst_align >= 32)
     {
       /* If the source has remaining DImode regs, write them out in
 	 two pieces.  */
@@ -2787,7 +2780,7 @@ alpha_expand_block_move (operands)
 			  gen_lowpart (SImode, data_regs[i]));
 	  emit_move_insn (change_address (orig_dst, SImode,
 					  plus_constant (XEXP (orig_dst, 0),
-							 ofs+4)),
+							 ofs + 4)),
 			  gen_lowpart (SImode, tmp));
 	  ofs += 8;
 	  i++;
@@ -2803,18 +2796,20 @@ alpha_expand_block_move (operands)
 	  i++;
 	}
     }
+
   if (i < nregs && GET_MODE (data_regs[i]) == DImode)
     {
       /* Write out a remaining block of words using unaligned methods.  */
 
-      for (words = 1; i+words < nregs ; ++words)
-	if (GET_MODE (data_regs[i+words]) != DImode)
+      for (words = 1; i + words < nregs; words++)
+	if (GET_MODE (data_regs[i + words]) != DImode)
 	  break;
 
       if (words == 1)
 	alpha_expand_unaligned_store (orig_dst, data_regs[i], 8, ofs);
       else
-        alpha_expand_unaligned_store_words (data_regs+i, orig_dst, words, ofs);
+        alpha_expand_unaligned_store_words (data_regs + i, orig_dst,
+					    words, ofs);
      
       i += words;
       ofs += words * 8;
@@ -2830,7 +2825,7 @@ alpha_expand_block_move (operands)
       i++;
     }
 
-  if (dst_align >= 2)
+  if (dst_align >= 16)
     while (i < nregs && GET_MODE (data_regs[i]) == HImode)
       {
 	emit_move_insn (change_address (orig_dst, HImode,
@@ -2847,6 +2842,7 @@ alpha_expand_block_move (operands)
 	i++;
 	ofs += 2;
       }
+
   while (i < nregs && GET_MODE (data_regs[i]) == QImode)
     {
       emit_move_insn (change_address (orig_dst, QImode,
@@ -2856,10 +2852,11 @@ alpha_expand_block_move (operands)
       i++;
       ofs += 1;
     }
+
  dst_done:
 
   if (i != nregs)
-    abort();
+    abort ();
 
   return 1;
 }
@@ -2870,42 +2867,40 @@ alpha_expand_block_clear (operands)
 {
   rtx bytes_rtx	= operands[1];
   rtx align_rtx = operands[2];
-  HOST_WIDE_INT bytes = INTVAL (bytes_rtx);
-  HOST_WIDE_INT align = INTVAL (align_rtx);
-  rtx orig_dst	= operands[0];
+  HOST_WIDE_INT orig_bytes = INTVAL (bytes_rtx);
+  unsigned HOST_WIDE_INT bytes = orig_bytes;
+  unsigned HOST_WIDE_INT align = INTVAL (align_rtx);
+  rtx orig_dst = operands[0];
   rtx tmp;
-  HOST_WIDE_INT i, words, ofs = 0;
+  unsigned HOST_WIDE_INT i, words, ofs = 0;
   
-  if (bytes <= 0)
+  if (orig_bytes <= 0)
     return 1;
   if (bytes > MAX_MOVE_WORDS*8)
     return 0;
 
   /* Look for stricter alignment.  */
-
   tmp = XEXP (orig_dst, 0);
   if (GET_CODE (tmp) == REG)
-    {
-      if (REGNO_POINTER_ALIGN (REGNO (tmp)) > align)
-	align = REGNO_POINTER_ALIGN (REGNO (tmp));
-    }
+    align = MAX (align, REGNO_POINTER_ALIGN (REGNO (tmp)));
   else if (GET_CODE (tmp) == PLUS
 	   && GET_CODE (XEXP (tmp, 0)) == REG
 	   && GET_CODE (XEXP (tmp, 1)) == CONST_INT)
     {
-      HOST_WIDE_INT c = INTVAL (XEXP (tmp, 1));
-      int a = REGNO_POINTER_ALIGN (REGNO (XEXP (tmp, 0)));
+      unsigned HOST_WIDE_INT c = INTVAL (XEXP (tmp, 1));
+      unsigned int a = REGNO_POINTER_ALIGN (REGNO (XEXP (tmp, 0)));
 
       if (a > align)
 	{
-          if (a >= 8 && c % 8 == 0)
-	    align = 8;
-          else if (a >= 4 && c % 4 == 0)
-	    align = 4;
-          else if (a >= 2 && c % 2 == 0)
-	    align = 2;
+          if (a >= 64 && c % 8 == 0)
+	    align = 64;
+          else if (a >= 32 && c % 4 == 0)
+	    align = 32;
+          else if (a >= 16 && c % 2 == 0)
+	    align = 16;
 	}
     }
+
   else if (GET_CODE (tmp) == ADDRESSOF)
     {
       enum machine_mode mode;
@@ -2925,36 +2920,34 @@ alpha_expand_block_clear (operands)
 
   /* Handle a block of contiguous words first.  */
 
-  if (align >= 8 && bytes >= 8)
+  if (align >= 64 && bytes >= 8)
     {
       words = bytes / 8;
 
       for (i = 0; i < words; ++i)
-	{
-	  emit_move_insn (change_address(orig_dst, DImode,
-					 plus_constant (XEXP (orig_dst, 0),
-							ofs + i*8)),
+	emit_move_insn (change_address(orig_dst, DImode,
+				       plus_constant (XEXP (orig_dst, 0),
+						      ofs + i * 8)),
 			  const0_rtx);
-	}
 
       bytes -= words * 8;
       ofs += words * 8;
     }
-  if (align >= 4 && bytes >= 4)
+
+  if (align >= 16 && bytes >= 4)
     {
       words = bytes / 4;
 
       for (i = 0; i < words; ++i)
-	{
-	  emit_move_insn (change_address (orig_dst, SImode,
-					  plus_constant (XEXP (orig_dst, 0),
-							 ofs + i*4)),
-			  const0_rtx);
-	}
+	emit_move_insn (change_address (orig_dst, SImode,
+					plus_constant (XEXP (orig_dst, 0),
+						       ofs + i * 4)),
+			const0_rtx);
 
       bytes -= words * 4;
       ofs += words * 4;
     }
+
   if (bytes >= 16)
     {
       words = bytes / 8;
@@ -2968,21 +2961,23 @@ alpha_expand_block_clear (operands)
   /* Next clean up any trailing pieces.  We know from the contiguous
      block move that there are no aligned SImode or DImode hunks left.  */
 
-  if (!TARGET_BWX && bytes >= 8)
+  if (! TARGET_BWX && bytes >= 8)
     {
       alpha_expand_unaligned_store (orig_dst, const0_rtx, 8, ofs);
       bytes -= 8;
       ofs += 8;
     }
+
   if (!TARGET_BWX && bytes >= 4)
     {
       alpha_expand_unaligned_store (orig_dst, const0_rtx, 4, ofs);
       bytes -= 4;
       ofs += 4;
     }
+
   if (bytes >= 2)
     {
-      if (align >= 2)
+      if (align >= 16)
 	{
 	  do {
 	    emit_move_insn (change_address (orig_dst, HImode,
@@ -2993,13 +2988,14 @@ alpha_expand_block_clear (operands)
 	    ofs += 2;
 	  } while (bytes >= 2);
 	}
-      else if (!TARGET_BWX)
+      else if (! TARGET_BWX)
 	{
 	  alpha_expand_unaligned_store (orig_dst, const0_rtx, 2, ofs);
 	  bytes -= 2;
 	  ofs += 2;
 	}
     }
+
   while (bytes > 0)
     {
       emit_move_insn (change_address (orig_dst, QImode,
@@ -3012,7 +3008,6 @@ alpha_expand_block_clear (operands)
 
   return 1;
 }
-
 
 /* Adjust the cost of a scheduling dependency.  Return the new cost of
    a dependency LINK or INSN on DEP_INSN.  COST is the current cost.  */
@@ -3755,6 +3750,9 @@ alpha_va_start (stdarg_p, valist, nextarg)
 {
   HOST_WIDE_INT offset;
   tree t, offset_field, base_field;
+
+  if (TREE_CODE (TREE_TYPE (valist)) == ERROR_MARK)
+    return;
 
   if (TARGET_OPEN_VMS)
     std_expand_builtin_va_start (stdarg_p, valist, nextarg);

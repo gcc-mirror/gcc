@@ -2291,7 +2291,7 @@ clear_by_pieces (to, len, align)
 
   if (! SLOW_UNALIGNED_ACCESS (word_mode, align)
       || align > MOVE_MAX * BITS_PER_UNIT || align >= BIGGEST_ALIGNMENT)
-    align = MOVE_MAX;
+    align = MOVE_MAX * BITS_PER_UNIT;
 
   /* First move what we can in the largest integer mode, then go to
      successively smaller modes.  */
@@ -5973,8 +5973,7 @@ expand_expr (exp, target, tmode, modifier)
       if (temp != 0)
 	{
 	  if (GET_CODE (temp) == MEM && GET_CODE (XEXP (temp, 0)) == REG)
-	    mark_reg_pointer (XEXP (temp, 0),
-			      DECL_ALIGN (exp) / BITS_PER_UNIT);
+	    mark_reg_pointer (XEXP (temp, 0), DECL_ALIGN (exp));
 
 	  return temp;
 	}
@@ -6801,7 +6800,7 @@ expand_expr (exp, target, tmode, modifier)
 	    op0 = validize_mem (op0);
 
 	    if (GET_CODE (op0) == MEM && GET_CODE (XEXP (op0, 0)) == REG)
-	      mark_reg_pointer (XEXP (op0, 0), alignment / BITS_PER_UNIT);
+	      mark_reg_pointer (XEXP (op0, 0), alignment);
 
 	    op0 = extract_bit_field (op0, bitsize, bitpos,
 				     unsignedp, target, ext_mode, ext_mode,
@@ -6852,7 +6851,7 @@ expand_expr (exp, target, tmode, modifier)
 	  MEM_ALIAS_SET (op0) = get_alias_set (exp);
  
 	if (GET_CODE (XEXP (op0, 0)) == REG)
-	  mark_reg_pointer (XEXP (op0, 0), alignment / BITS_PER_UNIT);
+	  mark_reg_pointer (XEXP (op0, 0), alignment);
 
 	MEM_SET_IN_STRUCT_P (op0, 1);
 	MEM_VOLATILE_P (op0) |= volatilep;
@@ -8278,7 +8277,7 @@ expand_expr (exp, target, tmode, modifier)
 
       if (GET_CODE (op0) == REG
 	  && ! REG_USERVAR_P (op0))
-	mark_reg_pointer (op0, TYPE_ALIGN (TREE_TYPE (type)) / BITS_PER_UNIT);
+	mark_reg_pointer (op0, TYPE_ALIGN (TREE_TYPE (type)));
 
       /* If we might have had a temp slot, add an equivalent address
 	 for it.  */
@@ -8758,7 +8757,7 @@ expand_expr_unaligned (exp, palign)
 	  alignment >>= 1;
 
 	if (GET_CODE (XEXP (op0, 0)) == REG)
-	  mark_reg_pointer (XEXP (op0, 0), alignment / BITS_PER_UNIT);
+	  mark_reg_pointer (XEXP (op0, 0), alignment);
 
 	MEM_IN_STRUCT_P (op0) = 1;
 	MEM_VOLATILE_P (op0) |= volatilep;

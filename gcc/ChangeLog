@@ -1,5 +1,25 @@
 Thu Mar 30 06:32:51 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* calls.c (expand_call): Pass bit alignment to mark_reg_pointer.
+	* explow.c (memory_address, allocate_dynamic_stack_space): Likewise.
+	* function.c (assign_parms): Likewise.
+	* integrate.c (expand_inline_function): Likewise.
+	* stmt.c (expand_decl): Likewise.
+	(copy_rtx_and_substitute): Likewise.
+	* expr.c (expand_expr, expand_expr_unaligned): Likewise.
+ 	(clear_by_pieces): Fix error in last change.
+	* emit-rtl.c (init_emit): Set known registers alignment in bits.
+	* function.h (regno_pointer_align): Now unsigned.
+	* config/arm/arm.c (alignable_memory_operand): REGNO_POINTER_ALIGN
+	is in bits.
+	* config/i386/i386.c (aligned_operand): Likewise.
+	* config/sparc/sparc.c (mem_min_alignment): Likewise.
+	* config/alpha/alpha.c (aligned_memory_operand): Likewise.
+	(unaligned_memory_operand): Likewise.
+	(alpha_expand_block_move, alpha_expand_block_clear): Likewise.
+	Also make alignments and sizes unsigned and some whitespace cleanup.
+	(alpha_va_start): Do nothing if VALIST's type is error_mark_node.
+
 	* builtins.c (get_pointer_alignment): Use host_integerp & tree_low_cst.
 	(expand_builtin_apply): Pass alignment to emit_block_move in bits.
 	(expand_builtin_memcpy, expand_builtin_va_copy): Likewise.
@@ -26,7 +46,7 @@ Thu Mar 30 06:32:51 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* expr.h (emit_cmp_insn, emit_cmp_and_jump_insns): Alignment unsigned.
 	* function.c (purge_addressof_1): Pass bit align to store_bit_field.
 	(assign_parms): Likewise to emit_group_store.
-	* optbas.c (prepare_cmp_insn): Alignment is in bits.
+	* optabs.c (prepare_cmp_insn): Alignment is in bits.
 	(emit_cmp_and_jump_insns, emit_cmp_insn): Likewise, and also unsigned.
 	* stmt.c (expand_value_return): Pass align in bits to emit_group_load.
 	(expand_return): Likewise to {extract,store}_bit_field.

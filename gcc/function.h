@@ -108,7 +108,7 @@ struct emit_status
   /* Indexed by pseudo register number, if nonzero gives the known alignment
      for that pseudo (if regno_pointer_flag is set).
      Allocated in parallel with regno_pointer_flag.  */
-  char *regno_pointer_align;
+  unsigned char *regno_pointer_align;
 
   /* Indexed by pseudo register number, gives the rtx for that pseudo.
      Allocated in parallel with regno_pointer_flag.  */

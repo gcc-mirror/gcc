@@ -583,11 +583,11 @@ memory_address (mode, x)
   if (oldx == x)
     return x;
   else if (GET_CODE (x) == REG)
-    mark_reg_pointer (x, 1);
+    mark_reg_pointer (x, BITS_PER_UNIT);
   else if (GET_CODE (x) == PLUS
 	   && GET_CODE (XEXP (x, 0)) == REG
 	   && GET_CODE (XEXP (x, 1)) == CONST_INT)
-    mark_reg_pointer (XEXP (x, 0), 1);
+    mark_reg_pointer (XEXP (x, 0), BITS_PER_UNIT);
 
   /* OLDX may have been the address on a temporary.  Update the address
      to indicate that X is now used.  */
@@ -1305,7 +1305,7 @@ allocate_dynamic_stack_space (size, target, known_align)
       || REGNO (target) < FIRST_PSEUDO_REGISTER)
     target = gen_reg_rtx (Pmode);
 
-  mark_reg_pointer (target, known_align / BITS_PER_UNIT);
+  mark_reg_pointer (target, known_align);
 
   /* Perform the required allocation from the stack.  Some systems do
      this differently than simply incrementing/decrementing from the

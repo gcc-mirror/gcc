@@ -3791,8 +3791,8 @@ expand_decl (decl)
 
       if (POINTER_TYPE_P (type))
 	mark_reg_pointer (DECL_RTL (decl),
-			  (TYPE_ALIGN (TREE_TYPE (TREE_TYPE (decl)))
-			   / BITS_PER_UNIT));
+			  TYPE_ALIGN (TREE_TYPE (TREE_TYPE (decl))));
+			  
     }
 
   else if (TREE_CODE (DECL_SIZE_UNIT (decl)) == INTEGER_CST

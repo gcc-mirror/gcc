@@ -2758,10 +2758,7 @@ expand_call (exp, target, ignore)
 
 	  /* Mark the return value as a pointer if needed.  */
 	  if (TREE_CODE (TREE_TYPE (exp)) == POINTER_TYPE)
-	    {
-	      tree pointed_to = TREE_TYPE (TREE_TYPE (exp));
-	      mark_reg_pointer (temp, TYPE_ALIGN (pointed_to) / BITS_PER_UNIT);
-	    }
+	    mark_reg_pointer (temp, TYPE_ALIGN (TREE_TYPE (TREE_TYPE (exp))));
 
 	  /* Construct an "equal form" for the value which mentions all the
 	     arguments in order as well as the function name.  */
@@ -2795,7 +2792,7 @@ expand_call (exp, target, ignore)
 
 	  /* The return value from a malloc-like function is a pointer. */
 	  if (TREE_CODE (TREE_TYPE (exp)) == POINTER_TYPE)
-	    mark_reg_pointer (temp, BIGGEST_ALIGNMENT / BITS_PER_UNIT);
+	    mark_reg_pointer (temp, BIGGEST_ALIGNMENT);
 
 	  emit_move_insn (temp, valreg);
 
