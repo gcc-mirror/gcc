@@ -1,3 +1,8 @@
+2002-04-19  Hans Boehm <Hans_Boehm@hp.com>
+
+	* configure: Rebuilt.
+	* configure.in (backtrace): Function doesn't work on IA-64.
+
 2002-04-17  Adam King <aking@dreammechanics.com>
 
 	* java/io/File.java (normalizePath): Add Win32 support for auto 
