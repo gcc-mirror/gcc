@@ -206,7 +206,7 @@
 (define_insn_reservation "ir_sr70_arith"
                                1
                           (and (eq_attr "cpu" "sr71000")
-                               (eq_attr "type" "arith,darith"))
+                               (eq_attr "type" "arith,darith,const"))
                          "ri_insns")
 
 ;; emulate repeat (dispatch stall) by spending extra cycle(s) in

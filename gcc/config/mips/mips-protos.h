@@ -39,7 +39,7 @@ extern int		mips_can_use_return_insn PARAMS ((void));
 extern void		mips_declare_object PARAMS ((FILE *, const char *,
 						     const char *,
 						     const char *, int));
-extern void		mips_expand_epilogue PARAMS ((void));
+extern void		mips_expand_epilogue PARAMS ((int));
 extern void		mips_expand_prologue PARAMS ((void));
 extern void		mips_output_filename PARAMS ((FILE *, const char *));
 extern void		mips_output_lineno PARAMS ((FILE *, int));
@@ -81,6 +81,12 @@ extern void		mips_va_start PARAMS ((tree, rtx));
 extern struct rtx_def  *mips_va_arg PARAMS ((tree, tree));
 
 extern void		expand_block_move PARAMS ((rtx *));
+extern bool		mips_expand_unaligned_load PARAMS ((rtx, rtx,
+							    unsigned int,
+							    int));
+extern bool		mips_expand_unaligned_store PARAMS ((rtx, rtx,
+							     unsigned int,
+							     int));
 extern void		final_prescan_insn PARAMS ((rtx, rtx *, int));
 extern void		init_cumulative_args PARAMS ((CUMULATIVE_ARGS *,
 						      tree, rtx));
@@ -91,13 +97,11 @@ extern void		mips_set_return_address PARAMS ((rtx, rtx));
 extern void		machine_dependent_reorg PARAMS ((rtx));
 extern void		mips_count_memory_refs PARAMS ((rtx, int));
 extern HOST_WIDE_INT	mips_debugger_offset PARAMS ((rtx, HOST_WIDE_INT));
-extern int		mips_check_split PARAMS ((rtx, enum machine_mode));
 extern const char      *mips_fill_delay_slot PARAMS ((const char *,
 						      enum delay_type, rtx *,
 						      rtx));
 extern const char      *mips_move_1word PARAMS ((rtx *, rtx, int));
 extern const char      *mips_move_2words PARAMS ((rtx *, rtx));
-extern const char      *mips_sign_extend PARAMS ((rtx, rtx, rtx));
 extern const char      *mips_emit_prefetch PARAMS ((rtx *));
 extern const char      *mips_restore_gp PARAMS ((rtx *, rtx));
 extern const char      *output_block_move PARAMS ((rtx, rtx *, int,
@@ -106,12 +110,7 @@ extern void		override_options PARAMS ((void));
 extern void		mips_conditional_register_usage PARAMS ((void));
 extern void		print_operand_address PARAMS ((FILE *, rtx));
 extern void		print_operand PARAMS ((FILE *, rtx, int));
-extern int		double_memory_operand PARAMS ((rtx,enum machine_mode));
 extern struct rtx_def *	embedded_pic_offset PARAMS ((rtx));
-extern struct rtx_def * mips16_gp_offset PARAMS ((rtx));
-extern int		mips16_gp_offset_p PARAMS ((rtx));
-extern int		mips16_constant PARAMS ((rtx, enum machine_mode,
-						 int, int));
 extern int		build_mips16_call_stub PARAMS ((rtx, rtx, rtx, int));
 extern const char       *mips_output_conditional_branch PARAMS ((rtx, rtx *,
 								 int, int, int,
@@ -120,7 +119,7 @@ extern int              mips_adjust_insn_length PARAMS ((rtx, int));
 extern enum reg_class	mips_secondary_reload_class PARAMS ((enum reg_class,
 							     enum machine_mode,
 							     rtx, int));
-extern bool		mips_cannot_change_mode_class 
+extern bool     	mips_cannot_change_mode_class
 			  PARAMS ((enum machine_mode, enum machine_mode,
 				   enum reg_class));
 extern int              mips_class_max_nregs PARAMS ((enum reg_class,
@@ -129,13 +128,21 @@ extern int              mips_register_move_cost PARAMS ((enum machine_mode,
 							 enum reg_class,
 							 enum reg_class));
 
-extern int		pic_address_needs_scratch PARAMS ((rtx));
 extern int		se_arith_operand PARAMS ((rtx, enum machine_mode));
 extern int		coprocessor_operand PARAMS ((rtx, enum machine_mode));
 extern int		coprocessor2_operand PARAMS ((rtx, enum machine_mode));
-extern int		symbolic_operand PARAMS ((rtx, enum machine_mode));
-extern int              mips_legitimate_address_p PARAMS ((enum machine_mode,
+extern int		mips_address_insns PARAMS ((rtx, enum machine_mode));
+extern int		mips_fetch_insns PARAMS ((rtx));
+extern int		mips_const_insns PARAMS ((rtx));
+extern bool		mips_global_pic_constant_p PARAMS ((rtx));
+extern bool		mips_legitimate_address_p PARAMS ((enum machine_mode,
 							   rtx, int));
+extern bool		mips_legitimize_address PARAMS ((rtx *,
+							 enum machine_mode));
+extern bool		mips_legitimize_move PARAMS ((enum machine_mode,
+						      rtx, rtx));
+extern rtx		mips_simplify_dwarf_addr PARAMS ((rtx));
+extern void		mips_expand_call PARAMS ((rtx, rtx, rtx, rtx, int));
 extern int              mips_reg_mode_ok_for_base_p PARAMS ((rtx,
 							     enum machine_mode,
 							     int));
@@ -165,5 +172,6 @@ extern rtx		gen_int_relational PARAMS ((enum rtx_code, rtx, rtx,
 						    rtx,int *));
 extern void		gen_conditional_branch PARAMS ((rtx *, enum rtx_code));
 #endif
+extern rtx              mips_return_addr PARAMS ((int, rtx));
 
 #endif /* ! GCC_MIPS_PROTOS_H */

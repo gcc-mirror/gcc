@@ -92,17 +92,6 @@ enum processor_type {
 #define ABI_64  2
 #define ABI_EABI 3
 #define ABI_O64  4
-/* MEABI is gcc's internal name for MIPS' new EABI (defined by MIPS)
-   which is not the same as the above EABI (defined by Cygnus,
-   Greenhills, and Toshiba?).  MEABI is not yet complete or published,
-   but at this point it looks like N32 as far as calling conventions go,
-   but allows for either 32 or 64 bit registers.
-
-   Currently MIPS is calling their EABI "the" MIPS EABI, and Cygnus'
-   EABI the legacy EABI.  In the end we may end up calling both ABI's
-   EABI but give them different version numbers, but for now I'm going
-   with different names.  */
-#define ABI_MEABI 5
 
 /* Whether to emit abicalls code sequences or not.  */
 
@@ -175,7 +164,6 @@ extern const char *mips_abi_string;	/* for -mabi={32,n32,64} */
 extern const char *mips_entry_string;	/* for -mentry */
 extern const char *mips_no_mips16_string;/* for -mno-mips16 */
 extern const char *mips_cache_flush_func;/* for -mflush-func= and -mno-flush-func */
-extern int mips_split_addresses;	/* perform high/lo_sum support */
 extern int dslots_load_total;		/* total # load related delay slots */
 extern int dslots_load_filled;		/* # filled load delay slots */
 extern int dslots_jump_total;		/* total # jump related delay slots */
@@ -240,6 +228,7 @@ extern void		sbss_section PARAMS ((void));
 					   multiply-add operations.  */
 #define MASK_BRANCHLIKELY  0x02000000   /* Generate Branch Likely
 					   instructions.  */
+#define MASK_EXPLICIT_RELOCS 0x04000000 /* Use relocation operators.  */
 
 					/* Debug switches, not documented */
 #define MASK_DEBUG	0		/* unused */
@@ -332,11 +321,49 @@ extern void		sbss_section PARAMS ((void));
 
 #define TARGET_BRANCHLIKELY	(target_flags & MASK_BRANCHLIKELY)
 
+
+/* True if we should use NewABI-style relocation operators for
+   symbolic addresses.  This is never true for mips16 code,
+   which has its own conventions.  */
+
+#define TARGET_EXPLICIT_RELOCS	(target_flags & MASK_EXPLICIT_RELOCS)
+
+
 /* This is true if we must enable the assembly language file switching
    code.  */
 
 #define TARGET_FILE_SWITCHING \
   (TARGET_GP_OPT && ! TARGET_GAS && ! TARGET_MIPS16)
+
+/* True if the call patterns should be split into a jalr followed by
+   an instruction to restore $gp.  This is only ever true for SVR4 PIC,
+   in which $gp is call-clobbered.  It is only safe to split the load
+   from the call when every use of $gp is explicit.  */
+
+#define TARGET_SPLIT_CALLS \
+  (TARGET_EXPLICIT_RELOCS && TARGET_ABICALLS && !TARGET_NEWABI)
+
+/* True if we can optimize sibling calls.  For simplicity, we only
+   handle cases in which call_insn_operand will reject invalid
+   sibcall addresses.  There are two cases in which this isn't true:
+
+      - TARGET_MIPS16.  call_insn_operand accepts constant addresses
+	but there is no direct jump instruction.  It isn't worth
+	using sibling calls in this case anyway; they would usually
+	be longer than normal calls.
+
+      - TARGET_ABICALLS && !TARGET_EXPLICIT_RELOCS.  call_insn_operand
+	accepts global constants, but "jr $25" is the only allowed
+	sibcall.  */
+
+#define TARGET_SIBCALLS \
+  (!TARGET_MIPS16 && (!TARGET_ABICALLS || TARGET_EXPLICIT_RELOCS))
+
+/* True if .gpword or .gpdword should be used for switch tables.
+   Not all SGI assemblers support this.  */
+
+#define TARGET_GPWORD (TARGET_ABICALLS && (!TARGET_NEWABI || TARGET_GAS))
+
 
 /* We must disable the function end stabs when doing the file switching trick,
    because the Lscope stabs end up in the wrong place, making it impossible
@@ -378,6 +405,8 @@ extern void		sbss_section PARAMS ((void));
 #define TUNE_MIPS6000               (mips_tune == PROCESSOR_R6000)
 #define TUNE_SB1                    (mips_tune == PROCESSOR_SB1)
 #define TUNE_SR71K                  (mips_tune == PROCESSOR_SR71000)
+
+#define TARGET_NEWABI		    (mips_abi == ABI_N32 || mips_abi == ABI_64)
 
 /* Define preprocessor macros for the -march and -mtune options.
    PREFIX is either _MIPS_ARCH or _MIPS_TUNE, INFO is the selected
@@ -534,9 +563,7 @@ extern void		sbss_section PARAMS ((void));
 
 #define TARGET_SWITCHES							\
 {									\
-  SUBTARGET_TARGET_SWITCHES						\
-  {"no-crt0",          0,                                               \
-     N_("No default crt0.o") },					 	\
+  SUBTARGET_TARGET_SWITCHES                                             \
   {"int64",		  MASK_INT64 | MASK_LONG64,			\
      N_("Use 64-bit int type")},					\
   {"long64",		  MASK_LONG64,					\
@@ -639,6 +666,10 @@ extern void		sbss_section PARAMS ((void));
       N_("Use Branch Likely instructions, overriding default for arch")}, \
   { "no-branch-likely",  -MASK_BRANCHLIKELY,				\
       N_("Don't use Branch Likely instructions, overriding default for arch")}, \
+  {"explicit-relocs",	  MASK_EXPLICIT_RELOCS,				\
+     N_("Use NewABI-style %reloc() assembly operators")},		\
+  {"no-explicit-relocs", -MASK_EXPLICIT_RELOCS,				\
+     N_("Use assembler macros instead of relocation operators")},	\
   {"debug",		  MASK_DEBUG,					\
      NULL},								\
   {"debuga",		  MASK_DEBUG_A,					\
@@ -808,6 +839,10 @@ extern void		sbss_section PARAMS ((void));
 /* Likewise for 32-bit regs.  */
 #define ABI_NEEDS_32BIT_REGS	(mips_abi == ABI_32)
 
+/* True if symbols are 64 bits wide.  At present, n64 is the only
+   ABI for which this is true.  */
+#define ABI_HAS_64BIT_SYMBOLS	(mips_abi == ABI_64)
+
 /* ISA has instructions for managing 64 bit fp and gp regs (eg. mips3).  */
 #define ISA_HAS_64BIT_REGS	(ISA_MIPS3				\
 				 || ISA_MIPS4				\
@@ -893,7 +928,8 @@ extern void		sbss_section PARAMS ((void));
                                  )
 /* ISA has three operand multiply instructions that  the result
    from a 4th operand and puts the result in an accumulator.  */
-#define ISA_HAS_MACC            (TARGET_MIPS5400                        \
+#define ISA_HAS_MACC            ((TARGET_MIPS4120 && !TARGET_MIPS16)	\
+                                 || TARGET_MIPS5400                     \
                                  || TARGET_MIPS5500                     \
                                  || TARGET_SR71K                        \
                                  )
@@ -1027,12 +1063,6 @@ extern int mips_abi;
 #if MIPS_ABI_DEFAULT == ABI_EABI
 #define MULTILIB_ABI_DEFAULT "mabi=eabi"
 #define ASM_ABI_DEFAULT_SPEC "-mabi=eabi"
-#endif
-
-#if MIPS_ABI_DEFAULT == ABI_MEABI
-/* Most GAS don't know about MEABI.  */
-#define MULTILIB_ABI_DEFAULT "mabi=meabi"
-#define ASM_ABI_DEFAULT_SPEC ""
 #endif
 
 /* Only ELF targets can switch the ABI.  */
@@ -1318,6 +1348,8 @@ extern int mips_abi;
    SFmode register saves.  */
 #define DWARF_CIE_DATA_ALIGNMENT 4
 
+#define ASM_SIMPLIFY_DWARF_ADDR mips_simplify_dwarf_addr
+
 /* Overrides for the COFF debug format.  */
 #define PUT_SDB_SCL(a)					\
 do {							\
@@ -1587,19 +1619,18 @@ do {							\
 # endif
 #endif
 
-/* Width in bits of a pointer.
-   See also the macro `Pmode' defined below.  */
+/* Width in bits of a pointer.  */
 #ifndef POINTER_SIZE
-#define POINTER_SIZE (Pmode == DImode ? 64 : 32)
+#define POINTER_SIZE ((TARGET_LONG64 && TARGET_64BIT) ? 64 : 32)
 #endif
 
-/* Allocation boundary (in *bits*) for storing pointers in memory.  */
-#define POINTER_BOUNDARY (Pmode == DImode ? 64 : 32)
+#define POINTERS_EXTEND_UNSIGNED 0
 
 /* Allocation boundary (in *bits*) for storing arguments in argument list.  */
 #define PARM_BOUNDARY ((mips_abi == ABI_O64 || mips_abi == ABI_N32 \
 			|| mips_abi == ABI_64 \
 			|| (mips_abi == ABI_EABI && TARGET_64BIT)) ? 64 : 32)
+
 
 /* Allocation boundary (in *bits*) for the code of a function.  */
 #define FUNCTION_BOUNDARY 32
@@ -1678,9 +1709,7 @@ do {							\
 
 /* Force right-alignment for small varargs in 32 bit little_endian mode */
 
-#define PAD_VARARGS_DOWN (TARGET_64BIT                                  \
-			  || mips_abi == ABI_MEABI                      \
-			     ? BYTES_BIG_ENDIAN : !BYTES_BIG_ENDIAN)
+#define PAD_VARARGS_DOWN (TARGET_64BIT ? BYTES_BIG_ENDIAN : !BYTES_BIG_ENDIAN)
 
 /* Define this macro if an argument declared as `char' or `short' in a
    prototype should actually be passed as an `int'.  In addition to
@@ -1708,26 +1737,28 @@ do {							\
    in a wider mode than that declared by the program.  In such cases,
    the value is constrained to be within the bounds of the declared
    type, but kept valid in the wider mode.  The signedness of the
-   extension may differ from that of the type.
-
-   We promote any value smaller than SImode up to SImode.  We don't
-   want to promote to DImode when in 64 bit mode, because that would
-   prevent us from using the faster SImode multiply and divide
-   instructions.  */
+   extension may differ from that of the type.  */
 
 #define PROMOTE_MODE(MODE, UNSIGNEDP, TYPE)	\
   if (GET_MODE_CLASS (MODE) == MODE_INT		\
-      && GET_MODE_SIZE (MODE) < 4)		\
-    (MODE) = SImode;
+      && GET_MODE_SIZE (MODE) < UNITS_PER_WORD) \
+    {                                           \
+      if ((MODE) == SImode)                     \
+        (UNSIGNEDP) = 0;                        \
+      (MODE) = Pmode;                           \
+    }
+
+/* Define if loading short immediate values into registers sign extends.  */
+#define SHORT_IMMEDIATES_SIGN_EXTEND
+
 
 /* Define this if function arguments should also be promoted using the above
    procedure.  */
-
 #define PROMOTE_FUNCTION_ARGS
 
 /* Likewise, if the function return value is promoted.  */
-
 #define PROMOTE_FUNCTION_RETURN
+
 
 /* Standard register usage.  */
 
@@ -1764,10 +1795,10 @@ do {							\
 #define FIXED_REGISTERS							\
 {									\
   1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,			\
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1,			\
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0,			\
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,			\
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,			\
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0,			\
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1,			\
   /* COP0 registers */							\
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,			\
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,			\
@@ -1780,20 +1811,22 @@ do {							\
 }
 
 
-/* 1 for registers not available across function calls.
-   These must include the FIXED_REGISTERS and also any
-   registers that can be used without being saved.
-   The latter must include the registers where values are returned
-   and the register where structure-value addresses are passed.
-   Aside from that, you can include as many other registers as you like.  */
+/* Don't mark $31 as a call-clobbered register.  The idea is that
+   it's really the call instructions themselves which clobber $31.
+   We don't care what the called function does with it afterwards.
+
+   This approach makes it easier to implement sibcalls.  Unlike normal
+   calls, sibcalls don't clobber $31, so the register reaches the
+   called function in tact.  EPILOGUE_USES says that $31 is useful
+   to the called function.  */
 
 #define CALL_USED_REGISTERS						\
 {									\
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,			\
-  0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1,			\
+  0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0,			\
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,			\
   1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,			\
-  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,			\
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,			\
   /* COP0 registers */							\
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,			\
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,			\
@@ -1817,12 +1850,12 @@ do {							\
 #define CALL_REALLY_USED_REGISTERS                                      \
 { /* General registers.  */                                             \
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,                       \
-  0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 1,                       \
+  0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0,                       \
   /* Floating-point registers.  */                                      \
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,			\
   1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,			\
   /* Others.  */                                                        \
-  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,			\
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,			\
   /* COP0 registers */							\
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,			\
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,			\
@@ -1857,8 +1890,8 @@ do {							\
 #define ST_REG_LAST  74
 #define ST_REG_NUM   (ST_REG_LAST - ST_REG_FIRST + 1)
 
-#define RAP_REG_NUM   75
 
+/* FIXME: renumber.  */
 #define COP0_REG_FIRST 80
 #define COP0_REG_LAST 111
 #define COP0_REG_NUM (COP0_REG_LAST - COP0_REG_FIRST + 1)
@@ -1978,10 +2011,6 @@ extern char mips_hard_regno_mode_ok[][FIRST_PSEUDO_REGISTER];
 /* Base register for access to arguments of the function.  */
 #define ARG_POINTER_REGNUM GP_REG_FIRST
 
-/* Fake register that holds the address on the stack of the
-   current function's return address.  */
-#define RETURN_ADDRESS_POINTER_REGNUM RAP_REG_NUM
-
 /* Register in which static-chain is passed to a function.  */
 #define STATIC_CHAIN_REGNUM (GP_REG_FIRST + 2)
 
@@ -2052,6 +2081,8 @@ enum reg_class
   M16_REGS,			/* mips16 directly accessible registers */
   T_REG,			/* mips16 T register ($24) */
   M16_T_REGS,			/* mips16 registers plus T register */
+  PIC_FN_ADDR_REG,		/* SVR4 PIC function address register */
+  LEA_REGS,			/* Every GPR except $25 */
   GR_REGS,			/* integer registers */
   FP_REGS,			/* floating point registers */
   HI_REG,			/* hi register */
@@ -2090,6 +2121,8 @@ enum reg_class
   "M16_REGS",								\
   "T_REG",								\
   "M16_T_REGS",								\
+  "PIC_FN_ADDR_REG",							\
+  "LEA_REGS",								\
   "GR_REGS",								\
   "FP_REGS",								\
   "HI_REG",								\
@@ -2131,6 +2164,8 @@ enum reg_class
   { 0x000300fc, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	/* mips16 registers */	\
   { 0x01000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	/* mips16 T register */	\
   { 0x010300fc, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	/* mips16 and T regs */ \
+  { 0x02000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	/* SVR4 PIC function address register */ \
+  { 0xfdffffff, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	/* Every other GPR */ \
   { 0xffffffff, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	/* integer registers */	\
   { 0x00000000, 0xffffffff, 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	/* floating registers*/	\
   { 0x00000000, 0x00000000, 0x00000001, 0x00000000, 0x00000000, 0x00000000 },	/* hi register */	\
@@ -2187,7 +2222,8 @@ extern const enum reg_class mips_regno_to_class[];
 /* This macro is used later on in the file.  */
 #define GR_REG_CLASS_P(CLASS)						\
   ((CLASS) == GR_REGS || (CLASS) == M16_REGS || (CLASS) == T_REG	\
-   || (CLASS) == M16_T_REGS || (CLASS) == M16_NA_REGS)
+   || (CLASS) == M16_T_REGS || (CLASS) == M16_NA_REGS			\
+   || (CLASS) == PIC_FN_ADDR_REG || (CLASS) == LEA_REGS)
 
 /* This macro is also used later on in the file.  */
 #define COP_REG_CLASS_P(CLASS)						\
@@ -2246,6 +2282,35 @@ extern enum reg_class mips_char_to_class[256];
 
 #define REG_CLASS_FROM_LETTER(C) mips_char_to_class[(unsigned char)(C)]
 
+/* True if VALUE is a signed 16-bit number.  */
+
+#define SMALL_OPERAND(VALUE) \
+  ((unsigned HOST_WIDE_INT) (VALUE) + 0x8000 < 0x10000)
+
+/* True if VALUE is an unsigned 16-bit number.  */
+
+#define SMALL_OPERAND_UNSIGNED(VALUE) \
+  (((VALUE) & ~(unsigned HOST_WIDE_INT) 0xffff) == 0)
+
+/* True if VALUE can be loaded into a register using LUI.  */
+
+#define LUI_OPERAND(VALUE)					\
+  (((VALUE) | 0x7fff0000) == 0x7fff0000				\
+   || ((VALUE) | 0x7fff0000) + 0x10000 == 0)
+
+/* Return a value X with the low 16 bits clear, and such that
+   VALUE - X is a signed 16-bit value.  */
+
+#define CONST_HIGH_PART(VALUE) \
+  (((VALUE) + 0x8000) & ~(unsigned HOST_WIDE_INT) 0xffff)
+
+#define CONST_LOW_PART(VALUE) \
+  ((VALUE) - CONST_HIGH_PART (VALUE))
+
+#define SMALL_INT(X) SMALL_OPERAND (INTVAL (X))
+#define SMALL_INT_UNSIGNED(X) SMALL_OPERAND_UNSIGNED (INTVAL (X))
+#define LUI_INT(X) LUI_OPERAND (INTVAL (X))
+
 /* The letters I, J, K, L, M, N, O, and P in a register constraint
    string can be used to stand for particular ranges of immediate
    operands.  This macro defines what the ranges are.  C is the
@@ -2274,21 +2339,14 @@ extern enum reg_class mips_char_to_class[256];
 
    `P'	is used for positive 16 bit constants.  */
 
-#define SMALL_INT(X) ((unsigned HOST_WIDE_INT) (INTVAL (X) + 0x8000) < 0x10000)
-#define SMALL_INT_UNSIGNED(X) ((unsigned HOST_WIDE_INT) (INTVAL (X)) < 0x10000)
-
 #define CONST_OK_FOR_LETTER_P(VALUE, C)					\
-  ((C) == 'I' ? ((unsigned HOST_WIDE_INT) ((VALUE) + 0x8000) < 0x10000)	\
+  ((C) == 'I' ? SMALL_OPERAND (VALUE)					\
    : (C) == 'J' ? ((VALUE) == 0)					\
-   : (C) == 'K' ? ((unsigned HOST_WIDE_INT) (VALUE) < 0x10000)		\
-   : (C) == 'L' ? (((VALUE) & 0x0000ffff) == 0				\
-		   && (((VALUE) & ~2147483647) == 0			\
-		       || ((VALUE) & ~2147483647) == ~2147483647))	\
-   : (C) == 'M' ? ((((VALUE) & ~0x0000ffff) != 0)			\
-		   && (((VALUE) & ~0x0000ffff) != ~0x0000ffff)		\
-		   && (((VALUE) & 0x0000ffff) != 0			\
-		       || (((VALUE) & ~2147483647) != 0			\
-			   && ((VALUE) & ~2147483647) != ~2147483647)))	\
+   : (C) == 'K' ? SMALL_OPERAND_UNSIGNED (VALUE)			\
+   : (C) == 'L' ? LUI_OPERAND (VALUE)					\
+   : (C) == 'M' ? (!SMALL_OPERAND (VALUE)				\
+		   && !SMALL_OPERAND_UNSIGNED (VALUE)			\
+		   && !LUI_OPERAND (VALUE))				\
    : (C) == 'N' ? ((unsigned HOST_WIDE_INT) ((VALUE) + 0xffff) < 0xffff) \
    : (C) == 'O' ? ((unsigned HOST_WIDE_INT) ((VALUE) + 0x4000) < 0x8000) \
    : (C) == 'P' ? ((VALUE) != 0 && (((VALUE) & ~0x0000ffff) == 0))	\
@@ -2305,22 +2363,40 @@ extern enum reg_class mips_char_to_class[256];
   ((C) == 'G'								\
    && (VALUE) == CONST0_RTX (GET_MODE (VALUE)))
 
+/* True if OP is a constant that should not be moved into $25.
+   We need this because many versions of gas treat 'la $25,foo' as
+   part of a call sequence and allow a global 'foo' to be lazily bound.  */
+
+#define DANGEROUS_FOR_LA25_P(OP)					\
+  (TARGET_ABICALLS							\
+   && !TARGET_EXPLICIT_RELOCS						\
+   && mips_global_pic_constant_p (OP))
+
 /* Letters in the range `Q' through `U' may be defined in a
    machine-dependent fashion to stand for arbitrary operand types.
    The machine description macro `EXTRA_CONSTRAINT' is passed the
    operand as its first argument and the constraint letter as its
    second operand.
 
-   `Q'	is for mips16 GP relative constants
-   `R'	is for memory references which take 1 word for the instruction.
-   `T'	is for memory addresses that can be used to load two words.  */
+   `Q' is for signed 16-bit constants.
+   `R' is for single-instruction memory references.  Note that this
+	 constraint has often been used in linux and glibc code.
+   `S' is for legitimate constant call addresses.
+   `T' is for constant move_operands that cannot be safely loaded into $25.
+   `U' is for constant move_operands that can be safely loaded into $25.  */
 
 #define EXTRA_CONSTRAINT(OP,CODE)					\
-  (((CODE) == 'T')	  ? double_memory_operand (OP, GET_MODE (OP))	\
-   : ((CODE) == 'Q')	  ? (GET_CODE (OP) == CONST			\
-			     && mips16_gp_offset_p (OP))		\
-   : (GET_CODE (OP) != MEM) ? FALSE					\
-   : ((CODE) == 'R')	  ? simple_memory_operand (OP, GET_MODE (OP))	\
+  (((CODE) == 'Q')	  ? const_arith_operand (OP, VOIDmode)		\
+   : ((CODE) == 'R')	  ? (GET_CODE (OP) == MEM			\
+			     && mips_fetch_insns (OP) == 1)		\
+   : ((CODE) == 'S')	  ? (CONSTANT_P (OP)				\
+			     && call_insn_operand (OP, VOIDmode))	\
+   : ((CODE) == 'T')	  ? (CONSTANT_P (OP)				\
+			     && move_operand (OP, VOIDmode)		\
+			     && DANGEROUS_FOR_LA25_P (OP))		\
+   : ((CODE) == 'U')	  ? (CONSTANT_P (OP)				\
+			     && move_operand (OP, VOIDmode)		\
+			     && !DANGEROUS_FOR_LA25_P (OP))		\
    : FALSE)
 
 /* Given an rtx X being reloaded into a reg required to be
@@ -2430,26 +2506,14 @@ extern enum reg_class mips_char_to_class[256];
    during reload to be either the frame pointer or the stack pointer plus
    an offset.  */
 
-/* ??? This definition fails for leaf functions.  There is currently no
-   general solution for this problem.  */
-
-/* ??? There appears to be no way to get the return address of any previous
-   frame except by disassembling instructions in the prologue/epilogue.
-   So currently we support only the current frame.  */
-
-#define RETURN_ADDR_RTX(count, frame)					\
-  (((count) == 0)							\
-   ? (leaf_function_p ()						\
-      ? gen_rtx_REG (Pmode, GP_REG_FIRST + 31)				\
-      : gen_rtx_MEM (Pmode, gen_rtx_REG (Pmode,				\
-					 RETURN_ADDRESS_POINTER_REGNUM))) \
-   : (rtx) 0)
+#define RETURN_ADDR_RTX mips_return_addr
 
 /* Since the mips16 ISA mode is encoded in the least-significant bit
    of the address, mask it off return addresses for purposes of
    finding exception handling regions.  */
 
 #define MASK_RETURN_ADDR GEN_INT (-2)
+
 
 /* Similarly, don't use the least-significant bit to tell pointers to
    code from vtable index.  */
@@ -2489,9 +2553,6 @@ extern enum reg_class mips_char_to_class[256];
 {{ ARG_POINTER_REGNUM,   STACK_POINTER_REGNUM},				\
  { ARG_POINTER_REGNUM,   GP_REG_FIRST + 30},				\
  { ARG_POINTER_REGNUM,   GP_REG_FIRST + 17},				\
- { RETURN_ADDRESS_POINTER_REGNUM, STACK_POINTER_REGNUM},		\
- { RETURN_ADDRESS_POINTER_REGNUM, GP_REG_FIRST + 30},			\
- { RETURN_ADDRESS_POINTER_REGNUM, GP_REG_FIRST + 17},			\
  { FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM},				\
  { FRAME_POINTER_REGNUM, GP_REG_FIRST + 30},				\
  { FRAME_POINTER_REGNUM, GP_REG_FIRST + 17}}
@@ -2517,15 +2578,11 @@ extern enum reg_class mips_char_to_class[256];
    */
 
 #define CAN_ELIMINATE(FROM, TO)						\
-  (((FROM) == RETURN_ADDRESS_POINTER_REGNUM				\
-    && (((TO) == STACK_POINTER_REGNUM && ! frame_pointer_needed)	\
- 	|| (TO) == HARD_FRAME_POINTER_REGNUM))				\
-   || ((FROM) != RETURN_ADDRESS_POINTER_REGNUM				\
-      && ((TO) == HARD_FRAME_POINTER_REGNUM 				\
+   (((TO) == HARD_FRAME_POINTER_REGNUM 				        \
 	  || ((TO) == STACK_POINTER_REGNUM && ! frame_pointer_needed	\
 	      && ! (TARGET_MIPS16 && TARGET_64BIT)			\
 	      && (! TARGET_MIPS16					\
-	          || compute_frame_size (get_frame_size ()) < 32768)))))
+	          || compute_frame_size (get_frame_size ()) < 32768))))
 
 #define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET) \
 	(OFFSET) = mips_initial_elimination_offset ((FROM), (TO))
@@ -2892,6 +2949,11 @@ typedef struct mips_args {
   || (regno == HARD_FRAME_POINTER_REGNUM && frame_pointer_needed)	\
   || (regno == (GP_REG_FIRST + 31) && regs_ever_live[GP_REG_FIRST + 31]))
 
+/* Say that the epilogue uses the return address register.  Note that
+   in the case of sibcalls, the values "used by the epilogue" are
+   considered live at the start of the called function.  */
+#define EPILOGUE_USES(REGNO) ((REGNO) == 31)
+
 /* Treat LOC as a byte offset from the stack pointer and round it up
    to the next fully-aligned offset.  */
 #define MIPS_STACK_ALIGN(LOC)						\
@@ -2959,7 +3021,7 @@ typedef struct mips_args {
   fprintf (STREAM, "\t.word\t0x03e00821\t\t# move   $1,$31\n");		\
   fprintf (STREAM, "\t.word\t0x04110001\t\t# bgezal $0,.+8\n");		\
   fprintf (STREAM, "\t.word\t0x00000000\t\t# nop\n");			\
-  if (Pmode == DImode)							\
+  if (ptr_mode == DImode)						\
     {									\
       fprintf (STREAM, "\t.word\t0xdfe30014\t\t# ld     $3,20($31)\n");	\
       fprintf (STREAM, "\t.word\t0xdfe2001c\t\t# ld     $2,28($31)\n");	\
@@ -2972,7 +3034,7 @@ typedef struct mips_args {
   fprintf (STREAM, "\t.word\t0x0060c821\t\t# move   $25,$3 (abicalls)\n"); \
   fprintf (STREAM, "\t.word\t0x00600008\t\t# jr     $3\n");		\
   fprintf (STREAM, "\t.word\t0x0020f821\t\t# move   $31,$1\n");		\
-  if (Pmode == DImode)							\
+  if (ptr_mode == DImode)						\
     {									\
       fprintf (STREAM, "\t.dword\t0x00000000\t\t# <function address>\n"); \
       fprintf (STREAM, "\t.dword\t0x00000000\t\t# <static chain value>\n"); \
@@ -2987,11 +3049,11 @@ typedef struct mips_args {
 /* A C expression for the size in bytes of the trampoline, as an
    integer.  */
 
-#define TRAMPOLINE_SIZE (32 + (Pmode == DImode ? 16 : 8))
+#define TRAMPOLINE_SIZE (32 + GET_MODE_SIZE (ptr_mode) * 2)
 
 /* Alignment required for trampolines, in bits.  */
 
-#define TRAMPOLINE_ALIGNMENT (Pmode == DImode ? 64 : 32)
+#define TRAMPOLINE_ALIGNMENT GET_MODE_BITSIZE (ptr_mode)
 
 /* INITIALIZE_TRAMPOLINE calls this library function to flush
    program and data caches.  */
@@ -3008,24 +3070,21 @@ typedef struct mips_args {
 
 #define INITIALIZE_TRAMPOLINE(ADDR, FUNC, CHAIN)			    \
 {									    \
-  rtx addr = ADDR;							    \
-  if (Pmode == DImode)							    \
-    {									    \
-      emit_move_insn (gen_rtx_MEM (DImode, plus_constant (addr, 32)), FUNC); \
-      emit_move_insn (gen_rtx_MEM (DImode, plus_constant (addr, 40)), CHAIN);\
-    }									    \
-  else									    \
-    {									    \
-      emit_move_insn (gen_rtx_MEM (SImode, plus_constant (addr, 32)), FUNC); \
-      emit_move_insn (gen_rtx_MEM (SImode, plus_constant (addr, 36)), CHAIN);\
-    }									    \
+  rtx func_addr, chain_addr;						    \
+									    \
+  func_addr = plus_constant (ADDR, 32);					    \
+  chain_addr = plus_constant (func_addr, GET_MODE_SIZE (ptr_mode));	    \
+  emit_move_insn (gen_rtx_MEM (ptr_mode, func_addr),			    \
+		  gen_lowpart (ptr_mode, force_reg (Pmode, FUNC)));	    \
+  emit_move_insn (gen_rtx_MEM (ptr_mode, chain_addr),			    \
+		  gen_lowpart (ptr_mode, force_reg (Pmode, CHAIN)));	    \
 									    \
   /* Flush both caches.  We need to flush the data cache in case	    \
      the system has a write-back cache.  */				    \
   /* ??? Should check the return value for errors.  */			    \
   if (mips_cache_flush_func && mips_cache_flush_func[0])		    \
     emit_library_call (gen_rtx_SYMBOL_REF (Pmode, mips_cache_flush_func),   \
-		       0, VOIDmode, 3, addr, Pmode,			    \
+		       0, VOIDmode, 3, ADDR, Pmode,			    \
 		       GEN_INT (TRAMPOLINE_SIZE), TYPE_MODE (integer_type_node),\
 		       GEN_INT (3), TYPE_MODE (integer_type_node));	    \
 }
@@ -3113,32 +3172,12 @@ typedef struct mips_args {
 }
 #endif
 
-/* A C expression that is 1 if the RTX X is a constant which is a
-   valid address.  This is defined to be the same as `CONSTANT_P (X)',
-   but rejecting CONST_DOUBLE.  */
-/* When pic, we must reject addresses of the form symbol+large int.
-   This is because an instruction `sw $4,s+70000' needs to be converted
-   by the assembler to `lw $at,s($gp);sw $4,70000($at)'.  Normally the
-   assembler would use $at as a temp to load in the large offset.  In this
-   case $at is already in use.  We convert such problem addresses to
-   `la $5,s;sw $4,70000($5)' via LEGITIMIZE_ADDRESS.  */
-/* ??? SGI Irix 6 assembler fails for CONST address, so reject them
-   when !TARGET_GAS.  */
-/* We should be rejecting everything but const addresses.  */
-#define CONSTANT_ADDRESS_P(X)						\
-  (GET_CODE (X) == LABEL_REF || GET_CODE (X) == SYMBOL_REF		\
-    || GET_CODE (X) == CONST_INT || GET_CODE (X) == HIGH		\
-    || (GET_CODE (X) == CONST						\
-	&& ! (flag_pic && pic_address_needs_scratch (X))		\
-	&& (TARGET_GAS)							\
-	&& (mips_abi != ABI_N32 					\
-	    && mips_abi != ABI_64)))
+/* Check for constness inline but use mips_legitimate_address_p
+   to check whether a constant really is an address.  */
 
+#define CONSTANT_ADDRESS_P(X) \
+  (CONSTANT_P (X) && mips_legitimate_address_p (SImode, X, 0))
 
-/* Define this, so that when PIC, reload won't try to reload invalid
-   addresses which require two reload registers.  */
-
-#define LEGITIMATE_PIC_OPERAND_P(X)  (! pic_address_needs_scratch (X))
 
 /* Nonzero if the constant value X is a legitimate general operand.
    It is given that X satisfies CONSTANT_P or is a CONST_DOUBLE.
@@ -3153,130 +3192,13 @@ typedef struct mips_args {
    gp pseudo reg (see mips16_gp_pseudo_reg) deciding it is not
    a LEGITIMATE_CONSTANT.  If we ever want mips16 and ABI_N32 or
    ABI_64 to work together, we'll need to fix this.  */
-#define LEGITIMATE_CONSTANT_P(X)					\
-  ((GET_CODE (X) != CONST_DOUBLE					\
-    || mips_const_double_ok (X, GET_MODE (X)))				\
-   && ! (GET_CODE (X) == CONST 						\
-	 && ! TARGET_GAS						\
-	 && (mips_abi == ABI_N32 					\
-	     || mips_abi == ABI_64))					\
-   && (! TARGET_MIPS16 || mips16_constant (X, GET_MODE (X), 0, 0)))
+#define LEGITIMATE_CONSTANT_P(X) (mips_const_insns (X) > 0)
 
-/* A C compound statement that attempts to replace X with a valid
-   memory address for an operand of mode MODE.  WIN will be a C
-   statement label elsewhere in the code; the macro definition may
-   use
-
-          GO_IF_LEGITIMATE_ADDRESS (MODE, X, WIN);
-
-   to avoid further processing if the address has become legitimate.
-
-   X will always be the result of a call to `break_out_memory_refs',
-   and OLDX will be the operand that was given to that function to
-   produce X.
-
-   The code generated by this macro should not alter the
-   substructure of X.  If it transforms X into a more legitimate
-   form, it should assign X (which will always be a C variable) a
-   new value.
-
-   It is not necessary for this macro to come up with a legitimate
-   address.  The compiler has standard ways of doing so in all
-   cases.  In fact, it is safe for this macro to do nothing.  But
-   often a machine-dependent strategy can generate better code.
-
-   For the MIPS, transform:
-
-	memory(X + <large int>)
-
-   into:
-
-	Y = <large int> & ~0x7fff;
-	Z = X + Y
-	memory (Z + (<large int> & 0x7fff));
-
-   This is for CSE to find several similar references, and only use one Z.
-
-   When PIC, convert addresses of the form memory (symbol+large int) to
-   memory (reg+large int).  */
-
-
-#define LEGITIMIZE_ADDRESS(X,OLDX,MODE,WIN)				\
-{									\
-  register rtx xinsn = (X);						\
-									\
-  if (TARGET_DEBUG_B_MODE)						\
-    {									\
-      GO_PRINTF ("\n========== LEGITIMIZE_ADDRESS\n");			\
-      GO_DEBUG_RTX (xinsn);						\
-    }									\
-									\
-  if (mips_split_addresses && mips_check_split (X, MODE))		\
-    {									\
-      /* ??? Is this ever executed?  */					\
-      X = gen_rtx_LO_SUM (Pmode,					\
-			  copy_to_mode_reg (Pmode,			\
-					    gen_rtx (HIGH, Pmode, X)),	\
-			  X);						\
-      goto WIN;								\
-    }									\
-									\
-  if (GET_CODE (xinsn) == CONST						\
-      && ((flag_pic && pic_address_needs_scratch (xinsn))		\
-	  /* ??? SGI's Irix 6 assembler can't handle CONST.  */		\
-	  || (!TARGET_GAS						\
-	      && (mips_abi == ABI_N32 					\
-	          || mips_abi == ABI_64))))    				\
-    {									\
-      rtx ptr_reg = gen_reg_rtx (Pmode);				\
-      rtx constant = XEXP (XEXP (xinsn, 0), 1);				\
-									\
-      emit_move_insn (ptr_reg, XEXP (XEXP (xinsn, 0), 0));		\
-									\
-      X = gen_rtx_PLUS (Pmode, ptr_reg, constant);			\
-      if (SMALL_INT (constant))						\
-	goto WIN;							\
-      /* Otherwise we fall through so the code below will fix the	\
-	 constant.  */							\
-      xinsn = X;							\
-    }									\
-									\
-  if (GET_CODE (xinsn) == PLUS)						\
-    {									\
-      register rtx xplus0 = XEXP (xinsn, 0);				\
-      register rtx xplus1 = XEXP (xinsn, 1);				\
-      register enum rtx_code code0 = GET_CODE (xplus0);			\
-      register enum rtx_code code1 = GET_CODE (xplus1);			\
-									\
-      if (code0 != REG && code1 == REG)					\
-	{								\
-	  xplus0 = XEXP (xinsn, 1);					\
-	  xplus1 = XEXP (xinsn, 0);					\
-	  code0 = GET_CODE (xplus0);					\
-	  code1 = GET_CODE (xplus1);					\
-	}								\
-									\
-      if (code0 == REG && REG_MODE_OK_FOR_BASE_P (xplus0, MODE)		\
-	  && code1 == CONST_INT && !SMALL_INT (xplus1))			\
-	{								\
-	  rtx int_reg = gen_reg_rtx (Pmode);				\
-	  rtx ptr_reg = gen_reg_rtx (Pmode);				\
-									\
-	  emit_move_insn (int_reg,					\
-			  GEN_INT (INTVAL (xplus1) & ~ 0x7fff));	\
-									\
-	  emit_insn (gen_rtx_SET (VOIDmode,				\
-				  ptr_reg,				\
-				  gen_rtx_PLUS (Pmode, xplus0, int_reg))); \
-									\
-	  X = plus_constant (ptr_reg, INTVAL (xplus1) & 0x7fff);	\
-	  goto WIN;							\
-	}								\
-    }									\
-									\
-  if (TARGET_DEBUG_B_MODE)						\
-    GO_PRINTF ("LEGITIMIZE_ADDRESS could not fix.\n");			\
-}
+#define LEGITIMIZE_ADDRESS(X,OLDX,MODE,WIN)			\
+  do {								\
+    if (mips_legitimize_address (&(X), MODE))			\
+      goto WIN;							\
+  } while (0)
 
 
 /* A C statement or compound statement with a conditional `goto
@@ -3311,7 +3233,6 @@ typedef struct mips_args {
 
 #define ASM_OUTPUT_POOL_EPILOGUE(FILE, FNNAME, FNDECL, SIZE)	\
   mips_string_length = 0;
-
 
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.
@@ -3319,7 +3240,7 @@ typedef struct mips_args {
    overflow is no more likely than the overflow in a branch
    instruction.  Large functions can currently break in both ways.  */
 #define CASE_VECTOR_MODE \
-  (TARGET_MIPS16 ? HImode : Pmode == DImode ? DImode : SImode)
+  (TARGET_MIPS16 ? HImode : ptr_mode)
 
 /* Define as C expression which evaluates to nonzero if the tablejump
    instruction expects the table to contain offsets from the address of the
@@ -3358,32 +3279,29 @@ typedef struct mips_args {
 
 /* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
    is done just by pretending it is already truncated.  */
-/* In 64 bit mode, 32 bit instructions require that register values be properly
-   sign-extended to 64 bits.  As a result, a truncate is not a no-op if it
-   converts a value >32 bits to a value <32 bits.  */
-/* ??? This results in inefficient code for 64 bit to 32 conversions.
-   Something needs to be done about this.  Perhaps not use any 32 bit
-   instructions?  Perhaps use PROMOTE_MODE?  */
 #define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) \
   (TARGET_64BIT ? ((INPREC) <= 32 || (OUTPREC) > 32) : 1)
 
+
 /* Specify the machine mode that pointers have.
    After generation of rtl, the compiler makes no further distinction
-   between pointers and any other objects of this machine mode.
-
-   For MIPS we make pointers are the smaller of longs and gp-registers.  */
+   between pointers and any other objects of this machine mode.  */
 
 #ifndef Pmode
-#define Pmode ((TARGET_LONG64 && TARGET_64BIT) ? DImode : SImode)
+#define Pmode (TARGET_64BIT && TARGET_LONG64 ? DImode : SImode)
 #endif
 
-/* A function address in a call instruction
-   is a word address (for indexing purposes)
-   so give the MEM rtx a words's mode.  */
+/* Give call MEMs SImode since it is the "most permissive" mode
+   for both 32-bit and 64-bit targets.  */
 
-#define FUNCTION_MODE (Pmode == DImode ? DImode : SImode)
+#define FUNCTION_MODE SImode
 
 
+/* The cost of loading values from the constant pool.  It should be
+   larger than the cost of any constant we want to synthesise in-line.  */
+
+#define CONSTANT_POOL_COST COSTS_N_INSNS (8)
+
 /* A C expression for the cost of moving data from a register in
    class FROM to one in class TO.  The classes are expressed using
    the enumeration values such as `GENERAL_REGS'.  A value of 2 is
@@ -3456,12 +3374,12 @@ typedef struct mips_args {
 
 #define PREDICATE_CODES							\
   {"uns_arith_operand",		{ REG, CONST_INT, SUBREG, ADDRESSOF }},	\
-  {"arith_operand",		{ REG, CONST_INT, SUBREG, ADDRESSOF }},	\
-  {"arith32_operand",		{ REG, CONST_INT, SUBREG, ADDRESSOF }},	\
-  {"reg_or_0_operand",		{ REG, CONST_INT, CONST_DOUBLE, SUBREG,	\
-				  ADDRESSOF }},				\
-  {"true_reg_or_0_operand",	{ REG, CONST_INT, CONST_DOUBLE, SUBREG,	\
-				  ADDRESSOF }},				\
+  {"symbolic_operand",		{ CONST, SYMBOL_REF, LABEL_REF }},	\
+  {"const_arith_operand",	{ CONST, CONST_INT }},			\
+  {"arith_operand",		{ REG, CONST_INT, CONST, SUBREG, ADDRESSOF }},	\
+  {"arith32_operand",		{ REG, CONST_INT, SUBREG, ADDRESSOF }},		\
+  {"reg_or_0_operand",		{ REG, CONST_INT, CONST_DOUBLE, SUBREG, ADDRESSOF }}, \
+  {"true_reg_or_0_operand",	{ REG, CONST_INT, CONST_DOUBLE, SUBREG, ADDRESSOF }}, \
   {"small_int",			{ CONST_INT }},				\
   {"large_int",			{ CONST_INT }},				\
   {"mips_const_double_ok",	{ CONST_DOUBLE }},			\
@@ -3472,29 +3390,13 @@ typedef struct mips_args {
 				  LTU, LEU }},				\
   {"trap_cmp_op",		{ EQ, NE, GE, GEU, LT, LTU }},		\
   {"pc_or_label_operand",	{ PC, LABEL_REF }},			\
-  {"call_insn_operand",		{ CONST_INT, CONST, SYMBOL_REF, REG}},	\
+  {"call_insn_operand",		{ CONST, SYMBOL_REF, LABEL_REF, REG }},	\
   {"move_operand", 		{ CONST_INT, CONST_DOUBLE, CONST,	\
 				  SYMBOL_REF, LABEL_REF, SUBREG,	\
-				  REG, MEM, ADDRESSOF }},		\
-  {"movdi_operand",		{ CONST_INT, CONST_DOUBLE, CONST,	\
-				  SYMBOL_REF, LABEL_REF, SUBREG,	\
-				  REG, MEM, ADDRESSOF, SIGN_EXTEND }},	\
-  {"se_register_operand",	{ SUBREG, REG, ADDRESSOF,		\
-				  SIGN_EXTEND }},			\
-  {"se_reg_or_0_operand",	{ REG, CONST_INT, CONST_DOUBLE, SUBREG,	\
-				  ADDRESSOF, SIGN_EXTEND }},		\
-  {"se_uns_arith_operand",	{ REG, CONST_INT, SUBREG,		\
-				  ADDRESSOF, SIGN_EXTEND }},		\
-  {"se_arith_operand",		{ REG, CONST_INT, SUBREG,		\
-				  ADDRESSOF, SIGN_EXTEND }},		\
-  {"se_nonmemory_operand",	{ CONST_INT, CONST_DOUBLE, CONST,	\
-				  SYMBOL_REF, LABEL_REF, SUBREG,	\
-				  REG, ADDRESSOF, SIGN_EXTEND }},	\
+				  REG, MEM}},				\
   {"consttable_operand",	{ LABEL_REF, SYMBOL_REF, CONST_INT,	\
 				  CONST_DOUBLE, CONST }},		\
-  {"fcc_register_operand",	{ REG, SUBREG }},			\
-  {"extend_operator",           { SIGN_EXTEND, ZERO_EXTEND }},          \
-  {"highpart_shift_operator",   { ASHIFTRT, LSHIFTRT, ROTATERT, ROTATE }},
+  {"fcc_register_operand",	{ REG, SUBREG }},
 
 /* A list of predicates that do special things with modes, and so
    should not elicit warnings for VOIDmode match_operand.  */
@@ -4068,7 +3970,7 @@ do {							\
 
 #define ASM_OUTPUT_ADDR_VEC_ELT(STREAM, VALUE)				\
   fprintf (STREAM, "\t%s\t%sL%d\n",					\
-	   Pmode == DImode ? ".dword" : ".word",			\
+	   ptr_mode == DImode ? ".dword" : ".word",			\
 	   LOCAL_LABEL_PREFIX,						\
 	   VALUE)
 
@@ -4083,17 +3985,15 @@ do {									\
 	     LOCAL_LABEL_PREFIX, VALUE, LOCAL_LABEL_PREFIX, REL);	\
   else if (TARGET_EMBEDDED_PIC)						\
     fprintf (STREAM, "\t%s\t%sL%d-%sLS%d\n",				\
-	     Pmode == DImode ? ".dword" : ".word",			\
+	     ptr_mode == DImode ? ".dword" : ".word",			\
 	     LOCAL_LABEL_PREFIX, VALUE, LOCAL_LABEL_PREFIX, REL);	\
-  else if (mips_abi == ABI_32 || mips_abi == ABI_O64			\
-	   || (TARGET_GAS && mips_abi == ABI_N32)			\
-	   || (TARGET_GAS && mips_abi == ABI_64))			\
+  else if (TARGET_GPWORD)						\
     fprintf (STREAM, "\t%s\t%sL%d\n",					\
-	     Pmode == DImode ? ".gpdword" : ".gpword",			\
+	     ptr_mode == DImode ? ".gpdword" : ".gpword",		\
 	     LOCAL_LABEL_PREFIX, VALUE);				\
   else									\
     fprintf (STREAM, "\t%s\t%sL%d\n",					\
-	     Pmode == DImode ? ".dword" : ".word",			\
+	     ptr_mode == DImode ? ".dword" : ".word",			\
 	     LOCAL_LABEL_PREFIX, VALUE);				\
 } while (0)
 
@@ -4244,11 +4144,13 @@ while (0)
 /* Default definitions for size_t and ptrdiff_t.  We must override the
    definitions from ../svr4.h on mips-*-linux-gnu.  */
 
-#undef SIZE_TYPE
-#define SIZE_TYPE (Pmode == DImode ? "long unsigned int" : "unsigned int")
+#ifndef SIZE_TYPE
+#define SIZE_TYPE (POINTER_SIZE == 64 ? "long unsigned int" : "unsigned int")
+#endif
 
-#undef PTRDIFF_TYPE
-#define PTRDIFF_TYPE (Pmode == DImode ? "long int" : "int")
+#ifndef PTRDIFF_TYPE
+#define PTRDIFF_TYPE (POINTER_SIZE == 64 ? "long int" : "int")
+#endif
 
 /* See mips_expand_prologue's use of loadgp for when this should be
    true.  */
