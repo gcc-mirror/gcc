@@ -850,7 +850,7 @@ assign_temp (tree type_or_decl, int keep, int memory_required,
    done for BLKmode slots because we can be sure that we won't have alignment
    problems in this case.  */
 
-void
+static void
 combine_temp_slots (void)
 {
   struct temp_slot *p, *q, *next, *next_q;
@@ -3011,7 +3011,7 @@ assign_parms_unsplit_complex (tree orig_fnargs, tree fnargs)
 /* Assign RTL expressions to the function's parameters.  This may involve
    copying them into registers and using those registers as the DECL_RTL.  */
 
-void
+static void
 assign_parms (tree fndecl)
 {
   struct assign_parm_data_all all;
@@ -3970,7 +3970,7 @@ expand_main_function (void)
    for the current function.  The PENDING_SIZES are a TREE_LIST.  The
    TREE_VALUE of each node is a SAVE_EXPR.  */
 
-void
+static void
 expand_pending_sizes (tree pending_sizes)
 {
   tree tem;

@@ -1,5 +1,11 @@
 2004-11-09  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* function.c (combine_temp_slots, assign_parms,
+	expand_pending_sizes): Make them static.
+	* tree.h: Remove the corresponding prototypes.
+
+2004-11-09  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* emit-rtl.c (copy_most_rtx): Remove.
 	* rtl.h: Remove the corresponding prototype.
 
