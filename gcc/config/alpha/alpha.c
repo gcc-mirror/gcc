@@ -181,13 +181,13 @@ static int unicosmk_need_dex PARAMS ((rtx));
 
 /* Initialize the GCC target structure.  */
 #if TARGET_ABI_OPEN_VMS
-static int vms_valid_decl_attribute_p PARAMS ((tree, tree, tree, tree));
+const struct attribute_spec vms_attribute_table[];
 static unsigned int vms_section_type_flags PARAMS ((tree, const char *, int));
 static void vms_asm_named_section PARAMS ((const char *, unsigned int));
 static void vms_asm_out_constructor PARAMS ((rtx, int));
 static void vms_asm_out_destructor PARAMS ((rtx, int));
-# undef TARGET_VALID_DECL_ATTRIBUTE
-# define TARGET_VALID_DECL_ATTRIBUTE vms_valid_decl_attribute_p
+# undef TARGET_ATTRIBUTE_TABLE
+# define TARGET_ATTRIBUTE_TABLE vms_attribute_table
 # undef TARGET_SECTION_TYPE_FLAGS
 # define TARGET_SECTION_TYPE_FLAGS vms_section_type_flags
 #endif
@@ -5732,17 +5732,12 @@ alpha_using_fp ()
 
 #if TARGET_ABI_OPEN_VMS
 
-static int
-vms_valid_decl_attribute_p (decl, attributes, identifier, args)
-     tree decl ATTRIBUTE_UNUSED;
-     tree attributes ATTRIBUTE_UNUSED;
-     tree identifier;
-     tree args;
+const struct attribute_spec vms_attribute_table[] =
 {
-  if (is_attribute_p ("overlaid", identifier))
-    return (args == NULL_TREE);
-  return 0;
-}
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
+  { "overlaid", 0, 0, true,  false, false, NULL },
+  { NULL,       0, 0, false, false, false, NULL }
+};
 
 #endif
 
@@ -7895,8 +7890,8 @@ vms_section_type_flags (decl, name, reloc)
 {
   unsigned int flags = default_section_type_flags (decl, name, reloc);
 
-  if (decl && DECL_MACHINE_ATTRIBUTES (decl)
-      && lookup_attribute ("overlaid", DECL_MACHINE_ATTRIBUTES (decl)))
+  if (decl && DECL_ATTRIBUTES (decl)
+      && lookup_attribute ("overlaid", DECL_ATTRIBUTES (decl)))
     flags |= SECTION_VMS_OVERLAY;
 
   return flags;

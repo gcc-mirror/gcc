@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.c for Windows NT.
    Contributed by Douglas Rupp (drupp@cs.washington.edu)
-   Copyright (C) 1995, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -49,51 +49,54 @@ int i386_pe_dllimport_p PARAMS ((tree));
 void i386_pe_mark_dllexport PARAMS ((tree));
 void i386_pe_mark_dllimport PARAMS ((tree));
 
-/* Return nonzero if ATTR is a valid attribute for DECL.
-   ATTRIBUTES are any existing attributes and ARGS are the arguments
-   supplied with ATTR.  */
-
-int
-i386_pe_valid_decl_attribute_p (decl, attributes, attr, args)
-     tree decl;
-     tree attributes ATTRIBUTE_UNUSED;
-     tree attr;
+/* Handle a "dllimport" or "dllexport" attribute;
+   arguments as in struct attribute_spec.handler.  */
+tree
+ix86_handle_dll_attribute (node, name, args, flags, no_add_attrs)
+     tree *node;
+     tree name;
      tree args;
+     int flags;
+     bool *no_add_attrs;
 {
-  if (args == NULL_TREE)
+  /* These attributes may apply to structure and union types being created,
+     but otherwise should pass to the declaration involved.  */
+  if (!DECL_P (*node))
     {
-      if (is_attribute_p ("dllexport", attr))
-	return 1;
-      if (is_attribute_p ("dllimport", attr))
-	return 1;
-      if (is_attribute_p ("shared", attr))
-	return TREE_CODE (decl) == VAR_DECL;
+      if (flags & ((int) ATTR_FLAG_DECL_NEXT | (int) ATTR_FLAG_FUNCTION_NEXT
+		   | (int) ATTR_FLAG_ARRAY_NEXT))
+	{
+	  *no_add_attrs = true;
+	  return tree_cons (name, args, NULL_TREE);
+	}
+      if (TREE_CODE (*node) != RECORD_TYPE && TREE_CODE (*node) != UNION_TYPE)
+	{
+	  warning ("`%s' attribute ignored", IDENTIFIER_POINTER (name));
+	  *no_add_attrs = true;
+	}
     }
 
-  return 0;
+  return NULL_TREE;
 }
 
-/* Return nonzero if ATTR is a valid attribute for TYPE.
-   ATTRIBUTES are any existing attributes and ARGS are the arguments
-   supplied with ATTR.  */
-
-int
-i386_pe_valid_type_attribute_p (type, attributes, attr, args)
-     tree type;
-     tree attributes;
-     tree attr;
-     tree args;
+/* Handle a "shared" attribute;
+   arguments as in struct attribute_spec.handler.  */
+tree
+ix86_handle_shared_attribute (node, name, args, flags, no_add_attrs)
+     tree *node;
+     tree name;
+     tree args ATTRIBUTE_UNUSED;
+     int flags ATTRIBUTE_UNUSED;
+     bool *no_add_attrs;
 {
-  if (args == NULL_TREE
-      && (TREE_CODE (type) == RECORD_TYPE || TREE_CODE (type) == UNION_TYPE))
+  if (TREE_CODE (*node) != VAR_DECL)
     {
-      if (is_attribute_p ("dllexport", attr))
-	return 1;
-      if (is_attribute_p ("dllimport", attr))
-	return 1;
+      warning ("`%s' attribute only applies to variables",
+	       IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
     }
 
-  return ix86_valid_type_attribute_p (type, attributes, attr, args);
+  return NULL_TREE;
 }
 
 /* Return the type that we should use to determine if DECL is
@@ -132,7 +135,7 @@ i386_pe_dllexport_p (decl)
   if (TREE_CODE (decl) != VAR_DECL
       && TREE_CODE (decl) != FUNCTION_DECL)
     return 0;
-  exp = lookup_attribute ("dllexport", DECL_MACHINE_ATTRIBUTES (decl));
+  exp = lookup_attribute ("dllexport", DECL_ATTRIBUTES (decl));
   if (exp)
     return 1;
 
@@ -163,7 +166,7 @@ i386_pe_dllimport_p (decl)
   if (TREE_CODE (decl) != VAR_DECL
       && TREE_CODE (decl) != FUNCTION_DECL)
     return 0;
-  imp = lookup_attribute ("dllimport", DECL_MACHINE_ATTRIBUTES (decl));
+  imp = lookup_attribute ("dllimport", DECL_ATTRIBUTES (decl));
   if (imp)
     return 1;
 
@@ -499,7 +502,7 @@ i386_pe_section_type_flags (decl, name, reloc)
       flags = SECTION_WRITE;
 
       if (decl && TREE_CODE (decl) == VAR_DECL
-	  && lookup_attribute ("shared", DECL_MACHINE_ATTRIBUTES (decl)))
+	  && lookup_attribute ("shared", DECL_ATTRIBUTES (decl)))
 	flags |= SECTION_PE_SHARED;
     }
 

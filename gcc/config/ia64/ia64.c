@@ -138,7 +138,7 @@ static rtx ia64_expand_compare_and_swap PARAMS ((enum machine_mode, int,
 static rtx ia64_expand_lock_test_and_set PARAMS ((enum machine_mode,
 						  tree, rtx));
 static rtx ia64_expand_lock_release PARAMS ((enum machine_mode, tree, rtx));
-static int ia64_valid_type_attribute PARAMS((tree, tree, tree, tree));
+const struct attribute_spec ia64_attribute_table[];
 static void ia64_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void ia64_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 static void ia64_output_function_end_prologue PARAMS ((FILE *));
@@ -156,8 +156,8 @@ static rtx ia64_cycle_display PARAMS ((int, rtx));
 
 
 /* Initialize the GCC target structure.  */
-#undef TARGET_VALID_TYPE_ATTRIBUTE
-#define TARGET_VALID_TYPE_ATTRIBUTE ia64_valid_type_attribute
+#undef TARGET_ATTRIBUTE_TABLE
+#define TARGET_ATTRIBUTE_TABLE ia64_attribute_table
 
 #undef TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS ia64_init_builtins
@@ -6755,29 +6755,13 @@ ia64_epilogue_uses (regno)
     }
 }
 
-/* Return true if IDENTIFIER is a valid attribute for TYPE.  */
-
-static int
-ia64_valid_type_attribute (type, attributes, identifier, args)
-     tree type;
-     tree attributes ATTRIBUTE_UNUSED;
-     tree identifier;
-     tree args;
+/* Table of valid machine attributes.  */
+const struct attribute_spec ia64_attribute_table[] =
 {
-  /* We only support an attribute for function calls.  */
-
-  if (TREE_CODE (type) != FUNCTION_TYPE
-      && TREE_CODE (type) != METHOD_TYPE)
-    return 0;
-
-  /* The "syscall_linkage" attribute says the callee is a system call entry
-     point.  This affects ia64_epilogue_uses.  */
-
-  if (is_attribute_p ("syscall_linkage", identifier))
-    return args == NULL_TREE;
-
-  return 0;
-}
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
+  { "syscall_linkage", 0, 0, false, true,  true,  NULL },
+  { NULL,              0, 0, false, false, false, NULL }
+};
 
 /* For ia64, SYMBOL_REF_FLAG set means that it is a function.
 

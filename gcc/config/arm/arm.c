@@ -103,10 +103,9 @@ static int       current_file_function_operand	PARAMS ((rtx));
 static Ulong     arm_compute_save_reg_mask	PARAMS ((void));
 static Ulong     arm_isr_value 			PARAMS ((tree));
 static Ulong     arm_compute_func_type		PARAMS ((void));
-static int	 arm_valid_type_attribute_p	PARAMS ((tree, tree,
-							 tree, tree));
-static int	 arm_valid_decl_attribute_p	PARAMS ((tree, tree,
-							 tree, tree));
+static tree      arm_handle_fndecl_attribute PARAMS ((tree *, tree, tree, int, bool *));
+static tree      arm_handle_isr_attribute PARAMS ((tree *, tree, tree, int, bool *));
+const struct attribute_spec arm_attribute_table[];
 static void	 arm_output_function_epilogue	PARAMS ((FILE *,
 							 HOST_WIDE_INT));
 static void	 arm_output_function_prologue	PARAMS ((FILE *,
@@ -130,16 +129,8 @@ static int	 arm_adjust_cost		PARAMS ((rtx, rtx, rtx, int));
 #define TARGET_MERGE_DECL_ATTRIBUTES merge_dllimport_decl_attributes
 #endif
 
-#undef TARGET_VALID_TYPE_ATTRIBUTE
-#define TARGET_VALID_TYPE_ATTRIBUTE arm_valid_type_attribute_p
-
-#undef TARGET_VALID_DECL_ATTRIBUTE
-#ifdef ARM_PE
-   static int arm_pe_valid_decl_attribute_p PARAMS ((tree, tree, tree, tree));
-#  define TARGET_VALID_DECL_ATTRIBUTE arm_pe_valid_decl_attribute_p
-#else
-#  define TARGET_VALID_DECL_ATTRIBUTE arm_valid_decl_attribute_p
-#endif
+#undef TARGET_ATTRIBUTE_TABLE
+#define TARGET_ATTRIBUTE_TABLE arm_attribute_table
 
 #undef TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE arm_output_function_prologue
@@ -845,7 +836,7 @@ arm_compute_func_type ()
   if (current_function_needs_context)
     type |= ARM_FT_NESTED;
 
-  attr = DECL_MACHINE_ATTRIBUTES (current_function_decl);
+  attr = DECL_ATTRIBUTES (current_function_decl);
   
   a = lookup_attribute ("naked", attr);
   if (a != NULL_TREE)
@@ -1909,39 +1900,120 @@ arm_pr_long_calls_off (pfile)
 }
 
 
-/* Return nonzero if IDENTIFIER with arguments ARGS is a valid machine
-   specific attribute for TYPE.  The attributes in ATTRIBUTES have
-   previously been assigned to TYPE.  */
-static int
-arm_valid_type_attribute_p (type, attributes, identifier, args)
-     tree type;
-     tree attributes ATTRIBUTE_UNUSED;
-     tree identifier;
-     tree args;
+/* Table of machine attributes.  */
+const struct attribute_spec arm_attribute_table[] =
 {
-  if (   TREE_CODE (type) != FUNCTION_TYPE
-      && TREE_CODE (type) != METHOD_TYPE
-      && TREE_CODE (type) != FIELD_DECL
-      && TREE_CODE (type) != TYPE_DECL)
-    return 0;
-
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
   /* Function calls made to this symbol must be done indirectly, because
      it may lie outside of the 26 bit addressing range of a normal function
      call.  */
-  if (is_attribute_p ("long_call", identifier))
-    return (args == NULL_TREE);
-  
+  { "long_call",    0, 0, false, true,  true,  NULL },
   /* Whereas these functions are always known to reside within the 26 bit
      addressing range.  */
-  if (is_attribute_p ("short_call", identifier))
-    return (args == NULL_TREE);
-  
+  { "short_call",   0, 0, false, true,  true,  NULL },
   /* Interrupt Service Routines have special prologue and epilogue requirements.  */ 
-  if (is_attribute_p ("isr", identifier)
-      || is_attribute_p ("interrupt", identifier))
-    return arm_isr_value (args);
+  { "isr",          0, 1, false, false, false, arm_handle_isr_attribute },
+  { "interrupt",    0, 1, false, false, false, arm_handle_isr_attribute },
+  { "naked",        0, 0, true,  false, false, arm_handle_fndecl_attribute },
+#ifdef ARM_PE
+  /* ARM/PE has three new attributes:
+     interfacearm - ?
+     dllexport - for exporting a function/variable that will live in a dll
+     dllimport - for importing a function/variable from a dll
 
-  return 0;
+     Microsoft allows multiple declspecs in one __declspec, separating
+     them with spaces.  We do NOT support this.  Instead, use __declspec
+     multiple times.
+  */
+  { "dllimport",    0, 0, true,  false, false, NULL },
+  { "dllexport",    0, 0, true,  false, false, NULL },
+  { "interfacearm", 0, 0, true,  false, false, arm_handle_fndecl_attribute },
+#endif
+  { NULL,           0, 0, false, false, false, NULL }
+};
+
+/* Handle an attribute requiring a FUNCTION_DECL;
+   arguments as in struct attribute_spec.handler.  */
+static tree
+arm_handle_fndecl_attribute (node, name, args, flags, no_add_attrs)
+     tree *node;
+     tree name;
+     tree args ATTRIBUTE_UNUSED;
+     int flags ATTRIBUTE_UNUSED;
+     bool *no_add_attrs;
+{
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning ("`%s' attribute only applies to functions",
+	       IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle an "interrupt" or "isr" attribute;
+   arguments as in struct attribute_spec.handler.  */
+static tree
+arm_handle_isr_attribute (node, name, args, flags, no_add_attrs)
+     tree *node;
+     tree name;
+     tree args;
+     int flags;
+     bool *no_add_attrs;
+{
+  if (DECL_P (*node))
+    {
+      if (TREE_CODE (*node) != FUNCTION_DECL)
+	{
+	  warning ("`%s' attribute only applies to functions",
+		   IDENTIFIER_POINTER (name));
+	  *no_add_attrs = true;
+	}
+      /* FIXME: the argument if any is checked for type attributes;
+	 should it be checked for decl ones?  */
+    }
+  else
+    {
+      if (TREE_CODE (*node) == FUNCTION_TYPE
+	  || TREE_CODE (*node) == METHOD_TYPE)
+	{
+	  if (arm_isr_value (args) == ARM_FT_UNKNOWN)
+	    {
+	      warning ("`%s' attribute ignored", IDENTIFIER_POINTER (name));
+	      *no_add_attrs = true;
+	    }
+	}
+      else if (TREE_CODE (*node) == POINTER_TYPE
+	       && (TREE_CODE (TREE_TYPE (*node)) == FUNCTION_TYPE
+		   || TREE_CODE (TREE_TYPE (*node)) == METHOD_TYPE)
+	       && arm_isr_value (args) != ARM_FT_UNKNOWN)
+	{
+	  *node = build_type_copy (*node);
+	  TREE_TYPE (*node) = build_type_attribute_variant (TREE_TYPE (*node),
+							    tree_cons (name,
+								       args,
+								       TYPE_ATTRIBUTES (TREE_TYPE (*node))));
+	  *no_add_attrs = true;
+	}
+      else
+	{
+	  /* Possibly pass this attribute on from the type to a decl.  */
+	  if (flags & ((int) ATTR_FLAG_DECL_NEXT
+		       | (int) ATTR_FLAG_FUNCTION_NEXT
+		       | (int) ATTR_FLAG_ARRAY_NEXT))
+	    {
+	      *no_add_attrs = true;
+	      return tree_cons (name, args, NULL_TREE);
+	    }
+	  else
+	    {
+	      warning ("`%s' attribute ignored", IDENTIFIER_POINTER (name));
+	    }
+	}
+    }
+
+  return NULL_TREE;
 }
 
 /* Return 0 if the attributes for two types are incompatible, 1 if they
@@ -4131,85 +4203,6 @@ multi_register_push (op, mode)
 
   return 1;
 }
-
-/* Routines for use with attributes.  */
-
-/* Return nonzero if ATTR is a valid attribute for DECL.
-   ATTRIBUTES are any existing attributes and ARGS are
-   the arguments supplied with ATTR.
-
-   Supported attributes:
-
-   naked:
-     don't output any prologue or epilogue code, the user is assumed
-     to do the right thing.
-   
-   isr or interrupt:
-     Interrupt Service Routine.
-
-   interfacearm:
-     Always assume that this function will be entered in ARM mode,
-     not Thumb mode, and that the caller wishes to be returned to in
-     ARM mode.  */
-static int
-arm_valid_decl_attribute_p (decl, attributes, attr, args)
-     tree decl;
-     tree attributes ATTRIBUTE_UNUSED;
-     tree attr;
-     tree args;
-{
-  /* The interrupt attribute can take args, so check for it before
-     rejecting other attributes on the grounds that they did have args.  */
-  if (is_attribute_p ("isr", attr)
-      || is_attribute_p ("interrupt", attr))
-    return TREE_CODE (decl) == FUNCTION_DECL;
-
-  if (args != NULL_TREE)
-    return 0;
-
-  if (is_attribute_p ("naked", attr))
-    return TREE_CODE (decl) == FUNCTION_DECL;
-
-#ifdef ARM_PE
-  if (is_attribute_p ("interfacearm", attr))
-    return TREE_CODE (decl) == FUNCTION_DECL;
-#endif /* ARM_PE */
-  
-  return 0;
-}
-
-#ifdef ARM_PE
-
-/* ARM/PE has three new attributes:
-   naked - for interrupt functions
-   dllexport - for exporting a function/variable that will live in a dll
-   dllimport - for importing a function/variable from a dll
-
-   Microsoft allows multiple declspecs in one __declspec, separating
-   them with spaces.  We do NOT support this.  Instead, use __declspec
-   multiple times.
-*/
-
-static int
-arm_pe_valid_decl_attribute_p (decl, attributes, attr, args)
-     tree decl;
-     tree attributes;
-     tree attr;
-     tree args;
-{
-  if (args != NULL_TREE)
-    return 0;
-
-  if (is_attribute_p ("dllexport", attr))
-    return 1;
-  
-  if (is_attribute_p ("dllimport", attr))
-    return 1;
-
-  return arm_valid_decl_attribute_p (decl, attributes, attr, args);
-}
-
-#endif /* ARM_PE  */
 
 /* Routines for use in generating RTL.  */
 rtx
@@ -9742,7 +9735,7 @@ is_called_in_ARM_mode (func)
     return TRUE;
 
 #ifdef ARM_PE 
-  return lookup_attribute ("interfacearm", DECL_MACHINE_ATTRIBUTES (func)) != NULL_TREE;
+  return lookup_attribute ("interfacearm", DECL_ATTRIBUTES (func)) != NULL_TREE;
 #else
   return FALSE;
 #endif

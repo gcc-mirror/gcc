@@ -1,3 +1,185 @@
+2001-09-21  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	Table-driven attributes.
+	* c-decl.c, config/alpha/alpha.c, config/arc/arc.c,
+	config/arm/arm.c, config/arm/pe.c, config/avr/avr.c,
+	config/avr/avr.h, config/d30v/d30v.h, config/fr30/fr30.h,
+	config/h8300/h8300.c, config/i386/cygwin.h, config/i386/winnt.c,
+	config/m32r/m32r.c, config/mcore/mcore.c, config/sh/sh.c,
+	config/stormy16/stormy16.h, config/v850/v850.c, doc/c-tree.texi,
+	doc/tm.texi, ggc-common.c, integrate.c, print-tree.c, tree.c,
+	tree.h: Rename DECL_MACHINE_ATTRIBUTES to DECL_ATTRIBUTES.
+	* tree.h (struct tree_decl): Change machine_attributes to
+	attributes.
+	* doc/c-tree.texi: Document that all attributes are now attached
+	to decls and types.
+	* c-common.c (add_attribute, attrtab, attrtab_idx,
+	default_valid_lang_attribute, valid_lang_attribute): Remove.
+	(attribute_tables, attributes_initialized,
+	c_common_attribute_table, default_lang_attribute_table): New
+	variables.
+	(handle_packed_attribute, handle_nocommon_attribute,
+	handle_common_attribute, handle_noreturn_attribute,
+	handle_unused_attribute, handle_const_attribute,
+	handle_transparent_union_attribute, handle_constructor_attribute,
+	handle_destructor_attribute, handle_mode_attribute,
+	handle_section_attribute, handle_aligned_attribute,
+	handle_weak_attribute, handle_alias_attribute,
+	handle_no_instrument_function_attribute,
+	handle_no_check_memory_usage_attribute, handle_malloc_attribute,
+	handle_no_limit_stack_attribute, handle_pure_attribute): New
+	functions.
+	(init_attributes, decl_attributes): Rewrite to implement
+	table-driven attributes.
+	* c-common.h (enum attribute_flags): Move to tree.h.
+	* c-format.c (decl_handle_format_attribute,
+	decl_handle_format_arg_attribute): Rename to
+	handle_format_attribute and handle_format_arg_attribute.  Update
+	for table-driven attributes.
+	* c-common.h (decl_handle_format_attribute,
+	decl_handle_format_arg_attribute): Remove prototypes.
+	(handle_format_attribute, handle_format_arg_attribute): Add
+	prototypes.
+	* c-decl.c (grokdeclarator): Handle attributes nested inside
+	declarators.
+	* c-parse.in (setattrs, maybe_setattrs): Remove.
+	(maybe_type_quals_setattrs): Rename to maybe_type_quals_attrs.
+	Update to handle nested attributes properly.
+	(maybe_resetattrs, after_type_declarator,
+	parm_declarator_nostarttypename, notype_declarator, absdcl1_noea,
+	absdcl1_ea, direct_absdcl1): Update to handle nested attributes
+	properly.
+	(make_pointer_declarator): Update to handle nested attributes
+	properly.
+	* doc/extend.texi: Update documentation of limits of attributes
+	syntax.  Warn about problems with attribute semantics in C++.
+	* target.h (struct target): Remove valid_decl_attribute and
+	valid_type_attribute.  Add attribute_table and
+	function_attribute_inlinable_p.
+	* target-def.h (TARGET_VALID_DECL_ATTRIBUTE,
+	TARGET_VALID_TYPE_ATTRIBUTE): Remove.
+	(TARGET_ATTRIBUTE_TABLE, TARGET_FUNCTION_ATTRIBUTE_INLINABLE_P):
+	Add.
+	(TARGET_INITIALIZER): Update.
+	* integrate.c (FUNCTION_ATTRIBUTE_INLINABLE_P): Remove default
+	definition.
+	(function_attribute_inlinable_p): New function.  Check for the
+	presence of any machine attributes before using
+	targetm.function_attribute_inlinable_p.
+	(function_cannot_inline_p): Update.
+	* Makefile.in (integrate.o): Update dependencies.
+	* doc/tm.texi: Update documentation of target attributes and
+	example definition of TARGET_VALID_TYPE_ATTRIBUTE.
+	* tree.c (default_valid_attribute_p, valid_machine_attribute):
+	Remove.
+	(default_target_attribute_table,
+	default_function_attribute_inlinable_p): New.
+	(lookup_attribute): Update comment to clarify handling of multiple
+	attributes with the same name.
+	(merge_attributes, attribute_list_contained): Allow multiple
+	attributes with the same name but different arguments to appear in
+	the same attribute list.
+	* tree.h (default_valid_attribute_p): Remove prototype.
+	(struct attribute_spec): New.
+	(default_target_attribute_table): Declare.
+	(enum attribute_flags): Move from c-common.h.  Add
+	ATTR_FLAG_TYPE_IN_PLACE.
+	(default_function_attribute_inlinable_p): Declare.
+	* config/alpha/alpha.c (vms_valid_decl_attribute_p): Remove.
+	(TARGET_VALID_DECL_ATTRIBUTE): Don't define.
+	(TARGET_ATTRIBUTE_TABLE): Define.
+	(vms_attribute_table): New.
+	* config/arc/arc.c (arc_valid_decl_attribute): Remove.
+	(TARGET_VALID_DECL_ATTRIBUTE): Don't define.
+	(TARGET_ATTRIBUTE_TABLE): Define.
+	(arc_attribute_table, arc_handle_interrupt_attribute): New.
+	* config/arm/arm.c (arm_valid_type_attribute_p,
+	arm_valid_decl_attribute_p, arm_pe_valid_decl_attribute_p):
+	Remove.
+	(TARGET_VALID_TYPE_ATTRIBUTE, TARGET_VALID_DECL_ATTRIBUTE): Don't
+	define.
+	(TARGET_ATTRIBUTE_TABLE): Define.
+	(arm_attribute_table, arm_handle_fndecl_attribute,
+	arm_handle_isr_attribute): New.
+	* config/avr/avr.c (avr_valid_type_attribute,
+	avr_valid_decl_attribute): Remove.
+	(TARGET_VALID_DECL_ATTRIBUTE, TARGET_VALID_TYPE_ATTRIBUTE): Don't
+	define.
+	(TARGET_ATTRIBUTE_TABLE): Define.
+	(avr_attribute_table, avr_handle_progmem_attribute,
+	avr_handle_fndecl_attribute): New.
+	* config/c4x/c4x.c (c4x_valid_type_attribute_p): Remove.
+	(TARGET_VALID_TYPE_ATTRIBUTE): Don't define.
+	(TARGET_ATTRIBUTE_TABLE): Define.
+	(c4x_attribute_table, c4x_handle_fntype_attribute): New.
+	* config/h8300/h8300.c (h8300_valid_decl_attribute): Remove.
+	(TARGET_VALID_DECL_ATTRIBUTE): Don't define.
+	(TARGET_ATTRIBUTE_TABLE): Define.
+	(h8300_attribute_table, h8300_handle_fndecl_attribute,
+	h8300_handle_eightbit_data_attribute,
+	h8300_handle_tiny_data_attribute): New.
+	* config/i386/i386-protos.h (ix86_valid_type_attribute_p,
+	i386_pe_valid_decl_attribute_p, i386_pe_valid_type_attribute_p):
+	Remove prototypes.
+	(ix86_handle_dll_attribute, ix86_handle_shared_attribute): New
+	declarations.
+	* config/i386/i386.c (ix86_valid_type_attribute_p: Remove.
+	(TARGET_VALID_TYPE_ATTRIBUTE, TARGET_VALID_DECL_ATTRIBUTE): Don't
+	define.
+	(TARGET_ATTRIBUTE_TABLE): Define.
+	(ix86_attribute_table, ix86_handle_cdecl_attribute,
+	ix86_handle_regparm_attribute): New.
+	* config/i386/winnt.c (i386_pe_valid_decl_attribute_p,
+	i386_pe_valid_type_attribute_p): Remove.
+	(ix86_handle_dll_attribute, ix86_handle_shared_attribute): New.
+	* config/ia64/ia64.c (ia64_valid_type_attribute): Remove.
+	(TARGET_VALID_TYPE_ATTRIBUTE): Don't define.
+	(TARGET_ATTRIBUTE_TABLE): Define.
+	(ia64_attribute_table): New.
+	* config/m32r/m32r.c (m32r_valid_decl_attribute, interrupt_ident1,
+	interrupt_ident2, model_ident1, model_ident2): Remove.
+	(TARGET_VALID_DECL_ATTRIBUTE): Don't define.
+	(TARGET_ATTRIBUTE_TABLE): Define.
+	(init_idents): Update.
+	(m32r_attribute_table, m32r_handle_model_attribute): New.
+	* config/m68hc11/m68hc11.c (m68hc11_valid_type_attribute_p):
+	Remove.
+	(TARGET_VALID_TYPE_ATTRIBUTE): Don't define.
+	(TARGET_ATTRIBUTE_TABLE): Define.
+	(m68hc11_attribute_table, m68hc11_handle_fntype_attribute): New.
+	* config/mcore/mcore.c (mcore_valid_decl_attribute): Remove.
+	(TARGET_VALID_DECL_ATTRIBUTE): Don't define.
+	(TARGET_ATTRIBUTE_TABLE): Define.
+	(mcore_attribute_table, mcore_handle_naked_attribute): New.
+	* config/ns32k/ns32k.c (ns32k_valid_type_attribute_p): Remove.
+	(TARGET_VALID_TYPE_ATTRIBUTE): Don't define.
+	(TARGET_ATTRIBUTE_TABLE): Define.
+	(ns32k_attribute_table, ns32k_handle_fntype_attribute): New.
+	* config/rs6000/rs6000.c (rs6000_valid_type_attribute_p): Remove.
+	(TARGET_VALID_TYPE_ATTRIBUTE): Don't define.
+	(TARGET_ATTRIBUTE_TABLE): Define.
+	(rs6000_attribute_table, rs6000_handle_longcall_attribute): New.
+	* config/sh/sh.c (sh_valid_decl_attribute): Remove.
+	(TARGET_VALID_DECL_ATTRIBUTE): Don't define.
+	(TARGET_ATTRIBUTE_TABLE): Define.
+	(sh_attribute_table, sh_handle_interrupt_handler_attribute,
+	sh_handle_sp_switch_attribute, sh_handle_trap_exit_attribute):
+	New.
+	* config/stormy16/stormy16.c (stormy16_valid_type_attribute):
+	Remove.
+	(TARGET_VALID_TYPE_ATTRIBUTE): Don't define
+	(TARGET_ATTRIBUTE_TABLE): Define.
+	(stormy16_attribute_table, stormy16_handle_interrupt_attribute):
+	New.
+	* config/v850/v850.c (v850_valid_decl_attribute): Remove.
+	(TARGET_VALID_DECL_ATTRIBUTE): Don't define.
+	(TARGET_ATTRIBUTE_TABLE): Define.
+	(v850_attribute_table, v850_handle_interrupt_attribute,
+	v850_handle_data_area_attribute): New.
+	* config/v850/v850-c.c (mark_current_function_as_interrupt):
+	Return void.  Call decl_attributes instead of
+	valid_machine_attribute.
+
 Fri Sep 21 01:49:41 2001  J"orn Rennecke <amylaar@redhat.com>
 
 	* sh-protos.h (sh_pr_n_sets): Declare.

@@ -1,7 +1,7 @@
 /*{{{  Comment.  */ 
 
 /* Definitions of FR30 target. 
-   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Cygnus Solutions.
 
 This file is part of GNU CC.
@@ -824,7 +824,7 @@ enum reg_class
    FUNDECL is a C variable whose value is a tree node that describes the
    function in question.  Normally it is a node of type `FUNCTION_DECL' that
    describes the declaration of the function.  From this it is possible to
-   obtain the DECL_MACHINE_ATTRIBUTES of the function.
+   obtain the DECL_ATTRIBUTES of the function.
 
    FUNTYPE is a C variable whose value is a tree node that describes the
    function in question.  Normally it is a node of type `FUNCTION_TYPE' that

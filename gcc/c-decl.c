@@ -1404,7 +1404,7 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
   int errmsg = 0;
 
   if (DECL_P (olddecl))
-    DECL_MACHINE_ATTRIBUTES (newdecl)
+    DECL_ATTRIBUTES (newdecl)
       = (*targetm.merge_decl_attributes) (olddecl, newdecl);
 
   if (TREE_CODE (newtype) == ERROR_MARK
@@ -2030,7 +2030,7 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
 
   /* NEWDECL contains the merged attribute lists.
      Update OLDDECL to be the same.  */
-  DECL_MACHINE_ATTRIBUTES (olddecl) = DECL_MACHINE_ATTRIBUTES (newdecl);
+  DECL_ATTRIBUTES (olddecl) = DECL_ATTRIBUTES (newdecl);
 
   return 1;
 }
@@ -3872,9 +3872,10 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
   enum tree_code innermost_code = ERROR_MARK;
   int bitfield = 0;
   int size_varies = 0;
-  tree decl_machine_attr = NULL_TREE;
+  tree decl_attr = NULL_TREE;
   tree array_ptr_quals = NULL_TREE;
   int array_parm_static = 0;
+  tree returned_attrs = NULL_TREE;
 
   if (decl_context == BITFIELD)
     bitfield = 1, decl_context = FIELD;
@@ -3896,6 +3897,10 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	case CALL_EXPR:
 	  innermost_code = TREE_CODE (decl);
 	  decl = TREE_OPERAND (decl, 0);
+	  break;
+
+	case TREE_LIST:
+	  decl = TREE_VALUE (decl);
 	  break;
 
 	case IDENTIFIER_NODE:
@@ -3979,7 +3984,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
       else if (TREE_CODE (id) == TYPE_DECL)
 	{
 	  type = TREE_TYPE (id);
-	  decl_machine_attr = DECL_MACHINE_ATTRIBUTES (id);
+	  decl_attr = DECL_ATTRIBUTES (id);
 	  typedef_decl = id;
 	}
       /* Built-in types come as identifiers.  */
@@ -4292,6 +4297,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
       /* Each level of DECLARATOR is either an ARRAY_REF (for ...[..]),
 	 an INDIRECT_REF (for *...),
 	 a CALL_EXPR (for ...(...)),
+	 a TREE_LIST (for nested attributes),
 	 an identifier (for the name being declared)
 	 or a null pointer (for the place in an absolute declarator
 	 where the name was omitted).
@@ -4313,7 +4319,30 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	  array_parm_static = 0;
 	}
 
-      if (TREE_CODE (declarator) == ARRAY_REF)
+      if (TREE_CODE (declarator) == TREE_LIST)
+	{
+	  /* We encode a declarator with embedded attributes using
+	     a TREE_LIST.  */
+	  tree attrs = TREE_PURPOSE (declarator);
+	  tree inner_decl;
+	  int attr_flags = 0;
+	  declarator = TREE_VALUE (declarator);
+	  inner_decl = declarator;
+	  while (inner_decl != NULL_TREE
+		 && TREE_CODE (inner_decl) == TREE_LIST)
+	    inner_decl = TREE_VALUE (inner_decl);
+	  if (inner_decl == NULL_TREE
+	      || TREE_CODE (inner_decl) == IDENTIFIER_NODE)
+	    attr_flags |= (int) ATTR_FLAG_DECL_NEXT;
+	  if (TREE_CODE (inner_decl) == CALL_EXPR)
+	    attr_flags |= (int) ATTR_FLAG_FUNCTION_NEXT;
+	  if (TREE_CODE (inner_decl) == ARRAY_REF)
+	    attr_flags |= (int) ATTR_FLAG_ARRAY_NEXT;
+	  returned_attrs = decl_attributes (&type,
+					    chainon (returned_attrs, attrs),
+					    attr_flags);
+	}
+      else if (TREE_CODE (declarator) == ARRAY_REF)
 	{
 	  register tree itype = NULL_TREE;
 	  register tree size = TREE_OPERAND (declarator, 1);
@@ -4657,6 +4686,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
       if ((specbits & (1 << (int) RID_SIGNED))
 	  || (typedef_decl && C_TYPEDEF_EXPLICITLY_SIGNED (typedef_decl)))
 	C_TYPEDEF_EXPLICITLY_SIGNED (decl) = 1;
+      decl_attributes (&decl, returned_attrs, 0);
       return decl;
     }
 
@@ -4687,6 +4717,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	pedwarn ("ISO C forbids const or volatile function types");
       if (type_quals)
 	type = c_build_qualified_type (type, type_quals);
+      decl_attributes (&type, returned_attrs, 0);
       return type;
     }
 
@@ -4711,7 +4742,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
      or a FUNCTION_DECL, depending on DECL_CONTEXT and TYPE.  */
 
   {
-    register tree decl;
+    tree decl;
 
     if (decl_context == PARM)
       {
@@ -4860,7 +4891,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	  pedwarn ("invalid storage class for function `%s'", name);
 
 	decl = build_decl (FUNCTION_DECL, declarator, type);
-	decl = build_decl_attribute_variant (decl, decl_machine_attr);
+	decl = build_decl_attribute_variant (decl, decl_attr);
 
 	if (pedantic && type_quals && ! DECL_IN_SYSTEM_HEADER (decl))
 	  pedwarn ("ISO C forbids qualified function types");
@@ -4952,6 +4983,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
        will be ignored, and would even crash the compiler.  */
     if (C_TYPE_FIELDS_VOLATILE (TREE_TYPE (decl)))
       mark_addressable (decl);
+
+    decl_attributes (&decl, returned_attrs, 0);
 
     return decl;
   }
@@ -5341,7 +5374,7 @@ finish_struct (t, fieldlist, attributes)
 
   TYPE_SIZE (t) = 0;
 
-  decl_attributes (&t, attributes, 0);
+  decl_attributes (&t, attributes, (int) ATTR_FLAG_TYPE_IN_PLACE);
 
   /* Nameless union parm types are useful as GCC extension.  */
   if (! (TREE_CODE (t) == UNION_TYPE && TYPE_NAME (t) == 0) && !pedantic)
@@ -5705,7 +5738,7 @@ finish_enum (enumtype, values, attributes)
   if (in_parm_level_p ())
     warning ("enum defined inside parms");
 
-  decl_attributes (&enumtype, attributes, 0);
+  decl_attributes (&enumtype, attributes, (int) ATTR_FLAG_TYPE_IN_PLACE);
 
   /* Calculate the maximum value of any enumerator in this type.  */
 

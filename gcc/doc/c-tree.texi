@@ -1658,14 +1658,11 @@ to the same declaration or type, or @code{NULL_TREE} if there are no
 further attributes in the list.
 
 Attributes may be attached to declarations and to types; these
-attributes may be accessed with the following macros.  At present only
-machine-dependent attributes are stored in this way (other attributes
-cause changes to the declaration or type or to other internal compiler
-data structures, but are not themselves stored along with the
-declaration or type), but in future all attributes may be stored like
-this.
+attributes may be accessed with the following macros.  All attributes
+are stored in this way, and many also cause other changes to the
+declaration or type or to other internal compiler data structures.
 
-@deftypefn {Tree Macro} tree DECL_MACHINE_ATTRIBUTES (tree @var{decl})
+@deftypefn {Tree Macro} tree DECL_ATTRIBUTES (tree @var{decl})
 This macro returns the attributes on the declaration @var{decl}.
 @end deftypefn
 

@@ -1,3 +1,43 @@
+2001-09-21  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	Table-driven attributes.
+	* decl.c: Rename DECL_MACHINE_ATTRIBUTES to DECL_ATTRIBUTES.
+	* decl2.c (cplus_decl_attributes): Only take one attributes
+	parameter.
+	* cp-tree.c (cplus_decl_attributes): Update prototype.
+	* class.c (finish_struct), decl.c (start_decl, start_function),
+	decl2.c (grokfield), friend.c (do_friend), parse.y
+	(parse_bitfield): Update calls to cplus_decl_attributes.
+	* decl.c (grokdeclarator): Take a pointer to a single ordinary
+	attribute list.
+	* decl.h (grokdeclarator): Update prototype.
+	* decl2.c (grokfield): Take a single ordinary attribute list.
+	* friend.c (do_friend): Likewise.
+	* decl.c (shadow_tag, groktypename, start_decl,
+	start_handler_parms, grokdeclarator, grokparms, start_function,
+	start_method), decl2.c (grokfield, grokbitfield, grokoptypename),
+	parse.y (parse_field, parse_bitfield, component_decl_1), pt.c
+	(process_template_parm, do_decl_instantiation): Pass single
+	ordinary attribute lists around.
+	* decl.c (grokdeclarator): Correct handling of nested attributes.
+	Revert the patch
+	1998-10-18  Jason Merrill  <jason@yorick.cygnus.com>
+		* decl.c (grokdeclarator): Embedded attrs bind to the right,
+		not the left.
+	.
+	* cp-tree.h (cp_valid_lang_attribute): Remove declaration
+	(cp_attribute_table): Declare.
+	* decl.c (valid_lang_attribute): Don't define.
+	(lang_attribute_table): Define.
+	(init_decl_processing): Initialize lang_attribute_table instead of
+	valid_lang_attribute.
+	* tree.c (cp_valid_lang_attribute): Remove.
+	(handle_java_interface_attribute, handle_com_interface_attribute,
+	handle_init_priority_attribute): New functions.
+	(cp_attribute_table): New array.
+	* decl2.c (import_export_class): Don't use
+	targetm.valid_type_attribute.
+
 2001-09-15  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
 	        * Make-lang.in (cp/error.o): Depend on real.h

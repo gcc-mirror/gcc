@@ -53,7 +53,9 @@ static int  const_costs_int          PARAMS ((HOST_WIDE_INT, int));
 static void substitute_ep_register   PARAMS ((rtx, rtx, int, int, rtx *, rtx *));
 static int  ep_memory_offset         PARAMS ((enum machine_mode, int));
 static void v850_set_data_area       PARAMS ((tree, v850_data_area));
-static int v850_valid_decl_attribute PARAMS ((tree, tree, tree, tree));
+const struct attribute_spec v850_attribute_table[];
+static tree v850_handle_interrupt_attribute PARAMS ((tree *, tree, tree, int, bool *));
+static tree v850_handle_data_area_attribute PARAMS ((tree *, tree, tree, int, bool *));
 static void v850_insert_attributes   PARAMS ((tree, tree *));
 
 /* True if the current function has anonymous arguments.  */
@@ -84,8 +86,8 @@ static int v850_interrupt_cache_p = FALSE;
 static int v850_interrupt_p = FALSE;
 
 /* Initialize the GCC target structure.  */
-#undef TARGET_VALID_DECL_ATTRIBUTE
-#define TARGET_VALID_DECL_ATTRIBUTE v850_valid_decl_attribute
+#undef TARGET_ATTRIBUTE_TABLE
+#define TARGET_ATTRIBUTE_TABLE v850_attribute_table
 
 #undef TARGET_INSERT_ATTRIBUTES
 #define TARGET_INSERT_ATTRIBUTES v850_insert_attributes
@@ -1978,13 +1980,13 @@ v850_data_area
 v850_get_data_area (decl)
      tree decl;
 {
-  if (lookup_attribute ("sda", DECL_MACHINE_ATTRIBUTES (decl)) != NULL_TREE)
+  if (lookup_attribute ("sda", DECL_ATTRIBUTES (decl)) != NULL_TREE)
     return DATA_AREA_SDA;
   
-  if (lookup_attribute ("tda", DECL_MACHINE_ATTRIBUTES (decl)) != NULL_TREE)
+  if (lookup_attribute ("tda", DECL_ATTRIBUTES (decl)) != NULL_TREE)
     return DATA_AREA_TDA;
   
-  if (lookup_attribute ("zda", DECL_MACHINE_ATTRIBUTES (decl)) != NULL_TREE)
+  if (lookup_attribute ("zda", DECL_ATTRIBUTES (decl)) != NULL_TREE)
     return DATA_AREA_ZDA;
 
   return DATA_AREA_NORMAL;
@@ -2008,62 +2010,92 @@ v850_set_data_area (decl, data_area)
       return;
     }
 
-  DECL_MACHINE_ATTRIBUTES (decl) = tree_cons
-    (name, NULL, DECL_MACHINE_ATTRIBUTES (decl));
+  DECL_ATTRIBUTES (decl) = tree_cons
+    (name, NULL, DECL_ATTRIBUTES (decl));
 }
 
-/* Return nonzero if ATTR is a valid attribute for DECL.
-   ARGS are the arguments supplied with ATTR.  */
+const struct attribute_spec v850_attribute_table[] =
+{
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
+  { "interrupt_handler", 0, 0, true,  false, false, v850_handle_interrupt_attribute },
+  { "interrupt",         0, 0, true,  false, false, v850_handle_interrupt_attribute },
+  { "sda",               0, 0, true,  false, false, v850_handle_data_area_attribute },
+  { "tda",               0, 0, true,  false, false, v850_handle_data_area_attribute },
+  { "zda",               0, 0, true,  false, false, v850_handle_data_area_attribute },
+  { NULL,                0, 0, false, false, false, NULL }
+};
 
-static int
-v850_valid_decl_attribute (decl, unused, attr, args)
-     tree decl;
-     tree unused ATTRIBUTE_UNUSED;
-     tree attr;
-     tree args;
+/* Handle an "interrupt" attribute; arguments as in
+   struct attribute_spec.handler.  */
+static tree
+v850_handle_interrupt_attribute (node, name, args, flags, no_add_attrs)
+     tree *node;
+     tree name;
+     tree args ATTRIBUTE_UNUSED;
+     int flags ATTRIBUTE_UNUSED;
+     bool *no_add_attrs;
+{
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning ("`%s' attribute only applies to functions",
+	       IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle a "sda", "tda" or "zda" attribute; arguments as in
+   struct attribute_spec.handler.  */
+static tree
+v850_handle_data_area_attribute (node, name, args, flags, no_add_attrs)
+     tree *node;
+     tree name;
+     tree args ATTRIBUTE_UNUSED;
+     int flags ATTRIBUTE_UNUSED;
+     bool *no_add_attrs;
 {
   v850_data_area data_area;
   v850_data_area area;
-  
-  if (args != NULL_TREE)
-    return 0;
-
-  if (is_attribute_p ("interrupt_handler", attr)
-      || is_attribute_p ("interrupt", attr))
-    return TREE_CODE (decl) == FUNCTION_DECL;
+  tree decl = *node;
 
   /* Implement data area attribute.  */
-  if (is_attribute_p ("sda", attr))
+  if (is_attribute_p ("sda", name))
     data_area = DATA_AREA_SDA;
-  else if (is_attribute_p ("tda", attr))
+  else if (is_attribute_p ("tda", name))
     data_area = DATA_AREA_TDA;
-  else if (is_attribute_p ("zda", attr))
+  else if (is_attribute_p ("zda", name))
     data_area = DATA_AREA_ZDA;
   else
-    return 0;
+    abort ();
   
   switch (TREE_CODE (decl))
     {
     case VAR_DECL:
       if (current_function_decl != NULL_TREE)
-	error_with_decl (decl, "\
+	{
+	  error_with_decl (decl, "\
 a data area attribute cannot be specified for local variables");
-      
+	  *no_add_attrs = true;
+	}
+
       /* Drop through.  */
 
     case FUNCTION_DECL:
       area = v850_get_data_area (decl);
       if (area != DATA_AREA_NORMAL && data_area != area)
-	error_with_decl (decl, "\
+	{
+	  error_with_decl (decl, "\
 data area of '%s' conflicts with previous declaration");
-      
-      return 1;
+	  *no_add_attrs = true;
+	}
+      break;
       
     default:
       break;
     }
-  
-  return 0;
+
+  return NULL_TREE;
 }
 
 
@@ -2083,13 +2115,13 @@ v850_interrupt_function_p (func)
   if (TREE_CODE (func) != FUNCTION_DECL)
     return 0;
 
-  a = lookup_attribute ("interrupt_handler", DECL_MACHINE_ATTRIBUTES (func));
+  a = lookup_attribute ("interrupt_handler", DECL_ATTRIBUTES (func));
   if (a != NULL_TREE)
     ret = 1;
 
   else
     {
-      a = lookup_attribute ("interrupt", DECL_MACHINE_ATTRIBUTES (func));
+      a = lookup_attribute ("interrupt", DECL_ATTRIBUTES (func));
       ret = a != NULL_TREE;
     }
 

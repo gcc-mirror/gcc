@@ -127,7 +127,8 @@ static int constant_pool_expr_1 PARAMS ((rtx, int *, int *));
 static void rs6000_free_machine_status PARAMS ((struct function *));
 static void rs6000_init_machine_status PARAMS ((struct function *));
 static int rs6000_ra_ever_killed PARAMS ((void));
-static int rs6000_valid_type_attribute_p PARAMS ((tree, tree, tree, tree));
+static tree rs6000_handle_longcall_attribute PARAMS ((tree *, tree, tree, int, bool *));
+const struct attribute_spec rs6000_attribute_table[];
 static void rs6000_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void rs6000_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 static rtx rs6000_emit_set_long_const PARAMS ((rtx,
@@ -184,8 +185,8 @@ static char alt_reg_names[][8] =
 #endif
 
 /* Initialize the GCC target structure.  */
-#undef TARGET_VALID_TYPE_ATTRIBUTE
-#define TARGET_VALID_TYPE_ATTRIBUTE rs6000_valid_type_attribute_p
+#undef TARGET_ATTRIBUTE_TABLE
+#define TARGET_ATTRIBUTE_TABLE rs6000_attribute_table
 
 #undef TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE rs6000_output_function_prologue
@@ -8123,28 +8124,34 @@ rs6000_initialize_trampoline (addr, fnaddr, cxt)
 }
 
 
-/* If defined, a C expression whose value is nonzero if IDENTIFIER
-   with arguments ARGS is a valid machine specific attribute for TYPE.
-   The attributes in ATTRIBUTES have previously been assigned to TYPE.  */
-
-static int
-rs6000_valid_type_attribute_p (type, attributes, identifier, args)
-     tree type;
-     tree attributes ATTRIBUTE_UNUSED;
-     tree identifier;
-     tree args;
+/* Table of valid machine attributes.  */
+const struct attribute_spec rs6000_attribute_table[] =
 {
-  if (TREE_CODE (type) != FUNCTION_TYPE
-      && TREE_CODE (type) != FIELD_DECL
-      && TREE_CODE (type) != TYPE_DECL)
-    return 0;
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
+  { "longcall", 0, 0, false, true,  true,  rs6000_handle_longcall_attribute },
+  { NULL,       0, 0, false, false, false, NULL }
+};
 
-  /* Longcall attribute says that the function is not within 2**26 bytes
-     of the current function, and to do an indirect call.  */
-  if (is_attribute_p ("longcall", identifier))
-    return (args == NULL_TREE);
+/* Handle a "longcall" attribute;
+   arguments as in struct attribute_spec.handler.  */
+static tree
+rs6000_handle_longcall_attribute (node, name, args, flags, no_add_attrs)
+     tree *node;
+     tree name;
+     tree args ATTRIBUTE_UNUSED;
+     int flags ATTRIBUTE_UNUSED;
+     bool *no_add_attrs;
+{
+  if (TREE_CODE (*node) != FUNCTION_TYPE
+      && TREE_CODE (*node) != FIELD_DECL
+      && TREE_CODE (*node) != TYPE_DECL)
+    {
+      warning ("`%s' attribute only applies to functions",
+	       IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
+    }
 
-  return 0;
+  return NULL_TREE;
 }
 
 /* Return a reference suitable for calling a function with the

@@ -154,15 +154,18 @@ static int calc_live_regs PARAMS ((int *, int *));
 static void mark_use PARAMS ((rtx, rtx *));
 static HOST_WIDE_INT rounded_frame_size PARAMS ((int));
 static rtx mark_constant_pool_use PARAMS ((rtx));
-static int sh_valid_decl_attribute PARAMS ((tree, tree, tree, tree));
+const struct attribute_spec sh_attribute_table[];
+static tree sh_handle_interrupt_handler_attribute PARAMS ((tree *, tree, tree, int, bool *));
+static tree sh_handle_sp_switch_attribute PARAMS ((tree *, tree, tree, int, bool *));
+static tree sh_handle_trap_exit_attribute PARAMS ((tree *, tree, tree, int, bool *));
 static void sh_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 static void sh_insert_attributes PARAMS ((tree, tree *));
 static void sh_asm_named_section PARAMS ((const char *, unsigned int));
 static int sh_adjust_cost PARAMS ((rtx, rtx, rtx, int));
 
 /* Initialize the GCC target structure.  */
-#undef TARGET_VALID_DECL_ATTRIBUTE
-#define TARGET_VALID_DECL_ATTRIBUTE sh_valid_decl_attribute
+#undef TARGET_ATTRIBUTE_TABLE
+#define TARGET_ATTRIBUTE_TABLE sh_attribute_table
 
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE sh_output_function_epilogue
@@ -269,7 +272,7 @@ print_operand (stream, x, code)
 
 	if ((lookup_attribute
 	     ("interrupt_handler",
-	      DECL_MACHINE_ATTRIBUTES (current_function_decl)))
+	      DECL_ATTRIBUTES (current_function_decl)))
 	    != NULL_TREE)
 	  interrupt_handler = 1;
 	else
@@ -3964,7 +3967,7 @@ calc_live_regs (count_ptr, live_regs_mask2)
 
   if ((lookup_attribute
        ("interrupt_handler",
-	DECL_MACHINE_ATTRIBUTES (current_function_decl)))
+	DECL_ATTRIBUTES (current_function_decl)))
       != NULL_TREE)
     interrupt_handler = 1;
   else
@@ -4058,7 +4061,7 @@ sh_expand_prologue ()
 
   current_function_interrupt
     = lookup_attribute ("interrupt_handler",
-			DECL_MACHINE_ATTRIBUTES (current_function_decl))
+			DECL_ATTRIBUTES (current_function_decl))
     != NULL_TREE;
 
   /* We have pretend args if we had an object sent partially in registers
@@ -4656,11 +4659,7 @@ sh_insert_attributes (node, attributes)
   return;
 }
 
-/* Return nonzero if ATTR is a valid attribute for DECL.
-   ATTRIBUTES are any existing attributes and ARGS are the arguments
-   supplied with ATTR.
-
-   Supported attributes:
+/* Supported attributes:
 
    interrupt_handler -- specifies this function is an interrupt handler.
 
@@ -4670,59 +4669,110 @@ sh_insert_attributes (node, attributes)
    trap_exit -- use a trapa to exit an interrupt function instead of
    an rte instruction.  */
 
-static int
-sh_valid_decl_attribute (decl, attributes, attr, args)
-     tree decl;
-     tree attributes ATTRIBUTE_UNUSED;
-     tree attr;
-     tree args;
+const struct attribute_spec sh_attribute_table[] =
 {
-  if (TREE_CODE (decl) != FUNCTION_DECL)
-    return 0;
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
+  { "interrupt_handler", 0, 0, true,  false, false, sh_handle_interrupt_handler_attribute },
+  { "sp_switch",         1, 1, true,  false, false, sh_handle_sp_switch_attribute },
+  { "trap_exit",         1, 1, true,  false, false, sh_handle_trap_exit_attribute },
+  { NULL,                0, 0, false, false, false, NULL }
+};
 
-  if (is_attribute_p ("interrupt_handler", attr))
+/* Handle an "interrupt_handler" attribute; arguments as in
+   struct attribute_spec.handler.  */
+static tree
+sh_handle_interrupt_handler_attribute (node, name, args, flags, no_add_attrs)
+     tree *node;
+     tree name;
+     tree args ATTRIBUTE_UNUSED;
+     int flags ATTRIBUTE_UNUSED;
+     bool *no_add_attrs;
+{
+  if (TREE_CODE (*node) != FUNCTION_DECL)
     {
-      return 1;
+      warning ("`%s' attribute only applies to functions",
+	       IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
     }
 
-  if (is_attribute_p ("sp_switch", attr))
+  return NULL_TREE;
+}
+
+/* Handle an "sp_switch" attribute; arguments as in
+   struct attribute_spec.handler.  */
+static tree
+sh_handle_sp_switch_attribute (node, name, args, flags, no_add_attrs)
+     tree *node;
+     tree name;
+     tree args;
+     int flags ATTRIBUTE_UNUSED;
+     bool *no_add_attrs;
+{
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning ("`%s' attribute only applies to functions",
+	       IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
+    }
+  else if (!pragma_interrupt)
     {
       /* The sp_switch attribute only has meaning for interrupt functions.  */
-      if (!pragma_interrupt)
-	return 0;
-
-      /* sp_switch must have an argument.  */
-      if (!args || TREE_CODE (args) != TREE_LIST)
-	return 0;
-
+      warning ("`%s' attribute only applies to interrupt functions",
+	       IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
+    }
+  else if (TREE_CODE (TREE_VALUE (args)) != STRING_CST)
+    {
       /* The argument must be a constant string.  */
-      if (TREE_CODE (TREE_VALUE (args)) != STRING_CST)
-	return 0;
-
+      warning ("`%s' attribute argument not a string constant",
+	       IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
+    }
+  else
+    {
       sp_switch = gen_rtx_SYMBOL_REF (VOIDmode,
 				      TREE_STRING_POINTER (TREE_VALUE (args)));
-      return 1;
     }
 
-  if (is_attribute_p ("trap_exit", attr))
+  return NULL_TREE;
+}
+
+/* Handle an "trap_exit" attribute; arguments as in
+   struct attribute_spec.handler.  */
+static tree
+sh_handle_trap_exit_attribute (node, name, args, flags, no_add_attrs)
+     tree *node;
+     tree name;
+     tree args;
+     int flags ATTRIBUTE_UNUSED;
+     bool *no_add_attrs;
+{
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning ("`%s' attribute only applies to functions",
+	       IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
+    }
+  else if (!pragma_interrupt)
     {
       /* The trap_exit attribute only has meaning for interrupt functions.  */
-      if (!pragma_interrupt)
-	return 0;
-
-      /* trap_exit must have an argument.  */
-      if (!args || TREE_CODE (args) != TREE_LIST)
-	return 0;
-
+      warning ("`%s' attribute only applies to interrupt functions",
+	       IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
+    }
+  else if (TREE_CODE (TREE_VALUE (args)) != INTEGER_CST)
+    {
       /* The argument must be a constant integer.  */
-      if (TREE_CODE (TREE_VALUE (args)) != INTEGER_CST)
-	return 0;
-
+      warning ("`%s' attribute argument not an integer constant",
+	       IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
+    }
+  else
+    {
       trap_exit = TREE_INT_CST_LOW (TREE_VALUE (args));
-      return 1;
     }
 
-  return 0;
+  return NULL_TREE;
 }
 
 

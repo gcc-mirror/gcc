@@ -87,7 +87,8 @@ static int current_insn_set_cc_p;
 static void record_cc_ref PARAMS ((rtx));
 static void arc_init_reg_tables PARAMS ((void));
 static int get_arc_condition_code PARAMS ((rtx));
-static int arc_valid_decl_attribute PARAMS ((tree, tree, tree, tree));
+const struct attribute_spec arc_attribute_table[];
+static tree arc_handle_interrupt_attribute PARAMS ((tree *, tree, tree, int, bool *));
 static void arc_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void arc_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 
@@ -96,8 +97,8 @@ static void arc_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 #define TARGET_ASM_FUNCTION_PROLOGUE arc_output_function_prologue
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE arc_output_function_epilogue
-#undef TARGET_VALID_DECL_ATTRIBUTE
-#define TARGET_VALID_DECL_ATTRIBUTE arc_valid_decl_attribute
+#undef TARGET_ATTRIBUTE_TABLE
+#define TARGET_ATTRIBUTE_TABLE arc_attribute_table
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -326,26 +327,40 @@ arc_init_reg_tables ()
    interrupt - for interrupt functions
 */
 
-/* Return nonzero if IDENTIFIER is a valid decl attribute.  */
-
-static int
-arc_valid_decl_attribute (type, attributes, identifier, args)
-     tree type ATTRIBUTE_UNUSED;
-     tree attributes ATTRIBUTE_UNUSED;
-     tree identifier;
-     tree args;
+const struct attribute_spec arc_attribute_table[] =
 {
-  if (identifier == get_identifier ("__interrupt__")
-      && list_length (args) == 1
-      && TREE_CODE (TREE_VALUE (args)) == STRING_CST)
-    {
-      tree value = TREE_VALUE (args);
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
+  { "interrupt", 1, 1, true,  false, false, arc_handle_interrupt_attribute },
+  { NULL,        0, 0, false, false, false, NULL }
+};
 
-      if (!strcmp (TREE_STRING_POINTER (value), "ilink1")
-	   || !strcmp (TREE_STRING_POINTER (value), "ilink2"))
-	return 1;
+/* Handle an "interrupt" attribute; arguments as in
+   struct attribute_spec.handler.  */
+static tree
+arc_handle_interrupt_attribute (node, name, args, flags, no_add_attrs)
+     tree *node ATTRIBUTE_UNUSED;
+     tree name;
+     tree args;
+     int flags ATTRIBUTE_UNUSED;
+     bool *no_add_attrs;
+{
+  tree value = TREE_VALUE (args);
+
+  if (TREE_CODE (value) != STRING_CST)
+    {
+      warning ("argument of `%s' attribute is not a string constant",
+	       IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
     }
-  return 0;
+  else if (strcmp (TREE_STRING_POINTER (value), "ilink1")
+	   && strcmp (TREE_STRING_POINTER (value), "ilink2"))
+    {
+      warning ("argument of `%s' attribute is not \"ilink1\" or \"ilink2\"",
+	       IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
 }
 
 
@@ -956,7 +971,7 @@ arc_compute_function_type (decl)
   fn_type = ARC_FUNCTION_NORMAL;
 
   /* Now see if this is an interrupt handler.  */
-  for (a = DECL_MACHINE_ATTRIBUTES (current_function_decl);
+  for (a = DECL_ATTRIBUTES (current_function_decl);
        a;
        a = TREE_CHAIN (a))
     {

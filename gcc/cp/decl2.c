@@ -1531,7 +1531,7 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
       && TREE_CHAIN (init) == NULL_TREE)
     init = NULL_TREE;
 
-  value = grokdeclarator (declarator, declspecs, FIELD, init != 0, attrlist);
+  value = grokdeclarator (declarator, declspecs, FIELD, init != 0, &attrlist);
   if (! value || value == error_mark_node)
     /* friend or constructor went bad.  */
     return value;
@@ -1628,8 +1628,7 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
     value = push_template_decl (value);
 
   if (attrlist)
-    cplus_decl_attributes (&value, TREE_PURPOSE (attrlist),
-			   TREE_VALUE (attrlist), 0);
+    cplus_decl_attributes (&value, attrlist, 0);
 
   if (TREE_CODE (value) == VAR_DECL)
     {
@@ -1679,7 +1678,7 @@ grokbitfield (declarator, declspecs, width)
      tree declarator, declspecs, width;
 {
   register tree value = grokdeclarator (declarator, declspecs, BITFIELD,
-					0, NULL_TREE);
+					0, NULL);
 
   if (! value) return NULL_TREE; /* friends went bad.  */
 
@@ -1735,7 +1734,7 @@ tree
 grokoptypename (declspecs, declarator)
      tree declspecs, declarator;
 {
-  tree t = grokdeclarator (declarator, declspecs, TYPENAME, 0, NULL_TREE);
+  tree t = grokdeclarator (declarator, declspecs, TYPENAME, 0, NULL);
   return mangle_conv_op_name_for_type (t);
 }
 
@@ -1824,8 +1823,8 @@ grok_function_init (decl, init)
 }
 
 void
-cplus_decl_attributes (decl, attributes, prefix_attributes, flags)
-     tree *decl, attributes, prefix_attributes;
+cplus_decl_attributes (decl, attributes, flags)
+     tree *decl, attributes;
      int flags;
 {
   if (*decl == NULL_TREE || *decl == void_type_node)
@@ -1834,7 +1833,7 @@ cplus_decl_attributes (decl, attributes, prefix_attributes, flags)
   if (TREE_CODE (*decl) == TEMPLATE_DECL)
     decl = &DECL_TEMPLATE_RESULT (*decl);
 
-  decl_attributes (decl, chainon (attributes, prefix_attributes), flags);
+  decl_attributes (decl, attributes, flags);
 
   if (TREE_CODE (*decl) == TYPE_DECL)
     SET_IDENTIFIER_TYPE_VALUE (DECL_NAME (*decl), TREE_TYPE (*decl));
@@ -2371,17 +2370,9 @@ import_export_class (ctype)
   if (CLASSTYPE_INTERFACE_ONLY (ctype))
     return;
 
-  if ((*targetm.valid_type_attribute) (ctype,
-				       TYPE_ATTRIBUTES (ctype),
-				       get_identifier ("dllimport"),
-				       NULL_TREE)
-      && lookup_attribute ("dllimport", TYPE_ATTRIBUTES (ctype)))
+  if (lookup_attribute ("dllimport", TYPE_ATTRIBUTES (ctype)))
     import_export = -1;
-  else if ((*targetm.valid_type_attribute) (ctype,
-					    TYPE_ATTRIBUTES (ctype),
-					    get_identifier ("dllexport"),
-					    NULL_TREE)
-	   && lookup_attribute ("dllexport", TYPE_ATTRIBUTES (ctype)))
+  else if (lookup_attribute ("dllexport", TYPE_ATTRIBUTES (ctype)))
     import_export = 1;
 
   /* If we got -fno-implicit-templates, we import template classes that

@@ -191,7 +191,7 @@ union tree_node;
    It's also used to handle dllimport override semantics.  */
 #if 0
 #define REDO_SECTION_INFO_P(DECL) \
-  ((DECL_MACHINE_ATTRIBUTES (DECL) != NULL_TREE) \
+  ((DECL_ATTRIBUTES (DECL) != NULL_TREE) \
    || (TREE_CODE (DECL) == VAR_DECL && DECL_VIRTUAL_P (DECL)))
 #else
 #define REDO_SECTION_INFO_P(DECL) 1

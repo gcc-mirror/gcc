@@ -107,11 +107,11 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 /* All in tree.c.  */
 #define TARGET_MERGE_DECL_ATTRIBUTES merge_decl_attributes
 #define TARGET_MERGE_TYPE_ATTRIBUTES merge_type_attributes
-#define TARGET_VALID_DECL_ATTRIBUTE default_valid_attribute_p
-#define TARGET_VALID_TYPE_ATTRIBUTE default_valid_attribute_p
+#define TARGET_ATTRIBUTE_TABLE default_target_attribute_table
 #define TARGET_COMP_TYPE_ATTRIBUTES default_comp_type_attributes
 #define TARGET_SET_DEFAULT_TYPE_ATTRIBUTES default_set_default_type_attributes
 #define TARGET_INSERT_ATTRIBUTES default_insert_attributes
+#define TARGET_FUNCTION_ATTRIBUTE_INLINABLE_P default_function_attribute_inlinable_p
 
 /* In builtins.c.  */
 #define TARGET_INIT_BUILTINS default_init_builtins
@@ -129,11 +129,11 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
   TARGET_SCHED,					\
   TARGET_MERGE_DECL_ATTRIBUTES,			\
   TARGET_MERGE_TYPE_ATTRIBUTES,			\
-  TARGET_VALID_DECL_ATTRIBUTE,			\
-  TARGET_VALID_TYPE_ATTRIBUTE,			\
+  TARGET_ATTRIBUTE_TABLE,			\
   TARGET_COMP_TYPE_ATTRIBUTES,			\
   TARGET_SET_DEFAULT_TYPE_ATTRIBUTES,		\
   TARGET_INSERT_ATTRIBUTES,			\
+  TARGET_FUNCTION_ATTRIBUTE_INLINABLE_P,	\
   TARGET_INIT_BUILTINS,				\
   TARGET_EXPAND_BUILTIN,			\
   TARGET_SECTION_TYPE_FLAGS,			\

@@ -37,6 +37,7 @@ Boston, MA 02111-1307, USA.  */
 #include "tm_p.h"
 #include "target.h"
 #include "target-def.h"
+#include "toplev.h"
 
 #ifdef OSF_OS
 int ns32k_num_files = 0;
@@ -64,13 +65,14 @@ static const char *const ns32k_out_reg_names[] = OUTPUT_REGISTER_NAMES;
 static rtx gen_indexed_expr PARAMS ((rtx, rtx, rtx));
 static const char *singlemove_string PARAMS ((rtx *));
 static void move_tail PARAMS ((rtx[], int, int));
-static int ns32k_valid_type_attribute_p PARAMS ((tree, tree, tree, tree));
+static tree ns32k_handle_fntype_attribute PARAMS ((tree *, tree, tree, int, bool *));
+const struct attribute_spec ns32k_attribute_table[];
 static void ns32k_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void ns32k_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 
 /* Initialize the GCC target structure.  */
-#undef TARGET_VALID_TYPE_ATTRIBUTE
-#define TARGET_VALID_TYPE_ATTRIBUTE ns32k_valid_type_attribute_p
+#undef TARGET_ATTRIBUTE_TABLE
+#define TARGET_ATTRIBUTE_TABLE ns32k_attribute_table
 
 #undef TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE ns32k_output_function_prologue
@@ -1008,32 +1010,39 @@ symbolic_reference_mentioned_p (op)
   return 0;
 }
 
-/* Return nonzero if IDENTIFIER with arguments ARGS is a valid machine specific
-   attribute for TYPE.  The attributes in ATTRIBUTES have previously been
-   assigned to TYPE.  */
+/* Table of machine-specific attributes.  */
 
-static int
-ns32k_valid_type_attribute_p (type, attributes, identifier, args)
-     tree type;
-     tree attributes ATTRIBUTE_UNUSED;
-     tree identifier;
-     tree args;
+const struct attribute_spec ns32k_attribute_table[] =
 {
-  if (TREE_CODE (type) != FUNCTION_TYPE
-      && TREE_CODE (type) != FIELD_DECL
-      && TREE_CODE (type) != TYPE_DECL)
-    return 0;
-
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
   /* Stdcall attribute says callee is responsible for popping arguments
      if they are not variable.  */
-  if (is_attribute_p ("stdcall", identifier))
-    return (args == NULL_TREE);
-
+  { "stdcall", 0, 0, false, true,  true,  ns32k_handle_fntype_attribute },
   /* Cdecl attribute says the callee is a normal C declaration */
-  if (is_attribute_p ("cdecl", identifier))
-    return (args == NULL_TREE);
+  { "cdecl",   0, 0, false, true,  true,  ns32k_handle_fntype_attribute },
+  { NULL,      0, 0, false, false, false, NULL }
+};
 
-  return 0;
+/* Handle an attribute requiring a FUNCTION_TYPE, FIELD_DECL or TYPE_DECL;
+   arguments as in struct attribute_spec.handler.  */
+static tree
+ns32k_handle_fntype_attribute (node, name, args, flags, no_add_attrs)
+     tree *node;
+     tree name;
+     tree args ATTRIBUTE_UNUSED;
+     int flags ATTRIBUTE_UNUSED;
+     bool *no_add_attrs;
+{
+  if (TREE_CODE (*node) != FUNCTION_TYPE
+      && TREE_CODE (*node) != FIELD_DECL
+      && TREE_CODE (*node) != TYPE_DECL)
+    {
+      warning ("`%s' attribute only applies to functions",
+	       IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
 }
 
 

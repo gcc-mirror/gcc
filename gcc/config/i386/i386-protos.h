@@ -173,9 +173,9 @@ extern int ix86_return_pops_args PARAMS ((tree, tree, int));
 extern int ix86_data_alignment PARAMS ((tree, int));
 extern int ix86_local_alignment PARAMS ((tree, int));
 extern int ix86_constant_alignment PARAMS ((tree, int));
-extern int ix86_valid_type_attribute_p PARAMS ((tree, tree, tree, tree));
-extern int i386_pe_valid_decl_attribute_p PARAMS ((tree, tree, tree, tree));
-extern int i386_pe_valid_type_attribute_p PARAMS ((tree, tree, tree, tree));
+extern tree ix86_handle_dll_attribute PARAMS ((tree *, tree, tree, int, bool *));
+extern tree ix86_handle_shared_attribute PARAMS ((tree *, tree, tree, int, bool *));
+
 extern unsigned int i386_pe_section_type_flags PARAMS ((tree, const char *,
 							int));
 extern void i386_pe_asm_named_section PARAMS ((const char *, unsigned int));

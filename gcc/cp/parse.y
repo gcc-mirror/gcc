@@ -164,7 +164,7 @@ parse_field (declarator, attributes, asmspec, init)
      tree declarator, attributes, asmspec, init;
 {
   tree d = grokfield (declarator, current_declspecs, init, asmspec,
-		      build_tree_list (attributes, prefix_attributes));
+		      chainon (attributes, prefix_attributes));
   decl_type_access_control (d);
   return d;
 }
@@ -182,7 +182,7 @@ parse_bitfield (declarator, attributes, width)
      tree declarator, attributes, width;
 {
   tree d = grokbitfield (declarator, current_declspecs, width);
-  cplus_decl_attributes (&d, attributes, prefix_attributes, 0);
+  cplus_decl_attributes (&d, chainon (attributes, prefix_attributes), 0);
   decl_type_access_control (d);
   return d;
 }
@@ -2639,11 +2639,9 @@ component_decl_1:
 		  $$ = NULL_TREE; 
 		}
 	| notype_declarator maybeasm maybe_attribute maybe_init
-		{ $$ = grokfield ($$, NULL_TREE, $4, $2,
-				  build_tree_list ($3, NULL_TREE)); }
+		{ $$ = grokfield ($$, NULL_TREE, $4, $2, $3); }
 	| constructor_declarator maybeasm maybe_attribute maybe_init
-		{ $$ = grokfield ($$, NULL_TREE, $4, $2,
-				  build_tree_list ($3, NULL_TREE)); }
+		{ $$ = grokfield ($$, NULL_TREE, $4, $2, $3); }
 	| ':' expr_no_commas
 		{ $$ = grokbitfield (NULL_TREE, NULL_TREE, $2); }
 	| error
@@ -2661,10 +2659,9 @@ component_decl_1:
 		{ tree specs, attrs;
 		  split_specs_attrs ($1.t, &specs, &attrs);
 		  $$ = grokfield ($2, specs, $5, $3,
-				  build_tree_list ($4, attrs)); }
+				  chainon ($4, attrs)); }
 	| component_constructor_declarator maybeasm maybe_attribute maybe_init
-		{ $$ = grokfield ($$, NULL_TREE, $4, $2,
-				  build_tree_list ($3, NULL_TREE)); }
+		{ $$ = grokfield ($$, NULL_TREE, $4, $2, $3); }
 	| using_decl
 		{ $$ = do_class_using_decl ($1); }
 

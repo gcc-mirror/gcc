@@ -503,29 +503,14 @@ extern const char *fname_as_string		PARAMS ((int));
 extern tree fname_decl				PARAMS ((unsigned, tree));
 extern const char *fname_string			PARAMS ((unsigned));
 
-/* Flags that may be passed in the third argument of decl_attributes.  */
-enum attribute_flags
-{
-  /* The type passed in is the type of a DECL, and any attributes that
-     should be passed in again to be applied to the DECL rather than the
-     type should be returned.  */
-  ATTR_FLAG_DECL_NEXT = 1,
-  /* The type passed in is a function return type, and any attributes that
-     should be passed in again to be applied to the function type rather
-     than the return type should be returned.  */
-  ATTR_FLAG_FUNCTION_NEXT = 2,
-  /* The type passed in is an array element type, and any attributes that
-     should be passed in again to be applied to the array type rather
-     than the element type should be returned.  */
-  ATTR_FLAG_ARRAY_NEXT = 4
-};
-
 extern tree decl_attributes			PARAMS ((tree *, tree, int));
 extern void init_function_format_info		PARAMS ((void));
 extern void check_function_format		PARAMS ((int *, tree, tree, tree));
 extern void set_Wformat				PARAMS ((int));
-extern void decl_handle_format_attribute	PARAMS ((tree, tree));
-extern void decl_handle_format_arg_attribute	PARAMS ((tree, tree));
+extern tree handle_format_attribute		PARAMS ((tree *, tree, tree,
+							 int, bool *));
+extern tree handle_format_arg_attribute		PARAMS ((tree *, tree, tree,
+							 int, bool *));
 extern void c_apply_type_quals_to_decl		PARAMS ((int, tree));
 extern tree c_sizeof				PARAMS ((tree));
 extern tree c_alignof				PARAMS ((tree));

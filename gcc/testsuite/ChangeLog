@@ -1,3 +1,8 @@
+2001-09-21  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	Table-driven attributes.
+	* g++.dg/ext/attrib1.C: New test.
+
 2001-09-20  DJ Delorie  <dj@redhat.com>
 
 	* gcc.dg/20000926-1.c: Update expected warning messages.

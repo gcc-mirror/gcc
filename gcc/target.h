@@ -121,17 +121,8 @@ struct gcc_target
   /* Given two types, merge their attributes and return the result.  */
   tree (* merge_type_attributes) PARAMS ((tree, tree));
 
-  /* Return nonzero if IDENTIFIER with arguments ARGS is a valid machine
-     specific attribute for DECL.  The attributes in ATTRIBUTES have
-     previously been assigned to DECL.  */
-  int (* valid_decl_attribute) PARAMS ((tree decl, tree attributes,
-					tree identifier, tree args));
-
-  /* Return nonzero if IDENTIFIER with arguments ARGS is a valid machine
-     specific attribute for TYPE.  The attributes in ATTRIBUTES have
-     previously been assigned to TYPE.  */
-  int (* valid_type_attribute) PARAMS ((tree type, tree attributes,
-					tree identifier, tree args));
+  /* Table of machine attributes and functions to handle them.  */
+  const struct attribute_spec *attribute_table;
 
   /* Return zero if the attributes on TYPE1 and TYPE2 are incompatible,
      one if they are compatible and two if they are nearly compatible
@@ -143,6 +134,10 @@ struct gcc_target
 
   /* Insert attributes on the newly created DECL.  */
   void (* insert_attributes) PARAMS ((tree decl, tree *attributes));
+
+  /* Return true if FNDECL (which has at least one machine attribute)
+     can be inlined despite its machine attributes, false otherwise.  */
+  bool (* function_attribute_inlinable_p) PARAMS ((tree fndecl));
 
   /* Set up target-specific built-in functions.  */
   void (* init_builtins) PARAMS ((void));

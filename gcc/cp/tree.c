@@ -50,6 +50,10 @@ static tree verify_stmt_tree_r PARAMS ((tree *, int *, void *));
 static tree find_tree_r PARAMS ((tree *, int *, void *));
 extern int cp_statement_code_p PARAMS ((enum tree_code));
 
+static tree handle_java_interface_attribute PARAMS ((tree *, tree, tree, int, bool *));
+static tree handle_com_interface_attribute PARAMS ((tree *, tree, tree, int, bool *));
+static tree handle_init_priority_attribute PARAMS ((tree *, tree, tree, int, bool *));
+
 /* If REF is an lvalue, returns the kind of lvalue that REF is.
    Otherwise, returns clk_none.  If TREAT_CLASS_RVALUES_AS_LVALUES is
    non-zero, rvalues of class type are considered lvalues.  */
@@ -2182,108 +2186,145 @@ pod_type_p (t)
   return 1;
 }
 
-/* Return a 1 if ATTR_NAME and ATTR_ARGS denote a valid C++-specific
-   attribute for either declaration DECL or type TYPE and 0 otherwise.
-   Plugged into valid_lang_attribute.  */
-
-int
-cp_valid_lang_attribute (attr_name, attr_args, decl, type)
-  tree attr_name;
-  tree attr_args ATTRIBUTE_UNUSED;
-  tree decl ATTRIBUTE_UNUSED;
-  tree type ATTRIBUTE_UNUSED;
+/* Table of valid C++ attributes.  */
+const struct attribute_spec cp_attribute_table[] =
 {
-  if (is_attribute_p ("java_interface", attr_name))
-    {
-      if (attr_args != NULL_TREE
-	  || decl != NULL_TREE
-	  || ! CLASS_TYPE_P (type)
-	  || ! TYPE_FOR_JAVA (type))
-	{
-	  error ("`java_interface' attribute can only be applied to Java class definitions");
-	  return 0;
-	}
-      TYPE_JAVA_INTERFACE (type) = 1;
-      return 1;
-    }
-  if (is_attribute_p ("com_interface", attr_name))
-    {
-      static int warned;
-      if (attr_args != NULL_TREE
-	  || decl != NULL_TREE
-	  || ! CLASS_TYPE_P (type)
-	  || type != TYPE_MAIN_VARIANT (type))
-	{
-	  warning ("`com_interface' attribute can only be applied to class definitions");
-	  return 0;
-	}
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
+  { "java_interface", 0, 0, false, false, false, handle_java_interface_attribute },
+  { "com_interface",  0, 0, false, false, false, handle_com_interface_attribute },
+  { "init_priority",  1, 1, true,  false, false, handle_init_priority_attribute },
+  { NULL,             0, 0, false, false, false, NULL }
+};
 
-      if (! warned++)
-	warning ("\
-`com_interface' is obsolete; g++ vtables are now COM-compatible by default");
-      return 1;
-    }
-  else if (is_attribute_p ("init_priority", attr_name))
+/* Handle a "java_interface" attribute; arguments as in
+   struct attribute_spec.handler.  */
+static tree
+handle_java_interface_attribute (node, name, args, flags, no_add_attrs)
+     tree *node;
+     tree name;
+     tree args ATTRIBUTE_UNUSED;
+     int flags;
+     bool *no_add_attrs;
+{
+  if (DECL_P (*node)
+      || !CLASS_TYPE_P (*node)
+      || !TYPE_FOR_JAVA (*node))
     {
-      tree initp_expr = (attr_args ? TREE_VALUE (attr_args): NULL_TREE);
-      int pri;
+      error ("`%s' attribute can only be applied to Java class definitions",
+	     IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+  if (!(flags & (int) ATTR_FLAG_TYPE_IN_PLACE))
+    *node = build_type_copy (*node);
+  TYPE_JAVA_INTERFACE (*node) = 1;
 
-      if (initp_expr)
-	STRIP_NOPS (initp_expr);
+  return NULL_TREE;
+}
+
+/* Handle a "com_interface" attribute; arguments as in
+   struct attribute_spec.handler.  */
+static tree
+handle_com_interface_attribute (node, name, args, flags, no_add_attrs)
+     tree *node;
+     tree name;
+     tree args ATTRIBUTE_UNUSED;
+     int flags ATTRIBUTE_UNUSED;
+     bool *no_add_attrs;
+{
+  static int warned;
+
+  *no_add_attrs = true;
+
+  if (DECL_P (*node)
+      || !CLASS_TYPE_P (*node)
+      || *node != TYPE_MAIN_VARIANT (*node))
+    {
+      warning ("`%s' attribute can only be applied to class definitions",
+	       IDENTIFIER_POINTER (name));
+      return NULL_TREE;
+    }
+
+  if (!warned++)
+    warning ("`%s' is obsolete; g++ vtables are now COM-compatible by default",
+	     IDENTIFIER_POINTER (name));
+
+  return NULL_TREE;
+}
+
+/* Handle an "init_priority" attribute; arguments as in
+   struct attribute_spec.handler.  */
+static tree
+handle_init_priority_attribute (node, name, args, flags, no_add_attrs)
+     tree *node;
+     tree name;
+     tree args;
+     int flags ATTRIBUTE_UNUSED;
+     bool *no_add_attrs;
+{
+  tree initp_expr = TREE_VALUE (args);
+  tree decl = *node;
+  tree type = TREE_TYPE (decl);
+  int pri;
+
+  STRIP_NOPS (initp_expr);
 	  
-      if (!initp_expr || TREE_CODE (initp_expr) != INTEGER_CST)
-	{
-	  error ("requested init_priority is not an integer constant");
-	  return 0;
-	}
-
-      pri = TREE_INT_CST_LOW (initp_expr);
-	
-      type = strip_array_types (type);
-
-      if (decl == NULL_TREE
-	  || TREE_CODE (decl) != VAR_DECL
-	  || ! TREE_STATIC (decl)
-	  || DECL_EXTERNAL (decl)
-	  || (TREE_CODE (type) != RECORD_TYPE
-	      && TREE_CODE (type) != UNION_TYPE)
-	  /* Static objects in functions are initialized the
-	     first time control passes through that
-	     function. This is not precise enough to pin down an
-	     init_priority value, so don't allow it. */
-	  || current_function_decl) 
-	{
-	  error ("can only use init_priority attribute on file-scope definitions of objects of class type");
-	  return 0;
-	}
-
-      if (pri > MAX_INIT_PRIORITY || pri <= 0)
-	{
-	  error ("requested init_priority is out of range");
-	  return 0;
-	}
-
-      /* Check for init_priorities that are reserved for
-	 language and runtime support implementations.*/
-      if (pri <= MAX_RESERVED_INIT_PRIORITY)
-	{
-	  warning 
-	    ("requested init_priority is reserved for internal use");
-	}
-
-      if (SUPPORTS_INIT_PRIORITY)
-	{
-	  DECL_INIT_PRIORITY (decl) = pri;
-	  return 1;
-	}
-      else
-	{
-	  error ("init_priority attribute is not supported on this platform");
-	  return 0;
-	}
+  if (!initp_expr || TREE_CODE (initp_expr) != INTEGER_CST)
+    {
+      error ("requested init_priority is not an integer constant");
+      *no_add_attrs = true;
+      return NULL_TREE;
     }
 
-  return 0;
+  pri = TREE_INT_CST_LOW (initp_expr);
+	
+  type = strip_array_types (type);
+
+  if (decl == NULL_TREE
+      || TREE_CODE (decl) != VAR_DECL
+      || !TREE_STATIC (decl)
+      || DECL_EXTERNAL (decl)
+      || (TREE_CODE (type) != RECORD_TYPE
+	  && TREE_CODE (type) != UNION_TYPE)
+      /* Static objects in functions are initialized the
+	 first time control passes through that
+	 function. This is not precise enough to pin down an
+	 init_priority value, so don't allow it. */
+      || current_function_decl) 
+    {
+      error ("can only use `%s' attribute on file-scope definitions of objects of class type",
+	     IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+
+  if (pri > MAX_INIT_PRIORITY || pri <= 0)
+    {
+      error ("requested init_priority is out of range");
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+
+  /* Check for init_priorities that are reserved for
+     language and runtime support implementations.*/
+  if (pri <= MAX_RESERVED_INIT_PRIORITY)
+    {
+      warning 
+	("requested init_priority is reserved for internal use");
+    }
+
+  if (SUPPORTS_INIT_PRIORITY)
+    {
+      DECL_INIT_PRIORITY (decl) = pri;
+      return NULL_TREE;
+    }
+  else
+    {
+      error ("`%s' attribute is not supported on this platform",
+	     IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
 }
 
 /* Return a new PTRMEM_CST of the indicated TYPE.  The MEMBER is the

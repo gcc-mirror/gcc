@@ -42,6 +42,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "loop.h"
 #include "params.h"
 #include "ggc.h"
+#include "target.h"
 
 #include "obstack.h"
 #define	obstack_chunk_alloc	xmalloc
@@ -63,12 +64,6 @@ extern struct obstack *function_maybepermanent_obstack;
    ? (1 + (3 * list_length (DECL_ARGUMENTS (DECL))) / 2) \
    : (8 * (8 + list_length (DECL_ARGUMENTS (DECL)))))
 #endif
-
-/* Decide whether a function with a target specific attribute
-   attached can be inlined.  By default we disallow this.  */
-#ifndef FUNCTION_ATTRIBUTE_INLINABLE_P
-#define FUNCTION_ATTRIBUTE_INLINABLE_P(FNDECL) 0
-#endif
 
 
 /* Private type used by {get/has}_func_hard_reg_initial_val.  */
@@ -81,6 +76,8 @@ typedef struct initial_value_struct {
   int max_entries;
   initial_value_pair *entries;
 } initial_value_struct;
+
+static bool function_attribute_inlinable_p PARAMS ((tree));
 
 static void setup_initial_hard_reg_value_integration PARAMS ((struct function *, struct inline_remap *));
 
@@ -128,6 +125,38 @@ get_label_from_map (map, i)
     x = map->label_map[i] = gen_label_rtx ();
 
   return x;
+}
+
+/* Return false if the function FNDECL cannot be inlined on account of its
+   attributes, true otherwise.  */
+static bool
+function_attribute_inlinable_p (fndecl)
+     tree fndecl;
+{
+  bool has_machine_attr = false;
+  tree a;
+
+  for (a = DECL_ATTRIBUTES (fndecl); a; a = TREE_CHAIN (a))
+    {
+      tree name = TREE_PURPOSE (a);
+      int i;
+
+      for (i = 0; targetm.attribute_table[i].name != NULL; i++)
+	{
+	  if (is_attribute_p (targetm.attribute_table[i].name, name))
+	    {
+	      has_machine_attr = true;
+	      break;
+	    }
+	}
+      if (has_machine_attr)
+	break;
+    }
+
+  if (has_machine_attr)
+    return (*targetm.function_attribute_inlinable_p) (fndecl);
+  else
+    return true;
 }
 
 /* Zero if the current function (whose FUNCTION_DECL is FNDECL)
@@ -250,9 +279,8 @@ function_cannot_inline_p (fndecl)
 
   /* If the function has a target specific attribute attached to it,
      then we assume that we should not inline it.  This can be overriden
-     by the target if it defines FUNCTION_ATTRIBUTE_INLINABLE_P.  */
-  if (DECL_MACHINE_ATTRIBUTES (fndecl)
-      && ! FUNCTION_ATTRIBUTE_INLINABLE_P (fndecl))
+     by the target if it defines TARGET_FUNCTION_ATTRIBUTE_INLINABLE_P.  */
+  if (!function_attribute_inlinable_p (fndecl))
     return N_("function with target specific attribute(s) cannot be inlined");
 
   return NULL;

@@ -1,5 +1,5 @@
 /* Front-end tree definitions for GNU compiler.
-   Copyright (C) 1989, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000
+   Copyright (C) 1989, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -1337,9 +1337,8 @@ struct tree_type
     type, or NULL_TREE if the given decl has "file scope".  */
 #define DECL_CONTEXT(NODE) (DECL_CHECK (NODE)->decl.context)
 #define DECL_FIELD_CONTEXT(NODE) (FIELD_DECL_CHECK (NODE)->decl.context)
-/* In a DECL this is the field where configuration dependent machine
-   attributes are store */
-#define DECL_MACHINE_ATTRIBUTES(NODE) (DECL_CHECK (NODE)->decl.machine_attributes)
+/* In a DECL this is the field where attributes are stored.  */
+#define DECL_ATTRIBUTES(NODE) (DECL_CHECK (NODE)->decl.attributes)
 /* In a FIELD_DECL, this is the field position, counting in bytes, of the
    byte containing the bit closest to the beginning of the structure.  */
 #define DECL_FIELD_OFFSET(NODE) (FIELD_DECL_CHECK (NODE)->decl.arguments)
@@ -1754,7 +1753,7 @@ struct tree_decl
   tree abstract_origin;
   tree assembler_name;
   tree section_name;
-  tree machine_attributes;
+  tree attributes;
   rtx rtl;	/* RTL representation for object.  */
   rtx live_range_rtl;
 
@@ -2069,14 +2068,82 @@ extern tree make_tree			PARAMS ((tree, rtx));
 extern tree build_type_attribute_variant PARAMS ((tree, tree));
 extern tree build_decl_attribute_variant PARAMS ((tree, tree));
 
+/* Structure describing an attribute and a function to handle it.  */
+struct attribute_spec
+{
+  /* The name of the attribute (without any leading or trailing __),
+     or NULL to mark the end of a table of attributes.  */
+  const char *name;
+  /* The minimum length of the list of arguments of the attribute.  */
+  int min_length;
+  /* The maximum length of the list of arguments of the attribute
+     (-1 for no maximum).  */
+  int max_length;
+  /* Whether this attribute requires a DECL.  If it does, it will be passed
+     from types of DECLs, function return types and array element types to
+     the DECLs, function types and array types respectively; but when
+     applied to a type in any other circumstances, it will be ignored with
+     a warning.  (If greater control is desired for a given attribute,
+     this should be false, and the flags argument to the handler may be
+     used to gain greater control in that case.)  */
+  bool decl_required;
+  /* Whether this attribute requires a type.  If it does, it will be passed
+     from a DECL to the type of that DECL.  */
+  bool type_required;
+  /* Whether this attribute requires a function (or method) type.  If it does,
+     it will be passed from a function pointer type to the target type,
+     and from a function return type (which is not itself a function
+     pointer type) to the function type.  */
+  bool function_type_required;
+  /* Function to handle this attribute.  NODE points to the node to which
+     the attribute is to be applied.  If a DECL, it should be modified in
+     place; if a TYPE, a copy should be created.  NAME is the name of the
+     attribute (possibly with leading or trailing __).  ARGS is the TREE_LIST
+     of the arguments (which may be NULL).  FLAGS gives further information
+     about the context of the attribute.  Afterwards, the attributes will
+     be added to the DECL_ATTRIBUTES or TYPE_ATTRIBUTES, as appropriate,
+     unless *NO_ADD_ATTRS is set to true (which should be done on error,
+     as well as in any other cases when the attributes should not be added
+     to the DECL or TYPE).  Depending on FLAGS, any attributes to be
+     applied to another type or DECL later may be returned;
+     otherwise the return value should be NULL_TREE.  This pointer may be
+     NULL if no special handling is required beyond the checks implied
+     by the rest of this structure.  */
+  tree (*handler) PARAMS ((tree *node, tree name, tree args,
+			   int flags, bool *no_add_attrs));
+};
+
+extern const struct attribute_spec default_target_attribute_table[];
+
+/* Flags that may be passed in the third argument of decl_attributes, and
+   to handler functions for attributes.  */
+enum attribute_flags
+{
+  /* The type passed in is the type of a DECL, and any attributes that
+     should be passed in again to be applied to the DECL rather than the
+     type should be returned.  */
+  ATTR_FLAG_DECL_NEXT = 1,
+  /* The type passed in is a function return type, and any attributes that
+     should be passed in again to be applied to the function type rather
+     than the return type should be returned.  */
+  ATTR_FLAG_FUNCTION_NEXT = 2,
+  /* The type passed in is an array element type, and any attributes that
+     should be passed in again to be applied to the array type rather
+     than the element type should be returned.  */
+  ATTR_FLAG_ARRAY_NEXT = 4,
+  /* The type passed in is a structure, union or enumeration type being
+     created, and should be modified in place.  */
+  ATTR_FLAG_TYPE_IN_PLACE = 8
+};
+
 /* Default versions of target-overridable functions.  */
 
 extern tree merge_decl_attributes PARAMS ((tree, tree));
 extern tree merge_type_attributes PARAMS ((tree, tree));
-extern int default_valid_attribute_p PARAMS ((tree, tree, tree, tree));
 extern int default_comp_type_attributes PARAMS ((tree, tree));
 extern void default_set_default_type_attributes PARAMS ((tree));
 extern void default_insert_attributes PARAMS ((tree, tree *));
+extern bool default_function_attribute_inlinable_p PARAMS ((tree));
 
 /* Split a list of declspecs and attributes into two.  */
 
