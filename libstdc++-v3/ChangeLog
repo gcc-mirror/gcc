@@ -1,3 +1,19 @@
+2003-06-18  Andreas Jaeger  <aj@suse.de>
+
+	* testsuite/Makefile.am (new-abi-baseline): Create baseline
+	directory.
+	(baseline_file): Use baseline_dir.
+	(baseline_dir): New.
+	(mkinstalldirs): New.
+
+	* acinclude.m4: Rename baseline_file to baseline_dir, strip
+	filename from baseline_dir.
+
+	* testsuite/Makefile.in: Regenerated.
+	* Makefile.in: Regenerated.
+	* aclocal.m4: Regenerated.
+	* configure: Regenerated.
+
 2003-06-17  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* configure.in: Missed check_survey bit.
@@ -20,10 +36,10 @@
 	location of testsuite_flags.
 	* Makefile.am (check-script): Move..
 	(check-script-install): Move...
-	* testsuite/Makefile.am: ... here.	
+	* testsuite/Makefile.am: ... here.
 	* testsuite/Makefile.in: Regenerate.
-	* Makefile.in: Regenerate.	
-	
+	* Makefile.in: Regenerate.
+
 2003-06-17  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* config/abi/i486-linux-gnu/baseline_symbols.txt: Update to 3.3.0.
@@ -37,18 +53,18 @@
 	(check-abi): Conditionalize.
 	(check-abi-verbose): New.
 	* Makefile.in: Regenerate.
-	* testsuite/Makefile.in: Regenerate.	
+	* testsuite/Makefile.in: Regenerate.
 	* configure.in: Consolidate testsuite configure bits.
 	* acinclude.m4 (GLIBCPP_CONFIGURE_TESTSUITE): Same.
 	* configure: Regenerate.
-	* aclocal.m4: Regenerate.	
+	* aclocal.m4: Regenerate.
 	* testsuite/abi_check.cc: Add --check-verbose.
 	Only output detailed information if --check-verbose.
 
 2003-06-16  Andreas Jaeger  <aj@suse.de>
-        
+
         * testsuite/abi_check.cc: Create summary report.
- 
+
 2003-06-16  Paolo Carlini  <pcarlini@unitus.it>
 
 	* testsuite/27_io/basic_filebuf/sgetn/char/1-in.cc: Fix
@@ -63,7 +79,7 @@
 	check-abi multilib aware.
 	* aclocal.m4: Regenerate.
 	* configure: Regenerate.
-	
+
 2003-06-16  Benjamin Kosnik  <bkoz@redhat.com>
             Andreas Jaeger  <aj@suse.de>
 
@@ -79,7 +95,7 @@
 	* testsuite/27_io/basic_filebuf/sungetc/char/2-in.cc: New.
 	* testsuite/27_io/basic_filebuf/sungetc/char/2-io.cc: New.
 	* testsuite/27_io/basic_filebuf/sungetc/char/2-out.cc: New.
-		
+
 2003-06-15  Richard Henderson  <rth@redhat.com>
 
 	* config/linker-map.gnu: Export virtual function thunks for
@@ -127,21 +143,21 @@
 2003-06-13  Nathan C. Myers <ncm-nospam@cantrip.org>
 
 	Avoid multi-processor bus contention on increment/decrement-and-
-	test of the reference count in the empty-string object, by comparing 
+	test of the reference count in the empty-string object, by comparing
         addresses first, and never touching the reference count of the empty-
-        string object.  
+        string object.
 	* include/bits/basic_string.h:
 	(_S_empty_rep_storage): Move into basic_string<>::_Rep for use by its
 	members.
-	(_Rep::_S_empty_rep()): New accessor. 
+	(_Rep::_S_empty_rep()): New accessor.
 	(_Rep::_M_length, _Rep::_M_capacity, _Rep::_M_references): Move to
 	a base class _Rep_base.
 	(_Rep::_M_dispose, _Rep::_M_refcopy): Check for the empty string.
 	(basic_string()): Change to use _M_refdata() in place of _M_refcopy(),
 	since no longer must increment its refcount.
 	* include/bits/basic_string.tcc:
-	(_Rep::_M_destroy, _M_leak_hard): Check for the empty string and 
-        return immediately.  The former might be unnecessary.  The latter 
+	(_Rep::_M_destroy, _M_leak_hard): Check for the empty string and
+        return immediately.  The former might be unnecessary.  The latter
         prevents begin() and end() from cloning it unnecessarily.
 	(_S_construct(_InIterator, _InIterator, const _Alloc&,
 	input_iterator_tag), _S_construct(_InIterator, _InIterator,
@@ -151,14 +167,14 @@
         This is necessary here because _M_mutate is sometimes called with
         all-zero arguments; in all other uses of _M_is_shared, the test comes
         out right anyhow.
-	
+
 2003-06-12  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* src/allocator-inst.cc: Explicitly instantiate.
 	* include/ext/pool_allocator.h: Inhibit implicit instantiations.
 	Tweaks.
 	* config/linker-map.gnu: Add __pool_alloc bits. Tweaks.
-	
+
 2003-06-11  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* acinclude.m4 (GLIBCPP_ENABLE_CSTDIO): Simplify.
@@ -168,15 +184,15 @@
 	* configure.in: Same.
 	* configure: Regenerate.
 	* config/io/basic_file_libio.cc: Remove.
-	* config/io/basic_file_libio.h: Remove.	
+	* config/io/basic_file_libio.h: Remove.
 	* config/io/c_io_libio_codecvt.c: Remove.
-	* config/io/c_io_libio.h: Remove.	
+	* config/io/c_io_libio.h: Remove.
 	* libio/*: Remove.
 	* src/Makefile.am: Same.
 	* src/Makefile.in: Regenerate.
-	* docs/html/configopts.html: Edits.	
+	* docs/html/configopts.html: Edits.
 	* docs/html/explanations.html: Edits.
-	
+
 2003-06-11  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/stl_alloc.h (__debug_alloc): Move out.
@@ -189,7 +205,7 @@
 	* include/bits/stl_tree.h: Modify include.
 	* include/std/std_memory.h: Same.
 	* include/ext/rope: Same.
-	* include/ext/slist: Same.	
+	* include/ext/slist: Same.
 	* include/std/std_vector.h: Same.
 	* include/std/std_stack.h: Same.
 	* include/std/std_queue.h: Same.
@@ -197,11 +213,11 @@
 	* include/std/std_deque.h: Same.
 	* include/backward/alloc.h: Same.
 	* include/ext/debug_allocator.h: New.
-	* include/ext/malloc_allocator.h: New.	
-	* include/ext/pool_allocator.h: New.		
+	* include/ext/malloc_allocator.h: New.
+	* include/ext/pool_allocator.h: New.
 	* include/ext/new_allocator.h: New.
 	* include/bits/pthread_allocimpl.h: Remove.
-	* include/bits/stl_pthread_alloc.h: Remove.	
+	* include/bits/stl_pthread_alloc.h: Remove.
 	* include/Makefile.am (ext_headers): Add.
 	* include/Makefile.in: Regenerate.
 	* src/stl-inst.cc: Use __gnu_cxx namespace.
@@ -212,10 +228,10 @@
 	* config/linker-map.gnu: Remove __pool_alloc bits.
 	* testsuite/ext/headers.cc: Add.
 	* testsuite/ext/allocators.cc: Fixup.
-	
+
 2003-06-11  Stefan Olsson  <stefan@snon.net>
             Ola Rönnerup  <fnolis@home.se>
-	
+
 	* include/Makefile.am (ext_headers): Add.
 	* include/Makefile.in: Regenerate.
 	* include/ext/mt_allocator.h: New file.
@@ -340,7 +356,7 @@
 
 2003-06-05  Benjamin Kosnik  <bkoz@redhat.com>
 
-	PR libstdc++/9024	
+	PR libstdc++/9024
 	* include/bits/fstream.tcc (_M_underflow): Fix for unbuffered.
 	* include/bits/stl_algobase.h: Tweak.
 	* include/std/std_fstream.h: Move _M_buf_size to...
@@ -395,7 +411,7 @@
 	* testsuite/27_io/basic_filebuf/sputn/char/2-out.cc: New.
 	* testsuite/data/sgetc.txt: New.
 	* testsuite/data/sgetn.txt: New.
-	
+
 2003-06-05  Paolo Carlini  <pcarlini@unitus.it>
 
 	PR libstdc++/11095
@@ -454,7 +470,7 @@
 	asm case to asm.
 	* config/cpu/i486/atomicity.h (__exchange_and_add): Likewise.
 	(__atomic_add): likewise.
-	
+
 2003-06-02  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/bits/sstream.tcc (pbackfail): Minor clean up and
@@ -556,7 +572,7 @@
 	(basic_filebuf::overflow): ...this.
 	* testsuite/27_io/basic_filebuf/sputn/char/9339.cc: New.
 	* testsuite/27_io/basic_filebuf/sputc/char/2.cc: Unbuffered.
-	
+
 2003-05-24  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* libsupc++/Makefile.am, libsupc++/cxxabi.h, libsupc++/del_op.cc,
@@ -585,7 +601,7 @@
 	* aclocal.m4: Regenerate.
 	* configure.target: Same. Rename to...
 	* configure.host: This.
-	
+
 2003-05-22  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/std/std_fstream.h (_S_pback_size): Remove definition.
@@ -678,12 +694,12 @@
         * testsuite/performance/string_append.cc: New.
 	* testsuite/lib/libstdc++-v3-dg.exp (v3-compute-tests): Filter
 	performance tests.
- 
+
 2003-05-20  Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 	PR libstdc++/10689
 	* include/std/std_complex.h (pow): Tidy.
-	
+
 2003-05-19  Paolo Carlini  <pcarlini@unitus.it>
 
 	* testsuite/27_io/basic_filebuf/close/char/4.cc: New file, testing
@@ -730,7 +746,7 @@
 	excess errors dg marker, use dg-errors instead.
 	* testsuite/27_io/ios_base/cons/assign_neg.cc: Same.
 	* testsuite/20_util/auto_ptr_neg.cc: Same.
-	
+
 2003-05-12  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/std/std_fstream.h (basic_filebuf::_M_codecvt): Add
@@ -745,11 +761,11 @@
 	(basic_filebuf::imbue): Use it, tweaks.
 	* include/bits/localefwd.h (__check_facet): New.
 	* include/bits/locale_classes.h: Tweaks.
-	* include/bits/locale_facets.tcc: Tweaks.	
+	* include/bits/locale_facets.tcc: Tweaks.
 	* include/bits/basic_ios.h (basic_ios::_M_check_facet): Remove.
 	_M_fctype to _M_ctype, _M_fnumput to _M_num_put, _M_fnumget to
 	_M_num_get. Change _M_check_facet to __check_facet. Tweaks.
-	* include/bits/basic_ios.tcc: Same.	
+	* include/bits/basic_ios.tcc: Same.
 	* include/bits/istream.tcc: Same.
 	* include/bits/ostream.tcc: Same.
 	* include/std/std_streambuf.h: Same.
@@ -759,7 +775,7 @@
 	* testsuite/27_io/basic_filebuf/imbue/wchar_t/2.cc: New.
 	* testsuite/27_io/basic_filebuf/imbue/wchar_t/3.cc: New.
 	* testsuite/27_io/basic_filebuf/imbue/wchar_t/9322.cc: New.
-	
+
 2003-05-12  Paolo Carlini  <pcarlini@unitus.it>
 
 	* testsuite/27_io/basic_filebuf/sgetc/char/1.cc: Remove
@@ -821,7 +837,7 @@
 	* include/bits/cpp_type_traits.h (__are_same<>): New traits.
 	(__enable_if): Likewise.
 	* testsuite/26_numerics/cmath/overloads.C: New test.
-	
+
 2003-05-10  Petur Runolfsson  <peturr02@ru.is>
 
 	PR libstdc++/9027
@@ -859,7 +875,7 @@
 	* include/bits/fstream.tcc: Same.
 	* src/fstream.cc: Same.
 	* testsuite/27_io/basic_filebuf/sgetn/char/1.cc (test05): Tidy.
-	
+
 2003-05-10  Petur Runolfsson  <peturr02@ru.is>
 
 	PR libstdc++/9520
@@ -871,7 +887,7 @@
 	* include/Makefile.in: Regenerate.
 	* include/bits/ios_base.h (Init::_S_create_buffers,
 	Init::_S_destroy_buffers):  Remove declarations.
-	* src/globals.cc (buf_cout_sync, buf_cin_sync, buf_cerr_sync, 
+	* src/globals.cc (buf_cout_sync, buf_cin_sync, buf_cerr_sync,
 	buf_wcout_sync, buf_wcin_sync, buf_wcerr_sync):  Define.
 	* src/ios.cc (Init::_S_create_buffers,
 	Init::_S_destroy_buffers):  Remove.
@@ -945,10 +961,10 @@
         (__cxa_call_unexpected): Remove foreign exception fixmes.
 
 2003-05-07  Benjamin Kosnik  <bkoz@redhat.com>
-	
+
 	* testsuite/27_io/ios_base/cons: New.
 	* testsuite/27_io/ios_base/cons/assign_neg.cc: New.
-	* testsuite/27_io/ios_base/cons/copy_neg.cc: New.	
+	* testsuite/27_io/ios_base/cons/copy_neg.cc: New.
 
 2003-05-07  Paolo Carlini  <pcarlini@unitus.it>
 
@@ -973,7 +989,7 @@
 	to clean up.
 
 2003-05-06  Benjamin Kosnik  <bkoz@redhat.com>
-	
+
 	* include/bits/stl_algo.h: Enums as _S_.
 	* include/bits/stl_tree.h: Same.
 	* include/bits/stl_bvector.h: Same.
@@ -981,12 +997,12 @@
 	* include/bits/stl_alloc.h: Same.
 	* include/ext/stl_hashtable.h: Same.
 	* src/ios.cc: And here.
-	
-	* include/std/std_sstream.h: Replace _M_really_sync to _M_sync. 
+
+	* include/std/std_sstream.h: Replace _M_really_sync to _M_sync.
 	* include/bits/sstream.tcc: Same.
 
         * include/bits/basic_ios.h: Correct spacing for '< ctype'.
- 
+
 	* include/bits/locale_facets.tcc: Replace __temp to __tmp.
 
 	* include/bits/locale_facets.h (__num_base): Remove protected.
@@ -994,9 +1010,9 @@
 	(_S_format_int): Remove.
 	* include/bits/locale_facets.tcc: Same.
 	* src/locale.cc: Same.
-	
+
 	* include/std/std_sstream.h (stringbuf::str): Tweak formatting.
-	
+
 2003-05-06  Phil Edwards  <pme@gcc.gnu.org>
 
 	* docs/html/faq/index.html (3.10):  Add note about mips atomicity.h.
@@ -1087,7 +1103,7 @@
 	* testsuite/abi_check.cc (check_version): Update known versions.
 	Check added symbols for version_name != base version. Add missing
 	symbols to incompatible list.
-	
+
 2003-05-01  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* acinclude.m4 (GLIBCPP_EXPORT_FLAGS): Remove -Winline.
@@ -1181,7 +1197,7 @@
 	* config/locale/ieee_1003.1-2001/codecvt_specializations.h: Same.
 
 	* testsuite/testsuite_hooks.cc (__gnu_cxx_test): Modify.
-	
+
 2003-04-28  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/std/std_streambuf.h (_M_buf_size): is currently
@@ -1215,7 +1231,7 @@
 	* po/Makefile.in, config.h.in, configure:  Regenerate.
 
 2003-04-28  Petur Runolfsson  <peturr02@ru.is>
- 
+
         PR libstdc++/9523
         * include/bits/ios_base.h (Init::_S_ios_create,
         Init::_S_ios_destroy):  Remove declarations.
@@ -1237,12 +1253,12 @@
 2003-04-28  Benjamin Kosnik  <bkoz@redhat.com>
 
         * testsuite/27_io/objects/char/8.cc:  New test.
-	
+
 2003-04-28  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/22_locale/codecvt/unicode/char.cc: Remove bom usage.
 	* testsuite/22_locale/codecvt/unicode/wchar_t.cc: Same.
-	
+
 2003-04-27  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/std/std_fstream.h (basic_filebuf): _M_pback_destroy to
@@ -1256,7 +1272,7 @@
 	* include/bits/streambuf.tcc: Same.
 	* include/bits/fstream.tcc: Same.
 	* include/bits/sstream.tcc: Same.
-	
+
 2003-04-27  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/locale_classes.h (locale::_Impl): Change _M_names
@@ -1271,7 +1287,7 @@
 	* src/localename.cc: Use them.
 	(locale::_Impl::~_Impl): Destroy _M_names.
 	(locale::_Impl::_Impl): Create _M_names.
-	
+
 2003-04-27  Andreas Schwab  <schwab@suse.de>
 
 	* config/locale/ieee_1003.1-2001/codecvt_specializations.h
@@ -1289,7 +1305,7 @@
 	replace(size_type, size_type, const _CharT*, size_type)):
 	Move from here to...
 	* include/bits/basic_string.tcc: ...here.
-	
+
 2003-04-26  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/bits/fstream.tcc (pbackfail): Shorten a bit (10 lines)
@@ -1304,19 +1320,19 @@
 
 	* include/std/std_sstream.h (setbuf): don't set _M_buf_size,
 	in basic_stringbuf it's unused.
-	
+
 	* include/std/std_sstream.h (underflow): consistently use
 	_M_in_cur, not gptr().
 
 2003-04-25  Ranjit Mathew  <rmathew@hotmail.com>
             Phil Edwards  <pme@gcc.gnu.org>
-	
+
 	* testsuite_flags.in: Guard against the possibility
 	of having "xgcc" as a part of a folder name in the
 	path to the GCC build folder.
 	* testsuite/Makefile.am: Likewise.
 	* testsuite/Makefile.in: Regenerated.
-	
+
 2003-04-25  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/10132
@@ -1325,27 +1341,27 @@
 	(basic_filebuf::close): Same.
 	(basic_filebuf::_M_pback_destroy): Same.
 	(basic_filebuf::_M_destroy_internal_buffer): Same.
-	(basic_filebuf): Remove __res_type typedef.	
+	(basic_filebuf): Remove __res_type typedef.
 	* src/fstream.cc: Same.
 	* include/bits/fstream.tcc
 	(basic_filebuf::_M_convert_to_external): Simplify.
 	(basic_filebuf::seekoff): Use has_facet	before use_facet.
 	(basic_filebuf::close): Add exception specification of throw().
 	* testsuite/27_io/basic_filebuf/cons: New.
-	* testsuite/27_io/basic_filebuf/cons/wchar_t: New.	
-	* testsuite/27_io/basic_filebuf/cons/wchar_t/10132-1.cc: New.	
+	* testsuite/27_io/basic_filebuf/cons/wchar_t: New.
+	* testsuite/27_io/basic_filebuf/cons/wchar_t/10132-1.cc: New.
 	* testsuite/27_io/basic_filebuf/seekoff/10132-2.cc: New.
 	* testsuite/27_io/basic_filebuf/seekpos/10132-3.cc: New.
 
 2003-04-25  Benjamin Kosnik  <bkoz@redhat.com>
-	
+
 	* include/bits/locale_classes.h
 	(locale::_S_extra_categories_size): Remove.
 	* src/locale.cc: Remove _S_extra_categories_size.
 	* src/localename.cc: Same.
 	* config/locale/gnu/c_locale.cc: Same.
 	* config/locale/generic/c_locale.cc: Same.
-	
+
 2003-04-24  Richard Sandiford  <rsandifo@redhat.com>
 
 	* src/localename.cc (__gnu_cxx::facet_vec): Correct types.
@@ -1395,9 +1411,9 @@
 
 	* configure.in: Move GLIBCPP_CHECK_PCH before native/cross conditions.
 	* configure: Regenerated.
-	
+
 2003-04-23  Benjamin Kosnik  <bkoz@redhat.com>
-	
+
 	* config/locale/generic/c_locale.h (__convert_from_v): Use
 	attribute unused.
 
@@ -1595,7 +1611,7 @@
 	* testsuite/thread/pthread4.cc: Same.
 	* testsuite/thread/pthread5.cc: Same.
 	* testsuite/thread/pthread6.cc: Same.
- 
+
 2003-04-15  Loren J. Rittle  <ljrittle@acm.org>
 
 	libstdc++/7680
@@ -1613,12 +1629,12 @@
 	* testsuite/26_numerics/c_math_dynamic.cc: New file.
 
 2003-04-14  Andreas Tobler  <toa@pop.agri.ch>
- 	    Benjamin Kosnik  <bkoz@redhat.com>
+	    Benjamin Kosnik  <bkoz@redhat.com>
 
 	* config/os/generic/ctype_inline.h: Fix.
-	
+
 2003-04-14  Benjamin Kosnik  <bkoz@redhat.com>
-	
+
 	* testsuite/testsuite_hooks.h
 	(__gnu_cxx_test::run_test_wrapped_generic_locale_exception_catcher):
 	Change to try_named_locale.
@@ -1763,9 +1779,9 @@
 	* testsuite/27_io/basic_ostream/inserters_arithmetic/char/2.cc: Same.
 	* testsuite/27_io/basic_streambuf/imbue/char/9322.cc: Same.
 	* testsuite/27_io/basic_stringbuf/imbue/char/9322.cc: Same.
-	
+
 2003-04-14  Andreas Tobler  <toa@pop.agri.ch>
- 	    
+
 	* configure.target (_cpu_incdir_fullpath): Solaris 2.9 uses
 	solaris includes, not generic.
 
@@ -1809,7 +1825,7 @@
 	Remove _M_buf_size_opt, use directly _M_buf_size instead.
 	* include/bits/fstream.tcc
 	(basic_filebuf::_M_allocate_internal_buffer, setbuf): Remove
-	references to _M_buf_size_opt. 
+	references to _M_buf_size_opt.
 	* include/bits/sstream.tcc (basic_stringbuf::overflow): Likewise.
 	* include/bits/streambuf.tcc (__copy_streambufs): Likewise, rename
 	__bufsize to __in_avail and __size_opt to __buf_size.
@@ -1852,12 +1868,12 @@
 
 	* testsuite/22_locale/locale/cons/3.cc: Split.
 	* testsuite/22_locale/locale/cons/7222-c.cc: New.
-	* testsuite/22_locale/locale/cons/7222-env.cc: New.	
+	* testsuite/22_locale/locale/cons/7222-env.cc: New.
 	Check before trying to create a locale from the environment.
 	* testsuite/27_io/ios_base/state/1.cc (test02): Use "C" locale.
 	* testsuite/27_io/basic_istream/extractors_arithmetic/char/12.cc:
 	Adjust includes.
-	
+
 2003-04-11  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/22_locale/ctype/is/char/3.cc (test03): Use the classic
@@ -1869,7 +1885,7 @@
 	instantiation for AIX.
 	* testsuite/27_io/basic_ostream/sentry/char/3983-fstream.cc: Same.
 	* testsuite/25_algorithms/min_max.cc: Same.
-	
+
 2003-04-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* basic_file_stdio.cc (__basic_file<char>::close): Don't flush stream
@@ -2243,13 +2259,13 @@
 
 	* include/std/std_streambuf.h (basic_streambuf::setp): Set
 	_M_out_lim.
-	
+
 	* include/std/std_sstream.h (basic_strinbuf::str): Zero length
 	output string shouldn't core.
 	(basic_stringbuf::_M_really_sync): Add base argument. Remove rturn
 	type.
 	* include/bits/sstream.tcc: Adjust _M_really_sync bits here.
-	
+
 	* include/bits/istream.tcc (basic_istream::putback): Set gcount to
 	zero.
 
@@ -2257,13 +2273,13 @@
 
 	* testsuite/data: New directory.
 	* testsuite/lib/libstdc++-v3-dg.exp (libstdc++-v3-init): Modify
-	to copy files from the testsuite data directory.	
+	to copy files from the testsuite data directory.
 	(libstdc++-v3-list-sourcefiles): Add another test list filter, for
 	testfiles containing _xin, which now means this is an interactive
 	test and should be run with the interactive dejagnu hooks.
 	* testsuite/Makefile.am: Remove testsuite_* files.
 	* testsuite/Makefile.in: Regenerate.
-	
+
 2003-04-09  Zack Weinberg  <zack@codesourcery.com>
 
 	* docs/html/install.html: Document complete list of locales
@@ -3050,7 +3066,7 @@
 	(basic_streambuf()): Initialize _M_out_lim too.
 	* testsuite/27_io/filebuf_virtuals.cc (test10): Trivial tweak.
 	* testsuite/27_io/filebuf_virtuals.cc (test11): Add.
- 	* testsuite/27_io/stringbuf_virtuals.cc (test09): Add.
+	* testsuite/27_io/stringbuf_virtuals.cc (test09): Add.
 
 2003-02-24  Benjamin Kosnik  <bkoz@redhat.com>
 

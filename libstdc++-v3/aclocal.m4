@@ -2071,8 +2071,8 @@ AC_DEFUN(GLIBCPP_CONFIGURE_TESTSUITE, [
   fi
 
   # Export file names for ABI checking.
-  baseline_file="${glibcpp_srcdir}/config/abi/${abi_baseline_pair}\$(MULTISUBDIR)/baseline_symbols.txt"
-  AC_SUBST(baseline_file)
+  baseline_dir="${glibcpp_srcdir}/config/abi/${abi_baseline_pair}\$(MULTISUBDIR)"
+  AC_SUBST(baseline_dir)
 
   # Determine if checking the ABI is desirable.
   if test x$enable_symvers = xno; then

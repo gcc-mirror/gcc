@@ -137,6 +137,8 @@ toplevel_srcdir = @toplevel_srcdir@
 
 AUTOMAKE_OPTIONS = cygnus dejagnu
 
+mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
+
 DEJATOOL = libstdc++-v3
 
 EXPECT = `if [ -f @glibcpp_builddir@/../../expect/expect ] ; then \
@@ -177,7 +179,8 @@ libv3test_a_SOURCES = testsuite_hooks.cc testsuite_allocator.cc
 @GLIBCPP_TEST_ABI_FALSE@noinst_PROGRAMS = 
 abi_check_SOURCES = abi_check.cc
 
-baseline_file = @baseline_file@
+baseline_dir = @baseline_dir@
+baseline_file = ${baseline_dir}/baseline_symbols.txt
 extract_symvers = @glibcpp_srcdir@/scripts/extract_symvers
 
 # These two special 'check-script' rules use the bash script 'check'
@@ -197,7 +200,6 @@ check_performance = ${glibcpp_srcdir}/scripts/check_performance
 CLEANFILES = *.txt *.tst *.exe core* filebuf_* tmp* ostream_* *.log *.sum \
 	     testsuite_* site.exp abi_check baseline_symbols
 
-mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
 LIBRARIES =  $(noinst_LIBRARIES)
@@ -507,6 +509,7 @@ baseline_symbols:
 	touch baseline_symbols)
 
 new-abi-baseline: 
+	-@$(mkinstalldirs) ${baseline_dir}
 	-@(output=${baseline_file}; \
 	  if test -f $${output}; then \
 	    output=$${output}.new; \

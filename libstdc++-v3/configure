@@ -23607,7 +23607,7 @@ done
   fi
 
   # Export file names for ABI checking.
-  baseline_file="${glibcpp_srcdir}/config/abi/${abi_baseline_pair}\$(MULTISUBDIR)/baseline_symbols.txt"
+  baseline_dir="${glibcpp_srcdir}/config/abi/${abi_baseline_pair}\$(MULTISUBDIR)"
   
 
   # Determine if checking the ABI is desirable.
@@ -24095,7 +24095,7 @@ s%@WERROR@%$WERROR%g
 s%@SYMVER_MAP@%$SYMVER_MAP%g
 s%@GLIBCPP_BUILD_VERSIONED_SHLIB_TRUE@%$GLIBCPP_BUILD_VERSIONED_SHLIB_TRUE%g
 s%@GLIBCPP_BUILD_VERSIONED_SHLIB_FALSE@%$GLIBCPP_BUILD_VERSIONED_SHLIB_FALSE%g
-s%@baseline_file@%$baseline_file%g
+s%@baseline_dir@%$baseline_dir%g
 s%@GLIBCPP_TEST_WCHAR_T_TRUE@%$GLIBCPP_TEST_WCHAR_T_TRUE%g
 s%@GLIBCPP_TEST_WCHAR_T_FALSE@%$GLIBCPP_TEST_WCHAR_T_FALSE%g
 s%@GLIBCPP_TEST_ABI_TRUE@%$GLIBCPP_TEST_ABI_TRUE%g
