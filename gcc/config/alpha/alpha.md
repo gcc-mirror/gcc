@@ -2198,12 +2198,7 @@
    (use (match_operand:DI 1 "" ""))
    (clobber (reg:DI 26))]
   ""
-  "*
-{ if (alpha_gp_dead_after (insn))
-    return \"jsr $26,($27),%1\";
-  else 
-    return \"jsr $26,($27),%1\;ldgp $29,0($26)\";
-}"
+  "jsr $26,($27),%1\;ldgp $29,0($26)"
   [(set_attr "type" "jsr")])
       
 (define_insn ""
@@ -2213,31 +2208,26 @@
    (use (match_operand:DI 2 "" ""))
    (clobber (reg:DI 26))]
   ""
-  "*
-{ if (alpha_gp_dead_after (insn))
-    return \"jsr $26,($27),%2\";
-  else 
-    return \"jsr $26,($27),%2\;ldgp $29,0($26)\";
-}"
+  "jsr $26,($27),%2\;ldgp $29,0($26)"
   [(set_attr "type" "jsr")])
 
 (define_insn ""
-  [(call (mem:DI (match_operand 1 "current_function_operand" "i"))
+  [(call (mem:DI (match_operand 1 "current_file_function_operand" "i"))
 	 (match_operand 0 "" ""))
    (use (match_dup 1))
    (clobber (reg:DI 26))]
   ""
-  "bsr $26,%F1"
+  "bsr $26,%1..ng"
   [(set_attr "type" "ibr")])
       
 (define_insn ""
   [(set (match_operand 0 "register_operand" "=rf")
-	(call (mem:DI (match_operand 1 "current_function_operand" "i"))
+	(call (mem:DI (match_operand 1 "current_file_function_operand" "i"))
 	      (match_operand 2 "" "")))
    (use (match_dup 1))
    (clobber (reg:DI 26))]
   ""
-  "bsr $26,%F1"
+  "bsr $26,%1..ng"
   [(set_attr "type" "ibr")])
 
 (define_insn "jump"
