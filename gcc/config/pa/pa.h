@@ -1058,13 +1058,15 @@ struct hppa_args {int words, nargs_prototype, indirect; };
    bits, of an argument with the specified mode and type.  If it is
    not defined,  `PARM_BOUNDARY' is used for all arguments.  */
 
-#define FUNCTION_ARG_BOUNDARY(MODE, TYPE)				\
-  (((TYPE) != 0)							\
-	? (((int_size_in_bytes (TYPE)) + UNITS_PER_WORD - 1)		\
-	   / UNITS_PER_WORD) * BITS_PER_WORD				\
-	: ((GET_MODE_ALIGNMENT(MODE) <= PARM_BOUNDARY)			\
-		? PARM_BOUNDARY						\
-		: GET_MODE_ALIGNMENT(MODE)))
+#define FUNCTION_ARG_BOUNDARY(MODE, TYPE)			\
+  (((TYPE) != 0)						\
+   ? ((integer_zerop (TYPE_SIZE (TYPE))				\
+       || ! TREE_CONSTANT (TYPE_SIZE (TYPE)))			\
+      ? BITS_PER_UNIT						\
+      : (((int_size_in_bytes (TYPE)) + UNITS_PER_WORD - 1)	\
+	 / UNITS_PER_WORD) * BITS_PER_WORD)			\
+   : ((GET_MODE_ALIGNMENT(MODE) <= PARM_BOUNDARY)		\
+      ? PARM_BOUNDARY : GET_MODE_ALIGNMENT(MODE)))
 
 /* Arguments larger than eight bytes are passed by invisible reference */
 
