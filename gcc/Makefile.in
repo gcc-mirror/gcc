@@ -1271,39 +1271,41 @@ bc-optab.o : bc-optab.c bc-typecd.def $(CONFIG_H) $(BYTECODE_H)
 
 bytecode: $(BI_ALL) $(BC_ALL)
 
-bi-arity:	bi-arity.o
-bi-opcode:	bi-opcode.o
-bi-opname:	bi-opname.o
-bi-unparse:	bi-unparse.o
-bi-lexer:	bi-lexer.o
-
-bi-arity bi-opcode bi-opname bi-unparse bi-lexer: $(BI_OBJ)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $^ $(LEXLIB)
+bi-arity: bi-arity.o $(BI_OBJ)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ bi-arity.o $(BI_OBJ) $(LEXLIB)
+bi-opcode: bi-opcode.o $(BI_OBJ)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ bi-opcode.o $(BI_OBJ) $(LEXLIB)
+bi-opname: bi-opname.o $(BI_OBJ)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ bi-opname.o $(BI_OBJ) $(LEXLIB)
+bi-unparse: bi-unparse.o $(BI_OBJ)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ bi-unparse.o $(BI_OBJ) $(LEXLIB)
+bi-lexer: bi-lexer.o $(BI_OBJ)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ bi-lexer.o $(BI_OBJ) $(LEXLIB)
 
 bi-run.o:	$(srcdir)/bi-run.c $(srcdir)/bi-run.h $(srcdir)/bc-typecd.h bc-opname.h bc-arity.h bc-opcode.h
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c $<
+	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c $(srcdir)/bi-run.c
 
 bi-parser.c: $(srcdir)/bi-parser.y $(srcdir)/bi-parser.h
 
 bi-parser.o:	$(srcdir)/bi-parser.c $(srcdir)/bi-defs.h
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c $<
+	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c $(srcdir)/bi-parser.c
 
 bi-lexer.c:	$(srcdir)/bi-lexer.l $(srcdir)/bi-parser.h
 
 bi-lexer.o:	bi-lexer.c bi-parser.h
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c $<
+	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c bi-lexer.c
 
 bc-arity.h:	$(srcdir)/bytecode.def bi-arity
-	-rm -f $@
-	bi-arity <$< >$@
+	-rm -f bc-arity.h
+	bi-arity < $(srcdir)/bytecode.def > bc-arity.h
 
 bc-opcode.h:	$(srcdir)/bytecode.def bi-opcode
-	-rm -f $@
-	bi-opcode <$< >$@
+	-rm -f bc-arity.h
+	bi-opcode < $(srcdir)/bytecode.def > bc-arity.h
 
 bc-opname.h:	 $(srcdir)/bytecode.def bi-opname
-	-rm -f $@
-	bi-opname <$< >$@
+	-rm -f bc-arity.h
+	bi-opname < $(srcdir)/bytecode.def > bc-arity.h
 
 bytecode.mostlyclean:
 	-rm -f bc-arity.h bc-opcode.h bc-opname.h
