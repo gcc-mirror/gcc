@@ -1,3 +1,8 @@
+2000-05-19  Tom Tromey  <tromey@cygnus.com>
+
+	* java/io/BufferedWriter.java: Merged with Classpath.
+	* java/io/BufferedOutputStream.java: Merged with Classpath.
+
 2000-05-16  Andrew Haley  <aph@cygnus.com>
 
 	* sysdep/ia64.c (ia64_backtrace_helper): Pass NULL pointer to
