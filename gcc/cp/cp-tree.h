@@ -3954,8 +3954,10 @@ extern tree dfs_skip_nonprimary_vbases_unmarkedp PROTO((tree, void *));
 extern tree dfs_skip_nonprimary_vbases_markedp  PROTO((tree, void *));
 extern tree dfs_unmarked_real_bases_queue_p     PROTO((tree, void *));
 extern tree dfs_marked_real_bases_queue_p       PROTO((tree, void *));
+extern tree dfs_skip_vbases                     PROTO((tree, void *));
 extern void mark_primary_bases                  PROTO((tree));
 extern tree convert_pointer_to_vbase            PROTO((tree, tree));
+extern tree find_vbase_instance                 PROTO((tree, tree));
 
 /* in semantics.c */
 extern void finish_expr_stmt                    PROTO((tree));
