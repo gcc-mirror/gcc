@@ -35,7 +35,7 @@ Boston, MA 02111-1307, USA.  */
 /* Profiling routine.  */
 #undef FUNCTION_PROFILER
 #define FUNCTION_PROFILER(FILE, LABELNO)  \
-  fprintf (FILE, "\tmovab .LP%d,%sr0\n\tjsb __mcount+2\n", (LABELNO), \
+  fprintf (FILE, "\tmovab .LP%d,%sr0\n\tjsb __mcount\n", (LABELNO), \
            REGISTER_PREFIX)
   
 /*  Let's be re-entrant.  */
