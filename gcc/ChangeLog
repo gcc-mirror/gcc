@@ -1,3 +1,15 @@
+2002-03-12  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa-config.h: Define XCHAL_HAVE_LOOPS.
+	* config/xtensa/lib1funcs.asm: Fix copyright to include
+	special case for libgcc files.
+	(__udivsi3): Avoid loop instructions when XCHAL_HAVE_LOOPS is 0.
+	(__divsi3): Likewise.
+	(__umodsi3): Likewise.
+	(__modsi3): Likewise.
+	* config/xtensa/lib2funcs.S: Fix copyright to include
+	special case for libgcc files.
+
 2002-03-12  Michael Matz  <matz@suse.de>
 
 	* config/rs6000/rs6000.md (ne0+4): Add extra CLOBBER.

@@ -1,5 +1,5 @@
 /* Assembly functions for the Xtensa version of libgcc1.
-   Copyright (C) 2001 Free Software Foundation, Inc.
+   Copyright (C) 2001,2002 Free Software Foundation, Inc.
    Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
 This file is part of GCC.
@@ -8,6 +8,15 @@ GCC is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
 Software Foundation; either version 2, or (at your option) any later
 version.
+
+In addition to the permissions in the GNU General Public License, the
+Free Software Foundation gives you unlimited permission to link the
+compiled version of this file into combinations with other programs,
+and to distribute those combinations without any restriction coming
+from the use of this file.  (The General Public License restrictions
+do apply in other respects; for example, they cover modification of
+the file, and distribution when not linked into a combine
+executable.)
 
 GCC is distributed in the hope that it will be useful, but WITHOUT ANY
 WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -211,13 +220,20 @@ __udivsi3:
 	movi	a2, 0		# quotient = 0
 
 	# test-subtract-and-shift loop; one quotient bit on each iteration
+#if XCHAL_HAVE_LOOPS
 	loopnez	a4, .Lloopend
+#endif /* XCHAL_HAVE_LOOPS */
+.Lloop:
 	bltu	a6, a3, .Lzerobit
 	sub	a6, a6, a3
 	addi	a2, a2, 1
 .Lzerobit:
 	slli	a2, a2, 1
 	srli	a3, a3, 1
+#if !XCHAL_HAVE_LOOPS
+	addi	a4, a4, -1
+	bnez	a4, .Lloop
+#endif /* !XCHAL_HAVE_LOOPS */
 .Lloopend:
 
 	bltu	a6, a3, .Lreturn
@@ -270,13 +286,20 @@ __divsi3:
 	movi	a2, 0		# quotient = 0
 
 	# test-subtract-and-shift loop; one quotient bit on each iteration
+#if XCHAL_HAVE_LOOPS
 	loopnez	a4, .Lloopend
+#endif /* XCHAL_HAVE_LOOPS */
+.Lloop:
 	bltu	a6, a3, .Lzerobit
 	sub	a6, a6, a3
 	addi	a2, a2, 1
 .Lzerobit:
 	slli	a2, a2, 1
 	srli	a3, a3, 1
+#if !XCHAL_HAVE_LOOPS
+	addi	a4, a4, -1
+	bnez	a4, .Lloop
+#endif /* !XCHAL_HAVE_LOOPS */
 .Lloopend:
 
 	bltu	a6, a3, .Lreturn
@@ -331,11 +354,18 @@ __umodsi3:
 	sll	a3, a3		# divisor <<= count
 
 	# test-subtract-and-shift loop
+#if XCHAL_HAVE_LOOPS
 	loopnez	a4, .Lloopend
+#endif /* XCHAL_HAVE_LOOPS */
+.Lloop:
 	bltu	a2, a3, .Lzerobit
 	sub	a2, a2, a3
 .Lzerobit:
 	srli	a3, a3, 1
+#if !XCHAL_HAVE_LOOPS
+	addi	a4, a4, -1
+	bnez	a4, .Lloop
+#endif /* !XCHAL_HAVE_LOOPS */
 .Lloopend:
 
 	bltu	a2, a3, .Lreturn
@@ -384,11 +414,18 @@ __modsi3:
 	sll	a3, a3		# udivisor <<= count
 
 	# test-subtract-and-shift loop
+#if XCHAL_HAVE_LOOPS
 	loopnez	a4, .Lloopend
+#endif /* XCHAL_HAVE_LOOPS */
+.Lloop:
 	bltu	a2, a3, .Lzerobit
 	sub	a2, a2, a3
 .Lzerobit:
 	srli	a3, a3, 1
+#if !XCHAL_HAVE_LOOPS
+	addi	a4, a4, -1
+	bnez	a4, .Lloop
+#endif /* !XCHAL_HAVE_LOOPS */
 .Lloopend:
 
 	bltu	a2, a3, .Lreturn
