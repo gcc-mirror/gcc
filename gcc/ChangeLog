@@ -1,3 +1,9 @@
+2004-12-13  Richard Henderson  <rth@redhat.com>
+
+	PR middle-end/17930
+	* toplev.c (rest_of_compilation): Fix computation of
+	preferred_incoming_stack_boundary.
+
 2004-12-12  Richard Henderson  <rth@redhat.com>
 
         PR rtl-opt/17186
