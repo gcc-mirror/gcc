@@ -219,8 +219,9 @@ Boston, MA 02111-1307, USA.  */
 
 /* ??? If no mabi=X option give, but a mipsX option is, then should depend
    on the mipsX option.  */
+/* If no mips[3,4] option given, give the appropriate default for mabi=X */
 #undef SUBTARGET_ASM_SPEC
-#define SUBTARGET_ASM_SPEC "%{!mabi*:-n32}"
+#define SUBTARGET_ASM_SPEC "%{!mabi*:-n32} %{!mips*: %{!mabi*:-mips3} %{mabi=n32:-mips3} %{mabi=64:-mips4}}"
 
 /* Must pass -g0 to the assembler, otherwise it may overwrite our
    debug info with its own debug info. */
