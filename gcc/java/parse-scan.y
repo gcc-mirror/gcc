@@ -109,8 +109,7 @@ struct method_declarator {
 };
 #define NEW_METHOD_DECLARATOR(D,N,A)					     \
 {									     \
-  (D) = 								     \
-    (struct method_declarator *)xmalloc (sizeof (struct method_declarator)); \
+  (D) = xmalloc (sizeof (struct method_declarator));			     \
   (D)->method_name = (N);						     \
   (D)->args = (A);							     \
 }
@@ -1179,8 +1178,7 @@ constant_expression:
 void
 java_push_parser_context ()
 {
-  struct parser_ctxt *new = 
-    (struct parser_ctxt *) xcalloc (1, sizeof (struct parser_ctxt));
+  struct parser_ctxt *new = xcalloc (1, sizeof (struct parser_ctxt));
 
   new->next = ctxp;
   ctxp = new;
@@ -1192,7 +1190,7 @@ push_class_context (name)
 {
   struct class_context *ctx;
 
-  ctx = (struct class_context *) xmalloc (sizeof (struct class_context));
+  ctx = xmalloc (sizeof (struct class_context));
   ctx->name = (char *) name;
   ctx->next = current_class_context;
   current_class_context = ctx;
