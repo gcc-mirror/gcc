@@ -130,7 +130,7 @@ EOF
     for x in gcc/version.c; do 
       y=`basename ${x}`
       (changedir `dirname ${SOURCE_DIRECTORY}/${x}` && \
-          sed -e 's|= \".*\"|= \"'${RELEASE}'\"|g' < ${y} > ${y}.new && \
+          sed -e 's|version_string\[\] = \".*\"|version_string\[\] = \"'${RELEASE}'\"|g' < ${y} > ${y}.new && \
 	  mv ${y}.new ${y} && \
           ${CVS} ci -m 'Update version' ${y}) || \
 	  error "Could not update ${x}"
@@ -515,7 +515,7 @@ if [ $SNAPSHOT -eq 0 ]; then
   # If this is not a final release, set various parameters acordingly.
   if [ ${FINAL} -ne 1 ]; then
     RELEASE="${RELEASE}-${DATE}"
-    FTP_PATH="${FTP_PATH}/snapshots/"
+    FTP_PATH="${FTP_PATH}/prerelease-${RELEASE}/"
   else
     FTP_PATH="${FTP_PATH}/releases/gcc-${RELEASE}/"
   fi
