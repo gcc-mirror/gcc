@@ -132,8 +132,8 @@
 
 #if defined (__arm__)
 #define add_ssaaaa(sh, sl, ah, al, bh, bl) \
-  __asm__ ("adds %1,%4,%5
-	adc %0,%2,%3"							\
+  __asm__ ("adds	%1, %4, %5
+	adc	%0, %2, %3"						\
 	   : "=r" ((USItype)(sh)),					\
 	     "=&r" ((USItype)(sl))					\
 	   : "%r" ((USItype)(ah)),					\
@@ -141,8 +141,8 @@
 	     "%r" ((USItype)(al)),					\
 	     "rI" ((USItype)(bl)))
 #define sub_ddmmss(sh, sl, ah, al, bh, bl) \
-  __asm__ ("subs %1,%4,%5
-	sbc %0,%2,%3"							\
+  __asm__ ("subs	%1, %4, %5
+	sbc	%0, %2, %3"						\
 	   : "=r" ((USItype)(sh)),					\
 	     "=&r" ((USItype)(sl))					\
 	   : "r" ((USItype)(ah)),					\
@@ -150,19 +150,19 @@
 	     "r" ((USItype)(al)),					\
 	     "rI" ((USItype)(bl)))
 #define umul_ppmm(xh, xl, a, b) \
-  __asm__ ("; Inlined umul_ppmm
-	mov	r0,%2 lsr 16
-	mov	r2,%3 lsr 16
-	bic	r1,%2,r0 lsl 16
-	bic	r2,%3,r2 lsl 16
-	mul	%1,r1,r2
-	mul	r2,r0,r2
-	mul	r1,%0,r1
-	mul	%0,r0,%0
-	adds	r1,r2,r1
-	addcs	%0,%0,0x10000
-	adds	%1,%1,r1 lsl 16
-	adc	%0,%0,r1 lsr 16"					\
+  __asm__ ("%@ Inlined umul_ppmm
+	mov	%|r0, %2, lsr #16
+	mov	%|r2, %3, lsr #16
+	bic	%|r1, %2, %|r0, lsl #16
+	bic	%|r2, %3, %|r2, lsl #16
+	mul	%1, %|r1, %|r2
+	mul	%|r2, %|r0, %|r2
+	mul	%|r1, %0, %|r1
+	mul	%0, %|r0, %0
+	adds	%|r1, %|r2, %|r1
+	addcs	%0, %0, #65536
+	adds	%1, %1, %|r1, lsl #16
+	adc	%0, %0, %|r1, lsr #16"					\
 	   : "=&r" ((USItype)(xh)),					\
 	     "=r" ((USItype)(xl))					\
 	   : "r" ((USItype)(a)),					\
