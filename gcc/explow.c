@@ -1,5 +1,5 @@
 /* Subroutines for manipulating rtx's in semantically interesting ways.
-   Copyright (C) 1987, 1991, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1991, 1994, 1995, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -331,10 +331,12 @@ convert_memory_address (to_mode, x)
     case MULT:
       /* For addition the second operand is a small constant, we can safely
 	 permute the converstion and addition operation.  We can always safely
-	 permute them if we are making the address narrower.  */
+	 permute them if we are making the address narrower.  In addition,
+	 always permute the operations if this is a constant.  */
       if (GET_MODE_SIZE (to_mode) < GET_MODE_SIZE (from_mode)
 	  || (GET_CODE (x) == PLUS && GET_CODE (XEXP (x, 1)) == CONST_INT
-	      && INTVAL (x) + 20000 < 40000))
+	      && (INTVAL (XEXP (x, 1)) + 20000 < 40000
+		  || CONSTANT_P (XEXP (x, 0)))))
 	return gen_rtx (GET_CODE (x), to_mode, 
 			convert_memory_address (to_mode, XEXP (x, 0)),
 			convert_memory_address (to_mode, XEXP (x, 1)));
