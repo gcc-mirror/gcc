@@ -2331,6 +2331,7 @@ extern unsigned int\
         -e 's/char[ 	]*\*[ 	]*calloc/void \*	calloc/g' \
         -e 's/char[ 	]*\*[ 	]*malloc/void \*	malloc/g' \
         -e 's/char[ 	]*\*[ 	]*realloc/void \*	realloc/g' \
+        -e 's/char[ 	]*\*[ 	]*bsearch/void \*	bsearch/g' \
         -e 's/int[ 	][ 	]*exit/void	exit/g' \
         -e '/typedef[ 	a-zA-Z_]*[ 	]size_t[ 	]*;/i\
 #ifndef _GCC_SIZE_T\

@@ -2000,6 +2000,7 @@ fix = {
     sed   = "s/char[ \t]*\\*[ \t]*calloc/void \\*\tcalloc/g";
     sed   = "s/char[ \t]*\\*[ \t]*malloc/void \\*\tmalloc/g";
     sed   = "s/char[ \t]*\\*[ \t]*realloc/void \\*\trealloc/g";
+    sed   = "s/char[ \t]*\\*[ \t]*bsearch/void \\*\tbsearch/g";
     sed   = "s/int[ \t][ \t]*exit/void\texit/g";
 
     sed   = "/typedef[ \ta-zA-Z_]*[ \t]size_t[ \t]*;/i\\\n"

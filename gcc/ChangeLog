@@ -1,3 +1,9 @@
+Fri Aug 13 01:42:24 1999  Jeffrey A Law  (law@cygnus.com)
+
+	Tue Aug  3 00:03:41 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+        * fixincludes: Fix the return type of bsearch, char* -> void*.
+        * fixinc/inclhack.def: Likewise.
+
 Fri Aug 13 01:29:57 1999  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* dwarfout.c (fundamental_type_code): Return FT_boolean for

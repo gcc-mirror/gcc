@@ -2821,6 +2821,7 @@ const char* apzSysz_Stdlib_For_SunPatch[] = { "sed",
     "-e", "s/char[ \t]*\\*[ \t]*calloc/void \\*\tcalloc/g",
     "-e", "s/char[ \t]*\\*[ \t]*malloc/void \\*\tmalloc/g",
     "-e", "s/char[ \t]*\\*[ \t]*realloc/void \\*\trealloc/g",
+    "-e", "s/char[ \t]*\\*[ \t]*bsearch/void \\*\tbsearch/g",
     "-e", "s/int[ \t][ \t]*exit/void\texit/g",
     "-e", "/typedef[ \ta-zA-Z_]*[ \t]size_t[ \t]*;/i\\\n\
 #ifndef _GCC_SIZE_T\\\n\
