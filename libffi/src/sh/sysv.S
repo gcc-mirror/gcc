@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   sysv.S - Copyright (c) 2002 Kaz Kojima
+   sysv.S - Copyright (c) 2002, 2003 Kaz Kojima
    
    SuperH Foreign Function Interface 
 
@@ -505,21 +505,22 @@ ENTRY(ffi_closure_SYSV)
 	   ...
 	   32 bytes (floating register parameters, SH-4 only)
 	   16 bytes (register parameters)
-	    4 bytes (result)
+	    8 bytes (result)
+	    4 bytes (pad)
 	    4 bytes (5th arg)
 	   <- new stack pointer
 	*/
 .LCFI8:
 #if defined(__SH4__)
-	add	#-56,r15
+	add	#-64,r15
 #else
-	add	#-24,r15
+	add	#-32,r15
 #endif
 .LCFI9:
 	mov	r15,r14
 .LCFIA:
 	mov	r14,r1
-	add	#24,r1
+	add	#32,r1
 	mov.l	r7,@-r1
 	mov.l	r6,@-r1
 	mov.l	r5,@-r1
@@ -528,7 +529,7 @@ ENTRY(ffi_closure_SYSV)
 
 #if defined(__SH4__)
 	mov	r14,r1
-	add	#56,r1
+	add	#64,r1
 #ifdef __LITTLE_ENDIAN__
 	fmov.s	fr10,@-r1
 	fmov.s	fr11,@-r1
@@ -552,14 +553,14 @@ ENTRY(ffi_closure_SYSV)
 #endif
 
 	mov	r14,r1
-	add	#4,r1
+	add	#8,r1
 	mov	r1,r5
 
 	mov	r14,r1
 #if defined(__SH4__)
-	add	#64,r1
+	add	#72,r1
 #else
-	add	#32,r1
+	add	#40,r1
 #endif
 	mov.l	r1,@r14
 
@@ -574,7 +575,7 @@ ENTRY(ffi_closure_SYSV)
 	mov.w	@r0,r0
 	mov	r14,r2
 	braf	r0
-	 add	#4,r2
+	 add	#8,r2
 0:
 	.align 2
 L_helper:
@@ -664,9 +665,9 @@ L_case_uh:
 
 L_case_v:
 #if defined(__SH4__)
-	add	#56,r15
+	add	#64,r15
 #else
-	add	#24,r15
+	add	#32,r15
 #endif
 	lds.l	@r15+,pr
 	rts
@@ -757,9 +758,9 @@ __FRAME_BEGIN__:
 	.4byte	.LCFI9-.LCFI8
 	.byte	0xe	/* DW_CFA_def_cfa_offset */
 #if defined(__SH4__)
-	.byte	8+56	/* uleb128 8+56 */
+	.byte	8+64	/* uleb128 8+64 */
 #else
-	.byte	8+24	/* uleb128 8+24 */
+	.byte	8+32	/* uleb128 8+32 */
 #endif
 	.byte	0x91	/* DW_CFA_offset, column 0x11 */
         .byte	0x2
