@@ -867,7 +867,7 @@ expand_call_inline (tp, walk_subtrees, data)
      line numbers corresponding to the function we are calling.  We
      wrap the whole inlined body in an EXPR_WITH_FILE_AND_LINE as well
      because individual statements don't record the filename.  */
-  push_srcloc (fn->decl.filename, fn->decl.linenum);
+  push_srcloc (DECL_SOURCE_FILE (fn), DECL_SOURCE_LINE (fn));
 
   /* Build a statement-expression containing code to initialize the
      arguments, the actual inline expansion of the body, and a label

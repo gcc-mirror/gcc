@@ -1,5 +1,10 @@
 2002-06-13  Gabriel Dos Reis  <gdr@codesourcery.com>
 
+	* tree-inline.c (expand_call_inline): Don' mess with _DECL
+	fields. 
+
+2002-06-13  Gabriel Dos Reis  <gdr@codesourcery.com>
+
 	* diagnostic.c (output_format): Recognize "%H" as a format
 	specifier for a location_t.
 	(text_specifies_location): New function.
