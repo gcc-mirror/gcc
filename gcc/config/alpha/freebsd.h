@@ -39,7 +39,7 @@ Boston, MA 02111-1307, USA.  */
 #define CPP_SPEC "%(cpp_subtarget) %{posix:-D_POSIX_SOURCE}"
 
 #define LINK_SPEC "%{G*} %{relax:-relax}				\
-  %{p:%e`-p' not supported; use `-pg' and gprof(1)}			\
+  %{p:%nconsider using `-pg' instead of `-p' with gprof(1)}		\
   %{Wl,*:%*}								\
   %{assert*} %{R*} %{rpath*} %{defsym*}					\
   %{shared:-Bshareable %{h*} %{soname*}}				\

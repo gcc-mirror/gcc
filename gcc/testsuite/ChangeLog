@@ -1,3 +1,7 @@
+2003-02-07  Loren James Rittle  <ljrittle@acm.org>
+
+	* gcc.dg/20021014-1.c: Annotate with expected notice text.
+
 2003-02-07  Roger Sayle  <roger@eyesopen.com>
 
 	* testsuite/gcc.dg/builtins-4.c: New test case.

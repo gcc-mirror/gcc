@@ -19,8 +19,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 
-#define LINK_SPEC							\
- "%{p:%e`-p' not supported; use `-pg' and gprof(1)}			\
+#define LINK_SPEC "							\
+  %{p:%nconsider using `-pg' instead of `-p' with gprof(1)}				\
   %{Wl,*:%*}								\
   %{assert*} %{R*} %{rpath*} %{defsym*}					\
   %{shared:-Bshareable %{h*} %{soname*}}				\

@@ -1,3 +1,10 @@
+2003-02-07  Loren James Rittle  <ljrittle@acm.org>
+
+	* config/alpha/freebsd.h (LINK_SPEC): Weaken error to notice.
+	* config/ia64/freebsd.h (LINK_SPEC): Likewise.
+	* config/sparc/freebsd.h (LINK_SPEC): Likewise.
+	* config/i386/freebsd.h (LINK_SPEC): Add clause to mirror other arches.
+
 2003-02-07  Wolfgang Bangerth  <bangerth@ticam.utexas.edu>
 
 	* doc/trouble.texi: Document pitfalls of two-stage name lookup.
