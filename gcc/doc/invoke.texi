@@ -793,7 +793,7 @@ producing an executable file as output.
 If @option{-o} is not specified, the default is to put an executable file
 in @file{a.out}, the object file for @file{@var{source}.@var{suffix}} in
 @file{@var{source}.o}, its assembler file in @file{@var{source}.s}, and
-all preprocessed C source on standard output.@refill
+all preprocessed C source on standard output.
 
 @item -v
 @opindex v
@@ -3163,7 +3163,7 @@ and @option{-fdefer-pop} on all machines.  The compiler turns on
 @option{-fdelayed-branch} on machines that have delay slots, and
 @option{-fomit-frame-pointer} on machines that can support debugging even
 without a frame pointer.  On some machines the compiler also turns
-on other flags.@refill
+on other flags.
 
 @item -O2
 @opindex O2
@@ -3263,7 +3263,7 @@ On some machines, such as the Vax, this flag has no effect, because
 the standard calling sequence automatically handles the frame pointer
 and nothing is saved by pretending it doesn't exist.  The
 machine-description macro @code{FRAME_POINTER_REQUIRED} controls
-whether a target machine supports this flag.  @xref{Registers}.@refill
+whether a target machine supports this flag.  @xref{Registers}.
 @end ifset
 @ifclear INTERNALS
 On some machines, such as the Vax, this flag has no effect, because
@@ -3271,7 +3271,7 @@ the standard calling sequence automatically handles the frame pointer
 and nothing is saved by pretending it doesn't exist.  The
 machine-description macro @code{FRAME_POINTER_REQUIRED} controls
 whether a target machine supports this flag.  @xref{Registers,,Register
-Usage, gcc.info, Using and Porting GCC}.@refill
+Usage, gcc.info, Using and Porting GCC}.
 @end ifclear
 
 @item -foptimize-sibling-calls
@@ -4934,7 +4934,7 @@ version of GCC that you installed.
 The @option{-b} and @option{-V} options actually work by controlling part of
 the file name used for the executable files and libraries used for
 compilation.  A given version of GCC, for a given target machine, is
-normally kept in the directory @file{/usr/local/lib/gcc-lib/@var{machine}/@var{version}}.@refill
+normally kept in the directory @file{/usr/local/lib/gcc-lib/@var{machine}/@var{version}}.
 
 Thus, sites can customize the effect of @option{-b} or @option{-V} either by
 changing the names of these directories or adding alternate names (or
@@ -6523,7 +6523,7 @@ Supported values for @var{cpu_type} are @samp{rios}, @samp{rios1},
 @option{-mcpu=power2}, @option{-mcpu=powerpc}, and @option{-mcpu=powerpc64}
 specify generic POWER, POWER2, pure 32-bit PowerPC (i.e., not MPC601),
 and 64-bit PowerPC architecture machine types, with an appropriate,
-generic processor model assumed for scheduling purposes.@refill
+generic processor model assumed for scheduling purposes.
 
 Specifying any of the following options:
 @option{-mcpu=rios1}, @option{-mcpu=rios2}, @option{-mcpu=rsc},
@@ -6538,7 +6538,7 @@ Exactly similarly, all of @option{-mcpu=403},
 @option{-mcpu=505}, @option{-mcpu=821}, @option{-mcpu=860} and @option{-mcpu=powerpc}
 enable the @option{-mpowerpc} option and disable the @option{-mpower} option.
 @option{-mcpu=common} disables both the
-@option{-mpower} and @option{-mpowerpc} options.@refill
+@option{-mpower} and @option{-mpowerpc} options.
 
 AIX versions 4 or greater selects @option{-mcpu=common} by default, so
 that code will operate on all members of the RS/6000 POWER and PowerPC
@@ -6553,7 +6553,7 @@ disables the @samp{new-mnemonics} option.  Specifying @option{-mcpu=601},
 @option{-mcpu=602}, @option{-mcpu=603}, @option{-mcpu=603e}, @option{-mcpu=604},
 @option{-mcpu=620}, @option{-mcpu=630}, @option{-mcpu=403}, @option{-mcpu=505},
 @option{-mcpu=821}, @option{-mcpu=860} or @option{-mcpu=powerpc} also enables
-the @samp{new-mnemonics} option.@refill
+the @samp{new-mnemonics} option.
 
 Specifying @option{-mcpu=403}, @option{-mcpu=821}, or @option{-mcpu=860} also
 enables the @option{-msoft-float} option.
@@ -6598,7 +6598,7 @@ these options, specify @option{-mminimal-toc} instead.  This option causes
 GCC to make only one TOC entry for every file.  When you specify this
 option, GCC will produce code that is slower and larger but which
 uses extremely little TOC space.  You may wish to use this option
-only on files that contain less frequently executed code. @refill
+only on files that contain less frequently executed code.
 
 @item -maix64
 @itemx -maix32
