@@ -10065,7 +10065,7 @@ not_accessible_p (tree reference, tree member, tree where, int from_super)
             {
 	      if (inherits_from_p (where, reference))
 	        return 0;
-	      if (PURE_INNER_CLASS_TYPE_P (reference))
+	      if (INNER_CLASS_TYPE_P (reference))
 		reference = TREE_TYPE (DECL_CONTEXT (TYPE_NAME (reference)));
 	      else
 	        break;
@@ -10079,7 +10079,7 @@ not_accessible_p (tree reference, tree member, tree where, int from_super)
         {
           if (inherits_from_p (reference, DECL_CONTEXT (member)))
             return 0;
-	  if (PURE_INNER_CLASS_TYPE_P (reference))
+	  if (INNER_CLASS_TYPE_P (reference))
             reference = TREE_TYPE (DECL_CONTEXT (TYPE_NAME (reference)));
 	  else
 	    break;
