@@ -387,7 +387,11 @@ extern void tree_operand_check_failed (int, enum tree_code,
 
 /* Here is how primitive or already-canonicalized types' hash codes
    are made.  */
-#define TYPE_HASH(TYPE) ((size_t) (TYPE) & 0777777)
+#define TYPE_HASH(TYPE) (TYPE_UID (TYPE))
+
+/* A simple hash function for an arbitrary tree node.  This must not be
+   used in hash tables which are saved to a PCH.  */
+#define TREE_HASH(NODE) ((size_t) (NODE) & 0777777)
 
 /* Nodes are chained together for many purposes.
    Types are chained together to record them for being output to the debugger
@@ -2179,7 +2183,7 @@ extern tree array_type_nelts (tree);
 extern tree value_member (tree, tree);
 extern tree purpose_member (tree, tree);
 extern tree binfo_member (tree, tree);
-extern unsigned int attribute_hash_list (tree);
+
 extern int attribute_list_equal (tree, tree);
 extern int attribute_list_contained (tree, tree);
 extern int tree_int_cst_equal (tree, tree);
@@ -2881,7 +2885,6 @@ extern int type_list_equal (tree, tree);
 extern int chain_member (tree, tree);
 extern tree type_hash_lookup (unsigned int, tree);
 extern void type_hash_add (unsigned int, tree);
-extern unsigned int type_hash_list (tree);
 extern int simple_cst_list_equal (tree, tree);
 extern void dump_tree_statistics (void);
 extern void expand_function_end (void);

@@ -1,3 +1,7 @@
+2004-03-05  Jason Merrill  <jason@redhat.com>
+
+	* tree.c (list_hash_pieces): s/TYPE_HASH/TREE_HASH/.
+
 2004-03-04  Geoffrey Keating  <geoffk@apple.com>
 
 	* decl.c (grokfndecl): Update old incorrect comment.

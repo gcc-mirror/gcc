@@ -107,6 +107,8 @@ static hashval_t type_hash_hash (const void *);
 static void print_type_hash_statistics (void);
 static void finish_vector_type (tree);
 static int type_hash_marked_p (const void *);
+static unsigned int type_hash_list (tree, hashval_t);
+static unsigned int attribute_hash_list (tree, hashval_t);
 
 tree global_trees[TI_MAX];
 tree integer_types[itk_none];
@@ -2723,8 +2725,9 @@ build_type_attribute_variant (tree ttype, tree attribute)
 {
   if (! attribute_list_equal (TYPE_ATTRIBUTES (ttype), attribute))
     {
-      unsigned int hashcode;
+      hashval_t hashcode = 0;
       tree ntype;
+      enum tree_code code = TREE_CODE (ttype);
 
       ntype = copy_node (ttype);
 
@@ -2737,23 +2740,32 @@ build_type_attribute_variant (tree ttype, tree attribute)
       TYPE_NEXT_VARIANT (ntype) = 0;
       set_type_quals (ntype, TYPE_UNQUALIFIED);
 
-      hashcode = (TYPE_HASH (TREE_CODE (ntype))
-		  + TYPE_HASH (TREE_TYPE (ntype))
-		  + attribute_hash_list (attribute));
+      hashcode = iterative_hash_object (code, hashcode);
+      if (TREE_TYPE (ntype))
+	hashcode = iterative_hash_object (TYPE_HASH (TREE_TYPE (ntype)),
+					  hashcode);
+      hashcode = attribute_hash_list (attribute, hashcode);
 
       switch (TREE_CODE (ntype))
 	{
 	case FUNCTION_TYPE:
-	  hashcode += TYPE_HASH (TYPE_ARG_TYPES (ntype));
+	  hashcode = type_hash_list (TYPE_ARG_TYPES (ntype), hashcode);
 	  break;
 	case ARRAY_TYPE:
-	  hashcode += TYPE_HASH (TYPE_DOMAIN (ntype));
+	  hashcode = iterative_hash_object (TYPE_HASH (TYPE_DOMAIN (ntype)),
+					    hashcode);
 	  break;
 	case INTEGER_TYPE:
-	  hashcode += TYPE_HASH (TYPE_MAX_VALUE (ntype));
+	  hashcode = iterative_hash_object
+	    (TREE_INT_CST_LOW (TYPE_MAX_VALUE (ntype)), hashcode);
+	  hashcode = iterative_hash_object
+	    (TREE_INT_CST_HIGH (TYPE_MAX_VALUE (ntype)), hashcode);
 	  break;
 	case REAL_TYPE:
-	  hashcode += TYPE_HASH (TYPE_PRECISION (ntype));
+	  {
+	    unsigned int precision = TYPE_PRECISION (ntype);
+	    hashcode = iterative_hash_object (precision, hashcode);
+	  }
 	  break;
 	default:
 	  break;
@@ -3054,13 +3066,14 @@ build_type_copy (tree type)
    of the individual types.  */
 
 unsigned int
-type_hash_list (tree list)
+type_hash_list (tree list, hashval_t hashcode)
 {
-  unsigned int hashcode;
   tree tail;
 
-  for (hashcode = 0, tail = list; tail; tail = TREE_CHAIN (tail))
-    hashcode += TYPE_HASH (TREE_VALUE (tail));
+  for (tail = list; tail; tail = TREE_CHAIN (tail))
+    if (TREE_VALUE (tail) != error_mark_node)
+      hashcode = iterative_hash_object (TYPE_HASH (TREE_VALUE (tail)),
+					hashcode);
 
   return hashcode;
 }
@@ -3109,7 +3122,7 @@ type_hash_hash (const void *item)
    If one is found, return it.  Otherwise return 0.  */
 
 tree
-type_hash_lookup (unsigned int hashcode, tree type)
+type_hash_lookup (hashval_t hashcode, tree type)
 {
   struct type_hash *h, in;
 
@@ -3130,7 +3143,7 @@ type_hash_lookup (unsigned int hashcode, tree type)
    for a type TYPE whose hash code is HASHCODE.  */
 
 void
-type_hash_add (unsigned int hashcode, tree type)
+type_hash_add (hashval_t hashcode, tree type)
 {
   struct type_hash *h;
   void **loc;
@@ -3210,14 +3223,14 @@ print_type_hash_statistics (void)
    by adding the hash codes of the individual attributes.  */
 
 unsigned int
-attribute_hash_list (tree list)
+attribute_hash_list (tree list, hashval_t hashcode)
 {
-  unsigned int hashcode;
   tree tail;
 
-  for (hashcode = 0, tail = list; tail; tail = TREE_CHAIN (tail))
+  for (tail = list; tail; tail = TREE_CHAIN (tail))
     /* ??? Do we want to add in TREE_VALUE too? */
-    hashcode += TYPE_HASH (TREE_PURPOSE (tail));
+    hashcode = iterative_hash_object
+      (IDENTIFIER_HASH_VALUE (TREE_PURPOSE (tail)), hashcode);
   return hashcode;
 }
 
@@ -3943,7 +3956,7 @@ tree
 build_array_type (tree elt_type, tree index_type)
 {
   tree t;
-  unsigned int hashcode;
+  hashval_t hashcode = 0;
 
   if (TREE_CODE (elt_type) == FUNCTION_TYPE)
     {
@@ -3965,7 +3978,8 @@ build_array_type (tree elt_type, tree index_type)
       return t;
     }
 
-  hashcode = TYPE_HASH (elt_type) + TYPE_HASH (index_type);
+  hashcode = iterative_hash_object (TYPE_HASH (elt_type), hashcode);
+  hashcode = iterative_hash_object (TYPE_HASH (index_type), hashcode);
   t = type_hash_canon (hashcode, t);
 
   if (!COMPLETE_TYPE_P (t))
@@ -3998,7 +4012,7 @@ tree
 build_function_type (tree value_type, tree arg_types)
 {
   tree t;
-  unsigned int hashcode;
+  hashval_t hashcode = 0;
 
   if (TREE_CODE (value_type) == FUNCTION_TYPE)
     {
@@ -4012,7 +4026,8 @@ build_function_type (tree value_type, tree arg_types)
   TYPE_ARG_TYPES (t) = arg_types;
 
   /* If we already have such a type, use the old one and free this one.  */
-  hashcode = TYPE_HASH (value_type) + type_hash_list (arg_types);
+  hashcode = iterative_hash_object (TYPE_HASH (value_type), hashcode);
+  hashcode = type_hash_list (arg_types, hashcode);
   t = type_hash_canon (hashcode, t);
 
   if (!COMPLETE_TYPE_P (t))
@@ -4058,7 +4073,7 @@ build_method_type_directly (tree basetype,
 {
   tree t;
   tree ptype;
-  int hashcode;
+  int hashcode = 0;
 
   /* Make a node of the sort we want.  */
   t = make_node (METHOD_TYPE);
@@ -4074,8 +4089,9 @@ build_method_type_directly (tree basetype,
 
   /* If we already have such a type, use the old one and free this one.
      Note that it also frees up the above cons cell if found.  */
-  hashcode = TYPE_HASH (basetype) + TYPE_HASH (rettype) +
-    type_hash_list (argtypes);
+  hashcode = iterative_hash_object (TYPE_HASH (basetype), hashcode);
+  hashcode = iterative_hash_object (TYPE_HASH (rettype), hashcode);
+  hashcode = type_hash_list (argtypes, hashcode);
 
   t = type_hash_canon (hashcode, t);
 
@@ -4109,7 +4125,7 @@ tree
 build_offset_type (tree basetype, tree type)
 {
   tree t;
-  unsigned int hashcode;
+  hashval_t hashcode = 0;
 
   /* Make a node of the sort we want.  */
   t = make_node (OFFSET_TYPE);
@@ -4118,7 +4134,8 @@ build_offset_type (tree basetype, tree type)
   TREE_TYPE (t) = type;
 
   /* If we already have such a type, use the old one and free this one.  */
-  hashcode = TYPE_HASH (basetype) + TYPE_HASH (type);
+  hashcode = iterative_hash_object (TYPE_HASH (basetype), hashcode);
+  hashcode = iterative_hash_object (TYPE_HASH (type), hashcode);
   t = type_hash_canon (hashcode, t);
 
   if (!COMPLETE_TYPE_P (t))
@@ -4133,7 +4150,7 @@ tree
 build_complex_type (tree component_type)
 {
   tree t;
-  unsigned int hashcode;
+  hashval_t hashcode;
 
   /* Make a node of the sort we want.  */
   t = make_node (COMPLEX_TYPE);
@@ -4142,7 +4159,7 @@ build_complex_type (tree component_type)
   set_type_quals (t, TYPE_QUALS (component_type));
 
   /* If we already have such a type, use the old one and free this one.  */
-  hashcode = TYPE_HASH (component_type);
+  hashcode = iterative_hash_object (TYPE_HASH (component_type), 0);
   t = type_hash_canon (hashcode, t);
 
   if (!COMPLETE_TYPE_P (t))
