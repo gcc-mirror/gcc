@@ -10558,9 +10558,20 @@ do_store_flag (exp, target, mode, only_cheap)
       && TYPE_PRECISION (type) <= HOST_BITS_PER_WIDE_INT)
     {
       tree inner = TREE_OPERAND (arg0, 0);
-      int bitnum = exact_log2 (INTVAL (expand_expr (TREE_OPERAND (arg0, 1),
-						    NULL_RTX, VOIDmode, 0)));
+      HOST_WIDE_INT tem;
+      int bitnum;
       int ops_unsignedp;
+
+      tem = INTVAL (expand_expr (TREE_OPERAND (arg0, 1),
+				 NULL_RTX, VOIDmode, 0));
+      /* In this case, immed_double_const will sign extend the value to make
+	 it look the same on the host and target.  We must remove the
+	 sign-extension before calling exact_log2, since exact_log2 will
+	 fail for negative values.  */
+      if (BITS_PER_WORD < HOST_BITS_PER_WIDE_INT
+	  && BITS_PER_WORD == GET_MODE_BITSIZE (TYPE_MODE (type)))
+	tem = tem & (((HOST_WIDE_INT) 1 << BITS_PER_WORD) - 1);
+      bitnum = exact_log2 (tem);
 
       /* If INNER is a right shift of a constant and it plus BITNUM does
 	 not overflow, adjust BITNUM and INNER.  */
