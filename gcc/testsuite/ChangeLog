@@ -1,5 +1,9 @@
 2003-08-22  Mark Mitchell  <mark@codesourcery.com>
 
+	* gcc.misc-tests/linkage.exp: Add logic for ia64-hp-hpux*.
+
+2003-08-22  Mark Mitchell  <mark@codesourcery.com>
+
 	* g++.dg/other/packed1.C: Add XFAIL marker for ia64-hp-hpux*.
 
 2003-08-21  Mark Mitchell  <mark@codesourcery.com>
