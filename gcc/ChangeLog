@@ -1,3 +1,7 @@
+2004-02-16  Zack Weinberg  <zack@codesourcery.com>
+
+	* sdbout.c (sdb_debug_hooks): Correct the type_decl entry.
+
 2004-02-16  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* doc/sourcebuild.texi: Mention backends.html.
@@ -12,7 +16,7 @@
 
 	* cse.c (cse_insn): Don't lose REG_NON_LOCAL_GOTO note.
 
-        * fold-const.c (operand_equal_p): Fix VECTOR_CST comparison.
+	* fold-const.c (operand_equal_p): Fix VECTOR_CST comparison.
 
 2004-02-15  Kazu Hirata  <kazu@cs.umass.edu>
 
