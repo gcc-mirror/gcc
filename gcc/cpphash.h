@@ -333,9 +333,6 @@ struct cpp_reader
      preprocessor.  */
   struct spec_nodes spec_nodes;
 
-  /* We're printed a warning recommending against using #import.  */
-  unsigned char import_warning;
-
   /* Whether to print our version number.  Done this way so
      we don't get it twice for -v -version.  */
   unsigned char print_version;

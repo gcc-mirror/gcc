@@ -193,7 +193,6 @@ setup_callbacks ()
     {
       cb->define = cb_define;
       cb->undef  = cb_undef;
-      cb->poison = cb_def_pragma;
     }
 }
 

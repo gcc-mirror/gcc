@@ -411,7 +411,6 @@ struct cpp_callbacks
 			     const cpp_token *));
     void (*define) PARAMS ((cpp_reader *, cpp_hashnode *));
     void (*undef) PARAMS ((cpp_reader *, cpp_hashnode *));
-    void (*poison) PARAMS ((cpp_reader *));
     void (*ident) PARAMS ((cpp_reader *, const cpp_string *));
     void (*def_pragma) PARAMS ((cpp_reader *));
 };
