@@ -7827,19 +7827,21 @@ delete_output_reload (insn, j, last_reload_reg)
       while (GET_CODE (reg2) == SUBREG)
 	reg2 = SUBREG_REG (reg2);
       if (rtx_equal_p (reg2, reg))
-	if (reload_inherited[k] || reload_override_in[k] || k == j)
-	  {
-	    n_inherited++;
-	    reg2 = reload_out_reg[k];
-	    if (! reg2)
-	      continue;
-	    while (GET_CODE (reg2) == SUBREG)
-	      reg2 = XEXP (reg2, 0);
-	    if (rtx_equal_p (reg2, reg))
+	{
+	  if (reload_inherited[k] || reload_override_in[k] || k == j)
+	    {
 	      n_inherited++;
-	  }
-	else
-	  return;
+	      reg2 = reload_out_reg[k];
+	      if (! reg2)
+		continue;
+	      while (GET_CODE (reg2) == SUBREG)
+		reg2 = XEXP (reg2, 0);
+	      if (rtx_equal_p (reg2, reg))
+		n_inherited++;
+	    }
+	  else
+	    return;
+	}
     }
   n_occurrences = count_occurrences (PATTERN (insn), reg);
   if (substed)
