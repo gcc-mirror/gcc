@@ -1,3 +1,10 @@
+2003-05-27  Steve Ellcey  <sje@cup.hp.com>
+
+	* config/os/hpux/os_defines.h: Define _LIBUNWIND_STD_ABI if we are
+	on IA64 HP-UX.
+	* libsupc++/eh_throw.cc: Don't call _Unwind_Resume_or_Rethrow if
+	_LIBUNWIND_STD_ABI is set.
+
 2003-05-21  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* libmath/stubs.c (hypot, hypotf, hypotl): Don't divide by

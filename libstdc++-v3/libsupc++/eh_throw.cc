@@ -98,7 +98,11 @@ __cxa_rethrow ()
 #ifdef _GLIBCPP_SJLJ_EXCEPTIONS
       _Unwind_SjLj_Resume_or_Rethrow (&header->unwindHeader);
 #else
+#ifdef _LIBUNWIND_STD_ABI
+      _Unwind_RaiseException (&header->unwindHeader);
+#else
       _Unwind_Resume_or_Rethrow (&header->unwindHeader);
+#endif
 #endif
   
       // Some sort of unwinding error.  Note that terminate is a handler.
