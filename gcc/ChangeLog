@@ -1,3 +1,28 @@
+2004-01-05  Daniel Berlin  <dberlin@dberlin.org>
+	
+	* ggc-zone.c: Remove everything in #ifdef USING_MALLOC_PAGE_GROUPS
+	(USING_MMAP): We don't support non-mmap.
+	(struct alloc_chunk): Steal 1 bit from typecode, use it to mark
+	large objects.
+	(struct page_entry): Remove bytes_free.
+	(struct page_table_chain): Remove.
+	(struct globals): Remove page_table member.
+	(loookup_page_table_entry): Function deleted.
+	(set_page_table_entry): Ditto.
+	(ggc_allocated_p): No longer need page table lookups.
+	(ggc_marked_p): Ditto.
+	(alloc_small_page): Don't care about bytes_free anymore.
+	(alloc_large_page): Round up size.
+	(ggc_alloc_zone_1): Mark large objects as such, and calculate
+	their size the new way. 
+	Remove page table lookups and setting.
+	(ggc_get_size): Calculate large object size the new way.
+	(sweep_pages): Redo to account for fact that we no longer have
+	bytes_free.
+	(ggc_collect): No longer need to reincrement bytes_free.
+	(ggc_pch_alloc_object): Handle new large objects properly.
+	(ggc_pch_read): Put PCH stuff into it's own uncollected zone.
+
 2004-01-05  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* doc/invoke.texi: Remove a page break.
