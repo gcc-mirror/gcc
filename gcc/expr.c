@@ -1506,7 +1506,7 @@ move_by_pieces (to, from, len, align)
 }
 
 /* Return number of insns required to move L bytes by pieces.
-   ALIGN (in bytes) is maximum alignment we can assume.  */
+   ALIGN (in bits) is maximum alignment we can assume.  */
 
 static unsigned HOST_WIDE_INT
 move_by_pieces_ninsns (l, align)
@@ -3080,7 +3080,7 @@ get_push_address (size)
    SIZE is an rtx for the size of data to be copied (in bytes),
    needed only if X is BLKmode.
 
-   ALIGN is maximum alignment we can assume.
+   ALIGN (in bits) is maximum alignment we can assume.
 
    If PARTIAL and REG are both nonzero, then copy that many of the first
    words of X into registers starting with REG, and push the rest of X.
@@ -3183,7 +3183,8 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 	     and such small pushes do rounding that causes trouble.  */
 	  && ((! SLOW_UNALIGNED_ACCESS (word_mode, align))
 	      || align >= BIGGEST_ALIGNMENT
-	      || PUSH_ROUNDING (align) == align)
+	      || (PUSH_ROUNDING (align / BITS_PER_UNIT)
+		  == (align / BITS_PER_UNIT)))
 	  && PUSH_ROUNDING (INTVAL (size)) == INTVAL (size))
 	{
 	  /* Push padding now if padding above and stack grows down,
