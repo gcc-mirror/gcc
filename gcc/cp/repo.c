@@ -22,18 +22,16 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
    Everything should be emitted in a translation unit where it is used.
    The results of the automatic process should be easily reproducible with
-   explicit code.
-
-   I'm thinking of compiling with -frepo, running a Perl script to update
-   files, and then being able to rebuild everything with -fno-implicit.
-   Full automation can come later.  */
+   explicit code.  */
 
 #include <stdio.h>
+#include "config.h"
 #include "tree.h"
 #include "cp-tree.h"
 #include "input.h"
 
 extern char * rindex ();
+extern char * getenv ();
 
 static tree pending_repo;
 static char repo_name[1024];
@@ -157,12 +155,61 @@ repo_tinfo_used (ti)
 {
 }
 
+static char *
+save_string (s, len)
+     char *s;
+     int len;
+{
+  register char *result = xmalloc (len + 1);
+
+  bcopy (s, result, len);
+  result[len] = 0;
+  return result;
+}
+
+static char *
+get_base_filename (filename)
+     char *filename;
+{
+  char *p = getenv ("COLLECT_GCC_OPTIONS");
+  char *output = 0;
+  int compiling = 0;
+
+  if (p)
+    while (*p)
+      {
+	char *q = p;
+	while (*q && *q != ' ') q++;
+	if (*p == '-' && p[1] == 'o')
+	  {
+	    p += 2;
+	    if (p == q)
+	      {
+		p++; q++;
+		if (*q)
+		  while (*q && *q != ' ') q++;
+	      }
+
+	    output = save_string (p, q - p);
+	  }
+	else if (*p == '-' && p[1] == 'c')
+	  compiling = 1;
+	if (*q) q++;
+	p = q;
+      }
+
+  if (compiling && output)
+    return output;
+
+  return save_string (filename, strlen (filename));
+}        
+
 static void
 open_repo_file (filename)
      char *filename;
 {
   register char *p, *q;
-  char *file = filename;
+  char *file = get_base_filename (filename);
   char *s = rindex (file, '/');
   if (s == NULL)
     s = file;
@@ -172,10 +219,15 @@ open_repo_file (filename)
   for (p = repo_name, q = file; q < s; )
     *p++ = *q++;
   *p++ = '.';
-  strcpy (p, q);
+  if ((s = rindex (q, '.')) == NULL)
+    strcpy (p, q);
+  else
+    for (; q < s;)
+      *p++ = *q++;
   strcat (p, ".repo");
 
   repo_file = fopen (repo_name, "r");
+  free (file);
 }
 
 void
@@ -187,7 +239,7 @@ init_repo (filename)
   if (! flag_use_repository)
     return;
 
-  open_repo_file (filename);
+  open_repo_file ();
 
   if (repo_file == 0)
     return;
@@ -202,6 +254,7 @@ init_repo (filename)
       switch (buf[0])
 	{
 	case 'A':
+	case 'G':
 	case 'M':
 	  break;
 	case 'C':
@@ -228,7 +281,7 @@ reopen_repo_file_for_write ()
 
   if (repo_file == 0)
     {
-      error ("man't create repository information file `%s'", repo_name);
+      error ("can't create repository information file `%s'", repo_name);
       flag_use_repository = 0;
     }
 }
@@ -239,7 +292,7 @@ void
 finish_repo ()
 {
   tree t;
-  int changed = 0;
+  char *p;
 
   if (! flag_use_repository)
     return;
@@ -253,6 +306,16 @@ finish_repo ()
 
   if (repo_file == 0)
     goto out;
+
+  fprintf (repo_file, "M %s\n", main_input_filename);
+
+  p = getenv ("COLLECT_GCC");
+  if (p != 0)
+    fprintf (repo_file, "G %s\n", p);
+
+  p = getenv ("COLLECT_GCC_OPTIONS");
+  if (p != 0)
+    fprintf (repo_file, "A %s\n", p);
 
   for (t = pending_repo; t; t = TREE_CHAIN (t))
     {

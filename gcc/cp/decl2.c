@@ -2291,7 +2291,7 @@ finish_table (name, type, init, publicp)
 	  DECL_INITIAL (empty_table) = init;
 	  asmspec = build_string (IDENTIFIER_LENGTH (DECL_NAME (empty_table)),
 				  IDENTIFIER_POINTER (DECL_NAME (empty_table)));
-	  finish_decl (empty_table, init, asmspec, 0, 0);
+	  finish_decl (empty_table, NULL_TREE, asmspec, 0, 0);
 	}
       is_empty = 1;
     }
@@ -2329,7 +2329,7 @@ finish_table (name, type, init, publicp)
 			      IDENTIFIER_POINTER (DECL_NAME (empty_table)));
     }
 
-  finish_decl (decl, init, asmspec, 0, 0);
+  finish_decl (decl, NULL_TREE, asmspec, 0, 0);
   return decl;
 }
 

@@ -3082,7 +3082,8 @@ build_new (placement, decl, init, use_global_new)
 
   if (TYPE_NEEDS_CONSTRUCTING (type) || init)
     {
-      if (! TYPE_NEEDS_CONSTRUCTING (type) && ! IS_AGGR_TYPE (type))
+      if (! TYPE_NEEDS_CONSTRUCTING (type)
+	  && ! IS_AGGR_TYPE (type) && ! has_array)
 	{
 	  /* New 2.0 interpretation: `new int (10)' means
 	     allocate an int, and initialize it with 10.  */

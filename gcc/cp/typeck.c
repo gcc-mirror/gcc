@@ -3483,6 +3483,9 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 	     all the values of the unsigned type.  */
 	  if (! TREE_UNSIGNED (result_type))
 	    /* OK */;
+	  /* Do not warn if both operands are unsigned.  */
+	  else if (op0_signed == op1_signed)
+	    /* OK */;
 	  /* Do not warn if the signed quantity is an unsuffixed
 	     integer literal (or some static constant expression
 	     involving such literals) and it is non-negative.  */
@@ -4592,11 +4595,13 @@ build_conditional_expr (ifexp, op1, op2)
 	  cp_error ("enumeral mismatch in conditional expression: `%T' vs `%T'", type1, type2);
 	  return error_mark_node;
 	}
-      else if (extra_warnings && ! IS_AGGR_TYPE_CODE (code2))
+      else if (extra_warnings && ! IS_AGGR_TYPE_CODE (code2)
+	       && type2 != type_promotes_to (type1))
 	warning ("enumeral and non-enumeral type in conditional expression");
     }
   else if (extra_warnings
-	   && code2 == ENUMERAL_TYPE && ! IS_AGGR_TYPE_CODE (code1))
+	   && code2 == ENUMERAL_TYPE && ! IS_AGGR_TYPE_CODE (code1)
+	   && type1 != type_promotes_to (type2))
     warning ("enumeral and non-enumeral type in conditional expression");
 
   if (code1 != VOID_TYPE)
@@ -4828,6 +4833,22 @@ build_x_compound_expr (list)
 			   TREE_VALUE (list), TREE_VALUE (rest), NULL_TREE);
   if (result)
     return build_x_compound_expr (tree_cons (NULL_TREE, result, TREE_CHAIN (rest)));
+
+  if (! TREE_SIDE_EFFECTS (TREE_VALUE (list)))
+    {
+      /* the left-hand operand of a comma expression is like an expression
+         statement: we should warn if it doesn't have any side-effects,
+         unless it was explicitly cast to (void).  */
+      if ((extra_warnings || warn_unused)
+           && !(TREE_CODE (TREE_VALUE(list)) == CONVERT_EXPR
+                && TREE_TYPE (TREE_VALUE(list)) == void_type_node))
+        warning("left-hand operand of comma expression has no effect");
+    }
+#if 0 /* this requires a gcc backend patch to export warn_if_unused_value */
+  else if (warn_unused)
+    warn_if_unused_value (TREE_VALUE(list));
+#endif
+
   return build_compound_expr (tree_cons (NULL_TREE, TREE_VALUE (list),
 					 build_tree_list (NULL_TREE, build_x_compound_expr (rest))));
 }
@@ -4861,25 +4882,9 @@ build_compound_expr (list)
 
   rest = build_compound_expr (TREE_CHAIN (list));
 
-  if (! TREE_SIDE_EFFECTS (TREE_VALUE (list)))
-    {
-      /* the left-hand operand of a comma expression is like an expression
-         statement: we should warn if it doesn't have any side-effects,
-         unless it was explicitly cast to (void).  */
-      if ((extra_warnings || warn_unused)
-           && !(TREE_CODE (TREE_VALUE(list)) == CONVERT_EXPR
-                && TREE_TYPE (TREE_VALUE(list)) == void_type_node))
-        warning("left-hand operand of comma expression has no effect");
-
-      /* When pedantic, a compound expression can be neither an lvalue
-         nor an integer constant expression.  */
-      if (! pedantic)
-        return rest;
-    }
-#if 0 /* this requires a gcc backend patch to export warn_if_unused_value */
-  else if (warn_unused)
-    warn_if_unused_value (TREE_VALUE(list));
-#endif
+  /* When pedantic, a compound expression cannot be a constant expression.  */
+  if (! TREE_SIDE_EFFECTS (TREE_VALUE (list)) && ! pedantic)
+    return rest;
 
   return build (COMPOUND_EXPR, TREE_TYPE (rest),
 		break_out_cleanups (TREE_VALUE (list)), rest);
