@@ -50,19 +50,23 @@ Boston, MA 02111-1307, USA.  */
 
 /* Target specific preprocessor settings.  */
 
-#define CPP_PREDEFINES \
-  "-Dunix -Asystem(unix) -D__gnu_linux__ -Dlinux -Asystem(linux) -D__ELF__ \
-   -Acpu(s390) -Amachine(s390) -D__s390__"
+#define TARGET_OS_CPP_BUILTINS()		\
+  do						\
+    {						\
+      builtin_define_std ("linux");		\
+      builtin_define_std ("unix");		\
+      builtin_assert ("system=linux");		\
+      builtin_assert ("system=unix");		\
+      builtin_define ("__ELF__");		\
+      builtin_define ("__gnu_linux__");		\
+      if (flag_pic)				\
+        {					\
+          builtin_define ("__PIC__");		\
+          builtin_define ("__pic__");		\
+        }					\
+    }						\
+  while (0)
 
-#define CPP_ARCH31_SPEC ""
-#define CPP_ARCH64_SPEC "-D__s390x__"
-
-#undef  CPP_SPEC
-#ifdef DEFAULT_TARGET_64BIT
-#define CPP_SPEC "%{!m31:%(cpp_arch64)}"
-#else
-#define CPP_SPEC "%{m64:%(cpp_arch64)}"
-#endif
 
 /* Target specific compiler settings.  */
 
@@ -118,8 +122,6 @@ Boston, MA 02111-1307, USA.  */
    is an initializer with a subgrouping for each command option.  */
 
 #define EXTRA_SPECS \
-  { "cpp_arch31",	CPP_ARCH31_SPEC },	\
-  { "cpp_arch64",	CPP_ARCH64_SPEC },	\
   { "link_arch31",	LINK_ARCH31_SPEC },	\
   { "link_arch64",	LINK_ARCH64_SPEC },	\
 
