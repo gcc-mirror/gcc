@@ -1,3 +1,8 @@
+Mon Jul 26 12:30:09 1999  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cpplib.c (cpp_get_token): Don't return a CPP_POP if the buffer
+	has manual_pop set.
+
 1999-07-26  Nathan Sidwell  <nathan@acm.org>
 
 	* eh-common.h (__eh_matcher): Prototype correctly.
