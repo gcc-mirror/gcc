@@ -44,7 +44,7 @@ foo (int *ip, unsigned int *uip, short int *hp, unsigned short int *uhp,
   /* Valid, invalid and silly assignment-suppression constructions.  */
   scanf ("%*d%*i%*o%*u%*x%*X%*e%*E%*f%*g%*G%*s%*[abc]%*c%*p");
   scanf ("%*2d%*8s%*3c");
-  scanf ("%*n"); /* { dg-warning "suppress" "suppression of %n" } */
+  scanf ("%*n", n); /* { dg-warning "suppress" "suppression of %n" } */
   scanf ("%*hd"); /* { dg-warning "together" "suppression with length" } */
   /* Valid, invalid and silly width constructions.  */
   scanf ("%2d%3i%4o%5u%6x%7X%8e%9E%10f%11g%12G%13s%14[abc]%15c%16p",

@@ -140,8 +140,8 @@ foo (int i, int i1, int i2, unsigned int u, double d, char *s, void *p,
   /* Uses of the space flag (valid on signed conversions only, and ignored
      with +).
   */
-  printf ("% +d", i); /* { dg-warning "use of both" "use of space and + flags" } */
-  printf ("%+ d", i); /* { dg-warning "use of both" "use of space and + flags" } */
+  printf ("% +d", i); /* { dg-warning "use of both|ignored" "use of space and + flags" } */
+  printf ("%+ d", i); /* { dg-warning "use of both|ignored" "use of space and + flags" } */
   printf ("% d% i% f% e% E% g% G\n", i, i, d, d, d, d, d);
   printf ("% o", u); /* { dg-warning "flag" "bad use of space flag" } */
   printf ("% u", u); /* { dg-warning "flag" "bad use of space flag" } */
@@ -176,17 +176,17 @@ foo (int i, int i1, int i2, unsigned int u, double d, char *s, void *p,
   printf ("%08.5X", u); /* { dg-warning "ignored" "0 flag ignored with precision" } */
   printf ("%08.5f%08.5e%08.5E%08.5g%08.5G", d, d, d, d, d);
   /* 0 flag ignored with - flag.  */
-  printf ("%-08d", i); /* { dg-warning "flags" "0 flag ignored with - flag" } */
-  printf ("%-08i", i); /* { dg-warning "flags" "0 flag ignored with - flag" } */
-  printf ("%-08o", u); /* { dg-warning "flags" "0 flag ignored with - flag" } */
-  printf ("%-08u", u); /* { dg-warning "flags" "0 flag ignored with - flag" } */
-  printf ("%-08x", u); /* { dg-warning "flags" "0 flag ignored with - flag" } */
-  printf ("%-08X", u); /* { dg-warning "flags" "0 flag ignored with - flag" } */
-  printf ("%-08e", d); /* { dg-warning "flags" "0 flag ignored with - flag" } */
-  printf ("%-08E", d); /* { dg-warning "flags" "0 flag ignored with - flag" } */
-  printf ("%-08f", d); /* { dg-warning "flags" "0 flag ignored with - flag" } */
-  printf ("%-08g", d); /* { dg-warning "flags" "0 flag ignored with - flag" } */
-  printf ("%-08G", d); /* { dg-warning "flags" "0 flag ignored with - flag" } */
+  printf ("%-08d", i); /* { dg-warning "flags|ignored" "0 flag ignored with - flag" } */
+  printf ("%-08i", i); /* { dg-warning "flags|ignored" "0 flag ignored with - flag" } */
+  printf ("%-08o", u); /* { dg-warning "flags|ignored" "0 flag ignored with - flag" } */
+  printf ("%-08u", u); /* { dg-warning "flags|ignored" "0 flag ignored with - flag" } */
+  printf ("%-08x", u); /* { dg-warning "flags|ignored" "0 flag ignored with - flag" } */
+  printf ("%-08X", u); /* { dg-warning "flags|ignored" "0 flag ignored with - flag" } */
+  printf ("%-08e", d); /* { dg-warning "flags|ignored" "0 flag ignored with - flag" } */
+  printf ("%-08E", d); /* { dg-warning "flags|ignored" "0 flag ignored with - flag" } */
+  printf ("%-08f", d); /* { dg-warning "flags|ignored" "0 flag ignored with - flag" } */
+  printf ("%-08g", d); /* { dg-warning "flags|ignored" "0 flag ignored with - flag" } */
+  printf ("%-08G", d); /* { dg-warning "flags|ignored" "0 flag ignored with - flag" } */
   /* Various tests of bad argument types.  */
   printf ("%d", l); /* { dg-warning "format" "bad argument types" } */
   printf ("%*.*d", l, i2, i); /* { dg-warning "field" "bad * argument types" } */

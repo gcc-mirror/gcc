@@ -47,7 +47,7 @@ foo (int *ip, unsigned int *uip, short int *hp, unsigned short int *uhp,
   */
   scanf ("%*d%*i%*o%*u%*x%*X%*a%*A%*e%*E%*f%*F%*g%*G%*s%*[abc]%*c%*p");
   scanf ("%*2d%*8s%*3c");
-  scanf ("%*n"); /* { dg-warning "suppress" "suppression of %n" } */
+  scanf ("%*n", n); /* { dg-warning "suppress" "suppression of %n" } */
   scanf ("%*hd"); /* { dg-warning "together" "suppression with length" } */
   scanf ("%2d%3i%4o%5u%6x%7X%8a%9A%10e%11E%12f%13F%14g%15G%16s%3[abc]%4c%5p",
 	 ip, ip, uip, uip, uip, uip, fp, fp, fp, fp, fp, fp, fp, fp,

@@ -210,5 +210,5 @@ foo (char *s, size_t m, const struct tm *tp)
      covered in c99-strftime-1.c, except for the extension %P.
   */
   strftime (s, m, "%OC%Og%OG%Oj%OY%Oz%Ok%Ol%Os", tp); /* { dg-warning "only last 2" "2-digit year" } */
-  strftime (s, m, "%OP", tp); /* { dg-warning "flag" "bad %OP" } */
+  strftime (s, m, "%OP", tp); /* { dg-warning "flag|modifier" "bad %OP" } */
 }

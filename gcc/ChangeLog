@@ -1,3 +1,26 @@
+2000-10-08  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-common.c (FMT_FLAG_ARG_CONVERT, FMT_FLAG_SCANF_A_KLUDGE,
+	FMT_FLAG_FANCY_PERCENT_OK): Define.
+	(format_char_info): Add flag "4" to comment.
+	(format_flag_spec, format_flag_pair): New structures.
+	(format_kind_info): Add additional fields to control format
+	checking.
+	(printf_flag_specs, printf_flag_pairs, scanf_flag_specs,
+	scanf_flag_pairs, strftime_flag_specs, strftime_flag_pairs): New
+	arrays.
+	(time_char_table): Use "4" flag to handle %Ey.
+	(format_types): Add entries for new fields.
+	(get_flag_spec): New function.
+	(check_format_info): Increase size of flag_chars[] to 256.
+	Control format checking using the new fields of a format_kind_info
+	and the new tables; remove all conditionals on printf_format_type,
+	scanf_format_type or strftime_format_type.  Handle all details of
+	bad combinations of flags (including width, precision and strftime
+	modifiers) through data rather than ad hoc code.  Handle all
+	details of standard versions in which flags appeared through
+	data.  Use the "4" flag.
+
 2000-10-07  Will Cohen  <wcohen@redhat.com>, Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.md: Remove the memory alternative and correct
