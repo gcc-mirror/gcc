@@ -5,6 +5,27 @@
 	* Make-lang.in: Add several "else true" clauses to deal with lame
 	systems.
 
+1999-02-25  Andreas Jaeger  <aj@arthur.rhein-neckar.de>
+
+	* f/intdoc.in: Add missing `,' after cross references.
+
+1999-02-20  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.texi: Properly attribute Priest document; clarify
+	that it is in the .ps version of the Goldberg document.
+
+1999-02-18  Craig Burley  <craig@jcb-sc.com>
+
+	* intdoc.in (LOG10): Fix typo.
+
+1999-02-17  Dave Love  <fx@gnu.org>
+
+	* intdoc.in: Say `common' logarithm for log10.
+
+1999-02-15  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.texi: Change my email address in a couple of places.
+
 1999-02-14  Craig Burley  <craig@jcb-sc.com>
 
 	* version.c: Bump for 1998-10-02 change (forgot to do this

@@ -1,4 +1,4 @@
-/* Copyright (C) 1997 Free Software Foundation, Inc.
+/* Copyright (C) 1997, 1999 Free Software Foundation, Inc.
  * This is part of the G77 manual.
  * For copying conditions, see the file g77.texi. */
 
@@ -285,7 +285,7 @@ be zero.
 
 @xref{Exp Intrinsic}, for the inverse of this function.
 
-@xref{Log10 Intrinsic}, for the base-10 logarithm function.
+@xref{Log10 Intrinsic}, for the `common' (base-10) logarithm function.
 ")
 
 DEFDOC (ALOG, "Natural logarithm (archaic).", ARCHAIC (LOG, Log))
@@ -296,8 +296,8 @@ DEFDOC (DLOG, "Natural logarithm (archaic).", ARCHAIC (LOG, Log))
 
 DEFDOC (CDLOG, "Natural logarithm (archaic).", ARCHAIC (LOG, Log))
 
-DEFDOC (LOG10, "Base-10 logarithm.", "\
-Returns the base-10 logarithm of @var{@1@}, which must
+DEFDOC (LOG10, "Common logarithm.", "\
+Returns the common (base 10) logarithm of @var{@1@}, which must
 be greater than zero.
 
 The inverse of this function is @samp{10. ** LOG10(@var{@1@})}.
@@ -305,9 +305,9 @@ The inverse of this function is @samp{10. ** LOG10(@var{@1@})}.
 @xref{Log Intrinsic}, for the natural logarithm function.
 ")
 
-DEFDOC (ALOG10, "Natural logarithm (archaic).", ARCHAIC (LOG10, Log10))
+DEFDOC (ALOG10, "Common logarithm (archaic).", ARCHAIC (LOG10, Log10))
 
-DEFDOC (DLOG10, "Natural logarithm (archaic).", ARCHAIC (LOG10, Log10))
+DEFDOC (DLOG10, "Common logarithm (archaic).", ARCHAIC (LOG10, Log10))
 
 DEFDOC (MAX, "Maximum value.", "\
 Returns the argument with the largest value.
@@ -2409,18 +2409,18 @@ DEFDOC (TIME_vxt, "Get the time as a character value.", "\
 Returns in @var{@1@} a character representation of the current time as
 obtained from @code{ctime(3)}.
 
-@xref{Fdate Intrinsic (subroutine)} for an equivalent routine.
+@xref{Fdate Intrinsic (subroutine)}, for an equivalent routine.
 ")
 
 DEFDOC (IBCLR, "Clear a bit.", "\
 Returns the value of @var{@1@} with bit @var{@2@} cleared (set to
 zero).
-@xref{BTest Intrinsic} for information on bit positions.
+@xref{BTest Intrinsic}, for information on bit positions.
 ")
 
 DEFDOC (IBSET, "Set a bit.", "\
 Returns the value of @var{@1@} with bit @var{@2@} set (to one).
-@xref{BTest Intrinsic} for information on bit positions.
+@xref{BTest Intrinsic}, for information on bit positions.
 ")
 
 DEFDOC (IBITS, "Extract a bit subfield of a variable.", "\
@@ -2443,7 +2443,7 @@ Bits shifted out from the left end or the right end, as the case may be,
 are lost.
 Zeros are shifted in from the opposite end.
 
-@xref{IShftC Intrinsic} for the circular-shift equivalent.
+@xref{IShftC Intrinsic}, for the circular-shift equivalent.
 ")
 
 DEFDOC (ISHFTC, "Circular bit shift.", "\
@@ -2459,7 +2459,7 @@ must be less than or equal to @var{@3@}.
 The value of @var{@3@} must be greater than or equal to one and less than 
 or equal to @samp{BIT_SIZE(@var{@1@})}.
 
-@xref{IShft Intrinsic} for the logical shift equivalent.
+@xref{IShft Intrinsic}, for the logical shift equivalent.
 ")
 
 DEFDOC (MVBITS, "Moving a bit field.", "\
