@@ -146,6 +146,14 @@ public final class Double extends Number implements Comparable
    * <code>instanceof</code> <code>Double</code>, and represents
    * the same primitive <code>double</code> value return 
    * <code>true</code>.  Otherwise <code>false</code> is returned.
+   * <p>
+   * Note that there are two differences between <code>==</code> and
+   * <code>equals()</code>. <code>0.0d == -0.0d</code> returns <code>true</code>
+   * but <code>new Double(0.0d).equals(new Double(-0.0d))</code> returns
+   * <code>false</code>. And <code>Double.NaN == Double.NaN</code> returns
+   * <code>false</code>, but
+   * <code>new Double(Double.NaN).equals(new Double(Double.NaN))</code> returns
+   * <code>true</code>.
    *
    * @param obj the object to compare to
    * @return whether the objects are semantically equal.
@@ -248,11 +256,9 @@ public final class Double extends Number implements Comparable
    */
   public static boolean isNaN (double v)
   {
-    long bits = doubleToLongBits (v);
-    long e = bits & 0x7ff0000000000000L;
-    long f = bits & 0x000fffffffffffffL;
-
-    return e == 0x7ff0000000000000L && f != 0L;
+    // This works since NaN != NaN is the only reflexive inequality
+    // comparison which returns true.
+    return v != v;
   }
 
   /**
@@ -277,10 +283,7 @@ public final class Double extends Number implements Comparable
    */
   public static boolean isInfinite (double v)
   {
-    long bits = doubleToLongBits (v);
-    long f = bits & 0x7fffffffffffffffL;
-
-    return f == 0x7ff0000000000000L;
+    return (v == POSITIVE_INFINITY || v == NEGATIVE_INFINITY);
   }
 
   /**
@@ -508,5 +511,5 @@ public final class Double extends Number implements Comparable
    * Initialize JNI cache.  This method is called only by the 
    * static initializer when using JNI.
    */
-  private static void initIDs () { /* Not used in libgcj */ };
+  private static native void initIDs ();
 }
