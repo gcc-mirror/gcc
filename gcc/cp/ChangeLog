@@ -1,3 +1,11 @@
+1999-08-19  Mark Mitchell  <mark@codesourcery.com>
+
+	* pt.c (redeclare_class_template): Merge default template
+	arguments in both directions.
+
+	* typeck.c (common_type): Undo 1999-08-18 change.  Remove
+	compiler_error message.
+
 1999-08-19  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* cp-tree.h: Declare flag_use_repository.
