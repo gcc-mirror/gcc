@@ -1,5 +1,11 @@
 2000-05-29  Richard Henderson  <rth@cygnus.com>
 
+	* final.c (current_output_insn): New.
+	(final_scan_insn): Set it.
+	* output.h: Declare it.
+
+2000-05-29  Richard Henderson  <rth@cygnus.com>
+
 	* stor-layout.c (finalize_record_size): Fix typo.
 
 	* jump.c (redirect_jump): Don't emit NOTE_INSN_FUNCTION_END

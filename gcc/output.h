@@ -444,8 +444,10 @@ extern FILE *rtl_dump_file;
 #endif
 
 /* Nonnull if the insn currently being emitted was a COND_EXEC pattern.  */
-
 extern struct rtx_def *current_insn_predicate;
+
+/* Last insn processed by final_scan_insn.  */
+extern struct rtx_def *current_output_insn;
 
 /* Decide whether DECL needs to be in a writable section.  RELOC is the same
    as for SELECT_SECTION.  */
