@@ -1,3 +1,33 @@
+2002-09-16  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* calls.c (store_one_arg): Set default alignment for BLKmode arguments
+	to BITS_PER_UNIT when ARGS_GROW_DOWNWARD and the padding direction is
+	downward.
+	* function.c (pad_below):  Always compile.
+	(locate_and_pad_parm): If defined ARGS_GROW_DOWNWARD, pad argument to
+	alignment when it is not in a register or REG_PARM_STACK_SPACE is true.
+	Pad below when the argument is not in a register and the padding
+	direction is downward.
+
+	* pa-64.h (MUST_PASS_IN_STACK): Move define to pa.h.
+	(PAD_VARARGS_DOWN): Define.
+	* pa.c (function_arg_padding): Revise padding directions to make them
+	compatible with the 32 and 64-bit runtime architecture documentation.
+	(hppa_va_arg):  Add code to handle variable and size zero arguments
+	passed by reference on TARGET_64BIT.  Reformat.
+	(function_arg): Use a PARALLEL for BLKmode and aggregates args on
+	TARGET_64BIT.  Use a DImode PARALLEL for BLKmode args 5 to 8 bytes
+	wide when !TARGET_64BIT.  Move forward check for mode==VOIDmode.
+	Add comments.
+	* pa.h (MAX_PARM_BOUNDARY): Correct define for TARGET_64BIT.
+	(RETURN_IN_MEMORY): Return size zero types in memory.
+	(FUNCTION_VALUE): Return TFmode in general registers.
+	(MUST_PASS_IN_STACK): Define.
+	(FUNCTION_ARG_BOUNDARY): Simplify.
+	(FUNCTION_ARG_PASS_BY_REFERENCE): Pass variable and zero sized types
+	by reference.
+	(FUNCTION_ARG_CALLEE_COPIES): Define to FUNCTION_ARG_PASS_BY_REFERENCE.
+
 2002-09-16  Richard Henderson  <rth@redhat.com>
 
 	* real.c (do_fix_trunc): New.

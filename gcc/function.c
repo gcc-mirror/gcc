@@ -255,10 +255,8 @@ static int instantiate_virtual_regs_1 PARAMS ((rtx *, rtx, int));
 static void delete_handlers	PARAMS ((void));
 static void pad_to_arg_alignment PARAMS ((struct args_size *, int,
 					  struct args_size *));
-#ifndef ARGS_GROW_DOWNWARD
 static void pad_below		PARAMS ((struct args_size *, enum machine_mode,
 					 tree));
-#endif
 static rtx round_trampoline_addr PARAMS ((rtx));
 static rtx adjust_trampoline_addr PARAMS ((rtx));
 static tree *identify_blocks_1	PARAMS ((rtx, tree *, tree *, tree *));
@@ -5244,6 +5242,9 @@ locate_and_pad_parm (passed_mode, type, in_regs, fndecl,
     = type ? size_in_bytes (type) : size_int (GET_MODE_SIZE (passed_mode));
   enum direction where_pad = FUNCTION_ARG_PADDING (passed_mode, type);
   int boundary = FUNCTION_ARG_BOUNDARY (passed_mode, type);
+#ifdef ARGS_GROW_DOWNWARD
+  tree s2 = sizetree;
+#endif
 
 #ifdef REG_PARM_STACK_SPACE
   /* If we have found a stack parm before we reach the end of the
@@ -5289,13 +5290,20 @@ locate_and_pad_parm (passed_mode, type, in_regs, fndecl,
       offset_ptr->constant = -initial_offset_ptr->constant;
       offset_ptr->var = 0;
     }
+
   if (where_pad != none
       && (!host_integerp (sizetree, 1)
 	  || (tree_low_cst (sizetree, 1) * BITS_PER_UNIT) % PARM_BOUNDARY))
-    sizetree = round_up (sizetree, PARM_BOUNDARY / BITS_PER_UNIT);
-  SUB_PARM_SIZE (*offset_ptr, sizetree);
-  if (where_pad != downward)
+    s2 = round_up (s2, PARM_BOUNDARY / BITS_PER_UNIT);
+  SUB_PARM_SIZE (*offset_ptr, s2);
+
+  if (!in_regs
+#ifdef REG_PARM_STACK_SPACE
+      || REG_PARM_STACK_SPACE (fndecl) > 0
+#endif
+     )
     pad_to_arg_alignment (offset_ptr, boundary, alignment_pad);
+
   if (initial_offset_ptr->var)
     arg_size_ptr->var = size_binop (MINUS_EXPR,
 				    size_binop (MINUS_EXPR,
@@ -5306,6 +5314,13 @@ locate_and_pad_parm (passed_mode, type, in_regs, fndecl,
   else
     arg_size_ptr->constant = (-initial_offset_ptr->constant
 			      - offset_ptr->constant);
+
+  /* Pad_below needs the pre-rounded size to know how much to pad below.
+     We only pad parameters which are not in registers as they have their
+     padding done elsewhere.  */
+  if (where_pad == downward
+      && !in_regs)
+    pad_below (offset_ptr, passed_mode, sizetree);
 
 #else /* !ARGS_GROW_DOWNWARD */
   if (!in_regs
@@ -5392,7 +5407,6 @@ pad_to_arg_alignment (offset_ptr, boundary, alignment_pad)
     }
 }
 
-#ifndef ARGS_GROW_DOWNWARD
 static void
 pad_below (offset_ptr, passed_mode, sizetree)
      struct args_size *offset_ptr;
@@ -5420,7 +5434,6 @@ pad_below (offset_ptr, passed_mode, sizetree)
 	}
     }
 }
-#endif
 
 /* Walk the tree of blocks describing the binding levels within a function
    and warn about uninitialized variables.

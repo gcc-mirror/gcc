@@ -407,7 +407,7 @@ extern int target_flags;
 
 /* Largest alignment required for any stack parameter, in bits.
    Don't define this if it is equal to PARM_BOUNDARY */
-#define MAX_PARM_BOUNDARY 64
+#define MAX_PARM_BOUNDARY (2 * PARM_BOUNDARY)
 
 /* Boundary (in *bits*) on which stack pointer is always aligned;
    certain optimizations in combine depend on this.
@@ -506,9 +506,13 @@ extern struct rtx_def *hppa_pic_save_rtx PARAMS ((void));
    PA64 ABI says that objects larger than 128 bits are returned in memory.
    Note, int_size_in_bytes can return -1 if the size of the object is
    variable or larger than the maximum value that can be expressed as
-   a HOST_WIDE_INT.  */
+   a HOST_WIDE_INT.   It can also return zero for an empty type.  The
+   simplest way to handle variable and empty types is to pass them in
+   memory.  This avoids problems in defining the boundaries of argument
+   slots, allocating registers, etc.  */
 #define RETURN_IN_MEMORY(TYPE)	\
-  ((unsigned HOST_WIDE_INT) int_size_in_bytes (TYPE) > (TARGET_64BIT ? 16 : 8))
+  (int_size_in_bytes (TYPE) > (TARGET_64BIT ? 16 : 8)	\
+   || int_size_in_bytes (TYPE) <= 0)
 
 /* Register in which address to store a structure value
    is passed to a function.  */
@@ -681,16 +685,18 @@ extern struct rtx_def *hppa_pic_save_rtx PARAMS ((void));
    otherwise, FUNC is 0.  */
 
 /* On the HP-PA the value is found in register(s) 28(-29), unless
-   the mode is SF or DF. Then the value is returned in fr4 (32, ) */
+   the mode is SF or DF. Then the value is returned in fr4 (32).  */
 
 /* This must perform the same promotions as PROMOTE_MODE, else
    PROMOTE_FUNCTION_RETURN will not work correctly.  */
-#define FUNCTION_VALUE(VALTYPE, FUNC)				\
-  gen_rtx_REG (((INTEGRAL_TYPE_P (VALTYPE)			\
-		 && TYPE_PRECISION (VALTYPE) < BITS_PER_WORD)	\
-		|| POINTER_TYPE_P (VALTYPE))			\
-	       ? word_mode : TYPE_MODE (VALTYPE),		\
-	       TREE_CODE (VALTYPE) == REAL_TYPE && !TARGET_SOFT_FLOAT ? 32 : 28)
+#define FUNCTION_VALUE(VALTYPE, FUNC)					\
+  gen_rtx_REG (((INTEGRAL_TYPE_P (VALTYPE)				\
+		 && TYPE_PRECISION (VALTYPE) < BITS_PER_WORD)		\
+		|| POINTER_TYPE_P (VALTYPE))				\
+	        ? word_mode : TYPE_MODE (VALTYPE),			\
+	       (TREE_CODE (VALTYPE) == REAL_TYPE			\
+		&& TYPE_MODE (VALTYPE) != TFmode			\
+		&& !TARGET_SOFT_FLOAT) ? 32 : 28)
 
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
@@ -745,7 +751,9 @@ struct hppa_args {int words, nargs_prototype, indirect; };
   (CUM).indirect = 0,				\
   (CUM).nargs_prototype = 1000
 
-/* Figure out the size in words of the function argument.  */
+/* Figure out the size in words of the function argument.  The size
+   returned by this macro should always be greater than zero because
+   we pass variable and zero sized objects by reference.  */
 
 #define FUNCTION_ARG_SIZE(MODE, TYPE)	\
   ((((MODE) != BLKmode \
@@ -817,6 +825,12 @@ struct hppa_args {int words, nargs_prototype, indirect; };
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
   function_arg (&CUM, MODE, TYPE, NAMED, 0)
 
+/* Nonzero if we do not know how to pass TYPE solely in registers.  */
+#define MUST_PASS_IN_STACK(MODE,TYPE) \
+  ((TYPE) != 0							\
+   && (TREE_CODE (TYPE_SIZE (TYPE)) != INTEGER_CST		\
+       || TREE_ADDRESSABLE (TYPE)))
+
 #define FUNCTION_INCOMING_ARG(CUM, MODE, TYPE, NAMED) \
   function_arg (&CUM, MODE, TYPE, NAMED, 1)
 
@@ -833,33 +847,37 @@ struct hppa_args {int words, nargs_prototype, indirect; };
    bits, of an argument with the specified mode and type.  If it is
    not defined,  `PARM_BOUNDARY' is used for all arguments.  */
 
-#define FUNCTION_ARG_BOUNDARY(MODE, TYPE)			\
-  (((TYPE) != 0)						\
-   ? ((integer_zerop (TYPE_SIZE (TYPE))				\
-       || ! TREE_CONSTANT (TYPE_SIZE (TYPE)))			\
-      ? BITS_PER_UNIT						\
-      : (((int_size_in_bytes (TYPE)) + UNITS_PER_WORD - 1)	\
-	 / UNITS_PER_WORD) * BITS_PER_WORD)			\
-   : ((GET_MODE_ALIGNMENT(MODE) <= PARM_BOUNDARY)		\
-      ? PARM_BOUNDARY : GET_MODE_ALIGNMENT(MODE)))
+/* Arguments larger than one word are double word aligned.  */
 
-/* Arguments larger than eight bytes are passed by invisible reference */
+#define FUNCTION_ARG_BOUNDARY(MODE, TYPE)				\
+  (((TYPE)								\
+    ? (integer_zerop (TYPE_SIZE (TYPE))					\
+       || !TREE_CONSTANT (TYPE_SIZE (TYPE))				\
+       || int_size_in_bytes (TYPE) <= UNITS_PER_WORD)			\
+    : GET_MODE_SIZE(MODE) <= UNITS_PER_WORD)				\
+   ? PARM_BOUNDARY : MAX_PARM_BOUNDARY)
 
-/* PA64 does not pass anything by invisible reference.  */
+/* In the 32-bit runtime, arguments larger than eight bytes are passed
+   by invisible reference.  As a GCC extension, we also pass anything
+   with a zero or variable size by reference.
+
+   The 64-bit runtime does not describe passing any types by invisible
+   reference.  The internals of GCC can't currently handle passing
+   empty structures, and zero or variable length arrays when they are
+   not passed entirely on the stack or by reference.  Thus, as a GCC
+   extension, we pass these types by reference.  The HP compiler doesn't
+   support these types, so hopefully there shouldn't be any compatibility
+   issues.  This may have to be revisited when HP releases a C99 compiler
+   or updates the ABI.  */
 #define FUNCTION_ARG_PASS_BY_REFERENCE(CUM, MODE, TYPE, NAMED)		\
   (TARGET_64BIT								\
-   ? 0									\
-   : (((TYPE) && int_size_in_bytes (TYPE) > 8)				\
+   ? ((TYPE) && int_size_in_bytes (TYPE) <= 0)				\
+   : (((TYPE) && (int_size_in_bytes (TYPE) > 8				\
+		  || int_size_in_bytes (TYPE) <= 0))			\
       || ((MODE) && GET_MODE_SIZE (MODE) > 8)))
  
-/* PA64 does not pass anything by invisible reference.
-   This should be undef'ed for 64bit, but we'll see if this works. The
-   problem is that we can't test TARGET_64BIT from the preprocessor.  */
-#define FUNCTION_ARG_CALLEE_COPIES(CUM, MODE, TYPE, NAMED) \
-  (TARGET_64BIT							\
-   ? 0								\
-   : (((TYPE) && int_size_in_bytes (TYPE) > 8)			\
-      || ((MODE) && GET_MODE_SIZE (MODE) > 8)))
+#define FUNCTION_ARG_CALLEE_COPIES(CUM, MODE, TYPE, NAMED) 		\
+  FUNCTION_ARG_PASS_BY_REFERENCE (CUM, MODE, TYPE, NAMED)
 
 
 extern GTY(()) rtx hppa_compare_op0;

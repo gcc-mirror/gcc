@@ -5089,22 +5089,33 @@ function_arg_padding (mode, type)
      enum machine_mode mode;
      tree type;
 {
-  int size;
-
-  if (mode == BLKmode)
+  if (mode == BLKmode
+      || (TARGET_64BIT && type && AGGREGATE_TYPE_P (type)))
     {
-      if (type && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST)
-	size = int_size_in_bytes (type) * BITS_PER_UNIT;
+      /* Return none if justification is not required.  */
+      if (type
+	  && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
+	  && (int_size_in_bytes (type) * BITS_PER_UNIT) % PARM_BOUNDARY == 0)
+	return none;
+
+      /* The directions set here are ignored when a BLKmode argument larger
+	 than a word is placed in a register.  Different code is used for
+	 the stack and registers.  This makes it difficult to have a
+	 consistent data representation for both the stack and registers.
+	 For both runtimes, the justification and padding for arguments on
+	 the stack and in registers should be identical.  */
+      if (TARGET_64BIT)
+	/* The 64-bit runtime specifies left justification for aggregates.  */
+        return upward;
       else
-	return upward;		/* Don't know if this is right, but */
-				/* same as old definition.  */
+	/* The 32-bit runtime architecture specifies right justification.
+	   When the argument is passed on the stack, the argument is padded
+	   with garbage on the left.  The HP compiler pads with zeros.  */
+	return downward;
     }
-  else
-    size = GET_MODE_BITSIZE (mode);
-  if (size < PARM_BOUNDARY)
+
+  if (GET_MODE_BITSIZE (mode) < PARM_BOUNDARY)
     return downward;
-  else if (size % PARM_BOUNDARY)
-    return upward;
   else
     return none;
 }
@@ -5196,15 +5207,23 @@ rtx
 hppa_va_arg (valist, type)
      tree valist, type;
 {
-  HOST_WIDE_INT align, size, ofs;
+  HOST_WIDE_INT size = int_size_in_bytes (type);
+  HOST_WIDE_INT ofs;
   tree t, ptr, pptr;
 
   if (TARGET_64BIT)
     {
-      /* Every argument in PA64 is passed by value (including large structs).
-         Arguments with size greater than 8 must be aligned 0 MOD 16.  */
+      /* Every argument in PA64 is supposed to be passed by value
+	 (including large structs).  However, as a GCC extension, we
+	 pass zero and variable sized arguments by reference.  Empty
+	 structures are a GCC extension not supported by the HP
+	 compilers.  Thus, passing them by reference isn't likely
+	 to conflict with the ABI.  For variable sized arguments,
+	 GCC doesn't have the infrastructure to allocate these to
+	 registers.  */
 
-      size = int_size_in_bytes (type);
+      /* Arguments with a size greater than 8 must be aligned 0 MOD 16.  */
+
       if (size > UNITS_PER_WORD)
         {
           t = build (PLUS_EXPR, TREE_TYPE (valist), valist,
@@ -5213,57 +5232,75 @@ hppa_va_arg (valist, type)
                      build_int_2 (-2 * UNITS_PER_WORD, -1));
           t = build (MODIFY_EXPR, TREE_TYPE (valist), valist, t);
           TREE_SIDE_EFFECTS (t) = 1;
-          expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+	  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
         }
-      return std_expand_builtin_va_arg (valist, type);
-    }
 
-  /* Compute the rounded size of the type.  */
-  align = PARM_BOUNDARY / BITS_PER_UNIT;
-  size = int_size_in_bytes (type);
-
-  ptr = build_pointer_type (type);
-
-  /* "Large" types are passed by reference.  */
-  if (size > 8)
-    {
-      t = build (PREDECREMENT_EXPR, TREE_TYPE (valist), valist,
-		 build_int_2 (POINTER_SIZE / BITS_PER_UNIT, 0));
-      TREE_SIDE_EFFECTS (t) = 1;
-
-      pptr = build_pointer_type (ptr);
-      t = build1 (NOP_EXPR, pptr, t);
-      TREE_SIDE_EFFECTS (t) = 1;
-
-      t = build1 (INDIRECT_REF, ptr, t);
-      TREE_SIDE_EFFECTS (t) = 1;
-    }
-  else
-    {
-      t = build (PLUS_EXPR, TREE_TYPE (valist), valist,
-		 build_int_2 (-size, -1));
-
-      /* Copied from va-pa.h, but we probably don't need to align
-	 to word size, since we generate and preserve that invariant.  */
-      t = build (BIT_AND_EXPR, TREE_TYPE (valist), t,
-		 build_int_2 ((size > 4 ? -8 : -4), -1));
-
-      t = build (MODIFY_EXPR, TREE_TYPE (valist), valist, t);
-      TREE_SIDE_EFFECTS (t) = 1;
-
-      ofs = (8 - size) % 4;
-      if (ofs)
+      if (size > 0)
+	return std_expand_builtin_va_arg (valist, type);
+      else
 	{
-	  t = build (PLUS_EXPR, TREE_TYPE (valist), t, build_int_2 (ofs, 0));
+	  ptr = build_pointer_type (type);
+
+	  /* Args grow upward.  */
+	  t = build (POSTINCREMENT_EXPR, TREE_TYPE (valist), valist,
+		     build_int_2 (POINTER_SIZE / BITS_PER_UNIT, 0));
+	  TREE_SIDE_EFFECTS (t) = 1;
+
+	  pptr = build_pointer_type (ptr);
+	  t = build1 (NOP_EXPR, pptr, t);
+	  TREE_SIDE_EFFECTS (t) = 1;
+
+	  t = build1 (INDIRECT_REF, ptr, t);
 	  TREE_SIDE_EFFECTS (t) = 1;
 	}
+    }
+  else /* !TARGET_64BIT */
+    {
+      ptr = build_pointer_type (type);
 
-      t = build1 (NOP_EXPR, ptr, t);
-      TREE_SIDE_EFFECTS (t) = 1;
+      /* "Large" and variable sized types are passed by reference.  */
+      if (size > 8 || size <= 0)
+	{
+	  /* Args grow downward.  */
+	  t = build (PREDECREMENT_EXPR, TREE_TYPE (valist), valist,
+		     build_int_2 (POINTER_SIZE / BITS_PER_UNIT, 0));
+	  TREE_SIDE_EFFECTS (t) = 1;
+
+	  pptr = build_pointer_type (ptr);
+	  t = build1 (NOP_EXPR, pptr, t);
+	  TREE_SIDE_EFFECTS (t) = 1;
+
+	  t = build1 (INDIRECT_REF, ptr, t);
+	  TREE_SIDE_EFFECTS (t) = 1;
+	}
+      else
+	{
+	  t = build (PLUS_EXPR, TREE_TYPE (valist), valist,
+		     build_int_2 (-size, -1));
+
+	  /* Copied from va-pa.h, but we probably don't need to align to
+	     word size, since we generate and preserve that invariant.  */
+	  t = build (BIT_AND_EXPR, TREE_TYPE (valist), t,
+		     build_int_2 ((size > 4 ? -8 : -4), -1));
+
+	  t = build (MODIFY_EXPR, TREE_TYPE (valist), valist, t);
+	  TREE_SIDE_EFFECTS (t) = 1;
+
+	  ofs = (8 - size) % 4;
+	  if (ofs)
+	    {
+	      t = build (PLUS_EXPR, TREE_TYPE (valist), t,
+			 build_int_2 (ofs, 0));
+	      TREE_SIDE_EFFECTS (t) = 1;
+	    }
+
+	  t = build1 (NOP_EXPR, ptr, t);
+	  TREE_SIDE_EFFECTS (t) = 1;
+	}
     }
 
   /* Calculate!  */
-  return expand_expr (t, NULL_RTX, Pmode, EXPAND_NORMAL);
+  return expand_expr (t, NULL_RTX, VOIDmode, EXPAND_NORMAL);
 }
 
 
@@ -7446,28 +7483,32 @@ function_arg (cum, mode, type, named, incoming)
      int incoming;
 {
   int max_arg_words = (TARGET_64BIT ? 8 : 4);
-  int arg_size = FUNCTION_ARG_SIZE (mode, type);
   int alignment = 0;
+  int arg_size;
   int fpr_reg_base;
   int gpr_reg_base;
   rtx retval;
 
+  if (mode == VOIDmode)
+    return NULL_RTX;
+
+  arg_size = FUNCTION_ARG_SIZE (mode, type);
+
+  /* If this arg would be passed partially or totally on the stack, then
+     this routine should return zero.  FUNCTION_ARG_PARTIAL_NREGS will
+     handle arguments which are split between regs and stack slots if
+     the ABI mandates split arguments.  */
   if (! TARGET_64BIT)
     {
-      /* If this arg would be passed partially or totally on the stack, then
-         this routine should return zero.  FUNCTION_ARG_PARTIAL_NREGS will
-         handle arguments which are split between regs and stack slots if
-         the ABI mandates split arguments.  */
-      if (cum->words + arg_size > max_arg_words
-          || mode == VOIDmode)
+      /* The 32-bit ABI does not split arguments.  */
+      if (cum->words + arg_size > max_arg_words)
 	return NULL_RTX;
     }
   else
     {
       if (arg_size > 1)
 	alignment = cum->words & 1;
-      if (cum->words + alignment >= max_arg_words
-	  || mode == VOIDmode)
+      if (cum->words + alignment >= max_arg_words)
 	return NULL_RTX;
     }
 
@@ -7488,8 +7529,11 @@ function_arg (cum, mode, type, named, incoming)
       gpr_reg_base = 26 - cum->words;
       fpr_reg_base = 32 + cum->words;
 
-      /* Arguments wider than one word need special treatment.  */
-      if (arg_size > 1)
+      /* Arguments wider than one word and small aggregates need special
+	 treatment.  */
+      if (arg_size > 1
+	  || mode == BLKmode
+	  || (type && AGGREGATE_TYPE_P (type)))
 	{
 	  /* Double-extended precision (80-bit), quad-precision (128-bit)
 	     and aggregates including complex numbers are aligned on
@@ -7497,7 +7541,10 @@ function_arg (cum, mode, type, named, incoming)
 	     are associated one-to-one, with general registers r26
 	     through r19, and also with floating-point registers fr4
 	     through fr11.  Arguments larger than one word are always
-	     passed in general registers.  */
+	     passed in general registers.
+
+	     Using a PARALLEL with a word mode register results in left
+	     justified data on a big-endian target.  */
 
 	  rtx loc[8];
 	  int i, offset = 0, ub = arg_size;
@@ -7517,7 +7564,7 @@ function_arg (cum, mode, type, named, incoming)
 
 	  return gen_rtx_PARALLEL (mode, gen_rtvec_v (ub, loc));
 	}
-    }
+     }
   else
     {
       /* If the argument is larger than a word, then we know precisely
@@ -7533,6 +7580,34 @@ function_arg (cum, mode, type, named, incoming)
 	    {
 	      gpr_reg_base = 25;
 	      fpr_reg_base = 34;
+	    }
+
+	  /* Structures 5 to 8 bytes in size are passed in the general
+	     registers in the same manner as other non floating-point
+	     objects.  The data is right-justified and zero-extended
+	     to 64 bits.
+
+	     This is magic.  Normally, using a PARALLEL results in left
+	     justified data on a big-endian target.  However, using a
+	     single double-word register provides the required right
+	     justication for 5 to 8 byte structures.  This has nothing
+	     to do with the direction of padding specified for the argument.
+	     It has to do with how the data is widened and shifted into
+	     and from the register.
+
+	     Aside from adding load_multiple and store_multiple patterns,
+	     this is the only way that I have found to obtain right
+	     justification of BLKmode data when it has a size greater
+	     than one word.  Splitting the operation into two SImode loads
+	     or returning a DImode REG results in left justified data.  */
+	  if (mode == BLKmode)
+	    {
+	      rtx loc[1];
+
+	      loc[0] = gen_rtx_EXPR_LIST (VOIDmode,
+					  gen_rtx_REG (DImode, gpr_reg_base),
+					  const0_rtx);
+	      return gen_rtx_PARALLEL (mode, gen_rtvec_v (1, loc));
 	    }
 	}
       else
