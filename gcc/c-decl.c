@@ -5948,8 +5948,8 @@ build_enumerator (name, value)
 }
 
 /* Create the FUNCTION_DECL for a function definition.
-   DECLSPECS, DECLARATOR, and ATTRIBUTES are the parts of the declaration;
-   they describe the function's name and the type it returns,
+   DECLSPECS, DECLARATOR, PREFIX_ATTRIBUTES and ATTRIBUTES are the parts of
+   the declaration; they describe the function's name and the type it returns,
    but twisted together in a fashion that parallels the syntax of C.
 
    This function creates a binding context for the function body
@@ -5962,8 +5962,8 @@ build_enumerator (name, value)
    NESTED is nonzero for a function nested within another function.  */
 
 int
-start_function (declspecs, declarator, attributes, nested)
-     tree declarator, declspecs, attributes;
+start_function (declspecs, declarator, prefix_attributes, attributes, nested)
+     tree declarator, declspecs, prefix_attributes, attributes;
      int nested;
 {
   tree decl1, old_decl;
@@ -5988,8 +5988,7 @@ start_function (declspecs, declarator, attributes, nested)
   if (decl1 == 0)
     return 0;
 
-  if (attributes)
-    decl_attributes (decl1, NULL_TREE, attributes);
+  decl_attributes (decl1, prefix_attributes, attributes);
 
   announce_function (decl1);
 
