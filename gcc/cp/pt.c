@@ -4831,30 +4831,36 @@ tsubst_friend_class (friend_tmpl, args)
 {
   tree friend_type;
   tree tmpl;
+  tree context;
+
+  context = DECL_CONTEXT (friend_tmpl);
+
+  if (context)
+    {
+      if (TREE_CODE (context) == NAMESPACE_DECL)
+	push_nested_namespace (context);
+      else
+	push_nested_class (context, 2);
+    }
 
   /* First, we look for a class template.  */
-  if (DECL_CONTEXT (friend_tmpl))
-    tmpl = friend_tmpl;
-  else
+  tmpl = lookup_name (DECL_NAME (friend_tmpl), /*prefer_type=*/0); 
+
+  /* But, if we don't find one, it might be because we're in a
+     situation like this:
+
+       template <class T>
+       struct S {
+	 template <class U>
+	 friend struct S;
+       };
+
+     Here, in the scope of (say) S<int>, `S' is bound to a TYPE_DECL
+     for `S<int>', not the TEMPLATE_DECL.  */
+  if (!tmpl || !DECL_CLASS_TEMPLATE_P (tmpl))
     {
-      tmpl = lookup_name (DECL_NAME (friend_tmpl), /*prefer_type=*/0); 
-
-      /* But, if we don't find one, it might be because we're in a
-	 situation like this:
-
-	   template <class T>
-	   struct S {
-	     template <class U>
-	     friend struct S;
-	   };
-
-	 Here, in the scope of (say) S<int>, `S' is bound to a TYPE_DECL
-	 for `S<int>', not the TEMPLATE_DECL.  */
-      if (!tmpl || !DECL_CLASS_TEMPLATE_P (tmpl))
-	{
-	  tmpl = lookup_name (DECL_NAME (friend_tmpl), /*prefer_type=*/1);
-	  tmpl = maybe_get_template_decl_from_type_decl (tmpl);
-	}
+      tmpl = lookup_name (DECL_NAME (friend_tmpl), /*prefer_type=*/1);
+      tmpl = maybe_get_template_decl_from_type_decl (tmpl);
     }
 
   if (tmpl && DECL_CLASS_TEMPLATE_P (tmpl))
@@ -4865,12 +4871,15 @@ tsubst_friend_class (friend_tmpl, args)
 	 of course.  We only need the innermost template parameters
 	 because that is all that redeclare_class_template will look
 	 at.  */
-      tree parms 
-	= tsubst_template_parms (DECL_TEMPLATE_PARMS (friend_tmpl),
-				 args, tf_error | tf_warning);
-      if (!parms)
-        return error_mark_node;
-      redeclare_class_template (TREE_TYPE (tmpl), parms);
+      if (TMPL_PARMS_DEPTH (DECL_TEMPLATE_PARMS (friend_tmpl))
+	  > TMPL_ARGS_DEPTH (args))
+	{
+	  tree parms;
+	  parms = tsubst_template_parms (DECL_TEMPLATE_PARMS (friend_tmpl),
+					 args, tf_error | tf_warning);
+	  redeclare_class_template (TREE_TYPE (tmpl), parms);
+	}
+
       friend_type = TREE_TYPE (tmpl);
     }
   else
@@ -4890,6 +4899,14 @@ tsubst_friend_class (friend_tmpl, args)
 
       /* Inject this template into the global scope.  */
       friend_type = TREE_TYPE (pushdecl_top_level (tmpl));
+    }
+
+  if (context) 
+    {
+      if (TREE_CODE (context) == NAMESPACE_DECL)
+	pop_nested_namespace (context);
+      else
+	pop_nested_class ();
     }
 
   return friend_type;
