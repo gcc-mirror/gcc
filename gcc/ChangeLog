@@ -1,3 +1,18 @@
+2002-06-07  Jeff Law <law@redhat.com
+
+	* emit-rtl.c (init_emit): Add hard registers to regno_reg_rtx.
+	* combine.c (move_deaths): Use regno_reg_rtx for hard regs rather       
+	than creating a new register.
+	(distribute_notes): Likewise.
+	* df.c (df_reg_use_gen): Likewise.
+	(df_reg_clobber_gen): Likewise.
+	(df_ref_record): Likewise.
+	* expr.c (use_regs): Likewise.
+	* flow.c (propagate_one_insn): Likewise.
+	(mark_set_1): Likewise.
+	(mark_used_reg): Likewise.
+	* reload.c (emit_reload_insns): Likewise.
+
 2002-06-07  Roger Sayle  <roger@eyesopen.com>
 
 	* simplify-rtx.c (simplify_gen_relational): Simplify RTL of the form
