@@ -524,19 +524,13 @@ rtl_in_current_obstack ()
   rtl_obstack = current_obstack;
 }
 
-/* Temporarily allocate rtl from saveable_obstack.  Return 1 if we were
-   previously allocating it from current_obstack.  */
+/* Start allocating rtl from saveable_obstack.  Intended to be used after
+   a call to push_obstacks_nochange.  */
 
-int
+void
 rtl_in_saveable_obstack ()
 {
-  if (rtl_obstack == current_obstack)
-    {
-      rtl_obstack = saveable_obstack;
-      return 1;
-    }
-  else
-    return 0;
+  rtl_obstack = saveable_obstack;
 }
 
 /* Allocate SIZE bytes in the current obstack
