@@ -1345,7 +1345,7 @@ install-gcc:
 	  r=`pwd`; export r; \
 	  s=`cd $(srcdir); pwd`; export s; \
 	  $(SET_LIB_PATH) \
-	  (cd gcc; $(MAKE) $(GCC_FLAGS_TO_PASS) LANGUAGES="c c++" install); \
+	  (cd gcc; $(MAKE) $(GCC_FLAGS_TO_PASS) install); \
 	else \
 	  true; \
 	fi
@@ -1356,7 +1356,7 @@ install-gcc-cross:
 	  r=`pwd`; export r; \
 	  s=`cd $(srcdir); pwd`; export s; \
 	  $(SET_LIB_PATH) \
-	  (cd gcc; $(MAKE) $(GCC_FLAGS_TO_PASS) install); \
+	  (cd gcc; $(MAKE) $(GCC_FLAGS_TO_PASS) LANGUAGES="c c++" install); \
 	else \
 	  true; \
 	fi
