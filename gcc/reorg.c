@@ -1157,7 +1157,14 @@ optimize_skip (insn)
 	  target_label = JUMP_LABEL (next_trial);
 	  if (target_label == 0)
 	    target_label = find_end_label ();
-	  reorg_redirect_jump (insn, target_label);
+
+	  /* Recompute the flags based on TARGET_LABEL since threading
+	     the jump to TARGET_LABEL may change the direction of the
+	     jump (which may change the circumstances in which the
+	     delay slot is nullified).  */
+	  flags = get_jump_flags (insn, target_label);
+	  if (eligible_for_annul_true (insn, 0, trial, flags))
+	    reorg_redirect_jump (insn, target_label);
 	}
 
       INSN_ANNULLED_BRANCH_P (insn) = 1;
