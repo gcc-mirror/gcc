@@ -1428,7 +1428,7 @@ fundamental_type_code (type)
 	       So we have to tell the debugger that the type is float to
 	       make the output of the 'print' command etc. readable.  */
 	    if (DOUBLE_TYPE_SIZE == FLOAT_TYPE_SIZE && FLOAT_TYPE_SIZE == 32)
-	      return return FT_float;
+	      return FT_float;
 	    return FT_dbl_prec_float;
 	  }
 	if (TYPE_PRECISION (type) == FLOAT_TYPE_SIZE)
