@@ -1337,7 +1337,10 @@ main (argc, argv)
 	  pedantic = 1;
 	  pedantic_errors = 1;
 	} else if (!strcmp (argv[i], "-pcp")) {
-	  char *pcp_fname = argv[++i];
+	  char *pcp_fname;
+	  if (i + 1 == argc)
+	    fatal ("Filename missing after -pcp option");
+	  pcp_fname = argv[++i];
 	  pcp_outfile = 
 	    ((pcp_fname[0] != '-' || pcp_fname[1] != '\0')
 	     ? fopen (pcp_fname, "w")
@@ -1444,6 +1447,8 @@ main (argc, argv)
 	/* For -MD and -MMD options, write deps on file named by next arg.  */
 	if (!strcmp (argv[i], "-MD")
 	    || !strcmp (argv[i], "-MMD")) {
+	  if (i + 1 == argc)
+	    fatal ("Filename missing after %s option", argv[i]);
 	  i++;
 	  deps_file = argv[i];
 	  deps_mode = "w";
