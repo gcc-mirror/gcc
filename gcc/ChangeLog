@@ -1,3 +1,7 @@
+2001-07-26  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* glimits.h (_MACH_MACHLIMITS_H_): Delete.
+
 Thu Jul 26 22:01:30 2001  Denis Chertykov  <denisc@overta.ru>
 
 	* cse.c (cse_process_notes): Replace any registers if the address
