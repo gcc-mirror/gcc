@@ -1846,39 +1846,58 @@ merge_blocks_nomove (a, b)
      basic_block a, b;
 {
   edge e;
-  rtx insn;
-  int done = 0;
+  rtx b_head, b_end, a_end;
+  int b_empty = 0;
+
+  /* If there was a CODE_LABEL beginning B, delete it.  */
+  b_head = b->head;
+  b_end = b->end;
+  if (GET_CODE (b_head) == CODE_LABEL)
+    {
+      /* Detect basic blocks with nothing but a label.  This can happen
+	 in particular at the end of a function.  */
+      if (b_head == b_end)
+	b_empty = 1;
+      b_head = flow_delete_insn (b_head);
+    }
+
+  /* Delete the basic block note.  */
+  if (GET_CODE (b_head) == NOTE 
+      && NOTE_LINE_NUMBER (b_head) == NOTE_INSN_BASIC_BLOCK)
+    {
+      if (b_head == b_end)
+	b_empty = 1;
+      b_head = flow_delete_insn (b_head);
+    }
 
   /* If there was a jump out of A, delete it.  */
-  if (GET_CODE (a->end) == JUMP_INSN)
+  a_end = a->end;
+  if (GET_CODE (a_end) == JUMP_INSN)
     {
-      /* If the jump was the only insn in A, turn the jump into a deleted
-	 note, since we may yet not be able to merge the blocks.  */
-      if (a->end == a->head)
-	{
-	  PUT_CODE (a->head, NOTE);
-	  NOTE_LINE_NUMBER (a->head) = NOTE_INSN_DELETED;
-	  NOTE_SOURCE_FILE (a->head) = 0;
-	}
-      else
-	{
-	  rtx tmp = a->end;
+      rtx prev;
 
-	  a->end = prev_nonnote_insn (tmp);
+      prev = prev_nonnote_insn (a_end);
+      if (!prev) 
+	prev = a->head;
 
 #ifdef HAVE_cc0
-	  /* If this was a conditional jump, we need to also delete
-	     the insn that set cc0.  */
-	  if (! simplejump_p (tmp) && condjump_p (tmp))
-	    {
-	      PUT_CODE (PREV_INSN (tmp), NOTE);
-	      NOTE_LINE_NUMBER (PREV_INSN (tmp)) = NOTE_INSN_DELETED;
-	      NOTE_SOURCE_FILE (PREV_INSN (tmp)) = 0;
-	    }
-#endif
+      /* If this was a conditional jump, we need to also delete
+	 the insn that set cc0.  */
 
+      if (prev && sets_cc0_p (prev))
+	{
+          rtx tmp = prev;
+	  prev = prev_nonnote_insn (prev);
+	  if (!prev)
+	    prev = a->head;
 	  flow_delete_insn (tmp);
 	}
+#endif
+
+      /* Note that a->head != a->end, since we should have at least a
+	 bb note plus the jump, so prev != insn.  */
+      flow_delete_insn (a_end);
+      a_end = prev;
     }
 
   /* By definition, there should only be one successor of A, and that is
@@ -1890,37 +1909,18 @@ merge_blocks_nomove (a, b)
     e->src = a;
   a->succ = b->succ;
 
-  /* If there was a CODE_LABEL beginning B, delete it.  */
-  insn = b->head;
-  if (GET_CODE (insn) == CODE_LABEL)
-    {
-      /* Detect basic blocks with nothing but a label.  This can happen
-	 in particular at the end of a function.  */
-      if (insn == b->end)
-	done = 1;
-      insn = flow_delete_insn (insn);
-    }
-
-  /* Delete the basic block note.  */
-  if (GET_CODE (insn) == NOTE 
-      && NOTE_LINE_NUMBER (insn) == NOTE_INSN_BASIC_BLOCK)
-    {
-      if (insn == b->end)
-	done = 1;
-      insn = flow_delete_insn (insn);
-    }
-
   /* Reassociate the insns of B with A.  */
-  if (!done)
+  if (!b_empty)
     {
-      BLOCK_FOR_INSN (insn) = a;
-      while (insn != b->end)
+      BLOCK_FOR_INSN (b_head) = a;
+      while (b_head != b_end)
 	{
-	  insn = NEXT_INSN (insn);
-	  BLOCK_FOR_INSN (insn) = a;
+	  b_head = NEXT_INSN (b_head);
+	  BLOCK_FOR_INSN (b_head) = a;
 	}
-      a->end = insn;
+      a_end = b_head;
     }
+  a->end = a_end;
   
   /* Compact the basic block array.  */
   expunge_block (b);

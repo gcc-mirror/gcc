@@ -1,3 +1,8 @@
+Fri Apr  9 11:29:17 1999  Richard Henderson  <rth@cygnus.com>
+
+	* flow.c (merge_blocks_nomove): Rewrite to properly handle two
+	blocks that vanish entirely during merging.
+
 Sat Apr 10 20:09:55 EDT 1999  John Wehle  (john@feith.com)
 
 	* i386.md (floatsisf2, floatdisf2, floatsidf2, floatdidf2,
