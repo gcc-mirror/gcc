@@ -2250,11 +2250,9 @@ nshift_operator (x, mode)
     }
 }
 
-/* Called from the .md file to emit code to do shifts.
-   Return a boolean indicating success.
-   (Currently this is always TRUE).  */
+/* Emit code to do shifts.  */
 
-int
+void
 expand_a_shift (mode, code, operands)
      enum machine_mode mode;
      int code;
@@ -2273,8 +2271,6 @@ expand_a_shift (mode, code, operands)
 					       operands[2])),
 			 gen_rtx_CLOBBER (VOIDmode,
 					  gen_rtx_SCRATCH (QImode)))));
-
-  return 1;
 }
 
 /* Symbols of the various modes which can be used as indices.  */

@@ -1,3 +1,12 @@
+2002-12-23  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300-protos.h: Update the prototype of
+	expand_a_shift.
+	* config/h8300/h8300.c (expand_a_shift): Change the return
+	type to void.
+	* config/h8300/h8300.md: Update all the uses of
+	expand_a_shift.
+
 2002-12-22  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* tree.c (save_expr): Allow either side of a dyadic operand to be
