@@ -1,3 +1,15 @@
+2004-05-26  Jerry Quinn  <jlquinn@optonline.net>
+
+	PR libgcj/8321
+	* java/util/SimpleTimeZone.java (serialVersionOnStream): Bump to 2.
+	(setStartRule,setEndRule): Don't take abs of day number.
+	(getOffset): Clarify docs.  Add argument checks.
+	(isBefore): Take abs of day number in DOW_LE_DOM_MODE.
+	(equals,hasSameRules,toString,readObject): Use startTimeMode and
+	endTimeMode.
+	* testsuite/libjava.mauve/xfails
+	(gnu.testlet.java.util.SimpleTimeZone.check12): XFAIL test 22.
+
 2004-05-21  Bryce McKinlay  <mckinlay@redhat.com>
 
 	Layout interfaces during preparation, not initialization. 
