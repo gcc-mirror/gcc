@@ -38,7 +38,7 @@ struct dom_walk_data
      to use the second statement walker for anything, so it's hard to
      predict if we really need the ability to select their direction
      independently.  */
-  bool walk_stmts_backward : 1;
+  BOOL_BITFIELD walk_stmts_backward : 1;
 
   /* Function to initialize block local data.
 
