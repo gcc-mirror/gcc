@@ -1,3 +1,9 @@
+Thu Jan 25 02:01:16 2001  J"orn Rennecke <amylaar@redhat.com>
+
+	* c-decl.c (duplicate_decls): If different_binding_level is nonzero,
+	olddecl has argument types and newdecl has none, use the argument
+	types from olddecl.
+
 2001-01-24  Ulrich Drepper  <drepper@redhat.com>
 
 	* dwarf2out.c (prefix_of): New function.  Determine longest common
