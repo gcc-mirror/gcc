@@ -472,7 +472,7 @@ struct gcc_target
     bool (* split_complex_arg) (tree type);
 
     /* Gimplifies a VA_ARG_EXPR.  */
-    void (* gimplify_va_arg_expr) (tree *expr_p, tree *pre_p,
+    tree (* gimplify_va_arg_expr) (tree valist, tree type, tree *pre_p,
 				   tree *post_p);
   } calls;
 

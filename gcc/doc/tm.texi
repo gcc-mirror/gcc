@@ -3864,6 +3864,19 @@ The default value of this hook is @code{NULL}, which is treated as always
 false.
 @end deftypefn
 
+@deftypefn {Target Hook} tree TARGET_GIMPLIFY_VA_ARG_EXPR (tree @var{valist}, tree @var{type}, tree *@var{pre_p}, tree *@var{post_p})
+This hook performs target-specific gimplification of
+@code{VA_ARG_EXPR}.  The first two parameters correspond to the
+arguments to @code{va_arg}; the latter two are as in
+@code{gimplify.c:gimplify_expr}.
+
+You only need to define this hook if you also define
+@code{EXPAND_BUILTIN_VA_ARG}; it is pretty easy to reuse the same code
+for both.  One significant difference is that
+@code{EXPAND_BUILTIN_VA_ARG} returns an address, whereas this hook
+produces an expression of type @var{type}, usually an @code{INDIRECT_REF}.
+@end deftypefn
+
 @node Scalar Return
 @subsection How Scalar Function Values Are Returned
 @cindex return values in registers

@@ -440,7 +440,7 @@ static tree get_prev_label (tree function_name);
 #endif
 
 static tree rs6000_build_builtin_va_list (void);
-static void rs6000_gimplify_va_arg (tree *, tree *, tree *);
+static tree rs6000_gimplify_va_arg (tree, tree, tree *, tree *);
 
 /* Hash table stuff for keeping track of TOC entries.  */
 
@@ -5292,11 +5292,9 @@ rs6000_va_arg (tree valist, tree type)
   return addr_rtx;
 }
 
-void
-rs6000_gimplify_va_arg (tree *expr_p, tree *pre_p, tree *post_p)
+tree
+rs6000_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
 {
-  tree valist = TREE_OPERAND (*expr_p, 0);
-  tree type = TREE_TYPE (*expr_p);
   tree f_gpr, f_fpr, f_res, f_ovf, f_sav;
   tree gpr, fpr, ovf, sav, reg, t, u;
   int indirect_p, size, rsize, n_reg, sav_ofs, sav_scale;
@@ -5318,10 +5316,7 @@ rs6000_gimplify_va_arg (tree *expr_p, tree *pre_p, tree *post_p)
 		      build_int_2 (POINTER_SIZE / BITS_PER_UNIT, 0));
 	  t = build1 (NOP_EXPR, build_pointer_type (ptrtype), t);
 	  t = build_fold_indirect_ref (t);
-	  t = build_fold_indirect_ref (t);
-
-	  *expr_p = t;
-	  return;
+	  return build_fold_indirect_ref (t);
 	}
       if (targetm.calls.split_complex_arg
 	  && TREE_CODE (type) == COMPLEX_TYPE)
@@ -5332,52 +5327,24 @@ rs6000_gimplify_va_arg (tree *expr_p, tree *pre_p, tree *post_p)
 
 	  if (elem_size < UNITS_PER_WORD)
 	    {
-	      tree real_part, imag_addr, dest_real, rr;
+	      tree real_part, imag_part;
 	      tree post = NULL_TREE;
 
-	      /* This is a bit tricky because we can't just feed the
-		 VA_ARG_EXPRs back into gimplify_expr; if we did,
-		 gimplify_va_arg_expr would complain about trying to pass a
-		 float. */
-	      real_part = build1 (VA_ARG_EXPR, elem_type, valist);
-	      rs6000_gimplify_va_arg (&real_part, pre_p, &post);
-	      gimplify_expr (&real_part, pre_p, &post, is_gimple_val,
-			     fb_rvalue);
+	      real_part = rs6000_gimplify_va_arg (valist, elem_type, pre_p,
+						  &post);
+	      /* Copy the value into a temporary, lest the formal temporary
+		 be reused out from under us.  */
+	      real_part = get_initialized_tmp_var (real_part, pre_p, &post);
 	      append_to_statement_list (post, pre_p);
 
-	      imag_addr = build1 (VA_ARG_EXPR, elem_type, valist);
-	      rs6000_gimplify_va_arg (&imag_addr, pre_p, post_p);
-	      imag_addr = build_fold_addr_expr (imag_addr);
-	      gimplify_expr (&imag_addr, pre_p, post_p, is_gimple_val,
-			     fb_rvalue);
+	      imag_part = rs6000_gimplify_va_arg (valist, elem_type, pre_p,
+						  post_p);
 
-	      /* We're not returning the value here, but the address.
-		 real_part and imag_part are not contiguous, and we know
-		 there is space available to pack real_part next to
-		 imag_part.  float _Complex is not promoted to
-		 double _Complex by the default promotion rules that
-		 promote float to double.  */
-	      if (2 * elem_size > UNITS_PER_WORD)
-		abort ();
-
-	      dest_real = fold (build2 (MINUS_EXPR, TREE_TYPE (imag_addr),
-					imag_addr, ssize_int (elem_size)));
-	      gimplify_expr (&dest_real, pre_p, post_p, is_gimple_val,
-			     fb_rvalue);
-
-	      rr = build_fold_indirect_ref (dest_real);
-	      rr = build2 (MODIFY_EXPR, void_type_node, rr, real_part);
-	      gimplify_and_add (rr, pre_p);
-
-	      dest_real = convert (build_pointer_type (type), dest_real);
-	      *expr_p = build_fold_indirect_ref (dest_real);
-
-	      return;
+	      return build (COMPLEX_EXPR, type, real_part, imag_part);
 	    }
 	}
 
-      std_gimplify_va_arg_expr (expr_p, pre_p, post_p);
-      return;
+      return std_gimplify_va_arg_expr (valist, type, pre_p, post_p);
     }
 
   f_gpr = TYPE_FIELDS (TREE_TYPE (va_list_type_node));
@@ -5520,13 +5487,13 @@ rs6000_gimplify_va_arg (tree *expr_p, tree *pre_p, tree *post_p)
 
   if (indirect_p)
     {
-      addr = convert (build_pointer_type (ptrtype), addr);
+      addr = fold_convert (build_pointer_type (ptrtype), addr);
       addr = build_fold_indirect_ref (addr);
     }
   else
-    addr = convert (ptrtype, addr);
+    addr = fold_convert (ptrtype, addr);
 
-  *expr_p = build_fold_indirect_ref (addr);
+  return build_fold_indirect_ref (addr);
 }
 
 /* Builtins.  */

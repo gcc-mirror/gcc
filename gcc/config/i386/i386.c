@@ -878,7 +878,7 @@ static bool ix86_expand_carry_flag_compare (enum rtx_code, rtx, rtx, rtx*);
 static tree ix86_build_builtin_va_list (void);
 static void ix86_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
 					 tree, int *, int);
-static void ix86_gimplify_va_arg (tree *expr_p, tree *pre_p, tree *post_p);
+static tree ix86_gimplify_va_arg (tree, tree, tree *, tree *);
 
 struct ix86_address
 {
@@ -3418,11 +3418,9 @@ ix86_va_arg (tree valist, tree type)
 
 /* Lower VA_ARG_EXPR at gimplification time.  */
 
-void
-ix86_gimplify_va_arg (tree *expr_p, tree *pre_p, tree *post_p)
+tree
+ix86_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
 {
-  tree valist = TREE_OPERAND (*expr_p, 0);
-  tree type = TREE_TYPE (*expr_p);
   static const int intreg[6] = { 0, 1, 2, 3, 4, 5 };
   tree f_gpr, f_fpr, f_ovf, f_sav;
   tree gpr, fpr, ovf, sav, t;
@@ -3435,10 +3433,7 @@ ix86_gimplify_va_arg (tree *expr_p, tree *pre_p, tree *post_p)
 
   /* Only 64bit target needs something special.  */
   if (!TARGET_64BIT)
-    {
-      std_gimplify_va_arg_expr (expr_p, pre_p, post_p);
-      return;
-    }
+    return std_gimplify_va_arg_expr (valist, type, pre_p, post_p);
 
   f_gpr = TYPE_FIELDS (TREE_TYPE (va_list_type_node));
   f_fpr = TREE_CHAIN (f_gpr);
@@ -3595,12 +3590,12 @@ ix86_gimplify_va_arg (tree *expr_p, tree *pre_p, tree *post_p)
 		  src_addr = int_addr;
 		  src_offset = REGNO (reg) * 8;
 		}
-	      src_addr = convert (addr_type, src_addr);
+	      src_addr = fold_convert (addr_type, src_addr);
 	      src_addr = fold (build2 (PLUS_EXPR, addr_type, src_addr,
 				       size_int (src_offset)));
 	      src = build_fold_indirect_ref (src_addr);
 
-	      dest_addr = convert (addr_type, addr);
+	      dest_addr = fold_convert (addr_type, addr);
 	      dest_addr = fold (build2 (PLUS_EXPR, addr_type, dest_addr,
 					size_int (INTVAL (XEXP (slot, 1)))));
 	      dest = build_fold_indirect_ref (dest_addr);
@@ -3661,11 +3656,11 @@ ix86_gimplify_va_arg (tree *expr_p, tree *pre_p, tree *post_p)
     }
 
   ptrtype = build_pointer_type (type);
-  addr = convert (ptrtype, addr);
+  addr = fold_convert (ptrtype, addr);
 
   if (indirect_p)
     addr = build_fold_indirect_ref (addr);
-  *expr_p = build_fold_indirect_ref (addr);
+  return build_fold_indirect_ref (addr);
 }
 
 /* Return nonzero if OP is either a i387 or SSE fp register.  */
