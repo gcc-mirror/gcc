@@ -93,6 +93,13 @@ Sat Dec 16 19:56:24 MET 2000  Jan Hubicka  <jh@suse.cz>
 
 Sat Dec 16 10:41:11 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* diagnostic.c (finish_abort): Deleted.
+	(fatal): Add code from finish_abort.
+	(error_recursion, fancy_abort): Call fatal, not finish_abort.
+	(trim_filename): Remove leading "../".
+	* diagnostic.h (finish_abort): Deleted.
+	* toplev.c (crash_signal): Call fatal, not finish_abort.
+
 	* stor-layout.c (place_field): Treat overflowing DECL_SIZE_UNIT
 	as if size were variable.
 
