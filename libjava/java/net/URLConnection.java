@@ -17,6 +17,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Hashtable;
+import java.util.Map;
 import java.util.StringTokenizer;
 import gnu.gcj.io.MimeTypes;
 
@@ -102,6 +103,15 @@ public abstract class URLConnection
   }
 
   public String getHeaderField(String name)
+  {
+    // Subclasses for specific protocols override this.
+    return null;
+  }
+
+  /**
+   * @since 1.4
+   */
+  public Map getHeaderFields()
   {
     // Subclasses for specific protocols override this.
     return null;

@@ -13,6 +13,7 @@ package gnu.gcj.protocol.core;
 import gnu.gcj.Core;
 import java.net.*;
 import java.io.*;
+import java.util.Map;
 import java.util.Vector;
 import java.util.Hashtable;
 import java.util.Enumeration;
@@ -69,6 +70,20 @@ class Connection extends URLConnection
 	return null;
       }
     return (String) hdrHash.get(name.toLowerCase());
+  }
+
+  // Override default method in URLConnection.
+  public Map getHeaderFields()
+  {
+    try
+      {
+	getHeaders();
+      }
+    catch (IOException x)
+      {
+	return null;
+      }
+    return hdrHash;
   }
 
   // Override default method in URLConnection.

@@ -12,6 +12,7 @@ package gnu.gcj.protocol.http;
 
 import java.net.*;
 import java.io.*;
+import java.util.Map;
 import java.util.Vector;
 import java.util.Hashtable;
 import java.util.Enumeration;
@@ -165,6 +166,22 @@ class Connection extends HttpURLConnection
 	}
 
     return (String) hdrHash.get(name.toLowerCase());
+  }
+
+  // Override default method in URLConnection.
+  public Map getHeaderFields()
+  {
+    if (!connected)
+      try
+        {
+	  connect();
+	}
+      catch (IOException x)
+        {
+	  return null;
+	}
+
+    return hdrHash;
   }
 
   // Override default method in URLConnection.
