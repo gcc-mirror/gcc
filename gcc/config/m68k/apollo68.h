@@ -121,7 +121,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* We have atexit(2).  So C++ can use it for global destructors.  */
 
+#if 0 /* troy@cbme.unsw.edu.au says people are still using sr10.2
+	 and it does not support atexit.  */
 #define HAVE_ATEXIT
+#endif
 
 /* Every structure or union's size must be a multiple of 2 bytes.  */
 
