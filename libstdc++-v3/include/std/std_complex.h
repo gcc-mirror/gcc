@@ -40,8 +40,8 @@
  *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
  */
 
-#ifndef _COMPLEX
-#define _COMPLEX 1
+#ifndef _GLIBCXX_COMPLEX
+#define _GLIBCXX_COMPLEX 1
 
 #pragma GCC system_header
 
@@ -1062,4 +1062,4 @@ namespace std
   : _M_value(_ComplexT(__z._M_value)) { }
 } // namespace std
 
-#endif	/* _COMPLEX */
+#endif	/* _GLIBCXX_COMPLEX */

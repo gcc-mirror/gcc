@@ -58,8 +58,8 @@
  *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
  */
 
-#ifndef _LIST
-#define _LIST 1
+#ifndef _GLIBCXX_LIST
+#define _GLIBCXX_LIST 1
 
 #pragma GCC system_header
 
@@ -74,5 +74,5 @@
 #  include <bits/list.tcc>
 #endif
 
-#endif /* _LIST */
+#endif /* _GLIBCXX_LIST */
 

@@ -40,8 +40,8 @@
  *  contained in the namespace @c std.
  */
 
-#ifndef _CCTYPE
-#define _CCTYPE 1
+#ifndef _GLIBCXX_CCTYPE
+#define _GLIBCXX_CCTYPE 1
 
 #pragma GCC system_header
 

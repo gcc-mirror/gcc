@@ -37,8 +37,8 @@
  *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
  */
 
-#ifndef _STRING
-#define _STRING	1
+#ifndef _GLIBCXX_STRING
+#define _GLIBCXX_STRING	1
 
 #pragma GCC system_header
 
@@ -57,5 +57,4 @@
 # include <bits/basic_string.tcc> 
 #endif
 
-#endif /* _STRING */
-
+#endif /* _GLIBCXX_STRING */

@@ -37,8 +37,8 @@
  *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
  */
 
-#ifndef _IOMANIP
-#define _IOMANIP 1
+#ifndef _GLIBCXX_IOMANIP
+#define _GLIBCXX_IOMANIP 1
 
 #pragma GCC system_header
 
@@ -297,4 +297,4 @@ namespace std
 #endif
 } // namespace std
 
-#endif	
+#endif /* _GLIBCXX_IOMANIP */

@@ -41,8 +41,8 @@
  *  contained in the namespace @c std.
  */
 
-#ifndef _CSETJMP
-#define _CSETJMP 1
+#ifndef _GLIBCXX_CSETJMP
+#define _GLIBCXX_CSETJMP 1
 
 #pragma GCC system_header
 

@@ -37,8 +37,8 @@
  *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
  */
 
-#ifndef _IOSFWD
-#define _IOSFWD 1
+#ifndef _GLIBCXX_IOSFWD
+#define _GLIBCXX_IOSFWD 1
 
 #pragma GCC system_header
 
@@ -165,4 +165,4 @@ namespace std
   /** @}  */
 } // namespace std
 
-#endif
+#endif /* _GLIBCXX_IOSFWD */
