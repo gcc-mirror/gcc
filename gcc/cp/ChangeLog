@@ -1,3 +1,22 @@
+2004-06-02  Matt Austern  <austern@apple.com>
+
+	* cp-tree.h (instantiate_decl): new boolean parameter,
+	undefined_ok. Current behavior is equivalent to its being 0.
+	* decl2.c (mark_used): Add new argument when calling instantiate_decl
+	* pt.c (mark_decl_instantiated): Unconditionally make
+	instantiations explicit unconditionally
+	(do_decl_instantiation): Don't call SET_DECL_EXPLICIT_INSTANTIATION,
+	since mark_decl_instantiated now does it.
+	(instantiate_class_member): New.  Instantiate a member of an
+	explicitly instantiated class template.
+	(do_type_instantiation): Explicitly instantiate members of an
+	explicitly instantiated class template.
+	(instantiate_decl): if undefined_ok is nonzero, and if we're
+	trying to explicitly instantiated a template with no definition,
+	change it to an implicit instantiation.
+	(instantiate_pending_templates): Add new argument to instantiate_decl.
+	* tree.c (cp_cannot_inline_tree_fn): Likewise.
+	
 2004-06-02  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* cp-tree.h: Fix typo.

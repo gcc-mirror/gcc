@@ -2057,7 +2057,7 @@ cp_cannot_inline_tree_fn (tree* fnp)
 			(template_for_substitution (fn))))
 	return 1;
 
-      fn = *fnp = instantiate_decl (fn, /*defer_ok=*/0);
+      fn = *fnp = instantiate_decl (fn, /*defer_ok=*/0, /*undefined_ok=*/0);
 
       if (TI_PENDING_TEMPLATE_FLAG (DECL_TEMPLATE_INFO (fn)))
 	return 1;
