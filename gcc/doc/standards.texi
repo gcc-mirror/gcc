@@ -132,16 +132,26 @@ the semantics defined in the standard.  To make it act as a conforming
 freestanding implementation for a freestanding environment, use the
 option @option{-ffreestanding}; it will then define
 @code{__STDC_HOSTED__} to @code{0} and not make assumptions about the
-meanings of function names from the standard library.  To build an OS
-kernel, you may well still need to make your own arrangements for
-linking and startup.  @xref{C Dialect Options,,Options Controlling C
-Dialect}.
+meanings of function names from the standard library, with exceptions
+noted below.  To build an OS kernel, you may well still need to make
+your own arrangements for linking and startup.
+@xref{C Dialect Options,,Options Controlling C Dialect}.
 
 GCC does not provide the library facilities required only of hosted
 implementations, nor yet all the facilities required by C99 of
 freestanding implementations; to use the facilities of a hosted
 environment, you will need to find them elsewhere (for example, in the
 GNU C library).  @xref{Standard Libraries,,Standard Libraries}.
+
+Most of the compiler support routines used by GCC are present in
+@file{libgcc}, but there are a few exceptions.  GCC requires the
+freestanding environment provide @code{memcpy}, @code{memmove},
+@code{memset} and @code{memcmp}.  Some older ports of GCC are 
+configured to use the BSD @code{bcopy}, @code{bzero} and @code{bcmp}
+functions instead, but this is deprecated for new ports.
+Finally, if @code{__builtin_trap} is used, and the target does 
+not implement the @code{trap} pattern, then GCC will emit a call
+to @code{abort}.
 
 For references to Technical Corrigenda, Rationale documents and
 information concerning the history of C that is available online, see

@@ -1,3 +1,7 @@
+2002-04-02  Richard Henderson  <rth@redhat.com>
+
+	* doc/standards.texi: Document required freestanding libc entry points.
+
 2002-04-02  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.md (ctrdi*): Add FPR constraint and
