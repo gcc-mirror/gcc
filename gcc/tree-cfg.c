@@ -5677,6 +5677,7 @@ execute_warn_function_return (void)
   /* If we see "return;" in some basic block, then we do reach the end
      without returning a value.  */
   else if (warn_return_type
+	   && !TREE_NO_WARNING (cfun->decl)
 	   && EDGE_COUNT (EXIT_BLOCK_PTR->preds) > 0
 	   && !VOID_TYPE_P (TREE_TYPE (TREE_TYPE (cfun->decl))))
     {
@@ -5697,6 +5698,7 @@ execute_warn_function_return (void)
 		locus = &cfun->function_end_locus;
 	      warning ("%Hcontrol reaches end of non-void function", locus);
 #endif
+	      TREE_NO_WARNING (cfun->decl) = 1;
 	      break;
 	    }
 	}

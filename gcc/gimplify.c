@@ -1911,7 +1911,7 @@ shortcut_cond_expr (tree expr)
   tree true_label, false_label, end_label, t;
   tree *true_label_p;
   tree *false_label_p;
-  bool emit_end, emit_false;
+  bool emit_end, emit_false, jump_over_else;
   bool then_se = then_ && TREE_SIDE_EFFECTS (then_);
   bool else_se = else_ && TREE_SIDE_EFFECTS (else_);
 
@@ -2013,6 +2013,16 @@ shortcut_cond_expr (tree expr)
   emit_end = (end_label == NULL_TREE);
   emit_false = (false_label == NULL_TREE);
 
+  /* We only emit the jump over the else clause if we have to--if the
+     then clause may fall through.  Otherwise we can wind up with a
+     useless jump and a useless label at the end of gimplified code,
+     which will cause us to think that this conditional as a whole
+     falls through even if it doesn't.  If we then inline a function
+     which ends with such a condition, that can cause us to issue an
+     inappropriate warning about control reaching the end of a
+     non-void function.  */
+  jump_over_else = block_may_fallthru (then_);
+
   pred = shortcut_cond_r (pred, true_label_p, false_label_p);
 
   expr = NULL;
@@ -2021,8 +2031,11 @@ shortcut_cond_expr (tree expr)
   append_to_statement_list (then_, &expr);
   if (else_se)
     {
-      t = build_and_jump (&end_label);
-      append_to_statement_list (t, &expr);
+      if (jump_over_else)
+	{
+	  t = build_and_jump (&end_label);
+	  append_to_statement_list (t, &expr);
+	}
       if (emit_false)
 	{
 	  t = build1 (LABEL_EXPR, void_type_node, false_label);
