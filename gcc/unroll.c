@@ -1807,7 +1807,12 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 	  break;
 	  
 	case NOTE:
-	  if (NOTE_LINE_NUMBER (insn) != NOTE_INSN_DELETED)
+	  /* VTOP notes are valid only before the loop exit test.  If placed
+	     anywhere else, loop may generate bad code.  */
+	     
+	  if (NOTE_LINE_NUMBER (insn) != NOTE_INSN_DELETED
+	      && (NOTE_LINE_NUMBER (insn) != NOTE_INSN_LOOP_VTOP
+		  || (last_iteration && unroll_type != UNROLL_COMPLETELY)))
 	    copy = emit_note (NOTE_SOURCE_FILE (insn),
 			      NOTE_LINE_NUMBER (insn));
 	  else
