@@ -1,3 +1,8 @@
+2003-02-04  Phil Edwards  <pme@gcc.gnu.org>
+
+	* doc/install.texi (*-*-linux-gnu):  Mention glibc requirements
+	for recent libstdc++.  Remove formatting cruft.
+
 2003-02-04  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* doc/gcc.texi, doc/gccint.texi, doc/gcov.texi,

@@ -2240,17 +2240,14 @@ have a higher-quality port for this machine soon.
 @end html
 @heading @anchor{*-*-linux-gnu}*-*-linux-gnu
 
+Versions of libstdc++-v3 starting with 3.2.1 require bugfixes present
+in glibc 2.2.5 and later.  More information is available in the
+libstdc++-v3 documentation.
+
 If you use glibc 2.2 (or 2.1.9x), GCC 2.95.2 won't install
 out-of-the-box.  You'll get compile errors while building @samp{libstdc++}.
 The patch @uref{glibc-2.2.patch,,glibc-2.2.patch}, that is to be
 applied in the GCC source tree, fixes the compatibility problems.
-
-@html
-@end html
-
-@html
-<p>
-@end html
 
 Currently Glibc 2.2.3 (and older releases) and GCC 3.0 are out of sync
 since the latest exception handling changes for GCC@.  Compiling glibc
