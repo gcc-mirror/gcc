@@ -2965,9 +2965,6 @@ expression, and may give different results in some cases.  If the value
 comes out to be nonzero, the @samp{#if} succeeds and the @var{controlled
 text} is included; otherwise it is skipped.
 
-If @var{expression} is not correctly formed, GCC issues an error and
-treats the conditional as having failed.
-
 @node Defined
 @subsection Defined
 

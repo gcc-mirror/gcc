@@ -1,3 +1,8 @@
+2004-07-04  Neil Booth  <neil@duron.akihabara.co.uk>
+
+	* doc/cpp.texi: Don't document what we do for ill-formed expressions.
+	* doc/cppopts.texi: Clarify processing of command-line defines.
+
 2004-07-04  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/contrib.texi (Contributors): Adjust link for GNU Classpath.
