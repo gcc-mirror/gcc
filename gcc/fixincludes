@@ -2809,6 +2809,57 @@ if [ -r ${LIB}/$file ]; then
   fi
 fi
 
+# sys/lc_core.h on some versions of OSF1/4.x pollutes the namespace by
+# defining regex.h related types.  This causes libg++ build and usage failures.
+# Fixing this correctly requires checking and modifying 3 files.
+for file in reg_types.h regex.h sys/lc_core.h; do
+  if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+    cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+    chmod +w ${LIB}/$file 2>/dev/null
+    chmod a+r ${LIB}/$file 2>/dev/null
+  fi
+done
+if [ -r ${LIB}/reg_types.h ]; then
+  if egrep '} regex_t;' ${LIB}/reg_types.h >/dev/null 2>&1; then
+    if [ -r ${LIB}/sys/lc_core.h ]; then
+      if egrep ' regex_t ' ${LIB}/sys/lc_core.h >/dev/null 2>&1; then
+        if [ -r ${LIB}/regex.h ]; then
+	  if egrep '__regex_t' ${LIB}/regex.h >/dev/null 2>&1; then
+	    true;
+	  else
+	    echo Fixing reg_types.h, regex.h, sys/lc_core.h
+	    for file in reg_types.h sys/lc_core.h; do
+	      sed -e 's/regex_t/__regex_t/g' \
+	        -e 's/regoff_t/__regoff_t/g' \
+		-e 's/regmatch_t/__regmatch_t/g' \
+		${LIB}/$file > ${LIB}/${file}.sed
+	      rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+	    done
+	    sed -e '/#include <reg_types.h>/a\
+typedef __regex_t	regex_t;\
+typedef __regoff_t	regoff_t;\
+typedef __regmatch_t	regmatch_t;\
+' \
+	      ${LIB}/regex.h > ${LIB}/regex.h.sed
+	    rm -f ${LIB}/regex.h; mv ${LIB}/regex.h.sed ${LIB}/regex.h
+	  fi
+	fi
+      fi
+    fi
+  fi
+fi
+for file in reg_types.h regex.h sys/lc_core.h; do
+  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+    rm -f ${LIB}/$file
+  else
+    # Find any include directives that use "file".
+    for include in `egrep '^[       ]*#[    ]*include[      ]*"[^/]' ${LIB}/$file | sed -e 's/^[    ]*#[    ]*include[      ]*"\([^"]*\)".*$/\1/'`; do
+      dir=`echo $file | sed -e s'|/[^/]*$||'`
+      required="$required ${INPUT} $dir/$include ${LIB}/$dir/$include"
+    done
+  fi
+done
+
 # This loop does not appear to do anything, because it uses file
 # rather than $file when setting target.  It also appears to be
 # unnecessary, since the main loop processes symbolic links.
