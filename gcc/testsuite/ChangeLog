@@ -1,3 +1,8 @@
+2003-04-28  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/10180
+	* g++.dg/warn/Winline-1.C: New test.
+
 2003-04-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/execute/string-opt-19.c: New test.

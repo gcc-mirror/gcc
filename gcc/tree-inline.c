@@ -1139,6 +1139,19 @@ expand_call_inline (tp, walk_subtrees, data)
       abort ();
 #endif /* INLINER_FOR_JAVA */
     }
+  else if (TREE_CODE (t) == EXPR_WITH_FILE_LOCATION)
+    {
+      /* We're walking the subtree directly.  */
+      *walk_subtrees = 0;
+      /* Update the source position.  */
+      push_srcloc (EXPR_WFL_FILENAME (t), EXPR_WFL_LINENO (t));
+      walk_tree (&EXPR_WFL_NODE (t), expand_call_inline, data, 
+		 id->tree_pruner);
+      /* Restore the original source position.  */
+      pop_srcloc ();
+
+      return NULL_TREE;
+    }
 
   if (TYPE_P (t))
     /* Because types were not copied in copy_body, CALL_EXPRs beneath
@@ -1173,7 +1186,14 @@ expand_call_inline (tp, walk_subtrees, data)
   if ((!flag_unit_at_a_time || !DECL_SAVED_TREE (fn)
        || !cgraph_global_info (fn)->inline_once)
       && !inlinable_function_p (fn, id, 0))
-    return NULL_TREE;
+    {
+      if (warn_inline && DECL_INLINE (fn))
+	{
+	  warning_with_decl (fn, "inlining failed in call to `%s'");
+	  warning ("called from here");
+	}
+      return NULL_TREE;
+    }
 
   if (! (*lang_hooks.tree_inlining.start_inlining) (fn))
     return NULL_TREE;
