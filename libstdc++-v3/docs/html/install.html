@@ -7,7 +7,7 @@
    <META NAME="GENERATOR" CONTENT="vi and eight fingers">
    <TITLE>libstdc++-v3 Installation Instructions</TITLE>
 <LINK REL=StyleSheet HREF="lib3styles.css">
-<!-- $Id: install.html,v 1.2 2001/01/21 09:36:09 pme Exp $ -->
+<!-- $Id: install.html,v 1.3 2001/01/23 17:02:26 pme Exp $ -->
 </HEAD>
 <BODY>
 
@@ -58,7 +58,8 @@
    <P>If you don't have bash, and want to run <TT>'make check'</TT> to
       test your build, you'll need to get bash 2.x.  Also recommended
       is GNU Make, since it is the only 'make' that will parse these
-      makefiles correctly.
+      makefiles correctly.  We are moving to DejaGNU, so you'll
+      probably want to get that.
    </P>
 
    <P>As of June 19, 2000, libstdc++ attempts to use tricky and
@@ -151,10 +152,11 @@
    <P><B>...with a gcc-2.9[67] snapshot</B>
       <P>Unpack the <EM>gccsrcdir</EM> and go into that directory.  For
          instance, <TT>gcc-2.95.2</TT> is a valid <EM>gccsrcdir</EM>.
-         Once in <EM>gccsrcdir</EM>, you'll need to rename the libstdc++-v3
-         directory which comes with that snapshot:
+         Once in <EM>gccsrcdir</EM>, you'll need to rename or delete
+	 the libstdc++-v3 directory which comes with that snapshot:
          <PRE>
-   mv libstdc++-v3 libstdc++-v3-previous</PRE>
+   mv libstdc++-v3 libstdc++-v3-previous  <STRONG>[OR]</STRONG>
+   rm -r libstdc++-v3</PRE>
       </P>
       <P>Next, unpack the libstdc++-v3 library tarball into the
          <EM>gccsrcdir</EM> directory; it will create a
@@ -173,9 +175,11 @@
    <P><B>...with CVS gcc</B> 
       <P>Check out or download the gcc sources: the resulting source
          directory is <EM>gccsrcdir</EM>.  Once in <EM>gccsrcdir</EM>,
-         you'll need to rename the libstdc++-v3 directory which comes
-         with that snapshot:
-   mv libstdc++-v3 libstdc++-v3-previous</PRE>
+         you'll need to rename or delete the libstdc++-v3 directory
+	 which comes with that snapshot:
+         <PRE>
+   mv libstdc++-v3 libstdc++-v3-previous  <STRONG>[OR]</STRONG>
+   rm -r libstdc++-v3</PRE>
       </P>
       <P>Next, unpack the libstdc++-v3 library tarball into this
          <EM>gccsrcdir</EM> directory; it will create a
@@ -208,13 +212,7 @@
 
    <P><PRE>
    cd <EM>gccbuilddir</EM>
-   <EM>gccsrcdir</EM>/configure --prefix=<EM>destdir</EM> --enable-libstdcxx-v3</PRE>
-   </P>
-   
-   <P>Adding <TT>--enable-libstdcxx-v3</TT> automatically selects libstdc++-v3
-      as the C++ library to be used alongside the C++ compiler being built,
-      and also enables -fhonor-std by default.  This option is not available
-      with gcc-2.95.2.
+   <EM>gccsrcdir</EM>/configure --prefix=<EM>destdir</EM> --other-opts...</PRE>
    </P>
 
 
@@ -239,10 +237,6 @@
       This will configure and build the C++ library in the
       <EM>gccbuilddir/cpu-vendor-OS/</EM>libstdc++ directory.
    </P>
-   <P>If the build fails with a &quot;warning: can't inline call&quot;
-      message when compiling stringMAIN.cc, see <A HREF="#Werror">the
-      resolution at the end of this document</A>.
-   </P>
    <P>If you are rebuilding from a previous build [attempt], some
       information is kept in a cache file.  This is stored in
       <EM>gccbuilddir/cpu-vendor-OS/</EM> if you are building with
@@ -258,7 +252,7 @@
       or 
       <PRE>
    make install-gcc
-   make install-target-<EM>libstdc++-rule</EM></PRE>
+   make install-target-libstdc++-v3</PRE>
    </P>
 
 
@@ -271,7 +265,7 @@
    include/g++-v3/
       bits/
       ext/
-   cpu-vendor-OS/include/g++-v3/
+   CPU-vendor-OS/include/g++-v3/
       bits/
       ext/</PRE>
    </P>
@@ -326,35 +320,6 @@
    </P>
 
 
-<HR>
-<H3><A NAME="Werror"><TT>warning: can't inline call to</TT>...</A></H3>
-   <P>When building the .8 snapshot with g++ 2.95.2, compilation may halt
-      with this warning message.  The &quot;problem&quot; is the -Werror
-      flag being passed to the compiler, which says to treat warnings as
-      errors.  (This plus a high warning level makes us track down bugs
-      <EM>quickly</EM>.)  The compiler can't inline a certain call, prints
-      a warning, and dies.
-   </P>
-   <P>The workaround is to edit either <EM>libsrcdir</EM>/src/Makefile.in
-      (before configuring) or <EM>bld-libstdc++</EM>/src/Makefile
-      (after configuring).  There's one line that reads
-      <PRE>
-   WERROR = -Werror</PRE>
-      Delete the flag itself, so that the line reads
-      <PRE>
-   WERROR =</PRE>
-      Then the compiler will still print a warning, but it won't die.
-   </P>
-   <P>For the curious, this &quot;problem&quot; is actually a symptom
-      of something else.  The compiler in CVS could inline more than what
-      2.95.2 does, and the libstdc++ changes were made with that
-      compiler.  One of the libstdc++ maintainers explains this
-<A HREF="http://gcc.gnu.org/ml/libstdc++/2000-q1/msg00420.html">here</A>.
-   </P>
-   <P>This has been patched in current CVS sources.
-   </P>
-
-
 <!--
 <HR>
 <H2><A NAME=""></A></H2>
@@ -370,7 +335,7 @@
 Comments and suggestions are welcome, and may be sent to
 <A HREF="mailto:pme@sources.redhat.com">Phil Edwards</A> or
 <A HREF="mailto:gdr@gcc.gnu.org">Gabriel Dos Reis</A>.
-<BR> $Id: install.html,v 1.2 2001/01/21 09:36:09 pme Exp $
+<BR> $Id: install.html,v 1.3 2001/01/23 17:02:26 pme Exp $
 </EM></P>
 
 

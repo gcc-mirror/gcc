@@ -1,3 +1,14 @@
+2001-02-06  Phil Edwards  <pme@sources.redhat.com>
+
+	* docs/html/configopts.html:  Fix HTML markup.
+	* docs/html/install.html:  Bring up to date.
+	* docs/html/17_intro/C++STYLE:  Add global variable conventions.
+	* docs/html/21_strings/howto.html:  More notes.
+	* docs/html/22_locale/howto.html:  Fix HTML markup.
+	* docs/html/27_io/howto.html:  More notes.
+	* docs/html/27_io/binary_iostreams_kanze.txt:  New file.
+	* docs/html/27_io/binary_iostreams_kuehl.txt:  New file.
+
 2001-02-06  Jeffrey Oldham  <oldham@codesourcery.com>
 
 	* src/misc-inst.cc (_S_pad_char): Modify declaration's parameters
