@@ -2,6 +2,7 @@
 // Templates defined outside must be declared inside
 namespace bar
 {
+  template<class T>
   void foo(); // trick it to provide some prior declaration
   template<class T>class X;
 }
@@ -13,9 +14,8 @@ bar::foo(T const &a)
   return a;
 }
 
-template<> const int bar::foo<int>(int const &)
+template<> void bar::foo<int>()
 {                        // ERROR - not declared in bar - XFAIL *-*-*
-  return 0;
 }
 
 template<class T,class U>
