@@ -98,7 +98,7 @@ higher_prime_number (n)
 
 /* Returns a hash code for P.  */
 
-hashval_t
+static hashval_t
 hash_pointer (p)
      const void *p;
 {
@@ -107,7 +107,7 @@ hash_pointer (p)
 
 /* Returns non-zero if P1 and P2 are equal.  */
 
-int
+static int
 eq_pointer (p1, p2)
      const void *p1;
      const void *p2;
@@ -224,7 +224,7 @@ htab_expand (htab)
   olimit = oentries + htab->size;
 
   htab->size = higher_prime_number (htab->size * 2);
-  htab->entries = xcalloc (htab->size, sizeof (void **));
+  htab->entries = (void **) xcalloc (htab->size, sizeof (void **));
 
   htab->n_elements -= htab->n_deleted;
   htab->n_deleted = 0;
