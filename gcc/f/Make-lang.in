@@ -145,6 +145,9 @@ f77.all.cross: g77-cross$(exeext)
 f77.start.encap: g77$(exeext)
 f77.rest.encap:
 
+f77.tags: force
+	cd $(srcdir)/f; etags *.c *.h
+
 f77.info: $(srcdir)/f/g77.info
 f77.dvi: f/g77.dvi
 f77.generated-manpages: $(srcdir)/f/g77.1
