@@ -1,5 +1,5 @@
-/* { dg-require-weak "" } */
 /* { dg-do compile } */
+/* { dg-require-weak "" } */
 /* { dg-options "-fno-common" } */
 
 /* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]_?ffoo1a" } } */
