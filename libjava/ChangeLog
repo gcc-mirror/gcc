@@ -1,3 +1,10 @@
+2002-01-25  Tom Tromey  <tromey@redhat.com>
+
+	* java/awt/FlowLayout.java (layoutContainer): Correctly compute
+	loop termination condition.
+	* java/awt/GridLayout.java (getSize): Use `real_cols' to compute
+	width.
+
 2002-01-24  Tom Tromey  <tromey@redhat.com>
 
 	* java/awt/Shape.java: Merged with Classpath.
