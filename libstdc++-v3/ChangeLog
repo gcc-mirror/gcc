@@ -1,3 +1,8 @@
+2000-11-02  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+
+	* src/locale.cc: Match orderings for static members.
+	* include/bits/fstream.tcc: Fixes for cin.
+
 2000-11-02  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* include/bits/std_complex.h (complex<>): Remove (cos<>, cosh<>,

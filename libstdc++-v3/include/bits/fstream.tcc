@@ -240,17 +240,14 @@ namespace std
 	      if (0 < __size)
 		{
 		  _M_set_determinate(__size);
+		  if (__testout)
+		    _M_out_cur = _M_in_cur;
+		  __ret = traits_type::to_int_type(*_M_in_cur);
 		  streamoff __p = _M_file->seekoff(0 - __size, ios_base::cur, 
 						   ios_base::in);
 		  if (__p == -1)
 		    {
 		      // XXX Something is wrong, do error checking.
-		    }
-		  else
-		    {
-		      if (__testout)
-			_M_out_cur = _M_in_cur;
-		      __ret = traits_type::to_int_type(*_M_in_cur);
 		    }
 		}
 #else
