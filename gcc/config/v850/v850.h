@@ -755,7 +755,7 @@ extern int current_function_anonymous_args;
 #define TRAMPOLINE_TEMPLATE(FILE)			\
   do {							\
     fprintf (FILE, "\tjarl .+4,r12\n");			\
-    fprintf (FILE, "\tld.w 12[r12],r5\n");		\
+    fprintf (FILE, "\tld.w 12[r12],r20\n");		\
     fprintf (FILE, "\tld.w 16[r12],r12\n");		\
     fprintf (FILE, "\tjmp [r12]\n");			\
     fprintf (FILE, "\tnop\n");				\
