@@ -1,3 +1,18 @@
+2002-05-27  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/6795.
+	* config/os/solaris/solaris2.6/bits/ctype_noninline.h
+	(classic_table): Fix.
+	* config/os/solaris/solaris2.5/bits/ctype_noninline.h: Same.
+	
+2002-05-27  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/22_locale/ctype_is_wchar_t.cc: Guard with
+	_GLIBCPP_USE_WCHAR_T.
+	* testsuite/22_locale/ctype_narrow_wchar_t.cc: Same.
+	* testsuite/22_locale/ctype_to_wchar_t.cc: Same.
+	* testsuite/22_locale/ctype_widen_wchar_t.cc: Same.
+	
 2002-05-26  Carlo Wood  <carlo@alinoe.com>
             Paolo Carlini  <pcarlini@unitus.it>
 
