@@ -108,13 +108,26 @@ esac
 # Set any flags dependant on the full target triplet.
 # THIS TABLE IS SORTED.  KEEP IT THAT WAY.
 
-#case "${target}" in
-#  *-*-telepathic)
-#    # On the MindReader 10000 platform, you really *can* tell the
-#    # compiler to "do what I mean".
-#    l_glibcpp_cxxflags='-fDWIM'
-#    ;;
-#esac
+case "${target}" in
+   *-*-aix*)
+     ATOMICITYH=$os_include_dir
+     ;;
+   *-*-freebsd*)
+     ATOMICITYH=$cpu_include_dir
+     ;;
+   *-*-irix*)
+     ATOMICITYH=$os_include_dir
+     ;;
+   *-*-linux*)
+     ATOMICITYH=$cpu_include_dir
+     ;;
+   sparc*-*-*)
+     ATOMICITYH=$cpu_include_dir
+     ;;
+   *)
+     ATOMICITYH="config/cpu/generic"
+     ;;
+esac
 
 
 # Okay, folks, show's over.  Move along, move along.
