@@ -1,5 +1,5 @@
 /* Header file for modules that link with gcc.c
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -33,6 +33,7 @@ extern void fatal PARAMS ((const char *, ...))
      ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 extern void error PARAMS ((const char *, ...)) ATTRIBUTE_PRINTF_1;
 extern void pfatal_with_name PARAMS ((const char *)) ATTRIBUTE_NORETURN;
+extern void set_input PARAMS ((const char *));
 
 /* Spec files linked with gcc.c must provide definitions for these. */
 
