@@ -1,3 +1,10 @@
+2004-01-10  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/13630
+	* include/bits/locale_classes.h (class locale): Fix category
+	typedef.
+	* testsuite/22_locale/locale/13630.cc: Add.
+
 2004-01-10  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	* include/bits/locale_facets.h: Make a name really dependent. This
