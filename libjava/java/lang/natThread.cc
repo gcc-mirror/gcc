@@ -130,10 +130,13 @@ java::lang::Thread::interrupt (void)
   // another thread to exit.
   natThread *nt = (natThread *) data;
   _Jv_MutexLock (&nt->interrupt_mutex);
+  // Notify the interrupt condition to interrupt sleep() and join() calls.
   _Jv_CondNotify (&nt->interrupt_cond, &nt->interrupt_mutex);
-  _Jv_MutexUnlock (&nt->interrupt_mutex);
-
+  // Send a signal to the target thread to interrupt system calls. On Linux,
+  // this will also interrupt the target thread from *any* _Jv_CondWait call,
+  // ie wait(). This behaviour is not portable, however.
   _Jv_ThreadInterrupt (nt->thread);
+  _Jv_MutexUnlock (&nt->interrupt_mutex);
 }
 
 void
@@ -145,7 +148,7 @@ java::lang::Thread::join (jlong millis, jint nanos)
     _Jv_Throw (new IllegalArgumentException);
 
   Thread *current = currentThread ();
-  if (current->isInterrupted ())
+  if (current->isInterrupted_ ())
     _Jv_Throw (new InterruptedException);
 
   // Update the list of all threads waiting for this thread to exit.
@@ -199,11 +202,12 @@ java::lang::Thread::join (jlong millis, jint nanos)
 	  t->next = 0;
 	  break;
 	}
+      prev = t;
     }
   JvAssert (t != NULL);
   _Jv_MonitorExit (this);
 
-  if (current->isInterrupted ())
+  if (current->isInterrupted_ ())
     _Jv_Throw (new InterruptedException);
 }
 
@@ -240,7 +244,7 @@ java::lang::Thread::sleep (jlong millis, jint nanos)
     ++nanos;
 
   Thread *current = currentThread ();
-  if (current->isInterrupted ())
+  if (current->isInterrupted_ ())
     _Jv_Throw (new InterruptedException);
 
   // We use a condition variable to implement sleeping so that an
@@ -253,7 +257,7 @@ java::lang::Thread::sleep (jlong millis, jint nanos)
 		  millis, nanos);
   }
 
-  if (current->isInterrupted ())
+  if (current->isInterrupted_ ())
     _Jv_Throw (new InterruptedException);
 }
 

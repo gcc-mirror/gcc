@@ -1,3 +1,24 @@
+1999-12-22  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/lang/natObject.cc (notify): Throw message with
+	IllegalMonitorStateException.
+	(notifyAll): Ditto.
+	(wait): Ditto.
+	* java/lang/Thread.java (isInterrupted): Don't clear interrupt_flag.
+	(isInterrupted_): New function, which does clear interrupt_flag.
+	(interrupt): Use `isInterrupted_'.
+	* java/lang/natThread.cc (interrupt): Add comment.
+	(join): Set `prev' in joiner loop.
+	Change various calls to `isInterrupted' to use `isInterrupted_'.
+	* posix-threads.cc (_Jv_CondWait): Allways use pthread_cond_timedwait
+	on linux. Set result to 0 on an interrupt. Test interrupted status
+	of java Thread object directly. 
+	FLAG_INTERRUPTED: removed.
+	(_Jv_ThreadStart): Throw OutOfMemoryError if pthread_create fails.
+	(_Jv_ThreadInterrupt): Don't set FLAG_INTERRUPTED.
+	(_Jv_InitThreads): Don't block SIGINT.
+	(_Jv_ThreadWait): Don't configure SIGINT handler.
+
 1999-12-21  Tom Tromey  <tromey@cygnus.com>
 
 	* mauve-libgcj: Added java.lang.reflect.Modifier.toString12.

@@ -175,7 +175,8 @@ java::lang::Object::notify (void)
     sync_init ();
   _Jv_SyncInfo *si = (_Jv_SyncInfo *) sync_info;
   if (_Jv_CondNotify (&si->condition, &si->mutex))
-    JvThrow (new IllegalMonitorStateException);
+    JvThrow (new IllegalMonitorStateException(JvNewStringLatin1 
+                                              ("current thread not owner")));
 }
 
 void
@@ -185,7 +186,8 @@ java::lang::Object::notifyAll (void)
     sync_init ();
   _Jv_SyncInfo *si = (_Jv_SyncInfo *) sync_info;
   if (_Jv_CondNotifyAll (&si->condition, &si->mutex))
-    JvThrow (new IllegalMonitorStateException);
+    JvThrow (new IllegalMonitorStateException(JvNewStringLatin1 
+                                              ("current thread not owner")));
 }
 
 void
@@ -197,7 +199,8 @@ java::lang::Object::wait (jlong timeout, jint nanos)
     JvThrow (new IllegalArgumentException);
   _Jv_SyncInfo *si = (_Jv_SyncInfo *) sync_info;
   if (_Jv_CondWait (&si->condition, &si->mutex, timeout, nanos))
-    JvThrow (new IllegalMonitorStateException);
+    JvThrow (new IllegalMonitorStateException(JvNewStringLatin1 
+                                              ("current thread not owner")));
   if (Thread::interrupted())
     JvThrow (new InterruptedException);
 }

@@ -27,11 +27,14 @@ extern "C"
 #include <time.h>
 #include <signal.h>
 #include <errno.h>
+#include <limits.h>
 
 #include <gcj/cni.h>
 #include <jvm.h>
 #include <java/lang/Thread.h>
 #include <java/lang/System.h>
+#include <java/lang/Long.h>
+#include <java/lang/OutOfMemoryError.h>
 
 // This is used to implement thread startup.
 struct starter
@@ -58,7 +61,7 @@ static int non_daemon_count;
 
 // The signal to use when interrupting a thread.
 #ifdef LINUX_THREADS
-  // LinuxThreads usurps both SIGUSR1 and SIGUSR2.
+  // LinuxThreads (prior to glibc 2.1) usurps both SIGUSR1 and SIGUSR2.
 #  define INTR SIGHUP
 #else /* LINUX_THREADS */
 #  define INTR SIGUSR2
@@ -72,8 +75,6 @@ static int non_daemon_count;
 #define FLAG_START   0x01
 // Thread is daemon.
 #define FLAG_DAEMON  0x02
-// Thread was interrupted by _Jv_ThreadInterrupt.
-#define FLAG_INTERRUPTED  0x04
 
 
 
@@ -86,58 +87,82 @@ _Jv_CondWait (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu,
 
   int r;
   pthread_mutex_t *pmu = _Jv_PthreadGetMutex (mu);
-  struct timespec ts; 
+  struct timespec ts;
   jlong m, m2, startTime;
   bool done_sleeping = false;
 
   if (millis == 0 && nanos == 0)
-    r = pthread_cond_wait (cv, pmu);
+    {
+#ifdef LINUX_THREADS
+      // pthread_cond_timedwait can be interrupted by a signal on linux, while
+      // pthread_cond_wait can not. So pthread_cond_timedwait() forever.
+      m = java::lang::Long::MAX_VALUE;
+      ts.tv_sec = LONG_MAX;
+      ts.tv_nsec = 0;
+#endif
+    }
   else
     {
       startTime = java::lang::System::currentTimeMillis();
       m = millis + startTime;
+      ts.tv_sec = m / 1000; 
+      ts.tv_nsec = ((m % 1000) * 1000000) + nanos; 
+    }
 
-      do
-	{  
-	  ts.tv_sec = m / 1000; 
-	  ts.tv_nsec = ((m % 1000) * 1000000) + nanos; 
+  java::lang::Thread *current = _Jv_ThreadCurrent();
 
+  do
+    {
+      r = EINTR;
+      // Check to ensure the thread hasn't already been interrupted.
+      if (!(current->isInterrupted ()))
+        {
+#ifdef LINUX_THREADS	
+	  // FIXME: in theory, interrupt() could be called on this thread
+	  // between the test above and the wait below, resulting in the 
+	  // interupt() call failing. I don't see a way to fix this 
+	  // without significant changes to the implementation.
 	  r = pthread_cond_timedwait (cv, pmu, &ts);
-
-	  if (r == EINTR)
+#else
+	  if (millis == 0 && nanos == 0)
+	    r = pthread_cond_wait (cv, pmu);
+	  else	  
+	    r = pthread_cond_timedwait (cv, pmu, &ts);	  
+#endif
+	}
+      
+      if (r == EINTR)
+	{
+	  /* We were interrupted by a signal.  Either this is
+	     because we were interrupted intentionally (i.e. by
+	     Thread.interrupt()) or by the GC if it is
+	     signal-based.  */
+	  if (current->isInterrupted ())
 	    {
-	      /* We were interrupted by a signal.  Either this is
-		 because we were interrupted intentionally (i.e. by
-		 Thread.interrupt()) or by the GC if it is
-		 signal-based.  */
-	      _Jv_Thread_t *current = _Jv_ThreadCurrentData();
-	      if (current->flags & FLAG_INTERRUPTED)
+	      r = 0;
+              done_sleeping = true;
+            }
+	  else
+            {
+	      /* We were woken up by the GC or another signal.  */
+	      m2 = java::lang::System::currentTimeMillis ();
+	      if (m2 >= m)
 		{
-                  current->flags &= ~(FLAG_INTERRUPTED);
-                  done_sleeping = true;
-                }
-	      else
-                {
-		  /* We were woken up by the GC or another signal.  */
-		  m2 = java::lang::System::currentTimeMillis ();
-		  if (m2 >= m)
-		    {
-		      r = 0;
-		      done_sleeping = true;
-		    }
+		  r = 0;
+		  done_sleeping = true;
 		}
 	    }
-	  else if (r == ETIMEDOUT)
-	    {
-	      /* A timeout is a normal result.  */
-	      r = 0;
-	      done_sleeping = true;
-	    }
-	  else
-	    done_sleeping = true;
 	}
-      while (! done_sleeping);
+      else if (r == ETIMEDOUT)
+	{
+	  /* A timeout is a normal result.  */
+	  r = 0;
+	  done_sleeping = true;
+	}
+      else
+	done_sleeping = true;
     }
+  while (! done_sleeping);
 
   return r != 0;
 }
@@ -272,20 +297,12 @@ _Jv_InitThreads (void)
   sigemptyset (&act.sa_mask);
   act.sa_flags = 0;
   sigaction (INTR, &act, NULL);
-
-  // Arrange for SIGINT to be blocked to all threads.  It is only
-  // deliverable to the master thread.
-  sigset_t mask;
-  sigemptyset (&mask);
-  sigaddset (&mask, SIGINT);
-  pthread_sigmask (SIG_BLOCK, &mask, NULL);
 }
 
 void
 _Jv_ThreadInitData (_Jv_Thread_t **data, java::lang::Thread *)
 {
   _Jv_Thread_t *info = new _Jv_Thread_t;
-
   info->flags = 0;
 
   // FIXME register a finalizer for INFO here.
@@ -361,20 +378,20 @@ _Jv_ThreadStart (java::lang::Thread *thread, _Jv_Thread_t *data,
     }
   else
     data->flags |= FLAG_DAEMON;
-  pthread_create (&data->thread, &attr, really_start, (void *) info);
-
+  int r = pthread_create (&data->thread, &attr, really_start, (void *) info);
+  
   pthread_attr_destroy (&attr);
+
+  if (r)
+    {
+      const char* msg = "Cannot create additional threads";
+      JvThrow (new java::lang::OutOfMemoryError (JvNewStringUTF (msg)));
+    }
 }
 
 void
 _Jv_ThreadWait (void)
 {
-  // Arrange for SIGINT to be delivered to the master thread.
-  sigset_t mask;
-  sigemptyset (&mask);
-  sigaddset (&mask, SIGINT);
-  pthread_sigmask (SIG_UNBLOCK, &mask, NULL);
-
   pthread_mutex_lock (&daemon_mutex);
   if (non_daemon_count)
     pthread_cond_wait (&daemon_cond, &daemon_mutex);
@@ -384,6 +401,5 @@ _Jv_ThreadWait (void)
 void
 _Jv_ThreadInterrupt (_Jv_Thread_t *data)
 {
-  data->flags |= FLAG_INTERRUPTED; 
   pthread_kill (data->thread, INTR);
 }
