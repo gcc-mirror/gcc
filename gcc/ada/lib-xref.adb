@@ -751,7 +751,7 @@ package body Lib.Xref is
 
                         if Sloc (Tref) = Standard_Location then
 
-                           --  For now, output only if speial -gnatdM flag set
+                           --  For now, output only if special -gnatdM flag set
 
                            exit when not Debug_Flag_MM;
 
@@ -768,6 +768,14 @@ package body Lib.Xref is
                            --  unless we have special debug flag -gnatdM
 
                            exit when not (Debug_Flag_MM or else Left = '<');
+
+                           --  Do not output type reference if referenced
+                           --  entity is not in the main unit and is itself
+                           --  not referenced, since otherwise the reference
+                           --  will dangle.
+
+                           exit when not Referenced (Tref)
+                             and then not In_Extended_Main_Source_Unit (Tref);
 
                            --  Output the reference
 

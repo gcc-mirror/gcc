@@ -1545,33 +1545,48 @@ package body Sem_Attr is
          --  get the proper value, but if expansion is not active, then
          --  the check here allows proper semantic analysis of the reference.
 
-         if (Is_Entity_Name (P)
-           and then
-             (((Ekind (Entity (P)) = E_Task_Type
-                 or else Ekind (Entity (P)) = E_Protected_Type)
-                   and then Etype (Entity (P)) = Base_Type (Entity (P)))
-               or else Ekind (Entity (P)) = E_Package
-               or else Is_Generic_Unit (Entity (P))))
-           or else
-            (Nkind (P) = N_Attribute_Reference
-              and then
-             Attribute_Name (P) = Name_AST_Entry)
+         --  An Address attribute created by expansion is legal even when it
+         --  applies to other entity-denoting expressions.
+
+         if (Is_Entity_Name (P)) then
+            if Is_Subprogram (Entity (P))
+              or else Is_Object (Entity (P))
+              or else Ekind (Entity (P)) = E_Label
+            then
+               Set_Address_Taken (Entity (P));
+
+            elsif ((Ekind (Entity (P)) = E_Task_Type
+                      or else Ekind (Entity (P)) = E_Protected_Type)
+                    and then Etype (Entity (P)) = Base_Type (Entity (P)))
+              or else Ekind (Entity (P)) = E_Package
+              or else Is_Generic_Unit (Entity (P))
+            then
+               Rewrite (N,
+                 New_Occurrence_Of (RTE (RE_Null_Address), Sloc (N)));
+
+            else
+               Error_Attr ("invalid prefix for % attribute", P);
+            end if;
+
+         elsif Nkind (P) = N_Attribute_Reference
+          and then Attribute_Name (P) = Name_AST_Entry
          then
             Rewrite (N,
               New_Occurrence_Of (RTE (RE_Null_Address), Sloc (N)));
 
-         --  The following logic is obscure, needs explanation ???
+         elsif Is_Object_Reference (P) then
+            null;
 
-         elsif Nkind (P) = N_Attribute_Reference
-           or else (Is_Entity_Name (P)
-                      and then not Is_Subprogram (Entity (P))
-                      and then not Is_Object (Entity (P))
-                      and then Ekind (Entity (P)) /= E_Label)
+         elsif Nkind (P) = N_Selected_Component
+           and then Is_Subprogram (Entity (Selector_Name (P)))
          then
-            Error_Attr ("invalid prefix for % attribute", P);
+            null;
 
-         elsif Is_Entity_Name (P) then
-            Set_Address_Taken (Entity (P));
+         elsif not Comes_From_Source (N) then
+            null;
+
+         else
+            Error_Attr ("invalid prefix for % attribute", P);
          end if;
 
          Set_Etype (N, RTE (RE_Address));
@@ -3138,22 +3153,21 @@ package body Sem_Attr is
 
          if Is_Object_Reference (P)
            or else (Is_Entity_Name (P)
-                      and then
-                    Ekind (Entity (P)) = E_Function)
+                     and then Ekind (Entity (P)) = E_Function)
          then
             Check_Object_Reference (P);
 
-         elsif Nkind (P) = N_Attribute_Reference
-           or else
-             (Nkind (P) = N_Selected_Component
-               and then (Is_Entry (Entity (Selector_Name (P)))
-                           or else
-                         Is_Subprogram (Entity (Selector_Name (P)))))
-           or else
-             (Is_Entity_Name (P)
-               and then not Is_Type (Entity (P))
-               and then not Is_Object (Entity (P)))
+         elsif Is_Entity_Name (P)
+           and then Is_Type (Entity (P))
          then
+            null;
+
+         elsif Nkind (P) = N_Type_Conversion
+           and then not Comes_From_Source (P)
+         then
+            null;
+
+         else
             Error_Attr ("invalid prefix for % attribute", P);
          end if;
 
@@ -5490,7 +5504,7 @@ package body Sem_Attr is
 
       when Attribute_Small =>
 
-         --  The floating-point case is present only for Ada 83 compatibility.
+         --  The floating-point case is present only for Ada 83 compatability.
          --  Note that strictly this is an illegal addition, since we are
          --  extending an Ada 95 defined attribute, but we anticipate an
          --  ARG ruling that will permit this.
@@ -6509,24 +6523,6 @@ package body Sem_Attr is
                     ("prefix of % attribute cannot be overloaded", N);
                   return;
                end if;
-            end if;
-
-            --  Do not permit address to be applied to entry
-
-            if (Is_Entity_Name (P) and then Is_Entry (Entity (P)))
-              or else Nkind (P) = N_Entry_Call_Statement
-
-              or else (Nkind (P) = N_Selected_Component
-                and then Is_Entry (Entity (Selector_Name (P))))
-
-              or else (Nkind (P) = N_Indexed_Component
-                and then Nkind (Prefix (P)) = N_Selected_Component
-                and then Is_Entry (Entity (Selector_Name (Prefix (P)))))
-            then
-               Error_Msg_Name_1 := Aname;
-               Error_Msg_N
-                 ("prefix of % attribute cannot be entry", N);
-               return;
             end if;
 
             if not Is_Entity_Name (P)
