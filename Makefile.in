@@ -23866,7 +23866,7 @@ all-flex: maybe-all-libiberty maybe-all-bison maybe-all-byacc
 all-gzip: maybe-all-libiberty
 all-hello: maybe-all-libiberty
 all-m4: maybe-all-libiberty maybe-all-texinfo
-all-make: maybe-all-libiberty
+all-make: maybe-all-libiberty maybe-all-intl
 all-patch: maybe-all-libiberty
 all-prms: maybe-all-libiberty
 all-recode: maybe-all-libiberty
