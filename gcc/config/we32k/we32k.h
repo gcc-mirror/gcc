@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  AT&T we32000 version.
-   Copyright (C) 1991, 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1992, 1993, 1994 Free Software Foundation, Inc.
    Contributed by John Wehle (john@feith1.uucp)
 
 This file is part of GNU CC.
@@ -21,7 +21,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
-#define CPP_PREDEFINES "-Dwe32000 -Du3b -Dunix -Asystem(unix) -Acpu(we32000) -Amachine(we32000)"
+#define CPP_PREDEFINES "-Dwe32000 -Du3b2 -Dunix -Asystem(unix) -Acpu(we32000) -Amachine(we32000)"
 
 /* Print subsidiary information on the compiler version in use.  */
 
