@@ -45,10 +45,9 @@ xrealloc (old, size)
      unsigned size;
 {
   register char *ptr = (char *) realloc (old, size);
-  if (ptr != 0) return (ptr);
-  memory_full ();
-  /*NOTREACHED*/
-  return 0;
+  if (ptr == 0)
+    memory_full ();
+  return ptr;
 }
 
 char *
@@ -56,26 +55,8 @@ xcalloc (number, size)
      unsigned number, size;
 {
   register unsigned total = number * size;
-  register char *ptr = (char *) malloc (total);
-  if (ptr != 0) {
-    if (total > 100)
-      bzero (ptr, total);
-    else {
-      /* It's not too long, so loop, zeroing by longs.
-	 It must be safe because malloc values are always well aligned.  */
-      register long *zp = (long *) ptr;
-      register long *zl = (long *) (ptr + total - 4);
-      register int i = total - 4;
-      while (zp < zl)
-	*zp++ = 0;
-      if (i < 0)
-	i = 0;
-      while (i < total)
-	ptr[i++] = 0;
-    }
-    return ptr;
-  }
-  memory_full ();
-  /*NOTREACHED*/
-  return 0;
+  register char *ptr = (char *) calloc (number, size);
+  if (ptr == 0)
+    memory_full ();
+  return ptr;
 }
