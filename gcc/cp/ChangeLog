@@ -1,3 +1,9 @@
+2003-10-06  Giovanni Bajo <giovannibajo@libero.it>
+
+	PR c++/11097
+	* pt.c (tsubst_decl): Substitute also the DECL_NAME node of
+	USING_DECL.
+
 2003-10-06  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/10147
