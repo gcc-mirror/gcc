@@ -1,5 +1,5 @@
 /* ISO_8859_1.java -- 
-   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -53,7 +53,28 @@ final class ISO_8859_1 extends Charset
 {
   ISO_8859_1 ()
   {
-    super ("ISO-8859-1", new String[]{"ISO-LATIN-1"});
+    /* Canonical charset name chosen according to:
+     * http://java.sun.com/j2se/1.5.0/docs/guide/intl/encoding.doc.html
+     */
+    super ("ISO-8859-1", new String[] {
+        /* These names are provided by 
+         * http://www.iana.org/assignments/character-sets
+         */
+        "iso-ir-100",
+        "ISO_8859-1",
+        "latin1",
+        "l1",
+        "IBM819",
+        "CP819",
+        "csISOLatin1",
+        "8859_1",
+        /* These names are provided by
+         * http://oss.software.ibm.com/cgi-bin/icu/convexp?s=ALL
+         */
+        "ISO8859_1", "ISO_8859_1", "ibm-819", "ISO_8859-1:1987",
+        "819"
+        });
+
   }
 
   public boolean contains (Charset cs)

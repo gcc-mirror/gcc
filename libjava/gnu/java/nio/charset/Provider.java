@@ -1,5 +1,5 @@
 /* Provider.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -48,6 +48,7 @@ import java.util.Iterator;
  * {@link Charset#charsetForName} and * {@link Charset#availableCharsets}.
  *
  * @author Jesse Rosenstock
+ * @author Robert Schuster (thebohemian@gmx.net)
  * @see Charset
  */
 public final class Provider extends CharsetProvider
@@ -63,12 +64,14 @@ public final class Provider extends CharsetProvider
   }
 
   /**
-   * Map from charset name to charset canonical name.
+   * Map from charset name to charset canonical name. The strings
+   * are all lower-case to allow case-insensitive retrieval of
+   * Charset instances. 
    */
   private final HashMap canonicalNames;
 
   /**
-   * Map from canonical name to Charset.
+   * Map from lower-case canonical name to Charset.
    * TODO: We may want to use soft references.  We would then need to keep
    * track of the class name to regenerate the object.
    */
@@ -76,8 +79,6 @@ public final class Provider extends CharsetProvider
 
   private Provider ()
   {
-    // FIXME: We might need to make the name comparison case insensitive.
-    // Verify this with the Sun JDK.
     canonicalNames = new HashMap ();
     charsets = new HashMap ();
 
@@ -106,24 +107,42 @@ public final class Provider extends CharsetProvider
                       .iterator ();
   }
 
+  /**
+   * Returns a Charset instance by converting the given
+   * name to lower-case, looking up the canonical charset
+   * name and finally looking up the Charset with that name.
+   * 
+   * <p>The lookup is therefore case-insensitive.</p>
+   * 
+   *  @returns The Charset having <code>charsetName</code>
+   *  as its alias or null if no such Charset exist.
+   */
   public Charset charsetForName (String charsetName)
   {
-    return (Charset) charsets.get (canonicalize (charsetName));
+    return (Charset) charsets.get(canonicalNames.get(charsetName.toLowerCase()));
   }
 
-  private Object canonicalize (String charsetName)
-  {
-    Object o = canonicalNames.get (charsetName);
-    return o == null ? charsetName : o;
-  }
-
+  /**
+   * Puts a Charset under its canonical name into the 'charsets' map.
+   * Then puts a mapping from all its alias names to the canonical name.
+   * 
+   * <p>All names are converted to lower-case</p>.
+   * 
+   * @param cs
+   */
   private void addCharset (Charset cs)
   {
-    String canonicalName = cs.name ();
+    String canonicalName = cs.name().toLowerCase();
     charsets.put (canonicalName, cs);
+    
+    /* Adds a mapping between the canonical name
+     * itself making a lookup using that name
+     * no special case.
+     */  
+    canonicalNames.put(canonicalName, canonicalName);
 
     for (Iterator i = cs.aliases ().iterator (); i.hasNext (); )
-      canonicalNames.put (i.next (), canonicalName);
+      canonicalNames.put (((String) i.next()).toLowerCase(), canonicalName);
   }
 
   public static synchronized Provider provider ()
