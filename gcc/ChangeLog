@@ -1,3 +1,8 @@
+2003-06-17  Ranjit Mathew  <rmathew@hotmail.com>
+
+	* install.texi (Testing): Add information on how to run Java
+	runtime tests separately.
+
 2003-06-17  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config/mips/mips.md (trap): Use break 0 when !TARGET_GAS.
