@@ -1309,10 +1309,6 @@ extern struct rtx_def *hppa_builtin_saveregs ();
    these things in insns and then not re-recognize the insns, causing
    constrain_operands to fail.
 
-   Also note `Q' accepts any memory operand during the reload pass.
-   This includes out-of-range displacements in reg+d addressing.
-   This makes for better code.  (??? For 2.5 address this issue).
-
    `R' is unused.
 
    `S' is unused.
@@ -1321,8 +1317,6 @@ extern struct rtx_def *hppa_builtin_saveregs ();
 #define EXTRA_CONSTRAINT(OP, C)				\
   ((C) == 'Q' ?						\
    (IS_RELOADING_PSEUDO_P (OP)				\
-    || (GET_CODE (OP) == MEM 				\
-	&& reload_in_progress)				\
     || (GET_CODE (OP) == MEM				\
 	&& memory_address_p (GET_MODE (OP), XEXP (OP, 0))\
 	&& ! symbolic_memory_operand (OP, VOIDmode)))	\
@@ -1571,6 +1565,11 @@ while (0)
    in one reasonably fast instruction.  */
 #define MOVE_MAX 8
 
+/* Higher than the default as we prefer to use simple move insns
+   (better scheduling and delay slot filling) and because our
+   built-in block move is really a 2X unrolled loop.  */
+#define MOVE_RATIO 4
+
 /* Define if operations between registers always perform the operation
    on the full register even if a narrower mode is specified.  */
 #define WORD_REGISTER_OPERATIONS
@@ -1685,22 +1684,28 @@ while (0)
    switch on CODE.  The purpose for the cost of MULT is to encourage
    `synth_mult' to find a synthetic multiply when reasonable.  */
 
-#define RTX_COSTS(X,CODE,OUTER_CODE) \
-  case MULT:							\
-    return (TARGET_SNAKE && ! TARGET_DISABLE_FPREGS		\
-	    && ! TARGET_SOFT_FLOAT				\
-	    ? COSTS_N_INSNS (8) : COSTS_N_INSNS (20)); 		\
-  case DIV:							\
-  case UDIV:							\
-  case MOD:							\
-  case UMOD:							\
-    return COSTS_N_INSNS (60);					\
-  case PLUS:							\
-    if (GET_CODE (XEXP (X, 0)) == MULT				\
-	&& shadd_operand (XEXP (XEXP (X, 0), 1), VOIDmode))	\
-      return (2 + rtx_cost (XEXP (XEXP (X, 0), 0), OUTER_CODE)	\
-	      + rtx_cost (XEXP (X, 1), OUTER_CODE));		\
-    break;
+#define RTX_COSTS(X,CODE,OUTER_CODE)					\
+  case MULT:								\
+    if (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT)			\
+      return COSTS_N_INSNS (3);						\
+    return (TARGET_SNAKE && ! TARGET_DISABLE_FPREGS && ! TARGET_SOFT_FLOAT) \
+	    ? COSTS_N_INSNS (8) : COSTS_N_INSNS (20);	\
+  case DIV:								\
+    if (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT)			\
+      return COSTS_N_INSNS (14);					\
+  case UDIV:								\
+  case MOD:								\
+  case UMOD:								\
+    return COSTS_N_INSNS (60);						\
+  case PLUS: /* this includes shNadd insns */				\
+  case MINUS:								\
+    if (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT)			\
+      return COSTS_N_INSNS (3);						\
+    return COSTS_N_INSNS (1);						\
+  case ASHIFT:								\
+  case ASHIFTRT:							\
+  case LSHIFTRT:							\
+    return COSTS_N_INSNS (1);
 
 /* Adjust the cost of dependencies.  */
 
@@ -2153,41 +2158,6 @@ extern void output_global_address ();
 extern struct rtx_def *legitimize_pic_address ();
 extern struct rtx_def *gen_cmp_fp ();
 extern void hppa_encode_label ();
-
-#if 0
-#define PREDICATE_CODES \
-  {"reg_or_0_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE}},		\
-  {"reg_or_cint_move_operand", {SUBREG, REG, CONST_INT}},		\
-  {"arith_operand", {SUBREG, REG, CONST_INT}},				\
-  {"arith32_operand", {SUBREG, REG, CONST_INT}},			\
-  {"arith11_operand", {SUBREG, REG, CONST_INT}},			\
-  {"arith5_operand", {SUBREG, REG, CONST_INT}},				\
-  {"pre_cint_operand", {CONST_INT}},					\
-  {"post_cint_operand", {CONST_INT}},					\
-  {"int5_operand", {CONST_INT}},					\
-  {"uint5_operand", {CONST_INT}},					\
-  {"uint32_operand", {CONST_INT}},					\
-  {"int11_operand", {CONST_INT}},					\
-  {"and_operand", {SUBREG, REG, CONST_INT}},				\
-  {"ior_operand", {CONST_INT}},						\
-  {"lhs_lshift_operand", {SUBREG, REG, CONST_INT}},			\
-  {"lhs_lshift_cint_operand", {CONST_INT}},				\
-  {"plus_xor_ior_operator", {PLUS, XOR, IOR}},				\
-  {"shadd_operand", {CONST_INT}},					\
-  {"eq_neq_comparison_operator", {EQ, NE}},				\
-  {"movb_comparison_operator", {EQ, NE, LT, GE}},			\
-  {"pc_or_label_operand", {LABEL_REF, PC}},				\
-  {"symbolic_operand", {SYMBOL_REF, LABEL_REF, CONST}},			\
-  {"reg_or_nonsymb_mem_operand", {SUBREG, REG, MEM}},			\
-  {"move_operand", {SUBREG, REG, CONST_INT, MEM}},			\
-  {"pic_label_operand", {LABEL_REF, CONST}},				\
-  {"function_label_operand", {SYMBOL_REF}},				\
-  {"reg_or_0_or_nonsymb_mem_operand", {SUBREG, REG, CONST_INT,		\
-				       CONST_DOUBLE, MEM}},		\
-  {"div_operand", {REG, CONST_INT}},					\
-  {"call_operand_address", {SYMBOL_REF, LABEL_REF, CONST_INT,		\
-			    CONST_DOUBLE, CONST, HIGH}},
-#endif
 
 /* We want __gcc_plt_call to appear in every program built by
    gcc, so we make a reference to it out of __main.

@@ -386,7 +386,71 @@
 			     [(match_operand:SF 0 "reg_or_0_operand" "fG")
 			      (match_operand:SF 1 "reg_or_0_operand" "fG")]))]
   "! TARGET_SOFT_FLOAT"
-  "fcmp,sgl,%Y2 %r0,%r1"
+  "*
+{
+  rtx next_insn;
+
+  /* See if this is later used in a reversed FP branch.  If so, reverse our
+     condition and the branch.  Doing so avoids a useless add,tr. 
+
+     Don't do this if fcmp is in a delay slot since it's too much of a
+     headache to track down things on multiple paths.  */
+  if (dbr_sequence_length ())
+    next_insn = NULL;
+  else
+    next_insn = NEXT_INSN (insn);
+  while (next_insn)
+    {
+      /* Jumps, calls and labels stop our search.  */
+      if (GET_CODE (next_insn) == JUMP_INSN
+	  || GET_CODE (next_insn) == CALL_INSN
+	  || GET_CODE (next_insn) == CODE_LABEL)
+	break;
+
+      /* As does another fcmp insn.  */
+      if (GET_CODE (next_insn) == INSN
+	  && GET_CODE (PATTERN (next_insn)) == SET
+	  && GET_CODE (SET_DEST (PATTERN (next_insn))) == REG
+	  && REGNO (SET_DEST (PATTERN (next_insn))) == 0)
+	break;
+
+      if (GET_CODE (next_insn) == INSN
+	  && GET_CODE (PATTERN (next_insn)) == SEQUENCE)
+	next_insn = XVECEXP (PATTERN (next_insn), 0, 0);
+      else
+	next_insn = NEXT_INSN (next_insn);
+    }
+
+  /* Is NEXT_INSN a branch?  */
+  if (next_insn
+      && GET_CODE (next_insn) == JUMP_INSN)
+    {
+      rtx pattern = PATTERN (next_insn);
+
+      /* Is it a reversed fp conditional branch (eg uses add,tr) and
+	 CCFP dies, then reverse our conditional and the branch to
+	 avoid the add,tr.  */
+      if (GET_CODE (pattern) == SET
+	  && SET_DEST (pattern) == pc_rtx
+	  && GET_CODE (SET_SRC (pattern)) == IF_THEN_ELSE
+	  && GET_CODE (XEXP (SET_SRC (pattern), 0)) == NE
+	  && GET_CODE (XEXP (XEXP (SET_SRC (pattern), 0), 0)) == REG
+	  && REGNO (XEXP (XEXP (SET_SRC (pattern), 0), 0)) == 0
+	  && GET_CODE (XEXP (SET_SRC (pattern), 1)) == PC
+	  && find_regno_note (next_insn, REG_DEAD, 0))
+
+	{
+	  rtx tmp;
+
+	  tmp = XEXP (SET_SRC (pattern), 1);
+	  XEXP (SET_SRC (pattern), 1) = XEXP (SET_SRC (pattern), 2);
+	  XEXP (SET_SRC (pattern), 2) = tmp;
+	  INSN_CODE (next_insn) = -1;
+	  return \"fcmp,sgl,%y2 %r0,%r1\";
+	}
+    }
+  return \"fcmp,sgl,%Y2 %r0,%r1\";
+}"
   [(set_attr "length" "4")
    (set_attr "type" "fpcc")])
 
@@ -396,7 +460,71 @@
 			     [(match_operand:DF 0 "reg_or_0_operand" "fG")
 			      (match_operand:DF 1 "reg_or_0_operand" "fG")]))]
   "! TARGET_SOFT_FLOAT"
-  "fcmp,dbl,%Y2 %r0,%r1"
+  "*
+{
+  rtx next_insn;
+
+  /* See if this is later used in a reversed FP branch.  If so, reverse our
+     condition and the branch.  Doing so avoids a useless add,tr. 
+
+     Don't do this if fcmp is in a delay slot since it's too much of a
+     headache to track down things on multiple paths.  */
+  if (dbr_sequence_length ())
+    next_insn = NULL;
+  else
+    next_insn = NEXT_INSN (insn);
+  while (next_insn)
+    {
+      /* Jumps, calls and labels stop our search.  */
+      if (GET_CODE (next_insn) == JUMP_INSN
+	  || GET_CODE (next_insn) == CALL_INSN
+	  || GET_CODE (next_insn) == CODE_LABEL)
+	break;
+
+      /* As does another fcmp insn.  */
+      if (GET_CODE (next_insn) == INSN
+	  && GET_CODE (PATTERN (next_insn)) == SET
+	  && GET_CODE (SET_DEST (PATTERN (next_insn))) == REG
+	  && REGNO (SET_DEST (PATTERN (next_insn))) == 0)
+	break;
+
+      if (GET_CODE (next_insn) == INSN
+	  && GET_CODE (PATTERN (next_insn)) == SEQUENCE)
+	next_insn = XVECEXP (PATTERN (next_insn), 0, 0);
+      else
+	next_insn = NEXT_INSN (next_insn);
+    }
+
+  /* Is NEXT_INSN a branch?  */
+  if (next_insn
+      && GET_CODE (next_insn) == JUMP_INSN)
+    {
+      rtx pattern = PATTERN (next_insn);
+
+      /* Is it a reversed fp conditional branch (eg uses add,tr) and
+	 CCFP dies, then reverse our conditional and the branch to
+	 avoid the add,tr.  */
+      if (GET_CODE (pattern) == SET
+	  && SET_DEST (pattern) == pc_rtx
+	  && GET_CODE (SET_SRC (pattern)) == IF_THEN_ELSE
+	  && GET_CODE (XEXP (SET_SRC (pattern), 0)) == NE
+	  && GET_CODE (XEXP (XEXP (SET_SRC (pattern), 0), 0)) == REG
+	  && REGNO (XEXP (XEXP (SET_SRC (pattern), 0), 0)) == 0
+	  && GET_CODE (XEXP (SET_SRC (pattern), 1)) == PC
+	  && find_regno_note (next_insn, REG_DEAD, 0))
+
+	{
+	  rtx tmp;
+
+	  tmp = XEXP (SET_SRC (pattern), 1);
+	  XEXP (SET_SRC (pattern), 1) = XEXP (SET_SRC (pattern), 2);
+	  XEXP (SET_SRC (pattern), 2) = tmp;
+	  INSN_CODE (next_insn) = -1;
+	  return \"fcmp,dbl,%y2 %r0,%r1\";
+	}
+    }
+  return \"fcmp,dbl,%Y2 %r0,%r1\";
+}"
   [(set_attr "length" "4")
    (set_attr "type" "fpcc")])
 
@@ -761,6 +889,15 @@
   comiclr,<< %2,%0,0\;ldi %2,%0"
 [(set_attr "type" "multi,multi")
  (set_attr "length" "8,8")])
+
+(define_insn "abssi2"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(abs:SI (match_operand:SI 1 "register_operand" "0")))]
+  ""
+  "comiclr,< 0,%0,0\;subi 0,%0,%0"
+  [(set_attr "type" "multi")
+   (set_attr "length" "8")])
+
 ;;; Experimental conditional move patterns
 
 (define_expand "movsicc"
@@ -1302,6 +1439,25 @@
   [(set_attr "type" "load")
    (set_attr "length" "8")])
 
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(mem:SI (plus:SI (match_operand:SI 1 "register_operand" "r")
+			 (match_operand:SI 2 "basereg_operand" "r"))))]
+  "! TARGET_DISABLE_INDEXING"
+  "*
+{
+  /* Reload can create backwards (relative to cse) unscaled index
+     address modes when eliminating registers and possibly for
+     pseudos that don't get hard registers.  Deal with it.  */
+  if (operands[1] == hard_frame_pointer_rtx
+      || operands[1] == stack_pointer_rtx)
+    return \"ldwx %2(0,%1),%0\";
+  else
+    return \"ldwx %1(0,%2),%0\";
+}"
+  [(set_attr "type" "load")
+   (set_attr "length" "4")])
+
 ;; Load or store with base-register modification.
 
 (define_insn "pre_ldwm"
@@ -1624,6 +1780,25 @@
    (set_attr "length" "8")])
 
 (define_insn ""
+  [(set (match_operand:HI 0 "register_operand" "=r")
+	(mem:HI (plus:SI (match_operand:SI 1 "register_operand" "r")
+			 (match_operand:SI 2 "basereg_operand" "r"))))]
+  "! TARGET_DISABLE_INDEXING"
+  "*
+{
+  /* Reload can create backwards (relative to cse) unscaled index
+     address modes when eliminating registers and possibly for
+     pseudos that don't get hard registers.  Deal with it.  */
+  if (operands[1] == hard_frame_pointer_rtx
+      || operands[1] == stack_pointer_rtx)
+    return \"ldhx %2(0,%1),%0\";
+  else
+    return \"ldhx %1(0,%2),%0\";
+}"
+  [(set_attr "type" "load")
+   (set_attr "length" "4")])
+
+(define_insn ""
   [(set (match_operand:HI 3 "register_operand" "=r")
 	(mem:HI (plus:SI (match_operand:SI 1 "register_operand" "0")
 			 (match_operand:SI 2 "int5_operand" "L"))))
@@ -1690,6 +1865,25 @@
    (set_attr "length" "4,4,4,4,4,4,4,4")])
 
 (define_insn ""
+  [(set (match_operand:QI 0 "register_operand" "=r")
+	(mem:QI (plus:SI (match_operand:SI 1 "register_operand" "r")
+			 (match_operand:SI 2 "basereg_operand" "r"))))]
+  "! TARGET_DISABLE_INDEXING"
+  "*
+{
+  /* Reload can create backwards (relative to cse) unscaled index
+     address modes when eliminating registers and possibly for
+     pseudos that don't get hard registers.  Deal with it.  */
+  if (operands[1] == hard_frame_pointer_rtx
+      || operands[1] == stack_pointer_rtx)
+    return \"ldbx %2(0,%1),%0\";
+  else
+    return \"ldbx %1(0,%2),%0\";
+}"
+  [(set_attr "type" "load")
+   (set_attr "length" "4")])
+
+(define_insn ""
   [(set (match_operand:QI 3 "register_operand" "=r")
 	(mem:QI (plus:SI (match_operand:SI 1 "register_operand" "0")
 			 (match_operand:SI 2 "int5_operand" "L"))))
@@ -1727,19 +1921,55 @@
   ""
   "
 {
-  /* If the blocks are not at least word-aligned and rather big (>16 items),
-     or the size is indeterminate, don't inline the copy code.  A
-     procedure call is better since it can check the alignment at
-     runtime and make the optimal decisions.  */
-     if (INTVAL (operands[3]) < 4
-	 && (GET_CODE (operands[2]) != CONST_INT
-	     || (INTVAL (operands[2]) / INTVAL (operands[3]) > 8)))
-       FAIL;
+  int size, align;
+  /* HP provides very fast block move library routine for the PA;
+     this routine includes:
 
+	4x4 byte at a time block moves,
+	1x4 byte at a time with alignment checked at runtime with
+	    attempts to align the source and destination as needed
+	1x1 byte loop
+
+     With that in mind, here's the heuristics to try and guess when
+     the inlined block move will be better than the library block
+     move:
+
+	If the size isn't constant, then always use the library routines.
+
+	If the size is large in respect to the known alignment, then use
+	the library routines.
+
+	If the size is small in repsect to the known alignment, then open
+	code the copy (since that will lead to better scheduling).
+
+        Else use the block move pattern.   */
+
+  /* Undetermined size, use the library routine.  */
+  if (GET_CODE (operands[2]) != CONST_INT)
+    FAIL;
+
+  size = INTVAL (operands[2]);
+  align = INTVAL (operands[3]);
+  align = align > 4 ? 4 : align;
+
+  /* If size/alignment > 8 (eg size is large in respect to alignment),
+     then use the library routines.  */
+  if (size/align > 16)
+    FAIL;
+
+  /* This does happen, but not often enough to worry much about.  */
+  if (size/align < MOVE_RATIO)
+    FAIL;
+  
+  /* Fall through means we're going to use our block move pattern.  */
   operands[0] = copy_to_mode_reg (SImode, XEXP (operands[0], 0));
   operands[1] = copy_to_mode_reg (SImode, XEXP (operands[1], 0));
   operands[4] = gen_reg_rtx (SImode);
   operands[5] = gen_reg_rtx (SImode);
+  emit_insn (gen_movstrsi_internal (operands[0], operands[1], operands[4],
+				     operands[5], operands[2], operands[3],
+				     gen_reg_rtx (SImode)));
+  DONE;
 }")
 
 ;; The operand constraints are written like this to support both compile-time
@@ -1747,13 +1977,14 @@
 ;; the register with the byte count is clobbered by the copying code, and
 ;; therefore it is forced to operand 2.  If the count is compile-time
 ;; determined, we need two scratch registers for the unrolled code.
-(define_insn ""
+(define_insn "movstrsi_internal"
   [(set (mem:BLK (match_operand:SI 0 "register_operand" "+r,r"))
 	(mem:BLK (match_operand:SI 1 "register_operand" "+r,r")))
    (clobber (match_dup 0))
    (clobber (match_dup 1))
    (clobber (match_operand:SI 2 "register_operand" "=r,r"))	;loop cnt/tmp
    (clobber (match_operand:SI 3 "register_operand" "=&r,&r"))	;item tmp
+   (clobber (match_operand:SI 6 "register_operand" "=&r,&r"))	;item tmp2
    (use (match_operand:SI 4 "arith_operand" "J,2"))	 ;byte count
    (use (match_operand:SI 5 "const_int_operand" "n,n"))] ;alignment
   ""
@@ -1778,7 +2009,7 @@
    && operands[1] != CONST0_RTX (DFmode)
    && ! TARGET_SOFT_FLOAT"
   "* return (which_alternative == 0 ? output_move_double (operands)
-				    : \" fldds%F1 %1,%0\");"
+				    : \"fldds%F1 %1,%0\");"
   [(set_attr "type" "move,fpload")
    (set_attr "length" "16,4")])
 
@@ -1898,6 +2129,25 @@
    (set_attr "length" "8")])
 
 (define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=fx")
+	(mem:DF (plus:SI (match_operand:SI 1 "register_operand" "r")
+			 (match_operand:SI 2 "basereg_operand" "r"))))]
+  "! TARGET_DISABLE_INDEXING && ! TARGET_SOFT_FLOAT"
+  "*
+{
+  /* Reload can create backwards (relative to cse) unscaled index
+     address modes when eliminating registers and possibly for
+     pseudos that don't get hard registers.  Deal with it.  */
+  if (operands[1] == hard_frame_pointer_rtx
+      || operands[1] == stack_pointer_rtx)
+    return \"flddx %2(0,%1),%0\";
+  else
+    return \"flddx %1(0,%2),%0\";
+}"
+  [(set_attr "type" "fpload")
+   (set_attr "length" "4")])
+
+(define_insn ""
   [(set (mem:DF (plus:SI (mult:SI (match_operand:SI 1 "register_operand" "r")
 				  (const_int 8))
 			 (match_operand:SI 2 "register_operand" "r")))
@@ -1935,6 +2185,25 @@
 }"
   [(set_attr "type" "fpstore")
    (set_attr "length" "8")])
+
+(define_insn ""
+  [(set (mem:DF (plus:SI (match_operand:SI 1 "register_operand" "r")
+			 (match_operand:SI 2 "basereg_operand" "r")))
+	(match_operand:DF 0 "register_operand" "fx"))]
+  "! TARGET_DISABLE_INDEXING && ! TARGET_SOFT_FLOAT"
+  "*
+{
+  /* Reload can create backwards (relative to cse) unscaled index
+     address modes when eliminating registers and possibly for
+     pseudos that don't get hard registers.  Deal with it.  */
+  if (operands[1] == hard_frame_pointer_rtx
+      || operands[1] == stack_pointer_rtx)
+    return \"fstdx %0,%2(0,%1)\";
+  else
+    return \"fstdx %0,%1(0,%2)\";
+}"
+  [(set_attr "type" "fpstore")
+   (set_attr "length" "4")])
 
 (define_expand "movdi"
   [(set (match_operand:DI 0 "reg_or_nonsymb_mem_operand" "")
@@ -2203,6 +2472,25 @@
    (set_attr "length" "8")])
 
 (define_insn ""
+  [(set (match_operand:SF 0 "register_operand" "=fx")
+	(mem:SF (plus:SI (match_operand:SI 1 "register_operand" "r")
+			 (match_operand:SI 2 "basereg_operand" "r"))))]
+  "! TARGET_DISABLE_INDEXING && ! TARGET_SOFT_FLOAT"
+  "*
+{
+  /* Reload can create backwards (relative to cse) unscaled index
+     address modes when eliminating registers and possibly for
+     pseudos that don't get hard registers.  Deal with it.  */
+  if (operands[1] == hard_frame_pointer_rtx
+      || operands[1] == stack_pointer_rtx)
+    return \"fldwx %2(0,%1),%0\";
+  else
+    return \"fldwx %1(0,%2),%0\";
+}"
+  [(set_attr "type" "fpload")
+   (set_attr "length" "4")])
+
+(define_insn ""
   [(set (mem:SF (plus:SI (mult:SI (match_operand:SI 1 "register_operand" "r")
 				  (const_int 4))
 			 (match_operand:SI 2 "register_operand" "r")))
@@ -2240,7 +2528,27 @@
 }"
   [(set_attr "type" "fpstore")
    (set_attr "length" "8")])
+
+(define_insn ""
+  [(set (mem:SF (plus:SI (match_operand:SI 1 "register_operand" "r")
+			 (match_operand:SI 2 "basereg_operand" "r")))
+      (match_operand:SF 0 "register_operand" "fx"))]
+  "! TARGET_DISABLE_INDEXING && ! TARGET_SOFT_FLOAT"
+  "*
+{
+  /* Reload can create backwards (relative to cse) unscaled index
+     address modes when eliminating registers and possibly for
+     pseudos that don't get hard registers.  Deal with it.  */
+  if (operands[1] == hard_frame_pointer_rtx
+      || operands[1] == stack_pointer_rtx)
+    return \"fstwx %0,%2(0,%1)\";
+  else
+    return \"fstwx %0,%1(0,%2)\";
+}"
+  [(set_attr "type" "fpstore")
+   (set_attr "length" "4")])
 
+
 ;;- zero extension instructions
 
 (define_insn "zero_extendhisi2"

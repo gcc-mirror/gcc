@@ -637,6 +637,16 @@ hppa_legitimize_address (x, oldx, mode)
   if (GET_CODE (x) == CONST)
     x = XEXP (x, 0);
 
+  /* Special case.  Get the SYMBOL_REF into a register and use indexing.
+     That should always be safe.  */
+  if (GET_CODE (x) == PLUS
+      && GET_CODE (XEXP (x, 0)) == REG
+      && GET_CODE (XEXP (x, 1)) == SYMBOL_REF)
+    {
+      rtx reg = force_reg (SImode, XEXP (x, 1));
+      return force_reg (SImode, gen_rtx (PLUS, SImode, reg, XEXP (x, 0)));
+    }
+
   /* Note we must reject symbols which represent function addresses
      since the assembler/linker can't handle arithmetic on plabels.  */
   if (GET_CODE (x) == PLUS
@@ -793,7 +803,7 @@ emit_move_sequence (operands, mode, scratch_reg)
 
   /* Handle secondary reloads for loads/stores of FP registers from
      REG+D addresses where D does not fit in 5 bits, including 
-     (subreg (mem (addr)) cases.  */
+     (subreg (mem (addr))) cases.  */
   if (fp_reg_operand (operand0, mode)
       && ((GET_CODE (operand1) == MEM
 	   && ! memory_address_p (DFmode, XEXP (operand1, 0)))
@@ -975,9 +985,9 @@ emit_move_sequence (operands, mode, scratch_reg)
 		  operands[1] = force_const_mem (mode, operand1);
 		  emit_move_sequence (operands, mode, temp);
 		}
-	      /* Likewise for (const (plus (symbol) (const_int)) when generating
-		 pic code during or after reload and const_int will not fit
-		 in 14 bits.  */
+	      /* Likewise for (const (plus (symbol) (const_int))) when
+		 generating pic code during or after reload and const_int
+		 will not fit in 14 bits.  */
 	      else if (GET_CODE (operand1) == CONST
 		       && GET_CODE (XEXP (operand1, 0)) == PLUS
 		       && GET_CODE (XEXP (XEXP (operand1, 0), 1)) == CONST_INT
@@ -1008,6 +1018,14 @@ emit_move_sequence (operands, mode, scratch_reg)
 	      else
 		temp = gen_reg_rtx (mode);
 
+	      /* Loading a SYMBOL_REF into a register makes that register
+		 safe to be used as the base in an indexed address. 
+
+		 Don't mark hard registers though.  That loses.  */
+	      if (REGNO (operand0) >= FIRST_PSEUDO_REGISTER)
+		REGNO_POINTER_FLAG (REGNO (operand0)) = 1;
+	      if (REGNO (temp) >= FIRST_PSEUDO_REGISTER)
+		REGNO_POINTER_FLAG (REGNO (temp)) = 1;
 	      if (ishighonly)
 		set = gen_rtx (SET, mode, operand0, temp);
 	      else
@@ -1457,18 +1475,13 @@ find_addr_reg (addr)
 
 /* Emit code to perform a block move.
 
-   Restriction: If the length argument is non-constant, alignment
-   must be 4.
-
    OPERANDS[0] is the destination pointer as a REG, clobbered.
    OPERANDS[1] is the source pointer as a REG, clobbered.
-   if SIZE_IS_CONSTANT
-     OPERANDS[2] is a register for temporary storage.
-     OPERANDS[4] is the size as a CONST_INT
-   else
-     OPERANDS[2] is a REG which will contain the size, clobbered.
+   OPERANDS[2] is a register for temporary storage.
+   OPERANDS[4] is the size as a CONST_INT
    OPERANDS[3] is a register for temporary storage.
-   OPERANDS[5] is the alignment safe to use, as a CONST_INT.  */
+   OPERANDS[5] is the alignment safe to use, as a CONST_INT. 
+   OPERNADS[6] is another temporary register.   */
 
 char *
 output_block_move (operands, size_is_constant)
@@ -1476,153 +1489,94 @@ output_block_move (operands, size_is_constant)
      int size_is_constant;
 {
   int align = INTVAL (operands[5]);
-  unsigned long n_bytes;
+  unsigned long n_bytes = INTVAL (operands[4]);
 
   /* We can't move more than four bytes at a time because the PA
      has no longer integer move insns.  (Could use fp mem ops?)  */
   if (align > 4)
     align = 4;
 
-  if (size_is_constant)
+  /* Note that we know each loop below will execute at least twice
+     (else we would have open-coded the copy).  */
+  switch (align)
     {
-      unsigned long offset;
-      rtx temp;
+      case 4:
+	/* Pre-adjust the loop counter.  */
+	operands[4] = GEN_INT (n_bytes - 8);
+	output_asm_insn ("ldi %4,%2", operands);
 
-      n_bytes = INTVAL (operands[4]);
-      if (n_bytes == 0)
+	/* Copying loop.  */
+	output_asm_insn ("ldws,ma 4(0,%1),%3", operands);
+	output_asm_insn ("ldws,ma 4(0,%1),%6", operands);
+	output_asm_insn ("stws,ma %3,4(0,%0)", operands);
+	output_asm_insn ("addib,>= -8,%2,.-12", operands);
+	output_asm_insn ("stws,ma %6,4(0,%0)", operands);
+
+	/* Handle the residual.  There could be up to 7 bytes of
+	   residual to copy!  */
+	if (n_bytes % 8 != 0)
+	  {
+	    operands[4] = GEN_INT (n_bytes % 4);
+	    if (n_bytes % 8 >= 4)
+	      output_asm_insn ("ldws,ma 4(0,%1),%3", operands);
+	    if (n_bytes % 4 != 0)
+	      output_asm_insn ("ldw 0(0,%1),%6", operands);
+	    if (n_bytes % 8 >= 4)
+	      output_asm_insn ("stws,ma %3,4(0,%0)", operands);
+	    if (n_bytes % 4 != 0)
+	      output_asm_insn ("stbys,e %6,%4(0,%0)", operands);
+	  }
 	return "";
 
-      if (align >= 4)
-	{
-	  /* Don't unroll too large blocks.  */
-	  if (n_bytes > 32)
-	    goto copy_with_loop;
+      case 2:
+	/* Pre-adjust the loop counter.  */
+	operands[4] = GEN_INT (n_bytes - 4);
+	output_asm_insn ("ldi %4,%2", operands);
 
-	  /* Read and store using two registers, and hide latency
-	     by deferring the stores until three instructions after
-	     the corresponding load.  The last load insn will read
-	     the entire word were the last bytes are, possibly past
-	     the end of the source block, but since loads are aligned,
-	     this is harmless.  */
+	/* Copying loop.  */
+	output_asm_insn ("ldhs,ma 2(0,%1),%3", operands);
+	output_asm_insn ("ldhs,ma 2(0,%1),%6", operands);
+	output_asm_insn ("sths,ma %3,2(0,%0)", operands);
+	output_asm_insn ("addib,>= -4,%2,.-12", operands);
+	output_asm_insn ("sths,ma %6,2(0,%0)", operands);
 
-	  output_asm_insn ("ldws,ma 4(0,%1),%2", operands);
-
-	  for (offset = 4; offset < n_bytes; offset += 4)
-	    {
-	      output_asm_insn ("ldws,ma 4(0,%1),%3", operands);
-	      output_asm_insn ("stws,ma %2,4(0,%0)", operands);
-
-	      temp = operands[2];
-	      operands[2] = operands[3];
-	      operands[3] = temp;
-	    }
-	  if (n_bytes % 4 == 0)
-	    /* Store the last word.  */
-	    output_asm_insn ("stw %2,0(0,%0)", operands);
-	  else
-	    {
-	      /* Store the last, partial word.  */
-	      operands[4] = GEN_INT (n_bytes % 4);
-	      output_asm_insn ("stbys,e %2,%4(0,%0)", operands);
-	    }
-	  return "";
-	}
-
-      if (align >= 2 && n_bytes >= 2)
-	{
-	  output_asm_insn ("ldhs,ma 2(0,%1),%2", operands);
-
-	  for (offset = 2; offset + 2 <= n_bytes; offset += 2)
-	    {
+	/* Handle the residual.  */
+	if (n_bytes % 4 != 0)
+	  {
+	    if (n_bytes % 4 >= 2)
 	      output_asm_insn ("ldhs,ma 2(0,%1),%3", operands);
-	      output_asm_insn ("sths,ma %2,2(0,%0)", operands);
+	    if (n_bytes % 2 != 0)
+	      output_asm_insn ("ldb 0(0,%1),%6", operands);
+	    if (n_bytes % 4 >= 2)
+	      output_asm_insn ("sths,ma %3,2(0,%0)", operands);
+	    if (n_bytes % 2 != 0)
+	      output_asm_insn ("stb %6,0(0,%0)", operands);
+	  }
+	return "";
 
-	      temp = operands[2];
-	      operands[2] = operands[3];
-	      operands[3] = temp;
-	    }
-	  if (n_bytes % 2 != 0)
+      case 1:
+	/* Pre-adjust the loop counter.  */
+	operands[4] = GEN_INT (n_bytes - 2);
+	output_asm_insn ("ldi %4,%2", operands);
+
+	/* Copying loop.  */
+	output_asm_insn ("ldbs,ma 1(0,%1),%3", operands);
+	output_asm_insn ("ldbs,ma 1(0,%1),%6", operands);
+	output_asm_insn ("stbs,ma %3,1(0,%0)", operands);
+	output_asm_insn ("addib,>= -2,%2,.-12", operands);
+	output_asm_insn ("stbs,ma %6,1(0,%0)", operands);
+
+	/* Handle the residual.  */
+	if (n_bytes % 2 != 0)
+	  {
 	    output_asm_insn ("ldb 0(0,%1),%3", operands);
-
-	  output_asm_insn ("sths,ma %2,2(0,%0)", operands);
-
-	  if (n_bytes % 2 != 0)
 	    output_asm_insn ("stb %3,0(0,%0)", operands);
+	  }
+	return "";
 
-	  return "";
-	}
-
-      output_asm_insn ("ldbs,ma 1(0,%1),%2", operands);
-
-      for (offset = 1; offset + 1 <= n_bytes; offset += 1)
-	{
-	  output_asm_insn ("ldbs,ma 1(0,%1),%3", operands);
-	  output_asm_insn ("stbs,ma %2,1(0,%0)", operands);
-
-	  temp = operands[2];
-	  operands[2] = operands[3];
-	  operands[3] = temp;
-	}
-      output_asm_insn ("stb %2,0(0,%0)", operands);
-
-      return "";
+      default:
+	abort ();
     }
-
-  if (align != 4)
-    abort();
-
- copy_with_loop:
-
-  if (size_is_constant)
-    {
-      /* Size is compile-time determined, and also not
-	 very small (such small cases are handled above).  */
-      operands[4] = GEN_INT (n_bytes - 4);
-      output_asm_insn ("ldo %4(0),%2", operands);
-    }
-  else
-    {
-      /* Decrement counter by 4, and if it becomes negative, jump past the
-	 word copying loop.  */
-      output_asm_insn ("addib,<,n -4,%2,.+16", operands);
-    }
-
-  /* Copying loop.  Note that the first load is in the annulled delay slot
-     of addib.  Is it OK on PA to have a load in a delay slot, i.e. is a
-     possible page fault stopped in time?  */
-  output_asm_insn ("ldws,ma 4(0,%1),%3", operands);
-  output_asm_insn ("addib,>= -4,%2,.-4", operands);
-  output_asm_insn ("stws,ma %3,4(0,%0)", operands);
-
-  /* The counter is negative, >= -4.  The remaining number of bytes are
-     determined by the two least significant bits.  */
-
-  if (size_is_constant)
-    {
-      if (n_bytes % 4 != 0)
-	{
-	  /* Read the entire word of the source block tail.  */
-	  output_asm_insn ("ldw 0(0,%1),%3", operands);
-	  operands[4] = GEN_INT (n_bytes % 4);
-	  output_asm_insn ("stbys,e %3,%4(0,%0)", operands);
-	}
-    }
-  else
-    {
-      /* Add 4 to counter.  If it becomes zero, we're done.  */
-      output_asm_insn ("addib,=,n 4,%2,.+16", operands);
-
-      /* Read the entire word of the source block tail.  (Also this
-	 load is in an annulled delay slot.)  */
-      output_asm_insn ("ldw 0(0,%1),%3", operands);
-
-      /* Make %0 point at the first byte after the destination block.  */
-      output_asm_insn ("addl %2,%0,%0", operands);
-      /* Store the leftmost bytes, up to, but not including, the address
-	 in %0.  */
-      output_asm_insn ("stbys,e %3,0(0,%0)", operands);
-    }
-  return "";
 }
 
 /* Count the number of insns necessary to handle this block move.
@@ -1635,106 +1589,33 @@ compute_movstrsi_length (insn)
      rtx insn;
 {
   rtx pat = PATTERN (insn);
-  int size_is_constant;
   int align = INTVAL (XEXP (XVECEXP (pat, 0, 6), 0));
-  unsigned long n_bytes;
-  int insn_count = 0;
-
-  if (GET_CODE (XEXP (XVECEXP (pat, 0, 5), 0)) == CONST_INT)
-    {
-      size_is_constant = 1;
-      n_bytes = INTVAL (XEXP (XVECEXP (pat, 0, 5), 0));
-    }
-  else
-    {
-      size_is_constant = 0;
-      n_bytes = 0;
-    }
+  unsigned long n_bytes = INTVAL (XEXP (XVECEXP (pat, 0, 5), 0));
+  unsigned int n_insns = 0;
 
   /* We can't move more than four bytes at a time because the PA
      has no longer integer move insns.  (Could use fp mem ops?)  */
   if (align > 4)
     align = 4;
 
-  if (size_is_constant)
+  /* The basic opying loop.  */
+  n_insns = 6;
+
+  /* Residuals.  */
+  if (n_bytes % (2 * align) != 0)
     {
-      unsigned long offset;
+      /* Any residual caused by unrolling the copy loop.  */
+      if (n_bytes % (2 * align) > align)
+	n_insns += 1;
 
-      if (n_bytes == 0)
-	return 0;
-
-      if (align >= 4)
-	{
-	  /* Don't unroll too large blocks.  */
-	  if (n_bytes > 32)
-	    goto copy_with_loop;
-
-	  /* first load */
-	  insn_count = 1;
-
-	  /* Count the unrolled insns.  */
-	  for (offset = 4; offset < n_bytes; offset += 4)
-	    insn_count += 2;
-
-	  /* Count last store or partial store.  */
-	  insn_count += 1;
-	  return insn_count * 4;
-	}
-
-      if (align >= 2 && n_bytes >= 2)
-	{
-	  /* initial load.  */
-	  insn_count = 1;
-
-	  /* Unrolled loop.  */
-	  for (offset = 2; offset + 2 <= n_bytes; offset += 2)
-	    insn_count += 2;
-
-	  /* ??? odd load/store */
-	  if (n_bytes % 2 != 0)
-	    insn_count += 2;
-
-	  /* ??? final store from loop.  */
-	  insn_count += 1;
-
-	  return insn_count * 4;
-	}
-
-      /* First load.  */
-      insn_count = 1;
-
-      /* The unrolled loop.  */
-      for (offset = 1; offset + 1 <= n_bytes; offset += 1)
-	insn_count += 2;
-
-      /* Final store.  */
-      insn_count += 1;
-
-      return insn_count * 4;
+      /* Any residual because the number of bytes was not a
+	 multiple of the alignment.  */
+      if (n_bytes % align != 0)
+	n_insns += 1;
     }
 
-  if (align != 4)
-    abort();
-
- copy_with_loop:
-
-  /* setup for constant and non-constant case.  */
-  insn_count = 1;
-
-  /* The copying loop.  */
-  insn_count += 3;
-
-  /* The counter is negative, >= -4.  The remaining number of bytes are
-     determined by the two least significant bits.  */
-
-  if (size_is_constant)
-    {
-      if (n_bytes % 4 != 0)
-	insn_count += 2;
-    }
-  else
-    insn_count += 4;
-  return insn_count * 4;
+  /* Lengths are expressed in bytes now; each insn is 4 bytes.  */
+  return n_insns * 4;
 }
 
 
@@ -2363,7 +2244,7 @@ hppa_expand_prologue()
      even be more efficient. 
 
      Avoid this if the callee saved register wasn't used (these are
-     leaf functions.  */
+     leaf functions).  */
   if (flag_pic && regs_ever_live[PIC_OFFSET_TABLE_REGNUM_SAVED])
     emit_move_insn (gen_rtx (REG, SImode, PIC_OFFSET_TABLE_REGNUM_SAVED),
 		    gen_rtx (REG, SImode, PIC_OFFSET_TABLE_REGNUM));
@@ -2511,9 +2392,8 @@ hppa_expand_epilogue ()
       load_reg (2, - 20, STACK_POINTER_REGNUM);
     }
 
-  /* Reset stack pointer (and possibly frame pointer).  The stack */
-  /* pointer is initially set to fp + 64 to avoid a race condition.
-     ??? What race condition?!?  */
+  /* Reset stack pointer (and possibly frame pointer).  The stack 
+     pointer is initially set to fp + 64 to avoid a race condition.  */
   else if (frame_pointer_needed)
     {
       /* Emit a blockage insn here to keep these insns from being moved
@@ -3004,6 +2884,27 @@ print_operand (file, x, code)
 	  abort ();
 	}
       return;
+    /* Reversed floating point comparison.  Need special conditions to
+       deal with NaNs properly.  */
+    case 'y':
+      switch (GET_CODE (x))
+	{
+	case EQ:
+	  fprintf (file, "?=");  break;
+	case NE:
+	  fprintf (file, "!?=");  break;
+	case GT:
+	  fprintf (file, "!<=");  break;
+	case GE:
+	  fprintf (file, "!<");  break;
+	case LT:
+	  fprintf (file, "!>=");  break;
+	case LE:
+	  fprintf (file, "!>");  break;
+	default:
+	  abort ();
+	}
+      return;
     case 'S':			/* Condition, operands are (S)wapped.  */
       switch (GET_CODE (x))
 	{
@@ -3161,30 +3062,6 @@ print_operand (file, x, code)
 	  break;
 	}
     }
-#if 0
-  /* The code here is completely wrong.  It attempts to extract parts of
-     a CONST_DOUBLE which is wrong since REAL_ARITHMETIC is defined, and it
-     extracts the wrong indices (0 instead of 2 and 1 instead of 3) using
-     the wrong macro (XINT instead of XWINT).
-     Just disable it for now, since the code will never be used anyway!  */
-  else if (GET_CODE (x) == CONST_DOUBLE && GET_MODE (x) == SFmode)
-    {
-      union { double d; int i[2]; } u;
-      union { float f; int i; } u1;
-      u.i[0] = XINT (x, 0); u.i[1] = XINT (x, 1);
-      u1.f = u.d;
-      if (code == 'f')
-	fprintf (file, "0r%.9g", u1.f);
-      else
-	fprintf (file, "0x%x", u1.i);
-    }
-  else if (GET_CODE (x) == CONST_DOUBLE && GET_MODE (x) != VOIDmode)
-    {
-      union { double d; int i[2]; } u;
-      u.i[0] = XINT (x, 0); u.i[1] = XINT (x, 1);
-      fprintf (file, "0r%.20g", u.d);
-    }
-#endif
   else
     output_addr_const (file, x);
 }
@@ -3526,12 +3403,6 @@ secondary_reload_class (class, mode, in)
 
   if (GET_CODE (in) == SUBREG)
     in = SUBREG_REG (in);
-
-  if (FP_REG_CLASS_P (class)
-      && GET_CODE (in) == MEM
-      && !memory_address_p (DFmode, XEXP (in, 0))
-      && memory_address_p (SImode, XEXP (in, 0)))
-    return GENERAL_REGS;
 
   return NO_REGS;
 }
@@ -4429,6 +4300,38 @@ shadd_operand (op, mode)
      enum machine_mode mode;
 {
   return (GET_CODE (op) == CONST_INT && shadd_constant_p (INTVAL (op)));
+}
+
+/* Return 1 if OP is valid as a base register in a reg + reg address.  */
+
+int
+basereg_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  /* Once reload has started everything is considered valid.  Reload should
+     only create indexed addresses using the stack/frame pointer, and any
+     others were checked for validity when created by the combine pass. 
+
+     Also allow any register when TARGET_NO_SPACE_REGS is in effect since
+     we don't have to worry about the braindamaged implicit space register
+     selection using the basereg only (rather than effective address)
+     screwing us over.  */
+  if (TARGET_NO_SPACE_REGS || reload_in_progress || reload_completed)
+    return (GET_CODE (op) == REG || GET_CODE (op) == CONST_INT);
+
+  /* Stack and frame pointers are always OK for indexing.  */
+  if (op == stack_pointer_rtx || op == frame_pointer_rtx)
+    return 1;
+
+  /* The only other valid OPs are pseudo registers with
+     REGNO_POINTER_FLAG set.  */
+  if (GET_CODE (op) != REG
+      || REGNO (op) < FIRST_PSEUDO_REGISTER
+      || ! register_operand (op, mode))
+    return 0;
+    
+  return REGNO_POINTER_FLAG (REGNO (op));
 }
 
 /* Return 1 if this operand is anything other than a hard register.  */
