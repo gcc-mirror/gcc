@@ -11107,15 +11107,8 @@ cp_parser_direct_declarator (cp_parser* parser,
 		bounds = fold_non_dependent_expr (bounds);
 	      /* Normally, the array bound must be an integral constant
 		 expression.  However, as an extension, we allow VLAs
-		 in function scopes.  And, we allow type-dependent
-		 expressions in templates; sometimes we don't know for
-		 sure whether or not something is a valid integral
-		 constant expression until instantiation time.  (It
-		 doesn't make sense to check for value-dependency, as
-		 an expression is only value-dependent when it is a
-		 constant expression.)  */  
-	      else if (!type_dependent_expression_p (bounds)
-		       && !at_function_scope_p ())
+		 in function scopes.  */  
+	      else if (!at_function_scope_p ())
 		{
 		  error ("array bound is not an integer constant");
 		  bounds = error_mark_node;
