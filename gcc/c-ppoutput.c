@@ -254,7 +254,7 @@ print_line (source_location src_loc, const char *special_flags)
       /* cpp_quote_string does not nul-terminate, so we have to do it
 	 ourselves.  */
       p = cpp_quote_string (to_file_quoted,
-			    (unsigned char *)map->to_file, to_file_len);
+			    (unsigned char *) map->to_file, to_file_len);
       *p = '\0';
       fprintf (print.outf, "# %u \"%s\"%s", print.src_line,
 	       to_file_quoted, special_flags);

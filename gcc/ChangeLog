@@ -1,3 +1,10 @@
+2004-10-03  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* c-aux-info.c, c-common.c, c-common.h, c-cppbuiltin.c, c-decl.c,
+	c-format.c, c-incpath.c, c-lex.c, c-objc-common.c, c-opts.c,
+	c-parse.in, c-pch.c, c-ppoutput.c, c-pragma.c, c-typeck.c: Follow
+	code formatting conventions.
+
 2004-10-03  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.md (<u>mulsidi3_32bit_r4000): Fix unsigned case.

@@ -1036,7 +1036,7 @@ c_common_post_options (const char **pfilename)
     }
 
   if (flag_working_directory
-      && flag_preprocess_only && ! flag_no_line_commands)
+      && flag_preprocess_only && !flag_no_line_commands)
     pp_dir_change (parse_in, get_src_pwd ());
 
   return flag_preprocess_only;
@@ -1343,7 +1343,7 @@ push_command_line_include (void)
     {
       struct deferred_opt *opt = &deferred_opts[include_cursor++];
 
-      if (! cpp_opts->preprocessed && opt->code == OPT_include
+      if (!cpp_opts->preprocessed && opt->code == OPT_include
 	  && cpp_push_include (parse_in, opt->arg))
 	return;
     }
@@ -1354,7 +1354,7 @@ push_command_line_include (void)
       /* -Wunused-macros should only warn about macros defined hereafter.  */
       cpp_opts->warn_unused_macros = warn_unused_macros;
       /* Restore the line map from <command line>.  */
-      if (! cpp_opts->preprocessed)
+      if (!cpp_opts->preprocessed)
 	cpp_change_file (parse_in, LC_RENAME, main_input_filename);
 
       /* Set this here so the client can change the option if it wishes,
@@ -1380,7 +1380,7 @@ cb_file_change (cpp_reader * ARG_UNUSED (pfile),
 void
 cb_dir_change (cpp_reader * ARG_UNUSED (pfile), const char *dir)
 {
-  if (! set_src_pwd (dir))
+  if (!set_src_pwd (dir))
     warning ("too late for # directive to set debug directory");
 }
 

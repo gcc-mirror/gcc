@@ -735,7 +735,7 @@ fname_as_string (int pretty_p)
   char *namep;
   int vrb = 2;
 
-  if (! pretty_p)
+  if (!pretty_p)
     {
       name = "";
       vrb = 0;
@@ -1009,8 +1009,8 @@ convert_and_check (tree type, tree expr)
 	       don't warn unless pedantic.  */
 	    if ((pedantic
 		 || TYPE_UNSIGNED (type)
-		 || ! constant_fits_type_p (expr,
-					    c_common_unsigned_type (type)))
+		 || !constant_fits_type_p (expr,
+					   c_common_unsigned_type (type)))
 		&& skip_evaluation == 0)
 	      warning ("overflow in implicit constant conversion");
 	}
@@ -1080,9 +1080,9 @@ add_tlist (struct tlist **to, struct tlist *add, tree exclude_writer, int copy)
   while (add)
     {
       struct tlist *next = add->next;
-      if (! copy)
+      if (!copy)
 	add->next = *to;
-      if (! exclude_writer || add->writer != exclude_writer)
+      if (!exclude_writer || add->writer != exclude_writer)
 	*to = copy ? new_tlist (*to, add->expr, add->writer) : add;
       add = next;
     }
@@ -1112,10 +1112,10 @@ merge_tlist (struct tlist **to, struct tlist *add, int copy)
 	if (tmp2->expr == add->expr)
 	  {
 	    found = 1;
-	    if (! tmp2->writer)
+	    if (!tmp2->writer)
 	      tmp2->writer = add->writer;
 	  }
-      if (! found)
+      if (!found)
 	{
 	  *end = copy ? add : new_tlist (NULL, add->expr, add->writer);
 	  end = &(*end)->next;
@@ -1144,7 +1144,7 @@ warn_for_collisions_1 (tree written, tree writer, struct tlist *list,
     {
       if (list->expr == written
 	  && list->writer != writer
-	  && (! only_writes || list->writer)
+	  && (!only_writes || list->writer)
 	  && DECL_NAME (list->expr))
 	{
 	  warned_ids = new_tlist (warned_ids, written, NULL_TREE);
@@ -1333,7 +1333,7 @@ verify_tree (tree x, struct tlist **pbefore_sp, struct tlist **pno_sp,
 	  if (t->expr == x)
 	    break;
 
-	if (! t)
+	if (!t)
 	  {
 	    t = XOBNEW (&tlist_obstack, struct tlist_cache);
 	    t->next = save_expr_cache;
@@ -1711,7 +1711,7 @@ c_common_signed_type (tree type)
 tree
 c_common_signed_or_unsigned_type (int unsignedp, tree type)
 {
-  if (! INTEGRAL_TYPE_P (type)
+  if (!INTEGRAL_TYPE_P (type)
       || TYPE_UNSIGNED (type) == unsignedp)
     return type;
 
@@ -1803,7 +1803,7 @@ min_precision (tree value, int unsignedp)
   else
     log = tree_floor_log2 (value);
 
-  return log + 1 + ! unsignedp;
+  return log + 1 + !unsignedp;
 }
 
 /* Print an error message for invalid operands to arith operation
@@ -1921,7 +1921,7 @@ shorten_compare (tree *op0_ptr, tree *op1_ptr, tree *restype_ptr,
      the second arg is 0.  */
 
   if (TREE_CONSTANT (primop0)
-      && ! integer_zerop (primop1) && ! real_zerop (primop1))
+      && !integer_zerop (primop1) && !real_zerop (primop1))
     {
       tree tem = primop0;
       int temi = unsignedp0;
@@ -1993,7 +1993,7 @@ shorten_compare (tree *op0_ptr, tree *op1_ptr, tree *restype_ptr,
 	 enumerated type itself.  In C++, TYPE_MAX_VALUE and
 	 TYPE_MIN_VALUE have already been set correctly on the
 	 enumeration type.  */
-      if (!c_dialect_cxx() && TREE_CODE (type) == ENUMERAL_TYPE)
+      if (!c_dialect_cxx () && TREE_CODE (type) == ENUMERAL_TYPE)
 	type = c_common_type_for_size (TYPE_PRECISION (type), unsignedp0);
 
       maxval = TYPE_MAX_VALUE (type);
@@ -2181,18 +2181,18 @@ shorten_compare (tree *op0_ptr, tree *op1_ptr, tree *restype_ptr,
 		 >= 0, the signedness of the comparison isn't an issue,
 		 so suppress the warning.  */
 	      if (extra_warnings && !in_system_header
-		  && ! (TREE_CODE (primop0) == INTEGER_CST
-			&& ! TREE_OVERFLOW (convert (c_common_signed_type (type),
-						     primop0))))
+		  && !(TREE_CODE (primop0) == INTEGER_CST
+		       && !TREE_OVERFLOW (convert (c_common_signed_type (type),
+						   primop0))))
 		warning ("comparison of unsigned expression >= 0 is always true");
 	      value = truthvalue_true_node;
 	      break;
 
 	    case LT_EXPR:
 	      if (extra_warnings && !in_system_header
-		  && ! (TREE_CODE (primop0) == INTEGER_CST
-			&& ! TREE_OVERFLOW (convert (c_common_signed_type (type),
-						     primop0))))
+		  && !(TREE_CODE (primop0) == INTEGER_CST
+		       && !TREE_OVERFLOW (convert (c_common_signed_type (type),
+						   primop0))))
 		warning ("comparison of unsigned expression < 0 is always false");
 	      value = truthvalue_false_node;
 	      break;
@@ -2259,7 +2259,7 @@ pointer_int_sum (enum tree_code resultcode, tree ptrop, tree intop)
      This helps produce common subexpressions.  */
 
   if ((TREE_CODE (intop) == PLUS_EXPR || TREE_CODE (intop) == MINUS_EXPR)
-      && ! TREE_CONSTANT (intop)
+      && !TREE_CONSTANT (intop)
       && TREE_CONSTANT (TREE_OPERAND (intop, 1))
       && TREE_CONSTANT (size_exp)
       /* If the constant comes from pointer subtraction,
@@ -2268,7 +2268,7 @@ pointer_int_sum (enum tree_code resultcode, tree ptrop, tree intop)
       /* If the constant is unsigned, and smaller than the pointer size,
 	 then we must skip this optimization.  This is because it could cause
 	 an overflow error if the constant is negative but INTOP is not.  */
-      && (! TYPE_UNSIGNED (TREE_TYPE (intop))
+      && (!TYPE_UNSIGNED (TREE_TYPE (intop))
 	  || (TYPE_PRECISION (TREE_TYPE (intop))
 	      == TYPE_PRECISION (TREE_TYPE (ptrop)))))
     {
@@ -2351,7 +2351,7 @@ c_common_truthvalue_conversion (tree expr)
     case ADDR_EXPR:
       {
 	if (TREE_CODE (TREE_OPERAND (expr, 0)) == FUNCTION_DECL
-	    && ! DECL_WEAK (TREE_OPERAND (expr, 0)))
+	    && !DECL_WEAK (TREE_OPERAND (expr, 0)))
 	  {
 	    /* Common Ada/Pascal programmer's mistake.  We always warn
 	       about this since it is so bad.  */
@@ -2559,7 +2559,7 @@ c_type_hash (const void *p)
 {
   int i = 0;
   int shift, size;
-  tree t = (tree)p;
+  tree t = (tree) p;
   tree t2;
   switch (TREE_CODE (t))
     {
@@ -2616,7 +2616,7 @@ c_common_get_alias_set (tree t)
       return 0;
 
   /* That's all the expressions we handle specially.  */
-  if (! TYPE_P (t))
+  if (!TYPE_P (t))
     return -1;
 
   /* The C standard guarantees that any object may be accessed via an
@@ -3550,8 +3550,8 @@ c_add_case_label (splay_tree cases, tree cond, tree orig_type,
      expression.  If both low_value and high_value are out of range,
      don't insert the case label and return NULL_TREE.  */
   if (low_value
-      && ! check_case_bounds (type, orig_type,
-			      &low_value, high_value ? &high_value : NULL))
+      && !check_case_bounds (type, orig_type,
+			     &low_value, high_value ? &high_value : NULL))
     return NULL_TREE;
 
   /* Look up the LOW_VALUE in the table of case labels we already
@@ -4294,11 +4294,11 @@ handle_mode_attribute (tree *node, tree name, tree args,
 
       /* Change this type to have a type with the specified mode.
 	 First check for the special modes.  */
-      if (! strcmp (p, "byte"))
+      if (!strcmp (p, "byte"))
 	mode = byte_mode;
       else if (!strcmp (p, "word"))
 	mode = word_mode;
-      else if (! strcmp (p, "pointer"))
+      else if (!strcmp (p, "pointer"))
 	mode = ptr_mode;
       else
 	for (j = 0; j < NUM_MACHINE_MODES; j++)
@@ -4410,7 +4410,7 @@ handle_section_attribute (tree *node, tree ARG_UNUSED (name), tree args,
 	{
 	  if (TREE_CODE (decl) == VAR_DECL
 	      && current_function_decl != NULL_TREE
-	      && ! TREE_STATIC (decl))
+	      && !TREE_STATIC (decl))
 	    {
 	      error ("%Jsection attribute cannot be specified for "
 		     "local variables", decl);
@@ -4548,7 +4548,7 @@ handle_alias_attribute (tree *node, tree name, tree args,
   tree decl = *node;
 
   if ((TREE_CODE (decl) == FUNCTION_DECL && DECL_INITIAL (decl))
-      || (TREE_CODE (decl) != FUNCTION_DECL && ! DECL_EXTERNAL (decl)))
+      || (TREE_CODE (decl) != FUNCTION_DECL && !DECL_EXTERNAL (decl)))
     {
       error ("%J%qD defined both normally and as an alias", decl, decl);
       *no_add_attrs = true;
@@ -4613,7 +4613,7 @@ handle_visibility_attribute (tree *node, tree name, tree args,
          return NULL_TREE;
        }
     }
-  else if (decl_function_context (decl) != 0 || ! TREE_PUBLIC (decl))
+  else if (decl_function_context (decl) != 0 || !TREE_PUBLIC (decl))
     {
       warning ("%qs attribute ignored", IDENTIFIER_POINTER (name));
       return NULL_TREE;
@@ -4629,7 +4629,7 @@ handle_visibility_attribute (tree *node, tree name, tree args,
   if (TYPE_P (decl))
     {
       decl = TYPE_NAME (decl);
-      if (! decl)
+      if (!decl)
         return NULL_TREE;
     }
 
@@ -4699,7 +4699,7 @@ handle_tls_model_attribute (tree *node, tree name, tree args,
 {
   tree decl = *node;
 
-  if (! DECL_THREAD_LOCAL (decl))
+  if (!DECL_THREAD_LOCAL (decl))
     {
       warning ("%qs attribute ignored", IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
@@ -4899,7 +4899,7 @@ handle_vector_size_attribute (tree *node, tree name, tree args,
   if (TREE_CODE (size) == NON_LVALUE_EXPR)
     size = TREE_OPERAND (size, 0);
 
-  if (! host_integerp (size, 1))
+  if (!host_integerp (size, 1))
     {
       warning ("%qs attribute ignored", IDENTIFIER_POINTER (name));
       return NULL_TREE;
@@ -4928,7 +4928,7 @@ handle_vector_size_attribute (tree *node, tree name, tree args,
   if (TREE_CODE (type) == RECORD_TYPE
       || (GET_MODE_CLASS (orig_mode) != MODE_FLOAT
 	  && GET_MODE_CLASS (orig_mode) != MODE_INT)
-      || ! host_integerp (TYPE_SIZE_UNIT (type), 1))
+      || !host_integerp (TYPE_SIZE_UNIT (type), 1))
     {
       error ("invalid vector type for attribute %qs",
 	     IDENTIFIER_POINTER (name));
@@ -4963,9 +4963,9 @@ handle_nonnull_attribute (tree *node, tree ARG_UNUSED (name),
   /* If no arguments are specified, all pointer arguments should be
      non-null.  Verify a full prototype is given so that the arguments
      will have the correct types when we actually check them later.  */
-  if (! args)
+  if (!args)
     {
-      if (! TYPE_ARG_TYPES (type))
+      if (!TYPE_ARG_TYPES (type))
 	{
 	  error ("nonnull attribute without arguments on a non-prototype");
 	  *no_add_attrs = true;
@@ -4980,7 +4980,7 @@ handle_nonnull_attribute (tree *node, tree ARG_UNUSED (name),
       tree argument;
       unsigned HOST_WIDE_INT arg_num = 0, ck_num;
 
-      if (! get_nonnull_operand (TREE_VALUE (args), &arg_num))
+      if (!get_nonnull_operand (TREE_VALUE (args), &arg_num))
 	{
 	  error ("nonnull argument has invalid operand number (arg %lu)",
 		 (unsigned long) attr_arg_num);
@@ -4993,12 +4993,12 @@ handle_nonnull_attribute (tree *node, tree ARG_UNUSED (name),
 	{
 	  for (ck_num = 1; ; ck_num++)
 	    {
-	      if (! argument || ck_num == arg_num)
+	      if (!argument || ck_num == arg_num)
 		break;
 	      argument = TREE_CHAIN (argument);
 	    }
 
-	  if (! argument
+	  if (!argument
 	      || TREE_CODE (TREE_VALUE (argument)) == VOID_TYPE)
 	    {
 	      error ("nonnull argument with out-of-range operand number (arg %lu, operand %lu)",
@@ -5042,9 +5042,9 @@ check_function_nonnull (tree attrs, tree params)
 	  for (param = params, param_num = 1; ;
 	       param_num++, param = TREE_CHAIN (param))
 	    {
-	      if (! param)
+	      if (!param)
 	break;
-	      if (! args || nonnull_check_p (args, param_num))
+	      if (!args || nonnull_check_p (args, param_num))
 	check_function_arguments_recurse (check_nonnull_arg, NULL,
 					  TREE_VALUE (param),
 					  param_num);
