@@ -1,3 +1,8 @@
+2000-07-06  Hans-Peter Nilsson  <hp@axis.com>
+
+	* timevar.c: [HAVE_SYS_RESOURCE_H]: Include <sys/resource.h>.
+	[NEED_DECLARATION_GETRUSAGE]: Declare getrusage.
+
 2000-07-05  Kazu Hirata  <kazu@hxi.com>
 
 	* h8300-proto.h: Fix formatting.
