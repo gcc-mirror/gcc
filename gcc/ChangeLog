@@ -1,3 +1,15 @@
+Tue Dec  1 17:23:16 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* reload1.c (reload): Sum needs for both OPADDR_ADDR and
+	OPERAND_ADDRESS when computing how many registers an insn needs.
+	(reload_reg_free_p): OPADDR_ADDR and OPERAND_ADDRESS reloads conflict.
+	(reload_reg_free_before_p): Treat OPERAND_ADDRESS reloads just like
+	OPADDR_ADDR reload.
+	(reload_reg_reaches_end_p): For RELOAD_FOR_OPADDR_ADDR insns, registers
+	in reload_reg_use_in_op_addr do not reach the end.
+	(reloads_conflict): RELOAD_FOR_OPADDR_ADDR conflicts with
+	RELOAD_FOR_OPERAND_ADDRESS.
+
 Tue Dec  1 09:35:45 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* Makefile.in (C_AND_OBJC_OBJS): Add mbchar.o.
