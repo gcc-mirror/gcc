@@ -1,3 +1,8 @@
+2001-09-05  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/natSystem.cc (init_properties): Default locale is
+	en_US, not just en.
+
 2001-09-05  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
         * java/text/MessageFormat.java (setLocale): Don't catch ParseException 
