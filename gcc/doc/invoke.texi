@@ -308,8 +308,8 @@ in the following sections.
 -fsched-spec-load-dangerous  @gol
 -fsched-stalled-insns=@var{n} -sched-stalled-insns-dep=@var{n} @gol
 -fsched2-use-superblocks @gol
--fsched2-use-traces  -fsignaling-nans @gol
--fsingle-precision-constant  @gol
+-fsched2-use-traces -freschedule-modulo-scheduled-loops @gol
+-fsignaling-nans -fsingle-precision-constant  @gol
 -fstrength-reduce  -fstrict-aliasing  -ftracer  -fthread-jumps @gol
 -funroll-all-loops  -funroll-loops  -fpeel-loops @gol
 -funswitch-loops  -fold-unroll-loops  -fold-unroll-all-loops @gol
@@ -4392,6 +4392,12 @@ without @code{-fbranch-probabilities} the traces constructed may not match the
 reality and hurt the performance.  This only makes
 sense when scheduling after register allocation, i.e.@: with
 @option{-fschedule-insns2} or at @option{-O2} or higher.
+
+@item -freschedule-modulo-scheduled-loops
+@opindex fscheduling-in-modulo-scheduled-loops
+The modulo scheduling comes before the traditional scheduling, if a loop was modulo scheduled
+we may want to prevent the later scheduling passes from changing its schedule, we use this
+option to control that.
 
 @item -fcaller-saves
 @opindex fcaller-saves

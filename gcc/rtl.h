@@ -983,6 +983,12 @@ enum insn_note
   /* Generated at the start of a duplicated exit test.  */
   NOTE_INSN_LOOP_VTOP,
 
+  /* Mark that a block shouldn't be scheduled.  This is currently
+     used in modulo scheduling. Modulo scheduling  adds this note
+     to the blocks of the modulo-scheduled loops to disable scheduling
+     them in the later traditional scheduling passes.  */
+  NOTE_DISABLE_SCHED_OF_BLOCK,
+
   /* This kind of note is generated at the end of the function body,
      just before the return insn or return label.  In an optimizing
      compilation it is deleted by the first jump optimization, after
