@@ -1,5 +1,6 @@
 /* Functions to support general ended bitmaps.
-   Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2003
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -330,7 +331,7 @@ bitmap_find_bit (head, bit)
      unsigned int bit;
 {
   bitmap_element *element;
-  unsigned HOST_WIDE_INT indx = bit / BITMAP_ELEMENT_ALL_BITS;
+  unsigned int indx = bit / BITMAP_ELEMENT_ALL_BITS;
 
   if (head->current == 0
       || head->indx == indx)
@@ -369,10 +370,9 @@ bitmap_clear_bit (head, bit)
 
   if (ptr != 0)
     {
-      unsigned bit_num  = bit % (unsigned) HOST_BITS_PER_WIDE_INT;
-      unsigned word_num = ((bit / (unsigned) HOST_BITS_PER_WIDE_INT)
-			   % BITMAP_ELEMENT_WORDS);
-      ptr->bits[word_num] &= ~ (((unsigned HOST_WIDE_INT) 1) << bit_num);
+      unsigned bit_num  = bit % BITMAP_WORD_BITS;
+      unsigned word_num = bit / BITMAP_WORD_BITS % BITMAP_ELEMENT_WORDS;
+      ptr->bits[word_num] &= ~ (((BITMAP_WORD) 1) << bit_num);
 
       /* If we cleared the entire word, free up the element */
       if (bitmap_element_zerop (ptr))
@@ -388,10 +388,9 @@ bitmap_set_bit (head, bit)
      int bit;
 {
   bitmap_element *ptr = bitmap_find_bit (head, bit);
-  unsigned word_num
-    = ((bit / (unsigned) HOST_BITS_PER_WIDE_INT) % BITMAP_ELEMENT_WORDS);
-  unsigned bit_num  = bit % (unsigned) HOST_BITS_PER_WIDE_INT;
-  unsigned HOST_WIDE_INT bit_val = ((unsigned HOST_WIDE_INT) 1) << bit_num;
+  unsigned word_num = bit / BITMAP_WORD_BITS % BITMAP_ELEMENT_WORDS;
+  unsigned bit_num  = bit % BITMAP_WORD_BITS;
+  BITMAP_WORD bit_val = ((BITMAP_WORD) 1) << bit_num;
 
   if (ptr == 0)
     {
@@ -419,9 +418,8 @@ bitmap_bit_p (head, bit)
   if (ptr == 0)
     return 0;
 
-  bit_num = bit % (unsigned) HOST_BITS_PER_WIDE_INT;
-  word_num
-    = ((bit / (unsigned) HOST_BITS_PER_WIDE_INT) % BITMAP_ELEMENT_WORDS);
+  bit_num = bit % BITMAP_WORD_BITS;
+  word_num = bit / BITMAP_WORD_BITS % BITMAP_ELEMENT_WORDS;
 
   return (ptr->bits[word_num] >> bit_num) & 1;
 }
@@ -434,7 +432,7 @@ bitmap_first_set_bit (a)
      bitmap a;
 {
   bitmap_element *ptr = a->first;
-  unsigned HOST_WIDE_INT word;
+  BITMAP_WORD word;
   unsigned word_num, bit_num;
 
   if (ptr == NULL)
@@ -456,10 +454,10 @@ bitmap_first_set_bit (a)
   bit_num = 0;
   word = word & -word;
 
-#if HOST_BITS_PER_WIDE_INT > 64
+#if nBITMAP_WORD_BITS > 64
  #error "Fill out the table."
 #endif
-#if HOST_BITS_PER_WIDE_INT > 32
+#if nBITMAP_WORD_BITS > 32
   if ((word & 0xffffffff) == 0)
     word >>= 32, bit_num += 32;
 #endif
@@ -475,7 +473,7 @@ bitmap_first_set_bit (a)
     bit_num += 1;
 
   return (ptr->indx * BITMAP_ELEMENT_ALL_BITS
-	  + word_num * HOST_BITS_PER_WIDE_INT
+	  + word_num * BITMAP_WORD_BITS
 	  + bit_num);
 }
 
@@ -487,7 +485,7 @@ bitmap_last_set_bit (a)
      bitmap a;
 {
   bitmap_element *ptr = a->first;
-  unsigned HOST_WIDE_INT word;
+  BITMAP_WORD word;
   unsigned word_num, bit_num;
 
   if (ptr == NULL)
@@ -509,11 +507,11 @@ bitmap_last_set_bit (a)
   /* Binary search for the last set bit.  */
 
   bit_num = 0;
-#if HOST_BITS_PER_WIDE_INT > 64
+#if nBITMAP_WORD_BITS > 64
  #error "Fill out the table."
 #endif
-#if HOST_BITS_PER_WIDE_INT > 32
-  if (word & ~ (unsigned HOST_WIDE_INT) 0xffffffff)
+#if nBITMAP_WORD_BITS > 32
+  if (word & ~(BITMAP_WORD)0xffffffff)
     word >>= 32, bit_num += 32;
 #endif
   if (word & 0xffff0000)
@@ -528,7 +526,7 @@ bitmap_last_set_bit (a)
     bit_num += 1;
 
   return (ptr->indx * BITMAP_ELEMENT_ALL_BITS
-	  + word_num * HOST_BITS_PER_WIDE_INT
+	  + word_num * BITMAP_WORD_BITS
 	  + bit_num);
 }
 
@@ -558,7 +556,7 @@ bitmap_operation (to, from1, from2, operation)
 #if BITMAP_ELEMENT_WORDS == 2
 #define DOIT(OP)					\
   do {							\
-    unsigned HOST_WIDE_INT t0, t1, f10, f11, f20, f21;	\
+    BITMAP_WORD t0, t1, f10, f11, f20, f21;		\
     f10 = from1_tmp->bits[0];				\
     f20 = from2_tmp->bits[0];				\
     t0 = f10 OP f20;					\
@@ -573,7 +571,7 @@ bitmap_operation (to, from1, from2, operation)
 #else
 #define DOIT(OP)					\
   do {							\
-    unsigned HOST_WIDE_INT t, f1, f2;			\
+    BITMAP_WORD t, f1, f2;				\
     int i;						\
     for (i = 0; i < BITMAP_ELEMENT_WORDS; ++i)		\
       {							\
@@ -785,7 +783,7 @@ debug_bitmap_file (file, head)
 
   for (ptr = head->first; ptr; ptr = ptr->next)
     {
-      int i, j, col = 26;
+      unsigned int i, j, col = 26;
 
       fprintf (file, "\t");
       fprintf (file, HOST_PTR_PRINTF, (PTR) ptr);
@@ -796,7 +794,7 @@ debug_bitmap_file (file, head)
       fprintf (file, " indx = %u\n\t\tbits = {", ptr->indx);
 
       for (i = 0; i < BITMAP_ELEMENT_WORDS; i++)
-	for (j = 0; j < HOST_BITS_PER_WIDE_INT; j++)
+	for (j = 0; j < BITMAP_WORD_BITS; j++)
 	  if ((ptr->bits[i] >> j) & 1)
 	    {
 	      if (col > 70)
@@ -806,7 +804,7 @@ debug_bitmap_file (file, head)
 		}
 
 	      fprintf (file, " %u", (ptr->indx * BITMAP_ELEMENT_ALL_BITS
-				     + i * HOST_BITS_PER_WIDE_INT + j));
+				     + i * BITMAP_WORD_BITS + j));
 	      col += 4;
 	    }
 

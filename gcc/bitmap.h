@@ -1,5 +1,5 @@
 /* Functions to support general ended bitmaps.
-   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -22,10 +22,18 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifndef GCC_BITMAP_H
 #define GCC_BITMAP_H
 
+/* Fundamental storage type for bitmap.  */
+
+/* typedef unsigned HOST_WIDE_INT BITMAP_WORD; */
+/* #define nBITMAP_WORD_BITS HOST_BITS_PER_WIDE_INT */
+typedef unsigned long BITMAP_WORD;
+#define nBITMAP_WORD_BITS (CHAR_BIT * SIZEOF_LONG)
+#define BITMAP_WORD_BITS (unsigned) nBITMAP_WORD_BITS
+
 /* Number of words to use for each element in the linked list.  */
 
 #ifndef BITMAP_ELEMENT_WORDS
-#define BITMAP_ELEMENT_WORDS 2
+#define BITMAP_ELEMENT_WORDS ((128 + nBITMAP_WORD_BITS - 1) / nBITMAP_WORD_BITS)
 #endif
 
 /* Number of bits in each actual element of a bitmap.  We get slightly better
@@ -33,7 +41,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    bits is unsigned, assuming it is a power of 2.  */
 
 #define BITMAP_ELEMENT_ALL_BITS \
-  ((unsigned) (BITMAP_ELEMENT_WORDS * HOST_BITS_PER_WIDE_INT))
+  ((unsigned) (BITMAP_ELEMENT_WORDS * BITMAP_WORD_BITS))
 
 /* Bitmap set element.  We use a linked list to hold only the bits that
    are set.  This allows for use to grow the bitset dynamically without
@@ -45,7 +53,7 @@ typedef struct bitmap_element_def GTY(())
   struct bitmap_element_def *next;		/* Next element.  */
   struct bitmap_element_def *prev;		/* Previous element.  */
   unsigned int indx;			/* regno/BITMAP_ELEMENT_ALL_BITS.  */
-  unsigned HOST_WIDE_INT bits[BITMAP_ELEMENT_WORDS]; /* Bits that are set.  */
+  BITMAP_WORD bits[BITMAP_ELEMENT_WORDS]; /* Bits that are set.  */
 } bitmap_element;
 
 /* Head of bitmap linked list.  */
@@ -162,9 +170,8 @@ do {						\
 do {									\
   bitmap_element *ptr_ = (BITMAP)->first;				\
   unsigned int indx_ = (MIN) / BITMAP_ELEMENT_ALL_BITS;			\
-  unsigned bit_num_ = (MIN) % ((unsigned) HOST_BITS_PER_WIDE_INT);	\
-  unsigned word_num_ = (((MIN) / ((unsigned) HOST_BITS_PER_WIDE_INT))	\
-			% BITMAP_ELEMENT_WORDS);			\
+  unsigned bit_num_ = (MIN) % BITMAP_WORD_BITS;				\
+  unsigned word_num_ = (MIN) / BITMAP_WORD_BITS % BITMAP_ELEMENT_WORDS;	\
 									\
 									\
   /* Find the block the minimum bit is in.  */				\
@@ -181,20 +188,19 @@ do {									\
     {									\
       for (; word_num_ < BITMAP_ELEMENT_WORDS; word_num_++)		\
 	{								\
-	  unsigned HOST_WIDE_INT word_ = ptr_->bits[word_num_];		\
+	  BITMAP_WORD word_ = ptr_->bits[word_num_];			\
 									\
 	  if (word_ != 0)						\
 	    {								\
-	      for (; bit_num_ < HOST_BITS_PER_WIDE_INT; bit_num_++)	\
+	      for (; bit_num_ < BITMAP_WORD_BITS; bit_num_++)		\
 		{							\
-		  unsigned HOST_WIDE_INT mask_				\
-		    = ((unsigned HOST_WIDE_INT) 1) << bit_num_;		\
+		  BITMAP_WORD mask_ = ((BITMAP_WORD) 1) << bit_num_;	\
 									\
 		  if ((word_ & mask_) != 0)				\
 		    {							\
 		      word_ &= ~ mask_;					\
 		      (BITNUM) = (ptr_->indx * BITMAP_ELEMENT_ALL_BITS  \
-				  + word_num_ * HOST_BITS_PER_WIDE_INT  \
+				  + word_num_ * BITMAP_WORD_BITS	\
 				  + bit_num_);				\
 		      CODE;						\
 									\
@@ -220,9 +226,8 @@ do {									\
   bitmap_element *ptr1_ = (BITMAP1)->first;				\
   bitmap_element *ptr2_ = (BITMAP2)->first;				\
   unsigned int indx_ = (MIN) / BITMAP_ELEMENT_ALL_BITS;			\
-  unsigned bit_num_ = (MIN) % ((unsigned) HOST_BITS_PER_WIDE_INT);	\
-  unsigned word_num_ = (((MIN) / ((unsigned) HOST_BITS_PER_WIDE_INT))	\
-			% BITMAP_ELEMENT_WORDS);			\
+  unsigned bit_num_ = (MIN) % BITMAP_WORD_BITS;				\
+  unsigned word_num_ = (MIN) / BITMAP_WORD_BITS % BITMAP_ELEMENT_WORDS;	\
 									\
   /* Find the block the minimum bit is in in the first bitmap.  */	\
   while (ptr1_ != 0 && ptr1_->indx < indx_)				\
@@ -248,20 +253,19 @@ do {									\
 									\
       for (; word_num_ < BITMAP_ELEMENT_WORDS; word_num_++)		\
 	{								\
-	  unsigned HOST_WIDE_INT word_ = (ptr1_->bits[word_num_]	\
-					  & ~ tmp2_->bits[word_num_]);	\
+	  BITMAP_WORD word_ = (ptr1_->bits[word_num_]			\
+			       & ~ tmp2_->bits[word_num_]);		\
 	  if (word_ != 0)						\
 	    {								\
-	      for (; bit_num_ < HOST_BITS_PER_WIDE_INT; bit_num_++)	\
+	      for (; bit_num_ < BITMAP_WORD_BITS; bit_num_++)		\
 		{							\
-		  unsigned HOST_WIDE_INT mask_				\
-		    = ((unsigned HOST_WIDE_INT)1) << bit_num_;		\
+		  BITMAP_WORD mask_ = ((BITMAP_WORD) 1) << bit_num_;	\
 									\
 		  if ((word_ & mask_) != 0)				\
 		    {							\
 		      word_ &= ~ mask_;					\
 		      (BITNUM) = (ptr1_->indx * BITMAP_ELEMENT_ALL_BITS \
-				  + word_num_ * HOST_BITS_PER_WIDE_INT  \
+				  + word_num_ * BITMAP_WORD_BITS	\
 				  + bit_num_);				\
 									\
 		      CODE;						\
@@ -287,9 +291,8 @@ do {									\
   bitmap_element *ptr1_ = (BITMAP1)->first;				\
   bitmap_element *ptr2_ = (BITMAP2)->first;				\
   unsigned int indx_ = (MIN) / BITMAP_ELEMENT_ALL_BITS;			\
-  unsigned bit_num_ = (MIN) % ((unsigned) HOST_BITS_PER_WIDE_INT);	\
-  unsigned word_num_ = (((MIN) / ((unsigned) HOST_BITS_PER_WIDE_INT))	\
-			% BITMAP_ELEMENT_WORDS);			\
+  unsigned bit_num_ = (MIN) % BITMAP_WORD_BITS;				\
+  unsigned word_num_ = (MIN) / BITMAP_WORD_BITS % BITMAP_ELEMENT_WORDS;	\
 									\
   /* Find the block the minimum bit is in in the first bitmap.  */	\
   while (ptr1_ != 0 && ptr1_->indx < indx_)				\
@@ -321,20 +324,19 @@ do {									\
 									\
       for (; word_num_ < BITMAP_ELEMENT_WORDS; word_num_++)		\
 	{								\
-	  unsigned HOST_WIDE_INT word_ = (ptr1_->bits[word_num_]	\
-					  & ptr2_->bits[word_num_]);	\
+	  BITMAP_WORD word_ = (ptr1_->bits[word_num_]			\
+			       & ptr2_->bits[word_num_]);		\
 	  if (word_ != 0)						\
 	    {								\
-	      for (; bit_num_ < HOST_BITS_PER_WIDE_INT; bit_num_++)	\
+	      for (; bit_num_ < BITMAP_WORD_BITS; bit_num_++)		\
 		{							\
-		  unsigned HOST_WIDE_INT mask_				\
-		    = ((unsigned HOST_WIDE_INT)1) << bit_num_;		\
+		  BITMAP_WORD mask_ = ((BITMAP_WORD) 1) << bit_num_;	\
 									\
 		  if ((word_ & mask_) != 0)				\
 		    {							\
 		      word_ &= ~ mask_;					\
 		      (BITNUM) = (ptr1_->indx * BITMAP_ELEMENT_ALL_BITS \
-				  + word_num_ * HOST_BITS_PER_WIDE_INT  \
+				  + word_num_ * BITMAP_WORD_BITS	\
 				  + bit_num_);				\
 									\
 		      CODE;						\

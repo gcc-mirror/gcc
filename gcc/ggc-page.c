@@ -330,6 +330,12 @@ static struct globals
   /* Total amount of memory mapped.  */
   size_t bytes_mapped;
 
+  /* Bit N set if any allocations have been done at context depth N.  */
+  unsigned long context_depth_allocations;
+
+  /* Bit N set if any collections have been done at context depth N.  */
+  unsigned long context_depth_collections;
+
   /* The current depth in the context stack.  */
   unsigned short context_depth;
 
@@ -728,6 +734,8 @@ alloc_page (order)
   entry->order = order;
   entry->num_free_objects = num_objects;
   entry->next_bit_hint = 1;
+
+  G.context_depth_allocations |= (unsigned long)1 << G.context_depth;
 
 #ifdef USING_MALLOC_PAGE_GROUPS
   entry->group = group;
@@ -1207,7 +1215,7 @@ ggc_push_context ()
   ++G.context_depth;
 
   /* Die on wrap.  */
-  if (G.context_depth == 0)
+  if (G.context_depth >= HOST_BITS_PER_LONG)
     abort ();
 }
 
@@ -1255,9 +1263,18 @@ ggc_recalculate_in_use_p (p)
 void
 ggc_pop_context ()
 {
+  unsigned long omask;
   unsigned order, depth;
 
   depth = --G.context_depth;
+  omask = (unsigned long)1 << (depth + 1);
+
+  if (!((G.context_depth_allocations | G.context_depth_collections) & omask))
+    return;
+
+  G.context_depth_allocations |= (G.context_depth_allocations & omask) >> 1;
+  G.context_depth_allocations &= omask - 1;
+  G.context_depth_collections &= omask - 1;
 
   /* Any remaining pages in the popped context are lowered to the new
      current context; i.e. objects allocated in the popped context and
@@ -1510,6 +1527,9 @@ ggc_collect ()
   /* Release the pages we freed the last time we collected, but didn't
      reuse in the interim.  */
   release_pages ();
+
+  /* Indicate that we've seen collections at this context depth.  */
+  G.context_depth_collections = ((unsigned long)1 << (G.context_depth + 1)) - 1;
 
   clear_marks ();
   ggc_mark_roots ();

@@ -1,3 +1,21 @@
+2003-01-30  Richard Henderson  <rth@redhat.com>
+
+	* ggc-page.c (G.context_depth_allocations): New.
+	(G.context_depth_collections): New.
+	(alloc_page): Set G.context_depth_allocations.
+	(ggc_collect): Set G.context_depth_collections.
+	(ggc_push_context): Limit to HOST_BITS_PER_LONG contexts.
+	(ggc_pop_context): Early exit for no allocations or collections.
+
+2003-01-25  Segher Boessenkool  <segher@koffie.nl>
+
+	* bitmap.h (BITMAP_WORD): New typedef: fundamental storage
+	type for bitmaps.  Use unsigned long.
+	(nBITMAP_WORD_BITS): New macro.
+	(BITMAP_WORD_BITS): New macro.
+	(rest of file): Use it.
+	* bitmap.c: Use it.
+
 2003-02-13  Josef Zlomek  <zlomekj@suse.cz>
 
 	* cfgcleanup.c (outgoing_edges_match): When there is single outgoing
