@@ -983,7 +983,7 @@ chrec_convert (tree type,
 
     default:
       {
-	tree res = convert (type, chrec);
+	tree res = fold_convert (type, chrec);
 
 	/* Don't propagate overflows.  */
 	TREE_OVERFLOW (res) = 0;

@@ -1,3 +1,9 @@
+2004-12-09  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR tree-opt/18904
+	* tree-chrec.c (chrec_convert): Use fold_convert
+	instead of convert.
+
 2004-12-09  Matt Rice  <ratmice@yahoo.com>
 
 	PR preprocessor/18102
