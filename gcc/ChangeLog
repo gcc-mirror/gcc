@@ -1,3 +1,10 @@
+Mon Jan 11 23:51:50 1999  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.h (TARGET_SWITCHES): Document switches.
+	(TARGET_OPTIONS): Likewise.
+
+	* alpha/elf.h (ASM_FINISH_DECLARE_OBJECT): Use HOST_WIDE_INT_PRINT_DEC.
+
 Mon Jan 11 22:54:14 1999  Richard Henderson  <rth@cygnus.com>
 
 	* tree.c (new_alias_set): Return zero if !flag_strict_aliasing.
