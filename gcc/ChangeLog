@@ -1,3 +1,7 @@
+2003-02-25  Matthias Klose  <doko@debian.org>
+
+	* config.gcc (m68k-*-linux*): Add crtbeginT.o to extra_parts.
+
 2003-02-24  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config/alpha/osf.h (CPP_SUBTARGET_SPEC): Rename
