@@ -601,7 +601,7 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
 
 /* Definitions for register eliminations.
 
-   We have two registers that can be eliminated on the i386.  First, the
+   We have two registers that can be eliminated on the Alpha.  First, the
    frame pointer register can often be eliminated in favor of the stack
    pointer register.  Secondly, the argument pointer register can always be
    eliminated; it is replaced with either the stack or frame pointer. */
@@ -630,9 +630,14 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
 { if ((FROM) == FRAME_POINTER_REGNUM && (TO) == STACK_POINTER_REGNUM)	\
     (OFFSET) = 0;							\
   else									\
-    (OFFSET) = (get_frame_size () + current_function_outgoing_args_size \
-		+ current_function_pretend_args_size			\
-		+ alpha_sa_size () + 15) & ~ 15;			\
+    {									\
+      (OFFSET) = ((get_frame_size () + current_function_outgoing_args_size \
+		   + current_function_pretend_args_size			\
+		   + alpha_sa_size () + 15)				\
+		  & ~ 15);						\
+      if ((FROM) == ARG_POINTER_REGNUM)					\
+	(OFFSET) -= current_function_pretend_args_size;			\
+    }									\
 }
 
 /* Define this if stack space is still allocated for a parameter passed
