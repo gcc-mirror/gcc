@@ -604,6 +604,9 @@ extern int flag_trapv;
 /* Nonzero if the signed arithmetic overflow should wrap around.  */
 extern int flag_wrapv;
 
+/* Nonzero if subexpressions must be evaluated from left-to-right.  */
+extern int flag_evaluation_order;
+
 /* Value of the -G xx switch, and whether it was passed or not.  */
 extern unsigned HOST_WIDE_INT g_switch_value;
 extern bool g_switch_set;

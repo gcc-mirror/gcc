@@ -685,6 +685,9 @@ java_init_options (unsigned int argc ATTRIBUTE_UNUSED,
   /* In Java arithmetic overflow always wraps around.  */
   flag_wrapv = 1;
 
+  /* Java requires left-to-right evaluation of subexpressions.  */
+  flag_evaluation_order = 1;
+
   jcf_path_init ();
 
   return CL_Java;

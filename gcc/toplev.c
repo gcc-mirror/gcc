@@ -988,6 +988,9 @@ int flag_trapv = 0;
 /* Nonzero if signed arithmetic overflow should wrap around.  */
 int flag_wrapv = 0;
 
+/* Nonzero if subexpressions must be evaluated from left-to-right.  */
+int flag_evaluation_order = 0;
+
 /* Add or remove a leading underscore from user symbols.  */
 int flag_leading_underscore = -1;
 

@@ -12265,7 +12265,7 @@ java_complete_lhs (tree node)
 
           TREE_OPERAND (node, 1) = nn;
         }
-      return force_evaluation_order (patch_binop (node, wfl_op1, wfl_op2));
+      return patch_binop (node, wfl_op1, wfl_op2);
 
     case INSTANCEOF_EXPR:
       wfl_op1 = TREE_OPERAND (node, 0);
