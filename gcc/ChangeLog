@@ -1,3 +1,18 @@
+Wed Mar 14 22:26:10 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (ix86_cmodel_string, ix86_cmodel): Define.
+	(override_options): Parse cmodel string.
+	(x86_64_sign_extended_value, x86_64_zero_extended_value): New.
+	* i386.h (TARGET_OPTIONS): Add "cmodel".
+	(EXTRA_CONSTRAINT): Recognize 'e' and 'Z'.
+	(enum cmodel): New.
+	(ix86_cmodel_string, ix86_cmodel): Declare.
+
+Wed Mar 14 22:26:54 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	Spot by Matt Kraai:
+	* i386.h (GENERAL_REG_P): Add missing REG_P.
+
 2001-03-14  Laurynas Biveinis  <lauras@softhome.net>
 
 	* configure.in: Use $gcc_cv_as instead of $as.

@@ -487,6 +487,11 @@ struct ix86_frame
   HOST_WIDE_INT stack_pointer_offset;
 };
 
+/* Code model option as passed by user.  */
+const char *ix86_cmodel_string;
+/* Parsed value.  */
+enum cmodel ix86_cmodel;
+
 /* which cpu are we scheduling for */
 enum processor_type ix86_cpu;
 
@@ -658,6 +663,35 @@ override_options ()
 
   ix86_arch = PROCESSOR_I386;
   ix86_cpu = (enum processor_type) TARGET_CPU_DEFAULT;
+
+  if (ix86_cmodel_string != 0)
+    {
+      if (!strcmp (ix86_cmodel_string, "small"))
+	ix86_cmodel = flag_pic ? CM_SMALL_PIC : CM_SMALL;
+      else if (flag_pic)
+	sorry ("Code model %s not supported in PIC mode", ix86_cmodel_string);
+      else if (!strcmp (ix86_cmodel_string, "32"))
+	ix86_cmodel = CM_32;
+      else if (!strcmp (ix86_cmodel_string, "kernel") && !flag_pic)
+	ix86_cmodel = CM_KERNEL;
+      else if (!strcmp (ix86_cmodel_string, "medium") && !flag_pic)
+	ix86_cmodel = CM_MEDIUM;
+      else if (!strcmp (ix86_cmodel_string, "large") && !flag_pic)
+	ix86_cmodel = CM_LARGE;
+      else
+	error ("bad value (%s) for -mcmodel= switch", ix86_cmodel_string);
+    }
+  else
+    {
+      ix86_cmodel = CM_32;
+      if (TARGET_64BIT)
+	ix86_cmodel = flag_pic ? CM_SMALL_PIC : CM_SMALL;
+    }
+  if ((TARGET_64BIT == 0) != (ix86_cmodel == CM_32))
+    error ("Code model `%s' not supported in the %s bit mode.",
+	   ix86_cmodel_string, TARGET_64BIT ? "64" : "32");
+  if (ix86_cmodel == CM_LARGE)
+    sorry ("Code model `large' not supported yet.");
 
   if (ix86_arch_string != 0)
     {
@@ -1792,6 +1826,171 @@ ix86_can_use_return_insn_p ()
 
   ix86_compute_frame_layout (&frame);
   return frame.to_allocate == 0 && frame.nregs == 0;
+}
+
+/* Return 1 if VALUE can be stored in the sign extended immediate field.  */
+int
+x86_64_sign_extended_value (value)
+     rtx value;
+{
+  switch (GET_CODE (value))
+    {
+      /* CONST_DOUBLES never match, since HOST_BITS_PER_WIDE_INT is known
+         to be at least 32 and this all acceptable constants are
+	 represented as CONST_INT.  */
+      case CONST_INT:
+	if (HOST_BITS_PER_WIDE_INT == 32)
+	  return 1;
+	else
+	  {
+	    HOST_WIDE_INT val = trunc_int_for_mode (INTVAL (value), DImode);
+	    return (HOST_WIDE_INT)(int)val == val;
+	  }
+	break;
+
+      /* For certain code models, the symbolic references are known to fit.  */
+      case SYMBOL_REF:
+	return ix86_cmodel == CM_SMALL || ix86_cmodel == CM_KERNEL;
+
+      /* For certain code models, the code is near as well.  */
+      case LABEL_REF:
+	return ix86_cmodel != CM_LARGE && ix86_cmodel != CM_SMALL_PIC;
+
+      /* We also may accept the offsetted memory references in certain special
+         cases.  */
+      case CONST:
+	if (GET_CODE (XEXP (value, 0)) == UNSPEC
+	    && XVECLEN (XEXP (value, 0), 0) == 1
+	    && XINT (XEXP (value, 0), 1) ==  15)
+	  return 1;
+	else if (GET_CODE (XEXP (value, 0)) == PLUS)
+	  {
+	    rtx op1 = XEXP (XEXP (value, 0), 0);
+	    rtx op2 = XEXP (XEXP (value, 0), 1);
+	    HOST_WIDE_INT offset;
+
+	    if (ix86_cmodel == CM_LARGE)
+	      return 0;
+	    if (GET_CODE (op2) != CONST_INT)
+	      return 0;
+	    offset = trunc_int_for_mode (INTVAL (op2), DImode);
+	    switch (GET_CODE (op1))
+	      {
+		case SYMBOL_REF:
+		  /* For CM_SMALL assume that latest object is 1MB before
+		     end of 31bits boundary.  We may also accept pretty
+		     large negative constants knowing that all objects are
+		     in the positive half of address space.  */
+		  if (ix86_cmodel == CM_SMALL
+		      && offset < 1024*1024*1024
+		      && trunc_int_for_mode (offset, SImode) == offset)
+		    return 1;
+		  /* For CM_KERNEL we know that all object resist in the
+		     negative half of 32bits address space.  We may not
+		     accept negative offsets, since they may be just off
+		     and we may accept pretty large possitive ones.  */
+		  if (ix86_cmodel == CM_KERNEL
+		      && offset > 0
+		      && trunc_int_for_mode (offset, SImode) == offset)
+		    return 1;
+		  break;
+		case LABEL_REF:
+		  /* These conditions are similar to SYMBOL_REF ones, just the
+		     constraints for code models differ.  */
+		  if ((ix86_cmodel == CM_SMALL || ix86_cmodel == CM_MEDIUM)
+		      && offset < 1024*1024*1024
+		      && trunc_int_for_mode (offset, SImode) == offset)
+		    return 1;
+		  if (ix86_cmodel == CM_KERNEL
+		      && offset > 0
+		      && trunc_int_for_mode (offset, SImode) == offset)
+		    return 1;
+		  break;
+		default:
+		  return 0;
+	      }
+	  }
+	return 0;
+      default:
+	return 0;
+    }
+}
+
+/* Return 1 if VALUE can be stored in the zero extended immediate field.  */
+int
+x86_64_zero_extended_value (value)
+     rtx value;
+{
+  switch (GET_CODE (value))
+    {
+      case CONST_DOUBLE:
+	if (HOST_BITS_PER_WIDE_INT == 32)
+	  return  (GET_MODE (value) == VOIDmode
+		   && !CONST_DOUBLE_HIGH (value));
+	else
+	  return 0;
+      case CONST_INT:
+	if (HOST_BITS_PER_WIDE_INT == 32)
+	  return INTVAL (value) >= 0;
+	else
+	  return !(INTVAL (value) & ~(HOST_WIDE_INT)0xffffffff);
+	break;
+
+      /* For certain code models, the symbolic references are known to fit.  */
+      case SYMBOL_REF:
+	return ix86_cmodel == CM_SMALL;
+
+      /* For certain code models, the code is near as well.  */
+      case LABEL_REF:
+	return ix86_cmodel == CM_SMALL || ix86_cmodel == CM_MEDIUM;
+
+      /* We also may accept the offsetted memory references in certain special
+         cases.  */
+      case CONST:
+	if (GET_CODE (XEXP (value, 0)) == PLUS)
+	  {
+	    rtx op1 = XEXP (XEXP (value, 0), 0);
+	    rtx op2 = XEXP (XEXP (value, 0), 1);
+
+	    if (ix86_cmodel == CM_LARGE)
+	      return 0;
+	    switch (GET_CODE (op1))
+	      {
+		case SYMBOL_REF:
+		    return 0;
+		  /* For small code model we may accept pretty large possitive
+		     offsets, since one bit is available for free.  Negative
+		     offsets are limited by the size of NULL pointer area
+		     specified by the ABI.  */
+		  if (ix86_cmodel == CM_SMALL
+		      && GET_CODE (op2) == CONST_INT
+		      && trunc_int_for_mode (INTVAL (op2), DImode) > -0x10000
+		      && (trunc_int_for_mode (INTVAL (op2), SImode)
+			  == INTVAL (op2)))
+		    return 1;
+	          /* ??? For the kernel, we may accept adjustment of
+		     -0x10000000, since we know that it will just convert
+		     negative address space to possitive, but perhaps this
+		     is not worthwhile.  */
+		  break;
+		case LABEL_REF:
+		  /* These conditions are similar to SYMBOL_REF ones, just the
+		     constraints for code models differ.  */
+		  if ((ix86_cmodel == CM_SMALL || ix86_cmodel == CM_MEDIUM)
+		      && GET_CODE (op2) == CONST_INT
+		      && trunc_int_for_mode (INTVAL (op2), DImode) > -0x10000
+		      && (trunc_int_for_mode (INTVAL (op2), SImode)
+			  == INTVAL (op2)))
+		    return 1;
+		  break;
+		default:
+		  return 0;
+	      }
+	  }
+	return 0;
+      default:
+	return 0;
+    }
 }
 
 /* Value should be nonzero if functions must have frame pointers.
