@@ -1,5 +1,6 @@
 /* Configuration for an i386 running VSTa micro-kernel.
    Copyright (C) 1994 Free Software Foundation, Inc.
+   Contributed by Rob Savoye (rob@cygnus.com).
 
 This file is part of GNU CC.
 
