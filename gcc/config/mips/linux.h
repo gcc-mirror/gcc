@@ -252,3 +252,8 @@ while (0)
 /* Tell function_prologue in mips.c that we have already output the .ent/.end
    pseudo-ops.  */
 #define FUNCTION_NAME_ALREADY_DECLARED
+
+/* Output #ident as a .ident.  */
+#undef ASM_OUTPUT_IDENT
+#define ASM_OUTPUT_IDENT(FILE, NAME) \
+  fprintf (FILE, "\t%s\t\"%s\"\n", IDENT_ASM_OP, NAME);

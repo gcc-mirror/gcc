@@ -1,5 +1,9 @@
 2001-08-01  H.J. Lu <hjl@gnu.org>
 
+	* config/mips/linux.h (ASM_OUTPUT_IDENT): Defined.
+
+2001-08-01  H.J. Lu <hjl@gnu.org>
+
 	* gcc/config/mips/linux.h (ASM_OUTPUT_SOURCE_LINE): Defined.
 
 2001-07-31  Jeff Sturm  <jsturm@one-point.com>
