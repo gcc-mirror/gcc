@@ -164,6 +164,15 @@ struct iv_class {
 				   biv controls. */
 };
 
+
+typedef struct loop_mem_info
+{
+  rtx mem;      /* The MEM itself.  */
+  rtx reg;      /* Corresponding pseudo, if any.  */
+  int optimize; /* Nonzero if we can optimize access to this MEM.  */
+} loop_mem_info;
+
+
 /* Information required to calculate the number of loop iterations. 
    This is set by loop_iterations.  */
 
@@ -207,6 +216,30 @@ struct loop_info
   /* The number of times the loop body was unrolled.  */
   unsigned int unroll_number;
   int used_count_register;
+  /* List of MEMs that are stored in this loop.  */
+  rtx store_mems;
+  /* Array of MEMs that are used (read or written) in this loop, but
+     cannot be aliased by anything in this loop, except perhaps
+     themselves.  In other words, if mems[i] is altered during
+     the loop, it is altered by an expression that is rtx_equal_p to
+     it.  */
+  loop_mem_info *mems;
+  /* The index of the next available slot in MEMS.  */
+  int mems_idx;
+  /* The number of elements allocated in MEMS.  */
+  int mems_allocated;
+  /* Nonzero if we don't know what MEMs were changed in the current
+     loop.  This happens if the loop contains a call (in which case
+     `has_call' will also be set) or if we store into more than
+     NUM_STORES MEMs.  */
+  int unknown_address_altered;
+  /* The above doesn't count any readonly memory locations that are
+     stored.  This does.  */
+  int unknown_constant_address_altered;
+  /* Count of memory write instructions discovered in the loop.  */
+  int num_mem_sets;
+  /* The insn where the first of these was found.  */
+  rtx first_loop_store_insn;
 };
 
 /* Definitions used by the basic induction variable discovery code.  */

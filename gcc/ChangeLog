@@ -1,3 +1,21 @@
+2000-09-11  Michael Hayes  <mhayes@cygnus.com>
+
+	* loop.h (struct loop_mem_info): Move from loop.c
+	(struct loop_info): Add fields store_mems, mems, mems_idx,
+	mems_allocated, unknown_address_altered,
+	unknown_constant_address_altered, num_mem_sets, and
+	first_loop_store_insn.
+
+	* loop.c (loop_store_mems): Replace with field in loop_info struct.
+	(loop_mems, loop_mems_idx, loop_mems_allocated): Likewise.
+	(unknown_address_altered, unknown_constant_address_altered): Likewise.
+	(num_mem_sets): Likewise.
+ 	(replace_loop_mems, replace_loop_regs): New.
+	(struct loop_replace_args): New.
+	(load_mems): Use replace_loop_mems.
+	(try_copy_prop): Use replace_loop_regs.
+	(replace_loop_reg, replace_loop_mem): Use loop_replace_args structure.
+
 2000-09-09  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
 	* configure.in: Recognize m6811-elf and m6812-elf.

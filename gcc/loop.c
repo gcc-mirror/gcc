@@ -113,49 +113,6 @@ static varray_type reg_single_usage;
 
 static char *moved_once;
 
-/* List of MEMs that are stored in this loop.  */
-
-static rtx loop_store_mems;
-
-/* The insn where the first of these was found.  */
-static rtx first_loop_store_insn;
-
-typedef struct loop_mem_info {
-  rtx mem;      /* The MEM itself.  */
-  rtx reg;      /* Corresponding pseudo, if any.  */
-  int optimize; /* Nonzero if we can optimize access to this MEM.  */
-} loop_mem_info;
-
-/* Array of MEMs that are used (read or written) in this loop, but
-   cannot be aliased by anything in this loop, except perhaps
-   themselves.  In other words, if loop_mems[i] is altered during the
-   loop, it is altered by an expression that is rtx_equal_p to it.  */
-
-static loop_mem_info *loop_mems;
-
-/* The index of the next available slot in LOOP_MEMS.  */
-
-static int loop_mems_idx;
-
-/* The number of elements allocated in LOOP_MEMs.  */
-
-static int loop_mems_allocated;
-
-/* Nonzero if we don't know what MEMs were changed in the current
-   loop.  This happens if the loop contains a call (in which case
-   `loop_info->has_call' will also be set) or if we store into more
-   than NUM_STORES MEMs.  */
-
-static int unknown_address_altered;
-
-/* The above doesn't count any readonly memory locations that are stored.
-   This does.  */
-
-static int unknown_constant_address_altered;
-
-/* Count of memory write instructions discovered in the loop.  */
-static int num_mem_sets;
-
 /* Bound on pseudo register number before loop optimization.
    A pseudo has valid regscan info if its number is < max_reg_before_loop.  */
 unsigned int max_reg_before_loop;
@@ -314,7 +271,9 @@ static void load_mems_and_recount_loop_regs_set PARAMS ((const struct loop*,
 static void load_mems PARAMS ((const struct loop *));
 static int insert_loop_mem PARAMS ((rtx *, void *));
 static int replace_loop_mem PARAMS ((rtx *, void *));
+static void replace_loop_mems PARAMS ((rtx, rtx, rtx));
 static int replace_loop_reg PARAMS ((rtx *, void *));
+static void replace_loop_regs PARAMS ((rtx insn, rtx, rtx));
 static void note_reg_stored PARAMS ((rtx, rtx, void *));
 static void try_copy_prop PARAMS ((const struct loop *, rtx, unsigned int));
 static void try_swap_copy_prop PARAMS ((const struct loop *, rtx,
@@ -327,15 +286,17 @@ static int iv_add_mult_cost PARAMS ((rtx, rtx, rtx, rtx));
 static void loop_dump_aux PARAMS ((const struct loop *, FILE *, int));
 void debug_loop PARAMS ((const struct loop *));
 
-typedef struct rtx_and_int {
-  rtx r;
-  int i;
-} rtx_and_int;
-
 typedef struct rtx_pair {
   rtx r1;
   rtx r2;
 } rtx_pair;
+
+typedef struct loop_replace_args
+{
+  rtx match;
+  rtx replacement;
+  rtx insn;
+} loop_replace_args;
 
 /* Nonzero iff INSN is between START and END, inclusive.  */
 #define INSN_IN_RANGE_P(INSN, START, END) 	\
@@ -616,11 +577,11 @@ scan_loop (loop, flags)
   int loop_depth = 0;
   int nregs;
 
+  loop->top = 0;
+
   movables->head = 0;
   movables->last = 0;
   movables->num = 0;
-
-  loop->top = 0;
 
   /* Determine whether this loop starts with a jump down to a test at
      the end.  This will occur for a small number of loops with a test
@@ -704,7 +665,7 @@ scan_loop (loop, flags)
      that even after the moving of movables creates some new registers
      we won't have to reallocate these arrays.  However, we do grow
      the arrays, if necessary, in load_mems_recount_loop_regs_set.  */
-  nregs = max_reg_num () + loop_mems_idx + 16;
+  nregs = max_reg_num () + loop_info->mems_idx + 16;
   VARRAY_INT_INIT (set_in_loop, nregs, "set_in_loop");
   VARRAY_INT_INIT (n_times_set, nregs, "n_times_set");
   VARRAY_CHAR_INIT (may_not_optimize, nregs, "may_not_optimize");
@@ -2332,10 +2293,10 @@ count_nonfixed_reads (loop, x)
 }
 
 /* Scan a loop setting the elements `cont', `vtop', `loops_enclosed',
-   `has_call', `has_volatile', and `has_tablejump' within LOOP.
-   Set the global variables `unknown_address_altered',
-   `unknown_constant_address_altered', and `num_mem_sets'.  Also, fill
-   in the array `loop_mems' and the list `loop_store_mems'.  */
+   `has_call', `has_volatile', `has_tablejump',
+   `unknown_address_altered', `unknown_constant_address_altered', and
+   `num_mem_sets' in LOOP.  Also, fill in the array `mems' and the
+   list `store_mems' in LOOP.  */
 
 static void
 prescan_loop (loop)
@@ -2359,12 +2320,12 @@ prescan_loop (loop)
   loop_info->has_multiple_exit_targets = 0;
   loop->level = 1;
 
-  unknown_address_altered = 0;
-  unknown_constant_address_altered = 0;
-  loop_store_mems = NULL_RTX;
-  first_loop_store_insn = NULL_RTX;
-  loop_mems_idx = 0;
-  num_mem_sets = 0;
+  loop_info->unknown_address_altered = 0;
+  loop_info->unknown_constant_address_altered = 0;
+  loop_info->store_mems = NULL_RTX;
+  loop_info->first_loop_store_insn = NULL_RTX;
+  loop_info->mems_idx = 0;
+  loop_info->num_mem_sets = 0;
 
   for (insn = NEXT_INSN (start); insn != NEXT_INSN (end);
        insn = NEXT_INSN (insn))
@@ -2385,7 +2346,7 @@ prescan_loop (loop)
       else if (GET_CODE (insn) == CALL_INSN)
 	{
 	  if (! CONST_CALL_P (insn))
-	    unknown_address_altered = 1;
+	    loop_info->unknown_address_altered = 1;
 	  loop_info->has_call = 1;
 	}
       else if (GET_CODE (insn) == INSN || GET_CODE (insn) == JUMP_INSN)
@@ -2401,9 +2362,9 @@ prescan_loop (loop)
 		  || GET_CODE (PATTERN (insn)) == ADDR_VEC))
 	    loop_info->has_tablejump = 1;
 
-	  note_stores (PATTERN (insn), note_addr_stored, NULL);
-	  if (! first_loop_store_insn && loop_store_mems)
-	    first_loop_store_insn = insn;
+	  note_stores (PATTERN (insn), note_addr_stored, loop_info);
+	  if (! loop_info->first_loop_store_insn && loop_info->store_mems)
+	    loop_info->first_loop_store_insn = insn;
 
 	  if (! loop_info->has_multiple_exit_targets
 	      && GET_CODE (insn) == JUMP_INSN
@@ -2463,23 +2424,25 @@ prescan_loop (loop)
       && ! loop_info->has_multiple_exit_targets)
     for (insn = NEXT_INSN (start); insn != NEXT_INSN (end);
 	 insn = NEXT_INSN (insn))
-      for_each_rtx (&insn, insert_loop_mem, 0);
+      for_each_rtx (&insn, insert_loop_mem, loop_info);
 
   /* BLKmode MEMs are added to LOOP_STORE_MEM as necessary so
      that loop_invariant_p and load_mems can use true_dependence
      to determine what is really clobbered.  */
-  if (unknown_address_altered)
+  if (loop_info->unknown_address_altered)
     {
       rtx mem = gen_rtx_MEM (BLKmode, const0_rtx);
 
-      loop_store_mems = gen_rtx_EXPR_LIST (VOIDmode, mem, loop_store_mems);
+      loop_info->store_mems 
+	= gen_rtx_EXPR_LIST (VOIDmode, mem, loop_info->store_mems);
     }
-  if (unknown_constant_address_altered)
+  if (loop_info->unknown_constant_address_altered)
     {
       rtx mem = gen_rtx_MEM (BLKmode, const0_rtx);
 
       RTX_UNCHANGING_P (mem) = 1;
-      loop_store_mems = gen_rtx_EXPR_LIST (VOIDmode, mem, loop_store_mems);
+      loop_info->store_mems 
+	= gen_rtx_EXPR_LIST (VOIDmode, mem, loop_info->store_mems);
     }
 }
 
@@ -3093,25 +3056,28 @@ note_addr_stored (x, y, data)
      rtx y ATTRIBUTE_UNUSED;
      void *data ATTRIBUTE_UNUSED;
 {
+  struct loop_info *loop_info = data;
+
   if (x == 0 || GET_CODE (x) != MEM)
     return;
 
   /* Count number of memory writes.
      This affects heuristics in strength_reduce.  */
-  num_mem_sets++;
-
+  loop_info->num_mem_sets++;
+  
   /* BLKmode MEM means all memory is clobbered.  */
-    if (GET_MODE (x) == BLKmode)
+  if (GET_MODE (x) == BLKmode)
     {
       if (RTX_UNCHANGING_P (x))
-	unknown_constant_address_altered = 1;
+	loop_info->unknown_constant_address_altered = 1;
       else
-	unknown_address_altered = 1;
-
+	loop_info->unknown_address_altered = 1;
+      
       return;
     }
-
-  loop_store_mems = gen_rtx_EXPR_LIST (VOIDmode, x, loop_store_mems);
+  
+  loop_info->store_mems = gen_rtx_EXPR_LIST (VOIDmode, x, 
+					     loop_info->store_mems);
 }
 
 /* X is a value modified by an INSN that references a biv inside a loop
@@ -3151,13 +3117,14 @@ note_set_pseudo_multiple_uses (x, y, data)
    The value is 2 if we refer to something only conditionally invariant.
 
    A memory ref is invariant if it is not volatile and does not conflict
-   with anything stored in `loop_store_mems'.  */
+   with anything stored in `loop_info->store_mems'.  */
 
 int
 loop_invariant_p (loop, x)
      const struct loop *loop;
      register rtx x;
 {
+  struct loop_info *loop_info = LOOP_INFO (loop);
   register int i;
   register enum rtx_code code;
   register const char *fmt;
@@ -3221,7 +3188,7 @@ loop_invariant_p (loop, x)
 	return 0;
 
       /* See if there is any dependence between a store and this load.  */
-      mem_list_entry = loop_store_mems;
+      mem_list_entry = loop_info->store_mems;
       while (mem_list_entry)
 	{
 	  if (true_dependence (XEXP (mem_list_entry, 0), VOIDmode,
@@ -8220,7 +8187,7 @@ check_dbra_loop (loop, insn_count)
       if (no_use_except_counting)
 	/* No need to worry about MEMs.  */
 	;
-      else if (num_mem_sets <= 1)
+      else if (loop_info->num_mem_sets <= 1)
 	{
 	  for (p = loop_start; p != loop_end; p = NEXT_INSN (p))
 	    if (INSN_P (p))
@@ -8232,15 +8199,15 @@ check_dbra_loop (loop, insn_count)
 	     This would work if the source was invariant also, however, in that
 	     case, the insn should have been moved out of the loop.  */
 
-	  if (num_mem_sets == 1)
+	  if (loop_info->num_mem_sets == 1)
 	    {
 	      struct induction *v;
 
 	      reversible_mem_store
-		= (! unknown_address_altered
-		   && ! unknown_constant_address_altered
+		= (! loop_info->unknown_address_altered
+		   && ! loop_info->unknown_constant_address_altered
 		   && ! loop_invariant_p (loop,
-					  XEXP (XEXP (loop_store_mems, 0),
+					  XEXP (XEXP (loop_info->store_mems, 0),
 						0)));
 
 	      /* If the store depends on a register that is set after the
@@ -8250,8 +8217,9 @@ check_dbra_loop (loop, insn_count)
 		{
 		  if (v->giv_type == DEST_REG
 		      && reg_mentioned_p (v->dest_reg,
-					  PATTERN (first_loop_store_insn))
-		      && loop_insn_first_p (first_loop_store_insn, v->insn))
+					  PATTERN (loop_info->first_loop_store_insn))
+		      && loop_insn_first_p (loop_info->first_loop_store_insn, 
+					    v->insn))
 		    reversible_mem_store = 0;
 		}
 	    }
@@ -8271,7 +8239,7 @@ check_dbra_loop (loop, insn_count)
 	   && ! loop_info->has_call
 	   && ! loop_info->has_volatile
 	   && reversible_mem_store
-	   && (bl->giv_count + bl->biv_count + num_mem_sets
+	   && (bl->giv_count + bl->biv_count + loop_info->num_mem_sets
 	      + the_movables.num + compare_and_branch == insn_count)
 	   && (bl == loop_iv_list && bl->next == 0))
 	  || no_use_except_counting)
@@ -9544,6 +9512,7 @@ insert_loop_mem (mem, data)
      rtx *mem;
      void *data ATTRIBUTE_UNUSED;
 {
+  struct loop_info *loop_info = data;
   int i;
   rtx m = *mem;
 
@@ -9574,40 +9543,40 @@ insert_loop_mem (mem, data)
     }
 
   /* See if we've already seen this MEM.  */
-  for (i = 0; i < loop_mems_idx; ++i)
-    if (rtx_equal_p (m, loop_mems[i].mem))
+  for (i = 0; i < loop_info->mems_idx; ++i)
+    if (rtx_equal_p (m, loop_info->mems[i].mem))
       {
-	if (GET_MODE (m) != GET_MODE (loop_mems[i].mem))
+	if (GET_MODE (m) != GET_MODE (loop_info->mems[i].mem))
 	  /* The modes of the two memory accesses are different.  If
 	     this happens, something tricky is going on, and we just
 	     don't optimize accesses to this MEM.  */
-	  loop_mems[i].optimize = 0;
+	  loop_info->mems[i].optimize = 0;
 
 	return 0;
       }
 
   /* Resize the array, if necessary.  */
-  if (loop_mems_idx == loop_mems_allocated)
+  if (loop_info->mems_idx == loop_info->mems_allocated)
     {
-      if (loop_mems_allocated != 0)
-	loop_mems_allocated *= 2;
+      if (loop_info->mems_allocated != 0)
+	loop_info->mems_allocated *= 2;
       else
-	loop_mems_allocated = 32;
+	loop_info->mems_allocated = 32;
 
-      loop_mems = (loop_mem_info*)
-	xrealloc (loop_mems,
-		  loop_mems_allocated * sizeof (loop_mem_info));
+      loop_info->mems = (loop_mem_info*)
+	xrealloc (loop_info->mems,
+		  loop_info->mems_allocated * sizeof (loop_mem_info));
     }
 
   /* Actually insert the MEM.  */
-  loop_mems[loop_mems_idx].mem = m;
+  loop_info->mems[loop_info->mems_idx].mem = m;
   /* We can't hoist this MEM out of the loop if it's a BLKmode MEM
      because we can't put it in a register.  We still store it in the
      table, though, so that if we see the same address later, but in a
      non-BLK mode, we'll not think we can optimize it at that point.  */
-  loop_mems[loop_mems_idx].optimize = (GET_MODE (m) != BLKmode);
-  loop_mems[loop_mems_idx].reg = NULL_RTX;
-  ++loop_mems_idx;
+  loop_info->mems[loop_info->mems_idx].optimize = (GET_MODE (m) != BLKmode);
+  loop_info->mems[loop_info->mems_idx].reg = NULL_RTX;
+  ++loop_info->mems_idx;
 
   return 0;
 }
@@ -9678,6 +9647,7 @@ static void
 load_mems (loop)
      const struct loop *loop;
 {
+  struct loop_info *loop_info = LOOP_INFO (loop);
   int maybe_never = 0;
   int i;
   rtx p;
@@ -9687,7 +9657,7 @@ load_mems (loop)
   int next_maybe_never = 0;
   int last_max_reg = max_reg_num ();
 
-  if (loop_mems_idx == 0)
+  if (loop_info->mems_idx == 0)
     return;
 
   /* Find start of the extended basic block that enters the loop.  */
@@ -9736,23 +9706,23 @@ load_mems (loop)
     }
 
   /* Actually move the MEMs.  */
-  for (i = 0; i < loop_mems_idx; ++i)
+  for (i = 0; i < loop_info->mems_idx; ++i)
     {
       regset_head load_copies;
       regset_head store_copies;
       int written = 0;
       rtx reg;
-      rtx mem = loop_mems[i].mem;
+      rtx mem = loop_info->mems[i].mem;
       rtx mem_list_entry;
 
       if (MEM_VOLATILE_P (mem)
 	  || loop_invariant_p (loop, XEXP (mem, 0)) != 1)
 	/* There's no telling whether or not MEM is modified.  */
-	loop_mems[i].optimize = 0;
+	loop_info->mems[i].optimize = 0;
 
       /* Go through the MEMs written to in the loop to see if this
 	 one is aliased by one of them.  */
-      mem_list_entry = loop_store_mems;
+      mem_list_entry = loop_info->store_mems;
       while (mem_list_entry)
 	{
 	  if (rtx_equal_p (mem, XEXP (mem_list_entry, 0)))
@@ -9761,7 +9731,7 @@ load_mems (loop)
 				    mem, rtx_varies_p))
 	    {
 	      /* MEM is indeed aliased by this store.  */
-	      loop_mems[i].optimize = 0;
+	      loop_info->mems[i].optimize = 0;
 	      break;
 	    }
 	  mem_list_entry = XEXP (mem_list_entry, 1);
@@ -9769,27 +9739,27 @@ load_mems (loop)
 
       if (flag_float_store && written
 	  && GET_MODE_CLASS (GET_MODE (mem)) == MODE_FLOAT)
-	loop_mems[i].optimize = 0;
+	loop_info->mems[i].optimize = 0;
 
       /* If this MEM is written to, we must be sure that there
 	 are no reads from another MEM that aliases this one.  */
-      if (loop_mems[i].optimize && written)
+      if (loop_info->mems[i].optimize && written)
 	{
 	  int j;
 
-	  for (j = 0; j < loop_mems_idx; ++j)
+	  for (j = 0; j < loop_info->mems_idx; ++j)
 	    {
 	      if (j == i)
 		continue;
 	      else if (true_dependence (mem,
 					VOIDmode,
-					loop_mems[j].mem,
+					loop_info->mems[j].mem,
 					rtx_varies_p))
 		{
-		  /* It's not safe to hoist loop_mems[i] out of
+		  /* It's not safe to hoist loop_info->mems[i] out of
 		     the loop because writes to it might not be
-		     seen by reads from loop_mems[j].  */
-		  loop_mems[i].optimize = 0;
+		     seen by reads from loop_info->mems[j].  */
+		  loop_info->mems[i].optimize = 0;
 		  break;
 		}
 	    }
@@ -9798,9 +9768,9 @@ load_mems (loop)
       if (maybe_never && may_trap_p (mem))
 	/* We can't access the MEM outside the loop; it might
 	   cause a trap that wouldn't have happened otherwise.  */
-	loop_mems[i].optimize = 0;
+	loop_info->mems[i].optimize = 0;
 
-      if (!loop_mems[i].optimize)
+      if (!loop_info->mems[i].optimize)
 	/* We thought we were going to lift this MEM out of the
 	   loop, but later discovered that we could not.  */
 	continue;
@@ -9814,7 +9784,7 @@ load_mems (loop)
 	 user-variable nor used in the loop test.  */
       reg = gen_reg_rtx (GET_MODE (mem));
       REG_USERVAR_P (reg) = 1;
-      loop_mems[i].reg = reg;
+      loop_info->mems[i].reg = reg;
 
       /* Now, replace all references to the MEM with the
 	 corresponding pesudos.  */
@@ -9823,8 +9793,6 @@ load_mems (loop)
 	   p != NULL_RTX;
 	   p = next_insn_in_loop (loop, p))
 	{
-	  rtx_and_int ri;
-
 	  if (INSN_P (p))
 	    {
 	      rtx set;
@@ -9859,9 +9827,8 @@ load_mems (loop)
  		SET_REGNO_REG_SET (&store_copies, REGNO (SET_SRC (set)));
  	      
  	      /* Replace the memory reference with the shadow register.  */
-	      ri.r = p;
-	      ri.i = i;
-	      for_each_rtx (&p, replace_loop_mem, &ri);
+	      replace_loop_mems (p, loop_info->mems[i].mem,
+				 loop_info->mems[i].reg);
 	    }
 
 	  if (GET_CODE (p) == CODE_LABEL
@@ -9871,7 +9838,7 @@ load_mems (loop)
 
       if (! apply_change_group ())
 	/* We couldn't replace all occurrences of the MEM.  */
-	loop_mems[i].optimize = 0;
+	loop_info->mems[i].optimize = 0;
       else
 	{
 	  /* Load the memory immediately before LOOP->START, which is
@@ -10065,12 +10032,8 @@ try_copy_prop (loop, replacement, regno)
       if (init_insn && insn != init_insn)
 	{
 	  struct note_reg_stored_arg arg;
-	  rtx array[3];
-	  array[0] = reg_rtx;
-	  array[1] = replacement;
-	  array[2] = insn;
 
-	  for_each_rtx (&insn, replace_loop_reg, array);
+	  replace_loop_regs (insn, reg_rtx, replacement);
 	  if (REGNO_LAST_UID (regno) == INSN_UID (insn))
 	    replaced_last = 1;
 
@@ -10191,8 +10154,8 @@ try_swap_copy_prop (loop, replacement, regno)
 
 
 /* Replace MEM with its associated pseudo register.  This function is
-   called from load_mems via for_each_rtx.  DATA is actually an
-   rtx_and_int * describing the instruction currently being scanned
+   called from load_mems via for_each_rtx.  DATA is actually a pointer
+   to a structure describing the instruction currently being scanned
    and the MEM we are currently replacing.  */
 
 static int
@@ -10200,9 +10163,7 @@ replace_loop_mem (mem, data)
      rtx *mem;
      void *data;
 {
-  rtx_and_int *ri;
-  rtx insn;
-  int i;
+  loop_replace_args *args = (loop_replace_args *)data;
   rtx m = *mem;
 
   if (m == NULL_RTX)
@@ -10223,25 +10184,36 @@ replace_loop_mem (mem, data)
       return 0;
     }
 
-  ri = (rtx_and_int *) data;
-  i = ri->i;
-
-  if (!rtx_equal_p (loop_mems[i].mem, m))
+  if (!rtx_equal_p (args->match, m))
     /* This is not the MEM we are currently replacing.  */
     return 0;
 
-  insn = ri->r;
-
   /* Actually replace the MEM.  */
-  validate_change (insn, mem, loop_mems[i].reg, 1);
+  validate_change (args->insn, mem, args->replacement, 1);
 
   return 0;
 }
 
+
+static void
+replace_loop_mems (insn, mem, reg)
+      rtx insn;
+      rtx mem;
+      rtx reg;
+{	    
+  loop_replace_args args;
+
+  args.insn = insn;
+  args.match = mem;
+  args.replacement = reg;
+
+  for_each_rtx (&insn, replace_loop_mem, &args);
+}
+
+
 /* Replace one register with another.  Called through for_each_rtx; PX points
-   to the rtx being scanned.  DATA is actually an array of three rtx's; the
-   first one is the one to be replaced, and the second one the replacement.
-   The third one is the current insn.  */
+   to the rtx being scanned.  DATA is actually a pointer to 
+   a structure of arguments.  */
 
 static int
 replace_loop_reg (px, data)
@@ -10249,16 +10221,33 @@ replace_loop_reg (px, data)
      void *data;
 {
   rtx x = *px;
-  rtx *array = (rtx *) data;
+  loop_replace_args *args = (loop_replace_args *)data;
 
   if (x == NULL_RTX)
     return 0;
 
-  if (x == array[0])
-    validate_change (array[2], px, array[1], 1);
+  if (x == args->match)
+    validate_change (args->insn, px, args->replacement, 1);
 
   return 0;
 }
+
+
+static void
+replace_loop_regs (insn, reg, replacement)
+     rtx insn;
+     rtx reg;
+     rtx replacement;
+{
+  loop_replace_args args;
+
+  args.insn = insn;
+  args.match = reg;
+  args.replacement = replacement;
+
+  for_each_rtx (&insn, replace_loop_reg, &args);
+}
+
 
 /* Replace occurrences of the old exit label for the loop with the new
    one.  DATA is an rtx_pair containing the old and new labels,
