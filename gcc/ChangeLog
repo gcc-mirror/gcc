@@ -1,7 +1,24 @@
+2002-03-12  Richard Henderson  <rth@redhat.com>
+
+	* config/arc/arc.h, config/cris/cris.h, config/i386/i386.h,
+	config/m68k/m68k.h, config/s390/s390.h, config/sparc/sparc.h
+	(PIC_OFFSET_TABLE_REGNUM): Conditionalize on flag_pic.
+
+	* config/arm/arm.h config/i386/i386.h, config/m68k/m68k.h,
+	config/sparc/sparc.h (CONDITIONAL_REGISTER_USAGE): Set
+	PIC_OFFSET_TABLE_REGNUM based on INVALID_REGNUM not flag_pic.
+
+	* config/arc/arc.h (CONDITIONAL_REGISTER_USAGE): New.
+	* config/arm/arm.c (arm_pic_register): Init to INVALID_REGNUM.
+	(arm_override_options): Set arm_pic_register if TARGET_APCS_STACK
+	also.  Don't set it if not flag_pic.
+	* config/i386/i386.c (ix86_save_reg): Trust PIC_OFFSET_TABLE_REGNUM
+	to be INVALID_REGNUM when not used.
+
 2002-03-13  Aldy Hernandez  <aldyh@redhat.com>
 
-        * expmed.c (store_bit_field): Reset alias set for memory.
-        (extract_bit_field): Same.
+	* expmed.c (store_bit_field): Reset alias set for memory.
+	(extract_bit_field): Same.
 
 2002-03-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
@@ -372,12 +389,12 @@ Sat Mar  9 07:20:01 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2002-03-08  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/rs6000.c (rs6000_va_arg): Fix alignment for
-        vectors.
+	* config/rs6000/rs6000.c (rs6000_va_arg): Fix alignment for
+	vectors.
 
 2002-03-08  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/sysv4.h (BIGGEST_ALIGNMENT): Change for altivec.
+	* config/rs6000/sysv4.h (BIGGEST_ALIGNMENT): Change for altivec.
 
 Fri Mar  8 21:27:49 CET 2002  Jan Hubicka  <jh@suse.cz>
 
@@ -521,11 +538,11 @@ Thu Mar  7 16:33:54 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-03-07  Aldy Hernandez  <aldyh@redhat.com>
 
-        * doc/invoke.texi: Add documentation for -mabi=no-altivec.
+	* doc/invoke.texi: Add documentation for -mabi=no-altivec.
 
-        * config/rs6000/rs6000.c (rs6000_parse_abi_options): Add
-        -mabi=no-altivec
-        (alt_reg_names): Remove % for vrsave.
+	* config/rs6000/rs6000.c (rs6000_parse_abi_options): Add
+	-mabi=no-altivec
+	(alt_reg_names): Remove % for vrsave.
 
 2002-03-06  Richard Henderson  <rth@redhat.com>
 
@@ -537,7 +554,7 @@ Thu Mar  7 16:33:54 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-03-06  Ulrich Weigand  <uweigand@de.ibm.com>
 
-        * reload1.c (reload): Unshare all rtl after reload is done.
+	* reload1.c (reload): Unshare all rtl after reload is done.
 
 	* simplify-rtx.c (simplify_plus_minus): Do not abort,
 	but simply fail if the expression is too complex to simplify.
@@ -662,7 +679,7 @@ Tue Mar  5 18:31:27 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-03-05  Richard Henderson  <rth@redhat.com>
 
-        * rs6000.h (TOTAL_ALTIVEC_REGS): Fix off-by-one error.
+	* rs6000.h (TOTAL_ALTIVEC_REGS): Fix off-by-one error.
 
 2002-03-04  Geoffrey Keating  <geoffk@redhat.com>
 
@@ -709,10 +726,10 @@ Mon Mar  4 15:33:54 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-03-03  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config.gcc (powerpc-*-eabialtivec*): Use t-ppcendian.
-        (powerpc-*-eabisimaltivec*): Same.
+	* config.gcc (powerpc-*-eabialtivec*): Use t-ppcendian.
+	(powerpc-*-eabisimaltivec*): Same.
 
-        * config/rs6000/t-ppcendian: New.
+	* config/rs6000/t-ppcendian: New.
 
 2002-03-04  Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
 
