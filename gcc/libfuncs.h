@@ -139,12 +139,6 @@ enum libfunc_index
   LTI_fixunstfdi,
   LTI_fixunstfti,
 
-  LTI_chkr_check_addr,
-  LTI_chkr_set_right,
-  LTI_chkr_copy_bitmap,
-  LTI_chkr_check_exec,
-  LTI_chkr_check_str,
-
   LTI_profile_function_entry,
   LTI_profile_function_exit,
 
@@ -271,12 +265,6 @@ extern rtx libfunc_table[LTI_MAX];
 #define fixunstfsi_libfunc	(libfunc_table[LTI_fixunstfsi])
 #define fixunstfdi_libfunc	(libfunc_table[LTI_fixunstfdi])
 #define fixunstfti_libfunc	(libfunc_table[LTI_fixunstfti])
-
-#define chkr_check_addr_libfunc	(libfunc_table[LTI_chkr_check_addr])
-#define chkr_set_right_libfunc	(libfunc_table[LTI_chkr_set_right])
-#define chkr_copy_bitmap_libfunc	(libfunc_table[LTI_chkr_copy_bitmap])
-#define chkr_check_exec_libfunc	(libfunc_table[LTI_chkr_check_exec])
-#define chkr_check_str_libfunc	(libfunc_table[LTI_chkr_check_str])
 
 #define profile_function_entry_libfunc	(libfunc_table[LTI_profile_function_entry])
 #define profile_function_exit_libfunc	(libfunc_table[LTI_profile_function_exit])

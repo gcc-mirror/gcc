@@ -1617,13 +1617,6 @@ expand_builtin_strlen (exp, target)
 	 source operand later.  */
       before_strlen = get_last_insn();
 
-      /* Check the string is readable and has an end.  */
-      if (current_function_check_memory_usage)
-	emit_library_call (chkr_check_str_libfunc, LCT_CONST_MAKE_BLOCK,
-			   VOIDmode, 2, src_reg, Pmode,
-			   GEN_INT (MEMORY_USE_RO),
-			   TYPE_MODE (integer_type_node));
-
       char_rtx = const0_rtx;
       char_mode = insn_data[(int) icode].operand[2].mode;
       if (! (*insn_data[(int) icode].operand[2].predicate) (char_rtx,
@@ -1672,8 +1665,7 @@ expand_builtin_strstr (arglist, target, mode)
      rtx target;
      enum machine_mode mode;
 {
-  if (!validate_arglist (arglist, POINTER_TYPE, POINTER_TYPE, VOID_TYPE)
-      || current_function_check_memory_usage)
+  if (!validate_arglist (arglist, POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
     return 0;
   else
     {
@@ -1729,8 +1721,7 @@ expand_builtin_strchr (arglist, target, mode)
      rtx target;
      enum machine_mode mode;
 {
-  if (!validate_arglist (arglist, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE)
-      || current_function_check_memory_usage)
+  if (!validate_arglist (arglist, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
     return 0;
   else
     {
@@ -1776,8 +1767,7 @@ expand_builtin_strrchr (arglist, target, mode)
      rtx target;
      enum machine_mode mode;
 {
-  if (!validate_arglist (arglist, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE)
-      || current_function_check_memory_usage)
+  if (!validate_arglist (arglist, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
     return 0;
   else
     {
@@ -1831,8 +1821,7 @@ expand_builtin_strpbrk (arglist, target, mode)
      rtx target;
      enum machine_mode mode;
 {
-  if (!validate_arglist (arglist, POINTER_TYPE, POINTER_TYPE, VOID_TYPE)
-      || current_function_check_memory_usage)
+  if (!validate_arglist (arglist, POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
     return 0;
   else
     {
@@ -1939,7 +1928,6 @@ expand_builtin_memcpy (arglist)
 	 by pieces, we can avoid loading the string from memory
 	 and only stored the computed constants.  */
       if (src_str
-	  && !current_function_check_memory_usage
 	  && GET_CODE (len_rtx) == CONST_INT
 	  && (unsigned HOST_WIDE_INT) INTVAL (len_rtx) <= strlen (src_str) + 1
 	  && can_store_by_pieces (INTVAL (len_rtx), builtin_memcpy_read_str,
@@ -1953,13 +1941,6 @@ expand_builtin_memcpy (arglist)
 
       src_mem = get_memory_rtx (src);
       set_mem_align (src_mem, src_align);
-
-      /* Just copy the rights of SRC to the rights of DEST.  */
-      if (current_function_check_memory_usage)
-	emit_library_call (chkr_copy_bitmap_libfunc, LCT_CONST_MAKE_BLOCK,
-			   VOIDmode, 3, XEXP (dest_mem, 0), Pmode,
-			   XEXP (src_mem, 0), Pmode,
-			   len_rtx, TYPE_MODE (sizetype));
 
       /* Copy word part most expediently.  */
       dest_addr = emit_block_move (dest_mem, src_mem, len_rtx);
@@ -2143,10 +2124,9 @@ expand_builtin_memset (exp)
 	{
 	  if (!host_integerp (len, 1))
 	    return 0;
-	  if (current_function_check_memory_usage
-	      || !can_store_by_pieces (tree_low_cst (len, 1),
-				       builtin_memset_read_str,
-				       (PTR) &c, dest_align))
+	  if (!can_store_by_pieces (tree_low_cst (len, 1),
+				    builtin_memset_read_str, (PTR) &c,
+				    dest_align))
 	    return 0;
 
 	  dest_mem = get_memory_rtx (dest);
@@ -2160,16 +2140,6 @@ expand_builtin_memset (exp)
 
       dest_mem = get_memory_rtx (dest);
       set_mem_align (dest_mem, dest_align);
-	   
-      /* Just check DST is writable and mark it as readable.  */
-      if (current_function_check_memory_usage)
-	emit_library_call (chkr_check_addr_libfunc, LCT_CONST_MAKE_BLOCK,
-			   VOIDmode, 3, XEXP (dest_mem, 0), Pmode,
-			   len_rtx, TYPE_MODE (sizetype),
-			   GEN_INT (MEMORY_USE_WO),
-			   TYPE_MODE (integer_type_node));
-
-
       dest_addr = clear_storage (dest_mem, len_rtx);
 
       if (dest_addr == 0)
@@ -2225,10 +2195,6 @@ expand_builtin_memcmp (exp, arglist, target)
      tree arglist;
      rtx target;
 {
-  /* If we need to check memory accesses, call the library function.  */
-  if (current_function_check_memory_usage)
-    return 0;
-
   if (!validate_arglist (arglist,
 		      POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
     return 0;
@@ -2308,10 +2274,6 @@ expand_builtin_strcmp (exp, target, mode)
   tree arglist = TREE_OPERAND (exp, 1);
   tree arg1, arg2;
   const char *p1, *p2;
-
-  /* If we need to check memory accesses, call the library function.  */
-  if (current_function_check_memory_usage)
-    return 0;
 
   if (!validate_arglist (arglist, POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
     return 0;
@@ -2414,10 +2376,6 @@ expand_builtin_strncmp (exp, target, mode)
   tree arg1, arg2, arg3;
   const char *p1, *p2;
 
-  /* If we need to check memory accesses, call the library function.  */
-  if (current_function_check_memory_usage)
-    return 0;
-
   if (!validate_arglist (arglist,
 			 POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
     return 0;
@@ -2518,10 +2476,6 @@ expand_builtin_strcat (arglist, target, mode)
      rtx target;
      enum machine_mode mode;
 {
-  /* If we need to check memory accesses, call the library function.  */
-  if (current_function_check_memory_usage)
-    return 0;
-
   if (!validate_arglist (arglist, POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
     return 0;
   else
@@ -2548,10 +2502,6 @@ expand_builtin_strncat (arglist, target, mode)
      rtx target;
      enum machine_mode mode;
 {
-  /* If we need to check memory accesses, call the library function.  */
-  if (current_function_check_memory_usage)
-    return 0;
-
   if (!validate_arglist (arglist,
 			 POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
     return 0;
@@ -2605,10 +2555,6 @@ expand_builtin_strspn (arglist, target, mode)
      rtx target;
      enum machine_mode mode;
 {
-  /* If we need to check memory accesses, call the library function.  */
-  if (current_function_check_memory_usage)
-    return 0;
-
   if (!validate_arglist (arglist, POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
     return 0;
   else
@@ -2646,10 +2592,6 @@ expand_builtin_strcspn (arglist, target, mode)
      rtx target;
      enum machine_mode mode;
 {
-  /* If we need to check memory accesses, call the library function.  */
-  if (current_function_check_memory_usage)
-    return 0;
-
   if (!validate_arglist (arglist, POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
     return 0;
   else
@@ -2791,7 +2733,7 @@ expand_builtin_args_info (exp)
   TREE_STATIC (result) = 1;
   result = build1 (INDIRECT_REF, build_pointer_type (type), result);
   TREE_CONSTANT (result) = 1;
-  return expand_expr (result, NULL_RTX, VOIDmode, EXPAND_MEMORY_USE_BAD);
+  return expand_expr (result, NULL_RTX, VOIDmode, 0);
 #endif
 }
 
@@ -3280,8 +3222,7 @@ expand_builtin_fputs (arglist, ignore)
     return 0;
 
   /* Verify the arguments in the original call.  */
-  if (!validate_arglist (arglist, POINTER_TYPE, POINTER_TYPE, VOID_TYPE)
-      || current_function_check_memory_usage)
+  if (!validate_arglist (arglist, POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
     return 0;
 
   /* Get the length of the string passed to fputs.  If the length

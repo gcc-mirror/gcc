@@ -1432,14 +1432,6 @@ put_var_into_stack (decl)
     }
   else
     return;
-
-  if (current_function_check_memory_usage)
-    emit_library_call (chkr_set_right_libfunc, LCT_CONST_MAKE_BLOCK, VOIDmode,
-		       3, XEXP (reg, 0), Pmode,
-		       GEN_INT (GET_MODE_SIZE (GET_MODE (reg))),
-		       TYPE_MODE (sizetype),
-		       GEN_INT (MEMORY_USE_RW),
-		       TYPE_MODE (integer_type_node));
 }
 
 /* Subroutine of put_var_into_stack.  This puts a single pseudo reg REG
@@ -4824,14 +4816,6 @@ assign_parms (fndecl)
 
 	      store_expr (parm, copy, 0);
 	      emit_move_insn (parmreg, XEXP (copy, 0));
-	      if (current_function_check_memory_usage)
-		emit_library_call (chkr_set_right_libfunc,
-				   LCT_CONST_MAKE_BLOCK, VOIDmode, 3,
-				   XEXP (copy, 0), Pmode,
-				   GEN_INT (int_size_in_bytes (type)),
-				   TYPE_MODE (sizetype),
-				   GEN_INT (MEMORY_USE_RW),
-				   TYPE_MODE (integer_type_node));
 	      conversion_insns = get_insns ();
 	      did_conversion = 1;
 	      end_sequence ();
@@ -5000,20 +4984,7 @@ assign_parms (fndecl)
 		emit_move_insn (validize_mem (stack_parm),
 				validize_mem (entry_parm));
 	    }
-	  if (current_function_check_memory_usage)
-	    {
-	      push_to_sequence (conversion_insns);
-	      emit_library_call (chkr_set_right_libfunc, LCT_CONST_MAKE_BLOCK,
-				 VOIDmode, 3, XEXP (stack_parm, 0), Pmode,
-				 GEN_INT (GET_MODE_SIZE (GET_MODE
-							 (entry_parm))),
-				 TYPE_MODE (sizetype),
-				 GEN_INT (MEMORY_USE_RW),
-				 TYPE_MODE (integer_type_node));
 
-	      conversion_insns = get_insns ();
-	      end_sequence ();
-	    }
 	  SET_DECL_RTL (parm, stack_parm);
 	}
 
@@ -5074,7 +5045,7 @@ assign_parms (fndecl)
     = (stack_args_size.var == 0 ? GEN_INT (-stack_args_size.constant)
        : expand_expr (size_diffop (stack_args_size.var,
 				   size_int (-stack_args_size.constant)),
-		      NULL_RTX, VOIDmode, EXPAND_MEMORY_USE_BAD));
+		      NULL_RTX, VOIDmode, 0);
 #else
   current_function_arg_offset_rtx = ARGS_SIZE_RTX (stack_args_size);
 #endif
@@ -6352,8 +6323,7 @@ expand_pending_sizes (pending_sizes)
   /* Evaluate now the sizes of any types declared among the arguments.  */
   for (tem = pending_sizes; tem; tem = TREE_CHAIN (tem))
     {
-      expand_expr (TREE_VALUE (tem), const0_rtx, VOIDmode,
-		   EXPAND_MEMORY_USE_BAD);
+      expand_expr (TREE_VALUE (tem), const0_rtx, VOIDmode, 0);
       /* Flush the queue in case this parameter declaration has
 	 side-effects.  */
       emit_queue ();
@@ -6377,11 +6347,6 @@ expand_function_start (subr, parms_have_cleanups)
   /* Make sure volatile mem refs aren't considered
      valid operands of arithmetic insns.  */
   init_recog_no_volatile ();
-
-  /* Set this before generating any memory accesses.  */
-  current_function_check_memory_usage
-    = (flag_check_memory_usage
-       && ! DECL_NO_CHECK_MEMORY_USAGE (current_function_decl));
 
   current_function_instrument_entry_exit
     = (flag_instrument_function_entry_exit

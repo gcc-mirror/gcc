@@ -1,3 +1,42 @@
+Wed Dec  5 16:03:04 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* attribs.c (handle_no_check_memory_usage_atribute): Deleted.
+	(c_com): Delete its reference.
+	* builtins.c: Delete memory checking code.
+	* calls.c, expr.c, function.c, stmt.c: Likewise.
+	* builtins.c (expand_builtin_arg_info): Remove reference to
+	EXPAND_MEMORY_USE_* modifiers.
+	* explow.c (expr_size): Likewise.
+	* expr.c (expand_expr, expand_increment): Likewise.
+	* expr.h (ARGS_SIZE_RTX): Likewise.
+	* function.c (assign_parms, expand_pending_sizeso): Likewise.
+	* c-decl.c (duplicate_decls): Don't handle DECL_NO_CHECK_MEMORY_USAGE.
+	* expr.c (in_check_memory_usage): Delete.
+	(get_push_address, get_memory_usage_from_modifier): Delete.
+	(expand_assigment): Use EXPAND_WRITE on destination.
+	(expand_expr): Delete ro_modifier.
+	* expr.h (expand_modifier): Delete EXPAND_MEMORY_* entries and
+	add EXPAND_WRITE.
+	(memory_use_mode): Delete.
+	* flags.h (flag_check_memory_usage): Deleted.
+	(flag_prefix_function_name): Likewise.
+	* function.c (expand_function_start): Don't set
+	current_function_check_memory_usage.
+	* function.h (check_memory_usage): Delete.
+	* libfuncs.h, optabs.c: Delete chkr_* stuff.
+	* stmt.c (expand_asm_opernd): Change EXPAND_MEMORY_USE_WO to
+	EXPAND_WRITE.
+	* toplev.c (flag_check_memory_usage): Deleted.
+	(flag_prefix_function_name): Likewise.
+	(f_options, process_options): Delete references to above.
+	* tree.h (DECL_NO_CHECK_MEMORY_USAGE): Deleted.
+	* varasm.c (CHKR_PREFIX): Deleted.
+	(make_decl_rtl): Remove flag_prefix_function_name handling.
+	(assemble_name): Likewise.
+	* doc/extend.texi: Remove no_check_memory_usage attribute.
+	* doc/invoke.texi: Remove -fcheck-memory-usage
+	and -fprefix-function-name.
+
 2001-12-05  Andreas Schwab  <schwab@suse.de>
 
 	* Makefile.in (STMP_FIXPROTO, STMP_FIXINC): Use substituted values

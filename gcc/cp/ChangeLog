@@ -1,3 +1,7 @@
+Wed Dec  5 17:00:49 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* decl.c (duplicate_decls): Don't copy DECL_NO_CHECK_MEMORY_USAGE.
+
 2001-12-04  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* pt.c (end_template_parm_list): Clear TREE_CHAIN of each parm.
