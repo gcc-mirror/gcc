@@ -1,3 +1,10 @@
+2002-10-12  Neil Booth  <neil@daikokuya.co.uk>
+
+	PR preprocessor/7862
+	PR preprocessor/8190
+	* gcc.c (cpp_unique_options): Don't delete .d files.
+	Remove stray whitespace.
+
 2002-10-12  Naohiko Shimizu  <pshimizu@fa2.so-net.ne.jp>
 
 	* pdp11.h (ASM_OUTPUT_SKIP): Add preceding 0 for octal constant.
