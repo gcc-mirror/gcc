@@ -204,7 +204,9 @@ set_decl_assembler_name (decl)
      DECL_ASSEMBLER_NAME.  */
   if (TREE_CODE (decl) == FUNCTION_DECL
       || (TREE_CODE (decl) == VAR_DECL 
-	  && (TREE_STATIC (decl) || DECL_EXTERNAL (decl))))
+	  && (TREE_STATIC (decl) 
+	      || DECL_EXTERNAL (decl) 
+	      || TREE_PUBLIC (decl))))
     /* By default, assume the name to use in assembly code is the
        same as that used in the source language.  (That's correct
        for C, and GCC used to set DECL_ASSEMBLER_NAME to the same
