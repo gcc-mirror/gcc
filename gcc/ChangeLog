@@ -1,6 +1,12 @@
 2001-08-18  Zack Weinberg  <zackw@panix.com>
 
-	* cpperror.c: Use VA_OPEN/VA_CLOSE/VA_FIXEDARG throughout. 
+	* doc/extend.texi, doc/gcc.texi, doc/install-old.texi,
+	doc/invoke.texi, doc/md.texi, doc/rtl.texi, doc/include/gpl.texi:
+	Eliminate overfull or underfull hboxes.
+
+2001-08-18  Zack Weinberg  <zackw@panix.com>
+
+	* cpperror.c: Use VA_OPEN/VA_CLOSE/VA_FIXEDARG throughout.
 
 2001-08-18  Zack Weinberg  <zackw@panix.com>
 
@@ -12,12 +18,12 @@
 	TARGET_SCHED_ADJUST_PRIORITY, TARGET_SCHED_ISSUE_RATE,
 	TARGET_SCHED_VARIABLE_ISSUE, TARGET_SCHED_INIT,
 	TARGET_SCHED_FINISH, TARGET_SCHED_REORDER,
-	TARGET_SCHED_REORDER2, TARGET_SCHED_CYCLE_DISPLAY): 
+	TARGET_SCHED_REORDER2, TARGET_SCHED_CYCLE_DISPLAY):
 	New hook #defines to be overridden.
 	(TARGET_SCHED): Bring them all together.
 	(TARGET_INITIALIZER): Update.
 	* target.h: Don't forward declare struct rtx_def.  Use 'rtx'
-	instead of 'struct rtx_def *' throughout.  
+	instead of 'struct rtx_def *' throughout.
 	(struct sched): New set of hooks for the scheduler.
 	* Makefile.in (haifa-sched.o): Depend on target.h.
 	* doc/tm.texi: Document the new scheduler hooks, together in
@@ -81,7 +87,7 @@
 2001-08-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* except.c (TYPE_HASH): Delete.
-	
+
 	* objc/objc-act.c (HASHFUNCTION): Cast to size_t, not
 	HOST_WIDE_INT.
 
@@ -140,7 +146,7 @@
 	(MAX_OFILE_ALIGNMENT): New.
 	(ASM_OUTPUT_ALIGNED_LOCAL): Use bss_section.
 	* config/mips/mips.c (mips_make_temp_file, temp_filename): Remove.
-	(copy_file_data): Split out from 
+	(copy_file_data): Split out from
 	(mips_asm_file_end): ... here.
 	(mips_asm_file_start): Remove extra .section directive.  Use
 	tmpfile instead of mips_make_temp_file.

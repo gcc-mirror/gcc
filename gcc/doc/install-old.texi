@@ -430,11 +430,11 @@ machine, the cross-compiler can use them also.
 Otherwise, you're on your own in finding header files to use when
 cross-compiling.
 
-When you have found suitable header files, put them in the directory
-@file{/usr/local/@var{target}/include}, before building the cross
-compiler.  Then installation will run fixincludes properly and install
-the corrected versions of the header files where the compiler will use
-them.
+When you have found suitable header files, you should put them in the
+directory @file{/usr/local/@var{target}/include}, before building the
+cross compiler.  Then installation will run fixincludes properly and
+install the corrected versions of the header files where the compiler
+will use them.
 
 Provide the header files before you build the cross-compiler, because
 the build stage actually runs the cross-compiler to produce parts of
@@ -613,9 +613,9 @@ $ install replace sys$common:[syslib]dcltables
 @end smallexample
 
 @item
-Type @samp{@@make-gcc} to recompile everything (alternatively, submit
-the file @file{make-gcc.com} to a batch queue).  If you wish to build
-the GNU C++ compiler as well as the GNU CC compiler, you must first edit
+Type @samp{@@make-gcc} to recompile everything, or submit the file
+@file{make-gcc.com} to a batch queue.  If you wish to build the GNU C++
+compiler as well as the GNU CC compiler, you must first edit
 @file{make-gcc.com} and follow the instructions that appear in the
 comments.
 
@@ -679,12 +679,6 @@ If you use GAS 1.38.1, then @code{extern const} variables will not have
 the read-only bit set, and the linker will generate warning messages
 about mismatched psect attributes for these variables.  These warning
 messages are merely a nuisance, and can safely be ignored.
-
-If you are compiling with a version of GNU CC older than 1.33, specify
-@samp{/DEFINE=("inline=")} as an option in all the compilations.  This
-requires editing all the @code{gcc} commands in @file{make-cc1.com}.
-(The older versions had problems supporting @code{inline}.)  Once you
-have a working 1.33 or newer GNU CC, you can change this file back.
 
 @item
 If you want to build GNU CC with the VAX C compiler, you will need to
@@ -829,11 +823,12 @@ done).
 is where @code{g++} looks first for header files.  The C++ library
 installs only target independent header files in that directory.
 
-@code{LOCAL_INCLUDE_DIR} is used only for a native compiler.  It is
-normally @file{/usr/local/include}.  GNU CC searches this directory so
-that users can install header files in @file{/usr/local/include}.
+@code{LOCAL_INCLUDE_DIR} is used only by native compilers.  GNU CC
+doesn't install anything there.  It is normally
+@file{/usr/local/include}.  This is where local additions to a packaged
+system should place header files.
 
-@code{CROSS_INCLUDE_DIR} is used only for a cross compiler.  GNU CC
+@code{CROSS_INCLUDE_DIR} is used only by cross compilers.  GNU CC
 doesn't install anything there.
 
 @code{TOOL_INCLUDE_DIR} is used for both native and cross compilers.  It

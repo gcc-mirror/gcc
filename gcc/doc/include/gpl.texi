@@ -61,7 +61,7 @@ patent must be licensed for everyone's free use or not licensed at all.
 modification follow.
 
 @iftex
-@unnumberedsec TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
+@unnumberedsec TERMS AND CONDITIONS FOR COPYING,@*DISTRIBUTION AND MODIFICATION
 @end iftex
 @ifnottex
 @center TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION

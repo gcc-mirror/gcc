@@ -1527,8 +1527,8 @@ than the operands.  Write the pattern for this as
 where @var{m} is wider than the modes of @var{x} and @var{y}, which need
 not be the same.
 
-Write patterns for unsigned widening multiplication similarly using
-@code{zero_extend}.
+For unsigned widening multiplication, use the same idiom, but with
+@code{zero_extend} instead of @code{sign_extend}.
 
 @findex div
 @cindex division
@@ -2169,7 +2169,8 @@ either wrap around or use saturating addition depending on the value
 of a special control register:
 
 @example
-(parallel [(set (reg:SI 2) (unspec:SI [(reg:SI 3) (reg:SI 4)] 0))
+(parallel [(set (reg:SI 2) (unspec:SI [(reg:SI 3) 
+                                       (reg:SI 4)] 0))
            (use (reg:SI 1))])
 @end example
 
