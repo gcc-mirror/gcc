@@ -6601,6 +6601,17 @@ void
 clobber_return_register ()
 {
   diddle_return_value (do_clobber_return_reg, NULL);
+
+  /* In case we do use pseudo to return value, clobber it too.  */
+  if (DECL_RTL_SET_P (DECL_RESULT (current_function_decl)))
+    {
+      tree decl_result = DECL_RESULT (current_function_decl);
+      rtx decl_rtl = DECL_RTL (decl_result);
+      if (REG_P (decl_rtl) && REGNO (decl_rtl) >= FIRST_PSEUDO_REGISTER)
+	{
+	  do_clobber_return_reg (decl_rtl, NULL);
+	}
+    }
 }
 
 static void
