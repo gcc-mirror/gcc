@@ -395,7 +395,7 @@ public abstract class Rectangle2D extends RectangularShape
     return new PathIterator()
     {
       /** Current coordinate. */
-      private int current = (maxx >= minx && maxy >= miny) ? 6 : 0;
+      private int current = (maxx <= minx && maxy <= miny) ? 6 : 0;
 
       public int getWindingRule()
       {
