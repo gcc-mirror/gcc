@@ -11771,7 +11771,9 @@ java_complete_lhs (tree node)
 	      nn = wfl_op2;
 	      if (TREE_CODE (nn) == EXPR_WITH_FILE_LOCATION)
 		nn = EXPR_WFL_NODE (nn);
-	      if (TREE_CODE (nn) != EXIT_EXPR)
+	      /* NN can be NULL_TREE exactly when UPDATE is, in
+		 finish_for_loop.  */
+	      if (nn != NULL_TREE && TREE_CODE (nn) != EXIT_EXPR)
 		{
 		  SET_WFL_OPERATOR (wfl_operator, node, wfl_op2);
 		  if (SUPPRESS_UNREACHABLE_ERROR (nn))
@@ -14928,12 +14930,17 @@ finish_for_loop (int location, tree condition, tree update, tree body)
       tree up2 = update;
       if (TREE_CODE (up2) == EXPR_WITH_FILE_LOCATION)
 	up2 = EXPR_WFL_NODE (up2);
-      /* Try to detect constraint violations.  These would be
-	 programming errors somewhere.  */
-      if (! IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (up2)))
-	  || TREE_CODE (up2) == LOOP_EXPR)
-	abort ();
-      SUPPRESS_UNREACHABLE_ERROR (up2) = 1;
+      /* It is possible for the update expression to be an
+	 EXPR_WFL_NODE wrapping nothing.  */
+      if (up2 != NULL_TREE && up2 != empty_stmt_node)
+	{
+	  /* Try to detect constraint violations.  These would be
+	     programming errors somewhere.  */
+	  if (! IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (up2)))
+	      || TREE_CODE (up2) == LOOP_EXPR)
+	    abort ();
+	  SUPPRESS_UNREACHABLE_ERROR (up2) = 1;
+	}
     }
   LOOP_EXPR_BODY_UPDATE_BLOCK (LOOP_EXPR_BODY (loop)) = update;
   return loop;
