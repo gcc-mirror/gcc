@@ -66,11 +66,14 @@ struct answer
    conditional.  EXPAND means that macros are to be expanded on the
    directive line.  INCL means to treat "..." and <...> as
    q-char-sequence and h-char-sequence respectively.  COMMENTS means
-   preserve comments in the directive if -C.  */
+   preserve comments in the directive if -C.  IN_I means this directive
+   should be handled even if -fpreprocessed is in effect (these are the
+   directives with callback hooks).  */
 #define COND		(1 << 0)
 #define EXPAND   	(1 << 1)
 #define INCL		(1 << 2)
 #define COMMENTS	(1 << 3)
+#define IN_I		(1 << 4)
 
 /* Defines one #-directive, including how to handle it.  */
 typedef void (*directive_handler) PARAMS ((cpp_reader *));
