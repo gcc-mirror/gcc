@@ -1,5 +1,9 @@
 2002-02-15  Richard Sandiford  <rsandifo@redhat.com>
 
+	* gcc.dg/attr-nest.c: New test.
+
+2002-02-15  Richard Sandiford  <rsandifo@redhat.com>
+
 	* gcc.c-torture/execute/20020215-1.c: New test.
 
 2002-02-14  Jakub Jelinek  <jakub@redhat.com>
