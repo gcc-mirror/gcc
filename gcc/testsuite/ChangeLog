@@ -1,3 +1,7 @@
+2001-03-03  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* gcc.dg/cpp/multiline.c: Update.
+
 2001-03-02  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.other/enum3.C: New test.

@@ -22,3 +22,5 @@ L"line 1
    { dg-final { if \{ [grep multiline.i "^$"] == "" \} \{               } }
    { dg-final { return \}                                               } }
    { dg-final { fail "multiline.c: multi-line tokens"                   } } */
+/* { dg-warning "deprecated" "multiline strings" { target *-*-* } 11 } */
+/* { dg-warning "deprecated" "multiline strings" { target *-*-* } 15 } */
