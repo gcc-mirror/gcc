@@ -1,3 +1,10 @@
+1999-12-05  Mark Mitchell  <mark@codesourcery.com>
+
+	* splay-tree.h (struct splay_tree_node): Rename to ...
+	(struct splay_tree_node_s): ... this.
+	(struct splay_tree): Rename to ...
+	(struct splay_tree_s): ... this.
+
 1999-11-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* ansidecl.h (ATTRIBUTE_MALLOC): New macro.

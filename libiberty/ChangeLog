@@ -1,3 +1,10 @@
+1999-12-05  Mark Mitchell  <mark@codesourcery.com>
+
+	* splay-tree.c (splay_tree_new): Use struct splay_tree_node_s
+	rather than struct splay_tree_node.
+	(splay_tree_insert): Use struct splay_tree_s rather than struct
+	splay_tree.
+
 Sun Nov 28 00:59:39 1999  Philippe De Muyter  <phdm@macqel.be>
 
 	* hashtab.c (sys/types.h): File included.
