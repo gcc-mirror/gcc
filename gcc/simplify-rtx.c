@@ -247,21 +247,38 @@ simplify_replace_rtx (x, old, new)
 			     simplify_replace_rtx (XEXP (x, 0), old, new),
 			     simplify_replace_rtx (XEXP (x, 1), old, new));
     case '<':
-      return
-	simplify_gen_relational (code, mode,
-				 (GET_MODE (XEXP (x, 0)) != VOIDmode
-				  ? GET_MODE (XEXP (x, 0))
-				  : GET_MODE (XEXP (x, 1))),
-				 simplify_replace_rtx (XEXP (x, 0), old, new),
-				 simplify_replace_rtx (XEXP (x, 1), old, new));
+      {
+	enum machine_mode op_mode = (GET_MODE (XEXP (x, 0)) != VOIDmode
+				     ? GET_MODE (XEXP (x, 0))
+				     : GET_MODE (XEXP (x, 1)));
+	rtx op0 = simplify_replace_rtx (XEXP (x, 0), old, new);
+	rtx op1 = simplify_replace_rtx (XEXP (x, 1), old, new);
+
+	return
+	  simplify_gen_relational (code, mode,
+				   (op_mode != VOIDmode
+				    ? op_mode
+				    : GET_MODE (op0) != VOIDmode
+				    ? GET_MODE (op0)
+				    : GET_MODE (op1)),
+				   op0, op1);
+      }
 
     case '3':
     case 'b':
-      return
-	simplify_gen_ternary (code, mode, GET_MODE (XEXP (x, 0)),
-			      simplify_replace_rtx (XEXP (x, 0), old, new),
-			      simplify_replace_rtx (XEXP (x, 1), old, new),
-			      simplify_replace_rtx (XEXP (x, 2), old, new));
+      {
+	enum machine_mode op_mode = GET_MODE (XEXP (x, 0));
+	rtx op0 = simplify_replace_rtx (XEXP (x, 0), old, new);
+
+	return
+	  simplify_gen_ternary (code, mode, 
+				(op_mode != VOIDmode
+				 ? op_mode
+				 : GET_MODE (op0)),
+				op0,
+				simplify_replace_rtx (XEXP (x, 1), old, new),
+				simplify_replace_rtx (XEXP (x, 2), old, new));
+      }
 
     case 'x':
       /* The only case we try to handle is a SUBREG.  */
