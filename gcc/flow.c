@@ -3012,6 +3012,10 @@ calculate_global_regs_live (blocks_in, blocks_out, flags)
   qtail = queue;
   qhead = qend = queue + n_basic_blocks + 2;
 
+  /* Clear out the garbage that might be hanging out in bb->aux.  */
+  for (i = n_basic_blocks - 1; i >= 0; --i)
+    BASIC_BLOCK (i)->aux = NULL;
+
   /* Queue the blocks set in the initial mask.  Do this in reverse block
      number order so that we are more likely for the first round to do 
      useful work.  We use AUX non-null to flag that the block is queued.  */
