@@ -94,6 +94,9 @@ Ada front end		Geert Bosch		bosch@gnat.com
 Ada front end		Robert Dewar		dewar@gnat.com
 fortran			Richard Henderson	rth@redhat.com
 fortran			Toon Moene		toon@moene.indiv.nluug.nl
+fortran 95		Paul Brook		paul@nowt.org
+fortran 95		Steven Bosscher		steven@gcc.gnu.org
+fortran	95		Toon Moene		toon@moene.indiv.nluug.nl
 c++			Jason Merrill		jason@redhat.com
 c++                     Mark Mitchell		mark@codesourcery.com
 cpplib			Dave Brolley		brolley@redhat.com
@@ -171,7 +174,6 @@ Eric Blake					ericb@gcc.gnu.org
 Jim Blandy					jimb@redhat.com
 Phil Blundell					pb@futuretv.com
 Hans Boehm					hboehm@gcc.gnu.org
-Steven Bosscher					steven@gcc.gnu.org
 Eric Botcazou					ebotcazou@libertysurf.fr
 Kevin Buettner					kevinb@redhat.com
 Andrew Cagney					cagney@redhat.com
