@@ -8,7 +8,11 @@ public:
     virtual A * clone();
 };
 
-class B : virtual public A {
+struct Pad {
+  virtual void f () {}
+};
+
+class B : public Pad, virtual public A {
 public:
     void print();
     B * clone();
