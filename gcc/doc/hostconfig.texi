@@ -150,7 +150,7 @@ constructing the index part of debugging dump file names.  The resultant
 string must fit in fifteen bytes.  The full filename will be the
 concatenation of: the prefix of the assembler file name, the string
 resulting from applying this format to an index number, and a string
-unique to each dump file kind, e.g. @samp{rtl}.
+unique to each dump file kind, e.g.@: @samp{rtl}.
 
 If you do not define this macro, GCC will use @samp{.%02d.}.  You should
 define this macro if using the default will create an invalid file name.
