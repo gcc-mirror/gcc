@@ -138,10 +138,10 @@
 
 (define_function_unit "memory"   1 0 (eq_attr "type" "store") 1 0)
 
-(define_function_unit "fp_comp"  1 0 (eq_attr "type" "fcmp") 2 0)
+(define_function_unit "addr"     1 0 (eq_attr "type" "fcmp") 2 0)
 
-(define_function_unit "transfer" 1 0 (eq_attr "type" "xfer") 2 0)
-(define_function_unit "transfer" 1 0 (eq_attr "type" "hilo") 3 0)
+(define_function_unit "memory"   1 0 (eq_attr "type" "xfer") 2 0)
+(define_function_unit "memory"   1 0 (eq_attr "type" "hilo") 3 0)
 
 (define_function_unit "imuldiv"  1 1
   (and (eq_attr "type" "imul") (eq_attr "cpu" "!r3000,r4000"))
@@ -235,8 +235,8 @@
   (and (eq_attr "type" "fdiv") (and (eq_attr "mode" "DF") (eq_attr "cpu" "r6000")))
   16 32)
 
-(define_function_unit "sqrt" 1 1 (and (eq_attr "type" "fsqrt") (eq_attr "mode" "SF"))  54 108)
-(define_function_unit "sqrt" 1 1 (and (eq_attr "type" "fsqrt") (eq_attr "mode" "DF")) 112 224)
+(define_function_unit "divide" 1 1 (and (eq_attr "type" "fsqrt") (eq_attr "mode" "SF"))  54 108)
+(define_function_unit "divide" 1 1 (and (eq_attr "type" "fsqrt") (eq_attr "mode" "DF")) 112 224)
 
 
 ;; The following functional units do not use the cpu type, and use
@@ -2857,9 +2857,9 @@ move\\t%0,%z4\\n\\
 	}
 
       if (operands[2] != pc_rtx)
-	return (truth) ? \"%*j\\t%2\" : \"#bne\\t%z1,%.,%2\";
+	return (truth) ? \"%*beq%?\\t%.,%.,%2\" : \"%*bne%?\\t%.,%.,%2\";
       else
-	return (truth) ? \"#bne\\t%z1,%.,%3\" : \"%*j\\t%3\";
+	return (truth) ? \"%*bne%?\\t%.,%.,%2\" : \"%*beq%?\\t%.,%.,%2\";
     }
 
   if (operands[2] != pc_rtx)
