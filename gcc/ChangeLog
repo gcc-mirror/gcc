@@ -1,3 +1,11 @@
+2002-06-16  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/7042
+	* reorg.c (make_return_insns) [DELAY_SLOTS_FOR_EPILOGUE]: Exit
+	early if current_function_epilogue_delay_list is non-empty.
+	* config/cris/cris.md ("return"): Add sanity check asserting that
+	current_function_epilogue_delay_list is empty.
+
 2002-06-16  Jeff Law <law@redhat.com>
 
 	* toplev.c (rest_of_compilation): Perform a simpler, less costly

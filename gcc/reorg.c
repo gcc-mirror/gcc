@@ -3485,6 +3485,17 @@ make_return_insns (first)
   rtx real_return_label = end_of_function_label;
   int slots, i;
 
+#ifdef DELAY_SLOTS_FOR_EPILOGUE
+  /* If a previous pass filled delay slots in the epilogue, things get a
+     bit more complicated, as those filler insns would generally (without
+     data flow analysis) have to be executed after any existing branch
+     delay slot filler insns.  It is also unknown whether such a
+     transformation would actually be profitable.  Note that the existing
+     code only cares for branches with (some) filled delay slots.  */
+  if (current_function_epilogue_delay_list != NULL)
+    return;
+#endif
+
   /* See if there is a RETURN insn in the function other than the one we
      made for END_OF_FUNCTION_LABEL.  If so, set up anything we can't change
      into a RETURN to jump to it.  */
