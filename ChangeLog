@@ -1,3 +1,8 @@
+2003-10-16  Bernardo Innocenti  <bernie@develer.com>
+
+	* config.guess: Update to 2003-10-16 version.
+	* config.sub: Update to 2003-10-16 version.
+
 2003-10-15 David Daney  <ddaney@avtrex.com>
 
 	* MAINTAINERS: Added myself to 'Write After Approval' section.
