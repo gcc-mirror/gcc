@@ -4425,6 +4425,15 @@ assign_parms (fndecl)
 	  passed_pointer = 1;
 	  passed_mode = nominal_mode = Pmode;
 	}
+      /* See if the frontend wants to pass this by invisible reference.  */
+      else if (passed_type != nominal_type
+	       && POINTER_TYPE_P (passed_type)
+	       && TREE_TYPE (passed_type) == nominal_type)
+	{
+	  nominal_type = passed_type;
+	  passed_pointer = 1;
+	  passed_mode = nominal_mode = Pmode;
+	}
 
       promoted_mode = passed_mode;
 

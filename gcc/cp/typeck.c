@@ -3112,11 +3112,7 @@ convert_arguments (typelist, values, fndecl, flags)
 	      parmval = convert_for_initialization
 		(NULL_TREE, type, val, flags,
 		 "argument passing", fndecl, i);
-	      if (PROMOTE_PROTOTYPES
-		  && INTEGRAL_TYPE_P (type)
-		  && (TYPE_PRECISION (type)
-		      < TYPE_PRECISION (integer_type_node)))
-		parmval = default_conversion (parmval);
+	      parmval = convert_for_arg_passing (type, parmval);
 	    }
 
 	  if (parmval == error_mark_node)

@@ -1,3 +1,8 @@
+2002-07-26  Jason Merrill  <jason@redhat.com>
+
+	* function.c (assign_parms): Handle frontend-directed pass by
+	invisible reference.
+
 2002-07-26  Neil Booth  <neil@daikokuya.co.uk>
 
 	* doc/cppopts.texi: Update.

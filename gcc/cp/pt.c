@@ -6012,7 +6012,7 @@ tsubst_decl (t, args, type, complain)
 	r = copy_node (t);
 	if (DECL_TEMPLATE_PARM_P (t))
 	  SET_DECL_TEMPLATE_PARM_P (r);
-	
+
 	TREE_TYPE (r) = type;
 	c_apply_type_quals_to_decl (cp_type_quals (type), r);
 
@@ -6023,10 +6023,9 @@ tsubst_decl (t, args, type, complain)
 				     complain, in_decl);
 
 	DECL_CONTEXT (r) = NULL_TREE;
-	if (!DECL_TEMPLATE_PARM_P (r) && PROMOTE_PROTOTYPES
-	    && INTEGRAL_TYPE_P (type)
-	    && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node))
-	  DECL_ARG_TYPE (r) = integer_type_node;
+
+	if (!DECL_TEMPLATE_PARM_P (r))
+	  DECL_ARG_TYPE (r) = type_passed_as (type);
 	if (TREE_CHAIN (t))
 	  TREE_CHAIN (r) = tsubst (TREE_CHAIN (t), args,
 				   complain, TREE_CHAIN (t));

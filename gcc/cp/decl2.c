@@ -795,6 +795,19 @@ grok_x_components (specs)
   finish_member_declaration (build_decl (FIELD_DECL, NULL_TREE, t)); 
 }
 
+/* Build a PARM_DECL with NAME and TYPE, and set DECL_ARG_TYPE
+   appropriately.  */
+
+tree
+cp_build_parm_decl (name, type)
+     tree name;
+     tree type;
+{
+  tree parm = build_decl (PARM_DECL, name, type);
+  DECL_ARG_TYPE (parm) = type_passed_as (type);
+  return parm;
+}
+
 /* Returns a PARM_DECL for a parameter of the indicated TYPE, with the
    indicated NAME.  */
 
@@ -803,14 +816,11 @@ build_artificial_parm (name, type)
      tree name;
      tree type;
 {
-  tree parm;
-
-  parm = build_decl (PARM_DECL, name, type);
+  tree parm = cp_build_parm_decl (name, type);
   DECL_ARTIFICIAL (parm) = 1;
   /* All our artificial parms are implicitly `const'; they cannot be
      assigned to.  */
   TREE_READONLY (parm) = 1;
-  DECL_ARG_TYPE (parm) = type;
   return parm;
 }
 
@@ -2853,16 +2863,13 @@ start_static_storage_duration_function ()
   VARRAY_PUSH_TREE (ssdf_decls, ssdf_decl);
 
   /* Create the argument list.  */
-  initialize_p_decl = build_decl (PARM_DECL,
-				  get_identifier (INITIALIZE_P_IDENTIFIER),
-				  integer_type_node);
+  initialize_p_decl = cp_build_parm_decl
+    (get_identifier (INITIALIZE_P_IDENTIFIER), integer_type_node);
   DECL_CONTEXT (initialize_p_decl) = ssdf_decl;
-  DECL_ARG_TYPE (initialize_p_decl) = integer_type_node;
   TREE_USED (initialize_p_decl) = 1;
-  priority_decl = build_decl (PARM_DECL, get_identifier (PRIORITY_IDENTIFIER),
-			      integer_type_node);
+  priority_decl = cp_build_parm_decl
+    (get_identifier (PRIORITY_IDENTIFIER), integer_type_node);
   DECL_CONTEXT (priority_decl) = ssdf_decl;
-  DECL_ARG_TYPE (priority_decl) = integer_type_node;
   TREE_USED (priority_decl) = 1;
 
   TREE_CHAIN (initialize_p_decl) = priority_decl;
