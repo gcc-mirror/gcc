@@ -1,5 +1,10 @@
 2004-10-19  Richard Hendeson  <rth@redhat.com>
 
+	* builtins.c (expand_builtin_memmove): If fold_builtin_memmove
+	succeeds, only expand the result.
+
+2004-10-19  Richard Hendeson  <rth@redhat.com>
+
 	PR middle-end/17885
 	* tree.c (recompute_tree_invarant_for_addr_expr): Always poll address
 	of INDIRECT_REF.

@@ -2725,7 +2725,7 @@ expand_builtin_memmove (tree arglist, tree type, rtx target,
       tree result = fold_builtin_memmove (arglist, type);
 
       if (result)
-	expand_expr (result, target, mode, EXPAND_NORMAL);
+	return expand_expr (result, target, mode, EXPAND_NORMAL);
 
       /* If DEST is not a pointer type, call the normal function.  */
       if (dest_align == 0)
