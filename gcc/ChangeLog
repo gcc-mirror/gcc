@@ -1,3 +1,8 @@
+2001-08-10  Richard Henderson  <rth@redhat.com>
+
+	* config/m68k/m68k.c (m68k_svr3_asm_out_constructor): Protect with
+	ifdef CTOR_LIST_BEGIN instead of INIT_SECTION_ASM_OP.
+
 2001-08-10  Zack Weinberg  <zackw@stanford.edu>
 
 	* calls.c, function.c: Always define PREFERRED_STACK_BOUNDARY
