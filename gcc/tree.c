@@ -2802,19 +2802,14 @@ build_type_variant (type, constp, volatilep)
   constp = !!constp;
   volatilep = !!volatilep;
 
-  /* If not generating auxiliary info, search the chain of variants to see
-     if there is already one there just like the one we need to have.  If so,
-     use that existing one.
+  /* Search the chain of variants to see if there is already one there just
+     like the one we need to have.  If so, use that existing one.  We must
+     preserve the TYPE_NAME, since there is code that depends on this.  */
 
-     We don't do this in the case where we are generating aux info because
-     in that case we want each typedef names to get it's own distinct type
-     node, even if the type of this new typedef is the same as some other
-     (existing) type.  */
-
-  if (!flag_gen_aux_info)
-    for (t = TYPE_MAIN_VARIANT(type); t; t = TYPE_NEXT_VARIANT (t))
-      if (constp == TYPE_READONLY (t) && volatilep == TYPE_VOLATILE (t))
-        return t;
+  for (t = TYPE_MAIN_VARIANT(type); t; t = TYPE_NEXT_VARIANT (t))
+    if (constp == TYPE_READONLY (t) && volatilep == TYPE_VOLATILE (t)
+	&& TYPE_NAME (t) == TYPE_NAME (type))
+      return t;
 
   /* We need a new one.  */
 
