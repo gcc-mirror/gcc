@@ -14348,7 +14348,11 @@ maybe_build_cleanup (decl)
 {
   tree type = TREE_TYPE (decl);
 
-  if (type != error_mark_node && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
+  if (type != error_mark_node && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type)
+      /* The destructor must not be called on the parameters of a thunk
+        because they are not copied when the thunk calls the function
+        to which is thunking. */
+      && (! DECL_CONTEXT (decl) || ! DECL_THUNK_P (DECL_CONTEXT (decl))))
     {
       int flags = LOOKUP_NORMAL|LOOKUP_DESTRUCTOR;
       tree rval;
