@@ -1011,6 +1011,8 @@ extern tree *type_map;
    initialization during its declaration */
 #define MODIFY_EXPR_FROM_INITIALIZATION_P(EXPR) TREE_LANG_FLAG_2 (EXPR)
 
+/* True if EXPR (a TREE_TYPE denoting a class type) has its methods
+   already checked (for redifitions, etc, see java_check_regular_methods.) */
 #define CLASS_METHOD_CHECKED_P(EXPR) TREE_LANG_FLAG_2 (EXPR)
 
 /* True if EXPR (a WFL in that case) resolves into an expression name */

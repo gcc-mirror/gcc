@@ -2764,7 +2764,7 @@ java_parser_context_push_initialized_field ()
 }
 
 /* Pop the lists of initialized field. If this lists aren't empty,
-   remember them so we can use it to create and populate the $finit$
+   remember them so we can use it to create and populate the finit$
    or <clinit> functions. */
 
 static void
@@ -3858,7 +3858,7 @@ create_class (flags, id, super, interfaces)
 }
 
 /* End a class declaration: register the statements used to create
-   $finit$ and <clinit>, pop the current class and resume the prior
+   finit$ and <clinit>, pop the current class and resume the prior
    parser context if necessary.  */
 
 static void
@@ -3916,9 +3916,9 @@ add_inner_class_fields (class_decl, fct_decl)
 	  wfl = build_wfl_node (get_identifier (name));
 	  init = build_wfl_node (get_identifier (pname));
 	  /* Build an initialization for the field: it will be
-	     initialized by a parameter added to $finit$, bearing a
+	     initialized by a parameter added to finit$, bearing a
 	     mangled name of the field itself (param$<n>.) The
-	     parameter is provided to $finit$ by the constructor
+	     parameter is provided to finit$ by the constructor
 	     invoking it (hence the constructor will also feature a
 	     hidden parameter, set to the value of the outer context
 	     local at the time the inner class is created.)
@@ -3927,7 +3927,7 @@ add_inner_class_fields (class_decl, fct_decl)
 	     be accessed by the inner class. It's actually not trivial
 	     to minimize these aliases down to the ones really
 	     used. One way to do that would be to expand all regular
-	     methods first, then $finit$ to get a picture of what's
+	     methods first, then finit$ to get a picture of what's
 	     used.  It works with the exception that we would have to
 	     go back on all constructor invoked in regular methods to
 	     have their invokation reworked (to include the right amount
@@ -3939,7 +3939,7 @@ add_inner_class_fields (class_decl, fct_decl)
 	     use.
 	     
 	     On the other hand, it only affect local inner classes,
-	     whose constructors (and $finit$ call) will be featuring
+	     whose constructors (and finit$ call) will be featuring
 	     unecessary arguments. It's easy for a developper to keep
 	     this number of parameter down by using the `final'
 	     keyword only when necessary. For the time being, we can
@@ -4145,7 +4145,7 @@ register_fields (flags, type, variable_list)
 
       /* If the couple initializer/initialized is marked ARG_FINAL_P, we
 	 mark the created field FIELD_LOCAL_ALIAS, so that we can 
-	 hide parameters to this inner class $finit$ and constructors. */
+	 hide parameters to this inner class finit$ and constructors. */
       if (ARG_FINAL_P (current))
 	FIELD_LOCAL_ALIAS (field_decl) = 1;
       
@@ -4186,8 +4186,8 @@ register_fields (flags, type, variable_list)
   lineno = saved_lineno;
 }
 
-/* Generate $finit$, using the list of initialized fields to populate
-   its body. $finit$'s parameter(s) list is adjusted to include the
+/* Generate finit$, using the list of initialized fields to populate
+   its body. finit$'s parameter(s) list is adjusted to include the
    one(s) used to initialized the field(s) caching outer context
    local(s). */
 
@@ -5000,7 +5000,7 @@ java_check_circular_reference ()
    count is kept of the number of crafted parameters. MODE governs
    what eventually gets created: something suitable for a function
    creation or a function invocation, either the constructor or
-   $finit$.  */
+   finit$.  */
 
 static tree
 build_alias_initializer_parameter_list (mode, class_type, parm, artificial)
@@ -5795,7 +5795,7 @@ check_method_redefinition (class, method)
   tree redef, name;
   tree cl = DECL_NAME (method);
   tree sig = TYPE_ARGUMENT_SIGNATURE (TREE_TYPE (method));
-  /* decl name of artificial <clinit> and $finit$ doesn't need to be
+  /* decl name of artificial <clinit> and finit$ doesn't need to be
      fixed and checked */
 
   /* Reset the method name before running the check. If it returns 1,
@@ -7393,7 +7393,7 @@ java_complete_expand_class (outer)
    we expand regular methods first. This allows us get an estimate on
    how outer context local alias fields are really used so we can add
    to the constructor just enough code to initialize them properly (it
-   also lets us generate $finit$ correctly.) Then we expand the
+   also lets us generate finit$ correctly.) Then we expand the
    constructors and then <clinit>.  */
 
 static void
@@ -7414,7 +7414,7 @@ java_complete_expand_methods (class_decl)
   first_decl = TYPE_METHODS (current_class);
   clinit = maybe_generate_pre_expand_clinit (current_class);
 
-  /* Then generate $finit$ (if we need to) because constructor will
+  /* Then generate finit$ (if we need to) because constructor will
    try to use it.*/
   if (TYPE_FINIT_STMT_LIST (current_class))
     {
@@ -9884,7 +9884,7 @@ patch_method_invocation (patch, primary, where, is_static, ret_decl)
     {
       tree finit_parms, finit_call;
       
-      /* Prepare to pass hidden parameters to $finit$, if any. */
+      /* Prepare to pass hidden parameters to finit$, if any. */
       finit_parms = build_alias_initializer_parameter_list 
 	(AIPL_FUNCTION_FINIT_INVOCATION, current_class, NULL_TREE, NULL);
 
@@ -12173,7 +12173,7 @@ try_builtin_assignconv (wfl_op1, lhs_type, rhs)
 }
 
 /* Return 1 if RHS_TYPE can be converted to LHS_TYPE by identity
-   conversion (5.1.1) or widening primitve conversion (5.1.2).  Return
+   conversion (5.1.1) or widening primitive conversion (5.1.2).  Return
    0 is the conversion test fails.  This implements parts the method
    invocation convertion (5.3).  */
 

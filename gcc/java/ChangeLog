@@ -1,3 +1,10 @@
+2000-08-29  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* expr.c (can_widen_reference_to): Fixed indentation.
+	* java-tree.h (CLASS_METHOD_CHECKED_P): Added leading comment.
+	* parse.y: `finit$' replaces `$finit$' in comments.
+	(try_builtin_assignconv): Fixed leading comment.
+
 2000-08-25  Greg McGary  <greg@mcgary.org>
 
 	* gjavah.c (cxx_keyword_subst): Use ARRAY_SIZE.
