@@ -1,0 +1,195 @@
+# Process this file with autoconf to produce a configure script, like so:
+# aclocal && autoconf && autoheader && automake
+
+AC_PREREQ(2.59)
+AC_INIT([GNU Fortran Runtime Library], 0.2,,[libgfortran])
+AC_CONFIG_HEADER(config.h)
+
+# For libtool versioning info, format is CURRENT:REVISION:AGE
+libtool_VERSION=6:0:0
+AC_SUBST(libtool_VERSION)
+
+# -------
+# Options
+# -------
+
+AC_MSG_CHECKING([for --enable-version-specific-runtime-libs])
+AC_ARG_ENABLE(version-specific-runtime-libs,
+[  --enable-version-specific-runtime-libs    Specify that runtime libraries should be installed in a compiler-specific directory ],
+[case "$enableval" in
+ yes) version_specific_libs=yes ;;
+ no)  version_specific_libs=no ;;
+ *)   AC_MSG_ERROR([Unknown argument to enable/disable version-specific libs]);;
+ esac],
+[version_specific_libs=no])
+AC_MSG_RESULT($version_specific_libs)
+
+
+# Gets build, host, target, *_vendor, *_cpu, *_os, etc.
+#
+# You will slowly go insane if you do not grok the following fact:  when
+# building this library, the top-level /target/ becomes the library's /host/.
+#
+# configure then causes --target to default to --host, exactly like any
+# other package using autoconf.  Therefore, 'target' and 'host' will
+# always be the same.  This makes sense both for native and cross compilers
+# just think about it for a little while.  :-)
+#
+# Also, if this library is being configured as part of a cross compiler, the
+# top-level configure script will pass the "real" host as $with_cross_host.
+#
+# Do not delete or change the following two lines.  For why, see
+# http://gcc.gnu.org/ml/libstdc++/2003-07/msg00451.html
+AC_CANONICAL_SYSTEM
+target_alias=${target_alias-$host_alias}
+
+# Sets up automake.  Must come after AC_CANONICAL_SYSTEM.  Each of the
+# following is magically included in AUTOMAKE_OPTIONS in each Makefile.am.
+#  1.8.2:  minimum required version
+#  no-define:  PACKAGE and VERSION will not be #define'd in config.h (a bunch
+#              of other PACKAGE_* variables will, however, and there's nothing
+#              we can do about that; they come from AC_INIT).
+#  foreign:  we don't follow the normal rules for GNU packages (no COPYING
+#            file in the top srcdir, etc, etc), so stop complaining.
+#  no-dependencies:  turns off auto dependency generation (just for now)
+#  -Wall:  turns on all automake warnings...
+#  -Wno-portability:  ...except this one, since GNU make is required.
+AM_INIT_AUTOMAKE([1.8.2 no-define foreign no-dependencies -Wall -Wno-portability])
+
+AM_MAINTAINER_MODE
+AM_ENABLE_MULTILIB(, ..)
+
+# Handy for debugging:
+#AC_MSG_NOTICE($build / $host / $target / $host_alias / $target_alias); sleep 5
+
+# Are we being configured with some form of cross compiler?
+# NB: We don't actually need to know this just now, but when, say, a test
+#     suite is included, we'll have to know.
+if test "$build" != "$host"; then
+  LIBGFOR_IS_NATIVE=false
+  GCC_NO_EXECUTABLES
+else
+  LIBGFOR_IS_NATIVE=true
+fi
+
+# Process the option "--enable-version-specific-runtime-libs"
+gcc_version_trigger=${srcdir}/../gcc/version.c
+gcc_version_full=`grep version_string ${gcc_version_trigger} | sed -e 's/.*\"\([[^ \"]]*\)[[ \"]].*/\1/'`
+gcc_version=`echo ${gcc_version_full} | sed -e 's/\([^ ]*\) .*/\1/'`
+AC_SUBST(gcc_version)
+
+# Calculate toolexeclibdir
+# Also toolexecdir, though it's only used in toolexeclibdir
+case ${version_specific_libs} in
+  yes)
+    # Need the gcc compiler version to know where to install libraries
+    # and header files if --enable-version-specific-runtime-libs option
+    # is selected.
+    toolexecdir='$(libdir)/gcc/$(target_alias)'
+    toolexeclibdir='$(toolexecdir)/'${gcc_version}'$(MULTISUBDIR)'
+    ;;
+  no)
+    if test -n "$with_cross_host" &&
+       test x"$with_cross_host" != x"no"; then
+      # Install a library built with a cross compiler in tooldir, not libdir.
+      toolexecdir='$(exec_prefix)/$(target_alias)'
+      toolexeclibdir='$(toolexecdir)/lib'
+    else
+      toolexecdir='$(libdir)/gcc-lib/$(target_alias)'
+      toolexeclibdir='$(libdir)'
+    fi
+    multi_os_directory=`$CC -print-multi-os-directory`
+    case $multi_os_directory in
+      .) ;; # Avoid trailing /.
+      *) toolexeclibdir=$toolexeclibdir/$multi_os_directory ;;
+    esac
+    ;;
+esac
+AC_SUBST(toolexecdir)
+AC_SUBST(toolexeclibdir)
+
+# Check the compiler.
+# The same as in boehm-gc and libstdc++. Have to borrow it from there.
+# We must force CC to /not/ be precious variables; otherwise
+# the wrong, non-multilib-adjusted value will be used in multilibs.
+# As a side effect, we have to subst CFLAGS ourselves.
+
+m4_rename([_AC_ARG_VAR_PRECIOUS],[real_PRECIOUS])
+m4_define([_AC_ARG_VAR_PRECIOUS],[])
+AC_PROG_CC
+m4_rename([real_PRECIOUS],[_AC_ARG_VAR_PRECIOUS])
+
+AC_SUBST(CFLAGS)
+
+# Add -Wall if we are using GCC.
+if test "x$GCC" = "xyes"; then
+  CFLAGS="$CFLAGS -Wall"
+fi
+
+# Find other programs we need.
+AC_CHECK_TOOL(AS, as)
+AC_CHECK_TOOL(AR, ar)
+AC_CHECK_TOOL(RANLIB, ranlib, ranlib-not-found-in-path-error)
+AC_PROG_MAKE_SET
+AC_PROG_INSTALL
+
+# Configure libtool
+#AC_MSG_NOTICE([====== Starting libtool configuration])
+AC_LIBTOOL_DLOPEN
+AM_PROG_LIBTOOL
+AC_SUBST(enable_shared)
+AC_SUBST(enable_static)
+#AC_MSG_NOTICE([====== Finished libtool configuration]) ; sleep 10
+
+# We need gfortran to compile parts of the library
+# We can't use AC_PROG_F77 because it expects a fully working gfortran.
+#AC_PROG_F77(gfortran)
+F77="$GFORTRAN"
+AC_PROG_F77(gfortran)
+FFLAGS="$FFLAGS -Wall -fno-repack-arrays -fno-underscoring"
+
+AC_FUNC_MMAP
+AC_TYPE_OFF_T
+
+# check header files
+AC_STDC_HEADERS
+AC_HAVE_HEADERS(stdlib.h stdio.h string.h stddef.h math.h unistd.h)
+AC_CHECK_HEADERS(time.h sys/params.h sys/time.h sys/times.h sys/resource.h)
+AC_CHECK_HEADER([complex.h],[AC_DEFINE([HAVE_COMPLEX_H], [1], [complex.h exists])])
+
+# Check for complex math functions
+AC_CHECK_LIB([m],[csin],[need_math="no"],[need_math="yes"])
+
+# Check for complex math functions in -lmx also
+AC_CHECK_LIB([mx],[csin],[need_math="no"],[need_math="yes"])
+
+# Check for library functions.
+AC_CHECK_FUNCS(getrusage times)
+
+# Let the user override this
+AC_ARG_ENABLE(cmath,
+	AC_HELP_STRING([--enable-cmath],[Include complex math functions]),
+	[need_math=$enableval])
+if test "$need_math" = "yes"; then
+	AC_MSG_NOTICE([Including complex math functions in libgfor]);
+  extra_math_obj='$(gfor_cmath_obj)'
+fi
+
+AC_SUBST([MATH_OBJ],["$extra_math_obj"])
+
+# The standard autoconf HAVE_STRUCT_TIMEZONE doesn't actually check
+# for struct timezone, as you might think.  We also need to check how
+# to call gettimeofday if we have it.
+LIBGFOR_GETTIMEOFDAY
+
+AC_CACHE_SAVE
+
+if test ${multilib} = yes; then
+  multilib_arg="--enable-multilib"
+else
+  multilib_arg=
+fi
+
+# Write our Makefile.
+AC_CONFIG_FILES(Makefile)
+AC_OUTPUT
