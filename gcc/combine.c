@@ -2351,12 +2351,12 @@ try_combine (i3, i2, i1)
 	if (newi2pat && reg_set_p (i3dest_killed, newi2pat))
 	  distribute_notes (gen_rtx (EXPR_LIST, REG_DEAD, i3dest_killed,
 				     NULL_RTX),
-			    NULL_RTX, i2, NULL_RTX, NULL_RTX, NULL_RTX);
+			    NULL_RTX, i2, NULL_RTX, elim_i2, elim_i1);
 	else
 	  distribute_notes (gen_rtx (EXPR_LIST, REG_DEAD, i3dest_killed,
 				     NULL_RTX),
 			    NULL_RTX, i3, newi2pat ? i2 : NULL_RTX,
-			    NULL_RTX, NULL_RTX);
+			    elim_i2, elim_i1);
       }
 
     if (i2dest_in_i2src)
