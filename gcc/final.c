@@ -752,7 +752,7 @@ shorten_branches (first)
 
 	  /* Account for possible alignment.  */
 	  insn_lengths[uid]
-	    += unitsize - (insn_current_address & (unitsize - 1));
+	    += unitsize - 1 - ((insn_current_address - 1) & (unitsize - 1));
 #else
 	  ;
 #endif
