@@ -49,9 +49,6 @@ extern char *ctime ();
 extern int flag_traditional;
 extern FILE *asm_out_file;
 
-static char out_rcs_id[] = "$What: <@(#) m88k.c,v	1.8> $";
-static char tm_rcs_id [] = TM_RCS_ID;
-
 char *m88k_pound_sign = "";	/* Either # for SVR4 or empty for SVR3 */
 char *m88k_short_data;
 char *m88k_version;
@@ -1580,7 +1577,7 @@ output_file_start (file, f_options, f_len, W_options, W_len)
       time_t now = time ((time_t *)0);
       sprintf (indent, "]\"\n\t%s\t \"@(#)%s [", IDENT_ASM_OP, main_input_filename);
       fprintf (file, indent+3);
-      pos = fprintf (file, "gcc %s, %.24s,", VERSION_STRING, ctime (&now));
+      pos = fprintf (file, "gcc %s, %.24s,", version_string, ctime (&now));
 #if 1
       /* ??? It would be nice to call print_switch_values here (and thereby
 	 let us delete output_options) but this is kept in until it is known

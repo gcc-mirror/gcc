@@ -1,3 +1,17 @@
+Wed Aug 25 15:35:55 1999  Richard Henderson  <rth@cygnus.com>
+
+	* m88k.h (VERSION_INFO2): Kill.
+	(VERSION_STRING): Kill.
+	(TM_RCS_ID): Kill.
+	(VERSION_INFO1): Tidy.
+	(TARGET_VERSION): Update.
+	* m88k/dgux.h (VERSION_INFO2): Kill.
+	(ASM_FIRST_LINE): Adjust for death of VERSION_STRING.
+	* m88k/luna.h (VERSION_INFO1): Tidy.
+	* m88k/sysv4.h (VERSION_INFO1): Likewise.
+	* m88k.c (out_rcs_id, tm_rcs_id): Kill.
+	(output_file_start): Adjust for death of VERSION_STRING.
+
 1999-08-25 13:51 -0700  Jim Meyering  <meyering@ascend.com>
 
 	* cpplib.c (detect_if_not_defined): New function.

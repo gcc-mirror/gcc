@@ -38,7 +38,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Identify the compiler.  */
 #undef  VERSION_INFO1
-#define VERSION_INFO1 "88open ABI, "
+#define VERSION_INFO1 "88open ABI"
 
 /* Default switches */
 #undef	TARGET_DEFAULT
