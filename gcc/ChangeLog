@@ -1,3 +1,8 @@
+2002-11-25  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (an anonymous pattern): Relax the
+	condition for the pattern.
+
 2002-11-25  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/rs6000.h (enum rs6000_builtins): Remove evmwlssf,
