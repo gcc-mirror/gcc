@@ -8858,8 +8858,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 ;; Operand 0 contains the start address.
 ;; Operand 1 contains the end address.
 ;; Operand 2 contains the line length to use.
-;; Operand 3 contains the start address (clobbered).
-;; Operands 4 and 5 (icacheflush) are clobbered scratch registers.
+;; Operands 3 and 4 (icacheflush) are clobbered scratch registers.
 (define_insn "dcacheflush"
   [(const_int 1)
    (unspec_volatile [(mem:BLK (scratch))] 0)
@@ -8884,16 +8883,16 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
    (use (match_operand 0 "pmode_register_operand" "r"))
    (use (match_operand 1 "pmode_register_operand" "r"))
    (use (match_operand 2 "pmode_register_operand" "r"))
-   (clobber (match_scratch 3 "=&0"))
+   (clobber (match_operand 3 "pmode_register_operand" "=&r"))
    (clobber (match_operand 4 "pmode_register_operand" "=&r"))
-   (clobber (match_operand 5 "pmode_register_operand" "=&r"))]
+   (clobber (match_scratch 5 "=&0"))]
   ""
   "*
 {
   if (TARGET_64BIT)
-    return \"mfsp %%sr0,%5\;ldsid (%3),%4\;mtsp %4,%%sr0\;cmpb,*<<=,n %3,%1,.\;fic,m %2(%%sr0,%3)\;sync\;mtsp %5,%%sr0\;nop\;nop\;nop\;nop\;nop\;nop\";
+    return \"mfsp %%sr0,%4\;ldsid (%5),%3\;mtsp %3,%%sr0\;cmpb,*<<=,n %5,%1,.\;fic,m %2(%%sr0,%5)\;sync\;mtsp %4,%%sr0\;nop\;nop\;nop\;nop\;nop\;nop\";
   else
-    return \"mfsp %%sr0,%5\;ldsid (%3),%4\;mtsp %4,%%sr0\;cmpb,<<=,n %3,%1,.\;fic,m %2(%%sr0,%3)\;sync\;mtsp %5,%%sr0\;nop\;nop\;nop\;nop\;nop\;nop\";
+    return \"mfsp %%sr0,%4\;ldsid (%5),%3\;mtsp %3,%%sr0\;cmpb,<<=,n %5,%1,.\;fic,m %2(%%sr0,%5)\;sync\;mtsp %4,%%sr0\;nop\;nop\;nop\;nop\;nop\;nop\";
 }"
   [(set_attr "type" "multi")
    (set_attr "length" "52")])

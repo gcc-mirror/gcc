@@ -1,3 +1,10 @@
+2004-03-06  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.md (icacheflush): Reorder operands to make match_scratch operand
+	last.
+	* pa.h (INITIALIZE_TRAMPOLINE): Remove unnecessary scratch argument
+	from calls to gen_icacheflush.
+
 2004-03-06  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR target/14343
