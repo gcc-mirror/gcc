@@ -836,8 +836,9 @@ extern enum reg_class regno_reg_class[];
 
 /* If we generate an insn to push BYTES bytes,
    this says how many the stack pointer really advances by.
-   On the 68000, sp@- in a byte insn really pushes a word.  */
-#define PUSH_ROUNDING(BYTES) (((BYTES) + 1) & ~1)
+   On the 68000, sp@- in a byte insn really pushes a word.
+   On the 5200 (coldfire), sp@- in a byte insn pushes just a byte.  */
+#define PUSH_ROUNDING(BYTES) (TARGET_5200 ? BYTES : ((BYTES) + 1) & ~1)
 
 /* Offset of first parameter from the argument pointer register value.  */
 #define FIRST_PARM_OFFSET(FNDECL) 8
