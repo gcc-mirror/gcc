@@ -1,4 +1,11 @@
-2000-08-23  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+2000-08-24  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+
+	* acconfig.h: Revert.
+	* acinclude.m4: Revert.
+	* libio/_G_config.h: Revert.
+	* libio/libio.h: Revert.
+	
+2000-08-23  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>	
 
 	* bits/codecvt.h: Tweaks.
 	* testsuite/22_locale/codecvt_unicode_wchar_t.cc (test01): Fix up
