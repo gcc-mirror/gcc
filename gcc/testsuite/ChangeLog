@@ -1,3 +1,8 @@
+2004-05-20  Falk Hueffner  <falk@debian.org>
+
+	PR other/15526
+	* gcc.dg/ftrapv-1.c: New test case.
+
 2004-05-18  Feng Wang  <fengwang@nudt.edu.cn>
 
 	* gfortran.fortran-torture/execute/power.f90: Test constant integers.
