@@ -1,3 +1,7 @@
+2003-11-03  Andreas Jaeger  <aj@suse.de>
+
+	* Makefile.in (GCC_CFLAGS): Remove @WERROR@ again.
+
 2003-11-03  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Makefile.in (cpp.dvi): New target split from cpp.info.
@@ -165,7 +169,7 @@
 	prototypes.
 	(SBSS_SECTION_FUNCTION): Likewise.
 
-2003-11-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+2003-11-01  Andreas Jaeger  <aj@suse.de>
 
 	* Makefile.in (GCC_CFLAGS): Add @WERROR@ for target files.
 

@@ -289,7 +289,7 @@ GCC_FOR_TARGET = $(STAGE_CC_WRAPPER) ./xgcc -B./ -B$(build_tooldir)/bin/ -isyste
 # This is used instead of ALL_CFLAGS when compiling with GCC_FOR_TARGET.
 # It omits XCFLAGS, and specifies -B./.
 # It also specifies -isystem ./include to find, e.g., stddef.h.
-GCC_CFLAGS=$(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(LOOSE_WARN) @WERROR@ $($@-warn) -isystem ./include $(TCFLAGS)
+GCC_CFLAGS=$(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(LOOSE_WARN) $($@-warn) -isystem ./include $(TCFLAGS)
 
 # ---------------------------------------------------
 # Programs which produce files for the target machine
