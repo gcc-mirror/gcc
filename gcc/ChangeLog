@@ -1,3 +1,10 @@
+Wed Dec 15 15:05:30 MET 1999  Jan Hubicka  <hubicka@freesoft.cz>
+
+	* flow.c (dump_flow_info): Dump loop_depth.
+	(flow_loops_nodes_find): Increase loop_depth for basic block in the
+	body.
+	(flow_loops_find): Initialize the loop_depth for each basic block.
+
 1999-12-15  Jason Merrill  <jason@casey.cygnus.com>
 
 	* tree.c (decl_function_context): Handle virtual functions.
