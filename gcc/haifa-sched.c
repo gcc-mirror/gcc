@@ -714,7 +714,7 @@ static int is_pfree PROTO ((rtx, int, int));
 static int find_conditional_protection PROTO ((rtx, int));
 static int is_conditionally_protected PROTO ((rtx, int, int));
 static int may_trap_exp PROTO ((rtx, int));
-static int classify_insn PROTO ((rtx));
+static int haifa_classify_insn PROTO ((rtx));
 static int is_exception_free PROTO ((rtx, int, int));
 
 static char find_insn_mem_list PROTO ((rtx, rtx, rtx, rtx));
@@ -2558,7 +2558,7 @@ is_pfree (load_insn, bb_src, bb_trg)
 	      if (GET_MODE (fore_link) == VOIDmode)
 		{
 		  /* found a DEF-USE dependence (insn1, insn2) */
-		  if (classify_insn (insn2) != PFREE_CANDIDATE)
+		  if (haifa_classify_insn (insn2) != PFREE_CANDIDATE)
 		    /* insn2 not guaranteed to be a 1 base reg load */
 		    continue;
 
@@ -2659,7 +2659,7 @@ may_trap_exp (x, is_store)
    being either PFREE or PRISKY.  */
 
 static int
-classify_insn (insn)
+haifa_classify_insn (insn)
      rtx insn;
 {
   rtx pat = PATTERN (insn);
@@ -2721,7 +2721,7 @@ classify_insn (insn)
 
   return insn_class;
 
-}				/* classify_insn */
+}				/* haifa_classify_insn */
 
 /* Return 1 if load_insn is prisky (i.e. if load_insn is fed by
    a load moved speculatively, or if load_insn is protected by
@@ -2754,7 +2754,7 @@ is_exception_free (insn, bb_src, bb_trg)
      rtx insn;
      int bb_src, bb_trg;
 {
-  int insn_class = classify_insn (insn);
+  int insn_class = haifa_classify_insn (insn);
 
   /* handle non-load insns */
   switch (insn_class)
