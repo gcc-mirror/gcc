@@ -1,6 +1,6 @@
 // resolve.cc - Code for linking and resolving classes and pool entries.
 
-/* Copyright (C) 1999, 2000, 2001  Free Software Foundation
+/* Copyright (C) 1999, 2000, 2001 , 2002 Free Software Foundation
 
    This file is part of libgcj.
 
@@ -628,8 +628,7 @@ _Jv_PrepareClass(jclass klass)
       else if (imeth != 0)		// it could be abstract
 	{
 	  _Jv_InterpMethod *im = reinterpret_cast<_Jv_InterpMethod *> (imeth);
-	  // FIXME: enable once verifier is more fully tested.
-	  // _Jv_VerifyMethod (im);
+	  _Jv_VerifyMethod (im);
 	  clz->methods[i].ncode = im->ncode ();
 	}
     }
