@@ -333,6 +333,20 @@ current_file_function_operand (op, mode)
 	      || op == XEXP (DECL_RTL (current_function_decl), 0)));
 }
 
+/* Return 1 if OP is a valid operand for the MEM of a CALL insn.  */
+
+int
+call_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (mode != Pmode)
+    return 0;
+
+  return (GET_CODE (op) == SYMBOL_REF
+	  || (GET_CODE (op) == REG && REGNO (op) == 27));
+}
+
 /* Return 1 if OP is a valid Alpha comparison operator.  Here we know which
    comparisons are valid in which insn.  */
 
@@ -1521,9 +1535,6 @@ output_epilog (file, size)
   assemble_name (file, alpha_function_name);
   fprintf (file, "\n");
   inside_function = FALSE;
-
-  /* Show that we know this function if it is called again.  */
-  SYMBOL_REF_FLAG (XEXP (DECL_RTL (current_function_decl), 0)) = 1;
 }
 
 /* Debugging support.  */
