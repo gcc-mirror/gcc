@@ -1,3 +1,8 @@
+2004-06-13  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/libgcc-std.ver: Add __unorddf2 and __unordsf2 with
+	version 3.3.4.
+
 2004-06-12  Roger Sayle  <roger@eyesopen.com>
 
 	* expmed.c (shift_cost, shiftadd_cost, shiftsub_cost): Additionally
