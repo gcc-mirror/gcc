@@ -682,8 +682,11 @@ case $os in
 	-solaris)
 		os=-solaris2
 		;;
-	-unixware* | svr4*)
+	-svr4*)
 		os=-sysv4
+		;;
+	-unixware*)
+		os=-sysv4.2uw
 		;;
 	-gnu/linux*)
 		os=`echo $os | sed -e 's|gnu/linux|linux-gnu|'`
