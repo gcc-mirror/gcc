@@ -1,3 +1,8 @@
+Mon Aug 17 11:46:19 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* expr.c (expand_expr): Allow assignments from TImode PARM_DECLs
+	and VAR_DECLs.
+
 Mon Aug 17 10:28:52 1998  Mark Mitchell  <mark@markmitchell.com>
 
 	* stmt.c (expand_end_loop): Tidy.  Allow unconditional
@@ -5,6 +10,18 @@ Mon Aug 17 10:28:52 1998  Mark Mitchell  <mark@markmitchell.com>
 
 Mon Aug 17 10:06:11 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 			  Jeff Law <law@cygnus.com>
+
+	* Makefile.in (cplus-dep.o): Use cplus-dem.c from libiberty.
+
+	* Makefile.in (fold-const.o): depend on $(RTL_H).
+
+	* fold-const.c: Include rtl.h to get the prototype for
+ 	`set_identifier_local_value'.
+
+	* loop.c (express_from_1): Remove unused variable `tmp'.
+	(combine_givs): cast the first argument of bzero to char *.
+
+	* toplev.c (display_help): Remove unused variable `looking_for_start'.
 
 	* c-decl.c (init_decl_processing): Remove unneeded &.
 
