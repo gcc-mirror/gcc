@@ -1,3 +1,30 @@
+Mon Jul 13 18:45:06 1998  Craig Burley  <burley@gnu.org>
+
+	* Make-lang.in (f77.rebuilt): Fix to depend on
+	build-dir-based, not source-based, g77.info.
+
+	* g77.texi: Merge docs with 0.5.24.
+	* g77install.texi: Ditto.
+
+Mon Jul 13 18:02:29 1998  Craig Burley  <burley@gnu.org>
+
+	Cleanups vis-a-vis g77-0.5.24:
+	* g77spec.c (lang_specific_driver): Tabify source.
+	* top.c (ffe_decode_option): Use fixed macro to set
+	internal-checking flag.
+	* top.h (ffe_set_is_do_internal_checks): Fix macro.
+
+Mon Jul 13 17:33:44 1998  Craig Burley  <burley@gnu.org>
+
+	Cleanups vis-a-vis system.h cutover and g77-0.5.24:
+	* Makefile.in (fini.o): Define USE_HCONFIG macro
+	so source code doesn't have to.
+	* fini.c: Don't define USE_HCONFIG here, since
+	source code usually shouldn't care about this.
+	* ansify.c: Include stddef.h only if we have it.
+	* intdoc.c: Ditto.
+	* proj.h: Ditto.
+
 Mon Jul 13 17:30:29 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* lang-options.h: Format changed to work with --help support added
@@ -41,6 +68,11 @@ Thu Jul  9 00:45:59 1998  Craig Burley  <burley@gnu.org>
 	(pushdecl): No longer set "ignored", "used", or
 	"suppressed debug" flags for decls having "invented"
 	identifiers.
+
+1998-07-06  Mike Stump  <mrs@wrs.com>
+
+	* Make-lang.in (f77.stage?): Use mv -f instead of just mv so that
+	we can move g77.c.
 
 1998-07-06  Dave Love  <d.love@dl.ac.uk>
 
@@ -128,6 +160,10 @@ Fri Jun 26 11:54:19 1998  Craig Burley  <burley@gnu.org>
 	* g77spec.c (lang_specific_driver): Put `-lg2c' in
 	front of any `-lm' that is seen.
 
+Mon Jun 22 23:12:05 1998  H.J. Lu  (hjl@gnu.org)
+
+	* Make-lang.in (G77STAGESTUFF): Add g77.c.
+
 Mon Jun 15 23:39:24 1998  Craig Burley  <burley@gnu.org>
 
 	* Make-lang.in (f/g77.info): Use -f when removing
@@ -137,11 +173,7 @@ Mon Jun 15 23:39:24 1998  Craig Burley  <burley@gnu.org>
 
 	* Make-lang.in ($(srcdir)/f/intdoc.texi): Compile
 	using $(INCLUDES) macro to get the new hconfig.h
-	and system.h headers.  [Instead of change below.]
-
-1998-16-19  Manfred Hollstein  <manfred@s-direktnet.de>
-
-	* Makefile.in ($(srcdir)/f/intdoc.texi): Add $(INCLUDES).
+	and system.h headers.
 
 Mon Jun 15 22:21:57 1998  Craig Burley  <burley@gnu.org>
 
@@ -346,6 +378,10 @@ Sat May 23 06:32:52 1998  Craig Burley  <burley@gnu.org>
 	external functions.  But warn if they're unused and -Wunused.
 	* bad.def (FFEBAD_SFUNC_UNUSED): New diagnostic.
 
+Wed May 20 12:12:55 1998  Craig Burley  <burley@gnu.org>
+
+	* Version 0.5.23 released.
+
 Tue May 19 14:52:41 1998  Craig Burley  <burley@gnu.org>
 
 	* bad.def (FFEBAD_OPEN_UNSUPPORTED, FFEBAD_INQUIRE_UNSUPPORTED,
@@ -396,6 +432,11 @@ Wed May 13 13:05:34 1998  Craig Burley  <burley@gnu.org>
 	(f77.clean): Add removal of g77.c, g77.o, g77spec.o,
 	and g77version.o.
 	(f77.distclean): Delete removal of g77.c.
+
+Thu Apr 30 18:59:43 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* Make-lang.in (g77.info, g77.dvi, BUGS, INSTALL, NEWS): Put -o
+	option before input file.
 
 Tue Apr 28 09:23:10 1998  Craig Burley  <burley@gnu.org>
 
@@ -449,11 +490,6 @@ Mon Mar 16 21:20:35 1998  Craig Burley  <burley@gnu.org>
 	reset symbol info after calling ffesymbol_error,
 	to avoid crash.
 
-Thu Mar 12 13:50:21 1998  Craig Burley  <burley@gnu.org>
-
-	* lang-options.h: Sort all -f*-intrinsics-* options,
-	for consistency with other g77 versions.
-
 Mon Mar 16 15:38:50 1998  Craig Burley  <burley@gnu.org>
 
 	* Version 0.5.22 released.
@@ -471,6 +507,11 @@ Sun Mar 15 05:48:49 1998  Craig Burley  <burley@gnu.org>
 
 	* intrin.def: Fix spelling of mixed-case form
 	of `CPU_Time' (was `Cpu_Time').
+
+Thu Mar 12 13:50:21 1998  Craig Burley  <burley@gnu.org>
+
+	* lang-options.h: Sort all -f*-intrinsics-* options,
+	for consistency with other g77 versions.
 
 1998-03-09  Dave Love  <d.love@dl.ac.uk>
 
@@ -496,6 +537,50 @@ Fri Feb 20 12:45:53 1998  Craig Burley  <burley@gnu.org>
 1998-02-16  Dave Love  <d.love@dl.ac.uk>
 
 	* Makefile.in (f/fini): Don't use -W -Wall with HOST_CC.
+
+Fri Feb 13 00:14:56 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* com.c (type_for_mode): Add explicit braces to avoid ambiguous `else'.
+ 
+	* expr.c (ffeexpr_type_combine): Likewise.
+	(ffeexpr_reduce_): Likewise.
+	(ffeexpr_declare_parenthesized_): Likewise.
+ 
+	* src.c (ffesrc_strcmp_1ns2i): Likewise.
+	(ffesrc_strcmp_2c): Likewise.
+	(ffesrc_strncmp_2c): Likewise.
+ 
+	* stb.c (ffestb_halt1_): Likewise.
+	(ffestb_R90910_): Likewise.
+	(ffestb_R9109_): Likewise.
+
+	* stc.c (ffestc_R544_equiv_): Likewise.
+ 
+	* std.c (ffestd_subr_copy_easy_): Likewise.
+	(ffestd_R1001dump_): Likewise.
+	(ffestd_R1001dump_1005_1_): Likewise.
+	(ffestd_R1001dump_1005_2_): Likewise.
+	(ffestd_R1001dump_1005_3_): Likewise.
+	(ffestd_R1001dump_1005_4_): Likewise.
+	(ffestd_R1001dump_1005_5_): Likewise.
+	(ffestd_R1001dump_1010_2_): Likewise.
+ 
+	* ste.c (ffeste_R840): Likewise.
+ 
+	* sts.c (ffests_puttext): Likewise.
+ 
+	* symbol.c (ffesymbol_check_token_): Likewise.
+ 
+	* target.c (ffetarget_real1): Likewise.
+	(ffetarget_real2): Likewise.
+ 
+Sun Jan 25 12:32:15 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Make-lang.in (f77.stage1): Depend on stage1-start so parallel
+ 	make works better.
+	* (f77.stage2): Likewise for stage2-start.
+	* (f77.stage3): Likewise for stage3-start.
+	* (f77.stage4): Likewise for stage4-start.
 
 Sun Jan 11 02:14:47 1998  Craig Burley  <burley@gnu.org>
 
