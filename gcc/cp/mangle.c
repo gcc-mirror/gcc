@@ -1,5 +1,5 @@
 /* Name mangling for the new standard C++ ABI.
-   Copyright (C) 2000 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
    Written by Alex Samuel <sameul@codesourcery.com>
 
    This file is part of GNU CC.
@@ -1450,7 +1450,7 @@ write_builtin_type (type)
 	 integer_type_nodes.  */
       if (type == wchar_type_node)
 	write_char ('w');
-      if (TYPE_FOR_JAVA (type))
+      else if (TYPE_FOR_JAVA (type))
 	write_java_integer_type_codes (type);
       else
 	{

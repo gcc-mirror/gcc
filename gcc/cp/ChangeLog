@@ -1,5 +1,7 @@
 2001-01-10  Mark Mitchell  <mark@codesourcery.com>
 
+	* mangle.c (write_builtin_type): Fix thinko.
+
 	* pt.c (copy_default_args_to_explicit_spec_1): New function.
 	(copy_default_args_to_explicit_spec): Likewise.
 	(check_explicit_specialization): Use it.
