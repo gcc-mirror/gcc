@@ -1,3 +1,9 @@
+2003-10-01  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR optimization/11753
+	* config/sparc/sparc.md (length attribute) [fcc branch]: Add 1 to
+	the length in the non-V9 case.
+
 2003-09-27  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR optimization/12340
