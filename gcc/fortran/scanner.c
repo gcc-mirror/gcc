@@ -679,13 +679,20 @@ gfc_gobble_whitespace (void)
 static void
 load_line (FILE * input, char *buffer, char *filename, int linenum)
 {
-  int c, maxlen, i, trunc_flag;
+  int c, maxlen, i, trunc_flag, preprocessor_flag;
 
   maxlen = (gfc_current_form == FORM_FREE) 
     ? 132 
     : gfc_option.fixed_line_length;
 
   i = 0;
+
+  preprocessor_flag = 0;
+  c = fgetc (input);
+  if (c == '#')
+    /* Don't truncate preprocessor lines.  */
+    preprocessor_flag = 1;
+  ungetc (c, input);
 
   for (;;)
     {
@@ -722,7 +729,7 @@ load_line (FILE * input, char *buffer, char *filename, int linenum)
       *buffer++ = c;
       i++;
 
-      if (i >= maxlen)
+      if (i >= maxlen && !preprocessor_flag)
 	{			/* Truncate the rest of the line.  */
 	  trunc_flag = 1;
 
@@ -736,8 +743,8 @@ load_line (FILE * input, char *buffer, char *filename, int linenum)
 		  && trunc_flag
 		  && !gfc_is_whitespace (c))
 		{
-		  gfc_warning_now ("Line %d of %s is being truncated",
-				   linenum, filename);
+		  gfc_warning_now ("%s:%d: Line is being truncated",
+				   filename, linenum);
 		  trunc_flag = 0;
 		}
 	    }
@@ -789,19 +796,21 @@ preprocessor_line (char *c)
     c++;
 
   if (*c < '0' || *c > '9')
-    {
-      gfc_warning_now ("%s:%d Unknown preprocessor directive", 
-		       current_file->filename, current_file->line);
-      current_file->line++;
-      return;
-    }
+    goto bad_cpp_line;
 
   line = atoi (c);
 
-  c = strchr (c, ' ') + 2; /* Skip space and quote.  */
+  c = strchr (c, ' '); 
+  if (c == NULL)
+    /* Something we don't understand has happened.  */
+    goto bad_cpp_line;
+  c += 2;     /* Skip space and quote.  */
   filename = c;
 
   c = strchr (c, '"'); /* Make filename end at quote.  */
+  if (c == NULL)
+    /* Preprocessor line has no closing quote.  */
+    goto bad_cpp_line;
   *c++ = '\0';
 
   /* Get flags.  */
@@ -846,6 +855,13 @@ preprocessor_line (char *c)
       current_file->filename = gfc_getmem (strlen (filename) + 1);
       strcpy (current_file->filename, filename);
     }
+
+  return;
+
+ bad_cpp_line:
+  gfc_warning_now ("%s:%d: Unknown preprocessor directive", 
+		   current_file->filename, current_file->line);
+  current_file->line++;
 }
 
 
