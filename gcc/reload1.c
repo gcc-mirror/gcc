@@ -1048,6 +1048,7 @@ reload (first, global, dumpfile)
 	      for (i = 0; i < n_reloads; i++)
 		{
 		  register enum reg_class *p;
+		  enum reg_class class = reload_reg_class[i];
 		  int size;
 		  enum machine_mode mode;
 		  int *this_groups;
@@ -1063,6 +1064,16 @@ reload (first, global, dumpfile)
 		      || (reload_out[i] == 0 && reload_in[i] == 0
 			  && ! reload_secondary_p[i]))
   		    continue;
+
+		  /* Show that a reload register of this class is needed
+		     in this basic block.  We do not use insn_needs and
+		     insn_groups because they are overly conservative for
+		     this purpose.  */
+		  if (global && ! basic_block_needs[(int) class][this_block])
+		    {
+		      basic_block_needs[(int) class][this_block] = 1;
+		      new_basic_block_needs = 1;
+		    }
 
 		  /* Decide which time-of-use to count this reload for.  */
 		  switch (reload_when_needed[i])
@@ -1097,15 +1108,15 @@ reload (first, global, dumpfile)
 		  mode = reload_inmode[i];
 		  if (GET_MODE_SIZE (reload_outmode[i]) > GET_MODE_SIZE (mode))
 		    mode = reload_outmode[i];
-		  size = CLASS_MAX_NREGS (reload_reg_class[i], mode);
+		  size = CLASS_MAX_NREGS (class, mode);
 		  if (size > 1)
 		    {
 		      enum machine_mode other_mode, allocate_mode;
 
 		      /* Count number of groups needed separately from
 			 number of individual regs needed.  */
-		      this_groups[(int) reload_reg_class[i]]++;
-		      p = reg_class_superclasses[(int) reload_reg_class[i]];
+		      this_groups[(int) class]++;
+		      p = reg_class_superclasses[(int) class];
 		      while (*p != LIM_REG_CLASSES)
 			this_groups[(int) *p++]++;
 		      (*this_total_groups)++;
@@ -1113,18 +1124,18 @@ reload (first, global, dumpfile)
 		      /* Record size and mode of a group of this class.  */
 		      /* If more than one size group is needed,
 			 make all groups the largest needed size.  */
-		      if (group_size[(int) reload_reg_class[i]] < size)
+		      if (group_size[(int) class] < size)
 			{
-			  other_mode = group_mode[(int) reload_reg_class[i]];
+			  other_mode = group_mode[(int) class];
 			  allocate_mode = mode;
 
-			  group_size[(int) reload_reg_class[i]] = size;
-			  group_mode[(int) reload_reg_class[i]] = mode;
+			  group_size[(int) class] = size;
+			  group_mode[(int) class] = mode;
 			}
 		      else
 			{
 			  other_mode = mode;
-			  allocate_mode = group_mode[(int) reload_reg_class[i]];
+			  allocate_mode = group_mode[(int) class];
 			}
 
 		      /* Crash if two dissimilar machine modes both need
@@ -1134,13 +1145,13 @@ reload (first, global, dumpfile)
 			  && other_mode != allocate_mode
 			  && ! modes_equiv_for_class_p (allocate_mode,
 							other_mode,
-							reload_reg_class[i]))
+							class))
 			abort ();
 		    }
 		  else if (size == 1)
 		    {
-		      this_needs[(int) reload_reg_class[i]] += 1;
-		      p = reg_class_superclasses[(int) reload_reg_class[i]];
+		      this_needs[(int) class] += 1;
+		      p = reg_class_superclasses[(int) class];
 		      while (*p != LIM_REG_CLASSES)
 			this_needs[(int) *p++] += 1;
 		    }
@@ -1210,16 +1221,6 @@ reload (first, global, dumpfile)
 		  if (caller_save_group_size > 1)
 		    insn_total_groups = MAX (insn_total_groups, 1);
 		}
-
-	      /* Update the basic block needs.  */
-
-	      for (i = 0; i < N_REG_CLASSES; i++)
-		if (global && (insn_needs[i] || insn_groups[i])
-		    && ! basic_block_needs[i][this_block])
-		  {
-		    new_basic_block_needs = 1;
-		    basic_block_needs[i][this_block] = 1;
-		  }
 
 #ifdef SMALL_REGISTER_CLASSES
 	      /* If this insn stores the value of a function call,
