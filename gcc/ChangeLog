@@ -1,5 +1,7 @@
 Thu Sep 18 21:13:40 1997  Jeffrey A Law  (law@cygnus.com)
 
+	* Makefile.in (BOOT_CFLAGS): Use -O2.
+
 	* configure.in (strtoul, bsearch): Have autoconf check for these
 	functions.
 	* configure, config.in: Rebuilt.
