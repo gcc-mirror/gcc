@@ -1176,6 +1176,10 @@ dbxout_type (type, full, show_arg_types)
 	     and hence they can't span same size unsigned types.  */
 
  	  if (use_gnu_debug_info_extensions
+	      && TYPE_MIN_VALUE (type) != 0
+	      && TREE_CODE (TYPE_MIN_VALUE (type)) == INTEGER_CST
+	      && TYPE_MAX_VALUE (type) != 0
+	      && TREE_CODE (TYPE_MAX_VALUE (type)) == INTEGER_CST
 	      && (TYPE_PRECISION (type) > TYPE_PRECISION (integer_type_node)
 		  || (TYPE_PRECISION (type) == TYPE_PRECISION (integer_type_node)
 		      && TREE_UNSIGNED (type))
@@ -1650,7 +1654,7 @@ print_int_cst_octal (c)
 		  << (HOST_BITS_PER_WIDE_INT / 3 * 3))
 		 - 1);
 
-      fprintf (asmfile, "%o%01o", (int)beg, (int)middle);
+      fprintf (asmfile, "%o%01o", (int) beg, (int) middle);
       print_octal (end, HOST_BITS_PER_WIDE_INT / 3);
     }
 }
@@ -1663,7 +1667,7 @@ print_octal (value, digits)
   int i;
 
   for (i = digits - 1; i >= 0; i--)
-    fprintf (asmfile, "%01o", (int)((value >> (3 * i)) & 7));
+    fprintf (asmfile, "%01o", (int) ((value >> (3 * i)) & 7));
 }
 
 /* Output the name of type TYPE, with no punctuation.

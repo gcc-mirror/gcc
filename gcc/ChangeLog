@@ -1,5 +1,8 @@
 Fri Apr 14 07:40:32 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* dbxout.c (dbxout_type, case INTEGER_TYPE): Don't call
+	print_int_cst_octal with something that's not an INTEGER_CST.
+
 	* config/alpha/alpha.c (alpha_emit_floatuns): Ensure we pass a REG
 	and not a SUBREG to a FLOAT rtl.
 
