@@ -52,6 +52,10 @@
 	(safe_for_unsave): New.
 	* tree.h (lang_safe_for_unsave, safe_for_unsave): Declare.
 
+	* alpha.h (FUNCTION_OK_FOR_SIBCALL): New.
+	* alpha.md (sibcall, sibcall_value, sibcall_epilogue): New.
+	(*sibcall_osf_1, *sibcall_value_osf_1): New.
+
 2000-03-17  Mark Mitchell  <mark@codesourcery.com>
 
 	* objc/objc-act.c (encode_method_prototype): Pass types, not
@@ -214,7 +218,7 @@ Thu Mar 16 09:02:19 2000  Jason Eckhardt  <jle@cygnus.com>
 2000-03-16  Neil Booth  <NeilB@earthling.net>
 
 	* cppinit.c (handle_option):  Implement #unassert directive
-        as -A- command line option.
+	as -A- command line option.
 	(print_help):  Update.
 	* cpptexi.c:  Update.
 
@@ -298,9 +302,9 @@ Wed Mar 15 13:07:05 MET 2000  Jan Hubicka  <jh@suse.cz>
 
 Wed Feb 23 13:00:06 CET 2000  Jan Hubicka  <jh@suse.cz>
 
-        * flow.c (fixup_reorder_chain): Avoid double labels in the basic block;
-        end of basic block is jump_insn, not barrier; use create_basic_block
-        instead of creating basic block by hand.
+	* flow.c (fixup_reorder_chain): Avoid double labels in the basic block;
+	end of basic block is jump_insn, not barrier; use create_basic_block
+	instead of creating basic block by hand.
 
 2000-03-14  Jason Eckhardt  <jle@cygnus.com>
 

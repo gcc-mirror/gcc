@@ -3704,6 +3704,17 @@
   DONE;
 }")
 
+(define_expand "sibcall"
+  [(call (mem:DI (match_operand 0 "" ""))
+		 (match_operand 1 "" ""))]
+  "!TARGET_OPEN_VMS && !TARGET_WINDOWS_NT"
+  "
+{
+  if (GET_CODE (operands[0]) != MEM)
+    abort ();
+  operands[0] = XEXP (operands[0], 0);
+}")
+
 (define_expand "call_osf"
   [(parallel [(call (mem:DI (match_operand 0 "" ""))
 		    (match_operand 1 "" ""))
@@ -3815,6 +3826,18 @@
   DONE;
 }")
 
+(define_expand "sibcall_value"
+  [(set (match_operand 0 "" "")
+	(call (mem:DI (match_operand 1 "" ""))
+	      (match_operand 2 "" "")))]
+  "!TARGET_OPEN_VMS && !TARGET_WINDOWS_NT"
+  "
+{
+  if (GET_CODE (operands[1]) != MEM)
+    abort ();
+  operands[1] = XEXP (operands[1], 0);
+}")
+
 (define_expand "call_value_osf"
   [(parallel [(set (match_operand 0 "" "")
 		   (call (mem:DI (match_operand 1 "" ""))
@@ -3903,7 +3926,7 @@
     }
 }")
 
-(define_insn ""
+(define_insn "*call_osf_1"
   [(call (mem:DI (match_operand:DI 0 "call_operand" "r,R,i"))
 	 (match_operand 1 "" ""))
    (clobber (reg:DI 27))
@@ -3916,7 +3939,17 @@
   [(set_attr "type" "jsr")
    (set_attr "length" "12,*,16")])
       
-(define_insn ""
+(define_insn "*sibcall_osf_1"
+  [(call (mem:DI (match_operand:DI 0 "call_operand" "R,i"))
+	 (match_operand 1 "" ""))]
+  "! TARGET_WINDOWS_NT && ! TARGET_OPEN_VMS"
+  "@
+   br $31,$%0..ng
+   jmp $31,%0"
+  [(set_attr "type" "jsr")
+   (set_attr "length" "*,8")])
+
+(define_insn "*call_nt_1"
   [(call (mem:DI (match_operand:DI 0 "call_operand" "r,R,i"))
 	 (match_operand 1 "" ""))
    (clobber (reg:DI 26))]
@@ -3928,7 +3961,7 @@
   [(set_attr "type" "jsr")
    (set_attr "length" "*,*,12")])
       
-(define_insn ""
+(define_insn "*call_vms_1"
   [(call (mem:DI (match_operand:DI 0 "call_operand" "r,i"))
 	 (match_operand 1 "" ""))
    (use (match_operand:DI 2 "nonimmediate_operand" "r,m"))
@@ -5434,6 +5467,11 @@
   ""
   "alpha_expand_epilogue ();")
 
+(define_expand "sibcall_epilogue"
+  [(return)]
+  "!TARGET_OPEN_VMS && !TARGET_WINDOWS_NT"
+  "alpha_expand_epilogue (); DONE;")
+
 (define_expand "eh_epilogue"
   [(use (match_operand:DI 0 "register_operand" "r"))
    (use (match_operand:DI 1 "register_operand" "r"))
@@ -5576,7 +5614,7 @@
 ;; The call patterns are at the end of the file because their
 ;; wildcard operand0 interferes with nice recognition.
 
-(define_insn ""
+(define_insn "*call_value_osf_1"
   [(set (match_operand 0 "" "")
 	(call (mem:DI (match_operand:DI 1 "call_operand" "r,R,i"))
 	      (match_operand 2 "" "")))
@@ -5590,7 +5628,18 @@
   [(set_attr "type" "jsr")
    (set_attr "length" "12,*,16")])
 
-(define_insn ""
+(define_insn "*sibcall_value_osf_1"
+  [(set (match_operand 0 "" "")
+	(call (mem:DI (match_operand:DI 1 "call_operand" "R,i"))
+	      (match_operand 2 "" "")))]
+  "! TARGET_WINDOWS_NT && ! TARGET_OPEN_VMS"
+  "@
+   br $31,$%1..ng
+   jmp $31,%1"
+  [(set_attr "type" "jsr")
+   (set_attr "length" "*,8")])
+
+(define_insn "*call_value_nt_1"
   [(set (match_operand 0 "" "")
 	(call (mem:DI (match_operand:DI 1 "call_operand" "r,R,i"))
 	      (match_operand 2 "" "")))
@@ -5603,7 +5652,7 @@
   [(set_attr "type" "jsr")
    (set_attr "length" "*,*,12")])
 
-(define_insn ""
+(define_insn "*call_value_vms_1"
   [(set (match_operand 0 "" "")
 	(call (mem:DI (match_operand:DI 1 "call_operand" "r,i"))
 	      (match_operand 2 "" "")))
@@ -5617,7 +5666,6 @@
    ldq $27,%3\;jsr $26,%1\;ldq $27,0($29)"
   [(set_attr "type" "jsr")
    (set_attr "length" "12,16")])
-
 
 ;; Peepholes go at the end.
 
