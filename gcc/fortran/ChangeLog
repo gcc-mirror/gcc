@@ -1,3 +1,16 @@
+2004-11-16  Paul Brook  <paul@codesourcery.com>
+
+	PR fortran/13010
+	* trans-array.c (gfc_trans_allocate_temp_array): Use gfc_get_dtype.
+	(gfc_array_init_size, gfc_conv_expr_descriptor): Ditto.
+	* trans-types.c (gfc_get_dtype): Accept array type rather than element
+	type.
+	(gfc_get_nodesc_array_type): Don't set GFC_TYPE_ARRAY_DTYPE.
+	(gfc_get_array_type_bounds): Ditto.
+	(gfc_get_derived_type): Recurse into derived type pointers.
+	* trans-types.h (gfc_get_dtype): Add prototype.
+	* trans.h (GFC_TYPE_ARRAY_DTYPE): Add comment.
+
 2004-11-15  Paul Brook  <paul@codesourcery.com>
 
 	* trans-types.c (gfc_get_dtype): Remove obsolete TODO.
