@@ -30,12 +30,15 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "real.h"
 #include "recog.h"
 
-static rtx extract_split_bit_field ();
-static rtx extract_fixed_bit_field ();
-static void store_split_bit_field ();
-static void store_fixed_bit_field ();
-static rtx mask_rtx ();
-static rtx lshift_value ();
+static void store_fixed_bit_field	PROTO((rtx, int, int, int, rtx, int));
+static void store_split_bit_field	PROTO((rtx, int, int, rtx, int));
+static rtx extract_fixed_bit_field	PROTO((enum machine_mode, rtx, int,
+					       int, int, rtx, int, int));
+static rtx mask_rtx			PROTO((enum machine_mode, int,
+					       int, int));
+static rtx lshift_value			PROTO((enum machine_mode, rtx,
+					       int, int));
+static rtx extract_split_bit_field	PROTO((rtx, int, int, int, int));
 
 #define CEIL(x,y) (((x) + (y) - 1) / (y))
 

@@ -237,21 +237,32 @@ static int scratch_index;
 static int this_insn_number;
 static rtx this_insn;
 
-static void block_alloc ();
-static void update_equiv_regs ();
-static int no_conflict_p ();
-static int combine_regs ();
-static void wipe_dead_reg ();
-static int find_free_reg ();
-static void reg_is_born ();
-static void reg_is_set ();
-static void mark_life ();
-static void post_mark_life ();
-static int qty_compare ();
-static int qty_compare_1 ();
-static int reg_meets_class_p ();
-static void update_qty_class ();
-static int requires_inout_p ();
+static void alloc_qty		PROTO((int, enum machine_mode, int, int));
+static void alloc_qty_for_scratch PROTO((rtx, int, rtx, int, int));
+static void validate_equiv_mem_from_store PROTO((rtx, rtx));
+static int validate_equiv_mem	PROTO((rtx, rtx, rtx));
+static int memref_referenced_p	PROTO((rtx, rtx));
+static int memref_used_between_p PROTO((rtx, rtx, rtx));
+static void optimize_reg_copy_1	PROTO((rtx, rtx, rtx));
+static void optimize_reg_copy_2	PROTO((rtx, rtx, rtx));
+static void update_equiv_regs	PROTO((void));
+static void block_alloc		PROTO((int));
+static int qty_compare    	PROTO((int, int));
+static int qty_compare_1	PROTO((int *, int *));
+static int combine_regs		PROTO((rtx, rtx, int, int, rtx, int));
+static int reg_meets_class_p	PROTO((int, enum reg_class));
+static int reg_classes_overlap_p PROTO((enum reg_class, enum reg_class,
+					int));
+static void update_qty_class	PROTO((int, int));
+static void reg_is_set		PROTO((rtx, rtx));
+static void reg_is_born		PROTO((rtx, int));
+static void wipe_dead_reg	PROTO((rtx, int));
+static int find_free_reg	PROTO((enum reg_class, enum machine_mode,
+				       int, int, int, int, int));
+static void mark_life		PROTO((int, enum machine_mode, int));
+static void post_mark_life	PROTO((int, enum machine_mode, int, int, int));
+static int no_conflict_p	PROTO((rtx, rtx, rtx));
+static int requires_inout_p	PROTO((char *));
 
 /* Allocate a new quantity (new within current basic block)
    for register number REGNO which is born at index BIRTH
@@ -1909,9 +1920,9 @@ find_free_reg (class, mode, qty, accept_call_clobbered, just_try_suggested,
 	       born_index, dead_index)
      enum reg_class class;
      enum machine_mode mode;
+     int qty;
      int accept_call_clobbered;
      int just_try_suggested;
-     int qty;
      int born_index, dead_index;
 {
   register int i, ins;
@@ -2070,9 +2081,9 @@ mark_life (regno, mode, life)
 
 static void
 post_mark_life (regno, mode, life, birth, death)
-     register int regno, life, birth;
+     int regno;
      enum machine_mode mode;
-     int death;
+     int life, birth, death;
 {
   register int j = HARD_REGNO_NREGS (regno, mode);
 #ifdef HARD_REG_SET
