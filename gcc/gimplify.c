@@ -1808,7 +1808,6 @@ gimplify_call_expr (tree *expr_p, tree *pre_p, bool want_value)
   tree decl;
   tree arglist;
   enum gimplify_status ret;
-  tree slot;
 
 #if defined ENABLE_CHECKING
   if (TREE_CODE (*expr_p) != CALL_EXPR)
@@ -1871,19 +1870,6 @@ gimplify_call_expr (tree *expr_p, tree *pre_p, bool want_value)
   ret = gimplify_expr (&TREE_OPERAND (*expr_p, 0), pre_p, NULL,
 		       is_gimple_call_addr, fb_rvalue);
 
-  /* Make the return slot explicit if it isn't already.  */
-  if (aggregate_value_p (*expr_p, decl)
-      && !CALL_EXPR_HAS_RETURN_SLOT_ADDR (*expr_p))
-    {
-      slot = create_tmp_var (TREE_TYPE (*expr_p), NULL);
-      arglist = build_fold_addr_expr (slot);
-      arglist = tree_cons (NULL_TREE, arglist, TREE_OPERAND (*expr_p, 1));
-      TREE_OPERAND (*expr_p, 1) = arglist;
-      CALL_EXPR_HAS_RETURN_SLOT_ADDR (*expr_p) = 1;
-    }
-  else
-    slot = NULL_TREE;
-
   if (PUSH_ARGS_REVERSED)
     TREE_OPERAND (*expr_p, 1) = nreverse (TREE_OPERAND (*expr_p, 1));
   for (arglist = TREE_OPERAND (*expr_p, 1); arglist;
@@ -1920,22 +1906,6 @@ gimplify_call_expr (tree *expr_p, tree *pre_p, bool want_value)
   if (TREE_CODE (*expr_p) == CALL_EXPR
       && (call_expr_flags (*expr_p) & (ECF_CONST | ECF_PURE)))
     TREE_SIDE_EFFECTS (*expr_p) = 0;
-
-  /* If we have a return slot, use it in the containing expression.  */
-  if (want_value && CALL_EXPR_HAS_RETURN_SLOT_ADDR (*expr_p))
-    {
-      /* Don't warn about an unused return value.  */
-      TREE_USED (*expr_p) = 1;
-
-      if (slot == NULL_TREE)
-	{
-	  slot = TREE_OPERAND (*expr_p, 1);
-	  slot = TREE_VALUE (slot);
-	  slot = build_fold_indirect_ref (slot);
-	}
-      append_to_statement_list (*expr_p, pre_p);
-      *expr_p = slot;
-    }
 
   return ret;
 }
@@ -2734,39 +2704,6 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p, tree *pre_p,
 	  {
 	    *expr_p = *from_p;
 	    return gimplify_cond_expr (expr_p, pre_p, *to_p);
-	  }
-	else
-	  ret = GS_UNHANDLED;
-	break;
-
-      case CALL_EXPR:
-	/* Transform 'a = f();' to 'f(&a), a' if f returns in memory.  */
-	if (aggregate_value_p (*from_p, *from_p))
-	  {
-	    tree arg;
-	    if (CALL_EXPR_HAS_RETURN_SLOT_ADDR (*from_p))
-	      abort ();
-
-	    ret = gimplify_expr (to_p, pre_p, post_p, is_gimple_lvalue,
-				 fb_lvalue);
-	    if (ret == GS_ERROR)
-	      return ret;
-
-	    arg = build_fold_addr_expr (*to_p);
-	    arg = tree_cons (NULL_TREE, arg, TREE_OPERAND (*from_p, 1));
-	    TREE_OPERAND (*from_p, 1) = arg;
-	    CALL_EXPR_HAS_RETURN_SLOT_ADDR (*from_p) = 1;
-	    /* Don't warn about an unused return value.  */
-	    TREE_USED (*from_p) = 1;
-
-	    if (want_value)
-	      {
-		gimplify_and_add (*from_p, pre_p);
-		*expr_p = *to_p;
-	      }
-	    else
-	      *expr_p = *from_p;
-	    return GS_OK;
 	  }
 	else
 	  ret = GS_UNHANDLED;
