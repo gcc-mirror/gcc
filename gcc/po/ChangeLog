@@ -1,3 +1,9 @@
+2004-04-06  Richard Sandiford  <rsandifo@redhat.com>
+
+	PR other/20792
+	* exgettext: Don't scan options.c.  Scan .opt files for help strings.
+	* gcc.pot: Regenerate.
+
 2005-04-06  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* rw.po: New file.

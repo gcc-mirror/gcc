@@ -4285,7 +4285,7 @@ install-po:
 # fairly modern (POSIX-compliant) awk.
 # The .pot file is left in the build directory.
 gcc.pot: po/gcc.pot
-po/gcc.pot: force options.c
+po/gcc.pot: force
 	-test -d po || mkdir po
 	$(MAKE) srcextra
 	AWK=$(AWK) $(SHELL) $(srcdir)/po/exgettext \
