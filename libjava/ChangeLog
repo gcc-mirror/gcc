@@ -1,6 +1,6 @@
 2004-07-11  Bryce McKinlay  <mckinlay@redhat.com>
 
-	PR libgcj/16748	
+	PR libgcj/16478	
 	* prims.cc (_Jv_CreateJavaVM): Fix comment.
 	* gnu/gcj/runtime/FinalizerThread.java (init): New. Native.
 	(finalizerReady): Now native.
