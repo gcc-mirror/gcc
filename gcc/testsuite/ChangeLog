@@ -1,3 +1,8 @@
+2005-02-15  James A. Morrison  <phython@gcc.gnu.org>
+
+	PR tree-optimization/15785
+	* gcc.dg/pr15785-1.c: New test.
+
 2005-02-15  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR c++/17788
