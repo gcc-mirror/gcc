@@ -8,7 +8,6 @@ Wed Jan 17 13:26:34 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	case of making new double-word constant.
 	Revert last change: instead just test i3_subst_into_i2.
 
->>>>>>> 1.9022
 2001-01-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.md (cmpqi_minus_1): Use {b} for QImode operation.
