@@ -1,3 +1,12 @@
+2002-07-11  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa.md (adddi3): For 32-bit targets, force constants to a register
+	if they don't fit in an 11-bit immediate.  Change insn predicate to
+	arith11_operand.  Remove comment.
+	* pa.c (cint_ok_for_move): Fix comment.
+	(emit_move_sequence):  Don't directly split DImode constants on 32-bit
+	targets.
+
 2002-07-10  Roger Sayle  <roger@eyesopen.com>
 
 	PR c/2454
