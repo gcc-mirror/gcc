@@ -346,17 +346,16 @@ string_verify (GFC_INTEGER_4 slen, const char * str, GFC_INTEGER_4 setlen,
 
   if (back)
     {
-      last =  0;
+      last = -1;
       start = slen - 1;
       delta = -1;
     }
   else
     {
-      last = slen - 1;
+      last = slen;
       start = 0;
       delta = 1;
     }
-  i = 0;
   for (; start != last; start += delta)
     {
       for (i = 0; i < setlen; i++)
