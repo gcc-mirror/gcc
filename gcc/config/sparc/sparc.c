@@ -4914,6 +4914,7 @@ output_double_int (file, value)
 {
   if (GET_CODE (value) == CONST_INT)
     {
+      /* ??? This has endianness issues.  */
 #if HOST_BITS_PER_WIDE_INT == 64
       HOST_WIDE_INT xword = INTVAL (value);
       HOST_WIDE_INT high, low;
