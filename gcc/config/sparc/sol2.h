@@ -69,9 +69,6 @@ do {									\
   ASM_OUTPUT_ALIGNED_COMMON (FILE, NAME, SIZE, ALIGN);			\
 } while (0)
 
-#undef COMMON_ASM_OP
-#define COMMON_ASM_OP "\t.common"
-
 /* This is how to output a definition of an internal numbered label where
    PREFIX is the class of label and NUM is the number within the class.  */
 
