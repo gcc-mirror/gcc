@@ -1,3 +1,8 @@
+Mon Nov 27 17:29:44 2000  kaz Kojima <kkojima@rr.iij4u.or.jp>
+
+	* gcc/config/sh/sh.md (udivsi3_i4, udivsi3_i4_single): Clobber
+	T register.
+
 2000-11-27  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.c (select_dominance_cc_mode): Handle new way that combine
