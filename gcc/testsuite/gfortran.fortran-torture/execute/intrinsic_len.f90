@@ -12,6 +12,7 @@ program test
 
   if ((a .ne. "01234567") .or. (n .ne. 8)) call abort
   if (len(Tom%name) .ne. 10) call abort
+  call array_test()
 end
 
 function w(i)
@@ -20,3 +21,11 @@ function w(i)
   w = "01234567"
   i = len(w)
 end
+
+! This is the testcase from PR 15211 converted to a subroutine
+subroutine array_test
+   implicit none
+   character(len=10) a(4)
+   if (len(a) .NE. 10) call abort()
+end subroutine array_test
+
