@@ -1,3 +1,7 @@
+Wed Feb 10 11:03:22 1999  Richard Henderson  <rth@cygnus.com>
+
+	* configure.in (alphaev6*): Fix typo in target_cpu_default2.
+
 Tue Feb  9 00:00:14 1999  Mark Kettenis  <kettenis@gnu.org>
 
 	* configure.in (i[34567]86-*gnu*): Set float_format to i386.
