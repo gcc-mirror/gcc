@@ -1,3 +1,7 @@
+2004-01-15  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Make-lang.in (c++.srcextra): Dummy entry.
+
 2004-01-15  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/8856

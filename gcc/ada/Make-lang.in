@@ -432,6 +432,7 @@ ada.all.cross:
 
 ada.start.encap: 
 ada.rest.encap: 
+ada.srcextra:
 
 ada.tags: force
 	cd $(srcdir)/ada; etags -o TAGS.sub *.c *.h *.ads *.adb; \

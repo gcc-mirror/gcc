@@ -141,6 +141,7 @@ f77.all.build: g77$(exeext)
 f77.all.cross: g77-cross$(exeext)
 f77.start.encap: g77$(exeext)
 f77.rest.encap:
+f77.srcextra: 
 
 f77.tags: force
 	cd $(srcdir)/f; etags -o TAGS.sub *.c *.h; \
