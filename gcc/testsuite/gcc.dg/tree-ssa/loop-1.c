@@ -29,7 +29,7 @@ void xxx(void)
    well as the calls we need to look for something more specific then just
    foo in order to count only the calls and not the declaration.  */
 
-/* { dg-final { scan-assembler times "foo" 5 { xfail hppa-*-* ia64-*-* } } } */
+/* { dg-final { scan-assembler-times "foo" 5 { xfail hppa-*-* ia64-*-* } } } */
 /* { dg-final { scan-assembler-times "foo,%r" 5 { target hppa*-*-* } } } */
 /* { dg-final { scan-assembler-times "= foo"  5 { target ia64*-*-* } } } */
 
