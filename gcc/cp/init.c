@@ -1176,8 +1176,11 @@ expand_aggr_init (exp, init, alias_this, flags)
       && TREE_TYPE (init) == type)
     init = CONSTRUCTOR_ELTS (init);
 #endif
+
+  TREE_TYPE (exp) = TYPE_MAIN_VARIANT (type);
   expand_aggr_init_1 (TYPE_BINFO (type), exp, exp,
 		      init, alias_this, LOOKUP_NORMAL|flags);
+  TREE_TYPE (exp) = type;
   TREE_READONLY (exp) = was_const;
   TREE_THIS_VOLATILE (exp) = was_volatile;
 }

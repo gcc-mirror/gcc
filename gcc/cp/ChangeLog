@@ -6,6 +6,11 @@ Mon Nov 20 14:05:00 1995  Mike Stump  <mrs@cygnus.com>
 
 	* g++.c (pfatal_with_name): Add missing third argument to concat.
 
+Thu Oct 26 13:59:54 1995  Mike Stump  <mrs@cygnus.com>
+
+	* init.c (expand_aggr_init): Handle cv qualifiers on the object's
+	type.
+
 Sun Nov 12 18:09:35 1995  Mike Stump  <mrs@cygnus.com>
 
 	* Version 2.7.1 released.
