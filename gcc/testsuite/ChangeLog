@@ -1,3 +1,8 @@
+2001-09-06  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/3986
+	* g++.old-deja/g++.abi/vbase9.C: New test.
+
 2001-09-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/compile/20010903-1.c: New test.

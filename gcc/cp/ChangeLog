@@ -1,3 +1,16 @@
+2001-09-06  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/3986
+	* class.c (force_canonical_binfo_r): Check & move an indirect
+	primary base first.
+	(force_canonical_binfo): Check that it's not already
+	canonical.
+	(mark_primary_virtual_base): Remove BINFO parameter.
+	(mark_primary_bases): Adjust, set BINFO_LOST_PRIMARY_P here.
+
+	(binfo_ctor_vtable): Add prototype.
+	(get_primary_binfo): Initialize RESULT.
+
 2001-09-04  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/4203
