@@ -100,7 +100,7 @@ struct reload
   enum machine_mode outmode;
 
   /* The mode of the reload register.  */
-  enum mode;
+  enum machine_mode mode;
 
   /* the largest number of registers this reload will require.  */
   int nregs;
