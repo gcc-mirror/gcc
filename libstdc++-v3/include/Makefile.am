@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.6 2001/08/14 01:24:28 bkoz Exp $
+## $Id: Makefile.am,v 1.7 2001/08/14 08:42:19 bkoz Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -392,5 +392,3 @@ install-data-local:
 
 # By adding these files here, automake will remove them for 'make clean'
 #CLEANFILES = ${allstamps}
-
-

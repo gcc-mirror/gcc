@@ -1,4 +1,4 @@
-// Wrapper for underlying C-language localization -*- C++ -*-
+// std::moneypunct implementation details, generic version -*- C++ -*-
 
 // Copyright (C) 2001 Free Software Foundation, Inc.
 //
@@ -28,40 +28,46 @@
 // the GNU General Public License.
 
 //
-// ISO C++ 14882: 22.8  Standard locale categories.
+// ISO C++ 14882: 22.2.6.3.2  moneypunct virtual functions
 //
 
 // Written by Benjamin Kosnik <bkoz@redhat.com>
 
 #include <locale>
-#include <stdexcept>
-#include <langinfo.h>
 
-namespace std 
+namespace std
 {
-  void
-  locale::facet::_S_create_c_locale(__c_locale& __cloc, const char* __s)
-  {
-    // XXX
-    // Perhaps locale::categories could be made equivalent to LC_*_MASK ?
-    // _M_c_locale = __newlocale(1 << LC_ALL, __s, 0);
-    // _M_c_locale = __newlocale(locale::all, __s, 0);
-    __cloc = __newlocale(1 << LC_ALL, __s, 0);
-    if (!__cloc)
-      {
-	// This named locale is not supported by the underlying OS.
-	throw runtime_error("attempt to create locale from unknown name");
-      }
-  }
-  
-  void
-  locale::facet::_S_destroy_c_locale(__c_locale& __cloc)
-  {
-    if (__cloc)
-      __freelocale(__cloc); 
-  }
+  template<> 
+    void
+    moneypunct<char>::_M_initialize_moneypunct(__c_locale)
+    {
+      // "C" locale
+      _M_decimal_point = '.';
+      _M_thousands_sep = ',';
+      _M_grouping = "";
+      _M_curr_symbol = string_type();
+      _M_positive_sign = string_type();
+      _M_negative_sign = string_type();
+      _M_frac_digits = 0;
+      _M_pos_format = money_base::_S_default_pattern;
+      _M_neg_format = money_base::_S_default_pattern;
+    }
 
-  __c_locale
-  locale::facet::_S_clone_c_locale(__c_locale& __cloc)
-  { return __duplocale(__cloc); }
-}  // namespace std
+#ifdef _GLIBCPP_USE_WCHAR_T
+  template<> 
+    void
+    moneypunct<wchar_t>::_M_initialize_moneypunct(__c_locale)
+    {
+      // "C" locale
+      _M_decimal_point = L'.';
+      _M_thousands_sep = L',';
+      _M_grouping = "";
+      _M_curr_symbol = string_type();
+      _M_positive_sign = string_type();
+      _M_negative_sign = string_type();
+      _M_frac_digits = 0;
+      _M_pos_format = money_base::_S_default_pattern;
+      _M_neg_format = money_base::_S_default_pattern;
+    }
+#endif
+}

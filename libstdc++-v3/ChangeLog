@@ -1,3 +1,23 @@
+2001-08-27  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* config/locale/c_locale_gnu.cc: Move facet info to separate files...
+	* config/locale/c_locale_generic.cc: Same.
+	* config/locale/moneypunct_members_gnu.cc: New file.
+	* config/locale/moneypunct_members_generic.cc: New file.	
+	* config/locale/numpunct_members_gnu.cc: New file.
+	* config/locale/numpunct_members_generic.cc: New file.	
+	* acinclude.m4 (GLIBCPP_ENABLE_CLOCALE): Add moneypunct, numpunct
+	options.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* src/Makefile.am (sources): And here.
+	* src/Makefile.in: Regenerate.
+	
+	Rename for consistency with rest of testsuite.
+	* testsuite/22_locale/codecvt.cc: New file.
+	* testsuite/22_locale/money_put.cc: New file.
+	* testsuite/22_locale/money_put_members_char.cc: New file.
+	
 2001-08-27  Phil Edwards  <pme@sources.redhat.com>
 
 	PR libstdc++/4143
