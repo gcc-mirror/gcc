@@ -5710,26 +5710,7 @@ bool
 constant_address_p (x)
      rtx x;
 {
-  switch (GET_CODE (x))
-    {
-    case LABEL_REF:
-    case CONST_INT:
-      return true;
-
-    case CONST_DOUBLE:
-      return TARGET_64BIT;
-
-    case CONST:
-      /* For Mach-O, really believe the CONST.  */
-      if (TARGET_MACHO)
-	return true;
-      /* Otherwise fall through.  */
-    case SYMBOL_REF:
-      return !flag_pic && legitimate_constant_p (x);
-
-    default:
-      return false;
-    }
+  return CONSTANT_P (x) && legitimate_address_p (Pmode, x, 1);
 }
 
 /* Nonzero if the constant value X is a legitimate general operand
@@ -6080,7 +6061,12 @@ legitimate_address_p (mode, addr, strict)
 	     that never results in lea, this seems to be easier and
 	     correct fix for crash to disable this test.  */
 	}
-      else if (!CONSTANT_ADDRESS_P (disp))
+      else if (GET_CODE (disp) != LABEL_REF
+	       && GET_CODE (disp) != CONST_INT
+	       && (GET_CODE (disp) != CONST
+		   || !legitimate_constant_p (disp))
+	       && (GET_CODE (disp) != SYMBOL_REF
+		   || !legitimate_constant_p (disp)))
 	{
 	  reason = "displacement is not constant";
 	  goto report_error;
@@ -6088,11 +6074,6 @@ legitimate_address_p (mode, addr, strict)
       else if (TARGET_64BIT && !x86_64_sign_extended_value (disp))
 	{
 	  reason = "displacement is out of range";
-	  goto report_error;
-	}
-      else if (!TARGET_64BIT && GET_CODE (disp) == CONST_DOUBLE)
-	{
-	  reason = "displacement is a const_double";
 	  goto report_error;
 	}
     }

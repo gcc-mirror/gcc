@@ -1,3 +1,8 @@
+Thu Apr  3 09:53:40 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (constant_address_p): Use legitimate_constant_p.
+	(legitimate_address_p): Do not use CONSTANT_ADDRESS_P.
+
 2003-04-02  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300-protos.h: Add a prototype for
@@ -26,7 +31,7 @@ Thu Apr  3 00:31:21 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* doc/install.texi (Specific): Update pointers to apple.com.
 
-Thu Apr  3 00:18:49 CEST 2003  Jan HUbicka  <jh@suse.cz>
+Thu Apr  3 00:18:49 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (override_options):  Disable red zone by default on i386.
 	(compute_frame_layout, ix86_force_to_memory, ix86_free_from_memory):  
