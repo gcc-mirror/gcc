@@ -2732,12 +2732,16 @@ Produce debugging information in DWARF version 1 format (if that is
 supported).  This is the format used by SDB on most System V Release 4
 systems.
 
+This option is deprecated.
+
 @item -gdwarf+
 @opindex gdwarf+
 Produce debugging information in DWARF version 1 format (if that is
 supported), using GNU extensions understood only by the GNU debugger
 (GDB)@.  The use of these extensions is likely to make other debuggers
 crash or refuse to read the program.
+
+This option is deprecated.
 
 @item -gdwarf-2
 @opindex gdwarf-2
