@@ -8320,6 +8320,14 @@ gen_lowpart_for_combine (mode, x)
     }
 
   result = gen_lowpart_common (mode, x);
+  if (result != 0
+      && GET_CODE (result) == SUBREG
+      && GET_CODE (SUBREG_REG (result)) == REG
+      && REGNO (SUBREG_REG (result)) >= FIRST_PSEUDO_REGISTER
+      && (GET_MODE_SIZE (GET_MODE (result))
+	  != GET_MODE_SIZE (GET_MODE (SUBREG_REG (result)))))
+    reg_changes_size[REGNO (SUBREG_REG (result))] = 1;
+
   if (result)
     return result;
 
