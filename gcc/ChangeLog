@@ -1,3 +1,7 @@
+2000-12-21  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.texi, cpp.texi: Update last-updated dates.
+
 2000-12-21  Chandrakala Chavva  <cchavva@redhat.com>
 
 	* varasm.c (output_addressed_constants): Use language specific

@@ -2,7 +2,7 @@
 @c This is part of the G77 manual.
 @c For copying conditions, see the file g77.texi.
 
-@set last-update-install 2000-11-05
+@set last-update-install 2000-12-21
 
 @include root.texi
 

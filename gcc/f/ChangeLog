@@ -1,3 +1,10 @@
+Thu Dec 21 21:19:42 2000  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* g77install.texi, g77.texi: Update last-updated dates for
+	installation information and the manual as a whole.
+	* bugs.texi, news.texi: Update copyright years in the comments at
+	the top of the file.
+
 2000-12-21  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* g77install.texi: Adjust wording of an EGCS reference.

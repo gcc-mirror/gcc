@@ -42,7 +42,7 @@ into another language, under the above conditions for modified versions.
 @titlepage
 @c @finalout
 @title The C Preprocessor
-@subtitle Last revised July 2000
+@subtitle Last revised November 2000
 @subtitle for GCC version 2
 @author Richard M. Stallman
 @page

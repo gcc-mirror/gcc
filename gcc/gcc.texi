@@ -146,7 +146,7 @@ instead of in the original English.
 @sp 2
 @center Richard M. Stallman
 @sp 3
-@center Last updated 10 November 2000
+@center Last updated 20 December 2000
 @sp 1
 @c The version number appears five times more in this file.
 
