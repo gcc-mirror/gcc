@@ -32,10 +32,13 @@ details.  */
 #include <java/lang/Thread.h>
 #include <java/io/File.h>
 #include <java/io/FileDescriptor.h>
+#include <gnu/java/nio/channels/FileChannelImpl.h>
 #include <java/io/FileInputStream.h>
 #include <java/io/FileOutputStream.h>
 #include <java/io/IOException.h>
 #include <java/lang/OutOfMemoryError.h>
+
+using gnu::java::nio::channels::FileChannelImpl;
 
 extern char **environ;
 
@@ -187,9 +190,9 @@ java::lang::ConcreteProcess::startProcess (jstringArray progarray,
       // We create the streams before forking.  Otherwise if we had an
       // error while creating the streams we would have run the child
       // with no way to communicate with it.
-      errorStream = new FileInputStream (new FileDescriptor (errp[0]));
-      inputStream = new FileInputStream (new FileDescriptor (inp[0]));
-      outputStream = new FileOutputStream (new FileDescriptor (outp[1]));
+      errorStream = new FileInputStream (new FileChannelImpl(errp[0], FileChannelImpl::READ));
+      inputStream = new FileInputStream (new FileChannelImpl(inp[0], FileChannelImpl::READ));
+      outputStream = new FileOutputStream (new FileChannelImpl(outp[0], FileChannelImpl::WRITE));
 
       // We don't use vfork() because that would cause the local
       // environment to be set by the child.
