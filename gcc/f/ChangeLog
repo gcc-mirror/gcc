@@ -1,3 +1,7 @@
+1998-09-23  Dave Love  <d.love@dl.ac.uk>
+
+	* g77.texi: Additions about `/*', trailing comments and cpp.
+
 1998-09-18  Dave Love  <d.love@dl.ac.uk>
 
 	* g77.texi: Various additions and some small fixes.
