@@ -1554,23 +1554,36 @@ default_pch_valid_p (const void *data_p, size_t len)
 static bool
 default_tree_printer (pretty_printer * pp, text_info *text)
 {
+  tree t;
+
   switch (*text->format_spec)
     {
     case 'D':
+      t = va_arg (*text->args_ptr, tree);
+      if (DECL_DEBUG_EXPR (t) && DECL_DEBUG_EXPR_IS_FROM (t))
+	t = DECL_DEBUG_EXPR (t);
+      break;
+
     case 'F':
     case 'T':
-      {
-        tree t = va_arg (*text->args_ptr, tree);
-        const char *n = DECL_NAME (t)
-          ? lang_hooks.decl_printable_name (t, 2)
-          : "<anonymous>";
-        pp_string (pp, n);
-      }
-      return true;
+      t = va_arg (*text->args_ptr, tree);
+      break;
 
     default:
       return false;
     }
+
+  if (DECL_P (t))
+    {
+      const char *n = DECL_NAME (t)
+        ? lang_hooks.decl_printable_name (t, 2)
+        : "<anonymous>";
+      pp_string (pp, n);
+    }
+  else
+    dump_generic_node (pp, t, 0, 0, 0);
+
+  return true;
 }
 
 /* Initialization of the front end environment, before command line
