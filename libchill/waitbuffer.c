@@ -59,7 +59,7 @@ EXCEPTION (spacefail);
  * exceptions:
  *     bufferinconsistency  if something's wrong in the buffer queue's
  *     spacefail            out of heap space of datalength of receiver
- *                          less then data avilable.
+ *                          less than data avilable.
  *
  * abstract:
  *     implement the CHILL RECEIVE buffer CASE action.
@@ -280,7 +280,7 @@ __wait_buffer (buf_got, nbuf, bufptr, datap, datalen, ins,
           if (retval == 0)
               retval = start_list->bufferaddr;
           else
-              /* more then one has been sent, that's wrong */
+              /* more than one has been sent, that's wrong */
               CAUSE_BUFFINCONS;
           
           /* update instance, if present */

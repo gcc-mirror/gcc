@@ -1,3 +1,9 @@
+2002-01-11  Craig Rodrigues  <rodrigc@gcc.gnu.org>
+
+	PR other/5299
+	* delaycase.c (__delay_event): Fix spelling error.
+	* waitbuffer.c: Same. 
+
 2000-05-31  Richard Henderson  <rth@cygnus.com>
 
 	* Makefile.in (STROBJS): Get memmove.o from configure.
