@@ -56,7 +56,9 @@ convert_to_pointer (type, expr)
       if (type_precision (intype) == POINTER_SIZE)
 	return build1 (CONVERT_EXPR, type, expr);
       expr = convert (type_for_size (POINTER_SIZE, 0), expr);
-      if (TYPE_MODE (TREE_TYPE (expr)) != TYPE_MODE (type))
+      /* Modes may be different but sizes should be the same.  */
+      if (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (expr)))
+	  != GET_MODE_SIZE (TYPE_MODE (type)))
 	/* There is supposed to be some integral type
 	   that is the same width as a pointer.  */
 	abort ();
