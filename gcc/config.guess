@@ -81,7 +81,7 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
 	echo sparc-sun-solaris2`echo ${UNAME_RELEASE}|sed -e 's/[^.]*//'`
 	exit 0 ;;
     i86pc:SunOS:5.*:*)
-	echo i386-unknown-solaris2`echo ${UNAME_RELEASE}|sed -e 's/[^.]*//'`
+	echo i386-pc-solaris2`echo ${UNAME_RELEASE}|sed -e 's/[^.]*//'`
 	exit 0 ;;
     sun4*:SunOS:6*:*)
 	# According to config.sub, this is the proper way to canonicalize
@@ -332,7 +332,7 @@ EOF
 	echo m68k-hp-netbsd${UNAME_RELEASE}
 	exit 0 ;;
     i[34]86:BSD/386:*:* | *:BSD/OS:*:*)
-	echo ${UNAME_MACHINE}-unknown-bsdi${UNAME_RELEASE}
+	echo ${UNAME_MACHINE}-pc-bsdi${UNAME_RELEASE}
 	exit 0 ;;
     *:FreeBSD:*:*)
 	echo ${UNAME_MACHINE}-unknown-freebsd`echo ${UNAME_RELEASE}|sed -e 's/[-(].*//'`
@@ -341,7 +341,7 @@ EOF
 	echo ${UNAME_MACHINE}-unknown-netbsd`echo ${UNAME_RELEASE}|sed -e 's/[-_].*/\./'`
 	exit 0 ;;
     i*:CYGWIN*:*)
-	echo i386-unknown-cygwin32
+	echo i386-pc-cygwin32
 	exit 0 ;;
     p*:CYGWIN*:*)
 	echo powerpcle-unknown-cygwin32
@@ -357,26 +357,26 @@ EOF
 	# first see if it will tell us.
 	ld_help_string=`ld --help 2>&1`
 	if echo "$ld_help_string" | grep >/dev/null 2>&1 "supported emulations: elf_i[345]86"; then
-	  echo "${UNAME_MACHINE}-unknown-linux" ; exit 0
+	  echo "${UNAME_MACHINE}-pc-linux-gnu" ; exit 0
 	elif echo "$ld_help_string" | grep >/dev/null 2>&1 "supported emulations: i[345]86linux"; then
-	  echo "${UNAME_MACHINE}-unknown-linuxaout" ; exit 0
+	  echo "${UNAME_MACHINE}-pc-linux-gnuaout" ; exit 0
 	elif echo "$ld_help_string" | grep >/dev/null 2>&1 "supported emulations: i[345]86coff"; then
-	  echo "${UNAME_MACHINE}-unknown-linuxcoff" ; exit 0
+	  echo "${UNAME_MACHINE}-pc-linux-gnucoff" ; exit 0
 	elif echo "$ld_help_string" | grep >/dev/null 2>&1 "supported emulations: m68kelf"; then
-	  echo "${UNAME_MACHINE}-unknown-linux" ; exit 0
+	  echo "${UNAME_MACHINE}-unknown-linux-gnu" ; exit 0
 	elif echo "$ld_help_string" | grep >/dev/null 2>&1 "supported emulations: m68klinux"; then
-	  echo "${UNAME_MACHINE}-unknown-linuxaout" ; exit 0
+	  echo "${UNAME_MACHINE}-unknown-linux-gnuaout" ; exit 0
 	elif echo "$ld_help_string" | grep >/dev/null 2>&1 "supported emulations: elf32ppc"; then
-	  echo "powerpc-unknown-linux" ; exit 0
+	  echo "powerpc-unknown-linux-gnu" ; exit 0
 	elif test "${UNAME_MACHINE}" = "alpha" ; then
-	  echo alpha-unknown-linux ; exit 0
+	  echo alpha-unknown-linux-gnu ; exit 0
 	elif test "${UNAME_MACHINE}" = "sparc" ; then
-	  echo sparc-unknown-linux ; exit 0
+	  echo sparc-unknown-linux-gnu ; exit 0
 	else
-	  # Either a pre-BFD a.out linker (linuxoldld) or one that does not give us
-	  # useful --help.  Gcc wants to distinguish between linuxoldld and linuxaout.
+	  # Either a pre-BFD a.out linker (linux-gnuoldld) or one that does not give us
+	  # useful --help.  Gcc wants to distinguish between linux-gnuoldld and linux-gnuaout.
 	  test ! -d /usr/lib/ldscripts/. \
-	    && echo "${UNAME_MACHINE}-unknown-linuxoldld" && exit 0
+	    && echo "${UNAME_MACHINE}-pc-linux-gnuoldld" && exit 0
 	  # Determine whether the default compiler is a.out or elf
 	  cat >dummy.c <<EOF
 main(argc, argv)
@@ -384,9 +384,9 @@ int argc;
 char *argv[];
 {
 #ifdef __ELF__
-  printf ("%s-unknown-linux\n", argv[1]);
+  printf ("%s-pc-linux-gnu\n", argv[1]);
 #else
-  printf ("%s-unknown-linuxaout\n", argv[1]);
+  printf ("%s-pc-linux-gnuaout\n", argv[1]);
 #endif
   return 0;
 }
@@ -403,25 +403,25 @@ EOF
 	if grep Novell /usr/include/link.h >/dev/null 2>/dev/null; then
 		echo ${UNAME_MACHINE}-univel-sysv${UNAME_RELEASE}
 	else
-		echo ${UNAME_MACHINE}-unknown-sysv${UNAME_RELEASE}
+		echo ${UNAME_MACHINE}-pc-sysv${UNAME_RELEASE}
 	fi
 	exit 0 ;;
     i[34]86:*:3.2:*)
 	if test -f /usr/options/cb.name; then
 		UNAME_REL=`sed -n 's/.*Version //p' </usr/options/cb.name`
-		echo ${UNAME_MACHINE}-unknown-isc$UNAME_REL
+		echo ${UNAME_MACHINE}-pc-isc$UNAME_REL
 	elif /bin/uname -X 2>/dev/null >/dev/null ; then
 		UNAME_REL=`(/bin/uname -X|egrep Release|sed -e 's/.*= //')`
 		(/bin/uname -X|egrep i80486 >/dev/null) && UNAME_MACHINE=i486
 		(/bin/uname -X|egrep '^Machine.*Pentium' >/dev/null) \
 			&& UNAME_MACHINE=i586
-		echo ${UNAME_MACHINE}-unknown-sco$UNAME_REL
+		echo ${UNAME_MACHINE}-pc-sco$UNAME_REL
 	else
-		echo ${UNAME_MACHINE}-unknown-sysv32
+		echo ${UNAME_MACHINE}-pc-sysv32
 	fi
 	exit 0 ;;
     Intel:Mach:3*:*)
-	echo i386-unknown-mach3
+	echo i386-pc-mach3
 	exit 0 ;;
     paragon:*:*:*)
 	echo i860-intel-osf1
@@ -547,7 +547,7 @@ main ()
 #endif
 
 #if defined (__386BSD__)
-  printf ("i386-unknown-bsd\n"); exit (0);
+  printf ("i386-pc-bsd\n"); exit (0);
 #endif
 
 #if defined (sequent)
