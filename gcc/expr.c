@@ -4152,9 +4152,13 @@ store_expr (exp, target, want_value)
       /* If TEMP is a VOIDmode constant, use convert_modes to make
 	 sure that we properly convert it.  */
       if (CONSTANT_P (temp) && GET_MODE (temp) == VOIDmode)
-	temp = convert_modes (GET_MODE (SUBREG_REG (target)),
-			      TYPE_MODE (TREE_TYPE (exp)), temp,
-			      SUBREG_PROMOTED_UNSIGNED_P (target));
+	{
+	  temp = convert_modes (GET_MODE (target), TYPE_MODE (TREE_TYPE (exp)),
+				temp, SUBREG_PROMOTED_UNSIGNED_P (target));
+	  temp = convert_modes (GET_MODE (SUBREG_REG (target)),
+			        GET_MODE (target), temp,
+			        SUBREG_PROMOTED_UNSIGNED_P (target));
+	}
 
       convert_move (SUBREG_REG (target), temp,
 		    SUBREG_PROMOTED_UNSIGNED_P (target));
