@@ -1,3 +1,7 @@
+2003-08-08  Loren J. Rittle  <ljrittle@acm.org>
+
+	* testsuite/testsuite_performance.h (__FreeBSD__): Add fake mallinfo.
+
 2003-08-07  Doug Gregor  <dgregor@apple.com>
 
 	* include/bits/char_traits.h (char_traits::not_eof): Match operand 
