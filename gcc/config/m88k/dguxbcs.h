@@ -40,7 +40,7 @@ Boston, MA 02111-1307, USA.  */
 %{V} %{v:%{!V:-V}} %{pipe:%{!.s: - }\
 %{msvr4:%{!m88110:-KV3 }%{m88110:-KV04.00 }}}\
 %{!mlegend:%{mstandard:-Wc,off}}\
-%{mlegend:-Wc,-fix-bb,-h\"gcc-" VERSION_INFO2 "\",-s\"%i\"\
+%{mlegend:-Wc,-fix-bb,-s\"%i\"\
 %{traditional:,-lc}%{!traditional:,-lansi-c}\
 %{mstandard:,-keep-std}\
 %{mkeep-coff:,-keep-coff}\
