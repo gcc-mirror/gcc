@@ -24,7 +24,7 @@
 #define SUBTARGET_CPU_DEFAULT 		TARGET_CPU_xscale
 
 #undef  SUBTARGET_EXTRA_ASM_SPEC
-#define SUBTARGET_EXTRA_ASM_SPEC "%{!mcpu=*:-mxscale}"
+#define SUBTARGET_EXTRA_ASM_SPEC "%{!mcpu=*:-mcpu=xscale}"
 
 #undef  MULTILIB_DEFAULTS
 #define MULTILIB_DEFAULTS \

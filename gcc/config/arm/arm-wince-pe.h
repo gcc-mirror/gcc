@@ -51,8 +51,8 @@ Boston, MA 02111-1307, USA.  */
 #undef  ASM_SPEC
 #define ASM_SPEC "			\
 %{mbig-endian:-EB}			\
-%{mcpu=*:-m%*}				\
-%{march=*:-m%*}				\
+%{mcpu=*:-mcpu=%*}			\
+%{march=*:-march=%*}			\
 %{mapcs-*:-mapcs-%*}			\
 %{mthumb-interwork:-mthumb-interwork}	\
 %{!mapcs-32:%{!mapcs-26:-mapcs-32}}	\
