@@ -1,3 +1,10 @@
+2000-11-15  Jason Merrill  <jason@redhat.com>
+
+	* diagnostic.c (finish_abort): New fn.
+	(fancy_abort, error_recursion): Use it.
+	* toplev.c (crash_signal): Likewise.
+	* diagnostic.h: Declare it.
+
 2000-11-13  Andrew Haley  <aph@redhat.com>
 
 	* tree.c (build_type_no_quals): New function.
@@ -179,17 +186,17 @@ Tue Nov 14 12:34:56 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2000-11-13  Neil Booth  <neilb@earthling.net>
 
-        * cpplex.c (_cpp_lex_token): CPP_COMMENT and true CPP_EOF
-        cases return without MI check.
-        * cpplib.c (do_diagnostic): Take boolean of whether to
-        print the directive name.
-        (do_error, do_warning): Update.
-        (do_pragma_dependency): Use it.
-        * cpplib.h (VARARGS_FIRST): Delete.
-        (struct cpp_token): Delete integer.
-        * cppmacro.c (enter_macro_context): Move disabled check
-        to _cpp_get_token.
-        (_cpp_get_token): Simplify into a single loop.
+	* cpplex.c (_cpp_lex_token): CPP_COMMENT and true CPP_EOF
+	cases return without MI check.
+	* cpplib.c (do_diagnostic): Take boolean of whether to
+	print the directive name.
+	(do_error, do_warning): Update.
+	(do_pragma_dependency): Use it.
+	* cpplib.h (VARARGS_FIRST): Delete.
+	(struct cpp_token): Delete integer.
+	* cppmacro.c (enter_macro_context): Move disabled check
+	to _cpp_get_token.
+	(_cpp_get_token): Simplify into a single loop.
 
 2000-11-13  Richard Earnshaw  <rearnsha@arm.com>
 

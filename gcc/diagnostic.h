@@ -207,5 +207,6 @@ void record_last_error_module   PARAMS ((void));
 int error_function_changed      PARAMS ((void));
 void record_last_error_function PARAMS ((void));
 void report_problematic_module  PARAMS ((output_buffer *));     
+void finish_abort		PARAMS ((void)) ATTRIBUTE_NORETURN;
 
 #endif /* __GCC_DIAGNOSTIC_H__ */

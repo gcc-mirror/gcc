@@ -259,6 +259,9 @@ friendly_abort (where, file, line, func)
   if (where > 0)
     error ("Internal error #%d.", where);
 
+  /* Uncount this error, so finish_abort will do the right thing.  */
+  --errorcount;
+
   fancy_abort (file, line, func);
 }
 

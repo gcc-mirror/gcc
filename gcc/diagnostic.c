@@ -1638,11 +1638,8 @@ error_recursion ()
     finish_diagnostic ();
 
   fprintf (stderr,
-"Internal compiler error: Error reporting routines re-entered.\n\
-Please submit a full bug report.\n\
-See %s for instructions.\n", GCCBUGURL);
-
-  exit (FATAL_EXIT_CODE);
+	   "Internal compiler error: Error reporting routines re-entered.");
+  finish_abort ();
 }
 
 /* Given a partial pathname as input, return another pathname that
@@ -1676,11 +1673,27 @@ fancy_abort (file, line, function)
      int line;
      const char *function;
 {
-  fatal (
-"Internal compiler error in %s, at %s:%d\n\
+  error ("Internal compiler error in %s, at %s:%d",
+	 function, trim_filename (file), line);
+  finish_abort ();
+}
+
+/* Finish reporting an internal compiler error.  If the only error we've
+   seen is the current one, encourage the user to file a bug report;
+   otherwise, fixing their code will probably avoid the crash.  */
+
+void
+finish_abort ()
+{
+  if (errorcount > 1 || sorrycount > 0)
+    fprintf (stderr, "confused by earlier errors, bailing out\n");
+  else
+    fprintf (stderr, "\
 Please submit a full bug report.\n\
-See %s for instructions.",
-	 function, trim_filename (file), line, GCCBUGURL);
+See %s for instructions.\n",
+	   GCCBUGURL);
+
+  exit (FATAL_EXIT_CODE);
 }
 
 /* Setup DC for reporting a diagnostic MESSAGE (an error of a WARNING),
