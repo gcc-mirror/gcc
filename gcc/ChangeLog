@@ -1,3 +1,9 @@
+2000-01-04  Stan Cox  <scox@cygnus.com>
+
+	* haifa-sched.c (build_control_flow): Change unreachable simple
+	loop test to check if current block has only one predecessor.
+	(find_rgns): Initialize degree.  Use dest as degree index, not src.
+
 2000-01-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.c (expand_builtin_strlen): Initialize variable `icode'.
