@@ -1,5 +1,8 @@
 2003-01-01  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+
+	* g++.dg/parse/parens2.C: Removed, turned out to duplicate
+	angle-bracket1.C.
 	* g++.dg/parse/parens2.C: New test.
 
 	* g++.dg/lookup/scope-operator1.C: New test.
