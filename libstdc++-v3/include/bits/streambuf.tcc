@@ -1,6 +1,6 @@
 // Stream buffer classes -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -109,8 +109,7 @@ namespace std
 
   // Conceivably, this could be used to implement buffer-to-buffer
   // copies, if this was ever desired in an un-ambiguous way by the
-  // standard. If so, then checks for __ios being zero would be
-  // necessary.
+  // standard.
   template<typename _CharT, typename _Traits>
     streamsize
     __copy_streambufs(basic_streambuf<_CharT, _Traits>* __sbin,
@@ -120,24 +119,11 @@ namespace std
       typename _Traits::int_type __c = __sbin->sgetc();
       while (!_Traits::eq_int_type(__c, _Traits::eof()))
 	{
-	  const size_t __n = __sbin->egptr() - __sbin->gptr();
-	  if (__n > 1)
-	    {
-	      const size_t __wrote = __sbout->sputn(__sbin->gptr(), __n);
-	      __sbin->gbump(__wrote);
-	      __ret += __wrote;
-	      if (__wrote < __n)
-		break;
-	      __c = __sbin->underflow();
-	    }
-	  else
-	    {
-	      __c = __sbout->sputc(_Traits::to_char_type(__c));
-	      if (_Traits::eq_int_type(__c, _Traits::eof()))
-		break;
-	      ++__ret;
-	      __c = __sbin->snextc();
-	    }
+	  __c = __sbout->sputc(_Traits::to_char_type(__c));
+	  if (_Traits::eq_int_type(__c, _Traits::eof()))
+	    break;
+	  ++__ret;
+	  __c = __sbin->snextc();
 	}
       return __ret;
     }
