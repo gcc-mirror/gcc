@@ -278,6 +278,13 @@ static void fix_sizetype PROTO ((tree));
 /* If non-null, a language specific helper for unsave_expr_now. */
 
 void (*lang_unsave_expr_now) PROTO((tree));
+
+/* The string used as a placeholder instead of a source file name for
+   built-in tree nodes.  The variable, which is dynamically allocated,
+   should be used; the macro is only used to initialize it.  */
+
+static char *built_in_filename;
+#define BUILT_IN_FILENAME ("<built-in>")
 
 tree global_trees[TI_MAX];
 
@@ -867,7 +874,9 @@ resume_momentary (yes)
 void
 init_tree_codes ()
 {
-  
+  built_in_filename = 
+    ggc_alloc_string (BUILT_IN_FILENAME, sizeof (BUILT_IN_FILENAME));
+  ggc_add_string_root (&built_in_filename, 1);
 }
 
 /* Return a newly allocated node of code CODE.
@@ -1044,7 +1053,8 @@ make_node (code)
       DECL_IN_SYSTEM_HEADER (t)
 	= in_system_header && (obstack == &permanent_obstack);
       DECL_SOURCE_LINE (t) = lineno;
-      DECL_SOURCE_FILE (t) = (input_filename) ? input_filename : "<built-in>";
+      DECL_SOURCE_FILE (t) = 
+	(input_filename) ? input_filename : built_in_filename;
       DECL_UID (t) = next_decl_uid++;
       /* Note that we have not yet computed the alias set for this
 	 declaration.  */
