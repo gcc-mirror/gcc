@@ -5,9 +5,11 @@
 
 2003-10-16  Benjamin Kosnik  <bkoz@redhat.com>
 
-        * acconfig.h: Add HAVE_DRAND48 and HAVE_ISATTY.
+        * acconfig.h: Add HAVE_DRAND48.
+	* crossconfig.m4: Remove ISATTY.
 	* aclocal.m4: Regenerated.
 	* config.h.in: Regenerated.
+	* configure: Regenerated.
 	
 2003-10-16  Bernardo Innocenti  <bernie@develer.com>
 

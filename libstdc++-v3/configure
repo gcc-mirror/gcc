@@ -59009,10 +59009,6 @@ _ACEOF
 _ACEOF
 
          cat >>confdefs.h <<\_ACEOF
-#define HAVE_ISATTY 1
-_ACEOF
-
-         cat >>confdefs.h <<\_ACEOF
 #define HAVE_MBRLEN 1
 _ACEOF
 
