@@ -2,6 +2,7 @@
 //test for bools with inclusive ors
 
 #include <assert.h>
+#include <limits.h>
 
 void bar ( bool  x ) {};
 void bars ( short  x ) {};
@@ -45,12 +46,14 @@ int ors(){
 }
 
 
+#if INT_MAX > 32767
 int orus(){
   unsigned short y = 1;
   bars ( y );
   int blob = ( 65539 | int (y) );
   return blob;  //expect 65539, will be 3 if done in us type
 }
+#endif
 
 int main() {
   int tmp;
@@ -66,11 +69,10 @@ int main() {
   assert (tmp ==27);
   tmp = ors();
   assert (tmp ==27);
-  if (sizeof (int) > 2 && sizeof (int) > sizeof (unsigned short))
-    {
-      tmp = orus();
-      assert (tmp == 65539);
-    }
+#if INT_MAX > 32767
+  tmp = orus();
+  assert (tmp == 65539);
+#endif
 
   return 0;
 }
