@@ -57,6 +57,7 @@ import java.util.Hashtable;
 import java.util.Vector;
 import gnu.java.io.NullOutputStream;
 import gnu.java.lang.reflect.TypeSignature;
+import gnu.java.security.action.SetAccessibleAction;
 import gnu.java.security.provider.Gnu;
 
 
@@ -470,14 +471,8 @@ outer:
 		    }
 		}
 		final Method m = methods[i];
-		AccessController.doPrivileged(new PrivilegedAction()
-		{
-		    public Object run()
-		    {
-			m.setAccessible(true);
-			return null;
-		    }
-		});
+		SetAccessibleAction setAccessible = new SetAccessibleAction(m);
+		AccessController.doPrivileged(setAccessible);
 		return m;
 	    }
 	}
@@ -543,6 +538,8 @@ outer:
   // clazz.
   private void setFields(Class cl)
   {
+    SetAccessibleAction setAccessible = new SetAccessibleAction();
+
     if (!isSerializable() || isExternalizable())
       {
 	fields = NO_FIELDS;
@@ -551,17 +548,11 @@ outer:
 
     try
       {
-	final Field serialPersistentFields =
+	final Field f =
 	  cl.getDeclaredField("serialPersistentFields");
-	AccessController.doPrivileged(new PrivilegedAction()
-	{
-	    public Object run()
-	    {
-		serialPersistentFields.setAccessible(true);
-		return null;
-	    }
-	});
-	int modifiers = serialPersistentFields.getModifiers();
+	setAccessible.setMember(f);
+	AccessController.doPrivileged(setAccessible);
+	int modifiers = f.getModifiers();
 
 	if (Modifier.isStatic(modifiers)
 	    && Modifier.isFinal(modifiers)
@@ -617,14 +608,8 @@ outer:
       if (all_fields[from] != null)
 	{
 	  final Field f = all_fields[from];
-	  AccessController.doPrivileged(new PrivilegedAction()
-	  {
-	      public Object run()
-	      {
-		  f.setAccessible(true);
-		  return null;
-	      }
-	  });
+	  setAccessible.setMember(f);
+	  AccessController.doPrivileged(setAccessible);
 	  fields[to] = new ObjectStreamField(all_fields[from]);
 	  to++;
 	}
@@ -651,14 +636,8 @@ outer:
 	// may not be public AND we only want the serialVersionUID of this
 	// class, not a superclass or interface.
 	final Field suid = cl.getDeclaredField("serialVersionUID");
-	AccessController.doPrivileged(new PrivilegedAction()
-	{
-	    public Object run()
-	    {
-		suid.setAccessible(true);
-		return null;
-	    }
-	});
+	SetAccessibleAction setAccessible = new SetAccessibleAction(suid);
+	AccessController.doPrivileged(setAccessible);
 	int modifiers = suid.getModifiers();
 
 	if (Modifier.isStatic(modifiers)
