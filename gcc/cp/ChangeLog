@@ -1,3 +1,8 @@
+2002-01-09  Graham Stott  <grahams@redhat.com>
+
+	* semantics.c (FINISH_COND): Uppercase macro paramaters and
+	add parenthesis.
+
 2002-01-08  Graham Stott  <grahams@redhat.com>
 
 	* xref.c (FILE_NAME_ABSOLUTE_P): Add parenthesis.

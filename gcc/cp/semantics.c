@@ -66,19 +66,19 @@ static tree clear_decl_rtl PARAMS ((tree *, int *, void *));
 
 /* Finish processing the COND, the SUBSTMT condition for STMT.  */
 
-#define FINISH_COND(cond, stmt, substmt) 		\
+#define FINISH_COND(COND, STMT, SUBSTMT) 		\
   do {							\
-    if (last_tree != stmt)				\
+    if (last_tree != (STMT))				\
       {							\
-        RECHAIN_STMTS (stmt, substmt);	                \
-        if (!processing_template_decl)                  \
-          {                                             \
-	    cond = build_tree_list (substmt, cond);     \
-	    substmt = cond;                             \
-          }                                             \
+        RECHAIN_STMTS (STMT, SUBSTMT);			\
+        if (!processing_template_decl)			\
+          {						\
+	    (COND) = build_tree_list (SUBSTMT, COND);	\
+	    (SUBSTMT) = (COND);				\
+          }						\
       }							\
     else						\
-      substmt = cond;					\
+      (SUBSTMT) = (COND);				\
   } while (0)
 
 /* Returns non-zero if the current statement is a full expression,
