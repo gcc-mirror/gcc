@@ -1,3 +1,9 @@
+2005-03-22  James E Wilson  <wilson@specifixinc.com>
+
+	PR c++/19769
+	* dwarf2out.c (declare_in_namespace): Ignore decls with an abstract
+	origin.
+
 2005-03-22  Daniel Berlin  <dberlin@dberlin.org>
 
 	* c-opts.c (c_common_parse_file): Only start/end main source file
