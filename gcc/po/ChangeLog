@@ -1,5 +1,7 @@
 2003-05-23  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* exgettext: Add "This file is part of GCC".
+
 	* exgettext: Replace "GNU CC" and "this program" with "GCC" in
 	copyright boilerplate.
 
