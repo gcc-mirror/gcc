@@ -95,6 +95,7 @@ ___mulsi3:
 #ifdef L_udivsi3
 	.text
 	.global ___udivsi3
+	.type	___udivsi3,@function
 ___udivsi3:
 	mov 1,r12
 	mov 0,r10
@@ -110,8 +111,8 @@ ___udivsi3:
 	bnl .L12
 	cmp r0,r12
 	be .L8
-	mov r7,r5
-	and r13,r5
+	mov r7,r19
+	and r13,r19
 	be .L4
 	br .L12
 .L9:

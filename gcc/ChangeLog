@@ -1,3 +1,19 @@
+Tue Oct 13 12:51:04 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* config/v850/lib1funcs.asm (_udivsi3): Add .type declaration.
+	Replace use of r5 with use of r19.
+
+	* config/v850/v850.h (LINK_POINTER_REGNUM): Define.
+
+	* config/v850/v850.c (compute_register_save_size): Allow for the
+	fact that helper functions save all registers, not just those used
+	by the function.
+	
+	Replace constant 31 with macro LINK_POINTER_REGNUM.
+
+	* config/v850/v850.md: Use 'indirect_operand' rather than
+	'memory_operand' for bit test/set/clear patterns.
+
 Tue Oct 13 11:49:14 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* mips/iris6.h (ASM_OUTPUT_WEAK_ALIAS): Call ASM_GLOBALIZE_LABEL.
