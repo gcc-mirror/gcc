@@ -465,8 +465,9 @@ find_basic_blocks (f, nonlocal_label_list)
     if (! LABEL_REF_NONLOCAL_P (x))
       block_live[BLOCK_NUM (XEXP (x, 0))] = 1;
 
-  for (x = exception_handler_labels; x; x = XEXP (x, 1))
-    block_live[BLOCK_NUM (XEXP (x, 0))] = 1;
+  if (asynchronous_exceptions)
+    for (x = exception_handler_labels; x; x = XEXP (x, 1))
+      block_live[BLOCK_NUM (XEXP (x, 0))] = 1;
 
   /* Record which basic blocks control can drop in to.  */
 
@@ -530,6 +531,11 @@ find_basic_blocks (f, nonlocal_label_list)
 	    for (x = nonlocal_label_list; x; x = XEXP (x, 1))
 	      mark_label_ref (gen_rtx (LABEL_REF, VOIDmode, XEXP (x, 0)),
 			      insn, 0);
+
+	    if (! asynchronous_exceptions)
+	      for (x = exception_handler_labels; x; x = XEXP (x, 1))
+		mark_label_ref (gen_rtx (LABEL_REF, VOIDmode, XEXP (x, 0)),
+				insn, 0);
 
 	    /* ??? This could be made smarter:
 	       in some cases it's possible to tell that certain
