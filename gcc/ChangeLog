@@ -1,3 +1,8 @@
+2003-03-03  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* dwarf2out.c (dwarf2out_finish): Swap order of break_out_includes and
+	prune_unused_types calls.
+
 2003-03-03  Jason Merrill  <jason@redhat.com>
 
 	* tree-inline.c (find_builtin_longjmp_call): Save and restore
