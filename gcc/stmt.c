@@ -1153,6 +1153,14 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
       return;
     }
 
+#ifdef MD_ASM_CLOBBERS
+  /* Sometimes we wish to automatically clobber registers across an asm.
+     Case in point is when the i386 backend moved from cc0 to a hard reg --
+     maintaining source-level compatability means automatically clobbering
+     the flags register.  */
+  MD_ASM_CLOBBERS (clobbers);
+#endif
+
   /* Count the number of meaningful clobbered registers, ignoring what
      we would ignore later.  */
   nclobbers = 0;

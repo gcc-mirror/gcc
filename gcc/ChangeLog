@@ -1,3 +1,28 @@
+Thu Sep  2 13:00:48 1999  Richard Henderson  <rth@cygnus.com>
+
+	* stmt.c (expand_asm_operands): Invoke MD_ASM_CLOBBERS if present.
+	* tm.texi (MD_ASM_CLOBBERS): Document it.
+
+Thu Sep  2 10:22:40 1999  Richard Henderson  <rth@cygnus.com>
+
+	* dwarf2out.c (dwarf2out_line): Constify `lastfile'.
+	* except.c (expand_rethrow): Remove unused variable.
+	* expr.c (do_jump_by_parts_greater_rtx): Likewise.
+	* flow.c (replace_insns): Likewise.
+	(create_edge_list, verify_edge_list): Likewise.
+	* gcse.c (cprop_cc0_jump): Protect declaration with HAVE_cc0.
+
+	* genemit.c (gen_expand): Only emit `operands[N]' decl if there
+	is special code to run.
+	(main): Don't define operands to emit_operand.
+	* genrecog.c (main): Don't emit an empty peephole2_insn function.
+
+	* rtl.h (NOTE_BASIC_BLOCK): Use X0BBDEF.
+
+	* alpha/alpha.h (normal_memory_operand): Declare.
+	(reg_no_subreg_operand): Declare.
+	* alpha/elf.h (ASM_DECLARE_OBJECT_NAME): Use HOST_WIDE_INT_PRINT_DEC.
+
 Thu Sep  2 10:19:20 1999  Richard Henderson  <rth@cygnus.com>
 
 	* c-parse.in (compstmt_primary_start): New, broken out of first
