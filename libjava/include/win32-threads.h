@@ -18,8 +18,13 @@ details.  */
 // Typedefs.
 //
 
-typedef HANDLE _Jv_ConditionVariable_t;
-typedef HANDLE _Jv_Mutex_t;
+typedef struct _Jv_ConditionVariable_t {
+  HANDLE ev[2];
+  CRITICAL_SECTION count_mutex;
+  int blocked_count;
+};
+
+typedef CRITICAL_SECTION _Jv_Mutex_t;
 
 typedef struct
 {
@@ -34,63 +39,39 @@ typedef void _Jv_ThreadStartFunc (java::lang::Thread *);
 // Condition variables.
 //
 
-inline void
-_Jv_CondInit (_Jv_ConditionVariable_t *cv)
-{
-  *cv = CreateEvent (NULL, 0, 0, NULL);
-}
-
-#define _Jv_HaveCondDestroy
-
-inline void
-_Jv_CondDestroy (_Jv_ConditionVariable_t *cv)
-{
-  CloseHandle (*cv);
-  cv = NULL;
-}
-
-int _Jv_CondWait (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu,
-		  jlong millis, jint nanos);
-
-inline int
-_Jv_CondNotify (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *)
-{
-  // FIXME: check for mutex ownership?
-  return PulseEvent (*cv) ? 0 : _JV_NOT_OWNER;        // FIXME?
-}
-
-inline int
-_Jv_CondNotifyAll (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *)
-{
-  // FIXME: check for mutex ownership?
-  return PulseEvent (*cv) ? 0 : _JV_NOT_OWNER;        // FIXME?
-}
+int _Jv_CondWait (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu, jlong millis, jint nanos);
+void _Jv_CondInit (_Jv_ConditionVariable_t *cv);
+void _Jv_CondDestroy (_Jv_ConditionVariable_t *cv);
+int _Jv_CondNotify (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *);
+int _Jv_CondNotifyAll (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *);
 
 //
 // Mutexes.
+// We use CRITICAL_SECTIONs instead of CreateMutex() for better performance
 //
 
-inline void
-_Jv_MutexInit (_Jv_Mutex_t *mu)
+inline void _Jv_MutexInit (_Jv_Mutex_t *mu)
 {
-  *mu = CreateMutex (NULL, 0, NULL);
+  InitializeCriticalSection(mu);
 }
 
 #define _Jv_HaveMutexDestroy
-
-inline void
-_Jv_MutexDestroy (_Jv_Mutex_t *mu)
+inline void _Jv_MutexDestroy (_Jv_Mutex_t *mu)
 {
-  CloseHandle (*mu);
+  DeleteCriticalSection(mu);
   mu = NULL;
 }
 
-int _Jv_MutexLock (_Jv_Mutex_t *mu);
-
-inline int
-_Jv_MutexUnlock (_Jv_Mutex_t *mu)
+inline int _Jv_MutexUnlock (_Jv_Mutex_t *mu)
 {
-  return ReleaseMutex(*mu) ? 0 : GetLastError();        // FIXME: Map error code?
+  LeaveCriticalSection(mu);
+  return 0;
+}
+
+inline int _Jv_MutexLock (_Jv_Mutex_t *mu)
+{
+  EnterCriticalSection(mu);
+  return 0;
 }
 
 //
@@ -101,24 +82,23 @@ void _Jv_InitThreads (void);
 _Jv_Thread_t *_Jv_ThreadInitData (java::lang::Thread *thread);
 void _Jv_ThreadDestroyData (_Jv_Thread_t *data);
 
-inline java::lang::Thread *
-_Jv_ThreadCurrent (void)
+inline java::lang::Thread* _Jv_ThreadCurrent (void)
 {
   extern DWORD _Jv_ThreadKey;
   return (java::lang::Thread *) TlsGetValue(_Jv_ThreadKey);
 }
 
-inline _Jv_Thread_t *
-_Jv_ThreadCurrentData (void)
+inline _Jv_Thread_t *_Jv_ThreadCurrentData(void)
 {
   extern DWORD _Jv_ThreadDataKey;
   return (_Jv_Thread_t *) TlsGetValue(_Jv_ThreadDataKey);
 }
 
-inline void
-_Jv_ThreadYield (void)
+inline void _Jv_ThreadYield (void)
 {
-  Sleep (0);
+  // FIXME: win98 freezes hard (OS hang) when we use this --
+  //        for now, we simply don't yield
+  // Sleep (0);
 }
 
 void _Jv_ThreadRegister (_Jv_Thread_t *data);
