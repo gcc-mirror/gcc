@@ -94,7 +94,7 @@ void ffi_prep_args_SYSV(extended_cif *ecif, unsigned *const stack)
   const unsigned flags = ecif->cif->flags;
   
   /* 'stacktop' points at the previous backchain pointer.  */
-  unsigned *const stacktop = stack + (ecif->cif->bytes / sizeof(unsigned));
+  unsigned *const stacktop = stack + (bytes / sizeof(unsigned));
 
   /* 'gpr_base' points at the space for gpr3, and grows upwards as
      we use GPR registers.  */
@@ -521,13 +521,15 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
 
     case FFI_TYPE_STRUCT:
       if (cif->abi != FFI_GCC_SYSV && cif->abi != FFI_LINUX64)
-	if (cif->rtype->size <= 4)
-	  break;
-	else if (cif->rtype->size <= 8)
-	  {
-	    flags |= FLAG_RETURNS_64BITS;
+	{
+	  if (cif->rtype->size <= 4)
 	    break;
-	  }
+	  else if (cif->rtype->size <= 8)
+	    {
+	      flags |= FLAG_RETURNS_64BITS;
+	      break;
+	    }
+	}
       /* else fall through.  */
 #if FFI_TYPE_LONGDOUBLE != FFI_TYPE_DOUBLE
     case FFI_TYPE_LONGDOUBLE:
