@@ -1,3 +1,8 @@
+2003-09-18  Jeroen Frijters  <jeroen@frijters.net>
+
+	* java/sql/Timestamp.java
+	(valueOf): Fixed confusion of java.sql.Date and java.util.Date
+
 2003-09-18  David P Grove  <groved@us.ibm.com>
 
 	* java/io/LineNumberReader (read): Don't reset pos & limit when

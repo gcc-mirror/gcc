@@ -81,7 +81,7 @@ public class Timestamp extends java.util.Date
   {
     try
       {
-	Date d = (Date) parse_sdf.parseObject(str);
+	java.util.Date d = (java.util.Date)parse_sdf.parseObject(str);
 
 	if (d == null)
 	  throw new IllegalArgumentException(str);
