@@ -1,5 +1,8 @@
 Sat Jan 23 01:37:36 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* fold-const.c (lshift_double): Mark 'prec' arguments as possibly
+	unused.
+
 	* bitmap.h (bitmap_head_def): Make indx field unsigned.
 
 	* configure.in (gcc_tooldir): When not making a relative gcc_tooldir,

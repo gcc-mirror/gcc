@@ -1,5 +1,5 @@
 /* Fold a constant sub-tree into a single node for C-compiler
-   Copyright (C) 1987, 88, 92-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92-98, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -378,7 +378,7 @@ lshift_double (l1, h1, count, prec, lv, hv, arith)
 void
 rshift_double (l1, h1, count, prec, lv, hv, arith)
      HOST_WIDE_INT l1, h1, count;
-     int prec;
+     int prec ATTRIBUTE_UNUSED;
      HOST_WIDE_INT *lv, *hv;
      int arith;
 {
