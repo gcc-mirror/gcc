@@ -1,5 +1,5 @@
 /* Implement classes and message passing for Objective C.
-   Copyright (C) 1992, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
    Author: Steve Naroff.
 
 This file is part of GNU CC.
@@ -1560,7 +1560,7 @@ build_module_descriptor ()
 				      tree_cons (NULL_TREE, NULL_TREE,
 						 void_list_node),
 				      NULL_TREE),
-		    0);
+		    NULL_TREE, 0);
 #if 0 /* This should be turned back on later
 	 for the systems where collect is not needed.  */
     /* Make these functions nonglobal
@@ -6571,7 +6571,7 @@ really_start_method (method, parmlist)
       TREE_OPERAND (save_expr, 0) = method_decl;
       method_decl = ret_decl;
       /* fool the parser into thinking it is starting a function */
-      start_function (decl_specs, method_decl, 0);
+      start_function (decl_specs, method_decl, NULL_TREE, 0);
       /* unhook...this has the effect of restoring the abstract declarator */
       TREE_OPERAND (save_expr, 0) = NULLT;
     }
@@ -6579,7 +6579,7 @@ really_start_method (method, parmlist)
     {
       TREE_VALUE (TREE_TYPE (method)) = method_decl;
       /* fool the parser into thinking it is starting a function */
-      start_function (decl_specs, method_decl, 0);
+      start_function (decl_specs, method_decl, NULL_TREE, 0);
       /* unhook...this has the effect of restoring the abstract declarator */
       TREE_VALUE (TREE_TYPE (method)) = NULLT;
     }
