@@ -1,3 +1,24 @@
+Thu Sep 30 14:39:17 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* tree.h (enum built_in_function): Rename BUILT_IN_DWARF_REG_SIZE
+	to BUILT_IN_INIT_DWARF_REG_SIZES.
+	* builtins.c (expand_builtins, case BUILT_IN_INIT_DWARF_REG_SIZES):
+	Renamed from BUILT_IN_DWARF_REG_SIZE; call
+	expand_builtin_init_dwarf_reg_sizes.
+	* c-decl.c (init_decl_processing): Replace __builtin_dwarf_reg_size
+	with __builtin_init_dwarf_reg_size_table.
+	* dwarf2out.c (struct reg_size_range): Delete.
+	(expand_builtin_init_dwarf_reg_sizes): New function.
+	(expand_builtin_dwarf_reg_size): Delete.
+	* except.h (expand_builtin_init_dwarf_reg_sizes): Declare.
+	(expand_builtin_dwarf_reg_size): Don't declare.
+	* libgcc2.c (dwarf_reg_size_table_initialized): New.
+	(dwarf_reg_size_table): New.
+	(init_reg_size_table): New function.
+	(copy_reg): Use dwarf_reg_size_table.
+	(eh_context_initialize): Make sure dwarf_reg_size_table is initialized
+	before use.
+
 Thu Sep 30 05:40:34 1999  Richard Earnshaw <rearnsha@arm.com>
 
 	* c-lang.c (finish_file case ndef ASM_OUTPUT_{CON,DE}STRUCTOR): 

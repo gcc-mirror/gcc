@@ -2484,8 +2484,9 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 #ifdef DWARF2_UNWIND_INFO
     case BUILT_IN_DWARF_FP_REGNUM:
       return expand_builtin_dwarf_fp_regnum ();
-    case BUILT_IN_DWARF_REG_SIZE:
-      return expand_builtin_dwarf_reg_size (TREE_VALUE (arglist), target);
+    case BUILT_IN_INIT_DWARF_REG_SIZES:
+      expand_builtin_init_dwarf_reg_sizes (TREE_VALUE (arglist));
+      return const0_rtx;
 #endif
     case BUILT_IN_FROB_RETURN_ADDR:
       return expand_builtin_frob_return_addr (TREE_VALUE (arglist));
