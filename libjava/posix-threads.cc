@@ -18,6 +18,7 @@ details.  */
 #ifdef HAVE_BOEHM_GC
 extern "C"
 {
+#include <gcconfig.h>
 #include <gc.h>
 };
 #endif /* HAVE_BOEHM_GC */
