@@ -1421,10 +1421,10 @@ extern const enum reg_class reg_class_from_letter[];
 /* 1 if N is a possible register number for function argument passing.  */
 #define FUNCTION_ARG_REGNO_P(REGNO) \
   (((REGNO) >= FIRST_PARM_REG && (REGNO) < (FIRST_PARM_REG		\
-					    + NPARM_REGS (SImode))	\
+					    + NPARM_REGS (SImode)))	\
    || (TARGET_FPU_ANY                                                   \
        && (REGNO) >= FIRST_FP_PARM_REG && (REGNO) < (FIRST_FP_PARM_REG	\
-						     + NPARM_REGS (SFmode)))))
+						     + NPARM_REGS (SFmode))))
 
 /* Define a data type for recording info about an argument list
    during the scan of that argument list.  This data type should
