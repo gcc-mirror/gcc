@@ -288,8 +288,6 @@ public abstract class ClassLoader
     if (c != null)
       return c;
 
-    ClassNotFoundException ex = null;
-
     // Can the class be loaded by a parent?
     try
       {
@@ -306,20 +304,9 @@ public abstract class ClassLoader
       }
     catch (ClassNotFoundException e)
       {
-	ex = e;
       }
     // Still not found, we have to do it ourself.
-    try
-      {
-	c = findClass(name);
-      }
-    catch (ClassNotFoundException cause)
-      {
-	if (ex != null)
-	  throw new ClassNotFoundException(ex.toString(), cause);
-	else
-	  throw cause;
-      }
+    c = findClass(name);
     if (resolve)
       resolveClass(c);
     return c;
