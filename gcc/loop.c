@@ -4056,11 +4056,11 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 	         in-between when biv_total_increment returns nonzero both times
 		 but we test it here in case some day some real cfg analysis
 		 gets used to set always_computable.  */
-	      && ((loop_insn_first_p (bl2->biv->insn, bl->biv->insn)
-		   && no_labels_between_p (bl2->biv->insn, bl->biv->insn))
-		  || (! reg_used_between_p (bl->biv->src_reg, bl->biv->insn,
-					    bl2->biv->insn)
-		      && no_jumps_between_p (bl->biv->insn, bl2->biv->insn)))
+	      && (loop_insn_first_p (bl2->biv->insn, bl->biv->insn)
+		  ? no_labels_between_p (bl2->biv->insn, bl->biv->insn)
+		  : (! reg_used_between_p (bl->biv->src_reg, bl->biv->insn,
+					   bl2->biv->insn)
+		     && no_jumps_between_p (bl->biv->insn, bl2->biv->insn)))
 	      && validate_change (bl->biv->insn,
 				  &SET_SRC (single_set (bl->biv->insn)),
 				  copy_rtx (src), 0))
