@@ -1,3 +1,12 @@
+2000-09-04  Anthony Green  <green@redhat.com>
+
+	* java/io/File.java (deleteOnExit): New method.
+	* gnu/gcj/runtime/FileDeleter.java: New class.
+	* java/lang/natRuntime.cc (exit): Call
+	FileDeleter.deleteOnExitNow()
+	* Makefile.am: Add FileDeleter.java.
+	* Makefile.in: Rebuilt.
+
 2000-09-02  Tom Tromey  <tromey@cygnus.com>
 
 	* Makefile.in: Rebuilt.
