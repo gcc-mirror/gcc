@@ -83,7 +83,7 @@ do {  \
 /* It looks like DWARF2 will be the easiest debug format to handle on this
    platform.  */
 #define OBJECT_FORMAT_ELF
-#define DWARF2_DEBUGGING_INFO
+#define DWARF2_DEBUGGING_INFO 1
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 /* This isn't quite ready yet.  I'm seeing it mess up some line
    tables.  For example, we're getting lines starting/ending at

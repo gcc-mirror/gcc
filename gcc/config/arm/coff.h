@@ -40,7 +40,7 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 /* This is COFF, but prefer stabs.  */
-#define SDB_DEBUGGING_INFO
+#define SDB_DEBUGGING_INFO 1
 
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 

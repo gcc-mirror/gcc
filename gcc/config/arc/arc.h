@@ -1311,12 +1311,8 @@ do { if ((LOG) != 0) fprintf (FILE, "\t.align %d\n", 1 << (LOG)); } while (0)
 /* Debugging information.  */
 
 /* Generate DBX and DWARF debugging information.  */
-#ifndef DBX_DEBUGGING_INFO
-#define DBX_DEBUGGING_INFO
-#endif
-#ifndef DWARF_DEBUGGING_INFO
-#define DWARF_DEBUGGING_INFO
-#endif
+#define DBX_DEBUGGING_INFO 1
+#define DWARF_DEBUGGING_INFO 1
 
 /* Prefer STABS (for now).  */
 #undef PREFERRED_DEBUGGING_TYPE

@@ -111,10 +111,10 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_VERSION fprintf (stderr," (intel 80960)");
 
 /* Generate DBX debugging information.  */
-#define DBX_DEBUGGING_INFO
+#define DBX_DEBUGGING_INFO 1
 
 /* Generate SDB style debugging information.  */
-#define SDB_DEBUGGING_INFO
+#define SDB_DEBUGGING_INFO 1
 #define EXTENDED_SDB_BASIC_TYPES
 
 /* Generate DBX_DEBUGGING_INFO by default.  */

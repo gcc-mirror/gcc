@@ -33,7 +33,6 @@ Boston, MA 02111-1307, USA.  */
 #include "dbxcoff.h"
 
 #undef  SDB_DEBUGGING_INFO
-#undef  DBX_DEBUGGING_INFO
 #define DBX_DEBUGGING_INFO 1
 
 /* Computed in toplev.c.  */

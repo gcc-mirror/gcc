@@ -24,7 +24,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* We want to output DBX debugging information.  */
 
-#define DBX_DEBUGGING_INFO
+#define DBX_DEBUGGING_INFO 1
 
 /* Compensate for botch in dbxout_init/dbxout_source_file which
    unconditionally drops the first character from ltext_label_name */

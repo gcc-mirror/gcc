@@ -25,8 +25,8 @@ Boston, MA 02111-1307, USA.  */
 /* Enable parsing of #pragma pack(push,<n>) and #pragma pack(pop).  */
 #define HANDLE_PRAGMA_PACK_PUSH_POP 1
 
-#define DBX_DEBUGGING_INFO 
-#define SDB_DEBUGGING_INFO 
+#define DBX_DEBUGGING_INFO 1
+#define SDB_DEBUGGING_INFO 1
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 
 #include "i386/unix.h"

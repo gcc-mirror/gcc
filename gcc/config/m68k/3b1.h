@@ -52,7 +52,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Make output for SDB.  */
 
-#define SDB_DEBUGGING_INFO
+#define SDB_DEBUGGING_INFO 1
 
 /* The .file command should always begin the output.  */
 

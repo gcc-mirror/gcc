@@ -1892,7 +1892,7 @@ do {						\
    to avoid conflict with TI's use of .def).  */
 
 #define SDB_DELIM "\n"
-#define SDB_DEBUGGING_INFO
+#define SDB_DEBUGGING_INFO 1
 
 /* Don't use octal since this can confuse gas for the c4x.  */
 #define PUT_SDB_TYPE(a) fprintf(asm_out_file, "\t.type\t0x%x%s", a, SDB_DELIM)

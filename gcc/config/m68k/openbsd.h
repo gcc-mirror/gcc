@@ -63,7 +63,7 @@ Boston, MA 02111-1307, USA.  */
 /* Specific options for DBX Output.  */
 
 /* This is BSD, so it wants DBX format.  */
-#define DBX_DEBUGGING_INFO
+#define DBX_DEBUGGING_INFO 1
 
 /* Do not break .stabs pseudos into continuations.  */
 #define DBX_CONTIN_LENGTH 0

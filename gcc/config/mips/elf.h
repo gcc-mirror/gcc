@@ -27,8 +27,8 @@ Boston, MA 02111-1307, USA.  */
 /* ??? Move all SDB stuff into separate header file.  */
 #undef  SDB_DEBUGGING_INFO
 
-#define DBX_DEBUGGING_INFO
-#define DWARF2_DEBUGGING_INFO
+#define DBX_DEBUGGING_INFO 1
+#define DWARF2_DEBUGGING_INFO 1
 
 #undef  PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG

@@ -49,7 +49,7 @@ Boston, MA 02111-1307, USA.  */
 #undef	LIBGCC_SPEC
 
 /* set debugging info */
-#define	DBX_DEBUGGING_INFO
+#define	DBX_DEBUGGING_INFO 1
 #undef	SDB_DEBUGGING_INFO
 #undef	DWARF_DEBUGGING_INFO
 #undef	XCOFF_DEBUGGING_INFO

@@ -68,7 +68,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Turn on SDB debugging info.  */
 
-#define SDB_DEBUGGING_INFO
+#define SDB_DEBUGGING_INFO 1
 
 /* All the ASM_OUTPUT macros need to conform to the Tower as syntax.  */
 

@@ -129,7 +129,7 @@ Boston, MA 02111-1307, USA.
 
 /* System V Release 3 uses COFF debugging info.  */
 
-#define SDB_DEBUGGING_INFO
+#define SDB_DEBUGGING_INFO 1
 
 /* We don't want to output DBX debugging information.  */
 

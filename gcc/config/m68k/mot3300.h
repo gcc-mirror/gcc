@@ -120,7 +120,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Make output for SDB.  */
 
-#define SDB_DEBUGGING_INFO
+#define SDB_DEBUGGING_INFO 1
 
 #undef REGISTER_PREFIX
 #define REGISTER_PREFIX "%"

@@ -5,7 +5,7 @@
 
 /* This wants DBX format.  */
 
-#define DBX_DEBUGGING_INFO
+#define DBX_DEBUGGING_INFO 1
 
 #define USE_GAS
 

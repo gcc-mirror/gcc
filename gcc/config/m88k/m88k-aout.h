@@ -21,7 +21,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #undef SDB_DEBUGGING_INFO
-#define DBX_DEBUGGING_INFO
+#define DBX_DEBUGGING_INFO 1
 
 #include "m88k/m88k.h"
 #include "aoutos.h"

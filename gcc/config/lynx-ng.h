@@ -54,7 +54,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* We want to output DBX debugging information.  */
 
-#define DBX_DEBUGGING_INFO
+#define DBX_DEBUGGING_INFO 1
 #undef PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 
@@ -62,7 +62,7 @@ Boston, MA 02111-1307, USA.  */
    we can create debuggable SDB/coff files.  This won't be needed when
    stabs-in-coff works.  */
 
-#define SDB_DEBUGGING_INFO
+#define SDB_DEBUGGING_INFO 1
 
 /* Generate calls to memcpy, memcmp and memset.  */
 

@@ -4,4 +4,4 @@
 
 /* We want to output DBX debugging information.  */
 
-#define DBX_DEBUGGING_INFO
+#define DBX_DEBUGGING_INFO 1

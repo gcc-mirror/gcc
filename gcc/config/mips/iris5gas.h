@@ -1,10 +1,10 @@
 /* Definitions of target machine for GNU compiler.  Irix version 5 with gas.  */
 
 /* Enable debugging.  */
-#define DBX_DEBUGGING_INFO
-#define DWARF2_DEBUGGING_INFO
-#define SDB_DEBUGGING_INFO
-#define MIPS_DEBUGGING_INFO
+#define DBX_DEBUGGING_INFO 1
+#define DWARF2_DEBUGGING_INFO 1
+#define SDB_DEBUGGING_INFO 1
+#define MIPS_DEBUGGING_INFO 1
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 
 /* GNU as does handle DWARF2 directives.  */

@@ -20,6 +20,6 @@ Boston, MA 02111-1307, USA.  */
 
 
 /* a.out with DBX. */
-#define DBX_DEBUGGING_INFO
+#define DBX_DEBUGGING_INFO 1
 #define DEFAULT_GDB_EXTENSIONS 0
 

@@ -85,4 +85,4 @@ Boston, MA 02111-1307, USA.
 
 /* For pSOS we use DBX debugging info.  */
 
-#define DBX_DEBUGGING_INFO
+#define DBX_DEBUGGING_INFO 1

@@ -22,9 +22,7 @@ Boston, MA 02111-1307, USA.  */
    information.  The configure script will add a #include of this file
    to tm.h when --with-stabs is used for certain targets.  */
 
-#ifndef DBX_DEBUGGING_INFO
-#define DBX_DEBUGGING_INFO
-#endif
+#define DBX_DEBUGGING_INFO 1
 
 #undef PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
