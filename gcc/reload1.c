@@ -1158,10 +1158,10 @@ reload (first, global, dumpfile)
 		  if (size == 1)
 		    for (j = 0; j < n_reloads; j++)
 		      if ((CLASS_MAX_NREGS (reload_reg_class[j],
-					    (GET_MODE_SIZE (reload_outmode[i])
-					     > GET_MODE_SIZE (reload_inmode[i]))
-					    ? reload_outmode[i]
-					    : reload_inmode[i])
+					    (GET_MODE_SIZE (reload_outmode[j])
+					     > GET_MODE_SIZE (reload_inmode[j]))
+					    ? reload_outmode[j]
+					    : reload_inmode[j])
 			   > 1)
 			  && reloads_conflict (i, j)
 			  && reg_classes_intersect_p (class,
