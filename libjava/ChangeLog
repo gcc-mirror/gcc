@@ -1,3 +1,9 @@
+2002-03-06  Tom Tromey  <tromey@redhat.com>
+
+	* include/config.h.in: Rebuilt.
+	* configure: Rebuilt.
+	* Makefile.in: Rebuilt.
+
 2002-03-06  Adam Megacz  <adam@xwt.org>
 
         * java/io/FileDescriptor.java: Initialize in/out/err in init().

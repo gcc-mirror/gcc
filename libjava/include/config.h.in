@@ -47,9 +47,6 @@
 /* Define if using POSIX threads that have the mutexattr functions.  */
 #undef HAVE_PTHREAD_MUTEXATTR_INIT
 
-/* Define this if you prefer size over speed for java.lang.Character.  */
-#undef COMPACT_CHARACTER
-
 /* Define if you have memcpy.  */
 #undef HAVE_MEMCPY
 
