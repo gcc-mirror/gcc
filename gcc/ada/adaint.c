@@ -2612,7 +2612,8 @@ get_gcc_version (void)
 }
 
 int
-__gnat_set_close_on_exec (int fd, int close_on_exec_p)
+__gnat_set_close_on_exec (int fd ATTRIBUTE_UNUSED,
+                        int close_on_exec_p ATTRIBUTE_UNUSED)
 {
 #if defined (F_GETFD) && defined (FD_CLOEXEC) && ! defined (__vxworks)
   int flags = fcntl (fd, F_GETFD, 0);
