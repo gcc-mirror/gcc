@@ -40,11 +40,6 @@ extern int target_flags;
 
 #define TARGET_SNAKE (target_flags & 1)
 
-/* Force gcc not to use the bss segment.  This is (temporarily) provided 
-   for sites which are using pa-gas-1.36 versions prior to Aug 7, 1992.  */
-
-#define TARGET_NO_BSS (target_flags & 2)
-
 /* Force gcc to only use instructions which are safe when compiling kernels.
    Specifically, avoid using add instructions with dp (r27) as an argument.
    Use addil instructions instead.  Doing so avoids a nasty bug in the 
@@ -76,7 +71,6 @@ extern int target_flags;
    {"nosnake", -1},	\
    {"pa-risc-1-0", -1},	\
    {"pa-risc-1-1", 1},	\
-   {"no-bss", 2},	\
    {"kernel", 4},	\
    {"shared-libs", 8},	\
    {"no-shared-libs", -8},\
@@ -1665,7 +1659,7 @@ bss_section ()								\
 
 
 #define ASM_OUTPUT_COMMON(FILE, NAME, SIZE, ROUNDED)  \
-( (TARGET_NO_BSS) ? data_section (): bss_section (),	\
+( bss_section (),					\
   assemble_name ((FILE), (NAME)),			\
   fputs ("\t.comm ", (FILE)),				\
   fprintf ((FILE), "%d\n", (ROUNDED)))
@@ -1674,11 +1668,10 @@ bss_section ()								\
    to define a local common symbol.  */
 
 #define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE, ROUNDED)  \
-( (TARGET_NO_BSS) ? data_section (): bss_section (),	\
+( bss_section (),						\
   fprintf ((FILE), "\t.align %d\n", (SIZE) <= 4 ? 4 : 8),	\
   assemble_name ((FILE), (NAME)),				\
-  (TARGET_NO_BSS) ? fprintf ((FILE), "\n\t.blockz %d\n", (ROUNDED)) \
-		  : fprintf ((FILE), "\n\t.block %d\n", (ROUNDED)))
+  fprintf ((FILE), "\n\t.block %d\n", (ROUNDED)))
 
 /* Store in OUTPUT a string (made with alloca) containing
    an assembler-name for a local static variable named NAME.
