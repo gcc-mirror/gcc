@@ -3048,6 +3048,9 @@ bootstrap4 bootstrap4-lean: stage4_build
 
 unstage1 unstage2 unstage3 unstage4:
 	-set -vx; stage=`echo $@ | sed -e 's/un//'`; \
+	rm -f $$stage/as$(exeext); \
+	rm -f $$stage/ld$(exeext); \
+	rm -f $$stage/collect-ld$(exeext); \
 	if test -d $$stage; then \
 	  mv $$stage/* . 2>/dev/null; \
 	  for i in `cd $$stage; echo *` ; do \
