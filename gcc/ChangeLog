@@ -1,3 +1,10 @@
+2003-12-08  David Edelsohn  <edelsohn@gnu.org>
+	    Graham Reed <greed@pobox.com>
+
+	PR target/13150
+        * collect2.c (GCC_OK_SYMBOL): Add support for AIX C_WEAKEXT.
+        (GCC_UNDEF_SYMBOL): Same.
+
 2003-12-08  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/10060
