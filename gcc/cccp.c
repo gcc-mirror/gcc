@@ -1879,7 +1879,7 @@ main (argc, argv)
 	q = in_fname;
 
       /* Copy remainder to mungable area.  */
-      p = alloca (strlen(q) + 8);
+      p = (char *) alloca (strlen(q) + 8);
       strcpy (p, q);
 
       /* Output P, but remove known suffixes.  */
