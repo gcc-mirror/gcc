@@ -4042,6 +4042,21 @@
   [(set_attr "type" "binarycc")])
 
 ;
+; MPYF/LDF 0
+;
+
+(define_insn "*mulqf3_clrqf_clobber"
+  [(set (match_operand:QF 0 "r0r1_reg_operand" "=t")
+        (mult:QF (match_operand:QF 1 "par_ind_operand" "S<>")
+                 (match_operand:QF 2 "par_ind_operand" "S<>")))
+   (set (match_operand:QF 3 "r2r3_reg_operand" "=u")
+        (match_operand:QF 4 "fp_zero_operand" "G"))
+   (clobber (reg:CC 21))]
+  "TARGET_PARALLEL_MPY"
+  "mpyf3\\t%2,%1,%0\\n||\\tsubf3\\t%3,%3,%3"
+  [(set_attr "type" "binarycc")])
+
+;
 ; NEGF/STF
 ;
 
@@ -4073,7 +4088,6 @@
 ;
 ; PARALLEL INTEGER INSTRUCTIONS
 ;
-; These patterns are under development
 
 ;
 ; ABSI/STI
@@ -4195,6 +4209,7 @@
   "mpyi3\\t%2,%1,%0\\n||\\taddi3\\t%5,%4,%3"
   [(set_attr "type" "binarycc")])
 
+
 ;
 ; MPYI/STI
 ;
@@ -4226,6 +4241,21 @@
   "TARGET_PARALLEL_MPY && TARGET_MPYI
    && valid_parallel_operands_6 (operands, QImode)"
   "mpyi3\\t%2,%1,%0\\n||\\tsubi3\\t%5,%4,%3"
+  [(set_attr "type" "binarycc")])
+
+;
+; MPYI/LDI 0
+;
+
+(define_insn "*mulqi3_clrqi_clobber"
+  [(set (match_operand:QI 0 "r0r1_reg_operand" "=t")
+        (mult:QI (match_operand:QI 1 "par_ind_operand" "S<>")
+                 (match_operand:QI 2 "par_ind_operand" "S<>")))
+   (set (match_operand:QI 3 "r2r3_reg_operand" "=u")
+	(const_int 0))
+   (clobber (reg:CC 21))]
+  "TARGET_PARALLEL_MPY && TARGET_MPYI"
+  "mpyi3\\t%2,%1,%0\\n||\\tsubi3\\t%3,%3,%3"
   [(set_attr "type" "binarycc")])
 
 ;
