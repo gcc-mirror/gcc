@@ -1,3 +1,9 @@
+2001-06-26  Phil Edwards  <pme@sources.redhat.com>
+
+	* acinclude.m4:  Clean extraneous tabs, rewrap 'test' lines.
+	* aclocal.m4:  Regenerate.
+	* configure:  Regenerate.
+
 2001-06-26  Felix Natter  <f.natter@ndh.net>
 
 	* docs/html/17_intro/porting-howto.html:  Fixed some errors.
