@@ -1201,8 +1201,9 @@ fi
 # declaration on Sun OS 4.x.  We must only fix this on Sun OS 4.x, because
 # many other systems have similar text but correct versions of the file.
 # To ensure only Sun's is fixed, we grep for a likely unique string.
+# Fix also on sysV68 R3V7.1 (head/memory.h\t50.1\t )
 file=memory.h
-if [ -r $file ] && egrep '/\*	@\(#\)memory\.h 1\.[2-4] 8./../.. SMI; from S5R2 1\.2	\*/' $file > /dev/null; then
+if [ -r $file ] && egrep '/\*	@\(#\)(head/memory.h	50.1	 |memory\.h 1\.[2-4] 8./../.. SMI; from S5R2 1\.2	)\*/' $file > /dev/null; then
   if [ ! -r ${LIB}/$file ]; then
     cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
     chmod +w ${LIB}/$file 2>/dev/null
