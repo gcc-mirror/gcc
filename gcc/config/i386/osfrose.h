@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    Intel 386 (OSF/1 with OSF/rose) version.
-   Copyright (C) 1991, 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1992, 1993, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -36,16 +36,7 @@ Boston, MA 02111-1307, USA.  */
    -z* options (for the linker).  */
 
 #define SWITCH_TAKES_ARG(CHAR) \
-  (   (CHAR) == 'D' \
-   || (CHAR) == 'U' \
-   || (CHAR) == 'o' \
-   || (CHAR) == 'e' \
-   || (CHAR) == 'T' \
-   || (CHAR) == 'u' \
-   || (CHAR) == 'I' \
-   || (CHAR) == 'm' \
-   || (CHAR) == 'L' \
-   || (CHAR) == 'A' \
+  (DEFAULT_SWITCH_TAKES_ARG(CHAR) \
    || (CHAR) == 'h' \
    || (CHAR) == 'z')
 

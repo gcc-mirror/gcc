@@ -53,15 +53,7 @@ Boston, MA 02111-1307, USA.
    thing as a -T option for svr4.  */
 
 #define SWITCH_TAKES_ARG(CHAR) \
-  (   (CHAR) == 'D' \
-   || (CHAR) == 'U' \
-   || (CHAR) == 'o' \
-   || (CHAR) == 'e' \
-   || (CHAR) == 'u' \
-   || (CHAR) == 'I' \
-   || (CHAR) == 'm' \
-   || (CHAR) == 'L' \
-   || (CHAR) == 'A' \
+  (DEFAULT_SWITCH_TAKES_ARG (CHAR) \
    || (CHAR) == 'h' \
    || (CHAR) == 'x' \
    || (CHAR) == 'z')

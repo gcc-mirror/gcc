@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  MIPS GNU Hurd version.
-   Copyright (C) 1995 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -81,11 +81,7 @@ Boston, MA 02111-1307, USA.  */
 /* Switch  Recognition by gcc.c.  Add -G xx support */
 #undef SWITCH_TAKES_ARG
 #define SWITCH_TAKES_ARG(CHAR)						\
-  ((CHAR) == 'D' || (CHAR) == 'U' || (CHAR) == 'o'			\
-   || (CHAR) == 'e' || (CHAR) == 'T' || (CHAR) == 'u'			\
-   || (CHAR) == 'I' || (CHAR) == 'm'					\
-   || (CHAR) == 'h' || (CHAR) == 'z'					\
-   || (CHAR) == 'L' || (CHAR) == 'A' || (CHAR) == 'G')
+  (DEFAULT_SWITCH_TAKES_ARG(CHAR) || (CHAR) == 'G')
 
 #undef DEFAULT_PCC_STRUCT_RETURN
 #define DEFAULT_PCC_STRUCT_RETURN 1
