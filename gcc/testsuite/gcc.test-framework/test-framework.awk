@@ -1,0 +1,42 @@
+# Process the gcc.sum file for a run through gcc.test-framework.
+# Print result lines that show potential problems.  Report the number
+# of passing tests.
+#
+#
+# Copyright (c) 2004, 2005 Free Software Foundation, Inc.
+#
+# This file is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# For a copy of the GNU General Public License, write the the
+# Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+# Boston, MA 02111-1307, USA.
+
+BEGIN			{ skip = 1; pass = 0 }
+/Running.*test-frame/	{ skip = 0; next }
+/gcc Summary/		{ skip = 1; next }
+			{ if (skip) next }
+/^$/			{ next }
+# The post tests are always expected to pass.
+/^PASS.*-2.c/		{ next }
+# dg-xfail-if applies to the compile step; these should be XPASS for the
+# compile step on dox tests, which are run tests.
+/^XPASS.*dox.*xiff.*-1.c.*(test for excess errors)/ { next }
+# xfail for scan-assembler-not tests doesn't apply to the compile step.
+/^PASS.*sa.*-1.c.*(test for excess errors)/ { next }
+# The other dox tests pass the compile step; ignore that message.
+/^PASS.*dox.*(test for excess errors)/ { next }
+/^PASS/			{ if (match ($0, "exp-P")) { pass++; next } }
+/^FAIL/			{ if (match ($0, "exp-F")) { pass++; next } }
+/^XPASS/		{ if (match ($0, "exp-XP")) { pass++; next } }
+/^XFAIL/		{ if (match ($0, "exp-XF")) { pass++; next } }
+/^UNSUPPORTED/		{ if (match ($0, "exp-U")) { pass++; next } }
+			{ print }
+END			{ printf("%d tests passed\n", pass) }
