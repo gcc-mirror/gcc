@@ -96,7 +96,6 @@ extern const struct floatformat floatformat_m68881_ext;
 extern const struct floatformat floatformat_i960_ext;
 extern const struct floatformat floatformat_m88110_ext;
 extern const struct floatformat floatformat_m88110_harris_ext;
-extern const struct floatformat floatformat_arm_ext; /* deprecated. */
 extern const struct floatformat floatformat_arm_ext_big;
 extern const struct floatformat floatformat_arm_ext_littlebyte_bigword;
 /* IA-64 Floating Point register spilt into memory.  */
