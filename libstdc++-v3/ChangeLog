@@ -1,3 +1,10 @@
+2004-11-08  Momchil Velikov  <velco@fadata.bg>
+
+	PR libstdc++/18185
+	* libsupc++/eh_globals.cc (get_globals_dtor): Delete unhandled
+	exceptions.
+	* testsuite/thread/18185.cc: New.
+
 2004-11-07  Paolo Carlini  <pcarlini@suse.de>
 	    Andrea Arcangeli  <andrea@suse.de>
 
