@@ -379,7 +379,7 @@ save_for_inline_nocopy (fndecl)
      perform constant folding when its incoming value is constant).
      Otherwise, we have to copy its value into a new register and track
      the new register's life.  */
-
+  in_nonparm_insns = 0;
   for (insn = NEXT_INSN (insn); insn; insn = NEXT_INSN (insn))
     {
       if (insn == first_nonparm_insn)
