@@ -2867,7 +2867,14 @@ __do_global_dtors ()
     }
 #endif
 #ifdef EH_FRAME_SECTION
-  __deregister_frame_info (__EH_FRAME_BEGIN__);
+  {
+    static int completed = 0;
+    if (! completed)
+      {
+	completed = 1;
+	__deregister_frame_info (__EH_FRAME_BEGIN__);
+      }
+  }
 #endif
 }
 #endif
