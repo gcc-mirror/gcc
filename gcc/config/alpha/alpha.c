@@ -386,9 +386,9 @@ add_operand (op, mode)
      enum machine_mode mode;
 {
   if (GET_CODE (op) == CONST_INT)
+    /* Constraints I, J, O and P are covered by K.  */
     return (CONST_OK_FOR_LETTER_P (INTVAL (op), 'K')
-	    || CONST_OK_FOR_LETTER_P (INTVAL (op), 'L')
-	    || CONST_OK_FOR_LETTER_P (INTVAL (op), 'O'));
+	    || CONST_OK_FOR_LETTER_P (INTVAL (op), 'L'));
   else if (GET_CODE (op) == CONSTANT_P_RTX)
     return 1;
 
@@ -404,8 +404,8 @@ sext_add_operand (op, mode)
      enum machine_mode mode;
 {
   if (GET_CODE (op) == CONST_INT)
-    return ((unsigned HOST_WIDE_INT) INTVAL (op) < 255
-	    || (unsigned HOST_WIDE_INT) (- INTVAL (op)) < 255);
+    return (CONST_OK_FOR_LETTER_P (INTVAL (op), 'I')
+	    || CONST_OK_FOR_LETTER_P (INTVAL (op), 'O'));
   else if (GET_CODE (op) == CONSTANT_P_RTX)
     return 1;
 

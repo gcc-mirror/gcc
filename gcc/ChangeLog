@@ -1,3 +1,13 @@
+Fri Nov  6 19:37:33 1998  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.c (add_operand): Simplify the CONST_INT match.
+	(sext_add_operand): Correct typo in comparison by using
+	CONST_OK_FOR_LETTER_P.
+	* alpha.md (s?addq): Use sext_add_operand to allow the negative
+	constant alternatives to be generated.
+	(mulsi3, muldi3, umuldi3_highpart): Loosen constraints to allow
+	small constants, since the hw instructions do.
+
 Fri Nov  6 20:15:19 1998  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
 
 	* reload1.c (emit_reload_insns):  When rewriting the SET_DEST of a
