@@ -690,9 +690,9 @@ scan_loop (loop_start, end, nregs)
 	  else if (! ((! maybe_never
 		       && ! loop_reg_used_before_p (set, p, loop_start,
 						    scan_start, end))
-		      || (! REG_USERVAR_P (SET_DEST (PATTERN (p)))
-			  && ! REG_LOOP_TEST_P (SET_DEST (PATTERN (p))))
-		      || reg_in_basic_block_p (p, SET_DEST (PATTERN (p)))))
+		      || (! REG_USERVAR_P (SET_DEST (set))
+			  && ! REG_LOOP_TEST_P (SET_DEST (set)))
+		      || reg_in_basic_block_p (p, SET_DEST (set))))
 	    ;
 	  else if ((tem = invariant_p (src))
 		   && (dependencies == 0
