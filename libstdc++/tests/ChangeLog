@@ -1,3 +1,8 @@
+1998-07-17  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* tmap.cc: Use less<int>.
+	* tlist.cc (main): Use remove_if.
+
 1998-07-13  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* Makefile.in (VERSION): Bump to 2.9.0.

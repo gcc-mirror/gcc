@@ -3,21 +3,14 @@
 #include <iostream.h>
 #include <function.h>
 
-int SIZE;
-
-#if 0
-/* Crashes compiler */
 #define int_less less<int>
-#else
-struct int_less {
-  bool operator() (int x, int y) const { return x < y; }
-};
 struct str_less {
   bool operator() (char* x, char* y) const { return strcmp(x,y) < 0; }
 };
-#endif
 
 #if 0
+int SIZE;
+
 void add(int x[], int y[], map<int,int, int_less>& a)
 {
   for (int i = 0; i < SIZE; ++i) a[x[i]] = y[i];

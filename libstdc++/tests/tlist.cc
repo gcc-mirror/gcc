@@ -1,6 +1,4 @@
-/*
- test/demo of generic lists
-*/
+// test/demo of generic lists
 
 #include <assert.h>
 
@@ -8,8 +6,8 @@
                        else _assert(#ex, __FILE__,__LINE__); }
 
 #include <iostream.h>
-#include "list.h"
-#include "algo.h"
+#include <list.h>
+#include <algo.h>
 
 bool int_compare(int a, int b)
 {
@@ -123,16 +121,7 @@ main()
   for (it = a.begin(), bit = b.begin(); it != a.end () && bit != b.end (); )
     g.insert (g.end (), *it++ + *bit++);
   cout << "\nlist<int> g = combine(plus, a, b);\n"; print(g);
-#if 1
-  for (it = g.begin(); it != g.end(); )
-    {
-      bit = it++;
-      if (is_odd (*bit))
-	g.erase (bit);
-    }
-#else
   g.remove_if (is_odd);
-#endif
   cout << "\ng.del(is_odd);\n"; print(g);
 
   ff.erase (ff.begin (), ff.end());
