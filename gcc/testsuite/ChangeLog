@@ -1,3 +1,8 @@
+2004-03-10  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/14510
+	* g++.dg/lookup/struct2.C: New test.
+
 2004-03-10  Uros Bizjak  <uros@kss-loka.si>
 
 	* gcc.dg/builtins-34.c: New test.
