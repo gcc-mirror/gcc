@@ -4726,14 +4726,18 @@ reload_reg_free_before_p (regno, opnum, type)
       return ! TEST_HARD_REG_BIT (reload_reg_used_in_other_addr, regno);
 
     case RELOAD_FOR_INPUT:
-      /* The only things earlier are the address for this and
-	 earlier inputs, other inputs (which we know we don't conflict
-	 with), and addresses of RELOAD_OTHER objects.  */
+      /* The only things earlier are the address for this and earlier inputs,
+	 earlier inputs, and addresses of RELOAD_OTHER objects.  */
 
-      for (i = 0; i <= opnum; i++)
+      for (i = 0; i < opnum; i++)
 	if (TEST_HARD_REG_BIT (reload_reg_used_in_input_addr[i], regno)
-	    || TEST_HARD_REG_BIT (reload_reg_used_in_inpaddr_addr[i], regno))
+	    || TEST_HARD_REG_BIT (reload_reg_used_in_inpaddr_addr[i], regno)
+	    || TEST_HARD_REG_BIT (reload_reg_used_in_input[i], regno))
 	  return 0;
+
+      if (TEST_HARD_REG_BIT (reload_reg_used_in_input_addr[opnum], regno)
+	  || TEST_HARD_REG_BIT (reload_reg_used_in_inpaddr_addr[opnum], regno))
+	return 0;
 
       return ! TEST_HARD_REG_BIT (reload_reg_used_in_other_addr, regno);
 
