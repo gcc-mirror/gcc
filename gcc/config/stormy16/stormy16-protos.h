@@ -1,5 +1,5 @@
 /* Prototypes for exported functions defined in xstormy16.c
-   Copyright (C) 2000, 2001, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2003, 2004 Free Software Foundation, Inc.
    Contributed by Red Hat, Inc.
 
 This file is part of GCC.
@@ -30,15 +30,11 @@ extern int xstormy16_interrupt_function_p (void);
 extern int xstormy16_epilogue_uses (int);
 extern void xstormy16_function_profiler (void);
 
-#if defined (TREE_CODE)
-#  if defined (HAVE_MACHINE_MODES)
+#if defined (TREE_CODE) && defined (HAVE_MACHINE_MODES)
 extern CUMULATIVE_ARGS xstormy16_function_arg_advance 
  (CUMULATIVE_ARGS, enum machine_mode, tree, int);
 extern rtx xstormy16_function_arg
  (CUMULATIVE_ARGS, enum machine_mode, tree, int);
-#  endif
-extern void xstormy16_setup_incoming_varargs 
- (CUMULATIVE_ARGS, int, tree, int *);
 #endif
 
 #if defined (TREE_CODE) && defined (RTX_CODE)
