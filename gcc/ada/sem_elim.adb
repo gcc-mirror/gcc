@@ -376,7 +376,7 @@ package body Sem_Elim is
                      P      : Source_Ptr;
                      Sindex : Source_File_Index;
 
-                     function File_Mame_Match return Boolean;
+                     function File_Name_Match return Boolean;
                      --  This function is supposed to be called when Idx points
                      --  to the beginning of the new file name, and Name_Buffer
                      --  is set to contain the name of the proper source file
@@ -436,45 +436,64 @@ package body Sem_Elim is
                         end if;
                      end Different_Trace_Lengths;
 
-                     function File_Mame_Match return Boolean is
-                        Tmp_Idx : Positive := 1;
-                        End_Idx : Positive := 1;
-                        --  Initializations are to stop warnings
+                     ---------------------
+                     -- File_Name_Match --
+                     ---------------------
 
-                        --  But are warnings possibly valid ???
-                        --  Why are loops below guaranteed to exit ???
+                     function File_Name_Match return Boolean is
+                        Tmp_Idx : Natural;
+                        End_Idx : Natural;
 
                      begin
                         if Idx = 0 then
                            return False;
                         end if;
 
-                        for J in Idx .. Last loop
-                           if Sloc_Trace (J) = ':' then
-                              Tmp_Idx := J - 1;
+                        --  Find first colon. If no colon, then return False.
+                        --  If there is a colon, Tmp_Idx is set to point just
+                        --  before the colon.
+
+                        Tmp_Idx := Idx - 1;
+                        loop
+                           if Tmp_Idx >= Last then
+                              return False;
+                           elsif Sloc_Trace (Tmp_Idx + 1) = ':' then
                               exit;
+                           else
+                              Tmp_Idx := Tmp_Idx + 1;
                            end if;
                         end loop;
 
-                        for J in reverse Idx .. Tmp_Idx loop
-                           if Sloc_Trace (J) /= ' ' then
-                              End_Idx := J;
+                        --  Find last non-space before this colon. If there
+                        --  is no no space character before this colon, then
+                        --  return False. Otherwise, End_Idx set to point to
+                        --  this non-space character.
+
+                        End_Idx := Tmp_Idx;
+                        loop
+                           if End_Idx < Idx then
+                              return False;
+                           elsif Sloc_Trace (End_Idx) /= ' ' then
                               exit;
+                           else
+                              End_Idx := End_Idx - 1;
                            end if;
                         end loop;
+
+                        --  Now see if file name matches what is in Name_Buffer
+                        --  and if so, step Idx past it and return True. If the
+                        --  name does not match, return False.
 
                         if Sloc_Trace (Idx .. End_Idx) =
                            Name_Buffer (1 .. Name_Len)
                         then
                            Idx := Tmp_Idx + 2;
-
                            Idx := Skip_Spaces;
-
                            return True;
                         else
                            return False;
                         end if;
-                     end File_Mame_Match;
+                     end File_Name_Match;
 
                      --------------------
                      -- Line_Num_Match --
@@ -548,7 +567,7 @@ package body Sem_Elim is
 
                      Idx := Skip_Spaces;
                      while Idx > 0 loop
-                        if not File_Mame_Match then
+                        if not File_Name_Match then
                            goto Continue;
                         elsif not Line_Num_Match then
                            goto Continue;

@@ -40,7 +40,6 @@ GNATRTL_TASKING_OBJS= \
   g-semaph$(objext) \
   g-signal$(objext) \
   g-thread$(objext) \
-  s-addope$(objext) \
   s-asthan$(objext) \
   s-inmaop$(objext) \
   s-interr$(objext) \
@@ -271,6 +270,7 @@ GNATRTL_NONTASKING_OBJS= \
   ioexcept$(objext) \
   machcode$(objext) \
   s-addima$(objext) \
+  s-addope$(objext) \
   s-arit64$(objext) \
   s-assert$(objext) \
   s-atacco$(objext) \
