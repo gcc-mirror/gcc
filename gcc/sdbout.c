@@ -48,6 +48,7 @@ AT&T C compiler.  From the example below I would conclude the following:
 #include "rtl.h"
 #include <stdio.h>
 #include "regs.h"
+#include "defaults.h"
 #include "flags.h"
 #include "insn-config.h"
 #include "reload.h"
