@@ -1,5 +1,5 @@
 /* Utility routines for data type conversion for GNU C.
-   Copyright (C) 1987, 88, 91, 92, 94, 95, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 91-95, 97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU C.
 
@@ -36,9 +36,6 @@ tree
 convert_to_pointer (type, expr)
      tree type, expr;
 {
-  register tree intype = TREE_TYPE (expr);
-  register enum tree_code form = TREE_CODE (intype);
-  
   if (integer_zerop (expr))
     {
       expr = build_int_2 (0, 0);
@@ -46,29 +43,27 @@ convert_to_pointer (type, expr)
       return expr;
     }
 
-  if (form == POINTER_TYPE || form == REFERENCE_TYPE)
-    return build1 (NOP_EXPR, type, expr);
-
-
-  if (form == INTEGER_TYPE || form == ENUMERAL_TYPE)
+  switch (TREE_CODE (TREE_TYPE (expr)))
     {
-      if (type_precision (intype) == POINTER_SIZE)
+    case POINTER_TYPE:
+    case REFERENCE_TYPE:
+      return build1 (NOP_EXPR, type, expr);
+
+    case INTEGER_TYPE:
+    case ENUMERAL_TYPE:
+    case BOOLEAN_TYPE:
+    case CHAR_TYPE:
+      if (TYPE_PRECISION (TREE_TYPE (expr)) == POINTER_SIZE)
 	return build1 (CONVERT_EXPR, type, expr);
-      expr = convert (type_for_size (POINTER_SIZE, 0), expr);
-      /* Modes may be different but sizes should be the same.  */
-      if (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (expr)))
-	  != GET_MODE_SIZE (TYPE_MODE (type)))
-	/* There is supposed to be some integral type
-	   that is the same width as a pointer.  */
-	abort ();
-      return convert_to_pointer (type, expr);
+
+      return
+	convert_to_pointer (type,
+			    convert (type_for_size (POINTER_SIZE, 0), expr));
+
+    default:
+      error ("cannot convert to a pointer type");
+      return convert_to_pointer (type, integer_zero_node);
     }
-
-  error ("cannot convert to a pointer type");
-
-  expr = build_int_2 (0, 0);
-  TREE_TYPE (expr) = type;
-  return expr;
 }
 
 /* Convert EXPR to some floating-point type TYPE.
@@ -80,30 +75,32 @@ tree
 convert_to_real (type, expr)
      tree type, expr;
 {
-  register enum tree_code form = TREE_CODE (TREE_TYPE (expr));
+  switch (TREE_CODE (TREE_TYPE (expr)))
+    {
+    case REAL_TYPE:
+      return build1 (flag_float_store ? CONVERT_EXPR : NOP_EXPR,
+		     type, expr);
 
-  if (form == REAL_TYPE)
-    return build1 (flag_float_store ? CONVERT_EXPR : NOP_EXPR,
-		   type, expr);
+    case INTEGER_TYPE:
+    case ENUMERAL_TYPE:
+    case BOOLEAN_TYPE:
+    case CHAR_TYPE:
+      return build1 (FLOAT_EXPR, type, expr);
 
-  if (INTEGRAL_TYPE_P (TREE_TYPE (expr)))
-    return build1 (FLOAT_EXPR, type, expr);
+    case COMPLEX_TYPE:
+      return convert (type,
+		      fold (build1 (REALPART_EXPR,
+				    TREE_TYPE (TREE_TYPE (expr)), expr)));
 
-  if (form == COMPLEX_TYPE)
-    return convert (type, fold (build1 (REALPART_EXPR,
-					TREE_TYPE (TREE_TYPE (expr)), expr)));
+    case POINTER_TYPE:
+    case REFERENCE_TYPE:
+      error ("pointer value used where a floating point value was expected");
+      return convert_to_real (type, integer_zero_node);
 
-  if (form == POINTER_TYPE || form == REFERENCE_TYPE)
-    error ("pointer value used where a floating point value was expected");
-  else
-    error ("aggregate value used where a float was expected");
-
-  {
-    register tree tem = make_node (REAL_CST);
-    TREE_TYPE (tem) = type;
-    TREE_REAL_CST (tem) = REAL_VALUE_ATOF ("0.0", TYPE_MODE (type));
-    return tem;
-  }
+    default:
+      error ("aggregate value used where a float was expected");
+      return convert_to_real (type, integer_zero_node);
+    }
 }
 
 /* Convert EXPR to some integer (or enum) type TYPE.
@@ -118,34 +115,30 @@ tree
 convert_to_integer (type, expr)
      tree type, expr;
 {
-  register tree intype = TREE_TYPE (expr);
-  register enum tree_code form = TREE_CODE (intype);
+  enum tree_code ex_form = TREE_CODE (expr);
+  tree intype = TREE_TYPE (expr);
+  int inprec = TYPE_PRECISION (intype);
+  int outprec = TYPE_PRECISION (type);
 
-  if (form == POINTER_TYPE || form == REFERENCE_TYPE)
+  switch (TREE_CODE (intype))
     {
+    case POINTER_TYPE:
+    case REFERENCE_TYPE:
       if (integer_zerop (expr))
 	expr = integer_zero_node;
       else
 	expr = fold (build1 (CONVERT_EXPR,
 			     type_for_size (POINTER_SIZE, 0), expr));
-      intype = TREE_TYPE (expr);
-      form = TREE_CODE (intype);
-      if (intype == type)
-	return expr;
-    }
 
-  if (form == INTEGER_TYPE || form == ENUMERAL_TYPE
-      || form == BOOLEAN_TYPE || form == CHAR_TYPE)
-    {
-      register unsigned outprec = TYPE_PRECISION (type);
-      register unsigned inprec = TYPE_PRECISION (intype);
-      register enum tree_code ex_form = TREE_CODE (expr);
+      return convert_to_integer (type, expr);
 
-      /* If we are widening the type, put in an explicit conversion.
-	 Similarly if we are not changing the width.  However, if this is
-	 a logical operation that just returns 0 or 1, we can change the
-	 type of the expression.  For logical operations, we must
-	 also change the types of the operands to maintain type
+    case INTEGER_TYPE:
+    case ENUMERAL_TYPE:
+    case BOOLEAN_TYPE:
+    case CHAR_TYPE:
+      /* If this is a logical operation, which just returns 0 or 1, we can
+	 change the type of the expression.  For some logical operations,
+	 we must also change the types of the operands to maintain type
 	 correctness.  */
 
       if (TREE_CODE_CLASS (ex_form) == '<')
@@ -153,6 +146,7 @@ convert_to_integer (type, expr)
 	  TREE_TYPE (expr) = type;
 	  return expr;
 	}
+
       else if (ex_form == TRUTH_AND_EXPR || ex_form == TRUTH_ANDIF_EXPR
 	       || ex_form == TRUTH_OR_EXPR || ex_form == TRUTH_ORIF_EXPR
 	       || ex_form == TRUTH_XOR_EXPR)
@@ -162,12 +156,18 @@ convert_to_integer (type, expr)
 	  TREE_TYPE (expr) = type;
 	  return expr;
 	}
+
       else if (ex_form == TRUTH_NOT_EXPR)
 	{
 	  TREE_OPERAND (expr, 0) = convert (type, TREE_OPERAND (expr, 0));
 	  TREE_TYPE (expr) = type;
 	  return expr;
 	}
+
+      /* If we are widening the type, put in an explicit conversion.
+	 Similarly if we are not changing the width.  After this, we know
+	 we are truncating EXPR.  */
+
       else if (outprec >= inprec)
 	return build1 (NOP_EXPR, type, expr);
 
@@ -352,74 +352,30 @@ convert_to_integer (type, expr)
 	  return convert (type, get_unwidened (TREE_OPERAND (expr, 0), type));
 
 	case COND_EXPR:
-	  /* Can treat the two alternative values like the operands
-	     of an arithmetic expression.  */
-	  {
-	    tree arg1 = get_unwidened (TREE_OPERAND (expr, 1), type);
-	    tree arg2 = get_unwidened (TREE_OPERAND (expr, 2), type);
-
-	    if (outprec >= BITS_PER_WORD
-		|| TRULY_NOOP_TRUNCATION (outprec, inprec)
-		|| inprec > TYPE_PRECISION (TREE_TYPE (arg1))
-		|| inprec > TYPE_PRECISION (TREE_TYPE (arg2)))
-	      {
-		/* Do the arithmetic in type TYPEX,
-		   then convert result to TYPE.  */
-		register tree typex = type;
-
-		/* Can't do arithmetic in enumeral types
-		   so use an integer type that will hold the values.  */
-		if (TREE_CODE (typex) == ENUMERAL_TYPE)
-		  typex = type_for_size (TYPE_PRECISION (typex),
-					 TREE_UNSIGNED (typex));
-
-		/* But now perhaps TYPEX is as wide as INPREC.
-		   In that case, do nothing special here.
-		   (Otherwise would recurse infinitely in convert.  */
-		if (TYPE_PRECISION (typex) != inprec)
-		  {
-		    /* Don't do unsigned arithmetic where signed was wanted,
-		       or vice versa.  */
-		    typex = (TREE_UNSIGNED (TREE_TYPE (expr))
-			     ? unsigned_type (typex) : signed_type (typex));
-		    return convert (type,
-				    fold (build (COND_EXPR, typex,
-						 TREE_OPERAND (expr, 0),
-						 convert (typex, arg1),
-						 convert (typex, arg2))));
-		  }
-		else
-		  /* It is sometimes worthwhile
-		     to push the narrowing down through the conditional.  */
-		  return fold (build (COND_EXPR, type,
-				      TREE_OPERAND (expr, 0),
-				      convert (type, TREE_OPERAND (expr, 1)), 
-				      convert (type, TREE_OPERAND (expr, 2))));
-	      }
-	  }
-	  break;
+	  /* It is sometimes worthwhile to push the narrowing down through
+	     the conditional and never loses.  */
+	  return fold (build (COND_EXPR, type, TREE_OPERAND (expr, 0),
+			      convert (type, TREE_OPERAND (expr, 1)), 
+			      convert (type, TREE_OPERAND (expr, 2))));
 
 	default:
 	  break;
 	}
 
       return build1 (NOP_EXPR, type, expr);
+
+    case REAL_TYPE:
+      return build1 (FIX_TRUNC_EXPR, type, expr);
+
+    case COMPLEX_TYPE:
+      return convert (type,
+		      fold (build1 (REALPART_EXPR,
+				    TREE_TYPE (TREE_TYPE (expr)), expr)));
+
+    default:
+      error ("aggregate value used where an integer was expected");
+      return convert (type, integer_zero_node);
     }
-
-  if (form == REAL_TYPE)
-    return build1 (FIX_TRUNC_EXPR, type, expr);
-
-  if (form == COMPLEX_TYPE)
-    return convert (type, fold (build1 (REALPART_EXPR,
-					TREE_TYPE (TREE_TYPE (expr)), expr)));
-
-  error ("aggregate value used where an integer was expected");
-
-  {
-    register tree tem = build_int_2 (0, 0);
-    TREE_TYPE (tem) = type;
-    return tem;
-  }
 }
 
 /* Convert EXPR to the complex type TYPE in the usual ways.  */
@@ -428,48 +384,52 @@ tree
 convert_to_complex (type, expr)
      tree type, expr;
 {
-  register enum tree_code form = TREE_CODE (TREE_TYPE (expr));
   tree subtype = TREE_TYPE (type);
   
-  if (form == REAL_TYPE || form == INTEGER_TYPE || form == ENUMERAL_TYPE)
+  switch (TREE_CODE (TREE_TYPE (expr)))
     {
-      expr = convert (subtype, expr);
-      return build (COMPLEX_EXPR, type, expr,
+    case REAL_TYPE:
+    case INTEGER_TYPE:
+    case ENUMERAL_TYPE:
+    case BOOLEAN_TYPE:
+    case CHAR_TYPE:
+      return build (COMPLEX_EXPR, type, convert (subtype, expr),
 		    convert (subtype, integer_zero_node));
-    }
 
-  if (form == COMPLEX_TYPE)
-    {
-      tree elt_type = TREE_TYPE (TREE_TYPE (expr));
-      if (TYPE_MAIN_VARIANT (elt_type) == TYPE_MAIN_VARIANT (subtype))
-	return expr;
-      else if (TREE_CODE (expr) == COMPLEX_EXPR)
-	return fold (build (COMPLEX_EXPR,
-			    type,
-			    convert (subtype, TREE_OPERAND (expr, 0)),
-			    convert (subtype, TREE_OPERAND (expr, 1))));
-      else
-	{
-	  expr = save_expr (expr);
+    case COMPLEX_TYPE:
+      {
+	tree elt_type = TREE_TYPE (TREE_TYPE (expr));
+
+	if (TYPE_MAIN_VARIANT (elt_type) == TYPE_MAIN_VARIANT (subtype))
+	  return expr;
+	else if (TREE_CODE (expr) == COMPLEX_EXPR)
 	  return fold (build (COMPLEX_EXPR,
 			      type,
-			      convert (subtype,
-				       fold (build1 (REALPART_EXPR,
-						     TREE_TYPE (TREE_TYPE (expr)),
-						     expr))),
-			      convert (subtype,
-				       fold (build1 (IMAGPART_EXPR,
-						     TREE_TYPE (TREE_TYPE (expr)),
-						     expr)))));
-	}
-    }
+			      convert (subtype, TREE_OPERAND (expr, 0)),
+			      convert (subtype, TREE_OPERAND (expr, 1))));
+	else
+	  {
+	    expr = save_expr (expr);
+	    return
+	      fold (build (COMPLEX_EXPR,
+			   type, convert (subtype,
+					  fold (build1 (REALPART_EXPR,
+							TREE_TYPE (TREE_TYPE (expr)),
+							expr))),
+			   convert (subtype,
+				    fold (build1 (IMAGPART_EXPR,
+						  TREE_TYPE (TREE_TYPE (expr)),
+						  expr)))));
+	  }
+      }
 
-  if (form == POINTER_TYPE || form == REFERENCE_TYPE)
-    error ("pointer value used where a complex was expected");
-  else
-    error ("aggregate value used where a complex was expected");
-  
-  return build (COMPLEX_EXPR, type,
-		convert (subtype, integer_zero_node),
-		convert (subtype, integer_zero_node));
+    case POINTER_TYPE:
+    case REFERENCE_TYPE:
+      error ("pointer value used where a complex was expected");
+      return convert_to_complex (type, integer_zero_node);
+
+    default:
+      error ("aggregate value used where a complex was expected");
+      return convert_to_complex (type, integer_zero_node);
+    }
 }
