@@ -2973,7 +2973,8 @@ macros to replace them with the customary keywords.  It looks like this:
 @end example
 
 @findex __extension__
-@samp{-pedantic} causes warnings for many GNU C extensions.  You can
+@samp{-pedantic} and other options causes warnings for many GNU C extensions.
+You can
 prevent such warnings within one expression by writing
 @code{__extension__} before the expression.  @code{__extension__} has no
 effect aside from this.
