@@ -10,6 +10,6 @@ class foo {
   int fudge[40];
   int bar [40];
   inline int access(int i) {
-    return bar(i);  // { dg-error "call to non-function `foo::bar'" "" }
+    return bar(i);  // { dg-error "cannot be used as a function" "" }
   }
 };
