@@ -11,7 +11,7 @@ int pass = 0;
 struct A {
         A(void) {}
         A(const A& a) { ; }
-        A& operator = (const A& a) { pass = 1; }
+        A& operator = (const A& a) { pass = 1; return *this; }
 };
 
 struct B {

@@ -8688,7 +8688,7 @@ mark_decl_instantiated (result, extern_p)
 	maybe_make_one_only (result);
     }
   else if (TREE_CODE (result) == FUNCTION_DECL)
-    mark_inline_for_output (result);
+    defer_fn (result);
 }
 
 /* Given two function templates PAT1 and PAT2, and explicit template
@@ -9391,11 +9391,9 @@ instantiate_decl (d, defer_ok)
   tree code_pattern;
   tree spec;
   tree gen_tmpl;
-  int nested = in_function_p ();
   int pattern_defined;
   int line = lineno;
   char *file = input_filename;
-  tree old_fn = current_function_decl;
 
   /* This function should only be used to instantiate templates for
      functions and static member variables.  */
@@ -9546,25 +9544,6 @@ instantiate_decl (d, defer_ok)
       add_pending_template (d);
       goto out;
     }
-
-  /* If this instantiation is COMDAT, we don't know whether or not we
-     will really need to write it out.  If we can't be sure, mark it
-     DECL_DEFER_OUTPUT.  NOTE: This increases memory consumption,
-     since we keep some instantiations in memory rather than write
-     them out immediately and forget them.  A better approach would be
-     to wait until we know we need them to do the instantiation, but
-     that would break templates with static locals, because we
-     generate the functions to destroy statics before we determine
-     which functions are needed.  A better solution would be to
-     generate the ctor and dtor functions as we go.  */
-
-  if (TREE_CODE (d) == FUNCTION_DECL
-      && DECL_COMDAT (d)
-      && ! DECL_NEEDED_P (d)
-      /* If the function that caused us to be instantiated is needed, we
-	 will be needed, too.  */
-      && (! nested || (old_fn && ! DECL_NEEDED_P (old_fn))))
-    DECL_DEFER_OUTPUT (d) = 1;
 
   /* We're now committed to instantiating this template.  Mark it as
      instantiated so that recursive calls to instantiate_decl do not

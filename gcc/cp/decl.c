@@ -14153,7 +14153,7 @@ finish_function (lineno, flags)
 	  if (! DECL_EXTERNAL (fndecl))
 	    DECL_NOT_REALLY_EXTERN (fndecl) = 1;
 	  DECL_EXTERNAL (fndecl) = 1;
-	  mark_inline_for_output (fndecl);
+	  defer_fn (fndecl);
 	}
 
 #if 0
@@ -14669,13 +14669,6 @@ mark_cp_function_context (f)
 {
   mark_lang_function (f->language);
 }
-
-int
-in_function_p ()
-{
-  return function_depth != 0;
-}
-
 
 void
 lang_mark_false_label_stack (l)

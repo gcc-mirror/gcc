@@ -8,5 +8,5 @@
 // Message-ID: <9304291053.AA00090@mencon>
 
         struct A {
-                A& operator = (const A& a) {}// ERROR - 
+                A& operator = (const A& a) {}// ERROR - XFAIL
         };

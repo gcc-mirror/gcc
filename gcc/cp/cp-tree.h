@@ -1830,7 +1830,7 @@ struct lang_decl_flags
   unsigned constructor_for_vbase_attr : 1;
 
   unsigned mutable_flag : 1;
-  unsigned saved_inline : 1;
+  unsigned deferred : 1;
   unsigned use_template : 2;
   unsigned nonconverting : 1;
   unsigned declared_inline : 1;
@@ -2104,9 +2104,9 @@ struct lang_decl
 #define DECL_SORTED_FIELDS(NODE) \
 	(DECL_LANG_SPECIFIC (TYPE_DECL_CHECK (NODE))->u.sorted_fields)
 
-/* True if on the saved_inlines (see decl2.c) list.  */
-#define DECL_SAVED_INLINE(DECL) \
-  (DECL_LANG_SPECIFIC(DECL)->decl_flags.saved_inline)
+/* True if on the deferred_fns (see decl2.c) list.  */
+#define DECL_DEFERRED_FN(DECL) \
+  (DECL_LANG_SPECIFIC(DECL)->decl_flags.deferred)
 
 /* For a VAR_DECL, FUNCTION_DECL, TYPE_DECL or TEMPLATE_DECL:
    template-specific information.  */
@@ -3837,7 +3837,6 @@ extern tree maybe_build_cleanup_and_delete	PARAMS ((tree));
 extern tree maybe_build_cleanup			PARAMS ((tree));
 extern void cplus_expand_expr_stmt		PARAMS ((tree));
 extern void finish_stmt				PARAMS ((void));
-extern int in_function_p			PARAMS ((void));
 extern void replace_defarg			PARAMS ((tree, tree));
 extern void print_other_binding_stack		PARAMS ((struct binding_level *));
 extern void revert_static_member_fn             PARAMS ((tree));
@@ -3898,7 +3897,7 @@ extern void cplus_decl_attributes		PARAMS ((tree, tree, tree));
 extern tree constructor_name_full		PARAMS ((tree));
 extern tree constructor_name			PARAMS ((tree));
 extern void setup_vtbl_ptr			PARAMS ((void));
-extern void mark_inline_for_output		PARAMS ((tree));
+extern void defer_fn             		PARAMS ((tree));
 extern tree get_temp_name			PARAMS ((tree, int));
 extern void finish_anon_union			PARAMS ((tree));
 extern tree finish_table			PARAMS ((tree, tree, tree, int));

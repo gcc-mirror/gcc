@@ -8,7 +8,7 @@ class Y
 {
 public:
     Y(char*) {}
-    Y& operator = (const Y&) {}
+    Y& operator = (const Y&) { return *this; }
 };
     
 
