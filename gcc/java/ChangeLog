@@ -1,3 +1,8 @@
+2000-11-08  Tom Tromey  <tromey@cygnus.com>
+
+	* gjavah.c (process_file): Only include gcj/cni.h when generating
+	CNI stubs.
+
 2000-11-07  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* expr.c (note_instructions), jcf-io.c (find_class), jcf-parse.c

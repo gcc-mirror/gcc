@@ -1766,7 +1766,8 @@ DEFUN(process_file, (jcf, out),
 	  if (len > 6 && ! strcmp (&jcf->classname[len - 6], ".class"))
 	    len -= 6;
 	  print_include (out, jcf->classname, len);
-	  print_include (out, "gcj/cni", -1);
+	  if (! flag_jni)
+	    print_include (out, "gcj/cni", -1);
 	}
     }
 
