@@ -81,20 +81,7 @@ namespace std {
     basic_istream<_CharT, _Traits>::
     operator>>(__istream_type& (*__pf)(__istream_type&))
     {
-      sentry __cerb(*this, false);
-      if (__cerb) 
-	{
-	  try {
-	    __pf(*this);
-	  }
-	  catch(exception& __fail){
-	    // 27.6.1.2.1 Common requirements.
-	    // Turn this on without causing an ios::failure to be thrown.
-	    this->setstate(ios_base::badbit);
-	    if ((this->exceptions() & ios_base::badbit) != 0)
-	      __throw_exception_again;
-	  }
-	}
+      __pf(*this);
       return *this;
     }
 
@@ -103,20 +90,7 @@ namespace std {
     basic_istream<_CharT, _Traits>::
     operator>>(__ios_type& (*__pf)(__ios_type&))
     {
-      sentry __cerb(*this, false);
-      if (__cerb) 
-	{
-	  try {
-	    __pf(*this);
-	  }
-	  catch(exception& __fail){
-	    // 27.6.1.2.1 Common requirements.
-	    // Turn this on without causing an ios::failure to be thrown.
-	    this->setstate(ios_base::badbit);
-	    if ((this->exceptions() & ios_base::badbit) != 0)
-	      __throw_exception_again;
-	  }
-	}
+      __pf(*this);
       return *this;
     }
   
@@ -125,20 +99,7 @@ namespace std {
     basic_istream<_CharT, _Traits>::
     operator>>(ios_base& (*__pf)(ios_base&))
     {
-      sentry __cerb(*this, false);
-      if (__cerb) 
-	{
-	  try {
-	    __pf(*this);
-	  }
-	  catch(exception& __fail){
-	    // 27.6.1.2.1 Common requirements.
-	    // Turn this on without causing an ios::failure to be thrown.
-	    this->setstate(ios_base::badbit);
-	    if ((this->exceptions() & ios_base::badbit) != 0)
-	      __throw_exception_again;
-	  }
-	}
+      __pf(*this);
       return *this;
     }
   
