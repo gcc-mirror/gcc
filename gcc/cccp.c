@@ -1035,9 +1035,6 @@ static void pfatal_with_name PROTO((char *)) __attribute__ ((noreturn));
 static void pipe_closed PROTO((int)) __attribute__ ((noreturn));
 
 static void memory_full PROTO((void)) __attribute__ ((noreturn));
-GENERIC_PTR xmalloc PROTO((size_t));
-static GENERIC_PTR xrealloc PROTO((GENERIC_PTR, size_t));
-static GENERIC_PTR xcalloc PROTO((size_t, size_t));
 static char *savestring PROTO((char *));
 static void print_help PROTO((void));
 
@@ -10678,34 +10675,33 @@ memory_full ()
   fatal ("Memory exhausted.");
 }
 
-
-GENERIC_PTR
+PTR
 xmalloc (size)
-     size_t size;
+  size_t size;
 {
-  register GENERIC_PTR ptr = (GENERIC_PTR) malloc (size);
+  register PTR ptr = (PTR) malloc (size);
   if (!ptr)
     memory_full ();
   return ptr;
 }
 
-static GENERIC_PTR
+PTR
 xrealloc (old, size)
-     GENERIC_PTR old;
-     size_t size;
+  PTR old;
+  size_t size;
 {
-  register GENERIC_PTR ptr = (GENERIC_PTR) realloc (old, size);
+  register PTR ptr = (PTR) realloc (old, size);
   if (!ptr)
     memory_full ();
   return ptr;
 }
 
-static GENERIC_PTR
+PTR
 xcalloc (number, size)
-     size_t number, size;
+  size_t number, size;
 {
   register size_t total = number * size;
-  register GENERIC_PTR ptr = (GENERIC_PTR) malloc (total);
+  register PTR ptr = (PTR) malloc (total);
   if (!ptr)
     memory_full ();
   bzero (ptr, total);

@@ -53,8 +53,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "gcov-io.h"
 #include "toplev.h"
 
-extern char * xmalloc ();
-
 /* One of these is dynamically created whenever we identify an arc in the
    function.  */
 

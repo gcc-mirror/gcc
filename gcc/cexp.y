@@ -168,7 +168,6 @@ extern int c89;
 
 struct constant;
 
-GENERIC_PTR xmalloc PROTO((size_t));
 HOST_WIDE_INT parse_escape PROTO((char **, HOST_WIDE_INT));
 int check_assertion PROTO((U_CHAR *, int, int, struct arglist *));
 struct hashnode *lookup PROTO((U_CHAR *, int, int));
@@ -1240,10 +1239,10 @@ lookup (name, len, hash)
   return (DEFAULT_SIGNED_CHAR) ? 0 : ((struct hashnode *) -1);
 }
 
-GENERIC_PTR
+PTR
 xmalloc (size)
-     size_t size;
+  size_t size;
 {
-  return (GENERIC_PTR) malloc (size);
+  return (PTR) malloc (size);
 }
 #endif

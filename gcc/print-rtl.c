@@ -45,7 +45,7 @@ static char *reg_names[] = REGISTER_NAMES;
 
 static FILE *outfile;
 
-static char spaces[] = "                                                                                                                                                                ";
+static const char xspaces[] = "                                                                                                                                                                ";
 
 static int sawclose = 0;
 
@@ -77,7 +77,7 @@ print_rtx (in_rtx)
   if (sawclose)
     {
       fprintf (outfile, "\n%s",
-	       (spaces + (sizeof spaces - 1 - indent * 2)));
+	       (xspaces + (sizeof xspaces - 1 - indent * 2)));
       sawclose = 0;
     }
 
@@ -185,7 +185,7 @@ print_rtx (in_rtx)
 	if (sawclose)
 	  {
 	    fprintf (outfile, "\n%s",
-		     (spaces + (sizeof spaces - 1 - indent * 2)));
+		     (xspaces + (sizeof xspaces - 1 - indent * 2)));
 	    sawclose = 0;
 	  }
 	fputs ("[ ", outfile);
@@ -202,7 +202,7 @@ print_rtx (in_rtx)
 	  }
 	if (sawclose)
 	  fprintf (outfile, "\n%s",
-		   (spaces + (sizeof spaces - 1 - indent * 2)));
+		   (xspaces + (sizeof xspaces - 1 - indent * 2)));
 
 	fputs ("] ", outfile);
 	sawclose = 1;

@@ -611,24 +611,10 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 #define __proto(x) PARAMS(x)
-/* Should PTR_T and CPTR_T be typedef'ed in terms of PTR ??? */
-#ifdef __STDC__
-typedef void *PTR_T;
-typedef const void *CPTR_T;
-#else
+typedef PTR PTR_T;
+typedef const PTR_T CPTR_T;
 
-#if defined(_STDIO_H_) || defined(__STDIO_H__)		/* Ultrix 4.0, SGI */
-typedef void *PTR_T;
-typedef void *CPTR_T;
-
-#else
-typedef char *PTR_T;					/* Ultrix 3.1 */
-typedef char *CPTR_T;
-#endif
-
-#endif
-
-/* Do to size_t being defined in sys/types.h and different
+/* Due to size_t being defined in sys/types.h and different
    in stddef.h, we have to do this by hand.....  Note, these
    types are correct for MIPS based systems, and may not be
    correct for other systems.  Ultrix 4.0 and Silicon Graphics
@@ -650,10 +636,7 @@ extern void	pfatal_with_name
 				__proto((char *));
 extern void	fancy_abort	__proto((void));
        void	botch		__proto((const char *));
-extern PTR_T	xmalloc		__proto((Size_t));
-extern PTR_T	xcalloc		__proto((Size_t, Size_t));
-extern PTR_T	xrealloc	__proto((PTR_T, Size_t));
-extern void	xfree		__proto((PTR_T));
+extern void	xfree		__proto((PTR));
 
 extern void	fatal		PVPROTO((const char *format, ...));
 extern void	error		PVPROTO((const char *format, ...));
@@ -5597,14 +5580,14 @@ void
 fatal VPROTO((const char *format, ...))
 {
 #ifndef ANSI_PROTOTYPES
-  char *format;
+  const char *format;
 #endif
   va_list ap;
 
   VA_START (ap, format);
 
 #ifndef ANSI_PROTOTYPES
-  format = va_arg (ap, char *);
+  format = va_arg (ap, const char *);
 #endif
 
   if (line_number > 0)
@@ -5675,11 +5658,11 @@ botch (s)
 
 /* Same as `malloc' but report error if no memory available.  */
 
-PTR_T
+PTR
 xmalloc (size)
-     Size_t size;
+  size_t size;
 {
-  register PTR_T value = malloc (size);
+  register PTR value = (PTR) malloc (size);
   if (value == 0)
     fatal ("Virtual memory exhausted.");
 
@@ -5695,11 +5678,11 @@ xmalloc (size)
 
 /* Same as `calloc' but report error if no memory available.  */
 
-PTR_T
+PTR
 xcalloc (size1, size2)
-     Size_t size1, size2;
+  size_t size1, size2;
 {
-  register PTR_T value = calloc (size1, size2);
+  register PTR value = (PTR) calloc (size1, size2);
   if (value == 0)
     fatal ("Virtual memory exhausted.");
 
@@ -5717,12 +5700,12 @@ xcalloc (size1, size2)
 
 /* Same as `realloc' but report error if no memory available.  */
 
-PTR_T
+PTR
 xrealloc (ptr, size)
-     PTR_T ptr;
-     Size_t size;
+  PTR ptr;
+  size_t size;
 {
-  register PTR_T result = realloc (ptr, size);
+  register PTR result = (PTR) realloc (ptr, size);
   if (!result)
     fatal ("Virtual memory exhausted.");
 
@@ -5740,7 +5723,7 @@ xrealloc (ptr, size)
 
 void
 xfree (ptr)
-     PTR_T ptr;
+     PTR ptr;
 {
   if (debug > 3)
     {

@@ -1385,21 +1385,6 @@ union tree_node
 extern int exact_log2_wide             PROTO((unsigned HOST_WIDE_INT));
 extern int floor_log2_wide             PROTO((unsigned HOST_WIDE_INT));
 
-#if 0
-/* At present, don't prototype xrealloc, since all of the callers don't
-   cast their pointers to char *, and all of the xrealloc's don't use
-   void * yet.  */
-extern char *xmalloc			PROTO((size_t));
-extern char *xcalloc			PROTO((size_t, size_t));
-extern char *xrealloc			PROTO((void *, size_t));
-#else
-extern char *xmalloc ();
-extern char *xcalloc ();
-extern char *xrealloc ();
-#endif
-
-extern char *xstrdup			PROTO((char *));
-
 extern char *oballoc			PROTO((int));
 extern char *permalloc			PROTO((int));
 extern char *savealloc			PROTO((int));

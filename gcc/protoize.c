@@ -109,16 +109,7 @@ extern char *version_string;
 
 extern char *getpwd ();
 
-extern char *choose_temp_base PROTO ((void));
 extern char * my_strerror PROTO ((int));
-
-extern int pexecute PROTO ((const char *, char * const *, const char *,
-			    const char *, char **, char **, int));
-extern int pwait PROTO ((int, int *, int));
-/* Flag arguments to pexecute.  */
-#define PEXECUTE_FIRST  1
-#define PEXECUTE_LAST   2
-#define PEXECUTE_SEARCH 4
 
 static void usage PROTO ((void)) ATTRIBUTE_NORETURN;
 static void aux_info_corrupted PROTO ((void)) ATTRIBUTE_NORETURN;
@@ -128,13 +119,8 @@ static void declare_source_confusing PROTO ((const char *)) ATTRIBUTE_NORETURN;
    These were made to facilitate compilation with old brain-dead DEC C
    compilers which didn't properly grok `void*' types.  */
 
-#ifdef __STDC__
-typedef void * pointer_type;
-typedef const void * const_pointer_type;
-#else
-typedef char * pointer_type;
-typedef char * const_pointer_type;
-#endif
+typedef PTR pointer_type;
+typedef const PTR const_pointer_type;
 
 #if defined(POSIX)
 
@@ -605,19 +591,15 @@ my_strerror(e)
 
 pointer_type
 xmalloc (byte_count)
-     size_t byte_count;
+  size_t byte_count;
 {
-  pointer_type rv;
-
-  rv = (pointer_type) malloc (byte_count);
+  register pointer_type rv = (pointer_type) malloc (byte_count);
   if (rv == NULL)
     {
       fprintf (stderr, "\n%s: virtual memory exceeded\n", pname);
       exit (FATAL_EXIT_CODE);
-      return 0;		/* avoid warnings */
     }
-  else
-    return rv;
+  return rv;
 }
 
 /* Reallocate some space, but check that the reallocation was successful.  */
@@ -627,17 +609,13 @@ xrealloc (old_space, byte_count)
      pointer_type old_space;
      size_t byte_count;
 {
-  pointer_type rv;
-
-  rv = (pointer_type) realloc (old_space, byte_count);
+  register pointer_type rv = (pointer_type) realloc (old_space, byte_count);
   if (rv == NULL)
     {
       fprintf (stderr, "\n%s: virtual memory exceeded\n", pname);
       exit (FATAL_EXIT_CODE);
-      return 0;		/* avoid warnings */
     }
-  else
-    return rv;
+  return rv;
 }
 
 /* Deallocate the area pointed to by an arbitrary pointer, but first, strip

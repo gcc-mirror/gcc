@@ -302,10 +302,6 @@ static char *resolve_lib_name	PROTO((char *));
 static int use_import_list	PROTO((char *));
 static int ignore_library	PROTO((char *));
 #endif
-
-char *xcalloc ();
-char *xmalloc ();
-
 
 #ifdef NO_DUP2
 int
@@ -514,36 +510,32 @@ handler (signo)
 }
 
 
-char *
+PTR
 xcalloc (size1, size2)
-     int size1, size2;
+  size_t size1, size2;
 {
-  char *ptr = (char *) calloc (size1, size2);
-  if (ptr)
-    return ptr;
-
-  fatal ("out of memory");
-  return (char *) 0;
+  PTR ptr = (PTR) calloc (size1, size2);
+  if (!ptr)
+    fatal ("out of memory");
+  return ptr;
 }
 
-char *
+PTR
 xmalloc (size)
-     unsigned size;
+  size_t size;
 {
-  char *ptr = (char *) malloc (size);
-  if (ptr)
-    return ptr;
-
-  fatal ("out of memory");
-  return (char *) 0;
+  PTR ptr = (PTR) malloc (size);
+  if (!ptr)
+    fatal ("out of memory");
+  return ptr;
 }
 
-char *
+PTR
 xrealloc (ptr, size)
-     char *ptr;
-     unsigned size;
+  PTR ptr;
+  size_t size;
 {
-  register char *value = (char *) realloc (ptr, size);
+  register PTR value = (PTR) realloc (ptr, size);
   if (value == 0)
     fatal ("virtual memory exhausted");
   return value;

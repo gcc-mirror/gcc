@@ -13,7 +13,6 @@ struct rtx_def;
 extern int count_error			PROTO ((int));
 extern void strip_off_ending		PROTO ((char *, int));
 extern void print_time			PROTO ((char *, int));
-extern int get_run_time			PROTO ((void));
 extern void debug_start_source_file	PROTO ((char *));
 extern void debug_end_source_file	PROTO ((unsigned));
 extern void debug_define		PROTO ((unsigned, char *));

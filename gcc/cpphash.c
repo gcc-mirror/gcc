@@ -27,8 +27,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #include "cpplib.h"
 #include "cpphash.h"
 
-extern char *xmalloc PARAMS ((unsigned));
-
 static HASHNODE *hashtab[HASHSIZE];
 
 /* Return hash function on name.  must be compatible with the one

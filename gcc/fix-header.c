@@ -873,7 +873,7 @@ write_rbrac ()
 
 char *
 xstrdup (str)
-     char *str;
+  const char *str;
 {
   char *copy = (char *) xmalloc (strlen (str) + 1);
   strcpy (copy, str);

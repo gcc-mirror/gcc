@@ -184,7 +184,6 @@ struct cpp_pending {
 
 /* Forward declarations.  */
 
-char *xmalloc ();
 extern void cpp_hash_cleanup PARAMS ((cpp_reader *));
 
 static char *my_strerror		PROTO ((int));
@@ -213,8 +212,6 @@ static void free_token_list		PROTO ((struct arglist *));
 static void push_macro_expansion PARAMS ((cpp_reader *,
 					  U_CHAR *, int, HASHNODE *));
 static struct cpp_pending *nreverse_pending PARAMS ((struct cpp_pending *));
-extern char *xrealloc ();
-static char *xcalloc			PROTO ((unsigned, unsigned));
 
 static void conditional_skip		PROTO ((cpp_reader *, int,
 					       enum node_type, U_CHAR *));
@@ -6436,12 +6433,12 @@ free_token_list (tokens)
    be moved into cppalloc.c.  We can't do that right now because
    then we'd get multiple-symbol clashes with toplev.c and several
    other people. */
-static char *
+PTR
 xcalloc (number, size)
-     unsigned number, size;
+  size_t number, size;
 {
   register unsigned total = number * size;
-  register char *ptr = (char *) xmalloc (total);
+  register PTR ptr = (PTR) xmalloc (total);
   bzero (ptr, total);
   return ptr;
 }

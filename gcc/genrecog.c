@@ -193,8 +193,6 @@ static void mybzero		PROTO((char *, unsigned));
 static void mybcopy		PROTO((char *, char *, unsigned));
 static void fatal		PVPROTO((char *, ...))
   ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
-char *xrealloc			PROTO((char *, unsigned));
-char *xmalloc			PROTO((unsigned));
 void fancy_abort		PROTO((void)) ATTRIBUTE_NORETURN;
 
 /* Construct and return a sequence of decisions
@@ -1660,22 +1658,22 @@ mybcopy (in, out, length)
     *out++ = *in++;
 }
 
-char *
+PTR
 xrealloc (ptr, size)
-     char *ptr;
-     unsigned size;
+  PTR ptr;
+  size_t size;
 {
-  char *result = (char *) realloc (ptr, size);
+  register PTR result = (PTR) realloc (ptr, size);
   if (!result)
     fatal ("virtual memory exhausted");
   return result;
 }
 
-char *
+PTR
 xmalloc (size)
-     unsigned size;
+  size_t size;
 {
-  register char *val = (char *) malloc (size);
+  register PTR val = (PTR) malloc (size);
 
   if (val == 0)
     fatal ("virtual memory exhausted");

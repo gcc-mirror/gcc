@@ -66,11 +66,11 @@ int main (argc, argv)
 /* FIXME: We only need an xmalloc definition because we are forced to
    link with alloca.o on some platforms.  This should go away if/when
    we link against libiberty.a. (ghazi@caip.rutgers.edu 6/3/98) */
-char *
+PTR
 xmalloc (nbytes)
-     int nbytes;
+  size_t nbytes;
 {
-  char *tmp = (char *) malloc (nbytes);
+  register PTR tmp = (PTR) malloc (nbytes);
 
   if (!tmp)
     {
