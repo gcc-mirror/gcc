@@ -4595,7 +4595,6 @@ output_mi_thunk (file, thunk_fndecl, delta, function)
   const char *this_reg = reg_names[ aggregate_value_p (TREE_TYPE (TREE_TYPE (function))) ? 4 : 3 ];
   const char *prefix;
   char *fname;
-#if 0
   const char *r0	 = reg_names[0];
   const char *sp	 = reg_names[1];
   const char *toc	 = reg_names[2];
@@ -4603,12 +4602,11 @@ output_mi_thunk (file, thunk_fndecl, delta, function)
   const char *r12	 = reg_names[12];
   char buf[512];
   static int labelno = 0;
-#endif
 
   /* Small constants that can be done by one add instruction */
   if (delta >= -32768 && delta <= 32767)
     {
-      if (!TARGET_NEW_MNEMONICS)
+      if (! TARGET_NEW_MNEMONICS)
 	fprintf (file, "\tcal %s,%d(%s)\n", this_reg, delta, this_reg);
       else
 	fprintf (file, "\taddi %s,%s,%d\n", this_reg, this_reg, delta);
@@ -4622,7 +4620,7 @@ output_mi_thunk (file, thunk_fndecl, delta, function)
   /* 32-bit constants that can be done by an add and addis instruction.  */
   else if (TARGET_32BIT || num_insns_constant_wide (delta) == 1)
     {
-      /* Break into two pieces, propigating the sign bit from the low word to
+      /* Break into two pieces, propagating the sign bit from the low word to
 	 the upper word.  */
       int delta_high = delta >> 16;
       int delta_low  = delta & 0xffff;
@@ -4635,7 +4633,7 @@ output_mi_thunk (file, thunk_fndecl, delta, function)
       asm_fprintf (file, "\t{cau|addis} %s,%s,%d\n", this_reg, this_reg,
 		   delta_high);
 
-      if (!TARGET_NEW_MNEMONICS)
+      if (! TARGET_NEW_MNEMONICS)
 	fprintf (file, "\tcal %s,%d(%s)\n", this_reg, delta_low, this_reg);
       else
 	fprintf (file, "\taddi %s,%s,%d\n", this_reg, this_reg, delta_low);
@@ -4670,21 +4668,15 @@ output_mi_thunk (file, thunk_fndecl, delta, function)
      Otherwise, load up its address and jump to it.  */
 
   fname = XSTR (XEXP (DECL_RTL (function), 0), 0);
-#if 1
-  /* For now, just emit a branch always, until we can figure out better when we
-     need to load the address into the count register and emit the slower bctr
-     instruction.  */
-  fprintf (file, "\tb %s", prefix);
-  assemble_name (file, fname);
-  fprintf (file, "\n");
 
-#else
   if (current_file_function_operand (XEXP (DECL_RTL (function), 0))
-      && !lookup_attribute ("longcall", TYPE_ATTRIBUTES (TREE_TYPE (function))))
+      && ! lookup_attribute ("longcall",
+			     TYPE_ATTRIBUTES (TREE_TYPE (function))))
     {
       fprintf (file, "\tb %s", prefix);
       assemble_name (file, fname);
-      fprintf (file, "\n");
+      if (DEFAULT_ABI == ABI_V4 && flag_pic) fputs ("@local", file);
+      fputs ("\n", file);
     }
 
   else
@@ -4729,8 +4721,14 @@ output_mi_thunk (file, thunk_fndecl, delta, function)
 	  asm_fprintf (file, "\tbctr\n");
 	  break;
 
-	  /* Don't use r11, that contains the static chain, just use r0/r12.  */
 	case ABI_V4:
+	  fprintf (file, "\tb %s", prefix);
+	  assemble_name (file, fname);
+	  if (flag_pic) fputs ("@plt", file);
+	  fputs ("\n", file);
+	  break;
+	      
+	  /* Don't use r11, that contains the static chain, just use r0/r12.  */
 	case ABI_AIX_NODESC:
 	case ABI_SOLARIS:
 	  if (flag_pic == 1)
@@ -4785,7 +4783,6 @@ output_mi_thunk (file, thunk_fndecl, delta, function)
 	  break;
 	}
     }
-#endif	/* #if 0 out code to use bctr for far away jumps */
 }
 
 
