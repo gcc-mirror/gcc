@@ -1,5 +1,10 @@
 2004-11-06  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	* gcc.dg/compat/generate-random.c (generate_random_data unsafe_state):
+	Do not use C99 designators.
+
+2004-11-06  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	* g++.dg/other/pragma-re-1.C (p, q): Fix type and remove cast.
 
 2004-11-06  Eric Botcazou  <ebotcazou@libertysurf.fr>
