@@ -4467,9 +4467,9 @@ main (argc, argv)
 
   while ((c = getopt_long (argc, argv,
 #ifdef UNPROTOIZE
-			   "c:d:i:knNp:qVx:",
+			   "c:d:i:knNp:qvVx:",
 #else
-			   "B:c:Cd:gklnNp:qVx:",
+			   "B:c:Cd:gklnNp:qvVx:",
 #endif
 			   longopts, &longind)) != EOF)
     {
@@ -4488,6 +4488,7 @@ main (argc, argv)
 	  exclude_list = string_list_cons (optarg, exclude_list);
 	  break;
 	    
+	case 'v':
 	case 'V':
 	  version_flag = 1;
 	  break;
