@@ -17,7 +17,7 @@ endif
 ##
 
 if XLIB_AWT
-cond_x_ltlibrary = libgcjx.la
+cond_x_ltlibrary = lib-gnu-awt-xlib.la
 ## We require libstdc++-v3 to be in the same build tree.
 xlib_includes = -I../libstdc++-v3/include -I../libstdc++-v3/include/$(target_alias) -I$(srcdir)/../libstdc++-v3/libsupc++
 else
@@ -304,23 +304,15 @@ org/xml/sax/SAXParseException.java \
 org/xml/sax/XMLFilter.java \
 org/xml/sax/XMLReader.java
 
-libgcjx_la_SOURCES = $(x_nat_source_files)
-EXTRA_libgcjx_la_SOURCES = $(x_java_source_files)
-libgcjx_la_DEPENDENCIES = libgcj-@gcc_version@.jar $(x_javao_files)
-libgcjx_la_LIBADD = $(x_javao_files)
-libgcjx_la_LDFLAGS = @X_PRE_LIBS@ @X_LIBS@ -lX11 @X_EXTRA_LIBS@ \
+lib_gnu_awt_xlib_la_SOURCES = $(x_nat_source_files)
+EXTRA_lib_gnu_awt_xlib_la_SOURCES = $(x_java_source_files)
+lib_gnu_awt_xlib_la_DEPENDENCIES = libgcj-@gcc_version@.jar $(x_javao_files)
+lib_gnu_awt_xlib_la_LIBADD = $(x_javao_files)
+lib_gnu_awt_xlib_la_LDFLAGS = @X_PRE_LIBS@ @X_LIBS@ -lX11 @X_EXTRA_LIBS@ \
         -rpath $(toolexeclibdir) \
 ## The mysterious backslash is consumed by make.
         -version-info `grep -v '^\#' $(srcdir)/libtool-version`
-libgcjx_la_LINK = $(LIBLINK)
-
-## Make a symlink for each `libgcjx' file that was installed.
-install-exec-hook:
-	cd $(DESTDIR)$(libdir) && \
-	if test -f libgcjx.la; then \
-	  rm -f gnu-awt-xlib.la; \
-	  $(LN_S) libgcjx.la gnu-awt-xlib.la; \
-	fi
+lib_gnu_awt_xlib_la_LINK = $(LIBLINK)
 
 all_java_source_files = \
     $(java_source_files) \
@@ -398,10 +390,10 @@ libgcj.la: $(libgcj_la_OBJECTS) $(libgcj_la_DEPENDENCIES)
 	@GCLIBS@ @LIBFFI@ @ZLIBS@ \
 	-rpath $(toolexeclibdir) $(libgcj_la_LDFLAGS) $(LIBS)
 
-libgcjx.la: $(libgcjx_la_OBJECTS) $(libgcjx_la_DEPENDENCIES)
-	@: $(shell echo Creating list of files to link...) $(shell rm -f libgcjx.objectlist || :) $(shell touch libgcjx.objectlist) $(foreach object,$(libgcjx_la_OBJECTS) $(libgcjx_la_LIBADD),$(shell echo $(object) >> libgcjx.objectlist))
-	$(libgcjx_la_LINK) -objectlist libgcjx.objectlist \
-	-rpath $(toolexeclibdir) $(libgcjx_la_LDFLAGS) $(LIBS)
+lib-gnu-awt-xlib.la: $(lib_gnu_awt_xlib_la_OBJECTS) $(lib_gnu_awt_xlib_la_DEPENDENCIES)
+	@: $(shell echo Creating list of files to link...) $(shell rm -f lib_gnu_awt_xlib.objectlist || :) $(shell touch lib_gnu_awt_xlib.objectlist) $(foreach object,$(lib_gnu_awt_xlib_la_OBJECTS) $(lib_gnu_awt_xlib_la_LIBADD),$(shell echo $(object) >> lib_gnu_awt_xlib.objectlist))
+	$(lib_gnu_awt_xlib_la_LINK) -objectlist lib_gnu_awt_xlib.objectlist \
+	-rpath $(toolexeclibdir) $(lib_gnu_awt_xlib_la_LDFLAGS) $(LIBS)
 
 ## ################################################################
 
