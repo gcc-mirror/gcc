@@ -1,3 +1,9 @@
+Sat Oct 16 12:34:44 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.c (c4x_rptb_insert): Emit rpts_top pattern
+	if appropriate.
+	* config/c4x/c4x.md (rpts_top): New pattern and splitter.
+
 Sat Oct 16 12:26:30 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.c (src_operand):  Check SYMBOL_REF and LABEL_REF
