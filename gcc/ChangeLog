@@ -1,3 +1,7 @@
+Sun Apr 19 18:48:07 1998  K. Richard Pixley  <rich@kyoto.noir.com>
+
+	* fixincludes: Discard empty C++ comments.
+
 Sun Apr 19 18:30:11 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
 	* m68k.md ({add,sub}di3): Optimize for constant operand.

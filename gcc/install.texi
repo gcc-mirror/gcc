@@ -328,8 +328,9 @@ Ignore any warnings you may see about ``statement not reached'' in
 escape sequence'' are normal in @file{genopinit.c} and perhaps some
 other files.  Likewise, you should ignore warnings about ``constant is
 so large that it is unsigned'' in @file{insn-emit.c} and
-@file{insn-recog.c} and a warning about a comparison always being zero
-in @file{enquire.o}.  Any other compilation errors may represent bugs in
+@file{insn-recog.c}, a warning about a comparison always being zero
+in @file{enquire.o}, and warnings about shift counts exceeding type
+widths in @file{cexp.y}.  Any other compilation errors may represent bugs in
 the port to your machine or operating system, and
 @ifclear INSTALLONLY
 should be investigated and reported (@pxref{Bugs}).
