@@ -2031,6 +2031,15 @@ definition of this macro is
 @end smallexample
 @end defmac
 
+@defmac REGMODE_NATURAL_SIZE (@var{mode})
+Define this macro if the natural size of registers that hold values
+of mode @var{mode} is not the word size.  It is a C expression that
+should give the natural size in bytes for the specified mode.  It is
+used by the register allocator to try to optimize its results.  This
+happens for example on SPARC 64-bit where the natural size of
+floating-point registers is still 32-bit.
+@end defmac
+
 @defmac HARD_REGNO_MODE_OK (@var{regno}, @var{mode})
 A C expression that is nonzero if it is permissible to store a value
 of mode @var{mode} in hard register number @var{regno} (or in several

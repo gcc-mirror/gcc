@@ -1,3 +1,8 @@
+2004-03-12  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* doc/tm.texi (registers) <Values in Registers>: Add
+	entry for REGMODE_NATURAL_SIZE.
+
 2004-03-11  Richard Henderson  <rth@redhat.com>
 
 	PR target/14539
