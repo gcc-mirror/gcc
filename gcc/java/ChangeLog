@@ -1,3 +1,10 @@
+2001-02-07  Per Bothner  <per@bothner.com>
+
+	* check-init.c (check_init):  Fix TRY_FINALLY_EXPR logic.
+
+	* check-init.c (check_init):  Don't call done_alternative after
+	processing loop code, as a LOOP_EXPR never terminates normally.
+
 2001-02-08  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcj.texi: Change sources.redhat.com reference to gcc.gnu.org.

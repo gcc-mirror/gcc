@@ -451,7 +451,6 @@ check_init (exp, before)
 	BEGIN_ALTERNATIVES (before, alt);
 	alt.block = exp;
 	check_init (TREE_OPERAND (exp, 0), before);
-	done_alternative (before, &alt);
 	END_ALTERNATIVES (before, alt);
 	return;
       }
@@ -571,8 +570,9 @@ check_init (exp, before)
       {
 	words tmp = ALLOC_WORDS (num_current_words);
 	COPY (tmp, before);
-	check_init (TREE_OPERAND (exp, 0), tmp);
-	check_init (TREE_OPERAND (exp, 1), before);
+	check_init (TREE_OPERAND (exp, 0), before);
+	check_init (TREE_OPERAND (exp, 1), tmp);
+	UNION (before, before, tmp);
 	FREE_WORDS (tmp);
       }
       return;
