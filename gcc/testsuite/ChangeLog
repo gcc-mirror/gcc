@@ -1,3 +1,7 @@
+2001-12-14  Aldy Hernandez  <aldyh@redhat.com>
+
+	* testsuite/gcc.dg/20011214-1.c: New.
+
 2001-12-13  Aldy Hernandez  <aldyh@redhat.com>
 
 	* gcc.dg/altivec-4.c: New.
