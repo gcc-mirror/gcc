@@ -329,8 +329,6 @@ static int set_phi_alternative_reg      PARAMS ((rtx, int, int, void *));
 static void calculate_global_regs_live	PARAMS ((sbitmap, sbitmap, int));
 static void propagate_block_delete_insn PARAMS ((basic_block, rtx));
 static rtx propagate_block_delete_libcall PARAMS ((basic_block, rtx, rtx));
-static void propagate_block		PARAMS ((basic_block, regset,
-						 regset, int));
 static int insn_dead_p			PARAMS ((struct propagate_block_info *,
 						 rtx, int, rtx));
 static int libcall_dead_p		PARAMS ((struct propagate_block_info *,
@@ -3267,6 +3265,269 @@ propagate_block_delete_libcall (bb, insn, note)
   return before;
 }
 
+/* Update the life-status of regs for one insn.  Return the previous insn.  */
+
+rtx
+propagate_one_insn (pbi, insn)
+     struct propagate_block_info *pbi;
+     rtx insn;
+{
+  rtx prev = PREV_INSN (insn);
+  int flags = pbi->flags;
+  int insn_is_dead = 0;
+  int libcall_is_dead = 0;
+  rtx note;
+  int i;
+
+  if (! INSN_P (insn))
+    return prev;
+
+  note = find_reg_note (insn, REG_RETVAL, NULL_RTX);
+  if (flags & PROP_SCAN_DEAD_CODE)
+    {
+      insn_is_dead = insn_dead_p (pbi, PATTERN (insn), 0,
+				  REG_NOTES (insn));
+      libcall_is_dead = (insn_is_dead && note != 0
+			 && libcall_dead_p (pbi, PATTERN (insn),
+					    note, insn));
+    }
+
+  /* We almost certainly don't want to delete prologue or epilogue
+     instructions.  Warn about probable compiler losage.  */
+  if (insn_is_dead
+      && reload_completed
+      && (((HAVE_epilogue || HAVE_prologue)
+	   && prologue_epilogue_contains (insn))
+	  || (HAVE_sibcall_epilogue
+	      && sibcall_epilogue_contains (insn))))
+    {
+      if (flags & PROP_KILL_DEAD_CODE)
+	{ 
+	  warning ("ICE: would have deleted prologue/epilogue insn");
+	  if (!inhibit_warnings)
+	    debug_rtx (insn);
+	}
+      libcall_is_dead = insn_is_dead = 0;
+    }
+
+  /* If an instruction consists of just dead store(s) on final pass,
+     delete it.  */
+  if ((flags & PROP_KILL_DEAD_CODE) && insn_is_dead)
+    {
+      if (libcall_is_dead)
+	{
+	  prev = propagate_block_delete_libcall (pbi->bb, insn, note);
+	  insn = NEXT_INSN (prev);
+	}
+      else
+	propagate_block_delete_insn (pbi->bb, insn);
+
+      /* CC0 is now known to be dead.  Either this insn used it,
+	 in which case it doesn't anymore, or clobbered it,
+	 so the next insn can't use it.  */
+      pbi->cc0_live = 0;
+
+      return prev;
+    }
+
+  /* See if this is an increment or decrement that can be merged into
+     a following memory address.  */
+#ifdef AUTO_INC_DEC
+  {
+    register rtx x = single_set (insn);
+
+    /* Does this instruction increment or decrement a register?  */
+    if (!reload_completed
+	&& (flags & PROP_AUTOINC)
+	&& x != 0
+	&& GET_CODE (SET_DEST (x)) == REG
+	&& (GET_CODE (SET_SRC (x)) == PLUS
+	    || GET_CODE (SET_SRC (x)) == MINUS)
+	&& XEXP (SET_SRC (x), 0) == SET_DEST (x)
+	&& GET_CODE (XEXP (SET_SRC (x), 1)) == CONST_INT
+	/* Ok, look for a following memory ref we can combine with.
+	   If one is found, change the memory ref to a PRE_INC
+	   or PRE_DEC, cancel this insn, and return 1.
+	   Return 0 if nothing has been done.  */
+	&& try_pre_increment_1 (pbi, insn))
+      return prev;
+  }
+#endif /* AUTO_INC_DEC */
+
+  CLEAR_REG_SET (pbi->new_live);
+  CLEAR_REG_SET (pbi->new_dead);
+
+  /* If this is not the final pass, and this insn is copying the value of
+     a library call and it's dead, don't scan the insns that perform the
+     library call, so that the call's arguments are not marked live.  */
+  if (libcall_is_dead)
+    {
+      /* Record the death of the dest reg.  */
+      mark_set_regs (pbi, PATTERN (insn), insn);
+
+      insn = XEXP (note, 0);
+      return PREV_INSN (insn);
+    }
+  else if (GET_CODE (PATTERN (insn)) == SET
+	   && SET_DEST (PATTERN (insn)) == stack_pointer_rtx
+	   && GET_CODE (SET_SRC (PATTERN (insn))) == PLUS
+	   && XEXP (SET_SRC (PATTERN (insn)), 0) == stack_pointer_rtx
+	   && GET_CODE (XEXP (SET_SRC (PATTERN (insn)), 1)) == CONST_INT)
+    /* We have an insn to pop a constant amount off the stack.
+       (Such insns use PLUS regardless of the direction of the stack,
+       and any insn to adjust the stack by a constant is always a pop.)
+       These insns, if not dead stores, have no effect on life.  */
+    ;
+  else
+    {
+      /* Any regs live at the time of a call instruction must not go
+	 in a register clobbered by calls.  Find all regs now live and
+	 record this for them.  */
+
+      if (GET_CODE (insn) == CALL_INSN && (flags & PROP_REG_INFO))
+	EXECUTE_IF_SET_IN_REG_SET (pbi->reg_live, 0, i,
+				   { REG_N_CALLS_CROSSED (i)++; });
+
+      /* Record sets.  Do this even for dead instructions, since they
+	 would have killed the values if they hadn't been deleted.  */
+      mark_set_regs (pbi, PATTERN (insn), insn);
+
+      if (GET_CODE (insn) == CALL_INSN)
+	{
+	  register int i;
+	  rtx note, cond;
+
+	  cond = NULL_RTX;
+	  if (GET_CODE (PATTERN (insn)) == COND_EXEC)
+	    cond = COND_EXEC_TEST (PATTERN (insn));
+
+	  /* Non-constant calls clobber memory.  */
+	  if (! CONST_CALL_P (insn))
+	    free_EXPR_LIST_list (&pbi->mem_set_list);
+
+	  /* There may be extra registers to be clobbered.  */
+	  for (note = CALL_INSN_FUNCTION_USAGE (insn);
+	       note;
+	       note = XEXP (note, 1))
+	    if (GET_CODE (XEXP (note, 0)) == CLOBBER)
+	      mark_set_1 (pbi, XEXP (XEXP (note, 0), 0), cond, insn);
+
+	  /* Calls change all call-used and global registers.  */
+	  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	    if (call_used_regs[i] && ! global_regs[i]
+		&& ! fixed_regs[i])
+	      {
+		int dummy;
+		mark_set_reg (pbi, gen_rtx_REG (reg_raw_mode[i], i),
+			      cond, &dummy, &dummy);
+	      }
+	}
+
+      /* If an insn doesn't use CC0, it becomes dead since we assume
+	 that every insn clobbers it.  So show it dead here;
+	 mark_used_regs will set it live if it is referenced.  */
+      pbi->cc0_live = 0;
+
+      /* Record uses.  */
+      if (! insn_is_dead)
+	mark_used_regs (pbi, PATTERN (insn), NULL_RTX, insn);
+
+      /* Sometimes we may have inserted something before INSN (such as a move)
+	 when we make an auto-inc.  So ensure we will scan those insns.  */
+#ifdef AUTO_INC_DEC
+      prev = PREV_INSN (insn);
+#endif
+
+      if (! insn_is_dead && GET_CODE (insn) == CALL_INSN)
+	{
+	  register int i;
+	  rtx note, cond;
+
+	  cond = NULL_RTX;
+	  if (GET_CODE (PATTERN (insn)) == COND_EXEC)
+	    cond = COND_EXEC_TEST (PATTERN (insn));
+
+	  /* Calls use their arguments.  */
+	  for (note = CALL_INSN_FUNCTION_USAGE (insn);
+	       note;
+	       note = XEXP (note, 1))
+	    if (GET_CODE (XEXP (note, 0)) == USE)
+	      mark_used_regs (pbi, XEXP (XEXP (note, 0), 0),
+			      cond, insn);
+
+	  /* The stack ptr is used (honorarily) by a CALL insn.  */
+	  SET_REGNO_REG_SET (pbi->reg_live, STACK_POINTER_REGNUM);
+
+	  /* Calls may also reference any of the global registers,
+	     so they are made live.  */
+	  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	    if (global_regs[i])
+	      mark_used_reg (pbi, gen_rtx_REG (reg_raw_mode[i], i),
+			     cond, insn);
+	}
+    }
+
+  /* Update reg_live for the registers killed and used.  */
+  AND_COMPL_REG_SET (pbi->reg_live, pbi->new_dead);
+  IOR_REG_SET (pbi->reg_live, pbi->new_live);
+
+  /* On final pass, update counts of how many insns in which each reg
+     is live.  */
+  if (flags & PROP_REG_INFO)
+    EXECUTE_IF_SET_IN_REG_SET (pbi->reg_live, 0, i,
+			       { REG_LIVE_LENGTH (i)++; });
+
+  return prev;
+}
+
+/* Initialize a propagate_block_info struct for public consumption.
+   Note that the structure itself is opaque to this file, but that
+   the user can use the regsets provided here.  */
+
+struct propagate_block_info *
+init_propagate_block_info (bb, live, local_set, flags)
+     basic_block bb;
+     regset live;
+     regset local_set;
+     int flags;
+{
+  struct propagate_block_info *pbi = xmalloc (sizeof(*pbi));
+
+  pbi->bb = bb;
+  pbi->reg_live = live;
+  pbi->mem_set_list = NULL_RTX;
+  pbi->local_set = local_set;
+  pbi->cc0_live = 0;
+  pbi->flags = flags;
+
+  if (flags & (PROP_LOG_LINKS | PROP_AUTOINC))
+    pbi->reg_next_use = (rtx *) xcalloc (max_reg_num (), sizeof (rtx));
+  else
+    pbi->reg_next_use = NULL;
+
+  pbi->new_live = BITMAP_XMALLOC ();
+  pbi->new_dead = BITMAP_XMALLOC ();
+
+  return pbi;
+}
+
+/* Release a propagate_block_info struct.  */
+
+void
+free_propagate_block_info (pbi)
+     struct propagate_block_info *pbi;
+{
+  free_EXPR_LIST_list (&pbi->mem_set_list);
+
+  BITMAP_XFREE (pbi->new_live);
+  BITMAP_XFREE (pbi->new_dead);
+
+  if (pbi->reg_next_use)
+    free (pbi->reg_next_use);
+
+  free (pbi);
+}
+
 /* Compute the registers live at the beginning of a basic block BB from
    those live at the end.
 
@@ -3276,31 +3537,17 @@ propagate_block_delete_libcall (bb, insn, note)
    LOCAL_SET, if non-null, will be set with all registers killed by 
    this basic block.  */
 
-static void
+void
 propagate_block (bb, live, local_set, flags)
      basic_block bb;
      regset live;
      regset local_set;
      int flags;
 {
-  struct propagate_block_info pbi;
+  struct propagate_block_info *pbi;
   rtx insn, prev;
-  regset_head new_live_head, new_dead_head;
   
-  pbi.bb = bb;
-  pbi.reg_live = live;
-  pbi.mem_set_list = NULL_RTX;
-  pbi.local_set = local_set;
-  pbi.cc0_live = 0;
-  pbi.flags = flags;
-
-  if (flags & (PROP_LOG_LINKS | PROP_AUTOINC))
-    pbi.reg_next_use = (rtx *) xcalloc (max_reg_num (), sizeof (rtx));
-  else
-    pbi.reg_next_use = NULL;
-
-  pbi.new_live = INITIALIZE_REG_SET (new_live_head);
-  pbi.new_dead = INITIALIZE_REG_SET (new_dead_head);
+  pbi = init_propagate_block_info (bb, live, local_set, flags);
 
   if (flags & PROP_REG_INFO)
     {
@@ -3309,243 +3556,28 @@ propagate_block (bb, live, local_set, flags)
       /* Process the regs live at the end of the block.
 	 Mark them as not local to any one basic block. */
       EXECUTE_IF_SET_IN_REG_SET (live, 0, i,
-				 {
-				   REG_BASIC_BLOCK (i) = REG_BLOCK_GLOBAL;
-				 });
+				 { REG_BASIC_BLOCK (i) = REG_BLOCK_GLOBAL; });
     }
 
   /* Scan the block an insn at a time from end to beginning.  */
 
   for (insn = bb->end; ; insn = prev)
     {
-      prev = PREV_INSN (insn);
+      /* If this is a call to `setjmp' et al, warn if any
+	 non-volatile datum is live.  */
+      if ((flags & PROP_REG_INFO)
+	  && GET_CODE (insn) == NOTE
+	  && NOTE_LINE_NUMBER (insn) == NOTE_INSN_SETJMP)
+	IOR_REG_SET (regs_live_at_setjmp, pbi->reg_live);
 
-      if (GET_CODE (insn) == NOTE)
-	{
-	  /* If this is a call to `setjmp' et al,
-	     warn if any non-volatile datum is live.  */
+      prev = propagate_one_insn (pbi, insn);
 
-	  if ((flags & PROP_REG_INFO)
-	      && NOTE_LINE_NUMBER (insn) == NOTE_INSN_SETJMP)
-	    IOR_REG_SET (regs_live_at_setjmp, pbi.reg_live);
-	}
-
-      /* Update the life-status of regs for this insn.
-	 First DEAD gets which regs are set in this insn
-	 then LIVE gets which regs are used in this insn.
-	 Then the regs live before the insn
-	 are those live after, with DEAD regs turned off,
-	 and then LIVE regs turned on.  */
-
-      else if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
-	{
-	  register int i;
-	  rtx note = find_reg_note (insn, REG_RETVAL, NULL_RTX);
-	  int insn_is_dead = 0;
-	  int libcall_is_dead = 0;
-
-	  if (flags & PROP_SCAN_DEAD_CODE)
-	    {
-	      insn_is_dead = insn_dead_p (&pbi, PATTERN (insn), 0,
-					  REG_NOTES (insn));
-	      libcall_is_dead = (insn_is_dead && note != 0
-	                         && libcall_dead_p (&pbi, PATTERN (insn),
-						    note, insn));
-	    }
-
-	  /* We almost certainly don't want to delete prologue or epilogue
-	     instructions.  Warn about probable compiler losage.  */
-	  if (insn_is_dead
-	      && reload_completed
-	      && (((HAVE_epilogue || HAVE_prologue)
-		   && prologue_epilogue_contains (insn))
-		  || (HAVE_sibcall_epilogue
-		      && sibcall_epilogue_contains (insn))))
-	    {
-	      if (flags & PROP_KILL_DEAD_CODE)
-	        { 
-	      	  warning ("ICE: would have deleted prologue/epilogue insn");
-	      	  if (!inhibit_warnings)
-	  	    debug_rtx (insn);
-	        }
-	      libcall_is_dead = insn_is_dead = 0;
-	    }
-
-	  /* If an instruction consists of just dead store(s) on final pass,
-	     delete it.  */
-	  if ((flags & PROP_KILL_DEAD_CODE) && insn_is_dead)
-	    {
-	      if (libcall_is_dead)
-		{
-		  prev = propagate_block_delete_libcall (bb, insn, note);
-		  insn = NEXT_INSN (prev);
-		}
-	      else
-		propagate_block_delete_insn (bb, insn);
-
-	      /* CC0 is now known to be dead.  Either this insn used it,
-		 in which case it doesn't anymore, or clobbered it,
-		 so the next insn can't use it.  */
-	      pbi.cc0_live = 0;
-
-	      goto flushed;
-	    }
-
-	  /* See if this is an increment or decrement that can be
-	     merged into a following memory address.  */
-#ifdef AUTO_INC_DEC
-	  {
-	    register rtx x = single_set (insn);
-
-	    /* Does this instruction increment or decrement a register?  */
-	    if (!reload_completed
-		&& (flags & PROP_AUTOINC)
-		&& x != 0
-		&& GET_CODE (SET_DEST (x)) == REG
-		&& (GET_CODE (SET_SRC (x)) == PLUS
-		    || GET_CODE (SET_SRC (x)) == MINUS)
-		&& XEXP (SET_SRC (x), 0) == SET_DEST (x)
-		&& GET_CODE (XEXP (SET_SRC (x), 1)) == CONST_INT
-		/* Ok, look for a following memory ref we can combine with.
-		   If one is found, change the memory ref to a PRE_INC
-		   or PRE_DEC, cancel this insn, and return 1.
-		   Return 0 if nothing has been done.  */
-		&& try_pre_increment_1 (&pbi, insn))
-	      goto flushed;
-	  }
-#endif /* AUTO_INC_DEC */
-
-	  CLEAR_REG_SET (pbi.new_live);
-	  CLEAR_REG_SET (pbi.new_dead);
-
-	  /* If this is not the final pass, and this insn is copying the
-	     value of a library call and it's dead, don't scan the
-	     insns that perform the library call, so that the call's
-	     arguments are not marked live.  */
-	  if (libcall_is_dead)
-	    {
-	      /* Record the death of the dest reg.  */
-	      mark_set_regs (&pbi, PATTERN (insn), insn);
-
-	      insn = XEXP (note, 0);
-	      prev = PREV_INSN (insn);
-	    }
-	  else if (GET_CODE (PATTERN (insn)) == SET
-		   && SET_DEST (PATTERN (insn)) == stack_pointer_rtx
-		   && GET_CODE (SET_SRC (PATTERN (insn))) == PLUS
-		   && XEXP (SET_SRC (PATTERN (insn)), 0) == stack_pointer_rtx
-		   && GET_CODE (XEXP (SET_SRC (PATTERN (insn)), 1)) == CONST_INT)
-	    /* We have an insn to pop a constant amount off the stack.
-	       (Such insns use PLUS regardless of the direction of the stack,
-	       and any insn to adjust the stack by a constant is always a pop.)
-	       These insns, if not dead stores, have no effect on life.  */
-	    ;
-	  else
-	    {
-	      /* Any regs live at the time of a call instruction
-		 must not go in a register clobbered by calls.
-		 Find all regs now live and record this for them.  */
-
-	      if (GET_CODE (insn) == CALL_INSN
-		  && (flags & PROP_REG_INFO))
-		EXECUTE_IF_SET_IN_REG_SET (pbi.reg_live, 0, i,
-					   { REG_N_CALLS_CROSSED (i)++; });
-
-	      /* Record sets.  Do this even for dead instructions,
-		 since they would have killed the values if they hadn't
-		 been deleted.  */
-	      mark_set_regs (&pbi, PATTERN (insn), insn);
-
-	      /* If an insn doesn't use CC0, it becomes dead since we 
-		 assume that every insn clobbers it.  So show it dead here;
-		 mark_used_regs will set it live if it is referenced.  */
-	      pbi.cc0_live = 0;
-
-	      /* Record uses.  */
-	      if (! insn_is_dead)
-		mark_used_regs (&pbi, PATTERN (insn), NULL_RTX, insn);
-
-	      /* Sometimes we may have inserted something before INSN
-		 (such as a move) when we make an auto-inc.  So ensure
-		 we will scan those insns.  */
-#ifdef AUTO_INC_DEC
-	      prev = PREV_INSN (insn);
-#endif
-
-	      if (! insn_is_dead && GET_CODE (insn) == CALL_INSN)
-		{
-		  register int i;
-		  rtx note, cond;
-
-		  cond = NULL_RTX;
-		  if (GET_CODE (PATTERN (insn)) == COND_EXEC)
-		    cond = COND_EXEC_TEST (PATTERN (insn));
-
-		  /* Non-constant calls clobber memory.  */
-		  if (! CONST_CALL_P (insn))
-		    free_EXPR_LIST_list (&pbi.mem_set_list);
-
-		  /* There may be extra registers to be clobbered.  */
-	          for (note = CALL_INSN_FUNCTION_USAGE (insn);
-		       note;
-		       note = XEXP (note, 1))
-		    if (GET_CODE (XEXP (note, 0)) == CLOBBER)
-		      mark_set_1 (&pbi, XEXP (XEXP (note, 0), 0),
-				  cond, insn);
-
-		  /* Calls change all call-used and global registers.  */
-		  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-		    if (call_used_regs[i] && ! global_regs[i]
-			&& ! fixed_regs[i])
-		      {
-			int dummy;
-		        mark_set_reg (&pbi, gen_rtx_REG (reg_raw_mode[i], i),
-				      cond, &dummy, &dummy);
-		      }
-
-		  /* Calls use their arguments.  */
-	          for (note = CALL_INSN_FUNCTION_USAGE (insn);
-		       note;
-		       note = XEXP (note, 1))
-		    if (GET_CODE (XEXP (note, 0)) == USE)
-		      mark_used_regs (&pbi, XEXP (XEXP (note, 0), 0),
-				      cond, insn);
-
-		  /* The stack ptr is used (honorarily) by a CALL insn.  */
-		  SET_REGNO_REG_SET (pbi.new_live, STACK_POINTER_REGNUM);
-
-		  /* Calls may also reference any of the global registers,
-		     so they are made live.  */
-		  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-		    if (global_regs[i])
-		      mark_used_reg (&pbi, gen_rtx_REG (reg_raw_mode[i], i),
-				     cond, insn);
-		}
-	    }
-
-	  /* Update reg_live for the registers killed and used.  */
-	  AND_COMPL_REG_SET (pbi.reg_live, pbi.new_dead);
-	  IOR_REG_SET (pbi.reg_live, pbi.new_live);
-
-	  /* On final pass, update counts of how many insns in which
-	     each reg is live.  */
-	  if (flags & PROP_REG_INFO)
-	    EXECUTE_IF_SET_IN_REG_SET (pbi.reg_live, 0, i,
-				       { REG_LIVE_LENGTH (i)++; });
-	}
-    flushed:
       if (insn == bb->head)
 	break;
     }
 
-  FREE_REG_SET (pbi.new_live);
-  FREE_REG_SET (pbi.new_dead);
-  free_EXPR_LIST_list (&pbi.mem_set_list);
-
-  if (pbi.reg_next_use)
-    free (pbi.reg_next_use);
+  free_propagate_block_info (pbi);
 }
-
 
 /* Return 1 if X (the body of an insn, or part of it) is just dead stores
    (SET expressions whose destinations are registers dead after the insn).
