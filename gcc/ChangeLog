@@ -1,7 +1,7 @@
 2003-05-27  Danny Smith   <dannysmith@users.sourceforge.net>
 
-        * config.gcc (i[34567]86-*-mingw32*): Add host makefile
-        fragment i386/x-mingw32.
+	* config.gcc (i[34567]86-*-mingw32*): Add host makefile
+	fragment i386/x-mingw32.
 	* config/i386/x-mingw32: New file. Make local_includedir
 	relative to EXEC_PREFIX.
 
