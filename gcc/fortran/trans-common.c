@@ -379,7 +379,7 @@ build_common_decl (gfc_common_head *com, tree union_type, bool is_init)
    backend declarations for all of the elements.  */
 
 static void
-create_common (gfc_common_head *com, segment_info * head)
+create_common (gfc_common_head *com, segment_info * head, bool saw_equiv)
 {
   segment_info *s, *next_s;
   tree union_type;
@@ -388,8 +388,16 @@ create_common (gfc_common_head *com, segment_info * head)
   tree decl;
   bool is_init = false;
 
-  /* Declare the variables inside the common block.  */
-  union_type = make_node (UNION_TYPE);
+  /* Declare the variables inside the common block.
+     If the current common block contains any equivalence object, then
+     make a UNION_TYPE node, otherwise RECORD_TYPE. This will let the
+     alias analyzer work well when there is no address overlapping for
+     common variables in the current common block.  */
+  if (saw_equiv)
+    union_type = make_node (UNION_TYPE);
+  else
+    union_type = make_node (RECORD_TYPE);
+
   rli = start_record_layout (union_type);
   field_link = &TYPE_FIELDS (union_type);
 
@@ -703,7 +711,7 @@ find_equivalence (segment_info *n)
    segment list multiple times to include indirect equivalences.  */
 
 static void
-add_equivalences (void)
+add_equivalences (bool *saw_equiv)
 {
   segment_info *f;
   bool more;
@@ -718,6 +726,8 @@ add_equivalences (void)
 	    {
 	      f->sym->equiv_built = 1;
 	      more = find_equivalence (f);
+	      if (more)
+		*saw_equiv = true;
 	    }
 	}
     }
@@ -788,10 +798,12 @@ translate_common (gfc_common_head *common, gfc_symbol *var_list)
   HOST_WIDE_INT current_offset;
   unsigned HOST_WIDE_INT align;
   unsigned HOST_WIDE_INT max_align;
+  bool saw_equiv;
 
   common_segment = NULL;
   current_offset = 0;
   max_align = 1;
+  saw_equiv = false;
 
   /* Add symbols to the segment.  */
   for (sym = var_list; sym; sym = sym->common_next)
@@ -821,7 +833,7 @@ translate_common (gfc_common_head *common, gfc_symbol *var_list)
 
 	  /* Add all objects directly or indirectly equivalenced with this
 	     symbol.  */
-	  add_equivalences ();
+	  add_equivalences (&saw_equiv);
 
 	  if (current_segment->offset < 0)
 	    gfc_error ("The equivalence set for '%s' cause an invalid "
@@ -865,7 +877,7 @@ translate_common (gfc_common_head *common, gfc_symbol *var_list)
 		   common->name, &common->where, common_segment->offset);
     }
 
-  create_common (common, common_segment);
+  create_common (common, common_segment, saw_equiv);
 }
 
 
@@ -878,6 +890,7 @@ finish_equivalences (gfc_namespace *ns)
   gfc_symbol *sym;
   HOST_WIDE_INT offset;
   unsigned HOST_WIDE_INT align;
+  bool dummy;
 
   for (z = ns->equiv; z; z = z->next)
     for (y = z->eq; y; y = y->eq)
@@ -888,7 +901,7 @@ finish_equivalences (gfc_namespace *ns)
         current_segment = get_segment_info (sym, 0);
 
         /* All objects directly or indirectly equivalenced with this symbol.  */
-        add_equivalences ();
+        add_equivalences (&dummy);
 
 	/* Align the block.  */
 	offset = align_segment (&align);
@@ -899,7 +912,7 @@ finish_equivalences (gfc_namespace *ns)
 	apply_segment_offset (current_segment, offset);
 
 	/* Create the decl.  */
-        create_common (NULL, current_segment);
+        create_common (NULL, current_segment, true);
         break;
       }
 }
