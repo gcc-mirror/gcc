@@ -1,6 +1,6 @@
 // Bits and pieces used in algorithms -*- C++ -*-
 
-// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -77,8 +77,6 @@
 
 namespace std
 {
-  // swap and iter_swap
-
   /**
    *  @brief Swaps the contents of two iterators.
    *  @param  a  An iterator.
@@ -126,9 +124,6 @@ namespace std
       __a = __b;
       __b = __tmp;
     }
-
-  //--------------------------------------------------
-  // min and max
 
   #undef min
   #undef max
@@ -209,9 +204,6 @@ namespace std
       if (__comp(__a, __b)) return __b; return __a;
     }
 
-  //--------------------------------------------------
-  // copy
-
   // All of these auxiliary functions serve two purposes.  (1) Replace
   // calls to copy with memmove whenever possible.  (Memmove, not memcpy,
   // because the input and output ranges are permitted to overlap.)
@@ -221,10 +213,9 @@ namespace std
   template<typename _InputIter, typename _OutputIter>
     inline _OutputIter
     __copy(_InputIter __first, _InputIter __last,
-	   _OutputIter __result,
-	   input_iterator_tag)
+	   _OutputIter __result, input_iterator_tag)
     {
-      for ( ; __first != __last; ++__result, ++__first)
+      for (; __first != __last; ++__result, ++__first)
 	*__result = *__first;
       return __result;
     }
@@ -232,16 +223,16 @@ namespace std
   template<typename _RandomAccessIter, typename _OutputIter>
     inline _OutputIter
     __copy(_RandomAccessIter __first, _RandomAccessIter __last,
-	   _OutputIter __result,
-	   random_access_iterator_tag)
+	   _OutputIter __result, random_access_iterator_tag)
     {
       typedef typename iterator_traits<_RandomAccessIter>::difference_type
           _Distance;
-      for (_Distance __n = __last - __first; __n > 0; --__n) {
-	*__result = *__first;
-	++__first;
-	++__result;
-      }
+      for (_Distance __n = __last - __first; __n > 0; --__n) 
+	{
+	  *__result = *__first;
+	  ++__first;
+	  ++__result;
+	}
       return __result;
     }
 
@@ -255,60 +246,55 @@ namespace std
 
   template<typename _InputIter, typename _OutputIter>
     inline _OutputIter
-    __copy_aux2(_InputIter __first, _InputIter __last,
-		_OutputIter __result, __false_type)
+    __copy_aux2(_InputIter __first, _InputIter __last, _OutputIter __result, 
+		__false_type)
     { return __copy(__first, __last, __result, __iterator_category(__first)); }
 
   template<typename _InputIter, typename _OutputIter>
     inline _OutputIter
-    __copy_aux2(_InputIter __first, _InputIter __last,
-		_OutputIter __result, __true_type)
+    __copy_aux2(_InputIter __first, _InputIter __last, _OutputIter __result, 
+		__true_type)
     { return __copy(__first, __last, __result, __iterator_category(__first)); }
 
   template<typename _Tp>
     inline _Tp*
-    __copy_aux2(_Tp* __first, _Tp* __last,
-		_Tp* __result, __true_type)
+    __copy_aux2(_Tp* __first, _Tp* __last, _Tp* __result, __true_type)
     { return __copy_trivial(__first, __last, __result); }
 
   template<typename _Tp>
     inline _Tp*
-    __copy_aux2(const _Tp* __first, const _Tp* __last,
-		_Tp* __result, __true_type)
+    __copy_aux2(const _Tp* __first, const _Tp* __last, _Tp* __result, 
+		__true_type)
     { return __copy_trivial(__first, __last, __result); }
 
   template<typename _InputIter, typename _OutputIter>
     inline _OutputIter
-    __copy_ni2(_InputIter __first, _InputIter __last,
-	       _OutputIter __result, __true_type)
+    __copy_ni2(_InputIter __first, _InputIter __last, _OutputIter __result, 
+	       __true_type)
     {
       typedef typename iterator_traits<_InputIter>::value_type
 	  _ValueType;
       typedef typename __type_traits<_ValueType>::has_trivial_assignment_operator
 	  _Trivial;
-      return _OutputIter(__copy_aux2(__first, __last,
-                                     __result.base(),
+      return _OutputIter(__copy_aux2(__first, __last, __result.base(), 
 				     _Trivial()));
     }
 
   template<typename _InputIter, typename _OutputIter>
     inline _OutputIter
-    __copy_ni2(_InputIter __first, _InputIter __last,
-	       _OutputIter __result, __false_type)
+    __copy_ni2(_InputIter __first, _InputIter __last, _OutputIter __result, 
+	       __false_type)
     {
-      typedef typename iterator_traits<_InputIter>::value_type
-          _ValueType;
+      typedef typename iterator_traits<_InputIter>::value_type _ValueType;
       typedef typename __type_traits<_ValueType>::has_trivial_assignment_operator
           _Trivial;
-      return __copy_aux2(__first, __last,
-                         __result,
-			 _Trivial());
+      return __copy_aux2(__first, __last, __result, _Trivial());
     }
 
   template<typename _InputIter, typename _OutputIter>
     inline _OutputIter
-    __copy_ni1(_InputIter __first, _InputIter __last,
-	       _OutputIter __result, __true_type)
+    __copy_ni1(_InputIter __first, _InputIter __last, _OutputIter __result, 
+	       __true_type)
     {
       typedef typename _Is_normal_iterator<_OutputIter>::_Normal __Normal;
       return __copy_ni2(__first.base(), __last.base(), __result, __Normal());
@@ -316,8 +302,8 @@ namespace std
 
   template<typename _InputIter, typename _OutputIter>
     inline _OutputIter
-    __copy_ni1(_InputIter __first, _InputIter __last,
-	       _OutputIter __result, __false_type)
+    __copy_ni1(_InputIter __first, _InputIter __last, _OutputIter __result, 
+	       __false_type)
     {
       typedef typename _Is_normal_iterator<_OutputIter>::_Normal __Normal;
       return __copy_ni2(__first, __last, __result, __Normal());
@@ -349,14 +335,10 @@ namespace std
        return __copy_ni1(__first, __last, __result, __Normal());
     }
 
-  //--------------------------------------------------
-  // copy_backward
-
   template<typename _BidirectionalIter1, typename _BidirectionalIter2>
     inline _BidirectionalIter2
     __copy_backward(_BidirectionalIter1 __first, _BidirectionalIter1 __last, 
-		    _BidirectionalIter2 __result,
-		    bidirectional_iterator_tag)
+		    _BidirectionalIter2 __result, bidirectional_iterator_tag)
     {
       while (__first != __last)
         *--__result = *--__last;
@@ -366,8 +348,7 @@ namespace std
   template<typename _RandomAccessIter, typename _BidirectionalIter>
     inline _BidirectionalIter
     __copy_backward(_RandomAccessIter __first, _RandomAccessIter __last, 
-		    _BidirectionalIter __result,
-		    random_access_iterator_tag)
+		    _BidirectionalIter __result, random_access_iterator_tag)
     {
       typename iterator_traits<_RandomAccessIter>::difference_type __n;
       for (__n = __last - __first; __n > 0; --__n)
@@ -380,7 +361,6 @@ namespace std
   // have partial ordering of function templates.  All we're doing is
   // creating a specialization so that we can turn a call to copy_backward
   // into a memmove whenever possible.
-
   template<typename _BidirectionalIter1, typename _BidirectionalIter2,
            typename _BoolType>
     struct __copy_backward_dispatch
@@ -389,8 +369,7 @@ namespace std
       copy(_BidirectionalIter1 __first, _BidirectionalIter1 __last, 
 	   _BidirectionalIter2 __result)
       {
-        return __copy_backward(__first, __last,
-	                       __result,
+        return __copy_backward(__first, __last, __result, 
 			       __iterator_category(__first));
       }
     };
@@ -424,8 +403,9 @@ namespace std
     {
       typedef typename __type_traits<typename iterator_traits<_BI2>::value_type>
 			    ::has_trivial_assignment_operator _Trivial;
-      return __copy_backward_dispatch<_BI1, _BI2, _Trivial>
-		  ::copy(__first, __last, __result);
+      return __copy_backward_dispatch<_BI1, _BI2, _Trivial>::copy(__first, 
+								  __last, 
+								  __result);
     }
 
   template <typename _BI1, typename _BI2>
@@ -446,8 +426,9 @@ namespace std
 					  _BI2 __result, __true_type)
     {
       typedef typename _Is_normal_iterator<_BI2>::_Normal __Normal;
-      return __copy_backward_output_normal_iterator(__first.base(), __last.base(),
-						    __result, __Normal());
+      return __copy_backward_output_normal_iterator(__first.base(),
+						    __last.base(), __result, 
+						    __Normal());
     }
 
   template <typename _BI1, typename _BI2>
@@ -489,10 +470,6 @@ namespace std
       return __copy_backward_input_normal_iterator(__first, __last, __result,
 						   __Normal());
     }
-
-
-  //--------------------------------------------------
-  // fill and fill_n
 
 
   /**
@@ -541,7 +518,6 @@ namespace std
     }
 
   // Specialization: for one-byte types we can use memset.
-
   inline void
   fill(unsigned char* __first, unsigned char* __last, const unsigned char& __c)
   {
@@ -588,9 +564,6 @@ namespace std
     }
 
 
-  //--------------------------------------------------
-  // equal and mismatch
-
   /**
    *  @brief Finds the places in ranges which don't match.
    *  @param  first1  An input iterator.
@@ -605,8 +578,7 @@ namespace std
   */
   template<typename _InputIter1, typename _InputIter2>
     pair<_InputIter1, _InputIter2>
-    mismatch(_InputIter1 __first1, _InputIter1 __last1,
-	     _InputIter2 __first2)
+    mismatch(_InputIter1 __first1, _InputIter1 __last1, _InputIter2 __first2)
     {
       // concept requirements
       __glibcpp_function_requires(_InputIteratorConcept<_InputIter1>)
@@ -616,10 +588,11 @@ namespace std
       __glibcpp_function_requires(_EqualityComparableConcept<
 	    typename iterator_traits<_InputIter2>::value_type>)
 
-      while (__first1 != __last1 && *__first1 == *__first2) {
-	++__first1;
-	++__first2;
-      }
+      while (__first1 != __last1 && *__first1 == *__first2) 
+	{
+	  ++__first1;
+	  ++__first2;
+	}
       return pair<_InputIter1, _InputIter2>(__first1, __first2);
     }
 
@@ -639,18 +612,18 @@ namespace std
   */
   template<typename _InputIter1, typename _InputIter2, typename _BinaryPredicate>
     pair<_InputIter1, _InputIter2>
-    mismatch(_InputIter1 __first1, _InputIter1 __last1,
-	     _InputIter2 __first2,
+    mismatch(_InputIter1 __first1, _InputIter1 __last1, _InputIter2 __first2,
 	     _BinaryPredicate __binary_pred)
     {
       // concept requirements
       __glibcpp_function_requires(_InputIteratorConcept<_InputIter1>)
       __glibcpp_function_requires(_InputIteratorConcept<_InputIter2>)
 
-      while (__first1 != __last1 && __binary_pred(*__first1, *__first2)) {
-	++__first1;
-	++__first2;
-      }
+      while (__first1 != __last1 && __binary_pred(*__first1, *__first2)) 
+	{
+	  ++__first1;
+	  ++__first2;
+	}
       return pair<_InputIter1, _InputIter2>(__first1, __first2);
     }
 
@@ -667,8 +640,7 @@ namespace std
   */
   template<typename _InputIter1, typename _InputIter2>
     inline bool
-    equal(_InputIter1 __first1, _InputIter1 __last1,
-	  _InputIter2 __first2)
+    equal(_InputIter1 __first1, _InputIter1 __last1, _InputIter2 __first2)
     {
       // concept requirements
       __glibcpp_function_requires(_InputIteratorConcept<_InputIter1>)
@@ -712,9 +684,6 @@ namespace std
       return true;
     }
 
-  //--------------------------------------------------
-  // lexicographical_compare
-
   /**
    *  @brief Performs "dictionary" comparison on ranges.
    *  @param  first1  An input iterator.
@@ -742,13 +711,13 @@ namespace std
       __glibcpp_function_requires(_LessThanComparableConcept<
 	    typename iterator_traits<_InputIter2>::value_type>)
 
-      for ( ; __first1 != __last1 && __first2 != __last2
-	    ; ++__first1, ++__first2) {
-	if (*__first1 < *__first2)
-	  return true;
-	if (*__first2 < *__first1)
-	  return false;
-      }
+      for (;__first1 != __last1 && __first2 != __last2; ++__first1, ++__first2) 
+	{
+	  if (*__first1 < *__first2)
+	    return true;
+	  if (*__first2 < *__first1)
+	    return false;
+	}
       return __first1 == __last1 && __first2 != __last2;
     }
 
@@ -775,18 +744,21 @@ namespace std
       __glibcpp_function_requires(_InputIteratorConcept<_InputIter2>)
 
       for ( ; __first1 != __last1 && __first2 != __last2
-	    ; ++__first1, ++__first2) {
-	if (__comp(*__first1, *__first2))
-	  return true;
-	if (__comp(*__first2, *__first1))
-	  return false;
-      }
+	    ; ++__first1, ++__first2) 
+	{
+	  if (__comp(*__first1, *__first2))
+	    return true;
+	  if (__comp(*__first2, *__first1))
+	    return false;
+	}
       return __first1 == __last1 && __first2 != __last2;
     }
 
   inline bool 
-  lexicographical_compare(const unsigned char* __first1, const unsigned char* __last1,
-			  const unsigned char* __first2, const unsigned char* __last2)
+  lexicographical_compare(const unsigned char* __first1, 
+			  const unsigned char* __last1,
+			  const unsigned char* __first2, 
+			  const unsigned char* __last2)
   {
     const size_t __len1 = __last1 - __first1;
     const size_t __len2 = __last2 - __first2;
@@ -813,8 +785,4 @@ namespace std
 
 } // namespace std
 
-#endif /* __GLIBCPP_INTERNAL_ALGOBASE_H */
-
-// Local Variables:
-// mode:C++
-// End:
+#endif 

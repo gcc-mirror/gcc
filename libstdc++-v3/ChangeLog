@@ -1,21 +1,78 @@
+2003-06-05  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/9024	
+	* include/bits/fstream.tcc (_M_underflow): Fix for unbuffered.
+	* include/bits/stl_algobase.h: Tweak.
+	* include/std/std_fstream.h: Move _M_buf_size to...
+	* include/std/std_streambuf.h: ...here. Modify.
+	* include/bits/streambuf.tcc: Same.
+	* testsuite/testsuite_hooks.h: Tweak.
+	* testsuite/testsuite_io.h (constraint_filebuf): New.
+	* testsuite/27_io/basic_filebuf/sbumpc/char/1.cc: Split into...
+	* testsuite/27_io/basic_filebuf/sbumpc/char/1-in.cc: New.
+	* testsuite/27_io/basic_filebuf/sbumpc/char/1-io.cc: New.
+	* testsuite/27_io/basic_filebuf/sbumpc/char/1-out.cc: New.
+	* testsuite/27_io/basic_filebuf/sbumpc/char/2-in.cc: New.
+	* testsuite/27_io/basic_filebuf/sbumpc/char/2-io.cc: New.
+	* testsuite/27_io/basic_filebuf/sbumpc/char/2-out.cc: New.
+	* testsuite/27_io/basic_filebuf/sgetc/char/1.cc: Split into...
+	* testsuite/27_io/basic_filebuf/sgetc/char/1-in.cc: New.
+	* testsuite/27_io/basic_filebuf/sgetc/char/1-io.cc: New.
+	* testsuite/27_io/basic_filebuf/sgetc/char/1-out.cc: New.
+	* testsuite/27_io/basic_filebuf/sgetc/char/2-in.cc: New.
+	* testsuite/27_io/basic_filebuf/sgetc/char/2-io.cc: New.
+	* testsuite/27_io/basic_filebuf/sgetc/char/2-out.cc: New.
+	* testsuite/27_io/basic_filebuf/sgetn/char/1.cc: Split into...
+	* testsuite/27_io/basic_filebuf/sgetn/char/1-in.cc: New.
+	* testsuite/27_io/basic_filebuf/sgetn/char/1-io.cc: New.
+	* testsuite/27_io/basic_filebuf/sgetn/char/1-out.cc: New.
+	* testsuite/27_io/basic_filebuf/sgetn/char/2.cc: Split into...
+	* testsuite/27_io/basic_filebuf/sgetn/char/2-in.cc: New.
+	* testsuite/27_io/basic_filebuf/sgetn/char/2-io.cc: New.
+	* testsuite/27_io/basic_filebuf/sgetn/char/2-out.cc: New.
+	* testsuite/27_io/basic_filebuf/sgetn/char/3.cc: New.
+	* testsuite/27_io/basic_filebuf/snextc/char/1.cc: Split into...
+	* testsuite/27_io/basic_filebuf/snextc/char/1-in.cc: New.
+	* testsuite/27_io/basic_filebuf/snextc/char/1-io.cc: New.
+	* testsuite/27_io/basic_filebuf/snextc/char/1-out.cc: New.
+	* testsuite/27_io/basic_filebuf/snextc/char/2-in.cc: New.
+	* testsuite/27_io/basic_filebuf/snextc/char/2-io.cc: New.
+	* testsuite/27_io/basic_filebuf/snextc/char/2-out.cc: New.
+	* testsuite/27_io/basic_filebuf/sputc/char/1.cc: Split into...
+	* testsuite/27_io/basic_filebuf/sputc/char/1-in.cc: New.
+	* testsuite/27_io/basic_filebuf/sputc/char/1-io.cc: New.
+	* testsuite/27_io/basic_filebuf/sputc/char/1-out.cc: New.
+	* testsuite/27_io/basic_filebuf/sputc/char/2.cc: Split into...
+	* testsuite/27_io/basic_filebuf/sputc/char/2-in.cc: New.
+	* testsuite/27_io/basic_filebuf/sputc/char/2-io.cc: New.
+	* testsuite/27_io/basic_filebuf/sputc/char/2-out.cc: New.
+	* testsuite/27_io/basic_filebuf/sputn/char/1.cc: Split into...
+	* testsuite/27_io/basic_filebuf/sputn/char/1-in.cc: New.
+	* testsuite/27_io/basic_filebuf/sputn/char/1-io.cc: New.
+	* testsuite/27_io/basic_filebuf/sputn/char/1-out.cc: New.
+	* testsuite/27_io/basic_filebuf/sputn/char/2-in.cc: New.
+	* testsuite/27_io/basic_filebuf/sputn/char/2-io.cc: New.
+	* testsuite/27_io/basic_filebuf/sputn/char/2-out.cc: New.
+	* testsuite/data/sgetc.txt: New.
+	* testsuite/data/sgetn.txt: New.
+	
 2003-06-05  Paolo Carlini  <pcarlini@unitus.it>
 
 	PR libstdc++/11095
 	* include/bits/istream.tcc (operator>>(basic_istream&, _CharT*)):
 	Deal with width() smaller than zero.
 	* include/bits/ostream.tcc (operator<<(basic_ostream&, _CharT),
-	operator<<(basic_ostream&, char), operator<<(basic_ostream&,
-	const _CharT*), operator<<(basic_ostream<_CharT, _Traits>&,
-	const char*), operator<<(basic_ostream<char, _Traits>&,
-	const char*), operator<<(basic_ostream, const basic_string&)): Likewise.
-	* testsuite/27_io/basic_istream/extractors_character/char/11095-i.cc:
-	* testsuite/27_io/basic_ostream/inserters_character/char/11095-oa.cc:
-	* testsuite/27_io/basic_ostream/inserters_character/char/11095-ob.cc:
-	* testsuite/27_io/basic_ostream/inserters_character/char/11095-oc.cc:
-	* testsuite/27_io/basic_ostream/inserters_character/wchar_t/11095-od.cc:
-	* testsuite/27_io/basic_ostream/inserters_character/wchar_t/11095-oe.cc:
-	* testsuite/27_io/basic_ostream/inserters_character/wchar_t/11095-of.cc:
-	New.
+	operator<<(basic_ostream&, char), operator<<(basic_ostream&, const
+	_CharT*), operator<<(basic_ostream<_CharT, _Traits>&, const
+	char*), operator<<(basic_ostream<char, _Traits>&, const char*),
+	operator<<(basic_ostream, const basic_string&)): Likewise.
+
+	* testsuite/27_io/basic_istream/extractors_character/char/
+	(11095-i.cc, 11095-oa.cc, 11095-ob.cc, 11095-oc.cc): New.
+	* testsuite/27_io/basic_ostream/inserters_character/char/
+	(11095-oa.cc, 11095-ob.cc, 11095-oc.cc): New.
+	* testsuite/27_io/basic_ostream/inserters_character/wchar_t/
+	(11095-od.cc, 11095-oe.cc, 11095-of.cc): New.
 
 2003-06-05  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 

@@ -22,25 +22,43 @@
 
 #include <fstream>
 #include <testsuite_hooks.h>
+#include <testsuite_io.h>
 
-const char name_01[] = "filebuf_virtuals-1.tst"; // empty file, need to create
+// @require@ %-*.tst %-*.txt
+// @diff@ %-*.tst %*.txt
 
-void test06()
+const char name_02[] = "tmp_sbumpc_2out.tst"; // empty file, need to create
+
+void test05() 
 {
   using namespace std;
+  using namespace __gnu_cxx_test;
+  typedef filebuf::int_type 	int_type;
+  typedef filebuf::traits_type 	traits_type;
 
-  bool test = true;
-  char buffer[] = "xxxxxxxxxx";
-  typedef filebuf::int_type	int_type;
-  filebuf fbuf01;
-  fbuf01.open(name_01, ios_base::in);
-  int_type len1 = fbuf01.sgetn(buffer, sizeof(buffer));
-  VERIFY( len1 == sizeof(buffer) );
-  VERIFY( buffer[0] == '/' );
+  bool 					test = true;
+
+  // int_type sbumpc()
+  // if read_cur not avail returns uflow(), else return *read_cur & increment
+
+  // out
+  {
+    constraint_filebuf fb_02; 
+    fb_02.pubsetbuf(0, 0);
+    fb_02.open(name_02, ios_base::out | ios_base::trunc);
+    VERIFY( fb_02.unbuffered() );
+    VERIFY( !fb_02.read_position() );
+    int_type c2 = fb_02.sbumpc();
+    VERIFY( c2 == traits_type::eof() );
+    int_type c4 = fb_02.sbumpc();
+    VERIFY( c4 == traits_type::eof() );
+    VERIFY( fb_02.unbuffered() );
+    VERIFY( !fb_02.read_position() );
+  }
 }
 
 main() 
 {
-  test06();
+  test05();
   return 0;
 }
