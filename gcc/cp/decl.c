@@ -5233,10 +5233,10 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
 
 	  val = locval;
 
-	  /* To avoid redundant warnings, only warn when lexing, and the
-	     decls are significantly different.  */
+	  /* Only warn when not lexing; we don't want to warn if they
+	     use this name as a declarator.  */
 	  subtype = TREE_TYPE (TREE_TYPE (classval));
-	  if (yylex
+	  if (! yylex
 	      && ! (TREE_CODE (locval) == TEMPLATE_DECL
 		    && CLASSTYPE_TEMPLATE_INFO (subtype)
 		    && CLASSTYPE_TI_TEMPLATE (subtype) == locval)
