@@ -1,3 +1,7 @@
+2001-07-09  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* doc/c-tree.texi: Document representation of attributes.
+
 2001-07-08  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/tm.texi: Fix typo.
