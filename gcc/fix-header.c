@@ -385,7 +385,7 @@ write_rbrac ()
       fprintf (outf,
 	"#if defined(__cplusplus) || defined(__USE_FIXED_PROTOTYPES__)\n");
 #ifdef NO_IMPLICIT_EXTERN_C
-      fprintf (outf, "extern \"C\" {\n");
+      fprintf (outf, "#ifdef __cplusplus\nextern \"C\" {\n#endif\n");
 #endif
     }
 
@@ -417,7 +417,7 @@ write_rbrac ()
   if (required_unseen_count)
     {
 #ifdef NO_IMPLICIT_EXTERN_C
-      fprintf (outf, "}\n");
+      fprintf (outf, "#ifdef __cplusplus\n}\n#endif\n");
 #endif
       fprintf (outf,
 	"#endif /* defined(__cplusplus) || defined(__USE_FIXED_PROTOTYPES__*/\n");
