@@ -17,16 +17,33 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
+/* This is needed to pick up the NAN macro on some systems.  */
+#define _GNU_SOURCE
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#include <math.h>
+
+#ifdef HAVE_STRING_H
+#include <string.h>
+#endif
+
 #include "ansidecl.h"
+#include "libiberty.h"
 #include "floatformat.h"
-#include <math.h>		/* ldexp */
-#ifdef ANSI_PROTOTYPES
-#include <stddef.h>
-extern void *memcpy (void *s1, const void *s2, size_t n);
-extern void *memset (void *s, int c, size_t n);
+
+#ifndef INFINITY
+#ifdef HUGE_VAL
+#define INFINITY HUGE_VAL
 #else
-extern char *memcpy ();
-extern char *memset ();
+#define INFINITY (1.0 / 0.0)
+#endif
+#endif
+
+#ifndef NAN
+#define NAN (0.0 / 0.0)
 #endif
 
 static unsigned long get_field PARAMS ((const unsigned char *,
@@ -271,9 +288,45 @@ floatformat_to_double (fmt, from, to)
 
   exponent = get_field (ufrom, fmt->byteorder, fmt->totalsize,
 			fmt->exp_start, fmt->exp_len);
-  /* Note that if exponent indicates a NaN, we can't really do anything useful
-     (not knowing if the host has NaN's, or how to build one).  So it will
-     end up as an infinity or something close; that is OK.  */
+
+  /* If the exponent indicates a NaN, we don't have information to
+     decide what to do.  So we handle it like IEEE, except that we
+     don't try to preserve the type of NaN.  FIXME.  */
+  if ((unsigned long) exponent == fmt->exp_nan)
+    {
+      int nan;
+
+      mant_off = fmt->man_start;
+      mant_bits_left = fmt->man_len;
+      nan = 0;
+      while (mant_bits_left > 0)
+	{
+	  mant_bits = min (mant_bits_left, 32);
+
+	  if (get_field (ufrom, fmt->byteorder, fmt->totalsize,
+			 mant_off, mant_bits) != 0)
+	    {
+	      /* This is a NaN.  */
+	      nan = 1;
+	      break;
+	    }
+
+	  mant_off += mant_bits;
+	  mant_bits_left -= mant_bits;
+	}
+
+      if (nan)
+	dto = NAN;
+      else
+	dto = INFINITY;
+
+      if (get_field (ufrom, fmt->byteorder, fmt->totalsize, fmt->sign_start, 1))
+	dto = -dto;
+
+      *to = dto;
+
+      return;
+    }
 
   mant_bits_left = fmt->man_len;
   mant_off = fmt->man_start;
@@ -306,8 +359,18 @@ floatformat_to_double (fmt, from, to)
       mant = get_field (ufrom, fmt->byteorder, fmt->totalsize,
 			 mant_off, mant_bits);
 
-      dto += ldexp ((double)mant, exponent - mant_bits);
-      exponent -= mant_bits;
+      /* Handle denormalized numbers.  FIXME: What should we do for
+	 non-IEEE formats?  */
+      if (exponent == 0 && mant != 0)
+	dto += ldexp ((double)mant,
+		      (- fmt->exp_bias
+		       - mant_bits
+		       - (mant_off - fmt->man_start)
+		       + 1));
+      else
+	dto += ldexp ((double)mant, exponent - mant_bits);
+      if (exponent != 0)
+	exponent -= mant_bits;
       mant_off += mant_bits;
       mant_bits_left -= mant_bits;
     }
@@ -392,20 +455,8 @@ floatformat_from_double (fmt, from, to)
   int mant_bits_left;
   unsigned char *uto = (unsigned char *)to;
 
-  memcpy (&dfrom, from, sizeof (dfrom));
+  dfrom = *from;
   memset (uto, 0, fmt->totalsize / FLOATFORMAT_CHAR_BIT);
-  if (dfrom == 0)
-    return;			/* Result is zero */
-  if (dfrom != dfrom)
-    {
-      /* From is NaN */
-      put_field (uto, fmt->byteorder, fmt->totalsize, fmt->exp_start,
-		 fmt->exp_len, fmt->exp_nan);
-      /* Be sure it's not infinity, but NaN value is irrel */
-      put_field (uto, fmt->byteorder, fmt->totalsize, fmt->man_start,
-		 32, 1);
-      return;
-    }
 
   /* If negative, set the sign bit.  */
   if (dfrom < 0)
@@ -414,11 +465,44 @@ floatformat_from_double (fmt, from, to)
       dfrom = -dfrom;
     }
 
-  /* How to tell an infinity from an ordinary number?  FIXME-someday */
+  if (dfrom == 0)
+    {
+      /* 0.0.  */
+      return;
+    }
+
+  if (dfrom != dfrom)
+    {
+      /* NaN.  */
+      put_field (uto, fmt->byteorder, fmt->totalsize, fmt->exp_start,
+		 fmt->exp_len, fmt->exp_nan);
+      /* Be sure it's not infinity, but NaN value is irrelevant.  */
+      put_field (uto, fmt->byteorder, fmt->totalsize, fmt->man_start,
+		 32, 1);
+      return;
+    }
+
+  if (dfrom + dfrom == dfrom)
+    {
+      /* This can only happen for an infinite value (or zero, which we
+	 already handled above).  */
+      put_field (uto, fmt->byteorder, fmt->totalsize, fmt->exp_start,
+		 fmt->exp_len, fmt->exp_nan);
+      return;
+    }
 
   mant = frexp (dfrom, &exponent);
-  put_field (uto, fmt->byteorder, fmt->totalsize, fmt->exp_start, fmt->exp_len,
-	     exponent + fmt->exp_bias - 1);
+  if (exponent + fmt->exp_bias - 1 > 0)
+    put_field (uto, fmt->byteorder, fmt->totalsize, fmt->exp_start,
+	       fmt->exp_len, exponent + fmt->exp_bias - 1);
+  else
+    {
+      /* Handle a denormalized number.  FIXME: What should we do for
+	 non-IEEE formats?  */
+      put_field (uto, fmt->byteorder, fmt->totalsize, fmt->exp_start,
+		 fmt->exp_len, 0);
+      mant = ldexp (mant, exponent + fmt->exp_bias - 1);
+    }
 
   mant_bits_left = fmt->man_len;
   mant_off = fmt->man_start;
@@ -431,12 +515,11 @@ floatformat_from_double (fmt, from, to)
       mant_long = (unsigned long)mant;
       mant -= mant_long;
 
-      /* If the integer bit is implicit, then we need to discard it.
-	 If we are discarding a zero, we should be (but are not) creating
-	 a denormalized	number which means adjusting the exponent
-	 (I think).  */
+      /* If the integer bit is implicit, and we are not creating a
+	 denormalized number, then we need to discard it.  */
       if ((unsigned int) mant_bits_left == fmt->man_len
-	  && fmt->intbit == floatformat_intbit_no)
+	  && fmt->intbit == floatformat_intbit_no
+	  && exponent + fmt->exp_bias - 1 > 0)
 	{
 	  mant_long &= 0x7fffffff;
 	  mant_bits -= 1;
@@ -468,6 +551,8 @@ floatformat_is_valid (fmt, from)
 
 #ifdef IEEE_DEBUG
 
+#include <stdio.h>
+
 /* This is to be run on a host which uses IEEE floating point.  */
 
 void
@@ -475,19 +560,31 @@ ieee_test (n)
      double n;
 {
   double result;
-  char exten[16];
 
-  floatformat_to_double (&floatformat_ieee_double_big, &n, &result);
-  if (n != result)
+  floatformat_to_double (&floatformat_ieee_double_little, (char *) &n,
+			 &result);
+  if ((n != result && (! isnan (n) || ! isnan (result)))
+      || (n < 0 && result >= 0)
+      || (n >= 0 && result < 0))
     printf ("Differ(to): %.20g -> %.20g\n", n, result);
-  floatformat_from_double (&floatformat_ieee_double_big, &n, &result);
-  if (n != result)
+
+  floatformat_from_double (&floatformat_ieee_double_little, &n,
+			   (char *) &result);
+  if ((n != result && (! isnan (n) || ! isnan (result)))
+      || (n < 0 && result >= 0)
+      || (n >= 0 && result < 0))
     printf ("Differ(from): %.20g -> %.20g\n", n, result);
 
-  floatformat_from_double (&floatformat_m68881_ext, &n, exten);
-  floatformat_to_double (&floatformat_m68881_ext, exten, &result);
-  if (n != result)
-    printf ("Differ(to+from): %.20g -> %.20g\n", n, result);
+#if 0
+  {
+    char exten[16];
+
+    floatformat_from_double (&floatformat_m68881_ext, &n, exten);
+    floatformat_to_double (&floatformat_m68881_ext, exten, &result);
+    if (n != result)
+      printf ("Differ(to+from): %.20g -> %.20g\n", n, result);
+  }
+#endif
 
 #if IEEE_DEBUG > 1
   /* This is to be run on a host which uses 68881 format.  */
@@ -502,12 +599,22 @@ ieee_test (n)
 int
 main ()
 {
+  ieee_test (0.0);
   ieee_test (0.5);
   ieee_test (256.0);
   ieee_test (0.12345);
   ieee_test (234235.78907234);
   ieee_test (-512.0);
   ieee_test (-0.004321);
+  ieee_test (1.2E-70);
+  ieee_test (1.2E-316);
+  ieee_test (4.9406564584124654E-324);
+  ieee_test (- 4.9406564584124654E-324);
+  ieee_test (- 0.0);
+  ieee_test (- INFINITY);
+  ieee_test (- NAN);
+  ieee_test (INFINITY);
+  ieee_test (NAN);
   return 0;
 }
 #endif
