@@ -1,3 +1,8 @@
+2001-03-14  Mark Mitchell  <mark@codesourcery.com>
+
+	* varasm.c (assemble_alias): Use DECL_ASSEMBLER_NAME, not the
+	contents of the RTL, to determine the name of the object.
+
 2001-03-14  Laurynas Biveinis  <lauras@softhome.net>
 
         * configure.in: Use $gcc_cv_as instead of $as.

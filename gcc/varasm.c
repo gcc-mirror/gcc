@@ -4809,8 +4809,7 @@ assemble_alias (decl, target)
 {
   const char *name;
 
-  make_decl_rtl (decl, (char *) 0);
-  name = XSTR (XEXP (DECL_RTL (decl), 0), 0);
+  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
 
 #ifdef ASM_OUTPUT_DEF
   /* Make name accessible from other files, if appropriate.  */
