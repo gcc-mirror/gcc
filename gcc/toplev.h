@@ -107,6 +107,7 @@ extern int target_flags_explicit;
 extern void display_help (void);
 extern void display_target_options (void);
 extern void print_version (FILE *, const char *);
+extern void set_target_switch (const char *);
 
 /* The hashtable, so that the C front ends can pass it to cpplib.  */
 extern struct ht *ident_hash;

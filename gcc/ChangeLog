@@ -1,3 +1,17 @@
+2003-06-18  Neil Booth  <neil@daikokuya.co.uk>
+
+	* Makefile.in: Update.
+	* common.opt: New options.
+	* opts.c (maybe_warn_unused_parameter, set_Wextra, handle_param,
+	set_Wunused): New.
+	(common_handle_option): Handle new options.
+	* toplev.c (set_target_switch): Export.
+	(set_Wextra, set_Wunused, maybe_warn_unused_parameter): Move to opts.c.
+	(decode_W_option): -Wunused and -Wextra handled in opts.c now.
+	(independent_decode_option): More options handled in opts.c now.
+	Change prototype.
+	* toplev.h (set_target_switch): New.
+
 2003-06-17  Robert Abeles  <rabeles@archaelogic.com>
 
 	PR debug/4252
