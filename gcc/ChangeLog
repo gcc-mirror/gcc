@@ -1,5 +1,7 @@
 2004-09-01  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* tree-ssa.c (propagate_into_addr): Properly test for LHR.
+
 	* doc/c-tree.texi: Document new operands for ARRAY_REF and
 	COMPONENT_REF.
 

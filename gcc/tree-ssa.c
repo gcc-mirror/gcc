@@ -871,9 +871,9 @@ propagate_into_addr (tree stmt, tree var, tree *x, tree repl)
     return;
   addr_var = TREE_OPERAND (repl, 0);
 
-  while (TREE_CODE (*x) == ARRAY_REF
-	 || TREE_CODE (*x) == COMPONENT_REF
-	 || TREE_CODE (*x) == BIT_FIELD_REF)
+  while (handled_component_p (*x)
+	 || TREE_CODE (*x) == REALPART_EXPR
+	 || TREE_CODE (*x) == IMAGPART_EXPR)
     x = &TREE_OPERAND (*x, 0);
 
   if (TREE_CODE (*x) != INDIRECT_REF
