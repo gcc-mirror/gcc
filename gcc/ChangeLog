@@ -1,3 +1,10 @@
+Mon Nov 27 17:22:56 MET 2000  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (ix86_force_to_memory, ix86_free_from_memory): New.
+	* i386-protos.h (ix86_force_to_memory, ix86_free_from_memory): Declare
+	* i386.md (float?i?f, int/fp operations): Rewrite spliters to use
+	ix86_force_to_memory and ix86_free_from_memory.
+
 2000-11-27  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.md (arm_adddi3, adddi_sesidi_di, adddi_zesidi_di, arm_addsi3,
