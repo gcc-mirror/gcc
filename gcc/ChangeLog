@@ -1,3 +1,7 @@
+Sun Apr 12 05:52:18 1998  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* vax.md (call patterns): Operand 1 is always a CONST_INT.
+
 Sat Apr 11 16:01:11 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* convert.c (convert_to_{pointer,integer,real,complex}): Use switch.
