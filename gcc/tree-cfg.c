@@ -733,8 +733,8 @@ cleanup_tree_cfg (void)
   while (something_changed)
     {
       something_changed = cleanup_control_flow ();
-      something_changed |= thread_jumps ();
       something_changed |= delete_unreachable_blocks ();
+      something_changed |= thread_jumps ();
     }
 
   /* Merging the blocks creates no new opportunities for the other
@@ -3904,7 +3904,7 @@ static bool
 thread_jumps (void)
 {
   edge e, next, last, old;
-  basic_block bb, dest, tmp;
+  basic_block bb, dest, tmp, old_dest, dom;
   tree phi;
   int arg;
   bool retval = false;
@@ -3991,10 +3991,8 @@ thread_jumps (void)
 
 	  /* Perform the redirection.  */
 	  retval = true;
+	  old_dest = e->dest;
 	  e = redirect_edge_and_branch (e, dest);
-
-	  /* TODO -- updating dominators in this case is simple.  */
-	  free_dominance_info (CDI_DOMINATORS);
 
 	  if (!old)
 	    {
@@ -4007,6 +4005,49 @@ thread_jumps (void)
 		  if (arg < 0)
 		    abort ();
 		  add_phi_arg (&phi, PHI_ARG_DEF (phi, arg), e);
+		}
+	    }
+
+	  /* Update the dominators.  */
+	  if (dom_computed[CDI_DOMINATORS] >= DOM_CONS_OK)
+	    {
+	      /* Remove the unreachable blocks (observe that if all blocks
+		 were reachable before, only those in the path we threaded
+		 over and did not have any predecessor outside of the path
+		 become unreachable).  */
+	      for (; old_dest != dest; old_dest = tmp)
+		{
+		  tmp = old_dest->succ->dest;
+
+		  if (old_dest->pred)
+		    break;
+
+		  delete_basic_block (old_dest);
+		}
+	      /* If the dominator of the destination was in the path, set its
+		 dominator to the start of the redirected edge.  */
+	      if (get_immediate_dominator (CDI_DOMINATORS, old_dest) == NULL)
+		set_immediate_dominator (CDI_DOMINATORS, old_dest, bb);
+
+	      /* Now proceed like if we forwarded just over one edge at a time.
+		 Algorithm for forwarding over edge A --> B then is
+
+		 if (idom (B) == A)
+		   idom (B) = idom (A);
+		 recount_idom (A);  */
+
+	      for (; old_dest != dest; old_dest = tmp)
+		{
+		  tmp = old_dest->succ->dest;
+
+		  if (get_immediate_dominator (CDI_DOMINATORS, tmp) == old_dest)
+		    {
+		      dom = get_immediate_dominator (CDI_DOMINATORS, old_dest);
+  		      set_immediate_dominator (CDI_DOMINATORS, tmp, dom);
+		    }
+
+		  dom = recount_dominator (CDI_DOMINATORS, old_dest);
+		  set_immediate_dominator (CDI_DOMINATORS, old_dest, dom);
 		}
 	    }
 	}

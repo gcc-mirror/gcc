@@ -1,3 +1,15 @@
+2004-07-17  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* loop-init.c (loop_optimizer_init, loop_optimizer_finalize): Do not
+	destroy dominance information.
+	* passes.c (rest_of_handle_loop2):  Free dominance information.
+	* tree-cfg.c (cleanup_tree_cfg): Remove unreachable blocks before
+	jump threading.
+	(thread_jumps): Update dominance information and remove unreachable
+	blocks.
+	* tree-ssa-phiopt.c (replace_phi_with_stmt):  Update dominance
+	information and remove the unreachable block.
+
 2004-07-17  Graham Stott  <graham.stott@btinternet.com>
 
 	* emit-rtl.c (reorder_insns): Don't set BB for a BARRIER insn.
