@@ -49,7 +49,7 @@ extern enum processor_type pa_cpu;
 
 /* Print subsidiary information on the compiler version in use.  */
 
-#define TARGET_VERSION fprintf (stderr, " (hppa)");
+#define TARGET_VERSION fputs (" (hppa)", stderr);
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
@@ -702,11 +702,15 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
 #define PREFERRED_RELOAD_CLASS(X,CLASS) (CLASS)
 
 /* Return the register class of a scratch register needed to copy IN into
-   or out of a register in CLASS in MODE.  If it can be done directly,
-   NO_REGS is returned.  */
+   or out of a register in CLASS in MODE.  If it can be done directly
+   NO_REGS is returned. 
+
+  Avoid doing any work for the common case calls.  */
 
 #define SECONDARY_RELOAD_CLASS(CLASS,MODE,IN) \
-  secondary_reload_class (CLASS, MODE, IN)
+  ((CLASS == BASE_REG_CLASS && GET_CODE (IN) == REG		\
+    && REGNO (IN) < FIRST_PSEUDO_REGISTER)			\
+   ? NO_REGS : secondary_reload_class (CLASS, MODE, IN))
 
 /* On the PA it is not possible to directly move data between
    GENERAL_REGS and FP_REGS.  */
@@ -1087,11 +1091,11 @@ extern enum cmp_type hppa_branch_type;
 		   fprintf (FILE, ",ARGW%d=GR", i);			\
 	       }							\
 	     if (TYPE_MODE (fntype) == DFmode && ! TARGET_SOFT_FLOAT)	\
-	       fprintf (FILE, ",RTNVAL=FR");				\
+	       fputs (",RTNVAL=FR", FILE);				\
 	     else if (TYPE_MODE (fntype) == SFmode && ! TARGET_SOFT_FLOAT) \
-	       fprintf (FILE, ",RTNVAL=FU");				\
+	       fputs (",RTNVAL=FU", FILE);				\
 	     else if (fntype != void_type_node)				\
-	       fprintf (FILE, ",RTNVAL=GR");				\
+	       fputs (",RTNVAL=GR", FILE);				\
 	     fputs ("\n", FILE);					\
 	   }} while (0)
 
@@ -1171,17 +1175,17 @@ extern union tree_node *current_function_decl;
 
 #define TRAMPOLINE_TEMPLATE(FILE) \
   {							\
-    fprintf (FILE, "\tldw	36(0,%%r22),%%r21\n");	\
-    fprintf (FILE, "\tbb,>=,n	%%r21,30,.+16\n");	\
-    fprintf (FILE, "\tdepi	0,31,2,%%r21\n");	\
-    fprintf (FILE, "\tldw	4(0,%%r21),%%r19\n");	\
-    fprintf (FILE, "\tldw	0(0,%%r21),%%r21\n");	\
-    fprintf (FILE, "\tldsid	(0,%%r21),%%r1\n");	\
-    fprintf (FILE, "\tmtsp	%%r1,%%sr0\n");		\
-    fprintf (FILE, "\tbe	0(%%sr0,%%r21)\n");	\
-    fprintf (FILE, "\tldw	40(0,%%r22),%%r29\n");	\
-    fprintf (FILE, "\t.word	0\n");			\
-    fprintf (FILE, "\t.word	0\n");			\
+    fputs ("\tldw	36(0,%%r22),%%r21\n", FILE);	\
+    fputs ("\tbb,>=,n	%%r21,30,.+16\n", FILE);	\
+    fputs ("\tdepi	0,31,2,%%r21\n", FILE);		\
+    fputs ("\tldw	4(0,%%r21),%%r19\n", FILE);	\
+    fputs ("\tldw	0(0,%%r21),%%r21\n", FILE);	\
+    fputs ("\tldsid	(0,%%r21),%%r1\n", FILE);	\
+    fputs ("\tmtsp	%%r1,%%sr0\n", FILE);		\
+    fputs ("\tbe	0(%%sr0,%%r21)\n", FILE);	\
+    fputs ("\tldw	40(0,%%r22),%%r29\n", FILE);	\
+    fputs ("\t.word	0\n", FILE);			\
+    fputs ("\t.word	0\n", FILE);			\
   }
 
 /* Length in units of the trampoline for entering a nested function.
@@ -1753,14 +1757,14 @@ while (0)
 /* Output at beginning of assembler file.  */
 
 #define ASM_FILE_START(FILE) \
-do { fprintf (FILE, "\t.SPACE $PRIVATE$\n\
+do { fputs ("\t.SPACE $PRIVATE$\n\
 \t.SUBSPA $DATA$,QUAD=1,ALIGN=8,ACCESS=31\n\
 \t.SUBSPA $BSS$,QUAD=1,ALIGN=8,ACCESS=31,ZERO,SORT=82\n\
 \t.SPACE $TEXT$\n\
 \t.SUBSPA $LIT$,QUAD=0,ALIGN=8,ACCESS=44\n\
 \t.SUBSPA $CODE$,QUAD=0,ALIGN=8,ACCESS=44,CODE_ONLY\n\
 \t.IMPORT $global$,DATA\n\
-\t.IMPORT $$dyncall,MILLICODE\n");\
+\t.IMPORT $$dyncall,MILLICODE\n", FILE);\
      if (profile_flag)\
        fprintf (FILE, "\t.IMPORT _mcount, CODE\n");\
      if (write_symbols != NO_DEBUG) \
@@ -1778,7 +1782,7 @@ do { fprintf (FILE, "\t.SPACE $PRIVATE$\n\
 #define ASM_APP_OFF ""
 
 /* We don't yet know how to identify GCC to HP-PA machines.  */
-#define ASM_IDENTIFY_GCC(FILE) fprintf (FILE, "; gcc_compiled.:\n")
+#define ASM_IDENTIFY_GCC(FILE) fputs ("; gcc_compiled.:\n", FILE)
 
 /* Output before code.  */
 
@@ -1982,24 +1986,24 @@ DTORS_SECTION_FUNCTION
 /* This is how to output an assembler line defining an `int' constant.  */
 
 #define ASM_OUTPUT_INT(FILE,VALUE)  \
-{ fprintf (FILE, "\t.word ");			\
+{ fputs ("\t.word ", FILE);			\
   if (function_label_operand (VALUE, VOIDmode)	\
       && !TARGET_PORTABLE_RUNTIME)		\
-    fprintf (FILE, "P%%");			\
+    fputs ("P%%", FILE);			\
   output_addr_const (FILE, (VALUE));		\
-  fprintf (FILE, "\n");}
+  fputs ("\n", FILE);}
 
 /* Likewise for `short' and `char' constants.  */
 
 #define ASM_OUTPUT_SHORT(FILE,VALUE)  \
-( fprintf (FILE, "\t.half "),			\
+( fputs ("\t.half ", FILE),			\
   output_addr_const (FILE, (VALUE)),		\
-  fprintf (FILE, "\n"))
+  fputs ("\n", FILE))
 
 #define ASM_OUTPUT_CHAR(FILE,VALUE)  \
-( fprintf (FILE, "\t.byte "),			\
+( fputs ("\t.byte ", FILE),			\
   output_addr_const (FILE, (VALUE)),		\
-  fprintf (FILE, "\n"))
+  fputs ("\n", FILE))
 
 /* This is how to output an assembler line for a numeric constant byte.  */
 

@@ -1726,7 +1726,7 @@ output_ascii (file, p, size)
      restriction is in number of input characters (see \xnn &
      \whatever).  So we have to do this very carefully.  */
 
-  fprintf (file, "\t.STRING \"");
+  fputs ("\t.STRING \"", file);
 
   chars_output = 0;
   for (i = 0; i < size; i += 4)
@@ -1758,14 +1758,14 @@ output_ascii (file, p, size)
 	}
       if (chars_output + co > 243)
 	{
-	  fprintf (file, "\"\n\t.STRING \"");
+	  fputs ("\"\n\t.STRING \"", file);
 	  chars_output = 0;
 	}
       fwrite (partial_output, 1, co, file);
       chars_output += co;
       co = 0;
     }
-  fprintf (file, "\"\n");
+  fputs ("\"\n", file);
 }
 
 /* You may have trouble believing this, but this is the HP-PA stack
@@ -1983,12 +1983,12 @@ output_function_prologue (file, size)
      of a function.  */
   fprintf (file, "\t.CALLINFO FRAME=%d", actual_fsize);
   if (regs_ever_live[2] || profile_flag)
-    fprintf (file, ",CALLS,SAVE_RP");
+    fputs (",CALLS,SAVE_RP", file);
   else
-    fprintf (file, ",NO_CALLS");
+    fputs (",NO_CALLS", file);
 
   if (frame_pointer_needed)
-    fprintf (file, ",SAVE_SP");
+    fputs (",SAVE_SP", file);
 
   /* Pass on information about the number of callee register saves
      performed in the prologue.
@@ -2004,7 +2004,7 @@ output_function_prologue (file, size)
   if (fr_saved)
     fprintf (file, ",ENTRY_FR=%d", fr_saved + 11);
 
-  fprintf (file, "\n\t.ENTRY\n");
+  fputs ("\n\t.ENTRY\n", file);
 
   /* Horrid hack.  emit_function_prologue will modify this RTL in
      place to get the expected results.  */
@@ -2293,9 +2293,9 @@ output_function_epilogue (file, size)
   /* If insn is a CALL_INSN, then it must be a call to a volatile
      function (otherwise there would be epilogue insns).  */
   if (insn && GET_CODE (insn) == CALL_INSN)
-    fprintf (file, "\tnop\n");
+    fputs ("\tnop\n", file);
 
-  fprintf (file, "\t.EXIT\n\t.PROCEND\n");
+  fputs ("\t.EXIT\n\t.PROCEND\n", file);
 
   /* If we have deferred plabels, then we need to switch into the data
      section and align it to a 4 byte boundary before we output the
@@ -2827,25 +2827,25 @@ print_operand (file, x, code)
       switch (GET_CODE (x))
 	{
 	case EQ:
-	  fprintf (file, "=");  break;
+	  fputs ("=", file);  break;
 	case NE:
-	  fprintf (file, "<>");  break;
+	  fputs ("<>", file);  break;
 	case GT:
-	  fprintf (file, ">");  break;
+	  fputs (">", file);  break;
 	case GE:
-	  fprintf (file, ">=");  break;
+	  fputs (">=", file);  break;
 	case GEU:
-	  fprintf (file, ">>=");  break;
+	  fputs (">>=", file);  break;
 	case GTU:
-	  fprintf (file, ">>");  break;
+	  fputs (">>", file);  break;
 	case LT:
-	  fprintf (file, "<");  break;
+	  fputs ("<", file);  break;
 	case LE:
-	  fprintf (file, "<=");  break;
+	  fputs ("<=", file);  break;
 	case LEU:
-	  fprintf (file, "<<=");  break;
+	  fputs ("<<=", file);  break;
 	case LTU:
-	  fprintf (file, "<<");  break;
+	  fputs ("<<", file);  break;
 	default:
 	  abort ();
 	}
@@ -2854,25 +2854,25 @@ print_operand (file, x, code)
       switch (GET_CODE (x))
 	{
 	case EQ:
-	  fprintf (file, "<>");  break;
+	  fputs ("<>", file);  break;
 	case NE:
-	  fprintf (file, "=");  break;
+	  fputs ("=", file);  break;
 	case GT:
-	  fprintf (file, "<=");  break;
+	  fputs ("<=", file);  break;
 	case GE:
-	  fprintf (file, "<");  break;
+	  fputs ("<", file);  break;
 	case GEU:
-	  fprintf (file, "<<");  break;
+	  fputs ("<<", file);  break;
 	case GTU:
-	  fprintf (file, "<<=");  break;
+	  fputs ("<<=", file);  break;
 	case LT:
-	  fprintf (file, ">=");  break;
+	  fputs (">=", file);  break;
 	case LE:
-	  fprintf (file, ">");  break;
+	  fputs (">", file);  break;
 	case LEU:
-	  fprintf (file, ">>");  break;
+	  fputs (">>", file);  break;
 	case LTU:
-	  fprintf (file, ">>=");  break;
+	  fputs (">>=", file);  break;
 	default:
 	  abort ();
 	}
@@ -2883,17 +2883,17 @@ print_operand (file, x, code)
       switch (GET_CODE (x))
 	{
 	case EQ:
-	  fprintf (file, "!=");  break;
+	  fputs ("!=", file);  break;
 	case NE:
-	  fprintf (file, "=");  break;
+	  fputs ("=", file);  break;
 	case GT:
-	  fprintf (file, "!>");  break;
+	  fputs ("!>", file);  break;
 	case GE:
-	  fprintf (file, "!>=");  break;
+	  fputs ("!>=", file);  break;
 	case LT:
-	  fprintf (file, "!<");  break;
+	  fputs ("!<", file);  break;
 	case LE:
-	  fprintf (file, "!<=");  break;
+	  fputs ("!<=", file);  break;
 	default:
 	  abort ();
 	}
@@ -2904,17 +2904,17 @@ print_operand (file, x, code)
       switch (GET_CODE (x))
 	{
 	case EQ:
-	  fprintf (file, "?=");  break;
+	  fputs ("?=", file);  break;
 	case NE:
-	  fprintf (file, "!?=");  break;
+	  fputs ("!?=", file);  break;
 	case GT:
-	  fprintf (file, "!<=");  break;
+	  fputs ("!<=", file);  break;
 	case GE:
-	  fprintf (file, "!<");  break;
+	  fputs ("!<", file);  break;
 	case LT:
-	  fprintf (file, "!>=");  break;
+	  fputs ("!>=", file);  break;
 	case LE:
-	  fprintf (file, "!>");  break;
+	  fputs ("!>", file);  break;
 	default:
 	  abort ();
 	}
@@ -2923,25 +2923,25 @@ print_operand (file, x, code)
       switch (GET_CODE (x))
 	{
 	case EQ:
-	  fprintf (file, "=");  break;
+	  fputs ("=", file);  break;
 	case NE:
-	  fprintf (file, "<>");  break;
+	  fputs ("<>", file);  break;
 	case GT:
-	  fprintf (file, "<");  break;
+	  fputs ("<", file);  break;
 	case GE:
-	  fprintf (file, "<=");  break;
+	  fputs ("<=", file);  break;
 	case GEU:
-	  fprintf (file, "<<=");  break;
+	  fputs ("<<=", file);  break;
 	case GTU:
-	  fprintf (file, "<<");  break;
+	  fputs ("<<", file);  break;
 	case LT:
-	  fprintf (file, ">");  break;
+	  fputs (">", file);  break;
 	case LE:
-	  fprintf (file, ">=");  break;
+	  fputs (">=", file);  break;
 	case LEU:
-	  fprintf (file, ">>=");  break;
+	  fputs (">>=", file);  break;
 	case LTU:
-	  fprintf (file, ">>");  break;
+	  fputs (">>", file);  break;
 	default:
 	  abort ();
 	}
@@ -2950,25 +2950,25 @@ print_operand (file, x, code)
       switch (GET_CODE (x))
 	{
 	case EQ:
-	  fprintf (file, "<>");  break;
+	  fputs ("<>", file);  break;
 	case NE:
-	  fprintf (file, "=");  break;
+	  fputs ("=", file);  break;
 	case GT:
-	  fprintf (file, ">=");  break;
+	  fputs (">=", file);  break;
 	case GE:
-	  fprintf (file, ">");  break;
+	  fputs (">", file);  break;
 	case GEU:
-	  fprintf (file, ">>");  break;
+	  fputs (">>", file);  break;
 	case GTU:
-	  fprintf (file, ">>=");  break;
+	  fputs (">>=", file);  break;
 	case LT:
-	  fprintf (file, "<=");  break;
+	  fputs ("<=", file);  break;
 	case LE:
-	  fprintf (file, "<");  break;
+	  fputs ("<", file);  break;
 	case LEU:
-	  fprintf (file, "<<");  break;
+	  fputs ("<<", file);  break;
 	case LTU:
-	  fprintf (file, "<<=");  break;
+	  fputs ("<<=", file);  break;
 	default:
 	  abort ();
 	}
@@ -3010,11 +3010,11 @@ print_operand (file, x, code)
 	{
 	case PRE_DEC:
 	case PRE_INC:
-	  fprintf (file, "s,mb");
+	  fputs ("s,mb", file);
 	  break;
 	case POST_DEC:
 	case POST_INC:
-	  fprintf (file, "s,ma");
+	  fputs ("s,ma", file);
 	  break;
 	default:
 	  break;
@@ -3025,11 +3025,11 @@ print_operand (file, x, code)
 	{
 	case PRE_DEC:
 	case PRE_INC:
-	  fprintf (file, ",mb");
+	  fputs (",mb", file);
 	  break;
 	case POST_DEC:
 	case POST_INC:
-	  fprintf (file, ",ma");
+	  fputs (",ma", file);
 	  break;
 	default:
 	  break;
@@ -3101,7 +3101,7 @@ output_global_address (file, x, round_constant)
   else if (GET_CODE (x) == SYMBOL_REF && !flag_pic)
     {
       assemble_name (file, XSTR (x, 0));
-      fprintf (file, "-$global$");
+      fputs ("-$global$", file);
     }
   else if (GET_CODE (x) == CONST)
     {
@@ -3155,7 +3155,7 @@ output_global_address (file, x, round_constant)
       else abort ();
 
       if (!read_only_operand (base) && !flag_pic)
-	fprintf (file, "-$global$");
+	fputs ("-$global$", file);
       if (offset)
 	fprintf (file,"%s%d", sep, offset);
     }
@@ -3341,8 +3341,8 @@ output_arg_descriptor (call_insn)
      if using the portable runtime calling conventions.  */
   if (TARGET_PORTABLE_RUNTIME)
     {
-      fprintf (asm_out_file,
-	       "\t.CALL ARGW0=NO,ARGW1=NO,ARGW2=NO,ARGW3=NO,RETVAL=NO\n");
+      fputs ("\t.CALL ARGW0=NO,ARGW1=NO,ARGW2=NO,ARGW3=NO,RETVAL=NO\n",
+	     asm_out_file);
       return;
     }
 
@@ -3394,8 +3394,15 @@ output_arg_descriptor (call_insn)
   fputc ('\n', asm_out_file);
 }
 
-/* Memory loads/stores to/from the shift need to go through
-   the general registers.  */
+/* Return the class of any secondary reload register that is needed to
+   move IN into a register in class CLASS using mode MODE.
+
+   Profiling has showed this routine and its descendants account for
+   a significant amount of compile time (~7%).  So it has been
+   optimized to reduce redundant computations and eliminate useless
+   function calls.
+
+   It might be worthwhile to try and make this a leaf function too.  */
 
 enum reg_class
 secondary_reload_class (class, mode, in)
@@ -3403,7 +3410,7 @@ secondary_reload_class (class, mode, in)
      enum machine_mode mode;
      rtx in;
 {
-  int regno = true_regnum (in);
+  int regno, is_symbolic;
 
   /* Trying to load a constant into a FP register during PIC code
      generation will require %r1 as a scratch register.  */
@@ -3412,6 +3419,34 @@ secondary_reload_class (class, mode, in)
       && FP_REG_CLASS_P (class)
       && (GET_CODE (in) == CONST_INT || GET_CODE (in) == CONST_DOUBLE))
     return R1_REGS;
+
+  /* Profiling showed the PA port spends about 1.3% of its compilation
+     time in true_regnum from calls inside secondary_reload_class.  */
+
+  if (GET_CODE (in) == REG)
+    {
+      regno = REGNO (in);
+      if (regno >= FIRST_PSEUDO_REGISTER)
+	regno = true_regnum (in);
+    }
+  else if (GET_CODE (in) == SUBREG)
+    regno = true_regnum (in);
+  else
+    regno = -1;
+
+  /* Profiling showed the PA port spends about 1.3% of its compilation
+     time in true_regnum from calls inside secondary_reload_class.  */
+
+  if (GET_CODE (in) == REG)
+    {
+      regno = REGNO (in);
+      if (regno >= FIRST_PSEUDO_REGISTER)
+	regno = true_regnum (in);
+    }
+  else if (GET_CODE (in) == SUBREG)
+    regno = true_regnum (in);
+  else
+    regno = -1;
 
   if (((regno >= FIRST_PSEUDO_REGISTER || regno == -1)
        && GET_MODE_CLASS (mode) == MODE_INT
@@ -3422,16 +3457,37 @@ secondary_reload_class (class, mode, in)
   if (GET_CODE (in) == HIGH)
     in = XEXP (in, 0);
 
+  /* Profiling has showed GCC spends about 2.6% of its compilation
+     time in symbolic_operand from calls inside secondary_reload_class.
+
+     We use an inline copy and only compute its return value once to avoid
+     useless work.  */
+  switch (GET_CODE (in))
+    {
+      rtx tmp;
+
+      case SYMBOL_REF:
+      case LABEL_REF:
+        is_symbolic = 1;
+        break;
+      case CONST:
+	tmp = XEXP (in, 0);
+	is_symbolic = ((GET_CODE (XEXP (tmp, 0)) == SYMBOL_REF
+			|| GET_CODE (XEXP (tmp, 0)) == LABEL_REF)
+		       && GET_CODE (XEXP (tmp, 1)) == CONST_INT);
+        break;
+      default:
+        is_symbolic = 0;
+        break;
+    }
+  
   if (!flag_pic
-      && symbolic_operand (in, VOIDmode)
+      && is_symbolic
       && read_only_operand (in))
     return NO_REGS;
 
-  if (class != R1_REGS && symbolic_operand (in, VOIDmode))
+  if (class != R1_REGS && is_symbolic)
     return R1_REGS;
-
-  if (GET_CODE (in) == SUBREG)
-    in = SUBREG_REG (in);
 
   return NO_REGS;
 }
