@@ -457,6 +457,7 @@ namespace_qualifier:
 		}
 	| namespace_qualifier NSNAME SCOPE
 		{
+		  $$ = $2;
 		  if (TREE_CODE ($$) == IDENTIFIER_NODE)
 		    $$ = lastiddecl;
 		  got_scope = $$;

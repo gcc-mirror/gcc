@@ -1,3 +1,9 @@
+1998-07-14  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* parse.y (namespace_qualifier): Fix multiple level handling.
+	* decl2.c (namespace_ancestor): Use CP_DECL_CONTEXT.
+	(arg_assoc): Don't skip the first argument of a function.
+
 Tue Jul 14 20:09:22 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* search.c (my_tree_cons): Clean up.

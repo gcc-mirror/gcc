@@ -3845,7 +3845,7 @@ namespace_ancestor (ns1, ns2)
 {
   if (is_namespace_ancestor (ns1, ns2))
     return ns1;
-  return namespace_ancestor (DECL_CONTEXT (ns1), ns2);
+  return namespace_ancestor (CP_DECL_CONTEXT (ns1), ns2);
 }
 
 /* Insert used into the using list of user. Set indirect_flag if this
@@ -4341,11 +4341,8 @@ arg_assoc (k, n)
 	n = TREE_VALUE (n);
 	continue;
       case FUNCTION_DECL: /* 'd' */
-	if (arg_assoc_args (k, FUNCTION_ARG_CHAIN (n)))
+	if (arg_assoc_args (k, TYPE_ARG_TYPES (TREE_TYPE (n))))
 	  return 1;	
-	if (DECL_FUNCTION_MEMBER_P (n))
-	  if (arg_assoc_type (k, DECL_CLASS_CONTEXT (n)))
-	    return 1;
 	return 0;
       case TEMPLATE_DECL:
         /* XXX Type of a function template in the context of Koenig lookup?
