@@ -105,7 +105,6 @@ static void check_inner_class_access PARAMS ((tree, tree, tree));
 static int check_pkg_class_access PARAMS ((tree, tree, bool));
 static void register_package PARAMS ((tree));
 static tree resolve_package PARAMS ((tree, tree *, tree *));
-static tree lookup_package_type PARAMS ((const char *, int));
 static tree resolve_class PARAMS ((tree, tree, tree, tree));
 static void declare_local_variables PARAMS ((int, tree, tree));
 static void dump_java_tree PARAMS ((enum tree_dump_index, tree));
@@ -10466,27 +10465,15 @@ patch_method_invocation (patch, primary, where, from_super,
 
   /* This handles the situation where a constructor invocation needs
      to have an enclosing context passed as a second parameter (the
-     constructor is one of an inner class. We extract it from the
-     current function.  */
+     constructor is one of an inner class). */
   if ((is_super_init || 
        (TREE_CODE (patch) == CALL_EXPR && name == this_identifier_node))
       && PURE_INNER_CLASS_TYPE_P (DECL_CONTEXT (list)))
     {
-      tree enclosing_decl = DECL_CONTEXT (TYPE_NAME (current_class));
-      tree extra_arg;
-
-      if (ANONYMOUS_CLASS_P (current_class) || !DECL_CONTEXT (enclosing_decl))
-	{
-	  extra_arg = DECL_FUNCTION_BODY (current_function_decl);
-	  extra_arg = TREE_CHAIN (BLOCK_EXPR_DECLS (extra_arg));
-	}
-      else
-	{
-	  tree dest = TREE_TYPE (DECL_CONTEXT (enclosing_decl));
-	  extra_arg = 
-	    build_access_to_thisn (TREE_TYPE (enclosing_decl), dest, 0);
-	  extra_arg = java_complete_tree (extra_arg);
-	}
+      tree dest = TYPE_NAME (DECL_CONTEXT (list));
+      tree extra_arg = 
+	build_access_to_thisn (current_class, DECL_CONTEXT (dest), 0);
+      extra_arg = java_complete_tree (extra_arg);
       args = tree_cons (NULL_TREE, extra_arg, args);
     }
 

@@ -1,3 +1,10 @@
+2002-04-15  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	Fix for PR java/6085:
+	* parse.y (patch_method_invocation): Always use build_access_to_thisn
+	to get enclosing "this" argument for inner-class constructor
+	invocation. Pass correct arguments to build_access_to_thisn.
+
 2002-04-10  Andreas Jaeger  <aj@suse.de>
 
 	* gcj.texi (Input Options): Fix extdirs patch.
@@ -26,6 +33,7 @@
 	* Make-lang.in: Compile jcf-path with version info for use in
 	identifying the appropriate libgcj.jar.
 
+>>>>>>> 1.982
 2002-04-08  Tom Tromey  <tromey@redhat.com>
 
 	For PR libgcj/5303:
