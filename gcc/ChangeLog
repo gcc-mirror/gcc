@@ -1,3 +1,7 @@
+2002-04-02  Richard Henderson  <rth@redhat.com>
+
+	* libgcc2.c (__bb_exit_func): Revert 03-31 change.
+
 2002-04-02  David O'Brien  <obrien@FreeBSD.org>
 
 	* config.gcc (i386-dg-dgux, i386-go32-msdos , i386-go32-rtems,
