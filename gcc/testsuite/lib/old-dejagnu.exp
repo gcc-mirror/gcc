@@ -196,7 +196,7 @@ proc old-dejagnu { compiler prog cflagsx default_cflags libs } {
 # is right.  If no such Special Options are found, $default_cflags is used.
 # FIXME: Can there be multiple lines of these?
 #
-# Other keywords: "Build don't link:", "Build don't run:".
+# Other keywords: "Build don't link:", "Build don't run:", "Build then link:".
 
     set name "[file tail [file dirname $prog]]/[file tail $prog]"
 
@@ -238,6 +238,15 @@ proc old-dejagnu { compiler prog cflagsx default_cflags libs } {
 	set output "$tmpdir/[file tail [file rootname $prog]].o"
 	verbose "Will compile $prog to object" 3
     }
+
+    set tmp [lindex [grep $prog "Build then link:"] 0]
+    if ![string match "" $tmp] then {
+	set compile_type "object"
+	set runflag 2
+	set final_output "$output"
+	set output "$tmpdir/[file tail [file rootname $prog]].o"
+	verbose "Will compile $prog to object, then link it" 3
+    }	
 
     set tmp [lindex [grep $prog "Build don.t run:"] 0]
     if ![string match "" $tmp] then {
@@ -399,6 +408,11 @@ proc old-dejagnu { compiler prog cflagsx default_cflags libs } {
     # we can't run a.out when the compilation fails.
     remote_file build delete $output
     set comp_output [${tool}_target_compile $prog $output $compile_type $cflags]
+    if { $runflag == 2 && [file exists $output] } then {
+	set runflag 0
+	set comp_output [concat $comp_output [${tool}_target_compile $output $final_output "executable" $cflags]]
+	set output $final_output
+    }
 
     # Delete things like "ld.so: warning" messages.
     set comp_output [prune_warnings $comp_output]
