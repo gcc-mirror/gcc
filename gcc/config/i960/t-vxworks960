@@ -1,5 +1,5 @@
-LIBGCC1 = libgcc1.null
-CROSS_LIBGCC1 = libgcc1.null
+LIBGCC1 =
+CROSS_LIBGCC1 =
 
 # We don't want to put exit in libgcc.a for VxWorks, because VxWorks
 # does not have _exit.
