@@ -7438,7 +7438,10 @@
    (clobber (reg:SI 15))]
   ;;- Do not use operand 1 for most machines.
   "! TARGET_ARCH64 && GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) > 0"
-  "call\t%a0, %1\n\t nop\n\tunimp\t%2"
+{
+  operands[2] = GEN_INT (INTVAL (operands[2]) & 0xfff);
+  return "call\t%a0, %1\n\t nop\n\tunimp\t%2";
+}
   [(set_attr "type" "call_no_delay_slot")
    (set_attr "length" "3")])
 
@@ -7451,7 +7454,10 @@
    (clobber (reg:SI 15))]
   ;;- Do not use operand 1 for most machines.
   "! TARGET_ARCH64 && GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) > 0"
-  "call\t%a0, %1\n\t nop\n\tunimp\t%2"
+{
+  operands[2] = GEN_INT (INTVAL (operands[2]) & 0xfff);
+  return "call\t%a0, %1\n\t nop\n\tunimp\t%2";
+}
   [(set_attr "type" "call_no_delay_slot")
    (set_attr "length" "3")])
 
