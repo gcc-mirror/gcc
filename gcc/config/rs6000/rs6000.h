@@ -2366,9 +2366,16 @@ do {									     \
    : (((OP) == EQ || (OP) == NE) && GET_RTX_CLASS (GET_CODE (X)) == '<'   \
       ? CCEQmode : CCmode))
 
+/* Can the condition code MODE be safely reversed?  This is safe in
+   all cases on this port, because at present it doesn't use the
+   trapping FP comparisons (fcmpo).  */
+#define REVERSIBLE_CC_MODE(MODE) 1
+
+/* Given a condition code and a mode, return the inverse condition.  */
+#define REVERSE_CONDITION(CODE, MODE) rs6000_reverse_condition (MODE, CODE)
+
 /* Define the information needed to generate branch and scc insns.  This is
-   stored from the compare operation.  Note that we can't use "rtx" here
-   since it hasn't been defined!  */
+   stored from the compare operation.  */
 
 extern GTY(()) rtx rs6000_compare_op0;
 extern GTY(()) rtx rs6000_compare_op1;
