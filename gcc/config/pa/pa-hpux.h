@@ -36,6 +36,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* HPUX doesn't use any debugging format that GCC knows about.  */
 #undef DBX_DEBUGGING_INFO
+#undef DEFAULT_GDB_EXTENSIONS
+#define DEFAULT_GDB_EXTENSIONS 0
 
 /* Like the default, except no -lg.  */
 #define LIB_SPEC "%{!p:%{!pg:-lc}}%{p:-L/lib/libp/ -lc}%{pg:-L/lib/libp/ -lc}"
