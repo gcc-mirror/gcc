@@ -19,7 +19,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
-#include <stdio.h>
+#include "system.h"
 #include "tree.h"
 #include "rtl.h"
 #include "regs.h"
@@ -729,10 +729,7 @@ move_double_src_operand (op, int_mode)
     {
     case CONST_INT :
     case CONST_DOUBLE :
-      if (mode == DFmode)
-	return easy_df_const (op);
-      else
-	return easy_di_const (op);
+      return 1;
     case REG :
       return register_operand (op, mode);
     case SUBREG :
@@ -1115,6 +1112,123 @@ gen_compare (int_code, x, y, need_compare)
   return gen_rtx (branch_code, VOIDmode, cc_reg, CONST0_RTX (mode));
 }
 
+/* Split a 2 word move (DI or DF) into component parts.  */
+
+rtx
+gen_split_move_double (operands)
+     rtx operands[];
+{
+  enum machine_mode mode = GET_MODE (operands[0]);
+  rtx dest = operands[0];
+  rtx src  = operands[1];
+  rtx val;
+
+  start_sequence ();
+  if (GET_CODE (dest) == REG || GET_CODE (dest) == SUBREG)
+    {
+      /* reg = reg */
+      if (GET_CODE (src) == REG || GET_CODE (src) == SUBREG)
+	{
+	  /* We normally copy the low-numbered register first.  However, if
+	     the first register operand 0 is the same as the second register of
+	     operand 1, we must copy in the opposite order.  */
+	  int reverse = (REGNO (operands[0]) == REGNO (operands[1]) + 1);
+	  emit_insn (gen_rtx_SET (VOIDmode,
+				  operand_subword (dest, reverse, TRUE, mode),
+				  operand_subword (src,  reverse, TRUE, mode)));
+
+	  emit_insn (gen_rtx_SET (VOIDmode,
+				  operand_subword (dest, !reverse, TRUE, mode),
+				  operand_subword (src,  !reverse, TRUE, mode)));
+	}
+
+      /* reg = constant */
+      else if (GET_CODE (src) == CONST_INT || GET_CODE (src) == CONST_DOUBLE)
+	{
+	  rtx words[2];
+	  split_double (src, &words[0], &words[1]);
+	  emit_insn (gen_rtx_SET (VOIDmode,
+				  operand_subword (dest, 0, TRUE, mode),
+				  words[0]));
+
+	  emit_insn (gen_rtx_SET (VOIDmode,
+				  operand_subword (dest, 1, TRUE, mode),
+				  words[1]));
+	}
+
+      /* reg = mem */
+      else if (GET_CODE (src) == MEM)
+	{
+	  /* If the high-address word is used in the address, we must load it
+	     last.  Otherwise, load it first.  */
+	  rtx addr = XEXP (src, 0);
+	  int reverse = (refers_to_regno_p (REGNO (dest), REGNO (dest)+1,
+					    addr, 0) != 0);
+
+	  /* We used to optimize loads from single registers as
+
+		ld r1,r3+; ld r2,r3
+
+	     if r3 were not used subsequently.  However, the REG_NOTES aren't
+	     propigated correctly by the reload phase, and it can cause bad
+	     code to be generated.  We could still try:
+
+		ld r1,r3+; ld r2,r3; addi r3,-4
+
+	     which saves 2 bytes and doesn't force longword alignment.  */
+	  emit_insn (gen_rtx_SET (VOIDmode,
+				  operand_subword (dest, reverse, TRUE, mode),
+				  change_address (src, SImode,
+						  plus_constant (addr,
+								 reverse * UNITS_PER_WORD))));
+
+	  emit_insn (gen_rtx_SET (VOIDmode,
+				  operand_subword (dest, !reverse, TRUE, mode),
+				  change_address (src, SImode,
+						  plus_constant (addr,
+								 (!reverse) * UNITS_PER_WORD))));
+	}
+
+      else
+	abort ();
+    }
+
+  /* mem = reg */
+  /* We used to optimize loads from single registers as
+
+	st r1,r3; st r2,+r3
+
+     if r3 were not used subsequently.  However, the REG_NOTES aren't
+     propigated correctly by the reload phase, and it can cause bad
+     code to be generated.  We could still try:
+
+	st r1,r3; st r2,+r3; addi r3,-4
+
+     which saves 2 bytes and doesn't force longword alignment.  */
+  else if (GET_CODE (dest) == MEM
+	   && (GET_CODE (src) == REG || GET_CODE (src) == SUBREG))
+    {
+      rtx addr = XEXP (dest, 0);
+
+      emit_insn (gen_rtx_SET (VOIDmode,
+			      change_address (dest, SImode, addr),
+			      operand_subword (src, 0, TRUE, mode)));
+
+      emit_insn (gen_rtx_SET (VOIDmode,
+			      change_address (dest, SImode,
+					      plus_constant (addr, UNITS_PER_WORD)),
+			      operand_subword (src, 1, TRUE, mode)));
+    }
+
+  else
+    abort ();
+
+  val = gen_sequence ();
+  end_sequence ();
+  return val;
+}
+
+
 /* Implements the FUNCTION_ARG_PARTIAL_NREGS macro.  */
 
 int
@@ -1298,7 +1412,6 @@ struct m32r_frame_info
   unsigned int args_size;	/* # bytes that outgoing arguments take up */
   unsigned int reg_size;	/* # bytes needed to store regs */
   unsigned int var_size;	/* # bytes that variables take up */
-  unsigned int prolog_size;	/* # bytes that the prologue takes up */
   unsigned int gmask;		/* mask of saved gp registers */
   unsigned int save_fp;		/* nonzero if fp must be saved */
   unsigned int save_lr;		/* nonzero if lr (return addr) must be saved */
@@ -1322,7 +1435,7 @@ static struct m32r_frame_info zero_frame_info;
  && (regs_ever_live[regno] && (!call_used_regs[regno] || interrupt_p)))
 
 #define MUST_SAVE_FRAME_POINTER (regs_ever_live[FRAME_POINTER_REGNUM])
-#define MUST_SAVE_RETURN_ADDR (regs_ever_live[RETURN_ADDR_REGNUM])
+#define MUST_SAVE_RETURN_ADDR (regs_ever_live[RETURN_ADDR_REGNUM] || profile_flag)
 
 #define SHORT_INSN_SIZE 2	/* size of small instructions */
 #define LONG_INSN_SIZE 4	/* size of long instructions */
@@ -1338,7 +1451,7 @@ m32r_compute_frame_size (size)
 {
   int regno;
   unsigned int total_size, var_size, args_size, pretend_size, extra_size;
-  unsigned int reg_size, prolog_size, frame_size;
+  unsigned int reg_size, frame_size;
   unsigned int gmask;
   enum m32r_function_type fn_type;
   int interrupt_p;
@@ -1349,7 +1462,6 @@ m32r_compute_frame_size (size)
   extra_size	= FIRST_PARM_OFFSET (0);
   total_size	= extra_size + pretend_size + args_size + var_size;
   reg_size	= 0;
-  prolog_size	= 0;
   gmask		= 0;
 
   /* See if this is an interrupt handler.  Call used registers must be saved
@@ -1379,32 +1491,7 @@ m32r_compute_frame_size (size)
      handler will do the right thing if this changes total_size.  */
   total_size = M32R_STACK_ALIGN (total_size);
 
-  /* Calculate prologue size.  Obviously any changes to
-     m32r_output_function_prologue must be mirrored here.  */
-  if (pretend_size)
-    prolog_size += SHORT_INSN_SIZE;		/* addi sp,-pretend_size */
-
-  prolog_size += SHORT_INSN_SIZE * (reg_size / UNITS_PER_WORD);	/* pushes */
   frame_size = total_size - (pretend_size + reg_size);
-
-  if (frame_size == 0)
-    ;						/* nothing to do */
-  else if (frame_size <= 128)
-    prolog_size += SHORT_INSN_SIZE;		/* addi sp,-<frame> */
-  else
-    {
-      if ((prolog_size % LONG_INSN_SIZE) != 0)
-	prolog_size += SHORT_INSN_SIZE;		/* nop */
-
-      if (frame_size <= 32768)
-	prolog_size += LONG_INSN_SIZE;		/* add3 sp,sp,-<frame> */
-      else
-	prolog_size += (LONG_INSN_SIZE		/* ld24 tmp,<frame>/sub sp,tmp */
-			+ SHORT_INSN_SIZE);
-    }
-
-  if (frame_pointer_needed)
-    prolog_size += SHORT_INSN_SIZE;		/* mv fp,sp */
 
   /* Save computed information.  */
   current_frame_info.total_size   = total_size;
@@ -1413,7 +1500,6 @@ m32r_compute_frame_size (size)
   current_frame_info.var_size     = var_size;
   current_frame_info.args_size    = args_size;
   current_frame_info.reg_size	  = reg_size;
-  current_frame_info.prolog_size  = prolog_size;
   current_frame_info.gmask	  = gmask;
   current_frame_info.initialized  = reload_completed;
 
@@ -1431,8 +1517,77 @@ m32r_first_insn_address ()
   if (! current_frame_info.initialized)
     m32r_compute_frame_size (get_frame_size ());
 
-  return current_frame_info.prolog_size;
+  return 0;
 }
+
+/* Expand the m32r prologue as a series of insns.  */
+
+void
+m32r_expand_prologue ()
+{
+  int regno;
+  int frame_size;
+  unsigned int gmask = current_frame_info.gmask;
+
+  if (! current_frame_info.initialized)
+    m32r_compute_frame_size (get_frame_size ());
+
+  gmask = current_frame_info.gmask;
+
+  /* These cases shouldn't happen.  Catch them now.  */
+  if (current_frame_info.total_size == 0 && gmask)
+    abort ();
+
+  /* Allocate space for register arguments if this is a variadic function.  */
+  if (current_frame_info.pretend_size != 0)
+    emit_insn (gen_addsi3 (stack_pointer_rtx,
+			   stack_pointer_rtx,
+			   GEN_INT (-current_frame_info.pretend_size)));
+
+  /* Save any registers we need to and set up fp.  */
+
+  if (current_frame_info.save_fp)
+    emit_insn (gen_movsi_push (stack_pointer_rtx, frame_pointer_rtx));
+
+  gmask &= ~(FRAME_POINTER_MASK | RETURN_ADDR_MASK);
+
+  /* Save any needed call-saved regs (and call-used if this is an
+     interrupt handler).  */
+  for (regno = 0; regno <= M32R_MAX_INT_REGS; ++regno)
+    {
+      if ((gmask & (1 << regno)) != 0)
+	emit_insn (gen_movsi_push (stack_pointer_rtx,
+				   gen_rtx_REG (Pmode, regno)));
+    }
+
+  if (current_frame_info.save_lr)
+    emit_insn (gen_movsi_push (stack_pointer_rtx,
+			       gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM)));
+
+  /* Allocate the stack frame.  */
+  frame_size = (current_frame_info.total_size
+		- (current_frame_info.pretend_size
+		   + current_frame_info.reg_size));
+
+  if (frame_size == 0)
+    ; /* nothing to do */
+  else if (frame_size <= 32768)
+    emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,
+			   GEN_INT (-frame_size)));
+  else
+    {
+      rtx tmp = gen_rtx_REG (Pmode, PROLOGUE_TMP_REGNUM);
+      emit_insn (gen_movsi (tmp, GEN_INT (frame_size)));
+      emit_insn (gen_subsi3 (stack_pointer_rtx, stack_pointer_rtx, tmp));
+    }
+
+  if (frame_pointer_needed)
+    emit_insn (gen_movsi (frame_pointer_rtx, stack_pointer_rtx));
+
+  if (profile_flag || profile_block_flag)
+    emit_insn (gen_blockage ());
+}
+
 
 /* Set up the stack and frame pointer (if desired) for the function.
    Note, if this is changed, you need to mirror the changes in
@@ -1443,11 +1598,6 @@ m32r_output_function_prologue (file, size)
      FILE * file;
      int    size;
 {
-  int regno;
-  int total_size, frame_size;
-  char *sp_str = reg_names[STACK_POINTER_REGNUM];
-  char *fp_str = reg_names[FRAME_POINTER_REGNUM];
-  unsigned int gmask = current_frame_info.gmask;
   enum m32r_function_type fn_type = m32r_compute_function_type (current_function_decl);
 
   /* If this is an interrupt handler, mark it as such.  */
@@ -1457,83 +1607,17 @@ m32r_output_function_prologue (file, size)
 	       ASM_COMMENT_START);
     }
 
-  total_size = (! current_frame_info.initialized
-		? m32r_compute_frame_size (size)
-		: current_frame_info.total_size);
+  if (! current_frame_info.initialized)
+    m32r_compute_frame_size (size);
 
   /* This is only for the human reader.  */
   fprintf (file,
-	   "\t%s BEGIN PROLOGUE, vars= %d, regs= %d, args= %d, extra= %d, prolog= %d\n",
+	   "\t%s PROLOGUE, vars= %d, regs= %d, args= %d, extra= %d\n",
 	   ASM_COMMENT_START,
 	   current_frame_info.var_size,
 	   current_frame_info.reg_size / 4,
 	   current_frame_info.args_size,
-	   current_frame_info.extra_size,
-	   current_frame_info.prolog_size);
-
-  /* These cases shouldn't happen.  Catch them now.  */
-  if (total_size == 0 && gmask)
-    abort ();
-
-#if 1
-  /* Allocate space for register arguments if this is a variadic function.  */
-  if (current_frame_info.pretend_size != 0)
-    fprintf (file, "\taddi %s,%s%d\n",
-	     sp_str, IMMEDIATE_PREFIX,
-	     -current_frame_info.pretend_size);
-#else
-  /* If there are unnamed args in registers, save them.  */
-  if (current_function_stdarg || current_function_varargs)
-    {
-      int i;
-      fprintf (file, "\taddi %s,%s%d\n",
-	       sp_str, IMMEDIATE_PREFIX,
-	       - M32R_MAX_PARM_REGS * UNITS_PER_WORD);
-      for (i = 0; i < M32R_MAX_PARM_REGS; ++i)
-	fprintf (file, "\tst %s,@(sp,%d)\n",
-		 reg_names[i], i * UNITS_PER_WORD);
-    }
-#endif
-
-  /* Save any registers we need to and set up fp.  */
-
-  if (current_frame_info.save_fp)
-    fprintf (file, "\tpush %s\n", fp_str);
-
-  gmask &= ~(FRAME_POINTER_MASK | RETURN_ADDR_MASK);
-
-  /* Save any needed call-saved regs (and call-used if this is an
-     interrupt handler).  */
-  for (regno = 0; regno <= M32R_MAX_INT_REGS; ++regno)
-    {
-      if ((gmask & (1 << regno)) != 0)
-	fprintf (file, "\tpush %s\n", reg_names[regno]);
-    }
-
-  if (current_frame_info.save_lr)
-    fprintf (file, "\tpush %s\n", reg_names[RETURN_ADDR_REGNUM]);
-
-  /* Allocate the stack frame.  */
-  frame_size = total_size - (current_frame_info.pretend_size
-			     + current_frame_info.reg_size);
-  if (frame_size == 0)
-    ; /* nothing to do */
-  else if (frame_size <= 128)
-    fprintf (file, "\taddi %s,%s%d\n",
-	     sp_str, IMMEDIATE_PREFIX, -frame_size);
-  else if (frame_size <= 32768)
-    fprintf (file, "\tadd3 %s,%s,%s%d\n",
-	     sp_str, sp_str, IMMEDIATE_PREFIX, -frame_size);
-  else
-    fprintf (file, "\tld24 %s,%s%d\n\tsub %s,%s\n",
-	     reg_names[PROLOGUE_TMP_REGNUM],
-	     IMMEDIATE_PREFIX, frame_size,
-	     sp_str, reg_names[PROLOGUE_TMP_REGNUM]);
-
-  if (frame_pointer_needed)
-    fprintf (file, "\tmv %s,%s\n", fp_str, sp_str);
-
-  fprintf (file, "\t%s END PROLOGUE\n", ASM_COMMENT_START);
+	   current_frame_info.extra_size);
 }
 
 /* Do any necessary cleanup after a function to restore stack, frame,
@@ -1695,6 +1779,8 @@ m32r_print_operand (file, x, code)
      rtx    x;
      int    code;
 {
+  rtx addr;
+
   switch (code)
     {
     case 'R' :
@@ -1866,16 +1952,34 @@ m32r_print_operand (file, x, code)
       break;
 
     case MEM :
-      fprintf (file, "@(");
-      if (GET_CODE (XEXP (x, 0)) == PRE_INC)
-	output_address (plus_constant (XEXP (XEXP (x, 0), 0),
-				       GET_MODE_SIZE (GET_MODE (x))));
-      else if (GET_CODE (XEXP (x, 0)) == PRE_DEC)
-	output_address (plus_constant (XEXP (XEXP (x, 0), 0),
-				       - GET_MODE_SIZE (GET_MODE (x))));
+      addr = XEXP (x, 0);
+      if (GET_CODE (addr) == PRE_INC)
+	{
+	  if (GET_CODE (XEXP (addr, 0)) != REG)
+	    abort ();
+
+	  fprintf (file, "@+%s", reg_names[REGNO (XEXP (addr, 0))]);
+	}
+      else if (GET_CODE (addr) == PRE_DEC)
+	{
+	  if (GET_CODE (XEXP (addr, 0)) != REG)
+	    abort ();
+
+	  fprintf (file, "@-%s", reg_names[REGNO (XEXP (addr, 0))]);
+	}
+      else if (GET_CODE (addr) == POST_INC)
+	{
+	  if (GET_CODE (XEXP (addr, 0)) != REG)
+	    abort ();
+
+	  fprintf (file, "@%s+", reg_names[REGNO (XEXP (addr, 0))]);
+	}
       else
-	output_address (XEXP (x, 0));
-      fputc (')', file);
+	{
+	  fputs ("@(", file);
+	  output_address (XEXP (x, 0));
+	  fputc (')', file);
+	}
       break;
 
     case CONST_DOUBLE :
@@ -1975,11 +2079,16 @@ m32r_print_operand_address (file, addr)
       fputs (reg_names[REGNO (XEXP (addr, 0))], file);
       break;
 
-    case PRE_INC :
-    case PRE_DEC :
-      /* We shouldn't get here as we've lost the mode of the memory object
-	 (which says how much to inc/dec by).  */
-      abort ();
+    case PRE_INC :	/* Assume SImode */
+      fprintf (file, "+%s", reg_names[REGNO (XEXP (addr, 0))]);
+      break;
+
+    case PRE_DEC :	/* Assume SImode */
+      fprintf (file, "-%s", reg_names[REGNO (XEXP (addr, 0))]);
+      break;
+
+    case POST_INC :	/* Assume SImode */
+      fprintf (file, "%s+", reg_names[REGNO (XEXP (addr, 0))]);
       break;
 
     default :

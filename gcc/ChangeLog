@@ -3,6 +3,54 @@ Fri May  8 18:23:08 1998  Michael Meissner  <meissner@cygnus.com>
 	* final.c (final_scan_insn): Call fatal_insn instead of abort if
 	we could not split an insn when required to.
 
+	* m32r.md ({add,sub}di3): Add define_splits and appropriate low
+	level insns.
+	(peepholes): Disable peepholes that call dead_or_set_p.
+	(movsi): Rewrite to handle addresses better after last change.
+	Add define_split to split load of addresses in large/medium modes.
+	(prologue): Call m32r_expand_prologue.
+	(movsi_{push,pop}): Generators for push/pop.
+	(movsi): Support PRE_{INC,DEC}, POST_INC.
+	(mov{di,df}): Rewrite.  Always split the insns.
+	(movsf): Add define_split to get register load in correct mode.
+	(cmp_ne_small_const_insn): Use 'N' instead of 'S' constraint.
+	(attributes): Rewrite attributes so that type indicates both the
+	type and the length of the insn directly.
+	(all insns): Change to use new type attributes.
+	(debug): New attribute to convey whether -mdebug was used.
+	(opt_space): New attribute to convey whether -Os was used.
+	(function units): Loads are 3 cycles, not 2.  Better classify all
+	insns into short/long.
+	(load/store/extend insns): Add separate case for load/store
+	indirect operations without an offset.
+	(divsi3): Division is a long operation, not short.
+
+	* m32r.h (LEGITIMATE_LO_SUM_ADDRESS_P): Do not allow LO_SUM for
+	modes > 1 word.
+	(GO_IF_MODE_DEPENDENT_ADDRESS): LO_SUM is now mode dependent.
+	(CONST_OK_FOR_LETTER_P): Make 'N' handle reverse 8 bit compares.
+	(EXTRA_CONSTRAINT): Remove 'S' special support.  Add 'U' for
+	operands with PRE_{INC,DEC}, POST_INC.
+	(FUNCTION_PROFILER): Call abort instead of doing nothing.
+	(GO_IF_LEGITIMATE_ADDRESS): Allow PRE_{INC,DEC}, POST_INC of
+	SImode variables.
+	(gen_split_move_double): Declare.
+	(EXTRA_CONSTRAINT): Add 'T' for memory reference with no offset.
+
+	* m32r.c (gen_split_move_double): Fix typo.  Also, don't call
+	emit_move_insn, build up SET's directly.
+	(toplevel): Include system.h, not stdio.h.
+	(move_double_src_operand): Allow any DF or DI mode constant.
+	(gen_split_move_double): Split moves of DI or DF values into the
+	appropriate moves, loads, or stores.  Don't handle use of auto
+	inc/dec if using dead index.  Do handle overlapping moves, etc.
+	(m32r_frame_info): Remove prologue_size field.
+	(m32r_compute_frame_size): Don't calculate prologue size.
+	(m32r_output_function_prologue): Change to pretty much a NOP.
+	(m32r_expand_prologue): Expand prologue as a series of INSNs.
+	(m32r_print_operand): Add support for PRE_{INC,DEC}, POST_INC.
+	(m32r_print_operand_address): Ditto.
+	
 Fri May  8 14:13:21 1998  H.J. Lu  (hjl@gnu.org)
 
 	* reload1.c (emit_reload_insns): When performing expensive
