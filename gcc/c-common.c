@@ -670,7 +670,7 @@ decl_attributes (node, attributes, prefix_attributes)
 			 "argument format specified for non-function `%s'");
 		continue;
 	      }
-
+	
 	    if (TREE_CODE (format_type_id) != IDENTIFIER_NODE)
 	      {
 		error ("unrecognized format specifier");
@@ -679,7 +679,7 @@ decl_attributes (node, attributes, prefix_attributes)
 	    else
 	      {
 		char *p = IDENTIFIER_POINTER (format_type_id);
-
+		
 		if (!strcmp (p, "printf") || !strcmp (p, "__printf__"))
 		  format_type = printf_format_type;
 		else if (!strcmp (p, "scanf") || !strcmp (p, "__scanf__"))
@@ -1529,7 +1529,7 @@ check_format_info (info, params)
 	  else if (*format_chars == 'q' || *format_chars == 'L')
 	    {
 	      length_char = *format_chars++;
-	      if (pedantic && length_char == 'q')
+	      if (pedantic)
 		warning ("ANSI C does not support the `%c' length modifier",
 			 length_char);
 	    }
@@ -1541,13 +1541,6 @@ check_format_info (info, params)
 	    }
 	  else
 	    length_char = 0;
-	  if (length_char == 'h' && *format_chars == 'h')
-	    {
-	      length_char = 'H', format_chars++;
-	      /* FIXME: Is allowed in ISO C 9x.  */
-	      if (pedantic)
-		warning ("ANSI C does not support the `hh' length modifier");
-	    }
 	  if (length_char == 'l' && *format_chars == 'l')
 	    {
 	      length_char = 'q', format_chars++;
@@ -1667,10 +1660,10 @@ check_format_info (info, params)
 	}
       if (info->format_type == strftime_format_type)
 	continue;
-      integral_format = (format_char == 'd' || format_char == 'i'
-			 || format_char == 'o' || format_char == 'u'
-			 || format_char == 'x' || format_char == 'X');
-      if (precise && index (flag_chars, '0') != 0 && integral_format)
+      if (precise && index (flag_chars, '0') != 0
+	  && (format_char == 'd' || format_char == 'i'
+	      || format_char == 'o' || format_char == 'u'
+	      || format_char == 'x' || format_char == 'x'))
 	warning ("`0' flag ignored with precision specifier and `%c' format",
 		 format_char);
       switch (length_char)
@@ -1683,8 +1676,7 @@ check_format_info (info, params)
 	case 'L': wanted_type = fci->bigllen ? *(fci->bigllen) : 0; break;
 	case 'Z': wanted_type = fci->zlen ? *fci->zlen : 0; break;
 	}
-      if (wanted_type == 0
-	  || (pedantic && length_char == 'L' && integral_format))
+      if (wanted_type == 0)
 	warning ("use of `%c' length character with `%c' type character",
 		 length_char, format_char);
 
@@ -1723,7 +1715,7 @@ check_format_info (info, params)
 	    {
 	      cur_type = TREE_TYPE (cur_type);
 
-	      if (TREE_CODE (cur_param) == ADDR_EXPR)
+	      if (cur_param != 0 && TREE_CODE (cur_param) == ADDR_EXPR)
 		cur_param = TREE_OPERAND (cur_param, 0);
 	      else
 		cur_param = 0;

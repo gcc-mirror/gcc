@@ -1,4 +1,233 @@
+Sat May  2 20:39:22 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* fold-const.c (fold): When commutting COND_EXPR and binary operation,
+	avoid quadratic behavior if have nested COND_EXPRs.
+
+Tue Apr 28 17:30:05 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* mips.h (HOST_WIDE_INT): Define if not already.
+	(compute_frame_size, mips_debugger_offset): Return HOST_WIDE_INT.
+	(DEBUGGER_{AUTO,ARG}_OFFSET): Cast second arg to HOST_WIDE_INT.
+	* /mips.c (mips_debugger_offset): Now returns HOST_WIDE_INT.
+	Likewise for internal variable frame_size.
+
+	* final.c (alter_subreg): Make new SUBREG if reload replacement
+	scheduled inside it.
+
+	* dwarf2out.c (add_bound_info, case SAVE_EXPR): Pass 
+	SAVE_EXPR_RTL address through fix_lexical_addr.
+
+Mon Apr 27 18:57:18 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* mips/sni-svr4.h (CPP_PREDEFINES): Add -Dsinix and -DSNI.
+
+Mon Apr 20 14:48:29 1998  Michael Meissner  <meissner@cygnus.com>
+
+	* rs6000.md (mov{sf,df} define_splits): When splitting move of
+	constant to int reg, don't split  insns that do simple AND and OR
+	operations; just split each word and let normal movsi define split
+	handle it further.
+
+Sun Apr 19 20:21:19 1998  Michael P. Hayes  <michaelh@ongaonga.chch.cri.nz>
+
+	* real.h (C4X_FLOAT_FORMAT): New macro.
+	* real.c (c4xtoe, etoc4x, toc4x): New functions.
+
+Sun Apr 19 20:17:32 1998  Niklas Hallqvist  <niklas@petra.appli.se>
+
+	* m68k.c (notice_update_cc): Use modified_in_p to check for update.
+
+Sun Apr 19 18:48:07 1998  K. Richard Pixley  <rich@kyoto.noir.com>
+
+	* fixincludes: Discard empty C++ comments.
+	Special case more files with C++ comments nested in C comments.
+
+Sun Apr 19 18:30:11 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* m68k.md ({add,sub}di3): Optimize for constant operand.
+
+Sun Apr 19 18:27:11 1998  Alan Modra <alan@spri.levels.unisa.edu.au>
+
+	* i386.c (output_387_binary_op): Swap operands when popping if result
+	is st(0).
+
+Sun Apr 19 17:58:01 1998  Peter Jeremy  <peter.jeremy@alcatel.com.au>
+
+	* expr.c (do_jump_by_parts_equality_rtx): Now public.
+	* expmed.c (do_cmp_and_jump): New function.
+	(expand_divmod): Use do_cmp_and_jmp instead of emit_cmp_insn and
+	emit_jump_insn.
+
+Sun Apr 19 07:48:37 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* c-typeck.c (build_c_cast): Check underlying type when seeing
+	if discarding const or volatile.
+
+	* c-decl.c (pushdecl): Avoid duplicate warning about implicit redecl.
+
+	* configure.in (stab.h): Check for it.
+	(i386-*-vsta): Include xm-i386.h too.
+	* dbxout.c (stab.h): Include based on autoconf results.
+	* vax/xm-vms.h (NO_STAB_H): Deleted.
+	* alpha/xm-vms.h, xm-mips.h, i386/xm-mingw32.h, i386/go32.h: Likewise.
+	* i386/xm-cygwin32.h: Likewise.
+	* i386/xm-vsta.h (NO_STAB_H): Likewise.
+	(i386/xm-i386.h): No longer include.
+
+	* mips.c: Cleanups and reformatting throughout.
+	({expand,output}_block_move): Use HOST_WIDE_INT for sizes.
+	(mips_debugger_offset, compute_frame_size): Likewise.
+	(save_restore_insns, mips_expand_{pro,epi}logue): Likewise.
+	(siginfo): Deleted.
+	(override_options): Don't set up to call it; don't call setvbuf.
+
+Mon Apr 13 06:40:17 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* configure.in (sparc-*-vxsim*): Include xm-siglist.h and
+	define USG and POSIX.
+
+Sun Apr 12 21:59:27 1998  Jeffrey A. Law  <law@cygnus.com>
+
+	* calls.c (expand_call): Fix typo in STRICT_ARGUMENT_NAMING.
+
+Sun Apr 12 21:42:23 1998  D. Karthikeyan  <karthik@cdotd.ernet.in>
+
+	* m68k.h (TARGET_SWITCHES): Add missing comma.
+
+Sun Apr 12 21:33:33 1998  Eric Valette  <valette@crf.canon.fr>
+
+	* configure.in (i[34567]86-*-rtemself*): New configuration.
+	* i386/rtemself.h: New file.
+
+Sun Apr 12 21:08:28 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* loop.c (loop_optimize): Reset max_uid_for_loop after
+	find_and_verify_loops call.
+	(strength_reduce): In auto_inc_opt code, verify v->insn has valid
+	INSN_LUID.
+
+Sun Apr 12 20:54:59 1998  Richard Earnshaw (rearnsha@arm.com)
+
+	* configure.in (sparc-*-solaris2*): Add xm-siglist.h to xm_file.
+	Add USG and POSIX to xm_defines.
+
+Sun Apr 12 20:47:37 1998  Pat Rankin  <rankin@eql.caltech.edu>
+
+	* cccp.c (eprint_string): New function.
+	(do_elif, do_else, verror): Use it instead of fwrite(,,,stderr).
+	(error_from_errno, vwarning): Likewise.
+	({verror,vwarning,pedwarn}_with_line): Likewise.
+	(pedwarn_with_file_and_line, print_containing_files): Likewise.
+
+Sun Apr 12 20:40:44 1998  Richard Henderson  <rth@dot.cygnus.com>
+
+	* configure.in (alpha*-*-linux-gnu*): Add alpha/t-crtbe.
+	Add crt{begin,end}.o in extra_parts and delete crt{begin,end}S.o.o
+	* alpha/t-crtbe, alpha/crt{begin,end}.asm: New files.
+	
+	* alpha.h (PRINT_OPERAND_PUNCT_VALID_P): Accept '(' for s/sv/svi.
+	* alpha.c (print_operand): Handle it.
+	* alpha.md (fix_trunc[ds]fdi2): Use it.  Add earlyclobber pattern
+	for ALPHA_TP_INSN.
+
+Sun Apr 12 13:09:46 1998  Scott Christley  <scottc@net-community.com>
+
+	* objc/encoding.c (objc_sizeof_type, _C_VOID): New case.
+
+Sun Apr 12 13:04:55 1998  Nikolay Yatsenko  (nikolay@osf.org)
+
+	* configure.in (i[34567]86-*-osf1*): New entry.
+	* i386/osf1-c[in].asm: New files for OSF/1.
+	* i386/osf1elf{,gdb}.h, i386/[xt]-osf1elf, i386/xm-osf1elf.h: Likewise.
+
+Sun Apr 12 10:03:51 1998  Noel Cragg  <noel@red-bean.com>
+
+	* fixincludes: Remove specification of parameters when renaming
+	functions in Alpha DEC Unix include files.
+
+Sun Apr 12 07:33:46 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* mips.c (large_int): Use HOST_WIDE_INT, not int.
+	(print_operand): Use HOST_WIDE_INT_PRINT_* macros.
+
+	* toplev.c (main): Sort order of handling of -d letters.
+	Use `F' instead of `D' for addressof_dump.
+
+	* libgcc2.c (_eh_compat): Deleted.
+	* Makefile.in (LIB2FUNCS): Delete _eh_compat.
+
+	* configure.in (alpha*-*-linux-gnu*): Don't include alpha/xm-linux.h.
+
+	* c-common.c (check_format_info): Properly test for nested pointers.
+
+	* pa.md (casesi0): Add missing mode for operand 0.
+
+	* function.c (purge_addressof_1, case MEM): If BLKmode, put ADDRESSOF
+	into stack.
+
+	* c-parse.in (label): Give warning if pedantic and label not integral.
+
+	* c-decl.c (grokdeclarator): Don't warn about return type if in
+	system header.
+
+	* reload.c (reload_nongroup): New variable.
+	(push{_secondary,}_reload): Initialize it.
+	(find_reloads): Compute it.
+	(debug_reload): Print it.
+	* reload.h (reload_nongroup): Declare.
+	* reload1.c (reload): Use reload_nongroup instead of local computation.
+	Check caller_save_spill_class against any nongroup reloads.
+	(reloads_conflict): No longer static.
+
+Sun Apr 12 05:52:18 1998  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* vax.md (call patterns): Operand 1 is always a CONST_INT.
+
+Sat Apr 11 16:01:11 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* convert.c (convert_to_{pointer,integer,real,complex}): Use switch.
+	Add missing integer-like types.
+	Simplify return of zero in error case.
+	(convert_to_pointer): Remove dubious abort.
+	(convert_to_integer, case POINTER_TYPE): Make recursive call.
+	(convert_to_integer, case COND_EXPR): Always convert arms.
+	* tree.c (type_precision): Deleted.
+
+	* cccp.c (do_warning): Give pedantic warning if -pedantic and not
+	in system file.
+	* cpplib.c (do_warning): Likewise.
+
+	* function.c (target_temp_slot_level): Define here.
+	(push_temp_slots_for_target, {get,set}_target_temp_slot_level): New.
+	* stmt.c (target_temp_slot_level): Don't define here.
+	* expr.h (temp_slot_level): New declaration.
+
+Fri Apr 10 16:35:48 1998  Paul Eggert  <eggert@twinsun.com>
+
+	* c-common.c (decl_attributes): Support strftime format checking.
+	(record_function_format, {check,init_function}_format_info): Likewise.
+	(enum format_type): New type.
+	(record_function_format): Now static; takes value of type
+	enum format_type instead of int.
+	(time_char_table): New constant.
+	(struct function_format_info): format_type member renamed from is_scan.
+	(check_format_info): Use `warning' rather than sprintf followed by
+	`warning', to avoid mishandling `%' in warnings.
+	Change a `pedwarn' to `warning'.
+	* c-tree.h (record_function_format): Remove decl.
+
+Thu Apr  2 17:34:27 1998  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* regclass.c (memory_move_secondary_cost): Protect uses of
+	SECONDARY_{INPUT,OUTPUT}_RELOAD_CLASS with #ifdef tests.
+
+Thu Apr  2 07:06:57 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* m68k.c (standard_68881_constant_p): Don't use fmovecr on 68060.
+
 Thu Apr  2 06:19:25 1998  Ken Raeburn  <raeburn@cygnus.com>
+
+	* Makefile.in (version.c): Put "cvs log" output in build directory.
 
 	* reload.h (MEMORY_MOVE_COST): Define here if not already defined.
 	(memory_move_secondary_cost): Declare.
@@ -23,13 +252,11 @@ Mon Mar 30 13:56:30 1998  Jim Wilson  <wilson@cygnus.com>
 
 Wed Mar 25 16:09:01 1998  Michael Meissner  <meissner@cygnus.com>
 
-	* rs6000.h (FUNCTION_ARG_PADDING): Cast result to be enum
-	direction.
+	* rs6000.h (FUNCTION_ARG_PADDING): Cast result to be enum direction.
 	(function_arg_padding): Declare.
 
 	* rs6000.c: Include stdlib.h if we have it.
-	(function_arg_padding): Change return type to int, cast enum's to
-	int.
+	(function_arg_padding): Change return type to int, cast enum's to int.
 
 	(From Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>)
 	* rs6000.c (rs6000_override_options): Change type of `i', `j' and
@@ -37,13 +264,12 @@ Wed Mar 25 16:09:01 1998  Michael Meissner  <meissner@cygnus.com>
 	(rs6000_file_start): Likewise for `i'.
 	(rs6000_replace_regno): Add default case in enumeration switch.
 	(output_epilog): Remove unused variable `i'.
-	(rs6000_longcall_ref): Remove unused variables `len', `p', `reg1'
-	and `reg2'.
+	(rs6000_longcall_ref): Remove unused variables `len', `p', `reg[12]'.
  
 	* rs6000.h (ADDITIONAL_REGISTER_NAMES): Add missing braces around
 	initializer.
 	(get_issue_rate, non_logical_cint_operand): Add prototype.
-	(rs6000_output_load_toc_table): Ditto.
+	(rs6000_output_load_toc_table): Likewise.
  
 	* rs6000.md (udivmodsi4): Add explicit braces to avoid ambiguous
 	`else'.

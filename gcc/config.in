@@ -92,11 +92,11 @@
 /* Define if you have the rindex function.  */
 #undef HAVE_RINDEX
 
-/* Define if you have the strchr function.  */
-#undef HAVE_STRCHR
-
 /* Define if you have the setrlimit function.  */
 #undef HAVE_SETRLIMIT
+
+/* Define if you have the strchr function.  */
+#undef HAVE_STRCHR
 
 /* Define if you have the strerror function.  */
 #undef HAVE_STRERROR
@@ -118,6 +118,9 @@
 
 /* Define if you have the <limits.h> header file.  */
 #undef HAVE_LIMITS_H
+
+/* Define if you have the <stab.h> header file.  */
+#undef HAVE_STAB_H
 
 /* Define if you have the <stddef.h> header file.  */
 #undef HAVE_STDDEF_H

@@ -390,6 +390,12 @@ int temp_slot_level;
 /* Current nesting level for variables in a block.  */
 
 int var_temp_slot_level;
+
+/* When temporaries are created by TARGET_EXPRs, they are created at
+   this level of temp_slot_level, so that they can remain allocated
+   until no longer needed.  CLEANUP_POINT_EXPRs define the lifetime
+   of TARGET_EXPRs.  */
+int target_temp_slot_level;
 
 /* This structure is used to record MEMs or pseudos used to replace VAR, any
    SUBREGs of VAR, and any MEMs containing VAR as an address.  We need to
@@ -1288,6 +1294,33 @@ push_temp_slots_for_block ()
   push_temp_slots ();
 
   var_temp_slot_level = temp_slot_level;
+}
+
+/* Likewise, but save the new level as the place to allocate temporaries
+   for TARGET_EXPRs.  */
+
+void
+push_temp_slots_for_target ()
+{
+  push_temp_slots ();
+
+  target_temp_slot_level = temp_slot_level;
+}
+
+/* Set and get the value of target_temp_slot_level.  The only
+   permitted use of these functions is to save and restore this value.  */
+
+int
+get_target_temp_slot_level ()
+{
+  return target_temp_slot_level;
+}
+
+void
+set_target_temp_slot_level (level)
+     int level;
+{
+  target_temp_slot_level = level;
 }
 
 /* Pop a temporary nesting level.  All slots in use in the current level
@@ -2785,7 +2818,8 @@ purge_addressof_1 (loc, insn, force)
       if (GET_CODE (sub) == MEM)
 	sub = gen_rtx_MEM (GET_MODE (x), copy_rtx (XEXP (sub, 0)));
 
-      if (GET_CODE (sub) == REG && MEM_VOLATILE_P (x))
+      if (GET_CODE (sub) == REG
+	  && (MEM_VOLATILE_P (x) || GET_MODE (x) == BLKmode))
 	{
 	  put_addressof_into_stack (XEXP (x, 0));
 	  return;

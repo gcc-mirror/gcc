@@ -1,3 +1,7 @@
+Wed May  6 00:09:36 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* Check in merge from gcc2.  See ChangeLog.12 for details.
+
 Tue May  5 14:33:49 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* c-common.c (scan_char_table): Separate 's' and 'c'.  'c' does not

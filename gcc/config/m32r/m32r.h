@@ -1286,7 +1286,7 @@ do {					\
 /* Compute the cost of moving data between registers and memory.  */
 /* Memory is 3 times as expensive as registers.
    ??? Is that the right way to look at it?  */
-#define MEMORY_MOVE_COST(MODE,CLASS,IN_P) \
+#define MEMORY_MOVE_COST(MODE,CLASS,IN) \
 (GET_MODE_SIZE (MODE) <= UNITS_PER_WORD ? 6 : 12)
 
 /* The cost of a branch insn.  */

@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Motorola 68000 family.
-   Copyright (C) 1987, 93-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 93, 94, 95, 96, 97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2194,11 +2194,9 @@ notice_update_cc (exp, insn)
 	}
       else if (ADDRESS_REG_P (SET_DEST (exp)))
 	{
-	  if (cc_status.value1
-	      && reg_overlap_mentioned_p (SET_DEST (exp), cc_status.value1))
+	  if (cc_status.value1 && modified_in_p (cc_status.value1, insn))
 	    cc_status.value1 = 0;
-	  if (cc_status.value2
-	      && reg_overlap_mentioned_p (SET_DEST (exp), cc_status.value2))
+	  if (cc_status.value2 && modified_in_p (cc_status.value2, insn))
 	    cc_status.value2 = 0; 
 	}
       else if (!FP_REG_P (SET_DEST (exp))
@@ -2415,7 +2413,7 @@ standard_68881_constant_p (x)
 #endif
 
   /* fmovecr must be emulated on the 68040 and 68060, so it shouldn't be
-     used at all. */
+     used at all on those chips. */
   if (TARGET_68040 || TARGET_68060)
     return 0;
 

@@ -161,16 +161,18 @@ char *getpwd ();
 #define FORCE_TEXT
 #endif
 
-#if defined (USG) || defined (NO_STAB_H) || defined (CROSS_COMPILE)
-#include "gstab.h"  /* If doing DBX on sysV, use our own stab.h.  */
+/* If there is a system stabs.h, use it.  Otherwise, use our own.  */
+
+#ifndef HAVE_STABS_H
+#include "gstab.h"
 #else
-#include <stab.h>  /* On BSD, use the system's stab.h.  */
+#include <stab.h>
 
 /* This is a GNU extension we need to reference in this file.  */
 #ifndef N_CATCH
 #define N_CATCH 0x54
 #endif
-#endif /* not USG */
+#endif
 
 #ifdef __GNU_STAB__
 #define STAB_CODE_TYPE enum __stab_debug_code
