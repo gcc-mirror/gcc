@@ -16871,7 +16871,8 @@ cat >> $CONFIG_STATUS <<\EOF
 test -z "$CONFIG_HEADERS" || echo timestamp > stamp-h
 d=include/bits
     rm -f $d/gthr.h $d/gthr-single.h $d/gthr-default.h
-    sed '/^#/s/\([A-Z_][A-Z_]*\)/_GLIBCPP_\1/g' <$d/gthr.h-in >$d/gthr.h
+    sed '/^#/s/\([A-Z_][A-Z_]*\)/_GLIBCPP_\1/g' <$d/gthr.h-in \
+      | sed 's,"gthr-,"bits/gthr-,' >$d/gthr.h
     sed 's/\(UNUSED\)/_GLIBCPP_\1/g' <$d/gthr-single.h-in \
       | sed 's/\(GCC[A-Z_]*_H\)/_GLIBCPP_\1/g' >$d/gthr-single.h
     sed 's/\(UNUSED\)/_GLIBCPP_\1/g' <$d/gthr-default.h-in \
