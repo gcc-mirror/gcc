@@ -339,11 +339,15 @@ EOF
   if [ "@libgcc_visibility@" = yes -a "$SHLIB_LINK" ]; then
     libgcc_a_objs=
     echo ""
+    echo "libgcc/${dir}/stacknote.s: stmp-dirs"
+    echo '	@( echo | $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) '${flags}' -S -o - -xc - | grep .note.GNU-stack || : ) > $@.tmp'
+    echo '	@mv -f $@.tmp $@'
+    echo ""
     for o in $libgcc_objs $libgcc_st_objs; do
       # .oS objects will have all non-local symbol definitions .hidden
       oS=`echo ${o} | sed s~${objext}'$~.oS~g'`
-      echo "${oS}: stmp-dirs ${o}"
-      echo '	$(NM_FOR_TARGET) '${SHLIB_NM_FLAGS} ${o}' | $(AWK) '\''NF == 3 { print "\t.hidden", $$3 }'\'' | $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) '${flags}' -r -nostdinc -nostdlib -o $@ '${o}' -xassembler -'
+      echo "${oS}: stmp-dirs libgcc/${dir}/stacknote.s ${o}"
+      echo '	( $(NM_FOR_TARGET) '${SHLIB_NM_FLAGS} ${o}' | $(AWK) '\''NF == 3 { print "\t.hidden", $$3 }'\''; cat libgcc/${dir}/stacknote.s ) | $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) '${flags}' -r -nostdinc -nostdlib -o $@ '${o}' -xassembler -'
       libgcc_a_objs="${libgcc_a_objs} ${oS}"
     done
   fi
@@ -430,6 +434,7 @@ echo '	  if [ -d $(stage)/$$dir ]; then true; else '$mkinstalldirs' $(stage)/$$d
 echo '	done'
 echo '	-for dir in '"${dirs}"'; do \'
 echo '	  mv $$dir/*'"${objext}"' $(stage)/$$dir; \'
+echo '	  test ! -f $$dir/stacknote.s || mv $$dir/stacknote.s $(stage)/$$dir; \'
 echo '	  test ! -f $$dir/libgcc.a || mv $$dir/lib* $(stage)/$$dir; \'
 echo '	done'
 

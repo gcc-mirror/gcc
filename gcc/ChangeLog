@@ -1,3 +1,8 @@
+2003-06-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* mklibgcc.in: Propagate .note.GNU-stack section if needed into
+	the .hidden assembly stubs.
+
 2003-06-06  H.J. Lu <hongjiu.lu@intel.com>
 
 	* config.gcc (extra_headers): Add emmintrin.h for i[34567]86-*-*
