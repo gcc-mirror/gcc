@@ -1,5 +1,7 @@
 Sat Sep 22 09:09:32 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* varasm.c (output_constant): Fix unused variable warning.
+
 	* attribs.c: New file, from c-common.c.
 	(attribute_tables): Now four elements.
 	(format_attribute_table, lang_attribute_common): New variables.
