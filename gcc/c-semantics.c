@@ -854,8 +854,8 @@ expand_stmt (t)
 	}
 
       /* Restore saved state.  */
-      current_stmt_tree ()->stmts_are_full_exprs_p = 
-	saved_stmts_are_full_exprs_p;
+      current_stmt_tree ()->stmts_are_full_exprs_p
+	= saved_stmts_are_full_exprs_p;
 
       /* Go on to the next statement in this scope.  */
       t = TREE_CHAIN (t);
