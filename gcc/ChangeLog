@@ -1,5 +1,10 @@
 2002-09-12  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* cselib.c: Fix comment formatting.
+	* gengtype.c: Likewise.
+
+2002-09-12  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.md (udivmodqi4): Do not use an expander.
 	(udivmodhi4): Likewise.
 

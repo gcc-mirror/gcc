@@ -118,7 +118,7 @@ do_typedef (s, t, pos)
   typedefs = p;
 }
 
-/* Return the type previously defined for S.  Use POS to report errors.   */
+/* Return the type previously defined for S.  Use POS to report errors.  */
 
 type_p
 resolve_typedef (s, pos)
