@@ -1489,6 +1489,10 @@ staticp (tree arg)
 	      && ! DECL_NON_ADDR_CONST_P (arg)
 	      ? arg : NULL);
 
+    case CONST_DECL:
+      return ((TREE_STATIC (arg) || DECL_EXTERNAL (arg))
+	      ? arg : NULL);
+
     case CONSTRUCTOR:
       return TREE_STATIC (arg) ? arg : NULL;
 
