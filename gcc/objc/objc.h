@@ -36,7 +36,11 @@ extern "C" {
 /*
 ** Definition of the boolean type.  
 */
+#ifdef __vxworks
+typedef int BOOL;
+#else
 typedef unsigned char  BOOL;
+#endif
 #define YES   (BOOL)1
 #define NO    (BOOL)0
 
