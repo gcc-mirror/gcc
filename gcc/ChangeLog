@@ -1,5 +1,13 @@
 2002-10-24  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config.gcc (mips64vr-*-elf*, mips64vrel-*-elf*): Add
+	MIPS_MARCH_CONTROLS_SOFT_FLOAT=1 to $tm_defines.
+	* config/mips/mips.c (MIPS_MARCH_CONTROLS_SOFT_FLOAT): Default to 0.
+	(override_options): Base default setting of MASK_SOFT_FLOAT on -march
+	if MIPS_MARCH_CONTROLS_SOFT_FLOAT.
+
+2002-10-24  Richard Sandiford  <rsandifo@redhat.com>
+
 	* optabs.c (expand_binop): Don't reuse the shift target in the
 	middle of shift sequences.
 
