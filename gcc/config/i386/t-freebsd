@@ -1,0 +1,4 @@
+# Don't run fixproto
+STMP_FIXPROTO =
+# Use only native include files
+USER_H =
