@@ -1,3 +1,19 @@
+2003-07-12  Zack Weinberg  <zack@codesourcery.com>
+
+	* aclocal.m4 (gcc_AC_CHECK_TYPE): Clone of AC_CHECK_TYPE,
+	uses three-argument AC_DEFINE so no acconfig.h entries are
+	needed.
+	(_gcc_COMPUTE_GAS_VERSION): Also provide gcc_cv_gas_vers
+	which contains the GAS version number as a scaled integer.
+	(gcc_GAS_VERSION_GTE_IFELSE): Use gcc_cv_gas_vers.  Add
+	ability to check for ELF assembler.
+	(gcc_GAS_CHECK_FEATURE): New macro.
+	* configure.in: Use gcc_AC_CHECK_TYPE.  Rewrite all
+	assembler feature checks using gcc_GAS_CHECK_FEATURE.
+	Use three-argument AC_DEFINE everywhere.
+	* acconfig.h: Deleted.
+	* config.in, configure: Regenerate.
+
 2003-07-12  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* fixinc/inclhack.def (struct_sockaddr): Avoid "fixing" sockaddr_in

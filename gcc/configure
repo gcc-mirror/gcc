@@ -5767,6 +5767,9 @@ done
 gcc_cv_gas_major_version=`expr "$gcc_cv_gas_version" : "VERSION=\([0-9]*\)"`
 gcc_cv_gas_minor_version=`expr "$gcc_cv_gas_version" : "VERSION=[0-9]*\.\([0-9]*\)"`
 gcc_cv_gas_patch_version=`expr "$gcc_cv_gas_version" : "VERSION=[0-9]*\.[0-9]*\.\([0-9]*\)"`
+gcc_cv_gas_vers=`expr \( \( $gcc_cv_gas_major_version \* 1000 \) \
+			    + $gcc_cv_gas_minor_version \) \* 1000 \
+			    + $gcc_cv_gas_patch_version`
 
   rm -f as$host_exeext
   $symbolic_link ../gas/as-new$host_exeext as$host_exeext 2>/dev/null
@@ -5855,7 +5858,7 @@ esac
 # build->target linker and hope that it will have the same features
 # as the host->target linker we'll be using.
 echo $ac_n "checking what linker to use""... $ac_c" 1>&6
-echo "configure:5859: checking what linker to use" >&5
+echo "configure:5862: checking what linker to use" >&5
 in_tree_ld=no
 gcc_cv_ld=
 gcc_cv_gld_major_version=
@@ -5963,7 +5966,7 @@ esac
 # Figure out what nm we will be using.
 gcc_cv_binutils_srcdir=`echo $srcdir | sed -e 's,/gcc$,,'`/binutils
 echo $ac_n "checking what nm to use""... $ac_c" 1>&6
-echo "configure:5967: checking what nm to use" >&5
+echo "configure:5970: checking what nm to use" >&5
 in_tree_nm=no
 if test -x nm$host_exeext; then
 	gcc_cv_nm=./nm$host_exeext
@@ -5986,7 +5989,7 @@ esac
 
 # Figure out what objdump we will be using.
 echo $ac_n "checking what objdump to use""... $ac_c" 1>&6
-echo "configure:5990: checking what objdump to use" >&5
+echo "configure:5993: checking what objdump to use" >&5
 in_tree_objdump=no
 if test -x objdump$host_exeext; then
 	gcc_cv_objdump=./objdump$host_exeext
@@ -6010,305 +6013,318 @@ case $in_tree_objdump in
 esac
 
 # Figure out what assembler alignment features are present.
-echo $ac_n "checking assembler alignment features""... $ac_c" 1>&6
-echo "configure:6015: checking assembler alignment features" >&5
-gcc_cv_as_alignment_features=none
-if test $in_tree_gas = yes; then
-  # Gas version 2.6 and later support for .balign and .p2align.
-   if test $gcc_cv_gas_major_version -eq 2 \
-&& test $gcc_cv_gas_minor_version -ge 6 \
-|| test $gcc_cv_gas_major_version -gt 2 ; then
+echo $ac_n "checking assembler for .balign and .p2align""... $ac_c" 1>&6
+echo "configure:6018: checking assembler for .balign and .p2align" >&5
+if eval "test \"`echo '$''{'gcc_cv_as_balign_and_p2align'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  gcc_cv_as_balign_and_p2align=no
+    if test $in_tree_gas = yes; then
+    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 6 \) \* 1000 + 0`
+  then gcc_cv_as_balign_and_p2align=yes
+fi
+  elif test x$gcc_cv_as != x; then
+    echo '.balign 4
+.p2align 2' > conftest.s
+    if { ac_try='$gcc_cv_as  -o conftest.o conftest.s >&5'; { (eval echo configure:6030: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }
+    then
+	gcc_cv_as_balign_and_p2align=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
 
-
-    gcc_cv_as_alignment_features=".balign and .p2align"
-    cat >> confdefs.h <<\EOF
+echo "$ac_t""$gcc_cv_as_balign_and_p2align" 1>&6
+if test $gcc_cv_as_balign_and_p2align = yes; then
+  cat >> confdefs.h <<\EOF
 #define HAVE_GAS_BALIGN_AND_P2ALIGN 1
 EOF
 
-  
-
 fi
 
-  # Gas version 2.8 and later support specifying the maximum
-  # bytes to skip when using .p2align.
-   if test $gcc_cv_gas_major_version -eq 2 \
-&& test $gcc_cv_gas_minor_version -ge 8 \
-|| test $gcc_cv_gas_major_version -gt 2 ; then
+echo $ac_n "checking assembler for .p2align with maximum skip""... $ac_c" 1>&6
+echo "configure:6050: checking assembler for .p2align with maximum skip" >&5
+if eval "test \"`echo '$''{'gcc_cv_as_max_skip_p2align'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  gcc_cv_as_max_skip_p2align=no
+    if test $in_tree_gas = yes; then
+    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 8 \) \* 1000 + 0`
+  then gcc_cv_as_max_skip_p2align=yes
+fi
+  elif test x$gcc_cv_as != x; then
+    echo '.p2align 4,,7' > conftest.s
+    if { ac_try='$gcc_cv_as  -o conftest.o conftest.s >&5'; { (eval echo configure:6061: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }
+    then
+	gcc_cv_as_max_skip_p2align=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
 
-
-    gcc_cv_as_alignment_features=".p2align including maximum skip"
-    cat >> confdefs.h <<\EOF
+echo "$ac_t""$gcc_cv_as_max_skip_p2align" 1>&6
+if test $gcc_cv_as_max_skip_p2align = yes; then
+  cat >> confdefs.h <<\EOF
 #define HAVE_GAS_MAX_SKIP_P2ALIGN 1
 EOF
 
-  
-
 fi
 
-elif test x$gcc_cv_as != x; then
-	# Check if we have .balign and .p2align
-	echo ".balign  4" > conftest.s
-	echo ".p2align  2" >> conftest.s
-	if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
-		gcc_cv_as_alignment_features=".balign and .p2align"
-		cat >> confdefs.h <<\EOF
-#define HAVE_GAS_BALIGN_AND_P2ALIGN 1
-EOF
-
-	fi
-	rm -f conftest.s conftest.o
-	# Check if specifying the maximum bytes to skip when
-	# using .p2align is supported.
-	echo ".p2align 4,,7" > conftest.s
-	if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
-		gcc_cv_as_alignment_features=".p2align including maximum skip"
-		cat >> confdefs.h <<\EOF
-#define HAVE_GAS_MAX_SKIP_P2ALIGN 1
-EOF
-
-	fi
-	rm -f conftest.s conftest.o
+echo $ac_n "checking assembler for working .subsection -1""... $ac_c" 1>&6
+echo "configure:6081: checking assembler for working .subsection -1" >&5
+if eval "test \"`echo '$''{'gcc_cv_as_subsection_m1'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  gcc_cv_as_subsection_m1=no
+    if test $in_tree_gas = yes; then
+    if test $in_tree_gas_is_elf = yes \
+  && test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 9 \) \* 1000 + 0`
+  then gcc_cv_as_subsection_m1=yes
 fi
-echo "$ac_t""$gcc_cv_as_alignment_features" 1>&6
-
-echo $ac_n "checking assembler subsection support""... $ac_c" 1>&6
-echo "configure:6076: checking assembler subsection support" >&5
-gcc_cv_as_subsections=no
-if test $in_tree_gas = yes ; then
-   if test $gcc_cv_gas_major_version -eq 2 \
-&& test $gcc_cv_gas_minor_version -ge 9 \
-|| test $gcc_cv_gas_major_version -gt 2 ; then
-
-
-    test $in_tree_gas_is_elf = yes \
-	&& gcc_cv_as_subsections="working .subsection -1"
-  
-
-fi
-
-elif test x$gcc_cv_as != x; then
-	# Check if we have .subsection
-	echo ".subsection 1" > conftest.s
-	if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
-		gcc_cv_as_subsections=".subsection"
-		if test x$gcc_cv_nm != x; then
-			cat > conftest.s <<EOF
-conftest_label1: .word 0
+  elif test x$gcc_cv_as != x; then
+    echo 'conftest_label1: .word 0
 .subsection -1
 conftest_label2: .word 0
-.previous
-EOF
-			if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
-				$gcc_cv_nm conftest.o | grep conftest_label1 > conftest.nm1
-				$gcc_cv_nm conftest.o | grep conftest_label2 | sed -e 's/label2/label1/' > conftest.nm2
-				if cmp conftest.nm1 conftest.nm2 > /dev/null 2>&1; then
-					:
-				else
-					gcc_cv_as_subsections="working .subsection -1"
-				fi
-			fi
-		fi
-	fi
-	rm -f conftest.s conftest.o conftest.nm1 conftest.nm2
+.previous' > conftest.s
+    if { ac_try='$gcc_cv_as  -o conftest.o conftest.s >&5'; { (eval echo configure:6096: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }
+    then
+	if test x$gcc_cv_nm != x; then
+    $gcc_cv_nm conftest.o | grep conftest_label1 > conftest.nm1
+    $gcc_cv_nm conftest.o | grep conftest_label2 | sed -e 's/label2/label1/' > conftest.nm2
+    if cmp conftest.nm1 conftest.nm2 > /dev/null 2>&1
+    then :
+    else gcc_cv_as_subsection_m1=yes
+    fi
+    rm -f conftest.nm1 conftest.nm2
+  fi
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
 fi
-if test x"$gcc_cv_as_subsections" = x"working .subsection -1"; then
-	cat >> confdefs.h <<\EOF
+
+echo "$ac_t""$gcc_cv_as_subsection_m1" 1>&6
+if test $gcc_cv_as_subsection_m1 = yes; then
+  cat >> confdefs.h <<\EOF
 #define HAVE_GAS_SUBSECTION_ORDERING 1
 EOF
 
 fi
-echo "$ac_t""$gcc_cv_as_subsections" 1>&6
 
-echo $ac_n "checking assembler weak support""... $ac_c" 1>&6
-echo "configure:6124: checking assembler weak support" >&5
-gcc_cv_as_weak=no
-if test $in_tree_gas = yes ; then
-   if test $gcc_cv_gas_major_version -eq 2 \
-&& test $gcc_cv_gas_minor_version -ge 2 \
-|| test $gcc_cv_gas_major_version -gt 2 ; then
-
-
-    gcc_cv_as_weak="yes"
-  
-
+echo $ac_n "checking assembler for .weak""... $ac_c" 1>&6
+echo "configure:6124: checking assembler for .weak" >&5
+if eval "test \"`echo '$''{'gcc_cv_as_weak'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  gcc_cv_as_weak=no
+    if test $in_tree_gas = yes; then
+    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 2 \) \* 1000 + 0`
+  then gcc_cv_as_weak=yes
+fi
+  elif test x$gcc_cv_as != x; then
+    echo '	.weak foobar' > conftest.s
+    if { ac_try='$gcc_cv_as  -o conftest.o conftest.s >&5'; { (eval echo configure:6135: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }
+    then
+	gcc_cv_as_weak=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
 fi
 
-elif test x$gcc_cv_as != x; then
-	# Check if we have .weak
-	echo "	.weak foobar" > conftest.s
-	if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
-		gcc_cv_as_weak="yes"
-	fi
-	rm -f conftest.s conftest.o conftest.nm1 conftest.nm2
-fi
-if test x"$gcc_cv_as_weak" = xyes; then
-	cat >> confdefs.h <<\EOF
+echo "$ac_t""$gcc_cv_as_weak" 1>&6
+if test $gcc_cv_as_weak = yes; then
+  cat >> confdefs.h <<\EOF
 #define HAVE_GAS_WEAK 1
 EOF
 
 fi
-echo "$ac_t""$gcc_cv_as_weak" 1>&6
 
-echo $ac_n "checking assembler hidden support""... $ac_c" 1>&6
-echo "configure:6154: checking assembler hidden support" >&5
-gcc_cv_as_hidden=no
-if test $in_tree_gas = yes ; then
-   if test $gcc_cv_gas_major_version -eq 2 \
-&& (test $gcc_cv_gas_minor_version -gt 12 \
-    || (test $gcc_cv_gas_minor_version -eq 12 \
-        && test $gcc_cv_gas_patch_version -ge 1 )) \
-|| test $gcc_cv_gas_major_version -gt 2 ; then
-
-
-    test $in_tree_gas_is_elf = yes && gcc_cv_as_hidden="yes"
-  
-
+# .hidden needs to be supported in both the assembler and the linker,
+# because GNU LD versions before 2.12.1 have buggy support for STV_HIDDEN.
+# This is irritatingly difficult to feature test for; we have to check the
+# date string after the version number.  If we've got an in-tree
+# ld, we don't know its patchlevel version, so we set the baseline at 2.13
+# to be safe.
+# The gcc_GAS_CHECK_FEATURE call just sets a cache variable.
+echo $ac_n "checking assembler for .hidden""... $ac_c" 1>&6
+echo "configure:6162: checking assembler for .hidden" >&5
+if eval "test \"`echo '$''{'gcc_cv_as_hidden'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  gcc_cv_as_hidden=no
+    if test $in_tree_gas = yes; then
+    if test $in_tree_gas_is_elf = yes \
+  && test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 13 \) \* 1000 + 0`
+  then gcc_cv_as_hidden=yes
 fi
-
-elif test x$gcc_cv_as != x; then
-	# Check if we have .hidden
-	echo "	.hidden foobar" > conftest.s
-	echo "foobar:" >> conftest.s
-	if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
-		gcc_cv_as_hidden="yes"
-	fi
-	rm -f conftest.s conftest.o conftest.nm1 conftest.nm2
-
- 	# GNU LD versions before 2.12.1 have buggy support for STV_HIDDEN.
-	# This is irritatingly difficult to feature test for.  Look for 
-	# the date string after the version number.
-	ld_ver=`$gcc_cv_ld --version 2>/dev/null | head -1`
-	if echo "$ld_ver" | grep GNU > /dev/null; then
-               ld_vers=`echo $ld_ver | sed -n \
-	       -e 's,^.*[	 ]\([0-9][0-9]*\.[0-9][0-9]*\)$,\1,p' \
-	       -e 's,^.*[	 ]\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)$,\1,p' \
-	       -e 's,^.*[	 ]\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)$,\1,p' \
-	       -e 's,^.*[	 ]\([0-9][0-9]*\.[0-9][0-9]*\)[	 ].*$,\1,p' \
-	       -e 's,^.*[	 ]\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)[	 ].*$,\1,p' \
-	       -e 's,^.*[	 ]\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)[	 ].*$,\1,p'`
-               ld_date=`echo $ld_ver | sed -n 's,^.*\([2-9][0-9][0-9][0-9]\)[-]*\([01][0-9]\)[-]*\([0-3][0-9]\).*$,\1\2\3,p'`
-		if test 0"$ld_date" -lt 20020404; then
-			if test -n "$ld_date"; then
-				# If there was date string, but was earlier than 2002-04-04, fail
-				gcc_cv_as_hidden="no"
-			elif test -z "$ld_vers"; then
-				# If there was no date string nor ld version number, something is wrong
-				gcc_cv_as_hidden="no"
-			else
-				ld_vers_major=`expr "$ld_vers" : '\([0-9]*\)'`
-				ld_vers_minor=`expr "$ld_vers" : '[0-9]*\.\([0-9]*\)'`
-				ld_vers_patch=`expr "$ld_vers" : '[0-9]*\.[0-9]*\.\([0-9]*\)'`
-				test -z "$ld_vers_patch" && ld_vers_patch=0
-				if test "$ld_vers_major" -lt 2; then
-					gcc_cv_as_hidden="no"
-				elif test "$ld_vers_major" -eq 2 -a "$ld_vers_minor" -lt 12; then
-					gcc_cv_as_hidden="no"
-				elif test "$ld_vers_major" -eq 2 -a "$ld_vers_minor" -eq 12 \
-					  -a "$ld_vers_patch" -eq 0; then
-					gcc_cv_as_hidden="no"
-				fi
-			fi
-		fi
-	fi
-fi
-case "$target" in
-  mips-sgi-irix6*)
-    if test x"$gnu_ld_flag" = x"no"; then
-      # Even if using gas with .hidden support, the resulting object files
-      # cannot be linked with the IRIX 6 O32 linker.  With the N32 and
-      # N64 linkers, the problem is that the linker refuses to accept
-      # -call_shared (passed by default to the linker) and -r (used to
-      # link the object file generated without .hidden directives with
-      # one that hides symbols), so we also lose.
-      gcc_cv_as_hidden=no
+  elif test x$gcc_cv_as != x; then
+    echo '	.hidden foobar
+foobar:' > conftest.s
+    if { ac_try='$gcc_cv_as  -o conftest.o conftest.s >&5'; { (eval echo configure:6175: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }
+    then
+	gcc_cv_as_hidden=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
     fi
-    ;;
-esac
-if test x"$gcc_cv_as_hidden" = xyes; then
-	cat >> confdefs.h <<\EOF
+    rm -f conftest.o conftest.s
+  fi
+fi
+
+echo "$ac_t""$gcc_cv_as_hidden" 1>&6
+
+
+echo $ac_n "checking linker for .hidden support""... $ac_c" 1>&6
+echo "configure:6190: checking linker for .hidden support" >&5
+if eval "test \"`echo '$''{'gcc_cv_ld_hidden'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  if test $in_tree_ld = yes ; then
+  gcc_cv_ld_hidden=no
+  if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 13 -o "$gcc_cv_gld_major_version" -gt 2 \
+     && test $in_tree_ld_is_elf = yes; then
+     gcc_cv_ld_hidden=yes
+  fi
+else
+  gcc_cv_ld_hidden=yes
+  ld_ver=`$gcc_cv_ld --version 2>/dev/null | head -1`
+  if echo "$ld_ver" | grep GNU > /dev/null; then
+    ld_vers=`echo $ld_ver | sed -n \
+	-e 's,^.*[	 ]\([0-9][0-9]*\.[0-9][0-9]*\)$,\1,p' \
+	-e 's,^.*[	 ]\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)$,\1,p' \
+	-e 's,^.*[	 ]\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)$,\1,p' \
+	-e 's,^.*[	 ]\([0-9][0-9]*\.[0-9][0-9]*\)[	 ].*$,\1,p' \
+	-e 's,^.*[	 ]\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)[	 ].*$,\1,p' \
+	-e 's,^.*[	 ]\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)[	 ].*$,\1,p'`
+    ld_date=`echo $ld_ver | sed -n 's,^.*\([2-9][0-9][0-9][0-9]\)[-]*\([01][0-9]\)[-]*\([0-3][0-9]\).*$,\1\2\3,p'`
+    if test 0"$ld_date" -lt 20020404; then
+      if test -n "$ld_date"; then
+	# If there was date string, but was earlier than 2002-04-04, fail
+	gcc_cv_ld_hidden=no
+      elif test -z "$ld_vers"; then
+	# If there was no date string nor ld version number, something is wrong
+	gcc_cv_ld_hidden=no
+      else
+	ld_vers_major=`expr "$ld_vers" : '\([0-9]*\)'`
+	ld_vers_minor=`expr "$ld_vers" : '[0-9]*\.\([0-9]*\)'`
+	ld_vers_patch=`expr "$ld_vers" : '[0-9]*\.[0-9]*\.\([0-9]*\)'`
+	test -z "$ld_vers_patch" && ld_vers_patch=0
+	if test "$ld_vers_major" -lt 2; then
+	  gcc_cv_ld_hidden=no
+	elif test "$ld_vers_major" -eq 2 -a "$ld_vers_minor" -lt 12; then
+	  gcc_cv_ld_hidden="no"
+	elif test "$ld_vers_major" -eq 2 -a "$ld_vers_minor" -eq 12 -a "$ld_vers_patch" -eq 0; then
+	  gcc_cv_ld_hidden=no
+	fi
+      fi
+    fi
+  else
+    case "$target" in
+      mips-sgi-irix6*)
+        if test x"$gnu_ld_flag" = x"no"; then
+          # Even if using gas with .hidden support, the resulting object files
+          # cannot be linked with the IRIX 6 O32 linker.  With the N32 and
+          # N64 linkers, the problem is that the linker refuses to accept
+          # -call_shared (passed by default to the linker) and -r (used to
+          # link the object file generated without .hidden directives with
+          # one that hides symbols), so we also lose.
+          gcc_cv_ld_hidden=no
+        fi
+     ;;
+    esac
+  fi
+fi
+fi
+
+echo "$ac_t""$gcc_cv_ld_hidden" 1>&6
+libgcc_visibility=no
+
+if test $gcc_cv_as_hidden = yes && test $gcc_cv_ld_hidden=yes; then
+  libgcc_visibility=yes
+  cat >> confdefs.h <<\EOF
 #define HAVE_GAS_HIDDEN 1
 EOF
 
 fi
-echo "$ac_t""$gcc_cv_as_hidden" 1>&6
-libgcc_visibility=$gcc_cv_as_hidden
 
-
-echo $ac_n "checking assembler leb128 support""... $ac_c" 1>&6
-echo "configure:6239: checking assembler leb128 support" >&5
-gcc_cv_as_leb128=no
-if test $in_tree_gas = yes ; then
-   if test $gcc_cv_gas_major_version -eq 2 \
-&& test $gcc_cv_gas_minor_version -ge 11 \
-|| test $gcc_cv_gas_major_version -gt 2 ; then
-
-
-    test $in_tree_gas_is_elf = yes && gcc_cv_as_leb128="yes"
-  
-
+# Check if we have .[us]leb128, and support symbol arithmetic with it.
+echo $ac_n "checking assembler for .sleb128 and .uleb128""... $ac_c" 1>&6
+echo "configure:6264: checking assembler for .sleb128 and .uleb128" >&5
+if eval "test \"`echo '$''{'gcc_cv_as_leb128'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  gcc_cv_as_leb128=no
+    if test $in_tree_gas = yes; then
+    if test $in_tree_gas_is_elf = yes \
+  && test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 11 \) \* 1000 + 0`
+  then gcc_cv_as_leb128=yes
 fi
-
-elif test x$gcc_cv_as != x; then
-	# Check if we have .[us]leb128, and support symbol arithmetic with it.
-	cat > conftest.s <<EOF
-	.data
+  elif test x$gcc_cv_as != x; then
+    echo '	.data
 	.uleb128 L2 - L1
 L1:
 	.uleb128 1280
 	.sleb128 -1010
-L2:
-EOF
-	if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
-		gcc_cv_as_leb128="yes"
-
-		# GAS versions before 2.11 do not support uleb128,
-		# despite appearing to.
-		# ??? There exists an elf-specific test that will crash
-		# the assembler.  Perhaps it's better to figure out whether
-		# arbitrary sections are supported and try the test.
-		as_ver=`$gcc_cv_as --version 2>/dev/null | head -1`
-		if echo "$as_ver" | grep GNU > /dev/null; then
-			as_ver=`echo $as_ver | sed -e 's/GNU assembler \([0-9.][0-9.]*\).*/\1/'`
-			as_major=`echo $as_ver | sed 's/\..*//'`
-			as_minor=`echo $as_ver | sed 's/[^.]*\.\([0-9]*\).*/\1/'`
-			if test $as_major -eq 2 -a $as_minor -lt 11; then
-				gcc_cv_as_leb128="no"
-			fi
-		fi
-	fi
-	rm -f conftest.s conftest.o conftest.nm1 conftest.nm2
+L2:' > conftest.s
+    if { ac_try='$gcc_cv_as  -o conftest.o conftest.s >&5'; { (eval echo configure:6281: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }
+    then
+	# GAS versions before 2.11 do not support uleb128,
+  # despite appearing to.
+  # ??? There exists an elf-specific test that will crash
+  # the assembler.  Perhaps it's better to figure out whether
+  # arbitrary sections are supported and try the test.
+  as_ver=`$gcc_cv_as --version 2>/dev/null | head -1`
+  if echo "$as_ver" | grep GNU > /dev/null; then
+    as_ver=`echo $as_ver | sed -e 's/GNU assembler \([0-9.][0-9.]*\).*/\1/'`
+    as_major=`echo $as_ver | sed 's/\..*//'`
+    as_minor=`echo $as_ver | sed 's/[^.]*\.\([0-9]*\).*/\1/'`
+    if test $as_major -eq 2 && test $as_minor -lt 11
+    then :
+    else gcc_cv_as_leb128=yes
+    fi
+  fi
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
 fi
-if test x"$gcc_cv_as_leb128" = xyes; then
-	cat >> confdefs.h <<\EOF
+
+echo "$ac_t""$gcc_cv_as_leb128" 1>&6
+if test $gcc_cv_as_leb128 = yes; then
+  cat >> confdefs.h <<\EOF
 #define HAVE_AS_LEB128 1
 EOF
 
 fi
-echo "$ac_t""$gcc_cv_as_leb128" 1>&6
 
-echo $ac_n "checking assembler eh_frame optimization""... $ac_c" 1>&6
-echo "configure:6291: checking assembler eh_frame optimization" >&5
-gcc_cv_as_eh_frame=no
-if test $in_tree_gas = yes ; then
-   if test $gcc_cv_gas_major_version -eq 2 \
-&& test $gcc_cv_gas_minor_version -ge 12 \
-|| test $gcc_cv_gas_major_version -gt 2 ; then
-
-
-    test $in_tree_gas_is_elf = yes && gcc_cv_as_eh_frame="yes"
-  
-
+# GAS versions up to and including 2.11.0 may mis-optimize
+# .eh_frame data.
+echo $ac_n "checking assembler for eh_frame optimization""... $ac_c" 1>&6
+echo "configure:6317: checking assembler for eh_frame optimization" >&5
+if eval "test \"`echo '$''{'gcc_cv_as_eh_frame'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  gcc_cv_as_eh_frame=no
+    if test $in_tree_gas = yes; then
+    if test $in_tree_gas_is_elf = yes \
+  && test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 12 \) \* 1000 + 0`
+  then gcc_cv_as_eh_frame=yes
 fi
-
-elif test x$gcc_cv_as != x; then
-	# Check if this is GAS.
-	as_ver=`$gcc_cv_as --version < /dev/null 2> /dev/null | head -1`
-	rm -f a.out 2> /dev/null
-	if echo "$as_ver" | grep GNU > /dev/null; then
-		# Versions up to and including 2.11.0 may mis-optimize
-		# .eh_frame data.  Try something.
-		cat > conftest.s <<EOF
-	.text
+  elif test x$gcc_cv_as != x; then
+    echo '	.text
 .LFB1:
 	.4byte	0
 .L1:
@@ -6339,74 +6355,85 @@ __FRAME_BEGIN__:
 	.4byte	.LFE1-.LFB1
 	.byte	0x4
 	.4byte	.L1-.LFB1
-.LEFDE1:
-EOF
-		cat > conftest.lit <<EOF
+.LEFDE1:' > conftest.s
+    if { ac_try='$gcc_cv_as  -o conftest.o conftest.s >&5'; { (eval echo configure:6360: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }
+    then
+	  cat > conftest.lit <<EOF
  0000 10000000 00000000 017a0001 781a0004  .........z..x...
  0010 01000000 12000000 18000000 00000000  ................
  0020 08000000 04080000 0044               .........D      
 EOF
-		cat > conftest.big <<EOF
+  cat > conftest.big <<EOF
  0000 00000010 00000000 017a0001 781a0004  .........z..x...
  0010 00000001 00000012 00000018 00000000  ................
  0020 00000008 04000000 0844               .........D      
 EOF
-		# If the assembler didn't choke, and we can objdump,
-		# and we got the correct data, then succeed.
-		if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1 \
-		   && $gcc_cv_objdump -s -j .eh_frame conftest.o 2>/dev/null \
-		      | tail -3 > conftest.got \
-		   && { cmp conftest.lit conftest.got > /dev/null 2>&1 \
-		        || cmp conftest.big conftest.got > /dev/null 2>&1; }
-		then
-			gcc_cv_as_eh_frame="yes"
-		else
-			gcc_cv_as_eh_frame="bad"
-			if $gcc_cv_as -o conftest.o --traditional-format /dev/null; then
-				cat >> confdefs.h <<\EOF
+  # If the assembler didn't choke, and we can objdump,
+  # and we got the correct data, then succeed.
+  if test x$gcc_cv_objdump != x \
+  && $gcc_cv_objdump -s -j .eh_frame conftest.o 2>/dev/null \
+     | tail -3 > conftest.got \
+  && { cmp conftest.lit conftest.got > /dev/null 2>&1 \
+    || cmp conftest.big conftest.got > /dev/null 2>&1; }
+  then
+    gcc_cv_as_eh_frame=yes
+  elif { ac_try='$gcc_cv_as -o conftest.o --traditional-format /dev/null'; { (eval echo configure:6381: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }; then
+    gcc_cv_as_eh_frame=buggy
+  else
+    # Uh oh, what do we do now?
+    gcc_cv_as_eh_frame=no
+  fi
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+
+echo "$ac_t""$gcc_cv_as_eh_frame" 1>&6
+
+
+if test $gcc_cv_as_eh_frame = buggy; then
+  cat >> confdefs.h <<\EOF
 #define USE_AS_TRADITIONAL_FORMAT 1
 EOF
 
-			fi
-		fi
-	fi
-	rm -f conftest.*
-fi
-echo "$ac_t""$gcc_cv_as_eh_frame" 1>&6
-
-echo $ac_n "checking assembler section merging support""... $ac_c" 1>&6
-echo "configure:6379: checking assembler section merging support" >&5
-gcc_cv_as_shf_merge=no
-if test $in_tree_gas = yes ; then
-   if test $gcc_cv_gas_major_version -eq 2 \
-&& test $gcc_cv_gas_minor_version -ge 12 \
-|| test $gcc_cv_gas_major_version -gt 2 ; then
-
-
-    test $in_tree_gas_is_elf = yes && gcc_cv_as_shf_merge="yes"
-  
-
 fi
 
-elif test x$gcc_cv_as != x; then
-	# Check if we support SHF_MERGE sections
-	echo '.section .rodata.str, "aMS", @progbits, 1' > conftest.s
-	if $gcc_cv_as --fatal-warnings -o conftest.o conftest.s > /dev/null 2>&1; then
-		gcc_cv_as_shf_merge=yes
-	fi
-	rm -f conftest.s conftest.o
+echo $ac_n "checking assembler for section merging support""... $ac_c" 1>&6
+echo "configure:6406: checking assembler for section merging support" >&5
+if eval "test \"`echo '$''{'gcc_cv_as_shf_merge'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  gcc_cv_as_shf_merge=no
+    if test $in_tree_gas = yes; then
+    if test $in_tree_gas_is_elf = yes \
+  && test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 12 \) \* 1000 + 0`
+  then gcc_cv_as_shf_merge=yes
 fi
-if test x"$gcc_cv_as_shf_merge" = xyes; then
-	cat >> confdefs.h <<\EOF
+  elif test x$gcc_cv_as != x; then
+    echo '.section .rodata.str, "aMS", @progbits, 1' > conftest.s
+    if { ac_try='$gcc_cv_as --fatal-warnings -o conftest.o conftest.s >&5'; { (eval echo configure:6418: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }
+    then
+	gcc_cv_as_shf_merge=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+
+echo "$ac_t""$gcc_cv_as_shf_merge" 1>&6
+if test $gcc_cv_as_shf_merge = yes; then
+  cat >> confdefs.h <<\EOF
 #define HAVE_GAS_SHF_MERGE 1
 EOF
 
 fi
-echo "$ac_t""$gcc_cv_as_shf_merge" 1>&6
 
-echo $ac_n "checking assembler thread-local storage support""... $ac_c" 1>&6
-echo "configure:6409: checking assembler thread-local storage support" >&5
-gcc_cv_as_tls=no
+# Thread-local storage - the check is heavily parametrized.
 conftest_s=
 tls_first_major=
 tls_first_minor=
@@ -6583,58 +6610,57 @@ foo:	.long	25
 	;;
 esac
 if test -z "$tls_first_major"; then
-  :
-elif test $in_tree_gas = yes ; then
-   if test $gcc_cv_gas_major_version -eq $tls_first_major \
-&& test $gcc_cv_gas_minor_version -ge $tls_first_minor \
-|| test $gcc_cv_gas_major_version -gt $tls_first_major ; then
-
-
-    gcc_cv_as_tls=yes
-  
-
+  : # If we don't have a check, assume no support.
+else
+  echo $ac_n "checking assembler for thread-local storage support""... $ac_c" 1>&6
+echo "configure:6617: checking assembler for thread-local storage support" >&5
+if eval "test \"`echo '$''{'gcc_cv_as_tls'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  gcc_cv_as_tls=no
+    if test $in_tree_gas = yes; then
+    if test $gcc_cv_gas_vers -ge `expr \( \( $tls_first_major \* 1000 \) + $tls_first_minor \) \* 1000 + 0`
+  then gcc_cv_as_tls=yes
 fi
-
-elif test x$gcc_cv_as != x; then
-  echo "$conftest_s" > conftest.s
-  if $gcc_cv_as $tls_as_opt --fatal-warnings -o conftest.o conftest.s > /dev/null 2>&1
-  then
-    gcc_cv_as_tls=yes
+  elif test x$gcc_cv_as != x; then
+    echo "$conftest_s" > conftest.s
+    if { ac_try='$gcc_cv_as $tls_as_opt --fatal-warnings -o conftest.o conftest.s >&5'; { (eval echo configure:6628: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }
+    then
+	gcc_cv_as_tls=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
   fi
-  rm -f conftest.s conftest.o
 fi
-if test "$gcc_cv_as_tls" = yes; then
+
+echo "$ac_t""$gcc_cv_as_tls" 1>&6
+if test $gcc_cv_as_tls = yes; then
   cat >> confdefs.h <<\EOF
 #define HAVE_AS_TLS 1
 EOF
 
 fi
-echo "$ac_t""$gcc_cv_as_tls" 1>&6
+fi
+
+# Target-specific assembler checks.
 
 case "$target" in
   # All TARGET_ABI_OSF targets.
   alpha*-*-osf* | alpha*-*-linux* | alpha*-*-*bsd*)
-    echo $ac_n "checking assembler supports explicit relocations""... $ac_c" 1>&6
-echo "configure:6619: checking assembler supports explicit relocations" >&5
-if eval "test \"`echo '$''{'gcc_cv_as_explicit_relocs'+set}'`\" = set"; then
+    echo $ac_n "checking assembler for explicit relocation support""... $ac_c" 1>&6
+echo "configure:6654: checking assembler for explicit relocation support" >&5
+if eval "test \"`echo '$''{'gcc_cv_as_alpha_explicit_relocs'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
-  
-	gcc_cv_as_explicit_relocs=unknown
-	if test $in_tree_gas = yes ; then
-            if test $gcc_cv_gas_major_version -eq 2 \
-&& test $gcc_cv_gas_minor_version -ge 12 \
-|| test $gcc_cv_gas_major_version -gt 2 ; then
-
-
-	      gcc_cv_as_explicit_relocs=yes
-	   
-
+  gcc_cv_as_alpha_explicit_relocs=no
+    if test $in_tree_gas = yes; then
+    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 12 \) \* 1000 + 0`
+  then gcc_cv_as_alpha_explicit_relocs=yes
 fi
-
-	elif test x$gcc_cv_as != x; then
-	    cat > conftest.s << 'EOF'
-	.set nomacro
+  elif test x$gcc_cv_as != x; then
+    echo '	.set nomacro
 	.text
 	extbl	$3, $2, $3	!lituse_bytoff!1
 	ldq	$2, a($29)	!literal!1
@@ -6646,354 +6672,377 @@ fi
 	lda	$0, c($29)	!gprel
 	ldah	$1, d($29)	!gprelhigh
 	lda	$1, d($1)	!gprellow
-	lda	$29, 0($29)	!gpdisp!3
-EOF
-	    if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
-		gcc_cv_as_explicit_relocs=yes
-	    else
-		gcc_cv_as_explicit_relocs=no
-	    fi
-	    rm -f conftest.s conftest.o
-	fi
-    
+	lda	$29, 0($29)	!gpdisp!3' > conftest.s
+    if { ac_try='$gcc_cv_as  -o conftest.o conftest.s >&5'; { (eval echo configure:6677: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }
+    then
+	gcc_cv_as_alpha_explicit_relocs=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
 fi
 
-echo "$ac_t""$gcc_cv_as_explicit_relocs" 1>&6
-    if test "x$gcc_cv_as_explicit_relocs" = xyes; then
-	cat >> confdefs.h <<\EOF
+echo "$ac_t""$gcc_cv_as_alpha_explicit_relocs" 1>&6
+if test $gcc_cv_as_alpha_explicit_relocs = yes; then
+  cat >> confdefs.h <<\EOF
 #define HAVE_AS_EXPLICIT_RELOCS 1
 EOF
 
-    fi
+fi
     ;;
+
   sparc*-*-*)
-    echo $ac_n "checking assembler .register pseudo-op support""... $ac_c" 1>&6
-echo "configure:6672: checking assembler .register pseudo-op support" >&5
-if eval "test \"`echo '$''{'gcc_cv_as_register_pseudo_op'+set}'`\" = set"; then
+    echo $ac_n "checking assembler for .register""... $ac_c" 1>&6
+echo "configure:6699: checking assembler for .register" >&5
+if eval "test \"`echo '$''{'gcc_cv_as_sparc_register_op'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
-  
-	gcc_cv_as_register_pseudo_op=unknown
-	if test x$gcc_cv_as != x; then
-	    # Check if we have .register
-	    echo ".register %g2, #scratch" > conftest.s
-	    if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
-		gcc_cv_as_register_pseudo_op=yes
-	    else
-		gcc_cv_as_register_pseudo_op=no
-	    fi
-	    rm -f conftest.s conftest.o
-	fi
-    
+  gcc_cv_as_sparc_register_op=no
+  if test x$gcc_cv_as != x; then
+    echo '.register %g2, #scratch' > conftest.s
+    if { ac_try='$gcc_cv_as  -o conftest.o conftest.s >&5'; { (eval echo configure:6706: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }
+    then
+	gcc_cv_as_sparc_register_op=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
 fi
 
-echo "$ac_t""$gcc_cv_as_register_pseudo_op" 1>&6
-    if test "x$gcc_cv_as_register_pseudo_op" = xyes; then
-	cat >> confdefs.h <<\EOF
+echo "$ac_t""$gcc_cv_as_sparc_register_op" 1>&6
+if test $gcc_cv_as_sparc_register_op = yes; then
+  cat >> confdefs.h <<\EOF
 #define HAVE_AS_REGISTER_PSEUDO_OP 1
 EOF
 
-    fi
-
-    echo $ac_n "checking assembler supports -relax""... $ac_c" 1>&6
-echo "configure:6700: checking assembler supports -relax" >&5
-if eval "test \"`echo '$''{'gcc_cv_as_relax_opt'+set}'`\" = set"; then
-  echo $ac_n "(cached) $ac_c" 1>&6
-else
-  
-	gcc_cv_as_relax_opt=unknown
-	if test x$gcc_cv_as != x; then
-	    # Check if gas supports -relax
-	    echo ".text" > conftest.s
-	    if $gcc_cv_as -relax -o conftest.o conftest.s > /dev/null 2>&1; then
-		gcc_cv_as_relax_opt=yes
-	    else
-		gcc_cv_as_relax_opt=no
-	    fi
-	    rm -f conftest.s conftest.o
-	fi
-    
 fi
 
-echo "$ac_t""$gcc_cv_as_relax_opt" 1>&6
-    if test "x$gcc_cv_as_relax_opt" = xyes; then
-	cat >> confdefs.h <<\EOF
+    echo $ac_n "checking assembler for -relax option""... $ac_c" 1>&6
+echo "configure:6726: checking assembler for -relax option" >&5
+if eval "test \"`echo '$''{'gcc_cv_as_sparc_relax'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  gcc_cv_as_sparc_relax=no
+  if test x$gcc_cv_as != x; then
+    echo '.text' > conftest.s
+    if { ac_try='$gcc_cv_as -relax -o conftest.o conftest.s >&5'; { (eval echo configure:6733: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }
+    then
+	gcc_cv_as_sparc_relax=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+
+echo "$ac_t""$gcc_cv_as_sparc_relax" 1>&6
+if test $gcc_cv_as_sparc_relax = yes; then
+  cat >> confdefs.h <<\EOF
 #define HAVE_AS_RELAX_OPTION 1
 EOF
 
-    fi
+fi
 
-    echo $ac_n "checking assembler and linker support unaligned pc related relocs""... $ac_c" 1>&6
-echo "configure:6728: checking assembler and linker support unaligned pc related relocs" >&5
+    echo $ac_n "checking assembler for unaligned pcrel relocs""... $ac_c" 1>&6
+echo "configure:6753: checking assembler for unaligned pcrel relocs" >&5
 if eval "test \"`echo '$''{'gcc_cv_as_sparc_ua_pcrel'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
-  
-	gcc_cv_as_sparc_ua_pcrel=unknown
-	if test x$gcc_cv_as != x -a x$gcc_cv_ld != x; then
-	    gcc_cv_as_sparc_ua_pcrel=no
-	    echo ".text; foo: nop; .data; .align 4; .byte 0; .uaword %r_disp32(foo)" > conftest.s
-	    if $gcc_cv_as -K PIC -o conftest.o conftest.s > /dev/null 2>&1 \
-	       && $gcc_cv_ld -o conftest conftest.o -G > /dev/null 2>&1; then
-		gcc_cv_as_sparc_ua_pcrel=yes
-	    fi
-	    rm -f conftest.s conftest.o conftest
-	fi
-    
+  gcc_cv_as_sparc_ua_pcrel=no
+  if test x$gcc_cv_as != x; then
+    echo '.text
+foo:
+	nop
+.data
+.align 4
+.byte 0
+.uaword %r_disp32(foo)' > conftest.s
+    if { ac_try='$gcc_cv_as -K PIC -o conftest.o conftest.s >&5'; { (eval echo configure:6766: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }
+    then
+	if test x$gcc_cv_ld != x \
+       && $gcc_cv_ld -o conftest conftest.o -G > /dev/null 2>&1; then
+	 gcc_cv_as_sparc_ua_pcrel=yes
+       fi
+       rm -f conftest
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
 fi
 
 echo "$ac_t""$gcc_cv_as_sparc_ua_pcrel" 1>&6
-    if test "x$gcc_cv_as_sparc_ua_pcrel" = xyes; then
-	cat >> confdefs.h <<\EOF
+if test $gcc_cv_as_sparc_ua_pcrel = yes; then
+  cat >> confdefs.h <<\EOF
 #define HAVE_AS_SPARC_UA_PCREL 1
 EOF
 
-    fi
 
-    echo $ac_n "checking assembler and linker support unaligned pc related relocs against hidden symbols""... $ac_c" 1>&6
-echo "configure:6755: checking assembler and linker support unaligned pc related relocs against hidden symbols" >&5
+      echo $ac_n "checking assembler for unaligned pcrel relocs against hidden symbols""... $ac_c" 1>&6
+echo "configure:6789: checking assembler for unaligned pcrel relocs against hidden symbols" >&5
 if eval "test \"`echo '$''{'gcc_cv_as_sparc_ua_pcrel_hidden'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
-  
-	if test "x$gcc_cv_as_sparc_ua_pcrel" = xyes; then
-	    gcc_cv_as_sparc_ua_pcrel_hidden=unknown
-	    if test x$gcc_cv_objdump != x; then
-	        gcc_cv_as_sparc_ua_pcrel_hidden=no
-		echo ".data; .align 4; .byte 0x31; .uaword %r_disp32(foo)" > conftest.s
-		echo ".byte 0x32, 0x33, 0x34; .global foo; .hidden foo" >> conftest.s
-		echo "foo: .skip 4" >> conftest.s
-		if $gcc_cv_as -K PIC -o conftest.o conftest.s > /dev/null 2>&1 \
-		   && $gcc_cv_ld -o conftest conftest.o -G > /dev/null 2>&1 \
-		   && $gcc_cv_objdump -s -j .data conftest 2> /dev/null \
-		      | grep ' 31000000 07323334' > /dev/null 2>&1; then
-		    if $gcc_cv_objdump -R conftest 2> /dev/null \
-		       | grep 'DISP32' > /dev/null 2>&1; then
-			:
-		    else
-			gcc_cv_as_sparc_ua_pcrel_hidden=yes
-		    fi
-		fi
+  gcc_cv_as_sparc_ua_pcrel_hidden=no
+  if test x$gcc_cv_as != x; then
+    echo '.data
+.align 4
+.byte 0x31
+.uaword %r_disp32(foo)
+.byte 0x32, 0x33, 0x34
+.global foo
+.hidden foo
+foo:
+.skip 4' > conftest.s
+    if { ac_try='$gcc_cv_as -K PIC -o conftest.o conftest.s >&5'; { (eval echo configure:6804: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }
+    then
+	if test x$gcc_cv_ld != x && test x$gcc_cv_objdump != x \
+	 && $gcc_cv_ld -o conftest conftest.o -G > /dev/null 2>&1 \
+	 && $gcc_cv_objdump -s -j .data conftest 2> /dev/null \
+	    | grep ' 31000000 07323334' > /dev/null 2>&1; then
+	    if $gcc_cv_objdump -R conftest 2> /dev/null \
+	       | grep 'DISP32' > /dev/null 2>&1; then
+		:
+	    else
+		gcc_cv_as_sparc_ua_pcrel_hidden=yes
 	    fi
-	    rm -f conftest.s conftest.o conftest
-	else
-	    gcc_cv_as_sparc_ua_pcrel_hidden="$gcc_cv_as_sparc_ua_pcrel"
-	fi
-    
+	 fi
+	 rm -f conftest
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
 fi
 
 echo "$ac_t""$gcc_cv_as_sparc_ua_pcrel_hidden" 1>&6
-    if test "x$gcc_cv_as_sparc_ua_pcrel_hidden" = xyes; then
-	cat >> confdefs.h <<\EOF
+if test $gcc_cv_as_sparc_ua_pcrel_hidden = yes; then
+  cat >> confdefs.h <<\EOF
 #define HAVE_AS_SPARC_UA_PCREL_HIDDEN 1
 EOF
 
-    fi
+fi
+    
+fi # unaligned pcrel relocs
 
-    echo $ac_n "checking for assembler offsetable %lo() support""... $ac_c" 1>&6
-echo "configure:6795: checking for assembler offsetable %lo() support" >&5
-if eval "test \"`echo '$''{'gcc_cv_as_offsetable_lo10'+set}'`\" = set"; then
+    echo $ac_n "checking assembler for offsetable %lo()""... $ac_c" 1>&6
+echo "configure:6837: checking assembler for offsetable %lo()" >&5
+if eval "test \"`echo '$''{'gcc_cv_as_sparc_offsetable_lo10'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
-  
-	gcc_cv_as_offsetable_lo10=unknown
-	if test "x$gcc_cv_as" != x; then
-	    # Check if assembler has offsetable %lo()
-	    echo "or %g1, %lo(ab) + 12, %g1" > conftest.s
-	    echo "or %g1, %lo(ab + 12), %g1" > conftest1.s
-	    if $gcc_cv_as -xarch=v9 -o conftest.o conftest.s \
-		    > /dev/null 2>&1 &&
-	       $gcc_cv_as -xarch=v9 -o conftest1.o conftest1.s \
-		    > /dev/null 2>&1; then
-		if cmp conftest.o conftest1.o > /dev/null 2>&1; then
-		    gcc_cv_as_offsetable_lo10=no
-		else
-		    gcc_cv_as_offsetable_lo10=yes
-		fi
-	    else
-		gcc_cv_as_offsetable_lo10=no
-	    fi
-	    rm -f conftest.s conftest.o conftest1.s conftest1.o
-	fi
-    
+  gcc_cv_as_sparc_offsetable_lo10=no
+  if test x$gcc_cv_as != x; then
+    echo '.text
+	or %g1, %lo(ab) + 12, %g1
+	or %g1, %lo(ab + 12), %g1' > conftest.s
+    if { ac_try='$gcc_cv_as -xarch=v9 -o conftest.o conftest.s >&5'; { (eval echo configure:6846: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }
+    then
+	if test x$gcc_cv_objdump != x \
+       && %gcc_cv_objdump -s -j .text conftest.o 2> /dev/null \
+          | grep ' 82106000 82106000' > /dev/null 2>&1; then
+	 gcc_cv_as_offsetable_lo10=yes
+       fi
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
 fi
 
-echo "$ac_t""$gcc_cv_as_offsetable_lo10" 1>&6
-    if test "x$gcc_cv_as_offsetable_lo10" = xyes; then
-	cat >> confdefs.h <<\EOF
+echo "$ac_t""$gcc_cv_as_sparc_offsetable_lo10" 1>&6
+if test $gcc_cv_as_sparc_offsetable_lo10 = yes; then
+  cat >> confdefs.h <<\EOF
 #define HAVE_AS_OFFSETABLE_LO10 1
 EOF
 
-    fi
-
+fi
     ;;
 
   i[34567]86-*-* | x86_64-*-*)
-    echo $ac_n "checking assembler instructions""... $ac_c" 1>&6
-echo "configure:6834: checking assembler instructions" >&5
-    gcc_cv_as_instructions=
-    if test $in_tree_gas = yes ; then 
-       if test $gcc_cv_gas_major_version -eq 2 \
-&& test $gcc_cv_gas_minor_version -ge 9 \
-|| test $gcc_cv_gas_major_version -gt 2 ; then
-
-
-	gcc_cv_as_instructions="filds fists"
-      
-
+    echo $ac_n "checking assembler for filds and fists mnemonics""... $ac_c" 1>&6
+echo "configure:6872: checking assembler for filds and fists mnemonics" >&5
+if eval "test \"`echo '$''{'gcc_cv_as_ix86_filds_fists'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  gcc_cv_as_ix86_filds_fists=no
+    if test $in_tree_gas = yes; then
+    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 9 \) \* 1000 + 0`
+  then gcc_cv_as_ix86_filds_fists=yes
+fi
+  elif test x$gcc_cv_as != x; then
+    echo 'filds mem; fists mem' > conftest.s
+    if { ac_try='$gcc_cv_as  -o conftest.o conftest.s >&5'; { (eval echo configure:6883: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }
+    then
+	gcc_cv_as_ix86_filds_fists=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
 fi
 
-    elif test x$gcc_cv_as != x; then
-	set "filds fists" "filds mem; fists mem"
-	while test $# -gt 0
-  	do
-		echo "$2" > conftest.s
-		if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
-			gcc_cv_as_instructions=${gcc_cv_as_instructions}$1" "
-		fi
-		shift 2
-	done
-	rm -f conftest.s conftest.o
-    fi
-    if test x"$gcc_cv_as_instructions" != x; then
-	cat >> confdefs.h <<EOF
-#define HAVE_GAS_`echo "$gcc_cv_as_instructions" | sed -e 's/ $//' | tr 'a-z ' 'A-Z_'` 1
+echo "$ac_t""$gcc_cv_as_ix86_filds_fists" 1>&6
+if test $gcc_cv_as_ix86_filds_fists = yes; then
+  cat >> confdefs.h <<\EOF
+#define HAVE_GAS_FILDS_FISTS 1
 EOF
 
-    fi
-    echo "$ac_t""$gcc_cv_as_instructions" 1>&6
-
-    echo $ac_n "checking assembler GOTOFF in data directives""... $ac_c" 1>&6
-echo "configure:6868: checking assembler GOTOFF in data directives" >&5
-    gcc_cv_as_gotoff_in_data=no
-    if test $in_tree_gas = yes ; then
-       if test $gcc_cv_gas_major_version -eq 2 \
-&& test $gcc_cv_gas_minor_version -ge 11 \
-|| test $gcc_cv_gas_major_version -gt 2 ; then
-
-
-	gcc_cv_as_gotoff_in_data=yes
-      
-
 fi
 
-    elif test x$gcc_cv_as != x; then
-	cat > conftest.s <<EOF
-	.text
+    echo $ac_n "checking assembler for GOTOFF in data""... $ac_c" 1>&6
+echo "configure:6903: checking assembler for GOTOFF in data" >&5
+if eval "test \"`echo '$''{'gcc_cv_as_ix86_gotoff_in_data'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  gcc_cv_as_ix86_gotoff_in_data=no
+    if test $in_tree_gas = yes; then
+    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 11 \) \* 1000 + 0`
+  then gcc_cv_as_ix86_gotoff_in_data=yes
+fi
+  elif test x$gcc_cv_as != x; then
+    echo '	.text
 .L0:
 	nop
 	.data
-	.long .L0@GOTOFF
-EOF
-	if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
-	  gcc_cv_as_gotoff_in_data=yes
-	fi
+	.long .L0@GOTOFF' > conftest.s
+    if { ac_try='$gcc_cv_as  -o conftest.o conftest.s >&5'; { (eval echo configure:6918: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }
+    then
+	gcc_cv_as_ix86_gotoff_in_data=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
     fi
-    cat >> confdefs.h <<EOF
+    rm -f conftest.o conftest.s
+  fi
+fi
+
+echo "$ac_t""$gcc_cv_as_ix86_gotoff_in_data" 1>&6
+if test $gcc_cv_as_ix86_gotoff_in_data = yes; then
+  cat >> confdefs.h <<EOF
 #define HAVE_AS_GOTOFF_IN_DATA `if test $gcc_cv_as_gotoff_in_data = yes; then echo 1; else echo 0; fi`
 EOF
 
-    echo "$ac_t""$gcc_cv_as_gotoff_in_data" 1>&6
+fi
     ;;
 
   ia64*-*-*)
-    echo $ac_n "checking assembler supports ltoffx and ldxmov""... $ac_c" 1>&6
-echo "configure:6902: checking assembler supports ltoffx and ldxmov" >&5
-if eval "test \"`echo '$''{'gcc_cv_as_ltoffx_ldxmov_relocs'+set}'`\" = set"; then
+    echo $ac_n "checking assembler for ltoffx and ldxmov relocs""... $ac_c" 1>&6
+echo "configure:6940: checking assembler for ltoffx and ldxmov relocs" >&5
+if eval "test \"`echo '$''{'gcc_cv_as_ia64_ltoffx_ldxmov_relocs'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
-  
-	gcc_cv_as_ltoffx_ldxmov_relocs=unknown
-	if test $in_tree_gas = yes ; then
-           if test $gcc_cv_gas_major_version -eq 2 \
-&& test $gcc_cv_gas_minor_version -ge 14 \
-|| test $gcc_cv_gas_major_version -gt 2 ; then
-
-
-	    gcc_cv_as_ltoffx_ldxmov_relocs=yes
-          
-
+  gcc_cv_as_ia64_ltoffx_ldxmov_relocs=no
+    if test $in_tree_gas = yes; then
+    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 14 \) \* 1000 + 0`
+  then gcc_cv_as_ia64_ltoffx_ldxmov_relocs=yes
 fi
-
-	elif test x$gcc_cv_as != x; then
-	    cat > conftest.s << 'EOF'
-	.text
+  elif test x$gcc_cv_as != x; then
+    echo '	.text
 	addl r15 = @ltoffx(x#), gp
 	;;
-	ld8.mov r16 = [r15], x#
-EOF
-	    if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
-		gcc_cv_as_ltoffx_ldxmov_relocs=yes
-	    else
-		gcc_cv_as_ltoffx_ldxmov_relocs=no
-	    fi
-	    rm -f conftest.s conftest.o
-	fi
-    
-fi
-
-echo "$ac_t""$gcc_cv_as_ltoffx_ldxmov_relocs" 1>&6
-    if test "x$gcc_cv_as_ltoffx_ldxmov_relocs" = xyes; then
-	cat >> confdefs.h <<\EOF
+	ld8.mov r16 = r15, x#' > conftest.s
+    if { ac_try='$gcc_cv_as  -o conftest.o conftest.s >&5'; { (eval echo configure:6954: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }
+    then
+	    cat >> confdefs.h <<\EOF
 #define HAVE_AS_LTOFFX_LDXMOV_RELOCS 1
 EOF
 
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
     fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+
+echo "$ac_t""$gcc_cv_as_ia64_ltoffx_ldxmov_relocs" 1>&6
+
+
     ;;
+
   powerpc*-*-*)
-    echo $ac_n "checking assembler supports mfcr field""... $ac_c" 1>&6
-echo "configure:6946: checking assembler supports mfcr field" >&5
-if eval "test \"`echo '$''{'gcc_cv_as_mfcrf'+set}'`\" = set"; then
+    case $target in
+      *-*-aix) conftest_s='	.csect .textPR';;
+      *)       conftest_s='	.text';;
+    esac
+    conftest_s="$conftest_s
+	mfcr 3,128"
+
+    echo $ac_n "checking assembler for mfcr field support""... $ac_c" 1>&6
+echo "configure:6982: checking assembler for mfcr field support" >&5
+if eval "test \"`echo '$''{'gcc_cv_as_powerpc_mfcrf'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
-  
-	gcc_cv_as_mfcrf=unknown
-	if test $in_tree_gas = yes ; then
-           if test $gcc_cv_gas_major_version -eq 2 \
-&& test $gcc_cv_gas_minor_version -ge 14 \
-|| test $gcc_cv_gas_major_version -gt 2 ; then
-
-
-	    gcc_cv_as_mfcrf=yes
-          
-
+  gcc_cv_as_powerpc_mfcrf=no
+    if test $in_tree_gas = yes; then
+    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 14 \) \* 1000 + 0`
+  then gcc_cv_as_powerpc_mfcrf=yes
+fi
+  elif test x$gcc_cv_as != x; then
+    echo "$conftest_s" > conftest.s
+    if { ac_try='$gcc_cv_as  -o conftest.o conftest.s >&5'; { (eval echo configure:6993: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }
+    then
+	gcc_cv_as_powerpc_mfcrf=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
 fi
 
-	elif test x$gcc_cv_as != x; then
-	    cat > conftest.s << 'EOF'
-	      case "$target" in
-		*-*-aix*)
-	.csect .text[PR]
-		;;
-		*)
-	.text
-		;;
-	      esac
-	mfcr 3,128
-EOF
-	    if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
-		gcc_cv_as_mfcrf=yes
-	    else
-		gcc_cv_as_mfcrf=no
-	    fi
-	    rm -f conftest.s conftest.o
-	fi
-    
-fi
-
-echo "$ac_t""$gcc_cv_as_mfcrf" 1>&6
-    if test "x$gcc_cv_as_mfcrf" = xyes; then
-	cat >> confdefs.h <<\EOF
+echo "$ac_t""$gcc_cv_as_powerpc_mfcrf" 1>&6
+if test $gcc_cv_as_powerpc_mfcrf = yes; then
+  cat >> confdefs.h <<\EOF
 #define HAVE_AS_MFCRF 1
 EOF
 
+fi
+    ;;
+
+  mips*-*-*)
+    echo $ac_n "checking assembler for explicit relocation support""... $ac_c" 1>&6
+echo "configure:7015: checking assembler for explicit relocation support" >&5
+if eval "test \"`echo '$''{'gcc_cv_as_mips_explicit_relocs'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  gcc_cv_as_mips_explicit_relocs=no
+    if test $in_tree_gas = yes; then
+    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 14 \) \* 1000 + 0`
+  then gcc_cv_as_mips_explicit_relocs=yes
+fi
+  elif test x$gcc_cv_as != x; then
+    echo '	lw $4,%gp_rel(foo)($4)' > conftest.s
+    if { ac_try='$gcc_cv_as  -o conftest.o conftest.s >&5'; { (eval echo configure:7026: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }
+    then
+	gcc_cv_as_mips_explicit_relocs=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
     fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+
+echo "$ac_t""$gcc_cv_as_mips_explicit_relocs" 1>&6
+if test $gcc_cv_as_mips_explicit_relocs = yes; then
+  if test x$target_cpu_default = x
+       then target_cpu_default=MASK_EXPLICIT_RELOCS
+       else target_cpu_default="($target_cpu_default)|MASK_EXPLICIT_RELOCS"
+       fi
+fi
+
     ;;
 esac
-
-echo $ac_n "checking assembler dwarf2 debug_line support""... $ac_c" 1>&6
-echo "configure:6996: checking assembler dwarf2 debug_line support" >&5
-gcc_cv_as_dwarf2_debug_line=no
 # ??? Not all targets support dwarf2 debug_line, even within a version
 # of gas.  Moreover, we need to emit a valid instruction to trigger any
 # info to the output file.  So, as supported targets are added to gas 2.11,
@@ -7012,121 +7061,150 @@ case "$target" in
   mmix-*-*)
     insn="swym 0"
     ;;
-  esac
-if test $in_tree_gas = yes ; then
-   if test $gcc_cv_gas_major_version -eq 2 \
-&& test $gcc_cv_gas_minor_version -ge 11 \
-|| test $gcc_cv_gas_major_version -gt 2 ; then
-
-
-    test $in_tree_gas_is_elf = yes && test x"$insn" != x \
-	&& gcc_cv_as_dwarf2_debug_line="yes"
-  
-
+esac
+if test x"$insn" != x; then
+ conftest_s="\
+	.file 1 \"conftest.s\"
+	.loc 1 3 0
+	$insn"
+ echo $ac_n "checking assembler for dwarf2 debug_line support""... $ac_c" 1>&6
+echo "configure:7072: checking assembler for dwarf2 debug_line support" >&5
+if eval "test \"`echo '$''{'gcc_cv_as_dwarf2_debug_line'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  gcc_cv_as_dwarf2_debug_line=no
+    if test $in_tree_gas = yes; then
+    if test $in_tree_gas_is_elf = yes \
+  && test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 11 \) \* 1000 + 0`
+  then gcc_cv_as_dwarf2_debug_line=yes
+fi
+  elif test x$gcc_cv_as != x; then
+    echo "$conftest_s" > conftest.s
+    if { ac_try='$gcc_cv_as  -o conftest.o conftest.s >&5'; { (eval echo configure:7084: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }
+    then
+	# ??? This fails with non-gnu grep.  Maybe use objdump?
+   if grep debug_line conftest.o > /dev/null 2>&1; then
+     gcc_cv_as_dwarf2_debug_line=yes
+   fi
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
 fi
 
-elif test x$gcc_cv_as != x -a x"$insn" != x ; then
-	echo '	.file 1 "conftest.s"' > conftest.s
-	echo '	.loc 1 3 0' >> conftest.s
-	echo "	$insn" >> conftest.s
-	# ??? This fails with non-gnu grep.
-	if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1 \
-	   && grep debug_line conftest.o > /dev/null 2>&1 ; then
-		# The .debug_line file table must be in the exact order that
-		# we specified the files, since these indices are also used
-		# by DW_AT_decl_file.  Approximate this test by testing if
-		# the assembler bitches if the same index is assigned twice.
-		echo '	.file 1 "foo.s"' > conftest.s
-		echo '	.file 1 "bar.s"' >> conftest.s
-		if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1
-		then
-		  gcc_cv_as_dwarf2_debug_line="no"
-		else
-		  gcc_cv_as_dwarf2_debug_line="yes"
-		fi
-	fi
-	rm -f conftest.s conftest.o conftest.nm1 conftest.nm2
+echo "$ac_t""$gcc_cv_as_dwarf2_debug_line" 1>&6
+
+
+# The .debug_line file table must be in the exact order that
+# we specified the files, since these indices are also used
+# by DW_AT_decl_file.  Approximate this test by testing if
+# the assembler bitches if the same index is assigned twice.
+ echo $ac_n "checking assembler for buggy dwarf2 .file directive""... $ac_c" 1>&6
+echo "configure:7106: checking assembler for buggy dwarf2 .file directive" >&5
+if eval "test \"`echo '$''{'gcc_cv_as_dwarf2_file_buggy'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  gcc_cv_as_dwarf2_file_buggy=no
+  if test x$gcc_cv_as != x; then
+    echo '	.file 1 "foo.s"
+	.file 1 "bar.s"' > conftest.s
+    if { ac_try='$gcc_cv_as  -o conftest.o conftest.s >&5'; { (eval echo configure:7114: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }
+    then
+	gcc_cv_as_dwarf2_file_buggy=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
 fi
-if test x"$gcc_cv_as_dwarf2_debug_line" = xyes; then
+
+echo "$ac_t""$gcc_cv_as_dwarf2_file_buggy" 1>&6
+
+
+ if test $gcc_cv_as_dwarf2_debug_line = yes \
+ && test $gcc_cv_as_dwarf2_file_buggy = no; then
 	cat >> confdefs.h <<\EOF
 #define HAVE_AS_DWARF2_DEBUG_LINE 1
 EOF
 
+ fi
+
+ echo $ac_n "checking assembler for --gdwarf2 option""... $ac_c" 1>&6
+echo "configure:7137: checking assembler for --gdwarf2 option" >&5
+if eval "test \"`echo '$''{'gcc_cv_as_gdwarf2_flag'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  gcc_cv_as_gdwarf2_flag=no
+    if test $in_tree_gas = yes; then
+    if test $in_tree_gas_is_elf = yes \
+  && test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 11 \) \* 1000 + 0`
+  then gcc_cv_as_gdwarf2_flag=yes
 fi
-echo "$ac_t""$gcc_cv_as_dwarf2_debug_line" 1>&6
-
-echo $ac_n "checking assembler --gdwarf2 support""... $ac_c" 1>&6
-echo "configure:7060: checking assembler --gdwarf2 support" >&5
-gcc_cv_as_gdwarf2_flag=no
-if test $in_tree_gas = yes ; then
-   if test $gcc_cv_gas_major_version -eq 2 \
-&& test $gcc_cv_gas_minor_version -ge 11 \
-|| test $gcc_cv_gas_major_version -gt 2 ; then
-
-
-    test $in_tree_gas_is_elf = yes && test x"$insn" != x \
-	&& gcc_cv_as_gdwarf2_flag="yes"
-  
-
+  elif test x$gcc_cv_as != x; then
+    echo "$insn" > conftest.s
+    if { ac_try='$gcc_cv_as --gdwarf2 -o conftest.o conftest.s >&5'; { (eval echo configure:7149: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }
+    then
+	gcc_cv_as_gdwarf2_flag=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
 fi
 
-elif test x$gcc_cv_as != x -a x"$insn" != x ; then
-	echo '' > conftest.s
-	# ??? This fails with non-gnu grep.
-	if $gcc_cv_as --gdwarf2 -o conftest.o conftest.s > /dev/null 2>&1
-	  then
-	  gcc_cv_as_gdwarf2_flag="yes"
-	fi
-	rm -f conftest.s conftest.o
-fi
-if test x"$gcc_cv_as_gdwarf2_flag" = xyes; then
-	cat >> confdefs.h <<\EOF
+echo "$ac_t""$gcc_cv_as_gdwarf2_flag" 1>&6
+if test $gcc_cv_as_gdwarf2_flag = yes; then
+  cat >> confdefs.h <<\EOF
 #define HAVE_AS_GDWARF2_DEBUG_FLAG 1
 EOF
 
 fi
-echo "$ac_t""$gcc_cv_as_gdwarf2_flag" 1>&6
 
-echo $ac_n "checking assembler --gstabs support""... $ac_c" 1>&6
-echo "configure:7092: checking assembler --gstabs support" >&5
-gcc_cv_as_gstabs_flag=no
-if test $in_tree_gas = yes ; then
-   if test $gcc_cv_gas_major_version -eq 2 \
-&& test $gcc_cv_gas_minor_version -ge 11 \
-|| test $gcc_cv_gas_major_version -gt 2 ; then
-
-
-    test $in_tree_gas_is_elf = yes && test x"$insn" != x \
-	&& gcc_cv_as_gstabs_flag="yes"
-  
-
+ echo $ac_n "checking assembler for --gstabs option""... $ac_c" 1>&6
+echo "configure:7169: checking assembler for --gstabs option" >&5
+if eval "test \"`echo '$''{'gcc_cv_as_gstabs_flag'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  gcc_cv_as_gstabs_flag=no
+    if test $in_tree_gas = yes; then
+    if test $in_tree_gas_is_elf = yes \
+  && test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 11 \) \* 1000 + 0`
+  then gcc_cv_as_gstabs_flag=yes
+fi
+  elif test x$gcc_cv_as != x; then
+    echo "$insn" > conftest.s
+    if { ac_try='$gcc_cv_as --gstabs -o conftest.o conftest.s >&5'; { (eval echo configure:7181: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }
+    then
+	# The native Solaris 9/Intel assembler doesn't understand --gstabs
+   # and warns about it, but still exits successfully.  So check for
+   # this.
+   if { ac_try='$gcc_cv_as --gstabs -o conftest.o conftest.s 2>&1 | grep -i warning > /dev/null'; { (eval echo configure:7186: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; }
+   then :
+   else gcc_cv_as_gstabs_flag=yes
+   fi
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
 fi
 
-elif test x$gcc_cv_as != x -a x"$insn" != x ; then
-	echo '' > conftest.s
-	# ??? This fails with non-gnu grep.
-	if $gcc_cv_as --gstabs -o conftest.o conftest.s > /dev/null 2>&1 ; then
-	  gcc_cv_as_gstabs_flag="yes"
-	  # The native Solaris 9/Intel assembler doesn't understand --gstabs
-	  # and warns about it, but still exits successfully.  So check for
-	  # this.
-	  if $gcc_cv_as --gstabs -o conftest.o conftest.s 2>&1 | \
-		grep -i warning > /dev/null ; then
-	    gcc_cv_as_gstabs_flag="no"
-	  fi
-	fi
-	rm -f conftest.s conftest.o
-fi
-if test x"$gcc_cv_as_gstabs_flag" = xyes; then
-	cat >> confdefs.h <<\EOF
+echo "$ac_t""$gcc_cv_as_gstabs_flag" 1>&6
+if test $gcc_cv_as_gstabs_flag = yes; then
+  cat >> confdefs.h <<\EOF
 #define HAVE_AS_GSTABS_DEBUG_FLAG 1
 EOF
 
 fi
-echo "$ac_t""$gcc_cv_as_gstabs_flag" 1>&6
+fi
 
 echo $ac_n "checking linker read-only and read-write section mixing""... $ac_c" 1>&6
-echo "configure:7130: checking linker read-only and read-write section mixing" >&5
+echo "configure:7208: checking linker read-only and read-write section mixing" >&5
 gcc_cv_ld_ro_rw_mix=unknown
 if test $in_tree_ld = yes ; then
   if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 10 -o "$gcc_cv_gld_major_version" -gt 2 \
@@ -7165,7 +7243,7 @@ fi
 echo "$ac_t""$gcc_cv_ld_ro_rw_mix" 1>&6
 
 echo $ac_n "checking linker PT_GNU_EH_FRAME support""... $ac_c" 1>&6
-echo "configure:7169: checking linker PT_GNU_EH_FRAME support" >&5
+echo "configure:7247: checking linker PT_GNU_EH_FRAME support" >&5
 gcc_cv_ld_eh_frame_hdr=no
 if test $in_tree_ld = yes ; then
   if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 12 -o "$gcc_cv_gld_major_version" -gt 2 \
@@ -7187,7 +7265,7 @@ fi
 echo "$ac_t""$gcc_cv_ld_eh_frame_hdr" 1>&6
 
 echo $ac_n "checking linker position independent executable support""... $ac_c" 1>&6
-echo "configure:7191: checking linker position independent executable support" >&5
+echo "configure:7269: checking linker position independent executable support" >&5
 gcc_cv_ld_pie=no
 if test $in_tree_ld = yes ; then
   if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 15 -o "$gcc_cv_gld_major_version" -gt 2 \
@@ -7212,7 +7290,7 @@ echo "$ac_t""$gcc_cv_ld_pie" 1>&6
 case "$target" in
   mips*-*-*)
     echo $ac_n "checking whether libgloss uses STARTUP directives consistently""... $ac_c" 1>&6
-echo "configure:7216: checking whether libgloss uses STARTUP directives consistently" >&5
+echo "configure:7294: checking whether libgloss uses STARTUP directives consistently" >&5
     gcc_cv_mips_libgloss_startup=no
     gcc_cv_libgloss_srcdir=`echo $srcdir | sed -e 's,/gcc$,,'`/libgloss
     if test "x$exec_prefix" = xNONE; then
@@ -7238,35 +7316,6 @@ EOF
 
     fi
     echo "$ac_t""$gcc_cv_mips_libgloss_startup" 1>&6
-
-    echo $ac_n "checking whether the assembler has explicit relocation support""... $ac_c" 1>&6
-echo "configure:7244: checking whether the assembler has explicit relocation support" >&5
-    if test x$gcc_cv_mips_explicit_relocs = x; then
-      gcc_cv_mips_explicit_relocs=no
-      if test $in_tree_gas = yes; then
-         if test $gcc_cv_gas_major_version -eq 2 \
-&& test $gcc_cv_gas_minor_version -ge 14 \
-|| test $gcc_cv_gas_major_version -gt 2 ; then
-
-
-	  gcc_cv_mips_explicit_relocs=yes
-	
-
-fi
-
-      elif test x$gcc_cv_as != x; then
-	echo '  lw $4,%gp_rel(foo)($4)' > conftest.s
-	if $gcc_cv_as conftest.s -o conftest.o > /dev/null 2>&1; then
-	  gcc_cv_mips_explicit_relocs=yes
-	fi
-	rm -f conftest.s conftest.o
-      fi
-    fi
-    if test $gcc_cv_mips_explicit_relocs = yes; then
-      test x$target_cpu_default != x || target_cpu_default=0
-      target_cpu_default="(${target_cpu_default}|MASK_EXPLICIT_RELOCS)"
-    fi
-    echo "$ac_t""$gcc_cv_mips_explicit_relocs" 1>&6
     ;;
 esac
 
@@ -7446,7 +7495,7 @@ fi
 
 
 echo $ac_n "checking whether to enable maintainer-specific portions of Makefiles""... $ac_c" 1>&6
-echo "configure:7450: checking whether to enable maintainer-specific portions of Makefiles" >&5
+echo "configure:7499: checking whether to enable maintainer-specific portions of Makefiles" >&5
     # Check whether --enable-maintainer-mode or --disable-maintainer-mode was given.
 if test "${enable_maintainer_mode+set}" = set; then
   enableval="$enable_maintainer_mode"

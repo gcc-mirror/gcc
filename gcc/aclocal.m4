@@ -16,6 +16,27 @@ if test $ac_cv_header_stdbool_h = yes; then
 fi
 ])
 
+dnl Fixed AC_CHECK_TYPE that doesn't need anything in acconfig.h.
+dnl Remove after migrating to 2.5x.
+AC_DEFUN(gcc_AC_CHECK_TYPE,
+[AC_REQUIRE([AC_HEADER_STDC])dnl
+AC_MSG_CHECKING(for $1)
+AC_CACHE_VAL(ac_cv_type_$1,
+[AC_EGREP_CPP(dnl
+changequote(<<,>>)dnl
+<<(^|[^a-zA-Z_0-9])$1[^a-zA-Z_0-9]>>dnl
+changequote([,]), [#include <sys/types.h>
+#if STDC_HEADERS
+#include <stdlib.h>
+#include <stddef.h>
+#endif], ac_cv_type_$1=yes, ac_cv_type_$1=no)])dnl
+AC_MSG_RESULT($ac_cv_type_$1)
+if test $ac_cv_type_$1 = no; then
+  AC_DEFINE($1, $2, [Define as \`$2' if <sys/types.h> doesn't define.])
+fi
+])
+
+
 dnl See whether we can include both string.h and strings.h.
 AC_DEFUN(gcc_AC_HEADER_STRING,
 [AC_CACHE_CHECK([whether string.h and strings.h may both be included],
@@ -659,9 +680,12 @@ done
 gcc_cv_gas_major_version=`expr "$gcc_cv_gas_version" : "VERSION=\([[0-9]]*\)"`
 gcc_cv_gas_minor_version=`expr "$gcc_cv_gas_version" : "VERSION=[[0-9]]*\.\([[0-9]]*\)"`
 gcc_cv_gas_patch_version=`expr "$gcc_cv_gas_version" : "VERSION=[[0-9]]*\.[[0-9]]*\.\([[0-9]]*\)"`
+gcc_cv_gas_vers=`expr \( \( $gcc_cv_gas_major_version \* 1000 \) \
+			    + $gcc_cv_gas_minor_version \) \* 1000 \
+			    + $gcc_cv_gas_patch_version`
 ]) []dnl # _gcc_COMPUTE_GAS_VERSION
 
-dnl # gcc_GAS_VERSION_GTE_IFELSE(major, minor, patchlevel,
+dnl # gcc_GAS_VERSION_GTE_IFELSE([elf,] major, minor, patchlevel,
 dnl #                     [command_if_true = :], [command_if_false = :])
 dnl # Check to see if the version of GAS is greater than or
 dnl # equal to the specified version.
@@ -670,23 +694,54 @@ dnl # The first ifelse() shortens the shell code if the patchlevel
 dnl # is unimportant (the usual case).  The others handle missing
 dnl # commands.  Note that the tests are structured so that the most
 dnl # common version number cases are tested first.
+AC_DEFUN([_gcc_GAS_VERSION_GTE_IFELSE],
+[ifelse([$1], elf,
+ [if test $in_tree_gas_is_elf = yes \
+  &&],
+ [if]) test $gcc_cv_gas_vers -ge `expr \( \( $2 \* 1000 \) + $3 \) \* 1000 + $4`
+  then dnl
+ifelse([$5],,:,[$5])[]dnl
+ifelse([$6],,,[
+  else $6])
+fi])
+
 AC_DEFUN([gcc_GAS_VERSION_GTE_IFELSE],
-[AC_REQUIRE([_gcc_COMPUTE_GAS_VERSION]) []dnl
-ifelse([$3],[0],
-[if test $gcc_cv_gas_major_version -eq $1 \
-&& test $gcc_cv_gas_minor_version -ge $2 \
-|| test $gcc_cv_gas_major_version -gt $1 ; then
-],
-[if test $gcc_cv_gas_major_version -eq $1 \
-&& (test $gcc_cv_gas_minor_version -gt $2 \
-    || (test $gcc_cv_gas_minor_version -eq $2 \
-        && test $gcc_cv_gas_patch_version -ge $3 )) \
-|| test $gcc_cv_gas_major_version -gt $1 ; then
-])
-ifelse([$4],[],[:],[$4])
-ifelse([$5],[],[],[else $5])
-fi
-]) []dnl # gcc_GAS_VERSION_GTE_IFELSE
+[AC_REQUIRE([_gcc_COMPUTE_GAS_VERSION])dnl
+ifelse([$1], elf, [_gcc_GAS_VERSION_GTE_IFELSE($@)],
+                  [_gcc_GAS_VERSION_GTE_IFELSE(,$@)])])
+
+dnl gcc_GAS_CHECK_FEATURE(description, cv, [[elf,]major,minor,patchlevel],
+dnl [extra switches to as], [assembler input],
+dnl [extra testing logic], [command if feature available])
+dnl
+dnl Checks for an assembler feature.  If we are building an in-tree
+dnl gas, the feature is available if the associated assembler version
+dnl is greater than or equal to major.minor.patchlevel.  If not, then
+dnl ASSEMBLER INPUT is fed to the assembler and the feature is available
+dnl if assembly succeeds.  If EXTRA TESTING LOGIC is not the empty string,
+dnl then it is run instead of simply setting CV to "yes" - it is responsible
+dnl for doing so, if appropriate.
+AC_DEFUN([gcc_GAS_CHECK_FEATURE],
+[AC_CACHE_CHECK([assembler for $1], [$2],
+ [[$2]=no
+  ifelse([$3],,,[dnl
+  if test $in_tree_gas = yes; then
+    gcc_GAS_VERSION_GTE_IFELSE($3, [[$2]=yes])
+  el])if test x$gcc_cv_as != x; then
+    echo ifelse(substr([$5],0,1),[$], "[$5]", '[$5]') > conftest.s
+    if AC_TRY_COMMAND([$gcc_cv_as $4 -o conftest.o conftest.s >&AC_FD_CC])
+    then
+	ifelse([$6],, [$2]=yes, [$6])
+    else
+      echo "configure: failed program was" >&AC_FD_CC
+      cat conftest.s >&AC_FD_CC
+    fi
+    rm -f conftest.o conftest.s
+  fi])
+ifelse([$7],,,[dnl
+if test $[$2] = yes; then
+  $7
+fi])])
 
 # lcmessage.m4 serial 3 (gettext-0.11.3)
 dnl Copyright (C) 1995-2002 Free Software Foundation, Inc.
