@@ -35,6 +35,8 @@ details.  */
 
 #ifdef INTERPRETER
 
+#include <alloca.h>
+
 #define ClassError _CL_Q34java4lang5Error
 extern java::lang::Class ClassError;
 
