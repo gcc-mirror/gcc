@@ -4462,8 +4462,12 @@ expand_end_case (orig_index)
 	      else
 		{
 		  if (TYPE_MODE (index_type) != index_mode)
-		    index_expr = convert (type_for_size (index_bits, 0),
-					  index_expr);
+		    {
+		      index_expr = convert (type_for_size (index_bits, 0),
+					    index_expr);
+		      index_type = TREE_TYPE (index_expr);
+		    }
+
 		  index = expand_expr (index_expr, NULL_RTX, VOIDmode, 0);
 		}
 	      emit_queue ();
@@ -4500,6 +4504,7 @@ expand_end_case (orig_index)
 	      index_expr = convert (thiscase->data.case_stmt.nominal_type,
 				    fold (build (MINUS_EXPR, index_type,
 						 index_expr, minval)));
+	      index_type = TREE_TYPE (index_expr);
 	      index = expand_expr (index_expr, NULL_RTX, VOIDmode, 0);
 	      emit_queue ();
 	      index = protect_from_queue (index, 0);
