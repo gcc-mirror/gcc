@@ -1,3 +1,9 @@
+2004-07-25  Bernardo Innocenti  <bernie@develer.com>
+
+	* c-decl.c (groktypename, groktypename_in_param_context): Rename
+	variable typename to type_name.
+	* c-lex.c (interpret_float): Likewise.
+
 2004-07-25  Roger Sayle  <roger@eyesopen.com>
 
 	* convert.c (convert_to_real, convert_to_integer,

@@ -2646,33 +2646,33 @@ set_array_declarator_type (tree decl, tree type, int abstract_p)
 /* Decode a "typename", such as "int **", returning a ..._TYPE node.  */
 
 tree
-groktypename (tree typename)
+groktypename (tree type_name)
 {
   tree specs, attrs;
 
-  if (TREE_CODE (typename) != TREE_LIST)
-    return typename;
+  if (TREE_CODE (type_name) != TREE_LIST)
+    return type_name;
 
-  split_specs_attrs (TREE_PURPOSE (typename), &specs, &attrs);
+  split_specs_attrs (TREE_PURPOSE (type_name), &specs, &attrs);
 
-  typename = grokdeclarator (TREE_VALUE (typename), specs, TYPENAME, 0,
+  type_name = grokdeclarator (TREE_VALUE (type_name), specs, TYPENAME, 0,
 			     NULL);
 
   /* Apply attributes.  */
-  decl_attributes (&typename, attrs, 0);
+  decl_attributes (&type_name, attrs, 0);
 
-  return typename;
+  return type_name;
 }
 
 /* Return a PARM_DECL node for a given pair of specs and declarator.  */
 
 tree
-groktypename_in_parm_context (tree typename)
+groktypename_in_parm_context (tree type_name)
 {
-  if (TREE_CODE (typename) != TREE_LIST)
-    return typename;
-  return grokdeclarator (TREE_VALUE (typename),
-			 TREE_PURPOSE (typename),
+  if (TREE_CODE (type_name) != TREE_LIST)
+    return type_name;
+  return grokdeclarator (TREE_VALUE (type_name),
+			 TREE_PURPOSE (type_name),
 			 PARM, 0, NULL);
 }
 
