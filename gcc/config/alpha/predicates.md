@@ -66,6 +66,17 @@
 		 || CONST_OK_FOR_LETTER_P (INTVAL (op), 'O')")
     (match_operand 0 "register_operand")))
 
+;; Return 1 if the operand is a non-symbolic constant operand that
+;; does not satisfy add_operand.
+(define_predicate "non_add_const_operand"
+  (and (match_code "const_int,const_double,const_vector")
+       (not (match_operand 0 "add_operand"))))
+
+;; Return 1 if the operand is a non-symbolic, non-zero constant operand.
+(define_predicate "non_zero_const_operand"
+  (and (match_code "const_int,const_double,const_vector")
+       (match_test "op != CONST0_RTX (mode)")))
+
 ;; Return 1 if OP is the constant 4 or 8.
 (define_predicate "const48_operand"
   (and (match_code "const_int")
@@ -205,11 +216,19 @@
 	      && general_operand (op, mode));
 
     case CONST_DOUBLE:
+      return op == CONST0_RTX (mode);
+
     case CONST_VECTOR:
+      if (reload_in_progress || reload_completed)
+	return alpha_legitimate_constant_p (op);
       return op == CONST0_RTX (mode);
 
     case CONST_INT:
-      return mode == QImode || mode == HImode || add_operand (op, mode);
+      if (mode == QImode || mode == HImode)
+	return true;
+      if (reload_in_progress || reload_completed)
+	return alpha_legitimate_constant_p (op);
+      return add_operand (op, mode);
 
     default:
       abort ();

@@ -1,3 +1,27 @@
+2005-01-19  Richard Henderson  <rth@redhat.com>
+
+	PR target/19518
+	* config/alpha/alpha.c (alpha_rtx_costs): Handle HIGH.
+	(alpha_preferred_reload_class): Handle CONST_VECTOR.
+	(alpha_emit_set_const_1): Add no_output parameter; don't emit
+	rtl if true.
+	(alpha_emit_set_const): Likewise.  Make static.
+	(alpha_emit_set_long_const): Make static.
+	(alpha_extract_integer): Split out from alpha_expand_mov.
+	(alpha_split_const_mov): Likewise.
+	(alpha_expand_mov): Use them.  Handle CONST_VECTOR.
+	(alpha_legitimate_constant_p): New.
+	* config/alpha/alpha-protos.h: Update.
+	* config/alpha/alpha.h (REGISTER_MOVE_COST): Correct fp<->gp cost.
+	(LEGITIMATE_CONSTANT_P): Re-implement with a function.
+	* config/alpha/alpha.md (movsi): Add n alternative.
+	(movsi_nt_vms, movdi_er_nofix, movdi_er_fix, movdi_fix): Likewise.
+	(mov<VEC>_fix, mov<VEC>_nofix): Add i alternative.
+	(splitters for all of the above): Use alpha_split_const_mov.
+	* config/alpha/predicates.md (non_add_const_operand): New.
+	(non_zero_const_operand): New.
+	(input_operand): Use alpha_legitimate_constant_p after reload.
+
 2005-01-19  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR tree-optimization/19038

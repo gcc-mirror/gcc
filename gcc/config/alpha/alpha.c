@@ -1384,6 +1384,11 @@ alpha_rtx_costs (rtx x, int code, int outer_code, int *total)
 	*total = COSTS_N_INSNS (optimize_size ? 1 : alpha_memory_latency);
       return true;
 
+    case HIGH:
+      /* This is effectively an add_operand.  */
+      *total = 2;
+      return true;
+
     case PLUS:
     case MINUS:
       if (float_mode_p)
@@ -1557,7 +1562,9 @@ alpha_preferred_reload_class(rtx x, enum reg_class class)
     return class;
 
   /* These sorts of constants we can easily drop to memory.  */
-  if (GET_CODE (x) == CONST_INT || GET_CODE (x) == CONST_DOUBLE)
+  if (GET_CODE (x) == CONST_INT
+      || GET_CODE (x) == CONST_DOUBLE
+      || GET_CODE (x) == CONST_VECTOR)
     {
       if (class == FLOAT_REGS)
 	return NO_REGS;
@@ -1679,11 +1686,16 @@ alpha_set_memflags (rtx insn, rtx ref)
   for_each_rtx (base_ptr, alpha_set_memflags_1, (void *) ref);
 }
 
-/* Internal routine for alpha_emit_set_const to check for N or below insns.  */
+static rtx alpha_emit_set_const (rtx, enum machine_mode, HOST_WIDE_INT,
+				 int, bool);
+
+/* Internal routine for alpha_emit_set_const to check for N or below insns.
+   If NO_OUTPUT is true, then we only check to see if N insns are possible,
+   and return pc_rtx if successful.  */
 
 static rtx
 alpha_emit_set_const_1 (rtx target, enum machine_mode mode,
-			HOST_WIDE_INT c, int n)
+			HOST_WIDE_INT c, int n, bool no_output)
 {
   HOST_WIDE_INT new;
   int i, bits;
@@ -1722,6 +1734,8 @@ alpha_emit_set_const_1 (rtx target, enum machine_mode mode,
 	     emit_move_insn to gen_movdi.  So instead, since we know exactly
 	     what we want, create it explicitly.  */
 
+	  if (no_output)
+	    return pc_rtx;
 	  if (target == NULL)
 	    target = gen_reg_rtx (mode);
 	  emit_insn (gen_rtx_SET (VOIDmode, target, GEN_INT (c)));
@@ -1729,6 +1743,8 @@ alpha_emit_set_const_1 (rtx target, enum machine_mode mode,
 	}
       else if (n >= 2 + (extra != 0))
 	{
+	  if (no_output)
+	    return pc_rtx;
 	  if (no_new_pseudos)
 	    {
 	      emit_insn (gen_rtx_SET (VOIDmode, target, GEN_INT (high << 16)));
@@ -1781,14 +1797,26 @@ alpha_emit_set_const_1 (rtx target, enum machine_mode mode,
 	 high bits.  */
 
       new = ((c & 0xffff) ^ 0x8000) - 0x8000;
-      if (new != 0
-          && (temp = alpha_emit_set_const (subtarget, mode, c - new, i)) != 0)
-	return expand_binop (mode, add_optab, temp, GEN_INT (new),
-			     target, 0, OPTAB_WIDEN);
+      if (new != 0)
+	{
+          temp = alpha_emit_set_const (subtarget, mode, c - new, i, no_output);
+	  if (temp)
+	    {
+	      if (no_output)
+		return temp;
+	      return expand_binop (mode, add_optab, temp, GEN_INT (new),
+				   target, 0, OPTAB_WIDEN);
+	    }
+	}
 
       /* Next try complementing.  */
-      if ((temp = alpha_emit_set_const (subtarget, mode, ~ c, i)) != 0)
-	return expand_unop (mode, one_cmpl_optab, temp, target, 0);
+      temp = alpha_emit_set_const (subtarget, mode, ~c, i, no_output);
+      if (temp)
+	{
+	  if (no_output)
+	    return temp;
+	  return expand_unop (mode, one_cmpl_optab, temp, target, 0);
+	}
 
       /* Next try to form a constant and do a left shift.  We can do this
 	 if some low-order bits are zero; the exact_log2 call below tells
@@ -1799,16 +1827,26 @@ alpha_emit_set_const_1 (rtx target, enum machine_mode mode,
 	 bits to shift, but try all possibilities in case a ZAPNOT will
 	 be useful.  */
 
-      if ((bits = exact_log2 (c & - c)) > 0)
+      bits = exact_log2 (c & -c);
+      if (bits > 0)
 	for (; bits > 0; bits--)
-	  if ((temp = (alpha_emit_set_const
-		       (subtarget, mode, c >> bits, i))) != 0
-	      || ((temp = (alpha_emit_set_const
-			  (subtarget, mode,
-			   ((unsigned HOST_WIDE_INT) c) >> bits, i)))
-		  != 0))
-	    return expand_binop (mode, ashl_optab, temp, GEN_INT (bits),
-				 target, 0, OPTAB_WIDEN);
+	  {
+	    new = c >> bits;
+	    temp = alpha_emit_set_const (subtarget, mode, new, i, no_output);
+	    if (!temp && c < 0)
+	      {
+		new = (unsigned HOST_WIDE_INT)c >> bits;
+		temp = alpha_emit_set_const (subtarget, mode, new,
+					     i, no_output);
+	      }
+	    if (temp)
+	      {
+		if (no_output)
+		  return temp;
+	        return expand_binop (mode, ashl_optab, temp, GEN_INT (bits),
+				     target, 0, OPTAB_WIDEN);
+	      }
+	  }
 
       /* Now try high-order zero bits.  Here we try the shifted-in bits as
 	 all zero and all ones.  Be careful to avoid shifting outside the
@@ -1816,35 +1854,53 @@ alpha_emit_set_const_1 (rtx target, enum machine_mode mode,
       /* On narrow hosts, don't shift a 1 into the high bit, since we'll
 	 confuse the recursive call and set all of the high 32 bits.  */
 
-      if ((bits = (MIN (HOST_BITS_PER_WIDE_INT, GET_MODE_SIZE (mode) * 8)
-		   - floor_log2 (c) - 1 - (HOST_BITS_PER_WIDE_INT < 64))) > 0)
+      bits = (MIN (HOST_BITS_PER_WIDE_INT, GET_MODE_SIZE (mode) * 8)
+	      - floor_log2 (c) - 1 - (HOST_BITS_PER_WIDE_INT < 64));
+      if (bits > 0)
 	for (; bits > 0; bits--)
-	  if ((temp = alpha_emit_set_const (subtarget, mode,
-					    c << bits, i)) != 0
-	      || ((temp = (alpha_emit_set_const
-			   (subtarget, mode,
-			    ((c << bits) | (((HOST_WIDE_INT) 1 << bits) - 1)),
-			    i)))
-		  != 0))
-	    return expand_binop (mode, lshr_optab, temp, GEN_INT (bits),
-				 target, 1, OPTAB_WIDEN);
+	  {
+	    new = c << bits;
+	    temp = alpha_emit_set_const (subtarget, mode, new, i, no_output);
+	    if (!temp)
+	      {
+		new = (c << bits) | (((HOST_WIDE_INT) 1 << bits) - 1);
+	        temp = alpha_emit_set_const (subtarget, mode, new,
+					     i, no_output);
+	      }
+	    if (temp)
+	      {
+		if (no_output)
+		  return temp;
+		return expand_binop (mode, lshr_optab, temp, GEN_INT (bits),
+				     target, 1, OPTAB_WIDEN);
+	      }
+	  }
 
       /* Now try high-order 1 bits.  We get that with a sign-extension.
 	 But one bit isn't enough here.  Be careful to avoid shifting outside
 	 the mode and to avoid shifting outside the host wide int size.  */
 
-      if ((bits = (MIN (HOST_BITS_PER_WIDE_INT, GET_MODE_SIZE (mode) * 8)
-		   - floor_log2 (~ c) - 2)) > 0)
+      bits = (MIN (HOST_BITS_PER_WIDE_INT, GET_MODE_SIZE (mode) * 8)
+	      - floor_log2 (~ c) - 2);
+      if (bits > 0)
 	for (; bits > 0; bits--)
-	  if ((temp = alpha_emit_set_const (subtarget, mode,
-					    c << bits, i)) != 0
-	      || ((temp = (alpha_emit_set_const
-			   (subtarget, mode,
-			    ((c << bits) | (((HOST_WIDE_INT) 1 << bits) - 1)),
-			    i)))
-		  != 0))
-	    return expand_binop (mode, ashr_optab, temp, GEN_INT (bits),
-				 target, 0, OPTAB_WIDEN);
+	  {
+	    new = c << bits;
+	    temp = alpha_emit_set_const (subtarget, mode, new, i, no_output);
+	    if (!temp)
+	      {
+		new = (c << bits) | (((HOST_WIDE_INT) 1 << bits) - 1);
+	        temp = alpha_emit_set_const (subtarget, mode, new,
+					     i, no_output);
+	      }
+	    if (temp)
+	      {
+		if (no_output)
+		  return temp;
+		return expand_binop (mode, ashr_optab, temp, GEN_INT (bits),
+				     target, 0, OPTAB_WIDEN);
+	      }
+	  }
     }
 
 #if HOST_BITS_PER_WIDE_INT == 64
@@ -1863,10 +1919,17 @@ alpha_emit_set_const_1 (rtx target, enum machine_mode mode,
   if (mode == SImode)
     new = ((new & 0xffffffff) ^ 0x80000000) - 0x80000000;
 
-  if (new != c && new != -1
-      && (temp = alpha_emit_set_const (subtarget, mode, new, n - 1)) != 0)
-    return expand_binop (mode, and_optab, temp, GEN_INT (c | ~ new),
-			 target, 0, OPTAB_WIDEN);
+  if (new != c)
+    {
+      temp = alpha_emit_set_const (subtarget, mode, new, n - 1, no_output);
+      if (temp)
+	{
+	  if (no_output)
+	    return temp;
+	  return expand_binop (mode, and_optab, temp, GEN_INT (c | ~ new),
+			       target, 0, OPTAB_WIDEN);
+	}
+    }
 #endif
 
   return 0;
@@ -1878,32 +1941,46 @@ alpha_emit_set_const_1 (rtx target, enum machine_mode mode,
    emitted.  If it would take more than N insns, zero is returned and no
    insns and emitted.  */
 
-rtx
+static rtx
 alpha_emit_set_const (rtx target, enum machine_mode mode,
-		      HOST_WIDE_INT c, int n)
+		      HOST_WIDE_INT c, int n, bool no_output)
 {
-  rtx result = 0;
+  enum machine_mode orig_mode = mode;
   rtx orig_target = target;
+  rtx result = 0;
   int i;
 
   /* If we can't make any pseudos, TARGET is an SImode hard register, we
      can't load this constant in one insn, do this in DImode.  */
   if (no_new_pseudos && mode == SImode
-      && GET_CODE (target) == REG && REGNO (target) < FIRST_PSEUDO_REGISTER
-      && (result = alpha_emit_set_const_1 (target, mode, c, 1)) == 0)
+      && GET_CODE (target) == REG && REGNO (target) < FIRST_PSEUDO_REGISTER)
     {
-      target = gen_lowpart (DImode, target);
+      result = alpha_emit_set_const_1 (target, mode, c, 1, no_output);
+      if (result)
+	return result;
+
+      target = no_output ? NULL : gen_lowpart (DImode, target);
+      mode = DImode;
+    }
+  else if (mode == V8QImode || mode == V4HImode || mode == V2SImode)
+    {
+      target = no_output ? NULL : gen_lowpart (DImode, target);
       mode = DImode;
     }
 
   /* Try 1 insn, then 2, then up to N.  */
   for (i = 1; i <= n; i++)
     {
-      result = alpha_emit_set_const_1 (target, mode, c, i);
+      result = alpha_emit_set_const_1 (target, mode, c, i, no_output);
       if (result)
 	{
-	  rtx insn = get_last_insn ();
-	  rtx set = single_set (insn);
+	  rtx insn, set;
+
+	  if (no_output)
+	    return result;
+
+	  insn = get_last_insn ();
+	  set = single_set (insn);
 	  if (! CONSTANT_P (SET_SRC (set)))
 	    set_unique_reg_note (get_last_insn (), REG_EQUAL, GEN_INT (c));
 	  break;
@@ -1911,8 +1988,13 @@ alpha_emit_set_const (rtx target, enum machine_mode mode,
     }
 
   /* Allow for the case where we changed the mode of TARGET.  */
-  if (result == target)
-    result = orig_target;
+  if (result)
+    {
+      if (result == target)
+	result = orig_target;
+      else if (mode != orig_mode)
+	result = gen_lowpart (orig_mode, result);
+    }
 
   return result;
 }
@@ -1922,7 +2004,7 @@ alpha_emit_set_const (rtx target, enum machine_mode mode,
    exponential run times encountered when looking for longer sequences
    with alpha_emit_set_const.  */
 
-rtx
+static rtx
 alpha_emit_set_long_const (rtx target, HOST_WIDE_INT c1, HOST_WIDE_INT c2)
 {
   HOST_WIDE_INT d1, d2, d3, d4;
@@ -1976,6 +2058,114 @@ alpha_emit_set_long_const (rtx target, HOST_WIDE_INT c1, HOST_WIDE_INT c2)
   return target;
 }
 
+/* Given an integral CONST_INT, CONST_DOUBLE, or CONST_VECTOR, return 
+   the low 64 bits.  */
+
+static void
+alpha_extract_integer (rtx x, HOST_WIDE_INT *p0, HOST_WIDE_INT *p1)
+{
+  HOST_WIDE_INT i0, i1;
+
+  if (GET_CODE (x) == CONST_VECTOR)
+    x = simplify_subreg (DImode, x, GET_MODE (x), 0);
+
+
+  if (GET_CODE (x) == CONST_INT)
+    {
+      i0 = INTVAL (x);
+      i1 = -(i0 < 0);
+    }
+  else if (HOST_BITS_PER_WIDE_INT >= 64)
+    {
+      i0 = CONST_DOUBLE_LOW (x);
+      i1 = -(i0 < 0);
+    }
+  else
+    {
+      i0 = CONST_DOUBLE_LOW (x);
+      i1 = CONST_DOUBLE_HIGH (x);
+    }
+
+  *p0 = i0;
+  *p1 = i1;
+}
+
+/* Implement LEGITIMATE_CONSTANT_P.  This is all constants for which we
+   are willing to load the value into a register via a move pattern.
+   Normally this is all symbolic constants, integral constants that
+   take three or fewer instructions, and floating-point zero.  */
+
+bool
+alpha_legitimate_constant_p (rtx x)
+{
+  enum machine_mode mode = GET_MODE (x);
+  HOST_WIDE_INT i0, i1;
+
+  switch (GET_CODE (x))
+    {
+    case CONST:
+    case LABEL_REF:
+    case SYMBOL_REF:
+    case HIGH:
+      return true;
+
+    case CONST_DOUBLE:
+      if (x == CONST0_RTX (mode))
+	return true;
+      if (FLOAT_MODE_P (mode))
+	return false;
+      goto do_integer;
+
+    case CONST_VECTOR:
+      if (x == CONST0_RTX (mode))
+	return true;
+      if (GET_MODE_CLASS (mode) != MODE_VECTOR_INT)
+	return false;
+      if (GET_MODE_SIZE (mode) != 8)
+	return false;
+      goto do_integer;
+
+    case CONST_INT:
+    do_integer:
+      if (TARGET_BUILD_CONSTANTS)
+	return true;
+      alpha_extract_integer (x, &i0, &i1);
+      if (HOST_BITS_PER_WIDE_INT >= 64 || i1 == (-i0 < 0))
+        return alpha_emit_set_const_1 (x, mode, i0, 3, true) != NULL;
+      return false;
+
+    default:
+      return false;
+    }
+}
+
+/* Operand 1 is known to be a constant, and should require more than one
+   instruction to load.  Emit that multi-part load.  */
+
+bool
+alpha_split_const_mov (enum machine_mode mode, rtx *operands)
+{
+  HOST_WIDE_INT i0, i1;
+  rtx temp = NULL_RTX;
+
+  alpha_extract_integer (operands[1], &i0, &i1);
+
+  if (HOST_BITS_PER_WIDE_INT >= 64 || i1 == -(i0 < 0))
+    temp = alpha_emit_set_const (operands[0], mode, i0, 3, false);
+
+  if (!temp && TARGET_BUILD_CONSTANTS)
+    temp = alpha_emit_set_long_const (operands[0], i0, i1);
+
+  if (temp)
+    {
+      if (!rtx_equal_p (operands[0], temp))
+	emit_move_insn (operands[0], temp);
+      return true;
+    }
+
+  return false;
+}
+
 /* Expand a move instruction; return true if all work is done.
    We don't handle non-bwx subword loads here.  */
 
@@ -2008,40 +2198,11 @@ alpha_expand_mov (enum machine_mode mode, rtx *operands)
 
   /* Split large integers.  */
   if (GET_CODE (operands[1]) == CONST_INT
-      || GET_CODE (operands[1]) == CONST_DOUBLE)
+      || GET_CODE (operands[1]) == CONST_DOUBLE
+      || GET_CODE (operands[1]) == CONST_VECTOR)
     {
-      HOST_WIDE_INT i0, i1;
-      rtx temp = NULL_RTX;
-
-      if (GET_CODE (operands[1]) == CONST_INT)
-	{
-	  i0 = INTVAL (operands[1]);
-	  i1 = -(i0 < 0);
-	}
-      else if (HOST_BITS_PER_WIDE_INT >= 64)
-	{
-	  i0 = CONST_DOUBLE_LOW (operands[1]);
-	  i1 = -(i0 < 0);
-	}
-      else
-	{
-	  i0 = CONST_DOUBLE_LOW (operands[1]);
-	  i1 = CONST_DOUBLE_HIGH (operands[1]);
-	}
-
-      if (HOST_BITS_PER_WIDE_INT >= 64 || i1 == -(i0 < 0))
-	temp = alpha_emit_set_const (operands[0], mode, i0, 3);
-
-      if (!temp && TARGET_BUILD_CONSTANTS)
-	temp = alpha_emit_set_long_const (operands[0], i0, i1);
-
-      if (temp)
-	{
-	  if (rtx_equal_p (operands[0], temp))
-	    return true;
-	  operands[1] = temp;
-	  return false;
-	}
+      if (alpha_split_const_mov (mode, operands))
+	return true;
     }
 
   /* Otherwise we've nothing left but to drop the thing to memory.  */
@@ -7029,7 +7190,8 @@ alpha_expand_epilogue (void)
       else
 	{
 	  rtx tmp = gen_rtx_REG (DImode, 23);
-	  FRP (sp_adj2 = alpha_emit_set_const (tmp, DImode, frame_size, 3));
+	  FRP (sp_adj2 = alpha_emit_set_const (tmp, DImode, frame_size,
+					       3, false));
 	  if (!sp_adj2)
 	    {
 	      /* We can't drop new things to memory this late, afaik,
