@@ -148,71 +148,74 @@ integer_type_codes[itk_none] =
   'y'   /* itk_unsigned_long_long */
 };
 
-static int decl_is_template_id PARAMS ((tree, tree*));
+static int decl_is_template_id (const tree, tree* const);
 
 /* Functions for handling substitutions.  */
 
-static inline tree canonicalize_for_substitution PARAMS ((tree));
-static void add_substitution PARAMS ((tree));
-static inline int is_std_substitution PARAMS ((tree, substitution_identifier_index_t));
-static inline int is_std_substitution_char PARAMS ((tree, substitution_identifier_index_t));
-static int find_substitution PARAMS ((tree));
-static void mangle_call_offset PARAMS ((tree, tree));
+static inline tree canonicalize_for_substitution (tree);
+static void add_substitution (tree);
+static inline int is_std_substitution (const tree,
+				       const substitution_identifier_index_t);
+static inline int is_std_substitution_char (const tree,
+					    const substitution_identifier_index_t);
+static int find_substitution (tree);
+static void mangle_call_offset (const tree, const tree);
 
 /* Functions for emitting mangled representations of things.  */
 
-static void write_mangled_name PARAMS ((tree));
-static void write_encoding PARAMS ((tree));
-static void write_name PARAMS ((tree, int));
-static void write_unscoped_name PARAMS ((tree));
-static void write_unscoped_template_name PARAMS ((tree));
-static void write_nested_name PARAMS ((tree));
-static void write_prefix PARAMS ((tree));
-static void write_template_prefix PARAMS ((tree));
-static void write_unqualified_name PARAMS ((tree));
-static void write_conversion_operator_name (tree);
-static void write_source_name PARAMS ((tree));
-static int hwint_to_ascii PARAMS ((unsigned HOST_WIDE_INT, unsigned int, char *, unsigned));
-static void write_number PARAMS ((unsigned HOST_WIDE_INT, int,
-				  unsigned int));
-static void write_integer_cst PARAMS ((tree));
-static void write_real_cst PARAMS ((tree));
-static void write_identifier PARAMS ((const char *));
-static void write_special_name_constructor PARAMS ((tree));
-static void write_special_name_destructor PARAMS ((tree));
-static void write_type PARAMS ((tree));
-static int write_CV_qualifiers_for_type PARAMS ((tree));
-static void write_builtin_type PARAMS ((tree));
-static void write_function_type PARAMS ((tree));
-static void write_bare_function_type PARAMS ((tree, int, tree));
-static void write_method_parms PARAMS ((tree, int, tree));
-static void write_class_enum_type PARAMS ((tree));
-static void write_template_args PARAMS ((tree));
-static void write_expression PARAMS ((tree));
-static void write_template_arg_literal PARAMS ((tree));
-static void write_template_arg PARAMS ((tree));
-static void write_template_template_arg PARAMS ((tree));
-static void write_array_type PARAMS ((tree));
-static void write_pointer_to_member_type PARAMS ((tree));
-static void write_template_param PARAMS ((tree));
-static void write_template_template_param PARAMS ((tree));
-static void write_substitution PARAMS ((int));
-static int discriminator_for_local_entity PARAMS ((tree));
-static int discriminator_for_string_literal PARAMS ((tree, tree));
-static void write_discriminator PARAMS ((int));
-static void write_local_name PARAMS ((tree, tree, tree));
-static void dump_substitution_candidates PARAMS ((void));
-static const char *mangle_decl_string PARAMS ((tree));
+static void write_mangled_name (const tree);
+static void write_encoding (const tree);
+static void write_name (tree, const int);
+static void write_unscoped_name (const tree);
+static void write_unscoped_template_name (const tree);
+static void write_nested_name (const tree);
+static void write_prefix (const tree);
+static void write_template_prefix (const tree);
+static void write_unqualified_name (const tree);
+static void write_conversion_operator_name (const tree);
+static void write_source_name (tree);
+static int hwint_to_ascii (unsigned HOST_WIDE_INT, const unsigned int, char *,
+			   const unsigned int);
+static void write_number (unsigned HOST_WIDE_INT, const int,
+			  const unsigned int);
+static void write_integer_cst (const tree);
+static void write_real_cst (const tree);
+static void write_identifier (const char *);
+static void write_special_name_constructor (const tree);
+static void write_special_name_destructor (const tree);
+static void write_type (tree);
+static int write_CV_qualifiers_for_type (const tree);
+static void write_builtin_type (tree);
+static void write_function_type (const tree);
+static void write_bare_function_type (const tree, const int, const tree);
+static void write_method_parms (tree, const int, const tree);
+static void write_class_enum_type (const tree);
+static void write_template_args (tree);
+static void write_expression (tree);
+static void write_template_arg_literal (const tree);
+static void write_template_arg (tree);
+static void write_template_template_arg (const tree);
+static void write_array_type (const tree);
+static void write_pointer_to_member_type (const tree);
+static void write_template_param (const tree);
+static void write_template_template_param (const tree);
+static void write_substitution (const int);
+static int discriminator_for_local_entity (tree);
+static int discriminator_for_string_literal (tree, tree);
+static void write_discriminator (const int);
+static void write_local_name (const tree, const tree, const tree);
+static void dump_substitution_candidates (void);
+static const char *mangle_decl_string (const tree);
 
 /* Control functions.  */
 
-static inline void start_mangling (tree);
-static inline const char *finish_mangling (bool);
-static tree mangle_special_for_type PARAMS ((tree, const char *));
+static inline void start_mangling (const tree);
+static inline const char *finish_mangling (const bool);
+static tree mangle_special_for_type (const tree, const char *);
 
 /* Foreign language functions.  */
 
-static void write_java_integer_type_codes PARAMS ((tree));
+static void write_java_integer_type_codes (const tree);
 
 /* Append a single character to the end of the mangled
    representation.  */
@@ -249,15 +252,13 @@ static void write_java_integer_type_codes PARAMS ((tree));
    Otherwise return zero.  */
 
 static int
-decl_is_template_id (decl, template_info)
-     tree decl;
-     tree* template_info;
+decl_is_template_id (const tree decl, tree* const template_info)
 {
   if (TREE_CODE (decl) == TYPE_DECL)
     {
       /* TYPE_DECLs are handled specially.  Look at its type to decide
 	 if this is a template instantiation.  */
-      tree type = TREE_TYPE (decl);
+      const tree type = TREE_TYPE (decl);
 
       if (CLASS_TYPE_P (type) && CLASSTYPE_TEMPLATE_ID_P (type))
 	{
@@ -328,8 +329,7 @@ dump_substitution_candidates ()
    and substitution candidates and finding matches.  */
 
 static inline tree
-canonicalize_for_substitution (node)
-     tree node;
+canonicalize_for_substitution (tree node)
 {
   /* For a TYPE_DECL, use the type instead.  */
   if (TREE_CODE (node) == TYPE_DECL)
@@ -344,8 +344,7 @@ canonicalize_for_substitution (node)
    the list of candidates.  */
 
 static void
-add_substitution (node)
-     tree node;
+add_substitution (tree node)
 {
   tree c;
 
@@ -366,7 +365,7 @@ add_substitution (node)
     int i;
     for (i = VARRAY_ACTIVE_SIZE (G.substitutions); --i >= 0; )
       {
-	tree candidate = VARRAY_TREE (G.substitutions, i);
+	const tree candidate = VARRAY_TREE (G.substitutions, i);
 	if ((DECL_P (node) 
 	     && node == candidate)
 	    || (TYPE_P (node) 
@@ -389,9 +388,8 @@ add_substitution (node)
    name of substitution_index[INDEX] in the ::std namespace.  */
 
 static inline int 
-is_std_substitution (node, index)
-     tree node;
-     substitution_identifier_index_t index;
+is_std_substitution (const tree node,
+		     const substitution_identifier_index_t index)
 {
   tree type = NULL;
   tree decl = NULL;
@@ -423,9 +421,8 @@ is_std_substitution (node, index)
    substitution_index[INDEX].  */
 
 static inline int
-is_std_substitution_char (node, index)
-     tree node;
-     substitution_identifier_index_t index;
+is_std_substitution_char (const tree node,
+			  const substitution_identifier_index_t index)
 {
   tree args;
   /* Check NODE's name is ::std::identifier.  */
@@ -480,11 +477,10 @@ is_std_substitution_char (node, index)
    return nonzero.  If none is found, just return zero.  */
 
 static int
-find_substitution (node)
-     tree node;
+find_substitution (tree node)
 {
   int i;
-  int size = VARRAY_ACTIVE_SIZE (G.substitutions);
+  const int size = VARRAY_ACTIVE_SIZE (G.substitutions);
   tree decl;
   tree type;
 
@@ -613,8 +609,7 @@ find_substitution (node)
 /*  <mangled-name>      ::= _Z <encoding>  */
 
 static inline void
-write_mangled_name (decl)
-     tree decl;
+write_mangled_name (const tree decl)
 {
   MANGLE_TRACE_TREE ("mangled-name", decl);
 
@@ -639,8 +634,7 @@ write_mangled_name (decl)
 			::= <data name>  */
 
 static void
-write_encoding (decl)
-     tree decl;
+write_encoding (const tree decl)
 {
   MANGLE_TRACE_TREE ("encoding", decl);
 
@@ -686,9 +680,7 @@ write_encoding (decl)
    production, to avoid an infinite recursion.  */
 
 static void
-write_name (decl, ignore_local_scope)
-     tree decl;
-     int ignore_local_scope;
+write_name (tree decl, const int ignore_local_scope)
 {
   tree context;
 
@@ -770,8 +762,7 @@ write_name (decl, ignore_local_scope)
                    ::= St <unqualified-name>   # ::std::  */
 
 static void
-write_unscoped_name (decl)
-     tree decl;
+write_unscoped_name (const tree decl)
 {
   tree context = CP_DECL_CONTEXT (decl);
 
@@ -797,8 +788,7 @@ write_unscoped_name (decl)
                             ::= <substitution>  */
 
 static void
-write_unscoped_template_name (decl)
-     tree decl;
+write_unscoped_template_name (const tree decl)
 {
   MANGLE_TRACE_TREE ("unscoped-template-name", decl);
 
@@ -816,8 +806,7 @@ write_unscoped_template_name (decl)
    <CV-qualifiers> ::= [r] [V] [K]  */
 
 static void
-write_nested_name (decl)
-     tree decl;
+write_nested_name (const tree decl)
 {
   tree template_info;
 
@@ -858,8 +847,7 @@ write_nested_name (decl)
 	    ::= <substitution>  */
 
 static void
-write_prefix (node)
-     tree node;
+write_prefix (const tree node)
 {
   tree decl;
   /* Non-NULL if NODE represents a template-id.  */
@@ -924,8 +912,7 @@ write_prefix (node)
                      ::= <substitution>  */
 
 static void
-write_template_prefix (node)
-     tree node;
+write_template_prefix (const tree node)
 {
   tree decl = DECL_P (node) ? node : TYPE_NAME (node);
   tree type = DECL_P (node) ? TREE_TYPE (node) : node;
@@ -1000,8 +987,7 @@ write_template_prefix (node)
 			::= <source-name>  */
 
 static void
-write_unqualified_name (decl)
-     tree decl;
+write_unqualified_name (const tree decl)
 {
   MANGLE_TRACE_TREE ("unqualified-name", decl);
 
@@ -1040,7 +1026,7 @@ write_unqualified_name (decl)
 /* Write the unqualified-name for a conversion operator to TYPE.  */
 
 static void
-write_conversion_operator_name (tree type)
+write_conversion_operator_name (const tree type)
 {
   write_string ("cv");
   write_type (type);
@@ -1051,8 +1037,7 @@ write_conversion_operator_name (tree type)
      <source-name> ::= </length/ number> <identifier>  */
 
 static void
-write_source_name (identifier)
-     tree identifier;
+write_source_name (tree identifier)
 {
   MANGLE_TRACE_TREE ("source-name", identifier);
 
@@ -1072,11 +1057,8 @@ write_source_name (identifier)
    BUFFER points).  */
 
 static int
-hwint_to_ascii (number, base, buffer, min_digits)
-     unsigned HOST_WIDE_INT number;
-     unsigned int base;
-     char *buffer;
-     unsigned min_digits;
+hwint_to_ascii (unsigned HOST_WIDE_INT number, const unsigned int base,
+		char *buffer, const unsigned int min_digits)
 {
   static const char base_digits[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   unsigned digits = 0;
@@ -1102,10 +1084,8 @@ hwint_to_ascii (number, base, buffer, min_digits)
      <number> ::= [n] </decimal integer/>  */
 
 static void
-write_number (number, unsigned_p, base)
-     unsigned HOST_WIDE_INT number;
-     int unsigned_p;
-     unsigned int base;
+write_number (unsigned HOST_WIDE_INT number, const int unsigned_p,
+	      const unsigned int base)
 {
   char buffer[sizeof (HOST_WIDE_INT) * 8];
   unsigned count = 0;
@@ -1124,8 +1104,7 @@ write_number (number, unsigned_p, base)
    bigger than that, which we must deal with.  */
 
 static inline void
-write_integer_cst (cst)
-     tree cst;
+write_integer_cst (const tree cst)
 {
   int sign = tree_int_cst_sgn (cst);
 
@@ -1168,7 +1147,7 @@ write_integer_cst (cst)
 	  tree d = fold (build (FLOOR_DIV_EXPR, type, n, base));
 	  tree tmp = fold (build (MULT_EXPR, type, d, base));
 	  unsigned c;
-	  
+
 	  done = integer_zerop (d);
 	  tmp = fold (build (MINUS_EXPR, type, n, tmp));
 	  c = hwint_to_ascii (TREE_INT_CST_LOW (tmp), 10, ptr,
@@ -1215,8 +1194,7 @@ write_integer_cst (cst)
 
    Caller is responsible for the Lx and the E.  */
 static void
-write_real_cst (value)
-     tree value;
+write_real_cst (const tree value)
 {
   if (abi_version_at_least (2))
     {
@@ -1265,8 +1243,7 @@ write_real_cst (value)
      <identifier> ::= </unqualified source code identifier>  */
 
 static void
-write_identifier (identifier)
-     const char *identifier;
+write_identifier (const char *identifier)
 {
   MANGLE_TRACE ("identifier", identifier);
   write_string (identifier);
@@ -1286,8 +1263,7 @@ write_identifier (identifier)
    append *INTERNAL* to that, to make sure we never emit it.  */
 
 static void
-write_special_name_constructor (ctor)
-     tree ctor;
+write_special_name_constructor (const tree ctor)
 {
   if (DECL_COMPLETE_CONSTRUCTOR_P (ctor)
       /* Even though we don't ever emit a definition of the
@@ -1313,8 +1289,7 @@ write_special_name_constructor (ctor)
    append *INTERNAL* to that, to make sure we never emit it.  */
 
 static void
-write_special_name_destructor (dtor)
-     tree dtor;
+write_special_name_destructor (const tree dtor)
 {
   if (DECL_DELETING_DESTRUCTOR_P (dtor))
     write_string ("D0");
@@ -1335,14 +1310,12 @@ write_special_name_destructor (dtor)
    entities with the same name in the same FUNCTION.  */
 
 static int
-discriminator_for_local_entity (entity)
-     tree entity;
+discriminator_for_local_entity (tree entity)
 {
   tree *type;
-  int discriminator;
 
   /* Assume this is the only local entity with this name.  */
-  discriminator = 0;
+  int discriminator = 0;
 
   if (DECL_DISCRIMINATOR_P (entity) && DECL_LANG_SPECIFIC (entity))
     discriminator = DECL_DISCRIMINATOR (entity);
@@ -1379,8 +1352,7 @@ discriminator_for_string_literal (function, string)
    n - 2, if this is the nth occurrence, in lexical order.  */
 
 static void
-write_discriminator (discriminator)
-     int discriminator;
+write_discriminator (const int discriminator)
 {
   /* If discriminator is zero, don't write anything.  Otherwise...  */
   if (discriminator > 0)
@@ -1400,10 +1372,8 @@ write_discriminator (discriminator)
                   := Z <function encoding> E s [<discriminator>]  */
 
 static void
-write_local_name (function, local_entity, entity)
-     tree function;
-     tree local_entity;
-     tree entity;
+write_local_name (const tree function, const tree local_entity,
+		  const tree entity)
 {
   MANGLE_TRACE_TREE ("local-name", entity);
 
@@ -1445,8 +1415,7 @@ write_local_name (function, local_entity, entity)
    TYPE is a type node.  */
 
 static void 
-write_type (type)
-     tree type;
+write_type (tree type)
 {
   /* This gets set to nonzero if TYPE turns out to be a (possibly
      CV-qualified) builtin type.  */
@@ -1574,8 +1543,7 @@ write_type (type)
      <CV-qualifiers> ::= [r] [V] [K]  */
 
 static int
-write_CV_qualifiers_for_type (type)
-     tree type;
+write_CV_qualifiers_for_type (const tree type)
 {
   int num_qualifiers = 0;
 
@@ -1633,8 +1601,7 @@ write_CV_qualifiers_for_type (type)
                     ::= u <source-name>  # vendor extended type */
 
 static void 
-write_builtin_type (type)
-     tree type;
+write_builtin_type (tree type)
 {
   switch (TREE_CODE (type))
     {
@@ -1717,8 +1684,7 @@ write_builtin_type (type)
      <function-type> ::= F [Y] <bare-function-type> E   */
 
 static void
-write_function_type (type)
-     tree type;
+write_function_type (const tree type)
 {
   MANGLE_TRACE_TREE ("function-type", type);
 
@@ -1759,10 +1725,8 @@ write_function_type (type)
      <bare-function-type> ::= </signature/ type>+  */
 
 static void
-write_bare_function_type (type, include_return_type_p, decl)
-     tree type;
-     int include_return_type_p;
-     tree decl;
+write_bare_function_type (const tree type, const int include_return_type_p,
+			  const tree decl)
 {
   MANGLE_TRACE_TREE ("bare-function-type", type);
 
@@ -1783,10 +1747,7 @@ write_bare_function_type (type, include_return_type_p, decl)
    parameters are being emitted.  */
 
 static void
-write_method_parms (parm_types, method_p, decl)
-     tree decl;
-     tree parm_types;
-     int method_p;
+write_method_parms (tree parm_types, const int method_p, const tree decl)
 {
   tree first_parm_type;
   tree parm_decl = decl ? DECL_ARGUMENTS (decl) : NULL_TREE;
@@ -1844,8 +1805,7 @@ write_method_parms (parm_types, method_p, decl)
 /* <class-enum-type> ::= <name>  */
 
 static void 
-write_class_enum_type (type)
-     tree type;
+write_class_enum_type (const tree type)
 {
   write_name (TYPE_NAME (type), /*ignore_local_scope=*/0);
 }
@@ -1856,8 +1816,7 @@ write_class_enum_type (type)
      <template-args> ::= I <template-arg>+ E  */
 
 static void
-write_template_args (args)
-     tree args;
+write_template_args (tree args)
 {
   MANGLE_TRACE_TREE ("template-args", args);
 
@@ -1904,8 +1863,7 @@ write_template_args (args)
                   ::= sr <type> <unqualified-name> <template-args> */
 
 static void
-write_expression (expr)
-     tree expr;
+write_expression (tree expr)
 {
   enum tree_code code;
 
@@ -2095,8 +2053,7 @@ write_expression (expr)
      encoded as 0, true as 1."  */
 
 static void
-write_template_arg_literal (value)
-     tree value;
+write_template_arg_literal (const tree value)
 {
   tree type = TREE_TYPE (value);
   write_char ('L');
@@ -2134,8 +2091,7 @@ write_template_arg_literal (value)
                     ::= X <expression> E              # expression  */
 
 static void
-write_template_arg (node)
-     tree node;
+write_template_arg (tree node)
 {
   enum tree_code code = TREE_CODE (node);
 
@@ -2187,7 +2143,7 @@ write_template_arg (node)
 			::= <substitution>  */
 
 void
-write_template_template_arg (tree decl)
+write_template_template_arg (const tree decl)
 {
   MANGLE_TRACE_TREE ("template-template-arg", decl);
 
@@ -2207,9 +2163,8 @@ write_template_template_arg (tree decl)
      element type. For variable length arrays, the dimension (but not
      the '_' separator) is omitted."  */
 
-static void 
-write_array_type (type)
-  tree type;
+static void
+write_array_type (const tree type)
 {
   write_char ('A');
   if (TYPE_DOMAIN (type))
@@ -2241,8 +2196,7 @@ write_array_type (type)
      <pointer-to-member-type> ::= M </class/ type> </member/ type>  */
 
 static void
-write_pointer_to_member_type (type)
-     tree type;
+write_pointer_to_member_type (const tree type)
 {
   write_char ('M');
   write_type (TYPE_PTRMEM_CLASS_TYPE (type));
@@ -2263,8 +2217,7 @@ write_pointer_to_member_type (type)
    This is used by mangle_conv_op_name_for_type.  */
 
 static void
-write_template_param (parm)
-     tree parm;
+write_template_param (const tree parm)
 {
   int parm_index;
   int parm_level;
@@ -2313,8 +2266,7 @@ write_template_param (parm)
 			::= <substitution>  */
 
 static void
-write_template_template_param (parm)
-     tree parm;
+write_template_template_param (const tree parm)
 {
   tree template = NULL_TREE;
 
@@ -2342,8 +2294,7 @@ write_template_template_param (parm)
                      ::= S_  */
 
 static void
-write_substitution (seq_id)
-     int seq_id;
+write_substitution (const int seq_id)
 {
   MANGLE_TRACE ("substitution", "");
 
@@ -2356,7 +2307,7 @@ write_substitution (seq_id)
 /* Start mangling ENTITY.  */
 
 static inline void
-start_mangling (tree entity)
+start_mangling (const tree entity)
 {
   G.entity = entity;
   G.need_abi_warning = false;
@@ -2369,7 +2320,7 @@ start_mangling (tree entity)
    future version of the ABI, issue a warning.  */
 
 static inline const char *
-finish_mangling (bool warn)
+finish_mangling (const bool warn)
 {
   if (warn_abi && warn && G.need_abi_warning)
     warning ("the mangled name of `%D' will change in a future "
@@ -2405,8 +2356,7 @@ init_mangle ()
 /* Generate the mangled name of DECL.  */
 
 static const char *
-mangle_decl_string (decl)
-     tree decl;
+mangle_decl_string (const tree decl)
 {
   const char *result;
 
@@ -2446,8 +2396,7 @@ mangle_decl_string (decl)
 /* Create an identifier for the external mangled name of DECL.  */
 
 void
-mangle_decl (decl)
-     tree decl;
+mangle_decl (const tree decl)
 {
   tree id = get_identifier (mangle_decl_string (decl));
 
@@ -2457,8 +2406,7 @@ mangle_decl (decl)
 /* Generate the mangled representation of TYPE.  */
 
 const char *
-mangle_type_string (type)
-     tree type;
+mangle_type_string (const tree type)
 {
   const char *result;
 
@@ -2473,8 +2421,7 @@ mangle_type_string (type)
 /* Create an identifier for the mangled representation of TYPE.  */
 
 tree
-mangle_type (type)
-     tree type;
+mangle_type (const tree type)
 {
   return get_identifier (mangle_type_string (type));
 }
@@ -2484,9 +2431,7 @@ mangle_type (type)
    component.  */
 
 static tree
-mangle_special_for_type (type, code)
-     tree type;
-     const char *code;
+mangle_special_for_type (const tree type, const char *code)
 {
   const char *result;
 
@@ -2512,8 +2457,7 @@ mangle_special_for_type (type, code)
    structure for TYPE.  */
 
 tree
-mangle_typeinfo_for_type (type)
-     tree type;
+mangle_typeinfo_for_type (const tree type)
 {
   return mangle_special_for_type (type, "TI");
 }
@@ -2522,8 +2466,7 @@ mangle_typeinfo_for_type (type)
    the mangled name of TYPE.  */
 
 tree
-mangle_typeinfo_string_for_type (type)
-     tree type;
+mangle_typeinfo_string_for_type (const tree type)
 {
   return mangle_special_for_type (type, "TS");
 }
@@ -2531,8 +2474,7 @@ mangle_typeinfo_string_for_type (type)
 /* Create an identifier for the mangled name of the vtable for TYPE.  */
 
 tree
-mangle_vtbl_for_type (type)
-     tree type;
+mangle_vtbl_for_type (const tree type)
 {
   return mangle_special_for_type (type, "TV");
 }
@@ -2540,8 +2482,7 @@ mangle_vtbl_for_type (type)
 /* Returns an identifier for the mangled name of the VTT for TYPE.  */
 
 tree
-mangle_vtt_for_type (type)
-     tree type;
+mangle_vtt_for_type (const tree type)
 {
   return mangle_special_for_type (type, "TT");
 }
@@ -2561,9 +2502,7 @@ mangle_vtt_for_type (type)
     <special-name> ::= CT <type> <offset number> _ <base type>  */
 
 tree
-mangle_ctor_vtbl_for_type (type, binfo)
-     tree type;
-     tree binfo;
+mangle_ctor_vtbl_for_type (const tree type, const tree binfo)
 {
   const char *result;
 
@@ -2588,9 +2527,7 @@ mangle_ctor_vtbl_for_type (type, binfo)
 		 ::= v <fixed offset number> _ <virtual offset number> _ */
    
 static void
-mangle_call_offset (fixed_offset, virtual_offset)
-     tree fixed_offset;
-     tree virtual_offset;
+mangle_call_offset (const tree fixed_offset, const tree virtual_offset)
 {
   write_char (virtual_offset ? 'v' : 'h');
 
@@ -2621,11 +2558,8 @@ mangle_call_offset (fixed_offset, virtual_offset)
 */
 
 tree
-mangle_thunk (fn_decl, this_adjusting, fixed_offset, virtual_offset)
-     tree fn_decl;
-     int this_adjusting;
-     tree fixed_offset;
-     tree virtual_offset;
+mangle_thunk (tree fn_decl, const int this_adjusting, tree fixed_offset,
+	      tree virtual_offset)
 {
   const char *result;
   
@@ -2671,8 +2605,7 @@ mangle_thunk (fn_decl, this_adjusting, fixed_offset, virtual_offset)
    ABI spec; it is only used internally.  */
 
 tree
-mangle_conv_op_name_for_type (type)
-     tree type;
+mangle_conv_op_name_for_type (const tree type)
 {
   tree identifier;
   const char *mangled_type;
@@ -2716,8 +2649,7 @@ mangle_conv_op_name_for_type (type)
    variable for indicated VARIABLE.  */
 
 tree
-mangle_guard_variable (variable)
-     tree variable;
+mangle_guard_variable (const tree variable)
 {
   start_mangling (variable);
   write_string ("_ZGV");
@@ -2735,8 +2667,7 @@ mangle_guard_variable (variable)
    as well call them something readable.  */
 
 tree
-mangle_ref_init_variable (variable)
-     tree variable;
+mangle_ref_init_variable (const tree variable)
 {
   start_mangling (variable);
   write_string ("_ZGR");
@@ -2750,8 +2681,7 @@ mangle_ref_init_variable (variable)
 /* How to write the type codes for the integer Java type.  */
 
 static void
-write_java_integer_type_codes (type)
-     tree type;
+write_java_integer_type_codes (const tree type)
 {
   if (type == java_int_type_node)
     write_char ('i');
