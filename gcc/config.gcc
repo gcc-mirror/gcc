@@ -258,7 +258,7 @@ pj*-*-*)
 	;;
 powerpc*-*-*)
 	cpu_type=rs6000
-	extra_headers=ppc-asm.h
+	extra_headers="ppc-asm.h altivec.h"
 	;;
 sparc*-*-*)
 	cpu_type=sparc
@@ -2637,7 +2637,7 @@ powerpc-*-darwin*)
 	cxx_target_objs="darwin-c.o"
 	# Darwin linker does collect2 functionality
 	use_collect2=no
-	extra_headers=
+	extra_headers=altivec.h
 	;;
 powerpc*-*-freebsd*)
 	tm_file="${tm_file} dbxelf.h elfos.h ${fbsd_tm_file} rs6000/sysv4.h rs6000/freebsd.h"
