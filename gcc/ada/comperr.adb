@@ -279,7 +279,7 @@ package body Comperr is
                   End_Line;
                end if;
 
-               if not (Is_Public_Version and Is_FSF_Version) then
+               if not (Is_Public_Version or Is_FSF_Version) then
                   Write_Str
                     ("| (include your customer number #nnn " &
                      "in the subject line).");
