@@ -1,3 +1,6 @@
+# This variable gets added to GCC_CFLAGS.
+CROSS_GCC_CFLAGS = -B$(tooldir)/bin/
+
 # Expect user to provide libgcc1.a,
 # and give up immediately if the user has not done so.
 LIBGCC1 = libgcc1.cross
