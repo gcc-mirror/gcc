@@ -115,11 +115,9 @@ prepare_eh_type (tree type)
   return type;
 }
 
-/* Build the address of a typeinfo decl for use in the runtime
-   matching field of the exception model.  */
-
-static tree
-build_eh_type_type (tree type)
+/* Return the type info for TYPE as used by EH machinery.  */
+tree
+eh_type_info (tree type)
 {
   tree exp;
 
@@ -131,10 +129,21 @@ build_eh_type_type (tree type)
   else
     exp = get_tinfo_decl (type);
 
-  mark_used (exp);
-  exp = build1 (ADDR_EXPR, ptr_type_node, exp);
-
   return exp;
+}
+
+/* Build the address of a typeinfo decl for use in the runtime
+   matching field of the exception model.  */
+
+static tree
+build_eh_type_type (tree type)
+{
+  tree exp = eh_type_info (type);
+
+  if (!exp)
+    return NULL;
+
+  return build1 (ADDR_EXPR, ptr_type_node, exp);
 }
 
 tree
@@ -470,8 +479,13 @@ finish_eh_spec_block (tree raw_raises, tree eh_spec_block)
   for (raises = NULL_TREE;
        raw_raises && TREE_VALUE (raw_raises);
        raw_raises = TREE_CHAIN (raw_raises))
-    raises = tree_cons (NULL_TREE, prepare_eh_type (TREE_VALUE (raw_raises)),
-			raises);
+    {
+      tree type = prepare_eh_type (TREE_VALUE (raw_raises));
+      tree tinfo = eh_type_info (type);
+
+      mark_used (tinfo);
+      raises = tree_cons (NULL_TREE, type, raises);
+    }
 
   EH_SPEC_RAISES (eh_spec_block) = raises;
 }
