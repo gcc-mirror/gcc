@@ -38,19 +38,13 @@ typedef struct cpp_options cpp_options;
 typedef struct cpp_token cpp_token;
 typedef struct cpp_string cpp_string;
 typedef struct cpp_hashnode cpp_hashnode;
-typedef struct cpp_pool cpp_pool;
 typedef struct cpp_macro cpp_macro;
 typedef struct cpp_lexer_pos cpp_lexer_pos;
 typedef struct cpp_lookahead cpp_lookahead;
 typedef struct cpp_callbacks cpp_callbacks;
 
-struct directive;		/* These are deliberately incomplete.  */
 struct answer;
-struct cpp_macro;
-struct macro_args;
-struct cpp_chunk;
 struct file_name_map_list;
-struct htab;
 
 /* The first two groups, apart from '=', can appear in preprocessor
    expressions.  This allows a lookup table to be implemented in
@@ -158,10 +152,6 @@ enum cpp_ttype
 enum c_lang {CLK_GNUC89 = 0, CLK_GNUC99, CLK_STDC89, CLK_STDC94, CLK_STDC99,
 	     CLK_GNUCXX, CLK_CXX98, CLK_OBJC, CLK_OBJCXX, CLK_ASM};
 
-/* Multiple-include optimisation.  */
-enum mi_state {MI_FAILED = 0, MI_OUTSIDE};
-enum mi_ind {MI_IND_NONE = 0, MI_IND_NOT};
-
 /* Payload of a NUMBER, FLOAT, STRING, or COMMENT token.  */
 struct cpp_string
 {
@@ -217,43 +207,9 @@ struct cpp_lookahead
   unsigned int cur, count, cap;
 };
 
-/* Memory pools.  */
-struct cpp_pool
-{
-  struct cpp_chunk *cur, *locked;
-  unsigned char *pos;		/* Current position.  */
-  unsigned int align;
-  unsigned int locks;
-};
-
-typedef struct toklist toklist;
-struct toklist
-{
-  cpp_token *first;
-  cpp_token *limit;
-};
-
-typedef struct cpp_context cpp_context;
-struct cpp_context
-{
-  /* Doubly-linked list.  */
-  cpp_context *next, *prev;
-
-  /* Contexts other than the base context are contiguous tokens.
-     e.g. macro expansions, expanded argument tokens.  */
-  struct toklist list;
-
-  /* For a macro context, these are the macro and its arguments.  */
-  cpp_macro *macro;
-};
-
 /* A standalone character.  We may want to make it unsigned for the
    same reason we use unsigned char - to avoid signedness issues.  */
 typedef int cppchar_t;
-
-/* Maximum nesting of cpp_buffers.  We use a static limit, partly for
-   efficiency, and partly to limit runaway recursion.  */
-#define CPP_STACK_MAX 200
 
 /* Values for opts.dump_macros.
   dump_only means inhibit output of the preprocessed text
@@ -427,51 +383,6 @@ struct cpp_options
   unsigned char help_only;
 };
 
-struct lexer_state
-{
-  /* Nonzero if first token on line is CPP_HASH.  */
-  unsigned char in_directive;
-
-  /* Nonzero if in a directive that takes angle-bracketed headers.  */
-  unsigned char angled_headers;
-
-  /* Nonzero to save comments.  Turned off if discard_comments, and in
-     all directives apart from #define.  */
-  unsigned char save_comments;
-
-  /* If nonzero the next token is at the beginning of the line.  */
-  unsigned char next_bol;
-
-  /* Nonzero if we're mid-comment.  */
-  unsigned char lexing_comment;
-
-  /* Nonzero if lexing __VA_ARGS__ is valid.  */
-  unsigned char va_args_ok;
-
-  /* Nonzero if lexing poisoned identifiers is valid.  */
-  unsigned char poisoned_ok;
-
-  /* Nonzero to prevent macro expansion.  */
-  unsigned char prevent_expansion;  
-
-  /* Nonzero when parsing arguments to a function-like macro.  */
-  unsigned char parsing_args;
-
-  /* Nonzero when in a # NUMBER directive.  */
-  unsigned char line_extension;
-};
-
-/* Special nodes - identifiers with predefined significance.  */
-struct spec_nodes
-{
-  cpp_hashnode *n_L;			/* L"str" */
-  cpp_hashnode *n_defined;		/* defined operator */
-  cpp_hashnode *n__Pragma;		/* _Pragma operator */
-  cpp_hashnode *n__STRICT_ANSI__;	/* STDC_0_IN_SYSTEM_HEADERS */
-  cpp_hashnode *n__CHAR_UNSIGNED__;	/* plain char is unsigned */
-  cpp_hashnode *n__VA_ARGS__;		/* C99 vararg macros */
-};
-
 /* This structure is passed to the call back when changing file.  */
 enum cpp_fc_reason {FC_ENTER = 0, FC_LEAVE, FC_RENAME};
 
@@ -504,131 +415,9 @@ struct cpp_callbacks
     void (*def_pragma) PARAMS ((cpp_reader *));
 };
 
-/* A cpp_reader encapsulates the "state" of a pre-processor run.
-   Applying cpp_get_token repeatedly yields a stream of pre-processor
-   tokens.  Usually, there is only one cpp_reader object active.  */
-
-struct cpp_reader
-{
-  /* Top of buffer stack.  */
-  cpp_buffer *buffer;
-
-  /* Lexer state.  */
-  struct lexer_state state;
-
-  /* The position of the last lexed token and last lexed directive.  */
-  cpp_lexer_pos lexer_pos;
-  cpp_lexer_pos directive_pos;
-
-  /* Memory pools.  */
-  cpp_pool ident_pool;		/* For all identifiers, and permanent
-				   numbers and strings.  */
-  cpp_pool macro_pool;		/* For macro definitions.  Permanent.  */
-  cpp_pool argument_pool;	/* For macro arguments.  Temporary.   */
-
-  /* Context stack.  */
-  struct cpp_context base_context;
-  struct cpp_context *context;
-
-  /* If in_directive, the directive if known.  */
-  const struct directive *directive;
-
-  /* Multiple inlcude optimisation.  */
-  enum mi_state mi_state;
-  enum mi_ind mi_if_not_defined;
-  unsigned int mi_lexed;
-  const cpp_hashnode *mi_cmacro;
-  const cpp_hashnode *mi_ind_cmacro;
-
-  /* Token lookahead.  */
-  struct cpp_lookahead *la_read;	/* Read from this lookahead.  */
-  struct cpp_lookahead *la_write;	/* Write to this lookahead.  */
-  struct cpp_lookahead *la_unused;	/* Free store.  */
-  struct cpp_lookahead *la_saved;	/* Backup when entering directive.  */
-
-  /* Error counter for exit code.  */
-  unsigned int errors;
-
-  /* Line and column where a newline was first seen in a string
-     constant (multi-line strings).  */
-  cpp_lexer_pos mlstring_pos;
-
-  /* Buffer to hold macro definition string.  */
-  unsigned char *macro_buffer;
-  unsigned int macro_buffer_len;
-
-  /* Current depth in #include directives that use <...>.  */
-  unsigned int system_include_depth;
-
-  /* Current depth of buffer stack.  */
-  unsigned int buffer_stack_depth;
-
-  /* Current depth in #include directives.  */
-  unsigned int include_depth;
-
-  /* Hash table of macros and assertions.  See cpphash.c.  */
-  struct htab *hashtab;
-
-  /* Tree of other included files.  See cppfiles.c.  */
-  struct splay_tree_s *all_include_files;
-
-  /* Chain of `actual directory' file_name_list entries, for ""
-     inclusion.  */
-  struct file_name_list *actual_dirs;
-
-  /* Current maximum length of directory names in the search path
-     for include files.  (Altered as we get more of them.)  */
-  unsigned int max_include_len;
-
-  /* Date and time tokens.  Calculated together if either is requested.  */
-  cpp_token date;
-  cpp_token time;
-
-  /* Opaque handle to the dependencies of mkdeps.c.  Used by -M etc.  */
-  struct deps *deps;
-
-  /* Obstack holding all macro hash nodes.  This never shrinks.
-     See cpphash.c */
-  struct obstack *hash_ob;
-
-  /* Obstack holding buffer and conditional structures.  This is a
-     real stack.  See cpplib.c */
-  struct obstack *buffer_ob;
-
-  /* Pragma table - dynamic, because a library user can add to the
-     list of recognized pragmas.  */
-  struct pragma_entry *pragmas;
-
-  /* Call backs.  */
-  struct cpp_callbacks cb;
-
-  /* User visible options.  */
-  struct cpp_options opts;
-
-  /* Special nodes - identifiers with predefined significance to the
-     preprocessor.  */
-  struct spec_nodes spec_nodes;
-
-  /* We're printed a warning recommending against using #import.  */
-  unsigned char import_warning;
-
-  /* True after cpp_start_read completes.  Used to inhibit some
-     warnings while parsing the command line.  */
-  unsigned char done_initializing;
-
-  /* True if we are skipping a failed conditional group.  */
-  unsigned char skipping;
-};
-
 #define CPP_FATAL_LIMIT 1000
 /* True if we have seen a "fatal" error. */
 #define CPP_FATAL_ERRORS(PFILE) (cpp_errors (PFILE) >= CPP_FATAL_LIMIT)
-
-#define CPP_OPTION(PFILE, OPTION) ((PFILE)->opts.OPTION)
-#define CPP_BUFFER(PFILE) ((PFILE)->buffer)
-#define CPP_BUF_LINE(BUF) ((BUF)->lineno)
-#define CPP_BUF_COLUMN(BUF, CUR) ((CUR) - (BUF)->line_base + (BUF)->col_adjust)
-#define CPP_BUF_COL(BUF) CPP_BUF_COLUMN(BUF, (BUF)->cur)
 
 /* Name under which this program was invoked.  */
 extern const char *progname;
@@ -815,64 +604,6 @@ extern void cpp_stop_lookahead		PARAMS ((cpp_reader *, int));
 /* In cppfiles.c */
 extern int cpp_included	PARAMS ((cpp_reader *, const char *));
 extern void cpp_make_system_header PARAMS ((cpp_reader *, int, int));
-
-/* These are inline functions instead of macros so we can get type
-   checking.  */
-typedef unsigned char U_CHAR;
-#define U (const U_CHAR *)  /* Intended use: U"string" */
-
-static inline int ustrcmp	PARAMS ((const U_CHAR *, const U_CHAR *));
-static inline int ustrncmp	PARAMS ((const U_CHAR *, const U_CHAR *,
-					 size_t));
-static inline size_t ustrlen	PARAMS ((const U_CHAR *));
-static inline U_CHAR *uxstrdup	PARAMS ((const U_CHAR *));
-static inline U_CHAR *ustrchr	PARAMS ((const U_CHAR *, int));
-static inline int ufputs	PARAMS ((const U_CHAR *, FILE *));
-
-static inline int
-ustrcmp (s1, s2)
-     const U_CHAR *s1, *s2;
-{
-  return strcmp ((const char *)s1, (const char *)s2);
-}
-
-static inline int
-ustrncmp (s1, s2, n)
-     const U_CHAR *s1, *s2;
-     size_t n;
-{
-  return strncmp ((const char *)s1, (const char *)s2, n);
-}
-
-static inline size_t
-ustrlen (s1)
-     const U_CHAR *s1;
-{
-  return strlen ((const char *)s1);
-}
-
-static inline U_CHAR *
-uxstrdup (s1)
-     const U_CHAR *s1;
-{
-  return (U_CHAR *) xstrdup ((const char *)s1);
-}
-
-static inline U_CHAR *
-ustrchr (s1, c)
-     const U_CHAR *s1;
-     int c;
-{
-  return (U_CHAR *) strchr ((const char *)s1, c);
-}
-
-static inline int
-ufputs (s, f)
-     const U_CHAR *s;
-     FILE *f;
-{
-  return fputs ((const char *)s, f);
-}
 
 #ifdef __cplusplus
 }
