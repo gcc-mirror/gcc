@@ -465,7 +465,7 @@ int mem_report = 0;
    and to print them when we are done.  */
 int flag_detailed_statistics = 0;
 
-/* A random sequence of characters, unless overridden by user. */
+/* A random sequence of characters, unless overridden by user.  */
 const char *flag_random_seed;
 
 /* A local time stamp derived from the time of compilation. It will be

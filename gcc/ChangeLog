@@ -1,3 +1,14 @@
+2003-07-12  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* c-format.c: Fix comment formatting.
+	* c-typeck.c: Likewise.
+	* coverage.c: Likewise.
+	* cppcharset.c: Likewise.
+	* cpplib.c: Likewise.
+	* dbxout.c: Likewise.
+	* gcov-io.h: Likewise.
+	* toplev.c: Likewise.
+
 2003-07-12  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* fixinc/inclhack.def (alpha_sbrk): Note that OpenBSD needs this 

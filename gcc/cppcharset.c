@@ -448,7 +448,7 @@ one_utf16_to_utf8 (iconv_t bigend, const uchar **inbufp, size_t *inbytesleftp,
 
 /* Helper routine for the next few functions.  The 'const' on
    one_conversion means that we promise not to modify what function is
-   pointed to, which lets the inliner see through it. */
+   pointed to, which lets the inliner see through it.  */
 
 static inline bool
 conversion_loop (int (*const one_conversion)(iconv_t, const uchar **, size_t *,

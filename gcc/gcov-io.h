@@ -454,7 +454,7 @@ GCOV_LINKAGE struct gcov_var
    functions, gcov_seek & gcov_error. When a file is to be rewritten
    you use the functions for reading, then gcov_rewrite then the
    functions for writing.  Your file may become corrupted if you break
-   these invariants. */
+   these invariants.  */
 #if IN_LIBGCOV
 GCOV_LINKAGE int gcov_open (const char */*name*/);
 #else

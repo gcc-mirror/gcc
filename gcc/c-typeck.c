@@ -641,7 +641,7 @@ tagged_types_tu_compatible_p (tree t1, tree t2, int flags)
   /* We have to verify that the tags of the types are the same.  This
      is harder than it looks because this may be a typedef, so we have
      to go look at the original type.  It may even be a typedef of a
-     typedef... */
+     typedef...  */
   while (TYPE_NAME (t1) && TREE_CODE (TYPE_NAME (t1)) == TYPE_DECL)
     t1 = DECL_ORIGINAL_TYPE (TYPE_NAME (t1));
 

@@ -562,7 +562,7 @@ dbxout_typedefs (tree syms)
 }
 
 #ifdef DBX_USE_BINCL
-/* Emit BINCL stab using given name.   */
+/* Emit BINCL stab using given name.  */
 static void
 emit_bincl_stab (const char *name)
 {
