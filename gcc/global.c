@@ -1323,16 +1323,13 @@ record_conflicts (allocno_vec, len)
    if so, we do nothing.
 
    SETTER is 0 if this register was modified by an auto-increment (i.e.,
-   a REG_INC note was found for it).
-
-   CLOBBERs are processed here by calling mark_reg_clobber.  */ 
+   a REG_INC note was found for it).  */
 
 static void
-mark_reg_store (orig_reg, setter)
-     rtx orig_reg, setter;
+mark_reg_store (reg, setter)
+     rtx reg, setter;
 {
   register int regno;
-  register rtx reg = orig_reg;
 
   /* WORD is which word of a multi-register group is being stored.
      For the case where the store is actually into a SUBREG of REG.
@@ -1349,16 +1346,9 @@ mark_reg_store (orig_reg, setter)
   if (GET_CODE (reg) != REG)
     return;
 
-  if (setter && GET_CODE (setter) == CLOBBER)
-    {
-      /* A clobber of a register should be processed here too.  */
-      mark_reg_clobber (orig_reg, setter);
-      return;
-    }
-
   regs_set[n_regs_set++] = reg;
 
-  if (setter)
+  if (setter && GET_CODE (setter) != CLOBBER)
     set_preference (reg, SET_SRC (setter));
 
   regno = REGNO (reg);
@@ -1396,55 +1386,8 @@ static void
 mark_reg_clobber (reg, setter)
      rtx reg, setter;
 {
-  register int regno;
-
-  /* WORD is which word of a multi-register group is being stored.
-     For the case where the store is actually into a SUBREG of REG.
-     Except we don't use it; I believe the entire REG needs to be
-     made live.  */
-  int word = 0;
-
-  if (GET_CODE (setter) != CLOBBER)
-    return;
-
-  if (GET_CODE (reg) == SUBREG)
-    {
-      word = SUBREG_WORD (reg);
-      reg = SUBREG_REG (reg);
-    }
-
-  if (GET_CODE (reg) != REG)
-    return;
-
-  regs_set[n_regs_set++] = reg;
-
-  regno = REGNO (reg);
-
-  /* Either this is one of the max_allocno pseudo regs not allocated,
-     or it is or has a hardware reg.  First handle the pseudo-regs.  */
-  if (regno >= FIRST_PSEUDO_REGISTER)
-    {
-      if (reg_allocno[regno] >= 0)
-	{
-	  SET_ALLOCNO_LIVE (reg_allocno[regno]);
-	  record_one_conflict (regno);
-	}
-    }
-
-  if (reg_renumber[regno] >= 0)
-    regno = reg_renumber[regno] /* + word */;
-
-  /* Handle hardware regs (and pseudos allocated to hard regs).  */
-  if (regno < FIRST_PSEUDO_REGISTER && ! fixed_regs[regno])
-    {
-      register int last = regno + HARD_REGNO_NREGS (regno, GET_MODE (reg));
-      while (regno < last)
-	{
-	  record_one_conflict (regno);
-	  SET_HARD_REG_BIT (hard_regs_live, regno);
-	  regno++;
-	}
-    }
+  if (GET_CODE (setter) == CLOBBER)
+    mark_reg_store (reg, setter);
 }
 
 /* Record that REG has conflicts with all the regs currently live.
