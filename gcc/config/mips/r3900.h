@@ -22,7 +22,7 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#define MIPS_CPU_STRING_DEFAULT "R3900"
+#define MIPS_CPU_STRING_DEFAULT "r3900"
 #define MIPS_ISA_DEFAULT 1
 
 #define MULTILIB_DEFAULTS { MULTILIB_ENDIAN_DEFAULT, "msoft-float" }
