@@ -699,7 +699,7 @@ extern void cpp_scan_buffer		PARAMS ((cpp_reader *));
 extern int check_macro_name		PARAMS ((cpp_reader *, const U_CHAR *));
 
 /* Last arg to output_line_command.  */
-enum file_change_code {same_file, enter_file, leave_file};
+enum file_change_code {same_file, rename_file, enter_file, leave_file};
 extern void output_line_command		PARAMS ((cpp_reader *,
 						 enum file_change_code));
 

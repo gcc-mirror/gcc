@@ -965,7 +965,7 @@ output_line_command (pfile, file_change)
   CPP_ADJUST_WRITTEN (pfile, strlen (CPP_PWRITTEN (pfile)));
 
   quote_string (pfile, ip->nominal_fname); 
-  if (file_change != same_file)
+  if (file_change != same_file && file_change != rename_file)
     {
       CPP_PUTC_Q (pfile, ' ');
       CPP_PUTC_Q (pfile, file_change == enter_file ? '1' : '2');
@@ -1357,6 +1357,8 @@ do_line (pfile, keyword)
       U_CHAR *fname = pfile->token_buffer + old_written + 1;
       U_CHAR *end_name = CPP_PWRITTEN (pfile) - 1;
       int action_number = 0;
+
+      file_change = rename_file;
 
       if (read_line_number (pfile, &action_number))
 	{
