@@ -330,7 +330,7 @@ STARTFN (NAME);					\
 STARTFN (NAME);					\
 	LDDBL1;					\
 	LDDBL2;					\
-	OPCODE	$f12,$f14;			\
+	OPCODE	$f14,$f12;			\
 	li	$2,TRUE;			\
 	bc1t	1f;				\
 	li	$2,FALSE;			\
