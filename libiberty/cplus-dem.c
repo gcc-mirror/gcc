@@ -2414,8 +2414,15 @@ demangle_arm_hp_template (work, mangled, n, declp)
             break;
           default:
             /* Not handling other HP cfront stuff */
-            if (!do_type (work, &args, &arg))
-              goto cfront_template_args_done;
+            {
+              const char* old_args = args;
+              if (!do_type (work, &args, &arg))
+                goto cfront_template_args_done;
+
+              /* Fail if we didn't make any progress: prevent infinite loop. */
+              if (args == old_args)
+                return;
+            }
 	  }
 	string_appends (declp, &arg);
 	string_append (declp, ",");
