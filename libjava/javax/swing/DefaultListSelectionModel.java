@@ -42,34 +42,20 @@ import java.io.Serializable;
 import java.util.EventListener;
 import java.util.Vector;
 import javax.swing.event.EventListenerList;
+import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 public class DefaultListSelectionModel implements Cloneable, ListSelectionModel, Serializable
 {
+  private EventListenerList listenerList = new EventListenerList();
+  
     int mode = SINGLE_SELECTION;
 
     Vector sel = new Vector();
 
-    Vector listeners;
-
-    Vector get_listeners()
     {
-	if (listeners == null)
-	    listeners = new Vector();
-	return listeners;
-    }
-    
-
-    public void addListSelectionListener(ListSelectionListener listener)
-    {
-	get_listeners().addElement(listener);
     }
 
-    public void removeListSelectionListener(ListSelectionListener listener)
-    {
-	get_listeners().removeElement(listener);
-    }
-    
     class Range
     {
 	int i0, i1;
@@ -182,4 +168,24 @@ public class DefaultListSelectionModel implements Cloneable, ListSelectionModel,
 
 	sel.addElement(new Range(index0, index1));
     }
+
+  public void addListSelectionListener(ListSelectionListener listener)
+  {
+    listenerList.add (ListSelectionListener.class, listener);
+  }
+
+  public void removeListSelectionListener(ListSelectionListener listener)
+  {
+    listenerList.remove (ListSelectionListener.class, listener);
+  }
+
+  public ListSelectionListener[] getListSelectionListeners()
+  {
+    return (ListSelectionListener[]) getListeners (ListSelectionListener.class);
+  }
+  
+  public EventListener[] getListeners (Class listenerType)
+  {
+    return listenerList.getListeners (listenerType);
+  }
 }

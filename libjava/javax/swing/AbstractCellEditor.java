@@ -54,10 +54,6 @@ public abstract class AbstractCellEditor
 {
   static final long serialVersionUID = -1048006551406220959L;
 
-	//-------------------------------------------------------------
-	// Variables --------------------------------------------------
-	//-------------------------------------------------------------
-
 	/**
 	 * listenerList
 	 */
@@ -68,22 +64,12 @@ public abstract class AbstractCellEditor
 	 */
 	protected transient ChangeEvent changeEvent;
 
-
-	//-------------------------------------------------------------
-	// Initialization ---------------------------------------------
-	//-------------------------------------------------------------
-
 	/**
 	 * Constructor AbstractCellEditor
 	 */
 	public AbstractCellEditor() {
 		// TODO
 	} // AbstractCellEditor()
-
-
-	//-------------------------------------------------------------
-	// Methods ----------------------------------------------------
-	//-------------------------------------------------------------
 
 	/**
 	 * isCellEditable
@@ -119,40 +105,66 @@ public abstract class AbstractCellEditor
 	} // cancelCellEditing()
 
 	/**
-	 * addCellEditorListener
-	 * @param listener TODO
-	 */
-	public void addCellEditorListener(CellEditorListener listener) {
-		// TODO
-	} // addCellEditorListener()
-
-	/**
-	 * removeCellEditorListener
-	 * @param listener TODO
-	 */
-	public void removeCellEditorListener(CellEditorListener listener) {
-		// TODO
-	} // removeCellEditorListener()
-
-	/**
-	 * fireEditingStopped
-	 */
-	protected void fireEditingStopped() {
-		// TODO
-	} // fireEditingStopped()
-
-	/**
-	 * fireEditingCanceled
-	 */
-	protected void fireEditingCanceled() {
-		// TODO
-	} // fireEditingCanceled()
-
-	/**
 	 * getCellEditorValue
 	 * @returns Object
 	 */
 	public abstract Object getCellEditorValue();
+
+  /**
+   * addCellEditorListener
+   *
+   * @param listener The listener to add
+   */
+  public void addCellEditorListener (CellEditorListener listener)
+  {
+    listenerList.add (CellEditorListener.class, listener);
+  }
+
+  /**
+   * removeCellEditorListener
+   *
+   * @param listener The listener to remove
+   */
+  public void removeCellEditorListener (CellEditorListener listener)
+  {
+    listenerList.remove (CellEditorListener.class, listener);
+  }
+	
+  /**
+   * getCellEditorListeners
+   *
+   * @since 1.4
+   */
+  public CellEditorListener[] getCellEditorListeners()
+  {
+    return (CellEditorListener[]) listenerList.getListeners (CellEditorListener.class);
+  }
+
+  /**
+   * fireEditingStopped
+   */
+  protected void fireEditingStopped()
+  {
+    CellEditorListener[] listeners = getCellEditorListeners();
+
+    for (int index = 0; index < listeners.length; index++)
+      {
+	listeners [index].editingStopped (changeEvent);
+      }
+  }
+
+  /**
+   * fireEditingCanceled
+   */
+  protected void fireEditingCanceled()
+  {
+    CellEditorListener[] listeners = getCellEditorListeners();
+
+    for (int index = 0; index < listeners.length; index++)
+      {
+	listeners [index].editingCanceled (changeEvent);
+      }
+  }
 
 
 } // AbstractCellEditor

@@ -1,5 +1,30 @@
 2004-01-23  Michael Koch  <konqueror@gmx.de>
 
+	* javax/swing/AbstractAction.java: Reformated.
+	(getPropertyChangeListeners): New method.
+	* javax/swing/AbstractCellEditor.java: Reformated.
+	(getCellEditorListeners): New method.
+	* javax/swing/DefaultListSelectionModel.java
+	(listenerList): New field.
+	(listeners): Removed.
+	(get_listeners): Removed.
+	(addListSelectionListener): Rewritten.
+	(removeListSelectionListener): Rewritten.
+	(getListSelectionListeners): New method.
+	(getListeners): New method.
+	* javax/swing/JComboBox.java: Imports reworked.
+	(addActionListener): Implemented.
+	(removeActionListener): Implemented.
+	(addItemListener): Implemented.
+	(removeItemListener): Implemented.
+	(addPopupMenuListener): Implemented.
+	(removePopupMenuListener): Implemented.
+	(getActionListeners): New method.
+	(getItemListeners): New method.
+	(getPopupMenuListeners): New method.
+
+2004-01-23  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/net/protocol/http/Connection.java
 	(connect): Don't initialize bufferedOutputStream if not needed.
 	(sendRequest): Set property for content length if content is present.
