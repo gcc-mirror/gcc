@@ -1,3 +1,7 @@
+Thu Oct 14 05:08:14 1999  Andreas Schwab  <schwab@suse.de>
+
+	* Makefile.in (all.cross): Depend on xcpp$(exeext).
+
 Thu Oct 14 04:00:40 1999  Richard Henderson  <rth@cygnus.com>
 
 	* genrecog.c (validate_pattern): Condense the destination
