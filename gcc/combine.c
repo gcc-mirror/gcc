@@ -5920,7 +5920,7 @@ simplify_and_const_int (x, mode, varop, constop)
 	case LSHIFTRT:
 	  /* If we have (and (lshiftrt FOO C1) C2) where the combination of the
 	     shift and AND produces only copies of the sign bit (C2 is one less
-	     than a power of two), we can do this with just a shift.  */+
+	     than a power of two), we can do this with just a shift.  */
 
 	  if (GET_CODE (XEXP (varop, 1)) == CONST_INT
 	      && ((INTVAL (XEXP (varop, 1))
