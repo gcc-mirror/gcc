@@ -157,7 +157,7 @@ static tree cp_expr_size PARAMS ((tree));
 /* Each front end provides its own hooks, for toplev.c.  */
 const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 
-/* Tree code classes. */
+/* Tree code classes.  */
 
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) TYPE,
 
