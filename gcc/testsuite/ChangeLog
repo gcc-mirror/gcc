@@ -1,3 +1,7 @@
+2003-04-25  H.J. Lu <hjl@gnu.org>
+
+	* gcc.dg/ia64-sync-4.c: New test.
+
 2003-04-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.c-torture/execute/string-opt-18.c: Clean up.  Fix copyright
