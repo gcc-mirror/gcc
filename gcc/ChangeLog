@@ -1,3 +1,8 @@
+2003-01-15  John David Anglin  <dave.anglin@nrc.gc.ca>
+
+	* gengtype-lex.l (malloc, realloc): Move defines after include of
+	system.h.
+
 2003-01-15  Stephane Carrez  <stcarrez@nerim.fr>
 
 	* config/m68hc11/m68hc11.md ("return"): Use emit_jump_insn to emit
