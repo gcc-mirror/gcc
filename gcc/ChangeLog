@@ -1,3 +1,44 @@
+2005-03-15  Uros Bizjak  <uros@kss-loka.si>
+
+	PR target/18668
+	* config/i386/i386.h (x86_fisttp): New.
+	(TARGET_FISTTP): New macro.
+	* config/i386/i386.c (x86_fisttp): Set for NOCONA.
+	(output_fix_trunc): Add fisttp parameter.  Generate fisttp x87
+	instruction when fisttp flag is set.
+	* config/i386/i386-protos.h (output_fix_trunc): Change declaration.
+
+	* config/i386/i386.md (type attribute): Add fisttp.
+	(unit attribute): Set to i387 for fisttp type.
+	(X87MODEF, X87MODEI, SSEMODEF, SSEMODEI24): New mode macros.
+	(fix_truncxfdi2, fix_truncxfsi2): Generate fisttp patterns for
+	TARGET_FISTTP.
+	(fix_truncdfdi2, fix_truncsfdi2, fix_truncdfsi2, fix_truncsfsi2):
+	Generate fisttp patterns for TARGET_FISTTP. Implement using mode
+	macros.
+	(fix_truncxfhi2, fix_truncdfhi2, fix_truncsfhi2): Generate fisttp
+	patterns for TARGET_FISTTP.  Enable patterns for
+	(TARGET_FISTTP && !TARGET_SSE_MATH). Implement using mode macros.
+	(fix_trunc<mode>_i387_fisttp_1, fix_trunc<mode>_i387_fisttp,
+	fix_trunc<mode>_i387_fisttp_with_temp): New instruction patterns to
+	implement fisttp x87 insn.
+	(fix_trunc*_i387_fisttp splitters): New patterns.
+	(*fix_truncdi_i387, *fix_truncsi_i387, *fix_trunchi_i387):
+	Rename to *fix_trunc<mode>_i387_1.  Implement using mode macros.
+	Disable patterns for TARGET_FISTTP.  Add comment about FLAGS_REG
+	clobber.
+	(fix_truncdi_memory, fix_truncdi_nomemory, fix_trunchi_nomemory):
+	Rename to fix_trunc<mode>_i387 and fix_trunc<mode>_i387_with_temp.
+	Implement using mode macros. Disable patterns for TARGET_FISTTP.
+	(fix_truncsi_memory, fix_truncsi_nomemory, fix_trunchi_memory,
+	fix_trunchi_nomemory): Rename to fix_trunc<mode>_i387 and
+	fix_trunc<mode>_i387_with_temp. Implement using mode macros.
+	Disable patterns for TARGET_FISTTP.
+	(fix_trunc*_i387 splitters): Implement usign mode macros.
+	(fix_truncdfdi_sse, fix_truncsfdi_sse, fix_truncdfsi_sse,
+	fix_truncsfsi_sse): Disable for (TARGET_FISTTP && !TARGET_SSE_MATH).
+	(fix_trunx*_sse peephole2s): Implement using mode macros.
+
 2005-03-15  J"orn Rennecke <joern.rennecke@st.com>
 
 	PR rtl-optimization/20291

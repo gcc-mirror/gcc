@@ -117,7 +117,7 @@ extern void split_ti (rtx[], int, rtx[], rtx[]);
 extern const char *output_set_got (rtx);
 extern const char *output_387_binary_op (rtx, rtx*);
 extern const char *output_387_reg_move (rtx, rtx*);
-extern const char *output_fix_trunc (rtx, rtx*);
+extern const char *output_fix_trunc (rtx, rtx*, int);
 extern const char *output_fp_compare (rtx, rtx*, int, int);
 
 extern void i386_output_dwarf_dtprel (FILE*, int, rtx);
