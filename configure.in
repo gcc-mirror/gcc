@@ -640,12 +640,11 @@ case "${target}" in
     noconfigdirs="$noconfigdirs ld gprof target-libgloss ${libgcj}"
     ;;
   mips*-*-irix6*)
-    # The GNU assembler does not support IRIX 6.
     # Linking libjava exceeds command-line length limits on at least
     # IRIX 6.2, but not on IRIX 6.5.
     # Also, boehm-gc won't build on IRIX 6.5, according to Jeffrey Oldham
     # <oldham@codesourcery.com>
-    noconfigdirs="$noconfigdirs gas gprof target-libgloss ${libgcj}"
+    noconfigdirs="$noconfigdirs gprof target-libgloss ${libgcj}"
     ;;
   mips*-dec-bsd*)
     noconfigdirs="$noconfigdirs gprof target-libgloss ${libgcj}"
