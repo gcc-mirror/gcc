@@ -251,7 +251,7 @@ cp/spew.o: cp/spew.c $(CXX_TREE_H) cp/parse.h flags.h cp/lex.h toplev.h
 cp/lex.o: cp/lex.c $(CXX_TREE_H) cp/parse.h flags.h cp/lex.h c-pragma.h \
   toplev.h output.h mbchar.h $(GGC_H) input.h diagnostic.h cp/operators.def \
   $(TM_P_H)
-cp/cp-lang.o: cp/cp-lang.c $(CXX_TREE_H) toplev.h langhooks.h langhooks-def.h \
+cp/cp-lang.o: cp/cp-lang.c $(CXX_TREE_H) toplev.h langhooks.h $(LANGHOOKS_DEF_H) \
   c-common.h
 cp/decl.o: cp/decl.c $(CXX_TREE_H) flags.h cp/lex.h cp/decl.h stack.h \
   output.h $(EXPR_H) except.h toplev.h hash.h $(GGC_H) $(RTL_H) \

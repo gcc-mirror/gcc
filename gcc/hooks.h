@@ -19,4 +19,10 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  You are forbidden to forbid anyone else to use, share and improve
  what you give them.   Help stamp out software-hoarding!  */
 
+#ifndef GCC_HOOKS_H
+#define GCC_HOOKS_H
+
 bool hook_void_bool_false PARAMS ((void));
+void hook_void_void PARAMS ((void));
+
+#endif

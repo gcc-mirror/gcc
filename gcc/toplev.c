@@ -5226,7 +5226,7 @@ toplev_main (argc, argv)
   parse_options_and_default_flags (argc, argv);
 
   /* Exit early if we can (e.g. -help).  */
-  if (!exit_after_options)
+  if (!errorcount && !exit_after_options)
     do_compile ();
 
   if (errorcount || sorrycount)

@@ -3961,7 +3961,6 @@ extern int cp_type_qual_from_rid                PARAMS ((tree));
 extern const char *cxx_init			PARAMS ((const char *));
 extern void cxx_finish PARAMS ((void));
 extern void cxx_init_options PARAMS ((void));
-extern void cxx_post_options PARAMS ((void));
 
 /* in method.c */
 extern void init_method				PARAMS ((void));

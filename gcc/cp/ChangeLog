@@ -1,3 +1,9 @@
+2002-05-23  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cp-lang.c (LANG_HOOKS_POST_OPTIONS): Use c_common_post_options.
+	* cp-tree.h (cxx_post_options): Kill.
+	* cp-lex.c (cxx_post_options): Kill.
+
 2002-05-19  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* error.c (dump_type) [TYPEOF_TYPE]: Fix parenthesis printing.

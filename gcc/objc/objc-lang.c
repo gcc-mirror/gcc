@@ -1,5 +1,5 @@
 /* Language-dependent hooks for Objective-C.
-   Copyright 2001 Free Software Foundation, Inc.
+   Copyright 2001, 2002 Free Software Foundation, Inc.
    Contributed by Ziemowit Laski  <zlaski@apple.com>
 
 This file is part of GNU CC.
@@ -30,7 +30,6 @@ Boston, MA 02111-1307, USA.  */
 #include "langhooks-def.h"
 
 static void objc_init_options                   PARAMS ((void));
-static void objc_post_options                   PARAMS ((void));
 
 #undef LANG_HOOKS_NAME
 #define LANG_HOOKS_NAME "GNU Objective-C"  
@@ -43,7 +42,7 @@ static void objc_post_options                   PARAMS ((void));
 #undef LANG_HOOKS_DECODE_OPTION
 #define LANG_HOOKS_DECODE_OPTION objc_decode_option
 #undef LANG_HOOKS_POST_OPTIONS
-#define LANG_HOOKS_POST_OPTIONS objc_post_options
+#define LANG_HOOKS_POST_OPTIONS c_common_post_options
 #undef LANG_HOOKS_STATICP
 #define LANG_HOOKS_STATICP c_staticp
 #undef LANG_HOOKS_PRINT_IDENTIFIER
@@ -72,13 +71,3 @@ objc_init_options ()
 {
   c_common_init_options (clk_objective_c);
 } 
-
-/* Post-switch processing.  */
-
-static void
-objc_post_options ()
-{
-  c_common_post_options ();
-}
-
-

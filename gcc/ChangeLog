@@ -1,3 +1,20 @@
+2002-05-23  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	PR preprocessor/6517
+	* Makefile.in: Update.
+	* c-common.c (c_common_post_options): Add preprocessor
+	errors to the error count.
+	* c-lang.c (c_post_options): Kill.
+	(LANG_HOOKS_POST_OPTIONS): Use c_common_post_options.
+	* hooks.h: Add header guards.
+	* langhooks-def.h: Include hooks.h.
+	(LANG_HOOKS_POST_OPTIONS): Update.
+	* langhooks.h (struct lang_hooks): Update post_options.
+	* toplev.c (parse_options_and_default_flags): Update.
+objc:
+	* objc-lang.c (objc_post_options): Kill.
+	(LANG_HOOKS_POST_OPTIONS): Use c_common_post_options.
+
 2002-05-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/6753
