@@ -791,7 +791,12 @@ struct rtx_def *function_arg();
    || (GET_CODE (OP) == MEM && GET_CODE (XEXP (OP, 0)) == REG \
        && REG_OK_FOR_BASE_P (XEXP (OP, 0)))  \
    || (GET_CODE (OP) == MEM && GET_CODE (XEXP (OP, 0)) == SYMBOL_REF \
-       && SYMBOL_REF_FLAG (XEXP (OP, 0))))
+       && SYMBOL_REF_FLAG (XEXP (OP, 0))) \
+   || (GET_CODE (OP) == MEM && GET_CODE (XEXP (OP, 0)) == CONST \
+       && GET_CODE (XEXP (XEXP (OP, 0), 0)) == PLUS \
+       && GET_CODE (XEXP (XEXP (XEXP (OP, 0), 0), 0)) == SYMBOL_REF \
+       && SYMBOL_REF_FLAG (XEXP (XEXP (XEXP (OP, 0), 0), 0)) \
+       && GET_CODE (XEXP (XEXP (XEXP (OP, 0), 0), 1)) == CONST_INT))
  
 #define EXTRA_CONSTRAINT(OP, C) \
  ((C) == 'U' ? OK_FOR_U (OP) : 0)
