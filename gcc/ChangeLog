@@ -1,3 +1,8 @@
+2004-09-10  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/s390.c (s390_emit_prologue): Added missing
+	"{}" brackets.
+
 2004-09-10  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* doc/extend.texi, doc/invoke.texi, doc/passes.texi: Fix
