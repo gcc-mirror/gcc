@@ -1,5 +1,5 @@
 /* Parse C expressions for CCCP.
-   Copyright (C) 1987, 1992, 94 - 97, 1998 Free Software Foundation.
+   Copyright (C) 1987, 92, 94, 95, 96, 97, 1998 Free Software Foundation.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -26,10 +26,6 @@ Boston, MA 02111-1307, USA.
    
 %{
 #include "config.h"
-
-#define PRINTF_PROTO(ARGS, m, n) PVPROTO (ARGS) ATTRIBUTE_PRINTF(m, n)
-
-#define PRINTF_PROTO_1(ARGS) PRINTF_PROTO(ARGS, 1, 2)
 
 #include "system.h"
 #include <setjmp.h>
@@ -86,7 +82,7 @@ struct arglist {
 HOST_WIDE_INT parse_c_expression PROTO((char *, int));
 
 static int yylex PROTO((void));
-static void yyerror PROTO((char *)) __attribute__ ((noreturn));
+static void yyerror PRINTF_PROTO_1((char *, ...)) __attribute__ ((noreturn));
 static HOST_WIDE_INT expression_value;
 #ifdef TEST_EXP_READER
 static int expression_signedp;
@@ -491,12 +487,9 @@ parse_number (olen)
 	else {
 	  if (c == '.' || c == 'e' || c == 'E' || c == 'p' || c == 'P')
 	    yyerror ("Floating point numbers not allowed in #if expressions");
-	  else {
-	    char *buf = (char *) alloca (p - lexptr + 40);
-	    sprintf (buf, "missing white space after number `%.*s'",
+	  else
+	    yyerror ("missing white space after number `%.*s'",
 		     (int) (p - lexptr - 1), lexptr);
-	    yyerror (buf);
-	  }
 	}
 
 	if (--len == 0)
@@ -573,11 +566,7 @@ yylex ()
       if (c == *toktab->operator && tokstart[1] == toktab->operator[1]) {
 	lexptr += 2;
 	if (toktab->token == ERROR)
-	  {
-	    char *buf = (char *) alloca (40);
-	    sprintf (buf, "`%s' not allowed in operand of `#if'", toktab->operator);
-	    yyerror (buf);
-	  }
+	  yyerror ("`%s' not allowed in operand of `#if'", toktab->operator);
 	return toktab->token;
       }
 
@@ -977,15 +966,6 @@ parse_escape (string_ptr, result_mask)
 }
 
 static void
-yyerror (s)
-     char *s;
-{
-  error ("%s", s);
-  skip_evaluation = 0;
-  longjmp (parse_return_error, 1);
-}
-
-static void
 integer_overflow ()
 {
   if (!skip_evaluation && pedantic)
@@ -1051,6 +1031,29 @@ parse_c_expression (string, warn_undefined)
 
   return expression_value;	/* set by yyparse () */
 }
+
+static void
+yyerror VPROTO ((char * msgid, ...))
+{
+#ifndef ANSI_PROTOTYPES
+  char * msgid;
+#endif
+  va_list args;
+
+  VA_START (args, msgid);
+
+#ifndef ANSI_PROTOTYPES
+  msgid = va_arg (args, char *);
+#endif
+
+  fprintf (stderr, "error: ");
+  vfprintf (stderr, _(msgid), args);
+  fprintf (stderr, "\n");
+  va_end (args);
+  skip_evaluation = 0;
+  longjmp (parse_return_error, 1);
+}
+
 
 #ifdef TEST_EXP_READER
 
@@ -1161,64 +1164,65 @@ initialize_random_junk ()
 }
 
 void
-error VPROTO ((char * msg, ...))
+error VPROTO ((char * msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
-  char * msg;
+  char * msgid;
 #endif
   va_list args;
 
-  VA_START (args, msg);
- 
+  VA_START (args, msgid);
+
 #ifndef ANSI_PROTOTYPES
-  msg = va_arg (args, char *);
+  msgid = va_arg (args, char *);
 #endif
- 
+
   fprintf (stderr, "error: ");
-  vfprintf (stderr, msg, args);
+  vfprintf (stderr, _(msgid), args);
   fprintf (stderr, "\n");
   va_end (args);
 }
 
 void
-pedwarn VPROTO ((char * msg, ...))
+pedwarn VPROTO ((char * msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
-  char * msg;
+  char * msgid;
 #endif
   va_list args;
 
-  VA_START (args, msg);
- 
+  VA_START (args, msgid);
+
 #ifndef ANSI_PROTOTYPES
-  msg = va_arg (args, char *);
+  msgid = va_arg (args, char *);
 #endif
- 
+
   fprintf (stderr, "pedwarn: ");
-  vfprintf (stderr, msg, args);
+  vfprintf (stderr, _(msgid), args);
   fprintf (stderr, "\n");
   va_end (args);
 }
 
 void
-warning VPROTO ((char * msg, ...))
+warning VPROTO ((char * msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
-  char * msg;
+  char * msgid;
 #endif
   va_list args;
 
-  VA_START (args, msg);
- 
+  VA_START (args, msgid);
+
 #ifndef ANSI_PROTOTYPES
-  msg = va_arg (args, char *);
+  msgid = va_arg (args, char *);
 #endif
- 
+
   fprintf (stderr, "warning: ");
-  vfprintf (stderr, msg, args);
+  vfprintf (stderr, _(msgid), args);
   fprintf (stderr, "\n");
   va_end (args);
 }
+
 
 int
 check_assertion (name, sym_length, tokens_specified, tokens)

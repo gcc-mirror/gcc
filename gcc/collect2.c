@@ -47,6 +47,7 @@ Boston, MA 02111-1307, USA.  */
 #include "collect2.h"
 #include "demangle.h"
 #include "obstack.h"
+#include "intl.h"
 #ifdef __CYGWIN__
 #include <process.h>
 #endif
@@ -335,15 +336,13 @@ my_strerror (e)
 
 #else
 
-  static char buffer[30];
   if (!e)
     return "";
 
   if (e > 0 && e < sys_nerr)
     return sys_errlist[e];
 
-  sprintf (buffer, "Unknown error %d", e);
-  return buffer;
+  return "errno = ?";
 #endif
 }
 
@@ -403,25 +402,44 @@ collect_exit (status)
 }
 
 
+/* Notify user of a non-error.  */
+void
+notice VPROTO((char *msgid, ...))
+{
+#ifndef __STDC__
+  char *msgid;
+#endif
+  va_list ap;
+
+  VA_START (ap, msgid);
+
+#ifndef __STDC__
+  msgid = va_arg (ap, char *);
+#endif
+
+  vfprintf (stderr, _(msgid), ap);
+  va_end (ap);
+}
+
 /* Die when sys call fails.  */
 
 void
-fatal_perror VPROTO((const char * string, ...))
+fatal_perror VPROTO((const char * msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
-  const char *string;
+  const char *msgid;
 #endif
   int e = errno;
   va_list ap;
 
-  VA_START (ap, string);
+  VA_START (ap, msgid);
 
 #ifndef ANSI_PROTOTYPES
-  string = va_arg (ap, const char *);
+  msgid = va_arg (ap, const char *);
 #endif
 
   fprintf (stderr, "collect2: ");
-  vfprintf (stderr, string, ap);
+  vfprintf (stderr, _(msgid), ap);
   fprintf (stderr, ": %s\n", my_strerror (e));
   va_end (ap);
 
@@ -431,21 +449,21 @@ fatal_perror VPROTO((const char * string, ...))
 /* Just die.  */
 
 void
-fatal VPROTO((const char * string, ...))
+fatal VPROTO((const char * msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
-  const char *string;
+  const char *msgid;
 #endif
   va_list ap;
   
-  VA_START (ap, string);
+  VA_START (ap, msgid);
 
 #ifndef ANSI_PROTOTYPES
-  string = va_arg (ap, const char *);
+  msgid = va_arg (ap, const char *);
 #endif
   
   fprintf (stderr, "collect2: ");
-  vfprintf (stderr, string, ap);
+  vfprintf (stderr, _(msgid), ap);
   fprintf (stderr, "\n");
   va_end (ap);
 
@@ -455,21 +473,21 @@ fatal VPROTO((const char * string, ...))
 /* Write error message.  */
 
 void
-error VPROTO((const char * string, ...))
+error VPROTO((const char * msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
   const char * string;
 #endif
   va_list ap;
  
-  VA_START (ap, string);
+  VA_START (ap, msgid);
   
 #ifndef ANSI_PROTOTYPES
-  string = va_arg (ap, const char *);
+  msgid = va_arg (ap, const char *);
 #endif
 
   fprintf (stderr, "collect2: ");
-  vfprintf (stderr, string, ap);
+  vfprintf (stderr, _(msgid), ap);
   fprintf (stderr, "\n");
   va_end(ap);
 }
@@ -482,7 +500,6 @@ fancy_abort ()
 {
   fatal ("internal error");
 }
-
 
 static void
 handler (signo)
@@ -976,14 +993,25 @@ main (argc, argv)
   char *p;
   char **c_argv;
   char **c_ptr;
-  char **ld1_argv	= (char **) xcalloc (sizeof (char *), argc+3);
-  char **ld1		= ld1_argv;
-  char **ld2_argv	= (char **) xcalloc (sizeof (char *), argc+6);
-  char **ld2		= ld2_argv;
-  char **object_lst	= (char **) xcalloc (sizeof (char *), argc);
-  char **object		= object_lst;
+  char **ld1_argv;
+  char **ld1;
+  char **ld2_argv;
+  char **ld2;
+  char **object_lst;
+  char **object;
   int first_file;
   int num_c_args	= argc+9;
+
+  setlocale (LC_MESSAGES, "");
+  bindtextdomain (PACKAGE, localedir);
+  textdomain (PACKAGE);
+
+  /* Do not invoke xcalloc before this point, since locale needs to be
+     set first, in case a diagnostic is issued.  */
+
+  ld1 = ld1_argv = (char **) xcalloc (sizeof (char *), argc+3);
+  ld2 = ld2_argv = (char **) xcalloc (sizeof (char *), argc+6);
+  object = object_lst = (char **) xcalloc (sizeof (char *), argc);
 
 #ifdef DEBUG
   debug = 1;
@@ -1402,16 +1430,16 @@ main (argc, argv)
     *ld2++ = buf2;
     exportf = fopen (export_file, "w");
     if (exportf == (FILE *) 0)
-      fatal_perror ("%s", export_file);
+      fatal_perror ("fopen %s", export_file);
     write_export_file (exportf);
     if (fclose (exportf))
-      fatal_perror ("closing %s", export_file);
+      fatal_perror ("fclose %s", export_file);
     importf = fopen (import_file, "w");
     if (importf == (FILE *) 0)
       fatal_perror ("%s", import_file);
     write_import_file (importf);
     if (fclose (importf))
-      fatal_perror ("closing %s", import_file);
+      fatal_perror ("fclose %s", import_file);
   }
 #endif
 
@@ -1420,7 +1448,7 @@ main (argc, argv)
 
   if (vflag)
     {
-      fprintf (stderr, "collect2 version %s", version_string);
+      notice ("collect2 version %s", version_string);
 #ifdef TARGET_VERSION
       TARGET_VERSION;
 #endif
@@ -1509,8 +1537,8 @@ main (argc, argv)
 
   if (debug)
     {
-      fprintf (stderr, "%d constructor(s) found\n", constructors.number);
-      fprintf (stderr, "%d destructor(s)  found\n", destructors.number);
+      notice ("%d constructor(s) found\n", constructors.number);
+      notice ("%d destructor(s)  found\n", destructors.number);
     }
 
   if (constructors.number == 0 && destructors.number == 0
@@ -1553,12 +1581,12 @@ main (argc, argv)
   maybe_unlink(output_file);
   outf = fopen (c_file, "w");
   if (outf == (FILE *) 0)
-    fatal_perror ("%s", c_file);
+    fatal_perror ("fopen %s", c_file);
 
   write_c_file (outf, c_file);
 
   if (fclose (outf))
-    fatal_perror ("closing %s", c_file);
+    fatal_perror ("fclose %s", c_file);
 
   /* Tell the linker that we have initializer and finalizer functions.  */
 #ifdef LD_INIT_SWITCH
@@ -1578,10 +1606,10 @@ main (argc, argv)
       add_to_list (&exports, "_GLOBAL__DD");
       exportf = fopen (export_file, "w");
       if (exportf == (FILE *) 0)
-	fatal_perror ("%s", export_file);
+	fatal_perror ("fopen %s", export_file);
       write_export_file (exportf);
       if (fclose (exportf))
-	fatal_perror ("closing %s", export_file);
+	fatal_perror ("fclose %s", export_file);
     }
 #endif
 
@@ -1640,12 +1668,12 @@ collect_wait (prog)
       if (WIFSIGNALED (status))
 	{
 	  int sig = WTERMSIG (status);
-	  error ("%s terminated with signal %d [%s]%s",
+	  error ((status & 0200
+		  ? "%s terminated with signal %d [%s]"
+		  : "%s terminated with signal %d [%s], core dumped"),
 		 prog,
 		 sig,
-		 my_strsignal(sig),
-		 (status & 0200) ? ", core dumped" : "");
-
+		 my_strsignal(sig));
 	  collect_exit (FATAL_EXIT_CODE);
 	}
 
@@ -1686,7 +1714,7 @@ collect_execute (prog, argv, redir)
       if (argv[0])
 	fprintf (stderr, "%s", argv[0]);
       else
-	fprintf (stderr, "[cannot find %s]", prog);
+	notice ("[cannot find %s]", prog);
 
       for (p_argv = &argv[1]; (str = *p_argv) != (char *) 0; p_argv++)
 	fprintf (stderr, " %s", str);
@@ -1714,13 +1742,13 @@ collect_execute (prog, argv, redir)
 	{
 	  unlink (redir);
 	  if (freopen (redir, "a", stdout) == NULL)
-	    fatal_perror ("redirecting stdout: %s", redir);
+	    fatal_perror ("freopen stdout %s", redir);
 	  if (freopen (redir, "a", stderr) == NULL)
-	    fatal_perror ("redirecting stderr: %s", redir);
+	    fatal_perror ("freopen stderr %s", redir);
 	}
 
       execvp (argv[0], argv);
-      fatal_perror ("executing %s", prog);
+      fatal_perror ("execvp %s", prog);
     }
 #else
   pid = _spawnvp (_P_NOWAIT, argv[0], argv);
@@ -1747,7 +1775,7 @@ maybe_unlink (file)
   if (!debug)
     unlink (file);
   else
-    fprintf (stderr, "[Leaving %s]\n", file);
+    notice ("[Leaving %s]\n", file);
 }
 
 
@@ -1969,8 +1997,8 @@ write_c_file_stat (stream, name)
     if (!ISALNUM ((unsigned char)*q))
       *q = '_';
   if (debug)
-    fprintf (stderr, "\nwrite_c_file - output name is %s, prefix is %s\n",
-	     output_file, prefix);
+    notice ("\nwrite_c_file - output name is %s, prefix is %s\n",
+	    output_file, prefix);
 
 #define INIT_NAME_FORMAT "_GLOBAL__FI_%s"
   initname = xmalloc (strlen (prefix) + sizeof (INIT_NAME_FORMAT) - 2);
@@ -2233,16 +2261,16 @@ scan_prog_file (prog_name, which_pass)
     {
       /* setup stdout */
       if (dup2 (pipe_fd[1], 1) < 0)
-	fatal_perror ("dup2 (%d, 1)", pipe_fd[1]);
+	fatal_perror ("dup2 %d 1", pipe_fd[1]);
 
       if (close (pipe_fd[0]) < 0)
-	fatal_perror ("close (%d)", pipe_fd[0]);
+	fatal_perror ("close %d", pipe_fd[0]);
 
       if (close (pipe_fd[1]) < 0)
-	fatal_perror ("close (%d)", pipe_fd[1]);
+	fatal_perror ("close %d", pipe_fd[1]);
 
       execv (nm_file_name, nm_argv);
-      fatal_perror ("executing %s", nm_file_name);
+      fatal_perror ("execvp %s", nm_file_name);
     }
 
   /* Parent context from here on.  */
@@ -2252,7 +2280,7 @@ scan_prog_file (prog_name, which_pass)
 #endif
 
   if (close (pipe_fd[1]) < 0)
-    fatal_perror ("close (%d)", pipe_fd[1]);
+    fatal_perror ("close %d", pipe_fd[1]);
 
   if (debug)
     fprintf (stderr, "\nnm output with constructors/destructors.\n");
@@ -2326,7 +2354,7 @@ scan_prog_file (prog_name, which_pass)
     fprintf (stderr, "\n");
 
   if (fclose (inf) != 0)
-    fatal_perror ("fclose of pipe");
+    fatal_perror ("fclose");
 
   do_wait (nm_file_name);
 
@@ -2528,7 +2556,7 @@ locatelib (name)
   if (*pp == 0)
     {
       if (debug)
-	fprintf (stderr, "not found\n");
+	notice ("not found\n");
       else
 	fatal ("dynamic dependency %s not found", name);
     }
@@ -2572,7 +2600,7 @@ scan_libraries (prog_name)
     }
 
   if (debug)
-    fprintf (stderr, "dynamic dependencies.\n");
+    notice ("dynamic dependencies.\n");
 
   ld_2 = (struct link_dynamic_2 *) ((long) ld->ld_un.ld_2 + (long)base);
   for (lo = (struct link_object *) ld_2->ld_need; lo;
@@ -2669,16 +2697,16 @@ scan_libraries (prog_name)
     {
       /* setup stdout */
       if (dup2 (pipe_fd[1], 1) < 0)
-	fatal_perror ("dup2 (%d, 1)", pipe_fd[1]);
+	fatal_perror ("dup2 %d 1", pipe_fd[1]);
 
       if (close (pipe_fd[0]) < 0)
-	fatal_perror ("close (%d)", pipe_fd[0]);
+	fatal_perror ("close %d", pipe_fd[0]);
 
       if (close (pipe_fd[1]) < 0)
-	fatal_perror ("close (%d)", pipe_fd[1]);
+	fatal_perror ("close %d", pipe_fd[1]);
 
       execv (ldd_file_name, ldd_argv);
-      fatal_perror ("executing %s", ldd_file_name);
+      fatal_perror ("execv %s", ldd_file_name);
     }
 
   /* Parent context from here on.  */
@@ -2688,10 +2716,10 @@ scan_libraries (prog_name)
 #endif
 
   if (close (pipe_fd[1]) < 0)
-    fatal_perror ("close (%d)", pipe_fd[1]);
+    fatal_perror ("close %d", pipe_fd[1]);
 
   if (debug)
-    fprintf (stderr, "\nldd output with constructors/destructors.\n");
+    notice ("\nldd output with constructors/destructors.\n");
 
   /* Read each line of ldd output.  */
   while (fgets (buf, sizeof buf, inf) != (char *) 0)
@@ -2727,7 +2755,7 @@ scan_libraries (prog_name)
     fprintf (stderr, "\n");
 
   if (fclose (inf) != 0)
-    fatal_perror ("fclose of pipe");
+    fatal_perror ("fclose");
 
   do_wait (ldd_file_name);
 
@@ -3160,7 +3188,7 @@ scan_prog_file (prog_name, which_pass)
 
   prog_fd = open (prog_name, (rw) ? O_RDWR : O_RDONLY);
   if (prog_fd < 0)
-    fatal_perror ("cannot read %s", prog_name);
+    fatal_perror ("open %s", prog_name);
 
   obj_file = read_file (prog_name, prog_fd, rw);
   obj = obj_file->start;
@@ -3256,8 +3284,8 @@ scan_prog_file (prog_name, which_pass)
 		case SYMC_STABS:	   kind = "stabs";   break;
 		}
 
-	      fprintf (stderr, "\nProcessing symbol table #%d, offset = 0x%.8lx, kind = %s\n",
-		       symbol_load_cmds, load_hdr->hdr.ldci_section_off, kind);
+	      notice ("\nProcessing symbol table #%d, offset = 0x%.8lx, kind = %s\n",
+		      symbol_load_cmds, load_hdr->hdr.ldci_section_off, kind);
 	    }
 
 	  if (load_hdr->sym.symc_kind != SYMC_DEFINED_SYMBOLS)
@@ -3341,15 +3369,15 @@ scan_prog_file (prog_name, which_pass)
 	add_func_table (&hdr, load_array, main_sym, FNTC_INITIALIZATION);
 
       if (debug)
-	fprintf (stderr, "\nUpdating header and load commands.\n\n");
+	notice ("\nUpdating header and load commands.\n\n");
 
       hdr.moh_n_load_cmds++;
       size = sizeof (load_cmd_map_command_t) + (sizeof (mo_offset_t) * (hdr.moh_n_load_cmds - 1));
 
       /* Create new load command map.  */
       if (debug)
-	fprintf (stderr, "load command map, %d cmds, new size %ld.\n",
-		 (int)hdr.moh_n_load_cmds, (long)size);
+	notice ("load command map, %d cmds, new size %ld.\n",
+		(int) hdr.moh_n_load_cmds, (long) size);
 
       load_map = (load_union_t *) xcalloc (1, size);
       load_map->map.ldc_header.ldci_cmd_type = LDC_CMD_MAP;
@@ -3379,7 +3407,7 @@ scan_prog_file (prog_name, which_pass)
 	bad_header (status);
 
       if (debug)
-	fprintf (stderr, "writing load commands.\n\n");
+	notice ("writing load commands.\n\n");
 
       /* Write load commands */
       offset = hdr.moh_first_cmd_off;
@@ -3399,7 +3427,7 @@ scan_prog_file (prog_name, which_pass)
   end_file (obj_file);
 
   if (close (prog_fd))
-    fatal_perror ("closing %s", prog_name);
+    fatal_perror ("close %s", prog_name);
 
   if (debug)
     fprintf (stderr, "\n");
@@ -3477,12 +3505,11 @@ add_func_table (hdr_p, load_array, sym, type)
     }
 
   if (debug)
-    fprintf (stderr,
-	     "%s function, region %d, offset = %ld (0x%.8lx)\n",
-	     (type == FNTC_INITIALIZATION) ? "init" : "term",
-	     (int)ptr->func.fntc_entry_loc[i].adr_lcid,
-	     (long)ptr->func.fntc_entry_loc[i].adr_sctoff,
-	     (long)ptr->func.fntc_entry_loc[i].adr_sctoff);
+    notice ("%s function, region %d, offset = %ld (0x%.8lx)\n",
+	    type == FNTC_INITIALIZATION ? "init" : "term",
+	    (int) ptr->func.fntc_entry_loc[i].adr_lcid,
+	    (long) ptr->func.fntc_entry_loc[i].adr_sctoff,
+	    (long) ptr->func.fntc_entry_loc[i].adr_sctoff);
 
 }
 
@@ -3603,22 +3630,17 @@ static void
 bad_header (status)
      int status;
 {
-  char *msg = (char *) 0;
-
   switch (status)
     {
-    case MO_ERROR_BAD_MAGIC:		msg = "bad magic number";		break;
-    case MO_ERROR_BAD_HDR_VERS:		msg = "bad header version";		break;
-    case MO_ERROR_BAD_RAW_HDR_VERS:	msg = "bad raw header version";		break;
-    case MO_ERROR_BUF2SML:		msg = "raw header buffer too small";	break;
-    case MO_ERROR_OLD_RAW_HDR_FILE:	msg = "old raw header file";		break;
-    case MO_ERROR_UNSUPPORTED_VERS:	msg = "unsupported version";		break;
+    case MO_ERROR_BAD_MAGIC:		fatal ("bad magic number");
+    case MO_ERROR_BAD_HDR_VERS:		fatal ("bad header version");
+    case MO_ERROR_BAD_RAW_HDR_VERS:	fatal ("bad raw header version");
+    case MO_ERROR_BUF2SML:		fatal ("raw header buffer too small");
+    case MO_ERROR_OLD_RAW_HDR_FILE:	fatal ("old raw header file");
+    case MO_ERROR_UNSUPPORTED_VERS:	fatal ("unsupported version");
+    default:
+      fatal ("unknown {de,en}code_mach_o_hdr return value %d", status);
     }
-
-  if (msg == (char *) 0)
-    fatal ("unknown {de,en}code_mach_o_hdr return value %d", status);
-  else
-    fatal ("%s", msg);
 }
 
 
@@ -3674,7 +3696,7 @@ read_file (name, fd, rw)
       p->use_mmap = 0;
       p->start = xmalloc (p->size);
       if (lseek (fd, 0L, SEEK_SET) < 0)
-	fatal_perror ("lseek to 0 on %s", name);
+	fatal_perror ("lseek %s 0", name);
 
       len = read (fd, p->start, p->size);
       if (len < 0)
@@ -3722,7 +3744,7 @@ end_file (ptr)
 	    fprintf (stderr, "write %s\n", ptr->name);
 
 	  if (lseek (ptr->fd, 0L, SEEK_SET) < 0)
-	    fatal_perror ("lseek to 0 on %s", ptr->name);
+	    fatal_perror ("lseek %s 0", ptr->name);
 
 	  len = write (ptr->fd, ptr->start, ptr->size);
 	  if (len < 0)

@@ -1,5 +1,5 @@
 /* Default error handlers for CPP Library.
-   Copyright (C) 1986, 87, 89, 92 - 95, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1986, 87, 89, 92-95, 1998 Free Software Foundation, Inc.
    Written by Per Bothner, 1994.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -30,6 +30,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #endif /* not EMACS */
 
 #include "cpplib.h"
+#include "intl.h"
 
 /* Print the file names and line numbers of the #include
    commands which led to the current file.  */
@@ -62,10 +63,10 @@ cpp_print_containing_files (pfile)
 	  if (first)
 	    {
 	      first = 0;
-	      fprintf (stderr, "In file included");
+	      cpp_notice ("In file included from ");
 	    }
 	  else
-	    fprintf (stderr, ",\n                ");
+	    cpp_notice (",\n                 from ");
 	}
 
       fprintf (stderr, " from %s:%ld", ip->nominal_fname, line);
@@ -89,27 +90,41 @@ cpp_file_line_for_message (pfile, filename, line, column)
     fprintf (stderr, "%s:%d: ", filename, line);
 }
 
-/* IS_ERROR is 2 for "fatal" error, 1 for error, 0 for warning */
+/* IS_ERROR is 2 for "fatal" error, 1 for error, 0 for warning, -1 for notice */
 
 void
-v_cpp_message (pfile, is_error, msg, ap)
+v_cpp_message (pfile, is_error, msgid, ap)
   cpp_reader * pfile;
   int is_error;
-  const char *msg;
+  const char *msgid;
   va_list ap;
 {
-  if (!is_error)
-    fprintf (stderr, "warning: ");
-  else if (is_error == 2)
-    pfile->errors = CPP_FATAL_LIMIT;
-  else if (pfile->errors < CPP_FATAL_LIMIT)
-    pfile->errors++;
-  vfprintf (stderr, msg, ap);
-  fprintf (stderr, "\n");
+  switch (is_error)
+    {
+    case -1:
+      break;
+    case 0:
+      fprintf (stderr, _("warning: "));
+      break;
+    case 1:
+      if (pfile->errors < CPP_FATAL_LIMIT)
+	pfile->errors++;
+      break;
+    case 2:
+      pfile->errors = CPP_FATAL_LIMIT;
+      break;
+    default:
+      abort ();
+    }
+
+  vfprintf (stderr, _(msgid), ap);
+
+  if (0 <= is_error)
+    fprintf (stderr, "\n");
 }
 
 void
-cpp_message VPROTO ((cpp_reader *pfile, int is_error, const char *msg, ...))
+cpp_message VPROTO ((cpp_reader *pfile, int is_error, const char *msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
   cpp_reader *pfile;
@@ -118,15 +133,15 @@ cpp_message VPROTO ((cpp_reader *pfile, int is_error, const char *msg, ...))
 #endif
   va_list ap;
   
-  VA_START (ap, msg);
+  VA_START (ap, msgid);
   
 #ifndef ANSI_PROTOTYPES
   pfile = va_arg (ap, cpp_reader *);
   is_error = va_arg (ap, int);
-  msg = va_arg (ap, const char *);
+  msgid = va_arg (ap, const char *);
 #endif
 
-  v_cpp_message(pfile, is_error, msg, ap);
+  v_cpp_message(pfile, is_error, msgid, ap);
   va_end(ap);
 }
 
@@ -137,23 +152,23 @@ cpp_message VPROTO ((cpp_reader *pfile, int is_error, const char *msg, ...))
    CPP_FATAL_ERRORS.  */
 
 void
-cpp_fatal VPROTO ((cpp_reader *pfile, const char *str, ...))
+cpp_fatal VPROTO ((cpp_reader *pfile, const char *msgid, ...))
 {  
 #ifndef ANSI_PROTOTYPES
   cpp_reader *pfile;
-  const char *str;
+  const char *msgid;
 #endif
   va_list ap;
   
-  VA_START (ap, str);
+  VA_START (ap, msgid);
   
 #ifndef ANSI_PROTOTYPES
   pfile = va_arg (ap, cpp_reader *);
-  str = va_arg (ap, const char *);
+  msgid = va_arg (ap, const char *);
 #endif
 
   fprintf (stderr, "%s: ", progname);
-  v_cpp_message (pfile, 2, str, ap);
+  v_cpp_message (pfile, 2, msgid, ap);
   va_end(ap);
 }
 
@@ -169,3 +184,25 @@ cpp_pfatal_with_name (pfile, name)
   exit (FATAL_EXIT_CODE);
 #endif
 }
+
+/* Print an error message.  */
+
+void
+cpp_notice VPROTO ((const char *msgid, ...))
+{  
+#ifndef ANSI_PROTOTYPES
+  const char *msgid;
+#endif
+  va_list ap;
+  
+  VA_START (ap, msgid);
+  
+#ifndef ANSI_PROTOTYPES
+  msgid = va_arg (ap, const char *);
+#endif
+
+  fprintf (stderr, "%s: ", progname);
+  v_cpp_message ((cpp_reader *) 0, -1, msgid, ap);
+  va_end(ap);
+}
+

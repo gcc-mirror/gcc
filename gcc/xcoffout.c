@@ -177,7 +177,7 @@ xcoff_output_standard_types (syms)
 
 #define UNKNOWN_STAB(STR)	\
    do { \
-     fprintf(stderr, "Error, unknown stab %s: : 0x%x\n", STR, stab); \
+     error ("Unknown stab %s: : 0x%x\n", STR, stab);	\
      fflush (stderr);	\
    } while (0)
 

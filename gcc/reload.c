@@ -869,9 +869,11 @@ push_reload (in, out, inloc, outloc, class,
      the class whose registers cannot be referenced in a different size
      and M1 is not the same size as M2.  If SUBREG_WORD is nonzero, we
      cannot reload just the inside since we might end up with the wrong
-     register class.  */
+     register class.  But if it is inside a STRICT_LOW_PART, we have
+     no choice, so we hope we do get the right register class there.  */
 
-  if (in != 0 && GET_CODE (in) == SUBREG && SUBREG_WORD (in) == 0
+  if (in != 0 && GET_CODE (in) == SUBREG
+      && (SUBREG_WORD (in) == 0 || strict_low)
 #ifdef CLASS_CANNOT_CHANGE_SIZE
       && class != CLASS_CANNOT_CHANGE_SIZE
 #endif
@@ -988,7 +990,8 @@ push_reload (in, out, inloc, outloc, class,
      storing in a subreg is entitled to clobber it all
      (except in the case of STRICT_LOW_PART,
      and in that case the constraint should label it input-output.)  */
-  if (out != 0 && GET_CODE (out) == SUBREG && SUBREG_WORD (out) == 0
+  if (out != 0 && GET_CODE (out) == SUBREG
+      && (SUBREG_WORD (out) == 0 || strict_low)
 #ifdef CLASS_CANNOT_CHANGE_SIZE
       && class != CLASS_CANNOT_CHANGE_SIZE
 #endif
@@ -2602,12 +2605,12 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	}
       else if (code == MEM)
 	{
-	  if (find_reloads_address (GET_MODE (recog_operand[i]),
+	  address_reloaded[i]
+	    = find_reloads_address (GET_MODE (recog_operand[i]),
 				    recog_operand_loc[i],
 				    XEXP (recog_operand[i], 0),
 				    &XEXP (recog_operand[i], 0),
-				    i, address_type[i], ind_levels, insn))
-	    address_reloaded[i] = 1;
+				    i, address_type[i], ind_levels, insn);
 	  substed_operand[i] = recog_operand[i] = *recog_operand_loc[i];
 	}
       else if (code == SUBREG)
@@ -2682,6 +2685,15 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	= (code == REG && REGNO (recog_operand[i]) >= FIRST_PSEUDO_REGISTER
 	   && reg_alternate_class (REGNO (recog_operand[i])) == NO_REGS);
     }
+
+#ifdef HAVE_cc0
+  /* If we made any reloads for addresses, see if they violate a
+     "no input reloads" requirement for this insn.  */
+  if (no_input_reloads)
+    for (i = 0; i < n_reloads; i++)
+      if (reload_in[i] != 0)
+	abort ();
+#endif
 
   /* If this is simply a copy from operand 1 to operand 0, merge the
      preferred classes for the operands.  */
@@ -3020,24 +3032,11 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		     /* If IND_LEVELS, find_reloads_address won't reload a
 			pseudo that didn't get a hard reg, so we have to
 			reject that case.  */
-		     && (ind_levels ? offsettable_memref_p (operand)
-			 : offsettable_nonstrict_memref_p (operand)))
-		    /* A reloaded auto-increment address is offsettable,
-		       because it is now just a simple register indirect.  */
-		    || (GET_CODE (operand) == MEM
-			&& address_reloaded[i]
-			&& (GET_CODE (XEXP (operand, 0)) == PRE_INC
-			    || GET_CODE (XEXP (operand, 0)) == PRE_DEC
-			    || GET_CODE (XEXP (operand, 0)) == POST_INC
-			    || GET_CODE (XEXP (operand, 0)) == POST_DEC))
-		    /* Certain mem addresses will become offsettable
-		       after they themselves are reloaded.  This is important;
-		       we don't want our own handling of unoffsettables
-		       to override the handling of reg_equiv_address.  */
-		    || (GET_CODE (operand) == MEM
-			&& GET_CODE (XEXP (operand, 0)) == REG
-			&& (ind_levels == 0
-			    || reg_equiv_address[REGNO (XEXP (operand, 0))] != 0))
+		     && ((ind_levels ? offsettable_memref_p (operand)
+			  : offsettable_nonstrict_memref_p (operand))
+			 /* A reloaded address is offsettable because it is now
+			    just a simple register indirect.  */
+			 || address_reloaded[i]))
 		    || (GET_CODE (operand) == REG
 			&& REGNO (operand) >= FIRST_PSEUDO_REGISTER
 			&& reg_renumber[REGNO (operand)] < 0
@@ -4552,6 +4551,7 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels, insn)
      rtx insn;
 {
   register int regno;
+  int removed_and = 0;
   rtx tem;
 
   /* If the address is a register, see if it is a legitimate address and
@@ -4566,7 +4566,7 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels, insn)
 	  && strict_memory_address_p (mode, reg_equiv_constant[regno]))
 	{
 	  *loc = ad = reg_equiv_constant[regno];
-	  return 1;
+	  return 0;
 	}
 
       tem = reg_equiv_memory_loc[regno];
@@ -4671,12 +4671,22 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels, insn)
   while (0);
 #endif
 
-  /* The address is not valid.  We have to figure out why.  One possibility
-     is that it is itself a MEM.  This can happen when the frame pointer is
-     being eliminated, a pseudo is not allocated to a hard register, and the
-     offset between the frame and stack pointers is not its initial value.
-     In that case the pseudo will have been replaced by a MEM referring to
-     the stack pointer.  */
+  /* The address is not valid.  We have to figure out why.  First see if
+     we have an outer AND and remove it if so.  Then analyze what's inside.  */
+
+  if (GET_CODE (ad) == AND)
+    {
+      removed_and = 1;
+      loc = &XEXP (ad, 0);
+      ad = *loc;
+    }
+
+  /* One possibility for why the address is invalid is that it is itself
+     a MEM.  This can happen when the frame pointer is being eliminated, a
+     pseudo is not allocated to a hard register, and the offset between the
+     frame and stack pointers is not its initial value.  In that case the
+     pseudo will have been replaced by a MEM referring to the
+     stack pointer.  */
   if (GET_CODE (ad) == MEM)
     {
       /* First ensure that the address in this MEM is valid.  Then, unless
@@ -4693,6 +4703,8 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels, insn)
 	  *memrefloc = copy_rtx (*memrefloc);
 	  copy_replacements (tem, XEXP (*memrefloc, 0));
 	  loc = &XEXP (*memrefloc, 0);
+	  if (removed_and)
+	    loc = &XEXP (*loc, 0);
 	}
 
       /* Check similar cases as for indirect addresses as above except
@@ -4713,7 +4725,7 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels, insn)
 		       BASE_REG_CLASS, GET_MODE (tem),
 		       VOIDmode, 0,
 		       0, opnum, type);
-	  return 1;
+	  return ! removed_and;
 	}
       else
 	return 0;
@@ -4735,16 +4747,21 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels, insn)
 	{
 	  *memrefloc = copy_rtx (*memrefloc);
 	  loc = &XEXP (*memrefloc, 0);
+	  if (removed_and)
+	    loc = &XEXP (*loc, 0);
 	}
+
       if (double_reg_address_ok)
 	{
 	  /* Unshare the sum as well.  */
 	  *loc = ad = copy_rtx (ad);
+
 	  /* Reload the displacement into an index reg.
 	     We assume the frame pointer or arg pointer is a base reg.  */
 	  find_reloads_address_part (XEXP (ad, 1), &XEXP (ad, 1),
 				     INDEX_REG_CLASS, GET_MODE (ad), opnum,
 				     type, ind_levels);
+	  return 0;
 	}
       else
 	{
@@ -4754,7 +4771,7 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels, insn)
 	  find_reloads_address_part (ad, loc, BASE_REG_CLASS,
 				     Pmode, opnum, type, ind_levels);
 	}
-      return 1;
+      return ! removed_and;
     }
 
   /* If we have an indexed stack slot, there are three possible reasons why
@@ -4807,7 +4824,7 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels, insn)
       find_reloads_address_1 (mode, XEXP (ad, 1), 1, &XEXP (ad, 1), opnum,
 			      type, 0, insn);
 
-      return 1;
+      return 0;
     }
 			   
   else if (GET_CODE (ad) == PLUS && GET_CODE (XEXP (ad, 1)) == CONST_INT
@@ -4831,7 +4848,7 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels, insn)
       find_reloads_address_1 (mode, XEXP (ad, 0), 1, &XEXP (ad, 0), opnum,
 			      type, 0, insn);
 
-      return 1;
+      return 0;
     }
 			   
   /* See if address becomes valid when an eliminable register
@@ -4868,11 +4885,13 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels, insn)
 	{
 	  *memrefloc = copy_rtx (*memrefloc);
 	  loc = &XEXP (*memrefloc, 0);
+	  if (removed_and)
+	    loc = &XEXP (*loc, 0);
 	}
 
       find_reloads_address_part (ad, loc, BASE_REG_CLASS, Pmode, opnum, type,
 				 ind_levels);
-      return 1;
+      return ! removed_and;
     }
 
   return find_reloads_address_1 (mode, ad, 0, loc, opnum, type, ind_levels,

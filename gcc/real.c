@@ -5655,7 +5655,6 @@ eiremain (den, num)
 }
 
 /* Report an error condition CODE encountered in function NAME.
-   CODE is one of the following:
 
     Mnemonic        Value          Significance
 
@@ -5672,19 +5671,6 @@ eiremain (den, num)
    The order of appearance of the following messages is bound to the
    error codes defined above.  */
 
-#define NMSGS 8
-static char *ermsg[NMSGS] =
-{
-  "unknown",			/* error code 0 */
-  "domain error",		/* error code 1 */
-  "singularity",		/* et seq.      */
-  "overflow",
-  "underflow",
-  "total loss of precision",
-  "partial loss of precision",
-  "`not-a-number' produced"
-};
-
 int merror = 0;
 extern int merror;
 
@@ -5693,14 +5679,10 @@ mtherr (name, code)
      char *name;
      int code;
 {
-  char errstr[80];
-
   /* The string passed by the calling program is supposed to be the
      name of the function in which the error occurred.
      The code argument selects which error message string will be printed.  */
 
-  if ((code <= 0) || (code >= NMSGS))
-    code = 0;
   if (strcmp (name, "esub") == 0)
     name = "subtraction";
   else if (strcmp (name, "ediv") == 0)
@@ -5717,9 +5699,21 @@ mtherr (name, code)
     name = "modulus";
   else if (strcmp (name, "esqrt") == 0)
     name = "square root";
-  sprintf (errstr, "%s during real %s", ermsg[code], name);
   if (extra_warnings)
-    warning (errstr);
+    {
+      switch (code)
+	{
+	case DOMAIN:    warning ("%s: argument domain error"    , name); break;
+	case SING:      warning ("%s: function singularity"     , name); break;
+	case OVERFLOW:  warning ("%s: overflow range error"     , name); break;
+	case UNDERFLOW: warning ("%s: underflow range error"    , name); break;
+	case TLOSS:     warning ("%s: total loss of precision"  , name); break;
+	case PLOSS:     warning ("%s: partial loss of precision", name); break;
+	case INVALID:   warning ("%s: NaN - producing operation", name); break;
+	default:        abort ();
+	}
+    }
+
   /* Set global error message word */
   merror = code + 1;
 }

@@ -22,6 +22,10 @@ Boston, MA 02111-1307, USA.  */
 #include "system.h"
 #include <setjmp.h>
 
+#if HAVE_LIMITS_H
+# include <limits.h>
+#endif
+
 #include "rtl.h"
 #include "tree.h"
 #include "input.h"
@@ -32,6 +36,18 @@ Boston, MA 02111-1307, USA.  */
 #include "c-parse.h"
 #include "c-pragma.h"
 #include "toplev.h"
+#include "intl.h"
+
+#ifdef MAP_CHARACTER
+#include <ctype.h>
+#endif
+
+/* MULTIBYTE_CHARS support only works for native compilers.
+   ??? Ideally what we want is to model widechar support after
+   the current floating point support.  */
+#ifdef CROSS_COMPILE
+#undef MULTIBYTE_CHARS
+#endif
 
 #ifdef MULTIBYTE_CHARS
 #include "mbchar.h"
@@ -221,6 +237,8 @@ finish_parse ()
 void
 init_lex ()
 {
+  char *p;
+
   /* Make identifier nodes long enough for the language-specific slots.  */
   set_identifier_size (sizeof (struct lang_identifier));
 
@@ -1040,30 +1058,25 @@ readescape (ignore_ptr)
 }
 
 void
-yyerror (string)
-     char *string;
+yyerror (msgid)
+     char *msgid;
 {
-  char buf[200];
-
-  strcpy (buf, string);
+  char *string = _(msgid);
 
   /* We can't print string and character constants well
      because the token_buffer contains the result of processing escapes.  */
   if (end_of_file)
-    strcat (buf, " at end of input");
+    error ("%s at end of input", string);
   else if (token_buffer[0] == 0)
-    strcat (buf, " at null character");
+    error ("%s at null character", string);
   else if (token_buffer[0] == '"')
-    strcat (buf, " before string constant");
+    error ("%s before string constant", string);
   else if (token_buffer[0] == '\'')
-    strcat (buf, " before character constant");
+    error ("%s before character constant", string);
   else if (token_buffer[0] < 040 || (unsigned char) token_buffer[0] >= 0177)
-    sprintf (buf + strlen (buf), " before character 0%o",
-	     (unsigned char) token_buffer[0]);
+    error ("%s before character 0%o", string, (unsigned char) token_buffer[0]);
   else
-    strcat (buf, " before `%s'");
-
-  error (buf, token_buffer);
+    error ("%s before `%s'", string, token_buffer);
 }
 
 #if 0
@@ -1197,8 +1210,6 @@ yylex ()
       while (ISALNUM (c) || c == '_' || c == '$' || c == '@')
 	{
 	  /* Make sure this char really belongs in an identifier.  */
-	  if (c == '@' && ! doing_objc_thang)
-	    break;
 	  if (c == '$')
 	    {
 	      if (! dollars_in_ident)

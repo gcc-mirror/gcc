@@ -28,20 +28,6 @@ char *progname;
 int hash_tab[HASH_SIZE];
 int next_index;
 
-int
-hashf (name, len, hashsize)
-     register const U_CHAR *name;
-     register int len;
-     int hashsize;
-{
-  register int r = 0;
-
-  while (len--)
-    r = HASHSTEP (r, *name++);
-
-  return MAKE_POS (r) % hashsize;
-}
-
 static void
 add_hash (fname)
      char *fname;

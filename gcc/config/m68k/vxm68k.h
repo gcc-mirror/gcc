@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Vxworks m68k version.
-   Copyright (C) 1994, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1996, 1997, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -82,9 +82,9 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 
 #define LIB_SPEC ""
 
-/* Provide required defaults for linker -e. */
+/* Provide required defaults for linker. */
  
-#define LINK_SPEC "%{!nostdlib:%{!r*:%{!e*:-e start}}}"
+#define LINK_SPEC "-r"
 
 /* VxWorks provides the functionality of crt0.o and friends itself.  */
 
@@ -99,3 +99,8 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 
 /* GCC is the primary compiler for VxWorks, so we don't need this.  */
 #undef PCC_STATIC_STRUCT_RETURN
+
+/* Restrict use of 128 bit floating-point by default since VxWorks doesn't
+   have the proper accuracy routines for that size; this is not done because
+   the hardware doesn't support it, despite the name.  */
+#define WIDEST_HARDWARE_FP_SIZE 64

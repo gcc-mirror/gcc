@@ -3037,6 +3037,15 @@ changequote([,])dnl
 		    fi
 		fi
 		;;
+        sparc-hal-solaris2*)
+                xm_file=sparc/xm-sol2.h
+                tm_file="sparc/sol2.h sparc/hal.h"
+                tmake_file="sparc/t-halos sparc/t-sol2"
+                xmake_file=sparc/x-sysv4
+                extra_parts="crt1.o crti.o crtn.o gmon.o crtbegin.o crtend.o"
+                fixincludes=fixinc.svr4
+                broken_install=yes
+                ;;
 	sparc-*-solaris2*)
 		if test x$gnu_ld = xyes
 		then
@@ -3574,7 +3583,21 @@ do
 	fi
 
 	for file in `eval echo '$'$var`; do
+		case $file in
+		auto-config.h)
+			;;
+		*)
+			echo '#ifdef IN_GCC' >>$link
+			;;
+		esac
 		echo "#include \"$file\"" >>$link
+		case $file in
+		auto-config.h)
+			;;
+		*)
+			echo '#endif' >>$link
+			;;
+		esac
 	done
 
 	for def in `eval echo '$'$define`; do
@@ -3598,6 +3621,24 @@ fi
 changequote(,)dnl
 gcc_version=`sed -e 's/.*\"\([^ \"]*\)[ \"].*/\1/' < ${gcc_version_trigger}`
 changequote([,])dnl
+
+# Internationalization
+PACKAGE=gcc
+VERSION="$gcc_version"
+AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
+AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
+AC_SUBST(PACKAGE)
+AC_SUBST(VERSION)
+
+ALL_LINGUAS="en_UK"
+
+# NLS support is still experimental, so disable it by default for now.
+AC_ARG_ENABLE(nls,
+  [  --enable-nls            use Native Language Support (disabled by default)],
+  , enable_nls=no)
+
+AM_GNU_GETTEXT
+XGETTEXT="AWK='$AWK' \$(SHELL) \$(top_srcdir)/exgettext $XGETTEXT"
 
 # Get an absolute path to the GCC top-level source directory
 holddir=`pwd`
@@ -3960,7 +4001,7 @@ all_boot_languages=
 all_compilers=
 all_stagestuff=
 all_diff_excludes=
-all_outputs=Makefile
+all_outputs='Makefile intl/Makefile po/Makefile.in'
 # List of language makefile fragments.
 all_lang_makefiles=
 all_headers=
@@ -4028,10 +4069,10 @@ target_list="all.build all.cross start.encap rest.encap \
 for t in $target_list
 do
 	x=
-	for l in .. $all_languages
+	for lang in .. $all_languages
 	do
-		if test $l != ".."; then
-			x="$x $l.$t"
+		if test $lang != ".."; then
+			x="$x $lang.$t"
 		fi
 	done
 	echo "lang.$t: $x" >> Make-hooks
@@ -4246,6 +4287,11 @@ if test "$symbolic_link" = "ln -s"; then
    fi
  done
 else true ; fi
+# Avoid having to add intl to our include paths.
+if test -f intl/libintl.h; then
+  echo creating libintl.h
+  echo '#include "intl/libintl.h"' >libintl.h
+fi
 ],
 [
 host='${host}'

@@ -20,13 +20,6 @@ Boston, MA 02111-1307, USA. */
 
 #include "config.h"
 
-#define PRINTF_PROTO(ARGS, m, n) PVPROTO (ARGS) ATTRIBUTE_PRINTF(m, n)
-
-#define PRINTF_PROTO_1(ARGS) PRINTF_PROTO(ARGS, 1, 2)
-#define PRINTF_PROTO_2(ARGS) PRINTF_PROTO(ARGS, 2, 3)
-#define PRINTF_PROTO_3(ARGS) PRINTF_PROTO(ARGS, 3, 4)
-#define PRINTF_PROTO_4(ARGS) PRINTF_PROTO(ARGS, 4, 5)
-
 #include "system.h"
 #include <signal.h>
 
@@ -37,6 +30,7 @@ Boston, MA 02111-1307, USA. */
 typedef unsigned char U_CHAR;
 
 #include "pcp.h"
+#include "intl.h"
 #include "prefix.h"
 
 #ifdef MULTIBYTE_CHARS
@@ -851,8 +845,6 @@ U_CHAR is_idstart[256];
 static U_CHAR is_hor_space[256];
 /* table to tell if c is horizontal or vertical space.  */
 U_CHAR is_space[256];
-/* names of some characters */
-static char *char_name[256];
 
 #define SKIP_WHITE_SPACE(p) do { while (is_hor_space[*p]) p++; } while (0)
 #define SKIP_ALL_WHITE_SPACE(p) do { while (is_space[*p]) p++; } while (0)
@@ -949,7 +941,7 @@ static void pass_thru_directive PROTO((U_CHAR *, U_CHAR *, FILE_BUF *, struct di
 
 static MACRODEF create_definition PROTO((U_CHAR *, U_CHAR *, FILE_BUF *));
 
-static int check_macro_name PROTO((U_CHAR *, char *));
+static int check_macro_name PROTO((U_CHAR *, int));
 static int compare_defs PROTO((DEFINITION *, DEFINITION *));
 static int comp_def_part PROTO((int, U_CHAR *, int, U_CHAR *, int, int));
 
@@ -984,7 +976,7 @@ static void output_line_directive PROTO((FILE_BUF *, FILE_BUF *, int, enum file_
 static void macroexpand PROTO((HASHNODE *, FILE_BUF *));
 
 struct argdata;
-static char *macarg PROTO((struct argdata *, int));
+static int macarg PROTO((struct argdata *, int));
 
 static U_CHAR *macarg1 PROTO((U_CHAR *, U_CHAR *, struct hashnode *, int *, int *, int *, int));
 
@@ -993,18 +985,21 @@ static int discard_comments PROTO((U_CHAR *, int, int));
 static int change_newlines PROTO((U_CHAR *, int));
 
 static char *my_strerror PROTO((int));
-void error PRINTF_PROTO_1((char *, ...));
-static void verror PROTO((char *, va_list));
+static void notice VPROTO((char *, ...));
+static void vnotice PROTO((char *, va_list));
+void error VPROTO((char *, ...));
+void verror PROTO((char *, va_list));
 static void error_from_errno PROTO((char *));
-void warning PRINTF_PROTO_1((char *, ...));
+void warning VPROTO((char *, ...));
 static void vwarning PROTO((char *, va_list));
-static void error_with_line PRINTF_PROTO_2((int, char *, ...));
+static void error_with_line VPROTO((int, char *, ...));
 static void verror_with_line PROTO((int, char *, va_list));
 static void vwarning_with_line PROTO((int, char *, va_list));
-static void warning_with_line PRINTF_PROTO_2((int, char *, ...));
-void pedwarn PRINTF_PROTO_1((char *, ...));
-void pedwarn_with_line PRINTF_PROTO_2((int, char *, ...));
-static void pedwarn_with_file_and_line PRINTF_PROTO_4((char *, size_t, int, char *, ...));
+static void warning_with_line VPROTO((int, char *, ...));
+void pedwarn VPROTO((char *, ...));
+void pedwarn_with_line VPROTO((int, char *, ...));
+static void pedwarn_with_file_and_line VPROTO((char *, size_t, int, char *, ...));
+static void pedwarn_strange_white_space PROTO((int));
 
 static void print_containing_files PROTO((void));
 
@@ -1035,7 +1030,7 @@ static void append_include_chain PROTO((struct file_name_list *, struct file_nam
 static int quote_string_for_make PROTO((char *, char *));
 static void deps_output PROTO((char *, int));
 
-static void fatal PRINTF_PROTO_1((char *, ...)) __attribute__ ((noreturn));
+static void fatal VPROTO((char *, ...)) __attribute__ ((noreturn));
 void fancy_abort PROTO((void)) __attribute__ ((noreturn));
 static void perror_with_name PROTO((char *));
 static void pfatal_with_name PROTO((char *)) __attribute__ ((noreturn));
@@ -1222,16 +1217,17 @@ main (argc, argv)
   char *cp;
   int f, i;
   FILE_BUF *fp;
-  char **pend_files = (char **) xmalloc (argc * sizeof (char *));
-  char **pend_defs = (char **) xmalloc (argc * sizeof (char *));
-  char **pend_undefs = (char **) xmalloc (argc * sizeof (char *));
-  char **pend_assertions = (char **) xmalloc (argc * sizeof (char *));
-  char **pend_includes = (char **) xmalloc (argc * sizeof (char *));
+
+  char **pend_files;
+  char **pend_defs;
+  char **pend_undefs;
+  char **pend_assertions;
+  char **pend_includes;
 
   /* Record the option used with each element of pend_assertions.
      This is preparation for supporting more than one option for making
      an assertion.  */
-  char **pend_assertion_options = (char **) xmalloc (argc * sizeof (char *));
+  char **pend_assertion_options;
   int inhibit_predefs = 0;
   int no_standard_includes = 0;
   int no_standard_cplusplus_includes = 0;
@@ -1269,6 +1265,10 @@ main (argc, argv)
   signal (SIGPIPE, pipe_closed);
 #endif
 
+  setlocale (LC_MESSAGES, "");
+  bindtextdomain (PACKAGE, localedir);
+  textdomain (PACKAGE);
+
   progname = base_name (argv[0]);
 
 #ifdef VMS
@@ -1286,6 +1286,16 @@ main (argc, argv)
       *p = '\0';
   }
 #endif
+
+  /* Do not invoke xmalloc before this point, since locale and
+     progname need to be set first, in case a diagnostic is issued.  */
+     
+  pend_files = (char **) xmalloc (argc * sizeof (char *));
+  pend_defs = (char **) xmalloc (argc * sizeof (char *));
+  pend_undefs = (char **) xmalloc (argc * sizeof (char *));
+  pend_assertions = (char **) xmalloc (argc * sizeof (char *));
+  pend_includes = (char **) xmalloc (argc * sizeof (char *));
+  pend_assertion_options = (char **) xmalloc (argc * sizeof (char *));
 
   in_fname = NULL;
   out_fname = NULL;
@@ -1627,7 +1637,7 @@ main (argc, argv)
 	break;
 
       case 'v':
-	fprintf (stderr, "GNU CPP version %s", version_string);
+	notice ("GNU CPP version %s", version_string);
 #ifdef TARGET_VERSION
 	TARGET_VERSION;
 #endif
@@ -2054,10 +2064,10 @@ main (argc, argv)
   /* With -v, print the list of dirs to search.  */
   if (verbose) {
     struct file_name_list *p;
-    fprintf (stderr, "#include \"...\" search starts here:\n");
+    notice ("#include \"...\" search starts here:\n");
     for (p = include; p; p = p->next) {
       if (p == first_bracket_include)
-	fprintf (stderr, "#include <...> search starts here:\n");
+	notice ("#include <...> search starts here:\n");
       if (!p->fname[0])
 	fprintf (stderr, " .\n");
       else if (!strcmp (p->fname, "/") || !strcmp (p->fname, "//"))
@@ -2066,7 +2076,7 @@ main (argc, argv)
 	/* Omit trailing '/'.  */
 	fprintf (stderr, " %.*s\n", (int) strlen (p->fname) - 1, p->fname);
     }
-    fprintf (stderr, "End of search list.\n");
+    notice ("End of search list.\n");
   }
 
   /* -MG doesn't select the form of output and must be specified with one of
@@ -3810,7 +3820,7 @@ handle_directive (ip, op)
   while (1) {
     if (is_hor_space[*bp]) {
       if (*bp != ' ' && *bp != '\t' && pedantic)
-	pedwarn ("%s in preprocessing directive", char_name[*bp]);
+	pedwarn_strange_white_space (*bp);
       bp++;
     } else if (*bp == '/') {
       if (bp[1] == '\\' && bp[2] == '\n')
@@ -4013,7 +4023,7 @@ handle_directive (ip, op)
 	case '\r':
 	case '\v':
 	  if (pedantic)
-	    pedwarn ("%s in preprocessing directive", char_name[c]);
+	    pedwarn_strange_white_space (c);
 	  break;
 
 	case '\n':
@@ -4033,7 +4043,8 @@ handle_directive (ip, op)
       /* If a directive should be copied through, and -C was given,
 	 pass it through before removing comments.  */
       if (!no_output && put_out_comments
-	  && (kt->type == T_DEFINE ? dump_macros == dump_definitions
+	  && ((kt->type == T_DEFINE || kt->type == T_UNDEF)
+	      ? dump_macros == dump_definitions
 	      : IS_INCLUDE_DIRECTIVE_TYPE (kt->type) ? dump_includes
 	      : kt->type == T_PRAGMA)) {
         int len;
@@ -4454,16 +4465,18 @@ do_include (buf, limit, op, keyword)
       && !instack[indepth].system_header_p && !import_warning) {
     import_warning = 1;
     warning ("using `#import' is not recommended");
-    fprintf (stderr, "The fact that a certain header file need not be processed more than once\n");
-    fprintf (stderr, "should be indicated in the header file, not where it is used.\n");
-    fprintf (stderr, "The best way to do this is with a conditional of this form:\n\n");
-    fprintf (stderr, "  #ifndef _FOO_H_INCLUDED\n");
-    fprintf (stderr, "  #define _FOO_H_INCLUDED\n");
-    fprintf (stderr, "  ... <real contents of file> ...\n");
-    fprintf (stderr, "  #endif /* Not _FOO_H_INCLUDED */\n\n");
-    fprintf (stderr, "Then users can use `#include' any number of times.\n");
-    fprintf (stderr, "GNU C automatically avoids processing the file more than once\n");
-    fprintf (stderr, "when it is equipped with such a conditional.\n");
+    notice ("The fact that a certain header file need not be processed more than once\n\
+should be indicated in the header file, not where it is used.\n\
+The best way to do this is with a conditional of this form:\n\
+\n\
+  #ifndef _FOO_H_INCLUDED\n\
+  #define _FOO_H_INCLUDED\n\
+  ... <real contents of file> ...\n\
+  #endif /* Not _FOO_H_INCLUDED */\n\
+\n\
+Then users can use `#include' any number of times.\n\
+GNU C automatically avoids processing the file more than once\n\
+when it is equipped with such a conditional.\n");
   }
 
 get_filename:
@@ -5794,7 +5807,7 @@ create_definition (buf, limit, op)
     bp++;
 
   symname = bp;			/* remember where it starts */
-  sym_length = check_macro_name (bp, "macro");
+  sym_length = check_macro_name (bp, 0);
   bp += sym_length;
 
   /* Lossage will occur if identifiers or control keywords are broken
@@ -6045,12 +6058,12 @@ nope:
 }
 
 /* Check a purported macro name SYMNAME, and yield its length.
-   USAGE is the kind of name this is intended for.  */
+   ASSERTION is nonzero if this is really for an assertion name.  */
 
 static int
-check_macro_name (symname, usage)
+check_macro_name (symname, assertion)
      U_CHAR *symname;
-     char *usage;
+     int assertion;
 {
   U_CHAR *p;
   int sym_length;
@@ -6060,10 +6073,13 @@ check_macro_name (symname, usage)
   sym_length = p - symname;
   if (sym_length == 0
       || (sym_length == 1 && *symname == 'L' && (*p == '\'' || *p == '"')))
-    error ("invalid %s name", usage);
+    error (assertion ? "invalid assertion name" : "invalid macro name");
   else if (!is_idstart[*symname]
 	   || (sym_length == 7 && ! bcmp (symname, "defined", 7)))
-    error ("invalid %s name `%.*s'", usage, sym_length, symname);
+    error ((assertion
+	    ? "invalid assertion name `%.*s'"
+	    : "invalid macro name `%.*s'"),
+	   sym_length, symname);
   return sym_length;
 }
 
@@ -6489,7 +6505,7 @@ do_assert (buf, limit, op, keyword)
     bp++;
 
   symname = bp;			/* remember where it starts */
-  sym_length = check_macro_name (bp, "assertion");
+  sym_length = check_macro_name (bp, 1);
   bp += sym_length;
   /* #define doesn't do this, but we should.  */
   SKIP_WHITE_SPACE (bp);
@@ -6568,7 +6584,7 @@ do_unassert (buf, limit, op, keyword)
     bp++;
 
   symname = bp;			/* remember where it starts */
-  sym_length = check_macro_name (bp, "assertion");
+  sym_length = check_macro_name (bp, 1);
   bp += sym_length;
   /* #define doesn't do this, but we should.  */
   SKIP_WHITE_SPACE (bp);
@@ -7043,7 +7059,7 @@ do_undef (buf, limit, op, keyword)
     pass_thru_directive (buf, limit, op, keyword);
 
   SKIP_WHITE_SPACE (buf);
-  sym_length = check_macro_name (buf, "macro");
+  sym_length = check_macro_name (buf, 0);
 
   while ((hp = lookup (buf, sym_length, -1)) != NULL) {
     /* If we are generating additional info for debugging (with -g) we
@@ -8441,7 +8457,7 @@ macroexpand (hp, op)
   if (nargs >= 0) {
     register int i;
     struct argdata *args;
-    char *parse_error = 0;
+    int parse_error = 0;
 
     args = (struct argdata *) alloca ((nargs + 1) * sizeof (struct argdata));
 
@@ -8475,7 +8491,8 @@ macroexpand (hp, op)
       else
 	parse_error = macarg (NULL_PTR, 0);
       if (parse_error) {
-	error_with_line (line_for_error (start_line), parse_error);
+	error_with_line (line_for_error (start_line),
+			 "unterminated macro call");
 	break;
       }
       i++;
@@ -8820,7 +8837,7 @@ macroexpand (hp, op)
    REST_ARGS is passed to macarg1 to make it absorb the rest of the args.
    Return nonzero to indicate a syntax error.  */
 
-static char *
+static int
 macarg (argptr, rest_args)
      register struct argdata *argptr;
      int rest_args;
@@ -8829,7 +8846,7 @@ macarg (argptr, rest_args)
   int paren = 0;
   int newlines = 0;
   int comments = 0;
-  char *result = 0;
+  int result = 0;
 
   /* Try to parse as much of the argument as exists at this
      input stack level.  */
@@ -8862,7 +8879,7 @@ macarg (argptr, rest_args)
 
     while (bp == ip->buf + ip->length) {
       if (instack[indepth].macro == 0) {
-	result = "unterminated macro call";
+	result = 1;
 	break;
       }
       ip->macro->type = T_MACRO;
@@ -9344,34 +9361,62 @@ my_strerror (errnum)
 #endif
 
   if (!result)
-    result = "undocumented I/O error";
+    result = "errno = ?";
 
   return result;
+}
+
+/* notice - output message to stderr */
+
+static void
+notice VPROTO ((char * msgid, ...))
+{
+#ifndef ANSI_PROTOTYPES
+  char * msgid;
+#endif
+  va_list args;
+
+  VA_START (args, msgid);
+
+#ifndef ANSI_PROTOTYPES
+  msgid = va_arg (args, char *);
+#endif
+ 
+  vnotice (msgid, args);
+  va_end (args);
+}
+
+static void
+vnotice (msgid, args)
+     char *msgid;
+     va_list args;
+{
+  vfprintf (stderr, _(msgid), args);
 }
 
 /* error - print error message and increment count of errors.  */
 
 void
-error VPROTO ((char * msg, ...))
+error VPROTO ((char * msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
-  char * msg;
+  char * msgid;
 #endif
   va_list args;
 
-  VA_START (args, msg);
+  VA_START (args, msgid);
 
 #ifndef ANSI_PROTOTYPES
-  msg = va_arg (args, char *);
+  msgid = va_arg (args, char *);
 #endif
-
-  verror (msg, args);
+ 
+  verror (msgid, args);
   va_end (args);
 }
 
-static void
-verror (msg, args)
-     char *msg;
+void
+verror (msgid, args)
+     char *msgid;
      va_list args;
 {
   int i;
@@ -9389,7 +9434,7 @@ verror (msg, args)
     eprint_string (ip->nominal_fname, ip->nominal_fname_len);
     fprintf (stderr, ":%d: ", ip->lineno);
   }
-  vfprintf (stderr, msg, args);
+  vnotice (msgid, args);
   fprintf (stderr, "\n");
   errors++;
 }
@@ -9425,26 +9470,26 @@ error_from_errno (name)
 /* Print error message but don't count it.  */
 
 void
-warning VPROTO ((char * msg, ...))
+warning VPROTO ((char * msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
-  char * msg;
+  char * msgid;
 #endif
   va_list args;
 
-  VA_START (args, msg);
+  VA_START (args, msgid);
 
 #ifndef ANSI_PROTOTYPES
-  msg = va_arg (args, char *);
+  msgid = va_arg (args, char *);
 #endif
 
-  vwarning (msg, args);
+  vwarning (msgid, args);
   va_end (args);
 }
 
 static void
-vwarning (msg, args)
-     char *msg;
+vwarning (msgid, args)
+     char *msgid;
      va_list args;
 {
   int i;
@@ -9468,35 +9513,36 @@ vwarning (msg, args)
     eprint_string (ip->nominal_fname, ip->nominal_fname_len);
     fprintf (stderr, ":%d: ", ip->lineno);
   }
-  fprintf (stderr, "warning: ");
-  vfprintf (stderr, msg, args);
+  notice ("warning: ");
+  vnotice (msgid, args);
   fprintf (stderr, "\n");
 }
 
 static void
-error_with_line VPROTO ((int line, char * msg, ...))
+error_with_line VPROTO ((int line, char * msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
   int line;
-  char * msg;
+  char * msgid;
 #endif
   va_list args;
 
-  VA_START (args, msg);
+  VA_START (args, msgid);
 
 #ifndef ANSI_PROTOTYPES
   line = va_arg (args, int);
-  msg = va_arg (args, char *);
+  msgid = va_arg (args, char *);
 #endif
 
-  verror_with_line (line, msg, args);
+  verror_with_line (line, msgid, args);
   va_end (args);
 }
 
+
 static void
-verror_with_line (line, msg, args)
+verror_with_line (line, msgid, args)
      int line;
-     char *msg;
+     char *msgid;
      va_list args;
 {
   int i;
@@ -9514,35 +9560,35 @@ verror_with_line (line, msg, args)
     eprint_string (ip->nominal_fname, ip->nominal_fname_len);
     fprintf (stderr, ":%d: ", line);
   }
-  vfprintf (stderr, msg, args);
+  vnotice (msgid, args);
   fprintf (stderr, "\n");
   errors++;
 }
 
 static void
-warning_with_line VPROTO ((int line, char * msg, ...))
+warning_with_line VPROTO ((int line, char * msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
   int line;
-  char * msg;
+  char * msgid;
 #endif
   va_list args;
 
-  VA_START (args, msg);
+  VA_START (args, msgid);
 
 #ifndef ANSI_PROTOTYPES
   line = va_arg (args, int);
-  msg = va_arg (args, char *);
+  msgid = va_arg (args, char *);
 #endif
 
-  vwarning_with_line (line, msg, args);
+  vwarning_with_line (line, msgid, args);
   va_end (args);
 }
 
 static void
-vwarning_with_line (line, msg, args)
+vwarning_with_line (line, msgid, args)
      int line;
-     char *msg;
+     char *msgid;
      va_list args;
 {
   int i;
@@ -9566,54 +9612,54 @@ vwarning_with_line (line, msg, args)
     eprint_string (ip->nominal_fname, ip->nominal_fname_len);
     fprintf (stderr, line ? ":%d: " : ": ", line);
   }
-  fprintf (stderr, "warning: ");
-  vfprintf (stderr, msg, args);
+  notice ("warning: ");
+  vnotice (msgid, args);
   fprintf (stderr, "\n");
 }
 
 /* Print an error message and maybe count it.  */
 
 void
-pedwarn VPROTO ((char * msg, ...))
+pedwarn VPROTO ((char * msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
-  char * msg;
+  char * msgid;
 #endif
   va_list args;
 
-  VA_START (args, msg);
- 
+  VA_START (args, msgid);
+
 #ifndef ANSI_PROTOTYPES
-  msg = va_arg (args, char *);
+  msgid = va_arg (args, char *);
 #endif
- 
+
   if (pedantic_errors)
-    verror (msg, args);
+    verror (msgid, args);
   else
-    vwarning (msg, args);
+    vwarning (msgid, args);
   va_end (args);
 }
 
 void
-pedwarn_with_line VPROTO ((int line, char * msg, ...))
+pedwarn_with_line VPROTO ((int line, char * msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
   int line;
-  char * msg;
+  char * msgid;
 #endif
   va_list args;
 
-  VA_START (args, msg);
- 
+  VA_START (args, msgid);
+
 #ifndef ANSI_PROTOTYPES
   line = va_arg (args, int);
-  msg = va_arg (args, char *);
+  msgid = va_arg (args, char *);
 #endif
- 
+
   if (pedantic_errors)
-    verror_with_line (line, msg, args);
+    verror_with_line (line, msgid, args);
   else
-    vwarning_with_line (line, msg, args);
+    vwarning_with_line (line, msgid, args);
   va_end (args);
 }
 
@@ -9622,7 +9668,7 @@ pedwarn_with_line VPROTO ((int line, char * msg, ...))
 
 static void
 pedwarn_with_file_and_line VPROTO ((char *file, size_t file_len, int line,
-				    char * msg, ...))
+				    char * msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
   char *file;
@@ -9635,13 +9681,13 @@ pedwarn_with_file_and_line VPROTO ((char *file, size_t file_len, int line,
   if (!pedantic_errors && inhibit_warnings)
     return;
 
-  VA_START (args, msg);
+  VA_START (args, msgid);
  
 #ifndef ANSI_PROTOTYPES
   file = va_arg (args, char *);
   file_len = va_arg (args, size_t);
   line = va_arg (args, int);
-  msg = va_arg (args, char *);
+  msgid = va_arg (args, char *);
 #endif
  
   if (file) {
@@ -9651,11 +9697,23 @@ pedwarn_with_file_and_line VPROTO ((char *file, size_t file_len, int line,
   if (pedantic_errors)
     errors++;
   if (!pedantic_errors)
-    fprintf (stderr, "warning: ");
-
-  vfprintf (stderr, msg, args);
+    notice ("warning: ");
+  vnotice (msgid, args);
   va_end (args);
   fprintf (stderr, "\n");
+}
+
+static void
+pedwarn_strange_white_space (ch)
+     int ch;
+{
+  switch (ch)
+    {
+    case '\f': pedwarn ("formfeed in preprocessing directive"); break;
+    case '\r': pedwarn ("carriage return in preprocessing directive"); break;
+    case '\v': pedwarn ("vertical tab in preprocessing directive"); break;
+    default: abort ();
+    }
 }
 
 /* Print the file names and line numbers of the #include
@@ -9689,12 +9747,11 @@ print_containing_files ()
       ip = &instack[i];
       if (first) {
 	first = 0;
-	fprintf (stderr, "In file included");
+	notice (   "In file included from ");
       } else {
-	fprintf (stderr, ",\n                ");
+	notice (",\n                 from ");
       }
 
-      fprintf (stderr, " from ");
       eprint_string (ip->nominal_fname, ip->nominal_fname_len);
       fprintf (stderr, ":%d", ip->lineno);
     }
@@ -10132,10 +10189,6 @@ initialize_char_syntax ()
   is_space['\f'] = 1;
   is_space['\n'] = 1;
   is_space['\r'] = 1;
-
-  char_name['\v'] = "vertical tab";
-  char_name['\f'] = "formfeed";
-  char_name['\r'] = "carriage return";
 }
 
 /* Initialize the built-in macros.  */
@@ -10663,21 +10716,20 @@ deps_output (string, spacer)
 }
 
 static void
-fatal VPROTO ((char * msg, ...))
+fatal VPROTO ((char * msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
-  char * msg;
+  char * msgid;
 #endif
   va_list args;
 
   fprintf (stderr, "%s: ", progname);
-  VA_START (args, msg);
- 
+  VA_START (args, msgid);
+
 #ifndef ANSI_PROTOTYPES
-  msg = va_arg (args, char *);
+  msgid = va_arg (args, char *);
 #endif
- 
-  vfprintf (stderr, msg, args);
+  vnotice (msgid, args);
   va_end (args);
   fprintf (stderr, "\n");
   exit (FATAL_EXIT_CODE);

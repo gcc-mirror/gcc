@@ -64,6 +64,7 @@ Boston, MA 02111-1307, USA.  */
 #include "except.h"
 #include "toplev.h"
 #include "reload.h"
+#include "intl.h"
 
 /* Get N_SLINE and N_SOL from stab.h if we can expect the file to exist.  */
 #if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
@@ -3298,13 +3299,13 @@ alter_cond (cond)
    In an `asm', it's the user's fault; otherwise, the compiler's fault.  */
 
 void
-output_operand_lossage (str)
-  const char *str;
+output_operand_lossage (msgid)
+     const char *msgid;
 {
   if (this_is_asm_operands)
-    error_for_asm (this_is_asm_operands, "invalid `asm': %s", str);
+    error_for_asm (this_is_asm_operands, "invalid `asm': %s", _(msgid));
   else
-    fatal ("Internal compiler error, output_operand_lossage `%s'", str);
+    fatal ("Internal compiler error, output_operand_lossage `%s'", _(msgid));
 }
 
 /* Output of assembler code from a template, and its subroutines.  */

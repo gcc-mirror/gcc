@@ -37,6 +37,7 @@ Boston, MA 02111-1307, USA.  */
 #include "except.h"
 #include "function.h"
 #include "toplev.h"
+#include "intl.h"
 
 #include "obstack.h"
 #define	obstack_chunk_alloc	xmalloc
@@ -106,7 +107,7 @@ get_label_from_map (map, i)
 
 /* Zero if the current function (whose FUNCTION_DECL is FNDECL)
    is safe and reasonable to integrate into other functions.
-   Nonzero means value is a warning message with a single %s
+   Nonzero means value is a warning msgid with a single %s
    for the function's name.  */
 
 char *
@@ -123,20 +124,20 @@ function_cannot_inline_p (fndecl)
   /* No inlines with varargs.  */
   if ((last && TREE_VALUE (last) != void_type_node)
       || current_function_varargs)
-    return "varargs function cannot be inline";
+    return N_("varargs function cannot be inline");
 
   if (current_function_calls_alloca)
-    return "function using alloca cannot be inline";
+    return N_("function using alloca cannot be inline");
 
   if (current_function_contains_functions)
-    return "function with nested functions cannot be inline";
+    return N_("function with nested functions cannot be inline");
 
   if (current_function_cannot_inline)
     return current_function_cannot_inline;
 
   /* If its not even close, don't even look.  */
   if (!DECL_INLINE (fndecl) && get_max_uid () > 3 * max_insns)
-    return "function too large to be inline";
+    return N_("function too large to be inline");
 
 #if 0
   /* Don't inline functions which do not specify a function prototype and
@@ -146,27 +147,27 @@ function_cannot_inline_p (fndecl)
       if (TYPE_MODE (TREE_TYPE (parms)) == BLKmode)
 	TREE_ADDRESSABLE (parms) = 1;
       if (last == NULL_TREE && TREE_ADDRESSABLE (parms))
-	return "no prototype, and parameter address used; cannot be inline";
+	return N_("no prototype, and parameter address used; cannot be inline");
     }
 #endif
 
   /* We can't inline functions that return structures
      the old-fashioned PCC way, copying into a static block.  */
   if (current_function_returns_pcc_struct)
-    return "inline functions not supported for this return value type";
+    return N_("inline functions not supported for this return value type");
 
   /* We can't inline functions that return structures of varying size.  */
   if (int_size_in_bytes (TREE_TYPE (TREE_TYPE (fndecl))) < 0)
-    return "function with varying-size return value cannot be inline";
+    return N_("function with varying-size return value cannot be inline");
 
   /* Cannot inline a function with a varying size argument or one that
      receives a transparent union.  */
   for (parms = DECL_ARGUMENTS (fndecl); parms; parms = TREE_CHAIN (parms))
     {
       if (int_size_in_bytes (TREE_TYPE (parms)) < 0)
-	return "function with varying-size parameter cannot be inline";
+	return N_("function with varying-size parameter cannot be inline");
       else if (TYPE_TRANSPARENT_UNION (TREE_TYPE (parms)))
-	return "function with transparent unit parameter cannot be inline";
+	return N_("function with transparent unit parameter cannot be inline");
     }
 
   if (!DECL_INLINE (fndecl) && get_max_uid () > max_insns)
@@ -178,22 +179,23 @@ function_cannot_inline_p (fndecl)
 	  ninsns++;
 
       if (ninsns >= max_insns)
-	return "function too large to be inline";
+	return N_("function too large to be inline");
     }
 
-  /* We cannot inline this function if forced_labels is non-zero.  This
-     implies that a label in this function was used as an initializer.
-     Because labels can not be duplicated, all labels in the function
-     will be renamed when it is inlined.  However, there is no way to find
-     and fix all variables initialized with addresses of labels in this
+  /* We cannot inline this function it has the addresses of its labels
+     taken.  This can mean that a label in this function was used as an
+     initializer either statically or dynamically or stored outside the
+     function.  Because labels can not be duplicated, all labels in the
+     function will be renamed when it is inlined.  However, there is no way
+     to find and fix all variables initialized with addresses of labels in this
      function, hence inlining is impossible.  */
 
-  if (forced_labels)
-    return "function with label addresses used in initializers cannot inline";
+  if (current_function_addresses_labels)
+    return N_("function with label addresses taken cannot inline");
 
   /* We cannot inline a nested function that jumps to a nonlocal label.  */
   if (current_function_has_nonlocal_goto)
-    return "function with nonlocal goto cannot be inline";
+    return N_("function with nonlocal goto cannot be inline");
 
   /* This is a hack, until the inliner is taught about eh regions at
      the start of the function.  */
@@ -205,13 +207,13 @@ function_cannot_inline_p (fndecl)
     {
       if (insn && GET_CODE (insn) == NOTE
 	  && NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG)
-	return "function with complex parameters cannot be inline";
+	return N_("function with complex parameters cannot be inline");
     }
 
   /* We can't inline functions that return a PARALLEL rtx.  */
   result = DECL_RTL (DECL_RESULT (fndecl));
   if (result && GET_CODE (result) == PARALLEL)
-    return "inline functions not supported for this return value type";
+    return N_("inline functions not supported for this return value type");
 
   return 0;
 }
@@ -292,12 +294,16 @@ initialize_for_inline (fndecl, min_labelno, max_labelno, max_reg, copy)
        + current_function_calls_setjmp * FUNCTION_FLAGS_CALLS_SETJMP
        + current_function_calls_longjmp * FUNCTION_FLAGS_CALLS_LONGJMP
        + current_function_returns_struct * FUNCTION_FLAGS_RETURNS_STRUCT
-       + current_function_returns_pcc_struct * FUNCTION_FLAGS_RETURNS_PCC_STRUCT
+       + (current_function_returns_pcc_struct
+	  * FUNCTION_FLAGS_RETURNS_PCC_STRUCT)
        + current_function_needs_context * FUNCTION_FLAGS_NEEDS_CONTEXT
-       + current_function_has_nonlocal_label * FUNCTION_FLAGS_HAS_NONLOCAL_LABEL
+       + (current_function_has_nonlocal_label
+	  * FUNCTION_FLAGS_HAS_NONLOCAL_LABEL)
        + current_function_returns_pointer * FUNCTION_FLAGS_RETURNS_POINTER
        + current_function_uses_const_pool * FUNCTION_FLAGS_USES_CONST_POOL
-       + current_function_uses_pic_offset_table * FUNCTION_FLAGS_USES_PIC_OFFSET_TABLE);
+       + (current_function_uses_pic_offset_table
+	  * FUNCTION_FLAGS_USES_PIC_OFFSET_TABLE)
+       + current_function_addresses_labels * FUNCTION_FLAGS_ADDRESSES_LABELS);
 
   /* Clear out PARMDECL_MAP.  It was allocated in the caller's frame.  */
   bzero ((char *) parmdecl_map, max_parm_reg * sizeof (tree));
@@ -3402,6 +3408,9 @@ output_inline_function (fndecl)
   
   stack_slot_list = STACK_SLOT_LIST (head);
   forced_labels = FORCED_LABELS (head);
+
+  if (FUNCTION_FLAGS (head) & FUNCTION_FLAGS_ADDRESSES_LABELS)
+    current_function_addresses_labels = 1;
 
   if (FUNCTION_FLAGS (head) & FUNCTION_FLAGS_CALLS_ALLOCA)
     current_function_calls_alloca = 1;

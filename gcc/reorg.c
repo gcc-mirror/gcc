@@ -222,25 +222,26 @@ static int *uid_to_ruid;
 /* Highest valid index in `uid_to_ruid'.  */
 static int max_uid;
 
-static void mark_referenced_resources PROTO((rtx, struct resources *, int));
-static void mark_set_resources	PROTO((rtx, struct resources *, int, int));
-static int stop_search_p	PROTO((rtx, int));
-static int resource_conflicts_p	PROTO((struct resources *,
-				       struct resources *));
-static int insn_references_resource_p PROTO((rtx, struct resources *, int));
-static int insn_sets_resource_p PROTO((rtx, struct resources *, int));
-static rtx find_end_label	PROTO((void));
-static rtx emit_delay_sequence	PROTO((rtx, rtx, int));
-static rtx add_to_delay_list	PROTO((rtx, rtx));
-static rtx delete_from_delay_slot PROTO((rtx));
-static void delete_scheduled_jump PROTO((rtx));
-static void note_delay_statistics PROTO((int, int));
-static rtx optimize_skip	PROTO((rtx));
-static int get_jump_flags PROTO((rtx, rtx));
-static int rare_destination PROTO((rtx));
-static int mostly_true_jump	PROTO((rtx, rtx));
-static rtx get_branch_condition	PROTO((rtx, rtx));
-static int condition_dominates_p PROTO((rtx, rtx));
+static void mark_referenced_resources	PROTO((rtx, struct resources *, int));
+static void mark_set_resources		PROTO((rtx, struct resources *,
+					       int, int));
+static int stop_search_p		PROTO((rtx, int));
+static int resource_conflicts_p		PROTO((struct resources *,
+					       struct resources *));
+static int insn_references_resource_p	PROTO((rtx, struct resources *, int));
+static int insn_sets_resource_p		PROTO((rtx, struct resources *, int));
+static rtx find_end_label		PROTO((void));
+static rtx emit_delay_sequence		PROTO((rtx, rtx, int));
+static rtx add_to_delay_list		PROTO((rtx, rtx));
+static rtx delete_from_delay_slot	PROTO((rtx));
+static void delete_scheduled_jump	PROTO((rtx));
+static void note_delay_statistics	PROTO((int, int));
+static rtx optimize_skip		PROTO((rtx));
+static int get_jump_flags		PROTO((rtx, rtx));
+static int rare_destination		PROTO((rtx));
+static int mostly_true_jump		PROTO((rtx, rtx));
+static rtx get_branch_condition		PROTO((rtx, rtx));
+static int condition_dominates_p	PROTO((rtx, rtx));
 static rtx steal_delay_list_from_target PROTO((rtx, rtx, rtx, rtx,
 					       struct resources *,
 					       struct resources *,
@@ -251,29 +252,30 @@ static rtx steal_delay_list_from_fallthrough PROTO((rtx, rtx, rtx, rtx,
 						    struct resources *,
 						    struct resources *,
 						    int, int *, int *));
-static void try_merge_delay_insns PROTO((rtx, rtx));
-static rtx redundant_insn	PROTO((rtx, rtx, rtx));
-static int own_thread_p		PROTO((rtx, rtx, int));
-static int find_basic_block	PROTO((rtx));
-static void update_block	PROTO((rtx, rtx));
-static int reorg_redirect_jump PROTO((rtx, rtx));
-static void update_reg_dead_notes PROTO((rtx, rtx));
-static void fix_reg_dead_note PROTO((rtx, rtx));
-static void update_reg_unused_notes PROTO((rtx, rtx));
-static void update_live_status	PROTO((rtx, rtx));
-static rtx next_insn_no_annul	PROTO((rtx));
 static rtx find_dead_or_set_registers PROTO ((rtx, struct resources *, rtx *,
 					      int, struct resources,
 					      struct resources));
-static void mark_target_live_regs PROTO((rtx, struct resources *));
-static void fill_simple_delay_slots PROTO((int));
-static rtx fill_slots_from_thread PROTO((rtx, rtx, rtx, rtx, int, int,
-					 int, int, int *, rtx));
-static void fill_eager_delay_slots PROTO((void));
-static void relax_delay_slots	PROTO((rtx));
-static void make_return_insns	PROTO((rtx));
+static void try_merge_delay_insns	PROTO((rtx, rtx));
+static rtx redundant_insn		PROTO((rtx, rtx, rtx));
+static int own_thread_p			PROTO((rtx, rtx, int));
+static int find_basic_block		PROTO((rtx));
+static void update_block		PROTO((rtx, rtx));
+static int reorg_redirect_jump		PROTO((rtx, rtx));
+static void update_reg_dead_notes	PROTO((rtx, rtx));
+static void fix_reg_dead_note		PROTO((rtx, rtx));
+static void update_reg_unused_notes	PROTO((rtx, rtx));
+static void update_live_status		PROTO((rtx, rtx));
+static rtx next_insn_no_annul		PROTO((rtx));
+static void mark_target_live_regs	PROTO((rtx, struct resources *));
+static void fill_simple_delay_slots	PROTO((int));
+static rtx fill_slots_from_thread	PROTO((rtx, rtx, rtx, rtx, int, int,
+					       int, int, int *, rtx));
+static void fill_eager_delay_slots	PROTO((void));
+static void relax_delay_slots		PROTO((rtx));
+static void make_return_insns		PROTO((rtx));
 static int redirect_with_delay_slots_safe_p PROTO ((rtx, rtx, rtx));
 static int redirect_with_delay_list_safe_p PROTO ((rtx, rtx, rtx));
+static int check_annul_list_true_false	PROTO ((int, rtx));
 
 /* Given X, some rtl, and RES, a pointer to a `struct resource', mark
    which resources are references by the insn.  If INCLUDE_DELAYED_EFFECTS
@@ -1006,8 +1008,8 @@ add_to_delay_list (insn, delay_list)
   return delay_list;
 }   
 
-/* Delete INSN from the delay slot of the insn that it is in.  This may
-   produce an insn without anything in its delay slots.  */
+/* Delete INSN from the delay slot of the insn that it is in, which may
+   produce an insn with no delay slots.  Return the new insn.  */
 
 static rtx
 delete_from_delay_slot (insn)
@@ -1646,6 +1648,7 @@ check_annul_list_true_false (annul_true_p, delay_list)
 	    return 0;
         }
     }
+
   return 1;
 }
 
@@ -1689,8 +1692,8 @@ steal_delay_list_from_target (insn, condition, seq, delay_list,
   int total_slots_filled = *pslots_filled;
   rtx new_delay_list = 0;
   int must_annul = *pannul_p;
-  int i;
   int used_annul = 0;
+  int i;
   struct resources cc_set;
 
   /* We can't do anything if there are more delay slots in SEQ than we

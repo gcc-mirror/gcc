@@ -389,6 +389,11 @@ extern int current_function_contains_functions;
 
 extern int current_function_sp_is_unchanging;
 
+/* Nonzero if the function being compiled has the address of its
+   labels taken. */
+
+extern int current_function_addresses_labels;
+
 /* Nonzero if the current function returns a pointer type */
 
 extern int current_function_returns_pointer;

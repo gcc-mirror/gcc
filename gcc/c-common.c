@@ -81,6 +81,7 @@ typedef struct
   char *file;
   int needs_warning;
 } if_elt;
+static void tfaff			PROTO((void));
 
 static if_elt *if_stack;
 
@@ -1327,7 +1328,11 @@ record_international_format (name, assembler_name, format_num)
   info->format_num = format_num;
 }
 
-static char	tfaff[] = "too few arguments for format";
+static void
+tfaff ()
+{
+  warning ("too few arguments for format");
+}
 
 /* Check the argument list of a call to printf, scanf, etc.
    NAME is the function identifier.
@@ -1594,7 +1599,7 @@ check_format_info (info, params)
 	      ++format_chars;
 	      if (params == 0)
 		{
-		  warning (tfaff);
+		  tfaff ();
 		  return;
 		}
 	      if (info->first_arg_num != 0)
@@ -1637,7 +1642,7 @@ check_format_info (info, params)
 		      ++format_chars;
 		      if (params == 0)
 		        {
-			  warning (tfaff);
+			  tfaff ();
 			  return;
 			}
 		      cur_param = TREE_VALUE (params);
@@ -1832,7 +1837,7 @@ check_format_info (info, params)
 	continue;
       if (params == 0)
 	{
-	  warning (tfaff);
+	  tfaff ();
 	  return;
 	}
       cur_param = TREE_VALUE (params);
@@ -1858,9 +1863,9 @@ check_format_info (info, params)
 	      continue;
 	    }
 	  if (TREE_CODE (cur_type) != ERROR_MARK)
-	    warning ("format argument is not a %s (arg %d)",
-		     ((fci->pointer_count + aflag == 1)
-		      ? "pointer" : "pointer to a pointer"),
+	    warning ((fci->pointer_count + aflag == 1
+		      ? "format argument is not a pointer (arg %d)"
+		      : "format argument is not a pointer to a pointer (arg %d)"),
 		     arg_num);
 	  break;
 	}
