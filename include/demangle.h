@@ -128,4 +128,30 @@ cplus_demangle_v3 PARAMS ((const char* mangled));
 extern char*
 java_demangle_v3 PARAMS ((const char* mangled));
 
+
+enum gnu_v3_ctor_kinds {
+  gnu_v3_complete_object_ctor = 1,
+  gnu_v3_base_object_ctor,
+  gnu_v3_complete_object_allocating_ctor
+};
+
+/* Return non-zero iff NAME is the mangled form of a constructor name
+   in the G++ V3 ABI demangling style.  Specifically, return an `enum
+   gnu_v3_ctor_kinds' value indicating what kind of constructor
+   it is.  */
+extern enum gnu_v3_ctor_kinds is_gnu_v3_mangled_ctor (const char *name);
+
+
+enum gnu_v3_dtor_kinds {
+  gnu_v3_deleting_dtor = 1,
+  gnu_v3_complete_object_dtor,
+  gnu_v3_base_object_dtor
+};
+
+/* Return non-zero iff NAME is the mangled form of a destructor name
+   in the G++ V3 ABI demangling style.  Specifically, return an `enum
+   gnu_v3_dtor_kinds' value, indicating what kind of destructor
+   it is.  */
+extern enum gnu_v3_dtor_kinds is_gnu_v3_mangled_dtor (const char *name);
+
 #endif	/* DEMANGLE_H */

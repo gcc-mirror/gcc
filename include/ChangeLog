@@ -1,3 +1,9 @@
+2001-03-20  Jim Blandy  <jimb@redhat.com>
+
+	* demangle.h (enum gnu_v3_constructor_kinds,
+	is_gnu_v3_mangled_ctor, enum gnu_v3_destructor_kinds,
+	is_gnu_v3_mangled_dtor): New declarations.
+
 2001-03-14  Nick Clifton  <nickc@redhat.com>
 
 	* ansidecl.h: Fix copyright dates.
