@@ -1,3 +1,15 @@
+2004-03-13  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/14567
+	* config/rs6000/rs6000.h (UNITS_PER_ARG, RS6000_ARG_SIZE): Delete.
+	(HARD_REGNO_MODE_OK): Disallow TFmode for fp31.
+	* config/rs6000/rs6000.c (rs6000_arg_size): New function.
+	Update all users of RS6000_ARG_SIZE.
+	(function_arg_advance): Count fregno using mode size.
+	(function_arg): Handle long double split over regs and memory.
+	(function_arg_partial_nregs): Likewise.
+	(rs6000_va_arg): Repackage complex args.
+
 2004-03-13  Dean Ferreyra <dferreyra@igc.org>
 
 	PR target/14047
@@ -54,7 +66,7 @@
 	that corresponds to this FDE.
 	(FRAME_BEGIN_LABEL): Allow target to override default label.
 	(output_call_frame_info): If FDEs are linknonce, then use extra
-	indirection for FDE encoding, output a label for each FDE, and 
+	indirection for FDE encoding, output a label for each FDE, and
 	output an empty label for each function without an FDE.
 	(dwarf2out_begin_prologue): Set up decl field when creating an FDE.
 	* varasm.c (globalize_decl): Call ASM_MAKE_LABEL_LINKONCE for
@@ -114,10 +126,10 @@
 	* target.h (struct gcc_target): Move calls substructure before
 	booleans.  Add split_complex_arg.
 	* function.c (assign_parms, split_complex_args): Use it.
-        * calls.c (expand_call): Likewise.
-        (split_complex_values): Likewise.  Check for splittable types
-        before allocating memory.
-        (split_complex_types): Likewise.
+	* calls.c (expand_call): Likewise.
+	(split_complex_values): Likewise.  Check for splittable types
+	before allocating memory.
+	(split_complex_types): Likewise.
 	* system.h (SPLIT_COMPLEX_ARGS): Poison.
 	* expr.h (SPLIT_COMPLEX_ARGS): Remove.
 	* target-def.h (TARGET_SPLIT_COMPLEX_ARG): New.
@@ -247,7 +259,7 @@
 	(set_frame_base_location): Unshare variable if needed.
 	(set_variable_part): Init the refcount of new variable.
 	Unshare the variables if needed.
-	(delete_variable_part): Unshare the variables if needed. 
+	(delete_variable_part): Unshare the variables if needed.
 	(emit_notes_for_differences_1): Init the refcount of new variable.
 	(vt_add_function_parameters): Do not add function parameters to
 	IN set of ENTRY_BLOCK_PTR because it is unused anyway.
@@ -310,7 +322,7 @@
 	and gt_pch_use_address.
 	* config/host-linux.c, config/host-solaris.c: New files.
 	* config/x-linux, config/x-solaris: New files.
-	* config/rs6000/host-darwin.c darwin_rs6000_gt_pch_get_address): 
+	* config/rs6000/host-darwin.c (darwin_rs6000_gt_pch_get_address): 
 	Update for changed definition.
 	(darwin_rs6000_gt_pch_use_address): Likewise.
 	* doc/hostconfig.texi: Update docs.
@@ -407,7 +419,7 @@
 	PR bootstrap/12371
 	* config/m68k/m68k.h (FIXED_REGISTERS): Add arg pointer.
 	(CALL_USED_REGISTERS): Likewise.
-        (REG_CLASS_CONTENTS): Likewise.
+	(REG_CLASS_CONTENTS): Likewise.
 	(REG_ALLOC_ORDER): New.
 	(REGNO_REG_CLASS): Use regno_reg_class.
 	* config/m68k/m68k.c: Add regno_reg_class array.
@@ -2099,7 +2111,7 @@
 
 	* toplev.c (dump_file_tbl): Rename from dump_file.
 	* bb-reorder.c, bt-load.c, cfgcleanup.c, cfglayout.c, cfgloopanal.c,
- 	cfgloopmanip.c, cfgrtl.c, config/arm/arm.c, config/frv/frv.c,
+	cfgloopmanip.c, cfgrtl.c, config/arm/arm.c, config/frv/frv.c,
 	config/i386/i386.c, config/ia64/ia64.c, config/mips/mips.c,
 	config/sh/sh.c, cse.c, flow.c, ifcvt.c, loop-iv.c, loop-unroll.c,
 	loop-unswitch.c, output.h, predict.c, profile.c, ra-build.c,
@@ -5827,7 +5839,7 @@
 
 2004-01-31  Paolo Bonzini  <bonzini@gnu.org>
 
- 	* combine.c (cse_main): Set gen_lowpart to gen_lowpart_for_combine
+	* combine.c (cse_main): Set gen_lowpart to gen_lowpart_for_combine
 	and restore it to gen_lowpart_general on exit.
 	(gen_lowpart_for_combine): Adjust all callers to go through
 	gen_lowpart.
@@ -8109,7 +8121,7 @@
 
 	* fixinc/inclhack.def (alpha___extern_prefix,
 	alpha___extern_prefix_standards): New hacks to obey
- 	__PRAGMA_EXTERN_PREFIX.
+	__PRAGMA_EXTERN_PREFIX.
 	* fixinc/tests/base/testing.h [ALPHA___EXTERN_PREFIX_CHECK]: New
 	test.
 	* fixinc/tests/base/standards.h: Likewise.
