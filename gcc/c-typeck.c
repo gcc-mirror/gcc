@@ -1682,12 +1682,11 @@ convert_arguments (typelist, values, name, fundecl)
 					        (char *) 0, /* arg passing  */
 						fundecl, name, parmnum + 1);
 	      
-#ifdef PROMOTE_PROTOTYPES
-	      if ((TREE_CODE (type) == INTEGER_TYPE
-		   || TREE_CODE (type) == ENUMERAL_TYPE)
+	      if (PROMOTE_PROTOTYPES
+		  && (TREE_CODE (type) == INTEGER_TYPE
+		      || TREE_CODE (type) == ENUMERAL_TYPE)
 		  && (TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node)))
 		parmval = default_conversion (parmval);
-#endif
 	    }
 	  result = tree_cons (NULL_TREE, parmval, result);
 	}

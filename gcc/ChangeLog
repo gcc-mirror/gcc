@@ -1,3 +1,38 @@
+1999-08-02  Jakub Jelinek  <jj@ultra.linux.cz>
+
+	* c-decl.c (get_parm_info, store_parm_decls): Change all uses of
+	PROMOTE_PROTOTYPES, so that it tests it as a C expression.
+	Ensure expr.h is included.
+	* c-typecheck.c (convert_arguments): Ditto.
+
+	* expr.h: Supply default for PROMOTE_PROTOTYPES (0).
+
+	* config/arc/arc.h: Define PROMOTE_PROTOTYPES to 1.
+	* config/convex/convex.h: Ditto.
+	* config/dsp16xx/dsp16xx.h: Ditto.
+	* config/fx80/fx80.h: Ditto.
+	* config/gmicro/gmicro.h: Ditto.
+	* config/i370/i370.h: Ditto.
+	* config/i386/i386.h: Ditto.
+	* config/m32r/m32r.h: Ditto.
+	* config/m68k/m68k.h: Ditto.
+	* config/m88k/m88k.h: Ditto.
+	* config/mips/mips.h: Ditto.
+	* config/pa/pa.h: Ditto.
+	* config/pyr/pyr.h: Ditto.
+	* config/tahoe/tahoe.h: Ditto.
+	* config/we32k/we32k.h: Ditto.
+
+	* config/sparc/sparc.h: Define PROMOTE_PROTOTYPES
+	based on arch size.
+
+	* config/i1750a/i1750a.h: Define PROMOTE_PROTOTYPES to 0.
+
+	* config/i860/paragon.h: Remove PROMOTE_PROTOTYPES
+	from comment.
+
+	* tm.texi: Document new usage of PROMOTE_PROTOTYPES.
+
 1999-08-02  Richard Henderson  <rth@cygnus.com>
 
 	* m32r.c (m32r_setup_incoming_varargs): Use get_varargs_alias_set

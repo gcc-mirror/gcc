@@ -34,6 +34,7 @@ Boston, MA 02111-1307, USA.  */
 #include "c-tree.h"
 #include "c-lex.h"
 #include "toplev.h"
+#include "expr.h"
 
 #if USE_CPPLIB
 #include "cpplib.h"
@@ -5219,12 +5220,11 @@ get_parm_info (void_at_end)
 	   args are passed in their declared types.  */
 	tree type = TREE_TYPE (decl);
 	DECL_ARG_TYPE (decl) = type;
-#ifdef PROMOTE_PROTOTYPES
-	if ((TREE_CODE (type) == INTEGER_TYPE
-	     || TREE_CODE (type) == ENUMERAL_TYPE)
+	if (PROMOTE_PROTOTYPES
+	    && (TREE_CODE (type) == INTEGER_TYPE
+		|| TREE_CODE (type) == ENUMERAL_TYPE)
 	    && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node))
 	  DECL_ARG_TYPE (decl) = integer_type_node;
-#endif
 
 	types = saveable_tree_cons (NULL_TREE, TREE_TYPE (decl), types);
 	if (TYPE_MAIN_VARIANT (TREE_VALUE (types)) == void_type_node && ! erred
@@ -6557,13 +6557,14 @@ store_parm_decls ()
 			 `int foo(float x) {...}'.  This is particularly
 			 useful for argument types like uid_t.  */
 		      DECL_ARG_TYPE (parm) = TREE_TYPE (parm);
-#ifdef PROMOTE_PROTOTYPES
-		      if ((TREE_CODE (TREE_TYPE (parm)) == INTEGER_TYPE
-			   || TREE_CODE (TREE_TYPE (parm)) == ENUMERAL_TYPE)
+
+		      if (PROMOTE_PROTOTYPES
+			  && (TREE_CODE (TREE_TYPE (parm)) == INTEGER_TYPE
+			      || TREE_CODE (TREE_TYPE (parm)) == ENUMERAL_TYPE)
 			  && TYPE_PRECISION (TREE_TYPE (parm))
 			  < TYPE_PRECISION (integer_type_node))
 			DECL_ARG_TYPE (parm) = integer_type_node;
-#endif
+
 		      if (pedantic)
 			{
 			  pedwarn ("promoted argument `%s' doesn't match prototype",
