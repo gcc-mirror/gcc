@@ -3495,12 +3495,14 @@ expand_assignment (to, from, want_value, suggest_reg)
 	  size *= GET_MODE_SIZE (best_mode);
 
 	  /* Check the access right of the pointer.  */
+	  in_check_memory_usage = 1;
 	  if (size)
 	    emit_library_call (chkr_check_addr_libfunc, 1, VOIDmode, 3,
 			       to_addr, Pmode,
 			       GEN_INT (size), TYPE_MODE (sizetype),
 			       GEN_INT (MEMORY_USE_WO),
 			       TYPE_MODE (integer_type_node));
+	  in_check_memory_usage = 0;
 	}
 
       /* If this is a varying-length object, we must get the address of
@@ -3877,6 +3879,7 @@ store_expr (exp, target, want_value)
       && GET_CODE (target) == MEM
       && AGGREGATE_TYPE_P (TREE_TYPE (exp)))
     {
+      in_check_memory_usage = 1;
       if (GET_CODE (temp) == MEM)
         emit_library_call (chkr_copy_bitmap_libfunc, 1, VOIDmode, 3,
 			   XEXP (target, 0), Pmode,
@@ -3888,6 +3891,7 @@ store_expr (exp, target, want_value)
 			   expr_size (exp), TYPE_MODE (sizetype),
 			   GEN_INT (MEMORY_USE_WO), 
 			   TYPE_MODE (integer_type_node));
+      in_check_memory_usage = 0;
     }
 
   /* If value was not generated in the target, store it there.
@@ -3991,12 +3995,14 @@ store_expr (exp, target, want_value)
 	      if (size != const0_rtx)
 		{
 		  /* Be sure we can write on ADDR.  */
+		  in_check_memory_usage = 1;
 		  if (current_function_check_memory_usage)
 		    emit_library_call (chkr_check_addr_libfunc, 1, VOIDmode, 3,
 				       addr, Pmode,
 				       size, TYPE_MODE (sizetype),
  				       GEN_INT (MEMORY_USE_WO), 
 				       TYPE_MODE (integer_type_node));
+		  in_check_memory_usage = 0;
 		  clear_storage (gen_rtx_MEM (BLKmode, addr), size, align);
 		}
 
@@ -5919,6 +5925,7 @@ expand_expr (exp, target, tmode, modifier)
 	  enum memory_use_mode memory_usage;
 	  memory_usage = get_memory_usage_from_modifier (modifier);
 
+	  in_check_memory_usage = 1;
 	  if (memory_usage != MEMORY_USE_DONT)
 	    emit_library_call (chkr_check_addr_libfunc, 1, VOIDmode, 3,
 			       XEXP (DECL_RTL (exp), 0), Pmode,
@@ -5926,6 +5933,7 @@ expand_expr (exp, target, tmode, modifier)
 			       TYPE_MODE (sizetype),
 			       GEN_INT (memory_usage),
 			       TYPE_MODE (integer_type_node));
+	  in_check_memory_usage = 0;
 	}
 
       /* ... fall through ...  */
@@ -6755,6 +6763,7 @@ expand_expr (exp, target, tmode, modifier)
 		size = (bitpos % BITS_PER_UNIT) + bitsize + BITS_PER_UNIT - 1;
 
         	/* Check the access right of the pointer.  */
+		in_check_memory_usage = 1;
 		if (size > BITS_PER_UNIT)
 		  emit_library_call (chkr_check_addr_libfunc, 1, VOIDmode, 3,
 				     to, Pmode,
@@ -6762,6 +6771,7 @@ expand_expr (exp, target, tmode, modifier)
 				     TYPE_MODE (sizetype),
 				     GEN_INT (memory_usage), 
 				     TYPE_MODE (integer_type_node));
+		in_check_memory_usage = 0;
 	      }
 	  }
 
@@ -8717,12 +8727,14 @@ expand_expr_unaligned (exp, palign)
 	    size = (bitpos % BITS_PER_UNIT) + bitsize + BITS_PER_UNIT - 1;
 
 	    /* Check the access right of the pointer.  */
+	    in_check_memory_usage = 1;
 	    if (size > BITS_PER_UNIT)
 	      emit_library_call (chkr_check_addr_libfunc, 1, VOIDmode, 3,
 				 to, ptr_mode, GEN_INT (size / BITS_PER_UNIT),
 				 TYPE_MODE (sizetype),
 				 GEN_INT (MEMORY_USE_RO), 
 				 TYPE_MODE (integer_type_node));
+	    in_check_memory_usage = 0;
 	  }
 
 	/* In cases where an aligned union has an unaligned object
