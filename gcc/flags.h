@@ -363,6 +363,11 @@ extern int flag_finite_math_only;
 
 extern int flag_trapping_math;
 
+/* Nonzero means disable transformations that assume default floating
+   point rounding behavior.  */
+
+extern int flag_rounding_math;
+
 /* 0 means straightforward implementation of complex divide acceptable.
    1 means wide ranges of inputs must work for complex divide.
    2 means C99-like requirements for complex divide (not yet implemented).  */
@@ -716,6 +721,6 @@ extern const char *flag_random_seed;
 /* Like HONOR_NANS, but true if given mode supports sign-dependent rounding,
    and the rounding mode is important.  */
 #define HONOR_SIGN_DEPENDENT_ROUNDING(MODE) \
-  (MODE_HAS_SIGN_DEPENDENT_ROUNDING (MODE) && !flag_unsafe_math_optimizations)
+  (MODE_HAS_SIGN_DEPENDENT_ROUNDING (MODE) && flag_rounding_math)
 
 #endif /* ! GCC_FLAGS_H */

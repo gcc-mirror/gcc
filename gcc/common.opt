@@ -552,6 +552,10 @@ frerun-loop-opt
 Common
 Run the loop optimizer twice
 
+frounding-math
+Common
+Disable optimizations that assume default FP rounding behavior
+
 fsched-interblock
 Common
 Enable scheduling across basic blocks

@@ -633,6 +633,11 @@ int flag_finite_math_only = 0;
 
 int flag_trapping_math = 1;
 
+/* Nonzero means disable transformations that assume default floating
+   point rounding behavior.  */
+
+int flag_rounding_math = 0;
+
 /* Nonzero means disable transformations observable by signaling NaNs.
    This option implies that any operation on an IEEE signaling NaN can
    generate a (user-visible) trap.  */
@@ -1113,6 +1118,7 @@ static const lang_independent_options f_options[] =
   { "guess-branch-probability", &flag_guess_branch_prob, 1 },
   {"math-errno", &flag_errno_math, 1 },
   {"trapping-math", &flag_trapping_math, 1 },
+  {"rounding-math", &flag_rounding_math, 1 },
   {"unsafe-math-optimizations", &flag_unsafe_math_optimizations, 1 },
   {"signaling-nans", &flag_signaling_nans, 1 },
   {"bounds-check", &flag_bounds_check, 1 },

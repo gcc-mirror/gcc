@@ -280,7 +280,7 @@ in the following sections.
 -freduce-all-givs  -fregmove  -frename-registers @gol
 -freorder-blocks  -freorder-functions @gol
 -frerun-cse-after-loop  -frerun-loop-opt @gol
--fschedule-insns  -fschedule-insns2 @gol
+-frounding-math -fschedule-insns  -fschedule-insns2 @gol
 -fno-sched-interblock  -fno-sched-spec  -fsched-spec-load @gol
 -fsched-spec-load-dangerous  -fsched2-use-superblocks @gol
 -fsched2-use-traces  -fsignaling-nans @gol
@@ -4260,8 +4260,8 @@ them to store all pertinent intermediate computations into variables.
 @item -ffast-math
 @opindex ffast-math
 Sets @option{-fno-math-errno}, @option{-funsafe-math-optimizations}, @*
-@option{-fno-trapping-math}, @option{-ffinite-math-only} and @*
-@option{-fno-signaling-nans}.
+@option{-fno-trapping-math}, @option{-ffinite-math-only},
+@option{-fno-rounding-math} and @option{-fno-signaling-nans}.
 
 This option causes the preprocessor macro @code{__FAST_MATH__} to be defined.
 
@@ -4324,6 +4324,26 @@ an exact implementation of IEEE or ISO rules/specifications for
 math functions.
 
 The default is @option{-ftrapping-math}.
+
+@item -frounding-math
+@opindex frounding-math
+Disable transformations and optimizations that assume default floating
+point rounding behavior.  This is round-to-zero for all floating point
+to integer conversions, and round-to-nearest for all other arithmetic
+truncations.  This option should be specified for programs that change
+the FP rounding mode dynamically, or that may be executed with a
+non-default rounding mode.  This option disables constant folding of
+floating point expressions at compile-time (which may be affected by
+rounding mode) and arithmetic transformations that are unsafe in the
+presence of sign-dependent rounding modes.
+
+The default is @option{-fno-rounding-math}.
+
+This option is experimental and does not currently guarantee to
+disable all GCC optimizations that are affected by rounding mode.
+Future versions of gcc may provide finer control of this setting
+using C99's @code{FENV_ACCESS} pragma.  This command line option
+will be used to specify the default state for @code{FENV_ACCESS}.
 
 @item -fsignaling-nans
 @opindex fsignaling-nans
