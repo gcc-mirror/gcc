@@ -1,3 +1,10 @@
+2000-09-16  Geoffrey Keating  <geoffk@cygnus.com>
+
+	* configure.in: Define macros that affect features before
+	testing for features.  Don't define _XOPEN_SOURCE.
+	* configure: Regenerated.
+	* config.in: Regenerated.
+
 Sat Sep 16 19:42:50 EDT 2000  John Wehle  (john@feith.com)
 
 	* rtlanal.c (rtx_varies_p): Volatile asms vary.
