@@ -5015,15 +5015,15 @@ instantiate_type (lhstype, rhs, flags)
 	          field = OVL_FUNCTION (field);
 	        if (TREE_CODE (field) == FUNCTION_DECL)
 	          {
-		    cp_error ("object-dependent reference `%E' can only be used in a call",
+		    cp_pedwarn ("object-dependent reference `%E' can only be used in a call",
 		    	      DECL_NAME (field));
-  	    	    cp_error ("  to form a pointer to member function, say `&%T::%E'",
+  	    	    cp_pedwarn ("  to form a pointer to member function, say `&%T::%E'",
 		    	      t, DECL_NAME (field));
     	          }
 	        else
-	          cp_error ("object-dependent reference can only be used in a call");
+	          cp_pedwarn ("object-dependent reference can only be used in a call");
 	      }
-	    return error_mark_node;
+	    return r;
 	  }
 	
 	return r;
