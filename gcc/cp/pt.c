@@ -3572,17 +3572,17 @@ tsubst_friend_function (decl, args)
   return new_friend;
 }
 
-/* FRIEND_TYPE is a friend RECORD_TYPE or UNION_TYPE.  ARGS is the
-   vector of template arguments, as for tsubst.
+/* FRIEND_TMPL is a friend TEMPLATE_DECL.  ARGS is the vector of
+   template arguments, as for tsubst.
 
    Returns an appropriate tsbust'd friend type.  */
 
 static tree
-tsubst_friend_class (friend_type, args)
-     tree friend_type;
+tsubst_friend_class (friend_tmpl, args)
+     tree friend_tmpl;
      tree args;
 {
-  tree friend_tmpl = CLASSTYPE_TI_TEMPLATE (friend_type);
+  tree friend_type;
   tree tmpl = lookup_name (DECL_NAME (friend_tmpl), 1); 
 
   tmpl = maybe_get_template_decl_from_type_decl (tmpl);
@@ -3591,9 +3591,8 @@ tsubst_friend_class (friend_type, args)
     {
       /* The friend template has already been declared.  Just
 	 check to see that the declarations match.  */
-      if (tmpl != friend_tmpl)
-	redeclare_class_template (TREE_TYPE (tmpl),
-				  DECL_TEMPLATE_PARMS (friend_tmpl));
+      redeclare_class_template (TREE_TYPE (tmpl),
+				DECL_TEMPLATE_PARMS (friend_tmpl));
       friend_type = TREE_TYPE (tmpl);
     }
   else
@@ -3886,19 +3885,29 @@ instantiate_class_template (type)
        t = TREE_CHAIN (t))
     {
       tree friend_type = TREE_VALUE (t);
+      tree new_friend_type;
 
-      if (!CLASSTYPE_IS_TEMPLATE (friend_type))
+      if (TREE_CODE (friend_type) != TEMPLATE_DECL)
 	/* The call to xref_tag_from_type does injection for friend
 	   classes.  */
-	friend_type = 
+	new_friend_type = 
 	  xref_tag_from_type (tsubst (friend_type, args, NULL_TREE),
 			      NULL_TREE, 1);
       else
-	friend_type = tsubst_friend_class (friend_type, args);
+	new_friend_type = tsubst_friend_class (friend_type, args);
 
-      CLASSTYPE_FRIEND_CLASSES (type) = 
-	tree_cons (NULL_TREE, friend_type,
-		   CLASSTYPE_FRIEND_CLASSES (type));
+      if (TREE_CODE (friend_type) == TEMPLATE_DECL)
+	/* Trick make_friend_class into realizing that the friend
+	   we're adding is a template, not an ordinary class.  It's
+	   important that we use make_friend_class since it will
+	   perform some error-checking and output cross-reference
+	   information.  */
+	++processing_template_decl;
+
+      make_friend_class (type, new_friend_type);
+
+      if (TREE_CODE (friend_type) == TEMPLATE_DECL)
+	--processing_template_decl;
     }
 
   /* This does injection for friend functions. */

@@ -9590,9 +9590,11 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	{
 	  /* Make sure this typedef lives as long as its type,
 	     since it might be used as a template parameter. */
-	  push_obstacks (TYPE_OBSTACK (type), TYPE_OBSTACK (type));
+	  if (type != error_mark_node)
+	    push_obstacks (TYPE_OBSTACK (type), TYPE_OBSTACK (type));
 	  decl = build_decl (TYPE_DECL, declarator, type);
-	  pop_obstacks ();
+	  if (type != error_mark_node)
+	    pop_obstacks ();
 	}
 
       /* If the user declares "struct {...} foo" then `foo' will have
