@@ -1,6 +1,6 @@
 Mon Apr 27 18:57:18 1998  Jim Wilson  <wilson@cygnus.com>
 
-	* sni-svr4.h (CPP_PREDEFINES): Add -Dsinix and -DSNI.
+	* mips/sni-svr4.h (CPP_PREDEFINES): Add -Dsinix and -DSNI.
 
 Mon Apr 20 14:48:29 1998  Michael Meissner  <meissner@cygnus.com>
 
