@@ -50,7 +50,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define X_OK 1
 #endif
 
-#ifdef USG
+#if defined(USG) || defined(NO_STAB_H)
 #include "gstab.h"  /* If doing DBX on sysV, use our own stab.h.  */
 #else
 #include <stab.h>  /* On BSD, use the system's stab.h.  */
@@ -2982,6 +2982,8 @@ mips_output_filename (stream, name)
       SET_FILE_NUMBER ();
       current_function_file = name;
       fprintf (stream, "\t.file\t%d \"%s\"\n", num_source_filenames, name);
+      if (!TARGET_GAS && write_symbols == DBX_DEBUG)
+	fprintf (stream, "\t#@stabs\n");
     }
 
   else if (!TARGET_GAS && write_symbols == DBX_DEBUG)
@@ -3136,6 +3138,30 @@ mips_asm_file_end (file)
 
       if (fclose (asm_out_text_file) != 0)
 	pfatal_with_name (temp_filename);
+    }
+}
+
+
+/* Emit either a label, .comm, or .lcomm directive, and mark
+   that the symbol is used, so that we don't emit an .extern
+   for it in mips_asm_file_end.  */
+
+void
+mips_declare_object (stream, name, init_string, final_string, size)
+     FILE *stream;
+     char *name;
+     char *init_string;
+     char *final_string;
+     int size;
+{
+  fputs (init_string, stream);		/* "", "\t.comm\t", or "\t.lcomm\t" */
+  assemble_name (stream, name);
+  fprintf (stream, final_string, size);	/* ":\n", ",%u\n", ",%u\n" */
+
+  if (TARGET_GP_OPT && mips_section_threshold != 0)
+    {
+      tree name_tree = get_identifier (name);
+      TREE_ASM_WRITTEN (name_tree) = 1;
     }
 }
 
