@@ -98,7 +98,7 @@
 
 Fri Apr  6 15:36:15 2001  J"orn Rennecke <amylaar@redhat.com>
 
-	* gcc.c-torture/execute/20001203-2.c (main):
+	* gcc.c-torture/execute/20001203-2.c (memset):
 	Count argument is of type __SIZE_TYPE__.
 
 2001-04-04  Diego Novillo  <dnovillo@redhat.com>
