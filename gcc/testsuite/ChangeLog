@@ -1,3 +1,7 @@
+2002-02-13  Stan Shebs  <shebs@apple.com>
+
+        * gcc.dg/altivec-3.c: New.
+
 2002-02-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/Wunreachable-1.c: New test.

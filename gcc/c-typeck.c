@@ -4830,6 +4830,8 @@ digest_init (type, init, require_constant, constructor_constant)
 		     TYPE_MAIN_VARIANT (type))
 	  || (code == ARRAY_TYPE
 	      && comptypes (TREE_TYPE (inside_init), type))
+	  || (code == VECTOR_TYPE
+	      && comptypes (TREE_TYPE (inside_init), type))
 	  || (code == POINTER_TYPE
 	      && (TREE_CODE (TREE_TYPE (inside_init)) == ARRAY_TYPE
 		  || TREE_CODE (TREE_TYPE (inside_init)) == FUNCTION_TYPE)
@@ -5341,6 +5343,14 @@ really_start_incremental_init (type)
 
       constructor_unfilled_index = constructor_index;
     }
+  else if (TREE_CODE (constructor_type) == VECTOR_TYPE)
+    {
+      /* Vectors are like simple fixed-size arrays.  */
+      constructor_max_index =
+	build_int_2 (TYPE_VECTOR_SUBPARTS (constructor_type) - 1, 0);
+      constructor_index = convert (bitsizetype, integer_zero_node);
+      constructor_unfilled_index = constructor_index;
+    }
   else
     {
       /* Handle the case of int x = {5}; */
@@ -5623,7 +5633,8 @@ pop_init_level (implicit)
     ;
   else if (TREE_CODE (constructor_type) != RECORD_TYPE
 	   && TREE_CODE (constructor_type) != UNION_TYPE
-	   && TREE_CODE (constructor_type) != ARRAY_TYPE)
+	   && TREE_CODE (constructor_type) != ARRAY_TYPE
+	   && TREE_CODE (constructor_type) != VECTOR_TYPE)
     {
       /* A nonincremental scalar initializer--just return
 	 the element, after verifying there is just one.  */
@@ -6822,6 +6833,31 @@ process_init_element (value)
 	      output_init_element (value, elttype, constructor_index, 1);
 	      RESTORE_SPELLING_DEPTH (constructor_depth);
 	    }
+
+	  constructor_index
+	    = size_binop (PLUS_EXPR, constructor_index, bitsize_one_node);
+
+	  if (! value)
+	    /* If we are doing the bookkeeping for an element that was
+	       directly output as a constructor, we must update
+	       constructor_unfilled_index.  */
+	    constructor_unfilled_index = constructor_index;
+	}
+      else if (TREE_CODE (constructor_type) == VECTOR_TYPE)
+	{
+	  tree elttype = TYPE_MAIN_VARIANT (TREE_TYPE (constructor_type));
+
+         /* Do a basic check of initializer size.  Note that vectors
+            always have a fixed size derived from their type.  */
+	  if (tree_int_cst_lt (constructor_max_index, constructor_index))
+	    {
+	      pedwarn_init ("excess elements in vector initializer");
+	      break;
+	    }
+
+	  /* Now output the actual element.  */
+	  if (value)
+	    output_init_element (value, elttype, constructor_index, 1);
 
 	  constructor_index
 	    = size_binop (PLUS_EXPR, constructor_index, bitsize_one_node);
