@@ -1,3 +1,10 @@
+Wed Jan 12 23:12:47 2000  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/ns32k/ns32k.md: Revert Jan 9 change.
+
+	* genrecog.c (maybe_both_true_2): Do not compare a predicate-test
+	to a mode-test, if the predicate is address_operand.
+
 Wed Jan 12 22:34:00 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* combine.c (if_then_else_cond): Be careful about what kinds
