@@ -462,7 +462,6 @@ public class Proxy implements Serializable
   private static native Class generateProxyClass0(ClassLoader loader,
                                                   ProxyData data);
 
-
   /**
    * Helper class for mapping unique ClassLoader and interface combinations
    * to proxy classes.
@@ -490,6 +489,8 @@ public class Proxy implements Serializable
      */
     ProxyType(ClassLoader loader, Class[] interfaces)
     {
+      if (loader == null)
+         loader = ClassLoader.getSystemClassLoader();
       this.loader = loader;
       this.interfaces = interfaces;
     }
@@ -501,10 +502,54 @@ public class Proxy implements Serializable
      */
     public int hashCode()
     {
-      int hash = (loader == null) ? 0 : loader.hashCode();
+      //loader is always not null
+      int hash = loader.hashCode();
       for (int i = 0; i < interfaces.length; i++)
         hash = hash * 31 + interfaces[i].hashCode();
       return hash;
+    }
+
+    // A more comprehensive comparison of two arrays,
+    //   ignore array element order, and
+    //   ignore redundant elements
+    private static boolean sameTypes(Class arr1[], Class arr2[]) {
+      if (arr1.length == 1 && arr2.length == 1) {
+        return arr1[0] == arr2[0];
+      }
+        
+      // total occurrance of elements of arr1 in arr2
+      int total_occ_of_arr1_in_arr2 = 0;
+    each_type:
+      for (int i = arr1.length; --i >= 0; ) 
+      {
+        Class t = arr1[i];
+        for (int j = i; --j >= 0; ) 
+        {
+          if (t == arr1[j]) 
+          { //found duplicate type
+            continue each_type;  
+          }
+        }
+            
+        // count c(a unique element of arr1)'s 
+        //   occurrences in arr2
+        int occ_in_arr2 = 0;
+        for (int j = arr2.length; --j >= 0; ) 
+        {
+          if (t == arr2[j]) 
+          {
+            ++occ_in_arr2;
+          }
+        }
+        if (occ_in_arr2 == 0) 
+        { // t does not occur in arr2
+          return false;
+        }
+        
+        total_occ_of_arr1_in_arr2 += occ_in_arr2;
+      }
+      // now, each element of arr2 must have been visited
+      return total_occ_of_arr1_in_arr2 == arr2.length;
     }
 
     /**
@@ -518,15 +563,10 @@ public class Proxy implements Serializable
       ProxyType pt = (ProxyType) other;
       if (loader != pt.loader || interfaces.length != pt.interfaces.length)
         return false;
-      int i = interfaces.length;
-      while (--i >= 0)
-        if (interfaces[i] != pt.interfaces[i])
-          return false;
-      return true;
+	  return sameTypes(interfaces, pt.interfaces);
     }
   } // class ProxyType
 
-
   /**
    * Helper class which allows hashing of a method name and signature
    * without worrying about return type, declaring class, or throws clause,
@@ -681,7 +721,6 @@ public class Proxy implements Serializable
     }
   } // class ProxySignature
 
-
   /**
    * A flat representation of all data needed to generate bytecode/instantiate
    * a proxy class.  This is basically a struct.
@@ -820,7 +859,6 @@ public class Proxy implements Serializable
     }
   } // class ProxyData
 
-
   /**
    * Does all the work of building a class. By making this a nested class,
    * this code is not loaded in memory if the VM has a native

@@ -158,12 +158,12 @@ public class ZipOutputStream extends DeflaterOutputStream implements ZipConstant
    * is not set in the entry, the current time is used.
    * @param entry the entry.
    * @exception IOException if an I/O error occured.
-   * @exception IllegalStateException if stream was finished
+   * @exception ZipException if stream was finished.
    */
   public void putNextEntry(ZipEntry entry) throws IOException
   {
     if (entries == null)
-      throw new IllegalStateException("ZipOutputStream was finished");
+      throw new ZipException("ZipOutputStream was finished");
 
     int method = entry.getMethod();
     int flags = 0;
@@ -249,12 +249,12 @@ public class ZipOutputStream extends DeflaterOutputStream implements ZipConstant
   /**
    * Closes the current entry.
    * @exception IOException if an I/O error occured.
-   * @exception IllegalStateException if no entry is active.
+   * @exception ZipException if no entry is active.
    */
   public void closeEntry() throws IOException
   {
     if (curEntry == null)
-      throw new IllegalStateException("No open entry");
+      throw new ZipException("No open entry");
 
     /* First finish the deflater, if appropriate */
     if (curMethod == DEFLATED)
@@ -300,12 +300,12 @@ public class ZipOutputStream extends DeflaterOutputStream implements ZipConstant
   /**
    * Writes the given buffer to the current entry.
    * @exception IOException if an I/O error occured.
-   * @exception IllegalStateException if no entry is active.
+   * @exception ZipException if no entry is active.
    */
   public void write(byte[] b, int off, int len) throws IOException
   {
     if (curEntry == null)
-      throw new IllegalStateException("No open entry.");
+      throw new ZipException("No open entry.");
 
     switch (curMethod)
       {

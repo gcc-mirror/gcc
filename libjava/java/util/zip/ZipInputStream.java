@@ -139,7 +139,7 @@ public class ZipInputStream extends InflaterInputStream implements ZipConstants
   public ZipEntry getNextEntry() throws IOException
   {
     if (crc == null)
-      throw new IllegalStateException("Closed.");
+      throw new IOException("Stream closed.");
     if (entry != null)
       closeEntry();
 
@@ -216,7 +216,7 @@ public class ZipInputStream extends InflaterInputStream implements ZipConstants
   public void closeEntry() throws IOException
   {
     if (crc == null)
-      throw new IllegalStateException("Closed.");
+      throw new IOException("Stream closed.");
     if (entry == null)
       return;
 
@@ -287,7 +287,7 @@ public class ZipInputStream extends InflaterInputStream implements ZipConstants
   public int read(byte[] b, int off, int len) throws IOException
   {
     if (crc == null)
-      throw new IllegalStateException("Closed.");
+      throw new IOException("Stream closed.");
     if (entry == null)
       return -1;
     boolean finished = false;

@@ -734,7 +734,9 @@ public class DataInputStream extends FilterInputStream implements DataInput
   static String convertFromUTF(byte[] buf) 
     throws EOFException, UTFDataFormatException
   {
-    StringBuffer strbuf = new StringBuffer();
+    // Give StringBuffer an initial estimated size to avoid 
+    // enlarge buffer frequently
+    StringBuffer strbuf = new StringBuffer(buf.length/2 + 2);
 
     for (int i = 0; i < buf.length; )
       {
