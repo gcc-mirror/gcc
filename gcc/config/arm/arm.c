@@ -64,7 +64,7 @@ static int arm_gen_constant (enum rtx_code, enum machine_mode, HOST_WIDE_INT,
 			     rtx, rtx, int, int);
 static unsigned bit_count (unsigned long);
 static int arm_address_register_rtx_p (rtx, int);
-static int arm_legitimate_index_p (enum machine_mode, rtx, int);
+static int arm_legitimate_index_p (enum machine_mode, rtx, RTX_CODE, int);
 static int thumb_base_register_rtx_p (rtx, enum machine_mode, int);
 inline static int thumb_index_register_rtx_p (rtx, int);
 static int const_ok_for_op (HOST_WIDE_INT, enum rtx_code);
@@ -2719,7 +2719,7 @@ legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 	{
 	  /* The base register doesn't really matter, we only want to
 	     test the index for the appropriate mode.  */
-	  if (!arm_legitimate_index_p (mode, offset, 0))
+	  if (!arm_legitimate_index_p (mode, offset, SET, 0))
 	    {
 	      if (!no_new_pseudos)
 		offset = force_reg (Pmode, offset);
@@ -2824,7 +2824,8 @@ arm_address_register_rtx_p (rtx x, int strict_p)
 
 /* Return nonzero if X is a valid ARM state address operand.  */
 int
-arm_legitimate_address_p (enum machine_mode mode, rtx x, int strict_p)
+arm_legitimate_address_p (enum machine_mode mode, rtx x, RTX_CODE outer,
+			  int strict_p)
 {
   if (arm_address_register_rtx_p (x, strict_p))
     return 1;
@@ -2837,7 +2838,8 @@ arm_legitimate_address_p (enum machine_mode mode, rtx x, int strict_p)
 	   && arm_address_register_rtx_p (XEXP (x, 0), strict_p)
 	   && GET_CODE (XEXP (x, 1)) == PLUS
 	   && XEXP (XEXP (x, 1), 0) == XEXP (x, 0))
-    return arm_legitimate_index_p (mode, XEXP (XEXP (x, 1), 1), strict_p);
+    return arm_legitimate_index_p (mode, XEXP (XEXP (x, 1), 1), outer,
+				   strict_p);
 
   /* After reload constants split into minipools will have addresses
      from a LABEL_REF.  */
@@ -2889,9 +2891,9 @@ arm_legitimate_address_p (enum machine_mode mode, rtx x, int strict_p)
       rtx xop1 = XEXP (x, 1);
 
       return ((arm_address_register_rtx_p (xop0, strict_p)
-	       && arm_legitimate_index_p (mode, xop1, strict_p))
+	       && arm_legitimate_index_p (mode, xop1, outer, strict_p))
 	      || (arm_address_register_rtx_p (xop1, strict_p)
-		  && arm_legitimate_index_p (mode, xop0, strict_p)));
+		  && arm_legitimate_index_p (mode, xop0, outer, strict_p)));
     }
 
 #if 0
@@ -2902,7 +2904,7 @@ arm_legitimate_address_p (enum machine_mode mode, rtx x, int strict_p)
       rtx xop1 = XEXP (x, 1);
 
       return (arm_address_register_rtx_p (xop0, strict_p)
-	      && arm_legitimate_index_p (mode, xop1, strict_p));
+	      && arm_legitimate_index_p (mode, xop1, outer, strict_p));
     }
 #endif
 
@@ -2924,7 +2926,8 @@ arm_legitimate_address_p (enum machine_mode mode, rtx x, int strict_p)
 /* Return nonzero if INDEX is valid for an address index operand in
    ARM state.  */
 static int
-arm_legitimate_index_p (enum machine_mode mode, rtx index, int strict_p)
+arm_legitimate_index_p (enum machine_mode mode, rtx index, RTX_CODE outer,
+			int strict_p)
 {
   HOST_WIDE_INT range;
   enum rtx_code code = GET_CODE (index);
@@ -2949,38 +2952,42 @@ arm_legitimate_index_p (enum machine_mode mode, rtx index, int strict_p)
 	    && INTVAL (index) < 256
 	    && INTVAL (index) > -256);
 
-  /* XXX What about ldrsb?  */
-  if (GET_MODE_SIZE (mode) <= 4  && code == MULT
-      && (!arm_arch4 || (mode) != HImode))
-    {
-      rtx xiop0 = XEXP (index, 0);
-      rtx xiop1 = XEXP (index, 1);
-
-      return ((arm_address_register_rtx_p (xiop0, strict_p)
-	       && power_of_two_operand (xiop1, SImode))
-	      || (arm_address_register_rtx_p (xiop1, strict_p)
-		  && power_of_two_operand (xiop0, SImode)));
-    }
-
   if (GET_MODE_SIZE (mode) <= 4
-      && (code == LSHIFTRT || code == ASHIFTRT
-	  || code == ASHIFT || code == ROTATERT)
-      && (!arm_arch4 || (mode) != HImode))
+      && ! (arm_arch4
+	    && (mode == HImode
+		|| (mode == QImode && outer == SIGN_EXTEND))))
     {
-      rtx op = XEXP (index, 1);
+      if (code == MULT)
+	{
+	  rtx xiop0 = XEXP (index, 0);
+	  rtx xiop1 = XEXP (index, 1);
 
-      return (arm_address_register_rtx_p (XEXP (index, 0), strict_p)
-	      && GET_CODE (op) == CONST_INT
-	      && INTVAL (op) > 0
-	      && INTVAL (op) <= 31);
+	  return ((arm_address_register_rtx_p (xiop0, strict_p)
+		   && power_of_two_operand (xiop1, SImode))
+		  || (arm_address_register_rtx_p (xiop1, strict_p)
+		      && power_of_two_operand (xiop0, SImode)));
+	}
+      else if (code == LSHIFTRT || code == ASHIFTRT
+	       || code == ASHIFT || code == ROTATERT)
+	{
+	  rtx op = XEXP (index, 1);
+
+	  return (arm_address_register_rtx_p (XEXP (index, 0), strict_p)
+		  && GET_CODE (op) == CONST_INT
+		  && INTVAL (op) > 0
+		  && INTVAL (op) <= 31);
+	}
     }
 
-  /* XXX For ARM v4 we may be doing a sign-extend operation during the
-     load, but that has a restricted addressing range and we are unable
-     to tell here whether that is the case.  To be safe we restrict all
-     loads to that range.  */
+  /* For ARM v4 we may be doing a sign-extend operation during the
+     load.  */
   if (arm_arch4)
-    range = (mode == HImode || mode == QImode) ? 256 : 4096;
+    {
+      if (mode == HImode || (outer == SIGN_EXTEND && mode == QImode))
+	range = 256;
+      else
+	range = 4096;
+    }
   else
     range = (mode == HImode) ? 4095 : 4096;
 
@@ -4211,37 +4218,6 @@ arm_reload_memory_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 		  && REGNO (op) >= FIRST_PSEUDO_REGISTER)));
 }
 
-/* Return 1 if OP is a valid memory address, but not valid for a signed byte
-   memory access (architecture V4).
-   MODE is QImode if called when computing constraints, or VOIDmode when
-   emitting patterns.  In this latter case we cannot use memory_operand()
-   because it will fail on badly formed MEMs, which is precisely what we are
-   trying to catch.  */
-int
-bad_signed_byte_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  if (GET_CODE (op) != MEM)
-    return 0;
-
-  op = XEXP (op, 0);
-
-  /* A sum of anything more complex than reg + reg or reg + const is bad.  */
-  if ((GET_CODE (op) == PLUS || GET_CODE (op) == MINUS)
-      && (!s_register_operand (XEXP (op, 0), VOIDmode)
-	  || (!s_register_operand (XEXP (op, 1), VOIDmode)
-	      && GET_CODE (XEXP (op, 1)) != CONST_INT)))
-    return 1;
-
-  /* Big constants are also bad.  */
-  if (GET_CODE (op) == PLUS && GET_CODE (XEXP (op, 1)) == CONST_INT
-      && (INTVAL (XEXP (op, 1)) > 0xff
-	  || -INTVAL (XEXP (op, 1)) > 0xff))
-    return 1;
-
-  /* Everything else is good, or can will automatically be made so.  */
-  return 0;
-}
-
 /* Return TRUE for valid operands for the rhs of an ARM instruction.  */
 int
 arm_rhs_operand (rtx op, enum machine_mode mode)
@@ -4432,6 +4408,15 @@ cirrus_memory_offset (rtx op)
     }
 
   return 0;
+}
+
+int
+arm_extendqisi_mem_op (rtx op, enum machine_mode mode)
+{
+  if (!memory_operand (op, mode))
+    return 0;
+
+  return arm_legitimate_address_p (mode, XEXP (op, 0), SIGN_EXTEND, 0);
 }
 
 /* Return nonzero if OP is a Cirrus or general register.  */

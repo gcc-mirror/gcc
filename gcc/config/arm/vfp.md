@@ -111,8 +111,8 @@
 ;; ??? For now do not allow loading constants into vfp regs.  This causes
 ;; problems because small constants get converted into adds.
 (define_insn "*arm_movsi_vfp"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r ,m,!w,r,!w,!w, U")
-      (match_operand:SI 1 "general_operand"	   "rI,K,mi,r,r,!w,!w,Ui,!w"))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r ,m,!w,r,!w,!w,  Uv")
+      (match_operand:SI 1 "general_operand"	   "rI,K,mi,r,r,!w,!w,Uvi,!w"))]
   "TARGET_ARM && TARGET_VFP && TARGET_HARD_FLOAT
    && (   s_register_operand (operands[0], SImode)
        || s_register_operand (operands[1], SImode))"
@@ -136,8 +136,8 @@
 ;; DImode moves
 
 (define_insn "*arm_movdi_vfp"
-  [(set (match_operand:DI 0 "nonimmediate_di_operand" "=r, r,o<>,w,r,w,w ,U")
-	(match_operand:DI 1 "di_operand"              "rIK,mi,r ,r,w,w,Ui,w"))]
+  [(set (match_operand:DI 0 "nonimmediate_di_operand" "=r, r,o<>,w,r,w,w  ,Uv")
+	(match_operand:DI 1 "di_operand"              "rIK,mi,r ,r,w,w,Uvi,w"))]
   "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
   "*
   switch (which_alternative)
@@ -168,8 +168,8 @@
 ;; SFmode moves
 
 (define_insn "*movsf_vfp"
-  [(set (match_operand:SF 0 "nonimmediate_operand" "=w,r,w ,U,r ,m,w,r")
-	(match_operand:SF 1 "general_operand"	   " r,w,UE,w,mE,r,w,r"))]
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=w,r,w  ,Uv,r ,m,w,r")
+	(match_operand:SF 1 "general_operand"	   " r,w,UvE,w, mE,r,w,r"))]
   "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP
    && (   s_register_operand (operands[0], SFmode)
        || s_register_operand (operands[1], SFmode))"
@@ -192,8 +192,8 @@
 ;; DFmode moves
 
 (define_insn "*movdf_vfp"
-  [(set (match_operand:DF 0 "nonimmediate_soft_df_operand" "=w,r,r, m,w ,U,w,r")
-	(match_operand:DF 1 "soft_df_operand"		   " r,w,mF,r,UF,w,w,r"))]
+  [(set (match_operand:DF 0 "nonimmediate_soft_df_operand" "=w,r,r, m,w  ,Uv,w,r")
+	(match_operand:DF 1 "soft_df_operand"		   " r,w,mF,r,UvF,w, w,r"))]
   "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
   "*
   {

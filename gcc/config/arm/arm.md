@@ -3748,57 +3748,15 @@
   }"
 )
 
-; Rather than restricting all byte accesses to memory addresses that ldrsb
-; can handle, we fix up the ones that ldrsb can't grok with a split.
 (define_insn "*extendqihi_insn"
-  [(set (match_operand:HI                 0 "s_register_operand" "=r")
-	(sign_extend:HI (match_operand:QI 1 "memory_operand"      "m")))]
+  [(set (match_operand:HI 0 "s_register_operand" "=r")
+	(sign_extend:HI (match_operand:QI 1 "memory_operand" "Uq")))]
   "TARGET_ARM && arm_arch4"
-  "*
-  /* If the address is invalid, this will split the instruction into two.  */
-  if (bad_signed_byte_operand (operands[1], VOIDmode))
-    return \"#\";
-  return \"ldr%?sb\\t%0, %1\";
-  "
+  "ldr%?sb\\t%0, %1"
   [(set_attr "type" "load_byte")
    (set_attr "predicable" "yes")
-   (set_attr "length" "8")
    (set_attr "pool_range" "256")
    (set_attr "neg_pool_range" "244")]
-)
-
-(define_split
-  [(set (match_operand:HI 0 "s_register_operand" "")
-	(sign_extend:HI (match_operand:QI 1 "bad_signed_byte_operand" "")))]
-  "TARGET_ARM && arm_arch4 && reload_completed"
-  [(set (match_dup 3) (match_dup 1))
-   (set (match_dup 0) (sign_extend:HI (match_dup 2)))]
-  "
-  {
-    HOST_WIDE_INT offset;
-
-    operands[3] = gen_rtx_REG (SImode, REGNO (operands[0]));
-    operands[2] = gen_rtx_MEM (QImode, operands[3]);
-    MEM_COPY_ATTRIBUTES (operands[2], operands[1]);
-    operands[1] = XEXP (operands[1], 0);
-    if (GET_CODE (operands[1]) == PLUS
-	&& GET_CODE (XEXP (operands[1], 1)) == CONST_INT
-	&& !(const_ok_for_arm (offset = INTVAL (XEXP (operands[1], 1)))
-	     || const_ok_for_arm (-offset)))
-      {
-	HOST_WIDE_INT low = (offset > 0
-			     ? (offset & 0xff) : -((-offset) & 0xff));
-	XEXP (operands[2], 0) = plus_constant (operands[3], low);
-	operands[1] = plus_constant (XEXP (operands[1], 0), offset - low);
-      }
-    /* Ensure the sum is in correct canonical form.  */
-    else if (GET_CODE (operands[1]) == PLUS
-	     && GET_CODE (XEXP (operands[1], 1)) != CONST_INT
-	     && !s_register_operand (XEXP (operands[1], 1), VOIDmode))
-      operands[1] = gen_rtx_PLUS (GET_MODE (operands[1]),
-					   XEXP (operands[1], 1),
-					   XEXP (operands[1], 0));
-  }"
 )
 
 (define_expand "extendqisi2"
@@ -3833,42 +3791,26 @@
   }"
 )
 
-; Rather than restricting all byte accesses to memory addresses that ldrsb
-; can handle, we fix up the ones that ldrsb can't grok with a split.
 (define_insn "*arm_extendqisi"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
-	(sign_extend:SI (match_operand:QI 1 "memory_operand" "m")))]
+	(sign_extend:SI (match_operand:QI 1 "memory_operand" "Uq")))]
   "TARGET_ARM && arm_arch4 && !arm_arch6"
-  "*
-  /* If the address is invalid, this will split the instruction into two.  */
-  if (bad_signed_byte_operand (operands[1], VOIDmode))
-    return \"#\";
-  return \"ldr%?sb\\t%0, %1\";
-  "
+  "ldr%?sb\\t%0, %1"
   [(set_attr "type" "load_byte")
    (set_attr "predicable" "yes")
-   (set_attr "length" "8")
    (set_attr "pool_range" "256")
    (set_attr "neg_pool_range" "244")]
 )
 
 (define_insn "*arm_extendqisi_v6"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")
-	(sign_extend:SI (match_operand:QI 1 "nonimmediate_operand" "r,m")))]
+	(sign_extend:SI (match_operand:QI 1 "nonimmediate_operand" "r,Uq")))]
   "TARGET_ARM && arm_arch6"
-  "*
-  if (which_alternative == 0)
-    return \"sxtb%?\\t%0, %1\";
-
-  /* If the address is invalid, this will split the instruction into two.  */
-  if (bad_signed_byte_operand (operands[1], VOIDmode))
-    return \"#\";
-
-  return \"ldr%?sb\\t%0, %1\";
-  "
+  "@
+   sxtb%?\\t%0, %1
+   ldr%?sb\\t%0, %1"
   [(set_attr "type" "alu_shift,load_byte")
    (set_attr "predicable" "yes")
-   (set_attr "length" "4,8")
    (set_attr "pool_range" "*,256")
    (set_attr "neg_pool_range" "*,244")]
 )
@@ -3881,39 +3823,6 @@
   "sxtab%?\\t%0, %2, %1"
   [(set_attr "type" "alu_shift")
    (set_attr "predicable" "yes")]
-)
-
-(define_split
-  [(set (match_operand:SI 0 "s_register_operand" "")
-	(sign_extend:SI (match_operand:QI 1 "bad_signed_byte_operand" "")))]
-  "TARGET_ARM && arm_arch4 && reload_completed"
-  [(set (match_dup 0) (match_dup 1))
-   (set (match_dup 0) (sign_extend:SI (match_dup 2)))]
-  "
-  {
-    HOST_WIDE_INT offset;
-
-    operands[2] = gen_rtx_MEM (QImode, operands[0]);
-    MEM_COPY_ATTRIBUTES (operands[2], operands[1]);
-    operands[1] = XEXP (operands[1], 0);
-    if (GET_CODE (operands[1]) == PLUS
-	&& GET_CODE (XEXP (operands[1], 1)) == CONST_INT
-	&& !(const_ok_for_arm (offset = INTVAL (XEXP (operands[1], 1)))
-	     || const_ok_for_arm (-offset)))
-      {
-	HOST_WIDE_INT low = (offset > 0
-			     ? (offset & 0xff) : -((-offset) & 0xff));
-	XEXP (operands[2], 0) = plus_constant (operands[0], low);
-	operands[1] = plus_constant (XEXP (operands[1], 0), offset - low);
-      }
-    /* Ensure the sum is in correct canonical form.  */
-    else if (GET_CODE (operands[1]) == PLUS
-	     && GET_CODE (XEXP (operands[1], 1)) != CONST_INT
-	     && !s_register_operand (XEXP (operands[1], 1), VOIDmode))
-      operands[1] = gen_rtx_PLUS (GET_MODE (operands[1]),
-					   XEXP (operands[1], 1),
-					   XEXP (operands[1], 0));
-  }"
 )
 
 (define_insn "*thumb_extendqisi2"

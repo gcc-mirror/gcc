@@ -1471,23 +1471,30 @@ enum reg_class
    accessed without using a load.
    'U' is an address valid for VFP load/store insns.  */
 
-#define EXTRA_CONSTRAINT_ARM(OP, C)					    \
-  ((C) == 'Q' ? GET_CODE (OP) == MEM && GET_CODE (XEXP (OP, 0)) == REG :    \
-   (C) == 'R' ? (GET_CODE (OP) == MEM					    \
-		 && GET_CODE (XEXP (OP, 0)) == SYMBOL_REF		    \
-		 && CONSTANT_POOL_ADDRESS_P (XEXP (OP, 0))) :		    \
-   (C) == 'S' ? (optimize > 0 && CONSTANT_ADDRESS_P (OP)) :		    \
-   (C) == 'T' ? cirrus_memory_offset (OP) : 		    		    \
-   (C) == 'U' ? vfp_mem_operand (OP) :					    \
-   0)
+#define EXTRA_CONSTRAINT_STR_ARM(OP, C, STR)			\
+  (((C) == 'Q') ? (GET_CODE (OP) == MEM				\
+		 && GET_CODE (XEXP (OP, 0)) == REG) :		\
+   ((C) == 'R') ? (GET_CODE (OP) == MEM				\
+		   && GET_CODE (XEXP (OP, 0)) == SYMBOL_REF	\
+		   && CONSTANT_POOL_ADDRESS_P (XEXP (OP, 0))) :	\
+   ((C) == 'S') ? (optimize > 0 && CONSTANT_ADDRESS_P (OP)) :	\
+   ((C) == 'T') ? cirrus_memory_offset (OP) :			\
+   ((C) == 'U' && (STR)[1] == 'v') ? vfp_mem_operand (OP) :	\
+   ((C) == 'U' && (STR)[1] == 'q')				\
+    ? arm_extendqisi_mem_op (OP, GET_MODE (OP))			\
+      : 0)
+
+#define CONSTRAINT_LEN(C,STR)				\
+  ((C) == 'U' ? 2 : DEFAULT_CONSTRAINT_LEN (C, STR))
 
 #define EXTRA_CONSTRAINT_THUMB(X, C)					\
   ((C) == 'Q' ? (GET_CODE (X) == MEM					\
 		 && GET_CODE (XEXP (X, 0)) == LABEL_REF) : 0)
 
-#define EXTRA_CONSTRAINT(X, C)						\
-  (TARGET_ARM ?								\
-   EXTRA_CONSTRAINT_ARM (X, C) : EXTRA_CONSTRAINT_THUMB (X, C))
+#define EXTRA_CONSTRAINT_STR(X, C, STR)		\
+  (TARGET_ARM					\
+   ? EXTRA_CONSTRAINT_STR_ARM (X, C, STR)	\
+   : EXTRA_CONSTRAINT_THUMB (X, C))
 
 #define EXTRA_MEMORY_CONSTRAINT(C, STR) ((C) == 'U')
 
@@ -2336,7 +2343,7 @@ typedef struct
 
 #define ARM_GO_IF_LEGITIMATE_ADDRESS(MODE,X,WIN)		\
   {								\
-    if (arm_legitimate_address_p (MODE, X, REG_STRICT_P))	\
+    if (arm_legitimate_address_p (MODE, X, SET, REG_STRICT_P))	\
       goto WIN;							\
   }
 
@@ -2817,7 +2824,6 @@ extern int making_const_table;
   {"thumb_cmpneg_operand", {CONST_INT}},				\
   {"thumb_cbrch_target_operand", {SUBREG, REG, MEM}},			\
   {"offsettable_memory_operand", {MEM}},				\
-  {"bad_signed_byte_operand", {MEM}},					\
   {"alignable_memory_operand", {MEM}},					\
   {"shiftable_operator", {PLUS, MINUS, AND, IOR, XOR}},			\
   {"minmax_operator", {SMIN, SMAX, UMIN, UMAX}},			\
