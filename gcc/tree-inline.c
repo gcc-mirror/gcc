@@ -1164,8 +1164,8 @@ expand_call_inline (tree *tp, int *walk_subtrees, void *data)
 
   /* Don't try to inline functions that are not well-suited to
      inlining.  */
-  if (!DECL_SAVED_TREE (fn)
-      || (flag_unit_at_a_time && !cgraph_inline_p (id->current_decl, fn))
+  if ((flag_unit_at_a_time
+       && (!DECL_SAVED_TREE (fn) || !cgraph_inline_p (id->current_decl, fn)))
       || (!flag_unit_at_a_time && !inlinable_function_p (fn, id, 0)))
     {
       if (warn_inline && DECL_INLINE (fn) && !DID_INLINE_FUNC (fn)
