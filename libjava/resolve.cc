@@ -1,6 +1,6 @@
 // resolve.cc - Code for linking and resolving classes and pool entries.
 
-/* Copyright (C) 1999, 2000  Free Software Foundation
+/* Copyright (C) 1999, 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -31,6 +31,17 @@ details.  */
 #include <java/lang/ClassNotFoundException.h>
 #include <java/lang/IncompatibleClassChangeError.h>
 #include <java/lang/reflect/Modifier.h>
+
+void
+_Jv_ResolveField (_Jv_Field *field, java::lang::ClassLoader *loader)
+{
+  if (! field->isResolved ())
+    {
+      _Jv_Utf8Const *sig = (_Jv_Utf8Const*)field->type;
+      field->type = _Jv_FindClassFromSignature (sig->data, loader);
+      field->flags &= ~_Jv_FIELD_UNRESOLVED_FLAG;
+    }
+}
 
 #ifdef INTERPRETER
 
@@ -359,17 +370,6 @@ _Jv_SearchMethodInClass (jclass cls, jclass klass,
 	}
     }
   return 0;
-}
-
-void
-_Jv_ResolveField (_Jv_Field *field, java::lang::ClassLoader *loader)
-{
-  if (! field->isResolved ())
-    {
-      _Jv_Utf8Const *sig = (_Jv_Utf8Const*)field->type;
-      field->type = _Jv_FindClassFromSignature (sig->data, loader);
-      field->flags &= ~_Jv_FIELD_UNRESOLVED_FLAG;
-    }
 }
 
 /** FIXME: this is a terribly inefficient algorithm!  It would improve

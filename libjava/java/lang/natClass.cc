@@ -678,7 +678,7 @@ java::lang::Class::finalize (void)
 void
 java::lang::Class::initializeClass (void)
 {
-  // jshort-circuit to avoid needless locking.
+  // short-circuit to avoid needless locking.
   if (state == JV_STATE_DONE)
     return;
 
@@ -713,7 +713,9 @@ java::lang::Class::initializeClass (void)
     wait ();
 
   // Steps 3 &  4.
-  if (state == JV_STATE_DONE || state == JV_STATE_IN_PROGRESS || thread == self)
+  if (state == JV_STATE_DONE
+      || state == JV_STATE_IN_PROGRESS
+      || thread == self)
     {
       _Jv_MonitorExit (this);
       return;

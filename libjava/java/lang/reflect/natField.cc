@@ -1,6 +1,6 @@
 // natField.cc - Implementation of java.lang.reflect.Field native methods.
 
-/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -44,17 +44,8 @@ jclass
 java::lang::reflect::Field::getType ()
 {
   jfieldID fld = _Jv_FromReflectedField (this);
-  if (! fld->isResolved())
-    {
-      JvSynchronize sync (declaringClass);
-      if (! fld->isResolved())
-	{
-	  fld->type
-	    = _Jv_FindClassFromSignature(((Utf8Const*) (fld->type))->data,
-					 declaringClass->getClassLoader());
-	  fld->flags &= ~_Jv_FIELD_UNRESOLVED_FLAG;
-	}
-    }
+  JvSynchronize sync (declaringClass);
+  _Jv_ResolveField (fld, declaringClass->getClassLoader ());
   return fld->type;
 }
 
