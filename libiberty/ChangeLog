@@ -1,3 +1,7 @@
+2000-09-07  Michael Sokolov  <msokolov@ivan.Harhan.ORG>
+
+	* md5.c: #include "ansidecl.h".
+
 2000-09-06  Alex Samuel  <samuel@codesourcery.com>
 
 	* cp-demangle.c (status_allocation_failed): Rearrange whitespace.
