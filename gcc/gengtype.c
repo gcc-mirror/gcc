@@ -1480,12 +1480,13 @@ output_escaped_param (struct walk_type_data *d, const char *param,
 /* Call D->PROCESS_FIELD for every field (or subfield) of D->VAL,
    which is of type T.  Write code to D->OF to constrain execution (at
    the point that D->PROCESS_FIELD is called) to the appropriate
-   cases.  D->PREV_VAL lists the objects containing the current object,
-   D->OPT is a list of options to apply, D->INDENT is the current
-   indentation level, D->LINE is used to print error messages,
-   D->BITMAP indicates which languages to print the structure for, and
-   D->PARAM is the current parameter (from an enclosing param_is
-   option).  */
+   cases.  Call D->PROCESS_FIELD on subobjects before calling it on
+   pointers to those objects.  D->PREV_VAL lists the objects
+   containing the current object, D->OPT is a list of options to
+   apply, D->INDENT is the current indentation level, D->LINE is used
+   to print error messages, D->BITMAP indicates which languages to
+   print the structure for, and D->PARAM is the current parameter
+   (from an enclosing param_is option).  */
 
 static void
 walk_type (type_p t, struct walk_type_data *d)
@@ -1622,7 +1623,6 @@ walk_type (type_p t, struct walk_type_data *d)
 	    oprintf (d->of, "%*sif (%s != NULL) {\n", d->indent, "", d->val);
 	    d->indent += 2;
 	    oprintf (d->of, "%*ssize_t i%d;\n", d->indent, "", loopcounter);
-	    d->process_field(t, d);
 	    oprintf (d->of, "%*sfor (i%d = 0; i%d < (size_t)(", d->indent, "",
 		     loopcounter, loopcounter);
 	    output_escaped_param (d, length, "length");
@@ -1638,6 +1638,7 @@ walk_type (type_p t, struct walk_type_data *d)
 	    d->used_length = 0;
 	    d->indent -= 2;
 	    oprintf (d->of, "%*s}\n", d->indent, "");
+	    d->process_field(t, d);
 	    d->indent -= 2;
 	    oprintf (d->of, "%*s}\n", d->indent, "");
 	  }

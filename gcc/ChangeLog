@@ -1,3 +1,8 @@
+2003-08-13  Geoffrey Keating  <geoffk@apple.com>
+
+	* gengtype.c (walk_type): Process a subobject before processing
+	the pointer that points to the subobject.
+
 2003-08-13  Per Bothner  <pbothner@apple.com>
 
 	* regclass.c (init_reg_modes):  Make non-static.
