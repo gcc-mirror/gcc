@@ -1404,12 +1404,12 @@ arm_return_in_memory (type)
     {
       tree field;
 
-      /* For a struct the APCS says that we must return in a register if
-	 every addressable element has an offset of zero.  For practical
-	 purposes this means that the structure can have at most one non
-	 bit-field element and that this element must be the first one in
-	 the structure.  */
-
+      /* For a struct the APCS says that we only return in a register
+	 if the type is 'integer like' and every addressable element
+	 has an offset of zero.  For practical purposes this means
+	 that the structure can have at most one non bit-field element
+	 and that this element must be the first one in the structure.  */
+      
       /* Find the first field, ignoring non FIELD_DECL things which will
 	 have been created by C++.  */
       for (field = TYPE_FIELDS (type);
@@ -1420,7 +1420,19 @@ arm_return_in_memory (type)
       if (field == NULL)
 	return 0; /* An empty structure.  Allowed by an extension to ANSI C. */
 
-      /* Now check the remaining fields, if any. */
+      /* Check that the first field is valid for returning in a register...  */
+
+      /* ... Floats are not allowed */
+      if (FLOAT_TYPE_P (TREE_TYPE (field)))
+	return 1;
+
+      /* ... Aggregates that are not themselves valid for returning in
+	 a register are not allowed.  */
+      if (RETURN_IN_MEMORY (TREE_TYPE (field)))
+	return 1;
+
+      /* Now check the remaining fields, if any.  Only bitfields are allowed,
+	 since they are not addressable.  */
       for (field = TREE_CHAIN (field);
 	   field;
 	   field = TREE_CHAIN (field))
