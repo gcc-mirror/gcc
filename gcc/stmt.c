@@ -430,6 +430,7 @@ static void mark_cond_nesting           PARAMS ((struct nesting *));
 static void mark_loop_nesting           PARAMS ((struct nesting *));
 static void mark_block_nesting          PARAMS ((struct nesting *));
 static void mark_case_nesting           PARAMS ((struct nesting *));
+static void mark_case_node		PARAMS ((struct case_node *));
 static void mark_goto_fixup             PARAMS ((struct goto_fixup *));
 
 
@@ -509,25 +510,32 @@ mark_case_nesting (n)
 {
   while (n)
     {
-      struct case_node *node;
-
       ggc_mark_rtx (n->exit_label);
       ggc_mark_rtx (n->data.case_stmt.start);
-
-      node = n->data.case_stmt.case_list;
-      while (node)
-	{
-	  ggc_mark_tree (node->low);
-	  ggc_mark_tree (node->high);
-	  ggc_mark_tree (node->code_label);
-	  node = node->right;
-	}
 
       ggc_mark_tree (n->data.case_stmt.default_label);
       ggc_mark_tree (n->data.case_stmt.index_expr);
       ggc_mark_tree (n->data.case_stmt.nominal_type);
 
+      mark_case_node (n->data.case_stmt.case_list);
       n = n->next;
+    }
+}
+
+/* Mark C for GC.  */
+
+static void
+mark_case_node (c)
+     struct case_node *c;
+{
+  if (c != 0)
+    {
+      ggc_mark_tree (c->low);
+      ggc_mark_tree (c->high);
+      ggc_mark_tree (c->code_label);
+
+      mark_case_node (c->right);
+      mark_case_node (c->left);
     }
 }
 
