@@ -217,16 +217,16 @@ struct loops
   /* Number of natural loops in the function.  */
   unsigned num;
 
-  /* Maximum nested loop level in the function.  */
-  unsigned levels;
-
   /* Array of natural loop descriptors (scanning this array in reverse order
      will find the inner loops before their enclosing outer loops).  */
   struct loop *array;
 
   /* The above array is unused in new loop infrastructure and is kept only for
      purposes of the old loop optimizer.  Instead we store just pointers to
-     loops here.  */
+     loops here.  
+     Note that a loop in this array may actually be NULL, if the loop
+     has been removed and the entire loops structure has not been
+     recomputed since that time.  */
   struct loop **parray;
 
   /* Pointer to root of loop hierarchy tree.  */
