@@ -367,7 +367,7 @@ _cpp_handle_directive (pfile, indented)
       if (dname->val.node->directive_index)
 	dir = &dtable[dname->val.node->directive_index - 1];
     }
-  /* We do not recognise the # followed by a number extension in
+  /* We do not recognize the # followed by a number extension in
      assembler code.  */
   else if (dname->type == CPP_NUMBER && CPP_OPTION (pfile, lang) != CLK_ASM)
     {
@@ -1984,7 +1984,7 @@ _cpp_pop_buffer (pfile)
     }
 }
 
-/* Enter all recognised directives in the hash table.  */
+/* Enter all recognized directives in the hash table.  */
 void
 _cpp_init_directives (pfile)
      cpp_reader *pfile;

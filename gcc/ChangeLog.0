@@ -12000,7 +12000,7 @@ Wed Sep 10 11:49:20 1997  Jason Merrill  <jason@yorick.cygnus.com>
 	EXCEPTION_SECTION, mark the start of the frame info with a
 	collectible tag.
 	* collect2.c (frame_tables): New list.
-	(is_ctor_dtor): Recognise frame entries.
+	(is_ctor_dtor): Recognize frame entries.
 	(scan_prog_file): Likewise.
 	(main): Pass -fno-exceptions to sub-compile.  Also do collection
 	if there are any frame entries.

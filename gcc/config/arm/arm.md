@@ -3913,7 +3913,7 @@
 ;;  DONE;
 ;;}")
 
-;; Recognise garbage generated above.
+;; Recognize garbage generated above.
 
 ;;(define_insn ""
 ;;  [(set (match_operand:TI 0 "general_operand" "=r,r,r,<,>,m")
@@ -4682,7 +4682,7 @@
   "
 )
 
-;; Pattern to recognise insn generated default case above
+;; Pattern to recognize insn generated default case above
 (define_insn "*movhi_insn_arch4"
   [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,m,r")    
 	(match_operand:HI 1 "general_operand"      "rI,K,r,m"))]

@@ -477,7 +477,7 @@ extern int warn_char_subscripts;
 
 extern int warn_conversion;
 
-/* Warn about #pragma directives that are not recognised.  */      
+/* Warn about #pragma directives that are not recognized.  */      
 
 extern int warn_unknown_pragmas; /* Tri state variable.  */  
 

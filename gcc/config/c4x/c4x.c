@@ -1469,7 +1469,7 @@ c4x_check_legit_addr (mode, addr, strict)
   switch (code)
     {
       /* Register indirect with auto increment/decrement.  We don't
-	 allow SP here---push_operand should recognise an operand
+	 allow SP here---push_operand should recognize an operand
 	 being pushed on the stack.  */
 
     case PRE_DEC:

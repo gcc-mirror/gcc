@@ -1470,7 +1470,7 @@ CUMULATIVE_ARGS;
 
    Note that we return, rather than break so that rtx_cost doesn't
    include CONST_COSTS otherwise expand_mult will think that it is
-   cheaper to synthesise a multiply rather than to use a multiply
+   cheaper to synthesize a multiply rather than to use a multiply
    instruction.  I think this is because the algorithm synth_mult
    doesn't take into account the loading of the operands, whereas the
    calculation of mult_cost does. 

@@ -831,7 +831,7 @@ arm_isr_value (argument)
     if (streq (arg, ptr->arg))
       return ptr->return_value;
 
-  /* An unrecognised interrupt type.  */
+  /* An unrecognized interrupt type.  */
   return ARM_FT_UNKNOWN;
 }
 
@@ -1034,7 +1034,7 @@ arm_split_constant (code, mode, val, target, source, subtargets)
 	  && REGNO (target) != REGNO (source)))
     {
       /* After arm_reorg has been called, we can't fix up expensive
-	 constants by pushing them into memory so we must synthesise
+	 constants by pushing them into memory so we must synthesize
 	 them in-line, regardless of the cost.  This is only likely to
 	 be more costly on chips that have load delay slots and we are
 	 compiling without running the scheduler (so no splitting
@@ -7859,7 +7859,7 @@ emit_multi_reg_push (mask)
     num_dwarf_regs--;
 
   /* For the body of the insn we are going to generate an UNSPEC in
-     parallel with several USEs.  This allows the insn to be recognised
+     parallel with several USEs.  This allows the insn to be recognized
      by the push_multi pattern in the arm.md file.  The insn looks
      something like this:
 

@@ -1,3 +1,43 @@
+2002-09-15  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* ChangeLog: Follow spelling conventions.
+	* ChangeLog.0: Likewise.
+	* ChangeLog.1: Likewise.
+	* ChangeLog.2: Likewise.
+	* ChangeLog.3: Likewise.
+	* ChangeLog.4: Likewise.
+	* ChangeLog.5: Likewise.
+	* ChangeLog.6: Likewise.
+	* FSFChangeLog.10: Likewise.
+	* FSFChangeLog.11: Likewise.
+	* c-common.c: Likewise.
+	* c-common.h: Likewise.
+	* c-format.c: Likewise.
+	* c-opts.c: Likewise.
+	* cpplib.c: Likewise.
+	* langhooks.h: Likewise.
+	* real.c: Likewise.
+	* reg-stack.c: Likewise.
+	* toplev.c: Likewise.
+	* config/arm/arm.c: Likewise.
+	* config/arm/arm.md: Likewise.
+	* config/arm/linux-gas.h: Likewise.
+	* config/arm/netbsd.h: Likewise.
+	* config/c4x/c4x.c: Likewise.
+	* config/c4x/c4x.h: Likewise.
+	* config/c4x/c4x.md: Likewise.
+	* config/c4x/libgcc.S: Likewise.
+	* config/fr30/fr30.md: Likewise.
+	* config/frv/frv.md: Likewise.
+	* config/ia64/ia64.md: Likewise.
+	* config/mips/mips.h: Likewise.
+	* config/mn10300/mn10300.c: Likewise.
+	* config/stormy16/stormy16.c: Likewise.
+	* config/v850/v850.md: Likewise.
+	* doc/extend.texi: Likewise.
+	* doc/invoke.texi: Likewise.
+	* doc/md.texi: Likewise.
+
 2002-09-15  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config/netbsd.h (LIB_SPEC): Include the appropriate pthread
@@ -9823,7 +9863,7 @@ Tue Jun  4 19:29:42 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	(gt_ggc_m_tree_node): Likewise.
 
 	* varasm.c (copy_constant): Call expand_constant if we hit
-	something we can't recognise.
+	something we can't recognize.
 
 	* ggc-common.c (ggc_mark_rtvec_children): Delete.
 	(ggc_mark_rtx_children): Use generic name for ggc_mark_rtvec.
@@ -24905,7 +24945,7 @@ Mon Feb  4 09:05:58 2002  Jeffrey A Law  (law@redhat.com)
 	* cpphash.c (_cpp_init_hashtable): Similarly.
 	* cppinit.c (cpp_create_reader): Default the signed_char flag.
 	(init_builtins): Define __CHAR_UNSIGNED__ appropriately.
-	(COMMAND_LINE_OPTIONS): Recognise -f{un,}signed-char.
+	(COMMAND_LINE_OPTIONS): Recognize -f{un,}signed-char.
 	(cpp_handle_option): Handle the new options.
 	* cpplex.c (cpp_interpret_charconst): Use new flag.
 	* cpplib.h (struct cpp_options): New member signed_char.

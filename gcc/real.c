@@ -5728,7 +5728,7 @@ ibmtoe (d, e, mode)
   if (y[M] == 0 && y[M+1] == 0 && y[M+2] == 0 && y[M+3] == 0)
     y[0] = y[E] = 0;
   else
-    y[E] -= 5 + enormlz (y);	/* now normalise the mantissa */
+    y[E] -= 5 + enormlz (y);	/* now normalize the mantissa */
 			      /* handle change in RADIX */
   emovo (y, e);
 }

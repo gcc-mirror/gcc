@@ -48,7 +48,7 @@ Boston, MA 02111-1307, USA.  */
 ;
 ; r[i + 1] = r[i] * (2.0 - v * r[i])
 ;
-; The normalised error e[i] at the ith iteration is
+; The normalized error e[i] at the ith iteration is
 ;
 ; e[i] = (r - r[i]) / r = (1 / v - r[i]) * v = (1 - v * r[i])
 ;

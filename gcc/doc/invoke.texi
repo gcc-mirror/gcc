@@ -5841,7 +5841,7 @@ memory a feature of the ARM architecture allows a word load to be used,
 even if the address is unaligned, and the processor core will rotate the
 data as it is being loaded.  This option tells the compiler that such
 misaligned accesses will cause a MMU trap and that it should instead
-synthesise the access as a series of byte accesses.  The compiler can
+synthesize the access as a series of byte accesses.  The compiler can
 still use word accesses to load half-word data if it knows that the
 address is aligned to a word boundary.
 
@@ -8589,10 +8589,10 @@ DBcond(D), instructions.  This is enabled by default for the C4x.  To be
 on the safe side, this is disabled for the C3x, since the maximum
 iteration count on the C3x is @math{2^{23} + 1} (but who iterates loops more than
 @math{2^{23}} times on the C3x?).  Note that GCC will try to reverse a loop so
-that it can utilise the decrement and branch instruction, but will give
+that it can utilize the decrement and branch instruction, but will give
 up if there is more than one memory reference in the loop.  Thus a loop
 where the loop counter is decremented can generate slightly more
-efficient code, in cases where the RPTB instruction cannot be utilised.
+efficient code, in cases where the RPTB instruction cannot be utilized.
 
 @item -mdp-isr-reload
 @itemx -mparanoid

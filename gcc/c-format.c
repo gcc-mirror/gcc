@@ -286,7 +286,7 @@ decode_format_attr (args, info, validated_p)
 
 /* Check a call to a format function against a parameter list.  */
 
-/* The meaningfully distinct length modifiers for format checking recognised
+/* The meaningfully distinct length modifiers for format checking recognized
    by GCC.  */
 enum format_lengths
 {

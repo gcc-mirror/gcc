@@ -303,7 +303,7 @@ int warn_char_subscripts;
 
 int warn_conversion;
 
-/* Warn about #pragma directives that are not recognised.  */      
+/* Warn about #pragma directives that are not recognized.  */      
 
 int warn_unknown_pragmas; /* Tri state variable.  */  
 
@@ -4947,7 +4947,7 @@ builtin_define_float_constants (name_prefix, fp_suffix, type)
   sprintf (name, "__%s_DIG__", name_prefix);
   builtin_define_with_int_value (name, dig);
 
-  /* The minimum negative int x such that b**(x-1) is a normalised float.  */
+  /* The minimum negative int x such that b**(x-1) is a normalized float.  */
   sprintf (name, "__%s_MIN_EXP__", name_prefix);
   sprintf (buf, "(%d)", min_exp);
   builtin_define_with_value (name, buf, 0);

@@ -186,7 +186,7 @@ struct lang_hooks
   /* Function called with an option vector as argument, to decode a
      single option (typically starting with -f or -W or +).  It should
      return the number of command-line arguments it uses if it handles
-     the option, or 0 and not complain if it does not recognise the
+     the option, or 0 and not complain if it does not recognize the
      option.  If this function returns a negative number, then its
      absolute value is the number of command-line arguments used, but,
      in addition, no language-independent option processing should be

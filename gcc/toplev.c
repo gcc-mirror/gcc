@@ -4008,7 +4008,7 @@ decode_f_option (arg)
   else if (!strcmp (arg, "no-stack-limit"))
     stack_limit_rtx = NULL_RTX;
   else if (!strcmp (arg, "preprocessed"))
-    /* Recognise this switch but do nothing.  This prevents warnings
+    /* Recognize this switch but do nothing.  This prevents warnings
        about an unrecognized switch if cpplib has not been linked in.  */
     ;
   else
