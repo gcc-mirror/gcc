@@ -1,3 +1,7 @@
+2004-08-31  Paul Brook  <paul@codesourcery.com>
+
+	* list_read.c (eat_separator): Set at_eo when a '/' is seen.
+
 2004-08-31  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* libgfortran.h: Replace 'gfc_strlen_type' by
