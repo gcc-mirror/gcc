@@ -1,3 +1,20 @@
+1999-05-11  Tom Tromey  <tromey@cygnus.com>
+
+	* Make-lang.in (jvspec.o): Don't define WITH_THREAD_x or WITH_GC_x
+	flags.
+	* jvspec.c (THREAD_NAME): Removed.
+	(GC_NAME): Likewise.
+	(MATHLIB): Likewise.
+	(WITHLIBC): Likewise.
+	(GCLIB): Likewise.
+	(THREADLIB): Likewise.
+	(MATH_LIBRARY): Likewise.
+	(lang_specific_driver): Don't add `-l' options to command line.
+	Instead, add a single --specs option.  Recognize `-L' options and
+	use them to search for spec file.
+	(find_spec_file): New function.
+	(SPEC_FILE): New define.
+
 Tue May 11 11:46:36 1999  Dave Brolley  <brolley@cygnus.com>
 
 	* lang-options.h: -MD, -MMD, -M and -MM not needed here for
