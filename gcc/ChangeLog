@@ -1,3 +1,11 @@
+2002-02-18  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/h8300-protos.h: Remove the prototype for
+	p_operand.
+	* config/h8300/h8300.c (p_operand): Remove.
+	* config/h8300/h8300.md: Replace p_operand with
+	const_int_operand.
+
 2002-02-18 Philip Blundell <pb@nexus.co.uk>
 
 	* config/arm/arm.c (arm_compute_save_reg_mask): Fix typo in
