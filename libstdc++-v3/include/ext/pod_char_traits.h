@@ -68,9 +68,12 @@ namespace std
       // NB: This type should be bigger than char_type, so as to
       // properly hold EOF values in addition to the full range of
       // char_type values.
+      // Also, assumes 
+      // int_type(value_type) is valid.
+      // int_type(-1) is possible.
       typedef typename char_type::int_type	int_type;
       typedef typename char_type::state_type	state_type;
-      typedef streampos 			pos_type;
+      typedef fpos<state_type>			pos_type;
       typedef streamoff 			off_type;
       
       static void 
