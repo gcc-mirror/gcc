@@ -1,5 +1,11 @@
 2002-12-18  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
+	PR c++/8099
+	* friend.c (make_friend_class): Allow partial specialization
+	when declaration is not a template friend.
+
+2002-12-18  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
 	PR c++/3663
 	* pt.c (lookup_template_class): Copy TREE_PRIVATE and
 	TREE_PROTECTED to created decl nodes.
