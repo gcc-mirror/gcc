@@ -1,3 +1,7 @@
+2003-11-14  Tom Tromey  <tromey@redhat.com>
+
+	* libjava.jar/simple.jar: Replaced.
+
 2003-11-13  Tom Fitzsimmons  <fitzsim@redhat.com>
 
 	* libjava.jni/jniutf.c: New file.
