@@ -2929,7 +2929,7 @@
 ;; For the unaligned byte case, we use code similar to that in the
 ;; Architecture book, but reordered to lower the number of registers
 ;; required.  Operand 0 is the address.  Operand 1 is the data to store.
-;; Operands 2, 3, and 4 are DImode temporaries, where the last two may
+;; Operands 2, 3, and 4 are DImode temporaries, where operands 2 and 4 may
 ;; be the same temporary, if desired.  If the address is in a register,
 ;; operand 2 can be that register.
 
@@ -3193,12 +3193,18 @@
 (define_expand "reload_inqi"
   [(parallel [(match_operand:QI 0 "register_operand" "=r")
 	      (match_operand:QI 1 "unaligned_memory_operand" "m")
-	      (match_operand:DI 2 "register_operand" "=&r")])]
+	      (match_operand:TI 2 "register_operand" "=&r")])]
   ""
   "
 { extern rtx get_unaligned_address ();
   rtx addr = get_unaligned_address (operands[1]);
-  rtx seq = gen_unaligned_loadqi (operands[0], addr, operands[2],
+  /* It is possible that one of the registers we got for operands[2]
+     might co-incide with that of operands[0] (which is why we made
+     it TImode).  Pick the other one to use as our scratch.  */
+  rtx scratch = gen_rtx (REG, DImode,
+			 REGNO (operands[0]) == REGNO (operands[2]) 
+			 ? REGNO (operands[2]) + 1 : REGNO (operands[2]));
+  rtx seq = gen_unaligned_loadqi (operands[0], addr, scratch,
 				  gen_rtx (REG, DImode, REGNO (operands[0])));
 
   alpha_set_memflags (seq, operands[1]);
@@ -3260,7 +3266,7 @@
 	scratch1 = addr;
 
       seq = gen_unaligned_storeqi (addr, operands[1], scratch1,
-				   scratch2, scratch2);
+				   scratch2, scratch1);
       alpha_set_memflags (seq, operands[0]);
       emit_insn (seq);
     }
