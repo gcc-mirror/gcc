@@ -546,16 +546,15 @@ enum languages { lang_c, lang_cplusplus, lang_java };
 
 /* Nonzero if this type is const-qualified.  */
 #define CP_TYPE_CONST_P(NODE)				\
-  (CP_TYPE_QUALS (NODE) & TYPE_QUAL_CONST)
+  ((CP_TYPE_QUALS (NODE) & TYPE_QUAL_CONST) != 0)
 
 /* Nonzero if this type is volatile-qualified.  */
 #define CP_TYPE_VOLATILE_P(NODE)			\
-  (CP_TYPE_QUALS (NODE) & TYPE_QUAL_VOLATILE)
+  ((CP_TYPE_QUALS (NODE) & TYPE_QUAL_VOLATILE) != 0)
 
-/* Nonzero if this type is restrict-qualified.  
-   FIXME: Does this make sense?  */
+/* Nonzero if this type is restrict-qualified.  */
 #define CP_TYPE_RESTRICT_P(NODE)			\
-  (CP_TYPE_QUALS (NODE) & TYPE_QUAL_RESTRICT)
+  ((CP_TYPE_QUALS (NODE) & TYPE_QUAL_RESTRICT) != 0)
 
 /* Nonzero if this type is const-qualified, but not
    volatile-qualified.  Other qualifiers are ignored.  This macro is
