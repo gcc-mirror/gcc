@@ -393,6 +393,17 @@ static void delete_output_reload	PROTO((rtx, int, rtx));
 static void inc_for_reload		PROTO((rtx, rtx, int));
 static int constraint_accepts_reg_p	PROTO((char *, rtx));
 static int count_occurrences		PROTO((rtx, rtx));
+static void reload_cse_invalidate_regno	PROTO((int, enum machine_mode, int));
+static int reload_cse_mem_conflict_p	PROTO((rtx, rtx, enum machine_mode,
+					       rtx));
+static void reload_cse_invalidate_mem	PROTO((rtx));
+static void reload_cse_invalidate_rtx	PROTO((rtx, rtx));
+static void reload_cse_regs		PROTO((rtx));
+static int reload_cse_regno_equal_p	PROTO((int, rtx, enum machine_mode));
+static int reload_cse_noop_set_p	PROTO((rtx));
+static void reload_cse_simplify_set	PROTO((rtx, rtx));
+static void reload_cse_check_clobber	PROTO((rtx, rtx));
+static void reload_cse_record_set	PROTO((rtx, rtx));
 
 /* Initialize the reload pass once per compilation.  */
 
@@ -2105,6 +2116,10 @@ reload (first, global, dumpfile)
 	    XEXP (reg_equiv_mem[i], 0) = addr;
 	}
     }
+
+  /* Do a very simple CSE pass over just the hard registers.  */
+  if (optimize > 0)
+    reload_cse_regs (first);
 
 #ifdef PRESERVE_DEATH_INFO_REGNO_P
   /* Make a pass over all the insns and remove death notes for things that
@@ -7510,4 +7525,662 @@ count_occurrences (x, find)
 	}
     }
   return count;
+}
+
+/* This array holds values which are equivalent to a hard register
+   during reload_cse_regs.  Each array element is an EXPR_LIST of
+   values.  Each time a hard register is set, we set the corresponding
+   array element to the value.  Each time a hard register is copied
+   into memory, we add the memory location to the corresponding array
+   element.  We don't store values or memory addresses with side
+   effects in this array.
+
+   If the value is a CONST_INT, then the mode of the containing
+   EXPR_LIST is the mode in which that CONST_INT was referenced.
+
+   We sometimes clobber a specific entry in a list.  In that case, we
+   just set XEXP (list-entry, 0) to 0.  */
+
+static rtx *reg_values;
+
+/* Invalidate any entries in reg_values which depend on REGNO,
+   including those for REGNO itself.  This is called if REGNO is
+   changing.  If CLOBBER is true, then always forget anything we
+   currently know about REGNO.  MODE is the mode of the assignment to
+   REGNO, which is used to determine how many hard registers are being
+   changed.  If MODE is VOIDmode, then only REGNO is being changed;
+   this is used when invalidating call clobbered registers across a
+   call.  */
+
+static void
+reload_cse_invalidate_regno (regno, mode, clobber)
+     int regno;
+     enum machine_mode mode;
+     int clobber;
+{
+  int endregno;
+  register int i;
+
+  /* Our callers don't always go through true_regnum; we may see a
+     pseudo-register here from a CLOBBER or the like.  We probably
+     won't ever see a pseudo-register that has a real register number,
+     for we check anyhow for safety.  */
+  if (regno >= FIRST_PSEUDO_REGISTER)
+    regno = reg_renumber[regno];
+  if (regno < 0)
+    return;
+
+  if (mode == VOIDmode)
+    endregno = regno + 1;
+  else
+    endregno = regno + HARD_REGNO_NREGS (regno, mode);
+
+  if (clobber)
+    for (i = regno; i < endregno; i++)
+      reg_values[i] = 0;
+
+  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+    {
+      rtx x;
+
+      for (x = reg_values[i]; x; x = XEXP (x, 1))
+	{
+	  if (XEXP (x, 0) != 0
+	      && refers_to_regno_p (regno, endregno, XEXP (x, 0), NULL_RTX))
+	    {
+	      /* If this is the only entry on the list, clear
+                 reg_values[i].  Otherwise, just clear this entry on
+                 the list.  */
+	      if (XEXP (x, 1) == 0 && x == reg_values[i])
+		{
+		  reg_values[i] = 0;
+		  break;
+		}
+	      XEXP (x, 0) = 0;
+	    }
+	}
+    }
+}
+
+/* The memory at address (plus MEM_BASE MEM_OFFSET), where MEM_OFFSET
+   is a CONST_INT, is being changed.  MEM_MODE is the mode of the
+   memory reference.  Return whether this change will invalidate VAL.  */
+
+static int
+reload_cse_mem_conflict_p (mem_base, mem_offset, mem_mode, val)
+     rtx mem_base;
+     rtx mem_offset;
+     enum machine_mode mem_mode;
+     rtx val;
+{
+  enum rtx_code code;
+  char *fmt;
+  int i;
+
+  code = GET_CODE (val);
+  switch (code)
+    {
+      /* Get rid of a few simple cases quickly. */
+    case REG:
+    case SUBREG:
+    case PC:
+    case CC0:
+    case SCRATCH:
+    case CONST:
+    case CONST_INT:
+    case CONST_DOUBLE:
+    case SYMBOL_REF:
+    case LABEL_REF:
+      return 0;
+
+    case MEM:
+      {
+	rtx val_base, val_offset;
+
+	if (mem_mode == BLKmode || GET_MODE (val) == BLKmode)
+	  return 1;
+
+	val_offset = const0_rtx;
+	val_base = eliminate_constant_term (XEXP (val, 0), &val_offset);
+
+	/* If MEM_BASE and VAL_BASE are the same, but the offsets do
+	   not overlap, then we do not have a conflict on this MEM.
+	   For complete safety, we still need to check that VAL_BASE
+	   itself does not contain an overlapping MEM.
+
+	   We can't simplify the check to just OFFSET + SIZE <=
+	   OTHER_OFFSET, because SIZE might cause OFFSET to wrap from
+	   positive to negative.  If we used unsigned arithmetic, we
+	   would have the same problem wrapping around zero.  */
+
+	if (rtx_equal_p (mem_base, val_base)
+	    && ((INTVAL (mem_offset) < INTVAL (val_offset)
+		 && (INTVAL (mem_offset) + GET_MODE_SIZE (mem_mode)
+		     <= INTVAL (val_offset)))
+		|| (INTVAL (val_offset) < INTVAL (mem_offset)
+		    && (INTVAL (val_offset) + GET_MODE_SIZE (GET_MODE (val))
+			<= INTVAL (mem_offset)))))
+	  return reload_cse_mem_conflict_p (mem_base, mem_offset, mem_mode,
+					    val_base);
+
+	return 1;
+      }
+
+    default:
+      break;
+    }
+
+  fmt = GET_RTX_FORMAT (code);
+
+  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+    {
+      if (fmt[i] == 'e')
+	{
+	  if (reload_cse_mem_conflict_p (mem_base, mem_offset, mem_mode,
+					 XEXP (val, i)))
+	    return 1;
+	}
+      else if (fmt[i] == 'E')
+	{
+	  int j;
+
+	  for (j = 0; j < XVECLEN (val, i); j++)
+	    if (reload_cse_mem_conflict_p (mem_base, mem_offset, mem_mode,
+					   XVECEXP (val, i, j)))
+	      return 1;
+	}
+    }
+
+  return 0;
+}
+
+/* Invalidate any entries in reg_values which are changed because of a
+   store to MEM_RTX.  If this is called because of a non-const call
+   instruction, MEM_RTX is (mem:BLK const0_rtx).  */
+
+static void
+reload_cse_invalidate_mem (mem_rtx)
+     rtx mem_rtx;
+{
+  register int i;
+  rtx mem_base, mem_offset;
+  enum machine_mode mem_mode;
+
+  /* We detect certain cases where memory addresses can not conflict:
+     if they use the same register, and the offsets do not overlap.  */
+
+  mem_offset = const0_rtx;
+  mem_base = eliminate_constant_term (XEXP (mem_rtx, 0), &mem_offset);
+  mem_mode = GET_MODE (mem_rtx);
+
+  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+    {
+      rtx x;
+
+      for (x = reg_values[i]; x; x = XEXP (x, 1))
+	{
+	  if (XEXP (x, 0) != 0
+	      && reload_cse_mem_conflict_p (mem_base, mem_offset, mem_mode,
+					    XEXP (x, 0)))
+	    {
+	      /* If this is the only entry on the list, clear
+                 reg_values[i].  Otherwise, just clear this entry on
+                 the list.  */
+	      if (XEXP (x, 1) == 0 && x == reg_values[i])
+		{
+		  reg_values[i] = 0;
+		  break;
+		}
+	      XEXP (x, 0) = 0;
+	    }
+	}
+    }
+}
+
+/* Invalidate DEST, which is being assigned to or clobbered.  The
+   second parameter exists so that this function can be passed to
+   note_stores; it is ignored.  */
+
+static void
+reload_cse_invalidate_rtx (dest, ignore)
+     rtx dest;
+     rtx ignore;
+{
+  while (GET_CODE (dest) == STRICT_LOW_PART
+	 || GET_CODE (dest) == SIGN_EXTRACT
+	 || GET_CODE (dest) == ZERO_EXTRACT
+	 || GET_CODE (dest) == SUBREG)
+    dest = XEXP (dest, 0);
+
+  if (GET_CODE (dest) == REG)
+    reload_cse_invalidate_regno (REGNO (dest), GET_MODE (dest), 1);
+  else if (GET_CODE (dest) == MEM)
+    reload_cse_invalidate_mem (dest);
+}
+
+/* Do a very simple CSE pass over the hard registers.
+
+   This function detects no-op moves where we happened to assign two
+   different pseudo-registers to the same hard register, and then
+   copied one to the other.  Reload will generate a useless
+   instruction copying a register to itself.
+
+   This function also detects cases where we load a value from memory
+   into two different registers, and (if memory is more expensive than
+   registers) changes it to simply copy the first register into the
+   second register.  */
+
+static void
+reload_cse_regs (first)
+     rtx first;
+{
+  char *firstobj;
+  rtx callmem;
+  register int i;
+  rtx insn;
+
+  reg_values = (rtx *) alloca (FIRST_PSEUDO_REGISTER * sizeof (rtx));
+  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+    reg_values[i] = 0;
+
+  /* Create our EXPR_LIST structures on reload_obstack, so that we can
+     free them when we are done.  */
+  push_obstacks (&reload_obstack, &reload_obstack);
+  firstobj = (char *) obstack_alloc (&reload_obstack, 0);
+
+  /* We pass this to reload_cse_invalidate_mem to invalidate all of
+     memory for a non-const call instruction.  */
+  callmem = gen_rtx (MEM, BLKmode, const0_rtx);
+
+  for (insn = first; insn; insn = NEXT_INSN (insn))
+    {
+      rtx body;
+
+      if (GET_CODE (insn) == CODE_LABEL)
+	{
+	  /* Forget all the register values at a code label.  We don't
+             try to do anything clever around jumps.  */
+	  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	    reg_values[i] = 0;
+
+	  continue;
+	}
+
+#ifdef NON_SAVING_SETJMP 
+      if (NON_SAVING_SETJMP && GET_CODE (insn) == NOTE
+	  && NOTE_LINE_NUMBER (insn) == NOTE_INSN_SETJMP)
+	{
+	  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	    reg_values[i] = 0;
+
+	  continue;
+	}
+#endif
+
+      if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+	continue;
+
+      /* If this is a call instruction, forget anything stored in a
+	 call clobbered register, or, if this is not a const call, in
+	 memory.  */
+      if (GET_CODE (insn) == CALL_INSN)
+	{
+	  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	    if (call_used_regs[i])
+	      reload_cse_invalidate_regno (i, VOIDmode, 1);
+
+	  if (! CONST_CALL_P (insn))
+	    reload_cse_invalidate_mem (callmem);
+	}
+
+      body = PATTERN (insn);
+      if (GET_CODE (body) == SET)
+	{
+	  if (reload_cse_noop_set_p (body))
+	    {
+	      /* If we were preserving death notes, then we would want
+		 to remove any existing death note for the register
+		 being set.  */
+	      PUT_CODE (insn, NOTE);
+	      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
+	      NOTE_SOURCE_FILE (insn) = 0;
+
+	      /* We're done with this insn.  */
+	      continue;
+	    }
+
+	  reload_cse_simplify_set (body, insn);
+	  reload_cse_record_set (body, body);
+	}
+      else if (GET_CODE (body) == PARALLEL)
+	{
+	  int delete;
+
+	  /* If every action in a PARALLEL is a noop, we can delete
+             the entire PARALLEL.  */
+	  for (i = XVECLEN (body, 0) - 1; i >= 0; --i)
+	    if (GET_CODE (XVECEXP (body, 0, i)) != SET
+		|| ! reload_cse_noop_set_p (XVECEXP (body, 0, i)))
+	      break;
+	  if (i < 0)
+	    {
+	      /* If we were preserving death notes, then we would want
+		 to remove any existing death notes for the registers
+		 being set.  */
+	      PUT_CODE (insn, NOTE);
+	      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
+	      NOTE_SOURCE_FILE (insn) = 0;
+
+	      /* We're done with this insn.  */
+	      continue;
+	    }
+
+	  /* Look through the PARALLEL and record the values being
+             set, if possible.  Also handle any CLOBBERs.  */
+	  for (i = XVECLEN (body, 0) - 1; i >= 0; --i)
+	    {
+	      rtx x = XVECEXP (body, 0, i);
+
+	      if (GET_CODE (x) == SET)
+		reload_cse_record_set (x, body);
+	      else
+		note_stores (x, reload_cse_invalidate_rtx);
+	    }
+	}
+      else
+	note_stores (body, reload_cse_invalidate_rtx);
+
+#ifdef AUTO_INC_DEC
+      /* Clobber any registers which appear in REG_INC notes.  We
+         could keep track of the changes to their values, but it is
+         unlikely to help.  */
+      {
+	rtx x;
+
+	for (x = REG_NOTES (insn); x; x = XEXP (x, 1))
+	  if (REG_NOTE_KIND (x) == REG_INC)
+	    reload_cse_invalidate_rtx (XEXP (x, 0), NULL_RTX);
+      }
+#endif
+
+      /* Look for any CLOBBERs in CALL_INSN_FUNCTION_USAGE, but only
+         after we have processed the insn.  */
+      if (GET_CODE (insn) == CALL_INSN)
+	{
+	  rtx x;
+
+	  for (x = CALL_INSN_FUNCTION_USAGE (insn); x; x = XEXP (x, 1))
+	    if (GET_CODE (XEXP (x, 0)) == CLOBBER)
+	      reload_cse_invalidate_rtx (XEXP (XEXP (x, 0), 0), NULL_RTX);
+	}
+    }
+
+  /* Free all the temporary structures we created, and go back to the
+     regular obstacks.  */
+  obstack_free (&reload_obstack, firstobj);
+  pop_obstacks ();
+}
+
+/* Return whether the values known for REGNO are equal to VAL.  MODE
+   is the mode of the object that VAL is being copied to; this matters
+   if VAL is a CONST_INT.  */
+
+static int
+reload_cse_regno_equal_p (regno, val, mode)
+     int regno;
+     rtx val;
+     enum machine_mode mode;
+{
+  rtx x;
+
+  if (val == 0)
+    return 0;
+
+  for (x = reg_values[regno]; x; x = XEXP (x, 1))
+    if (XEXP (x, 0) != 0
+	&& rtx_equal_p (XEXP (x, 0), val)
+	&& (GET_CODE (val) != CONST_INT
+	    || mode == GET_MODE (x)
+	    || (GET_MODE_SIZE (mode) < GET_MODE_SIZE (GET_MODE (x))
+		&& TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (mode),
+					  GET_MODE_BITSIZE (GET_MODE (x))))))
+      return 1;
+
+  return 0;
+}
+
+/* See whether a single SET instruction is a nooop.  */
+
+static int
+reload_cse_noop_set_p (set)
+     rtx set;
+{
+  rtx src, dest;
+  enum machine_mode dest_mode;
+  int dreg, sreg;
+
+  src = SET_SRC (set);
+  dest = SET_DEST (set);
+  dest_mode = GET_MODE (dest);
+
+  if (side_effects_p (src))
+    return 0;
+
+  dreg = true_regnum (dest);
+  sreg = true_regnum (src);
+
+  if (dreg >= 0)
+    {
+      /* Check for setting a register to itself.  */
+      if (dreg == sreg)
+	return 1;
+
+      /* Check for setting a register to a value which we already know
+         is in the register.  */
+      if (reload_cse_regno_equal_p (dreg, src, dest_mode))
+	return 1;
+
+      /* Check for setting a register DREG to another register SREG
+         where SREG is equal to a value which is already in DREG.  */
+      if (sreg >= 0)
+	{
+	  rtx x;
+
+	  for (x = reg_values[sreg]; x; x = XEXP (x, 1))
+	    if (XEXP (x, 0) != 0
+		&& reload_cse_regno_equal_p (dreg, XEXP (x, 0), dest_mode))
+	      return 1;
+	}
+    }
+  else if (GET_CODE (dest) == MEM)
+    {
+      /* Check for storing a register to memory when we know that the
+         register is equivalent to the memory location. */
+      if (sreg >= 0
+	  && reload_cse_regno_equal_p (sreg, dest, dest_mode)
+	  && ! side_effects_p (dest))
+	return 1;
+    }
+
+  return 0;
+}
+
+/* Try to simplify a single SET instruction.  SET is the set pattern.
+   INSN is the instruction it came from. */
+
+static void
+reload_cse_simplify_set (set, insn)
+     rtx set;
+     rtx insn;
+{
+  int dreg;
+  rtx src;
+  enum machine_mode dest_mode;
+  enum reg_class dclass;
+  register int i;
+
+  /* We only handle one case: if we set a register to a value which is
+     not a register, we try to find that value in some other register
+     and change the set into a register copy.  */
+
+  dreg = true_regnum (SET_DEST (set));
+  if (dreg < 0)
+    return;
+
+  src = SET_SRC (set);
+  if (side_effects_p (src) || true_regnum (src) >= 0)
+    return;
+
+  /* If memory loads are cheaper than register copies, don't change
+     them.  */
+  if (GET_CODE (src) == MEM && MEMORY_MOVE_COST (GET_MODE (src)) < 2)
+    return;
+
+  dest_mode = GET_MODE (SET_DEST (set));
+  dclass = REGNO_REG_CLASS (dreg);
+  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+    {
+      if (i != dreg
+	  && REGISTER_MOVE_COST (REGNO_REG_CLASS (i), dclass) == 2
+	  && reload_cse_regno_equal_p (i, src, dest_mode))
+	{
+	  int validated;
+
+	  /* Pop back to the real obstacks while changing the insn.  */
+	  pop_obstacks ();
+
+	  validated = validate_change (insn, &SET_SRC (set),
+				       gen_rtx (REG, dest_mode, i), 0);
+
+	  /* Go back to the obstack we are using for temporary
+             storage.  */
+	  push_obstacks (&reload_obstack, &reload_obstack);
+
+	  if (validated)
+	    return;
+	}
+    }
+}
+
+/* These two variables are used to pass information from
+   reload_cse_record_set to reload_cse_check_clobber.  */
+
+static int reload_cse_check_clobbered;
+static rtx reload_cse_check_src;
+
+/* See if DEST overlaps with RELOAD_CSE_CHECK_SRC. If it does, set
+   RELOAD_CSE_CHECK_CLOBBERED.  This is called via note_stores.  The
+   second argument, which is passed by note_stores, is ignored.  */
+
+static void
+reload_cse_check_clobber (dest, ignore)
+     rtx dest;
+     rtx ignore;
+{
+  if (reg_overlap_mentioned_p (dest, reload_cse_check_src))
+    reload_cse_check_clobbered = 1;
+}
+
+/* Record the result of a SET instruction.  SET is the set pattern.
+   BODY is the pattern of the insn that it came from.  */
+
+static void
+reload_cse_record_set (set, body)
+     rtx set;
+     rtx body;
+{
+  rtx dest, src;
+  int dreg, sreg;
+  enum machine_mode dest_mode;
+
+  dest = SET_DEST (set);
+  src = SET_SRC (set);
+  dreg = true_regnum (dest);
+  sreg = true_regnum (src);
+  dest_mode = GET_MODE (dest);
+
+  /* We can only handle an assignment to a register, or a store of a
+     register to a memory location.  For other cases, we just clobber
+     the destination.  We also have to just clobber if there are side
+     effects in SRC or DEST.  */
+  if ((dreg < 0 && GET_CODE (dest) != MEM)
+      || side_effects_p (src)
+      || side_effects_p (dest))
+    {
+      reload_cse_invalidate_rtx (dest, NULL_RTX);
+      return;
+    }
+
+#ifdef HAVE_cc0
+  /* We don't try to handle values involving CC, because it's a pain
+     to keep track of when they have to be invalidated.  */
+  if (reg_mentioned_p (cc0_rtx, src)
+      || reg_mentioned_p (cc0_rtx, dest))
+    {
+      reload_cse_invalidate_rtx (dest, NULL_RTX);
+      return;
+    }
+#endif
+
+  /* If BODY is a PARALLEL, then we need to see whether the source of
+     SET is clobbered by some other instruction in the PARALLEL.  */
+  if (GET_CODE (body) == PARALLEL)
+    {
+      int i;
+
+      for (i = XVECLEN (body, 0) - 1; i >= 0; --i)
+	{
+	  rtx x;
+
+	  x = XVECEXP (body, 0, i);
+	  if (x == set)
+	    continue;
+
+	  reload_cse_check_clobbered = 0;
+	  reload_cse_check_src = src;
+	  note_stores (x, reload_cse_check_clobber);
+	  if (reload_cse_check_clobbered)
+	    {
+	      reload_cse_invalidate_rtx (dest, NULL_RTX);
+	      return;
+	    }
+	}
+    }
+
+  if (dreg >= 0)
+    {
+      int i;
+
+      /* This is an assignment to a register.  Update the value we
+         have stored for the register.  */
+      if (sreg >= 0)
+	reg_values[dreg] = reg_values[sreg];
+      else
+	reg_values[dreg] = gen_rtx (EXPR_LIST, dest_mode, src, NULL_RTX);
+
+      /* We've changed DREG, so invalidate any values held by other
+         registers that depend upon it.  */
+      reload_cse_invalidate_regno (dreg, dest_mode, 0);
+
+      /* If this assignment changes more than one hard register,
+         forget anything we know about the others.  */
+      for (i = 1; i < HARD_REGNO_NREGS (dreg, dest_mode); i++)
+	reg_values[dreg + i] = 0;
+    }
+  else if (GET_CODE (dest) == MEM)
+    {
+      /* Invalidate conflicting memory locations.  */
+      reload_cse_invalidate_mem (dest);
+
+      /* If we're storing a register to memory, add DEST to the list
+         in REG_VALUES.  */
+      if (sreg >= 0 && ! side_effects_p (dest))
+	reg_values[sreg] = gen_rtx (EXPR_LIST, dest_mode, dest,
+				    reg_values[sreg]);
+    }
+  else
+    {
+      /* We should have bailed out earlier.  */
+      abort ();
+    }
 }
