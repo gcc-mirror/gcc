@@ -4023,7 +4023,8 @@ emit_prefetch_instructions (loop)
 
 	      /* Make sure the address operand is valid for prefetch.  */
 	      if (! (*insn_data[(int)CODE_FOR_prefetch].operand[0].predicate)
-		    (loc, Pmode))
+		    (loc,
+		     insn_data[(int)CODE_FOR_prefetch].operand[0].mode))
 		loc = force_reg (Pmode, loc);
 	      emit_insn_before (gen_prefetch (loc, GEN_INT (info[i].write),
 		                              GEN_INT (3)),
