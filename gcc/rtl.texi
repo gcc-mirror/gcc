@@ -287,9 +287,9 @@ to access them.
 @section Flags in an RTL Expression
 @cindex flags in RTL expression
 
-RTL expressions contain several flags (one-bit bitfields) that are used
-in certain types of expression.  Most often they are accessed with the
-following macros:
+RTL expressions contain several flags (one-bit bitfields) and other
+values that are used in certain types of expression.  Most often they
+are accessed with the following macros:
 
 @table @code
 @findex MEM_VOLATILE_P
@@ -309,6 +309,15 @@ In @code{mem} expressions, nonzero for reference to an entire
 structure, union or array, or to a component of one.  Zero for
 references to a scalar variable or through a pointer to a scalar.
 Stored in the @code{in_struct} field and printed as @samp{/s}.
+
+@findex MEM_ALIAS_SET
+@item MEM_ALIAS_SET (@var{x})
+In @code{mem} expressions, the alias set to which @var{x} belongs.  If
+zero, @var{x} is not in any alias set, and may alias anything.  If
+nonzero, @var{x} may only alias objects in the same alias set.  This
+value is set (in a language-specific manner) by the front-end.  This
+field is not a bit-field; it is in an integer, found as the second
+argument to the @code{mem}.
 
 @findex REG_LOOP_TEST_P
 @cindex @code{reg} and @samp{/s}

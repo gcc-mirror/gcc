@@ -301,6 +301,20 @@ gen_rtx_REG (mode, regno)
   return gen_rtx_raw_REG (mode, regno);
 }
 
+rtx
+gen_rtx_MEM (mode, addr)
+     enum machine_mode mode;
+     rtx addr;
+{
+  rtx rt = gen_rtx_raw_MEM (mode, addr);
+
+  /* This field is not cleared by the mere allocation of the rtx, so
+     we clear it here.  */
+  MEM_ALIAS_SET (rt) = 0;
+
+  return rt;
+}
+
 /* rtx gen_rtx (code, mode, [element1, ..., elementn])
 **
 **	    This routine generates an RTX of the size specified by

@@ -1466,6 +1466,7 @@ put_var_into_stack (decl)
       /* Change the CONCAT into a combined MEM for both parts.  */
       PUT_CODE (reg, MEM);
       MEM_VOLATILE_P (reg) = MEM_VOLATILE_P (XEXP (reg, 0));
+      MEM_ALIAS_SET (reg) = get_alias_set (decl);
 
       /* The two parts are in memory order already.
 	 Use the lower parts address as ours.  */
@@ -1538,6 +1539,7 @@ put_reg_into_stack (function, reg, type, promoted_mode, decl_mode, volatile_p,
      case it was set for other reasons.  For instance, it is set for
      __builtin_va_alist.  */
   MEM_IN_STRUCT_P (reg) = AGGREGATE_TYPE_P (type) | MEM_IN_STRUCT_P (new);
+  MEM_ALIAS_SET (reg) = get_alias_set (type);
 
   /* Now make sure that all refs to the variable, previously made
      when it was a register, are fixed up to be valid again.  */
@@ -2735,6 +2737,7 @@ gen_mem_addressof (reg, decl)
   PUT_MODE (reg, DECL_MODE (decl));
   MEM_VOLATILE_P (reg) = TREE_SIDE_EFFECTS (decl);
   MEM_IN_STRUCT_P (reg) = AGGREGATE_TYPE_P (type);
+  MEM_ALIAS_SET (reg) = get_alias_set (decl);
 
   if (TREE_USED (decl) || DECL_INITIAL (decl) != 0)
     fixup_var_refs (reg, GET_MODE (reg), TREE_UNSIGNED (type));
@@ -3908,6 +3911,7 @@ assign_parms (fndecl, second_time)
 	     is readonly.  */
 	  MEM_IN_STRUCT_P (stack_parm) = aggregate;
 	  RTX_UNCHANGING_P (stack_parm) = TREE_READONLY (parm);
+	  MEM_ALIAS_SET (stack_parm) = get_alias_set (parm);
 	}
 
       /* If this parameter was passed both in registers and in the stack,

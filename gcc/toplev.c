@@ -711,6 +711,12 @@ int flag_regmove = 0;
    This defaults to 0 for C.  */
 int flag_argument_noalias = 0;
 
+/* Nonzero if we should do (language-dependent) alias analysis.
+   Typically, this analysis will assume that expressions of certain
+   types do not alias expressions of certain other types.  Only used
+   if alias analysis (in general) is enabled.  */
+int flag_strict_aliasing = 0;
+
 /* Table of language-independent -f options.
    STRING is the option name.  VARIABLE is the address of the variable.
    ON_VALUE is the value to store in VARIABLE
@@ -782,6 +788,7 @@ struct { char *string; int *variable; int on_value;} f_options[] =
   {"argument-alias", &flag_argument_noalias, 0},
   {"argument-noalias", &flag_argument_noalias, 1},
   {"argument-noalias-global", &flag_argument_noalias, 2},
+  {"strict-aliasing", &flag_strict_aliasing, 1},
   {"check-memory-usage", &flag_check_memory_usage, 1},
   {"prefix-function-name", &flag_prefix_function_name, 1}
 };
@@ -3839,6 +3846,9 @@ main (argc, argv, envp)
       flag_schedule_insns_after_reload = 1;
 #endif
       flag_regmove = 1;
+      /* We don't set flag_strict_aliasing here because we're still
+	 testing the functionality.  After it has been tested, it
+	 should be turned on here.  */
     }
 
   if (optimize >= 3)

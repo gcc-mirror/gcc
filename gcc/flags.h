@@ -432,6 +432,12 @@ extern int flag_pack_struct;
    The value is ignored if flag_alias_check is 0.  */
 extern int flag_argument_noalias;
 
+/* Nonzero if we should do (language-dependent) alias analysis.
+   Typically, this analysis will assume that expressions of certain
+   types do not alias expressions of certain other types.  Only used
+   if alias analysis (in general) is enabled.  */
+extern int flag_strict_aliasing;
+
 /* Emit code to check for stack overflow; also may cause large objects
    to be allocated dynamically.  */
 extern int flag_stack_check;

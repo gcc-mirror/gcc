@@ -537,10 +537,16 @@ DEF_RTL_EXPR(CONST, "const", "e", 'o')
    by a SET whose first operand is (PC).  */
 DEF_RTL_EXPR(PC, "pc", "", 'o')
 
-/* A register.  The "operand" is the register number, accessed
-   with the REGNO macro.  If this number is less than FIRST_PSEUDO_REGISTER
-   than a hardware register is being referred to.  */
-DEF_RTL_EXPR(REG, "reg", "i", 'o')
+/* A register.  The "operand" is the register number, accessed with
+   the REGNO macro.  If this number is less than FIRST_PSEUDO_REGISTER
+   than a hardware register is being referred to.  The second operand
+   doesn't really exist.  Unfortunately, however, the compiler
+   implicitly assumes that a REG can be transformed in place into a
+   MEM, and therefore that a REG is at least as big as a MEM.  To
+   avoid this memory overhead, which is likely to be substantial,
+   search for uses of PUT_CODE that turn REGs into MEMs, and fix them
+   somehow.  Then, the trailing `0' can be removed here.  */
+DEF_RTL_EXPR(REG, "reg", "i0", 'o')
 
 /* A scratch register.  This represents a register used only within a
    single insn.  It will be turned into a REG during register allocation
@@ -578,9 +584,11 @@ DEF_RTL_EXPR(STRICT_LOW_PART, "strict_low_part", "e", 'x')
    in DECL_RTLs and during RTL generation, but not in the insn chain.  */
 DEF_RTL_EXPR(CONCAT, "concat", "ee", 'o')
 
-/* A memory location; operand is the address.
-   Can be nested inside a VOLATILE.  */
-DEF_RTL_EXPR(MEM, "mem", "e", 'o')
+/* A memory location; operand is the address.  Can be nested inside a
+   VOLATILE.  The second operand is the alias set to which this MEM
+   belongs.  We use `0' instead of `i' for this field so that the
+   field need not be specified in machine descriptions.  */
+DEF_RTL_EXPR(MEM, "mem", "e0", 'o')
 
 /* Reference to an assembler label in the code for this function.
    The operand is a CODE_LABEL found in the insn chain.

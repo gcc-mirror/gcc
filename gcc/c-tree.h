@@ -164,6 +164,7 @@ extern void declare_function_name               PROTO((void));
 extern void decl_attributes                     PROTO((tree, tree, tree));
 extern void init_function_format_info		PROTO((void));
 extern void check_function_format		PROTO((tree, tree, tree));
+extern int c_get_alias_set                      PROTO((tree));
 /* Print an error message for invalid operands to arith operation CODE.
    NOP_EXPR is used as a special case (see truthvalue_conversion).  */
 extern void binary_op_error                     PROTO((enum tree_code));

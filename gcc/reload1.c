@@ -2095,6 +2095,9 @@ reload (first, global, dumpfile)
 	      XEXP (reg, 0) = addr;
 	      REG_USERVAR_P (reg) = 0;
 	      MEM_IN_STRUCT_P (reg) = in_struct;
+	      /* We have no alias information about this newly created
+		 MEM.  */
+	      MEM_ALIAS_SET (reg) = 0;
 	      PUT_CODE (reg, MEM);
 	    }
 	  else if (reg_equiv_mem[i])

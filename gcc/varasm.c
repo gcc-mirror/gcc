@@ -662,8 +662,6 @@ make_decl_rtl (decl, asmspec, top_level)
      same DECL node.  Don't discard the RTL already made.  */
   if (DECL_RTL (decl) == 0)
     {
-      DECL_RTL (decl) = 0;
-
       /* First detect errors in declaring global registers.  */
       if (TREE_CODE (decl) != FUNCTION_DECL
 	  && DECL_REGISTER (decl) && reg_number == -1)
@@ -767,7 +765,8 @@ make_decl_rtl (decl, asmspec, top_level)
 
 	  DECL_RTL (decl) = gen_rtx_MEM (DECL_MODE (decl),
 					 gen_rtx_SYMBOL_REF (Pmode, name));
-
+	  MEM_ALIAS_SET (DECL_RTL (decl)) = get_alias_set (decl);
+	    
 	  /* If this variable is to be treated as volatile, show its
 	     tree node has side effects.  If it has side effects, either
 	     because of this test or from TREE_THIS_VOLATILE also

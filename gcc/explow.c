@@ -592,6 +592,11 @@ stabilize (x)
       MEM_IN_STRUCT_P (mem) = MEM_IN_STRUCT_P (x) || GET_CODE (addr) == PLUS;
       RTX_UNCHANGING_P (mem) = RTX_UNCHANGING_P (x);
       MEM_VOLATILE_P (mem) = MEM_VOLATILE_P (x);
+
+      /* Since the new MEM is just like the old X, it can alias only
+	 the things that X could.  */
+      MEM_ALIAS_SET (mem) = MEM_ALIAS_SET (x);
+
       return mem;
     }
   return x;

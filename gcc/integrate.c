@@ -2688,6 +2688,7 @@ copy_rtx_and_substitute (orig, map)
       XEXP (copy, 0) = copy_rtx_and_substitute (XEXP (orig, 0), map);
       MEM_IN_STRUCT_P (copy) = MEM_IN_STRUCT_P (orig);
       MEM_VOLATILE_P (copy) = MEM_VOLATILE_P (orig);
+      MEM_ALIAS_SET (copy) = MEM_ALIAS_SET (orig);
 
       /* If doing function inlining, this MEM might not be const in the
 	 function that it is being inlined into, and thus may not be

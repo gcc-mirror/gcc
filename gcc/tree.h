@@ -776,6 +776,18 @@ struct tree_block
 #define TYPE_OBSTACK(NODE) (TYPE_CHECK (NODE)->type.obstack)
 #define TYPE_LANG_SPECIFIC(NODE) (TYPE_CHECK (NODE)->type.lang_specific)
 
+/* The (language-specific) typed-based alias set for this type.
+   Objects whose TYPE_ALIAS_SETs are different cannot alias each
+   other.  If the TYPE_ALIAS_SET is -1, no alias set has yet been
+   assigned to this type.  If the TYPE_ALIAS_SET is 0, objects of this
+   type can alias objects of any type.  */
+#define TYPE_ALIAS_SET(NODE) (TYPE_CHECK (NODE)->type.alias_set)
+
+/* Nonzero iff the typed-based alias set for this type has been
+   calculated.  */
+#define TYPE_ALIAS_SET_KNOWN_P(NODE) \
+  (TYPE_CHECK (NODE)->type.alias_set != -1)
+
 /* A TREE_LIST of IDENTIFIER nodes of the attributes that apply
    to this type.  */
 #define TYPE_ATTRIBUTES(NODE) (TYPE_CHECK (NODE)->type.attributes)
@@ -870,6 +882,7 @@ struct tree_type
   union tree_node *noncopied_parts;
   union tree_node *context;
   struct obstack *obstack;
+  int alias_set;
   /* Points to a structure whose details depend on the language in use.  */
   struct lang_type *lang_specific;
 };
@@ -1811,6 +1824,8 @@ extern tree get_file_function_name		PROTO((int));
 extern tree get_set_constructor_bits		PROTO((tree, char *, int));
 extern tree get_set_constructor_bytes		PROTO((tree,
 						       unsigned char *, int));
+extern int get_alias_set                        PROTO((tree));
+extern int (*lang_get_alias_set)                PROTO((tree));
 
 /* In stmt.c */
 
