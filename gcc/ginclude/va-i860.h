@@ -46,10 +46,10 @@ typedef struct {
 #ifdef __SVR4__
   unsigned	__ireg_used;	/* How many int regs consumed 'til now? */
   unsigned	__freg_used;	/* How many flt regs consumed 'til now? */
-  __va_saved_regs *__reg_base;	/* Address of where we stored the regs. */
+  long		*__reg_base;	/* Address of where we stored the regs. */
   long *	__mem_ptr;	/* Address of memory overflow args area. */
 #else /* pre-SVR4 */
-  __va_saved_regs *__reg_base;	/* Address of where we stored the regs. */
+  long		*__reg_base;	/* Address of where we stored the regs. */
   long *	__mem_ptr;	/* Address of memory overflow args area. */
   unsigned	__ireg_used;	/* How many int regs consumed 'til now? */
   unsigned	__freg_used;	/* How many flt regs consumed 'til now? */
@@ -88,7 +88,7 @@ enum {
 #define __NUM_PARM_FREGS	8
 #define __NUM_PARM_IREGS	12
 
-#define __savereg(__va) (__va.__reg_base)
+#define __savereg(__va) ((__va_saved_regs *) (__va.__reg_base)
 
 /* This macro works both for SVR4 and pre-SVR4 environments.  */
 
@@ -105,6 +105,7 @@ enum {
 #endif
 
 #define va_arg(__va, __type)						\
+__extension__								\
 (* (__type *)								\
 ({									\
   register void *__rv;  /* result value */				\
