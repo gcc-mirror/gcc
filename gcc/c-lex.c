@@ -1093,9 +1093,7 @@ lex_number (str, len)
 
       if (c == '.')
 	{
-	  if (base == 16 && pedantic && !flag_isoc99)
-	    pedwarn ("floating constant may not be in radix 16");
-	  else if (floatflag == AFTER_POINT)
+	  if (floatflag == AFTER_POINT)
 	    ERROR ("too many decimal points in floating constant");
 	  else if (floatflag == AFTER_EXPON)
 	    ERROR ("decimal point in exponent - impossible!");
@@ -1190,6 +1188,9 @@ lex_number (str, len)
       REAL_VALUE_TYPE real;
       struct pf_args args;
       char *copy;
+
+      if (base == 16 && pedantic && !flag_isoc99)
+	pedwarn ("floating constant may not be in radix 16");
 
       if (base == 16 && floatflag != AFTER_EXPON)
 	ERROR ("hexadecimal floating constant has no exponent");
