@@ -1,3 +1,12 @@
+2000-09-19  David Edelsohn  <edelsohn@gnu.org>
+
+	* configure.in: Allow enable_threads_flag value of "aix".  Define
+	thread_file as "aix" for AIX 4.3 and above..
+	* configure: Regenerated.
+	* rs6000/t-aix43: Replace soft-float multilib with pthread.
+	Remove 403 processor multilib match.  Fix rios2 processor multilib
+	match.
+
 2000-09-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.c (is_valid_printf_arglist, expand_builtin_printf): New
