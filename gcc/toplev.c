@@ -72,6 +72,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "debug.h"
 #include "target.h"
 #include "langhooks.h"
+#include "langhooks-def.h"
 #include "cfglayout.h"
 #include "cfgloop.h"
 #include "hosthooks.h"

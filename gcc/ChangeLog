@@ -1,3 +1,8 @@
+2003-02-19  Andreas Schwab  <schwab@suse.de>
+
+	* Makefile.in (toplev.o): Depend on $(LANGHOOKS_DEF_H).
+	* toplev.c: Include langhooks-def.h.
+
 2003-02-18  Chris Demetriou  <cgd@broadcom.com>
 
 	* config/mips/mips.h (enum processor_type): Sort entries
