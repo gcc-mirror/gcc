@@ -731,6 +731,10 @@ dtors_section ()							\
 #undef HANDLE_SYSV_PRAGMA
 #define HANDLE_SYSV_PRAGMA 1
 
+#define ASM_WEAKEN_LABEL(FILE,NAME) \
+  do { fputs ("\t.weak\t", FILE); assemble_name (FILE, NAME);		\
+	fputc ('\n', FILE); } while (0)
+
 #undef SCCS_DIRECTIVE
 #define SCCS_DIRECTIVE 1
 

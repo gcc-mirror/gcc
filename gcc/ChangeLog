@@ -1,3 +1,7 @@
+Fri Sep 11 22:57:55 1998  Eric Dumazet  <dumazet@cosmosbay.com>
+
+	*config/i386/sco5.h (ASM_WEAKEN_LABEL): Defined as in svr4.h.
+
 Thu Sep 10 22:02:04 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 
 	* glimits.h (__LONG_MAX__): Recognize __sparcv9 too.
