@@ -98,7 +98,7 @@ static struct stack_level *decl_stack;
 
 #ifndef BOOL_TYPE_SIZE
 #ifdef SLOW_BYTE_ACCESS
-#define BOOL_TYPE_SIZE BITS_PER_WORD
+#define BOOL_TYPE_SIZE ((SLOW_BYTE_ACCESS) ? (BITS_PER_WORD) : (BITS_PER_UNIT))
 #else
 #define BOOL_TYPE_SIZE BITS_PER_UNIT
 #endif
