@@ -1816,7 +1816,7 @@ push_namespace (name)
   if (need_new)
     {
       /* Make a new namespace, binding the name to it. */
-      d = build_lang_decl (NAMESPACE_DECL, name, NULL_TREE);
+      d = build_lang_decl (NAMESPACE_DECL, name, void_type_node);
       /* The global namespace is not pushed, and the global binding
 	 level is set elsewhere.  */
       if (!global)

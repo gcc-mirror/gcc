@@ -274,6 +274,8 @@ incomplete_type_error (value, type)
   if (value != 0 && (TREE_CODE (value) == VAR_DECL
 		     || TREE_CODE (value) == PARM_DECL))
     cp_error ("`%D' has incomplete type", value);
+  else if (value && TREE_CODE (value) == NAMESPACE_DECL)
+    cp_error ("namespace `%D' used as expression", value);
   else
     {
     retry:

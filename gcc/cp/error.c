@@ -1191,6 +1191,7 @@ dump_expr (t, nop)
     case CONST_DECL:
     case FUNCTION_DECL:
     case TEMPLATE_DECL:
+    case NAMESPACE_DECL:
       dump_decl (t, -1);
       break;
 
