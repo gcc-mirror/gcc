@@ -1,3 +1,8 @@
+2005-02-18  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (constant_boolean_node): Always create values of the
+	specified type, don't bother calling truthvalue_conversion.
+
 2005-02-18  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* except.c (output_function_exception_table): Call
