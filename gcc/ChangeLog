@@ -1,3 +1,11 @@
+2002-04-18  Roger Sayle  <roger@eyesopen.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* fold-const.c (fold) [NOP_EXPR]: Convert (T)(x&c) into ((T)x&(T)c)
+	for integer constant c (if x has unsigned type or sign bit is not
+	set in c).  This folds the zero/sign extension into the bit-wise and
+	operation.
+
 2002-04-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/6205
