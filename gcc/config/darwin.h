@@ -493,7 +493,7 @@ do { text_section ();							\
        else if (!strncmp (xname, ".objc_class_name_", 17))		     \
 	 fprintf (FILE, "%s", xname);					     \
        else								     \
-         fprintf (FILE, "_%s", xname);					     \
+         asm_fprintf (FILE, "%U%s", xname);				     \
   } while (0)
 
 /* Output before executable code.  */

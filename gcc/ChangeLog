@@ -1,3 +1,9 @@
+2004-07-07  Mike Stump  <mrs@apple.com>
+
+	* darwin.h (ASM_OUTPUT_LABELREF): Fix -fno-leading-underscore.
+	* darwin.c (machopic_non_lazy_ptr_name, machopic_stub_name) 
+	(machopic_finish): Likewise.
+
 2004-07-07  Richard Henderson  <rth@redhat.com>
 
 	* tree-ssa-dom.c (simplify_switch_and_lookup_avail_expr): Look
