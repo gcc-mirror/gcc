@@ -1,5 +1,11 @@
 2004-05-21  Roger Sayle  <roger@eyesopen.com>
 
+	* io.c (check_format): As a GNU extension, allow the comma after a
+	string literal to be optional in a format.  Use gfc_notify_std to
+	issue an error/warning as appropriate.
+
+2004-05-21  Roger Sayle  <roger@eyesopen.com>
+
 	* io.c (check_format): Use gfc_notify_std to determine whether to
 	issue an error/warning for omitting the digits from the X format.
 

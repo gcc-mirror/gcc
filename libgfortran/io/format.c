@@ -543,7 +543,7 @@ format_item:
       tail->u.string.p = string;
       tail->u.string.length = value;
       tail->repeat = 1;
-      goto between_desc;
+      goto optional_comma;
 
     case FMT_S:
     case FMT_SS:
