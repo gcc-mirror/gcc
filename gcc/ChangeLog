@@ -1,5 +1,15 @@
 2003-10-11  Roger Sayle  <roger@eyesopen.com>
 
+	* builtins.c (expand_builtin_strcmp): Defend against the possibility
+	that gen_cmpstrsi may fail: Stabilize the argument list against
+	re-evaluation and expand the library call directly using this saved
+	argument list if a cmpstrsi sequence can't be generated.
+	(expand_builtin_strncmp): Likewise.
+
+	* config/i386/i386.md (cmpstrsi, movstrsi): Disable with -Os.
+
+2003-10-11  Roger Sayle  <roger@eyesopen.com>
+
 	PR optimization/12260
 	* simplify-rtx.c (simplify_unary_operation): Simplify all unary
 	operations through CONST nodes.  Optimize (neg (plus X C)) as

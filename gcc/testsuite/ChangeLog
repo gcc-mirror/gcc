@@ -1,5 +1,10 @@
 2003-10-11  Roger Sayle  <roger@eyesopen.com>
 
+	* gcc.c-torture/execute/string-opt-8.c: Don't test optimizations
+	that inline strncmp as cmpstrsi on i386 when compiled with -Os.
+
+2003-10-11  Roger Sayle  <roger@eyesopen.com>
+
 	PR optimization/12260
 	* gcc.c-torture/compile/20031011-2.c: New test case.
 

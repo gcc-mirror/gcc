@@ -65,7 +65,7 @@ int main ()
   s2 = s1; s3 = s1+4;
   if (strncmp (++s2, ++s3+2, 1) >= 0 || s2 != s1+1 || s3 != s1+5)
     abort();
-#if !defined(__OPTIMIZE__) || defined(__i386__)
+#if !defined(__OPTIMIZE__) || (defined(__i386__) && !defined(__OPTIMIZE_SIZE__))
   /* These tests work on platforms which support cmpstrsi.  We test it
      at -O0 on all platforms to ensure the strncmp logic is correct.  */
   s2 = s1;
