@@ -1,5 +1,10 @@
 2002-02-10  Richard Henderson  <rth@redhat.com>
 
+	PR c/5623
+	* c-typeck.c (incomplete_type_error): Handle flexible array members.
+
+2002-02-10  Richard Henderson  <rth@redhat.com>
+
 	PR c++/5624
 	* tree.c (append_random_chars): Don't abort if main_input_filename
 	does not exist.
