@@ -526,9 +526,14 @@ reload (first, global, dumpfile)
   cannot_omit_stores = (char *) alloca (max_regno);
   bzero (cannot_omit_stores, max_regno);
 
+#ifdef SMALL_REGISTER_CLASSES
+  CLEAR_HARD_REG_SET (forbidden_regs);
+#endif
+
   /* Look for REG_EQUIV notes; record what each pseudo is equivalent to.
-     Also find all paradoxical subregs
-     and find largest such for each pseudo.  */
+     Also find all paradoxical subregs and find largest such for each pseudo.
+     On machines with small register classes, record hard registers that
+     are used for user variables.  These can never be used for spills.  */
 
   for (insn = first; insn; insn = NEXT_INSN (insn))
     {
@@ -690,9 +695,7 @@ reload (first, global, dumpfile)
      rtl as a spill register.  But on some, we have to.  Those will have
      taken care to keep the life of hard regs as short as possible.  */
 
-#ifdef SMALL_REGISTER_CLASSES
-  CLEAR_HARD_REG_SET (forbidden_regs);
-#else
+#ifndef SMALL_REGISTER_CLASSES
   COPY_HARD_REG_SET (forbidden_regs, bad_spill_regs);
 #endif
 
@@ -2168,7 +2171,8 @@ new_spill_reg (i, class, max_needs, max_nongroups, global, dumpfile)
 
   if (fixed_regs[regno] || TEST_HARD_REG_BIT (forbidden_regs, regno))
     fatal ("fixed or forbidden register was spilled.\n\
-This may be due to a compiler bug or to impossible asm statements.");
+This may be due to a compiler bug or to impossible asm\n\
+statements or clauses.");
 
   /* Make reg REGNO an additional reload reg.  */
 
@@ -3406,7 +3410,9 @@ spill_hard_reg (regno, global, dumpfile, cant_eliminate)
   return something_changed;
 }
 
-/* Find all paradoxical subregs within X and update reg_max_ref_width.  */
+/* Find all paradoxical subregs within X and update reg_max_ref_width. 
+   Also mark any hard registers used to store user variables as
+   forbidden from being used for spill registers.  */
 
 static void
 scan_paradoxical_subregs (x)
@@ -3418,6 +3424,13 @@ scan_paradoxical_subregs (x)
 
   switch (code)
     {
+    case REG:
+#ifdef SMALL_REGISTER_CLASSES
+      if (REGNO (x) < FIRST_PSEUDO_REGISTER && REG_USERVAR_P (x))
+	SET_HARD_REG_BIT (forbidden_regs, REGNO (x));
+#endif
+      return;
+
     case CONST_INT:
     case CONST:
     case SYMBOL_REF:
@@ -3425,7 +3438,6 @@ scan_paradoxical_subregs (x)
     case CONST_DOUBLE:
     case CC0:
     case PC:
-    case REG:
     case USE:
     case CLOBBER:
       return;
