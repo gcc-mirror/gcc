@@ -1,5 +1,17 @@
 2003-05-15  Philip Blundell  <philb@gnu.org>
 
+	* config/arm/arm.c (arm_is_xscale): Rename to arm_arch_xscale.
+	All uses updated.
+	(arm_tune_xscale): New variable.
+	(arm_override_options): Set it.
+	(arm_adjust_cost): Use it in place of arm_arch_xscale.
+	(arm_gen_load_multiple): Likewise.
+	(arm_gen_store_multiple): Likewise.
+	* config/arm/arm.md (is_xscale): Likewise.
+	* config/arm/arm.h (arm_tune_xscale): Declare.
+
+2003-05-15  Philip Blundell  <philb@gnu.org>
+
 	PR target/10730
 	* config/arm/arm.c (adjacent_mem_locations): Reject offsets
 	involving invalid constants.

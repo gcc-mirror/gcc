@@ -610,7 +610,10 @@ extern int arm_is_strong;
 extern int arm_is_cirrus;
 
 /* Nonzero if this chip is an XScale.  */
-extern int arm_is_xscale;
+extern int arm_arch_xscale;
+
+/* Nonzero if tuning for XScale  */
+extern int arm_tune_xscale;
 
 /* Nonzero if this chip is an ARM6 or an ARM7.  */
 extern int arm_is_6_or_7;
@@ -728,7 +731,7 @@ extern int arm_is_6_or_7;
 #define BIGGEST_ALIGNMENT  32
 
 /* Make strings word-aligned so strcpy from constants will be faster.  */
-#define CONSTANT_ALIGNMENT_FACTOR (TARGET_THUMB || ! arm_is_xscale ? 1 : 2)
+#define CONSTANT_ALIGNMENT_FACTOR (TARGET_THUMB || ! arm_arch_xscale ? 1 : 2)
     
 #define CONSTANT_ALIGNMENT(EXP, ALIGN)				\
   ((TREE_CODE (EXP) == STRING_CST				\
@@ -2119,7 +2122,7 @@ do {							\
 #define MOVE_MAX 4
 
 #undef  MOVE_RATIO
-#define MOVE_RATIO (arm_is_xscale ? 4 : 2)
+#define MOVE_RATIO (arm_arch_xscale ? 4 : 2)
 
 /* Define if operations between registers always perform the operation
    on the full register even if a narrower mode is specified.  */
