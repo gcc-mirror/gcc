@@ -2915,7 +2915,11 @@ eliminate_regs (x, mem_mode, insn)
 		 smaller.  So leave the SUBREG then.  */
 	      && ! (GET_CODE (SUBREG_REG (x)) == REG
 		    && GET_MODE_SIZE (GET_MODE (x)) <= UNITS_PER_WORD
-		    && GET_MODE_SIZE (GET_MODE (new)) <= UNITS_PER_WORD)
+		    && GET_MODE_SIZE (GET_MODE (new)) <= UNITS_PER_WORD
+		    && (GET_MODE_SIZE (GET_MODE (x))
+			> GET_MODE_SIZE (GET_MODE (new)))
+		    && INTEGRAL_MODE_P (GET_MODE (new))
+		    && LOAD_EXTEND_OP (GET_MODE (new)) != NIL)
 #endif
 	      )
 	    {
