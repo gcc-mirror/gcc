@@ -1,5 +1,14 @@
 2003-10-30  Mohan Embar  <gnustuff@thisiscool.com>
 
+	* win32.cc: (dirExists) Internal helper function to
+	test for directory existence.
+	(getUserHome) New helper function refactored out
+	of _Jv_platform_initProperties. Uses USERPROFILE
+	instead of HOMEDIR and attempts to support Win9X and NT.
+	(_Jv_platform_initProperties) Use getUserHome.
+
+2003-10-30  Mohan Embar  <gnustuff@thisiscool.com>
+
 	PR libgcj/11521:
 	* gnu/java/net/natPlainSocketImplWin32.cc
 	(bind): Don't use SO_REUSEADDR

@@ -177,6 +177,43 @@ __mingwthr_key_dtor (DWORD, void (*) (void *))
   return 0;
 }
 
+static bool dirExists (const char* dir)
+{
+  DWORD dwAttrs = ::GetFileAttributes (dir);
+  return dwAttrs != 0xFFFFFFFF &&
+    (dwAttrs & FILE_ATTRIBUTE_DIRECTORY) != 0;
+}
+
+static void getUserHome(char* userHome, const char* userId)
+{
+  char* uh = ::getenv ("USERPROFILE");
+  if (uh)
+    {
+      strcpy(userHome, uh);
+    }
+  else
+    {
+      // Make a half-hearted attempt to support this
+      // legacy version of Windows. Try %WINDIR%\Profiles\%USERNAME%
+      // and failing this, use %WINDIR%.
+      //
+      // See:http://java.sun.com/docs/books/tutorial/security1.2/summary/files.html#UserPolicy
+      //
+      // To do this correctly, we'd have to factor in the
+      // Windows version, but if we did that, then this attempt
+      // wouldn't be half-hearted.
+      char userHomePath[MAX_PATH], winHome[MAX_PATH];
+      ::GetWindowsDirectory(winHome, MAX_PATH);
+        // assume this call always succeeds
+
+      sprintf(userHomePath, "%s\\Profiles\\%s", winHome, userId);
+      if (dirExists (userHomePath))
+        strcpy(userHome, userHomePath);
+      else
+        strcpy(userHome, winHome);
+    }
+}
+
 // Set platform-specific System properties.
 void
 _Jv_platform_initProperties (java::util::Properties* newprops)
@@ -205,37 +242,14 @@ _Jv_platform_initProperties (java::util::Properties* newprops)
 
   // Use GetUserName to set 'user.name'.
   buflen = 257;  // UNLEN + 1
-  buffer = (char *) _Jv_MallocUnchecked (buflen);
-  if (buffer != NULL)
-    {
-      if (GetUserName (buffer, &buflen))
-        SET ("user.name", buffer);
-      _Jv_Free (buffer);
-    }
+  char userName[buflen];
+  if (GetUserName (userName, &buflen))
+    SET ("user.name", userName);
 
-  // According to the api documentation for 'GetWindowsDirectory()', the
-  // environmental variable HOMEPATH always specifies the user's home
-  // directory or a default directory.  On the 3 windows machines I checked
-  // only 1 had it set.  If it's not set, JDK1.3.1 seems to set it to
-  // the windows directory, so we'll do the same.
-  char *userHome = NULL;
-  if ((userHome = ::getenv ("HOMEPATH")) == NULL )
-    {
-      // Check HOME since it's what I use.
-      if ((userHome = ::getenv ("HOME")) == NULL )
-        {
-          // Not found - use the windows directory like JDK1.3.1 does.
-          char *winHome = (char *) _Jv_MallocUnchecked (MAX_PATH);
-          if (winHome != NULL)
-            {
-              if (GetWindowsDirectory (winHome, MAX_PATH))
-        SET ("user.home", winHome);
-              _Jv_Free (winHome);
-            }
-        }
-     }
-  if (userHome != NULL)
-    SET ("user.home", userHome);
+  // Set user.home
+  char userHome[MAX_PATH];
+  getUserHome(userHome, userName);
+  SET ("user.home", userHome);
 
   // Get and set some OS info.
   OSVERSIONINFO osvi;
