@@ -1,3 +1,10 @@
+2001-11-05  Phil Edwards  <pme@gcc.gnu.org>
+
+	* porting.texi:  Move...
+	* docs/html/17_intro/porting.texi:  ...to here.
+	* docs/html/Makefile:  Add rule to rebuild...
+	* docs/html/17_intro/porting.html:  ...this.  New file.
+
 2001-11-05  Felix Natter  <fnatter@gmx.net>
 
 	* docs/html/17_intro/porting-howto.xml:  check in v0.9.4
