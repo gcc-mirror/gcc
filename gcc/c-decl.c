@@ -454,16 +454,13 @@ c_decode_option (argc, argv)
   static const struct {
       /* The name of the option.  */
       const char *option;
-      /* If non-NULL, a flag variable to set to 0 or 1.  If NULL,
-         this means that cpp handles this option.  */
+      /* A pointer to a flag variable to set to 0 or 1.  */
       int *flag;
   } warn_options[] = {
     /* This list is in alphabetical order.  Keep it like that.  */
     { "bad-function-cast", &warn_bad_function_cast },
     { "cast-qual", &warn_cast_qual },
     { "char-subscripts", &warn_char_subscripts },
-    { "comment", NULL },
-    { "comments", NULL },
     { "conversion", &warn_conversion },
     { "div-by-zero", &warn_div_by_zero },
     { "float-equal", &warn_float_equal },
@@ -474,7 +471,6 @@ c_decode_option (argc, argv)
     { "format-y2k", &warn_format_y2k },
     { "implicit-function-declaration", &mesg_implicit_function_declaration },
     { "implicit-int", &warn_implicit_int },
-    { "import", NULL },
     { "long-long", &warn_long_long },
     { "main", &warn_main },
     { "missing-braces", &warn_missing_braces },
@@ -492,8 +488,6 @@ c_decode_option (argc, argv)
     { "sign-compare", &warn_sign_compare },
     { "strict-prototypes", &warn_strict_prototypes },
     { "traditional", &warn_traditional },
-    { "trigraphs", NULL },
-    { "undef", NULL },
     { "write-strings", &flag_const_strings }
   };
 
@@ -694,7 +688,6 @@ c_decode_option (argc, argv)
       size_t i;
       for (i = 0; i < ARRAY_SIZE (warn_options); i++)
 	if (strncmp (p, "-W", 2) == 0 
-	    && warn_options[i].flag
 	    && (strcmp (p+2, warn_options[i].option) == 0
 		|| (strncmp (p+2, "no-", 3) == 0
 		    && strcmp (p+5, warn_options[i].option) == 0)))
