@@ -190,6 +190,22 @@ _lab1:	or	A1H,A1H	; look at dividend
 	adds	#1,A1
 	xor	#0x1,A2L; and toggle sign of result
 _lab2:	rts
+;; Basically the same, except that the sign of the divisor determines
+;; the sign.
+modnorm:
+	mov.b	#0x0,A2L
+	or	A0H,A0H		; is divisor > 0
+	bge	_lab7			
+	not	A0H		; no - then make it +ve
+	not	A0L
+	adds	#1,A0			
+	xor	#0x1,A2L	; and remember that in A2L
+_lab7:	or	A1H,A1H	; look at dividend
+	bge	_lab8		
+	not	A1H		; it is -ve, make it positive
+	not	A1L
+	adds	#1,A1
+_lab8:	rts
 
 ; A0=A0/A1 signed
 
@@ -208,7 +224,7 @@ _lab4:	rts
 
 	.global	___modhi3
 ___modhi3:
-	bsr	divnorm
+	bsr	modnorm
 	bsr	___udivhi3
 	mov	A3,A0
 	bra	negans
@@ -338,6 +354,39 @@ postive:
 postive2:
 	rts
 
+;; Basically the same, except that the sign of the divisor determines
+;; the sign.
+modnorm:
+	mov.b	#0,S2L		; keep the sign in S2
+	mov.b	A0H,A0H		; is the numerator -ve
+	bge	mpostive
+
+	; negate arg
+	not	A0H
+	not	A1H
+	not	A0L
+	not	A1L
+
+	add	#1,A1L
+	addx	#0,A1H
+	addx	#0,A0H
+	addx	#0,A0L
+
+	mov.b	#1,S2L		; the sign will be -ve
+mpostive:
+	mov.b	A2H,A2H		; is the denominator -ve
+	bge	mpostive2
+	not	A2L		
+	not	A2H
+	not	A3L
+	not	A3H
+	add.b	#1,A3L	
+	addx	#0,A3H
+	addx	#0,A2L
+	addx	#0,A2H
+mpostive2:
+	rts
+
 #else /* __H8300H__ */
 
 divnorm:
@@ -358,6 +407,25 @@ postive:
 postive2:
 	rts
 
+;; Basically the same, except that the sign of the divisor determines
+;; the sign.
+modnorm:
+	mov.b	#0,S2L		; keep the sign in S2
+	mov.l	A0P,A0P		; is the numerator -ve
+	bge	mpostive
+
+	neg.l	A0P		; negate arg
+	mov.b	#1,S2L		; the sign will be -ve
+
+mpostive:
+	mov.l	A1P,A1P		; is the denominator -ve
+	bge	mpostive2
+
+	neg.l	A1P		; negate arg
+
+mpostive2:
+	rts
+
 #endif
 
 ; numerator in A0/A1
@@ -368,7 +436,7 @@ ___modsi3:
 	PUSHP	S0P
 	PUSHP	S1P
 
-	bsr	divnorm
+	bsr	modnorm
 	bsr	divmodsi4
 #ifdef __H8300__
 	mov	S0,A0
