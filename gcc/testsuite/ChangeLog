@@ -1,6 +1,6 @@
 2003-04-09  Mike Stump  <mrs@apple.com>
 
-	* 
+	* gcc.dg/pch/pch.exp: Make testcase names longer.
 
 2003-04-08  Roger Sayle  <roger@eyesopen.com>
 
