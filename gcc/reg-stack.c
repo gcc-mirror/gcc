@@ -1,5 +1,5 @@
 /* Register to Stack convert for GNU compiler.
-   Copyright (C) 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1062,7 +1062,7 @@ record_reg_life_pat (pat, src, dest, douse)
   register int i;
 
   if (STACK_REG_P (pat)
-      || GET_CODE (pat) == SUBREG && STACK_REG_P (SUBREG_REG (pat)))
+      || (GET_CODE (pat) == SUBREG && STACK_REG_P (SUBREG_REG (pat))))
     {
       if (src)
 	 mark_regs_pat (pat, src);
