@@ -79,3 +79,20 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
     -DM_COFF -DM_BITFIELDS -DM_WORDSWAP \
     %{scointl:-D_M_INTERNAT -DM_INTERNAT} \
     %{traditional:-D_KR -D_SVID -D_NO_PROTOTYPE}}}}"
+
+/* Assembler bugs are suspected in floating constants.
+   So output them as hex.  */
+
+#undef ASM_OUTPUT_DOUBLE
+#define ASM_OUTPUT_DOUBLE(FILE,VALUE)  \
+do { long l[2];						\
+     REAL_VALUE_TO_TARGET_DOUBLE (VALUE, l);		\
+     fprintf (FILE, "%s 0x%x,0x%x\n", ASM_LONG, l[0], l[1]); \
+   } while (0)
+
+#undef ASM_OUTPUT_FLOAT
+#define ASM_OUTPUT_FLOAT(FILE,VALUE)  \
+do { long l;					\
+     REAL_VALUE_TO_TARGET_SINGLE (VALUE, l);	\
+     fprintf ((FILE), "%s 0x%x\n", ASM_LONG, l);	\
+   } while (0)
