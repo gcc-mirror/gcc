@@ -1,7 +1,13 @@
 2004-01-26  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
+	* config/c4x/c4x.c (c4x_valid_operands): More aggressively reject
+	invalid operand combinations.
+
+2004-01-26  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
 	* config/c4x/c4x.c (c4x_check_legit_addr): Rename to
 	c4x_legitimate_address_p.  Fix post_modify check.
+
 	* config/c4x/c4x-protos.h (c4x_check_legit_addr): Adjust.
 	* config/c4x/c4x.h (c4x_check_legit_addr): Adjust.
 	
