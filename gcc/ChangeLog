@@ -1,3 +1,11 @@
+Sat Apr 18 18:30:22 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* i386.h (CPP_CPU_DEFAULT): Renamed to CPP_CPU_DEFAULT_SPEC.
+	Add missing -Dpentium* options.
+	(CPP_CPU_SPEC): Delete redundant definition.  Include cpp_cpu_default
+	instead of CPP_CPU_DEFAULT.
+	(EXTRA_SPECS): Add entry for cpp_cpu_default.
+
 Sat Apr 18 19:06:59 1998  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* rs6000.md (floatsidf2_loadaddr): rs6000_fpmem_offset will be
