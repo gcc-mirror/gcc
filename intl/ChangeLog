@@ -1,3 +1,7 @@
+2004-09-22  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* .cvsignore: Ignore autom4te.cache
+
 2004-04-25  Paolo Bonzini  <bonzini@gnu.org>
 
         * configure.ac: Point config.intl to the parent directory of
