@@ -8969,9 +8969,8 @@ output_get_cpu_unit_code_func (void)
   int i;
   unit_decl_t *units;
 
-  fprintf (output_file, "int\n%s (%s)\n\tconst char *%s;\n",
-	   GET_CPU_UNIT_CODE_FUNC_NAME, CPU_UNIT_NAME_PARAMETER_NAME,
-	   CPU_UNIT_NAME_PARAMETER_NAME);
+  fprintf (output_file, "int\n%s (const char *%s)\n",
+	   GET_CPU_UNIT_CODE_FUNC_NAME, CPU_UNIT_NAME_PARAMETER_NAME);
   fprintf (output_file, "{\n  struct %s {const char *%s; int %s;};\n",
 	   NAME_CODE_STRUCT_NAME, NAME_MEMBER_NAME, CODE_MEMBER_NAME);
   fprintf (output_file, "  int %s, %s, %s, %s;\n", CMP_VARIABLE_NAME,
@@ -9018,9 +9017,9 @@ output_cpu_unit_reservation_p (void)
 {
   automaton_t automaton;
 
-  fprintf (output_file, "int\n%s (%s, %s)\n\t%s %s;\n\tint %s;\n",
-	   CPU_UNIT_RESERVATION_P_FUNC_NAME, STATE_NAME,
-	   CPU_CODE_PARAMETER_NAME, STATE_TYPE_NAME, STATE_NAME,
+  fprintf (output_file, "int\n%s (%s %s, int %s)\n",
+	   CPU_UNIT_RESERVATION_P_FUNC_NAME,
+	   STATE_TYPE_NAME, STATE_NAME,
 	   CPU_CODE_PARAMETER_NAME);
   fprintf (output_file, "{\n  gcc_assert (%s >= 0 && %s < %d);\n",
 	   CPU_CODE_PARAMETER_NAME, CPU_CODE_PARAMETER_NAME,
