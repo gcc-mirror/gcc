@@ -1,3 +1,9 @@
+2003-06-04  Roger Sayle  <roger@eyesopen.com>
+
+	* calls.c (expand_call): Avoid calling pure or const functions
+	when the result is ignored (or void) and none of the arguments
+	are volatile.  Move warning diagnostic earlier in function.
+
 2003-06-04  Andreas Jaeger  <aj@suse.de>
 
 	* system.h: Do not poison TDESC_SECTION_ASM_OP,
@@ -15,7 +21,8 @@
 	* cse.c: Include params.h.
 	(PATHLENGTH): Removed.
 	(struct cse_basic_block_data): Make path array dynamic.
-	(cse_end_of_basic_block): Use PARAM_MAX_CSE_PATH_LENGTH instead of PATHLENGTH.
+	(cse_end_of_basic_block): Use PARAM_MAX_CSE_PATH_LENGTH instead
+	of PATHLENGTH.
 	(cse_main, cse_basic_block): Allocate path array.
 	* params.def (PARAM_MAX_CSE_PATH_LENGTH): New.
 
