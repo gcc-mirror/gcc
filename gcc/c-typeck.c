@@ -5384,6 +5384,14 @@ push_init_level (implicit)
       constructor_unfilled_fields = constructor_fields;
       constructor_bit_index = bitsize_zero_node;
     }
+  else if (TREE_CODE (constructor_type) == VECTOR_TYPE)
+    {
+      /* Vectors are like simple fixed-size arrays.  */
+      constructor_max_index =
+	build_int_2 (TYPE_VECTOR_SUBPARTS (constructor_type) - 1, 0);
+      constructor_index = convert (bitsizetype, integer_zero_node);
+      constructor_unfilled_index = constructor_index;
+    }
   else if (TREE_CODE (constructor_type) == ARRAY_TYPE)
     {
       if (TYPE_DOMAIN (constructor_type))
