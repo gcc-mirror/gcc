@@ -1,5 +1,33 @@
 2003-10-12  Michael Koch  <konqueror@gmx.de>
 
+	* javax/swing/event/AncestorListener.java,
+	javax/swing/event/CaretListener.java,
+	javax/swing/event/CellEditorListener.java,
+	javax/swing/event/ChangeListener.java,
+	javax/swing/event/DocumentEvent.java,
+	javax/swing/event/DocumentListener.java,
+	javax/swing/event/HyperlinkListener.java,
+	javax/swing/event/InternalFrameListener.java,
+	javax/swing/event/ListDataListener.java,
+	javax/swing/event/ListSelectionListener.java,
+	javax/swing/event/MenuDragMouseListener.java,
+	javax/swing/event/MenuKeyListener.java,
+	javax/swing/event/MenuListener.java,
+	javax/swing/event/MouseInputListener.java,
+	javax/swing/event/PopupMenuListener.java,
+	javax/swing/event/TableColumnModelListener.java,
+	javax/swing/event/TableModelListener.java,
+	javax/swing/event/TreeExpansionListener.java,
+	javax/swing/event/TreeModelListener.java,
+	javax/swing/event/TreeSelectionListener.java,
+	javax/swing/event/TreeWillExpandListener.java,
+	javax/swing/event/UndoableEditListener.java,
+	javax/swing/plaf/UIResource.java,
+	javax/swing/plaf/metal/MetalLookAndFeel.java:
+	Removed redundant modifiers.
+
+2003-10-12  Michael Koch  <konqueror@gmx.de>
+
 	* javax/swing/Action.java,
 	javax/swing/BoundedRangeModel.java,
 	javax/swing/CellEditor.java,

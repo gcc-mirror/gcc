@@ -51,19 +51,19 @@ public interface AncestorListener extends EventListener {
 	 * Ancestor Added
 	 * @param event Ancestor Event
 	 */
-	public void ancestorAdded(AncestorEvent event);
+	void ancestorAdded(AncestorEvent event);
 
 	/**
 	 * Ancestor Removed
 	 * @param event Ancestor Event
 	 */
-	public void ancestorRemoved(AncestorEvent event);
+	void ancestorRemoved(AncestorEvent event);
 
 	/**
 	 * Ancestor Moved
 	 * @param event Ancestor Event
 	 */
-	public void ancestorMoved(AncestorEvent event);
+	void ancestorMoved(AncestorEvent event);
 
 
 } // AncestorListener

@@ -41,7 +41,7 @@ package javax.swing.event;
 import java.util.EventListener;
 
 /**
- * CellEditorListener interface
+ * CellEditorListener public interface
  * @author Andrew Selkirk
  */
 public interface CellEditorListener extends EventListener {
@@ -50,13 +50,13 @@ public interface CellEditorListener extends EventListener {
 	 * Editing has been canceled
 	 * @param event Change Event
 	 */
-	public void editingCanceled(ChangeEvent event);
+	void editingCanceled(ChangeEvent event);
 
 	/**
 	 * Editing has been stopped
 	 * @param event Change Event
 	 */
-	public void editingStopped(ChangeEvent event);
+	void editingStopped(ChangeEvent event);
 
 
 } // CellEditorListener

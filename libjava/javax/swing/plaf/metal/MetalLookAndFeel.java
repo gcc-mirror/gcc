@@ -66,4 +66,4 @@ public class MetalLookAndFeel extends BasicLookAndFeel
 	     //      Returns the default values for this look and feel. 
 	     return LAF_defaults;
 	 }
- };
+ }

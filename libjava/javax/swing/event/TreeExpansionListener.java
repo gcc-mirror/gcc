@@ -41,7 +41,7 @@ package javax.swing.event;
 import java.util.EventListener;
 
 /**
- * TreeExpansionListener interface
+ * TreeExpansionListener public interface
  * @author Andrew Selkirk
  */
 public interface TreeExpansionListener extends EventListener {
@@ -50,13 +50,13 @@ public interface TreeExpansionListener extends EventListener {
 	 * Tree collapsed
 	 * @param event Tree Expansion Event
 	 */
-	public void treeCollapsed(TreeExpansionEvent event);
+	void treeCollapsed(TreeExpansionEvent event);
 
 	/**
 	 * Tree expanded
 	 * @param event Tree Expansion Event
 	 */
-	public void treeExpanded(TreeExpansionEvent event);
+	void treeExpanded(TreeExpansionEvent event);
 
 
 } // TreeExpansionListener

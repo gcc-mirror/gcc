@@ -41,7 +41,7 @@ package javax.swing.event;
 import java.util.EventListener;
 
 /**
- * TreeSelectionListener interface
+ * TreeSelectionListener public interface
  * @author Andrew Selkirk
  */
 public interface TreeSelectionListener extends EventListener {
@@ -50,7 +50,7 @@ public interface TreeSelectionListener extends EventListener {
 	 * Value changed
 	 * @param event Tree Selection Event
 	 */
-	public void valueChanged(TreeSelectionEvent event);
+	void valueChanged(TreeSelectionEvent event);
 
 
 } // TreeSelectionListener
