@@ -305,7 +305,7 @@ override_options ()
     }
 }
 
-/* Return non-zero only if OP is a register of mode MODE,
+/* Return nonzero only if OP is a register of mode MODE,
    or CONST0_RTX.  */
 int
 reg_or_0_operand (op, mode)
@@ -315,7 +315,7 @@ reg_or_0_operand (op, mode)
   return (op == CONST0_RTX (mode) || register_operand (op, mode));
 }
 
-/* Return non-zero if OP is suitable for use in a call to a named
+/* Return nonzero if OP is suitable for use in a call to a named
    function.
 
    For 2.5 try to eliminate either call_operand_address or

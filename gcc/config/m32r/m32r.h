@@ -185,7 +185,7 @@ Boston, MA 02111-1307, USA.  */
 
 extern int target_flags;
 
-/* If non-zero, tell the linker to do relaxing.
+/* If nonzero, tell the linker to do relaxing.
    We don't do anything with the option, other than recognize it.
    LINK_SPEC handles passing -relax to the linker.
    This can cause incorrect debugging information as line numbers may
@@ -972,7 +972,7 @@ M32R_STACK_ALIGN (current_function_outgoing_args_size)
  { ARG_POINTER_REGNUM,	 STACK_POINTER_REGNUM },	\
  { ARG_POINTER_REGNUM,   FRAME_POINTER_REGNUM }}
 
-/* A C expression that returns non-zero if the compiler is allowed to
+/* A C expression that returns nonzero if the compiler is allowed to
    try to replace register number FROM-REG with register number
    TO-REG.  This macro need only be defined if `ELIMINABLE_REGS' is
    defined, and will usually be the constant 1, since most of the
@@ -1414,7 +1414,7 @@ do {									\
 
 /* Condition code usage.  */
 
-/* Return non-zero if SELECT_CC_MODE will never return MODE for a
+/* Return nonzero if SELECT_CC_MODE will never return MODE for a
    floating point inequality comparison.  */
 #define REVERSIBLE_CC_MODE(MODE) 1 /*???*/
 

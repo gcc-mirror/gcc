@@ -32,7 +32,7 @@ Boston, MA 02111-1307, USA.  */
   {ARG_POINTER_REGNUM,	 FRAME_POINTER_REGNUM},				\
 }
 
-/* A C expression that returns non-zero if the compiler is allowed to try to
+/* A C expression that returns nonzero if the compiler is allowed to try to
    replace register number FROM with register number TO.  The frame pointer
    is automatically handled.  */
 

@@ -92,7 +92,7 @@ int rs6000_fprs = 1;
 /* String from -misel=.  */
 const char *rs6000_isel_string;
 
-/* Set to non-zero once AIX common-mode calls have been defined.  */
+/* Set to nonzero once AIX common-mode calls have been defined.  */
 static int common_mode_defined;
 
 /* Private copy of original value of flag_pic for ABI_AIX.  */
@@ -822,7 +822,7 @@ rs6000_file_start (file, default_cpu)
     }
 }
 
-/* Return non-zero if this function is known to have a null epilogue.  */
+/* Return nonzero if this function is known to have a null epilogue.  */
 
 int
 direct_return ()
@@ -8348,7 +8348,7 @@ rs6000_emit_cbranch (code, loc)
    condition code register and its mode specifies what kind of
    comparison we made.
 
-   REVERSED is non-zero if we should reverse the sense of the comparison.
+   REVERSED is nonzero if we should reverse the sense of the comparison.
 
    INSN is the insn.  */
 

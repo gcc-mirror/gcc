@@ -1,3 +1,29 @@
+2002-09-20  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/m32r/m32r.c: Follow spelling conventions.
+	* config/m32r/m32r.h: Likewise.
+	* config/m32r/m32r.md: Likewise.
+	* config/m68k/m68k.c: Likewise.
+	* config/m88k/m88k.c: Likewise.
+	* config/mcore/mcore.c: Likewise.
+	* config/mips/mips.c: Likewise.
+	* config/mips/mips.h: Likewise.
+	* config/mmix/mmix.c: Likewise.
+	* config/mn10200/mn10200.c: Likewise.
+	* config/ns32k/ns32k.h: Likewise.
+	* config/pa/pa.c: Likewise.
+	* config/pa/pa64-linux.h: Likewise.
+	* config/pdp11/pdp11.h: Likewise.
+	* config/romp/romp.c: Likewise.
+	* config/romp/romp.h: Likewise.
+	* config/rs6000/eabi.asm: Likewise.
+	* config/rs6000/linux64.h: Likewise.
+	* config/rs6000/rs6000.c: Likewise.
+	* config/rs6000/rs6000.h: Likewise.
+	* config/rs6000/rs6000.md: Likewise.
+	* config/rs6000/sysv4.h: Likewise.
+	* config/rs6000/xcoff.h: Likewise.
+
 2002-09-20  Jim Wilson  <wilson@redhat.com>
 
 	* config/v850/v850/lib1funcs.asm (__muldi3): Change r5 to r28.

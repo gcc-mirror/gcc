@@ -229,7 +229,7 @@ update_cc (body, insn)
       break;
 
     case CC_TBIT:
-      /* Insn sets T bit if result is non-zero.  Next insn must be branch.  */
+      /* Insn sets T bit if result is nonzero.  Next insn must be branch.  */
       CC_STATUS_INIT;
       cc_status.flags = CC_IN_TB | CC_NOT_NEGATIVE;
       break;
@@ -389,7 +389,7 @@ current_function_operand (op, mode)
 	  && ! strcmp (current_function_name, XSTR (op, 0)));
 }
 
-/* Return non-zero if this function is known to have a null epilogue.  */
+/* Return nonzero if this function is known to have a null epilogue.  */
 
 int
 null_epilogue ()
@@ -786,7 +786,7 @@ print_operand (file, x, code)
       break;
 
     case 'Z':
-      /* Upper or lower half, depending on which is non-zero or not
+      /* Upper or lower half, depending on which is nonzero or not
 	 all ones.  Must be consistent with 'z' above.  */
       if (GET_CODE (x) != CONST_INT)
 	output_operand_lossage ("invalid %%Z value");
@@ -1032,7 +1032,7 @@ romp_sa_size ()
   return size * 4;
 }
 
-/* Return non-zero if this function makes calls or has fp operations
+/* Return nonzero if this function makes calls or has fp operations
    (which are really calls).  */
 
 int
@@ -1059,7 +1059,7 @@ romp_makes_calls ()
   return 0;
 }
 
-/* Return non-zero if this function will use r14 as a pointer to its
+/* Return nonzero if this function will use r14 as a pointer to its
    constant pool.  */
 
 int
@@ -1071,7 +1071,7 @@ romp_using_r14 ()
 	  || get_pool_size () != 0 || romp_makes_calls ());
 }
 
-/* Return non-zero if this function needs to push space on the stack.  */
+/* Return nonzero if this function needs to push space on the stack.  */
 
 int
 romp_pushes_stack ()

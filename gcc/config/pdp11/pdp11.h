@@ -508,7 +508,7 @@ loading is easier into LOAD_FPU_REGS than FPU_REGS! */
 extern int current_first_parm_offset;
 
 /* Offset of first parameter from the argument pointer register value.  
-   For the pdp11, this is non-zero to account for the return address.
+   For the pdp11, this is nonzero to account for the return address.
 	1 - return address
 	2 - frame pointer (always saved, even when not used!!!!)
 		-- chnage some day !!!:q!

@@ -139,7 +139,7 @@ FUNC_START(__eabi)
 	addi	11,11,.LCTOC1@l
 	cmplwi	2,9,0				/* init flag != 0? */
 	bnelr	2				/* return now, if we've been called already */
-	stw	1,.Linit_p@l(10)		/* store a non-zero value in the done flag */
+	stw	1,.Linit_p@l(10)		/* store a nonzero value in the done flag */
 
 #else /* -mrelocatable */
 	mflr	0
@@ -155,7 +155,7 @@ FUNC_START(__eabi)
 	cmplwi	2,9,0				/* init flag != 0? */
 	mtlr	0				/* restore in case branch was taken */
 	bnelr	2				/* return now, if we've been called already */
-	stwx	1,10,12				/* store a non-zero value in the done flag */
+	stwx	1,10,12				/* store a nonzero value in the done flag */
 	beq+	0,.Lsdata			/* skip if we don't need to relocate */
 
 /* We need to relocate the .got2 pointers.  */
