@@ -1,3 +1,8 @@
+Fri Dec 12 01:19:48 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* except.c (call_get_eh_context): Don't mess with sequences.
+	(emit_eh_context): Include the call in the sequence here.
+
 1997-12-11  Paul Eggert  <eggert@twinsun.com>
 
 	* collect2.c (write_c_file_glob): Allocate initial frame object

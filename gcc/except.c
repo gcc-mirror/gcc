@@ -707,15 +707,13 @@ add_partial_entry (handler)
   pop_obstacks ();
 }
 
-/* Emit code to get EH context to current function.  Should only be used
-   by emit_eh_context.  */
+/* Emit code to get EH context to current function.  */
 
 static rtx
 call_get_eh_context ()
 {
   static tree fn;
   tree expr;
-  rtx ehc, reg, insns;
 
   if (fn == NULL_TREE)
     {
@@ -741,16 +739,7 @@ call_get_eh_context ()
 		expr, NULL_TREE, NULL_TREE);
   TREE_SIDE_EFFECTS (expr) = 1;
 
-  start_sequence ();
-  ehc = expand_expr (expr, NULL_RTX, VOIDmode, 0);
-  reg = copy_to_reg (ehc);
-
-  insns = get_insns ();
-  end_sequence ();
-
-  emit_insns_before (insns, get_first_nonparm_insn ());
-
-  return reg;
+  return copy_to_reg (expand_expr (expr, NULL_RTX, VOIDmode, 0));
 }
 
 /* Get a reference to the EH context.
@@ -1678,11 +1667,12 @@ emit_eh_context ()
 	  {
 	    rtx insns;
 	    
-	    /* If this is the first use insn, emit the call. */
+	    start_sequence ();
+
+	    /* If this is the first use insn, emit the call here. */
 	    if (ehc == 0)
 	      ehc = call_get_eh_context ();
 
-	    start_sequence ();
 	    emit_move_insn (XEXP (reg, 0), ehc);
 	    insns = get_insns ();
 	    end_sequence ();
