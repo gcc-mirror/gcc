@@ -1,2 +1,2 @@
 private void KeepInline.example()
-public static void KeepInline.main([Ljava.lang.String;)
+public static void KeepInline.main(java.lang.String[])
