@@ -3002,7 +3002,6 @@ rest_of_compilation (decl)
       /* If we are not running more CSE passes, then we are no longer
 	 expecting CSE to be run.  But always rerun it in a cheap mode.  */
       cse_not_expected = !flag_rerun_cse_after_loop && !flag_gcse;
-      flag_cse_skip_blocks = flag_cse_follow_jumps = 0;
 
       if (tem || optimize > 1)
 	{
@@ -3101,6 +3100,7 @@ rest_of_compilation (decl)
 
   if (optimize > 0 && flag_gcse)
     {
+      int save_csb, save_cfj;
       int tem2 = 0;
 
       timevar_push (TV_GCSE);
@@ -3109,6 +3109,10 @@ rest_of_compilation (decl)
       find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
       cleanup_cfg (insns);
       tem = gcse_main (insns, rtl_dump_file);
+
+      save_csb = flag_cse_skip_blocks;
+      save_cfj = flag_cse_follow_jumps;
+      flag_cse_skip_blocks = flag_cse_follow_jumps = 0;
 
       /* If -fexpensive-optimizations, re-run CSE to clean up things done
 	 by gcse.  */
@@ -3144,7 +3148,9 @@ rest_of_compilation (decl)
       timevar_pop (TV_GCSE);
 
       ggc_collect ();
-    }
+      flag_cse_skip_blocks = save_csb;
+      flag_cse_follow_jumps = save_cfj;
+     }
 
   /* Move constant computations out of loops.  */
 
