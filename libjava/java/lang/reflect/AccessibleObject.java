@@ -133,7 +133,7 @@ public class AccessibleObject
    *
    * @throws SecurityException if permission is denied
    */
-  private static final void checkPermission()
+  private static void checkPermission()
   {
     SecurityManager sm = System.getSecurityManager();
     if (sm != null)
@@ -148,7 +148,7 @@ public class AccessibleObject
    * @throws SecurityException if flag is true and this is a constructor
    * for <code>java.lang.Class</code>.
    */
-  private final void secureSetAccessible(boolean flag)
+  private void secureSetAccessible(boolean flag)
   {
     if (flag &&
         (this instanceof Constructor

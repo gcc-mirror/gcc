@@ -1,3 +1,23 @@
+2004-10-18  Michael Koch  <konqueror@gmx.de>
+
+	* java/lang/reflect/Proxy.java: Improved javadocs.
+
+2004-10-18  Michael Koch  <konqueror@gmx.de>
+
+	* java/lang/reflect/AccessibleObject.java
+	(checkPermission): Removed redundant final modifier.
+	(secureSetAccessible): Likewise.
+	* java/lang/reflect/Proxy.java:
+	Reworked import statements.
+	(generate): Removed redundant final modifier.
+	* java/lang/reflect/ReflectPermission.java:
+	Reorder package declaration and import statement.
+
+2004-10-18  Jeroen Frijters  <jeroen@frijters.net>
+
+	* java/lang/reflect/Proxy.java
+	(count): Removed useless initializer.
+
 2004-10-17  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/BindException.java,
