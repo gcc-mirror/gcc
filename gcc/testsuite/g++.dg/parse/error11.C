@@ -50,4 +50,4 @@ template struct Foo<::B>; // { dg-error "cannot begin|alternate spelling" }
 
 // On the first error message, an additional note about the use of 
 //  -fpermissive should be present
-// { dg-error "-fpermissive" "" { target *-*-* } 18 }
+// { dg-error "-fpermissive" "-fpermissive" { target *-*-* } 18 }

@@ -12,4 +12,4 @@ template <class T> struct S {
 };
 
 // Additional notes on the same line are allowed
-// { dg-error "" "" { target *-*-* } 10 }
+// { dg-error "" "additional" { target *-*-* } 10 }
