@@ -1,3 +1,7 @@
+Mon Apr 12 00:57:10 1999 Theodore Papadopoulo <Theodore.Papadopoulo@sophia.inria.fr> 
+
+	* integrate.c (INTEGRATE_THRESHOLD): Sync it with the comment.
+
 Sun Apr 11 10:24:18 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* rtl.h (rtx_def): Update documentation for jump and call.
