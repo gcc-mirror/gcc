@@ -1,3 +1,8 @@
+1999-05-21  Mark Mitchell  <mark@codesourcery.com>
+
+	* typeck.c (build_ptrmemfunc): Handle PTRMEM_CSTs carefully to
+	reveal optimization opportunities.
+
 1999-05-20  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (grokdeclarator): Don't treat [] as indicating a
