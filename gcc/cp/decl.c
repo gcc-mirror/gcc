@@ -3938,7 +3938,9 @@ pushdecl (x)
 	  if (oldlocal)
 	    {
 	      tree d = oldlocal;
-	      while (oldlocal && DECL_DEAD_FOR_LOCAL (oldlocal))
+	      while (oldlocal
+		     && TREE_CODE (oldlocal) == VAR_DECL
+		     && DECL_DEAD_FOR_LOCAL (oldlocal))
 		{
 		  oldlocal = DECL_SHADOWED_FOR_VAR (oldlocal);
 		}
