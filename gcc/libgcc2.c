@@ -1,6 +1,6 @@
 /* More subroutines needed by GCC output code on some machines.  */
 /* Compile this one with gcc.  */
-/* Copyright (C) 1989, 1992 Free Software Foundation, Inc.
+/* Copyright (C) 1989, 1992, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1842,6 +1842,38 @@ __enable_execute_stack ()
   asm ("pich");
 }
 #endif /* __convex__ */
+
+#ifdef __DOLPHIN__
+
+/* Modified from the convex -code above. */
+
+#include <sys/param.h>
+#include <errno.h>
+#include <sys/m88kbcs.h>
+
+void
+__enable_execute_stack ()
+{
+  int save_errno;
+  static unsigned long lowest = USRSTACK;
+  unsigned long current = (unsigned long) &save_errno & -NBPC;
+  
+  /* Ignore errno being set. memctl sets errno to EINVAL whenever the
+     address is seen as 'negative'. That is the case with the stack.   */
+
+  save_errno=errno;
+  if (lowest > current)
+    {
+      unsigned len=lowest-current;
+      memctl(current,len,MCT_TEXT);
+      lowest = current;
+    }
+  else
+    memctl(current,NBPC,MCT_TEXT);
+  errno=save_errno;
+}
+
+#endif /* __DOLPHIN__ */
 
 #ifdef __pyr__
 
