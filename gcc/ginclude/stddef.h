@@ -13,6 +13,10 @@
 #define _ANSI_STDDEF_H
 #endif
 
+#ifndef __sys_stdtypes_h
+/* This avoids lossage on SunOS but only if stdtypes.h comes first.
+   There's no way to win with the other order!  Sun lossage.  */
+
 /* On 4.3bsd-net2, make sure ansi.h is included, so we have
    one less case to deal with in the following.  */
 #if defined (__BSD_NET2__) || defined (____386BSD____)
@@ -198,6 +202,8 @@ typedef __WCHAR_TYPE__ wchar_t;
 #undef _WCHAR_T_
 #endif
 #endif /* _ANSI_H_ */
+
+#endif /* __sys_stdtypes_h */
 
 /* A null pointer constant.  */
 
