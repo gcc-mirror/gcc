@@ -1,3 +1,8 @@
+2004-12-30  Steven Bosscher  <stevenb@suse.de>
+
+	* global.c (regclass_intersect): Remove.
+	(mark_reg_use_for_earlyclobber): Use reg_classes_intersect_p instead.
+
 2004-12-30  Richard Henderson  <rth@redhat.com>
 
 	* config/ia64/ia64.c (ia64_function_value): Use PARALLEL for 
