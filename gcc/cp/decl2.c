@@ -1794,15 +1794,10 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
   if (TREE_CODE (value) == FIELD_DECL)
     {
       if (asmspec)
-	{
-	  /* This must override the asm specifier which was placed
-	     by grokclassfn.  Lay this out fresh.  */
-	  DECL_RTL (value) = NULL_RTX;
-	  DECL_ASSEMBLER_NAME (value) = get_identifier (asmspec);
-	}
+	cp_error ("`asm' specifiers are not permitted on non-static data members");
       if (DECL_INITIAL (value) == error_mark_node)
 	init = error_mark_node;
-      cp_finish_decl (value, init, asmspec_tree, flags);
+      cp_finish_decl (value, init, NULL_TREE, flags);
       DECL_INITIAL (value) = init;
       DECL_IN_AGGR_P (value) = 1;
       return value;
