@@ -39,10 +39,9 @@ enum
 
   JV_STATE_PRELOADING = 1,	// Can do _Jv_FindClass.
   JV_STATE_LOADING = 3,		// Has super installed.
-  JV_STATE_LOADED = 5,		// Is complete.
-    
-  JV_STATE_COMPILED = 6,	// This was a compiled class.
+  JV_STATE_COMPILED = 5,	// This was a compiled class.
 
+  JV_STATE_LOADED = 6,		// Is complete.
   JV_STATE_PREPARED = 7,	// Layout & static init done.
   JV_STATE_LINKED = 9,		// Strings interned.
 

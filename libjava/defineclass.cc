@@ -336,6 +336,8 @@ _Jv_ClassReader::parse ()
 
   // tell everyone we're done.
   def->state = JV_STATE_LOADED;
+  if (gcj::verbose_class_flag)
+    fprintf (stderr, "[Loaded (bytecode) %s]\n", (const char*)(def->name->data));
   def->notifyAll ();
 
 }
