@@ -17,7 +17,7 @@ The standard class codecvt attempts to address conversions between
 different character encoding schemes. In particular, the standard
 attempts to detail conversions between the implementation-defined wide
 characters (hereafter referred to as wchar_t) and the standard type
-char that is so beloved in classic "C" (which can now be referred to
+char that is so beloved in classic &quot;C&quot; (which can now be referred to
 as narrow characters.)  This document attempts to describe how the GNU
 libstdc++-v3 implementation deals with the conversion between wide and
 narrow characters, and also presents a framework for dealing with the
@@ -42,7 +42,7 @@ The text around the codecvt definition gives some clues:
 
 <BLOCKQUOTE>
 <I>
--1- The class codecvt<internT,externT,stateT> is for use when
+-1- The class codecvt&lt;internT,externT,stateT&gt; is for use when
 converting from one codeset to another, such as from wide characters
 to multibyte characters, between wide character encodings such as
 Unicode and EUC. 
@@ -68,11 +68,11 @@ Ah ha! Another clue...
 <BLOCKQUOTE>
 <I>
 -3- The instantiations required in the Table ??
-(lib.locale.category), namely codecvt<wchar_t,char,mbstate_t> and
-codecvt<char,char,mbstate_t>, convert the implementation-defined
-native character set. codecvt<char,char,mbstate_t> implements a
+(lib.locale.category), namely codecvt&lt;wchar_t,char,mbstate_t&gt; and
+codecvt&lt;char,char,mbstate_t&gt;, convert the implementation-defined
+native character set. codecvt&lt;char,char,mbstate_t&gt; implements a
 degenerate conversion; it does not convert at
-all. codecvt<wchar_t,char,mbstate_t> converts between the native
+all. codecvt&lt;wchar_t,char,mbstate_t&gt; converts between the native
 character sets for tiny and wide characters. Instantiations on
 mbstate_t perform conversion between encodings known to the library
 implementor.  Other encodings can be converted by specializing on a
@@ -100,7 +100,7 @@ mcsrtombs and wcsrtombs in particular.</P>
 2. Some thoughts on what would be useful
 </H2>
 Probably the most frequently asked question about code conversion is:
-"So dudes, what's the deal with Unicode strings?" The dude part is
+&quot;So dudes, what's the deal with Unicode strings?&quot; The dude part is
 optional, but apparently the usefulness of Unicode strings is pretty
 widely appreciated. Sadly, this specific encoding (And other useful
 encodings like UTF8, UCS4, ISO 8859-10, etc etc etc) are not mentioned
@@ -168,7 +168,8 @@ UTF-16, UTF8, UTF16).
 
 <P>
 For iconv-based implementations, string literals for each of the
-encodings (ie. "UCS-2" and "UTF-8") are necessary, although for other,
+encodings (ie. &quot;UCS-2&quot; and &quot;UTF-8&quot;) are necessary,
+although for other,
 non-iconv implementations a table of enumerated values or some other
 mechanism may be required.
 
@@ -178,13 +179,13 @@ mechanism may be required.
 <LI>
  Some encodings are require explicit endian-ness. As such, some kind
   of endian marker or other byte-order marker will be necessary. See
-  "Footnotes for C/C++ developers" in Haible for more information on
+  &quot;Footnotes for C/C++ developers&quot; in Haible for more information on
   UCS-2/Unicode endian issues. (Summary: big endian seems most likely,
   however implementations, most notably Microsoft, vary.)
 
 <LI>
  Types representing the conversion state, for conversions involving
-  the machinery in the "C" library, or the conversion descriptor, for
+  the machinery in the &quot;C&quot; library, or the conversion descriptor, for
   conversions using iconv (such as the type iconv_t.)  Note that the
   conversion descriptor encodes more information than a simple encoding
   state type.
@@ -207,14 +208,14 @@ mechanism may be required.
 
 <P>
 <H2>
-3. Problems with "C" code conversions : thread safety, global locales,
-   termination.
+3. Problems with &quot;C&quot; code conversions : thread safety, global
+locales, termination.
 </H2>
 
 In addition, multi-threaded and multi-locale environments also impact
 the design and requirements for code conversions. In particular, they
-affect the required specialization codecvt<wchar_t, char, mbstate_t>
-when implemented using standard "C" functions.
+affect the required specialization codecvt&lt;wchar_t, char, mbstate_t&gt;
+when implemented using standard &quot;C&quot; functions.
 
 <P>
 Three problems arise, one big, one of medium importance, and one small. 
@@ -233,7 +234,7 @@ incorrect. Yikes!
 
 <P>
 The last, and fundamental problem, is the assumption of a global
-locale for all the "C" functions referenced above. For something like
+locale for all the &quot;C&quot; functions referenced above. For something like
 C++ iostreams (where codecvt is explicitly used) the notion of
 multiple locales is fundamental. In practice, most users may not run
 into this limitation. However, as a quality of implementation issue,
@@ -243,7 +244,7 @@ correct results. In short, libstdc++-v3 is trying to offer, as an
 option, a high-quality implementation, damn the additional complexity!
 
 <P>
-For the required specialization codecvt<wchar_t, char, mbstate_t> ,
+For the required specialization codecvt&lt;wchar_t, char, mbstate_t&gt; ,
 conversions are made between the internal character set (always UCS4
 on GNU/Linux) and whatever the currently selected locale for the
 LC_CTYPE category implements.
@@ -256,7 +257,7 @@ The two required specializations are implemented as follows:
 
 <P>
 <TT>
-codecvt&#60char, char, mbstate_t&#62
+codecvt&lt;char, char, mbstate_t&gt;
 </TT>
 <P>
 This is a degenerate (ie, does nothing) specialization. Implementing
@@ -264,7 +265,7 @@ this was a piece of cake.
 
 <P>
 <TT>
-codecvt&#60char, wchar_t, mbstate_t&#62
+codecvt&lt;char, wchar_t, mbstate_t&gt;
 </TT>
 <P>
 This specialization, by specifying all the template parameters, pretty
@@ -353,7 +354,7 @@ ready to convert and will return true.
 
 <P>
 <TT> 
-__enc_traits(const __enc_traits&)
+__enc_traits(const __enc_traits&amp;)
 </TT>
 <P>
 As iconv allocates memory and sets up conversion descriptors, the copy
@@ -363,8 +364,8 @@ themselves.
 
 <P>
 Definitions for all the required codecvt member functions are provided
-for this specialization, and usage of codecvt<internal character type,
-external character type, __enc_traits> is consistent with other
+for this specialization, and usage of codecvt&lt;internal character type,
+external character type, __enc_traits&gt; is consistent with other
 codecvt usage.
 
 <P>
@@ -379,7 +380,7 @@ a. conversions involving string literals
   typedef unicode_t				int_type;
   typedef char					ext_type;
   typedef __enc_traits				enc_type;
-  typedef codecvt<int_type, ext_type, enc_type>	unicode_codecvt;
+  typedef codecvt&lt;int_type, ext_type, enc_type&gt;	unicode_codecvt;
 
   const ext_type* 	e_lit = "black pearl jasmine tea";
   int 			size = strlen(e_lit);
@@ -399,8 +400,8 @@ a. conversions involving string literals
   // construct a locale object with the specialized facet.
   locale 		loc(locale::classic(), new unicode_codecvt);
   // sanity check the constructed locale has the specialized facet.
-  VERIFY( has_facet<unicode_codecvt>(loc) );
-  const unicode_codecvt&	cvt = use_facet<unicode_codecvt>(loc); 
+  VERIFY( has_facet&lt;unicode_codecvt&gt;(loc) );
+  const unicode_codecvt&amp; cvt = use_facet&lt;unicode_codecvt&gt;(loc); 
   // convert between const char* and unicode strings
   unicode_codecvt::state_type state01("UNICODE", "ISO_8859-1");
   initialize_state(state01);
@@ -454,7 +455,8 @@ codecvt_wchar_t_char.cc
 		standards-conformant manner?
 
 		<LI>
-		how to synchronize the "C" and "C++" conversion information?
+		how to synchronize the &quot;C&quot; and &quot;C++&quot;
+        conversion information?
 
 		<LI>
 		wchar_t/char internal buffers and conversions between
@@ -475,17 +477,17 @@ specialization hints, language clarification, and wchar_t fixes.
 8. Bibliography / Referenced Documents
 </H2>
 
-Drepper, Ulrich, GNU libc (glibc) 2.2 manual. In particular, Chapters "6. Character Set Handling" and "7 Locales and Internationalization"
+Drepper, Ulrich, GNU libc (glibc) 2.2 manual. In particular, Chapters &quot;6. Character Set Handling&quot; and &quot;7 Locales and Internationalization&quot;
 
 <P>
 Drepper, Ulrich, Numerous, late-night email correspondence
 
 <P>
-Feather, Clive, "A brief description of Normative Addendum 1," in particular the parts on Extended Character Sets
+Feather, Clive, &quot;A brief description of Normative Addendum 1,&quot; in particular the parts on Extended Character Sets
 http://www.lysator.liu.se/c/na1.html
 
 <P>
-Haible, Bruno, "The Unicode HOWTO" v0.18, 4 August 2000
+Haible, Bruno, &quot;The Unicode HOWTO&quot; v0.18, 4 August 2000
 ftp://ftp.ilog.fr/pub/Users/haible/utf8/Unicode-HOWTO.html
 
 <P>
@@ -495,7 +497,7 @@ ISO/IEC 14882:1998 Programming languages - C++
 ISO/IEC 9899:1999 Programming languages - C
 
 <P>
-Khun, Markus, "UTF-8 and Unicode FAQ for Unix/Linux"
+Khun, Markus, &quot;UTF-8 and Unicode FAQ for Unix/Linux&quot;
 http://www.cl.cam.ac.uk/~mgk25/unicode.html
 
 <P>
