@@ -1,3 +1,9 @@
+2003-08-04  Richard Sandiford  <rsandif@redhat.com>
+
+	* config/mips/mips.c (override_options): Disable -G on targets that
+	have no .section support.
+	(mips_select_section): Use default_select_section for such targets.
+
 2003-08-04  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* fixinc/inclhack.def (svr4_undeclared_getrnge): Introduce and enable.
