@@ -1551,7 +1551,7 @@ profile.o : profile.c $(CONFIG_H) system.h $(RTL_H) flags.h insn-flags.h \
    ggc.h
 loop.o : loop.c $(CONFIG_H) system.h $(RTL_H) flags.h loop.h insn-config.h \
    insn-flags.h $(REGS_H) hard-reg-set.h $(RECOG_H) $(EXPR_H) real.h \
-   function.h toplev.h varray.h except.h
+   $(BASIC_BLOCK_H) function.h toplev.h varray.h except.h
 unroll.o : unroll.c $(CONFIG_H) system.h $(RTL_H) insn-config.h function.h \
    integrate.h $(REGS_H) $(RECOG_H) flags.h $(EXPR_H) loop.h toplev.h varray.h
 flow.o : flow.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h insn-config.h \
