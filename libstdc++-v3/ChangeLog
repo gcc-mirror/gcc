@@ -1,3 +1,8 @@
+2004-04-24  Matthias Klose  <doko@debian.org>
+
+	Jonathan Wakely  <cow@compsoc.man.ac.uk>
+	* docs/html/configopts.html: Fix reference to allocator config option.
+
 2004-04-23  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* linkage.m4 (GLIBCXX_CHECK_MATH_SUPPORT): Check for libmx also.
