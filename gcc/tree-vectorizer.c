@@ -4763,6 +4763,23 @@ vect_analyze_pointer_ref_access (tree memref, tree stmt, bool is_read)
    memory tag (for aliasing purposes). 
    Also data reference structure DR is created.  
 
+   This function handles three kinds of MEMREF:
+
+   It is called from vect_analyze_data_refs with a MEMREF that is either an 
+   ARRAY_REF or an INDIRECT_REF (this is category 1 - "recursion begins"). 
+   It builds a DR for them using vect_get_base_and_bit_offset, and calls itself 
+   recursively to retrieve the relevant memtag for the MEMREF, "peeling" the 
+   MEMREF along the way. During the recursive calls, the function may be called 
+   with a MEMREF for which the recursion has to continue - PLUS_EXPR, 
+   MINUS_EXPR, INDIRECT_REF (category 2 - "recursion continues"), 
+   and/or with a MEMREF for which a memtag can be trivially obtained - VAR_DECL 
+   and SSA_NAME (this is category 3 - "recursion stop condition"). 
+
+   When the MEMREF falls into category 1 there is still no data reference struct 
+   (DR) available. It is created by this function, and then, along the recursion, 
+   MEMREF will fall into category 2 or 3, in which case a DR will have already 
+   been created, but the analysis continues to retrieve the MEMTAG.
+
    Input:
    MEMREF - data reference in STMT
    IS_READ - TRUE if STMT reads from MEMREF, FALSE if writes to MEMREF
@@ -4780,118 +4797,118 @@ vect_get_symbl_and_dr (tree memref, tree stmt, bool is_read,
   tree symbl, oprnd0, oprnd1;
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   tree offset;
-  tree array_base, base;
+  tree tag;
   struct data_reference *new_dr;
   bool base_aligned_p;
 
-  *dr = NULL;
-  switch (TREE_CODE (memref))
+  if (*dr)
     {
-    case INDIRECT_REF:
-      new_dr = vect_analyze_pointer_ref_access (memref, stmt, is_read);
-      if (! new_dr)
-	return NULL_TREE; 
-      *dr = new_dr;
-      symbl = DR_BASE_NAME (new_dr);
-      STMT_VINFO_VECT_DR_BASE (stmt_info) = symbl;
+      /* Category 3: recursion stop condition.  */
+      /* (1) A DR already exists. We only need to get the relevant memtag for
+	 MEMREF, the rest of the data was already initialized.  */
 
-      switch (TREE_CODE (symbl))
+      switch (TREE_CODE (memref))
 	{
+	  /* (1.1) Stop condition: find the relevant memtag and return.  */
+	case SSA_NAME:
+	  symbl = SSA_NAME_VAR (memref);
+	  tag = get_var_ann (symbl)->type_mem_tag;
+	  if (!tag)
+	    {
+	      tree ptr = TREE_OPERAND (DR_REF ((*dr)), 0);
+	      if (TREE_CODE (ptr) == SSA_NAME)
+		tag = get_var_ann (SSA_NAME_VAR (ptr))->type_mem_tag;
+	    }
+	  if (!tag)
+	    {
+	      if (vect_debug_details (NULL))
+		fprintf (dump_file, "not vectorized: no memtag for ref.");
+	      return NULL_TREE;
+	    }
+	  return tag;
+
+	case VAR_DECL:
+	case PARM_DECL:
+	  return memref;
+
+	  /* Category 2: recursion continues.  */
+	  /* (1.2) A recursive call to find the relevant memtag is required.  */
+	case INDIRECT_REF:
+	  symbl = TREE_OPERAND (memref, 0); 
+	  break; /* For recursive call.  */
+
+	case COMPONENT_REF:
+	  /* Could have recorded more accurate information - 
+	     i.e, the actual FIELD_DECL that is being referenced -
+	     but later passes expect VAR_DECL as the nmt.  */
+	  /* Fall through.  */
+	
+	case ADDR_EXPR:
+	  symbl = vect_get_base_and_bit_offset ((*dr), memref, NULL_TREE, 
+					loop_vinfo, &offset, &base_aligned_p);
+	  break; /* For recursive call.  */
+
 	case PLUS_EXPR:
 	case MINUS_EXPR:
-	  oprnd0 = TREE_OPERAND (symbl, 0);
-	  oprnd1 = TREE_OPERAND (symbl, 1);
-
-	  STRIP_NOPS(oprnd1);
-	  /* Only {address_base + offset} expressions are supported,  
-	     where address_base can be POINTER_TYPE or ARRAY_TYPE and 
-	     offset can be anything but POINTER_TYPE or ARRAY_TYPE.  
+	  /* Although DR exists, we have to call the function recursively to 
+	     build MEMTAG for such expression. This is handled below.  */
+	  oprnd0 = TREE_OPERAND (memref, 0);
+	  oprnd1 = TREE_OPERAND (memref, 1);
+      
+	  STRIP_NOPS (oprnd1); 
+	   /* Supported plus/minus expressions are of the form 
+	     {address_base + offset}, such that address_base is of type 
+	     POINTER/ARRAY, and offset is either an INTEGER_CST of type POINTER, 
+	     or it's not of type POINTER/ARRAY. 
 	     TODO: swap operands if {offset + address_base}.  */
 	  if ((TREE_CODE (TREE_TYPE (oprnd1)) == POINTER_TYPE 
 	       && TREE_CODE (oprnd1) != INTEGER_CST)
 	      || TREE_CODE (TREE_TYPE (oprnd1)) == ARRAY_TYPE)
 	    return NULL_TREE;
-
-	  if (TREE_CODE (TREE_TYPE (oprnd0)) == POINTER_TYPE)
-	    symbl = oprnd0;
-	  else
-	    symbl = vect_get_symbl_and_dr (oprnd0, stmt, is_read, 
-					   loop_vinfo, &new_dr); 
-
-	case SSA_NAME:
-	case ADDR_EXPR:
-	  /* symbl remains unchanged.  */
-	  break;
+      
+	  symbl = oprnd0;	 
+	  break; /* For recursive call.  */
 
 	default:
-	  if (vect_debug_details (NULL))
-	    {
-	      fprintf (dump_file, "unhandled data ref: ");
-	      print_generic_expr (dump_file, memref, TDF_SLIM);
-	      fprintf (dump_file, " (symbl ");
-	      print_generic_expr (dump_file, symbl, TDF_SLIM);
-	      fprintf (dump_file, ") in stmt  ");
-	      print_generic_expr (dump_file, stmt, TDF_SLIM);
-	    }
-	  return NULL_TREE;	
-	}
-      break;
-
-    case ARRAY_REF:
-      offset = size_zero_node;
-
-      /* Store the array base in the stmt info. 
-	 For one dimensional array ref a[i], the base is a,
-	 for multidimensional a[i1][i2]..[iN], the base is 
-	 a[i1][i2]..[iN-1].  */
-      array_base = TREE_OPERAND (memref, 0);
-      STMT_VINFO_VECT_DR_BASE (stmt_info) = array_base;	     
-
-      new_dr = analyze_array (stmt, memref, is_read);
-      *dr = new_dr;
-
-      /* Find the relevant symbol for aliasing purposes.  */	
-      base = DR_BASE_NAME (new_dr);
-      switch (TREE_CODE (base))	
-	{
-	case VAR_DECL:
-	  symbl = base;
-	  break;
-
-	case INDIRECT_REF:
-	  symbl = TREE_OPERAND (base, 0); 
-	  break;
-
-	case COMPONENT_REF:
-	  /* Could have recorded more accurate information - 
-	     i.e, the actual FIELD_DECL that is being referenced -
-	     but later passes expect VAR_DECL as the nmt.  */	
-	  symbl = vect_get_base_and_bit_offset (new_dr, base, NULL_TREE, 
-					loop_vinfo, &offset, &base_aligned_p);
-	  if (symbl)
-	    break;
-	  /* fall through */	
-	default:
-	  if (vect_debug_details (NULL))
-	    {
-	      fprintf (dump_file, "unhandled struct/class field access ");
-	      print_generic_expr (dump_file, stmt, TDF_SLIM);
-	    }
 	  return NULL_TREE;
 	}
-      break;
+    }  
+  else
+    {
+      /* Category 1: recursion begins.  */
+      /* (2) A DR does not exist yet and must be built, followed by a
+	 recursive call to get the relevant memtag for MEMREF.  */
 
-    default:
-      if (vect_debug_details (NULL))
-	{
-	  fprintf (dump_file, "unhandled data ref: ");
-	  print_generic_expr (dump_file, memref, TDF_SLIM);
-	  fprintf (dump_file, " in stmt  ");
-	  print_generic_expr (dump_file, stmt, TDF_SLIM);
-	}
-      return NULL_TREE;
+      switch (TREE_CODE (memref))
+	{      
+	case INDIRECT_REF:
+	  new_dr = vect_analyze_pointer_ref_access (memref, stmt, is_read);
+	  if (!new_dr)
+	    return NULL_TREE; 
+	  *dr = new_dr;
+	  symbl = DR_BASE_NAME (new_dr);
+	  STMT_VINFO_VECT_DR_BASE (stmt_info) = symbl;
+	  break;
+      
+	case ARRAY_REF:
+	  new_dr = analyze_array (stmt, memref, is_read);
+	  *dr = new_dr;
+	  symbl = DR_BASE_NAME (new_dr);
+	  STMT_VINFO_VECT_DR_BASE (stmt_info) = TREE_OPERAND (memref, 0);
+	  break;
+
+	default:
+	  /* TODO: Support data-refs of form a[i].p for unions and single
+	     field structures.  */
+	  return NULL_TREE;
+	}      
     }
-  return symbl;
+
+  if (!symbl)
+     return NULL_TREE;
+  /* Recursive call to retrieve the relevant memtag.  */
+  tag = vect_get_symbl_and_dr (symbl, stmt, is_read, loop_vinfo, dr);
+  return tag;
 }
 
 
@@ -4912,10 +4929,6 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo)
   block_stmt_iterator si;
   int j;
   struct data_reference *dr;
-  tree tag;
-  tree address_base;
-  bool base_aligned_p;
-  tree offset;
 
   if (vect_debug_details (NULL))
     fprintf (dump_file, "\n<<vect_analyze_data_refs>>\n");
@@ -4982,6 +4995,7 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo)
 	  /* Analyze MEMREF. If it is of a supported form, build data_reference
 	     struct for it (DR) and find the relevant symbol for aliasing 
 	     purposes.  */
+	  dr = NULL;
 	  symbl = vect_get_symbl_and_dr (memref, stmt, is_read, loop_vinfo, 
 					 &dr);
 	  if (!symbl)
@@ -4993,83 +5007,7 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo)
 		}
 	      return false;
 	    }
-
-	  /* Find and record the memtag assigned to this data-ref.  */
-	   switch (TREE_CODE (symbl))
-	    {
-	    case VAR_DECL:
-	      STMT_VINFO_MEMTAG (stmt_info) = symbl;
-	      break;
-	      
-	    case SSA_NAME:
-	      symbl = SSA_NAME_VAR (symbl);
-	      tag = get_var_ann (symbl)->type_mem_tag;
-	      if (!tag)
-		{
-		  tree ptr = TREE_OPERAND (memref, 0);
-		  if (TREE_CODE (ptr) == SSA_NAME)
-		    tag = get_var_ann (SSA_NAME_VAR (ptr))->type_mem_tag;
-		}
-	      if (!tag)
-		{
-		  if (vect_debug_stats (loop) || vect_debug_details (loop))
-		    fprintf (dump_file, "not vectorized: no memtag for ref.");
-		  return false;
-		}
-	      STMT_VINFO_MEMTAG (stmt_info) = tag;
-	      break;
-
-	    case ADDR_EXPR:
-	      address_base = TREE_OPERAND (symbl, 0);
-
-	      switch (TREE_CODE (address_base))
-		{
-		case ARRAY_REF:
-		  {
-		    struct data_reference *tmp_dr;
-		    
-		    tmp_dr = analyze_array (stmt, TREE_OPERAND (symbl, 0), 
-					    DR_IS_READ (dr));
-		    tag = vect_get_base_and_bit_offset
-		      (tmp_dr, DR_BASE_NAME (tmp_dr), 
-		       NULL_TREE, loop_vinfo, &offset, &base_aligned_p);
-		    if (!tag)
-		      {
-			if (vect_debug_stats (loop)
-			    || vect_debug_details (loop))
-			  fprintf (dump_file,
-				   "not vectorized: no memtag for ref.");
-			return false;
-		      }
-		    STMT_VINFO_MEMTAG (stmt_info) = tag;
-		  }
-		  
-		  break;
-		  
-		case VAR_DECL: 
-		  STMT_VINFO_MEMTAG (stmt_info) = address_base;
-		  break;
-
-		default:
-		  if (vect_debug_stats (loop) || vect_debug_details (loop))
-		    {
-		      fprintf (dump_file, 
-			       "not vectorized: unhandled address expr: ");
-		      print_generic_expr (dump_file, stmt, TDF_SLIM);
-		    }
-		  return false;
-		}
-	      break;
-	      
-	    default:
-	      if (vect_debug_stats (loop) || vect_debug_details (loop))
-		{
-		  fprintf (dump_file, "not vectorized: unsupported data-ref: ");
-		  print_generic_expr (dump_file, memref, TDF_SLIM);
-		}
-	      return false;
-	    }
-
+	  STMT_VINFO_MEMTAG (stmt_info) = symbl;
 	  VARRAY_PUSH_GENERIC_PTR (*datarefs, dr);
 	  STMT_VINFO_DATA_REF (stmt_info) = dr;
 	}

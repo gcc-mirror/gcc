@@ -1,3 +1,10 @@
+2004-12-29  Ira Rosen  <irar@il.ibm.com>
+
+        PR tree-optimization/18179
+	* tree-vectorizer.c (vect_get_symbl_and_dr): Reorganize. Add memtag 
+	retrieval.
+	(vect_analyze_data_refs): Remove memtag retrieval.
+
 2004-12-28  Richard Henderson  <rth@redhat.com>
 
 	PR inline-asm/15740
