@@ -1,6 +1,6 @@
 /* Data flow analysis for GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -333,7 +333,6 @@ static void mark_used_reg		PARAMS ((struct propagate_block_info *,
 						 rtx, rtx, rtx));
 static void mark_used_regs		PARAMS ((struct propagate_block_info *,
 						 rtx, rtx, rtx));
-void dump_flow_info			PARAMS ((FILE *));
 void debug_flow_info			PARAMS ((void));
 static void add_to_mem_set_list		PARAMS ((struct propagate_block_info *,
 						 rtx));

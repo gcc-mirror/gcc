@@ -94,7 +94,6 @@ typedef struct alias_set_entry
 
 static int rtx_equal_for_memref_p (rtx, rtx);
 static rtx find_symbolic_term (rtx);
-rtx get_addr (rtx);
 static int memrefs_conflict_p (int, rtx, int, rtx, HOST_WIDE_INT);
 static void record_set (rtx, rtx, void *);
 static int base_alias_check (rtx, rtx, enum machine_mode,

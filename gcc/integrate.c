@@ -88,7 +88,6 @@ static void set_block_origin_self	PARAMS ((tree));
 static void set_block_abstract_flags	PARAMS ((tree, int));
 static void process_reg_param		PARAMS ((struct inline_remap *, rtx,
 						 rtx));
-void set_decl_abstract_flags		PARAMS ((tree, int));
 static void mark_stores                 PARAMS ((rtx, rtx, void *));
 static void save_parm_insns		PARAMS ((rtx, rtx));
 static void copy_insn_list              PARAMS ((rtx, struct inline_remap *,

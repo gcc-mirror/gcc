@@ -1,3 +1,22 @@
+2003-06-16  Andreas Jaeger  <aj@suse.de>
+
+	* tracer.c: Remove duplication declaration.
+
+	* toplev.c: Remove extra declaration of decode_d_option.
+
+	* ssa.c: Remove duplicate declaration.
+
+	* sreal.c: Remove extra declaration of dump_sreal.
+
+	* reload1.c: Remove duplicate declarations.
+
+	* integrate.c: Remove extra declaration of
+	set_decl_abstract_flags.
+
+	* flow.c: Remove extra declaration of dump_flow_info.
+
+	* alias.c: Remove extra declaration of get_addr.
+
 2003-06-16  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* config/rtems.h, config/sol2.h, config/svr4.h, config/usegas.h,
