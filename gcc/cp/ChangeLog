@@ -1,3 +1,8 @@
+2003-07-17  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	PR c++/10668
+	* typeck.c (build_class_member_access_expr): Improve diagnostic. 
+
 2003-07-16  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/11547
