@@ -4292,7 +4292,8 @@ init_ext_80387_constants ()
     {
       real_from_string (&ext_80387_constants_table[i], cst[i]);
       /* Ensure each constant is rounded to XFmode precision.  */
-      real_convert (&ext_80387_constants_table[i], XFmode,
+      real_convert (&ext_80387_constants_table[i],
+		    TARGET_128BIT_LONG_DOUBLE ? TFmode : XFmode,
 		    &ext_80387_constants_table[i]);
     }
 
@@ -4316,7 +4317,7 @@ standard_80387_constant_p (x)
 
   /* For XFmode constants, try to find a special 80387 instruction on
      those CPUs that benefit from them.  */
-  if (GET_MODE (x) == XFmode
+  if ((GET_MODE (x) == XFmode || GET_MODE (x) == TFmode)
       && x86_ext_80387_constants & TUNEMASK)
     {
       REAL_VALUE_TYPE r;
@@ -4388,7 +4389,8 @@ standard_80387_constant_rtx (idx)
       abort ();
     }
 
-  return CONST_DOUBLE_FROM_REAL_VALUE (ext_80387_constants_table[i], XFmode);
+  return CONST_DOUBLE_FROM_REAL_VALUE (ext_80387_constants_table[i],
+				       TARGET_128BIT_LONG_DOUBLE ? TFmode : XFmode);
 }
 
 /* Return 1 if X is FP constant we can load to SSE register w/o using memory.
