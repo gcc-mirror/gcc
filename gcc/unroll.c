@@ -3093,7 +3093,11 @@ loop_iterations (loop_start, loop_end)
   loop_final_value = 0;
   loop_iteration_var = 0;
 
-  last_loop_insn = prev_nonnote_insn (loop_end);
+  /* We used to use pren_nonnote_insn here, but that fails because it might
+     accidentally get the branch for a contained loop if the branch for this
+     loop was deleted.  We can only trust branches immediately before the
+     loop_end.  */
+  last_loop_insn = PREV_INSN (loop_end);
 
   comparison = get_condition_for_loop (last_loop_insn);
   if (comparison == 0)
