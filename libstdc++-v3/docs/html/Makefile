@@ -5,6 +5,7 @@ INC=../../../gcc/doc/include
 
 all: documentation.html                  \
      faq/index.txt                       \
+     17_intro/confdeps.png               \
      17_intro/porting.html               \
      17_intro/porting-howto.html
 
@@ -33,5 +34,8 @@ faq/index.txt: faq/index.html
 # known to work under RH; this can be cleaned up later if needed
 17_intro/porting-howto.html: 17_intro/porting-howto.xml
 	xltproc -o $@ /usr/share/xml/docbook/xsl-stylesheets-1.48-2/html/docbook.xsl $<
+
+17_intro/confdeps.png: 17_intro/confdeps.dot
+	dot -Tpng -o $@ $<
 
 # vim:noet ts=4

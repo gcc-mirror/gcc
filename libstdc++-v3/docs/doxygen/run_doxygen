@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Runs doxygen and massages the output files.
 # Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
@@ -10,12 +10,11 @@
 
 # We can check now that the version of doxygen is >= this variable.
 DOXYVER=1.2.15
-doxygen=
 
 find_doxygen() {
-    v_required=`echo $DOXYVER |  \
+    local -r v_required=`echo $DOXYVER |  \
                 awk -F. '{if(NF<3)$3=0;print ($1*100+$2)*100+$3}'`
-    testing_version=
+    local testing_version doxygen maybedoxy v_found
     # thank you goat book
     set `IFS=:; X="$PATH:/usr/local/bin:/bin:/usr/bin"; echo $X`
     for dir
@@ -36,6 +35,10 @@ find_doxygen() {
         echo run_doxygen error:  Could not find Doxygen $DOXYVER in path. 1>&2
         print_usage
     fi
+    # We need to use other tools from the same package/version.
+    echo :: Using Doxygen tools from ${dir}.
+    PATH=$dir:$PATH
+    hash -r
 }
 
 print_usage() {
@@ -142,8 +145,8 @@ test $do_man = yes && {
       -e "s=@do_man@=${do_man}=" \
       ${srcdir}/docs/doxygen/user.cfg.in > ${outdir}/${mode}.cfg
   echo :: NOTE that this may take some time...
-  echo $doxygen ${outdir}/${mode}.cfg
-  $doxygen ${outdir}/${mode}.cfg
+  echo doxygen ${outdir}/${mode}.cfg
+  doxygen ${outdir}/${mode}.cfg
   echo :: Finished, exit code was $?
 )
 ret=$?
@@ -151,6 +154,9 @@ test $ret -ne 0 && exit $ret
 
 test $do_html = yes && {
   cd ${outdir}/html_${mode}
+
+  #doxytag -t libstdc++.tag . > /dev/null 2>&1
+
   sed -e "s=@LEVEL@=${LEVELtext}=" \
       -e "s=@DATE@=${DATEtext}=" \
       ${srcdir}/docs/doxygen/mainpage.html > index.html

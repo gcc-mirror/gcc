@@ -1,3 +1,16 @@
+2003-08-04  Phil Edwards  <pme@gcc.gnu.org>
+
+	* docs/doxygen/guide.html:  run_doxygen uses bash.
+	* docs/doxygen/mainpage.html:  We'll be shipping tag files.
+	* docs/doxygen/run_doxygen:  Tweaks and improvements.
+	* docs/doxygen/user.cfg.in:  Set GENERATE_TAGFILE.
+	* docs/html/install.html:  Update autoconf/automake requirements.
+	* docs/html/test.html:  Add section describing DejaGNU support.
+	* docs/html/17_intro/confdeps.dot:  New file, generates...
+	* docs/html/17_intro/confdeps.png:  ...this new file.
+	* docs/html/Makefile:  Generated here.
+	* docs/html/17_intro/configury.html:  New file.
+
 2003-07-31  Phil Edwards  <pme@gcc.gnu.org>
 
 	* testsuite/lib/libstdc++-v3-dg.exp:  Rename...
