@@ -861,6 +861,7 @@ assign_stack_temp (mode, size, keep)
 					 stack_slot_list);
 
 	      best_p->size = rounded_size;
+	      best_p->full_size = rounded_size;
 	    }
 	}
 
