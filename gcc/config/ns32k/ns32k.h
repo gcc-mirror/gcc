@@ -96,8 +96,8 @@ extern int target_flags;
     { "regparm", 4},				\
     { "noregparm", -4},				\
     { "32532", 24},				\
-    { "32332", -16},				\
-    { "32332", 8},				\
+    { "32332", -8},				\
+    { "32332", 16},				\
     { "32032", -24},				\
     { "sb", -32},				\
     { "nosb", 32},				\
@@ -1255,10 +1255,11 @@ do {									\
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
   sprintf (LABEL, "*%s%d", PREFIX, NUM)
 
-/* This is how to align the code that follows an unconditional branch.  */
+/* This is how to align the code that follows an unconditional branch.
+   Note that 0xa2 is a no-op.  */
 
 #define ASM_OUTPUT_ALIGN_CODE(FILE)	\
-  fprintf (FILE, "\t.align 2\n")
+  fprintf (FILE, "\t.align 2,0xa2\n")
 
 /* This is how to output an element of a case-vector that is absolute.
    (The ns32k does not use such vectors,
