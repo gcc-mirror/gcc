@@ -1164,8 +1164,9 @@ get_expr_operands (tree stmt, tree *expr_p, int flags, voperands_t prev_vops)
   abort ();
 }
 
-/* Scan operands in ASM_EXPR STMT.  PREV_VOPS is as in
-   append_v_may_def and append_vuse.  */
+
+/* Scan operands in ASM_EXPR STMT.  PREV_VOPS is as in append_v_may_def and
+   append_vuse.  */
 
 static void
 get_asm_expr_operands (tree stmt, voperands_t prev_vops)
@@ -1223,47 +1224,43 @@ get_asm_expr_operands (tree stmt, voperands_t prev_vops)
       get_expr_operands (stmt, &TREE_VALUE (link), 0, prev_vops);
     }
 
+
   /* Clobber memory for asm ("" : : : "memory");  */
-  if (!aliases_computed_p)
-    {
-      /* If we still have not computed aliasing information,
-	 mark the statement as having volatile operands to avoid
-	 optimizations from messing around with it.  */
-      stmt_ann (stmt)->has_volatile_ops = true;
-    }
-  else
-    {
-      /* Otherwise, if this ASM_EXPR clobbers memory, clobber
-	 all the call-clobbered variables and the addressable
-	 variables found by the alias analyzer.  */
-      for (link = ASM_CLOBBERS (stmt); link; link = TREE_CHAIN (link))
-	if (!strcmp (TREE_STRING_POINTER (TREE_VALUE (link)), "memory"))
+  for (link = ASM_CLOBBERS (stmt); link; link = TREE_CHAIN (link))
+    if (strcmp (TREE_STRING_POINTER (TREE_VALUE (link)), "memory") == 0)
+      {
+	size_t i;
+
+	/* If we still have not computed aliasing information, we
+	   won't know what variables are call-clobbered and/or
+	   addressable.  Just mark the statement as having volatile
+	   operands for now.  */
+	if (!aliases_computed_p)
 	  {
-	    /* If we had created .GLOBAL_VAR earlier, use it.
-	       Otherwise, add a V_MAY_DEF operand for every
-	       call-clobbered and addressable variable.  See
-	       compute_may_aliases for the heuristic used to decide
-	       whether to create .GLOBAL_VAR or not.  */
-	    if (global_var)
-	      add_stmt_operand (&global_var, stmt, opf_is_def, prev_vops);
-	    else
-	      {
-		size_t i;
-
-		EXECUTE_IF_SET_IN_BITMAP (call_clobbered_vars, 0, i,
-		    {
-		      tree var = referenced_var (i);
-		      add_stmt_operand (&var, stmt, opf_is_def, prev_vops);
-		    });
-
-		EXECUTE_IF_SET_IN_BITMAP (addressable_vars, 0, i,
-		    {
-		      tree var = referenced_var (i);
-		      add_stmt_operand (&var, stmt, opf_is_def, prev_vops);
-		    });
-	      }
+	    stmt_ann (stmt)->has_volatile_ops = true;
+	    break;
 	  }
-    }
+
+	/* Clobber all call-clobbered variables (or .GLOBAL_VAR if we
+	   decided to group them).  */
+	if (global_var)
+	  add_stmt_operand (&global_var, stmt, opf_is_def, prev_vops);
+	else
+	  EXECUTE_IF_SET_IN_BITMAP (call_clobbered_vars, 0, i,
+	      {
+		tree var = referenced_var (i);
+		add_stmt_operand (&var, stmt, opf_is_def, prev_vops);
+	      });
+
+	/* Now clobber all addressables.  */
+	EXECUTE_IF_SET_IN_BITMAP (addressable_vars, 0, i,
+	    {
+	      tree var = referenced_var (i);
+	      add_stmt_operand (&var, stmt, opf_is_def, prev_vops);
+	    });
+
+	break;
+      }
 }
 
 

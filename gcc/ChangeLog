@@ -1,3 +1,8 @@
+2004-07-08  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-ssa-operands.c (get_asm_expr_operands): Fix thinkos in
+	the handling of clobbering ASM_EXPRs.
+
 2004-07-08  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR target/16430
