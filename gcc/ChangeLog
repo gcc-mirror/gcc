@@ -1,5 +1,7 @@
 2004-01-03  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* doc/install.texi: Note that 'gcc' is now a 2.57 directory.
+
 	* configure.in: Rename to configure.ac.
 	* configure.ac: Renamed from configure.in; make minimum necessary
 	changes for autoconf 2.5x.
