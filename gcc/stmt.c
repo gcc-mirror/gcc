@@ -3108,6 +3108,7 @@ expand_end_bindings (vars, mark_ends, dont_jump_in)
       rtx afterward = gen_label_rtx ();
       rtx handler_label = gen_label_rtx ();
       rtx save_receiver = gen_reg_rtx (Pmode);
+      rtx insns;
 
       /* Don't let jump_optimize delete the handler.  */
       LABEL_PRESERVE_P (handler_label) = 1;
@@ -3117,14 +3118,20 @@ expand_end_bindings (vars, mark_ends, dont_jump_in)
       if (thisblock->next != 0)
 	{
 	  emit_move_insn (nonlocal_goto_handler_slot, save_receiver);
-	  emit_insn_before (gen_move_insn (save_receiver,
-					   nonlocal_goto_handler_slot),
-			    thisblock->data.block.first_insn);
+
+	  start_sequence ();
+	  emit_move_insn (save_receiver, nonlocal_goto_handler_slot);
+	  insns = get_insns ();
+	  end_sequence ();
+	  emit_insns_before (insns, thisblock->data.block.first_insn);
 	}
-      emit_insn_before (gen_move_insn (nonlocal_goto_handler_slot,
-				       gen_rtx (LABEL_REF, Pmode,
-						handler_label)),
-			thisblock->data.block.first_insn);
+
+      start_sequence ();
+      emit_move_insn (nonlocal_goto_handler_slot,
+		      gen_rtx (LABEL_REF, Pmode, handler_label));
+      insns = get_insns ();
+      end_sequence ();
+      emit_insns_before (insns, thisblock->data.block.first_insn);
 
       /* Jump around the handler; it runs only when specially invoked.  */
       emit_jump (afterward);
