@@ -1,5 +1,10 @@
 2003-09-15  Andrew Cagney  <cagney@redhat.com>
 
+	* floatformat.h (floatformat_to_double): Make input buffer constant.
+	(floatformat_from_double, floatformat_is_valid): Ditto.
+	
+2003-09-15  Andrew Cagney  <cagney@redhat.com>
+
 	* floatformat.h (struct floatformat): Make "exp_bias" signed.
 
 2003-09-15  Daniel Jacobowitz  <drow@mvista.com>

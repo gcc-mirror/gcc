@@ -143,7 +143,7 @@ const struct floatformat floatformat_ia64_quad_little =
   "floatformat_ia64_quad_little"
 };
 
-static unsigned long get_field PARAMS ((unsigned char *,
+static unsigned long get_field PARAMS ((const unsigned char *,
 					enum floatformat_byteorders,
 					unsigned int,
 					unsigned int,
@@ -153,7 +153,7 @@ static unsigned long get_field PARAMS ((unsigned char *,
    TOTAL_LEN are the thing we are extracting it from, in byteorder ORDER.  */
 static unsigned long
 get_field (data, order, total_len, start, len)
-     unsigned char *data;
+     const unsigned char *data;
      enum floatformat_byteorders order;
      unsigned int total_len;
      unsigned int start;
@@ -207,10 +207,10 @@ get_field (data, order, total_len, start, len)
 void
 floatformat_to_double (fmt, from, to)
      const struct floatformat *fmt;
-     char *from;
+     const char *from;
      double *to;
 {
-  unsigned char *ufrom = (unsigned char *)from;
+  const unsigned char *ufrom = (const unsigned char *)from;
   double dto;
   long exponent;
   unsigned long mant;
@@ -331,7 +331,7 @@ put_field (data, order, total_len, start, len, stuff_to_put)
 void
 floatformat_from_double (fmt, from, to)
      const struct floatformat *fmt;
-     double *from;
+     const double *from;
      char *to;
 {
   double dfrom;
@@ -409,7 +409,7 @@ floatformat_from_double (fmt, from, to)
 int
 floatformat_is_valid (fmt, from)
      const struct floatformat *fmt;
-     char *from;
+     const char *from;
 {
   if (fmt == &floatformat_i387_ext)
     {
@@ -419,7 +419,7 @@ floatformat_is_valid (fmt, from)
 	 if the exponent is zero can it be zero, and then it must
 	 be zero.  */
       unsigned long exponent, int_bit;
-      unsigned char *ufrom = (unsigned char *) from;
+      const unsigned char *ufrom = (const unsigned char *) from;
 
       exponent = get_field (ufrom, fmt->byteorder, fmt->totalsize,
 			    fmt->exp_start, fmt->exp_len);

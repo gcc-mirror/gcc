@@ -1,3 +1,10 @@
+2003-09-15  Andrew Cagney  <cagney@redhat.com>
+
+	* floatformat.c (get_field): Make "data" constant.
+	(floatformat_is_valid, floatformat_to_double): Make "from"
+	constant, fix casts.
+	(floatformat_from_double): Make "from" constant.
+
 2003-09-15  Daniel Jacobowitz  <drow@mvista.com>
 
 	* floatformat.c (floatformat_is_valid): New function.

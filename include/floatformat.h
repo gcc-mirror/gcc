@@ -113,18 +113,18 @@ extern const struct floatformat floatformat_ia64_quad_little;
    Store the double in *TO.  */
 
 extern void
-floatformat_to_double PARAMS ((const struct floatformat *, char *, double *));
+floatformat_to_double PARAMS ((const struct floatformat *, const char *, double *));
 
 /* The converse: convert the double *FROM to FMT
    and store where TO points.  */
 
 extern void
 floatformat_from_double PARAMS ((const struct floatformat *,
-				 double *, char *));
+				 const double *, char *));
 
 /* Return non-zero iff the data at FROM is a valid number in format FMT.  */
 
 extern int
-floatformat_is_valid PARAMS ((const struct floatformat *fmt, char *from));
+floatformat_is_valid PARAMS ((const struct floatformat *fmt, const char *from));
 
 #endif	/* defined (FLOATFORMAT_H) */
