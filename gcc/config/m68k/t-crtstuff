@@ -1,0 +1,11 @@
+# from ../t-svr4
+EXTRA_PARTS=crtbegin.o crtend.o crti.o crtn.o
+
+# Add flags here as required.
+CRTSTUFF_T_CFLAGS =
+
+# Assemble startup files.
+crti.o: $(srcdir)/config/m68k/crti.s $(GCC_PASSES)
+	$(GCC_FOR_TARGET) -c -o crti.o $(srcdir)/config/m68k/crti.s
+crtn.o: $(srcdir)/config/m68k/crtn.s $(GCC_PASSES)
+	$(GCC_FOR_TARGET) -c -o crtn.o $(srcdir)/config/m68k/crtn.s

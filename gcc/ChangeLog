@@ -1,3 +1,31 @@
+Tue Sep 14 03:47:23 1999  Joel Sherrill <joel@OARcorp.com>
+			  Charles-Antoine Gauthier <charles.gauthier@iit.nrc.ca>
+			  Rosimildo DaSilva <rdasilva@connecttel.com>
+
+	* configure.in (m68k-*-rtemscoff*): Added.
+	* configure.in (mips64orion-*-rtems*): Converted to ELF.
+	* configure.in (sparc-*-rtemsaout*): Added as alias for old
+	sparc-rtems configuration.
+	* configure.in (sparc-*-rtemself*): Added.
+	* configure.in (sparc-*-rtems*): Now ELF not a.out.
+	* config/i386/rtems.h: Added comment.
+	* config/sparc/rtemself.h: New file.
+
+	* configure.in (m68k-rtemself): Added.
+	* config/elfos.h: Added ifndef wrapper for DWARF2_DEBUGGING_INFO
+	and DWARF_DEBUGGING_INFO.
+	* config/m68k/crti.s: New file.
+	* config/m68k/crtn.s: New file.
+	* config/m68k/t-crtstuff: New file.
+	* config/m68k/rtemself.h: New file.
+
+	* configure.in (i[[34567]]86-*-rtemself*): Now uses crtstuff for
+	global ctor/dtor and C++ exception handling.
+	* config/i386/rtemself.h: Now uses crtstuff (crti.o + crtbegin.o)
+	for STARTFILE_SPEC and crtstuff (crtend.o + crtn.o) for
+	ENDFILE_SPEC.
+	* config/i386/t-rtems-i386: New File.
+
 Tue Sep 14 09:47:41 1999  Andreas Schwab  <schwab@suse.de>
 
 	* stmt.c (expand_end_case): Return right away if the case stack is

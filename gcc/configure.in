@@ -1456,14 +1456,15 @@ changequote([,])dnl
 		tmake_file="i386/t-go32 t-rtems"
 		;;
 changequote(,)dnl
-	i[34567]86-*-rtemself*)
+	i[34567]86-*-rtems*|i[34567]86-*-rtemself*)
 changequote([,])dnl
 		cpu_type=i386
 		tm_file=i386/rtemself.h
-		tmake_file="i386/t-i386bare t-rtems"
+		extra_parts="crtbegin.o crtend.o crti.o crtn.o"
+		tmake_file="i386/t-rtems-i386 i386/t-crtstuff t-rtems"
 		;;
 changequote(,)dnl
-	i[34567]86-*-rtems*)
+	i[34567]86-*-rtemscoff*)
 changequote([,])dnl
 		cpu_type=i386
 		tm_file=i386/rtems.h
@@ -2233,13 +2234,18 @@ changequote([,])dnl
 		extra_headers=math-68881.h
 		float_format=m68k
 		;;
-	m68k-*-rtems*)
+	m68k-*-rtemscoff*|m68k-*-rtems*)
 		tmake_file="m68k/t-m68kbare t-rtems"
 		tm_file=m68k/rtems.h
 		extra_headers=math-68881.h
 		float_format=m68k
 		;;
-
+	m68k-*-rtemself*)
+		tmake_file="m68k/t-m68kbare t-rtems m68k/t-crtstuff"
+		tm_file=m68k/rtemself.h
+		extra_headers=math-68881.h
+		float_format=m68k
+		;;
 	m88k-dg-dgux*)
 		case $machine in
 		  m88k-dg-dguxbcs*)
@@ -2769,7 +2775,8 @@ changequote([,])dnl
 		;;
 	mips64orion-*-rtems*)
 		tm_file="mips/elforion.h mips/elf64.h mips/rtems64.h"
-		tmake_file="mips/t-ecoff t-rtems"
+                tm_file="mips/elforion.h mips/elf64.h mips/rtems64.h"
+		tmake_file="mips/t-elf t-rtems"
 		;;
 	mipstx39el-*-elf*)
 		tm_file="mips/r3900.h mips/elfl.h mips/abi64.h"
@@ -3217,7 +3224,14 @@ changequote([,])dnl
 		tmake_file=sparc/t-sunos41
 		xmake_file=x-lynx
 		;;
-	sparc-*-rtems*)
+	sparc-*-rtems*|sparc-*-rtemself*)
+		tm_file="sparc/rtemself.h"
+		tmake_file="sparc/t-elf t-rtems"
+		extra_parts="crti.o crtn.o crtbegin.o crtend.o"
+		#float_format=i128
+		float_format=i64
+		;;
+	sparc-*-rtemsaout*)
 		tmake_file="sparc/t-sparcbare t-rtems"
 		tm_file=sparc/rtems.h
 		;;

@@ -163,7 +163,9 @@ Boston, MA 02111-1307, USA.  */
   asm_output_aligned_bss (FILE, DECL, NAME, SIZE, ALIGN)
 
 #undef STARTFILE_SPEC
-#define STARTFILE_SPEC  "crt0.o%s"
+#define STARTFILE_SPEC "crt0.o%s crti.o%s crtbegin.o%s"
 
 #undef ENDFILE_SPEC
+#define ENDFILE_SPEC   "crtend.o%s crtn.o%s"
+
      
