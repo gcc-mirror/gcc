@@ -1228,9 +1228,9 @@ extern char *current_function_name;
   char *p, *after_dir = main_input_filename;			\
 								\
   fprintf (FILE, "\t.verstamp 9 0 ");				\
-  for (p = version_string; *p != 0; p++)			\
+  for (p = version_string; *p != ' ' && *p != 0; p++)		\
     fprintf (FILE, "%c", *p == '.' ? ' ' : *p);			\
-  fprintf (FILE, "\n\t.set noreorder\n");				\
+  fprintf (FILE, "\n\t.set noreorder\n");			\
   fprintf (FILE, "\t.set noat\n");				\
   for (p = main_input_filename; *p; p++)			\
     if (*p == '/')						\
