@@ -1,3 +1,7 @@
+1998-12-20  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* g++.old-deja/g++.pt/ptrmem5.C: New test.
+
 1998-12-15  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* g++.old-deja/g++.other/conv5.C: New test.
