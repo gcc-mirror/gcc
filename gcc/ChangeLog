@@ -1,3 +1,10 @@
+Thu Aug 30 18:50:37 2001  J"orn Rennecke <amylaar@redhat.com>
+
+	* t-h8300 (LIB1ASMFUNCS): Add _fixunssfdi and _fixunssfsi_asm.
+	(LIB2FUNCS_EXTRA): Define.
+	config/h8300/lib1funcs.asm: New part: L_fixunssfsi_asm .
+	config/h8300/fixunssfsi.c: New file.
+
 Thu Aug 30 16:00:31 2001  J"orn Rennecke <amylaar@redhat.com>
 
 	* h8300.c (dosize): Fix test for "sub".
