@@ -1,3 +1,9 @@
+2004-03-16  Richard Henderson  <rth@redhat.com>
+
+	PR middle-end/14535
+	* except.c (collect_one_action_chain): Create action record for
+	cleanup outer of exception spec.
+
 2004-03-16  Ralf Corsepius <corsepiu@faw.uni-ulm.de>
 
 	PR target/14577
