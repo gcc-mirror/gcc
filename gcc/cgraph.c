@@ -98,7 +98,7 @@ cgraph_node (decl)
   cgraph_nodes = node;
   cgraph_n_nodes++;
   *slot = node;
-  if (DECL_CONTEXT (decl))
+  if (DECL_CONTEXT (decl) && TREE_CODE (DECL_CONTEXT (decl)) == FUNCTION_DECL)
     {
       node->origin = cgraph_node (DECL_CONTEXT (decl));
       node->next_nested = node->origin->nested;
