@@ -1,0 +1,3 @@
+#ifndef _CPP_CLOCALE
+#include <bits/std_clocale.h>
+#endif

@@ -1,0 +1,4 @@
+
+#ifndef _CPP_CSIGNAL
+#include <bits/std_csignal.h>
+#endif

@@ -1,0 +1,3 @@
+#ifndef _CPP_LOCALE
+#include <bits/std_locale.h>
+#endif

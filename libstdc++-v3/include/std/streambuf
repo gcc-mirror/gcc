@@ -1,0 +1,3 @@
+#ifndef _CPP_STREAMBUF
+#include <bits/std_streambuf.h>
+#endif

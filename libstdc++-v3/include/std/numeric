@@ -1,0 +1,3 @@
+#ifndef _CPP_NUMERIC
+#include <bits/std_numeric.h>
+#endif

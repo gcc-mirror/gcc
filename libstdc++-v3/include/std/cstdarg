@@ -1,0 +1,4 @@
+
+#ifndef _CPP_CSTDARG
+#include <bits/std_cstdarg.h>
+#endif
