@@ -280,7 +280,7 @@ cp/parser.o: cp/parser.c $(CXX_TREE_H) $(TM_H) diagnostic.h gt-cp-parser.h outpu
 
 cp/name-lookup.o: cp/name-lookup.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 	$(TM_H) $(CXX_TREE_H) timevar.h gt-cp-name-lookup.h toplev.h \
-	$(DIAGNOSTIC_H)
+	$(DIAGNOSTIC_H) flags.h
 
 cp/cxx-pretty-print.o: cp/cxx-pretty-print.c $(CXX_PRETTY_PRINT_H) \
   $(CONFIG_H) $(SYSTEM_H) $(TM_H) coretypes.h $(CXX_TREE_H)
