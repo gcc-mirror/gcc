@@ -1,6 +1,6 @@
 /* CPP Library. (Directive handling.)
    Copyright (C) 1986, 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994-95.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -1113,14 +1113,6 @@ do_pragma (pfile)
 	    p = NULL;
 	}
     }
-
-  /* FIXME.  This is an awful kludge to get the front ends to update
-     their notion of line number for diagnostic purposes.  The line
-     number should be passed to the handler and they should do it
-     themselves.  Stand-alone CPP must ignore us, otherwise it will
-     prefix the directive with spaces, hence the 1.  Ugh.  */
-  if (pfile->cb.line_change)
-    (*pfile->cb.line_change)(pfile, token, 1);
 
   if (p)
     (*p->u.handler) (pfile);
