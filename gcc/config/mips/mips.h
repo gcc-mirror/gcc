@@ -3705,9 +3705,6 @@ while (0)
    : (FROM) == FP_REGS && GR_REG_CLASS_P (TO) ? 4			\
    : (((FROM) == HI_REG || (FROM) == LO_REG				\
        || (FROM) == MD_REGS || (FROM) == HILO_REG)			\
-      && ((TO) == M16_REGS || (TO) == M16_NA_REGS)) ? 6			\
-   : (((FROM) == HI_REG || (FROM) == LO_REG				\
-       || (FROM) == MD_REGS || (FROM) == HILO_REG)			\
       && GR_REG_CLASS_P (TO)) ? (TARGET_MIPS16 ? 12 : 6)		\
    : (((TO) == HI_REG || (TO) == LO_REG					\
        || (TO) == MD_REGS || (TO) == HILO_REG)				\
