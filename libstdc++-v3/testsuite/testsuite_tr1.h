@@ -113,6 +113,8 @@ namespace __gnu_test
   typedef volatile ClassType        vClassType;
   typedef const volatile ClassType  cvClassType;
 
+  class DerivedType : public ClassType { };
+
   enum EnumType { };
 
   struct ConvType
