@@ -1,3 +1,8 @@
+2001-05-17  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* gcc.texi (gccbug): Refer to the web pages for detailed information
+	on GNATS.
+
 2001-05-16  Wolfgang Bangerth <wolfgang.bangerth@iwr.uni-heidelberg.de>
 	Bruce Korb <bkorb@gnu.org>
 
