@@ -1059,14 +1059,23 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
     {
       rtx insns;
       rtx funexp = binoptab->handlers[(int) mode].libfunc;
+      rtx op1x = op1;
+      enum machine_mode op1_mode = mode;
 
       start_sequence ();
+
+      if (shift_op)
+	{
+	  op1_mode = word_mode;
+	  /* Specify unsigned here,
+	     since negative shift counts are meaningless.  */
+	  op1x = convert_to_mode (word_mode, op1, 1);
+	}
 
       /* Pass 1 for NO_QUEUE so we don't lose any increments
 	 if the libcall is cse'd or moved.  */
       emit_library_call (binoptab->handlers[(int) mode].libfunc,
-			 1, mode, 2, op0, mode, op1,
-			 (shift_op ? word_mode : mode));
+			 1, mode, 2, op0, mode, op1x, op1_mode);
 
       insns = get_insns ();
       end_sequence ();
