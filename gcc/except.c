@@ -2207,13 +2207,16 @@ void
 expand_builtin_set_return_addr_reg (addr_tree)
      tree addr_tree;
 {
+  rtx tmp;
   rtx ra = expand_builtin_return_addr (BUILT_IN_RETURN_ADDRESS,
 				       0, hard_frame_pointer_rtx);
 
   if (GET_CODE (ra) != REG || REGNO (ra) >= FIRST_PSEUDO_REGISTER)
     return;
 
-  emit_move_insn (ra, expand_builtin_frob_return_addr (addr_tree));
+  tmp = force_operand (expand_builtin_frob_return_addr (addr_tree), ra);
+  if (tmp != ra)
+    emit_move_insn (ra, tmp);
 }
 
 /* Choose two registers for communication between the main body of
