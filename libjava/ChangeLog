@@ -1,3 +1,10 @@
+2001-09-06  Tom Tromey  <tromey@redhat.com>
+
+	* java/text/RuleBasedCollator.java (clone): Rewrote.
+	(RuleBasedCollator(RuleBasedCollator)): Removed.
+	* java/text/MessageFormat.java: Re-merged from Classpath.
+	* java/text/DecimalFormat.java: Re-merged from Classpath.
+
 2001-09-06  Anthony Green  <green@redhat.com>
 
 	* include/jvm.h: Declare _Jv_RegisterResource.

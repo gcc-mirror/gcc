@@ -350,21 +350,9 @@ public class DecimalFormat extends NumberFormat
 
   public Object clone ()
   {
-    return new DecimalFormat (this);
-  }
-
-  private DecimalFormat (DecimalFormat dup)
-  {
-    decimalSeparatorAlwaysShown = dup.decimalSeparatorAlwaysShown;
-    groupingSize = dup.groupingSize;
-    minExponentDigits = dup.minExponentDigits;
-    multiplier = dup.multiplier;
-    negativePrefix = dup.negativePrefix;
-    negativeSuffix = dup.negativeSuffix;
-    positivePrefix = dup.positivePrefix;
-    positiveSuffix = dup.positiveSuffix;
-    symbols = (DecimalFormatSymbols) dup.symbols.clone();
-    useExponentialNotation = dup.useExponentialNotation;
+    DecimalFormat c = (DecimalFormat) super.clone ();
+    c.symbols = (DecimalFormatSymbols) symbols.clone ();
+    return c;
   }
 
   public DecimalFormat ()

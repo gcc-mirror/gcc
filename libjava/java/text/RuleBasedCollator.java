@@ -1,6 +1,6 @@
 // RuleBasedCollator.java - Concrete class for locale-based string compare.
 
-/* Copyright (C) 1999, 2000  Free Software Foundation
+/* Copyright (C) 1999, 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -39,7 +39,10 @@ public class RuleBasedCollator extends Collator
 {
   public Object clone ()
   {
-    return new RuleBasedCollator (this);
+    RuleBasedCollator c = (RuleBasedCollator) super.clone ();
+    c.map = (Hashtable) map.clone ();
+    c.prefixes = (Hashtable) map.clone ();
+    return c;
   }
 
   // A helper for CollationElementIterator.next().
@@ -350,17 +353,6 @@ public class RuleBasedCollator extends Collator
 	for (int i = r.key.length() - 1; i >= 1; --i)
 	  prefixes.put(r.key.substring(0, i), Boolean.TRUE);
       }
-  }
-
-  // This is a helper for clone.
-  private RuleBasedCollator (RuleBasedCollator other)
-  {
-    frenchAccents = other.frenchAccents;
-    rules = other.rules;
-    decmp = other.decmp;
-    strength = other.strength;
-    map = other.map;
-    prefixes = other.prefixes;
   }
 
   // True if we are using French-style accent ordering.
