@@ -1,4 +1,8 @@
-2002-07-30  Andrew Haley  <aph@redhat.com>
+2002-08-16  David Edelsohn  <edelsohn@gnu.org>
+
+	* doc/install.texi (*-ibm-aix*): Explain AIX shared object versioning.
+
+2002-08-16  Andrew Haley  <aph@redhat.com>
 
 	* tree-inline.c: Add includes for Java inliner.
 	(remap_decl): Don't handle anonymous types for Java.
