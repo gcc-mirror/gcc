@@ -1,5 +1,9 @@
 2001-06-11  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* doc/objc.texi: Use more logical markup.  Use TeX dashes.
+
+2001-06-11  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* doc/c-tree.texi: Use more logical markup.
 
 2001-06-11  Joseph S. Myers  <jsm28@cam.ac.uk>
