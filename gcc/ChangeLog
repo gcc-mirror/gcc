@@ -1,3 +1,8 @@
+Fri May 29 01:48:25 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* gcse.c (pre_delete): Fix code to determine the mode of
+	the reaching pseudo register.
+
 Fri May 29 01:07:28 1998  Bernd Schmidt <crux@Pool.Informatik.RWTH-Aachen.DE>
 
 	* Makefile.in (GEN): Add gencheck

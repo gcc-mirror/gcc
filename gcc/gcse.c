@@ -4548,14 +4548,16 @@ pre_delete ()
 
 	      if (TEST_BIT (ppin, indx))
 		{
-		  /* Create a pseudo-reg to store the result of reaching
-		     expressions into.  */
-		  if (expr->reaching_reg == NULL)
-		    expr->reaching_reg = gen_reg_rtx (GET_MODE (expr->expr));
-
 		  set = single_set (insn);
 		  if (! set)
 		    abort ();
+
+		  /* Create a pseudo-reg to store the result of reaching
+		     expressions into.  Get the mode for the new pseudo
+		     from the mode of the original destination pseudo.  */
+		  if (expr->reaching_reg == NULL)
+		    expr->reaching_reg
+		      = gen_reg_rtx (GET_MODE (SET_DEST (set)));
 
 		  /* In theory this should never fail since we're creating
 		     a reg->reg copy.
