@@ -1707,7 +1707,8 @@ check_macro_name (pfile, symname, usage)
 /* Return zero if two DEFINITIONs are isomorphic.  */
 
 static int
-compare_defs (d1, d2)
+compare_defs (pfile, d1, d2)
+     cpp_reader *pfile;
      DEFINITION *d1, *d2;
 {
   register struct reflist *a1, *a2;
@@ -1717,7 +1718,7 @@ compare_defs (d1, d2)
 
   if (d1->nargs != d2->nargs)
     return 1;
-  if (pedantic
+  if (CPP_PEDANTIC (pfile)
       && strcmp ((char *)d1->args.argnames, (char *)d2->args.argnames))
     return 1;
   for (a1 = d1->pattern, a2 = d2->pattern; a1 && a2;
@@ -1814,7 +1815,7 @@ do_define (pfile, keyword, buf, limit)
 	ok = 1;
       /* Redefining a macro is ok if the definitions are the same.  */
       else if (hp->type == T_MACRO)
-	ok = ! compare_defs (mdef.defn, hp->value.defn);
+	ok = ! compare_defs (pfile, mdef.defn, hp->value.defn);
       /* Redefining a constant is ok with -D.  */
       else if (hp->type == T_CONST)
         ok = ! CPP_OPTIONS (pfile)->done_initializing;
