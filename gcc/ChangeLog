@@ -1,3 +1,7 @@
+Sat Jun  3 15:26:13 2000  Matt Kraai <kraai@alumni.carnegiemellon.edu>
+
+	* toplev.c (main): Fix misspellings of possibility and language.
+
 2000-06-03  Richard Henderson  <rth@cygnus.com>
 
 	* alias.c (record_alias_subset): Initialize has_zero_child in the

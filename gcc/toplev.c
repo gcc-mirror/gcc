@@ -4542,7 +4542,7 @@ main (argc, argv)
 	 Some options are both language specific and language independent,
 	 eg --help.  It is possible that there might be options that should
 	 only be decoded in a language independent way if they were not
-	 decoded in a langauge specific way, which is why 'lang_processed'
+	 decoded in a language specific way, which is why 'lang_processed'
 	 is passed in.  */
       indep_processed = independent_decode_option (argc - i, argv + i,
 						   lang_processed);
@@ -4560,7 +4560,7 @@ main (argc, argv)
 	     current language, but it is valid for another language.  In order
 	     to be compatible with previous versions of the compiler (which
 	     did not issue an error message in this case) we check for this
-	     possibilty here.  If we do find a match, then if extra_warnings
+	     possibility here.  If we do find a match, then if extra_warnings
 	     is set we generate a warning message, otherwise we will just
 	     ignore the option.  */
 	  for (j = 0; j < NUM_ELEM (documented_lang_options); j++)
@@ -4580,7 +4580,7 @@ main (argc, argv)
 		  warning ("Ignoring command line option '%s'", argv[i]);
 		  if (lang)
 		    warning ("\
-(It is valid for %s but not the selected langauge)", lang);
+(It is valid for %s but not the selected language)", lang);
 		}
 	    }
 	  else
