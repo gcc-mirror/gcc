@@ -1,3 +1,76 @@
+Mon Aug 11 14:50:55 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* Integrate Haifa instruction scheduler.
+	* Makefile.in (ALL_CFLAGS): Add SCHED_CFLAGS.  Prefix all references
+	to sched with $(SCHED_CFLAGS.
+	* configure.in: Handle --enable-haifa.
+	* configure: Rebuilt.
+	* flags.h: Add new flags for haifa instruction scheduler.
+	* genattrtab.c (expand_units): For haifa, don't subtract one
+	when computing blockage.
+	* toplev.h (flag_schedule_interblock): Haifa scheduler flag.
+	(flag_schedule_speculative): Ditto.
+	(flag_schedule_speculative_load): Ditto.
+	(flag_schedule_speculative_load_dangerous): Ditto.
+	(flag_schedule_reverse_before_reload): Ditto.
+	(flag_schedule_reverse_after_reload): Ditto.
+	(flag_branch_on_count_reg): Ditto.
+	(f_options): Add Haifa switches.
+	(main): Turn off some Haifa options if appropriate macro is
+	defined.  Process Haifa switches.
+	* unroll.c (iteration_info): No longer static, since Haifa
+	scheduler uses it.
+	(unroll_loop): Inform HAIFA scheduler about loop unrolling factor.
+	* unroll.c (unroll_loop): Set loop_unroll_iter, loop_start_value.
+	* loop.h (loop_unroll_factor, loop_number): Add HAIFA decls.
+	* loop.h (loop_initial_value,loop_unroll_iter): New globals.
+	* loop.c (loop_optimize): If HAIFA is defined, allocate additional
+	storage for the Haifa scheduler.
+	(mark_loop_jump): If HAIFA defined, set LABEL_OUTSIDE_LOOP_P and
+	LABEL_NEXTREF.
+	(strength_reduce): If HAIFA and HAVE_decrement_and_branch_on_count
+	are defined, call analyze_loop_iterations and insert_bct to use
+	countdown loops.
+	(record_giv): Refine test for jumps out of loops if HAIFA is
+	defined.
+	(analyze_loop_iterations): New function to identify if we can use
+	a countdown loop.
+	(insert_bct): Insert countdown loop.
+	(instrument_loop_bct): Low level code to insert countdown loop.
+	(loop_number): Calculate UID of loop.
+	(indirect_jump_in_function_p): Return true if an indirect jump is
+	in the function.
+	(is_power_of_2): Return true if value is a power of 2.
+	(is_conditional_branch): Return true if insn is a conditional
+	jump.
+	(fix_bct_param): Process -fbct-{min,max}-N switches.
+	(check_bct_param): Return true if loop should be instrumented.
+	* loop.c (loop_initial_value,loop_unroll_iter): New globals.
+	(loop_optimize): Initialize.
+	(get_condition_for_loop): Ditto.
+	* loop.c (strength_reduce): Inside of code that uses #ifdef
+	HAVE_decrement_and_branch_on_count code, test it to make sure the
+	condition is true.
+	(instrument_loop_bct): Ditto.
+	* haifa-sched.c: New file.
+	
+
+	* Integrate regmove pass.
+	* Makefile.in (OBJS): Add regmove.o
+	(regmove.o): Add dependencies.
+	* flow.c (find_use_as_address): No longer static.
+	* rtl.h (find_use_as_address): Declare.
+	* toplev.c (regmove_dump, flag_regmove): Define.
+	(f_options): Add -fregmove.
+	(regmove_dump_file, regmove_time): Define.
+	(fatal_insn): Close the regmove dump file.
+	(compile_file): Initialize regmove_time; open/close the regmove dump
+	file as needed.  Print regmove time as needed.
+	(rest_of_compilation): Run regmove pass if requested, dump
+	RTL after regmove if requested.
+	(main): If -O2 or more, turn on regmove.  Handle dump switches.
+	* regmove.c: New file.
+	
 Mon Aug 11 14:15:02 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* Integrate tlink patch from jason@cygnus.com

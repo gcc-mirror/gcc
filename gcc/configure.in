@@ -3027,6 +3027,26 @@ if [[ ! -f Makefile.in ]]; then
 	echo "source ${srcdir}/.gdbinit" >> .gdbinit
 fi
 
+# Override SCHED_OBJ and SCHED_CFLAGS to enable the Haifa scheduler.
+sched_prefix=
+sched_cflags=
+if [[ x$enable_haifa = xyes ]]; then
+    echo "Using the Haifa scheduler."
+    sched_prefix=haifa-
+    sched_cflags=-DHAIFA
+fi
+AC_SUBST(sched_prefix)
+AC_SUBST(sched_cflags)
+if [[ x$enable_haifa != x ]]; then
+    # Explicitly remove files that need to be recompiled for the Haifa scheduler.
+    for x in genattrtab.o toplev.o loop.o unroll.o *sched.o; do
+	if [ -f $x ]; then
+	    echo "Removing $x"
+	    rm -f $x
+	fi
+    done
+fi
+
 # Process the language and host/target makefile fragments.
 ${CONFIG_SHELL-/bin/sh} $srcdir/configure.frag $srcdir "$subdirs" "$dep_host_xmake_file" "$dep_tmake_file"
 
