@@ -1382,6 +1382,7 @@ find_dummy_reload (real_in, real_out, inloc, outloc, class, for_real)
     {
       register int regno = REGNO (out) + out_offset;
       int nwords = HARD_REGNO_NREGS (regno, GET_MODE (real_out));
+      rtx saved_rtx;
 
       /* When we consider whether the insn uses OUT,
 	 ignore references within IN.  They don't prevent us
@@ -1392,6 +1393,7 @@ find_dummy_reload (real_in, real_out, inloc, outloc, class, for_real)
 	 If the insn uses IN elsewhere and it contains OUT,
 	 that counts.  We can't be sure it's the "same" operand
 	 so it might not go through this reload.  */
+      saved_rtx = *inloc;
       *inloc = const0_rtx;
 
       if (regno < FIRST_PSEUDO_REGISTER
@@ -1418,7 +1420,7 @@ find_dummy_reload (real_in, real_out, inloc, outloc, class, for_real)
 	    }
 	}
 
-      *inloc = real_in;
+      *inloc = saved_rtx;
     }
 
   /* Consider using IN if OUT was not acceptable
