@@ -2087,8 +2087,8 @@ dtors_section ()							\
     }									\
 }
 
-#define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME, RELOC) \
-   fprintf (FILE, "\t.sect\t\"%s\"\n", NAME);
+/* Switch into a generic section.  */
+#define TARGET_ASM_NAMED_SECTION c4x_asm_named_section
 
 /* This is machine-dependent because it needs to push something
    on the stack.  */

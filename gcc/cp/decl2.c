@@ -2861,11 +2861,11 @@ finish_objects (method_type, initp, body)
       else
 	assemble_destructor (fnname);
     }
-#if defined (ASM_OUTPUT_SECTION_NAME) && defined (ASM_OUTPUT_CONSTRUCTOR)
+#if defined (ASM_OUTPUT_CONSTRUCTOR)
   /* If we're using init priority we can't use assemble_*tor, but on ELF
      targets we can stick the references into named sections for GNU ld
      to collect.  */
-  else
+  else if (targetm.have_named_sections)
     {
       char buf[15];
       sprintf (buf, ".%ctors.%.5u", method_type == 'I' ? 'c' : 'd',

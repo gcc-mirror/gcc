@@ -73,24 +73,9 @@ do {							\
   fprintf (asm_out_text_file, "\t.etype\t0x%x;", (a));	\
 } while (0)
 
-/* A C statement to output something to the assembler file to switch to section
-   NAME for object DECL which is either a FUNCTION_DECL, a VAR_DECL or
-   NULL_TREE.  Some target formats do not support arbitrary sections.  Do not
-   define this macro in such cases.  */
-
-#undef ASM_OUTPUT_SECTION_NAME
-#define ASM_OUTPUT_SECTION_NAME(F, DECL, NAME, RELOC) \
-do {								\
-  extern FILE *asm_out_text_file;				\
-  if ((DECL) && TREE_CODE (DECL) == FUNCTION_DECL)		\
-    fprintf (asm_out_text_file, "\t.section %s,\"ax\",@progbits\n", (NAME)); \
-  else if ((DECL) && DECL_READONLY_SECTION (DECL, RELOC))	\
-    fprintf (F, "\t.section %s,\"a\",@progbits\n", (NAME));	\
-  else if (! strcmp (NAME, ".bss"))				\
-    fprintf (F, "\t.section %s,\"aw\",@nobits\n", (NAME));	\
-  else								\
-    fprintf (F, "\t.section %s,\"aw\",@progbits\n", (NAME));	\
-} while (0)
+/* Switch into a generic section.  */
+#undef TARGET_ASM_NAMED_SECTION
+#define TARGET_ASM_NAMED_SECTION  default_elf_asm_named_section
 
 /* The following macro defines the format used to output the second
    operand of the .type assembler directive.  Different svr4 assemblers
@@ -192,8 +177,6 @@ do {									 \
  } while (0)
 
 #define MAKE_DECL_ONE_ONLY(DECL) (DECL_WEAK (DECL) = 1)
-#undef UNIQUE_SECTION_P
-#define UNIQUE_SECTION_P(DECL) (DECL_ONE_ONLY (DECL))
 #undef UNIQUE_SECTION
 #define UNIQUE_SECTION(DECL,RELOC)					   \
 do {									   \

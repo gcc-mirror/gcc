@@ -277,18 +277,6 @@ static void def_cfa_1		 	PARAMS ((const char *, dw_cfa_location *));
 #define SECTION_ASM_OP	"\t.section\t"
 #endif
 
-/* The default format used by the ASM_OUTPUT_SECTION macro (see below) to
-   print the SECTION_ASM_OP and the section name.  The default here works for
-   almost all svr4 assemblers, except for the sparc, where the section name
-   must be enclosed in double quotes.  (See sparcv4.h).  */
-#ifndef SECTION_FORMAT
-#ifdef PUSHSECTION_FORMAT
-#define SECTION_FORMAT PUSHSECTION_FORMAT
-#else
-#define SECTION_FORMAT		"%s%s\n"
-#endif
-#endif
-
 #ifndef DEBUG_FRAME_SECTION
 #define DEBUG_FRAME_SECTION	".debug_frame"
 #endif
@@ -315,11 +303,6 @@ static void def_cfa_1		 	PARAMS ((const char *, dw_cfa_location *));
 /* Definitions of defaults for various types of primitive assembly language
    output operations.  These may be overridden from within the tm.h file,
    but typically, that is unnecessary.  */
-
-#ifndef ASM_OUTPUT_SECTION
-#define ASM_OUTPUT_SECTION(FILE, SECTION) \
-  fprintf ((FILE), SECTION_FORMAT, SECTION_ASM_OP, SECTION)
-#endif
 
 #ifdef SET_ASM_OP
 #ifndef ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL
@@ -1753,12 +1736,13 @@ output_call_frame_info (for_eh)
 
   if (for_eh)
     {
-#ifdef EH_FRAME_SECTION
-      EH_FRAME_SECTION ();
+#ifdef EH_FRAME_SECTION_NAME
+      named_section_flags (EH_FRAME_SECTION_NAME, SECTION_WRITE,
+			   DWARF_OFFSET_SIZE);
 #else
       tree label = get_file_function_name ('F');
 
-      force_data_section ();
+      data_section ();
       ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (PTR_SIZE));
       ASM_GLOBALIZE_LABEL (asm_out_file, IDENTIFIER_POINTER (label));
       ASM_OUTPUT_LABEL (asm_out_file, IDENTIFIER_POINTER (label));
@@ -1766,7 +1750,7 @@ output_call_frame_info (for_eh)
       assemble_label ("__FRAME_BEGIN__");
     }
   else
-    ASM_OUTPUT_SECTION (asm_out_file, DEBUG_FRAME_SECTION);
+    named_section_flags (DEBUG_FRAME_SECTION, SECTION_DEBUG, 1);
 
   /* Output the CIE.  */
   ASM_GENERATE_INTERNAL_LABEL (l1, CIE_AFTER_SIZE_LABEL, for_eh);
@@ -1984,7 +1968,7 @@ output_call_frame_info (for_eh)
       ASM_OUTPUT_LABEL (asm_out_file, l2);
     }
 
-#ifndef EH_FRAME_SECTION
+#ifndef EH_FRAME_SECTION_NAME
   if (for_eh)
     dw2_asm_output_data (4, 0, "End of Table");
 #endif
@@ -6336,7 +6320,7 @@ output_comp_unit (die)
     secname = (const char *) DEBUG_INFO_SECTION;
 
   /* Output debugging information.  */
-  ASM_OUTPUT_SECTION (asm_out_file, secname);
+  named_section_flags (secname, SECTION_DEBUG, 1);
   output_compilation_unit_header ();
   output_die (die);
 
@@ -11574,10 +11558,12 @@ dwarf2out_start_source_file (lineno, filename)
     }
   if (debug_info_level >= DINFO_LEVEL_VERBOSE)
     {
-      ASM_OUTPUT_SECTION (asm_out_file, DEBUG_MACINFO_SECTION);
+      named_section_flags (DEBUG_MACINFO_SECTION, SECTION_DEBUG, 1);
       dw2_asm_output_data (1, DW_MACINFO_start_file, "Start new file");
-      dw2_asm_output_data_uleb128 (lineno, "Included from line number %d", lineno);
-      dw2_asm_output_data_uleb128 (lookup_filename (filename), "Filename we just started");
+      dw2_asm_output_data_uleb128 (lineno, "Included from line number %d",
+				   lineno);
+      dw2_asm_output_data_uleb128 (lookup_filename (filename),
+				   "Filename we just started");
     }
 }
 
@@ -11594,7 +11580,7 @@ dwarf2out_end_source_file (lineno)
     }
   if (debug_info_level >= DINFO_LEVEL_VERBOSE)
     {
-      ASM_OUTPUT_SECTION (asm_out_file, DEBUG_MACINFO_SECTION);
+      named_section_flags (DEBUG_MACINFO_SECTION, SECTION_DEBUG, 1);
       dw2_asm_output_data (1, DW_MACINFO_end_file, "End file");
     }
 }
@@ -11616,7 +11602,7 @@ dwarf2out_define (lineno, buffer)
     }
   if (debug_info_level >= DINFO_LEVEL_VERBOSE)
     {
-      ASM_OUTPUT_SECTION (asm_out_file, DEBUG_MACINFO_SECTION);
+      named_section_flags (DEBUG_MACINFO_SECTION, SECTION_DEBUG, 1);
       dw2_asm_output_data (1, DW_MACINFO_define, "Define macro");
       dw2_asm_output_data_uleb128 (lineno, "At line number %d", lineno);
       dw2_asm_output_nstring (buffer, -1, "The macro");
@@ -11634,7 +11620,7 @@ dwarf2out_undef (lineno, buffer)
 {
   if (debug_info_level >= DINFO_LEVEL_VERBOSE)
     {
-      ASM_OUTPUT_SECTION (asm_out_file, DEBUG_MACINFO_SECTION);
+      named_section_flags (DEBUG_MACINFO_SECTION, SECTION_DEBUG, 1);
       dw2_asm_output_data (1, DW_MACINFO_undef, "Undefine macro");
       dw2_asm_output_data_uleb128 (lineno, "At line number %d", lineno);
       dw2_asm_output_nstring (buffer, -1, "The macro");
@@ -11707,25 +11693,26 @@ dwarf2out_init (main_input_filename)
   ASM_GENERATE_INTERNAL_LABEL (debug_line_section_label,
 			       DEBUG_LINE_SECTION_LABEL, 0);
   ASM_GENERATE_INTERNAL_LABEL (loc_section_label, DEBUG_LOC_SECTION_LABEL, 0);
-  ASM_OUTPUT_SECTION (asm_out_file, DEBUG_LOC_SECTION);
+  named_section_flags (DEBUG_LOC_SECTION, SECTION_DEBUG, 1);
   ASM_OUTPUT_LABEL (asm_out_file, loc_section_label);
-  ASM_OUTPUT_SECTION (asm_out_file, DEBUG_ABBREV_SECTION);
+  named_section_flags (DEBUG_ABBREV_SECTION, SECTION_DEBUG, 1);
   ASM_OUTPUT_LABEL (asm_out_file, abbrev_section_label);
-  if (DWARF2_GENERATE_TEXT_SECTION_LABEL)
-    {
-      ASM_OUTPUT_SECTION (asm_out_file, TEXT_SECTION);
-      ASM_OUTPUT_LABEL (asm_out_file, text_section_label);
-    }
-  ASM_OUTPUT_SECTION (asm_out_file, DEBUG_INFO_SECTION);
+  named_section_flags (DEBUG_INFO_SECTION, SECTION_DEBUG, 1);
   ASM_OUTPUT_LABEL (asm_out_file, debug_info_section_label);
-  ASM_OUTPUT_SECTION (asm_out_file, DEBUG_LINE_SECTION);
+  named_section_flags (DEBUG_LINE_SECTION, SECTION_DEBUG, 1);
   ASM_OUTPUT_LABEL (asm_out_file, debug_line_section_label);
   if (debug_info_level >= DINFO_LEVEL_VERBOSE)
     {
-      ASM_OUTPUT_SECTION (asm_out_file, DEBUG_MACINFO_SECTION);
+      named_section_flags (DEBUG_MACINFO_SECTION, SECTION_DEBUG, 1);
       ASM_GENERATE_INTERNAL_LABEL (macinfo_section_label,
 				   DEBUG_MACINFO_SECTION_LABEL, 0);
       ASM_OUTPUT_LABEL (asm_out_file, macinfo_section_label);
+    }
+
+  if (DWARF2_GENERATE_TEXT_SECTION_LABEL)
+    {
+      text_section ();
+      ASM_OUTPUT_LABEL (asm_out_file, text_section_label);
     }
 }
 
@@ -11783,18 +11770,8 @@ dwarf2out_finish (input_filename)
     add_sibling_attributes (node->die);
 
   /* Output a terminator label for the .text section.  */
-  ASM_OUTPUT_SECTION (asm_out_file, TEXT_SECTION);
+  text_section ();
   ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, TEXT_END_LABEL, 0);
-
-#if 0
-  /* Output a terminator label for the .data section.  */
-  ASM_OUTPUT_SECTION (asm_out_file, DATA_SECTION);
-  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, DATA_END_LABEL, 0);
-
-  /* Output a terminator label for the .bss section.  */
-  ASM_OUTPUT_SECTION (asm_out_file, BSS_SECTION);
-  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, BSS_END_LABEL, 0);
-#endif
 
   /* Output the source line correspondence table.  We must do this
      even if there is no line information.  Otherwise, on an empty
@@ -11803,7 +11780,7 @@ dwarf2out_finish (input_filename)
      examining the file.  */
   if (! DWARF2_ASM_LINE_DEBUG_INFO)
     {
-      ASM_OUTPUT_SECTION (asm_out_file, DEBUG_LINE_SECTION);
+      named_section_flags (DEBUG_LINE_SECTION, SECTION_DEBUG, 1);
       output_line_info ();
     }
 
@@ -11834,13 +11811,13 @@ dwarf2out_finish (input_filename)
   output_comp_unit (comp_unit_die);
 
   /* Output the abbreviation table.  */
-  ASM_OUTPUT_SECTION (asm_out_file, DEBUG_ABBREV_SECTION);
+  named_section_flags (DEBUG_ABBREV_SECTION, SECTION_DEBUG, 1);
   output_abbrev_section ();
 
   if (pubname_table_in_use)
     {
       /* Output public names table.  */
-      ASM_OUTPUT_SECTION (asm_out_file, DEBUG_PUBNAMES_SECTION);
+      named_section_flags (DEBUG_PUBNAMES_SECTION, SECTION_DEBUG, 1);
       output_pubnames ();
     }
 
@@ -11849,7 +11826,7 @@ dwarf2out_finish (input_filename)
   if (fde_table_in_use)
     {
       /* Output the address range information.  */
-      ASM_OUTPUT_SECTION (asm_out_file, DEBUG_ARANGES_SECTION);
+      named_section_flags (DEBUG_ARANGES_SECTION, SECTION_DEBUG, 1);
       output_aranges ();
     }
 
@@ -11857,7 +11834,7 @@ dwarf2out_finish (input_filename)
   if (have_location_lists)
     {
       /* Output the location lists info. */
-      ASM_OUTPUT_SECTION (asm_out_file, DEBUG_LOC_SECTION);
+      named_section_flags (DEBUG_LOC_SECTION, SECTION_DEBUG, 1);
       output_location_lists (die);
       have_location_lists = 0;
     }
@@ -11865,14 +11842,14 @@ dwarf2out_finish (input_filename)
   /* Output ranges section if necessary.  */
   if (ranges_table_in_use)
     {
-      ASM_OUTPUT_SECTION (asm_out_file, DEBUG_RANGES_SECTION);
+      named_section_flags (DEBUG_RANGES_SECTION, SECTION_DEBUG, 1);
       output_ranges ();
     }
 
   /* Have to end the primary source file. */
   if (debug_info_level >= DINFO_LEVEL_VERBOSE)
     { 
-      ASM_OUTPUT_SECTION (asm_out_file, DEBUG_MACINFO_SECTION);
+      named_section_flags (DEBUG_MACINFO_SECTION, SECTION_DEBUG, 1);
       dw2_asm_output_data (1, DW_MACINFO_end_file, "End file");
     }
 }

@@ -66,6 +66,12 @@ struct gcc_target
 
     /* Output the assembler code for function exit.  */
     void (* function_epilogue) PARAMS ((FILE *, HOST_WIDE_INT));
+
+    /* Switch to an arbitrary section NAME with attributes as specified
+       by FLAGS.  ALIGN specifies any known alignment requirements for
+       the section; 0 if the default should be used.  */
+    void (* named_section) PARAMS ((const char *, unsigned int,
+				    unsigned int));
   } asm_out;
 
   /* Given two decls, merge their attributes and return the result.  */
@@ -106,6 +112,14 @@ struct gcc_target
 					       struct rtx_def *subtarget,
 					       enum machine_mode mode,
 					       int ignore));
+
+  /* Given a decl, a section name, and whether the decl initializer
+     has relocs, choose attributes for the section.  */
+  /* ??? Should be merged with SELECT_SECTION and UNIQUE_SECTION.  */
+  unsigned int (* section_type_flags) PARAMS ((tree, const char *, int));
+
+  /* True if arbitrary sections are supported.  */
+  bool have_named_sections;
 };
 
 extern struct gcc_target targetm;

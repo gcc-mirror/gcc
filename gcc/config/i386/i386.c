@@ -608,6 +608,11 @@ static int ix86_fp_comparison_cost PARAMS ((enum rtx_code code));
 static int ix86_save_reg PARAMS ((int, int));
 static void ix86_compute_frame_layout PARAMS ((struct ix86_frame *));
 static int ix86_comp_type_attributes PARAMS ((tree, tree));
+
+#if defined(TARGET_ELF) && defined(TARGET_COFF)
+static void sco_asm_named_section PARAMS ((const char *, unsigned int,
+					   unsigned int));
+#endif
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_VALID_TYPE_ATTRIBUTE
@@ -2323,7 +2328,7 @@ ix86_asm_file_end (file)
   /* ??? Binutils 2.10 and earlier has a linkonce elimination bug related
      to updating relocations to a section being discarded such that this
      doesn't work.  Ought to detect this at configure time.  */
-#if 0 && defined (ASM_OUTPUT_SECTION_NAME)
+#if 0
   /* The trick here is to create a linkonce section containing the
      pic label thunk, but to refer to it with an internal label.
      Because the label is internal, we don't have inter-dso name
@@ -2331,16 +2336,18 @@ ix86_asm_file_end (file)
 
      In order to use these macros, however, we must create a fake
      function decl.  */
-  {
-    tree decl = build_decl (FUNCTION_DECL,
-			    get_identifier ("i686.get_pc_thunk"),
-			    error_mark_node);
-    DECL_ONE_ONLY (decl) = 1;
-    UNIQUE_SECTION (decl, 0);
-    named_section (decl, NULL, 0);
-  }
+  if (targetm.have_named_sections)
+    {
+      tree decl = build_decl (FUNCTION_DECL,
+			      get_identifier ("i686.get_pc_thunk"),
+			      error_mark_node);
+      DECL_ONE_ONLY (decl) = 1;
+      UNIQUE_SECTION (decl, 0);
+      named_section (decl, NULL, 0);
+    }
+  else
 #else
-  text_section ();
+    text_section ();
 #endif
 
   /* This used to call ASM_DECLARE_FUNCTION_NAME() but since it's an
@@ -10822,3 +10829,17 @@ ix86_output_main_function_alignment_hack (file, size)
   fprintf (file, "\tret\n");
   ASM_OUTPUT_INTERNAL_LABEL (file, "L", CODE_LABEL_NUMBER (label));
 }
+
+#if defined(TARGET_ELF) && defined(TARGET_COFF)
+static void
+sco_asm_named_section (name, flags, align)
+     const char *name;
+     unsigned int flags;
+     unsigned int align;
+{
+  if (TARGET_ELF)
+    default_elf_asm_named_section (name, flags, align);
+  else
+    default_coff_asm_named_section (name, flags, align);
+}
+#endif

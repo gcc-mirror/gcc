@@ -60,6 +60,8 @@ static rtx find_addr_reg PARAMS ((rtx));
 static const char *singlemove_string PARAMS ((rtx *));
 static void m68k_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void m68k_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
+static void m68k_coff_asm_named_section PARAMS ((const char *, unsigned int,
+						 unsigned int));
 
 
 /* Alignment to use for loops and jumps */
@@ -4207,4 +4209,22 @@ output_xorsi3 (operands)
       return "bchg %1,%0";
     }
   return "eor%.l %2,%0";
+}
+
+/* Output assembly to switch to section NAME with attribute FLAGS.  */
+
+static void
+m68k_coff_asm_named_section (name, flags, align)
+     const char *name;
+     unsigned int flags;
+     unsigned int align ATTRIBUTE_UNUSED;
+{
+  char flagchar;
+
+  if (flags & SECTION_WRITE)
+    flagchar = 'd';
+  else
+    flagchar = 'x';
+
+  fprintf (asm_out_file, "\t.section\t%s,\"%c\"\n", name, flagchar);
 }

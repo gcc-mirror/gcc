@@ -148,9 +148,14 @@ static void alpha_output_function_end_prologue
 
 /* Initialize the GCC target structure.  */
 #if TARGET_ABI_OPEN_VMS
-   static int vms_valid_decl_attribute_p PARAMS ((tree, tree, tree, tree));
-#  undef TARGET_VALID_DECL_ATTRIBUTE
-#  define TARGET_VALID_DECL_ATTRIBUTE vms_valid_decl_attribute_p
+static int vms_valid_decl_attribute_p PARAMS ((tree, tree, tree, tree));
+static unsigned int vms_section_type_flags PARAMS ((tree, const char *, int));
+static void vms_asm_named_section PARAMS ((const char *, unsigned int,
+					   unsigned int));
+# undef TARGET_VALID_DECL_ATTRIBUTE
+# define TARGET_VALID_DECL_ATTRIBUTE vms_valid_decl_attribute_p
+# undef TARGET_SECTION_TYPE_FLAGS
+# define TARGET_SECTION_TYPE_FLAGS vms_section_type_flags
 #endif
 
 #undef TARGET_ASM_FUNCTION_END_PROLOGUE
@@ -6533,6 +6538,51 @@ alpha_write_linkage (stream)
   readonly_section ();
   fprintf (stream, "\t.align 3\n");
   splay_tree_foreach (alpha_links, alpha_write_one_linkage, stream);
+}
+
+/* Given a decl, a section name, and whether the decl initializer
+   has relocs, choose attributes for the section.  */
+
+#define SECTION_VMS_OVERLAY	SECTION_FORGET
+
+static unsigned int
+vms_section_type_flags (decl, name, reloc)
+     tree decl;
+     const char *name;
+     int reloc;
+{
+  unsigned int flags = default_section_type_flags (decl, name, reloc);
+
+  if (decl && DECL_MACHINE_ATTRIBUTES (decl)
+      && lookup_attribute ("overlaid", DECL_MACHINE_ATTRIBUTES (decl)))
+    flags |= SECTION_VMS_OVERLAY;
+
+  return flags;
+}
+
+/* Switch to an arbitrary section NAME with attributes as specified
+   by FLAGS.  ALIGN specifies any known alignment requirements for
+   the section; 0 if the default should be used.  */
+
+static void
+vms_asm_named_section (name, flags, align)
+     const char *name;
+     unsigned int flags;
+     unsigned int align;
+{
+  const char *flag_str = "";
+
+  if (flags & SECTION_VMS_OVERLAY)
+    flag_str = ",OVR";
+  else if (flags & SECTION_DEBUG)
+    flag_str = ",NOWRT";
+
+  fprintf (asm_out_file, ".section\t%s%s\n", name, flag_str);
+
+  /* ??? An indicated alignment of 1 byte is only used by dwarf,
+     and for that we turn off auto-alignment.  */
+  if (align == 1)
+    ASM_OUTPUT_ALIGN (asm_out_file, 0);
 }
 
 #else

@@ -233,33 +233,16 @@ do {									\
    symbols must be explicitly imported from shared libraries (DLLs).  */
 #define MULTIPLE_SYMBOL_SPACES
 
-#define UNIQUE_SECTION_P(DECL) DECL_ONE_ONLY (DECL)
 extern void i386_pe_unique_section ();
 #define UNIQUE_SECTION(DECL,RELOC) i386_pe_unique_section (DECL, RELOC)
 
 #define SUPPORTS_ONE_ONLY 1
 
-/* A C statement to output something to the assembler file to switch to section
-   NAME for object DECL which is either a FUNCTION_DECL, a VAR_DECL or
-   NULL_TREE.  Some target formats do not support arbitrary sections.  Do not
-   define this macro in such cases.  */
-#undef ASM_OUTPUT_SECTION_NAME
-#define ASM_OUTPUT_SECTION_NAME(STREAM, DECL, NAME, RELOC)	\
-do {								\
-  if ((DECL) && TREE_CODE (DECL) == FUNCTION_DECL)		\
-    fprintf (STREAM, "\t.section %s,\"x\"\n", (NAME));		\
-  else if ((DECL) && DECL_READONLY_SECTION (DECL, RELOC))	\
-    fprintf (STREAM, "\t.section %s,\"\"\n", (NAME));		\
-  else								\
-    fprintf (STREAM, "\t.section %s,\"w\"\n", (NAME));		\
-  /* Functions may have been compiled at various levels of	\
-     optimization so we can't use `same_size' here.  Instead,	\
-     have the linker pick one.  */				\
-  if ((DECL) && DECL_ONE_ONLY (DECL))				\
-    fprintf (STREAM, "\t.linkonce %s\n",			\
-	     TREE_CODE (DECL) == FUNCTION_DECL			\
-	     ? "discard" : "same_size");			\
-} while (0)
+/* Switch into a generic section.  */
+#define TARGET_ASM_NAMED_SECTION  i386_pe_asm_named_section
+
+/* Select attributes for named sections.  */
+#define TARGET_SECTION_TYPE_FLAGS  i386_pe_section_type_flags
 
 #undef ASM_COMMENT_START
 #define ASM_COMMENT_START " #"

@@ -56,6 +56,8 @@ static const char *cond_string PARAMS ((enum rtx_code));
 static int h8300_valid_decl_attribute PARAMS ((tree, tree, tree, tree));
 static void h8300_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void h8300_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
+static void h8300_asm_named_section PARAMS ((const char *, unsigned int,
+					     unsigned int));
 
 /* CPU_TYPE, says what cpu we're compiling for.  */
 int cpu_type;
@@ -3324,4 +3326,14 @@ h8300_adjust_insn_length (insn, length)
     }
 
   return 0;
+}
+
+static void
+h8300_asm_named_section (name, flags, align)
+     const char *name;
+     unsigned int flags ATTRIBUTE_UNUSED;
+     unsigned int align ATTRIBUTE_UNUSED;
+{
+  /* ??? Perhaps we should be using default_coff_asm_named_section.  */
+  fprintf (asm_out_file, "\t.section %s\n", name);
 }

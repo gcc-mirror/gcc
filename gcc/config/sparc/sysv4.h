@@ -182,25 +182,10 @@ do { ASM_OUTPUT_ALIGN ((FILE), Pmode == SImode ? 2 : 3);		\
 #define CTORS_SECTION_ASM_OP    "\t.section\t\".ctors\",#alloc,#write"
 #undef DTORS_SECTION_ASM_OP
 #define DTORS_SECTION_ASM_OP    "\t.section\t\".dtors\",#alloc,#write"
-#undef EH_FRAME_SECTION_ASM_OP
-#define EH_FRAME_SECTION_ASM_OP "\t.section\t\".eh_frame\",#alloc,#write"
 
-/* A C statement to output something to the assembler file to switch to section
-   NAME for object DECL which is either a FUNCTION_DECL, a VAR_DECL or
-   NULL_TREE.  Some target formats do not support arbitrary sections.  Do not
-   define this macro in such cases.  */
-
-#undef	ASM_OUTPUT_SECTION_NAME	/* Override svr4.h's definition.  */
-#define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME, RELOC) \
-do {									\
-  if ((DECL) && TREE_CODE (DECL) == FUNCTION_DECL)			\
-    fprintf (FILE, ".section\t\"%s\",#alloc,#execinstr\n",		\
-	                                      (NAME));		\
-  else if ((DECL) && DECL_READONLY_SECTION (DECL, RELOC))		\
-    fprintf (FILE, ".section\t\"%s\",#alloc\n", (NAME));		\
-  else									\
-    fprintf (FILE, ".section\t\"%s\",#alloc,#write\n", (NAME));		\
-} while (0)
+/* Switch into a generic section.  */
+#undef TARGET_ASM_NAMED_SECTION
+#define TARGET_ASM_NAMED_SECTION  sparc_elf_asm_named_section
 
 /* A C statement (sans semicolon) to output to the stdio stream
    FILE the assembler definition of uninitialized global DECL named

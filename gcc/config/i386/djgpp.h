@@ -57,10 +57,6 @@ Boston, MA 02111-1307, USA.  */
 #undef DTORS_SECTION_ASM_OP
 #define DTORS_SECTION_ASM_OP "\t.section .dtor"
 
-/* Define the name of the .eh_frame section.  */
-#undef EH_FRAME_SECTION_ASM_OP
-#define EH_FRAME_SECTION_ASM_OP "\t.section .eh_frame"
-
 /* Define the name of the .ident op.  */
 #undef IDENT_ASM_OP
 #define IDENT_ASM_OP "\t.ident\t"
@@ -189,14 +185,8 @@ dtor_section ()							\
     fprintf (FILE, "\n");			\
   } while (0)
 
-/* Tell GCC how to output a section name. Add "x" for code sections.  */
-#define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME, RELOC)\
-  do {									\
-    if ((DECL) && TREE_CODE (DECL) == FUNCTION_DECL)			\
-      fprintf ((FILE), "\t.section %s,\"x\"\n", (NAME));		\
-    else								\
-      fprintf ((FILE), "\t.section %s\n", (NAME));			\
-  } while (0)
+/* Switch into a generic section.  */
+#define TARGET_ASM_NAMED_SECTION  default_coff_asm_named_section
 
 #define ASM_OUTPUT_DESTRUCTOR(FILE,NAME)	\
   do {						\
@@ -286,11 +276,6 @@ while (0)
 /* Support for C++ templates.  */
 #undef MAKE_DECL_ONE_ONLY
 #define MAKE_DECL_ONE_ONLY(DECL) (DECL_WEAK (DECL) = 1)
-
-/* Additional support for C++ templates and support for
-   garbage collection.  */
-#undef UNIQUE_SECTION_P
-#define UNIQUE_SECTION_P(DECL) (DECL_ONE_ONLY (DECL))
 
 #undef UNIQUE_SECTION
 #define UNIQUE_SECTION(DECL,RELOC)				\

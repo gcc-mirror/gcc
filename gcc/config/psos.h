@@ -73,13 +73,8 @@ Boston, MA 02111-1307, USA.
   do { fputs ("\t.weak\t", FILE); assemble_name (FILE, NAME); \
        fputc ('\n', FILE); } while (0)
 
-/* Switch into a generic section. */
-
-#define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME, RELOC) \
-  fprintf (FILE, ".section\t%s,\"%s\",@progbits\n", NAME, \
-	   (DECL) && TREE_CODE (DECL) == FUNCTION_DECL ? "ax" : \
-	   (DECL) && DECL_READONLY_SECTION (DECL, RELOC) ? "a" : "aw")
-
+/* Switch into a generic section.  */
+#define TARGET_ASM_NAMED_SECTION  default_elf_asm_named_section
 
 /* Define the pseudo-ops used to switch to the .ctors and .dtors
    sections. */

@@ -103,23 +103,9 @@ Boston, MA 02111-1307, USA.  */
 #undef ASM_FINAL_SPEC
 #undef STARTFILE_SPEC
 
-/* A C statement to output something to the assembler file to switch to 
-   section NAME for object DECL which is either a FUNCTION_DECL, a VAR_DECL 
-   or NULL_TREE.  Some target formats do not support arbitrary sections.  
-   Do not define this macro in such cases. mips.h doesn't define this, 
-   do it here.  */
-#define ASM_OUTPUT_SECTION_NAME(F, DECL, NAME, RELOC)                        \
-do {                                                                         \
-  extern FILE *asm_out_text_file;                                            \
-  if ((DECL) && TREE_CODE (DECL) == FUNCTION_DECL)                           \
-    fprintf (asm_out_text_file, "\t.section %s,\"ax\",@progbits\n", (NAME)); \
-  else if ((DECL) && DECL_READONLY_SECTION (DECL, RELOC))                    \
-    fprintf (F, "\t.section %s,\"a\",@progbits\n", (NAME));                  \
-  else if (! strcmp (NAME, ".bss"))                         	     	     \
-    fprintf (F, "\t.section %s,\"aw\",@nobits\n", (NAME));      	     \
-  else                                                                       \
-    fprintf (F, "\t.section %s,\"aw\",@progbits\n", (NAME));                 \
-} while (0)
+/* Switch into a generic section.  */
+#undef TARGET_ASM_NAMED_SECTION
+#define TARGET_ASM_NAMED_SECTION  default_elf_asm_named_section
 
 /* collect2 support (Macros for initialization).  */
 

@@ -232,6 +232,11 @@ Boston, MA 02111-1307, USA.  */
        fprintf (FILE, ".reference .destructors_used\n");        \
       } while (0)
 
+/* ??? Should be changed to EH_FRAME_SECTION_NAME, but that requires
+   named section support.  Based on this definition, it seems clear
+   that the object file format supports named sections, but it has
+   not been implemented in gcc.  */
+#error "Implement named section support"
 #define EH_FRAME_SECTION_ASM_OP "\t.section __TEXT,__eh_frame,regular"
 
 /* Don't output a .file directive.  That is only used by the assembler for

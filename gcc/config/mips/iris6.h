@@ -217,19 +217,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define POPSECTION_ASM_OP	"\t.popsection"
 
-#define DEBUG_INFO_SECTION	".debug_info,0x7000001e,0,0,1"
-#define DEBUG_LINE_SECTION	".debug_line,0x7000001e,0,0,1"
-#define DEBUG_SFNAMES_SECTION	".debug_sfnames,0x7000001e,0,0,1"
-#define DEBUG_SRCINFO_SECTION	".debug_srcinfo,0x7000001e,0,0,1"
-#define DEBUG_MACINFO_SECTION	".debug_macinfo,0x7000001e,0,0,1"
-#define DEBUG_PUBNAMES_SECTION	".debug_pubnames,0x7000001e,0,0,1"
-#define DEBUG_ARANGES_SECTION	".debug_aranges,0x7000001e,0,0,1"
-#define DEBUG_FRAME_SECTION	".debug_frame,0x7000001e,0x08000000,0,1"
-#define DEBUG_ABBREV_SECTION	".debug_abbrev,0x7000001e,0,0,1"
-#define DEBUG_LOC_SECTION	".debug_loc,0x7000001e,0,0,1"
-#define DEBUG_STR_SECTION	".debug_str,0x7000001e,0,0,1"
-#define DEBUG_RANGES_SECTION	".debug_ranges,0x7000001e,0,0,1"
-
 /* ??? If no mabi=X option give, but a mipsX option is, then should depend
    on the mipsX option.  */
 /* If no mips[3,4] option given, give the appropriate default for mabi=X */
@@ -278,12 +265,9 @@ Boston, MA 02111-1307, USA.  */
 #if _MIPS_SZPTR == 64
 #define CTORS_SECTION_ASM_OP "\t.section\t.ctors,1,2,0,8"
 #define DTORS_SECTION_ASM_OP "\t.section\t.dtors,1,2,0,8"
-#define EH_FRAME_SECTION_ASM_OP "\t.section\t.eh_frame,1,2,0,8"
 #else /* _MIPS_SZPTR != 64 */
 #define CTORS_SECTION_ASM_OP "\t.section\t.ctors,1,2,0,4"
 #define DTORS_SECTION_ASM_OP "\t.section\t.dtors,1,2,0,4"
-#define EH_FRAME_SECTION_ASM_OP "\t.section\t.eh_frame,1,2,0,4"
-
 #endif /* _MIPS_SZPTR == 64 */
 
 #else /* ! (defined (CRT_BEGIN) || defined (CRT_END)) */
@@ -293,8 +277,6 @@ Boston, MA 02111-1307, USA.  */
   (Pmode == DImode ? "\t.section\t.ctors,1,2,0,8" : "\t.section\t.ctors,1,2,0,4")
 #define DTORS_SECTION_ASM_OP \
   (Pmode == DImode ? "\t.section\t.dtors,1,2,0,8" : "\t.section\t.dtors,1,2,0,4")
-#define EH_FRAME_SECTION_ASM_OP \
-  (Pmode == DImode ? "\t.section\t.eh_frame,1,2,0,8" : "\t.section\t.eh_frame,1,2,0,4")
 #endif /* defined (CRT_BEGIN) || defined (CRT_END) */
 
 /* A default list of other sections which we might be "in" at any given
@@ -382,22 +364,9 @@ dtors_section ()							\
     fprintf (FILE, "\n");						\
   } while (0)
 
-/* A C statement to output something to the assembler file to switch to section
-   NAME for object DECL which is either a FUNCTION_DECL, a VAR_DECL or
-   NULL_TREE.  */
-
-#define ASM_OUTPUT_SECTION_NAME(F, DECL, NAME, RELOC)			\
-do {									\
-  extern FILE *asm_out_text_file;					\
-  if ((DECL) && TREE_CODE (DECL) == FUNCTION_DECL)			\
-    fprintf (asm_out_text_file, "\t.section %s,1,6,4,4\n", (NAME));	\
-  else if ((DECL) && DECL_READONLY_SECTION (DECL, RELOC))		\
-    fprintf (F, "\t.section %s,1,2,0,8\n", (NAME));			\
-  else if (! strcmp (NAME, ".bss"))                         		\
-    fprintf (F, "\t.section %s,\"aw\",@nobits\n", (NAME));      	\
-  else									\
-    fprintf (F, "\t.section %s,1,3,0,8\n", (NAME));			\
-} while (0)
+/* Switch into a generic section.  */
+#undef TARGET_ASM_NAMED_SECTION
+#define TARGET_ASM_NAMED_SECTION  iris6_asm_named_section
 
 /* Stuff for constructors.  End here.  */
 

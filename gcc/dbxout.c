@@ -83,6 +83,7 @@ Boston, MA 02111-1307, USA.  */
 #include "tm_p.h"
 #include "ggc.h"
 #include "debug.h"
+#include "target.h"
 
 #ifdef XCOFF_DEBUGGING_INFO
 #include "xcoffout.h"
@@ -290,9 +291,7 @@ static void dbxout_start_source_file	PARAMS ((unsigned, const char *));
 static void dbxout_end_source_file	PARAMS ((unsigned));
 static void dbxout_source_line		PARAMS ((unsigned int, const char *));
 static void dbxout_source_file		PARAMS ((FILE *, const char *));
-#if defined(ASM_OUTPUT_SECTION_NAME)
 static void dbxout_function_end		PARAMS ((void));
-#endif
 static void dbxout_typedefs		PARAMS ((tree));
 static void dbxout_type_index		PARAMS ((tree));
 #if DBX_CONTIN_LENGTH > 0
@@ -378,7 +377,6 @@ struct gcc_debug_hooks xcoff_debug_hooks =
 };
 #endif /* XCOFF_DEBUGGING_INFO  */
 
-#if defined(ASM_OUTPUT_SECTION_NAME)
 static void
 dbxout_function_end ()
 {
@@ -399,7 +397,6 @@ dbxout_function_end ()
   assemble_name (asmfile, XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0));
   fprintf (asmfile, "\n");
 }
-#endif /* ! NO_DBX_FUNCTION_END */
 
 /* At the beginning of compilation, start writing the symbol table.
    Initialize `typevec' and output the standard data types of C.  */
@@ -642,14 +639,12 @@ dbxout_function_decl (decl)
 #ifdef DBX_OUTPUT_FUNCTION_END
   DBX_OUTPUT_FUNCTION_END (asmfile, decl);
 #endif
-#if defined(ASM_OUTPUT_SECTION_NAME)
   if (use_gnu_debug_info_extensions
 #if defined(NO_DBX_FUNCTION_END)
       && ! NO_DBX_FUNCTION_END
 #endif
-      )
+      && targetm.have_named_sections)
     dbxout_function_end ();
-#endif
 }
 
 #endif /* DBX_DEBUGGING_INFO  */

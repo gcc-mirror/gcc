@@ -132,6 +132,9 @@ static int        mcore_dllexport_p            PARAMS ((tree));
 static int        mcore_dllimport_p            PARAMS ((tree));
 static int        mcore_valid_decl_attribute   PARAMS ((tree, tree,
 							tree, tree));
+static void	  mcore_asm_named_section      PARAMS ((const char *,
+							unsigned int,
+							unsigned int));
 
 /* Initialize the GCC target structure.  */
 #ifdef TARGET_DLLIMPORT_DECL_ATTRIBUTES
@@ -3593,4 +3596,13 @@ int
 mcore_naked_function_p ()
 {
   return lookup_attribute ("naked", DECL_MACHINE_ATTRIBUTES (current_function_decl)) != NULL_TREE;
+}
+
+static void
+mcore_asm_named_section (name, flags, align)
+     const char *name;
+     unsigned int flags ATTRIBUTE_UNUSED;
+     unsigned int align ATTRIBUTE_UNUSED;
+{
+  fprintf (asm_out_file, "\t.section %s\n", name);
 }

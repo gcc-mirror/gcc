@@ -159,10 +159,6 @@ extern void readonly_data_section	PARAMS ((void));
 /* Determine if we're in the text section. */
 extern int in_text_section		PARAMS ((void));
 
-#ifdef EH_FRAME_SECTION_ASM_OP
-extern void eh_frame_section		PARAMS ((void));
-#endif
-
 #ifdef CTORS_SECTION_ASM_OP
 extern void ctors_section PARAMS ((void));
 #endif
@@ -459,3 +455,30 @@ extern void default_function_pro_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 
 /* Default target hook that outputs nothing to a stream.  */
 extern void no_asm_to_stream PARAMS ((FILE *));
+
+/* Flags controling properties of a section.  */
+#define SECTION_CODE	    1	/* contains code */
+#define SECTION_WRITE	    2	/* data is writable */
+#define SECTION_DEBUG	    4	/* contains debug data */
+#define SECTION_LINKONCE    8	/* is linkonce */
+#define SECTION_SMALL	   16	/* contains "small data" */
+#define SECTION_BSS	   32	/* contains zeros only */
+#define SECTION_FORGET	   64	/* forget that we've entered the section */
+#define SECTION_MACH_DEP  128	/* subsequent bits reserved for target */
+
+extern void named_section_flags		PARAMS ((const char *, unsigned int,
+						 unsigned int));
+
+union tree_node;
+extern unsigned int default_section_type_flags PARAMS ((union tree_node *,
+							const char *, int));
+
+extern void default_no_named_section PARAMS ((const char *, unsigned int,
+					      unsigned int));
+extern void default_elf_asm_named_section PARAMS ((const char *, unsigned int,
+					      unsigned int));
+extern void default_coff_asm_named_section PARAMS ((const char *, unsigned int,
+					      unsigned int));
+extern void default_pe_asm_named_section PARAMS ((const char *, unsigned int,
+					      unsigned int));
+

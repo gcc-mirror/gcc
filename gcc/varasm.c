@@ -46,6 +46,7 @@ Boston, MA 02111-1307, USA.  */
 #include "ggc.h"
 #include "tm_p.h"
 #include "debug.h"
+#include "target.h"
 
 #ifdef XCOFF_DEBUGGING_INFO
 #include "xcoffout.h"		/* Needed for external data
@@ -181,13 +182,11 @@ static hashval_t const_str_htab_hash	PARAMS ((const void *x));
 static int const_str_htab_eq		PARAMS ((const void *x, const void *y));
 static void const_str_htab_del		PARAMS ((void *));
 static void asm_emit_uninitialised	PARAMS ((tree, const char*, int, int));
+static void resolve_unique_section	PARAMS ((tree, int));
 
 static enum in_section { no_section, in_text, in_data, in_named
 #ifdef BSS_SECTION_ASM_OP
   , in_bss
-#endif
-#ifdef EH_FRAME_SECTION_ASM_OP
-  , in_eh_frame
 #endif
 #ifdef EXTRA_SECTIONS
   , EXTRA_SECTIONS
@@ -281,6 +280,28 @@ in_data_section ()
   return in_section == in_data;
 }
 
+/* Tell assembler to change to section NAME with attributes FLAGS.  */
+
+void
+named_section_flags (name, flags, align)
+     const char *name;
+     unsigned int flags;
+     unsigned int align;
+{
+  if (in_section != in_named || strcmp (name, in_named_name))
+    {
+      (* targetm.asm_out.named_section) (name, flags, align);
+
+      if (flags & SECTION_FORGET)
+	in_section = no_section;
+      else
+	{
+	  in_named_name = ggc_strdup (name);
+	  in_section = in_named;
+	}
+    }
+}
+
 /* Tell assembler to change to section NAME for DECL.
    If DECL is NULL, just switch to section NAME.
    If NAME is NULL, get the name from DECL.
@@ -290,27 +311,31 @@ void
 named_section (decl, name, reloc)
      tree decl;
      const char *name;
-     int reloc ATTRIBUTE_UNUSED;
+     int reloc;
 {
+  unsigned int flags;
+
   if (decl != NULL_TREE && !DECL_P (decl))
     abort ();
   if (name == NULL)
     name = TREE_STRING_POINTER (DECL_SECTION_NAME (decl));
 
-  if (in_section != in_named || strcmp (name, in_named_name))
-    {
-#ifdef ASM_OUTPUT_SECTION_NAME
-      ASM_OUTPUT_SECTION_NAME (asm_out_file, decl, name, reloc);
-#else
-      /* Section attributes are not supported if this macro isn't provided -
-	 some host formats don't support them at all.  The front-end should
-	 already have flagged this as an error.  */
-      abort ();
-#endif
+  flags = (* targetm.section_type_flags) (decl, name, reloc);
+  named_section_flags (name, flags, 0);
+}
 
-      in_named_name = ggc_strdup (name);
-      in_section = in_named;
-    }
+/* If required, set DECL_SECTION_NAME to a unique name.  */
+
+static void
+resolve_unique_section (decl, reloc)
+     tree decl;
+     int reloc;
+{
+  if (DECL_SECTION_NAME (decl) == NULL_TREE
+      && (flag_function_sections
+	  || (targetm.have_named_sections
+	      && DECL_ONE_ONLY (decl))))
+    UNIQUE_SECTION (decl, reloc);
 }
 
 #ifdef BSS_SECTION_ASM_OP
@@ -392,18 +417,6 @@ asm_output_aligned_bss (file, decl, name, size, align)
 
 #endif /* BSS_SECTION_ASM_OP */
 
-#ifdef EH_FRAME_SECTION_ASM_OP
-void
-eh_frame_section ()
-{
-  if (in_section != in_eh_frame)
-    {
-      fprintf (asm_out_file, "%s\n", EH_FRAME_SECTION_ASM_OP);
-      in_section = in_eh_frame;
-    }
-} 
-#endif
-
 /* Switch to the section for function DECL.
 
    If DECL is NULL_TREE, switch to the text section.
@@ -467,14 +480,12 @@ exception_section ()
 #if defined (EXCEPTION_SECTION)
   EXCEPTION_SECTION ();
 #else
-#ifdef ASM_OUTPUT_SECTION_NAME
-  named_section (NULL_TREE, ".gcc_except_table", 0);
-#else
-  if (flag_pic)
+  if (targetm.have_named_sections)
+    named_section (NULL_TREE, ".gcc_except_table", 0);
+  else if (flag_pic)
     data_section ();
   else
     readonly_data_section ();
-#endif
 #endif
 }
 
@@ -896,15 +907,7 @@ assemble_start_function (decl, fnname)
   if (CONSTANT_POOL_BEFORE_FUNCTION)
     output_constant_pool (fnname, decl);
 
-#ifdef ASM_OUTPUT_SECTION_NAME
-  /* If the function is to be put in its own section and it's not in a section
-     already, indicate so.  */
-  if ((flag_function_sections
-       && DECL_SECTION_NAME (decl) == NULL_TREE)
-      || UNIQUE_SECTION_P (decl))
-    UNIQUE_SECTION (decl, 0);
-#endif
-
+  resolve_unique_section (decl, 0);
   function_section (decl);
 
   /* Tell assembler to move to target machine's alignment for functions.  */
@@ -1163,12 +1166,8 @@ asm_emit_uninitialised (decl, name, size, rounded)
 	}
     }
 
-#ifdef ASM_OUTPUT_SECTION_NAME
-  /* We already know that DECL_SECTION_NAME() == NULL.  */
-  if (flag_data_sections != 0 || UNIQUE_SECTION_P (decl))
-    UNIQUE_SECTION (decl, 0);
-#endif
-  
+  resolve_unique_section (decl, 0);
+
   switch (destination)
     {
 #ifdef ASM_EMIT_BSS
@@ -1396,13 +1395,8 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
   else if (DECL_INITIAL (decl))
     reloc = output_addressed_constants (DECL_INITIAL (decl));
 
-#ifdef ASM_OUTPUT_SECTION_NAME
-  if ((flag_data_sections != 0 && DECL_SECTION_NAME (decl) == NULL_TREE)
-      || UNIQUE_SECTION_P (decl))
-    UNIQUE_SECTION (decl, reloc);
-#endif
-
   /* Switch to the appropriate section.  */
+  resolve_unique_section (decl, reloc);
   variable_section (decl, reloc);
 
   /* dbxout.c needs to know this.  */
@@ -4764,4 +4758,143 @@ init_varasm_once ()
 		mark_const_hash_entry);
   ggc_add_root (&const_str_htab, 1, sizeof const_str_htab,
 		mark_const_str_htab);
+}
+
+/* Select a set of attributes for section NAME based on the properties
+   of DECL and whether or not RELOC indicates that DECL's initializer
+   might contain runtime relocations.
+
+   We make the section read-only and executable for a function decl,
+   read-only for a const data decl, and writable for a non-const data decl.
+
+   If the section has already been defined, to not allow it to have
+   different attributes, as (1) this is ambiguous since we're not seeing
+   all the declarations up front and (2) some assemblers (e.g. SVR4)
+   do not recoginize section redefinitions.  */
+
+unsigned int
+default_section_type_flags (decl, name, reloc)
+     tree decl;
+     const char *name;
+     int reloc;
+{
+  static htab_t htab;
+  unsigned int flags;
+  unsigned int **slot;
+
+  /* The names we put in the hashtable will always be the unique
+     versions gived to us by the stringtable, so we can just use
+     their addresses as the keys.  */
+  if (!htab)
+    htab = htab_create (31, htab_hash_pointer, htab_eq_pointer, NULL);
+
+  if (decl && TREE_CODE (decl) == FUNCTION_DECL)
+    flags = SECTION_CODE;
+  else if (decl && DECL_READONLY_SECTION (decl, reloc))
+    flags = 0;
+  else
+    flags = SECTION_WRITE;
+
+  if (decl && DECL_ONE_ONLY (decl))
+    flags |= SECTION_LINKONCE;
+
+  if (strcmp (name, ".bss") == 0
+      || strncmp (name, ".bss.", 5) == 0
+      || strncmp (name, ".gnu.linkonce.b.", 16) == 0
+      || strcmp (name, ".sbss") == 0
+      || strncmp (name, ".sbss.", 6) == 0
+      || strncmp (name, ".gnu.linkonce.sb.", 17) == 0)
+    flags |= SECTION_BSS;
+
+  /* See if we already have an entry for this section.  */
+  slot = (unsigned int **) htab_find_slot (htab, name, INSERT);
+  if (!*slot)
+    {
+      *slot = (unsigned int *) xmalloc (sizeof (unsigned int));
+      **slot = flags;
+    }
+  else
+    {
+      if (decl && **slot != flags)
+	error_with_decl (decl, "%s causes a section type conflict");
+    }
+
+  return flags;
+}
+
+/* Output assembly to switch to section NAME with attribute FLAGS.
+   Four variants for common object file formats.  */
+
+void
+default_no_named_section (name, flags, align)
+     const char *name ATTRIBUTE_UNUSED;
+     unsigned int flags ATTRIBUTE_UNUSED;
+     unsigned int align ATTRIBUTE_UNUSED;
+{
+  /* Some object formats don't support named sections at all.  The
+     front-end should already have flagged this as an error.  */
+  abort ();
+}
+
+void
+default_elf_asm_named_section (name, flags, align)
+     const char *name;
+     unsigned int flags;
+     unsigned int align ATTRIBUTE_UNUSED;
+{
+  char flagchars[8], *f = flagchars;
+  const char *type;
+
+  if (!(flags & SECTION_DEBUG))
+    *f++ = 'a';
+  if (flags & SECTION_WRITE)
+    *f++ = 'w';
+  if (flags & SECTION_CODE)
+    *f++ = 'x';
+  if (flags & SECTION_SMALL)
+    *f++ = 's';
+  *f = '\0';
+
+  if (flags & SECTION_BSS)
+    type = "nobits";
+  else
+    type = "progbits";
+
+  fprintf (asm_out_file, "\t.section\t%s,\"%s\",@%s\n",
+	   name, flagchars, type);
+}
+
+void
+default_coff_asm_named_section (name, flags, align)
+     const char *name;
+     unsigned int flags;
+     unsigned int align ATTRIBUTE_UNUSED;
+{
+  char flagchars[8], *f = flagchars;
+
+  if (flags & SECTION_WRITE)
+    *f++ = 'w';
+  if (flags & SECTION_CODE)
+    *f++ = 'x';
+  *f = '\0';
+
+  fprintf (asm_out_file, "\t.section\t%s,\"%s\"\n", name, flagchars);
+}
+
+void
+default_pe_asm_named_section (name, flags, align)
+     const char *name;
+     unsigned int flags;
+     unsigned int align ATTRIBUTE_UNUSED;
+{
+  default_coff_asm_named_section (name, flags, align);
+
+  if (flags & SECTION_LINKONCE)
+    {
+      /* Functions may have been compiled at various levels of
+         optimization so we can't use `same_size' here.
+         Instead, have the linker pick one.  */
+      fprintf (asm_out_file, "\t.linkonce %s\n",
+	       (flags & SECTION_CODE ? "discard" : "same_size"));
+    }
 }

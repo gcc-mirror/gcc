@@ -1,3 +1,119 @@
+2001-08-03  Richard Henderson  <rth@redhat.com>
+
+	* target.h (gcc_target): Add asm_out.named_section, 
+	section_type_flags, have_named_sections.
+	* target-def.h (TARGET_ASM_NAMED_SECTION): New.
+	(TARGET_HAVE_NAMED_SECTIONS): New.
+	(TARGET_SECTION_TYPE_FLAGS): New.
+
+	* Makefile.in (toplev.o): Depend on TARGET_H.
+	(varasm.o, dbxout.o): Likewise.
+	* c-common.c (decl_attributes): Check targetm.have_named_sections
+	instead of ifdef ASM_OUTPUT_SECTION_NAME.
+	* dbxout.c (dbxout_function_decl): Likewise.
+	(dbxout_function_end): Likewise.
+	* toplev.c (compile_file): Likewise.
+	* varasm.c (exception_section): Likewise.
+	* cp/decl2.c (finish_objects): Likewise.
+
+	* defaults.h (EH_FRAME_SECTION): Remove.
+	(EH_FRAME_SECTION_ASM_OP): Remove.
+	(EH_FRAME_SECTION_NAME): New.
+	(UNIQUE_SECTION): Don't depend on ASM_OUTPUT_SECTION_NAME.
+	(UNIQUE_SECTION_P): Remove.
+	* dwarf2out.c (SECTION_FORMAT): Remove.
+	(ASM_OUTPUT_SECTION): Remove.
+	(output_call_frame_info): Use named_section_flags.
+	(output_comp_unit, dwarf2out_start_source_file): Likewise.
+	(dwarf2out_end_source_file, dwarf2out_define): Likewise.
+	(dwarf2out_undef, dwarf2out_init, dwarf2out_finish): Likewise.
+	* varasm.c (in_eh_frame, eh_frame_section): Remove.
+	(named_section_flags): New.
+	(named_section): Use it and targetm.section_type_flags.
+	(resolve_unique_section): New.
+	(assemble_start_function): Use it.
+	(asm_emit_uninitialised, assemble_variable): Likewise.
+	(default_section_type_flags): New.
+	(default_no_named_section, default_elf_asm_named_section): New.
+	(default_coff_asm_named_section, default_pe_asm_named_section): New.
+	* output.h: Update varasm.c decls.
+	(SECTION_*): New flags.
+
+	* crtstuff.c: Check EH_FRAME_SECTION_NAME not EH_FRAME_SECTION_ASM_OP.
+	(__EH_FRAME_BEGIN__, __FRAME_END__): Use attribute section.
+
+	* config/elfos.h (UNIQUE_SECTION_P): Remove.
+	* config/alpha/elf.h, config/arm/linux-elf.h: Likewise.
+	* config/arm/pe.h, config/arm/unknown-elf.h: Likewise.
+	* config/i386/cygwin.h, config/i386/djgpp.h: Likewise.
+	* config/i386/i386-interix.h, config/i386/win32.h: Likewise.
+	* config/ia64/sysv4.h, config/mcore/mcore-pe.h: Likewise.
+	* config/mips/elf.h, config/mips/elf64.h: Likewise.
+	* config/mips/iris6gld.h, config/mips/mips.h: Likewise.
+	* config/pa/pa64-hpux.h, 
+
+	* config/elfos.h (ASM_OUTPUT_SECTION_NAME): Remove.
+	(TARGET_ASM_NAMED_SECTION): New.
+	* config/psos.h, config/a29k/a29k.h, config/alpha/elf.h: Likewise.
+	* config/alpha/vms.h, config/arm/coff.h: Likewise.
+	* config/arm/conix-elf.h, config/arm/elf.h: Likewise.
+	* config/arm/linux-elf.h, config/arm/pe.h: Likewise.
+	* config/arm/unknown-elf.h, config/avr/avr.h: Likewise.
+	* config/c4x/c4x.h, config/h8300/h8300.h: Likewise.
+	* config/i386/cygwin.h, config/i386/djgpp.h: Likewise.
+	* config/i386/i386-interix.h, config/i386/i386elf.h : Likewise.
+	* config/i386/sco5.h, config/i386/win32.h: Likewise.
+	* config/m68k/coff.h, config/mcore/mcore-pe.h: Likewise.
+	* config/mcore/mcore.h, config/mips/elf.h: Likewise.
+	* config/mips/elf64.h, config/mips/iris6.h: Likewise.
+	* config/mips/netbsd.h, config/mips/openbsd.h: Likewise.
+	* config/pa/pa64-hpux.h, config/rs6000/sysv4.h: Likewise.
+	* config/rs6000/xcoff.h, config/sh/sh.h: Likewise.
+	* config/sparc/sysv4.h: Likewise.
+
+	* config/nextstep.h: Error until named sections implemented.
+
+	* config/a29k/a29k.c (a29k_asm_named_section): New.
+	* config/alpha/alpha.c (SECTION_VMS_OVERLAY): New.
+	(vms_section_type_flags, vms_asm_named_section): New.
+	* config/arm/arm.c (arm_elf_asm_named_section): New.
+	* config/avr/avr.c (asm_output_section_name): Remove.
+	* config/avr/avr-protos.h: Update.
+	* config/c4x/c4x.c (c4x_asm_named_section): New.
+	* config/h8300/h8300.c (h8300_asm_named_section): New.
+	* config/i386/i386.c (sco_asm_named_section): New.
+	* config/i386/winnt.c (SECTION_PE_SHARED): New.
+	(i386_pe_section_type_flags): New.
+	(i386_pe_asm_named_section): New.
+	* config/i386/i386-protos.h: Update.
+	* config/m68k/m68k.c (m68k_coff_asm_named_section): New.
+	* config/mcore/mcore.c (mcore_asm_named_section): New.
+	* config/mips/mips.c (iris6_asm_named_section): New.
+	* config/mips/mips.h (ENCODE_SECTION_INFO): Use DECL_ONE_ONLY
+	instead of UNIQUE_SECTION_P.
+	* config/rs6000/rs6000.c (rs6000_elf_section_type_flags): New.
+	(xcoff_asm_named_section): New.
+	* config/sh/sh.c (sh_asm_named_section): New.
+	* config/sparc/sparc.c (sparc_elf_asm_named_section): New.
+
+	* config/i386/djgpp.h (EH_FRAME_SECTION_ASM_OP): Remove.
+	* config/i386/sco5.h (EH_FRAME_SECTION_ASM_OP*): Remove.
+	(EH_FRAME_SECTION_NAME): New.
+	(EXCEPTION_SECTION): New.
+	* config/ia64/ia64.h (EH_FRAME_SECTION_ASM_OP): Remove.
+	(DEBUG_*_SECTION): Remove.
+	* config/m68k/rtemself.h (EH_FRAME_SECTION_ASM_OP): Remove.
+	* config/mips/iris6.h (DEBUG_*_SECTION): Remove.
+	(EH_FRAME_SECTION_ASM_OP): Remove.
+
+	* doc/tm.texi (UNIQUE_SECTION_P): Remove.
+	(ASM_OUTPUT_SECTION_NAME): Remove.
+	(TARGET_ASM_NAMED_SECTION): New.
+	(TARGET_HAVE_NAMED_SECTIONS): New.
+	(TARGET_SECTION_TYPE_FLAGS): New.
+	(EH_FRAME_SECTION_ASM_OP): Remove.
+	(EH_FRAME_SECTION_NAME): New.
+
 2001-08-03  Zack Weinberg  <zackw@stanford.edu>
 
 	* builtins.c (fold_builtin_constant_p): Return integer_zero_node

@@ -1357,7 +1357,7 @@ toplev.o : toplev.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(RTL_H) function.h \
    debug.h insn-config.h intl.h $(RECOG_H) Makefile toplev.h \
    dwarf2out.h sdbout.h dbxout.h $(EXPR_H) hard-reg-set.h $(BASIC_BLOCK_H) \
    graph.h $(LOOP_H) except.h $(REGS_H) $(TIMEVAR_H) $(lang_options_files) \
-   ssa.h $(PARAMS_H) $(TM_P_H) reload.h dwarf2asm.h
+   ssa.h $(PARAMS_H) $(TM_P_H) reload.h dwarf2asm.h $(TARGET_H)
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(MAYBE_USE_COLLECT2) \
 	  -DTARGET_NAME=\"$(target_alias)\" \
 	  -c $(srcdir)/toplev.c
@@ -1377,7 +1377,7 @@ errors.o : errors.c $(GCONFIG_H) $(SYSTEM_H) errors.h
 varasm.o : varasm.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(RTL_H) flags.h \
    function.h $(EXPR_H) hard-reg-set.h $(REGS_H) $(OBSTACK_H) \
    output.h c-pragma.h toplev.h xcoffout.h debug.h $(GGC_H) $(TM_P_H) \
-   $(HASHTAB_H)
+   $(HASHTAB_H) $(TARGET_H)
 function.o : function.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TREE_H) flags.h \
    function.h $(EXPR_H) $(REGS_H) hard-reg-set.h \
    insn-config.h $(RECOG_H) output.h toplev.h except.h hash.h $(GGC_H) $(TM_P_H)
@@ -1408,7 +1408,7 @@ optabs.o : optabs.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TREE_H) flags.h  \
    insn-config.h $(EXPR_H) $(RECOG_H) reload.h \
    toplev.h $(GGC_H) real.h $(TM_P_H) except.h
 dbxout.o : dbxout.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(RTL_H) flags.h \
-    $(REGS_H) debug.h $(TM_P_H) \
+    $(REGS_H) debug.h $(TM_P_H) $(TARGET_H) \
    insn-config.h reload.h gstab.h xcoffout.h output.h dbxout.h toplev.h
 debug.o : debug.c $(CONFIG_H) $(SYSTEM_H)
 sdbout.o : sdbout.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(RTL_H) flags.h \

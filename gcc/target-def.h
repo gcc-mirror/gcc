@@ -33,12 +33,20 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #define TARGET_ASM_FUNCTION_END_PROLOGUE no_asm_to_stream
 #define TARGET_ASM_FUNCTION_BEGIN_EPILOGUE no_asm_to_stream
 
+#ifdef TARGET_ASM_NAMED_SECTION
+#define TARGET_HAVE_NAMED_SECTIONS true
+#else
+#define TARGET_ASM_NAMED_SECTION default_no_named_section
+#define TARGET_HAVE_NAMED_SECTIONS false
+#endif
+
 #define TARGET_ASM_OUT {TARGET_ASM_OPEN_PAREN,			\
 			TARGET_ASM_CLOSE_PAREN,			\
 			TARGET_ASM_FUNCTION_PROLOGUE,		\
 			TARGET_ASM_FUNCTION_END_PROLOGUE,	\
 			TARGET_ASM_FUNCTION_BEGIN_EPILOGUE,	\
-			TARGET_ASM_FUNCTION_EPILOGUE}
+			TARGET_ASM_FUNCTION_EPILOGUE,		\
+			TARGET_ASM_NAMED_SECTION}
 
 /* All in tree.c.  */
 #define TARGET_MERGE_DECL_ATTRIBUTES merge_decl_attributes
@@ -53,6 +61,11 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #define TARGET_INIT_BUILTINS default_init_builtins
 #define TARGET_EXPAND_BUILTIN default_expand_builtin
 
+/* In varasm.c.  */
+#ifndef TARGET_SECTION_TYPE_FLAGS
+#define TARGET_SECTION_TYPE_FLAGS default_section_type_flags
+#endif
+
 /* The whole shebang.  */
 #define TARGET_INITIALIZER			\
 {						\
@@ -65,5 +78,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
   TARGET_SET_DEFAULT_TYPE_ATTRIBUTES,		\
   TARGET_INSERT_ATTRIBUTES,			\
   TARGET_INIT_BUILTINS,				\
-  TARGET_EXPAND_BUILTIN				\
+  TARGET_EXPAND_BUILTIN,			\
+  TARGET_SECTION_TYPE_FLAGS,			\
+  TARGET_HAVE_NAMED_SECTIONS			\
 }

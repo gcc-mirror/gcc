@@ -1948,13 +1948,8 @@ dtors_section()							\
    which could be text or it could be a user defined section.  */
 #define JUMP_TABLES_IN_TEXT_SECTION 1
 
-/* A C statement to output something to the assembler file to switch to section
-   NAME for object DECL which is either a FUNCTION_DECL, a VAR_DECL or
-   NULL_TREE.  Some target formats do not support arbitrary sections.  Do not
-   define this macro in such cases.  */
-
-#define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME, RELOC) \
-   do { fprintf (FILE, ".section\t%s\n", NAME); } while (0)
+/* Switch into a generic section.  */
+#define TARGET_ASM_NAMED_SECTION  sh_asm_named_section
 
 /* This is the pseudo-op used to generate a reference to a specific
    symbol in some section.  */

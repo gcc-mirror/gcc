@@ -299,23 +299,9 @@ dtors_section ()						\
 }
 #endif
 
-/* A C statement to output something to the assembler file to switch to
-   section NAME for object DECL which is either a FUNCTION_DECL, a VAR_DECL
-   or NULL_TREE.  */
-#undef  ASM_OUTPUT_SECTION_NAME
-#define ASM_OUTPUT_SECTION_NAME(STREAM, DECL, NAME, RELOC)        	\
-  do									\
-    {								  	\
-      if ((DECL) && TREE_CODE (DECL) == FUNCTION_DECL)		  	\
-	fprintf (STREAM, "\t.section %s,\"ax\",%%progbits\n", NAME);	\
-      else if ((DECL) && DECL_READONLY_SECTION (DECL, RELOC))	  	\
-	fprintf (STREAM, "\t.section %s,\"a\"\n", NAME);		\
-      else if (! strncmp (NAME, ".bss", 4))      			\
-	fprintf (STREAM, "\t.section %s,\"aw\",%%nobits\n", NAME);	\
-      else							 	\
-	fprintf (STREAM, "\t.section %s,\"aw\"\n", NAME);	  	\
-    }									\
-  while (0)
+/* Switch into a generic section.  */
+#undef TARGET_ASM_NAMED_SECTION
+#define TARGET_ASM_NAMED_SECTION  arm_elf_asm_named_section
 
 /* Support the ctors/dtors sections for g++.  */
 #ifndef INT_ASM_OP

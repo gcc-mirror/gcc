@@ -67,6 +67,7 @@ Boston, MA 02111-1307, USA.  */
 #include "dwarf2asm.h"
 #include "integrate.h"
 #include "debug.h"
+#include "target.h"
 
 #if defined (DWARF2_UNWIND_INFO) || defined (DWARF2_DEBUGGING_INFO)
 #include "dwarf2out.h"
@@ -2267,18 +2268,19 @@ compile_file (name)
     debug_hooks = &dwarf2_debug_hooks;
 #endif
 
-#ifndef ASM_OUTPUT_SECTION_NAME
-  if (flag_function_sections)
+  if (! targetm.have_named_sections)
     {
-      warning ("-ffunction-sections not supported for this target.");
-      flag_function_sections = 0;
+      if (flag_function_sections)
+	{
+	  warning ("-ffunction-sections not supported for this target.");
+	  flag_function_sections = 0;
+	}
+      if (flag_data_sections)
+	{
+	  warning ("-fdata-sections not supported for this target.");
+	  flag_data_sections = 0;
+	}
     }
-  if (flag_data_sections)
-    {
-      warning ("-fdata-sections not supported for this target.");
-      flag_data_sections = 0;
-    }
-#endif
 
   if (flag_function_sections
       && (profile_flag || profile_block_flag))

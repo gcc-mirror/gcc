@@ -489,11 +489,8 @@ toc_section ()						\
     }							\
   } while (0)
 
-#define ASM_OUTPUT_SECTION_NAME(ASM_OUT_FILE,DECL,NAME,RELOC)	\
-  do { fputs ("\t.csect ", ASM_OUT_FILE);			\
-       fputs (TREE_STRING_POINTER (DECL_SECTION_NAME (DECL)), ASM_OUT_FILE); \
-       putc ('\n', ASM_OUT_FILE);				\
-  } while (0)
+/* Switch into a generic section.  */
+#define TARGET_ASM_NAMED_SECTION  xcoff_asm_named_section
 
 /* Define the name of the section to use for the exception tables.
    TODO: test and see if we can use read_only_data_section, if so,

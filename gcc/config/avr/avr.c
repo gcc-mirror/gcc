@@ -4556,23 +4556,6 @@ unique_section (decl, reloc)
 }
 
 
-/* Output section name to file FILE
-   We make the section read-only and executable for a function decl,
-   read-only for a const data decl, and writable for a non-const data decl.  */
-
-void
-asm_output_section_name(file, decl, name, reloc)
-     FILE *file;
-     tree decl;
-     const char *name;
-     int reloc ATTRIBUTE_UNUSED;
-{
-  fprintf (file, ".section %s, \"%s\", @progbits\n", name,
-	   decl && TREE_CODE (decl) == FUNCTION_DECL ? "ax" :
-	   decl && TREE_READONLY (decl) ? "a" : "aw");
-}
-
-
 /* The routine used to output NUL terminated strings.  We use a special
    version of this for most svr4 targets because doing so makes the
    generated assembly code more compact (and thus faster to assemble)
