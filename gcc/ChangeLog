@@ -1,3 +1,11 @@
+Sat Aug 28 16:20:12 1999  Richard Henderson  <rth@cygnus.com>
+
+        * haifa-sched.c (sched_analyze): Clear LOG_LINKS before calling
+        sched_analyze_insn.
+        (sched_analyze_1): Let add_dependence care for not adding dups.
+        (sched_analyze_2): Likewise.
+        (add_branch_dependences): Likewise.
+
 Sat Aug 28 15:58:16 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* i386/winnt.c (export_list): New type.
