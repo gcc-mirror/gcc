@@ -1,3 +1,30 @@
+2004-01-19  Arnaud Charlet  <charlet@act-europe.fr>
+
+	* utils.c: Update copyright notice, missed in previous change.
+
+2004-01-19  Vincent Celier  <celier@gnat.com>
+
+	* mlib-prj.adb (Build_Library.Add_ALI_For): Only add the ALI to the
+	args if Bind is True. Set First_ALI, if not already done.
+	(Build_Library): For Stand Alone Libraries, extract from one ALI file
+	an eventual --RTS switch, for gnatbind, and all backend switches +
+	--RTS, for linking.
+
+2004-01-19  Robert Dewar  <dewar@gnat.com>
+
+	* sem_attr.adb, memtrack.adb: Minor reformatting
+
+2004-01-19  Ed Schonberg  <schonberg@gnat.com>
+
+	* exp_ch6.adb (Expand_Call): Remove code to fold calls to functions
+	that rename enumeration literals. This is properly done in sem_eval.
+
+	* sem_eval.ads, sem_eval.adb (Eval_Call): New procedure to fold calls
+	to functions that rename enumeration literals.
+
+	* sem_res.adb (Resolve_Call): Use Eval_Call to fold static calls to
+	functions that rename enumeration literals.
+
 2004-01-16  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* Make-lang.in (utils.o): Depend on target.h.

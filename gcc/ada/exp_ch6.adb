@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1828,32 +1828,10 @@ package body Exp_Ch6 is
          Check_Restriction (No_Abort_Statements, N);
       end if;
 
-      --  Some more special cases for cases other than explicit dereference
-
-      if Nkind (Name (N)) /= N_Explicit_Dereference then
-
-         --  Calls to an enumeration literal are replaced by the literal
-         --  This case occurs only when we have a call to a function that
-         --  is a renaming of an enumeration literal. The normal case of
-         --  a direct reference to an enumeration literal has already been
-         --  been dealt with by Resolve_Call. If the function is itself
-         --  inherited (see 7423-001) the literal of the parent type must
-         --  be explicitly converted to the return type of the function.
-
-         if Ekind (Subp) = E_Enumeration_Literal then
-            if Base_Type (Etype (Subp)) /= Base_Type (Etype (N)) then
-               Rewrite
-                 (N, Convert_To (Etype (N), New_Occurrence_Of (Subp, Loc)));
-            else
-               Rewrite (N, New_Occurrence_Of (Subp, Loc));
-            end if;
-
-            Resolve (N);
-         end if;
+      if Nkind (Name (N)) = N_Explicit_Dereference then
 
       --  Handle case of access to protected subprogram type
 
-      else
          if Ekind (Base_Type (Etype (Prefix (Name (N))))) =
                                E_Access_Protected_Subprogram_Type
          then
