@@ -1,3 +1,14 @@
+2002-06-07  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config.gcc (sh5*-*-netbsd*): Remove sh/t-netbsd-sh5-32
+	from and add t-sh64 to ${tmake_file}.
+	(sh64*-*-netbsd*): Add t-sh64 to ${tmake_file}.
+	* config/sh/t-netbsd-sh5 (LIB1ASMFUNCS): Remove.
+	* config/sh/t-netbsd-sh5-32: Remove.
+	* config/sh/t-netbsd-sh5-64 (MULTILIB_OPTIONS): Use
+	MULTILIB_ENDIAN.
+	(MULTILIB_DIRNAMES): Define.
+
 Thu Jun  6 23:14:46 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (and promoting splitters): Disable QI to SImode promoting
