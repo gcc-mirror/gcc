@@ -1,3 +1,7 @@
+2004-02-14  Eric Botcazou  <ebotcazou@act-europe.fr>
+
+	* gcc.c-torture/compile/20040214-1.c: New test.
+
 2004-02-14  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/13635
@@ -20793,4 +20797,5 @@ rlsruhe.de>
 	correspond to c-torture	1.11.
 
 	* New file.
+
 
