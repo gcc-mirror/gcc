@@ -117,6 +117,7 @@ static void delete_computation		PROTO((rtx));
 static void delete_from_jump_chain	PROTO((rtx));
 static int delete_labelref_insn		PROTO((rtx, rtx, int));
 static void redirect_tablejump		PROTO((rtx, rtx));
+static rtx find_insert_position         PROTO((rtx, rtx));
 
 /* Delete no-op jumps and optimize jumps to jumps
    and jumps around jumps.
@@ -996,11 +997,12 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	    {
 	      rtx new = gen_reg_rtx (GET_MODE (temp2));
 
-	      if (validate_change (temp, &SET_DEST (temp1), new, 0))
+	      if ((temp3 = find_insert_position (insn, temp))
+		  && validate_change (temp, &SET_DEST (temp1), new, 0))
 		{
 		  next = emit_insn_after (gen_move_insn (temp2, new), insn);
 		  emit_insn_after_with_line_notes (PATTERN (temp), 
-						   PREV_INSN (insn), temp);
+						   PREV_INSN (temp3), temp);
 		  delete_insn (temp);
 		  reallabelprev = prev_active_insn (JUMP_LABEL (insn));
 		}
@@ -4707,4 +4709,46 @@ rtx_equal_for_thread_p (x, y, yinsn)
 	}
     }
   return 1;
+}
+
+
+/* Return the insn that NEW can be safely inserted in front of starting at
+   the jump insn INSN.  Return 0 if it is not safe to do this jump
+   optimization.  Note that NEW must contain a single set. */
+
+static rtx
+find_insert_position (insn, new)
+     rtx insn;
+     rtx new;
+{
+  int i;
+  rtx prev;
+
+  /* If NEW does not clobber, it is safe to insert NEW before INSN. */
+  if (GET_CODE (PATTERN (new)) != PARALLEL)
+    return insn;
+
+  for (i = XVECLEN (PATTERN (new), 0) - 1; i >= 0; i--)
+    if (GET_CODE (XVECEXP (PATTERN (new), 0, i)) == CLOBBER
+	&& reg_overlap_mentioned_p (XEXP (XVECEXP (PATTERN (new), 0, i), 0),
+				    insn))
+      break;
+
+  if (i < 0)
+    return insn;
+
+  /* There is a good chance that the previous insn PREV sets the thing
+     being clobbered (often the CC in a hard reg).  If PREV does not
+     use what NEW sets, we can insert NEW before PREV. */
+
+  prev = prev_active_insn (insn);
+  for (i = XVECLEN (PATTERN (new), 0) - 1; i >= 0; i--)
+    if (GET_CODE (XVECEXP (PATTERN (new), 0, i)) == CLOBBER
+	&& reg_overlap_mentioned_p (XEXP (XVECEXP (PATTERN (new), 0, i), 0),
+				    insn))
+	&& ! modified_in_p (XEXP (XVECEXP (PATTERN (new), 0, i), 0),
+			    prev)))
+     return 0;
+
+  return (reg_mentioned_p (SET_DEST (single_set (new)), prev)) ? 0 : prev;
 }
