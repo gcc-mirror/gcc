@@ -1,3 +1,7 @@
+2004-12-03  Roger Sayle  <roger@eyesopen.com>
+
+	* doc/tm.texi (TARGET_DELEGITIMIZE_ADDRESS): Document target hook.
+
 2004-12-03  Richard Henderson  <rth@redhat.com>
 
 	* alias.c (component_uses_parent_alias_set): Rename from 
