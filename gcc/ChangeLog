@@ -1,3 +1,8 @@
+Tue Mar  2 01:07:12 1999  Dan Nicolaescu  <dann@godzilla.ics.uci.edu>
+
+	* final.c (end_final): There are 11 words in the "main header"
+	structure, not 10.
+
 Tue Mar  2 00:09:18 1999  Marc Espie <espie@cvs.openbsd.org>
 
 	* extend.texi: Reference __extension__ in the index.
