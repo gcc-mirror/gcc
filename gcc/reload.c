@@ -3586,7 +3586,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	    || no_input_reloads)
 	&& operand_mode[i] != VOIDmode)
       {
-	*recog_operand_loc[i] = recog_operand[i]
+	substed_operand[i] = recog_operand[i]
 	  = find_reloads_toplev (force_const_mem (operand_mode[i],
 						  recog_operand[i]),
 				 i, address_type[i], ind_levels, 0, insn);
