@@ -58,6 +58,7 @@
 #define _GLIBCPP_TESTSUITE_HOOKS_H
 
 #include <bits/c++config.h>
+#include <bits/functexcept.h>
 #include <cstddef>
 
 #ifdef DEBUG_ASSERT
@@ -113,7 +114,8 @@ class gnu_copy_tracker
     : itsId(rhs.id()), willThrow(rhs.willThrow)
     {
       ++itsCopyCount;
-      if (willThrow) throw "copy tracker exception";
+      if (willThrow) 
+	__throw_exception_again "copy tracker exception";
     }
 
     gnu_copy_tracker& operator=(const gnu_copy_tracker& rhs)

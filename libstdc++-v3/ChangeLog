@@ -1,3 +1,20 @@
+2002-08-02  Benjamin Kosnik  <bkoz@redhat.com>
+
+	Revert PR libstdc++/6594
+	* src/strstream.cc (strstreambuf): Revert.
+	(strstreambuf::overflow): Same.
+	(strstreambuf::~strstreambuf): Same.	
+	* testsuite/backward/strstream_members.cc (test02): Add.
+	
+	* docs/html/abi.txt: Update. Spell check.
+
+	* testsuite/19_diagnostics/stdexceptions.cc (test04): Add bool test.
+
+	* testsuite/Makefile.am (INCLUDES): Add LIBSUPCXX_INCLUDES.
+	* testsuite/Makefile.in: Regenerate.
+	* testsuite/testsuite_hooks.h: Use __throw_exception_again,
+	include functexcept.h so that -fno-exceptions will build.
+	
 2002-08-02  Gabriel Dos Reis  <gdr@nerim.net>
 
 	* include/bits/valarray_meta.h (__unary_plus, __negate,
