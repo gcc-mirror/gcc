@@ -3380,7 +3380,12 @@ rest_of_compilation (decl)
   /* If optimizing, then go ahead and split insns now since we are about
      to recompute flow information anyway.  */
   if (optimize > 0)
-    split_all_insns (0);
+    {
+      int old_labelnum = max_label_num ();
+
+      split_all_insns (0);
+      rebuild_label_notes_after_reload |= old_labelnum != max_label_num ();
+    }
 
   /* Register allocation and reloading may have turned an indirect jump into
      a direct jump.  If so, we must rebuild the JUMP_LABEL fields of
