@@ -3954,7 +3954,7 @@ edit_file (hp)
 #ifdef UNPROTOIZE
           /* Don't even mention "system" include files unless we are
              protoizing.  If we are protoizing, we mention these as a
-             gentile way of prodding the user to convert his "system"
+             gentle way of prodding the user to convert his "system"
              include files to prototype format.  */
           && !in_system_include_dir (convert_filename)
 #endif /* defined (UNPROTOIZE) */
