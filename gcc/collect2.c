@@ -1511,20 +1511,21 @@ main (argc, argv)
   /* On AIX we do this later.  */
 #ifndef COLLECT_EXPORT_LIST
   do_tlink (ld1_argv, object_lst); 
-#else
+#endif
 
   /* If -r or they will be run via some other method, do not build the
      constructor or destructor list, just return now.  */
   if (rflag || ! do_collecting)
     {
+#ifdef COLLECT_EXPORT_LIST
       /* But make sure we delete the export file we may have created.  */
       if (export_file != 0 && export_file[0])
 	maybe_unlink (export_file);
       if (import_file != 0 && import_file[0])
 	maybe_unlink (import_file);
+#endif
       return 0;
     }
-#endif
 
   /* Examine the namelist with nm and search it for static constructors
      and destructors to call.

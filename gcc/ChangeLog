@@ -1,3 +1,7 @@
+1998-02-20  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* collect2.c (main): Still handle !do_collecting for non-AIX targets.
+
 Thu Feb 19 22:36:53 1998  Andrey Slepuhin  <pooh@msu.net>
                           David Edelsohn  <edelsohn@mhpcc.edu>
 
