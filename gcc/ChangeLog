@@ -4,6 +4,9 @@ Sat Feb 14 05:08:21 1998  Richard Earnshaw (rearnsha@arm.com)
 	float.
 	(movdfcc): Only accept fpu_add_operand for operands[3].
 
+	* arm/t-semi (STMP_FIXPROTO): Define to nothing.
+	* arm/t-semiaof (STMP_FIXPROTO): Likewise.
+
 Sat Feb 14 02:02:41 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* varasm.c (output_constant_pool): Bring back 'done' label inside

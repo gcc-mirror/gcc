@@ -7,6 +7,7 @@ LIBGCC = libgcc-aof.a
 LIBGCC2_CFLAGS = -O2 -fomit-frame-pointer
 LIBGCC1_TEST = #libgcc1-atest
 EXTRA_PARTS = crtbegin.o crtend.o
+STMP_FIXPROTO =
 
 # Rule to build libgcc1.a and libgcc2.a and libgcc.a, since the librarian 
 # for the ARM tools is somewhat quirky, and needs a special rule to use it.
