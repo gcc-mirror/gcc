@@ -1738,9 +1738,6 @@ component_decl:
 		  /* Support for unnamed structs or unions as members of
 		     structs or unions (which is [a] useful and [b] supports
 		     MS P-SDK).  */
-		  if (pedantic)
-		    pedwarn ("ISO C doesn't support unnamed structs/unions");
-
 		  $$ = grokfield (build_id_declarator (NULL_TREE),
 				  current_declspecs, NULL_TREE);
 		  POP_DECLSPEC_STACK; }
