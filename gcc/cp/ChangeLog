@@ -1,3 +1,7 @@
+Mon Nov 17 23:42:03 1997  Bruno Haible <haible@ilog.fr>
+
+	* pt.c (do_poplevel): Don't prohibit jumps into this contour.
+
 Mon Nov 17 02:01:28 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* friend.c (do_friend): Warn about non-template friends in templates.
