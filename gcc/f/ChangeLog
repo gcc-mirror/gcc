@@ -1,3 +1,10 @@
+2003-11-24  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	PR fortran/12633
+	* expr.c (ffeexpr_reduced_ugly2log_): Revert
+	change allowing logical .and. logical to be
+	integer in expressions when -fugly-logint.
+
 2003-11-21  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* .cvsignore: Delete.
