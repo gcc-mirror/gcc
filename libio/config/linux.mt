@@ -1,8 +1,5 @@
 # Use the libio which comes with the local libc.
 
-# That is where we keep the g++ header files.
-gxx_include_dir =$(prefix)/include/g++
-
 # Comment this out to avoid including the stdio functions in libiostream.a:
 # LIBIOSTREAM_OBJECTS = $(IO_OBJECTS) $(IOSTREAM_OBJECTS) $(STDIO_WRAP_OBJECTS) $(OSPRIM_OBJECTS)
 # LIBIOSTREAM_DEP = $(LIBIOSTREAM_OBJECTS) stdio.list
