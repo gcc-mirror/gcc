@@ -733,23 +733,22 @@ C_OBJS = c-parse.o c-lang.o $(C_AND_OBJC_OBJS)
 
 # Language-independent object files.
 
-OBJS =									\
- alias.o bb-reorder.o bitmap.o builtins.o caller-save.o calls.o		\
- combine.o conflict.o convert.o cse.o cselib.o dbxout.o debug.o		\
- dependence.o df.o diagnostic.o doloop.o dominance.o dwarf2asm.o	\
- dwarf2out.o dwarfout.o emit-rtl.o except.o explow.o expmed.o expr.o	\
- final.o flow.o fold-const.o function.o gcse.o genrtl.o ggc-common.o	\
- global.o graph.o haifa-sched.o hash.o hashtable.o ifcvt.o		\
- insn-attrtab.o insn-emit.o insn-extract.o insn-opinit.o insn-output.o	\
- insn-peep.o insn-recog.o integrate.o intl.o jump.o lcm.o lists.o	\
- local-alloc.o loop.o mbchar.o optabs.o params.o predict.o print-rtl.o	\
- print-tree.o profile.o real.o recog.o reg-stack.o regclass.o regmove.o	\
- regrename.o reload.o reload1.o reorg.o resource.o rtl.o rtlanal.o	\
- rtl-error.o sbitmap.o sched-deps.o sched-ebb.o sched-rgn.o sched-vis.o \
- sdbout.o sibcall.o simplify-rtx.o splay-tree.o ssa.o ssa-ccp.o         \
- ssa-dce.o stmt.o stor-layout.o stringpool.o timevar.o toplev.o tree.o  \
- unroll.o varasm.o varray.o version.o xcoffout.o cfg.o cfganal.o	\
- cfgbuild.o cfgcleanup.o cfgloop.o cfgrtl.o tree-inline.o langhooks.o	\
+OBJS = alias.o bb-reorder.o bitmap.o builtins.o caller-save.o calls.o	\
+ cfg.o cfganal.o cfgbuild.o cfgcleanup.o cfgloop.o cfgrtl.o combine.o	\
+ conflict.o convert.o cse.o cselib.o dbxout.o debug.o dependence.o df.o	\
+ diagnostic.o doloop.o dominance.o dwarf2asm.o dwarf2out.o dwarfout.o	\
+ emit-rtl.o except.o explow.o expmed.o expr.o final.o flow.o 		\
+ fold-const.o function.o gcse.o genrtl.o ggc-common.o global.o graph.o	\
+ haifa-sched.o hash.o hashtable.o ifcvt.o insn-attrtab.o insn-emit.o	\
+ insn-extract.o insn-opinit.o insn-output.o insn-peep.o insn-recog.o	\
+ integrate.o intl.o jump.o  langhooks.o lcm.o lists.o local-alloc.o 	\
+ loop.o mbchar.o optabs.o params.o predict.o print-rtl.o print-tree.o	\
+ profile.o real.o recog.o reg-stack.o regclass.o regmove.o regrename.o	\
+ reload.o reload1.o reorg.o resource.o rtl.o rtlanal.o rtl-error.o	\
+ sbitmap.o sched-deps.o sched-ebb.o sched-rgn.o sched-vis.o sdbout.o	\
+ sibcall.o simplify-rtx.o splay-tree.o ssa.o ssa-ccp.o ssa-dce.o stmt.o	\
+ stor-layout.o stringpool.o timevar.o toplev.o tree.o tree-inline.o 	\
+ unroll.o varasm.o varray.o version.o xcoffout.o			\
  $(GGC) $(out_object_file) $(EXTRA_OBJS)
 
 BACKEND = main.o libbackend.a
