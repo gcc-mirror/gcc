@@ -1,5 +1,21 @@
 2005-03-30  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/iq2000/iq2000.h (target_flags, MASK_GPOPT, MASK_EMBEDDED_DATA)
+	(MASK_UNINIT_CONST_IN_RODATA, TARGET_EMBEDDED_DATA, TARGET_SWITCHES)
+	(TARGET_DEFAULT, TARGET_CPU_DEFAULT, SUBTARGET_TARGET_OPTIONS)
+	(TARGET_OPTIONS, iq2000_cpu_string, iq2000_arch_string): Delete.
+	(TARGET_DEBUG_MODE, TARGET_DEBUG_A_MODE, TARGET_DEBUG_B_MODE)
+	(TARGET_DEBUG_C_MODE, TARGET_DEBUG_D_MODE): Define to 0 rather
+	than target_flags & 0.
+	* config/iq2000/iq2000.c (iq2000_cpu_string, iq2000_arch_string)
+	(iq2000_arch, iq2000_parse_cpu): Delete.
+	(TARGET_HANDLE_OPTION): Override default.
+	(iq2000_handle_option): New function.
+	(override_options): Remove -march= and -mcpu= handling.
+	* config/iq2000/iq2000.opt: New file.
+
+2005-03-30  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/c4x/c4x-protos.h (c4x_rpts_cycles, c4x_cpu_version): Delete.
 	* config/c4x/c4x.h (SMALL_MEMORY_FLAG, MPYI_FLAG, FAST_FIX_FLAG)
 	(RPTS_FLAG, C3X_FLAG, TI_FLAG, PARANOID_FLAG, MEMPARM_FLAG, DEVEL_FLAG)
