@@ -3719,6 +3719,12 @@ h8300_adjust_insn_length (insn, length)
 	  /* @Rs is 2 bytes shorter than the longest.  */
 	  if (GET_CODE (addr) == REG)
 	    return -2;
+
+	  /* @aa:8 is 2 bytes shorter than the longest.  */
+	  if (GET_MODE (SET_SRC (pat)) == QImode
+	      && ((GET_CODE (addr) == SYMBOL_REF && SYMBOL_REF_FLAG (addr))
+		  || EIGHTBIT_CONSTANT_ADDRESS_P (addr)))
+	    return -2;
 	}
       else
 	{
