@@ -41,6 +41,7 @@ Boston, MA 02111-1307, USA.  */
 #include "function.h"
 #include "toplev.h"
 #include "ggc.h"
+#include "tm_p.h"
 
 /* External data.  */
 extern char *version_string;
@@ -2642,7 +2643,7 @@ void
 print_operand (file, x, code)
     FILE *file;
     rtx x;
-    char code;
+    int code;
 {
   int i;
 
@@ -4149,7 +4150,7 @@ long alpha_auto_offset;
 void
 alpha_output_filename (stream, name)
      FILE *stream;
-     char *name;
+     const char *name;
 {
   static int first_time = TRUE;
   char ltext_label_name[100];
@@ -5186,7 +5187,7 @@ alpha_arg_type (mode)
 /* Return an rtx for an integer representing the VMS Argument Information
    register value.  */
 
-struct rtx_def *
+rtx
 alpha_arg_info_reg_val (cum)
      CUMULATIVE_ARGS cum;
 {

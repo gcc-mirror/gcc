@@ -1,3 +1,14 @@
+Thu Sep 23 05:32:06 1999  Richard Henderson  <rth@cygnus.com>
+
+	* builtins.c, dbxout.c, varasm.c: Include tm_p.h.
+
+	* alpha/alpha.c (print_operand): Fix type of `code'.
+	(alpha_output_filename): Constify.
+	* alpha/alpha.h: Move all function declarations ...
+	* alpha/alpha-protos.h: ... here.  New file.
+	* alpha/elf.h (CONST_SECTION_FUNCTION): Prototype the function.
+	(SECTION_FUNCTION_TEMPLATE): Likewise.
+
 Thu Sep 23 11:15:36 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* expmed.c (do_cmp_and_jump): Pass ccp_jump to can_compare_p.

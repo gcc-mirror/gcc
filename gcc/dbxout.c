@@ -80,6 +80,7 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h" /* ASM_OUTPUT_SOURCE_LINE may refer to sdb functions.  */
 #include "dbxout.h"
 #include "toplev.h"
+#include "tm_p.h"
 
 #ifdef XCOFF_DEBUGGING_INFO
 #include "xcoffout.h"

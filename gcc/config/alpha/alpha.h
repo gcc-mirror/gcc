@@ -351,7 +351,6 @@ extern const char *alpha_mlat_string;	/* For -mmemory-latency= */
    On the Alpha, it is used to translate target-option strings into
    numeric values.  */
 
-extern void override_options ();
 #define OVERRIDE_OPTIONS override_options ()
 
 
@@ -795,7 +794,6 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
    : (C) == 'S' ? (GET_CODE (OP) == CONST_INT				\
 		   && (unsigned HOST_WIDE_INT) INTVAL (OP) < 64)	\
    : 0)
-extern int normal_memory_operand ();
 
 /* Given an rtx X being reloaded into a reg required to be
    in class CLASS, return the class of reg to actually use.
@@ -1188,10 +1186,6 @@ extern int alpha_memory_latency;
    where the output has been placed if it can be done and the insns have been
    emitted.  If it would take more than N insns, zero is returned and no
    insns and emitted.  */
-extern struct rtx_def *alpha_emit_set_const ();
-extern struct rtx_def *alpha_emit_set_long_const ();
-extern struct rtx_def *alpha_emit_conditional_branch ();
-extern struct rtx_def *alpha_emit_conditional_move ();
 
 /* Define the information needed to generate branch and scc insns.  This is
    stored from the compare operation.  Note that we can't use "rtx" here
@@ -1218,7 +1212,6 @@ struct machine_function
 
 /* Make (or fake) .linkage entry for function call.
    IS_LOCAL is 0 if name is used in call, 1 if name is used in definition.  */
-extern void alpha_need_linkage ();
 
 /* This macro defines the start of an assembly comment.  */
 
@@ -1228,18 +1221,15 @@ extern void alpha_need_linkage ();
 
 #define ASM_DECLARE_FUNCTION_NAME(FILE,NAME,DECL) \
   alpha_start_function(FILE,NAME,DECL);
-extern void alpha_start_function ();
 
 /* This macro closes up a function definition for the assembler.  */
 
 #define ASM_DECLARE_FUNCTION_SIZE(FILE,NAME,DECL) \
   alpha_end_function(FILE,NAME,DECL)
-extern void alpha_end_function ();
    
 /* This macro notes the end of the prologue.  */
 
 #define FUNCTION_END_PROLOGUE(FILE)  output_end_prologue (FILE)
-extern void output_end_prologue ();
 
 /* Output any profiling code before the prologue.  */
 
@@ -1327,7 +1317,6 @@ do {						\
 
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT) \
   alpha_initialize_trampoline (TRAMP, FNADDR, CXT, 16, 24, 8)
-extern void alpha_initialize_trampoline ();
 
 /* A C expression whose value is RTL representing the value of the return
    address for the frame COUNT steps up from the current frame.
@@ -1335,7 +1324,6 @@ extern void alpha_initialize_trampoline ();
    the COUNT-1 frame if RETURN_ADDR_IN_PREVIOUS_FRAME is defined.  */
 
 #define RETURN_ADDR_RTX  alpha_return_addr
-extern struct rtx_def *alpha_return_addr ();
 
 /* Before the prologue, RA lives in $26. */
 #define INCOMING_RETURN_ADDR_RTX  gen_rtx_REG (Pmode, 26)
@@ -2401,11 +2389,9 @@ extern long alpha_auto_offset;
 
 #define ASM_OUTPUT_SOURCE_LINE(STREAM, LINE)				\
   alpha_output_lineno (STREAM, LINE)
-extern void alpha_output_lineno ();
 
 #define ASM_OUTPUT_SOURCE_FILENAME(STREAM, NAME)			\
   alpha_output_filename (STREAM, NAME)
-extern void alpha_output_filename ();
 
 /* mips-tfile.c limits us to strings of one page.  We must underestimate this
    number, because the real length runs past this up to the next
@@ -2514,55 +2500,3 @@ do {							\
 
 /* The system headers under Alpha systems are generally C++-aware.  */
 #define NO_IMPLICIT_EXTERN_C
-
-/* Prototypes for alpha.c functions used in the md file & elsewhere.  */
-extern struct rtx_def *get_unaligned_address ();
-extern void alpha_write_verstamp ();
-extern void alpha_reorg ();
-extern int check_float_value ();
-extern int direct_return ();
-extern int const48_operand ();
-extern int add_operand ();
-extern int and_operand ();
-extern int unaligned_memory_operand ();
-extern int zap_mask ();
-extern int current_file_function_operand ();
-extern int alpha_sa_size ();
-extern int alpha_adjust_cost ();
-extern void print_operand ();
-extern void print_operand_address ();
-extern int reg_or_0_operand ();
-extern int reg_or_8bit_operand ();
-extern int mul8_operand ();
-extern int reg_or_6bit_operand ();
-extern int alpha_comparison_operator ();
-extern int alpha_swapped_comparison_operator ();
-extern int sext_add_operand ();
-extern int cint8_operand ();
-extern int mode_mask_operand ();
-extern int or_operand ();
-extern int mode_width_operand ();
-extern int reg_or_fp0_operand ();
-extern int signed_comparison_operator ();
-extern int fp0_operand ();
-extern int some_operand ();
-extern int input_operand ();
-extern int divmod_operator ();
-extern int call_operand ();
-extern int reg_or_cint_operand ();
-extern int hard_fp_register_operand ();
-extern int reg_not_elim_operand ();
-extern int normal_memory_operand ();
-extern int reg_no_subreg_operand ();
-extern void alpha_set_memflags ();
-extern int aligned_memory_operand ();
-extern void get_aligned_mem ();
-extern void alpha_expand_unaligned_load ();
-extern void alpha_expand_unaligned_store ();
-extern int alpha_expand_block_move ();
-extern int alpha_expand_block_clear ();
-extern void alpha_expand_prologue ();
-extern void alpha_expand_epilogue ();
-extern union tree_node *alpha_build_va_list ();
-extern void alpha_va_start ();
-extern struct rtx_def *alpha_va_arg ();
