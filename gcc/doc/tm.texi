@@ -3870,11 +3870,15 @@ This hook performs target-specific gimplification of
 arguments to @code{va_arg}; the latter two are as in
 @code{gimplify.c:gimplify_expr}.
 
-You only need to define this hook if you also define
+You only need to define this hook if you previously defined
 @code{EXPAND_BUILTIN_VA_ARG}; it is pretty easy to reuse the same code
 for both.  One significant difference is that
 @code{EXPAND_BUILTIN_VA_ARG} returns an address, whereas this hook
 produces an expression of type @var{type}, usually an @code{INDIRECT_REF}.
+
+Once you define this macro, you can change
+@code{EXPAND_BUILTIN_VA_ARG} to just abort, as it should never be
+called.
 @end deftypefn
 
 @node Scalar Return

@@ -1,3 +1,19 @@
+2004-06-11  Jason Merrill  <jason@redhat.com>
+
+	* config/i386/i386.h (EXPAND_BUILTIN_VA_ARG): Just abort.
+	* config/i386/i386.c (ix86_va_arg): Remove.
+	* config/rs6000/rs6000.h (EXPAND_BUILTIN_VA_ARG): Just abort.
+	* config/rs6000/rs6000.c (rs6000_va_arg): Remove.
+	* config/alpha/alpha.h (EXPAND_BUILTIN_VA_ARG): Just abort.
+	* config/alpha/alpha.c (alpha_va_arg): Remove.
+	* config/sparc/sparc.h (EXPAND_BUILTIN_VA_ARG): Just abort.
+	* config/sparc/sparc.c (sparc_va_arg): Remove.
+
+	* tree-ssa-operands.c (get_stmt_operands): Use a V_MAY_DEF if the
+	assignment might throw.
+	* tree-eh.c (tree_could_throw_p): Support non-call exceptions in
+	expressions.
+
 2004-06-11  J"orn Rennecke <joern.rennecke@superh.com>
 
 	PR 15886:
