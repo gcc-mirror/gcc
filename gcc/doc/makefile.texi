@@ -41,8 +41,8 @@ build gcc.
 
 @item srcextra
 Generates files in the source directory that do not exist in CVS but
-should go into a release tarball.  One example is @file{gcc/c-parse.c}
-which is generated from the CVS source file @file{gcc/c-parse.in}.
+should go into a release tarball.  One example is @file{gcc/java/parse.c}
+which is generated from the CVS source file @file{gcc/java/parse.y}.
 
 @item srcinfo
 @itemx srcman

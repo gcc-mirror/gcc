@@ -612,7 +612,7 @@ Install man pages for the front end.  This target should ignore
 errors.
 @item srcextra
 Copies its dependencies into the source directory.  This generally should
-be used for generated files such as @file{gcc/c-parse.c} which are not
+be used for generated files such as Bison output files which are not
 present in CVS, but should be included in any release tarballs.  This
 target will be executed during a bootstrap if
 @samp{--enable-generated-files-in-srcdir} was specified as a
