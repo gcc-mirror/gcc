@@ -15189,8 +15189,7 @@ rs6000_variable_issue (FILE *stream ATTRIBUTE_UNUSED,
    a dependency LINK or INSN on DEP_INSN.  COST is the current cost.  */
 
 static int
-rs6000_adjust_cost (rtx insn, rtx link, rtx dep_insn ATTRIBUTE_UNUSED,
-		    int cost)
+rs6000_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
 {
   if (! recog_memoized (insn))
     return 0;
