@@ -1,3 +1,18 @@
+1998-07-12  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* friend.c (do_friend): Pull the identifier out of declarator.
+	Use cp_error and friends.
+	* decl2.c (qualified_lookup_using_namespace): Fix call to 
+	purpose_member.
+	* decl.c (lookup_name_real): Don't call complete_type on a namespace.
+	(grokvardecl): Use DECL_CLASS_SCOPE_P.
+	(xref_basetypes): Fix call to GNU_xref_hier.
+	* cvt.c (convert_pointer_to_real): Check for error_mark_node sooner.
+	* class.c (warn_hidden): Fix for OVERLOAD.
+	From grahams@rcp.co.uk:
+	* cp-tree.h (DEFARG_NODE_CHECK): New macro.
+ 	(DEFARG_LENGTH, DEFARG_POINTER): Use it.
+
 Sun Jul 12 01:20:57 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* g++.1 (-traditional): Remove duplicated documentation.

@@ -4784,7 +4784,8 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
 	  if (TREE_CODE (type) == TYPENAME_TYPE && TREE_TYPE (type))
 	    type = TREE_TYPE (type);
 
-	  type = complete_type (type);
+	  if (TYPE_P (type))
+	    type = complete_type (type);
 
 	  if (TREE_CODE (type) == VOID_TYPE)
 	    type = global_namespace;
@@ -7876,8 +7877,7 @@ grokvardecl (type, declarator, specbits_in, initialized, constp, in_namespace)
 
   /* In class context, static means one per class,
      public access, and static storage.  */
-  if (DECL_FIELD_CONTEXT (decl) != NULL_TREE
-      && IS_AGGR_TYPE (DECL_FIELD_CONTEXT (decl)))
+  if (DECL_CLASS_SCOPE_P (decl))
     {
       TREE_PUBLIC (decl) = 1;
       TREE_STATIC (decl) = 1;
@@ -11309,6 +11309,9 @@ xref_basetypes (code_type_node, name, ref, binfo)
   SET_CLASSTYPE_MARKED (ref);
   BINFO_BASETYPES (TYPE_BINFO (ref)) = binfos = make_tree_vec (len);
 
+  if (TREE_CODE (name) == TYPE_DECL)
+    name = DECL_NAME (name);
+
   for (i = 0; binfo; binfo = TREE_CHAIN (binfo))
     {
       /* The base of a derived struct is public by default.  */
@@ -11329,10 +11332,6 @@ xref_basetypes (code_type_node, name, ref, binfo)
       tree basetype = TREE_VALUE (binfo);
       tree base_binfo;
 
-      GNU_xref_hier (IDENTIFIER_POINTER (name),
-		     IDENTIFIER_POINTER (TREE_VALUE (binfo)),
-		     via_public, via_virtual, 0);
-
       if (basetype && TREE_CODE (basetype) == TYPE_DECL)
 	basetype = TREE_TYPE (basetype);
       if (!basetype
@@ -11345,11 +11344,16 @@ xref_basetypes (code_type_node, name, ref, binfo)
 		    TREE_VALUE (binfo));
 	  continue;
 	}
+
+      GNU_xref_hier (IDENTIFIER_POINTER (name),
+		     IDENTIFIER_POINTER (TYPE_IDENTIFIER (basetype)),
+		     via_public, via_virtual, 0);
+
 #if 1
       /* This code replaces similar code in layout_basetypes.
          We put the complete_type first for implicit `typename'.  */
-      else if (TYPE_SIZE (complete_type (basetype)) == NULL_TREE
-	       && ! (current_template_parms && uses_template_parms (basetype)))
+      if (TYPE_SIZE (complete_type (basetype)) == NULL_TREE
+	  && ! (current_template_parms && uses_template_parms (basetype)))
 	{
 	  cp_error ("base class `%T' has incomplete type", basetype);
 	  continue;

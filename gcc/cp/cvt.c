@@ -554,6 +554,9 @@ convert_pointer_to_real (binfo, expr)
   tree ptr_type;
   tree type, rval;
 
+  if (intype == error_mark_node)
+    return error_mark_node;
+
   if (TREE_CODE (binfo) == TREE_VEC)
     type = BINFO_TYPE (binfo);
   else if (IS_AGGR_TYPE (binfo))
@@ -571,9 +574,6 @@ convert_pointer_to_real (binfo, expr)
   ptr_type = build_pointer_type (ptr_type);
   if (ptr_type == TYPE_MAIN_VARIANT (intype))
     return expr;
-
-  if (intype == error_mark_node)
-    return error_mark_node;
 
   my_friendly_assert (!integer_zerop (expr), 191);
 
