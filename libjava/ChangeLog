@@ -1,3 +1,17 @@
+2003-03-03  Michael Koch  <konqueror@gmx.de>
+
+	* java/net/DatagramSocket.java
+	(connect): Merged comment from classpath.
+	(receive): Merged documentation from classpath.
+	* java/net/Socket.java
+	(setSoTimeout): Clarified documentation.
+	* java/net/URL.java
+	(getPath): Merged from classpath.
+	(getUserInfo): Merged from classpath.
+	(getQuery): Merged from classpath.
+	* java/net/URLStreamHandler.java
+	(toExternalForm): Merged from classpath.
+
 2003-03-02  Mark Wielaard  <mark@klomp.org>
 
 	* java/util/Properties.java (load): Only skip line if the first

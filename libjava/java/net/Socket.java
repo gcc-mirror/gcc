@@ -692,10 +692,10 @@ public class Socket
    * this option implies that there is no timeout (ie, operations will 
    * block forever).  On systems that have separate read and write timeout
    * values, this method returns the read timeout.  This
-   * value is in thousandths of a second (****????*****)
+   * value is in milliseconds.
    *
-   * @param timeout The length of the timeout in thousandth's of a second or 
-   * 0 if not set
+   * @param timeout The length of the timeout in milliseconds, or 
+   * 0 to indicate no timeout.
    *
    * @exception SocketException If an error occurs or Socket not connected
    *

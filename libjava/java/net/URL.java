@@ -472,8 +472,8 @@ public final class URL implements Serializable
    */
   public String getPath()
   {
-    int quest = file.indexOf('?');
-    return quest < 0 ? file : file.substring(0, quest);
+    int quest = (file == null) ? -1 : file.indexOf('?');
+    return quest < 0 ? getFile() : file.substring(0, quest);
   }
 
   /**
@@ -544,7 +544,7 @@ public final class URL implements Serializable
    */
   public String getUserInfo ()
   {
-    int at = host.indexOf('@');
+    int at = (host == null) ? -1 : host.indexOf('@');
     return at < 0 ? null : host.substring(0, at);
   }
 
@@ -556,7 +556,7 @@ public final class URL implements Serializable
    */
   public String getQuery ()
   {
-    int quest = file.indexOf('?');
+    int quest = (file == null) ? -1 : file.indexOf('?');
     return quest < 0 ? null : file.substring(quest + 1, file.length());
   }
 

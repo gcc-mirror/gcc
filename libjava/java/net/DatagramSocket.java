@@ -466,6 +466,7 @@ public class DatagramSocket
       }
     catch (SocketException e)
       {
+        // This means simply not connected.
       }
   }
 
@@ -488,9 +489,9 @@ public class DatagramSocket
    * will block until a packet is received from the network.  On return,
    * the passed in <code>DatagramPacket</code> is populated with the data
    * received and all the other information about the packet.
-   * 
-   * @param p The datagram packet to put the incoming data into.
-   * 
+   *
+   * @param p A <code>DatagramPacket</code> for storing the data
+   *
    * @exception IOException If an error occurs.
    * @exception SocketTimeoutException If setSoTimeout was previously called
    * and the timeout has expired.
