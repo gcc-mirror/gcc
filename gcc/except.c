@@ -1159,6 +1159,12 @@ expand_leftover_cleanups ()
       /* Output the label for the start of the exception handler.  */
       emit_label (entry->exception_handler_label);
 
+#ifdef HAVE_nonlocal_goto_receiver
+      if (! exceptions_via_longjmp)
+	if (HAVE_nonlocal_goto_receiver)
+	  emit_insn (gen_nonlocal_goto_receiver ());
+#endif
+
       /* And now generate the insns for the handler.  */
       expand_expr (entry->finalization, const0_rtx, VOIDmode, 0);
 
@@ -1251,6 +1257,12 @@ expand_start_all_catch ()
 	 still be emitted, so any code emitted after this point will
 	 end up being the handler.  */
       emit_label (entry->exception_handler_label);
+
+#ifdef HAVE_nonlocal_goto_receiver
+      if (! exceptions_via_longjmp)
+	if (HAVE_nonlocal_goto_receiver)
+	  emit_insn (gen_nonlocal_goto_receiver ());
+#endif
 
       /* When we get down to the matching entry for this try block, stop.  */
       if (entry->finalization == integer_zero_node)
