@@ -23,14 +23,10 @@
 #if _GLIBCPP_USE_WCHAR_T
 #include <cwctype>
   // Make sure wint_t is in namespace std
-  std::wint_t i = 5;            // { dg-do compile }
+  std::wint_t i = 5;
 #endif
 
 int main(void)
 {
   return 0;
 }
-
-
-
-

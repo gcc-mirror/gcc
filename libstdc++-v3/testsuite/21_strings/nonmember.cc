@@ -293,12 +293,8 @@ template<class charT, class traits, class Allocator>
   return 0;
 }
 
-int main() {
+int main() 
+{
   test01();
+  return 0;
 }
-
-
-
-
-
-

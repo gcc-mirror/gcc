@@ -121,9 +121,5 @@ bool test02()
 int main()
 { 
   test01();
+  return 0;
 }
-
-
-
-
-

@@ -15,7 +15,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
 
 # Please email any bugs, comments, and/or additions to this file to:
-# bug-gcc@prep.ai.mit.edu
+# libstdc++@gcc.gnu.org
 
 load_lib "standard.exp"
 

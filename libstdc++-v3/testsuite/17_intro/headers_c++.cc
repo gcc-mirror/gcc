@@ -67,4 +67,4 @@
   #include <wctype.h>
 #endif
 
-int main() { }                  // { dg-do compile }
+int main() { return 0; }

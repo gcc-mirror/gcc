@@ -32,7 +32,7 @@ void test01()
 void test02()
 {
   // Make sure size_t is in namespace std
-  std::size_t i = 5;            // { dg-do compile }
+  std::size_t i = 5;
 }
 
 int main()
@@ -41,6 +41,3 @@ int main()
   test02();
   return 0;
 }
-
-
-

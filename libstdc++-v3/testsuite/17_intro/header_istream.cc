@@ -20,7 +20,7 @@
 
 // 17.4.1.2 Headers, istream
 
-#include <istream>              // { dg-do compile }
+#include <istream>
 #include <debug_assert.h>
 
 
@@ -28,7 +28,3 @@ int main(void)
 {
   return 0;
 }
-
-
-
-

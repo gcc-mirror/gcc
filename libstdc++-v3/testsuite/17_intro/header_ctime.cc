@@ -26,10 +26,6 @@
 int main(void)
 {
   // Make sure size_t is in namespace std
-  std::size_t i = 5;            // { dg-do compile }
+  std::size_t i = 5;
   return 0;
 }
-
-
-
-

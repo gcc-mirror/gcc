@@ -105,5 +105,3 @@ int main() {
 #endif /* !defined(_GLIBCPP_USE_WCHAR_T) */
   return 0;
 }
-
-

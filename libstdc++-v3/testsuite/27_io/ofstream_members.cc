@@ -78,4 +78,5 @@ int main()
 {
   test00();
   test01();
+  return 0;
 }

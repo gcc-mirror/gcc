@@ -69,4 +69,3 @@ main()
   test04();
   return 0;
 }
-
