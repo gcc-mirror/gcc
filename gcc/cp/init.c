@@ -3626,18 +3626,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 					    auto_delete, integer_two_node));
 	}
       else
-	{
-	  if (TYPE_GETS_REG_DELETE (type))
-	    {
-	      /* Only do access checking here; we'll be calling op delete
-                 from the destructor.  */
-	      tree t = build_opfncall (DELETE_EXPR, LOOKUP_NORMAL, addr,
-				       size_zero_node, NULL_TREE);
-	      if (t == error_mark_node)
-		return error_mark_node;
-	    }
-	  passed_auto_delete = auto_delete;
-	}
+	passed_auto_delete = auto_delete;
 
       if (flags & LOOKUP_PROTECT)
 	{

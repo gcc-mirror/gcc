@@ -1,3 +1,69 @@
+Tue May  9 19:10:33 1995  Mike Stump  <mrs@cygnus.com>
+
+	* decl2.c: Add flag_new_for_scope for new -ffor-scope flag.
+	* parse.y (FOR): Conditionalize the pushing and poping of scope for
+	the for-init-statement upon the new flag_new_for_scope.
+	* parse.y (try_block): Simplify and use compstmt.
+
+Mon May  8 12:41:52 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* decl.c (define_function): Mark function decl artificial.
+
+Sun May  7 00:51:28 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* parse.y (simple_stmt, FOR): Put back push/pop for condition scope.
+
+	* decl2.c (grokclassfn): DECLs don't have cv-qualified types.
+	* tree.c (build_cplus_method_type): Ditto.
+
+	* cp-tree.h (SET_DECL_ARTIFICIAL): Just set DECL_ARTIFICIAL to 1.
+
+	* typeck.c (build_function_call_real): If convert_arguments failed,
+	just bail.
+	(convert_arguments): If one of the arguments is error_mark_node,
+	just bail.
+
+Sat May  6 02:39:41 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* decl.c (duplicate_decls): Don't check DECL_NOT_REALLY_EXTERN for
+	decls that don't include it.
+
+Fri May  5 14:23:30 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* decl.c (duplicate_decls): Decls that have DECL_INTERFACE_KNOWN or
+	DECL_NOT_REALLY_EXTERN set aren't extern decls.
+
+	* typeck.c (build_indirect_ref): Don't call default_conversion for a
+	parameter of reference_type.
+	* cvt.c (convert_from_reference): Just use build_indirect_ref.
+
+	* pt.c (do_type_instantiation): Only instantiate member functions
+	that actually come from templates.
+
+Fri May  5 09:46:05 1995  Mike Stump  <mrs@cygnus.com>
+
+	* parse.y: Generalized cleanup of poplevels, and compound statements
+	and compound statements in try blocks.  Rewritten `for' rule so that
+	the scope of variables declared in the for clause is shortened to
+	span just to the end of the statement, instead of the whole
+	containing block.
+
+Fri May  5 00:37:14 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* call.c (convert_harshness): Handle pointers to members better.
+
+Thu May  4 16:00:26 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* decl2.c (delete_sanity): Do access control here.
+	* init.c (build_delete): Instead of here.
+
+	* Make-lang.in: Build c++filt.
+
+Wed May  3 02:59:53 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* decl2.c (cplus_decl_attributes): If we just modified a TYPE_DECL,
+	update our IDENTIFIER_TYPE_VALUE.
+
 Fri Apr 28 07:58:41 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
 
 	* lex.c (cons_up_default_function): Fix linkage of #pragma

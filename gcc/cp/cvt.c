@@ -855,30 +855,8 @@ convert_from_reference (val)
 
   if (TREE_CODE (type) == OFFSET_TYPE)
     type = TREE_TYPE (type);
- if (TREE_CODE (type) == REFERENCE_TYPE)
-    {
-      tree target_type = TREE_TYPE (type);
-      tree nval;
-
-      /* This can happen if we cast to a reference type.  */
-      if (TREE_CODE (val) == ADDR_EXPR)
-	{
-	  nval = build1 (NOP_EXPR, build_pointer_type (target_type), val);
-	  nval = build_indirect_ref (nval, NULL_PTR);
-	  /* The below was missing, are other important flags missing too? */
-	  TREE_SIDE_EFFECTS (nval) = TREE_SIDE_EFFECTS (val);
-	  return nval;
-	}
-
-      nval = build1 (INDIRECT_REF, target_type, val);
-
-      TREE_THIS_VOLATILE (nval) = TYPE_VOLATILE (target_type);
-      TREE_SIDE_EFFECTS (nval) = TYPE_VOLATILE (target_type);
-      TREE_READONLY (nval) = TYPE_READONLY (target_type);
-      /* The below was missing, are other important flags missing too? */
-      TREE_SIDE_EFFECTS (nval) |= TREE_SIDE_EFFECTS (val);
-      return nval;
-    }
+  if (TREE_CODE (type) == REFERENCE_TYPE)
+    return build_indirect_ref (val, NULL_PTR);
   return val;
 }
 

@@ -49,6 +49,8 @@ GXX_INSTALL_NAME = `t='$(program_transform_name)'; echo g++ | sed $$t`
 CXX_CROSS_NAME = `t='$(program_transform_cross_name)'; echo c++ | sed $$t`
 GXX_CROSS_NAME = `t='$(program_transform_cross_name)'; echo g++ | sed $$t`
 
+# The name to use for the demangler program.
+DEMANGLER_PROG = c++filt
 
 # Define the names for selecting c++ in LANGUAGES.
 # Note that it would be nice to move the dependency on g++
@@ -68,6 +70,17 @@ g++-cross: $(srcdir)/cp/g++.c version.o $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(INCLUDES) $(LDFLAGS) -o g++-cross \
 	   -DGCC_NAME=\"$(GCC_CROSS_NAME)\" $(srcdir)/cp/g++.c version.o $(LIBS)
 
+cxxmain.o: cplus-dem.c demangle.h
+	rm -f cxxmain.c
+	ln -s $(srcdir)/cplus-dem.c cxxmain.c
+	$(CC) -c -DMAIN $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+	  -DVERSION='"$(version)"' cxxmain.c
+	rm -f cxxmain.c
+
+$(DEMANGLER_PROG): cxxmain.o underscore.o getopt.o getopt1.o
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $(DEMANGLER_PROG) \
+	  cxxmain.o underscore.o getopt.o getopt1.o
+
 CXX_SRCS = $(srcdir)/cp/call.c $(srcdir)/cp/decl2.c \
  $(srcdir)/cp/except.c $(srcdir)/cp/input.c $(srcdir)/cp/pt.c \
  $(srcdir)/cp/spew.c $(srcdir)/cp/xref.c $(srcdir)/cp/class.c \
@@ -83,10 +96,10 @@ cc1plus: $(P) $(CXX_SRCS) $(LIBDEPS) stamp-objlist c-common.o c-pragma.o
 
 # Build hooks:
 
-c++.all.build: g++
-c++.all.cross: g++-cross
+c++.all.build: g++ $(DEMANGLER_PROG)
+c++.all.cross: g++-cross $(DEMANGLER_PROG)
 c++.start.encap: g++
-c++.rest.encap:
+c++.rest.encap: $(DEMANGLER_PROG)
 
 c++.info:
 c++.dvi:

@@ -233,12 +233,12 @@ empty_parms ()
 %type <ttype> base_class maybe_base_class_list base_class.1
 %type <ttype> exception_specification_opt ansi_raise_identifier ansi_raise_identifiers
 %type <ttype> component_declarator0
-%type <ttype> forhead.1 operator_name
+%type <ttype> operator_name
 %type <ttype> object aggr
 %type <itype> new delete
 /* %type <ttype> primary_no_id */
 %type <ttype> nonmomentary_expr maybe_parmlist
-%type <itype> forhead.2 initdcl0 notype_initdcl0 member_init_list
+%type <itype> initdcl0 notype_initdcl0 member_init_list
 %type <ttype> template_header template_parm_list template_parm
 %type <ttype> template_type_parm
 %type <ttype> template_type template_arg_list template_arg
@@ -252,7 +252,7 @@ empty_parms ()
 %type <ttype> complex_type_name nested_name_specifier_1
 %type <itype> nomods_initdecls nomods_initdcl0
 %type <ttype> new_initializer new_placement specialization type_specifier_seq
-%type <ttype> using_decl
+%type <ttype> using_decl .poplevel
 
 /* in order to recognize aggr tags as defining and thus shadowing. */
 %token TYPENAME_DEFN IDENTIFIER_DEFN PTYPENAME_DEFN
@@ -261,8 +261,6 @@ empty_parms ()
 
 %token NSNAME
 %type <ttype> NSNAME
-
-%type <strtype> .pushlevel
 
 /* Used in lex.c for parsing pragmas.  */
 %token END_OF_LINE
@@ -983,12 +981,15 @@ condition:
 	| expr
 	;
 
+compstmtend:
+	  '}'
+	| maybe_label_decls stmts '}'
+	| maybe_label_decls stmts error '}'
+	| maybe_label_decls error '}'
+	;
+
 already_scoped_stmt:
-	  '{' '}'
-		{ finish_stmt (); }
-	| '{' maybe_label_decls stmts '}'
-		{ finish_stmt (); }
-	| '{' maybe_label_decls error '}'
+	  '{' compstmtend
 		{ finish_stmt (); }
 	| simple_stmt
 	;
@@ -3105,6 +3106,12 @@ errstmt:  error ';'
 		  expand_start_bindings (0); }
 	;
 
+.poplevel:   /* empty */
+		{ expand_end_bindings (getdecls (), kept_level_p (), 1);
+		  $$ = poplevel (kept_level_p (), 1, 0);
+		  pop_momentary (); }
+	;
+
 /* Read zero or more forward-declarations for labels
    that nested functions can jump to.  */
 maybe_label_decls:
@@ -3139,22 +3146,8 @@ compstmt_or_error:
 	| error compstmt
 	;
 
-compstmt: '{' .pushlevel '}'
-		{ expand_end_bindings (getdecls (), kept_level_p(), 1);
-		  $$ = poplevel (kept_level_p (), 1, 0);
-		  pop_momentary (); }
-	| '{' .pushlevel maybe_label_decls stmts '}'
-		{ expand_end_bindings (getdecls (), kept_level_p(), 1);
-		  $$ = poplevel (kept_level_p (), 1, 0);
-		  pop_momentary (); }
-	| '{' .pushlevel maybe_label_decls stmts error '}'
-		{ expand_end_bindings (getdecls (), kept_level_p(), 1);
-		  $$ = poplevel (kept_level_p (), 0, 0);
-		  pop_momentary (); }
-	| '{' .pushlevel maybe_label_decls error '}'
-		{ expand_end_bindings (getdecls (), kept_level_p(), 1);
-		  $$ = poplevel (kept_level_p (), 0, 0);
-		  pop_momentary (); }
+compstmt: '{' .pushlevel compstmtend .poplevel
+		{ $$ = $4; }
 	;
 
 simple_if:
@@ -3169,10 +3162,8 @@ simple_if:
 implicitly_scoped_stmt:
 	  compstmt
 		{ finish_stmt (); }
-	| .pushlevel simple_stmt
-		{ expand_end_bindings (getdecls (), kept_level_p (), 1);
-		  $$ = poplevel (kept_level_p (), 1, 0);
-		  pop_momentary (); }
+	| .pushlevel simple_stmt .poplevel
+		{ $$ = $3; }
 	;
 
 stmt:
@@ -3201,11 +3192,9 @@ simple_stmt:
 	| simple_if ELSE
 		{ expand_start_else (); }
 	  implicitly_scoped_stmt
-		{ expand_end_cond ();
-		  expand_end_bindings (getdecls (), kept_level_p (), 1);
-		  poplevel (kept_level_p (), 1, 0);
-		  pop_momentary ();
-		  finish_stmt (); }
+		{ expand_end_cond (); }
+	  .poplevel
+		{ finish_stmt (); }
 	| simple_if %prec IF
 		{ expand_end_cond ();
 		  expand_end_bindings (getdecls (), kept_level_p (), 1);
@@ -3219,11 +3208,8 @@ simple_stmt:
 		  cond_stmt_keyword = "while"; }
 	  .pushlevel paren_cond_or_null
 		{ expand_exit_loop_if_false (0, $4); }
-	  already_scoped_stmt
-		{ expand_end_bindings (getdecls (), kept_level_p (), 1);
-		  poplevel (kept_level_p (), 1, 0);
-		  pop_momentary ();
-		  expand_end_loop ();
+	  already_scoped_stmt .poplevel
+		{ expand_end_loop ();
 		  finish_stmt (); }
 	| DO
 		{ emit_nop ();
@@ -3238,51 +3224,42 @@ simple_stmt:
 		  expand_end_loop ();
 		  clear_momentary ();
 		  finish_stmt (); }
-	| forhead.1
+	| FOR
+		{ extern int flag_new_for_scope;
+		  emit_line_note (input_filename, lineno);
+		  if (flag_new_for_scope)
+		    {
+		      /* Conditionalize .pushlevel */
+		      pushlevel (0);
+		      clear_last_expr ();
+		      push_momentary ();
+		      expand_start_bindings (0);
+		    }
+		}
+	  '(' for.init.statement
 		{ emit_nop ();
 		  emit_line_note (input_filename, lineno);
-		  if ($1) cplus_expand_expr_stmt ($1);
 		  expand_start_loop_continue_elsewhere (1); }
 	  .pushlevel xcond ';'
 		{ emit_line_note (input_filename, lineno);
-		  if ($4) expand_exit_loop_if_false (0, $4); }
+		  if ($7) expand_exit_loop_if_false (0, $7); }
 	  xexpr ')'
-		/* Don't let the tree nodes for $7 be discarded
+		/* Don't let the tree nodes for $10 be discarded
 		   by clear_momentary during the parsing of the next stmt.  */
 		{ push_momentary (); }
-	  already_scoped_stmt
+	  already_scoped_stmt .poplevel
 		{ emit_line_note (input_filename, lineno);
-		  expand_end_bindings (getdecls (), kept_level_p (), 1);
-		  poplevel (kept_level_p (), 1, 0);
-		  pop_momentary ();
 		  expand_loop_continue_here ();
-		  if ($7) cplus_expand_expr_stmt ($7);
+		  if ($10) cplus_expand_expr_stmt ($10);
 		  pop_momentary ();
 		  expand_end_loop ();
+		  if (flag_new_for_scope)
+		    {
+		      expand_end_bindings (getdecls (), kept_level_p (), 1);
+		      poplevel (kept_level_p (), 1, 0);
+		      pop_momentary ();
+		    }
 		  finish_stmt (); }
-	| forhead.2
-		{ emit_nop ();
-		  emit_line_note (input_filename, lineno);
-		  expand_start_loop_continue_elsewhere (1); }
-	  .pushlevel xcond ';'
-		{ emit_line_note (input_filename, lineno);
-		  if ($4) expand_exit_loop_if_false (0, $4); }
-	  xexpr ')'
-		/* Don't let the tree nodes for $7 be discarded
-		   by clear_momentary during the parsing of the next stmt.  */
-		{ push_momentary ();
-		  $<itype>8 = lineno; }
-	  already_scoped_stmt
-		{ emit_line_note (input_filename, (int) $<itype>8);
-		  expand_end_bindings (getdecls (), kept_level_p (), 1);
-		  poplevel (kept_level_p (), 1, 0);
-		  pop_momentary ();
-		  expand_loop_continue_here ();
-		  if ($7) cplus_expand_expr_stmt ($7);
-		  pop_momentary ();
-		  expand_end_loop ();
-		  finish_stmt ();
-		}
 	| SWITCH .pushlevel '(' condition ')'
 		{ emit_line_note (input_filename, lineno);
 		  c_expand_start_case ($4);
@@ -3293,11 +3270,9 @@ simple_stmt:
 	  implicitly_scoped_stmt
 		{ expand_end_case ($4);
 		  pop_momentary ();
-		  pop_switch ();
-		  expand_end_bindings (getdecls (), kept_level_p (), 1);
-		  poplevel (kept_level_p (), 1, 0);
-		  pop_momentary ();
-		  finish_stmt (); }
+		  pop_switch (); }
+	  .poplevel
+		{ finish_stmt (); }
 	| CASE expr_no_commas ':'
 		{ register tree value = check_cp_case_value ($2);
 		  register tree label
@@ -3442,43 +3417,20 @@ simple_stmt:
 	;
 
 try_block:
-	  TRY '{' .pushlevel
+	  TRY
 		{ expand_start_try_stmts (); }
-	  ansi_try_stmts
+	  compstmt
 		{ expand_end_try_stmts ();
 		  expand_start_all_catch (); }
 	  handler_seq
 		{ expand_end_all_catch (); }
 	;
 
-ansi_try_stmts:
-	  '}'
-		/* An empty try block is degenerate, but it's better to
-		   do extra work here than to do all the special-case work
-		   everywhere else.  */
-		{ expand_end_bindings (0,1,1);
-		  poplevel (2,0,0);
-		}
-	| stmts '}'
-		{ expand_end_bindings (0,1,1);
-		  poplevel (2,0,0);
-		}
-	| error '}'
-		{ expand_end_bindings (0,1,1);
-		  poplevel (2,0,0);
-		}
-	;
-
 handler_seq:
 	  /* empty */
-	| handler_seq CATCH
-		{ emit_line_note (input_filename, lineno); }
-          .pushlevel handler_args compstmt
-		{ expand_end_catch_block ();
-		  expand_end_bindings (getdecls (), kept_level_p (), 1);
-		  poplevel (kept_level_p (), 1, 0);
-		  pop_momentary ();
-		}
+	| handler_seq CATCH .pushlevel handler_args compstmt
+		{ expand_end_catch_block (); }
+	  .poplevel
 	;
 
 type_specifier_seq:
@@ -3518,24 +3470,11 @@ label_colon:
 		{ goto do_label; }
 	;
 
-forhead.1:
-	  FOR '(' ';'
-		{ $$ = NULL_TREE; }
-	| FOR '(' expr ';'
-		{ $$ = $3; }
-	| FOR '(' '{' '}'
-		{ $$ = NULL_TREE; }
-	;
-
-forhead.2:
-	  FOR '(' decl
-		{ $$ = 0; }
-	| FOR '(' error ';'
-		{ $$ = 0; }
-	| FOR '(' '{' .pushlevel stmts '}'
-		{ $$ = 1; }
-	| FOR '(' '{' .pushlevel error '}'
-		{ $$ = -1; }
+for.init.statement:
+	  xexpr ';'
+		{ if ($1) cplus_expand_expr_stmt ($1); }
+	| decl
+	| '{' compstmtend
 	;
 
 /* Either a type-qualifier or nothing.  First thing in an `asm' statement.  */

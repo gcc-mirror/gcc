@@ -397,10 +397,8 @@ build_cplus_method_type (basetype, rettype, argtypes)
 					  TYPE_READONLY (basetype),
 					  TYPE_VOLATILE (basetype));
   else
-    {
-      ptype = build_pointer_type (basetype);
-      ptype = build_type_variant (ptype, 1, 0);
-    }
+    ptype = build_pointer_type (basetype);
+
   /* The actual arglist for this function includes a "hidden" argument
      which is "this".  Put it into the list of argument types.  */
 
