@@ -26,6 +26,8 @@ extern void mn10300_va_start PARAMS ((tree, rtx));
 #endif /* TREE_CODE */
 
 extern struct rtx_def *legitimize_address PARAMS ((rtx, rtx, enum machine_mode));
+extern rtx legitimize_pic_address   (rtx, rtx);
+extern int legitimate_pic_operand_p (rtx);
 extern void print_operand PARAMS ((FILE *, rtx, int));
 extern void print_operand_address PARAMS ((FILE *, rtx));
 extern void mn10300_print_reg_list PARAMS ((FILE *, int));

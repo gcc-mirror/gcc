@@ -46,6 +46,8 @@ Boston, MA 02111-1307, USA.  */
 
 extern int target_flags;
 
+extern GTY(()) int mn10300_unspec_int_label_counter;
+
 /* Macros used in the machine description to test the flags.  */
 
 /* Macro to define tables used to set the flags.
@@ -212,6 +214,8 @@ extern int target_flags;
            i++) 				\
 	fixed_regs[i] = call_used_regs[i] = 1;	\
     }						\
+  if (flag_pic)					\
+    fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;	\
 }
 
 /* Return number of consecutive hard regs needed starting at reg REGNO
@@ -735,6 +739,9 @@ struct cum_arg {int nbytes; };
 #define EXTRA_CONSTRAINT(OP, C) \
  ((C) == 'R' ? OK_FOR_R (OP) \
   : (C) == 'Q' ? OK_FOR_Q (OP) \
+  : (C) == 'S' && flag_pic \
+  ? GET_CODE (OP) == UNSPEC && (XINT (OP, 1) == UNSPEC_PLT \
+				|| XINT (OP, 1) == UNSPEC_PIC) \
   : (C) == 'S' ? GET_CODE (OP) == SYMBOL_REF \
   : (C) == 'T' ? OK_FOR_T (OP) \
   : 0)
@@ -775,7 +782,8 @@ struct cum_arg {int nbytes; };
 
 #define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)    	\
 {							\
-  if (CONSTANT_ADDRESS_P (X))				\
+  if (CONSTANT_ADDRESS_P (X)				\
+      && (! flag_pic || legitimate_pic_operand_p (X)))	\
     goto ADDR;						\
   if (RTX_OK_FOR_BASE_P (X))				\
     goto ADDR;						\
@@ -796,6 +804,8 @@ struct cum_arg {int nbytes; };
       if (base != 0 && index != 0)			\
 	{						\
 	  if (GET_CODE (index) == CONST_INT)		\
+	    goto ADDR;					\
+	  if (GET_CODE (index) == CONST)		\
 	    goto ADDR;					\
 	}						\
     }							\
@@ -833,6 +843,60 @@ struct cum_arg {int nbytes; };
 
 #define LEGITIMATE_CONSTANT_P(X) 1
 
+/* Zero if this needs fixing up to become PIC.  */
+
+#define LEGITIMATE_PIC_OPERAND_P(X) (legitimate_pic_operand_p (X))
+
+/* Register to hold the addressing base for
+   position independent code access to data items.  */
+#define PIC_OFFSET_TABLE_REGNUM	PIC_REG
+
+/* The name of the pseudo-symbol representing the Global Offset Table.  */
+#define GOT_SYMBOL_NAME "*_GLOBAL_OFFSET_TABLE_"
+
+#define SYMBOLIC_CONST_P(X)	\
+((GET_CODE (X) == SYMBOL_REF || GET_CODE (X) == LABEL_REF)	\
+  && ! LEGITIMATE_PIC_OPERAND_P (X))
+
+/* Non-global SYMBOL_REFs have SYMBOL_REF_FLAG enabled.  */
+#define MN10300_GLOBAL_P(X) (! SYMBOL_REF_FLAG (X))
+
+/* Recognize machine-specific patterns that may appear within
+   constants.  Used for PIC-specific UNSPECs.  */
+#define OUTPUT_ADDR_CONST_EXTRA(STREAM, X, FAIL) \
+  do									\
+    if (GET_CODE (X) == UNSPEC && XVECLEN ((X), 0) == 1)	\
+      {									\
+	switch (XINT ((X), 1))						\
+	  {								\
+	  case UNSPEC_INT_LABEL:					\
+	    asm_fprintf ((STREAM), ".%LLIL%d",				\
+ 			 INTVAL (XVECEXP ((X), 0, 0)));			\
+	    break;							\
+	  case UNSPEC_PIC:						\
+	    /* GLOBAL_OFFSET_TABLE or local symbols, no suffix.  */	\
+	    output_addr_const ((STREAM), XVECEXP ((X), 0, 0));		\
+	    break;							\
+	  case UNSPEC_GOT:						\
+	    output_addr_const ((STREAM), XVECEXP ((X), 0, 0));		\
+	    fputs ("@GOT", (STREAM));					\
+	    break;							\
+	  case UNSPEC_GOTOFF:						\
+	    output_addr_const ((STREAM), XVECEXP ((X), 0, 0));		\
+	    fputs ("@GOTOFF", (STREAM));				\
+	    break;							\
+	  case UNSPEC_PLT:						\
+	    output_addr_const ((STREAM), XVECEXP ((X), 0, 0));		\
+	    fputs ("@PLT", (STREAM));					\
+	    break;							\
+	  default:							\
+	    goto FAIL;							\
+	  }								\
+	break;								\
+      }									\
+    else								\
+      goto FAIL;							\
+  while (0)
 
 /* Tell final.c how to eliminate redundant test instructions.  */
 
