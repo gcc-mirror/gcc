@@ -42,6 +42,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "timevar.h"
 #include "except.h"
 #include "target.h"
+#include "params.h"
 
 /* The basic idea of common subexpression elimination is to go
    through the code, keeping a record of expressions that would
@@ -569,10 +570,6 @@ static struct table_elt *last_jump_equiv_class;
 
 static int constant_pool_entries_cost;
 
-/* Define maximum length of a branch path.  */
-
-#define PATHLENGTH	10
-
 /* This data describes a block that will be processed by cse_basic_block.  */
 
 struct cse_basic_block_data
@@ -596,7 +593,7 @@ struct cse_basic_block_data
 	 except that it is used when the destination label is not preceded
        by a BARRIER.  */
       enum taken {TAKEN, NOT_TAKEN, AROUND} status;
-    } path[PATHLENGTH];
+    } *path;
 };
 
 static bool fixed_base_plus_p	PARAMS ((rtx x));
@@ -6947,7 +6944,7 @@ cse_end_of_basic_block (insn, data, follow_jumps, after_loop, skip_blocks)
 	 In this case invalidate_skipped_block will be called to invalidate any
 	 registers set in the block when following the jump.  */
 
-      else if ((follow_jumps || skip_blocks) && path_size < PATHLENGTH - 1
+      else if ((follow_jumps || skip_blocks) && path_size < PARAM_VALUE (PARAM_MAX_CSE_PATH_LENGTH) - 1
 	       && GET_CODE (p) == JUMP_INSN
 	       && GET_CODE (PATTERN (p)) == SET
 	       && GET_CODE (SET_SRC (PATTERN (p))) == IF_THEN_ELSE
@@ -7077,6 +7074,9 @@ cse_main (f, nregs, after_loop, file)
   rtx insn = f;
   int i;
 
+  val.path = xmalloc (sizeof (struct branch_path)
+		      * PARAM_VALUE (PARAM_MAX_CSE_PATH_LENGTH));
+
   cse_jumps_altered = 0;
   recorded_label_ref = 0;
   constant_pool_entries_cost = 0;
@@ -7200,6 +7200,7 @@ cse_main (f, nregs, after_loop, file)
   end_alias_analysis ();
   free (uid_cuid);
   free (reg_eqv_table);
+  free (val.path);
 
   return cse_jumps_altered || recorded_label_ref;
 }
@@ -7377,7 +7378,10 @@ cse_basic_block (from, to, next_branch, around_loop)
 	     following branches in this case.  */
 	  to_usage = 0;
 	  val.path_size = 0;
+	  val.path = xmalloc (sizeof (struct branch_path)
+			      * PARAM_VALUE (PARAM_MAX_CSE_PATH_LENGTH));
 	  cse_end_of_basic_block (insn, &val, 0, 0, 0);
+	  free (val.path);
 
 	  /* If the tables we allocated have enough space left
 	     to handle all the SETs in the next basic block,
