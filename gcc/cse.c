@@ -3409,7 +3409,8 @@ simplify_binary_operation (code, mode, op0, op1)
 	case ASHIFT:     case LSHIFT:
 	case ROTATE:     case ROTATERT:
 #ifdef SHIFT_COUNT_TRUNCATED
-	  l2 &= (GET_MODE_BITSIZE (mode) - 1), h2 = 0;
+	  if (SHIFT_COUNT_TRUNCATED)
+	    l2 &= (GET_MODE_BITSIZE (mode) - 1), h2 = 0;
 #endif
 
 	  if (h2 != 0 || l2 < 0 || l2 >= GET_MODE_BITSIZE (mode))
@@ -3840,7 +3841,8 @@ simplify_binary_operation (code, mode, op0, op1)
 	return 0;
 
 #ifdef SHIFT_COUNT_TRUNCATED
-      arg1 &= (BITS_PER_WORD - 1);
+      if (SHIFT_COUNT_TRUNCATED)
+	arg1 &= (BITS_PER_WORD - 1);
 #endif
 
       if (arg1 >= width)
@@ -3855,7 +3857,8 @@ simplify_binary_operation (code, mode, op0, op1)
 	return 0;
 
 #ifdef SHIFT_COUNT_TRUNCATED
-      arg1 &= (BITS_PER_WORD - 1);
+      if (SHIFT_COUNT_TRUNCATED)
+	arg1 &= (BITS_PER_WORD - 1);
 #endif
 
       if (arg1 >= width)
@@ -3869,7 +3872,8 @@ simplify_binary_operation (code, mode, op0, op1)
 	return 0;
 
 #ifdef SHIFT_COUNT_TRUNCATED
-      arg1 &= (BITS_PER_WORD - 1);
+      if (SHIFT_COUNT_TRUNCATED)
+	arg1 &= (BITS_PER_WORD - 1);
 #endif
 
       if (arg1 >= width)
