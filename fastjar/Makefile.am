@@ -82,3 +82,27 @@ jar.pod: $(srcdir)/fastjar.texi
 
 grepjar.pod: $(srcdir)/fastjar.texi
 	-$(TEXI2POD) -D grepjar $< > $@
+
+# GCC LOCAL CHANGE
+# The following commands allow us to release tarballs with the man pages
+# and info documentation prebuilt.  This feature is enabled via 
+# --enable-generated-files-in-srcdir in the configure script.
+
+if GENINSRC
+STAMP_GENINSRC = stamp-geninsrc
+else
+STAMP_GENINSRC =
+endif
+
+all-local: $(STAMP_GENINSRC) 
+
+stamp-geninsrc: jar.1 grepjar.1 fastjar.info
+	-cp -p $(top_builddir)/jar.1 $(srcdir)/jar.1
+	-cp -p $(top_builddir)/grepjar.1 $(srcdir)/grepjar.1
+	-cp -p $(top_builddir)/fastjar.info $(srcdir)/fastjar.info
+	touch $@
+
+CLEANFILES = stamp-geninsrc
+MAINTAINERCLEANFILES = $(srcdir)/jar.1 \
+                       $(srcdir)/grepjar.1 \
+                       $(srcdir)/fastjar.info
