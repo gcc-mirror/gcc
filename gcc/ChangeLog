@@ -1,3 +1,23 @@
+2004-09-23 Jeff Law  <law@redhat.com>
+
+	* tree-ssa-ccp.c (get_default_value): Use SSA_NAME_VALUE rather
+	than SSA_NAME_EQUIV and SET_SSA_NAME_EQUIV.
+	(substitute_and_fold):  Likewise.
+	* tree-ssa-dom.c (tree_ssa_dominator_optimize): Remove everything
+	except invariants from SSA_NAME_VALUE.
+	(thread_across_edge): Use SSA_NAME_VALUE rather than SSA_NAME_EQUIV
+	and SET_SSA_NAME_EQUIV.
+	(restore_vars_to_original_value, record_const_or_copy): Likewise.
+	(record_equivalences_from_phis, record_const_or_copy_1): Likewise.
+	(record_equality, cprop_into_successor_phis): Likewise.
+	(record_equivalences_from_stmt, cprop_operand): Likewise.
+	(lookup_avail_expr): Likewise.
+	* tree-ssa-pre.c (fini_pre): Remove everything except invariants
+	from SSA_NAME_VALUE.
+	* tree.h (SSA_NAME_EQUIV, SET_SSA_NAME_EQUIV): Kill.
+	(struct tree_ssa_name):  Kill EQUIV field.  Remove GGC skip
+	annotation from the VALUE_HANDLE field.
+
 2004-09-21 Fariborz Jahanian <fjahanian@apple.com>
 	PR c++/13989
 	PR c++/9844

@@ -1964,6 +1964,8 @@ static void
 fini_pre (void)
 {
   basic_block bb;
+  unsigned int i;
+
   bsi_commit_edge_inserts (NULL);
 
   obstack_free (&grand_bitmap_obstack, NULL);
@@ -1992,6 +1994,20 @@ fini_pre (void)
     }
 
   BITMAP_XFREE (need_eh_cleanup);
+
+  /* Wipe out pointers to VALUE_HANDLEs.  In the not terribly distant
+     future we will want them to be persistent though.  */
+  for (i = 0; i < num_ssa_names; i++)
+    {
+      tree name = ssa_name (i);
+
+      if (!name)
+	continue;
+
+      if (SSA_NAME_VALUE (name)
+	  && TREE_CODE (SSA_NAME_VALUE (name)) == VALUE_HANDLE)
+	SSA_NAME_VALUE (name) = NULL;
+    }
 }
 
 

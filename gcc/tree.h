@@ -1312,20 +1312,6 @@ struct tree_exp GTY(())
 #define SSA_NAME_IN_FREE_LIST(NODE) \
     SSA_NAME_CHECK (NODE)->common.nothrow_flag
 
-/* If NAME is equivalent to some other SSA_NAME or an invariant, then
-   return the equivalent SSA_NAME or invariant, else return NULL.  */
-#define SSA_NAME_EQUIV(NAME) __extension__ \
-  ({  tree equiv = SSA_NAME_CHECK (NAME)->ssa_name.equiv; \
-      if (equiv && TREE_CODE (equiv) == SSA_NAME) \
-	equiv = ssa_name (SSA_NAME_VERSION (equiv)); \
-      equiv; \
-   })
-
-/* Record that NAME (an SSA_NAME) is equivalent to EQUIV.  */
-
-#define SET_SSA_NAME_EQUIV(NAME, EQUIV)\
-   SSA_NAME_CHECK (NAME)->ssa_name.equiv = (EQUIV);
-
 /* Attributes for SSA_NAMEs for pointer-type variables.  */
 #define SSA_NAME_PTR_INFO(N) \
     SSA_NAME_CHECK (N)->ssa_name.ptr_info
@@ -1357,8 +1343,12 @@ struct tree_ssa_name GTY(())
   /* Pointer attributes used for alias analysis.  */
   struct ptr_info_def *ptr_info;
 
-  /* Value for SSA name used by GVN.  */
-  tree GTY((skip)) value_handle;
+  /* Value for SSA name used by various passes.
+
+     Right now only invariants are allowed to persist beyond a pass in
+     this field; in the future we will allow VALUE_HANDLEs to persist
+     as well.  */
+  tree value_handle;
 
   /* Auxiliary information stored with the ssa name.  */
   PTR GTY((skip)) aux;

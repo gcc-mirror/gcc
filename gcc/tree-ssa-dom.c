@@ -404,6 +404,24 @@ tree_ssa_dominator_optimize (void)
   /* Free nonzero_vars.   */
   BITMAP_XFREE (nonzero_vars);
   BITMAP_XFREE (need_eh_cleanup);
+
+  /* Finally, remove everything except invariants in SSA_NAME_VALUE.
+
+     Long term we will be able to let everything in SSA_NAME_VALUE
+     persist.  However, for now, we know this is the safe thing to
+     do.  */
+  for (i = 0; i < num_ssa_names; i++)
+    {
+      tree name = ssa_name (i);
+      tree value;
+
+      if (!name)
+	continue;
+
+      value = SSA_NAME_VALUE (name);
+      if (value && !is_gimple_min_invariant (value))
+	SSA_NAME_VALUE (name) = NULL;
+    }
 }
 
 static bool
@@ -503,8 +521,8 @@ thread_across_edge (struct dom_walk_data *walk_data, edge e)
 
 	      uses_copy[i] = USE_OP (uses, i);
 	      if (TREE_CODE (USE_OP (uses, i)) == SSA_NAME)
-		tmp = SSA_NAME_EQUIV (USE_OP (uses, i));
-	      if (tmp)
+		tmp = SSA_NAME_VALUE (USE_OP (uses, i));
+	      if (tmp && TREE_CODE (tmp) != VALUE_HANDLE)
 		SET_USE_OP (uses, i, tmp);
 	    }
 
@@ -515,8 +533,8 @@ thread_across_edge (struct dom_walk_data *walk_data, edge e)
 
 	      vuses_copy[i] = VUSE_OP (vuses, i);
 	      if (TREE_CODE (VUSE_OP (vuses, i)) == SSA_NAME)
-		tmp = SSA_NAME_EQUIV (VUSE_OP (vuses, i));
-	      if (tmp)
+		tmp = SSA_NAME_VALUE (VUSE_OP (vuses, i));
+	      if (tmp && TREE_CODE (tmp) != VALUE_HANDLE)
 		SET_VUSE_OP (vuses, i, tmp);
 	    }
 
@@ -607,15 +625,15 @@ thread_across_edge (struct dom_walk_data *walk_data, edge e)
 	  /* Get the current value of both operands.  */
 	  if (TREE_CODE (op0) == SSA_NAME)
 	    {
-	      tree tmp = SSA_NAME_EQUIV (op0);
-	      if (tmp)
+	      tree tmp = SSA_NAME_VALUE (op0);
+	      if (tmp && TREE_CODE (tmp) != VALUE_HANDLE)
 		op0 = tmp;
 	    }
 
 	  if (TREE_CODE (op1) == SSA_NAME)
 	    {
-	      tree tmp = SSA_NAME_EQUIV (op1);
-	      if (tmp)
+	      tree tmp = SSA_NAME_VALUE (op1);
+	      if (tmp && TREE_CODE (tmp) != VALUE_HANDLE)
 		op1 = tmp;
 	    }
 
@@ -654,7 +672,7 @@ thread_across_edge (struct dom_walk_data *walk_data, edge e)
       else if (TREE_CODE (cond) == SSA_NAME)
 	{
 	  cached_lhs = cond;
-	  cached_lhs = SSA_NAME_EQUIV (cached_lhs);
+	  cached_lhs = SSA_NAME_VALUE (cached_lhs);
 	  if (cached_lhs && ! is_gimple_min_invariant (cached_lhs))
 	    cached_lhs = 0;
 	}
@@ -809,7 +827,7 @@ restore_vars_to_original_value (void)
       prev_value = VARRAY_TOP_TREE (const_and_copies_stack);
       VARRAY_POP (const_and_copies_stack);
 
-      SET_SSA_NAME_EQUIV (dest, prev_value);
+      SSA_NAME_VALUE (dest) =  prev_value;
     }
 }
 
@@ -1067,7 +1085,7 @@ record_equivalences_from_phis (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
 	 by this assignment, so unwinding just costs time and space.  */
       if (i == PHI_NUM_ARGS (phi)
 	  && may_propagate_copy (lhs, rhs))
-	SET_SSA_NAME_EQUIV (lhs, rhs);
+	SSA_NAME_VALUE (lhs) = rhs;
 
       /* Now see if we know anything about the nonzero property for the
 	 result of this PHI.  */
@@ -1463,7 +1481,7 @@ record_dominating_conditions (tree cond)
 static void
 record_const_or_copy_1 (tree x, tree y, tree prev_x)
 {
-  SET_SSA_NAME_EQUIV (x, y);
+  SSA_NAME_VALUE (x) = y;
 
   VARRAY_PUSH_TREE (const_and_copies_stack, prev_x);
   VARRAY_PUSH_TREE (const_and_copies_stack, x);
@@ -1475,11 +1493,11 @@ record_const_or_copy_1 (tree x, tree y, tree prev_x)
 static void
 record_const_or_copy (tree x, tree y)
 {
-  tree prev_x = SSA_NAME_EQUIV (x);
+  tree prev_x = SSA_NAME_VALUE (x);
 
   if (TREE_CODE (y) == SSA_NAME)
     {
-      tree tmp = SSA_NAME_EQUIV (y);
+      tree tmp = SSA_NAME_VALUE (y);
       if (tmp)
 	y = tmp;
     }
@@ -1496,9 +1514,9 @@ record_equality (tree x, tree y)
   tree prev_x = NULL, prev_y = NULL;
 
   if (TREE_CODE (x) == SSA_NAME)
-    prev_x = SSA_NAME_EQUIV (x);
+    prev_x = SSA_NAME_VALUE (x);
   if (TREE_CODE (y) == SSA_NAME)
-    prev_y = SSA_NAME_EQUIV (y);
+    prev_y = SSA_NAME_VALUE (y);
 
   /* If one of the previous values is invariant, then use that.
      Otherwise it doesn't matter which value we choose, just so
@@ -1509,7 +1527,7 @@ record_equality (tree x, tree y)
     prev_x = x, x = y, y = prev_x, prev_x = prev_y;
   else if (prev_x && TREE_INVARIANT (prev_x))
     x = y, y = prev_x, prev_x = prev_y;
-  else if (prev_y)
+  else if (prev_y && TREE_CODE (prev_y) != VALUE_HANDLE)
     y = prev_y;
 
   /* After the swapping, we must have one SSA_NAME.  */
@@ -2233,7 +2251,7 @@ cprop_into_successor_phis (basic_block bb, bitmap nonzero_vars)
 
 	  /* If we have *ORIG_P in our constant/copy table, then replace
 	     ORIG_P with its value in our constant/copy table.  */
-	  new = SSA_NAME_EQUIV (orig);
+	  new = SSA_NAME_VALUE (orig);
 	  if (new
 	      && (TREE_CODE (new) == SSA_NAME
 		  || is_gimple_min_invariant (new))
@@ -2378,7 +2396,7 @@ record_equivalences_from_stmt (tree stmt,
       if (may_optimize_p
 	  && (TREE_CODE (rhs) == SSA_NAME
 	      || is_gimple_min_invariant (rhs)))
-	SET_SSA_NAME_EQUIV (lhs, rhs);
+	SSA_NAME_VALUE (lhs) = rhs;
 
       /* alloca never returns zero and the address of a non-weak symbol
 	 is never zero.  NOP_EXPRs and CONVERT_EXPRs can be completely
@@ -2500,8 +2518,8 @@ cprop_operand (tree stmt, use_operand_p op_p)
   /* If the operand has a known constant value or it is known to be a
      copy of some other variable, use the value or copy stored in
      CONST_AND_COPIES.  */
-  val = SSA_NAME_EQUIV (op);
-  if (val)
+  val = SSA_NAME_VALUE (op);
+  if (val && TREE_CODE (val) != VALUE_HANDLE)
     {
       tree op_type, val_type;
 
@@ -2886,8 +2904,8 @@ lookup_avail_expr (tree stmt, bool insert)
      use the value from the const_and_copies table.  */
   if (TREE_CODE (lhs) == SSA_NAME)
     {
-      temp = SSA_NAME_EQUIV (lhs);
-      if (temp)
+      temp = SSA_NAME_VALUE (lhs);
+      if (temp && TREE_CODE (temp) != VALUE_HANDLE)
 	lhs = temp;
     }
 

@@ -136,11 +136,11 @@ get_default_value (tree var)
   val.const_val = NULL_TREE;
 
   if (TREE_CODE (var) == SSA_NAME
-      && SSA_NAME_EQUIV (var)
-      && is_gimple_min_invariant (SSA_NAME_EQUIV (var)))
+      && SSA_NAME_VALUE (var)
+      && is_gimple_min_invariant (SSA_NAME_VALUE (var)))
     {
       val.lattice_val = CONSTANT;
-      val.const_val = SSA_NAME_EQUIV (var);
+      val.const_val = SSA_NAME_VALUE (var);
     }
   else if (TREE_CODE (sym) == PARM_DECL || TREE_THIS_VOLATILE (sym))
     {
@@ -611,7 +611,7 @@ substitute_and_fold (void)
       if (value->lattice_val == CONSTANT
           && is_gimple_reg (name)
 	  && is_gimple_min_invariant (value->const_val))
-	SET_SSA_NAME_EQUIV (name, value->const_val)
+	SSA_NAME_VALUE (name) = value->const_val;
     }
 }
 
