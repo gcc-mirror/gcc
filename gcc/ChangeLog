@@ -1,3 +1,10 @@
+Sun Apr  4 00:14:54 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* fixinc/hackshell.tpl: Skip links to directories, to avoid
+	removing them.
+	* fixinc/inclhack.tpl: Likewise.
+	* fixinc/fixinc.sh, fixinc/fixincl.x, fixinc/inclhack.sh: Rebuilt.
+
 Sat Apr  3 23:46:13 1999  David Edelsohn  <edelsohn@gnu.org>
 	
 	* rs6000.md (addsi3, iorsi3, xorsi3, adddi3, iordi3, xordi3,

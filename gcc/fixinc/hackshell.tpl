@@ -8,9 +8,12 @@
   echo Checking header files
   for file in $files; do
 
-    if ( test ! -r ${file} -o \
-    -n "`fgrep 'This file is part of the GNU C Library' ${file}`" )
-    then continue ; fi
+    # Skip unreadable files, symlinks to directories and glibc files
+    if test ! -r "${file}" || test -d "${file}/." \
+       || fgrep 'This file is part of the GNU C Library' "${file}" \
+	    > /dev/null 2>&1; then
+      continue
+    fi
 
     fixlist=""
     DESTFILE=${DESTDIR}/`echo ${file} | sed "s;${FIND_BASE}/;;" `
