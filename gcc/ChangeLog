@@ -1,3 +1,7 @@
+2001-02-02  lars brinkhoff  <lars@nocrew.org>
+
+	* md.texi (Standard Names): remove reference to spur.md.
+
 2001-02-03  Michael Hayes  <m.hayes@elec.canterbury.ac.nz)
 
 	* c4x.h (IS_INT_CALL_SAVED_REG, IS_FLOAT_CALL_SAVED_REG): Define.
