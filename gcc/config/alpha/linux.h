@@ -1,7 +1,7 @@
-/* Definitions of target machine for GNU compiler, for Alpha Linux-based GNU
-   systems using ECOFF.
+/* Definitions of target machine for GNU compiler,
+   for Alpha Linux-based GNU systems.
    Copyright (C) 1996, 1997 Free Software Foundation, Inc.
-   Contributed by Bob Manson.
+   Contributed by Richard Henderson.
 
 This file is part of GNU CC.
 
@@ -20,55 +20,28 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef TARGET_DEFAULT
-#define TARGET_DEFAULT (3 | MASK_GAS)
-
-#undef TARGET_VERSION
-#define TARGET_VERSION fprintf (stderr, " (GNU/Linux/Alpha)");
+#define TARGET_DEFAULT (MASK_FP | MASK_FPREGS | MASK_GAS)
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "\
 -D__alpha -D__alpha__ -D__linux__ -D__linux -D_LONGLONG -Dlinux -Dunix \
--Asystem(linux) -Acpu(alpha) -Amachine(alpha)"
-
-/* We don't actually need any of these; the MD_ vars are ignored
-   anyway for cross-compilers, and the other specs won't get picked up
-   because the user is supposed to do ld -r (hmm, perhaps that should be
-   the default).  In any case, setting them thus will catch some
-   common user errors. */
-
-#undef MD_EXEC_PREFIX
-#undef MD_STARTFILE_PREFIX
+-Asystem(linux) -Acpu(alpha) -Amachine(alpha)" SUB_CPP_PREDEFINES
 
 #undef LIB_SPEC
 #define LIB_SPEC "%{pg:-lgmon} %{pg:-lc_p} %{!pg:-lc}"
 
-#undef LINK_SPEC
-#define LINK_SPEC "-G 8 %{O*:-O3} %{!O*:-O1}"
-
 #undef ASM_SPEC
 #define ASM_SPEC "-nocpp"
-
-/* Can't do stabs */
-#undef SDB_DEBUGGING_INFO
-
-/* Prefer dbx.  */
-#undef PREFERRED_DEBUGGING_TYPE
-#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
-
-#undef FUNCTION_PROFILER
-#define FUNCTION_PROFILER(FILE, LABELNO)			\
-	fputs ("\tjsr $28,_mcount\n", (FILE))
 
 /* Generate calls to memcpy, etc., not bcopy, etc. */
 #define TARGET_MEM_FUNCTIONS
 
+#undef FUNCTION_PROFILER
+#define FUNCTION_PROFILER(FILE, LABELNO)			\
+	fputs ("\tlda $28,_mcount\n\tjsr $28,($28),_mcount\n", (FILE))
+
 /* Show that we need a GP when profiling.  */
 #define TARGET_PROFILING_NEEDS_GP
-
-/* We support #pragma.  */
-#define HANDLE_SYSV_PRAGMA
-
-#undef ASM_FINAL_SPEC
 
 /* Emit RTL insns to initialize the variable parts of a trampoline.
    FNADDR is an RTX for the address of the function's pure code.

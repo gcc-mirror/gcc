@@ -310,18 +310,22 @@ for machine in $build $host $target; do
 		use_collect2=yes
 		;;
 	alpha*-*-linux-gnuecoff*)
-		tm_file="${tm_file} alpha/linux.h"
+		if [[ x$enable_haifa != xno ]]; then
+			enable_haifa=yes
+		fi
+		tm_file="${tm_file} alpha/linux-ecoff.h alpha/linux.h"
 		xm_file="${xm_file} alpha/xm-linux.h"
-		target_cpu_default="MASK_GAS"
 		gas=no
 		xmake_file=none
 		fixincludes=Makefile.in
 		gas=yes gnu_ld=yes
 		;;
 	alpha*-*-linux-gnulibc1*)
-		tm_file="${tm_file} alpha/linux.h alpha/elf.h"
+		if [[ x$enable_haifa != xno ]]; then
+			enable_haifa=yes
+		fi
+		tm_file="${tm_file} alpha/elf.h alpha/linux-elf.h alpha/linux.h"
 		xm_file="${xm_file} alpha/xm-linux.h"
-		target_cpu_default="MASK_GAS"
 		tmake_file="t-linux t-linux-gnulibc1 alpha/t-linux"
 		xmake_file=none
 		fixincludes=Makefile.in
@@ -331,9 +335,11 @@ for machine in $build $host $target; do
  		fi
 		;;
 	alpha*-*-linux-gnu*)
-		tm_file="${tm_file} alpha/linux.h alpha/elf.h"
+		if [[ x$enable_haifa != xno ]]; then
+			enable_haifa=yes
+		fi
+		tm_file="${tm_file} alpha/elf.h alpha/linux-elf.h alpha/linux.h"
 		xm_file="${xm_file} alpha/xm-linux.h"
-		target_cpu_default="MASK_GAS"
 		tmake_file="t-linux alpha/t-linux"
 		xmake_file=none
 		fixincludes=Makefile.in
@@ -343,6 +349,9 @@ for machine in $build $host $target; do
  		fi
 		;;
 	alpha*-dec-osf*)
+		if [[ x$enable_haifa != xno ]]; then
+			enable_haifa=yes
+		fi
 		if [[ x$stabs = xyes ]]
 		then
 			tm_file="${tm_file} dbx.h"
@@ -354,12 +363,13 @@ for machine in $build $host $target; do
 		use_collect2=yes
 		case $machine in
 		  *-*-osf1.2)
-		    tm_file="${tm_file} alpha/osf12.h alpha/osf2or3.h"
+		    tm_file="${tm_file} alpha/osf.h alpha/osf12.h alpha/osf2or3.h"
 		    ;;
 		  *-*-osf[[23]]*)
-		    tm_file="${tm_file} alpha/osf2or3.h"
+		    tm_file="${tm_file} alpha/osf.h alpha/osf2or3.h"
 		    ;;
 		  *-*-osf4*)
+		    tm_file="${tm_file} alpha/osf.h"
 		    # Some versions of OSF4 (specifically X4.0-9 296.7) have
 		    # a broken tar, so we use cpio instead.
 		    install_headers_dir=install-headers-cpio
@@ -371,9 +381,11 @@ for machine in $build $host $target; do
 		    ;;
 		esac
 		;;
-	alpha*-*-winnt3*)
+	alpha*-*-winnt*)
+		if [[ x$enable_haifa != xno ]]; then
+			enable_haifa=yes
+		fi
 		tm_file="${tm_file} alpha/win-nt.h"
-		target_cpu_default=MASK_WINDOWS_NT
 		xm_file="${xm_file} config/winnt/xm-winnt.h alpha/xm-winnt.h"
 		tmake_file=t-libc-ok
 		xmake_file=winnt/x-winnt
@@ -389,6 +401,9 @@ for machine in $build $host $target; do
 		fi
 		;;
 	alpha*-dec-vms*)
+		if [[ x$enable_haifa != xno ]]; then
+			enable_haifa=yes
+		fi
 		tm_file=alpha/vms.h
 		xm_file="${xm_file} alpha/xm-vms.h"
 		tmake_file=alpha/t-vms
@@ -1066,7 +1081,7 @@ for machine in $build $host $target; do
 		fi
 		exeext=.exe
 		;;
-	i[[3456]]86-*-winnt3*)
+	i[[3456]]86-*-winnt*)
 		tm_file=i386/win-nt.h
 		out_file=i386/i386.c
 		xm_file=i386/xm-winnt.h

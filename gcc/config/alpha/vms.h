@@ -46,6 +46,18 @@ Boston, MA 02111-1307, USA.  */
 %{.C:	-D__LANGUAGE_C_PLUS_PLUS__ -D__LANGUAGE_C_PLUS_PLUS -D__cplusplus} \
 %{.m:	-D__LANGUAGE_OBJECTIVE_C__ -D__LANGUAGE_OBJECTIVE_C}"
 
+/* Under OSF4, -p and -pg require -lprof1, and -lprof1 requires -lpdf.  */
+
+#define LIB_SPEC "%{p:-lprof1 -lpdf} %{pg:-lprof1 -lpdf} %{a:-lprof2} -lc"
+
+/* Pass "-G 8" to ld because Alpha's CC does.  Pass -O3 if we are
+   optimizing, -O1 if we are not.  Pass -shared, -non_shared or
+   -call_shared as appropriate.  Also pass -pg.  */
+#define LINK_SPEC  \
+  "-G 8 %{O*:-O3} %{!O*:-O1} %{static:-non_shared} \
+   %{!static:%{shared:-shared} %{!shared:-call_shared}} %{pg} %{taso} \
+   %{rpath*}"
+
 /* We allow $'s in identifiers unless -ansi is used .. */
 
 #define DOLLARS_IN_IDENTIFIERS 2
