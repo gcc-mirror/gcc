@@ -13,7 +13,10 @@ Sat Nov 28 19:20:06 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	Use ANSI_PROTOTYPES, not __STDC__ to select varargs vs. stdargs.
 	* gcc.c, mips-tfile.c, prefix.c, toplev.c, tree.c: Likewise.
 	* gen*.c (fatal): Fix error in varargs case.
-	* genatttab.c (fatal): Make same as other gen programs.
+	* genattrtab.c (fatal): Make same as other gen programs.
+	* genattrtab.c: Write #include for system.h in output.
+	* genemit.c, genextract.c, genoutput.c, genpeep.c: Likewise.
+	* genrecog.c: Likewise.
 
 Sat Nov 28 06:01:525 1998  John F. Carr  <jfc@mit.edu>
 
