@@ -4054,8 +4054,9 @@ move\\t%0,%z4\\n\\
   if (operands[0])		/* eliminate unused code warnings */
     {
       addr = XEXP (operands[0], 0);
-      if (GET_CODE (addr) != REG && (!CONSTANT_ADDRESS_P (addr) || TARGET_LONG_CALLS))
-	XEXP (operands[0], 0) = force_reg (FUNCTION_MODE, addr);
+      if ((GET_CODE (addr) != REG && (!CONSTANT_ADDRESS_P (addr) || TARGET_LONG_CALLS))
+	  || ! call_insn_operand (operands[0], VOIDmode))
+	XEXP (operands[0], 0) = copy_to_mode_reg (Pmode, addr);
 
       /* In order to pass small structures by value in registers
 	 compatibly with the MIPS compiler, we need to shift the value
@@ -4081,7 +4082,7 @@ move\\t%0,%z4\\n\\
 }")
 
 (define_insn "call_internal1"
-  [(call (match_operand 0 "memory_operand" "m")
+  [(call (match_operand 0 "call_insn_operand" "m")
 	 (match_operand 1 "" "i"))
    (clobber (match_operand:SI 2 "register_operand" "=d"))]
   "!TARGET_LONG_CALLS"
@@ -4135,8 +4136,9 @@ move\\t%0,%z4\\n\\
   if (operands[0])		/* eliminate unused code warning */
     {
       addr = XEXP (operands[1], 0);
-      if (GET_CODE (addr) != REG && (!CONSTANT_ADDRESS_P (addr) || TARGET_LONG_CALLS))
-	XEXP (operands[1], 0) = force_reg (FUNCTION_MODE, addr);
+      if ((GET_CODE (addr) != REG && (!CONSTANT_ADDRESS_P (addr) || TARGET_LONG_CALLS))
+	  || ! call_insn_operand (operands[1], VOIDmode))
+	XEXP (operands[1], 0) = copy_to_mode_reg (Pmode, addr);
 
       /* In order to pass small structures by value in registers
 	 compatibly with the MIPS compiler, we need to shift the value
@@ -4165,7 +4167,7 @@ move\\t%0,%z4\\n\\
 
 (define_insn "call_value_internal1"
   [(set (match_operand 0 "register_operand" "=df")
-        (call (match_operand 1 "memory_operand" "m")
+        (call (match_operand 1 "call_insn_operand" "m")
               (match_operand 2 "" "i")))
    (clobber (match_operand:SI 3 "register_operand" "=d"))]
   "!TARGET_LONG_CALLS"
