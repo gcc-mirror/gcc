@@ -933,7 +933,9 @@ highly recommend using GAS for all HP-PA configurations.
 You should be using GAS-2.6 (or later) along with GDB-4.16 (or later).  These
 can be retrieved from all the traditional GNU ftp archive sites.
 
-GAS will need to be installed into a directory before @code{/bin},
+On some versions of HP-UX, you will need to install GNU @file{sed}.
+
+You will need to be install GAS into a directory before @code{/bin},
 @code{/usr/bin}, and @code{/usr/ccs/bin} in your search path.  You
 should install GAS before you build GNU CC.
 
@@ -1000,10 +1002,8 @@ GNU binutils version 2.2 or later.
 Go to the Berkeley universe before compiling.
 
 @item i386-sequent-ptx1*
-Sequent DYNIX/ptx 1.x.
-
-@item i386-sequent-ptx2*
-Sequent DYNIX/ptx 2.x.
+@itemx i386-sequent-ptx2*
+You must install GNU @file{sed} before running @file{configure}.
 
 @item i386-sun-sunos4
 You may find that you need another version of GNU CC to begin
@@ -1206,8 +1206,8 @@ PHCO_4484 from HP.
 In addition, if you wish to use gas @samp{--with-gnu-as} you must use
 gas version 2.1 or later, and you must use the GNU linker version 2.1 or
 later.  Earlier versions of gas relied upon a program which converted the
-gas output into the native HP/UX format, but that program has not been
-kept up to date.  gdb does not understand that native HP/UX format, so
+gas output into the native HP-UX format, but that program has not been
+kept up to date.  gdb does not understand that native HP-UX format, so
 you must use gas if you wish to use gdb.
 
 @item m68k-sun
