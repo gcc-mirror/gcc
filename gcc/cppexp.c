@@ -30,7 +30,7 @@ Boston, MA 02111-1307, USA.  */
 
 struct op
 {
-  cpp_num value;		     /* The value logically "right" of op.  */
+  cpp_num value;		/* The value logically "right" of op.  */
   enum cpp_ttype op;
 };
 
@@ -52,8 +52,7 @@ static cpp_num num_inequality_op PARAMS ((cpp_reader *, cpp_num, cpp_num,
 					  enum cpp_ttype));
 static cpp_num num_equality_op PARAMS ((cpp_reader *, cpp_num, cpp_num,
 					enum cpp_ttype));
-static cpp_num num_mul PARAMS ((cpp_reader *, cpp_num, cpp_num,
-				enum cpp_ttype));
+static cpp_num num_mul PARAMS ((cpp_reader *, cpp_num, cpp_num));
 static cpp_num num_div_op PARAMS ((cpp_reader *, cpp_num, cpp_num,
 				   enum cpp_ttype));
 static cpp_num num_lshift PARAMS ((cpp_num, size_t, size_t));
@@ -631,60 +630,54 @@ The parser assumes all shifted operators require a left operand unless
 the flag NO_L_OPERAND is set.  These semantics are automatic; any
 extra semantics need to be handled with operator-specific code.  */
 
-/* Flags.  */
+/* Flags.  ALWAYS_EVAL is for operators that should be evaluated even
+   if skip_eval is true; perhaps they are invalid and require a
+   diagnostic, or they might modify skip_eval.  */
 #define NO_L_OPERAND	(1 << 0)
 #define LEFT_ASSOC	(1 << 1)
+#define ALWAYS_EVAL	(1 << 2)
 
-/* Arity. */
-#define UNARY		(1 << 0)
-#define BINARY		(1 << 1)
-#define OTHER		(1 << 2)
-
-typedef cpp_num (*binary_handler) PARAMS ((cpp_reader *, cpp_num, cpp_num,
-					   enum cpp_ttype));
 /* Operator to priority map.  Must be in the same order as the first
    N entries of enum cpp_ttype.  */
 static const struct operator
 {
   uchar prio;
   uchar flags;
-  uchar arity;
-  binary_handler handler;
 } optab[] =
 {
-  /* EQ */		{0, 0, OTHER, NULL},	/* Shouldn't happen.  */
-  /* NOT */		{16, NO_L_OPERAND, UNARY, NULL},
-  /* GREATER */		{12, LEFT_ASSOC, BINARY, num_inequality_op},
-  /* LESS */		{12, LEFT_ASSOC, BINARY, num_inequality_op},
-  /* PLUS */		{14, LEFT_ASSOC, BINARY, num_binary_op},
-  /* MINUS */		{14, LEFT_ASSOC, BINARY, num_binary_op},
-  /* MULT */		{15, LEFT_ASSOC, BINARY, num_mul},
-  /* DIV */		{15, LEFT_ASSOC, BINARY, num_div_op},
-  /* MOD */		{15, LEFT_ASSOC, BINARY, num_div_op},
-  /* AND */		{9, LEFT_ASSOC, BINARY, num_bitwise_op},
-  /* OR */		{7, LEFT_ASSOC, BINARY, num_bitwise_op},
-  /* XOR */		{8, LEFT_ASSOC, BINARY, num_bitwise_op},
-  /* RSHIFT */		{13, LEFT_ASSOC, BINARY, num_binary_op},
-  /* LSHIFT */		{13, LEFT_ASSOC, BINARY, num_binary_op},
+  /* EQ */		{0, 0},	/* Shouldn't happen.  */
+  /* NOT */		{16, NO_L_OPERAND},
+  /* GREATER */		{12, LEFT_ASSOC},
+  /* LESS */		{12, LEFT_ASSOC},
+  /* PLUS */		{14, LEFT_ASSOC},
+  /* MINUS */		{14, LEFT_ASSOC},
+  /* MULT */		{15, LEFT_ASSOC},
+  /* DIV */		{15, LEFT_ASSOC},
+  /* MOD */		{15, LEFT_ASSOC},
+  /* AND */		{9, LEFT_ASSOC},
+  /* OR */		{7, LEFT_ASSOC},
+  /* XOR */		{8, LEFT_ASSOC},
+  /* RSHIFT */		{13, LEFT_ASSOC},
+  /* LSHIFT */		{13, LEFT_ASSOC},
 
-  /* MIN */		{10, LEFT_ASSOC, BINARY, num_binary_op},
-  /* MAX */		{10, LEFT_ASSOC, BINARY, num_binary_op},
+  /* MIN */		{10, LEFT_ASSOC},
+  /* MAX */		{10, LEFT_ASSOC},
 
-  /* COMPL */		{16, NO_L_OPERAND, UNARY, NULL},
-  /* AND_AND */		{6, LEFT_ASSOC, OTHER, NULL},
-  /* OR_OR */		{5, LEFT_ASSOC, OTHER, NULL},
-  /* QUERY */		{3, 0, OTHER, NULL},
-  /* COLON */		{4, LEFT_ASSOC, OTHER, NULL},
-  /* COMMA */		{2, LEFT_ASSOC, BINARY, num_binary_op},
-  /* OPEN_PAREN */	{1, NO_L_OPERAND, OTHER, NULL},
-  /* CLOSE_PAREN */	{0, 0, OTHER, NULL},
-  /* EOF */		{0, 0, OTHER, NULL},
-  /* EQ_EQ */		{11, LEFT_ASSOC, BINARY, num_equality_op},
-  /* NOT_EQ */		{11, LEFT_ASSOC, BINARY, num_equality_op},
-  /* GREATER_EQ */	{12, LEFT_ASSOC, BINARY, num_inequality_op},
-  /* LESS_EQ */		{12, LEFT_ASSOC, BINARY, num_inequality_op},
-  /* UPLUS */		{16, NO_L_OPERAND, UNARY, NULL},
-  /* UMINUS */		{16, NO_L_OPERAND, UNARY, NULL}
+  /* COMPL */		{16, NO_L_OPERAND},
+  /* AND_AND */		{6, LEFT_ASSOC | ALWAYS_EVAL},
+  /* OR_OR */		{5, LEFT_ASSOC | ALWAYS_EVAL},
+  /* QUERY */		{3, ALWAYS_EVAL},
+  /* COLON */		{4, LEFT_ASSOC | ALWAYS_EVAL},
+  /* COMMA */		{2, LEFT_ASSOC},
+  /* OPEN_PAREN */	{1, NO_L_OPERAND | ALWAYS_EVAL},
+  /* CLOSE_PAREN */	{0, 0},
+  /* EOF */		{0, 0},
+  /* EQ_EQ */		{11, LEFT_ASSOC},
+  /* NOT_EQ */		{11, LEFT_ASSOC},
+  /* GREATER_EQ */	{12, LEFT_ASSOC},
+  /* LESS_EQ */		{12, LEFT_ASSOC},
+  /* UPLUS */		{16, NO_L_OPERAND},
+  /* UMINUS */		{16, NO_L_OPERAND}
 };
 
 /* Parse and evaluate a C expression, reading from PFILE.
@@ -870,70 +863,112 @@ reduce (pfile, top, op)
   prio = optab[op].prio - ((optab[op].flags & LEFT_ASSOC) != 0);
   while (prio < optab[top->op].prio)
     {
-      if (optab[top->op].arity == UNARY)
-	{
-	  if (!pfile->state.skip_eval)
+      if (!pfile->state.skip_eval || optab[top->op].flags & ALWAYS_EVAL)
+	switch (top->op)
+	  {
+	  case CPP_UPLUS:
+	  case CPP_UMINUS:
+	  case CPP_NOT:
+	  case CPP_COMPL:
 	    top[-1].value = num_unary_op (pfile, top->value, top->op);
-	  top--;
-	}
-      else if (optab[top->op].arity == BINARY)
-	{
-	  if (!pfile->state.skip_eval)
-	    top[-1].value = (* (binary_handler) optab[top->op].handler)
-	      (pfile, top[-1].value, top->value, top->op);
-	  top--;
-	}
-      /* Anything changing skip_eval has to be handled here.  */
-      else switch (top--->op)
-	{
-	case CPP_OR_OR:
-	  if (!num_zerop (top->value))
-	    pfile->state.skip_eval--;
-	  top->value.low = !num_zerop (top->value) || !num_zerop (top[1].value);
-	  top->value.high = 0;
-	  top->value.unsignedp = false;
-	  top->value.overflow = false;
-	  break;
+	    break;
 
-	case CPP_AND_AND:
-	  if (num_zerop (top->value))
-	    pfile->state.skip_eval--;
-	  top->value.low = !num_zerop (top->value) && !num_zerop (top[1].value);
-	  top->value.high = 0;
-	  top->value.unsignedp = false;
-	  top->value.overflow = false;
-	  break;
+	  case CPP_PLUS:
+	  case CPP_MINUS:
+	  case CPP_RSHIFT:
+	  case CPP_LSHIFT:
+	  case CPP_MIN:
+	  case CPP_MAX:
+	  case CPP_COMMA:
+	    top[-1].value = num_binary_op (pfile, top[-1].value,
+					   top->value, top->op);
+	    break;
 
-	case CPP_OPEN_PAREN:
-	  if (op != CPP_CLOSE_PAREN)
-	    {
-	      cpp_error (pfile, DL_ERROR, "missing ')' in expression");
-	      return 0;
-	    }
-	  top->value = top[1].value;
-	  return top;
+	  case CPP_GREATER:
+	  case CPP_LESS:
+	  case CPP_GREATER_EQ:
+	  case CPP_LESS_EQ:
+	    top[-1].value
+	      = num_inequality_op (pfile, top[-1].value, top->value, top->op);
+	    break;
 
-	case CPP_COLON:
-	  top--;
-	  if (!num_zerop (top->value))
-	    {
+	  case CPP_EQ_EQ:
+	  case CPP_NOT_EQ:
+	    top[-1].value
+	      = num_equality_op (pfile, top[-1].value, top->value, top->op);
+	    break;
+
+	  case CPP_AND:
+	  case CPP_OR:
+	  case CPP_XOR:
+	    top[-1].value
+	      = num_bitwise_op (pfile, top[-1].value, top->value, top->op);
+	    break;
+
+	  case CPP_MULT:
+	    top[-1].value = num_mul (pfile, top[-1].value, top->value);
+	    break;
+
+	  case CPP_DIV:
+	  case CPP_MOD:
+	    top[-1].value = num_div_op (pfile, top[-1].value,
+					top->value, top->op);
+	    break;
+
+	  case CPP_OR_OR:
+	    top--;
+	    if (!num_zerop (top->value))
 	      pfile->state.skip_eval--;
-	      top->value = top[1].value;
-	    }
-	  else
-	    top->value = top[2].value;
-	  top->value.unsignedp = (top[1].value.unsignedp
-				  || top[2].value.unsignedp);
-	  break;
+	    top->value.low = (!num_zerop (top->value)
+			      || !num_zerop (top[1].value));
+	    top->value.high = 0;
+	    top->value.unsignedp = false;
+	    top->value.overflow = false;
+	    continue;
 
-	case CPP_QUERY:
-	  cpp_error (pfile, DL_ERROR, "'?' without following ':'");
-	  return 0;
+	  case CPP_AND_AND:
+	    top--;
+	    if (num_zerop (top->value))
+	      pfile->state.skip_eval--;
+	    top->value.low = (!num_zerop (top->value)
+			      && !num_zerop (top[1].value));
+	    top->value.high = 0;
+	    top->value.unsignedp = false;
+	    top->value.overflow = false;
+	    continue;
 
-	default:
-	  goto bad_op;
-	}
+	  case CPP_OPEN_PAREN:
+	    if (op != CPP_CLOSE_PAREN)
+	      {
+		cpp_error (pfile, DL_ERROR, "missing ')' in expression");
+		return 0;
+	      }
+	    top--;
+	    top->value = top[1].value;
+	    return top;
 
+	  case CPP_COLON:
+	    top -= 2;
+	    if (!num_zerop (top->value))
+	      {
+		pfile->state.skip_eval--;
+		top->value = top[1].value;
+	      }
+	    else
+	      top->value = top[2].value;
+	    top->value.unsignedp = (top[1].value.unsignedp
+				    || top[2].value.unsignedp);
+	    continue;
+
+	  case CPP_QUERY:
+	    cpp_error (pfile, DL_ERROR, "'?' without following ':'");
+	    return 0;
+
+	  default:
+	    goto bad_op;
+	  }
+
+      top--;
       if (top->value.overflow && !pfile->state.skip_eval)
 	cpp_error (pfile, DL_PEDWARN,
 		   "integer overflow in preprocessor expression");
@@ -1383,10 +1418,9 @@ num_part_mul (lhs, rhs)
 
 /* Multiply two preprocessing numbers.  */
 static cpp_num
-num_mul (pfile, lhs, rhs, op)
+num_mul (pfile, lhs, rhs)
      cpp_reader *pfile;
      cpp_num lhs, rhs;
-     enum cpp_ttype op ATTRIBUTE_UNUSED;
 {
   cpp_num result, temp;
   bool unsignedp = lhs.unsignedp || rhs.unsignedp;

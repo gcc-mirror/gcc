@@ -1,3 +1,12 @@
+2002-07-18  Neil Booth  <neil@daikokuya.co.uk>
+
+	* cppexp.c (cpp_num_mul): Remove unused parameter.
+	(UNARY, BINARY, OTHER, binary_handler): Remove.
+	(ALWAYS_EVAL): New.
+	(optab): Update.
+	(reduce): Refactor to a large switch, don't use a function
+	pointer.
+
 2002-07-18  Bo Thorsen  <bo@berlioz.suse.de>
 
 	* config/i386/linux64.h (STARTFILE_PREFIX_SPEC): Define this always.
