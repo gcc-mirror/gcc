@@ -295,10 +295,10 @@ namespace std
       istream_iterator() : _M_stream(0), _M_ok(false) {}
       istream_iterator(istream_type& __s) : _M_stream(&__s) { _M_read(); }
 
-      reference 
+      const _Tp&
       operator*() const { return _M_value; }
 
-      pointer 
+      const _Tp*
       operator->() const { return &(operator*()); }
 
       istream_iterator& 
