@@ -1,5 +1,8 @@
 2003-06-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* scan.h: Convert to ISO C.
+	* system.h: Likewise.
+
 	* c-format.c (dynamic_format_types): New pointer for dynamic data.
 	(find_length_info_modifier_index, init_dynamic_asm_fprintf_info):
 	New functions split out of...
