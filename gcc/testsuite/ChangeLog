@@ -1,3 +1,7 @@
+Mon Feb  8 21:42:57 1999  Richard Henderson  <rth@cygnus.com>
+
+	* gcc.c-torture/execute/990208-1.c: New test.
+
 1999-02-07  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* g++.dg/special/ecos.exp: New driver for new tests with special
