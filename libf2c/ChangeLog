@@ -1,3 +1,8 @@
+Mon May  3 11:21:35 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* libF77/c_log.c: Cope with partial overlap a la z_log.c.
+	(Change likely to be made to netlib version shortly.)
+
 Mon May  3 11:12:38 1999  Craig Burley  <craig@jcb-sc.com>
 
 	Update to Netlib version of 1999-05-03:
