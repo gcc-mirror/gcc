@@ -345,7 +345,6 @@ m68k_output_function_prologue (stream, size)
     {
       if (fsize + 4 < 0x8000)
 	{
-#ifndef NO_ADDSUB_Q
 	  if (fsize + 4 <= 8)
 	    {
 	      if (!TARGET_5200)
@@ -381,9 +380,7 @@ m68k_output_function_prologue (stream, size)
 			   fsize + 4 - 8);
 #endif
 	    }
-	  else 
-#endif /* not NO_ADDSUB_Q */
-	  if (TARGET_68040)
+	  else if (TARGET_68040)
 	    {
 	      /* Adding negative number is faster on the 68040.  */
 	      /* asm_fprintf() cannot handle %.  */
@@ -800,7 +797,6 @@ m68k_output_function_epilogue (stream, size)
 	     reg_names[FRAME_POINTER_REGNUM]);
   else if (fsize)
     {
-#ifndef NO_ADDSUB_Q
       if (fsize + 4 <= 8) 
 	{
 	  if (!TARGET_5200)
@@ -833,9 +829,7 @@ m68k_output_function_epilogue (stream, size)
 		       fsize + 4 - 8);
 #endif
 	}
-      else
-#endif /* not NO_ADDSUB_Q */
-      if (fsize + 4 < 0x8000)
+      else if (fsize + 4 < 0x8000)
 	{
 	  if (TARGET_68040)
 	    { 
@@ -1763,11 +1757,7 @@ output_move_qimode (operands)
       if (!reg_mentioned_p (stack_pointer_rtx, operands[1]))
 	{
 	  xoperands[3] = stack_pointer_rtx;
-#ifndef NO_ADDSUB_Q
 	  output_asm_insn ("subq%.l %#2,%3\n\tmove%.b %1,%2", xoperands);
-#else
-	  output_asm_insn ("sub%.l %#2,%3\n\tmove%.b %1,%2", xoperands);
-#endif
 	}
       else
 	output_asm_insn ("move%.b %1,%-\n\tmove%.b %@,%2", xoperands);
@@ -2268,7 +2258,6 @@ output_addsi3 (operands)
     }
   if (GET_CODE (operands[2]) == CONST_INT)
     {
-#ifndef NO_ADDSUB_Q
       if (INTVAL (operands[2]) > 0
 	  && INTVAL (operands[2]) <= 8)
 	return "addq%.l %2,%0";
@@ -2296,7 +2285,6 @@ output_addsi3 (operands)
 	      return "subq%.l %#8,%0\n\tsubq%.l %2,%0";
 	    }
 	}
-#endif
       if (ADDRESS_REG_P (operands[0])
 	  && INTVAL (operands[2]) >= -0x8000
 	  && INTVAL (operands[2]) < 0x8000)
