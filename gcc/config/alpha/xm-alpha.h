@@ -41,9 +41,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define	FAILURE_EXIT_CODE	2
 #define	FATAL_EXIT_CODE		3
 
-/* If not compiled with GNU C, use the C alloca.  */
+/* If not compiled with GNU C, use the builtin alloca.  */
 #ifndef __GNUC__
-#define USE_C_ALLOCA
+#include <alloca.h>
+#else
+extern void *alloca ();
 #endif
 
 /* The host compiler has problems with enum bitfields since it makes
@@ -57,7 +59,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    include these in the sources since other machines might define them
    differently.  */
 
-extern void *malloc (), *realloc (), *calloc (), *alloca ();
+extern void *malloc (), *realloc (), *calloc ();
 
 #ifndef inhibit_libc
 #include "string.h"
