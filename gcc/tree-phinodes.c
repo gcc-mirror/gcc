@@ -199,7 +199,12 @@ make_phi_node (tree var, int len)
 
     }
 
-  memset (phi, 0, size);
+  /* We do not have to clear a part of the PHI node that stores PHI
+     arguments, which is safe because we tell the garbage collector to
+     scan up to num_args elements in the array of PHI arguments.  In
+     other words, the garbage collector will not follow garbage
+     pointers in the unused portion of the array.  */
+  memset (phi, 0, sizeof (struct tree_phi_node) - sizeof (struct phi_arg_d));
   TREE_SET_CODE (phi, PHI_NODE);
   PHI_ARG_CAPACITY (phi) = len;
   TREE_TYPE (phi) = TREE_TYPE (var);
@@ -234,7 +239,7 @@ resize_phi_node (tree *phi, int len)
 {
   int size, old_size;
   tree new_phi;
-  int i, old_len, bucket = NUM_BUCKETS - 2;
+  int bucket = NUM_BUCKETS - 2;
 
   gcc_assert (len >= PHI_ARG_CAPACITY (*phi));
 
@@ -271,15 +276,7 @@ resize_phi_node (tree *phi, int len)
 
   memcpy (new_phi, *phi, old_size);
 
-  old_len = PHI_ARG_CAPACITY (new_phi);
   PHI_ARG_CAPACITY (new_phi) = len;
-
-  for (i = old_len; i < len; i++)
-    {
-      SET_PHI_ARG_DEF (new_phi, i, NULL_TREE);
-      PHI_ARG_EDGE (new_phi, i) = NULL;
-      PHI_ARG_NONZERO (new_phi, i) = false;
-    }
 
   *phi = new_phi;
 }

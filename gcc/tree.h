@@ -1405,7 +1405,7 @@ struct tree_phi_node GTY(())
   /* Dataflow information.  */
   struct dataflow_d *df;
 
-  struct phi_arg_d GTY ((length ("((tree)&%h)->phi.capacity"))) a[1];
+  struct phi_arg_d GTY ((length ("((tree)&%h)->phi.num_args"))) a[1];
 };
 
 
