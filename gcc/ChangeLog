@@ -1,3 +1,9 @@
+2003-02-19  Josef Zlomek  <zlomekj@suse.cz>
+
+	* bb-reorder.c (find_traces_1_round): Fixed condition for small
+	destination block with multiple predecessors.
+	(connect_traces): Check whether the block is a start of trace.
+
 Wed Feb 19 19:00:24 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* calls.c (expand_call): Update call of INIT_CUMULATIVE_ARGS

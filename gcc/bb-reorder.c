@@ -448,12 +448,6 @@ find_traces_1_round (branch_th, exec_th, count_th, traces, n_traces, round,
 		  || prob < branch_th || freq < exec_th || e->count < count_th)
 		continue;
 
-	      /* If the destination has multiple precessesors, and can be
-		 duplicated cheaper than a jump, don't allow it to be added
-		 to a trace.  We'll duplicate it when connecting traces.  */
-	      if (e->dest->pred->pred_next && copy_bb_p (e->dest, 0))
-		continue;
-
 	      if (better_edge_p (bb, e, prob, freq, best_prob, best_freq))
 		{
 		  best_edge = e;
@@ -461,6 +455,13 @@ find_traces_1_round (branch_th, exec_th, count_th, traces, n_traces, round,
 		  best_freq = freq;
 		}
 	    }
+
+	  /* If the best destination has multiple precessesors, and can be
+	     duplicated cheaper than a jump, don't allow it to be added
+	     to a trace.  We'll duplicate it when connecting traces.  */
+	  if (best_edge && best_edge->dest->pred->pred_next
+	      && copy_bb_p (best_edge->dest, 0))
+	    best_edge = NULL;
 
 	  /* Add all non-selected successors to the heaps.  */
 	  for (e = bb->succ; e; e = e->succ_next)
@@ -922,15 +923,17 @@ connect_traces (n_traces, traces)
 		    edge best2 = NULL;
 		    int best2_len = 0;
 
-		    /* If the destination trace is only one block
-		       long, then no need to search the successor
+		    /* If the destination is a start of a trace which is only
+		       one block long, then no need to search the successor
 		       blocks of the trace.  Accept it.  */
-		   if (traces[bbd[e->dest->index].start_of_trace].length == 1)
-		     {
-		       best = e;
-		       try_copy = true;
-		       continue;
-		     }
+		    if (bbd[e->dest->index].start_of_trace >= 0
+			&& traces[bbd[e->dest->index].start_of_trace].length
+			   == 1)
+		      {
+			best = e;
+			try_copy = true;
+			continue;
+		      }
 
 		    for (e2 = e->dest->succ; e2; e2 = e2->succ_next)
 		      {
