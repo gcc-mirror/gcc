@@ -1196,7 +1196,6 @@ init_branch_prob (filename)
       /* Open an output file for the basic block/line number map.  */
       data_file = (char *) alloca (len + 4);
       strcpy (data_file, filename);
-      strip_off_ending (data_file, len);
       strcat (data_file, ".bb");
       if ((bb_file = fopen (data_file, "wb")) == 0)
 	fatal_io_error ("can't open %s", data_file);
@@ -1204,7 +1203,6 @@ init_branch_prob (filename)
       /* Open an output file for the program flow graph.  */
       bbg_file_name = (char *) alloca (len + 5);
       strcpy (bbg_file_name, filename);
-      strip_off_ending (bbg_file_name, len);
       strcat (bbg_file_name, ".bbg");
       if ((bbg_file = fopen (bbg_file_name, "wb")) == 0)
 	fatal_io_error ("can't open %s", bbg_file_name);
@@ -1221,7 +1219,6 @@ init_branch_prob (filename)
       len = strlen (filename);
       da_file_name = (char *) alloca (len + 4);
       strcpy (da_file_name, filename);
-      strip_off_ending (da_file_name, len);
       strcat (da_file_name, ".da");
       if ((da_file = fopen (da_file_name, "rb")) == 0)
 	warning ("file %s not found, execution counts assumed to be zero",

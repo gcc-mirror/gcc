@@ -311,7 +311,6 @@ end_final (filename)
 	strcpy (da_filename, cwd);
 	strcat (da_filename, "/");
 	strcat (da_filename, filename);
-	strip_off_ending (da_filename, da_filename_len - 3);
 	strcat (da_filename, ".da");
 	da_filename_len = strlen (da_filename);
 	string_cst = build_string (da_filename_len + 1, da_filename);

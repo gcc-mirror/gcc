@@ -1,5 +1,21 @@
 2002-08-04  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* gcc.c (cc1_options): Pass output file as auxbase when
+	appropriate.
+	* profile.c (init_branch_prob): FILENAME has already had ending
+	stripped.
+	* final.c (end_final): Likewise.
+	* toplev.c (aux_base_name): New global.
+	(compile_file): Pass aux_base_name to init init_branch_prob and
+	end_final.
+	(independent_decode_option, case 'a'): New auxinfo options.
+	(case 'd'): Protect against mising basename.
+	(do_compile): Initialize aux_base_name.
+	* toplev.h (aux_base_name): New global.
+	* doc/invoke.texi: Adjust documentation.
+
+2002-08-04  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* config/i386/i386.c (x86_field_alignment): Remove duplicate test
 	of TARGET_ALIGN_DOUBLE.
 
