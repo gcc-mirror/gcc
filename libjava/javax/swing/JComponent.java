@@ -100,7 +100,7 @@ public abstract class JComponent extends Container implements Serializable
   Border border;
   JToolTip tooltip;
   String tool_tip_text;
-  boolean use_double_buffer, opaque;
+  boolean use_double_buffer = false, opaque;
   Image doubleBuffer;
   int doubleBufferWidth = -1;
   int doubleBufferHeight = -1;

@@ -417,7 +417,7 @@ draw3DRect(int x, int y, int width, int height, boolean raised)
   drawLine(x1, y2, x1, y1);
   setColor(br);
   drawLine(x2, y1, x2, y2);
-  drawLine(x2, y1, x1, y2);
+  drawLine(x2, y2, x1, y2);
   setColor(color);
 }
 

@@ -50,6 +50,7 @@ public class GtkMenuItemPeer extends GtkMenuComponentPeer
   implements MenuItemPeer
 {
   native void create (String label);
+  public native void connectSignals ();
 
   public GtkMenuItemPeer (MenuItem item)
   {
@@ -57,6 +58,9 @@ public class GtkMenuItemPeer extends GtkMenuComponentPeer
     create (item.getLabel ());
     setEnabled (item.isEnabled ());
     setParent (item);
+
+    if (item.getParent() instanceof Menu && ! (item instanceof Menu))
+      connectSignals();
   }
 
   void setParent (MenuItem item)

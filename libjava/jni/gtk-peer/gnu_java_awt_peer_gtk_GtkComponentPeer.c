@@ -136,7 +136,7 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkComponentPeer_requestFocus
   ptr = NSA_GET_PTR (env, obj);
   
   gdk_threads_enter ();
-  gtk_widget_grab_focus (GTK_WIDGET (ptr));
+  // gtk_widget_grab_focus (GTK_WIDGET (ptr));
   gdk_threads_leave ();
 }
 
@@ -386,7 +386,6 @@ Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkSetFont
 {
   const char *font_name;
   void *ptr;
-  GtkWidget *label;
   PangoFontDescription *font_desc;
 
   ptr = NSA_GET_PTR (env, obj);
@@ -632,12 +631,13 @@ filter_expose_event_handler (GtkWidget *widget, GdkEvent *event, jobject peer)
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkComponentPeer_addExposeFilter
   (JNIEnv *env, jobject obj)
 {
-  void *ptr = NSA_GET_PTR (env, obj);
-  jobject *gref = NSA_GET_GLOBAL_REF (env, obj);
-  g_assert (gref);
   GtkObject *filterobj;
   GtkWidget *vbox, *layout;
   GList *children;
+  void *ptr = NSA_GET_PTR (env, obj);
+  jobject *gref = NSA_GET_GLOBAL_REF (env, obj);
+
+  g_assert (gref);
 
   gdk_threads_enter ();
 
@@ -675,12 +675,13 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkComponentPeer_addExposeFilt
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkComponentPeer_removeExposeFilter
   (JNIEnv *env, jobject obj)
 {
-  void *ptr = NSA_GET_PTR (env, obj);
-  jobject *gref = NSA_GET_GLOBAL_REF (env, obj);
-  g_assert (gref);
   GtkObject *filterobj;
   GtkWidget *vbox, *layout;
   GList *children;
+  void *ptr = NSA_GET_PTR (env, obj);
+  jobject *gref = NSA_GET_GLOBAL_REF (env, obj);
+
+  g_assert (gref);
 
   gdk_threads_enter ();
 

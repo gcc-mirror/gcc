@@ -310,7 +310,10 @@ deleteShortcut()
 public String
 getActionCommand()
 {
-  return(actionCommand);
+  if (actionCommand == null)
+    return label;
+  else
+    return actionCommand;
 }
 
 /*************************************************************************/

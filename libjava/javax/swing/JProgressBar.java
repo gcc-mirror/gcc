@@ -185,9 +185,6 @@ public class JProgressBar extends JComponent implements SwingConstants,
   /** Fired in a PropertyChangeEvent when the "indeterminate" property changes. */
   public static final String INDETERMINATE_CHANGED_PROPERTY = "indeterminate";
 
-  /** A list of ChangeListeners registered with this ProgressBar. */
-  private transient EventListenerList changeListenerList;
-
   /** Whether the ProgressBar is determinate. */
   private transient boolean indeterminate = false;
 
@@ -260,7 +257,6 @@ public class JProgressBar extends JComponent implements SwingConstants,
     this.orientation = orientation;
     changeListener = createChangeListener();
     model.addChangeListener(changeListener);
-    changeListenerList = new EventListenerList();
     updateUI();
   }
 
@@ -275,7 +271,6 @@ public class JProgressBar extends JComponent implements SwingConstants,
     this.model = model;
     changeListener = createChangeListener();
     model.addChangeListener(changeListener);
-    changeListenerList = new EventListenerList();
     updateUI();    
   }
 
@@ -511,7 +506,7 @@ public class JProgressBar extends JComponent implements SwingConstants,
    */
   public void addChangeListener(ChangeListener listener)
   {
-    changeListenerList.add(ChangeListener.class, listener);
+    listenerList.add(ChangeListener.class, listener);
   }
 
   /**
@@ -521,7 +516,7 @@ public class JProgressBar extends JComponent implements SwingConstants,
    */
   public void removeChangeListener(ChangeListener listener)
   {
-    changeListenerList.remove(ChangeListener.class, listener);
+    listenerList.remove(ChangeListener.class, listener);
   }
   
   /**
@@ -532,7 +527,7 @@ public class JProgressBar extends JComponent implements SwingConstants,
    */
   public ChangeListener[] getChangeListeners()
   {
-    return (ChangeListener[]) changeListenerList.getListenerList();
+    return (ChangeListener[]) listenerList.getListeners(ChangeListener.class);
   }  
 
   /**
@@ -542,7 +537,7 @@ public class JProgressBar extends JComponent implements SwingConstants,
    */
   protected void fireStateChanged()
   {
-    Object[] changeListeners = changeListenerList.getListenerList();
+    Object[] changeListeners = listenerList.getListenerList();
     if (changeEvent == null)
       changeEvent = new ChangeEvent(this);
     for (int i = changeListeners.length - 2; i >= 0; i -= 2)

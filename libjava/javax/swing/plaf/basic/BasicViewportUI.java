@@ -127,6 +127,7 @@ public class BasicViewportUI extends ViewportUI
 
     Point pos = v.getViewPosition();
     Rectangle viewBounds = view.getBounds();
+    Rectangle portBounds = v.getBounds();
 
     if (backingStoreImage == null 
         || backingStoreWidth != viewBounds.width
@@ -138,6 +139,32 @@ public class BasicViewportUI extends ViewportUI
       }
 
     Graphics g2 = backingStoreImage.getGraphics();
+
+
+    if (c.getBackground() != null)
+      {
+        // fill the backing store background
+        java.awt.Color save = g2.getColor();
+        g2.setColor(c.getBackground());
+        g2.fillRect (0, 0, backingStoreWidth, backingStoreHeight);
+        g2.setColor(save);
+
+        // fill the viewport background
+        save = g.getColor();
+        g.setColor(c.getBackground());
+        g.fillRect (0, 0, portBounds.width, portBounds.height);
+        g.setColor(save);
+
+      }
+    else
+      {
+        // clear the backing store background
+        g2.clearRect(0, 0, backingStoreWidth, backingStoreHeight);
+
+        // clear the viewport background
+        g.clearRect(0, 0, portBounds.width, portBounds.height);
+      }
+
     view.paint(g2);
     g2 = null;
     g.drawImage(backingStoreImage, 

@@ -176,12 +176,6 @@ public class JScrollBar extends JComponent implements Adjustable, Accessible
   /** How much the thumb moves when moving in a unit. */
   protected int unitIncrement = 1;
 
-  /** A list of all ChangeListeners attached to the scroll bar. */
-  private transient EventListenerList changeListenerList;
-
-  /** A list of all AdjustmentListeners attached to the scroll bar. */
-  private transient EventListenerList adjustmentListenerList;
-
   /** The ChangeListener that listens to the model. */
   private transient ChangeListener changeListener;
 
@@ -228,8 +222,6 @@ public class JScrollBar extends JComponent implements Adjustable, Accessible
                                          + " is not a legal orientation");
     this.orientation = orientation;
     changeListener = createChangeListener();
-    changeListenerList = new EventListenerList();
-    adjustmentListenerList = new EventListenerList();
     model.addChangeListener(changeListener);
     updateUI();
   }
@@ -586,7 +578,7 @@ public class JScrollBar extends JComponent implements Adjustable, Accessible
    */
   private void fireStateChanged()
   {
-    Object[] changeListeners = changeListenerList.getListenerList();
+    Object[] changeListeners = listenerList.getListenerList();
     if (changeEvent == null)
       changeEvent = new ChangeEvent(this);
     for (int i = changeListeners.length - 2; i >= 0; i -= 2)
@@ -603,7 +595,7 @@ public class JScrollBar extends JComponent implements Adjustable, Accessible
    */
   public void addChangeListener(ChangeListener listener)
   {
-    changeListenerList.add(ChangeListener.class, listener);
+    listenerList.add(ChangeListener.class, listener);
   }
 
   /**
@@ -613,7 +605,7 @@ public class JScrollBar extends JComponent implements Adjustable, Accessible
    */
   public void removeChangeListener(ChangeListener listener)
   {
-    changeListenerList.remove(ChangeListener.class, listener);
+    listenerList.remove(ChangeListener.class, listener);
   }
 
   /**
@@ -624,7 +616,7 @@ public class JScrollBar extends JComponent implements Adjustable, Accessible
    */
   public ChangeListener[] getChangeListeners()
   {
-    return (ChangeListener[]) changeListenerList.getListenerList();
+    return (ChangeListener[]) listenerList.getListeners(ChangeListener.class);
   }
 
   /**
@@ -634,7 +626,7 @@ public class JScrollBar extends JComponent implements Adjustable, Accessible
    */
   public void addAdjustmentListener(AdjustmentListener listener)
   {
-    adjustmentListenerList.add(AdjustmentListener.class, listener);
+    listenerList.add(AdjustmentListener.class, listener);
   }
 
   /**
@@ -644,7 +636,7 @@ public class JScrollBar extends JComponent implements Adjustable, Accessible
    */
   public void removeAdjustmentListener(AdjustmentListener listener)
   {
-    adjustmentListenerList.remove(AdjustmentListener.class, listener);
+    listenerList.remove(AdjustmentListener.class, listener);
   }
 
   /**
@@ -655,7 +647,7 @@ public class JScrollBar extends JComponent implements Adjustable, Accessible
    */
   public AdjustmentListener[] getAdjustmentListeners()
   {
-    return (AdjustmentListener[]) adjustmentListenerList.getListenerList();
+    return (AdjustmentListener[]) listenerList.getListeners(AdjustmentListener.class);
   }
 
   /**
@@ -670,7 +662,7 @@ public class JScrollBar extends JComponent implements Adjustable, Accessible
    */
   protected void fireAdjustmentValueChanged(int id, int type, int value)
   {
-    Object[] adjustmentListeners = adjustmentListenerList.getListenerList();
+    Object[] adjustmentListeners = listenerList.getListenerList();
     AdjustmentEvent adjustmentEvent = new AdjustmentEvent(this, 
                                             AdjustmentEvent.ADJUSTMENT_VALUE_CHANGED,
 					    AdjustmentEvent.TRACK,

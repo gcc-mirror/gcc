@@ -1,5 +1,5 @@
-/* MenuPeer.java -- Interface for menu peers
-   Copyright (C) 1999 Free Software Foundation, Inc.
+/* BasicCheckBoxMenuItemUI.java
+   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,14 +35,43 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+package javax.swing.plaf.basic;
 
-package java.awt.peer;
+import java.awt.event.MouseEvent;
 
-import java.awt.MenuItem;
+import javax.swing.AbstractButton;
+import javax.swing.Icon;
+import javax.swing.JComponent;
+import javax.swing.JMenuItem;
+import javax.swing.MenuElement;
+import javax.swing.MenuSelectionManager;
+import javax.swing.UIDefaults;
+import javax.swing.UIManager;
+import javax.swing.plaf.ComponentUI;
 
-public interface MenuPeer extends MenuItemPeer
+
+public class BasicCheckBoxMenuItemUI extends BasicMenuItemUI
 {
-  void addItem (MenuItem item);
-  void delItem (int index);
-}
+  public static ComponentUI createUI(final JComponent c)
+  {
+    return new BasicCheckBoxMenuItemUI();
+  }
 
+  protected String getPropertyPrefix()
+  {
+    return null; // TODO
+  }
+
+  protected void installDefaults()
+  {
+    super.installDefaults();
+
+    UIDefaults defaults = UIManager.getLookAndFeelDefaults();
+    checkIcon = defaults.getIcon("CheckBoxMenuItem.checkIcon");
+  }
+
+  void processMouseEvent(JMenuItem item, MouseEvent e, MenuElement[] path,
+                         MenuSelectionManager manager)
+  {
+  }
+}
