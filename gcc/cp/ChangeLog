@@ -23,6 +23,10 @@
 	* pt.c (tsubst_expr): Simplify CTOR_INITIALIZER case.
 	(tsubst_initializer_list): Use expand_member_init.
 	* semantics.c (finish_mem_intiailizers): Simplify.
+
+2002-10-02  Matt Austern  <austern@apple.com>
+	* decl.c (walk_vtables_r): Fixed typo that caused result to
+	never get a nonzero value.
 	
 2002-10-02  Roger Sayle  <roger@eyesopen.com>
 
@@ -33,6 +37,11 @@
 	in function pointers, ensure that force_align_functions_log
 	is atleast one.
 
+2002-10-02  Matt Austern  <austern@apple.com>
+
+	* class.c (check_field_decls): Changed warning about const member
+	variables so that it doesn't get issued for a class aggregate.
+	
 2002-10-01  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (cp_finish_decl): Make sure array types are laid out,
