@@ -502,7 +502,7 @@ package body GNAT.Directory_Operations is
    ---------------------
 
    Max_Path : Integer;
-   pragma Import (C, Max_Path, "max_path_len");
+   pragma Import (C, Max_Path, "__gnat_max_path_len");
 
    function Get_Current_Dir return Dir_Name_Str is
       Current_Dir : String (1 .. Max_Path + 1);

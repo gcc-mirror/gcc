@@ -1,5 +1,14 @@
 2002-05-31  Florian Weimer  <fw@deneb.enyo.de>
 
+	* cstreams.c (max_path_len): Move from here ...
+	* adaint.c (__gnat_max_path_len): ... to here.
+	* adaint.c (__gnat_max_path_len): Declare.
+	* g-dirope.adb (Max_Path): Adjust.
+	* g-os_lib.adb (Normalize_Pathname.Max_Path): Adjust.
+	* i-cstrea.ads (max_path_len): Adjust. 
+	* osint.adb (Get_RTS_Search_Dir.Max_Path): Adjust.
+	* xr_tabls.adb (Dir_Name.Max_Path: Adjust.
+
 	* Makefile.in, Make-lang.in: Documentation is now built in
 	Make-lang.in.  Store Info and generated Texinfo files in the
 	source directory.

@@ -941,7 +941,7 @@ package body Osint is
       pragma Import (C, Get_Current_Dir, "__gnat_get_current_dir");
 
       Max_Path : Integer;
-      pragma Import (C, Max_Path, "max_path_len");
+      pragma Import (C, Max_Path, "__gnat_max_path_len");
       --  Maximum length of a path name
 
       Current_Dir        : String_Ptr;
