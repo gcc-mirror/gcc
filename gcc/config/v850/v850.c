@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for NEC V850 series
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002
    Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
@@ -1249,12 +1249,15 @@ void v850_reorg (start_insn)
 	      int unsignedp = FALSE;
 
 	      /* We might have (SUBREG (MEM)) here, so just get rid of the
-		 subregs to make this code simpler.  It is safe to call
-		 alter_subreg any time after reload.  */
-	      if (GET_CODE (dest) == SUBREG)
-		dest = alter_subreg (dest);
-	      if (GET_CODE (src) == SUBREG)
-		src = alter_subreg (src);
+		 subregs to make this code simpler.  */
+	      if (GET_CODE (dest) == SUBREG
+		  && (GET_CODE (SUBREG_REG (dest)) == MEM
+		      || GET_CODE (SUBREG_REG (dest)) == REG))
+		alter_subreg (&dest);
+	      if (GET_CODE (src) == SUBREG
+		  && (GET_CODE (SUBREG_REG (src)) == MEM
+		      || GET_CODE (SUBREG_REG (src)) == REG))
+		alter_subreg (&src);
 
 	      if (GET_CODE (dest) == MEM && GET_CODE (src) == MEM)
 		mem = NULL_RTX;

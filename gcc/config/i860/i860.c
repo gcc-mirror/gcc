@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Intel 860
-   Copyright (C) 1989, 1991, 1997, 1998, 1999, 2000, 2001
+   Copyright (C) 1989, 1991, 1997, 1998, 1999, 2000, 2001, 2002
    Free Software Foundation, Inc.
    Derived from sparc.c.
 
@@ -1470,7 +1470,7 @@ output_delayed_branch (template, operands, insn)
       for (i = 0; i < insn_data[insn_code_number].n_operands; i++)
 	{
 	  if (GET_CODE (recog_data.operand[i]) == SUBREG)
-	    recog_data.operand[i] = alter_subreg (recog_data.operand[i]);
+	    alter_subreg (&recog_data.operand[i]);
 	}
 
       insn_extract (delay_insn);
@@ -1511,7 +1511,7 @@ output_delay_insn (delay_insn)
   for (i = 0; i < insn_data[insn_code_number].n_operands; i++)
     {
       if (GET_CODE (recog_data.operand[i]) == SUBREG)
-	recog_data.operand[i] = alter_subreg (recog_data.operand[i]);
+	alter_subreg (&recog_data.operand[i]);
     }
 
   if (! constrain_operands (1))

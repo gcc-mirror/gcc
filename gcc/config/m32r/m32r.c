@@ -1281,9 +1281,9 @@ gen_split_move_double (operands)
      subregs to make this code simpler.  It is safe to call
      alter_subreg any time after reload.  */
   if (GET_CODE (dest) == SUBREG)
-    dest = alter_subreg (dest);
+    alter_subreg (&dest);
   if (GET_CODE (src) == SUBREG)
-    src = alter_subreg (src);
+    alter_subreg (&src);
 
   start_sequence ();
   if (GET_CODE (dest) == REG)
