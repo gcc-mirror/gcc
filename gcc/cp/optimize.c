@@ -490,9 +490,10 @@ declare_return_variable (id, use_stmt)
       my_friendly_assert (id->target_exprs->elements_used != 0,
 			  20000430);
       var = TREE_OPERAND (VARRAY_TOP_TREE (id->target_exprs), 0);
-      my_friendly_assert (same_type_p (TREE_TYPE (var), 
-				       TREE_TYPE (result)),
-			  20000430);
+      my_friendly_assert 
+	(same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (var), 
+						    TREE_TYPE (result)),
+	 20000430);
     }
   /* Otherwise, make an appropriate copy.  */
   else

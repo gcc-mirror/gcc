@@ -749,8 +749,7 @@ is_specialization_of (decl, tmpl)
 	   t != NULL_TREE;
 	   t = CLASSTYPE_USE_TEMPLATE (t)
 	     ? TREE_TYPE (CLASSTYPE_TI_TEMPLATE (t)) : NULL_TREE)
-	if (same_type_p (TYPE_MAIN_VARIANT (t), 
-			 TYPE_MAIN_VARIANT (TREE_TYPE (tmpl))))
+	if (same_type_ignoring_top_level_qualifiers_p (t, TREE_TYPE (tmpl)))
 	  return 1;
     }  
 
@@ -8528,11 +8527,9 @@ unify (tparms, targs, parm, arg, strict)
 			TYPE_MAX_VALUE (arg), UNIFY_ALLOW_INTEGER))
 	    return 1;
 	}
-      /* We use the TYPE_MAIN_VARIANT since we have already
-	 checked cv-qualification at the top of the
+      /* We have already checked cv-qualification at the top of the
 	 function.  */
-      else if (!same_type_p (TYPE_MAIN_VARIANT (arg),
-			     TYPE_MAIN_VARIANT (parm)))
+      else if (!same_type_ignoring_top_level_qualifiers_p (arg, parm))
 	return 1;
 
       /* As far as unification is concerned, this wins.	 Later checks
@@ -8621,8 +8618,7 @@ unify (tparms, targs, parm, arg, strict)
 	  return unify (tparms, targs, CLASSTYPE_TI_ARGS (parm),
 			CLASSTYPE_TI_ARGS (t), UNIFY_ALLOW_NONE);
 	}
-      else if (!same_type_p (TYPE_MAIN_VARIANT (parm),
-			     TYPE_MAIN_VARIANT (arg)))
+      else if (!same_type_ignoring_top_level_qualifiers_p (parm, arg))
 	return 1;
       return 0;
 

@@ -1516,8 +1516,8 @@ comp_target_parms (parms1, parms2, strict)
 	      continue;
 	    }
 	  if (IS_AGGR_TYPE (TREE_TYPE (p1))
-	      && !same_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (p1)),
-			       TYPE_MAIN_VARIANT (TREE_TYPE (p2))))
+	      && !same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (p1),
+							     TREE_TYPE (p2)))
 	    return 0;
 	}
       /* Note backwards order due to contravariance.  */
@@ -5178,8 +5178,9 @@ build_static_cast (type, expr)
     }
   else if (TYPE_PTRMEM_P (type) && TYPE_PTRMEM_P (intype))
     {
-      if (same_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (type))),
-		       TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (intype))))
+      if (same_type_ignoring_top_level_qualifiers_p
+	  (TREE_TYPE (TREE_TYPE (type)),
+	   TREE_TYPE (TREE_TYPE (intype)))
 	  && (binfo = get_binfo (TYPE_OFFSET_BASETYPE (TREE_TYPE (type)),
 				 TYPE_OFFSET_BASETYPE (TREE_TYPE (intype)), 0))
 	  && ! TREE_VIA_VIRTUAL (binfo))
@@ -5255,8 +5256,7 @@ build_reinterpret_cast (type, expr)
 	expr = build_indirect_ref (expr, 0);
       return expr;
     }
-  else if (same_type_p (TYPE_MAIN_VARIANT (intype), 
-			TYPE_MAIN_VARIANT (type)))
+  else if (same_type_ignoring_top_level_qualifiers_p (intype, type))
     return build_static_cast (type, expr);
 
   if (TYPE_PTR_P (type) && (TREE_CODE (intype) == INTEGER_TYPE
@@ -5339,8 +5339,8 @@ build_const_cast (type, expr)
     }
 
   intype = TREE_TYPE (expr);
-
-  if (same_type_p (TYPE_MAIN_VARIANT (intype), TYPE_MAIN_VARIANT (type)))
+  
+  if (same_type_ignoring_top_level_qualifiers_p (intype, type))
     return build_static_cast (type, expr);
   else if (TREE_CODE (type) == REFERENCE_TYPE)
     {
@@ -6979,7 +6979,7 @@ comp_ptr_ttypes_real (to, from, constp)
 
       if (TREE_CODE (to) != POINTER_TYPE)
 	return 
-	  same_type_p (TYPE_MAIN_VARIANT (to), TYPE_MAIN_VARIANT (from))
+	  same_type_ignoring_top_level_qualifiers_p (to, from)
 	  && (constp >= 0 || to_more_cv_qualified);
     }
 }
@@ -7037,8 +7037,7 @@ comp_ptr_ttypes_const (to, from)
 	  continue;
 
       if (TREE_CODE (to) != POINTER_TYPE)
-	return same_type_p (TYPE_MAIN_VARIANT (to), 
-			    TYPE_MAIN_VARIANT (from));
+	return same_type_ignoring_top_level_qualifiers_p (to, from);
     }
 }
 

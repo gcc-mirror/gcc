@@ -5215,7 +5215,7 @@ resolves_to_fixed_type_p (instance, nonnull)
     return 0;
   if (POINTER_TYPE_P (t))
     t = TREE_TYPE (t);
-  return same_type_p (TYPE_MAIN_VARIANT (t), TYPE_MAIN_VARIANT (fixed));
+  return same_type_ignoring_top_level_qualifiers_p (t, fixed);
 }
 
 
