@@ -5467,8 +5467,46 @@ expand_expr (exp, target, tmode, modifier)
 
 	  for (elt = CONSTRUCTOR_ELTS (TREE_OPERAND (exp, 0)); elt;
 	       elt = TREE_CHAIN (elt))
-	    if (TREE_PURPOSE (elt) == TREE_OPERAND (exp, 1))
-	      return expand_expr (TREE_VALUE (elt), target, tmode, modifier);
+	    if (TREE_PURPOSE (elt) == TREE_OPERAND (exp, 1)
+		/* We can normally use the value of the field in the
+		   CONSTRUCTOR.  However, if this is a bitfield in
+		   an integral mode that we can fit in a HOST_WIDE_INT,
+		   we must mask only the number of bits in the bitfield,
+		   since this is done implicitly by the constructor.  If
+		   the bitfield does not meet either of those conditions,
+		   we can't do this optimization.  */
+		&& (! DECL_BIT_FIELD (TREE_PURPOSE (elt))
+		    || ((GET_MODE_CLASS (DECL_MODE (TREE_PURPOSE (elt)))
+			 == MODE_INT)
+			&& (GET_MODE_BITSIZE (DECL_MODE (TREE_PURPOSE (elt)))
+			    <= HOST_BITS_PER_WIDE_INT))))
+	      {
+		op0 =  expand_expr (TREE_VALUE (elt), target, tmode, modifier);
+		if (DECL_BIT_FIELD (TREE_PURPOSE (elt)))
+		  {
+		    int bitsize = DECL_FIELD_SIZE (TREE_PURPOSE (elt));
+		    enum machine_mode imode
+		      = TYPE_MODE (TREE_TYPE (TREE_PURPOSE (elt)));
+
+		    if (TREE_UNSIGNED (TREE_TYPE (TREE_PURPOSE (elt))))
+		      {
+			op1 = GEN_INT (((HOST_WIDE_INT) 1 << bitsize) - 1);
+			op0 = expand_and (op0, op1, target);
+		      }
+		    else
+		      {
+			tree count
+			  = build_int_2 (imode - bitsize, 0);
+
+			op0 = expand_shift (LSHIFT_EXPR, imode, op0, count,
+					    target, 0);
+			op0 = expand_shift (RSHIFT_EXPR, imode, op0, count,
+					    target, 0);
+		      }
+		  }
+
+		return op0;
+	      }
 	}
 
       {
@@ -8838,8 +8876,10 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	enum machine_mode sa_mode = Pmode;
 	rtx stack_save;
 	int old_inhibit_defer_pop = inhibit_defer_pop;
-	int return_pops = RETURN_POPS_ARGS (get_identifier ("__dummy"),
-					    get_identifier ("__dummy"), 0);
+	int return_pops
+	  =  RETURN_POPS_ARGS (get_identifier ("__dummy"),
+			       build_function_type (void_type_node, NULL_TREE),
+			       0);
 	rtx next_arg_reg;
 	CUMULATIVE_ARGS args_so_far;
 	int i;
