@@ -1,3 +1,9 @@
+2000-02-09  Clinton Popetz  <cpopetz@cygnus.com>
+
+	* function.c (thread_prologue_and_epilogue_insns): Don't delete
+	the edge from a block that both jumps and falls through to the
+	fallthru block.
+
 2000-02-09  Scott Bambrough  <scottb@netwinder.org>
 
         * config/arm/arm.md (movsi): In PIC mode, make sure that a
