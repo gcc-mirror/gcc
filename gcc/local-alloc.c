@@ -1,5 +1,5 @@
 /* Allocate registers within a basic block, for GNU compiler.
-   Copyright (C) 1987, 1988, 1991 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1991, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -345,11 +345,7 @@ alloc_qty_for_scratch (scratch, n, insn, insn_code_num, insn_number)
 	break;
       }
 
-  /* If CLASS has only a few registers, don't allocate the SCRATCH here since
-     it will prevent that register from being used as a spill register.
-     reload will do the allocation.  */
-
-  if (class == NO_REGS || CLASS_LIKELY_SPILLED_P (class))
+  if (class == NO_REGS)
     return;
 
 #else /* REGISTER_CONSTRAINTS */
@@ -399,6 +395,11 @@ local_alloc ()
   /* Allocate vectors of temporary data.
      See the declarations of these variables, above,
      for what they mean.  */
+
+  /* There can be up to MAX_SCRATCH * N_BASIC_BLOCKS SCRATCHes to allocate.
+     Instead of allocating this much memory from now until the end of
+     reload, only allocate space for MAX_QTY SCRATCHes.  If there are more
+     reload will allocate them.  */
 
   scratch_list_length = max_qty;
   scratch_list = (rtx *) xmalloc (scratch_list_length * sizeof (rtx));
@@ -1335,13 +1336,7 @@ block_alloc (b)
 		&& GET_CODE (XEXP (link, 0)) == REG)
 	      wipe_dead_reg (XEXP (link, 0), 1);
 
-#ifndef SMALL_REGISTER_CLASSES
-	  /* Allocate quantities for any SCRATCH operands of this insn.  We
-	     don't do this for machines with small register classes because
-	     those machines can use registers explicitly mentioned in the
-	     RTL as spill registers and our usage of hard registers
-	     explicitly for SCRATCH operands will conflict.  On those machines,
-	     reload will allocate the SCRATCH.  */
+	  /* Allocate quantities for any SCRATCH operands of this insn.  */
 
 	  if (insn_code_number >= 0)
 	    for (i = 0; i < insn_n_operands[insn_code_number]; i++)
@@ -1349,7 +1344,6 @@ block_alloc (b)
 		  && scratch_index < scratch_list_length - 1)
 		alloc_qty_for_scratch (recog_operand[i], i, insn,
 				       insn_code_number, insn_number);
-#endif
 
 	  /* If this is an insn that has a REG_RETVAL note pointing at a 
 	     CLOBBER insn, we have reached the end of a REG_NO_CONFLICT
