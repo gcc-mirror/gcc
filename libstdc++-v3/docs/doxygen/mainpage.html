@@ -58,6 +58,19 @@
    </ul>
 </p>
 
+<p>If you are using Doxygen for your own projects, you can use
+   <a href="libstdc++.tag">a tag file for the appropriate version</a> and
+   an entry such as
+   <blockquote>
+   TAGFILES = "libstdc++.tag = 
+   http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen"
+   </blockquote>
+   Be sure to adjust the URL for the right version.  If you download a
+   local copy of the source documentation for faster viewing, you can use
+   the doxytag/installdox programs (part of Doxygen) to adjust the links
+   for you.
+</p>
+
 <h2>Generating the documentation</h2>
 <p>These HTML pages are automatically generated, along with the man pages.
    See <code>docs/doxygen/guide.html</code> in the source tree for how to
