@@ -1,5 +1,8 @@
 2003-11-12  Mark Mitchell  <mark@codesourcery.com>
 
+	* tree.c (build_target_expr_with_type): Treate VA_ARG_EXPR like
+	CONSTRUCTOR.
+
 	* decl.c (cp_make_fname_decl): When creating a top-level
 	__FUNCTION__-like symbol, do register it with pushdecl.
 
