@@ -193,9 +193,9 @@ extern tree stabilize_reference PROTO ((tree));
 			     && (TYPE) == TREE_TYPE (null_pointer_node))
 
 /* Other predicate */
-#define DECL_P(NODE) (NODE && (TREE_CODE (NODE) == PARM_DECL		\
-			       || TREE_CODE (NODE) == VAR_DECL		\
-			       || TREE_CODE (NODE) == FIELD_DECL))
+#define JDECL_P(NODE) (NODE && (TREE_CODE (NODE) == PARM_DECL		\
+				|| TREE_CODE (NODE) == VAR_DECL		\
+				|| TREE_CODE (NODE) == FIELD_DECL))
 
 #define TYPE_INTERFACE_P(TYPE) 					\
   (CLASS_P (TYPE) && CLASS_INTERFACE (TYPE_NAME (TYPE)))
