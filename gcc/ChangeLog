@@ -1,3 +1,9 @@
+Fri Dec 10 00:53:10 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* regclass.c (globalize_reg): Re-instate test that allows
+	fixed registers to be declared as a variable even after functions
+	are defined.
+
 Fri Dec 10 00:52:13 MET 1999  Jan Hubicka  <hubicka@freesoft.cz>
 
 	* i386.md (cpu attribute): Add "athlon".

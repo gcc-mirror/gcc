@@ -218,7 +218,7 @@ struct reg_info_data {
 
 static struct reg_info_data *reg_info_head;
 
-/* No more global register vairiables may be declared; true once
+/* No more global register variables may be declared; true once
    regclass has been initialized. */
 
 static int no_global_reg_vars = 0;
@@ -630,7 +630,7 @@ void
 globalize_reg (i)
      int i;
 {
-  if (no_global_reg_vars)
+  if (fixed_regs[i] == 0 && no_global_reg_vars)
     error ("global register variable follows a function definition");
 
   if (global_regs[i])
@@ -767,7 +767,7 @@ regclass_init ()
      before regclass is run.  */
   reg_pref = NULL;
 
-  /* No more global register vairiables may be declared. */
+  /* No more global register variables may be declared. */
   no_global_reg_vars = 1;
 }
 
