@@ -1758,11 +1758,13 @@ floor_log2_wide (unsigned HOST_WIDE_INT x)
 }
 
 /* Handler for fatal signals, such as SIGSEGV.  These are transformed
-   into ICE messages, which is much more user friendly.  */
+   into ICE messages, which is much more user friendly.  In case the
+   error printer crashes, reset the signal to prevent infinite recursion.  */
 
 static void
 crash_signal (int signo)
 {
+  signal (signo, SIG_DFL);
   internal_error ("%s", strsignal (signo));
 }
 
