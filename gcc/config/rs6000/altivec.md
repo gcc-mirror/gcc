@@ -124,13 +124,14 @@
   [(set (match_operand:V4SI 0 "altivec_register_operand" "")
 	(match_operand:V4SI 1 "easy_vector_constant_add_self" ""))]
   "TARGET_ALTIVEC && reload_completed"
-  [(set (match_dup 0)
-	(unspec:V4SI [(match_dup 3)] UNSPEC_VSPLTISW))
+  [(set (match_dup 0) (match_dup 3))
    (set (match_dup 0)
 	(plus:V4SI (match_dup 0)
 		   (match_dup 0)))]
   "
-{ operands[3] = GEN_INT (INTVAL (CONST_VECTOR_ELT (operands[1], 0)) >> 1); }")
+{ 
+  operands[3] = gen_easy_vector_constant_add_self (operands[1]);
+}")    
 
 (define_expand "movv8hi"
   [(set (match_operand:V8HI 0 "nonimmediate_operand" "")
@@ -172,13 +173,14 @@
   [(set (match_operand:V8HI 0 "altivec_register_operand" "")
 	(match_operand:V8HI 1 "easy_vector_constant_add_self" ""))]
   "TARGET_ALTIVEC && reload_completed"
-  [(set (match_dup 0)
-	(unspec:V8HI [(match_dup 3)] UNSPEC_VSPLTISH))
+  [(set (match_dup 0) (match_dup 3))
    (set (match_dup 0)
 	(plus:V8HI (match_dup 0)
 		   (match_dup 0)))]
   "
-{ operands[3] = GEN_INT (INTVAL (CONST_VECTOR_ELT (operands[1], 0)) >> 1); }")
+{
+  operands[3] = gen_easy_vector_constant_add_self (operands[1]);
+}")
 
 (define_expand "movv16qi"
   [(set (match_operand:V16QI 0 "nonimmediate_operand" "")
@@ -220,13 +222,14 @@
   [(set (match_operand:V16QI 0 "altivec_register_operand" "")
 	(match_operand:V16QI 1 "easy_vector_constant_add_self" ""))]
   "TARGET_ALTIVEC && reload_completed"
-  [(set (match_dup 0)
-	(unspec:V16QI [(match_dup 3)] UNSPEC_VSPLTISB))
+  [(set (match_dup 0) (match_dup 3))
    (set (match_dup 0)
 	(plus:V16QI (match_dup 0)
 		   (match_dup 0)))]
   "
-{ operands[3] = GEN_INT (INTVAL (CONST_VECTOR_ELT (operands[1], 0)) >> 1); }")
+{
+  operands[3] = gen_easy_vector_constant_add_self (operands[1]);
+}")
 
 (define_expand "movv4sf"
   [(set (match_operand:V4SF 0 "nonimmediate_operand" "")

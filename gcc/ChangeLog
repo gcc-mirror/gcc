@@ -1,3 +1,24 @@
+2004-06-11  Hartmut Penner  <hpenner@de.ibm.com>
+
+	Backport from mainline:	
+
+        * config/rs6000/rs6000.c (output_vec_const_move):
+        Find all cases of EASY_VECTOR_15_ADD_SELF.
+        (easy_vector_constant_add_self): Accept
+        all vector constant loadable by vsplt* and vadd*.
+	(easy_vector_same): Use easy_vector_splat_const.
+	(easy_vector_const): Use easy_vector_splat_const.
+        (easy_vector_splat_const): New function.
+	(gen_easy_vector_constant_add_self): New function.
+
+	* config/rs6000/rs6000-protos.c (gen_easy_vector_constant_add_self):
+	New prototype.
+
+        * config/rs6000/altivec.md (movv4si splitter): Change to
+	emit move insn with halfed vector constant.
+	(*movv8hi splitter): Likewise.
+	(*movv16qi splitter): Likewise.
+
 2004-06-10  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* doc/sourcebuild.texi (Front End): Add details of more
