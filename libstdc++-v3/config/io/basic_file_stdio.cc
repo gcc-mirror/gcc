@@ -68,6 +68,8 @@
 # endif
 #endif
 
+#include <limits> // For <off_t>::max() and min()
+
 namespace std 
 {
   // Definitions for __basic_file<char>.
@@ -173,7 +175,11 @@ namespace std
 
     if (!this->is_open())
       {
+#ifdef _GLIBCXX_USE_LFS
+	if ((_M_cfile = fopen64(__name, __c_mode)))
+#else
 	if ((_M_cfile = fopen(__name, __c_mode)))
+#endif
 	  {
 	    _M_cfile_created = true;
 	    __ret = this;
@@ -262,7 +268,16 @@ namespace std
 
   streamoff
   __basic_file<char>::seekoff(streamoff __off, ios_base::seekdir __way)
-  { return lseek(this->fd(), __off, __way); }
+  {
+#ifdef _GLIBCXX_USE_LFS
+    return lseek64(this->fd(), __off, __way);
+#else
+    if (__off > std::numeric_limits<off_t>::max()
+	|| __off < std::numeric_limits<off_t>::min())
+      return -1L;
+    return lseek(this->fd(), __off, __way);
+#endif
+  }
 
   int 
   __basic_file<char>::sync() 

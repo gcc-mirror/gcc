@@ -1,5 +1,26 @@
 2003-10-22  Paolo Carlini  <pcarlini@suse.de>
 
+	PR libstdc++/8610
+	* acinclude.m4 (GLIBCXX_CHECK_INT64_T): New macro,
+	checking for the availability of int64_t.
+	(GLIBCXX_CHECK_LFS): New macro, checking for LFS support.
+	* configure.ac: Call here.
+	* acconfig.h: Add undef for the corresponding symbols.
+	* config/io/basic_file_stdio.cc	(__basic_file<char>::open):
+	Depending on _GLIBCXX_USE_LFS, call fopen64 or fopen.
+	(__basic_file<char>::seekoff): Likewise, call lseek64 when
+	available, otherwise lseek, checking the __off parameter.
+	* include/bits/postypes.h: Typedef __streamoff_base_type
+	to int64_t if available, otherwise long long.
+	* aclocal.m4: Regenerate.
+	* config.h.in: Likewise.
+	* configure: Likewise.
+
+	* acinclude.m4 (GLIBCXX_CHECK_POLL, GLIBCXX_CHECK_WRITEV):
+	Use AC_TRY_LINK instead of AC_TRY_COMPILE.
+	
+2003-10-22  Paolo Carlini  <pcarlini@suse.de>
+
 	PR libstdc++/12657
 	* include/bits/basic_ios.tcc (copyfmt(const basic_ios&)):
 	Implement resolution of DR 292 (WP).

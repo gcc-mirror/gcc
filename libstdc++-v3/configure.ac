@@ -134,6 +134,12 @@ if $GLIBCXX_IS_NATIVE; then
   AC_CHECK_HEADERS(sys/uio.h)
   GLIBCXX_CHECK_WRITEV
 
+  # For the __streamoff_base_type typedef.
+  GLIBCXX_CHECK_INT64_T
+
+  # For LFS support.
+  GLIBCXX_CHECK_LFS
+
   AC_LC_MESSAGES
 
   AC_TRY_COMPILE(
