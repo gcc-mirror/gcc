@@ -125,7 +125,7 @@ public class SelectorImpl extends AbstractSelector
 
         if ((key.interestOps () & ops) != 0)
           {
-            result[counter] = key.fd;
+            result[counter] = key.getNativeFD();
             counter++;
           }
       }
@@ -172,7 +172,7 @@ public class SelectorImpl extends AbstractSelector
         // Set new ready read/accept ops
         for (int i = 0; i < read.length; i++)
           {
-            if (key.fd == read[i])
+            if (key.getNativeFD() == read[i])
               {
                 if (key.channel () instanceof ServerSocketChannelImpl)
                   {
@@ -188,7 +188,7 @@ public class SelectorImpl extends AbstractSelector
         // Set new ready write ops
         for (int i = 0; i < write.length; i++)
           {
-            if (key.fd == write[i])
+            if (key.getNativeFD() == write[i])
               {
                 ops = ops | SelectionKey.OP_WRITE;
                 
@@ -253,17 +253,17 @@ public class SelectorImpl extends AbstractSelector
     if (ch instanceof SocketChannelImpl)
       {
         SocketChannelImpl sc = (SocketChannelImpl) ch;
-        result = new SelectionKeyImpl (ch, this, 0); // FIXME: last argument
+        result = new SocketChannelSelectionKey (ch, this); // FIXME: last argument
       }
     else if (ch instanceof DatagramChannelImpl)
       {
         DatagramChannelImpl dc = (DatagramChannelImpl) ch;
-        result = new SelectionKeyImpl (ch, this, 0); // FIXME: last argument
+        result = new DatagramChannelSelectionKey (ch, this); // FIXME: last argument
       }
     else if (ch instanceof ServerSocketChannelImpl)
       {
         ServerSocketChannelImpl ssc = (ServerSocketChannelImpl) ch;
-        result = new SelectionKeyImpl (ch, this, 0); // FIXME: last argument
+        result = new SocketChannelSelectionKey (ch, this); // FIXME: last argument
       }
     else
       {
