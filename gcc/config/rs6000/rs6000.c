@@ -2539,10 +2539,10 @@ output_prolog (file, size)
       else
 	{
 	  asm_fprintf (file, "\t{liu|lis} %s,%d\n\t{oril|ori} %s,%s,%d\n",
-		       reg_names[0], (info->total_size >> 16) & 0xffff,
+		       reg_names[0], - (info->total_size >> 16) & 0xffff,
 		       reg_names[0], reg_names[0], info->total_size & 0xffff);
 	  asm_fprintf (file,
-		       (TARGET_64BIT) ? "\tstdux %s,%s,%s\n" : "\tstwux %s,%s,%s\n",
+		       (TARGET_64BIT) ? "\tstdux %s,%s,%s\n" : "\t{stux|stwux} %s,%s,%s\n",
 		       reg_names[1], reg_names[1], reg_names[0]);
 	}
     }
