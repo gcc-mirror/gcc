@@ -112,7 +112,7 @@ static void delete_barrier_successors	PARAMS ((rtx));
 static void mark_all_labels		PARAMS ((rtx, int));
 static rtx delete_unreferenced_labels	PARAMS ((rtx));
 static void delete_noop_moves		PARAMS ((rtx));
-static int calculate_can_reach_end	PARAMS ((rtx, int, int));
+static int calculate_can_reach_end	PARAMS ((rtx, int));
 static int duplicate_loop_exit_test	PARAMS ((rtx));
 static void find_cross_jump		PARAMS ((rtx, rtx, int, rtx *, rtx *));
 static void do_cross_jump		PARAMS ((rtx, rtx, rtx));
@@ -232,24 +232,8 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
 
   last_insn = delete_unreferenced_labels (f);
 
-  if (optimize == 0)
-    {
-      /* CAN_REACH_END is persistent for each function.  Once set it should
-	 not be cleared.  This is especially true for the case where we
-	 delete the NOTE_FUNCTION_END note.  CAN_REACH_END is cleared by
-	 the front-end before compiling each function.  */
-      if (calculate_can_reach_end (last_insn, 1, 0))
-	can_reach_end = 1;
-
-      /* Zero the "deleted" flag of all the "deleted" insns.  */
-      for (insn = f; insn; insn = NEXT_INSN (insn))
-	INSN_DELETED_P (insn) = 0;
-      
-      goto end;
-    }
-
 #ifdef HAVE_return
-  if (HAVE_return)
+  if (optimize && HAVE_return)
     {
       /* If we fall through to the epilogue, see if we can insert a RETURN insn
 	 in front of it.  If the machine allows it at this point (we might be
@@ -275,7 +259,7 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
      This helps some of the optimizations below by having less insns
      being jumped around.  */
 
-  if (! reload_completed && after_regscan)
+  if (optimize && ! reload_completed && after_regscan)
     for (insn = f; insn; insn = next)
       {
 	rtx set = single_set (insn);
@@ -388,6 +372,9 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
 		  changed = 1;
 		}
 	    }
+
+	  if (! optimize)
+	    continue;
 
 	  /* If a jump references the end of the function, try to turn
 	     it into a RETURN insn, possibly a conditional one.  */
@@ -986,7 +973,7 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
 	     CALL_INSN, which some machines, such as the ARC, can do, but
 	     this is a very minor optimization.  */
 	  if (this_is_condjump && ! this_is_simplejump
-	      && cse_not_expected && optimize > 0 && ! reload_completed
+	      && cse_not_expected && ! reload_completed
 	      && BRANCH_COST > 2
 	      && can_reverse_comparison_p (XEXP (SET_SRC (PATTERN (insn)), 0),
 					   insn))
@@ -2008,8 +1995,6 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
 #endif
 	  else
 	    {
-	      /* Detect a jump to a jump.  */
-
 	      /* Look for   if (foo) bar; else break;  */
 	      /* The insns look like this:
 		 insn = condjump label1;
@@ -2300,7 +2285,7 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
      not be cleared.  This is especially true for the case where we
      delete the NOTE_FUNCTION_END note.  CAN_REACH_END is cleared by
      the front-end before compiling each function.  */
-  if (calculate_can_reach_end (last_insn, 0, 1))
+  if (calculate_can_reach_end (last_insn, optimize != 0))
     can_reach_end = 1;
 
 end:
@@ -2711,9 +2696,8 @@ delete_noop_moves (f)
    if we find it.  */
 
 static int
-calculate_can_reach_end (last, check_deleted, delete_final_note)
+calculate_can_reach_end (last, delete_final_note)
      rtx last;
-     int check_deleted;
      int delete_final_note;
 {
   rtx insn = last;
@@ -2751,9 +2735,7 @@ calculate_can_reach_end (last, check_deleted, delete_final_note)
   /* See if we backed up to the appropriate type of note.  */
   if (insn != NULL_RTX
       && GET_CODE (insn) == NOTE
-      && NOTE_LINE_NUMBER (insn) == NOTE_INSN_FUNCTION_END
-      && (check_deleted == 0
-	  || ! INSN_DELETED_P (insn)))
+      && NOTE_LINE_NUMBER (insn) == NOTE_INSN_FUNCTION_END)
     {
       if (delete_final_note)
 	delete_insn (insn);
@@ -4320,8 +4302,7 @@ delete_insn (insn)
 
   /* Don't delete user-declared labels.  Convert them to special NOTEs
      instead.  */
-  if (was_code_label && LABEL_NAME (insn) != 0
-      && optimize && ! dont_really_delete)
+  if (was_code_label && LABEL_NAME (insn) != 0 && ! dont_really_delete)
     {
       PUT_CODE (insn, NOTE);
       NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED_LABEL;
@@ -4347,7 +4328,7 @@ delete_insn (insn)
 
   /* Patch out INSN (and the barrier if any) */
 
-  if (optimize && ! dont_really_delete)
+  if (! dont_really_delete)
     {
       if (prev)
 	{

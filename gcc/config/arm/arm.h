@@ -736,14 +736,8 @@ extern const char * structure_size_string;
 #define SUBTARGET_CONDITIONAL_REGISTER_USAGE
 #endif
 
-/* If doing stupid life analysis, avoid a bug causing a return value r0 to be
-   trampled.  This effectively reduces the number of available registers by 1.
-   XXX It is a hack, I know.
-   XXX Is this still needed?  */
 #define CONDITIONAL_REGISTER_USAGE  \
 {							\
-  if (obey_regdecls)					\
-    fixed_regs[0] = 1;					\
   if (TARGET_SOFT_FLOAT)				\
     {							\
       int regno;					\

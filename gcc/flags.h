@@ -57,11 +57,6 @@ extern int optimize;
 
 extern int optimize_size;
 
-/* Nonzero means do stupid register allocation.  -noreg.
-   Currently, this is 1 if `optimize' is 0.  */
-
-extern int obey_regdecls;
-
 /* Don't print functions as they are compiled and don't print
    times taken by the various passes.  -quiet.  */
 

@@ -436,7 +436,8 @@ find_basic_blocks (f, nregs, file, do_cleanup)
       delete_unreachable_blocks ();
       move_stray_eh_region_notes ();
       record_active_eh_regions (f);
-      try_merge_blocks ();
+      if (optimize)
+	try_merge_blocks ();
     }
 
   /* Mark critical edges.  */
@@ -2447,9 +2448,14 @@ life_analysis (f, nregs, file, remove_dead_code)
   /* We want alias analysis information for local dead store elimination.  */
   init_alias_analysis ();
 
-  flags = PROP_FINAL;
-  if (! remove_dead_code)
-    flags &= ~(PROP_SCAN_DEAD_CODE | PROP_KILL_DEAD_CODE);
+  if (! optimize)
+    flags = PROP_DEATH_NOTES | PROP_REG_INFO;
+  else
+    {
+      flags = PROP_FINAL;
+      if (! remove_dead_code)
+	flags &= ~(PROP_SCAN_DEAD_CODE | PROP_KILL_DEAD_CODE);
+    }
   life_analysis_1 (f, nregs, flags);
 
   if (! reload_completed)
@@ -2835,15 +2841,9 @@ mark_regs_live_at_end (set)
     }
 
   /* Mark function return value.  */
-  /* ??? Only do this after reload.  Consider a non-void function that
-     omits a return statement.  Across that edge we'll have the return
-     register live, and no set for it.  Thus the return register will
-     be live back through the CFG to the entry, and thus we die.  A
-     possible solution is to emit a clobber at exits without returns.  */
 
   type = TREE_TYPE (DECL_RESULT (current_function_decl));
-  if (reload_completed
-      && type != void_type_node)
+  if (type != void_type_node)
     {
       rtx outgoing;
 
@@ -4643,12 +4643,6 @@ mark_used_regs (needed, live, x, flags, insn)
       }
       break;
 
-    case RETURN:
-      /* ??? This info should have been gotten from mark_regs_live_at_end,
-	 as applied to the EXIT block, and propagated along the edge that
-	 connects this block to the EXIT.  */
-      break;
-
     case ASM_OPERANDS:
     case UNSPEC_VOLATILE:
     case TRAP_IF:
@@ -5112,8 +5106,7 @@ print_rtl_with_bb (outf, rtx_first)
 
 	  if (in_bb_p[INSN_UID(tmp_rtx)] == NOT_IN_BB
 	      && GET_CODE (tmp_rtx) != NOTE
-	      && GET_CODE (tmp_rtx) != BARRIER
-	      && ! obey_regdecls)
+	      && GET_CODE (tmp_rtx) != BARRIER)
 	    fprintf (outf, ";; Insn is not within a basic block\n");
 	  else if (in_bb_p[INSN_UID(tmp_rtx)] == IN_MULTIPLE_BB)
 	    fprintf (outf, ";; Insn is in multiple basic blocks\n");

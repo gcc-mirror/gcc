@@ -362,11 +362,6 @@ int pedantic = 0;
 
 int in_system_header = 0;
 
-/* Nonzero means do stupid register allocation.
-   Currently, this is 1 if `optimize' is 0.  */
-
-int obey_regdecls = 0;
-
 /* Don't print functions as they are compiled and don't print
    times taken by the various passes.  -quiet.  */
 
@@ -3207,13 +3202,6 @@ rest_of_compilation (decl)
 	ggc_collect ();
     }
 
-  /* Now we choose between stupid (pcc-like) register allocation
-     (if we got the -noreg switch and not -opt)
-     and smart register allocation.  */
-
-  if (optimize > 0)		/* Stupid allocation probably won't work */
-    obey_regdecls = 0;		/* if optimizations being done.  */
-
   regclass_init ();
 
   /* Print function header into flow dump now
@@ -3222,34 +3210,23 @@ rest_of_compilation (decl)
   if (flow_dump)
     open_dump_file (".08.flow", decl_printable_name (decl, 2));
   
-  if (obey_regdecls)
-    {
-      TIMEVAR (flow_time,
-	       {
-		 regclass (insns, max_reg_num (), NULL);
-		 stupid_life_analysis (insns, max_reg_num (),
-				       rtl_dump_file);
-	       });
-    }
-  else
-    {
-      /* Do control and data flow analysis,
-	 and write some of the results to dump file.  */
+  /* Do control and data flow analysis; wrote some of the results to
+     the dump file.  */
 
-      TIMEVAR
-	(flow_time,
-	 {
-	   find_basic_blocks (insns, max_reg_num (), rtl_dump_file, 1);
-	   calculate_loop_depth (rtl_dump_file);
-	   life_analysis (insns, max_reg_num (), rtl_dump_file, 1);
-	 });
+  TIMEVAR
+    (flow_time,
+     {
+       find_basic_blocks (insns, max_reg_num (), rtl_dump_file, 1);
+       if (optimize)
+	 calculate_loop_depth (rtl_dump_file);
+       life_analysis (insns, max_reg_num (), rtl_dump_file, 1);
+     });
 
-      if (warn_uninitialized || extra_warnings)
-	{
-	  uninitialized_vars_warning (DECL_INITIAL (decl));
-          if (extra_warnings)
-	    setjmp_args_warning ();
-	}
+  if (warn_uninitialized || extra_warnings)
+    {
+      uninitialized_vars_warning (DECL_INITIAL (decl));
+      if (extra_warnings)
+	setjmp_args_warning ();
     }
 
   /* Dump rtl after flow analysis.  */
@@ -3344,24 +3321,20 @@ rest_of_compilation (decl)
   if (local_reg_dump)
     open_dump_file (".12.lreg", decl_printable_name (decl, 2));
 
-  /* Unless we did stupid register allocation,
-     allocate pseudo-regs that are used only within 1 basic block. 
+  /* Allocate pseudo-regs that are used only within 1 basic block. 
 
      RUN_JUMP_AFTER_RELOAD records whether or not we need to rerun the
      jump optimizer after register allocation and reloading are finished.  */
 
-  if (!obey_regdecls)
-    TIMEVAR (local_alloc_time,
-	     {
-	       /* We recomputed reg usage as part of updating the rest
-		  of life info during sched.  */
-	       if (! flag_schedule_insns)
-		 recompute_reg_usage (insns, ! optimize_size);
-	       regclass (insns, max_reg_num (), rtl_dump_file);
-	       rebuild_label_notes_after_reload = local_alloc ();
-	     });
-  else
-    rebuild_label_notes_after_reload = 0;
+  TIMEVAR (local_alloc_time,
+	   {
+	     /* We recomputed reg usage as part of updating the rest
+		of life info during sched.  */
+	     if (! flag_schedule_insns)
+	       recompute_reg_usage (insns, ! optimize_size);
+	     regclass (insns, max_reg_num (), rtl_dump_file);
+	     rebuild_label_notes_after_reload = local_alloc ();
+	   });
 
   /* Dump rtl code after allocating regs within basic blocks.  */
 
@@ -3381,18 +3354,19 @@ rest_of_compilation (decl)
   if (global_reg_dump)
     open_dump_file (".13.greg", decl_printable_name (decl, 2));
 
-  /* Unless we did stupid register allocation,
-     allocate remaining pseudo-regs, then do the reload pass
-     fixing up any insns that are invalid.  */
+  /* If optimizing, allocate remaining pseudo-regs.  Do the reload
+     pass fixing up any insns that are invalid.  */
 
   TIMEVAR (global_alloc_time,
 	   {
-	     if (!obey_regdecls)
+	     if (optimize)
 	       failure = global_alloc (rtl_dump_file);
 	     else
-	       failure = reload (insns, 0, rtl_dump_file);
+	       {
+		 build_insn_chain (insns);
+		 failure = reload (insns, 0, rtl_dump_file);
+	       }
 	   });
-
 
   if (failure)
     goto exit_rest_of_compilation;
@@ -3507,10 +3481,8 @@ rest_of_compilation (decl)
     = optimize > 0 && only_leaf_regs_used () && leaf_function_p ();
 #endif
 
-  /* One more attempt to remove jumps to .+1
-     left by dead-store-elimination.
-     Also do cross-jumping this time
-     and delete no-op move insns.  */
+  /* One more attempt to remove jumps to .+1 left by dead-store elimination. 
+     Also do cross-jumping this time and delete no-op move insns.  */
 
   if (optimize > 0)
     {
@@ -4572,8 +4544,6 @@ main (argc, argv)
 	    }
 	}
     }
-
-  obey_regdecls = (optimize == 0);
 
   if (optimize >= 1)
     {

@@ -3916,45 +3916,6 @@ delete_handlers ()
     }
 }
 
-/* Output a USE for any register use in RTL.
-   This is used with -noreg to mark the extent of lifespan
-   of any registers used in a user-visible variable's DECL_RTL.  */
-
-void
-use_variable (rtl)
-     rtx rtl;
-{
-  if (GET_CODE (rtl) == REG)
-    /* This is a register variable.  */
-    emit_insn (gen_rtx_USE (VOIDmode, rtl));
-  else if (GET_CODE (rtl) == MEM
-	   && GET_CODE (XEXP (rtl, 0)) == REG
-	   && (REGNO (XEXP (rtl, 0)) < FIRST_VIRTUAL_REGISTER
-	       || REGNO (XEXP (rtl, 0)) > LAST_VIRTUAL_REGISTER)
-	   && XEXP (rtl, 0) != current_function_internal_arg_pointer)
-    /* This is a variable-sized structure.  */
-    emit_insn (gen_rtx_USE (VOIDmode, XEXP (rtl, 0)));
-}
-
-/* Like use_variable except that it outputs the USEs after INSN
-   instead of at the end of the insn-chain.  */
-
-void
-use_variable_after (rtl, insn)
-     rtx rtl, insn;
-{
-  if (GET_CODE (rtl) == REG)
-    /* This is a register variable.  */
-    emit_insn_after (gen_rtx_USE (VOIDmode, rtl), insn);
-  else if (GET_CODE (rtl) == MEM
-	   && GET_CODE (XEXP (rtl, 0)) == REG
-	   && (REGNO (XEXP (rtl, 0)) < FIRST_VIRTUAL_REGISTER
-	       || REGNO (XEXP (rtl, 0)) > LAST_VIRTUAL_REGISTER)
-	   && XEXP (rtl, 0) != current_function_internal_arg_pointer)
-    /* This is a variable-sized structure.  */
-    emit_insn_after (gen_rtx_USE (VOIDmode, XEXP (rtl, 0)), insn);
-}
-
 int
 max_parm_reg_num ()
 {
@@ -4495,7 +4456,8 @@ assign_parms (fndecl)
 	    }
 	  DECL_RTL (parm) = stack_parm;
 	}
-      else if (! ((obey_regdecls && ! DECL_REGISTER (parm)
+      else if (! ((! optimize
+		   && ! DECL_REGISTER (parm)
 		   && ! DECL_INLINE (fndecl))
 		  /* layout_decl may set this.  */
 		  || TREE_ADDRESSABLE (parm)
@@ -4579,7 +4541,8 @@ assign_parms (fndecl)
 	  /* If we were passed a pointer but the actual value
 	     can safely live in a register, put it in one.  */
 	  if (passed_pointer && TYPE_MODE (TREE_TYPE (parm)) != BLKmode
-	      && ! ((obey_regdecls && ! DECL_REGISTER (parm)
+	      && ! ((! optimize
+		     && ! DECL_REGISTER (parm)
 		     && ! DECL_INLINE (fndecl))
 		    /* layout_decl may set this.  */
 		    || TREE_ADDRESSABLE (parm)
@@ -6064,32 +6027,19 @@ expand_function_start (subr, parms_have_cleanups)
      as opposed to parm setup.  */
   emit_note (NULL_PTR, NOTE_INSN_FUNCTION_BEG);
 
-  /* If doing stupid allocation, mark parms as born here.  */
-
   if (GET_CODE (get_last_insn ()) != NOTE)
     emit_note (NULL_PTR, NOTE_INSN_DELETED);
   parm_birth_insn = get_last_insn ();
-
-  if (obey_regdecls)
-    {
-      for (i = LAST_VIRTUAL_REGISTER + 1; i < max_parm_reg; i++)
-	use_variable (regno_reg_rtx[i]);
-
-      if (current_function_internal_arg_pointer != virtual_incoming_args_rtx)
-	use_variable (current_function_internal_arg_pointer);
-    }
 
   context_display = 0;
   if (current_function_needs_context)
     {
       /* Fetch static chain values for containing functions.  */
       tem = decl_function_context (current_function_decl);
-      /* If not doing stupid register allocation copy the static chain
-	 pointer into a pseudo.  If we have small register classes, copy
-	 the value from memory if static_chain_incoming_rtx is a REG.  If
-	 we do stupid register allocation, we use the stack address
-	 generated above.  */
-      if (tem && ! obey_regdecls)
+      /* Copy the static chain pointer into a pseudo.  If we have
+	 small register classes, copy the value from memory if
+	 static_chain_incoming_rtx is a REG.  */
+      if (tem)
 	{
 	  /* If the static chain originally came in a register, put it back
 	     there, then move it out in the next insn.  The reason for
@@ -6349,27 +6299,6 @@ expand_function_end (filename, line, end_bindings)
      until next function's body starts.  */
   immediate_size_expand--;
 
-  /* If doing stupid register allocation,
-     mark register parms as dying here.  */
-
-  if (obey_regdecls)
-    {
-      rtx tem;
-      for (i = LAST_VIRTUAL_REGISTER + 1; i < max_parm_reg; i++)
-	use_variable (regno_reg_rtx[i]);
-
-      /* Likewise for the regs of all the SAVE_EXPRs in the function.  */
-
-      for (tem = save_expr_regs; tem; tem = XEXP (tem, 1))
-	{
-	  use_variable (XEXP (tem, 0));
-	  use_variable_after (XEXP (tem, 0), parm_birth_insn);
-	}
-
-      if (current_function_internal_arg_pointer != virtual_incoming_args_rtx)
-	use_variable (current_function_internal_arg_pointer);
-    }
-
   clear_pending_stack_adjust ();
   do_pending_stack_adjust ();
 
@@ -6488,7 +6417,6 @@ expand_function_end (filename, line, end_bindings)
 		  GET_MODE (DECL_RTL (DECL_RESULT (current_function_decl))));
       emit_move_insn (real_decl_result,
 		      DECL_RTL (DECL_RESULT (current_function_decl)));
-      emit_insn (gen_rtx_USE (VOIDmode, real_decl_result));
 
       /* The delay slot scheduler assumes that current_function_return_rtx
 	 holds the hard register containing the return value, not a temporary
@@ -6522,7 +6450,6 @@ expand_function_end (filename, line, end_bindings)
       REG_FUNCTION_VALUE_P (outgoing) = 1;
 
       emit_move_insn (outgoing, value_address);
-      use_variable (outgoing);
     }
 
   /* If this is an implementation of __throw, do what's necessary to 

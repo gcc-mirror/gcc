@@ -2364,14 +2364,6 @@ emit_eh_context ()
 	    end_sequence ();
 
 	    emit_insns_before (insns, insn);
-
-            /* At -O0, we must make the context register stay alive so
-               that the stupid.c register allocator doesn't get confused. */
-            if (obey_regdecls != 0)
-              {
-                insns = gen_rtx_USE (GET_MODE (XEXP (reg,0)), XEXP (reg,0));
-                emit_insn_before (insns, get_last_insn ());
-              }
 	  }
       }
 }

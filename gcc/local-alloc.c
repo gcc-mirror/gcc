@@ -1110,7 +1110,8 @@ block_alloc (b)
 
 	     If tying is done, WIN is set nonzero.  */
 
-	  if (recog_data.n_operands > 1
+	  if (optimize
+	      && recog_data.n_operands > 1
 	      && recog_data.constraints[0][0] == '='
 	      && recog_data.constraints[0][1] != '&')
 	    {
@@ -1194,7 +1195,8 @@ block_alloc (b)
 	     destination register won't have had a quantity number
 	     assigned, since that would prevent combining.  */
 
-	  if (GET_CODE (PATTERN (insn)) == CLOBBER
+	  if (optimize
+	      && GET_CODE (PATTERN (insn)) == CLOBBER
 	      && (r0 = XEXP (PATTERN (insn), 0),
 		  GET_CODE (r0) == REG)
 	      && (link = find_reg_note (insn, REG_LIBCALL, NULL_RTX)) != 0
