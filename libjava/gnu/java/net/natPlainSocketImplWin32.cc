@@ -17,7 +17,6 @@ details.  */
 #include <gnu/java/net/PlainSocketImpl$SocketInputStream.h>
 #include <gnu/java/net/PlainSocketImpl$SocketOutputStream.h>
 #include <java/io/IOException.h>
-#include <java/io/InterruptedIOException.h>
 #include <java/net/BindException.h>
 #include <java/net/ConnectException.h>
 #include <java/net/InetAddress.h>
@@ -176,9 +175,13 @@ gnu::java::net::PlainSocketImpl::connect (::java::net::SocketAddress *addr,
             // use true, false instead of TRUE, FALSE because the
             // MS constants got undefined
 
+        // Reset and ignore our thread's interrupted flag.
+        // It's not possible to interrupt these sort of
+        // operations on Win32 anyway.
+        ::java::lang::Thread::interrupted();
+
         if (dwRet == WSA_WAIT_FAILED)
           throwConnectException ();
-        
         else if (dwRet == WSA_WAIT_TIMEOUT)
           throw new ::java::net::SocketTimeoutException
             (JvNewStringUTF ("connect timed out"));
@@ -275,11 +278,14 @@ gnu::java::net::PlainSocketImpl::accept (gnu::java::net::PlainSocketImpl *s)
             // use true, false instead of TRUE, FALSE because the
             // MS constants got undefined
 
+        // Reset and ignore our thread's interrupted flag.
+        ::java::lang::Thread::interrupted();
+
         if (dwRet == WSA_WAIT_FAILED)
           goto error;
         else if (dwRet == WSA_WAIT_TIMEOUT)
           throw new ::java::net::SocketTimeoutException
-            (JvNewStringUTF ("accept timed out"));
+            (JvNewStringUTF ("Accept timed out"));
       }
     }
   else
@@ -361,14 +367,12 @@ gnu::java::net::PlainSocketImpl$SocketOutputStream::write(jint b)
       if (r == -1)
         {
           DWORD dwErr = WSAGetLastError();
-          if (::java::lang::Thread::interrupted())
-            {
-              ::java::io::InterruptedIOException *iioe
-                = new ::java::io::InterruptedIOException
-                (_Jv_WinStrError (dwErr));
-              iioe->bytesTransferred = 0;
-              throw iioe;
-            }
+          
+          // Reset and ignore our thread's interrupted flag.
+          // It's not possible to interrupt these sort of
+          // operations on Win32 anyway.
+          ::java::lang::Thread::interrupted();
+
           // Some errors should not cause exceptions.
           if (dwErr != WSAENOTCONN && dwErr != WSAECONNRESET
             && dwErr != WSAENOTSOCK)
@@ -397,14 +401,10 @@ gnu::java::net::PlainSocketImpl$SocketOutputStream::write(jbyteArray b,
       if (r == -1)
         {
           DWORD dwErr = WSAGetLastError();
-          if (::java::lang::Thread::interrupted())
-            {
-              ::java::io::InterruptedIOException *iioe
-                = new ::java::io::InterruptedIOException
-                (_Jv_WinStrError (dwErr));
-              iioe->bytesTransferred = written;
-              throw iioe;
-            }
+
+          // Reset and ignore our thread's interrupted flag.
+          ::java::lang::Thread::interrupted();
+
           // Some errors should not cause exceptions.
           if (dwErr != WSAENOTCONN && dwErr != WSAECONNRESET
             && dwErr != WSAENOTSOCK)
@@ -456,15 +456,10 @@ doRead(int native_fd, void* buf, int count, int timeout)
   dwErrorCode = WSAGetLastError ();
     // save WSAGetLastError() before calling Thread.interrupted()
   
-  if (::java::lang::Thread::interrupted())
-    {
-      ::java::io::InterruptedIOException *iioe =
-        new ::java::io::InterruptedIOException
-        (JvNewStringUTF("read interrupted"));
-      iioe->bytesTransferred = r == -1 ? 0 : r;
-      throw iioe;
-    }
-  else if (r == -1)
+  // Reset and ignore our thread's interrupted flag.
+  ::java::lang::Thread::interrupted();
+  
+  if (r == -1)
     {
 error:
       // Some errors cause us to return end of stream...
@@ -474,7 +469,7 @@ error:
       // Other errors need to be signalled.
       if (dwErrorCode == WSAETIMEDOUT)
         throw new ::java::net::SocketTimeoutException
-          (JvNewStringUTF ("read timed out") );
+          (JvNewStringUTF ("Read timed out") );
       else
         _Jv_ThrowIOException (dwErrorCode);
     }
