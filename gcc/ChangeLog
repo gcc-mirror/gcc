@@ -1,3 +1,8 @@
+Mon Aug 31 13:57:55 1998  Richard Henderson  <rth@cygnus.com>
+
+	* alpha/va_list.h: New file.
+	* alpha/x-alpha (EXTRA_HEADERS): New.  Add va_list.h.
+
 Mon Aug 31 14:55:02 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* NEWS: Fix typos.
