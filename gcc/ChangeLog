@@ -1,3 +1,7 @@
+2004-11-18  Ben Elliston  <bje@au.ibm.com>
+
+	* doc/rtl.texi (Flags): Grammar fix.
+
 2004-11-17  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* expmed.c (alg_code): Add alg_unknown.
@@ -54,7 +58,7 @@
 
 2004-11-17  Steven Bosscher  <stevenb@suse.de>
 
-	* tree-ssa-propagate.c (cfg_blocks_add) Assert we're not trying
+	* tree-ssa-propagate.c (cfg_blocks_add): Assert we're not trying
 	to insert the exit or entry block.
 	(ssa_prop_init): Use add_control_edge to seed the algorithm.
 
