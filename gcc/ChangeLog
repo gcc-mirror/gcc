@@ -1,3 +1,31 @@
+2004-09-16  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* fold-const.c (fold): Fold difference of addresses.
+	(ptr_difference_const): Moved from tree-ssa-loop-ivopts, based on
+	get_inner_reference.
+	* tree-ssa-loop-ivopts.c (peel_address): Removed.
+	(ptr_difference_const): Moved to fold-const.c.
+	(split_address_cost): Use get_inner_reference instead of peel_address.
+	(ptr_difference_cost): Change type of diff to HOST_WIDE_INT.
+	* tree.h (ptr_difference_const): Export.
+
+	* tree-ssa-loop-ivopts.c (dump_iv, dump_use, dump_cand): Add induction
+	variable type to the dump.  Fix indentation.
+	(idx_find_step): Handle nonconstant array_ref_element_size and
+	array_ref_low_bound.
+	(idx_record_use): Handle array_ref_element_size and
+	array_ref_low_bound.
+	(find_interesting_uses_stmt): Handle memory = nontrivial_expression
+	statements correctly.
+	(get_computation_at, iv_value): Do not unshare expressions here.
+	(rewrite_use_outer): Unshare the expression before it is emitted
+	to code.
+	* tree-ssa-loop-niter.c (unsigned_type_for, signed_type_for):
+	Moved to tree.c.
+	* tree.c (unsigned_type_for, signed_type_for): Moved from
+	tree-ssa-loop-niter.c.  Use langhooks.
+	* tree.h (signed_type_for): Export.
+
 2004-09-16  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (rs6000_xcoff_asm_named_section): Update

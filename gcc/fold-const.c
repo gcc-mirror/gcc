@@ -6966,6 +6966,18 @@ fold (tree expr)
 	      || (INTEGRAL_TYPE_P (type) && flag_wrapv && !flag_trapv)))
 	return fold (build2 (PLUS_EXPR, type, arg0, negate_expr (arg1)));
 
+      /* Try folding difference of addresses.  */
+      {
+	HOST_WIDE_INT diff;
+
+	if (TREE_CODE (arg0) == ADDR_EXPR
+	    && TREE_CODE (arg1) == ADDR_EXPR
+	    && ptr_difference_const (TREE_OPERAND (arg0, 0),
+				     TREE_OPERAND (arg1, 0),
+				     &diff))
+	  return build_int_cst_type (type, diff);
+      }
+
       if (TREE_CODE (arg0) == MULT_EXPR
 	  && TREE_CODE (arg1) == MULT_EXPR
 	  && (INTEGRAL_TYPE_P (type) || flag_unsafe_math_optimizations))
@@ -10667,4 +10679,52 @@ round_down (tree value, int divisor)
     }
 
   return value;
+}
+
+/* Returns true if addresses of E1 and E2 differ by a constant, false
+   otherwise.  If they do, &E1 - &E2 is stored in *DIFF.  */
+
+bool
+ptr_difference_const (tree e1, tree e2, HOST_WIDE_INT *diff)
+{
+  tree core1, core2;
+  HOST_WIDE_INT bitsize1, bitsize2;
+  HOST_WIDE_INT bitpos1, bitpos2;
+  tree toffset1, toffset2, tdiff, type;
+  enum machine_mode mode1, mode2;
+  int unsignedp1, unsignedp2, volatilep1, volatilep2;
+  
+  core1 = get_inner_reference (e1, &bitsize1, &bitpos1, &toffset1, &mode1,
+			       &unsignedp1, &volatilep1);
+  core2 = get_inner_reference (e2, &bitsize2, &bitpos2, &toffset2, &mode2,
+			       &unsignedp2, &volatilep2);
+
+  if (bitpos1 % BITS_PER_UNIT != 0
+      || bitpos2 % BITS_PER_UNIT != 0
+      || !operand_equal_p (core1, core2, 0))
+    return false;
+
+  if (toffset1 && toffset2)
+    {
+      type = TREE_TYPE (toffset1);
+      if (type != TREE_TYPE (toffset2))
+	toffset2 = fold_convert (type, toffset2);
+
+      tdiff = fold (build2 (MINUS_EXPR, type, toffset1, toffset2));
+      if (!host_integerp (tdiff, 0))
+	return false;
+
+      *diff = tree_low_cst (tdiff, 0);
+    }
+  else if (toffset1 || toffset2)
+    {
+      /* If only one of the offsets is non-constant, the difference cannot
+	 be a constant.  */
+      return false;
+    }
+  else
+    *diff = 0;
+
+  *diff += (bitpos1 - bitpos2) / BITS_PER_UNIT;
+  return true;
 }

@@ -5866,4 +5866,20 @@ tree_fold_gcd (tree a, tree b)
     }
 }
 
+/* Returns unsigned variant of TYPE.  */
+
+tree
+unsigned_type_for (tree type)
+{
+  return lang_hooks.types.unsigned_type (type);
+}
+
+/* Returns signed variant of TYPE.  */
+
+tree
+signed_type_for (tree type)
+{
+  return lang_hooks.types.signed_type (type);
+}
+
 #include "gt-tree.h"
