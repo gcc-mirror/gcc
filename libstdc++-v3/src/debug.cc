@@ -496,11 +496,11 @@ namespace __gnu_debug
     abort();
   }
 
-  template<typename _T>
+  template<typename _Tp>
     void
     _Error_formatter::_M_format_word(char* __buf, 
 				     int __n __attribute__((__unused__)), 
-				     const char* __fmt, _T __s) const
+				     const char* __fmt, _Tp __s) const
     {
 #ifdef _GLIBCXX_USE_C99
       std::snprintf(__buf, __n, __fmt, __s);
@@ -651,7 +651,7 @@ namespace __gnu_debug
   template
     void
     _Error_formatter::_M_format_word(char* __buf, int __n, const char* __fmt, 
-				     unsigned int __s) const;
+				     std::size_t __s) const;
 
   template
     void

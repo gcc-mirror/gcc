@@ -1,5 +1,10 @@
 2003-11-20  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* include/debug/formatter.h: Use _Tp as template argument.
+	* src/debug.cc: Same, instantiate std::size_t.
+	
+2003-11-20  Benjamin Kosnik  <bkoz@redhat.com>
+
 	PR libstdc++/13109
 	* include/debug/formatter.h (_Error_formatter::_M_format_word): New.
 	* src/debug.cc (__gnu_debug): Format. 

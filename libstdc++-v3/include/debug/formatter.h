@@ -356,9 +356,9 @@ namespace __gnu_debug
       _M_max_length(78), _M_column(1), _M_first_line(true), _M_wordwrap(false)
     { }
 
-    template<typename _T>
+    template<typename _Tp>
       void
-      _M_format_word(char*, int, const char*, _T) const;
+      _M_format_word(char*, int, const char*, _Tp) const;
 
     void 
     _M_print_word(const char* __word) const;
