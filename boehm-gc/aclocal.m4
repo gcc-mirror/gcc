@@ -32,8 +32,18 @@ AM_INIT_AUTOMAKE(gc, 6.1a1, no-define)
 sinclude(../config/no-executables.m4)
 GCC_NO_EXECUTABLES
 
+# Yak.  We must force CC and CXX to /not/ be precious variables; otherwise
+# the wrong, non-multilib-adjusted value will be used in multilibs.
+# As a side effect, we have to subst CFLAGS and CXXFLAGS ourselves.
+
+m4_rename([_AC_ARG_VAR_PRECIOUS],[real_PRECIOUS])
+m4_define([_AC_ARG_VAR_PRECIOUS],[])
 AC_PROG_CC
 AC_PROG_CXX
+m4_rename([real_PRECIOUS],[_AC_ARG_VAR_PRECIOUS])
+
+AC_SUBST(CFLAGS)
+AC_SUBST(CXXFLAGS)
 
 AC_CHECK_TOOL(AS, as)
 AC_CHECK_TOOL(AR, ar)
