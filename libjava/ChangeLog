@@ -1,3 +1,7 @@
+2002-04-21  Mark Wielaard  <mark@klomp.org>
+
+	* mauve-libgcj: Don't run java.lang.ref tests since they are buggy.
+
 2002-04-19  David S. Miller  <davem@redhat.com>
 
 	* include/dwarf2-signal.h (SIGNAL_HANDLER): Name siginfo_t pointer

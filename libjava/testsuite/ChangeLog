@@ -1,3 +1,8 @@
+2002-04-21  Mark Wielaard  <mark@klomp.org>
+
+	* libjava.mauve/xfail: Expect failures for PR java/6391 and
+	libgcj/6389.
+
 2002-04-16  Mark Wielaard  <mark@klomp.org>
 
 	* libjava.lang/negzero.java: New.
