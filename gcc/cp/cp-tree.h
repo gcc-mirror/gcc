@@ -1003,7 +1003,6 @@ struct lang_type_class GTY(())
   unsigned dummy : 9;
 
   tree primary_base;
-  tree vfields;
   tree vcall_indices;
   tree vtables;
   tree typeinfo_var;
@@ -1386,9 +1385,8 @@ struct lang_type GTY(())
 #define SET_BINFO_NEW_VTABLE_MARKED(B)					 \
   (BINFO_NEW_VTABLE_MARKED (B) = 1,					 \
    my_friendly_assert (!BINFO_PRIMARY_P (B)				 \
-		       || BINFO_VIRTUAL_P (B), 20000517),			 \
-   my_friendly_assert (CLASSTYPE_VFIELDS (BINFO_TYPE (B)) != NULL_TREE,  \
-		       20000517))
+		       || BINFO_VIRTUAL_P (B), 20000517),		 \
+   my_friendly_assert (TYPE_VFIELD (BINFO_TYPE (B)), 20000517))
 
 /* Nonzero if this BINFO is a primary base class.  */
 
@@ -1432,15 +1430,6 @@ struct lang_type GTY(())
   (LANG_TYPE_CLASS_CHECK (NODE)->typeinfo_var)
 
 /* Accessor macros for the vfield slots in structures.  */
-
-/* List of virtual table fields that this type contains (both the primary
-   and secondaries). The TREE_VALUE is the class type where the vtable
-   field was introduced. For a vtable field inherited from the primary
-   base, or introduced by this class, the TREE_PURPOSE is NULL. For
-   other vtable fields (those from non-primary bases), the
-   TREE_PURPOSE is the BINFO of the base through which the vtable was
-   inherited.  */
-#define CLASSTYPE_VFIELDS(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->vfields)
 
 /* Get the BINFO that introduced this vtable into the hierarchy (will
    be NULL for those created at this level, or from a primary

@@ -1282,25 +1282,7 @@ determine_primary_base (tree t)
 	    continue;
 
 	  if (!CLASSTYPE_HAS_PRIMARY_BASE_P (t))
-	    {
-	      set_primary_base (t, base_binfo);
-	      CLASSTYPE_VFIELDS (t) = copy_list (CLASSTYPE_VFIELDS (basetype));
-	    }
-	  else
-	    {
-	      tree vfields;
-
-	      /* Only add unique vfields, and flatten them out as we go.  */
-	      for (vfields = CLASSTYPE_VFIELDS (basetype);
-		   vfields;
-		   vfields = TREE_CHAIN (vfields))
-		if (VF_BINFO_VALUE (vfields) == NULL_TREE
-		    || ! BINFO_VIRTUAL_P (VF_BINFO_VALUE (vfields)))
-		  CLASSTYPE_VFIELDS (t) 
-		    = tree_cons (base_binfo, 
-				 VF_BASETYPE_VALUE (vfields),
-				 CLASSTYPE_VFIELDS (t));
-	    }
+	    set_primary_base (t, base_binfo);
 	}
     }
 
@@ -1382,11 +1364,7 @@ determine_primary_base (tree t)
 
       /* If we've got a primary base, use it.  */
       if (candidate)
-	{
-	  set_primary_base (t, candidate);
-	  CLASSTYPE_VFIELDS (t) 
-	    = copy_list (CLASSTYPE_VFIELDS (BINFO_TYPE (candidate)));
-	}	
+	set_primary_base (t, candidate);
     }
 
   /* Mark the primary base classes at this point.  */
@@ -2193,15 +2171,18 @@ update_vtable_entry_for_fn (tree t, tree binfo, tree fn, tree* virtuals,
 static tree
 dfs_modify_vtables (tree binfo, void* data)
 {
+  tree t = (tree) data;
+  
   if (/* There's no need to modify the vtable for a non-virtual
          primary base; we're not going to use that vtable anyhow.
 	 We do still need to do this for virtual primary bases, as they
 	 could become non-primary in a construction vtable.  */
       (!BINFO_PRIMARY_P (binfo) || BINFO_VIRTUAL_P (binfo))
       /* Similarly, a base without a vtable needs no modification.  */
-      && CLASSTYPE_VFIELDS (BINFO_TYPE (binfo)))
+      && TYPE_CONTAINS_VPTR_P (BINFO_TYPE (binfo))
+      /* Don't do the primary vtable, if it's new.  */
+      && (BINFO_TYPE (binfo) != t || CLASSTYPE_HAS_PRIMARY_BASE_P (t)))
     {
-      tree t = (tree) data;
       tree virtuals;
       tree old_virtuals;
       unsigned ix;
@@ -4963,12 +4944,6 @@ finish_struct_1 (tree t)
 
   virtuals = modify_all_vtables (t, nreverse (virtuals));
 
-  /* If we created a new vtbl pointer for this class, add it to the
-     list.  */
-  if (TYPE_VFIELD (t) && !CLASSTYPE_HAS_PRIMARY_BASE_P (t))
-    CLASSTYPE_VFIELDS (t) 
-      = chainon (CLASSTYPE_VFIELDS (t), build_tree_list (NULL_TREE, t));
-
   /* If necessary, create the primary vtable for this class.  */
   if (virtuals || TYPE_CONTAINS_VPTR_P (t))
     {
@@ -5044,19 +5019,6 @@ finish_struct_1 (tree t)
       if (! DECL_LANG_SPECIFIC (TYPE_MAIN_DECL (t)))
 	retrofit_lang_decl (TYPE_MAIN_DECL (t));
       DECL_SORTED_FIELDS (TYPE_MAIN_DECL (t)) = field_vec;
-    }
-
-  if (TYPE_HAS_CONSTRUCTOR (t))
-    {
-      tree vfields = CLASSTYPE_VFIELDS (t);
-
-      for (vfields = CLASSTYPE_VFIELDS (t);
-	   vfields; vfields = TREE_CHAIN (vfields))
-	/* Mark the fact that constructor for T could affect anybody
-	   inheriting from T who wants to initialize vtables for
-	   VFIELDS's type.  */
-	if (VF_BINFO_VALUE (vfields))
-	  TREE_ADDRESSABLE (vfields) = 1;
     }
 
   /* Make the rtl for any new vtables we have created, and unmark
