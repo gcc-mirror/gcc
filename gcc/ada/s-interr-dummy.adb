@@ -7,7 +7,7 @@
 --                                  B o d y                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---             Copyright (C) 1995-2004, Ada Core Technologies               --
+--                      Copyright (C) 1995-2005 AdaCore                     --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,10 +32,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is an OS/2 version of this package.
-
---  This version is a stub, for systems that
---  do not support interrupts (or signals).
+--  This version is for systems that do not support interrupts (or signals)
 
 with Ada.Exceptions;
 
@@ -93,8 +90,7 @@ package body System.Interrupts is
    ---------------------
 
    function Current_Handler
-     (Interrupt : Interrupt_ID)
-      return      Parameterless_Handler
+     (Interrupt : Interrupt_ID) return Parameterless_Handler
    is
    begin
       Unimplemented;
@@ -155,7 +151,6 @@ package body System.Interrupts is
       return   Boolean
    is
       pragma Warnings (Off, Object);
-
    begin
       Unimplemented;
       return True;
@@ -166,7 +161,6 @@ package body System.Interrupts is
       return   Boolean
    is
       pragma Warnings (Off, Object);
-
    begin
       Unimplemented;
       return True;

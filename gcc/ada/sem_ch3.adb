@@ -9603,13 +9603,15 @@ package body Sem_Ch3 is
          end if;
       end Comes_From_Generic;
 
+   --  Start of processing for Derived_Type_Declaration
+
    begin
       Parent_Type := Find_Type_Of_Subtype_Indic (Indic);
 
       if Parent_Type = Any_Type
         or else Etype (Parent_Type) = Any_Type
         or else (Is_Class_Wide_Type (Parent_Type)
-                  and then Etype (Parent_Type) = T)
+                   and then Etype (Parent_Type) = T)
       then
          --  If Parent_Type is undefined or illegal, make new type into a
          --  subtype of Any_Type, and set a few attributes to prevent cascaded

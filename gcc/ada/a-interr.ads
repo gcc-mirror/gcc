@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -49,8 +49,7 @@ package Ada.Interrupts is
    function Is_Attached (Interrupt : Interrupt_ID) return Boolean;
 
    function Current_Handler
-     (Interrupt : Interrupt_ID)
-      return      Parameterless_Handler;
+     (Interrupt : Interrupt_ID) return Parameterless_Handler;
 
    procedure Attach_Handler
      (New_Handler : Parameterless_Handler;

@@ -513,8 +513,8 @@ package Prj is
 
    end record;
 
-   function Standard_Naming_Data (Tree : Project_Tree_Ref := No_Project_Tree)
-                                  return Naming_Data;
+   function Standard_Naming_Data
+     (Tree : Project_Tree_Ref := No_Project_Tree) return Naming_Data;
    pragma Inline (Standard_Naming_Data);
    --  The standard GNAT naming scheme when Tree is No_Project_Tree.
    --  Otherwise, return the default naming scheme for the project tree Tree,

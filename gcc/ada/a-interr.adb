@@ -7,7 +7,7 @@
 --                                  B o d y                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---             Copyright (C) 1995-2003, Ada Core Technologies               --
+--                      Copyright (C) 1995-2005 AdaCore                     --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -73,8 +73,7 @@ package body Ada.Interrupts is
    ---------------------
 
    function Current_Handler
-     (Interrupt : Interrupt_ID)
-      return      Parameterless_Handler
+     (Interrupt : Interrupt_ID) return Parameterless_Handler
    is
    begin
       return To_Ada (SI.Current_Handler (SI.Interrupt_ID (Interrupt)));
@@ -84,7 +83,7 @@ package body Ada.Interrupts is
    -- Detach_Handler --
    --------------------
 
-   procedure Detach_Handler (Interrupt : in Interrupt_ID) is
+   procedure Detach_Handler (Interrupt : Interrupt_ID) is
    begin
       SI.Detach_Handler (SI.Interrupt_ID (Interrupt), False);
    end Detach_Handler;

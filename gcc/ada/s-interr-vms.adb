@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2004, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2005, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,7 +31,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is an OpenVMS/Alpha version of this package.
+--  This is an OpenVMS/Alpha version of this package
 
 --  Invariants:
 
@@ -140,9 +140,8 @@ package body System.Interrupts is
    -- Local Tasks --
    -----------------
 
-   --  WARNING: System.Tasking.Stages performs calls to this task
-   --  with low-level constructs. Do not change this spec without synchro-
-   --  nizing it.
+   --  WARNING: System.Tasking.Stages performs calls to this task with
+   --  low-level constructs. Do not change this spec without synchronizing it.
 
    task Interrupt_Manager is
       entry Detach_Interrupt_Entries (T : Task_Id);
@@ -183,10 +182,10 @@ package body System.Interrupts is
 
    task type Server_Task (Interrupt : Interrupt_ID) is
       pragma Priority (System.Interrupt_Priority'Last);
-      --  Note: the above pragma Priority is strictly speaking improper
-      --  since it is outside the range of allowed priorities, but the
-      --  compiler treats system units specially and does not apply
-      --  this range checking rule to system units.
+      --  Note: the above pragma Priority is strictly speaking improper since
+      --  it is outside the range of allowed priorities, but the compiler
+      --  treats system units specially and does not apply this range checking
+      --  rule to system units.
 
    end Server_Task;
 
@@ -210,9 +209,9 @@ package body System.Interrupts is
                     (others => (null, Static => False));
    pragma Volatile_Components (User_Handler);
    --  Holds the protected procedure handler (if any) and its Static
-   --  information  for each interrupt. A handler is a Static one if
-   --  it is specified through the pragma Attach_Handler.
-   --  Attach_Handler. Otherwise, not static)
+   --  information for each interrupt. A handler is a Static one if it is
+   --  specified through the pragma Attach_Handler. Attach_Handler. Otherwise,
+   --  not static)
 
    User_Entry : array (Interrupt_ID'Range) of Entry_Assoc :=
                   (others => (T => Null_Task, E => Null_Task_Entry));
@@ -221,7 +220,7 @@ package body System.Interrupts is
 
    Blocked : constant array (Interrupt_ID'Range) of Boolean :=
      (others => False);
---  ??? pragma Volatile_Components (Blocked);
+   --  ??? pragma Volatile_Components (Blocked);
    --  True iff the corresponding interrupt is blocked in the process level
 
    Ignored : array (Interrupt_ID'Range) of Boolean := (others => False);
@@ -238,13 +237,13 @@ package body System.Interrupts is
    Server_ID : array (Interrupt_ID'Range) of Task_Id :=
                  (others => Null_Task);
    pragma Atomic_Components (Server_ID);
-   --  Holds the Task_Id of the Server_Task for each interrupt.
-   --  Task_Id is needed to accomplish locking per Interrupt base. Also
-   --  is needed to decide whether to create a new Server_Task.
+   --  Holds the Task_Id of the Server_Task for each interrupt. Task_Id is
+   --  needed to accomplish locking per Interrupt base. Also is needed to
+   --  decide whether to create a new Server_Task.
 
    --  Type and Head, Tail of the list containing Registered Interrupt
-   --  Handlers. These definitions are used to register the handlers
-   --  specified by the pragma Interrupt_Handler.
+   --  Handlers. These definitions are used to register the handlers specified
+   --  by the pragma Interrupt_Handler.
 
    type Registered_Handler;
    type R_Link is access all Registered_Handler;
@@ -334,7 +333,6 @@ package body System.Interrupts is
       end loop;
 
       return False;
-
    end Is_Registered;
 
    -----------------
@@ -415,9 +413,9 @@ package body System.Interrupts is
            Interrupt_ID'Image (Interrupt) & " is reserved");
       end if;
 
-      --  ??? Since Parameterless_Handler is not Atomic, the
-      --  current implementation is wrong. We need a new service in
-      --  Interrupt_Manager to ensure atomicity.
+      --  ??? Since Parameterless_Handler is not Atomic, the current
+      --  implementation is wrong. We need a new service in Interrupt_Manager
+      --  to ensure atomicity.
 
       return User_Handler (Interrupt).H;
    end Current_Handler;
@@ -452,19 +450,20 @@ package body System.Interrupts is
    -- Exchange_Handler --
    ----------------------
 
-   --  Calling this procedure with New_Handler = null and Static = True
-   --  means we want to detach the current handler regardless of the
-   --  previous handler's binding status (ie. do not care if it is a
-   --  dynamic or static handler).
+   --  Calling this procedure with New_Handler = null and Static = True means
+   --  we want to detach the current handler regardless of the previous
+   --  handler's binding status (ie. do not care if it is dynamic or static
+   --  handler).
 
-   --  This option is needed so that during the finalization of a PO, we
-   --  can detach handlers attached through pragma Attach_Handler.
+   --  This option is needed so that during the finalization of a PO, we can
+   --  detach handlers attached through pragma Attach_Handler.
 
    procedure Exchange_Handler
      (Old_Handler : out Parameterless_Handler;
       New_Handler : Parameterless_Handler;
       Interrupt   : Interrupt_ID;
-      Static      : Boolean := False) is
+      Static      : Boolean := False)
+   is
    begin
       if Is_Reserved (Interrupt) then
          Raise_Exception (Program_Error'Identity, "Interrupt" &
@@ -1152,25 +1151,24 @@ package body System.Interrupts is
    end Install_Handlers;
 
 --  Elaboration code for package System.Interrupts
+
 begin
 
    --  Get Interrupt_Manager's ID so that Abort_Interrupt can be sent.
 
    Interrupt_Manager_ID := To_System (Interrupt_Manager'Identity);
 
-   --  During the elaboration of this package body we want RTS to
-   --  inherit the interrupt mask from the Environment Task.
+   --  During the elaboration of this package body we want RTS to inherit the
+   --  interrupt mask from the Environment Task.
 
-   --  The Environment Task should have gotten its mask from
-   --  the enclosing process during the RTS start up. (See
-   --  in s-inmaop.adb). Pass the Interrupt_Mask of the Environment
-   --  task to the Interrupt_Manager.
+   --  The Environment Task should have gotten its mask from the enclosing
+   --  process during the RTS start up. (See in s-inmaop.adb). Pass the
+   --  Interrupt_Mask of the Environment task to the Interrupt_Manager.
 
-   --  Note : At this point we know that all tasks (including
-   --  RTS internal servers) are masked for non-reserved signals
-   --  (see s-taprop.adb). Only the Interrupt_Manager will have
-   --  masks set up differently inheriting the original Environment
-   --  Task's mask.
+   --  Note : At this point we know that all tasks (including RTS internal
+   --  servers) are masked for non-reserved signals (see s-taprop.adb). Only
+   --  the Interrupt_Manager will have masks set up differently inheriting the
+   --  original Environment Task's mask.
 
    Interrupt_Manager.Initialize (IMOP.Environment_Mask);
 end System.Interrupts;

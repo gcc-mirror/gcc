@@ -18140,7 +18140,7 @@ allocation and deallocation routines that record call information. This
 allows to obtain accurate dynamic memory usage history at a minimal cost to
 the execution speed. Note however, that @code{gnatmem} is not supported on
 all platforms (currently, it is supported on AIX, HP-UX, GNU/Linux x86,
-Solaris (sparc and x86) and Windows NT/2000/XP (x86).
+32-bit Solaris (sparc and x86) and Windows NT/2000/XP (x86).
 
 @noindent
 The @code{gnatmem} command has the form
