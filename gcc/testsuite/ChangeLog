@@ -31,6 +31,10 @@
 
 2002-01-22  Richard Henderson  <rth@redhat.com>
 
+	* gcc.dg/20020122-4.c: Use multiple outputs on the asm.
+
+2002-01-22  Richard Henderson  <rth@redhat.com>
+
 	* gcc.dg/20020122-4.c: New.
 
 2002-01-22  H.J. Lu <hjl@gnu.org>
@@ -103,8 +107,7 @@
 
 2001-01-18  David Billinghurst <David.Billinghurst@riotinto.com>
 
-	* g++.dg/other/deprecated.C: Fix FAIL from
-	"At global scope" message
+	* g++.dg/other/deprecated.C: Fix FAIL from "At global scope" message.
 	* g++.dg/ext/align1.C: Fix fail on cygwin from maximum
 	alignment warnings.
 
