@@ -292,7 +292,7 @@ rs6000_override_options (default_cpu)
 		break;
 	      }
 
-	  if (i == ptt_size)
+	  if (j == ptt_size)
 	    error ("bad value (%s) for %s switch", ptr->string, ptr->name);
 	}
     }
