@@ -660,7 +660,7 @@ combine_instructions (f, nregs)
 		      goto retry;
 		}
 
-    #ifdef HAVE_cc0
+#ifdef HAVE_cc0
 	      /* Try to combine a jump insn that uses CC0
 		 with a preceding insn that sets CC0, and maybe with its
 		 logical predecessor as well.
@@ -718,7 +718,7 @@ combine_instructions (f, nregs)
 		    && (next = try_combine (insn, XEXP (links, 0),
 					    prev, &new_direct_jump_p)) != 0)
 		  goto retry;
-    #endif
+#endif
 
 	      /* Try combining an insn with two different insns whose results it
 		 uses.  */
