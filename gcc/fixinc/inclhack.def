@@ -2173,6 +2173,8 @@ fix = {
                "|__STDC__[ \t]*==[ \t]*0"
                "|__STDC__[ \t]*!=[ \t]*1"
                "|__STDC__[ \t]*-[ \t]*0[ \t]*==[ \t]*0)";
+    /* Tru64 UNIX V4.0F/V5.1 <standards.h> supports GCC usage of __STDC__. */
+    bypass = 'GNU and MIPS C compilers define __STDC__ differently';
     c_test   = stdc_0_in_system_headers;
 
     c_fix     = format;
