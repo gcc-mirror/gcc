@@ -70,7 +70,7 @@ __atomic_add (volatile _Atomic_word* __mem, int __val)
 	: "m" (*__mem), "r"(__val));
 }
 
-static inline intint
+static inline int
 __attribute__ ((unused))
 __compare_and_swap (volatile long *__p, long __oldval, long __newval)
 {
