@@ -1,3 +1,7 @@
+Sun Apr 19 22:13:05 1998  H.J. Lu  (hjl@gnu.org)
+
+	* isgetline.cc (istream::get): Fix a typo.
+
 1998-02-24  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
 	Changes for _G_IO_IO_FILE_VERSION == 0x20001:

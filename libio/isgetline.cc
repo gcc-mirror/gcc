@@ -8,3 +8,4 @@
 				       -1, &ch);
     if (ch != EOF)
       ch = sb->sbumpc();
+      _gcount = _IO_getline_info(sbuf, buf, len - 1, delim, -1, &ch);
