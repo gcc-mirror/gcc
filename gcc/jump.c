@@ -1909,10 +1909,20 @@ never_reached_warning (avoided_insn, finish)
   if (!warn_notreached)
     return;
 
+  /* Back up to the first of any NOTEs preceding avoided_insn; flow passes
+     us the head of a block, a NOTE_INSN_BASIC_BLOCK, which often follows
+     the line note.  */
+  for (insn = PREV_INSN (avoided_insn); ; insn = PREV_INSN (insn))
+    if (GET_CODE (insn) != NOTE)
+      {
+	insn = NEXT_INSN (insn);
+	break;
+      }
+
   /* Scan forwards, looking at LINE_NUMBER notes, until we hit a LABEL
      in case FINISH is NULL, otherwise until we run out of insns.  */
 
-  for (insn = avoided_insn; insn != NULL; insn = NEXT_INSN (insn))
+  for (; insn != NULL; insn = NEXT_INSN (insn))
     {
       if ((finish == NULL && GET_CODE (insn) == CODE_LABEL)
 	  || GET_CODE (insn) == BARRIER)
@@ -1929,7 +1939,7 @@ never_reached_warning (avoided_insn, finish)
 	}
       else if (INSN_P (insn))
 	{
-	  if (reached_end || a_line_note == NULL)
+	  if (reached_end)
 	    break;
 	  contains_insn = 1;
 	}
