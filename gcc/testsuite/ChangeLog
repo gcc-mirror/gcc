@@ -1,3 +1,11 @@
+2001-01-14  Jeffrey Oldham  <oldham@codesourcery.com>
+
+	* g++.dg/special/ecos.exp (conpr-1.C): XFAIL if compile emits
+	message containing "init_priority".
+	(conpr-2.C): Likewise.
+	(conpr-3.C): Likewise.
+	* g++.old-deja/g++.ext/initp1.C: XFAIL for Irix.
+
 2001-01-14  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* gcc.c-torture/execute/20010114-2.c: New test.
