@@ -28,9 +28,6 @@ extern char *getcwd ();
 /* We actually use this as a starting point, not a limit.  */
 #define GUESSPATHLEN 100
 #endif /* (defined (USG) || defined (VMS)) */
-#ifdef _WIN32
-#include <direct.h>
-#endif
 
 char *getenv ();
 char *xmalloc ();
