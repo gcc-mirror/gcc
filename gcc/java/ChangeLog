@@ -1,3 +1,8 @@
+2003-01-27  Tom Tromey  <tromey@redhat.com>
+
+	* parse.y (java_check_regular_methods): Check for construct after
+	checking types in throws clause.
+
 2003-01-26  Christian Cornelssen  <ccorn@cs.tu-berlin.de>
 
 	* Make-lang.in (java.install-common, java.uninstall)
