@@ -2704,7 +2704,7 @@ cp_valid_lang_attribute (attr_name, attr_args, decl, type)
   tree decl ATTRIBUTE_UNUSED;
   tree type ATTRIBUTE_UNUSED;
 {
-  if (attr_name == get_identifier ("com_interface"))
+  if (is_attribute_p ("com_interface", attr_name))
     {
       if (! flag_vtable_thunks)
 	{
@@ -2724,7 +2724,7 @@ cp_valid_lang_attribute (attr_name, attr_args, decl, type)
       CLASSTYPE_COM_INTERFACE (type) = 1;
       return 1;
     }
-  else if (attr_name == get_identifier ("init_priority"))
+  else if (is_attribute_p ("init_priority", attr_name))
     {
       tree initp_expr = (attr_args ? TREE_VALUE (attr_args): NULL_TREE);
       int pri;
