@@ -1,3 +1,8 @@
+2001-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.old-deja/g++.other/init16.C: Update the test so that it does
+	not need <string> and also tests the initialization at runtime.
+
 2001-02-16  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* g++.old-deja/g++.other/decl9.C: New test.
