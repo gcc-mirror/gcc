@@ -53,7 +53,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 do {									\
   if (switch_table_difference_label_flag)				\
     asm_fprintf ((FILE), "%s %LLD%d,%LL%d\n", SET_ASM_OP, (NUM), (NUM));\
-  switch_table_difference_label_flag = 0;
+  switch_table_difference_label_flag = 0;				\
 } while (0)
 
 int switch_table_difference_label_flag;
